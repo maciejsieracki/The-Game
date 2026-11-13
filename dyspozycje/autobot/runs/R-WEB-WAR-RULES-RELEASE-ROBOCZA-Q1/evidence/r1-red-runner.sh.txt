@@ -1,0 +1,15 @@
+#!/bin/bash
+S=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/r1
+R=/home/user/The-Game/.claude/worktrees/wf_3a680124-f25-1
+cd "$R" || exit 1
+run() {
+  name="$1"; shift
+  timeout 900 node "$@" > "$S/t-$name.log" 2>&1
+  echo "EXIT=$?" >> "$S/t-$name.log"
+  echo "$name: $(tail -1 "$S/t-$name.log") / $(grep -E 'PASS|FAIL|pass|fail|OK' "$S/t-$name.log" | tail -1 | cut -c1-120)"
+}
+run recruitment-no-upkeep gra/tools/recruitment-no-upkeep-gate-test.cjs
+run deposit-building gra/tools/deposit-building-gate-test.cjs
+run koniec-tury-f1-f4 gra/tools/koniec-tury-f1-f4-runda3-test.cjs
+run koniec-tury-g1-g2 gra/tools/koniec-tury-g1-g2-runda4-test.cjs
+echo REDDONE

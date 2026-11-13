@@ -1,0 +1,19 @@
+{
+  "stage": "11/11",
+  "status": "PASS_WITH_NOTES_DEPLOYED_PUSHED_GIT_READBACK",
+  "wave": 608,
+  "source": "531d403f6",
+  "publicationCommit": "aac34b5215e785dc79f3fb2bef2b1e2ca88c7715",
+  "bundleMd5": "6c95bf48a96e610ab152f1ca98f91619",
+  "checks": [
+    "IndependentDefense/FinalControlPASSWITHNOTES",
+    "CleanproductionbuildPASS",
+    "HTTPpresent/absentaudiosmokePASS",
+    "All3audiopacksunchanged",
+    "Freshgitfetch/gitshowremoteartifactsbyteidentical"
+  ],
+  "limits": [
+    "file:// remains INFRA blocked by managed Chromium; notverified",
+    "UnusedJSONInfluencebonusunchanged, removedonlyfalseplayerclaims"
+  ]
+}

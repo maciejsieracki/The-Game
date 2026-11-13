@@ -279,7 +279,6 @@ async function main() {
         unlockedTechs: TECHS,
         pracaSurplusThreshold: 0,
         pracaBudgetPercent: 100,
-        maxItemsPerCity: 3,
         skipWyrab: true,
         playerEra: 3,
         priorityOverride: M.AI_IMPROVEMENT_PRIORITY,

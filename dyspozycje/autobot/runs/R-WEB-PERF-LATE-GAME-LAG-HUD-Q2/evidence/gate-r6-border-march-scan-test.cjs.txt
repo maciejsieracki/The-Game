@@ -1,0 +1,2 @@
+border-march-scan-test: 15 pass, 0 fail
+EXIT=0

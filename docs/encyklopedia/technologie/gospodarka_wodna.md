@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Gospodarka wodna** — epoka **Kamień** (poziom 2), koszt **36** PN (tempo Szybka), wymaga: Rolnictwo. Odblokowuje budynki: Studnia; ulepszenia terenu: Irygacja.
+**Gospodarka wodna** — epoka **Kamień** (poziom 2), koszt **180** PN (tempo Szybka), wymaga: Rolnictwo. Odblokowuje budynki: Studnia; ulepszenia terenu: Irygacja.
 
 ---
 
@@ -24,7 +24,7 @@
 ### Wymagania
 - **Epoka:** Kamień (poziom 2)
 - **Wymaga (prereq):** Rolnictwo
-- **Koszt nauki:** 36 PN (baza, tempo Szybka — mnożnik tempa wg `tech-tempo.ts`)
+- **Koszt nauki:** 180 PN (baza, tempo Szybka — mnożnik tempa wg `tech-tempo.ts`)
 
 ### Co odblokowuje
 - **Budynki:** Studnia

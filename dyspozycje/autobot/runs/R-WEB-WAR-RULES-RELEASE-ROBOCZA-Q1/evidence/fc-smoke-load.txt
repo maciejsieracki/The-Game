@@ -1,0 +1,7 @@
+load before rep1: 0.92 5.09 12.59 2/113 696
+cand rep1 EXIT=0
+base rep1 EXIT=0
+load before rep2: 15.76 17.88 16.51 16/496 3426
+cand rep2 EXIT=0
+base rep2 EXIT=0
+ALLDONE

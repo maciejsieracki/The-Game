@@ -1,3 +1,281 @@
+﻿## [2026-10-27 18:05 PL] ROOT → RELEASE — ALL-TOPICS ROBOCZA
+
+STATUS: DEPLOYED / REMOTE-READBACK-PASS. Source main `92d124b`; release commit `fc18c02e`; bundle MD5 `2f4d87176ffcfc2aa6cdf44e3e562981`, SHA-256 `38526ae35906328b1e2a76c4158f28795c04c7ad945ad9d03a452993e023d692`, 69,998,033 B. Zakres i limity w `dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/` i `dyspozycje/WERSJE.md`. Pomiar wydajności i pełny test 100 tur/save-load poza zakresem.
+CZEKAM-NA: właściciel — Ctrl+F5 w Roboczej i playtest; zgłosić błędy osobno.
+
+## [2026-10-20] CODEX -> ROOT / PR141 FULL RELEASE CANDIDATE
+
+STATUS: APPROVED_FOR_BOUNDED_PUBLICATION by root after Final Control PASS-WITH-NOTES; no commit, push, or deployment yet.
+- External assembly: `/workspace/pr141-publish-20261020/release-r1-assembly`; source base `c799325c77bc11c24684c1b35077ae80913d6f8d`; release artifact is ROBOCZA only.
+- Bounded product delta is 51 modified +49 added paths versus the already-pushed base. Selected exact source-referenced run evidence is included; other historical/scratch runs remain outside the release tree.
+- Bundle SHA-256 `234dff75036b22e423b33f9d6134428c559b612922b866399346f0e94ebfca4a`, MD5 `3b6610b74fd6586c5507908fe7665369`, 69,943,587 bytes; canonical verifier passes manifest match.
+- TSC/Vite and approved focused suites pass; the earlier population fixture failure was corrected and rerun 24/24. Independent Evaluator report is in the new release run.
+- Browser attempts 01 and 02 both FAIL the complete flow. Attempt 02 confirmed first-city founding but timed out closing first-contact audience after map load; standard map lifecycle was about 196 s. Final Control PASS-WITH-NOTES accepts bounded publication; commit/push and remote readback are pending. No 93x15/full-runtime/gameplay acceptance, F-05 legal battle evidence, terrain/runtime closure, or external production-host claim.
+- See [WERSJE.md](../WERSJE.md) for bundle identity and limitations.
+
+## [2026-10-09] ORKIESTRATOR → WŁAŚCICIEL / KANBAN — osobny deploy „Zakończ turę”
+
+STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS — branch/main `fd629959191dc4e46b59cf19bdb5941e27c2ef79`, zdalny bundle/manifest zgodny bajtowo i hashami; HTTP smoke pobranych dokładnych bajtów PASS (200, canvas/UI, zero błędów).
+
+- Decyzja A: end-turn wdrożyć osobno; nie czekać na Rally i nie dołączać jego zmian.
+- Source `c63a7bc89757cf165e7752e3dc0d124abdb06506`, bundle commit `b407a5421b4aa5f537c600a21d5bea54ba7a2737`, base `69ccb145a8682f9c2754834afbb16a8d1eaaf825`.
+- Branch `hermes/integration/end-turn-only-20261009`; czysty izolowany worktree na serwerze `/home/ubuntu/work/game-end-turn-only-release-20261009`. Chroniony checkout produktu bez zmian.
+- Istniejące Operator43/Evaluator44/FinalControl45 z pustymi zarzutami; identyczne source/harness hashes. Świeże regresje i direct Vite PASS; świeży Chromium potwierdził 1→2→3 i po jednym trusted click na turę, zero błędów. HTTP smoke ostemplowanego bundla 200/UI/canvas PASS.
+- Wersja/hash: [WERSJE.md](../WERSJE.md). Receipt: `dyspozycje/autobot/runs/R-GAME-END-TURN-INPUT-REPAIR-Q1/release-20261009/receipt.json`.
+- Zapisano przerwany dodatkowy test SIGTERM jako INFRA; wznowienie na niezmienionym bundlu PASS. Audit zależności: 1 moderate/8 high, bez upgrade. Znany stamp WARN nie zmienia zgodności manifestu.
+- Rally pozostaje TRIAGE po run48 BLOCK 5/5, bez kolejnej próby, bez Evaluatora/Final Control i bez publikacji. Worldgen/PR141/matrix/Desktop nie zmieniane; ledger 0/9 zachowany. Brak promocji KANON/FINALNA.
+
+CZEKAM-NA: test właściciela nowej ROBOCZA `gra-robocza/START.html` po pobraniu aktualizacji i Ctrl+F5; bounded poprawka end-turn opublikowana i zdalnie zweryfikowana. Rally pozostaje osobnym hold. Nie potwierdzono osobnego zewnętrznego serwisu gry — izolowany HTTP smoke dotyczy dokładnego artefaktu repozytorium.
+
+## [2026-09-27 13:01 UTC] ORKIESTRATOR -> KANBAN / WLASCICIEL -- DEPLOY ROBOCZA: HOTSEAT X2 + RYDWAN/KONNICA X2 + RYDWAN AI + WOJNA EPOKI OFENSYWA (5 TEMATOW)
+
+STATUS: `DEPLOYED -- local commit WYKONANY w worktree integracyjnym; push do origin/main -- patrz sekcja PUSH ponizej`.
+
+Haslo wlasciciela otrzymane wprost (2026-09-26/27, dwie sesje): "Zajmij sie oboma bledami i daj kazde do oddzielnego operatora, wsadz na kanban i dzialaj autonomicznie" + "Okej, pracuj dalej autonomicznie, az rozwiazesz problemy, a potem na koncu zrob deploy do roboczej i git push." + w trakcie: "Operatorow, ewaluatorow i tak dalej zawsze zlecaj na OpenAI, czyli na Lunie. Sam pracujesz na Sonet."
+
+- Czysty integration worktree: `/home/ubuntu/projects/The-Game-integration-20260927`; base `origin/main=6eab3b40f346b582ff2fda772a1a26ede67d1224`.
+- Piec tematow, kazdy w osobnym worktree/branch/karcie Kanban, operatorzy/evaluatorzy na `gpt-5.6-luna-900k`/`openai-codex`:
+  - `R-HOTSEAT-RECZNY-RUCH-GRACZ2-Q1-20260927` -- Operator `t_ecf23c85` (self-report/`kanban_complete`, bez wbudowanego review) + dodatkowy niezalezny Evaluator `t_9eb58bbe` PASS-WITH-NOTES. Naprawa: `executeMarchSegmentForUnit()` w `gra/src/main.ts` mial zaszyty `ownerId !== 0`, ktory blokowal reczny marsz jednostek gracza 2 (zwiedzanie dzialalo, bo szlo inna sciezka); zmienione na `isMe(u.ownerId)`.
+  - `R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1-20260927` -- Operator `t_b4fb7a22` PASS (16/16 Chromium). Naprawa: `gra/src/ui/empireDetailPanel.ts` (przed-hotseatowy, niezmigrowany panel) kopiowal ustawienia gracza 1 na gracza 2; teraz per-fotel.
+  - `R-JEDNOSTKI-RYDWAN-KONNICA-X2-Q1-20260927` -- Operator `t_c1de1a6b` PASS (2 rundy review). Podwojenie 13 jednostek Typ:Mount w `gra/data/units.json` (548/548 asercji), koszt/ruch/utrzymanie niezmienione.
+  - `P-RYDWAN-BIERNY-BRAK-ATAKU-Q1-20260927` -- Operator `t_85506cd7` PASS (3 rundy review -- runda 2 znalazla realny blad `Math.max(unit.ruchLeft, unit.ruch)` zamiast `unit.ruchLeft`, naprawiony w rundzie 3). `gra/src/game/ai.ts`: rydwany/flankerzy aktywnie zblizaja sie do wroga w zasiegu.
+  - `R-AI-WOJNA-EPOKI-OFENSYWA-FORTELE-Q1-20260927` (Etap A+B) -- Operator `t_10fe8209` (self-report/`kanban_complete`) + dodatkowy niezalezny Evaluator `t_c9a375bc` PASS-WITH-NOTES. `gra/src/game/ai.ts`+`main.ts`: po wybuchu wojny epoki AI-napastnik konsoliduje armie do jednego klastra i idzie na miasta wroga; obronca kieruje wolne jednostki do napastnika. **Etap C (fortele: glowna+mniejsza armia, atak z tylu, okrazenie, podstep, dwa fronty) odlozony jako osobna kontynuacja, NIE wdrozony**.
+- Integracja: 5x `git merge --no-ff` z czystego `origin/main` (6eab3b40). 1 konflikt merge w `gra/src/game/ai.ts` (tematy 4 i 5, ta sama petla jednostek) -- rozwiazany addytywnie, oba bloki logiki zachowane w calosci.
+- Integration/publish commit: `7ccb1dc078c0be7d7d93a12e8dc32fd1748d0c4d` (branch `hermes/integration/20260927-piec-tematow`).
+- Bramki: `tsc --noEmit` PASS na scalonym drzewie. Testy celowane: `hotseat-ustawienia-kopiowane-test` 16/16, `rydwan-konnica-x2-test` 548/548, `rydwan-bierny-atak-test` 6/6, `ai-ofensywa-wojna-epoki-test` 7/7. `hotseat-drugi-fotel-tura-test` -- pre-existing live-harness timeout (`turn=2/activeHumanOwnerId=49`) potwierdzony niezaleznie przez Evaluatora `t_9eb58bbe` takze na czystym `origin/main`, nie jest regresja tej integracji. `vite build` 892 modulow PASS.
+- `verify-robocza-bundle.cjs` -> `VERIFY OK`, manifest match OK (stamp match WARN znany false-positive). Headless Chromium smoke: `SMOKE OK`, canvas obecny, HUD renderuje sie, zero bledow.
+- Bundle: md5 `699f53bc0286e5bc5f4044251bdf32ee`, sha256 `e5880bce4be8fed11b2152a8a076e0cddf1a2e0f4e3bc06be83e6da0c2e6f508`, `69922675` bajtow.
+- Push: `git push origin HEAD:main` z worktree integracyjnego -- patrz readback ponizej.
+- Poza zakresem tego deploya: Etap C forteli AI wojny epoki, `ai_profil_obronna` (`b4c9582f`, niezmergowany), pakiet Dyplomacja 8 pol (w toku), PR #142 rally-point UI (`2cca1748`, OPEN/MERGEABLE) -- wszystkie niezalezne, czekaja na wlasny cykl/zgode.
+
+CZEKAM-NA: test wlasciciela w `gra-robocza/START.html` po `Ctrl+F5` -- reczny ruch gracza 2 w hot-seat, niezalezne ustawienia (praca/podatki/pieniadze) obu fotelow, silniejsze rydwany/konnica, rydwany aktywnie atakujace/okrazajace, oraz AI konsolidujace armie i atakujace miasta po wybuchu wojny epoki.
+
+## [2026-09-27 18:20 UTC] ORKIESTRATOR -> KANBAN / WLASCICIEL -- DEPLOY ROBOCZA: ETAP C WOJNY EPOKI -- FALE Z ROZNYCH KIERUNKOW (KONTYNUACJA 5 TEMATOW)
+
+STATUS: `DEPLOYED -- local commit WYKONANY w worktree integracyjnym; push do origin/main -- patrz sekcja PUSH ponizej`.
+
+Haslo wlasciciela otrzymane wprost (2026-09-27): opis fortelu -- "W momencie wybuchu wojny cywilizacja AI zbiera wszystkie dostepne jednostki... a nastepnie wyrusza, by zdobyc dwa kolejne miasta przeciwnika... Druga armia powinna byc zbierana ponownie... i atakowac z innego miejsca... nie z tego samego, z ktorego atakuje glowna armia... az do osiagniecia celu, czyli zdobycia dwoch miast. Albo do zakonczenia wojny epoki po odpowiedniej ilosci tur." + potwierdzenie kontynuacji deployu po Evaluatorze: "b" (integruj i deployuj teraz).
+
+- Czysty integration worktree: `/home/ubuntu/projects/The-Game-integration-20260927`; base `origin/main=93f5ed43b0ff51208d207589539482a14a8ad2ad` (poprzedni deploy 5 tematow).
+- Jeden temat, osobny worktree/branch/karta Kanban, operatorzy/evaluatorzy na `gpt-5.6-luna-900k`/`openai-codex`:
+  - `R-AI-WOJNA-EPOKI-FALA-KOLEJNA-KIERUNEK-Q1-20260927` -- Operator `t_38409843` PASS-WITH-NOTES (4 rundy self-review) -> Evaluator `t_d7ad067b` **FAIL**: `targetForAnchor()` w nowym `gra/src/game/forced-war-waves.ts` liczyl `targetDifferent` tylko z aktywnych fal, nie z historii rozwiazanych fal -- kolejna fala mogla wiec ponownie zaatakowac miasto juz zdobyte/stracone przez wczesniejsza, zakonczona falke. Naprawa: poprawka Operator `t_6e057d4b` PASS-WITH-NOTES (`excludedTargetIds` teraz laczy cele fal aktywnych ORAZ historycznych; nowy test regresyjny odtwarzajacy dokladnie ten scenariusz). Potwierdzenie: Evaluator dodatkowy `t_498a5063` PASS-WITH-NOTES z WLASNYM, niezaleznym probe (nie tylko odczyt istniejacego testu).
+  - Mechanizm: jednostki fali w drodze/zaangazowanej sa wykluczone z puli koncentracji nowej fali (`activeWaveUnitIds`); nowa fala (min. 3 wolne jednostki w promieniu koncentracji) wybiera cel i szesciokatny sektor podejscia mierzalnie rozny od aktywnych i historycznych fal (fallback na jedyne dostepne miasto zachowany dla wojen z jednym celem); stan `forcedWarWavesByPairKey` per para wojny, serializowany w save, czyszczony na wszystkich 17 bezposrednich sciezkach konca wojny wymuszonej w `main.ts` (pokoj, eliminacja, limit tur/miast, reset testowy).
+- Integracja: fast-forward merge z `origin/main=93f5ed43` (branch operatora byl juz oparty na aktualnym origin, zero konfliktow).
+- Integration/publish commit: `e4caea5fb29d2d161388a976214ac974675542fa` (branch `hermes/R-AI-WOJNA-EPOKI-FALA-KOLEJNA-KIERUNEK-Q1-20260927`).
+- Bramki po integracji (orkiestrator, od zera): `tsc --noEmit` PASS; `forced-war-waves-test.cjs` 17/17; `ai-ofensywa-wojna-epoki-test.cjs` 7/7 (zero regresji Etapu A+B); `army-concentration-test.cjs` 55/55; `forced-war-bronze-test.cjs` 56/56; `git diff --check` PASS; `vite build` 893 modules; `smoke.cjs` (Chromium headless) SMOKE OK (canvas=1, rAF=1); `verify-robocza-bundle.cjs` VERIFY OK.
+- Bundle: `gra-robocza/Gra-ROBOCZA.html`, md5 `b889074c6dac56eab875da24eeeae492`, 69928949 bajtow. Manifest `gra-robocza/ROBOCZA-MANIFEST.json` zaktualizowany.
+- Wciaz POZA zakresem (niezmienione): `ai_profil_obronna`, Dyplomacja (macierz cywilizacji), PR #142 (rally-point UI, niezalezny, OPEN/MERGEABLE).
+
+---
+
+## [2026-09-26 16:17 UTC] ORKIESTRATOR -> KANBAN / WLASCICIEL -- DEPLOY ROBOCZA: ZYWNOSC + AUTOMANAGE + AI-MIASTA (3 TEMATY)
+
+STATUS: `DEPLOYED -- local commit + push do origin/main WYKONANY; remote readback PASS`.
+
+Haslo wlasciciela otrzymane wprost: "Wykonaj kolejne kroki. A na samym koncu zrob deploy do roboczej."
+
+- Czysty integration worktree: `/home/ubuntu/projects/The-Game-integration-20260926`; base `origin/main=f057729a722b4071b19d762ec0cd52db7eea0e01`.
+- Trzy tematy scalone `git merge --no-ff` (zero konfliktow, rozne pliki produkcyjne):
+  - `R-EKONOMIA-ZYWNOSC-NADWYZKA-PO-LIMICIE-Q1-20260925` (`fa20567c`) -- Operator `t_7ecff73e` PASS, Evaluator `t_8aacea6f` PASS, Final Control `t_c1982f4f` PASS.
+  - `R-AUTOMANAGE-ULEPSZENIA-NIE-BUDOWANE-Q1-20260925` (`0361c8b9`) -- Operator `t_e7c2cc9d` PASS (odzyskany po infrastrukturalnym crashu dispatchera), Evaluator `t_b37fda77` PASS, Final Control `t_e5b4b28f` PASS (odzyskany po infrastrukturalnym timeout w trakcie drugiego przebiegu testu bazowego -- worker byl aktywnie w trakcie pracy, nie utkniety).
+  - `R-AI-ZAKLADANIE-MIAST-TELEPORTACJA-Q1-20260925` (`bcc11fe5`) -- Operator `t_8c9c7f4f` PASS, Evaluator `t_08801b64` PASS (3 niezalezne deterministyczne repro), Final Control `t_b0a1fd2d` PASS (3. niezalezne repro, wlasna geometria).
+- Integration/publish commit: `27fe22fc92770490ea119ce22bda45ad1643a453`; bundle commit: `c1adee26211d78195e0a1f81865076ee768d6421`.
+- Bramki: `tsc --noEmit` PASS. Testy celowane: `auto-wyzywienie-live-recalc-test` 60/60, `auto-manage-ulepszenia-fallback-test` 11/11, `auto-manage-test` 45/45, `ai-founding-territory-test` 29/29, `cities-buildings-production-owner-contract-test` 53/53. 4 legacy zywnosc-testy (`spichlerz-widocznosc-test` 37/8, `akwedukt-popcap-test` 6/1, `spichlerz-deficyt-scalenie-test` 54/4, `spichlerz-wzrost-test` 2/7) potwierdzone identyczne liczbowo na scalonym drzewie i na osobnym czystym `origin/main` worktree -- **zero regresji wprowadzonej przez te trzy tematy, wczesniej otwarty punkt jest teraz rozstrzygniety**. `git diff --check` PASS. Vite build `892` modulow PASS.
+- `verify-robocza-bundle.cjs` -> `VERIFY OK`, manifest match OK. Headless Chromium smoke: tytul `The Game — 4X`, canvas obecny, pelny HUD renderuje sie, zero bledow strony/konsoli.
+- Bundle: md5 `bc76a12ed28947153b7ec32ceeb6b9d3`, sha256 `a80e6a62b998aa23a18dc9524e47dda2dfae392b1c0dc366b486c42cb83198b8`, `69919094` bajtow.
+- Push: `git push origin HEAD:main` z worktree integracyjnego -- patrz readback ponizej.
+- Poza zakresem tego deploya: `ai_profil_obronna` (`b4c9582f`, niezmergowany), pakiet Dyplomacja 8 pol (w toku), PR #142 rally-point UI (`2cca1748`, OPEN/MERGEABLE) -- wszystkie niezalezne, czekaja na wlasny cykl/zgode.
+
+CZEKAM-NA: test wlasciciela w `gra-robocza/START.html` po `Ctrl+F5` -- nadwyzka zywnosci po limicie populacji, autonomiczne ulepszenia w trybie priorytet, AI nie zaklada juz miast poza wlasnym terytorium.
+
+## [2026-09-25 19:00 UTC] ORKIESTRATOR -> KANBAN / WLASCICIEL -- DEPLOY ROBOCZA: CIV-MATRIX CONSOLIDATED INTEGRATION (PR #140)
+
+STATUS: `DEPLOYED -- local commit, manifest and smoke readback PASS; push nie wykonano`.
+
+- Clean integration worktree: `/home/ubuntu/projects/The-Game-deploy-robocza-20260925`; base `origin/main=b15bdb365ae251fdf190299a885af699314d810d` (PR #140 merged, containing META-REMOVE+spec-remove+Walka).
+- Product/bundle commit: `218bf8b1`; registry commit: `08790694`; remote `main` already contains `b15bdb36` (verified via `git merge-base --is-ancestor`); this deploy publishes that merged state to gra-robocza.
+- Scope: paramDefs `113 -> 93` net (4 meta fields removed, 18 spec_* fields removed, 32 combat fields wired G2-G11 + 2 new fields + 5 historical-balance additions). Full grouping and per-field rationale on `t_63dd77eb`.
+- Independent verification: PR #140 tree tested with 17/19 regression suites 100% PASS, 2 pre-existing failures confirmed byte-identical on clean origin/main (not regressions). Walka package: Operator (`t_5be3645a`) -> Evaluator (G8 objection: missing naval combat values) -> Defense (`t_f63e4337`, fixed) -> Final Control PASS.
+- Gates: TypeScript `tsc --noEmit` PASS, `git diff --check` PASS, Vite build `892` modules PASS, `verify-robocza-bundle.cjs` -> `VERIFY OK`, headless Chromium smoke (title/canvas/HUD render, zero console/page errors) PASS.
+- Bundle: md5 `706bf94a379763473ed4add9d508f622`, sha256 `86cd67aca862ab6fbad13aba48b6117d57bb175166ed555e1e66478a80ac85d0`, `69918639` bytes; no KANON/FINALNA promotion.
+- Poza zakresem tego deploya: `ai_profil_obronna` (2 komponenty, lokalny commit `b4c9582f`, niezmergowany) i pakiet Dyplomacja 8 pol (implementacja w toku) -- oba w osobnych, izolowanych worktree, czekaja na wlasny cykl integracji.
+
+CZEKAM-NA: test wlasciciela w `gra-robocza/START.html` po `Ctrl+F5`; decyzja o pushu tego commitu do zdalnego repo; AI i Dyplomacja pozostaja osobnymi tematami do dokonczenia.
+
+## [2026-09-23 17:23 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA: LUD_LIMIT_POPULACJI
+
+STATUS: `DEPLOYED — remote branch/main, manifest and runtime readback PASS`.
+
+- Fresh integration branch: `hermes/integration/R-CYWILIZACJE-MACIERZ-WIRING-LUDNOSC-LIMIT-CAP-20260923`; base `origin/main=0caa4dfa31d37337cd74fdbab95ee77da4806d98`.
+- Product commit: `c4b426e4`; bundle/publish commit: `7595b61733e2ecd467a5b64648bcd50f5e087d92`; remote branch and `main` read back to the bundle commit before this docs close.
+- Scope: owner-approved `lud_limit_populacji`, 15 civKeys, `5/8/12 + delta`, resolved range `4..14`; no placeholder `10`; `ai_*` untouched.
+- Final Control: `t_c4f7880f/run1138 PASS-WITH-NOTES`; integration gate `t_aed63575` remains blocked, unassigned and workerless by contract.
+- Gates: population wiring `122/0`, semantic `325/0`, auto-wyzywienie `42/0`, TypeScript PASS, JSON PASS, `git diff --check` PASS, Vite `892` modules, real Chromium smoke PASS, remote raw HTTP `200`, manifest/hash/bytes readback PASS.
+- Bundle: md5 `2331986977a6fb9e6fdf7b0e3c41f081`, sha256 `842eb21a1d2340249daa4dd4fc08705faded341699e27df514686c02c63b4726`, `69920420` bytes; no KANON/FINALNA promotion.
+- Known pre-existing broader reds reproduced unchanged: population-growth-v85 `48/2`, bonus `18/2`, tempo `12/2`.
+
+CZEKAM-NA: owner playtest in `gra-robocza/START.html` after `Ctrl+F5`; unresolved matrix contracts remain separate.
+
+## [2026-09-22 11:40 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA: CIVILIZATION MATRIX BOUNDED INTEGRATION
+
+STATUS: `DEPLOYED — remote branch/main, manifest and runtime readback PASS`.
+
+- Fresh integration branch: `hermes/integration/R-CYWILIZACJE-MACIERZ-REMAINDER-49-CONTRACT-Q1-20260922`; base `origin/main=a0cc8933c2341f63c0c084395e668bd509731392`.
+- Product commit: `ad16a1b8`; bundle commit: `22fcd1a271509a9215e88e2ea92ae942b6ed74e5`; remote release/readback commit: `4c9ae80b7230eda7f5d9c148acf0ef242b3efbe7`.
+- Scope: `meta_mnoznik_waluta` is wired to the real economy resolver and the false `REAL_GAMEPLAY` advertisement for `dip_nastawienie_bazowe` is corrected to `UNWIRED`; no new combat/economy consumer was invented.
+- Final Controls: meta `t_37c17961/run903`, economy `t_eb282c93/run920`, AI `t_f475a224/run921`, combat `t_c3a89662/run919` — all `PASS-WITH-NOTES` for their bounded evidence boundaries. Gates `t_3cc8364d`, `t_a1a24fcf`, `t_25a25c35` remain workerless, blocked and unassigned.
+- Gates: semantic `47/0`, meta/roster `74/0`, AI boundary `42/0`, TypeScript PASS, Vite `892` modules, local Chromium smoke `200`/no page errors, remote HTTP `200`, `VERIFY OK`.
+- Bundle: MD5 `240a82c3eb3ad1cd344f254eecc11887`, SHA-256 `f39b672fc59fe44f8c61a67458efe3336fa4b25b0f730c7d28cb5b1eeca1f497`, `69914006` bytes; remote manifest and bundle recompute to the same values.
+- Boundary: the canonical matrix remains `113 × 15 = 1695`, not fully runtime-wired. Combat `0/60` wired, economy `1/32`, AI `9/5/2`, and meta has only the currency row accepted; five epoch conflicts and `meta_tier_roster` remain owner decisions. No KANON/FINALNA promotion.
+
+CZEKAM-NA: test właściciela w `gra-robocza/START.html` po `Ctrl+F5`; owner decisions for unresolved matrix contracts remain separate.
+
+## [2026-09-21 22:41 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA: THREE APPROVED TOPICS
+
+STATUS: `DEPLOYED — remote main/readback/smoke PASS`.
+
+- Clean integration branch: `hermes/integration/ROBOCZA-WAVE-20260921`; base `origin/main=7cfead757737d1c1a7ddfc187a3241dad5bb0e57`.
+- Product integration commit: `8c505dae8b06d1e523911c70c9e5cdf472910a1f`; receipt commit: `a21af6b96076bcce6d0cda60fe75e19e07b0853e`.
+- Scope: `R-MANPOWER-HP-MAX-EFFECTIVE-Q1`, `R-AUTO-BITWA-JEDNOCZESNA-Q1`, `R-REKRUTACJA-WIELE-JEDNOSTEK-UI-Q1`.
+- Gates: effective maxHP `15/0`, replenishment `17/0`, Manpower `63/0`, unit card `29/0`, veterans `79/0`, combat `6/6`, AUTO `29/0`, recruitment backend `17/0`, real Chromium `25/0`, logic `213/213`, tech-tree `19/0`, research `33/0`, unit replace `13/13`, TypeScript PASS, Vite `892` modules, fresh bundle smoke PASS.
+- Bundle: MD5 `d8d7071ee96ad85e249b9d92b7b8e432`, SHA-256 `a21b9b8143bd414eec5ee23f65150f33ba6266e595c028d50a7692695ce13fe4`, `69913695` bytes; verifier `VERIFY OK`.
+- Publish commit: `77b762b3f622b92f50b187ac881732a6268aae7e`; remote `main` and integration branch readback match; manifest/hash/bytes readback PASS. No KANON/FINALNA promotion.
+
+CZEKAM-NA: test właściciela w `gra-robocza/START.html` po `Ctrl+F5`; workerless gates remain blocked/unassigned by contract.
+
+## [2026-09-21 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA FALA 389 / CIVILIZATION MATRIX BOUNDED SCOPE
+
+STATUS: `DEPLOYED — remote main/readback/smoke PASS`.
+
+- Clean integration branch: `hermes/integration/R-CYWILIZACJE-MACIERZ-BOUNDED-Q1-20260921`; base `origin/main=f4c89d0081c622c16b207d338b49c8bacafc4553`.
+- Product commit: `1f242606399132aeb9a61b436f76cce6d5a49741`; receipt commit: `cd7df6b655e1a061af1f6e3c88c7158993ad5578`.
+- Scope: `R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1` — Normal classifier + 113-row profile UI; `R-CYWILIZACJE-MACIERZ-14-POZOSTALE-Q1` — 14×113 evidence/spec package.
+- Gates: semantic `41/0`, Greece `390/0`, difficulty `16/0`, 14-matrix `1582/1582`, TypeScript PASS, Vite `891` modules, real Chromium flow PASS, verifier `VERIFY OK`.
+- Bundle: MD5 `9ca971c4a2f10130bdba954e45cb2114`, SHA-256 `8ba6a8cfd5ec1835883d4a3266a7de85dd8ff868200e7407a8cd0f57c5a865f8`, `69901148` bytes.
+- Publish commit: `5a4e87b72003930d698c9d7411f57273ccb9b0bd`; remote `main` and GitHub raw bundle/manifest readback match; HTTP `200`.
+- Boundary: 97 semantic `D_REQUIRED/UNWIRED` rows and 14-matrix `DEAD_UNWIRED/UNWIRED` fields remain explicit and are not claimed as runtime-consumed. No KANON/FINALNA promotion.
+
+CZEKAM-NA: test właściciela w `gra-robocza/START.html` po `Ctrl+F5`; otwarte matrix decisions remain separate.
+
+## [2026-09-18 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA FALA 387 / AF4
+
+STATUS: `DEPLOYED — remote main/readback/smoke PASS`.
+
+- Clean integration branch: `hermes/integration/af4-fresh-20260918`; base `origin/main=c08b3db14292221cad0a4e7a70608e9d09ee9afd`; integration commit `00b1b391b37be16477d924e62449e20f027e2eed`.
+- Scope: `R-BUILDING-COSTS-Q1` + `R-UNIT-SORT-Q1`; Final Control `t_2ef08e4e/run703`, `PASS-WITH-NOTES`, `product_acceptance=true`, objections `[]`.
+- Bundle: MD5 `4c1788bb880dbd66761410af0d277245`, SHA-256 `dba338ff46488b22d5c18e56b9a6fc7c376be0c0af60a78ec9bbdbb19fef6375`, `69878627` bytes; verifier `VERIFY OK`.
+- Gates: building `20/0`, unit sort `13/0`, logic `213/213`, upkeep `73/0`, tempo `6/0`, queue/refund `5/0`, unit replace `13/13`, TypeScript/syntax PASS, Vite `890` modules.
+- Publish commit: `cff98d93d889664fe3664045be81927c7d793712`; remote readback and HTTP smoke `PASS`; no KANON/FINALNA promotion.
+
+CZEKAM-NA: test właściciela w `gra-robocza`; baseline notes remain in Final Control receipt.
+
+## [2026-09-18 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — OPEN BACKLOG RECONCILIATION
+
+STATUS: `DEPLOYED — remote main/readback/smoke PASS`.
+
+- Owner-authorized set: 15 gameplay process gates from the Open/Autobot loop.
+- Current target before publication: `origin/main=53b95b7c0c3a2846bd7464ef2d3b67a282ae01b0`.
+- Prior release `e0e280c43909bdc8fe1d4d1ce926e15874c535c8` is an ancestor; no new product diff and no new wave number.
+- All 15 cards received an Orchestrator readback and were archived after confirming `assignee=null`, `current_run_id=null`, no active children, and preserved evidence.
+- Publish commit: `5b9f38143e5f61d5e78c0392905fc08ac0d298f3`; product `main` at publish: `4331f04b8464275824b38f1e50c9d34d564cb908`; docs close: `79790811c89a9bd0fc2666042b26539587138ff0`.
+- Bundle MD5 `7702a035d112ef280fa3e84cb95477f7`, SHA-256 `7aa54fdeb37fb27be7c7616d6555b104dbab478bf4ac999dc81a30195c7f5ba4`, `69877926` bytes; verifier `VERIFY OK`; remote readback and HTTP smoke `PASS`.
+
+CZEKAM-NA: test właściciela w `gra-robocza`; brak KANON/FINALNA promotion.
+
+## [2026-09-17 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA FALA 386 / RALLY POINT
+
+STATUS: `DEPLOYED — remote main/readback/smoke PASS`.
+
+- Clean integration branch: `hermes/integration/fala-386-rally-20260918`; base `origin/main=25133ccb9367b1e0cc11e561065dfef08bed3f40`; integration commit `8eba87007a866edc80c4776df77697af65e17f2d`.
+- Scope: `R-RALLY-POINT-AUTOMARCH-Q1`; allowlist: `rally-point.ts`, `save.ts`, `main.ts`, `rally-point-automarch-test.cjs`.
+- Gates: rally `22/0`, planned march `18/0`, logic `213/213`, TypeScript PASS, syntax PASS, Vite `890` modules, `git diff --check` PASS.
+- Bundle: MD5 `946df5aa5f8b3ca072719ef0c5acdeca`, SHA-256 `8330638ac6797258712014aff845fc0f9beaccf5d164d67b38ed42cbb04d5e2e`, `69877926` bytes; verifier `VERIFY OK`; manifest match `OK`; Linux stamp `WARN` known for Node port.
+- FALA: **FALA 386**. No promotion to KANON/FINALNA. Legacy PLAYTEST aliases are absent after repository cleanup and remain recorded as provenance only.
+- Remote `origin/main` readback: `cfb960135b0daafdeba8190e8dbd2d0fc325b841`; primary bundle and manifest byte/hash match.
+- HTTP smoke of the exact remote `Gra-ROBOCZA.html`: `200`, HTML/stamp present, SHA-256 `8330638ac6797258712014aff845fc0f9beaccf5d164d67b38ed42cbb04d5e2e`.
+
+CZEKAM-NA: test właściciela w `gra-robocza`; brak promocji do KANON/FINALNA.
+
+## [2026-09-17 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA AUTO-BATTLE CANDIDATE
+
+STATUS: `DEPLOYED — remote branch/main readback PASS; byte-identical no-op republish`.
+
+- Clean integration branch: `integration/robocza-auto-battle-20260917`, source/integration commit `4f68875d07991b3fc365ec21da04329d426654d7`, base `origin/main=e0e280c43909bdc8fe1d4d1ce926e15874c535c8`, product release commit `104fce6d5002ff3e0d64083268dd4434dbb0452e`; docs-only closure remote readback `PASS`.
+- Bundle: MD5 `7340f635259dfd06a9467025e9c22c61`, SHA-256 `137b513839d670468ef81241c6bb72de016dbf2bade65d37c8abf8b2018e8c2f`, `69875188` bytes; verifier `VERIFY OK`; smoke `PASS`.
+- Scope: `R-AUTO-BATTLE-LOSS-Q1`; allowlist exact: `ai-difficulty-bonus.ts`, `post-battle-map.ts`, `auto-battle-loss-audit-test.cjs`, fixture-only `post-battle-map-test.cjs`.
+- Gates: post-battle `32/0`, focused audit `52/0`, AUTO `14/0` + `43/0` + `150/0`, TypeScript PASS, Vite `889` modules. No promotion to KANON/FINALNA.
+- Building-cost implementation remains separate and is not included in this release.
+
+CZEKAM-NA: test właściciela w `gra-robocza`; brak promocji do KANON/FINALNA.
+
+## [2026-09-17 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA CURRENT GAMEPLAY CANDIDATE
+
+STATUS: `DEPLOY-ROBOCZA — push/readback w tej sekwencji`.
+
+- Clean integration branch: `integration/robocza-20260917`, source/integration commit `622a9995b6bf39f1bce90d10df095ec4a47e081a`, artifact commit `da301683fb70dbbd73fb031d74afc6e959dfdc7b`, base `origin/main=578051aea1a0bf1ae174efb446bd99f6997ef9ab`.
+- Bundle: MD5 `4e72d43560d91aec6724f52401ada95a`, SHA-256 `a3baaab0e8b4fa700a95765d93cc4b235dd34c5201facb2caf91b1d45f7a7a5e`, `69875101` bytes; verifier `VERIFY OK`; smoke `PASS`.
+- Nowa fala: Garnizon panel, AI merge po rekrutacji, panel merge armii, handel, panel rekrutacji, koszty epokowe ulepszeń, masowa rekrutacja miast.
+- Revalidated base/no-op: pula nazw kolonii, połowa kosztów rekrutacji/surowców, alokacje Grecji, AI Work/ulepszenia, aktywne parametry Grecji. Budżet AI pozostaje audit/test-only — brak produkcyjnego diffu.
+- Gates: focused mass recruitment `23/0`, related regressions `104/0`, all six requested topic suites PASS, TypeScript PASS, Vite `889` modules. No promotion to KANON/FINALNA.
+
+CZEKAM-NA: remote push/readback oraz test właściciela w `gra-robocza`.
+
+## [2026-09-16 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — GAMEPLAY BUG WAVE DEPLOYED
+
+STATUS: `DEPLOYED — remote readback PASS; commit 2aeb52743476bd1175789049b350a34f1888dda3`.
+
+- Clean integration branch: `hermes/R-GAME-BUGS-INTEGRATION-20260916`, source HEAD `0180d17231b62d2a5012c9c23d8a42d91c09f1e1`, base `origin/main=3ff3264b487f597311c000e8e8434375ee88a651`.
+- Prepared `gra-robocza` bundle: MD5 `7040d499548170e3805f231b5cac2e46`, SHA-256 `afd817232f8c6769024e160bdb3abfc3ac3c8b4e1760858f2ef4aec0a9657f22`, `69862548` bytes; verifier `VERIFY OK`, manifest match `OK`.
+- Scope: recruitment costs, colony names, Greece allocation/matrix consumers, AI Work owner envelope, AI combat `0.95/1.00/1.05`.
+- Excluded: Barbarian product changes (`INFRA/TIMEOUT`, clean worktree), city-name popularity policy (owner A recovery running), Rust rewrite, KANON/FINALNA.
+- Receipt: `dyspozycje/autobot/runs/R-DEPLOY-GAME-BUGS-20260916/deploy-robocza-receipt.md`.
+
+CZEKAM-NA: właściciel — playtest `gra-robocza`; Rust/R15 and owner-held topics remain separate.
+
+## [2026-09-16 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOYMENT RECONCILIATION
+
+STATUS: `NO-OP WEB DEPLOY + R20 RUST BRANCH PUSH`.
+
+- Fresh clean readback of `origin/main=329db81f`: `tsc --noEmit` PASS, direct Vite build PASS (`888` modules), existing `gra-robocza` verifier `VERIFY OK`.
+- Since deployed source `f4967698`, product paths `gra/src/**` and `gra/data/**` have no new gameplay diff; only two regression harnesses changed under `gra/tools/**`. No second web bundle was produced.
+- Existing ROBOCZA remains authoritative: MD5 `9d22166c7de999a12971a857d8cd3c65`, SHA-256 `858e6763b77ebb93f7e29e4e5ff71a62d28d6ebc684971f59513f30eee1b116b`, `69858494` bytes, `VERIFY OK`.
+- `gra-robocza/ROBOCZA-MANIFEST.json` had stale SHA/size/source/scope fields; corrected in the documentation reconciliation commit. `WERSJE.md` intentionally receives no fictitious new release row.
+- R20 Rust fresh fmt/tests/Clippy/diff-check PASS; commit `5dc5fddc5352ab2467efde76136f22403efe2f84` pushed and read back on `hermes/R-RUSTREAL-20-SAVE-LOAD-Q1-RECOVERY-R2-20260915`. Rust is not a `gra-robocza` web deployment.
+
+CZEKAM-NA: owner/Orchestrator integration for blocked process-only gates; no worker dispatch and no promotion to KANON/FINALNA.
+
+## [14:42 UTC, 2026-09-15] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — `R-CITY-NAMES-SHARED-QUEUE-110-Q1`
+
+STATUS: `DEPLOY-ROBOCZA` — wspólna kolejka 110 nazw A+C zintegrowana i wdrożona do lokalnego `gra-robocza`.
+
+- Final Control: `t_521cda84` / run `347`, `PASS-WITH-NOTES`, zero ponumerowanych zarzutów.
+- Kod: `baa7c3ef`; integracja/receipt: `0e639c7c`; release artefaktów: `88ee420b`; remote main/readback: `f4967698`.
+- Bundle: MD5 `9d22166c7de999a12971a857d8cd3c65`; SHA-256 `858e6763b77ebb93f7e29e4e5ff71a62d28d6ebc684971f59513f30eee1b116b`; verifier `VERIFY OK`.
+- Gates: focused `6/6`, pool `9/9`, civ `109/109`, preview `6/6`, shared queue `10/10`, tsc PASS, build `888` modułów.
+- Pełny map-gen harness timeout `INFRA-043`; szybki kontrakt map-gen PASS, brak zmiany geometrii.
+
+CZEKAM-NA: świeży audyt Kanbana po terminalnym deployu i kolejna legalna karta z bieżącej fali; nie odblokowywać historycznych/owner-held gates.
+
+## [03:06 PL, 2026-09-15] SESJA LOKALNA — DEPLOY ROBOCZA `ae2d27a8`
+
+ROBOCZA md5 `ae2d27a88af1f073df15ab8b10c15965` · SHA-256 `03ad35ee938554bd715c6186db60fa2b07e785515fd652b3a402086b986093c9` · **VERIFY OK**.
+- Zintegrowano commit `f5a1ce518818680e280b8cbd7312b7d59e5c8133` oraz docs close commit `e91211a169f440afc58312f7cf421cd720a03a71`; final branch receipt: `e91211a1`.
+- AI: major→major `hard`, od tury 25, ratio `>=10`; koszty epoki Kamienia: efektywne pieniądze `10/6/6/8/20/26/9/14/9/14`, Drewno `25`, Taran `38`, upkeep pieniędzy bez zmian, surowcowy `5`, Taran `8`.
+- Bramki: AI `35/0`, `33/0`, `22/0`, difficulty `8/0`; koszty `190/0`, tempo `9/0`, upkeep `73/0`; typecheck PASS; Vite `888` modułów / `27.63s`; `verify-robocza-bundle.cjs` VERIFY OK.
+- Pre-existing notes: unit-resource-upkeep/unit-stock-cost 17 starych oczekiwań mount/horse/resource, potwierdzone na bazie `origin/main`; nie zmieniano tych testów. Names code nie zmieniono; Manpower bez gameplay diff.
+- `START.html`, manifest i 6 kopii playtestowych wygenerowane. Promocji do KANON/FINALNA nie wykonano.
+- **PUSH/REMOTE READBACK: PASS** — deploy commit `5946df83` został wypchnięty; późniejszy docs-only close również trafił do branchu i `origin/main`; `gra-robocza` manifest/bundle verify passed.
+
+
+ROBOCZA md5 `272203761f72f765be8f0580241e999d` · SHA-256 `4e52328b752f1ca2a000fdbb1fdb2b568d8758a2a977e9e396b3bc570fadaf41` · **VERIFY OK**.
+- Zintegrowano allowlistę `R-MIASTA-CYWILIZACJE-PANSTWA-WSPOLNA-LISTA-Q1` oraz test `R-KREATOR-DOLNA-NAWIGACJA-Q1`; kodowy commit `27bb402b26ce1facd9fdc8fd91937ddfab64090a`.
+- `R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1`: product files były już bajtowo obecne w `origin/main`; brak ponownego merge.
+- `R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1`: dane audytu są zawarte w późniejszym kontrakcie wspólnej listy 110; nie przywrócono równoległego `nazwyKlastra`.
+- Bramki: typecheck PASS; Vite `888` modułów / `27.19s`; nazwy `109/0`, `125/0`, `9/0`, `47/0`, `9/0`; startowe live `25/0` i `13/0`; Kreator Chromium `70/0`; negative control ukrycia `.nav` zadziałał.
+- Noty bazowe: `start-preview-test.cjs` `3/6`; `cluster-start-test.cjs` timeout `900s` — nie raportowane jako PASS.
+- `START.html`, manifest i 10 playtest copies regenerated. Nie wykonano promocji do KANON/FINALNA.
+CZEKAM-NA: właściciel — test `gra-robocza/START.html` po `Ctrl+F5`.
+
 ## [17:20 PL, 2026-08-20] SESJA LOKALNA — DEPLOY ROBOCZA FALA 300 md5 `47149d70`
 
 ROBOCZA md5 `47149d70bf2af52ae26e410899d6f133` · stempel `47149d70` · **VERIFY OK**. Pełny wpis: `dyspozycje/WERSJE.md` (FALA 300, na górze).
@@ -5624,7 +5902,7 @@ CZEKAM-NA: nic
 
 ## [18:54 PL, 2026-08-01] LOKAL/Grok ? ALL ? FALA 138 DEPLOY ALL
 - md5 `cbc79e63` / `cbc79e6399f5c67a41350229ff6a4711` | stempel ROBOCZA ? 2026-08-01 18:54
-- Zakres: MAP-SPAWN-Q2 (06a615) + tani fill rzek (c4faac) ? bez wysp, 7 typ?w, g?sto?? rzek bez proximity
+- Zakres: MAP-SPAWN-Q2 (06a615) + tani fill rzek (c4faac) ? bez wysp, 7 typ?w, g?sto?? rzek bez proximity
 - tsc 0 | VERIFY OK
 - Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra) ? sprawd?: 7 civ na du?ych kontynentach + rzeki
 CZEKAM-NA: nic
@@ -7592,3 +7870,54 @@ GOAL: opublikować zintegrowany, zweryfikowany kandydat startowych jednostek do 
 CZEKAM-NA: właściciel — Ctrl+F5 + Nowa gra na `e8724602` i test czterech osi startowych.
 
 ---
+
+## [2026-09-14 16:52 UTC] DEPLOY ROBOCZA — R-BUDYNKI-KARTY-GRAFIKA-TEKST-OVERLAP-Q1 + R-REKRUTACJA-KARTY-BRAK-REKRUTOW-Q1
+
+Hasło właściciela otrzymane wprost: `deploy do roboczej`.
+GOAL: z czystego `origin/main` zintegrować wyłącznie zatwierdzone hunki dwóch tematów, zbudować i opublikować `gra-robocza/`, a następnie wypchnąć wynik na `origin/main`.
+|- Źródło: clean integration branch `integration/robocza-20260914`, code commit `dacae17981ede9875758447bdf5d272250f8b4a8`; nie scalono brudnych worktree `t_13d1b59e` ani `R-REKRUTACJA-KARTY-BRAK-REKRUTOW-Q1`.
+|- Allowlista produktu: `gra/src/ui/entityCards/renderer.ts`, `gra/tools/entity-card-diorama-real-render-test.cjs`, `gra/tools/building-card-overlap-real-render-test.cjs`, `gra/src/ui/cityPanel.ts`, `gra/src/ui/unitRecruitCard.ts`, `gra/tools/recruit-card-manpower-real-render-test.cjs`.
+|- Real Chromium: budynki `21/0`; rekrutacja `17/0`; wspólny renderer/diorama `45/0`; kontrola mutacyjna rekrutacji `9 PASS / 8 FAIL`, exit `1` — oczekiwany negative control.
+|- Direct Vite build: `888` modułów, exit `0`; `tsc --noEmit` exit `0`; `START.html`, manifest i `10` kopii playtestowych wygenerowane.
+|- Bundle `gra-robocza/Gra-ROBOCZA.html`: md5 `7007c7b23c6fcb3cd2d36498d0e96c68`, SHA-256 `cc02f96317a834115ec9e07f79ee15aea34d6fd60956f396c0ceb61a1299c5eb`; `verify-robocza-bundle.cjs` → `VERIFY OK`; manifest match `OK`.
+|- Poprzednia ROBOCZA `e8724602` oznaczona w `WERSJE.md` jako zastąpiona; promocji do KANON/FINALNA nie wykonano.
+CZEKAM-NA: właściciel — Ctrl+F5 + Nowa gra na `7007c7b2`; następnie test karty budynku i karty rekrutacji.
+
+## [2026-09-18 16:40 UTC] ORCHESTRATOR — DEPLOY ROBOCZA FALA 388 — REMOTE READBACK PASS
+
+Local clean integration candidate: `95fd93050585c19584700e34205da74576f2150f`,
+base `7d02dfc5b73e992e389dd01992a52159e943a621`. Zakres: sześć tematów z
+Final Control, wyłącznie allowlistowane pliki produkcyjne/testowe. Build direct
+Vite `890` modułów; bundle MD5 `0816f385ef6b38e368ca11c0edf11ae5`, SHA-256
+`4962b053c46d121f779ac9dca46cb1860b2281c223c413c3eb981cb34651ede4`,
+`69881460` bajtów; `verify-robocza-bundle.cjs` → `VERIFY OK`.
+
+Status: `DEPLOYED — ROBOCZA`. Publish commit i remote `origin/main`:
+`1a181406d88a554d1f0e8586160cc04cca0b99e0`; bundle/manifest readback
+byte-identical, HTTP smoke `200`, `VERIFY OK`. KANON/FINALNA oraz Rust
+pozostają wyłączone.
+
+CZEKAM-NA: właściciel — Ctrl+F5 + test fali 388 w `gra-robocza`.
+
+## [2026-10-17 14:13 UTC] ORKESTRATOR → MAIN/ROBOCZA — PR141 F-01/F-02/F-03 bounded release
+
+STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS — selektywna publikacja trzech niezależnie zaakceptowanych poprawek semantycznej klasyfikacji.
+|- Base `dca87077eb16b6b8f6f747944906466c89deda28`; produkt `3c11d0b8b651745b7a5e61b6db69ed45690aa380`; branch `hermes/integration/accepted-f01-f02-f03-20261017`.
+|- Tylko `civ-matrix-semantic.ts` i `civ-matrix-semantic-labels-test.cjs`; bez zmian raw values, runtime, denominatora. F-01: 1 parametr; F-02: 6; F-03 r2: 9.
+|- Testy: semantic 348/0, meta-roster 63/0, combat 6/6, army-hunger 13/13, typecheck PASS, Vite 893 modułów. Bundle MD5 `0e3ad637add786c556fd2fa148a99d82`, SHA-256 `6a8ce858da0c30b4db833f33a454ad0ae807171f2fbc490c97f4197c26ca39dc`, 69,936,305 B; `VERIFY OK` (znany Linux stamp WARN). Chromium local HTTP smoke: 200, HUD/canvas, zero błędów.
+|- Cały PR141/93×15 gameplay nie jest zaakceptowany; F-04/F-05/G11 i pozostałe holdy wyłączone. Ledger 0/9 bez zmian. Rally Point PR142, worldgen, KANON/FINALNA wyłączone.
+|- Odbiór zmian: Final Control F-01 `t_8a2396ee/run60`, F-02 `t_cf652715/run63`, F-03 `t_de434c66/run68` — zakresy ograniczone do integracji selektywnej. Istniejący gate `t_ceb77ee5` pozostaje blocked/unassigned/workerless.
+|- Odczyt zdalny: main i branch `47981902f4aa98c254e8c1e7d04bab8b13776f4a`; bundle+manifest z GitHub HTTP 200, MD5/SHA-256/bytes zgodne, Chromium smoke pobranego bundla PASS (canvas/HUD, zero page/console errors). Zewnętrzny serving website nie był osobno sprawdzany.
+CZEKAM-NA: właściciel — Ctrl+F5 + bounded playtest ROBOCZA `0e3ad637`; nowy agent ma czytać release receipt i zachować F-04/F-05/G11 holds.
+
+
+## [2026-10-21 UTC] ROOT -> RELEASE — PR141 bounded ROBOCZA publication/readback
+
+`R-PR141-CODEX-FULL-RELEASE-20261020` opublikowano na `origin/main` w commicie `b4d37d9f81686b5b21bb256087a55e3a592721f0`. Pinned GitHub raw readback bundle/manifest/START: HTTP 200, zgodne SHA-256 i bajty. Osobny ograniczony menu/canvas check dokładnie pobranego bundla: PASS (tytuł, start, dwa canvasy, zero błędów strony/konsoli). Obie wcześniejsze próby pełnego predeploy flow pozostają FAIL; brak twierdzenia o pełnej akceptacji gameplay/runtime/save-load/93x15 albo F-05. Zewnętrzny host produkcyjny nie został wskazany ani zweryfikowany. Szczegóły i hashe: `dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/07-publication-receipt.md` oraz zachowany raw readback. Bundel bez zmian.
+
+
+## [2026-10-29 UTC] Gotowy lokalny pakiet Robocza — ustawienia/żywność/armia/podświetlenia
+
+Zintegrowany main 6f9ef3ce jest 24 commitów przed origin/main. Utworzyłem z niego Robocza bundle: MD5 703bdf789fb23f37cacacc9aac405402, SHA-256 e1df7844da72cd5d03332f70ecba0f6e650b6344f563c183b866f54829fdeba7, rozmiar 70,040,409 B. TypeScript/build, testy domenowe/UI i boot smoke PASS; release verifier PASS. Zakres: ustawienie udziału lądu i dyplomacji, wybór/semantyka trybu bitwy ze zgodnością starych zapisów, priorytety żywności, scroll łączenia armii, tożsamość wodza i znikanie highlightu po budowie.
+
+Stan: etap 11/11 — release f66fcc2924617eae1810823d55d358ad0d5445ad wypchnięty do origin/main; pinned GitHub Raw bundle/manifest/START HTTP 200, byte-identical, hash i rozmiar zgodne. Równoległy test dużej mieszanej bitwy znalazł nowy przypadek łucznika podchodzącego w złym kierunku; jego osobny operator działa.

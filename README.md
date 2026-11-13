@@ -15,7 +15,7 @@ numerze ID, nie po dacie incydentu w treści — reguły odzyskane z archiwum po
 niższym numerem (np. C-046…C-049, wstawione 2026-08-20) tu się nie pojawią,
 mimo że tego dnia też trafiły do playbooka.
 
-- **C-063** (2026-09-12) — każde nowe/odnowione zadanie najpierw trafia do karty Kanban z pełnym grafem planu (GOAL, kryteria, allowlista, zależności, wszystkie fazy i przyszłe blokady); wszystkie karty używają profilu `game`, a role są `process_phase`/transition receipts z `idempotency_key`. Każde terminalne przejście Kanbana (np. `kanban_complete`, `kanban_block`, `review_requested` lub `changes_requested`, gdy kończy bieżącą fazę) wymaga technical/context readbacku, po którym graf wybiera wyłącznie legalnego sukcesora: `FAIL`/`NAPRAW`/`BLOCK`/`TIMEOUT`/`INFRA`/`ZWIS` przechodzą przez retry guard i `LIMIT-5-EXCEEDED`, jawna decyzja wznawia ten sam ID bez resetu licznika, a aktywna karta wymaga `notify`+`wake`; `OWNER_HOLD`/`DECISION_REQUIRED` blokuje tylko przyszłych następców, a Obrona istnieje wyłącznie przy konkretnych zarzutach.
+- **C-063** (2026-10-29, zmiana decyzją właściciela) — Kanban nie jest używany w tym repozytorium. Każdy temat jest prowadzony w `dyspozycje/autobot/runs/<ID>/`, a raport podaje ostatni potwierdzony etap 1–11; niedziałający proces lub brak artefaktu oznacza `WSTRZYMANY/BLOCKED` z przyczyną. Po readbacku runu, statusu operatora, commita i testów orkiestrator uruchamia kwalifikowany następny etap; Obrona powstaje tylko dla konkretnych zarzutów Evaluatora.
 - **C-062** (2026-08-21) — przywrócono zapis: Final Control (Claude Code) = Sonnet 5 effort High, zawsze osobny subagent, nigdy główny orkiestrator — zaginął z §5a przy nadpisaniu pliku przez równoległą sesję, przywrócony po audycie właściciela.
 - **C-061** (2026-08-21) — dwie ścieżki dispatchu Operator/Evaluator: różnicowanie `effort` per rola tylko przez narzędzie Workflow (gdy dostępne i autoryzowane), inaczej wyłącznie przez treść promptu.
 - **C-060** (2026-08-20) — watchdog dispatchu liczy się jako zajęty slot, jeśli dzieli limit wątków z Operatorami/Evaluatorami — efektywna pojemność na tematy to 5, nie 6.
@@ -26,7 +26,7 @@ mimo że tego dnia też trafiły do playbooka.
 - **C-055** (2026-08-20) — każdy raport etapu dostaje pole `DOMAIN:` (`GAME`/`PROCESS`/`INFRA`/`INFORMATIONAL`) zaraz po `STATUS:`.
 - **C-054** (2026-08-20) — `DECISION_REQUIRED` to nie `BLOCK` i nie zastępuje turnieju ABC (C-018); konflikt z wpływem na gameplay/UX wymaga pełnego turnieju, nie skróconej ścieżki.
 - **C-053** (2026-08-20) — po `LIMIT-5-EXCEEDED` ręczny nowy cykl tego samego ID wymaga jawnej decyzji właściciela i raportu porównawczego, nie jest automatyczną rundą 6.
-- **C-052** (2026-08-20) — w dispatchach Codex `multi_agent_v1` Operator i Evaluator muszą dostać jawnie `model=gpt-5.6-luna` i `reasoning_effort=high`, bez dziedziczenia po orkiestratorze.
+- **C-052** (2026-08-20; routing Codex Operator/Evaluator/Final Control zastąpiony decyzją właściciela 2026-11-10) — historycznie role używały jawnie `gpt-5.6-luna/high`; aktualny routing Codex Operator/Evaluator/Final Control to `gpt-6-luna/high`, opisany w `R-PROC-AUTOBOT.md` §1a. Routing Obrony i Claude pozostaje bez zmian.
 
 ## Zanim cokolwiek zrobisz
 
@@ -34,12 +34,18 @@ Każdy temat w tym repozytorium — kod, fix, dokumentacja procesu, audyt,
 przygotowanie deployu — idzie przez jeden obowiązkowy obieg:
 
 ```text
-Operator → Evaluator → Final Control → integracja orkiestratora → READY_FOR_DEPLOY
-                                                                  → osobna bramka deploy/push
+Operator → Evaluator → [warunkowo Obrona] → niezależny Final Control
+  → integracja main → deploy Robocza → push/readback → cleanup → następny temat
 ```
 
-Reguła jest nienegocjowalna, bez wyjątku „to tylko drobiazg". Pełny opis ról,
-pętli domknięcia i dwóch wąskich wyjątków: [`docs/decyzje/R-PROC-AUTOBOT.md`](docs/decyzje/R-PROC-AUTOBOT.md).
+Maksymalnie cztery tematy mogą być aktywne jednocześnie; role jednego tematu zawsze
+działają sekwencyjnie. W dispatchach Codex Operator, Evaluator i Final Control używają
+jawnie `gpt-6-luna` / `high`; routingi Obrony i Claude pozostają bez zmian.
+Proces kończy etap 11/11, a następnie odczytuje kolejkę i uruchamia następny kwalifikowany
+temat. Jeśli nie ma wywoływalnego schedulera, kontrolę kolejki zapisuj przy każdym
+zakończeniu/statusie; nie deklaruj wybudzenia w tle. Pełna norma ról, pętli, limitu,
+heartbeatów i kolejki: [`docs/decyzje/R-PROC-AUTOBOT.md`](docs/decyzje/R-PROC-AUTOBOT.md)
+oraz [`dyspozycje/autobot/KOLEJKA-CODEX-FOUR-TOPICS-20261110.md`](dyspozycje/autobot/KOLEJKA-CODEX-FOUR-TOPICS-20261110.md).
 
 ## Kolejność czytania na starcie sesji
 

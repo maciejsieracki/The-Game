@@ -39,6 +39,7 @@ export {
   playerStartUnitCount,
   AI_DIFFICULTY_BONUS_UNIT_TYPE,
 } from ${JSON.stringify(SRC + '/game/ai-difficulty-bonus')};
+export { resolveCombat, combatUnitFromDef } from ${JSON.stringify(SRC + '/game/combat')};
 export { isBarbarian, BARBARIAN_OWNER_ID } from ${JSON.stringify(SRC + '/game/barbarians')};
 `, 'utf8');
 
@@ -74,6 +75,8 @@ const {
   foreignCityStateStartUnitCount,
   playerStartUnitCount,
   AI_DIFFICULTY_BONUS_UNIT_TYPE,
+  resolveCombat,
+  combatUnitFromDef,
 } = require(BUNDLE);
 
 let passed = 0;
@@ -93,12 +96,58 @@ console.log('\n--- T-DB-a: qualifiesForMajorAiDifficultyBonus ---');
 console.log('\n--- T-DB-b: mnozniki walki, nauki i produkcji ---');
 {
   eq(difficultyCombatMultiplier(0.05), 1.05, 'bonusWalka 5%');
+  eq(difficultyCombatMultiplier(-0.05), 0.95, 'bonusWalka -5%');
   eq(difficultyCombatMultiplier(0), 1, 'bonusWalka 0');
   eq(difficultyScienceBonusPerTurn(1), 1, 'bonusNauka +1');
   eq(difficultyScienceBonusPerTurn(-2), 0, 'bonusNauka ujemny -> 0');
   eq(difficultyProductionMultiplier(0), 1, 'bonusProdukcja L1 -> x1.0');
   eq(difficultyProductionMultiplier(0.1), 1.1, 'bonusProdukcja L2 -> x1.1');
   eq(difficultyProductionMultiplier(0.25), 1.25, 'bonusProdukcja L3 -> x1.25');
+}
+
+console.log('\n--- T-DB-b-live: live resolveCombat consumer ---');
+{
+  const combatDef = {
+    Jednostka: 'Testownik', Typ: 'Wrecz', 'Rola (linia)': 'Wrecz',
+    meleeAttack: 10, meleeDefence: 10, weaponDamage: 10, armor: 0,
+    piercing: 0, chargeBonus: 0, health: 100,
+    'Prog dezercji (% health)': null, missileAttack: 0,
+  };
+  const attacker = combatUnitFromDef(combatDef);
+  const defender = combatUnitFromDef({ ...combatDef, weaponDamage: 0 });
+  const aiData = {
+    aiParams: JSON.parse(fs.readFileSync(path.resolve(GRA_ROOT, 'data', 'ai-params.json'), 'utf8')),
+  };
+  const liveDifficultyMultiplier = (level) => difficultyCombatMultiplier(
+    loadDifficultyParams(aiData, level).bonusWalka,
+  );
+  const attackHitAtBoundary = (difficultyMult) => resolveCombat(attacker, defender, {
+    attackerDifficultyCombatMult: difficultyMult,
+    defenderDifficultyCombatMult: 1,
+    attackerMoved: false,
+    maxRounds: 1,
+    rng: () => 0.3995,
+  });
+  const easy = attackHitAtBoundary(liveDifficultyMultiplier(1));
+  const normal = attackHitAtBoundary(liveDifficultyMultiplier(2));
+  const hard = attackHitAtBoundary(liveDifficultyMultiplier(3));
+  assert(!easy.log.some((line) => line.includes('ATK trafia')), 'live combat easy: boundary roll misses');
+  assert(normal.log.some((line) => line.includes('ATK trafia')), 'live combat normal: boundary roll hits');
+  assert(hard.log.some((line) => line.includes('ATK trafia')), 'live combat hard: boundary roll hits');
+
+  const defenceHitAtBoundary = (difficultyMult) => resolveCombat(defender, attacker, {
+    attackerDifficultyCombatMult: 1,
+    defenderDifficultyCombatMult: difficultyMult,
+    attackerMoved: false,
+    maxRounds: 1,
+    rng: () => 0.3995,
+  });
+  const defenderEasy = defenceHitAtBoundary(liveDifficultyMultiplier(1));
+  const defenderNormal = defenceHitAtBoundary(liveDifficultyMultiplier(2));
+  const defenderHard = defenceHitAtBoundary(liveDifficultyMultiplier(3));
+  assert(!defenderEasy.log.some((line) => line.includes('DEF trafia')), 'live combat easy defender: boundary roll misses');
+  assert(defenderNormal.log.some((line) => line.includes('DEF trafia')), 'live combat normal defender: boundary roll hits');
+  assert(defenderHard.log.some((line) => line.includes('DEF trafia')), 'live combat hard defender: boundary roll hits');
 }
 
 console.log('\n--- T-DB-c: applyDifficultyCombatToUnitDef ---');

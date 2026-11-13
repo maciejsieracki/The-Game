@@ -1,0 +1,4 @@
+[civ] mapGen ms | prep=5 terrain=25 landSea=295 relief=146 coast=31 riversMain=2061 riversFill=1712 forest=6 deposits=19 starts=162 total=4463
+
+converter-era-scaling-test: 87 passed, 0 failed
+EXIT=0

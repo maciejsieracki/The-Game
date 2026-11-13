@@ -1,0 +1,25 @@
+PASS: (0) mutacja PRZED faktycznie przywróciła etykietę „(3 tury)" bez sekcji czasu — test nie jest tautologiczny
+PASS: (0b) mutacja PRZED faktycznie usunęła zapis payload.treatyTurns dla case '4' — test nie jest tautologiczny
+[barb-karencja-czas-trwania] domyslny Chromium niedostepny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+
+--- (PRZED) sztywne "(3 tury)", brak wyboru czasu ---
+PASS: (PRZED-1) etykieta niesie sztywne „(3 tury)"
+PASS: (PRZED-2) brak sekcji wyboru czasu (0 chipów) po zaznaczeniu przycisku
+PASS: (PRZED-3) payload BEZ treatyTurns (dawne zachowanie)
+  [zrzut] /tmp/bkct-dowody-18859-Frgd7J/00-przed-sztywne-3-tury.png
+
+--- (PO) wybór czasu 5/10/15/Bezterminowy ---
+PASS: (PO-1) etykieta BEZ sztywnego „(3 tury)"
+PASS: (PO-2) sekcja czasu ukryta, dopóki barb-coop NIE jest zaznaczone
+PASS: (PO-3) po zaznaczeniu: dokładnie 4 chipy czasu — 5/10/15/Bezterminowy(0)
+  [zrzut] /tmp/bkct-dowody-18859-Frgd7J/01-po-wybor-czasu-widoczny.png
+PASS: (PO-4) klik chipa "5" -> payload.treatyTurns === 5, barbarianCooperation === true
+PASS: (PO-5) klik chipa "15" -> payload.treatyTurns === 15
+PASS: (PO-6) klik chipa "Bezterminowy" (0) -> payload.treatyTurns === 0 (silnik: wygasaTura=null)
+  [zrzut] /tmp/bkct-dowody-18859-Frgd7J/02-po-bezterminowy-wybrany.png
+PASS: (PO-7) bez zaznaczenia barb-coop: payload BEZ treatyTurns (zwykły przemarsz nietknięty)
+PASS: (Z) brak błędów strony (pageerror) w całym przebiegu
+
+========================================================================
+WYNIK: 13 PASS, 0 FAIL
+EXIT=0

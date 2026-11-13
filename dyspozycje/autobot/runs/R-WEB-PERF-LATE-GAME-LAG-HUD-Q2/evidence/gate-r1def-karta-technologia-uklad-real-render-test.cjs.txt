@@ -1,0 +1,15 @@
+[karta-technologia-uklad-real-render-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+PASS: [1] "Żegluga": encja znaleziona
+PASS: [1] "Żegluga": pole "Historia" realnie niepuste (dowód nietautologiczności pozycji historii)
+PASS: [1] "Żegluga": kolejność DOM Wymagania → Charakterystyka → Rys historyczny → Co możesz teraz zrobić → Budynki → Jednostki → Ulepszenia terenu → Kolejne technologie → Zmiany ekonomiczne
+PASS: [2] Charakterystyka: wiersz "Koszt nauki" obecny
+PASS: [2] Charakterystyka: wiersz "Epoka" obecny
+PASS: [2] Charakterystyka: wiersz "Poziom" obecny
+PASS: [2] Charakterystyka: brak duplikacji etykiety "Dostęp do surowca" (zajęta przez Zmiany ekonomiczne, inne pole źródłowe)
+PASS: [2] Zmiany ekonomiczne: sekcja niezmieniona, etykieta "Dostęp do surowca" obecna WTEDY I TYLKO WTEDY, gdy pole "Odblokowuje surowiec." jest niepuste (dziś dla "Żegluga": false)
+PASS: [3] fixture bez pola "Historia": sekcja ".entity-card-historia" NIEOBECNA (zero pustego bloku)
+PASS: [3] fixture bez pola "Historia": Wymagania i Charakterystyka nadal na indeksach 0/1 (kolejność reszty niezmieniona)
+PASS: brak błędów konsoli/pageerror podczas całego scenariusza
+
+[karta-technologia-uklad-real-render-test] 11 pass, 0 fail
+EXIT=0

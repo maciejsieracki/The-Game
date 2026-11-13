@@ -1,4 +1,5 @@
 import { scaleStockCostRecord } from './r-stawki-strojenie';
+import { nazwaWyswietlana } from './text-names';
 
 /**
  * building-stock-cost.ts
@@ -20,12 +21,81 @@ import { scaleStockCostRecord } from './r-stawki-strojenie';
 /** Kształt pola `koszt_surowce` w buildings.json — klucze ASCII zgodne z City.surowce. */
 export type BuildingStockCost = Partial<Record<string, number>>;
 
+/**
+ * Shared unit-cost epoch multiplier: Stone x1, Bronze x2, Iron and later x4.
+ * Unknown or malformed epochs intentionally default to Stone for zero-regression
+ * compatibility with older/missing units.json rows.
+ */
+export function epochCostMultiplier(epoch?: number | string | null): number {
+  if (typeof epoch === 'number' && Number.isFinite(epoch)) {
+    const ordinal = Math.floor(epoch);
+    if (ordinal >= 3) return 4;
+    if (ordinal >= 2) return 2;
+    return 1;
+  }
+  if (typeof epoch !== 'string') return 1;
+
+  const normalized = epoch
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+  if (/^\d+(?:\.\d+)?$/.test(normalized)) {
+    return epochCostMultiplier(Number(normalized));
+  }
+  if (normalized === 'kamien' || normalized === 'stone' || normalized === '1') return 1;
+  if (normalized === 'braz' || normalized === 'bronze' || normalized === '2') return 2;
+  if (
+    normalized === 'zelazo' ||
+    normalized === 'zelazo+' ||
+    normalized === 'iron' ||
+    normalized === 'iron+' ||
+    normalized === 'iron plus' ||
+    normalized === 'steel' ||
+    normalized === 'stal'
+  ) return 4;
+  return 1;
+}
+
+/** Scale one economic cost by the unit's epoch, preserving zero and bad inputs. */
+export function scaleCostByEpoch(
+  cost: number,
+  epoch?: number | string | null,
+): number {
+  if (!Number.isFinite(cost) || cost < 0) return 0;
+  if (cost === 0) return 0;
+  return Math.max(1, Math.round(cost * epochCostMultiplier(epoch)));
+}
+
+/**
+ * Owner-approved building cost multiplier by entry era: Stone x1, Bronze x2,
+ * Iron and every later era x4.  Keeping this helper here gives Work, stock
+ * costs, and gold upkeep one auditable source without widening the allowlist.
+ */
+export function buildingEraCostMultiplier(epokaWejscia?: number | null): number {
+  const era = typeof epokaWejscia === 'number' && Number.isFinite(epokaWejscia)
+    ? Math.floor(epokaWejscia)
+    : 1;
+  if (era >= 3) return 4;
+  if (era >= 2) return 2;
+  return 1;
+}
+
 /** Znormalizowany koszt: tylko klucze z liczbą skończoną > 0 (odporne na dane śmieciowe). */
 export function buildingStockCost(
-  building: { koszt_surowce?: BuildingStockCost | null } | null | undefined,
+  building: { epokaWejscia?: number | null; koszt_surowce?: BuildingStockCost | null } | null | undefined,
 ): Record<string, number> {
-  // R-NADMIAR-POOLS FALA2: koszt_surowce ×2 — UI/AI afford/deduct widzą skalowany koszt
-  return scaleStockCostRecord(building?.koszt_surowce);
+  // Najpierw zachowujemy istniejące FALA2 ×2 i jego zaokrąglenie, a dopiero
+  // potem stosujemy dokładnie jeden mnożnik ery do już przeskalowanego kosztu.
+  const fala2Cost = scaleStockCostRecord(building?.koszt_surowce);
+  const eraMultiplier = buildingEraCostMultiplier(building?.epokaWejscia);
+  if (eraMultiplier === 1) return fala2Cost;
+
+  const out: Record<string, number> = {};
+  for (const [key, amount] of Object.entries(fala2Cost)) {
+    out[key] = Math.max(1, Math.round(amount * eraMultiplier));
+  }
+  return out;
 }
 
 /** Ile brakuje w puli państwa dla każdego surowca kosztu (0 lub brak wpisu = wystarcza). */
@@ -99,7 +169,7 @@ export const EMPIRE_STOCK_RESOURCE_KEYS: readonly string[] = [
 ] as const;
 
 export function stockResourceLabel(key: string): string {
-  return STOCK_RESOURCE_LABEL[key] ?? key;
+  return STOCK_RESOURCE_LABEL[key] ?? nazwaWyswietlana(key);
 }
 
 // ---------------------------------------------------------------------------
@@ -305,6 +375,7 @@ export const MOUNT_HORSE_EXEMPT_UNIT = 'Rydwan (woły)';
 export interface UnitStockCostSource {
   Jednostka?: string | null;
   Typ?: string | null;
+  Epoka?: number | string | null;
   Surowiec?: string | null;
   'Surowiec (ilość)'?: number | null;
 }
@@ -339,12 +410,71 @@ export function unitStockCost(
     const ilosc = unit['Surowiec (ilość)'];
     if (typeof ilosc === 'number' && Number.isFinite(ilosc) && ilosc > 0) {
       const key = stripDiacriticsLower(rawName);
-      if (key) out[key] = ilosc;
+      if (key) out[key] = scaleCostByEpoch(ilosc, unit.Epoka);
     }
   }
   if (unitRequiresMountHorseStock(unit)) {
     out[MOUNT_UNIT_HORSE_STOCK_KEY] =
-      (out[MOUNT_UNIT_HORSE_STOCK_KEY] ?? 0) + MOUNT_UNIT_HORSE_STOCK_COST;
+      (out[MOUNT_UNIT_HORSE_STOCK_KEY] ?? 0) + scaleCostByEpoch(MOUNT_UNIT_HORSE_STOCK_COST, unit.Epoka);
   }
   return out;
+}
+
+/**
+ * R-WEB-DISBAND-REFUND-RESOURCES-Q1: zwrot surowców przy ROZWIĄZANIU jednostki gracza.
+ * Zwraca 100% surowców zapisanych jako zużyte przy werbunku (`stockPaid`); pomija
+ * wpisy niedodatnie/niefinityjne. Brak śladu (undefined/{}) -> {} (zero zwrotu).
+ * Pure -- bez DOM. Pieniądz NIE wraca (ta funkcja zwraca wyłącznie surowce).
+ * EN: returns 100% of the stock recorded as consumed at recruitment; {} when no trace.
+ */
+export function disbandStockRefund(
+  stockPaid: Readonly<Record<string, number>> | null | undefined,
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  if (!stockPaid) return out;
+  for (const [key, amount] of Object.entries(stockPaid)) {
+    if (typeof amount === 'number' && Number.isFinite(amount) && amount > 0) {
+      out[key] = amount;
+    }
+  }
+  return out;
+}
+
+/**
+ * Ślad zużycia surowców przy werbunku, zapisany na obiekcie jednostki jako `stockPaid`
+ * (ustawiany przy ukończeniu rekrutacji, main.ts). Typ trzymany tutaj, a nie w
+ * RuntimeUnit (units/setup.ts), żeby zmiana mieściła się w allowliście tematu.
+ * Brak pola / brak obiektu -> undefined.
+ */
+export function stockPaidOf(unit: object | null | undefined): Record<string, number> | undefined {
+  if (!unit) return undefined;
+  return (unit as { stockPaid?: Record<string, number> }).stockPaid;
+}
+
+/**
+ * Rozwiązanie jednostki gracza: dodaje zwrot (100% `stockPaid`) do puli PAŃSTWA właściciela
+ * tym samym mechanizmem co produkcja (creditOwnerResourceStock, z capem magazynu).
+ * Zwraca faktycznie dopisane ilości per surowiec (po obcięciu capem). Nadwyżka ponad cap
+ * przepada -- wywołujący pokazuje w hincie wyłącznie zwróconą ilość.
+ * Pure -- nie dotyka skarbca (pieniądz nie wraca).
+ */
+export function disbandStockRefundCredit<T extends StockCitySource>(
+  cities: ReadonlyArray<T>,
+  ownerId: number,
+  unit: object,
+  capPerType?: number,
+): Record<string, number> {
+  const credited: Record<string, number> = {};
+  for (const [key, amount] of Object.entries(disbandStockRefund(stockPaidOf(unit)))) {
+    const got = creditOwnerResourceStock(cities, ownerId, key, amount, capPerType);
+    if (got > 0) credited[key] = got;
+  }
+  return credited;
+}
+
+/** Fragment hintu: „+5 Drewno, +3 Brąz" (etykiety PL, bez surowych id); '' gdy pusto. */
+export function formatDisbandStockRefundHint(credited: Readonly<Record<string, number>>): string {
+  return Object.entries(credited)
+    .map(([key, amount]) => '+' + amount + ' ' + stockResourceLabel(key))
+    .join(', ');
 }

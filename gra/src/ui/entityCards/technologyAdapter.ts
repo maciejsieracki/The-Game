@@ -29,17 +29,31 @@
  * (4 sekcje odblokowań, ABC Q1 właściciela: NIE scalać, tylko przenieść) → Zmiany
  * ekonomiczne → (pusta, gdy brak odblokowań). Wzajemna kolejność tej ostatniej piątki
  * zostaje jak przed tym tematem — tylko przesunięta niżej, za miejsce wstawienia historii.
+ *
+ * R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1 (etap 1 kart odkryć): Wymagania → Charakterystyka →
+ * [Rys historyczny] → Top 5 korzyści (NOWA, indeks 2) → Co możesz teraz zrobić (CZYNNOŚĆ →
+ * KORZYŚĆ z `data/tech-cards-top5.json`, bez wiersza „Nie oznacza”) → Budynki → Jednostki →
+ * Ulepszenia terenu (z `terrain-improvements.json`) → Cuda (NOWA) → Kolejne technologie →
+ * Zmiany ekonomiczne. Efekty martwe (Teatr, Wielka odlewnia, Wielka Kuźnia, …) są ukryte.
  */
 import buildingsData from '../../../data/buildings.json';
 import unitsData from '../../../data/units.json';
 import terrainImprovementsData from '../../../data/terrain-improvements.json';
 import techData from '../../../data/tech.json';
+import techCardsTop5Data from '../../../data/tech-cards-top5.json';
+import wondersData from '../../../data/wonders.json';
+import civsData from '../../../data/civs.json';
+import { terrainUnlockLabelsForTech } from '../../game/improvement-tech';
 import { techIconSvg } from '../techIcons';
 import { buildingIconSvg, unitIconSvg, improvementIconSvg } from '../icons/brandAssets';
 import { naukaCostSuffix } from '../naukaLabel';
+import { humanizeId, nazwaCywilizacji, nazwaWyswietlana, nazwyZListyId } from '../../game/text-names';
+import { hiddenTechEffectNames, isDeadTechCardBuilding } from './techDeadEffects';
 import type { RawTech } from './registry';
-import { resolveBuildingRow, resolveUnitRow, technologyIdFromName, unitToSlug } from './registry';
+import { resolveBuildingRow, resolveUnitRow, resolveWonderRow, technologyIdFromName, unitToSlug } from './registry';
 import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
+import { resourcesFromList, yieldEntryParts, yieldSentenceFields, yieldTitleFields, yieldValueFields } from './resourceRows';
+import type { EntityCardValuePart } from './resourceRows';
 
 const PLACEHOLDER_ICON_SVG =
   '<svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true">' +
@@ -52,10 +66,39 @@ const PLACEHOLDER_ICON_SVG =
 // jest tym samym co `UNIT_PREVIEW` w `techDiscoveryNotice.ts` (popup odkrycia
 // technologii) — ten drugi zostaje NIETKNIĘTY, poza zakresem tego tematu.
 
+// --- R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1: treść kart odkryć z `data/tech-cards-top5.json`
+// (generator `tools/gen-tech-cards-top5.cjs` z `odkrycia-top5.csv`, FC 58339997b). ----------
+/** Pozycja „Top 5 korzyści” — decyzja właściciela Q1: tytuł z liczbą + jedno zdanie. */
+export interface TechTop5Item { tytul: string; liczba?: string; zdanie: string; dowod?: string }
+/** „Co możesz teraz zrobić” — schemat CZYNNOŚĆ → KORZYŚĆ (decyzja właściciela Q6). */
+export interface TechCmzItem { czynnosc: string; korzysc: string }
+/** `ukryte` — nazwy efektów martwych/niedostępnych ukrytych z karty (decyzja Q3/Q4). */
+export interface TechCardContent { top5: TechTop5Item[]; cmz: TechCmzItem[]; ukryte: string[] }
+
+const TECH_CARD_CONTENT = techCardsTop5Data as unknown as Record<string, TechCardContent | undefined>;
+
+/** Treść karty odkrycia albo `undefined`, gdy odkrycie nie ma wpisu (fallback adaptera). */
+export function techCardContentOf(techName: string): TechCardContent | undefined {
+  if (techName.startsWith('_')) return undefined;
+  return TECH_CARD_CONTENT[techName];
+}
+
+/** Jedno zdanie „Co możesz teraz zrobić”: „[CZYNNOŚĆ], aby [KORZYŚĆ].” (ANALIZA §4 pkt 7). */
+export function cmzSentence(item: TechCmzItem): string {
+  return `${item.czynnosc}, aby ${item.korzysc}.`;
+}
+
+// R-WEB-CITYPANEL-TECH-TILE-DEAD-EFFECTS-Q1: reguła efektów martwych (`isDeadTechCardBuilding`,
+// `hiddenTechEffectNames`) żyje we WSPÓLNYM module `techDeadEffects.ts` (re-eksport dla
+// dotychczasowych importerów, np. techDiscoveryNotice.ts).
+export { isDeadTechCardBuilding } from './techDeadEffects';
+
 type BuildingRow = {
   id: string;
   nazwa?: string;
   techUnlock?: string | null;
+  suppressed?: boolean;
+  epokaWejscia?: number;
   baza?: Record<string, number>;
   przyrost?: Record<string, number>;
   uwagi?: string;
@@ -77,17 +120,14 @@ function list(raw: string | null | undefined): string[] {
     .filter((x) => x !== '' && x !== '-' && x !== '—');
 }
 
-function buildingEffectText(building: BuildingRow): string {
-  const effects: string[] = [];
-  for (const [key, value] of Object.entries(building.przyrost ?? {})) {
-    if (value) effects.push(`${key} ${value > 0 ? '+' : ''}${value}`);
-  }
-  if (effects.length === 0) {
-    for (const [key, value] of Object.entries(building.baza ?? {})) {
-      if (value) effects.push(`${key} ${value > 0 ? '+' : ''}${value}`);
-    }
-  }
-  return effects.join(', ');
+function buildingEffectFields(building: BuildingRow): { value: string; valueParts?: EntityCardValuePart[] } {
+  const collect = (src: Record<string, number> | undefined) => Object.entries(src ?? {})
+    .filter(([, value]) => !!value)
+    .map(([key, value]) => ({ key, label: nazwaWyswietlana(key), amount: value as number }));
+  let entries = collect(building.przyrost as Record<string, number> | undefined);
+  if (entries.length === 0) entries = collect(building.baza as Record<string, number> | undefined);
+  if (entries.length === 0) return { value: '' };
+  return yieldEntryParts(entries);
 }
 
 /** Mapa nazwa gracza → `ImprovementKey`, odtworzona z `terrain-improvements.json`
@@ -131,52 +171,86 @@ function resourceAccessOf(tech: RawTech): string | undefined {
   return t !== '' ? t : undefined;
 }
 
+/** Lista surowców z danych → pola wiersza: rozpoznane surowce jako chipy (ikona), reszta tekstem. */
+function resourceFields(list: string | null | undefined): Pick<EntityCardRow, 'value' | 'resources'> {
+  const { resources, rest } = resourcesFromList(list);
+  return resources.length > 0
+    ? { value: rest ? nazwyZListyId(rest) : '', resources }
+    : { value: nazwyZListyId(list) };
+}
+
+type WonderRowLite = { id: string; nazwa?: string; dostep?: string; cywilizacje?: string[]; techUnlock?: string[] };
+const ALL_WONDERS = (wondersData as unknown as { cuda: WonderRowLite[] }).cuda;
+const CIV_NAME_BY_ID: Record<string, string> = Object.fromEntries(
+  (civsData as unknown as { cywilizacje: { ikonaId?: string; Cywilizacja?: string }[] }).cywilizacje
+    .filter((c) => c.ikonaId && c.Cywilizacja)
+    .map((c) => [c.ikonaId as string, c.Cywilizacja as string]),
+);
+
+/** Budynek martwy dziś (Q3/Q4 właściciela — ukryć do czasu naprawy): `suppressed` (np. Teatr)
+ * albo `epokaWejscia` powyżej grywalnej epoki (Wielka odlewnia, Wielka Kuźnia). */
+function isDeadBuilding(b: BuildingRow): boolean {
+  return isDeadTechCardBuilding(b);
+}
+
+/** Cuda odblokowywane przez technologię — Q6 (założenie Operatora): sekcja „Cuda” z oznaczeniem
+ * cudu narodowego (dostęp E — tylko wskazane cywilizacje) albo wyścigowego (dostęp R); oba
+ * typy mają `maxNaSwiecie = 1`, więc dopisek „maks. 1 na świecie” jest zawsze prawdziwy. */
+function wonderTrailing(w: WonderRowLite, techName: string): string {
+  const parts: string[] = [];
+  if (w.dostep === 'R') parts.push('Wyścig wszystkich państw, maks. 1 na świecie');
+  else {
+    const civs = (w.cywilizacje ?? []).map((id) => CIV_NAME_BY_ID[id] ?? nazwaCywilizacji(id));
+    parts.push(`Cud narodowy: ${civs.join(', ')} · maks. 1 na świecie`);
+  }
+  const other = (w.techUnlock ?? []).filter((t) => t !== techName);
+  if (other.length > 0) parts.push(`wymaga też: ${other.join(', ')}`);
+  return parts.join(' · ');
+}
+
 export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
-  const buildings = (buildingsData as BuildingRow[]).filter((b) => b.techUnlock === tech['Technologia']);
-  const units = (unitsData as UnitRow[]).filter((u) => u.Tech === tech['Technologia']);
-  const nextTechRows = ALL_TECHS.filter((t) => list(t['Wymaga (prereq)']).includes(tech['Technologia']));
-  const improvementNames = list(tech['Odblokowuje ulepszenie terenu']);
-  const resourceUnlocked = tech['Odblokowuje surowiec.'] || null;
+  const techName = tech['Technologia'];
+  const content = techCardContentOf(techName);
+  const hidden = hiddenTechEffectNames(techName);
+  // Q3/Q4 właściciela: efekty martwe UKRYTE we wszystkich sekcjach odblokowań (bez napisu
+  // „niedostępne”). Źródła: `ukryte` z danych + ta sama reguła budynków co w generatorze.
+  const buildings = (buildingsData as BuildingRow[]).filter((b) => b.techUnlock === techName
+    && !isDeadBuilding(b) && !hidden.has(b.nazwa ?? b.id));
+  const units = (unitsData as UnitRow[]).filter((u) => u.Tech === techName && !hidden.has(u.Jednostka));
+  const nextTechRows = ALL_TECHS.filter((t) => list(t['Wymaga (prereq)']).includes(techName)
+    && !hidden.has(t['Technologia']));
+  // Q5 (założenie Operatora): ulepszenia terenu ze ŹRÓDŁA PRAWDY bramki gry
+  // (`terrain-improvements.json` przez `improvement-tech.ts::terrainUnlockLabelsForTech`), nie z
+  // opisowego pola `tech.json` — dopisuje Kopalnie miedzi/cyny/żelaza i Stadninę.
+  const improvementNames = terrainUnlockLabelsForTech(techName).filter((n) => !hidden.has(n));
+  const wonders = ALL_WONDERS.filter((w) => (w.techUnlock ?? []).includes(techName) && !hidden.has(w.nazwa ?? w.id));
+  const resourceUnlocked = nazwyZListyId(tech['Odblokowuje surowiec.']) || null;
   const requirements = list(tech['Wymaga (prereq)']);
 
-  // --- „Co możesz teraz zrobić" — PIERWSZA sekcja, przed Budynkami (odstępstwo świadome,
-  // patrz nagłówek `techDiscoveryNotice.ts` pkt 2: szablony wypełnione realnymi nazwami). ---
+  // --- „Top 5 korzyści” (R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1) — wstawiana na indeks 2 tablicy
+  // `sections`, więc `renderer.ts::renderEntityCard` (HISTORIA_SECTION_INDEX = 2, NIETKNIĘTY)
+  // stawia Rys historyczny tuż PRZED nią: Top 5 jest zawsze bezpośrednio po Rysie (Q5
+  // właściciela). Format pozycji: tytuł z liczbą + jedno zdanie (Q1), tylko realne pozycje (Q2)
+  // — layout `top3` renderera numeruje dowolną liczbę pozycji (1–5).
+  const top5Rows: EntityCardRow[] = (content?.top5 ?? []).slice(0, 5)
+    .map((item) => ({ label: item.tytul, ...yieldTitleFields(item.tytul), value: item.zdanie }));
+  const top5Section: EntityCardSection = {
+    key: 'top5', title: 'Top 5 korzyści', rows: top5Rows, layout: 'top3',
+  };
+
+  // --- „Co możesz teraz zrobić" — CZYNNOŚĆ → KORZYŚĆ z danych (Q6 właściciela). Wiersz
+  // „Nie oznacza” usunięty (Q3, założenie Operatora). Fallback na dawne szablony TYLKO gdy
+  // odkrycie nie ma wpisu w `tech-cards-top5.json` (test pilnuje, że dziś: 0/32). ---
   const actionRows: EntityCardRow[] = [];
-  if (resourceUnlocked) {
-    actionRows.push({
-      label: 'Możesz teraz', value: `Sprawdź dostęp do surowca: ${resourceUnlocked}.`,
-      badge: { kind: 'ok', label: 'Możesz teraz' },
-    });
-  }
-  const buildingNames = buildings.map((b) => b.nazwa ?? b.id);
-  if (buildingNames.length > 0) {
-    actionRows.push({
-      label: 'Najpierw spełnij', value: `Zbuduj ${buildingNames.join(' lub ')}, jeśli spełniasz ich wymagania.`,
-      badge: { kind: 'warn', label: 'Najpierw spełnij' },
-    });
-  }
-  if (improvementNames.length > 0) {
-    actionRows.push({
-      label: 'Najpierw spełnij', value: `Przygotuj ${improvementNames.join(', ')} na odpowiednim złożu.`,
-      badge: { kind: 'warn', label: 'Najpierw spełnij' },
-    });
-  }
-  if (nextTechRows.length > 0) {
-    actionRows.push({
-      label: 'Możesz teraz', value: 'Wybierz dalszy kierunek badań, jeśli pozostałe wymagania są spełnione.',
-      badge: { kind: 'ok', label: 'Możesz teraz' },
-    });
-  }
-  if (actionRows.length > 0) {
-    actionRows.push({
-      label: 'Nie oznacza',
-      value: 'Odkrycie nie buduje automatycznie budynków ani ulepszeń i nie dodaje zapasu surowców.',
-      badge: { kind: 'muted', label: 'Nie oznacza' },
-    });
+  if (content) {
+    for (const item of content.cmz) actionRows.push({ label: '', ...yieldSentenceFields(cmzSentence(item)) });
+  } else {
+    actionRows.push(...legacyActionRows(resourceUnlocked, buildings, improvementNames, nextTechRows.length));
   }
   const actionsSection: EntityCardSection = {
     key: 'actions', title: 'Co możesz teraz zrobić', rows: actionRows,
     collapsible: true, openDefault: true, highlighted: true,
+    layout: content ? 'prose' : undefined,
   };
 
   // --- Budynki ---------------------------------------------------------------------------
@@ -187,7 +261,7 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   const buildingsRows: EntityCardRow[] = buildings.map((b) => {
     const linkTo = resolveBuildingRow(b.id) != null ? ({ kind: 'building', id: b.id } as const) : undefined;
     return {
-      label: b.nazwa ?? b.id,
+      label: b.nazwa ?? humanizeId(b.id),
       // P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1 (GOAL 1): tekst "Szczegóły →" ZNIKA, a
       // przyciskiem staje się SAMA NAZWA budynku (`label`) — dokładnie tak, jak od początku
       // wyglądała pigułka Wymagań (`button.entity-card-pill-text`), którą właściciel wskazał
@@ -237,6 +311,16 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   const improvementsSection: EntityCardSection = {
     key: 'improvements', title: 'Ulepszenia terenu', rows: improvementsRows,
     collapsible: true, openDefault: true,
+  };
+
+  // --- Cuda (Q6, założenie Operatora: TAK, z oznaczeniem narodowy/wyścig, maks. 1 na świecie) ---
+  const wondersRows: EntityCardRow[] = wonders.map((w) => ({
+    label: w.nazwa ?? humanizeId(w.id), value: '', trailing: wonderTrailing(w, techName),
+    linkTo: resolveWonderRow(w.id) != null ? ({ kind: 'wonder', id: w.id } as const) : undefined,
+    linkAnchor: 'label',
+  }));
+  const wondersSection: EntityCardSection = {
+    key: 'wonders', title: 'Cuda', rows: wondersRows, collapsible: true, openDefault: true,
   };
 
   // --- Kolejne technologie -------------------------------------------------------------------
@@ -290,10 +374,10 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   for (const b of buildings) {
     const buildingLinkTo = resolveBuildingRow(b.id) != null
       ? ({ kind: 'building', id: b.id } as const) : undefined;
-    const effect = buildingEffectText(b);
-    if (effect) {
+    const effect = buildingEffectFields(b);
+    if (effect.value) {
       econRows.push({
-        label: b.nazwa ?? b.id, value: effect,
+        label: b.nazwa ?? humanizeId(b.id), ...effect,
         icon: { kind: 'svg', svg: buildingIconSvg(undefined, b.id) },
         linkTo: buildingLinkTo,
         // P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1: pudełko przycisku MUSI trafić na nazwę
@@ -304,7 +388,7 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
     }
     if (b.utrzymanie != null) {
       econRows.push({
-        label: `${b.nazwa ?? b.id} — utrzymanie`, value: `${b.utrzymanie} złota na turę`,
+        label: `${b.nazwa ?? humanizeId(b.id)} — utrzymanie`, ...yieldValueFields('pieniadz', `${b.utrzymanie} na turę`),
         icon: { kind: 'svg', svg: buildingIconSvg(undefined, b.id) },
         linkTo: buildingLinkTo,
         // P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1: jw. — `value` to kwota utrzymania.
@@ -313,7 +397,7 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
     }
   }
   if (resourceUnlocked) {
-    econRows.push({ label: 'Dostęp do surowca', value: resourceUnlocked });
+    econRows.push({ label: 'Dostęp do surowca', ...resourceFields(tech['Odblokowuje surowiec.']) });
   }
   const econSection: EntityCardSection = {
     key: 'econ', title: 'Zmiany ekonomiczne', rows: econRows, collapsible: true, openDefault: true,
@@ -342,19 +426,19 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   // (wymóg badania)" żeby uniknąć wizualnej duplikacji z „Dostęp do surowca" w Zmianach
   // ekonomicznych mimo wspólnego rdzenia słownego. -------------------------------------------
   const resourceAccess = resourceAccessOf(tech);
-  const charRows: EntityCardRow[] = [
-    { label: 'Koszt nauki', value: `${tech['Koszt nauki']}${naukaCostSuffix()}` },
+  const charRows: EntityCardRow[] = ([
+    { label: 'Koszt nauki', value: `${tech['Koszt nauki']}${naukaCostSuffix()}`, valueParts: [{ id: 'nauka', amount: String(tech['Koszt nauki']) }] },
     tech['Epoka'] ? { label: 'Epoka', value: tech['Epoka'] } : null,
     tech['Poziom'] != null ? { label: 'Poziom', value: String(tech['Poziom']) } : null,
-    resourceAccess ? { label: 'Surowiec (wymóg badania)', value: resourceAccess } : null,
-  ].filter((r): r is EntityCardRow => r != null);
+    resourceAccess ? { label: 'Surowiec (wymóg badania)', ...resourceFields(resourceAccess) } : null,
+  ] as Array<EntityCardRow | null>).filter((r): r is EntityCardRow => r != null);
   const characteristicsSection: EntityCardSection = {
     key: 'characteristics', title: 'Charakterystyka', rows: charRows,
   };
 
-  const anyContent = actionRows.length > 0 || buildingsRows.length > 0 || unitsRows.length > 0
-    || improvementsRows.length > 0 || nextTechsRows.length > 0 || econRows.length > 0
-    || requirements.length > 0;
+  const anyContent = top5Rows.length > 0 || actionRows.length > 0 || buildingsRows.length > 0
+    || unitsRows.length > 0 || improvementsRows.length > 0 || wondersRows.length > 0
+    || nextTechsRows.length > 0 || econRows.length > 0 || requirements.length > 0;
   const emptySection: EntityCardSection = {
     key: 'empty', title: 'Informacja',
     rows: anyContent ? [] : [{ label: '', value: 'Ta technologia nie odblokowuje bezpośrednio nowych elementów.' }],
@@ -374,9 +458,12 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
     // (odpowiednik „zaraz po Opisie" dla budynku/jednostki). Reszta (4 osobne sekcje
     // odblokowań, Q1 właściciela: NIE scalać) i Zmiany ekonomiczne zostają w niezmienionej
     // WZAJEMNEJ kolejności, tylko przesunięte niżej za miejsce wstawienia historii.
+    // R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1: `top5Section` na INDEKSIE 2 = pierwsza sekcja po
+    // Rysie historycznym (renderer wstawia Rys PRZED indeksem 2); „Cuda” (Q6) między
+    // Ulepszeniami terenu a Kolejnymi technologiami (ANALIZA-KART-ODKRYC §7).
     sections: [
-      requirementsSection, characteristicsSection, actionsSection, buildingsSection,
-      unitsSection, improvementsSection, nextTechsSection, econSection, emptySection,
+      requirementsSection, characteristicsSection, top5Section, actionsSection, buildingsSection,
+      unitsSection, improvementsSection, wondersSection, nextTechsSection, econSection, emptySection,
     ],
     // P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1 — uzasadnienie jak w `unitAdapter.ts`.
     // Folder = katalog `docs/encyklopedia/technologie/`.
@@ -384,3 +471,38 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
     historicalNote: historicalNoteOf(tech),
   };
 };
+
+/** Dawne szablony „Co możesz teraz zrobić” — WYŁĄCZNIE fallback dla odkrycia BEZ wpisu w
+ * `tech-cards-top5.json` (dziś 0/32 — pilnuje `tools/tech-cards-top5-test.cjs`). Wiersz
+ * „Nie oznacza” usunięty globalnie (Q3, założenie Operatora R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1). */
+function legacyActionRows(
+  resourceUnlocked: string | null, buildings: BuildingRow[], improvementNames: string[], nextTechCount: number,
+): EntityCardRow[] {
+  const actionRows: EntityCardRow[] = [];
+  if (resourceUnlocked) {
+    actionRows.push({
+      label: 'Możesz teraz', value: `Sprawdź dostęp do surowca: ${resourceUnlocked}.`,
+      badge: { kind: 'ok', label: 'Możesz teraz' },
+    });
+  }
+  const buildingNames = buildings.map((b) => b.nazwa ?? humanizeId(b.id));
+  if (buildingNames.length > 0) {
+    actionRows.push({
+      label: 'Najpierw spełnij', value: `Zbuduj ${buildingNames.join(' lub ')}, jeśli spełniasz ich wymagania.`,
+      badge: { kind: 'warn', label: 'Najpierw spełnij' },
+    });
+  }
+  if (improvementNames.length > 0) {
+    actionRows.push({
+      label: 'Najpierw spełnij', value: `Przygotuj ${improvementNames.join(', ')} na odpowiednim złożu.`,
+      badge: { kind: 'warn', label: 'Najpierw spełnij' },
+    });
+  }
+  if (nextTechCount > 0) {
+    actionRows.push({
+      label: 'Możesz teraz', value: 'Wybierz dalszy kierunek badań, jeśli pozostałe wymagania są spełnione.',
+      badge: { kind: 'ok', label: 'Możesz teraz' },
+    });
+  }
+  return actionRows;
+}

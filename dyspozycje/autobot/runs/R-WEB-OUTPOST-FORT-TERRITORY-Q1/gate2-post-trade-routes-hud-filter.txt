@@ -1,0 +1,47 @@
+
+== Fikstura swiata (zywy refreshTradeRoutes) ==
+  tras lacznie: 8 | gracza: 3 (w tym wewnetrznych gracza: 1) | cudzych: 5
+    a1->b1:lad  owner 1 -> 2  d=30 lad
+    a1->b2:lad  owner 1 -> 2  d=42 lad
+    a2->b1:lad  owner 1 -> 2  d=19 lad
+    a2->b2:lad  owner 1 -> 2  d=31 lad
+    p1->a1:lad  owner 0 -> 1  d=20 lad
+    p2->a1:lad  owner 0 -> 1  d=11 lad
+    c1->c2:lad  owner 3 -> 3  d=8 lad
+    p1->p2:lad  owner 0 -> 0  d=9 lad
+  [ODNIESIENIE] dochod gracza wg silnika (computeTradeRouteIncomeByCity zawezone do miast gracza) = 42
+
+-- R2-K1/R2-K5: chip HUD „Handel" (realne zrodlo main.ts) --
+  chip: handelIncome=42, handelRouteCount=3
+
+-- R2-K2: panel imperium „Handel" (realne zrodlo buildEmpireTradeSnap) --
+  wierszy w panelu: 3
+    id=p1->p2:lad city=p1 partner=M-p2 (Handel wewnętrzny) income=12
+    id=p2->a1:lad city=p2 partner=M-a1 (CYW1) income=14
+    id=p1->a1:lad city=p1 partner=M-a1 (CYW1) income=16
+
+-- R2-K3: nakladka mapy (realne zrodlo refreshTradeRoutesOverlay) --
+  lukow narysowanych: 3 | tras gracza: 3 | tras w swiecie: 8
+
+-- R2-K4: toasty i dziennik (realne zrodlo reportTradeRouteEvents) --
+  toasty:
+    🧭 Nowy szlak handlowy: M-p1 ↔ M-a1 (CYW1) · +16 złota/turę
+    🧭 Nowy szlak handlowy: M-p2 ↔ M-a1 (CYW1) · +14 złota/turę
+    🧭 Nowy szlak handlowy: M-p1 ↔ M-p2 (handel wewnętrzny) · +6 złota/turę
+  toasty (zerwanie):
+    ⛓️ Szlak handlowy zerwany: M-p1 ↔ M-a1 (CYW1)
+    ⛓️ Szlak handlowy zerwany: M-p2 ↔ M-a1 (CYW1)
+    ⛓️ Szlak handlowy zerwany: M-p1 ↔ M-p2 (handel wewnętrzny)
+
+-- R2-D: trasa z graczem po stronie `to` (odwrocony kierunek) --
+
+-- ZARZUT 4: `hasActiveRoute` (activeDeals) symetryczny wzgledem kierunku trasy --
+
+-- SEKCJA M: mutanty (filtr wlasciciela usuniety -> asercje MUSZA zaplonac) --
+  [OK] mutant chip HUD wykryty: handelIncome=112 != 42
+  [OK] mutant panel imperium wykryty: wierszy=8, w tym cudze
+  [OK] mutant nakladka mapy wykryty: lukow=8 != 3
+  [OK] mutant toasty wykryty: toastow=8 != 3
+
+[trade-routes-hud-filter-test] passed=59 failed=0
+EXIT=0

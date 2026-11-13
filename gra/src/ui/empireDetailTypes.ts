@@ -3,6 +3,7 @@
  */
 import type { HudState } from './hud';
 import type { ResourceUsageBreakdown } from '../game/resource-usage-breakdown';
+import type { EmpireProducersSnap } from '../game/building-toggle';
 
 /** PYTANIE-84-U23A — uchwała imperium (perk widoczny, gdy ≥1 Spichlerz II płaci Sól). */
 export const UCHWALA_SOL_SPICHLERZ_II_ID = 'uchwala-sol-spichlerz-ii';
@@ -25,15 +26,15 @@ export function buildUchwalaSolSpichlerzII(
 ): EmpireUchwalaRow {
   const count = Math.max(0, spichlerzIISolCount ?? 0);
   const countNote = count > 0
-    ? ` Aktywne Spichlerze II płacące Sól: ${count}.`
+    ? ` Aktywne Spichlerze Królewskie płacące Sól: ${count}.`
     : '';
   return {
     id: UCHWALA_SOL_SPICHLERZ_II_ID,
     nazwa: 'Solanka zapasowa',
     opis: aktywna
       ? `Armia poza własnym terytorium zużywa 1 pkt Żywności/turę zamiast 2 (bonus imperium).${countNote}`
-      : 'Nieaktywna — wymaga co najmniej jednego Spichlerza II z dostępem do Soli w magazynie państwa (5 Soli/turę).',
-    zrodlo: 'Spichlerz II · Sól',
+      : 'Nieaktywna — wymaga co najmniej jednego Spichlerza Królewskiego z dostępem do Soli w magazynie państwa (5 Soli/turę).',
+    zrodlo: 'Spichlerz Królewski · Sól',
     aktywna,
   };
 }
@@ -94,7 +95,7 @@ export interface EmpireResourceRow {
    * wartości 100 na sztywno.
    */
   capBase?: number;
-  /** Bonus capu za KAŻDY Magazyn (econ-params.json magazyn_bonus_surowce_na_budynek). */
+  /** Bonus capu za KAŻDY Magazyn = baza × magazyn_bonus_surowce_proc_na_budynek (0,2 → +20%) × mnożnik epoki. */
   capBonusPerMagazyn?: number;
   /**
    * Opcjonalnie: skąd dostęp pochodzi (Ceramika/Sól/Koń/Złoto — budynek/złoże/szlak).
@@ -107,6 +108,12 @@ export interface EmpireResourceRow {
    * surowiec nie jest na liście tej epoki (badge nie jest rysowany).
    */
   citizenRequired?: boolean;
+  /**
+   * R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1: stawka zużycia tej epoki (sztuk surowca / obywatela / turę),
+   * z której silnik policzył drenaż (`citizen-resource-upkeep.ts` `citizenUpkeepRateForEra`).
+   * Gdy `citizenRequired`. Brak → panel przyjmuje 1,0 (fallback).
+   */
+  citizenRatePerCitizen?: number;
   /**
    * Gdy `citizenRequired` — czy magazyn centralny akurat TERAZ ma > 0 tego surowca (pokrycie)
    * czy 0 (kara aktywna — Szczęście −1, Rozwój −1% w każdym mieście imperium).
@@ -306,6 +313,30 @@ export interface EmpireCityDefenseRow {
   garnizonCount: number;
 }
 
+/** Jednostka dostępna w tabeli masowej rekrutacji jednego miasta. */
+export interface EmpireCityRecruitmentOption {
+  id: string;
+  name: string;
+  /** Jednorazowy koszt zakupu ze skarbca za jedną sztukę. */
+  goldCost: number;
+  /** Jednorazowy koszt Manpower za jedną sztukę. */
+  manpowerCost: number;
+  /** Jednorazowy koszt surowców z puli państwa za jedną sztukę. */
+  stockCost: Record<string, number>;
+  /** Jednostka morska — wymaga wody w mieście rekrutującym. */
+  requiresWater: boolean;
+}
+
+/** Stan tabeli masowej rekrutacji jednego miasta. */
+export interface EmpireCityMassRecruitmentSnap {
+  /** Tylko jednostki przechodzące istniejące bramki produkcji/rekrutacji tego miasta. */
+  options: EmpireCityRecruitmentOption[];
+  /** Liczba opłaconych jednostek oczekujących w kolejce tego miasta. */
+  queueCount: number;
+  /** Dostęp do morza lub rzeki dla bramki jednostek morskich. */
+  waterAccess: boolean;
+}
+
 /** Ludność i pula rekrutów per miasto. */
 export interface EmpireCityPoborRow {
   /**
@@ -359,6 +390,8 @@ export interface EmpireCityPoborRow {
   poziomRacji: number;
   /** Wpływ bieżącego poziomu Racji na wzrost ludności, %/turę (`rationGrowthPercent()`). */
   racjaGrowthPct: number;
+  /** Masowa rekrutacja z tego miasta; akcja jest dostępna wyłącznie w panelu gracza. */
+  massRecruitment: EmpireCityMassRecruitmentSnap;
 }
 
 /**
@@ -627,6 +660,22 @@ export interface EmpireReligionSnap {
 }
 
 /**
+ * Globalny stan kontrolki masowej rekrutacji. Owner jest jawny: obecny panel wystawia
+ * akcję tylko dla gracza (`ownerId === 0`), a ścieżka AI pozostaje przy istniejącym
+ * `purchaseRecruitmentUnit` dla pojedynczego zakupu.
+ */
+export interface EmpireMassRecruitmentSnap {
+  ownerId: number;
+  treasury: number;
+  manpower: number;
+  stock: Record<string, number>;
+  /** Suma opłaconych jednostek w kolejkach wszystkich miast ownera. */
+  queuedCount: number;
+  /** Ukończone jednostki ownera na mapie (ta sama liczba co `power.unitsOnMap`). */
+  completedCount: number;
+}
+
+/**
  * P-ARMIA-PANEL-BRAK-INFO-PRODUKCJA-JEDNOSTEK (Maciej 2026-08-16): jedno miasto gracza, na
  * czele kolejki produkcji (`City.productionQueue`/`kolejka[0]`, `game/production.ts`
  * `frontItem()`) którego stoi JEDNOSTKA (`ProductionItem.kind === 'jednostka'`) — miasta z
@@ -670,6 +719,7 @@ export interface EmpireDetailSnap {
   power: EmpirePowerSnap;
   cityEcon: EmpireCityEconRow[];
   cityPobor: EmpireCityPoborRow[];
+  massRecruitment: EmpireMassRecruitmentSnap;
   resources: EmpireResourceRow[];
   trade: EmpireTradeSnap;
   /** PYTANIE-85 — Spichlerz centralny (magazyn żywności imperium). */
@@ -686,4 +736,6 @@ export interface EmpireDetailSnap {
   /** P-ARMIA-PANEL-BRAK-INFO-PRODUKCJA-JEDNOSTEK — miasta gracza aktualnie budujące jednostkę
    *  (front kolejki produkcji == jednostka); patrz JSDoc EmpireArmiaProductionRow. */
   armiaProdukcja: EmpireArmiaProductionRow[];
+  /** R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: lista miast z budynkami produkcyjnymi + agregaty per surowiec. */
+  producers?: EmpireProducersSnap;
 }

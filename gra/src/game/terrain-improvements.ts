@@ -6,6 +6,8 @@
 import improvementsJson from '../../data/terrain-improvements.json';
 import { Nakladka, TerenBazowy } from '../types/hex';
 import type { TileYield } from './economy';
+import { scaleImprovementWorkCost } from './r-stawki-strojenie';
+import { humanizeId } from './text-names';
 
 export type ImprovementBonusKey =
   | 'zywnosc' | 'praca' | 'handel' | 'pieniadz' | 'drewno' | 'kamien' | 'glina';
@@ -15,6 +17,9 @@ export type ImprovementBonus = Partial<Record<ImprovementBonusKey, number>>;
 type ImprovementRow = {
   bonus?: ImprovementBonus;
   nazwa?: string;
+  epoka?: number;
+  koszt_praca?: number;
+  typ?: 'wycinka' | 'ulepszenie';
   surowiec_ilosc_tura?: number;
   surowiecOdblokowany?: string | null;
   /** Ograniczenie do wybranych cywilizacji (typCywilizacji z civs.json) — pole ogólny,
@@ -22,7 +27,7 @@ type ImprovementRow = {
   cywilizacje?: readonly string[];
 };
 
-const IMPROVEMENTS = improvementsJson as Record<string, ImprovementRow>;
+const IMPROVEMENTS = improvementsJson as unknown as Record<string, ImprovementRow>;
 
 /** Legacy klucze przed kanonem żywność+hodowla (save / stary enum). */
 const LEGACY_KEY_ALIASES: Readonly<Record<string, string>> = {
@@ -62,6 +67,54 @@ export function migrateImprovementLayers(
 export const IMPROVEMENT_KEYS: readonly string[] = Object.keys(IMPROVEMENTS)
   .filter(k => !k.startsWith('_'));
 
+/**
+ * Era multiplier used for terrain-improvement upkeep. Construction Work costs
+ * use `scaleTerrainImprovementWorkCost` below; their Stone/Bronze/Iron rates
+ * are 0.5/1/2 after FALA2, while upkeep keeps its existing 1/2/4 progression.
+ */
+export const TERRAIN_IMPROVEMENT_ERA_MULTIPLIERS: Readonly<Record<number, number>> = {
+  1: 1,
+  2: 2,
+  3: 4,
+};
+
+export function terrainImprovementEraMultiplier(era: number | undefined): number {
+  const normalized = typeof era === 'number' && Number.isFinite(era)
+    ? Math.floor(era)
+    : 1;
+  if (normalized <= 1) return TERRAIN_IMPROVEMENT_ERA_MULTIPLIERS[1] ?? 1;
+  const mapped = TERRAIN_IMPROVEMENT_ERA_MULTIPLIERS[normalized];
+  if (mapped !== undefined) return mapped;
+  return (TERRAIN_IMPROVEMENT_ERA_MULTIPLIERS[3] ?? 4) * Math.pow(2, normalized - 3);
+}
+
+/** Construction Work rates: Stone 0.5×, Bronze 1×, Iron 2×, then double. */
+export function terrainImprovementConstructionEraMultiplier(era: number | undefined): number {
+  const normalized = typeof era === 'number' && Number.isFinite(era)
+    ? Math.floor(era)
+    : 1;
+  if (normalized <= 1) return 0.5;
+  if (normalized === 2) return 1;
+  return 2 * Math.pow(2, normalized - 3);
+}
+
+/** Epoka technologiczna ulepszenia z terrain-improvements.json. */
+export function terrainImprovementEraForKey(key: string): number {
+  const normalized = normalizeImprovementKey(key);
+  const era = normalized ? IMPROVEMENTS[normalized]?.epoka : undefined;
+  return typeof era === 'number' && Number.isFinite(era) ? era : 1;
+}
+
+/** Koszt postawienia ulepszenia: FALA2-scaled Stone base × construction era rate. */
+export function scaleTerrainImprovementWorkCost(
+  base: number,
+  era: number | undefined = 1,
+): number {
+  const stoneBase = scaleImprovementWorkCost(base);
+  if (stoneBase <= 0) return 0;
+  return stoneBase * terrainImprovementConstructionEraMultiplier(era);
+}
+
 export function normalizeImprovementKey(raw: string | undefined | null): string | undefined {
   if (!raw || raw === 'brak') return undefined;
   const key = LEGACY_KEY_ALIASES[raw] ?? raw;
@@ -70,23 +123,59 @@ export function normalizeImprovementKey(raw: string | undefined | null): string 
     : (IMPROVEMENTS[raw] ? raw : undefined);
 }
 
-export function improvementBonusForKey(key: string): ImprovementBonus {
+/** Pola plonu ulepszenia skalowane epoką (+1 za epokę ponad Kamień, tylko wartości > 0). */
+export type ImprovementEraScaledStat = 'zywnosc' | 'praca' | 'handel' | 'pieniadz';
+const ERA_SCALED_YIELD_STATS: ReadonlySet<string> = new Set(['zywnosc', 'praca', 'handel', 'pieniadz']);
+
+/**
+ * R-WEB-IMPROVEMENT-ERA-SCALING-Q1 (decyzja właściciela 2026-11-03) -- JEDNO ŹRÓDŁO PRAWDY.
+ * Plon ulepszenia terenu rośnie o +1 za epokę ponad Kamień (Kamień +0, Brąz +1, Żelazo +2),
+ * dla Żywności, Pracy, Handlu i Pieniądza, ale tylko gdy baza > 0. `era` = AKTUALNA epoka
+ * właściciela ulepszenia (nie epoka odblokowania ulepszenia). Pozostałe pola (drewno/kamień/glina)
+ * i plony <= 0 bez zmian. `key` zostaje w sygnaturze dla spójności API (wszystkie ulepszenia
+ * z plonem skalują się tak samo; Fort/Posterunek nie mają plonu).
+ */
+export function improvementYieldForEra(
+  _key: string,
+  stat: string,
+  base: number,
+  era: number | undefined = 1,
+): number {
+  if (!(base > 0) || (era !== 2 && era !== 3)) return base;
+  if (!ERA_SCALED_YIELD_STATS.has(stat)) return base;
+  return base + (era - 1);
+}
+
+/** Bonus plonu ulepszenia dla epoki właściciela (domyślnie Kamień = wartości bazowe z JSON). */
+export function improvementBonusForKey(key: string, era: number | undefined = 1): ImprovementBonus {
   const row = IMPROVEMENTS[key];
   if (!row?.bonus) return {};
-  return { ...row.bonus };
+  const out: ImprovementBonus = { ...row.bonus };
+  for (const stat of Object.keys(out) as Array<keyof ImprovementBonus>) {
+    const v = out[stat];
+    if (typeof v === 'number') out[stat] = improvementYieldForEra(key, stat, v, era);
+  }
+  return out;
 }
 
 /**
- * Dodaje bonus ulepszenia do plonów heksa.
+ * Dodaje bonus ulepszenia do plonów heksa (epoka właściciela skaluje Żyw/Pra/Han/Pieniądz).
  * pieniadz z JSON → handel (TileYield nie ma osobnego pieniadz na polu).
  */
-export function applyImprovementBonus(yld: TileYield, improvementKey: string | undefined): void {
+export function applyImprovementBonus(
+  yld: TileYield,
+  improvementKey: string | undefined,
+  era: number | undefined = 1,
+): void {
   if (!improvementKey) return;
-  const b = improvementBonusForKey(improvementKey);
-  if (b.zywnosc) yld.zywnosc += b.zywnosc;
-  if (b.praca)   yld.praca   += b.praca;
-  if (b.handel)  yld.handel  += b.handel;
-  if (b.pieniadz) yld.handel += b.pieniadz;
+  // Gorąca ścieżka (tileYield woła to dla każdego heksu rankingu pól): bez alokacji obiektu --
+  // czyta wiersz JSON wprost i skaluje przez `improvementYieldForEra` (jedno źródło prawdy).
+  const b = IMPROVEMENTS[improvementKey]?.bonus;
+  if (!b) return;
+  if (b.zywnosc) yld.zywnosc += improvementYieldForEra(improvementKey, 'zywnosc', b.zywnosc, era);
+  if (b.praca)   yld.praca   += improvementYieldForEra(improvementKey, 'praca', b.praca, era);
+  if (b.handel)  yld.handel  += improvementYieldForEra(improvementKey, 'handel', b.handel, era);
+  if (b.pieniadz) yld.handel += improvementYieldForEra(improvementKey, 'pieniadz', b.pieniadz, era);
   if (b.drewno)  yld.drewno  += b.drewno;
   if (b.kamien)  yld.kamien  += b.kamien;
   if (b.glina)   yld.glina   += b.glina;
@@ -128,9 +217,13 @@ export function oreYieldFromImprovements(
 }
 
 /** Suma bonusów wielu warstw ulepszeń na jednym heksie (kanon §3). */
-export function applyImprovementBonuses(yld: TileYield, improvementKeys: readonly string[]): void {
+export function applyImprovementBonuses(
+  yld: TileYield,
+  improvementKeys: readonly string[],
+  era: number | undefined = 1,
+): void {
   for (const key of improvementKeys) {
-    applyImprovementBonus(yld, key);
+    applyImprovementBonus(yld, key, era);
   }
 }
 
@@ -149,8 +242,12 @@ export function applyImprovementBonuses(yld: TileYield, improvementKeys: readonl
 //   Tartak->drewno 50 (bylo 10) · Glinianka->glina 50 (bylo 10) · Kamieniolom->kamien 50 (bylo 10) ·
 //   Kopalnia miedzi->ruda 20 (bylo 4) · Kopalnia (zloze zelaza)->ruda_zelaza 20 (bylo 4) ·
 //   Warzelnia soli->sol 50 (bylo 10) · Stadnina->kon 25 (bylo 5) · Kopalnia zlota->zloto 1 (BEZ ZMIAN).
+// Tartak i Kamieniolom: baza 50/ture (epoka 1), skalowana x1,5 za epoke (50/75/113).
+// Historia: 2026-09-09 (commit 9175f031f) podniesione do 200 = REGRES; 2026-10-31
+// przywrocone 50 decyzja wlasciciela (R-WEB-SAWMILL-QUARRY-PRODUCTION-50-Q1).
 // EN: rates above are current as of 2026-08-13 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, ×5 vs the
 // prior state; gold excluded -- currency, not a construction resource);
+// tartak/kamieniolom restored to 50 on 2026-10-31 (see above);
 // see terrain-improvements.json surowiec_ilosc_tura per improvement for source of truth.
 // Domyslny fallback (gdy pole nieobecne w JSON) = 10/ture (bylo 2) -- czysto bezpieczenstwo,
 // nie stawka docelowa; do dalszego strojenia w panelu Excel jesli potrzeba.
@@ -171,8 +268,12 @@ const TERRITORY_YIELD_IMPROVEMENTS: ReadonlySet<string> = new Set([
   'warzelnia_soli', 'stadnina', 'kopalnia_zlota',
 ]);
 
-/** Produkcja Tartaku i Kamieniołomu rośnie o 50% za każdą kolejną epokę. */
-const ERA_SCALED_RESOURCE_IMPROVEMENTS: ReadonlySet<string> = new Set(['tartak', 'kamieniolom']);
+/**
+ * Produkcja KAŻDEGO ulepszenia surowcowego rośnie ×1,5 za epokę (R-WEB-IMPROVEMENT-ERA-SCALING-Q1,
+ * decyzja właściciela 2026-11-03; wcześniej tylko Tartak i Kamieniołom; złoto też -- cofa
+ * dawne „złoto bez skalowania"; zużycie Mennicy 1 Złoto/t bez zmian).
+ */
+const ERA_SCALED_RESOURCE_IMPROVEMENTS: ReadonlySet<string> = TERRITORY_YIELD_IMPROVEMENTS;
 
 function normalizeProductionEra(era: number | undefined): 1 | 2 | 3 {
   return era === 2 || era === 3 ? era : 1;
@@ -220,18 +321,18 @@ export function territoryResourceYieldForImprovement(
   switch (norm) {
     case 'tartak':          return { resourceKey: 'drewno', amount: amount() };
     case 'kamieniolom':     return { resourceKey: 'kamien', amount: amount() };
-    case 'glinianka':       return { resourceKey: 'glina',  amount: territoryYieldAmountForKey(norm) };
-    case 'kopalnia_miedzi': return { resourceKey: 'ruda',   amount: territoryYieldAmountForKey(norm) };
-    case 'kopalnia_zelaza': return { resourceKey: 'ruda_zelaza', amount: territoryYieldAmountForKey(norm) };
+    case 'glinianka':       return { resourceKey: 'glina',  amount: amount() };
+    case 'kopalnia_miedzi': return { resourceKey: 'ruda',   amount: amount() };
+    case 'kopalnia_zelaza': return { resourceKey: 'ruda_zelaza', amount: amount() };
     // Maciej 2026-08-13: Ruda cyny — nowy surowiec, analogicznie do ruda_zelaza (stawka z JSON).
-    case 'kopalnia_cyny':   return { resourceKey: 'ruda_cyny', amount: territoryYieldAmountForKey(norm) };
-    case 'warzelnia_soli':  return { resourceKey: 'sol',    amount: territoryYieldAmountForKey(norm) };
+    case 'kopalnia_cyny':   return { resourceKey: 'ruda_cyny', amount: amount() };
+    case 'warzelnia_soli':  return { resourceKey: 'sol',    amount: amount() };
     // R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1 (Maciej 2026-08-12): stawka teraz czytana z JSON
     // (surowiec_ilosc_tura), tak jak pozostale ulepszenia produkcyjne — wczesniej byla
     // zahardkodowana na 1 i ignorowala korekty balansu w danych.
     // EN: rate now read from JSON (surowiec_ilosc_tura), like the other production
     // improvements — previously hardcoded to 1 and ignoring data balance corrections.
-    case 'stadnina':        return { resourceKey: 'kon',    amount: territoryYieldAmountForKey(norm) }; // PYTANIE-84-B3
+    case 'stadnina':        return { resourceKey: 'kon',    amount: amount() }; // PYTANIE-84-B3
     // N1 (Maciej 2026-08-12, dispatch po ecbddda8): stawka teraz czytana z JSON
     // (surowiec_ilosc_tura), tak jak pozostale ulepszenia produkcyjne (w tym stadnina
     // naprawiona w ecbddda8) — wczesniej byla zahardkodowana na 1, tak samo jak stadnina
@@ -240,7 +341,7 @@ export function territoryResourceYieldForImprovement(
     // improvements (including stadnina, fixed in ecbddda8) — previously hardcoded to 1,
     // same as stadnina before its fix. Today's JSON value is 1, so in-game behavior is
     // unchanged (1→1).
-    case 'kopalnia_zlota':  return { resourceKey: 'zloto',  amount: territoryYieldAmountForKey(norm) }; // PYTANIE-84-B4
+    case 'kopalnia_zlota':  return { resourceKey: 'zloto',  amount: amount() }; // PYTANIE-84-B4
     default: return null;
   }
 }
@@ -262,6 +363,12 @@ export function improvementKeysForHex(
     nakladka?: Nakladka;
   },
 ): string[] {
+  if (!hex.ulepszenia?.length) {
+    // R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R6): szybkie wyjście dla heksu bez ulepszeń (większość mapy; skany po całej mapie).
+    // Równoważne ścieżce poniżej: null/undefined/''/'brak' -> normalizeImprovementKey zwraca undefined -> [].
+    const u = hex.ulepszenie;
+    if (u === undefined || u === null || u === '' || u === 'brak') return [];
+  }
   if (hex.ulepszenia?.length) {
     const keys = hex.ulepszenia
       .map(k => normalizeImprovementKey(String(k)))
@@ -285,6 +392,16 @@ export function hexHasCoveringTerrainImprovement(
   return improvementKeysForHex(hex).some(k => !ROAD_IMPROVEMENT_KEYS.has(k));
 }
 
+/**
+ * R-WEB-STADNINA-KONIE-STARE-ZAPISY-Q1: JEDYNY predykat złoża konia (budowa, tooltip, koszt, ukrywanie
+ * ikony). Złoże = nakładka `ZlozeKonia` (nowe mapy) LUB `zloze==='konie'` po trim/lowercase (stare
+ * zapisy: koń pod lasem, las zostaje). Bez migracji danych.
+ */
+export function hexHasHorseDeposit(hex: { nakladka?: Nakladka; zloze?: string | null }): boolean {
+  return hex.nakladka === Nakladka.ZlozeKonia
+    || (typeof hex.zloze === 'string' && hex.zloze.trim().toLowerCase() === 'konie');
+}
+
 /** Czy postawione ulepszenie eksploatuje złoże/nakładkę na tym heksie (spójne z improvement-build). */
 export function improvementHidesDepositOnHex(
   improvementKey: string,
@@ -306,7 +423,7 @@ export function improvementHidesDepositOnHex(
     case 'warzelnia_soli':
       return zloze === 'sol';
     case 'stadnina':
-      return nakladka === Nakladka.ZlozeKonia;
+      return hexHasHorseDeposit(hex);
     case 'bydlo':
       return nakladka === Nakladka.ZlozeBydla;
     case 'owce':
@@ -339,7 +456,7 @@ export function hexSuppressesDepositOverlay(
 }
 
 export function improvementDisplayName(key: string): string {
-  return IMPROVEMENTS[key]?.nazwa ?? key;
+  return IMPROVEMENTS[key]?.nazwa ?? humanizeId(key);
 }
 
 /** Surowce zwierzęce — `_meta.klucze_surowcow_ASCII` w terrain-improvements.json. */
@@ -391,10 +508,9 @@ export function isImprovementAllowedForCiv(
 }
 
 // ---------------------------------------------------------------------------
-// ZADANIE 1 (Maciej 2026-07-23): upkeep Pracy civ-wide za ulepszenia surowcowe.
-// Wariant B (decyzja właściciela) -- płacą TAKŻE ulepszenia czysto dostępowe
-// (warzelnia_soli, stadnina), nie tylko te produkujące surowiec logistyczny
-// (TERRITORY_YIELD_IMPROVEMENTS powyżej). Zwolnione: żywnościowe + infrastruktura.
+// R-KOSZTY-EPOKOWE-ULEPSZENIA-Q1: upkeep Pracy civ-wide za wszystkie trwałe
+// ulepszenia terenu. Koszt bazowy pochodzi z econ-params.json, a epoka wpisu
+// skaluje go ×1/×2/×4; jednorazowa wycinka nie jest trwałą warstwą.
 // Patrz turn-economy.ts computePracaUpkeepByOwner / countResourceUpkeepImprovementsByOwner.
 // ---------------------------------------------------------------------------
 
@@ -429,10 +545,13 @@ export function foodPotentialForHex(
   return 0;
 }
 
-/** Ulepszenia płacące −1 Praca/turę (civ-wide) z econ-params.json `ulepszenie_surowcowe_upkeep_praca`. */
-export const RESOURCE_UPKEEP_IMPROVEMENT_KEYS: ReadonlySet<string> = new Set([
-  'tartak', 'kamieniolom', 'glinianka', 'kopalnia_miedzi', 'kopalnia_zelaza',
-  'warzelnia_soli', 'stadnina',
-  // PYTANIE-84-B4: Kopalnia złota produkuje zloto/t do magazynu państwa (TERRITORY_YIELD powyżej).
-  'kopalnia_zlota',
-]);
+/**
+ * Wszystkie trwałe warstwy ulepszeń płacące bazowy koszt Pracy/turę z
+ * econ-params.json `ulepszenie_surowcowe_upkeep_praca`. Lista wynika ze źródła
+ * danych, żeby nowe ulepszenie nie zostało przypadkiem bez upkeepu. `wyrab`
+ * jest jednorazową akcją wycinki, nie trwałą warstwą `placedImprovements`, więc
+ * nie może być policzony jako utrzymanie po zakończeniu akcji.
+ */
+export const RESOURCE_UPKEEP_IMPROVEMENT_KEYS: ReadonlySet<string> = new Set(
+  IMPROVEMENT_KEYS.filter(key => IMPROVEMENTS[key]?.typ !== 'wycinka'),
+);

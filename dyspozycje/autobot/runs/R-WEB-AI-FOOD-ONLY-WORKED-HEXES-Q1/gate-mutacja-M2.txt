@@ -1,0 +1,4 @@
+  [FAIL] ai (resource-pass bez filtra): 0 zywnosciowych bez obywatela przy niedoborze soli (jest 1: 0:warzelnia_soli@13,17)
+  [FAIL] player-zrownowazone (resource-pass bez filtra): 0 zywnosciowych bez obywatela przy niedoborze soli (jest 1: 0:warzelnia_soli@13,17)
+25 OK, 2 FAIL
+EXIT=1

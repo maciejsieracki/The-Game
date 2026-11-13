@@ -1,0 +1,12 @@
+ai-food-improvement-priority-stages-test.cjs EXIT=0 5s :: [PASS] parity. real AI turn planner develops river hexes clear -> farm (E1 > E2), then E3/E4 | [PASS] mutation. disabling stage selection makes the behavioral gate fail | ai-food-improvement-priority-stages-test: 13 pass
+ai-improvements-test.cjs EXIT=0 3s :: AI-IMPROVEMENTS-TEST: 56 passed, 0 failed
+auto-improve-no-item-cap-test.cjs EXIT=0 2s :: auto-improve-no-item-cap-test: 15 passed, 0 failed
+auto-improve-q3-test.cjs EXIT=0 9s :: 41 OK, 0 FAIL
+auto-improvements-test.cjs EXIT=0 2s :: auto-improvements-test: 46 passed, 0 failed
+autoimprove-irrigation-after-farms-test.cjs EXIT=TIMEOUT 280s ::
+autoimprove-live-hooks-test.cjs EXIT=0 1s :: autoimprove-live-hooks-test: 37 passed, 0 failed
+autoimprove-river-forest-clear-no-citizen-q1-test.cjs EXIT=1 0s ::
+autoimprove-river-forest-clear-no-citizen-q1-unit-test.cjs EXIT=0 1s :: 17 OK, 0 FAIL
+autoimprove-river-forest-first-q1-test.cjs EXIT=0 1s :: 12 OK, 0 FAIL
+autoimprove-river-forest-live-verify-q1-test.cjs EXIT=1 0s ::
+autoimprove-stages-q1-test.cjs EXIT=1 272s ::   [FAIL] [K3] (b) wszystko zaspokojone: drogi powstaja (0 szt.) |   [FAIL] [K3] (c) niedobor bez ulepszenia/miejsca ({zloto,kamien} na rownie) NIE blokuje drog w nieskonczonosc (0 droga) |   [FAIL] [K2] niedobor kamienia

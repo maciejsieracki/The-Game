@@ -1,0 +1,6 @@
+  PASS: spichlerz I bez Ceramiki → inactive
+  PASS: spichlerz I z Ceramiką → active
+  PASS: spichlerz II Ceramika OK, brak Soli → Brak: Sól
+  PASS: spichlerz II oba surowce → active
+owned-building-inactive-test: 4 pass, 0 fail
+EXIT=0

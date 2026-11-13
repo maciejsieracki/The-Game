@@ -1,0 +1,5 @@
+FAIL: call-site contract: hook is inside the completed recruitment loop
+FAIL: call-site contract: completed recruit uses canonical AI owner classification
+FAIL: call-site contract: merge runs after the completed unit is inserted into live units
+army-recruitment-concentration-test: 26 passed, 3 failed
+EXIT=1

@@ -26,7 +26,7 @@ Berserker germański to jednostka typu **Wręcz** z epoki **Żelazo**. Unikalna 
 ### Rekrutacja i utrzymanie
 - **Koszt:** 16 ¤, 1 mieszkańców
 - **Surowiec:** 3× stal
-- **Tech:** Obróbka żelaza
+- **Tech:** Sztuka wojenna
 - **Utrzymanie:** 2 ¤/t, 1 żywności/t
 - **Ruch:** 3 (mapa) / 5 (bitwa)
 - **Siła w polu:** 33

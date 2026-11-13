@@ -1,0 +1,5 @@
+# R-WEB-ADMINISTRATOR-AUTOBUILD-GATE-Q1
+STATUS: DECISION_REQUIRED
+DOMAIN: GAME
+Owner2026-11-11 wants automaticbuilding impossiblewithoutAdministrator, askswhichbuildingcouldunlockAdministrator. AssistantproposedRatusz andpercityAdministrator; OWNER HAS NOT ACCEPTED building/scopechoice. Do not treatproposalasdecision orimplementRatuszgatingwithoutanswer. Audit actualAdministratorfeature/buildingavailability beforeproposingfinalrule. Needdetermineautomaticcitybuildingsonlyoralsoterrainimprovements, playerAIparity, oldsave existingautomaticsettings whennoAdministrator. Existingqueues/manualbuildingpreserved unlessexplicitdecisionotherwise.
+QUEUE: registeredpendingownerdecision; nooperatorcurrently, notactivework. Thisregistrationpreservesrequestratherthansilentlydropsit.

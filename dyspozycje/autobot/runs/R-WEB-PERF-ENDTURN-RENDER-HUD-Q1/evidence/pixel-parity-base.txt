@@ -1,0 +1,4 @@
+[perf] build identity: {"reused":"/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/build-base2","gitHead":"6a673c838b306dbad47dd33d58f5f5a72882a71c"}
+[perf] PIXEL {"digestObjects":38033,"mismatchedChildren":[],"afterEotVsForcedSync":{"pixels":1600000,"diff":137,"maxChannelDelta":1,"bbox":[1584,838,1587,881]},"forcedSyncVsForcedSyncAgain":{"pixels":1600000,"diff":83,"maxChannelDelta":1,"bbox":[1584,842,1586,877]}}
+[perf] result written: /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/ev/base-pixel.json
+EXIT=0

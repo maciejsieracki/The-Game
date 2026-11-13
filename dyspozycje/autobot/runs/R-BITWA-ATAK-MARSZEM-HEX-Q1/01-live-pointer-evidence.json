@@ -1,0 +1,61 @@
+{
+  "setup": {
+    "actorId": "atk0",
+    "actorAt": [
+      30,
+      77
+    ],
+    "enemyId": "def0",
+    "enemyAt": [
+      36,
+      77
+    ],
+    "playerSide": "atk",
+    "manualMode": true
+  },
+  "waypoint": [
+    32,
+    77
+  ],
+  "attackMoveOrder": {
+    "order": {
+      "type": "attackMove",
+      "col": 32,
+      "row": 77
+    },
+    "selected": true,
+    "mode": true
+  },
+  "plainMoveOrder": {
+    "type": "move",
+    "col": 33,
+    "row": 77
+  },
+  "exactAttackOrder": {
+    "type": "attack",
+    "targetId": "def0"
+  },
+  "checks": [
+    [
+      "real pointer selected a production player unit",
+      true
+    ],
+    [
+      "Atakuj-marszem toolbar mode + ground pointer assigned exact empty waypoint",
+      true
+    ],
+    [
+      "ordinary empty-ground pointer retained plain Move",
+      true
+    ],
+    [
+      "enemy pointer click retained exact target Attack",
+      true
+    ],
+    [
+      "browser page has no errors",
+      true
+    ]
+  ],
+  "errors": []
+}

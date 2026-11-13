@@ -1,0 +1,2 @@
+granary2-tech-data-guard-test: PASS 14 / FAIL 0
+EXIT=0

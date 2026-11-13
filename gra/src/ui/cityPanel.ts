@@ -31,12 +31,15 @@
  * Mini-podgląd jednostek: unitMiniPreview.ts (Three.js — buildUnitModel).
  */
 
+import { isCityUnderSiege, CITY_SIEGE_RECRUIT_BLOCK_PL } from '../game/city-siege-state';
 import {
   attachHoverDetail,
   attachInteractiveDetail,
   setHoverDetailDocks,
   disposeHoverDetailDock,
   showHoverDetailNow,
+  showPinnedDetail,
+  clearPinnedDetail,
 } from './hoverDetailDock';
 import { naukaCostSuffix } from './naukaLabel';
 import { scienceOwlIconHtml } from './icons/scienceOwlIcon';
@@ -62,7 +65,6 @@ import {
   normalizePodzialHandlu,
   snapHandelPct,
   adjustHandelSplit,
-  MAX_PROCENT_NAUKA,
   clampPodzialPracyBudynkiPercent,
   procentPuliImperiumZBudynkow,
   MIN_PODZIAL_PRACY_BUDYNKI_PERCENT,
@@ -76,7 +78,8 @@ import { resolveCityPodzialHandlu } from '../game/empire-handel-split';
 import { civWideSixStatsFromEmpireSnap, buildChipDeltaStockHtml } from '../game/empire-hud-totals';
 import type { GameMap } from '../types/map';
 import { TerenBazowy, Nakladka } from '../types/hex';
-import { loadGameData, getTechDef, type GameData, type BuildingDef, type UnitDef } from '../data/loader';
+import { loadGameData, getTechDef, getUnitDef, type GameData, type BuildingDef, type UnitDef } from '../data/loader';
+import { sortRecruitListByEra, type RecruitOrderInput } from '../game/recruit-list-order';
 import { parsePrerequisites } from '../game/research';
 import {
   buildableProduction,
@@ -85,6 +88,7 @@ import {
   type BuildingCatalogEntry,
   purchasableUnits,
   frontItem,
+  rushCost,
   enqueue,
   dequeue,
   promoteToFront,
@@ -101,12 +105,17 @@ import {
   dequeueRecruitment,
   unitNacjaForCivKey,
   etaTurns,
+  buildingWorkPerTurn,
+  unitRecruitmentCapacityPerTurn,
   type CityProduction,
   type ProductionItem,
+  type RecruitOrigin,
   type CivBonusLite,
   type AvailabilityContext,
   isBuildingSupersededByUpgrade,
 } from '../game/production';
+// R-WEB-MILL-RIVER-ONLY-GATE-Q1: zbiór budynków „tylko rzeka" (młyn) — definicja w production.ts.
+import { RIVER_ONLY_BUILDING_IDS, effectivePracaRouting } from '../game/production';
 import {
   CITY_BUILDING_PREREQ,
   cityBuildingPrereqMet,
@@ -127,6 +136,7 @@ import {
 } from '../game/building-stock-cost';
 import {
   upgradeChainSteps,
+  skipChainUpgradeSource,
   upgradeCompositionLines,
   buildingStructuralDefenseBonusLine,
   buildingStructuralDefenseBonusPercent,
@@ -155,12 +165,13 @@ import {
   cityHasSpichlerzBuilding,
   filterRuntimeActiveBuiltIds,
   paySpichlerzDrainForCity,
+  loadSpichlerzDrainParams,
   resolveOwnedBuildingInactiveStatus,
   resolveSpichlerzCityBonusState,
 } from '../game/building-resource-gate';
 import { daninaLabel, daninaLabelGenitive, daninaLabelAccusative, type DaninaLabel } from '../game/danina-nazwa';
 import type { CityManpowerSnapshot } from '../game/manpower';
-import { civManpowerMaxMult, cityLudnoscAbsolutna, formatManpower, unitManpowerCost, unitManpowerCostForType } from '../game/manpower';
+import { civManpowerMaxMult, cityLudnoscAbsolutna, formatManpowerCompact, formatObywateleLabel, unitManpowerCost, unitManpowerCostForType } from '../game/manpower';
 import { defaultOwnerColor, mountUnitMiniPreview } from './unitMiniPreview';
 import {
   unitInfographicMedallionHtml,
@@ -173,8 +184,10 @@ import type { EntityCardData } from './entityCards/types';
 import { buildingAdapter, type BuildingCardCityState } from './entityCards/buildingAdapter';
 import { unitAdapter } from './entityCards/unitAdapter';
 import { brandIconSvg, buildingIconSvg, unitIconSvg, mapResourceIconSvg, type BrandIconSize } from './icons/brandAssets';
+import { resourceAmountChipHtml, RESOURCE_CHIP_CSS } from './resourceAmountChip';
 import { techIconSvg } from './techIcons';
 import { showTechDiscoveryNotice } from './techDiscoveryNotice';
+import { filterDeadEffectText } from './entityCards/techDeadEffects';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
 import {
   resourceColorClassCss,
@@ -208,6 +221,7 @@ import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../gam
 import {
   buildingUpkeep,
   buildingResourceUpkeep,
+  readBuildingResourceUpkeepRatio,
   addResourceCosts,
   unitResourceUpkeep,
   canAffordUnitRecruitStock,
@@ -224,6 +238,7 @@ import { openEntityCard } from './entityCards/renderer';
 import { resolveTechnologyRow, technologyIdFromName } from './entityCards/registry';
 import { loadOrderParams, type OrderYieldMults } from '../game/order';
 import {
+  applyCivMatrixHappinessModifier,
   evaluateOrderFromBreakdown,
   porPctBand,
   POR_BAND_LABELS,
@@ -234,11 +249,13 @@ import {
   ownShareFromSignal,
   type SocietyLine,
 } from '../game/society-breakdown';
+import { civMatrixParam } from '../game/civ-matrix';
 import {
   computeCitizenResourceDrain,
   citizenUpkeepDisplayLines,
   type CitizenUpkeepCoverage,
 } from '../game/citizen-resource-upkeep';
+import { citizenConsumptionEraMultiplier, formatCitizenConsumptionMult, formatCitizenConsumptionNumber } from '../game/citizen-consumption-era';
 import {
   applyPostCaptureLawOverride,
   isPostCaptureLawActive,
@@ -257,8 +274,8 @@ import {
   cityPopulationCap,
   sumBuildingHappinessFromBuiltIds,
   cityBuildingEntriesFromBuiltIds,
-  mnoznikHandelPieniadzForCivByDifficulty,
   civEconomyYieldMultipliers,
+  mennicaMnoznikForCiv,
   type CityYieldContext,
   type BuildingRecord,
 } from '../game/economy';
@@ -266,12 +283,20 @@ import {
   converterProductionDisplayForBuilding,
   type RawConverterParamsJson,
 } from '../game/converters';
+import { isProductionBuildingEnabled, operationalBuiltIds } from '../game/building-toggle';
 import { UI_PARAMS } from './uiParams';
 import type { EmpireFoodState, EmpireFoodTick } from '../game/empire-food';
 // Formatowanie liczb do wyświetlenia (obcięcie śmieci zmiennoprzecinkowych) — Maciej 2026-07-26.
 // formatLiczbaPl: separator polski (przecinek) — P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD 2026-08-09,
 // wiersz WZROST% w chipie „Wyżywienie i wzrost" dogania konwencję plakietki mapy (przecinek).
-import { formatLiczbaPl, signedPl } from './formatPl';
+import { formatLiczbaPl, signedPl, formatTurCount, formatJednostkiCount } from './formatPl';
+import { formatCompactNumber, formatFullNumber } from './formatCompactNumber';
+import { formatGrossNet } from './hudChip6c';
+import { humanizeId, nazwaWyswietlana, nazwyZListyId } from '../game/text-names';
+import { AUTO_BUILD_DISABLED_HINT, AUTO_BUILD_NEEDS_ADMINISTRATOR_HINT } from '../game/auto-build-gate';
+import { administratorIconHtml, ADMINISTRATOR_ICON_CSS, administratorChipInnerHtml, administratorUpkeepValueHtml } from './icons/administratorIcon';
+import { openAdministratorPanel, isAdministratorPanelOpen, type AdministratorPanelModel } from './administratorPanel';
+import { administratorBaseEffectsPct, administratorTierScale, administratorEffectsFor, type AdminTier } from '../game/city-administrator';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -357,6 +382,24 @@ export interface CityPanelConfig {
   onAutoManage?: (cityId: string) => void;
   /** B1-Q3=A — czy auto-zarządca włączony (podświetlenie ⚙). */
   isAutoManageEnabled?: (cityId: string) => boolean;
+  /**
+   * R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1 (właściciel 2026-11-05): czy „Automatyzacja budowy” gracza jest
+   * włączona w Ustawieniach. Brak haka = włączona (zachowanie sprzed zmiany). Wyłączona: przyciski
+   * auto budowy (profile typów, Zrównoważone, Lista, Zarządca ⚙) są wyszarzone z podpowiedzią.
+   * / EN: master switch for the player's build automation; absent hook = enabled.
+   */
+  isAutoBuildEnabled?: () => boolean;
+  /**
+   * R-WEB-CITY-ADMINISTRATOR-Q1: stan administratora miasta (przycisk/chip w nagłówku, bramka autobudowy).
+   * Brak haka = funkcja administratora niedostępna w UI.
+   */
+  getCityAdministratorState?: (cityId: string) => CityAdministratorUiState | null;
+  /** R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: stan administratora ulepszeń (chip w nagłówku miasta). */
+  getImprovementAdministratorState?: (cityId: string) => { hired: boolean; working: boolean } | null;
+  /** Zatrudnij administratora (koszt ze skarbca państwa); true = zatrudniono. */
+  onHireAdministrator?: (cityId: string) => boolean;
+  /** Zwolnij administratora; true = zwolniono. */
+  onDismissAdministrator?: (cityId: string) => boolean;
   /** Stan kultury miasta -> dynamiczna sekcja Kultura i Religia. */
   getCultureState?: (cityId: string) => {
     kulturaSuma: number;
@@ -489,6 +532,8 @@ export interface CityPanelConfig {
   getEmpireStock?: (ownerId: number) => Record<string, number>;
   /** TEMAT 8 Q2 (2026-07-24): czy TO miasto ma wybrzeże LUB rzekę w zasięgu — bramka Portu. */
   getCityHasCoastOrRiver?: (cityId: string) => boolean;
+  /** R-WEB-MILL-RIVER-ONLY-GATE-Q1: rzeka w zasięgu miasta (bramka młyna). */
+  getCityHasRiver?: (cityId: string) => boolean;
   /**
    * Promień okolicy roboczej (pól obrabianych) wg EKONOMII:
    * cityRangeForPopulation(pop): pop<5 -> 5, pop>=5 -> 10, pop>=10 -> 15.
@@ -537,14 +582,27 @@ export interface CityPanelConfig {
   getPodzialPracyOverride?: (cityId: string) => boolean;
   /** Przełącznik pin/odpin Podziału Pracy (global ⇄ lokalny override). */
   onPodzialPracyOverrideToggle?: (cityId: string) => void;
-  /** Kup jednostke za Pieniadz ze skarbca (purchasableUnits). */
-  onPurchaseUnit?: (cityId: string, itemId: string, koszt: number) => void;
+  /** Kup jedną lub atomową partię jednostek za Pieniądz ze skarbca. */
+  /** `origin`: 'city' = zamówienie w panelu miasta, 'army' = menu Armia (R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1). */
+  onPurchaseUnit?: (cityId: string, itemId: string, koszt: number, quantity?: number, origin?: RecruitOrigin) => boolean | void;
+  /** Current capital-only General offer for the Army panel. */
+  getGeneralRecruitmentOffer?: (cityId: string) => {
+    item: ProductionItem | null;
+    alive: number;
+    queued: number;
+    limit: number;
+    title?: 'Wódz' | 'Generał';
+    disabledReason?: string;
+  } | null;
+  onPurchaseGeneral?: (cityId: string, itemId: string, koszt: number, origin?: RecruitOrigin) => boolean | void;
   /** B11-A: anulowanie opłaconej pozycji w kolejce rekrutacji — pełny zwrot kosztu. */
   onCancelRecruitment?: (cityId: string, itemId: string, koszt: number) => void;
   /** Kup budynek za Pieniadz (koszt 1:1 z kosztem Pracy — natychmiastowa budowa). */
   onPurchaseBuilding?: (cityId: string, item: ProductionItem, kosztGold: number) => void;
   /** Bonusy cywilizacji per owner (civs.json) — koszty budynkow/jednostek. */
   getCivBonusy?: (ownerId: number) => readonly CivBonusLite[];
+  /** Matrix-aware Manpower multipliers for live recruitment previews. */
+  getManpowerMultipliers?: (ownerId: number) => { maxMult: number; costMult: number };
   /** typCywilizacji / ikonaId gracza lub AI — filtr jednostek per Nacja. */
   getCivKey?: (ownerId: number) => string | undefined;
   /** Stan porządku/szczęścia per miasto (silnik po turze). Brak → szacunek z budynków. */
@@ -573,6 +631,8 @@ export interface CityPanelConfig {
   getDifficulty?: () => import('../game/difficulty-cost').GameDifficulty;
   /** E7 — trasy handlowe aktywne w tej chwili (odswiezane co ture przez refreshTradeRoutes). */
   getTradeRoutes?: () => readonly TradeRoute[];
+  /** Current owner/medium-resolved route income for this city's yield preview. */
+  getTradeIncomeByCity?: (cityId: string) => { total: number; maritime: number };
   /** E7 — etykieta cywilizacji wlasciciela (jak w panelu dyplomacji) — do „czyje to miasto". */
   getOwnerLabel?: (ownerId: number) => string;
   /**
@@ -604,12 +664,102 @@ export interface CityPanelConfig {
 
 let cfg: CityPanelConfig = {};
 
+/** Effective Work rate for a building queue, resolved from this city's owner. */
+function buildingWorkPerTurnForCity(city: City, baseWorkPerTurn: number): number {
+  const civKey = cfg.getCivKey?.(city.ownerId);
+  const speedBonus = civKey
+    ? civMatrixParam(civKey, 'prod_szybkosc_budynku_proc')
+    : 0;
+  return buildingWorkPerTurn(baseWorkPerTurn, speedBonus);
+}
+
+/** Effective paid-recruitment completions per turn for this city's owner. */
+function unitRecruitmentCapacityForCity(city: City, baseCapacity: number): number {
+  const civKey = cfg.getCivKey?.(city.ownerId);
+  const speedBonus = civKey
+    ? civMatrixParam(civKey, 'prod_szybkosc_jednostki_proc')
+    : 0;
+  return unitRecruitmentCapacityPerTurn(baseCapacity, speedBonus);
+}
+
+/** Rush quote uses the same raw matrix modifier as the engine payment callback. */
+function rushCostModifierForCity(city: City): number {
+  const civKey = cfg.getCivKey?.(city.ownerId);
+  return civKey ? civMatrixParam(civKey, 'prod_rush_koszt_proc') : 0;
+}
+
 /** Inject engine hooks.  Merges into any previous config; call once at startup. */
 export function configureCityPanel(config: CityPanelConfig): void {
   cfg = { ...cfg, ...config };
 }
 
 /** R-HOTSEAT-ETAP6B-UI-Q1: patrz `CityPanelConfig.isMe` — domyślnie `ownerId === 0`. */
+/** R-WEB-CITY-ADMINISTRATOR-Q1: stan administratora miasta dla UI. */
+export interface CityAdministratorUiState {
+  hired: boolean;
+  working: boolean;
+  tier: number;
+  upkeep: number;
+  hireCost: number;
+  /** Powód zablokowania zatrudnienia (null = można zatrudnić albo już zatrudniony). */
+  blockReasonText: string | null;
+  /** Rodzaj blokady; `brak_srodkow` NIE blokuje otwarcia panelu wyboru (panel pokazuje, ile brakuje). */
+  blockReason?: 'brak_budynku' | 'ma_administratora' | 'brak_srodkow' | null;
+  /** Skarbiec państwa (Pieniądz) — panel administratora liczy braki do kosztu zatrudnienia. */
+  treasury?: number | null;
+}
+
+/** Model panelu wyboru administratora miasta (liczby z silnika przez stan UI; skala bonusów z poziomu budynku). */
+function cityAdministratorPanelModel(st: CityAdministratorUiState, cityName: string): AdministratorPanelModel {
+  const hard = st.blockReason !== undefined ? (st.blockReason === 'brak_srodkow' ? null : st.blockReasonText) : st.blockReasonText;
+  return {
+    kind: 'city',
+    cityName,
+    hired: st.hired,
+    working: st.working,
+    hireCost: st.hireCost,
+    upkeep: st.upkeep,
+    treasury: st.treasury ?? null,
+    tier: st.tier,
+    blockReasonText: st.hired ? null : hard,
+  };
+}
+
+/** Tooltip przycisku/chipa administratora: efekty (ze skalą tieru), utrzymanie, stan. */
+function administratorTooltipText(st: CityAdministratorUiState): string {
+  const tier = (st.tier >= 3 ? 3 : st.tier === 2 ? 2 : st.tier === 1 ? 1 : 0) as AdminTier;
+  const skala = administratorTierScale(tier);
+  const base = administratorBaseEffectsPct();
+  const fmt = (v: number): string => String(Math.round(v * skala * 100) / 100).replace('.', ',');
+  const lines = [
+    `Administrator miasta (budynek administracyjny: poziom ${tier}, skala ×${String(skala).replace('.', ',')})`,
+    `Korupcja −${fmt(base.korupcja)}% · Produkcja miasta +${fmt(base.produkcja)}% · Ściągalność podatków +${fmt(base.podatki)}%`,
+    `Utrzymanie: ${st.upkeep} Pieniądza/turę ze skarbca państwa`,
+    'Umożliwia automatyczną budowę budynków w tym mieście',
+  ];
+  if (st.hired) lines.push('Stan: ' + (st.working ? 'pracuje' : 'nie pracuje — brak środków w skarbcu państwa (brak efektów i autobudowy)'));
+  return lines.join('\n');
+}
+
+function administratorHeaderHtml(city: City): string {
+  if (!isMeCity(city.ownerId) || !cfg.getCityAdministratorState || !cfg.onHireAdministrator) return '';
+  const st = cfg.getCityAdministratorState(city.id);
+  if (!st) return '';
+  const esc = (t: string): string => t.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  if (st.hired) {
+    const icon = administratorIconHtml({ size: 16, state: st.working ? 'ok' : 'idle' });
+    return `<button type="button" class="civ-v-w3-capital-btn civ-v-adm-btn is-hired${st.working ? '' : ' is-idle'}" id="civ-v-administrator" ` +
+      `data-adm-state="${st.working ? 'working' : 'idle'}" title="${esc(administratorTooltipText(st))}">${icon}<span>Administrator ✓</span></button>`;
+  }
+  const blocked = cityAdministratorPanelModel(st, '').blockReasonText !== null;
+  const icon = administratorIconHtml({ size: 16, state: blocked ? 'off' : 'ok' });
+  const title = blocked
+    ? (st.blockReasonText ?? '')
+    : `Wybierz administratora miasta — koszt ${st.hireCost} Pieniądza, utrzymanie ${st.upkeep} Pieniądza na turę`;
+  return `<button type="button" class="civ-v-w3-capital-btn civ-v-adm-btn" id="civ-v-administrator" data-adm-state="${blocked ? 'blocked' : 'available'}" ` +
+    `${blocked ? 'disabled ' : ''}title="${esc(title)}">${icon}<span>Administrator +</span></button>`;
+}
+
 function isMeCity(ownerId: number): boolean {
   return cfg.isMe?.(ownerId) ?? (ownerId === 0);
 }
@@ -725,7 +875,7 @@ function reorderQueueItem(prod: CityProduction, fromIndex: number, toIndex: numb
   };
 }
 
-function bindRecruitQueueDragReorder(sc: HTMLElement, city: City): void {
+function bindRecruitQueueDragReorder(sc: HTMLElement, city: City, onMutated?: () => void): void {
   let dragFromIndex: number | null = null;
 
   const clearDropMarks = (): void => {
@@ -784,6 +934,7 @@ function bindRecruitQueueDragReorder(sc: HTMLElement, city: City): void {
     dragFromIndex = null;
     clearDropMarks();
     rerender();
+    onMutated?.();
   });
 }
 
@@ -878,30 +1029,38 @@ function formatBuildEtaLabel(turns: number | null, prefix = '~'): string {
 }
 
 /**
- * Kumulatywny ETA pozycji kolejki (indeks ≥ 1): kiedy budynek będzie gotowy,
- * licząc od bieżącej tury przy stałym dopływie Pracy do budynków.
+ * Kumulatywny ETA pozycji kolejki (indeks ≥ 1): kiedy pozycja będzie gotowa,
+ * licząc od bieżącej tury przy stałym dopływie Pracy. Building speed applies only
+ * to building entries; legacy unit entries retain the base rate.
  * Gdy produkcja wstrzymana — null (nie da się oszacować kolejki).
  */
 function queueItemCumulativeEta(
   prod: CityProduction,
   queueIndex: number,
   pracaPerTurn: number,
+  buildingPracaPerTurn = pracaPerTurn,
 ): number | null {
   if (!(pracaPerTurn > 0) || queueIndex < 1) return null;
   if (prod.wstrzymana === true) return null;
   const front = frontItem(prod);
   let sum = 0;
   if (front) {
-    const rem = etaTurns(front.koszt, prod.postep, pracaPerTurn);
+    const frontPraca = front.kind === 'budynek' ? buildingPracaPerTurn : pracaPerTurn;
+    if (!(frontPraca > 0)) return null;
+    const rem = etaTurns(front.koszt, prod.postep, frontPraca);
     if (rem === null) return null;
     sum += rem;
   }
   for (let i = 1; i < queueIndex; i++) {
     const it = prod.kolejka[i] as ProductionItem;
-    sum += Math.max(1, Math.ceil(it.koszt / pracaPerTurn));
+    const itemPraca = it.kind === 'budynek' ? buildingPracaPerTurn : pracaPerTurn;
+    if (!(itemPraca > 0)) return null;
+    sum += Math.max(1, Math.ceil(it.koszt / itemPraca));
   }
   const cur = prod.kolejka[queueIndex] as ProductionItem;
-  sum += Math.max(1, Math.ceil(cur.koszt / pracaPerTurn));
+  const curPraca = cur.kind === 'budynek' ? buildingPracaPerTurn : pracaPerTurn;
+  if (!(curPraca > 0)) return null;
+  sum += Math.max(1, Math.ceil(cur.koszt / curPraca));
   return sum;
 }
 
@@ -944,6 +1103,16 @@ const DEFAULT_PODZIAL_PRACY: PodzialPracySplit = { procentBudynki: 70 };
 
 /** Etykieta suwaka handlu karmiącego pulę zamożności (UI — bez „Społ.” / „Wealth”). */
 const HANDEL_ZAMOZNOSC_LABEL = 'Zamożność';
+
+/**
+ * Wyświetlana etykieta grupy budynków (klucz `grupa` z danych bez zmian).
+ * Jedna funkcja dla wszystkich miejsc pokazujących grupę graczowi.
+ */
+const BUILDING_GROUP_DISPLAY_LABEL: Readonly<Record<string, string>> = {
+  'Handel i pieniądz': 'Podatek i pieniądz',
+};
+const buildingGroupDisplayLabel = (grupa: string): string =>
+  BUILDING_GROUP_DISPLAY_LABEL[grupa] ?? grupa;
 
 /**
  * Tymczasowy placeholder UI — docelowo korupcja z silnika (dystans od stolicy, liczba miast, cap).
@@ -1039,6 +1208,8 @@ interface CityView {
   /** Produkcja brutto żywności (pola + budynki, przed racjami). */
   zywnoscBrutto: number;
   kosztRacji: number;
+  /** Epoka cywilizacji właściciela miasta — mnożnik zużycia obywateli (R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1). */
+  ownerEra: number;
   bilansLokalny: number;
   poziomRacji: PoziomRacji;
   wzrostProcent: number;
@@ -1054,7 +1225,7 @@ interface CityView {
   popCapBezAkweduktu: number;
   /** Twardy cap ludności ze Spichlerzem, ale bez Akweduktu (parametr gry, normal=8). */
   popCapSpichlerz: number;
-  /** Max ludność z Akweduktem (parametr gry, normal=12). */
+  /** Max ludność z Akweduktem (parametr gry, normal=20). */
   popCapZAkweduktem: number;
   /** Aktualny cap dla tego miasta. */
   popCapAktualny: number;
@@ -1076,6 +1247,11 @@ export interface EmpireHudSnap {
   /** Civ-wide utrzymanie Pracy za ulepszenia surowcowe terenu (tartak/kamieniołom/
    *  glinianka/kopalnie/warzelnia soli/stadnina), już wliczone (odjęte) w `pracaRate`. */
   pracaUpkeep?: number;
+  /** R-WEB-HUD-GROSS-NET-REST-Q1: koszt auto-ulepszeń / Cudów na mapie (ostatnia tura) — składniki BRUTTO Pracy jak w HUD. */
+  pracaAutoUlepszeniaKoszt?: number;
+  pracaCudaKoszt?: number;
+  /** R-WEB-HUD-GROSS-NET-REST-Q1: nadwyżka żywności miast → centrala (BRUTTO Spichlerza) — jak w HUD. */
+  zywnoscWplywMiast?: number;
   zloto?: number;
   zlotoRate?: number;
   nauka?: number;
@@ -1097,6 +1273,8 @@ export interface EmpireHudSnap {
   bogactwoUtrzymanieBudynkow?: number;
   bogactwoUtrzymanieSurowcowBudynkow?: Record<string, number>;
   bogactwoUtrzymanieJednostek?: number;
+  /** R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: utrzymanie administratorow (miast + ulepszen) / ture, juz w bilansie. */
+  bogactwoUtrzymanieAdministratorow?: number;
   bogactwoRate?: number;
 }
 
@@ -1116,6 +1294,8 @@ export interface CityMoneySnap {
   utrzymanieSurowcowBudynkow?: Record<string, number>;
   /** Utrzymanie jednostek na heksie miasta (garnizon) / turę. */
   utrzymanieGarnizonu: number;
+  /** R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: utrzymanie administratora miasta + ulepszen (0 gdy brak / nie pracuje). */
+  utrzymanieAdministratora?: number;
   /** Nauka / turę z tego miasta (informacyjnie). */
   nauka: number;
 }
@@ -1139,9 +1319,10 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     // więc samo `built.includes('spichlerz')` gubi cap 8 po ulepszeniu.
     const maSpichlerz = cityHasSpichlerzBuilding(built);
     const maAkwedukt = built.includes('akwedukt');
+    const maSpichlerzII = built.includes('spichlerz_ii');
     // P-HEKS-SPOR-SASIAD runda 2 nota A: excludeHexKeys tak samo jak silnik tury /
     // overlay 👤 (getWorkedTiles) -- bez tego panel liczyl A=4/B=2 zamiast A=3/B=2.
-    const worked = cityWorkedTilesForEconomy(city, map, territoryNodesForPanel(), cfg.getExcludeHexKeys?.(city.id));
+    const worked = cityWorkedTilesForEconomy(city, map, territoryNodesForPanel(), cfg.getExcludeHexKeys?.(city.id), cfg.getEpoch?.(city.ownerId) ?? 1);
     const healthBd = computeCityHealthBreakdown(
       city.population,
       worked,
@@ -1156,6 +1337,8 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       city, params, isCapital(city), zdrowie,
       { maSpichlerz, maAkwedukt },
       ownerDefaultPodzial,
+      undefined,
+      cfg.getCivKey?.(city.ownerId),
     );
     // #17 fix: base ctx miał flagi budynków/Waluty/bonusów cyw. na sztywno false/1/undefined,
     // więc Bilans plonów pomijał Młyn/Cegielnię/Targowisko/Bibliotekę/Mennicę, Walutę i bonusy
@@ -1173,21 +1356,14 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     // cityYieldPerTurn tak samo jak silnik, więc musi być tym samym warunkiem.
     const maMennica = ownerHasMennica(city.ownerId) && (cfg.getOwnerHasZlotoAccess?.(city.ownerId) ?? true);
     const civKey = cfg.getCivKey?.(city.ownerId);
-    // Efekt 1 SCALONY (2026-07-25) + pytanie 69 (2026-07-25): mnoznik cywilizacyjny
-    // (civs.json mnoznikHandelPieniadz) SKALOWANY TRUDNOSCIA (+0,5 easy / -0,5 hard).
-    // ZASTĘPUJE dawna plaska regule "2/1.5/1 dla wszystkich" -- ta zostaje TYLKO
-    // jako fallbackScaled (params.mennicaMnoznikPoWalucie, juz per-trudnosc) dla
-    // cywilizacji bez wpisu w civs.json. Musi być IDENTYCZNE ze silnikiem tury
-    // (resolveWalutaMnoznikOverride w turn-economy.ts) — inaczej panel znów
-    // rozjeżdża się z realnym dochodem (rozjazd wykryty i naprawiony 2026-07-25).
-    // bramka maMennica&&walutaOdkryta w cityYieldPerTurn i tak decyduje CZY ten
-    // mnoznik w ogole zadziala, wiec ustawienie go tutaj nie omija Mennicy.
-    const walutaMnoznikOverride = walutaOdkryta && civKey
-      ? mnoznikHandelPieniadzForCivByDifficulty(civKey, cfg.data?.civs, cfg.difficulty ?? 'normal', params.mennicaMnoznikPoWalucie)
-      : undefined;
     const { handel: civHandelMult, nauka: civNaukaMult } =
       civEconomyYieldMultipliers(cfg.getCivBonusy?.(city.ownerId) ?? []);
+    // R-WEB-CITY-ADMINISTRATOR-Q1 r2 (zarzut 4): działający administrator miasta — Praca +3% i ściągalność
+    // podatków +3% (× tier) tą samą funkcją co silnik (turn-economy.ts), żeby Bilans plonów zgadzał się z HUD/tickiem.
+    const administratorEfekty = administratorEffectsFor(city, built);
     const base: CityYieldContext = {
+      administratorProdukcjaMult: administratorEfekty.produkcjaMult,
+      administratorPodatkiMult: administratorEfekty.podatkiMult,
       wojskoZuzycieZywnosci: 0, strataFraction: 0,
       maMlyn: built.includes('mlyn'),
       maCegielnia: built.includes('cegielnia'),
@@ -1199,7 +1375,6 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       // (mnoznik TYLKO na strumien Pieniadza) zostalo usuniete 2026-07-25.
       maMennica,
       walutaOdkryta,
-      walutaMnoznikOverride,
       civHandelMult,
       civNaukaMult,
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
@@ -1236,9 +1411,22 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     const rationParams = buildRationParams(data.econParams, cfg.difficulty ?? 'normal');
     const poziomRacji = getCityRationLevel(city);
     const allCities = cfg.getCities?.() ?? [];
-    const spichlerzDrain = paySpichlerzDrainForCity(allCities, city.ownerId, built, true);
+    // R-WEB-SPICHLERZ-HUD-PARAMS-Q1: te same parametry zużycia co silnik (econ-params wg trudności).
+    const spichlerzDrain = paySpichlerzDrainForCity(
+      allCities,
+      city.ownerId,
+      built,
+      true,
+      loadSpichlerzDrainParams(data.econParams as unknown as RawConverterParamsJson, cfg.difficulty ?? 'normal'),
+    );
     const spichlerzState = resolveSpichlerzCityBonusState(built, spichlerzDrain);
-    const kosztRacji = computeCityRationCost(city.population, poziomRacji, rationParams, spichlerzState);
+    const kosztRacji = computeCityRationCost(
+      city.population,
+      poziomRacji,
+      rationParams,
+      spichlerzState,
+      cfg.getEpoch?.(city.ownerId) ?? 1,
+    );
     const bilansLokalny = zywnoscBrutto - kosztRacji;
     const { state: ordState } = resolveOrderState(city, data);
     const ws = city.wealthState ?? freshWealthState();
@@ -1264,22 +1452,25 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       wealthPoziom: ws.poziom ?? 0,
       spichlerzState,
       civKey: cfg.getCivKey?.(city.ownerId) ?? null,
+      difficulty: cfg.getDifficulty?.() ?? 'normal',
       rationParams,
       citizenResourceGrowthPct: citizenUpkeep.growthPctDelta,
     });
     // B3 (R-SPICHLERZ-CAP-LUDNOSCI-ETAP runda 2): "bez Akweduktu" musi liczyć AKTUALNY
     // cap uwzględniający Spichlerz tego miasta (5 albo 8) — NIE sztywny param 5, bo dla
     // miasta z Akweduktem I Spichlerzem to dawało fałszywe "bez niego max 5" (realnie 8).
-    const popCapBezAkweduktu = cityPopulationCap(false, maSpichlerz, params);
-    const popCapSpichlerz = params.spichlerzProgLudnosci;
+    const popCapBezAkweduktu = cityPopulationCap(false, maSpichlerz, params, 0, maSpichlerzII);
+    // Spichlerz I = 8, Spichlerz II = 12 (R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1) -- liczba z parametrów.
+    const popCapSpichlerz = maSpichlerzII ? params.spichlerzIIProgLudnosci : params.spichlerzProgLudnosci;
     const popCapZAkweduktem = params.akweduktMaxLudnosci;
-    const popCapAktualny = cityPopulationCap(maAkwedukt, maSpichlerz, params);
+    const popCapAktualny = cityPopulationCap(maAkwedukt, maSpichlerz, params, 0, maSpichlerzII);
     const atPopCap = city.population >= popCapAktualny;
     return {
       praca: y.praca, pieniadz: y.pieniadz, nauka: y.nauka, kultura: y.kultura,
       zywnoscNetto: bilansLokalny,
       zywnoscBrutto,
       kosztRacji,
+      ownerEra: cfg.getEpoch?.(city.ownerId) ?? 1,
       bilansLokalny,
       poziomRacji,
       wzrostProcent: growthBreakdown.total,
@@ -1359,17 +1550,27 @@ function cityPracaSplit(city: City, view: CityView, data: GameData | null): {
   doPuli: number;
   pctBudynki: number;
   pctPuli: number;
+  kolejkaPustaDoPuli: boolean;
 } {
   const pctB = clampPodzialPracyBudynkiPercent(readPodzialPracy(city, data).procentBudynki);
   const split = splitPraca(view.praca, pctB / 100);
+  // R-WEB-WORK-POOL-ACCUMULATES-DESPITE-100-BUILDINGS-Q1: przy pustej kolejce cala Praca miasta
+  // ksiegowana jest w puli imperium (wyjatek silnika `pracaImperialPoolGain`) -- pokazujemy to
+  // samo, zeby baner/chipy nie twierdzily "0 do puli", gdy pula rosnie.
+  const prodNow = getProd(city.id);
+  const routed = effectivePracaRouting(split, frontItem(prodNow) === null, prodNow.wstrzymana === true);
   return {
     total: split.total,
-    doBudynkow: split.doBudynkow,
-    doPuli: split.doPuli,
+    doBudynkow: routed.doBudynkow,
+    doPuli: routed.doPuli,
     pctBudynki: pctB,
     pctPuli: procentPuliImperiumZBudynkow(pctB),
+    kolejkaPustaDoPuli: routed.kolejkaPustaDoPuli,
   };
 }
+
+/** R-WEB-UI-CITY-EMPTY-QUEUE-WORK-TO-POOL-HINT-Q1: tekst podpowiedzi (jedno zrodlo dla UI i testu). */
+export const KOLEJKA_PUSTA_PRACA_DO_PULI_HINT = 'Kolejka pusta — Praca idzie do puli imperium';
 
 /**
  * Bilans żywności miasta (PYTANIE-85: produkcja − racje).
@@ -1436,11 +1637,15 @@ function clampedGrowthBreakdown(view: CityView, maxSafe?: number): GrowthPercent
   return { ...bd, racje, total };
 }
 
-function wyzwienieSummaryLabel(level: PoziomRacji, params: ReturnType<typeof buildRationParams>): string {
-  const cost = rationFoodCostPerPop(level, params);
+function wyzwienieSummaryLabel(level: PoziomRacji, params: ReturnType<typeof buildRationParams>, ownerEra = 1): string {
+  // R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1: stawka z mnożnikiem epoki właściciela (jedna funkcja
+  // `citizenConsumptionEraMultiplier`) — bez zaszytych liczb; mnożnik ×1 nie jest dopisywany.
+  const mult = citizenConsumptionEraMultiplier(ownerEra);
+  const cost = rationFoodCostPerPop(level, params) * mult;
   const grow = rationGrowthPercent(level, params);
   const growTxt = grow > 0 ? `+${grow}` : String(grow);
-  return `${cost} 🍞/miesz. · ${growTxt}%`;
+  const multTxt = mult === 1 ? '' : ` (epoka ${formatCitizenConsumptionMult(ownerEra)})`;
+  return `${formatCitizenConsumptionNumber(cost)} 🍞/miesz./turę${multTxt} · ${growTxt}%`;
 }
 
 function growthBreakdownRow(label: string, value: number, showZero = false): string {
@@ -1612,13 +1817,13 @@ function buildGrowthProgressTooltipCard(
   gridDetailRow(
     g,
     'Skala absolutna',
-    `≈ ${formatManpower(fracPeople)} / ${formatManpower(osobNaObywatela)} os.`,
+    `≈ ${formatManpowerCompact(fracPeople)} / ${formatManpowerCompact(osobNaObywatela)} os.`,
   );
   if (gainSlots > 0) {
     gridDetailRow(
       g,
       'Tempo',
-      `+${fmtDecPl(gainSlots)} obywatela/t (≈ +${formatManpower(gainPeople)}/t)`,
+      `+${fmtDecPl(gainSlots)} obywatela/t (≈ +${formatManpowerCompact(gainPeople)}/t)`,
     );
   }
   const note = el('div', 'dc-note');
@@ -2180,6 +2385,14 @@ ${resourceColorClassCss('.civ-cs')}
 .civ-cs .civ-w4-tab-card.civ-w4-tab-card--scroll{display:flex;flex-direction:column;max-height:min(72vh,calc(100vh - 220px));min-height:0;}
 .civ-cs .civ-w4-tab-card--scroll .civ-w4-tab-body--scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;
   padding-bottom:0.65em;scrollbar-width:thin;}
+.civ-v-left-main.civ-v-left-main-split > .civ-w4-tab-card.civ-w4-tab-card--scroll{
+  flex:1 1 auto;min-height:0;max-height:none;
+}
+.civ-cs .civ-w4-tab-card--scroll .civ-w4-tab-body--scroll.civ-v-recruit-body{
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.civ-cs .civ-v-recruit-body .list-scroll-fill{flex:1 1 auto;min-height:0;max-height:none;
+  overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;}
 .civ-cs .civ-w4-tab-card--scroll .civ-w4-tab-body--scroll::-webkit-scrollbar{width:5px;}
 .civ-cs .civ-w4-tab-card--scroll .civ-w4-tab-body--scroll::-webkit-scrollbar-thumb{background:rgba(212,175,90,0.22);border-radius:3px;}
 .civ-cs .civ-w4-tab-body{padding:0 0.85em 0.55em;}
@@ -2417,12 +2630,13 @@ ${resourceColorClassCss('.civ-cs')}
   background:linear-gradient(180deg,#0c121c,#060a10);border-bottom:1px solid rgba(212,175,90,0.32);}
 .civ-v-resource-bar.civ-v-resource-bar-w3{display:flex;align-items:center;justify-content:center;gap:0.65rem;
   padding:0;background:transparent;border:none;height:auto;min-height:0;width:fit-content;max-width:100%;min-width:0;margin:0 auto;box-sizing:border-box;}
-.civ-v-top-stack{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:fit-content;max-width:min(98vw,1280px);gap:0.22rem;padding:0;box-sizing:border-box;margin:0 auto;}
-.civ-v-top-flank-row{display:flex;align-items:flex-start;justify-content:center;gap:0.5rem 0.65rem;flex-wrap:nowrap;width:100%;overflow:visible;}
-.civ-v-w3-chips-flank{display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:0.32rem 0.48rem;
+.civ-v-top-stack{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:fit-content;max-width:min(98vw,1480px);gap:0.22rem;padding:0;box-sizing:border-box;margin:0 auto;}
+.civ-v-top-flank-row{display:flex;align-items:flex-start;justify-content:center;gap:0.5rem 0.65rem;flex-wrap:nowrap;width:100%;max-width:100%;min-width:0;overflow:visible;}
+.civ-v-w3-chips-flank{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0.32rem 0.48rem;
   padding:0.38rem 0.82rem;border-radius:12px;
   background:linear-gradient(180deg,rgba(22,28,40,0.94),rgba(8,10,16,0.95));border:1px solid rgba(232,216,138,0.32);
-  flex:0 0 auto;min-width:0;overflow:visible;}
+  /* R-WEB-UI-LEFT-BANNER-OVERFLOW-NARROW-WINDOW-Q1: baner kurczy sie i zawija zetony (bez wychodzenia poza okno). */
+  flex:0 1 auto;min-width:0;max-width:100%;box-sizing:border-box;overflow:visible;}
 .civ-v-w3-chips-flank.civ-v-w3-chips-left{justify-content:flex-end;}
 .civ-v-w3-chips-flank.civ-v-w3-chips-right{justify-content:flex-start;}
 .civ-v-top-line{display:flex;align-items:center;justify-content:center;gap:0.65rem;flex-wrap:wrap;width:100%;}
@@ -2453,6 +2667,12 @@ ${resourceColorClassCss('.civ-cs')}
   white-space:nowrap;flex-shrink:0;cursor:pointer;opacity:0.9;}
 .civ-v-w3-capital-btn:hover:not(:disabled){opacity:1;background:rgba(232,216,138,0.14);}
 .civ-v-w3-capital-btn:disabled{opacity:0.35;cursor:not-allowed;}
+.civ-v-adm-btn{display:inline-flex;align-items:center;gap:0.35em;}
+.civ-v-adm-btn.is-hired{background:rgba(232,216,138,0.12);}
+.civ-v-adm-btn.is-idle{border-color:#c0392b;color:#e8a49b;}
+.civ-v-adm-chip{cursor:default;font-size:0.8em;}
+.civ-v-adm-chip.is-idle{border-color:rgba(192,57,43,0.6);color:#e8a49b;}
+${ADMINISTRATOR_ICON_CSS}
 .civ-v-w3-chips{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0.35rem 0.55rem;
   padding:0.3rem 0.85rem;border-radius:12px;
   background:linear-gradient(180deg,rgba(22,28,40,0.94),rgba(8,10,16,0.95));border:1px solid rgba(232,216,138,0.32);
@@ -2518,13 +2738,22 @@ ${resourceColorClassCss('.civ-cs')}
 .civ-v-garrison-inline{display:flex;align-items:center;justify-content:center;gap:0.42rem;min-width:0;overflow-x:auto;scrollbar-width:none;
   padding:0.1rem 0;-ms-overflow-style:none;width:auto;max-width:100%;text-align:center;align-self:center;}
 .civ-v-garrison-inline::-webkit-scrollbar{display:none;}
-.civ-v-garrison-label{display:inline-flex;align-items:center;gap:0.28em;font-size:0.82em;font-weight:700;color:var(--text);
-  letter-spacing:0.03em;flex-shrink:0;white-space:nowrap;cursor:pointer;border-radius:6px;padding:0.18em 0.42em;
-  border:1px solid transparent;transition:color .15s,border-color .15s,background .15s;}
+.civ-v-garrison-label{display:inline-flex;align-items:center;gap:0.32em;font-size:0.94em;font-weight:700;color:#f0e6d0;
+  letter-spacing:0.03em;flex-shrink:0;white-space:nowrap;cursor:pointer;border-radius:7px;padding:0.26em 0.52em;
+  background:rgba(20,25,34,0.72);border:1px solid rgba(212,175,90,0.34);
+  transition:color .15s,border-color .15s,background .15s,box-shadow .15s;}
 .civ-v-garrison-label:hover,.civ-v-garrison-label:focus-visible{color:#f0e8b8;border-color:rgba(212,175,90,0.28);
   background:rgba(212,175,90,0.08);outline:none;}
-.civ-v-garrison-icon{font-size:1.45em;line-height:1;display:flex;align-items:center;flex-shrink:0;opacity:0.95;}
-.civ-v-garrison-count{font-size:0.92em;font-weight:700;color:#d4af5a;}
+.civ-v-garrison-label.is-pinned{color:#fff8df;border-color:#e0b24a;background:rgba(94,64,22,0.38);
+  box-shadow:0 0 0 1px rgba(224,178,74,0.16),0 2px 8px rgba(0,0,0,0.35);}
+.civ-v-garrison-icon{font-size:1.62em;line-height:1;display:flex;align-items:center;flex-shrink:0;opacity:1;}
+.civ-v-garrison-count{font-size:0.96em;font-weight:800;color:#f0c968;min-width:1.35em;padding:0.08em 0.28em;
+  border-radius:999px;background:rgba(212,175,90,0.16);text-align:center;}
+.civ-v-garrison-detail-close{margin-left:auto;flex:0 0 auto;pointer-events:auto;cursor:pointer;width:1.5em;height:1.5em;
+  padding:0;border:1px solid rgba(212,175,90,0.35);border-radius:3px;background:rgba(212,175,90,0.08);
+  color:#e8d88a;font:inherit;font-size:0.9em;line-height:1;}
+.civ-v-garrison-detail-close:hover,.civ-v-garrison-detail-close:focus-visible{background:rgba(212,175,90,0.24);
+  color:#fff8df;outline:2px solid rgba(232,216,138,0.55);outline-offset:1px;}
 .civ-v-garrison-chip{display:inline-flex;align-items:center;gap:0.3em;padding:0.22em 0.52em;border-radius:3px;
   background:rgba(20,28,40,0.88);border:1px solid rgba(212,175,90,0.28);font-size:0.72em;line-height:1.15;flex-shrink:0;}
 .civ-v-garrison-detail-list{display:flex;flex-direction:column;gap:0.35em;max-height:min(50vh,320px);overflow-y:auto;
@@ -2935,7 +3164,8 @@ ${UNIT_RECRUIT_CARD_CSS}
 .bld-owned-name--inactive{color:#e07070;}
 .bld-owned-lvl{flex:none;font-size:0.58em;font-weight:700;color:#2a2208;background:#c8b070;border-radius:4px;padding:0.08em 0.32em;line-height:1.2;}
 .bld-owned-tail{display:flex;align-items:center;justify-content:flex-end;gap:0.35em 0.45em;flex:1 1 8em;min-width:0;margin-left:auto;flex-wrap:wrap;font-size:0.66em;line-height:1.25;}
-.bld-owned-upkeep{flex:none;color:#e8a090;font-weight:600;white-space:nowrap;}
+.bld-owned-upkeep{flex:0 1 auto;min-width:0;color:#e8a090;font-weight:600;white-space:normal;overflow-wrap:anywhere;}
+${RESOURCE_CHIP_CSS}
 .bld-owned-upkeep.muted{color:#6a6458;font-weight:500;}
 .bld-owned-bonus{display:inline-flex;flex-wrap:wrap;gap:0.18em 0.32em;min-width:0;justify-content:flex-end;}
 /* P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE: druga linia -- bilans produkcji
@@ -3161,7 +3391,7 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
   const haCuda = engineSzLines?.find(l => l.id === 'cuda')?.value ?? 0;
   const atWar = engineSzLines ? engineSzLines.some(l => l.id === 'wojna') : false;
 
-  const ordPctRaw = evaluateOrderFromBreakdown(
+  const ordPctEvaluated = evaluateOrderFromBreakdown(
     {
       difficulty,
       era,
@@ -3198,6 +3428,16 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
     data.societyParams,
     difficulty,
   );
+
+  const happinessCivKey = cfg.getCivKey?.(city.ownerId);
+  const ordPctRaw = happinessCivKey
+    ? applyCivMatrixHappinessModifier(
+      ordPctEvaluated,
+      civMatrixParam(happinessCivKey, 'eko_zadowolenie_proc'),
+      data.societyParams,
+      difficulty,
+    )
+    : ordPctEvaluated;
 
   const ordPct = isPostCaptureLawActive(city)
     ? applyPostCaptureLawOverride(ordPctRaw, city, data.societyParams, difficulty)
@@ -3262,7 +3502,7 @@ function resolveCityHealth(city: City, map: GameMap, data: GameData): { total: n
   const builtIds = cfg.getBuiltBuildingIds?.(city.id) ?? [];
   // P-HEKS-SPOR-SASIAD runda 2 nota A: fallback (gdy cfg.getCityHealth nie odpowiedzial)
   // musi liczyc tak samo jak silnik -- ta sama excludeHexKeys.
-  const tiles = cityWorkedTilesForEconomy(city, map, territoryNodesForPanel(), cfg.getExcludeHexKeys?.(city.id));
+  const tiles = cityWorkedTilesForEconomy(city, map, territoryNodesForPanel(), cfg.getExcludeHexKeys?.(city.id), cfg.getEpoch?.(city.ownerId) ?? 1);
   const br = computeCityHealthBreakdown(
     city.population, tiles, builtIds, data.societyParams, cfg.difficulty ?? 'normal',
     { city, map },
@@ -3294,7 +3534,7 @@ function renderSpoleczenstwo(mount: HTMLElement, city: City, data: GameData): vo
     orderChips.push({
       icon: cityPanelChipIcon('chip-warning', 14),
       label: 'Bunt',
-      value: `${state.revoltGraceRemaining} tur`,
+      value: formatTurCount(state.revoltGraceRemaining),
       cls: 'red',
       title: 'Brak reakcji — ryzyko rebelii',
     });
@@ -3304,7 +3544,7 @@ function renderSpoleczenstwo(mount: HTMLElement, city: City, data: GameData): vo
     orderChips.push({
       icon: cityPanelChipIcon('chip-garrison', 14),
       label: 'Prawo',
-      value: `${state.postCaptureLawTurnsRemaining} tur`,
+      value: formatTurCount(state.postCaptureLawTurnsRemaining),
       cls: 'green',
       title: postCaptureLawBannerLabel(city) ?? 'Bonus Prawa po podboju',
     });
@@ -3384,7 +3624,7 @@ function renderSpoleczenstwo(mount: HTMLElement, city: City, data: GameData): vo
       }
       if (state.revoltWarning && state.revoltGraceRemaining != null) {
         const st = el('div', 'civ-w4-order-banner crit');
-        st.innerHTML = `${cityPanelChipIconWrap('chip-warning', 16)}<span>Grozi bunt · ${state.revoltGraceRemaining} tur</span>`;
+        st.innerHTML = `${cityPanelChipIconWrap('chip-warning', 16)}<span>Grozi bunt · ${formatTurCount(state.revoltGraceRemaining)}</span>`;
         porBlock.appendChild(st);
       } else if (state.rebelState) {
         const st = el('div', 'civ-w4-order-banner rebel');
@@ -3440,7 +3680,7 @@ function buildPorzadekDetailCard(city: City, state: OrderState): HTMLDivElement 
       : `${Math.round(praw)}%`,
   );
   if (state.revoltWarning && state.revoltGraceRemaining != null) {
-    gridDetailRow(g0, 'Alert buntu', `${state.revoltGraceRemaining} tur(y) na reakcję`);
+    gridDetailRow(g0, 'Alert buntu', `${formatTurCount(state.revoltGraceRemaining)} na reakcję`);
   }
   if (state.rebelState) {
     gridDetailRow(g0, 'Rebelia', 'Miasto pod kontrolą rebeliantów');
@@ -3450,7 +3690,7 @@ function buildPorzadekDetailCard(city: City, state: OrderState): HTMLDivElement 
   const bandNote = el('div', 'dc-note');
   bandNote.style.fontStyle = 'normal';
   const bandExplain: Record<string, string> = {
-    lad: '≥90% Porządku — bonus do pracy i handlu. Miasto w pełni stabilne.',
+    lad: '≥90% Porządku — bonus do pracy i podatku. Miasto w pełni stabilne.',
     spokoj: '70–89% — normalna gra, bez kar i bez bonusów.',
     napiecie: '50–69% — lekkie napięcie: praca spada o ~5%. Czas reagować, zanim spadnie dalej.',
     niepokoj: '30–49% — wyraźne kary na plony, wolniejszy wzrost. Możliwy chip niepokojów.',
@@ -3504,8 +3744,8 @@ function buildPorzadekDetailCard(city: City, state: OrderState): HTMLDivElement 
   const actions = el('div', 'dc-note');
   actions.style.fontStyle = 'normal';
   actions.innerHTML = cpInlineIcons(
-    `<b>Podnieś Szczęście:</b> przesuń suwak handlu na <b>${HANDEL_ZAMOZNOSC_LABEL}</b> ` +
-    `(obecnie ${podzial.procentLuksus}% — im wyżej, tym więcej zamożności z handlu zamiast skarbca/nauki). ` +
+    `<b>Podnieś Szczęście:</b> przesuń suwak podatku na <b>${HANDEL_ZAMOZNOSC_LABEL}</b> ` +
+    `(obecnie ${podzial.procentLuksus}% — im wyżej, tym więcej zamożności z podatku zamiast skarbca/nauki). ` +
     'Długoterminowo: Teatr, Łaźnia, wyższe W.<br><br>' +
     `<b>Podnieś Prawo:</b> stacjonuj wojsko w mieście (obecnie ${gCount} jedn. w garnizonie) ` +
     'lub rozwijaj administrację lokalną (Dom Starszyzny → Dwór Zarządcy → Pretorium; ' +
@@ -4604,7 +4844,7 @@ function appendIndywidualneToggle(
   btn.setAttribute('aria-pressed', String(overrideOn));
   btn.title = overrideOn
     ? 'WŁ: to miasto ma własne ustawienie — ignoruje zmiany globalne z panelu cywilizacji (mapa świata).'
-    : 'WYŁ: to miasto dziedziczy globalne ustawienie imperium (panel cywilizacji na mapie świata, np. „Grecy").';
+    : 'WYŁ: to miasto dziedziczy globalne ustawienie imperium (panel cywilizacji na mapie świata, np. „Grecy”).';
   row.appendChild(btn);
   btn.addEventListener('click', () => {
     onToggle();
@@ -4683,7 +4923,7 @@ function appendPodzialHandlu(
     sliders.appendChild(row);
   };
   makeSlider('procentPieniadz', 'Skarb', resourceTextClass('skarbiec'));
-  makeSlider('procentNauka', 'Nauka', resourceTextClass('nauka'), 'slider-nauka', MAX_PROCENT_NAUKA);
+  makeSlider('procentNauka', 'Nauka', resourceTextClass('nauka'), 'slider-nauka');
   makeSlider('procentLuksus', HANDEL_ZAMOZNOSC_LABEL, 'happy');
   // R-USTAWIENIA-GLOBALNE-LOKALNE (Maciej 2026-08-10): "Skarbiec i Nauka to JEDNA
   // grupa" -- JEDEN przycisk Indywidualne dla całego suwaka (Skarb+Nauka+Zamożność
@@ -4719,14 +4959,16 @@ function appendCitySkarbiecBalance(mount: HTMLElement, city: City): void {
   sub.style.marginTop = '0.65em';
   mount.appendChild(sub);
 
-  const rows: Array<{ label: string; value: string; cls?: string }> = [
+  const rows: Array<{ label: string; value: string; cls?: string; html?: boolean }> = [
     { label: 'Pieniądz brutto (pola + budynki)', value: signed(snap.pieniadzBrutto) },
     { label: 'Mnożnik zamożności W', value: `×${snap.wealthMnoznik.toFixed(2)}` },
     { label: 'Handel ze szlaków', value: signed(snap.handelZeSzlakow) },
     { label: '→ Wpływ do skarbca imperium', value: signed(snap.doSkarbca), cls: snap.doSkarbca > 0 ? 'green' : snap.doSkarbca < 0 ? 'red' : 'muted' },
     { label: 'Utrzymanie budynków (to miasto)', value: snap.utrzymanieBudynkow > 0 ? `−${snap.utrzymanieBudynkow}` : '—', cls: snap.utrzymanieBudynkow > 0 ? 'red' : undefined },
-    { label: 'Utrzymanie surowców budynków', value: formatResourceUpkeepSummary(snap.utrzymanieSurowcowBudynkow ?? {}), cls: Object.keys(snap.utrzymanieSurowcowBudynkow ?? {}).length > 0 ? 'red' : undefined },
+    { label: 'Utrzymanie surowców budynków', value: formatResourceUpkeepSummary(snap.utrzymanieSurowcowBudynkow ?? {}), html: true, cls: Object.keys(snap.utrzymanieSurowcowBudynkow ?? {}).length > 0 ? 'red' : undefined },
     { label: 'Utrzymanie garnizonu (hex miasta)', value: snap.utrzymanieGarnizonu > 0 ? `−${snap.utrzymanieGarnizonu}` : '—', cls: snap.utrzymanieGarnizonu > 0 ? 'red' : undefined },
+    // R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1 (zarzut 1): wiersz tylko gdy opcja „Administratorzy” ON (main.ts podaje wartość); OFF = brak wiersza.
+    ...(snap.utrzymanieAdministratora !== undefined ? [{ label: 'Utrzymanie administratorów (to miasto)', value: administratorUpkeepValueHtml(snap.utrzymanieAdministratora), html: true, cls: snap.utrzymanieAdministratora > 0 ? 'red' : undefined }] : []),
   ];
 
   const grid = el('div', 'city-money-grid');
@@ -4735,7 +4977,10 @@ function appendCitySkarbiecBalance(mount: HTMLElement, city: City): void {
     const lbl = el('span', 'city-money-lbl');
     lbl.textContent = r.label;
     const val = el('span', `city-money-val${r.cls ? ' ' + r.cls : ''}`);
-    val.textContent = r.value;
+    // Wiersz z ikonami surowców (formatResourceUpkeepSummary zwraca HTML) — innerHTML;
+    // pozostałe wartości są czysto tekstowe — textContent.
+    if (r.html) val.innerHTML = r.value;
+    else val.textContent = r.value;
     row.appendChild(lbl);
     row.appendChild(val);
     grid.appendChild(row);
@@ -4746,7 +4991,7 @@ function appendCitySkarbiecBalance(mount: HTMLElement, city: City): void {
 /** @deprecated używane przez testy / kompat — prefer renderEkonomiaStrip */
 function renderPodzialHandlu(mount: HTMLElement, city: City, view: CityView | null, data: GameData | null): void {
   mount.innerHTML = '';
-  mount.appendChild(el('div', 'ptitle', '<span>Podział Handlu</span>'));
+  mount.appendChild(el('div', 'ptitle', '<span>Podział podatku</span>'));
   appendPodzialHandlu(mount, city, view, data);
 }
 
@@ -4868,12 +5113,12 @@ function buildWealthDetailCard(
     ? 'Maks. poziom w tej epoce'
     : (etaW != null
       ? `W${ws.poziom + 1} za ok. ${etaW} ${tury(etaW)} przy ~${zamIn} 💰/turę do puli (udział „Zamożność” w ${daninaLblGen})`
-      : 'Brak wpływu do puli — zwiększ udział „Zamożność” w podziale handlu'));
+      : 'Brak wpływu do puli — zwiększ udział „Zamożność” w podziale podatku'));
 
   appendDetailSection(card, 'Wzory');
   appendDetailFormula(card, `×Skarb = max(1, 1 + (W−1) × ${p.mnoznikNaPoziom})`);
   appendDetailFormula(card, `Próg W(L→L+1) = ${p.progNaPoziom} × (L+1) × epoka`);
-  appendDetailFormula(card, `Utrzymanie = rownowaga(W) × pieniądz_miasta`);
+  appendDetailFormula(card, `Utrzymanie = Równowaga(W) × pieniądz miasta`);
   appendDetailFormula(card, `Równowaga(W) = ${Math.round(p.utrzymanieBaza * 100)}% + (W/cap)×(${Math.round(p.utrzymaniePrzyCap * 100)}%−${Math.round(p.utrzymanieBaza * 100)}%)`);
 
   appendDetailSection(card, 'Skąd bierze się pula');
@@ -4899,16 +5144,17 @@ function buildWealthDetailCard(
   gridDetailRow(g3, 'Szczęście', `W=0: ${p.karaZero}; dalej floor(W × ${p.zadowolenieMax} / cap epoki) — max +${p.zadowolenieMax} w każdej epoce (cap ${cap})`);
 
   appendDetailAlgo(card, 'Kolejność ticku zamożności', [
-    `Wejście: strumień z ${daninaLblGen} = floor(handelNetto × %${HANDEL_ZAMOZNOSC_LABEL}) — nie trafia do skarbca.`,
-    'Koszt utrzymania = rownowaga(W) × pieniądz brutto miasta tej tury.',
+    `Wejście: strumień z ${daninaLblGen} = floor(podatek netto × %${HANDEL_ZAMOZNOSC_LABEL}) — nie trafia do skarbca.`,
+    'Koszt utrzymania = Równowaga(W) × pieniądz brutto miasta tej tury.',
     `Pula += wpływ z ${daninaLblGen} − utrzymanie. Gdy pula < 0 → pula=0 i W−1.`,
     'Dopóki pula ≥ próg awansu i W < cap: W+1, pula −= próg, pula ×= zachowanie po awansie.',
     'Mnożnik skarbca rośnie z poziomem W — stosowany do pieniędzy miasta (nie do nauki).',
   ]);
 
   appendDetailAlgo(card, 'Skąd bierze się wpływ do puli', [
-    `${daninaLbl} brutto z pól + bonus Targowiska → handelNetto (po korupcji, opcjonalnie ×Waluta).`,
-    `Podział ${daninaLblGen}: %${HANDEL_ZAMOZNOSC_LABEL} × handelNetto → wpływ do puli zamożności.`,
+    `${daninaLbl} brutto z pól i budynków → lokalny podatek netto (po korupcji; ×Mennica, gdy aktywna).`,
+    'Dochód tras z premią Targowiska trafia osobno do skarbca i nie wchodzi do lokalnego podatku ani puli zamożności.',
+    `Podział ${daninaLblGen}: %${HANDEL_ZAMOZNOSC_LABEL} × podatek netto → wpływ do puli zamożności.`,
     `Więcej % na Skarb = mniej ${HANDEL_ZAMOZNOSC_LABEL} = wolniejszy W, ale więcej 💰 od razu.`,
     `Więcej % na ${HANDEL_ZAMOZNOSC_LABEL} = szybszy W, ale mniej gotówki — ×Skarb rośnie z opóźnieniem.`,
   ]);
@@ -4981,8 +5227,8 @@ function buildPracaDetailCard(
     'Kolejka pusta: cała Praca miasta (doBudynkow + doPuli) idzie do puli imperium.',
     'Kolejka zajęta: postęp += doBudynkow; gdy postęp ≥ koszt → budynek gotowy; reszta → doPuli.',
     maTargowisko
-      ? 'Część pracy (doPuli) + Waluta + Targowisko → dodatkowy pieniądz (osobny strumień).'
-      : 'Bez Targowiska doPuli nie konwertuje się na pieniądz.',
+      ? 'Targowisko odblokowuje ręczną konwersję wybranej części puli Pracy imperium na podatek; to nie jest stały dochód miasta.'
+      : 'Bez Targowiska ręczna konwersja puli Pracy imperium na podatek jest niedostępna.',
     'Brak pracy = brak postępu budowy i brak wpływu do puli — przypisz 👤 w okolicy.',
   ]);
 
@@ -5025,6 +5271,16 @@ function appendPodzialPracyInfo(
     statChipBrand('chip-crate', PULA_LBL, praca ? `+${praca.doPuli}` : '—', 'blue');
   mount.appendChild(chips);
 
+  // R-WEB-UI-CITY-EMPTY-QUEUE-WORK-TO-POOL-HINT-Q1: tylko gdy kolejka pusta i Praca faktycznie
+  // trafia do puli (wyjatek silnika `pracaImperialPoolGain`); znika po dodaniu pozycji.
+  if (praca?.kolejkaPustaDoPuli) {
+    const hint = el('div', 'praca-empty-queue-hint muted');
+    hint.setAttribute('data-testid', 'praca-empty-queue-hint');
+    hint.style.cssText = 'font-size:0.74em;margin:0.2em 0;';
+    hint.textContent = KOLEJKA_PUSTA_PRACA_DO_PULI_HINT;
+    mount.appendChild(hint);
+  }
+
   const info = el('div', 'praca-split-info');
 
   const rowTotal = el('div', 'psi-row');
@@ -5038,7 +5294,13 @@ function appendPodzialPracyInfo(
   let budSub = '';
   if (front && praca) {
     const paused = prod.wstrzymana === true;
-    const eta = paused ? null : etaTurns(front.koszt, prod.postep, praca.doBudynkow);
+    const eta = paused ? null : etaTurns(
+      front.koszt,
+      prod.postep,
+      front.kind === 'budynek'
+        ? buildingWorkPerTurnForCity(city, praca.doBudynkow)
+        : praca.doBudynkow,
+    );
     budSub =
       `${front.nazwa}: ${prod.postep}/${front.koszt}${cityPanelChipIconWrap('res-work', 14)}` +
       (paused ? ' · wstrzymana' : eta != null ? ` · ~${eta} ${tury(eta)}` : praca.doBudynkow > 0 ? '' : ' · brak pracy');
@@ -5106,7 +5368,7 @@ function renderPodzialPracy(
   // wartosci globalnej je gasi (logika: `applyCityPodzialPracyChange` w main.ts).
   const podzialTip = `Podział przyrostu Pracy tego miasta: Budynki ${MIN_PODZIAL_PRACY_BUDYNKI_PERCENT}–100%, `
     + `${PULA_LBL_PELNA} 0–${MAX_PROCENT_PULI_IMPERIUM}% — zawsze razem 100%. Kroki co ${HANDEL_PCT_STEP}%. `
-    + 'Ustawienie inne niż globalne włącza „Indywidualne" samo; powrót do globalnego je gasi.';
+    + 'Ustawienie inne niż globalne włącza „Indywidualne” samo; powrót do globalnego je gasi.';
 
   // Sygnał na samej górze: ile z tegorocznego przyrostu Pracy trafia do Ulepszeń.
   const summary = el('div', 'praca-split-summary');
@@ -5218,8 +5480,8 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   const popHero = el('div', 'food-pop-hero');
   popHero.innerHTML =
     `<div class="pop-slots">${cityPanelChipIcon('res-population', 14)} Ludność ${city.population}</div>` +
-    `<div class="pop-abs">≈ ${formatManpower(osobRazem)} osób` +
-    ` (1 obywatel = ${formatManpower(osobNaObywatela)})</div>`;
+    `<div class="pop-abs">≈ ${formatManpowerCompact(osobRazem)} osób` +
+    ` (1 obywatel = ${formatManpowerCompact(osobNaObywatela)})</div>`;
   mount.appendChild(popHero);
 
   const chips: TabIndicatorChip[] = [
@@ -5409,7 +5671,7 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
     );
   }
   const hint = el('div', 'wyzwienie-w4-hint');
-  hint.textContent = wyzwienieSummaryLabel(displayLevel, rationParams);
+  hint.textContent = wyzwienieSummaryLabel(displayLevel, rationParams, view.ownerEra);
   if (maxSafe < WYZYWIENIE_MAX && rationEditable) {
     hint.textContent += ` · Limit Spichlerza: ${formatWyzwienieLabel(maxSafe)}`;
   }
@@ -5479,8 +5741,8 @@ function buildRacjeWzrostDetailCard(
   const g0 = appendDetailGrid(card);
   const osobRazem = cityLudnoscAbsolutna(city.population, epoch);
   gridDetailRow(g0, 'Obywatele (sloty)', String(city.population));
-  gridDetailRow(g0, 'Ludność absolutna', `≈ ${formatManpower(osobRazem)} osób`);
-  gridDetailRow(g0, 'Skala epoki', `1 obywatel = ${formatManpower(cityLudnoscAbsolutna(1, epoch))}`);
+  gridDetailRow(g0, 'Ludność absolutna', `≈ ${formatManpowerCompact(osobRazem)} osób`);
+  gridDetailRow(g0, 'Skala epoki', `1 obywatel = ${formatManpowerCompact(cityLudnoscAbsolutna(1, epoch))}`);
 
   appendDetailSection(card, 'Bilans lokalny (to miasto)');
   const g1 = appendDetailGrid(card);
@@ -5491,7 +5753,7 @@ function buildRacjeWzrostDetailCard(
     gridDetailRow(g1, 'Auto-korekta', `ustawione Wyżywienie ${formatWyzwienieLabel(view.poziomRacji)} przekracza limit Spichlerza — Bilans liczony przy ${formatWyzwienieLabel(bilansDisplayLevel)}, poziom zostanie obniżony na koniec tury`);
   }
   if (rationParams) {
-    gridDetailRow(g1, 'Wyżywienie', wyzwienieSummaryLabel(view.poziomRacji, rationParams));
+    gridDetailRow(g1, 'Wyżywienie', wyzwienieSummaryLabel(view.poziomRacji, rationParams, view.ownerEra));
   }
 
   appendDetailSection(card, 'WZROST% — składniki');
@@ -5598,7 +5860,7 @@ function buildTopBarZywnoscDetailCard(
     gridDetailRow(g1, 'Auto-korekta', `ustawione Wyżywienie ${formatWyzwienieLabel(view.poziomRacji)} przekracza limit Spichlerza — Bilans liczony przy ${formatWyzwienieLabel(bilansDisplayLevel)}, poziom zostanie obniżony na koniec tury`);
   }
   if (rationParams) {
-    gridDetailRow(g1, 'Wyżywienie aktywne', wyzwienieSummaryLabel(view.poziomRacji, rationParams));
+    gridDetailRow(g1, 'Wyżywienie aktywne', wyzwienieSummaryLabel(view.poziomRacji, rationParams, view.ownerEra));
   }
 
   appendDetailSection(card, 'WZROST ludności');
@@ -5643,17 +5905,17 @@ function buildTopBarRekruciDetailCard(
 
   appendDetailSection(card, 'Stan puli');
   const g = appendDetailGrid(card);
-  gridDetailRow(g, 'Bieżąca pula', formatManpower(mp.manpowerBiezacy));
-  gridDetailRow(g, 'Maksimum', formatManpower(mp.manpowerMax));
-  gridDetailRow(g, 'Odnowa', `+${formatManpower(mp.regenPerTurn)}`);
-  gridDetailRow(g, 'Koszt 1 jednostki', formatManpower(mp.kosztJednostki));
+  gridDetailRow(g, 'Bieżąca pula', formatManpowerCompact(mp.manpowerBiezacy));
+  gridDetailRow(g, 'Maksimum', formatManpowerCompact(mp.manpowerMax));
+  gridDetailRow(g, 'Odnowa', `+${formatManpowerCompact(mp.regenPerTurn)}`);
+  gridDetailRow(g, 'Koszt 1 jednostki', formatManpowerCompact(mp.kosztJednostki));
   gridDetailRow(g, 'Werb przy pełnej puli', String(mp.werbMaxPrzyPelnejPuli));
-  gridDetailRow(g, 'Ludność abs.', formatManpower(mp.ludnoscAbsolutna));
+  gridDetailRow(g, 'Ludność abs.', formatManpowerCompact(mp.ludnoscAbsolutna));
   gridDetailRow(g, 'Obywatele', `${mp.ludki} · epoka ${mp.epoka}`);
 
   appendDetailAlgo(card, 'Skąd bierze się pula', [
     'Max ≈ 10% ludności absolutnej miasta (tabela epok).',
-    'Regen = % max (parametr balansu, patrz "Odnowa" wyżej) × bonus cywilizacji (np. Rzym ×2).',
+    'Regen = % max (parametr balansu, patrz "Odnowa" wyżej) × modyfikator regeneracji z macierzy cywilizacji.',
     'Oblężenie blokuje odnowę do czasu zdjęcia oblężenia.',
   ]);
   return card;
@@ -5691,7 +5953,7 @@ function buildTopBarLudnoscDetailCard(
   appendDetailSection(card, 'Co widzisz na pasku');
   const g0 = appendDetailGrid(card);
   gridDetailRow(g0, 'Duża liczba 👥', `${city.population} — obywatele (sloty) tego miasta`);
-  gridDetailRow(g0, 'Ludność absolutna', `≈ ${formatManpower(osobRazem)} osób`);
+  gridDetailRow(g0, 'Ludność absolutna', `≈ ${formatManpowerCompact(osobRazem)} osób`);
   gridDetailRow(g0, 'Epoka', String(epoch));
   gridDetailRow(g0, 'WZROST%', bd ? `${bd.total}%` : '—');
 
@@ -5837,6 +6099,10 @@ function buildTopBarZlotoDetailCard(
   gridDetailRow(gImp, 'Utrzymanie budynków', utrzB > 0 ? `−${utrzB}` : '—');
   gridDetailRow(gImp, 'Utrzymanie surowców budynków', formatResourceUpkeepSummary(utrzRes));
   gridDetailRow(gImp, 'Utrzymanie jednostek', utrzJ > 0 ? `−${utrzJ}` : '—');
+  // R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1 (zarzut 1): wiersz tylko przy opcji „Administratorzy” ON.
+  if (empire.bogactwoUtrzymanieAdministratorow !== undefined) {
+    gridDetailRow(gImp, 'Utrzymanie administratorów', administratorUpkeepValueHtml(empire.bogactwoUtrzymanieAdministratorow));
+  }
   gridDetailRow(gImp, 'Netto / turę', signed(netto));
 
   appendDetailSection(card, 'Ten gród — przychody i koszty lokalne');
@@ -5849,6 +6115,9 @@ function buildTopBarZlotoDetailCard(
     gridDetailRow(gCity, 'Utrzymanie budynków', moneySnap.utrzymanieBudynkow > 0 ? `−${moneySnap.utrzymanieBudynkow}` : '—');
     gridDetailRow(gCity, 'Utrzymanie surowców budynków', formatResourceUpkeepSummary(moneySnap.utrzymanieSurowcowBudynkow ?? {}));
     gridDetailRow(gCity, 'Utrzymanie garnizonu', moneySnap.utrzymanieGarnizonu > 0 ? `−${moneySnap.utrzymanieGarnizonu}` : '—');
+    if (moneySnap.utrzymanieAdministratora !== undefined) {
+      gridDetailRow(gCity, 'Utrzymanie administratorów', administratorUpkeepValueHtml(moneySnap.utrzymanieAdministratora));
+    }
     gridDetailRow(gCity, 'Nauka (osobny bank)', signed(moneySnap.nauka));
   } else {
     gridDetailRow(gCity, 'Wpływ do skarbca', signed(cityMoney));
@@ -5912,13 +6181,13 @@ function buildTopBarNaukaDetailCard(
   appendDetailSection(card, 'Skąd bierze się nauka');
   const g1 = appendDetailGrid(card);
   gridDetailRow(g1, 'Pola i budynki', maBiblioteka ? 'Biblioteka + pola z nauką' : 'Głównie pola z nauką + budynki');
-  gridDetailRow(g1, 'Udział handlu', `${split.procentNauka}% handlu netto → nauka`);
-  if (est.nauka) gridDetailRow(g1, '→ z handlu (szac.)', `~+${est.nauka}`);
+  gridDetailRow(g1, 'Udział podatku', `${split.procentNauka}% podatku netto → nauka`);
+  if (est.nauka) gridDetailRow(g1, '→ z podatku (szac.)', `~+${est.nauka}`);
 
-  appendDetailFormula(card, 'nauka += plony + budynki + % handlu');
+  appendDetailFormula(card, 'nauka += plony + budynki + % podatku');
   appendDetailAlgo(card, 'Gdzie zarządzać', [
     'Panel badań (mapa) — wydajesz bank na tech.',
-    'Podział handlu → więcej % na Naukę = szybsze tech, mniej złota.',
+    'Podział podatku → więcej % na Naukę = szybsze tech, mniej złota.',
     'Buduj Bibliotekę, przypisuj 👤 na pola z nauką.',
   ]);
   return card;
@@ -6293,9 +6562,9 @@ function appendBuildActionButtons(
     const bBuy = el('button', 'btn btn-sm btn-g', 'Kup') as HTMLButtonElement;
     const canBuy = !!(purchaseHook && stac && canBuild);
     let buyTitle: string;
-    if (!purchaseHook) buyTitle = 'Wymaga wpiecia onPurchaseBuilding przez silnik';
+    if (!purchaseHook) buyTitle = 'Zakup niedostępny w tej wersji gry';
     else if (!canBuild) buyTitle = 'Najpierw spełnij wymagania budowy';
-    else if (!stac) buyTitle = `Za malo zlota (${skarb ?? 0}/${goldKoszt})`;
+    else if (!stac) buyTitle = `Za mało złota (${skarb ?? 0}/${goldKoszt})`;
     else buyTitle = `Kup natychmiast za ${goldKoszt} złota (×2 kosztu Pracy)`;
     applyBuildButtonVisualState(bBuy, canBuy, buyTitle);
     bBuy.addEventListener('click', () => {
@@ -6545,7 +6814,8 @@ function buildingOwnedLevel(def: BuildingDef, city: City): number {
 
 function sumOwnedBuildingsUpkeep(built: readonly string[], data: GameData, city: City): number {
   let sum = 0;
-  for (const id of built) {
+  // R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: wyłączony budynek nie kosztuje utrzymania.
+  for (const id of operationalBuiltIds(city, built)) {
     const def = data.buildings.find(b => b.id === id);
     if (!def) continue;
     sum += buildingUpkeep(def as unknown as BuildingRecord, buildingOwnedLevel(def, city));
@@ -6600,9 +6870,8 @@ function buildingStockCostChipsHtml(def: BuildingDef, city: City | undefined): s
     const have = pool?.[k] ?? 0;
     const met = pool !== undefined && have >= need;
     return {
-      label: pool !== undefined
-        ? `${need} ${stockResourceLabel(k)} (masz ${have})`
-        : `${need} ${stockResourceLabel(k)}`,
+      label: pool !== undefined ? `(masz ${have})` : '',
+      iconHtml: resourceAmountChipHtml(k, `${need}`),
       met,
       kind: 'stock' as const,
     };
@@ -6612,17 +6881,31 @@ function buildingStockCostChipsHtml(def: BuildingDef, city: City | undefined): s
 
 const BUILDING_UPKEEP_ZERO_LABEL = 'utrzymanie zero';
 
+/**
+ * Utrzymanie surowcowe jako chipy „liczba + ikona surowca" (R-WEB-UI-CITY-BUILDINGS-RESOURCE-ICONS-Q1):
+ * nazwa surowca nie jest widocznym tekstem wiersza, tylko title/aria-label ikony.
+ * `perTurnUnit` dokłada "/t" (wiersz budynku, karta); łączna suma w nagłówku pomija je.
+ */
 function formatResourceUpkeepText(
   resources: Record<string, number>,
   compact: boolean,
+  perTurnUnit: boolean = !compact,
 ): string {
   const keys = Object.keys(resources);
   if (keys.length === 0) return '';
   return keys
-    .map(k => (compact
-      ? `−${resources[k]} ${stockResourceLabel(k)}`
-      : `−${resources[k]} ${stockResourceLabel(k)}/t`))
+    .map(k => resourceAmountChipHtml(k, `−${resources[k]}`, perTurnUnit ? '/t' : ''))
     .join(' · ');
+}
+
+/** R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1: współczynnik utrzymania surowcowego dla widoku (jak w ticku). */
+function buildingResourceUpkeepRatioForView(): number {
+  const d = gameData();
+  if (!d?.econParams) return 1;
+  return readBuildingResourceUpkeepRatio(
+    d.econParams as unknown as Parameters<typeof readBuildingResourceUpkeepRatio>[0],
+    cfg.difficulty ?? 'normal',
+  );
 }
 
 function buildingUpkeepDisplay(
@@ -6631,19 +6914,20 @@ function buildingUpkeepDisplay(
 ): { gold: number; resources: Record<string, number> } {
   return {
     gold: buildingUpkeep(def as unknown as BuildingRecord, level),
-    resources: buildingResourceUpkeep(def),
+    resources: buildingResourceUpkeep(def, level, buildingResourceUpkeepRatioForView()),
   };
 }
 
 function sumOwnedBuildingsResourceUpkeep(
   built: readonly string[],
   data: GameData,
+  city?: City,
 ): Record<string, number> {
   const out: Record<string, number> = {};
-  for (const id of built) {
+  for (const id of operationalBuiltIds(city, built)) {
     const def = data.buildings.find(b => b.id === id);
     if (!def) continue;
-    addResourceCosts(out, buildingResourceUpkeep(def));
+    addResourceCosts(out, buildingResourceUpkeep(def, city ? buildingOwnedLevel(def, city) : 1, buildingResourceUpkeepRatioForView()));
   }
   return out;
 }
@@ -6690,15 +6974,15 @@ function formatBuildingUpkeepTotalHtml(
   if (totalGold > 0) {
     parts.push(`−${totalGold}${cityPanelChipIconWrap('res-treasury', 12)}`);
   }
-  const res = formatResourceUpkeepText(totalResources, false).replace(/\/t/g, '');
+  const res = formatResourceUpkeepText(totalResources, false, false);
   if (res) parts.push(res);
   return `Utrzymanie łącznie: <b>${parts.join(' · ')}</b>/turę`;
 }
 
-function formatResourceUpkeepSummary(resources: Record<string, number>): string {
+function formatResourceUpkeepSummary(resources: Record<string, number>, unitSuffix = ''): string {
   const keys = Object.keys(resources);
   if (keys.length === 0) return '—';
-  return keys.map(k => `−${resources[k]} ${stockResourceLabel(k)}`).join(' · ');
+  return keys.map(k => resourceAmountChipHtml(k, `−${resources[k]}`, unitSuffix)).join(' · ');
 }
 
 /**
@@ -6773,14 +7057,14 @@ function formatConverterProductionRowHtml(
     const r1 = Math.round(v * 10) / 10;
     if (r1 <= 0) continue;
     const amtTxt = formatConverterAmount(v);
-    const txt = compact ? `−${amtTxt} ${stockResourceLabel(k)}` : `−${amtTxt} ${stockResourceLabel(k)}/t`;
+    const txt = resourceAmountChipHtml(k, `−${amtTxt}`, compact ? '' : '/t');
     parts.push(`<span class="bld-owned-conv-in">${txt}</span>`);
   }
   for (const [k, v] of Object.entries(display.produced)) {
     const r1 = Math.round(v * 10) / 10;
     if (r1 <= 0) continue;
     const amtTxt = formatConverterAmount(v);
-    const txt = compact ? `+${amtTxt} ${stockResourceLabel(k)}` : `+${amtTxt} ${stockResourceLabel(k)}/t`;
+    const txt = resourceAmountChipHtml(k, `+${amtTxt}`, compact ? '' : '/t');
     parts.push(`<span class="bld-owned-conv-out">${txt}</span>`);
   }
   if (parts.length === 0) return '';
@@ -6834,7 +7118,11 @@ function buildingRequirementChips(
   }
 
   const parentId = def.upgradeFrom?.trim();
-  if (parentId) {
+  if (parentId && def.upgradeSkip === true) {
+    // Łańcuch fortyfikacji z przeskokiem: poprzednik NIE jest wymagany (budowa od zera jest dozwolona).
+    const parentName = parentBuildingName(data, parentId) ?? parentId;
+    chips.push({ label: `Awans z: ${parentName} (opcjonalnie)`, met: true, kind: 'other' });
+  } else if (parentId) {
     const parentName = parentBuildingName(data, parentId) ?? parentId;
     const met = built.includes(parentId)
       || isBuildingSupersededByUpgrade(parentId, built, buildings);
@@ -6844,7 +7132,7 @@ function buildingRequirementChips(
   const cityPrereq = CITY_BUILDING_PREREQ[def.id];
   if (cityPrereq) {
     const ids = typeof cityPrereq === 'string' ? [cityPrereq] : [...cityPrereq];
-    const names = ids.map(id => findBuildingDef(data, id)?.nazwa ?? id);
+    const names = ids.map(id => findBuildingDef(data, id)?.nazwa ?? humanizeId(id));
     const met = cityBuildingPrereqMet(
       cityPrereq, built, buildings, isBuildingSupersededByUpgrade,
     );
@@ -6862,6 +7150,15 @@ function buildingRequirementChips(
     });
   }
 
+  // R-WEB-MILL-RIVER-ONLY-GATE-Q1: młyn — blokada z tekstem „wymaga rzeki" (morze/jezioro nie wystarcza).
+  if (RIVER_ONLY_BUILDING_IDS.has(def.id)) {
+    chips.push({
+      label: 'Wymaga rzeki przy mieście',
+      met: ctx.cityHasRiver === true,
+      kind: 'other',
+    });
+  }
+
   if (def.lokalizacja === 'stolica' || def.lokalizacja === 'region') {
     chips.push({
       label: def.lokalizacja === 'stolica' ? 'Tylko stolica' : 'Tylko poza stolicą',
@@ -6874,7 +7171,8 @@ function buildingRequirementChips(
   for (const [k, need] of Object.entries(stockCost)) {
     const have = pool[k] ?? 0;
     chips.push({
-      label: `${need} ${stockResourceLabel(k)} w magazynie (masz ${have})`,
+      label: ` w magazynie (masz ${have})`,
+      iconHtml: resourceAmountChipHtml(k, `${need}`),
       met: have >= need,
       kind: 'stock',
     });
@@ -6907,7 +7205,7 @@ function buildingRequirementChips(
 }
 
 /** Czy gracz może TERAZ kliknąć Buduj — wszystkie chipy wymagań spełnione (tech, magazyn…). */
-function buildingCanBuildNow(
+export function buildingCanBuildNow(
   def: BuildingDef,
   city: City,
   data: GameData,
@@ -6984,7 +7282,7 @@ function appendBuildingRequirementsBlock(
 function parentBuildingName(data: GameData, upgradeFromId: string | undefined): string | null {
   const id = upgradeFromId?.trim();
   if (!id) return null;
-  return findBuildingDef(data, id)?.nazwa ?? id;
+  return findBuildingDef(data, id)?.nazwa ?? humanizeId(id);
 }
 
 /** Karta infografiki budynku (Design Poziom B · 2026-07-05). */
@@ -7088,7 +7386,7 @@ function buildBuildingInfocard(
 
   if (opts?.item && opts.city) {
     const act = el('div', 'bld-infocard-actions');
-    const e = etaTurns(opts.item.koszt, 0, opts.praca ?? 0);
+    const e = etaTurns(opts.item.koszt, 0, buildingWorkPerTurnForCity(opts.city, opts.praca ?? 0));
     const workIc = cityPanelChipIconWrap('res-work', 12);
     const cost = el('div', 'bld-infocard-cost');
     cost.innerHTML = `${opts.item.koszt}${workIc}${e !== null ? ' · ~' + e + ' ' + tury(e) : ''}`;
@@ -7397,23 +7695,22 @@ function appendTechDetailBlock(parent: HTMLElement, data: GameData, techName: st
     }
   }
 
-  if (t['wymagany budynek'] && !isEmptyDataVal(t['wymagany budynek'])) {
-    gridDetailRow(grid, 'Wymaga budynek', String(t['wymagany budynek']));
-  }
+  // R-WEB-CITYPANEL-TECH-TILE-DEAD-EFFECTS-Q1: wiersze tekstowe przechodzą przez WSPÓLNY filtr
+  // efektów martwych (ten sam co karta odkrycia: `ukryte` z tech-cards-top5.json + budynki
+  // suppressed / epoka > 3) — bez tego kafelek pokazywał np. „Teatr” przy Filozofii.
+  const wymagaBudynek = filterDeadEffectText(t['wymagany budynek'], techName);
+  if (wymagaBudynek) gridDetailRow(grid, 'Wymaga budynek', wymagaBudynek);
   if (t['Dostęp do surowca.'] && !isEmptyDataVal(t['Dostęp do surowca.'])) {
-    gridDetailRow(grid, 'Surowiec (tech)', String(t['Dostęp do surowca.']));
+    gridDetailRow(grid, 'Surowiec (tech)', nazwyZListyId(String(t['Dostęp do surowca.'])));
   }
-  if (t['Odblokowuje budynek'] && !isEmptyDataVal(t['Odblokowuje budynek'])) {
-    gridDetailRow(grid, 'Odblokowuje budynek', String(t['Odblokowuje budynek']));
-  }
-  if (t['Odblokowuje surowiec.'] && !isEmptyDataVal(t['Odblokowuje surowiec.'])) {
-    gridDetailRow(grid, 'Odblokowuje surowiec', String(t['Odblokowuje surowiec.']));
-  }
+  const odblokowujeBudynek = filterDeadEffectText(t['Odblokowuje budynek'], techName);
+  if (odblokowujeBudynek) gridDetailRow(grid, 'Odblokowuje budynek', odblokowujeBudynek);
+  const odblokowujeSurowiec = filterDeadEffectText(t['Odblokowuje surowiec.'], techName);
+  if (odblokowujeSurowiec) gridDetailRow(grid, 'Odblokowuje surowiec', nazwyZListyId(odblokowujeSurowiec));
   const terrainUnlock = (t as unknown as Record<string, unknown>)['Odblokowuje ulepszenie terenu'];
-  if (terrainUnlock && !isEmptyDataVal(terrainUnlock)) {
-    gridDetailRow(grid, 'Odblokowuje pole', String(terrainUnlock));
-  }
-  const techNote = playerFacingNote(t.Uwagi);
+  const odblokowujePole = filterDeadEffectText(terrainUnlock == null ? null : String(terrainUnlock), techName);
+  if (odblokowujePole) gridDetailRow(grid, 'Odblokowuje pole', odblokowujePole);
+  const techNote = filterDeadEffectText(playerFacingNote(t.Uwagi), techName);
   if (techNote) gridDetailRow(grid, 'Uwagi tech', techNote);
 
   // T10 LINKOWANIE-KRZYZOWE: JEDEN nowy link wyjścia z tego wbudowanego bloku (celowo
@@ -7515,12 +7812,14 @@ function ensureEntityCardBuildingStyles(): void {
 function buildBuildingDetailCardViaEntityCard(def: BuildingDef, data: GameData, city?: City): HTMLDivElement {
   ensureEntityCardBuildingStyles();
   const displayLevel = buildingUiDisplayLevel(def, city);
+  const ownerId = city?.ownerId ?? 0;
   const cityState: BuildingCardCityState = {
     hasCity: city !== undefined,
     displayLevel,
     buildCostPace: cfg.getBuildingCostPace?.() ?? 'niski',
     difficulty: cfg.getDifficulty?.() ?? 'normal',
-    ownerId: 0, // 1:1 ze świadomym hardcode'em dawnego `buildBuildingDetailCard`
+    ownerId,
+    civBonusy: cfg.getCivBonusy?.(ownerId),
   };
   const built = buildingAdapter(def, { city: cityState });
   const card = renderEntityCard(built) as HTMLDivElement;
@@ -7619,9 +7918,9 @@ function _legacyBuildBuildingDetailCard(def: BuildingDef, data: GameData, city?:
   const gCost = appendDetailGridIn(costBody);
   const pace = cfg.getBuildingCostPace?.() ?? 'niski';
   const difficulty = cfg.getDifficulty?.() ?? 'normal';
-  const ownerId = 0;
+  const ownerId = city?.ownerId ?? 0;
   const baseWork = itemCost('budynek', def.id, { buildings: data.buildings, units: data.units }, 1);
-  const workCost = buildingWorkCost(baseWork, undefined, pace, ownerId, difficulty);
+  const workCost = buildingWorkCost(baseWork, cfg.getCivBonusy?.(ownerId), pace, ownerId, difficulty);
   gridDetailRow(gCost, 'Koszt budowy (jednorazowy)', `${workCost} pkt Pracy ${cityPanelChipIconWrap('res-work', 14)}`);
   if (def.przyrostKosztu) {
     gridDetailRow(
@@ -7647,7 +7946,7 @@ function _legacyBuildBuildingDetailCard(def: BuildingDef, data: GameData, city?:
     gridDetailRow(
       gCost,
       'Koszt surowcowy (jednorazowy)',
-      Object.entries(stockCostDetail).map(([k, v]) => `${v} ${stockResourceLabel(k)}`).join(' + ')
+      Object.entries(stockCostDetail).map(([k, v]) => resourceAmountChipHtml(k, `${v}`)).join(' + ')
         + ' — z magazynu państwa',
     );
   }
@@ -7759,7 +8058,7 @@ function buildBuildingBuildTabDetailCard(
 
   if (opts?.item && city && !opts.locked) {
     const act = el('div', 'bld-detail-actions');
-    const e = etaTurns(opts.item.koszt, 0, opts.praca ?? 0);
+    const e = etaTurns(opts.item.koszt, 0, buildingWorkPerTurnForCity(city, opts.praca ?? 0));
     const workIc = cityPanelChipIconWrap('res-work', 12);
     const cost = el('div', 'bld-infocard-cost');
     cost.style.cssText = 'flex:1 1 100%;margin-bottom:0.2em;';
@@ -7770,7 +8069,9 @@ function buildBuildingBuildTabDetailCard(
     act.appendChild(btnWrap);
     card.appendChild(act);
   } else if (!opts?.locked && opts?.item) {
-    const e = etaTurns(opts.item.koszt, 0, opts.praca ?? 0);
+    const e = city
+      ? etaTurns(opts.item.koszt, 0, buildingWorkPerTurnForCity(city, opts.praca ?? 0))
+      : etaTurns(opts.item.koszt, 0, opts.praca ?? 0);
     const workIc = cityPanelChipIconWrap('res-work', 12);
     const note = el('div', 'dc-note');
     note.style.fontStyle = 'normal';
@@ -7795,7 +8096,7 @@ function buildOwnedBuildingsDetailCard(city: City, data: GameData | null): HTMLD
     return card;
   }
   const totalUpkeep = sumOwnedBuildingsUpkeep(built, data, city);
-  const totalResUpkeep = sumOwnedBuildingsResourceUpkeep(built, data);
+  const totalResUpkeep = sumOwnedBuildingsResourceUpkeep(built, data, city);
   const summary = el('div', 'bld-owned-summary');
   summary.innerHTML =
     formatBuildingUpkeepTotalHtml(totalUpkeep, totalResUpkeep) +
@@ -7804,7 +8105,8 @@ function buildOwnedBuildingsDetailCard(city: City, data: GameData | null): HTMLD
   const groups = groupBuiltBuildingIds(built, data.buildings);
   for (const { grupa, ids } of groups) {
     if (ids.length === 0) continue;
-    appendDetailSection(card, grupa);
+    // Etykieta wyświetlana (klucz `grupa` z danych bez zmian — patrz BUILDING_GROUP_ORDER).
+    appendDetailSection(card, buildingGroupDisplayLabel(grupa));
     const list = el('div');
     list.style.cssText = 'display:flex;flex-direction:column;gap:0.1em;margin-bottom:0.28em;';
     for (const id of ids) appendOwnedBuildingRow(list, id, data, city);
@@ -7934,7 +8236,7 @@ function _legacyBuildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivElement 
     gridDetailRow(
       gEco,
       'Utrzymanie surowców',
-      formatResourceUpkeepSummary(resUpkeep) + '/t',
+      formatResourceUpkeepSummary(resUpkeep, '/t'),
     );
   }
   gridDetailRow(gEco, 'Żywność', u['żywność/turę'] != null ? `${u['żywność/turę']}` : null);
@@ -7977,7 +8279,7 @@ function appendBuildableItemRow(
   city: City,
   item: ProductionItem,
   data: GameData,
-  opts: { praca: number; skarb: number | undefined; buildLabel: 'Buduj' | 'Ulepsz'; upgrade?: boolean },
+  opts: { praca: number; skarb: number | undefined; buildLabel: 'Buduj' | 'Ulepsz'; upgrade?: boolean; fromName?: string },
 ): void {
   const def = findBuildingDef(data, item.id);
   if (!def) {
@@ -7996,7 +8298,10 @@ function appendBuildableItemRow(
   fillIconElement(ic, buildingIconHtml(def));
   row.appendChild(ic);
   const name = el('span', 'bld-compact-name');
-  name.textContent = def.nazwa;
+  // Awans w łańcuchu (Palisada -> Mury kamienne): „Ulepsz → Mury kamienne” z nazwą źródła w tooltipie.
+  // Pozostałe wiersze (w tym awans POZIOMU) zachowują dotychczasową etykietę def.nazwa (bez zmiany zachowania).
+  name.textContent = opts.fromName ? `Ulepsz → ${def.nazwa}` : def.nazwa;
+  if (opts.fromName) name.title = `${opts.fromName} → ${def.nazwa}`;
   row.appendChild(name);
 
   const actions = el('div', 'bld-compact-actions');
@@ -8027,17 +8332,55 @@ function appendBuildableItemRow(
 
 function recruitManpowerCost(city: City, typeId: string): number {
   const ep = cfg.getEpoch?.(city.ownerId) ?? 1;
-  const maxMult = civManpowerMaxMult(cfg.getCivBonusy?.(city.ownerId));
-  return unitManpowerCostForType(typeId, ep, maxMult);
+  const multipliers = cfg.getManpowerMultipliers?.(city.ownerId);
+  const maxMult = multipliers?.maxMult ?? civManpowerMaxMult(cfg.getCivBonusy?.(city.ownerId));
+  return unitManpowerCostForType(typeId, ep, maxMult, multipliers?.costMult ?? maxMult);
+}
+
+/** Bieżąca pula rekrutów używana przez bramkę zakupu (fallback: pula miasta). */
+function empireRekruciTotal(city: City): number | undefined {
+  const empireTotal = cfg.getEmpireRekruciTotal?.(city.ownerId);
+  if (empireTotal != null) return empireTotal;
+  return cfg.getManpowerSnapshot?.(city.id)?.manpowerBiezacy;
 }
 
 /** Czy imperium ma wystarczającą pulę rekrutów na werb (fallback: pula miasta). */
-function empireRekruciAffordable(city: City, mpCost: number): boolean {
+function empireRekruciAffordable(
+  city: City,
+  mpCost: number,
+  available = empireRekruciTotal(city),
+): boolean {
   if (mpCost <= 0) return true;
-  const empireTotal = cfg.getEmpireRekruciTotal?.(city.ownerId);
-  if (empireTotal != null) return empireTotal >= mpCost;
-  const mpSnap = cfg.getManpowerSnapshot?.(city.id);
-  return !mpSnap || mpSnap.manpowerBiezacy >= mpCost;
+  return available == null || available >= mpCost;
+}
+
+/**
+ * Sufit licznika na karcie z bieżącego snapshotu zasobów.
+ * To tylko informacyjny max dla draftu UI — nie rezerwuje i nie zmienia kolejki.
+ * Brak wiarygodnego snapshotu oznacza brak bezpiecznego maxa.
+ */
+function maxAffordableRecruitQuantity(
+  city: City,
+  item: ProductionItem,
+  mpCost: number,
+  skarb: number | undefined,
+  stockCost: Readonly<Record<string, number>>,
+): number | undefined {
+  let max = Number.POSITIVE_INFINITY;
+  let constrained = false;
+  const applyLimit = (available: number | undefined, cost: number): void => {
+    if (available == null || !Number.isFinite(available) || cost <= 0) return;
+    constrained = true;
+    max = Math.min(max, Math.max(0, Math.floor(available / cost)));
+  };
+
+  applyLimit(skarb, item.koszt);
+  applyLimit(empireRekruciTotal(city), mpCost);
+  const pool = ownerSurowcePoolFor(city);
+  for (const [key, cost] of Object.entries(stockCost)) {
+    applyLimit(pool[key] ?? 0, cost);
+  }
+  return constrained ? Math.max(1, max) : undefined;
 }
 
 /**
@@ -8059,7 +8402,10 @@ function unitStockCostChipsHtml(u: UnitDef, city: City): string {
     const need = cost[k]!;
     const missing = isUnitRecruitStockChipMissing(pool, u, k);
     const cls = missing ? 'bld-infocard-chip stock-missing' : 'bld-infocard-chip';
-    return `<span class="${cls}">${need} ${stockResourceLabel(k)}</span>`;
+    // R-WEB-RECRUIT-LIST-REGRESSION-Q1: brak surowca widoczny tekstem w chipie („13 Drewno (brak)").
+    const chip = resourceAmountChipHtml(k, `${need}`);
+    const text = missing ? `${chip} (brak)` : chip;
+    return `<span class="${cls}">${text}</span>`;
   });
   return chips.join('');
 }
@@ -8070,35 +8416,163 @@ function unitResourceUpkeepChipsHtml(u: UnitDef): string {
   const keys = Object.keys(upkeep);
   if (keys.length === 0) return '';
   return keys
-    .map(k => `<span class="bld-infocard-chip">−${upkeep[k]} ${stockResourceLabel(k)}/t</span>`)
+    .map(k => `<span class="bld-infocard-chip">${resourceAmountChipHtml(k, `−${upkeep[k]}`, '/t')}</span>`)
     .join('');
 }
 
-function appendUnitRecruitCompactRow(
+/**
+ * Lista jednostek panelu rekrutacji (R-WEB-RECRUIT-LIST-REGRESSION-Q1, 2026-10-24).
+ * Jedyne miejsce, gdzie panel wywołuje `purchasableUnits` z `showStockGatedUnits: true`:
+ * jednostka bez zapasu surowca (Braz/Zelazo/Drewno) zostaje na liście jako wyszarzona
+ * z przyczyną (appendUnitRecruitCompactRow). Logika gry (AI, walidacja) używa flagi domyślnie false.
+ * Eksportowane pod test regresji tools/recruit-list-visibility-ui-test.cjs.
+ */
+export function recruitPanelPurchasableUnits(city: City, data: GameData) {
+  const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
+  // R-WEB-RECRUIT-LIST-ORDER-BY-ERA-Q1: epoka malejąco, w epoce siła malejąco (jeden komparator
+  // dla panelu miasta i panelu Armia — oba renderują tę listę przez renderPurchasableUnits).
+  return sortRecruitListByEra(
+    purchasableUnits(city, data, techs, { ...productionCtxForCity(city), showStockGatedUnits: true }),
+    unit => getUnitDef(data, unit.id) as unknown as RecruitOrderInput,
+  );
+}
+
+/**
+ * R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1 (część A): liczniki ilości rekrutacji per miasto+typ jednostki,
+ * niezależne i NIE zerowane po „Rekrutuj” ani po przebudowie panelu (stan UI sesji, poza zapisem gry).
+ */
+const recruitQuantityDrafts = new Map<string, number>();
+const recruitDraftKey = (cityId: string, itemId: string): string => `${cityId}|${itemId}`;
+const armyRecruitDrafts = new Map<string, number>();
+const ARMY_RECRUIT_DRAFTS_STORAGE_KEY = 'civ-army-recruit-drafts-v1';
+try {
+  const saved = localStorage.getItem(ARMY_RECRUIT_DRAFTS_STORAGE_KEY);
+  if (saved) {
+    const parsed: unknown = JSON.parse(saved);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      for (const [key, value] of Object.entries(parsed)) {
+        if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+          armyRecruitDrafts.set(key, Math.min(999, Math.floor(value)));
+        }
+      }
+    }
+  }
+} catch { /* storage can be unavailable in private/restricted contexts */ }
+function saveArmyRecruitDrafts(): void {
+  try { localStorage.setItem(ARMY_RECRUIT_DRAFTS_STORAGE_KEY, JSON.stringify(Object.fromEntries(armyRecruitDrafts))); }
+  catch { /* best effort; the in-memory drafts still work for this session */ }
+}
+function setArmyRecruitDraft(cityId: string, itemId: string, quantity: number): void {
+  const key = recruitDraftKey(cityId, itemId);
+  const safe = Math.min(999, Math.max(0, Math.floor(Number.isFinite(quantity) ? quantity : 0)));
+  if (safe > 0) armyRecruitDrafts.set(key, safe);
+  else armyRecruitDrafts.delete(key);
+  saveArmyRecruitDrafts();
+  const sum = getArmyRecruitDraftTotal();
+  document.querySelectorAll<HTMLButtonElement>('[data-army-recruit-all]').forEach(button => { button.disabled = sum <= 0; });
+}
+export function getArmyRecruitDraftTotal(): number {
+  return Array.from(armyRecruitDrafts.values()).reduce((sum, quantity) => sum + quantity, 0);
+}
+/**
+ * Zamknięcie panelu rekrutacji (Zamknij / Esc / tło): wszystkie szkice liczników Armii -> 0
+ * (pamięć + localStorage). Dopóki panel jest otwarty, szkice są zachowywane przy odświeżeniach.
+ */
+export function clearArmyRecruitDraftsOnPanelClose(): void {
+  if (armyRecruitDrafts.size === 0) return;
+  resetArmyRecruitDraftsSession();
+}
+/** New/load game boundary: do not carry one save's unpublished Army drafts into another. */
+export function resetArmyRecruitDraftsSession(): void {
+  armyRecruitDrafts.clear();
+  try { localStorage.removeItem(ARMY_RECRUIT_DRAFTS_STORAGE_KEY); } catch { /* best effort */ }
+  document.querySelectorAll<HTMLButtonElement>('[data-army-recruit-all]').forEach(button => { button.disabled = true; });
+}
+
+/** Apply only selected Army city/type drafts through the existing guarded purchase path. */
+export function submitArmyRecruitmentDrafts(cityIds: string[]): { accepted: number; requested: number; message: string } {
+  const data = gameData();
+  if (!data) return { accepted: 0, requested: 0, message: 'Brak danych gry.' };
+  const entries = cityIds.flatMap(cityId => {
+    const city = cfg.getCities?.().find(item => item.id === cityId);
+    if (!city || !isMeCity(city.ownerId)) return [];
+    return recruitPanelPurchasableUnits(city, data).flatMap(item => {
+      const quantity = armyRecruitDrafts.get(recruitDraftKey(cityId, item.id)) ?? 0;
+      return quantity > 0 ? [{ city, item, quantity }] : [];
+    });
+  });
+  let requested = 0;
+  let accepted = 0;
+  const notAccepted: string[] = [];
+  for (const entry of entries) {
+    requested += entry.quantity;
+    let remaining = entry.quantity;
+    // Existing city purchase callbacks accept/reject an exact batch. Try the largest batch
+    // downward so a budget-limited order can accept its affordable prefix without redirecting it.
+    while (remaining > 0) {
+      let batch = remaining;
+      while (batch > 0 && !recruitUnit(entry.city, entry.item, batch, false, 'army')) batch--;
+      if (batch === 0) break;
+      accepted += batch;
+      remaining -= batch;
+    }
+    setArmyRecruitDraft(entry.city.id, entry.item.id, remaining);
+    if (remaining > 0) notAccepted.push(`${entry.city.name}: ${entry.item.nazwa} — nie przyjęto ${remaining}.`);
+  }
+  // Rebuild each mounted Army city list through the same renderer so its local quantity controls
+  // reflect the accepted/remainder draft while retaining the persistent city/type values.
+  for (const cityId of new Set(entries.map(entry => entry.city.id))) {
+    const target = Array.from(document.querySelectorAll<HTMLElement>('[data-mass-recruitment-cards]'))
+      .find(node => node.dataset.massRecruitmentCards === cityId);
+    if (target) mountCityRecruitmentCardsForArmy(cityId, target);
+  }
+  if (accepted > 0) rerender();
+  const message = `Rekrutacja: przyjęto ${accepted} z ${requested} jednostek.`
+    + (notAccepted.length ? ` Pozostało: ${notAccepted.join(' ')}` : '');
+  return { accepted, requested, message };
+}
+/** Test: odczyt zapamiętanego licznika (1 = domyślny). */
+export function getRecruitQuantityDraft(cityId: string, itemId: string): number {
+  return recruitQuantityDrafts.get(recruitDraftKey(cityId, itemId)) ?? 1;
+}
+
+/** Render one recruitment card; exported for the real DOM regression gate. */
+export function appendUnitRecruitCompactRow(
   scroll: HTMLElement,
   city: City,
   item: ProductionItem,
   data: GameData,
   skarb: number | undefined,
+  opts?: { unitLabel?: string; disabledReason?: string; onRecruit?: (quantity: number) => boolean | void; armyBatch?: boolean },
 ): void {
   const udef = findUnitDef(data, item.id);
   if (!udef) return;
   const mpCost = recruitManpowerCost(city, item.id);
-  const canMp = empireRekruciAffordable(city, mpCost);
+  const mpAvailable = empireRekruciTotal(city);
+  const canMp = empireRekruciAffordable(city, mpCost, mpAvailable);
+  const mpMissing = mpAvailable == null ? undefined : Math.max(0, mpCost - mpAvailable);
   // JEDNOSTKI-SUROWIEC-01 + R-REKRUTACJA-SUROWIEC-BEZ-UPKEEP-Q1: bramka na puli
   // państwa liczy WYŁĄCZNIE jednorazowy koszt zakupu; utrzymanie idzie w następnej turze.
   const stockCost = unitStockCost(udef);
   const stockMissing = missingStockFor(ownerSurowcePoolFor(city), stockCost);
   const recruitOk = Object.keys(stockMissing).length === 0;
+  // R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1: oblężone miasto -- przycisk nieaktywny z powodem (PL).
+  const siegeBlocked = isCityUnderSiege([city], city);
+  const effectiveDisabledReason = siegeBlocked ? CITY_SIEGE_RECRUIT_BLOCK_PL : opts?.disabledReason;
   const row = buildUnitRecruitCard({
     udef,
+    unitLabel: opts?.unitLabel,
     item,
     data,
     skarb,
-    canPurchase: !!cfg.onPurchaseUnit && canMp && recruitOk,
+    canPurchase: !siegeBlocked && (opts?.onRecruit ? !opts.disabledReason : !!cfg.onPurchaseUnit) && canMp && recruitOk,
     treasuryIconHtml: cityPanelChipIconWrap('res-treasury', 14),
     mpCost,
-    mpCostLabel: formatManpower(mpCost),
+    mpCostLabel: formatManpowerCompact(mpCost),
+    // R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1: Super-jednostka = max 1 sztuka w jednym zamówieniu.
+    maxQuantity: udef['Super-jednostka'] === 'TAK' ? 1 : maxAffordableRecruitQuantity(city, item, mpCost, skarb, stockCost),
+    manpowerAvailable: mpAvailable,
+    manpowerRequired: mpCost,
     stockChipsHtml: unitStockCostChipsHtml(udef, city),
     resourceUpkeepChipsHtml: unitResourceUpkeepChipsHtml(udef),
     stockMissingLabel: !recruitOk
@@ -8106,28 +8580,162 @@ function appendUnitRecruitCompactRow(
         .map(([k, v]) => `${v} ${stockResourceLabel(k)}`)
         .join(', ')
       : undefined,
-    onRecruit: () => recruitUnit(city, item),
+    disabledReason: effectiveDisabledReason,
+    manpowerMissingLabel: mpMissing != null && mpMissing > 0
+      ? `Brakuje rekrutów: ${formatManpowerCompact(mpMissing)}`
+      : undefined,
+    initialQuantity: opts?.armyBatch
+      ? (armyRecruitDrafts.get(recruitDraftKey(city.id, item.id)) ?? 0)
+      : recruitQuantityDrafts.get(recruitDraftKey(city.id, item.id)),
+    minQuantity: opts?.armyBatch ? 0 : 1,
+    onQuantityChange: (q) => {
+      if (opts?.armyBatch) setArmyRecruitDraft(city.id, item.id, q);
+      else recruitQuantityDrafts.set(recruitDraftKey(city.id, item.id), q);
+    },
+    onRecruit: (quantity) => opts?.onRecruit
+      ? opts.onRecruit(quantity)
+      : recruitUnit(city, item, quantity, true, opts?.armyBatch ? 'army' : 'city'),
   });
+  if (opts?.armyBatch) {
+    row.dataset.armyRecruitCity = city.id;
+    row.dataset.armyRecruitUnit = item.id;
+  }
   attachHoverDetail(row, () => buildUnitDetailCard(udef, data), 220, 'left');
   scroll.appendChild(row);
 }
 
-function recruitUnit(city: City, item: ProductionItem): void {
+/** Mount the single capital-only commander offer, shared by both Army recruitment views. */
+export function mountGeneralRecruitmentCardForArmy(cityId: string, host: HTMLElement): boolean {
+  const city = cfg.getCities?.().find(item => item.id === cityId);
+  const data = gameData();
+  if (!city || !data || !isMeCity(city.ownerId)) return false;
+  if (!document.getElementById(STYLE_ID)) ensureStyles();
+  host.classList.add('civ-cs', 'civ-emp-mass-city-recruit-list');
+  const offer = cfg.getGeneralRecruitmentOffer?.(cityId);
+  if (!offer) return false;
+  if (!offer.item) {
+    host.textContent = 'Dowódca jest rekrutowany w stolicy, gdy dostępna jest jednostka do werbunku.';
+    return true;
+  }
+  const generalDef = findUnitDef(data, offer.item.id);
+  if (!generalDef) return false;
+  const generalMpCost = recruitManpowerCost(city, offer.item.id);
+  const generalMpAvailable = empireRekruciTotal(city);
+  const generalMpOk = empireRekruciAffordable(city, generalMpCost, generalMpAvailable);
+  const generalStockMissing = missingStockFor(ownerSurowcePoolFor(city), unitStockCost(generalDef));
+  const generalStockOk = Object.keys(generalStockMissing).length === 0;
+  const summary = el('div', 'unit-recruit-pool');
+  const leaderTitle = offer.title ?? 'Wódz';
+  summary.textContent = `${leaderTitle}: ${offer.alive} / ${offer.limit} · w kolejce ${offer.queued}`;
+  host.appendChild(summary);
+  const generalRow = buildUnitRecruitCard({
+    udef: generalDef,
+    unitLabel: leaderTitle,
+    item: offer.item,
+    data,
+    skarb: cfg.getTreasury?.(city.ownerId),
+    canPurchase: !!cfg.onPurchaseGeneral && !offer.disabledReason && generalMpOk && generalStockOk,
+    treasuryIconHtml: cityPanelChipIconWrap('res-treasury', 14),
+    mpCost: generalMpCost,
+    mpCostLabel: formatManpowerCompact(generalMpCost),
+    manpowerAvailable: generalMpAvailable,
+    manpowerRequired: generalMpCost,
+    maxQuantity: 1,
+    stockChipsHtml: unitStockCostChipsHtml(generalDef, city),
+    resourceUpkeepChipsHtml: unitResourceUpkeepChipsHtml(generalDef),
+    stockMissingLabel: generalStockOk ? undefined : 'Brakuje w magazynie: ' + Object.entries(generalStockMissing)
+      .map(([key, amount]) => `${amount} ${stockResourceLabel(key)}`).join(', '),
+    manpowerMissingLabel: !generalMpOk && generalMpAvailable != null
+      ? `Brakuje rekrutów: ${formatManpowerCompact(Math.max(0, generalMpCost - generalMpAvailable))}`
+      : undefined,
+    disabledReason: offer.disabledReason,
+    onRecruit: () => cfg.onPurchaseGeneral?.(cityId, offer.item!.id, offer.item!.koszt, 'army'),
+  });
+  generalRow.dataset.generalRecruit = 'true';
+  host.appendChild(generalRow);
+  return true;
+}
+
+/** Mount the exact city recruitment UI inside the map's Empire/Army panel. */
+export function mountCityRecruitmentCardsForArmy(cityId: string, host: HTMLElement): boolean {
+  const city = cfg.getCities?.().find(item => item.id === cityId);
+  const data = gameData();
+  if (!city || !data || !isMeCity(city.ownerId)) return false;
+  if (!document.getElementById(STYLE_ID)) ensureStyles();
+  host.classList.add('civ-cs', 'civ-emp-mass-city-recruit-list');
+  // R-WEB-UI-EMPIRE-RECRUIT-PANEL-NO-INNER-SCROLL-Q1: bez wewnętrznego suwaka listy (pełna wysokość).
+  renderPurchasableUnits(host, city, data, { w4: true, noInnerScroll: true, armyBatch: true });
+  // R-WEB-ARMY-PANEL-RECRUIT-REMOVE-Q1: ta sama „Kolejka rekrutacji:” co w panelu miasta
+  // (uchwyt, ikona, koszt, ETA, ↑ ↓ ✕, przeciąganie) -- ten sam appendRecruitmentQueue.
+  appendRecruitmentQueueForArmy(host, city);
+  return true;
+}
+
+function appendRecruitmentQueueForArmy(host: HTMLElement, city: City): void {
+  host.querySelectorAll(':scope > .civ-army-recruit-queue').forEach(n => n.remove());
+  const holder = el('div', 'civ-army-recruit-queue');
+  appendRecruitmentQueue(holder, city, true, {
+    // Gdy updateHud() odświeżył cały panel, stary host jest odpięty -- wtedy nic nie robimy.
+    onMutated: () => { if (host.isConnected) appendRecruitmentQueueForArmy(host, city); },
+  });
+  if (holder.childElementCount > 0) host.appendChild(holder);
+}
+
+function recruitUnit(city: City, item: ProductionItem, quantity = 1, refresh = true, origin: RecruitOrigin = 'city'): boolean {
+  if (isCityUnderSiege([city], city)) return false; // R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1
+  const requestedQuantity = Number.isFinite(quantity)
+    ? Math.max(1, Math.floor(quantity))
+    : 1;
   const skarb = cfg.getTreasury?.(city.ownerId);
-  if (skarb !== undefined && skarb < item.koszt) return;
+  if (skarb !== undefined && skarb < item.koszt * requestedQuantity) return false;
   const mpCost = recruitManpowerCost(city, item.id);
-  if (!empireRekruciAffordable(city, mpCost)) return;
+  if (!empireRekruciAffordable(city, mpCost * requestedQuantity)) return false;
   const data = gameData();
   const udef = data ? findUnitDef(data, item.id) : undefined;
   const pool = ownerSurowcePoolFor(city);
-  if (!canAffordUnitRecruitStock(pool, udef)) return;
-  if (cfg.onPurchaseUnit) {
-    cfg.onPurchaseUnit(city.id, item.id, item.koszt);
+  if (requestedQuantity === 1) {
+    if (!canAffordUnitRecruitStock(pool, udef)) return false;
+  } else {
+    const batchStockCost = Object.fromEntries(
+      Object.entries(unitStockCost(udef)).map(([key, cost]) => [key, cost * requestedQuantity]),
+    );
+    if (Object.keys(missingStockFor(pool, batchStockCost)).length > 0) return false;
   }
-  rerender();
+  if (cfg.onPurchaseUnit) {
+    const accepted = cfg.onPurchaseUnit(city.id, item.id, item.koszt, requestedQuantity, origin);
+    if (accepted === false) return false;
+  }
+  if (refresh) rerender();
+  return true;
 }
 
-function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean, opts?: { w4?: boolean }): void {
+/**
+ * R-WEB-ARMY-PANEL-RECRUIT-REMOVE-Q1: JEDNA logika mutacji kolejki rekrutacji, wspólna dla panelu
+ * miasta i panelu armii (Imperium → Armia). Każda mutacja idzie przez setProd (→ cfg.onChange →
+ * updateHud → odświeżenie panelu armii) i rerender() (panel miasta).
+ * `onMutated` pozwala widokowi spoza panelu miasta odświeżyć się, gdy host nadal jest w DOM.
+ */
+function cancelRecruitmentQueueItem(city: City, index: number, onMutated?: () => void): void {
+  const it = (getProd(city.id).rekrutacja ?? [])[index];
+  if (!it) return;
+  cfg.onCancelRecruitment?.(city.id, it.id, it.koszt);
+  setProd(city.id, dequeueRecruitment(getProd(city.id), index));
+  rerender();
+  onMutated?.();
+}
+
+function moveRecruitmentQueueItemBy(city: City, index: number, dir: -1 | 1, onMutated?: () => void): void {
+  setProd(city.id, moveRecruitQueueItem(getProd(city.id), index, dir));
+  rerender();
+  onMutated?.();
+}
+
+function appendRecruitmentQueue(
+  mount: HTMLElement,
+  city: City,
+  player: boolean,
+  opts?: { w4?: boolean; onMutated?: () => void },
+): void {
   const prod = getProd(city.id);
   const rq = prod.rekrutacja ?? [];
   if (rq.length === 0) return;
@@ -8176,41 +8784,39 @@ function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean,
       costEl.innerHTML = `${it.koszt} ${cityPanelChipIconWrap('res-treasury', 14)}`;
       costEl.title = `Opłacone ze skarbca: ${it.koszt}`;
       qi.appendChild(costEl);
-      const etaTurns = i + 1;
+      const unitsPerTurn = unitRecruitmentCapacityForCity(city, 1);
+      const recruitmentEtaTurns = unitsPerTurn > 0 ? Math.ceil((i + 1) / unitsPerTurn) : null;
       const etaEl = el('span', 'qitem-eta');
-      etaEl.textContent = etaTurns === 1 ? 'nast. tura' : `~${etaTurns} ${tury(etaTurns)}`;
-      etaEl.title = `Szacunek: ${etaTurns} ${tury(etaTurns)} (1 jednostka na turę)`;
+      etaEl.textContent = recruitmentEtaTurns === null
+        ? 'brak tempa'
+        : recruitmentEtaTurns === 1 ? 'nast. tura' : `~${recruitmentEtaTurns} ${tury(recruitmentEtaTurns)}`;
+      etaEl.title = recruitmentEtaTurns === null
+        ? 'Brak dostępnego limitu rekrutacji na turę'
+        : `Szacunek: ${recruitmentEtaTurns} ${tury(recruitmentEtaTurns)} (limit rekrutacji na turę: ${unitsPerTurn})`;
       qi.appendChild(etaEl);
       if (player) {
         const up = el('button', 'btn btn-sm', '↑');
         up.style.cssText = 'padding:0 0.35em;';
         (up as HTMLButtonElement).disabled = i <= 0;
-        up.addEventListener('click', () => {
-          setProd(city.id, moveRecruitQueueItem(getProd(city.id), i, -1));
-          rerender();
-        });
+        up.setAttribute('aria-label', `Przesuń „${it.nazwa}” wyżej w kolejce rekrutacji`);
+        up.addEventListener('click', () => moveRecruitmentQueueItemBy(city, i, -1, opts?.onMutated));
         const down = el('button', 'btn btn-sm', '↓');
         down.style.cssText = 'padding:0 0.35em;';
         (down as HTMLButtonElement).disabled = i >= rq.length - 1;
-        down.addEventListener('click', () => {
-          setProd(city.id, moveRecruitQueueItem(getProd(city.id), i, 1));
-          rerender();
-        });
+        down.setAttribute('aria-label', `Przesuń „${it.nazwa}” niżej w kolejce rekrutacji`);
+        down.addEventListener('click', () => moveRecruitmentQueueItemBy(city, i, 1, opts?.onMutated));
         const x = el('button', 'btn btn-sm', '✕');
         x.style.cssText = 'padding:0 0.35em;';
         x.title = 'Usuń z kolejki (zwrot opłaty do skarbca)';
-        x.addEventListener('click', () => {
-          cfg.onCancelRecruitment?.(city.id, it.id, it.koszt);
-          setProd(city.id, dequeueRecruitment(getProd(city.id), i));
-          rerender();
-        });
+        x.setAttribute('aria-label', `Usuń „${it.nazwa}” z kolejki rekrutacji (zwrot opłaty)`);
+        x.addEventListener('click', () => cancelRecruitmentQueueItem(city, i, opts?.onMutated));
         qi.appendChild(up);
         qi.appendChild(down);
         qi.appendChild(x);
       }
       sc.appendChild(qi);
     }
-    if (player) bindRecruitQueueDragReorder(sc, city);
+    if (player) bindRecruitQueueDragReorder(sc, city, opts?.onMutated);
     wrap.appendChild(sc);
   }
   mount.appendChild(wrap);
@@ -8271,8 +8877,12 @@ function appendBuildQueueSection(
       qLabel.style.cssText = 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
       qLabel.textContent = it.nazwa;
       qi.appendChild(qLabel);
-      const cumEta = queueItemCumulativeEta(prod, i, pracaBudynki);
-      const ownEta = queueItemOwnEta(it.koszt, pracaBudynki);
+      const buildingPracaBudynki = buildingWorkPerTurnForCity(city, pracaBudynki);
+      const cumEta = queueItemCumulativeEta(prod, i, pracaBudynki, buildingPracaBudynki);
+      const ownEta = queueItemOwnEta(
+        it.koszt,
+        it.kind === 'budynek' ? buildingWorkPerTurnForCity(city, pracaBudynki) : pracaBudynki,
+      );
       const etaEl = el('span', 'qitem-eta');
       if (cumEta !== null) {
         etaEl.textContent = `gotowy za ~${cumEta} ${tury(cumEta)}`;
@@ -8314,15 +8924,15 @@ function appendBuildQueueSection(
       const promote = el('button', 'btn btn-sm', '⇈');
       promote.style.cssText = 'padding:0 0.35em;';
       promote.title =
-        `Ustaw jako aktualnie budowane — zamienia miejscami z „${front.nazwa}" ` +
-        `(zebrana Praca „${front.nazwa}": ${Math.round(prod.postep)}/${front.koszt} — zostanie zachowana i wróci na front, ` +
+        `Ustaw jako aktualnie budowane — zamienia miejscami z „${front.nazwa}” ` +
+        `(zebrana Praca „${front.nazwa}”: ${Math.round(prod.postep)}/${front.koszt} — zostanie zachowana i wróci na front, ` +
         `gdy ten element ponownie stanie się aktualnie budowanym — czy to przez kolejną zamianę, czy przez naturalne dokończenie poprzedzającego elementu)`;
       promote.addEventListener('click', () => { setProd(city.id, promoteToFront(getProd(city.id), idx)); rerender(); });
       const up = el('button', 'btn btn-sm', '↑');
       up.style.cssText = 'padding:0 0.35em;';
       (up as HTMLButtonElement).disabled = false;
       up.title = idx === 1
-        ? `Ustaw jako aktualnie budowane — zamienia miejscami z „${front.nazwa}"`
+        ? `Ustaw jako aktualnie budowane — zamienia miejscami z „${front.nazwa}”`
         : 'Przesuń w górę kolejki oczekujących';
       up.addEventListener('click', () => {
         if (idx === 1) { setProd(city.id, promoteToFront(getProd(city.id), idx)); }
@@ -8353,6 +8963,9 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
   const data = gameData();
   const pracaSplit = view ? cityPracaSplit(city, view, data) : null;
   const pracaBud = pracaSplit?.doBudynkow ?? 0;
+  const pracaBudForEta = front?.kind === 'budynek'
+    ? buildingWorkPerTurnForCity(city, pracaBud)
+    : pracaBud;
   const player = isMeCity(city.ownerId); // AI cities -> read-only (no build/queue controls)
   const hasBuildQueue = prod.kolejka.length > 1;
   const hasRecruitQueue = (prod.rekrutacja ?? []).length > 0;
@@ -8371,8 +8984,33 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
       bToolbar.style.cssText = 'margin:0.06em 0 0.18em;';
       const bProfiles = el('div', 'okolica-toolbar-profiles');
       appendBudowaToolbarProfiles(bProfiles, city, bState.priorytetTypow, bState.tryb, bState.lista);
-      bToolbar.appendChild(bProfiles);
-      if (bState.tryb === 'lista') {
+      const globalAutoBuildOn = cfg.isAutoBuildEnabled ? cfg.isAutoBuildEnabled() : true;
+      // R-WEB-CITY-ADMINISTRATOR-Q1: autobudowa w mieście wymaga DZIAŁAJĄCEGO administratora.
+      const admStProd = cfg.getCityAdministratorState?.(city.id) ?? null;
+      const adminMissing = admStProd !== null && !admStProd.working;
+      const autoBuildOn = globalAutoBuildOn && !adminMissing;
+      const autoLockHint = !globalAutoBuildOn ? AUTO_BUILD_DISABLED_HINT : AUTO_BUILD_NEEDS_ADMINISTRATOR_HINT;
+      if (!autoBuildOn) {
+        // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: wszystkie przyciski AUTO budowy wyszarzone (zostaje „Ręczny”).
+        bProfiles.querySelectorAll('button').forEach(btn => {
+          if (btn.classList.contains('reczny')) return;
+          btn.disabled = true;
+          btn.classList.remove('on');
+          btn.classList.add('auto-build-locked');
+          btn.style.opacity = '0.4';
+          btn.title = autoLockHint;
+        });
+        bProfiles.querySelectorAll('.budowa-prio-badge').forEach(b => b.remove());
+        bProfiles.setAttribute('data-auto-build-locked', '1');
+        const note = el('div', 'muted', autoLockHint);
+        note.style.cssText = 'font-size:0.68em;margin-top:0.1em;';
+        note.setAttribute('data-auto-build-hint', '1');
+        bToolbar.appendChild(bProfiles);
+        bToolbar.appendChild(note);
+      } else {
+        bToolbar.appendChild(bProfiles);
+      }
+      if (bState.tryb === 'lista' && autoBuildOn) {
         appendBudowaListaBar(bToolbar, city, bState.lista, bState.biblioteka);
       }
       mount.appendChild(bToolbar);
@@ -8381,7 +9019,7 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
 
   if (front) {
     const paused = getProd(city.id).wstrzymana === true;
-    const e = paused ? null : etaTurns(front.koszt, prod.postep, pracaBud);
+    const e = paused ? null : etaTurns(front.koszt, prod.postep, pracaBudForEta);
     const pct = front.koszt > 0 ? Math.round(Math.min(1, prod.postep / front.koszt) * 100) : 100;
     const workIc = cityPanelChipIconWrap('res-work', 12);
     const pauseBadge = paused
@@ -8424,13 +9062,13 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
     actions.style.cssText = 'margin-top:0.35em;display:flex;gap:0.3em;flex-wrap:wrap;';
     // Wykup (rush-buy) -- only when the engine exposes treasury + a spend hook.
     if (cfg.getTreasury && cfg.onRushBuy) {
-      const koszt = Math.ceil(Math.max(0, front.koszt - prod.postep) * UI_PARAMS.panel_miasta.rush_cost_mnoznik);
+      const koszt = rushCost(prod, rushCostModifierForCity(city));
       const skarb = cfg.getTreasury(city.ownerId);
       const stac = skarb >= koszt;
       const wykup = el('button', 'btn btn-g');
       wykup.innerHTML = `${cityPanelChipIconWrap('res-treasury', 14)} Wykup (${koszt})`;
       (wykup as HTMLButtonElement).disabled = !stac;
-      wykup.title = stac ? 'Zaplac zlotem i ukoncz natychmiast' : 'Za malo zlota (' + skarb + '/' + koszt + ')';
+      wykup.title = stac ? 'Zapłać złotem i ukończ natychmiast' : 'Za mało złota (' + skarb + '/' + koszt + ')';
       wykup.addEventListener('click', () => { cfg.onRushBuy?.(city.id, front, koszt); rerender(); });
       actions.appendChild(wykup);
     }
@@ -8463,6 +9101,7 @@ function formatBuildingCatalogLockHint(
   entry: BuildingCatalogEntry,
   data: GameData,
   unlockedTechs: readonly string[],
+  brakZasobow: readonly string[] = [],
 ): string {
   if (entry.status === 'built') return 'Już wybudowany w tym mieście';
   if (entry.status === 'queued') return '⏳ W kolejce produkcji';
@@ -8471,6 +9110,8 @@ function formatBuildingCatalogLockHint(
   if (entry.locationBlocked === 'region') return '🔒 Tylko poza stolicą';
 
   const parts: string[] = [];
+  // R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3: brak surowca wprost (czego brakuje), nie tylko „Niedostępny”.
+  if (brakZasobow.length > 0) parts.push(`Brakuje: ${brakZasobow.join(' · ')}`);
   let techIc = '';
   if (entry.missingTech) {
     techIc = techIconHintSpan(entry.missingTech);
@@ -8554,6 +9195,7 @@ function productionCtxForCity(city: City): AvailabilityContext {
     empireBuiltIds,
     empireResourceStock: cfg.getEmpireStock?.(city.ownerId),
     cityHasCoastOrRiver: cfg.getCityHasCoastOrRiver?.(city.id) ?? false,
+    cityHasRiver: cfg.getCityHasRiver?.(city.id) ?? false,
     // ADMIN-STOLICA (2026-07-25): jedno źródło prawdy o stolicy — capitalCityIdForOwner
     // (main.ts), tu przez cfg.getCapitalCityId (patrz getCapitalCityId doc powyżej —
     // wyznaczona stolica z fallbackiem na najstarsze miasto, NIE heurystyka
@@ -8651,7 +9293,9 @@ function appendCatalogBuildingRow(
   scroll.appendChild(row);
 }
 
-function renderBuildList(
+/** Lista „Dostępne do budowy” (R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3: eksport pod test regresji
+ *  tools/building-resource-visibility-ui-test.cjs — ten sam kod co w panelu miasta). */
+export function renderBuildList(
   mount: HTMLElement,
   city: City,
   data: GameData | null,
@@ -8688,13 +9332,22 @@ function renderBuildList(
   const civBonusy = cfg.getCivBonusy?.(city.ownerId) ?? [];
   const prodState = getProd(city.id);
   const prodCtx = productionCtxForCity(city);
-  const items = sortProductionItemsByBuildability(
-    buildableProduction(city, data, techs, prodCtx),
+  // R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3 (2026-10-24): lista budowy pokazuje budynki możliwe do
+  // wybudowania, których brakuje surowca etykietowego (Glina/Drewno/…) — wyszarzone z chipem
+  // przyczyny. Tylko widok: AI i walidacja używają buildableProduction bez tej flagi.
+  const allBuildable = sortProductionItemsByBuildability(
+    buildableProduction(city, data, techs, { ...prodCtx, showResourceGatedBuildings: true }),
     city,
     data,
     prodCtx,
     techs,
   );
+  // Łańcuch fortyfikacji: etap, do którego stoi niższy etap, to AWANS („Ulepsz”), nie „Buduj”.
+  const chainSource = (it: ProductionItem): string | null =>
+    it.kind === 'budynek' ? skipChainUpgradeSource(it.id, built, data.buildings) : null;
+  const items = allBuildable.filter(it => chainSource(it) === null);
+  const chainUps = allBuildable.filter(it => chainSource(it) !== null);
+  const itemIds = new Set(allBuildable.map(it => it.id));
 
   const skarb = cfg.getTreasury?.(city.ownerId);
 
@@ -8731,7 +9384,7 @@ function renderBuildList(
   const fullEraPreview = showEraBuildingPreview;
   const previewEntries = collectEraPreviewEntries(data, techs, prodCtx, fullEraPreview);
 
-  const sortedUps = sortProductionItemsByBuildability(ups, city, data, prodCtx, techs);
+  const sortedUps = sortProductionItemsByBuildability([...chainUps, ...ups], city, data, prodCtx, techs);
 
   if (items.length === 0 && sortedUps.length === 0 && previewEntries.length === 0) {
     mount.appendChild(el('div', 'muted', '(brak budynków — zbadaj technologie)'));
@@ -8755,21 +9408,33 @@ function renderBuildList(
     h.textContent = 'Ulepsz';
     scroll.appendChild(h);
     for (const u of sortedUps) {
-      appendBuildableItemRow(scroll, city, u, data, { praca, skarb, buildLabel: 'Ulepsz', upgrade: true });
+      const srcId = chainSource(u);
+      const fromName = srcId ? (findBuildingDef(data, srcId)?.nazwa ?? srcId) : undefined;
+      appendBuildableItemRow(scroll, city, u, data, { praca, skarb, buildLabel: 'Ulepsz', upgrade: true, fromName });
     }
   }
-  if (previewEntries.length > 0) {
+  // Budynek już widoczny w liście budowy (wyszarzony z przyczyną) nie powtarza się w „Jeszcze
+  // zablokowane” — ten sam wiersz, jedna informacja (tryb pełnego podglądu epoki zostaje bez zmian).
+  const lockedPreview = fullEraPreview
+    ? previewEntries
+    : previewEntries.filter(e => !itemIds.has(e.id));
+  if (lockedPreview.length > 0) {
     const h = el('div', 'muted');
     h.style.cssText = 'font-size:0.72em;margin:0.35em 0 0.2em;padding-top:0.25em;border-top:1px solid var(--border);';
     h.textContent = fullEraPreview
       ? `Podgląd epoki ${eraName} (badania)`
       : `Jeszcze zablokowane (epoka ${eraName})`;
     scroll.appendChild(h);
-    for (const entry of previewEntries) {
+    for (const entry of lockedPreview) {
       const def = findBuildingDef(data, entry.id);
+      const brakZasobow = def
+        ? buildingRequirementChips(def, city, data, prodCtx, techs)
+          .filter(c => c.kind === 'stock' && !c.met)
+          .map(c => c.label)
+        : [];
       const lockHint = fullEraPreview && def
         ? formatBuildingPreviewHint(def, data, techs)
-        : formatBuildingCatalogLockHint(entry, data, techs);
+        : formatBuildingCatalogLockHint(entry, data, techs, brakZasobow);
       appendCatalogBuildingRow(scroll, entry, def, data, city, prodCtx, techs, lockHint, {
         forceLocked: fullEraPreview || entry.status === 'locked',
       });
@@ -8781,8 +9446,9 @@ function renderBuildList(
 function buildRecruitTabDetailCard(city: City, unitCount: number, skarb: number | undefined): HTMLDivElement {
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const mpSnap = cfg.getManpowerSnapshot?.(city.id);
-  const maxMult = civManpowerMaxMult(cfg.getCivBonusy?.(city.ownerId));
-  const mpCostStd = unitManpowerCost(epoch, maxMult);
+  const multipliers = cfg.getManpowerMultipliers?.(city.ownerId);
+  const maxMult = multipliers?.maxMult ?? civManpowerMaxMult(cfg.getCivBonusy?.(city.ownerId));
+  const mpCostStd = unitManpowerCost(epoch, multipliers?.costMult ?? maxMult);
 
   const card = el('div', 'detail-card');
   card.appendChild(el('div', 'dc-h', '<span>Rekrutacja — szczegóły</span>'));
@@ -8798,10 +9464,11 @@ function buildRecruitTabDetailCard(city: City, unitCount: number, skarb: number 
   gridDetailRow(g, 'Dostępne jednostki', String(unitCount));
   gridDetailRow(g, 'Skarb imperium', skarb != null ? `${skarb} 💰` : '—');
   if (mpSnap) {
-    gridDetailRow(g, 'Rekruci (pula miasta)', `${formatManpower(mpSnap.manpowerBiezacy)} / ${formatManpower(mpSnap.manpowerMax)}`);
-    gridDetailRow(g, 'Koszt Manpower (typowy)', `${formatManpower(mpSnap.kosztJednostki)} · epoka ${mpSnap.epoka}`);
+    gridDetailRow(g, 'Rekruci (pula miasta)', `${formatManpowerCompact(mpSnap.manpowerBiezacy)} / ${formatManpowerCompact(mpSnap.manpowerMax)}`);
+    gridDetailRow(g, 'Odnowa rekrutów (miasto / turę)', `+${formatManpowerCompact(mpSnap.regenPerTurn)}`);
+    gridDetailRow(g, 'Koszt Manpower (typowy)', `${formatManpowerCompact(mpSnap.kosztJednostki)} · epoka ${mpSnap.epoka}`);
   } else {
-    gridDetailRow(g, 'Koszt Manpower (typowy)', `${formatManpower(mpCostStd)} · epoka ${epoch}`);
+    gridDetailRow(g, 'Koszt Manpower (typowy)', `${formatManpowerCompact(mpCostStd)} · epoka ${epoch}`);
   }
   const rq = getProd(city.id).rekrutacja?.length ?? 0;
   gridDetailRow(g, 'W kolejce', String(rq));
@@ -8812,7 +9479,7 @@ function renderPurchasableUnits(
   mount: HTMLElement,
   city: City,
   data: GameData | null,
-  opts?: { visibleRows?: number; w4?: boolean },
+  opts?: { visibleRows?: number; w4?: boolean; scrollFill?: boolean; noInnerScroll?: boolean; armyBatch?: boolean },
 ): void {
   mount.innerHTML = '';
   const w4 = opts?.w4 === true;
@@ -8826,8 +9493,7 @@ function renderPurchasableUnits(
           c.appendChild(el('div', 'dc-note', 'Brak danych gry'));
           return c;
         }
-        const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
-        const units = purchasableUnits(city, data, techs, productionCtxForCity(city));
+        const units = recruitPanelPurchasableUnits(city, data);
         return buildRecruitTabDetailCard(city, units.length, cfg.getTreasury?.(city.ownerId));
       },
     );
@@ -8842,8 +9508,7 @@ function renderPurchasableUnits(
   // R-REKRUTACJA-PODGLAD-SUROWCOW-Q1: pasek surowców faktycznie uczestniczących
   // w koszcie/utrzymaniu jednostek dostępnych do rekrutacji w tym mieście/epoce
   // (dynamicznie, patrz appendRecruitMilitaryResourceStrip).
-  const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
-  const units = purchasableUnits(city, data, techs, productionCtxForCity(city));
+  const units = recruitPanelPurchasableUnits(city, data);
   appendRecruitMilitaryResourceStrip(mount, city, data, units);
   const skarb = cfg.getTreasury?.(city.ownerId);
   const rqLen = getProd(city.id).rekrutacja?.length ?? 0;
@@ -8876,14 +9541,39 @@ function renderPurchasableUnits(
     return;
   }
 
-  const scroll = createScrollList(
-    'list-scroll',
-    opts?.visibleRows != null
-      ? { visible: opts.visibleRows, rowEm: LIST_ROW_HEIGHT_COMPACT }
-      : { visible: LIST_SCROLL_VISIBLE_CATALOG, rowEm: LIST_ROW_HEIGHT_COMPACT },
-  );
+  // R-WEB-REKRUTACJA-PANEL-UX-IMPL-Q1: pula rekrutów PAŃSTWA raz, jedną linią nad listą
+  // (wcześniej powtarzana w każdej karcie); wiersz pokazuje już tylko „potrzebne” i „brak N”.
+  const poolAvailable = empireRekruciTotal(city);
+  if (poolAvailable != null && Number.isFinite(poolAvailable)) {
+    const pool = el('div', 'unit-recruit-pool');
+    const poolValue = Math.max(0, Math.floor(poolAvailable));
+    pool.dataset.available = String(poolValue);
+    pool.title = 'Pula rekrutów imperium — wspólna dla wszystkich jednostek; '
+      + 'wiersz jednostki pokazuje, ile potrzebuje i ile brakuje'
+      + ` · Dostępne dokładnie: ${formatFullNumber(poolValue)}`;
+    pool.textContent = 'Rekruci: dostępne ';
+    const b = document.createElement('b');
+    // R-WEB-HUD-NUMBER-ABBREV-Q1: pula rekrutów skrócona do „71,7k" (pełna wartość w title/aria-label).
+    b.textContent = formatCompactNumber(poolValue);
+    pool.setAttribute('aria-label', `Rekruci: dostępne ${formatFullNumber(poolValue)}`);
+    pool.appendChild(b);
+    mount.appendChild(pool);
+  }
+
+  // R-WEB-UI-EMPIRE-RECRUIT-PANEL-NO-INNER-SCROLL-Q1: w panelu armii/imperium (noInnerScroll)
+  // lista jednostek ma pełną wysokość — bez max-height i bez wewnętrznego suwaka; przewija się panel.
+  const scroll = opts?.noInnerScroll
+    ? el('div', 'unit-recruit-list-full')
+    : createScrollList(
+      'list-scroll',
+      opts?.scrollFill
+        ? { fill: true }
+        : opts?.visibleRows != null
+          ? { visible: opts.visibleRows, rowEm: LIST_ROW_HEIGHT_COMPACT }
+          : { visible: LIST_SCROLL_VISIBLE_CATALOG, rowEm: LIST_ROW_HEIGHT_COMPACT },
+    );
   for (const it of units) {
-    appendUnitRecruitCompactRow(scroll, city, it, data, skarb);
+    appendUnitRecruitCompactRow(scroll, city, it, data, skarb, { armyBatch: opts?.armyBatch });
   }
   mount.appendChild(scroll);
 }
@@ -8965,6 +9655,8 @@ function appendOwnedBuildingRow(
   appendBuildingInlineIcon(hd, def);
   const bn = el('span', 'bld-owned-name');
   bn.textContent = def ? def.nazwa : id;
+  // R-WEB-UI-CITY-BUILDINGS-RESOURCE-ICONS-Q1: pełna nazwa w tooltipie przy obcięciu (ellipsis).
+  bn.title = bn.textContent ?? '';
   let upgradeChainTitle = '';
   if (def && (def.upgradeFrom ?? '').trim().length > 0) {
     upgradeChainTitle = upgradeChainSteps(def.id, data.buildings).map(c => c.nazwa).join(' → ');
@@ -9003,6 +9695,11 @@ function appendOwnedBuildingRow(
       empireStock,
       building: def,
       resolveOwnerZlotoAccess: cfg.getOwnerHasZlotoAccess,
+      // R-WEB-SPICHLERZ-HUD-PARAMS-Q1: parametry zużycia Spichlerza jak w silniku.
+      drainParams: loadSpichlerzDrainParams(
+        data.econParams as unknown as RawConverterParamsJson,
+        cfg.difficulty ?? 'normal',
+      ),
     });
     if (inactiveStatus.inactive) {
       bn.classList.add('bld-owned-name--inactive');
@@ -9014,7 +9711,19 @@ function appendOwnedBuildingRow(
   } else if (upgradeChainTitle) {
     bn.title = upgradeChainTitle;
   }
-  hd.appendChild(bn);
+  // R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: wyłączony budynek produkcyjny (stan z silnika ekonomii).
+  const toggledOff = !!(def && city && !isProductionBuildingEnabled(city, def.id));
+  if (toggledOff) {
+    bn.classList.add('bld-owned-name--inactive');
+    bn.title = 'Wyłączony ręcznie: nie produkuje, nie zużywa surowców i nie kosztuje utrzymania. Włączysz go w panelu Imperium, zakładka Miasta.';
+    const offTag = el('span', 'bld-owned-lvl');
+    offTag.textContent = 'wyłączony';
+    offTag.title = bn.title;
+    hd.appendChild(bn);
+    hd.appendChild(offTag);
+  } else {
+    hd.appendChild(bn);
+  }
   if (def && city) {
     const level = buildingOwnedLevel(def, city);
     if (!compact && (level > 1 || def.maksPoziom > 1)) {
@@ -9026,7 +9735,8 @@ function appendOwnedBuildingRow(
       bn.textContent = `${def.nazwa} L${level}`;
     }
   }
-  if (def && (def.upgradeFrom ?? '').trim().length > 0) {
+  // Łańcuch fortyfikacji (upgradeSkip): bez przycisku „Skład bonusów” -- to zamiana, nie suma poziomów.
+  if (def && (def.upgradeFrom ?? '').trim().length > 0 && def.upgradeSkip !== true) {
     const upBtn = el('button', 'bld-upg');
     upBtn.type = 'button';
     upBtn.textContent = '↗';
@@ -9040,7 +9750,9 @@ function appendOwnedBuildingRow(
   if (def && city) {
     const level = buildingOwnedLevel(def, city);
     const tail = el('div', 'bld-owned-tail');
-    const upkeepDisplay = buildingUpkeepDisplay(def, level);
+    const upkeepDisplay = toggledOff
+      ? { gold: 0, resources: {} as Record<string, number> }
+      : buildingUpkeepDisplay(def, level);
     const upSpan = el('span', 'bld-owned-upkeep' + (upkeepDisplay.gold === 0 && Object.keys(upkeepDisplay.resources).length === 0 ? ' muted' : ''));
     upSpan.innerHTML = formatBuildingUpkeepRowHtml(upkeepDisplay, compact);
     tail.appendChild(upSpan);
@@ -9066,10 +9778,11 @@ function appendOwnedBuildingRow(
         // conversion -- grey out the production row instead of showing it as
         // if the building were active; `inactiveStatus` already computed above
         // (hoisted), not recomputed.
-        const convInactive = inactiveStatus?.inactive === true;
+        const convInactive = toggledOff || inactiveStatus?.inactive === true;
         const convRow = el('div', 'bld-owned-conv-row' + (convInactive ? ' bld-owned-conv-row--inactive' : ''));
         convRow.innerHTML = convHtml;
-        if (convInactive && inactiveStatus?.tooltip) convRow.title = inactiveStatus.tooltip;
+        if (toggledOff) convRow.title = bn.title;
+        else if (convInactive && inactiveStatus?.tooltip) convRow.title = inactiveStatus.tooltip;
         row.appendChild(convRow);
       }
     }
@@ -9114,7 +9827,7 @@ function renderBuildingsOwned(
     : `<span>Budynki w mieście${built ? ' (' + built.length + ')' : ''}</span>${built ? '' : PH()}`;
   if (built && data && built.length > 0 && compact) {
     const totalUpkeep = sumOwnedBuildingsUpkeep(built, data, city);
-    const totalResUpkeep = sumOwnedBuildingsResourceUpkeep(built, data);
+    const totalResUpkeep = sumOwnedBuildingsResourceUpkeep(built, data, city);
     if (totalUpkeep === 0 && Object.keys(totalResUpkeep).length === 0) {
       titleHtml += `<span class="bld-owned-title-upkeep">· ${BUILDING_UPKEEP_ZERO_LABEL}</span>`;
     } else {
@@ -9130,7 +9843,7 @@ function renderBuildingsOwned(
     if (built.length === 0) { mount.appendChild(el('div', 'muted', '(brak)')); return; }
     if (!compact) {
       const totalUpkeep = sumOwnedBuildingsUpkeep(built, data, city);
-      const totalResUpkeep = sumOwnedBuildingsResourceUpkeep(built, data);
+      const totalResUpkeep = sumOwnedBuildingsResourceUpkeep(built, data, city);
       const summary = el('div', 'bld-owned-summary');
       summary.innerHTML = formatBuildingUpkeepTotalHtml(totalUpkeep, totalResUpkeep);
       mount.appendChild(summary);
@@ -9148,7 +9861,8 @@ function renderBuildingsOwned(
       const details = el('details', `bld-group${isEmpty ? ' bld-group-empty' : ''}`);
       details.open = !isEmpty;
       const summary = el('summary', 'bld-group-h');
-      summary.textContent = isEmpty ? `${grupa} —` : `${grupa} (${ids.length})`;
+      const grupaLabel = buildingGroupDisplayLabel(grupa);
+      summary.textContent = isEmpty ? `${grupaLabel} —` : `${grupaLabel} (${ids.length})`;
       details.appendChild(summary);
       if (isEmpty) {
         if (!compact) {
@@ -9306,9 +10020,14 @@ function renderTopBarGarrison(mount: HTMLElement, city: City): void {
   const units = cfg.getUnitsAt?.(city.q, city.r);
   const count = units?.length ?? 0;
   const showDetail = () => buildGarnizonDetailCard(units ?? null, count, city.q, city.r);
+  const isPinned = pinnedGarrisonCityId === city.id;
 
   const label = el('button', 'civ-v-garrison-label');
   label.type = 'button';
+  label.setAttribute('aria-label', count === 0
+    ? 'Garnizon pusty — kliknij, aby zobaczyć szczegóły'
+    : `Garnizon — ${count} jedn. w mieście — kliknij, aby zobaczyć listę`);
+  setGarrisonLabelPinned(label, isPinned);
   label.title = count === 0
     ? 'Garnizon pusty — kliknij, aby zobaczyć szczegóły'
     : `Garnizon — ${count} jedn. w mieście · kliknij, aby zobaczyć listę`;
@@ -9322,7 +10041,34 @@ function renderTopBarGarrison(mount: HTMLElement, city: City): void {
   cnt.textContent = units !== undefined ? String(count) : '—';
   label.appendChild(cnt);
   mount.appendChild(label);
-  attachInteractiveDetail(label, showDetail, { delayMs: 220, sideHint: 'left' });
+  // R-WEB-CITY-ADMINISTRATOR-Q1: chip „Administrator" pod nazwą miasta (obok Garnizonu).
+  const admSt = isMeCity(city.ownerId) ? cfg.getCityAdministratorState?.(city.id) : null;
+  if (admSt && admSt.hired) {
+    const chip = el('span', 'civ-v-garrison-label civ-v-adm-chip' + (admSt.working ? '' : ' is-idle'));
+    chip.setAttribute('data-adm-chip', admSt.working ? 'working' : 'idle');
+    chip.title = administratorTooltipText(admSt);
+    chip.innerHTML = administratorChipInnerHtml('city', admSt.working, 'Administrator');
+    mount.appendChild(chip);
+  }
+  // R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: chip „Administrator ulepszeń” obok administratora miasta.
+  const impSt = isMeCity(city.ownerId) ? (cfg.getImprovementAdministratorState?.(city.id) ?? null) : null;
+  if (impSt && impSt.hired) {
+    const impChip = el('span', 'civ-v-garrison-label civ-v-adm-chip' + (impSt.working ? '' : ' is-idle'));
+    impChip.setAttribute('data-imp-adm-chip', impSt.working ? 'working' : 'idle');
+    impChip.title = impSt.working
+      ? 'Administrator ulepszeń: pracuje'
+      : 'Administrator ulepszeń: nie pracuje — brak środków w skarbcu państwa';
+    impChip.innerHTML = administratorChipInnerHtml('improvements', impSt.working, 'Administrator ulepszeń');
+    mount.appendChild(impChip);
+  }
+  attachInteractiveDetail(label, showDetail, {
+    delayMs: 220,
+    sideHint: 'left',
+    pinOnActivate: () => {
+      pinGarrisonPanel(city.id, label);
+    },
+  });
+  if (isPinned) showPinnedDetail(label, showDetail, 'left');
 }
 
 function buildGarnizonDetailCard(
@@ -9332,7 +10078,22 @@ function buildGarnizonDetailCard(
   cityR?: number,
 ): HTMLDivElement {
   const card = el('div', 'detail-card');
-  card.appendChild(el('div', 'dc-h', '<span>Garnizon — szczegóły</span>'));
+  const header = el('div', 'dc-h');
+  const headerTitle = el('span');
+  headerTitle.textContent = 'Garnizon — szczegóły';
+  header.appendChild(headerTitle);
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.className = 'civ-v-garrison-detail-close';
+  close.textContent = '×';
+  close.setAttribute('aria-label', 'Zamknij szczegóły garnizonu');
+  close.title = 'Zamknij szczegóły garnizonu';
+  close.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    clearGarrisonPanel();
+  });
+  header.appendChild(close);
+  card.appendChild(header);
   const intro = el('div', 'dc-note');
   intro.style.fontStyle = 'normal';
   intro.textContent =
@@ -9353,7 +10114,7 @@ function buildGarnizonDetailCard(
       allBtn.className = 'civ-v-garrison-leave-all-btn';
       allBtn.textContent = hiddenCount > 1 ? 'Odfortyfikuj wszystkie' : 'Odfortyfikuj';
       allBtn.title = hiddenCount > 1
-        ? `Odfortyfikuj wszystkie ${hiddenCount} jednostki — zostają na heksie miasta`
+        ? `Odfortyfikuj wszystkie (${formatJednostkiCount(hiddenCount)}) — zostają na heksie miasta`
         : 'Odfortyfikuj jednostkę — zostaje na heksie miasta';
       allBtn.addEventListener('click', () => cfg.onLeaveAllGarrison?.(cityQ, cityR));
       card.appendChild(allBtn);
@@ -9566,8 +10327,8 @@ function buildOkolicaDetailCard(
   appendDetailAlgo(card, 'Auto-przydział pól (assignWorkedTiles)', [
     'Zbierz wszystkie heksy w promieniu r od centrum (bez centrum miasta).',
     'Dla każdego pola oblicz plony (teren + rzeka + las + ulepszenie).',
-    `Profil „${focusLbl[focus] ?? focus}”: wagi score — np. Żywność 3/0.5/0.5, Zrówn. 1/1/1.`,
-    'Posortuj malejąco po score; remis → bliżej centrum → klucz „q,r”.',
+    `Profil „${focusLbl[focus] ?? focus}”: wagi wyniku — np. Żywność 3/0.5/0.5, Zrównoważony 1/1/1.`,
+    'Posortuj malejąco po wyniku; remis → bliżej centrum → współrzędne „q,r”.',
     `Weź top N pól, gdzie N = populacja (${city.population} 👤).`,
     'Centrum miasta daje plony bez pracownika (jak Civ V).',
   ]);
@@ -9600,7 +10361,7 @@ function buildOkolicaDetailCard(
     const gImp = appendDetailGrid(card);
     const sortedImprovements = [...improvementCounts.entries()].sort((a, b) => b[1] - a[1]);
     for (const [key, count] of sortedImprovements) {
-      improvementRangeRow(gImp, key, IMPROVEMENT_KEY_TO_NAME[key] ?? key, count);
+      improvementRangeRow(gImp, key, IMPROVEMENT_KEY_TO_NAME[key] ?? nazwaWyswietlana(key), count);
     }
   }
 
@@ -9654,7 +10415,7 @@ function formatTileYieldShort(y: { zywnosc: number; praca: number; handel: numbe
  * `foodPotentialOfMapHex` w okolica.ts — nie tylko legacy pojedyncze pole
  * `hex.ulepszenie` (ostatnia postawiona warstwa).
  */
-function tileYieldLabel(hex: Hex): string {
+function tileYieldLabel(hex: Hex, ownerEra?: number): string {
   const ulepszeniaKeys = improvementKeysForHex(hex);
   const y = tileYield({
     terenBazowy: hex.terenBazowy,
@@ -9663,6 +10424,7 @@ function tileYieldLabel(hex: Hex): string {
     zloze: (hex as { zloze?: string }).zloze,
     ulepszenieKey: ulepszeniaKeys[0],
     ulepszeniaKeys: ulepszeniaKeys.length ? ulepszeniaKeys : undefined,
+    wlascicielEra: ownerEra,
   });
   return formatTileYieldShort(y);
 }
@@ -9672,6 +10434,7 @@ function appendOkolicaYieldLabel(
   c: { cx: number; cy: number; hex: Hex | null; isCity: boolean },
   SIZE: number,
   fontScale: number,
+  ownerEra?: number,
 ): void {
   if (!c.hex) return;
   const ulepszeniaKeys = improvementKeysForHex(c.hex);
@@ -9682,6 +10445,7 @@ function appendOkolicaYieldLabel(
     zloze: (c.hex as { zloze?: string }).zloze,
     ulepszenieKey: ulepszeniaKeys[0],
     ulepszeniaKeys: ulepszeniaKeys.length ? ulepszeniaKeys : undefined,
+    wlascicielEra: ownerEra,
   });
   const ytxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   ytxt.setAttribute('x', String(c.cx));
@@ -9800,12 +10564,12 @@ function renderWorkedPreview(
       // nielegalny (poza terytorium / centrum cudzego miasta / przegrany sąsiadowi)
       // dostaje ostrzeżenie w tooltipie zamiast zwykłego opisu "zabierz 👤".
       tip.textContent = c.isCity
-        ? `Centrum — plony z terenu (bez 👤) · ${tileYieldLabel(c.hex)}`
+        ? `Centrum — plony z terenu (bez 👤) · ${tileYieldLabel(c.hex, cfg.getEpoch?.(city.ownerId) ?? 1)}`
         : c.isIllegal
           ? `⚠ Nielegalny wpis (poza terytorium) — zniknie automatycznie na koniec tury. Klik: usuń teraz`
           : hasW
-            ? `Plon: ${tileYieldLabel(c.hex)} · Klik: zabierz 👤`
-            : `Plon: ${tileYieldLabel(c.hex)} · Klik: przypisz 👤`;
+            ? `Plon: ${tileYieldLabel(c.hex, cfg.getEpoch?.(city.ownerId) ?? 1)} · Klik: zabierz 👤`
+            : `Plon: ${tileYieldLabel(c.hex, cfg.getEpoch?.(city.ownerId) ?? 1)} · Klik: przypisz 👤`;
       poly.appendChild(tip);
     }
     svg.appendChild(poly);
@@ -9844,7 +10608,7 @@ function renderWorkedPreview(
     svg.appendChild(txt);
 
     if (c.hex) {
-      appendOkolicaYieldLabel(svg, c, SIZE, c.isCity ? 0.35 : 0.35);
+      appendOkolicaYieldLabel(svg, c, SIZE, c.isCity ? 0.35 : 0.35, cfg.getEpoch?.(city.ownerId) ?? 1);
     }
 
     const workers = c.isWorked ? (reczne?.[`${c.q},${c.r}`] ?? 1) : undefined;
@@ -9879,8 +10643,8 @@ function renderWorkedPreview(
       btn.style.height = `${pctD}%`;
       const hasW = okolicaTileHasWorkerAt(city, c.q, c.r, tryb, reczne, workedSet, c.d);
       btn.title = hasW
-        ? `Zabierz pracownika · plon: ${tileYieldLabel(c.hex)}`
-        : `Przypisz pracownika · plon: ${tileYieldLabel(c.hex)}`;
+        ? `Zabierz pracownika · plon: ${tileYieldLabel(c.hex, cfg.getEpoch?.(city.ownerId) ?? 1)}`
+        : `Przypisz pracownika · plon: ${tileYieldLabel(c.hex, cfg.getEpoch?.(city.ownerId) ?? 1)}`;
       btn.addEventListener('click', (ev) => {
         ev.stopPropagation();
         ev.preventDefault();
@@ -9948,6 +10712,14 @@ function renderOkolica(root: HTMLElement, city: City, map: GameMap): void {
     headEl.style.cssText = 'display:flex;justify-content:space-between;align-items:baseline;gap:0.35em;';
     const left = el('span', '');
     left.textContent = 'Zarządzanie polami';
+    if (tryb === 'reczny') {
+      // R-WEB-UI-FARM-ASSIGN-CITIZEN-HINT-MANUAL-MODE-Q1: wyraźny znacznik trybu ręcznego.
+      const manualBadge = el('span', 'okolica-manual-badge');
+      manualBadge.textContent = 'Tryb ręczny';
+      manualBadge.title = 'Obywatele nie są przydzielani automatycznie. Przydzielaj ręcznie: klik heksu = +👤, PPM = −👤.';
+      manualBadge.style.cssText = 'margin-left:0.45em;font-size:0.72em;font-weight:bold;padding:0 0.35em;border:1px solid currentColor;border-radius:4px;';
+      left.appendChild(manualBadge);
+    }
     headEl.appendChild(left);
     const infoLink = el('button', 'okolica-info-link gold');
     infoLink.type = 'button';
@@ -10044,6 +10816,26 @@ let rootEl: HTMLDivElement | null = null;
 let activeCity: City | null = null;
 let activeMap: GameMap | null = null;
 let activeOnClose: () => void = () => {};
+/** City id whose garrison detail is explicitly selected by click/keyboard. */
+let pinnedGarrisonCityId: string | null = null;
+
+function setGarrisonLabelPinned(label: HTMLElement, pinned: boolean): void {
+  label.classList.toggle('is-pinned', pinned);
+  label.setAttribute('aria-pressed', pinned ? 'true' : 'false');
+}
+
+function pinGarrisonPanel(cityId: string, label: HTMLElement): void {
+  pinnedGarrisonCityId = cityId;
+  setGarrisonLabelPinned(label, true);
+}
+
+function clearGarrisonPanel(): void {
+  pinnedGarrisonCityId = null;
+  clearPinnedDetail();
+  document.querySelectorAll<HTMLElement>('.civ-v-garrison-label').forEach(label => {
+    setGarrisonLabelPinned(label, false);
+  });
+}
 
 /** Cities of the active city's owner (for prev/next navigation). */
 function ownerCities(city: City): City[] {
@@ -10079,6 +10871,7 @@ function switchCity(dir: -1 | 1): void {
   if (idx < 0) return;
   const next = list[(idx + dir + list.length) % list.length];
   if (!next || next.id === activeCity.id) return;
+  clearGarrisonPanel();
   activeCity = next;
   cfg.onSwitchCity?.(next.id);
   rerender();
@@ -10229,6 +11022,7 @@ export interface CityPanelUxMounts {
 let uxSectionRefresh: (() => void) | null = null;
 
 export function clearCityPanelUxMode(): void {
+  clearGarrisonPanel();
   uxSectionRefresh = null;
   activeCityPanelTab = 'budowa';
   activeCity = null;
@@ -10348,6 +11142,10 @@ function buildCityOnlyW3FlankChips(
     kultura: { big: view.kultura,     small: civ.kultura, stock: empire.kultura ?? 0 },
     religia: { big: cityRel,          small: civ.religia, stock: empire.religionStock ?? 0 },
   };
+  // R-WEB-HUD-GROSS-NET-REST-Q1: BRUTTO Pracy cywilizacji = netto + utrzymanie + auto-ulepszenia + Cuda
+  // (ten sam wzór co `pracaWplywBrutto` w hud.ts); Skarbiec: BRUTTO tylko na poziomie cywilizacji (brutto miasta NIE_ZMIERZONO w tej funkcji).
+  const pracaCivBrutto = (chip.praca.small ?? 0) + (empire.pracaUpkeep ?? 0)
+    + (empire.pracaAutoUlepszeniaKoszt ?? 0) + (empire.pracaCudaKoszt ?? 0);
   const pracaCls = chip.praca.big > 0 ? 'green' : chip.praca.big < 0 ? 'red' : '';
   const foodCls = chip.zywnosc.big > 0 ? 'green' : chip.zywnosc.big < 0 ? 'red' : '';
   const goldCls = chip.zloto.big > 0 ? 'green' : chip.zloto.big < 0 ? 'red' : '';
@@ -10372,6 +11170,8 @@ function buildCityOnlyW3FlankChips(
           ? ` (wpływ do puli ${signed((chip.praca.small ?? 0) + empire.pracaUpkeep)} ` +
             `− utrzymanie ulepszeń surowcowych ${empire.pracaUpkeep} pkt Pracy/turę)`
           : '') +
+        ` · to miasto: ${formatGrossNet(chip.praca.big, chip.praca.big, 'pkt Pracy/turę')} (miasto nie ma własnych drenaży)` +
+        ` · cywilizacja: ${formatGrossNet(pracaCivBrutto, chip.praca.small, 'pkt Pracy/turę')}` +
         ` · zapas cywilizacji ${chip.praca.stock}`,
       chip.praca.small,
       chip.praca.stock,
@@ -10384,7 +11184,11 @@ function buildCityOnlyW3FlankChips(
       'zywnosc',
       `Żywność TEGO miasta: produkcja ${signed(foodSplit.produkcja)} − racje ${foodSplit.racje} = ` +
         `${signed(chip.zywnosc.big)} · WZROST ${wzrostProcentUi}% · cała cywilizacja ` +
-        `${signed(chip.zywnosc.small)} / turę · zapas cywilizacji ${chip.zywnosc.stock}`,
+        `${signed(chip.zywnosc.small)} / turę · zapas cywilizacji ${chip.zywnosc.stock}` +
+        ` · to miasto: ${formatGrossNet(foodSplit.produkcja, chip.zywnosc.big, '🍞/turę')} (produkcja − racje)` +
+        (empire.zywnoscWplywMiast != null
+          ? ` · cywilizacja: ${formatGrossNet(empire.zywnoscWplywMiast, chip.zywnosc.small, '🍞/turę')} (nadwyżka miast → centrala; netto po deficytach i armii)`
+          : ''),
       chip.zywnosc.small,
       chip.zywnosc.stock,
     ),
@@ -10396,7 +11200,10 @@ function buildCityOnlyW3FlankChips(
       'zloto',
       `Netto pieniędzy TEGO miasta ${signed(chip.zloto.big)} → skarbiec · ` +
         `${daninaLblChip.toLowerCase()} → skarb ${signed(skarbHandel)} · zamożność ${signed(wealthHandel)} · ` +
-        `cała cywilizacja ${signed(chip.zloto.small)} / turę · zapas skarbca ${chip.zloto.stock}`,
+        `cała cywilizacja ${signed(chip.zloto.small)} / turę · zapas skarbca ${chip.zloto.stock}` +
+        (empire.bogactwoWplywyBrutto != null
+          ? ` · cywilizacja: ${formatGrossNet(empire.bogactwoWplywyBrutto, empire.bogactwoRate ?? chip.zloto.small, 'pkt Pieniądza/turę')} (netto po utrzymaniu)`
+          : ''),
       chip.zloto.small,
       chip.zloto.stock,
     ),
@@ -10410,7 +11217,9 @@ function buildCityOnlyW3FlankChips(
       naukaCls,
       'nauka',
       `Nauka TEGO miasta ${signed(chip.nauka.big)} / turę · cała cywilizacja ` +
-        `${signed(chip.nauka.small)} / turę · nauka nagromadzona cywilizacji ${chip.nauka.stock}`,
+        `${signed(chip.nauka.small)} / turę · nauka nagromadzona cywilizacji ${chip.nauka.stock}` +
+        ` · to miasto: ${formatGrossNet(chip.nauka.big, chip.nauka.big, 'pkt Nauki/turę')} · cywilizacja: ` +
+        `${formatGrossNet(chip.nauka.small, chip.nauka.small, 'pkt Nauki/turę')} (brak dziś drenaży Nauki)`,
       chip.nauka.small,
       chip.nauka.stock,
     ),
@@ -10421,7 +11230,9 @@ function buildCityOnlyW3FlankChips(
       kultCls,
       'kultura',
       `Kultura TEGO miasta ${signed(chip.kultura.big)} / turę · cała cywilizacja ` +
-        `${signed(chip.kultura.small)} / turę · kultura nagromadzona cywilizacji ${chip.kultura.stock}`,
+        `${signed(chip.kultura.small)} / turę · kultura nagromadzona cywilizacji ${chip.kultura.stock}` +
+        ` · to miasto: ${formatGrossNet(chip.kultura.big, chip.kultura.big, 'pkt Kultury/turę')} · cywilizacja: ` +
+        `${formatGrossNet(chip.kultura.small, chip.kultura.small, 'pkt Kultury/turę')} (brak dziś drenaży Kultury)`,
       chip.kultura.small,
       chip.kultura.stock,
     ),
@@ -10432,7 +11243,9 @@ function buildCityOnlyW3FlankChips(
       relCls,
       'religia',
       `Przyrost wiernych TEGO miasta ${signed(chip.religia.big)} / turę · cała cywilizacja ` +
-        `${signed(chip.religia.small)} / turę · wierni religii państwa ${chip.religia.stock}`,
+        `${signed(chip.religia.small)} / turę · wierni religii państwa ${chip.religia.stock}` +
+        ` · to miasto: ${formatGrossNet(chip.religia.big, chip.religia.big, 'wiernych/turę')} · cywilizacja: ` +
+        `${formatGrossNet(chip.religia.small, chip.religia.small, 'wiernych/turę')} (brak dziś drenaży wiernych)`,
       chip.religia.small,
       chip.religia.stock,
     ),
@@ -10466,9 +11279,9 @@ function buildCityResourceStatItems(
     items += `<span class="civ-v-res-sep"></span>`;
     items += resLocalOnly(
       cityPanelChipIcon('tb-army', 20),
-      `${formatManpower(mpSnap.manpowerBiezacy)}/${formatManpower(mpSnap.manpowerMax)}`,
+      `${formatManpowerCompact(mpSnap.manpowerBiezacy)}/${formatManpowerCompact(mpSnap.manpowerMax)}`,
       'gold',
-      `Rekruci (Manpower) · +${formatManpower(mpSnap.regenPerTurn)} · kliknij po szczegóły`,
+      `Rekruci (Manpower) · +${formatManpowerCompact(mpSnap.regenPerTurn)} · kliknij po szczegóły`,
       'rekruci',
     );
   }
@@ -10618,6 +11431,7 @@ function renderCivResourceTopBar(
     `<button type="button" class="civ-v-w3-city-nav" id="civ-v-city-next" ${navDis} title="Następne miasto (→)" aria-label="Następne miasto">›</button>` +
     `<span class="civ-v-w3-city-pop">${city.population}</span>` +
     capitalBadgeOrButtonHtml(city) +
+    administratorHeaderHtml(city) +
     `</div>` +
     `<div id="civ-v-garrison-row" class="civ-v-garrison-inline"></div>` +
     `</div>` +
@@ -10637,6 +11451,20 @@ function renderCivResourceTopBar(
   mount.querySelector('#civ-v-set-capital')?.addEventListener('click', () => {
     cfg.onSetCapital?.(city.id);
     rerender();
+  });
+  mount.querySelector('#civ-v-administrator')?.addEventListener('click', () => {
+    const st = cfg.getCityAdministratorState?.(city.id);
+    if (!st || isAdministratorPanelOpen()) return;
+    // Przycisk „Administrator +/✓” otwiera mały panel wyboru (opis, bonusy, koszt, utrzymanie, Zatrudnij/Zwolnij).
+    openAdministratorPanel({
+      getModel: () => {
+        const cur = cfg.getCityAdministratorState?.(city.id) ?? null;
+        return cur ? cityAdministratorPanelModel(cur, city.name) : null;
+      },
+      onHire: () => cfg.onHireAdministrator?.(city.id) ?? false,
+      onDismiss: () => cfg.onDismissAdministrator?.(city.id) ?? false,
+      onClose: () => rerender(),
+    });
   });
   const garrisonRow = mount.querySelector('#civ-v-garrison-row') as HTMLElement | null;
   if (garrisonRow) renderTopBarGarrison(garrisonRow, city);
@@ -10677,7 +11505,7 @@ function renderCityHeaderCompact(mount: HTMLElement, city: City, view: CityView 
   const osobRazem = cityLudnoscAbsolutna(city.population, epoch);
   mount.innerHTML =
     `<div class="civ-v-city-name">${city.name}</div>` +
-    `<div class="civ-v-city-pop">${city.population} obywateli · ≈ ${formatManpower(osobRazem)} · epoka ${epoch}</div>`;
+    `<div class="civ-v-city-pop">${formatObywateleLabel(city.population)} · ≈ ${formatManpowerCompact(osobRazem)} · epoka ${epoch}</div>`;
   if (!view) {
     mount.appendChild(el('div', 'muted', 'Brak danych ekonomii'));
     return;
@@ -10735,13 +11563,10 @@ function buildHandelDetailCard(
   const mennicaAktywna = maMennica && walutaOdkryta;
   // Mennica fizycznie stoi + Waluta odkryta, ale mnoznik SPI bo brak zlota TERAZ.
   const mennicaSpiZBrakuZlota = maMennicaBudynek && walutaOdkryta && !maDostepDoZlota;
-  // Pytanie 69 (2026-07-25): tekst pokazuje mnoznik CYWILIZACYJNY skalowany
-  // trudnoscia (ten sam co realnie liczy silnik), nie plaski params.mennicaMnoznikPoWalucie.
-  const civKeyForMennicaTxt = cfg.getCivKey?.(city.ownerId);
-  const mennicaMnoznikVal = params
-    ? mnoznikHandelPieniadzForCivByDifficulty(civKeyForMennicaTxt, cfg.data?.civs, cfg.difficulty ?? 'normal', params.mennicaMnoznikPoWalucie)
-    : undefined;
-  const mennicaMnoznikTxt = mennicaMnoznikVal !== undefined ? `×${mennicaMnoznikVal}` : '×?';
+  // R-WEB-CURRENCY-MULT-PER-CIV-Q1: ta sama wartosc per cywilizacja co w silniku (economy.ts).
+  const mennicaMnoznikTxt = params
+    ? `×${Number(mennicaMnoznikForCiv(cfg.getCivKey?.(city.ownerId), params).toFixed(2))}`
+    : '×?';
   const est = estimateHandelChips(view, split);
   // Decyzje 65B/66B: etykieta widoczna dla gracza (Danina domyslnie, Podatek gdy
   // Waluta+Mennica W STOLICY -- scislejsze niz `mennicaAktywna` powyzej, ktore
@@ -10814,32 +11639,32 @@ function buildHandelDetailCard(
     gridDetailRow(g1, 'Uwaga', `* Pieniądz i Nauka zawierają też budynki (chipy = tylko udział z ${daninaLblGen} netto)`);
   }
 
-  appendDetailFormula(card, `handelBrutto = Σ ${daninaLblGen} pól`
-    + (maTargowisko ? ' × (1 + bonus Targowiska)' : '')
+  appendDetailFormula(card, `podatek brutto = Σ ${daninaLblGen} pól`
     + (aktywneTrasyCount > 0 ? ' + premia tras handlowych (z budynkiem)' : ''));
-  appendDetailFormula(card, `strataKorupcji = handelBrutto × ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% (dziś: stały %)`);
-  appendDetailFormula(card, 'handelNetto = handelBrutto − strataKorupcji' + (
+  if (maTargowisko) appendDetailFormula(card, 'Targowisko: premia procentowa zwiększa dochód ze szlaków; te wpływy trafiają do skarbca osobno, poza podatkiem miejskim.');
+  appendDetailFormula(card, `strata korupcji = podatek brutto × ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% (dziś: stały %)`);
+  appendDetailFormula(card, 'podatek netto = podatek brutto − strata korupcji' + (
     mennicaAktywna
       ? ` × Waluta+Mennica (${mennicaMnoznikTxt})`
       : mennicaSpiZBrakuZlota
         ? ' × ×1 (Mennica śpi — brak Złota w magazynie)'
         : ' × ×1 (brak Waluty lub Mennicy)'
   ));
-  appendDetailFormula(card, 'nauka = floor(handelNetto × %Nauka) + budynki  ← już zawiera mnożnik Waluty+Mennicy powyżej');
-  appendDetailFormula(card, 'skarb_z_handlu = floor(handelNetto × %Skarb)  ← już zawiera mnożnik Waluty+Mennicy powyżej');
-  appendDetailFormula(card, `${HANDEL_ZAMOZNOSC_LABEL} = floor(handelNetto × %${HANDEL_ZAMOZNOSC_LABEL}) → pula zamożności  ← też już zawiera mnożnik`);
+  appendDetailFormula(card, 'nauka = floor(podatek netto × %Nauka) + budynki  ← już zawiera mnożnik Waluty+Mennicy powyżej');
+  appendDetailFormula(card, 'skarb z podatku = floor(podatek netto × %Skarb)  ← już zawiera mnożnik Waluty+Mennicy powyżej');
+  appendDetailFormula(card, `${HANDEL_ZAMOZNOSC_LABEL} = floor(podatek netto × %${HANDEL_ZAMOZNOSC_LABEL}) → pula zamożności  ← też już zawiera mnożnik`);
 
   appendDetailAlgo(card, `Algorytm podziału ${daninaLblGen} (cityYieldPerTurn)`, [
     `Zbierz ${daninaLblAcc} ze wszystkich obrabianych pól + centrum miasta.`,
-    maTargowisko ? 'Targowisko zwiększa handelBrutto o bonus procentowy.' : 'Bez Targowiska — tylko plony z terenu.',
+    maTargowisko ? 'Targowisko zwiększa dochód ze szlaków; przychód ten trafia w całości do skarbca poza podatkiem miejskim.' : 'Bez Targowiska — szlaki nie otrzymują premii Targowiska.',
     aktywneTrasyCount > 0
-      ? `Trasy handlowe z budynkiem: +${Math.round(premiaTrasHandlowych)} do handelBrutto (${aktywneTrasyCount} aktywnych — szczegóły szlaków i partnerów w panelu Handel, żeton paska zasobów).`
-      : 'Bez aktywnych tras handlowych z budynkiem — brak premii do handelBrutto.',
-    `Odejmij korupcję (dziś: stały ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% brutto; docelowo: dystans, miasta, cap) → handelNetto.`,
-    'Waluta + Mennica RAZEM (decyzja 2026-07-25) mnożą całe handelNetto — Skarb, Naukę i ' + HANDEL_ZAMOZNOSC_LABEL + ' równocześnie. Sam tech Waluty już NIE wystarcza.',
-    `Podziel handelNetto suwakami: Skarb / Nauka / ${HANDEL_ZAMOZNOSC_LABEL} (suma 100%).`,
+      ? `Trasy handlowe z budynkiem: +${Math.round(premiaTrasHandlowych)} do podatku brutto (${aktywneTrasyCount} aktywnych — szczegóły szlaków i partnerów w panelu Handel, żeton paska zasobów).`
+      : 'Bez aktywnych tras handlowych z budynkiem — brak premii do podatku brutto.',
+    `Odejmij korupcję (dziś: stały ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% brutto; docelowo: dystans, miasta, cap) → podatek netto.`,
+    `Jeśli bramka Mennica + Waluta + dostęp do Złota jest aktywna, po korupcji mnożnik ${mennicaMnoznikTxt} zwiększa lokalny podatek miejski przed podziałem suwakami; szlaki handlowe są rozliczane osobno i nie podlegają temu mnożnikowi.`,
+    `Podziel podatek netto suwakami: Skarb / Nauka / ${HANDEL_ZAMOZNOSC_LABEL} (suma 100%).`,
     mennicaAktywna
-      ? `Mennica + Waluta razem mnożą całe ${daninaLbl} netto ${mennicaMnoznikTxt} (Skarb, Nauka i ${HANDEL_ZAMOZNOSC_LABEL} rosną razem).`
+      ? `Mennica + Waluta mnożą lokalny podatek ${daninaLbl} ${mennicaMnoznikTxt} przed podziałem suwakami; wpływy ze szlaków pozostają osobne.`
       : mennicaSpiZBrakuZlota
         ? `Mennica zbudowana i Waluta odkryta, ale mnożnik ŚPI: brak Złota w magazynie państwa — wraca sam po uzupełnieniu zapasu.`
         : maMennicaBudynek
@@ -10847,7 +11672,7 @@ function buildHandelDetailCard(
           : `Bez Mennicy — ${daninaLbl} netto bez mnożnika, niezależnie od tego czy Waluta jest odkryta.`,
     maBiblioteka ? `Biblioteka dodaje % bonusu do Nauki (łącznie z Nauką z ${daninaLblGen}).` : `Nauka = wyłącznie udział z ${daninaLblGen} + budynki.`,
     `${HANDEL_ZAMOZNOSC_LABEL} nie trafia do skarbca — idzie do puli zamożności miasta.`,
-    'Na końcu: mnożnik W mnoży cały pieniądz miasta (Skarb + budynki + Targowisko).',
+    'Wealth mnoży pieniądz z lokalnego podatku po podziale. Dochód ze szlaków trafia osobno do skarbca i omija Wealth.',
   ]);
 
   appendDetailAlgo(card, 'Suwak UI (adjustHandelSplit)', [
@@ -11109,7 +11934,7 @@ function appendBudowaListaBar(
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const buildingName = (id: string): string => {
     const def = data?.buildings.find(b => b.id === id);
-    return def?.nazwa ?? id;
+    return def?.nazwa ?? humanizeId(id);
   };
 
   // Jawne wyjście z edytora Listy (Maciej 2026-08-04) — profil typów / Ręczny też działają.
@@ -11501,6 +12326,7 @@ function renderCityIconRail(
     btn.appendChild(glyph);
     btn.addEventListener('click', () => {
       if (activeCityPanelTab !== item.id) {
+        clearGarrisonPanel();
         activeCityPanelTab = item.id;
         rerender();
       }
@@ -11535,7 +12361,7 @@ function renderLeftPanelTab(
   view: CityView | null,
   data: GameData | null,
 ): void {
-  mount.classList.toggle('civ-v-left-main-split', tab === 'budowa');
+  mount.classList.toggle('civ-v-left-main-split', tab === 'budowa' || tab === 'rekrutacja');
   mount.innerHTML = '';
   switch (tab) {
     case 'budowa':
@@ -11543,11 +12369,14 @@ function renderLeftPanelTab(
       break;
     case 'rekrutacja':
       withW4TabCard(mount, 'cs-units', city, body => {
+        body.classList.add('civ-v-recruit-body');
         renderPurchasableUnits(body, city, data, {
-          visibleRows: LIST_SCROLL_VISIBLE_CATALOG,
           w4: true,
+          // Ten sam flex-fill co lista budynków; nagłówek i pasek zasobów zostają stałe,
+          // a lista jest jedynym przewijanym obszarem.
+          scrollFill: true,
         });
-      });
+      }, { scrollable: true });
       break;
     default:
       mount.appendChild(el('div', 'muted', '—'));
@@ -11619,6 +12448,9 @@ export function paintCityPanelSections(
   refresh: () => void,
   onClose?: () => void,
 ): void {
+  if (pinnedGarrisonCityId !== null && pinnedGarrisonCityId !== city.id) {
+    clearGarrisonPanel();
+  }
   uxSectionRefresh = refresh;
   activeCity = city;
   activeMap = map;
@@ -11785,7 +12617,24 @@ function rerender(): void {
       manager.classList.remove('active');
       manager.setAttribute('title', 'Zarządca automatyczny — wyłączony');
     }
-    manager.addEventListener('click', () => { cfg.onAutoManage?.(city.id); rerender(); });
+    const mgrAdm = cfg.getCityAdministratorState?.(city.id) ?? null;
+    const mgrAdminMissing = mgrAdm !== null && !mgrAdm.working && !!city && isMeCity(city.ownerId);
+    if ((cfg.isAutoBuildEnabled && !cfg.isAutoBuildEnabled()) || mgrAdminMissing) {
+      // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: Zarządca ⚙ nie kolejkuje budynków przy wyłączonej automatyzacji budowy.
+      // R-WEB-CITY-ADMINISTRATOR-Q1: ani w mieście bez działającego administratora.
+      manager.classList.remove('active');
+      manager.setAttribute('title', 'Zarządca automatyczny — ' + (mgrAdminMissing && (!cfg.isAutoBuildEnabled || cfg.isAutoBuildEnabled())
+        ? AUTO_BUILD_NEEDS_ADMINISTRATOR_HINT : AUTO_BUILD_DISABLED_HINT));
+      (manager as HTMLButtonElement).style.opacity = '0.4';
+      // Obrona zarzutu 2: kontrolka naprawdę nieaktywna (disabled), nie tylko przyciemniona.
+      (manager as HTMLButtonElement).disabled = true;
+      manager.setAttribute('aria-disabled', 'true');
+    }
+    manager.addEventListener('click', () => {
+      if (cfg.isAutoBuildEnabled && !cfg.isAutoBuildEnabled()) return;
+      if (mgrAdminMissing) return;
+      cfg.onAutoManage?.(city.id); rerender();
+    });
   }
   const artview = q('cs-artview'); if (artview) artview.addEventListener('click', () => { cfg.onArtView?.(city.id); });
   rootEl.querySelectorAll('.fsbtn').forEach(b => {
@@ -11826,6 +12675,7 @@ export function hideCityPanel(): void {
 /** Zamknij panel jeśli otwarty (Esc / skrót z mapy) — wywołuje ten sam onClose co przycisk „Wróć na mapę”. */
 export function closeCityPanelIfOpen(): boolean {
   if (!isCityPanelOpen()) return false;
+  clearGarrisonPanel();
   activeOnClose();
   return true;
 }

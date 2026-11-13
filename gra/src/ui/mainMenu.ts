@@ -8,6 +8,7 @@
  * LANE: src/ui/* only — NIE main.ts.
  */
 
+import { mapSizeDisplayLabel } from '../util/map-size-display';
 import { UI_PARAMS } from './uiParams';
 import { CIV_BRAND_SCOPE_VARS, ensureBrandRootTokens } from './brandTokenVars';
 import {
@@ -359,7 +360,7 @@ function renderSettings(grid: HTMLElement): void {
   SETTINGS.forEach((s, i) => {
     const row = document.createElement('div');
     row.className = 'srow';
-    const val = () => (s.opts[s.idx] ?? '') + '<span class="vdesc">' + (s.descs[s.idx] ?? '') + '</span>';
+    const val = () => mapSizeDisplayLabel(s.opts[s.idx] ?? '') + '<span class="vdesc">' + (s.descs[s.idx] ?? '') + '</span>';
     row.innerHTML = '<div class="slbl">' + settingRowIconHtml(s.key) + s.label + '</div><div class="sctl"></div>';
     const ctl = row.querySelector('.sctl') as HTMLElement;
     const left = document.createElement('button'); left.className = 'arrbtn'; left.innerHTML = '&#8249;';

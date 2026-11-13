@@ -81,7 +81,10 @@ function ok(c, m) {
   //       luka w danych to nota, nie zgadywanie).
   //     +1 'Prawo i administracja' (8 -> 9) — Garnizon, ten temat.
   // ==========================================================================
-  const TOTAL = 42;
+  //   2026-11-06 (R-WEB-BUILDING-EMPORION-Q1) — 42 -> 43: +1 'Handel i pieniądz' (5 -> 6), Emporion.
+  //   2026-11 (dług testowy R-WEB-TEST-DEBT-BATTLE-HUD-WORK-Q3) — buildings.json ma 44 budynki
+  //     (stan zgodny z building-cards-top5-test '[A] buildings.json ma 44'): +1 'Wojsko i obrona' (7 -> 8).
+  const TOTAL = 44;
   ok(buildings.length === TOTAL, `buildings.json ma ${TOTAL} budynków (ma: ${buildings.length})`);
   ok(M.BUILDING_GROUP_ORDER.length === 8, 'BUILDING_GROUP_ORDER ma dokładnie 8 grup');
   const allowed = new Set(M.BUILDING_GROUP_ORDER);
@@ -99,8 +102,8 @@ function ok(c, m) {
   // podbicie jednego licznika bez drugiego nie przeszło niezauważone.
   const expectedCounts = {
     'Prawo i administracja': 9,
-    'Wojsko i obrona': 7,
-    'Handel i pieniądz': 5,
+    'Wojsko i obrona': 8,
+    'Handel i pieniądz': 6, // R-WEB-BUILDING-EMPORION-Q1: +1 Emporion (było 5)
     'Nauka i kultura': 4,
     'Wiara': 2,
     'Zdrowie': 3,
@@ -232,12 +235,16 @@ function ok(c, m) {
   ok(wielkaKuzniaLines.length > 0, 'Wielka Kuźnia: upgradeCompositionLines() niepuste (jest następcą)');
 
   // Budynki bez upgradeFrom (w tym cztery pary boczne + nowa Baszta) nie rozwijają nic.
-  for (const id of ['akademia', 'fort', 'akademia_wojskowa', 'swiatynia', 'biblioteka', 'koszary', 'kamienne_kregi', 'mury', 'baszta']) {
+  for (const id of ['akademia', 'fort', 'akademia_wojskowa', 'swiatynia', 'biblioteka', 'koszary', 'kamienne_kregi', 'baszta']) {
     const chain = M.upgradeChainSteps(id, buildings);
     ok(chain.length === 1, `${id}: łańcuch to tylko on sam (długość 1, brak upgradeFrom)`);
     const lines = M.upgradeCompositionLines(id, buildings);
     ok(lines.length === 0, `${id}: upgradeCompositionLines() puste — nic się nie rozwija`);
   }
+  // R-WEB-FORTIFICATIONS-UPGRADE-CHAIN-IMPL-Q1 (2026-11-11): Mury ceglane NIE są już bez łańcucha --
+  // palisada -> mury_kamienne -> mury (awans, decyzja właściciela). Cytadela (fort) zostaje osobno (sprawdzona wyżej).
+  const murChain = M.upgradeChainSteps('mury', buildings);
+  ok(murChain.map(c => c.id).join(',') === 'palisada,mury_kamienne,mury', 'mury: łańcuch awansu palisada→mury_kamienne→mury');
 }
 
 console.log(`\ngrupy-budynkow-test: ${pass} pass, ${fail} fail`);

@@ -1,0 +1,8 @@
+--- A1: progi relacji (isForcedWarRelationBlocked) ---
+--- A2: parowanie 1v1 (AI↔AI) przy Relacji 100 / 99 ---
+--- A3: gracz-pierwszy (playerFirst): kandydat z Relacją >= 100 pominięty, następny wolny wybrany ---
+--- A4: dołączanie trzeciego (leftover) nie wybiera pary z Relacją >= 100 ---
+--- B: okablowanie main.ts (R8) ---
+
+forced-war-relation-gate-test: 14 pass, 0 fail
+EXIT=0

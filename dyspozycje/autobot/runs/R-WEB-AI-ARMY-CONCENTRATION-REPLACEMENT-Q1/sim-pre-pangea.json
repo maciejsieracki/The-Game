@@ -1,0 +1,365 @@
+{
+ "label": "pre-pangea",
+ "summary": {
+  "runs": 6,
+  "waves": {
+   "fala1": {
+    "samples": 2240,
+    "avgClusters": 2.3888392857142855,
+    "avgLargest": 8.898214285714285,
+    "avgUnits": 13.936607142857143,
+    "avgStragglerShare": 0.36163338149946017,
+    "avgStackHexes": 2.2705357142857143,
+    "avgArmies3": 2.1517857142857144,
+    "shareMultiArmy": 0.9870535714285714,
+    "shareArmiesOverWars": 0.16473214285714285,
+    "shareArmiesOver1": 0.9870535714285714,
+    "avgMeanRadius": 3.6977975521501953,
+    "shareTurnsWithArmy3": 1
+   },
+   "fala2+": {
+    "samples": 904,
+    "avgClusters": 2.7168141592920354,
+    "avgLargest": 9.426991150442477,
+    "avgUnits": 13.423672566371682,
+    "avgStragglerShare": 0.3018134336165312,
+    "avgStackHexes": 1.2754424778761062,
+    "avgArmies3": 1.6238938053097345,
+    "shareMultiArmy": 0.5973451327433629,
+    "shareArmiesOverWars": 0.032079646017699116,
+    "shareArmiesOver1": 0.5973451327433629,
+    "avgMeanRadius": 5.153248202142002,
+    "shareTurnsWithArmy3": 0.9944690265486725
+   }
+  },
+  "join": {
+   "fala1": {
+    "n": 50,
+    "medianTurns": 0,
+    "meanTurns": 0.28888888888888886,
+    "neverJoinedShare": 0.1
+   },
+   "fala2+": {
+    "n": 156,
+    "medianTurns": 1,
+    "meanTurns": 2,
+    "neverJoinedShare": 0.21794871794871795
+   }
+  },
+  "replacement15t": {
+   "unitTurns": 902,
+   "share": {
+    "city-in-army": 0.24611973392461198,
+    "pair": 0.12971175166297116,
+    "singleton-in-field": 0.2073170731707317,
+    "in-army>=3": 0.4124168514412417,
+    "city-waiting": 0.004434589800443459
+   }
+  },
+  "causeHistogram": {
+   "war-allin-march|singleton-in-field": 946,
+   "war-allin-march|pair": 746,
+   "no-move|singleton-in-field": 139,
+   "no-move|pair": 74,
+   "no-move|city-waiting": 22,
+   "war-allin-march|city-waiting": 4
+  },
+  "marchBelowThreshold": {
+   "marchUnitTurns": 5128,
+   "belowThresholdUnitTurns": 1696,
+   "share": 0.33073322932917315
+  },
+  "waveEvents": 16,
+  "aiMsPerCall": 25.113055555555558
+ },
+ "perCiv": [
+  {
+   "world": "pangea",
+   "seed": 1,
+   "owner": 1,
+   "waves": 1,
+   "avgUnits": 14,
+   "avgClusters": 1.9618320610687023,
+   "avgLargest": 9.748091603053435,
+   "stragglerShare": 0.3037077426390398,
+   "meanRadius": 4.53489640130862,
+   "turnsWithArmy3": 1
+  },
+  {
+   "world": "pangea",
+   "seed": 1,
+   "owner": 2,
+   "waves": 1,
+   "avgUnits": 14,
+   "avgClusters": 3,
+   "avgLargest": 7,
+   "stragglerShare": 0.5,
+   "meanRadius": 3.642857142857153,
+   "turnsWithArmy3": 1
+  },
+  {
+   "world": "pangea",
+   "seed": 1,
+   "owner": 3,
+   "waves": 1,
+   "avgUnits": 13.954198473282442,
+   "avgClusters": 3.1755725190839694,
+   "avgLargest": 8.526717557251908,
+   "stragglerShare": 0.3890193775689948,
+   "meanRadius": 4.275438302155859,
+   "turnsWithArmy3": 1
+  },
+  {
+   "world": "pangea",
+   "seed": 1,
+   "owner": 4,
+   "waves": 1,
+   "avgUnits": 13.946564885496183,
+   "avgClusters": 2.0763358778625953,
+   "avgLargest": 8.84732824427481,
+   "stragglerShare": 0.3657760814249356,
+   "meanRadius": 3.3451821715180543,
+   "turnsWithArmy3": 1
+  },
+  {
+   "world": "pangea",
+   "seed": 2,
+   "owner": 1,
+   "waves": 3,
+   "avgUnits": 13.251908396946565,
+   "avgClusters": 2.8931297709923665,
+   "avgLargest": 7.564885496183206,
+   "stragglerShare": 0.432774858729057,
+   "meanRadius": 10.414471936036817,
+   "turnsWithArmy3": 1
+  },
+  {
+   "world": "pangea",
+   "seed": 2,
+   "owner": 2,
+   "waves": 1,
+   "avgUnits": 13.946564885496183,
+   "avgClusters": 2.0763358778625953,
+   "avgLargest": 8.816793893129772,
+   "stragglerShare": 0.36795710650672403,
+   "meanRadius": 3.0755040125269058,
+   "turnsWithArmy3": 1
+  },
+  {
+   "world": "pangea",
+   "seed": 2,
+   "owner": 3,
+   "waves": 1,
+   "avgUnits": 13.86259541984733,
+   "avgClusters": 2.8625954198473282,
+   "avgLargest": 9.625954198473282,
+   "stragglerShare": 0.30566507284064576,
+   "meanRadius": 4.107317618768008,
+   "turnsWithArmy3": 1
+  },
+  {
+   "world": "pangea",
+   "seed": 2,
+   "owner": 4,
+   "waves": 2,
+   "avgUnits": 13.50381679389313,
+   "avgClusters": 1.2595419847328244,
+   "avgLargest": 12.900763358778626,
+   "stragglerShare": 0.04748148374102574,
+   "meanRadius": 0.6452602528938407,
+   "turnsWithArmy3": 1
+  },
+  {
+   "world": "pangea",
+   "seed": 3,
+   "owner": 1,
+   "waves": 2,
+   "avgUnits": 13.625954198473282,
+   "avgClusters": 3.946564885496183,
+   "avgLargest": 7.374045801526718,
+   "stragglerShare": 0.4594826293299584,
+   "meanRadius": 6.589507312026395,
+   "turnsWithArmy3": 1
+  },
+  {
+   "world": "pangea",
+   "seed": 3,
+   "owner": 2,
+   "waves": 1,
+   "avgUnits": 13.900763358778626,
+   "avgClusters": 2.2748091603053435,
+   "avgLargest": 10.358778625954198,
+   "stragglerShare": 0.25507507759416215,
+   "meanRadius": 2.274054190084719,
+   "turnsWithArmy3": 1
+  },
+  {
+   "world": "pangea",
+   "seed": 3,
+   "owner": 3,
+   "waves": 1,
+   "avgUnits": 13.893129770992367,
+   "avgClusters": 2.1297709923664123,
+   "avgLargest": 8.740458015267176,
+   "stragglerShare": 0.37098524884784345,
+   "meanRadius": 3.4248359782710986,
+   "turnsWithArmy3": 1
+  },
+  {
+   "world": "pangea",
+   "seed": 3,
+   "owner": 4,
+   "waves": 1,
+   "avgUnits": 13.908396946564885,
+   "avgClusters": 2.0763358778625953,
+   "avgLargest": 8.84732824427481,
+   "stragglerShare": 0.3641612840086115,
+   "meanRadius": 3.312529709476279,
+   "turnsWithArmy3": 1
+  },
+  {
+   "world": "pangea",
+   "seed": 4,
+   "owner": 1,
+   "waves": 6,
+   "avgUnits": 12.86259541984733,
+   "avgClusters": 3.122137404580153,
+   "avgLargest": 8.274809160305344,
+   "stragglerShare": 0.36622328053625797,
+   "meanRadius": 8.05160818824941,
+   "turnsWithArmy3": 0.9618320610687023
+  },
+  {
+   "world": "pangea",
+   "seed": 4,
+   "owner": 2,
+   "waves": 2,
+   "avgUnits": 13.961832061068701,
+   "avgClusters": 2.267175572519084,
+   "avgLargest": 9.526717557251908,
+   "stragglerShare": 0.3176594397968438,
+   "meanRadius": 2.685756991100509,
+   "turnsWithArmy3": 1
+  },
+  {
+   "world": "pangea",
+   "seed": 4,
+   "owner": 3,
+   "waves": 1,
+   "avgUnits": 13.946564885496183,
+   "avgClusters": 2.4198473282442747,
+   "avgLargest": 9.274809160305344,
+   "stragglerShare": 0.33520677795486886,
+   "meanRadius": 3.6335458434695016,
+   "turnsWithArmy3": 1
+  },
+  {
+   "world": "pangea",
+   "seed": 4,
+   "owner": 4,
+   "waves": 2,
+   "avgUnits": 13.51908396946565,
+   "avgClusters": 1.366412213740458,
+   "avgLargest": 12.83969465648855,
+   "stragglerShare": 0.05272448077791586,
+   "meanRadius": 0.839399680048535,
+   "turnsWithArmy3": 1
+  },
+  {
+   "world": "pangea",
+   "seed": 5,
+   "owner": 1,
+   "waves": 1,
+   "avgUnits": 14,
+   "avgClusters": 3,
+   "avgLargest": 7,
+   "stragglerShare": 0.5,
+   "meanRadius": 3.642857142857153,
+   "turnsWithArmy3": 1
+  },
+  {
+   "world": "pangea",
+   "seed": 5,
+   "owner": 2,
+   "waves": 1,
+   "avgUnits": 13.931297709923664,
+   "avgClusters": 2.122137404580153,
+   "avgLargest": 8.816793893129772,
+   "stragglerShare": 0.36731398372619667,
+   "meanRadius": 2.997763051198159,
+   "turnsWithArmy3": 1
+  },
+  {
+   "world": "pangea",
+   "seed": 5,
+   "owner": 3,
+   "waves": 1,
+   "avgUnits": 13.961832061068701,
+   "avgClusters": 2.1374045801526718,
+   "avgLargest": 9.67175572519084,
+   "stragglerShare": 0.3075245365321696,
+   "meanRadius": 3.0559936246959123,
+   "turnsWithArmy3": 1
+  },
+  {
+   "world": "pangea",
+   "seed": 5,
+   "owner": 4,
+   "waves": 1,
+   "avgUnits": 13.938931297709924,
+   "avgClusters": 2.2748091603053435,
+   "avgLargest": 8.664122137404581,
+   "stragglerShare": 0.3785196991303852,
+   "meanRadius": 3.6391382154741,
+   "turnsWithArmy3": 1
+  },
+  {
+   "world": "pangea",
+   "seed": 6,
+   "owner": 1,
+   "waves": 5,
+   "avgUnits": 13.244274809160306,
+   "avgClusters": 4.6183206106870225,
+   "avgLargest": 6.778625954198473,
+   "stragglerShare": 0.489407411926496,
+   "meanRadius": 11.381509584563021,
+   "turnsWithArmy3": 1
+  },
+  {
+   "world": "pangea",
+   "seed": 6,
+   "owner": 2,
+   "waves": 1,
+   "avgUnits": 13.954198473282442,
+   "avgClusters": 2.183206106870229,
+   "avgLargest": 9.679389312977099,
+   "stragglerShare": 0.306601795151413,
+   "meanRadius": 2.660850599781892,
+   "turnsWithArmy3": 1
+  },
+  {
+   "world": "pangea",
+   "seed": 6,
+   "owner": 3,
+   "waves": 1,
+   "avgUnits": 13.916030534351146,
+   "avgClusters": 2.2213740458015265,
+   "avgLargest": 9.549618320610687,
+   "stragglerShare": 0.3142353829376725,
+   "meanRadius": 3.198179682912504,
+   "turnsWithArmy3": 1
+  },
+  {
+   "world": "pangea",
+   "seed": 6,
+   "owner": 4,
+   "waves": 2,
+   "avgUnits": 13.908396946564885,
+   "avgClusters": 2.1297709923664123,
+   "avgLargest": 8.778625954198473,
+   "stragglerShare": 0.36889509981112956,
+   "meanRadius": 3.362404135304904,
+   "turnsWithArmy3": 1
+  }
+ ]
+}

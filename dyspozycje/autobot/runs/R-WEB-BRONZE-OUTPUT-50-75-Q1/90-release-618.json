@@ -1,0 +1,12 @@
+{
+  "stage": 11,
+  "wave": 618,
+  "publication": "4919be9dc",
+  "md5": "14336eb5393bb01aef84047308564eb5",
+  "remoteReadback": "fresh fetch: three artifacts byte-identical",
+  "audio": "HTTP present/absent PASS; three sidecars unchanged",
+  "limits": [
+    "No file protocol acceptance",
+    "No full large empire test"
+  ]
+}

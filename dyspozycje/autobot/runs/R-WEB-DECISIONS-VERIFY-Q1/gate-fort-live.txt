@@ -1,0 +1,4 @@
+  OK  Q-A ruch: terytorium C przeszlo na gracza
+  OK  F: zero console.error/pageerror
+=== fort-outpost-territory-live-test: 33 passed, 0 failed ===
+EXIT=0

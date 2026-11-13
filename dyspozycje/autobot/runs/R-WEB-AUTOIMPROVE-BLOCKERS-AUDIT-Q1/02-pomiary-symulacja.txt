@@ -1,0 +1,955 @@
+A1 | rownina+rzeka, pop5, wszystkie techy, tryb zrownowazone, etapy ON (jak main.ts)
+   built={"farma":5,"bydlo":5,"irygacja":5} first={"farma":1,"bydlo":2,"irygacja":3} executor-odrzuca={} pustych_tur=37/40 worked=5
+A2 | jw., etapy OFF (foodImprovementStages=false)
+   built={"farma":5,"bydlo":5,"irygacja":5} first={"farma":1,"bydlo":1,"irygacja":1} executor-odrzuca={} pustych_tur=39/40 worked=5
+A3 | jw., profil zywnosc, etapy ON
+   built={"farma":5,"bydlo":5,"irygacja":5} first={"farma":1,"bydlo":2,"irygacja":3} executor-odrzuca={} pustych_tur=37/40 worked=5
+A4 | jw., demandDriven=false, etapy OFF
+   built={"farma":5,"bydlo":5,"irygacja":5} first={"farma":1,"bydlo":1,"irygacja":1} executor-odrzuca={} pustych_tur=39/40 worked=5
+A5 | jw. etapy ON, onlyWorked=false (bez "tylko z obywatelami")
+   built={"farma":91,"bydlo":91,"irygacja":24} first={"farma":1,"bydlo":2,"irygacja":3} executor-odrzuca={} pustych_tur=37/40 worked=5
+A6 | jw. etapy ON, BRAK techu Oswojenie zwierzat (reszta jest)
+   built={"farma":5} first={"farma":1} executor-odrzuca={} pustych_tur=39/40 worked=5
+A7 | jw. etapy ON, BRAK techu Gospodarka wodna
+   built={"farma":5,"bydlo":5} first={"farma":1,"bydlo":2} executor-odrzuca={} pustych_tur=38/40 worked=5
+A8 | jw. etapy ON, civ=inkowie (era 1, playerEra NIE przekazane jak w main.ts)
+   built={"farma":5,"irygacja":5} first={"farma":1,"irygacja":2} executor-odrzuca={} pustych_tur=38/40 worked=5
+A9 | jw. etapy ON, civ=inkowie, era 3 PRZEKAZANA do pickera (hipoteza naprawy)
+   built={"farma":5,"bydlo":5,"irygacja":5} first={"farma":1,"bydlo":2,"irygacja":3} executor-odrzuca={} pustych_tur=37/40 worked=5
+A10 | jw. etapy ON, pop 12 (wiecej heksow obrabianych)
+   built={"farma":12,"bydlo":12,"irygacja":9} first={"farma":1,"bydlo":2,"irygacja":3} executor-odrzuca={} pustych_tur=37/40 worked=12
+A11 | jw. etapy ON, pct=33 (domyslne 33%)
+   built={"farma":5,"bydlo":5,"irygacja":5} first={"farma":1,"bydlo":2,"irygacja":3} executor-odrzuca={} pustych_tur=37/40 worked=5
+C1 | rzeka+las NA rzece, wolno wycinac las ON, tylko z obywatelami, etapy ON
+   built={"wyrab":2,"farma":5,"bydlo":5,"irygacja":5} first={"wyrab":1,"farma":2,"bydlo":3,"irygacja":4} executor-odrzuca={} pustych_tur=36/40 worked=5
+C2 | jw., wolno wycinac las OFF (etap 0 powinien dzialac mimo to)
+   built={"wyrab":2,"farma":5,"bydlo":5,"irygacja":5} first={"wyrab":1,"farma":2,"bydlo":3,"irygacja":4} executor-odrzuca={} pustych_tur=36/40 worked=5
+C3 | jw., etapy OFF
+   built={"tartak":2,"oboz_lowiecki":2,"farma":3,"bydlo":3,"irygacja":3} first={"tartak":1,"oboz_lowiecki":1,"farma":1,"bydlo":1,"irygacja":1} executor-odrzuca={} pustych_tur=39/40 worked=5
+C4 | jw., etapy OFF + wolno wycinac OFF
+   built={"tartak":2,"oboz_lowiecki":2,"farma":3,"bydlo":3,"irygacja":3} first={"tartak":1,"oboz_lowiecki":1,"farma":1,"bydlo":1,"irygacja":1} executor-odrzuca={} pustych_tur=39/40 worked=5
+C5 | las BEZ rzeki, wolno wycinac ON, etapy ON, pop 5
+   built={"farma":5,"bydlo":5} first={"farma":1,"bydlo":2} executor-odrzuca={} pustych_tur=38/40 worked=5
+C6 | las BEZ rzeki, wolno wycinac ON, etapy OFF
+   built={"farma":5,"bydlo":5} first={"farma":1,"bydlo":1} executor-odrzuca={} pustych_tur=39/40 worked=5
+C7 | las BEZ rzeki, etapy ON, techy BEZ Obrobki drewna
+   built={"farma":5,"bydlo":5} first={"farma":1,"bydlo":2} executor-odrzuca={} pustych_tur=38/40 worked=5
+D1 | rownina+rzeka, NIEDOBOR surowca (etapy OFF, foodOnly OFF — jak main.ts przy deficit)
+   built={"farma":5,"bydlo":5,"irygacja":5} first={"farma":1,"bydlo":1,"irygacja":1} executor-odrzuca={} pustych_tur=39/40 worked=5
+D2 | rzeka+las NA rzece, NIEDOBOR, wolno wycinac ON
+   built={"tartak":2,"oboz_lowiecki":2,"farma":3,"bydlo":3,"irygacja":3} first={"tartak":1,"oboz_lowiecki":1,"farma":1,"bydlo":1,"irygacja":1} executor-odrzuca={} pustych_tur=39/40 worked=5
+D3 | rzeka+las NA rzece, NIEDOBOR, wolno wycinac OFF
+   built={"tartak":2,"oboz_lowiecki":2,"farma":3,"bydlo":3,"irygacja":3} first={"tartak":1,"oboz_lowiecki":1,"farma":1,"bydlo":1,"irygacja":1} executor-odrzuca={} pustych_tur=39/40 worked=5
+D4 | rzeka+las NA rzece, NIEDOBOR, techy BEZ Obrobki drewna/Lowiectwa (tartak/oboz niedostepne)
+   built={"wyrab":1,"farma":4,"bydlo":4,"irygacja":4} first={"wyrab":1,"farma":1,"bydlo":1,"irygacja":1} executor-odrzuca={} pustych_tur=38/40 worked=5
+D5 | las BEZ rzeki, NIEDOBOR, wolno wycinac ON
+   built={"farma":5,"bydlo":5} first={"farma":1,"bydlo":1} executor-odrzuca={} pustych_tur=39/40 worked=5
+E1a | mapa mieszana seed1, pop6, wolno ON, bez niedoboru (etapy ON)
+   built={"wyrab":1,"farma":5,"bydlo":5,"owce":1,"irygacja":5} first={"wyrab":1,"farma":2,"bydlo":3,"owce":3,"irygacja":4} executor-odrzuca={} pustych_tur=36/40 worked=6
+E1b | mapa mieszana seed1, pop6, wolno ON, z niedoborem (etapy OFF)
+   built={"farma":4,"bydlo":4,"irygacja":4,"owce":1,"tartak":1,"oboz_lowiecki":1} first={"farma":1,"bydlo":1,"irygacja":1,"owce":1,"tartak":1,"oboz_lowiecki":1} executor-odrzuca={} pustych_tur=39/40 worked=6
+E2a | mapa mieszana seed2, pop6, wolno ON, bez niedoboru (etapy ON)
+   built={"wyrab":3,"farma":6,"bydlo":6,"irygacja":6} first={"wyrab":1,"farma":2,"bydlo":3,"irygacja":4} executor-odrzuca={} pustych_tur=36/40 worked=6
+E2b | mapa mieszana seed2, pop6, wolno ON, z niedoborem (etapy OFF)
+   built={"farma":3,"bydlo":3,"irygacja":3,"tartak":3,"oboz_lowiecki":3} first={"farma":1,"bydlo":1,"irygacja":1,"tartak":1,"oboz_lowiecki":1} executor-odrzuca={} pustych_tur=39/40 worked=6
+E3a | mapa mieszana seed3, pop6, wolno ON, bez niedoboru (etapy ON)
+   built={"farma":6,"bydlo":6,"irygacja":6} first={"farma":1,"bydlo":2,"irygacja":3} executor-odrzuca={} pustych_tur=37/40 worked=6
+E3b | mapa mieszana seed3, pop6, wolno ON, z niedoborem (etapy OFF)
+   built={"farma":6,"bydlo":6,"irygacja":6} first={"farma":1,"bydlo":1,"irygacja":1} executor-odrzuca={} pustych_tur=39/40 worked=6
+F1 | las wokol miasta BEZ rzeki, heksy lasu obrabiane, wolno ON, bez niedoboru (etapy ON)
+   built={"farma":2,"bydlo":2,"tartak":6,"oboz_lowiecki":6} first={"farma":1,"bydlo":2,"tartak":3,"oboz_lowiecki":3} executor-odrzuca={} pustych_tur=37/40 worked=8
+F2 | jw., z niedoborem surowca (etapy OFF)
+   built={"farma":2,"bydlo":2,"tartak":6,"oboz_lowiecki":6} first={"farma":1,"bydlo":1,"tartak":1,"oboz_lowiecki":1} executor-odrzuca={} pustych_tur=39/40 worked=8
+F3 | jw. bez niedoboru, wolno OFF
+   built={"farma":2,"bydlo":2,"tartak":6,"oboz_lowiecki":6} first={"farma":1,"bydlo":2,"tartak":3,"oboz_lowiecki":3} executor-odrzuca={} pustych_tur=37/40 worked=8
+F4 | jw. etapy ON, techy BEZ Obrobki drewna i Lowiectwa (tartak/oboz niedostepne)
+   built={"farma":8,"bydlo":8,"wyrab":6} first={"farma":1,"bydlo":2,"wyrab":3} executor-odrzuca={} pustych_tur=35/40 worked=8
+G1 | rownina+rzeka pop8, etapy ON, pula0=40, +25 Pracy/ture
+   built={"farma":8,"bydlo":8,"irygacja":7} first={"farma":1,"bydlo":7,"irygacja":15} executor-odrzuca={} pustych_tur=20/40 worked=8
+G2 | jw., z niedoborem (etapy OFF, hex-po-hexie, pelna lista typow)
+   built={"farma":8,"bydlo":8,"irygacja":7} first={"farma":1,"bydlo":2,"irygacja":15} executor-odrzuca={} pustych_tur=20/40 worked=8
+G3 | jw. G2 ale +10 Pracy/ture (upkeep zjada przychod)
+   built={"farma":8,"bydlo":8,"irygacja":1} first={"farma":1,"bydlo":3,"irygacja":37} executor-odrzuca={} pustych_tur=23/40 worked=8
+H1 | rownina+rzeka pop8, etapy ON, pct=20, pula0=1000, +0 Pracy/ture, N=10
+   built={"farma":8,"bydlo":8,"irygacja":7} first={"farma":1,"bydlo":2,"irygacja":3} executor-odrzuca={} pustych_tur=2/40 worked=8
+H2 | jw., pct=100 (kontrola)
+   built={"farma":8,"bydlo":8,"irygacja":7} first={"farma":1,"bydlo":2,"irygacja":3} executor-odrzuca={} pustych_tur=7/40 worked=8
+M-start | deficitKeys przy magazynie "start" (wycenionych kluczy=15, prog=10) | {"mdef":["ruda","ruda_zelaza","ruda_cyny","cegla","sol","kon","ceramika","braz","zelazo","stal","zloto","wegiel"],"nonFood":true}
+M-srodek-gry | deficitKeys przy magazynie "srodek-gry" (wycenionych kluczy=15, prog=10) | {"mdef":["ruda_zelaza","ruda_cyny","braz","zelazo","stal","zloto","wegiel"],"nonFood":true}
+M-bogaty-wszystkie>=10 | deficitKeys przy magazynie "bogaty-wszystkie>=10" (wycenionych kluczy=15, prog=10) | {"mdef":[],"nonFood":false}
+K-farma | koszt Pracy / tech | {"koszt":20,"tech":"Rolnictwo"}
+K-bydlo | koszt Pracy / tech | {"koszt":20,"tech":"Oswojenie zwierząt"}
+K-irygacja | koszt Pracy / tech | {"koszt":60,"tech":"Gospodarka wodna"}
+K-wyrab | koszt Pracy / tech | {"koszt":2.5,"tech":null}
+K-tartak | koszt Pracy / tech | {"koszt":25,"tech":"Obróbka drewna"}
+K-oboz_lowiecki | koszt Pracy / tech | {"koszt":18,"tech":"Łowiectwo"}
+
+== A1 log
+t1 farma 15,14
+t1 farma 16,14
+t1 farma 14,14
+t1 farma 17,13
+t1 farma 18,13
+t2 bydlo 15,14
+t2 bydlo 16,14
+t2 bydlo 14,14
+t2 bydlo 17,13
+t2 bydlo 18,13
+t3 irygacja 15,14
+t3 irygacja 16,14
+t3 irygacja 14,14
+t3 irygacja 17,13
+t3 irygacja 18,13
+
+== A2 log
+t1 farma 15,14
+t1 bydlo 15,14
+t1 irygacja 15,14
+t1 farma 16,14
+t1 bydlo 16,14
+t1 irygacja 16,14
+t1 farma 14,14
+t1 bydlo 14,14
+t1 irygacja 14,14
+t1 farma 17,13
+t1 bydlo 17,13
+t1 irygacja 17,13
+t1 farma 18,13
+t1 bydlo 18,13
+t1 irygacja 18,13
+
+== A3 log
+t1 farma 15,14
+t1 farma 16,14
+t1 farma 14,14
+t1 farma 17,13
+t1 farma 18,13
+t2 bydlo 15,14
+t2 bydlo 16,14
+t2 bydlo 14,14
+t2 bydlo 17,13
+t2 bydlo 18,13
+t3 irygacja 15,14
+t3 irygacja 16,14
+t3 irygacja 14,14
+t3 irygacja 17,13
+t3 irygacja 18,13
+
+== A4 log
+t1 farma 15,14
+t1 bydlo 15,14
+t1 irygacja 15,14
+t1 farma 16,14
+t1 bydlo 16,14
+t1 irygacja 16,14
+t1 farma 14,14
+t1 bydlo 14,14
+t1 irygacja 14,14
+t1 farma 17,13
+t1 bydlo 17,13
+t1 irygacja 17,13
+t1 farma 18,13
+t1 bydlo 18,13
+t1 irygacja 18,13
+
+== A5 log
+t1 farma 15,14
+t1 farma 16,14
+t1 farma 14,14
+t1 farma 17,13
+t1 farma 18,13
+t1 farma 13,13
+t1 farma 15,15
+t1 farma 14,15
+t1 farma 14,16
+t1 farma 15,16
+t1 farma 16,15
+t1 farma 13,15
+t1 farma 13,16
+t1 farma 13,17
+t1 farma 14,17
+t1 farma 15,13
+t1 farma 15,17
+t1 farma 16,13
+t1 farma 16,16
+t1 farma 17,14
+t1 farma 17,15
+t1 farma 12,15
+t1 farma 12,16
+t1 farma 12,17
+t1 farma 12,18
+t1 farma 13,14
+t1 farma 13,18
+t1 farma 14,13
+t1 farma 14,18
+t1 farma 15,12
+t1 farma 15,18
+t1 farma 16,12
+t1 farma 16,17
+t1 farma 17,12
+t1 farma 17,16
+t1 farma 18,12
+t1 farma 18,14
+t1 farma 18,15
+t1 farma 11,15
+t1 farma 11,16
+t1 farma 11,17
+t1 farma 11,18
+t1 farma 11,19
+t1 farma 12,14
+t1 farma 12,19
+t1 farma 13,19
+t1 farma 14,12
+t1 farma 14,19
+t1 farma 15,11
+t1 farma 15,19
+t1 farma 16,11
+t1 farma 16,18
+t1 farma 17,11
+t1 farma 17,17
+t1 farma 18,11
+t1 farma 18,16
+t1 farma 19,11
+t1 farma 19,12
+t1 farma 19,13
+t1 farma 19,14
+t1 farma 19,15
+t1 farma 10,15
+t1 farma 10,16
+t1 farma 10,17
+t1 farma 10,18
+t1 farma 10,19
+t1 farma 10,20
+t1 farma 11,14
+t1 farma 11,20
+t1 farma 12,13
+t1 farma 12,20
+t1 farma 13,12
+t1 farma 13,20
+t1 farma 14,11
+t1 farma 14,20
+t1 farma 15,10
+t1 farma 15,20
+t1 farma 16,10
+t1 farma 16,19
+t1 farma 17,10
+t1 farma 17,18
+t1 farma 18,10
+t1 farma 18,17
+t1 farma 19,10
+t1 farma 19,16
+t1 farma 20,10
+t1 farma 20,11
+t1 farma 20,12
+t1 farma 20,13
+t1 farma 20,14
+t1 farma 20,15
+t2 bydlo 15,14
+t2 bydlo 16,14
+t2 bydlo 14,14
+t2 bydlo 17,13
+t2 bydlo 18,13
+t2 bydlo 13,13
+t2 bydlo 15,15
+t2 bydlo 14,15
+t2 bydlo 14,16
+t2 bydlo 15,16
+t2 bydlo 16,15
+t2 bydlo 13,15
+t2 bydlo 13,16
+t2 bydlo 13,17
+t2 bydlo 14,17
+t2 bydlo 15,13
+t2 bydlo 15,17
+t2 bydlo 16,13
+t2 bydlo 16,16
+t2 bydlo 17,14
+t2 bydlo 17,15
+t2 bydlo 12,15
+t2 bydlo 12,16
+t2 bydlo 12,17
+t2 bydlo 12,18
+t2 bydlo 13,14
+t2 bydlo 13,18
+t2 bydlo 14,13
+t2 bydlo 14,18
+t2 bydlo 15,12
+t2 bydlo 15,18
+t2 bydlo 16,12
+t2 bydlo 16,17
+t2 bydlo 17,12
+t2 bydlo 17,16
+t2 bydlo 18,12
+t2 bydlo 18,14
+t2 bydlo 18,15
+t2 bydlo 11,15
+t2 bydlo 11,16
+t2 bydlo 11,17
+t2 bydlo 11,18
+t2 bydlo 11,19
+t2 bydlo 12,14
+t2 bydlo 12,19
+t2 bydlo 13,19
+t2 bydlo 14,12
+t2 bydlo 14,19
+t2 bydlo 15,11
+t2 bydlo 15,19
+t2 bydlo 16,11
+t2 bydlo 16,18
+t2 bydlo 17,11
+t2 bydlo 17,17
+t2 bydlo 18,11
+t2 bydlo 18,16
+t2 bydlo 19,11
+t2 bydlo 19,12
+t2 bydlo 19,13
+t2 bydlo 19,14
+t2 bydlo 19,15
+t2 bydlo 10,15
+t2 bydlo 10,16
+t2 bydlo 10,17
+t2 bydlo 10,18
+t2 bydlo 10,19
+t2 bydlo 10,20
+t2 bydlo 11,14
+t2 bydlo 11,20
+t2 bydlo 12,13
+t2 bydlo 12,20
+t2 bydlo 13,12
+t2 bydlo 13,20
+t2 bydlo 14,11
+t2 bydlo 14,20
+t2 bydlo 15,10
+t2 bydlo 15,20
+t2 bydlo 16,10
+t2 bydlo 16,19
+t2 bydlo 17,10
+t2 bydlo 17,18
+t2 bydlo 18,10
+t2 bydlo 18,17
+t2 bydlo 19,10
+t2 bydlo 19,16
+t2 bydlo 20,10
+t2 bydlo 20,11
+t2 bydlo 20,12
+t2 bydlo 20,13
+t2 bydlo 20,14
+t2 bydlo 20,15
+t3 irygacja 15,14
+t3 irygacja 16,14
+t3 irygacja 14,14
+t3 irygacja 17,13
+t3 irygacja 18,13
+t3 irygacja 13,13
+t3 irygacja 15,15
+t3 irygacja 14,15
+t3 irygacja 16,15
+t3 irygacja 13,15
+t3 irygacja 15,13
+t3 irygacja 16,13
+t3 irygacja 17,14
+t3 irygacja 13,14
+t3 irygacja 14,13
+t3 irygacja 17,12
+t3 irygacja 18,12
+t3 irygacja 18,14
+t3 irygacja 12,14
+t3 irygacja 14,12
+t3 irygacja 19,12
+t3 irygacja 19,13
+t3 irygacja 12,13
+t3 irygacja 13,12
+
+== A6 log
+t1 farma 15,14
+t1 farma 16,14
+t1 farma 14,14
+t1 farma 17,13
+t1 farma 18,13
+
+== A7 log
+t1 farma 15,14
+t1 farma 16,14
+t1 farma 14,14
+t1 farma 17,13
+t1 farma 18,13
+t2 bydlo 15,14
+t2 bydlo 16,14
+t2 bydlo 14,14
+t2 bydlo 17,13
+t2 bydlo 18,13
+
+== A8 log
+t1 farma 15,14
+t1 farma 16,14
+t1 farma 14,14
+t1 farma 17,13
+t1 farma 18,13
+t2 irygacja 15,14
+t2 irygacja 16,14
+t2 irygacja 14,14
+t2 irygacja 17,13
+t2 irygacja 18,13
+
+== A9 log
+t1 farma 15,14
+t1 farma 16,14
+t1 farma 14,14
+t1 farma 17,13
+t1 farma 18,13
+t2 bydlo 15,14
+t2 bydlo 16,14
+t2 bydlo 14,14
+t2 bydlo 17,13
+t2 bydlo 18,13
+t3 irygacja 15,14
+t3 irygacja 16,14
+t3 irygacja 14,14
+t3 irygacja 17,13
+t3 irygacja 18,13
+
+== A10 log
+t1 farma 15,14
+t1 farma 16,14
+t1 farma 14,14
+t1 farma 17,13
+t1 farma 18,13
+t1 farma 13,13
+t1 farma 14,15
+t1 farma 14,16
+t1 farma 15,16
+t1 farma 16,15
+t1 farma 13,15
+t1 farma 13,16
+t2 bydlo 15,14
+t2 bydlo 16,14
+t2 bydlo 14,14
+t2 bydlo 17,13
+t2 bydlo 18,13
+t2 bydlo 13,13
+t2 bydlo 14,15
+t2 bydlo 14,16
+t2 bydlo 15,16
+t2 bydlo 16,15
+t2 bydlo 13,15
+t2 bydlo 13,16
+t3 irygacja 15,14
+t3 irygacja 16,14
+t3 irygacja 14,14
+t3 irygacja 17,13
+t3 irygacja 18,13
+t3 irygacja 13,13
+t3 irygacja 14,15
+t3 irygacja 16,15
+t3 irygacja 13,15
+
+== A11 log
+t1 farma 15,14
+t1 farma 16,14
+t1 farma 14,14
+t1 farma 17,13
+t1 farma 18,13
+t2 bydlo 15,14
+t2 bydlo 16,14
+t2 bydlo 14,14
+t2 bydlo 17,13
+t2 bydlo 18,13
+t3 irygacja 15,14
+t3 irygacja 16,14
+t3 irygacja 14,14
+t3 irygacja 17,13
+t3 irygacja 18,13
+
+== C1 log
+t1 wyrab 15,14
+t1 wyrab 16,14
+t2 farma 15,14
+t2 farma 16,14
+t2 farma 17,13
+t2 farma 18,13
+t2 farma 13,13
+t3 bydlo 15,14
+t3 bydlo 16,14
+t3 bydlo 17,13
+t3 bydlo 18,13
+t3 bydlo 13,13
+t4 irygacja 15,14
+t4 irygacja 16,14
+t4 irygacja 17,13
+t4 irygacja 18,13
+t4 irygacja 13,13
+
+== C2 log
+t1 wyrab 15,14
+t1 wyrab 16,14
+t2 farma 15,14
+t2 farma 16,14
+t2 farma 17,13
+t2 farma 18,13
+t2 farma 13,13
+t3 bydlo 15,14
+t3 bydlo 16,14
+t3 bydlo 17,13
+t3 bydlo 18,13
+t3 bydlo 13,13
+t4 irygacja 15,14
+t4 irygacja 16,14
+t4 irygacja 17,13
+t4 irygacja 18,13
+t4 irygacja 13,13
+
+== C3 log
+t1 tartak 15,14
+t1 oboz_lowiecki 15,14
+t1 tartak 16,14
+t1 oboz_lowiecki 16,14
+t1 farma 17,13
+t1 bydlo 17,13
+t1 irygacja 17,13
+t1 farma 18,13
+t1 bydlo 18,13
+t1 irygacja 18,13
+t1 farma 13,13
+t1 bydlo 13,13
+t1 irygacja 13,13
+
+== C4 log
+t1 tartak 15,14
+t1 oboz_lowiecki 15,14
+t1 tartak 16,14
+t1 oboz_lowiecki 16,14
+t1 farma 17,13
+t1 bydlo 17,13
+t1 irygacja 17,13
+t1 farma 18,13
+t1 bydlo 18,13
+t1 irygacja 18,13
+t1 farma 13,13
+t1 bydlo 13,13
+t1 irygacja 13,13
+
+== C5 log
+t1 farma 14,15
+t1 farma 15,14
+t1 farma 15,16
+t1 farma 16,14
+t1 farma 13,15
+t2 bydlo 14,15
+t2 bydlo 15,14
+t2 bydlo 15,16
+t2 bydlo 16,14
+t2 bydlo 13,15
+
+== C6 log
+t1 farma 14,15
+t1 bydlo 14,15
+t1 farma 15,14
+t1 bydlo 15,14
+t1 farma 15,16
+t1 bydlo 15,16
+t1 farma 16,14
+t1 bydlo 16,14
+t1 farma 13,15
+t1 bydlo 13,15
+
+== C7 log
+t1 farma 14,15
+t1 farma 15,14
+t1 farma 15,16
+t1 farma 16,14
+t1 farma 13,15
+t2 bydlo 14,15
+t2 bydlo 15,14
+t2 bydlo 15,16
+t2 bydlo 16,14
+t2 bydlo 13,15
+
+== D1 log
+t1 farma 15,14
+t1 bydlo 15,14
+t1 irygacja 15,14
+t1 farma 16,14
+t1 bydlo 16,14
+t1 irygacja 16,14
+t1 farma 14,14
+t1 bydlo 14,14
+t1 irygacja 14,14
+t1 farma 17,13
+t1 bydlo 17,13
+t1 irygacja 17,13
+t1 farma 18,13
+t1 bydlo 18,13
+t1 irygacja 18,13
+
+== D2 log
+t1 tartak 15,14
+t1 oboz_lowiecki 15,14
+t1 tartak 16,14
+t1 oboz_lowiecki 16,14
+t1 farma 17,13
+t1 bydlo 17,13
+t1 irygacja 17,13
+t1 farma 18,13
+t1 bydlo 18,13
+t1 irygacja 18,13
+t1 farma 13,13
+t1 bydlo 13,13
+t1 irygacja 13,13
+
+== D3 log
+t1 tartak 15,14
+t1 oboz_lowiecki 15,14
+t1 tartak 16,14
+t1 oboz_lowiecki 16,14
+t1 farma 17,13
+t1 bydlo 17,13
+t1 irygacja 17,13
+t1 farma 18,13
+t1 bydlo 18,13
+t1 irygacja 18,13
+t1 farma 13,13
+t1 bydlo 13,13
+t1 irygacja 13,13
+
+== D4 log
+t1 wyrab 15,14
+t1 farma 17,13
+t1 bydlo 17,13
+t1 irygacja 17,13
+t1 farma 18,13
+t1 bydlo 18,13
+t1 irygacja 18,13
+t1 farma 13,13
+t1 bydlo 13,13
+t1 irygacja 13,13
+t2 farma 15,14
+t2 bydlo 15,14
+t2 irygacja 15,14
+
+== D5 log
+t1 farma 14,15
+t1 bydlo 14,15
+t1 farma 15,14
+t1 bydlo 15,14
+t1 farma 15,16
+t1 bydlo 15,16
+t1 farma 16,14
+t1 bydlo 16,14
+t1 farma 13,15
+t1 bydlo 13,15
+
+== E1a log
+t1 wyrab 17,15
+t2 farma 15,14
+t2 farma 14,14
+t2 farma 17,15
+t2 farma 13,14
+t2 farma 18,16
+t3 bydlo 15,14
+t3 owce 16,15
+t3 bydlo 14,14
+t3 bydlo 17,15
+t3 bydlo 13,14
+t3 bydlo 18,16
+t4 irygacja 15,14
+t4 irygacja 14,14
+t4 irygacja 17,15
+t4 irygacja 13,14
+t4 irygacja 18,16
+
+== E1b log
+t1 farma 15,14
+t1 bydlo 15,14
+t1 irygacja 15,14
+t1 owce 16,15
+t1 farma 14,14
+t1 bydlo 14,14
+t1 irygacja 14,14
+t1 tartak 17,15
+t1 oboz_lowiecki 17,15
+t1 farma 13,14
+t1 bydlo 13,14
+t1 irygacja 13,14
+t1 farma 18,16
+t1 bydlo 18,16
+t1 irygacja 18,16
+
+== E2a log
+t1 wyrab 14,14
+t1 wyrab 18,16
+t1 wyrab 12,13
+t2 farma 16,15
+t2 farma 14,14
+t2 farma 17,15
+t2 farma 13,14
+t2 farma 18,16
+t2 farma 12,13
+t3 bydlo 16,15
+t3 bydlo 14,14
+t3 bydlo 17,15
+t3 bydlo 13,14
+t3 bydlo 18,16
+t3 bydlo 12,13
+t4 irygacja 16,15
+t4 irygacja 14,14
+t4 irygacja 17,15
+t4 irygacja 13,14
+t4 irygacja 18,16
+t4 irygacja 12,13
+
+== E2b log
+t1 farma 16,15
+t1 bydlo 16,15
+t1 irygacja 16,15
+t1 tartak 14,14
+t1 oboz_lowiecki 14,14
+t1 farma 17,15
+t1 bydlo 17,15
+t1 irygacja 17,15
+t1 farma 13,14
+t1 bydlo 13,14
+t1 irygacja 13,14
+t1 tartak 18,16
+t1 oboz_lowiecki 18,16
+t1 tartak 12,13
+t1 oboz_lowiecki 12,13
+
+== E3a log
+t1 farma 15,14
+t1 farma 16,15
+t1 farma 14,14
+t1 farma 13,14
+t1 farma 18,16
+t1 farma 12,13
+t2 bydlo 15,14
+t2 bydlo 16,15
+t2 bydlo 14,14
+t2 bydlo 13,14
+t2 bydlo 18,16
+t2 bydlo 12,13
+t3 irygacja 15,14
+t3 irygacja 16,15
+t3 irygacja 14,14
+t3 irygacja 13,14
+t3 irygacja 18,16
+t3 irygacja 12,13
+
+== E3b log
+t1 farma 15,14
+t1 bydlo 15,14
+t1 irygacja 15,14
+t1 farma 16,15
+t1 bydlo 16,15
+t1 irygacja 16,15
+t1 farma 14,14
+t1 bydlo 14,14
+t1 irygacja 14,14
+t1 farma 13,14
+t1 bydlo 13,14
+t1 irygacja 13,14
+t1 farma 18,16
+t1 bydlo 18,16
+t1 irygacja 18,16
+t1 farma 12,13
+t1 bydlo 12,13
+t1 irygacja 12,13
+
+== F1 log
+t1 farma 14,15
+t1 farma 16,15
+t2 bydlo 14,15
+t2 bydlo 16,15
+t3 tartak 14,16
+t3 oboz_lowiecki 14,16
+t3 tartak 15,14
+t3 oboz_lowiecki 15,14
+t3 tartak 15,16
+t3 oboz_lowiecki 15,16
+t3 tartak 16,14
+t3 oboz_lowiecki 16,14
+t3 tartak 13,15
+t3 oboz_lowiecki 13,15
+t3 tartak 13,16
+t3 oboz_lowiecki 13,16
+
+== F2 log
+t1 farma 14,15
+t1 bydlo 14,15
+t1 tartak 14,16
+t1 oboz_lowiecki 14,16
+t1 tartak 15,14
+t1 oboz_lowiecki 15,14
+t1 tartak 15,16
+t1 oboz_lowiecki 15,16
+t1 tartak 16,14
+t1 oboz_lowiecki 16,14
+t1 farma 16,15
+t1 bydlo 16,15
+t1 tartak 13,15
+t1 oboz_lowiecki 13,15
+t1 tartak 13,16
+t1 oboz_lowiecki 13,16
+
+== F3 log
+t1 farma 14,15
+t1 farma 16,15
+t2 bydlo 14,15
+t2 bydlo 16,15
+t3 tartak 14,16
+t3 oboz_lowiecki 14,16
+t3 tartak 15,14
+t3 oboz_lowiecki 15,14
+t3 tartak 15,16
+t3 oboz_lowiecki 15,16
+t3 tartak 16,14
+t3 oboz_lowiecki 16,14
+t3 tartak 13,15
+t3 oboz_lowiecki 13,15
+t3 tartak 13,16
+t3 oboz_lowiecki 13,16
+
+== F4 log
+t1 farma 14,15
+t1 farma 16,15
+t2 bydlo 14,15
+t2 bydlo 16,15
+t3 wyrab 14,16
+t3 wyrab 15,14
+t3 wyrab 15,16
+t3 wyrab 16,14
+t3 wyrab 13,15
+t3 wyrab 13,16
+t4 farma 14,16
+t4 farma 15,14
+t4 farma 15,16
+t4 farma 16,14
+t4 farma 13,15
+t4 farma 13,16
+t5 bydlo 14,16
+t5 bydlo 15,14
+t5 bydlo 15,16
+t5 bydlo 16,14
+t5 bydlo 13,15
+t5 bydlo 13,16
+
+== G1 log
+t1 farma 15,14
+t2 farma 16,14
+t2 farma 14,14
+t3 farma 17,13
+t4 farma 18,13
+t5 farma 13,13
+t6 farma 14,15
+t6 farma 14,16
+t7 bydlo 15,14
+t8 bydlo 16,14
+t9 bydlo 14,14
+t10 bydlo 17,13
+t10 bydlo 18,13
+t11 bydlo 13,13
+t12 bydlo 14,15
+t13 bydlo 14,16
+t15 irygacja 15,14
+t18 irygacja 16,14
+t20 irygacja 14,14
+t22 irygacja 17,13
+t25 irygacja 18,13
+t27 irygacja 13,13
+t30 irygacja 14,15
+
+== G2 log
+t1 farma 15,14
+t2 bydlo 15,14
+t2 farma 16,14
+t3 bydlo 16,14
+t4 farma 14,14
+t5 bydlo 14,14
+t6 farma 17,13
+t6 bydlo 17,13
+t7 farma 18,13
+t8 bydlo 18,13
+t9 farma 13,13
+t10 bydlo 13,13
+t10 farma 14,15
+t11 bydlo 14,15
+t12 farma 14,16
+t13 bydlo 14,16
+t15 irygacja 15,14
+t18 irygacja 16,14
+t20 irygacja 14,14
+t22 irygacja 17,13
+t25 irygacja 18,13
+t27 irygacja 13,13
+t30 irygacja 14,15
+
+== G3 log
+t1 farma 15,14
+t3 bydlo 15,14
+t5 farma 16,14
+t7 bydlo 16,14
+t9 farma 14,14
+t11 bydlo 14,14
+t13 farma 17,13
+t15 bydlo 17,13
+t17 farma 18,13
+t19 bydlo 18,13
+t21 farma 13,13
+t23 bydlo 13,13
+t25 farma 14,15
+t27 bydlo 14,15
+t29 farma 14,16
+t31 bydlo 14,16
+t37 irygacja 15,14
+
+== H1 log
+t1 farma 15,14
+t1 farma 16,14
+t1 farma 14,14
+t1 farma 17,13
+t1 farma 18,13
+t1 farma 13,13
+t1 farma 14,15
+t1 farma 14,16
+t2 bydlo 15,14
+t2 bydlo 16,14
+t2 bydlo 14,14
+t2 bydlo 17,13
+t2 bydlo 18,13
+t2 bydlo 13,13
+t2 bydlo 14,15
+t2 bydlo 14,16
+t3 irygacja 15,14
+t3 irygacja 16,14
+t4 irygacja 14,14
+t5 irygacja 17,13
+t6 irygacja 18,13
+t7 irygacja 13,13
+t8 irygacja 14,15
+
+== H2 log
+t1 farma 15,14
+t1 farma 16,14
+t1 farma 14,14
+t1 farma 17,13
+t1 farma 18,13
+t1 farma 13,13
+t1 farma 14,15
+t1 farma 14,16
+t2 bydlo 15,14
+t2 bydlo 16,14
+t2 bydlo 14,14
+t2 bydlo 17,13
+t2 bydlo 18,13
+t2 bydlo 13,13
+t2 bydlo 14,15
+t2 bydlo 14,16
+t3 irygacja 15,14
+t3 irygacja 16,14
+t3 irygacja 14,14
+t3 irygacja 17,13
+t3 irygacja 18,13
+t3 irygacja 13,13
+t3 irygacja 14,15
+
+TMP=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/tmp/audit-ai-35Hkrn
+EXIT=0

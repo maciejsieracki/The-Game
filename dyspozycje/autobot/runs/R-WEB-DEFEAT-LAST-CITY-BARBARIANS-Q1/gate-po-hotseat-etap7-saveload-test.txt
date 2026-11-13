@@ -1,0 +1,69 @@
+--- A. Roundtrip v3 NIEPUSTY (2 wlascicieli ludzcy, miasta, jednostki, tech) ---
+  OK: SAVE_VERSION === 3 (bump 2->3, R-HOTSEAT-ETAP7-SAVELOAD-Q1)
+  OK: JSON zserializowany NIE zawiera starego pola `gracz` (v2)
+  OK: JSON zserializowany NIE zawiera starego pola `explored` (v2, tablicowe)
+  OK: roundtrip: wersja === 3
+  OK: roundtrip: gracze[] ma 2 wpisy (nie 1 -- dowod ze to NIE jest zawsze single-player)
+  OK: roundtrip: exploredByHuman[] ma 2 wpisy
+  OK: roundtrip: humanOwnerIds === [0,3]
+  OK: roundtrip: activeHumanOwnerId === 3 (fotel B byl aktywny)
+  OK: roundtrip: miasta i jednostki obu wlascicieli zachowane
+  OK: roundtrip: gracze[0] skarbiec/nauka zachowane
+  OK: roundtrip: gracze[0] technologie (zbadane[]) zachowane -- NIEPUSTE (spelnia REGULE PRZECIW SAMOOSZUKIWANIU)
+  OK: roundtrip: gracze[0] pola *Pace (string-union) zachowane 1:1
+  OK: roundtrip: gracze[3] (fotel B) skarbiec/badana zachowane, NIEZALEZNE od gracza[0]
+  OK: roundtrip: exploredByHuman[3] (fotel B, mgla WLASNA) zachowane, rozne od fotela 0
+
+--- B. Prog `< 3` (IncompatibleSaveFormatError) ODDZIELNY od `> SAVE_VERSION` ---
+  OK: zapis v2 -> throw IncompatibleSaveFormatError (NIE zwykly Error, NIE cichy null)
+  OK: komunikat v2 zawiera "starszej wersji"
+  OK: komunikat v2 zawiera "gorącego krzesła" (kontekst ABC-4)
+  OK: komunikat v2 doradza "Rozpocznij nową grę" (nie sugeruje migracji/naprawy)
+  OK: zapis v1 (jeszcze starszy) -> throw IncompatibleSaveFormatError, ten sam prog
+  OK: zapis z wersja=4 (przyszla) -> throw ZWYKLY Error ("nowsza"), NIE IncompatibleSaveFormatError -- prog gorny NIEZALEZNY od progu ABC-4
+  OK: komunikat przyszlej wersji mowi "nowsza"
+  OK: zapis v3 BEZ pola gracze[] -- normalizuje sie do [] defensywnie (nie throw, main.ts petla po [] to no-op)
+  OK: zapis v3 BEZ humanOwnerIds -- fallback [0] (HUMAN_OWNER_PRIMARY)
+
+--- C. main.ts: ksztalt v3 + kolejnosc komunikatu + BRAK migracji v2->v3 ---
+  OK: main.ts importuje IncompatibleSaveFormatError z './game/save'
+  OK: znaleziono function buildSaveGameSnapshot(...)
+  OK: znaleziono koniec buildSaveGameSnapshot (mapSnapshot: serializeMapForSave(map),)
+  OK: buildSaveGameSnapshot pisze `wersja: SAVE_VERSION` (nie literal `2`)
+  OK: buildSaveGameSnapshot NIE pisze juz literalu `wersja: 2`
+  OK: buildSaveGameSnapshot pisze `gracze: graczeSave`
+  OK: buildSaveGameSnapshot pisze `exploredByHuman: exploredByHumanSave`
+  OK: buildSaveGameSnapshot pisze `humanOwnerIds: humanSeats.humanOwnerIds.slice()`
+  OK: buildSaveGameSnapshot pisze `activeHumanOwnerId: humanSeats.activeHumanOwnerId`
+  OK: buildSaveGameSnapshot NIE pisze juz starego pojedynczego pola `gracz: {`
+  OK: buildSaveGameSnapshot NIE pisze juz starego `explored: Array.from(explored)`
+  OK: graczeSave budowany z Array.from(playerStateByHuman.entries()) -- PER-HUMAN, nie hardkodowany gracz 0
+  OK: exploredByHumanSave budowany z Array.from(exploredByHuman.entries()) -- PER-HUMAN
+  OK: znaleziono function restoreGameFromSave(...)
+  OK: znaleziono punkt konca odczytywanego fragmentu (cityProd.clear();)
+  OK: restoreGameFromSave iteruje `for (const [oid, keys] of saved.exploredByHuman)` -- WSZYSTKIE fotele, nie tylko 0
+  OK: restoreGameFromSave iteruje `for (const [oid, g] of saved.gracze)` -- WSZYSTKIE fotele
+  OK: restoreGameFromSave odtwarza `humanSeats` z `saved.humanOwnerIds`/`saved.activeHumanOwnerId`
+  OK: restoreGameFromSave NIE czyta juz starego `saved.gracz` (pojedynczego)
+  OK: restoreGameFromSave NIE czyta juz starego `saved.explored` (tablicowego)
+  OK: restoreGameFromSave zachowuje alias: exploredByHuman.set(HUMAN_OWNER_PRIMARY, explored) (TEN SAM obiekt, nie kopia)
+  OK: gracz 0 (HUMAN_OWNER_PRIMARY) odtwarzany przez MUTACJE `explored` (clear+add), nie przez nowy Set()
+  OK: main.ts nie zawiera identyfikatora pasujacego do /migrateV2ToV3/i (brak funkcji migrujacej v2->v3, ABC-4)
+  OK: main.ts nie zawiera identyfikatora pasujacego do /migrateSaveV2/i (brak funkcji migrujacej v2->v3, ABC-4)
+  OK: main.ts nie zawiera identyfikatora pasujacego do /migrateGraczToGracze/i (brak funkcji migrujacej v2->v3, ABC-4)
+  OK: main.ts nie zawiera identyfikatora pasujacego do /upgradeSaveV2/i (brak funkcji migrujacej v2->v3, ABC-4)
+  OK: main.ts nie zawiera identyfikatora pasujacego do /v2ToV3/i (brak funkcji migrujacej v2->v3, ABC-4)
+  OK: znaleziono function loadGameFromSlot(...)
+  OK: znaleziono `} catch (e) {` w loadGameFromSlot
+  OK: catch(e) w loadGameFromSlot ma galaz `e instanceof IncompatibleSaveFormatError`
+  OK: KOLEJNOSC (N-ZINDEX-TOAST): openStartupMainMenu() PRZED showHintMessage(e.message, 6000) w galezi IncompatibleSaveFormatError
+  OK: loadGameFromSlot woła loadFromLocal(slotId, { rethrowIncompatible: true }) -- jedyna sciezka z ta flaga
+
+--- C2. save.ts strukturalnie: loadFromLocal domyslnie NIE rzuca (inni wolajacy) ---
+  OK: loadFromLocal rzuca WYLACZNIE gdy opts.rethrowIncompatible===true I e instanceof IncompatibleSaveFormatError -- domyslne wywolanie (np. summarizeSaveSlots() w saveLoadDialog.ts) zachowuje sie jak PRZED ta zmiana
+  OK: save.ts nie zawiera identyfikatora pasujacego do /migrateV2ToV3/i (brak funkcji migrujacej v2->v3, ABC-4)
+  OK: save.ts nie zawiera identyfikatora pasujacego do /migrateSaveV2/i (brak funkcji migrujacej v2->v3, ABC-4)
+  OK: save.ts nie zawiera identyfikatora pasujacego do /upgradeSaveV2/i (brak funkcji migrujacej v2->v3, ABC-4)
+
+59 passed, 0 failed
+EXIT=0

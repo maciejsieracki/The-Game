@@ -1,0 +1,11 @@
+[ai-table] świat gotowy po 80.3s (tryb pokoj)
+[ai-table] setup: moc {"player":2847,"ai":1275} tury wojny {"turnsAtWar":25,"lostCities":0} rw AI 0.309315866084425
+[ai-table] tura 2: wpisy stołu 0 []
+[ai-table] tury 1 -> 2 | stan pary {"status":"wojna","truceUntilTurn":null,"peaceUntilTurn":null,"turn":2}
+[ai-table] decyzje AI (console): [Dyplomacja] AI1 zaproponuj_pokoj: slabszy w wojnie (respektWzgledny=0.31 <= prog=0.48000000000000004; sygnaly=a,d,e; tury wojny=26): proponujemy pokoj
+[ai-table] wpisy AI na stole (unikalne): []
+[ai-table] stołWpisów(ostatnia tura)=0
+[ai-table] FAIL (pokoj) — AI nie wstawiło pokoj na stół; decyzja AI: zapisana
+[ai-table] błędy strony: brak
+[ai-table] czas całkowity: 95.0s
+EXIT=1

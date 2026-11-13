@@ -70,22 +70,23 @@ function assert(cond, msg) {
 // Param z combat-params.json
 assert(battleLootRecruitCostPct() === 100, 'recruit_cost_pct domyślnie 100');
 
-// Włócznik: 16 Pieniądz + 2 Brąz (units.json)
+// Włócznik: 16 Pieniądz + 50 Brąz. units.json stores 25 Brąz; the deployed
+// Bronze unit-cost multiplier is ×2 (unitStockCost / scaleCostByEpoch).
 const wlocznik = computeBattleLoot(['Włócznik']);
 eq(wlocznik.gold, 16, 'Włócznik gold');
-eq(wlocznik.resources.braz, 2, 'Włócznik braz');
+eq(wlocznik.resources.braz, 50, 'Włócznik braz');
 eq(wlocznik.killedCount, 1, 'Włócznik count');
-eq(formatBattleLootNote(wlocznik), '+16 Pieniądz, +2 Brąz', 'format Włócznik');
+eq(formatBattleLootNote(wlocznik), '+16 Pieniądz, +50 Brąz', 'format Włócznik');
 
 // Dwa włóczniki
 const dwa = computeBattleLoot(['Włócznik', 'Włócznik']);
 eq(dwa.gold, 32, '2x Włócznik gold');
-eq(dwa.resources.braz, 4, '2x Włócznik braz');
+eq(dwa.resources.braz, 100, '2x Włócznik braz');
 
 // 50% balans
 const half = computeBattleLoot(['Włócznik'], 50);
 eq(half.gold, 8, '50% gold');
-eq(half.resources.braz, 1, '50% braz');
+eq(half.resources.braz, 25, '50% braz');
 
 // Nieznana jednostka / milicja syntetyczna → 0
 const zero = computeBattleLoot(['Milicja']);

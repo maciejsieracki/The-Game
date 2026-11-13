@@ -3,11 +3,11 @@ import {
   pickForcedWarTargetId,
   restoreForcedWarState,
   serializeForcedWarState,
-  shouldEndForcedWarByCityCount,
   type ForcedWarNeighborCandidate,
   type ForcedWarPairState,
   type ForcedWarSaveState,
 } from './forced-war-common';
+import { WAR_RULES_PARAMS } from './war-rules-multiwar';
 
 /**
  * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): ochrona startowa mierzona turą gry —
@@ -16,7 +16,7 @@ import {
  * "tura gry" i "tura od początku epoki" są tożsame, bo każda cywilizacja zaczyna grę
  * w Kamieniu w turze 0 — zero zmiany mechanizmu, wyłącznie wartość stałej.
  */
-export const WOJNA_KAMIEN_WYMUSZONA_START_TURY = 25;
+export const WOJNA_KAMIEN_WYMUSZONA_START_TURY: number = WAR_RULES_PARAMS.eraForcedWarStartTurnsFromEra.stone;
 export const WOJNA_KAMIEN_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE = 2;
 export const WOJNA_KAMIEN_WYMUSZONA_ODPOCZYNEK_TUR = 20;
 export const WOJNA_KAMIEN_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR = 20;
@@ -26,7 +26,10 @@ export const WOJNA_KAMIEN_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR = 20;
  * ZDOBYTE_LUB_STRACONE`, który zostaje jako DODATKOWY, zwykle wcześniejszy warunek
  * zakończenia — który z dwóch warunków spełni się pierwszy, kończy wojnę).
  */
-export const WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR = 25;
+// R-WEB-PEACE-RULES-R8R9-Q1 R9: NIEUŻYWANA w runtime -- automatyczny koniec po czasie usunięty
+// (wojna wymuszona kończy się wyłącznie pokojem). Zostaje jako parametr dla testów
+// (tools/forced-war-stone-test.cjs, forced-war-reguly-multi-turn-simulation-test.cjs).
+export const WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR = 20;
 
 export interface StoneForcedWarEligibilityInput {
   /** Wyłącznie główna cywilizacja AI; nie gracz, miasto-państwo ani barbarzyńca. */
@@ -68,37 +71,6 @@ export function pickStoneForcedWarTargetId(
     hexDistanceFn,
     opts?.blockedOwnerIds ?? new Set<number>(),
   );
-}
-
-export function shouldEndStoneForcedWarByCityCount(
-  citiesCapturedByAttacker: number,
-  citiesCapturedByDefender: number,
-  threshold: number = WOJNA_KAMIEN_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE,
-): boolean {
-  return shouldEndForcedWarByCityCount(
-    citiesCapturedByAttacker,
-    citiesCapturedByDefender,
-    threshold,
-  );
-}
-
-/**
- * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): czy TA KONKRETNA para wojny wymuszonej Kamienia
- * kończy się TERAZ automatycznym pokojem, bo minęło `maxDurationTurns` tur od jej
- * rozpoczęcia — NIEZALEŻNIE od liczby zdobytych/straconych miast (próg miastowy zostaje
- * jako dodatkowy, zwykle wcześniejszy warunek — `shouldEndStoneForcedWarByCityCount`
- * wyżej, niezmieniona). `startTurn === undefined` (stary zapis sprzed tego pola,
- * `ForcedWarPairState.startTurn` jest opcjonalne) → `currentTurn - currentTurn === 0`,
- * więc NIGDY nie kończy wojny samym tym wywołaniem — main.ts backfilluje brakujące
- * `startTurn` PRZY WCZYTANIU zapisu (`restoreGameFromSave`), więc ten fallback w
- * praktyce nie jest długotrwały (patrz raport Operatora).
- */
-export function shouldEndStoneForcedWarByDuration(
-  currentTurn: number,
-  startTurn: number | undefined,
-  maxDurationTurns: number = WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
-): boolean {
-  return currentTurn - (startTurn ?? currentTurn) >= maxDurationTurns;
 }
 
 export function isRestingFromStoneForcedWar(

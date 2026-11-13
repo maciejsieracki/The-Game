@@ -1,0 +1,32 @@
+{"kind":"start","seed":7,"seedSeen":7,"setup":{"cities":2}}
+{"kind":"turn","seed":7,"turnBefore":1,"turnAfter":2,"ok":true,"ms":23898,"events":[{"id":"auto-ration-t2","title":"Automatycznie obniżono racje żywnościowe","subtitle":"Rzym: 4 → 1,5 · Mediolan: 4 → 6","kind":"enemy","blocking":false,"origin":null,"turn":2}]}
+{"kind":"turn","seed":7,"turnBefore":2,"turnAfter":3,"ok":true,"ms":18212,"events":[{"id":"border-march-violated","title":"Granice naruszone","subtitle":"Twoje granice naruszone — Kapua · Rzymianie · miasto-państwo, Pompeje · Rzymianie · miasto-państwo: −5 pkt Zaufania/turę u każdej naruszającej cywilizacji","kind":"diplo","blocking":false,"origin":null,"turn":3}]}
+{"kind":"turn","seed":7,"turnBefore":3,"turnAfter":4,"ok":true,"ms":17440,"events":[{"id":"border-march-violated","title":"Granice naruszone","subtitle":"Twoje granice naruszone — Ostia · Rzymianie · miasto-państwo, Kapua · Rzymianie · miasto-państwo: −5 pkt Zaufania/turę u każdej naruszającej cywilizacji","kind":"diplo","blocking":false,"origin":null,"turn":4}]}
+{"kind":"turn","seed":7,"turnBefore":4,"turnAfter":5,"ok":true,"ms":15253,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":5,"turnAfter":6,"ok":true,"ms":18293,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":6,"turnAfter":7,"ok":true,"ms":15470,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":7,"turnAfter":8,"ok":true,"ms":14762,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":8,"turnAfter":9,"ok":true,"ms":17372,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":9,"turnAfter":10,"ok":true,"ms":14036,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":10,"turnAfter":11,"ok":true,"ms":13252,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":11,"turnAfter":12,"ok":true,"ms":16374,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":12,"turnAfter":13,"ok":true,"ms":15827,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":13,"turnAfter":14,"ok":true,"ms":19038,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":14,"turnAfter":15,"ok":true,"ms":15154,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":15,"turnAfter":16,"ok":true,"ms":15547,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":16,"turnAfter":17,"ok":true,"ms":14618,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":17,"turnAfter":18,"ok":true,"ms":14232,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":18,"turnAfter":19,"ok":true,"ms":14922,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":19,"turnAfter":20,"ok":true,"ms":15108,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":20,"turnAfter":21,"ok":true,"ms":13384,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":21,"turnAfter":22,"ok":true,"ms":13841,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":22,"turnAfter":23,"ok":true,"ms":13160,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":23,"turnAfter":24,"ok":true,"ms":11332,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":24,"turnAfter":25,"ok":true,"ms":11982,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":25,"turnAfter":26,"ok":true,"ms":10325,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":26,"turnAfter":27,"ok":true,"ms":9641,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":27,"turnAfter":28,"ok":true,"ms":9492,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":28,"turnAfter":29,"ok":true,"ms":10493,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":29,"turnAfter":30,"ok":true,"ms":11901,"events":[]}
+{"kind":"turn","seed":7,"turnBefore":30,"turnAfter":31,"ok":true,"ms":10846,"events":[]}
+{"kind":"done","pageErrors":[]}

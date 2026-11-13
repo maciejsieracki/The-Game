@@ -1,0 +1,4 @@
+PASS: reconcileWorkedTilesForOwner nie odwoluje sie do okolicaTryb -- operuje wylacznie na okolicaReczne, niezaleznie od trybu miasta
+
+OKOLICA-TRYB-RESET-OWNERSHIP-CHANGE OK (18/18)
+EXIT=0

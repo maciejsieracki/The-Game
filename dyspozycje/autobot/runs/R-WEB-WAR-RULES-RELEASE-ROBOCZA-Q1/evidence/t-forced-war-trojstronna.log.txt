@@ -1,0 +1,16 @@
+--- GOAL 1 (adaptacja): para AI-A/AI-B już aktywna, gracz bez pary -> gracz dołącza jako trzeci ---
+
+--- GOAL 2 / ECHO 2: sojusz strony-napastnika blokuje CAŁĄ parę dla leftovera-gracza ---
+
+--- ECHO 2 (symetria): sojusz TYLKO obrońcy blokuje CAŁĄ parę identycznie jak sojusz napastnika ---
+
+--- GOAL 5: gracz ma już parę -> nie wchodzi do puli, mechanizm się nie uruchamia ---
+
+--- Brak jakiejkolwiek pary AI-vs-AI, gracz sam -> unresolved, zero efektu ubocznego ---
+
+--- Dwie niezależne pary + dwóch (wzajemnie zablokowanych) leftoverów -> każdy dołącza do jakiejś pary ---
+
+--- Bezpiecznik: para z attackerId===targetId odrzucona (obrona w głąb) ---
+--- decideAIDiplomacy: finalny target guard, wpis wygenerowany przez assignForcedWarPairings ---
+PASSED: 23 / FAILED: 0 / TOTAL: 23
+EXIT=0

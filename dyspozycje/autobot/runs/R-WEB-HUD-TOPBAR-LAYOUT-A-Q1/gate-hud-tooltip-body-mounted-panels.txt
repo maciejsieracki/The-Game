@@ -1,0 +1,30 @@
+[hud-tooltip-body-panels-test] budowanie bundla (vite build, wyłącznie dozwolona komenda z CLAUDE.md)...
+[hud-tooltip-body-panels-test] build OK.
+[hud-tooltip-body-panels-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+
+-- Scenariusz 1: panel Imperium (.civ-emp-panel), montowany na document.body, poza .civ-hud --
+  OK  [.civ-emp-info-tip] ikona znaleziona w panelu Surowce
+ FAIL [.civ-emp-info-tip] tooltip display:block po hover >380ms
+ FAIL [.civ-emp-info-tip] tooltip ma niepusty tekst
+ FAIL [.civ-emp-info-tip] tekst zawiera formułę pojemności magazynu (dowód treści, nie placeholder)
+  OK  [.civ-emp-info-tip] natywny atrybut title zdjęty po hover (mechanizm JS przejął kontrolę)
+  OK  [konsola] zero console.error / pageerror w scenariuszu 1
+
+-- Dowód mutacyjny: zdjęcie klasy .civ-emp-panel z roota NA ŻYWO musi zgasić tooltip --
+  OK  [mutacja scope] ikona nadal fizycznie znaleziona (kontrola sensu scenariusza)
+  OK  [mutacja scope] po wyjęciu spod .civ-emp-panel tooltip PRZESTAJE się pokazywać (dowód, że SCOPE_SELECTOR ma znaczenie, test nie jest tautologią)
+
+-- Scenariusz 2: panel jednostki (.civ-unit-panel), montaż bezpośredni (createUnitPanelHud nie ma dziś wywołania w main.ts/hud.ts) --
+  OK  [.uc-veteran-badge] plakietka weterana znaleziona w panelu jednostki
+  OK  [.uc-veteran-badge] tooltip display:block po hover >380ms
+  OK  [.uc-veteran-badge] tooltip ma niepusty tekst
+  OK  [.uc-veteran-badge] tekst zawiera treść doświadczenia bojowego (dowód treści, nie placeholder)
+  OK  [.uc-veteran-badge] natywny atrybut title zdjęty po hover (mechanizm JS przejął kontrolę)
+  OK  [konsola] zero console.error / pageerror w scenariuszu 2
+
+-- Dowód mutacyjny: zdjęcie klasy .civ-unit-panel z roota NA ŻYWO musi zgasić tooltip --
+  OK  [mutacja scope] plakietka nadal fizycznie znaleziona (kontrola sensu scenariusza)
+  OK  [mutacja scope] po wyjęciu spod .civ-unit-panel tooltip PRZESTAJE się pokazywać (dowód, że SCOPE_SELECTOR ma znaczenie, test nie jest tautologią)
+
+13 pass · 3 fail
+EXIT=1

@@ -26,7 +26,7 @@ Hastati to jednostka typu **Wręcz** z epoki **Żelazo**. Unikalna dla **Rzymska
 ### Rekrutacja i utrzymanie
 - **Koszt:** 18 ¤, 1 mieszkańców
 - **Surowiec:** 5× żelazo
-- **Tech:** Hutnictwo żelaza
+- **Tech:** Sztuka wojenna
 - **Utrzymanie:** 2 ¤/t, 1 żywności/t
 - **Ruch:** 2 (mapa) / 3 (bitwa)
 - **Zasięg:** 2 heksów

@@ -9,7 +9,10 @@ import {
   BATTLE_FONT,
   BATTLE_FONT_TITLE,
   BATTLE_GOLD,
-  BATTLE_PLAYER_TEXT,
+  BATTLE_LOSS_ENEMY_BG,
+  BATTLE_LOSS_ENEMY_TEXT,
+  BATTLE_LOSS_PLAYER_BG,
+  BATTLE_LOSS_PLAYER_TEXT,
   BATTLE_TEXT_DIM,
   CMD_SVG,
   FMT_SVG,
@@ -25,6 +28,8 @@ export interface EndScreenSideStats {
 
 export interface EndScreen1EParams {
   playerWon: boolean;
+  /** Remis (np. odparty szturm bez wylomu): neutralny naglowek zamiast Zwyciestwo/Porazka. */
+  draw?: boolean;
   /** Strona gracza — do poprawnego „Twoje straty" vs „Straty wroga". Domyślnie atk. */
   playerSide?: 'atk' | 'def';
   winnerLabel: string;
@@ -85,6 +90,16 @@ function statTileHtml(
   );
 }
 
+/**
+ * R-WEB-BATTLE-SKIP-TO-RESULT-ABSURD-OUTCOME-Q1: straty/łupy jako liczby całkowite
+ * z separatorem tysięcy (bez ułamków zmiennoprzecinkowych typu 2443.1999999999925).
+ * NaN/Infinity/ujemne => 0.
+ */
+export function formatEndLoss(v: number): string {
+  const n = Number.isFinite(v) ? Math.max(0, Math.round(v)) : 0;
+  return n.toLocaleString('pl-PL');
+}
+
 export function showEndScreen1E(
   _overlay: HTMLElement,
   p: EndScreen1EParams,
@@ -109,10 +124,11 @@ export function showEndScreen1E(
   });
 
   const won = p.playerWon;
-  const winWord = won ? 'Zwycięstwo' : 'Porażka';
-  const accent = won ? BATTLE_GOLD : BATTLE_ENEMY_TEXT;
-  const border = won ? 'rgba(232,216,138,0.5)' : 'rgba(200,64,64,0.5)';
-  const glow = won ? 'rgba(232,216,138,0.12)' : 'rgba(200,64,64,0.12)';
+  const draw = p.draw === true;
+  const winWord = draw ? 'Remis' : won ? 'Zwycięstwo' : 'Porażka';
+  const accent = draw ? '#c8b898' : won ? BATTLE_GOLD : BATTLE_ENEMY_TEXT;
+  const border = draw ? 'rgba(200,184,152,0.5)' : won ? 'rgba(232,216,138,0.5)' : 'rgba(200,64,64,0.5)';
+  const glow = draw ? 'rgba(200,184,152,0.12)' : won ? 'rgba(232,216,138,0.12)' : 'rgba(200,64,64,0.12)';
   const bg = won
     ? 'linear-gradient(180deg,rgba(22,28,38,0.96),rgba(8,10,16,0.97))'
     : 'linear-gradient(180deg,rgba(30,18,18,0.96),rgba(12,7,7,0.97))';
@@ -128,8 +144,8 @@ export function showEndScreen1E(
   const playerSide = p.playerSide ?? 'atk';
   const playerStats = playerSide === 'atk' ? p.atk : p.def;
   const enemyStats = playerSide === 'atk' ? p.def : p.atk;
-  const playerLost = Math.max(0, playerStats.hpMax - playerStats.hp);
-  const enemyLost = Math.max(0, enemyStats.hpMax - enemyStats.hp);
+  const playerLost = formatEndLoss(playerStats.hpMax - playerStats.hp);
+  const enemyLost = formatEndLoss(enemyStats.hpMax - enemyStats.hp);
 
   const card = document.createElement('div');
   Object.assign(card.style, {
@@ -154,10 +170,11 @@ export function showEndScreen1E(
       `<div class="tnum" style="font-size:12px;color:${BATTLE_TEXT_DIM};margin-top:5px;">${p.battleTitle}</div>` +
     `</div>` +
     `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 30px 20px;">` +
-      statTileHtml('−' + playerLost, 'Twoje straty', BATTLE_PLAYER_TEXT, 'rgba(58,106,208,0.35)', 'rgba(58,106,208,0.07)') +
-      statTileHtml('−' + enemyLost, 'Straty wroga', BATTLE_ENEMY_TEXT, 'rgba(200,64,64,0.35)', 'rgba(200,64,64,0.07)') +
+      // R-WEB-BATTLE-DAMAGE-COLORS: straty gracza czerwone, straty wroga żółte.
+      statTileHtml('−' + playerLost, 'Twoje straty', BATTLE_LOSS_PLAYER_TEXT, 'rgba(229,72,77,0.35)', BATTLE_LOSS_PLAYER_BG) +
+      statTileHtml('−' + enemyLost, 'Straty wroga', BATTLE_LOSS_ENEMY_TEXT, 'rgba(255,213,74,0.35)', BATTLE_LOSS_ENEMY_BG) +
       statTileHtml(
-        loot > 0 ? '+' + loot : '0',
+        loot > 0 ? '+' + formatEndLoss(loot) : '0',
         loot > 0 ? (p.lootNote ?? 'Łupy · złoto') : 'Łupy',
         loot > 0 ? BATTLE_GOLD : BATTLE_TEXT_DIM,
         loot > 0 ? 'rgba(232,216,138,0.35)' : 'rgba(232,216,138,0.25)',

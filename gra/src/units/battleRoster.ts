@@ -10,6 +10,34 @@ import { hexDistance, isCivilianUnit } from './setup';
 
 export type BattleRosterSide = 'attacker' | 'defender';
 
+/**
+ * Identity carried by the battle/event log for one resolved round.
+ *
+ * The arrays are intentionally side-specific and may be partial: post-battle
+ * loss application treats a unit absent from an explicitly supplied log as
+ * not logged, never as an implicit roster member. A complete log is produced
+ * from the radius-1 rosters by `buildBattleEventLog`.
+ */
+export interface BattleEventLog {
+  attackerUnitIds?: readonly string[];
+  defenderUnitIds?: readonly string[];
+}
+
+function uniqueUnitIds(units: ReadonlyArray<{ id: string | number }>): string[] {
+  return [...new Set(units.map(u => String(u.id)))];
+}
+
+/** Build the complete event identity for the already-selected battle rosters. */
+export function buildBattleEventLog(
+  attacker: ReadonlyArray<{ id: string | number }>,
+  defender: ReadonlyArray<{ id: string | number }>,
+): BattleEventLog {
+  return {
+    attackerUnitIds: uniqueUnitIds(attacker),
+    defenderUnitIds: uniqueUnitIds(defender),
+  };
+}
+
 export interface BattleRosterIncludeCtx {
   side: BattleRosterSide;
   anchor: RuntimeUnit;
@@ -36,11 +64,12 @@ function collectUnitsInRadius(
   allUnits: readonly RuntimeUnit[],
   radiusFrom: (u: RuntimeUnit) => number,
   ctx: BattleRosterIncludeCtx,
+  allowedOwnerIds?: ReadonlySet<number>,
 ): RuntimeUnit[] {
   const out: RuntimeUnit[] = [];
   const seen = new Set<string | number>();
   for (const u of allUnits) {
-    if (u.ownerId !== anchor.ownerId) continue;
+    if (allowedOwnerIds ? !allowedOwnerIds.has(u.ownerId) : u.ownerId !== anchor.ownerId) continue;
     if (radiusFrom(u) > 1) continue;
     if (!shouldIncludeInBattleRoster(u, ctx)) continue;
     if (seen.has(u.id)) continue;
@@ -80,18 +109,28 @@ export function collectAtkRosterNearCity(
   city: { q: number; r: number },
   anchor: RuntimeUnit,
   allUnits: readonly RuntimeUnit[],
+  allowedOwnerIds?: ReadonlySet<number>,
 ): RuntimeUnit[] {
   const ctx: BattleRosterIncludeCtx = {
     side: 'attacker',
     anchor,
     battleHex: { q: city.q, r: city.r },
   };
-  return collectUnitsInRadius(
+  const roster = collectUnitsInRadius(
     anchor,
     allUnits,
     u => hexDistance(u.q, u.r, city.q, city.r),
     ctx,
+    allowedOwnerIds,
   );
+  if (!allowedOwnerIds) return roster;
+  const lead = roster.find(u => u.id === anchor.id);
+  if (!lead) return roster;
+  return [
+    lead,
+    ...roster.filter(u => u.id !== anchor.id && u.ownerId === anchor.ownerId),
+    ...roster.filter(u => u.id !== anchor.id && u.ownerId !== anchor.ownerId),
+  ];
 }
 
 /** Obrońcy przy mieście — dist≤1; cywil tylko na hexie miasta. */

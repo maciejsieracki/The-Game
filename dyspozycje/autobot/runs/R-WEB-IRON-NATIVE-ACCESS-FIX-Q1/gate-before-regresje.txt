@@ -1,0 +1,13 @@
+civ-ai-allocation-saveload-order-test.cjs status=0 [5/5]
+civ-ai-allocation-test.cjs status=0 [11/11]
+deposit-building-gate-test.cjs status=1
+deposit-coast-test.cjs status=null
+diplomacy-deposit-trade-test.cjs status=0
+forced-war-iron-era-enter-turn-save-load-test.cjs status=0 [20 passed]
+forced-war-iron-main-guard-test.cjs status=0
+forced-war-iron-player-target-live-test.cjs status=1
+forced-war-iron-test.cjs status=0 [PASSED: 54]
+map-deposits-era-test.cjs status=0
+zelazo-gate-test.cjs status=1 [4/24]
+zloto-szlak-test.cjs status=0 [54 passed]
+EXIT=0

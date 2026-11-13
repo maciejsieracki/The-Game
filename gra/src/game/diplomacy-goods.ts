@@ -72,6 +72,28 @@ function asciiKeyForLabel(label: string): string {
 }
 
 /**
+ * Etykieta WYŚWIETLANA dóbr dyplomacji (tylko prezentacja — klucze danych `ruda` itd. bez zmian).
+ * Dyplomacja nazywa surowiec „Ruda" (złoże miedzi, kopalnia_miedzi) → „Ruda miedzi" (obok „Ruda cyny").
+ * Źródłowa etykieta „Ruda" zostaje w resource-access.ts (bramki budynków dopasowują po niej).
+ */
+const DISPLAY_LABEL_OVERRIDE: Readonly<Record<string, string>> = {
+  'Ruda': 'Ruda miedzi',
+};
+
+function dyplomacjaDisplayLabel(label: string): string {
+  return DISPLAY_LABEL_OVERRIDE[label] ?? label;
+}
+
+/**
+ * Ceramika nie ma liczonego zapasu sztuk (Maciej 2026-07-23) — dla niej `ilosc` zostaje
+ * `undefined` także przy aktywnym dostępie. Pozostałe aktywne surowce: brak/zero w magazynie
+ * = `ilosc: 0` (widoczne „×0"). `ilosc: 0` NIE jest oferowalne: filtry ofert
+ * (diplomacy-resource-trade-pick.ts, quantityTradableGoodOptions: maxQty > 0) i kupno
+ * (buyerHave: ilosc > 0) traktują 0 jak brak.
+ */
+const NO_COUNT_KEYS: ReadonlySet<string> = new Set(['ceramika']);
+
+/**
  * Indeks dóbr handlowych FAKTYCZNIE posiadanych przez ownera — nie katalog globalny.
  * Kolejność: najpierw aktywne surowce (z ilością, jeśli magazyn per-miasto ją zna), potem
  * ewentualna reszta magazynu (drewno/glina/etc. mogą istnieć w City.surowce zanim odblokuje
@@ -86,17 +108,21 @@ export function tradableGoodsForOwner(input: OwnerGoodsIndexInput): TradeGoodEnt
     if (seen.has(key)) continue;
     seen.add(key);
     const qty = input.citySurowceSum[key];
+    let ilosc: number | undefined;
+    if (NO_COUNT_KEYS.has(key)) ilosc = undefined;
+    else ilosc = typeof qty === 'number' && qty > 0 ? Math.floor(qty) : 0;
     out.push({
       key,
-      label,
-      ilosc: typeof qty === 'number' && qty > 0 ? Math.floor(qty) : undefined,
+      label: dyplomacjaDisplayLabel(label),
+      ilosc,
     });
   }
 
   for (const [key, qty] of Object.entries(input.citySurowceSum)) {
     if (seen.has(key) || typeof qty !== 'number' || !(qty > 0)) continue;
     seen.add(key);
-    out.push({ key, label: key.charAt(0).toUpperCase() + key.slice(1), ilosc: Math.floor(qty) });
+    const rawLabel = key.charAt(0).toUpperCase() + key.slice(1);
+    out.push({ key, label: dyplomacjaDisplayLabel(rawLabel), ilosc: Math.floor(qty) });
   }
 
   return out;

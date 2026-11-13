@@ -1,0 +1,2 @@
+PASS: production action-bar renderer produces outward split arrows and inward merge arrows.
+EXIT=0

@@ -1,0 +1,5 @@
+PERF rozstawienie 500v500 (plains): 2230 ms
+PERF rozstawienie 500v500 (obstacles): 1829 ms
+PERF logika tury 500v500 (1000 jedn., bez renderu): tur=42 srednia=1449.8 ms p95=4689.9 ms max=7394.8 ms; rozstawienie plains=2230.5 ms obstacles=1829 ms
+PASS 51 asercji
+EXIT=0

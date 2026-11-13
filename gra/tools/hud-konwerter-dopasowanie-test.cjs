@@ -47,6 +47,7 @@ const ENTRY = path.resolve(__dirname, '.hud-konwerter-entry.ts');
 const BUNDLE = path.resolve(__dirname, '.hud-konwerter-bundle.cjs');
 fs.writeFileSync(ENTRY, `
 export * from '../src/game/converters';
+export { operationalBuiltIds } from '../src/game/building-toggle';
 `, 'utf8');
 esbuild.buildSync({
   entryPoints: [ENTRY], bundle: true, platform: 'node', format: 'cjs',
@@ -55,8 +56,8 @@ esbuild.buildSync({
   absWorkingDir: GRA_ROOT, nodePaths: [path.resolve(GRA_ROOT, 'node_modules')],
 });
 const CONV = require(BUNDLE);
-const { DEFAULT_CONVERTER_RECIPES, loadThroughput, converterThroughputForEra,
-  converterBuildingIdForRecipe } = CONV;
+const { DEFAULT_CONVERTER_RECIPES, loadThroughput, converterThroughputForEra, converterOutputMultiplierForEra,
+  converterBuildingIdForRecipe, converterThroughputEraParamKey, operationalBuiltIds } = CONV;
 
 // ---------------------------------------------------------------------------
 // Wycinanie funkcji po SYGNATURZE (nie po numerze linii — te sie przesuwaja przy
@@ -94,7 +95,7 @@ function zbudujFunkcje(src) {
   const js = esbuild.transformSync(txt, { loader: 'ts', target: 'node18' }).code;
   const fabryka = new Function('deps', `
     const { data, _menuDifficulty, cities, cityBuilt, DEFAULT_CONVERTER_RECIPES,
-            loadThroughput, converterThroughputForEra, converterBuildingIdForRecipe,
+            loadThroughput, converterThroughputForEra, converterOutputMultiplierForEra, converterBuildingIdForRecipe, converterThroughputEraParamKey, operationalBuiltIds,
             empireEpochForOwner } = deps;
     ${js}
     return empireConverterResourceRatesForOwner;
@@ -116,9 +117,9 @@ function zbudujDane() {
     ['miasto-podstawowe', ['cegielnia', 'garncarnia', 'odlewnia_brazu']],
     ['miasto-puste', []],
   ]);
-  const data = { econParams: {} }; // brak budynki -> loadThroughput spada na throughputFallback
+  const data = { econParams: require(path.resolve(__dirname, '..', 'data', 'econ-params.json')) };
   const _menuDifficulty = 'normal';
-  const empireEpochForOwner = () => 1; // era 1 -- resolver epoki poza zakresem tego bugu
+  const empireEpochForOwner = ownerId => ({ 1: 2, 2: 3, 3: 1 })[ownerId] ?? 1;
   return { data, _menuDifficulty, cities, cityBuilt, empireEpochForOwner };
 }
 
@@ -126,8 +127,8 @@ function wywolajDlaOwnera(fn, ownerId) {
   const dane = zbudujDane();
   const F = fn({
     ...dane,
-    DEFAULT_CONVERTER_RECIPES, loadThroughput, converterThroughputForEra,
-    converterBuildingIdForRecipe,
+    DEFAULT_CONVERTER_RECIPES, loadThroughput, converterThroughputForEra, converterOutputMultiplierForEra,
+    converterBuildingIdForRecipe, converterThroughputEraParamKey, operationalBuiltIds,
   });
   return F(ownerId);
 }
@@ -139,24 +140,24 @@ const fnNaprawiona = zbudujFunkcje(realSrc);
 ok(!!fnNaprawiona, 'funkcja wycieta i skompilowana z realnego main.ts');
 
 if (fnNaprawiona) {
-  // Odlewnia zelaza (ownerId=1) — 2 receptury z buildingId != id: braz + zelazo.
+  // Odlewnia zelaza (ownerId=1, era2) — brąz 50/t + żelazo 75/t.
   const zelaza = wywolajDlaOwnera(fnNaprawiona, 1);
   ok(Object.keys(zelaza).length > 0, 'Odlewnia zelaza: HUD zwraca NIEPUSTY wynik (nie {})');
-  ok(zelaza.zelazo === 25, `Odlewnia zelaza: Zelazo (produkcja, jednostek/ture, era 1, normal) = 25 (got ${zelaza.zelazo})`);
-  ok(zelaza.braz === 25, `Odlewnia zelaza: Braz (produkcja, jednostek/ture, era 1, normal) = 25 (got ${zelaza.braz})`);
+  ok(zelaza.zelazo === 75, `Odlewnia zelaza: Zelazo (produkcja, jednostek/ture, era 2, normal) = 75 (50 x 1,5; got ${zelaza.zelazo})`);
+  ok(zelaza.braz === 50, `Odlewnia zelaza: Braz (produkcja, jednostek/ture, era 2, normal) = 50 (got ${zelaza.braz})`);
 
-  // Wielka odlewnia (ownerId=2) — 3 receptury z buildingId != id: braz + zelazo + stal.
+  // Wielka odlewnia (ownerId=2, era3) — brąz 75/t + żelazo/stal po 100/t.
   const wielka = wywolajDlaOwnera(fnNaprawiona, 2);
   ok(Object.keys(wielka).length > 0, 'Wielka odlewnia: HUD zwraca NIEPUSTY wynik (nie {})');
-  ok(wielka.braz === 25, `Wielka odlewnia: Braz (produkcja, jednostek/ture, era 1, normal) = 25 (got ${wielka.braz})`);
-  ok(wielka.zelazo === 25, `Wielka odlewnia: Zelazo (produkcja, jednostek/ture, era 1, normal) = 25 (got ${wielka.zelazo})`);
-  ok(wielka.stal === 25, `Wielka odlewnia: Stal (produkcja, jednostek/ture, era 1, normal) = 25 (got ${wielka.stal})`);
+  ok(wielka.braz === 75, `Wielka odlewnia: Braz (produkcja, jednostek/ture, era 3, normal) = 75 (got ${wielka.braz})`);
+  ok(wielka.zelazo === 100, `Wielka odlewnia: Zelazo (produkcja, jednostek/ture, era 3, normal) = 100 (50 x 2; got ${wielka.zelazo})`);
+  ok(wielka.stal === 100, `Wielka odlewnia: Stal (produkcja, jednostek/ture, era 3, normal) = 100 (50 x 2; got ${wielka.stal})`);
 
   // BRAK REGRESJI — trojka juz dzialajaca przed naprawa (recipe.id === buildingId).
   const podstawowe = wywolajDlaOwnera(fnNaprawiona, 3);
-  ok(podstawowe.cegla === 50, `Cegielnia: Cegla (produkcja, jednostek/ture, era 1, normal) = 50 (got ${podstawowe.cegla})`);
+  ok(podstawowe.cegla === 100, `Cegielnia: Cegla (produkcja, jednostek/ture, era 1, normal) = 100 (R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1, bylo 50) (got ${podstawowe.cegla})`);
   ok(podstawowe.ceramika === 50, `Garncarnia: Ceramika (produkcja, jednostek/ture, era 1, normal) = 50 (got ${podstawowe.ceramika})`);
-  ok(podstawowe.braz === 25, `Odlewnia brazu: Braz (produkcja, jednostek/ture, era 1, normal) = 25 (got ${podstawowe.braz})`);
+  ok(podstawowe.braz === 50, `Odlewnia brazu: Braz (produkcja, jednostek/ture, era 1, normal) = 50 from the first explicit data row (got ${podstawowe.braz})`);
 
   // Brzeg: wlasciciel bez zadnego konwertera -> pusty obiekt, nie undefined/wyjatek.
   const puste = wywolajDlaOwnera(fnNaprawiona, 4);
@@ -197,7 +198,7 @@ if (fnNaprawiona) {
     // dzialac nawet ze starym kodem -- jesli mutacja jednoczesnie psuje i ja, mutacja jest
     // zle przygotowana (za szeroka), a nie dowodzi punktowo tego jednego bledu.
     const podstawoweStara = wywolajDlaOwnera(fnStara, 3);
-    ok(podstawoweStara.cegla === 50 && podstawoweStara.ceramika === 50 && podstawoweStara.braz === 25,
+    ok(podstawoweStara.cegla === 100 && podstawoweStara.ceramika === 50 && podstawoweStara.braz === 50,
       `(kontrola mutacji) stare dopasowanie NIE psulo trojki juz-dzialajacej (got ${JSON.stringify(podstawoweStara)})`);
   } else {
     fail++; console.error('FAIL: nie udalo sie zbudowac zmutowanej funkcji do testu regresyjnego');

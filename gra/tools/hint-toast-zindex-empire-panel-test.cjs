@@ -98,8 +98,11 @@ const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
  * bieżącego main.ts, zostawiając resztę bieżącego drzewa (w tym wszystkie zależności) bez
  * zmian -- brak ryzyka driftu zależności, bo budujemy zawsze na bieżącym main.ts.
  */
-const FIXED_ZINDEX_LINE = "hintToast.style.zIndex = isPreBattleOpen() ? '9950' : ((isMainMenuOpen() || isEmpireDetailPanelOpen()) ? '600' : '320');";
-const BROKEN_ZINDEX_LINE = "hintToast.style.zIndex = isPreBattleOpen() ? '9950' : (isMainMenuOpen() ? '600' : '320');";
+// R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1 dodało gałąź `aboveBattle ? '10030'` na początku formuły
+// (komunikat tuż przed bitwą ponad pełnoekranową sceną). Gałąź ta jest częścią bieżącej formuły
+// i NIE jest przedmiotem tej bramki -- zostaje w obu wariantach (FIXED/BROKEN).
+const FIXED_ZINDEX_LINE = "hintToast.style.zIndex = aboveBattle ? '10030' : (isPreBattleOpen() ? '9950' : ((isMainMenuOpen() || isEmpireDetailPanelOpen()) ? '600' : '320'));";
+const BROKEN_ZINDEX_LINE = "hintToast.style.zIndex = aboveBattle ? '10030' : (isPreBattleOpen() ? '9950' : (isMainMenuOpen() ? '600' : '320'));";
 
 let pass = 0;
 let fail = 0;
@@ -357,7 +360,7 @@ async function main() {
   // --- (4) Gałąź pre-battle 9950 -- WYŁĄCZNIE strukturalnie, patrz docstring pkt (4). ---
   const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
   assert('(4) formuła z-index: isPreBattleOpen() ma pierwszeństwo, wartość 9950 niezmieniona',
-    /hintToast\.style\.zIndex\s*=\s*isPreBattleOpen\(\)\s*\?\s*'9950'\s*:\s*\(\(isMainMenuOpen\(\)\s*\|\|\s*isEmpireDetailPanelOpen\(\)\)\s*\?\s*'600'\s*:\s*'320'\)\s*;/
+    /hintToast\.style\.zIndex\s*=\s*aboveBattle\s*\?\s*'10030'\s*:\s*\(isPreBattleOpen\(\)\s*\?\s*'9950'\s*:\s*\(\(isMainMenuOpen\(\)\s*\|\|\s*isEmpireDetailPanelOpen\(\)\)\s*\?\s*'600'\s*:\s*'320'\)\)\s*;/
       .test(mainSrc));
 
   console.log('[hint-toast-zindex-empire-panel-test] budowanie bundla AFTER (bieżący main.ts z naprawą)...');

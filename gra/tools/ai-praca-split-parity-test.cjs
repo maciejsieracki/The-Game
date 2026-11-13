@@ -30,6 +30,8 @@ const BUNDLE_FILE = path.resolve(__dirname, '.ai-praca-split-parity-bundle.cjs')
 fs.writeFileSync(ENTRY_FILE, `
 export { decideAITurn } from ${JSON.stringify(SRC + '/game/ai')};
 export { splitPraca } from ${JSON.stringify(SRC + '/game/production')};
+export { computeAiImprovementBudgetCap } from ${JSON.stringify(SRC + '/game/cities')};
+export { computeAiImprovementBudgetCapForOwner } from ${JSON.stringify(SRC + '/game/cities')};
 `, 'utf8');
 
 try {
@@ -48,7 +50,12 @@ try {
   process.exit(1);
 }
 
-const { decideAITurn, splitPraca } = require(BUNDLE_FILE);
+const {
+  decideAITurn,
+  splitPraca,
+  computeAiImprovementBudgetCap,
+  computeAiImprovementBudgetCapForOwner,
+} = require(BUNDLE_FILE);
 
 let passed = 0;
 let failed = 0;
@@ -168,6 +175,23 @@ console.log('4. Mutacja capu 50 → 25 musi zostać wykryta (negacja drugiego sp
 
 console.log('5. Strażnik routingu main.ts i brak drugiego splitu w planie AI');
 {
+  eq(computeAiImprovementBudgetCap(50, 100), 50, 'produkcja: major AI cap wykonuje helper z pełnej puli');
+  eq(computeAiImprovementBudgetCap(50, 33), 16, 'produkcja: generyczny helper zachowuje cap 33%');
+  eq(
+    computeAiImprovementBudgetCapForOwner(7, 50, ownerId => [7, 8, 9].includes(ownerId)),
+    50,
+    'produkcja: owner-aware major AI cap wykonuje politykę 100%',
+  );
+  eq(
+    computeAiImprovementBudgetCapForOwner(8, 50, ownerId => [7, 8, 9].includes(ownerId)),
+    50,
+    'produkcja: owner-aware city-state cap wykonuje politykę 100%',
+  );
+  eq(
+    computeAiImprovementBudgetCapForOwner(9, 50, ownerId => [7, 8, 9].includes(ownerId)),
+    50,
+    'produkcja: owner-aware defensive-copy cap wykonuje politykę 100%',
+  );
   const mainSource = fs.readFileSync(path.resolve(SRC, 'main.ts'), 'utf8');
   const aiSource = fs.readFileSync(path.resolve(SRC, 'game', 'ai.ts'), 'utf8');
   assert(
@@ -195,7 +219,7 @@ console.log('5. Strażnik routingu main.ts i brak drugiego splitu w planie AI');
   //     obowiązującą formułę: `pracaAutoPercent% × SKUMULOWANA pula AI`. Warunek jest WĘŻSZY
   //     niż stary (pinuje i bazę, i procent), nie luźniejszy.
   assert(
-    mainSource.includes('aiImprovementBudgetByOwner.set(ownerId, Math.floor(aiPool * aiPct / 100))'),
+    mainSource.includes('computeAiImprovementBudgetCapForOwner(ownerId, aiPool, isAiImprovementOwner)'),
     'AI: koperta ulepszeń = pracaAutoPercent% skumulowanej puli AI (parytet z pickerem gracza)',
   );
   assert(
@@ -222,7 +246,7 @@ console.log('5. Strażnik routingu main.ts i brak drugiego splitu w planie AI');
   //     gracz i AI czytają udział ulepszeń z tego samego pola `pracaAutoPercent`.
   assert(
     mainSource.includes('pracaBudgetPercent: playerUlepszeniaPolicy.pracaAutoPercent')
-      && mainSource.includes('Math.min(100, ulepszeniaEmpireForOwner(ownerId).pracaAutoPercent)'),
+      && mainSource.includes('computeAiImprovementBudgetCapForOwner(ownerId, aiPool, isAiImprovementOwner)'),
     'gracz i AI czytają udział ulepszeń z tego samego pola pracaAutoPercent (parytet)',
   );
   assert(

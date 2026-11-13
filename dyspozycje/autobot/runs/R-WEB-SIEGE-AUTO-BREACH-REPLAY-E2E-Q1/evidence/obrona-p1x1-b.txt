@@ -1,0 +1,15 @@
+BUILD ok in 30 s
+RUN {"mode":"auto","winner":"remis","round":24,"breached":true,"wallS":53.3,"atk":{"lost":0,"remaining":17,"hp":3413},"def":{"lost":0,"remaining":6,"hp":231},"ev":7,"inside":0,"onBreachTile":5,"manual":null}
+RUN {"mode":"skip","winner":"remis","round":24,"breached":true,"wallS":0.5,"atk":{"lost":0,"remaining":17,"hp":3413},"def":{"lost":0,"remaining":6,"hp":231},"ev":7,"inside":0,"onBreachTile":5,"manual":null}
+PASS: P1a 1x AUTO: bitwa oblezenia zakonczona w limicie 120 s (bez przeskoku, speedIdx 0), brak bledow JS
+PASS: P1b 1x: wynik AUTO == SKIP (zwyciezca, tura, wylom, straty, HP, kafle muru, wszystkie jednostki)
+PASS: P1c 1x: oblezenie z wylomem w obu trybach (wylom po kaflu/bramie)
+RUN {"mode":"auto","winner":"remis","round":150,"breached":true,"wallS":22.8,"atk":{"lost":6,"remaining":11,"hp":2710},"def":{"lost":2,"remaining":4,"hp":122},"ev":212,"inside":0,"onBreachTile":1,"manual":null}
+PASS: B0 scenariusz oblezenia: obleznicza w rosterze, mur z kaflami
+PASS: B1 mur/brama padly: co najmniej jedno zdarzenie wylomu w AUTO (kafel muru lub brama), kafle muru ubyly lub brama otwarta
+PASS: B2 wylom ustawia wallEverBreached (wynik bitwy niesie wallBreached -> miasto do zdobycia)
+PASS: B3 wylom padl PRZED koncem bitwy (nie zalozony retroaktywnie): tura wylomu < tura konca
+PASS: B4 SZTURM po wylomie: zywy atakujacy stoi NA zburzonym kaflu muru / otwartej bramie (przejscie przez wylom)
+DEFEKT: B4b OBSERWACJA: w AUTO po wylomie zywy atakujacy wchodzi ZA linie muru (kolumna > kolumny muru) w limicie tur -- {"inside":0,"wallCol":40,"maxAtkQ":40}
+PASS: B5 brak bledow JS
+--- 9 ok, 0 fail, 1 defekt(y) gry, 0 NIE_ZMIERZONO

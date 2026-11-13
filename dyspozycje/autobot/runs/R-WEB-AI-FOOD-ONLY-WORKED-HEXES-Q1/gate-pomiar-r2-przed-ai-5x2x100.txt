@@ -1,0 +1,39 @@
+{
+ "actor": "ai",
+ "perCityStrict": false,
+ "seeds": [
+  11,
+  12,
+  13,
+  14,
+  15
+ ],
+ "worlds": [
+  "kontynenty",
+  "wyspy"
+ ],
+ "TURNS": 100,
+ "foodImprovements": 1761,
+ "offWorked": 1120,
+ "offWorkedButOtherCityWorks": 0,
+ "offPct": 63.6,
+ "causes": {
+  "wyrab-rzeka-lub-las-poza-obywatelem:wyrab": 584,
+  "zloze-na-heksie:farma": 147,
+  "inne/farma-po-wycince:farma": 389
+ },
+ "byKey": {
+  "farma": 682,
+  "wyrab": 600,
+  "bydlo": 226,
+  "owce": 4,
+  "irygacja": 226,
+  "lodzie_rybackie": 23
+ },
+ "irrigation": 226,
+ "livestock": 230,
+ "effectiveFoodFromImprovements": 2292,
+ "allFoodFromImprovementsIncludingUnworked": 3678,
+ "avgPickMsPerTurn": 19.55
+}
+EXIT=0

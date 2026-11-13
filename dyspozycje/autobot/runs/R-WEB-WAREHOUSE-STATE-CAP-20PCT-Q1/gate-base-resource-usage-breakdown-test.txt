@@ -1,0 +1,27 @@
+
+-- A. resourceUsageBreakdownFor / resourceUsageTotal / resourceUsageHasAny --
+
+-- B. Inwariant: buildings + units (addResourceCosts) === merged total, per klucz --
+
+-- C. turn-economy.ts: split budowany przed addResourceCosts, ten sam wynik co resourceUpkeepByOwner --
+
+-- D. main.ts: publikacja WPROST z econ.resourceUpkeep{Buildings,Units}ByOwner (gracz + AI) --
+FAIL: D3: gracz -- buildingResourceUpkeepByOwner.set(0, ...) czyta WPROST econ.resourceUpkeepBuildingsByOwner.get(0), zero przeliczenia
+FAIL: D4: gracz -- unitResourceUpkeepByOwner.set(0, ...) czyta WPROST econ.resourceUpkeepUnitsByOwner.get(0)
+
+-- E. buildEmpireResourceRows: usage = resourceUsageBreakdownFor(..., z fallbackiem live gdy mapy puste) --
+
+-- F. citizenUpkeepByOwner.clear() zawsze w parze z buildingResourceUpkeepByOwner.clear() + unitResourceUpkeepByOwner.clear() --
+
+-- G. EmpireResourceRow.usage typowane jako ResourceUsageBreakdown --
+
+-- H. empireDetailPanel.ts: przycisk „Zobacz szczegóły" wpięty w kartę surowca --
+
+-- I. previewOwnerBuildingResourceUpkeep / totalUnitResourceUpkeep (fallback live) -- wartości liczbowe --
+
+-- J. End-to-end post-save-load: preview -> resourceUsageBreakdownFor -> resUsageDetailsHtml (real HTML numeric) --
+
+-- K. Niedobór magazynu: citizens klamrowane (realne), buildings/units NIE (zapotrzebowanie) -- real HTML --
+
+resource-usage-breakdown-test: 98 passed, 2 failed
+EXIT=1

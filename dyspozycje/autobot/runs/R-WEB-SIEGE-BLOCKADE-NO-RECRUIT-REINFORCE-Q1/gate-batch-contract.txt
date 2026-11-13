@@ -1,0 +1,4 @@
+PASS: q=0 jest odrzucane przez backend
+
+recruitment-batch-contract-test: 17 passed, 0 failed
+EXIT=0

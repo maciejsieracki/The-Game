@@ -1,0 +1,17 @@
+R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1 — main.ts guards (okablowanie)
+PASS: main.ts importuje assignForcedWarPairings i typy z forced-war-common (nie osobne funkcje domina per epoka -- USUNIĘTE)
+PASS: pre-pass (triggeredSubjects, budowa puli) jest policzony RAZ, PRZED ownerLoop (nie per-owner) -- ECHO: "Najpierw wszyscy mają wojnę, potem trójkąty" wymaga znać WSZYSTKICH triggered tej tury NARAZ, zanim ktokolwiek dostanie przydział
+PASS: wywołanie assignForcedWarPairings występuje RAZ, PRZED ownerLoop (nie wewnątrz pętli per-owner)
+PASS: pre-pass zbiera triggeredSubjects Brązu (bronzeTriggeredSubjects.push) i Kamienia (stoneTriggeredSubjects.push) -- Żelazo pokryte w forced-war-iron-main-guard-test.cjs
+PASS: triggeredSubjects finalny to złączenie WSZYSTKICH trzech epok, PLUS gracz (dopisany osobno)
+PASS: existingActivePairsForJoin łączy WSZYSTKIE trzy mapy aktywnych par (AI<->AI, targetId!==0, bez eliminowanych), każda otagowana WŁASNĄ erą -- krok 4 ECHO (leftover dołącza do DOWOLNEJ epoki)
+PASS: ECHO, brzegowy przypadek: unresolvedOwnerIds NIEPUSTE loguje DECISION_REQUIRED (nie zgaduje, nie crashuje) -- owner zostaje bez przydziału tej tury
+PASS: wynik czytany do forcedWarAssignmentByOwner (Map<ownerId, assignment>) z assignments zwróconych przez assignForcedWarPairings
+PASS: Brąz: bronzeForceWarTargetId czytany z forcedWarAssignmentByOwner z rozróżnieniem WŁASNEJ ery (era === 'bronze'), nie z usuniętego domina/coordinated
+PASS: Kamień: stoneForceWarTargetId czytany z forcedWarAssignmentByOwner z rozróżnieniem WŁASNEJ ery (era === 'stone')
+PASS: Żelazo: ironForceWarTargetId czytany z forcedWarAssignmentByOwner z rozróżnieniem WŁASNEJ ery (era === 'iron')
+PASS: ECHO 2 (sojusz KTÓREJKOLWIEK strony blokuje CAŁĄ parę): isForcedWarPairBlocked sprawdza NAP, blokadę pokoju (w tym cooldown tej samej pary) i sojusz -- symetryczny predykat dla WSZYSTKICH par (nowych i dołączeń do istniejących), nie tylko względem gracza
+PASS: regresja mutacyjna: usunięcie odczytu Brązu z forcedWarAssignmentByOwner jest wykrywalne (test czerwienieje)
+PASS: GOAL 3 (nietknięte tą naprawą): ai.ts nadal woła WYŁĄCZNIE istniejące, niezmienione pola diploInp.*ForceWarTargetId (ten sam kanał co stary fallback/domino, ai.ts poza allowlistą)
+WYNIK: 14 PASS, 0 FAIL
+EXIT=0

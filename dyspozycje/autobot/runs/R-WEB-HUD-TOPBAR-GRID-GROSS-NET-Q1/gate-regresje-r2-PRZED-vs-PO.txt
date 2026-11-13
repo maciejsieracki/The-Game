@@ -1,0 +1,208 @@
+# R2 regresje PRZED(01fdd771f) vs PO (obrona r1): 85 testow = glob hud|top|chip|resource|abbrev|economy + testy referujace hud.ts/hudChip6c/empireDetailPanel/pracaChipTitle; timeout 120 s, rownolegle x3
+# PRZED
+ai-major-economy-test.cjs kod=1
+ai-resource-needs-test.cjs kod=0
+army-panel-recruit-remove-test.cjs kod=0
+autowyzywienie-stan-przycisku-test.cjs kod=0
+bottom-bar-hud-wykonaj-overlap-test.cjs kod=0
+build-mode-hud-affordability-test.cjs kod=0
+build-panel-ulepszenia-scroll-real-render-test.cjs kod=0
+building-resource-visibility-test.cjs kod=0
+building-resource-visibility-ui-test.cjs kod=0
+citizen-resource-upkeep-test.cjs kod=1
+civpedia-wikihubhud-rys-historyczny-duplikacja-test.cjs kod=0
+diplomacy-economy-test.cjs kod=0
+diplomacy-resource-cyclic-trade-test.cjs kod=0
+diplomacy-resource-trade-pick-test.cjs kod=0
+diplomacy-resource-values-x5-regression-test.cjs kod=0
+diplomacy-tech-chip-filter-and-multi-deal-test.cjs kod=0
+empire-armia-produkcja-test.cjs kod=1
+empire-autofeed-btn-label-real-render-test.cjs kod=0
+empire-diplo-resource-flow-test.cjs kod=0
+empire-mass-recruitment-test.cjs kod=1
+empire-miasta-table-test.cjs kod=0
+empire-nauka-panel-coverage-test.cjs kod=0
+empire-panel-drobiazgi-runda2-test.cjs kod=0
+empire-panel-econ-slider-visibility-test.cjs kod=0
+empire-panel-miasto-obywatele-content-test.cjs kod=1
+empire-panel-moc-scroll-preserve-test.cjs kod=1
+empire-panel-sliders-always-visible-test.cjs kod=0
+empire-panel-split-test.cjs kod=0
+empire-praca-panel-coverage-test.cjs kod=0
+empire-religia-panel-coverage-test.cjs kod=0
+empire-skarbiec-panel-coverage-test.cjs kod=0
+empire-trade-route-split-real-render-test.cjs kod=0
+escape-overlay-real-panels-test.cjs kod=0
+hex-tooltip-resources-line-dedup-test.cjs kod=0
+horse-resource-terrain-test.cjs kod=124
+hotseat-etap6c-economy-noop-test.cjs kod=0
+hotseat-etap6c-lastpraca-per-fotel-test.cjs kod=124
+hud-armia-chip-jednostki-test.cjs kod=0
+hud-konwerter-dopasowanie-test.cjs kod=0
+hud-miasto-stan-cywilizacji-test.cjs kod=0
+hud-miasto-stock-tempo-test.cjs kod=0
+hud-moc-warstwa-test.cjs kod=1
+hud-number-abbrev-test.cjs kod=0
+hud-obywatele-chip-test.cjs kod=1
+hud-recruits-abbrev-test.cjs kod=0
+hud-resource-deficit-red-test.cjs kod=0
+hud-skarbiec-test.cjs kod=1
+hud-tooltip-body-mounted-panels-test.cjs kod=124
+hud-zetony-ekonomia-brutto-live-test.cjs kod=0
+improvement-adapter-resource-note-test.cjs kod=0
+kolor-surowce-spojnosc-test.cjs kod=0
+labor-to-tax-conversion-gold-test.cjs kod=0
+manpower-panels-abbrev-test.cjs kod=0
+owner-economy-test.cjs kod=0
+panel-kolejka-pasek-postepu-test.cjs kod=0
+pr141-matrix-only-economy-test.cjs kod=1
+pr141-matrix-only-owner-ui-test.cjs kod=0
+praca-auto-ulepszenia-koszt-split-test.cjs kod=0
+praca-budmode-slider-max-real-render-test.cjs kod=0
+praca-jeden-podzial-kontrakt-test.cjs kod=1
+praca-jeden-podzial-real-render-test.cjs kod=0
+praca-panel-budowy-warstwa-real-render-test.cjs kod=1
+praca-pula-rate-parity-test.cjs kod=0
+praca-split-ui-test.cjs kod=1
+rally-point-automarch-test.cjs kod=0
+recruit-card-stock-chip-real-render-test.cjs kod=0
+recruit-list-order-by-era-test.cjs kod=0
+recruit-rally-default-ui-test.cjs kod=0
+recruit-resource-strip-test.cjs kod=0
+resource-usage-breakdown-test.cjs kod=1
+resources-map-icon-map-test.cjs kod=0
+saveload-hud-cache-hotseat-live-test.cjs kod=124
+saveload-hud-cache-hotseat-wiring-test.cjs kod=0
+sawmill-quarry-50-economy-test.cjs kod=0
+side-list-hud-panel-coverage-test.cjs kod=0
+sidepanel-hud-deadzone-test.cjs kod=124
+spichlerz-deficyt-scalenie-test.cjs kod=1
+spichlerz-hud-params-parity-test.cjs kod=0
+surowce-dostep-test.cjs kod=0
+surowce-katalog-kolejnosc-test.cjs kod=0
+tax-slider-thumb-align-real-render-test.cjs kod=0
+terrain-base-resource-yields-test.cjs kod=0
+trade-routes-hud-filter-test.cjs kod=1
+transient-webgl-resource-smoke.cjs kod=1
+unit-resource-upkeep-test.cjs kod=1
+# PO
+ai-major-economy-test.cjs kod=1
+ai-resource-needs-test.cjs kod=0
+army-panel-recruit-remove-test.cjs kod=0
+autowyzywienie-stan-przycisku-test.cjs kod=0
+bottom-bar-hud-wykonaj-overlap-test.cjs kod=0
+build-mode-hud-affordability-test.cjs kod=0
+build-panel-ulepszenia-scroll-real-render-test.cjs kod=0
+building-resource-visibility-test.cjs kod=0
+building-resource-visibility-ui-test.cjs kod=0
+citizen-resource-upkeep-test.cjs kod=1
+civpedia-wikihubhud-rys-historyczny-duplikacja-test.cjs kod=0
+diplomacy-economy-test.cjs kod=0
+diplomacy-resource-cyclic-trade-test.cjs kod=0
+diplomacy-resource-trade-pick-test.cjs kod=0
+diplomacy-resource-values-x5-regression-test.cjs kod=0
+diplomacy-tech-chip-filter-and-multi-deal-test.cjs kod=0
+empire-armia-produkcja-test.cjs kod=1
+empire-autofeed-btn-label-real-render-test.cjs kod=0
+empire-diplo-resource-flow-test.cjs kod=0
+empire-mass-recruitment-test.cjs kod=1
+empire-miasta-table-test.cjs kod=0
+empire-nauka-panel-coverage-test.cjs kod=0
+empire-panel-drobiazgi-runda2-test.cjs kod=0
+empire-panel-econ-slider-visibility-test.cjs kod=0
+empire-panel-miasto-obywatele-content-test.cjs kod=1
+empire-panel-moc-scroll-preserve-test.cjs kod=1
+empire-panel-sliders-always-visible-test.cjs kod=0
+empire-panel-split-test.cjs kod=0
+empire-praca-panel-coverage-test.cjs kod=0
+empire-religia-panel-coverage-test.cjs kod=0
+empire-skarbiec-panel-coverage-test.cjs kod=0
+empire-trade-route-split-real-render-test.cjs kod=0
+escape-overlay-real-panels-test.cjs kod=0
+hex-tooltip-resources-line-dedup-test.cjs kod=0
+horse-resource-terrain-test.cjs kod=124
+hotseat-etap6c-economy-noop-test.cjs kod=0
+hotseat-etap6c-lastpraca-per-fotel-test.cjs kod=124
+hud-armia-chip-jednostki-test.cjs kod=0
+hud-konwerter-dopasowanie-test.cjs kod=0
+hud-miasto-stan-cywilizacji-test.cjs kod=0
+hud-miasto-stock-tempo-test.cjs kod=0
+hud-moc-warstwa-test.cjs kod=1
+hud-number-abbrev-test.cjs kod=0
+hud-obywatele-chip-test.cjs kod=1
+hud-recruits-abbrev-test.cjs kod=0
+hud-resource-deficit-red-test.cjs kod=0
+hud-skarbiec-test.cjs kod=1
+hud-tooltip-body-mounted-panels-test.cjs kod=124
+hud-zetony-ekonomia-brutto-live-test.cjs kod=0
+improvement-adapter-resource-note-test.cjs kod=0
+kolor-surowce-spojnosc-test.cjs kod=0
+labor-to-tax-conversion-gold-test.cjs kod=0
+manpower-panels-abbrev-test.cjs kod=0
+owner-economy-test.cjs kod=0
+panel-kolejka-pasek-postepu-test.cjs kod=0
+pr141-matrix-only-economy-test.cjs kod=1
+pr141-matrix-only-owner-ui-test.cjs kod=0
+praca-auto-ulepszenia-koszt-split-test.cjs kod=0
+praca-budmode-slider-max-real-render-test.cjs kod=0
+praca-jeden-podzial-kontrakt-test.cjs kod=1
+praca-jeden-podzial-real-render-test.cjs kod=0
+praca-panel-budowy-warstwa-real-render-test.cjs kod=1
+praca-pula-rate-parity-test.cjs kod=0
+praca-split-ui-test.cjs kod=1
+rally-point-automarch-test.cjs kod=0
+recruit-card-stock-chip-real-render-test.cjs kod=0
+recruit-list-order-by-era-test.cjs kod=0
+recruit-rally-default-ui-test.cjs kod=0
+recruit-resource-strip-test.cjs kod=0
+resource-usage-breakdown-test.cjs kod=1
+resources-map-icon-map-test.cjs kod=0
+saveload-hud-cache-hotseat-live-test.cjs kod=0
+saveload-hud-cache-hotseat-wiring-test.cjs kod=0
+sawmill-quarry-50-economy-test.cjs kod=0
+side-list-hud-panel-coverage-test.cjs kod=0
+sidepanel-hud-deadzone-test.cjs kod=124
+spichlerz-deficyt-scalenie-test.cjs kod=1
+spichlerz-hud-params-parity-test.cjs kod=0
+surowce-dostep-test.cjs kod=0
+surowce-katalog-kolejnosc-test.cjs kod=0
+tax-slider-thumb-align-real-render-test.cjs kod=0
+terrain-base-resource-yields-test.cjs kod=0
+trade-routes-hud-filter-test.cjs kod=1
+transient-webgl-resource-smoke.cjs kod=1
+unit-resource-upkeep-test.cjs kod=1
+# POROWNANIE (kod + liczba i tresc linii FAIL)
+ai-major-economy-test.cjs: PRZED=1 PO=1 fail-lines 1/1 identyczne_komunikaty=True
+citizen-resource-upkeep-test.cjs: PRZED=1 PO=1 fail-lines 2/2 identyczne_komunikaty=True
+empire-armia-produkcja-test.cjs: PRZED=1 PO=1 fail-lines 7/7 identyczne_komunikaty=True
+empire-mass-recruitment-test.cjs: PRZED=1 PO=1 fail-lines 0/0 identyczne_komunikaty=True
+empire-panel-miasto-obywatele-content-test.cjs: PRZED=1 PO=1 fail-lines 1/1 identyczne_komunikaty=True
+empire-panel-moc-scroll-preserve-test.cjs: PRZED=1 PO=1 fail-lines 12/12 identyczne_komunikaty=True
+horse-resource-terrain-test.cjs: PRZED=124 PO=124 fail-lines 0/0 identyczne_komunikaty=True
+hotseat-etap6c-lastpraca-per-fotel-test.cjs: PRZED=124 PO=124 fail-lines 0/0 identyczne_komunikaty=True
+hud-moc-warstwa-test.cjs: PRZED=1 PO=1 fail-lines 8/8 identyczne_komunikaty=True
+hud-obywatele-chip-test.cjs: PRZED=1 PO=1 fail-lines 5/5 identyczne_komunikaty=True
+hud-skarbiec-test.cjs: PRZED=1 PO=1 fail-lines 1/1 identyczne_komunikaty=True
+hud-tooltip-body-mounted-panels-test.cjs: PRZED=124 PO=124 fail-lines 0/0 identyczne_komunikaty=True
+pr141-matrix-only-economy-test.cjs: PRZED=1 PO=1 fail-lines 1/1 identyczne_komunikaty=True
+praca-jeden-podzial-kontrakt-test.cjs: PRZED=1 PO=1 fail-lines 3/3 identyczne_komunikaty=True
+praca-panel-budowy-warstwa-real-render-test.cjs: PRZED=1 PO=1 fail-lines 1/1 identyczne_komunikaty=True
+praca-split-ui-test.cjs: PRZED=1 PO=1 fail-lines 1/1 identyczne_komunikaty=True
+resource-usage-breakdown-test.cjs: PRZED=1 PO=1 fail-lines 2/2 identyczne_komunikaty=True
+saveload-hud-cache-hotseat-live-test.cjs: PRZED=124 PO=0 fail-lines 0/0 identyczne_komunikaty=True
+sidepanel-hud-deadzone-test.cjs: PRZED=124 PO=124 fail-lines 0/0 identyczne_komunikaty=True
+spichlerz-deficyt-scalenie-test.cjs: PRZED=1 PO=1 fail-lines 4/4 identyczne_komunikaty=True
+trade-routes-hud-filter-test.cjs: PRZED=1 PO=1 fail-lines 1/1 identyczne_komunikaty=True
+transient-webgl-resource-smoke.cjs: PRZED=1 PO=1 fail-lines 1/1 identyczne_komunikaty=True
+unit-resource-upkeep-test.cjs: PRZED=1 PO=1 fail-lines 4/4 identyczne_komunikaty=True
+RAZEM 85 zielone PRZED 62 zielone PO 63
+# SOLO (bez rownoleglosci, PRZED i PO jednoczesnie, 250-500 s)
+PO horse-resource-terrain-test.cjs kod=124
+PO hotseat-etap6c-lastpraca-per-fotel-test.cjs kod=2
+PO hud-tooltip-body-mounted-panels-test.cjs kod=0
+PO sidepanel-hud-deadzone-test.cjs kod=0
+PRZED horse-resource-terrain-test.cjs kod=124
+PRZED hotseat-etap6c-lastpraca-per-fotel-test.cjs kod=2
+PRZED hud-tooltip-body-mounted-panels-test.cjs kod=0
+PRZED sidepanel-hud-deadzone-test.cjs kod=0
+EXIT=0

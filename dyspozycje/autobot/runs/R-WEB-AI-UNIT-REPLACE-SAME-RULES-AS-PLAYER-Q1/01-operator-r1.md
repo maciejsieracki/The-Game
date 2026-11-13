@@ -1,0 +1,11 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-AI-UNIT-REPLACE-SAME-RULES-AS-PLAYER-Q1
+GOAL: AI zamienia (ulepsza) jednostki wg tych samych zasad co gracz, jedna wspolna implementacja, pelny koszt Pieniadz + surowce.
+ZMIANY/COMMIT: baza aab0ca040 (origin/main, FALA 586). Pliki (allowlista): gra/src/game/unit-replace-execute.ts (NOWY, wspolny executeUnitReplace), gra/src/game/ai-unit-replace-plan.ts (NOWY: cap <=10% armii, kolejnosc najstarsze/najslabsze, klasa armii), gra/src/game/ai-era-unit-promotion.ts (deleguje do executeUnitReplace, opcjonalny hook gateReason), gra/src/main.ts (unitReplaceExecuteDeps wspolne dla gracza i AI; performUnitReplace -> executeUnitReplace; upgradeAiUnitsForEra: cap, kolejnosc, terytorium, oblezenie/zaokretowanie, zagrozenie <=3 hexy, brama Super max 1, klasa armii), gra/tools/ai-unit-replace-same-rules-test.cjs (NOWY), gra/tools/unit-replace-full-cost-test.cjs i gra/tools/unit-replace-army-multi-select-test.cjs (asercje okablowania przepisane na wspolny modul). SHA: patrz wiadomosc commita (git log -1 tej galezi).
+ZALOZENIA: (1) cap = max(1, floor(10% jednostek wojskowych)) udanych zamian na ture, stala AI_UNIT_REPLACE_MAX_FRACTION; (2) bezposrednie zagrozenie = wrogie (wojna/barbarzyncy) wojsko w <=3 hexach od jednostki; (3) klasa armii wg armyClassOfUnit (Typ), nieznana klasa = dozwolone; (4) bez nowego uprzywilejowania trudnosci (koszt wg effectiveGameDifficultyForOwner jak rekrutacja AI); (5) zachowanie gracza bez zmian (hpMax nadal nie ruszany przy zamianie gracza).
+TESTY: ai-unit-replace-same-rules-test 31/31; unit-replace-test 15/15; unit-replace-full-cost-test 40/40; unit-replace-army-multi-select-test 36/36; super-unit-limit-one-test 40/0; ai-era-unit-promotion-test 17/0; ai-test 296/0. tsc: brak nowych bledow w zmienionych plikach (srodowisko bez modulu three -> szum poza zakresem). Pomiar headless krotkiego przebiegu AI: NIE_ZMIERZONO (brak przegladarki/three w piaskownicy).
+BLOKADY: brak. Uwaga: node_modules w worktree to dowiazanie do cudzego worktree (nie w commicie).
+RUNDY: 1/5
+NASTEPNY KROK: Evaluator (przejrzec: kolejnosc bramek stock->money zgodna z graczem; cap; zagrozenie), potem Final Control. Dlug: REPIN Rust.
+DEPLOY/PUSH: NIE WYKONANO

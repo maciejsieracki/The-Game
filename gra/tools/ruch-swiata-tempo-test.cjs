@@ -186,11 +186,12 @@ assert(
   "playerState.ts: createPlayerState() domyslnie ruchSwiataPace: 'krotki'",
 );
 
-// newGameFlow.ts — DEFAULT_ADVANCED.ruchSwiataPace = 'krotki' (kompat wsteczna kreatora).
+// newGameFlow.ts — DEFAULT_ADVANCED.ruchSwiataPace = 'normalny' (R-WEB-NEWGAME-DEFAULTS-Q1,
+// decyzja właściciela Maciej 2026-10-31: zmiana z 'krotki'; newGameFlow.ts:255).
 const newGameFlowSrc = fs.readFileSync(path.join(SRC, 'ui', 'newGameFlow.ts'), 'utf8');
 assert(
-  /const DEFAULT_ADVANCED: NewGameAdvancedOptions = \{[\s\S]{0,400}?ruchSwiataPace: 'krotki',/.test(newGameFlowSrc),
-  "newGameFlow.ts: DEFAULT_ADVANCED.ruchSwiataPace === 'krotki'",
+  /const DEFAULT_ADVANCED: NewGameAdvancedOptions = \{[\s\S]{0,400}?ruchSwiataPace: 'normalny',/.test(newGameFlowSrc),
+  "newGameFlow.ts: DEFAULT_ADVANCED.ruchSwiataPace === 'normalny' (R-WEB-NEWGAME-DEFAULTS-Q1)",
 );
 assert(
   /opts: \['Krótki', 'Normalny', 'Długi'\]/.test(newGameFlowSrc),

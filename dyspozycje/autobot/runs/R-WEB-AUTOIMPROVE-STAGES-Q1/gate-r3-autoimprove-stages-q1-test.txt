@@ -1,0 +1,182 @@
+(a) [K1] farma -> trzoda -> irygacja na heksie przy rzece z obywatelem po nadaniu technologii
+  [OK] [K1] bez niedoboru: 12,9 farma(2) < bydlo(11) < irygacja(14)
+  [OK] [K1] bez niedoboru: 12,10 farma(0) < bydlo(9) < irygacja(12)
+  [OK] [K1] bez niedoboru: 13,10 farma(1) < bydlo(10) < irygacja(13)
+  [OK] [K1] bez niedoboru: zero tartaku/gliniany (profil „Zywnosc" nie odwoluje sie do niedoborow)
+  [OK] [K1] z niedoborem surowca (glina, drewno): 12,9 farma(2) < bydlo(11) < irygacja(14)
+  [OK] [K1] z niedoborem surowca (glina, drewno): 12,10 farma(0) < bydlo(9) < irygacja(12)
+  [OK] [K1] z niedoborem surowca (glina, drewno): 13,10 farma(1) < bydlo(10) < irygacja(13)
+  [OK] [K1] z niedoborem surowca (glina, drewno): zero tartaku/gliniany (profil „Zywnosc" nie odwoluje sie do niedoborow)
+(a) [K2] farma -> trzoda -> irygacja na heksie przy rzece z obywatelem po nadaniu technologii
+  [OK] [K2] bez niedoboru: 12,9 farma(2) < bydlo(11) < irygacja(14)
+  [OK] [K2] bez niedoboru: 12,10 farma(0) < bydlo(9) < irygacja(12)
+  [OK] [K2] bez niedoboru: 13,10 farma(1) < bydlo(10) < irygacja(13)
+  [OK] [K2] z niedoborem surowca (glina, drewno): 12,9 farma(2) < bydlo(11) < irygacja(14)
+  [OK] [K2] z niedoborem surowca (glina, drewno): 12,10 farma(0) < bydlo(9) < irygacja(12)
+  [OK] [K2] z niedoborem surowca (glina, drewno): 13,10 farma(1) < bydlo(10) < irygacja(13)
+(a) [K3] farma -> trzoda -> irygacja na heksie przy rzece z obywatelem po nadaniu technologii
+  [OK] [K3] bez niedoboru: 12,9 farma(2) < bydlo(11) < irygacja(14)
+  [OK] [K3] bez niedoboru: 12,10 farma(0) < bydlo(9) < irygacja(12)
+  [OK] [K3] bez niedoboru: 13,10 farma(1) < bydlo(10) < irygacja(13)
+  [OK] [K3] z niedoborem surowca (glina, drewno): 12,9 farma(2) < bydlo(11) < irygacja(14)
+  [OK] [K3] z niedoborem surowca (glina, drewno): 12,10 farma(0) < bydlo(9) < irygacja(12)
+  [OK] [K3] z niedoborem surowca (glina, drewno): 13,10 farma(1) < bydlo(10) < irygacja(13)
+(d) [K1] profil „Zywnosc" — zero odwolan do niedoborow (identyczna sekwencja)
+  [OK] [K1] sekwencja z niedoborem {drewno,kamien,glina,ruda} == sekwencja bez niedoboru
+  [OK] [K1] kamieniolom nie powstaje mimo niedoboru kamienia
+(b) [K1] heks rzeka+las z obywatelem: wyrab -> farma -> trzoda -> irygacja
+  [OK] [K1] 12,9: wyrab(2) < farma(5) < bydlo(8) < irygacja(11)
+  [OK] [K1] 12,10: wyrab(0) < farma(3) < bydlo(6) < irygacja(9)
+  [OK] [K1] 13,10: wyrab(1) < farma(4) < bydlo(7) < irygacja(10)
+  [info] [K1] tartak=0 oboz=0
+  [OK] [K1] zero tartaku/obozu na heksie rzeka+las zamiast wyrebu
+(b) [K2] heks rzeka+las z obywatelem: wyrab -> farma -> trzoda -> irygacja
+  [OK] [K2] 12,9: wyrab(2) < farma(5) < bydlo(8) < irygacja(11)
+  [OK] [K2] 12,10: wyrab(0) < farma(3) < bydlo(6) < irygacja(9)
+  [OK] [K2] 13,10: wyrab(1) < farma(4) < bydlo(7) < irygacja(10)
+  [info] [K2] tartak=0 oboz=0
+  [OK] [K2] zero tartaku/obozu na heksie rzeka+las zamiast wyrebu
+(b) [K3] heks rzeka+las z obywatelem: wyrab -> farma -> trzoda -> irygacja
+  [OK] [K3] 12,9: wyrab(2) < farma(5) < bydlo(8) < irygacja(11)
+  [OK] [K3] 12,10: wyrab(0) < farma(3) < bydlo(6) < irygacja(9)
+  [OK] [K3] 13,10: wyrab(1) < farma(4) < bydlo(7) < irygacja(10)
+  [info] [K3] tartak=0 oboz=0
+  [OK] [K3] zero tartaku/obozu na heksie rzeka+las zamiast wyrebu
+(c) [K1] po zagospodarowaniu rzek: wycinka + farmy poza rzeka, tartak/obozu nie ruszane
+  [OK] [K1] 14,12: wyrab(11) potem farma(13) poza rzeka
+  [OK] [K1] 11,11: wyrab(8) potem farma(10) poza rzeka
+  [OK] [K1] 13,11: wyrab(5) potem farma(6) poza rzeka
+  [OK] [K1] 11,13: wyrab(1) potem farma(3) poza rzeka
+  [OK] [K1] 12,13: wyrab(2) potem farma(4) poza rzeka
+  [OK] [K1] 11,11: irygacja(12) dopiero PO farmie(10) (kolejnosc etapow E5 -> E4 w nastepnej turze)
+  [OK] [K1] 13,11: irygacja(9) dopiero PO farmie(6) (kolejnosc etapow E5 -> E4 w nastepnej turze)
+  [OK] [K1] (kontrola) co najmniej jeden wyciety heks poza rzeka dostal irygacje (przy rzece)
+  [OK] [K1] heks z tartakiem 14,13 NIE jest wycinany
+  [OK] [K1] las pod tartakiem nietkniety
+  [OK] [K1] tartak nie stawiany na wycinanym lesie zamiast wyrebu
+(c) [K2] po zagospodarowaniu rzek: wycinka + farmy poza rzeka, tartak/obozu nie ruszane
+  [OK] [K2] 14,12: wyrab(11) potem farma(13) poza rzeka
+  [OK] [K2] 11,11: wyrab(8) potem farma(10) poza rzeka
+  [OK] [K2] 13,11: wyrab(5) potem farma(6) poza rzeka
+  [OK] [K2] 11,13: wyrab(1) potem farma(3) poza rzeka
+  [OK] [K2] 12,13: wyrab(2) potem farma(4) poza rzeka
+  [OK] [K2] 11,11: irygacja(12) dopiero PO farmie(10) (kolejnosc etapow E5 -> E4 w nastepnej turze)
+  [OK] [K2] 13,11: irygacja(9) dopiero PO farmie(6) (kolejnosc etapow E5 -> E4 w nastepnej turze)
+  [OK] [K2] (kontrola) co najmniej jeden wyciety heks poza rzeka dostal irygacje (przy rzece)
+  [OK] [K2] heks z tartakiem 14,13 NIE jest wycinany
+  [OK] [K2] las pod tartakiem nietkniety
+  [OK] [K2] tartak nie stawiany na wycinanym lesie zamiast wyrebu
+(c) [K3] po zagospodarowaniu rzek: wycinka + farmy poza rzeka, tartak/obozu nie ruszane
+  [OK] [K3] 14,12: wyrab(11) potem farma(13) poza rzeka
+  [OK] [K3] 11,11: wyrab(8) potem farma(10) poza rzeka
+  [OK] [K3] 13,11: wyrab(5) potem farma(6) poza rzeka
+  [OK] [K3] 11,13: wyrab(1) potem farma(3) poza rzeka
+  [OK] [K3] 12,13: wyrab(2) potem farma(4) poza rzeka
+  [OK] [K3] 11,11: irygacja(12) dopiero PO farmie(10) (kolejnosc etapow E5 -> E4 w nastepnej turze)
+  [OK] [K3] 13,11: irygacja(9) dopiero PO farmie(6) (kolejnosc etapow E5 -> E4 w nastepnej turze)
+  [OK] [K3] (kontrola) co najmniej jeden wyciety heks poza rzeka dostal irygacje (przy rzece)
+  [OK] [K3] heks z tartakiem 14,13 NIE jest wycinany
+  [OK] [K3] las pod tartakiem nietkniety
+  [OK] [K3] tartak nie stawiany na wycinanym lesie zamiast wyrebu
+(c2) [K2] wycinka poza rzeka BEZ progu lasu i BEZ minimum lesnego (1 las, brak tartaku)
+  [OK] [K2] pojedynczy las poza rzeka (ponizej progu 3, bez tartaku) zostaje wyciety
+(c3) [K2] wolno wycinac las = OFF: poza rzeka nie tniemy, na rzece tniemy (etap E2)
+  [OK] [K2] OFF: wyrab na rzece nadal dziala
+  [OK] [K2] OFF: brak wyrebu poza rzeka
+(e) cywilizacja Nowego Swiata (playerEra)
+  [OK] [K2] Inkowie, epoka 1: trzoda (bydlo/owce) zablokowana regula civ/epoka
+  [OK] [K2] Inkowie, epoka 1: irygacja NIE jest zakladnikiem braku trzody (ABC-5=A)
+  [OK] [K2] Inkowie, epoka 3: trzoda powstaje
+  [OK] [K1/K2] main.ts: picker gracza dostaje `playerEra: empireEpochForOwner(hOid)`
+  [OK] [K3] ai.ts: picker AI dostaje `playerEra: opts.civEra`
+  [OK] [K3] AI Inkowie, epoka 3 (civEra): trzoda powstaje
+(f) [K3] AI cywilizacji: farma -> trzoda -> irygacja przy rzece po nadaniu technologii
+  [OK] [K3] 12,9: farma < bydlo < irygacja (2/11/14)
+  [OK] [K3] 12,10: farma < bydlo < irygacja (0/9/12)
+  [OK] [K3] 13,10: farma < bydlo < irygacja (1/10/13)
+(g) ABC-5=A: brak „Oswojenia zwierzat" nie wiesza irygacji
+  [OK] [K1] bez Oswojenia: trzoda 0, irygacja 5 >= 3
+  [OK] [K2] bez Oswojenia: trzoda 0, irygacja 5 >= 3
+  [OK] [K3] bez Oswojenia: trzoda 0, irygacja 5 >= 3
+(h) Q2=B / ABC-6=A: trzoda i irygacja poza limitem %; rezerwacja budzetu na irygacje (koniec starvation)
+  [OK] [K1] limit 20% (40 < 60): irygacja powstaje poza limitem (2 szt.)
+  [OK] [K1] male przychody (12/ture): wszystkie 3 irygacje powstaja w 30 turach (4)
+  [OK] [K1] tanie farmy poza rzeka NIE wyprzedzaja irygacji rzecznej (0 przed pierwsza irygacja)
+  [OK] [K2] limit 20% (40 < 60): irygacja powstaje poza limitem (2 szt.)
+  [OK] [K2] male przychody (12/ture): wszystkie 3 irygacje powstaja w 30 turach (4)
+  [OK] [K2] tanie farmy poza rzeka NIE wyprzedzaja irygacji rzecznej (0 przed pierwsza irygacja)
+(h2) rezerwacja budzetu wewnatrz etapu E4: tanie tarasy nie zjadaja budzetu irygacji (60)
+  [OK] [K1] (kontrola) tarasy w ogole powstaja dla Chinczykow (2)
+  [seq] 1:irygacja@12,10 9:irygacja@13,10 16:irygacja@12,9 23:tarasy@11,13 29:tarasy@14,12 31:farma@11,12 34:farma@12,13 36:farma@13,11 44:irygacja@13,11 46:farma@13,12 49:farma@11,11 56:irygacja@11,11
+  [OK] [K1] irygacje rzeczne powstaja mimo tanich tarasow (5/3)
+  [OK] [K1] tarasy nie wyprzedzaja irygacji rzecznej (0 przed pierwsza irygacja)
+  [OK] [K2] (kontrola) tarasy w ogole powstaja dla Chinczykow (2)
+  [seq] 1:irygacja@12,10 9:irygacja@13,10 16:irygacja@12,9 23:tarasy@11,13 29:tarasy@14,12 31:farma@11,12 34:farma@12,13 36:farma@13,11 44:irygacja@13,11 46:farma@13,12 49:farma@11,11 56:irygacja@11,11
+  [OK] [K2] irygacje rzeczne powstaja mimo tanich tarasow (5/3)
+  [OK] [K2] tarasy nie wyprzedzaja irygacji rzecznej (0 przed pierwsza irygacja)
+(i) [K2] cykl: niedobor -> ulepszenie surowca NA PRZOD -> zaspokojenie -> powrot do zywnosci -> ponowny niedobor
+  [OK] [K2] niedobor w turze 0 -> kamieniolom w TEJ SAMEJ turze (t=0)
+  [OK] [K2] kamieniolom PRZED zywnoscia w turze 0 (kamieniolom,farma,farma,farma)
+  [OK] [K2] po zaspokojeniu (t=1..11) automat wraca do zywnosci: bydlo,irygacja,farma
+  [OK] [K2] w trakcie zaspokojenia zywnosc (farma) jest budowana
+  [OK] [K2] zaspokojony niedobor nie zostawia „trybu surowcowego" (kamieniolom 1 szt. - jedyny heks Wzgorz)
+  [OK] [K2] po ponownym niedoborze brak zakleszczenia: zywnosc nadal budowana (brak histerezy)
+(j) parytet K2 <-> K3: ten sam stan => ta sama kolejnosc i zestaw budow (R3 ABC-D=B: BEZ limitu maxItemsPerCity AI)
+  [OK] [K2=K3] bez niedoboru: identyczna sekwencja (K2: 0:wyrab@12,10 0:wyrab@13,10 0:wyrab@12,9 1:farma@12,10 1:farma@13,10 1:farma@12,9 2:bydlo@…)
+  [OK] [K2=K3] niedobor kamienia (t<3): identyczna sekwencja (K2: 0:kamieniolom@13,11 0:kamieniolom@11,11 0:wyrab@12,10 0:wyrab@13,10 0:wyrab@12,9 1:farma@1…)
+(k) profile gracza „surowce" (S) i „infrastruktura" (I) BEZ ZMIAN wzgledem bazy 4d1916f2c (zarzut FC R1 nr 1)
+  [OK] [S] profil „surowce": tartak 6 == 6 (baza; bez limitu ceil(pop/10)=2)
+  [OK] [S] profil „surowce": obozy 0 (poza lista profilu)
+  [OK] [I] profil „infrastruktura": tylko infrastruktura (tartak 0, farma 0)
+(k2) [K2/K3] tartak/obóz w minimum lesnym ceil(pop/10) (nie na kazdym lesie) — TYLKO przebiegi K1/K2/K3; ABC-B czeka
+  [OK] [K2] tartaki 2 w granicach 1..2 (nie 6)
+  [OK] [K2] obozy 2 <= 2
+  [OK] [K3] tartaki 2 w granicach 1..2 (nie 6)
+  [OK] [K3] obozy 2 <= 2
+(k3) POMIAR (informacyjny, zarzut FC R1 nr 7): tartak na heksie CENTRUM MIASTA z lasem — czy picker go stawia?
+  [POMIAR] [K2] heks centrum miasta z lasem + niedobor drewna: rozkazy na centrum = [] (NIE asercja; pytanie ABC-F do wlasciciela)
+  [POMIAR] [K3] heks centrum miasta z lasem + niedobor drewna: rozkazy na centrum = [] (NIE asercja; pytanie ABC-F do wlasciciela)
+(l) [K2/K3] niedobor surowca bez ulepszenia terenu (zloto) NIE zmienia kolejnosci
+  [OK] [K2] niedobor {zloto,stal} (brak ulepszenia) == brak niedoboru
+  [OK] [K3] niedobor {zloto,stal} (brak ulepszenia) == brak niedoboru
+(m) [K1] R3 ABC-A=C: profil „Zywnosc" BEZ tartaku i obozu (zero tartakow/obozow nawet przy lesie, obozie na tartaku i niedoborze)
+  [OK] [K1] lista profilu „Zywnosc" nie zawiera tartaku ani obozu (farma,bydlo,owce,lama,tarasy,lodzie_rybackie,irygacja)
+  [OK] [K1] bez niedoboru: tartak 0, oboz 0 (== 0)
+  [OK] [K1] bez niedoboru: zywnosc nadal budowana (farm 9)
+  [OK] [K1] z niedoborem drewna: tartak 0, oboz 0 (== 0)
+  [OK] [K1] z niedoborem drewna: zywnosc nadal budowana (farm 9)
+(n) [K2/K3] R3 ABC-B=B: tartak WYLACZNIE przy niedoborze drewna; obóz tylko na heksie z ISTNIEJACYM tartakiem
+  [OK] [K2] bez niedoboru drewna: tartak 0, oboz 0 (== 0, zniesienie „1 na 10” jako reguly budowy)
+  [OK] [K2] bez niedoboru wycinka nadal rusza (6 szt.)
+  [OK] [K2] niedobor INNEGO surowca (kamien) nie otwiera tartaku (0)
+  [OK] [K2] z niedoborem drewna tartak powstaje (2)
+  [OK] [K2] istniejacy tartak + brak niedoboru: zadnego NOWEGO tartaku (0)
+  [OK] [K2] oboz powstaje TYLKO na heksie z istniejacym tartakiem 14,12 (14,12)
+  [OK] [K3] bez niedoboru drewna: tartak 0, oboz 0 (== 0, zniesienie „1 na 10” jako reguly budowy)
+  [OK] [K3] bez niedoboru wycinka nadal rusza (6 szt.)
+  [OK] [K3] niedobor INNEGO surowca (kamien) nie otwiera tartaku (0)
+  [OK] [K3] z niedoborem drewna tartak powstaje (2)
+  [OK] [K3] istniejacy tartak + brak niedoboru: zadnego NOWEGO tartaku (0)
+  [OK] [K3] oboz powstaje TYLKO na heksie z istniejacym tartakiem 14,12 (14,12)
+(n2) [K2/K3] R3 ABC-B=B: sciezka BEZ wycinki (K2: „wolno wycinac las”=OFF; K3: las poza obrabianymi) — tartak nadal tylko przy niedoborze drewna
+  [OK] [K2] bez niedoboru: tartak 0, oboz 0 (== 0)
+  [OK] [K2] niedobor kamienia: tartak 0, oboz 0 (== 0)
+  [OK] [K2] niedobor drewna: tartak powstaje (2)
+  [OK] [K3] bez niedoboru: tartak 0, oboz 0 (== 0)
+  [OK] [K3] niedobor kamienia: tartak 0, oboz 0 (== 0)
+  [OK] [K3] niedobor drewna: tartak powstaje (6)
+(o) [K3] R3 ABC-D=B: AI bez limitu 1/miasto/ture (jak gracz) — wiecej niz 1 rozkaz na miasto w jednej turze
+  [OK] [K3] max rozkazow na miasto w jednej turze = 3 (> 1; limit etapu = 3)
+  [OK] [K3] ... nadal w granicach limitu etapu (3)
+(p) [K2/K3] R3 ABC-F=A: heks CENTRUM miasta nie dostaje zadnego ulepszenia (nawet las + niedobor drewna / farma)
+  [OK] [K2] las w centrum + niedobor drewna: rozkazy na centrum = [] (== brak)
+  [OK] [K2] laka w centrum, farma mozliwa: rozkazy na centrum = [] (== brak)
+  [OK] [K3] las w centrum + niedobor drewna: rozkazy na centrum = [] (== brak)
+  [OK] [K3] laka w centrum, farma mozliwa: rozkazy na centrum = [] (== brak)
+(i2) [K3] cykl niedobor -> surowiec NA PRZOD -> zaspokojenie -> powrot do zywnosci (ta sama logika co K2)
+  [OK] [K3] niedobor w t0 -> kamieniolom PRZED zywnoscia (kamieniolom,farma)
+  [OK] [K3] po zaspokojeniu powrot do zywnosci (farma), zero kamieniolomu
+  [OK] [K2=K3] cykl niedoboru (t<12): identyczna sekwencja
+
+autoimprove-stages-q1-test: 143 passed, 0 failed
+EXIT=0

@@ -21,6 +21,8 @@ let hideTimer: ReturnType<typeof setTimeout> | null = null;
 let activeAnchor: HTMLElement | null = null;
 let activeSide: HoverDetailDockSide | null = null;
 let dockHovered = false;
+/** Explicit click-selected detail; normal hover timers must never emulate this state. */
+let detailPinned = false;
 
 let floatEl: HTMLDivElement | null = null;
 
@@ -173,7 +175,7 @@ function scheduleClear(): void {
   if (hideTimer) clearTimeout(hideTimer);
   hideTimer = setTimeout(() => {
     hideTimer = null;
-    if (activeAnchor || dockHovered) return;
+    if (detailPinned || activeAnchor || dockHovered) return;
     cancelTimers();
     clearContent();
   }, HIDE_DELAY);
@@ -267,23 +269,57 @@ export function showHoverDetailNow(
   sideHint: HoverDetailDockSide | 'auto' = 'auto',
 ): void {
   cancelTimers();
+  detailPinned = false;
   activeAnchor = target;
   showContent(buildContent(), target, sideHint);
+}
+
+/** Show a click-selected detail without tying its lifetime to pointer leave. */
+export function showPinnedDetail(
+  target: HTMLElement,
+  buildContent: () => HTMLElement,
+  sideHint: HoverDetailDockSide | 'auto' = 'auto',
+): void {
+  cancelTimers();
+  detailPinned = true;
+  activeAnchor = null;
+  showContent(buildContent(), target, sideHint);
+}
+
+/** Clear an explicit click-selected detail (tab/city/panel teardown). */
+export function clearPinnedDetail(): void {
+  detailPinned = false;
+  cancelTimers();
+  clearContent();
 }
 
 /** Hover + klik / Enter — karta szczegółów (np. statystyki górnego paska). */
 export function attachInteractiveDetail(
   target: HTMLElement,
   buildContent: () => HTMLElement,
-  opts?: { delayMs?: number; sideHint?: HoverDetailDockSide | 'auto' },
+  opts?: {
+    delayMs?: number;
+    sideHint?: HoverDetailDockSide | 'auto';
+    /** Optional owner callback for a click-selected detail (e.g. city garrison). */
+    pinOnActivate?: () => void;
+  },
 ): void {
   const delayMs = opts?.delayMs ?? 350;
   const sideHint = opts?.sideHint ?? 'auto';
+  const activate = (): void => {
+    if (opts?.pinOnActivate) {
+      opts.pinOnActivate();
+      showPinnedDetail(target, buildContent, sideHint);
+    } else {
+      showHoverDetailNow(target, buildContent, sideHint);
+    }
+  };
   target.classList.add('hover-detail-anchor');
   if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '0');
   target.title = '';
 
   target.addEventListener('mouseenter', () => {
+    if (detailPinned) return;
     if (hideTimer) {
       clearTimeout(hideTimer);
       hideTimer = null;
@@ -292,12 +328,13 @@ export function attachInteractiveDetail(
     if (showTimer) clearTimeout(showTimer);
     showTimer = setTimeout(() => {
       showTimer = null;
-      if (activeAnchor !== target) return;
+      if (detailPinned || activeAnchor !== target) return;
       showContent(buildContent(), target, sideHint);
     }, delayMs);
   });
 
   target.addEventListener('mouseleave', () => {
+    if (detailPinned) return;
     if (showTimer) {
       clearTimeout(showTimer);
       showTimer = null;
@@ -308,13 +345,13 @@ export function attachInteractiveDetail(
 
   target.addEventListener('click', (e) => {
     e.stopPropagation();
-    showHoverDetailNow(target, buildContent, sideHint);
+    activate();
   });
 
   target.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      showHoverDetailNow(target, buildContent, sideHint);
+      activate();
     }
   });
 }
@@ -330,6 +367,7 @@ export function attachHoverDetail(
   target.title = '';
 
   target.addEventListener('mouseenter', () => {
+    if (detailPinned) return;
     if (hideTimer) {
       clearTimeout(hideTimer);
       hideTimer = null;
@@ -338,12 +376,13 @@ export function attachHoverDetail(
     if (showTimer) clearTimeout(showTimer);
     showTimer = setTimeout(() => {
       showTimer = null;
-      if (activeAnchor !== target) return;
+      if (detailPinned || activeAnchor !== target) return;
       showContent(buildContent(), target, sideHint);
     }, delayMs);
   });
 
   target.addEventListener('mouseleave', () => {
+    if (detailPinned) return;
     if (showTimer) {
       clearTimeout(showTimer);
       showTimer = null;
@@ -355,6 +394,7 @@ export function attachHoverDetail(
 
 export function disposeHoverDetailDock(): void {
   cancelTimers();
+  detailPinned = false;
   activeAnchor = null;
   activeSide = null;
   dockHovered = false;

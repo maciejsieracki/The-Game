@@ -1,0 +1,16 @@
+
+-- WIDOK: kolejka pod kazdym miastem --
+FAIL: V1: miasto A (3 poz.) ma sekcje kolejki z 3 wierszami -- 0
+FAIL: V2: miasto B (1 poz.) ma 1 wiersz
+PASS: V3: miasto C bez kolejki -- brak sekcji
+[army-panel-recruit-remove-test] ERROR locator.textContent: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-mount-for="A"] .civ-army-recruit-queue .gold').first()[22m
+
+    at main (/home/user/The-Game/.claude/worktrees/wf_25e1c5bf-cba-1/gra/tools/army-panel-recruit-remove-test.cjs:145:85) {
+  log: [
+    `  - waiting for locator('[data-mount-for="A"] .civ-army-recruit-queue .gold').first()`
+  ],
+  name: 'TimeoutError'
+}
+EXIT=1

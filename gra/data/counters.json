@@ -91,6 +91,13 @@
     "Status": "potwierdzone"
   },
   {
+    "Typ atakujący": "Falangite",
+    "Cel (typ)": "Spearman",
+    "Bonus": "+30%",
+    "Rodzaj (Atak/Obrona)": "Atak",
+    "Status": "potwierdzone"
+  },
+  {
     "Typ atakujący": "Distance",
     "Cel (typ)": "Spearman",
     "Bonus": "+15%",

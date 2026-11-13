@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Sztuka wojenna** — epoka **Żelazo** (poziom 9), koszt **400** PN (tempo Szybka), wymaga: Oblężnictwo + Obróbka żelaza. Odblokowuje budynki: Akademia wojskowa.
+**Sztuka wojenna** — epoka **Żelazo** (poziom 9), koszt **400** PN (tempo Szybka), wymaga: Oblężnictwo + Obróbka żelaza + Hutnictwo żelaza. Odblokowuje budynki: Akademia wojskowa; jednostki: Konnica, Jeździec chiński, Katapulta, Falanga, Hieros Lochos (Święty Zastęp), Hastati, Triari, Gaesatae, Soldurii, Rydwan celtycki, Wojownik germański, Berserker germański, Konnica lancowa asyryjska, Konnica łucznicza asyryjska, Drużynnik, Jeździec z oszczepami, Garnizon Harappy, Gwardia hetycka, Piechota neobabilońska, Tyrski miecznik, Gwardia Tyreńska, Thorakites, Evocati, iButho z iklwa, Wojownik z żelaznym khopesh, Mur tarcz (Sargonid), Miecznik galijski.
 
 ---
 
@@ -23,18 +23,18 @@
 
 ### Wymagania
 - **Epoka:** Żelazo (poziom 9)
-- **Wymaga (prereq):** Oblężnictwo + Obróbka żelaza
+- **Wymaga (prereq):** Oblężnictwo + Obróbka żelaza + Hutnictwo żelaza
 - **Wymagany budynek:** Koszary
 - **Koszt nauki:** 400 PN (baza, tempo Szybka — mnożnik tempa wg `tech-tempo.ts`)
 
 ### Co odblokowuje
 - **Budynki:** Akademia wojskowa
-- **Jednostki:** brak
+- **Jednostki:** Konnica, Jeździec chiński, Katapulta, Falanga, Hieros Lochos (Święty Zastęp), Hastati, Triari, Gaesatae, Soldurii, Rydwan celtycki, Wojownik germański, Berserker germański, Konnica lancowa asyryjska, Konnica łucznicza asyryjska, Drużynnik, Jeździec z oszczepami, Garnizon Harappy, Gwardia hetycka, Piechota neobabilońska, Tyrski miecznik, Gwardia Tyreńska, Thorakites, Evocati, iButho z iklwa, Wojownik z żelaznym khopesh, Mur tarcz (Sargonid), Miecznik galijski
 - **Ulepszenia terenu:** brak
 - **Surowce:** brak
 
 ### Uwagi
-kończy Epokę 3 (cap v0.1); Akademia wojskowa = NOWY budynek (mnoznik sily i exp jednostek ++, prereq elitarnych jednostek żelaznych); UNITS definiuje jednostki top-tier Żelaza; EKONOMIA dodaje budynek
+kończy Epokę 3 (cap v0.1); wszystkie jednostki Żelaza wymagają tej technologii; machiny oblężnicze buduje się wyłącznie podczas aktywnego oblężenia; Akademia wojskowa = NOWY budynek (mnoznik sily i exp jednostek ++, prereq elitarnych jednostek żelaznych); UNITS definiuje jednostki top-tier Żelaza; EKONOMIA dodaje budynek
 
 **Powiązane:** Drzewko technologii · Nauka · Epoki
 

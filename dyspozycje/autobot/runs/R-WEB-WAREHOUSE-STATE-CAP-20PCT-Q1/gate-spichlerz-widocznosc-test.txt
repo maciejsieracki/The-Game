@@ -1,0 +1,3 @@
+
+spichlerz-widocznosc-test: 45 pass, 0 fail
+EXIT=0

@@ -1,0 +1,13 @@
+[defeat-last-city-live] vite build do katalogu tymczasowego: /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/bDTLU/outm
+
+-- S4: realna bitwa barbarzyńców (Auto) na jedynym mieście, bez endTurn --
+  OK  S4 gracz ma dokładnie 1 miasto
+  OK  S4 bitwa uruchomiona (są obrońcy i atakujący)
+  OK  S4 przed Auto brak ekranu przegranej
+  OK  S4 podsumowanie bitwy widoczne, przegranej jeszcze nie ma (onResolved po Kontynuuj)
+[defeat-last-city-live] wyjątek: page.waitForSelector: Timeout 15000ms exceeded.
+Call log:
+  - waiting for locator('#__victory_screen__.vsc-overlay.lose') to be visible
+
+    at main (/home/user/The-Game/.claude/worktrees/wf_33d847bd-330-3/gra/tools/defeat-last-city-live-test.cjs:197:18)
+EXIT=1

@@ -1,0 +1,52 @@
+
+WIRE 2: splitPraca
+  [OK] doBudynkow=14 dla praca=20 udzial=0.7 (14 ~= 14)
+  [OK] doPuli=6 dla praca=20 udzial=0.7 (6 ~= 6)
+  [OK] suma = cityPraca
+  [OK] praca=0 -> doBudynkow=0 (0 === 0)
+  [OK] praca=0 -> doPuli=0 (0 === 0)
+  [OK] udzial=1.0 -> wszystko budynki (10 === 10)
+  [OK] udzial=1.0 -> doPuli=0 (0 === 0)
+
+WIRE 3: advanceWealth
+  [OK] freshWealthState.poziom=1 (1 === 1)
+  [OK] freshWealthState.pula=0 (0 === 0)
+  [OK] wealthMnoznik(1)=1.0 (1 ~= 1)
+  [OK] mnoznik is number
+  [OK] zadowolenie is number
+  [OK] mnoznik >= 1.0 (nigdy < x1)
+  [OK] poziom is finite
+  [OK] poziom >= 0
+  [OK] awans >= 0
+  [OK] poziom nie spada przy duzym spoleczMoney
+  [OK] wealthMnoznik(10)=2.35 (1+9*0.15) (2.3499999999999996 ~= 2.35)
+  [OK] wealthMnoznik(0)=1.0 (min) (1 ~= 1)
+
+WIRE 1: toEconomyCity backward compat
+  [OK] toEconomyCity bez zdrowie param -> zdrowie=0 (backward compat) (0 === 0)
+  [OK] id poprawne (c1 === c1)
+  [OK] ludnosc poprawna (3 === 3)
+  [OK] brak podzialHandlu -> params default luksus 10% (10 === 10)
+  [OK] toEconomyCity z zdrowie=4 -> zdrowie=4 (4 === 4)
+
+Per-city podzialHandlu: luksus 30%
+  [OK] miasto z podzialHandlu luksus=10% (10 === 10)
+  [OK] miasto z podzialHandlu luksus=30% (30 === 30)
+  [OK] handel=10, luksus 10% -> luksus=1 (1 === 1)
+  [OK] handel=10, luksus 30% -> luksus=3 (3 === 3)
+  [OK] per-city luksus 30% > default 10%
+
+WIRE 1 D17-A: cityHasWaterAccess
+  [OK] sąsiad riverPaths -> dostęp do wody
+  [OK] pustynia bez wody -> brak dostępu
+  [OK] nad rzeką total >= +1 (rzeka + małe miasto)
+  [OK] nad rzeką brak linii Brak wody
+  [OK] pustynia bez wody -> kara Brak wody
+
+WIRE 1 las: bonus zdrowia w okolicy
+  [OK] las w zasięgu -> bonus +
+  [OK] brak kary dżungli za las
+  [OK] pustynia bez lasu -> brak bonusu las
+
+wire-ekonomia-test: 37 passed, 0 failed
+EXIT=0

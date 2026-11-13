@@ -1,0 +1,14 @@
+# R-WEB-AUTO-FORT-CLAIM-Q1 pomiar AI (K3) · 5 ziaren x 40 tur · dochod 80/ture, pula startowa 2000 · src=/home/user/The-Game/.claude/worktrees/wf_e0522bf4-591-1/gra/src
+seed 42: OFF land 192 (zloza+gory 66) forty 0 | ON land 227 (zloza+gory 80) forty 3 [fort@t6 fort@t6 fort@t6] praca-na-forty 300 | start land 192
+   ON rozkazy: farma:3 fort:3 irygacja:2 wyrab:2 bydlo:1
+seed 1337: OFF land 197 (zloza+gory 65) forty 0 | ON land 238 (zloza+gory 82) forty 4 [fort@t6 fort@t6 posterunek@t6 fort@t7] praca-na-forty 360 | start land 197
+   ON rozkazy: farma:3 irygacja:3 fort:3 wyrab:2 bydlo:1 posterunek:1
+seed 2026: OFF land 182 (zloza+gory 73) forty 0 | ON land 221 (zloza+gory 88) forty 4 [fort@t3 fort@t3 fort@t3 posterunek@t4] praca-na-forty 360 | start land 182
+   ON rozkazy: fort:3 wyrab:1 farma:1 irygacja:1 posterunek:1
+seed 7: OFF land 143 (zloza+gory 60) forty 0 | ON land 185 (zloza+gory 78) forty 3 [fort@t3 fort@t3 posterunek@t3] praca-na-forty 260 | start land 143
+   ON rozkazy: irygacja:2 fort:2 farma:1 posterunek:1
+seed 99: OFF land 168 (zloza+gory 74) forty 0 | ON land 247 (zloza+gory 110) forty 5 [fort@t5 fort@t5 fort@t5 fort@t6 posterunek@t6] praca-na-forty 460 | start land 168
+   ON rozkazy: fort:4 farma:2 bydlo:2 irygacja:2 wyrab:1 posterunek:1
+
+SREDNIA/ziarno: OFF land 176.4 valuable 67.6 forty 0.0 | ON land 223.6 valuable 87.6 forty 3.8 praca-na-forty 348.0
+PRZYROST terytorium ON-OFF: +47.2 heksow lad./ziarno, +20.0 heksow zloza+gory/ziarno

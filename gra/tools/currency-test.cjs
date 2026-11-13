@@ -8,9 +8,10 @@
  *     (easy x2,0 / normal x1,5 / hard x1,0) TYLKO gdy walutaOdkryta ORAZ maMennica sa
  *     oba prawdziwe -- sam tech Waluty juz NIE wystarcza (to jest sedno zmiany, patrz
  *     tez tools/waluta-mennica-test.cjs dla pelnej macierzy trudnosc x Mennica).
- *   Efekt 2: doPuli * targowiskoPracaMnoznik -> pieniadzZPracy gdy maTargowisko+waluta; 0 bez nich.
- *     (Efekt 2 NIE wymaga Mennicy -- niezmieniony przez decyzje 2026-07-25.)
- *   Targowisko bonusy bazowe: +50% Handel (param) + 3 Pieniadz (baza) -- nienaruszone.
+ *   Manual Work tax is a separate owner action. City yield never converts the
+ *     Work pool automatically; `additionalTax` joins local tax without receiving
+ *     the route-only Market percentage.
+ *   Targowisko percentage applies only to route income; local tax excludes it.
  *
  * Self-contained: bundles economy.ts + production.ts with esbuild.
  */
@@ -84,9 +85,16 @@ const rawParams = {
 const params = E.loadEconParams(rawParams, 'normal');
 // Verify new params loaded with defaults
 eq(params.walutaMnoznik,           2, 'params.walutaMnoznik default = 2');
-eq(params.targowiskoPracaMnoznik,  2, 'params.targowiskoPracaMnoznik default = 2');
+eq(params.targowiskoPracaMnoznik, undefined, 'automatic Market work-conversion rate is retired');
 // Verify existing Targowisko param still default
 eq(params.budynekTargowiskoBonusHandlu, 0.5, 'params.budynekTargowiskoBonusHandlu default = 0.5');
+const productionEconParams = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../data/econ-params.json'), 'utf8'));
+const expectedMarketRates = { easy: 0.62, normal: 0.5, hard: 0.38 };
+for (const [difficulty, expected] of Object.entries(expectedMarketRates)) {
+  const atDifficulty = E.loadEconParams(productionEconParams, difficulty);
+  eq(atDifficulty.budynekTargowiskoBonusHandlu, expected, `Targowisko route rate ${difficulty} = +${Math.round(expected * 100)}%`);
+  eq(atDifficulty.mennicaMnoznikPoWalucie, 1 + expected, `Mint tax multiplier ${difficulty} = ×${(1 + expected).toFixed(2)}`);
+}
 
 // A city with trade slider 60/30/10 (nauka/pieniadz/luksus)
 // and work slider 70% budynki
@@ -181,49 +189,22 @@ assert(yldWaluta.pieniadz > yldWalutaNoMennica.pieniadz,
 // ---------------------------------------------------------------------------
 // C. EFEKT 1 + EFEKT 2: Waluta + Targowisko
 // ---------------------------------------------------------------------------
-// EFEKT 1 SCALONY: sekcja C testuje Efekt1+Efekt2 RAZEM aktywne, wiec ctxBoth
-// musi teraz miec tez maMennica:true (Efekt 1 wymaga Waluty ORAZ Mennicy;
-// Efekt 2/Targowisko nie wymaga Mennicy, bez zmian).
+// Currency+Mint still multiply local tax. A Market never auto-converts Work.
 const ctxBoth = makeCtx({ walutaOdkryta: true, maTargowisko: true, maMennica: true });
 const yldBoth = E.cityYieldPerTurn(city, workedTiles, noBuildings, params, ctxBoth);
 
-// Praca Rownina = 2 (data/terrain-yields.json) -> pracaNetto = 3*2 = 6 (no mlyn/cegielnia, no buildings, no corruption)
-// splitPraca(6, 0.70): doBudynkow=round(6*0.70)=round(4.2)=4, doPuli=6-4=2
-// pieniadzZPracy = floor(2 * 2) = 4  (targowiskoPracaMnoznik niezmieniony przez decyzje 2026-07-25)
-// D5 (decyzja 76=B, POPRAWKA tego samego dnia -- cytat wlasciciela w economy.ts):
-// pieniadzZPracy NIE jest doliczany do gotowej puli PO Targowisku -- to Praca
-// wystawiona na handel U ZRODLA, wiec wchodzi do handelBazowy PRZED Step 3
-// (Targowisko), i przechodzi przez WSZYSTKIE mnozniki Handlu (Targowisko,
-// civHandelMult, trasy, korupcja, Waluta+Mennica), tak jak reszta Daniny.
-// handelBazowy = handelTerenu(3) + pieniadzZPracy(4) = 7
-// handelBrutto  = 7 * (1 + 0.5) = 10.5  (Targowisko +50%, teraz dziala TEZ na pieniadzZPracy)
-// handelNetto   = 10.5 * mennicaMnoznikPoWalucie(1.5, normal) = 15.75
-// pieniadzZHandlu = floor(15.75 * 0.70) = floor(11.025) = 11
-// pieniadz total = 11 (0 buildings) -- POPRAWIONE 2026-07-25: stare 8 (i posrednie 7)
-// zakladaly, ze pieniadzZPracy omija Targowisko/Mennice (formule sprzed ostatniej
-// poprawki D5 w economy.ts).
-eq(yldBoth.pieniadzZPracy, 4,   'efekt2 (praca rownina=2): pieniadzZPracy = 4 (doPuli=round(6)-round(6*0.70)=2, x2) -- niezmieniony przez Mennica-gate');
-eq(yldBoth.pieniadz, 11,        'efekt1(x1.5 scalony)+efekt2: pieniadz = 11 (D5 poprawka: floor(((3+4)*1.5)*1.5*0.70), pieniadzZPracy przechodzi przez Targowisko+Waluta+Mennica jak Danina)');
+// The local tax remains terrain-only. Work is not converted by this city tick.
+eq(yldBoth.pieniadzZPracy, 0, 'Market+Currency do not automatically convert Work');
+eq(yldBoth.pieniadz, 3,         'Market route percentage does not multiply local tax');
 
 // Now test with more worked tiles so doPuli > 0
 // 6 rownina tiles -> praca=6*2=12 (Praca Rownina=2), handel=6
 const workedTiles6 = Array(6).fill(ROWNINA_TILE);
 const yldBoth6 = E.cityYieldPerTurn(city, workedTiles6, noBuildings, params, ctxBoth);
 
-// pracaNetto = 6*2 = 12  (Praca Rownina=2, no multipliers)
-// splitPraca(12, 0.70): doBudynkow=round(12*0.70)=round(8.4)=8, doPuli=12-8=4
-// pieniadzZPracy = floor(4 * 2) = 8
-// D5 (decyzja 76=B, POPRAWKA tego samego dnia -- patrz uzasadnienie w bloku wyzej):
-// pieniadzZPracy wchodzi do handelBazowy PRZED Targowisko, wiec przechodzi tez
-// przez Targowisko +50% i Waluta+Mennica x1.5.
-// handelBazowy = handelTerenu(6) + pieniadzZPracy(8) = 14
-// handelBrutto  = 14 * 1.5 = 21  (Targowisko +50%)
-// handelNetto   = 21 * mennicaMnoznikPoWalucie(1.5, normal) = 31.5
-// pieniadzZHandlu = floor(31.5 * 0.70) = floor(22.05) = 22
-// pieniadz total = 22 -- POPRAWIONE 2026-07-25: stare 17 (i posrednie 15) zakladaly,
-// ze pieniadzZPracy omija Targowisko/Mennice (formule sprzed ostatniej poprawki D5).
-eq(yldBoth6.pieniadzZPracy, 8,  'efekt2: pieniadzZPracy = 8 (doPuli=4, x2) -- niezmieniony przez Mennica-gate');
-eq(yldBoth6.pieniadz, 22,       'efekt1(x1.5 scalony)+efekt2: pieniadz = 22 (D5 poprawka: floor(((6+8)*1.5)*1.5*0.70), pieniadzZPracy przechodzi przez Targowisko+Waluta+Mennica jak Danina)');
+// Six local trade yields are multiplied by Currency+Mint, without Work conversion.
+eq(yldBoth6.pieniadzZPracy, 0, 'larger Work pool still has no automatic conversion');
+eq(yldBoth6.pieniadz, 6,        'larger local tax receives Currency+Mint without Market percentage');
 
 // ---------------------------------------------------------------------------
 // D. EFEKT 2 gate: Targowisko BEZ Waluty -> pieniadzZPracy = 0
@@ -240,25 +221,19 @@ const yldWalutaOnly = E.cityYieldPerTurn(city, workedTiles6, noBuildings, params
 eq(yldWalutaOnly.pieniadzZPracy, 0, 'efekt2 gate: Waluta bez Targowiska -> pieniadzZPracy = 0');
 
 // ---------------------------------------------------------------------------
-// F. Targowisko bonusy bazowe NIENARUSZONE (+50% Handel, +3 Pieniadz z bazy)
+// F. Targowisko no longer multiplies local gross tax; route income is tested separately.
 // ---------------------------------------------------------------------------
 // We need a building record for Targowisko with baza.pieniadz=3
 // Simulate via the building system with a mock building entry
-// The +50% handel is already tested indirectly above (handelBrutto = 6*1.5=9)
-// Verify that the 50% bonus is applied by comparing with/without Targowisko (no waluta):
+// Compare local yields with and without Targowisko (no Waluta):
 
 const ctxNoTarg = makeCtx({ maTargowisko: false, walutaOdkryta: false });
 const ctxWithTarg = makeCtx({ maTargowisko: true, walutaOdkryta: false });
 const yldNoTarg  = E.cityYieldPerTurn(city, workedTiles6, noBuildings, params, ctxNoTarg);
 const yldWithTarg = E.cityYieldPerTurn(city, workedTiles6, noBuildings, params, ctxWithTarg);
 
-// handelBrutto without = 6; with = 9 (+50%)
-// pieniadzZHandlu without = floor(6*0.70) = 4
-// pieniadzZHandlu with    = floor(9*0.70) = 6
-assert(yldWithTarg.pieniadz > yldNoTarg.pieniadz,
-  'Targowisko +50% Handel nienaruszone: pieniadz wzrasta bez Waluty');
-eq(yldWithTarg.pieniadz - yldNoTarg.pieniadz, 2,
-  'Targowisko +50% delta pieniadz = +2 (floor(9*0.70)-floor(6*0.70) = 6-4)');
+eq(yldWithTarg.pieniadz, yldNoTarg.pieniadz,
+  'Targowisko does not multiply local tax income');
 
 // Test +3 Pieniadz bazowy z budynku Targowisko (baza.pieniadz=3)
 // Create a minimal building record matching the targowisko definition
@@ -294,8 +269,8 @@ const yldWithTargBuilding = E.cityYieldPerTurn(
 // floor(9*0.7)=6, +3=9 rownie dobrze jak floor((6+3)*1.5*0.7)=floor(9.45)=9) -- NIE
 // dowod, ze formula jest bez zmian. Zobacz tools/plony-budynkow-test.cjs sekcja I
 // dla fixtury, gdzie stara i nowa formula daja WYRAZNIE rozne liczby.
-eq(yldWithTargBuilding.pieniadz, 9,
-  'Targowisko baza.pieniadz=3 (decyzja 67B): pieniadz = floor((6+3)*1.5*0.70) = 9 -- ta sama liczba co stara formula 6+3=9, ale przez INNA sciezke (budynek teraz w handelBazowy, przechodzi przez Targowisko+suwak)');
+eq(yldWithTargBuilding.pieniadz, 6,
+  'Targowisko baza.pieniadz=3: local building income remains in tax pool without the route percentage');
 eq(yldWithTargBuilding.pieniadzBudynkow, 3,
   'Targowisko: pole surowe pieniadzBudynkow = buildingValue = 3, niezalezne od Targowiska/suwaka (do UI/debug)');
 
@@ -322,7 +297,7 @@ const rawOverride = {
 };
 const paramsOverride = E.loadEconParams(rawOverride, 'normal');
 eq(paramsOverride.walutaMnoznik, 3,          'loadEconParams: walutaMnoznik override = 3');
-eq(paramsOverride.targowiskoPracaMnoznik, 4, 'loadEconParams: targowiskoPracaMnoznik override = 4');
+eq(paramsOverride.targowiskoPracaMnoznik, undefined, 'legacy automatic work-conversion rate is not loaded');
 
 // ---------------------------------------------------------------------------
 // H. per-cyw mnoznikHandelPieniadz (RDY-11, decyzja 5A)
@@ -336,25 +311,22 @@ const mockCivs = {
 };
 eq(E.mnoznikHandelPieniadzForCiv('grecy', mockCivs, 2), 2.3, 'mnoznikHandelPieniadz: Grecy = 2.3');
 eq(E.mnoznikHandelPieniadzForCiv('chinczycy', mockCivs, 2), 2.4, 'mnoznikHandelPieniadz: Chinczycy = 2.4');
-eq(E.mnoznikHandelPieniadzForCiv('zulusi', mockCivs, 2), 1.7, 'mnoznikHandelPieniadz: Zulusi = 1.7');
+eq(E.mnoznikHandelPieniadzForCiv('zulusi', mockCivs, 2), 1.8, 'mnoznikHandelPieniadz: Zulusi uses the authoritative matrix value 1.8');
 eq(E.mnoznikHandelPieniadzForCiv('unknown', mockCivs, 2), 2, 'mnoznikHandelPieniadz: unknown -> fallback 2');
 
 // terenBazowy wymagany -- tileYield() czyta tylko to pole (WorkedTile), literalne
 // klucze praca/handel/... na obiekcie tile sa ignorowane. Uzyj 10x Rownina (handel=1/tile)
 // zeby odtworzyc pierwotny zamysl testu (handel=10).
 const workedTiles7 = Array(10).fill(ROWNINA_TILE);
-// EFEKT 1 SCALONY: override per-cyw jest WARTOSCIA mnoznika, ale bramka
-// (walutaOdkryta && maMennica) nadal decyduje CZY w ogole mnozyc -- stad
-// maMennica:true tutaj jest wymagane, inaczej override zostalby zignorowany
-// (mnoznik=1) mimo ze jest ustawiony.
+// Legacy civ override cannot change the fixed difficulty Mint rate.
 const ctxWalutaGrecy = {
   wojskoZuzycieZywnosci: 0, strataFraction: 0,
   maMlyn: false, maCegielnia: false, maTargowisko: false, maMennica: true,
   walutaOdkryta: true, walutaMnoznikOverride: 2.3,
 };
 const yldGrecy = E.cityYieldPerTurn(city, workedTiles7, noBuildings, params, ctxWalutaGrecy);
-// handelNetto = 10 * 2.3 = 23; nauka 20% = floor(4.6) = 4
-eq(yldGrecy.nauka, 4, 'Efekt 1 per-cyw: Grecy x2.3 (bramka Waluta+Mennica spelniona) -> nauka z handlu = 4');
+// handelNetto = 10 * 1.5 = 15; nauka 20% = 3
+eq(yldGrecy.nauka, 3, 'Mint uses fixed normal rate ×1.50 despite legacy civ override');
 
 // Kontrola bramki: TA SAMA override 2.3, ale BEZ Mennicy -> mnoznik musi wrocic
 // do x1 (override nie omija bramki Mennicy).

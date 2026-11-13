@@ -26,7 +26,8 @@ ok(armySource.includes('config.onOpenUnitCard?.(a.id, a.unitTypeId!)'),
 ok(mainSource.includes('showUnitInfoCardDialog'), 'main podłącza dialog karty');
 ok(mainSource.includes('data.units.find(u => u.Jednostka === resolvedTypeId)'),
   'wiring wyszukuje prawdziwą definicję jednostki');
-ok(mainSource.includes('u.id === unitId && u.ownerId === 0'),
+// Klasa A (R-WEB-TEST-DEBT-PREEXISTING-B-Q1): literal `ownerId === 0` -> isMe(u.ownerId) (e9e6a3258).
+ok(mainSource.includes('u.id === unitId && isMe(u.ownerId)'),
   'wiring rozpoznaje właściwą jednostkę runtime');
 
 console.log(`\nunit-info-card-wiring-test: ${pass} pass, ${fail} fail`);

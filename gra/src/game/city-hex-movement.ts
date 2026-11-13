@@ -4,7 +4,7 @@
  */
 
 import type { City } from './cities';
-import { hexDistance, keyOf } from '../units/setup';
+import { hexDistance, keyOf, cloneMoveOccupancy } from '../units/setup';
 
 export type CityHexRef = Pick<City, 'q' | 'r' | 'ownerId'> & { maMur?: boolean };
 
@@ -59,7 +59,7 @@ export function canAiEnterEmptyEnemyCity(
   if (hexDistance(unitQ, unitR, city.q, city.r) !== 1) return false;
   if (hasDefenders) return false;
   if (city.maMur === true) return false;
-  return !cityBuiltIds.some(id => id === 'palisada' || id === 'mury' || id === 'fort' || id === 'baszta');
+  return !cityBuiltIds.some(id => id === 'palisada' || id === 'mury' || id === 'mury_kamienne' || id === 'fort' || id === 'baszta');
 }
 
 /** Heksy miast, których właścicielem NIE jest dana frakcja — do blokady pathfindingu. */
@@ -79,7 +79,11 @@ export function addForeignCityBlocks(
   unitOwnerId: number,
   cities: readonly CityHexRef[],
 ): Set<string> {
-  const out = new Set(occupied);
-  for (const k of foreignCityHexKeys(unitOwnerId, cities)) out.add(k);
+  // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: zachowaj `passThrough` (wlasne jednostki); obce miasto zawsze blokuje.
+  const out = cloneMoveOccupancy(occupied);
+  for (const k of foreignCityHexKeys(unitOwnerId, cities)) {
+    out.add(k);
+    out.passThrough.delete(k);
+  }
   return out;
 }

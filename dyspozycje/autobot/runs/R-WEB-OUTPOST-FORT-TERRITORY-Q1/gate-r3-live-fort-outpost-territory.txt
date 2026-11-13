@@ -1,0 +1,33 @@
+[live] vite build -> /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/r3/build
+state {"citiesLen":2,"turn":1,"myOwnerId":0,"myCity":{"q":48,"r":31,"pop":9},"foreignOwnerId":1,"fortNodes":0}
+  OK  bootstrap: miasto gracza + obce miasto
+  OK  znaleziono heks pod fort (wolny teren, pelny krag r=5)
+  OK  A: PRZED budowa heks fortu bez wlasciciela
+  OK  A: PRZED budowa 0 heksow wlasciciela w krugu fortu
+  OK  B: fort -> 91 heksow w r=5 nalezy do gracza
+  OK  B: dist 6 poza fortem (nadal 91)
+  OK  C: OBCY nie moze budowac ulepszen w terytorium fortu (srodek)
+  OK  C: OBCY nie moze budowac ulepszen na brzegu fortu
+  OK  D: WLASCICIEL moze budowac ulepszenia w terytorium fortu
+  OK  C: OBCY nie zaklada miasta w terytorium fortu
+  OK  D: WLASCICIEL - zalozenie miasta nie odrzucone jako "poza terytorium" (rezerwacja)
+  OK  znaleziono heks pod posterunek
+  OK  B: posterunek -> 37 heksow (r=3) nalezy do gracza (dist 4: 0 nowych)
+zrzut: /home/user/The-Game/.claude/worktrees/wf_7cdf812c-a4f-1/dyspozycje/autobot/runs/R-WEB-OUTPOST-FORT-TERRITORY-Q1/live-r3-fort-border.png
+  OK  E: zrzut mapy z granica wykonany
+  OK  R3: znaleziono heks pod fort A (obcy, wczesniejszy)
+  OK  R3: znaleziono heks pod fort B (gracz, pozniejszy, dist 8 od A)
+  OK  Q-B: oba forty maja znacznik kolejnosci (seq A < seq B)
+  OK  Q-B: istnieje sporny heks (blizej B, w zasiegu obu)
+  OK  Q-B: sporny heks nalezy do WCZESNIEJSZEGO fortu A (obcy), mimo ze blizej B
+  OK  Q-A: bez wejscia wojska fort nie jest zdobywany
+  OK  Q-A: jednostka wojskowa gracza stoi na forcie A
+  OK  Q-A: fort A zdobyty (ownerId = gracz)
+  OK  Q-A: terytorium przeszlo razem z fortem (heksy A: obcy -> gracz)
+  OK  Q-A: stary wlasciciel nie ma juz zadnego heksu fortu A
+  OK  Q-A: znacznik kolejnosci zostal po zdobyciu
+zrzut: /home/user/The-Game/.claude/worktrees/wf_7cdf812c-a4f-1/dyspozycje/autobot/runs/R-WEB-OUTPOST-FORT-TERRITORY-Q1/live-r3-fort-border-captured.png
+  OK  F: zero console.error/pageerror
+
+=== fort-outpost-territory-live-test: 26 passed, 0 failed ===
+EXIT=0

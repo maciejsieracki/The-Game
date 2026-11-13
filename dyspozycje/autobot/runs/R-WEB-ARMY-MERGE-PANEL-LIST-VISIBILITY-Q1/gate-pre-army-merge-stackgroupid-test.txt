@@ -1,0 +1,3 @@
+  (B4 fuzz: 500 układów, 3669 porównań jednostkowych, 0 rozbieżności)
+army-merge-stackgroupid-test: 11045 pass, 0 fail
+EXIT=0

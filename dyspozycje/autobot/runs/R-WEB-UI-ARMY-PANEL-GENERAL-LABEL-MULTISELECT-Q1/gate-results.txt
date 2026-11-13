@@ -1,0 +1,49 @@
+BRAMKI R-WEB-UI-ARMY-PANEL-GENERAL-LABEL-MULTISELECT-Q1 (runda 1, Operator)
+Srodowisko: baza origin/main 80919e2ae; zmiana w commicie 837c56b32; Chromium /opt/pw-browsers/chromium; bez npm run build/dev.
+
+gate: tsc --noEmit (gra/, po npm ci --ignore-scripts)
+EXIT=0
+
+gate: army-panel-general-label-multiselect-test.cjs (NOWY, PO zmianach)
+EXIT=0   (9/9 PASS)
+
+gate: army-panel-general-label-multiselect-test.cjs (RED: zmiany cofniete do origin/main, test nowy)
+EXIT=1   (static guard: brak sortArmyStackGeneralsFirst/pick w main.ts - oczekiwane)
+
+gate: army-split-panel-scroll-grid-test.cjs
+EXIT=1   (PO: 11/11 PASS; PRZED: 2 FAIL "RED-PRE" - kontrola porownuje z origin/main, ktore juz zawiera poprawke scrolla; niezalezne od tej zmiany)
+
+gate: army-split-ruch-icons-test.cjs
+EXIT=0   (7 pass, 0 fail)
+
+gate: army-merge-split-direction-icons-test.cjs
+EXIT=0
+
+gate: army-stack-commander-identity-test.cjs
+EXIT=0   (8/8 PASS)
+
+gate: army-split-movement-test.cjs
+EXIT=0   (4 pass, 0 fail)
+
+gate: unit-action-bar-completeness-test.cjs
+EXIT=0   (31 passed, 0 failed)
+
+gate: unit-info-card-army-interaction-test.cjs
+EXIT=1   (6 pass, 1 fail: "status runtime jest pobierany z wlasciwej jednostki" - szukany ciag `u.id === unitId && u.ownerId === 0` nie wystepuje w origin/main ani w zmianie; BLAD PRZED ZMIANA)
+
+gate: army-merge-panel-list-visibility-test.cjs
+EXIT=0   (104 pass, 0 fail)
+
+gate: escape-overlay-stack-test.cjs
+EXIT=0   (84 pass, 0 fail)
+
+gate: army-leadership-test.cjs
+EXIT=0
+
+gate: general-eligible-unit-roster-test.cjs
+EXIT=0   (137 checks)
+
+gate: ai-test.cjs (dispatch: 274/20)
+EXIT=1   (274 passed, 20 failed - wynik zgodny z baza 274/20, bez regresji)
+
+NIE_ZMIERZONO: pelny start gry w przegladarce i realne klikniecie „ROZWIĄZ” w main.ts (potwierdzenie window.confirm, rozwiazanie 3 jednostek w stanie gry). Pokryte statycznymi strażnikami w tescie + tsc, nie wykonane end-to-end.

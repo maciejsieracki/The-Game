@@ -34,6 +34,7 @@ import { applyGoldDeficitStatMultToCombatUnit } from '../game/gold-deficit';
 import type { CivBonusEntry } from '../game/civ-bonuses';
 import { axialToWorld, HEX_R, SQRT3 } from '../render/hexutil';
 import { buildUnitModel } from '../render/units';
+import { BATTLE_LOSS_PLAYER_TEXT, BATTLE_LOSS_ENEMY_TEXT } from './battleHudTheme';
 
 // ===========================================================================
 // Public types -- IDENTYCZNY ksztalt jak battleScene.ts
@@ -1183,7 +1184,9 @@ export class ManualBattle {
     const el = document.createElement('div');
     el.textContent = '-' + dmg;
     Object.assign(el.style, {
-      position: 'absolute', pointerEvents: 'none', color: '#ff4444',
+      // R-WEB-BATTLE-DAMAGE-COLORS: straty gracza czerwone, przeciwnika żółte.
+      position: 'absolute', pointerEvents: 'none',
+      color: ru.side === 'player' ? BATTLE_LOSS_PLAYER_TEXT : BATTLE_LOSS_ENEMY_TEXT,
       fontFamily: 'sans-serif', fontSize: '15px', fontWeight: 'bold',
       textShadow: '0 0 6px #000, 1px 1px 2px #000', whiteSpace: 'nowrap',
       transform: 'translate(-50%, -50%)', zIndex: '10010',

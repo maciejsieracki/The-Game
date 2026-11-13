@@ -1,0 +1,27 @@
+candidate_allowlist_paths:
+gra/src/game/building-stock-cost.ts	type=regular	mode=-rw-------	size=14839
+gra/src/game/economy-upkeep.ts	type=regular	mode=-rw-------	size=48305
+gra/src/game/production.ts	type=regular	mode=-rw-------	size=107209
+gra/src/game/unit-power.ts	type=regular	mode=-rw-------	size=6407
+gra/src/main.ts	type=regular	mode=-rw-------	size=2006543
+gra/src/ui/cityPanel.ts	type=regular	mode=-rw-------	size=586064
+gra/tools/building-epoch-cost-implementation-test.cjs	type=regular	mode=-rw-------	size=4257
+gra/tools/unit-power-sort-test.cjs	type=regular	mode=-rw-------	size=5309
+status_paths:
+CANDIDATE_ALLOWLIST  M gra/src/game/building-stock-cost.ts
+CANDIDATE_ALLOWLIST  M gra/src/game/economy-upkeep.ts
+CANDIDATE_ALLOWLIST  M gra/src/game/production.ts
+CANDIDATE_ALLOWLIST  M gra/src/game/unit-power.ts
+CANDIDATE_ALLOWLIST  M gra/src/main.ts
+CANDIDATE_ALLOWLIST  M gra/src/ui/cityPanel.ts
+PREEXISTING_PROCESS_OUTSIDE_CANDIDATE_ALLOWLIST ?? dyspozycje/autobot/runs/AF4-FRESH-INTEGRATION-20260918/01-change-intent.md
+FINAL_CONTROL_ARTIFACT ?? dyspozycje/autobot/runs/AF4-FRESH-INTEGRATION-20260918/final-control/01-final-control.md
+FINAL_CONTROL_ARTIFACT ?? dyspozycje/autobot/runs/AF4-FRESH-INTEGRATION-20260918/final-control/diff-name-status.txt
+FINAL_CONTROL_ARTIFACT ?? dyspozycje/autobot/runs/AF4-FRESH-INTEGRATION-20260918/final-control/diff-stat.txt
+FINAL_CONTROL_ARTIFACT ?? dyspozycje/autobot/runs/AF4-FRESH-INTEGRATION-20260918/final-control/gates.tsv
+FINAL_CONTROL_ARTIFACT ?? dyspozycje/autobot/runs/AF4-FRESH-INTEGRATION-20260918/final-control/path-audit.txt
+FINAL_CONTROL_ARTIFACT ?? dyspozycje/autobot/runs/AF4-FRESH-INTEGRATION-20260918/final-control/status-after-gates.txt
+FINAL_CONTROL_ARTIFACT ?? dyspozycje/autobot/runs/AF4-FRESH-INTEGRATION-20260918/final-control/tracked-diff.patch
+FINAL_CONTROL_ARTIFACT ?? dyspozycje/autobot/runs/AF4-FRESH-INTEGRATION-20260918/final-control/untracked-tests.patch
+CANDIDATE_ALLOWLIST  ?? gra/tools/building-epoch-cost-implementation-test.cjs
+CANDIDATE_ALLOWLIST  ?? gra/tools/unit-power-sort-test.cjs

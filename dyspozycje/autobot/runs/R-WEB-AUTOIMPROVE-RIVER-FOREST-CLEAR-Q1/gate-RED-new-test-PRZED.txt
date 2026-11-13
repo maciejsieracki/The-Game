@@ -1,0 +1,40 @@
+
+[1] regula przelacznika (skipWyrabForFocus)
+  [FAIL] eksport skipWyrabForFocus istnieje
+
+[2] zywnosc: przelacznik „Wolno wycinac las” WYL (domyslny w grze)
+  [FAIL] zywnosc: las NA rzece z obywatelem 15,12 wyciety
+  [FAIL] zywnosc: las NA rzece z obywatelem 15,13 wyciety
+  [FAIL] zywnosc: po wycince farma na wyciętych polach przy rzece
+  [FAIL] zywnosc: las poza rzeka z obywatelem 13,15 tez wyciety (E5, po rzekach)
+  [OK] zywnosc: (a) las na rzece BEZ obywatela NIE wyciety
+  [OK] zywnosc: (c) las z tartakiem nietkniety
+  [OK] zywnosc: (d) zero awaryjnego tartaku
+  [OK] zywnosc: irygacja nadal powstaje po farmach
+
+[2] zrownowazone: przelacznik „Wolno wycinac las” WYL (domyslny w grze)
+  [FAIL] zrownowazone: las NA rzece z obywatelem 15,12 wyciety
+  [FAIL] zrownowazone: las NA rzece z obywatelem 15,13 wyciety
+  [FAIL] zrownowazone: po wycince farma na wyciętych polach przy rzece
+  [FAIL] zrownowazone: las poza rzeka z obywatelem 13,15 tez wyciety (E5, po rzekach)
+  [OK] zrownowazone: (a) las na rzece BEZ obywatela NIE wyciety
+  [OK] zrownowazone: (c) las z tartakiem nietkniety
+  [OK] zrownowazone: (d) zero awaryjnego tartaku
+  [OK] zrownowazone: irygacja nadal powstaje po farmach
+
+[3] przelacznik WL — bez zmian zachowania Zywnosc/Zrownowazony
+  [FAIL] zywnosc: wynik identyczny dla przelacznika WL i WYL
+  [FAIL] zrownowazone: wynik identyczny dla przelacznika WL i WYL
+
+[4] Surowce: przelacznik WYL nadal blokuje wycinke (bez regresji)
+  [OK] surowce + WYL: zero wycinek
+
+[5] onlyWorked OFF (kontrola: profil nie zalezy od przelacznika)
+  [FAIL] zywnosc + onlyWorked OFF + przelacznik WYL: wycinka rzeczna dziala
+
+[6] wiazanie w main.ts (statyczne)
+  [FAIL] main.ts: getSkipWyrab automatu gracza uzywa skipWyrabForFocus(focus, wolnoWycinacLas)
+  [FAIL] main.ts: stare wiazanie „!wolnoWycinacLas dla kazdego profilu” usuniete
+
+9 OK, 14 FAIL
+EXIT=1

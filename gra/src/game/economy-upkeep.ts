@@ -48,6 +48,8 @@ import {
   canAffordBuildingStock,
   missingStockFor,
   unitStockCost,
+  buildingEraCostMultiplier,
+  scaleCostByEpoch,
   type UnitStockCostSource,
 } from './building-stock-cost';
 import { buildingEffectAtLevel } from './production';
@@ -315,9 +317,11 @@ export function onCityConquered(
 //  sol/zloto/kon -- PYTANIE-84-U20; NIE Zywnosc,
 // ktora zostaje przy modelu per-miasto powyzej, Spichlerz bez zmian) jest teraz
 // PULA PANSTWA (civ-wide, per ownerId), nie per-miasto:
-//   cap(typ) = bazaSurowcePanstwo + bonusSurowceNaBudynek * (liczba budynkow
-//   "Magazyn" ZBUDOWANYCH GDZIEKOLWIEK w imperium ownera) -- model ADDYTYWNY
-//   (nie mnoznik, w odroznieniu od foodStorageCapacity/Spichlerz powyzej).
+//   cap(typ) = bazaSurowcePanstwo * (1 + bonusProcNaBudynek * liczba budynkow
+//   "Magazyn" ZBUDOWANYCH GDZIEKOLWIEK w imperium ownera) * mnoznik epoki
+//   (R-WEB-WAREHOUSE-STATE-CAP-20PCT-Q1: kazdy Magazyn +20% BAZY, addytywnie
+//   miedzy Magazynami, nie skladane; w odroznieniu od foodStorageCapacity/Spichlerz
+//   powyzej, ktory zostaje przy modelu mnoznikowym).
 //
 // OWNERID-AGNOSTIC (twarda zasada Macieja 2026-07-24): dotyczy KAZDEGO ownera
 // identycznie -- gracz (ownerId=0) i kazda cywilizacja AI licza cap z TYCH SAMYCH
@@ -336,42 +340,39 @@ export function onCityConquered(
  *   - bazaSurowcePanstwo    : cap per typ surowca gdy owner ma 0 Magazynow
  *                             (globalne.magazyn_baza_surowce -- NOWA SEMANTYKA:
  *                             PANSTWO, nie per-miasto; placeholder 100).
- *   - bonusSurowceNaBudynek : dodatkowy cap za KAZDY Magazyn w imperium ownera
- *                             (globalne.magazyn_bonus_surowce_na_budynek,
- *                             placeholder 100; addytywnie, nie mnoznik).
+ *   - bonusProcNaBudynek    : ulamek BAZY dodawany za KAZDY Magazyn w imperium ownera
+ *                             (globalne.magazyn_bonus_surowce_proc_na_budynek, 0,2 = +20%;
+ *                             addytywnie miedzy Magazynami, nie skladane).
  */
 export interface OwnerStorageParams {
+  bazaSurowcePanstwo: number;
+  bonusProcNaBudynek: number;
+}
+
+/**
+ * Rozbicie capu PANSTWA na jednej epoce, w jednostkach szt/typ (dla UI, patrz
+ * ownerStorageParamsForEra): capBonusPerMagazyn = baza x proc x mnoznik epoki.
+ */
+export interface OwnerStorageBreakdown {
   bazaSurowcePanstwo:    number;
   bonusSurowceNaBudynek: number;
 }
 
 /**
- * P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): baza podniesiona 1000→10000
- * (epoka 1 / Kamień -- "zwiększ jeszcze wielkość magazynu do 10 tysięcy sztuk dla
- * każdego surowca z obecnego 1000"). bonusSurowceNaBudynek NIEZMIENIONY (100) --
- * właściciel podał docelowe "1000 i 1500" dla PARY Spichlerz I/II
- * (SPICHLERZ_EMPIRE_CAP_I/II w building-resource-gate.ts, potwierdzone grepem
- * komentarza "Spichlerze lokalne +100/+150, Magazyn +100" przy
- * magazyn_centralny_baza_zywnosc), nie dla tego pola (ma tylko JEDNĄ wartość, nie
- * parę) -- patrz raport Operatora. Oba pola mimo to dostają IDENTYCZNY mechanizm
- * podwajania co epokę (magazynEraMultiplier), bo dzielą tę samą formułę
- * cap(typ) = baza + bonus × liczba_magazynow. / EN: base raised 1000→10000 (era 1
- * / Stone); bonusSurowceNaBudynek UNCHANGED (100) -- the owner's "1000 and 1500"
- * target belongs to the Granary I/II PAIR (SPICHLERZ_EMPIRE_CAP_I/II), not this
- * single-value field -- but both fields still get the same era-doubling mechanism.
- */
-/**
- * R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): OBA pola ×5 (baza I bonus/Magazyn,
- * zgodnie z poleceniem "przeskalować WSZYSTKIE składowe formuły cap ×5") — było
- * 10000/100, jest 50000/500. Ten sam fallback musi zgadzać się z
- * econ-params.json globalne.magazyn_baza_surowce / magazyn_bonus_surowce_na_budynek
- * (przeskalowane w tym samym zadaniu) -- patrz `loadOwnerStorageParams` niżej.
- * / EN: BOTH fields ×5 (base and per-Magazyn bonus) -- was 10000/100, now 50000/500;
- * must match econ-params.json (scaled in the same task).
+ * Historia bazy (P-MAGAZYN-SKALOWANIE-EPOKA-Q1, R-EKONOMIA-SUROWCE-SKALA-5X-Q1):
+ * 1000→10000 (2026-08-12), potem ×5 → 50000 (2026-08-13). Baza jest ta sama
+ * dla wszystkich trudnosci (plasko).
+ *
+ * R-WEB-WAREHOUSE-STATE-CAP-20PCT-Q1 (decyzja wlasciciela 2026-11-05): kazdy Magazyn
+ * zwieksza pojemnosc panstwa o 20% BAZY (nie o staly "+500" -- przy bazie 50 000
+ * stala 500 byla pomijalna). Wartosc 0,2 = +20% za Magazyn; addytywnie (2 Magazyny
+ * = +40%, nie ×1,44). Stary klucz magazyn_bonus_surowce_na_budynek (500) USUNIETY.
+ * / EN: each Magazyn adds +20% of the BASE to the state cap (additive, not compound);
+ * replaces the flat +500 per Magazyn (owner decision 2026-11-05).
  */
 export const DEFAULT_OWNER_STORAGE_PARAMS: OwnerStorageParams = {
-  bazaSurowcePanstwo:    50000,
-  bonusSurowceNaBudynek: 500,
+  bazaSurowcePanstwo: 50000,
+  bonusProcNaBudynek: 0.2,
 };
 
 /**
@@ -394,8 +395,9 @@ export function magazynEraMultiplier(era: number): number {
 
 /**
  * Surowce objęte capem magazynu państwa (SUROW-CIV-01 + PYTANIE-84-U20):
- * cap(typ) = magazyn_baza_surowce + magazyn_bonus_surowce_na_budynek × liczba Magazynów
- * (dziś, epoka 1, po R-EKONOMIA-SUROWCE-SKALA-5X-Q1 2026-08-13: 50000 + 500×Magazyn per typ;
+ * cap(typ) = magazyn_baza_surowce × (1 + magazyn_bonus_surowce_proc_na_budynek × liczba Magazynów) × mnożnik epoki
+ * (dziś, epoka 1, po R-WEB-WAREHOUSE-STATE-CAP-20PCT-Q1 2026-11-05: 50000 × (1 + 0,2×Magazyn) per typ;
+ * wcześniej R-EKONOMIA-SUROWCE-SKALA-5X-Q1 2026-08-13: 50000 + 500×Magazyn;
  * NOTA: poprzedni tekst tego komentarza mówił „1000 + 100" i był już wtedy nieaktualny wobec
  * P-MAGAZYN-SKALOWANIE-EPOKA-Q1 z 2026-08-12 -- poprawione przy okazji). Żywność (Spichlerz) —
  * osobny model per-miasto, poza zakresem tej skali.
@@ -425,8 +427,8 @@ export function loadOwnerStorageParams(
 ): OwnerStorageParams {
   const g = raw.globalne;
   return {
-    bazaSurowcePanstwo:    readNum(g, 'magazyn_baza_surowce',              difficulty, DEFAULT_OWNER_STORAGE_PARAMS.bazaSurowcePanstwo),
-    bonusSurowceNaBudynek: readNum(g, 'magazyn_bonus_surowce_na_budynek',  difficulty, DEFAULT_OWNER_STORAGE_PARAMS.bonusSurowceNaBudynek),
+    bazaSurowcePanstwo: readNum(g, 'magazyn_baza_surowce',                   difficulty, DEFAULT_OWNER_STORAGE_PARAMS.bazaSurowcePanstwo),
+    bonusProcNaBudynek: readNum(g, 'magazyn_bonus_surowce_proc_na_budynek',  difficulty, DEFAULT_OWNER_STORAGE_PARAMS.bonusProcNaBudynek),
   };
 }
 
@@ -449,7 +451,10 @@ export function ownerResourceCapacityPerType(
   era: number = 1,
 ): number {
   const cnt = Number.isFinite(magazynCount) && magazynCount > 0 ? Math.floor(magazynCount) : 0;
-  return (p.bazaSurowcePanstwo + p.bonusSurowceNaBudynek * cnt) * magazynEraMultiplier(era);
+  // R-WEB-WAREHOUSE-STATE-CAP-20PCT-Q1: baza × (1 + proc × N) × mnożnik epoki.
+  // Round: wynik to pojemność w całych sztukach (baza×mnożnik to całkowite, ułamkowy
+  // proc tylko dokłada dryf zmiennoprzecinkowy, np. 1,2×50000 -- zaokrąglamy go do całości).
+  return Math.round(p.bazaSurowcePanstwo * (1 + p.bonusProcNaBudynek * cnt) * magazynEraMultiplier(era));
 }
 
 /**
@@ -462,11 +467,11 @@ export function ownerResourceCapacityPerType(
 export function ownerStorageParamsForEra(
   p: OwnerStorageParams,
   era: number,
-): OwnerStorageParams {
+): OwnerStorageBreakdown {
   const mult = magazynEraMultiplier(era);
   return {
     bazaSurowcePanstwo:    p.bazaSurowcePanstwo * mult,
-    bonusSurowceNaBudynek: p.bonusSurowceNaBudynek * mult,
+    bonusSurowceNaBudynek: p.bazaSurowcePanstwo * p.bonusProcNaBudynek * mult,
   };
 }
 
@@ -624,6 +629,7 @@ export interface BuildingInstanceLike {
  *   building.utrzymanie is a finite number (INCLUDING 0, e.g. Stela/Pomnik --
  *   decyzja 45=B, "pomnik nie wymaga obslugi")
  *     -> floor(utrzymanie + przyrostUtrzymania * (level-1))  [per-building, liniowy]
+ *        × existing FALA2 × buildingEraCostMultiplier(epokaWejscia)
  *   building.utrzymanie missing / not finite (no entry in buildings.json)
  *     -> flatOverride if given, else 0  [DEFAULT ONLY, never an override of real data]
  *
@@ -646,8 +652,10 @@ export function buildingUpkeep(
     const wzrost = Number.isFinite(building.przyrostUtrzymania) ? building.przyrostUtrzymania : 0;
     raw = Math.floor(buildingEffectAtLevel(base, wzrost, lvl));
   }
-  // R-NADMIAR-POOLS FALA2: utrzymanie budynków ×2 vs JSON (włącznie flatOverride).
-  return Math.floor(raw * R_STAWKI_FALA2_MULT);
+  // Zachowujemy dotychczasowe FALA2 zaokrąglenie, następnie stosujemy wspólny
+  // mnożnik ery dokładnie raz (włącznie dla flatOverride).
+  const fala2Upkeep = Math.floor(raw * R_STAWKI_FALA2_MULT);
+  return Math.floor(fala2Upkeep * buildingEraCostMultiplier(building.epokaWejscia));
 }
 
 /** Total gold building upkeep for a set of building instances (Spec s.6.1). */
@@ -663,31 +671,77 @@ export function totalBuildingUpkeep(
 }
 
 /**
- * Ile sztuk/turę zużywa wybudowany budynek per typ surowca obecny w koszt_surowce
- * (build cost) — flat, NIEZALEŻNIE od kwoty kosztu budowy ani skalowania FALA.
- * R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5, było 1 — ten sam algorytm
- * (flat N/typ), tylko N przeskalowane; „utrzymanie surowcowe budynków” z zadania.
- * / EN: flat units/turn per resource TYPE present in koszt_surowce (build cost),
- * regardless of build-cost amount or FALA scaling — algorithm unchanged, only the
- * flat constant N is scaled ×5 (was 1).
+ * R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1 (decyzja właściciela 2026-11-09, doprecyzowana
+ * r2 wg dispatchu: „dzisiejsze utrzymanie w Pieniądzu (pole `utrzymanie`, z `przyrostUtrzymania`
+ * per poziom)“): utrzymanie SUROWCOWE budynku jest PROPORCJONALNE do surowej wartości
+ * utrzymania w Pieniądzu. Dla KAŻDEGO typu surowca z `koszt_surowce` (koszt budowy) budynek
+ * zużywa na turę floor(rawUtrzymanie(poziom) × współczynnik) sztuk, gdzie
+ * rawUtrzymanie(poziom) = floor(utrzymanie + przyrostUtrzymania × (poziom-1)) — BEZ FALA2 i BEZ
+ * mnożnika epoki (te dotyczą tylko złota). Przykład: Mury (utrzymanie 2) => 2 drewna + 2 kamienia
+ * + 2 cegły na turę. Pieniądz utrzymania zostaje bez zmian (surowce są DODATKOWO).
+ * Współczynnik: econ-params.json `budynki.utrzymanie_surowce_wspolczynnik` (domyślnie 1 = 1:1),
+ * czytany przez `readBuildingResourceUpkeepRatio` dla trudności właściciela i PRZEKAZYWANY jako
+ * argument (brak stanu modułu). Zastępuje dawną stałą 5 szt./typ (R-EKONOMIA-SUROWCE-SKALA-5X-Q1).
+ * Budynek z utrzymaniem 0 (Stela) albo bez `koszt_surowce` => brak utrzymania surowcowego.
+ * / EN: per-building resource upkeep = raw gold upkeep (at level) x ratio, per build-cost resource.
  */
-export const BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE = 5;
+export const DEFAULT_BUILDING_RESOURCE_UPKEEP_RATIO = 1;
+
+/** Współczynnik z `budynki.utrzymanie_surowce_wspolczynnik` dla danej trudności (brak/zły => 1). */
+export function readBuildingResourceUpkeepRatio(
+  raw: RawEconParamsForUpkeep | null | undefined,
+  difficulty: Difficulty = 'normal',
+): number {
+  const v = readNum(raw?.budynki, 'utrzymanie_surowce_wspolczynnik', difficulty,
+    DEFAULT_BUILDING_RESOURCE_UPKEEP_RATIO);
+  return v >= 0 ? v : DEFAULT_BUILDING_RESOURCE_UPKEEP_RATIO;
+}
+
+/** Surowa wartość utrzymania Pieniądza budynku na poziomie (bez FALA2 i mnożnika epoki). */
+function buildingRawGoldUpkeepAtLevel(
+  building: { utrzymanie?: number; przyrostUtrzymania?: number },
+  level: number,
+): number {
+  if (!Number.isFinite(building.utrzymanie)) return 0;
+  const lvl = level >= 1 ? level : 1;
+  const wzrost = Number.isFinite(building.przyrostUtrzymania) ? building.przyrostUtrzymania! : 0;
+  return Math.floor(buildingEffectAtLevel(building.utrzymanie!, wzrost, lvl));
+}
 
 /**
- * Per-turn resource upkeep for one building: BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE
- * units per resource TYPE present in koszt_surowce (build cost), regardless of
- * build-cost amount or FALA scaling. Empty / missing koszt_surowce => no resource upkeep.
+ * Per-turn resource upkeep for one building at `level`: for each resource type in
+ * koszt_surowce, floor(rawGoldUpkeep(level) × ratio) units. Gold upkeep 0 or
+ * empty / missing koszt_surowce => no resource upkeep.
  */
 export function buildingResourceUpkeep(
-  building: { koszt_surowce?: BuildingStockCost | null } | null | undefined,
+  building: {
+    koszt_surowce?: BuildingStockCost | null;
+    utrzymanie?: number;
+    przyrostUtrzymania?: number;
+    utrzymanie_surowce?: BuildingStockCost | null;
+  } | null | undefined,
+  level = 1,
+  ratio: number = DEFAULT_BUILDING_RESOURCE_UPKEEP_RATIO,
 ): Record<string, number> {
-  const raw = building?.koszt_surowce;
-  if (!raw || typeof raw !== 'object') return {};
+  if (!building) return {};
   const out: Record<string, number> = {};
-  for (const [k, v] of Object.entries(raw)) {
-    if (typeof v === 'number' && Number.isFinite(v) && v > 0) {
-      out[k] = BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE;
+  // R-WEB-BUILDING-UPKEEP-CERAMICS-IMPL-Q1: jawne pole `utrzymanie_surowce` (np. {ceramika: 2})
+  // = stała ilość surowca na turę per budynek (nie per typ, nie na poziom). Dotyczy wyłącznie
+  // budynków, które mają to pole w buildings.json (Spichlerz II, Akwedukt, Łaźnia, Port).
+  const fixed = building.utrzymanie_surowce;
+  if (fixed && typeof fixed === 'object') {
+    for (const [k, v] of Object.entries(fixed)) {
+      if (typeof v !== 'number' || !Number.isFinite(v)) continue;
+      const units = Math.floor(v * ratio);
+      if (units > 0) out[k] = units;
     }
+  }
+  const raw = building.koszt_surowce;
+  if (!raw || typeof raw !== 'object') return out;
+  const amount = Math.floor(buildingRawGoldUpkeepAtLevel(building, level) * ratio);
+  if (!(amount > 0)) return out;
+  for (const [k, v] of Object.entries(raw)) {
+    if (typeof v === 'number' && Number.isFinite(v) && v > 0) out[k] = (out[k] ?? 0) + amount;
   }
   return out;
 }
@@ -707,11 +761,14 @@ export function addResourceCosts(
 /** Total per-turn resource upkeep for a set of building instances. */
 export function totalBuildingResourceUpkeep(
   buildings: ReadonlyArray<BuildingInstanceLike>,
+  ratio: number = DEFAULT_BUILDING_RESOURCE_UPKEEP_RATIO,
 ): Record<string, number> {
   const out: Record<string, number> = {};
   for (const b of buildings) {
     addResourceCosts(out, buildingResourceUpkeep(
       b.record as { koszt_surowce?: BuildingStockCost | null },
+      b.level,
+      ratio,
     ));
   }
   return out;
@@ -721,12 +778,14 @@ export function totalBuildingResourceUpkeep(
 export function buildingResourceUpkeepForBuiltIds(
   builtIds: readonly string[],
   buildingCatalog: ReadonlyArray<{ id: string; koszt_surowce?: BuildingStockCost | null }>,
+  levelFor?: (bdef: any) => number,
+  ratio: number = DEFAULT_BUILDING_RESOURCE_UPKEEP_RATIO,
 ): Record<string, number> {
   const out: Record<string, number> = {};
   for (const bid of builtIds) {
     const bdef = buildingCatalog.find(b => b.id === bid);
     if (!bdef) continue;
-    addResourceCosts(out, buildingResourceUpkeep(bdef));
+    addResourceCosts(out, buildingResourceUpkeep(bdef, levelFor ? levelFor(bdef) : 1, ratio));
   }
   return out;
 }
@@ -737,6 +796,8 @@ export function previewOwnerBuildingResourceUpkeep(
   cities: ReadonlyArray<{ id: string; ownerId: number }>,
   buildingCatalog: ReadonlyArray<{ id: string; koszt_surowce?: BuildingStockCost | null }>,
   builtByCity: ReadonlyMap<string, readonly string[]>,
+  levelFor?: (bdef: any) => number,
+  ratio: number = DEFAULT_BUILDING_RESOURCE_UPKEEP_RATIO,
 ): Record<string, number> {
   const out: Record<string, number> = {};
   for (const city of cities) {
@@ -744,6 +805,8 @@ export function previewOwnerBuildingResourceUpkeep(
     addResourceCosts(out, buildingResourceUpkeepForBuiltIds(
       builtByCity.get(city.id) ?? [],
       buildingCatalog,
+      levelFor,
+      ratio,
     ));
   }
   return out;
@@ -760,6 +823,7 @@ function stripDiacriticsLower(s: string): string {
 
 /** Minimalny kształt jednostki dla utrzymania surowcowego (units.json). */
 export interface UnitResourceUpkeepSource {
+  Epoka?: number | string | null;
   'Utrzymanie surowiec'?: string | null;
   'Utrzymanie surowiec (ilość)'?: number | null;
 }
@@ -785,7 +849,7 @@ export function unitResourceUpkeep(
   const ilosc = unitDef['Utrzymanie surowiec (ilość)'];
   if (typeof ilosc === 'number' && Number.isFinite(ilosc) && ilosc > 0) {
     const key = stripDiacriticsLower(rawName);
-    if (key) out[key] = ilosc;
+    if (key) out[key] = scaleCostByEpoch(ilosc, unitDef.Epoka);
   }
   return out;
 }
@@ -905,8 +969,10 @@ export function previewOwnerTotalResourceUpkeep(
   builtByCity: ReadonlyMap<string, readonly string[]>,
   units: ReadonlyArray<{ ownerId: number; typeId: string }>,
   resolveUnitDef: (typeId: string) => UnitResourceUpkeepSource | null | undefined,
+  levelFor?: (bdef: any) => number,
+  ratio: number = DEFAULT_BUILDING_RESOURCE_UPKEEP_RATIO,
 ): Record<string, number> {
-  const out = previewOwnerBuildingResourceUpkeep(ownerId, cities, buildingCatalog, builtByCity);
+  const out = previewOwnerBuildingResourceUpkeep(ownerId, cities, buildingCatalog, builtByCity, levelFor, ratio);
   const ownerUnits = units.filter(u => u.ownerId === ownerId);
   addResourceCosts(out, totalUnitResourceUpkeep(ownerUnits, resolveUnitDef));
   return out;
@@ -1009,7 +1075,9 @@ export function buildUnitUpkeepTable(
         }
       }
     }
-    if (upkeep !== undefined) out[name] = upkeep;
+    const rawEpoch = row['Epoka'];
+    const epoch = typeof rawEpoch === 'number' || typeof rawEpoch === 'string' ? rawEpoch : undefined;
+    if (upkeep !== undefined) out[name] = scaleCostByEpoch(upkeep, epoch);
   }
   return out;
 }
@@ -1075,7 +1143,9 @@ export function buildUnitFoodTable(
     if (typeof name !== 'string' || name.length === 0) continue;
     const direct = row['żywność/turę'] ?? row['zywnosc/ture'];
     if (typeof direct === 'number' && Number.isFinite(direct)) {
-      out[name] = Math.max(0, direct);
+      const rawEpoch = row['Epoka'];
+      const epoch = typeof rawEpoch === 'number' || typeof rawEpoch === 'string' ? rawEpoch : undefined;
+      out[name] = scaleCostByEpoch(direct, epoch);
     }
   }
   return out;
@@ -1107,6 +1177,8 @@ export function militaryFoodConsumption(
 export interface UpkeepBalance {
   utrzymanieBudynki:   number;   // gold spent on buildings this turn
   utrzymanieJednostki: number;   // gold spent on units this turn
+  /** R-WEB-CITY-ADMINISTRATOR-Q1: Pieniądz na działających administratorów miast (wchodzi do `utrzymanieRazem`); brak pola = 0. */
+  utrzymanieAdministratorow?: number;
   utrzymanieRazem:     number;   // total gold upkeep (s.6.4 "Utrzymanie_laczne")
   saldo:               number;   // income - total upkeep (s.6.4 "Saldo_Pieniadza")
   deficyt:             boolean;  // saldo < 0 -> deficit warning (s.6.4)

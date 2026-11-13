@@ -151,8 +151,11 @@ async function main() {
   });
   check('[1] "Żegluga": encja znaleziona', drewno.found, drewno);
   check('[1] "Żegluga": pole "Historia" realnie niepuste (dowód nietautologiczności pozycji historii)', drewno.historiaFieldNonEmpty, drewno);
-  check('[1] "Żegluga": kolejność DOM Wymagania → Charakterystyka → Rys historyczny → Co możesz teraz zrobić → Budynki → Jednostki → Ulepszenia terenu → Kolejne technologie → Zmiany ekonomiczne',
-    JSON.stringify(drewno.orderedKeys) === JSON.stringify(['requirements', 'characteristics', '__historia__', 'actions', 'buildings', 'units', 'improvements', 'next', 'econ']),
+  // R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1 (świadoma zmiana asercji): nowa sekcja „Top 5 korzyści”
+  // bezpośrednio po Rysie historycznym (decyzja właściciela Q5) i nowa sekcja „Cuda” (Q6 —
+  // Żegluga odblokowuje Kamień Ha'amonga) między Ulepszeniami terenu a Kolejnymi technologiami.
+  check('[1] "Żegluga": kolejność DOM Wymagania → Charakterystyka → Rys historyczny → Top 5 korzyści → Co możesz teraz zrobić → Budynki → Jednostki → Ulepszenia terenu → Cuda → Kolejne technologie → Zmiany ekonomiczne',
+    JSON.stringify(drewno.orderedKeys) === JSON.stringify(['requirements', 'characteristics', '__historia__', 'top5', 'actions', 'buildings', 'units', 'improvements', 'wonders', 'next', 'econ']),
     drewno.orderedKeys);
   check('[2] Charakterystyka: wiersz "Koszt nauki" obecny', drewno.charRows.some((t) => t.startsWith('Koszt nauki')), drewno.charRows);
   check('[2] Charakterystyka: wiersz "Epoka" obecny', drewno.charRows.some((t) => t.startsWith('Epoka')), drewno.charRows);

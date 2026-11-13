@@ -34,7 +34,9 @@ ok(armySource.includes('className = \'sl-unit-card-btn\''),
   'karta ma jednoznaczny osobny obszar/przycisk');
 ok(mainSource.includes('onOpenUnitCard: (unitId, unitTypeId)'),
   'wiring przekazuje identyfikator reprezentanta runtime');
-ok(mainSource.includes('u.id === unitId && u.ownerId === 0'),
+// Klasa A (R-WEB-TEST-DEBT-PREEXISTING-B-Q1): literal `ownerId === 0` zastąpiony przez isMe(u.ownerId)
+// w e9e6a3258 (R-HOTSEAT-ETAP6B-UI-Q1, migracja na isMe()); main.ts:25309.
+ok(mainSource.includes('u.id === unitId && isMe(u.ownerId)'),
   'status runtime jest pobierany z właściwej jednostki');
 const callbackStart = mainSource.indexOf('onOpenUnitCard: (unitId, unitTypeId) => {');
 const callbackEnd = mainSource.indexOf('onClose: () => refreshD1bHud()', callbackStart);

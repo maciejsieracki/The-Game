@@ -1,0 +1,46 @@
+
+1. getCityFood
+  [OK] getCityFood z magazynem=15 -> 15 (got 15, want 15)
+  [OK] getCityFood z magazynem=0 -> 0 (got 0, want 0)
+  [OK] getCityFood bez pola magazynZywnosci -> 0 (undefined) (got 0, want 0)
+
+2. Oblezenie: magazyn maleje o (pop + garnizon)
+  [OK] city.magazynZywnosci po oblezeniu: 20 - (3+2) = 15 (got 15, want 15)
+  [OK] tick.magazynPoTurze = 15 (got 15, want 15)
+  [OK] tick.oblegany = true (got true, want true)
+  [OK] tick.obleganyGlod = false (magazyn > 0) (got false, want false)
+
+3. Oblezenie: zywnoscNetto = 0
+  [OK] zywnoscNetto = 0 podczas oblezenia (brak dochodu z pol) (got 0, want 0)
+  [OK] totalZywnosc = 0 podczas oblezenia (got 0, want 0)
+
+4. Oblezenie: clamp do 0
+  [OK] magazyn clamped do 0 (nie ujemny) (got 0, want 0)
+  [OK] tick.magazynPoTurze = 0 (got 0, want 0)
+  [OK] tick.obleganyGlod = true (magazyn = 0) (got true, want true)
+
+5. Oblezenie: obleganyGlod przy pustym magazynie
+  [OK] obleganyGlod = true gdy magazyn startuje od 0 (got true, want true)
+  [OK] magazyn pozostaje 0 (nie ujemny) (got 0, want 0)
+
+6. Oblezenie: populacja nie zmienia sie
+  [OK] ludnoscPrzed = 4 (got 4, want 4)
+  [OK] ludnoscPo = 4 (brak wzrostu podczas oblezenia) (got 4, want 4)
+  [OK] wzrost = false podczas oblezenia (got false, want false)
+  [OK] ubytek = false podczas oblezenia (got false, want false)
+
+7. Brak regresji: miasto nie oblegane
+  [OK] oblegany = false gdy city.oblegane=false (got false, want false)
+  [OK] obleganyGlod = false gdy nie oblegane (got false, want false)
+  [OK] ludnoscPo jest liczba (normalny tick)
+  [OK] oblegany = false gdy city.oblegane=undefined (got false, want false)
+  [OK] obleganyGlod = false gdy oblegane=undefined (got false, want false)
+  [OK] oblezony: zywnoscNetto=0 (got 0, want 0)
+  [OK] nie-oblezony: zywnoscNetto != 0 (ekonomia dziala normalnie, got=-16)
+
+8. Oblezenie bez garnizonu
+  [OK] magazyn = 10 - pop(3) = 7 (garnizon undefined -> 0) (got 7, want 7)
+  [OK] obleganyGlod = false (magazyn > 0) (got false, want false)
+
+oblezenie-test: 27 passed, 0 failed
+EXIT=0

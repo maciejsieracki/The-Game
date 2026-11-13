@@ -1,0 +1,12 @@
+## hermes/integration/af4-fresh-20260918...origin/main
+ M gra/src/game/building-stock-cost.ts
+ M gra/src/game/economy-upkeep.ts
+ M gra/src/game/production.ts
+ M gra/src/game/unit-power.ts
+ M gra/src/main.ts
+ M gra/src/ui/cityPanel.ts
+?? dyspozycje/autobot/runs/AF4-FRESH-INTEGRATION-20260918/01-change-intent.md
+?? dyspozycje/autobot/runs/AF4-FRESH-INTEGRATION-20260918/final-control/gates.tsv
+?? dyspozycje/autobot/runs/AF4-FRESH-INTEGRATION-20260918/final-control/status-after-gates.txt
+?? gra/tools/building-epoch-cost-implementation-test.cjs
+?? gra/tools/unit-power-sort-test.cjs

@@ -1,0 +1,13 @@
+{
+  "scenario": "_activateNext skips a dead queued candidate, removes its queue ID, and activates the next live candidate; only _schedule is stubbed",
+  "skippedDead": {
+    "deadId": "atk0",
+    "liveId": "atk1",
+    "turnIdx": 2,
+    "queueAfter": [],
+    "deadQueued": false,
+    "deadActivated": true,
+    "liveActivated": true,
+    "liveOrder": "hold"
+  }
+}

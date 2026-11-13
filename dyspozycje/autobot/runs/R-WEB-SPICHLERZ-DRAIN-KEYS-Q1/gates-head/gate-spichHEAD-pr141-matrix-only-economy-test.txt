@@ -1,0 +1,14 @@
+AssertionError [ERR_ASSERTION]: grecy: gross trade uses only matrix, not poison civ multiplier
+
+0 !== 114
+
+    at /home/user/The-Game/.claude/worktrees/wf_8fb83844-830-3/gra/tools/pr141-matrix-only-economy-test.cjs:90:12
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 0,
+  expected: 114,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+EXIT=1

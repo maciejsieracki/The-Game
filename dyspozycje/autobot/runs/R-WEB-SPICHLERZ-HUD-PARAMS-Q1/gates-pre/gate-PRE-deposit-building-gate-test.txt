@@ -1,0 +1,50 @@
+  PASS: glinianka bez złoża → brak active Glina
+  PASS: improvementUnlockActiveOnHex glina false
+  PASS: glinianka na złożu gliny → active Glina
+  PASS: Glina złoże → poza potencjałem panelu (magazynowe)
+  PASS: buildingResourceGateMet: garncarnia z etykietą active bez stocku — bramka zamknięta (DOSTEP-SUROWCE-Q1)
+  PASS: buildingResourceGateMet: garncarnia z Gliną w magazynie — OK
+  PASS: buildingResourceGateMet: garncarnia bez Gliny — bramka zamknięta
+  PASS: glinianka na las+zloze gliny → active Glina
+  PASS: improvementUnlockActiveOnHex glina las+zloze
+  PASS: miedz bez ulepszenia → poza potencjałem panelu (tylko Koń/Sól/Złoto)
+  PASS: miedz bez ulepszenia → brak active Ruda
+  PASS: kopalnia_miedzi na miedzi → active Ruda
+  PASS: kopalnia_miedzi false na zelazo
+  PASS: kopalnia_miedzi na ZlozeRudy → Ruda
+  PASS: kopalnia_zelaza na zelazo → Ruda żelaza
+  PASS: kopalnia_zelaza false na miedz
+  PASS: warzelnia na zloze sol → Sól
+  PASS: warzelnia na wybrzeżu → Sól bez złoża
+  PASS: warzelnia coast active
+  PASS: złoże konia → potencjał Koń
+  PASS: stadnina na złożu konia → Koń
+  PASS: stadnina false bez złoża
+  PASS: złoże złota bez kopalni → potencjał panelu
+  PASS: złoże złota bez kopalni → brak active Złoto
+  PASS: kopalnia_zlota na złożu → active Złoto (imperium)
+  PASS: kopalnia_zlota → Złoto nie w potencjale
+  PASS: tartak bez złoża → Drewno
+  PASS: kamieniołom bez złoża → Kamień
+  PASS: bydlo NIE jest surowcem -> brak w active mimo hodowli
+  PASS: bydlo active bez złoża
+  PASS: buildingResourceGateMet: stolarnia bez drewna w magazynie — bramka zamknięta
+  PASS: buildingResourceGateMet: stolarnia z drewnem w magazynie — OK (tylko stock)
+  PASS: buildingResourceGateMet: stolarnia z samym activeLabels bez stocku — bramka zamknięta
+  PASS: buildingResourceGateMet: garncarnia z Gliną w magazynie — OK
+  PASS: buildingResourceGateMet: odlewnia brązu z Rudą w magazynie — OK (bez kopalni mapy)
+  PASS: stolarnia NIE w buildableProduction bez drewna w magazynie
+  PASS: stolarnia w buildableProduction z drewnem w magazynie (bez Tartaku)
+  PASS: stolarnia eraBuildingCatalog locked bez drewna w magazynie
+  FAIL: stolarnia eraBuildingCatalog ready z drewnem w magazynie (bez Tartaku)
+  PASS: runtime: stolarnia działa z drewnem w magazynie
+  PASS: runtime: stolarnia śpi bez zapasu drewna mimo activeLabels
+  PASS: runtime: spichlerz II działa z Solą w magazynie państwa
+  PASS: runtime: spichlerz II śpi bez Soli w magazynie
+  PASS: runtime: mennica śpi bez Złota w magazynie
+  PASS: runtime filter: garncarnia śpi bez gliny i bez dostępu
+  PASS: runtime filter: spichlerz I bez bramki Ceramiki (U-24) — zawsze aktywny
+  PASS: runtime filter: garncarnia+spichlerz przy zapasie Gliny w magazynie państwa
+
+deposit-building-gate: 46 pass, 1 fail
+EXIT=1

@@ -1,0 +1,32 @@
+
+[building-resource-visibility-test] Running tests...
+
+1. Budynek z bramka surowca, pusty magazyn: widoczny w widoku listy budowy
+  [OK] w danych realnych sa budynki z bramka surowca
+  [OK] znaleziono kandydata (bramka surowca, tech/prerekwizyt spelnione)
+  [OK] stolarnia (Stolarnia) widoczny w widoku przy pustym magazynie
+  [OK] stolarnia: bramka surowca NIE przechodzi przy pustym magazynie (wiersz wyszarzony)
+     kandydat: stolarnia wymaga=["Drewno"]
+
+2. Domyslny tryb (AI, walidacja): ten sam budynek NIE jest na liscie (regula gry bez zmian)
+  [OK] stolarnia nieobecny w trybie domyslnym (AI nie buduje bez surowca)
+
+3. Z dostarczonym surowcem budynek jest na liscie w obu trybach
+  [OK] stolarnia dostepny w trybie domyslnym z zapasem
+  [OK] stolarnia dostepny w widoku z zapasem
+
+4. Bramka technologii nadal ukrywa budynek w widoku (regula dostepu bez zmian)
+  [OK] znaleziono budynek z wymogiem technologii
+  [OK] odlewnia_zelaza: bez technologii Hutnictwo żelaza nadal ukryty w widoku
+
+5. Zastąp: jednostka bez zapasu widoczna w widoku, przyczyna podana; domyslnie ukryta
+  [OK] znaleziono jednostke, dla ktorej widok Zastąp ma pozycje bez zapasu
+  [OK] kazda pozycja dodatkowa w widoku ma przyczyne braku zapasu
+  [OK] pozycje domyslne (AI-like) nie maja przyczyny braku (zapas przeszedl bramke)
+     jednostka: Łucznik ukryte-domyslnie=["Oszczepnik"]
+  [OK] z zapasem pozycje widoczne i bez przyczyny braku
+  [OK] Wojownik bez drewna: przyczyna „Brak w magazynie państwa: Drewno”
+  [OK] Wojownik z drewnem: brak przyczyny
+
+15 passed, 0 failed
+EXIT=0

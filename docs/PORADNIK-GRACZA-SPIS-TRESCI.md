@@ -333,10 +333,10 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 
 ### 9. Terytorium
 
-**9.1.** Zasięg miasta (10 heksów) · posterunek (5) · fort (10)
+**9.1.** Zasięg miasta (10 heksów) · posterunek (3) · fort (5)
 - **Miasto** — rośczenie do ok. **10 heksów** wokół centrum (model v1)
-- **Posterunek (Strażnica)** — mniejszy zasięg, ok. **5 heksów**
-- **Fort** — większy zasięg, ok. **10 heksów** jak miasto
+- **Posterunek (Strażnica)** — teren zabezpieczony w promieniu **3 heksów**
+- **Fort** — teren zabezpieczony w promieniu **5 heksów** (jak miasto: obca cywilizacja nie może tam budować)
 - Tylko **twój** terytorium — budowa i plony z twoich pól
 
 **9.2.** Zakładanie kolejnego miasta (Strażnica LUB zasięg istniejącego miasta)
@@ -780,7 +780,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 
 **28.4.** **Infrastruktura:** Droga, Posterunek (Strażnica), Fort, Łodzie
 - **Droga** — tańszy ruch wojska i handel (§31.2)
-- **Posterunek** — małe terytorium (+5 heksów — Część II §9.1)
+- **Posterunek** — małe terytorium (promień 3 heksów — Część II §9.1)
 - **Fort** — większe terytorium, obrona
 - **Łódź rybacka** — wybrzeże w terytorium miasta (§13.2)
 
@@ -1366,7 +1366,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 - Wymaga dostępu do złota (kopalnia własna lub szlak handlowy) — bez dostępu mnożnik śpi, nazwa wraca na Daninę, budynek zostaje
 
 **49.3c.** Co jeszcze wchodzi do puli Daniny
-- Pieniądz z budynków i z zamiany Pracy przez Targowisko — trafia do puli Daniny, dzieli się suwakiem 60/20/20
+- Podatek z budynków i z zamiany Pracy przez Targowisko — trafia do puli Daniny, dzieli się suwakiem 60/20/20
 
 **49.4.** Strategie gracza — zarządzanie skarbcem
 - Wczesna gra: utrzymanie niskie, unikaj pustego skarbca przed wojnou
@@ -2247,8 +2247,8 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 - AI — często odmawia w niskiej relacji
 
 **80.3.** Terytorium a posterunki i forty
-- Twój posterunek — **twoje** terytorium (5 heksów)
-- Fort — 10 heksów (Część II §9)
+- Twój posterunek — **twoje** terytorium (promień 3 heksów)
+- Fort — 5 heksów (Część II §9)
 - Wrogie terytorium — tylko w wojnie lub z przemarszem
 - Zakończenie tury na cudzym hexie — liczy się kara
 
@@ -2349,7 +2349,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 - Każda cywilizacja — **3 linie** bonusów (macierz 9×3)
 
 **84.2.** Przykłady bonusów — jak czytać opis
-- **Mnożnik handlu** — więcej złota z suwaka Daniny
+- **Mnożnik waluty** — mnoży podatek miasta przed podziałem suwakiem (działa, gdy Mennica i Waluta są aktywne)
 - **% nauki** — szybsze badania z miast
 - **XP armii** — jednostki szybciej zyskują doświadczenie (jeśli wpięte)
 - **Morale** — bonus w walce przy spełnionym warunku

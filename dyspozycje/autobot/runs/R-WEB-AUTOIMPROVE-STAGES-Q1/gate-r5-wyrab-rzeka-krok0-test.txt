@@ -1,0 +1,4 @@
+1. rzeka+las z obywatelem, inny las w promieniu — heks rzeki wycinany jako KROK 0
+
+Wynik: 3 PASS / 0 FAIL
+EXIT=0

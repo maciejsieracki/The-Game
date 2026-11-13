@@ -1,0 +1,49 @@
+
+CZESC A -- prawdziwe funkcje presetu oblezenia
+  [OK] ensureSiegeMachines dodaje machiny (11)
+  [OK] id jednostek atakujacego unikalne po ensureSiegeMachines (duplikaty=0)
+  [OK] id unikalne po addSiegeMachinesCount (duplikaty=0)
+  [OK] hak rams=2 dodaje 2 tarany (2)
+  [OK] hak towers=2 dodaje 2 wieze oblezne (2)
+  [OK] rams=0/towers=0 => armia bez zmian
+  [OK] hak chariots=2 dodaje 2 rydwany (+2, razem +2)
+  [OK] id unikalne po chariots=2
+
+CZESC B -- okablowanie (zrodlo) + mutacje
+  [OK] pinezka: _doMove: odmowa wejscia w zasieg ostrzalu (jeden punkt ruchu)
+  [OK] mutacja lamie pinezke: _doMove: odmowa wejscia w zasieg ostrzalu (jeden punkt ruchu)
+  [OK] pinezka: _performPlayerOrder: reczne rozkazy oblezenia
+  [OK] mutacja lamie pinezke: _performPlayerOrder: reczne rozkazy oblezenia
+  [OK] pinezka: tryb reczny: tarany/wieze jada same
+  [OK] mutacja lamie pinezke: tryb reczny: tarany/wieze jada same
+  [OK] pinezka: taran: cel = kafel PRZED brama (BFS), nie wzdluz muru
+  [OK] mutacja lamie pinezke: taran: cel = kafel PRZED brama (BFS), nie wzdluz muru
+  [OK] pinezka: taran: BFS preferuje rzad bramy
+  [OK] mutacja lamie pinezke: taran: BFS preferuje rzad bramy
+  [OK] pinezka: wieza: staje pod murem na wolnej koronie
+  [OK] mutacja lamie pinezke: wieza: staje pod murem na wolnej koronie
+  [OK] pinezka: AUTO: wspolny helper wejscia po wiezy
+  [OK] mutacja lamie pinezke: AUTO: wspolny helper wejscia po wiezy
+  [OK] pinezka: RECZNY: piechota wchodzi po wiezy
+  [OK] mutacja lamie pinezke: RECZNY: piechota wchodzi po wiezy
+  [OK] pinezka: szarza/atakuj-marszem: podejscie poza zasiegiem (nie cel na koronie)
+  [OK] mutacja lamie pinezke: szarza/atakuj-marszem: podejscie poza zasiegiem (nie cel na koronie)
+  [OK] pinezka: ograniczenie: konnica tylko po wylomie bramy/kafla
+  [OK] mutacja lamie pinezke: ograniczenie: konnica tylko po wylomie bramy/kafla
+  [OK] pinezka: ograniczenie: piechota po wylomie/wiezy
+  [OK] mutacja lamie pinezke: ograniczenie: piechota po wylomie/wiezy
+  [OK] pinezka: ograniczenie: strzelcy (luk/proca) zwolnieni
+  [OK] mutacja lamie pinezke: ograniczenie: strzelcy (luk/proca) zwolnieni
+  [OK] pinezka: zrodla ognia: lucznicy z amunicja + wiezyczki muru
+  [OK] mutacja lamie pinezke: zrodla ognia: lucznicy z amunicja + wiezyczki muru
+  [OK] pinezka: main: hak ?rams/towers/bare
+  [OK] mutacja lamie pinezke: main: hak ?rams/towers/bare
+  [OK] pinezka: AUTO: machiny oblezenia atakujacego pomijaja doktryne (taran jedzie do bramy, nie flankuje)
+  [OK] mutacja lamie pinezke: AUTO: machiny oblezenia atakujacego pomijaja doktryne (taran jedzie do bramy, nie flankuje)
+
+CZESC C -- mutacja PRAWDZIWEJ funkcji: cofniecie unikalnych id lamie test
+  [OK] mutacja zastosowana (prefiks id machin = "atk")
+  [OK] zmutowany preset ma duplikaty id (11) => asercja unikalnosci CZERWONA
+
+WYNIK: 40 OK, 0 FAIL
+EXIT=0

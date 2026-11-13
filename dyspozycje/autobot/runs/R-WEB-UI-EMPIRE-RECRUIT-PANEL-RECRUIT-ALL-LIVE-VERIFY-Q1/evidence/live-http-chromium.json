@@ -1,0 +1,108 @@
+{
+  "url": "http://127.0.0.1:18787/index.html?playtest=mapa&civTest=1",
+  "hudEntry": {
+    "count": 1,
+    "visible": true,
+    "label": "Rekrutacja — cała cywilizacja"
+  },
+  "empireRecruitPanel": {
+    "title": "Rekrutacja — cała cywilizacja",
+    "rows": [
+      {
+        "id": "Wieża oblężnicza",
+        "label": "Wieża oblężnicza",
+        "qty": "0"
+      },
+      {
+        "id": "Taran okuty",
+        "label": "Taran okuty",
+        "qty": "0"
+      },
+      {
+        "id": "Rydwan konny",
+        "label": "Rydwan konny",
+        "qty": "0"
+      },
+      {
+        "id": "Konnica",
+        "label": "Konnica",
+        "qty": "0"
+      },
+      {
+        "id": "Wojownik tyrreński",
+        "label": "Wojownik tyrreński",
+        "qty": "0"
+      },
+      {
+        "id": "Galera",
+        "label": "Galera",
+        "qty": "0"
+      },
+      {
+        "id": "Procarz",
+        "label": "Procarz",
+        "qty": "0"
+      },
+      {
+        "id": "Taran",
+        "label": "Taran",
+        "qty": "0"
+      },
+      {
+        "id": "Rydwan (woły)",
+        "label": "Rydwan (woły)",
+        "qty": "0"
+      },
+      {
+        "id": "Wojownik",
+        "label": "Wojownik",
+        "qty": "0"
+      },
+      {
+        "id": "Łucznik",
+        "label": "Łucznik",
+        "qty": "0"
+      },
+      {
+        "id": "Oszczepnik",
+        "label": "Oszczepnik",
+        "qty": "0"
+      }
+    ],
+    "allButtons": [
+      {
+        "text": "Rekrutuj wszystkie",
+        "disabled": true
+      },
+      {
+        "text": "Rekrutuj wszystkie",
+        "disabled": true
+      }
+    ]
+  },
+  "armyEntry": {
+    "count": 1,
+    "visible": true,
+    "title": "Manpower: 18 000 · Możesz zwerbować 9 pełnych jednostek · Koszt jednej jednostki: 2000 rekrutów · Kliknij po szczegóły."
+  },
+  "armyRecruitment": {
+    "title": "Rekrutacja",
+    "cities": [
+      {
+        "id": "city0",
+        "name": "Testpolis",
+        "cards": 0,
+        "labels": []
+      }
+    ],
+    "mountedLists": [
+      {
+        "cityId": "city0",
+        "children": 5,
+        "text": "REKRUTACJA\nI SZCZEGÓŁY\nEPOKA BRĄZ\n0\n0\n0\nSkarb\n5000\nDostępne\n13\nKolejka\n0\nRekruci: dostępne 18k\nWieża oblężnicza\n2k\n20\n76 Brąz (brak)\n−16 Brąz/t\nOblężnicza · Brąz\nRekrutuj\nIlość\n−\n+\nTaran okuty\n2k\n18\n76 Brąz (brak)\n−16 Brąz/t\nOblężnicza · Brąz\nRekrutuj\nIlość\n−\n+\nRydwan konny\n2k\n28\n50 Brąz (brak)\n50 Koń (brak)\n−10 Brąz/t\nRydwan · Brąz\nRekrutuj\nIlość\n−\n+\nKonnica\n2k\n22\n50 Brąz (brak)\n50 Koń (brak)\n−10 Brąz/t\nKonnica · Brąz\nRekrutuj\nIlość\n−\n+\nWojownik tyrreński\n2k\n16\n50 Brąz (brak)\n−10 Brąz/t\nTopór ·"
+      }
+    ],
+    "listText": "Rekrutacja\njednostki pogrupowane według miasta\nW KOLEJCE\n0\nUKOŃCZONE\n3\nIdź do wodza\n· nowe jednostki będą maszerować i śledzić jego pozycję\nSkarbiec: 5k złota · Manpower: 18k\nWódz / Generał — rekrutacja w stolicy\nWódz: 0 / 2 · w kolejce 0\nWódz\n2k\n28\n50 Brąz (brak)\n50 Koń (brak)\n−10 Brąz/t\nRydwan · Brąz\nRekrutuj\nIlość\n−\n+\nTestpolis\nkolejka: 0\nREKRUTACJA\nI SZCZEGÓŁY\nEPOKA BRĄZ\n0\n0\n0\nSkarb\n5000\nDostępne\n13\nKolejka\n0\nRekruci: dostępne 18k\nWieża oblężnicza\n2k\n20\n76 Brąz (brak)\n−16 Brąz/t\nOblężnicza · Brąz\nRekrutuj\nIlość\n−\n+\nTaran okuty\n2k\n18\n76 Brąz (brak)\n−16 Brąz/t\nOblężnicza · Brąz\nRekrutuj\nIlość\n−\n+\nRydwan konny\n2k\n28\n50 Brąz (brak)\n50 Koń (brak)\n−10 Brąz/t\nRydwan · Brąz\nRekrutuj\nIlość\n−\n+\nKonnica\n2k\n22\n50 Brąz (brak)\n50 Koń (brak)\n−10 Brąz/t\nKonnica · Brąz\nRekrutuj\nIlość\n−\n+\nWojownik tyrreński\n2k\n16\n50 Brąz (brak)\n−10 Brąz/t\nTopór · Brąz\nRekrutuj\nIlość\n−\n+\nGalera\n2k\n18\n50 Brąz (brak)\n−10 Brąz/t\nGalera · Brąz\nRekrutuj\nIlość\n−\n+\nProcarz\n2k\n8\n50 Drewno (brak)\n−10 Drewno/t\nProcarz · Brąz\nRekrutuj\nIlość\n−\n+\nTaran\n2k\n7\n19 Drewno (brak)\n−4 Drewno/t\nOblężnicza · Kamień\nRekrutuj\nIlość\n−\n+\nRydwan (woły)\n2k\n15\n25 Drewno (brak)\n−5 Drewno/t\nRydwan · Kamień\nRekrutuj\nIlość\n−\n+\nWojownik\n2k\n5\n13 Drewno (brak)\n−3 Drewno/t\nMiecznik · Kamień\nRekrutuj\nIlość\n−\n+\nŁucznik\n2k\n3\n13 Drewno (brak)\n−3 Drewno/t\nŁucznik · Kamień\nRekrutuj\nIlość\n−\n+\nOszczepnik\n2k\n3\n13 Drewno (brak)\n−3 Drewno/t\nOszczepnik · Kamień\nRekrutuj\nIlość\n−\n+\nZwiadowca\n0\n4\nZwiadowca · Kamień\nRekrutuj\nIlość\n−\n+\nKażde miasto ma tę samą listę kart rekrutacji co jego panel. Kolejka i koszty są przypisane do wskazanego miasta."
+  },
+  "errors": []
+}

@@ -1,0 +1,135 @@
+0. BLOK CZYSTY z main.ts — wycięcie i egzekucja
+  OK: 0a: znaleziono BLOK CZYSTY po markerach POCZATEK/KONIEC
+  OK: 0b: blok zawiera buildCityCaptureReportRows
+  OK: 0c: blok zawiera captureReportOneLine
+  OK: 0e: wycięto STOCK_RESOURCE_LABEL + EMPIRE_STOCK_RESOURCE_KEYS + stockResourceLabel z building-stock-cost.ts
+  OK: 0d: blok wykonał się i wystawił wszystkie trzy funkcje
+1. Stolica (cyw. przeżywa), skarbiec 1234 — kwota zamiast „skarbiec przepadł"
+  OK: 1a: jest pozycja „Złoto ze skarbca"
+  OK: 1b: pozycja niesie FAKTYCZNĄ przejętą kwotę (got "+1234", want "+1234")
+  OK: 1c: NIC w raporcie nie mówi, że skarbiec przepadł (defekt recon A — komunikat kłamał)
+  OK: 1d: pula pracy nadal przepada — WŁASNA pozycja, nie sklejona ze skarbcem
+  OK: 1e: oba losy rozróżnione wprost i w kolejności zdobycz → strata
+2. Stolica, skarbiec 0 — pozycja pominięta, nie „Skarbiec był pusty"
+  OK: 2a: BRAK pozycji o skarbcu (pominięta, nie wypisana z zerem)
+  OK: 2b: nigdzie nie pada „pusty" — zero nie jest komunikatem
+  OK: 2c: żadna pozycja nie ma wartości „+0"
+  OK: 2d: skoro łupu nie było — DOKŁADNIE jedna świadoma linia „Łup: brak"
+  OK: 2e: linia „Łup" występuje raz
+3. Eliminacja, technologie 0 i Moc 0 — te pozycje NIE występują
+  OK: 3a: BRAK pozycji „Technologie" przy zerze
+  OK: 3b: BRAK pozycji „Moc" przy zerze
+  OK: 3c: nauka podana jako liczba, bez zera-szumu
+  OK: 3d: jednostka „nauka" nie pada dwa razy w jednej pozycji (defekt E2 „Nauka: +16 nauki")
+  OK: 3e: żadna wartość nie powtarza własnej etykiety
+  OK: 3f: przy niezerowej liczbie technologii pozycja JEST (regres w drugą stronę)
+  OK: 3g: przy niezerowej Mocy pozycja JEST, pod etykietą gracza „Moc"
+4. Skan negatywny — zero „tech(y)", zero „Power" w treści dla gracza
+  OK: 4a: przebadano pełną matrycę 24 kombinacji wejścia (got 24, want 24)
+  OK: 4b: „tech(y)" nie pada w ŻADNEJ z 24 kombinacji wyprodukowanego tekstu
+  OK: 4c: „Power" nie pada w ŻADNEJ z 24 kombinacji (etykietą gracza jest „Moc")
+  OK: 4d: literał „tech(y)" zniknął z KODU main.ts (przywrócenie go czerwieni tę asercję)
+  OK: 4e: literał „Zdobycze Power" zniknął z KODU main.ts
+  OK: 4f: etykieta Mocy pochodzi z ui/power-labels.ts (mocLabel), nie z literału w main.ts
+5. Trzy lejki przejęcia — każdy zapisuje wpis w panelu WYDARZENIA
+  OK: 5a-0: znaleziono ciało lejka applyCityCaptureToMap (wejście zbrojne: bitwa o miasto / szturm muru / puste miasto)
+  OK: 5a: lejek applyCityCaptureToMap (wejście zbrojne: bitwa o miasto / szturm muru / puste miasto) woła recordCityCaptureEvent
+  OK: 5b-0: znaleziono ciało lejka resolveSiegeSurrender (kapitulacja głodowa)
+  OK: 5b: lejek resolveSiegeSurrender (kapitulacja głodowa) woła recordCityCaptureEvent
+  OK: 5c-0: znaleziono ciało lejka runCapitalCapturePlunder (ścieżka stolicy / eliminacji)
+  OK: 5c: lejek runCapitalCapturePlunder (ścieżka stolicy / eliminacji) woła recordCityCaptureEvent
+  OK: 5d: cztery wywołania rejestratora — 1 + 1 + 2 (lejek stołeczny ma dwa zdarzenia) (got 4, want 4)
+  OK: 5e: lejek stołeczny rejestruje OBA swoje zdarzenia (przejęcie stolicy ORAZ eliminację) (got 2, want 2)
+6. Zwykłe miasto — raport mówi prawdę: co przejęto i że łupu brak
+  OK: 6a: dokładnie trzy pozycje: co przejęto (ludność, budynki) + brak łupu (got "Ludność|Budynki|Łup", want "Ludność|Budynki|Łup")
+  OK: 6b: łup nazwany wprost brakiem (ECHO 1: bez nowej mechaniki) (got "brak", want "brak")
+  OK: 6c: zwykłe miasto NIE dostaje żadnej pozycji łupu — mechanika bez zmian
+  OK: 6d: zwykłe miasto nie traci puli pracy — ta pozycja jest wyłącznie stołeczna
+  OK: 6e: raport wymienia FAKTYCZNIE przejęte miasto/ludność/budynki
+7. Gałąź barbarzyńska — ofiara traci, barbarzyńcy nie dziedziczą
+  OK: 7a: własna pozycja mówi wprost, że barbarzyńcy nie dziedziczą łupu
+  OK: 7b: mimo niezerowych kwot ŻADNA pozycja nie przypisuje ich barbarzyńcom
+  OK: 7c: pula pracy ofiary przepada tak samo (barbarzyńcy jej nie dziedziczą) — strata ofiary, nie nagroda zdobywcy
+8. Modal renderuje WIERSZE, nie jeden sklejony string
+  OK: 8a: znaleziono reportRowsHtml (+ rowHtml) w ui/cityCaptureNotice.ts
+  OK: 8b: znaleziono koniec reportRowsHtml
+  OK: 8c: trzy pozycje dają TRZY osobne elementy wiersza (nie jeden <div>) (got 3, want 3)
+  OK: 8d: każdy wiersz ma własny span etykiety (got 3, want 3)
+  OK: 8e: każdy wiersz ma własny span wartości (got 3, want 3)
+  OK: 8f: etykieta i wartość są w ROZŁĄCZNYCH węzłach — dają się ułożyć w dwie kolumny
+  OK: 8g: ton pozycji (strata) trafia do klasy wiersza
+  OK: 8h: pusta lista nie renderuje nagłówka „Bilans zdobycia"
+  OK: 8i: CityCaptureNoticeOpts przyjmuje wiersze, nie tylko string
+  OK: 8j: modal zdobycia miasta faktycznie wstawia wiersze do swojego HTML
+  OK: 8k: istnieje modal raportu otwierany po turach (klik z panelu WYDARZENIA)
+9. Wpis w panelu WYDARZENIA + szczegóły po kliknięciu
+  OK: 9-0a: skrót na kartę jest krótszy niż pełny bilans
+  OK: 9-0b: karta pomija „co przejęliśmy" i „co przepadło/przejęto poza łupem" — to jest treść modalu
+  OK: 9-0c: karta niesie sam łup, z faktycznymi kwotami
+  OK: 9-0d: modal dostaje PEŁNY bilans, w tym pulę pracy PRZEJĘTĄ (nie "przepadła") przy eliminacji
+  OK: 9-0e: zwykłe miasto — karta mówi wprost „Łup: brak"
+  OK: 9a: rodzina wpisów ma własny, rozłączny prefiks id
+  OK: 9b: rejestrator pisze BEZPOŚREDNIO do warEventLog (przeżywa koniec tury, jak elim-cs-*)
+  OK: 9c: przejęcia bez udziału gracza nie zaśmiecają jego panelu (jak recordWarDeclarationEvent)
+  OK: 9d: powtórne wywołanie dla tego samego miasta/tury jest no-opem (trzy lejki, jeden wpis)
+  OK: 9e: pełna treść (wiersze) trafia do mapy szczegółów pod tym samym id
+  OK: 9e2: karta dostaje skrót, mapa szczegółów KOMPLET wierszy (karta ≠ modal)
+  OK: 9f: kliknięcie karty otwiera modal raportu z zapisanymi wierszami
+  OK: 9g: karta dostaje widoczny skrót z TEGO SAMEGO resolvera co klik (afordancja = akcja)
+  OK: 9h: handler kliknięcia podpięty w onEventClick
+  OK: 9i: ✕ na karcie usuwa też szczegóły (bez wycieku po dismissie)
+  OK: 9j: mapa szczegółów czyszczona przy resetach dziennika w parze z warEventLog
+10. Ekonomia przejęcia nietknięta (ten temat zmienia tylko to, co gracz widzi)
+  OK: 10a: blok raportu nie dotyka żadnego akcesora zasobów — tylko opisuje
+  OK: 10b: blok raportu nie przyznaje Mocy
+  OK: 10c: reguła dziedziczenia Mocy przez barbarzyńców bez zmian
+  OK: 10d: raport podaje Moc FAKTYCZNIE przejętą (powerGain), nie utraconą przez ofiarę
+11. Strona lustrzana — gdy to GRACZ traci miasto, bilans jest stratą
+  OK: 11a: BLOK CZYSTY wystawia mirrorCaptureReportRowsForVictim
+  OK: 11b: złoto zabrane graczowi ma znak MINUS, nie „+1234" (got "−1234", want "−1234")
+  OK: 11c: ta sama pozycja ma ton straty, nie zdobyczy (got "loss", want "loss")
+  OK: 11d: w bilansie ofiary NIE MA ani jednej pozycji w tonie zdobyczy
+  OK: 11e: utracona ludność też liczy się na minus (got "−4", want "−4")
+  OK: 11f: pozycja już stratna zostaje BEZ ZMIAN (nie podwaja się minusem) (got "przepadła — nie przechodzi na zdobywcę", want "przepadła — nie przechodzi na zdobywcę")
+  OK: 11g: pozycja informacyjna „Łup: brak" zostaje bez zmian (got "brak", want "brak")
+  OK: 11h: odwrócona jest WYŁĄCZNIE prezentacja — etykiety i kolejność identyczne (got "Ludność|Budynki|Złoto ze skarbca|Pula pracy", want "Ludność|Budynki|Złoto ze skarbca|Pula pracy")
+  OK: 11i: oryginalne wiersze (perspektywa zdobywcy) nietknięte — funkcja nie mutuje wejścia (got "+1234", want "+1234")
+  OK: 11j: skrót na kartę „Utracono miasto" niesie kwotę ze znakiem minus (got "Złoto ze skarbca: −1234", want "Złoto ze skarbca: −1234")
+  OK: 11k: rejestrator faktycznie odwraca wiersze, gdy gracz jest ofiarą
+  OK: 11l: mapa szczegółów (modal po kliknięciu) dostaje wiersze W TEJ SAMEJ perspektywie co karta
+  OK: 11m: nagłówek listy nazywa stratę stratą — koniec „BILANS ZDOBYCIA" nad utraconym miastem
+  OK: 11n: modal raportu przekazuje ten nagłówek do renderu wierszy
+12. Dedup chroni przed potrójnym zapisem JEDNEGO zdarzenia, nie kasuje drugiego
+  OK: 12a: klucz dedupu niesie PARĘ WŁAŚCICIELI, nie samo miasto i turę
+  OK: 12b: dwa lejki TEGO SAMEGO przejęcia dają identyczny klucz — nadal jeden wpis (got "capture-7-c1-3-0", want "capture-7-c1-3-0")
+  OK: 12c: odbicie miasta w tej samej turze ma klucz INNY — wpis „Utracono miasto" powstaje
+  OK: 12d: kolejna tura to nadal osobny wpis
+  OK: 12e: ujemne id (barbarzyńcy) nie zlewa się z id cywilizacji
+  OK: 12f: klucz nadal zaczyna się prefiksem rodziny (✕ i klik po nim rozpoznają wpis)
+  OK: 12g: sam mechanizm no-opu zostaje — zmieniła się WYŁĄCZNIE ziarnistość klucza
+13. Surowce miasta w bilansie zdobycia — dokladna liczba, zera pominiete
+  OK: 13a: wiersz "Drewno" niesie DOKLADNA liczbe +42 z city.surowce
+  OK: 13b: wiersz "Żelazo" niesie DOKLADNA liczbe +7 z city.surowce
+  OK: 13c: surowiec o wartosci 0 NIE tworzy wiersza (ta sama zasada co reszta funkcji)
+  OK: 13d: wiersze surowcow naleza do grupy "co przejelismy", nie do lupu
+  OK: 13e: surowce miasta wypisane PRZED sekcja Lup (kolejnosc: co przejelismy -> lup)
+  OK: 13j (R-PODBOJ-RAPORT-SEKCJE-ROZWIJANE-Q1): wiersze surowcow oznaczone `collapsible: true` — traktuja jako pozycje zwijanej sekcji, nie glownej
+  OK: 13k: Ludność NIE jest collapsible — zostaje glowna pozycja zawsze widoczna
+  OK: 13f: barbarzynca-zdobywca WIDZI przejete surowce miasta (mechanizm ich nie wyklucza)
+  OK: 13g: kontrola: zloto ze skarbca nadal NIE przechodzi na barbarzyncow (bez zmian)
+  OK: 13h: brak `surowce` w wejsciu (kompatybilnosc wsteczna) — zero nowych wierszy, brak wyjatku
+  OK: 13i: wartosc niecalkowita jest floorowana, spojnie z reszta raportu (Math.floor)
+14. Modal: glowne pozycje zawsze widoczne, surowce w zwijanej sekcji
+  OK: 14a: surowce renderuja sie wewnatrz natywnego <details> (zwijalny bez wlasnego JS)
+  OK: 14b: sekcja surowcow jest domyslnie ZWINIETA (brak atrybutu open)
+  OK: 14c: naglowek rozwijania podaje LICZBE pozycji wewnatrz (3 surowce)
+  OK: 14d: WSZYSTKIE 6 pozycji renderuja sie jako wiersze — zero utraconych (got 6, want 6)
+  OK: 14e: glowne pozycje (Ludność) renderuja sie PRZED sekcja rozwijana surowcow
+  OK: 14f: Drewno jest WEWNATRZ sekcji rozwijanej, nie w glownej liscie
+  OK: 14g: Punkty nauki i Pula pracy zostaja glownymi, zawsze widocznymi pozycjami
+  OK: 14h: bez zadnej flagi `collapsible` NIE powstaje sekcja rozwijana (wsteczna zgodnosc)
+  OK: 14i: te same 6 pozycji nadal renderuja sie w calosci, tylko wszystkie w sekcji glownej (got 6, want 6)
+  OK: 14j: bez zadnej pozycji collapsible w ogole nie powstaje pusta sekcja rozwijana
+
+miasto-zdobycie-raport-test: 117 passed, 0 failed
+EXIT=0

@@ -73,9 +73,7 @@ Gdy cywilizacja **odkryje Walutę** i zbuduje **Mennicę w stolicy**, dzieją si
 1. **Nazwa strumienia** zmienia się z **Danina** na **Podatek** — sama etykieta, liczby się nie zmieniają.
 2. **Mnożnik Mennicy** przemnaża **całą Daninę/Podatek netto** cywilizacji:
 
-| Trudność | Łatwy | Normalny | Trudny |
-|---|---|---|---|
-| Mnożnik Mennicy | ×2,0 | ×1,5 | ×1,0 |
+Wartość mnożnika zależy od **cywilizacji** (parametr „Mnożnik waluty” z macierzy, pokazany w haśle cywilizacji w Encyklopedii; np. Grecy ×2,3, Germanie ×1,7, Fenicjanie ×2,6) i jest podana dla poziomu **Normalny**. Poziom trudności koryguje ją: **Łatwy +0,5**, **Trudny −0,5**. Żaden poziom nie schodzi poniżej minimum **×1,38** (Germanie, Zulusi i Słowianie na Trudnym mają dokładnie ×1,38; Asyria na Trudnym ma ×1,7); górnego limitu nie ma (Fenicjanie na Łatwym ×3,1). Gdy cywilizacja nie ma własnej wartości, obowiązuje globalny mnożnik poziomu trudności (×1,62 / ×1,50 / ×1,38). Gracz i AI liczą ten mnożnik tak samo.
 
 **Warunek dodatkowy — dostęp do złota.** Mennica wymaga **dostępu do złota** (własna Kopalnia złota na złożu **albo** szlak handlowy z cywilizacją posiadającą złoto). Gdy dostęp do złota zostaje utracony (złoże podbite, kopalnia zniszczona, szlak zerwany):
 
@@ -85,7 +83,7 @@ Gdy cywilizacja **odkryje Walutę** i zbuduje **Mennicę w stolicy**, dzieją si
 
 ### 49.3c. Co jeszcze wchodzi do puli Daniny
 
-**Pieniądz z budynków** (np. Targowisko) oraz **Pieniądz z zamiany Pracy przez Targowisko** nie trafiają wprost do skarbca — wpadają do **puli Daniny netto miasta** i dzielą się tym samym suwakiem 60/20/20 (Część VI §38.1), zamiast omijać podział.
+**Podatek z budynków** (np. Targowisko) oraz **Podatek z zamiany Pracy przez Targowisko** nie trafiają wprost do skarbca — wpadają do **puli Daniny netto miasta** i dzielą się tym samym suwakiem 60/20/20 (Część VI §38.1), zamiast omijać podział.
 
 ### 49.4. Strategie gracza
 
@@ -323,7 +321,7 @@ Od 2026-07-23 **9 budynków epoki Brązu/Żelaza** mają realny **koszt materia�
 |---------|----------------|
 | Świątynia | 6 ceramiki |
 | Biblioteka | 5 ceramiki |
-| Spichlerz II | 10 cegły |
+| Spichlerz Królewski | 10 cegły |
 | Akwedukt | 12 cegły |
 | Pretorium | 9 cegły |
 | Łaźnia publiczna | 10 cegły |

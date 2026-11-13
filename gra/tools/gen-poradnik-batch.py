@@ -27,7 +27,7 @@ def bonus_str(b):
     labels = {
         "zywnosc": "żywność",
         "praca": "praca",
-        "pieniadz": "złoto",
+        "pieniadz": "podatek",
         "nauka": "nauka",
         "kultura": "kultura",
         "zadowolenie": "szczęście",

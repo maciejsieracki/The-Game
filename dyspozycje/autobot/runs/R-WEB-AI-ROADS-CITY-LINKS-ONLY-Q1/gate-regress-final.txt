@@ -1,0 +1,18 @@
+ai-food-improvement-priority-stages-test.cjs EXIT=0 2s :: [PASS] parity. real AI turn planner develops river hexes clear -> farm (E1 > E2), then E3/E4 | [PASS] mutation. disabling stage selection makes the behavioral gate fail | ai-food-improvement-priority-stages-test: 13 pass
+ai-improvements-test.cjs EXIT=0 1s :: AI-IMPROVEMENTS-TEST: 56 passed, 0 failed
+auto-improve-no-item-cap-test.cjs EXIT=0 2s :: auto-improve-no-item-cap-test: 15 passed, 0 failed
+auto-improve-q3-test.cjs EXIT=0 5s :: 41 OK, 0 FAIL
+auto-improvements-test.cjs EXIT=0 1s :: auto-improvements-test: 46 passed, 0 failed
+autoimprove-live-hooks-test.cjs EXIT=0 1s :: autoimprove-live-hooks-test: 37 passed, 0 failed
+autoimprove-river-forest-clear-no-citizen-q1-unit-test.cjs EXIT=0 1s :: 17 OK, 0 FAIL
+autoimprove-river-forest-first-q1-test.cjs EXIT=0 1s :: 12 OK, 0 FAIL
+autoimprove-stages-q1-test.cjs EXIT=0 210s :: (s1) BUDZET SZTYWNO — test globalny: procent 10/33/50/100 x pule x niedobor x K1/K2; suma kosztow WSZYSTKICH pickow w turze <= procent x pula (tolerancja 0) | (s5) BUDZET SZTYWNO — kazdy KROK z osobna: KROK 0 wyrabu (rze
+droga-6-ramion-geom-test.cjs EXIT=0 1s :: droga-6-ramion-geom-test: 61 passed, 0 failed
+era-improvement-cost-upkeep-test.cjs EXIT=0 0s ::
+improvement-territory-gate-test.cjs EXIT=0 0s ::
+map-improvement-qualify-test.cjs EXIT=0 0s ::
+map-road-movement-test.cjs EXIT=0 0s ::
+pending-improvements-test.cjs EXIT=0 0s ::
+road-connectivity-test.cjs EXIT=0 0s :: road-connectivity-test: 99 passed, 0 failed
+road-hook-mainguard-test.cjs EXIT=0 0s :: road-hook-mainguard-test: 19 passed, 0 failed
+war-allin-capital-quick.cjs EXIT=0 2s ::

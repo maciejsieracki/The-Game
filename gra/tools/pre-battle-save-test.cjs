@@ -21,22 +21,34 @@ fs.writeFileSync(
   'utf8',
 );
 
-esbuild.buildSync({
-  entryPoints: [ENTRY],
-  bundle: true,
-  platform: 'node',
-  format: 'cjs',
-  outfile: OUT,
-  absWorkingDir: path.resolve(__dirname, '..'),
-  logLevel: 'silent',
-});
+// Plugin: Vite-only konstrukcje, których esbuild (cjs) nie zna:
+//  - importy `*.svg?raw` (czytane jako tekst),
+//  - `import.meta.glob` w leaderPortraits.ts (w teście portrety są zbędne -> pusta mapa).
+const testPlugin = {
+  name: 'pre-battle-save-vite-shims',
+  setup(build) {
+    build.onResolve({ filter: /\?raw$/ }, (args) => ({
+      path: path.resolve(args.resolveDir, args.path.replace(/\?raw$/, '')),
+      namespace: 'raw-file',
+    }));
+    build.onLoad({ filter: /.*/, namespace: 'raw-file' }, (args) => ({
+      contents: fs.readFileSync(args.path, 'utf8'),
+      loader: 'text',
+    }));
+    build.onLoad({ filter: /src[\\/].*\.ts$/ }, (args) => ({
+      contents: fs.readFileSync(args.path, 'utf8').split('import.meta.glob(').join('((..._g) => ({}))('),
+      loader: 'ts',
+    }));
+  },
+};
 
-const { showPreBattle, hidePreBattle, isPreBattleOpen } = require(OUT);
+async function runTest() {
 
 const dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>');
 global.document = dom.window.document;
 global.window = dom.window;
 global.HTMLElement = dom.window.HTMLElement;
+const { showPreBattle, hidePreBattle, isPreBattleOpen } = require(OUT);
 
 let saveCalled = false;
 showPreBattle(
@@ -63,6 +75,8 @@ const saveBtn = buttons.find(b => b.textContent && b.textContent.includes('Zapis
 if (!saveBtn) throw new Error('ZAPISZ button missing on preBattle overlay');
 
 saveBtn.click();
+// onSave jest async (await cb.onSave()) -> toast powstaje po mikrotasku, nie synchronicznie.
+await new Promise((r) => setTimeout(r, 0));
 
 if (!saveCalled) throw new Error('onSave callback not invoked');
 
@@ -77,5 +91,19 @@ hidePreBattle();
 if (isPreBattleOpen()) throw new Error('preBattle overlay still open after hide');
 
 console.log('pre-battle-save-test: OK');
-
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(OUT); } catch (_) {}
+}
+
+esbuild.build({
+  entryPoints: [ENTRY],
+  bundle: true,
+  platform: 'node',
+  format: 'cjs',
+  outfile: OUT,
+  absWorkingDir: path.resolve(__dirname, '..'),
+  logLevel: 'silent',
+  plugins: [testPlugin],
+}).then(runTest).catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

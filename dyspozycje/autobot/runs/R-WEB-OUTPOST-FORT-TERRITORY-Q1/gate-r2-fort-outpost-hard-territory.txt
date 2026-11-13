@@ -1,0 +1,15 @@
+
+--- A: promienie i territoryOwnerAt ---
+
+--- B: obcy nie buduje ulepszen, wlasciciel buduje ---
+
+--- C: zakladanie miast, limit miast ---
+
+--- D: spor o ten sam heks ---
+
+--- E: straznik main.ts ---
+
+--- F: fort NIE odbiera heksow sasiedniemu miastu (R2, zarzut 1) ---
+
+=== fort-outpost-hard-territory-test: 46 passed, 0 failed ===
+EXIT=0

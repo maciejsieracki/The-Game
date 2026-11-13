@@ -1,0 +1,10 @@
+  OK  M0 brak bledow stron; bez znacznikow sortowanie == domyslne three.js -- {"errs":[],"d":0}
+  OK  M1 klatka bazowa: wspolne materialy == wlasne (0 roznych pikseli z 1,6 mln) -- {"diff":0,"where":[],"models":194}
+  OK  M2 przyciemnienie co 3. jednostki i zdjecie: P == S, po zdjeciu == baza -- {"dim":0,"undim":0,"undimVsBaseP":0,"undimVsBaseS":0,"dimVsBase":40903}
+  OK  M3 kontrola czulosci: wspolne materialy z domyslnym sortowaniem ROZNIA sie (test widzi kolejnosc) -- {"diff":51,"where":[[1493,375],[1225,419],[1241,419],[1225,420],[1241,420],[1225,421],[1241,421],[1225,422]]}
+  OK  M4 przyciemnienie nie przechodzi na inne modele -- {"leak":false,"priv":true}
+  OK  M5 picking ten sam -- {"hits":184,"models":194}
+  OK  M6 mniej materialow, zwolnienie OK, pula pusta -- {"plain":[3038,3038],"shared":[3038,477],"pool":{"shared":477,"refs":3038},"after":{"shared":0,"refs":0},"release":true}
+
+WYNIK: 7 OK / 0 FAIL
+EXIT=0

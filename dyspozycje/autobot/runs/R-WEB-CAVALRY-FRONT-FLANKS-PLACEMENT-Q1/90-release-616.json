@@ -1,0 +1,9 @@
+{
+  "stage": 11,
+  "wave": 616,
+  "publication": "68a3019dff898f8790d6a152a7a811531f6bb56a",
+  "source": "a248ba2f119c57c7f5b7dad800d05d85331aa28b",
+  "md5": "bca9ecf94f70e61cda27ab5dbb2851c3",
+  "verification": "IndependentEvalFC;cleanbuild;HTTPaudioPASS;all3audioMD5unchanged;freshGit3artifactsbyteequal",
+  "limits": "fixture/module evidence, no fullcampaign; originalfilegateINFRA"
+}

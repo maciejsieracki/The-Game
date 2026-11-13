@@ -1,0 +1,62 @@
+{
+  "status": "PASS",
+  "topic": "R-CYWILIZACJE-MACIERZ-WALKA-10GRUP-Q1-20260925",
+  "parameterCoverage": {
+    "before": 91,
+    "after": 93,
+    "civilizations": 15,
+    "cells": 1395,
+    "added": [
+      "walka_ruch_piechota_teren_plytkie_morze",
+      "walka_ruch_rydwany"
+    ]
+  },
+  "changedMatrixValues": 13,
+  "legacyEntriesFaded": [
+    "Rydwan hetycki",
+    "Teren górski",
+    "Ruch i morale",
+    "Tania rekrutacja",
+    "Szybkie rydwany",
+    "Brawura szarży",
+    "Gaesatae",
+    "Konnica stepowa",
+    "Zasadzka leśna",
+    "Furia bojowa",
+    "Obrona murów",
+    "Forteca Anatolii",
+    "Horda leśna",
+    "Machiny oblężnicze"
+  ],
+  "tests": {
+    "civ-bonusy": "36/36",
+    "combat": "6/6",
+    "structure-defense": "8/8",
+    "civ-matrix-greece": "329/329",
+    "civ-matrix-semantic-labels": "233/233",
+    "walka-jeden-kontratak": "24/24",
+    "walka-morale-przewaga-mocy": "123/123",
+    "civ-matrix-meta-roster-wiring": "63/63",
+    "typecheck": "PASS (tsc 5.9.3)",
+    "diffCheck": "PASS"
+  },
+  "changedFiles": [
+    "gra/data/civ-matrix.json",
+    "gra/data/civs.json",
+    "gra/src/game/civ-bonuses.ts",
+    "gra/src/game/combat.ts",
+    "gra/src/game/production.ts",
+    "gra/src/game/embarkation.ts",
+    "gra/src/battle/battleScene.ts",
+    "gra/src/main.ts",
+    "gra/tools/civ-bonusy-test.cjs",
+    "gra/tools/civ-matrix-greece-test.cjs",
+    "gra/tools/civ-matrix-semantic-labels-test.cjs"
+  ],
+  "deployPushMerge": "NOT_EXECUTED",
+  "notes": [
+    "G8: Grecy i Fenicjanie mają walka_atak_morska=0.5 oraz walka_obrona_morska=0.5; pozostałe 13 cywilizacji pozostaje 0.",
+    "Galera klasyfikuje się jako morska; civCombatStatMultipliers daje +0.5 ataku i +0.5 obrony; Grecy preBattle: 6 zamiast 4 modifierów.",
+    "gra/src/game/economy.ts ma brak diffu; nie wykonano commit, push, merge ani deploy zgodnie z zakazem."
+  ]
+}

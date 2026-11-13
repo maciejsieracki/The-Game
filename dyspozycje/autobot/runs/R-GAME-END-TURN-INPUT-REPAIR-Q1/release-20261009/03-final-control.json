@@ -1,0 +1,148 @@
+{
+  "status": "PASS-WITH-NOTES",
+  "domain": "GAME",
+  "role": "Final Control",
+  "topic_id": "R-GAME-END-TURN-INPUT-REPAIR-Q1",
+  "incident": "ERR-GAME-2026-10-07-01",
+  "native_task_id": "t_9aac456c",
+  "native_run_id": 45,
+  "round": "1/5",
+  "attempt": "attempt-20261007",
+  "actual_route": {
+    "provider": "openai-codex",
+    "model": "gpt-6-luna",
+    "effort": "ultra",
+    "service_tier": "normal"
+  },
+  "base_sha": "69ccb145a8682f9c2754834afbb16a8d1eaaf825",
+  "head_sha": "69ccb145a8682f9c2754834afbb16a8d1eaaf825",
+  "branch": "hermes/R-GAME-END-TURN-INPUT-REPAIR-Q1-20261007",
+  "goal": "Naprawić utratę trusted click końca tury bez zmian reguł gry; wykonać dwie rzeczywiste tury zwykłym kliknięciem w web Chromium.",
+  "numbered_objections": [],
+  "defense_required": false,
+  "decision": "PASS-WITH-NOTES bounded end-turn input repair; proceed only to the existing workerless INTEGRATION_REQUIRED gate, with no integration or release authorization",
+  "gate_results": {
+    "G1_product_red": "PASS",
+    "G2_fixed_input_and_mutation_control": "PASS",
+    "G3_bounded_real_gameplay_two_turns": "PASS",
+    "G4_regression_scope_save_load_ai": "PASS-WITH-NOTES",
+    "G5_independent_evaluator_and_final_control": "PASS",
+    "G6_no_release": "PASS"
+  },
+  "independent_final_control": {
+    "full_diff_scope_inspected": true,
+    "head_equals_base": true,
+    "git_diff_check": "PASS",
+    "state_guard_source_review": {
+      "hud_end_turn_config": "gra/src/main.ts:22553-22556 routes readiness to canPlayerInitiateEndTurn and click to advanceSeat",
+      "can_player_initiate_end_turn": "gra/src/main.ts:31034-31080; unchanged",
+      "advance_seat": "gra/src/main.ts:36047-36096; unchanged",
+      "click_hide_guard": "gra/src/ui/bottomBarHud.ts:278-285; preserved"
+    },
+    "focused_test": {
+      "command": "node --check tools/end-turn-input-stability-test.cjs && node tools/end-turn-input-stability-test.cjs",
+      "exit_code": 0,
+      "behavior_groups": 10,
+      "candidate_source_sha256": "b3a1195d06473f8ff61bb9c2d4e1178cd2aee6e094b6cb40adfadf092b166b88",
+      "base_source_sha256": "d42297ed5035ece4215bd5ad7d267496f36f0e7645add72d6f9c9cdc0dcc13d5",
+      "harness_sha256": "f34430a6f1c0df06189970bf46b0c52ddcc68414633748c82afd03703d1eb128",
+      "outside_dismiss_candidate": {
+        "button_id_before_after": [1, 1],
+        "trusted_clicks": 1,
+        "accepted": 1
+      },
+      "readiness_change_candidate": {
+        "button_id_before_after": [1, 1],
+        "trusted_clicks": 1,
+        "accepted": 0,
+        "guarded": 1,
+        "aria_disabled_after": "true"
+      },
+      "hidden_during_press_candidate": {
+        "button_id_before": 1,
+        "button_removed_after_release": true,
+        "accepted": 0
+      },
+      "unchanged_base_negative_control": {
+        "button_id_before_after": [1, 2],
+        "trusted_clicks": 0,
+        "accepted": 0
+      }
+    },
+    "mutation_control": {
+      "location": "system scratch only; no repository change",
+      "mutations": [
+        "disabled render deferral during active end-turn pointer",
+        "disabled preservation of existing end-turn button identity"
+      ],
+      "mutant_source_sha256": "6b1cd29e80b7645a08440cd455eef1d1a23f3d1c4ec800f2373af51f12e63343",
+      "test_process_exit_expected": 1,
+      "assertions_detected": 5,
+      "status": "PASS: mutation detected by focused test"
+    },
+    "evaluator_runtime_evidence_readback": {
+      "evaluator_task_id": "t_3a306fbd",
+      "evaluator_run_id": 44,
+      "evaluator_status": "PASS-WITH-NOTES",
+      "orchestrator_readback_verified": true,
+      "readback_sha256": "6300626a9aa41d05ca93bd74603085adc1215ea8789711a939b6c1d69f3f54ae",
+      "numbered_objections": [],
+      "exact_request_sha256": "63039ccf71247cd54c205aff82af8823825604a2f8b20b09dba07fe1bb885530",
+      "paired_map_sha256": "0751e62911860b1407735e386a1d2c65f5bcacfc1f230c3a3c5d2d6380e8717e",
+      "paired_base": {
+        "status": "FAIL_EXPECTED_RED",
+        "turn_before_after": [1, 1],
+        "trusted_clicks": 0,
+        "pointerdown_button_id": 19,
+        "pointerup_button_id": 20
+      },
+      "candidate_turns": [
+        {
+          "turn_before_after": [1, 2],
+          "trusted_clicks": 1,
+          "end_turn_ready_after": true,
+          "transition_overlay_absent_after": true
+        },
+        {
+          "turn_before_after": [2, 3],
+          "trusted_clicks": 1,
+          "end_turn_ready_after": true,
+          "transition_overlay_absent_after": true
+        }
+      ],
+      "supplemental_active_human_readback": {
+        "active_human_owner_id_before_after_each_turn": [0, 0],
+        "separate_run_map_sha256": "2393d7222f8f00c3085d10b7759dd1bd9c719d2f81870f4c447adf4414525eeb"
+      },
+      "candidate_page_console_errors": 0,
+      "candidate_warnings": 24,
+      "screenshots_inspected": [
+        "evaluator-r44-candidate-gameplay-after.png: TURA 3 / 3900 P.N.E.; actual game map and enabled end-turn control visible",
+        "evaluator-r44-unchanged-base-gameplay-after.png: TURA 1 / 4000 P.N.E. remains after attempted click; end-turn control visible"
+      ]
+    }
+  },
+  "notes": [
+    "Separate candidate runs with the same request produced different map hashes (2393d722… and 0751e629…); cause not isolated. The Evaluator's paired unchanged-base/candidate run used the same map hash on both sides.",
+    "Runtime exercised active human owner 0 only; second hotseat human end-turn was not clicked.",
+    "Browser save/load was not exercised; separate roundtrip tests passed 59/59 and AI restore-order 5/5.",
+    "REJESTR-PROSB-I-ZADAN.md still says STATUS: OPERATOR / NEXT GATE: Evaluator. Final Control did not mutate the registry or routing; Orchestrator should reconcile this before later integration.",
+    "Full-gameplay acceptance and original worldgen acceptance remain NOT_PROVEN."
+  ],
+  "changed_by_final_control": [
+    "dyspozycje/autobot/runs/R-GAME-END-TURN-INPUT-REPAIR-Q1/attempt-20261007/03-final-control.md",
+    "dyspozycje/autobot/runs/R-GAME-END-TURN-INPUT-REPAIR-Q1/attempt-20261007/03-final-control.json"
+  ],
+  "product_acceptance": false,
+  "full_gameplay_acceptance": "NOT_PROVEN",
+  "original_worldgen_acceptance": "NOT_PROVEN",
+  "no_release": true,
+  "next_gate": {
+    "task_id": "t_9c7bf537",
+    "title": "R-GAME-END-TURN-INPUT-REPAIR-Q1 / INTEGRATION_REQUIRED",
+    "status_at_final_control": "blocked",
+    "workerless": true,
+    "integration_authorized": false
+  },
+  "deploy_push": "NOT_EXECUTED"
+}

@@ -1,0 +1,6 @@
+  [FAIL] [K1] farma przy rzece (10) PRZED pierwsza trzoda (3) i irygacja (6) — E1 < E3 < E4
+  [FAIL] [K2] farma przy rzece (10) PRZED pierwsza trzoda (3) i irygacja (6) — E1 < E3 < E4
+  [FAIL] [K1] Rodos: wszystkie 3 farmy PRZED pierwsza trzoda (1)
+  [FAIL] [K2] Rodos: wszystkie 3 farmy PRZED pierwsza trzoda (1)
+autoclear-priority-q1-test: 50 passed, 4 failed
+EXIT=0

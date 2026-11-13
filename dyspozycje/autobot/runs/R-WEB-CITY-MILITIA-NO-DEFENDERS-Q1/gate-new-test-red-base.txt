@@ -1,0 +1,13 @@
+city-militia-no-defenders-test (root: /dev/shm/militia-base/gra)
+  [FAIL] API: buildMilitiaSquad / collectCityDefRoster / applyMilitiaPopulationLoss istnieja
+--- mutacje (kazda musi zlamac test) ---
+  [OK] mutacja split-floor lamie test (1 asercji)
+  [OK] mutacja no-garrison-gate lamie test (1 asercji)
+  [OK] mutacja melee-not-scaled lamie test (1 asercji)
+  [OK] mutacja ranged-scaled-too lamie test (1 asercji)
+  [OK] mutacja era-iron-shifted lamie test (1 asercji)
+  [OK] mutacja pop-floor-zero lamie test (1 asercji)
+  [OK] mutacja replace-not-append lamie test (1 asercji)
+  [OK] mutacja morale-not-reduced lamie test (1 asercji)
+wynik: 8 OK, 1 FAIL
+EXIT=1

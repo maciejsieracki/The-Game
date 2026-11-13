@@ -1,0 +1,70 @@
+
+[1] memDebug
+PASS: bez parametru: isMemDebugEnabled=false (got=false want=false)
+PASS: bez parametru: zero wyjscia (no-op) (got=0 want=0)
+WARNING: Multiple instances of Three.js being imported.
+PASS: ?memdebug=1: isMemDebugEnabled=true (got=true want=true)
+PASS: ?memdebug=1: dokladnie jedna linia na wywolanie (got=1 want=1)
+PASS: format linii memdebug zgodny (tura, geometries, textures, programs, extra)
+WARNING: Multiple instances of Three.js being imported.
+PASS: ?memdebug=0: wylaczony (got=false want=false)
+
+[2] M2 pruneUnusedStatChipTextures / getMemDebugCounts
+PASS: po sync: tekstury plakietek zywych miast w cache (kontrola harnessu)
+PASS: getMemDebugCounts.badgeTextures = rozmiar statTexCache (got=3 want=3)
+PASS: getMemDebugCounts.cityModels = liczba modeli miast (got=2 want=2)
+PASS: prune zwraca liczbe zwolnionych (1 sierota) (got=1 want=1)
+PASS: sierota dostala dispose() (got=1 want=1)
+PASS: sierota usunieta z cache (got=false want=false)
+PASS: tekstury zywych sprite NIE zwolnione (got=2 want=2)
+PASS: drugie wywolanie: 0 (idempotentne) (got=0 want=0)
+PASS: zmiana populacji: powstal nowy klucz tekstury
+PASS: stara tekstura zmienionego miasta zwolniona przez sync(), druga zostaje (got=1 want=1)
+PASS: rozmiar cache staly po zmianie tekstu (brak kumulacji) (got=2 want=2)
+PASS: 33 kolejne zmiany populacji: cache nadal staly (got=2 want=2)
+
+[3] M1 dispose geometrii/materialow starego modelu
+PASS: model miasta w scenie (kontrola harnessu)
+PASS: model ma wlasne zasoby (geos=26, mats=18)
+PASS: userData.perCityGeos zarejestrowane dla modelu (galaz roblox) (got=26 want=26)
+PASS: userData.mats zarejestrowane dla modelu (got=18 want=18)
+PASS: wzrost populacji spowodowal przebudowe modelu (nowa grupa w scenie)
+PASS: WSZYSTKIE geometrie starego modelu zwolnione (dispose) (got=26 want=26)
+PASS: WSZYSTKIE materialy starego modelu zwolnione (dispose) (got=18 want=18)
+PASS: stary model zdjety ze sceny (got=false want=false)
+PASS: nowy model NIE jest zwalniany przy kolejnym sync bez zmiany klucza (got=false want=false)
+
+[4] M3 straznica statyczna battleScene.ts (NIE jest dowodem runtime)
+PASS: zdejmowanie _deployToolbarDocClick z document obecne
+PASS: rebuild paska zdejmuje stary nasluchiwacz + dispose (>=2 miejsca)
+PASS: dispose zdejmuje _deployLayoutListener z window
+
+[5] zasoby transient ghostów i znaczników wyrębu
+PASS: własna geometria meshów transient dispose tylko raz (got=1 want=1)
+PASS: oznaczona współdzielona geometria pozostaje żywa (got=0 want=0)
+PASS: współdzielony przez dzieci materiał transient dispose tylko raz (got=1 want=1)
+PASS: oznaczony współdzielony materiał cache pozostaje żywy (got=0 want=0)
+PASS: klon materiału cache należy do ghosta i jest zwalniany (got=1 want=1)
+PASS: materiał źródłowy cache pozostaje żywy po zwolnieniu ghosta (got=0 want=0)
+PASS: wyrąb ma geometrie modelu do zwolnienia
+PASS: zastąpione, własne materiały ghosta zwolnione po sklonowaniu (got=6 want=6)
+PASS: ghost używa wyłącznie własnych klonów materiałów
+PASS: wszystkie geometrie świeżego znacznika wyrębu zwolnione (got=25 want=25)
+PASS: wszystkie klonowane materiały ghosta zwolnione po jego usunięciu (got=25 want=25)
+PASS: ghost miasta wskazuje cache geometrii muru oznaczony jako współdzielony
+PASS: usuwanie ghosta miasta nie zwalnia geometrii muru używanej też przez live miasta (got=0 want=0)
+PASS: kolejny live model miasta nadal korzysta ze współdzielonego cache
+PASS: ghost kopalni cyny wskazuje oznaczone geometrie cache
+PASS: zastępowanie materiałów ghosta nie zwalnia oznaczonych źródeł cache (got=0 want=0)
+PASS: klony materiałów cache są oznaczone jako zasoby własne ghosta
+PASS: usuwanie ghosta kopalni nie zwalnia geometrii używanej przez live ulepszenie (got=0 want=0)
+PASS: ghost kopalni wskazuje oznaczone materiały cache
+PASS: usuwanie ghosta kopalni nie zwalnia materiałów używanych przez live ulepszenie (got=0 want=0)
+PASS: klony materiałów cache są zwalniane wraz z ghostem (got=56 want=56)
+PASS: ghost builderów deleguje disposal do helpera zasobów transient
+PASS: zastępowany znacznik wyrębu zwalnia zasoby
+PASS: reset stanu wyrębu zwalnia stare zasoby
+PASS: czyszczenie wyrębu zwalnia zasoby
+
+55 passed, 0 failed
+EXIT=0

@@ -1,0 +1,16 @@
+vite v5.4.21 building for production...
+transforming...
+✓ 1011 modules transformed.
+rendering chunks...
+[plugin vite:singlefile] 
+
+[plugin vite:singlefile] Inlining: index-DywDIuGI.js
+computing gzip size...
+
+[civ-audio-sidecar] pliki wyjsciowe (4), razem 105756514 B:
+  audio-pack-1.js: 39803262 B
+  audio-pack-2.js: 39999512 B
+  audio-pack-3.js: 11556324 B
+  index.html: 14397416 B
+../../codex-release-608-out/index.html  14,397.41 kB │ gzip: 6,714.86 kB
+✓ built in 11.09s

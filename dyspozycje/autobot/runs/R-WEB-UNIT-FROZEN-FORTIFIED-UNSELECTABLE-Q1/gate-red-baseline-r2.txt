@@ -1,0 +1,8 @@
+unit-frozen-fortified-unselectable-test [BASELINE=origin/main]
+[A] jednostkowa
+  OK   A1 REPRO: garnizon-sierota niewybieralny (unitAtRepresentative=null)
+  OK   A1b REPRO: visibleStackOnHex pusty (merge/ruch go nie widza)
+  FAIL A2 healUnitStates istnieje
+
+BASELINE: pass=2 fail=1
+EXIT=1

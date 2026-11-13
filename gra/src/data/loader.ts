@@ -119,6 +119,8 @@ export interface BuildingDef {
   wielokrotny?: boolean;
   /** id budynku wymaganego w miescie przed upgrade (zastepuje poprzedni w builtIds). */
   upgradeFrom?: string;
+  /** true = przeskok: `upgradeFrom` NIE jest wymagany do budowy (awans gdy poprzednik stoi, inaczej od zera). */
+  upgradeSkip?: boolean;
   /** true = ukryty z listy produkcji (merge w inny budynek). */
   suppressed?: boolean;
   /**
@@ -165,7 +167,7 @@ export interface BuildingDef {
    * 'maFort' dla Cytadeli). Odczytywane przez
    * game/production.ts buildingUnlockFlagFor() i stosowane w main.ts w miejscu
    * ukonczenia produkcji budynku -- zamienia dawny hardkod
-   * `id === 'mury' || id === 'fort'`. Opcjonalne — brak = budynek nie
+   * `id === 'mury' || id === 'mury_kamienne' || id === 'fort'`. Opcjonalne — brak = budynek nie
    * odblokowuje zadnej flagi City.
    */
   odblokowuje?: string;
@@ -212,8 +214,10 @@ export interface CivDef {
   Cywilizacja: string;
   'Styl / charakter': string | null;
   'Jednostka specjalna': string | null;
-  'Bonus startowy': string | null;
-  'Bonusy/minusy (do dopracowania)': string | null;
+  /** Deprecated civ bonus prose; optional for old external fixture compatibility. */
+  'Bonus startowy'?: string | null;
+  /** Deprecated civ bonus prose; optional for old external fixture compatibility. */
+  'Bonusy/minusy (do dopracowania)'?: string | null;
   Uwagi: string | null;
   /** Klucz identyfikujący cywilizację (np. 'grecy', 'rzymianie') — odpowiada TypCywilizacji enum. */
   ikonaId?: string;

@@ -1,0 +1,38 @@
+(a/b) onlyWorked=true: las NA rzece bez obywatela — wycinka rzeka+las w <= 4 turach, PRZED wycinka poza rzeka
+  [OK] wycinka na heksie rzeki w turze 1 (log: 0:farma@12,12 1:wyrab@12,11 1:wyrab@12,10 1:wyrab@13,10 1:wyrab@11,12 1:wyrab@13,11 1:wyrab@11,11 1:wyrab@14,10)
+  [OK] wycinka rzeczna nie pozniej niz wycinka poza rzeka i poza polami obywateli (rzeczna 1, inna 1)
+(a/b) onlyWorked=false: las NA rzece bez obywatela — wycinka rzeka+las w <= 4 turach, PRZED wycinka poza rzeka
+  [OK] wycinka na heksie rzeki w turze 1 (log: 0:farma@12,12 1:wyrab@12,11 1:wyrab@12,10 1:wyrab@13,10 1:wyrab@11,12 1:wyrab@13,11 1:wyrab@11,11 1:wyrab@14,10)
+  [OK] wycinka rzeczna nie pozniej niz wycinka poza rzeka i poza polami obywateli (rzeczna 1, inna 1)
+(c) „Wolno wycinac las” OFF blokuje cala wycinke, takze rzeczna (U-6 = A)
+  [OK] onlyWorked=true: brak wycinki przy skipWyrab (log: 0:farma@12,12 1:bydlo@12,12 2:irygacja@12,12)
+  [OK] onlyWorked=false: brak wycinki przy skipWyrab (log: 0:farma@12,12 1:bydlo@12,12 2:irygacja@12,12 3:farma@8,12 3:farma@8,13 3:farma@8,14)
+(d) las bez rzeki + onlyWorked ON: wycinka tylko na polach obywateli (filtr zachowany)
+  [OK] brak wycinki poza polami obywateli (0; log: 0:farma@12,12 0:wyrab@11,12 0:wyrab@12,13 0:wyrab@13,12 1:farma@11,12 1:farma@12,13 1:farma@13,12)
+(d2) farma na rzece BEZ lasu przed wycinka (E1 < E2)
+  [OK] pierwsza budowa to farma (jest: farma@12,11 farma@12,12)
+(d3) las NIE-farmowy (wzgorza) przy rzece nie jest wycinany pod farme (wyrabMaSens zachowane)
+  [OK] brak wycinki wzgorz przy rzece (log: 0:farma@12,12 1:bydlo@12,12 2:irygacja@12,12)
+(d4) zakres: profil „Zrownowazone” (K2) — ZAKTUALIZOWANE w R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1 (decyzja wlasciciela 2026-11-03)
+  [OK] K2: wycinka na heksie rzeki bez obywatela w turze 1 (log: 0:farma@12,12 1:wyrab@12,11 1:wyrab@12,10 1:wyrab@13,10 1:wyrab@11,12 1:wyrab@13,11)
+  [OK] K2: las bez rzeki poza polami obywateli nadal NIE jest wycinany (filtr zachowany)
+(e) wycinka -> farma, gdy obywatel wejdzie na wyciete pole (zalozenie jawne; bez obywatela patrz e2)
+  [OK] wycinka rzeczna wykonana
+  [OK] heks 12,11 po wycince bez lasu
+  [OK] farma na wycietym 12,11 gdy obywatel wejdzie na pole (wybrano: farma@12,11 farma@12,10 farma@13,10 farma@12,12 farma@11,12 farma@13,11 farma@11,11 farma@14,10 farma@11,10 farma@12,9 farma@13,9 farma@14,9)
+(e2) REALISTYCZNIE (bez recznego dopisywania do worked): ZAKTUALIZOWANE w Q3 — wycinka rzeczna bez obywatela KONCZY SIE FARMA takze przy onlyWorked=ON (decyzja wlasciciela 2026-11-03)
+  [INFO] onlyWorked=true: wycinek rzecznych 3, z farma w 12 turach 3
+  [OK] onlyWorked=true: wszystkie 3 heksy rzeczne wycinane (3)
+  [OK] onlyWorked=true: kazda wycinka rzeczna konczy sie farma (3/3)
+  [INFO] onlyWorked=false: wycinek rzecznych 3, z farma w 12 turach 3
+  [OK] onlyWorked=false: wszystkie 3 heksy rzeczne wycinane (3)
+  [OK] onlyWorked=false: kazda wycinka rzeczna konczy sie farma (3/3)
+(f) log pickera: wybor ma etykiete „E2 wycinka (rzeka+las)” (naRzece) takze przy onlyWorked ON; zmierzony koszt wycinki
+  [OK] onlyWorked=true: wybrany E2 wycinka (rzeka+las) na heksie rzeki x11; kosztWyrab=2.5
+  [OK] onlyWorked=false: wybrany E2 wycinka (rzeka+las) na heksie rzeki x11; kosztWyrab=2.5
+(g) koszt zbiorczy w 12 turach (informacyjnie): wycinki ON vs OFF
+  [INFO] onlyWorked=true: wycinek 13 (w tym rzecznych 3), farm 14
+  [INFO] onlyWorked=false: wycinek 46 (w tym rzecznych 3), farm 91
+
+20 OK, 0 FAIL
+EXIT=0

@@ -60,6 +60,7 @@ import {
   applyMarginalLandZoneCaps,
   rebalanceLandFractionWithMargins,
   rebalanceLandFractionPangea,
+  topUpPangeaLandFraction,
   enforceMapBorderOcean,
   isInMapBorder,
   type ReliefDensityTier,
@@ -78,6 +79,7 @@ import {
   ensureDepositGridCoverage,
   ensureForestGridCoverage,
   stripDepositsFromWater,
+  relocateForestHorses,
   stripRiverMarksFromOpenSea,
   computeStartPositions,
   purgeOceanInsideEarthLandMask,
@@ -464,6 +466,9 @@ export function generateMap(
       fillPangeaAnnularSeaCorridors(hexes, width, height);
       ensurePangeaSingleContinent(hexes, width, height);
       snapPangeaBagelAudit('08_po_ensure_B', hexes, width, height);
+      // R-WEB-PANGEA-LAND-FRACTION-Q1: dosyp lądu do celu (progi maski tną ~4 pp) — przed pierścieniem wybrzeża.
+      topUpPangeaLandFraction(hexes, landScores, landFraction, width, height);
+      snapPangeaBagelAudit('08b_po_topUp', hexes, width, height);
       enforceMapBorderOcean(hexes, width, height);
       applyCoastRing(hexes);
     }
@@ -732,6 +737,9 @@ export function generateMap(
   ensureReliefGridCoverage(
     hexes, terrainScratch, reliefTier, width, height, typ, zoneOf, nZones, rand,
   );
+  // R-WEB-HORSE-RESOURCE-TERRAIN-Q1 (Maciej 2026-11-03): koń nigdy na lesie — przesunięcie na
+  // FINALNYM stanie mapy (po wszystkich przebiegach reliefu/złóż; bez PRNG, reszta mapy bez zmian).
+  relocateForestHorses(hexes);
 
   reportMapGenPhase(onProgress, 10, MAP_GEN_PHASE_LABELS.starts, 100);
   const mapGenTimings = genTimer.finish();

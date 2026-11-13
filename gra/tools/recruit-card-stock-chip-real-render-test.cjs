@@ -4,10 +4,10 @@
  *
  * DOWÓD W ŻYWEJ PRZEGLĄDARCE (Playwright/Chromium) dla p.2 dispatchu: chip surowca i
  * komunikat odmowy na karcie rekrutacji pokazują WYŁĄCZNIE brak jednorazowego kosztu
- * zakupu. Scenariusz ze zrzutu właściciela: Wojownik (50 Drewna, utrzymanie 10 Drewna/t),
- * pula państwa 57 Drewna -> chip NIE czerwony, przycisk „Rekrutuj" aktywny, brak
- * komunikatu „Brakuje w magazynie". Kontrola odwrotna: pula 49 Drewna -> chip czerwony,
- * przycisk zablokowany, komunikat obecny.
+ * zakupu. Scenariusz korzysta z aktualnego kosztu Wojownika: pula wystarczająca na zakup,
+ * ale mniejsza niż koszt plus utrzymanie -> chip NIE czerwony, przycisk „Rekrutuj" aktywny,
+ * brak komunikatu „Brakuje w magazynie". Kontrola odwrotna: pula o jedną sztukę mniejsza
+ * od kosztu -> chip czerwony, przycisk zablokowany, komunikat obecny.
  *
  * Mierzone jest REALNE `getComputedStyle().color` renderowanego chipa, nie obecność klasy
  * w markupie (jsdom nie liczy CSS). Komponent karty (`src/ui/unitRecruitCard.ts`), predykat
@@ -95,6 +95,12 @@ async function main() {
   await page.addScriptTag({ content: fs.readFileSync(OUTFILE, 'utf8') });
 
   const cardCss = await page.evaluate(() => window.__api.UNIT_RECRUIT_CARD_CSS);
+  const stockCost = await page.evaluate(udef => window.__api.unitStockCost(udef), WOJOWNIK);
+  const resourceCost = Number(stockCost.drewno || 0);
+  const resourceUpkeep = Number((await page.evaluate(udef => window.__api.unitResourceUpkeep(udef), WOJOWNIK)).drewno || 0);
+  if (!(resourceCost > 0)) throw new Error('Wojownik: oczekiwany dodatni koszt Drewna');
+  const purchasePool = resourceCost + (resourceUpkeep > 0 ? resourceUpkeep - 1 : 1);
+  const blockedPool = resourceCost - 1;
 
   const run = drewno => page.evaluate(({ udef, drewno, css }) => {
     const A = window.__api;
@@ -173,31 +179,32 @@ async function main() {
   const NORMAL_COLOR = 'rgb(200, 184, 152)'; // #c8b898 — .bld-infocard-chip
   const MISSING_COLOR = 'rgb(232, 138, 122)'; // #e88a7a — .stock-missing
 
-  console.log('\n-- SCENARIUSZ WŁAŚCICIELA: pula 57 Drewna, Wojownik 50 + utrzymanie 10/t --');
-  const r57 = await run(57);
-  await shot('recruit-card-57-drewno-PRZECHODZI.png');
-  check('B1: chip Drewna widoczny w prawdziwym renderze', r57.chipVisible, r57);
-  check('B2: bramka rekrutacji przepuszcza przy 57 Drewna', r57.gate === true, r57.gate);
-  check('B3: chip NIE ma klasy stock-missing', !/stock-missing/.test(r57.chipClass), r57.chipClass);
-  check('B4: REALNY kolor chipa = normalny (nie czerwony)', r57.chipColor === NORMAL_COLOR, r57.chipColor);
-  check('B5: przycisk „Rekrutuj" AKTYWNY', r57.btnDisabled === false, r57.btnDisabled);
+  console.log(`\n-- KOSZT JEDNORAZOWY: pula ${purchasePool} Drewna, koszt ${resourceCost} + utrzymanie ${resourceUpkeep}/t --`);
+  const purchase = await run(purchasePool);
+  await shot('recruit-card-purchase-pool-PRZECHODZI.png');
+  check('B1: chip Drewna widoczny w prawdziwym renderze', purchase.chipVisible, purchase);
+  check('B2: bramka rekrutacji przepuszcza przy puli wystarczającej na zakup', purchase.gate === true, purchase.gate);
+  check('B3: chip NIE ma klasy stock-missing', !/stock-missing/.test(purchase.chipClass), purchase.chipClass);
+  check('B4: REALNY kolor chipa = normalny (nie czerwony)', purchase.chipColor === NORMAL_COLOR, purchase.chipColor);
+  check('B5: przycisk „Rekrutuj" AKTYWNY', purchase.btnDisabled === false, purchase.btnDisabled);
   check('B6: brak komunikatu odmowy — tooltip to zwykłe „Rekrutuj za ...", nie „Brakuje w magazynie"',
-    !/Brakuje w magazynie/.test(r57.text) && !/Brakuje w magazynie/.test(r57.btnTitle || ''),
-    { text: r57.text, title: r57.btnTitle });
+    !/Brakuje w magazynie/.test(purchase.text) && !/Brakuje w magazynie/.test(purchase.btnTitle || ''),
+    { text: purchase.text, title: purchase.btnTitle });
   check('B7: chip utrzymania nadal pokazany (informacyjnie, nie jako blokada)',
-    /−10/.test(r57.upkeepChipText || ''), r57.upkeepChipText);
-  check('B8: chip utrzymania NIE jest czerwony', r57.upkeepChipColor === NORMAL_COLOR, r57.upkeepChipColor);
+    new RegExp(`−${resourceUpkeep}`).test(purchase.upkeepChipText || ''), purchase.upkeepChipText);
+  check('B8: chip utrzymania NIE jest czerwony', purchase.upkeepChipColor === NORMAL_COLOR, purchase.upkeepChipColor);
 
-  console.log('\n-- KONTROLA ODWROTNA: pula 49 Drewna, koszt 50 --');
-  const r49 = await run(49);
-  await shot('recruit-card-49-drewno-BLOKADA.png');
-  check('B9: bramka rekrutacji BLOKUJE przy 49 Drewna', r49.gate === false, r49.gate);
-  check('B10: chip ma klasę stock-missing', /stock-missing/.test(r49.chipClass), r49.chipClass);
-  check('B11: REALNY kolor chipa = czerwony', r49.chipColor === MISSING_COLOR, r49.chipColor);
-  check('B12: przycisk „Rekrutuj" ZABLOKOWANY', r49.btnDisabled === true, r49.btnDisabled);
-  check('B13: komunikat odmowy (tooltip „Rekrutuj") = „Brakuje w magazynie: 1 Drewno"',
-    /^Brakuje w magazynie: 1 Drewno$/.test(r49.btnTitle || ''), r49.btnTitle);
-  check('B14: komunikat odmowy NIE wspomina utrzymania', !/utrzyman/i.test(r49.btnTitle || ''), r49.btnTitle);
+  console.log(`\n-- KONTROLA ODWROTNA: pula ${blockedPool} Drewna, koszt ${resourceCost} --`);
+  const blocked = await run(blockedPool);
+  await shot('recruit-card-below-cost-BLOKADA.png');
+  const missingStock = resourceCost - blockedPool;
+  check('B9: bramka rekrutacji BLOKUJE poniżej kosztu Drewna', blocked.gate === false, blocked.gate);
+  check('B10: chip ma klasę stock-missing', /stock-missing/.test(blocked.chipClass), blocked.chipClass);
+  check('B11: REALNY kolor chipa = czerwony', blocked.chipColor === MISSING_COLOR, blocked.chipColor);
+  check('B12: przycisk „Rekrutuj" ZABLOKOWANY', blocked.btnDisabled === true, blocked.btnDisabled);
+  check('B13: komunikat odmowy (tooltip „Rekrutuj") wskazuje brakujący koszt Drewna',
+    new RegExp(`^Brakuje w magazynie: ${missingStock} Drewno$`).test(blocked.btnTitle || ''), blocked.btnTitle);
+  check('B14: komunikat odmowy NIE wspomina utrzymania', !/utrzyman/i.test(blocked.btnTitle || ''), blocked.btnTitle);
 
   check('B15: brak błędów strony w Chromium', pageErrors.length === 0, pageErrors);
 

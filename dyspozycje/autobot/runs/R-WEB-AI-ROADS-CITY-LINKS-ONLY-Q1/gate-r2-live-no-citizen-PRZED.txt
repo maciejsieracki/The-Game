@@ -1,0 +1,6 @@
+{"tag":"base","seed":7,"focus":"zywnosc","turns":30,"lasStart":{"me":43,"meWorked":0,"ai":289},"firstCutTurn":null,"me":{"cut":0,"cutNoCit":0,"cutWithCit":0,"assigned":0,"assignedPct":null,"assignedAfterNoCit":0,"lagAvg":null,"lagMax":null},"firstCutTurnAi":3,"ai":{"cut":232,"cutNoCit":230,"cutWithCit":2,"assigned":86,"assignedPct":37.1,"assignedAfterNoCit":84,"lagAvg":2.92,"lagMax":15},"lasLeftMe":37,"msAvg":7256}
+  [OK] brak bledu przebiegu
+  [OK] przebieg >= 20 tur (jest 30)
+  [OK] sa pola las+rzeka+baza pod farme w terytorium (43)
+  [FAIL] pierwsza wycinka widoczna najpozniej w turze 2 (jest null)
+  [FAIL] wycieto pola BEZ obywatela (0)

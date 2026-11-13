@@ -1,0 +1,102 @@
+{
+  "build": {
+    "reused": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/cand",
+    "gitHead": "21cd11793d6d7f5fee219e530f1d167e143cccba"
+  },
+  "sections": [
+    "eot"
+  ],
+  "loadavgStart": [
+    6.97,
+    6.59,
+    6.71
+  ],
+  "seeded": {
+    "counts": {
+      "0": 40,
+      "1": 15,
+      "2": 1,
+      "3": 15,
+      "4": 1,
+      "5": 15,
+      "6": 1,
+      "7": 15,
+      "8": 1,
+      "9": 15,
+      "10": 1,
+      "11": 15,
+      "12": 1,
+      "13": 1
+    },
+    "majorAiOwners": [
+      1,
+      3,
+      5,
+      7,
+      9,
+      11
+    ],
+    "cities": 137,
+    "improvements": 180,
+    "buildingsPerCity": [
+      "stolarnia",
+      "spichlerz",
+      "targowisko",
+      "koszary",
+      "biblioteka"
+    ]
+  },
+  "seededUnits": {
+    "seeded": 300,
+    "total": 321
+  },
+  "renderInfo": {
+    "calls": 707,
+    "triangles": 1393160,
+    "points": 0,
+    "lines": 24
+  },
+  "eot": [
+    {
+      "wall": 22307,
+      "sel": null,
+      "clickOk": null,
+      "jsMs": 10001.2,
+      "nativeMs": 436.7,
+      "gcMs": 472.8,
+      "glNativeMs": 98.1,
+      "incl": {
+        "syncUnitsRender": 1384.8,
+        "buildHudState": 460.5,
+        "updateHud": 1057.7,
+        "refreshD1bHud": 1057.7,
+        "collectTurnEventsUncached": 489.1,
+        "collectTurnEvents": 489.9,
+        "refreshTerritoryBorderOverlay": 129.5,
+        "refreshFog": 724.8,
+        "refreshMinimap": 46.1,
+        "__top": [
+          "(idle):-1=11584",
+          "computeTerritoryResourceYieldByCity:106056=1191",
+          "axialDistance$1:69987=719",
+          "(garbage collector):-1=473",
+          "okolicaTiles:70170=471",
+          "(program):-1=437"
+        ]
+      },
+      "cnt": {
+        "buildHudState": 7,
+        "collectTurnEvents": 21,
+        "border": 4,
+        "refreshFog": 3
+      },
+      "longMax": 2111
+    }
+  ],
+  "loadavgEnd": [
+    9.35,
+    8.05,
+    7.29
+  ],
+  "errors": []
+}

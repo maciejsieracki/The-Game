@@ -1,0 +1,4 @@
+  [FAIL] bydlo w zasięgu → active Trzoda
+
+--- food-hodowla-test: 20 OK, 4 FAIL ---
+EXIT=0

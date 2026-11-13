@@ -1,0 +1,5 @@
+  [OK] [I] 0 tartakow/obozow na rzece+las
+  [OK] auto-improvements.ts: zakaz tartak/oboz na rzece nie jest warunkowany `demandActive`
+autoimprove-stages-q1-test: 255 passed, 0 failed
+
+EXIT=0

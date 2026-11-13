@@ -1,0 +1,45 @@
+
+--- (A) placeDeposits na syntetycznej siatce [kod bieżący] ---
+  [OK] A1: 0 koni na lesie (siatka 50% lasu)
+  [OK] A2: liczba koni zachowana (=== liczba bez lasu) i wszystkie na Równinie
+  [OK] A3: kontrola — test faktycznie generuje konie
+  [OK] A4: mutacja „zezwól na las" łamie sekcję (A) (test nie jest tautologią)
+
+--- (B) prawdziwy generator, Standardowy ---
+GOLDEN_ROW {"wyspy:11":{"horses":66,"forestBefore":0,"noHorse":"3cde04e80dc33094f2d5a4e448d2cb4e","other":"959b494e8f542b952fef9359031f9775"}}
+  [mapa] wyspy:11 horses=66 forest=0 msGen=812095 msTotal=815306
+GOLDEN_ROW {"wyspy:42":{"horses":45,"forestBefore":0,"noHorse":"7fe2fade1d240a6210ff37afd711e819","other":"5918ee19a349d5549f113d4b00df270b"}}
+  [mapa] wyspy:42 horses=45 forest=0 msGen=1371064 msTotal=1372046
+GOLDEN_ROW {"wyspy:777":{"horses":37,"forestBefore":0,"noHorse":"f13184c4a44605979b5e35cd72860bb3","other":"97c7fe7b67d4d5ea1004569b341a47f5"}}
+  [mapa] wyspy:777 horses=37 forest=0 msGen=1469829 msTotal=1470655
+GOLDEN_ROW {"wyspy:123":{"horses":34,"forestBefore":0,"noHorse":"ab74f795af701c3a83e274355e688b18","other":"43ea07b67e10a5da4ae9d907181575d4"}}
+  [mapa] wyspy:123 horses=34 forest=0 msGen=1524362 msTotal=1524905
+  wyspy:11 konie=66 naLesie=0 tereny={"rownina":66} rodzaj={"nakladka":66}
+  [OK] B1 wyspy:11: 0 koni na lesie
+  [OK] B2 wyspy:11: konie tylko na równinie/łące
+  [OK] B3 wyspy:11: liczba koni zachowana (±0)
+  [OK] B4 wyspy:11: hash mapy BEZ koni identyczny jak PRZED
+  [OK] B5 wyspy:11: rzeki/startowe bez zmian
+  wyspy:123 konie=34 naLesie=0 tereny={"rownina":34} rodzaj={"nakladka":34}
+  [OK] B1 wyspy:123: 0 koni na lesie
+  [OK] B2 wyspy:123: konie tylko na równinie/łące
+  [OK] B3 wyspy:123: liczba koni zachowana (±0)
+  [OK] B4 wyspy:123: hash mapy BEZ koni identyczny jak PRZED
+  [OK] B5 wyspy:123: rzeki/startowe bez zmian
+  wyspy:42 konie=45 naLesie=0 tereny={"rownina":45} rodzaj={"nakladka":45}
+  [OK] B1 wyspy:42: 0 koni na lesie
+  [OK] B2 wyspy:42: konie tylko na równinie/łące
+  [OK] B3 wyspy:42: liczba koni zachowana (±0)
+  [OK] B4 wyspy:42: hash mapy BEZ koni identyczny jak PRZED
+  [OK] B5 wyspy:42: rzeki/startowe bez zmian
+  wyspy:777 konie=37 naLesie=0 tereny={"rownina":37} rodzaj={"nakladka":37}
+  [OK] B1 wyspy:777: 0 koni na lesie
+  [OK] B2 wyspy:777: konie tylko na równinie/łące
+  [OK] B3 wyspy:777: liczba koni zachowana (±0)
+  [OK] B4 wyspy:777: hash mapy BEZ koni identyczny jak PRZED
+  [OK] B5 wyspy:777: rzeki/startowe bez zmian
+
+HISTOGRAM przyczyn (Stadnina, miasto przy każdym koniu): {"OK_mozna_budowac":182}
+
+WYNIK: 24 OK, 0 FAIL
+EXIT=0

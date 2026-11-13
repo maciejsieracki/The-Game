@@ -10,6 +10,7 @@ import { clampRelationForWar, computeRespekt } from './diplomacy';
 import { RodzajTraktatu } from '../types/diplomacy';
 import type { ActiveDeal, TreatyKind } from './diplomacy-treaties';
 import { normalizeTreatyKind } from './diplomacy-treaties';
+import { formatFullNumber } from '../ui/formatCompactNumber';
 import type { BasketItem } from './diplomacy-pn-engine';
 import type { ProposalPayload } from './diplomacy-proposals';
 import {
@@ -17,6 +18,9 @@ import {
   wiarygodnoscTooltipRozbiciePl,
   type WiarygodnoscRozbicie,
 } from './diplomacy-credibility';
+import { nazwaWyswietlana } from './text-names';
+import { isTruceActive } from './diplomacy-peace-lock';
+import { formatTurCountAcc } from '../ui/formatPl';
 
 const MATRIX = loadCivMatrix();
 
@@ -29,7 +33,7 @@ const WIARYGODNOSC_TOOLTIP_DEF_PL =
 
 const WIARYGODNOSC_TOOLTIP_PL =
   WIARYGODNOSC_TOOLTIP_DEF_PL
-  + ' Wpływa na tempo wzrostu Zaufania u wszystkich nacji. Prezenty i handel: max +5 Zaufania/turę (ten sam limit dla każdego — bez bonusu od wysokiej W). Relacja = Zaufanie + Respekt (0–200); w koszyku negocjacji widać „Wpływ Relacji na deal" (±%).';
+  + ' Wpływa na tempo wzrostu Zaufania u wszystkich nacji. Prezenty i handel: max +5 Zaufania/turę (ten sam limit dla każdego — bez bonusu od wysokiej W). Relacja = Zaufanie + Respekt (0–200); w koszyku negocjacji widać „Wpływ Relacji na deal” (±%).';
 
 interface TagRule {
   paramId: string;
@@ -311,6 +315,20 @@ export function resolveFormalDiplomaticStatus(input: FormalDiplomaticInput): For
   return { label: 'Brak kontaktu', kind: 'brak' };
 }
 
+/**
+ * R-WEB-DIPLO-TRUCE-UNTIL-TURN-DISPLAY-Q1 (#306/#319): napis „Rozejm do tury N” w relacji
+ * dyplomacji. N = tura końca rozejmu z danych pary (`truceUntilTurn`), nie stała.
+ * Zwraca null, gdy rozejm nie jest aktywny (brak pola, albo `currentTurn >= N`) — wtedy napisu brak.
+ * Logika aktywności = isTruceActive (diplomacy-peace-lock.ts), bez zmian reguł rozejmu.
+ */
+export function truceUntilTurnLabelPl(
+  truceUntilTurn: number | null | undefined,
+  currentTurn: number,
+): string | null {
+  if (!isTruceActive(truceUntilTurn, currentTurn)) return null;
+  return 'Rozejm do tury ' + Math.floor(truceUntilTurn as number);
+}
+
 /** Nastawienie z score Zaufania+Respektu; w wojnie co najmniej „Wrogi". */
 export function nastawienieLabelFromScore(
   zaufanie: number,
@@ -326,15 +344,23 @@ export function nastawienieLabelFromScore(
   return 'Przyjazny';
 }
 
-/** Zaufanie/Respekt do wyświetlenia — w wojnie z podłogą score (spójne z clampRelationForWar). */
+/**
+ * Zaufanie/Respekt do wyświetlenia — PRAWDZIWA wartość efektywna (ABC „B”, R-WEB-DIPLO-RESPECT-DISPLAY-TRUE-VALUE-Q1).
+ * Limit wojenny (clampRelationForWar, 29) NIE obcina wartości w panelu: dotyczy wyłącznie etykiety „Wrogi”
+ * i dopisku (zob. `warRelationCapApplies`). Mechanika (silnik) pozostaje bez zmian.
+ */
 export function effectiveNastawienieScores(
   zaufanie: number,
   respekt: number,
-  atWar: boolean,
 ): { zaufanie: number; respekt: number } {
-  if (!atWar) return { zaufanie, respekt };
+  return { zaufanie, respekt };
+}
+
+/** True, gdy w wojnie surowy score relacji przekracza limit wojenny — wtedy UI dopisuje „limit wojenny 29”. */
+export function warRelationCapApplies(zaufanie: number, respekt: number, atWar: boolean): boolean {
+  if (!atWar) return false;
   const c = clampRelationForWar({ zaufanie, respekt, status: 'wojna' });
-  return { zaufanie: c.zaufanie, respekt: c.respekt };
+  return c.zaufanie !== zaufanie || c.respekt !== respekt;
 }
 
 /** Krótki podpis pod etykietą nastawienia w audiencji. */
@@ -417,7 +443,7 @@ const RESOURCE_KEY_LABEL: Readonly<Record<string, string>> = {
   drewno: 'Drewno',
   kamien: 'Kamień',
   glina: 'Glina',
-  ruda: 'Ruda',
+  ruda: 'Ruda miedzi',
   sol: 'Sól',
   zelazo: 'Żelazo',
   braz: 'Brąz',
@@ -462,7 +488,7 @@ export function formatBasketItemBrief(item: BasketItem, ctx?: BasketItemFormatCt
       if (perTurn) {
         const base = `${amt} ¤ na turę`;
         if (turns != null && turns > 0 && !omitTotal) {
-          return `${base} (łącznie ${amt * turns} ¤ przez ${turns} tur)`;
+          return `${base} (łącznie ${amt * turns} ¤ przez ${formatTurCountAcc(turns)})`;
         }
         return base;
       }
@@ -491,14 +517,14 @@ export function formatBasketItemBrief(item: BasketItem, ctx?: BasketItemFormatCt
       if (perTurn) {
         const base = `${szt} ${label} na turę`;
         if (turns != null && turns > 0 && !omitTotal) {
-          return `${base} (łącznie ${szt * turns} ${label} przez ${turns} tur)`;
+          return `${base} (łącznie ${szt * turns} ${label} przez ${formatTurCountAcc(turns)})`;
         }
         return base;
       }
       return `jednorazowo ${szt} ${label}`;
     }
     default:
-      return item.id ?? item.typ;
+      return nazwaWyswietlana(item.id ?? item.typ);
   }
 }
 
@@ -543,9 +569,9 @@ export function formatNegotiationDealParts(
 
   if (turns != null && turns > 0) {
     if (perTurn) {
-      parts.schedule = `Wymiana co turę przez ${turns} tur`;
+      parts.schedule = `Wymiana co turę przez ${formatTurCountAcc(turns)}`;
     } else {
-      parts.schedule = `Jednorazowa wymiana (umowa na ${turns} tur)`;
+      parts.schedule = `Jednorazowa wymiana (umowa na ${formatTurCountAcc(turns)})`;
     }
   } else if (perTurn) {
     parts.schedule = 'Wymiana co turę (bez limitu tur w ofercie)';
@@ -582,8 +608,8 @@ export function splitNegotiationDealPlayerSides(
   let schedule: string | undefined;
   if (turns != null && turns > 0) {
     schedule = perTurn
-      ? `Wymiana co turę przez ${turns} tur`
-      : `Jednorazowa wymiana (umowa na ${turns} tur)`;
+      ? `Wymiana co turę przez ${formatTurCountAcc(turns)}`
+      : `Jednorazowa wymiana (umowa na ${formatTurCountAcc(turns)})`;
   } else if (perTurn) {
     schedule = 'Wymiana co turę (bez limitu tur w ofercie)';
   }
@@ -621,6 +647,22 @@ export interface DiploPlayerSummaryInput {
   wiarygodnosc?: number;
   population?: number;
   armyCount?: number;
+  /** Rekruci w pełnych jednostkach werbu — bieżąca pula (floor, jak rekrutUnitEquivalents). */
+  recruitsUnits?: number;
+  /** Rekruci w pełnych jednostkach werbu — maksimum puli. */
+  recruitsUnitsMax?: number;
+}
+
+/** Tooltip wiersza „Rekruci” na karcie listy: przeliczenie puli Manpower na pełne jednostki (wzór jak rekrutEkw). */
+export const RECRUITS_UNITS_TOOLTIP_PL =
+  'Rekruci w jednostkach = pula werbu (Manpower) ÷ koszt jednostki bieżącej epoki (ten sam wzór co rekrutEkw), '
+  + 'zaokrąglone w dół do pełnych jednostek. Audiencja pokazuje surową pulę Manpower.';
+
+/** Wiersz „Rekruci: bieżąca / maks. jedn.” w pełnych jednostkach werbu (bez zmiany audiencji). */
+export function formatRecruitsUnitsPart(current: number, max: number): string {
+  const cur = Math.max(0, Math.floor(current));
+  const mx = Math.max(0, Math.floor(max));
+  return `Rekruci: ${formatFullNumber(cur)} / ${formatFullNumber(mx)} jedn.`;
 }
 
 /** Linie statystyk gracza — spójne z kartami obcych cywilizacji (detail + meta). */
@@ -635,10 +677,13 @@ export function formatDiploPlayerSummaryLines(input: DiploPlayerSummaryInput): {
     detailParts.push(`Ranking mocy: ${input.powerRank.rank}. z ${input.powerRank.total}`);
   }
   if (input.population !== undefined) {
-    detailParts.push(`Ludność: ${Math.floor(input.population)}`);
+    detailParts.push(`Obywatele: ${Math.floor(input.population)}`);
   }
   if (input.armyCount !== undefined) {
     detailParts.push(`Armia: ${input.armyCount}`);
+  }
+  if (input.recruitsUnits !== undefined && input.recruitsUnitsMax !== undefined) {
+    detailParts.push(formatRecruitsUnitsPart(input.recruitsUnits, input.recruitsUnitsMax));
   }
   const metaParts: string[] = [];
   if (input.wiarygodnosc !== undefined) {
@@ -659,6 +704,9 @@ export interface DiploCivListEntryInput {
   /** Ich strona — jak oni nas widzą (demografia + ich respekt wobec gracza). */
   theirPopulation?: number;
   theirArmyCount?: number;
+  /** Rekruci rozmówcy w pełnych jednostkach werbu: bieżąca pula / maksimum. */
+  theirRecruitsUnits?: number;
+  theirRecruitsUnitsMax?: number;
   theirRespektTowardPlayer?: number;
   /** Nasza strona — jak my ich widzimy. */
   ourRespektTowardThem?: number;
@@ -678,10 +726,13 @@ export function formatDiploCivListLines(input: DiploCivListEntryInput): {
 
   const theirParts: string[] = [];
   if (input.theirPopulation !== undefined) {
-    theirParts.push(`Ludność: ${Math.floor(input.theirPopulation)}`);
+    theirParts.push(`Obywatele: ${Math.floor(input.theirPopulation)}`);
   }
   if (input.theirArmyCount !== undefined) {
     theirParts.push(`Armia: ${input.theirArmyCount}`);
+  }
+  if (input.theirRecruitsUnits !== undefined && input.theirRecruitsUnitsMax !== undefined) {
+    theirParts.push(formatRecruitsUnitsPart(input.theirRecruitsUnits, input.theirRecruitsUnitsMax));
   }
   if (input.theirRespektTowardPlayer !== undefined) {
     theirParts.push(`Ich respekt: ${Math.round(input.theirRespektTowardPlayer)}`);

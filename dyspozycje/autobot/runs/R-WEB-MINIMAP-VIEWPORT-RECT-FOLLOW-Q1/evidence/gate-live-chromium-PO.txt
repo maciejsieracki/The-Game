@@ -1,0 +1,5 @@
+START ramka: {"minX":108,"minY":55,"maxX":153,"maxY":90,"w":46,"h":36,"n":160}
+PO KLIKU w minimapę ramka: {"minX":18,"minY":0,"maxX":63,"maxY":21,"w":46,"h":22,"n":132}
+PO ZOOMIE ramka: {"minX":15,"minY":0,"maxX":65,"maxY":23,"w":51,"h":24,"n":146}
+
+OK: ramka widoku na minimapie podąża za kamerą (klik + zoom)

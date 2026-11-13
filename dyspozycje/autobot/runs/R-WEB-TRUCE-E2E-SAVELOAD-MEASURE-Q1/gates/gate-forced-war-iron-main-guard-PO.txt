@@ -1,0 +1,40 @@
+R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1 — main.ts + ai.ts guards
+
+PASS: main.ts importuje osobny moduł forced-war-iron
+PASS: wyzwalacz siedzi w syncOwnerEraFromResearch i używa isIronEraEntry(prev, next)
+PASS: wyzwalacz Żelaza NIE jest progiem tury (żadnego turn >= … obok ironForceWarPendingOwners.add)
+PASS: wyzwalacz wyklucza miasta-państwa/kopie (isOwnerClusterCityState przy awansie)
+PASS: guard napastnika (wspólna pętla pre-pass) wyklucza gracza, kopie typu, barbarzyńców, wyeliminowanych i miasta-państwa PRZED zebraniem wasPending Żelaza
+PASS: kwalifikacja napastnika przechodzi przez isEligibleForIronForcedWar (isMainAiCiv + brak wojny w dowolnej roli)
+PASS: R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: isEligibleForIronForcedWar wołane z currentTurn: turn, eraEnterTurn: ironEraEnterTurnByOwner.get(ownerId) -- bez tego próg 25 tur od wejścia w Żelazo nigdy nie jest sprawdzany, mechanizm strzela natychmiast po awansie
+PASS: cykl po odpoczynku: wymaga cycleOwners, braku wojny i wygaśnięcia isRestingFromIronForcedWar
+PASS: gracz dołącza do wspólnej puli triggeredSubjects (na równi z AI) WYŁĄCZNIE gdy sam nie ma dziś żadnej aktywnej wojny wymuszonej ORAZ minął próg tury (R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1, turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY) -- bez innego specjalnego wykluczania
+PASS: isForcedWarPairBlocked (NAP, blokada pokoju, sojusz) -- ten sam symetryczny predykat dla WSZYSTKICH trzech epok, zastępuje dawne ironBlockedOwnerIds/bronzeBlockedOwnerIds/stoneBlockedOwnerIds
+PASS: wybór celu (wszystkich trzech epok naraz, w tym Żelaza) przechodzi przez assignForcedWarPairings z isForcedWarPairBlocked i hexDistanceFn: hexDistance
+PASS: wynik przydziału Żelaza czytany z forcedWarAssignmentByOwner (nie z usuniętego pickIronForcedWarTargetId w pętli)
+PASS: Iron target jest przekazywany do decideAIDiplomacy
+PASS: ai.ts: DiplomacjaInputs ma pole ironForceWarTargetId
+PASS: ai.ts: guard Żelaza to wczesny return z wypowiedz_wojne i pełnym zestawem blokad
+PASS: ai.ts: guard Żelaza stoi PRZED ogólnymi regułami wojny (przed budową DiplomacjaParams `const p:`)
+PASS: ai.ts: guardy Kamienia i Brązu nietknięte (zero regresji dwóch istniejących epok)
+PASS: udany DOW mutuje active/cycle i konsumuje pending Żelaza
+PASS: pending Żelaza jest kasowany DOKŁADNIE w jednym miejscu (blok sukcesu), nie przy samej próbie
+PASS: komenda DOW ma finalny guard sojuszu dla celu Żelaza
+PASS: R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)
+PASS: resolveSiegeSurrender nadal przypisuje city.ownerId = newOwner (funnel kapitulacji bez zmian poza R9)
+PASS: zwykła wojna AI↔AI nietknięta: maybeResolveRegularWarOnCityCapture nadal zdefiniowana w main.ts
+PASS: finalizePeaceTreatyBetween uzbraja odpoczynek Żelaza (cleanupIronForcedWarOnPeace)
+PASS: save snapshot zawiera komplet 4 pól Żelaza
+PASS: restoreGameFromSave odtwarza komplet 4 struktur Żelaza
+PASS: eliminacja i nowa gra czyszczą stan Żelaza
+PASS: deklaracja: const ironEraEnterTurnByOwner = new Map<number, number>();
+PASS: przy awansie do Żelaza (isIronEraEntry) ustawiane jest ironEraEnterTurnByOwner.set(ownerId, turn) OBOK ironForceWarPendingOwners.add(ownerId) -- bez tego próg 25 tur nie ma od czego liczyć dla nowo awansowanych cywilizacji
+PASS: eliminacja ownera sprząta ironEraEnterTurnByOwner.delete(ownerId) OBOK reszty sprzątacza Żelaza
+PASS: reset nowej gry (bez przeładowania strony) czyści ironEraEnterTurnByOwner.clear() OBOK reszty rejestrów Żelaza -- inaczej reużyte ownerId dziedziczą licznik z poprzedniej gry
+PASS: save snapshot zawiera ironEraEnterTurnByOwner: Array.from(ironEraEnterTurnByOwner.entries())
+PASS: restoreGameFromSave odtwarza ironEraEnterTurnByOwner z saved.meta?.ironEraEnterTurnByOwner (clear() + pętla .set(), analogicznie do bronzeEraEnterTurnByOwner)
+PASS: Kamień i Brąz zachowują własne moduły i rejestry (przywrócone po R9)
+PASS: rejestry Żelaza są ROZŁĄCZNE z Kamieniem i Brązem (żadne pole nie jest współdzielone)
+
+WYNIK: 35 PASS, 0 FAIL
+EXIT=0

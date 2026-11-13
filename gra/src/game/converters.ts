@@ -1,18 +1,18 @@
 /**
  * converters.ts
  * Przetworstwo surowcow (budynki przetworcze) dla The Game -- czysty modul,
- * bez DOM, bez THREE, ZERO importow runtime.
+ * bez DOM, bez THREE. Jedyny import: citizen-consumption-era (czysty moduł, wzór epoki m(e)).
  *
  * Kanon 2026-07-27 (PYTANIE-84 R6=B, U-14, U-14b — supersedes CERAMIKA-DOSTEP 2026-07-23):
  *   - Ceramika = magazyn państwa (stock); Garncarnia PRODUKUJE, NIE zużywa Ceramiki.
  *   - Zużycie Ceramiki wyłącznie Spichlerz I/II (B6/B8: 5 Ceramiki/turę).
  *   - U-14bA: nadwyżka Ceramiki po drain Spichlerza → auto +Zdrowie (zapas: +Zadowolenie).
  *   - Paliwo USUNIĘTE całkowicie (Mielerz usunięty); konwertery biorą DREWNO 1:1.
- *   Cegielnia  | 2 glina + 1 drewno | 1 cegla    | 10/t + 10% bazy/epokę właściciela (P-KONWERTERY-PRZEPUSTOWOSC-Q1)
+ *   Cegielnia  | 2 glina + 1 drewno | 2 cegly   | 50/t + 50% bazy/epokę właściciela (R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1; wcześniej 1 cegła/cykl i +10%/epokę)
  *   Garncarnia | 1 glina + 1 drewno | 1 ceramika | 10/t + 10% bazy/epokę właściciela (P-KONWERTERY-PRZEPUSTOWOSC-Q1)
- *   Odlewnia brązu | 1 ruda + 1 drewno | 1 braz  | 5/t (płaskie, bez skalowania epoką)
- *   Odlewnia żelaza | braz (jak tier1) + żelazo (1 ruda_zelaza + 1 drewno) | 5/t każdy (płaskie)
- *   Wielka odlewnia | braz + żelazo + stal (1 zelazo + 1 drewno) | 5/t każdy (płaskie)
+ *   Odlewnia brązu | 1 ruda + 1 drewno + 0.1 cyny | 1 braz | explicit owner-era throughput (era 2: 50, era 3+: 75)
+ *   Odlewnia żelaza | braz (jak tier1) + żelazo (1 ruda_zelaza + 1 drewno) | 50/t × m(e) każdy
+ *   Wielka odlewnia | braz + żelazo + stal (1 zelazo + 1 drewno) | 50/t × m(e) każdy (założenie: ta sama rodzina)
  *   Stolarnia / Tartak — NIE konwertują (drewno TYP 1; deski wycofane).
  *
  * Lancuch odlewni (Maciej 2026-07-27): jeden slot, upgrade zastępuje poprzednik.
@@ -23,6 +23,8 @@
  * dostają +10% bazy ADDYTYWNIE za każdą epokę CYWILIZACJI WŁAŚCICIELA (nie epokę
  * gry, nie poziom budynku) -- patrz `converterThroughputForEra` niżej.
  */
+
+import { citizenConsumptionEraMultiplier } from './citizen-consumption-era';
 
 export type Difficulty = 'easy' | 'normal' | 'hard';
 
@@ -54,6 +56,8 @@ export interface ConverterRecipe {
   outputAmount:       number;
   throughputParamKey: string;
   throughputFallback: number;
+  /** Optional explicit owner-era parameter rows. Values are flat caps, not era multipliers. */
+  throughputEraParamKeys?: Readonly<Record<number, string>>;
 }
 
 /**
@@ -79,10 +83,14 @@ export interface ConverterRecipe {
 // to get 5× output, since cycles = min(throughput, input limit, output limit) and the
 // input limit already scales automatically with the ×5'd territorial resource production.
 export const DEFAULT_CONVERTER_RECIPES: ReadonlyArray<ConverterRecipe> = [
-  { id: 'cegielnia',              inputs: { glina: 2, drewno: 1 },         output: 'cegla',    outputAmount: 1, throughputParamKey: 'budynek_cegielnia_przepustowosc',        throughputFallback: 50 },
+  // R-WEB-BRICK-CYCLES-75-100-Q1 (decyzja właściciela 2026-11-11): cykle Cegielni jawnie per epoka
+  // właściciela -- epoka 1: 50, epoka 2: 75, epoka 3+: 100 (carry-forward ostatniej skonfigurowanej).
+  // Mnożnik WYJŚCIA cegły (1 / 1,5 / 2) zostaje bez zmian (CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE).
+  // Pełny Brąz 150 gliny/75 drewna → 225 cegieł (era 2); pełne Żelazo 200 gliny/100 drewna → 400 (era 3).
+  { id: 'cegielnia',              inputs: { glina: 2, drewno: 1 },         output: 'cegla',    outputAmount: 2, throughputParamKey: 'budynek_cegielnia_przepustowosc',        throughputFallback: 50, throughputEraParamKeys: { 1: 'budynek_cegielnia_przepustowosc', 2: 'budynek_cegielnia_epoka2_przepustowosc', 3: 'budynek_cegielnia_epoka3_przepustowosc' } },
   { id: 'garncarnia',             inputs: { glina: 1, drewno: 1 },         output: 'ceramika', outputAmount: 1, throughputParamKey: 'budynek_garncarnia_przepustowosc',     throughputFallback: 50 },
   // 'mielerz' USUNIĘTY (Maciej 2026-07-23): Paliwo usunięte całkowicie; konwertery biorą drewno 1:1.
-  { id: 'huta',                    inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 25 },
+  { id: 'huta',                    inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 50 },
   // R-CYNA-BRAZ (Maciej 2026-08-13): trzeci input konwertera Brązu — Ruda cyny, proporcja
   // 1 Ruda cyny / 10 cykli (0.1/cykl). Klucz `ruda_cyny` — TA SAMA nazwa co magazyn państwa
   // zasilany przez Kopalnię cyny (turn-economy.ts creditTerritory('ruda_cyny', ...)) —
@@ -92,12 +100,12 @@ export const DEFAULT_CONVERTER_RECIPES: ReadonlyArray<ConverterRecipe> = [
   // have('cyna') zawsze 0 gdyby nic tego pola nie zasilało). Cyna NICZEGO nie zastępuje —
   // to DODATKOWY wymóg obok ruda+drewno (brak Cyny w magazynie → throughput=0, mimo dostępnej
   // Miedzi/Drewna — patrz cyna-surowiec-test.cjs).
-  { id: 'odlewnia_brazu',          inputs: { ruda: 1, drewno: 1, ruda_cyny: 0.1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 25 },
-  { id: 'odlewnia_zelaza__braz',   buildingId: 'odlewnia_zelaza', inputs: { ruda: 1, drewno: 1, ruda_cyny: 0.1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 25 },
-  { id: 'odlewnia_zelaza__zelazo', buildingId: 'odlewnia_zelaza', inputs: { ruda_zelaza: 1, drewno: 1 },    output: 'zelazo',   outputAmount: 1, throughputParamKey: 'budynek_odlewnia_zelaza_przepustowosc', throughputFallback: 25 },
-  { id: 'wielka_odlewnia__braz',   buildingId: 'wielka_odlewnia', inputs: { ruda: 1, drewno: 1, ruda_cyny: 0.1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 25 },
-  { id: 'wielka_odlewnia__zelazo', buildingId: 'wielka_odlewnia', inputs: { ruda_zelaza: 1, drewno: 1 },    output: 'zelazo',   outputAmount: 1, throughputParamKey: 'budynek_odlewnia_zelaza_przepustowosc', throughputFallback: 25 },
-  { id: 'wielka_odlewnia__stal',   buildingId: 'wielka_odlewnia', inputs: { zelazo: 1, drewno: 1 },        output: 'stal',     outputAmount: 1, throughputParamKey: 'budynek_wielka_odlewnia_przepustowosc',  throughputFallback: 25 },
+  { id: 'odlewnia_brazu',          inputs: { ruda: 1, drewno: 1, ruda_cyny: 0.1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 50, throughputEraParamKeys: { 2: 'budynek_huta_braz_epoka2_przepustowosc', 3: 'budynek_huta_braz_epoka3_przepustowosc' } },
+  { id: 'odlewnia_zelaza__braz',   buildingId: 'odlewnia_zelaza', inputs: { ruda: 1, drewno: 1, ruda_cyny: 0.1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 50, throughputEraParamKeys: { 2: 'budynek_huta_braz_epoka2_przepustowosc', 3: 'budynek_huta_braz_epoka3_przepustowosc' } },
+  { id: 'odlewnia_zelaza__zelazo', buildingId: 'odlewnia_zelaza', inputs: { ruda_zelaza: 1, drewno: 1 },    output: 'zelazo',   outputAmount: 1, throughputParamKey: 'budynek_odlewnia_zelaza_przepustowosc', throughputFallback: 50 },
+  { id: 'wielka_odlewnia__braz',   buildingId: 'wielka_odlewnia', inputs: { ruda: 1, drewno: 1, ruda_cyny: 0.1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 50, throughputEraParamKeys: { 2: 'budynek_huta_braz_epoka2_przepustowosc', 3: 'budynek_huta_braz_epoka3_przepustowosc' } },
+  { id: 'wielka_odlewnia__zelazo', buildingId: 'wielka_odlewnia', inputs: { ruda_zelaza: 1, drewno: 1 },    output: 'zelazo',   outputAmount: 1, throughputParamKey: 'budynek_odlewnia_zelaza_przepustowosc', throughputFallback: 50 },
+  { id: 'wielka_odlewnia__stal',   buildingId: 'wielka_odlewnia', inputs: { zelazo: 1, drewno: 1 },        output: 'stal',     outputAmount: 1, throughputParamKey: 'budynek_wielka_odlewnia_przepustowosc',  throughputFallback: 50 },
 ];
 
 // ---------------------------------------------------------------------------
@@ -106,8 +114,8 @@ export const DEFAULT_CONVERTER_RECIPES: ReadonlyArray<ConverterRecipe> = [
 // przepustowość rośnie +10% ADDYTYWNIE od bazy za KAŻDĄ epokę CYWILIZACJI
 // WŁAŚCICIELA budynku (nie globalną epokę gry, nie poziom budynku
 // buildingLevelForEpoch -- to OSOBNY system, patrz buildings.json maksPoziom).
-// Baza 10: epoka1=10, epoka2=11, epoka3=12. Odlewnie (huta/odlewnia_brazu/
-// odlewnia_zelaza*/wielka_odlewnia*) NIE dostają tego mechanizmu -- zostają płaskie.
+// Baza 10: epoka1=10, epoka2=11, epoka3=12. Odlewnie nie dostają tego mechanizmu.
+// Żelazo/stal używają m(e), a brąz jawnych parametrów per-era (R-WEB-BRONZE-OUTPUT-50-75-Q1).
 // / EN: Brickworks/Pottery throughput grows +10% ADDITIVELY from the base for EVERY
 // era of the OWNING civilization (not the global game era, not the building's own
 // level system). Base 10: era1=10, era2=11, era3=12. Foundries are excluded and
@@ -127,16 +135,74 @@ export const DEFAULT_CONVERTER_RECIPES: ReadonlyArray<ConverterRecipe> = [
 // ---------------------------------------------------------------------------
 
 /** Receptury objęte skalowaniem +10%/epokę (klucz `id` z DEFAULT_CONVERTER_RECIPES). */
-export const CONVERTER_ERA_SCALING_RECIPE_IDS: ReadonlySet<string> = new Set(['cegielnia', 'garncarnia']);
+export const CONVERTER_ERA_SCALING_RECIPE_IDS: ReadonlySet<string> = new Set(['garncarnia']);
 
-/** Przyrost przepustowości na epokę (10% BAZY), addytywnie -- patrz komentarz wyżej. */
+/** Przyrost przepustowości na epokę (10% BAZY), addytywnie -- domyślny (Garncarnia), patrz komentarz wyżej. */
 export const CONVERTER_ERA_SCALING_PCT = 0.10;
+
+/**
+ * R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 (decyzja właściciela 2026-11-05): „zwiększ naturalną
+ * ilość cykli z 25 do 50 dla odlewni brązu / żelaza … i w każdą epokę zwiększaj możliwości
+ * zgodnie z mnożnikami 1, 1,5, 2 …". Żelazo/stal skalują PRZEPUSTOWOŚĆ
+ * (cykle/turę) mnożnikiem epoki WŁAŚCICIELA m(e) = `citizenConsumptionEraMultiplier` (1 / 1,5 / 2 /
+ * 2,5 / 3) -- jedna definicja wzoru dla konsumpcji obywateli i żelaza/stali. Brąz używa jawnych
+ * parametrów per era z econ-params. Receptury (wejścia/wyjścia) bez zmian. Huta zostaje płaska;
+ * Cegielnia skaluje WYJŚCIE (BRICK).
+ */
+export const CONVERTER_FOUNDRY_ERA_RECIPE_IDS: ReadonlySet<string> = new Set([
+  'odlewnia_zelaza__zelazo',
+  'wielka_odlewnia__zelazo',
+  'wielka_odlewnia__stal',
+]);
+
+/**
+ * R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1 (decyzja właściciela 2026-11-05 + zgoda
+ * „mnożniki te, co przy surowcach"): „dwukrotnie zwiększyć produkcję cegły" + „cegielnia
+ * powinna zwiększać swoją produkcję o 50% w każdej epoce".
+ *
+ * (a) ×2: `outputAmount` Cegielni 1→2 (2 glina + 1 drewno → 2 cegły), baza przepustowości
+ *     50 cykli/turę BEZ zmian (stan historyczny tej decyzji; aktualne cykle per epoka: patrz niżej).
+ * (b) +50% BAZY za epokę właściciela jako MNOŻNIK WYJŚCIA (nie cykli): m(e) = 1 + 0,5 × (e − 1)
+ *     = 1 / 1,5 / 2 / 2,5 / 3 -- ta sama krzywa co `citizenConsumptionEraMultiplier`
+ *     (mnożniki surowców FALA 500). Pomiar w grze pokazał, że Cegielnię ogranicza WEJŚCIE
+ *     (drewno 30/30 tur), więc mnożnik na cyklach byłby martwy; mnożnik na wyjściu działa
+ *     w każdym reżimie i NIE zwiększa zużycia gliny/drewna (cykle i wejścia/cykl bez zmian).
+ *     Cykle Cegielni NIE są skalowane mnożnikiem epoki; od R-WEB-BRICK-CYCLES-75-100-Q1 (2026-11-11)
+ *     są jawne per epoka właściciela (50 / 75 / 100, throughputEraParamKeys), a wyjście cegły skaluje
+ *     wyłącznie CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE.
+ * Jedna funkcja `converterOutputMultiplierForEra` dla gracza i AI.
+ */
+export const CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE: Readonly<Record<string, number>> = {
+  cegielnia: 0.50,
+};
+
+/** Sufiks klucza w mapie `throughputs` przekazującego mnożnik wyjścia do `runConverters`. */
+export const CONVERTER_OUTPUT_MULT_KEY_SUFFIX = '#outMult';
+
+/** Explicit per-era parameter row for a recipe, carrying the latest configured era forward. */
+export function converterThroughputEraParamKey(recipe: ConverterRecipe, era: number): string | undefined {
+  const rows = recipe.throughputEraParamKeys;
+  if (!rows) return undefined;
+  const e = Number.isFinite(era) && era > 1 ? Math.floor(era) : 1;
+  const configured = Object.keys(rows).map(Number).filter(n => Number.isFinite(n)).sort((a, b) => a - b);
+  const selected = configured.filter(n => n <= e).pop() ?? configured[0];
+  return selected === undefined ? undefined : rows[selected];
+}
+
+/** Mnożnik WYJŚCIA receptury za epokę właściciela (1 dla receptur bez skalowania wyjścia). */
+export function converterOutputMultiplierForEra(recipeId: string, era: number): number {
+  const pct = CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE[recipeId];
+  if (pct === undefined) return 1;
+  const e = Number.isFinite(era) && era > 1 ? Math.floor(era) : 1;
+  return 1 + pct * (e - 1);
+}
 
 /**
  * Przepustowość konwertera po uwzględnieniu epoki WŁAŚCICIELA budynku (per-owner,
  * PARYTET AI -- ta sama funkcja dla gracza i AI, `era` to zwykły parametr liczbowy
- * bez gałęzi po ownerId). Cegielnia/Garncarnia rosną +10% bazy/epokę (addytywnie);
- * reszta receptur (Odlewnie) zwraca `baseThroughput` bez zmian niezależnie od `era`.
+ * bez gałęzi po ownerId). Garncarnia +10% bazy/epokę (addytywnie); Odlewnie
+ * (CONVERTER_FOUNDRY_ERA_RECIPE_IDS) × m(e) = 1/1,5/2/2,5/3; brąz explicit per era;
+ * Huta płaska; Cegielnia skaluje WYJŚCIE (`converterOutputMultiplierForEra`), jej cykle płaskie.
  * `era` < 1 lub nieskończone/NaN traktowane jak 1 (brak ujemnego/undefined mnożnika).
  */
 export function converterThroughputForEra(
@@ -144,9 +210,32 @@ export function converterThroughputForEra(
   baseThroughput: number,
   era: number,
 ): number {
+  if (CONVERTER_FOUNDRY_ERA_RECIPE_IDS.has(recipeId)) {
+    return baseThroughput * citizenConsumptionEraMultiplier(era);
+  }
   if (!CONVERTER_ERA_SCALING_RECIPE_IDS.has(recipeId)) return baseThroughput;
   const e = Number.isFinite(era) && era > 1 ? era : 1;
   return baseThroughput * (1 + CONVERTER_ERA_SCALING_PCT * (e - 1));
+}
+
+/**
+ * Mapa dla `runConverters`: przepustowości per receptura + mnożniki wyjścia pod kluczem
+ * `<id>#outMult` (tylko receptury ze skalowaniem wyjścia). Jedno miejsce dla gracza i AI.
+ */
+export function converterThroughputsForEra(
+  baseOf: (recipe: ConverterRecipe, era: number) => number,
+  era: number,
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const recipe of DEFAULT_CONVERTER_RECIPES) {
+    const base = baseOf(recipe, era);
+    out[recipe.id] = recipe.throughputEraParamKeys
+      ? base
+      : converterThroughputForEra(recipe.id, base, era);
+    const m = converterOutputMultiplierForEra(recipe.id, era);
+    if (m !== 1) out[recipe.id + CONVERTER_OUTPUT_MULT_KEY_SUFFIX] = m;
+  }
+  return out;
 }
 
 export type ConverterReason = 'ok' | 'brak-wejscia' | 'pelny-magazyn' | 'zero-przepustowosci';
@@ -157,6 +246,17 @@ export interface ConvertResult {
   consumed: Record<string, number>;
   stores:   Record<string, number>;
   reason:   ConverterReason;
+  /**
+   * R-WEB-UI-RESOURCE-BUILDING-UTILIZATION-PERCENT-Q1: maksymalna liczba cykli tej receptury w turze
+   * (floor przepustowosci) -- mianownik "wykorzystania mocy". Tylko odczyt, nie zmienia reguly.
+   */
+  maxCykle: number;
+  /** Co ogranicza cykle PONIZEJ maksimum: 'wejscie' (zapas), 'magazyn' (brak miejsca na wyjscie); brak = pelna moc. */
+  limitedBy?: 'wejscie' | 'magazyn';
+  /** Klucze wejsc, ktorych zapas wyznacza limit (tylko gdy limitedBy === 'wejscie'). */
+  limitingInputs?: string[];
+  /** Ile brakuje do PELNEJ mocy per limitujace wejscie (surowiec -> sztuki, zaokraglone w gore). */
+  missing?: Record<string, number>;
 }
 
 export function runConverter(
@@ -164,6 +264,7 @@ export function runConverter(
   stores: Record<string, number>,
   throughput: number,
   outputCapacity: number,
+  outputMultiplier = 1,
 ): ConvertResult {
   const have = (k: string): number => {
     const v = stores[k];
@@ -180,8 +281,10 @@ export function runConverter(
   }
   if (!Number.isFinite(limitWejscia)) limitWejscia = 0;
 
+  const outMult = Number.isFinite(outputMultiplier) && outputMultiplier > 0 ? outputMultiplier : 1;
+  const outPerCykl = recipe.outputAmount * outMult;
   const wolne = Math.max(0, outputCapacity - have(recipe.output));
-  const limitWyjscia = recipe.outputAmount > 0 ? Math.floor(wolne / recipe.outputAmount) : 0;
+  const limitWyjscia = outPerCykl > 0 ? Math.floor(wolne / outPerCykl) : 0;
 
   const cykle = Math.max(0, Math.min(tput, limitWejscia, limitWyjscia));
 
@@ -193,7 +296,7 @@ export function runConverter(
       nowe[k] = have(k) - used;
       consumed[k] = used;
     }
-    nowe[recipe.output] = have(recipe.output) + recipe.outputAmount * cykle;
+    nowe[recipe.output] = have(recipe.output) + outPerCykl * cykle;
   }
 
   let reason: ConverterReason = 'ok';
@@ -204,7 +307,70 @@ export function runConverter(
     else                         reason = 'brak-wejscia';
   }
 
-  return { produced: cykle * recipe.outputAmount, cykle, consumed, stores: nowe, reason };
+  let limitedBy: 'wejscie' | 'magazyn' | undefined;
+  let limitingInputs: string[] | undefined;
+  let missing: Record<string, number> | undefined;
+  if (cykle < tput) {
+    if (cykle === limitWejscia) {
+      limitedBy = 'wejscie';
+      limitingInputs = Object.keys(recipe.inputs).filter(k => {
+        const perCykl = recipe.inputs[k];
+        return perCykl !== undefined && perCykl > 0 && Math.floor(have(k) / perCykl) === limitWejscia;
+      });
+      missing = {};
+      for (const k of limitingInputs) {
+        missing[k] = Math.max(1, Math.ceil((recipe.inputs[k] ?? 0) * tput - have(k)));
+      }
+    } else {
+      limitedBy = 'magazyn';
+    }
+  }
+
+  return { produced: cykle * outPerCykl, cykle, consumed, stores: nowe, reason, maxCykle: tput, limitedBy, limitingInputs, missing };
+}
+
+/**
+ * R-WEB-UI-RESOURCE-BUILDING-UTILIZATION-PERCENT-Q1: wykorzystanie mocy JEDNEGO budynku w turze
+ * (suma cykli / suma maksymalnych cykli jego receptur), z ConvertResult tego samego `runConverters`,
+ * ktory liczy realna produkcje -- zadnej osobnej formuly.
+ */
+export interface ConverterBuildingUtilization {
+  /** Cykle zrealizowane / maksimum (sumy po recepturach budynku). */
+  cykle: number;
+  maxCykle: number;
+  /** Procent 0..100 (zaokraglony do calkowitych); maxCykle = 0 -> 0. */
+  pct: number;
+  /** Powod, gdy pct < 100: 'wejscie' | 'magazyn' | 'przepustowosc'. */
+  limitedBy?: 'wejscie' | 'magazyn' | 'przepustowosc';
+  /** Brakujace/limitujace wejscia (klucze surowcow), gdy limitedBy === 'wejscie'. */
+  limitingInputs: string[];
+  /** Ile brakuje do pelnej mocy per limitujace wejscie (suma po recepturach budynku). */
+  missing: Record<string, number>;
+}
+
+export function summarizeBuildingUtilization(results: ReadonlyArray<ConvertResult>): ConverterBuildingUtilization {
+  let cykle = 0;
+  let maxCykle = 0;
+  const lim = new Set<string>();
+  const missing: Record<string, number> = {};
+  let limitedBy: ConverterBuildingUtilization['limitedBy'];
+  for (const r of results) {
+    cykle += r.cykle;
+    maxCykle += r.maxCykle;
+    if (r.limitedBy === 'wejscie') {
+      limitedBy = 'wejscie';
+      for (const k of r.limitingInputs ?? []) lim.add(k);
+      for (const [k, v] of Object.entries(r.missing ?? {})) missing[k] = Math.max(missing[k] ?? 0, v);
+    } else if (r.limitedBy === 'magazyn' && limitedBy !== 'wejscie') {
+      limitedBy = 'magazyn';
+    }
+  }
+  let pct = maxCykle > 0 ? Math.round((100 * cykle) / maxCykle) : 0;
+  // Obrona zarzutu 3: niepelne wykorzystanie (cykle < maxCykle) nigdy nie pokazuje 100% (np. 199/200 -> 99%).
+  if (maxCykle > 0 && cykle < maxCykle && pct >= 100) pct = 99;
+  if (maxCykle <= 0) limitedBy = 'przepustowosc';
+  if (pct >= 100) limitedBy = undefined;
+  return { cykle, maxCykle, pct, limitedBy, limitingInputs: [...lim], missing };
 }
 
 export interface RunConvertersResult {
@@ -253,13 +419,16 @@ export function converterProductionDisplayForBuilding(
     const baseThroughput = loadThroughput(
       rawParams, recipe.throughputParamKey, difficulty, recipe.throughputFallback,
     );
-    const throughput = converterThroughputForEra(recipe.id, baseThroughput, era);
+    const eraParamKey = converterThroughputEraParamKey(recipe, era);
+    const throughput = eraParamKey
+      ? loadThroughput(rawParams, eraParamKey, difficulty, baseThroughput)
+      : converterThroughputForEra(recipe.id, baseThroughput, era);
     for (const [key, perCykl] of Object.entries(recipe.inputs)) {
       if (!(perCykl > 0)) continue;
       consumed[key] = (consumed[key] ?? 0) + perCykl * throughput;
     }
     if (recipe.outputAmount > 0) {
-      produced[recipe.output] = (produced[recipe.output] ?? 0) + recipe.outputAmount * throughput;
+      produced[recipe.output] = (produced[recipe.output] ?? 0) + recipe.outputAmount * converterOutputMultiplierForEra(recipe.id, era) * throughput;
     }
   }
   return { consumed, produced };
@@ -351,7 +520,8 @@ export function runConverters(
     const tput = Object.prototype.hasOwnProperty.call(throughputs, tputKey)
       ? (throughputs[tputKey] ?? recipe.throughputFallback)
       : recipe.throughputFallback;
-    const res = runConverter(recipe, cur, tput, capacityOf(recipe.output));
+    const outMult = throughputs[recipe.id + CONVERTER_OUTPUT_MULT_KEY_SUFFIX] ?? 1;
+    const res = runConverter(recipe, cur, tput, capacityOf(recipe.output), outMult);
     cur = res.stores;
     perBuilding[recipe.id] = res;
   }

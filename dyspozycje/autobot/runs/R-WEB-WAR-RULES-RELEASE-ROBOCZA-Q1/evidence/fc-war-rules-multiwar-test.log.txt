@@ -1,0 +1,8 @@
+--- R1: opóźnienie wojen między cywilizacjami do tury 40 ---
+--- R2: Kamień -- najwyżej 1 równoczesna wojna na cywilizację ---
+--- R3: jedna wojna epoki na epokę w skali świata ---
+--- W1: wybór najbliższej wrogiej armii w promieniu ---
+--- W2: podział armii na grupy wg siły wrogów ---
+--- planner: W1 (engage) i W2 (podział) ---
+
+WYNIK: 55 OK / 0 FAIL

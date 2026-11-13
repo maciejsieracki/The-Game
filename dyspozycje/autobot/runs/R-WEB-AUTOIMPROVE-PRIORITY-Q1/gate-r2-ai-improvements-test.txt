@@ -1,0 +1,16 @@
+1. brak opts.territoryNodes -- no-op
+2. Praca niewystarczajaca -- throttling
+3. tech niezbadany -- brak buildImprovement
+4. Praca + tech -> 1 buildImprovement (farma)
+5. throttle 1/miasto/ture (wiele kwalifikujacych heksow)
+6. 2 miasta -- 1 rozkaz na miasto (2 lacznie)
+7. wyrab na mapie lasu gdy brak innych tech
+8. determinizm (A=B)
+9. defensiveCopy -- ta sama intensywnosc co zwykle AI
+10. AI: cap 50% całej puli (20 -> 0, 40 -> 1)
+11. combined AI + defensive copy: city improvements + posterunek <= 50%
+11. egzekucja wyrab (AI) — refundacja idzie do Drewna, nie Pracy
+12. straznik tekstowy main.ts -- blok AI wycinka kredytuje Drewno, nie dokłada refundacji do Pracy
+
+AI-IMPROVEMENTS-TEST: 53 passed, 0 failed
+EXIT=0

@@ -1,0 +1,2 @@
+hotseat-etap6c-economy-noop-test: 70 PASS, 0 FAIL
+EXIT=0

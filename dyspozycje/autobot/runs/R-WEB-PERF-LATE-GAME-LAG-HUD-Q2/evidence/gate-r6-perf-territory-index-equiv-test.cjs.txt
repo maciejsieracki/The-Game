@@ -1,0 +1,9 @@
+PASS: territoryOwnerLookup == territoryOwnerAt (5 zestawow x cala siatka, miasta+forty+posterunki+order)
+PASS: maly zestaw (<12 wezlow) i brak wezlow: identycznie jak oryginal
+PASS: zmiana populacji / pozycji / wlasciciela wezla zmienia wynik indeksu (brak nieaktualnych wpisow)
+PASS: makeTerritoryWorkableFilter == stara definicja (baza && isTerritoryHexOwnedBy)
+PASS: hexKeysWithinRadius z pamiecia == niezalezne liczenie, powtorne wywolania zwracaja ten sam wynik, tablica zamrozona
+PASS: okolicaTiles z pamiecia == definicja (bez centrum, dist<=rad, filtr), swieza tablica przy kazdym wywolaniu
+
+WYNIK: 6 PASS, 0 FAIL
+EXIT=0

@@ -1,0 +1,69 @@
+[
+ {
+  "n": 1,
+  "gap": 0,
+  "manual": false,
+  "switchToAutoAfter": null,
+  "rounds": 7,
+  "hits": 13,
+  "moves": 0,
+  "minDist": 1
+ },
+ {
+  "n": 1,
+  "gap": 1,
+  "manual": false,
+  "switchToAutoAfter": null,
+  "rounds": 7,
+  "hits": 12,
+  "moves": 1,
+  "minDist": 1
+ },
+ {
+  "n": 1,
+  "gap": 3,
+  "manual": false,
+  "switchToAutoAfter": null,
+  "rounds": 7,
+  "hits": 11,
+  "moves": 3,
+  "minDist": 1
+ },
+ {
+  "n": 2,
+  "gap": 3,
+  "manual": false,
+  "switchToAutoAfter": null,
+  "rounds": 7,
+  "hits": 22,
+  "moves": 6,
+  "minDist": 1
+ },
+ {
+  "n": 2,
+  "gap": 3,
+  "manual": true,
+  "switchToAutoAfter": 2,
+  "rounds": 7,
+  "hits": 22,
+  "moves": 6,
+  "minDist": 1
+ },
+ {
+  "n": 1,
+  "gap": 3,
+  "manual": true,
+  "switchToAutoAfter": 2,
+  "rounds": 7,
+  "hits": 11,
+  "moves": 3,
+  "minDist": 1
+ }
+]
+PASS AUTO 1v1 gap 0: blows
+PASS AUTO 1v1 gap 1: blows
+PASS AUTO 1v1 gap 3: blows
+PASS AUTO 2v2 gap 3: blows and contact
+PASS manual 2 rounds -> AUTO 2v2 gap 3: blows and contact
+PASS manual 2 rounds -> AUTO 1v1 gap 3: blows and contact
+EXIT=0

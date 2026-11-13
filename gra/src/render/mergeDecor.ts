@@ -41,6 +41,56 @@ function meshMatrixInGroupSpace(mesh: THREE.Mesh, root: THREE.Object3D, out: THR
   }
 }
 
+/**
+ * R-WEB-MEMORY-GROWTH-ROOTCAUSE-Q1: zamiana listy trójkątów bez indeksów (3 wierzchołki na trójkąt)
+ * na wierzchołki unikalne + indeksy. Wierzchołki są „ten sam", gdy 6 liczb Float32 (xyz + rgb) jest
+ * identycznych BIT W BIT — bez tolerancji, więc żaden trójkąt nie zmienia kształtu ani koloru.
+ * Kolejność trójkątów zachowana (indeks i = i-ty wierzchołek wejścia). Gdy nic się nie powtarza,
+ * zwraca wejście bez indeksu (index = null). Hash z otwartym adresowaniem na Uint32 (bez stringów —
+ * merge woła się tysiące razy przy budowie mapy). / EN: dedupe bit-identical (pos,color) vertices.
+ */
+export function indexIdenticalVertices(
+  positions: Float32Array,
+  colors: Float32Array,
+): { positions: Float32Array; colors: Float32Array; index: Uint16Array | Uint32Array | null } {
+  const n = positions.length / 3;
+  if (n === 0 || colors.length !== positions.length) return { positions, colors, index: null };
+  const pb = new Uint32Array(positions.buffer, positions.byteOffset, positions.length);
+  const cb = new Uint32Array(colors.buffer, colors.byteOffset, colors.length);
+  let cap = 16; while (cap < n * 2) cap <<= 1;
+  const mask = cap - 1;
+  const table = new Int32Array(cap).fill(-1); // slot -> indeks unikalnego wierzchołka
+  const firstSrc = new Uint32Array(n);        // unikalny -> pierwszy wierzchołek wejścia
+  const remap = new Uint32Array(n);           // wierzchołek wejścia -> unikalny
+  let unique = 0;
+  for (let i = 0; i < n; i++) {
+    const o = i * 3;
+    let h = Math.imul(pb[o]! ^ 0x9e3779b9, 0x85ebca6b);
+    h = Math.imul(h ^ pb[o + 1]!, 0xc2b2ae35); h = Math.imul(h ^ pb[o + 2]!, 0x85ebca6b);
+    h = Math.imul(h ^ cb[o]!, 0xc2b2ae35); h = Math.imul(h ^ cb[o + 1]!, 0x85ebca6b);
+    h = Math.imul(h ^ cb[o + 2]!, 0xc2b2ae35); h ^= h >>> 15;
+    let s = h & mask;
+    for (;;) {
+      const u = table[s]!;
+      if (u < 0) { table[s] = unique; firstSrc[unique] = i; remap[i] = unique; unique++; break; }
+      const q = firstSrc[u]! * 3;
+      if (pb[q] === pb[o] && pb[q + 1] === pb[o + 1] && pb[q + 2] === pb[o + 2]
+        && cb[q] === cb[o] && cb[q + 1] === cb[o + 1] && cb[q + 2] === cb[o + 2]) { remap[i] = u; break; }
+      s = (s + 1) & mask;
+    }
+  }
+  if (unique === n) return { positions, colors, index: null };
+  const outP = new Float32Array(unique * 3); const outC = new Float32Array(unique * 3);
+  for (let u = 0; u < unique; u++) {
+    const src = firstSrc[u]! * 3; const dst = u * 3;
+    outP[dst] = positions[src]!; outP[dst + 1] = positions[src + 1]!; outP[dst + 2] = positions[src + 2]!;
+    outC[dst] = colors[src]!; outC[dst + 1] = colors[src + 1]!; outC[dst + 2] = colors[src + 2]!;
+  }
+  const index = unique <= 65535 ? new Uint16Array(n) : new Uint32Array(n);
+  index.set(remap);
+  return { positions: outP, colors: outC, index };
+}
+
 function buildMergedMesh(group: THREE.Object3D): THREE.Mesh {
   const _m = new THREE.Matrix4();
   const _v = new THREE.Vector3();
@@ -77,8 +127,14 @@ function buildMergedMesh(group: THREE.Object3D): THREE.Mesh {
   });
 
   const merged = new THREE.BufferGeometry();
-  merged.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  merged.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  // R-WEB-MEMORY-GROWTH-ROOTCAUSE-Q1: wierzchołki o IDENTYCZNEJ pozycji i kolorze (bit w bit, Float32)
+  // są współdzielone przez bufor indeksów. Te same trójkąty w tej samej kolejności, a flatShading liczy
+  // normalną z pochodnych pozycji w shaderze — obraz identyczny, a geometria ~3-4x mniejsza (CPU i GPU).
+  // Pomiar: zmergowane meshe ulepszeń = 155 MB z 573 MB sterty w t.100 (seed 4242).
+  const ix = indexIdenticalVertices(new Float32Array(positions), new Float32Array(colors));
+  merged.setAttribute('position', new THREE.BufferAttribute(ix.positions, 3));
+  merged.setAttribute('color', new THREE.BufferAttribute(ix.colors, 3));
+  if (ix.index) merged.setIndex(new THREE.BufferAttribute(ix.index, 1));
   // flatShading: normalne liczone w shaderze z pochodnych — nie pieczemy atrybutu normal.
   const m = new THREE.Mesh(
     merged,
@@ -172,4 +228,51 @@ export function disposeMergedDecor(group: THREE.Object3D): void {
     if (Array.isArray(mat)) mat.forEach(m => m.dispose());
     else mat?.dispose();
   }
+}
+
+/**
+ * R-WEB-MEMORY-GROWTH-ROOTCAUSE-Q1: zwolnienie KOPII CPU (Float32Array position/color) zmergowanej
+ * geometrii PO wysłaniu jej do GPU. Pomiar (seed 4242, 100 tur): zmergowane meshe ulepszeń trzymały
+ * ~48 KB/heks tablic w pamięci JS (81 MB przy 1676 heksach w t.60) — po uploadzie three.js rysuje
+ * WYŁĄCZNIE z bufora WebGL (także cienie), a tablic nikt już nie czyta: meshe ulepszeń nie są
+ * raycastowane, a mgła zmienia tylko `material.color`. Sfera/prostopadłościan otaczający są liczone
+ * TERAZ (frustum culling / Box3 nie potrzebują już tablic). Atrybut zachowuje `count` (draw range).
+ * Wołać TYLKO dla grup, których geometrii nic później nie czyta ani nie modyfikuje (ulepszenia).
+ * Utrata kontekstu WebGL: three.js po `webglcontextrestored` wgrałby bufory od nowa z `array` —
+ * dlatego wołający musi wtedy przebudować te meshe (main.ts: rebuildImprovementMeshesAfterContextRestore).
+ * / EN: drop the CPU copy of a merged decor geometry once it has been uploaded to the GPU.
+ */
+export function releaseMergedDecorCpuArraysAfterUpload(group: THREE.Object3D): void {
+  if (group.userData?.[MERGED_DECOR_FLAG] !== true) return;
+  for (const child of group.children) {
+    if (child.userData?.[MERGED_DECOR_FLAG] !== true) continue;
+    const geo = (child as THREE.Mesh).geometry as THREE.BufferGeometry | undefined;
+    if (!geo) continue;
+    if (!geo.boundingSphere) geo.computeBoundingSphere();
+    if (!geo.boundingBox) geo.computeBoundingBox();
+    for (const name of Object.keys(geo.attributes)) {
+      (geo.attributes[name] as THREE.BufferAttribute).onUpload(releaseAttributeArrayAfterUpload);
+    }
+    geo.index?.onUpload(releaseAttributeArrayAfterUpload);
+  }
+}
+
+/** true gdy KAŻDY atrybut zmergowanego meshu grupy ma już zwolnioną kopię CPU (hak testowy/pomiar). */
+export function mergedDecorCpuArraysReleased(group: THREE.Object3D): boolean {
+  let any = false;
+  for (const child of group.children) {
+    const geo = (child as THREE.Mesh).geometry as THREE.BufferGeometry | undefined;
+    if (!geo || child.userData?.[MERGED_DECOR_FLAG] !== true) continue;
+    for (const name of Object.keys(geo.attributes)) {
+      any = true;
+      if ((geo.attributes[name] as THREE.BufferAttribute).array !== null) return false;
+    }
+    if (geo.index && geo.index.array !== null) return false;
+  }
+  return any;
+}
+
+function releaseAttributeArrayAfterUpload(this: THREE.BufferAttribute): void {
+  // three.js r169 nie czyta `array` po uploadzie, dopóki `version` się nie zmieni (nie zmienia się).
+  (this as unknown as { array: ArrayLike<number> | null }).array = null;
 }

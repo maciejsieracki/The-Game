@@ -1,0 +1,17 @@
+[empire-skarbiec-bilans-test] Bundling...
+PASS: treasuryBalanceSignedTxt(0) = "0" (nie myślnik)
+PASS: treasuryBalanceSignedTxt(+5) pokazuje +5
+PASS: treasuryBalanceSignedTxt(-3) pokazuje −3 (U+2212, nie ASCII)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=5 terrain=18 landSea=200 relief=190 coast=16 riversMain=1290 riversFill=1330 forest=5 deposits=41 starts=88 total=3182
+PASS: fixture: miasto gracza
+PASS: fixture: wplywy brutto > 0 (palac daje pieniadz)
+PASS: fixture: utrzymanie budynkow > 0
+PASS: bilans: wplywy brutto NIE renderuja sie jako myślnik
+PASS: bilans: netto NIE renderuje sie jako myślnik gdy rozny od zera
+PASS: bilans: utrzymanie budynkow jako ujemna kwota (nie myślnik przy >0, U+2212 nie ASCII)
+PASS: fixture: perCity ma wpis dla miasta
+PASS: per-miasto: do skarbca nie jest myślnikiem gdy pieniadz > 0
+
+empire-skarbiec-bilans-test: 11 passed, 0 failed
+EXIT=0

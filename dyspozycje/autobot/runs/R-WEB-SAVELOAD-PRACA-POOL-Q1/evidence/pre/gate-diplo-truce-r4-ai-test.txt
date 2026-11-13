@@ -1,0 +1,4 @@
+PASS: main.ts: akceptacja AI rozejmu idzie gałęzią cywAction===rozejm (długość z payloadu)
+
+diplo-truce-r4-ai-test: 24 pass / 0 fail
+EXIT=0

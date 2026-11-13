@@ -1,0 +1,3 @@
+
+army-merge-separate-return-test: 16 pass, 0 fail
+EXIT=0

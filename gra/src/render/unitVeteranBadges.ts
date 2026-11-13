@@ -208,6 +208,9 @@ export const VETERAN_BADGE_HIT_UD = 'veteranBadgeHit';
 const UD_STAR_COUNT = 'vetBadgeStarCount';
 /** Klucz w userData żetonu — podgrupa z gwiazdkami (do podmiany/usunięcia). */
 const UD_GROUP = 'vetBadgeGroup';
+/** Klucz odrębnego znaku wodza/generała; nie jest częścią doświadczenia. */
+const UD_COMMANDER_STAR = 'commanderStarBadge';
+export const COMMANDER_STAR_HIT_UD = 'commanderStarBadgeHit';
 
 /** Rozstaw wyśrodkowany: 2 → [-s/2, +s/2]; 3 → [-s, 0, +s]. */
 function starOffsetsX(count: number): number[] {
@@ -262,6 +265,39 @@ export function applyUnitVeteranBadgeStarCount(group: THREE.Object3D, starCount:
   const badge = buildVeteranBadgeGroup(starCount);
   group.add(badge);
   group.userData[UD_GROUP] = badge;
+}
+
+/**
+ * Odrębna, większa gwiazda wodza/generała nad listwą doświadczenia.
+ * Przy stosie informację agreguje stackVitals, więc znak pozostaje widoczny
+ * również wtedy, gdy reprezentantem na mapie jest zwykła jednostka.
+ */
+export function applyUnitCommanderStar(group: THREE.Object3D, hasCommander: boolean): void {
+  const old = group.userData[UD_COMMANDER_STAR] as THREE.Group | undefined;
+  if (!hasCommander) {
+    if (old) {
+      group.remove(old);
+      delete group.userData[UD_COMMANDER_STAR];
+    }
+    return;
+  }
+  if (old) return;
+
+  const badge = new THREE.Group();
+  badge.name = 'commanderStarBadge';
+  badge.position.set(0, VETERAN_BADGE_RESERVED_Y + 0.25 * HEX_R, 0);
+  badge.rotation.x = -STAR_TILT_RAD;
+  const outline = new THREE.Mesh(getGeoVeteranStar(), getMatVeteranStarOutline());
+  outline.position.z = STAR_OUTLINE_OFFSET_Z;
+  outline.scale.set(STAR_OUTLINE_SCALE * 1.6, STAR_OUTLINE_SCALE * 1.6, 1);
+  outline.userData[COMMANDER_STAR_HIT_UD] = true;
+  badge.add(outline);
+  const star = new THREE.Mesh(getGeoVeteranStar(), getMatVeteranStar());
+  star.scale.set(1.6, 1.6, 1);
+  star.userData[COMMANDER_STAR_HIT_UD] = true;
+  badge.add(star);
+  group.add(badge);
+  group.userData[UD_COMMANDER_STAR] = badge;
 }
 
 /** @deprecated użyj applyUnitVeteranBadgeStarCount */

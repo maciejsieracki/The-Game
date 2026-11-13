@@ -166,6 +166,11 @@ export interface VillageRewardSpawnInput {
   /** Heksy odkryte graczem — preferowane przy wyborze spawnu. */
   exploredHexes?: ReadonlySet<string>;
   maxRadius?: number;
+  /**
+   * R-WEB-ARMY-STACK-LIMIT-Q1: limit jednostek w jednej armii. Heks, na ktorym wlasciciel ma juz
+   * `stackLimit` jednostek (takze w garnizonie, ktory omija test `occupied`), nie jest kandydatem.
+   */
+  stackLimit?: number;
 }
 
 /**
@@ -198,6 +203,9 @@ export function findVillageRewardSpawnHex(
           u => u.q === nq && u.r === nr && u.inGarnizon !== true,
         );
         if (occupied) continue;
+        if (input.stackLimit !== undefined && input.units.filter(
+          u => u.ownerId === input.ownerId && u.q === nq && u.r === nr,
+        ).length >= input.stackLimit) continue;
 
         const explored = input.exploredHexes?.has(k) ?? false;
         candidates.push({ q: nq, r: nr, dist, explored });

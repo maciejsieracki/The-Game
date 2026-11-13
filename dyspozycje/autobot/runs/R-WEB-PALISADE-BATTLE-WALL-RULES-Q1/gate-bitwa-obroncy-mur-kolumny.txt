@@ -1,0 +1,19 @@
+[bitwa-obroncy-mur-kolumny-test] vite build (base) -> /tmp/civ-bitwa-obroncy-mur-23557-zx6dfp/dist-base ...
+[bitwa-obroncy-mur-kolumny-test] vite build (mut) -> /tmp/civ-bitwa-obroncy-mur-23557-zx6dfp/dist-mut ...
+[bitwa-obroncy-mur-kolumny-test] vite build (mut2) -> /tmp/civ-bitwa-obroncy-mur-23557-zx6dfp/dist-mut2 ...
+(A) BASE start: wallCol= 40 obroncow= 28
+PASS: (A1) BASE: siegeWallCol ustawiony na starcie
+PASS: (A2) BASE: sa obroncy do zmierzenia
+PASS: (A3) BASE: WSZYSCY obroncy startuja z kolumna >= siegeWallCol (na murze lub za nim)
+(B) BASE po AUTO (runda 1 ): obroncow ponizej muru = 0 / 28
+(B) MUT  po AUTO (runda 1 ): obroncow ponizej muru = 1 / 28
+PASS: (B1) BASE (naprawiony kod): PO 1 turze trybu AUTO WSZYSCY obroncy nadal >= siegeWallCol
+PASS: (B2) DOWOD NIETAUTOLOGICZNOSCI: MUT (rewert straznika naprawy) odtwarza defekt — CO NAJMNIEJ jeden obronca schodzi ponizej siegeWallCol po tej samej turze AUTO
+PASS: (B3) brak bledow JS w konsoli strony (BASE)
+(C) BASE _placeUnitsOneSide('def',true): ponizej muru = 0 / 28
+(C) MUT2 _placeUnitsOneSide('def',true): ponizej muru = 28 / 28
+PASS: (C1) BASE (naprawiona delegacja): _placeUnitsOneSide('def',true) stawia WSZYSTKICH obroncow >= siegeWallCol
+PASS: (C2) DOWOD NIETAUTOLOGICZNOSCI naprawy #2: MUT2 (rewert galezi delegacji) odtwarza defekt — CO NAJMNIEJ jeden obronca ponizej siegeWallCol po _placeUnitsOneSide('def',true)
+PASS: (C3) brak bledow JS w konsoli strony (BASE reset)
+--- 9 ok, 0 fail
+EXIT=0

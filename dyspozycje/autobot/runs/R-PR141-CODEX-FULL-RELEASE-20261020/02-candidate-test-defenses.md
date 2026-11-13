@@ -1,0 +1,15 @@
+# 02 — Candidate test-only corrections
+
+Run `R-PR141-CODEX-FULL-RELEASE-20261020`, round 1/5. Both adjustments below are test-only, explicitly authorized by root during independent release review. No production source or game data changed.
+
+## Rush consumer status expectation
+
+The preimage `gra/tools/pr141-semantic-consumer-consistency-test.cjs` is preserved at `/workspace/pr141-publish-20261020/release-r1-defenses/pr141-semantic-consumer-consistency-test.before.cjs`, SHA-256 `6bb006dff7dfdb8bcd227f6acf57d9a3736a7376a3d72636ea88e8c85081b205`. It asserted rush was `UNWIRED` and had no evidence. That assertion predates the owner’s F-04 rush decision and the later bounded activation recorded in `R-PR141-CODEX-MATRIX-ONLY-BONUSES-20261018/04-integration.md`. Current source has the approved modifier in `production.ts::rushCost`, quote construction in `cityPanel.ts::rushCostModifierForCity`, and owner payment in `main.ts::onRushBuy`; the dedicated rush test checks signed quote behavior and owner routing. The existing assertion was corrected to `REAL_GAMEPLAY` and one evidence reference, without weakening/removing the check. Updated SHA-256 is `a45d278367fafed9435aa9e1bf5903e7c661755ed219c7a258fb8e621105162a`; actual focused test run from `gra/` passed **52/52**. Defense details and prior hash are in `/workspace/pr141-publish-20261020/release-r1-defenses/semantic-rush-stale-expectation.md` (SHA-256 `bee63841632faeb3fe1865aefa2977b84d0f48dfc5055bba1766335d632c3110`).
+
+## Population behavior fixture compatibility
+
+The owner-directed repair updates only `gra/tools/pr141-population-behavior-test.cjs` to provide the missing `applyCivMatrixParam` export required by its temporary fixture; the fixture retains profile perturbations at `civMatrixParam`. This corrects its test harness setup against the current `economy.ts` import contract and does not change product behavior or reduce assertions. Preserved baseline SHA-256 is `10b6575d842b0ed8a0cefebbf6afdf73060ca2868692aaf2ec8ed649ab591b14`; updated SHA-256 is `6436894f937ad72a97728edf7ec69b079c3713bb7f1f6e9c804fc51f633e912f`. The focused corrected test run reported **24 passed, 0 failed**, and the independent Evaluator reran the exact candidate file with the same result; corrected log SHA-256 is `fde2c1977896cae7a65ba8921f5faedebecff251b29fcc02bf9188649835845f`.
+
+## Candidate pins after these two deltas
+
+The source candidate remains 101 changed paths and 6,222 total files over base `c799325c77bc11c24684c1b35077ae80913d6f8d`. Current change-manifest SHA-256 is `66bec8206b501f96ca64f4f24b316b12ede6ba3606f5d319de753cd79ac5a673`; deterministic path/content digest is `8d1224714d326b395f0086e4c7eec40729aace78124000c4db46405f45f21d2c` (not a Git tree ID). Both edits update already-included test paths; the changed path set is unchanged. Full candidate TSC/Vite evidence remains valid because `gra/src` and `gra/data` bytes did not change. The independent evaluator was asked to amend its report for the population fixture rerun, and Independent Evaluator received both exact corrections; Final Control remains a separate pending gate.

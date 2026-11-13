@@ -142,6 +142,20 @@ export interface OwnerResourceAccess {
   setNaukaPool(ownerId: number, value: number): void;
   getResearchedTechs(ownerId: number): ReadonlySet<string>;
   addResearchedTechs(ownerId: number, ids: Iterable<string>): void;
+  /**
+   * R-WEB-ELIMINATION-FULL-SPOILS-Q1: zapas zywnosci SPICHLERZA imperium
+   * (`EmpireFoodState.zapasyPanstwa`). OPCJONALNE (wsteczna zgodnosc ze starymi
+   * akcesorami/testami) -- brak = zywnosc nie jest transferowana. Uzywane WYLACZNIE
+   * w Zdarzeniu 2 (eliminacja).
+   */
+  getFoodReserve?(ownerId: number): number;
+  setFoodReserve?(ownerId: number, value: number): void;
+  /**
+   * Pojemnosc spichlerza ZDOBYWCY (maks. zapas). OPCJONALNE: brak / nie-skonczona /
+   * <= 0 = brak znanego limitu (ZALOZENIE: nastepny tick `advanceEmpireFood` i tak
+   * przytnie zapas do limitu, wiec nie wymyslamy limitu, ktorego nie znamy).
+   */
+  getFoodCapacity?(ownerId: number): number;
 }
 
 export type CapitalCaptureEventKind = 'przejecie_stolicy' | 'eliminacja';
@@ -159,6 +173,24 @@ export interface CapitalCaptureOutcome {
   pracaPoolPrzejeta: number;
   /** Id techów skopiowanych zwycięzcy (puste poza Zdarzeniem 2), posortowane. */
   techSkopiowane: string[];
+  /**
+   * R-WEB-ELIMINATION-FULL-SPOILS-Q1: zywnosc Spichlerza ofiary FAKTYCZNIE dopisana
+   * do Spichlerza zwycieskiego (po przycieciu do jego pojemnosci). 0 poza Zdarzeniem 2.
+   */
+  zywnoscPrzejeta: number;
+  /** Zywnosc ofiary, ktora nie zmiescila sie w Spichlerzu zdobywcy (ginie). 0 poza Zdarzeniem 2. */
+  zywnoscUtracona: number;
+  /** Calkowity zapas zywnosci ofiary przed przejeciem (= przejeta + utracona). 0 poza Zdarzeniem 2. */
+  zywnoscOfiaryRazem: number;
+  /**
+   * R-WEB-ELIMINATION-FULL-SPOILS-Q1: WSZYSTKIE surowce magazynu panstwa ofiary
+   * (`City.surowce` przejetego, ostatniego miasta ofiary), tylko
+   * wartosci > 0, klucze w stalej kolejnosci. Magazyn panstwa to suma magazynow miast
+   * (SUROW-CIV-01), a `City.surowce` przechodzi na zdobywce razem z miastem
+   * (ownerId), wiec ten rekord jest lista TEGO, co fizycznie przeszlo. Puste poza
+   * Zdarzeniem 2.
+   */
+  surowcePrzejete: Record<string, number>;
   /** True = Zdarzenie 2 (eliminacja) — caller (main.ts) musi doczyścić rostery/dyplomację. */
   eliminacja: boolean;
   /**
@@ -168,6 +200,106 @@ export interface CapitalCaptureOutcome {
    * MUSI zapisać tę wartość pod oldOwner w swojej trwałej mapie wyznaczeń.
    */
   newCapitalIdForOldOwner: string | null;
+}
+
+/** Wynik przejecia calego majatku panstwa (wspolny dla eliminacji i aneksji MP). */
+export interface EstateTransferResult {
+  skarbiecPrzejety: number;
+  pracaPoolPrzejeta: number;
+  naukaPrzejeta: number;
+  zywnoscPrzejeta: number;
+  zywnoscUtracona: number;
+  zywnoscOfiaryRazem: number;
+  /** Surowce magazynu panstwa ofiary (suma City.surowce po `cities`), tylko floor > 0. */
+  surowcePrzejete: Record<string, number>;
+}
+
+/**
+ * R-WEB-ANNEX-CITYSTATE-SPOILS-Q1: JEDEN rdzen przejecia majatku panstwa -- skarbiec
+ * (Pieniadz), pula Pracy, pula Nauki, Spichlerz (zywnosc do pojemnosci zwyciezcy,
+ * nadwyzka ginie), lista surowcow magazynu. Ofiara zostaje wyzerowana. Uzywany przez
+ * eliminacje (`applyCapitalCapturePlunder`, Zdarzenie 2) i aneksje MP
+ * (`applyAnnexCityStateSpoils`) -- bez duplikacji logiki. NIE kopiuje technologii.
+ * Surowce fizycznie jada z miastem (zmiana `ownerId`); tu tylko je wyliczamy.
+ */
+export function transferWholeEstateToWinner(
+  oldOwner: number,
+  newOwner: number,
+  victimCities: readonly City[],
+  access: OwnerResourceAccess,
+): EstateTransferResult {
+  // --- Pieniadze ---
+  const skarbiecPrzejety = access.getTreasury(oldOwner);
+  if (skarbiecPrzejety > 0) {
+    access.setTreasury(newOwner, access.getTreasury(newOwner) + skarbiecPrzejety);
+  }
+  access.setTreasury(oldOwner, 0);
+
+  // --- Pula pracy (ECHO 2026-09-07): do zwyciezcy, potem wyzeruj ofiare ---
+  const pracaPoolPrzejeta = access.getPracaPool(oldOwner);
+  if (pracaPoolPrzejeta > 0) {
+    access.setPracaPool(newOwner, access.getPracaPool(newOwner) + pracaPoolPrzejeta);
+  }
+  access.setPracaPool(oldOwner, 0);
+
+  // --- Surowce: magazyn panstwa = suma magazynow miast; wartosci calkowite (floor) ---
+  const surowcePrzejete: Record<string, number> = {};
+  for (const c of victimCities) {
+    for (const key of Object.keys(c.surowce ?? {})) {
+      const v = Math.floor(c.surowce![key] ?? 0);
+      if (v > 0) surowcePrzejete[key] = (surowcePrzejete[key] ?? 0) + v;
+    }
+  }
+
+  // --- Zywnosc Spichlerza imperium: do pojemnosci spichlerza zwyciezcy ---
+  let zywnoscPrzejeta = 0;
+  let zywnoscUtracona = 0;
+  let zywnoscOfiaryRazem = 0;
+  if (access.getFoodReserve && access.setFoodReserve) {
+    zywnoscOfiaryRazem = Math.max(0, Math.floor(access.getFoodReserve(oldOwner)));
+    if (zywnoscOfiaryRazem > 0) {
+      const winnerFood = access.getFoodReserve(newOwner);
+      const cap = access.getFoodCapacity ? access.getFoodCapacity(newOwner) : Number.POSITIVE_INFINITY;
+      const room = Number.isFinite(cap) && cap > 0
+        ? Math.max(0, Math.floor(cap - winnerFood))
+        : Number.POSITIVE_INFINITY;
+      zywnoscPrzejeta = Math.min(zywnoscOfiaryRazem, room);
+      zywnoscUtracona = zywnoscOfiaryRazem - zywnoscPrzejeta;
+      if (zywnoscPrzejeta > 0) access.setFoodReserve(newOwner, winnerFood + zywnoscPrzejeta);
+    }
+    access.setFoodReserve(oldOwner, 0);
+  }
+
+  // --- Nauka ---
+  const naukaPrzejeta = access.getNaukaPool(oldOwner);
+  if (naukaPrzejeta > 0) {
+    access.setNaukaPool(newOwner, access.getNaukaPool(newOwner) + naukaPrzejeta);
+  }
+  access.setNaukaPool(oldOwner, 0);
+
+  return {
+    skarbiecPrzejety, pracaPoolPrzejeta, naukaPrzejeta,
+    zywnoscPrzejeta, zywnoscUtracona, zywnoscOfiaryRazem, surowcePrzejete,
+  };
+}
+
+/**
+ * R-WEB-ANNEX-CITYSTATE-SPOILS-Q1: majatek panstwa-miasta przy ANEKSJI dyplomatycznej
+ * (`annexCityStateToOwner`). Ten sam rdzen co eliminacja, ale to NIE zdobycie: brak kar,
+ * brak zmian relacji, brak techow. Wolane PO zmianie `ownerId` miast (miasta MP sa juz
+ * przekazane `victimCities`). Barbarzyncy: jako ofiara -> null; jako wchlaniajacy ->
+ * zapisy DO nich no-opowane (nie dziedzicza lupu), ofiara i tak traci.
+ */
+export function applyAnnexCityStateSpoils(
+  csOwner: number,
+  annexer: number,
+  victimCities: readonly City[],
+  access: OwnerResourceAccess,
+  isBarbarianOwner: (ownerId: number) => boolean,
+): EstateTransferResult | null {
+  if (csOwner === annexer || isBarbarianOwner(csOwner)) return null;
+  const finalAccess = isBarbarianOwner(annexer) ? barbarianCaptorResourceAccess(access, annexer) : access;
+  return transferWholeEstateToWinner(csOwner, annexer, victimCities, finalAccess);
 }
 
 /**
@@ -194,42 +326,30 @@ export function applyCapitalCapturePlunder(
   // SUKCESJA: gdy oldOwner przeżywa, nowa stolica = najstarsze z pozostałych miast.
   const newCapitalIdForOldOwner = eliminacja ? null : (oldestCityOfOwner(oldOwner, remaining)?.id ?? null);
 
-  // --- Pieniądze: w całości do zwycięzcy (identycznie w obu zdarzeniach) ---
-  const skarbiecPrzejety = access.getTreasury(oldOwner);
-  if (skarbiecPrzejety > 0) {
-    access.setTreasury(newOwner, access.getTreasury(newOwner) + skarbiecPrzejety);
-  }
-  access.setTreasury(oldOwner, 0);
-
-  // --- Pula pracy ---
-  // ECHO właściciela 2026-09-07 (P-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1), ODWRACA
-  // CZĘŚĆ kanonu 2026-08-09 (036173f7: "pula pracy zawsze przepada, dotyczy to obu
-  // typów właścicieli jednakowo") — WYŁĄCZNIE dla Zdarzenia 2 (eliminacja). Zdarzenie 1
-  // (stolica, cywilizacja przeżywa z innymi miastami) zostaje BEZ ZMIAN: pula przepada,
-  // NIE idzie do zwycięzcy — właściciel wybrał wprost transfer tylko "po zajęciu
-  // ostatniego miasta, czyli ostatniej stolicy" (eliminacja), nie przy zwykłej utracie
-  // stolicy. Wzorzec identyczny ze skarbcem wyżej: dodaj do puli zdobywcy, POTEM wyzeruj
-  // ofiarę (ofiara i tak już nie istnieje jako cywilizacja, ale dla spójności stanu).
+  let skarbiecPrzejety = 0;
   let pracaPoolPrzejeta = 0;
-  if (eliminacja) {
-    pracaPoolPrzejeta = access.getPracaPool(oldOwner);
-    if (pracaPoolPrzejeta > 0) {
-      access.setPracaPool(newOwner, access.getPracaPool(newOwner) + pracaPoolPrzejeta);
-    }
-  }
-  access.setPracaPool(oldOwner, 0);
-
   let naukaPrzejeta = 0;
   const techSkopiowane: string[] = [];
+  let zywnoscPrzejeta = 0;
+  let zywnoscUtracona = 0;
+  let zywnoscOfiaryRazem = 0;
+  let surowcePrzejete: Record<string, number> = {};
 
   if (eliminacja) {
-    // --- Zdarzenie 2 — dodatkowo nauka + techy ---
-    naukaPrzejeta = access.getNaukaPool(oldOwner);
-    if (naukaPrzejeta > 0) {
-      access.setNaukaPool(newOwner, access.getNaukaPool(newOwner) + naukaPrzejeta);
-    }
-    access.setNaukaPool(oldOwner, 0);
+    // --- Zdarzenie 2 — R-WEB-ELIMINATION-FULL-SPOILS-Q1: caly majatek panstwa ---
+    // (skarbiec, Praca, surowce, Spichlerz, Nauka) -- JEDEN rdzen, wspolny z aneksja
+    // MP (R-WEB-ANNEX-CITYSTATE-SPOILS-Q1, `applyAnnexCityStateSpoils`). Eliminacja =>
+    // ofiara nie ma juz innych miast: magazyn panstwa = magazyn TEGO miasta.
+    const t = transferWholeEstateToWinner(oldOwner, newOwner, [city], access);
+    skarbiecPrzejety = t.skarbiecPrzejety;
+    pracaPoolPrzejeta = t.pracaPoolPrzejeta;
+    naukaPrzejeta = t.naukaPrzejeta;
+    zywnoscPrzejeta = t.zywnoscPrzejeta;
+    zywnoscUtracona = t.zywnoscUtracona;
+    zywnoscOfiaryRazem = t.zywnoscOfiaryRazem;
+    surowcePrzejete = t.surowcePrzejete;
 
+    // --- Zdarzenie 2 — dodatkowo techy ---
     const winnerTechs = access.getResearchedTechs(newOwner);
     const loserTechs = access.getResearchedTechs(oldOwner);
     const missing = Array.from(loserTechs)
@@ -239,6 +359,16 @@ export function applyCapitalCapturePlunder(
       access.addResearchedTechs(newOwner, missing);
       techSkopiowane.push(...missing);
     }
+  } else {
+    // --- Zdarzenie 1 (stolica, ofiara przezywa): skarbiec -> zwyciezca, pula pracy przepada ---
+    // (kanon 2026-08-09; transfer puli pracy dotyczy WYLACZNIE eliminacji, ECHO 2026-09-07
+    // P-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1).
+    skarbiecPrzejety = access.getTreasury(oldOwner);
+    if (skarbiecPrzejety > 0) {
+      access.setTreasury(newOwner, access.getTreasury(newOwner) + skarbiecPrzejety);
+    }
+    access.setTreasury(oldOwner, 0);
+    access.setPracaPool(oldOwner, 0);
   }
 
   return {
@@ -249,6 +379,10 @@ export function applyCapitalCapturePlunder(
     naukaPrzejeta,
     pracaPoolPrzejeta,
     techSkopiowane,
+    zywnoscPrzejeta,
+    zywnoscUtracona,
+    zywnoscOfiaryRazem,
+    surowcePrzejete,
     newCapitalIdForOldOwner,
     eliminacja,
   };
@@ -291,6 +425,10 @@ export function barbarianCaptorResourceAccess(
     setTreasury: (oid, v) => { if (oid !== newOwner) base.setTreasury(oid, v); },
     setPracaPool: (oid, v) => { if (oid !== newOwner) base.setPracaPool(oid, v); },
     setNaukaPool: (oid, v) => { if (oid !== newOwner) base.setNaukaPool(oid, v); },
+    // R-WEB-ELIMINATION-FULL-SPOILS-Q1: barbarzyncy nie dziedzicza zywnosci (ofiara traci).
+    ...(base.setFoodReserve
+      ? { setFoodReserve: (oid: number, v: number) => { if (oid !== newOwner) base.setFoodReserve!(oid, v); } }
+      : {}),
     addResearchedTechs: (oid, ids) => { if (oid !== newOwner) base.addResearchedTechs(oid, ids); },
   };
 }

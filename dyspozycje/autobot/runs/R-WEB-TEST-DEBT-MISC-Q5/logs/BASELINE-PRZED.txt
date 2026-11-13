@@ -1,0 +1,14 @@
+BASELINE PRZED (origin/main 45ea4b67a), uruchomienie z gra/, node tools/<test>
+end-turn-modal-sequencing-test.cjs : EXIT=1, 35 pass / 5 fail
+growthmult-compound-test.cjs       : EXIT=1, 17 pass / 7 fail
+barb-city-capture-cluster-test.cjs : EXIT=1, 93 pass / 3 fail
+spichlerz-wzrost-test.cjs          : EXIT=1, 2 pass / 7 fail
+spichlerz-widocznosc-test.cjs      : EXIT=1, 37 pass / 8 fail
+siege-tower-breach-everywhere-test : EXIT=0, 47 ok / 0 fail
+cities-buildings-production-owner-contract-test : EXIT=0, 53/0
+deposit-building-gate-test.cjs     : EXIT=0, 49 pass / 0 fail (zielony, bez zmian)
+recruitment-no-upkeep-gate-test.cjs: EXIT=1, 22 pass / 14 fail
+koniec-tury-f1-f4-runda3-test.cjs  : EXIT=1, 36 pass / 3 fail
+koniec-tury-g1-g2-runda4-test.cjs  : EXIT=0, 41 pass / 0 fail
+hud-topbar-grid-gross-net-test.cjs : EXIT=0, 1190 ok / 0 fail
+simple-food-rule-no-toggles-test.cjs: EXIT=0, 36 OK / 0 FAIL

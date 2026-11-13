@@ -1,0 +1,10 @@
+-- 1. własna Kopalnia złota (magazyn > 0), bez szlaku -> Mennica DOSTĘPNA --
+-- 2. brak złoża, brak szlaku, brak zapasu -> Mennica NIEBUDOWALNA (bramka = magazyn państwa) --
+-- 3. brak złoża + aktywny szlak dostarczający złoto do magazynu -> Mennica DOSTĘPNA --
+-- 4. złoto PŁYNIE ilościowo przez szlak (PYTANIE-84-U3=A) -- weryfikacja mechanizmu --
+-- 5. parytet AI -- ta sama reguła dla ownerId != 0 --
+-- F. zerwanie szlaku: magazyn przetrwał zerwanie (bramka budowy = magazyn, nie żywy dostęp) --
+-- G. main.ts placedImprovementsWithTradeGrants: złoto jest no-op, brąz nadal działa; dostęp do złota idzie przez magazyn --
+
+zloto-szlak-test: 54 passed, 0 failed
+EXIT=0

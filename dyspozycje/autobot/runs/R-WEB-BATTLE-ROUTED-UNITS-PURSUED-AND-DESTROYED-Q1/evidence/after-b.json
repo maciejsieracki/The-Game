@@ -1,0 +1,290 @@
+[
+ {
+  "scen": "konnica vs piechota",
+  "seed": 1,
+  "mode": "skip",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "atakujacy",
+   "round": 9,
+   "atk": {
+    "total": 8,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 8
+   },
+   "def": {
+    "total": 14,
+    "killed": 8,
+    "fled": 6,
+    "routedLeft": 0,
+    "survived": 0
+   },
+   "exported": 14,
+   "exportedAtk": 8,
+   "exportedDef": 6,
+   "attacksOnRouted": 2,
+   "killedWhileRouted": 4,
+   "collapseRound": 2,
+   "fledAtEdge": 6,
+   "fledNotAtEdge": 0,
+   "notEdge": [],
+   "log": [
+    "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+   ]
+  }
+ },
+ {
+  "scen": "konnica vs piechota",
+  "seed": 1,
+  "mode": "instant",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "atakujacy",
+   "round": 0,
+   "atk": {
+    "total": 8,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 8
+   },
+   "def": {
+    "total": 14,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 14
+   },
+   "exported": 8,
+   "exportedAtk": 8,
+   "exportedDef": 0,
+   "attacksOnRouted": 0,
+   "killedWhileRouted": 0,
+   "collapseRound": -1,
+   "fledAtEdge": 0,
+   "fledNotAtEdge": 0,
+   "notEdge": [],
+   "log": []
+  }
+ },
+ {
+  "scen": "konnica vs piechota",
+  "seed": 2,
+  "mode": "skip",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "atakujacy",
+   "round": 9,
+   "atk": {
+    "total": 8,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 8
+   },
+   "def": {
+    "total": 14,
+    "killed": 9,
+    "fled": 5,
+    "routedLeft": 0,
+    "survived": 0
+   },
+   "exported": 13,
+   "exportedAtk": 8,
+   "exportedDef": 5,
+   "attacksOnRouted": 5,
+   "killedWhileRouted": 5,
+   "collapseRound": 2,
+   "fledAtEdge": 5,
+   "fledNotAtEdge": 0,
+   "notEdge": [],
+   "log": [
+    "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+   ]
+  }
+ },
+ {
+  "scen": "konnica vs piechota",
+  "seed": 2,
+  "mode": "instant",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "atakujacy",
+   "round": 0,
+   "atk": {
+    "total": 8,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 8
+   },
+   "def": {
+    "total": 14,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 14
+   },
+   "exported": 8,
+   "exportedAtk": 8,
+   "exportedDef": 0,
+   "attacksOnRouted": 0,
+   "killedWhileRouted": 0,
+   "collapseRound": -1,
+   "fledAtEdge": 0,
+   "fledNotAtEdge": 0,
+   "notEdge": [],
+   "log": []
+  }
+ },
+ {
+  "scen": "przewaga 2:1",
+  "seed": 1,
+  "mode": "skip",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "atakujacy",
+   "round": 16,
+   "atk": {
+    "total": 20,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 20
+   },
+   "def": {
+    "total": 10,
+    "killed": 0,
+    "fled": 10,
+    "routedLeft": 0,
+    "survived": 0
+   },
+   "exported": 30,
+   "exportedAtk": 20,
+   "exportedDef": 10,
+   "attacksOnRouted": 22,
+   "killedWhileRouted": 0,
+   "collapseRound": 8,
+   "fledAtEdge": 10,
+   "fledNotAtEdge": 0,
+   "notEdge": [],
+   "log": [
+    "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+   ]
+  }
+ },
+ {
+  "scen": "przewaga 2:1",
+  "seed": 1,
+  "mode": "instant",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "atakujacy",
+   "round": 0,
+   "atk": {
+    "total": 20,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 20
+   },
+   "def": {
+    "total": 10,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 10
+   },
+   "exported": 20,
+   "exportedAtk": 20,
+   "exportedDef": 0,
+   "attacksOnRouted": 0,
+   "killedWhileRouted": 0,
+   "collapseRound": -1,
+   "fledAtEdge": 0,
+   "fledNotAtEdge": 0,
+   "notEdge": [],
+   "log": []
+  }
+ },
+ {
+  "scen": "przewaga 2:1",
+  "seed": 2,
+  "mode": "skip",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "atakujacy",
+   "round": 17,
+   "atk": {
+    "total": 20,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 20
+   },
+   "def": {
+    "total": 10,
+    "killed": 1,
+    "fled": 9,
+    "routedLeft": 0,
+    "survived": 0
+   },
+   "exported": 29,
+   "exportedAtk": 20,
+   "exportedDef": 9,
+   "attacksOnRouted": 24,
+   "killedWhileRouted": 1,
+   "collapseRound": 9,
+   "fledAtEdge": 9,
+   "fledNotAtEdge": 0,
+   "notEdge": [],
+   "log": [
+    "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+   ]
+  }
+ },
+ {
+  "scen": "przewaga 2:1",
+  "seed": 2,
+  "mode": "instant",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "atakujacy",
+   "round": 0,
+   "atk": {
+    "total": 20,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 20
+   },
+   "def": {
+    "total": 10,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 10
+   },
+   "exported": 20,
+   "exportedAtk": 20,
+   "exportedDef": 0,
+   "attacksOnRouted": 0,
+   "killedWhileRouted": 0,
+   "collapseRound": -1,
+   "fledAtEdge": 0,
+   "fledNotAtEdge": 0,
+   "notEdge": [],
+   "log": []
+  }
+ }
+]

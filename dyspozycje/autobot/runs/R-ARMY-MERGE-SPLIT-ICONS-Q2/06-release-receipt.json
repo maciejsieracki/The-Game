@@ -1,0 +1,24 @@
+{
+  "task": "R-ARMY-MERGE-SPLIT-ICONS-Q2",
+  "status": "DEPLOY-ROBOCZA / REMOTE-READBACK-PASS",
+  "sourceCommit": "002a75815b067cf2cdbcae7eed5c488f8634ea34",
+  "releaseCommit": "42b4dac831765176684a506d0be377232fef008a",
+  "remoteMain": "42b4dac831765176684a506d0be377232fef008a",
+  "bundle": {
+    "path": "gra-robocza/Gra-ROBOCZA.html",
+    "md5": "c7c3e90d634feac44e63b9b69cbc3cad",
+    "sha256": "93f846fffedd526eeda1d3b17e25a73e80729b6bb16d3d6e4c2f41224192b974",
+    "sizeBytes": 70029107,
+    "remoteReadback": "byte-identical"
+  },
+  "manifestAndStart": "remote HTTP 200; byte-identical",
+  "checks": {
+    "iconRenderer": "PASS",
+    "actionBarCompleteness": "31/31 PASS",
+    "unfortifyRegression": "16/16 PASS",
+    "typescript": "PASS",
+    "roboczaVerifier": "VERIFY OK; manifest and bundle list exact",
+    "bootSmoke": "PASS; one canvas and one render frame"
+  },
+  "stampNote": "Existing self-referential injector yields marker 60642361040b3ec93525f26595efa309; verifier warns for embedded marker while manifest and bundles hashes/sizes pass."
+}

@@ -1,0 +1,31 @@
+{
+  "task": "R-WOJSKO-ARMIA-REKRUTACJA-DO-WODZA-Q1",
+  "status": "DEPLOY-ROBOCZA / REMOTE-READBACK-PASS",
+  "sourceBase": "2a6df3f36da3f404a7afd1c869cfec4a7fd606a2",
+  "sourceCommits": [
+    "98e9f6ee Add recruit rally-to-leader toggle",
+    "869cde2a Keep opt-in leader rally active from shared hex",
+    "7738027f Sync rally followers after instant end-turn moves"
+  ],
+  "releaseCommit": "fb2d613b68a3a32a370fb6a2d29121c312cac51f",
+  "remoteMain": "fb2d613b68a3a32a370fb6a2d29121c312cac51f",
+  "bundle": {
+    "path": "gra-robocza/Gra-ROBOCZA.html",
+    "md5": "15eabd0ba132bde2454f74d47371a685",
+    "sha256": "80be74dbece3ae923efdeffee193aec1607ae6e0555a4f36973406891a31b508",
+    "sizeBytes": 70033099,
+    "remoteReadback": "byte-identical"
+  },
+  "manifestAndStart": "HTTP 200; byte-identical to local files",
+  "checks": {
+    "followRegression": "20/20 PASS",
+    "recruitmentUiAndSaveLegacy": "PASS",
+    "typecheck": "PASS",
+    "viteBuild": "PASS; 917 modules",
+    "roboczaVerifier": "VERIFY OK; stamp self-reference warning only",
+    "bootSmoke": "PASS; canvas and render frame"
+  },
+  "evaluator": "PASS-WITH-NOTES",
+  "finalControl": "PASS",
+  "note": "End-turn regression simulates the helper/queue path and source-checks the production sync hook; it is not a full game-runtime end-turn integration test."
+}

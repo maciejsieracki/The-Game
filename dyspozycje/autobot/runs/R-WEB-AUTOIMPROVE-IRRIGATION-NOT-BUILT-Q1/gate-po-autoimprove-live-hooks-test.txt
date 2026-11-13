@@ -1,0 +1,44 @@
+(A) sondy tekstowe main.ts / civ-test-hooks.ts
+  [OK] main.ts WYWOLUJE installCivTestHooks(window, location.search, ...)
+  [OK] hook endTurn deleguje do triggerPlayerEndTurn
+  [OK] main.ts: hook naRzece uzywa riverPaths + sasiadow (nie tylko rzeka.obecna)
+  [OK] civ-test-hooks.ts: bramka dokladnie ?civTest=1
+  [OK] civ-test-hooks.ts: instalacja za bramka (return false bez parametru)
+  [OK] main.ts nie przypisuje __civTest bezposrednio (tylko przez bramkowany modul)
+  [OK] auto-improvements.ts: log za `if (dbg)` (domyslnie wylaczony)
+(B) window.__civTest tylko przy ?civTest=1
+  [OK] search="" => __civTest === undefined
+  [OK] search="?" => __civTest === undefined
+  [OK] search="?skipMenuRedirect=1" => __civTest === undefined
+  [OK] search="?civTest=0" => __civTest === undefined
+  [OK] search="?civTest=true" => __civTest === undefined
+  [OK] search="?civTest=" => __civTest === undefined
+  [OK] search="?xcivTest=1" => __civTest === undefined
+  [OK] search=null => __civTest === undefined
+  [OK] search=undefined => __civTest === undefined
+  [OK] ?civTest=1 => __civTest zdefiniowany
+  [OK] odczyt stanu: hex/forts/state
+  [OK] debugOn ustawia flage __civAutoImproveDebug
+  [OK] drainDecisions zwraca i czysci bufor
+  [OK] debugOff zdejmuje flage
+  [OK] isCivTestEnabled
+(C) log decyzji pickera: powod braku wycinki, wyniki bez zmian
+  [OK] wolno=false: wyniki z onDecision == bez (73 B)
+  [OK] wolno=false: wyniki z flaga globalna == bez
+  [OK] wolno=false: log obejmuje heksy lasu (zdarzen lasu: 45)
+  [OK] wolno=OFF: KAZDY las odrzucony z powodem "wycinka wylaczona"
+  [OK] wolno=true: wyniki z onDecision == bez (438 B)
+  [OK] wolno=true: wyniki z flaga globalna == bez
+  [OK] wolno=true: log obejmuje heksy lasu (zdarzen lasu: 45)
+  [OK] wolno=ON: kazdy las ma powod: odrzucony:wycinka poza priorytetami tego przebiegu (etap bez wyrab) | odrzucony:etap 0: tylko las przy rzece | wybrany:E5 wycinka poza rzeka spelnia bramki
+  [OK] rzeka=false: kazdy realny pick wyrab (5) ma werdykt 'wybrany' w logu (brakuje: 0)
+  [OK] rzeka=false: log jawnie oznaczony jako rekonstrukcja
+  [OK] rzeka=true: kazdy realny pick wyrab (2) ma werdykt 'wybrany' w logu (brakuje: 0)
+  [OK] rzeka=true: log jawnie oznaczony jako rekonstrukcja
+  [OK] bez onDecision/flagi: callback nie jest wolany (domyslnie wylaczony)
+  [OK] zdarzenie miasta ujawnia citySkipWyrab=true
+
+autoimprove-live-hooks-test: 36 passed, 1 failed
+  [FAIL] main.ts importuje installCivTestHooks
+
+EXIT=1

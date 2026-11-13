@@ -56,13 +56,16 @@ ok(params.glodWojskaKarencjaTur === 3, 'buildEmpireFoodParams: karencja domyśln
 // ---------------------------------------------------------------------------
 {
   const states = new Map([[0, M.freshEmpireFoodState(100)]]);
-  // 20 jednostek x 1 zywnosc/ture, brutto=0 (100% do rozwoju) -> doPanstwa=0,
-  // kosztArmii=20 -> netto -20/ture -> zapasy monotonicznie maleją.
+  // 20 jednostek x 1 bazowej żywności/turę, koszt armii ×4 (FALA1+FALA2)
+  // daje kosztArmii=80; brutto=0 -> deficyt 80/turę przy rezerwie 0.
   const econ = { perCity: [{ ownerId: 0, zywnoscNetto: 0, oblegany: false, procentRozwoj: 100 }] };
   const units20 = Array.from({ length: 20 }, () => ({ ownerId: 0, typeId: 'woj', camping: false, onOwnTerritory: true }));
 
   const t1 = M.advanceEmpireFood(econ, units20, states, upkeep, params);
-  ok(t1.byOwner.get(0).zapasyPo === -20, 'tura 1: zapasy -20');
+  // The empire reserve is clamped to zero after the turn; the deficit itself
+  // remains visible through glodWojska/turyUjemnychZapasowPo.
+  ok(t1.byOwner.get(0).zapasyPo === 0, 'tura 1: zapasy państwa są ograniczone do zera');
+  ok(t1.byOwner.get(0).glodWojska === true, 'tura 1: koszt armii przekroczył dostępne zapasy');
   ok(t1.byOwner.get(0).turyUjemnychZapasowPo === 1, 'tura 1: licznik = 1');
   ok(t1.byOwner.get(0).glodWojskaAtrycjaAktywna === false, 'tura 1: atrycja NIEaktywna (karencja)');
   ok(M.isArmyStarving(0) === false, 'tura 1: isArmyStarving false');
@@ -92,10 +95,9 @@ ok(params.glodWojskaKarencjaTur === 3, 'buildEmpireFoodParams: karencja domyśln
   // -------------------------------------------------------------------------
   // 2) Zerowanie licznika po powrocie zapasów na plus
   // -------------------------------------------------------------------------
-  // zywnoscNetto=140, procentRozwoj=0 -> doPanstwa=140, brak Spichlerza -> depositFrac
-  // domyślnie 0.5 -> +70. zapasyPrzed(-60) + 70 = +10: mały dodatni wynik (test poniżej
-  // sprawdza SAM reset licznika, nie ma znaczenia jak duży jest dodatni bufor).
-  const econPlus = { perCity: [{ ownerId: 0, zywnoscNetto: 140, oblegany: false, procentRozwoj: 0 }] };
+  // Po clampie zapasy wynoszą 0. Jednostkowa nadwyżka daje dodatni bufor;
+  // następna tura z kosztem armii wraca do deficytu i musi zacząć licznik od 1.
+  const econPlus = { perCity: [{ ownerId: 0, zywnoscNetto: 1, oblegany: false, procentRozwoj: 0 }] };
   const t4 = M.advanceEmpireFood(econPlus, [], states, upkeep, params);
   ok(t4.byOwner.get(0).zapasyPo > 0, 'tura 4: zapasy wracają na plus');
   ok(t4.byOwner.get(0).turyUjemnychZapasowPo === 0, 'tura 4: licznik zerowany natychmiast');
@@ -120,20 +122,20 @@ ok(params.glodWojskaKarencjaTur === 3, 'buildEmpireFoodParams: karencja domyśln
     },
   }, 'normal');
 
-  ok(M.unitFoodPerTurn({ camping: false, onOwnTerritory: true }, upkeepT) === 1,
-    'własne terytorium: 1 żywność/turę (mnożnik x1,0)');
-  ok(M.unitFoodPerTurn({ camping: false, onOwnTerritory: false }, upkeepT) === 2,
-    'poza własnym terytorium: 2 żywność/turę (mnożnik x2,0)');
-  ok(M.unitFoodPerTurn({ camping: false }, upkeepT) === 1,
-    'brak pola onOwnTerritory (stare wywołania) = domyślnie własne terytorium, BEZ regresji');
+  ok(M.unitFoodPerTurn({ camping: false, onOwnTerritory: true }, upkeepT) === 4,
+    'własne terytorium: 1 x mnożnik terenu x zatwierdzone stawki FALA1/FALA2 (4)');
+  ok(M.unitFoodPerTurn({ camping: false, onOwnTerritory: false }, upkeepT) === 8,
+    'poza własnym terytorium: 1 x 2,0 x zatwierdzone stawki FALA1/FALA2 (4)');
+  ok(M.unitFoodPerTurn({ camping: false }, upkeepT) === 4,
+    'brak pola onOwnTerritory (stare wywołania) domyślnie własne terytorium');
 
   const mixedUnits = [
     { camping: false, onOwnTerritory: true },
     { camping: false, onOwnTerritory: true },
     { camping: false, onOwnTerritory: false },
   ];
-  ok(M.militaryFoodConsumption(mixedUnits, upkeepT) === 4,
-    'mieszany stos: 2 własne (1+1) + 1 poza (2) = 4 żywności/turę');
+  ok(M.militaryFoodConsumption(mixedUnits, upkeepT) === 16,
+    'mieszany stos: 2 własne (4+4) + 1 poza (8) = 16 żywności/turę');
 }
 
 // ---------------------------------------------------------------------------
@@ -152,20 +154,20 @@ ok(params.glodWojskaKarencjaTur === 3, 'buildEmpireFoodParams: karencja domyśln
     },
   }, 'normal');
 
-  ok(M.unitFoodPerTurn({ camping: true, onOwnTerritory: true }, upkeepT) === 0.5,
-    'ufortyfikowana we własnym terytorium: 0,5 żywności/turę (0,5 obóz x 1,0 teren)');
-  ok(M.unitFoodPerTurn({ camping: true, onOwnTerritory: false }, upkeepT) === 1,
-    'ufortyfikowana POZA własnym terytorium: 1,0 żywności/turę (0,5 obóz x 2,0 teren)');
-  ok(M.unitFoodPerTurn({ camping: false, onOwnTerritory: false }, upkeepT) === 2,
-    'maszerująca poza własnym terytorium (regresja, camping=false): nadal 2,0 żywności/turę');
+  ok(M.unitFoodPerTurn({ camping: true, onOwnTerritory: true }, upkeepT) === 2,
+    'ufortyfikowana we własnym terytorium: 0,5 x 1,0 x stawki FALA1/FALA2 (4)');
+  ok(M.unitFoodPerTurn({ camping: true, onOwnTerritory: false }, upkeepT) === 4,
+    'ufortyfikowana poza własnym terytorium: 0,5 x 2,0 x stawki FALA1/FALA2 (4)');
+  ok(M.unitFoodPerTurn({ camping: false, onOwnTerritory: false }, upkeepT) === 8,
+    'maszerująca poza własnym terytorium: 1 x 2,0 x stawki FALA1/FALA2 (4)');
 
   const garrisonStack = [
     { camping: true, onOwnTerritory: true },
     { camping: true, onOwnTerritory: true },
     { camping: false, onOwnTerritory: true },
   ];
-  ok(M.militaryFoodConsumption(garrisonStack, upkeepT) === 2,
-    'stos w garnizonie: 2 ufortyfikowane (0,5+0,5) + 1 maszerująca (1) = 2,0 żywności/turę');
+  ok(M.militaryFoodConsumption(garrisonStack, upkeepT) === 8,
+    'stos w garnizonie: 2 ufortyfikowane (2+2) + 1 maszerująca (4) = 8 żywności/turę');
 }
 
 // ---------------------------------------------------------------------------

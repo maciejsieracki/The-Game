@@ -46,11 +46,21 @@ for (const b of buildings) {
   }
 }
 ok(checkedLevels > buildings.length, `pokryto wszystkie poziomy (${checkedLevels} poziomów, ${buildings.length} budynków)`);
-ok(buildings.length === 42, `pełny katalog budynków ma 42 rekordy (ma ${buildings.length})`);
+// R-WEB-BUILDING-EMPORION-Q1 (2026-11-06): 42 -> 43 (+ Emporion, decyzja właściciela 2026-11-05).
+ok(buildings.length === 43, `pełny katalog budynków ma 43 rekordy (ma ${buildings.length})`);
 
 // Niezależny, zamrożony fingerprint kosztów surowcowych — nie wolno go wyliczać
 // z oczekiwanego wyniku tej samej mutacji ani go przepisywać po zmianie mnożnika.
-const RESOURCE_BASELINE_SHA256 = '586ef4582f40496c36c667b2363921a78f99f2180fcf8db3f00cd3b501a08554';
+// R-WEB-BUILDING-EMPORION-Q1: fingerprint przepisany WYŁĄCZNIE z powodu dodania
+// nowego rekordu Emporion (koszt_surowce {drewno 80, kamien 60}); pozostałe 42
+// rekordy bez zmian. Poprzednia wartość: 586ef458...08554.
+// R-WEB-BUILDING-COSTS-ERA-RESOURCES-IMPL-Q1 (decyzja właściciela 2026-11-09): fingerprint
+// przepisany WYŁĄCZNIE z powodu zatwierdzonej zmiany kosztów (Kamień: drewno=kamień dla tech
+// poz. 2-3; Brąz: drewno=kamień=cegła; Żelazo: cegła=kamień=drewno; 36 rekordów, reszta bez
+// zmian) — wartości pilnuje koszty-surowcowe-test. Poprzednia wartość: 033cb1b7...e5a4.
+// R-WEB-DATA-TARGOWISKO-REMOVE-STONE-COST-Q1 (2026-11-09): fingerprint przepisany WYŁĄCZNIE z powodu
+// zmiany koszt_surowce Targowiska (drewno 30 + kamień 30 -> samo drewno 30). Poprzednia wartość: 71bed287...d542.
+const RESOURCE_BASELINE_SHA256 = '4855006679bf59f7a1a1e5709ff44374bf76a611acfa15c76bd7a7a4e4b07dea';
 const resourceCanonical = buildings.map(b => `${b.id}\t${JSON.stringify(b.koszt_surowce ?? null)}`).join('\n');
 const resourceSha = crypto.createHash('sha256').update(resourceCanonical).digest('hex');
 ok(resourceSha === RESOURCE_BASELINE_SHA256, `koszt_surowce wszystkich budynków bez zmian (sha256 ${resourceSha})`);

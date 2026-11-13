@@ -1,0 +1,19 @@
+== T1: geometria — sporne heksy istnieja i sa przypisane blizszemu miastu
+  [OK] miasto A przegrywa sporne heksy na rzecz B (15)
+  [OK] heks 13,15 (dystans A=5, B=2) przegrany przez A, nie przez B
+== T2: aiWorkedHexKeysForCity == zbior silnika (workedHexCoordsForCity z excludeHexKeys)
+  [FAIL] A: zbior AI == zbior silnika (6)
+  [FAIL] B: zbior AI == zbior silnika (6)
+  [FAIL] A: zadne pole obywatela AI nie lezy w zbiorze przegranych
+  [OK] kontrola: BEZ wykluczenia zbior A zawiera sporne heksy przegrane (to byl blad)
+  [FAIL] wykluczenie zmienia zbior pol obywateli A
+== T3: decideAITurn z opts.improvementExcludeHexKeysByCity — wycinka tylko na polach obywateli wg silnika
+  [OK] AI wycina las przy rzece pod obywatelami (z wykluczeniem: 8 pol)
+  [OK] kazda wycinka AI (z wykluczeniem) lezy na polu obywatela wg silnika (suma A+B)
+  [OK] scenariusz ma las+rzeka pod obywatelem wg silnika (8)
+  [OK] KAZDY las przy rzece pod obywatelem wg silnika zostal wyciety (z wykluczeniem)
+  [OK] determinizm: ponowny przebieg z wykluczeniem identyczny
+  [OK] bez opcji decideAITurn dziala jak dawniej (brak wyjatku)
+
+WYNIK: 9 OK, 4 FAIL
+EXIT=1

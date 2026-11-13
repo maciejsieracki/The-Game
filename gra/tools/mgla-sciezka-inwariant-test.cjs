@@ -1,3 +1,9 @@
+// KLASA B (kandydat, przyczyna do potwierdzenia) -- R-WEB-TEST-DEBT-PREEXISTING-B-Q1 r4.
+// Test CELOWO pozostaje CZERWONY. Kod gry NIE jest naprawiany w tym temacie.
+// Kandydaci na osobny temat R-WEB-* (decyzja orkiestratora): miejsca zapisu pozycji
+// siege-enter-city.ts:99-100 (uzasadnienie legalne/bledne do rozstrzygniecia), main.ts:4275, 26414,
+// 34805-34806, battleScene.ts:8607-8608. Czerwony na main i na ref 3aa1b3a2a (FULLREG).
+// NIE_ZWERYFIKOWANO w r4: nie wykonano analizy przyczyny kazdego miejsca.
 'use strict';
 /**
  * mgla-sciezka-inwariant-test.cjs — P-MGLA-ODKRYCIE-SCIEZKA-INWARIANT-Q1, GOAL 3.
@@ -233,7 +239,6 @@ function zbierzTs(dir, out) {
 const KLASYFIKACJA = [
   // --- siatka bitwy taktycznej: RuntimeBattleUnit, nie RuntimeUnit mapy swiata ---
   { plik: 'src/battle/battleScene.ts', tekst: 'ru.q = wallCol;', nr: 1, klasa: 'POZA-MAPA-SWIATA', uzasadnienie: 'deployment na murze, siatka bitwy (col/row)' },
-  { plik: 'src/battle/battleScene.ts', tekst: 'ru.r = wallRow;', nr: 1, klasa: 'POZA-MAPA-SWIATA', uzasadnienie: 'j.w.' },
   { plik: 'src/battle/battleScene.ts', tekst: 'u.q = retreatCol;', nr: 1, klasa: 'POZA-MAPA-SWIATA', uzasadnienie: 'odwrot na siatce bitwy' },
   { plik: 'src/battle/battleScene.ts', tekst: 'u.r = wallRow;', nr: 1, klasa: 'POZA-MAPA-SWIATA', uzasadnienie: 'j.w.' },
   { plik: 'src/battle/battleScene.ts', tekst: 'u.q = cc; u.r = rc;', nr: 1, klasa: 'POZA-MAPA-SWIATA', uzasadnienie: 'przesuniecie na wolna komorke siatki bitwy' },
@@ -253,6 +258,8 @@ const KLASYFIKACJA = [
   { plik: 'src/game/post-battle-map.ts', tekst: 'u.r = input.battleR;', nr: 1, klasa: 'KROK-1-HEX', uzasadnienie: 'j.w.' },
   { plik: 'src/game/post-battle-map.ts', tekst: 'u.q = start.q;', nr: 1, klasa: 'POWROT-NA-ODWIEDZONY', uzasadnienie: 'retreatAtkRosterToStart — powrot na atkStart, heks opuszczony w tej samej turze' },
   { plik: 'src/game/post-battle-map.ts', tekst: 'u.r = start.r;', nr: 1, klasa: 'POWROT-NA-ODWIEDZONY', uzasadnienie: 'j.w.' },
+  { plik: 'src/game/post-battle-map.ts', tekst: 'u.q = q2;', nr: 1, klasa: 'WIELOHEKS-HAK-ZEWNETRZNY', uzasadnienie: 'tryTwoHexRetreat (R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1): odwrot ocalalych PRZEGRANEJ strony w bitwie w polu o 2 heksy (heks posredni przechodni). Modul bez dostepu do `explored`; odkrycie wzdluz drogi (heks bitwy -> cel) domyka wolajacy: main.ts po applyPostBattleMap woła revealAlongPathForStack dla postBattleRes.retreatedTwoHexIds jednostek gracza. W miescie odwrotu nie ma.' },
+  { plik: 'src/game/post-battle-map.ts', tekst: 'u.r = r2;', nr: 1, klasa: 'WIELOHEKS-HAK-ZEWNETRZNY', uzasadnienie: 'j.w.' },
   { plik: 'src/game/post-battle-map.ts', tekst: 'live.q = city.q;', nr: 1, klasa: 'KROK-1-HEX', uzasadnienie: 'wejscie do zdobytego miasta — heks sasiedni i widoczny (oblezenie/atak z sasiedztwa)' },
   { plik: 'src/game/post-battle-map.ts', tekst: 'live.r = city.r;', nr: 1, klasa: 'KROK-1-HEX', uzasadnienie: 'j.w.' },
 
@@ -272,6 +279,7 @@ const KLASYFIKACJA = [
   { plik: MAIN_TS, tekst: 'u.q = dest.q;', nr: 2, klasa: 'TELEPORT-BEZ-SCIEZKI', uzasadnienie: 'ewakuacja z przejmowanego fortu przy zalozeniu miasta: findEvacuationHexOutsideCity szuka pierscieniami OD 1 i zwraca PIERWSZY wolny — jednostka nie przechodzi przez heksy posrednie, brak sciezki do odkrycia' },
   { plik: MAIN_TS, tekst: 'u.r = dest.r;', nr: 2, klasa: 'TELEPORT-BEZ-SCIEZKI', uzasadnienie: 'j.w.' },
   { plik: MAIN_TS, tekst: 'if (playerCity) { playerCity.q = attacker.q; playerCity.r = attacker.r; }', nr: 1, klasa: 'NIE-JEDNOSTKA', uzasadnienie: 'hak testowy wojny o Braz — przestawia MIASTO gracza, nie jednostke' },
+  { plik: MAIN_TS, tekst: 'bCities.forEach((city, index) => { city.q = land[index]!.coords.q; city.r = land[index]!.coords.r; });', nr: 1, klasa: 'NIE-JEDNOSTKA', uzasadnienie: 'hak testowy moveFixtureAwayForTest — przestawia MIASTA fixture ownera B (nie jednostki), R-WEB-TEST-DEBT-BASELINE-Q3 punkt 5' },
   { plik: MAIN_TS, tekst: 'if (playerCity) { playerCity.q = attacker.q; playerCity.r = attacker.r; }', nr: 2, klasa: 'NIE-JEDNOSTKA', uzasadnienie: 'lustro dla Zelaza — j.w.' },
   { plik: MAIN_TS, tekst: 'u.q = home.q;', nr: 1, klasa: 'DEBUG-TEST-HOOK', uzasadnienie: '`pullPlayerUnitsHome` — hak bramki testowej buntu, nie sciezka rozgrywki' },
   { plik: MAIN_TS, tekst: 'u.r = home.r;', nr: 1, klasa: 'DEBUG-TEST-HOOK', uzasadnienie: 'j.w.' },
@@ -285,6 +293,16 @@ const KLASYFIKACJA = [
   { plik: MAIN_TS, tekst: 'bu.r = bcmd.toR;', nr: 1, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'j.w.' },
   { plik: MAIN_TS, tekst: 'bu.q = bcmd.toQ;', nr: 2, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'komenda `raid` barbarzyncy' },
   { plik: MAIN_TS, tekst: 'bu.r = bcmd.toR;', nr: 2, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'j.w.' },
+  // --- R-WEB-TEST-DEBT-B-DIAG-Q1 r1: klasyfikacja miejsc dodanych PO R-PROC-... (4 sklasyfikowane
+  //     z weryfikacja kodu; zadne nie jest marszem wieloheksowym bez odkrycia) ---
+  { plik: 'src/battle/battleScene.ts', tekst: 'ru.q = col;', nr: 1, klasa: 'POZA-MAPA-SWIATA', uzasadnienie: '_doMove (tryb _autoBatchPlanning) — ruch jednostki na siatce bitwy (col/row); dawniej jedna linia `ru.q = col; ru.r = row;`, rozbita na dwie' },
+  { plik: 'src/battle/battleScene.ts', tekst: 'ru.r = row;', nr: 1, klasa: 'POZA-MAPA-SWIATA', uzasadnienie: 'j.w.' },
+  { plik: 'src/game/siege-enter-city.ts', tekst: 'u.q = city.q;', nr: 1, klasa: 'KROK-1-HEX', uzasadnienie: 'enterCityAfterSurrender (R-WEB-SIEGE-SURRENDER-ENTER-CITY-Q1): oblegajaca armia stoi POD MUREM (heks sasiedni, juz widoczny) i wchodzi na heks poddanego miasta; bez kosztu ruchu, brak heksow posrednich' },
+  { plik: 'src/game/siege-enter-city.ts', tekst: 'u.r = city.r;', nr: 1, klasa: 'KROK-1-HEX', uzasadnienie: 'j.w.' },
+  { plik: MAIN_TS, tekst: 'u.q = mv.toQ; u.r = mv.toR; // R-WEB-ARMY-STACK-LIMIT-Q1: migracja nadwyzki stosu (relokacja, nie marsz)', nr: 1, klasa: 'TELEPORT-BEZ-SCIEZKI', uzasadnienie: 'enforceArmyStackLimit — relokacja nadwyzki stosu na najblizsze wolne heksy (planOversizedStackSplits), bez heksow posrednich; po przeniesieniu funkcja woła refreshFog() (odkrycie z pozycji docelowej)' },
+  { plik: MAIN_TS, tekst: 'if (playerCity) { playerCity.q = attacker.q; playerCity.r = attacker.r; }', nr: 3, klasa: 'NIE-JEDNOSTKA', uzasadnienie: 'trzeci hak testowy wymuszonej wojny — przestawia MIASTO gracza, nie jednostke' },
+  { plik: MAIN_TS, tekst: 'u.q = mv.q;', nr: 1, klasa: 'TELEPORT-BEZ-SCIEZKI', uzasadnienie: 'transferCityByTreaty (cesja miasta w pokoju, plan.unitMoves z cityCessionPlanFor): garnizon oddajacego wyrzucany na najblizsze wolne heksy (pierscien <= 3), bez heksow posrednich; funkcja woła refreshFog() po przeniesieniu' },
+  { plik: MAIN_TS, tekst: 'u.r = mv.r;', nr: 1, klasa: 'TELEPORT-BEZ-SCIEZKI', uzasadnienie: 'j.w.' },
   { plik: MAIN_TS, tekst: 'su.q = destQ;', nr: 1, klasa: 'WIELOHEKS-ODKRYWA', uzasadnienie: 'koniec animacji marszu w renderLoop (pathHexes); MIEJSCE 3 z 3' },
   { plik: MAIN_TS, tekst: 'su.r = destR;', nr: 1, klasa: 'WIELOHEKS-ODKRYWA', uzasadnienie: 'j.w.' },
 ];
@@ -319,7 +337,10 @@ for (const w of DOZWOLONE_NAWIASOWE) indeksNawiasowych.set(klucz(w.plik, w.tekst
 // z uzasadnieniem — albo jest jednostka i wtedy potrzebuje odkrycia wzdluz sciezki,
 // albo nia nie jest i trzeba to napisac wprost.
 // ---------------------------------------------------------------------------
-const DOZWOLONE_OBJECT_ASSIGN = [];
+const DOZWOLONE_OBJECT_ASSIGN = [
+  // R-WEB-TEST-DEBT-B-DIAG-Q1 r1: jedyny cel inny niz `*.style` — hak testowy round-trip zapisu.
+  { plik: 'src/main.ts', arg: 'snap.meta as any', uzasadnienie: '__*TestDebug.roundTripMeta (R-WEB-SAVELOAD-HOTSEAT-PRACA-Q1) — nadpisuje pola `meta` migawki zapisu (playerPracaPool), nie pozycje jednostek; hak testowy' },
+];
 const indeksObjectAssign = new Map();
 for (const w of DOZWOLONE_OBJECT_ASSIGN) indeksObjectAssign.set(klucz(w.plik, w.arg, 1), w);
 

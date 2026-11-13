@@ -1,0 +1,5 @@
+# Mutacje R5 (kopie gra/src w gra/_mut/mN, test: STAGES_Q1_SRC_DIR=<kopia>/src node tools/autoimprove-stages-q1-test.cjs; baza zielona 218/0)
+M1 przywrocony limit tartak/oboz ceil(pop/10) w keyBlockedOnHex (demandActive) -> 208 passed, 10 failed  ZABITA
+M2 usunieta regula "tartak/oboz nie na rzece+las" (keyBlockedOnHex) -> 208 passed, 10 failed  ZABITA
+M3 usuniete `wyrabTylkoPodFarme` (wyrab na kazdym lesie, takze Wzgorza) -> 210 passed, 8 failed  ZABITA
+M4 przywrocone `lesneWymagane` (lesneMin) w K2/K3 -> 218 passed, 0 failed  PRZEZYLA = ROWNOWAZNA: w K2/K3 wycinka poza rzeka idzie etapem E5 (offRiverClearing, bez lesneMin) PRZED sciezka zapasowa, wiec bramka lesneMinSpelnione w sciezce zapasowej jest nieosiagalna; zmiana zostaje jako czyszczenie nieaktualnej reguly (bez wplywu na zachowanie).

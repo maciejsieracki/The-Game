@@ -1,0 +1,5811 @@
+{
+  "label": "Pre-fix production-method matrix baseline; paired doctrine fixture; helper adapters do not apply damage",
+  "seed": 20261028,
+  "unitsPerSide": 42,
+  "scenarios": [
+    {
+      "doctrine": "steady",
+      "priorityVariant": 0,
+      "terrainVariant": "engaged",
+      "activeUnits": 42,
+      "turns": 12,
+      "summary": {
+        "infantry": {
+          "units": 14,
+          "moves": 0,
+          "shots": 0,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 14,
+          "initialDistance": {
+            "min": 1,
+            "max": 1,
+            "unitsWithTargetInRange": 14
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 1,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "archer": {
+          "units": 8,
+          "moves": 0,
+          "shots": 96,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 96,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 3,
+            "max": 3,
+            "unitsWithTargetInRange": 8
+          },
+          "finalDistance": {
+            "min": 3,
+            "max": 3,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "javelin": {
+          "units": 6,
+          "moves": 0,
+          "shots": 72,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 72,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsWithTargetInRange": 6
+          },
+          "finalDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "cavalry": {
+          "units": 7,
+          "moves": 24,
+          "shots": 0,
+          "melee": 72,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 1,
+            "max": 2,
+            "unitsWithTargetInRange": 6
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 2,
+            "unitsOutsideWeaponRange": 1
+          }
+        },
+        "chariot": {
+          "units": 3,
+          "moves": 52,
+          "shots": 0,
+          "melee": 10,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsWithTargetInRange": 0
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 2,
+            "unitsOutsideWeaponRange": 2
+          }
+        }
+      },
+      "trace": [
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-archer-26",
+          "targetId": "def-infantry-9",
+          "at": [
+            13,
+            38
+          ],
+          "targetAt": [
+            16,
+            38
+          ],
+          "distance": 3,
+          "range": 3,
+          "ammo": 20,
+          "rank": 2,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 0,
+          "enemies": [
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 3,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-10",
+              "at": [
+                16,
+                39
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-19",
+              "at": [
+                17,
+                38
+              ],
+              "distance": 4,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-11",
+              "at": [
+                16,
+                40
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-archer-26",
+              "at": [
+                18,
+                38
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-archer-26",
+          "role": "archer",
+          "targetId": "def-infantry-9",
+          "distance": 3,
+          "range": 3,
+          "ammoBefore": 20,
+          "ammoAfter": 19,
+          "targetHp": 500,
+          "turn": 0
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-archer-26",
+          "doctrine": "steady",
+          "turn": 0,
+          "before": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 20
+          },
+          "after": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-28",
+          "targetId": "def-infantry-5",
+          "at": [
+            12,
+            34
+          ],
+          "targetAt": [
+            16,
+            34
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 20,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 0,
+          "enemies": [
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-4",
+              "at": [
+                16,
+                33
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-15",
+              "at": [
+                17,
+                34
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-3",
+              "at": [
+                16,
+                32
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-14",
+              "at": [
+                17,
+                33
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-28",
+          "role": "slinger",
+          "targetId": "def-infantry-5",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 20,
+          "ammoAfter": 19,
+          "targetHp": 500,
+          "turn": 0
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-28",
+          "doctrine": "steady",
+          "turn": 0,
+          "before": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 20
+          },
+          "after": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-30",
+          "targetId": "def-infantry-7",
+          "at": [
+            12,
+            36
+          ],
+          "targetAt": [
+            16,
+            36
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 20,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 0,
+          "enemies": [
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-17",
+              "at": [
+                17,
+                36
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-30",
+          "role": "slinger",
+          "targetId": "def-infantry-7",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 20,
+          "ammoAfter": 19,
+          "targetHp": 500,
+          "turn": 0
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-30",
+          "doctrine": "steady",
+          "turn": 0,
+          "before": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 20
+          },
+          "after": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-archer-26",
+          "targetId": "def-infantry-9",
+          "at": [
+            13,
+            38
+          ],
+          "targetAt": [
+            16,
+            38
+          ],
+          "distance": 3,
+          "range": 3,
+          "ammo": 19,
+          "rank": 2,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 1,
+          "enemies": [
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 3,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-10",
+              "at": [
+                16,
+                39
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-19",
+              "at": [
+                17,
+                38
+              ],
+              "distance": 4,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-11",
+              "at": [
+                16,
+                40
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-archer-26",
+              "at": [
+                18,
+                38
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-archer-26",
+          "role": "archer",
+          "targetId": "def-infantry-9",
+          "distance": 3,
+          "range": 3,
+          "ammoBefore": 19,
+          "ammoAfter": 18,
+          "targetHp": 500,
+          "turn": 1
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-archer-26",
+          "doctrine": "steady",
+          "turn": 1,
+          "before": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          },
+          "after": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-28",
+          "targetId": "def-infantry-5",
+          "at": [
+            12,
+            34
+          ],
+          "targetAt": [
+            16,
+            34
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 19,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 1,
+          "enemies": [
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-4",
+              "at": [
+                16,
+                33
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-15",
+              "at": [
+                17,
+                34
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-3",
+              "at": [
+                16,
+                32
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-14",
+              "at": [
+                17,
+                33
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-28",
+          "role": "slinger",
+          "targetId": "def-infantry-5",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 19,
+          "ammoAfter": 18,
+          "targetHp": 500,
+          "turn": 1
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-28",
+          "doctrine": "steady",
+          "turn": 1,
+          "before": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          },
+          "after": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-30",
+          "targetId": "def-infantry-7",
+          "at": [
+            12,
+            36
+          ],
+          "targetAt": [
+            16,
+            36
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 19,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 1,
+          "enemies": [
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-17",
+              "at": [
+                17,
+                36
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-30",
+          "role": "slinger",
+          "targetId": "def-infantry-7",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 19,
+          "ammoAfter": 18,
+          "targetHp": 500,
+          "turn": 1
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-30",
+          "doctrine": "steady",
+          "turn": 1,
+          "before": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          },
+          "after": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-archer-26",
+          "targetId": "def-infantry-9",
+          "at": [
+            13,
+            38
+          ],
+          "targetAt": [
+            16,
+            38
+          ],
+          "distance": 3,
+          "range": 3,
+          "ammo": 18,
+          "rank": 2,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 2,
+          "enemies": [
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 3,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-10",
+              "at": [
+                16,
+                39
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-19",
+              "at": [
+                17,
+                38
+              ],
+              "distance": 4,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-11",
+              "at": [
+                16,
+                40
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-archer-26",
+              "at": [
+                18,
+                38
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-archer-26",
+          "role": "archer",
+          "targetId": "def-infantry-9",
+          "distance": 3,
+          "range": 3,
+          "ammoBefore": 18,
+          "ammoAfter": 17,
+          "targetHp": 500,
+          "turn": 2
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-archer-26",
+          "doctrine": "steady",
+          "turn": 2,
+          "before": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          },
+          "after": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 17
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-28",
+          "targetId": "def-infantry-5",
+          "at": [
+            12,
+            34
+          ],
+          "targetAt": [
+            16,
+            34
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 18,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 2,
+          "enemies": [
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-4",
+              "at": [
+                16,
+                33
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-15",
+              "at": [
+                17,
+                34
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-3",
+              "at": [
+                16,
+                32
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-14",
+              "at": [
+                17,
+                33
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-28",
+          "role": "slinger",
+          "targetId": "def-infantry-5",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 18,
+          "ammoAfter": 17,
+          "targetHp": 500,
+          "turn": 2
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-28",
+          "doctrine": "steady",
+          "turn": 2,
+          "before": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          },
+          "after": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 17
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-30",
+          "targetId": "def-infantry-7",
+          "at": [
+            12,
+            36
+          ],
+          "targetAt": [
+            16,
+            36
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 18,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 2,
+          "enemies": [
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-17",
+              "at": [
+                17,
+                36
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-30",
+          "role": "slinger",
+          "targetId": "def-infantry-7",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 18,
+          "ammoAfter": 17,
+          "targetHp": 500,
+          "turn": 2
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-30",
+          "doctrine": "steady",
+          "turn": 2,
+          "before": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          },
+          "after": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 17
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-archer-26",
+          "targetId": "def-infantry-9",
+          "at": [
+            13,
+            38
+          ],
+          "targetAt": [
+            16,
+            38
+          ],
+          "distance": 3,
+          "range": 3,
+          "ammo": 17,
+          "rank": 2,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 3,
+          "enemies": [
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 3,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-10",
+              "at": [
+                16,
+                39
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-19",
+              "at": [
+                17,
+                38
+              ],
+              "distance": 4,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-11",
+              "at": [
+                16,
+                40
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-archer-26",
+              "at": [
+                18,
+                38
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-archer-26",
+          "role": "archer",
+          "targetId": "def-infantry-9",
+          "distance": 3,
+          "range": 3,
+          "ammoBefore": 17,
+          "ammoAfter": 16,
+          "targetHp": 500,
+          "turn": 3
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-archer-26",
+          "doctrine": "steady",
+          "turn": 3,
+          "before": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 17
+          },
+          "after": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 16
+          }
+        }
+      ]
+    },
+    {
+      "doctrine": "steady",
+      "priorityVariant": 1,
+      "terrainVariant": "engaged",
+      "activeUnits": 42,
+      "turns": 12,
+      "summary": {
+        "infantry": {
+          "units": 14,
+          "moves": 203,
+          "shots": 0,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 4,
+          "initialDistance": {
+            "min": 1,
+            "max": 1,
+            "unitsWithTargetInRange": 14
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 4,
+            "unitsOutsideWeaponRange": 5
+          }
+        },
+        "archer": {
+          "units": 8,
+          "moves": 0,
+          "shots": 96,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 96,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 3,
+            "max": 3,
+            "unitsWithTargetInRange": 8
+          },
+          "finalDistance": {
+            "min": 3,
+            "max": 3,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "javelin": {
+          "units": 6,
+          "moves": 0,
+          "shots": 72,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 72,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsWithTargetInRange": 6
+          },
+          "finalDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "cavalry": {
+          "units": 7,
+          "moves": 11,
+          "shots": 0,
+          "melee": 78,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 1,
+            "max": 2,
+            "unitsWithTargetInRange": 6
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 1,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "chariot": {
+          "units": 3,
+          "moves": 34,
+          "shots": 0,
+          "melee": 19,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsWithTargetInRange": 0
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 2,
+            "unitsOutsideWeaponRange": 1
+          }
+        }
+      },
+      "trace": [
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-archer-26",
+          "targetId": "def-infantry-9",
+          "at": [
+            13,
+            38
+          ],
+          "targetAt": [
+            16,
+            38
+          ],
+          "distance": 3,
+          "range": 3,
+          "ammo": 20,
+          "rank": 2,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 0,
+          "enemies": [
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 3,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-10",
+              "at": [
+                16,
+                39
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-19",
+              "at": [
+                17,
+                38
+              ],
+              "distance": 4,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-11",
+              "at": [
+                16,
+                40
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-archer-26",
+              "at": [
+                18,
+                38
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-archer-26",
+          "role": "archer",
+          "targetId": "def-infantry-9",
+          "distance": 3,
+          "range": 3,
+          "ammoBefore": 20,
+          "ammoAfter": 19,
+          "targetHp": 500,
+          "turn": 0
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-archer-26",
+          "doctrine": "steady",
+          "turn": 0,
+          "before": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 20
+          },
+          "after": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-28",
+          "targetId": "def-infantry-5",
+          "at": [
+            12,
+            34
+          ],
+          "targetAt": [
+            16,
+            34
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 20,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 0,
+          "enemies": [
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-4",
+              "at": [
+                16,
+                33
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-15",
+              "at": [
+                17,
+                34
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-3",
+              "at": [
+                16,
+                32
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-14",
+              "at": [
+                17,
+                33
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-28",
+          "role": "slinger",
+          "targetId": "def-infantry-5",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 20,
+          "ammoAfter": 19,
+          "targetHp": 500,
+          "turn": 0
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-28",
+          "doctrine": "steady",
+          "turn": 0,
+          "before": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 20
+          },
+          "after": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-30",
+          "targetId": "def-infantry-7",
+          "at": [
+            12,
+            36
+          ],
+          "targetAt": [
+            16,
+            36
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 20,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 0,
+          "enemies": [
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-17",
+              "at": [
+                17,
+                36
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-30",
+          "role": "slinger",
+          "targetId": "def-infantry-7",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 20,
+          "ammoAfter": 19,
+          "targetHp": 500,
+          "turn": 0
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-30",
+          "doctrine": "steady",
+          "turn": 0,
+          "before": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 20
+          },
+          "after": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-archer-26",
+          "targetId": "def-infantry-9",
+          "at": [
+            13,
+            38
+          ],
+          "targetAt": [
+            16,
+            38
+          ],
+          "distance": 3,
+          "range": 3,
+          "ammo": 19,
+          "rank": 2,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 1,
+          "enemies": [
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 3,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-10",
+              "at": [
+                16,
+                39
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-19",
+              "at": [
+                17,
+                38
+              ],
+              "distance": 4,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-11",
+              "at": [
+                16,
+                40
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-archer-26",
+              "at": [
+                18,
+                38
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-archer-26",
+          "role": "archer",
+          "targetId": "def-infantry-9",
+          "distance": 3,
+          "range": 3,
+          "ammoBefore": 19,
+          "ammoAfter": 18,
+          "targetHp": 500,
+          "turn": 1
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-archer-26",
+          "doctrine": "steady",
+          "turn": 1,
+          "before": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          },
+          "after": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-28",
+          "targetId": "def-infantry-5",
+          "at": [
+            12,
+            34
+          ],
+          "targetAt": [
+            16,
+            34
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 19,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 1,
+          "enemies": [
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-4",
+              "at": [
+                16,
+                33
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-15",
+              "at": [
+                17,
+                34
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-3",
+              "at": [
+                16,
+                32
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-14",
+              "at": [
+                17,
+                33
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-28",
+          "role": "slinger",
+          "targetId": "def-infantry-5",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 19,
+          "ammoAfter": 18,
+          "targetHp": 500,
+          "turn": 1
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-28",
+          "doctrine": "steady",
+          "turn": 1,
+          "before": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          },
+          "after": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-30",
+          "targetId": "def-infantry-7",
+          "at": [
+            12,
+            36
+          ],
+          "targetAt": [
+            16,
+            36
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 19,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 1,
+          "enemies": [
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-17",
+              "at": [
+                17,
+                36
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-30",
+          "role": "slinger",
+          "targetId": "def-infantry-7",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 19,
+          "ammoAfter": 18,
+          "targetHp": 500,
+          "turn": 1
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-30",
+          "doctrine": "steady",
+          "turn": 1,
+          "before": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          },
+          "after": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-archer-26",
+          "targetId": "def-infantry-9",
+          "at": [
+            13,
+            38
+          ],
+          "targetAt": [
+            16,
+            38
+          ],
+          "distance": 3,
+          "range": 3,
+          "ammo": 18,
+          "rank": 2,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 2,
+          "enemies": [
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 3,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-10",
+              "at": [
+                16,
+                39
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-19",
+              "at": [
+                17,
+                38
+              ],
+              "distance": 4,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-11",
+              "at": [
+                16,
+                40
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-archer-26",
+              "at": [
+                18,
+                38
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-archer-26",
+          "role": "archer",
+          "targetId": "def-infantry-9",
+          "distance": 3,
+          "range": 3,
+          "ammoBefore": 18,
+          "ammoAfter": 17,
+          "targetHp": 500,
+          "turn": 2
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-archer-26",
+          "doctrine": "steady",
+          "turn": 2,
+          "before": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          },
+          "after": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 17
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-28",
+          "targetId": "def-infantry-5",
+          "at": [
+            12,
+            34
+          ],
+          "targetAt": [
+            16,
+            34
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 18,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 2,
+          "enemies": [
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-4",
+              "at": [
+                16,
+                33
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-15",
+              "at": [
+                17,
+                34
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-3",
+              "at": [
+                16,
+                32
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-14",
+              "at": [
+                17,
+                33
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-28",
+          "role": "slinger",
+          "targetId": "def-infantry-5",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 18,
+          "ammoAfter": 17,
+          "targetHp": 500,
+          "turn": 2
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-28",
+          "doctrine": "steady",
+          "turn": 2,
+          "before": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          },
+          "after": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 17
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-30",
+          "targetId": "def-infantry-7",
+          "at": [
+            12,
+            36
+          ],
+          "targetAt": [
+            16,
+            36
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 18,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 2,
+          "enemies": [
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-17",
+              "at": [
+                17,
+                36
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-30",
+          "role": "slinger",
+          "targetId": "def-infantry-7",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 18,
+          "ammoAfter": 17,
+          "targetHp": 500,
+          "turn": 2
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-30",
+          "doctrine": "steady",
+          "turn": 2,
+          "before": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          },
+          "after": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 17
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-archer-26",
+          "targetId": "def-infantry-9",
+          "at": [
+            13,
+            38
+          ],
+          "targetAt": [
+            16,
+            38
+          ],
+          "distance": 3,
+          "range": 3,
+          "ammo": 17,
+          "rank": 2,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 3,
+          "enemies": [
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 3,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-10",
+              "at": [
+                16,
+                39
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-19",
+              "at": [
+                17,
+                38
+              ],
+              "distance": 4,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-11",
+              "at": [
+                16,
+                40
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-archer-26",
+              "at": [
+                18,
+                38
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-archer-26",
+          "role": "archer",
+          "targetId": "def-infantry-9",
+          "distance": 3,
+          "range": 3,
+          "ammoBefore": 17,
+          "ammoAfter": 16,
+          "targetHp": 500,
+          "turn": 3
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-archer-26",
+          "doctrine": "steady",
+          "turn": 3,
+          "before": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 17
+          },
+          "after": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 16
+          }
+        }
+      ]
+    },
+    {
+      "doctrine": "aggressive",
+      "priorityVariant": 0,
+      "terrainVariant": "engaged",
+      "activeUnits": 42,
+      "turns": 12,
+      "summary": {
+        "infantry": {
+          "units": 14,
+          "moves": 0,
+          "shots": 0,
+          "melee": 168,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 1,
+            "max": 1,
+            "unitsWithTargetInRange": 14
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 1,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "archer": {
+          "units": 8,
+          "moves": 0,
+          "shots": 96,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 96,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 3,
+            "max": 3,
+            "unitsWithTargetInRange": 8
+          },
+          "finalDistance": {
+            "min": 3,
+            "max": 3,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "javelin": {
+          "units": 6,
+          "moves": 0,
+          "shots": 72,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 72,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsWithTargetInRange": 6
+          },
+          "finalDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "cavalry": {
+          "units": 7,
+          "moves": 24,
+          "shots": 0,
+          "melee": 72,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 1,
+            "max": 2,
+            "unitsWithTargetInRange": 6
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 2,
+            "unitsOutsideWeaponRange": 1
+          }
+        },
+        "chariot": {
+          "units": 3,
+          "moves": 52,
+          "shots": 0,
+          "melee": 10,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsWithTargetInRange": 0
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 2,
+            "unitsOutsideWeaponRange": 2
+          }
+        }
+      },
+      "trace": [
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-archer-26",
+          "targetId": "def-infantry-9",
+          "at": [
+            13,
+            38
+          ],
+          "targetAt": [
+            16,
+            38
+          ],
+          "distance": 3,
+          "range": 3,
+          "ammo": 20,
+          "rank": 2,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 0,
+          "enemies": [
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 3,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-10",
+              "at": [
+                16,
+                39
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-19",
+              "at": [
+                17,
+                38
+              ],
+              "distance": 4,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-11",
+              "at": [
+                16,
+                40
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-archer-26",
+              "at": [
+                18,
+                38
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-archer-26",
+          "role": "archer",
+          "targetId": "def-infantry-9",
+          "distance": 3,
+          "range": 3,
+          "ammoBefore": 20,
+          "ammoAfter": 19,
+          "targetHp": 500,
+          "turn": 0
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-archer-26",
+          "doctrine": "aggressive",
+          "turn": 0,
+          "before": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 20
+          },
+          "after": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-28",
+          "targetId": "def-infantry-5",
+          "at": [
+            12,
+            34
+          ],
+          "targetAt": [
+            16,
+            34
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 20,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 0,
+          "enemies": [
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-4",
+              "at": [
+                16,
+                33
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-15",
+              "at": [
+                17,
+                34
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-3",
+              "at": [
+                16,
+                32
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-14",
+              "at": [
+                17,
+                33
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-28",
+          "role": "slinger",
+          "targetId": "def-infantry-5",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 20,
+          "ammoAfter": 19,
+          "targetHp": 500,
+          "turn": 0
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-28",
+          "doctrine": "aggressive",
+          "turn": 0,
+          "before": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 20
+          },
+          "after": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-30",
+          "targetId": "def-infantry-7",
+          "at": [
+            12,
+            36
+          ],
+          "targetAt": [
+            16,
+            36
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 20,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 0,
+          "enemies": [
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-17",
+              "at": [
+                17,
+                36
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-30",
+          "role": "slinger",
+          "targetId": "def-infantry-7",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 20,
+          "ammoAfter": 19,
+          "targetHp": 500,
+          "turn": 0
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-30",
+          "doctrine": "aggressive",
+          "turn": 0,
+          "before": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 20
+          },
+          "after": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-archer-26",
+          "targetId": "def-infantry-9",
+          "at": [
+            13,
+            38
+          ],
+          "targetAt": [
+            16,
+            38
+          ],
+          "distance": 3,
+          "range": 3,
+          "ammo": 19,
+          "rank": 2,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 1,
+          "enemies": [
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 3,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-10",
+              "at": [
+                16,
+                39
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-19",
+              "at": [
+                17,
+                38
+              ],
+              "distance": 4,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-11",
+              "at": [
+                16,
+                40
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-archer-26",
+              "at": [
+                18,
+                38
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-archer-26",
+          "role": "archer",
+          "targetId": "def-infantry-9",
+          "distance": 3,
+          "range": 3,
+          "ammoBefore": 19,
+          "ammoAfter": 18,
+          "targetHp": 500,
+          "turn": 1
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-archer-26",
+          "doctrine": "aggressive",
+          "turn": 1,
+          "before": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          },
+          "after": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-28",
+          "targetId": "def-infantry-5",
+          "at": [
+            12,
+            34
+          ],
+          "targetAt": [
+            16,
+            34
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 19,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 1,
+          "enemies": [
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-4",
+              "at": [
+                16,
+                33
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-15",
+              "at": [
+                17,
+                34
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-3",
+              "at": [
+                16,
+                32
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-14",
+              "at": [
+                17,
+                33
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-28",
+          "role": "slinger",
+          "targetId": "def-infantry-5",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 19,
+          "ammoAfter": 18,
+          "targetHp": 500,
+          "turn": 1
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-28",
+          "doctrine": "aggressive",
+          "turn": 1,
+          "before": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          },
+          "after": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-30",
+          "targetId": "def-infantry-7",
+          "at": [
+            12,
+            36
+          ],
+          "targetAt": [
+            16,
+            36
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 19,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 1,
+          "enemies": [
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-17",
+              "at": [
+                17,
+                36
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-30",
+          "role": "slinger",
+          "targetId": "def-infantry-7",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 19,
+          "ammoAfter": 18,
+          "targetHp": 500,
+          "turn": 1
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-30",
+          "doctrine": "aggressive",
+          "turn": 1,
+          "before": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          },
+          "after": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-archer-26",
+          "targetId": "def-infantry-9",
+          "at": [
+            13,
+            38
+          ],
+          "targetAt": [
+            16,
+            38
+          ],
+          "distance": 3,
+          "range": 3,
+          "ammo": 18,
+          "rank": 2,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 2,
+          "enemies": [
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 3,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-10",
+              "at": [
+                16,
+                39
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-19",
+              "at": [
+                17,
+                38
+              ],
+              "distance": 4,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-11",
+              "at": [
+                16,
+                40
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-archer-26",
+              "at": [
+                18,
+                38
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-archer-26",
+          "role": "archer",
+          "targetId": "def-infantry-9",
+          "distance": 3,
+          "range": 3,
+          "ammoBefore": 18,
+          "ammoAfter": 17,
+          "targetHp": 500,
+          "turn": 2
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-archer-26",
+          "doctrine": "aggressive",
+          "turn": 2,
+          "before": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          },
+          "after": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 17
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-28",
+          "targetId": "def-infantry-5",
+          "at": [
+            12,
+            34
+          ],
+          "targetAt": [
+            16,
+            34
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 18,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 2,
+          "enemies": [
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-4",
+              "at": [
+                16,
+                33
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-15",
+              "at": [
+                17,
+                34
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-3",
+              "at": [
+                16,
+                32
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-14",
+              "at": [
+                17,
+                33
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-28",
+          "role": "slinger",
+          "targetId": "def-infantry-5",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 18,
+          "ammoAfter": 17,
+          "targetHp": 500,
+          "turn": 2
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-28",
+          "doctrine": "aggressive",
+          "turn": 2,
+          "before": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          },
+          "after": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 17
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-30",
+          "targetId": "def-infantry-7",
+          "at": [
+            12,
+            36
+          ],
+          "targetAt": [
+            16,
+            36
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 18,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 2,
+          "enemies": [
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-17",
+              "at": [
+                17,
+                36
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-30",
+          "role": "slinger",
+          "targetId": "def-infantry-7",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 18,
+          "ammoAfter": 17,
+          "targetHp": 500,
+          "turn": 2
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-30",
+          "doctrine": "aggressive",
+          "turn": 2,
+          "before": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          },
+          "after": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 17
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-archer-26",
+          "targetId": "def-infantry-9",
+          "at": [
+            13,
+            38
+          ],
+          "targetAt": [
+            16,
+            38
+          ],
+          "distance": 3,
+          "range": 3,
+          "ammo": 17,
+          "rank": 2,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 3,
+          "enemies": [
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 3,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-10",
+              "at": [
+                16,
+                39
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-19",
+              "at": [
+                17,
+                38
+              ],
+              "distance": 4,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-infantry-11",
+              "at": [
+                16,
+                40
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 0
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-archer-26",
+              "at": [
+                18,
+                38
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-archer-26",
+          "role": "archer",
+          "targetId": "def-infantry-9",
+          "distance": 3,
+          "range": 3,
+          "ammoBefore": 17,
+          "ammoAfter": 16,
+          "targetHp": 500,
+          "turn": 3
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-archer-26",
+          "doctrine": "aggressive",
+          "turn": 3,
+          "before": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 17
+          },
+          "after": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 16
+          }
+        }
+      ]
+    },
+    {
+      "doctrine": "aggressive",
+      "priorityVariant": 1,
+      "terrainVariant": "engaged",
+      "activeUnits": 42,
+      "turns": 12,
+      "summary": {
+        "infantry": {
+          "units": 14,
+          "moves": 0,
+          "shots": 0,
+          "melee": 168,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 1,
+            "max": 1,
+            "unitsWithTargetInRange": 14
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 1,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "archer": {
+          "units": 8,
+          "moves": 0,
+          "shots": 96,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 96,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 3,
+            "max": 3,
+            "unitsWithTargetInRange": 8
+          },
+          "finalDistance": {
+            "min": 3,
+            "max": 3,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "javelin": {
+          "units": 6,
+          "moves": 0,
+          "shots": 72,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 72,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsWithTargetInRange": 6
+          },
+          "finalDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "cavalry": {
+          "units": 7,
+          "moves": 11,
+          "shots": 0,
+          "melee": 78,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 1,
+            "max": 2,
+            "unitsWithTargetInRange": 6
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 1,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "chariot": {
+          "units": 3,
+          "moves": 52,
+          "shots": 0,
+          "melee": 10,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsWithTargetInRange": 0
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 2,
+            "unitsOutsideWeaponRange": 2
+          }
+        }
+      },
+      "trace": [
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-archer-26",
+          "targetId": "def-infantry-9",
+          "at": [
+            13,
+            38
+          ],
+          "targetAt": [
+            16,
+            38
+          ],
+          "distance": 3,
+          "range": 3,
+          "ammo": 20,
+          "rank": 2,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 0,
+          "enemies": [
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 3,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-10",
+              "at": [
+                16,
+                39
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-19",
+              "at": [
+                17,
+                38
+              ],
+              "distance": 4,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-11",
+              "at": [
+                16,
+                40
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-archer-26",
+              "at": [
+                18,
+                38
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-archer-26",
+          "role": "archer",
+          "targetId": "def-infantry-9",
+          "distance": 3,
+          "range": 3,
+          "ammoBefore": 20,
+          "ammoAfter": 19,
+          "targetHp": 500,
+          "turn": 0
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-archer-26",
+          "doctrine": "aggressive",
+          "turn": 0,
+          "before": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 20
+          },
+          "after": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-28",
+          "targetId": "def-infantry-5",
+          "at": [
+            12,
+            34
+          ],
+          "targetAt": [
+            16,
+            34
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 20,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 0,
+          "enemies": [
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-4",
+              "at": [
+                16,
+                33
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-15",
+              "at": [
+                17,
+                34
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-3",
+              "at": [
+                16,
+                32
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-14",
+              "at": [
+                17,
+                33
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-28",
+          "role": "slinger",
+          "targetId": "def-infantry-5",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 20,
+          "ammoAfter": 19,
+          "targetHp": 500,
+          "turn": 0
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-28",
+          "doctrine": "aggressive",
+          "turn": 0,
+          "before": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 20
+          },
+          "after": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-30",
+          "targetId": "def-infantry-7",
+          "at": [
+            12,
+            36
+          ],
+          "targetAt": [
+            16,
+            36
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 20,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 0,
+          "enemies": [
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-17",
+              "at": [
+                17,
+                36
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-30",
+          "role": "slinger",
+          "targetId": "def-infantry-7",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 20,
+          "ammoAfter": 19,
+          "targetHp": 500,
+          "turn": 0
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-30",
+          "doctrine": "aggressive",
+          "turn": 0,
+          "before": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 20
+          },
+          "after": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-archer-26",
+          "targetId": "def-infantry-9",
+          "at": [
+            13,
+            38
+          ],
+          "targetAt": [
+            16,
+            38
+          ],
+          "distance": 3,
+          "range": 3,
+          "ammo": 19,
+          "rank": 2,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 1,
+          "enemies": [
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 3,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-10",
+              "at": [
+                16,
+                39
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-19",
+              "at": [
+                17,
+                38
+              ],
+              "distance": 4,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-11",
+              "at": [
+                16,
+                40
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-archer-26",
+              "at": [
+                18,
+                38
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-archer-26",
+          "role": "archer",
+          "targetId": "def-infantry-9",
+          "distance": 3,
+          "range": 3,
+          "ammoBefore": 19,
+          "ammoAfter": 18,
+          "targetHp": 500,
+          "turn": 1
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-archer-26",
+          "doctrine": "aggressive",
+          "turn": 1,
+          "before": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          },
+          "after": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-28",
+          "targetId": "def-infantry-5",
+          "at": [
+            12,
+            34
+          ],
+          "targetAt": [
+            16,
+            34
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 19,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 1,
+          "enemies": [
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-4",
+              "at": [
+                16,
+                33
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-15",
+              "at": [
+                17,
+                34
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-3",
+              "at": [
+                16,
+                32
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-14",
+              "at": [
+                17,
+                33
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-28",
+          "role": "slinger",
+          "targetId": "def-infantry-5",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 19,
+          "ammoAfter": 18,
+          "targetHp": 500,
+          "turn": 1
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-28",
+          "doctrine": "aggressive",
+          "turn": 1,
+          "before": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          },
+          "after": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-30",
+          "targetId": "def-infantry-7",
+          "at": [
+            12,
+            36
+          ],
+          "targetAt": [
+            16,
+            36
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 19,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 1,
+          "enemies": [
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-17",
+              "at": [
+                17,
+                36
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-30",
+          "role": "slinger",
+          "targetId": "def-infantry-7",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 19,
+          "ammoAfter": 18,
+          "targetHp": 500,
+          "turn": 1
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-30",
+          "doctrine": "aggressive",
+          "turn": 1,
+          "before": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 19
+          },
+          "after": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-archer-26",
+          "targetId": "def-infantry-9",
+          "at": [
+            13,
+            38
+          ],
+          "targetAt": [
+            16,
+            38
+          ],
+          "distance": 3,
+          "range": 3,
+          "ammo": 18,
+          "rank": 2,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 2,
+          "enemies": [
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 3,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-10",
+              "at": [
+                16,
+                39
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-19",
+              "at": [
+                17,
+                38
+              ],
+              "distance": 4,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-11",
+              "at": [
+                16,
+                40
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-archer-26",
+              "at": [
+                18,
+                38
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-archer-26",
+          "role": "archer",
+          "targetId": "def-infantry-9",
+          "distance": 3,
+          "range": 3,
+          "ammoBefore": 18,
+          "ammoAfter": 17,
+          "targetHp": 500,
+          "turn": 2
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-archer-26",
+          "doctrine": "aggressive",
+          "turn": 2,
+          "before": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          },
+          "after": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 17
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-28",
+          "targetId": "def-infantry-5",
+          "at": [
+            12,
+            34
+          ],
+          "targetAt": [
+            16,
+            34
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 18,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 2,
+          "enemies": [
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-4",
+              "at": [
+                16,
+                33
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-15",
+              "at": [
+                17,
+                34
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-3",
+              "at": [
+                16,
+                32
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-14",
+              "at": [
+                17,
+                33
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-28",
+          "role": "slinger",
+          "targetId": "def-infantry-5",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 18,
+          "ammoAfter": 17,
+          "targetHp": 500,
+          "turn": 2
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-28",
+          "doctrine": "aggressive",
+          "turn": 2,
+          "before": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          },
+          "after": {
+            "q": 12,
+            "r": 34,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 17
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-slinger-30",
+          "targetId": "def-infantry-7",
+          "at": [
+            12,
+            36
+          ],
+          "targetAt": [
+            16,
+            36
+          ],
+          "distance": 4,
+          "range": 4,
+          "ammo": 18,
+          "rank": 3,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 2,
+          "enemies": [
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-6",
+              "at": [
+                16,
+                35
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-17",
+              "at": [
+                17,
+                36
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-5",
+              "at": [
+                16,
+                34
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 6,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-16",
+              "at": [
+                17,
+                35
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 6,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-slinger-30",
+          "role": "slinger",
+          "targetId": "def-infantry-7",
+          "distance": 4,
+          "range": 4,
+          "ammoBefore": 18,
+          "ammoAfter": 17,
+          "targetHp": 500,
+          "turn": 2
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-slinger-30",
+          "doctrine": "aggressive",
+          "turn": 2,
+          "before": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 18
+          },
+          "after": {
+            "q": 12,
+            "r": 36,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 17
+          }
+        },
+        {
+          "type": "ranged-pick",
+          "unitId": "atk-archer-26",
+          "targetId": "def-infantry-9",
+          "at": [
+            13,
+            38
+          ],
+          "targetAt": [
+            16,
+            38
+          ],
+          "distance": 3,
+          "range": 3,
+          "ammo": 17,
+          "rank": 2,
+          "moveLeft": 2,
+          "acted": false,
+          "turn": 3,
+          "enemies": [
+            {
+              "id": "def-infantry-9",
+              "at": [
+                16,
+                38
+              ],
+              "distance": 3,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-8",
+              "at": [
+                16,
+                37
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-10",
+              "at": [
+                16,
+                39
+              ],
+              "distance": 4,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-19",
+              "at": [
+                17,
+                38
+              ],
+              "distance": 4,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-infantry-7",
+              "at": [
+                16,
+                36
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-infantry-11",
+              "at": [
+                16,
+                40
+              ],
+              "distance": 5,
+              "class": "melee",
+              "priority": 2
+            },
+            {
+              "id": "def-javelin-18",
+              "at": [
+                17,
+                37
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            },
+            {
+              "id": "def-archer-26",
+              "at": [
+                18,
+                38
+              ],
+              "distance": 5,
+              "class": "ranged",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "shot",
+          "unitId": "atk-archer-26",
+          "role": "archer",
+          "targetId": "def-infantry-9",
+          "distance": 3,
+          "range": 3,
+          "ammoBefore": 17,
+          "ammoAfter": 16,
+          "targetHp": 500,
+          "turn": 3
+        },
+        {
+          "type": "activation",
+          "unitId": "atk-archer-26",
+          "doctrine": "aggressive",
+          "turn": 3,
+          "before": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 17
+          },
+          "after": {
+            "q": 13,
+            "r": 38,
+            "moveLeft": 2,
+            "acted": false,
+            "ammoLeft": 16
+          }
+        }
+      ]
+    }
+  ]
+}

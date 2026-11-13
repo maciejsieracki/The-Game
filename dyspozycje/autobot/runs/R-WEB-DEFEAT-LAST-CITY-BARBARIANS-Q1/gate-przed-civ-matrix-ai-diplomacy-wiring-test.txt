@@ -1,0 +1,9 @@
+--- exact scope and 30 unresolved cells ---
+--- matrix adapters, precedence, and difficulty boundary ---
+--- accepted aggression consumer and unresolved aggression guard ---
+--- pure helper versus live start path ---
+--- existing trade consumer smoke check ---
+--- live consumer guards ---
+FAIL: main AI path reads the matrix profile per owner and difficulty
+RESULT: 42 passed, 1 failed
+EXIT=1

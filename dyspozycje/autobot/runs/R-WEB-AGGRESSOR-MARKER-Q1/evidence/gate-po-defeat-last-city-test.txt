@@ -1,0 +1,2 @@
+[defeat-last-city-test] 14 passed, 0 failed (total 14).
+EXIT=0

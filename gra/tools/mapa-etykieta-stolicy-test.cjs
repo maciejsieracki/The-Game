@@ -227,18 +227,18 @@ assert(/formatCityMapLabel\(city,\s*\{/.test(citiesSrc)
   '(D3) render/cities.ts karmi etykietę bez nowych pól — dane były tam już wcześniej');
 
 // ---------------------------------------------------------------------------
-// (E) R2-2 — stolica AI bierze nazwę z miasta_cywilizacji[0], nie z miasta_panstwa[0]
+// (E) R2-2 — stolica AI bierze nazwę z miasta_cywilizacji[0], nie z suffixu państw-miast
 // ---------------------------------------------------------------------------
 console.log('\n-- (E) R2-2: źródło nazwy stolicy AI --');
 
 const CHIN = M.foreignCapitalCityName(civs, 'chinczycy', pools);
 assert(CHIN === "Xi'an", '(E1) stolica AI Chińczyków = „Xi\'an"', CHIN);
-assert(CHIN !== 'Qin' && CHIN !== pools.chinczycy.miasta_panstwa[0],
+assert(CHIN !== 'Qin' && CHIN !== pools.chinczycy.miasta_cywilizacji[100],
   '(E2) NIE „Qin" — nazwa państwa/dynastii z puli miast-państw', CHIN);
 
 const SLOW = M.foreignCapitalCityName(civs, 'slowianie', pools);
 assert(SLOW === 'Kijów', '(E3) stolica AI Słowian = „Kijów"', SLOW);
-assert(SLOW !== 'Kiev' && SLOW !== pools.slowianie.miasta_panstwa[0],
+assert(SLOW !== 'Kiev' && SLOW !== pools.slowianie.miasta_cywilizacji[100],
   '(E4) NIE „Kiev" z puli miast-państw', SLOW);
 
 const mismatched = Object.keys(pools).filter(
@@ -248,9 +248,9 @@ assert(mismatched.length === 0,
   '(E5) WSZYSTKIE cywilizacje: stolica AI = miasta_cywilizacji[0] (parytet ze źródłem)',
   mismatched);
 
-// REGRESJA R2-2: pula miast-państw dalej obsługuje miasta-państwa klastra.
-assert(M.clusterRivalCityName(civs, 'chinczycy', 1, pools) === pools.chinczycy.miasta_panstwa[1],
-  '(E6) miasta-państwa klastra nadal z miasta_panstwa[1..] (bez zmian)');
+// REGRESJA R2-2: końcowy suffix wspólnej puli dalej obsługuje miasta-państwa klastra.
+assert(M.clusterRivalCityName(civs, 'chinczycy', 1, pools) === pools.chinczycy.miasta_cywilizacji[100],
+  '(E6) miasta-państwa klastra nadal z suffixu wspólnej listy (bez indeksu 0)');
 // (E7) ZMIENIONA W RUNDZIE 3 (R3-2). Do rundy 2 ta asercja brzmiała
 //   `M.playerStartCityName(civs, 'chinczycy', pools) === pools.chinczycy.miasta_panstwa[0]`
 // czyli utrwalała `Qin` — stan, w którym stolica GRACZA szła z puli MIAST-PAŃSTW. Runda 2
@@ -261,11 +261,11 @@ assert(M.clusterRivalCityName(civs, 'chinczycy', 1, pools) === pools.chinczycy.m
 const PLAYER_CHIN = M.playerStartCityName(civs, 'chinczycy', pools);
 assert(PLAYER_CHIN === pools.chinczycy.miasta_cywilizacji[0],
   '(E7) stolica GRACZA-Chińczyka = miasta_cywilizacji[0] („Xi\'an") — R3-2', PLAYER_CHIN);
-assert(PLAYER_CHIN !== 'Qin' && PLAYER_CHIN !== pools.chinczycy.miasta_panstwa[0],
+assert(PLAYER_CHIN !== 'Qin' && PLAYER_CHIN !== pools.chinczycy.miasta_cywilizacji[100],
   '(E7a) NIE „Qin" z puli miast-państw (wartość utrwalona przez bramkę rundy 2)', PLAYER_CHIN);
 
 const PLAYER_SLOW = M.playerStartCityName(civs, 'slowianie', pools);
-assert(PLAYER_SLOW === 'Kijów' && PLAYER_SLOW !== pools.slowianie.miasta_panstwa[0],
+assert(PLAYER_SLOW === 'Kijów' && PLAYER_SLOW !== pools.slowianie.miasta_cywilizacji[100],
   '(E7b) stolica GRACZA-Słowianina = „Kijów", nie „Kiev"', PLAYER_SLOW);
 
 const playerMismatched = Object.keys(pools).filter(
@@ -280,7 +280,7 @@ assert(Object.keys(pools).every(
 ), '(E7d) parytet: stolica gracza i stolica AI tej samej cywilizacji czytają to samo źródło');
 
 // BRAK DUPLIKATU W JEDNEJ PARTII (kryterium 4 rundy 3). Obce klastry pomijają typ gracza
-// (`cluster-spawn.ts:332`), a rywale tego samego typu biorą `miasta_panstwa[1..]`
+// (`cluster-spawn.ts:332`), a rywale tego samego typu biorą końcowy suffix wspólnej listy
 // (`clusterRivalCityName`), więc nazwa stolicy gracza nie może paść drugi raz.
 const PLAYER_CIV = 'chinczycy';
 const nazwyPartii = [];

@@ -1,0 +1,4 @@
+PASS: PO usunieciu bloku resetu z petli load'u: wzorzec 4.1 faktycznie przestaje pasowac (mutacja wykryta) -- asercja nie jest tautologiczna
+
+OKOLICA-LOAD-RECONCILE FAIL (21/23 passed, 2 failed)
+EXIT=1

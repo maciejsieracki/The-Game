@@ -1,0 +1,4 @@
+PASS real G11 pricing consumer retains Impi-only targeting after roundtrip
+CONSUMER_TRACE primary=zulu impiCost=90 nonImpiCost=100
+RESULT BOUNDED_SOURCE_EXECUTION_PASS; this does not prove full-game save/load.
+EXIT=0

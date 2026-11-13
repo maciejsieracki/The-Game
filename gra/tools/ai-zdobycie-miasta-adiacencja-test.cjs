@@ -186,8 +186,13 @@ const OSADNIK = { typeId: 'Osadnik', category: 'osadnik' };
  * jednostki — czyli komenda `move` na miasto jest JEDYNĄ komendą tej jednostki w turze.
  */
 function planAiCityMove(world) {
+  // Stan wojny z WROG_OWNER jest JAWNY w fixturze (jak w main.ts: atWarWithCivFor +
+  // canEngageOwner). Bez niego ai.ts słusznie traktuje cywilizację w pokoju jako
+  // niezaczepialną i prowadzi jednostkę do stolicy (R-WEB-ARMY-CONSOLIDATION-Q1,
+  // f2100f9cf) — stan sprzed tej zmiany fixtury nie modelował wojny wcale.
   const cmds = REAL.decideAITurn(
-    AI_OWNER, world.units, world.cities, world.map, GAME_DATA, { civType: 'rzymianie' },
+    AI_OWNER, world.units, world.cities, world.map, GAME_DATA,
+    { civType: 'rzymianie', atWarWithCiv: true, canEngageOwner: o => o === WROG_OWNER },
   );
   const unitCmds = cmds.filter(c => c.unitId === 'ai-u1');
   return { cmds, unitCmds, move: unitCmds.find(c => c.type === 'move') };
@@ -443,12 +448,14 @@ console.log('\n--- A5/A6: wpięcie w main.ts (anty-„naprawa na papierze") ---'
   const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
   const callIdx = mainSrc.indexOf('const moveResult = executeAiCityMove({');
   assert(callIdx > 0, 'A5a: main.ts wywołuje executeAiCityMove w pętli komend AI');
-  const window = mainSrc.slice(callIdx, callIdx + 1400);
+  // Okno wywołania egzekutora: `onCapture` leży ~2.2 kB od początku wywołania
+  // (po rozbudowie o hasCityDefenders z cityDefenderOptions, fortyfikacje itd.).
+  const window = mainSrc.slice(callIdx, callIdx + 2600);
   assert(window.includes('canOccupyCityHex: canUnitOccupyCityHex(u.ownerId, cmd.toQ, cmd.toR, cities),'),
     'A5b: egzekutor dostaje REALNĄ canUnitOccupyCityHex (reguła bazowa nadal liczona)');
   assert(/onCapture:\s*\(city\)\s*=>\s*tryAutoCaptureEmptyCityAt\(/.test(window),
     'A5c: onCapture jest wpięty w tryAutoCaptureEmptyCityAt — bez tego rozkaz przechodzi, ale miasto NIE zmienia właściciela');
-  assert(window.includes('hasCityDefenders(destinationCity, units)'),
+  assert(window.includes('hasCityDefenders(destinationCity, units, cityDefenderOptions(destinationCity))'),
     'A5d: hasCityDefenders liczone z realnego stanu jednostek');
 
   // --- A5e-A5h — WPIĘCIE `unitIsCivilian` (F1 Final Control, runda 2/5) ------
@@ -507,7 +514,8 @@ console.log('\n--- A5/A6: wpięcie w main.ts (anty-„naprawa na papierze") ---'
   const captureIdx = mainSrc.indexOf('captureCityWithoutBattle(city, anchor, atkRoster);', fnIdx);
   assert(captureIdx > fnIdx, 'A6b: tryAutoCaptureEmptyCityAt kończy się realnym captureCityWithoutBattle');
   const body = mainSrc.slice(fnIdx, captureIdx);
-  assert(body.includes('if (!canCaptureCityWithoutBattle(city, units)) return false;'),
+  const DEFENDER_GATE = 'if (!canCaptureCityWithoutBattle(city, units, cityDefenderOptions(city))) return false;';
+  assert(body.includes(DEFENDER_GATE),
     'A6c: jedyną bramką obrońców jest canCaptureCityWithoutBattle (wspólna dla gracza, barbarzyńców i AI)');
   // Filtr po ownerze napastnika odciąłby AI od przejęcia — dokładnie defekt tego tematu.
   // Jedyne dozwolone porównanie `ownerId` to blok „miasto już moje" (city.ownerId ===
@@ -515,8 +523,10 @@ console.log('\n--- A5/A6: wpięcie w main.ts (anty-„naprawa na papierze") ---'
   const sameOwnerIdx = body.indexOf('if (city.ownerId === anchor.ownerId) {');
   assert(sameOwnerIdx > 0, 'A6d: rozpoznano blok „miasto już należy do napastnika"');
   const head = body.slice(0, sameOwnerIdx);
-  const tailIdx = body.indexOf('if (!canCaptureCityWithoutBattle(city, units)) return false;');
-  const tail = body.slice(tailIdx);
+  const tailIdx = body.indexOf(DEFENDER_GATE);
+  // Dozwolone jest wyłącznie odwołanie do właściciela napastnika w komunikacie dla gracza
+  // (`isMe(anchor.ownerId)`) — nie jest to bramka przejęcia.
+  const tail = body.slice(tailIdx).replace(/isMe\(anchor\.ownerId\)/g, '');
   eq(/anchor\.ownerId/.test(head), false,
     'A6e: przed blokiem własnego miasta NIE ma warunku po ownerId napastnika');
   eq(/ownerId/.test(tail), false,
@@ -646,7 +656,10 @@ function countRedsUnderExecutor(executor) {
     'K6b: MUT-2 („naprawa na papierze" — ruch przechodzi, callback przejęcia wycięty) — 2 czerwone asercje K2 (captured + ownerId)');
 
   const MUT_NO_UNBLOCK = bundleExecutorVariant(
-    src => src.replace('if (canEnterEmptyCity) blockedKeys.delete(opts.destinationKey);', ''),
+    src => src.replace(
+      '    blockedKeys.delete(opts.destinationKey);\n    blockedKeys.passThrough.delete(opts.destinationKey);',
+      '',
+    ),
     'nounblock',
   );
   eq(countRedsUnderExecutor(MUT_NO_UNBLOCK), 4,
@@ -654,8 +667,8 @@ function countRedsUnderExecutor(executor) {
 
   const MUT_DROP_ADJACENCY = bundleExecutorVariant(
     src => src.replace(
-      "const canEnterEmptyCity = destinationCity !== undefined\n    && command.targetCityId === destinationCity.id",
-      "const canEnterEmptyCity = destinationCity !== undefined",
+      "    && command.targetCityId === destinationCity.id\n    && opts.targetVisible",
+      "    && opts.targetVisible",
     ),
     'dropTarget',
   );

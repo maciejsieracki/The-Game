@@ -1,0 +1,70 @@
+PROFIL CDP (sampling 200us), tura 1 EOT, 137 miast / 321 jednostek, harness gra/tools/perf-endturn-ai-phase-live-test.cjs.
+ms: inclusive (nie sumuja sie) i self. jsMs tury 1: baza=7250, kandydat=4334 (przebieg A/B nr 1; load 3.9-7.4).
+
+=== prof-ab-base-1.1.json
+-- top-15 inclusive
+runAiPhase:225720 4411
+runWorldEndTurn:224165 1826
+syncUnitsRender:205547 1351
+decideAITurn:190619 1284
+decideAITurnCore:190742 1282
+cached:106306 1152
+renderLoop:217541 913
+run:106297 902
+WebGLRenderer.render:17274 812
+_syncStatChip:126303 794
+syncStatChips:126049 710
+firstStep:189525 676
+empireActiveResourceLabelsForOwner:199582 660
+computePath:51952 655
+withSiegeScope:51798 655
+-- top-15 self
+computeVisibleAt:70757 331
+updateMatrixWorld:4695 267
+hexesInCitySight:129673 255
+computePathImpl:51955 232
+computeLostToNearerSiblingByCityUncached:70700 145
+projectObject:17361 124
+runWorldEndTurn:224165 102
+runAiPhase:225720 97
+territoryOwnerAt:70042 89
+isOnRiver:188732 83
+multiplyMatrices:3697 81
+pickAutoImprovementsSinglePass:188648 80
+collectDepositPotential:129685 78
+getCityResourceAccessForCity:129723 78
+empireBuiltIdsForOwnerRaw:199574 75
+
+=== prof-ab-cand-1.1.json
+-- top-15 inclusive
+runAiPhase:225766 2693
+runWorldEndTurn:224211 898
+decideAITurn:190643 809
+decideAITurnCore:190766 805
+syncUnitsRender:205589 760
+renderLoop:217583 720
+WebGLRenderer.render:17274 626
+run:106318 599
+cached:106327 563
+_syncStatChip:126324 519
+syncStatChips:126070 489
+_buildBadgeInput:126276 440
+assignWorkedTiles:70472 434
+getCityGrowth:219111 425
+cityGrowthLive:148982 425
+-- top-15 self
+updateMatrixWorld:4695 216
+computePathImpl:51963 158
+computeLostToNearerSiblingByCityUncached:70721 124
+projectObject:17361 114
+isOnRiver:188756 88
+runWorldEndTurn:224211 86
+pickAutoImprovementsSinglePass:188672 83
+runAiPhase:225766 70
+intersectsObject:7802 67
+multiplyMatrices:3697 67
+territoryOwnerAt:70050 66
+yieldOf:106683 59
+isLandWorkableHex:70341 54
+ownPlayerVisibleHexes:205028 47
+improvementKeysForHex:51430 42

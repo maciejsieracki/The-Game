@@ -43,6 +43,7 @@
  *    to poprawne czytanie, czy jednak dodać widoczny, wygaszony przycisk?
  */
 
+import { humanizeId, nazwaWyswietlana, nazwyZListyId } from '../game/text-names';
 import techData from '../../data/tech.json';
 import buildingsData from '../../data/buildings.json';
 import unitsData from '../../data/units.json';
@@ -53,6 +54,9 @@ import { buildingIconSvg, unitIconSvg, improvementIconSvg } from './icons/brandA
 import type { ImprovementKey } from '../render/improvements';
 import { buildEntityCardData, renderEntityCard, ENTITY_CARD_CSS, openEntityCard } from './entityCards/renderer';
 import { technologyIdFromName } from './entityCards/registry';
+import { yieldSentenceFields } from './entityCards/resourceRows';
+import { techCardContentOf, cmzSentence, isDeadTechCardBuilding } from './entityCards/technologyAdapter';
+import { hiddenTechEffectNames } from './entityCards/techDeadEffects';
 import type { EntityCardData, EntityCardAction } from './entityCards/types';
 
 type TechRow = {
@@ -146,11 +150,11 @@ function pluralPl(n: number, one: string, few: string, many: string): string {
 function buildingEffectText(building: BuildingRow): string {
   const effects: string[] = [];
   for (const [key, value] of Object.entries(building.przyrost ?? {})) {
-    if (value) effects.push(`${key} ${value > 0 ? '+' : ''}${value}`);
+    if (value) effects.push(`${nazwaWyswietlana(key)} ${value > 0 ? '+' : ''}${value}`);
   }
   if (effects.length === 0) {
     for (const [key, value] of Object.entries(building.baza ?? {})) {
-      if (value) effects.push(`${key} ${value > 0 ? '+' : ''}${value}`);
+      if (value) effects.push(`${nazwaWyswietlana(key)} ${value > 0 ? '+' : ''}${value}`);
     }
   }
   return effects.join(', ');
@@ -201,13 +205,20 @@ function actionItemRow(kind: 'ok' | 'warn' | 'muted', label: string, text: strin
   return `<div class="tdn-action">${badge(kind, label)}<span class="tdn-action-text">${esc(text)}</span></div>`;
 }
 
-/** „Co możesz teraz zrobić" — szablony wypełnione realnymi nazwami, nie ręczna narracja per-tech (patrz nagłówek pliku, pkt 2). */
+/** „Co możesz teraz zrobić" — R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1: spójnie z `technologyAdapter.ts`
+ * (ta sama treść CZYNNOŚĆ → KORZYŚĆ z `data/tech-cards-top5.json`, bez wiersza „Nie oznacza”).
+ * Szablony wypełnione realnymi nazwami zostają WYŁĄCZNIE jako fallback dla odkrycia bez wpisu. */
 function buildActionItems(args: {
+  techName: string;
   buildingNames: string[];
   improvementNames: string[];
   resourceUnlocked: string | null;
   nextTechCount: number;
 }): string {
+  const content = techCardContentOf(args.techName);
+  if (content) {
+    return content.cmz.map(item => actionItemRow('ok', 'Możesz teraz', cmzSentence(item))).join('');
+  }
   const rows: string[] = [];
   if (args.resourceUnlocked) {
     rows.push(actionItemRow('ok', 'Możesz teraz', `Sprawdź dostęp do surowca: ${args.resourceUnlocked}.`));
@@ -221,8 +232,6 @@ function buildActionItems(args: {
   if (args.nextTechCount > 0) {
     rows.push(actionItemRow('ok', 'Możesz teraz', 'Wybierz dalszy kierunek badań, jeśli pozostałe wymagania są spełnione.'));
   }
-  if (rows.length === 0) return '';
-  rows.push(actionItemRow('muted', 'Nie oznacza', 'Odkrycie nie buduje automatycznie budynków ani ulepszeń i nie dodaje zapasu surowców.'));
   return rows.join('');
 }
 
@@ -350,18 +359,33 @@ background:rgba(232,216,138,.025);text-align:center;font-size:13px;color:#c8b898
 }
 
 function buildBody(tech: TechRow): { html: string } {
-  const buildings = (buildingsData as BuildingRow[]).filter(b => b.techUnlock === tech.Technologia);
-  const units = (unitsData as UnitRow[]).filter(u => u.Tech === tech.Technologia);
+  // Obrona r1 (Z4): ścieżka zapasowa ukrywa te same efekty martwe co `technologyAdapter.ts`
+  // (`ukryte` z `tech-cards-top5.json` + reguła budynków suppressed / epoka > 3).
+  const hidden = hiddenTechEffectNames(tech.Technologia);
+  const buildings = (buildingsData as BuildingRow[]).filter(b => b.techUnlock === tech.Technologia
+    && !isDeadTechCardBuilding(b as unknown as { suppressed?: unknown; epokaWejscia?: unknown })
+    && !hidden.has(b.nazwa ?? humanizeId(b.id)));
+  const units = (unitsData as UnitRow[]).filter(u => u.Tech === tech.Technologia && !hidden.has(u.Jednostka));
   const allTechs = (techData as unknown as { technologie: TechRow[] }).technologie;
-  const nextTechRows = allTechs.filter(t => list(t['Wymaga (prereq)']).includes(tech.Technologia));
-  const improvementNames = list(tech['Odblokowuje ulepszenie terenu']);
-  const resourceUnlocked = tech['Odblokowuje surowiec.'] || null;
+  const nextTechRows = allTechs.filter(t => list(t['Wymaga (prereq)']).includes(tech.Technologia)
+    && !hidden.has(t.Technologia));
+  const improvementNames = list(tech['Odblokowuje ulepszenie terenu']).filter(n => !hidden.has(n));
+  const resourceUnlocked = nazwyZListyId(tech['Odblokowuje surowiec.']) || null;
   const requirements = list(tech['Wymaga (prereq)']);
 
   // "Co możesz teraz zrobić" — PIERWSZA sekcja, nad Budynkami: priorytet „co mogę zrobić teraz"
   // przed „co zostało odblokowane" (DYSPOZYCJA-WDROZENIE.md §2, odstępstwo świadome i zaakceptowane).
+  // R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1: „Top 5 korzyści” także w ścieżce zapasowej (spójność
+  // z `technologyAdapter.ts`; ta ścieżka działa tylko, gdy entityCards rzuci wyjątek).
+  const top5Items = techCardContentOf(tech.Technologia)?.top5 ?? [];
+  const top5Section = top5Items.length === 0 ? '' : accordionSection({
+    key: 'top5', title: 'Top 5 korzyści', count: top5Items.length, openDefault: true,
+    bodyHtml: top5Items.map(item => unlockItemRow({ icon: null, title: item.tytul, meta: item.zdanie })).join(''),
+  });
+
   const actionsHtml = buildActionItems({
-    buildingNames: buildings.map(b => b.nazwa ?? b.id),
+    techName: tech.Technologia,
+    buildingNames: buildings.map(b => b.nazwa ?? humanizeId(b.id)),
     improvementNames,
     resourceUnlocked,
     nextTechCount: nextTechRows.length,
@@ -373,7 +397,7 @@ function buildBody(tech: TechRow): { html: string } {
 
   const buildingsBody = buildings.map(b => unlockItemRow({
     icon: buildingIconSvg(undefined, b.id),
-    title: b.nazwa ?? b.id,
+    title: b.nazwa ?? humanizeId(b.id),
     meta: [tech.Epoka ? `Epoka ${tech.Epoka === 'Kamień' ? 'Kamienia' : tech.Epoka}` : null, b.wymagania ?? (buildingEffectText(b) || null)]
       .filter(Boolean).join(' · ') || undefined,
   })).join('');
@@ -427,11 +451,11 @@ function buildBody(tech: TechRow): { html: string } {
   const econRows: string[] = [];
   for (const b of buildings) {
     const effect = buildingEffectText(b);
-    if (effect) econRows.push(unlockItemRow({ icon: buildingIconSvg(undefined, b.id), title: b.nazwa ?? b.id, meta: effect }));
+    if (effect) econRows.push(unlockItemRow({ icon: buildingIconSvg(undefined, b.id), title: b.nazwa ?? humanizeId(b.id), meta: effect }));
     if (b.utrzymanie != null) {
       econRows.push(unlockItemRow({
         icon: buildingIconSvg(undefined, b.id),
-        title: `${b.nazwa ?? b.id} — utrzymanie`,
+        title: `${b.nazwa ?? humanizeId(b.id)} — utrzymanie`,
         meta: `${b.utrzymanie} złota na turę`,
       }));
     }
@@ -448,7 +472,7 @@ function buildBody(tech: TechRow): { html: string } {
     + `<div class="tdn-req-body">${requirements.map(r => `<span class="tdn-req-pill">${esc(r)} <b>✓</b></span>`).join('')}</div>`
     + `</div>`;
 
-  const sections = [actionsSection, buildingsSection, unitsSection, improvementsSection, nextTechsSection, econSection]
+  const sections = [top5Section, actionsSection, buildingsSection, unitsSection, improvementsSection, nextTechsSection, econSection]
     .filter(Boolean).join('');
 
   if (sections === '' && reqSection === '') {
@@ -565,7 +589,20 @@ function showTechDiscoveryNoticeViaEntityCard(tech: TechRow, opts: ShowTechDisco
   // dopinamy `linkTo` TU, na już zbudowanych danych, żeby otwierały tę samą kartę co
   // pozostałe 2 miejsca wywołania (`openEntityCard('improvement', key, {mode:'dialog'})`).
   // `IMPROVEMENT_NAME_TO_KEY` (góra pliku) — ten sam mostek nazwa→klucz co reszta pliku.
-  const sectionsWithImprovementLinks = cardData.sections.map((section) => {
+  // R-WEB-UI-RESOURCE-ICONS-TECH-DISCOVERY-NOTICE-Q1: zdania „Top 5 korzyści” (`tech-cards-top5.json`)
+  // trafiają do adaptera jako zwykły `value` — bez tokenizacji plony/surowce („żywność, Pracę i podatek”)
+  // zostawałyby gołymi nazwami. Ta sama tokenizacja co wiersze „Co możesz teraz zrobić” (`yieldSentenceFields`).
+  // Tekst `value` zostaje (rezerwa); `valueParts` niesie chipy ikona+liczba.
+  const sectionsWithYieldChips = cardData.sections.map((section) => {
+    if (section.key !== 'top5') return section;
+    return {
+      ...section,
+      rows: section.rows.map((row) => (typeof row.value === 'string'
+        ? { ...row, ...yieldSentenceFields(row.value) }
+        : row)),
+    };
+  });
+  const sectionsWithImprovementLinks = sectionsWithYieldChips.map((section) => {
     if (section.key !== 'improvements') return section;
     return {
       ...section,

@@ -1,0 +1,26 @@
+=== r2 vs r3 (pary: r2=5, r3=5)
+EOT1      syncUnitsRender  r2 n=5 192 (155/211)          r3 n=5 305 (233/336)          redukcja(med) -58.9%
+EOT1      renderLoop       r2 n=5 658 (635/714)          r3 n=5 620 (545/778)          redukcja(med) 5.8%
+EOT1      syncStatChips    r2 n=5 118 (92/139)           r3 n=5 228 (162/234)          redukcja(med) -93.2%
+EOT1      union            r2 n=5 852 (813/897)          r3 n=5 924 (878/1074)         redukcja(med) -8.5%
+EOT1      sum              r2 n=5 985 (906/1015)         r3 n=5 1112 (1086/1302)       redukcja(med) -12.9%
+EOT2      syncUnitsRender  r2 n=5 209 (193/276)          r3 n=5 293 (215/348)          redukcja(med) -40.2%
+EOT2      renderLoop       r2 n=5 668 (570/730)          r3 n=5 671 (574/791)          redukcja(med) -0.4%
+EOT2      syncStatChips    r2 n=5 162 (132/240)          r3 n=5 226 (143/262)          redukcja(med) -39.5%
+EOT2      union            r2 n=5 893 (779/957)          r3 n=5 916 (867/1109)         redukcja(med) -2.6%
+EOT2      sum              r2 n=5 1075 (941/1138)        r3 n=5 1111 (1031/1350)       redukcja(med) -3.3%
+EOT3      syncUnitsRender  r2 n=5 222 (204/272)          r3 n=5 349 (310/416)          redukcja(med) -57.2%
+EOT3      renderLoop       r2 n=5 1831 (1375/2037)       r3 n=5 2165 (1862/2276)       redukcja(med) -18.2%
+EOT3      syncStatChips    r2 n=5 173 (134/202)          r3 n=5 272 (227/312)          redukcja(med) -57.2%
+EOT3      union            r2 n=5 2035 (1590/2259)       r3 n=5 2479 (2211/2654)       redukcja(med) -21.8%
+EOT3      sum              r2 n=5 2169 (1758/2457)       r3 n=5 2706 (2483/2966)       redukcja(med) -24.8%
+EOT1+2    syncUnitsRender  r2 n=5 404 (395/431)          r3 n=5 629 (448/651)          redukcja(med) -55.7%
+EOT1+2    renderLoop       r2 n=5 1303 (1275/1422)       r3 n=5 1336 (1194/1449)       redukcja(med) -2.5%
+EOT1+2    syncStatChips    r2 n=5 280 (271/332)          r3 n=5 455 (305/490)          redukcja(med) -62.5%
+EOT1+2    union            r2 n=5 1707 (1676/1835)       r3 n=5 1823 (1812/2093)       redukcja(med) -6.8%
+EOT1+2    sum              r2 n=5 2039 (1956/2128)       r3 n=5 2277 (2117/2583)       redukcja(med) -11.7%
+EOT1+2+3  syncUnitsRender  r2 n=5 642 (599/685)          r3 n=5 954 (864/1029)         redukcja(med) -48.6%
+EOT1+2+3  renderLoop       r2 n=5 3218 (2650/3405)       r3 n=5 3529 (3056/3618)       redukcja(med) -9.7%
+EOT1+2+3  syncStatChips    r2 n=5 448 (413/509)          r3 n=5 717 (615/787)          redukcja(med) -60.0%
+EOT1+2+3  union            r2 n=5 3816 (3266/4090)       r3 n=5 4393 (4034/4641)       redukcja(med) -15.1%
+EOT1+2+3  sum              r2 n=5 4229 (3714/4585)       r3 n=5 5008 (4760/5428)       redukcja(med) -18.4%

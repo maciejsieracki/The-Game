@@ -1,0 +1,28 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1
+GOAL: Podczas wojny AI kieruje najwieksza armie w pierwszej kolejnosci na najwieksza (widoczna) armie przeciwnika, aby stoczyc bitwe w polu, zamiast mijac ja i zajmowac miasta.
+ZMIANY/COMMIT: baza 37bcf8ebb. Pliki: gra/src/game/ai-war-army-seeks-army.ts (nowy, czysty planer), gra/src/game/ai.ts (import + wywolanie w decideAITurn po applyHomeWarPriorities + funkcja applyArmySeeksEnemyArmy), gra/data/ai-params.json (3 parametry), gra/tools/ai-war-army-seeks-army-test.cjs (nowy test), dyspozycje/rust-port/LEDGER.md (wpis REPIN, wymagany pkt 4 dispatchu), ten raport. SHA: patrz odpowiedz Operatora (pole sha).
+TESTY (surowe wyniki):
+- tsc --noEmit: exit 0.
+- ai-war-army-seeks-army-test.cjs: 17 PASS, 0 FAIL (T1 sasiedztwo, T2 3 hexy, T3 mijanie, T4 za slaba, T5 poza zasiegiem, T6 miasto pod presja, T7 mgla, T8 determinizm, T9 planer).
+  Dowod sceny T3 (rownolegle pasy, 25 tur): PRZED battles=30 captures=2, PO battles=31 captures=0; pierwsza bitwa przed pierwszym zajeciem miasta. Uwaga: PRZED tez dochodzi do bitew (istniejacy krok 4b atakuje sasiadow) -- roznica to zajecia miast (2 -> 0).
+- Regresja: ai-test 296/0; ai-war-defend-home-test 30/0; ai-war-gate-test 24/0; ai-war-nearest-city-peace-2t-test PASS (16/16 mutacji); ai-target-nearest-city-test 18/18; ai-army-all-civs-general-muster-test 26/0; ai-army-scattered-merge-test 33/0; ai-general-war-campaign-test 51/0; ai-no-march-without-war-q1-test 11 PASS; ai-siege-requires-war-test 49/0; ai-war-weariness-peace-test 96/0; ai-home-war-sees-own-land-test 4/4; war-allin-general-path-barb-defense-test 24/0.
+- war-allin-capital-test: 95 PASS, 3 FAIL. Dwa (6b aiVsAi/noLandPath, hash referencyjny) padaja tez na bazie (zmierzone z wylaczona nakladka: 96/2) -- dlug istniejacy. TRZECI, "1k w 20 turach >=70% jednostko-tur to ruch lub atak", jest NOWY: 157+31/320 z nakladka vs 213+36/320 bez niej (prog 224). Hipoteza (NIE_ZMIERZONO): nakladka powoduje wiecej bitew w aiVsAi, wiec wiecej jednostek ginie i liczba komend maleje (miernik zaklada stala liczbe 16 jednostek). Nie edytowalem testu (poza allowlista). Do oceny Evaluatora/orkiestratora: dostosowac miernik (liczyc zywe jednostko-tury) albo zbadac, czy to realna bezczynnosc.
+DIAGNOZA (pkt 1): w ai.ts krok 4b atakuje tylko jednostke juz sasiadujaca; poza tym cele marszu sa miejskie (planWarAllInCapital/NEARCITY) i nie zawieraja armii wroga, wiec dwie armie na rownoleglych pasach lub 2-3 hexy od siebie ida do miast i sie mijaja. Mgla: AI widzi wroga tylko przez opts.visibleHexes (zachowane).
+ZALOZENIA (luki rozstrzygniete): (a) prog sil 0.8 = ten sam stosunek 10:8 co atak ostatniej woli i obrona domu (zatwierdzony ABC 2026-11-04), wiec bez nowego ABC -- ale to wartosc balansu: DECYZJA WLASCICIELA mozliwa przy ocenie (parametr w ai-params.json); (b) zasieg N=3 tury marszu najwolniejszej jednostki (dystans <= 3*ruch+1); (c) "armia" = skupisko lacone <=3 hexy, garnizon (najslabsza jednostka na heksie wlasnego miasta) nie wchodzi; (d) celem jest najsilniejsze widoczne skupisko wroga sposrod wszystkich wrogow w wojnie z kontaktem, bez barbarzyncow; (e) pierwszenstwo obrony domu: nakladka nie dziala, gdy wrog jest w pierscieniu zagrozenia wlasnego miasta (isHomeDefenseThreatForCity), gdy istnieje utracone miasto do odbicia, oraz gdy obrona domu jest wylaczona (nakladka jest jej rozszerzeniem; zachowuje to ai-war-defend-home-test 30/30 wraz z mutacjami M1/M3); (f) jednostki z wydanym juz atakiem w tej turze nie sa ruszane; zwiadowcy i cywile poza armia; gracz bez zmian (nakladka dotyczy wylacznie decideAITurn).
+BLOKADY: brak. Nie uruchamiano build/dev ani przegladarki (zmiana logiki AI, nie wizualna). Nie zmierzono kosztu czasu tury AI poza testami ai-test.
+RUNDY: 1/5
+NASTEPNY KROK: Evaluator -- ocena nowego FAIL 1k w war-allin-capital-test (miernik vs realna bezczynnosc), przeglad zalozen (a) i (e); ewentualnie pomiar na zywo (partia AI vs AI) zajec miast i bitew.
+DEPLOY/PUSH: NIE WYKONANO
+
+---
+## RUNDA 2/5 (Operator, baza a95d6589)
+
+STATUS: PASS
+ZMIANY/COMMIT: gra/src/game/ai.ts -- applyArmySeeksEnemyArmy odsprzegniete od isHomeWarDefenseEnabled (wlasny przelacznik ai_wojna_armia_szuka_armii_wlaczone / setArmySeeksArmyOverride; pierwszenstwo obrony domu zostaje przez warunki zagrozenia wlasnych miast i utraconego miasta). Wariant (a): test ai-war-defend-home T9 NIETKNIETY. Zalozenie (e) z r1 ("gdy obrona domu wylaczona") jest tym samym uchylone. merge-tree z origin/main 494480569: czysty, bez konfliktow.
+TESTY (surowe): tsc --noEmit exit 0; ai-test 296/0; ai-war-defend-home 30/0 (T9 zielony); ai-war-gate 24/0; ai-war-army-seeks-army 20/0; ai-war-nearest-city-peace-2t PASS (mutacje 16/16); general-muster 26/0; war-allin-capital 96/2 (jak baza); scattered-merge 33/0; ai-target-nearest-city 18/18. NIE ZMIERZONO w tej rundzie: 5 bramek referencyjnych, sprawdzenie 4 zablokowanych ruchow (artefakt harnessu?).
+BLOKADY: brak. Prog 0,8 / zasieg 3 bez zmian (decyzja balansu u wlasciciela).
+RUNDY: 2/5
+NASTEPNY KROK: Evaluator -> Obrona -> Final Control
+DEPLOY/PUSH: NIE WYKONANO

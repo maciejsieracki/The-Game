@@ -1,0 +1,5 @@
+komenda: live-verify-autoimprove-fort.cjs 38 zrownowazone (ziarno 18, mapa 76x52)
+wynik: bieg PRZERWANY po turze 33 z 38 (page.evaluate: Target page, context or browser has been closed w endTurnAndWait); pageErrors=[]; przyczyna zamkniecia przegladarki NIE_ZMIERZONO (nie blad gry).
+dane: evidence/fort-zrownowazone.json (wpisy tur 2-33; snapshoty liczby fortow lacznie wszystkich wlascicieli: t11:0 t21:0 t26:1 t28:2 t30:4 t31:4 t33:8; fortDec gracza = [] we wszystkich turach)
+wniosek: teza U-2 (0 fortow gracza w 33 turach) oparta na snapshotach z przerwanego biegu, brak gate z EXIT=0 dla pelnych 38 tur.
+EXIT=INTERRUPTED-AFTER-T33

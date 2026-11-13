@@ -33,6 +33,14 @@ const LEFT_MARGIN = CITY_EDGE_PX;
 const LEFT_RAIL_GAP = CITY_RAIL_GAP_PX;
 /** Panele boczne startują blisko górnej krawędzi — pasek miasta jest wyśrodkowany, rogi są wolne. */
 const LEFT_RAIL_TOP = CITY_RAIL_TOP_PX;
+/**
+ * R-WEB-UI-CITY-SIDE-PANELS-OVERLAP-TOPBANNERS-Q1: jedno źródło prawdy dla górnej krawędzi paneli bocznych,
+ * rail'i i docków = dolna krawędź banerów górnych (+ odstęp). `--civ-city-side-top` ustawia
+ * `fitCitySideTop()` (pomiar getBoundingClientRect); bez pomiaru (np. brak banerów) wartość = CITY_RAIL_TOP_PX.
+ */
+const SIDE_TOP_VAR = '--civ-city-side-top';
+const SIDE_TOP_GAP_PX = 8;
+const SIDE_TOP_EXPR = `var(${SIDE_TOP_VAR},${LEFT_RAIL_TOP}px)`;
 const LEFT_ICON_RAIL_W = CITY_LEFT_ICON_RAIL_W_PX;
 const RIGHT_MARGIN = CITY_EDGE_PX;
 const RIGHT_RAIL_GAP = CITY_RAIL_GAP_PX;
@@ -62,28 +70,28 @@ function ensureFrameStyles(): void {
 .civ-ux-top{position:fixed;top:0;left:0;right:0;height:auto;min-height:${TOP_H}px;z-index:403;pointer-events:none;overflow:visible;
   display:flex;align-items:flex-start;justify-content:center;padding:5px 12px 4px 12px;}
 .civ-ux-top .civ-ux-panel-scope{height:auto;width:100%;display:flex;flex-direction:column;align-items:center;pointer-events:none;}
-.civ-ux-top .civ-ux-panel-scope .civ-v-top-stack{width:fit-content;max-width:min(98vw,1280px);box-sizing:border-box;pointer-events:none;}
+.civ-ux-top .civ-ux-panel-scope .civ-v-top-stack{width:fit-content;max-width:min(98vw,1480px);box-sizing:border-box;pointer-events:none;}
 .civ-ux-top .civ-ux-panel-scope .civ-v-top-stack .civ-v-w3-chips-flank{pointer-events:none;}
 .civ-ux-top .civ-ux-panel-scope .civ-v-top-stack button,
 .civ-ux-top .civ-ux-panel-scope .civ-v-top-stack .hover-detail-anchor,
 .civ-ux-top .civ-ux-panel-scope .civ-v-top-stack [data-res-stat]{pointer-events:auto;}
-.civ-ux-left{position:fixed;top:${LEFT_RAIL_TOP}px;left:${LEFT_MARGIN}px;bottom:0;width:${LEFT_PANEL_W_EXPR};min-width:280px;z-index:410;
+.civ-ux-left{position:fixed;top:${SIDE_TOP_EXPR};left:${LEFT_MARGIN}px;bottom:0;width:${LEFT_PANEL_W_EXPR};min-width:280px;z-index:410;
   pointer-events:auto;overflow-y:auto;overflow-x:hidden;padding:0.18rem 0.4rem 0.48rem;
   display:flex;flex-direction:column;background:transparent;border:none;box-shadow:none;}
-.civ-ux-left-icon-rail{position:fixed;top:${LEFT_RAIL_TOP}px;
+.civ-ux-left-icon-rail{position:fixed;top:${SIDE_TOP_EXPR};
   left:calc(${LEFT_MARGIN}px + ${LEFT_PANEL_W_EXPR} + var(--civ-detail-dock-left-w,0px) + ${LEFT_RAIL_GAP}px);
-  width:${LEFT_ICON_RAIL_W}px;height:auto;max-height:calc(100vh - ${LEFT_RAIL_TOP}px - ${DOCK_BOTTOM_CLEAR}px);z-index:408;pointer-events:auto;overflow:visible;
+  width:${LEFT_ICON_RAIL_W}px;height:auto;max-height:calc(100vh - ${SIDE_TOP_EXPR} - ${DOCK_BOTTOM_CLEAR}px);z-index:408;pointer-events:auto;overflow:visible;
   display:flex;flex-direction:column;align-items:center;padding:0;
   background:transparent;border:none;box-shadow:none;transition:left .22s ease;}
 .civ-ux-left-icon-rail .civ-ux-panel-scope{width:100%;height:auto;display:flex;flex-direction:column;align-items:center;}
-.civ-ux-right-icon-rail{position:fixed;top:${LEFT_RAIL_TOP}px;
+.civ-ux-right-icon-rail{position:fixed;top:${SIDE_TOP_EXPR};
   right:calc(${RIGHT_MARGIN}px + ${RIGHT_PANEL_W_EXPR} + var(--civ-detail-dock-w,0px) + ${RIGHT_RAIL_GAP}px);
-  width:${RIGHT_ICON_RAIL_W}px;height:auto;max-height:calc(100vh - ${LEFT_RAIL_TOP}px - ${DOCK_BOTTOM_CLEAR}px);z-index:408;pointer-events:auto;overflow:visible;
+  width:${RIGHT_ICON_RAIL_W}px;height:auto;max-height:calc(100vh - ${SIDE_TOP_EXPR} - ${DOCK_BOTTOM_CLEAR}px);z-index:408;pointer-events:auto;overflow:visible;
   display:flex;flex-direction:column;align-items:center;padding:0;
   background:transparent;border:none;box-shadow:none;transition:right .22s ease;}
 .civ-ux-right-icon-rail .civ-ux-panel-scope{width:100%;height:auto;display:flex;flex-direction:column;align-items:center;}
-.civ-ux-detail-dock-left{position:fixed;top:${LEFT_RAIL_TOP}px;left:calc(${LEFT_MARGIN}px + ${LEFT_PANEL_W_EXPR});bottom:${DOCK_BOTTOM_CLEAR}px;z-index:407;
-  width:0;min-width:0;max-height:calc(100vh - ${LEFT_RAIL_TOP}px - ${DOCK_BOTTOM_CLEAR}px);padding:0;opacity:0;pointer-events:none;overflow:hidden;
+.civ-ux-detail-dock-left{position:fixed;top:${SIDE_TOP_EXPR};left:calc(${LEFT_MARGIN}px + ${LEFT_PANEL_W_EXPR});bottom:${DOCK_BOTTOM_CLEAR}px;z-index:407;
+  width:0;min-width:0;max-height:calc(100vh - ${SIDE_TOP_EXPR} - ${DOCK_BOTTOM_CLEAR}px);padding:0;opacity:0;pointer-events:none;overflow:hidden;
   background:linear-gradient(90deg,rgba(10,16,28,0.97) 0%,rgba(8,14,28,0.88) 100%);
   border-right:1px solid transparent;box-shadow:none;
   transition:width .22s ease,opacity .18s ease,padding .22s ease,box-shadow .22s ease,border-color .18s ease;}
@@ -91,8 +99,8 @@ function ensureFrameStyles(): void {
   overflow-y:auto;overflow-x:hidden;border-right-color:rgba(212,175,90,0.28);box-shadow:4px 0 18px rgba(0,0,0,0.35);}
 .civ-ux-detail-dock-left.is-open::-webkit-scrollbar{width:5px;}
 .civ-ux-detail-dock-left.is-open::-webkit-scrollbar-thumb{background:rgba(212,175,90,0.22);border-radius:3px;}
-.civ-ux-detail-dock{position:fixed;top:${LEFT_RAIL_TOP}px;right:calc(${RIGHT_MARGIN}px + ${RIGHT_PANEL_W_EXPR});bottom:${DOCK_BOTTOM_CLEAR}px;z-index:407;
-  width:0;min-width:0;max-height:calc(100vh - ${LEFT_RAIL_TOP}px - ${DOCK_BOTTOM_CLEAR}px);padding:0;opacity:0;pointer-events:none;overflow:hidden;
+.civ-ux-detail-dock{position:fixed;top:${SIDE_TOP_EXPR};right:calc(${RIGHT_MARGIN}px + ${RIGHT_PANEL_W_EXPR});bottom:${DOCK_BOTTOM_CLEAR}px;z-index:407;
+  width:0;min-width:0;max-height:calc(100vh - ${SIDE_TOP_EXPR} - ${DOCK_BOTTOM_CLEAR}px);padding:0;opacity:0;pointer-events:none;overflow:hidden;
   background:linear-gradient(270deg,rgba(10,16,28,0.97) 0%,rgba(8,14,28,0.88) 100%);
   border-left:1px solid transparent;box-shadow:none;
   transition:width .22s ease,opacity .18s ease,padding .22s ease,box-shadow .22s ease,border-color .18s ease;}
@@ -102,7 +110,7 @@ function ensureFrameStyles(): void {
 .civ-ux-detail-dock.is-open::-webkit-scrollbar-thumb{background:rgba(212,175,90,0.22);border-radius:3px;}
 .civ-hover-detail-dock .civ-hover-detail-scope{display:flex;flex-direction:column;min-height:0;max-height:100%;}
 .civ-hover-detail-dock .civ-hover-detail-content{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;}
-.civ-ux-right{position:fixed;top:${LEFT_RAIL_TOP}px;right:${RIGHT_MARGIN}px;bottom:${CITY_EDGE_PX}px;width:${RIGHT_PANEL_W_EXPR};min-width:260px;z-index:410;
+.civ-ux-right{position:fixed;top:${SIDE_TOP_EXPR};right:${RIGHT_MARGIN}px;bottom:${CITY_EDGE_PX}px;width:${RIGHT_PANEL_W_EXPR};min-width:260px;z-index:410;
   pointer-events:auto;overflow:hidden;padding:0;
   background:linear-gradient(180deg,rgba(18,24,32,0.97),rgba(8,10,16,0.97));
   border:2px solid rgba(232,216,138,0.42);border-radius:14px;box-shadow:0 14px 36px rgba(0,0,0,0.6);
@@ -150,6 +158,56 @@ function unbindCityUxNavKeys(): void {
   if (cityUxNavKeyHandler === null) return;
   document.removeEventListener('keydown', cityUxNavKeyHandler, true);
   cityUxNavKeyHandler = null;
+}
+
+let sideTopObserver: ResizeObserver | null = null;
+const sideTopObserved = new Set<Element>();
+let sideTopFitQueued = false;
+let sideTopResizeBound = false;
+
+/** Przeliczenie po zmianie banera planowane na następną klatkę — callback ResizeObserver nie wywołuje pomiaru synchronicznie (brak pętli RO). */
+function queueSideTopFit(): void {
+  if (sideTopFitQueued) return;
+  sideTopFitQueued = true;
+  requestAnimationFrame(() => {
+    sideTopFitQueued = false;
+    fitCitySideTop();
+  });
+}
+
+/** Mierzy dolną krawędź banerów górnych (lewy/prawy żeton + plakietka miasta) i ustawia `--civ-city-side-top`. */
+export function fitCitySideTop(): void {
+  if (frameRoot === null) return;
+  const els = Array.from(frameRoot.querySelectorAll<HTMLElement>(
+    '.civ-ux-top .civ-v-w3-chips-flank, .civ-ux-top .civ-v-w3-city-badge',
+  ));
+  let bottom = 0;
+  for (const el of els) {
+    if (el.getClientRects().length === 0) continue;
+    bottom = Math.max(bottom, el.getBoundingClientRect().bottom);
+  }
+  const need = bottom > 0 ? Math.ceil(bottom + SIDE_TOP_GAP_PX) : 0;
+  if (need > LEFT_RAIL_TOP) frameRoot.style.setProperty(SIDE_TOP_VAR, need + 'px');
+  else frameRoot.style.removeProperty(SIDE_TOP_VAR);
+  // Zmiana rozmiaru banera (treść/zawijanie) po malowaniu — obserwuj elementy i przelicz.
+  // Obserwator tworzony RAZ; obserwowany jest tylko zbiór elementów (zmiana zbioru, nie każde przeliczenie).
+  if (typeof ResizeObserver !== 'undefined') {
+    if (sideTopObserver === null) sideTopObserver = new ResizeObserver(() => queueSideTopFit());
+    for (const old of Array.from(sideTopObserved)) {
+      if (els.includes(old as HTMLElement)) continue;
+      sideTopObserver.unobserve(old);
+      sideTopObserved.delete(old);
+    }
+    for (const el of els) {
+      if (sideTopObserved.has(el)) continue;
+      sideTopObserver.observe(el);
+      sideTopObserved.add(el);
+    }
+  }
+  if (!sideTopResizeBound && typeof window !== 'undefined') {
+    sideTopResizeBound = true;
+    window.addEventListener('resize', () => fitCitySideTop());
+  }
 }
 
 export function getCityUxLayoutMetrics(): {
@@ -268,6 +326,7 @@ export function showCityUxFrame(
     onClose();
   };
   paintCityPanelSections(mounts, city, map, paint, frameOnClose);
+  fitCitySideTop();
   pushOverlay('city-panel', () => { frameOnClose?.(); });
   bindCityUxNavKeys();
 }
@@ -279,6 +338,7 @@ export function refreshCityUxFrame(
 ): void {
   if (!mounts) return;
   paintCityPanelSections(mounts, city, map, paint, frameOnClose ?? undefined);
+  fitCitySideTop();
 }
 
 export function hideCityUxFrame(): void {
@@ -286,6 +346,9 @@ export function hideCityUxFrame(): void {
   popOverlay('city-panel');
   clearCityPanelUxMode();
   frameOnClose = null;
+  sideTopObserver?.disconnect();
+  sideTopObserver = null;
+  sideTopObserved.clear();
   frameRoot?.remove();
   frameRoot = null;
   mounts = null;

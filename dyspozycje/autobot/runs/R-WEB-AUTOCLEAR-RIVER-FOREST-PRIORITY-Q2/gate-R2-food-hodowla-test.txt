@@ -1,0 +1,37 @@
+
+AC-E1: bonusy JSON (przez improvementBonusForKey)
+  [OK] farma +3 zywnosc (3 === 3)
+  [OK] irygacja +5 (5 === 5)
+  [OK] tarasy +3 (3 === 3)
+  [OK] lodzie +3 praca (3 === 3)
+  [OK] bydlo +2 zywnosc (2 === 2)
+  [OK] bydlo +4 praca (data/terrain-improvements.json; stary pin +3 przestarzały) (4 === 4)
+  [OK] owce +1 (1 === 1)
+  [OK] lama +3 praca (3 === 3)
+  [OK] pastwisko usuniety z JSON
+
+AC-E2: tileYield suma warstw (delta ulepszen)
+  [OK] farma+irygacja delta = +8 zywnosci (8 === 8)
+  [OK] farma+bydlo delta = +5 zywnosci (5 === 5)
+  [OK] farma+bydlo delta = +7 praca (JSON: farma.praca=3 + bydlo.praca=4; stary pin +3 przestarzały) (7 === 7)
+
+AC-E3: Model B — bydlo bez złoża (aktywny dostęp lokalny)
+  [OK] trzoda NIE jest surowcem: brak etykiety dostępu (LIVESTOCK_NOT_RESOURCE; decyzja 2026-07-23 + #4 2026-10-31)
+  [OK] bydlo bez unlock — zawsze dozwolone
+
+AC-E4: Inkowie era<3
+  [OK] Inkowie ep2: bydlo false
+  [OK] Inkowie ep1: owce false
+  [OK] Inkowie ep2: kon dozwolony (bramka złoża osobno)
+  [OK] Inkowie ep1: lama true
+  [OK] Inkowie ep3: bydlo true
+  [OK] Rzym ep1: bydlo true
+
+AC-E5: Model B — brak złoża zwierzęcego, bydlo daje dostęp lokalnie
+  [OK] Brak nakladki zwierzeczej -> brak warstwy bydlo
+  [OK] pole bez bydla = brak bonusu zywnosci (3 === 3)
+  [OK] Model B: bydlo NIE odblokowuje imperium
+  [OK] bydlo w zasięgu nie daje etykiety surowca (trzoda nie jest surowcem, nie wymaga złoża)
+
+--- food-hodowla-test: 24 OK, 0 FAIL ---
+EXIT=0

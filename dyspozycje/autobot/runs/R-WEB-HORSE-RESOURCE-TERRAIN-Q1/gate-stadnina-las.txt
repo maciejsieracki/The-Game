@@ -1,0 +1,41 @@
+
+--- (0) warunek istotnosci: imperium MA >= 50 koni w magazynie ---
+  [OK] isLivestockUnlockedForPlacement: stadnina bez zloza NA TYM hexie, magazyn >= 50 kon
+  [OK] KONTROLA runda 2: magazyn < 50 (bez zloza, bez trasy) juz NIE odblokowuje stadniny (Model B retirowany)
+  [OK] KONTROLA runda 2: tradeRouteKonUnlocked (Temat #4, osobna sciezka) nadal odblokowuje za darmo bez zmian
+
+--- (1) KRYTERIUM 1: kwalifikacja budowy na Laka/Rownina + Las ---
+  [OK] GOAL 1: stadnina KWALIFIKUJE SIE na Laka+Las po odblokowaniu Konia (dzis zablokowana PRZED poprawka)
+  [OK] GOAL 1: stadnina KWALIFIKUJE SIE tez na Rownina+Las (drugi kwalifikujacy teren bazowy)
+  [OK] kontrola: stadnina nadal kwalifikuje sie na golej Lace (bez zmian pozytywnych)
+  [OK] GOAL 1: gate commitu (computeImprovementBuildImpact) NIE blokuje stadniny na lesie
+  [OK] GOAL 1 + GOAL 3: kanoniczny predykat lasu NIE blokuje stadniny (jak glinianka/tartak)
+  [OK] predykat historyczny stadniny zawsze false od tej rundy
+
+--- (2) KRYTERIUM 2: PRZETRWANIE po usunieciu lasu (zywy test, nie lektura kodu) ---
+  [OK] kontrola: budowa przed wyrebem byla legalna (sekcja 1)
+  [OK] GOAL 2: stadnina POZOSTAJE na hexie po zywej symulacji wyrebu (stripImprovementsWhenForestRemoved)
+  [OK] kontrola: wyrab nie dodaje ani nie usuwa nic innego z warstwy stadniny
+  [OK] GOAL 2 (mix): stadnina przetrwa wsrod innych warstw
+  [OK] kontrola: tartak znika (R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1, 2026-09-07 -- odwrocenie kanonu)
+  [OK] kontrola: farma NIE jest usuwana TA funkcja (osobny mechanizm, patrz sekcja 4)
+  [OK] kontrola: oboz lowiecki NADAL znika (zalezny od lasu, temat go nie rusza)
+
+--- (3) KRYTERIUM 3: regresja ZERO na lama; owce/bydlo wg H-TRZODA-LAS-BLOKADA-Q1 ---
+  [OK] kontrola: las blokuje owce (H-TRZODA-LAS-BLOKADA-Q1, 2026-09-09)
+  [OK] kontrola: las blokuje bydlo (H-TRZODA-LAS-BLOKADA-Q1, 2026-09-09)
+  [OK] kontrola: las nadal NIE blokuje lamy (bez zmian)
+  [OK] kontrola: owce na Wzgorzu+Las zablokowane (H-TRZODA-LAS-BLOKADA-Q1)
+  [OK] kontrola: predykat historyczny stadniny nigdy nie lapal owiec
+  [OK] kontrola: predykat historyczny stadniny nigdy nie lapal bydla
+
+--- (4) KRYTERIUM 4: regresja ZERO na farmie / sprzataniu reliktow ---
+  [OK] kontrola: farma NADAL zabroniona na lesie (R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1 nietkniete)
+  [OK] kontrola: gate commitu farmy na lesie NADAL null
+  [OK] kontrola: sprzatanie farm-reliktow NIE rusza hexa bez farmy (stadnina+tartak przetrwaja)
+  [OK] kontrola: mechanizm faktycznie przeskanowal hex (nie 0 == falszywy pozytyw)
+  [OK] kontrola: sprzatanie NADAL usuwa farme-relikt na tym samym hexie
+  [OK] GOAL 2+4: sprzatanie farmy NIE zabiera stadniny stojacej obok niej na tym samym hexie
+
+stadnina-las-test: 28 passed, 0 failed
+EXIT=0

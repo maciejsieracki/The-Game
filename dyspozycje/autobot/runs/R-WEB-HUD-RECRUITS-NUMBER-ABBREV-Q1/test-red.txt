@@ -1,0 +1,17 @@
+  ok  hud.ts importuje wspolny formatter
+  FAIL hud.ts: etykieta Rekruci przez recruitHudCount
+  ok  Rekruci HUD 999 -> "999"
+  ok  title ma pelna wartosc "999"
+  info 999: txt="999 (19)" szer=63px
+  FAIL Rekruci HUD 1000 -> "1 tys." (oczekiwano "1k")
+  FAIL title ma pelna wartosc "1 000"
+  info 1000: txt="1 tys. (20)" szer=74px
+  FAIL Rekruci HUD 12345 -> "12.3 tys." (oczekiwano "12,3k")
+  FAIL title ma pelna wartosc "12 345"
+  info 12345: txt="12.3 tys. (246)" szer=100px
+  FAIL Rekruci HUD 1234567 -> "1.2 mln" (oczekiwano "1,2M")
+  FAIL title ma pelna wartosc "1 234 567"
+  info 1234567: txt="1.2 mln (24691)" szer=111px
+
+FAIL (7)
+EXIT=1

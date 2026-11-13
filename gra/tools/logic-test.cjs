@@ -1087,12 +1087,20 @@ function makeCity(over) {
     militia.Atak <= warrior().Atak && militia.Obrona <= warrior().Obrona);
   assert('siege: a city with no population raises no militia',
     makeMilitia(0) === null);
-  // effectiveGarrison falls back to militia when the standing garrison is empty.
-  const eg = effectiveGarrison(makeCity({ garrison: [], population: 10 }));
+  // Completed Garnizon gates the virtual militia; population alone is not enough.
+  const eg = effectiveGarrison(makeCity({
+    garrison: [],
+    population: 10,
+    completedBuildingIds: ['garnizon'],
+  }));
   assert('siege: effectiveGarrison falls back to militia for an empty garrison',
     eg.length === 1 && eg[0].typNazwa === 'Milicja');
   // A populated but garrison-less city still resists an attacker (militia fights).
-  const resM = resolveSiegeAttack(warrior(), makeCity({ garrison: [], population: 20 }),
+  const resM = resolveSiegeAttack(warrior(), makeCity({
+    garrison: [],
+    population: 20,
+    completedBuildingIds: ['garnizon'],
+  }),
     { rng: makeRng(99) });
   assert('siege: a militia-defended city is engaged (not a free walk-in)',
     resM.engagedDefender !== null && resM.rounds > 0,

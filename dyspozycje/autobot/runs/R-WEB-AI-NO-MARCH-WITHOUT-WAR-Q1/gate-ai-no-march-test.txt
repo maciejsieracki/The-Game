@@ -1,0 +1,13 @@
+[OK] K+ wojna wymuszona w WOJNIE: napastnik maszeruje na cel (czulosc harnessu)
+[OK] RED->GREEN: dyrektywa wojny wymuszonej BEZ wojny (relacja != wojna) = zero marszu na cel 2
+[OK] ruch przerwany po pokoju: ta sama dyrektywa, wojna -> pokoj w kolejnej turze
+[OK] rola obroncy (defender) bez wojny: zero ruchu na jednostki/miasta strony 2
+[OK] kampania wodza (recruiting) bez wojny z celem: zero zbiorki/marszu; w wojnie kampania steruje jednostkami
+[OK] kampania wodza (gathering) bez wojny z celem: zero zbiorki/marszu; w wojnie kampania steruje jednostkami
+[OK] kampania wodza (attacking) bez wojny z celem: zero zbiorki/marszu; w wojnie kampania steruje jednostkami
+[OK] K+ kampania wodza w wojnie zmienia decyzje wzgledem braku kampanii (harness czuly)
+[OK] wojna jest JEDNYM wpisem pary (obustronna z definicji): getDiploRelation/setDiploRelation uzywaja nieuporzadkowanego klucza
+[OK] strazniki statyczne: main.ts czysci wpis wojny wymuszonej bez wojny; ai.ts bramkuje forcedWar i kampanie
+
+PASS 10
+EXIT=0

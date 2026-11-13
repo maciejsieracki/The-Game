@@ -205,6 +205,7 @@ const MEASURE = (rootId) => {
       return getComputedStyle(g).display !== 'none' && gr.width > 40 ? 'yes' : 'no';
     })(),
     titleText: h2 ? (h2.textContent || '').trim() : null,
+    cardKind: card.classList.contains('entity-card-building') ? 'building' : card.classList.contains('entity-card-wonder') ? 'wonder' : card.classList.contains('entity-card-unit') ? 'unit' : null,
     titleFontSize: h2 ? getComputedStyle(h2).fontSize : null,
     // pozycja overlayu tytułu WZGLĘDEM nagłówka
     titleLeftInHeader: twr ? Math.round(twr.left - hr.left) : null,
@@ -235,6 +236,16 @@ const MEASURE = (rootId) => {
 };
 
 function isDiorama(m) {
+  // R-BUDYNKI-KARTY-GRAFIKA-TEKST-OVERLAP-Q1 keeps the enlarged scene but moves
+  // building title/chips/subtitle below it in normal flow. Units and wonders retain
+  // the original absolute overlay contract covered by this gate.
+  const titleLayoutOk = m.cardKind === 'building'
+    ? m.titlePosition === 'relative'
+      && m.titleLeftInHeader === 0
+      && m.titleBottomGap >= 0 && m.titleBottomGap <= 2
+    : m.titlePosition === 'absolute'
+      && m.titleLeftInHeader >= 0 && m.titleLeftInHeader <= 24
+      && m.titleBottomGap >= 0 && m.titleBottomGap <= 28;
   return !m.missing
     && m.hasDioramaClass
     && m.headerDisplay === 'block'
@@ -243,10 +254,8 @@ function isDiorama(m) {
     && m.medW >= 90 && m.medH >= 90
     && m.medCenterOffset <= 2
     && m.groundVisible === 'yes'
-    && m.titlePosition === 'absolute'
     && m.titleInsideHeader === true
-    && m.titleLeftInHeader >= 0 && m.titleLeftInHeader <= 24
-    && m.titleBottomGap >= 0 && m.titleBottomGap <= 28
+    && titleLayoutOk
     && m.titleTextShadow !== 'none';
 }
 

@@ -1,0 +1,1 @@
+EXIT=1 (hud-topbar-grid-gross-net --dist, run 1 z mutantami: 1222 ok, 1 fail) FAIL live Spichlerz+ proba 1: netto -44, zmiana magazynu 0 (przed 600, po 600)

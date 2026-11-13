@@ -15,16 +15,16 @@ Ulepszenia stawiasz z lewego panelu mapy (**Budowa**) na heksach w **swoim** ter
 | Kamieniołom | Kamień | 22 | +1 praca, +1 kamień | Wzgórza, Góry (kamień) | Murarstwo | [Kamieniołom](../encyklopedia/ulepszenia/kamieniolom.md) |
 | Kopalnia | Kamień | 25 | +2 praca | Wzgórza, Góry, złoże Rudy | Murarstwo | [Kopalnia](../encyklopedia/ulepszenia/kopalnia.md) |
 | Lama | Kamień | 20 | +1 żywność, +3 praca | Łąka, Równina, Wzgórza | Oswojenie zwierząt | [Lama](../encyklopedia/ulepszenia/lama.md) |
-| Obóz łowiecki | Kamień | 18 | +1 żywność, +1 złoto | Las / dzika zwierzyna | Łowiectwo | [Obóz łowiecki](../encyklopedia/ulepszenia/oboz_lowiecki.md) |
+| Obóz łowiecki | Kamień | 18 | +1 żywność, +1 podatek | Las / dzika zwierzyna | Łowiectwo | [Obóz łowiecki](../encyklopedia/ulepszenia/oboz_lowiecki.md) |
 | Owce | Kamień | 20 | +1 żywność, +2 praca | Wzgórza | Oswojenie zwierząt | [Owce](../encyklopedia/ulepszenia/owce.md) |
 | Tartak | Kamień | 25 | +3 praca | Ląd w terytorium (łąka, lasy, wzgórza…) | Obróbka drewna | [Tartak](../encyklopedia/ulepszenia/tartak.md) |
 | Wycinka | Kamień | 0 (wycinka) | — | Las | — | [Wycinka](../encyklopedia/ulepszenia/wyrab.md) |
-| Łodzie rybackie | Kamień | 20 | +2 żywność, +3 praca | Wybrzeże, Morze (ryby) | Żegluga | [Łodzie rybackie](../encyklopedia/ulepszenia/lodzie_rybackie.md) |
+| Łodzie rybackie | Kamień | 20 | +6 żywność, +6 praca, +6 podatek | Wybrzeże, Morze (ryby) | Żegluga | [Łodzie rybackie](../encyklopedia/ulepszenia/lodzie_rybackie.md) |
 | Glinianka | Brąz | 20 | +1 praca | złoże Gliny | Garncarstwo | [Glinianka](../encyklopedia/ulepszenia/glinianka.md) |
 | Irygacja | Brąz | 30 | +5 żywność | Łąka, Równina, Pustynia | Irygacja | [Irygacja](../encyklopedia/ulepszenia/irygacja.md) |
 | Posterunek (Strażnica) | Brąz | 30 | —; +50% obrona (obóz) | ląd w/na krawędzi własnego zasięgu | — | [Posterunek (Strażnica)](../encyklopedia/ulepszenia/posterunek.md) |
 | Tarasy uprawne | Brąz | 25 | +3 żywność | Wzgórza | — | [Tarasy uprawne](../encyklopedia/ulepszenia/tarasy.md) |
-| Warzelnia soli | Brąz | 20 | +1 złoto, +1 żywność | złoże soli (Pustynia/Równina — hex.zloze=sol) | Garncarstwo | [Warzelnia soli](../encyklopedia/ulepszenia/warzelnia_soli.md) |
+| Warzelnia soli | Brąz | 20 | +1 podatek, +1 żywność | złoże soli (Pustynia/Równina — hex.zloze=sol) | Garncarstwo | [Warzelnia soli](../encyklopedia/ulepszenia/warzelnia_soli.md) |
 | Fort / umocnienia | Żelazo | 25 | —; +100% obrona (obóz) | dowolny ląd w terytorium | Wojskowosc | [Fort / umocnienia](../encyklopedia/ulepszenia/fort.md) |
 
 ---
@@ -79,7 +79,7 @@ Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarb
 
 ### Obóz łowiecki
 
-**Obóz łowiecki** (epoka **Kamień**) kosztuje **18** pracy i wymaga technologii **Łowiectwo**. Daje: **+1 żywność, +1 złoto**.
+**Obóz łowiecki** (epoka **Kamień**) kosztuje **18** pracy i wymaga technologii **Łowiectwo**. Daje: **+1 żywność, +1 podatek**.
 Dozwolony teren: Las / dzika zwierzyna.
 **Warunek:** dzika zwierzyna
 
@@ -87,7 +87,7 @@ Dozwolony teren: Las / dzika zwierzyna.
 ### Przykład liczbowy
 
 Koszt **18** pracy przy **7** pracy/t na budynki (70%) → **~2** tury budowy.
-Bonus **+1 żywność, +1 złoto** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+1 żywność, +1 podatek** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarbca.
 → [`docs/encyklopedia/ulepszenia/oboz_lowiecki.md`](../encyklopedia/ulepszenia/oboz_lowiecki.md)
 
@@ -109,7 +109,7 @@ Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarb
 
 ### Łodzie rybackie
 
-**Łodzie rybackie** (epoka **Kamień**) kosztuje **20** pracy i wymaga technologii **Żegluga**. Daje: **+2 żywność, +3 praca**.
+**Łodzie rybackie** (epoka **Kamień**) kosztuje **20** pracy i wymaga technologii **Żegluga**. Daje: **+6 żywność, +6 praca, +6 podatek**.
 Dozwolony teren: Wybrzeże, Morze (ryby).
 **Warunek:** ławica ryb
 
@@ -231,7 +231,7 @@ Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarb
 
 ### Warzelnia soli
 
-**Warzelnia soli** (epoka **Brąz**) kosztuje **20** pracy i wymaga technologii **Garncarstwo**. Daje: **+1 złoto, +1 żywność**.
+**Warzelnia soli** (epoka **Brąz**) kosztuje **20** pracy i wymaga technologii **Garncarstwo**. Daje: **+1 podatek, +1 żywność**.
 Dozwolony teren: złoże soli (Pustynia/Równina — hex.zloze=sol).
 **Warunek:** sól (konserwacja żywności + handel); bez wybrzeża bez złoża
 **Odblokowuje:** Sól
@@ -241,7 +241,7 @@ Dozwolony teren: złoże soli (Pustynia/Równina — hex.zloze=sol).
 ### Przykład liczbowy
 
 Koszt **20** pracy przy **7** pracy/t na budynki (70%) → **~2** tury budowy.
-Bonus **+1 złoto, +1 żywność** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+1 podatek, +1 żywność** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarbca.
 → [`docs/encyklopedia/ulepszenia/warzelnia_soli.md`](../encyklopedia/ulepszenia/warzelnia_soli.md)
 
@@ -265,8 +265,8 @@ Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarb
 
 **Posterunek (Strażnica)** (epoka **Brąz**) kosztuje **30** pracy. Daje: **—**.
 Dozwolony teren: ląd w/na krawędzi własnego zasięgu.
-**Warunek:** NIE miasto, BEZ plonów; ROZSZERZA zasięg terytorium o promień 5 pól; odkrywa mgłę; węzeł sieci dróg; +50% Obrony jednostkom obozującym na polu
-**Zasięg terytorium:** +5 pól.
+**Warunek:** NIE miasto, BEZ plonów; ROZSZERZA zasięg terytorium o promień 3 pól; odkrywa mgłę; węzeł sieci dróg; +50% Obrony jednostkom obozującym na polu
+**Zasięg terytorium:** +3 pól.
 
 
 ### Przykład liczbowy
@@ -280,8 +280,8 @@ Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarb
 
 **Fort / umocnienia** (epoka **Żelazo**) kosztuje **25** pracy i wymaga technologii **Wojskowosc**. Daje: **—**.
 Dozwolony teren: dowolny ląd w terytorium.
-**Warunek:** +100% Obrony jednostkom obozującym na polu fortu (bez plonów); rozszerza zasięg terytorium o promień 10 pól
-**Zasięg terytorium:** +10 pól.
+**Warunek:** +100% Obrony jednostkom obozującym na polu fortu (bez plonów); rozszerza zasięg terytorium o promień 5 pól
+**Zasięg terytorium:** +5 pól.
 
 
 ### Przykład liczbowy

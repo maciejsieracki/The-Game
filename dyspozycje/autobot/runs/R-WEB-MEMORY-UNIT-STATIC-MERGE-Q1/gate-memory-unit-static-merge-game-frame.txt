@@ -1,0 +1,5 @@
+  OK  F1 K1 start: piksele > 8/255 <= 120 -- {"px":1600000,"any":313,"over8":0,"maxChannelDiff":2}
+  OK  F2 K2 przyblizenie: piksele > 8/255 <= 120 -- {"px":1600000,"any":0,"over8":0,"maxChannelDiff":0}
+
+memory-unit-static-merge-game-frame: 2 pass, 0 fail
+EXIT=0

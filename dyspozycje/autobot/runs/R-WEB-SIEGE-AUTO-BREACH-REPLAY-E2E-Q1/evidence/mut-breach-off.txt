@@ -1,0 +1,10 @@
+BUILD ok in 21 s MUTACJA=breach-off
+RUN {"mode":"auto","winner":"remis","round":150,"breached":false,"wallS":23,"atk":{"lost":6,"remaining":11,"hp":2605},"def":{"lost":3,"remaining":3,"hp":83},"ev":223,"inside":0,"onBreachTile":2,"manual":null}
+PASS: B0 scenariusz oblezenia: obleznicza w rosterze, mur z kaflami
+PASS: B1 mur/brama padly: co najmniej jedno zdarzenie wylomu w AUTO (kafel muru lub brama), kafle muru ubyly lub brama otwarta
+FAIL: B2 wylom ustawia wallEverBreached (wynik bitwy niesie wallBreached -> miasto do zdobycia) -- false
+PASS: B3 wylom padl PRZED koncem bitwy (nie zalozony retroaktywnie): tura wylomu < tura konca
+PASS: B4 SZTURM po wylomie: zywy atakujacy stoi NA zburzonym kaflu muru / otwartej bramie (przejscie przez wylom)
+DEFEKT: B4b OBSERWACJA: w AUTO po wylomie zywy atakujacy wchodzi ZA linie muru (kolumna > kolumny muru) w limicie tur -- {"inside":0,"wallCol":40,"maxAtkQ":40}
+PASS: B5 brak bledow JS
+--- 5 ok, 1 fail, 1 defekt(y) gry, 0 NIE_ZMIERZONO [MUTACJA breach-off]

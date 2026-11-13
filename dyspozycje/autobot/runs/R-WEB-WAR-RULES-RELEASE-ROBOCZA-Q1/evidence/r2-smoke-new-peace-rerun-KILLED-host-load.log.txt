@@ -1,0 +1,90 @@
+09:11:36 worldgen ms 49358
+09:11:50 end-turn {"n":1,"turn0":1,"turn1":2,"endTurnMs":7883,"retries":0,"cities":10,"heapMB":273}
+09:12:01 end-turn {"n":2,"turn0":2,"turn1":3,"endTurnMs":8665,"retries":0,"cities":10,"heapMB":273}
+09:12:12 end-turn {"n":3,"turn0":3,"turn1":4,"endTurnMs":8432,"retries":0,"cities":10,"heapMB":273}
+09:12:23 end-turn {"n":4,"turn0":4,"turn1":5,"endTurnMs":8786,"retries":0,"cities":10,"heapMB":273}
+09:12:33 end-turn {"n":5,"turn0":5,"turn1":6,"endTurnMs":7882,"retries":0,"cities":10,"heapMB":273}
+09:12:43 end-turn {"n":6,"turn0":6,"turn1":7,"endTurnMs":7621,"retries":0,"cities":10,"heapMB":273}
+09:12:50 end-turn {"n":7,"turn0":7,"turn1":8,"endTurnMs":5444,"retries":0,"cities":10,"heapMB":273}
+09:13:03 end-turn {"n":8,"turn0":8,"turn1":9,"endTurnMs":11144,"retries":0,"cities":10,"heapMB":273}
+09:13:17 end-turn {"n":9,"turn0":9,"turn1":10,"endTurnMs":10422,"retries":0,"cities":10,"heapMB":273}
+09:13:34 end-turn {"n":10,"turn0":10,"turn1":11,"endTurnMs":12994,"retries":0,"cities":10,"heapMB":273}
+09:13:50 end-turn {"n":11,"turn0":11,"turn1":12,"endTurnMs":12530,"retries":0,"cities":10,"heapMB":273}
+09:14:04 end-turn {"n":12,"turn0":12,"turn1":13,"endTurnMs":11021,"retries":0,"cities":10,"heapMB":273}
+09:14:21 end-turn {"n":13,"turn0":13,"turn1":14,"endTurnMs":12703,"retries":0,"cities":10,"heapMB":273}
+09:14:37 end-turn {"n":14,"turn0":14,"turn1":15,"endTurnMs":12601,"retries":0,"cities":10,"heapMB":273}
+09:14:53 end-turn {"n":15,"turn0":15,"turn1":16,"endTurnMs":12136,"retries":0,"cities":10,"heapMB":273}
+FATAL page.evaluate: Target page, context or browser has been closed
+Browser logs:
+
+<launching> /opt/pw-browsers/chromium-1194/chrome-linux/chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --no-sandbox --use-gl=swiftshader --enable-unsafe-swiftshader --js-flags=--expose-gc --user-data-dir=/tmp/playwright_chromiumdev_profile-zQUZey --remote-debugging-pipe --no-startup-window
+<launched> pid=18026
+[pid=18026][err] [18026:18040:1025/091040.577709:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[pid=18026][err] [18026:18040:1025/091040.583105:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=18026][err] [18026:18040:1025/091040.583727:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[pid=18026][err] [18026:18040:1025/091040.583858:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[pid=18026][err] [18055:18055:1025/091040.590050:ERROR:ui/gl/init/gl_factory.cc:102] Requested GL implementation (gl=none,angle=none) not found in allowed implementations: [(gl=egl-angle,angle=default)].
+[pid=18026][err] [18055:18055:1025/091040.600426:ERROR:components/viz/service/main/viz_main_impl.cc:189] Exiting GPU process due to errors during initialization
+[pid=18026][err] [18026:18040:1025/091040.623625:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=18026][err] [18026:18026:1025/091040.635404:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+[pid=18026][err] [18026:18040:1025/091040.635488:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=18026][err] [18026:18040:1025/091040.635507:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=18026][err] [18026:18040:1025/091040.635562:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=18026][err] [18026:18040:1025/091040.635585:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=18026][err] [18026:18040:1025/091040.635623:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=18026][err] [18026:18026:1025/091040.642590:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+[pid=18026][err] [18026:18026:1025/091040.644038:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+[pid=18026][err] [18026:18040:1025/091040.644047:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[pid=18026][err] [18026:18026:1025/091040.644064:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+[pid=18026][err] [18026:18040:1025/091040.644069:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[pid=18026][err] [18026:18026:1025/091040.645344:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: unknown error type:
+[pid=18026][err] [18088:18088:1025/091040.654162:ERROR:ui/gl/init/gl_factory.cc:102] Requested GL implementation (gl=none,angle=none) not found in allowed implementations: [(gl=egl-angle,angle=default)].
+[pid=18026][err] [18088:18088:1025/091040.657417:ERROR:components/viz/service/main/viz_main_impl.cc:189] Exiting GPU process due to errors during initialization
+[pid=18026][err] [18095:18095:1025/091040.672293:ERROR:ui/gl/init/gl_factory.cc:102] Requested GL implementation (gl=none,angle=none) not found in allowed implementations: [(gl=egl-angle,angle=default)].
+[pid=18026][err] [18095:18095:1025/091040.680345:ERROR:components/viz/service/main/viz_main_impl.cc:189] Exiting GPU process due to errors during initialization
+[pid=18026][err] [18121:18121:1025/091040.741372:ERROR:ui/gl/init/gl_factory.cc:102] Requested GL implementation (gl=none,angle=none) not found in allowed implementations: [(gl=egl-angle,angle=default)].
+[pid=18026][err] [18121:18121:1025/091040.743217:ERROR:components/viz/service/main/viz_main_impl.cc:189] Exiting GPU process due to errors during initialization
+[pid=18026][err] [18106:18122:1025/091040.781527:ERROR:gpu/ipc/client/command_buffer_proxy_impl.cc:128] ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer.
+[pid=18026][err] [18129:18129:1025/091046.719862:ERROR:gpu/command_buffer/service/gl_utils.cc:391] [.WebGL-0x3ccc00113e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[pid=18026][err] [18129:18129:1025/091047.162241:ERROR:gpu/command_buffer/service/gl_utils.cc:391] [.WebGL-0x3ccc00113e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[pid=18026][err] ALSA lib confmisc.c:855:(parse_card) [18026:18040:1025/091050.571194:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=18026][err] [18026:18040:1025/091050.571428:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=18026][err] [18026:18040:1025/091050.571581:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=18026][err] [18026:18040:1025/091050.571649:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=18026][err] [18026:18040:1025/091050.571716:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=18026][err] [18026:18040:1025/091050.571825:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=18026][err] [18026:18040:1025/091050.571944:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=18026][err] [18026:18040:1025/091050.571955:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=18026][err] [18026:18040:1025/091050.572097:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=18026][err] [18026:18040:1025/091050.572244:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=18026][err] cannot find card '0'
+[pid=18026][err] ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+[pid=18026][err] ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+[pid=18026][err] ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+[pid=18026][err] ALSA lib confmisc.c:1342:(snd_func_refer) error evaluating name
+[pid=18026][err] ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+[pid=18026][err] ALSA lib conf.c:5731:(snd_config_expand) Evaluate error: No such file or directory
+[pid=18026][err] ALSA lib pcm.c:2721:(snd_pcm_open_noupdate) Unknown PCM default
+[pid=18026][err] [18290:18290:1025/091050.572393:ERROR:media/audio/alsa/alsa_util.cc:204] PcmOpen: default,No such file or directory
+[pid=18026][err] ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+[pid=18026][err] ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+[pid=18026][err] ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+[pid=18026][err] ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+[pid=18026][err] ALSA lib confmisc.c:1342:(snd_func_refer) error evaluating name
+[pid=18026][err] ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+[pid=18026][err] ALSA lib conf.c:5731:(snd_config_expand) Evaluate error: No such file or directory
+[pid=18026][err] ALSA lib pcm.c:2721:(snd_pcm_open_noupdate) Unknown PCM default
+[pid=18026][err] [18290:18290:1025/091050.572570:ERROR:media/audio/alsa/alsa_util.cc:204] PcmOpen: plug:default,No such file or directory
+[pid=18026][err] [18026:18040:1025/091050.572729:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=18026][err] [18026:18040:1025/091050.572887:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=18026][err] [18026:18040:1025/091050.572899:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=18026][err] [18026:18040:1025/091050.572905:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=18026][err] [18129:18129:1025/091134.354051:ERROR:gpu/command_buffer/service/gl_utils.cc:391] [.WebGL-0x3ccc00113e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[pid=18026][err] [18129:18129:1025/091136.748716:ERROR:gpu/command_buffer/service/gl_utils.cc:391] [.WebGL-0x3ccc00113e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+[pid=18026] <gracefully close start>
+[pid=18026] <forcefully close>
+[pid=18026] <kill>
+[pid=18026] <will force kill>
+    at endTurn (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/r1/smoke.cjs:55:30)
+    at /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/r1/smoke.cjs:67:19
+EXIT=1

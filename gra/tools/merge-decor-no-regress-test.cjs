@@ -384,6 +384,7 @@ const fakeRenderer = {
   toneMappingExposure: 1,
   disposeCount: 0,
   setSize() {}, setPixelRatio() {},
+  setOpaqueSort() {}, // FALA 530: scene.ts ustawia sortowanie nieprzezroczystych (pula materialow)
   dispose() { this.disposeCount++; },
 };
 const fakeCanvas = { clientWidth: 800, clientHeight: 600 };

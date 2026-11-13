@@ -1,0 +1,54 @@
+  OK   sandbox: gracz ma miasto-start do zalozenia, AI ma miasto
+  OK   zalozenie pierwszego miasta gracza
+  OK   setup: tech Wymiana obu stron, kontakt, nie-wojna
+  OK   setup: zapasy ustawione (AI nadwyzka zelaza / brak cegly, gracz odwrotnie)
+  OK   selekcja (ta sama funkcja co wiring): AI daje zelazo, bierze cegle
+  OK   start: brak propozycji barteru na stole, brak umow cyklicznych
+  OK   REALNY endTurn: AI skladala graczowi propozycje wymiany cyklicznej (stol, aiCyclicBarter)
+  OK   payload: AI daje zelazo, prosi o cegle, cyklicznie per_turn
+  OK   oferta na stole: te same pozycje co selekcja, ilosci <= selekcji (clamp per_turn)
+  OK   cooldown barteru AI ustawiony dopiero po wystawieniu oferty
+  [shot] /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/ev-r3-d/01-propozycja-na-stole.png
+  OK   okno dyplomacji (klik karty HUD): otwarte, widoczny przycisk decyzji dla pakietu
+  OK   okno dyplomacji: propozycja AI widoczna w oknie (Zelazo oferowane, 10 Cegla zadane)
+  OK   okno dyplomacji: przycisk „Przyjmij” AKTYWNY (nie disabled) i „Odrzuć” aktywny
+  OK   wycena A1: oferta rowna za rowne (givePn == receivePn), bramka AI przechodzi, bramka gracza przechodzi
+  [shot] /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/ev-r3-d/05-okno-dyplomacji-przyjmij-aktywne.png
+  [grid] cegla->zelazo: n=400 aiA1=5 player=360 both=5 | zelazo->cegla: n=400 aiA1=5 player=45 both=5 | drewno->kamien: n=400 aiA1=6 player=343 both=6 | kamien->drewno: n=400 aiA1=6 player=63 both=6 | zelazo->kamien: n=400 aiA1=1 player=22 both=1 | drewno->cegla: n=400 aiA1=4 player=370 both=4
+  OK   tabela proporcji: kazda oferta przechodzaca OBIE bramki ma givePn == receivePn (rownosc PW)
+  OK   tabela proporcji: istnieja oferty „rowne za rowne” dla pary cegla->zelazo (both > 0)
+  OK   ignorowanie: oferta nadal jedna (bez duplikatu), ta sama
+  OK   ignorowanie: cooldown barteru nie zerowany
+  OK   zapis slotu z wiszaca propozycja (REALNY persistSaveToSlot)
+  OK   kopia slotu w formacie sprzed pol AI-TRADE
+  OK   odrzucenie (przed wczytaniem): stol pusty
+  OK   wczytanie: propozycja wrocila na stol (ten sam id i payload)
+  OK   wczytanie: cooldown barteru AI zachowany
+  OK   wczytanie: kooldowny odrzucen sprzed zapisu (puste) przywrocone, nie z po-zapisowego odrzucenia
+  OK   odrzucenie: okno dyplomacji otwarte po wczytaniu zapisu, przycisk „Odrzuć” dostepny
+  OK   odrzucenie: stol czysty, brak umowy
+  OK   odrzucenie: zapisany cooldown odrzuconej oferty (wymiana_cykliczna)
+  OK   cooldown: po odrzuceniu AI nie sklada nowej oferty w kolejnych turach
+  OK   odrzucenie: brak umowy = brak transferu (activeDeals puste po dwoch turach)
+  [shot] /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/ev-r3-d/02-po-odrzuceniu-cooldown.png
+  OK   ponowne wczytanie zapisu: propozycja znow wisi (akceptacja po load)
+  OK   po kontroli: ponowne wczytanie zapisu, propozycja znow wisi
+  OK   podglad akceptacji gracza przepuszcza oferte AI (previewAccept.accepted=true, A1)
+  OK   przyjecie: okno dyplomacji z AKTYWNYM przyciskiem „Przyjmij”
+  [shot] /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/ev-r3-d/05b-okno-przed-przyjeciem.png
+  [shot] /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/ev-r3-d/06-po-przyjeciu-przyciskiem.png
+  OK   przyjecie PRZYCISKIEM „Przyjmij” (bez forceAccept): oferta zdjeta ze stolu, umowa powstala
+  OK   akceptacja: oferta zdjeta ze stolu, umowa cykliczna w activeDeals
+  OK   umowa: dwie pozycje barteru (GIVE AI->gracz, RECV gracz->AI), ilosci z oferty znormalizowane do kroku 10
+  [shot] /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/ev-r3-d/03-po-akceptacji-umowa.png
+  OK   REALNY tick dostaw: AI (sprzedawca) oddala ilosc z umowy minus naturalna zmiane zapasu (kontrola bez umowy), rownosc; gracz dostaje ilosc minus zuzycie (kontrola)
+  OK   REALNY tick dostaw: gracz oddal cegle, AI dostala ja w calosci minus zwykle zuzycie (kontrola), rownosc
+  OK   zapis w trakcie aktywnej umowy
+  OK   wczytanie w trakcie umowy: umowa cykliczna zachowana (te same pozycje)
+  OK   po wczytaniu dostawy trwaja (kolejny tick przenosi zelazo)
+  OK   stary zapis: laduje sie bez bledu; cooldown barteru pusty (nie dziedziczony z biezacej sesji); wpis stolu zachowany
+  OK   stary zapis: koniec tury dziala po wczytaniu
+  [shot] /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/ev-r3-d/04-po-starym-zapisie.png
+  OK   zero console.error / pageerror
+
+ai-trade-wiring-e2e-live-test: 44 pass, 0 fail

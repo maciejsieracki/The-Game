@@ -1,0 +1,29 @@
+import { defineConfig } from '/home/user/The-Game/.claude/worktrees/wf_16ad639d-ca0-3/gra/node_modules/vite/dist/node/index.js';
+import { viteSingleFile } from '/home/user/The-Game/.claude/worktrees/wf_16ad639d-ca0-3/gra/node_modules/vite-plugin-singlefile/dist/esm/index.js';
+
+const MARK = '(window as any).__pracaPoolSaveLoadTestDebug = {';
+const INJECT = `(window as any).__laborTaxLive = {
+  addTarg: (): number => { let n = 0; for (const c of cities) if (c.ownerId === 0) { const b = cityBuilt.get(c.id) ?? []; if (!b.includes('targowisko')) cityBuilt.set(c.id, [...b, 'targowisko']); n++; } markCityStateDirty(); refreshLiveEmpireRates(); updateHud(); return n; },
+  rates: () => ({ skarb: _lastPieniadzRate, nauka: _lastNaukaRate, pending: pendingManualWorkTaxByOwner.get(0) ?? 0, pool: ownerPracaPool(0) }),
+  cap: () => { const c: any = cities.find(x => x.ownerId === 0); return c ? { split: effectivePodzialHandlu(c), civKey: c.civKey ?? null, civType: (c as any).civTypeId ?? null, override: c.podzialHandluOverride ?? null } : null; },
+  defaults: () => ({ d: ownerDefaultPodzialHandlu.get(0) ?? null }),
+  bilans: () => ({ skarbiec: (player as any).bogactwo ?? null }),
+};
+`;
+function injectPlugin() {
+  return {
+    name: 'labor-tax-live-inject',
+    enforce: 'pre',
+    transform(code, id) {
+      if (!id.endsWith('/src/main.ts')) return null;
+      if (!code.includes(MARK)) throw new Error('marker not found');
+      return code.replace(MARK, INJECT + MARK);
+    },
+  };
+}
+export default defineConfig({
+  root: '/home/user/The-Game/.claude/worktrees/wf_16ad639d-ca0-3/gra',
+  base: './',
+  plugins: [injectPlugin(), viteSingleFile()],
+  build: { sourcemap: false, assetsInlineLimit: 100000000, rollupOptions: { output: { format: 'iife', inlineDynamicImports: true, manualChunks: undefined } } },
+});

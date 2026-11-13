@@ -1,0 +1,10 @@
+PASS: pozycja Droga (10 P, stać) renderuje się
+PASS: pozycja Fort (50 P, NIE stać) renderuje się
+PASS: Droga (stać) NIE ma klasy locked
+PASS: Fort (nie stać) MA klasę locked (ten sam wzorzec co tech-lock)
+PASS: Fort ma data-lock-hint z tekstem "Za mało Pracy" i liczbami kosztu/puli
+PASS: klik w Fort (zablokowany) NIE wywołuje onSelectType
+PASS: klik w Droga (dostępna) wywołuje onSelectType("droga")
+
+[build-mode-hud-affordability-test] 7 pass, 0 fail
+EXIT=0

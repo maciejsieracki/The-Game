@@ -1,0 +1,69 @@
+[sidepanel-hud-deadzone-test] budowanie bundla (vite build, wyłącznie dozwolona komenda z CLAUDE.md)...
+[sidepanel-hud-deadzone-test] build OK.
+[sidepanel-hud-deadzone-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+
+-- A. Martwa strefa .civ-side-panel -> canvas (przed mutacją = PO naprawie) --
+  OK  .civ-side-panel znaleziony i ma niezerową geometrię
+  OK  punkt martwej strefy leży WEWNĄTRZ prostokąta .civ-side-panel, ale POD wszystkimi dziećmi (realna pusta przestrzeń, nie tautologia)
+ FAIL PO NAPRAWIE: klik w martwą strefę .civ-side-panel trafia w CANVAS, nie w panel -- {"tag":"DIV","cls":"civ-map-load-overlay"}
+
+-- Dowód mutacyjny: przywrócenie .civ-side-panel{pointer-events:auto} NA ŻYWO --
+  OK  mutacja: znaleziono wstrzyknięty <style> panelu HUD
+  OK  mutacja: reguła .civ-side-panel{pointer-events:none} znaleziona i podmieniona na auto
+ FAIL PO MUTACJI (cofnięcie naprawy): TEN SAM punkt ZNÓW łapie klik w DIV.civ-side-panel, nie w canvas -- dowód, że asercja wyżej naprawdę zależy od tej reguły CSS -- {"tag":"DIV","cls":"civ-map-load-overlay"}
+ FAIL CSS przywrócony do stanu naprawionego: punkt znów trafia w CANVAS -- {"tag":"DIV"}
+
+-- B. Zakładki powiadomień ([data-sp-tab]) nadal klikalne realnym kliknięciem --
+  OK  zakładka „wazne” istnieje w DOM
+  OK  zakładka „wazne” przed kliknięciem NIE jest aktywna
+  OK  zakładka „wazne” ma niezerową geometrię (boundingBox)
+ FAIL PRAWDZIWY klik myszy na zakładkę „wazne” ją aktywuje (funkcjonalność panelu NIE ucierpiała)
+
+-- C. Karta własnej jednostki (.civ-side-ctx-dock .sp-ctx-card) nadal w pełni klikalna --
+ FAIL klik na jednostkę gracza otwiera kartę .sp-ctx-card.sp-ctx-interactive w lewym doku -- null
+
+-- D. Baseline: .civ-side-ctx-dock (kontener) JUŻ MIAŁ pointer-events:none PRZED tą naprawą --
+  OK  .civ-side-ctx-dock (kontener, NIE karta) ma pointer-events:none -- baseline bez zmian w tej naprawie
+
+-- E. Karta kontekstu heksa (dblclick na terenie, wewnątrz .civ-side-panel) nadal w pełni klikalna --
+ FAIL dblclick na terenie otwiera kartę kontekstu heksa (.civ-side-panel .sp-ctx-card, BEZ klasy sp-ctx-interactive) -- null
+
+-- F. Wstrzyknięcie 20 syntetycznych .sp-event (odtworzenie progu >~11 wydarzeń z werdyktu Evaluatora) --
+  OK  .civ-side-panel .sp-scroll znaleziony, 20 syntetycznych .sp-event wstrzyknięte
+  OK  PO WSTRZYKNIĘCIU: scrollHeight > clientHeight (realne przepełnienie odtworzone)
+
+-- G. Scroll kółkiem myszy realnie przewija listę wydarzeń (naprawa rundy 2) --
+  OK  scrollTop=0 przed scrollem (higiena testu)
+ FAIL PO NAPRAWIE RUNDY 2: wheel realnie przewija listę wydarzeń (scrollTop 0 -> >0) — kontrfaktyczny pomiar Evaluatora (PRZED naprawą: scrollTop zostawał 0) teraz odwrócony -- {"scrollBefore":0,"scrollTop":0,"changed":false}
+
+-- H. Pasek przewijania łapalny (elementFromPoint w jego miejscu trafia w panel, nie CANVAS) --
+ FAIL PO NAPRAWIE: pasek przewijania łapalny -- elementFromPoint w miejscu paska trafia w .sp-scroll, NIE w CANVAS pod spodem -- {"tag":"DIV","cls":"civ-map-load-overlay"}
+
+-- Dowód mutacyjny (G/H): .sp-scroll{pointer-events:none} na żywo przywraca DOKŁADNIE regresję Evaluatora --
+  OK  mutacja: reguła .civ-side-panel .sp-scroll{pointer-events:auto} znaleziona i podmieniona na none
+  OK  PO MUTACJI (cofnięcie naprawy rundy 2): wheel PRZESTAJE przewijać listę (scrollTop bez zmian) -- dowód, że naprawa realnie zależy od tej reguły CSS, nie jest tautologią
+ FAIL PO MUTACJI: pasek przewijania PRZESTAJE być łapalny -- elementFromPoint w tym samym miejscu znów trafia w CANVAS (dokładnie regresja opisana przez Evaluatora) -- {"tag":"DIV","cls":"civ-map-load-overlay"}
+  OK  CSS przywrócony do stanu naprawionego: pasek znów łapalny (nie CANVAS)
+
+-- I. Klikalność .sp-event (karta wydarzenia) — dziś niestrzeżona bramką (Evaluator), dodajemy ochronę --
+  OK  syntetyczna karta .sp-event znaleziona w DOM po wstrzyknięciu (sekcja F)
+ FAIL środek karty .sp-event: elementFromPoint trafia W KARTĘ (nie w wrapper/canvas) -- pełna klikalność wydarzenia -- {"tag":"DIV","cls":"civ-map-load-overlay","insideEvent":false}
+
+-- Dowód mutacyjny (I): .sp-event{pointer-events:none} -- dokładnie mutacja opisana przez Evaluatora jako dziś niełapana --
+  OK  mutacja: reguła .civ-side-panel .sp-event{pointer-events:auto} znaleziona i podmieniona na none
+  OK  PO MUTACJI: TEN SAM punkt (środek karty) PRZESTAJE trafiać w .sp-event -- dowód, że asercja I naprawdę zależy od tej reguły CSS, nie jest tautologią (chroni dokładnie mutację opisaną przez Evaluatora)
+ FAIL CSS przywrócony: klik znów trafia w .sp-event -- {"insideEvent":false}
+  OK  [konsola] zero console.error / pageerror w całym scenariuszu
+
+===== P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY: .civ-side-ctx-dock .sp-ctx-scroll =====
+
+-- J. Wstrzyknięcie 25 syntetycznych .sp-unit-stack-card do .civ-side-ctx-dock .sp-ctx-scroll (odtworzenie przepełnienia dużym stosem jednostek) --
+ FAIL .civ-side-ctx-dock otwarty (.open) i .sp-ctx-scroll znaleziony, 25 syntetycznych .sp-unit-stack-card wstrzyknięte -- {"found":true,"dockOpen":false,"scrollHeight":0,"clientHeight":0,"rect":{"top":0,"bottom":0,"left":0,"right":0}}
+ FAIL PO WSTRZYKNIĘCIU: scrollHeight > clientHeight (realne przepełnienie dużym stosem jednostek odtworzone) -- {"found":true,"dockOpen":false,"scrollHeight":0,"clientHeight":0,"rect":{"top":0,"bottom":0,"left":0,"right":0}}
+
+-- M. Baseline niezmieniony: .civ-side-ctx-dock (kontener) nadal pointer-events:none po naprawie (fix rundy 1 Przyczyny A nienaruszony) --
+  OK  .civ-side-ctx-dock (kontener, NIE wrapper) ma pointer-events:none -- fix rundy 1 Przyczyny A pozostaje nienaruszony
+  OK  [konsola, page2] zero console.error / pageerror w scenariuszu P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY
+
+20 pass · 13 fail
+EXIT=1

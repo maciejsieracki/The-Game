@@ -370,7 +370,7 @@ export function wallKindFromBuilt(
   builtBuildingIds: readonly string[] | null | undefined,
 ): CityMapWallKind {
   const built = builtBuildingIds ?? [];
-  if (built.includes('mury') || built.includes('fort')) return 'stone';
+  if (built.includes('mury') || built.includes('mury_kamienne') || built.includes('fort')) return 'stone';
   if (built.includes('palisada')) return 'palisada';
   return 'none';
 }

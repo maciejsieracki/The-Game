@@ -1,0 +1,75 @@
+[minimapa-ikona-robotnik-kolor-live-test] budowa bundla PO (bieżący worktree)…
+[minimapa-ikona-robotnik-kolor-live-test] budowa bundla PRZED (ca289d8c)…
+
+=== PO (bieżący worktree, ten dispatch) ===
+[minimapa-ikona-robotnik-kolor-live-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+  OK  [worker] przycisk obecny w .civ-hud-util-dock
+  OK  [worker] niesie inline <svg> (nie emoji)
+  OK  [worker] svg stroke="currentColor"
+  OK  [worker] svg fill="none"
+  OK  [worker] viewBox="0 0 24 24"
+  OK  [worker] ZERO surowego emoji w treści przycisku
+  OK  [worker] getComputedStyle(button).color = rgb(232, 216, 138)
+  OK  [worker] getComputedStyle(svg).color = rgb(232, 216, 138)
+  OK  [worker] ma >=1 kształt rysowany
+  OK  [worker] KAŻDY kształt: rozwiązany stroke = rgb(232, 216, 138) (currentColor zadziałał)
+  OK  [worker] KAŻDY kształt: fill=none (linia, nie wypełnienie)
+  OK  [worker] ikona 20x20 CSS px
+  OK  [worker] przycisk 42x42 (jak reszta rzędu)
+  OK  [deposit] przycisk obecny w .civ-hud-util-dock
+  OK  [deposit] niesie inline <svg> (nie emoji)
+  OK  [deposit] svg stroke="currentColor"
+  OK  [deposit] svg fill="none"
+  OK  [deposit] viewBox="0 0 24 24"
+  OK  [deposit] ZERO surowego emoji w treści przycisku
+  OK  [deposit] getComputedStyle(button).color = rgb(232, 216, 138)
+  OK  [deposit] getComputedStyle(svg).color = rgb(232, 216, 138)
+  OK  [deposit] ma >=1 kształt rysowany
+  OK  [deposit] KAŻDY kształt: rozwiązany stroke = rgb(232, 216, 138) (currentColor zadziałał)
+  OK  [deposit] KAŻDY kształt: fill=none (linia, nie wypełnienie)
+  OK  [deposit] ikona 20x20 CSS px
+  OK  [deposit] przycisk 42x42 (jak reszta rzędu)
+  OK  rząd: wszystkie przyciski na wspólnej osi pionowej (spread <= 1 px)
+  OK  rząd: worker + deposit + kontrolki zoom w tym samym docku
+  OK  zrzut rzędu: piksele złota obecne
+  info  PO przycisk worker: piksele={"gold":209,"obceChlodne":0,"total":1764} bg=rgba(232, 216, 138, 0.12) bgImage=none
+  info  PO przycisk deposit: piksele={"gold":1184,"obceChlodne":0,"total":1764} bg=rgba(232, 216, 138, 0.12) bgImage=none
+  OK  [worker] klik przełącza klasę .on
+  OK  [worker] klik przełącza aria-pressed
+  OK  [worker] klik realnie zmienia obraz mapy 3D ponad szum tła
+  OK  [worker] stan AKTYWNY: rozwiązany stroke nadal = rgb(232, 216, 138)
+  OK  [deposit] klik przełącza klasę .on
+  OK  [deposit] klik przełącza aria-pressed
+  OK  [deposit] klik realnie zmienia obraz mapy 3D ponad szum tła
+  OK  [deposit] stan AKTYWNY: rozwiązany stroke nadal = rgb(232, 216, 138)
+  OK  zrzut rzędu (stan nieaktywne): piksele złota obecne
+  OK  zrzuty pokrywają OBA stany przycisków (aktywny i nieaktywny)
+  OK  brak błędów konsoli/strony
+
+=== PRZED (ca289d8c, źródło zmutowane do stanu sprzed naprawy) ===
+[minimapa-ikona-robotnik-kolor-live-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+ FAIL PRZED [worker] NIE ma żadnego <svg> (currentColor nie ma na czym zadziałać) — {"present":true,"hasSvg":true,"svgStrokeAttr":"currentColor","svgFillAttr":"none","viewBox":"0 0 24 24","text":"","btnColor":"rgb(232, 216, 138)","btnBgColor":"rgba(232, 216, 138, 0.12)","btnBgImage":"none","svgColor":"rgb(232, 216, 138)","shapeStrokes":["rgb(232, 216, 138)","rgb(232, 216, 138)"],"shapeFills":["none","none"],"shapeCount":2,"on":true,"ariaPressed":"true","svgW":20,"svgH":20,"btnW":42,"btnH":42,"btnCenterY":856}
+ FAIL PRZED [worker] treść przycisku to surowy znak emoji "👤" — ""
+ FAIL PRZED [worker] zero kształtów rysowanych dziedziczących kolor — 2
+ FAIL PRZED [deposit] NIE ma żadnego <svg> (currentColor nie ma na czym zadziałać) — {"present":true,"hasSvg":true,"svgStrokeAttr":"currentColor","svgFillAttr":"none","viewBox":"0 0 24 24","text":"","btnColor":"rgb(232, 216, 138)","btnBgColor":"rgba(232, 216, 138, 0.12)","btnBgImage":"none","svgColor":"rgb(232, 216, 138)","shapeStrokes":["rgb(232, 216, 138)","rgb(232, 216, 138)"],"shapeFills":["none","none"],"shapeCount":2,"on":true,"ariaPressed":"true","svgW":20,"svgH":20,"btnW":42,"btnH":42,"btnCenterY":856}
+ FAIL PRZED [deposit] treść przycisku to surowy znak emoji "⛏" — ""
+ FAIL PRZED [deposit] zero kształtów rysowanych dziedziczących kolor — 2
+  info  PRZED piksele przycisku worker: {"gold":209,"obceChlodne":0,"total":1764}
+  info  PRZED piksele przycisku deposit: {"gold":1184,"obceChlodne":0,"total":1764}
+  info  PRZED piksele rzędu: {"gold":2679,"obceChlodne":137,"total":19448}
+
+=== PORÓWNANIE PRZED vs PO ===
+  OK  wysokość rzędu .civ-hud-util-dock bez zmian (±1 px)
+  OK  szerokość rzędu .civ-hud-util-dock bez zmian (±2 px)
+  OK  pozycja rzędu bez zmian (±1 px)
+ FAIL PRZED przycisk worker MA obce, zimne piksele (emoji ignoruje CSS color) — {"gold":209,"obceChlodne":0,"total":1764}
+  OK  PO przycisk worker: ZERO obcych, zimnych pikseli (ikona w całości złota)
+  OK  przycisk worker: nie mniej pikseli złota niż przed naprawą
+  OK  PO przycisk deposit: ZERO obcych, zimnych pikseli (ikona w całości złota)
+  OK  przycisk deposit: nie mniej pikseli złota niż przed naprawą
+  OK  toggle worker: nakładka nadal reaguje jak przed naprawą (>=60% sygnału PRZED)
+  OK  toggle deposit: nakładka nadal reaguje jak przed naprawą (>=60% sygnału PRZED)
+
+Zrzuty: /tmp/civ-ikona-robotnik-kolor-shots-28941-idn5rm
+
+49 pass / 7 fail

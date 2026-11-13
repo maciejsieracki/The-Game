@@ -402,19 +402,35 @@ console.log('\n--- B1: straznik tekstowy main.ts -- blok obslugi cmd.type === "f
   // Naprawa: wytnij PREAMBULE (od poczatku ciala do pierwszego wystapienia
   // cityNodesForOwner(ownerId), czyli realnej logiki terytorium), zweryfikuj ze
   // PIERWSZA instrukcja w tej preambule (do najblizszego ';', bez przeskakiwania
-  // przez kod) to dokladnie "if (ownerId === 0 && ...) return {}", i ze NIC innego
+  // przez kod) to dokladnie "if (ownerId === 0 && ...) return {}" ALBO jej
+  // semantyczny rownowaznik "if (isMe(ownerId) && ...) return {}", i ze NIC innego
   // w preambule (miedzy ta instrukcja a cityNodesForOwner) nie zawiera "return".
+  //
+  // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (Maciej 2026-09-xx): literalny
+  // `ownerId === 0` zostal swiadomie zmieniony na `isMe(ownerId)` w main.ts, zeby
+  // poprawnie obslugiwac drugi fotel hotseat (ME() != 0 gdy aktywny jest fotel 2).
+  // Test zaakceptuje TYLKO gdy `isMe` jest faktycznie zdefiniowane jako
+  // `ownerId === ME()` (alias ownerId-aktywny-fotel-czlowieka) -- wowczas jest to
+  // 1:1 rownowaznik `ownerId === 0` dla jedynego dzis fotela czlowieka
+  // (HUMAN_OWNER_PRIMARY === 0), wiec NIE jest to ciche zwolnienie AI z wymogu
+  // terytorium. Jesli `isMe` kiedykolwiek przestanie byc tym prostym aliasem
+  // (np. zwroci true dla dowolnego ownerId), ten test musi to zlapac.
+  const isMeDefMatch = mainSrc.match(/function isMe\(ownerId:\s*number\)\s*:\s*boolean\s*\{\s*return\s+ownerId\s*===\s*ME\(\)\s*;\s*\}/);
+  assert(isMeDefMatch !== null,
+    'B1e-isMe: isMe(ownerId) musi byc zdefiniowane doslownie jako "return ownerId === ME();" ' +
+    '(alias na aktywny fotel czlowieka) -- inaczej rownowaznosc z ownerId===0 nie jest gwarantowana');
   const cityNodesMarker = 'cityNodesForOwner(ownerId)';
   const cityNodesIdx = fnBody.indexOf(cityNodesMarker);
   assert(cityNodesIdx !== -1, 'B1e-pre: cityNodesForOwner(ownerId) nie znaleziony w ciele foundingTerritoryOpts');
   const preamble = cityNodesIdx !== -1 ? fnBody.slice(0, cityNodesIdx) : fnBody;
 
-  // Pierwsza instrukcja preambuly, ograniczona do najblizszego ';' -- warunek
-  // "ownerId === 0 && ..." nie zawiera srednika, wiec to bezpiecznie wycina
+  // Pierwsza instrukcja preambuly, ograniczona do najblizszego ';' -- zaden z
+  // dwoch akceptowanych warunkow nie zawiera srednika, wiec to bezpiecznie wycina
   // DOKLADNIE jedna instrukcje, bez przeskakiwania przez kolejne linie kodu.
-  const firstStmtMatch = preamble.match(/if\s*\(\s*ownerId\s*===\s*0\s*&&[\s\S]*?;/);
+  const firstStmtMatch = preamble.match(/if\s*\(\s*(?:ownerId\s*===\s*0|isMe\(ownerId\))\s*&&[\s\S]*?;/);
   assert(firstStmtMatch !== null,
-    'B1e-a: pierwsza instrukcja w foundingTerritoryOpts musi zaczynac sie od "if (ownerId === 0 && ...)"');
+    'B1e-a: pierwsza instrukcja w foundingTerritoryOpts musi zaczynac sie od '
+    + '"if (ownerId === 0 && ...)" lub rownowaznego "if (isMe(ownerId) && ...)"');
   if (firstStmtMatch !== null) {
     assert(/return\s*\{\}\s*;?\s*$/.test(firstStmtMatch[0]),
       'B1e-b: pierwsza instrukcja (ownerId === 0 && ...) musi konczyc sie na "return {}"');

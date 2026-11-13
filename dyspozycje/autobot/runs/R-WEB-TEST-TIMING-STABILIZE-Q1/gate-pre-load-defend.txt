@@ -1,0 +1,22 @@
+run=1 rc=0 ms=9939 summary=[ai-war-defend-home-test: 30 passed, 0 failed] fails=[]
+T7 PO=108.8 PRZED=190.6 limit=336.0 OK
+run=2 rc=0 ms=6771 summary=[ai-war-defend-home-test: 30 passed, 0 failed] fails=[]
+T7 PO=109.1 PRZED=210.0 limit=365.0 OK
+run=3 rc=0 ms=7977 summary=[ai-war-defend-home-test: 30 passed, 0 failed] fails=[]
+T7 PO=135.8 PRZED=282.3 limit=473.5 OK
+run=4 rc=0 ms=7345 summary=[ai-war-defend-home-test: 30 passed, 0 failed] fails=[]
+T7 PO=145.4 PRZED=230.5 limit=395.7 OK
+run=5 rc=0 ms=8017 summary=[ai-war-defend-home-test: 30 passed, 0 failed] fails=[]
+T7 PO=142.5 PRZED=252.6 limit=428.9 OK
+run=6 rc=0 ms=8429 summary=[ai-war-defend-home-test: 30 passed, 0 failed] fails=[]
+T7 PO=130.5 PRZED=439.1 limit=708.6 OK
+run=7 rc=0 ms=9641 summary=[ai-war-defend-home-test: 30 passed, 0 failed] fails=[]
+T7 PO=191.4 PRZED=291.5 limit=487.2 OK
+run=8 rc=0 ms=9985 summary=[ai-war-defend-home-test: 30 passed, 0 failed] fails=[]
+T7 PO=230.6 PRZED=303.3 limit=504.9 OK
+run=9 rc=0 ms=10235 summary=[ai-war-defend-home-test: 30 passed, 0 failed] fails=[]
+T7 PO=130.8 PRZED=235.3 limit=403.0 OK
+run=10 rc=0 ms=9783 summary=[ai-war-defend-home-test: 30 passed, 0 failed] fails=[]
+T7 PO=117.9 PRZED=312.8 limit=519.2 OK
+DONE
+EXIT=0 runs_rc0=10 fail_runs=0

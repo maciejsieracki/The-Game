@@ -1,0 +1,11 @@
+1. clampUlepszeniaPracaPercent — zakres 0-100 i fallback
+2. migrateUlepszeniaPerTurnToPercent — 1->33, 2->66, 3->100
+3. resolveUlepszeniaPracaPercentFromRaw — nowy/stary zapis, priorytet nowego
+4. (d) migracja zapisu: ulepszeniaPerTurn=2 (stary) -> ulepszeniaPracaPercent=66, bez crasha
+5. (d) migracja jest idempotentna — powtorne wywolanie nie psuje juz-zmigrowanej wartosci
+6. miasto bez override — brak ulepszeniaPracaPercent po migracji (dziedziczy polityke panstwa)
+7. resolveEffectiveUlepszenia — dziedziczenie panstwa vs override miasta
+8. DEFAULT_ULEPSZENIA_PRACA_PERCENT = 33 (pin literalny, łapie mutację stałej)
+
+ulepszenia-praca-percent-test: 28 passed, 0 failed
+EXIT=0

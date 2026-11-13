@@ -1,0 +1,4752 @@
+{
+  "evaluateFailure": {
+    "at": "2026-10-28T09:10:49.740Z",
+    "id": 591,
+    "phase": "eot-timeout-state-read",
+    "details": {
+      "iteration": 47,
+      "turnBefore": 47
+    },
+    "elapsedMs": 3,
+    "error": "Error: page.evaluate: Target page, context or browser has been closed"
+  },
+  "phaseHistory": [
+    {
+      "at": "2026-10-28T08:41:07.840Z",
+      "phase": "page-load"
+    },
+    {
+      "at": "2026-10-28T08:41:09.931Z",
+      "phase": "test-hooks-ready"
+    },
+    {
+      "at": "2026-10-28T08:41:10.326Z",
+      "phase": "new-game-start"
+    },
+    {
+      "at": "2026-10-28T08:41:10.391Z",
+      "phase": "world-generation-wait"
+    },
+    {
+      "at": "2026-10-28T08:44:52.277Z",
+      "phase": "player-start-city"
+    },
+    {
+      "at": "2026-10-28T08:44:54.894Z",
+      "phase": "fixture-seed"
+    },
+    {
+      "at": "2026-10-28T08:45:00.130Z",
+      "phase": "eot-read-world-before",
+      "iteration": 1
+    },
+    {
+      "at": "2026-10-28T08:45:00.692Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 1,
+      "turnBefore": 1
+    },
+    {
+      "at": "2026-10-28T08:45:01.231Z",
+      "phase": "eot-configure",
+      "iteration": 1,
+      "turnBefore": 1,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:45:01.805Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 1,
+      "turnBefore": 1
+    },
+    {
+      "at": "2026-10-28T08:45:02.386Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 1,
+      "turnBefore": 1,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:45:02.386Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 1
+    },
+    {
+      "at": "2026-10-28T08:45:02.958Z",
+      "phase": "offer-final-pending-check",
+      "turn": 1
+    },
+    {
+      "at": "2026-10-28T08:45:03.492Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 1,
+      "turnBefore": 1,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:45:03.997Z",
+      "phase": "eot-trigger-call",
+      "iteration": 1,
+      "turnBefore": 1,
+      "attempt": 1,
+      "lifecycleStarted": 0
+    },
+    {
+      "at": "2026-10-28T08:45:04.498Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 1,
+      "turnBefore": 1,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:45:05.001Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 1,
+      "turnBefore": 1,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:45:20.873Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 1,
+      "turnBefore": 1,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:45:21.746Z",
+      "phase": "eot-completed",
+      "iteration": 1,
+      "turnBefore": 1,
+      "turnAfter": 2,
+      "wallMs": 19360
+    },
+    {
+      "at": "2026-10-28T08:45:23.083Z",
+      "phase": "eot-read-world-before",
+      "iteration": 2
+    },
+    {
+      "at": "2026-10-28T08:45:23.537Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 2,
+      "turnBefore": 2
+    },
+    {
+      "at": "2026-10-28T08:45:23.930Z",
+      "phase": "eot-configure",
+      "iteration": 2,
+      "turnBefore": 2,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:45:24.313Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 2,
+      "turnBefore": 2
+    },
+    {
+      "at": "2026-10-28T08:45:24.868Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 2,
+      "turnBefore": 2,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:45:24.868Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 2
+    },
+    {
+      "at": "2026-10-28T08:45:25.411Z",
+      "phase": "offer-read-contacts",
+      "attempt": 1,
+      "turn": 2,
+      "pending": 3,
+      "offerId": "negot-umowa_handlowa-0-1-t2-1"
+    },
+    {
+      "at": "2026-10-28T08:45:25.958Z",
+      "phase": "offer-open-and-click",
+      "turn": 2,
+      "ownerId": 13,
+      "offerId": "negot-umowa_handlowa-0-1-t2-1"
+    },
+    {
+      "at": "2026-10-28T08:45:26.449Z",
+      "phase": "offer-open-and-click",
+      "turn": 2,
+      "ownerId": 9,
+      "offerId": "negot-umowa_handlowa-0-1-t2-1"
+    },
+    {
+      "at": "2026-10-28T08:45:27.022Z",
+      "phase": "offer-open-and-click",
+      "turn": 2,
+      "ownerId": 10,
+      "offerId": "negot-umowa_handlowa-0-1-t2-1"
+    },
+    {
+      "at": "2026-10-28T08:45:27.564Z",
+      "phase": "offer-open-and-click",
+      "turn": 2,
+      "ownerId": 1,
+      "offerId": "negot-umowa_handlowa-0-1-t2-1"
+    },
+    {
+      "at": "2026-10-28T08:45:28.314Z",
+      "phase": "offer-wait-removal",
+      "turn": 2,
+      "offerId": "negot-umowa_handlowa-0-1-t2-1"
+    },
+    {
+      "at": "2026-10-28T08:45:29.277Z",
+      "phase": "offer-read-after-removal",
+      "turn": 2,
+      "offerId": "negot-umowa_handlowa-0-1-t2-1"
+    },
+    {
+      "at": "2026-10-28T08:45:29.777Z",
+      "phase": "offer-close-audience",
+      "turn": 2,
+      "offerId": "negot-umowa_handlowa-0-1-t2-1"
+    },
+    {
+      "at": "2026-10-28T08:45:30.282Z",
+      "phase": "offer-read-pending",
+      "attempt": 2,
+      "turn": 2
+    },
+    {
+      "at": "2026-10-28T08:45:30.823Z",
+      "phase": "offer-read-contacts",
+      "attempt": 2,
+      "turn": 2,
+      "pending": 2,
+      "offerId": "negot-umowa_handlowa-0-5-t2-2"
+    },
+    {
+      "at": "2026-10-28T08:45:31.369Z",
+      "phase": "offer-open-and-click",
+      "turn": 2,
+      "ownerId": 13,
+      "offerId": "negot-umowa_handlowa-0-5-t2-2"
+    },
+    {
+      "at": "2026-10-28T08:45:31.907Z",
+      "phase": "offer-open-and-click",
+      "turn": 2,
+      "ownerId": 9,
+      "offerId": "negot-umowa_handlowa-0-5-t2-2"
+    },
+    {
+      "at": "2026-10-28T08:45:32.580Z",
+      "phase": "offer-open-and-click",
+      "turn": 2,
+      "ownerId": 10,
+      "offerId": "negot-umowa_handlowa-0-5-t2-2"
+    },
+    {
+      "at": "2026-10-28T08:45:33.128Z",
+      "phase": "offer-open-and-click",
+      "turn": 2,
+      "ownerId": 1,
+      "offerId": "negot-umowa_handlowa-0-5-t2-2"
+    },
+    {
+      "at": "2026-10-28T08:45:33.615Z",
+      "phase": "offer-open-and-click",
+      "turn": 2,
+      "ownerId": 3,
+      "offerId": "negot-umowa_handlowa-0-5-t2-2"
+    },
+    {
+      "at": "2026-10-28T08:45:34.113Z",
+      "phase": "offer-open-and-click",
+      "turn": 2,
+      "ownerId": 5,
+      "offerId": "negot-umowa_handlowa-0-5-t2-2"
+    },
+    {
+      "at": "2026-10-28T08:45:34.979Z",
+      "phase": "offer-wait-removal",
+      "turn": 2,
+      "offerId": "negot-umowa_handlowa-0-5-t2-2"
+    },
+    {
+      "at": "2026-10-28T08:45:36.032Z",
+      "phase": "offer-read-after-removal",
+      "turn": 2,
+      "offerId": "negot-umowa_handlowa-0-5-t2-2"
+    },
+    {
+      "at": "2026-10-28T08:45:36.486Z",
+      "phase": "offer-close-audience",
+      "turn": 2,
+      "offerId": "negot-umowa_handlowa-0-5-t2-2"
+    },
+    {
+      "at": "2026-10-28T08:45:36.902Z",
+      "phase": "offer-read-pending",
+      "attempt": 3,
+      "turn": 2
+    },
+    {
+      "at": "2026-10-28T08:45:37.343Z",
+      "phase": "offer-read-contacts",
+      "attempt": 3,
+      "turn": 2,
+      "pending": 1,
+      "offerId": "negot-umowa_handlowa-0-9-t2-3"
+    },
+    {
+      "at": "2026-10-28T08:45:37.757Z",
+      "phase": "offer-open-and-click",
+      "turn": 2,
+      "ownerId": 13,
+      "offerId": "negot-umowa_handlowa-0-9-t2-3"
+    },
+    {
+      "at": "2026-10-28T08:45:38.208Z",
+      "phase": "offer-open-and-click",
+      "turn": 2,
+      "ownerId": 9,
+      "offerId": "negot-umowa_handlowa-0-9-t2-3"
+    },
+    {
+      "at": "2026-10-28T08:45:38.947Z",
+      "phase": "offer-wait-removal",
+      "turn": 2,
+      "offerId": "negot-umowa_handlowa-0-9-t2-3"
+    },
+    {
+      "at": "2026-10-28T08:45:40.010Z",
+      "phase": "offer-read-after-removal",
+      "turn": 2,
+      "offerId": "negot-umowa_handlowa-0-9-t2-3"
+    },
+    {
+      "at": "2026-10-28T08:45:40.539Z",
+      "phase": "offer-close-audience",
+      "turn": 2,
+      "offerId": "negot-umowa_handlowa-0-9-t2-3"
+    },
+    {
+      "at": "2026-10-28T08:45:41.046Z",
+      "phase": "offer-read-pending",
+      "attempt": 4,
+      "turn": 2
+    },
+    {
+      "at": "2026-10-28T08:45:41.634Z",
+      "phase": "offer-final-pending-check",
+      "turn": 2
+    },
+    {
+      "at": "2026-10-28T08:45:42.181Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 2,
+      "turnBefore": 2,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:45:42.601Z",
+      "phase": "eot-trigger-call",
+      "iteration": 2,
+      "turnBefore": 2,
+      "attempt": 1,
+      "lifecycleStarted": 1
+    },
+    {
+      "at": "2026-10-28T08:45:43.103Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 2,
+      "turnBefore": 2,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:45:43.615Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 2,
+      "turnBefore": 2,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:45:58.952Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 2,
+      "turnBefore": 2,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:45:59.729Z",
+      "phase": "eot-completed",
+      "iteration": 2,
+      "turnBefore": 2,
+      "turnAfter": 3,
+      "wallMs": 34861
+    },
+    {
+      "at": "2026-10-28T08:46:01.029Z",
+      "phase": "eot-read-world-before",
+      "iteration": 3
+    },
+    {
+      "at": "2026-10-28T08:46:01.541Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 3,
+      "turnBefore": 3
+    },
+    {
+      "at": "2026-10-28T08:46:02.060Z",
+      "phase": "eot-configure",
+      "iteration": 3,
+      "turnBefore": 3,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:46:02.463Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 3,
+      "turnBefore": 3
+    },
+    {
+      "at": "2026-10-28T08:46:02.855Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 3,
+      "turnBefore": 3,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:46:02.856Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 3
+    },
+    {
+      "at": "2026-10-28T08:46:03.295Z",
+      "phase": "offer-final-pending-check",
+      "turn": 3
+    },
+    {
+      "at": "2026-10-28T08:46:03.846Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 3,
+      "turnBefore": 3,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:46:04.336Z",
+      "phase": "eot-trigger-call",
+      "iteration": 3,
+      "turnBefore": 3,
+      "attempt": 1,
+      "lifecycleStarted": 2
+    },
+    {
+      "at": "2026-10-28T08:46:04.775Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 3,
+      "turnBefore": 3,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:46:05.207Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 3,
+      "turnBefore": 3,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:46:26.248Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 3,
+      "turnBefore": 3,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:46:27.069Z",
+      "phase": "eot-completed",
+      "iteration": 3,
+      "turnBefore": 3,
+      "turnAfter": 4,
+      "wallMs": 24214
+    },
+    {
+      "at": "2026-10-28T08:46:28.389Z",
+      "phase": "eot-read-world-before",
+      "iteration": 4
+    },
+    {
+      "at": "2026-10-28T08:46:28.785Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 4,
+      "turnBefore": 4
+    },
+    {
+      "at": "2026-10-28T08:46:29.234Z",
+      "phase": "eot-configure",
+      "iteration": 4,
+      "turnBefore": 4,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:46:29.691Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 4,
+      "turnBefore": 4
+    },
+    {
+      "at": "2026-10-28T08:46:30.105Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 4,
+      "turnBefore": 4,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:46:30.105Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 4
+    },
+    {
+      "at": "2026-10-28T08:46:30.529Z",
+      "phase": "offer-final-pending-check",
+      "turn": 4
+    },
+    {
+      "at": "2026-10-28T08:46:30.930Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 4,
+      "turnBefore": 4,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:46:31.360Z",
+      "phase": "eot-trigger-call",
+      "iteration": 4,
+      "turnBefore": 4,
+      "attempt": 1,
+      "lifecycleStarted": 3
+    },
+    {
+      "at": "2026-10-28T08:46:31.736Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 4,
+      "turnBefore": 4,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:46:32.188Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 4,
+      "turnBefore": 4,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:46:49.833Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 4,
+      "turnBefore": 4,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:46:50.694Z",
+      "phase": "eot-completed",
+      "iteration": 4,
+      "turnBefore": 4,
+      "turnAfter": 5,
+      "wallMs": 20589
+    },
+    {
+      "at": "2026-10-28T08:46:52.258Z",
+      "phase": "eot-read-world-before",
+      "iteration": 5
+    },
+    {
+      "at": "2026-10-28T08:46:52.677Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 5,
+      "turnBefore": 5
+    },
+    {
+      "at": "2026-10-28T08:46:53.171Z",
+      "phase": "eot-configure",
+      "iteration": 5,
+      "turnBefore": 5,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:46:53.636Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 5,
+      "turnBefore": 5
+    },
+    {
+      "at": "2026-10-28T08:46:54.136Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 5,
+      "turnBefore": 5,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:46:54.136Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 5
+    },
+    {
+      "at": "2026-10-28T08:46:54.540Z",
+      "phase": "offer-final-pending-check",
+      "turn": 5
+    },
+    {
+      "at": "2026-10-28T08:46:54.967Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 5,
+      "turnBefore": 5,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:46:55.375Z",
+      "phase": "eot-trigger-call",
+      "iteration": 5,
+      "turnBefore": 5,
+      "attempt": 1,
+      "lifecycleStarted": 4
+    },
+    {
+      "at": "2026-10-28T08:46:55.783Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 5,
+      "turnBefore": 5,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:46:56.284Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 5,
+      "turnBefore": 5,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:47:13.080Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 5,
+      "turnBefore": 5,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:47:14.247Z",
+      "phase": "eot-completed",
+      "iteration": 5,
+      "turnBefore": 5,
+      "turnAfter": 6,
+      "wallMs": 20111
+    },
+    {
+      "at": "2026-10-28T08:47:15.751Z",
+      "phase": "eot-read-world-before",
+      "iteration": 6
+    },
+    {
+      "at": "2026-10-28T08:47:16.388Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 6,
+      "turnBefore": 6
+    },
+    {
+      "at": "2026-10-28T08:47:16.852Z",
+      "phase": "eot-configure",
+      "iteration": 6,
+      "turnBefore": 6,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:47:17.279Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 6,
+      "turnBefore": 6
+    },
+    {
+      "at": "2026-10-28T08:47:17.832Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 6,
+      "turnBefore": 6,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:47:17.832Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 6
+    },
+    {
+      "at": "2026-10-28T08:47:18.267Z",
+      "phase": "offer-final-pending-check",
+      "turn": 6
+    },
+    {
+      "at": "2026-10-28T08:47:18.755Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 6,
+      "turnBefore": 6,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:47:19.238Z",
+      "phase": "eot-trigger-call",
+      "iteration": 6,
+      "turnBefore": 6,
+      "attempt": 1,
+      "lifecycleStarted": 5
+    },
+    {
+      "at": "2026-10-28T08:47:19.698Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 6,
+      "turnBefore": 6,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:47:20.207Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 6,
+      "turnBefore": 6,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:47:40.508Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 6,
+      "turnBefore": 6,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:47:41.470Z",
+      "phase": "eot-completed",
+      "iteration": 6,
+      "turnBefore": 6,
+      "turnAfter": 7,
+      "wallMs": 23638
+    },
+    {
+      "at": "2026-10-28T08:47:42.949Z",
+      "phase": "eot-read-world-before",
+      "iteration": 7
+    },
+    {
+      "at": "2026-10-28T08:47:43.366Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 7,
+      "turnBefore": 7
+    },
+    {
+      "at": "2026-10-28T08:47:43.831Z",
+      "phase": "eot-configure",
+      "iteration": 7,
+      "turnBefore": 7,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:47:44.407Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 7,
+      "turnBefore": 7
+    },
+    {
+      "at": "2026-10-28T08:47:44.902Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 7,
+      "turnBefore": 7,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:47:44.902Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 7
+    },
+    {
+      "at": "2026-10-28T08:47:45.507Z",
+      "phase": "offer-final-pending-check",
+      "turn": 7
+    },
+    {
+      "at": "2026-10-28T08:47:45.959Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 7,
+      "turnBefore": 7,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:47:46.438Z",
+      "phase": "eot-trigger-call",
+      "iteration": 7,
+      "turnBefore": 7,
+      "attempt": 1,
+      "lifecycleStarted": 6
+    },
+    {
+      "at": "2026-10-28T08:47:46.907Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 7,
+      "turnBefore": 7,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:47:47.376Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 7,
+      "turnBefore": 7,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:48:06.842Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 7,
+      "turnBefore": 7,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:48:07.911Z",
+      "phase": "eot-completed",
+      "iteration": 7,
+      "turnBefore": 7,
+      "turnAfter": 8,
+      "wallMs": 23009
+    },
+    {
+      "at": "2026-10-28T08:48:09.494Z",
+      "phase": "eot-read-world-before",
+      "iteration": 8
+    },
+    {
+      "at": "2026-10-28T08:48:09.963Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 8,
+      "turnBefore": 8
+    },
+    {
+      "at": "2026-10-28T08:48:10.499Z",
+      "phase": "eot-configure",
+      "iteration": 8,
+      "turnBefore": 8,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:48:11.079Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 8,
+      "turnBefore": 8
+    },
+    {
+      "at": "2026-10-28T08:48:11.607Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 8,
+      "turnBefore": 8,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:48:11.607Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 8
+    },
+    {
+      "at": "2026-10-28T08:48:12.258Z",
+      "phase": "offer-final-pending-check",
+      "turn": 8
+    },
+    {
+      "at": "2026-10-28T08:48:12.906Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 8,
+      "turnBefore": 8,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:48:13.443Z",
+      "phase": "eot-trigger-call",
+      "iteration": 8,
+      "turnBefore": 8,
+      "attempt": 1,
+      "lifecycleStarted": 7
+    },
+    {
+      "at": "2026-10-28T08:48:13.977Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 8,
+      "turnBefore": 8,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:48:14.561Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 8,
+      "turnBefore": 8,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:48:35.678Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 8,
+      "turnBefore": 8,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:48:36.566Z",
+      "phase": "eot-completed",
+      "iteration": 8,
+      "turnBefore": 8,
+      "turnAfter": 9,
+      "wallMs": 24959
+    },
+    {
+      "at": "2026-10-28T08:48:37.980Z",
+      "phase": "eot-read-world-before",
+      "iteration": 9
+    },
+    {
+      "at": "2026-10-28T08:48:38.383Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 9,
+      "turnBefore": 9
+    },
+    {
+      "at": "2026-10-28T08:48:38.894Z",
+      "phase": "eot-configure",
+      "iteration": 9,
+      "turnBefore": 9,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:48:39.391Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 9,
+      "turnBefore": 9
+    },
+    {
+      "at": "2026-10-28T08:48:39.887Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 9,
+      "turnBefore": 9,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:48:39.887Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 9
+    },
+    {
+      "at": "2026-10-28T08:48:40.442Z",
+      "phase": "offer-final-pending-check",
+      "turn": 9
+    },
+    {
+      "at": "2026-10-28T08:48:40.877Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 9,
+      "turnBefore": 9,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:48:41.369Z",
+      "phase": "eot-trigger-call",
+      "iteration": 9,
+      "turnBefore": 9,
+      "attempt": 1,
+      "lifecycleStarted": 8
+    },
+    {
+      "at": "2026-10-28T08:48:41.831Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 9,
+      "turnBefore": 9,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:48:42.198Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 9,
+      "turnBefore": 9,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:49:01.268Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 9,
+      "turnBefore": 9,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:49:02.294Z",
+      "phase": "eot-completed",
+      "iteration": 9,
+      "turnBefore": 9,
+      "turnAfter": 10,
+      "wallMs": 22407
+    },
+    {
+      "at": "2026-10-28T08:49:03.957Z",
+      "phase": "eot-read-world-before",
+      "iteration": 10
+    },
+    {
+      "at": "2026-10-28T08:49:04.403Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 10,
+      "turnBefore": 10
+    },
+    {
+      "at": "2026-10-28T08:49:04.880Z",
+      "phase": "eot-configure",
+      "iteration": 10,
+      "turnBefore": 10,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:49:05.328Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 10,
+      "turnBefore": 10
+    },
+    {
+      "at": "2026-10-28T08:49:05.750Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 10,
+      "turnBefore": 10,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:49:05.750Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 10
+    },
+    {
+      "at": "2026-10-28T08:49:06.305Z",
+      "phase": "offer-final-pending-check",
+      "turn": 10
+    },
+    {
+      "at": "2026-10-28T08:49:06.768Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 10,
+      "turnBefore": 10,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:49:07.201Z",
+      "phase": "eot-trigger-call",
+      "iteration": 10,
+      "turnBefore": 10,
+      "attempt": 1,
+      "lifecycleStarted": 9
+    },
+    {
+      "at": "2026-10-28T08:49:07.647Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 10,
+      "turnBefore": 10,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:49:08.061Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 10,
+      "turnBefore": 10,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:49:29.277Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 10,
+      "turnBefore": 10,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:49:30.158Z",
+      "phase": "eot-completed",
+      "iteration": 10,
+      "turnBefore": 10,
+      "turnAfter": 11,
+      "wallMs": 24408
+    },
+    {
+      "at": "2026-10-28T08:49:31.606Z",
+      "phase": "eot-read-world-before",
+      "iteration": 11
+    },
+    {
+      "at": "2026-10-28T08:49:32.078Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 11,
+      "turnBefore": 11
+    },
+    {
+      "at": "2026-10-28T08:49:32.561Z",
+      "phase": "eot-configure",
+      "iteration": 11,
+      "turnBefore": 11,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:49:32.988Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 11,
+      "turnBefore": 11
+    },
+    {
+      "at": "2026-10-28T08:49:33.444Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 11,
+      "turnBefore": 11,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:49:33.444Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 11
+    },
+    {
+      "at": "2026-10-28T08:49:33.843Z",
+      "phase": "offer-final-pending-check",
+      "turn": 11
+    },
+    {
+      "at": "2026-10-28T08:49:34.363Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 11,
+      "turnBefore": 11,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:49:34.981Z",
+      "phase": "eot-trigger-call",
+      "iteration": 11,
+      "turnBefore": 11,
+      "attempt": 1,
+      "lifecycleStarted": 10
+    },
+    {
+      "at": "2026-10-28T08:49:35.466Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 11,
+      "turnBefore": 11,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:49:36.030Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 11,
+      "turnBefore": 11,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:49:58.377Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 11,
+      "turnBefore": 11,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:49:59.530Z",
+      "phase": "eot-completed",
+      "iteration": 11,
+      "turnBefore": 11,
+      "turnAfter": 12,
+      "wallMs": 26086
+    },
+    {
+      "at": "2026-10-28T08:50:01.026Z",
+      "phase": "eot-read-world-before",
+      "iteration": 12
+    },
+    {
+      "at": "2026-10-28T08:50:01.449Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 12,
+      "turnBefore": 12
+    },
+    {
+      "at": "2026-10-28T08:50:01.880Z",
+      "phase": "eot-configure",
+      "iteration": 12,
+      "turnBefore": 12,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:50:02.391Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 12,
+      "turnBefore": 12
+    },
+    {
+      "at": "2026-10-28T08:50:02.885Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 12,
+      "turnBefore": 12,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:50:02.885Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 12
+    },
+    {
+      "at": "2026-10-28T08:50:03.413Z",
+      "phase": "offer-final-pending-check",
+      "turn": 12
+    },
+    {
+      "at": "2026-10-28T08:50:03.872Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 12,
+      "turnBefore": 12,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:50:04.344Z",
+      "phase": "eot-trigger-call",
+      "iteration": 12,
+      "turnBefore": 12,
+      "attempt": 1,
+      "lifecycleStarted": 11
+    },
+    {
+      "at": "2026-10-28T08:50:04.793Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 12,
+      "turnBefore": 12,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:50:05.247Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 12,
+      "turnBefore": 12,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:50:23.635Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 12,
+      "turnBefore": 12,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:50:24.649Z",
+      "phase": "eot-completed",
+      "iteration": 12,
+      "turnBefore": 12,
+      "turnAfter": 13,
+      "wallMs": 21764
+    },
+    {
+      "at": "2026-10-28T08:50:26.164Z",
+      "phase": "eot-read-world-before",
+      "iteration": 13
+    },
+    {
+      "at": "2026-10-28T08:50:26.647Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 13,
+      "turnBefore": 13
+    },
+    {
+      "at": "2026-10-28T08:50:27.144Z",
+      "phase": "eot-configure",
+      "iteration": 13,
+      "turnBefore": 13,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:50:27.592Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 13,
+      "turnBefore": 13
+    },
+    {
+      "at": "2026-10-28T08:50:28.082Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 13,
+      "turnBefore": 13,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:50:28.082Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 13
+    },
+    {
+      "at": "2026-10-28T08:50:28.614Z",
+      "phase": "offer-final-pending-check",
+      "turn": 13
+    },
+    {
+      "at": "2026-10-28T08:50:29.145Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 13,
+      "turnBefore": 13,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:50:29.697Z",
+      "phase": "eot-trigger-call",
+      "iteration": 13,
+      "turnBefore": 13,
+      "attempt": 1,
+      "lifecycleStarted": 12
+    },
+    {
+      "at": "2026-10-28T08:50:30.194Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 13,
+      "turnBefore": 13,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:50:30.686Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 13,
+      "turnBefore": 13,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:50:54.947Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 13,
+      "turnBefore": 13,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:50:55.984Z",
+      "phase": "eot-completed",
+      "iteration": 13,
+      "turnBefore": 13,
+      "turnAfter": 14,
+      "wallMs": 27902
+    },
+    {
+      "at": "2026-10-28T08:50:57.336Z",
+      "phase": "eot-read-world-before",
+      "iteration": 14
+    },
+    {
+      "at": "2026-10-28T08:50:57.781Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 14,
+      "turnBefore": 14
+    },
+    {
+      "at": "2026-10-28T08:50:58.208Z",
+      "phase": "eot-configure",
+      "iteration": 14,
+      "turnBefore": 14,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:50:58.688Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 14,
+      "turnBefore": 14
+    },
+    {
+      "at": "2026-10-28T08:50:59.277Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 14,
+      "turnBefore": 14,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:50:59.277Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 14
+    },
+    {
+      "at": "2026-10-28T08:50:59.745Z",
+      "phase": "offer-final-pending-check",
+      "turn": 14
+    },
+    {
+      "at": "2026-10-28T08:51:00.205Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 14,
+      "turnBefore": 14,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:51:00.767Z",
+      "phase": "eot-trigger-call",
+      "iteration": 14,
+      "turnBefore": 14,
+      "attempt": 1,
+      "lifecycleStarted": 13
+    },
+    {
+      "at": "2026-10-28T08:51:01.330Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 14,
+      "turnBefore": 14,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:51:01.835Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 14,
+      "turnBefore": 14,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:51:22.832Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 14,
+      "turnBefore": 14,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:51:23.847Z",
+      "phase": "eot-completed",
+      "iteration": 14,
+      "turnBefore": 14,
+      "turnAfter": 15,
+      "wallMs": 24570
+    },
+    {
+      "at": "2026-10-28T08:51:25.548Z",
+      "phase": "eot-read-world-before",
+      "iteration": 15
+    },
+    {
+      "at": "2026-10-28T08:51:25.986Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 15,
+      "turnBefore": 15
+    },
+    {
+      "at": "2026-10-28T08:51:26.489Z",
+      "phase": "eot-configure",
+      "iteration": 15,
+      "turnBefore": 15,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:51:27.021Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 15,
+      "turnBefore": 15
+    },
+    {
+      "at": "2026-10-28T08:51:27.455Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 15,
+      "turnBefore": 15,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:51:27.455Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 15
+    },
+    {
+      "at": "2026-10-28T08:51:27.931Z",
+      "phase": "offer-final-pending-check",
+      "turn": 15
+    },
+    {
+      "at": "2026-10-28T08:51:28.495Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 15,
+      "turnBefore": 15,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:51:29.040Z",
+      "phase": "eot-trigger-call",
+      "iteration": 15,
+      "turnBefore": 15,
+      "attempt": 1,
+      "lifecycleStarted": 14
+    },
+    {
+      "at": "2026-10-28T08:51:29.545Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 15,
+      "turnBefore": 15,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:51:30.014Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 15,
+      "turnBefore": 15,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:51:59.675Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 15,
+      "turnBefore": 15,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:52:00.846Z",
+      "phase": "eot-completed",
+      "iteration": 15,
+      "turnBefore": 15,
+      "turnAfter": 16,
+      "wallMs": 33391
+    },
+    {
+      "at": "2026-10-28T08:52:02.449Z",
+      "phase": "eot-read-world-before",
+      "iteration": 16
+    },
+    {
+      "at": "2026-10-28T08:52:02.987Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 16,
+      "turnBefore": 16
+    },
+    {
+      "at": "2026-10-28T08:52:03.546Z",
+      "phase": "eot-configure",
+      "iteration": 16,
+      "turnBefore": 16,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:52:04.106Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 16,
+      "turnBefore": 16
+    },
+    {
+      "at": "2026-10-28T08:52:04.693Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 16,
+      "turnBefore": 16,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:52:04.693Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 16
+    },
+    {
+      "at": "2026-10-28T08:52:05.326Z",
+      "phase": "offer-final-pending-check",
+      "turn": 16
+    },
+    {
+      "at": "2026-10-28T08:52:05.890Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 16,
+      "turnBefore": 16,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:52:06.401Z",
+      "phase": "eot-trigger-call",
+      "iteration": 16,
+      "turnBefore": 16,
+      "attempt": 1,
+      "lifecycleStarted": 15
+    },
+    {
+      "at": "2026-10-28T08:52:06.902Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 16,
+      "turnBefore": 16,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:52:07.397Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 16,
+      "turnBefore": 16,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:52:40.036Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 16,
+      "turnBefore": 16,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:52:41.040Z",
+      "phase": "eot-completed",
+      "iteration": 16,
+      "turnBefore": 16,
+      "turnAfter": 17,
+      "wallMs": 36347
+    },
+    {
+      "at": "2026-10-28T08:52:42.493Z",
+      "phase": "eot-read-world-before",
+      "iteration": 17
+    },
+    {
+      "at": "2026-10-28T08:52:42.963Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 17,
+      "turnBefore": 17
+    },
+    {
+      "at": "2026-10-28T08:52:43.383Z",
+      "phase": "eot-configure",
+      "iteration": 17,
+      "turnBefore": 17,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:52:43.827Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 17,
+      "turnBefore": 17
+    },
+    {
+      "at": "2026-10-28T08:52:44.241Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 17,
+      "turnBefore": 17,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:52:44.241Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 17
+    },
+    {
+      "at": "2026-10-28T08:52:44.674Z",
+      "phase": "offer-final-pending-check",
+      "turn": 17
+    },
+    {
+      "at": "2026-10-28T08:52:45.154Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 17,
+      "turnBefore": 17,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:52:45.601Z",
+      "phase": "eot-trigger-call",
+      "iteration": 17,
+      "turnBefore": 17,
+      "attempt": 1,
+      "lifecycleStarted": 16
+    },
+    {
+      "at": "2026-10-28T08:52:46.030Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 17,
+      "turnBefore": 17,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:52:46.445Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 17,
+      "turnBefore": 17,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:53:14.206Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 17,
+      "turnBefore": 17,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:53:15.477Z",
+      "phase": "eot-completed",
+      "iteration": 17,
+      "turnBefore": 17,
+      "turnAfter": 18,
+      "wallMs": 31236
+    },
+    {
+      "at": "2026-10-28T08:53:17.159Z",
+      "phase": "eot-read-world-before",
+      "iteration": 18
+    },
+    {
+      "at": "2026-10-28T08:53:17.695Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 18,
+      "turnBefore": 18
+    },
+    {
+      "at": "2026-10-28T08:53:18.256Z",
+      "phase": "eot-configure",
+      "iteration": 18,
+      "turnBefore": 18,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:53:18.783Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 18,
+      "turnBefore": 18
+    },
+    {
+      "at": "2026-10-28T08:53:19.341Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 18,
+      "turnBefore": 18,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:53:19.341Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 18
+    },
+    {
+      "at": "2026-10-28T08:53:19.882Z",
+      "phase": "offer-final-pending-check",
+      "turn": 18
+    },
+    {
+      "at": "2026-10-28T08:53:20.402Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 18,
+      "turnBefore": 18,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:53:20.858Z",
+      "phase": "eot-trigger-call",
+      "iteration": 18,
+      "turnBefore": 18,
+      "attempt": 1,
+      "lifecycleStarted": 17
+    },
+    {
+      "at": "2026-10-28T08:53:21.340Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 18,
+      "turnBefore": 18,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:53:21.856Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 18,
+      "turnBefore": 18,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:53:49.581Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 18,
+      "turnBefore": 18,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:53:50.697Z",
+      "phase": "eot-completed",
+      "iteration": 18,
+      "turnBefore": 18,
+      "turnAfter": 19,
+      "wallMs": 31356
+    },
+    {
+      "at": "2026-10-28T08:53:52.239Z",
+      "phase": "eot-read-world-before",
+      "iteration": 19
+    },
+    {
+      "at": "2026-10-28T08:53:52.700Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 19,
+      "turnBefore": 19
+    },
+    {
+      "at": "2026-10-28T08:53:53.233Z",
+      "phase": "eot-configure",
+      "iteration": 19,
+      "turnBefore": 19,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:53:53.743Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 19,
+      "turnBefore": 19
+    },
+    {
+      "at": "2026-10-28T08:53:54.285Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 19,
+      "turnBefore": 19,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:53:54.285Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 19
+    },
+    {
+      "at": "2026-10-28T08:53:54.741Z",
+      "phase": "offer-final-pending-check",
+      "turn": 19
+    },
+    {
+      "at": "2026-10-28T08:53:55.201Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 19,
+      "turnBefore": 19,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:53:55.683Z",
+      "phase": "eot-trigger-call",
+      "iteration": 19,
+      "turnBefore": 19,
+      "attempt": 1,
+      "lifecycleStarted": 18
+    },
+    {
+      "at": "2026-10-28T08:53:56.138Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 19,
+      "turnBefore": 19,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:53:56.654Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 19,
+      "turnBefore": 19,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:54:21.485Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 19,
+      "turnBefore": 19,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:54:22.563Z",
+      "phase": "eot-completed",
+      "iteration": 19,
+      "turnBefore": 19,
+      "turnAfter": 20,
+      "wallMs": 28278
+    },
+    {
+      "at": "2026-10-28T08:54:24.007Z",
+      "phase": "eot-read-world-before",
+      "iteration": 20
+    },
+    {
+      "at": "2026-10-28T08:54:24.481Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 20,
+      "turnBefore": 20
+    },
+    {
+      "at": "2026-10-28T08:54:24.995Z",
+      "phase": "eot-configure",
+      "iteration": 20,
+      "turnBefore": 20,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:54:25.469Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 20,
+      "turnBefore": 20
+    },
+    {
+      "at": "2026-10-28T08:54:25.946Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 20,
+      "turnBefore": 20,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:54:25.946Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 20
+    },
+    {
+      "at": "2026-10-28T08:54:26.375Z",
+      "phase": "offer-final-pending-check",
+      "turn": 20
+    },
+    {
+      "at": "2026-10-28T08:54:26.874Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 20,
+      "turnBefore": 20,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:54:27.435Z",
+      "phase": "eot-trigger-call",
+      "iteration": 20,
+      "turnBefore": 20,
+      "attempt": 1,
+      "lifecycleStarted": 19
+    },
+    {
+      "at": "2026-10-28T08:54:27.897Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 20,
+      "turnBefore": 20,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:54:28.333Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 20,
+      "turnBefore": 20,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:54:59.466Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 20,
+      "turnBefore": 20,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:55:00.484Z",
+      "phase": "eot-completed",
+      "iteration": 20,
+      "turnBefore": 20,
+      "turnAfter": 21,
+      "wallMs": 34538
+    },
+    {
+      "at": "2026-10-28T08:55:01.962Z",
+      "phase": "eot-read-world-before",
+      "iteration": 21
+    },
+    {
+      "at": "2026-10-28T08:55:02.473Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 21,
+      "turnBefore": 21
+    },
+    {
+      "at": "2026-10-28T08:55:02.986Z",
+      "phase": "eot-configure",
+      "iteration": 21,
+      "turnBefore": 21,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:55:03.536Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 21,
+      "turnBefore": 21
+    },
+    {
+      "at": "2026-10-28T08:55:04.060Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 21,
+      "turnBefore": 21,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:55:04.060Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 21
+    },
+    {
+      "at": "2026-10-28T08:55:04.634Z",
+      "phase": "offer-final-pending-check",
+      "turn": 21
+    },
+    {
+      "at": "2026-10-28T08:55:05.201Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 21,
+      "turnBefore": 21,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:55:05.799Z",
+      "phase": "eot-trigger-call",
+      "iteration": 21,
+      "turnBefore": 21,
+      "attempt": 1,
+      "lifecycleStarted": 20
+    },
+    {
+      "at": "2026-10-28T08:55:06.380Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 21,
+      "turnBefore": 21,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:55:06.902Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 21,
+      "turnBefore": 21,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:55:51.043Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 21,
+      "turnBefore": 21,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:55:51.949Z",
+      "phase": "eot-completed",
+      "iteration": 21,
+      "turnBefore": 21,
+      "turnAfter": 22,
+      "wallMs": 47889
+    },
+    {
+      "at": "2026-10-28T08:55:53.366Z",
+      "phase": "eot-read-world-before",
+      "iteration": 22
+    },
+    {
+      "at": "2026-10-28T08:55:53.927Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 22,
+      "turnBefore": 22
+    },
+    {
+      "at": "2026-10-28T08:55:54.466Z",
+      "phase": "eot-configure",
+      "iteration": 22,
+      "turnBefore": 22,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:55:54.994Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 22,
+      "turnBefore": 22
+    },
+    {
+      "at": "2026-10-28T08:55:55.469Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 22,
+      "turnBefore": 22,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:55:55.469Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 22
+    },
+    {
+      "at": "2026-10-28T08:55:55.929Z",
+      "phase": "offer-final-pending-check",
+      "turn": 22
+    },
+    {
+      "at": "2026-10-28T08:55:56.352Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 22,
+      "turnBefore": 22,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:55:56.868Z",
+      "phase": "eot-trigger-call",
+      "iteration": 22,
+      "turnBefore": 22,
+      "attempt": 1,
+      "lifecycleStarted": 21
+    },
+    {
+      "at": "2026-10-28T08:55:57.360Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 22,
+      "turnBefore": 22,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:55:57.896Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 22,
+      "turnBefore": 22,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:56:24.483Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 22,
+      "turnBefore": 22,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:56:25.473Z",
+      "phase": "eot-completed",
+      "iteration": 22,
+      "turnBefore": 22,
+      "turnAfter": 23,
+      "wallMs": 30004
+    },
+    {
+      "at": "2026-10-28T08:56:26.947Z",
+      "phase": "eot-read-world-before",
+      "iteration": 23
+    },
+    {
+      "at": "2026-10-28T08:56:27.461Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 23,
+      "turnBefore": 23
+    },
+    {
+      "at": "2026-10-28T08:56:27.953Z",
+      "phase": "eot-configure",
+      "iteration": 23,
+      "turnBefore": 23,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:56:28.409Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 23,
+      "turnBefore": 23
+    },
+    {
+      "at": "2026-10-28T08:56:28.908Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 23,
+      "turnBefore": 23,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:56:28.908Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 23
+    },
+    {
+      "at": "2026-10-28T08:56:29.435Z",
+      "phase": "offer-final-pending-check",
+      "turn": 23
+    },
+    {
+      "at": "2026-10-28T08:56:29.875Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 23,
+      "turnBefore": 23,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:56:30.415Z",
+      "phase": "eot-trigger-call",
+      "iteration": 23,
+      "turnBefore": 23,
+      "attempt": 1,
+      "lifecycleStarted": 22
+    },
+    {
+      "at": "2026-10-28T08:56:30.875Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 23,
+      "turnBefore": 23,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:56:31.333Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 23,
+      "turnBefore": 23,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:56:56.547Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 23,
+      "turnBefore": 23,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:56:57.481Z",
+      "phase": "eot-completed",
+      "iteration": 23,
+      "turnBefore": 23,
+      "turnAfter": 24,
+      "wallMs": 28573
+    },
+    {
+      "at": "2026-10-28T08:56:59.157Z",
+      "phase": "eot-read-world-before",
+      "iteration": 24
+    },
+    {
+      "at": "2026-10-28T08:56:59.650Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 24,
+      "turnBefore": 24
+    },
+    {
+      "at": "2026-10-28T08:56:59.657Z",
+      "phase": "eot-configure",
+      "iteration": 24,
+      "turnBefore": 24,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:57:00.161Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 24,
+      "turnBefore": 24
+    },
+    {
+      "at": "2026-10-28T08:57:00.654Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 24,
+      "turnBefore": 24,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:57:00.654Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 24
+    },
+    {
+      "at": "2026-10-28T08:57:01.178Z",
+      "phase": "offer-final-pending-check",
+      "turn": 24
+    },
+    {
+      "at": "2026-10-28T08:57:01.649Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 24,
+      "turnBefore": 24,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:57:02.141Z",
+      "phase": "eot-trigger-call",
+      "iteration": 24,
+      "turnBefore": 24,
+      "attempt": 1,
+      "lifecycleStarted": 23
+    },
+    {
+      "at": "2026-10-28T08:57:02.613Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 24,
+      "turnBefore": 24,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:57:03.181Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 24,
+      "turnBefore": 24,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:57:26.729Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 24,
+      "turnBefore": 24,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:57:27.689Z",
+      "phase": "eot-completed",
+      "iteration": 24,
+      "turnBefore": 24,
+      "turnAfter": 25,
+      "wallMs": 27035
+    },
+    {
+      "at": "2026-10-28T08:57:28.953Z",
+      "phase": "eot-read-world-before",
+      "iteration": 25
+    },
+    {
+      "at": "2026-10-28T08:57:29.429Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 25,
+      "turnBefore": 25
+    },
+    {
+      "at": "2026-10-28T08:57:29.916Z",
+      "phase": "eot-configure",
+      "iteration": 25,
+      "turnBefore": 25,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:57:30.489Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 25,
+      "turnBefore": 25
+    },
+    {
+      "at": "2026-10-28T08:57:31.052Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 25,
+      "turnBefore": 25,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:57:31.052Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 25
+    },
+    {
+      "at": "2026-10-28T08:57:31.535Z",
+      "phase": "offer-final-pending-check",
+      "turn": 25
+    },
+    {
+      "at": "2026-10-28T08:57:31.969Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 25,
+      "turnBefore": 25,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:57:32.460Z",
+      "phase": "eot-trigger-call",
+      "iteration": 25,
+      "turnBefore": 25,
+      "attempt": 1,
+      "lifecycleStarted": 24
+    },
+    {
+      "at": "2026-10-28T08:57:33.071Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 25,
+      "turnBefore": 25,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:57:33.689Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 25,
+      "turnBefore": 25,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:57:56.920Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 25,
+      "turnBefore": 25,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:57:57.781Z",
+      "phase": "eot-completed",
+      "iteration": 25,
+      "turnBefore": 25,
+      "turnAfter": 26,
+      "wallMs": 26729
+    },
+    {
+      "at": "2026-10-28T08:57:59.159Z",
+      "phase": "eot-read-world-before",
+      "iteration": 26
+    },
+    {
+      "at": "2026-10-28T08:57:59.649Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 26,
+      "turnBefore": 26
+    },
+    {
+      "at": "2026-10-28T08:58:00.126Z",
+      "phase": "eot-configure",
+      "iteration": 26,
+      "turnBefore": 26,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:58:00.565Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 26,
+      "turnBefore": 26
+    },
+    {
+      "at": "2026-10-28T08:58:01.005Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 26,
+      "turnBefore": 26,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:58:01.005Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 26
+    },
+    {
+      "at": "2026-10-28T08:58:01.512Z",
+      "phase": "offer-final-pending-check",
+      "turn": 26
+    },
+    {
+      "at": "2026-10-28T08:58:01.985Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 26,
+      "turnBefore": 26,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:58:02.487Z",
+      "phase": "eot-trigger-call",
+      "iteration": 26,
+      "turnBefore": 26,
+      "attempt": 1,
+      "lifecycleStarted": 25
+    },
+    {
+      "at": "2026-10-28T08:58:02.973Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 26,
+      "turnBefore": 26,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:58:03.458Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 26,
+      "turnBefore": 26,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:58:26.490Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 26,
+      "turnBefore": 26,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:58:27.485Z",
+      "phase": "eot-completed",
+      "iteration": 26,
+      "turnBefore": 26,
+      "turnAfter": 27,
+      "wallMs": 26480
+    },
+    {
+      "at": "2026-10-28T08:58:28.848Z",
+      "phase": "eot-read-world-before",
+      "iteration": 27
+    },
+    {
+      "at": "2026-10-28T08:58:29.305Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 27,
+      "turnBefore": 27
+    },
+    {
+      "at": "2026-10-28T08:58:29.749Z",
+      "phase": "eot-configure",
+      "iteration": 27,
+      "turnBefore": 27,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:58:30.304Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 27,
+      "turnBefore": 27
+    },
+    {
+      "at": "2026-10-28T08:58:30.896Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 27,
+      "turnBefore": 27,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:58:30.896Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 27
+    },
+    {
+      "at": "2026-10-28T08:58:31.506Z",
+      "phase": "offer-final-pending-check",
+      "turn": 27
+    },
+    {
+      "at": "2026-10-28T08:58:32.040Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 27,
+      "turnBefore": 27,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:58:32.559Z",
+      "phase": "eot-trigger-call",
+      "iteration": 27,
+      "turnBefore": 27,
+      "attempt": 1,
+      "lifecycleStarted": 26
+    },
+    {
+      "at": "2026-10-28T08:58:33.045Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 27,
+      "turnBefore": 27,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:58:33.470Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 27,
+      "turnBefore": 27,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:58:57.577Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 27,
+      "turnBefore": 27,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:58:58.597Z",
+      "phase": "eot-completed",
+      "iteration": 27,
+      "turnBefore": 27,
+      "turnAfter": 28,
+      "wallMs": 27701
+    },
+    {
+      "at": "2026-10-28T08:59:00.148Z",
+      "phase": "eot-read-world-before",
+      "iteration": 28
+    },
+    {
+      "at": "2026-10-28T08:59:00.779Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 28,
+      "turnBefore": 28
+    },
+    {
+      "at": "2026-10-28T08:59:01.380Z",
+      "phase": "eot-configure",
+      "iteration": 28,
+      "turnBefore": 28,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:59:01.865Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 28,
+      "turnBefore": 28
+    },
+    {
+      "at": "2026-10-28T08:59:02.341Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 28,
+      "turnBefore": 28,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:59:02.341Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 28
+    },
+    {
+      "at": "2026-10-28T08:59:02.860Z",
+      "phase": "offer-final-pending-check",
+      "turn": 28
+    },
+    {
+      "at": "2026-10-28T08:59:03.373Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 28,
+      "turnBefore": 28,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:59:03.866Z",
+      "phase": "eot-trigger-call",
+      "iteration": 28,
+      "turnBefore": 28,
+      "attempt": 1,
+      "lifecycleStarted": 27
+    },
+    {
+      "at": "2026-10-28T08:59:04.387Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 28,
+      "turnBefore": 28,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:59:04.912Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 28,
+      "turnBefore": 28,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:59:30.927Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 28,
+      "turnBefore": 28,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T08:59:31.993Z",
+      "phase": "eot-completed",
+      "iteration": 28,
+      "turnBefore": 28,
+      "turnAfter": 29,
+      "wallMs": 29652
+    },
+    {
+      "at": "2026-10-28T08:59:33.495Z",
+      "phase": "eot-read-world-before",
+      "iteration": 29
+    },
+    {
+      "at": "2026-10-28T08:59:33.973Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 29,
+      "turnBefore": 29
+    },
+    {
+      "at": "2026-10-28T08:59:34.525Z",
+      "phase": "eot-configure",
+      "iteration": 29,
+      "turnBefore": 29,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T08:59:35.028Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 29,
+      "turnBefore": 29
+    },
+    {
+      "at": "2026-10-28T08:59:35.495Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 29,
+      "turnBefore": 29,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:59:35.495Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 29
+    },
+    {
+      "at": "2026-10-28T08:59:35.961Z",
+      "phase": "offer-final-pending-check",
+      "turn": 29
+    },
+    {
+      "at": "2026-10-28T08:59:36.370Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 29,
+      "turnBefore": 29,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:59:36.805Z",
+      "phase": "eot-trigger-call",
+      "iteration": 29,
+      "turnBefore": 29,
+      "attempt": 1,
+      "lifecycleStarted": 28
+    },
+    {
+      "at": "2026-10-28T08:59:37.250Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 29,
+      "turnBefore": 29,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T08:59:37.789Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 29,
+      "turnBefore": 29,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:00:03.609Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 29,
+      "turnBefore": 29,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:00:04.635Z",
+      "phase": "eot-completed",
+      "iteration": 29,
+      "turnBefore": 29,
+      "turnAfter": 30,
+      "wallMs": 29140
+    },
+    {
+      "at": "2026-10-28T09:00:06.407Z",
+      "phase": "eot-read-world-before",
+      "iteration": 30
+    },
+    {
+      "at": "2026-10-28T09:00:06.950Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 30,
+      "turnBefore": 30
+    },
+    {
+      "at": "2026-10-28T09:00:07.373Z",
+      "phase": "eot-configure",
+      "iteration": 30,
+      "turnBefore": 30,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T09:00:07.772Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 30,
+      "turnBefore": 30
+    },
+    {
+      "at": "2026-10-28T09:00:08.208Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 30,
+      "turnBefore": 30,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:00:08.208Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 30
+    },
+    {
+      "at": "2026-10-28T09:00:08.663Z",
+      "phase": "offer-final-pending-check",
+      "turn": 30
+    },
+    {
+      "at": "2026-10-28T09:00:09.133Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 30,
+      "turnBefore": 30,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:00:09.649Z",
+      "phase": "eot-trigger-call",
+      "iteration": 30,
+      "turnBefore": 30,
+      "attempt": 1,
+      "lifecycleStarted": 29
+    },
+    {
+      "at": "2026-10-28T09:00:10.149Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 30,
+      "turnBefore": 30,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:00:10.611Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 30,
+      "turnBefore": 30,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:00:35.898Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 30,
+      "turnBefore": 30,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:00:36.906Z",
+      "phase": "eot-completed",
+      "iteration": 30,
+      "turnBefore": 30,
+      "turnAfter": 31,
+      "wallMs": 28698
+    },
+    {
+      "at": "2026-10-28T09:00:38.310Z",
+      "phase": "eot-read-world-before",
+      "iteration": 31
+    },
+    {
+      "at": "2026-10-28T09:00:38.743Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 31,
+      "turnBefore": 31
+    },
+    {
+      "at": "2026-10-28T09:00:39.301Z",
+      "phase": "eot-configure",
+      "iteration": 31,
+      "turnBefore": 31,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T09:00:39.891Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 31,
+      "turnBefore": 31
+    },
+    {
+      "at": "2026-10-28T09:00:40.304Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 31,
+      "turnBefore": 31,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:00:40.323Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 31
+    },
+    {
+      "at": "2026-10-28T09:00:40.696Z",
+      "phase": "offer-final-pending-check",
+      "turn": 31
+    },
+    {
+      "at": "2026-10-28T09:00:41.158Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 31,
+      "turnBefore": 31,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:00:41.636Z",
+      "phase": "eot-trigger-call",
+      "iteration": 31,
+      "turnBefore": 31,
+      "attempt": 1,
+      "lifecycleStarted": 30
+    },
+    {
+      "at": "2026-10-28T09:00:42.132Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 31,
+      "turnBefore": 31,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:00:42.676Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 31,
+      "turnBefore": 31,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:01:11.230Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 31,
+      "turnBefore": 31,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:01:12.288Z",
+      "phase": "eot-completed",
+      "iteration": 31,
+      "turnBefore": 31,
+      "turnAfter": 32,
+      "wallMs": 31984
+    },
+    {
+      "at": "2026-10-28T09:01:13.774Z",
+      "phase": "eot-read-world-before",
+      "iteration": 32
+    },
+    {
+      "at": "2026-10-28T09:01:14.329Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 32,
+      "turnBefore": 32
+    },
+    {
+      "at": "2026-10-28T09:01:14.808Z",
+      "phase": "eot-configure",
+      "iteration": 32,
+      "turnBefore": 32,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T09:01:15.291Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 32,
+      "turnBefore": 32
+    },
+    {
+      "at": "2026-10-28T09:01:15.766Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 32,
+      "turnBefore": 32,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:01:15.766Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 32
+    },
+    {
+      "at": "2026-10-28T09:01:16.233Z",
+      "phase": "offer-final-pending-check",
+      "turn": 32
+    },
+    {
+      "at": "2026-10-28T09:01:16.628Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 32,
+      "turnBefore": 32,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:01:17.070Z",
+      "phase": "eot-trigger-call",
+      "iteration": 32,
+      "turnBefore": 32,
+      "attempt": 1,
+      "lifecycleStarted": 31
+    },
+    {
+      "at": "2026-10-28T09:01:17.497Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 32,
+      "turnBefore": 32,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:01:17.949Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 32,
+      "turnBefore": 32,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:01:43.756Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 32,
+      "turnBefore": 32,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:01:44.787Z",
+      "phase": "eot-completed",
+      "iteration": 32,
+      "turnBefore": 32,
+      "turnAfter": 33,
+      "wallMs": 29021
+    },
+    {
+      "at": "2026-10-28T09:01:46.147Z",
+      "phase": "eot-read-world-before",
+      "iteration": 33
+    },
+    {
+      "at": "2026-10-28T09:01:46.601Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 33,
+      "turnBefore": 33
+    },
+    {
+      "at": "2026-10-28T09:01:47.204Z",
+      "phase": "eot-configure",
+      "iteration": 33,
+      "turnBefore": 33,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T09:01:47.732Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 33,
+      "turnBefore": 33
+    },
+    {
+      "at": "2026-10-28T09:01:48.213Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 33,
+      "turnBefore": 33,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:01:48.213Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 33
+    },
+    {
+      "at": "2026-10-28T09:01:48.666Z",
+      "phase": "offer-final-pending-check",
+      "turn": 33
+    },
+    {
+      "at": "2026-10-28T09:01:49.173Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 33,
+      "turnBefore": 33,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:01:49.727Z",
+      "phase": "eot-trigger-call",
+      "iteration": 33,
+      "turnBefore": 33,
+      "attempt": 1,
+      "lifecycleStarted": 32
+    },
+    {
+      "at": "2026-10-28T09:01:50.237Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 33,
+      "turnBefore": 33,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:01:50.777Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 33,
+      "turnBefore": 33,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:02:18.394Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 33,
+      "turnBefore": 33,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:02:19.359Z",
+      "phase": "eot-completed",
+      "iteration": 33,
+      "turnBefore": 33,
+      "turnAfter": 34,
+      "wallMs": 31146
+    },
+    {
+      "at": "2026-10-28T09:02:20.798Z",
+      "phase": "eot-read-world-before",
+      "iteration": 34
+    },
+    {
+      "at": "2026-10-28T09:02:21.262Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 34,
+      "turnBefore": 34
+    },
+    {
+      "at": "2026-10-28T09:02:21.749Z",
+      "phase": "eot-configure",
+      "iteration": 34,
+      "turnBefore": 34,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T09:02:22.344Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 34,
+      "turnBefore": 34
+    },
+    {
+      "at": "2026-10-28T09:02:22.908Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 34,
+      "turnBefore": 34,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:02:22.908Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 34
+    },
+    {
+      "at": "2026-10-28T09:02:23.443Z",
+      "phase": "offer-final-pending-check",
+      "turn": 34
+    },
+    {
+      "at": "2026-10-28T09:02:24.052Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 34,
+      "turnBefore": 34,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:02:24.643Z",
+      "phase": "eot-trigger-call",
+      "iteration": 34,
+      "turnBefore": 34,
+      "attempt": 1,
+      "lifecycleStarted": 33
+    },
+    {
+      "at": "2026-10-28T09:02:25.186Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 34,
+      "turnBefore": 34,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:02:25.777Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 34,
+      "turnBefore": 34,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:02:57.781Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 34,
+      "turnBefore": 34,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:02:58.336Z",
+      "phase": "eot-completed",
+      "iteration": 34,
+      "turnBefore": 34,
+      "turnAfter": 35,
+      "wallMs": 35428
+    },
+    {
+      "at": "2026-10-28T09:02:59.281Z",
+      "phase": "eot-read-world-before",
+      "iteration": 35
+    },
+    {
+      "at": "2026-10-28T09:02:59.804Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 35,
+      "turnBefore": 35
+    },
+    {
+      "at": "2026-10-28T09:03:00.285Z",
+      "phase": "eot-configure",
+      "iteration": 35,
+      "turnBefore": 35,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T09:03:00.768Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 35,
+      "turnBefore": 35
+    },
+    {
+      "at": "2026-10-28T09:03:01.237Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 35,
+      "turnBefore": 35,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:03:01.237Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 35
+    },
+    {
+      "at": "2026-10-28T09:03:01.661Z",
+      "phase": "offer-final-pending-check",
+      "turn": 35
+    },
+    {
+      "at": "2026-10-28T09:03:02.049Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 35,
+      "turnBefore": 35,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:03:02.466Z",
+      "phase": "eot-trigger-call",
+      "iteration": 35,
+      "turnBefore": 35,
+      "attempt": 1,
+      "lifecycleStarted": 34
+    },
+    {
+      "at": "2026-10-28T09:03:02.905Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 35,
+      "turnBefore": 35,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:03:03.352Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 35,
+      "turnBefore": 35,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:03:34.767Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 35,
+      "turnBefore": 35,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:03:35.775Z",
+      "phase": "eot-completed",
+      "iteration": 35,
+      "turnBefore": 35,
+      "turnAfter": 36,
+      "wallMs": 34538
+    },
+    {
+      "at": "2026-10-28T09:03:37.286Z",
+      "phase": "eot-read-world-before",
+      "iteration": 36
+    },
+    {
+      "at": "2026-10-28T09:03:37.739Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 36,
+      "turnBefore": 36
+    },
+    {
+      "at": "2026-10-28T09:03:38.164Z",
+      "phase": "eot-configure",
+      "iteration": 36,
+      "turnBefore": 36,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T09:03:38.629Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 36,
+      "turnBefore": 36
+    },
+    {
+      "at": "2026-10-28T09:03:39.091Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 36,
+      "turnBefore": 36,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:03:39.091Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 36
+    },
+    {
+      "at": "2026-10-28T09:03:39.540Z",
+      "phase": "offer-final-pending-check",
+      "turn": 36
+    },
+    {
+      "at": "2026-10-28T09:03:39.976Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 36,
+      "turnBefore": 36,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:03:40.528Z",
+      "phase": "eot-trigger-call",
+      "iteration": 36,
+      "turnBefore": 36,
+      "attempt": 1,
+      "lifecycleStarted": 35
+    },
+    {
+      "at": "2026-10-28T09:03:41.024Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 36,
+      "turnBefore": 36,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:03:41.601Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 36,
+      "turnBefore": 36,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:04:14.569Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 36,
+      "turnBefore": 36,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:04:15.571Z",
+      "phase": "eot-completed",
+      "iteration": 36,
+      "turnBefore": 36,
+      "turnAfter": 37,
+      "wallMs": 36480
+    },
+    {
+      "at": "2026-10-28T09:04:17.111Z",
+      "phase": "eot-read-world-before",
+      "iteration": 37
+    },
+    {
+      "at": "2026-10-28T09:04:17.584Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 37,
+      "turnBefore": 37
+    },
+    {
+      "at": "2026-10-28T09:04:18.083Z",
+      "phase": "eot-configure",
+      "iteration": 37,
+      "turnBefore": 37,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T09:04:18.628Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 37,
+      "turnBefore": 37
+    },
+    {
+      "at": "2026-10-28T09:04:19.107Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 37,
+      "turnBefore": 37,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:04:19.107Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 37
+    },
+    {
+      "at": "2026-10-28T09:04:19.577Z",
+      "phase": "offer-final-pending-check",
+      "turn": 37
+    },
+    {
+      "at": "2026-10-28T09:04:19.578Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 37,
+      "turnBefore": 37,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:04:19.579Z",
+      "phase": "eot-trigger-call",
+      "iteration": 37,
+      "turnBefore": 37,
+      "attempt": 1,
+      "lifecycleStarted": 36
+    },
+    {
+      "at": "2026-10-28T09:04:20.003Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 37,
+      "turnBefore": 37,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:04:20.485Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 37,
+      "turnBefore": 37,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:04:51.766Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 37,
+      "turnBefore": 37,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:04:52.666Z",
+      "phase": "eot-completed",
+      "iteration": 37,
+      "turnBefore": 37,
+      "turnAfter": 38,
+      "wallMs": 33559
+    },
+    {
+      "at": "2026-10-28T09:04:54.273Z",
+      "phase": "eot-read-world-before",
+      "iteration": 38
+    },
+    {
+      "at": "2026-10-28T09:04:54.709Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 38,
+      "turnBefore": 38
+    },
+    {
+      "at": "2026-10-28T09:04:55.168Z",
+      "phase": "eot-configure",
+      "iteration": 38,
+      "turnBefore": 38,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T09:04:55.681Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 38,
+      "turnBefore": 38
+    },
+    {
+      "at": "2026-10-28T09:04:56.149Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 38,
+      "turnBefore": 38,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:04:56.149Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 38
+    },
+    {
+      "at": "2026-10-28T09:04:56.657Z",
+      "phase": "offer-final-pending-check",
+      "turn": 38
+    },
+    {
+      "at": "2026-10-28T09:04:57.071Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 38,
+      "turnBefore": 38,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:04:57.689Z",
+      "phase": "eot-trigger-call",
+      "iteration": 38,
+      "turnBefore": 38,
+      "attempt": 1,
+      "lifecycleStarted": 37
+    },
+    {
+      "at": "2026-10-28T09:04:58.192Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 38,
+      "turnBefore": 38,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:04:58.664Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 38,
+      "turnBefore": 38,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:05:30.428Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 38,
+      "turnBefore": 38,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:05:31.462Z",
+      "phase": "eot-completed",
+      "iteration": 38,
+      "turnBefore": 38,
+      "turnAfter": 39,
+      "wallMs": 35313
+    },
+    {
+      "at": "2026-10-28T09:05:32.779Z",
+      "phase": "eot-read-world-before",
+      "iteration": 39
+    },
+    {
+      "at": "2026-10-28T09:05:33.241Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 39,
+      "turnBefore": 39
+    },
+    {
+      "at": "2026-10-28T09:05:33.658Z",
+      "phase": "eot-configure",
+      "iteration": 39,
+      "turnBefore": 39,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T09:05:34.078Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 39,
+      "turnBefore": 39
+    },
+    {
+      "at": "2026-10-28T09:05:34.573Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 39,
+      "turnBefore": 39,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:05:34.573Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 39
+    },
+    {
+      "at": "2026-10-28T09:05:34.978Z",
+      "phase": "offer-final-pending-check",
+      "turn": 39
+    },
+    {
+      "at": "2026-10-28T09:05:35.435Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 39,
+      "turnBefore": 39,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:05:35.992Z",
+      "phase": "eot-trigger-call",
+      "iteration": 39,
+      "turnBefore": 39,
+      "attempt": 1,
+      "lifecycleStarted": 38
+    },
+    {
+      "at": "2026-10-28T09:05:36.546Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 39,
+      "turnBefore": 39,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:05:37.032Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 39,
+      "turnBefore": 39,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:06:29.413Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 39,
+      "turnBefore": 39,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:06:30.536Z",
+      "phase": "eot-completed",
+      "iteration": 39,
+      "turnBefore": 39,
+      "turnAfter": 40,
+      "wallMs": 55962
+    },
+    {
+      "at": "2026-10-28T09:06:31.999Z",
+      "phase": "eot-read-world-before",
+      "iteration": 40
+    },
+    {
+      "at": "2026-10-28T09:06:32.544Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 40,
+      "turnBefore": 40
+    },
+    {
+      "at": "2026-10-28T09:06:32.983Z",
+      "phase": "eot-configure",
+      "iteration": 40,
+      "turnBefore": 40,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T09:06:33.426Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 40,
+      "turnBefore": 40
+    },
+    {
+      "at": "2026-10-28T09:06:33.929Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 40,
+      "turnBefore": 40,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:06:33.929Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 40
+    },
+    {
+      "at": "2026-10-28T09:06:34.503Z",
+      "phase": "offer-final-pending-check",
+      "turn": 40
+    },
+    {
+      "at": "2026-10-28T09:06:34.995Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 40,
+      "turnBefore": 40,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:06:35.453Z",
+      "phase": "eot-trigger-call",
+      "iteration": 40,
+      "turnBefore": 40,
+      "attempt": 1,
+      "lifecycleStarted": 39
+    },
+    {
+      "at": "2026-10-28T09:06:35.905Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 40,
+      "turnBefore": 40,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:06:36.356Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 40,
+      "turnBefore": 40,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:07:03.475Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 40,
+      "turnBefore": 40,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:07:03.947Z",
+      "phase": "eot-completed",
+      "iteration": 40,
+      "turnBefore": 40,
+      "turnAfter": 41,
+      "wallMs": 30018
+    },
+    {
+      "at": "2026-10-28T09:07:04.863Z",
+      "phase": "eot-read-world-before",
+      "iteration": 41
+    },
+    {
+      "at": "2026-10-28T09:07:05.287Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 41,
+      "turnBefore": 41
+    },
+    {
+      "at": "2026-10-28T09:07:05.762Z",
+      "phase": "eot-configure",
+      "iteration": 41,
+      "turnBefore": 41,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T09:07:06.321Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 41,
+      "turnBefore": 41
+    },
+    {
+      "at": "2026-10-28T09:07:06.776Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 41,
+      "turnBefore": 41,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:07:06.776Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 41
+    },
+    {
+      "at": "2026-10-28T09:07:07.270Z",
+      "phase": "offer-final-pending-check",
+      "turn": 41
+    },
+    {
+      "at": "2026-10-28T09:07:07.735Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 41,
+      "turnBefore": 41,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:07:08.160Z",
+      "phase": "eot-trigger-call",
+      "iteration": 41,
+      "turnBefore": 41,
+      "attempt": 1,
+      "lifecycleStarted": 40
+    },
+    {
+      "at": "2026-10-28T09:07:08.585Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 41,
+      "turnBefore": 41,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:07:09.069Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 41,
+      "turnBefore": 41,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:07:35.166Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 41,
+      "turnBefore": 41,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:07:36.053Z",
+      "phase": "eot-completed",
+      "iteration": 41,
+      "turnBefore": 41,
+      "turnAfter": 42,
+      "wallMs": 29277
+    },
+    {
+      "at": "2026-10-28T09:07:37.382Z",
+      "phase": "eot-read-world-before",
+      "iteration": 42
+    },
+    {
+      "at": "2026-10-28T09:07:37.764Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 42,
+      "turnBefore": 42
+    },
+    {
+      "at": "2026-10-28T09:07:38.373Z",
+      "phase": "eot-configure",
+      "iteration": 42,
+      "turnBefore": 42,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T09:07:38.949Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 42,
+      "turnBefore": 42
+    },
+    {
+      "at": "2026-10-28T09:07:39.557Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 42,
+      "turnBefore": 42,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:07:39.557Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 42
+    },
+    {
+      "at": "2026-10-28T09:07:40.172Z",
+      "phase": "offer-final-pending-check",
+      "turn": 42
+    },
+    {
+      "at": "2026-10-28T09:07:40.669Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 42,
+      "turnBefore": 42,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:07:41.132Z",
+      "phase": "eot-trigger-call",
+      "iteration": 42,
+      "turnBefore": 42,
+      "attempt": 1,
+      "lifecycleStarted": 41
+    },
+    {
+      "at": "2026-10-28T09:07:41.585Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 42,
+      "turnBefore": 42,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:07:42.056Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 42,
+      "turnBefore": 42,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:08:08.387Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 42,
+      "turnBefore": 42,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:08:09.430Z",
+      "phase": "eot-completed",
+      "iteration": 42,
+      "turnBefore": 42,
+      "turnAfter": 43,
+      "wallMs": 29873
+    },
+    {
+      "at": "2026-10-28T09:08:10.795Z",
+      "phase": "eot-read-world-before",
+      "iteration": 43
+    },
+    {
+      "at": "2026-10-28T09:08:11.358Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 43,
+      "turnBefore": 43
+    },
+    {
+      "at": "2026-10-28T09:08:11.823Z",
+      "phase": "eot-configure",
+      "iteration": 43,
+      "turnBefore": 43,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T09:08:12.288Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 43,
+      "turnBefore": 43
+    },
+    {
+      "at": "2026-10-28T09:08:12.734Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 43,
+      "turnBefore": 43,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:08:12.734Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 43
+    },
+    {
+      "at": "2026-10-28T09:08:13.170Z",
+      "phase": "offer-final-pending-check",
+      "turn": 43
+    },
+    {
+      "at": "2026-10-28T09:08:13.695Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 43,
+      "turnBefore": 43,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:08:14.178Z",
+      "phase": "eot-trigger-call",
+      "iteration": 43,
+      "turnBefore": 43,
+      "attempt": 1,
+      "lifecycleStarted": 42
+    },
+    {
+      "at": "2026-10-28T09:08:14.686Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 43,
+      "turnBefore": 43,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:08:15.239Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 43,
+      "turnBefore": 43,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:08:45.597Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 43,
+      "turnBefore": 43,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:08:46.569Z",
+      "phase": "eot-completed",
+      "iteration": 43,
+      "turnBefore": 43,
+      "turnAfter": 44,
+      "wallMs": 33835
+    },
+    {
+      "at": "2026-10-28T09:08:47.965Z",
+      "phase": "eot-read-world-before",
+      "iteration": 44
+    },
+    {
+      "at": "2026-10-28T09:08:48.444Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 44,
+      "turnBefore": 44
+    },
+    {
+      "at": "2026-10-28T09:08:48.889Z",
+      "phase": "eot-configure",
+      "iteration": 44,
+      "turnBefore": 44,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T09:08:49.398Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 44,
+      "turnBefore": 44
+    },
+    {
+      "at": "2026-10-28T09:08:49.880Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 44,
+      "turnBefore": 44,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:08:49.880Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 44
+    },
+    {
+      "at": "2026-10-28T09:08:50.357Z",
+      "phase": "offer-final-pending-check",
+      "turn": 44
+    },
+    {
+      "at": "2026-10-28T09:08:50.834Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 44,
+      "turnBefore": 44,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:08:51.301Z",
+      "phase": "eot-trigger-call",
+      "iteration": 44,
+      "turnBefore": 44,
+      "attempt": 1,
+      "lifecycleStarted": 43
+    },
+    {
+      "at": "2026-10-28T09:08:51.797Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 44,
+      "turnBefore": 44,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:08:52.280Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 44,
+      "turnBefore": 44,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:09:17.560Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 44,
+      "turnBefore": 44,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:09:18.475Z",
+      "phase": "eot-completed",
+      "iteration": 44,
+      "turnBefore": 44,
+      "turnAfter": 45,
+      "wallMs": 28595
+    },
+    {
+      "at": "2026-10-28T09:09:19.934Z",
+      "phase": "eot-read-world-before",
+      "iteration": 45
+    },
+    {
+      "at": "2026-10-28T09:09:20.350Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 45,
+      "turnBefore": 45
+    },
+    {
+      "at": "2026-10-28T09:09:20.778Z",
+      "phase": "eot-configure",
+      "iteration": 45,
+      "turnBefore": 45,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T09:09:21.365Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 45,
+      "turnBefore": 45
+    },
+    {
+      "at": "2026-10-28T09:09:21.936Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 45,
+      "turnBefore": 45,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:09:21.936Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 45
+    },
+    {
+      "at": "2026-10-28T09:09:22.444Z",
+      "phase": "offer-final-pending-check",
+      "turn": 45
+    },
+    {
+      "at": "2026-10-28T09:09:22.873Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 45,
+      "turnBefore": 45,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:09:23.399Z",
+      "phase": "eot-trigger-call",
+      "iteration": 45,
+      "turnBefore": 45,
+      "attempt": 1,
+      "lifecycleStarted": 44
+    },
+    {
+      "at": "2026-10-28T09:09:23.873Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 45,
+      "turnBefore": 45,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:09:24.358Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 45,
+      "turnBefore": 45,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:09:53.241Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 45,
+      "turnBefore": 45,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:09:54.194Z",
+      "phase": "eot-completed",
+      "iteration": 45,
+      "turnBefore": 45,
+      "turnAfter": 46,
+      "wallMs": 32258
+    },
+    {
+      "at": "2026-10-28T09:09:55.647Z",
+      "phase": "eot-read-world-before",
+      "iteration": 46
+    },
+    {
+      "at": "2026-10-28T09:09:56.174Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 46,
+      "turnBefore": 46
+    },
+    {
+      "at": "2026-10-28T09:09:56.645Z",
+      "phase": "eot-configure",
+      "iteration": 46,
+      "turnBefore": 46,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T09:09:57.086Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 46,
+      "turnBefore": 46
+    },
+    {
+      "at": "2026-10-28T09:09:57.596Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 46,
+      "turnBefore": 46,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:09:57.596Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 46
+    },
+    {
+      "at": "2026-10-28T09:09:58.157Z",
+      "phase": "offer-final-pending-check",
+      "turn": 46
+    },
+    {
+      "at": "2026-10-28T09:09:58.649Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 46,
+      "turnBefore": 46,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:09:59.181Z",
+      "phase": "eot-trigger-call",
+      "iteration": 46,
+      "turnBefore": 46,
+      "attempt": 1,
+      "lifecycleStarted": 45
+    },
+    {
+      "at": "2026-10-28T09:09:59.701Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 46,
+      "turnBefore": 46,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:10:00.181Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 46,
+      "turnBefore": 46,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:10:31.177Z",
+      "phase": "eot-wait-lifecycle-completion",
+      "iteration": 46,
+      "turnBefore": 46,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:10:32.290Z",
+      "phase": "eot-completed",
+      "iteration": 46,
+      "turnBefore": 46,
+      "turnAfter": 47,
+      "wallMs": 34694
+    },
+    {
+      "at": "2026-10-28T09:10:33.704Z",
+      "phase": "eot-read-world-before",
+      "iteration": 47
+    },
+    {
+      "at": "2026-10-28T09:10:34.154Z",
+      "phase": "eot-read-ownership-before",
+      "iteration": 47,
+      "turnBefore": 47
+    },
+    {
+      "at": "2026-10-28T09:10:34.674Z",
+      "phase": "eot-configure",
+      "iteration": 47,
+      "turnBefore": 47,
+      "mode": "coalesced"
+    },
+    {
+      "at": "2026-10-28T09:10:35.169Z",
+      "phase": "eot-prepare-player-units",
+      "iteration": 47,
+      "turnBefore": 47
+    },
+    {
+      "at": "2026-10-28T09:10:35.740Z",
+      "phase": "eot-offer-resolution",
+      "iteration": 47,
+      "turnBefore": 47,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:10:35.740Z",
+      "phase": "offer-read-pending",
+      "attempt": 1,
+      "turn": 47
+    },
+    {
+      "at": "2026-10-28T09:10:36.303Z",
+      "phase": "offer-final-pending-check",
+      "turn": 47
+    },
+    {
+      "at": "2026-10-28T09:10:36.897Z",
+      "phase": "eot-read-lifecycle-before-trigger",
+      "iteration": 47,
+      "turnBefore": 47,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:10:37.507Z",
+      "phase": "eot-trigger-call",
+      "iteration": 47,
+      "turnBefore": 47,
+      "attempt": 1,
+      "lifecycleStarted": 46
+    },
+    {
+      "at": "2026-10-28T09:10:38.137Z",
+      "phase": "eot-immediate-state-read",
+      "iteration": 47,
+      "turnBefore": 47,
+      "attempt": 1
+    },
+    {
+      "at": "2026-10-28T09:10:38.729Z",
+      "phase": "eot-wait-world-turn-and-busy-clear",
+      "iteration": 47,
+      "turnBefore": 47,
+      "timeoutMs": 60000
+    },
+    {
+      "at": "2026-10-28T09:10:49.737Z",
+      "phase": "eot-timeout-state-read",
+      "iteration": 47,
+      "turnBefore": 47
+    }
+  ],
+  "errors": [],
+  "warnings": [
+    "[.WebGL-0x1ee4001b6400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[.WebGL-0x1ee4001b6400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[.WebGL-0x1ee4001b6400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[.WebGL-0x1ee4001b6400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)",
+    "[EndTurn] triggerPlayerEndTurn: START tura 1",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 289 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 2",
+    "[EndTurn] blocked: oferta handlowa AI czeka na decyzję gracza",
+    "[EndTurn] blocked: oferta handlowa AI czeka na decyzję gracza",
+    "[EndTurn] blocked: oferta handlowa AI czeka na decyzję gracza",
+    "[EndTurn] blocked: oferta handlowa AI czeka na decyzję gracza",
+    "[EndTurn] blocked: oferta handlowa AI czeka na decyzję gracza",
+    "[EndTurn] blocked: oferta handlowa AI czeka na decyzję gracza",
+    "[EndTurn] blocked: oferta handlowa AI czeka na decyzję gracza",
+    "[EndTurn] blocked: oferta handlowa AI czeka na decyzję gracza",
+    "[EndTurn] blocked: oferta handlowa AI czeka na decyzję gracza",
+    "[EndTurn] triggerPlayerEndTurn: START tura 2",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 289 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 3",
+    "[EndTurn] triggerPlayerEndTurn: START tura 3",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 283 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 4",
+    "[EndTurn] triggerPlayerEndTurn: START tura 4",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 273 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 5",
+    "[EndTurn] triggerPlayerEndTurn: START tura 5",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Deficyt! Utrzymanie=1006 Dochod=993 Saldo=-13",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 271 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 6",
+    "[EndTurn] triggerPlayerEndTurn: START tura 6",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Deficyt! Utrzymanie=1094 Dochod=1018 Saldo=-76",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 282 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 7",
+    "[EndTurn] triggerPlayerEndTurn: START tura 7",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Deficyt! Utrzymanie=1226 Dochod=1126 Saldo=-100",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 267 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 8",
+    "[EndTurn] triggerPlayerEndTurn: START tura 8",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Deficyt! Utrzymanie=1232 Dochod=1217 Saldo=-15",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 267 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 9",
+    "[EndTurn] triggerPlayerEndTurn: START tura 9",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 267 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 10",
+    "[EndTurn] triggerPlayerEndTurn: START tura 10",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 267 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 11",
+    "[EndTurn] triggerPlayerEndTurn: START tura 11",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 249 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 12",
+    "[EndTurn] triggerPlayerEndTurn: START tura 12",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 249 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 13",
+    "[EndTurn] triggerPlayerEndTurn: START tura 13",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 249 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 14",
+    "[EndTurn] triggerPlayerEndTurn: START tura 14",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 247 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 15",
+    "[EndTurn] triggerPlayerEndTurn: START tura 15",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 247 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 16",
+    "[EndTurn] triggerPlayerEndTurn: START tura 16",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 247 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 17",
+    "[EndTurn] triggerPlayerEndTurn: START tura 17",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 247 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 18",
+    "[EndTurn] triggerPlayerEndTurn: START tura 18",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 247 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 19",
+    "[EndTurn] triggerPlayerEndTurn: START tura 19",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 247 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 20",
+    "[EndTurn] triggerPlayerEndTurn: START tura 20",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 247 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 21",
+    "[EndTurn] triggerPlayerEndTurn: START tura 21",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1933 Drewno, 380 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 22",
+    "[EndTurn] triggerPlayerEndTurn: START tura 22",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1296 Drewno, 257 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 23",
+    "[EndTurn] triggerPlayerEndTurn: START tura 23",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1296 Drewno, 257 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 24",
+    "[EndTurn] triggerPlayerEndTurn: START tura 24",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1296 Drewno, 257 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 25",
+    "[EndTurn] triggerPlayerEndTurn: START tura 25",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1296 Drewno, 257 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 26",
+    "[EndTurn] triggerPlayerEndTurn: START tura 26",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1296 Drewno, 257 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 27",
+    "[EndTurn] triggerPlayerEndTurn: START tura 27",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1296 Drewno, 257 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 28",
+    "[EndTurn] triggerPlayerEndTurn: START tura 28",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1296 Drewno, 257 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 29",
+    "[EndTurn] triggerPlayerEndTurn: START tura 29",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1296 Drewno, 257 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 30",
+    "[EndTurn] triggerPlayerEndTurn: START tura 30",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1296 Drewno, 257 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 31",
+    "[EndTurn] triggerPlayerEndTurn: START tura 31",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1296 Drewno, 257 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 32",
+    "[EndTurn] triggerPlayerEndTurn: START tura 32",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1296 Drewno, 257 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 33",
+    "[EndTurn] triggerPlayerEndTurn: START tura 33",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1296 Drewno, 257 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 34",
+    "[EndTurn] triggerPlayerEndTurn: START tura 34",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1296 Drewno, 257 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 35",
+    "[EndTurn] triggerPlayerEndTurn: START tura 35",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1296 Drewno, 257 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 36",
+    "[EndTurn] triggerPlayerEndTurn: START tura 36",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1296 Drewno, 257 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 37",
+    "[EndTurn] triggerPlayerEndTurn: START tura 37",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1296 Drewno, 257 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 38",
+    "[EndTurn] triggerPlayerEndTurn: START tura 38",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1296 Drewno, 257 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 39",
+    "[EndTurn] triggerPlayerEndTurn: START tura 39",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1296 Drewno, 257 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 40",
+    "[EndTurn] triggerPlayerEndTurn: START tura 40",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1211 Drewno, 221 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 41",
+    "[EndTurn] triggerPlayerEndTurn: START tura 41",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1211 Drewno, 221 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 42",
+    "[EndTurn] triggerPlayerEndTurn: START tura 42",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1211 Drewno, 221 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 43",
+    "[EndTurn] triggerPlayerEndTurn: START tura 43",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1211 Drewno, 221 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 44",
+    "[EndTurn] triggerPlayerEndTurn: START tura 44",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1211 Drewno, 221 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 45",
+    "[EndTurn] triggerPlayerEndTurn: START tura 45",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1211 Drewno, 221 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 46",
+    "[EndTurn] triggerPlayerEndTurn: START tura 46",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1211 Drewno, 221 Kamień",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 47",
+    "[EndTurn] triggerPlayerEndTurn: START tura 47",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[Ekonomia] Brak surowców na utrzymanie budynków: 1234 Drewno, 211 Kamień"
+  ],
+  "screenshotError": "Error: page.screenshot: Target page, context or browser has been closed",
+  "stateError": "Error: page.evaluate: Target page, context or browser has been closed"
+}

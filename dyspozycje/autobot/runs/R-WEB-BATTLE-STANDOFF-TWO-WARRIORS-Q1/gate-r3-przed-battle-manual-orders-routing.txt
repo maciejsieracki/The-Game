@@ -1,0 +1,108 @@
+[
+  {
+    "test": "melee attack around allied blocker",
+    "moves": [
+      {
+        "id": "manual-infantry",
+        "to": "5,9"
+      }
+    ],
+    "blockedMoveAttempts": [],
+    "position": [
+      5,
+      9
+    ]
+  },
+  {
+    "test": "dry ranged unit closes instead of striking at range 3",
+    "moves": [
+      {
+        "id": "dry-archer",
+        "to": "9,10"
+      }
+    ],
+    "attacks": [],
+    "position": [
+      9,
+      10
+    ]
+  },
+  {
+    "test": "loaded ranged unit attacks selected in-range target",
+    "moves": [],
+    "attacks": [
+      {
+        "kind": "ranged",
+        "attacker": "loaded-archer",
+        "target": "clicked-enemy",
+        "distance": 3
+      }
+    ]
+  },
+  {
+    "test": "ranged attack order routes around allied screen/terrain, preserves clicked target during movement, clears after target death",
+    "moves": [
+      {
+        "id": "ranged-group-archer",
+        "to": "5,11"
+      }
+    ],
+    "orderAfterStep": {
+      "type": "attack",
+      "targetId": "ranged-group-target"
+    },
+    "finalOrder": {
+      "type": "none"
+    },
+    "attacks": []
+  },
+  {
+    "test": "mounted attack order routes around allied screen/terrain while retaining exact target intent",
+    "moves": [
+      {
+        "id": "mounted-group-cavalry",
+        "to": "5,11"
+      }
+    ],
+    "orderAfterStep": {
+      "type": "attack",
+      "targetId": "mounted-group-target"
+    },
+    "attacks": []
+  },
+  {
+    "test": "42-unit group attack order around allied line + impassable terrain; stale target behavior",
+    "allAssigned": true,
+    "routed": [
+      {
+        "id": "group-0",
+        "to": "5,11"
+      },
+      {
+        "id": "group-1",
+        "to": "4,11"
+      }
+    ],
+    "blockedMoveAttempts": [],
+    "staleOrderAfterTargetDeath": "none",
+    "attacks": []
+  },
+  {
+    "test": "canvas semantics enemy click=attack, empty hex click=move",
+    "orders": [
+      {
+        "type": "attack",
+        "id": "clicked-enemy",
+        "queued": false
+      },
+      {
+        "type": "move",
+        "col": 20,
+        "row": 12,
+        "queued": false
+      }
+    ]
+  }
+]
+battle-manual-orders-routing-test: passed
+EXIT=0

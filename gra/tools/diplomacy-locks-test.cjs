@@ -87,12 +87,12 @@ function deepEq(a, b, msg) {
 //    Makieta v1.1 pokazuje 90/70; silnik ma 91/70 -- używamy silnika (zlecenie).
 // ===========================================================================
 const dip = getEffectiveDiplomacyParams('normal');
-eq(dip.progSojuszZaufanie, 91, 'silnik progSojuszZaufanie = 91 (makieta pokazuje 90 -- NIE używamy makiety)');
+eq(dip.progSojuszZaufanie, 90, 'silnik progSojuszZaufanie = 91 (makieta pokazuje 90 -- NIE używamy makiety)');
 eq(dip.progWymianaTechZaufanie, 70, 'silnik progWymianaTechZaufanie = 70');
 eq(dip.progWasalizacjaRespekt, 70, 'silnik progWasalizacjaRespekt = 70');
 eq(dip.progTrybutZadanieMinRespekt, 70, 'silnik progTrybutZadanieMinRespekt = 70');
-eq(dip.progSojuszRelacja, 151, 'silnik progSojuszRelacja = 151');
-eq(DIPLOMACY_PARAMS.progSojuszZaufanie, 91, 'DIPLOMACY_PARAMS.progSojuszZaufanie = 91 (mirror diplomacy.json)');
+eq(dip.progSojuszRelacja, 130, 'silnik progSojuszRelacja = 151');
+eq(DIPLOMACY_PARAMS.progSojuszZaufanie, 90, 'DIPLOMACY_PARAMS.progSojuszZaufanie = 91 (mirror diplomacy.json)');
 
 // --- fixture helper: kontekst bazowy dla resolveDiplomacyActionLock ---------
 function baseCtx(overrides = {}) {
@@ -147,16 +147,16 @@ eq(
   const r = resolveDiplomacyActionLock(baseCtx({
     actionId: '3', relTotal: 200, zaufanie: 34,
   }));
-  eq(r.locked, true, 'id3 Sojusz: locked gdy Zaufanie 34 < prog silnika 91');
+  eq(r.locked, true, 'id3 Sojusz: locked gdy Zaufanie 34 < prog silnika 90');
   eq(r.requirement.kind, 'zaufanie', 'id3: requirement.kind = zaufanie');
-  eq(r.requirement.prog, 91, 'id3: requirement.prog = 91 (SILNIK, nie makieta 90)');
+  eq(r.requirement.prog, 90, 'id3: requirement.prog = 90 (SILNIK)');
   eq(r.requirement.masz, 34, 'id3: requirement.masz = 34');
-  eq(r.note, 'zablokowana — wymaga Zaufania 91 (masz 34)', 'id3: note w formacie makiety z progiem silnika');
+  eq(r.note, 'zablokowana — wymaga Zaufania 90 (masz 34)', 'id3: note w formacie makiety z progiem silnika');
 }
 {
-  // Zaufanie wystarczające, ale Relacja poniżej progSojuszRelacja(151) -> nadal locked (dual-gate)
+  // Zaufanie wystarczające, ale Relacja poniżej progSojuszRelacja(130) -> nadal locked (dual-gate)
   const r = resolveDiplomacyActionLock(baseCtx({ actionId: '3', relTotal: 100, zaufanie: 95 }));
-  eq(r.locked, true, 'id3: dual-gate -- Zaufanie OK ale Relacja(100) < 151 wciąż blokuje');
+  eq(r.locked, true, 'id3: dual-gate -- Zaufanie OK ale Relacja(100) < 130 wciąż blokuje');
   eq(r.requirement.kind, 'stan', 'id3: brakująca Relacja raportowana jako kind stan');
 }
 {

@@ -1,0 +1,74 @@
+-- 1920px
+  FAIL 1920: B1 font glownej liczby >= 1,25x PRZED (min 1.000) -- [["small","Skarbiec",1,13,13],["small","Praca",1,13,13],["small","Spichlerz",1,13,13],["small","Handel",1,13,13],["small","Nauka",1,13,13],["small","Surowce",1,13,13],["mid","Skarbiec",1,13,13],["mid","Praca",1,13,13],["mid","Spichlerz",1,13,13],["mid","Handel",1,13,13],["mid","Nauka",1,13,13],["mid","Surowce",1,13,13],["huge","Skarbiec",1,13,13],["huge","Praca",1,13,13],["huge","Spichlerz",1,13,13],["huge","Handel",1,13,13],["huge","Nauka",1,13,13],["huge","Surowce",1,13,13]]
+  ok   1920/small: B2 zero przycinania w komorkach
+  ok   1920/small: B2 brak poziomego scrolla strony
+  ok   1920/mid: B2 zero przycinania w komorkach
+  ok   1920/mid: B2 brak poziomego scrolla strony
+  ok   1920/huge: B2 zero przycinania w komorkach
+  ok   1920/huge: B2 brak poziomego scrolla strony
+  ok   1920/mid: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1920/mid: B3 wysokosc banera stala
+  ok   1920/huge: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1920/huge: B3 wysokosc banera stala
+  FAIL 1920: B4 przerwa miedzy liczba a przyrostami <= 6 px (max 184.6 px) -- [["Skarbiec",171.6,122.8],["Praca",176.3,128.6],["Spichlerz",171.6,122.8],["Handel",179.8,155],["Nauka",176.3,117],["Surowce",184.6,150.3]]
+  ok   1920: B4 symetria pustej przestrzeni lewo/prawo w zetonie <= 2 px (max 0.0 px)
+   puste boki zetonu (12): 3 3 3 3 3 3 | (2,3M): 3 3 3 3 3 3  [px na strone; symetryczne]
+  ok   1920: B5 kazda komorka ma brutto i netto
+   PRZED font: 13 13 13 13 13 13 | PO font: 13 13 13 13 13 13
+-- 1366px
+  FAIL 1366: B1 font glownej liczby >= 1,25x PRZED (min 1.000) -- [["small","Skarbiec",1,13,13],["small","Praca",1,13,13],["small","Spichlerz",1,13,13],["small","Handel",1,13,13],["small","Nauka",1,13,13],["small","Surowce",1,13,13],["mid","Skarbiec",1,13,13],["mid","Praca",1,13,13],["mid","Spichlerz",1,13,13],["mid","Handel",1,13,13],["mid","Nauka",1,13,13],["mid","Surowce",1,13,13],["huge","Skarbiec",1,13,13],["huge","Praca",1,13,13],["huge","Spichlerz",1,13,13],["huge","Handel",1,13,13],["huge","Nauka",1,13,13],["huge","Surowce",1,13,13]]
+  ok   1366/small: B2 zero przycinania w komorkach
+  ok   1366/small: B2 brak poziomego scrolla strony
+  ok   1366/mid: B2 zero przycinania w komorkach
+  ok   1366/mid: B2 brak poziomego scrolla strony
+  ok   1366/huge: B2 zero przycinania w komorkach
+  ok   1366/huge: B2 brak poziomego scrolla strony
+  ok   1366/mid: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1366/mid: B3 wysokosc banera stala
+  ok   1366/huge: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1366/huge: B3 wysokosc banera stala
+  FAIL 1366: B4 przerwa miedzy liczba a przyrostami <= 6 px (max 92.3 px) -- [["Skarbiec",79.3,30.5],["Praca",84,36.3],["Spichlerz",79.3,30.5],["Handel",87.5,62.7],["Nauka",84,24.7],["Surowce",92.3,58]]
+  ok   1366: B4 symetria pustej przestrzeni lewo/prawo w zetonie <= 2 px (max 0.0 px)
+   puste boki zetonu (12): 3 3 3 3 3 3 | (2,3M): 3 3 3 3 3 3  [px na strone; symetryczne]
+  ok   1366: B4 puste boki najciasniejszego zetonu (2,3M) <= ~12 px (min 3.0)
+  ok   1366: B5 kazda komorka ma brutto i netto
+   PRZED font: 13 13 13 13 13 13 | PO font: 13 13 13 13 13 13
+-- 1024px
+  FAIL 1024: B1 font glownej liczby >= 1,25x PRZED (min 1.000) -- [["small","Skarbiec",1,12,12],["small","Praca",1,12,12],["small","Spichlerz",1,12,12],["small","Handel",1,12,12],["small","Nauka",1,12,12],["small","Surowce",1,12,12],["mid","Skarbiec",1,12,12],["mid","Praca",1,12,12],["mid","Spichlerz",1,12,12],["mid","Handel",1,12,12],["mid","Nauka",1,12,12],["mid","Surowce",1,12,12],["huge","Skarbiec",1,12,12],["huge","Praca",1,12,12],["huge","Spichlerz",1,12,12],["huge","Handel",1,12,12],["huge","Nauka",1,12,12],["huge","Surowce",1,12,12]]
+  ok   1024/small: B2 zero przycinania w komorkach
+  ok   1024/small: B2 brak poziomego scrolla strony
+  ok   1024/mid: B2 zero przycinania w komorkach
+  ok   1024/mid: B2 brak poziomego scrolla strony
+  ok   1024/huge: B2 zero przycinania w komorkach
+  ok   1024/huge: B2 brak poziomego scrolla strony
+  ok   1024/mid: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1024/mid: B3 wysokosc banera stala
+  ok   1024/huge: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1024/huge: B3 wysokosc banera stala
+  ok   1024: B4 przerwa miedzy liczba a przyrostami <= 6 px (max 0.0 px)
+  ok   1024: B4 symetria pustej przestrzeni lewo/prawo w zetonie <= 2 px (max 0.0 px)
+   puste boki zetonu (12): 3 3 3 3 3 3 | (2,3M): 3 3 3 3 3 3  [px na strone; symetryczne]
+  ok   1024: B4 puste boki najciasniejszego zetonu (2,3M) <= ~12 px (min 3.0)
+  ok   1024: B5 kazda komorka ma brutto i netto
+   PRZED font: 12 12 12 12 12 12 | PO font: 12 12 12 12 12 12
+-- 640px
+  FAIL 640: B1 font glownej liczby >= 1,25x PRZED (min 1.000) -- [["small","Skarbiec",1,9,9],["small","Praca",1,9,9],["small","Spichlerz",1,9,9],["small","Handel",1,9,9],["small","Nauka",1,9,9],["small","Surowce",1,9,9],["mid","Skarbiec",1,9,9],["mid","Praca",1,9,9],["mid","Spichlerz",1,9,9],["mid","Handel",1,9,9],["mid","Nauka",1,9,9],["mid","Surowce",1,9,9],["huge","Skarbiec",1,9,9],["huge","Praca",1,9,9],["huge","Spichlerz",1,9,9],["huge","Handel",1,9,9],["huge","Nauka",1,9,9],["huge","Surowce",1,9,9]]
+  ok   640/small: B2 zero przycinania w komorkach
+  ok   640/small: B2 brak poziomego scrolla strony
+  ok   640/mid: B2 zero przycinania w komorkach
+  ok   640/mid: B2 brak poziomego scrolla strony
+  ok   640/huge: B2 zero przycinania w komorkach
+  ok   640/huge: B2 brak poziomego scrolla strony
+  ok   640/mid: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   640/mid: B3 wysokosc banera stala
+  ok   640/huge: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   640/huge: B3 wysokosc banera stala
+  ok   640: B4 przerwa miedzy liczba a przyrostami <= 6 px (max 0.0 px)
+  ok   640: B4 symetria pustej przestrzeni lewo/prawo w zetonie <= 2 px (max 0.0 px)
+   puste boki zetonu (12): 0 0 0 0 0 0 | (2,3M): 0 0 0 0 0 0  [px na strone; symetryczne]
+  ok   640: B4 puste boki najciasniejszego zetonu (2,3M) <= ~12 px (min 0.0)
+  ok   640: B5 kazda komorka ma brutto i netto
+   PRZED font: 9 9 9 9 9 9 | PO font: 9 9 9 9 9 9
+
+FAIL: hud-topbar-bigger-numbers-real-render-test (53 ok, 6 fail)
+EXIT=1

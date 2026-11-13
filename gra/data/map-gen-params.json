@@ -94,6 +94,10 @@
       "duzy": [240, 168],
       "ogromny": [336, 238],
       "superogromny": [672, 476]
+    },
+    "capital_sep_short_side_coef": {
+      "wartosc": 0.21,
+      "opis": "R-WEB-CAPITAL-SPACING-FIX-Q1: min. dystans stolic roznych cywilizacji = max(tabela capitalMinSeparation 12/12/15/16/19, round(wspolczynnik x krotszy bok mapy)); 0 = wylaczone (sama tabela)."
     }
   },
   "deposit_rules": {

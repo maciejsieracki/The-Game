@@ -55,6 +55,7 @@ import {
   hitChanceTw,
   baseDamage,
   rangeDamage,
+  rangedShotAccuracy,
   counterMultiplier,
   terrainDefenseMultiplier,
   terrainRiverAttackMultiplier,
@@ -64,6 +65,9 @@ import {
 } from '../game/combat';
 import type { CombatUnit, CombatResult } from '../game/combat';
 import { combatUnitFromDef, unitRowStat } from '../game/combat';
+import { isCertainHitMode } from '../game/hit-mode';
+import { buildBattleEventLog } from '../units/battleRoster';
+import type { BattleEventLog } from '../units/battleRoster';
 // R-WALKA-PRZEWAGA-LICZEBNA-Q1-W2 -- GOAL 1 (jeden kontratak na ture obroncy)
 // i GOAL 2 (startowa kara morale od stosunku MOCY wazonej biezacym HP).
 import {
@@ -74,12 +78,20 @@ import {
   applyStartingMoralePenalty,
 } from '../game/combat';
 import type { UnitPowerInput } from '../game/unit-power';
+import { rangedDamageMultFor } from '../game/unit-power';
 import {
   buildTerrainTerenTooltipParts,
   terrainTerenTooltipColor,
 } from './battleTerrainTooltip';
 import type { CivBonusEntry } from '../game/civ-bonuses';
-import { applyMultiplier, civCombatStatMultipliers } from '../game/civ-bonuses';
+import { battleUnitCivBonusy, battleUnitDifficultyCombatMult } from './battle-unit-context';
+import {
+  applyMultiplier,
+  civCombatStatMultipliers,
+  civMovementMultiplier,
+  civAttackRangeMultiplier,
+  civWallDefenseMultiplier,
+} from '../game/civ-bonuses';
 import { mergeBuildingBonusIntoStatMultipliers } from '../game/unit-building-bonuses';
 import {
   applyVeteranFracToCombatUnit,
@@ -89,10 +101,27 @@ import {
 import { applyArmyHungerStatMultToCombatUnit } from '../game/army-starvation';
 import { applyGoldDeficitStatMultToCombatUnit } from '../game/gold-deficit';
 import {
+  armyMoraleRatioWithoutCommander,
+  commandersToWithdrawAfterArmyBreak,
+  moraleWithArmyLeaderBonus,
+} from '../game/army-leadership';
+import {
   cityWallDefenseBonusPercent,
   cityGatedTerrainMultiplier,
   fieldFortifyDefenseBonus,
+  fortificationDefenseBonusForUnit,
+  wallCrownShooterRange,
 } from '../game/city-defense';
+import { meleeBlockedByWall, cityFortificationKind, attackerWallEntryIsBreach } from '../game/city-fortification';
+import {
+  towerMaterialFor,
+  towerRows,
+  strongestRangedUnitForEra,
+  towerRangeFor,
+  pickTowerTarget,
+  DEFAULT_TOWER_SPACING,
+  DEFAULT_TOWER_MIN_RANGE,
+} from '../game/city-towers';
 import { buildUnitModel } from '../render/units';
 import { clientRectToNdc, refreshInstancedPickBounds, worldToClientPx } from '../input/picker';
 import {
@@ -105,7 +134,8 @@ import {
 } from './battle-terrain';
 import combatParamsData from '../../data/combat-params.json';
 import miastoParamsData from '../../data/miasto-params.json';
-import { buildSiegeWall, attachRowBreachPanels } from './siegeWall';
+import unitsDataForTowers from '../../data/units.json';
+import { buildSiegeWall, attachRowBreachPanels, buildWallTower } from './siegeWall';
 import type { BronzeCiv } from '../render/bronzeCity';
 import {
   drawBattleMinimap,
@@ -218,11 +248,13 @@ import {
   applySettingsPopupHeader1E,
   createSettingsToggleRow1E,
   createSettingsActionRow1E,
+  battleLossTextColor,
 } from './battleHudTheme';
 import { civIconSvg, brandIconSvg } from '../ui/icons/brandAssets';
 import { leaderPortraitUrl, leaderName, civIconIdFromCivLabel } from '../ui/leaderPortraits';
 import { showEndScreen1E } from './endScreen1E';
 import { markBattleSceneOpen, markBattleSceneClosed } from './battleSceneOpen';
+import { classifyInitialBattleRole, compactLineAllowsAdvance, initialBattleFormation, initialBattleSlots, type InitialBattleRole } from './formationRules';
 import { startVictoryMusic, startDefeatMusic, startBattleMusic } from '../audio/muzyka-antyczna';
 import {
   showEndDetails1E,
@@ -248,6 +280,20 @@ import {
 } from './siegeHud1E';
 
 export type { BattleMinimapData, BattleMinimapUnit, BattleMinimapViewport } from './battleMinimap';
+import { resolveAutoBatchPhase } from './autoBatchPhase';
+import type {
+  AutoBatchIntent,
+  AutoBatchPhase,
+  AutoBatchResolution,
+  AutoBatchUnitSnapshot,
+} from './autoBatchPhase';
+export { resolveAutoBatchPhase } from './autoBatchPhase';
+export type {
+  AutoBatchIntent,
+  AutoBatchPhase,
+  AutoBatchResolution,
+  AutoBatchUnitSnapshot,
+} from './autoBatchPhase';
 
 // ---------------------------------------------------------------------------
 // SQUARE-GRID FACING (4 directions: N / E / S / W)
@@ -366,6 +412,14 @@ export interface BattleUnit {
   stats: any;
   hp: number;
   maxHp: number;
+  /** Recruited Wódz/Generał: an ordinary combatant with commander-specific army effects. */
+  isArmyCommander?: boolean;
+  /** Starting morale bonus shared by this commander's assigned army; cleared on leader loss. */
+  armyLeaderMoraleBonusFrac?: number;
+  /** Per-unit owner's civ combat bonuses; absent synthetic units use BattleOpts side fallback. */
+  civBonusy?: readonly CivBonusEntry[];
+  /** Per-unit owner's difficulty combat multiplier; absent synthetic units use BattleOpts side fallback. */
+  difficultyCombatMult?: number;
   /**
    * Sciezki ulepszen jednostek (2026-07-25, game/unit-building-bonuses.ts).
    * Ulamkowy bonus Pancerza (Sciezka A: Kuznia/Kuznia zelaza/Wielka Kuznia)
@@ -471,6 +525,9 @@ export interface BattleOpts {
   attackerCivBonusy?: readonly CivBonusEntry[];
   /** RDY-01 / D4-Q3: bonusy cyw armii broniacej. */
   defenderCivBonusy?: readonly CivBonusEntry[];
+  attackerOwnTerritory?: boolean;
+  defenderOwnTerritory?: boolean;
+  shallowSea?: boolean;
   /** Etykieta cywilizacji atakujacego (pasek mocy HUD). */
   attackerCivLabel?: string;
   /** Etykieta cywilizacji broniacego (pasek mocy HUD). */
@@ -525,12 +582,26 @@ export interface BattleOpts {
   attackerDifficultyCombatMult?: number;
   /** P-AI-MOC-BONUS=A: bonus trudności walki broniącego (major AI). */
   defenderDifficultyCombatMult?: number;
+  /** When set, manual battle control is available only while the player's commander survives. */
+  manualControlAllowed?: boolean;
 }
 
 export interface BattleResult {
   winner: 'atakujacy' | 'obronca' | 'remis';
   survivors: BattleUnit[];
   log: string[];
+  /**
+   * Units actually DEPLOYED on the battlefield (capped at MAX_PER_SIDE per side).
+   * Reserve units beyond the cap are absent here, so the map must leave them untouched
+   * (R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1).
+   */
+  eventLog: BattleEventLog;
+  /**
+   * R-WEB-PALISADE-BATTLE-WALL-RULES-Q1 (R1): w oblezeniu -- czy zniszczono brame
+   * albo mur/palisade (wylom). Miasto obwarowane mozna zdobyc WYLACZNIE po wylomie.
+   * Brak pola (bitwa poza oblezeniem) = nie dotyczy.
+   */
+  wallBreached?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -588,6 +659,8 @@ function cloneBattleUnitsForReplay(units: BattleUnit[]): BattleUnit[] {
 // the ranks occupy and guarantees a passable clash corridor across the river
 // (see _carveBattleBox), so the lines stand on flat passable ground and can
 // reach each other, while terrain survives EVERYWHERE else as obstacles/scenery.
+/** R-WEB-BATTLE-LINE-ADVANCE-UNIFORM-Q1: po tylu rundach bez nowego postepu jednostka nie wstrzymuje linii. */
+const LINE_ADVANCE_STALL_ROUNDS = 10; // zmierzone: objazd sciany 5 pol z zatorem czekajacych liderow <= 9 rund (tools/battle-line-advance-uniform-test.cjs)
 const BF_COLS = 68;   // pełne pole (2× poprzednie 34) — margines do przewijania kamery
 const BF_ROWS = 156;  // pełne pole (2× poprzednie 78)
 
@@ -643,19 +716,35 @@ const ORDER_COLOR_ATTACK = 0xe04040;
 const ORDER_MOVE_OPACITY = 0.30;
 const ORDER_ATTACK_OPACITY = 0.45;
 
-// Up to this many units deploy per side. maciej_playtest (POLE-BITWY) fields 110
-// per side (60 infantry + 30 archers + 20 cavalry). Headroom 120 so nothing
-// is sliced before deployment.
-const MAX_PER_SIDE = 120;
+// Up to this many units deploy per side. R-WEB-BATTLE-CAP-500-Q1 (decyzja
+// wlasciciela 2026-11-07): limit podniesiony ze 120 do 500. JEDNO zrodlo prawdy
+// -- rozstawienie, komunikat
+// o rezerwie (BATTLE_MAX_PER_SIDE) i slice(0, MAX_PER_SIDE) czytaja te stala.
+// Glebokosc czyszczenia pasm terenu NIE czyta tej stalej (patrz battleClearSideCap).
+const MAX_PER_SIDE = 500;
+/** R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1: limit pola bitwy do komunikatu o rezerwie (jedno zrodlo: MAX_PER_SIDE). */
+export const BATTLE_MAX_PER_SIDE = MAX_PER_SIDE;
 
 // How many figures stand shoulder-to-shoulder in ONE rank (a straight line).
 // 60 units => 3 even ranks of 20. Keep <= BF_ROWS minus a small margin so a
 // full rank fits centred on the field.
 const RANK_WIDTH = 20;
 
-// How many ranks deep one full side can be (ceil(MAX_PER_SIDE / RANK_WIDTH)).
-// Drives the rank-clearing band width and the rear-rank column budget.
-const MAX_RANKS = Math.ceil(MAX_PER_SIDE / RANK_WIDTH); // 4 for 64 / 20
+// Side cap the terrain clearing depth was sized for BEFORE R-WEB-BATTLE-CAP-500-Q1
+// (the old MAX_PER_SIDE). Battles with <= this many units per side keep the
+// exact same clearing depth as before the limit was raised (bit-for-bit terrain).
+const CLEAR_DEPTH_BASE_CAP = 120;
+
+/**
+ * Side cap that sizes the deployment-rank clearing depth for one battle:
+ * max(CLEAR_DEPTH_BASE_CAP, the larger army), never above MAX_PER_SIDE. Depth
+ * therefore grows only for battles that really field more than 120 units per
+ * side; it does NOT scale with the MAX_PER_SIDE constant, so a 40 vs 40 battle
+ * clears exactly the same columns as before the cap was raised.
+ */
+export function battleClearSideCap(attackerCount: number, defenderCount: number): number {
+  return Math.min(MAX_PER_SIDE, Math.max(CLEAR_DEPTH_BASE_CAP, attackerCount, defenderCount));
+}
 
 // Outer columns kept as clean plains by the terrain generator. Small value so
 // the rivers / forest / hills generate across nearly the whole field; the rank
@@ -685,8 +774,8 @@ const DEF_COL_STEP  = 1;            // defender rear ranks step RIGHT (toward +X
  *
  * LEGACY (presetActive=false, i.e. no worldTerrain / no ?bt= override): the
  * exact pre-existing formula, UNTOUCHED -- verified bit-for-bit against the
- * pre-2026-07-22 generator (3 seeds). Sized generously (MAX_RANKS+12) so even
- * a fully-mounted MAX_PER_SIDE army (mounted deploy the deepest, see
+ * pre-2026-07-22 generator (3 seeds). Sized generously (ranks(sideCap)+12) so even
+ * a fully-mounted army of sideCap units (mounted deploy the deepest, see
  * arrangeFlankCavalry/_placeUnits) always lands on clean ground.
  *
  * PRESET-ACTIVE: owner correction 2026-07-22 #3 ("odblokuj teren poza
@@ -694,7 +783,7 @@ const DEF_COL_STEP  = 1;            // defender rear ranks step RIGHT (toward +X
  * to Plains on EVERY row, leaving only three narrow 4-column bands for the
  * generator's terrain to ever be visible in, which is what forced hills/river
  * into straight rectangular-looking bars. Preset battles use a tighter depth
- * (still comfortably deeper than MAX_RANKS=6 and the real per-side rank
+ * (still comfortably deeper than ranks(sideCap)=6 for 120 and the real per-side rank
  * count) that keeps the actual deployment columns clean while giving the
  * meandering river/hill generation roughly DOUBLE the surviving interior
  * width to occupy. The BFS connectivity guard in _carveBattleBox (unchanged)
@@ -704,10 +793,16 @@ const DEF_COL_STEP  = 1;            // defender rear ranks step RIGHT (toward +X
  * impassable) -- so shrinking this is a rendering/variety change only, not a
  * gameplay-safety one.
  */
-function deployClearRanksFor(presetActive: boolean): number {
+function deployClearRanksFor(presetActive: boolean, sideCap: number): number {
+  const maxRanks = Math.ceil(sideCap / RANK_WIDTH);
   return presetActive
-    ? Math.max(MAX_RANKS + 4, Math.ceil(MAX_PER_SIDE / 12) + 3)
-    : Math.max(MAX_RANKS + 12, Math.ceil(MAX_PER_SIDE / 12) + 8);
+    ? Math.max(maxRanks + 4, Math.ceil(sideCap / 12) + 3)
+    : Math.max(maxRanks + 12, Math.ceil(sideCap / 12) + 8);
+}
+
+/** Clearing depth (rank columns) for one battle; sideCap from battleClearSideCap(). */
+export function battleClearRanks(presetActive: boolean, sideCap: number): number {
+  return deployClearRanksFor(presetActive, sideCap);
 }
 
 /**
@@ -727,8 +822,8 @@ function deployClearRanksFor(presetActive: boolean): number {
  * Set<number> (duplicated formula, verified to match exactly) so this stays
  * a pure, side-effect-free query callable before generation runs.
  */
-function battleSafeCols(presetActive: boolean): Array<[number, number]> {
-  const deployClearRanks = deployClearRanksFor(presetActive);
+function battleSafeCols(presetActive: boolean, sideCap: number): Array<[number, number]> {
+  const deployClearRanks = deployClearRanksFor(presetActive, sideCap);
   const atkRankEnd = ATK_FRONT_COL + (deployClearRanks - 1) * ATK_COL_STEP;
   const defRankEnd = DEF_FRONT_COL + (deployClearRanks - 1) * DEF_COL_STEP;
   const atkLo = Math.min(ATK_FRONT_COL, atkRankEnd);
@@ -1025,6 +1120,20 @@ const MORALE_HIT_LOSS_SCALE = 100;   // moraleLost = (dmg/maxHp)*100 -- loss off
 // (a "shaken by losses" ripple), within MORALE_DEATH_RADIUS tiles.
 const MORALE_ALLY_DEATH_LOSS = 12;
 const STALL_TURN_LIMIT = 6;   // tury bez zmiany HP/morale/strat -> rozstrzygnij bitwe (anty-pat)
+// R-WEB-BATTLE-ROUTED-UNITS-PURSUED-AND-DESTROYED-Q1: sufit FAZY POSCIGU. Bitwa nie konczy sie w chwili,
+// gdy strona traci morale -- trwa, dopoki uciekinierzy nie zgina lub nie opuszcza planszy. Po tylu turach
+// od startu poscigu pozostali uciekinierzy sa rozstrzygani deterministycznie (_resolveRemainingRouted).
+// Wartosc nie jest balansem walki (nie zmienia morale/statow) -- to wylacznie zabezpieczenie przed nieskonczona bitwa.
+const PURSUIT_MAX_ROUNDS = 30;
+// R-WEB-BATTLE-SKIP-TO-RESULT-ABSURD-OUTCOME-Q1 (runda 2): bezpiecznik przewijania (skip).
+// Pomiar: scena ?playtest=oblezenie-duze nie konczy sie silnikiem (stan ustalony, tury
+// rosna bez konca), wiec przewijanie musi miec sufit. Sufit liczony w TURACH (nie w czasie
+// wirtualnym), o rzedy wiekszy niz rozgrywane bitwy (zrzuty wlasciciela: tura 11).
+// Po przekroczeniu rozstrzygniecie = ten sam wynik co PAT silnika (morale), nie rachunek natychmiastowy.
+const FF_MAX_ROUNDS = 400;
+// R-WEB-BATTLE-SKIP-SIEGE-TRUE-RESULT-Q1 (r3, ABC wlasciciela 2026-11-10): krotszy sufit tur dla
+// oblezenia BEZ wylomu (mur/palisada/brama stoi). Wartosc z combat-params.json (oblezenie.bez_wylomu_max_tur).
+const SIEGE_NO_BREACH_MAX_ROUNDS: number = Math.max(1, Math.round(Number(combatParamsData['oblężenie'].bez_wylomu_max_tur) || FF_MAX_ROUNDS));
 const MORALE_DEATH_RADIUS    = 3;    // Manhattan tiles within which allies are shaken
 
 // ---------------------------------------------------------------------------
@@ -1283,6 +1392,16 @@ function movementPoints(bu: BattleUnit): number {
   return Math.max(1, Math.round(mv));
 }
 
+function civUnitShapeForBattleUnit(bu: BattleUnit): { typNazwa: string; rola: string; missileAttack?: number; counterTyp?: string } {
+  const s = (bu.stats as Record<string, unknown>) ?? {};
+  return {
+    typNazwa: String(s['Jednostka'] ?? bu.nazwa ?? bu.kategoria),
+    rola: String(s['Rola (linia)'] ?? bu.kategoria ?? 'Wrecz'),
+    missileAttack: norm(s['missileAttack'] ?? s['Atak dystansowy'], 0),
+    counterTyp: String(s['Typ'] ?? ''),
+  };
+}
+
 /**
  * Ranged attack reach in TILES (0 for pure melee).
  *
@@ -1375,10 +1494,24 @@ function isPrimaryRanged(bu: BattleUnit): boolean {
   return false;
 }
 
+/** Role bands used only for the default battle deployment and deploy reset. */
+function initialBattleRoleOf(bu: BattleUnit): InitialBattleRole {
+  const stats = (bu.stats as Record<string, unknown>) ?? {};
+  return classifyInitialBattleRole({
+    commander: bu.isArmyCommander,
+    category: bu.kategoria,
+    name: String(stats['Jednostka'] ?? bu.nazwa ?? ''),
+    type: String(stats['Typ'] ?? ''),
+    primaryRanged: isPrimaryRanged(bu),
+  });
+}
+
 /** True for a MOUNTED unit (cavalry or chariot) -- belongs on the wings. */
 function isMounted(bu: BattleUnit): boolean {
   const cat = normName(String(bu.kategoria ?? ''));
   if (cat === 'konnica' || cat === 'rydwan') return true;
+  // units.json Typ "Mount" (incl. super units whose category is 'super')
+  if (normName(String((bu.stats as any)?.['Typ'] ?? '')) === 'mount') return true;
   const n = normName(String((bu.stats as any)?.['Jednostka'] ?? bu.nazwa ?? ''));
   return n.includes('konnic') || n.includes('jazd') || n.includes('jezdz') ||
          n.includes('kawaler') || n.includes('rydwan') || n.includes('chariot') ||
@@ -1439,41 +1572,6 @@ function isSiegeTower(bu: BattleUnit): boolean {
 }
 
 /**
- * Reorder one side's units so MOUNTED units (cavalry / chariots) deploy on the
- * WINGS -- the top and bottom rows at the two ends of the rank axis -- instead
- * of trailing in a partial rear rank. The placement loop fills the array rank by
- * rank, each rank a straight line of `perRank` rows from top (rowIdx 0) to bottom
- * (rowIdx perRank-1); so the flank slots are the LOW and HIGH rowIdx of the FRONT
- * rank. We split the mounted units half to the top wing, half to the bottom wing
- * of the front rank, with the foot units filling the centre and the rear ranks.
- * Returns a NEW array (input order otherwise preserved). No geometry here.
- */
-function arrangeFlankCavalry(units: BattleUnit[]): BattleUnit[] {
-  const mounted = units.filter(isMounted);
-  if (mounted.length === 0) return units.slice();
-  const foot = units.filter(u => !isMounted(u));
-
-  const perRank = Math.max(1, Math.min(RANK_WIDTH, BF_ROWS));
-  // Mounted units split evenly to the two wings of the FRONT rank. Cap to half
-  // the rank per wing so they never crowd out the whole front line.
-  const maxPerWing = Math.max(1, Math.floor(perRank / 2));
-  const topCount = Math.min(Math.ceil(mounted.length / 2), maxPerWing);
-  const botCount = Math.min(mounted.length - topCount, maxPerWing);
-  const topWing = mounted.slice(0, topCount);
-  const botWing = mounted.slice(topCount, topCount + botCount);
-  // Any mounted beyond the wing cap fall back to the centre with the foot.
-  const extraMounted = mounted.slice(topCount + botCount);
-
-  // Front rank = [topWing ... foot/extra centre ... botWing]; the remaining foot
-  // forms the rear ranks (appended after the full front rank).
-  const centreBudget = Math.max(0, perRank - topWing.length - botWing.length);
-  const centre = [...extraMounted, ...foot].slice(0, centreBudget);
-  const rear   = [...extraMounted, ...foot].slice(centreBudget);
-
-  return [...topWing, ...centre, ...botWing, ...rear];
-}
-
-/**
  * Spear/phalanx-type defenders brace and NEGATE the attacker's charge bonus
  * (Uderzenie) when the attacker moved in. Mirrors the private negatesCharge()
  * rule inside combat.ts so a single blow matches the canonical model.
@@ -1527,7 +1625,10 @@ function moraleBaseFor(bu: BattleUnit): number {
   // TRZECI SYSTEM (weterani, 2026-07-25 -- korekta wlasciciela wieczorem):
   // "Morale bazowe" idzie W GORE (wyzej = lepiej) -- +10%/+20%, Math.ceil
   // gwarantuje widoczny efekt nawet dla malych wartosci. Patrz game/veteran.ts.
-  return veteranMoraleBazoweUp(base, bu.veteranBonusFrac ?? 0);
+  return moraleWithArmyLeaderBonus(
+    veteranMoraleBazoweUp(base, bu.veteranBonusFrac ?? 0),
+    bu.armyLeaderMoraleBonusFrac ?? 0,
+  );
 }
 
 /** Per-unit ABSOLUTE morale level at which the unit breaks + flees ('Morale ucieczki'). */
@@ -1868,6 +1969,7 @@ function desiredHitForDirection(dir: AttackDirection): FacingHit | null {
 
 interface RuntimeBattleUnit {
   bu:           BattleUnit;
+  isArmyCommander: boolean;
   group:        THREE.Group;
   hpBarFg:      THREE.Mesh;
   hpBarBg:      THREE.Mesh;
@@ -1882,6 +1984,8 @@ interface RuntimeBattleUnit {
   ammoBarShown: boolean;  // true only when this unit ever shows an ammo bar (ranged + finite ammo)
   q:            number;   // COLUMN (grid x); kept as `q` to minimise churn
   r:            number;   // ROW (grid z); kept as `r` to minimise churn
+  /** Last tile left by an automatic move; prevents replanning loops into the prior tile. */
+  lastAutoMoveFrom?: { q: number; r: number };
   side:         'atk' | 'def';
   dead:         boolean;
   fadingOut:    boolean;
@@ -1930,7 +2034,7 @@ interface RuntimeBattleUnit {
   // attackers who climbed via a siege tower (onWallWalkway too).
   // Attackers can also get this flag after mounting via a siege tower.
   onWallWalkway: boolean;
-  playerOrder:   { type: 'none' } | { type: 'hold' } | { type: 'move'; col: number; row: number } | { type: 'attack'; targetId: string };
+  playerOrder:   { type: 'none' } | { type: 'hold' } | { type: 'move'; col: number; row: number } | { type: 'attackMove'; col: number; row: number } | { type: 'attack'; targetId: string };
   // --- Tryby recz. sterowania ---
   rangedKite:       boolean; // true = kituje (domyslnie); false = stoi i bije bez cofania
   shootingEnabled:  boolean; // true = uzywa ataku dystansowego; false = idzie wrecz
@@ -1939,6 +2043,8 @@ interface RuntimeBattleUnit {
   groupId:      string | null;
   /** Wzgledny offset {dc, dr} od centroidu grupy w chwili grupowania (formacja pierwotna). */
   formationOffset: { dc: number; dr: number } | null;
+  /** Deployment rank measured from this side's front; used by Attack line pacing. */
+  formationRank?: number;
   /** Wlasna doktryna (null = dziedzicz z grupy, potem domyslnie Atak). */
   unitDoctrine: GroupDoctrine | null;
   /** C-FLANK: kierunek natarcia w auto-play (front/bok/tyl); domyslnie 'front'. */
@@ -1951,8 +2057,8 @@ interface RuntimeBattleUnit {
   perTokenGeos: THREE.BufferGeometry[];
 }
 
-/** Ustawienie konnicy w formacji deploy: skrzydla lub linia z tylu. */
-type CavalryDeployMode = 'flanks' | 'rear';
+/** Ustawienie konnicy w formacji deploy: przod, skrzydla lub linia z tylu. */
+type CavalryDeployMode = 'front' | 'flanks' | 'rear';
 
 /** Liczba linii glebokosci (1–3) dla piechoty lub lucznikow w deploy. */
 type DeployLineCount = 1 | 2 | 3;
@@ -1964,7 +2070,7 @@ interface GroupMeta {
   rallyRow?: number;
   /** Brak = uzyj aktywnego przycisku F1/F2/F3 z paska deploy. */
   formation?: 'F1' | 'F2' | 'F3';
-  /** Konnica: boki (domyslnie) lub za liniami piechoty/lucznikow. */
+  /** Konnica: przod / boki (domyslnie) / za liniami piechoty i lucznikow. */
   cavalryMode?: CavalryDeployMode;
   /** C-FLANK: kierunek natarcia domyslny dla grupy (brak = 'front'). */
   attackDirection?: AttackDirection;
@@ -2186,6 +2292,9 @@ export class BattleScene {
   // --- STEROWANIE RECZNIE (faza walki) ---
   /** Tryb recznego sterowania jednostkami gracza. Domyslnie true = RECZNE (C2-FLOW). */
   private _manualMode = true;
+  /** Ground-click mode armed by the Atakuj-marszem control. */
+  private _attackMoveMode = false;
+  private _manualCommanderGate = false;
   /** Po Start walki: faza planowania (Spacja = rozpocznij turę). */
   private _battleAwaitingOrders = false;
   /**
@@ -2194,6 +2303,13 @@ export class BattleScene {
    * i _executeUnitsImmediate odrzuca rozkazy gracza.
    */
   private _autoBattleSuspended = false;
+  /** AUTO resolves one side as a frozen wave before opening the next side. */
+  private _autoBatchPhase: AutoBatchPhase | null = null;
+  private _autoBatchResolutions: AutoBatchResolution[] = [];
+  private _autoBatchPending = 0;
+  private _autoBatchToken = 0;
+  /** Non-mutating planner context used while taking a phase snapshot. */
+  private _autoBatchPlanning: { intent: AutoBatchIntent } | null = null;
   /** Jednostki z rozkazem odlozonym (Ctrl/Shift) — wykonaj na SPACJI. */
   private _queuedOrderUnitIds = new Set<string>();
   /** Zaznaczone jednostki gracza (id). */
@@ -2245,6 +2361,8 @@ export class BattleScene {
    * odtwarzany po _replayBattle() razem z _deployGroupSnapshot.
    */
   private _deployAttackDirSnapshot: Map<string, AttackDirection> | null = null;
+  /** Tryb konnicy per jednostka z końca deployu; replay odtwarza ręczny wybór grupy. */
+  private _deployCavalryModeSnapshot: Map<string, CavalryDeployMode> | null = null;
   /** Zloty marker grupy na mapie (3D) per jednostka. */
   private _groupFrameMarkers = new Map<string, THREE.Group>();
   // --- PROFESSIONAL HUD (TotalWar-style) ---
@@ -2321,6 +2439,19 @@ export class BattleScene {
   // --- Siege state ---
   /** The wall mesh group (siegeWall.ts output), or null in non-siege battles. */
   private siegeWallGroup: THREE.Group | null = null;
+  /**
+   * R4 (R-WEB-PALISADE-BATTLE-WALL-RULES-Q1): rodzaj obwarowania ('palisada'/'mur'/'none')
+   * z opts.siege.builtBuildingIds (city-fortification.ts) -- steruje modelem muru/palisady,
+   * materialem wiezyczek i tym, czy wiezyczki w ogole stoja.
+   */
+  private _siegeDefCiv: string | null = null;
+  private fortKind: import('../game/city-fortification').CityFortificationKind = 'none';
+  private brickWallRed = false;
+  /** R4: wiezyczki strzeleckie na obwodzie muru/palisady (rzad kafla muru = row). */
+  private siegeTowers: { row: number; mesh: THREE.Group | null; destroyed: boolean }[] = [];
+  /** R4: jednostka dystansowa epoki obroncy, ktorej moca strzela kazda wiezyczka. */
+  private towerShooterRow: Record<string, unknown> | null = null;
+  private towerRange = DEFAULT_TOWER_MIN_RANGE;
   /** Column on the battlefield where the siege wall is placed. */
   private siegeWallCol: number = -1;
   /** Column(s) of the gate tile. */
@@ -2331,6 +2462,8 @@ export class BattleScene {
   private gateHp: number = 0;
   /** Whether the gate has been breached (HP <= 0). */
   private gateOpen: boolean = false;
+  /** Liczba kafli muru przy starcie (wallTileHp.size) -- mniej = wyburzony kafel = wylom dla konnicy. */
+  private siegeWallTilesInit: number = 0;
   /** Row range of the wall on the battlefield (inclusive). */
   private siegeWallRowLo: number = -1;
   private siegeWallRowHi: number = -1;
@@ -2352,6 +2485,11 @@ export class BattleScene {
    */
   private wallDefenseTotalProc: number = 0;
   /**
+   * R-WEB-WALL-DEFENDERS-BONUS-RANGE-Q1: bonus obwarowania (%) uzyty per obronca
+   * w ostatnim "Pomin" (computeInstantResult) -- czysty odczyt dla testu parytetu.
+   */
+  lastInstantDefBonus: { q: number; r: number; onWall: boolean; pct: number }[] = [];
+  /**
    * C-COMBAT-Q2 (Maciej 2026-07-26): true when the DEFENDER is defending a
    * CITY hex (walled or not) -- see BattleOpts.cityDefense doc for the full
    * rationale. `opts.siege != null` always implies this (every real siege
@@ -2369,8 +2507,18 @@ export class BattleScene {
   private towerAtWallRows = new Set<number>();
   /** HP per-tile muru (klucz: row). 0 = wyburzony. */
   private wallTileHp = new Map<number, number>();
+  /** R1 (R-WEB-PALISADE-BATTLE-WALL-RULES-Q1): brama lub kafel muru/palisady zniszczony. */
+  private wallEverBreached: boolean = false;
+  /** Sufit tur oblezenia bez wylomu (domyslnie z combat-params.json; test moze nadpisac instancje). */
+  private siegeNoBreachMaxRounds: number = SIEGE_NO_BREACH_MAX_ROUNDS;
   /** Max HP pojedynczego kafla muru. */
   private static readonly WALL_TILE_HP = 640;
+  /** Replay: kopia terenu kolumny muru/bramy zaraz po wyrzezbieniu (indeks = rzad), do przywrocenia zburzonych kafli. */
+  private siegeWallInitialTiles: number[] = [];
+  /** Replay: gruz z wylomow (mesh-e dodane do sceny w _breachWallTile) -- zdejmowany przy powtorce. */
+  private siegeRubbleMeshes: THREE.Mesh[] = [];
+  /** Replay: elementy muru/bramy ukryte przez wylom -- przywracane przy powtorce. */
+  private siegeHiddenMeshes: THREE.Object3D[] = [];
   /** HUD: pasek HP bramy + kafla muru. */
   private siegeHudDiv: HTMLDivElement | null = null;
   /** Ostatnio atakowany rząd muru (do wyświetlania HP). */
@@ -2415,6 +2563,8 @@ export class BattleScene {
   // to each due time so a chain of short gaps catches up fully. Throughput now
   // scales linearly to 16x (verified in a /tmp sim).
   private static readonly SPEED_STEPS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512] as const;
+  private static readonly BATTLE_FRAME_WALL_MS = 16;
+  private static readonly BATTLE_FRAME_MAX_WALL_DELTA_MS = 100;
   private speedIdx   = 0;            // index into SPEED_STEPS; 0 => 1x default
   private speedMul   = 1;            // current multiplier (SPEED_STEPS[speedIdx])
   private vNow       = 0;            // virtual (speed-scaled) clock in ms
@@ -2429,6 +2579,15 @@ export class BattleScene {
   // fires its cb when vNow >= due; _drainTimers() empties it every frame.
   private vTimers: { due: number; cb: () => void; id: number }[] = [];
   private vTimerSeq = 0;             // monotonic id for stable ordering of equal-due timers
+
+  // R-WEB-BATTLE-SKIP-TO-RESULT-ABSURD-OUTCOME-Q1: "Pomin do wyniku" = SZYBKIE PRZEWINIECIE
+  // tej samej symulacji (ten sam silnik co walka automatyczna), nie osobny uproszczony
+  // rachunek. W trybie FF kroki animacji (dawniej wymagajace osobnej klatki rAF) ida do
+  // kolejki _ffQueue, a petla klatki wykonuje wiele krokow wirtualnego czasu na klatke.
+  private _ffActive = false;
+  private _ffQueue: (() => void)[] = [];
+  private _ffVirtualMs = 0;
+  private _ffPendingAuto = false;      // skip() z trybu recznego w trakcie animacji: AUTO po dokonczeniu rozkazu
 
   // CHANGE2: master visibility toggle for ALL over-head stat bars (morale/ammo/
   // HP), flipped by the "H" key. Default true (bars shown). When false every
@@ -2512,7 +2671,7 @@ export class BattleScene {
   private _battleStatsOpen = false;
   /** C-23 „Szczegóły bitwy" (endDetails1E, TW v5) — otwierany z ekranu końca (C-12). */
   private _endDetailsEl: HTMLDivElement | null = null;
-  private _endWinner: 'atakujacy' | 'obronca' | null = null;
+  private _endWinner: 'atakujacy' | 'obronca' | 'remis' | null = null;
   private _endSurvivors: BattleUnit[] = [];
 
   private floatLabels:  FloatLabel[]        = [];
@@ -2521,6 +2680,8 @@ export class BattleScene {
   // routed, so a future "general rally" feature could bring routed units back.
   // TODO: general rally recovery -- consume this list to respawn rallied units.
   private routedUnits:  { typeId: string; side: 'atk' | 'def'; owner: number }[] = [];
+  /** Numer tury, w ktorej zaczal sie poscig za uciekinierami strony przegranej (-1 = jeszcze nie). */
+  private _pursuitStartRound = -1;
   private projectiles:  { mesh: THREE.Object3D; from: THREE.Vector3; to: THREE.Vector3; t0: number; dur: number; geos: THREE.BufferGeometry[]; mats: THREE.Material[] }[] = [];
 
   // resolveCombat context
@@ -2530,6 +2691,9 @@ export class BattleScene {
   private counters:    any[];
   private attackerCivBonusy: readonly CivBonusEntry[] = [];
   private defenderCivBonusy: readonly CivBonusEntry[] = [];
+  private attackerOwnTerritory = false;
+  private defenderOwnTerritory = false;
+  private shallowSea = false;
   private armyHungerStatMult = 0.75;
   private goldDeficitStatMult = 0.75;
   private attackerDifficultyCombatMult = 1;
@@ -2548,6 +2712,9 @@ export class BattleScene {
   // walks it. activeSide is kept only for the opening hint.
   private activeSide: 'atk' | 'def' = 'atk';
   private roundNo = 0;
+  private _lineCapCache: { round: number; info: Map<string, { engaged: Set<string>; minMp: number }> } | null = null;
+  /** Per jednostka (po bu.id; planowanie AUTO pracuje na klonach): rekord postepu i rundy bez rekordu. */
+  private _lineAdvanceState: Map<string, { best: number; stall: number }> | undefined;
   private turnOrder: RuntimeBattleUnit[] = [];
   private turnIdx = 0;
 
@@ -2567,6 +2734,7 @@ export class BattleScene {
 
   // -------------------------------------------------------------------------
   constructor(opts: BattleOpts) {
+    this._manualCommanderGate = opts.manualControlAllowed !== undefined;
     this.onCancelCb  = opts.onCancel ?? null;
     this.terrain     = opts.teren;
     const d: any     = opts.data ?? {};
@@ -2575,6 +2743,9 @@ export class BattleScene {
     this.counters    = normCounters(d.counters ?? []);
     this.attackerCivBonusy = opts.attackerCivBonusy ?? [];
     this.defenderCivBonusy = opts.defenderCivBonusy ?? [];
+    this.attackerOwnTerritory = opts.attackerOwnTerritory === true;
+    this.defenderOwnTerritory = opts.defenderOwnTerritory === true;
+    this.shallowSea = opts.shallowSea === true;
     this.armyHungerStatMult = opts.armyHungerStatMult ?? 0.75;
     this.goldDeficitStatMult = opts.goldDeficitStatMult ?? 0.75;
     this.attackerDifficultyCombatMult = opts.attackerDifficultyCombatMult ?? 1;
@@ -2586,6 +2757,9 @@ export class BattleScene {
     this._attackerSideLabel = opts.attackerSideLabel?.trim() || '';
     // C-COMBAT-Q2 (Maciej 2026-07-26): patrz doc na polu isCityDefenseBattle.
     this.isCityDefenseBattle = opts.cityDefense === true || opts.siege != null;
+    this.fortKind = cityFortificationKind(opts.siege?.builtBuildingIds);
+    this.brickWallRed = opts.siege?.builtBuildingIds?.includes('mury') === true;
+    this._siegeDefCiv = (opts.siege?.defCiv ?? opts.siege?.civ ?? null) as string | null;
     // Wall/Cytadela/Baszta defence multiplier (Maciej 2026-07-25, rozszerzone
     // 41B) -- data-driven from miasto-params.json, not hardcoded. +200% (mur),
     // +300% (mur+Cytadela) or +400% (mur+Cytadela+Baszta). Scalone w
@@ -2593,11 +2767,12 @@ export class BattleScene {
     // main.ts structureDefenseBonusFor (mapa swiata), zeby oba tryby liczyly to samo.
     {
       const murProc = (miastoParamsData as any)?.bonus_obrona_mur_proc?.wartosc ?? 200;
+      const murKamiennyProc = (miastoParamsData as any)?.bonus_obrona_mur_kamienny_proc?.wartosc ?? 150;
       const cytadelaProc = (miastoParamsData as any)?.bonus_obrona_cytadela_proc?.wartosc ?? 100;
       const basztaProc = (miastoParamsData as any)?.bonus_obrona_baszta_proc?.wartosc ?? 100;
       const palisadaProc = (miastoParamsData as any)?.bonus_obrona_palisada_proc?.wartosc ?? 100;
       const totalProc = cityWallDefenseBonusPercent(opts.siege?.builtBuildingIds, {
-        mur: murProc, cytadela: cytadelaProc, baszta: basztaProc, palisada: palisadaProc,
+        mur: murProc, murKamienny: murKamiennyProc, cytadela: cytadelaProc, baszta: basztaProc, palisada: palisadaProc,
       });
       this.wallDefenseMult = 1 + totalProc / 100;
       this.wallDefenseTotalProc = totalProc;
@@ -2630,6 +2805,9 @@ export class BattleScene {
     // the legacy carve (and therefore the legacy terrain) bit-for-bit
     // unchanged (owner correction 2026-07-22 #3).
     const presetActive = worldTerrain != null;
+    // Clearing depth follows the real army size (>120 only for big battles), not
+    // the MAX_PER_SIDE constant, so small battles keep their pre-cap terrain.
+    const clearSideCap = battleClearSideCap(opts.attacker.length, opts.defender.length);
 
     // Deterministic procedural terrain for the big square field. Seeded from the
     // battle terrain name so the same matchup terrain reproduces every run.
@@ -2643,13 +2821,13 @@ export class BattleScene {
       // Always passed: only consulted by generator branches gated on preset
       // flags (edgeRocks), false on DEFAULT_PRESET, so this is a no-op for
       // every legacy/no-worldTerrain call (verified bit-for-bit, see report).
-      safeCols:     battleSafeCols(presetActive),
+      safeCols:     battleSafeCols(presetActive, clearSideCap),
     });
     // Flatten the deploy ranks + the clash corridor to clean plains so the two
     // even lines stand on flat, even ground and reach melee fast; terrain stays
     // everywhere else (flanks AND, for preset battles, most of the no-man's-land
     // too -- see deployClearRanksFor) as a backdrop.
-    this._carveBattleBox(presetActive);
+    this._carveBattleBox(presetActive, clearSideCap);
     this._fencePlayableZone();
 
     // SIEGE MODE: carve wall tiles into terrainMap before the scene is built.
@@ -3407,7 +3585,16 @@ export class BattleScene {
     // strony -- RAZ, tutaj, zanim ruszy pierwsza tura. Nigdy co runde (spirala
     // smierci) i nigdy na mapie swiata.
     this._applyStartingMoralePowerPenalty();
-    this._manualMode = true;
+    const playerSide = this._deployPlayerSideOpt;
+    const hasCommander = (playerSide === 'atk' ? this.atk : this.def)
+      .some(u => u.isArmyCommander && !u.dead && !u.routed);
+    this._manualMode = !this._manualCommanderGate || (this._manualCommanderGate && hasCommander);
+    // R-WEB-BATTLE-STANDOFF-TWO-WARRIORS-Q1 (R3): ZAWSZE true. `_kickoffBattleTurn` (niżej, dla
+    // AUTO bez dowódcy) wychodzi od razu przy `!_battleAwaitingOrders`, więc wcześniejsze
+    // `= this._manualMode` (false w AUTO) zostawiało pierwszą turę nigdy nie rozpoczętą:
+    // armie stały naprzeciw siebie w „Tura 0" bez ataku (e06ad53c8).
+    // / EN: always true; kickoff clears it itself. `= _manualMode` made AUTO-without-commander
+    // return early from kickoff, so round 1 never began (armies stood facing each other).
     this._battleAwaitingOrders = true;
     this._queuedOrderUnitIds.clear();
     this._disposeAllOrderLines();
@@ -3428,6 +3615,7 @@ export class BattleScene {
     this._updateBattlePhaseBanner();
     this._syncMinimapPosition();
     this._syncBattleToolbarMode();
+    if (!this._manualMode) this._kickoffBattleTurn();
   }
 
   /** Wykonaj odłożone dyspozycje (Ctrl/Shift + SPACJA). */
@@ -3454,6 +3642,8 @@ export class BattleScene {
       'Tura ' + (this.roundNo + 1) + ' — klik: ruch/atak od razu · Ctrl/Shift: dyspozycja · SPACJA: wykonaj odlozone.';
     if (this.roundNo === 0) {
       this._beginTurn();
+    } else if (!this._manualMode && this.siegeWallCol < 0) {
+      this._beginAutoBatchTurnFromCurrentState();
     } else {
       this._activateNext();
     }
@@ -3507,8 +3697,48 @@ export class BattleScene {
   }
 
   skip(): void {
+    if (this.finished || this._ffActive) return;
+    // Tabela bonusu muru per obronca (dla testu parytetu Pomin == taktyka): snapshot z TEJ SAMEJ
+    // funkcji, ktorej uzywa _singleBlow w walce, zrobiony PRZED zmiana stanu sceny. To nie jest
+    // osobny rachunek wyniku -- wynik i tak liczy przewijana symulacja.
+    this.lastInstantDefBonus = this.def
+      .filter(u => !u.dead)
+      .map(u => ({ q: u.q, r: u.r, onWall: !!u.onWallWalkway, pct: this._wallBonusProcFor(u) }));
+    // R-WEB-BATTLE-SKIP-TO-RESULT-ABSURD-OUTCOME-Q1: ta sama symulacja co walka AUTO,
+    // tylko przewinieta (bez osobnego uproszczonego rachunku z zerowymi stratami).
+    if (this.deployPhase) this._endDeployPhase();
+    if (!this.started) { this._skipInstantFallback(); return; }
+    this.paused = false;
+    // Tryb FF wlaczamy PRZED startem tury: kroki ruchu/ciosu zarejestrowane przez _raf() w pierwszej
+    // turze musza trafic do kolejki FF, a nie do prawdziwego requestAnimationFrame (inaczej pierwsza
+    // tura czekalaby do konca budzetu klatki FF i zuzywala ~64 s czasu bitwy).
+    this._ffActive = true;
+    this._ffVirtualMs = 0;
+    this._ffQueue = [];
+    // Tryb reczny w trakcie animacji rozkazu gracza (busy): jednostka wykonujaca rozkaz ma jeszcze
+    // acted=false, wiec natychmiastowe przejscie na AUTO zaplanowaloby ja drugi raz (duplikat
+    // aktywacji). Zamiast tego FF dokancza rozpoczety rozkaz (cala kolejke gracza) i dopiero
+    // wtedy przechodzi na AUTO (patrz _runFastForward).
+    this._ffPendingAuto = this._manualMode && this.busy;
+    if (!this._ffPendingAuto) this._ffEnterAuto();
+    this.hint.textContent = 'Przewijanie bitwy do wyniku...';
+  }
+
+  /** Przejscie na AUTO przy skip(): gra sama za obie strony, start tury jesli czeka na rozkazy. */
+  private _ffEnterAuto(): void {
+    if (this._manualMode) this._toggleManualMode();
+    if (this._battleAwaitingOrders) this._kickoffBattleTurn();
+  }
+
+  /** Awaryjny rachunek natychmiastowy (tylko gdy przewiniecie niemozliwe lub przekroczylo limit). */
+  private _skipInstantFallback(): void {
     if (this.finished) return;
     this.finished = true;
+    // R1: "Pomin" nie rozgrywa wylomu -- machina oblezenicza w skladzie atakujacego
+    // = zalozony wylom (jak szturm Auto); bez machin miasto obwarowane nie padnie.
+    if (this.siegeWallCol >= 0 && this.atk.some(u => !u.dead && isSiegeUnit(u.bu))) {
+      this.wallEverBreached = true;
+    }
     const result = computeInstantResult(
       this.atk.filter(u => !u.dead),
       this.def.filter(u => !u.dead),
@@ -3524,7 +3754,12 @@ export class BattleScene {
       this.attackerDifficultyCombatMult,
       this.defenderDifficultyCombatMult,
       this.goldDeficitStatMult,
+      this.attackerOwnTerritory,
+      this.defenderOwnTerritory,
+      this.shallowSea,
+      this.siegeWallCol,
     );
+    this.lastInstantDefBonus = result.defBonus;
     for (const line of result.log) this.log.push(line);
     this._endWinner = result.winner;
     this._endSurvivors = result.survivors;
@@ -3600,6 +3835,11 @@ export class BattleScene {
     for (const m of this.ownedMats) m.dispose();
     for (const g of this.ownedGeos) g.dispose();
     this.renderer.dispose();
+    // Map battles own a short-lived WebGL context alongside the persistent world-map
+    // renderer. `dispose()` releases Three.js resources but leaves the browser context
+    // alive until its canvas is collected; explicitly lose this battle-only context now
+    // so large battles cannot retain a GPU context/allocations after their overlay closes.
+    this.renderer.forceContextLoss();
 
     // The battle-log panel is a child of the overlay, so removing the overlay
     // detaches it too; drop the handle + buffer so nothing dangles after dispose.
@@ -3650,6 +3890,17 @@ export class BattleScene {
     }
     disposeSiegeHud1E();
     document.removeEventListener('click', this._onSettingsDocClick);
+    // R-WEB-MEMORY-LEAKS-FIX-Q1 (M3): oba domknięcia trzymały `this` (cała scena bitwy:
+    // renderer, graf sceny, DOM) przez `document`/`window` — po bitwie nigdy nie zdejmowane.
+    // / EN: both closures captured `this`; detach them so the finished scene can be GC'd.
+    if (this._deployToolbarDocClick) {
+      document.removeEventListener('click', this._deployToolbarDocClick);
+      this._deployToolbarDocClick = null;
+    }
+    if (this._deployLayoutListener) {
+      window.removeEventListener('resize', this._deployLayoutListener);
+      this._deployLayoutListener = null;
+    }
     this._settingsGearWrap = null;
     this._settingsPopup = null;
     this._settingsMusicToggle = null;
@@ -3682,7 +3933,7 @@ export class BattleScene {
   //      defender band is reachable over passable tiles; if some pathological
   //      terrain still blocks it, punch fords straight across the centre row.
   // -------------------------------------------------------------------------
-  private _carveBattleBox(presetActive: boolean): void {
+  private _carveBattleBox(presetActive: boolean, sideCap: number): void {
     const tm = this.terrainMap;
     const tiles = tm.tiles;
     if (!tiles) return;
@@ -3694,12 +3945,12 @@ export class BattleScene {
     const rLo = PLAY_ROW0;
     const rHi = PLAY_ROW1;
 
-    // --- 1) Kolumny formacji + tyl konnicy (glebsze niz MAX_RANKS piechoty).
+    // --- 1) Kolumny formacji + tyl konnicy (glebsze niz rzedy piechoty).
     // presetActive=false (legacy): DOKLADNIE ta sama formula co przed
     // korekta -- bit-for-bit. presetActive=true: plytszy carve (patrz
     // deployClearRanksFor) tak, by srodek pola ("ziemia niczyja") zostal
     // wolny na meandrujacy teren (owner correction 2026-07-22 #3). ---
-    const DEPLOY_CLEAR_RANKS = deployClearRanksFor(presetActive);
+    const DEPLOY_CLEAR_RANKS = deployClearRanksFor(presetActive, sideCap);
     const rankCols = new Set<number>();
     for (let k = 0; k < DEPLOY_CLEAR_RANKS; k++) {
       const ac = ATK_FRONT_COL + k * ATK_COL_STEP;
@@ -3820,6 +4071,7 @@ export class BattleScene {
       if (r >= gateRowLo && r <= gateRowHi) continue;
       this.wallTileHp.set(r, BattleScene.WALL_TILE_HP);
     }
+    this.siegeWallTilesInit = this.wallTileHp.size;
 
     const idx = (c: number, r: number) => r * BF_COLS + c;
     for (let r = rLo; r <= rHi; r++) {
@@ -3828,6 +4080,11 @@ export class BattleScene {
       if (wallCol >= 0 && wallCol < BF_COLS) {
         tiles[idx(wallCol, r)] = isGate ? BTerrain.Gate : BTerrain.Wall;
       }
+    }
+    // Replay: zapamietaj stan poczatkowy kolumny muru (teren kazdego rzedu).
+    this.siegeWallInitialTiles = [];
+    for (let r = 0; r < BF_ROWS; r++) {
+      this.siegeWallInitialTiles[r] = tiles[idx(wallCol, r)] as number;
     }
   }
 
@@ -3852,6 +4109,9 @@ export class BattleScene {
       tileSize: TILE_S,
       height: 2.5,
       gateWidthTiles: 2,
+      // Faza B: palisada = drewniane pale + drewniana brama; mur = model wg cywilizacji.
+      kind: this.fortKind === 'palisada' ? 'palisada' : 'mur',
+      brickRed: this.brickWallRed,
     });
 
     // siegeWall.ts builds the wall along X axis, centred at origin.
@@ -3896,6 +4156,9 @@ export class BattleScene {
     this._syncSiegeHudChromeVisibility();
     requestAnimationFrame(() => this._syncSiegeHudLayout());
 
+    // R4: wiezyczki strzeleckie na obwodzie muru/palisady (wlasna grupa = wlasne wyłomy).
+    this._placeSiegeTowers(wallCol, rLo, rHi);
+
     // Register mesh resources for disposal
     wallGroup.traverse(obj => {
       const mesh = obj as THREE.Mesh;
@@ -3905,6 +4168,125 @@ export class BattleScene {
         if (Array.isArray(mm)) this.ownedMats.push(...mm);
         else if (mm) this.ownedMats.push(mm as THREE.Material);
       }
+    });
+  }
+
+  /**
+   * R4 (R-WEB-PALISADE-BATTLE-WALL-RULES-Q1, decyzja wlasciciela 2026-11-03):
+   * wiezyczki strzeleckie co `wieze_strzeleckie_odstep_kafli` (4) kafli obwodu
+   * muru I palisady -- automatycznie i za darmo (budynek Baszta bez zmian).
+   * Moc strzalu = najmocniejsza jednostka dystansowa epoki obroncy, zasieg =
+   * jej zasieg (min. `wieze_strzeleckie_zasieg_min`). Model drewniany przy
+   * palisadzie, kamienny przy murze. Gracz i AI -- ta sama sciezka (_fireSiegeTowers).
+   */
+  private _placeSiegeTowers(wallCol: number, rLo: number, rHi: number): void {
+    this.siegeTowers = [];
+    const material = towerMaterialFor(this.fortKind);
+    if (material === null) return;
+    const spacing = (miastoParamsData as any)?.wieze_strzeleckie_odstep_kafli?.wartosc ?? DEFAULT_TOWER_SPACING;
+    const minRange = (miastoParamsData as any)?.wieze_strzeleckie_zasieg_min?.wartosc ?? DEFAULT_TOWER_MIN_RANGE;
+    const unitList: readonly Record<string, unknown>[] =
+      ((this._battleData as any).units as Record<string, unknown>[] | undefined)
+      ?? (unitsDataForTowers as unknown as Record<string, unknown>[]);
+    this.towerShooterRow = strongestRangedUnitForEra(unitList, this._defenderEra, this._siegeDefCiv);
+    this.towerRange = towerRangeFor(this.towerShooterRow, minRange);
+    const rows = towerRows({
+      rowLo: rLo, rowHi: rHi,
+      gateRowLo: this.siegeGateRow - 1, gateRowHi: this.siegeGateRow,
+      spacing,
+    });
+    const tower = buildWallTower(material, TILE_S, 2.5);
+    for (const row of rows) {
+      const mesh = tower.clone(true);
+      const { x, z } = cellToWorld(wallCol, row);
+      // wysunieta na zewnatrz (strona atakujacego, -X) -- nie koliduje z obroncami na koronie
+      mesh.position.set(x - TILE_S * 0.5, 0, z);
+      this.scene.add(mesh);
+      mesh.traverse(obj => {
+        const m = obj as THREE.Mesh;
+        if (m.isMesh) {
+          this.ownedGeos.push(m.geometry as THREE.BufferGeometry);
+          const mm = m.material;
+          if (Array.isArray(mm)) this.ownedMats.push(...mm); else this.ownedMats.push(mm as THREE.Material);
+        }
+      });
+      this.siegeTowers.push({ row, mesh, destroyed: false });
+    }
+  }
+
+  /** R4: wyłom kafla muru/palisady burzy stojaca na nim wiezyczke. */
+  private _destroyTowerAtRow(wallRow: number): void {
+    const t = this.siegeTowers.find(x => x.row === wallRow && !x.destroyed);
+    if (!t) return;
+    t.destroyed = true;
+    if (t.mesh) t.mesh.visible = false;
+    this.log.push('Wieza strzelnicza w wyłomie (rzad ' + wallRow + ') zburzona.');
+  }
+
+  /**
+   * R4: raz na ture bitwy KAZDA zywa wiezyczka strzela do jednego wroga w zasiegu
+   * (strzelaja wiezyczki obroncy -- wlasciciela miasta -- do atakujacych; gracz i AI
+   * przez ta sama sciezke). Strzal = `_singleBlow(..., ranged=true)` ze statystykami
+   * najmocniejszej jednostki dystansowej epoki (nie osobna matematyka).
+   */
+  private _fireSiegeTowers(): void {
+    if (this.finished || this.siegeTowers.length === 0 || !this.towerShooterRow) return;
+    const shooterRow = this.towerShooterRow;
+    const nazwa = String(shooterRow['Jednostka'] ?? 'Strzelec');
+    const hp = Number(shooterRow['Health'] ?? shooterRow['health'] ?? 1) || 1;
+    let stagger = 0;
+    for (const t of this.siegeTowers) {
+      if (t.destroyed) continue;
+      if (!this.wallTileHp.has(t.row)) { this._destroyTowerAtRow(t.row); continue; }
+      const delay = stagger;
+      stagger += 180;
+      this._schedule(delay, () => this._fireOneTower(t, shooterRow, nazwa, hp));
+    }
+  }
+
+  private _fireOneTower(
+    t: { row: number; mesh: THREE.Group | null; destroyed: boolean },
+    shooterRow: Record<string, unknown>, nazwa: string, hp: number,
+  ): void {
+    if (this.finished || t.destroyed) return;
+    const wallCol = this.siegeWallCol;
+    const enemies = this.atk.filter(u => !u.dead && !u.fadingOut && !u.routed && !u.removed);
+    const idx = pickTowerTarget(
+      { q: wallCol, r: t.row }, this.towerRange,
+      enemies.map(u => ({ q: u.q, r: u.r, hp: u.bu.hp })),
+    );
+    if (idx < 0) return;
+    const target = enemies[idx]!;
+    // Syntetyczny "strzelec": nie jest w zadnym rosterze, nie ma morale ani modelu
+    // (dead:true => _gainMorale/_updateMoraleBar pomijaja go); caly strzal liczy _singleBlow.
+    const shooter = {
+      bu: {
+        id: 'wieza:' + t.row, nazwa: 'Wieza (' + nazwa + ')', kategoria: String(shooterRow['Typ'] ?? 'Distance'),
+        ownerColor: 0xc84040, stats: shooterRow, hp, maxHp: hp,
+      } as BattleUnit,
+      side: 'def', q: wallCol, r: t.row, facing: Dir.W,
+      dead: true, fadingOut: false, routed: false, mounted: false, onWallWalkway: false,
+      morale: 0, moraleMax: 0,
+    } as unknown as RuntimeBattleUnit;
+    this.log.push('Wieza strzelnicza (rzad ' + t.row + ') strzela do ' + target.bu.nazwa + '.');
+    const tw = cellToWorld(wallCol, t.row);
+    const from = new THREE.Vector3(tw.x - TILE_S * 0.5, 4.2, tw.z);
+    const dw = cellToWorld(target.q, target.r);
+    const to = new THREE.Vector3(dw.x, tileTopY(this.terrainMap, target.q, target.r) + 0.5, dw.z);
+    const { group: proj, geos, mats } = makeProjectileMesh(projectileKind(shooter.bu));
+    proj.position.copy(from);
+    const dir = new THREE.Vector3().subVectors(to, from);
+    if (dir.lengthSq() > 1e-6) {
+      dir.normalize();
+      proj.quaternion.copy(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(1, 0, 0), dir));
+    }
+    this.scene.add(proj);
+    this._sfxShot();
+    this.projectiles.push({ mesh: proj, from, to, t0: this._now(), dur: RANGED_FLY_MS, geos, mats });
+    this._schedule(RANGED_FLY_MS, () => {
+      if (this.finished || target.dead || target.fadingOut) return;
+      const dmg = this._singleBlow(shooter, target, true);
+      if (dmg > 0 && !target.dead && !target.fadingOut) this._spawnDamageLabel(target, dmg);
     });
   }
 
@@ -4168,6 +4550,7 @@ export class BattleScene {
 
       const moraleBase = moraleBaseFor(bu) * 1.5; // obrońcy +50% morale na starcie
       const ru: RuntimeBattleUnit = {
+        isArmyCommander: bu.isArmyCommander === true,
         bu,
         group,
         hpBarFg:     bars.hpBarFg,
@@ -4185,11 +4568,11 @@ export class BattleScene {
         fadingOut: false,
         fadeStart: 0,
         acted:     false,
-        moveLeft:  movementPoints(bu),
-        range:      attackRange(bu),
-        rangeBase:  attackRange(bu),
-        ranged:     isRanged(bu),
-        rangedBase: isRanged(bu),
+        moveLeft:  this._movementPointsFor(bu),
+        range:      this._attackRangeFor(bu),
+        rangeBase:  this._attackRangeFor(bu),
+        ranged:     this._attackRangeFor(bu) >= 2,
+        rangedBase: this._attackRangeFor(bu) >= 2,
         primaryRanged: isPrimaryRanged(bu),
         ammoLeft:   ammo0,
         ammoMax:    ammo0,
@@ -4335,18 +4718,19 @@ export class BattleScene {
 
       const moraleBase = moraleBaseFor(bu) * 1.5; // obrońcy +50% morale na starcie
       const ru: RuntimeBattleUnit = {
+        isArmyCommander: bu.isArmyCommander === true,
         bu, group,
         hpBarFg: bars.hpBarFg, hpBarBg: bars.hpBarBg, hpBarGroup: bars.hpBarGroup,
         moraleBarFg: bars.moraleBarFg, moraleBarBg: bars.moraleBarBg,
         ammoBarFg: bars.ammoBarFg, ammoBarBg: bars.ammoBarBg, ammoBarShown: ammoShown,
         q: wallCol, r: wr, side: 'def',
         dead: false, fadingOut: false, fadeStart: 0, acted: false,
-        moveLeft: movementPoints(bu),
+        moveLeft: this._movementPointsFor(bu),
         // Defender catapult on wall walkway (kontrbateria) gets range 6 (cataRange 5 + 1 elevation).
-        range: (this._isCatapult(bu) ? Math.max(attackRange(bu), 6) : attackRange(bu)),
-        rangeBase: (this._isCatapult(bu) ? Math.max(attackRange(bu), 6) : attackRange(bu)),
-        ranged: (this._isCatapult(bu) ? true : isRanged(bu)),
-        rangedBase: (this._isCatapult(bu) ? true : isRanged(bu)),
+        range: (this._isCatapult(bu) ? Math.max(this._attackRangeFor(bu), 6) : this._attackRangeFor(bu)),
+        rangeBase: (this._isCatapult(bu) ? Math.max(this._attackRangeFor(bu), 6) : this._attackRangeFor(bu)),
+        ranged: (this._isCatapult(bu) ? true : this._attackRangeFor(bu) >= 2),
+        rangedBase: (this._isCatapult(bu) ? true : this._attackRangeFor(bu) >= 2),
         primaryRanged: isPrimaryRanged(bu),
         ammoLeft: ammo0, ammoMax: ammo0,
         dryCol: -1, heldAfterFallback: false,
@@ -4366,6 +4750,8 @@ export class BattleScene {
       this._updateMoraleBar(ru);
       this._updateAmmoBar(ru);
       this.occByKey.set(key, ru);
+      // Zasieg x2 strzelca na koronie widoczny od startu (podswietlenie zasiegu w UI).
+      this._applyTerrainRange(ru);
       result.push(ru);
     }
 
@@ -4935,89 +5321,81 @@ export class BattleScene {
       const freeOk = (c: number, r: number): boolean =>
         !this.occByKey.has(cellKey(c, r)) && this.terrainMap.passable(c, r);
 
-      // DEPLOYMENT BY ROLE (Naster): ONE continuous melee front line, then a rank
-      // of JAVELINEERS, then a rank of ARCHERS behind it; mounted on the wings.
-      //   rank 0 (front col) = ALL melee (non-shooter foot) in one wide line
-      //   rank 1 = javelineers (kategoria 'oszczep...')
-      //   rank 2 = archers/slingers (rest of the primary shooters)
-      // Each group is centred on the field; a group wider than the field wraps to
-      // an extra rank behind it. Mounted deploy on the wings of the widest line.
-      const meleeI:   number[] = [];
-      const javI:     number[] = [];
-      const arcI:     number[] = [];
-      const siegeI:   number[] = []; // maszyny oblężnicze (Taran/Katapulta/Wieża) -- grupowane NA KOŃCU formacji
-      const mountIdx: number[] = [];
-      units.forEach((u, i) => {
-        if (isMounted(u)) { mountIdx.push(i); return; }
-        if (isSiegeUnit(u)) { siegeI.push(i); return; } // siege PRZED isPrimaryRanged, bo nie są ranged
-        if (!isPrimaryRanged(u)) { meleeI.push(i); return; }
-        if (normName(String(u.kategoria ?? '')).includes('oszczep')) { javI.push(i); return; }
-        arcI.push(i);
-      });
-
+      // Default role bands are physically separated along the front-to-rear
+      // axis. F1/F2/F3 manual deployment can still rearrange these positions.
+      const formation = initialBattleFormation(units, initialBattleRoleOf);
+      const unitIndex = new Map(units.map((unit, index) => [unit, index]));
       const idealRow = new Array<number>(units.length);
       const idealCol = new Array<number>(units.length);
-
-      // MAX units per rank (row-axis). Each group is centred on midRow so all
-      // groups share the same centre column -- NO wing spreading.
-      const MAX_LINE = 12;
-      const midRow   = PLAY_MID_ROW;
-
-      const layGroup = (list: number[], rankBase: number): number => {
-        if (list.length === 0) return 0;
-        // Deploy gracza: ten sam zwarty szyk co w walce (max 12 w szeregu, centrum
-        // PLAY_MID_ROW) — NIE _deploySpreadRank (rozciągał całą wysokość strefy).
-        const per = Math.max(1, Math.min(list.length, MAX_LINE));
-        const r0g = midRow - Math.floor(per / 2);
-        list.forEach((ui, k) => {
-          idealRow[ui] = clampRow(r0g + (k % per));
-          idealCol[ui] = clampCol(frontCol + (rankBase + Math.floor(k / per)) * rankStep);
-        });
-        return Math.ceil(list.length / per);
-      };
-      let rankBase = 0;
-      rankBase += layGroup(meleeI, rankBase); // FRONT: jedna ciagla linia wrecz
-      rankBase += layGroup(javI, rankBase);   // za nia: oszczepnicy
-      const arcRanks = layGroup(arcI, rankBase); // za nimi: lucznicy
-      rankBase += arcRanks;
-      const siegeRanks = layGroup(siegeI, rankBase); // NA KOŃCU: maszyny oblężnicze (katapulty/taran/wieże)
-      const totalFootRanks = rankBase + siegeRanks;
-
-      // Mounted: za piechotą — zwarty blok w centrum mapy (deploy i walka).
-      {
-        const mountColOff = totalFootRanks + (this._deployMode && side === this._playerControlSide() ? 2 : 5);
-        const mountPer    = Math.max(1, Math.min(mountIdx.length, MAX_LINE));
-        const mountR0     = midRow - Math.floor(mountPer / 2);
-        mountIdx.forEach((ui, k) => {
-          idealRow[ui] = clampRow(mountR0 + (k % mountPer));
-          idealCol[ui] = clampCol(frontCol + (mountColOff + Math.floor(k / mountPer)) * rankStep);
-        });
+      const slots = initialBattleSlots(formation, {
+        rankWidth: RANK_WIDTH, midRow: PLAY_MID_ROW, playRow0: PLAY_ROW0, playRow1: PLAY_ROW1,
+        meleeLines: this._deployMeleeLines, archerLines: this._deployArcherLines,
+      });
+      slots.forEach(slot => {
+        const index = unitIndex.get(slot.unit)!;
+        idealRow[index] = clampRow(slot.row);
+        idealCol[index] = clampCol(frontCol + slot.rank * rankStep);
+      });
+      // Row span of the non-mounted body: wing horse must stay OUTSIDE it.
+      const mountedSet = new Set<BattleUnit>(formation.mounted);
+      let bodyMinRow = Infinity, bodyMaxRow = -Infinity;
+      for (const slot of slots) {
+        if (mountedSet.has(slot.unit)) continue;
+        bodyMinRow = Math.min(bodyMinRow, clampRow(slot.row));
+        bodyMaxRow = Math.max(bodyMaxRow, clampRow(slot.row));
       }
 
       return units.map((bu, idx) => {
         // Resolve collisions / impassable: prefer PLAINS (konnica nie startuje w lesie).
         let col = idealCol[idx]!;
         let row = idealRow[idx]!;
+        const mountedWing = initialBattleRoleOf(bu) === 'mounted';
         const tileScore = (c: number, r: number): number => {
           if (!freeOk(c, r)) return -1;
           let s = 100 - Math.abs(r - idealRow[idx]!) * 3 - Math.abs(c - idealCol[idx]!) * 2;
           const kind = this.terrainMap.at(c, r);
-          if (kind === BTerrain.Plains) s += 40;
+          // R-WEB-ARMY-CAVALRY-FLANK-NOT-APPLIED-DEFAULT-Q1: the terrain bonus
+          // (+40 plains vs -15 forest) used to outweigh the 2-per-column
+          // distance, so on rough ground a wing horse slid ~10 columns off its
+          // wing slot -- straight to the front of the line. Mounted wings get a
+          // small terrain nudge only (they must stay on their wing slot).
+          if (mountedWing) {
+            if (kind === BTerrain.Plains) s += 6;
+            else if (kind === BTerrain.Ford) s += 3;
+            else if (kind === BTerrain.Forest) s -= 4;
+          } else if (kind === BTerrain.Plains) s += 40;
           else if (kind === BTerrain.Ford) s += 20;
           else if (kind === BTerrain.Forest) s -= 15;
           return s;
         };
         let bestScore = -1;
         const playerDeploy = this._deployMode && side === this._playerControlSide();
-        const rowLo = playerDeploy
+        const topWing = idealRow[idx]! < PLAY_MID_ROW;
+        // R-WEB-ARMY-CAVALRY-FLANK-NOT-APPLIED-DEFAULT-Q1: the wing search band
+        // used to reach from the slot up to the map mid-row, i.e. INTO the body's
+        // rows. Now it is bounded by the body's row span (outer side up to 6 rows).
+        const wingRowLo = topWing
+          ? Math.max(PLAY_ROW0 + 1, idealRow[idx]! - 6, bodyMinRow === Infinity ? 0 : bodyMinRow - 5)
+          : Math.max(bodyMaxRow === -Infinity ? PLAY_MID_ROW + 1 : bodyMaxRow + 1, idealRow[idx]! - 3);
+        const wingRowHi = topWing
+          ? Math.min(bodyMinRow === Infinity ? PLAY_MID_ROW - 1 : bodyMinRow - 1, idealRow[idx]! + 3)
+          : Math.min(PLAY_ROW1 - 1, idealRow[idx]! + 6, bodyMaxRow === -Infinity ? PLAY_ROW1 - 1 : bodyMaxRow + 5);
+        const rowLo = mountedWing ? wingRowLo : playerDeploy
           ? Math.max(DEPLOY_MIN_ROW, idealRow[idx]! - 8)
           : PLAY_ROW0;
-        const rowHi = playerDeploy
+        const rowHi = mountedWing ? wingRowHi : playerDeploy
           ? Math.min(DEPLOY_MAX_ROW, idealRow[idx]! + 8)
           : PLAY_ROW1;
         for (let extra = 0; extra < 10; extra++) {
           for (let rr = rowLo; rr <= rowHi; rr++) {
-            for (const cc of [
+            // R-WEB-BATTLE-CAP-500-Q1: gorna granica wyniku pola w wierszu rr (100 + 40 premii Plains,
+            // odleglosc kolumn >= 0). Pole z granica <= bestScore nie moze wygrac (porownanie ostre
+            // `sc > bestScore`), wiec pominiecie go nie zmienia wyniku -- a przy 500 vs 500 tnie
+            // ~2200 wywolan tileScore na jednostke do kilkudziesieciu.
+            if (140 - Math.abs(rr - idealRow[idx]!) * 3 <= bestScore) continue;
+            // A wing horse may fall back (rear-ward) when its slot is blocked,
+            // but never move AHEAD of its wing rank (= in front of the line).
+            for (const cc of mountedWing ? [clampCol(idealCol[idx]! + extra * rankStep)] : [
               clampCol(idealCol[idx]! + extra * rankStep),
               clampCol(idealCol[idx]! - extra * rankStep),
             ]) {
@@ -5082,6 +5460,7 @@ export class BattleScene {
         });
 
         const ru: RuntimeBattleUnit = {
+          isArmyCommander: bu.isArmyCommander === true,
           bu,
           group,
           hpBarFg:     bars.hpBarFg,
@@ -5094,6 +5473,7 @@ export class BattleScene {
           ammoBarShown: ammoShown,
           q:          col,
           r:          row,
+          formationRank: Math.abs(idealCol[idx]! - frontCol),
           side,
           dead:      false,
           fadingOut: false,
@@ -5151,8 +5531,8 @@ export class BattleScene {
     // FLANK CAVALRY: reorder each side so mounted units (konnica / rydwan) take
     // the front-rank WING rows (top & bottom ends of the rank axis) rather than
     // trailing in a partial rear rank, so horse/chariots sit on the wings.
-    const atkArr = arrangeFlankCavalry(attackers.slice(0, MAX_PER_SIDE));
-    const defArr = arrangeFlankCavalry(defenders.slice(0, MAX_PER_SIDE));
+    const atkArr = attackers.slice(0, MAX_PER_SIDE);
+    const defArr = defenders.slice(0, MAX_PER_SIDE);
     // Zapisz oryginalne sklady (Reset deploy + Rozegraj ponownie)
     this._savedAtkBUs = cloneBattleUnitsForReplay(atkArr);
     this._savedDefBUs = cloneBattleUnitsForReplay(defArr);
@@ -5283,6 +5663,9 @@ export class BattleScene {
     // kontratakowal" wraca do zera i kazdy obronca znow moze kontratakowac raz.
     this._counterBudget.beginTurn();
 
+    // R4: wiezyczki strzeleckie muru/palisady -- jeden strzal na ture bitwy.
+    if (this.siegeWallCol >= 0) this._fireSiegeTowers();
+
     // Snapshot of all living, non-routed units for this turn, interleaved
     // atk/def so both sides participate throughout the turn (initiative order).
     // Routed units are INCLUDED so they get a turn to FLEE (normal movement
@@ -5307,7 +5690,7 @@ export class BattleScene {
     // Every unit acts this turn and gets fresh movement points.
     for (const ru of order) {
       ru.acted    = false;
-      ru.moveLeft = movementPoints(ru.bu);
+      ru.moveLeft = this._movementPointsFor(ru.bu);
     }
 
     this.turnOrder = order;
@@ -5317,7 +5700,300 @@ export class BattleScene {
       'Tura ' + this.roundNo + ' — klik: ruch/atak od razu. Ctrl/Shift: dyspozycja · SPACJA: wykonaj odlozone.';
 
     this._updateBattlePhaseBanner();
+    // AUTO field battles use two barriers per round: all attacker intents are
+    // planned from one phase-start snapshot and launched as a wave, then the
+    // defender wave starts only after that animation/damage wave settles.
+    // Siege keeps its dedicated wall/gate choreography until those actions are
+    // represented by the same phase contract.
+    if (!this._manualMode && this.siegeWallCol < 0) {
+      this._beginAutoBatchPhase('atk', a);
+      return;
+    }
     this._activateNext();
+  }
+
+  /**
+   * Start AUTO on the unacted part of an already-open turn. This is used when
+   * the player switches from RECZNY to AUTO while the planning screen is open;
+   * it must not increment the round or reset movement a second time.
+   */
+  private _beginAutoBatchTurnFromCurrentState(): void {
+    if (this.finished || this._manualMode || this.siegeWallCol >= 0) return;
+    const liveUnacted = (ru: RuntimeBattleUnit): boolean =>
+      !ru.dead && !ru.fadingOut && !ru.removed && !ru.acted;
+    const atk = this.atk.filter(liveUnacted);
+    const def = this.def.filter(liveUnacted);
+    if (atk.length > 0) this._beginAutoBatchPhase('atk', atk);
+    else this._beginAutoBatchPhase('def', def);
+  }
+
+  /** Take a phase-start snapshot and resolve all actions as one AUTO wave. */
+  private _beginAutoBatchPhase(side: AutoBatchPhase, units: RuntimeBattleUnit[]): void {
+    if (this.finished || this._manualMode || this._autoBattleSuspended) return;
+
+    const snapshots = [...this.atk, ...this.def].map((ru): AutoBatchUnitSnapshot => ({
+      id: ru.bu.id,
+      side: ru.side,
+      q: ru.q,
+      r: ru.r,
+      dead: ru.dead || ru.fadingOut,
+      fadingOut: ru.fadingOut,
+      routed: ru.routed,
+      removed: ru.removed,
+      acted: ru.acted,
+      hp: ru.bu.hp,
+      occupies: this.occByKey.get(cellKey(ru.q, ru.r)) === ru,
+    }));
+    // The phase is frozen before any live action is launched. Planning clones
+    // are rebuilt per unit below, so each decision sees exactly this snapshot,
+    // never a previous same-side move.
+    const intents = this._snapshotAutoBatchIntents(side, units);
+    this._autoBatchPhase = side;
+    this._autoBatchResolutions = resolveAutoBatchPhase(side, snapshots, intents);
+    this._autoBatchPending = this._autoBatchResolutions.length;
+    const token = ++this._autoBatchToken;
+    const first = this._autoBatchResolutions[0];
+    this._updateBattlePhaseBanner(first ? this._findUnitById(first.unitId) : undefined);
+
+    if (this._autoBatchPending === 0) {
+      this._finishAutoBatchPhase(token);
+      return;
+    }
+    // Do not schedule an ACT_GAP between members. Every movement/attack starts
+    // from the same virtual timestamp; the defender phase cannot start until
+    // every callback in this wave has completed.
+    for (const resolution of this._autoBatchResolutions) {
+      this._launchAutoBatchResolution(resolution, token);
+    }
+  }
+
+  /**
+   * Ask the existing AUTO decision tree for every unit without touching live
+   * state. A fresh clone board is installed for each decision, which is the
+   * important distinction from sequential AUTO: earlier intents cannot move a
+   * later unit's target or occupancy while the phase is being planned.
+   */
+  private _snapshotAutoBatchIntents(side: AutoBatchPhase, units: RuntimeBattleUnit[]): AutoBatchIntent[] {
+    const originalAtk = this.atk;
+    const originalDef = this.def;
+    const originalOcc = this.occByKey;
+    const originalTimers = this.vTimers;
+    const originalLogLength = this.log.length;
+    const originalRoutedLength = this.routedUnits.length;
+    const intents: AutoBatchIntent[] = [];
+
+    try {
+      for (const source of units) {
+        const cloneById = new Map<string, RuntimeBattleUnit>();
+        const cloneRoster = (roster: RuntimeBattleUnit[]): RuntimeBattleUnit[] => roster.map(ru => {
+          const clone = this._cloneForAutoBatchPlanning(ru);
+          cloneById.set(ru.bu.id, clone);
+          return clone;
+        });
+        const cloneAtk = cloneRoster(originalAtk);
+        const cloneDef = cloneRoster(originalDef);
+        const cloneOcc = new Map<string, RuntimeBattleUnit>();
+        for (const [key, liveUnit] of originalOcc) {
+          const clone = cloneById.get(liveUnit.bu.id);
+          if (clone && !clone.dead && !clone.fadingOut && !clone.removed) {
+            cloneOcc.set(key, clone);
+          }
+        }
+        const clone = cloneById.get(source.bu.id);
+        if (!clone) continue;
+
+        const intent: AutoBatchIntent = {
+          unitId: source.bu.id,
+          side,
+          kind: 'hold',
+          steps: [],
+        };
+        this.atk = cloneAtk;
+        this.def = cloneDef;
+        this.occByKey = cloneOcc;
+        this._autoBatchPlanning = { intent };
+        const startCol = clone.q;
+        const startRow = clone.r;
+        try {
+          this._activateUnit(clone, () => {});
+        } finally {
+          this._autoBatchPlanning = null;
+          this._disposeAutoBatchPlanningRoster(cloneAtk);
+          this._disposeAutoBatchPlanningRoster(cloneDef);
+        }
+        // Special movement branches may update q/r without passing _doMove.
+        if (intent.steps.length === 0 && (clone.q !== startCol || clone.r !== startRow)) {
+          intent.kind = intent.kind === 'attack' ? 'attack' : 'move';
+          intent.steps.push({ col: clone.q, row: clone.r });
+        }
+        intents.push(intent);
+      }
+    } finally {
+      this._autoBatchPlanning = null;
+      this.atk = originalAtk;
+      this.def = originalDef;
+      this.occByKey = originalOcc;
+      this.vTimers = originalTimers;
+      // Planning clones may rout or write a combat log entry. Neither is a live
+      // battle result; keep those side effects private to the planning clone.
+      this.log.length = originalLogLength;
+      this.routedUnits.length = originalRoutedLength;
+    }
+    return intents;
+  }
+
+  /** Clone only state read by AUTO planning; never share live render resources. */
+  private _cloneForAutoBatchPlanning(source: RuntimeBattleUnit): RuntimeBattleUnit {
+    const barMesh = (): THREE.Mesh => new THREE.Mesh(
+      new THREE.BoxGeometry(1, 1, 1),
+      new THREE.MeshBasicMaterial(),
+    );
+    return {
+      ...source,
+      bu: { ...source.bu, stats: { ...source.bu.stats } },
+      group: new THREE.Group(),
+      hpBarFg: barMesh(),
+      hpBarBg: barMesh(),
+      hpBarGroup: new THREE.Group(),
+      moraleBarFg: barMesh(),
+      moraleBarBg: barMesh(),
+      ammoBarFg: barMesh(),
+      ammoBarBg: barMesh(),
+      playerOrder: { ...source.playerOrder },
+      formationOffset: source.formationOffset ? { ...source.formationOffset } : null,
+      unitTargetPriorities: source.unitTargetPriorities ? { ...source.unitTargetPriorities } : undefined,
+      mats: [],
+      perTokenGeos: [],
+    };
+  }
+
+  /** Dispose detached bar resources created solely for one planning clone. */
+  private _disposeAutoBatchPlanningRoster(roster: RuntimeBattleUnit[]): void {
+    for (const ru of roster) {
+      for (const mesh of [
+        ru.hpBarFg,
+        ru.hpBarBg,
+        ru.moraleBarFg,
+        ru.moraleBarBg,
+        ru.ammoBarFg,
+        ru.ammoBarBg,
+      ]) {
+        mesh.geometry.dispose();
+        const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+        for (const material of materials) material.dispose();
+      }
+    }
+  }
+
+  /** Launch one already-resolved action; completion is counted exactly once. */
+  private _launchAutoBatchResolution(resolution: AutoBatchResolution, token: number): void {
+    let completed = false;
+    const complete = (): void => {
+      if (completed || token !== this._autoBatchToken) return;
+      completed = true;
+      const ru = this._findUnitById(resolution.unitId);
+      if (ru && !ru.dead && !ru.fadingOut && !ru.removed) ru.acted = true;
+      this._autoBatchPending = Math.max(0, this._autoBatchPending - 1);
+      if (this._autoBatchPending === 0) {
+        this._schedule(ACT_GAP_MS, () => this._finishAutoBatchPhase(token));
+      }
+    };
+
+    const ru = this._findUnitById(resolution.unitId);
+    if (!ru || ru.dead || ru.fadingOut || ru.removed) {
+      complete();
+      return;
+    }
+    if (ru.routed) {
+      if (resolution.steps.length > 0) {
+        this._resolveAutoBatchMovement(ru, resolution, 0, complete);
+      } else {
+        this._fleeStep(ru, complete);
+      }
+      return;
+    }
+    if ((resolution.kind === 'move' || resolution.kind === 'attack') && resolution.steps.length > 0) {
+      this._resolveAutoBatchMovement(ru, resolution, 0, complete);
+      return;
+    }
+    if (resolution.kind === 'move' || resolution.kind === 'hold') {
+      complete();
+      return;
+    }
+    if (!resolution.targetId) {
+      complete();
+      return;
+    }
+    this._resolveAutoBatchAttack(ru, resolution.targetId, complete);
+  }
+
+  /** Attack the frozen target when the unit's frozen movement path completes. */
+  private _resolveAutoBatchAttack(
+    attacker: RuntimeBattleUnit,
+    targetId: string,
+    done: () => void,
+  ): void {
+    const target = this._findUnitById(targetId);
+    if (!target || target.dead || target.fadingOut || target.removed
+      || !this._enemiesOf(attacker).includes(target)
+      || !this._canStrikeTargetFrom(attacker, attacker.q, attacker.r, target)) {
+      done();
+      return;
+    }
+    this._applyTerrainRange(attacker);
+    this._doAttack(attacker, target, done);
+  }
+
+  /** Resolve one frozen path; different units remain animated concurrently. */
+  private _resolveAutoBatchMovement(
+    ru: RuntimeBattleUnit,
+    resolution: AutoBatchResolution,
+    stepIdx: number,
+    done: () => void,
+  ): void {
+    if (this.finished || this._autoBattleSuspended || this._manualMode) return;
+    if (stepIdx >= resolution.steps.length) {
+      if (ru.routed) {
+        const homeCol = this._fleeHomeCol(ru);
+        const reached = ru.side === 'atk' ? ru.q <= homeCol : ru.q >= homeCol;
+        if (reached) {
+          this._removeUnitFromScene(ru);
+          this._shakeAlliesOnLoss(ru);
+        }
+        done();
+        return;
+      }
+      if (resolution.kind === 'attack' && resolution.targetId) {
+        this._resolveAutoBatchAttack(ru, resolution.targetId, done);
+        return;
+      }
+      done();
+      return;
+    }
+    const step = resolution.steps[stepIdx]!;
+    const occupant = this.occByKey.get(cellKey(step.col, step.row));
+    if ((occupant && occupant !== ru) || !this._passableForUnit(ru, step.col, step.row)) {
+      done();
+      return;
+    }
+    this._doMove(ru, step.col, step.row, () => {
+      this._resolveAutoBatchMovement(ru, resolution, stepIdx + 1, done);
+    });
+  }
+
+  /** End attacker phase only after its entire animation wave has settled. */
+  private _finishAutoBatchPhase(token: number): void {
+    if (token !== this._autoBatchToken || this.finished || this._autoBattleSuspended || this._manualMode) return;
+    if (this._checkEnd()) return;
+    if (this._autoBatchPhase === 'atk') {
+      const defenders = this.def.filter(u => !u.dead && !u.fadingOut && !u.removed && !u.acted);
+      this._beginAutoBatchPhase('def', defenders);
+      return;
+    }
+    this._autoBatchPhase = null;
+    this._autoBatchResolutions = [];
+    this._autoBatchPending = 0;
+    this._schedule(TURN_GAP_MS, () => this._beginTurn());
   }
 
   /**
@@ -5331,6 +6007,7 @@ export class BattleScene {
 
     // Find the next unit in the snapshot that is still alive and has not acted.
     let ru: RuntimeBattleUnit | null = null;
+    let clearedSkippedQueuedOrder = false;
     while (this.turnIdx < this.turnOrder.length) {
       const cand = this.turnIdx < this.turnOrder.length ? this.turnOrder[this.turnIdx] : undefined;
       this.turnIdx++;
@@ -5338,7 +6015,11 @@ export class BattleScene {
       // mid-turn must not take an action).
       // Routed units ARE activated (to flee a few tiles per turn); they never attack.
       if (cand && !cand.dead && !cand.fadingOut && !cand.removed && !cand.acted) { ru = cand; break; }
+      if (cand && this._manualMode && this._queuedOrderUnitIds.delete(cand.bu.id)) {
+        clearedSkippedQueuedOrder = true;
+      }
     }
+    if (clearedSkippedQueuedOrder) this._refreshQueuedOrderVisuals();
 
     if (!ru) {
       // Whole turn done -> start the next turn after a short breather.
@@ -5349,6 +6030,13 @@ export class BattleScene {
     const u = ru;
     this._updateBattlePhaseBanner(u);
     this._activateUnit(u, () => {
+      // A queued pointer order has now been consumed by this unit's real turn
+      // activation. Keep queue membership limited to orders still waiting for
+      // activation; otherwise a stale id leaves the order marked as queued and
+      // can incorrectly gate a later immediate-order batch.
+      if (this._manualMode && this._queuedOrderUnitIds.delete(u.bu.id)) {
+        this._refreshQueuedOrderVisuals();
+      }
       if (this._autoBattleSuspended) {
         this.busy = false;
         return;
@@ -5421,7 +6109,11 @@ export class BattleScene {
     // HOLD" + `ru.onWallWalkway` galezie nizej) -- wiec doktryna dla tej strony
     // w tym trybie jest celowo pomijana, nie tylko lagodzona.
     const siegeDefenderNeverDoctrine = ru.side === 'def' && this.siegeWallCol >= 0;
-    if (!this._manualMode && !siegeDefenderNeverDoctrine) {
+    // R-WEB-SIEGE-MANUAL-BATTLE-BEHAVIOR-Q1 (runda 2): machiny oblezenia atakujacego (taran/wieza)
+    // tez pomijaja doktryne -- doktryna AUTO wysylala tarany flanka wokol muru (zmierzone: rzedy 72/84
+    // zamiast bramy), zanim kod dotarl do _siegeRamTowerStep (wspolnego z trybem recznym).
+    const siegeMachineNeverDoctrine = ru.side === 'atk' && this.siegeWallCol >= 0 && isSiegeUnit(ru.bu);
+    if (!this._manualMode && !siegeDefenderNeverDoctrine && !siegeMachineNeverDoctrine) {
       if (this._isUnitDoctrineAuto(ru)) {
         if (ru.playerOrder.type !== 'none') ru.playerOrder = { type: 'none' };
         const meta = this._effectiveMetaForUnit(ru);
@@ -5460,11 +6152,10 @@ export class BattleScene {
     // enemies at the base or on the walkway. No kiting, no advancing.
     if (ru.onWallWalkway) {
       // Defender CATAPULT (kontrbateria): range already set to 6 in _placeSiegeDefenders.
-      // No additional range boost needed (already includes elevation).
-      const wallRangeBonus = (ru.rangedBase && !this._isCatapult(ru.bu)) ? 1 : 0;
-      // Temporarily boost range for this action (elevation = +1 like hills).
+      // Strzelec na koronie: zasieg x2 jest juz w ru.range (_applyTerrainRange, wolane
+      // na poczatku aktywacji) -- dawny tymczasowy +1 "elewacji" usuniety
+      // (R-WEB-WALL-DEFENDERS-BONUS-RANGE-Q1), zeby nie podwajac bonusu.
       const origRange = ru.range;
-      if (wallRangeBonus > 0) ru.range = origRange + wallRangeBonus;
 
       if (canShoot(ru)) {
         // DEFENDER CATAPULT (kontrbateria): prioritize nearest attacker catapult in range 6.
@@ -5507,44 +6198,10 @@ export class BattleScene {
     // SIEGE v2 -- SIEGE TOWER: rejestracja w towerAtWallRows odbywa sie
     // w bloku isSiegeUnit powyzej; tutaj juz nie powielamy.
 
-    // SIEGE v2 -- CLIMB via SIEGE TOWER: attacking infantry adjacent to a siege
-    // tower that is at the wall base can step onto the wall walkway.
-    if (!ru.onWallWalkway && ru.side === 'atk' && this.siegeWallCol >= 0 &&
-        !isSiegeUnit(ru.bu) && !ru.mounted) {
-      const wallBase = this.siegeWallCol - 1;
-      // Is the unit adjacent to a tower at the wall?
-      let canClimb = false;
-      if (this.towerAtWallRows.size > 0) {
-        for (const [dc, dr] of DIRS4) {
-          const nc = ru.q + dc;
-          const nr = ru.r + dr;
-          if (nc === wallBase && this.towerAtWallRows.has(nr)) {
-            canClimb = true; break;
-          }
-        }
-      }
-      if (canClimb) {
-        // Check that the walkway tile at (wallCol, ru.r) is free.
-        const wallCol = this.siegeWallCol;
-        const wallRow = ru.r; // same row as the unit
-        const wallKey = cellKey(wallCol, wallRow);
-        if (!this.occByKey.has(wallKey)) {
-          // Climb: move onto walkway. Costs all movement.
-          this.occByKey.delete(cellKey(ru.q, ru.r));
-          ru.q = wallCol;
-          ru.r = wallRow;
-          ru.onWallWalkway = true;
-          this.occByKey.set(wallKey, ru);
-          const { x, z } = cellToWorld(wallCol, wallRow);
-          const walkY = 2.5; // wall walk height
-          ru.group.position.set(x, walkY, z);
-          ru.hpBarGroup.position.set(x, walkY + HPBAR_Y, z);
-          ru.moveLeft = 0;
-          done();
-          return;
-        }
-      }
-    }
+    // SIEGE v2 -- CLIMB via SIEGE TOWER (R-WEB-SIEGE-MANUAL-BATTLE-BEHAVIOR-Q1: wspolny helper
+    // z trybem RECZNYM) + marsz piechoty pod wieze, gdy ta stoi przy murze.
+    if (this._trySiegeTowerClimb(ru, done)) return;
+    if (this._siegeInfantryToTowerStep(ru, done)) return;
 
     // SIEGE MACHINES: ruch i atak.
     // Taran (battering ram): atakuje TYLKO bramę z dystansu 1.
@@ -5555,15 +6212,8 @@ export class BattleScene {
       const isRam  = this._isRam(ru.bu);
       const isCata = this._isCatapult(ru.bu);
       const isTower = isSiegeTower(ru.bu);
-      if (isRam && !this.gateOpen) {
-        // TARAN: jedzie do bramy i uderza gdy dystans 1
-        const distToGate = manhattan(ru.q, ru.r, this.siegeGateCol, this.siegeGateRow);
-        if (distToGate <= 1) {
-          this._attackGate(ru, done);
-          return;
-        }
-        this._advanceToward(ru, this.siegeGateCol, this.siegeGateRow, done);
-        return;
+      if ((isRam && !this.gateOpen) || isTower) {
+        if (this._siegeRamTowerStep(ru, done)) return;
       }
       if (isCata && this.wallTileHp.size > 0) {
         // KATAPULTA: strzela w NAJBLIŻSZY żywy kafel muru z zasięgu.
@@ -5590,16 +6240,6 @@ export class BattleScene {
           return;
         }
         // Wszystkie kafle muru wyburzone — atakuj piechurów wroga
-      }
-      if (isTower) {
-        // Wieża: jedzie pod mur (siegeWallCol-1); rejestracja w towerAtWallRows obsługiwana wyżej
-        const wallBase = this.siegeWallCol - 1;
-        if (ru.q >= wallBase) {
-          this.towerAtWallRows.add(ru.r);
-          done(); return; // stoi przy murze
-        }
-        this._advanceToward(ru, wallBase, ru.r, done);
-        return;
       }
     }
 
@@ -6153,7 +6793,7 @@ export class BattleScene {
    * front, keeping its current LANE. Each turn it picks the passable neighbour
    * that most reduces the advance-axis (column) distance to the NEAREST enemy,
    * breaking ties by the SMALLEST lateral (row) change so it never fans out. It
-   * STOPS the instant any enemy is within firing range (shoots on a later turn).
+   * STOPS and fires on the same activation when an enemy enters firing range.
    * Verified in a /tmp sim: column distance to the enemy line decreases
    * monotonically with ~zero lateral drift, and it halts once in range.
    */
@@ -6164,7 +6804,7 @@ export class BattleScene {
 
     const nearest = this._nearestEnemy(ru);
     if (!nearest) { done(); return; }
-    // Already in range? Stop -- it will shoot next turn (and won't over-close).
+    // Already in range? Stop -- the caller normally chooses the shoot branch first.
     if (manhattan(ru.q, ru.r, nearest.q, nearest.r) <= ru.range) { done(); return; }
 
     const stepKey = this._bestForwardStep(ru, nearest);
@@ -6172,13 +6812,21 @@ export class BattleScene {
     const parts = stepKey.split(',');
     const nc = Number(parts[0]);
     const nr = Number(parts[1]);
+    const meleeLine = (ru.side === 'atk' ? this.atk : this.def)
+      .some(u => !u.dead && !u.fadingOut && !u.removed && !u.routed
+        && !u.mounted && !u.rangedBase && !isSiegeUnit(u.bu));
+    const lineAllowsRangedStep = meleeLine && this._effectiveMetaForUnit(ru).doctrine === 'steady'
+      ? this._rangedFiringStepStaysBehindMelee(ru, nc)
+      : this._compactAttackAllowsStep(ru, nc);
+    if (!lineAllowsRangedStep) { done(); return; }
 
     this._doMove(ru, nc, nr, () => {
       if (this.finished) { done(); return; }
       const e = this._nearestEnemy(ru);
       if (!e) { done(); return; }
-      // The moment we are within range, STOP (don't walk on toward adjacency).
-      if (manhattan(ru.q, ru.r, e.q, e.r) <= ru.range) { done(); return; }
+      // The moment we enter range, shoot on this same activation. This removes
+      // the extra planning/Start-Turn cycle previously needed for the opening volley.
+      if (manhattan(ru.q, ru.r, e.q, e.r) <= ru.range) { this._rangedAction(ru, done); return; }
       if (ru.moveLeft > 0) this._schedule(STEP_GAP_MS, () => this._rangedForwardStep(ru, done));
       else done();
     });
@@ -6231,6 +6879,40 @@ export class BattleScene {
         best = nk;
       }
     }
+    if (best) return best;
+
+    // A shooter can be behind a solid friendly rank with its straight-ahead
+    // tile occupied. In that case, do not route around the entire formation
+    // (which can make it walk away from the enemy). Look for the nearest open
+    // forward lane within the non-mounted army's row envelope, and take only
+    // the first lateral step when that lane immediately opens forward progress.
+    // The next activation reevaluates and advances through the newly open lane.
+    const allies = (ru.side === 'atk' ? this.atk : this.def)
+      .filter(u => !u.dead && !u.fadingOut && !u.removed && !u.routed
+        && !u.mounted && !isSiegeUnit(u.bu));
+    const minRow = allies.length ? Math.min(...allies.map(u => u.r)) : ru.r;
+    const maxRow = allies.length ? Math.max(...allies.map(u => u.r)) : ru.r;
+    const firstByRow = new Map<number, number | null>([[ru.r, null]]);
+    const queue = [ru.r];
+    for (let i = 0; i < queue.length; i++) {
+      const row = queue[i]!;
+      for (const nr of [row - 1, row + 1]) {
+        if (nr < minRow || nr > maxRow || firstByRow.has(nr)) continue;
+        if (this.occByKey.has(cellKey(ru.q, nr)) || !this._passableForUnit(ru, ru.q, nr)) continue;
+        const first = firstByRow.get(row) ?? nr;
+        firstByRow.set(nr, first);
+        const nextCol = ru.q + this._advanceDir(ru.side);
+        const nextKey = cellKey(nextCol, nr);
+        const nextDistance = Math.abs(nearest.q - nextCol);
+        if (nextCol >= 0 && nextCol < BF_COLS
+            && !this.occByKey.has(nextKey)
+            && this._passableForUnit(ru, nextCol, nr)
+            && nextDistance < colDistNow) {
+          return cellKey(ru.q, first);
+        }
+        queue.push(nr);
+      }
+    }
     return best;
   }
 
@@ -6244,9 +6926,9 @@ export class BattleScene {
    */
   private _bestBackStep(ru: RuntimeBattleUnit): string | null {
     const dir = this._advanceDir(ru.side); // forward dir; we want the OPPOSITE
-    const enemies = this._enemiesOf(ru);
+    const enemies = this._activeEnemiesOf(ru);
     if (enemies.length === 0) return null;
-    const threat = this._nearestEnemyMelee(ru) ?? this._nearestEnemy(ru);
+    const threat = this._nearestEnemyMelee(ru) ?? this._nearestActiveEnemy(ru);
     if (!threat) return null;
     const dNow = manhattan(ru.q, ru.r, threat.q, threat.r);
 
@@ -6300,7 +6982,7 @@ export class BattleScene {
    */
   private _bestKiteShotStep(ru: RuntimeBattleUnit, threat: RuntimeBattleUnit): string | null {
     const dir = this._advanceDir(ru.side); // forward dir; we want the OPPOSITE
-    const enemies = this._enemiesOf(ru);
+    const enemies = this._activeEnemiesOf(ru);
     if (enemies.length === 0) return null;
     const dNow = manhattan(ru.q, ru.r, threat.q, threat.r);
 
@@ -6458,20 +7140,20 @@ export class BattleScene {
       if (!m) return true;
       return manhattan(ru.q, ru.r, m.q, m.r) >= MELEE_SAFE_GAP;
     }
-    const n = this._nearestEnemy(ru);
+    const n = this._nearestActiveEnemy(ru);
     if (!n) return true;
     return manhattan(ru.q, ru.r, n.q, n.r) >= RANGED_MIN_GAP;
   }
 
   private _bestKiteStep(ru: RuntimeBattleUnit): string | null {
-    const enemies = this._enemiesOf(ru);
+    const enemies = this._activeEnemiesOf(ru);
     if (enemies.length === 0) return null;
     // SKIRMISH REFINE: a PRIMARY shooter scores candidate tiles by distance from
     // the nearest enemy MELEE unit (the thing it must escape); other units use
     // the nearest enemy of any kind. The chosen "threat" anchor below.
     const threat = ru.primaryRanged
-      ? (this._nearestEnemyMelee(ru) ?? this._nearestEnemy(ru))
-      : this._nearestEnemy(ru);
+      ? (this._nearestEnemyMelee(ru) ?? this._nearestActiveEnemy(ru))
+      : this._nearestActiveEnemy(ru);
     const dNow = threat ? manhattan(ru.q, ru.r, threat.q, threat.r) : Infinity;
 
     let best: string | null = null;
@@ -6526,9 +7208,9 @@ export class BattleScene {
    * enemy. With no ammo there is no range to preserve.
    */
   private _bestFallBackStep(ru: RuntimeBattleUnit): string | null {
-    const enemies = this._enemiesOf(ru);
+    const enemies = this._activeEnemiesOf(ru);
     if (enemies.length === 0) return null;
-    const nearestNow = this._nearestEnemy(ru);
+    const nearestNow = this._nearestActiveEnemy(ru);
     const dNow = nearestNow ? manhattan(ru.q, ru.r, nearestNow.q, nearestNow.r) : Infinity;
 
     let best: string | null = null;
@@ -6790,6 +7472,28 @@ export class BattleScene {
   }
 
   // -------------------------------------------------------------------------
+  // R-WEB-WALL-DEFENDERS-BONUS-RANGE-Q1 -- obronca wewnatrz obwarowania.
+  // -------------------------------------------------------------------------
+
+  /**
+   * Bonus obrony z obwarowania (%) dla jednostki: this.wallDefenseTotalProc gdy
+   * to OBRONCA na koronie muru/palisady LUB za linia muru (game/city-defense.ts
+   * defenderInsideFortification -- ta sama regula co "Pomin"), inaczej 0.
+   */
+  private _wallBonusProcFor(u: RuntimeBattleUnit): number {
+    return fortificationDefenseBonusForUnit(
+      { side: u.side, onWallWalkway: u.onWallWalkway === true, q: u.q, siegeWallCol: this.siegeWallCol },
+      this.wallDefenseTotalProc,
+    );
+  }
+
+  /** Strzelec-obronca NA koronie muru/palisady (nie machina) -- zasieg x2. */
+  private _isWallCrownShooter(ru: RuntimeBattleUnit): boolean {
+    return ru.side === 'def' && ru.onWallWalkway === true
+      && ru.rangedBase === true && !this._isCatapult(ru.bu) && ru.rangeBase > 0;
+  }
+
+  // -------------------------------------------------------------------------
   // C-TEREN-Q1 ETAP 2 -- terrain-derived ranged-reach delta.
   // -------------------------------------------------------------------------
 
@@ -6815,6 +7519,10 @@ export class BattleScene {
     const terrain = this.terrainMap.combatTerrainName(ru.q, ru.r);
     const delta = terrainRangeDelta(terrain, this.terrainData);
     ru.range = Math.max(0, ru.rangeBase + delta);
+    // R-WEB-WALL-DEFENDERS-BONUS-RANGE-Q1: strzelec na koronie muru/palisady ma
+    // DWUKROTNY zasieg (zamiast dawnego +1 "elewacji"), zaokraglony w gore.
+    // Machiny (katapulty: staly zasieg 6) i wiezyczki (osobny zasieg) nietkniete.
+    if (this._isWallCrownShooter(ru)) ru.range = wallCrownShooterRange(ru.range);
   }
 
   /** Obrażenia vs mur/bramę z units.json TW (`wallAttack`, fallback legacy). */
@@ -6828,9 +7536,23 @@ export class BattleScene {
     return Math.max(12, Math.round(imp * 2));
   }
 
+  private _movementPointsFor(bu: BattleUnit): number {
+    const base = movementPoints(bu);
+    const bonuses = battleUnitCivBonusy(bu, bu.ownerColor === 0xc84040
+      ? this.defenderCivBonusy : this.attackerCivBonusy);
+    return Math.max(1, Math.round(base * civMovementMultiplier(bonuses, civUnitShapeForBattleUnit(bu), this.terrain, this.shallowSea)));
+  }
+
+  private _attackRangeFor(bu: BattleUnit): number {
+    const base = attackRange(bu);
+    const bonuses = battleUnitCivBonusy(bu, bu.ownerColor === 0xc84040
+      ? this.defenderCivBonusy : this.attackerCivBonusy);
+    return base > 0 ? Math.max(1, Math.round(base * civAttackRangeMultiplier(bonuses, civUnitShapeForBattleUnit(bu)))) : 0;
+  }
+
   /** Zasięg machiny oblężniczej vs mur (hex) — z `Zasięg ataku (hex)` / TW. */
   private _siegeMachineRange(ru: RuntimeBattleUnit): number {
-    const r = attackRange(ru.bu);
+    const r = this._attackRangeFor(ru.bu);
     if (r >= 1) return r;
     return this._isCatapult(ru.bu) ? 6 : 1;
   }
@@ -6946,6 +7668,8 @@ export class BattleScene {
       tiles[idx] = BTerrain.Plains;
     }
     this.wallTileHp.delete(wallRow);
+    this.wallEverBreached = true;
+    this._destroyTowerAtRow(wallRow); // R4: wiezyczka na zburzonym kaflu znika
     this._spawnWallLabel(wallCol, wallRow, 'MUR WYBURZONY!', '#ff4400');
 
     // NAPRAWA problem 3: WYRWA — ukryj segment muru (visible=false), dodaj gruz.
@@ -6954,7 +7678,7 @@ export class BattleScene {
       const wallMeshes = this.siegeWallGroup.userData['rowWallMeshes'] as Map<number, THREE.Mesh[]> | undefined;
       if (wallMeshes) {
         const segs = wallMeshes.get(wallRow);
-        if (segs) segs.forEach(m => { m.visible = false; });
+        if (segs) segs.forEach(m => { if (m.visible) this.siegeHiddenMeshes.push(m); m.visible = false; });
       }
       // Gruz — nieregularna sterta boxów/odłamków skalnych w miejscu wyłomu
       // (world space). Deterministyczny jitter (tileJitter — sam mechanizm co
@@ -6989,6 +7713,7 @@ export class BattleScene {
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         this.scene.add(mesh);
+        this.siegeRubbleMeshes.push(mesh);
         this.ownedGeos.push(geo);
         this.ownedMats.push(mat);
       }
@@ -7001,10 +7726,7 @@ export class BattleScene {
       if (u.onWallWalkway && u.r === wallRow && u.q === wallCol) {
         if (this._isCatapult(u.bu)) {
           // Katapulta obrońcy na wyburzonym kaflu — niszczymy ją
-          u.dead = true;
-          u.fadingOut = true;
-          u.fadeStart = performance.now();
-          this.occByKey.delete(cellKey(u.q, u.r));
+          this._startFade(u);
         } else {
           // Piechota/łucznik — cofa się o 1 pole w głąb obrony (wallCol+1)
           const retreatCol = Math.min(BF_COLS - 1, wallCol + 1);
@@ -7040,6 +7762,7 @@ export class BattleScene {
             }
           }
           u.onWallWalkway = false; // zszedł z muru
+          this._applyTerrainRange(u); // utrata korony => zasieg x2 znika
         }
       }
     }
@@ -7058,6 +7781,7 @@ export class BattleScene {
    */
   private _breachGate(): void {
     this.gateOpen = true;
+    this.wallEverBreached = true;
     this._updateSiegeHud();
 
     // Update terrain tiles: replace Gate with Plains so pathfinding opens up
@@ -7078,7 +7802,7 @@ export class BattleScene {
     // Zmiana 3: Ukryj całą strukturę bramy — portkulisa + nadproże + most + filary.
     if (this.siegeWallGroup) {
       const gate: THREE.Group | null = this.siegeWallGroup.userData['gate'] as THREE.Group ?? null;
-      if (gate) gate.visible = false;
+      if (gate) { if (gate.visible) this.siegeHiddenMeshes.push(gate); gate.visible = false; }
 
       // Ukryj też nadproże / most / filary bramy:
       // Są to children wallGroup w lokalnym X bliskim 0 (centrum = gateCenterX),
@@ -7097,6 +7821,7 @@ export class BattleScene {
           // Nadproże (lintel): y ≈ wallH; Most (bridge): y ≈ wallH; Wieże bramne: y > wallH/2
           // Nie chcemy ukrywać ościeży/filarów bocznych muru — ale brama jest w centrum.
           if (ly >= wallH * 0.9 || (Math.abs(lx - gateCX) < gateHalfW * 0.9)) {
+            if (mesh.visible) this.siegeHiddenMeshes.push(mesh);
             mesh.visible = false;
           }
         }
@@ -7216,6 +7941,362 @@ export class BattleScene {
     this._doMove(ru, nc, nr, done);
   }
 
+  // -------------------------------------------------------------------------
+  // R-WEB-SIEGE-MANUAL-BATTLE-BEHAVIOR-Q1 -- oblezenie: tarany -> brama, wieza -> mur,
+  // szarza/atakuj-marszem POZA zasiegiem ostrzalu dopoki nie ma wylomu.
+  // -------------------------------------------------------------------------
+
+  /** Zrodla ostrzalu obroncow: jednostki dystansowe z amunicja (zasieg z korony x2) + wiezyczki muru. */
+  private _siegeShooterThreats(): Array<{ q: number; r: number; range: number }> {
+    const out: Array<{ q: number; r: number; range: number }> = [];
+    for (const d of this.def) {
+      if (d.dead || d.fadingOut || d.removed || d.routed) continue;
+      if (!canShoot(d) || d.rangeBase <= 0) continue;
+      this._applyTerrainRange(d);
+      if (d.range >= 1) out.push({ q: d.q, r: d.r, range: d.range });
+    }
+    for (const t of this.siegeTowers) {
+      if (t.destroyed) continue;
+      out.push({ q: this.siegeWallCol, r: t.row, range: this.towerRange });
+    }
+    return out;
+  }
+
+  private static _threatSlack(threats: ReadonlyArray<{ q: number; r: number; range: number }>, col: number, row: number): number {
+    let m = Infinity;
+    for (const t of threats) m = Math.min(m, Math.abs(col - t.q) + Math.abs(row - t.r) - t.range);
+    return m;
+  }
+
+  /**
+   * Czy jednostka atakujacego jest ZWIAZANA zakazem wejscia w zasieg ostrzalu obroncow:
+   * wrecz/konnica (nie machiny, nie strzelcy z amunicja) dopoki mur/palisada stoi.
+   * Piechota: zwolniona gdy jest wylom (brama/kafel/wieza przy murze). Konnica i rydwany:
+   * wchodza TYLKO przez wylom bramy/muru (sama wieza ich nie zwalnia).
+   */
+  private _siegeApproachRestricted(ru: RuntimeBattleUnit): boolean {
+    if (!(this.siegeWallCol >= 0) || ru.side !== 'atk') return false;
+    if (ru.routed || ru.onWallWalkway || isSiegeUnit(ru.bu)) return false;
+    if (ru.primaryRanged && canShoot(ru) && ru.shootingEnabled !== false) return false; // strzelec (luk/proca) -- nie wrecz
+    if (ru.mounted) {
+      const tileBreached = this.siegeWallTilesInit > 0 && this.wallTileHp.size < this.siegeWallTilesInit;
+      return !(this.gateOpen || tileBreached);
+    }
+    return !(this.wallEverBreached || this.towerAtWallRows.size > 0);
+  }
+
+  /** Krok do (col,row) wprowadza jednostke w zasieg ostrzalu (lub poglebia pobyt w nim). */
+  private _siegeMoveRefused(ru: RuntimeBattleUnit, col: number, row: number): boolean {
+    if (!this._siegeApproachRestricted(ru)) return false;
+    const th = this._siegeShooterThreats();
+    if (th.length === 0) return false;
+    const to = BattleScene._threatSlack(th, col, row);
+    if (to > 0) return false;
+    return to < BattleScene._threatSlack(th, ru.q, ru.r);
+  }
+
+  /** BFS po wolnych, przechodnich kaflach: pierwszy krok do najblizszego kafla spelniajacego `isGoal`. */
+  private _bfsFirstStep(
+    ru: RuntimeBattleUnit,
+    isGoal: (col: number, row: number) => boolean,
+    allowTile?: (col: number, row: number) => boolean,
+    prefRow?: number,
+    maxVisited = 6000,
+  ): string | null {
+    const startKey = cellKey(ru.q, ru.r);
+    const first = new Map<string, string>();
+    const seen = new Set<string>([startKey]);
+    const frontier: Array<[number, number]> = [[ru.q, ru.r]];
+    for (let head = 0; head < frontier.length && head < maxVisited; head++) {
+      const [cc, cr] = frontier[head]!;
+      // prefRow: najpierw kroki zmniejszajace |rzad - prefRow| (trasa na bramie bez wedrowania wzdluz muru).
+      const dirs = prefRow == null ? DIRS4
+        : [...DIRS4].sort((a, b) => Math.abs(cr + a[1] - prefRow) - Math.abs(cr + b[1] - prefRow));
+      for (const [dc, dr] of dirs) {
+        const nc = cc + dc; const nr = cr + dr;
+        if (nc < 0 || nr < 0 || nc >= BF_COLS || nr >= BF_ROWS) continue;
+        const k = cellKey(nc, nr);
+        if (seen.has(k)) continue;
+        seen.add(k);
+        if (this.occByKey.has(k) || !this._passableForUnit(ru, nc, nr)) continue;
+        if (allowTile && !allowTile(nc, nr)) continue;
+        first.set(k, cc === ru.q && cr === ru.r ? k : first.get(cellKey(cc, cr)) ?? k);
+        if (isGoal(nc, nr)) return first.get(k) ?? null;
+        frontier.push([nc, nr]);
+      }
+    }
+    return null;
+  }
+
+  /** Marsz machiny/piechoty do celu BFS-em: kroki dopoki starcza ruchu (jak _advanceStep). */
+  private _siegeWalkTo(
+    ru: RuntimeBattleUnit, isGoal: (col: number, row: number) => boolean, done: () => void,
+    allowTile?: (col: number, row: number) => boolean, prefRow?: number,
+  ): void {
+    if (this.finished || ru.dead || ru.fadingOut || ru.moveLeft <= 0) { done(); return; }
+    if (isGoal(ru.q, ru.r)) { done(); return; }
+    const key = this._bfsFirstStep(ru, isGoal, allowTile, prefRow);
+    if (!key) { done(); return; }
+    const [nc, nr] = key.split(',').map(Number) as [number, number];
+    this._doMove(ru, nc, nr, () => {
+      if (this.finished || ru.dead || isGoal(ru.q, ru.r) || ru.moveLeft <= 0) { done(); return; }
+      this._schedule(STEP_GAP_MS, () => this._siegeWalkTo(ru, isGoal, done, allowTile, prefRow));
+    });
+  }
+
+  /** Tarany i wieze oblezne atakujacego -- wspolna logika dla AUTO i RECZNEGO. true = akcja wykonana. */
+  private _siegeRamTowerStep(ru: RuntimeBattleUnit, done: () => void): boolean {
+    if (!(this.siegeWallCol >= 0) || ru.side !== 'atk' || !isSiegeUnit(ru.bu)) return false;
+    const wallCol = this.siegeWallCol;
+    if (this._isRam(ru.bu) && !this.gateOpen) {
+      const gLo = this.siegeGateRow - 1; const gHi = this.siegeGateRow;
+      const nearGate = Math.abs(ru.q - wallCol) + Math.min(Math.abs(ru.r - gLo), Math.abs(ru.r - gHi)) <= 1;
+      if (nearGate) { this._attackGate(ru, done); return true; }
+      // Tarany jada DO BRAMY (kafel przed brama), nie wzdluz muru: BFS omija wlasne jednostki.
+      const goal = (c: number, r: number) => c === wallCol - 1 && (r === gLo || r === gHi);
+      if (this._bfsFirstStep(ru, goal, undefined, this.siegeGateRow)) {
+        this._siegeWalkTo(ru, goal, done, undefined, this.siegeGateRow);
+        return true;
+      }
+      this._advanceToward(ru, this.siegeGateCol, this.siegeGateRow, done);
+      return true;
+    }
+    if (isSiegeTower(ru.bu)) {
+      const wallBase = wallCol - 1;
+      if (ru.q >= wallBase) { this.towerAtWallRows.add(ru.r); done(); return true; }
+      // Wieza staje pod murem w rzedzie, gdzie korona jest wolna (piechota ma gdzie wejsc).
+      const goal = (c: number, r: number) => c === wallBase && !this.towerAtWallRows.has(r)
+        && this.wallTileHp.has(r) && !this.occByKey.has(cellKey(wallCol, r));
+      const arrive = () => {
+        if (ru.q >= wallBase) this.towerAtWallRows.add(ru.r);
+        done();
+      };
+      if (this._bfsFirstStep(ru, goal)) { this._siegeWalkTo(ru, goal, arrive); return true; }
+      this._advanceToward(ru, wallBase, ru.r, arrive);
+      return true;
+    }
+    return false;
+  }
+
+  /** Piechota przy wiezy oblezniczej wchodzi na korone muru (wspolne dla AUTO i RECZNEGO). */
+  private _trySiegeTowerClimb(ru: RuntimeBattleUnit, done: () => void): boolean {
+    if (ru.onWallWalkway || ru.side !== 'atk' || !(this.siegeWallCol >= 0) || isSiegeUnit(ru.bu) || ru.mounted) return false;
+    if (this.towerAtWallRows.size === 0) return false;
+    const wallBase = this.siegeWallCol - 1;
+    let canClimb = false;
+    for (const [dc, dr] of DIRS4) {
+      if (ru.q + dc === wallBase && this.towerAtWallRows.has(ru.r + dr)) { canClimb = true; break; }
+    }
+    if (!canClimb) return false;
+    const wallCol = this.siegeWallCol;
+    const wallKey = cellKey(wallCol, ru.r);
+    // Korona = zywy kafel muru (nie brama, nie wyburzony), wolna od jednostek.
+    if (!this.wallTileHp.has(ru.r) || this.occByKey.has(wallKey)) return false;
+    this.occByKey.delete(cellKey(ru.q, ru.r));
+    ru.q = wallCol;
+    ru.onWallWalkway = true;
+    if (attackerWallEntryIsBreach(ru.side, ru.onWallWalkway) && !this.wallEverBreached) {
+      this.wallEverBreached = true;
+      this.log.push('=== WYLOM: atakujacy weszli na mur po wiezy oblezniczej -- miasto moze zostac zdobyte ===');
+    }
+    this.occByKey.set(wallKey, ru);
+    const { x, z } = cellToWorld(wallCol, ru.r);
+    const walkY = 2.5; // wall walk height
+    ru.group.position.set(x, walkY, z);
+    ru.hpBarGroup.position.set(x, walkY + HPBAR_Y, z);
+    ru.moveLeft = 0;
+    done();
+    return true;
+  }
+
+  /** Piechota idzie pod wieze oblezna (kafel przy wiezy z wolna korona nad nim). true = obsluzone. */
+  private _siegeInfantryToTowerStep(ru: RuntimeBattleUnit, done: () => void): boolean {
+    if (!(this.siegeWallCol >= 0) || ru.side !== 'atk' || ru.onWallWalkway || ru.mounted || isSiegeUnit(ru.bu)) return false;
+    if (this.towerAtWallRows.size === 0) return false;
+    if (ru.primaryRanged && canShoot(ru) && ru.shootingEnabled !== false) return false;
+    const wallCol = this.siegeWallCol; const wallBase = wallCol - 1;
+    const rows = this.towerAtWallRows;
+    const crownFree = (r: number) => this.wallTileHp.has(r) && !this.occByKey.has(cellKey(wallCol, r));
+    const goal = (c: number, r: number) =>
+      ((c === wallBase - 1 && rows.has(r)) || (c === wallBase && !rows.has(r) && (rows.has(r - 1) || rows.has(r + 1))))
+      && crownFree(r);
+    if (goal(ru.q, ru.r)) { done(); return true; } // przy wiezy -- czeka na wolna korone
+    if (!this._bfsFirstStep(ru, goal)) return false;
+    this._siegeWalkTo(ru, goal, done);
+    return true;
+  }
+
+  /**
+   * Podejscie jednostki wrecz do (tc,tr) bez wejscia w zasieg ostrzalu: najblizszy (Manhattan do celu)
+   * osiagalny kafel o luzie > 0. true = krok wykonany, false = nie ma lepszego kafla (stoi).
+   */
+  private _siegeSafeApproach(ru: RuntimeBattleUnit, tc: number, tr: number, done: () => void): boolean {
+    const th = this._siegeShooterThreats();
+    const safe = (c: number, r: number) => BattleScene._threatSlack(th, c, r) > 0;
+    const startKey = cellKey(ru.q, ru.r);
+    const first = new Map<string, string>();
+    const seen = new Set<string>([startKey]);
+    const frontier: Array<[number, number]> = [[ru.q, ru.r]];
+    let best: string | null = null;
+    let bestD = safe(ru.q, ru.r) ? Math.abs(ru.q - tc) + Math.abs(ru.r - tr) : Infinity;
+    for (let head = 0; head < frontier.length && head < 6000; head++) {
+      const [cc, cr] = frontier[head]!;
+      for (const [dc, dr] of DIRS4) {
+        const nc = cc + dc; const nr = cr + dr;
+        if (nc < 0 || nr < 0 || nc >= BF_COLS || nr >= BF_ROWS) continue;
+        const k = cellKey(nc, nr);
+        if (seen.has(k)) continue;
+        seen.add(k);
+        if (this.occByKey.has(k) || !this._passableForUnit(ru, nc, nr) || !safe(nc, nr)) continue;
+        first.set(k, cc === ru.q && cr === ru.r ? k : first.get(cellKey(cc, cr)) ?? k);
+        const d = Math.abs(nc - tc) + Math.abs(nr - tr);
+        if (d < bestD) { bestD = d; best = k; }
+        frontier.push([nc, nr]);
+      }
+    }
+    if (!best) return false;
+    const goalKey = best;
+    const goal = (c: number, r: number) => cellKey(c, r) === goalKey;
+    this._siegeWalkTo(ru, goal, done, safe);
+    return true;
+  }
+
+  /** Attack doctrine advances each infantry rank as a line; Charge keeps its existing free wrap. */
+  private _compactAttackAllowsStep(ru: RuntimeBattleUnit, candidateCol: number): boolean {
+    if (this._effectiveMetaForUnit(ru).doctrine !== 'steady' || ru.mounted || isSiegeUnit(ru.bu)) return true;
+    const rank = Math.max(0, Math.floor(ru.formationRank ?? 0));
+    const progress = (u: RuntimeBattleUnit): number => ru.side === 'atk' ? u.q : -u.q;
+    const currentProgress = progress(ru);
+    const nextProgress = ru.side === 'atk' ? candidateCol : -candidateCol;
+    // Sideways alignment remains available, but an Attack formation must never
+    // step backwards: that lets a blocked rear-rank unit oscillate between two
+    // tiles while repeatedly replanning around its own line.
+    if (nextProgress < currentProgress) return false;
+    if (nextProgress === currentProgress) return true;
+    // R-WEB-BATTLE-CAP-500-Q1: te same warunki co dawny filtr `allies` + filtr rangi, ale w jednym
+    // przejsciu i z tanim testem rangi PRZED isSiegeUnit (normName) -- przy 500 jednostkach na strone
+    // to wolane dla kazdego kroku kazdej jednostki. Wynik (zbior `previous`) identyczny.
+    const previous = rank > 0
+      ? (ru.side === 'atk' ? this.atk : this.def).filter(u =>
+          !u.dead && !u.fadingOut && !u.removed && !u.routed && !u.mounted
+          && Math.max(0, Math.floor(u.formationRank ?? 0)) === rank - 1
+          && !isSiegeUnit(u.bu))
+      : [];
+    const nearestPreviousRowGap = previous.length > 0
+      ? Math.min(...previous.map(u => Math.abs(u.r - ru.r)))
+      : Number.POSITIVE_INFINITY;
+    const previousLane = previous.filter(u => Math.abs(u.r - ru.r) === nearestPreviousRowGap);
+    const previousReference = previousLane.length > 0
+      ? Math.min(...previousLane.map(progress))
+      : null;
+    return compactLineAllowsAdvance({
+      side: ru.side,
+      candidateCol,
+      lineReferenceProgress: currentProgress,
+      previousLineReferenceProgress: previousReference,
+    });
+  }
+
+  private _lineAdvanceWithinCap(ru: RuntimeBattleUnit, candidateCol: number): boolean {
+    const sign = ru.side === 'atk' ? 1 : -1;
+    // Ruch wstecz / w bok nigdy nie jest ograniczany sufitem natarcia.
+    if (sign * candidateCol <= sign * ru.q) return true;
+    return sign * candidateCol <= this._lineAdvanceCap(ru);
+  }
+
+  /**
+   * R-WEB-BATTLE-LINE-ADVANCE-UNIFORM-Q1: wspolny sufit tempa dla jednej rangi piechoty grupy
+   * (Atak). Bez niego kazda jednostka maszeruje niezaleznie (inna predkosc, objazd skal/wody),
+   * wiec front rozsypuje sie i NIGDY sie nie zbiera (zmierzone: rozrzut 4-12 kolumn bez powrotu).
+   * Zasada: kolumna docelowa <= (najmniej zaawansowana jednostka rangi, liczona na POCZATKU rundy)
+   * + najmniejsza pula ruchu rangi. Rowne tempo wszystkich, tempo wyznacza najwolniejsza.
+   * Anti-freeze: jednostka w kontakcie z wrogiem albo bez nowego postepu przez
+   * LINE_ADVANCE_STALL_ROUNDS rund (zablokowana na amen) przestaje wyznaczac sufit.
+   * Stan (postep/kontakt/min. ruch) odswiezany raz na (runda, strona, grupa, ranga); sam sufit z
+   * biezacych pozycji -- deterministyczny dla AUTO (klony stanu z poczatku fazy) i SKIP.
+   */
+  private _lineAdvanceCap(ru: RuntimeBattleUnit): number {
+    if (this._effectiveMetaForUnit(ru).doctrine !== 'steady' || ru.mounted || ru.rangedBase || isSiegeUnit(ru.bu)) {
+      return Number.POSITIVE_INFINITY;
+    }
+    const rank = Math.max(0, Math.floor(ru.formationRank ?? 0));
+    const key = `${ru.side}|${ru.groupId ?? ''}|${rank}`;
+    const sign = ru.side === 'atk' ? 1 : -1;
+    const isMate = (u: RuntimeBattleUnit): boolean =>
+      !u.dead && !u.fadingOut && !u.removed && !u.routed && !u.mounted && !u.rangedBase
+      && (u.groupId ?? '') === (ru.groupId ?? '')
+      && Math.max(0, Math.floor(u.formationRank ?? 0)) === rank
+      && !isSiegeUnit(u.bu);
+    const roster = ru.side === 'atk' ? this.atk : this.def;
+    const state = this._lineAdvanceState ??= new Map<string, { best: number; stall: number }>();
+    let cache = this._lineCapCache;
+    if (!cache || cache.round !== this.roundNo) { cache = { round: this.roundNo, info: new Map() }; this._lineCapCache = cache; }
+    let info = cache.info.get(key);
+    if (!info) {
+      // Odswiezenie RAZ na runde (pierwsze zapytanie rangi): rekord postepu, rundy bez postepu,
+      // jednostki w kontakcie i najmniejsza pula ruchu rangi.
+      info = { engaged: new Set<string>(), minMp: Number.POSITIVE_INFINITY };
+      const entries: { id: string; p: number; progressed: boolean }[] = [];
+      for (const u of roster) {
+        if (!isMate(u)) continue;
+        const p = sign * u.q;
+        const st = state.get(u.bu.id);
+        const progressed = !st || p > st.best;
+        if (progressed) state.set(u.bu.id, { best: p, stall: 0 });
+        if (this._canAttackFrom(u, u.q, u.r)) { info.engaged.add(u.bu.id); continue; } // w kontakcie: nie wyznacza tempa
+        entries.push({ id: u.bu.id, p, progressed });
+        info.minMp = Math.min(info.minMp, this._movementPointsFor(u.bu));
+      }
+      let refMin0 = Number.POSITIVE_INFINITY;
+      for (const e of entries) {
+        if (state.get(e.id)!.stall < LINE_ADVANCE_STALL_ROUNDS && e.p < refMin0) refMin0 = e.p;
+      }
+      // Rundy bez postepu liczy sie TYLKO jednostce, ktora aktualnie wyznacza tempo linii (najmniej
+      // zaawansowanej); czekajacy na nia liderzy nie sa "zablokowani" i nie moga zostac wykluczeni.
+      for (const e of entries) {
+        const st = state.get(e.id)!;
+        if (st.stall >= LINE_ADVANCE_STALL_ROUNDS) continue;
+        if (e.p === refMin0 && !e.progressed) st.stall++;
+        else if (e.p > refMin0) st.stall = 0;
+      }
+      cache.info.set(key, info);
+    }
+    // Sufit liczony z ZYWYCH pozycji (planowanie AUTO pracuje na klonach stanu z poczatku fazy,
+    // wiec dla kazdej jednostki to ten sam, deterministyczny obraz).
+    let refMin = Number.POSITIVE_INFINITY;
+    for (const u of roster) {
+      if (!isMate(u) || info.engaged.has(u.bu.id)) continue;
+      if ((state.get(u.bu.id)?.stall ?? 0) >= LINE_ADVANCE_STALL_ROUNDS) continue; // zablokowana na amen
+      const p = sign * u.q;
+      if (p < refMin) refMin = p;
+    }
+    return Number.isFinite(refMin) && Number.isFinite(info.minMp) ? refMin + info.minMp : Number.POSITIVE_INFINITY;
+  }
+
+  /** A shooter may close to a firing tile while staying behind the melee line. */
+  private _rangedFiringStepStaysBehindMelee(ru: RuntimeBattleUnit, candidateCol: number): boolean {
+    if (this._effectiveMetaForUnit(ru).doctrine !== 'steady' || !ru.rangedBase || ru.mounted) return false;
+    const allies = (ru.side === 'atk' ? this.atk : this.def)
+      .filter(u => !u.dead && !u.fadingOut && !u.removed && !u.routed
+        && !u.mounted && !u.rangedBase && !isSiegeUnit(u.bu));
+    if (allies.length === 0) return false;
+    const progress = (col: number): number => ru.side === 'atk' ? col : -col;
+    const nearestMeleeRowGap = Math.min(...allies.map(u => Math.abs(u.r - ru.r)));
+    const meleeLane = allies.filter(u => Math.abs(u.r - ru.r) === nearestMeleeRowGap);
+    // Let shooters follow the advancing edge of their nearest melee lane. Using
+    // its rearmost unit deadlocks ranged ranks at choke points and sends them
+    // around the map looking for a route that never opens.
+    const meleeLaneProgress = Math.min(...meleeLane.map(u => progress(u.q)));
+    return progress(candidateCol) <= meleeLaneProgress;
+  }
+
+  private _shouldAvoidAutoBacktrack(ru: RuntimeBattleUnit): boolean {
+    const meta = ru.groupId ? this._groupMeta?.get(ru.groupId) : undefined;
+    const doctrine = ru.unitDoctrine ?? meta?.doctrine ?? 'steady';
+    const auto = doctrine !== 'manual' && (ru.unitDoctrine != null || !ru.groupId || (meta?.autoPlay ?? true));
+    return auto && doctrine === 'steady';
+  }
+
   private _advanceStep(ru: RuntimeBattleUnit, done: () => void): void {
     if (this.finished) { done(); return; }
     if (ru.dead || ru.fadingOut) { done(); return; }
@@ -7255,9 +8336,16 @@ export class BattleScene {
       }
     }
 
-    // Already standing where it could attack -> stop moving (it will strike
-    // next turn).
-    if (this._canAttackFrom(ru, ru.q, ru.r)) { done(); return; }
+    // The Attack doctrine routes melee through this line-advance path. Once a
+    // warrior reaches adjacency, it must switch from formation movement to a
+    // real melee action; merely ending the activation here leaves it idle on
+    // every later turn (Szturm has a separate adjacent-target dispatch).
+    if (this._canAttackFrom(ru, ru.q, ru.r)) {
+      const adjacent = this._pickAdjacentTargetByPriority(ru);
+      if (adjacent) this._doAttack(ru, adjacent, done);
+      else done();
+      return;
+    }
 
     const target = this._nearestEnemy(ru);
     if (!target) { done(); return; }
@@ -7267,7 +8355,14 @@ export class BattleScene {
     // take only its FIRST step. This routes around occupied allied tiles
     // instead of stalling like a greedy step would. If BFS finds nothing
     // reachable (fully walled in), fall back to a greedy nudge closer.
-    const stepKey = this._firstStepAlongPathToAttack(ru) ?? this._stepToward(ru, target);
+    // R-WEB-BATTLE-LINE-ADVANCE-UNIFORM-Q1: jednostka na suficie tempa linii czeka w miejscu
+    // (zamiast szukac bocznych krokow, ktore rozsypuja szyk i marnuja ruch).
+    if (!this._lineAdvanceWithinCap(ru, ru.q + this._advanceDir(ru.side))) { done(); return; }
+    const avoidAutoBacktrack = this._shouldAvoidAutoBacktrack(ru);
+    const stepKey = this._firstStepAlongPathToAttack(ru, (q, r) =>
+      this._compactAttackAllowsStep(ru, q)
+      && !(avoidAutoBacktrack && ru.lastAutoMoveFrom?.q === q && ru.lastAutoMoveFrom?.r === r),
+    ) ?? this._stepToward(ru, target);
     if (!stepKey) {
       // Blocked / cannot get closer this turn.
       done();
@@ -7277,7 +8372,11 @@ export class BattleScene {
     const nc = Number(parts[0]);
     const nr = Number(parts[1]);
 
+    if (!this._compactAttackAllowsStep(ru, nc) || !this._lineAdvanceWithinCap(ru, nc)) { done(); return; }
+
+    const previousPosition = avoidAutoBacktrack ? { q: ru.q, r: ru.r } : undefined;
     this._doMove(ru, nc, nr, () => {
+      if (previousPosition) ru.lastAutoMoveFrom = previousPosition;
       if (this.finished) { done(); return; }
       // Reached an attack position? Stop -- the blow happens on a later turn.
       if (this._canAttackFrom(ru, ru.q, ru.r)) { done(); return; }
@@ -7294,15 +8393,36 @@ export class BattleScene {
   // Private: targeting
   // -------------------------------------------------------------------------
 
+  /**
+   * R-WEB-BATTLE-ROUTED-UNITS-PURSUED-AND-DESTROYED-Q1: CELE ataku. Zroutowany (uciekajacy)
+   * wrog pozostaje pelnoprawnym celem -- armia go sciga i dobija; ginie przy HP <= 0.
+   * (Dawniej `!u.routed` pomijal uciekinierow, wiec bitwa konczyla sie zalamaniem morale
+   * bez strat po stronie przegranej.) Do oceny ZAGROZENIA uzywaj _activeEnemiesOf.
+   */
   private _enemiesOf(ru: RuntimeBattleUnit): RuntimeBattleUnit[] {
-    // Routed units are OUT of the fight -- they are no longer valid targets.
-    return (ru.side === 'atk' ? this.def : this.atk).filter(u => !u.dead && !u.fadingOut && !u.routed);
+    return (ru.side === 'atk' ? this.def : this.atk).filter(u => !u.dead && !u.fadingOut && !u.removed);
+  }
+
+  /** Wrogowie jeszcze w walce (bez uciekinierow): zrodlo ZAGROZENIA (kitowanie, odwrot, otoczenie). */
+  private _activeEnemiesOf(ru: RuntimeBattleUnit): RuntimeBattleUnit[] {
+    return this._enemiesOf(ru).filter(u => !u.routed);
   }
 
   private _nearestEnemy(ru: RuntimeBattleUnit): RuntimeBattleUnit | null {
     let best: RuntimeBattleUnit | null = null;
     let bestD = Infinity;
     for (const e of this._enemiesOf(ru)) {
+      const dd = manhattan(ru.q, ru.r, e.q, e.r);
+      if (dd < bestD) { bestD = dd; best = e; }
+    }
+    return best;
+  }
+
+  /** Najblizszy wrog jeszcze w walce (bez uciekinierow) -- kotwica ZAGROZENIA dla kitowania/odwrotu. */
+  private _nearestActiveEnemy(ru: RuntimeBattleUnit): RuntimeBattleUnit | null {
+    let best: RuntimeBattleUnit | null = null;
+    let bestD = Infinity;
+    for (const e of this._activeEnemiesOf(ru)) {
       const dd = manhattan(ru.q, ru.r, e.q, e.r);
       if (dd < bestD) { bestD = dd; best = e; }
     }
@@ -7321,7 +8441,7 @@ export class BattleScene {
   private _nearestEnemyMelee(ru: RuntimeBattleUnit, col = ru.q, row = ru.r): RuntimeBattleUnit | null {
     let best: RuntimeBattleUnit | null = null;
     let bestD = Infinity;
-    for (const e of this._enemiesOf(ru)) {
+    for (const e of this._activeEnemiesOf(ru)) {
       if (e.primaryRanged) continue; // only OFFENSIVE (melee) units threaten the gap
       const dd = manhattan(col, row, e.q, e.r);
       if (dd < bestD) { bestD = dd; best = e; }
@@ -7358,6 +8478,24 @@ export class BattleScene {
    * pick, so behaviour is bit-for-bit unchanged when attackDirection is
    * 'front' (default).
    */
+  /**
+   * R2 (R-WEB-PALISADE-BATTLE-WALL-RULES-Q1): jednostka WRECZ nie moze zaatakowac
+   * obroncy stojacego NA MURZE / ZA PALISADA (onWallWalkway). Dystansowi i machiny
+   * oblezenicze nie sa blokowani; po wylomie (wallEverBreached) blokada znika dla WSZYSTKICH
+   * obroncow na murze, wiec melee moze wejsc i walczyc.
+   */
+  private _meleeBlockedByWall(ru: RuntimeBattleUnit, e: RuntimeBattleUnit): boolean {
+    if (this.siegeWallCol < 0) return false;
+    return meleeBlockedByWall({
+      // Po wylomie obroncy na koronie muru nie schodza z niej, wiec blokada musi
+      // zniknac globalnie (inaczej melee wchodzi do miasta i nie ma kogo bic).
+      wallBreached: this.wallEverBreached,
+      attackerIsMelee: !canShoot(ru) && !isSiegeUnit(ru.bu),
+      attackerOnWall: ru.onWallWalkway === true,
+      defenderOnWall: e.onWallWalkway === true,
+    });
+  }
+
   private _targetInRange(ru: RuntimeBattleUnit): RuntimeBattleUnit | null {
     const enemies = this._enemiesOf(ru);
     const inReach: RuntimeBattleUnit[] = [];
@@ -7374,6 +8512,7 @@ export class BattleScene {
       // they are "adjacent in the vertical sense" even though the tile is BTerrain.Wall.
       // dd === 0: same tile (walkway combat between two units who both climbed) -- treat as melee.
       for (const e of enemies) {
+        if (this._meleeBlockedByWall(ru, e)) continue; // R2: melee nie bije muru/palisady
         const dd = manhattan(ru.q, ru.r, e.q, e.r);
         if (dd === 1 || dd === 0) inReach.push(e);
       }
@@ -7423,10 +8562,46 @@ export class BattleScene {
   private _canAttackFrom(ru: RuntimeBattleUnit, col: number, row: number): boolean {
     const reach = canShoot(ru) ? ru.range : 1;
     for (const e of this._enemiesOf(ru)) {
+      if (this._meleeBlockedByWall(ru, e)) continue; // R2
       const dd = manhattan(col, row, e.q, e.r);
       if (dd >= 1 && dd <= reach) return true;
     }
     return false;
+  }
+
+  /**
+   * R-WEB-BATTLE-CAP-500-Q1: ta sama odpowiedz co _canAttackFrom(ru, col, row), ale z
+   * jednorazowym przygotowaniem (lista wrogow, filtr muru, indeks pol) -- BFS w
+   * _firstStepAlongPathToAttack wola test dla kazdego odwiedzonego pola, a przy 500 vs 500
+   * (1000 jednostek) pelna petla po wrogach + alokacja _enemiesOf na KAZDE pole dawala
+   * O(pola x wrogowie) na jednostke. Wynik identyczny (dd w [1, reach] do dowolnego
+   * wroga nieblokowanego murem).
+   */
+  private _makeCanAttackFromTest(ru: RuntimeBattleUnit): (col: number, row: number) => boolean {
+    const reach = canShoot(ru) ? ru.range : 1;
+    const enemies = this._enemiesOf(ru).filter(e => !this._meleeBlockedByWall(ru, e));
+    if (enemies.length === 0) return () => false;
+    if (reach <= 4) {
+      const cells = new Set<string>();
+      for (const e of enemies) cells.add(cellKey(e.q, e.r));
+      return (col: number, row: number): boolean => {
+        for (let dc = -reach; dc <= reach; dc++) {
+          const rem = reach - Math.abs(dc);
+          for (let dr = -rem; dr <= rem; dr++) {
+            if (dc === 0 && dr === 0) continue;
+            if (cells.has(cellKey(col + dc, row + dr))) return true;
+          }
+        }
+        return false;
+      };
+    }
+    return (col: number, row: number): boolean => {
+      for (const e of enemies) {
+        const dd = manhattan(col, row, e.q, e.r);
+        if (dd >= 1 && dd <= reach) return true;
+      }
+      return false;
+    };
   }
 
   /**
@@ -7438,6 +8613,7 @@ export class BattleScene {
   private _canStrikeTargetFrom(
     ru: RuntimeBattleUnit, col: number, row: number, target: RuntimeBattleUnit,
   ): boolean {
+    if (this._meleeBlockedByWall(ru, target)) return false; // R2
     const reach = canShoot(ru) ? ru.range : 1;
     const dd = manhattan(col, row, target.q, target.r);
     return dd >= 1 && dd <= reach;
@@ -7512,11 +8688,18 @@ export class BattleScene {
    * real grid path lengths, so the unit reliably routes around its own front
    * line instead of deadlocking behind it the way a greedy step would.
    */
-  private _firstStepAlongPathToAttack(ru: RuntimeBattleUnit): string | null {
+  private _firstStepAlongPathToAttack(
+    ru: RuntimeBattleUnit,
+    allowFirstStep?: (q: number, r: number) => boolean,
+    target?: RuntimeBattleUnit,
+  ): string | null {
     const startKey = cellKey(ru.q, ru.r);
+    const isGoal = target
+      ? (q: number, r: number): boolean => this._canStrikeTargetFrom(ru, q, r, target)
+      : this._makeCanAttackFromTest(ru);
 
     // Already standing on an attack position -> handled by the caller, but be safe.
-    if (this._canAttackFrom(ru, ru.q, ru.r)) return null;
+    if (isGoal(ru.q, ru.r)) return null;
 
     // BFS with parent links so we can reconstruct the first step.
     const parent = new Map<string, string | null>();
@@ -7533,6 +8716,7 @@ export class BattleScene {
         if (nc < 0 || nc >= BF_COLS || nr < 0 || nr >= BF_ROWS) continue;
         const nk = cellKey(nc, nr);
         if (parent.has(nk)) continue;          // already seen
+        if (cur.c === ru.q && cur.r === ru.r && allowFirstStep && !allowFirstStep(nc, nr)) continue;
         if (this.occByKey.has(nk)) continue;   // occupied -> wall (cannot stand here)
         // SIEGE v2: wall tiles (BTerrain.Wall) are normally impassable but an
         // attacker approaching the base of the siege wall should be able to
@@ -7546,7 +8730,7 @@ export class BattleScene {
         // from being TARGETED.
         if (!this._passableForUnit(ru, nc, nr)) continue; // river / wall body -> cannot stand
         parent.set(nk, cellKey(cur.c, cur.r));
-        if (this._canAttackFrom(ru, nc, nr)) { goalKey = nk; frontier.length = 0; break; }
+        if (isGoal(nc, nr)) { goalKey = nk; frontier.length = 0; break; }
         frontier.push({ c: nc, r: nr });
       }
     }
@@ -7625,6 +8809,35 @@ export class BattleScene {
   // -------------------------------------------------------------------------
 
   private _doMove(ru: RuntimeBattleUnit, col: number, row: number, done: () => void): void {
+    // R-WEB-SIEGE-MANUAL-BATTLE-BEHAVIOR-Q1 (B): wrecz/konnica przy zamknietym murze/palisadzie
+    // NIE wchodzi w zasieg ostrzalu obroncow (szarza, atakuj-marszem, doktryna -- jeden wspolny
+    // punkt ruchu). Odmowa konczy ruch jednostki w tej turze (brak petli ponawiania kroku).
+    if (this.siegeWallCol >= 0 && this._siegeMoveRefused(ru, col, row)) {
+      ru.moveLeft = 0;
+      done();
+      return;
+    }
+    if (this._autoBatchPlanning) {
+      const intent = this._autoBatchPlanning.intent;
+      const oldKey = cellKey(ru.q, ru.r);
+      const newKey = cellKey(col, row);
+      this.occByKey.delete(oldKey);
+      this.occByKey.set(newKey, ru);
+      const oldCol = ru.q;
+      const oldRow = ru.r;
+      ru.q = col;
+      ru.r = row;
+      const enterCost = Math.max(1, Math.min(this._moveCostForUnit(ru, col, row), 99));
+      const wadingFord = isFordTile(this.terrainMap, oldCol, oldRow)
+        || isFordTile(this.terrainMap, col, row);
+      const stepCost = wadingFord ? enterCost / BROD_RUCH_MULT : enterCost;
+      ru.moveLeft = Math.max(0, ru.moveLeft - stepCost);
+      this._updateFacing(ru);
+      if (intent.kind !== 'attack') intent.kind = 'move';
+      intent.steps.push({ col, row });
+      done();
+      return;
+    }
     this.busy = true;
     const oldKey = cellKey(ru.q, ru.r);
     const newKey = cellKey(col, row);
@@ -7677,7 +8890,7 @@ export class BattleScene {
       ru.group.position.set(x, baseY + hop, z);
       ru.hpBarGroup.position.set(x, baseY + HPBAR_Y, z);
       if (p < 1) {
-        requestAnimationFrame(step);
+        this._raf(step);
       } else {
         ru.group.position.set(to.x, toTopY, to.z);
         ru.hpBarGroup.position.set(to.x, toTopY + HPBAR_Y, to.z);
@@ -7685,7 +8898,7 @@ export class BattleScene {
         done();
       }
     };
-    requestAnimationFrame(step);
+    this._raf(step);
   }
 
   // -------------------------------------------------------------------------
@@ -7698,6 +8911,13 @@ export class BattleScene {
   // -------------------------------------------------------------------------
 
   private _doAttack(attacker: RuntimeBattleUnit, defender: RuntimeBattleUnit, done: () => void): void {
+    if (this._autoBatchPlanning) {
+      const intent = this._autoBatchPlanning.intent;
+      intent.kind = 'attack';
+      intent.targetId = defender.bu.id;
+      done();
+      return;
+    }
     if (canShoot(attacker)) this._doRangedAttack(attacker, defender, done);
     else                    this._doMeleeAttack(attacker, defender, done);
   }
@@ -7756,8 +8976,10 @@ export class BattleScene {
     const cityTerrMult = this.isCityDefenseBattle
       ? cityGatedTerrainMultiplier(hasMur, cityElevationTerrain, this.terrainData)
       : 1;
+    // R-WEB-WALL-DEFENDERS-BONUS-RANGE-Q1: bonus obwarowania dla KAZDEGO obroncy
+    // wewnatrz obwarowania (korona ALBO za linia muru) -- _wallBonusProcFor.
     const terrDefMult = this.isCityDefenseBattle
-      ? 1 + ((defender.onWallWalkway ? this.wallDefenseTotalProc : 0) + (cityTerrMult - 1) * 100) / 100
+      ? 1 + (this._wallBonusProcFor(defender) + (cityTerrMult - 1) * 100) / 100
       : terrainDefenseMultiplier(defTerrain, cuA.rola, this.terrainData);
     // River-crossing Atak penalty (SS5j, pre-existing): the ATTACKER's own
     // tile decides this -- -25% Atak when it is wading a Ford (river_attack_mult
@@ -7786,8 +9008,14 @@ export class BattleScene {
     );
     const defPenaltyFrac = flankRearDefensePenalty(cuD, hitArc);
 
-    const atkBonusy = attacker.side === 'atk' ? this.attackerCivBonusy : this.defenderCivBonusy;
-    const defBonusy = defender.side === 'def' ? this.defenderCivBonusy : this.attackerCivBonusy;
+    const atkBonusy = battleUnitCivBonusy(
+      attacker.bu,
+      attacker.side === 'atk' ? this.attackerCivBonusy : this.defenderCivBonusy,
+    );
+    const defBonusy = battleUnitCivBonusy(
+      defender.bu,
+      defender.side === 'def' ? this.defenderCivBonusy : this.attackerCivBonusy,
+    );
 
     let isCharge = false;
     if (!ranged) {
@@ -7805,6 +9033,9 @@ export class BattleScene {
         side: 'attacker',
         terrain: defTerrain,
         isChargeRound: isCharge,
+        ownTerritory: attacker.side === 'atk' ? this.attackerOwnTerritory : this.defenderOwnTerritory,
+        onWallWalkway: false,
+        shallowSea: this.shallowSea,
       }),
       { pancerz: attacker.bu.pancerzBonusFrac ?? 0, other: attacker.bu.parametryBonusFrac ?? 0 },
     );
@@ -7813,6 +9044,9 @@ export class BattleScene {
         side: 'defender',
         terrain: defTerrain,
         isChargeRound: isCharge,
+        ownTerritory: defender.side === 'def' ? this.defenderOwnTerritory : this.attackerOwnTerritory,
+        onWallWalkway: defender.onWallWalkway === true,
+        shallowSea: this.shallowSea,
       }),
       { pancerz: defender.bu.pancerzBonusFrac ?? 0, other: defender.bu.parametryBonusFrac ?? 0 },
     );
@@ -7824,24 +9058,34 @@ export class BattleScene {
       defender.bu.fortifiedInField === true,
       FORTIFY_OBRONA_PROC_FIELD,
     );
-    const atkOwnerDiffMult = attacker.side === 'atk'
-      ? this.attackerDifficultyCombatMult
-      : this.defenderDifficultyCombatMult;
-    const defOwnerDiffMult = defender.side === 'def'
-      ? this.defenderDifficultyCombatMult
-      : this.attackerDifficultyCombatMult;
+    const atkOwnerDiffMult = battleUnitDifficultyCombatMult(
+      attacker.bu,
+      attacker.side === 'atk' ? this.attackerDifficultyCombatMult : this.defenderDifficultyCombatMult,
+    );
+    const defOwnerDiffMult = battleUnitDifficultyCombatMult(
+      defender.bu,
+      defender.side === 'def' ? this.defenderDifficultyCombatMult : this.attackerDifficultyCombatMult,
+    );
 
     const defEffObrona   = Math.max(0, defMeleeDef * (1 - defPenaltyFrac) * defOwnerDiffMult);
-    const defFinalObrona = defEffObrona * terrDefMult * defFordMlt * shoreBonusMlt;
-    const atkMelee       = applyMultiplier(cuA.meleeAttack, atkMods.atk) * terrRiverMlt * atkOwnerDiffMult;
+    const wallCivMult = defender.onWallWalkway
+      ? civWallDefenseMultiplier(defBonusy, cuD)
+      : 1;
+    const defFinalObrona = defEffObrona * terrDefMult * defFordMlt * shoreBonusMlt * wallCivMult;
+    const atkMeleeRaw    = applyMultiplier(cuA.meleeAttack, atkMods.atk) * atkOwnerDiffMult;
+    const atkMelee       = atkMeleeRaw * terrRiverMlt;
     const atkMissile     = applyMultiplier(cuA.missileAttack ?? 0, atkMods.rangedAtk) * atkOwnerDiffMult;
+    // R-WEB-BATTLE-RANGED-DAMAGE-MULT-Q1: celnosc pocisku = max(wrecz, dystansowy) strzelca.
+    const atkShootAcc    = rangedShotAccuracy(atkMeleeRaw, atkMissile) * terrRiverMlt;
     const defArmor       = applyMultiplier(cuD.armor, defMods.pancerz);
     const roundAtkCharge = applyMultiplier(cuA.chargeBonus, atkMods.uderzenie);
     const ctrAtkVsDef    = counterMultiplier(cuA.counterTyp, cuD.counterTyp, this.counters);
 
     const chargeHitBonus = (!ranged && isCharge) ? roundAtkCharge : 0;
-    const hitPct = hitChanceTw(atkMelee, defFinalObrona, chargeHitBonus);
-    const roll   = Math.random() * 100;
+    // R-WEB-BATTLE-HIT-MODE-SETTING-Q1: tryb 'pewne' = uderzenie zawsze trafia (bez rzutu).
+    const certainHit = isCertainHitMode();
+    const hitPct = certainHit ? 100 : hitChanceTw(ranged ? atkShootAcc : atkMelee, defFinalObrona, chargeHitBonus);
+    const roll   = certainHit ? 0 : Math.random() * 100;
     if (roll >= hitPct) {
       this.log.push(attacker.bu.nazwa + ' chybia w ' + defender.bu.nazwa + ' (' + roll.toFixed(0) + '>=' + hitPct + '%).');
       return 0;
@@ -7850,7 +9094,11 @@ export class BattleScene {
     let rawDmg: number;
     let meleeCharge = false; // FACTOR 2 flag: this blow is a mounted charge's first blow
     if (ranged) {
-      rawDmg = rangeDamage(atkMissile, defArmor);
+      // R-WEB-BATTLE-RANGED-DAMAGE-MULT-Q1: mnoznik klasy strzelca przed zaokragleniem.
+      rawDmg = rangeDamage(atkMissile, defArmor) * rangedDamageMultFor({
+        Typ: cuA.counterTyp,
+        Jednostka: cuA.typNazwa,
+      });
     } else {
       meleeCharge = isCharge; // FACTOR 2: mounted charge morale hit (set below)
       rawDmg = baseDamage(
@@ -7887,6 +9135,16 @@ export class BattleScene {
     else if (hitArc === 'rear') extraMorale += MORALE_REAR_HIT;
     if (!ranged && attacker.mounted && meleeCharge) extraMorale += MORALE_CHARGE_HIT;
 
+    return this._resolveBlowOutcome(attacker, defender, dmg, extraMorale);
+  }
+
+  /**
+   * Outcome of a landed blow (HP already reduced): death (HP <= 0 -> unit removed
+   * from the field at once, also for an already routed unit), rout-before-death
+   * (only for NON-lethal blows) or plain morale damage. Extracted from _singleBlow
+   * (R-WEB-BATTLE-DEAD-UNITS-NOT-REMOVED-FROM-FIELD-Q1) so it is testable headless.
+   */
+  private _resolveBlowOutcome(attacker: RuntimeBattleUnit, defender: RuntimeBattleUnit, dmg: number, extraMorale: number): number {
     // Death check for the target (one blow affects one unit). HP <= 0 kills it
     // outright (and shakes nearby allies). The old HP-fraction "Prog dezercji"
     // elimination is now handled by the MORALE pool below; a never-rout unit
@@ -7895,10 +9153,13 @@ export class BattleScene {
     // PEKA I UCIEKA zamiast ginac -- zmeczone jednostki rotuja, nie bija sie do
     // ostatniego. Tylko cios NIE lamiacy morale moze zabic od razu (nagla smierc
     // jeszcze niezlamanej jednostki). neverRout (berserk/"walczy do smierci") nie pekaja.
-    if (!defender.dead && !defender.fadingOut && !defender.routed && !defender.neverRout) {
+    // R-WEB-BATTLE-DEAD-UNITS-NOT-REMOVED-FROM-FIELD-Q1: cios, ktory sprowadza HP do 0,
+    // ZABIJA (jednostka znika z pola) -- nie ozywiamy jej do hp=1 tylko po to, by uciekala
+    // z pustym paskiem zdrowia. Rout-before-death dotyczy wylacznie ciosow NIEsmiertelnych.
+    if (!defender.dead && !defender.fadingOut && !defender.routed && !defender.neverRout
+        && defender.bu.hp > 0) {
       const projMorale = defender.morale - MORALE_HIT_LOSS_SCALE * (dmg / Math.max(1, defender.bu.maxHp)) - extraMorale;
       if (projMorale <= defender.fleeMorale) {
-        if (defender.bu.hp <= 0) { defender.bu.hp = 1; this._updateHpBar(defender); } // przezywa by uciec
         this._applyMoraleDamage(defender, dmg, extraMorale); // obniza morale (+flanka/tyl/szarza) -> _checkRout -> _startRout
         // FACTOR 3: blow that ROUTED the defender -> attacker GAINS morale.
         if (defender.routed) this._gainMorale(attacker, MORALE_KILL_GAIN);
@@ -7907,7 +9168,8 @@ export class BattleScene {
       }
     }
 
-    if (!defender.dead && !defender.fadingOut && !defender.routed) {
+    // Uciekajacy (routed) tez ginie przy HP <= 0 -- nie wolno mu zostac na polu z pustym paskiem.
+    if (!defender.dead && !defender.fadingOut && !defender.removed) {
       if (defender.bu.hp <= 0) {
         this.log.push('  -> ' + defender.bu.nazwa + ' wyeliminowany');
         this._startFade(defender);
@@ -8035,9 +9297,9 @@ export class BattleScene {
         });
         return;
       }
-      requestAnimationFrame(stepAnim);
+      this._raf(stepAnim);
     };
-    requestAnimationFrame(stepAnim);
+    this._raf(stepAnim);
   }
 
   // ---- Ranged: ONE shot with a flying projectile, single blow on landing ----
@@ -8130,6 +9392,13 @@ export class BattleScene {
       // Advance the speed-scaled virtual clock from the wall clock, THEN drive
       // every battle ticker off that virtual time so animations honour the
       // current speed multiplier (1x/2x/4x/8x) without breaking their shape.
+      if (this._ffActive && !this.paused) {
+        this.vLastWall = t;
+        this._runFastForward();
+        this._updateArmyMoraleBars();
+        this.renderer.render(this.scene, this.camera);
+        return;
+      }
       this._advanceVClock(t);
       // Drain the virtual-time scheduler BEFORE the per-frame tickers so newly
       // due actions are applied this frame (the speed fix -- see _drainTimers).
@@ -8261,6 +9530,100 @@ export class BattleScene {
    */
   private _now(): number { return this.vNow; }
 
+  /** requestAnimationFrame dla krokow przeplywu walki; w trybie FF (skip) wykonywane synchronicznie w petli FF. */
+  private _raf(cb: () => void): void {
+    if (this._ffActive) { this._ffQueue.push(cb); return; }
+    requestAnimationFrame(cb);
+  }
+
+  /**
+   * Przewija symulacje: do ~budzetu czasu zegara scianowego wykonuje kroki wirtualnego
+   * czasu (timery + kroki animacji), az bitwa sie skonczy. Ten sam kod walki co zwykla gra.
+   */
+  private _runFastForward(): void {
+    // Match one AUTO animation frame at the active speed. Capping and
+    // quantizing the same wall-clock budget here keeps fast-forward gameplay
+    // on the same simulation ticks as AUTO (including when speed changes).
+    const FF_STEP_MS = this._scaledWallDelta(BattleScene.BATTLE_FRAME_WALL_MS);
+    // Koniec bitwy wyznacza silnik (_checkEnd) tak jak w walce AUTO. Sufit FF_MAX_ROUNDS
+    // (w turach) dotyczy tylko bitew, ktore silnik nie konczy (stan ustalony w oblezeniu).
+    const wall0 = performance.now();
+    while (!this.finished && performance.now() - wall0 < 40) {
+      if (this._roundCapVerdict()) { this._ffRoundCapResult(); return; }
+      if (this._ffPendingAuto && !this.busy) { this._ffPendingAuto = false; this._ffEnterAuto(); }
+      this.vNow += FF_STEP_MS;
+      this._ffVirtualMs += FF_STEP_MS;
+      // Kolejnosc jak w klatce AUTO (_startLoop): najpierw zegary i pociski/zaniki, potem
+      // kroki animacji z poprzedniej klatki (rAF). Kroki dopisane teraz trafiaja do nastepnego obrotu.
+      this._drainTimers();
+      this._tickProjectiles(this.vNow);
+      this._tickFades(this.vNow);
+      const q = this._ffQueue;
+      this._ffQueue = [];
+      for (const cb of q) cb();
+    }
+  }
+
+  /**
+   * Jedyne kryterium konca po sufitach tur -- wspolne dla przewijania (skip), walki AUTO i recznej
+   * (_checkEnd), zeby wszystkie sciezki dawaly IDENTYCZNY wynik.
+   *  - Oblezenie BEZ wylomu (mur/palisada/brama stoi): sufit siegeNoBreachMaxRounds (150 tur,
+   *    combat-params.json). Werdykt = REMIS (odparty szturm): atakujacy sie wycofuje, miasto zostaje
+   *    przy obroncy, obie strony ponosza straty z przebiegu (decyzja wlasciciela ABC 2026-11-10).
+   *  - Pozostale bitwy (w tym oblezenie Z wylomem): sufit FF_MAX_ROUNDS (400), rozstrzygniecie po
+   *    morale armii, remis morale -> obronca (jak PAT silnika).
+   * Zwraca null, gdy sufit nie zostal osiagniety.
+   */
+  private _roundCapVerdict(): { winner: 'atakujacy' | 'obronca' | 'remis'; reason: string; cap: number } | null {
+    const noBreach = this.siegeWallCol >= 0 && !this.wallEverBreached;
+    if (noBreach) {
+      const cap = Math.min(this.siegeNoBreachMaxRounds, FF_MAX_ROUNDS);
+      if (this.roundNo < cap) return null;
+      return { winner: 'remis', reason: 'SZTURM ODPARTY (remis): brak wylomu w murze/palisadzie, atakujacy sie wycofuja, miasto zostaje przy obroncy', cap };
+    }
+    if (this.roundNo < FF_MAX_ROUNDS) return null;
+    const ratioA = this._armyMoraleRatio('atk');
+    const ratioD = this._armyMoraleRatio('def');
+    return {
+      winner: ratioA <= ratioD ? 'obronca' : 'atakujacy',
+      reason: 'rozstrzygniecie po morale armii',
+      cap: FF_MAX_ROUNDS,
+    };
+  }
+
+  /** Koniec bitwy REMISEM (odparty szturm): ocalali obu stron wracaja na mape, bez zwyciezcy. */
+  private _finishDraw(reason: string, cap: number): void {
+    this.finished = true;
+    this._ffActive = false;
+    this._ffQueue = [];
+    this.log.push('=== PAT: ' + cap + ' tur bez rozstrzygniecia -- ' + reason + ' ===');
+    this.log.push('=== Koniec bitwy: REMIS ===');
+    this._endWinner = 'remis';
+    this._endSurvivors = [
+      ...this._battleUnitsForMapExport(this.atk),
+      ...this._battleUnitsForMapExport(this.def),
+    ];
+    this._showEndScreen('remis');
+  }
+
+  /**
+   * Sufit przewijania: rozstrzygniecie tym samym kryterium co _checkEnd (_roundCapVerdict),
+   * z pelnym zakonczeniem bitwy i ekranem wyniku.
+   */
+  private _ffRoundCapResult(): void {
+    const cap = this._roundCapVerdict();
+    if (!cap) return;
+    if (cap.winner === 'remis') { this._finishDraw(cap.reason, cap.cap); return; }
+    this.finished = true;
+    this._ffActive = false;
+    this._ffQueue = [];
+    const winner = cap.winner;
+    this.log.push('=== PAT (przewijanie): ' + cap.cap + ' tur bez rozstrzygniecia -- ' + cap.reason + ' ===');
+    this._endWinner = winner;
+    this._endSurvivors = this._battleUnitsForMapExport(this._mapExportRoster(winner));
+    this._showEndScreen(winner);
+  }
+
   /** Advance the virtual clock from the wall clock, scaled by speedMul. Called once per frame. */
   private _advanceVClock(wall: number): void {
     if (this.vLastWall === 0) { this.vLastWall = wall; return; }
@@ -8270,8 +9633,13 @@ export class BattleScene {
     if (dw < 0) dw = 0;
     // Clamp the wall delta so a backgrounded tab (huge dt) can't teleport the
     // whole battle forward in a single frame; pacing stays smooth on resume.
-    if (dw > 100) dw = 100;
-    this.vNow += dw * this.speedMul;
+    this.vNow += this._scaledWallDelta(dw);
+  }
+
+  /** Shared wall-delta clamp and speed quantization for AUTO and fast-forward. */
+  private _scaledWallDelta(wallDelta: number): number {
+    const clamped = Math.max(0, Math.min(wallDelta, BattleScene.BATTLE_FRAME_MAX_WALL_DELTA_MS));
+    return clamped * this.speedMul;
   }
 
   /** Apply a speed step by index into SPEED_STEPS and refresh the button label. */
@@ -8353,6 +9721,14 @@ export class BattleScene {
    * gaps catches up fully within a frame, so tempo scales linearly to 16x.
    */
   private _schedule(ms: number, cb: () => void): void {
+    // AUTO planning runs on detached clones. Execute its continuation
+    // synchronously so the intent is complete before the next unit is planned;
+    // never enqueue clone callbacks into the live battle timer queue.
+    if (this._autoBatchPlanning) {
+      void ms;
+      cb();
+      return;
+    }
     if (this.finished) return;
     this.vTimers.push({ due: this._now() + Math.max(0, ms), cb, id: this.vTimerSeq++ });
   }
@@ -8550,14 +9926,18 @@ export class BattleScene {
 
   private _startRout(ru: RuntimeBattleUnit): void {
     if (ru.routed || ru.dead || ru.fadingOut) return;
-    this._sfxRout(); // AUDIO: a brief falling horn as the unit breaks
+    if (!this._autoBatchPlanning) this._sfxRout(); // clone planning is silent
     ru.routed = true;
+    if (ru.isArmyCommander) {
+      this._removeCommanderMoraleBonus(ru.side);
+      this._disableManualIfCommanderLost(ru.side);
+    }
     ru.acted  = true; // never takes another offensive action
     if (!ru.primaryRanged) this._checkMeleeScreenLost(ru.side);
     this._boostEnemiesOnBreak(ru); // FACTOR 4: this unit broke -> nearby enemies gain morale
-    // Free its tile immediately so others can path through the gap it leaves and
-    // it never blocks tiles while fleeing.
-    this.occByKey.delete(cellKey(ru.q, ru.r));
+    // R-WEB-BATTLE-ROUTED-UNITS-PURSUED-AND-DESTROYED-Q1: uciekinier ZOSTAJE na swoim polu w
+    // occByKey (jest zywa jednostka na planszy: ruch/cel nie moga go wchlonac ani zdublowac).
+    // Pole zwalnia sie, gdy ucieknie z planszy (_removeUnitFromScene) lub zginie.
     // Turn to FACE its OWN home edge (away from the enemy): the attacker deploys
     // LEFT so it flees WEST toward the left edge; the defender deploys RIGHT so it
     // flees EAST toward the right edge.
@@ -8581,6 +9961,30 @@ export class BattleScene {
     // turn by _beginTurn), so it gets fresh flee-turns afterwards.
   }
 
+  /** Cache: kolumna krawedzi ucieczki per strona (pierwsza kolumna od krawedzi planszy, na ktorej da sie stanac). */
+  private _fleeHomeColCache: { atk: number | null; def: number | null } = { atk: null, def: null };
+
+  /**
+   * R-WEB-BATTLE-ROUTED-UNITS-PURSUED-AND-DESTROYED-Q1: KRAWEDZ ucieczki strony = skrajna kolumna pola
+   * bitwy, na ktorej jednostka moze faktycznie stanac (planszy 68 kolumn ma po prawej ~10 kolumn marginesu
+   * kamery nieprzechodnich -- uciekinier dochodzi do konca MAPY, nie do niewidzialnej sciany). Atakujacy
+   * ucieka na zachod (min. kolumna), obronca na wschod (maks. kolumna). Wynik terenu jest staly, wiec cache.
+   */
+  private _fleeHomeCol(ru: RuntimeBattleUnit): number {
+    const cached = this._fleeHomeColCache[ru.side];
+    if (cached !== null) return cached;
+    const playable = (c: number): boolean => {
+      for (let r = 0; r < BF_ROWS; r++) if (this._passableForUnit(ru, c, r)) return true;
+      return false;
+    };
+    let col = ru.side === 'atk' ? 0 : BF_COLS - 1;
+    const step = ru.side === 'atk' ? 1 : -1;
+    while (col >= 0 && col < BF_COLS && !playable(col)) col += step;
+    if (col < 0 || col >= BF_COLS) col = ru.side === 'atk' ? 0 : BF_COLS - 1; // brak przechodnich kolumn: stare zachowanie
+    this._fleeHomeColCache[ru.side] = col;
+    return col;
+  }
+
   /**
    * ROUTED unit's per-turn flee action: walk up to its movement points toward its
    * OWN home edge (attacker -> col 0 / west; defender -> col BF_COLS-1 / east) at
@@ -8595,7 +9999,7 @@ export class BattleScene {
     if (ru.dead || ru.fadingOut || ru.removed) { done(); return; }
     if (ru.moveLeft <= 0) { done(); return; }
 
-    const homeCol = ru.side === 'atk' ? 0 : (BF_COLS - 1);
+    const homeCol = this._fleeHomeCol(ru);
 
     // Already at (or past) the home edge -> leave the field now.
     const atEdge = ru.side === 'atk' ? (ru.q <= homeCol) : (ru.q >= homeCol);
@@ -8673,21 +10077,29 @@ export class BattleScene {
   }
 
   private _startFade(ru: RuntimeBattleUnit): void {
-    if (ru.fadingOut || ru.dead) return;
+    if (ru.fadingOut || ru.dead || ru.removed) return;
+    if (ru.isArmyCommander) {
+      this._removeCommanderMoraleBonus(ru.side);
+      this._disableManualIfCommanderLost(ru.side);
+    }
     this._sfxDeath(); // AUDIO: a dull thud as the unit falls
-    ru.fadingOut = true;
-    ru.fadeStart = this._now();
-    this.fadingUnits.push(ru);
-    this.occByKey.delete(cellKey(ru.q, ru.r));
+    // A killed unit has no on-field corpse/death visual: detach it immediately.
+    // Routed units deliberately use _startRout/_fleeStep instead and remain
+    // visible while leaving the battlefield.
+    this._removeUnitFromScene(ru);
   }
 
   private _spawnDamageLabel(ru: RuntimeBattleUnit, dmg: number): void {
+    // Przewijanie (skip): etykiet nie tworzymy -- w FF nie ma klatek, ktore by je usuwaly
+    // (_tickFloatLabels nie jest wolane), wiec DOM rosnalby o jeden div na kazdy cios.
+    if (this._ffActive) return;
     const el = document.createElement('div');
     el.textContent = '-' + dmg;
     Object.assign(el.style, {
       position:      'absolute',
       pointerEvents: 'none',
-      color:         '#ff4444',
+      // R-WEB-BATTLE-DAMAGE-COLORS: straty gracza czerwone, przeciwnika żółte.
+      color:         battleLossTextColor(this._isPlayerSide(ru.side)),
       fontFamily:    'sans-serif',
       fontSize:      '15px',
       fontWeight:    'bold',
@@ -8727,16 +10139,31 @@ export class BattleScene {
    */
   private _armyMoraleRatio(side: 'atk' | 'def'): number {
     const arr = side === 'atk' ? this.atk : this.def;
-    let cur = 0;
-    let start = 0;
+    return armyMoraleRatioWithoutCommander(arr);
+  }
+
+  private _removeCommanderMoraleBonus(side: 'atk' | 'def'): void {
+    const arr = side === 'atk' ? this.atk : this.def;
     for (const u of arr) {
-      start += u.moraleMax;
-      // Dead OR routed units contribute 0 current morale.
-      if (u.dead || u.fadingOut || u.routed) continue;
-      cur += Math.max(0, u.morale);
+      const frac = u.bu.armyLeaderMoraleBonusFrac ?? 0;
+      if (frac <= 0) continue;
+      const ratio = u.moraleMax > 0 ? Math.max(0, Math.min(1, u.morale / u.moraleMax)) : 0;
+      u.bu.armyLeaderMoraleBonusFrac = 0;
+      const base = moraleBaseFor(u.bu) * (side === 'def' ? 1.5 : 1);
+      u.moraleMax = base;
+      u.morale = Math.min(base, Math.ceil(base * ratio));
+      this._updateMoraleBar(u);
     }
-    if (start <= 0) return 1.0;
-    return cur / start;
+  }
+
+  private _disableManualIfCommanderLost(side: 'atk' | 'def'): void {
+    if (!this._manualCommanderGate || side !== this._deployPlayerSideOpt || this._autoBatchPlanning) return;
+    this._schedule(0, () => {
+      const roster = side === 'atk' ? this.atk : this.def;
+      if (this._manualMode && !roster.some(u => u.isArmyCommander && !u.dead && !u.fadingOut && !u.routed)) {
+        this._toggleManualMode();
+      }
+    });
   }
 
   /**
@@ -8892,6 +10319,11 @@ export class BattleScene {
     const ratioD = this._armyMoraleRatio('def');
     const brokenA = ratioA < ARMY_MORALE_LOSS_THRESHOLD;
     const brokenD = ratioD < ARMY_MORALE_LOSS_THRESHOLD;
+    // R-WEB-BATTLE-ROUTED-UNITS-PURSUED-AND-DESTROYED-Q1: zalamanie morale CALEJ armii nie "ocala" reszty --
+    // wszyscy jeszcze walczacy (poza neverRout) pekaja i uciekaja do krawedzi, a zwyciezca ich sciga.
+    if (brokenA) { this._routWholeArmy(this.atk); aliveA = this.atk.some(u => !u.dead && !u.fadingOut && !u.routed); }
+    if (brokenD) { this._routWholeArmy(this.def); aliveD = this.def.some(u => !u.dead && !u.fadingOut && !u.routed); }
+    let forcedVerdict = false; // werdykt wymuszony (pat/sufit/szturm odparty) -- bez odroczenia na poscig
     if (this._stalled && aliveA && aliveD) {
       // Nie rozstrzygaj po stall gdy: (a) tryb oblezenia -- atakujacy maszeruje/
       // buduje machiny wiele tur bez starcia, (b) zerowe straty po obu stronach
@@ -8900,19 +10332,45 @@ export class BattleScene {
       const totalDead = [...this.atk, ...this.def].filter(u => u.dead).length;
       if (!isSiege && totalDead > 0) {
         this.log.push('=== PAT: brak postepu w walce -- rozstrzygniecie po morale armii ===');
+        forcedVerdict = true;
         if (ratioA <= ratioD) aliveA = false; else aliveD = false;
       }
+      // R1/R2: w oblezeniu bez wylomu nikt nie moze zadac ciosu (melee nie bije muru/
+      // palisady, brak machin) -- szturm odparty zamiast wiecznego patu.
+      if (isSiege && !this.wallEverBreached) {
+        this.log.push('=== SZTURM ODPARTY: brak wylomu w murze/palisadzie -- atakujacy nie moga dosiegnac obroncow ===');
+        forcedVerdict = true;
+        aliveA = false;
+      }
     }
-    if (brokenA && aliveA) {
-      this.log.push('=== Morale armii ATAKUJACEGO zalamane (' + Math.round(ratioA * 100) + '% < 25%) -- armia w rozsypce! ===');
-      aliveA = false;
+    // R-WEB-BATTLE-NEVERROUT-HOLD-FIGHT-Q1: po zalamaniu morale zostaja przy zyciu tylko jednostki
+    // "walczy do smierci" (neverRout) -- one NIE uciekaja i walcza dalej, wiec strona pozostaje w grze
+    // (aliveX=true). Bitwa konczy sie, gdy one zgina albo uciekinierzy zejda z pola (_pursuitPending).
+    if (brokenA && aliveA && !this._logHas('Morale armii ATAKUJACEGO')) {
+      this.log.push('=== Morale armii ATAKUJACEGO zalamane (' + Math.round(ratioA * 100) + '% < 25%) -- zwykli uciekaja, walczacy do smierci zostaja ===');
     }
-    if (brokenD && aliveD) {
-      this.log.push('=== Morale armii OBRONCY zalamane (' + Math.round(ratioD * 100) + '% < 25%) -- armia w rozsypce! ===');
-      aliveD = false;
+    if (brokenD && aliveD && !this._logHas('Morale armii OBRONCY')) {
+      this.log.push('=== Morale armii OBRONCY zalamane (' + Math.round(ratioD * 100) + '% < 25%) -- zwykli uciekaja, walczacy do smierci zostaja ===');
+    }
+    // Sufit tur w AUTO/recznej: ten sam werdykt co przewijanie (_roundCapVerdict),
+    // dzieki czemu "Pomin do wyniku" i dojscie AUTO do sufitu daja identyczny wynik.
+    if (aliveA && aliveD) {
+      const cap = this._roundCapVerdict();
+      if (cap) {
+        if (cap.winner === 'remis') { this._finishDraw(cap.reason, cap.cap); return true; }
+        this.log.push('=== PAT: ' + cap.cap + ' tur bez rozstrzygniecia -- ' + cap.reason + ' ===');
+        forcedVerdict = true;
+        if (cap.winner === 'obronca') aliveA = false; else aliveD = false;
+      }
     }
 
     if (aliveA && aliveD) return false;
+
+    // R-WEB-BATTLE-ROUTED-UNITS-PURSUED-AND-DESTROYED-Q1: BITWA NIE KONCZY SIE, dopoki strona przegrana ma
+    // na polu uciekinierow, a zwyciezca moze ich scigac (aktywne, niezroutowane jednostki). Uciekinier
+    // ginie w poscigu albo znika jako ocalaly po dotarciu do SWOJEJ krawedzi (_fleeStep).
+    if (!forcedVerdict && this._pursuitPending(aliveA, aliveD)) return false;
+    this._resolveRemainingRouted();
 
     this.finished = true;
 
@@ -8928,9 +10386,10 @@ export class BattleScene {
 
     // Rout na polu 3D ustawia dead=true przy _removeUnitFromScene — na mapie świata
     // jednostka rozbita (rout) ma wrócić z HP>0 (post-battle-map.ts wycofanie).
-    const survivors = this._battleUnitsForMapExport(
-      winner === 'atakujacy' ? this.atk : this.def,
-    );
+    // R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1: w bitwie W POLU ocalali (w tym rozbici/
+    // rout, HP>0) PRZEGRANEJ strony tez wracaja na mape -- applyPostBattleMap cofa ich o 2 heksy.
+    // W MIESCIE (isCityDefenseBattle / oblezenie) przegrani gina jak dotad (decyzja wlasciciela).
+    const survivors = this._battleUnitsForMapExport(this._mapExportRoster(winner));
 
     const winMsg = winner === 'atakujacy' ? 'ATAKUJACEGO' : 'OBRONCY';
     this.log.push('=== Koniec bitwy: zwyciestwo ' + winMsg + ' ===');
@@ -8946,10 +10405,84 @@ export class BattleScene {
     return true;
   }
 
+  /** R-WEB-BATTLE-NEVERROUT-HOLD-FIGHT-Q1: czy log bitwy juz zawiera dany fragment (komunikat zalamania jednorazowo, nie co ture). */
+  private _logHas(fragment: string): boolean {
+    return this.log.some(l => typeof l === 'string' && l.includes(fragment));
+  }
+
+  /** Uciekinierzy strony nadal na planszy (zywi, nie usunieci). */
+  private _routedOnField(roster: RuntimeBattleUnit[]): RuntimeBattleUnit[] {
+    return roster.filter(u => u.routed && !u.dead && !u.fadingOut && !u.removed);
+  }
+
+  /** Zalamanie morale armii: reszta jednostek (poza neverRout) pęka i ucieka do swojej krawedzi. */
+  private _routWholeArmy(roster: RuntimeBattleUnit[]): void {
+    for (const u of commandersToWithdrawAfterArmyBreak(roster, ARMY_MORALE_LOSS_THRESHOLD)) this._startRout(u);
+    for (const u of roster) {
+      if (u.dead || u.fadingOut || u.removed || u.routed || u.neverRout) continue;
+      this._startRout(u);
+    }
+  }
+
+  /**
+   * Czy koniec bitwy trzeba ODLOZYC na poscig: przegrana strona ma uciekinierow na polu, a zwyciezca ma
+   * aktywnych (niezroutowanych) scigajacych, i sufit PURSUIT_MAX_ROUNDS nie zostal osiagniety.
+   */
+  private _pursuitPending(aliveA: boolean, aliveD: boolean): boolean {
+    const chasing = (loserAtk: boolean): boolean => {
+      const loser = loserAtk ? this.atk : this.def;
+      const winnerAlive = loserAtk ? aliveD : aliveA;
+      return winnerAlive && this._routedOnField(loser).length > 0;
+    };
+    // R-WEB-BATTLE-NEVERROUT-HOLD-FIGHT-Q1: strona, ktora po zalamaniu morale nadal ma walczace do smierci
+    // jednostki (neverRout), a jej uciekinierzy sa jeszcze na polu, nie moze zniknac z bitwy w tej samej
+    // turze -- uciekinierzy maja byc widoczni az zejda z pola (limit PURSUIT_MAX_ROUNDS tez obowiazuje).
+    const neverLeft = (roster: RuntimeBattleUnit[]): boolean =>
+      roster.some(u => u.neverRout && !u.dead && !u.fadingOut && !u.removed && !u.routed);
+    const neverFlight = (alive: boolean, roster: RuntimeBattleUnit[]): boolean =>
+      alive && neverLeft(roster) && this._routedOnField(roster).length > 0;
+    const neverPending = neverFlight(aliveA, this.atk) || neverFlight(aliveD, this.def);
+    if (!(!aliveA && chasing(true)) && !(!aliveD && chasing(false)) && !neverPending) return false;
+    if (this._pursuitStartRound < 0) {
+      this._pursuitStartRound = this.roundNo;
+      this.log.push('=== POSCIG: armia przegrana ucieka -- zwyciezca dobija uciekinierow ===');
+    }
+    return this.roundNo - this._pursuitStartRound < PURSUIT_MAX_ROUNDS;
+  }
+
+  /**
+   * Rozstrzygniecie DETERMINISTYCZNE uciekinierow, ktorzy w chwili konca bitwy sa jeszcze na planszy
+   * (sufit poscigu, brak scigajacych, werdykt wymuszony): w zasiegu (ruch + zasieg ataku) dowolnego
+   * aktywnego wroga -> ginie przed dotarciem do krawedzi; poza zasiegiem -> uznany za uciekajacego (ocalaly).
+   */
+  private _resolveRemainingRouted(): void {
+    for (const roster of [this.atk, this.def]) {
+      const enemies = (roster === this.atk ? this.def : this.atk)
+        .filter(u => !u.dead && !u.fadingOut && !u.removed && !u.routed);
+      for (const ru of this._routedOnField(roster)) {
+        const caught = enemies.some(e =>
+          manhattan(ru.q, ru.r, e.q, e.r) <= this._movementPointsFor(e.bu) + (canShoot(e) ? e.range : 1));
+        if (caught) {
+          ru.bu.hp = 0;
+          this.log.push('  -> ' + ru.bu.nazwa + ' dogoniony i zniszczony w poscigu');
+        } else {
+          this.log.push('  -> ' + ru.bu.nazwa + ' uciekl z pola bitwy');
+        }
+        this._removeUnitFromScene(ru);
+      }
+    }
+  }
+
   /**
    * Ocalałe jednostki zwycięskiej strony do applyPostBattleMap (manualSurvivors).
    * Rout = ucieczka z pola bitwy, nie kasacja z units[] — HP>0 wraca na mapę.
    */
+  /** Roster eksportowany na mape: w polu OBIE strony (przegrani sie cofna), w miescie tylko zwyciezca. */
+  private _mapExportRoster(winner: 'atakujacy' | 'obronca' | 'remis'): RuntimeBattleUnit[] {
+    if (!this.isCityDefenseBattle) return [...this.atk, ...this.def];
+    return winner === 'atakujacy' ? this.atk : this.def;
+  }
+
   private _battleUnitsForMapExport(roster: RuntimeBattleUnit[]): BattleUnit[] {
     return roster
       .filter(u => u.bu.hp > 0 && (!u.dead || u.routed))
@@ -9019,7 +10552,7 @@ export class BattleScene {
   }
 
   private _battleSummaryWinner(): BattleSummaryWinner {
-    if (this._endWinner === 'atakujacy' || this._endWinner === 'obronca') return this._endWinner;
+    if (this._endWinner === 'atakujacy' || this._endWinner === 'obronca' || this._endWinner === 'remis') return this._endWinner;
     if (this.finished) {
       const aliveA = this.atk.some(u => !u.dead && !u.removed);
       const aliveD = this.def.some(u => !u.dead && !u.removed);
@@ -9226,8 +10759,28 @@ export class BattleScene {
     if (this.siegeWallCol < 0) return;
     this.gateHp = 400;
     this.gateOpen = false;
+    this.wallEverBreached = false;
     this.towerAtWallRows.clear();
     this.wallTileHp.clear();
+    this.lastAttackedWallRow = -1;
+    // Teren kolumny muru/bramy z kopii zapamietanej przy starcie bitwy (wyłomy zamieniaja kafle na Plains).
+    const tiles = this.terrainMap.tiles;
+    if (tiles) {
+      for (let r = 0; r < this.siegeWallInitialTiles.length; r++) {
+        const idx = r * BF_COLS + this.siegeWallCol;
+        if (idx >= 0 && idx < tiles.length) tiles[idx] = this.siegeWallInitialTiles[r] as typeof tiles[number];
+      }
+    }
+    // Wizualia: gruz z wylomow zdjac, ukryte segmenty muru/brama wracaja, wiezyczki odbudowane.
+    for (const m of this.siegeRubbleMeshes) this.scene.remove(m);
+    this.siegeRubbleMeshes = [];
+    for (const o of this.siegeHiddenMeshes) o.visible = true;
+    this.siegeHiddenMeshes = [];
+    for (const t of this.siegeTowers) {
+      t.destroyed = false;
+      if (t.mesh) t.mesh.visible = true;
+    }
+    this._updateSiegeHud();
     const gateRowLo = this.siegeGateRow - 1;
     const gateRowHi = this.siegeGateRow;
     for (let r = this.siegeWallRowLo; r <= this.siegeWallRowHi; r++) {
@@ -9241,6 +10794,8 @@ export class BattleScene {
     this.started = false;
     this.busy = false;
     this.roundNo = 0;
+    this._lineCapCache = null;
+    this._lineAdvanceState?.clear();
     this.activeSide = 'atk';
     this._manualMode = true;
     this._battleAwaitingOrders = true;
@@ -9248,6 +10803,8 @@ export class BattleScene {
     this._endSurvivors = [];
     this.log = [];
     this.vTimers.length = 0;
+    this._ffActive = false;
+    this._ffQueue = [];
     this.engaged.clear();
     this._stallTurns = 0;
     this._stallSig = '';
@@ -9367,7 +10924,9 @@ export class BattleScene {
     if (!suppress) this._syncBattleToolbarMode();
   }
 
-  private _showEndScreen(winner: 'atakujacy' | 'obronca'): void {
+  private _showEndScreen(winner: 'atakujacy' | 'obronca' | 'remis'): void {
+    this._ffActive = false;
+    this._ffQueue = [];
     if (this._endScreenShown) return;
     this._endScreenShown = true;
     this._hideEndDetails();
@@ -9377,13 +10936,14 @@ export class BattleScene {
     const playerSide = this._playerControlSide();
     const sA = this._sideEndStats('atk');
     const sD = this._sideEndStats('def');
-    const playerWon = this._playerWonFromBattleWinner(winner);
+    const isDraw = winner === 'remis';
+    const playerWon = !isDraw && this._playerWonFromBattleWinner(winner);
     // Muzyka ekranu końca bitwy (wg tej samej flagi playerWon, co wizualia):
     // wygrana -> utwór zwycięstwa, przegrana -> utwór porażki. Overlay bitwy jest
     // aktywny, więc to czysta wymiana utworu; muzykę mapy wznawia setMood('mapa')
     // wołane z callbacku onFinish/onCancel bitwy (patrz main.ts).
-    if (playerWon) startVictoryMusic(); else startDefeatMusic();
-    const winSub = winner === 'atakujacy' ? 'Zwyci\u0119stwo atakuj\u0105cego!' : 'Zwyci\u0119stwo obro\u0144cy!';
+    if (playerWon) startVictoryMusic(); else if (!isDraw) startDefeatMusic();
+    const winSub = isDraw ? 'Remis \u2014 szturm odparty' : winner === 'atakujacy' ? 'Zwyci\u0119stwo atakuj\u0105cego!' : 'Zwyci\u0119stwo obro\u0144cy!';
     const enemyRoster = playerSide === 'atk' ? this.def : this.atk;
     const killedTypeIds = playerWon
       ? enemyRoster.map(u => String(u.bu.nazwa || '')).filter(Boolean)
@@ -9403,6 +10963,7 @@ export class BattleScene {
       : 0;
     const endUi = showEndScreen1E(this.overlay, {
       playerWon,
+      draw: isDraw,
       playerSide,
       winnerLabel: winSub,
       battleTitle: 'Tura ' + this.roundNo + ' \u00b7 ' + this._fmtBattleClock(elapsedMsEnd),
@@ -9417,7 +10978,16 @@ export class BattleScene {
       onReplay: () => { this._replayBattle(); },
       onFinish: () => {
         if (this.onFinishCb) {
-          this.onFinishCb({ winner: this._endWinner ?? winner, survivors: this._endSurvivors, log: this.log });
+          this.onFinishCb({
+            winner: this._endWinner ?? winner,
+            survivors: this._endSurvivors,
+            log: this.log,
+            eventLog: buildBattleEventLog(
+              this.atk.map(u => u.bu),
+              this.def.map(u => u.bu),
+            ),
+            ...(this.siegeWallCol >= 0 ? { wallBreached: this.wallEverBreached } : {}),
+          });
         }
         this.dispose();
         if (this.onCancelCb) this.onCancelCb();
@@ -10215,9 +11785,9 @@ export class BattleScene {
       if (ru.dead || ru.removed || ru.routed) continue;
       const ord = ru.playerOrder;
       const queued = this._queuedOrderUnitIds.has(ru.bu.id);
-      if (ord.type === 'move') {
+      if (ord.type === 'move' || ord.type === 'attackMove') {
         const to = this._worldAtTile(ord.col, ord.row);
-        const arrow = this._makeOrderArrow(this._unitWorldPos(ru), to, false, queued);
+        const arrow = this._makeOrderArrow(this._unitWorldPos(ru), to, ord.type === 'attackMove', queued);
         this._orderLinesGroup.add(arrow);
         this._queuedOrderArrows.push(arrow);
       } else if (ord.type === 'attack') {
@@ -11373,6 +12943,7 @@ export class BattleScene {
     this._deployFmtRow = center;
 
     const cavDefs: Array<{ mode: CavalryDeployMode; label: string; subtitle: string; icon: string; msg: string }> = [
+      { mode: 'front', label: 'Z przodu', subtitle: 'Konnica w pierwszej linii', icon: FMT_SVG.dirFront, msg: 'Konnica z przodu' },
       { mode: 'flanks', label: 'Z boku', subtitle: 'Oskrzydlenie flanki', icon: FMT_SVG.cavFlanks, msg: 'Konnica na skrzyd\u0142ach' },
       { mode: 'rear', label: 'Z ty\u0142u', subtitle: 'Uderzenie na ty\u0142y', icon: FMT_SVG.cavRear, msg: 'Konnica za liniami' },
     ];
@@ -11501,6 +13072,11 @@ export class BattleScene {
     document.body.appendChild(bar);
     this._deployToolbar = bar;
 
+    // R-WEB-MEMORY-LEAKS-FIX-Q1 (M3): ponowne zbudowanie paska nadpisywało pole bez zdjęcia
+    // poprzedniego nasłuchiwacza z `document` — zdejmij stary przed podpięciem nowego.
+    if (this._deployToolbarDocClick) {
+      document.removeEventListener('click', this._deployToolbarDocClick);
+    }
     this._deployToolbarDocClick = (e: MouseEvent) => {
       const t = e.target as Node | null;
       if (!t) return;
@@ -11646,7 +13222,7 @@ export class BattleScene {
   }
 
   private _deployCavalryShortLabel(mode: CavalryDeployMode): string {
-    return mode === 'flanks' ? 'Konnica z boku' : 'Konnica z ty\u0142u';
+    return mode === 'front' ? 'Konnica z przodu' : mode === 'flanks' ? 'Konnica z boku' : 'Konnica z ty\u0142u';
   }
 
   /** C-FLANK: etykieta chipu kierunku natarcia (front/bok/tyl). */
@@ -12484,6 +14060,9 @@ export class BattleScene {
       if (this._deployAttackDirSnapshot) {
         this._restoreDeployAttackDirSnapshot(this._deployAttackDirSnapshot);
       }
+      if (this._deployCavalryModeSnapshot) {
+        this._restoreDeployCavalryModeSnapshot(this._deployCavalryModeSnapshot);
+      }
     } else {
       this._autoGroupDeployByKind();
     }
@@ -12577,6 +14156,17 @@ export class BattleScene {
     }
     this._rebuildDeployRosterGrid();
     this._refreshDeploySelectionVisuals();
+  }
+
+  /** Odtwarza tryb konnicy z ostatniego deployu; brak wpisu w starym snapshotcie = domyślne skrzydła. */
+  private _restoreDeployCavalryModeSnapshot(snapshot: Map<string, CavalryDeployMode>): void {
+    for (const ru of this._playerRoster()) {
+      if (!ru.groupId) continue;
+      const mode = snapshot.get(ru.bu.id);
+      if (mode === 'front' || mode === 'flanks' || mode === 'rear') {
+        this._ensureGroupMeta(ru.groupId).cavalryMode = mode;
+      }
+    }
   }
 
   /** Odtwarza kierunek natarcia (C-FLANK) po powtórce bitwy w fazie deploy. */
@@ -14971,6 +16561,7 @@ export class BattleScene {
     cavalryMode: CavalryDeployMode,
   ): {
     main: Array<{ role: string; units: RuntimeBattleUnit[] }>;
+    mountedFront: RuntimeBattleUnit[];
     mountedFlank: RuntimeBattleUnit[];
     mountedRear: RuntimeBattleUnit[];
     flankAtRole: string;
@@ -15017,6 +16608,7 @@ export class BattleScene {
 
     return {
       main,
+      mountedFront: cavalryMode === 'front' ? mounted : [],
       mountedFlank: cavalryMode === 'flanks' ? mounted : [],
       mountedRear: cavalryMode === 'rear' ? mounted : [],
       flankAtRole,
@@ -15118,9 +16710,10 @@ export class BattleScene {
       });
     };
 
-    let dc = 0;
+    if (plan.mountedFront.length > 0) addBandLine(plan.mountedFront, 0);
+    let dc = plan.mountedFront.length > 0 ? 1 : 0;
     let flankDc = 0;
-    let maxHalfWidth = 0;
+    let maxHalfWidth = Math.ceil(plan.mountedFront.length / 2);
 
     for (const band of plan.main) {
       if (band.role === plan.flankAtRole) flankDc = dc;
@@ -15136,9 +16729,15 @@ export class BattleScene {
     }
 
     const wingBase = maxHalfWidth + 1;
+    const flankWingRows = 3;
     plan.mountedFlank.forEach((u, i) => {
       const side = i % 2 === 0 ? 1 : -1;
-      slots.push([u, flankDc, side * (wingBase + Math.floor(i / 2))]);
+      const wingIndex = Math.floor(i / 2);
+      slots.push([
+        u,
+        flankDc + Math.floor(wingIndex / flankWingRows),
+        side * (wingBase + wingIndex % flankWingRows),
+      ]);
     });
     addBandLine(plan.mountedRear, dc);
 
@@ -15252,14 +16851,27 @@ export class BattleScene {
       : Math.min(anchorCol, dragCol);
     const centerRow = Math.round((anchorRow + dragRow) / 2);
 
-    let dcCursor = 0;
+    const frontRanks = plan.mountedFront.length > 0
+      ? this._splitUnitsIntoRanks(plan.mountedFront, Math.ceil(plan.mountedFront.length / lateralSpan))
+      : [];
+    let dcCursor = frontRanks.length;
     let flankDc = 0;
     let maxHalfWidth = 0;
+
+    for (let r = 0; r < frontRanks.length; r++) {
+      const rankCol = frontCol + this._colOffForFormation(side, r);
+      frontRanks[r]!.forEach((u, i) => {
+        const row = this._deployLateralRow(i, frontRanks[r]!.length, centerRow, lateralSpan);
+        out.set(u.bu.id, this._clampDeployCell(rankCol, row));
+      });
+      maxHalfWidth = Math.max(maxHalfWidth, Math.ceil(frontRanks[r]!.length / 2));
+    }
 
     for (const band of plan.main) {
       if (band.role === plan.flankAtRole) flankDc = dcCursor;
       const rankSlices = this._splitUnitsIntoRanks(
-        band.units, this._deployLinesForRole(band.role),
+        band.units,
+        Math.max(this._deployLinesForRole(band.role), Math.ceil(band.units.length / lateralSpan)),
       );
       for (let r = 0; r < rankSlices.length; r++) {
         const rankUnits = rankSlices[r]!;
@@ -15275,17 +16887,20 @@ export class BattleScene {
       dcCursor += rankSlices.length;
     }
 
-    const wingBase = maxHalfWidth + 1;
-    const flankColOff = this._colOffForFormation(side, flankDc);
-    const flankCol = frontCol + flankColOff;
+    const wingBase = Math.max(maxHalfWidth, Math.floor(lateralSpan / 2)) + 1;
+    const flankWingRows = 3;
     plan.mountedFlank.forEach((u, i) => {
       const sideSign = i % 2 === 0 ? 1 : -1;
-      const row = centerRow + sideSign * (wingBase + Math.floor(i / 2));
-      out.set(u.bu.id, this._clampDeployCell(flankCol, row));
+      const wingIndex = Math.floor(i / 2);
+      const row = centerRow + sideSign * (wingBase + wingIndex % flankWingRows);
+      const rankCol = frontCol + this._colOffForFormation(side, flankDc + Math.floor(wingIndex / flankWingRows));
+      out.set(u.bu.id, this._clampDeployCell(rankCol, row));
     });
 
     if (plan.mountedRear.length > 0) {
-      const rearSlices = this._splitUnitsIntoRanks(plan.mountedRear, 1);
+      const rearSlices = this._splitUnitsIntoRanks(
+        plan.mountedRear, Math.ceil(plan.mountedRear.length / lateralSpan),
+      );
       for (let r = 0; r < rearSlices.length; r++) {
         const rankUnits = rearSlices[r]!;
         const rankDc = dcCursor + r;
@@ -15598,7 +17213,7 @@ export class BattleScene {
     }
     this._refreshDeploySelectionVisuals();
     this._updateRosterBar();
-    this._showOrderFeedback(mode === 'flanks' ? 'Konnica: boki' : 'Konnica: z ty\u0142u');
+    this._showOrderFeedback(mode === 'front' ? 'Konnica: przód' : mode === 'flanks' ? 'Konnica: boki' : 'Konnica: z ty\u0142u');
   }
 
   /**
@@ -15770,47 +17385,26 @@ export class BattleScene {
       !this.occByKey.has(cellKey(c, r)) && this.terrainMap.passable(c, r);
 
     const units = saved;
-    const meleeI: number[] = [], javI: number[] = [], arcI: number[] = [],
-          siegeI: number[] = [], mountIdx: number[] = [];
-    units.forEach((u, i) => {
-      if (isMounted(u)) { mountIdx.push(i); return; }
-      if (isSiegeUnit(u)) { siegeI.push(i); return; }
-      if (!isPrimaryRanged(u)) { meleeI.push(i); return; }
-      if (normName(String(u.kategoria ?? '')).includes('oszczep')) { javI.push(i); return; }
-      arcI.push(i);
-    });
-
-    const MAX_LINE = 12;
-    const midRow = PLAY_MID_ROW;
+    const formation = initialBattleFormation(units, initialBattleRoleOf);
+    const unitIndex = new Map(units.map((unit, index) => [unit, index]));
     const idealRow = new Array<number>(units.length);
     const idealCol = new Array<number>(units.length);
     const playerSide = this._playerControlSide();
-
-    const layGroup = (list: number[], rankBase: number): number => {
-      if (list.length === 0) return 0;
-      const per = Math.max(1, Math.min(list.length, MAX_LINE));
-      const r0g = midRow - Math.floor(per / 2);
-      list.forEach((ui, k) => {
-        idealRow[ui] = clampRow(r0g + (k % per));
-        idealCol[ui] = clampCol(frontCol + (rankBase + Math.floor(k / per)) * rankStep);
-      });
-      return Math.ceil(list.length / per);
-    };
-    let rankBase = 0;
-    rankBase += layGroup(meleeI, rankBase);
-    rankBase += layGroup(javI, rankBase);
-    const arcRanks = layGroup(arcI, rankBase);
-    rankBase += arcRanks;
-    const siegeRanks = layGroup(siegeI, rankBase);
-    const totalFootRanks = rankBase + siegeRanks;
-    {
-      const mountColOff = totalFootRanks + (this.deployPhase && side === playerSide ? 2 : 5);
-      const mountPer = Math.max(1, Math.min(mountIdx.length, MAX_LINE));
-      const mountR0 = midRow - Math.floor(mountPer / 2);
-      mountIdx.forEach((ui, k) => {
-        idealRow[ui] = clampRow(mountR0 + (k % mountPer));
-        idealCol[ui] = clampCol(frontCol + (mountColOff + Math.floor(k / mountPer)) * rankStep);
-      });
+    const slots = initialBattleSlots(formation, {
+      rankWidth: RANK_WIDTH, midRow: PLAY_MID_ROW, playRow0: PLAY_ROW0, playRow1: PLAY_ROW1,
+      meleeLines: this._deployMeleeLines, archerLines: this._deployArcherLines,
+    });
+    slots.forEach(slot => {
+      const index = unitIndex.get(slot.unit)!;
+      idealRow[index] = clampRow(slot.row);
+      idealCol[index] = clampCol(frontCol + slot.rank * rankStep);
+    });
+    const mountedSet = new Set<BattleUnit>(formation.mounted);
+    let bodyMinRow = Infinity, bodyMaxRow = -Infinity;
+    for (const slot of slots) {
+      if (mountedSet.has(slot.unit)) continue;
+      bodyMinRow = Math.min(bodyMinRow, clampRow(slot.row));
+      bodyMaxRow = Math.max(bodyMaxRow, clampRow(slot.row));
     }
 
     const placed: RuntimeBattleUnit[] = [];
@@ -15822,10 +17416,18 @@ export class BattleScene {
       if (!freeOk(col, row)) {
         let found = false;
         const baseCol = col;
-        const rowLo = this.deployPhase && side === playerSide
+        const mountedWing = initialBattleRoleOf(bu) === 'mounted';
+        const topWing = idealRow[idx]! < PLAY_MID_ROW;
+        const wingRowLo = topWing
+          ? Math.max(PLAY_ROW0 + 1, idealRow[idx]! - 6, bodyMinRow === Infinity ? 0 : bodyMinRow - 5)
+          : Math.max(bodyMaxRow === -Infinity ? PLAY_MID_ROW + 1 : bodyMaxRow + 1, idealRow[idx]! - 3);
+        const wingRowHi = topWing
+          ? Math.min(bodyMinRow === Infinity ? PLAY_MID_ROW - 1 : bodyMinRow - 1, idealRow[idx]! + 3)
+          : Math.min(PLAY_ROW1 - 1, idealRow[idx]! + 6, bodyMaxRow === -Infinity ? PLAY_ROW1 - 1 : bodyMaxRow + 5);
+        const rowLo = mountedWing ? wingRowLo : this.deployPhase && side === playerSide
           ? Math.max(DEPLOY_MIN_ROW, idealRow[idx]! - 8)
           : 0;
-        const rowHi = this.deployPhase && side === playerSide
+        const rowHi = mountedWing ? wingRowHi : this.deployPhase && side === playerSide
           ? Math.min(DEPLOY_MAX_ROW, idealRow[idx]! + 8)
           : BF_ROWS - 1;
         for (let rr = rowLo; rr <= rowHi && !found; rr++) {
@@ -15872,6 +17474,7 @@ export class BattleScene {
 
       const moraleBase = moraleBaseFor(bu);
       const ru: RuntimeBattleUnit = {
+        isArmyCommander: bu.isArmyCommander === true,
         bu,
         group,
         hpBarFg:     bars.hpBarFg,
@@ -15884,16 +17487,17 @@ export class BattleScene {
         ammoBarShown: ammoShown,
         q:           col,
         r:           row,
+        formationRank: Math.abs(idealCol[idx]! - frontCol),
         side,
         dead:        false,
         fadingOut:   false,
         fadeStart:   0,
         acted:       false,
-        moveLeft:    movementPoints(bu),
-        range:       attackRange(bu),
-        rangeBase:   attackRange(bu),
-        ranged:      isRanged(bu),
-        rangedBase:  isRanged(bu),
+        moveLeft:    this._movementPointsFor(bu),
+        range:       this._attackRangeFor(bu),
+        rangeBase:   this._attackRangeFor(bu),
+        ranged:      this._attackRangeFor(bu) >= 2,
+        rangedBase:  this._attackRangeFor(bu) >= 2,
         primaryRanged: isPrimaryRanged(bu),
         ammoLeft:    ammo0,
         ammoMax:     ammo0,
@@ -15951,9 +17555,19 @@ export class BattleScene {
     // _replayBattle -> _initDeployUI mógł go odtworzyć zamiast auto-grupować.
     this._deployGroupSnapshot = new Map();
     this._deployAttackDirSnapshot = new Map();
+    this._deployCavalryModeSnapshot = new Map();
+    for (const ru of [...this.atk, ...this.def]) {
+      const frontCol = this.siegeWallCol >= 0
+        ? (ru.side === 'atk' ? 2 : this.siegeWallCol)
+        : (ru.side === 'atk' ? DEPLOY_ATK_FRONT_COL : DEPLOY_DEF_FRONT_COL);
+      ru.formationRank = Math.abs(ru.q - frontCol);
+    }
     for (const ru of this._playerRoster()) {
       if (ru.groupId) this._deployGroupSnapshot.set(ru.bu.id, ru.groupId);
       this._deployAttackDirSnapshot.set(ru.bu.id, ru.attackDirection);
+      const mode = ru.groupId ? this._groupMeta.get(ru.groupId)?.cavalryMode : undefined;
+      this._deployCavalryModeSnapshot.set(ru.bu.id,
+        mode === 'front' || mode === 'flanks' || mode === 'rear' ? mode : this._deployCavalryMode);
     }
     this.deployPhase = false;
     this._clearAllSelection();
@@ -15980,17 +17594,29 @@ export class BattleScene {
   private _haltAutoBattleTurn(suspendInFlight = true): void {
     this.vTimers.length = 0;
     this.busy = false;
+    // Invalidate every completion callback from the old AUTO wave. The visual
+    // rAF callbacks cannot be cancelled here, but their token check prevents a
+    // stale member from reopening an AUTO phase after RECZNY takes over.
+    this._autoBatchToken++;
+    this._autoBatchPhase = null;
+    this._autoBatchResolutions = [];
+    this._autoBatchPending = 0;
     this._battleAwaitingOrders = true;
     if (suspendInFlight) this._autoBattleSuspended = true;
   }
 
   /** Przelacza miedzy trybem AUTO a RECZNYM. */
   private _toggleManualMode(): void {
+    const playerSide = this._deployPlayerSideOpt;
+    const playerRoster = playerSide === 'atk' ? this.atk : this.def;
+    if (this._manualCommanderGate && !this._manualMode
+      && !playerRoster.some(u => u.isArmyCommander && !u.dead && !u.fadingOut && !u.routed)) return;
     this._manualMode = !this._manualMode;
     if (this._manualBtn) {
       this._syncManualRailHighlight();
     }
     if (!this._manualMode) {
+      this._attackMoveMode = false;
       this._clearAllSelection();
       for (const ru of this._playerRoster()) ru.playerOrder = { type: 'none' };
       this._queuedOrderUnitIds.clear();
@@ -16006,7 +17632,9 @@ export class BattleScene {
         this._kickoffBattleTurn();
       } else if (this.started && !this.finished) {
         this._battleAwaitingOrders = false;
-        this._activateNext();
+        this._autoBattleSuspended = false;
+        if (this.siegeWallCol >= 0) this._activateNext();
+        else this._beginAutoBatchTurnFromCurrentState();
       }
     } else {
       this._haltAutoBattleTurn();
@@ -16037,8 +17665,15 @@ export class BattleScene {
 
   /** Klawisz R — przełącz RECZNE / AUTO. */
   private readonly _onKeyManual = (e: KeyboardEvent): void => {
-    if (e.key !== 'r' && e.key !== 'R') return;
     if (isEditableTarget(e.target)) return;
+    if (e.key === 'Escape' && this._attackMoveMode) {
+      this._attackMoveMode = false;
+      this._cancelAttackMoveSelected();
+      this._updateBattleSelectionBar();
+      this._showOrderFeedback('Atakuj-marszem anulowane');
+      return;
+    }
+    if (e.key !== 'r' && e.key !== 'R') return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (this.deployPhase || !this.started || this.finished) return;
     e.preventDefault();
@@ -16591,6 +18226,16 @@ export class BattleScene {
   /** Jeden krok auto-gra wg doktryny grupy. */
   private _executeGroupDoctrineStep(ru: RuntimeBattleUnit, meta: GroupMeta, done: () => void): boolean {
     if (meta.doctrine === 'defensive') {
+      // Defensive doctrine fixes POSITION, not weapon usage. Ranged units must
+      // still fire from their line when a target is already in range; the old
+      // adjacent-only picker made archers/slingers wait without participating.
+      if (canShoot(ru) && ru.shootingEnabled !== false) {
+        const ranged = this._pickRangedTargetByPriority(ru);
+        if (ranged) {
+          this._doAttack(ru, ranged, done);
+          return true;
+        }
+      }
       const adj = this._pickAdjacentTargetByPriority(ru);
       if (adj) {
         this._doAttack(ru, adj, done);
@@ -16601,6 +18246,43 @@ export class BattleScene {
     }
     if (meta.doctrine === 'skirmish') {
       return this._executeSkirmishDoctrineStep(ru, meta, done);
+    }
+    // Atak paces infantry and ranged ranks as a line, but mounted units keep
+    // their flank/target-selection behavior. Sending them to the infantry's
+    // formation rally point can leave chariots idle behind a blocked lane.
+    if (meta.doctrine === 'steady' && ru.mounted) {
+      this._cavalryAction(ru, done);
+      return true;
+    }
+    // A compact line still shoots as soon as a legal target is in range.
+    // This must precede the line-advance branch below: delegating every
+    // steady unit directly to _advanceStep otherwise bypasses the ranged
+    // attack selection entirely, so archers walk into firing distance but
+    // never spend ammunition.
+    if (meta.doctrine === 'steady' && canShoot(ru) && ru.shootingEnabled !== false) {
+      const ranged = this._pickRangedTargetByPriority(ru);
+      if (ranged) {
+        this._doAttack(ru, ranged, done);
+        return true;
+      }
+    }
+    // An out-of-range shooter must use the ranged lane-advance planner, not the
+    // infantry's shortest-path-to-contact planner. The latter treats the melee
+    // line as arbitrary obstacles and can send a rear-rank archer around the
+    // formation's edge, increasing its distance from the enemy for several
+    // activations. The ranged planner advances toward firing range and respects
+    // the melee line; it also fires immediately if a step enters range.
+    if (meta.doctrine === 'steady' && canShoot(ru) && ru.shootingEnabled !== false) {
+      this._rangedAction(ru, done);
+      return true;
+    }
+    // In a compact attack, solve the next legally reachable attack tile with
+    // the line and anti-backtrack constraints inside the path search itself.
+    // Selecting an unconstrained path and rejecting its first step afterward
+    // made units oscillate around allied blockers at narrow fronts.
+    if (meta.doctrine === 'steady') {
+      this._advanceStep(ru, done);
+      return true;
     }
     // Szturm: konnica = pelna logika jazdy; reszta = BFS do wroga (omija wlasna linie)
     if (meta.doctrine === 'aggressive') {
@@ -16640,7 +18322,11 @@ export class BattleScene {
       return true;
     }
     const dest = this._doctrineMoveDest(ru, meta);
-    if (!dest || (dest.col === ru.q && dest.row === ru.r)) {
+    if (!dest) {
+      done();
+      return true;
+    }
+    if (dest.col === ru.q && dest.row === ru.r) {
       done();
       return true;
     }
@@ -16858,6 +18544,7 @@ export class BattleScene {
       done();
       return true;
     }
+    if (this._performSiegeManualOrder(ru, ord, done)) return true;
     if (ord.type === 'none') {
       if (this._isUnitDoctrineAuto(ru)) {
         const meta = this._effectiveMetaForUnit(ru);
@@ -16886,25 +18573,85 @@ export class BattleScene {
       const dr = Math.sign(tr - ru.r);
       let nc = ru.q + dc;
       let nr = ru.r + dr;
-      if (!this._passableForUnit(ru, nc, nr) || this.occByKey.has(cellKey(nc, nr))) {
-        if (dc !== 0 && this._passableForUnit(ru, ru.q + dc, ru.r) && !this.occByKey.has(cellKey(ru.q + dc, ru.r))) {
+      const avoidAutoBacktrack = this._shouldAvoidAutoBacktrack(ru);
+      const isImmediateBacktrack = (q: number, r: number): boolean =>
+        avoidAutoBacktrack && ru.lastAutoMoveFrom?.q === q && ru.lastAutoMoveFrom?.r === r;
+      if (!this._passableForUnit(ru, nc, nr) || this.occByKey.has(cellKey(nc, nr)) || isImmediateBacktrack(nc, nr)) {
+        if (dc !== 0 && this._passableForUnit(ru, ru.q + dc, ru.r) && !this.occByKey.has(cellKey(ru.q + dc, ru.r)) && !isImmediateBacktrack(ru.q + dc, ru.r)) {
           nc = ru.q + dc; nr = ru.r;
-        } else if (dr !== 0 && this._passableForUnit(ru, ru.q, ru.r + dr) && !this.occByKey.has(cellKey(ru.q, ru.r + dr))) {
+        } else if (dr !== 0 && this._passableForUnit(ru, ru.q, ru.r + dr) && !this.occByKey.has(cellKey(ru.q, ru.r + dr)) && !isImmediateBacktrack(ru.q, ru.r + dr)) {
           nc = ru.q; nr = ru.r + dr;
         } else {
-          done();
-          return true;
+          // Group members often occupy all three greedy neighbors while they
+          // are converging on their formation-offset destinations. Do not let
+          // the rear ranks stall forever behind their own line: route around
+          // the formation through free passable cells, then resume the exact
+          // move order on the next activation.
+          const routeStep = this._firstStepTowardMoveDestination(
+            ru, tc, tr, 1024,
+            this._shouldAvoidAutoBacktrack(ru) ? (col) => this._compactAttackAllowsStep(ru, col) : undefined,
+          );
+          if (!routeStep) { done(); return true; }
+          const [routeCol, routeRow] = routeStep.split(',').map(Number);
+          nc = routeCol!;
+          nr = routeRow!;
         }
       }
+      if (!this._compactAttackAllowsStep(ru, nc)) { done(); return true; }
       if (nc === tc && nr === tr) ru.playerOrder = { type: 'none' };
       if (!this._destAllowedByBlockade(ru, nc)) {
         done();
         return true;
       }
+      const previousPosition = avoidAutoBacktrack ? { q: ru.q, r: ru.r } : undefined;
       this._doMove(ru, nc, nr, () => {
+        if (previousPosition) ru.lastAutoMoveFrom = previousPosition;
         this._refreshQueuedOrderVisuals();
         done();
       });
+      return true;
+    }
+    if (ord.type === 'attackMove') {
+      const targetCol = ord.col;
+      const targetRow = ord.row;
+      const route = this._attackMovePath(ru, targetCol, targetRow, true);
+      const routeTiles = new Set(route ?? []);
+      const routeThreat = this._enemiesOf(ru)
+        .filter(enemy => !enemy.dead && !enemy.fadingOut && !enemy.removed && !enemy.routed)
+        .filter(enemy => routeTiles.has(cellKey(enemy.q, enemy.r))
+          || (route ?? []).some(tile => {
+            const [q, r] = tile.split(',').map(Number);
+            return this._canStrikeTargetFrom(ru, q!, r!, enemy);
+          }))
+        .sort((a, b) => this._priorityScore(ru, a) - this._priorityScore(ru, b)
+          || manhattan(ru.q, ru.r, a.q, a.r) - manhattan(ru.q, ru.r, b.q, b.r));
+      const target = routeThreat[0];
+      if (target) {
+        if (this._canStrikeTargetFrom(ru, ru.q, ru.r, target)) {
+          this._doAttack(ru, target, done);
+          return true;
+        }
+        // Advance toward a blocking threat while retaining the waypoint order.
+        const routeStep = this._firstStepAlongPathToAttack(ru, undefined, target);
+        if (routeStep) {
+          const [nc, nr] = routeStep.split(',').map(Number);
+          if (this._destAllowedByBlockade(ru, nc!)) {
+            this._doMove(ru, nc!, nr!, () => { this._refreshQueuedOrderVisuals(); done(); });
+            return true;
+          }
+        }
+      }
+      if (ru.q === targetCol && ru.r === targetRow) {
+        ru.playerOrder = { type: 'none' };
+        this._refreshQueuedOrderVisuals();
+        done();
+        return true;
+      }
+      const step = this._firstStepOnAttackMovePath(ru, targetCol, targetRow);
+      if (!step) { done(); return true; }
+      const [nc, nr] = step.split(',').map(Number);
+      if (!this._destAllowedByBlockade(ru, nc!)) { done(); return true; }
+      this._doMove(ru, nc!, nr!, () => { this._refreshQueuedOrderVisuals(); done(); });
       return true;
     }
     if (ord.type === 'attack') {
@@ -16915,27 +18662,177 @@ export class BattleScene {
         done();
         return true;
       }
-      const dist = manhattan(ru.q, ru.r, tgt.q, tgt.r);
-      if (dist <= Math.max(1, ru.range)) {
+      if (this._canStrikeTargetFrom(ru, ru.q, ru.r, tgt)) {
         this._doAttack(ru, tgt, done);
         return true;
       }
-      const dc = Math.sign(tgt.q - ru.q);
-      const dr = Math.sign(tgt.r - ru.r);
-      let nc = ru.q + dc;
-      let nr = ru.r + dr;
-      if (!this._passableForUnit(ru, nc, nr) || this.occByKey.has(cellKey(nc, nr))) {
-        nc = ru.q + dc; nr = ru.r;
-        if (!this._passableForUnit(ru, nc, nr) || this.occByKey.has(cellKey(nc, nr))) {
-          nc = ru.q; nr = ru.r + dr;
-        }
-      }
-      if (nc !== ru.q || nr !== ru.r) this._doMove(ru, nc, nr, done);
-      else done();
+      const avoidAutoBacktrack = this._shouldAvoidAutoBacktrack(ru);
+      const routeStep = this._firstStepAlongPathToAttack(
+        ru,
+        (q, r) => this._compactAttackAllowsStep(ru, q)
+          && !(avoidAutoBacktrack && ru.lastAutoMoveFrom?.q === q && ru.lastAutoMoveFrom?.r === r),
+        tgt,
+      );
+      if (!routeStep) { done(); return true; }
+      const [nc, nr] = routeStep.split(',').map(Number);
+      if (!this._destAllowedByBlockade(ru, nc!)) { done(); return true; }
+      const previousPosition = avoidAutoBacktrack ? { q: ru.q, r: ru.r } : undefined;
+      this._doMove(ru, nc!, nr!, () => {
+        if (previousPosition) ru.lastAutoMoveFrom = previousPosition;
+        this._refreshQueuedOrderVisuals();
+        done();
+      });
       return true;
     }
     done();
     return true;
+  }
+
+  /**
+   * R-WEB-SIEGE-MANUAL-BATTLE-BEHAVIOR-Q1: rozkazy gracza w RECZNEJ bitwie oblezniczej.
+   * Tarany/wieze jada same (do bramy / pod mur), piechota wchodzi po wiezy i od razu bije,
+   * wrecz/konnica przy zamknietym murze podchodzi tylko poza zasieg ostrzalu. true = obsluzone.
+   */
+  private _performSiegeManualOrder(
+    ru: RuntimeBattleUnit, ord: RuntimeBattleUnit['playerOrder'], done: () => void,
+  ): boolean {
+    if (!(this.siegeWallCol >= 0) || ru.side !== 'atk' || ord.type === 'move') return false;
+    if (isSiegeUnit(ru.bu)) {
+      if ((this._isRam(ru.bu) && !this.gateOpen) || isSiegeTower(ru.bu)) return this._siegeRamTowerStep(ru, done);
+      return false;
+    }
+    const doctrineAuto = ord.type === 'none' && this._isUnitDoctrineAuto(ru)
+      && this._effectiveMetaForUnit(ru).doctrine !== 'manual';
+    if (ord.type === 'none' && !doctrineAuto) {
+      // Bezczynny strzelec nadal strzela do celu w zasiegu (zrodlo ognia na mur po wiezach).
+      if (canShoot(ru) && ru.shootingEnabled !== false) {
+        const tgt = this._rangedTargetInRange(ru);
+        if (tgt) { this._doAttack(ru, tgt, done); return true; }
+      }
+      return false;
+    }
+    if (ru.onWallWalkway) {
+      const adj = this._targetInRange(ru);
+      if (adj) this._doAttack(ru, adj, done); else done();
+      return true;
+    }
+    if (this._trySiegeTowerClimb(ru, done)) return true;
+    if (this._siegeInfantryToTowerStep(ru, done)) return true;
+    if ((ord.type === 'attack' || ord.type === 'attackMove') && this._siegeApproachRestricted(ru)) {
+      const adj = this._targetInRange(ru);
+      if (adj) { this._doAttack(ru, adj, done); return true; }
+      let tc = ru.q; let tr = ru.r;
+      if (ord.type === 'attackMove') { tc = ord.col; tr = ord.row; }
+      else {
+        const t = this._enemiesOf(ru).find(u => u.bu.id === ord.targetId && !u.dead && !u.fadingOut);
+        if (!t) { ru.playerOrder = { type: 'none' }; this._refreshQueuedOrderVisuals(); done(); return true; }
+        tc = t.q; tr = t.r;
+      }
+      if (ru.q === tc && ru.r === tr) { ru.playerOrder = { type: 'none' }; this._refreshQueuedOrderVisuals(); done(); return true; }
+      if (!this._siegeSafeApproach(ru, tc, tr, () => { this._refreshQueuedOrderVisuals(); done(); })) done();
+      return true;
+    }
+    return false;
+  }
+
+  /** Find a first free step around allied blockers for a move order. */
+  private _firstStepTowardMoveDestination(
+    ru: RuntimeBattleUnit, targetCol: number, targetRow: number, maxVisited = 1024,
+    allowFirstStep?: (col: number, row: number) => boolean,
+  ): string | null {
+    const startKey = cellKey(ru.q, ru.r);
+    const targetKey = cellKey(targetCol, targetRow);
+    const firingTiles = new Set<string>();
+    if (ru.rangedBase && canShoot(ru) && ru.shootingEnabled !== false) {
+      for (const enemy of this._enemiesOf(ru)) {
+        if (enemy.dead || enemy.fadingOut || enemy.routed) continue;
+        for (let dc = -ru.range; dc <= ru.range; dc++) {
+          const remaining = ru.range - Math.abs(dc);
+          for (let dr = -remaining; dr <= remaining; dr++) {
+            if (dc === 0 && dr === 0) continue;
+            const col = enemy.q + dc;
+            const row = enemy.r + dr;
+            if (col >= 0 && col < BF_COLS && row >= 0 && row < BF_ROWS) firingTiles.add(cellKey(col, row));
+          }
+        }
+      }
+    }
+    const canFireFrom = (col: number, row: number): boolean => firingTiles.has(cellKey(col, row));
+    const parent = new Map<string, string | null>([[startKey, null]]);
+    const firstStepByKey = new Map<string, string>();
+    const frontier: Array<{ col: number; row: number }> = [{ col: ru.q, row: ru.r }];
+    let head = 0;
+    while (head < frontier.length && head < maxVisited) {
+      const current = frontier[head++]!;
+      for (const [dc, dr] of DIRS4) {
+        const col = current.col + dc;
+        const row = current.row + dr;
+        if (col < 0 || col >= BF_COLS || row < 0 || row >= BF_ROWS) continue;
+        const nextKey = cellKey(col, row);
+        if (this._isUnitDoctrineAuto(ru) && this._effectiveMetaForUnit(ru).doctrine === 'steady'
+          && ru.lastAutoMoveFrom?.q === col && ru.lastAutoMoveFrom?.r === row) continue;
+        if (current.col === ru.q && current.row === ru.r && allowFirstStep && !allowFirstStep(col, row)) continue;
+        if (this.occByKey.has(nextKey) || !this._passableForUnit(ru, col, row)) continue;
+        if (parent.has(nextKey)) continue;
+        parent.set(nextKey, cellKey(current.col, current.row));
+        firstStepByKey.set(nextKey, current.col === ru.q && current.row === ru.r
+          ? nextKey
+          : firstStepByKey.get(cellKey(current.col, current.row)) ?? nextKey);
+        // A ranged unit's exact formation tile may remain occupied by its
+        // firing front rank. Let it route to the nearest reachable legal
+        // firing tile without crossing that rank, rather than idling forever.
+        if (nextKey === targetKey || canFireFrom(col, row)) {
+          return firstStepByKey.get(nextKey) ?? null;
+        }
+        frontier.push({ col, row });
+      }
+    }
+    return null;
+  }
+
+  /** Shortest waypoint path. Enemy cells may be treated as provisional route
+   * cells when scouting threats; the issued movement path always keeps every
+   * occupied tile blocked. */
+  private _attackMovePath(
+    ru: RuntimeBattleUnit, targetCol: number, targetRow: number, allowEnemyCells: boolean,
+  ): string[] | null {
+    const start = cellKey(ru.q, ru.r);
+    const goal = cellKey(targetCol, targetRow);
+    const parent = new Map<string, string | null>([[start, null]]);
+    const queue = [start];
+    for (let head = 0; head < queue.length && queue.length < BF_COLS * BF_ROWS; head++) {
+      const current = queue[head]!;
+      if (current === goal) break;
+      const [q, r] = current.split(',').map(Number);
+      for (const [dq, dr] of DIRS4) {
+        const nq = q! + dq;
+        const nr = r! + dr;
+        if (nq < 0 || nq >= BF_COLS || nr < 0 || nr >= BF_ROWS) continue;
+        const next = cellKey(nq, nr);
+        if (parent.has(next) || !this._passableForUnit(ru, nq, nr)
+          || !this._destAllowedByBlockade(ru, nq)) continue;
+        const occupant = this.occByKey.get(next);
+        if (occupant && occupant !== ru
+          && (!allowEnemyCells || this._isPlayerSide(occupant.side))) continue;
+        parent.set(next, current);
+        queue.push(next);
+      }
+    }
+    if (!parent.has(goal)) return null;
+    const path: string[] = [];
+    let node: string | null = goal;
+    while (node && node !== start) {
+      path.push(node);
+      node = parent.get(node) ?? null;
+    }
+    return node === start ? [start, ...path.reverse()] : null;
+  }
+
+  private _firstStepOnAttackMovePath(
+    ru: RuntimeBattleUnit, targetCol: number, targetRow: number,
+  ): string | null {
+    const path = this._attackMovePath(ru, targetCol, targetRow, false);
+    return path && path.length > 1 ? path[1]! : null;
   }
 
   /** Natychmiastowe wykonanie rozkazow wybranych jednostek (po kolei). */
@@ -17043,6 +18940,38 @@ export class BattleScene {
     }
   }
 
+  private _issueBattleAttackMove(col: number, row: number, queueOnly: boolean): void {
+    const ids = this._collectOrderUnitIds();
+    if (ids.length === 0) return;
+    this._orderMoveForUnits(col, row, ids);
+    for (const id of ids) {
+      const u = this._findPlayerUnit(id);
+      if (!u || u.dead || u.removed || u.routed) continue;
+      // Preserve the ordinary move formation offsets. Activations remain
+      // serialized by _executeUnitsImmediate, so occupancy is refreshed between members.
+      const waypoint = u.playerOrder.type === 'move' ? u.playerOrder : { col, row };
+      u.playerOrder = { type: 'attackMove', col: waypoint.col, row: waypoint.row };
+      if (queueOnly) this._queuedOrderUnitIds.add(id);
+      else this._queuedOrderUnitIds.delete(id);
+    }
+    this._refreshQueuedOrderVisuals();
+    this._showOrderFeedback(queueOnly ? 'Dyspozycja ATAKUJ-MARSZEM' : 'ATAKUJ-MARSZEM');
+    if (!queueOnly) {
+      this._executeUnitsImmediate(ids);
+      this._advanceToNextBattleUnit(new Set(ids));
+    }
+  }
+
+  private _cancelAttackMoveSelected(): void {
+    for (const id of this._collectOrderUnitIds()) {
+      const unit = this._findPlayerUnit(id);
+      if (unit?.playerOrder.type !== 'attackMove') continue;
+      unit.playerOrder = { type: 'none' };
+      this._queuedOrderUnitIds.delete(id);
+    }
+    this._refreshQueuedOrderVisuals();
+  }
+
   /** Duchy docelowej formacji grupy (podglad w walce). */
   private _refreshBattleMoveGhosts(col: number, row: number): void {
     if (!this._deployGhostGroup || this._selectedUnits.size === 0) return;
@@ -17147,7 +19076,8 @@ export class BattleScene {
     }
 
     if (this._selectedUnits.size > 0) {
-      this._issueBattleMove(tile.col, tile.row, queueOnly);
+      if (this._attackMoveMode) this._issueBattleAttackMove(tile.col, tile.row, queueOnly);
+      else this._issueBattleMove(tile.col, tile.row, queueOnly);
     }
   }
 
@@ -17308,6 +19238,7 @@ export class BattleScene {
     if (!o || o.type === 'none') return this._manualMode ? 'Brak rozkazu' : 'Brak rozkazu (AI)';
     if (o.type === 'hold') return 'Stoj';
     if (o.type === 'move') return 'Ruch -> (' + o.col + ',' + o.row + ')';
+    if (o.type === 'attackMove') return 'Atakuj-marszem -> (' + o.col + ',' + o.row + ')';
     if (o.type === 'attack') return 'Atak -> ' + o.targetId;
     return '';
   }
@@ -17408,6 +19339,26 @@ export class BattleScene {
       b.addEventListener('click', (e) => { e.stopPropagation(); onClick(); });
       return b;
     };
+
+    if (!this.deployPhase) {
+      const attackMove = mkBtn(this._attackMoveMode ? '✓ Atakuj-marszem' : 'Atakuj-marszem', () => {
+        this._attackMoveMode = !this._attackMoveMode;
+        this._updateBattleSelectionBar();
+        this._showOrderFeedback(this._attackMoveMode
+          ? 'Atakuj-marszem aktywne — kliknij pusty heks · Esc anuluje'
+          : 'Atakuj-marszem wyłączone');
+      }, this._attackMoveMode);
+      attackMove.dataset.battleAttackMoveMode = this._attackMoveMode ? 'active' : 'off';
+      attackMove.title = 'Kliknij, potem wybierz pusty heks. Bezpośredni klik wroga nadal wskazuje dokładny cel.';
+      bar.appendChild(attackMove);
+      if (selUnits.some(unit => unit.playerOrder.type === 'attackMove')) {
+        bar.appendChild(mkBtn('Anuluj marsz', () => {
+          this._cancelAttackMoveSelected();
+          this._showOrderFeedback('Atakuj-marszem anulowane');
+          this._updateBattleSelectionBar();
+        }, true));
+      }
+    }
 
     const clearFn = () => this.deployPhase
       ? this._clearDeploySelectionState()
@@ -18719,8 +20670,18 @@ function computeInstantResult(
   attackerDifficultyCombatMult: number = 1,
   defenderDifficultyCombatMult: number = 1,
   goldDeficitStatMult: number = 0.75,
-): { winner: 'atakujacy' | 'obronca'; survivors: BattleUnit[]; log: string[] } {
+  attackerOwnTerritory: boolean = false,
+  defenderOwnTerritory: boolean = false,
+  shallowSea: boolean = false,
+  // R-WEB-WALL-DEFENDERS-BONUS-RANGE-Q1: kolumna muru (BattleScene.siegeWallCol,
+  // -1 = brak) -- obronca ZA murem dostaje bonus obwarowania tak jak na koronie.
+  siegeWallCol: number = -1,
+): {
+  winner: 'atakujacy' | 'obronca'; survivors: BattleUnit[]; log: string[];
+  defBonus: { q: number; r: number; onWall: boolean; pct: number }[];
+} {
   const log: string[] = [];
+  const defBonus: { q: number; r: number; onWall: boolean; pct: number }[] = [];
 
   const atkState = aliveAtk.map(u => ({ ru: u, hp: u.bu.hp }));
   const defState = aliveDef.map(u => ({ ru: u, hp: u.bu.hp }));
@@ -18791,7 +20752,12 @@ function computeInstantResult(
       const cityTerrMult = isCityDefense
         ? cityGatedTerrainMultiplier(hasMur, cityElevationTerrain, terrainData)
         : 1;
-      const structBonusPctForPair = (defOnWall ? wallDefenseTotalProc : 0)
+      const wallBonusForDef = fortificationDefenseBonusForUnit(
+        { side: d.ru.side, onWallWalkway: defOnWall, q: d.ru.q, siegeWallCol },
+        wallDefenseTotalProc,
+      );
+      defBonus.push({ q: d.ru.q, r: d.ru.r, onWall: defOnWall, pct: wallBonusForDef });
+      const structBonusPctForPair = wallBonusForDef
         + (isCityDefense ? (cityTerrMult - 1) * 100 : 0);
 
       // C-FORT-POLE-Q1, skip-resolve parity: +50% Obrony gdy fortifiedInField
@@ -18832,11 +20798,15 @@ function computeInstantResult(
         terrainData,
         counters,
         attackerPosition: arc,
-        attackerCivBonusy,
-        defenderCivBonusy,
+        attackerCivBonusy: battleUnitCivBonusy(a.ru.bu, attackerCivBonusy),
+        defenderCivBonusy: battleUnitCivBonusy(d.ru.bu, defenderCivBonusy),
         // C-COMBAT-Q1 (Maciej, 2026-07-26): bonus muru/Cytadeli/Baszty, dopiety
         // do "Pomiń" -- patrz defOnWall/structBonusPctForPair powyżej.
         structureDefBonusPct: structBonusPctForPair,
+        attackerOwnTerritory,
+        defenderOwnTerritory,
+        defenderOnWallWalkway: defOnWall,
+        shallowSea,
         // C-COMBAT-Q2 (Maciej, 2026-07-26): w obronie miasta neutralizuje
         // wewnetrzny terrDefMult resolveCombat (elewacja juz policzona wyzej,
         // dodana ADDYTYWNIE do structBonusPctForPair) -- undefined dla bitwy w
@@ -18852,8 +20822,8 @@ function computeInstantResult(
         attackerGoldDeficit: a.ru.bu.goldDeficit === true,
         defenderGoldDeficit: d.ru.bu.goldDeficit === true,
         goldDeficitStatMult,
-        attackerDifficultyCombatMult,
-        defenderDifficultyCombatMult,
+        attackerDifficultyCombatMult: battleUnitDifficultyCombatMult(a.ru.bu, attackerDifficultyCombatMult),
+        defenderDifficultyCombatMult: battleUnitDifficultyCombatMult(d.ru.bu, defenderDifficultyCombatMult),
       });
       for (const line of res.log) log.push(line);
 
@@ -18869,18 +20839,23 @@ function computeInstantResult(
   let survivors: BattleUnit[];
 
   if (survivorsA.length > 0 && survivorsD.length === 0) {
-    winner = 'atakujacy'; survivors = survivorsA;
+    winner = 'atakujacy';
   } else if (survivorsD.length > 0 && survivorsA.length === 0) {
-    winner = 'obronca'; survivors = survivorsD;
+    winner = 'obronca';
   } else {
     const hpA = survivorsA.reduce((s, u) => s + u.hp, 0);
     const hpD = survivorsD.reduce((s, u) => s + u.hp, 0);
     winner    = hpA >= hpD ? 'atakujacy' : 'obronca';
-    survivors = winner === 'atakujacy' ? survivorsA : survivorsD;
   }
+  // R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1: na mape wracaja ocalali OBU stron
+  // (przegrani z HP>0 cofaja sie o 2 heksy w applyPostBattleMap, nie znikaja).
+  // Tylko bitwa W POLU; w miescie (isCityDefense) przegrani gina jak dotad.
+  survivors = isCityDefense
+    ? (winner === 'atakujacy' ? survivorsA : survivorsD)
+    : [...survivorsA, ...survivorsD];
 
   log.push('=== Natychmiastowy wynik: ' + (winner === 'atakujacy' ? 'ATAKUJACY' : 'OBRONCA') + ' wygrywa ===');
-  return { winner, survivors, log };
+  return { winner, survivors, log, defBonus };
 }
 
 // ---------------------------------------------------------------------------

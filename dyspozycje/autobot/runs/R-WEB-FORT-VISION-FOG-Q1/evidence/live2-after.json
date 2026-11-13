@@ -1,0 +1,55 @@
+{
+  "label": "after",
+  "steps": {
+    "S1": {
+      "fort": {
+        "q": 58,
+        "r": 11
+      },
+      "kolo": 91,
+      "nieodkryte_przed_budowa": 91,
+      "nieodkryte_po_placeFort_bez_przeliczenia": 91,
+      "nudgeOk": true,
+      "nieodkryte_po_przeliczeniu_mgly": 0,
+      "exploredN": 560
+    },
+    "S2": {
+      "aiWidocznoscPrzed": 91,
+      "aiWidocznoscPoForcie": 182,
+      "fort": {
+        "q": 65,
+        "r": 11
+      },
+      "owner": 1,
+      "kolo": 91,
+      "nieodkryte_przed": 75,
+      "nieodkryte_po_przeliczeniu_mgly": 75
+    },
+    "S3": {
+      "unitPlaced": true,
+      "zdobyte": 1,
+      "wlascicielFortuPo": 0,
+      "nieodkryte_po_zdobyciu_bez_ruchu_jednostki": 0
+    },
+    "S4": {
+      "unitPlaced": true,
+      "przejete": 1,
+      "wlascicielFortuA": 1,
+      "nieodkryte_A_przed_utrata": 0,
+      "nieodkryte_A_po_utracie": 0
+    }
+  },
+  "state": {
+    "citiesLen": 2,
+    "turn": 1,
+    "myOwnerId": 0,
+    "myCity": {
+      "q": 48,
+      "r": 31,
+      "pop": 9
+    },
+    "foreignOwnerId": 1,
+    "fortNodes": 0
+  },
+  "pageErrors": []
+}

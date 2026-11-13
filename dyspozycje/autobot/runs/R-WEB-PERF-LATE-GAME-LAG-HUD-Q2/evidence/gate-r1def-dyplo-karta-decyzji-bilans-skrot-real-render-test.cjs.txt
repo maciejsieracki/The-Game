@@ -1,0 +1,12 @@
+dyplo-karta-decyzji-bilans-skrot-real-render-test — start
+[dyplo-karta-decyzji-bilans-skrot-real-render-test] domyslny Chromium niedostepny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+[dyplo-karta-decyzji-bilans-skrot-real-render-test] zrzut: /home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/dyspozycje/autobot/runs/P-DYPLO-KARTA-DECYZJI-BILANS-SKROT-Q1/dowody/01-przed-kompakt-z-lacznie.png
+PASS: DOWÓD NIETAUTOLOGICZNOŚCI: PRZED (stare wywołanie bez omitTotal) zawiera "łącznie"
+[dyplo-karta-decyzji-bilans-skrot-real-render-test] zrzut: /home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/dyspozycje/autobot/runs/P-DYPLO-KARTA-DECYZJI-BILANS-SKROT-Q1/dowody/02-po-kompakt-bez-lacznie.png
+PASS: KRYTERIUM 1: PO (kompakt, omitTotal:true) NIE zawiera "łącznie"
+PASS: KRYTERIUM 1: PO nadal pokazuje ilość/turę i liczbę tur (nie pusty tekst)
+[dyplo-karta-decyzji-bilans-skrot-real-render-test] zrzut: /home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/dyspozycje/autobot/runs/P-DYPLO-KARTA-DECYZJI-BILANS-SKROT-Q1/dowody/03-po-stol-negocjacji-z-lacznie-bez-zmian.png
+PASS: KRYTERIUM 2 (GOAL 3, regresja): stół negocjacji (bez omitTotal) NADAL zawiera "łącznie" — bit-identyczne z PRZED bez sufiksu rundy
+
+4/4 PASS
+EXIT=0

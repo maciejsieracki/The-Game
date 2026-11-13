@@ -85,11 +85,13 @@ ok(NEGOTIATION_EXPIRY_TURNS > 0, 'NEGOTIATION_EXPIRY_TURNS > 0');
     { actionId: 'nap', proposerOwnerId: 0, responderOwnerId: 1, payload: { turns: 15 } },
     10, 'player', 2,
   );
-  // R-BALANS-PAKT-NIEAGRESJI-I-GLINA-Q1 (2026-09-02): próg NAP poszedł 50->90 (realny, w
-  // gra/data/diplomacy.json — źródło, którego czyta silnik). score=75 < 90 -> reject bez
-  // słodzika, ALE w zasięgu maks. ease (sufit 20 pkt @ 500 PW): 75+20=95>=90 -> AI może
-  // skutecznie skontrować (dawne score=30 przy progu 50 miało tę samą własność: 30+20=50).
-  const evalCtx = ctx({ relation: rel(40, 35) });
+  // R-BALANS-PAKT-NIEAGRESJI-I-GLINA-Q1 (2026-09-02) ustawił próg NAP 50->90; późniejszy
+  // balans podniósł go do progNapRelacja = 110 (gra/data/diplomacy.json:46, src/game/diplomacy.ts:208).
+  // Klasa A (stała asercja vs. świadoma zmiana progu): scenariusz kontrofert musi mieścić się
+  // w oknie score < 110 oraz score + maks. ease (sufit 20 pkt) >= 110, czyli score w [90,110).
+  // Relacja (50,45) => score 95: odrzucone bez słodzika, 95+20=115>=110 -> AI kontruje.
+  // (Relacja (40,35) => score 75, 75+20=95<110 -> kontrofery nie ma; probe potwierdził null.)
+  const evalCtx = ctx({ relation: rel(50, 45) });
   const rejectCheck = evaluateProposal(negotiationAsProposal(entry), evalCtx);
   ok(!rejectCheck.accepted, 'NAP bez słodzika: AI odrzuca (relacja za niska)');
 

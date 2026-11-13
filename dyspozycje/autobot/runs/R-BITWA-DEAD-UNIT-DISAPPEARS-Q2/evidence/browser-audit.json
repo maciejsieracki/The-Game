@@ -1,0 +1,229 @@
+{
+  "generatedAt": "2026-11-11T08:27:10.250Z",
+  "results": [
+    {
+      "siege": false,
+      "expectedRoster": [
+        28,
+        28
+      ],
+      "roster": [
+        28,
+        28
+      ],
+      "observations": [
+        {
+          "kind": "melee-single-blow",
+          "damage": 5,
+          "hp": 0,
+          "dead": true,
+          "removed": true,
+          "bodyDetached": true,
+          "hpBarDetached": true,
+          "bodyHidden": true,
+          "hpBarHidden": true,
+          "tileReleased": true
+        },
+        {
+          "kind": "missile-single-blow",
+          "damage": 2,
+          "hp": 0,
+          "dead": true,
+          "removed": true,
+          "bodyDetached": true,
+          "hpBarDetached": true,
+          "bodyHidden": true,
+          "hpBarHidden": true,
+          "tileReleased": true
+        },
+        {
+          "kind": "multi-target-volley",
+          "damage": 2,
+          "hp": 0,
+          "dead": true,
+          "removed": true,
+          "bodyDetached": true,
+          "hpBarDetached": true,
+          "bodyHidden": true,
+          "hpBarHidden": true,
+          "tileReleased": true
+        },
+        {
+          "kind": "multi-target-volley",
+          "damage": 2,
+          "hp": 0,
+          "dead": true,
+          "removed": true,
+          "bodyDetached": true,
+          "hpBarDetached": true,
+          "bodyHidden": true,
+          "hpBarHidden": true,
+          "tileReleased": true
+        },
+        {
+          "kind": "multi-target-volley",
+          "damage": 2,
+          "hp": 0,
+          "dead": true,
+          "removed": true,
+          "bodyDetached": true,
+          "hpBarDetached": true,
+          "bodyHidden": true,
+          "hpBarHidden": true,
+          "tileReleased": true
+        },
+        {
+          "kind": "living-rout-control",
+          "routed": true,
+          "hp": 40,
+          "bodyAttached": true,
+          "hpBarAttached": true,
+          "bodyVisible": true,
+          "hpBarVisible": true
+        },
+        {
+          "kind": "mutation-no-detach",
+          "detected": true
+        },
+        {
+          "kind": "replay-recreation",
+          "priorObjectReplaced": true,
+          "roster": [
+            28,
+            28
+          ],
+          "live": true,
+          "afterFreshKill": {
+            "kind": "replay-fresh-unit-kill",
+            "damage": 5,
+            "hp": 0,
+            "dead": true,
+            "removed": true,
+            "bodyDetached": true,
+            "hpBarDetached": true,
+            "bodyHidden": true,
+            "hpBarHidden": true,
+            "tileReleased": true
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "siege": true,
+      "expectedRoster": [
+        28,
+        29
+      ],
+      "roster": [
+        28,
+        29
+      ],
+      "observations": [
+        {
+          "kind": "melee-single-blow",
+          "damage": 5,
+          "hp": 0,
+          "dead": true,
+          "removed": true,
+          "bodyDetached": true,
+          "hpBarDetached": true,
+          "bodyHidden": true,
+          "hpBarHidden": true,
+          "tileReleased": true
+        },
+        {
+          "kind": "missile-single-blow",
+          "damage": 2,
+          "hp": 0,
+          "dead": true,
+          "removed": true,
+          "bodyDetached": true,
+          "hpBarDetached": true,
+          "bodyHidden": true,
+          "hpBarHidden": true,
+          "tileReleased": true
+        },
+        {
+          "kind": "multi-target-volley",
+          "damage": 2,
+          "hp": 0,
+          "dead": true,
+          "removed": true,
+          "bodyDetached": true,
+          "hpBarDetached": true,
+          "bodyHidden": true,
+          "hpBarHidden": true,
+          "tileReleased": true
+        },
+        {
+          "kind": "multi-target-volley",
+          "damage": 2,
+          "hp": 0,
+          "dead": true,
+          "removed": true,
+          "bodyDetached": true,
+          "hpBarDetached": true,
+          "bodyHidden": true,
+          "hpBarHidden": true,
+          "tileReleased": true
+        },
+        {
+          "kind": "multi-target-volley",
+          "damage": 2,
+          "hp": 0,
+          "dead": true,
+          "removed": true,
+          "bodyDetached": true,
+          "hpBarDetached": true,
+          "bodyHidden": true,
+          "hpBarHidden": true,
+          "tileReleased": true
+        },
+        {
+          "kind": "living-rout-control",
+          "routed": true,
+          "hp": 40,
+          "bodyAttached": true,
+          "hpBarAttached": true,
+          "bodyVisible": true,
+          "hpBarVisible": true
+        },
+        {
+          "kind": "mutation-no-detach",
+          "detected": true
+        },
+        {
+          "kind": "siege-wall-collapse-catapult",
+          "dead": true,
+          "removed": true,
+          "bodyDetached": true,
+          "hpBarDetached": true,
+          "tileReleased": true
+        },
+        {
+          "kind": "replay-recreation",
+          "priorObjectReplaced": true,
+          "roster": [
+            28,
+            29
+          ],
+          "live": true,
+          "afterFreshKill": {
+            "kind": "replay-fresh-unit-kill",
+            "damage": 5,
+            "hp": 0,
+            "dead": true,
+            "removed": true,
+            "bodyDetached": true,
+            "hpBarDetached": true,
+            "bodyHidden": true,
+            "hpBarHidden": true,
+            "tileReleased": true
+          }
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

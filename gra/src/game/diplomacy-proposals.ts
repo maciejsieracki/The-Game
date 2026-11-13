@@ -2,6 +2,7 @@
  * diplomacy-proposals.ts — ocena propozycji dyplomatycznych v1.1 (lane CYW).
  * SILNIK/UI wołają evaluateProposal; EKO tick osobno po akceptacji trybutu.
  */
+import { formatTurCountAcc } from '../ui/formatPl';
 import {
   aiDiplomacyStance,
   clampRelationForWar,
@@ -9,6 +10,7 @@ import {
   diplomacyAllianceStrengthAdjust,
   diplomacyAllianceMinZaufanie,
   diplomacyTreatyMinRelacja,
+  allianceCoreMet,
   getEffectiveDiplomacyParams,
   relationScore,
   type AIDiplomacyContext,
@@ -25,6 +27,10 @@ import {
   normalizeTreatyKind,
 } from './diplomacy-treaties';
 import { RodzajTraktatu } from '../types/diplomacy';
+import { czyAgresorAktywny, deltaRelacjiSojusz } from './diplomacy';
+import { resolveWarPeaceProfile, evaluatePeaceAiGate } from './diplomacy-war-peace-profile';
+import { peaceProposalBlocked, PEACE_PROPOSAL_MIN_WAR_TURNS } from './diplomacy-peace-proposal-timing';
+import { warWearinessLevel, wearinessPeacePriceFactor } from './war-weariness';
 import type { Player } from '../types/player';
 import { TypCywilizacji } from '../types/player';
 import {
@@ -58,6 +64,7 @@ import {
   trimProposalForZeroBalance,
 } from './diplomacy-ai-offer-balance';
 import { BARBARIAN_COOPERATION_TURNS } from './diplomacy-barbarian-cooperation';
+import { normalizeTruceDuration, TRUCE_DEFAULT_TURNS } from './diplomacy-peace-lock';
 
 export { AI_TRADE_GOLD_MAX, AI_TRIBUTE_PEACE_MAX, capAiGoldOffer } from './diplomacy-economy';
 
@@ -87,7 +94,9 @@ export type ProposalActionId =
   /** R-GRACZ-WCHLONIECIE: wchłonięcie miasta-państwa po wasalu (gracz→MP, v1). */
   | 'wchloniecie'
   /** Zakończenie wojny — stoł negocjacyjny, PN bazowe 500 (Maciej 2026-07-29). */
-  | 'pokoj';
+  | 'pokoj'
+  /** R-WEB-TRUCE-Q1: rozejm 5/10/15 tur — te same bramki co pokój, PN baza z acceptance-points. */
+  | 'rozejm';
 
 export interface ProposalPayload {
   /** NAP: 10–20 tur (terminowy); 0 lub brak po UI „bezterminowy” → wygasaTura null */
@@ -144,6 +153,8 @@ export interface ProposalPayload {
    * działa identycznie gdy proponentem jest gracz LUB AI.
    */
   resourceTradeMode?: 'once' | 'per_turn';
+  /** Jawny czas cyklicznej wymiany: brak = historyczny fallback do `turns`, null = bezterminowo. */
+  exchangeDurationTurns?: number | null;
   /**
    * R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 (Obrona runda 1, zarzut 1 Evaluatora
    * PRZYJĘTY): czas TRWANIA TRAKTATU wybrany jawnie w formularzu „Warunki traktatu"
@@ -179,6 +190,17 @@ export interface ProposalEvalContext {
   militaryRatio?: number;
   /** Frakcja siły respondenta 0..1 (jak decideAIDiplomacy respektWzgledny) */
   respektWzgledny?: number;
+  /**
+   * R-WEB-PEACE-RULES-Q1 R1/R5: stan wojny pary (tylko gdy stanWojny). `responderRw` = udział
+   * siły RESPONDENTA (AI) 0..1; `lostCitiesResponder` = miasta utracone przez respondenta w tej wojnie.
+   * Brak pola = brak bramki pokoju R5 (zachowanie sprzed rundy).
+   */
+  warState?: {
+    turnsAtWar: number;
+    lostCitiesResponder: number;
+    turnsSinceCityChange?: number;
+    responderRw: number;
+  };
   /** Realne sąsiedztwo terytorialne (granica lądowa) + obie strony >2 miasta. */
   karaWspolnaGranica?: boolean;
   /** Benchmark wartości handlu (fair value) */
@@ -358,7 +380,10 @@ export function makeDealId(
   return `${prefix}-${p0}-${p1}-t${turn}`;
 }
 
-function stanceForEval(ctx: ProposalEvalContext): ReturnType<typeof aiDiplomacyStance> {
+function stanceForEval(
+  ctx: ProposalEvalContext,
+  celAgresorAktywny: boolean,
+): ReturnType<typeof aiDiplomacyStance> {
   const responder = ctx.responderPlayer ?? STUB_RESPONDER;
   const proposer = ctx.proposerPlayer ?? STUB_PROPOSER;
   const proposerMil = ctx.militaryRatio ?? 1;
@@ -368,7 +393,10 @@ function stanceForEval(ctx: ProposalEvalContext): ReturnType<typeof aiDiplomacyS
     isMinorCiv: ctx.isMinorCiv ?? false,
     militaryRatio: responderMilRatio,
     currentTurn: ctx.turn,
-    turnsAtWar: ctx.stanWojny ? 5 : 0,
+    // R-WEB-PEACE-RULES-Q1 R1: realny czas wojny (dawna stała 5 usunięta).
+    turnsAtWar: ctx.stanWojny ? Math.max(0, ctx.warState?.turnsAtWar ?? 0) : 0,
+    // R-WEB-WAR-AGGRESSOR-FLAG-Q1: proponent (druga strona stance) z aktywną flagą agresora.
+    celAgresorAktywny,
   };
   return aiDiplomacyStance(responder, proposer, ctx.relation, dipCtx);
 }
@@ -424,6 +452,26 @@ export function clampDealTurns(turns: number | undefined, defaultTurns = 15): nu
   return clamp(turns ?? defaultTurns, 1, 20);
 }
 
+/** Cyclic quantity-exchange duration is distinct from treaty duration (1–30). */
+export function clampExchangeDurationTurns(turns: number | undefined, defaultTurns = 15): number {
+  return clamp(turns ?? defaultTurns, 1, 30);
+}
+
+function exchangeValuationTurns(payload: Pick<ProposalPayload, 'turns' | 'exchangeDurationTurns'>): number {
+  // Only new, explicitly versioned UI offers can use the new 21–30 valuation horizon.
+  // Legacy and AI payloads retain their historical 1–20 clamp.
+  return payload.exchangeDurationTurns !== undefined
+    ? clampExchangeDurationTurns(payload.turns)
+    : clampDealTurns(payload.turns);
+}
+
+/** Resolve active cyclic exchange expiry while preserving legacy finite payload behavior. */
+export function resolveExchangeExpiry(turn: number, payload: Pick<ProposalPayload, 'turns' | 'exchangeDurationTurns'>): number | null {
+  if (payload.exchangeDurationTurns === null) return null;
+  if (payload.exchangeDurationTurns !== undefined) return turn + clampExchangeDurationTurns(payload.exchangeDurationTurns);
+  return turn + clampDealTurns(payload.turns);
+}
+
 /**
  * R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 (Obrona runda 1, zarzut 1 Evaluatora PRZYJĘTY):
  * JEDNO miejsce odczytu „czasu trwania traktatu" z payloadu. `treatyTurns` (jawny wybór
@@ -455,7 +503,7 @@ export function resolveNapDealExpiry(
     return { wygasaTura: null, label: 'Pakt nieagresji (bezterminowy)' };
   }
   const turns = clamp(raw ?? 15, 10, 20);
-  return { wygasaTura: turn + turns, label: `Pakt nieagresji na ${turns} tur` };
+  return { wygasaTura: turn + turns, label: `Pakt nieagresji na ${formatTurCountAcc(turns)}` };
 }
 
 // ---------------------------------------------------------------------------
@@ -486,6 +534,26 @@ const SWEETENER_EASE_MAX_POINTS = 20;
  * droższym. Zmiana jednej z tych dwóch stałych bez drugiej łamie tę gwarancję.
  */
 export const NAP_GRANICA_RELACJA_NARZUT = SWEETENER_EASE_MAX_POINTS;
+
+/**
+ * R-WEB-DIPLO-NAP-UI-BORDER-THRESHOLD-Q1: JEDEN efektywny próg Relacji dla Paktu o nieagresji.
+ * Używany przez silnik (evaluateProposal::case 'nap'), blokadę UI (diplomacy-locks.ts case '2')
+ * i notkę/tooltip — UI nie może liczyć progu inaczej niż silnik.
+ * Składowe: `progNapRelacja` (już po skalowaniu trudności), narzut „Kara za wspólną granicę",
+ * delta flagi agresora proponenta (`deltaRelacjiSojusz`), minus słodzik (`napEase`).
+ * Blokada UI nie zna payloadu propozycji, więc woła z `napEase = 0` (słodzik działa dopiero
+ * w ocenie konkretnej oferty — ta sama reguła co wcześniej).
+ */
+export function napRelacjaProgEfektywny(
+  progNapRelacja: number,
+  opts: { karaWspolnaGranica?: boolean; proponentAgresor?: boolean; napEase?: number } = {},
+): number {
+  const narzut = opts.karaWspolnaGranica ? NAP_GRANICA_RELACJA_NARZUT : 0;
+  return Math.max(
+    0,
+    progNapRelacja + narzut - (opts.napEase ?? 0) + deltaRelacjiSojusz(opts.proponentAgresor === true),
+  );
+}
 
 /** Wartość netto słodzika w PN (koszyk giveItems minus receiveItems, floor 0). */
 export function sweetenerNetPn(payload: ProposalPayload, pnOpts?: ResolveProposalPnOptions): number {
@@ -686,7 +754,8 @@ function treatyPnGate(
   const proposerIsPlayer = (pnOpts?.proposerOwnerId ?? 0) === (pnOpts?.playerOwnerId ?? 0);
   const relTotal = treatyEvalRelationTotal(relation);
 
-  if (actionId === 'pokoj') {
+  // R-WEB-TRUCE-Q1 (runda 2): rozejm dzieli bramkę PW pokoju (ta sama formuła i komunikat).
+  if (actionId === 'pokoj' || actionId === 'rozejm') {
     const { offerPn, required } = peaceProposalOfferPn(givePn, receivePn, basePn, relation, proposerIsPlayer);
     if (offerPn < required) {
       return {
@@ -777,7 +846,7 @@ function treatyPnGate(
  *    ZAKRES-Q1=A`):
  *     - `nap`/`sojusz_defensywny`/`sojusz_pelny`/`granice`/`wasal` mają REALNE,
  *       niezerowe progi Relacji/Zaufania/Respektu we własnym case'ie
- *       (progNapRelacja=110, progSojuszRelacja=151, progGraniceRelacja=100,
+ *       (progNapRelacja=110, progSojuszRelacja=130, progGraniceRelacja=100,
  *       progWasalizacjaRespekt=70) — przy pustym koszyku wystarczy im próg
  *       case'a; ochrona przed koszykiem nieuczciwym dla partnera (np. „daj mi
  *       coś za darmo w koszyku") zostaje w `treatyPnGate` (uruchamianym i tak
@@ -962,6 +1031,38 @@ function handelFairnessReject(
 }
 
 /**
+ * R-WEB-AI-TRADE-WIRING-E2E-Q1 r3 (ABC A1): relTotal bramki uczciwosci dla ofert AI
+ * (proponent) -> gracz (responder). 100 = wspolczynnik relacji 1 (handelRequiredPn clampuje
+ * do 100): wymagane givePn >= receivePn. Podglad „Przyjmij" gracza (previewIncomingPlayerAccept,
+ * netPw >= 0) wymaga receivePn >= givePn -- przeciecie to oferty „rowne za rowne".
+ * Bramka gracz->AI NIE uzywa tej stalej.
+ */
+export const AI_PROPOSER_FAIRNESS_REL_TOTAL = 100;
+
+/**
+ * R-WEB-AI-TRADE-ONESHOT-OVERPAY-LIMIT-Q1: górny limit nadpłaty w jednorazowej ofercie
+ * handlowej AI -> gracz. Ta sama reguła co cykliczna (A1): AI nie oddaje więcej PW, niż
+ * otrzymuje (givePn <= receivePn). Dar (isGift) jest wyłączony — dar AI nie ma receivePn.
+ * Zwraca true, gdy jednorazowa oferta handlowa (actionId 'handel', typ inny niż cykliczna)
+ * z perspektywy proponenta AI przekracza ten limit. Jedyne miejsce tej reguły — wołane z
+ * filtra enqueue w main.ts (boot, łańcuch komend AI -> gracz).
+ */
+export function aiOneshotHandelOverpaysPlayer(
+  actionId: string | undefined,
+  cmdType: string | undefined,
+  payload: ProposalPayload,
+  pnOpts?: ResolveProposalPnOptions,
+): boolean {
+  if (actionId !== 'handel' || cmdType === 'zaproponuj_wymiane_cykliczna') return false;
+  const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
+  const isGift = payload.isGift === true
+    || ((payload.giveItems?.length ?? 0) > 0 && !(payload.receiveItems?.length) && (payload.receivePn ?? 0) <= 0);
+  const hasPnPath = givePn > 0 || receivePn > 0
+    || (payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0;
+  return !isGift && hasPnPath && givePn > receivePn;
+}
+
+/**
  * Wymagany próg PW handlu @ Relacji × mnożnik chęci — JEDYNE miejsce, które to liczy
  * (handelFairnessGate i pwBalance przy sukcesie muszą użyć TEJ SAMEJ liczby, inaczej
  * wraca P-DYPLO-BILANS-GATE-NIESPOJNY). PODŁOGA PARYTETU (runda 4): nigdy poniżej receivePn.
@@ -980,7 +1081,7 @@ export function handelRequiredPn(receivePn: number, relTotal: number, multiplier
  * Zwraca wynik odrzucenia lub null = próg spełniony. Wynik odrzucenia niesie `pwBalance`
  * (givePn − requiredPn, ta sama liczba co bramka) — P-DYPLO-BILANS-GATE-NIESPOJNY.
  */
-function handelFairnessGate(
+export function handelFairnessGate(
   givePn: number,
   receivePn: number,
   relTotal: number,
@@ -1011,15 +1112,27 @@ export function evaluateProposal(
     difficulty: ctx.difficulty ?? 'normal',
     proposerOwnerId,
     playerOwnerId: 0,
+    // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2 defekt r2): bez actionId pozycja 'miasto' wyceniana
+    // jako null (fail-safe) → cesja miasta nie wchodziła do bilansu PW propozycji.
+    actionId,
     ...proposalPnTurnsMultiplier(payload),
   };
   const score = relationScore(relation);
-  const stance = stanceForEval(ctx);
+  // R-WEB-WAR-AGGRESSOR-FLAG-Q1: proponent z aktywną flagą agresora → gorszy próg/chęć (JSON).
+  const proponentAgresor = czyAgresorAktywny(proposerOwnerId, ctx.turn);
+  const stance = stanceForEval(ctx, proponentAgresor);
+
+  if (ctx.warState && peaceProposalBlocked(actionId, stanWojny, ctx.warState.turnsAtWar)) {
+    return { accepted: false, reason: `Pokój i rozejm dostępne po ${PEACE_PROPOSAL_MIN_WAR_TURNS} pełnych turach wojny` };
+  }
 
   if (actionId === 'pokoj' && !stanWojny) {
     return { accepted: false, reason: 'Pokój — brak trwającej wojny' };
   }
-  if (stanWojny && actionId !== 'trybut_oferta' && actionId !== 'ultimatum' && actionId !== 'pokoj') {
+  if (actionId === 'rozejm' && !stanWojny) {
+    return { accepted: false, reason: 'Rozejm — brak trwającej wojny' };
+  }
+  if (stanWojny && actionId !== 'trybut_oferta' && actionId !== 'ultimatum' && actionId !== 'pokoj' && actionId !== 'rozejm') {
     return { accepted: false, reason: 'Trwa wojna — ta akcja jest niedostępna' };
   }
   if (stanWojny && isCurrencyProposalForbiddenDuringWar(actionId, payload, true)) {
@@ -1043,6 +1156,14 @@ export function evaluateProposal(
           reason: `Wiarygodność zbyt niska na pakt (wymagana ≥ ${p.wiarygodnoscProgNapMin})`,
         };
       }
+      // R-WEB-DIPLO-NAP-TRUST-30-Q1: pakt wymaga TEŻ Zaufania ≥ progNapZaufanie (stała, bez ±trudność).
+      // Fail-closed: brak wartości w parametrach = odrzut, nie pominięcie bramki.
+      if (!(relation.zaufanie >= p.progNapZaufanie)) {
+        return {
+          accepted: false, pwBalance: -1,
+          reason: `Zaufanie zbyt niskie na pakt (wymagane ≥ ${p.progNapZaufanie}, masz ${relation.zaufanie})`,
+        };
+      }
       // C-DYP-STOL-Q1=B: słodzik (giveItems/receiveItems w payload) obniża próg Relacji.
       const napEase = sweetenerEasePoints(payload, pnOpts);
       // R-DYPLO-PAKT-WETO-EKSPANSJA-Q1: „Ekspansja przy granicy" była TU binarnym wetem
@@ -1059,8 +1180,13 @@ export function evaluateProposal(
       // reszta tej bramki. Narzut = SWEETENER_EASE_MAX_POINTS (sufit słodzika), więc
       // MAKSYMALNY słodzik dokładnie go kasuje — to jest gwarancja, że warunek nigdy nie
       // jest nieosiągalny. Wartość WYPROWADZONA z istniejącej stałej, nie nowy balans.
+      // R-WEB-DIPLO-NAP-UI-BORDER-THRESHOLD-Q1: próg liczy WSPÓLNY helper (ten sam co blokada UI).
       const napExpansionSurcharge = ctx.karaWspolnaGranica ? NAP_GRANICA_RELACJA_NARZUT : 0;
-      const napThreshold = Math.max(0, p.progNapRelacja + napExpansionSurcharge - napEase);
+      const napThreshold = napRelacjaProgEfektywny(p.progNapRelacja, {
+        karaWspolnaGranica: ctx.karaWspolnaGranica,
+        proponentAgresor,
+        napEase,
+      });
       if (score < napThreshold) {
         return {
           accepted: false, pwBalance: -1,
@@ -1104,26 +1230,36 @@ export function evaluateProposal(
       // (diplomacyProposerStrengthEase) — komponuje się z istniejącą ulgą, nie ją zastępuje.
       // diplomacyTreatyMinRelacja i tak nie zejdzie poniżej progUmowaMinRelacja (twarda podłoga).
       const sojuszEase = sweetenerEasePoints(payload, pnOpts);
-      const minZ = Math.max(0, diplomacyAllianceMinZaufanie(adj, milRatio, p) - sojuszEase);
-      const minScore = diplomacyTreatyMinRelacja(
-        p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore - sojuszEase,
-        p,
+      // R-WEB-DIPLO-ALLIANCE-THRESHOLD-130-TRUST-90-Q1: rdzeń 130 Relacji + 90 Zaufania
+      // (po słodziku/agresorze) wyłącza bramki siły (hegemon, kara siły, słaby proponent); gotowość AI zostaje (runda 2).
+      const relThresholdCore = p.progSojuszRelacja - sojuszEase + deltaRelacjiSojusz(proponentAgresor);
+      const coreMet = allianceCoreMet(relation.zaufanie, score, relThresholdCore, p, sojuszEase);
+      const minZ = coreMet
+        ? Math.max(0, p.progSojuszZaufanie - sojuszEase)
+        : Math.max(0, diplomacyAllianceMinZaufanie(adj, milRatio, p) - sojuszEase);
+      const minScore = coreMet
+        ? diplomacyTreatyMinRelacja(relThresholdCore, p)
+        : diplomacyTreatyMinRelacja(relThresholdCore - adj.ease.scoreThresholdDelta + adj.penaltyScore, p);
+      // Runda 2 (A): gotowość AI ZOSTAJE przy rdzeniu 130/90 — pomijamy tylko karę siły (penaltyAlly).
+      const minAlly = Math.max(
+        0,
+        p.progSojuszWillingnessMin - adj.ease.allyThresholdDelta + (coreMet ? 0 : adj.penaltyAlly),
       );
-      const minAlly = Math.max(0, p.progSojuszWillingnessMin - adj.ease.allyThresholdDelta + adj.penaltyAlly);
 
-      if (adj.hegemonBlocksAlliance) {
+      if (!coreMet && adj.hegemonBlocksAlliance) {
         return {
           accepted: false, pwBalance: -1,
           reason: 'Hegemon nie potrzebuje sojuszu — wola wobec słabszego to trybut lub wasalizacja',
         };
       }
       if (relation.zaufanie < minZ) {
-        return { accepted: false, pwBalance: -1, reason: `Zaufanie zbyt niskie (wymagane ≥ ${minZ})` };
+        return { accepted: false, pwBalance: -1, reason: `Sojusz wymaga Relacji ${minScore} i Zaufania ${minZ} (masz Zaufanie ${relation.zaufanie})` };
       }
       if (score < minScore) {
-        return { accepted: false, pwBalance: -1, reason: `Relacja ogólna zbyt niska na sojusz (≥ ${minScore})` };
+        return { accepted: false, pwBalance: -1, reason: `Sojusz wymaga Relacji ${minScore} i Zaufania ${minZ} (masz Relację ${score})` };
       }
       if (
+        !coreMet &&
         milRatio < p.progSojuszSlabyProponentMilRatio &&
         ctx.proposerRespekt <= ctx.responderRespekt &&
         score < p.progUmowaMinRelacja
@@ -1131,7 +1267,10 @@ export function evaluateProposal(
         return { accepted: false, pwBalance: -1, reason: 'Za słaby proponent bez pełnej relacji — sojusz nierealny' };
       }
       if (stance.willingnessAlly < minAlly) {
-        return { accepted: false, pwBalance: -1, reason: 'Brak gotowości do sojuszu' };
+        return {
+          accepted: false, pwBalance: -1,
+          reason: `Brak gotowości do sojuszu (gotowość ${stance.willingnessAlly.toFixed(2)}, wymagana ${minAlly.toFixed(2)})`,
+        };
       }
       if (pairHasKind(ctx.activeDeals, proposerOwnerId, responderOwnerId, kind)) {
         return { accepted: false, pwBalance: -1, reason: 'Sojusz tego typu już istnieje' };
@@ -1186,7 +1325,13 @@ export function evaluateProposal(
       return { accepted: true, pwBalance: 0, reason: `Trybut ${perTurn} ¤/turę`, deal };
     }
 
-    case 'pokoj': {
+    case 'pokoj':
+    case 'rozejm': {
+      // R-WEB-TRUCE-Q1: rozejm dzieli CAŁĄ gałąź pokoju (bramki czasu wojny, siły, PW);
+      // różni się wyłącznie bazą PW (klucz actionId) i poprawnością długości 5/10/15.
+      if (actionId === 'rozejm' && normalizeTruceDuration(payload.turns ?? TRUCE_DEFAULT_TURNS) == null) {
+        return { accepted: false, reason: 'Rozejm: dozwolone długości to 5, 10 lub 15 tur' };
+      }
       // R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A, wymóg #2 (ostrożność „darmowy pokój"):
       // peaceProposalOfferPn ma samospełniający się warunek przy pustym koszyku
       // (offerPn = required + max(0, 0-0) = required, więc offerPn < required
@@ -1196,7 +1341,46 @@ export function evaluateProposal(
       // z dedykowanym komunikatem, żeby pokój dalej wymagał albo Relacji bliskiej
       // neutralnej, albo dopłaty koszykiem pokrywającej różnicę.
       const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
-      const basePn = treatyBasePnFromConfig('pokoj', payload);
+      const basePnCfg = treatyBasePnFromConfig(actionId, payload);
+      // R-WEB-PEACE-RULES-Q1 R5: gdy GRACZ jest autorem warunków, a respondentem jest AI (nie
+      // miasto-państwo), bramka AI: minimalny czas wojny, „czuje się silniejsze" i mnożnik ceny.
+      const r5AuthorOwnerId = ctx.authorOwnerId ?? proposerOwnerId;
+      const r5PlayerAuthors = r5AuthorOwnerId === (pnOpts.playerOwnerId ?? 0);
+      const r5RespondentIsAi = responderOwnerId !== (pnOpts.playerOwnerId ?? 0);
+      let basePn = basePnCfg;
+      if (ctx.warState && r5PlayerAuthors && r5RespondentIsAi && !ctx.responderIsCityState) {
+        const r5Profile = resolveWarPeaceProfile(
+          typeof ctx.responderPlayer?.typCywilizacji === 'string' ? ctx.responderPlayer.typCywilizacji : undefined,
+        );
+        const r5Gate = evaluatePeaceAiGate(
+          {
+            rw: ctx.warState.responderRw,
+            turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
+            lostCitiesInWar: Math.max(0, ctx.warState.lostCitiesResponder),
+            // DODATEK 1 (przewaga >20%): zmeczenie wojna zdejmuje blokade (ten sam wzor co wearyFactor nizej).
+            // ZALOZENIE (R-WEB-DIPLO-PEACE-BALANCE-ACCEPT-DIAG-Q1, odpowiedz na zarzut 4): lostCitiesTotal = tylko
+            // miasta utracone przez respondenta (AI), jak w istniejacym wearyFactor nizej. ai.ts (propozycja AI->gracz)
+            // dodaje dodatkowo zdobyteMiastaPartnera, bo tam ta wartosc jest dostepna w kontekscie. Roznica istniala
+            // przed ta zmiana; ujednolicenie zmienia wearyFactor i wymaga osobnej decyzji (nie robione tutaj).
+            wearinessLevel: warWearinessLevel({
+              turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
+              lostCitiesTotal: Math.max(0, ctx.warState.lostCitiesResponder),
+              turnsSinceCityChange: ctx.warState.turnsSinceCityChange,
+            }),
+          },
+          r5Profile,
+        );
+        if (r5Gate.verdict !== 'ok') {
+          return { accepted: false, reason: r5Gate.reason ?? 'AI odrzuca pokój' };
+        }
+        // R-WEB-AI-WAR-WEARINESS-PEACE-Q1: zmęczenie wojną obniża cenę pokoju zadaną od gracza (do rabatCenyPokojuMax).
+        const wearyFactor = wearinessPeacePriceFactor(warWearinessLevel({
+          turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
+          lostCitiesTotal: Math.max(0, ctx.warState.lostCitiesResponder),
+          turnsSinceCityChange: ctx.warState.turnsSinceCityChange,
+        }));
+        basePn = Math.round(basePnCfg * r5Gate.priceMultiplier * wearyFactor);
+      }
       const proposerIsPlayer = proposerOwnerId === (pnOpts.playerOwnerId ?? 0);
       const relTotal = treatyEvalRelationTotal(relation);
       // OBRONA runda 2 (P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA, zarzut 1 Evaluatora,
@@ -1406,6 +1590,9 @@ export function evaluateProposal(
       // komentarz bloku handelWillingnessMultiplier wyżej (naprawa regresji rundy 2).
       const responderIsPlayer = responderOwnerId === 0;
       const handelMultiplier = handelWillingnessMultiplier(stance, p, responderIsPlayer);
+      // R-WEB-AI-TRADE-WIRING-E2E-Q1 r3 (ABC A1): AI proponent -> gracz: bramka uczciwosci
+      // z wspolczynnikiem 1 (AI oddaje co najwyzej tyle PW, ile dostaje). Gracz->AI bez zmian.
+      const fairnessRelTotal = responderIsPlayer ? AI_PROPOSER_FAIRNESS_REL_TOTAL : relTotal;
 
       const hasPnPath = givePn > 0 || receivePn > 0 || payload.giveItems?.length || payload.receiveItems?.length;
       if (proposalHasResourceAccess(payload)) {
@@ -1421,10 +1608,10 @@ export function evaluateProposal(
         (payload.giveItems?.some(i => i.typ === 'surowiec_ilosc') ?? false)
         || (payload.receiveItems?.some(i => i.typ === 'surowiec_ilosc') ?? false);
       if (payload.resourceTradeMode === 'per_turn' && hasQuantityResourceItems) {
-        const cyklFairnessReject = handelFairnessGate(givePn, receivePn, relTotal, handelMultiplier);
+        const cyklFairnessReject = handelFairnessGate(givePn, receivePn, fairnessRelTotal, handelMultiplier);
         if (cyklFairnessReject) return cyklFairnessReject;
-        const cyklPwBalance = givePn - handelRequiredPn(receivePn, relTotal, handelMultiplier);
-        const turns = clampDealTurns(payload.turns);
+        const cyklPwBalance = givePn - handelRequiredPn(receivePn, fairnessRelTotal, handelMultiplier);
+        const turns = exchangeValuationTurns(payload);
         const cyklicznyItems = buildHandelSurowiecCykliczny(
           proposerOwnerId, responderOwnerId, payload.giveItems, payload.receiveItems,
         );
@@ -1436,7 +1623,7 @@ export function evaluateProposal(
           proposerOwnerId,
           responderOwnerId,
           ctx.turn,
-          ctx.turn + turns,
+          resolveExchangeExpiry(ctx.turn, payload),
           undefined,
           false,
           undefined,
@@ -1444,16 +1631,18 @@ export function evaluateProposal(
         );
         return {
           accepted: true,
-          reason: `Umowa handlowa (surowiec co turę) na ${turns} tur`,
+          reason: payload.exchangeDurationTurns === null
+            ? 'Umowa handlowa (surowiec co turę) bezterminowa'
+            : `Umowa handlowa (surowiec co turę) na ${formatTurCountAcc(turns)}`,
           deal,
           pwBalance: cyklPwBalance,
         };
       }
 
       if (hasPnPath) {
-        const fairnessReject = handelFairnessGate(givePn, receivePn, relTotal, handelMultiplier);
+        const fairnessReject = handelFairnessGate(givePn, receivePn, fairnessRelTotal, handelMultiplier);
         if (fairnessReject) return fairnessReject;
-        const pwBalance = givePn - handelRequiredPn(receivePn, relTotal, handelMultiplier);
+        const pwBalance = givePn - handelRequiredPn(receivePn, fairnessRelTotal, handelMultiplier);
         return { accepted: true, reason: 'Wymiana PW zaakceptowana', oneShotTrade: true, pwBalance };
       }
 
@@ -1796,26 +1985,35 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
       return cmd.allianceKind === 'defensywny'
         ? 'Proponujemy sojusz obronny — wchodzimy do wojny tylko gdy któryś z nas jest atakowany.'
         : 'Proponujemy sojusz wojskowy — wspólna obrona i wsparcie militarnie.';
+    case 'zaproponuj_przemarsz':
+      return 'Prosimy o zgodę na przemarsz naszych wojsk przez Twoje ziemie — w wojnie z innym państwem chcemy ominąć Twoje granice bez naruszeń.';
     case 'zaproponuj_pakt':
       return cmd.turns != null && cmd.turns <= 0
         ? 'Proponujemy bezterminowy pakt nieagresji — żadna strona nie zaatakuje drugiej.'
-        : `Proponujemy pakt nieagresji na ${cmd.turns ?? 15} tur — żadna strona nie zaatakuje drugiej.`;
+        : `Proponujemy pakt nieagresji na ${formatTurCountAcc(cmd.turns ?? 15)} — żadna strona nie zaatakuje drugiej.`;
     case 'zaproponuj_pokoj':
-      return 'Proponujemy zawarcie pokoju i zakończenie wojny.';
+      return cmd.rodzaj === 'rozejm'
+        ? 'Proponujemy rozejm — na czas ustalony w propozycji wstrzymujemy działania wojenne.'
+        : 'Proponujemy zawarcie pokoju i zakończenie wojny.';
     case 'zadaj_trybut':
       return `Żądamy trybut: ${AI_TRIBUTE_PER_TURN} ¤ co turę na rzecz naszego państwa.`;
     case 'oferuj_trybut_za_pokoj':
       return `Oferujemy jednorazową zapłatę ${cmd.goldOnce ?? 0} ¤ w zamian za pokój.`;
+    case 'oferuj_miasto_za_pokoj':
+      return 'Oferujemy pokój w zamian za przekazanie jednego z naszych miast.';
+    case 'zada_miasto_za_pokoj':
+      return 'Warunkiem pokoju jest przekazanie jednego z twoich miast.';
     case 'wypowiedz_wojne':
       return 'Wypowiadamy wojnę — nasze wojska są gotowe do walki.';
     case 'zaproponuj_handel_surowiec': {
       const zaplataLabel = cmd.zaplataTyp === 'praca' ? 'Praca' : '¤';
+      const reasonSuffix = cmd.reasonHandlu ? ` Uzasadnienie: ${cmd.reasonHandlu}` : '';
       if (cmd.kierunek === 'zakup') {
-        return `Kupię od ciebie ${cmd.label} — ${cmd.pakietyPerTura} szt./turę`
-          + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${cmd.turns} tur.`;
+        return `Kupię od ciebie ${cmd.label} — ${cmd.pakietyPerTura} sztuk na turę`
+          + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${formatTurCountAcc(cmd.turns)}.${reasonSuffix}`;
       }
-      return `Mamy nadwyżkę surowca ${cmd.label} — oferujemy ${cmd.pakietyPerTura} szt./turę`
-        + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${cmd.turns} tur.`;
+      return `Mamy nadwyżkę surowca ${cmd.label} — oferujemy ${cmd.pakietyPerTura} sztuk na turę`
+        + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${formatTurCountAcc(cmd.turns)}.${reasonSuffix}`;
     }
     default:
       return 'Propozycja dyplomatyczna od tego państwa.';
@@ -1848,6 +2046,18 @@ export function aiCommandToPendingProposal(
         payload: { allianceKind },
       };
     }
+    case 'zaproponuj_wymiane_cykliczna':
+      if (cmd.giveQty <= 0 || cmd.receiveQty <= 0 || cmd.giveKey === cmd.receiveKey) return null;
+      return {
+        ...base,
+        id: makeDealId('pending-barter', turn, fromOwnerId, toOwnerId),
+        actionId: 'handel',
+        payload: {
+          giveItems: [{ typ: 'surowiec_ilosc', id: cmd.giveKey, ilosc: cmd.giveQty }],
+          receiveItems: [{ typ: 'surowiec_ilosc', id: cmd.receiveKey, ilosc: cmd.receiveQty }],
+          resourceTradeMode: 'per_turn', turns: cmd.turns, exchangeDurationTurns: cmd.turns,
+        },
+      };
     case 'zaproponuj_pakt':
       return {
         ...base,
@@ -1855,12 +2065,49 @@ export function aiCommandToPendingProposal(
         actionId: 'nap',
         payload: { turns: cmd.turns ?? 15 },
       };
+    case 'zaproponuj_przemarsz':
+      return {
+        ...base,
+        id: makeDealId('pending-przemarsz', turn, fromOwnerId, toOwnerId),
+        actionId: 'granice',
+        payload: { borderMilitary: true },
+      };
     case 'zaproponuj_pokoj':
+      // R-WEB-TRUCE-Q1 r4 (N4): rozejm proponowany przez AI idzie tą samą ścieżką co pokój
+      // (stół → applyProposalOutcome 'rozejm'), z domyślną długością okna.
+      if (cmd.rodzaj === 'rozejm') {
+        return {
+          ...base,
+          id: makeDealId('pending-rozejm', turn, fromOwnerId, toOwnerId),
+          actionId: 'rozejm',
+          payload: { turns: TRUCE_DEFAULT_TURNS },
+        };
+      }
       return {
         ...base,
         id: makeDealId('pending-pokoj', turn, fromOwnerId, toOwnerId),
         actionId: 'pokoj',
         payload: {},
+      };
+    case 'oferuj_miasto_za_pokoj':
+      // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): AI (proponent) oddaje swoje miasto → giveItems.
+      return {
+        ...base,
+        id: makeDealId('pending-pokoj-miasto', turn, fromOwnerId, toOwnerId),
+        actionId: 'pokoj',
+        payload: {
+          giveItems: [{ typ: 'miasto', id: cmd.cityId, ilosc: 1, cityPn: cmd.cityPn, cityWeight: cmd.cityWeight }],
+        },
+      };
+    case 'zada_miasto_za_pokoj':
+      // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1b): AI żąda miasta gracza → receiveItems (strona gracza).
+      return {
+        ...base,
+        id: makeDealId('pending-pokoj-zadanie', turn, fromOwnerId, toOwnerId),
+        actionId: 'pokoj',
+        payload: {
+          receiveItems: [{ typ: 'miasto', id: cmd.cityId, ilosc: 1, cityPn: cmd.cityPn }],
+        },
       };
     case 'zaproponuj_handel': {
       const goldOnce = cmd.goldOnce ?? 0;
@@ -1971,7 +2218,7 @@ const NEGOTIATION_PEACE_REQUIRED: ReadonlySet<ProposalActionId> = new Set([
  * bez progów (gracz już się zgodził ręcznie — jak reszta tej funkcji).
  */
 const PEACE_ACTIONS_DURING_WAR: ReadonlySet<ProposalActionId> = new Set([
-  'pokoj', 'trybut_oferta', 'ultimatum',
+  'pokoj', 'rozejm', 'trybut_oferta', 'ultimatum',
 ]);
 
 export function resolvePlayerAcceptsAiPending(
@@ -2031,6 +2278,8 @@ export function resolvePlayerAcceptsAiPending(
     }
     case 'pokoj':
       return { accepted: true, reason: 'Pokój zawarty', oneShotTrade: true };
+    case 'rozejm':
+      return { accepted: true, reason: 'Rozejm zawarty', oneShotTrade: true };
     case 'granice': {
       if (payload.barbarianCooperation && !payload.borderMilitary) {
         return { accepted: false, reason: 'Wspólna walka z barbarzyńcami wymaga wariantu wojskowego' };
@@ -2110,7 +2359,7 @@ export function resolvePlayerAcceptsAiPending(
         (payload.giveItems?.some(i => i.typ === 'surowiec_ilosc') ?? false)
         || (payload.receiveItems?.some(i => i.typ === 'surowiec_ilosc') ?? false);
       if (payload.resourceTradeMode === 'per_turn' && hasQuantityResourceItems) {
-        const turns = clampDealTurns(payload.turns);
+        const turns = exchangeValuationTurns(payload);
         const cyklicznyItems = buildHandelSurowiecCykliczny(
           fromOwnerId, toOwnerId, payload.giveItems, payload.receiveItems,
         );
@@ -2122,13 +2371,19 @@ export function resolvePlayerAcceptsAiPending(
           fromOwnerId,
           toOwnerId,
           turn,
-          turn + turns,
+          resolveExchangeExpiry(turn, payload),
           undefined,
           false,
           undefined,
           cyklicznyItems,
         );
-        return { accepted: true, reason: `Umowa handlowa (surowiec co turę) na ${turns} tur`, deal };
+        return {
+          accepted: true,
+          reason: payload.exchangeDurationTurns === null
+            ? 'Umowa handlowa (surowiec co turę) bezterminowa'
+            : `Umowa handlowa (surowiec co turę) na ${formatTurCountAcc(turns)}`,
+          deal,
+        };
       }
       if (payload.goldOnce != null && payload.goldOnce > 0) {
         return { accepted: true, reason: 'Wymiana jednorazowa (T3A)', oneShotTrade: true };
@@ -2259,6 +2514,16 @@ export interface PendingNegotiation {
   expiresTurn: number;
   /** Kto zainicjował rundę 1 — UI (własne/przychodzące) + parytet AI/gracz (ta sama droga). */
   source: 'player' | 'ai';
+  /** R-WEB-DIPLO-DEALS-SENSIBLE-Q1: uzasadnienie oferty handlowej AI (niedobór/nadwyżka). */
+  reason?: string;
+  /**
+   * R-WEB-DIPLO-CITY-OFFER-REJECT-OWN-COOLDOWN-Q1: klucz cooldownu odrzucenia, gdy inny niż actionId
+   * (oferta miasta za pokój ma actionId 'pokoj', ale własny klucz 'miasto_za_pokoj').
+   * Brak pola = cooldown wg actionId (zachowanie sprzed zmiany; stare zapisy bez pola działają).
+   */
+  rejectCooldownKey?: 'miasto_za_pokoj' | 'wymiana_cykliczna';
+  /** Marker for an AI initiated barter sharing actionId='handel'. Optional in old saves. */
+  aiCyclicBarter?: boolean;
 }
 
 function otherPartyOf(
@@ -2474,8 +2739,9 @@ const NEGOTIATION_MONEY_STEP_PCT = 0.2;
 /** Maks. prób na kierunek (± do 80% od bieżącej kwoty) zanim uznajemy impas. */
 const NEGOTIATION_MONEY_MAX_STEPS = 4;
 
+// R-WEB-TRUCE-Q1 r3 (N3): rozejm ma ten sam słodzik kontrprzeciwny co pokój (ta sama bramka PW).
 const SWEETENER_COUNTER_ELIGIBLE: ReadonlySet<ProposalActionId> = new Set([
-  'nap', 'sojusz_defensywny', 'sojusz_pelny', 'granice', 'wasal', 'pokoj',
+  'nap', 'sojusz_defensywny', 'sojusz_pelny', 'granice', 'wasal', 'pokoj', 'rozejm',
 ]);
 
 function withExtraSweetenerGold(payload: ProposalPayload, extraGold: number): ProposalPayload {

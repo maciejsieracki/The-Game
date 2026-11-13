@@ -1,0 +1,25 @@
+
+1. ownerHasNativeZelazoAccess (wspolna sciezka gracz/AI)
+  [OK] funkcja wyeksportowana z zelazo-access.ts
+  [OK] kopalnia + zapas + odlewnia -> true
+  [OK] odlewnia w drugim miescie -> true
+  [OK] wielka_odlewnia -> true
+  [OK] brak kopalni na zlozu -> false
+  [OK] zapas 0 -> false
+  [OK] pusty zapas -> false
+  [OK] brak zapasu (undefined) -> false (fail-closed)
+  [OK] brak odlewni -> false
+  [OK] brak miast -> false
+  [OK] ruda_zelaza to nie zelazo -> false (konwencja stock.zelazo)
+
+2. Stary bug zakodowany jako dowod (boolean w miejscu empireStock -> zawsze false)
+  [OK] hasZelazoAccess(true, odlewnia) === false (stara sklejka main.ts)
+  [OK] hasZelazoAccess({zelazo:1}, odlewnia) === true (poprawne wywolanie)
+
+3. Straznik zrodla main.ts (obie sklejki na wspolnej sciezce; ta sama sciezka dla gracza i AI)
+  [OK] main.ts nie wola hasZelazoAccess(hasKopalniaZelazo, ...)
+  [OK] main.ts nie importuje juz hasZelazoAccess
+  [OK] main.ts: 2 wywolania ownerHasNativeZelazoAccess(.., citySurowceSumForOwner(ownerId), ..) (znaleziono 2)
+
+16 passed, 0 failed
+EXIT=0

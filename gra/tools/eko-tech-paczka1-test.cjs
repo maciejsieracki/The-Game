@@ -47,22 +47,35 @@ const gateEmpty = { empireBuiltIds: new Set(), buildings };
 const gateWithCeg = { empireBuiltIds: new Set(['cegielnia']), buildings };
 
 // T-TECH-7: Pismo wymaga Cegielni
+// Fixture (klasa A, R-WEB-TEST-DEBT-PREEXISTING-B-Q1): Pismo (Brąz, Poziom 4) ma wymagania
+// "Garncarstwo + Wymiana" oraz Zasadę 2 (epochTierGateMet: wszystkie niższe Poziomy tej
+// epoki zbadane). Stary fixture miał tylko Garncarstwo, więc test nie mierzył bramki Cegielni.
+// Teraz: wszystkie pozostałe technologie zbadane — różnicuje wyłącznie bramka budynku.
+const allTechsButPismo = techData.map(t => t.Technologia).filter(n => n !== 'Pismo');
 {
   const st = M.createResearchState();
-  st.ukonczone = ['Garncarstwo'];
+  st.ukonczone = allTechsButPismo;
   ok(!M.canResearch(st, techData, 'Pismo', gateEmpty), 'Pismo blocked bez Cegielni (gate)');
   ok(M.canResearch(st, techData, 'Pismo', gateWithCeg), 'Pismo OK z Cegielnia');
   const avail = M.availableTechs(st, techData, gateWithCeg).filter(t => t === 'Pismo');
   ok(avail.includes('Pismo'), 'Pismo on available list z gate');
 }
 
-// T-TECH-8: upgrade kręgi → świątynia
+// T-TECH-8: upgrade łańcucha budynków (upgradeFrom) zastępuje poprzednika.
+// Fixture (klasa A, R-WEB-TEST-DEBT-PREEXISTING-B-Q1): Świątynia NIE ma już upgradeFrom
+// w buildings.json; wymaga Kamiennych kręgów W TYM MIEŚCIE jako warunku wstępnego
+// (building-resource-gate.ts CITY_BUILDING_PREREQ: swiatynia: 'kamienne_kregi'; przywrócony
+// wymóg wcześniejszego budynku, commit a167fc0b1). Kręgi zostają obok Świątyni.
+// Mechanizm T-TECH-8 sprawdzamy na prawdziwej parze upgradeFrom: spichlerz -> spichlerz_ii.
 {
   const built = ['kamienne_kregi'];
   ok(!M.isBuildingSupersededByUpgrade('kamienne_kregi', built, buildings), 'kręgi not superseded yet');
-  const after = M.applyCompletedBuildingIds(built, 'swiatynia', buildings);
-  ok(after.includes('swiatynia') && !after.includes('kamienne_kregi'), 'upgrade replaces kręgi');
-  ok(M.isBuildingSupersededByUpgrade('kamienne_kregi', after, buildings), 'kręgi superseded after upgrade');
+  const withTemple = M.applyCompletedBuildingIds(built, 'swiatynia', buildings);
+  ok(withTemple.includes('swiatynia') && withTemple.includes('kamienne_kregi'), 'Świątynia nie zastępuje kręgów (wymóg, nie upgrade)');
+  ok(!M.isBuildingSupersededByUpgrade('kamienne_kregi', withTemple, buildings), 'kręgi nie są superseded przez Świątynię');
+  const spich = M.applyCompletedBuildingIds(['spichlerz'], 'spichlerz_ii', buildings);
+  ok(spich.includes('spichlerz_ii') && !spich.includes('spichlerz'), 'upgrade replaces poprzednika (spichlerz -> spichlerz_ii)');
+  ok(M.isBuildingSupersededByUpgrade('spichlerz', spich, buildings), 'poprzednik superseded after upgrade');
 }
 
 // ABC-9 (zaktualizowany 2026-07-23): Mielerz USUNIETY calkowicie (decyzja Macieja --
@@ -79,7 +92,10 @@ const gateWithCeg = { empireBuiltIds: new Set(['cegielnia']), buildings };
     { id: 'c1', name: 'X', ownerId: 0, population: 3, q: 0, r: 0 },
     { buildings, units: [] },
     ['Obróbka drewna'],
-    { epoch: 1, builtBuildingIds: [], activeResourceLabels: ['Drewno'] },
+    // Pola kontekstu: empireActiveResourceLabels / empireResourceStock (production.ts:491-496).
+    // Stary fixture używał nieistniejącej nazwy activeResourceLabels (ignorowana) — klasa A.
+    // Stolarnia ma koszt 25 drewna w magazynie państwa (buildings.json), więc stock też potrzebny.
+    { epoch: 1, builtBuildingIds: [], empireActiveResourceLabels: ['Drewno'], empireResourceStock: { drewno: 100 } },
   );
   ok(items.some(i => i.id === 'stolarnia'), 'Stolarnia in production after Obróbka drewna');
   ok(!items.some(i => i.id === 'mielerz'), 'Mielerz NIE istnieje juz w produkcji (usuniety 2026-07-23)');
@@ -89,7 +105,7 @@ const gateWithCeg = { empireBuiltIds: new Set(['cegielnia']), buildings };
 // playerState gate
 {
   const ps = M.createPlayerState();
-  for (const t of ['Garncarstwo']) ps.zbadane.add(t);
+  for (const t of allTechsButPismo) ps.zbadane.add(t);
   ok(!M.setPlayerResearchTarget(ps, 'Pismo', techData, gateEmpty), 'setPlayerResearchTarget rejects bez Cegielni');
   ok(M.setPlayerResearchTarget(ps, 'Pismo', techData, gateWithCeg), 'setPlayerResearchTarget OK z Cegielnia');
 }

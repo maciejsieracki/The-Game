@@ -16,10 +16,12 @@ import {
   type ForeignTypeClusterGroup,
   type HumanDistanceMode,
 } from '../map/cluster-spawn';
-import { startRelationForPair } from './diplomacy-layers';
+import { startRelationForMajorPair, startRelationForPair } from './diplomacy-layers';
 import type { Relation } from './diplomacy';
+import { HUMAN_OWNER_PRIMARY } from './human-owners';
 import { hexDistance } from '../units/setup';
 import { MIN_CITY_DISTANCE, MIN_CITY_DISTANCE_START_CITY_STATE } from './cities';
+import { pickNextCityName } from './civ-names';
 
 export type { ClusterSpawnSlot, ClusterSpawnPlan, ForeignTypeClusterGroup, HumanDistanceMode };
 export { buildSameTypeRivalSlots, buildSameTypeRivalCandidateHexes } from '../map/cluster-spawn';
@@ -54,6 +56,12 @@ export interface ClusterStartPlan {
   /** Wszystkie miasta AI z klastra — profil kopia_typu_obronna. */
   typCityCopyOwners: Set<number>;
   startRelations: Map<number, Relation>;
+  /** Relacje initialne wszystkich par major-major; city-state są wykluczone. */
+  majorPairStartRelations: Array<{
+    ownerA: number;
+    ownerB: number;
+    relation: Relation;
+  }>;
   placement: ClusterSpawnPlan['placement'];
   /** Liczba miast-państw do spawnu wokół pierwszego miasta gracza. */
   pendingSameTypeRivals: number;
@@ -184,6 +192,9 @@ export function buildClusterStartPlan(input: BuildClusterStartInput): ClusterSta
     { q: spawnPlan.playerStartHex.q, r: spawnPlan.playerStartHex.r, isCityState: false },
   ];
 
+  // R-WEB-CITY-NAME-UNIQUE-FOREVER-Q1: jeden globalny zbiór (pule cywilizacji się nakładają).
+  const acceptedNamesGlobal = new Set<string>([spawnPlan.playerStartCityName]);
+
   for (const slot of spawnPlan.slots) {
     // P-MIASTA-ZBYT-BLISKO-SIEBIE-Q1 runda 2 (Zarzut 1 Evaluatora, POTWIERDZONY
     // własną symulacją Evaluatora: 3/20 map, w tym seed=42 owner 37 — DOKŁADNIE
@@ -209,22 +220,31 @@ export function buildClusterStartPlan(input: BuildClusterStartInput): ClusterSta
     });
     if (collides) continue;
 
-    aiOwnerCivMap.set(slot.ownerId, slot.typ);
-    ownerDisplayName.set(slot.ownerId, displayLabelForSlot(input.civs, slot));
-    if (slot.isSameTypeRival) simplifiedDiplomacyOwners.add(slot.ownerId);
-    else foreignTypeOwners.add(slot.ownerId);
-    if (!slot.isClusterCapital) typCityCopyOwners.add(slot.ownerId);
-    startRelations.set(slot.ownerId, startRelationForPair(slot.isSameTypeRival));
+    const usedNames = acceptedNamesGlobal;
+    const acceptedName = input.cityNamesPools
+      ? pickNextCityName(input.cityNamesPools, slot.typ, usedNames, slot.nazwaMiasta || 'Miasto')
+      : slot.nazwaMiasta;
+    usedNames.add(acceptedName);
+    const acceptedSlot = acceptedName === slot.nazwaMiasta
+      ? slot
+      : { ...slot, nazwaMiasta: acceptedName };
+
+    aiOwnerCivMap.set(acceptedSlot.ownerId, acceptedSlot.typ);
+    ownerDisplayName.set(acceptedSlot.ownerId, displayLabelForSlot(input.civs, acceptedSlot));
+    if (acceptedSlot.isSameTypeRival) simplifiedDiplomacyOwners.add(acceptedSlot.ownerId);
+    else foreignTypeOwners.add(acceptedSlot.ownerId);
+    if (!acceptedSlot.isClusterCapital) typCityCopyOwners.add(acceptedSlot.ownerId);
+    startRelations.set(acceptedSlot.ownerId, startRelationForPair(acceptedSlot.isSameTypeRival));
 
     spawnCities.push({
-      q: slot.q,
-      r: slot.r,
-      ownerId: slot.ownerId,
-      name: slot.nazwaMiasta,
+      q: acceptedSlot.q,
+      r: acceptedSlot.r,
+      ownerId: acceptedSlot.ownerId,
+      name: acceptedSlot.nazwaMiasta,
     });
-    aiStartHexes.push({ q: slot.q, r: slot.r, ownerId: slot.ownerId });
-    acceptedForDistance.push({ q: slot.q, r: slot.r, isCityState: slotIsCityState });
-    acceptedOwnerIds.add(slot.ownerId);
+    aiStartHexes.push({ q: acceptedSlot.q, r: acceptedSlot.r, ownerId: acceptedSlot.ownerId });
+    acceptedForDistance.push({ q: acceptedSlot.q, r: acceptedSlot.r, isCityState: slotIsCityState });
+    acceptedOwnerIds.add(acceptedSlot.ownerId);
   }
 
   // P-MIASTA-ZBYT-BLISKO-SIEBIE-Q1 runda 2: `foreignTypeClusters` i
@@ -357,6 +377,32 @@ export function buildClusterStartPlan(input: BuildClusterStartInput): ClusterSta
   }
   const pendingSameTypeRivalsSecond = pendingSameTypeRivalOwnerIdsSecond.length;
 
+  // Q2: relacja początkowa jest per para wszystkich aktywnych major ownerów,
+  // wliczając oba fotele ludzkie i AI↔AI. City-state są poza listą: tylko
+  // zaakceptowane stolice obcych klastrów kwalifikują się po stronie AI.
+  const majorOwners: Array<{ ownerId: number; civId: string }> = [
+    { ownerId: HUMAN_OWNER_PRIMARY, civId: input.playerCivId },
+  ];
+  if (secondPlayerStartHex && secondPlayerOwnerId !== null && input.secondHumanCivId) {
+    majorOwners.push({ ownerId: secondPlayerOwnerId, civId: input.secondHumanCivId });
+  }
+  for (const ownerId of clusterCapitalOwnerIds) {
+    const civId = aiOwnerCivMap.get(ownerId);
+    if (civId) majorOwners.push({ ownerId, civId });
+  }
+  const majorPairStartRelations: ClusterStartPlan['majorPairStartRelations'] = [];
+  for (let i = 0; i < majorOwners.length; i++) {
+    for (let j = i + 1; j < majorOwners.length; j++) {
+      const a = majorOwners[i]!;
+      const b = majorOwners[j]!;
+      majorPairStartRelations.push({
+        ownerA: a.ownerId,
+        ownerB: b.ownerId,
+        relation: startRelationForMajorPair(a.civId, b.civId),
+      });
+    }
+  }
+
   return {
     playerStartHex: spawnPlan.playerStartHex,
     playerStartCityName: spawnPlan.playerStartCityName,
@@ -371,6 +417,7 @@ export function buildClusterStartPlan(input: BuildClusterStartInput): ClusterSta
     foreignTypeOwners,
     typCityCopyOwners,
     startRelations,
+    majorPairStartRelations,
     placement: spawnPlan.placement,
     pendingSameTypeRivals: spawnPlan.pendingSameTypeRivals,
     pendingSameTypeRivalHexes: spawnPlan.pendingSameTypeRivalHexes,

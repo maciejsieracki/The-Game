@@ -5,6 +5,7 @@
 import type { ArmyMergeUnitRow } from './armyMergePanel';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { unitIconSvg } from './icons/brandAssets';
+import { armyStackCardLabel, sortArmyStackGeneralsFirst } from './armyStackLabel';
 
 export interface MergeTargetOption {
   q: number;
@@ -53,6 +54,7 @@ function ensureStyles(): void {
 .civ-ampk-u input{accent-color:#50b070;}
 .civ-ampk-u-ic{font-size:18px;width:24px;text-align:center;}
 .civ-ampk-u-name{flex:1;font-size:12px;font-weight:600;color:#f0e8b8;}
+.civ-ampk-u.cmd .civ-ampk-u-name{color:#ffe27a;font-weight:800;}
 .civ-ampk-targets{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
 .civ-ampk-target{font:inherit;font-size:11px;font-weight:600;cursor:pointer;padding:8px 10px;border-radius:6px;
   border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:var(--sub);text-align:left;}
@@ -110,12 +112,13 @@ export function showArmyMergePickPanel(opts: ArmyMergePickPanelOpts): void {
 
   function renderInner(): void {
     let uHtml = '';
-    for (const u of opts.sourceUnits) {
+    for (const u of sortArmyStackGeneralsFirst(opts.sourceUnits)) {
       const on = selected.has(u.id);
-      uHtml += '<label class="civ-ampk-u' + (on ? ' on' : '') + '">'
-        + '<input type="checkbox"' + (on ? ' checked' : '') + ' data-uid="' + esc(u.id) + '">'
+      const label = armyStackCardLabel(u);
+      uHtml += '<label class="civ-ampk-u' + (on ? ' on' : '') + (u.commanderTitle ? ' cmd' : '') + '" title="' + esc(label) + '">'
+        + '<input type="checkbox"' + (on ? ' checked' : '') + ' data-uid="' + esc(u.id) + '" aria-label="' + esc(label) + '">'
         + '<span class="civ-ampk-u-ic">' + (u.icon || unitIconSvg(undefined)) + '</span>'
-        + '<span class="civ-ampk-u-name">' + esc(u.name) + '</span></label>';
+        + '<span class="civ-ampk-u-name">' + esc(label) + '</span></label>';
     }
     let tHtml = '';
     for (const t of opts.targets) {

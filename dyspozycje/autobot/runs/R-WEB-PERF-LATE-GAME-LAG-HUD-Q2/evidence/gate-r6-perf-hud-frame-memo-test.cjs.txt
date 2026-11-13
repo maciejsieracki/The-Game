@@ -1,0 +1,547 @@
+PASS: StateFrame: poza zakresem każdy odczyt jest świeży
+PASS: StateFrame: w zakresie jedno getState(), ta sama migawka; po zakresie znów świeżo
+PASS: StateFrame: HUD pokazuje aktualne dane po mutacji stanu PRZED updateHud (kolejne odświeżenia)
+PASS: StateFrame: zagnieżdżone odświeżenie po mutacji NIE renderuje starej migawki (zarzut 5)
+PASS: StateFrame: wyjątek w zakresie zamyka ramkę (brak przecieku starej migawki)
+PASS: StateFrame: invalidate() wymusza nowy odczyt w obrębie zakresu
+PASS: ScopeMemo: poza zakresem zawsze liczy od nowa
+PASS: ScopeMemo: w zakresie liczy raz per klucz; wynik równy wersji bez memo
+PASS: ScopeMemo: kopia chroni wpis przed zanieczyszczeniem; nowy zakres nie widzi starych wpisów po mutacji świata
+PASS: ScopeMemo: zagnieżdżony run współdzieli zakres; wyjątek zamyka zakres
+PASS: hud.ts: getState() wołane tylko przez StateFrame; updateHud = hudFrame.run
+node:assert:883
+    throw err;
+    ^
+
+AssertionError [ERR_ASSERTION]: The input did not match the regular expression /ownerScope\.cached\('built:'[^\n]*new Set\(v\)/. Input:
+
+'/**\n' +
+  ' * main.ts\n' +
+  ' * Punkt wejscia The Game -- M1 Step 1: 3D hex map renderer.\n' +
+  ' *\n' +
+  ' * Pipeline:\n' +
+  ' *   loadGameData() -> configureTerrainMovement (if data carries terrainMovement)\n' +
+  ' *   -> generateMap(seed) -> buildScene() -> CameraController -> render loop\n' +
+  ' */\n' +
+  '\n' +
+  '// Global Error Overlay\n' +
+  '// Catches any JS error or unhandled promise and shows it as a red overlay\n' +
+  '// so a black screen never silently hides what went wrong.\n' +
+  '\n' +
+  '/** C-GLOD-Q1=A (Maciej 2026-07-26): odmiana „tura" w bierniku dla ostrzeżenia\n' +
+  ' *  karencji głodu wojska ("za 1 turę" / "za 2 tury" / "za 5 tur"). */\n' +
+  'function slowoTura(n: number): string {\n' +
+  '  const a = Math.abs(n);\n' +
+  "  if (a === 1) return 'turę';\n" +
+  '  const m10 = a % 10;\n' +
+  '  const m100 = a % 100;\n' +
+  "  if (m10 >= 2 && m10 <= 4 && !(m100 >= 12 && m100 <= 14)) return 'tury';\n" +
+  "  return 'tur';\n" +
+  '}\n' +
+  '\n' +
+  'function showErr(msg: string): void {\n' +
+  "  let el = document.getElementById('__err_overlay__') as HTMLDivElement | null;\n" +
+  '  if (!el) {\n' +
+  "    el = document.createElement('div');\n" +
+  "    el.id = '__err_overlay__';\n" +
+  '    el.style.cssText = [\n' +
+  "      'position:fixed', 'top:0', 'left:0', 'width:100%',\n" +
+  "      'background:rgba(180,0,0,0.92)', 'color:#fff',\n" +
+  "      'font:bold 13px/1.5 monospace', 'padding:16px 20px',\n" +
+  "      'z-index:99999', 'white-space:pre-wrap', 'word-break:break-all',\n" +
+  "      'max-height:50vh', 'overflow-y:auto',\n" +
+  "      'border-bottom:3px solid #ff4444',\n" +
+  "    ].join(';');\n" +
+  "    el.innerHTML = '<b>THE GAME \\u2014 ERROR</b>\\n';\n" +
+  '    document.body.appendChild(el);\n' +
+  '  }\n' +
+  "  el.innerHTML += '\\n' + msg;\n" +
+  "  console.error('[TheGame]', msg);\n" +
+  '}\n' +
+  '\n' +
+  "window.addEventListener('error', (e) => {\n" +
+  "  showErr(e.message + ' @' + e.filename + ':' + e.lineno + ':' + e.colno);\n" +
+  '});\n' +
+  "window.addEventListener('unhandledrejection', (e) => {\n" +
+  "  showErr('Unhandled promise rejection: ' + String(e.reason));\n" +
+  '});\n' +
+  '\n' +
+  '// Imports\n' +
+  '\n' +
+  "import * as THREE from 'three';\n" +
+  "import { loadGameData } from './data/loader';\n" +
+  "import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from './map/generator';\n" +
+  "import { generujSwiatAsync } from './map/mapGenAsync';\n" +
+  "import type { TypSwiata } from './map/gen-helpers';\n" +
+  "import { typSwiataFromMenuLabel, defaultLandFractionPercentForTyp, aktywneTypyFromMapLabel, defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel, clampMiastaPanstwaCount, type WorldGenerationPreset, DEFAULT_WORLD_DENSITY } from './map/newGameMapDefaults';\n" +
+  "import { buildScene, getLastSetFogMs, type SceneBuildTimings, type SceneResult } from './render/scene';\n" +
+  "import { showMapLoadingOverlay, type MapLoadingOverlayHandle, formatCaughtError } from './ui/mapLoadingOverlay';\n" +
+  "import { showSceneTimingReport } from './ui/sceneTimingReport';\n" +
+  "import { ensurePerfReportChip, type PostSceneStepMs } from './ui/perfReport';\n" +
+  "import type { MapGenPhaseTimings } from './map/mapGenProgress';\n" +
+  '\n' +
+  '/** Ukryj overlay + raport czasów dopiero gdy cały start mapy gotowy (plik + chip HUD). */\n' +
+  'function finishMapLoadWithPerfReport(\n' +
+  '  loading: MapLoadingOverlayHandle,\n' +
+  '  report?: {\n' +
+  '    mapGen?: MapGenPhaseTimings;\n' +
+  '    scene?: SceneBuildTimings;\n' +
+  '    typLabel?: string;\n' +
+  '    rozmiarLabel?: string;\n' +
+  '    ksztaltLabel?: string;\n' +
+  '    mapGenHandoffMs?: number;\n' +
+  '    postSceneMs?: number;\n' +
+  '    postSceneSteps?: PostSceneStepMs[];\n' +
+  '    wallClockMs?: number;\n' +
+  '    error?: string;\n' +
+  '  },\n' +
+  "  sourcePath = 'finishMapLoadWithPerfReport',\n" +
+  '): void {\n' +
+  '  const wall = report?.wallClockMs ?? 0;\n' +
+  '  const postScene = report?.postSceneMs ?? 0;\n' +
+  '  if (wall > 0) {\n' +
+  '    console.info(\n' +
+  '      `[civ-perf] wall-clock Nowa gra → hide overlay: ${wall} ms`\n' +
+  "      + (postScene > 0 ? ` (postScene/finishLoading=${postScene} ms)` : ''),\n" +
+  '    );\n' +
+  '  }\n' +
+  '  loading.hide();\n' +
+  '  showSceneTimingReport({\n' +
+  '    mapGen: report?.mapGen,\n' +
+  '    scene: report?.scene,\n' +
+  '    typLabel: report?.typLabel,\n' +
+  '    rozmiarLabel: report?.rozmiarLabel,\n' +
+  '    ksztaltLabel: report?.ksztaltLabel ?? report?.typLabel,\n' +
+  '    mapGenHandoffMs: report?.mapGenHandoffMs,\n' +
+  '    postSceneMs: report?.postSceneMs,\n' +
+  '    postSceneSteps: report?.postSceneSteps,\n' +
+  '    wallClockMs: report?.wallClockMs,\n' +
+  '    sourcePath,\n' +
+  '    error: report?.error,\n' +
+  '    hideAfterMs: 0,\n' +
+  '  });\n' +
+  '}\n' +
+  '\n' +
+  'const yieldMainThread = (): Promise<void> => new Promise((r) => setTimeout(r, 0));\n' +
+  '\n' +
+  '/** Post-scene: overlay postępu (FALA 163). */\n' +
+  'async function postSceneProgress(\n' +
+  '  loading: MapLoadingOverlayHandle,\n' +
+  '  label: string,\n' +
+  '  step: number,\n' +
+  '  total: number,\n' +
+  '): Promise<void> {\n' +
+  '  loading.setProgress(`Po scenie — ${label}`, Math.round((step / total) * 100), step, total);\n' +
+  '  await yieldMainThread();\n' +
+  '}\n' +
+  '\n' +
+  'function endPostSceneStep(\n' +
+  '  label: string,\n' +
+  '  timings: PostSceneStepMs[],\n' +
+  '  stepWall: { t: number },\n' +
+  '): void {\n' +
+  '  timings.push({ label, ms: Math.round(performance.now() - stepWall.t) });\n' +
+  '  stepWall.t = performance.now();\n' +
+  '}\n' +
+  'import {\n' +
+  '  CIV_PERF_DEBUG_MARKER,\n' +
+  '  isPerfDebugOverlayVisible,\n' +
+  '  togglePerfDebugOverlay,\n' +
+  '  updatePerfDebugOverlay,\n' +
+  "} from './render/perfDebugOverlay';\n" +
+  "import { logRendererMemoryAtTurnEnd } from './render/memDebug';\n" +
+  "import { CIV_PUBLISH_MARKERS } from './buildInfo';\n" +
+  '// C-OBCE-JEDN-Q2: znak właściciela na żetonie mapy. Assety (portrety + ikony\n' +
+  '// brand-booka) wstrzykujemy stąd, bo warstwa render/ nie zależy od warstwy ui/.\n' +
+  "import { setUnitOwnerEmblemAssets } from './render/unitOwnerEmblem';\n" +
+  "import { setCityMapBadgeCivSigil, setCityMapBadgeProdIcon, setCityMapBadgeLeaderPortrait } from './render/cityMapStatChip';\n" +
+  "import { setUnitUpgradeBadgeAssets } from './render/unitUpgradeBadges';\n" +
+  "import { leaderPortraitUrl } from './ui/leaderPortraits';\n" +
+  "import { civIconSvg } from './ui/icons/brandAssets';\n" +
+  'import {\n' +
+  '  beginTurnTransition,\n' +
+  '  endTurnTransition,\n' +
+  '  isTurnTransitionActive,\n' +
+  '  setTurnTransition,\n' +
+  '  yieldTurnTransitionUi,\n' +
+  "} from './ui/turnTransitionOverlay';\n" +
+  "import { shouldYieldAiOwnerProgressFrame } from './ui/aiOwnerProgressFrame';\n" +
+  "import { createDirtyRenderSync } from './game/dirtyRenderSync';\n" +
+  "import { trimSidePanelEventLog } from './game/retained-side-panel-events';\n" +
+  "import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';\n" +
+  "import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';\n" +
+  "import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';\n" +
+  "import { installCivTestHooks, isCivTestEnabled } from './game/civ-test-hooks';\n" +
+  "import { computeStartPlacements, computeReachable, computePath, setSiegeEntryBlocker, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, hexNeighborCoords, categoryOf, terrainMoveCost, isCivilianUnit, buildMoveOccupancy, trimSegmentEndOffPassThrough, type MoveOccupancy } from './units/setup';\n" +
+  "import { enterCityAfterSurrender } from './game/siege-enter-city';\n" +
+  "import { isCityUnderSiege, isSiegeEntryBlocked, besiegedCityAtHex, CITY_SIEGE_RECRUIT_BLOCK_PL } from './game/city-siege-state';\n" +
+  "import type { RuntimeUnit } from './units/setup';\n" +
+  "import { UnitRenderer, type UnitRingStance } from './render/units';\n" +
+  '// Import keyOf from picker only (avoids duplicate identifier with setup.ts keyOf)\n' +
+  "import { pixelToHex, unitAt, keyOf, worldToClientPx } from './input/picker';\n" +
+  "import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, computeVisibleAlongPath, buildUnitSightResolver, computePlayerVisibility, unitsVisibleOnMap } from './game/visibility';\n" +
+  "import { clearScoutAutoExplore, isScoutUnit, runScoutsAutoExplore } from './game/scout-auto-explore';\n" +
+  "import { cyclablePlayerArmyLeadsBase, resolveAdjacentPlayerUnitCycle } from './game/army-cycle';\n" +
+  "import { activeUnitQueue } from './game/next-active-unit';\n" +
+  'import {\n' +
+  '  shouldShowPlayerTriumphCityStateUnification,\n' +
+  '  // buildTriumphCityStateUnificationMessage / TRIUMPH_CS_HINT_MS: nie używane tu\n' +
+  '  // od P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK (modal triumphCityStateNotice.ts\n' +
+  '  // ma własną treść i nie jest toastem czasowym) — nadal eksportowane z\n' +
+  '  // triumph-city-state.ts i pokryte przez triumph-city-state-test.cjs.\n' +
+  "} from './game/triumph-city-state';\n" +
+  "import { startRevealRadiusForDifficulty } from './map/startScoring';\n" +
+  'import {\n' +
+  '  canFoundCity,\n' +
+  '  foundCity,\n' +
+  '  foundCityAt,\n' +
+  '  ensureCitySaveDefaults,\n' +
+  '  DEFAULT_PODZIAL_HANDLU,\n' +
+  '  DEFAULT_PODZIAL_PRACY,\n' +
+  '  DEFAULT_PROCENT_ROZWOJ,\n' +
+  '  DEFAULT_OKOLICA_FOCUS,\n' +
+  '  DEFAULT_OKOLICA_TRYB,\n' +
+  '  DEFAULT_BUDOWA_FOCUS,\n' +
+  '  DEFAULT_BUDOWA_TRYB,\n' +
+  '  DEFAULT_BUDOWA_PRIORYTET_TYPOW,\n' +
+  '  sanitizeBudowaPriorytetTypow,\n' +
+  '  EMPTY_BUDOWA_LISTA_BIBLIOTEKA,\n' +
+  '  dedupeBudowaLista,\n' +
+  '  newBudowaListaSzablonId,\n' +
+  '  loadBudowaListaBiblioteka,\n' +
+  '  DEFAULT_ULEPSZENIA_TRYB,\n' +
+  '  DEFAULT_ULEPSZENIA_FOCUS,\n' +
+  '  AI_MAJOR_ULEPSZENIA_PRACA_PERCENT,\n' +
+  '  MAX_PODZIAL_PRACY_BUDYNKI_PERCENT,\n' +
+  '  AI_FIXED_PROCENT_BUDYNKI,\n' +
+  '  AI_FIXED_PROCENT_NAUKA,\n' +
+  '  clampUlepszeniaPracaPercent,\n' +
+  '  clampPodzialPracyBudynkiPercent,\n' +
+  '  podzialPracyZProcentuPuli,\n' +
+  '  MAX_PROCENT_PULI_IMPERIUM,\n' +
+  '  MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA,\n' +
+  '  resolveUlepszeniaPracaPercentFromRaw,\n' +
+  '  freshUlepszeniaEmpirePolicy,\n' +
+  '  freshUlepszeniaEmpirePolicyForOwner,\n' +
+  '  computeAiImprovementBudgetCapForOwner,\n' +
+  '  resolveEffectiveUlepszenia,\n' +
+  '  normalizePodzialHandlu,\n' +
+  '  isAutoBudowaTryb,\n' +
+  '  wasIndependentCityStateBeforeCapture,\n' +
+  '  applyCapturePopulationLoss,\n' +
+  '  capturePopLossReportRow,\n' +
+  '  type City,\n' +
+  '  type BudowaFocus,\n' +
+  '  type BudowaTryb,\n' +
+  '  type BudowaListaBiblioteka,\n' +
+  '  type CityPodzialHandlu,\n' +
+  '  type CityPodzialPracy,\n' +
+  '  type OkolicaFocus,\n' +
+  '  type UlepszeniaFocus,\n' +
+  '  type UlepszeniaTryb,\n' +
+  '  type UlepszeniaPracaPercent,\n' +
+  '  type UlepszeniaEmpirePolicy,\n' +
+  '  type EffectiveUlepszeniaSettings,\n' +
+  "} from './game/cities';\n" +
+  'import {\n' +
+  '  type FortNode,\n' +
+  '  nextFortSeq,\n' +
+  '  backfillFortOrder,\n' +
+  '  applyFortCaptureByOccupation,\n' +
+  '  type FortTakeoverEvent,\n' +
+  '  fortNodeAsCityNode,\n' +
+  '  foundingNodesForOwner,\n' +
+  '  fortTerritoryNodes,\n' +
+  '  fortSightSources,\n' +
+  '  isHexInForeignFortTerritory,\n' +
+  '  isOutpostPlacementAllowed,\n' +
+  '  OUTPOST_PLACEMENT_DENIED_HINT,\n' +
+  '  isHexReservedByRivalFort,\n' +
+  '  applyFortTakeoverOnCityFounded,\n' +
+  '  findEvacuationHexOutsideCity,\n' +
+  "} from './game/fort-territory';\n" +
+  'import {\n' +
+  '  migrateHandelSplitOnLoad,\n' +
+  '  resolveCityPodzialHandlu,\n' +
+  '  freshOwnerDefaultPodzialHandlu,\n' +
+  "} from './game/empire-handel-split';\n" +
+  'import {\n' +
+  '  migratePodzialPracyOnLoad,\n' +
+  '  freshOwnerDefaultPodzialPracy,\n' +
+  '  resolveCityPodzialPracy,\n' +
+  '  apply'... 2328335 more characters
+
+    at /home/user/The-Game/.claude/worktrees/wf_86013522-2a8-1/gra/tools/perf-hud-frame-memo-test.cjs:110:10
+    at t (/home/user/The-Game/.claude/worktrees/wf_86013522-2a8-1/gra/tools/perf-hud-frame-memo-test.cjs:24:27)
+    at Object.<anonymous> (/home/user/The-Game/.claude/worktrees/wf_86013522-2a8-1/gra/tools/perf-hud-frame-memo-test.cjs:108:1)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: '/**\n' +
+    ' * main.ts\n' +
+    ' * Punkt wejscia The Game -- M1 Step 1: 3D hex map renderer.\n' +
+    ' *\n' +
+    ' * Pipeline:\n' +
+    ' *   loadGameData() -> configureTerrainMovement (if data carries terrainMovement)\n' +
+    ' *   -> generateMap(seed) -> buildScene() -> CameraController -> render loop\n' +
+    ' */\n' +
+    '\n' +
+    '// Global Error Overlay\n' +
+    '// Catches any JS error or unhandled promise and shows it as a red overlay\n' +
+    '// so a black screen never silently hides what went wrong.\n' +
+    '\n' +
+    '/** C-GLOD-Q1=A (Maciej 2026-07-26): odmiana „tura" w bierniku dla ostrzeżenia\n' +
+    ' *  karencji głodu wojska ("za 1 turę" / "za 2 tury" / "za 5 tur"). */\n' +
+    'function slowoTura(n: number): string {\n' +
+    '  const a = Math.abs(n);\n' +
+    "  if (a === 1) return 'turę';\n" +
+    '  const m10 = a % 10;\n' +
+    '  const m100 = a % 100;\n' +
+    "  if (m10 >= 2 && m10 <= 4 && !(m100 >= 12 && m100 <= 14)) return 'tury';\n" +
+    "  return 'tur';\n" +
+    '}\n' +
+    '\n' +
+    'function showErr(msg: string): void {\n' +
+    "  let el = document.getElementById('__err_overlay__') as HTMLDivElement | null;\n" +
+    '  if (!el) {\n' +
+    "    el = document.createElement('div');\n" +
+    "    el.id = '__err_overlay__';\n" +
+    '    el.style.cssText = [\n' +
+    "      'position:fixed', 'top:0', 'left:0', 'width:100%',\n" +
+    "      'background:rgba(180,0,0,0.92)', 'color:#fff',\n" +
+    "      'font:bold 13px/1.5 monospace', 'padding:16px 20px',\n" +
+    "      'z-index:99999', 'white-space:pre-wrap', 'word-break:break-all',\n" +
+    "      'max-height:50vh', 'overflow-y:auto',\n" +
+    "      'border-bottom:3px solid #ff4444',\n" +
+    "    ].join(';');\n" +
+    "    el.innerHTML = '<b>THE GAME \\u2014 ERROR</b>\\n';\n" +
+    '    document.body.appendChild(el);\n' +
+    '  }\n' +
+    "  el.innerHTML += '\\n' + msg;\n" +
+    "  console.error('[TheGame]', msg);\n" +
+    '}\n' +
+    '\n' +
+    "window.addEventListener('error', (e) => {\n" +
+    "  showErr(e.message + ' @' + e.filename + ':' + e.lineno + ':' + e.colno);\n" +
+    '});\n' +
+    "window.addEventListener('unhandledrejection', (e) => {\n" +
+    "  showErr('Unhandled promise rejection: ' + String(e.reason));\n" +
+    '});\n' +
+    '\n' +
+    '// Imports\n' +
+    '\n' +
+    "import * as THREE from 'three';\n" +
+    "import { loadGameData } from './data/loader';\n" +
+    "import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from './map/generator';\n" +
+    "import { generujSwiatAsync } from './map/mapGenAsync';\n" +
+    "import type { TypSwiata } from './map/gen-helpers';\n" +
+    "import { typSwiataFromMenuLabel, defaultLandFractionPercentForTyp, aktywneTypyFromMapLabel, defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel, clampMiastaPanstwaCount, type WorldGenerationPreset, DEFAULT_WORLD_DENSITY } from './map/newGameMapDefaults';\n" +
+    "import { buildScene, getLastSetFogMs, type SceneBuildTimings, type SceneResult } from './render/scene';\n" +
+    "import { showMapLoadingOverlay, type MapLoadingOverlayHandle, formatCaughtError } from './ui/mapLoadingOverlay';\n" +
+    "import { showSceneTimingReport } from './ui/sceneTimingReport';\n" +
+    "import { ensurePerfReportChip, type PostSceneStepMs } from './ui/perfReport';\n" +
+    "import type { MapGenPhaseTimings } from './map/mapGenProgress';\n" +
+    '\n' +
+    '/** Ukryj overlay + raport czasów dopiero gdy cały start mapy gotowy (plik + chip HUD). */\n' +
+    'function finishMapLoadWithPerfReport(\n' +
+    '  loading: MapLoadingOverlayHandle,\n' +
+    '  report?: {\n' +
+    '    mapGen?: MapGenPhaseTimings;\n' +
+    '    scene?: SceneBuildTimings;\n' +
+    '    typLabel?: string;\n' +
+    '    rozmiarLabel?: string;\n' +
+    '    ksztaltLabel?: string;\n' +
+    '    mapGenHandoffMs?: number;\n' +
+    '    postSceneMs?: number;\n' +
+    '    postSceneSteps?: PostSceneStepMs[];\n' +
+    '    wallClockMs?: number;\n' +
+    '    error?: string;\n' +
+    '  },\n' +
+    "  sourcePath = 'finishMapLoadWithPerfReport',\n" +
+    '): void {\n' +
+    '  const wall = report?.wallClockMs ?? 0;\n' +
+    '  const postScene = report?.postSceneMs ?? 0;\n' +
+    '  if (wall > 0) {\n' +
+    '    console.info(\n' +
+    '      `[civ-perf] wall-clock Nowa gra → hide overlay: ${wall} ms`\n' +
+    "      + (postScene > 0 ? ` (postScene/finishLoading=${postScene} ms)` : ''),\n" +
+    '    );\n' +
+    '  }\n' +
+    '  loading.hide();\n' +
+    '  showSceneTimingReport({\n' +
+    '    mapGen: report?.mapGen,\n' +
+    '    scene: report?.scene,\n' +
+    '    typLabel: report?.typLabel,\n' +
+    '    rozmiarLabel: report?.rozmiarLabel,\n' +
+    '    ksztaltLabel: report?.ksztaltLabel ?? report?.typLabel,\n' +
+    '    mapGenHandoffMs: report?.mapGenHandoffMs,\n' +
+    '    postSceneMs: report?.postSceneMs,\n' +
+    '    postSceneSteps: report?.postSceneSteps,\n' +
+    '    wallClockMs: report?.wallClockMs,\n' +
+    '    sourcePath,\n' +
+    '    error: report?.error,\n' +
+    '    hideAfterMs: 0,\n' +
+    '  });\n' +
+    '}\n' +
+    '\n' +
+    'const yieldMainThread = (): Promise<void> => new Promise((r) => setTimeout(r, 0));\n' +
+    '\n' +
+    '/** Post-scene: overlay postępu (FALA 163). */\n' +
+    'async function postSceneProgress(\n' +
+    '  loading: MapLoadingOverlayHandle,\n' +
+    '  label: string,\n' +
+    '  step: number,\n' +
+    '  total: number,\n' +
+    '): Promise<void> {\n' +
+    '  loading.setProgress(`Po scenie — ${label}`, Math.round((step / total) * 100), step, total);\n' +
+    '  await yieldMainThread();\n' +
+    '}\n' +
+    '\n' +
+    'function endPostSceneStep(\n' +
+    '  label: string,\n' +
+    '  timings: PostSceneStepMs[],\n' +
+    '  stepWall: { t: number },\n' +
+    '): void {\n' +
+    '  timings.push({ label, ms: Math.round(performance.now() - stepWall.t) });\n' +
+    '  stepWall.t = performance.now();\n' +
+    '}\n' +
+    'import {\n' +
+    '  CIV_PERF_DEBUG_MARKER,\n' +
+    '  isPerfDebugOverlayVisible,\n' +
+    '  togglePerfDebugOverlay,\n' +
+    '  updatePerfDebugOverlay,\n' +
+    "} from './render/perfDebugOverlay';\n" +
+    "import { logRendererMemoryAtTurnEnd } from './render/memDebug';\n" +
+    "import { CIV_PUBLISH_MARKERS } from './buildInfo';\n" +
+    '// C-OBCE-JEDN-Q2: znak właściciela na żetonie mapy. Assety (portrety + ikony\n' +
+    '// brand-booka) wstrzykujemy stąd, bo warstwa render/ nie zależy od warstwy ui/.\n' +
+    "import { setUnitOwnerEmblemAssets } from './render/unitOwnerEmblem';\n" +
+    "import { setCityMapBadgeCivSigil, setCityMapBadgeProdIcon, setCityMapBadgeLeaderPortrait } from './render/cityMapStatChip';\n" +
+    "import { setUnitUpgradeBadgeAssets } from './render/unitUpgradeBadges';\n" +
+    "import { leaderPortraitUrl } from './ui/leaderPortraits';\n" +
+    "import { civIconSvg } from './ui/icons/brandAssets';\n" +
+    'import {\n' +
+    '  beginTurnTransition,\n' +
+    '  endTurnTransition,\n' +
+    '  isTurnTransitionActive,\n' +
+    '  setTurnTransition,\n' +
+    '  yieldTurnTransitionUi,\n' +
+    "} from './ui/turnTransitionOverlay';\n" +
+    "import { shouldYieldAiOwnerProgressFrame } from './ui/aiOwnerProgressFrame';\n" +
+    "import { createDirtyRenderSync } from './game/dirtyRenderSync';\n" +
+    "import { trimSidePanelEventLog } from './game/retained-side-panel-events';\n" +
+    "import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';\n" +
+    "import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';\n" +
+    "import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';\n" +
+    "import { installCivTestHooks, isCivTestEnabled } from './game/civ-test-hooks';\n" +
+    "import { computeStartPlacements, computeReachable, computePath, setSiegeEntryBlocker, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, hexNeighborCoords, categoryOf, terrainMoveCost, isCivilianUnit, buildMoveOccupancy, trimSegmentEndOffPassThrough, type MoveOccupancy } from './units/setup';\n" +
+    "import { enterCityAfterSurrender } from './game/siege-enter-city';\n" +
+    "import { isCityUnderSiege, isSiegeEntryBlocked, besiegedCityAtHex, CITY_SIEGE_RECRUIT_BLOCK_PL } from './game/city-siege-state';\n" +
+    "import type { RuntimeUnit } from './units/setup';\n" +
+    "import { UnitRenderer, type UnitRingStance } from './render/units';\n" +
+    '// Import keyOf from picker only (avoids duplicate identifier with setup.ts keyOf)\n' +
+    "import { pixelToHex, unitAt, keyOf, worldToClientPx } from './input/picker';\n" +
+    "import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, computeVisibleAlongPath, buildUnitSightResolver, computePlayerVisibility, unitsVisibleOnMap } from './game/visibility';\n" +
+    "import { clearScoutAutoExplore, isScoutUnit, runScoutsAutoExplore } from './game/scout-auto-explore';\n" +
+    "import { cyclablePlayerArmyLeadsBase, resolveAdjacentPlayerUnitCycle } from './game/army-cycle';\n" +
+    "import { activeUnitQueue } from './game/next-active-unit';\n" +
+    'import {\n' +
+    '  shouldShowPlayerTriumphCityStateUnification,\n' +
+    '  // buildTriumphCityStateUnificationMessage / TRIUMPH_CS_HINT_MS: nie używane tu\n' +
+    '  // od P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK (modal triumphCityStateNotice.ts\n' +
+    '  // ma własną treść i nie jest toastem czasowym) — nadal eksportowane z\n' +
+    '  // triumph-city-state.ts i pokryte przez triumph-city-state-test.cjs.\n' +
+    "} from './game/triumph-city-state';\n" +
+    "import { startRevealRadiusForDifficulty } from './map/startScoring';\n" +
+    'import {\n' +
+    '  canFoundCity,\n' +
+    '  foundCity,\n' +
+    '  foundCityAt,\n' +
+    '  ensureCitySaveDefaults,\n' +
+    '  DEFAULT_PODZIAL_HANDLU,\n' +
+    '  DEFAULT_PODZIAL_PRACY,\n' +
+    '  DEFAULT_PROCENT_ROZWOJ,\n' +
+    '  DEFAULT_OKOLICA_FOCUS,\n' +
+    '  DEFAULT_OKOLICA_TRYB,\n' +
+    '  DEFAULT_BUDOWA_FOCUS,\n' +
+    '  DEFAULT_BUDOWA_TRYB,\n' +
+    '  DEFAULT_BUDOWA_PRIORYTET_TYPOW,\n' +
+    '  sanitizeBudowaPriorytetTypow,\n' +
+    '  EMPTY_BUDOWA_LISTA_BIBLIOTEKA,\n' +
+    '  dedupeBudowaLista,\n' +
+    '  newBudowaListaSzablonId,\n' +
+    '  loadBudowaListaBiblioteka,\n' +
+    '  DEFAULT_ULEPSZENIA_TRYB,\n' +
+    '  DEFAULT_ULEPSZENIA_FOCUS,\n' +
+    '  AI_MAJOR_ULEPSZENIA_PRACA_PERCENT,\n' +
+    '  MAX_PODZIAL_PRACY_BUDYNKI_PERCENT,\n' +
+    '  AI_FIXED_PROCENT_BUDYNKI,\n' +
+    '  AI_FIXED_PROCENT_NAUKA,\n' +
+    '  clampUlepszeniaPracaPercent,\n' +
+    '  clampPodzialPracyBudynkiPercent,\n' +
+    '  podzialPracyZProcentuPuli,\n' +
+    '  MAX_PROCENT_PULI_IMPERIUM,\n' +
+    '  MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA,\n' +
+    '  resolveUlepszeniaPracaPercentFromRaw,\n' +
+    '  freshUlepszeniaEmpirePolicy,\n' +
+    '  freshUlepszeniaEmpirePolicyForOwner,\n' +
+    '  computeAiImprovementBudgetCapForOwner,\n' +
+    '  resolveEffectiveUlepszenia,\n' +
+    '  normalizePodzialHandlu,\n' +
+    '  isAutoBudowaTryb,\n' +
+    '  wasIndependentCityStateBeforeCapture,\n' +
+    '  applyCapturePopulationLoss,\n' +
+    '  capturePopLossReportRow,\n' +
+    '  type City,\n' +
+    '  type BudowaFocus,\n' +
+    '  type BudowaTryb,\n' +
+    '  type BudowaListaBiblioteka,\n' +
+    '  type CityPodzialHandlu,\n' +
+    '  type CityPodzialPracy,\n' +
+    '  type OkolicaFocus,\n' +
+    '  type UlepszeniaFocus,\n' +
+    '  type UlepszeniaTryb,\n' +
+    '  type UlepszeniaPracaPercent,\n' +
+    '  type UlepszeniaEmpirePolicy,\n' +
+    '  type EffectiveUlepszeniaSettings,\n' +
+    "} from './game/cities';\n" +
+    'import {\n' +
+    '  type FortNode,\n' +
+    '  nextFortSeq,\n' +
+    '  backfillFortOrder,\n' +
+    '  applyFortCaptureByOccupation,\n' +
+    '  type FortTakeoverEvent,\n' +
+    '  fortNodeAsCityNode,\n' +
+    '  foundingNodesForOwner,\n' +
+    '  fortTerritoryNodes,\n' +
+    '  fortSightSources,\n' +
+    '  isHexInForeignFortTerritory,\n' +
+    '  isOutpostPlacementAllowed,\n' +
+    '  OUTPOST_PLACEMENT_DENIED_HINT,\n' +
+    '  isHexReservedByRivalFort,\n' +
+    '  applyFortTakeoverOnCityFounded,\n' +
+    '  findEvacuationHexOutsideCity,\n' +
+    "} from './game/fort-territory';\n" +
+    'import {\n' +
+    '  migrateHandelSplitOnLoad,\n' +
+    '  resolveCityPodzialHandlu,\n' +
+    '  freshOwnerDefaultPodzialHandlu,\n' +
+    "} from './game/empire-handel-split';\n" +
+    'import {\n' +
+    '  migratePodzialPracyOnLoad,\n' +
+    '  freshOwnerDefaultPodzialPracy,\n' +
+    '  resolveCityPodzialPracy,\n' +
+    '  apply'... 2328335 more characters,
+  expected: /ownerScope\.cached\('built:'[^\n]*new Set\(v\)/,
+  operator: 'match',
+  diff: 'simple'
+}
+
+Node.js v22.22.0
+EXIT=1

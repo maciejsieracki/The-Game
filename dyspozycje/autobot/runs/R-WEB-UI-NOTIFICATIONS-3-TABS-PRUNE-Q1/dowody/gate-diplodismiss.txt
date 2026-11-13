@@ -1,0 +1,52 @@
+[diplo-dismiss-test] uzywam gotowego dist: /tmp/civ-notif-out-final
+
+-- (0) kotwice statyczne w zrodle --
+  OK   (0a) sidePanelHud.ts ma predykat isDeferrableDiploEvent dopasowujacy po kind, nie po prefiksie id
+  OK   (0b) renderer karty blokujacej renderuje "✕" (.sp-close z data-dismiss) w naglowku .sp-blk-body, przed .sp-action-bar
+  OK   (0b2) zdublowany tekstowy link "Odloz na pozniej" znikl z renderu (zastapiony przez "✕")
+  OK   (0c-pre) funkcja handleSidePanelEventDismiss znaleziona w zrodle
+  OK   (0c) handleSidePanelEventDismiss NIE ma osobnej galezi dla "diplo-pend-"/"negot-" — oba spadaja do wspolnej galezi domyslnej (dismissedSidePanelEventIds.add)
+  OK   (0d) galaz domyslna handleSidePanelEventDismiss faktycznie robi dismissedSidePanelEventIds.add(id) (miekki dismiss, czyszczony co ture)
+  OK   (0e) getNegotiationsForPair (renderer "Stolu negocjacji" w audiencji) NIE filtruje po dismissedSidePanelEventIds — odlozenie karty nie dotyka samej propozycji
+[diplo-dismiss-test] domyslny Chromium niedostepny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+
+-- (A) karta diplo-pend-* (ksztalt pendingDiplomacyInbox) --
+  OK   (A1) karta wyrenderowana i rozwinieta
+  OK   (A2) badge "Wymaga decyzji" + "Otworz ->" nietkniete
+  OK   (A3) "✕" widoczny w NAGLOWKU karty, z tym samym title/aria-label co karty informacyjne, BEZ przycisku buntu
+  OK   (A3b) zdublowany tekstowy link "Odloz na pozniej" znikl ze stopki (zero .sp-action-ignore na karcie diplo)
+  OK   (A3k) karta kontrolna (druga, niekliknieta) tez wyrenderowana
+  OK   (A4) klik w "✕" trafil w przycisk
+  OK   (A5) karta zniknela z panelu bocznego W TEJ TURZE (przed endTurn)
+  OK   (A5k) karta kontrolna NIETKNIETA klikiem w inna karte
+  OK   (A6) endTurn faktycznie sie wykonal (endTurnInProgress true->false)
+  INFO (A7) obie karty (klikana+kontrolna) wypadly z warEventLog po endTurn -- artefakt przyciecia logu do 8 wpisow, NIE test kryterium; produkcyjne pendingDiplomacyInbox/negotiationTable nie przechodza przez ten log (patrz main.ts collectTurnEvents) { afterTurn: { missing: true }, afterTurnControl: { missing: true } }
+
+-- (B) karta negot-* (ksztalt negotiationTable) --
+  OK   (B1) karta wyrenderowana i rozwinieta
+  OK   (B2) badge "Wymaga decyzji" + "Otworz ->" nietkniete
+  OK   (B3) "✕" widoczny w NAGLOWKU karty, z tym samym title/aria-label co karty informacyjne, BEZ przycisku buntu
+  OK   (B3b) zdublowany tekstowy link "Odloz na pozniej" znikl ze stopki (zero .sp-action-ignore na karcie diplo)
+  OK   (B3k) karta kontrolna (druga, niekliknieta) tez wyrenderowana
+  OK   (B4) klik w "✕" trafil w przycisk
+  OK   (B5) karta zniknela z panelu bocznego W TEJ TURZE (przed endTurn)
+  OK   (B5k) karta kontrolna NIETKNIETA klikiem w inna karte
+  OK   (B6) endTurn faktycznie sie wykonal (endTurnInProgress true->false)
+  INFO (B7) obie karty (klikana+kontrolna) wypadly z warEventLog po endTurn -- artefakt przyciecia logu do 8 wpisow, NIE test kryterium; produkcyjne pendingDiplomacyInbox/negotiationTable nie przechodza przez ten log (patrz main.ts collectTurnEvents) { afterTurn: { missing: true }, afterTurnControl: { missing: true } }
+
+-- (C) kontrola regresji: karta buntu --
+  OK   (C1) karta buntu wyrenderowana i rozwinieta
+  OK   (C2) MA "Zignoruj — bunt potrwa dalej"
+  OK   (C3) NIE dubluje sie z "Odloz na pozniej" (kind!=="diplo")
+  OK   (C4) dokladnie JEDEN przycisk .sp-action-ignore na karcie
+  OK   (C5) karta buntu ma DODATKOWO "✕" w naglowku (przysluguje wszystkim kartom blokujacym)
+
+-- (D) kontrola regresji: karta prod-empty --
+  OK   (D1) karta prod-empty wyrenderowana i rozwinieta
+  OK   (D2) zero przyciskow .sp-action-ignore (ani "Zignoruj", ani "Odloz")
+  OK   (D3) "Otworz ->" nietkniety
+  OK   (D4) karta prod-empty NIE ma "✕" (jej dismiss w main.ts jest wieloturowy — poza GOAL)
+  OK   (E) zero bledow konsoli/JS przez caly przebieg
+
+sidepanel-diplo-dismiss-real-render-test: 35 pass, 0 fail
+EXIT=0

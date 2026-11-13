@@ -1,0 +1,30 @@
+{
+  "_opis": "R-WEB-CITY-ADMINISTRATOR-Q1 (decyzja właściciela 2026-11-11). Administrator miasta: osoba przypisana indywidualnie do miasta, MAX 1 na miasto; rekrutowany tylko w mieście z budynkiem administracyjnym. Wszystkie liczby tu — zero literałów w kodzie.",
+  "koszt_zatrudnienia_pieniadz": 40,
+  "utrzymanie_pieniadz_na_ture_wg_tieru": { "1": 2, "2": 3, "3": 4 },
+  "skala_efektow_wg_tieru": { "1": 1, "2": 1.5, "3": 2.25 },
+  "efekty_bazowe": {
+    "korupcja_redukcja_pct": 10,
+    "produkcja_miasta_pct": 3,
+    "sciagalnosc_podatkow_miasta_pct": 3
+  },
+  "budynki_administracyjne_tier": {
+    "palac": 1,
+    "palac_ii": 2,
+    "palac_iii": 3,
+    "dom_starszyzny": 1,
+    "dwor_zarzadcy": 2,
+    "pretorium": 3
+  },
+  "ai": {
+    "rezerwa_tur_utrzymania": 3
+  },
+  "administrator_ulepszen": {
+    "_opis": "R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1 (decyzja właściciela ABC 2026-11-11): ten sam koszt co administrator miasta, ale BEZ bonusów i dodatków; jedyny skutek = odblokowuje automatyczne ulepszenia terenu w danym mieście. Utrzymanie = stawka tieru I administratora miasta (założenie: administrator ulepszeń nie ma budynku administracyjnego, więc nie ma tieru).",
+    "koszt_zatrudnienia_pieniadz": 40,
+    "utrzymanie_pieniadz_na_ture": 2,
+    "ai_wymaga_administratora": false,
+    "opis_gracza": "Administrator ulepszeń pozwala wyłącznie na automatyczne ulepszanie terenu w tym mieście (wycinka, farmy, trzoda, irygacja, drogi itd.). Nie daje żadnych bonusów. Utrzymanie płaci skarbiec państwa; bez środków administrator nie pracuje, a ulepszenia trzeba wykonywać ręcznie."
+  },
+  "opis_gracza": "Administrator miasta zmniejsza korupcję, podnosi produkcję i ściągalność podatków miasta oraz jako jedyny pozwala na automatyczną budowę budynków w tym mieście. Utrzymanie płaci skarbiec państwa."
+}

@@ -1,0 +1,84 @@
+  [FAIL] [K1] OFF: 0 wycinek (rzeka + poza rzeka), jest 3
+  [FAIL] [K1] OFF: brak wyrebu na rzece (dawny pin c3: 2 wycinki — poprawiony decyzja wlasciciela)
+  [FAIL] [K1] OFF: las przy rzece nietkniety
+  [FAIL] [K2] OFF: 0 wycinek (rzeka + poza rzeka), jest 3
+  [FAIL] [K2] OFF: brak wyrebu na rzece (dawny pin c3: 2 wycinki — poprawiony decyzja wlasciciela)
+  [FAIL] [K2] OFF: las przy rzece nietkniety
+  [FAIL] [K2] override miasta OFF (getSkipWyrab=true) przy skipWyrab=false: 0 wycinek (przycisk miasta wygrywa)
+  [FAIL] [K2] skipWyrab=true bez override: 0 wycinek (takze przy rzece)
+  [FAIL] [K1] limit 20% (40 < 60), bez przychodu: 0 budow, pula nietknieta (2 szt., pula 80)
+  [FAIL] [K1] pula kumuluje sie 200->...: irygacja startuje w t=0 przy puli 200 (20% >= 60), nie wczesniej
+  [FAIL] [K1] kazda tura: wydatek <= 20% skumulowanej puli (tolerancja 0)
+  [FAIL] [K2] limit 20% (40 < 60), bez przychodu: 0 budow, pula nietknieta (2 szt., pula 80)
+  [FAIL] [K2] pula kumuluje sie 200->...: irygacja startuje w t=0 przy puli 200 (20% >= 60), nie wczesniej
+  [FAIL] [K2] kazda tura: wydatek <= 20% skumulowanej puli (tolerancja 0)
+    naruszenie: K1 bez niedoboru pct=10 pula0=100 t=6: wydano 60 > 10% x 280
+    naruszenie: K1 bez niedoboru pct=10 pula0=100 t=7: wydano 180 > 10% x 260
+    naruszenie: K1 bez niedoboru pct=10 pula0=100 t=8: wydano 50 > 10% x 120
+    naruszenie: K1 bez niedoboru pct=10 pula0=600 t=1: wydano 60 > 10% x 580
+    naruszenie: K1 bez niedoboru pct=10 pula0=600 t=2: wydano 180 > 10% x 560
+    naruszenie: K1 bez niedoboru pct=10 pula0=600 t=3: wydano 50 > 10% x 420
+    naruszenie: K1 bez niedoboru pct=33 pula0=100 t=3: wydano 60 > 33% x 160
+    naruszenie: K1 bez niedoboru pct=33 pula0=100 t=4: wydano 60 > 33% x 140
+    naruszenie: K1 bez niedoboru pct=33 pula0=100 t=5: wydano 60 > 33% x 120
+    naruszenie: K1 bez niedoboru pct=33 pula0=100 t=6: wydano 60 > 33% x 100
+    naruszenie: K1 bez niedoboru pct=33 pula0=100 t=7: wydano 50 > 33% x 80
+    naruszenie: K1 bez niedoboru pct=50 pula0=100 t=3: wydano 60 > 50% x 100
+    naruszenie: K1 bez niedoboru pct=50 pula0=100 t=6: wydano 60 > 50% x 100
+    naruszenie: K1 bez niedoboru pct=50 pula0=100 t=7: wydano 50 > 50% x 80
+    naruszenie: K1 niedobor drewna+gliny pct=10 pula0=100 t=6: wydano 60 > 10% x 280
+    naruszenie: K1 niedobor drewna+gliny pct=10 pula0=100 t=7: wydano 180 > 10% x 260
+    naruszenie: K1 niedobor drewna+gliny pct=10 pula0=100 t=8: wydano 50 > 10% x 120
+    naruszenie: K1 niedobor drewna+gliny pct=10 pula0=600 t=1: wydano 60 > 10% x 580
+    naruszenie: K1 niedobor drewna+gliny pct=10 pula0=600 t=2: wydano 180 > 10% x 560
+    naruszenie: K1 niedobor drewna+gliny pct=10 pula0=600 t=3: wydano 50 > 10% x 420
+    naruszenie: K1 niedobor drewna+gliny pct=33 pula0=100 t=3: wydano 60 > 33% x 160
+    naruszenie: K1 niedobor drewna+gliny pct=33 pula0=100 t=4: wydano 60 > 33% x 140
+    naruszenie: K1 niedobor drewna+gliny pct=33 pula0=100 t=5: wydano 60 > 33% x 120
+    naruszenie: K1 niedobor drewna+gliny pct=33 pula0=100 t=6: wydano 60 > 33% x 100
+    naruszenie: K1 niedobor drewna+gliny pct=33 pula0=100 t=7: wydano 50 > 33% x 80
+    naruszenie: K1 niedobor drewna+gliny pct=50 pula0=100 t=3: wydano 60 > 50% x 100
+    naruszenie: K1 niedobor drewna+gliny pct=50 pula0=100 t=6: wydano 60 > 50% x 100
+    naruszenie: K1 niedobor drewna+gliny pct=50 pula0=100 t=7: wydano 50 > 50% x 80
+    naruszenie: K2 bez niedoboru pct=10 pula0=100 t=6: wydano 60 > 10% x 280
+    naruszenie: K2 bez niedoboru pct=10 pula0=100 t=7: wydano 180 > 10% x 260
+    naruszenie: K2 bez niedoboru pct=10 pula0=100 t=8: wydano 50 > 10% x 120
+    naruszenie: K2 bez niedoboru pct=10 pula0=600 t=1: wydano 60 > 10% x 580
+    naruszenie: K2 bez niedoboru pct=10 pula0=600 t=2: wydano 180 > 10% x 560
+    naruszenie: K2 bez niedoboru pct=10 pula0=600 t=3: wydano 50 > 10% x 420
+    naruszenie: K2 bez niedoboru pct=33 pula0=100 t=3: wydano 60 > 33% x 160
+    naruszenie: K2 bez niedoboru pct=33 pula0=100 t=4: wydano 60 > 33% x 140
+    naruszenie: K2 bez niedoboru pct=33 pula0=100 t=5: wydano 60 > 33% x 120
+    naruszenie: K2 bez niedoboru pct=33 pula0=100 t=6: wydano 60 > 33% x 100
+    naruszenie: K2 bez niedoboru pct=33 pula0=100 t=7: wydano 50 > 33% x 80
+    naruszenie: K2 bez niedoboru pct=50 pula0=100 t=3: wydano 60 > 50% x 100
+    naruszenie: K2 bez niedoboru pct=50 pula0=100 t=6: wydano 60 > 50% x 100
+    naruszenie: K2 bez niedoboru pct=50 pula0=100 t=7: wydano 50 > 50% x 80
+    naruszenie: K2 niedobor drewna+gliny pct=10 pula0=100 t=10: wydano 60 > 10% x 340
+    naruszenie: K2 niedobor drewna+gliny pct=10 pula0=100 t=11: wydano 180 > 10% x 320
+    naruszenie: K2 niedobor drewna+gliny pct=10 pula0=100 t=12: wydano 50 > 10% x 180
+    naruszenie: K2 niedobor drewna+gliny pct=10 pula0=600 t=5: wydano 180 > 10% x 580
+    naruszenie: K2 niedobor drewna+gliny pct=10 pula0=600 t=6: wydano 50 > 10% x 440
+    naruszenie: K2 niedobor drewna+gliny pct=33 pula0=100 t=5: wydano 60 > 33% x 140
+    naruszenie: K2 niedobor drewna+gliny pct=33 pula0=100 t=6: wydano 60 > 33% x 120
+    naruszenie: K2 niedobor drewna+gliny pct=33 pula0=100 t=7: wydano 60 > 33% x 100
+    naruszenie: K2 niedobor drewna+gliny pct=33 pula0=100 t=9: wydano 60 > 33% x 120
+    naruszenie: K2 niedobor drewna+gliny pct=33 pula0=100 t=10: wydano 50 > 33% x 100
+    naruszenie: K2 niedobor drewna+gliny pct=33 pula0=600 t=2: wydano 180 > 33% x 460
+    naruszenie: K2 niedobor drewna+gliny pct=50 pula0=100 t=4: wydano 60 > 50% x 100
+    naruszenie: K2 niedobor drewna+gliny pct=50 pula0=100 t=7: wydano 60 > 50% x 100
+  [FAIL] [K1/K2] 48 scenariuszy x 15 tur: 0 naruszen sufitu procentowego (wydano lacznie 31058.5)
+  [FAIL] [K1] 10% x 400 = 40 < irygacja 60: 0 budow w turze (dawny wyjatek E4 usuniety), jest 3
+  [FAIL] [K1] 5% x 400 = 20: wydatek 60 <= 20 (trzoda E3 w limicie %)
+  [FAIL] [K2] 10% x 400 = 40 < irygacja 60: 0 budow w turze (dawny wyjatek E4 usuniety), jest 3
+  [FAIL] [K2] 5% x 400 = 20: wydatek 60 <= 20 (trzoda E3 w limicie %)
+  [FAIL] [AI cywilizacji] pula 60: wydano 20 (3 farmy = 60) > 50% puli — brak capu %
+  [FAIL] [panstwo-miasto / kopia obronna] pula 72: wydano 20 (3 farmy = 60) > 50% puli — brak capu %
+  [FAIL] [K2] D-R5-1: ZERO tartakow na lesie pod farme (rownina)
+  [FAIL] [K2] D-R5-1: las pod farme -> wyrab -> farma
+  [FAIL] [K3] D-R5-1: ZERO tartakow na lesie pod farme (rownina)
+  [FAIL] [K3] D-R5-1: las pod farme -> wyrab -> farma
+  [FAIL] [S „surowce”] 0 tartakow/obozow na rzece+las (tartak@12,10,tartak@13,10,tartak@12,9)
+  [FAIL] auto-improvements.ts: zakaz tartak/oboz na rzece nie jest warunkowany `demandActive`
+autoimprove-stages-q1-test: 228 passed, 27 failed
+EXIT=1

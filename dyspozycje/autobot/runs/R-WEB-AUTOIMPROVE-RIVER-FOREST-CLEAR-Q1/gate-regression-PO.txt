@@ -1,0 +1,20 @@
+ai-food-only-worked-hexes: 81 OK, 0 FAIL
+ai-improvements: AI-IMPROVEMENTS-TEST: 56 passed, 0 failed
+auto-improve-no-item-cap: auto-improve-no-item-cap-test: 15 passed, 0 failed
+auto-improve-q3: 48 OK, 0 FAIL
+auto-improvements: auto-improvements-test: 46 passed, 0 failed
+autoclear-priority-q1: autoclear-priority-q1-test: 60 passed, 0 failed
+autoclear-river-forest-priority: 18 OK, 0 FAIL
+autoimprove-irrigation-after-farms: [civ] mapGen ms | prep=1 terrain=7 landSea=80 relief=69 coast=12 riversMain=193 
+autoimprove-stages-q1: autoimprove-stages-q1-test: 302 passed, 0 failed
+city-clears-forest: city-clears-forest-test: 18 pass / 0 fail
+city-orderstate-restore-clear: 9 passed, 0 failed
+farma-lesie-usun-istniejace: === farma-lesie-usun-istniejace: 143 OK / 0 FAIL ===
+farma-nie-w-lesie: farma-nie-w-lesie-test: 138 passed, 0 failed
+oboz-lowiecki-wymaga-tartaku: oboz-lowiecki-wymaga-tartaku-test: 16 passed, 0 failed
+sawmill-hill-relief: sawmill-hill-relief-test: 8 assertions passed
+sawmill-quarry-50-economy: 7 PASS, 0 FAIL
+tartak-glinianka-rate-Q1: 1281 passed, 0 failed
+wycinka-drewno-cap: [wycinka-drewno-cap-test] 15 pass, 0 fail
+PRE=PO (identyczna porazka): tartak-oboz-wyscig-race-test (TypeError commitPlayerPick), autoimprove-live-hooks-test (36/1: main.ts importuje installCivTestHooks)
+EXIT=0

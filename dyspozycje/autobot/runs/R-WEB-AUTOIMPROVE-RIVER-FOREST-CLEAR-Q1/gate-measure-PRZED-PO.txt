@@ -1,0 +1,13 @@
+PRZED zywnosc def=[] {"forestWorkedFinal": 13, "forestWorkedRiverFinal": 12, "wyrab": 0, "wyrabRiver": 0, "farma": 41, "irygacja": 41, "tartak": 0, "everWorkedForestRiver": 12, "everStillForest": 12}
+PRZED zrownowazone def=[] {"forestWorkedFinal": 13, "forestWorkedRiverFinal": 12, "wyrab": 0, "wyrabRiver": 0, "farma": 41, "irygacja": 41, "tartak": 0, "everWorkedForestRiver": 12, "everStillForest": 12}
+PRZED zrownowazone def=[drewno] {"forestWorkedFinal": 13, "forestWorkedRiverFinal": 12, "wyrab": 0, "wyrabRiver": 0, "farma": 41, "irygacja": 41, "tartak": 0, "everWorkedForestRiver": 12, "everStillForest": 12}
+PRZED surowce def=[] {"forestWorkedFinal": 13, "forestWorkedRiverFinal": 12, "wyrab": 0, "wyrabRiver": 0, "farma": 0, "irygacja": 0, "tartak": 0, "everWorkedForestRiver": 12, "everStillForest": 12}
+PRZED ai def=[] {"forestWorkedFinal": 0, "forestWorkedRiverFinal": 0, "wyrab": 13, "wyrabRiver": 12, "farma": 54, "irygacja": 54, "tartak": 0, "everWorkedForestRiver": 12, "everStillForest": 0}
+PRZED ai def=[drewno] {"forestWorkedFinal": 0, "forestWorkedRiverFinal": 0, "wyrab": 13, "wyrabRiver": 12, "farma": 54, "irygacja": 54, "tartak": 53, "everWorkedForestRiver": 12, "everStillForest": 0}
+PO zywnosc def=[] {"forestWorkedFinal": 0, "forestWorkedRiverFinal": 0, "wyrab": 13, "wyrabRiver": 12, "farma": 54, "irygacja": 54, "tartak": 0, "everWorkedForestRiver": 12, "everStillForest": 0}
+PO zrownowazone def=[] {"forestWorkedFinal": 0, "forestWorkedRiverFinal": 0, "wyrab": 13, "wyrabRiver": 12, "farma": 54, "irygacja": 54, "tartak": 0, "everWorkedForestRiver": 12, "everStillForest": 0}
+PO zrownowazone def=[drewno] {"forestWorkedFinal": 0, "forestWorkedRiverFinal": 0, "wyrab": 13, "wyrabRiver": 12, "farma": 54, "irygacja": 54, "tartak": 0, "everWorkedForestRiver": 12, "everStillForest": 0}
+PO surowce def=[] {"forestWorkedFinal": 13, "forestWorkedRiverFinal": 12, "wyrab": 0, "wyrabRiver": 0, "farma": 0, "irygacja": 0, "tartak": 0, "everWorkedForestRiver": 12, "everStillForest": 12}
+PO ai def=[] {"forestWorkedFinal": 0, "forestWorkedRiverFinal": 0, "wyrab": 13, "wyrabRiver": 12, "farma": 54, "irygacja": 54, "tartak": 0, "everWorkedForestRiver": 12, "everStillForest": 0}
+PO ai def=[drewno] {"forestWorkedFinal": 0, "forestWorkedRiverFinal": 0, "wyrab": 13, "wyrabRiver": 12, "farma": 54, "irygacja": 54, "tartak": 53, "everWorkedForestRiver": 12, "everStillForest": 0}
+EXIT=0

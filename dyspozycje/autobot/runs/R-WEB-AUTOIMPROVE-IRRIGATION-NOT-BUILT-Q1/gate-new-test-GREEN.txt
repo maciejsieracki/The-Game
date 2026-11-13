@@ -1,0 +1,50 @@
+(A) mapy Z rzekami: irygacja i trzoda budowane na polach obywateli po farmach (Zywnosc, Zrownowazone, AI)
+  [OK] zywnosc: farmy postawione (72)
+  [OK] zywnosc: irygacja zbudowana (75)
+  [OK] zywnosc: trzoda zbudowana (72)
+  [OK] zywnosc: 0 pol obywatela z farma, plaskich i przy rzece, bez irygacji (jest 0)
+  [OK] zywnosc: 0 ulepszen zywnosciowych poza polami obywateli (jest 0)
+  [OK] zrownowazone: farmy postawione (71)
+  [OK] zrownowazone: irygacja zbudowana (74)
+  [OK] zrownowazone: trzoda zbudowana (71)
+  [OK] zrownowazone: 0 pol obywatela z farma, plaskich i przy rzece, bez irygacji (jest 0)
+  [OK] zrownowazone: 0 ulepszen zywnosciowych poza polami obywateli (jest 0)
+  [OK] ai: farmy postawione (71)
+  [OK] ai: irygacja zbudowana (74)
+  [OK] ai: trzoda zbudowana (71)
+  [OK] ai: 0 pol obywatela z farma, plaskich i przy rzece, bez irygacji (jest 0)
+  [OK] ai: 0 ulepszen zywnosciowych poza polami obywateli (jest 0)
+(B) mapy BEZ rzek: irygacja/trzoda niemozliwe z reguly gry (tylko przy rzece) — nie bug; budzet niewydany jest jawnie sygnalizowany
+  [OK] zywnosc: farmy nadal powstaja (86)
+  [OK] zywnosc: irygacja 0 / trzoda 0 = 0 (regula: tylko przy rzece)
+  [OK] zywnosc: kazda niezirygowana farma ma powod „brak-rzeki” (86), zalegajacych 0
+  [OK] zywnosc: 0 ulepszen zywnosciowych poza polami obywateli (jest 0)
+  [OK] zywnosc: pula Pracy niewydana (21347) — brak legalnego ulepszenia zywnosci przy obywatelach
+  [OK] zywnosc: picker przy ogromnej puli nie ma kandydata na polach obywateli (pickow 0)
+  [OK] zywnosc: wskaznik „Budzet niewydany” swieci (6/6, pol czeka 1464)
+  [OK] zrownowazone: farmy nadal powstaja (86)
+  [OK] zrownowazone: irygacja 0 / trzoda 0 = 0 (regula: tylko przy rzece)
+  [OK] zrownowazone: kazda niezirygowana farma ma powod „brak-rzeki” (86), zalegajacych 0
+  [OK] zrownowazone: 0 ulepszen zywnosciowych poza polami obywateli (jest 0)
+  [OK] zrownowazone: pula Pracy niewydana (16812) — brak legalnego ulepszenia zywnosci przy obywatelach
+  [OK] zrownowazone: picker przy ogromnej puli nie ma kandydata na polach obywateli (pickow 0)
+  [OK] zrownowazone: wskaznik „Budzet niewydany” swieci (6/6, pol czeka 1443)
+  [OK] ai: farmy nadal powstaja (86)
+  [OK] ai: irygacja 0 / trzoda 0 = 0 (regula: tylko przy rzece)
+  [OK] ai: kazda niezirygowana farma ma powod „brak-rzeki” (86), zalegajacych 0
+  [OK] ai: 0 ulepszen zywnosciowych poza polami obywateli (jest 0)
+  [OK] ai: pula Pracy niewydana (16812) — brak legalnego ulepszenia zywnosci przy obywatelach
+(C) prog budzetu: irygacja 3 x droższa od farmy — przy 33% i rezerwie 30 rusza dopiero od puli >= koszt/0.33
+  [OK] scenariusz C: jest pole obywatela plaskie, puste, przy rzece (6,12)
+  [OK] koszt irygacji = 60 (3 x farma 20) [jest 60]
+  [OK] pula 180 (< 182): irygacja NIE powstaje (limit 33% < koszt) — „budzet odkladany”
+  [OK] pula 183 (>= 182): irygacja powstaje
+(D) PRZYCZYNA: sasiad z samym `rzeka.obecna` (bez wpisu w riverPaths) = „przy rzece” dla farmy/trzody (onRiverHex) — irygacja tez
+  [OK] zywnosc: irygacja na polu obywatela z farma+trzoda przy widocznej rzece (sasiad bez wpisu w riverPaths) — picki: irygacja@17,15
+  [OK] zrownowazone: irygacja na polu obywatela z farma+trzoda przy widocznej rzece (sasiad bez wpisu w riverPaths) — picki: irygacja@17,15
+  [OK] ręczna budowa (bez flagi): irygacja przy samym sasiedzie `rzeka.obecna` NIE kwalifikuje (regula reczna bez zmian)
+  [OK] automat (flaga): ta sama irygacja kwalifikuje
+  [OK] flaga nie poszerza reguly poza sasiada rzeki: heks bez rzeki w sasiedztwie nadal NIE kwalifikuje
+
+43 OK, 0 FAIL
+EXIT=0

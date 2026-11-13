@@ -18,6 +18,7 @@ import { improvementAdapter } from './improvementAdapter';
 import { wonderAdapter } from './wonderAdapter';
 import { defaultOwnerColor, mountUnitMiniPreview } from '../unitMiniPreview';
 import { openCivpediaEntry } from './civpediaOpenGate';
+import { resourceAmountChipHtml, escapeHtmlText, RESOURCE_CHIP_CSS } from '../resourceAmountChip';
 import type {
   EntityCardData,
   EntityCardCtx,
@@ -124,6 +125,19 @@ export function buildEntityCardData(kind: EntityKind, id: string, ctx: EntityCar
  * fallback do `row.value === ''` — świadomie, żeby NIE poszerzać obszaru klikalności
  * tam, gdzie ECHO tamtego tematu wymagało zera zmiany zachowania. Ten temat jest
  * odwrotną, jawną dyspozycją właściciela: poszerzenie MA się stać wszędzie. */
+/** Części (tekst zwykły + chipy surowców/plonów) → węzły elementu; kwoty escapowane, nazwa w title/aria-label. */
+function appendRowParts(target: HTMLElement, parts: ReadonlyArray<string | { id: string; amount?: string | number }>): void {
+  for (const part of parts) {
+    if (typeof part === 'string') {
+      target.append(document.createTextNode(part));
+    } else {
+      const chip = el('span', 'entity-card-row-res');
+      chip.innerHTML = resourceAmountChipHtml(part.id, escapeHtmlText(part.amount === undefined ? '' : String(part.amount)));
+      target.appendChild(chip);
+    }
+  }
+}
+
 function buildGridRowEl(row: EntityCardData['sections'][number]['rows'][number]): HTMLElement {
   if (row.badge) {
     const rowEl = el('div', 'entity-card-row entity-card-row-action');
@@ -168,7 +182,31 @@ function buildGridRowEl(row: EntityCardData['sections'][number]['rows'][number])
   }
   const valIsLink = row.linkTo != null && !anchorOnLabel;
   const val = el(valIsLink ? 'button' : 'span', 'entity-card-row-value');
-  val.textContent = row.value;
+  if (row.valueParts && row.valueParts.length > 0) {
+    // Proza z surowcami: tekst jako text node, surowiec jako ikona (chip bez liczby).
+    for (const part of row.valueParts) {
+      if (typeof part === 'string') {
+        val.append(document.createTextNode(part));
+      } else {
+        const chip = el('span', 'entity-card-row-res');
+        chip.innerHTML = resourceAmountChipHtml(part.id, escapeHtmlText(part.amount === undefined ? '' : String(part.amount)));
+        val.appendChild(chip);
+      }
+    }
+  } else if (row.resources && row.resources.length > 0) {
+    // R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1: surowce jako DANE → chipy (ikona + liczba).
+    // `row.value` i `resourcesSuffix` to zwykły tekst (text node); HTML powstaje wyłącznie z
+    // `resourceAmountChipHtml`, a kwoty są escapowane — żadnego surowego HTML z adaptera.
+    if (row.value !== '') val.append(document.createTextNode(`${row.value}, `));
+    const chips = el('span', 'entity-card-row-res');
+    chips.innerHTML = row.resources
+      .map((r) => resourceAmountChipHtml(r.id, escapeHtmlText(r.amount === undefined ? '' : String(r.amount))))
+      .join(' + ');
+    val.appendChild(chips);
+    if (row.resourcesSuffix) val.append(document.createTextNode(` ${row.resourcesSuffix}`));
+  } else {
+    val.textContent = row.value;
+  }
   if (row.linkTo) {
     if (valIsLink) {
       val.setAttribute('data-entity-kind', row.linkTo.kind);
@@ -218,7 +256,8 @@ function buildPillRowEl(row: EntityCardData['sections'][number]['rows'][number])
  * label/value: proza ma płynąć przez całą szerokość karty (patrz `types.ts`). */
 function buildProseRowEl(row: EntityCardData['sections'][number]['rows'][number]): HTMLElement {
   const p = el('p', 'entity-card-prose');
-  p.textContent = row.value !== '' ? row.value : row.label;
+  if (row.valueParts && row.valueParts.length > 0) appendRowParts(p, row.valueParts);
+  else p.textContent = row.value !== '' ? row.value : row.label;
   return p;
 }
 
@@ -237,11 +276,13 @@ function buildTop3RowEl(
   else rank.textContent = String(index + 1);
   const body = el('div', 'entity-card-top3-body');
   const title = el('b', 'entity-card-top3-title');
-  title.textContent = row.label;
+  if (row.labelParts && row.labelParts.length > 0) appendRowParts(title, row.labelParts);
+  else title.textContent = row.label;
   body.appendChild(title);
   if (row.value !== '') {
     const textEl = el('span', 'entity-card-top3-text');
-    textEl.textContent = row.value;
+    if (row.valueParts && row.valueParts.length > 0) appendRowParts(textEl, row.valueParts);
+    else textEl.textContent = row.value;
     body.appendChild(textEl);
   }
   item.append(rank, body);
@@ -1093,6 +1134,12 @@ button.entity-card-civpedia-link:focus-visible{outline:2px solid var(--tg-focus-
 .entity-card-top3-body{min-width:0;display:flex;flex-direction:column;gap:1px;}
 .entity-card-top3-title{font-size:13px;font-weight:700;color:#f0e3ab;}
 .entity-card-top3-text{font-size:12.5px;line-height:1.4;opacity:.85;overflow-wrap:anywhere;}
+/* R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1 — blok "Top 5 korzyści" karty odkrycia (ten sam layout
+   'top3'); pozycja 1 = GŁÓWNA KORZYŚĆ, wyróżniona mocniejszą ramką (ANALIZA-KART-ODKRYC §7). */
+.entity-card-section[data-section-key="top5"] .entity-card-top3-item:first-child{
+  border-color:rgba(232,216,138,.55);border-left-color:#e8d88a;
+  background:linear-gradient(180deg,rgba(232,216,138,.2),rgba(232,216,138,.07));}
+.entity-card-section[data-section-key="top5"] .entity-card-top3-item:first-child .entity-card-top3-title{font-size:13.5px;}
 /* R-KARTA-JEDNOSTKI-3D-EKSPOZYCJA-UX-Q1 — DIORAMA (Wariant A z zaakceptowanej makiety).
    Reguły .entity-card-header/.entity-card-medallion/.entity-card-title-wrap WYŻEJ zostają
    nietknięte i pełnią teraz rolę BAZY dla trybu kompaktowego; ten blok nadpisuje je dla
@@ -1196,4 +1243,20 @@ button.entity-card-civpedia-link:focus-visible{outline:2px solid var(--tg-focus-
 /* KOTWICA KOŃCOWA bloku R-KARTA-JEDNOSTKI-3D-EKSPOZYCJA-UX-Q1 — mutacja w
    tools/entity-card-diorama-real-render-test.cjs wycina dokładnie ten zakres. Nowe reguły
    dopisuj PO tej linii. */
+/* R-BUDYNKI-KARTY-GRAFIKA-TEKST-OVERLAP-Q1 — BUILDING FLOW START */
+/* Budynki mają tytuł, pigułki Epoka/Poziom i podtytuł w normalnym przepływie POD sceną.
+   Wspólny diorama layout nadal pozostaje overlayem dla jednostek i cudów, ale przy karcie
+   budynku (szczególnie w docku 400px) tytuł po lewej nachodził na wyśrodkowany medalion.
+   Wysokość sceny jest stała, wysokość nagłówka wynika z treści — długie nazwy zawijają się
+   bez wchodzenia w grafikę, a krótkie zachowują ten sam odstęp. */
+.entity-card-building .entity-card-diorama{height:auto;min-height:0;overflow:hidden;}
+.entity-card-building .entity-card-diorama-stage{position:relative;inset:auto;width:100%;height:132px;
+  flex:none;padding:0;}
+.entity-card-building .entity-card-diorama .entity-card-title-wrap{position:relative;left:auto;right:auto;
+  bottom:auto;z-index:3;min-width:0;padding:0 14px 12px;text-shadow:0 2px 6px rgba(0,0,0,.9),0 0 2px rgba(0,0,0,.8);}
+.entity-card-building .entity-card-title-row h2{min-width:0;overflow-wrap:anywhere;}
+/* R-BUDYNKI-KARTY-GRAFIKA-TEKST-OVERLAP-Q1 — BUILDING FLOW END */
+/* R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1: chipy surowców (liczba + ikona) w komórce wartości. */
+.entity-card-row-res{display:inline-flex;flex-wrap:wrap;align-items:center;gap:2px 6px;}
+${RESOURCE_CHIP_CSS}
 `;

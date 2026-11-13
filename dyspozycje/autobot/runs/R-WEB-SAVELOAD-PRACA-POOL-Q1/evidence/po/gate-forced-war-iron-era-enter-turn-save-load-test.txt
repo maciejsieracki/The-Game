@@ -1,0 +1,2 @@
+forced-war-iron-era-enter-turn-save-load-test: 20 passed, 0 failed
+EXIT=0

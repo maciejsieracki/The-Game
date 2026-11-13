@@ -10,6 +10,9 @@ import {
   computeReachable,
   keyOf,
   terrainMoveCost,
+  buildMoveOccupancy,
+  cloneMoveOccupancy,
+  isPassThroughHex,
   type RuntimeUnit,
 } from '../units/setup';
 import { addExplored, computeVisibleAt, type UnitSightResolver } from './visibility';
@@ -71,11 +74,14 @@ export function scoreHexForExplore(
 }
 
 function occupiedExcept(units: readonly RuntimeUnit[], unitId: string): Set<string> {
-  const occ = new Set<string>();
-  for (const u of units) {
-    if (u.id !== unitId) occ.add(keyOf(u.q, u.r));
+  // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: obce jednostki blokuja, wlasne = przejscie (bez zatrzymania).
+  const moverOwner = units.find(u => u.id === unitId)?.ownerId;
+  if (moverOwner === undefined) {
+    const all = new Set<string>();
+    for (const u of units) if (u.id !== unitId) all.add(keyOf(u.q, u.r));
+    return all;
   }
-  return occ;
+  return buildMoveOccupancy(units, moverOwner, [unitId]);
 }
 
 function deductStepCost(unit: RuntimeUnit, cost: number): void {
@@ -98,7 +104,7 @@ function pickKnownVillageTarget(
   sight: number,
 ): { q: number; r: number } | null {
   const visible = computeVisibleAt(unit.q, unit.r, map, sight);
-  const reachable = computeReachable(unit, map, new Set(occupied));
+  const reachable = computeReachable(unit, map, cloneMoveOccupancy(occupied as Set<string>));
 
   let bestPathLen = Infinity;
   let best: { q: number; r: number } | null = null;
@@ -112,7 +118,7 @@ function pickKnownVillageTarget(
     const hutKey = keyOf(q, r);
     if (!visible.has(hutKey) && !reachable.has(hutKey)) continue;
 
-    const path = computePath(unit, map, q, r, new Set(occupied));
+    const path = computePath(unit, map, q, r, cloneMoveOccupancy(occupied as Set<string>));
     if (path.length === 0) continue;
 
     if (path.length < bestPathLen) {
@@ -133,7 +139,7 @@ function pickBestExploreStep(
   sight: number,
   rng: () => number,
 ): { q: number; r: number } | null {
-  const reachable = computeReachable(unit, map, new Set(occupied));
+  const reachable = computeReachable(unit, map, cloneMoveOccupancy(occupied as Set<string>));
   reachable.delete(keyOf(unit.q, unit.r));
   if (reachable.size === 0) return null;
 
@@ -147,7 +153,7 @@ function pickBestExploreStep(
     const r = Number(parts[1]);
     if (!Number.isFinite(q) || !Number.isFinite(r)) continue;
 
-    const path = computePath(unit, map, q, r, new Set(occupied));
+    const path = computePath(unit, map, q, r, cloneMoveOccupancy(occupied as Set<string>));
     if (path.length !== 1) continue;
 
     const gain = scoreMarginalReveal(unit.q, unit.r, q, r, explored, map, sight);
@@ -230,6 +236,8 @@ export function advanceScoutAutoExplore(
     const cost = terrainMoveCost(hex);
     if (cost === Infinity) break;
     if (cost > unit.ruchLeft && unit.ruchLeft < 1) break;
+    // Przejscie przez wlasna jednostke tak, ale nie zakonczenie ruchu na niej (bez laczenia).
+    if (isPassThroughHex(occ, step.q, step.r) && unit.ruchLeft - cost <= 0) break;
 
     unit.q = step.q;
     unit.r = step.r;

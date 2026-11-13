@@ -1,0 +1,8 @@
+-- 9a / mutacja: cofniecie warunku resetu do wersji rundy 5 --
+-- 9b / mutacja: przywrocenie bramki trudnosci --
+-- 9c / mutacja M2b: zaostrzenie etykietowania spojnych skladowych --
+-- 9e / mutacja: `continue` cofniete do `break` w petli kandydatow --
+-- 9d / mutacja M3: cofniecie fallbacku unitComp === undefined --
+
+barbarzyncy-krazenie-test: 249 passed, 0 failed
+EXIT=0

@@ -1,0 +1,52 @@
+[minimapa-pasek-narzedzi-reorganizacja-live-test] budowanie bundla PO (vite build, worktree bieżący)...
+[minimapa-pasek-narzedzi-reorganizacja-live-test] budowanie bundla PRZED (vite build, baza dispatchu ca289d8c)...
+
+=== PRZED (baza dispatchu ca289d8c, dowód nietautologiczności) ===
+[minimapa-pasek-narzedzi-reorganizacja-live-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+ FAIL [PRZED] .civ-minimap-tools miał 5 przycisków (stary układ, kontrola) — {"count":2,"titles":["Zasięg państwa (klik)","Pokaż trasy handlowe (klik)"],"onFlags":[true,true]}
+ FAIL [PRZED] worker-toggle NIE istniał w .civ-hud-util-dock (dowód: to naprawdę nowa pozycja) — {"dockPresent":true,"workerPresent":true,"depositPresent":true,"workerOn":true,"depositOn":true,"dockBottom":878,"dockTop":834,"miniTop":890}
+ FAIL [PRZED] deposit-toggle NIE istniał w .civ-hud-util-dock — {"dockPresent":true,"workerPresent":true,"depositPresent":true,"workerOn":true,"depositOn":true,"dockBottom":878,"dockTop":834,"miniTop":890}
+ FAIL [PRZED] klik chipa Kultura NIE miał klasy aktywności (mechanizm nie istniał) — {"present":true,"active":true,"ariaPressed":null}
+  OK  [PRZED] (kontrola) klik chipa Kultura JUŻ WTEDY otwierał panel Imperium (zachowanie nietknięte przez dispatch)
+ FAIL [PRZED] klik chipa Kultura NIE ruszał mapy 3D (panel zamknięty, pixel diff w granicach szumu — dowód, że PO to realna nowa funkcja, nie tylko efekt panelu) — {"diff":99148}
+
+=== PO (bieżący worktree, ten dispatch) ===
+[minimapa-pasek-narzedzi-reorganizacja-live-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+  OK  [K1] .civ-minimap-tools ma DOKŁADNIE 2 przyciski (territory + trade-routes)
+  OK  [K1] zero worker/mapa/religia wśród tytułów przycisków minimapy
+  OK  [K2] worker-toggle obecny w .civ-hud-util-dock
+  OK  [K2] deposit-toggle obecny w .civ-hud-util-dock
+  OK  [K2] rząd zoom (z worker/deposit) leży NAD canvasem minimapy (dockBottom <= miniTop + 2px)
+  OK  [K2] worker domyślnie ON (showWorkerOverlay=true)
+  OK  [K2] deposit domyślnie ON (showResourceDepositOverlay=true)
+  OK  [K2] klik worker-toggle: DOM przełącza stan ON -> OFF
+  OK  [K2] klik worker-toggle REALNIE zmienia wyrenderowaną mapę 3D (pixel diff >> szum tła)
+  OK  [K2] klik worker-toggle #2: DOM przełącza stan z powrotem OFF -> ON
+  OK  [K2] klik worker-toggle #2 REALNIE zmienia mapę z powrotem (pixel diff >> szum tła)
+  OK  [K2] klik deposit-toggle: DOM przełącza stan ON -> OFF
+  OK  [K2] klik deposit-toggle REALNIE zmienia wyrenderowaną mapę 3D (pixel diff >> szum tła)
+  OK  [K2] klik deposit-toggle #2: DOM przełącza stan z powrotem OFF -> ON
+  OK  [K3] chip Kultura startuje NIEaktywny (cultureRangeVisible=false)
+  OK  [K3] chip Kultura dostaje klasę aktywności po kliku (DOM)
+  OK  [K3] dotychczasowe zachowanie chipa NIE zginęło — panel Imperium OTWARTY OBOK toggle
+  OK  [K3] po zamknięciu panelu toggle zasięgu NADAL aktywny (niezależny od panelu)
+  OK  [K3] klik Kultura REALNIE zmienia wyrenderowaną mapę 3D (panel zamknięty, pixel diff >> szum tła)
+  OK  [K3] klik Kultura #2: DOM klasa aktywności gaśnie (toggle OFF)
+  OK  [K3] klik Kultura #2 REALNIE zmienia mapę z powrotem (panel zamknięty, pixel diff >> szum tła)
+  OK  [K3] po toggle OFF mapa wraca blisko stanu sprzed toggle ON (diff vs preClick w granicach szumu×6)
+  OK  [K3] chip Religia startuje NIEaktywny (religionRangeVisible=false)
+  OK  [K3] chip Religia dostaje klasę aktywności po kliku (DOM)
+  OK  [K3] klik Religia: panel Imperium OTWARTY OBOK toggle (zachowanie nie zginęło)
+  OK  [K3] klik Religia REALNIE zmienia wyrenderowaną mapę 3D (panel zamknięty, pixel diff >> szum tła)
+  OK  [K3] klik Religia #2: DOM klasa aktywności gaśnie (toggle OFF)
+  OK  [K4] przycisk trasy handlowe obecny wśród tytułów .civ-minimap-tools
+  OK  [K4] przycisk trasy handlowe domyślnie ON (showTradeRoutesOverlay=true)
+  OK  [K4] klik trasy handlowe: DOM przełącza stan ON -> OFF
+  OK  [K5] przycisk granic (territory) nadal obecny i domyślnie ON
+  OK  [K5] klik granic REALNIE zmienia renderowaną mapę 3D (toggle OFF, pixel diff >> szum tła — zero regresji)
+  OK  [K5] klik granic #2 REALNIE zmienia mapę z powrotem (toggle ON, pixel diff >> szum tła — zero regresji)
+  OK  [konsola] zero console.error / pageerror w całym scenariuszu PO
+
+========================================
+35 pass · 5 fail
+========================================

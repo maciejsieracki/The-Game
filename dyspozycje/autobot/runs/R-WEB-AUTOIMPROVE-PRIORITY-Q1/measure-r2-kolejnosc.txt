@@ -1,0 +1,2 @@
+tura 1: 13,12:farma | 13,12:bydlo | 12,12:farma | 11,12:farma | 12,11:farma | 12,13:farma
+tura 2: (brak)

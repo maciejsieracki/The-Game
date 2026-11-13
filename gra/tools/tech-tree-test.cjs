@@ -79,7 +79,9 @@ const jezChain = TT.techPrereqChain('Jeździectwo', techs);
 ok(jezChain.includes('Koło') && jezChain.includes('Jeździectwo'), 'Jeździectwo chain zawiera Koło');
 
 const wymDepth = TT.linearDepthInEpoch('Wymiana', techs);
-ok(wymDepth === 1, 'Wymiana depth 1 (Garncarstwo w Kamień)');
+// R-WEB-TECH-POTTERY-FIFTH: Garncarstwo wymaga 4 podstaw Kamienia (depth 1), wiec Wymiana = depth 2.
+ok(wymDepth === 2, 'Wymiana depth 2 (Garncarstwo depth 1 w Kamień)');
+ok(TT.linearDepthInEpoch('Garncarstwo', techs) === 1, 'Garncarstwo depth 1 (4 podstawy Kamienia w tej samej epoce)');
 
 console.log(`tech-tree-test: ${pass} pass, ${fail} fail`);
 process.exit(fail > 0 ? 1 : 0);

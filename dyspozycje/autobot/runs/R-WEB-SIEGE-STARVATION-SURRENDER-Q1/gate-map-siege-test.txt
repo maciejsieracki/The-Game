@@ -1,0 +1,9 @@
+map-siege-test
+  [OK] adjacent hex
+  [OK] not adjacent
+  [OK] player can siege walled enemy
+  [OK] cannot siege own city
+  [OK] walled city -> oblezenie
+  [OK] enemy adjacent -> auto siege on player city
+--- 6 ok, 0 fail
+EXIT=0

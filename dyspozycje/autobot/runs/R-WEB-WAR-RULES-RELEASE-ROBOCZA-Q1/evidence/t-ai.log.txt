@@ -1,0 +1,235 @@
+
+--- T1a: decideAITurn basic contract ---
+
+--- T1b: wartosc (ASCII) read discriminator ---
+  FAIL: at least one city chooses economy building (wartosc=5 read correctly); got: koszary, koszary, koszary
+  FAIL: economy buildings (0) chosen more than Koszary (3) — proves wartosc read correctly
+
+--- T1c: wartość (unicode) backward compat ---
+  FAIL: unicode 'wartość' also read correctly; got: koszary, koszary, koszary
+
+--- T1d: early phase builds (no Osadnik) ---
+
+--- T1e: endTurn always last ---
+
+--- T2a: loadDifficultyParams reads levels ---
+
+--- T2b: higher difficulty → stronger economy production score ---
+
+--- T2c: loadDifficultyParams empty aiParams → fallbacks ---
+  FAIL: empty params: poziom1 bonusWalka fallback = 0 (got -0.05, want 0)
+
+--- T2d: default difficulty = Normal (2) ---
+
+--- T3a: Celtowie archetype readArchMods ---
+
+--- T3b: Germanie archetype readArchMods ---
+
+--- T3c: Celtowie civType mapping (CIV_TO_ARCH roundtrip) ---
+
+--- T3d: Germanie civType mapping (CIV_TO_ARCH roundtrip) ---
+
+--- T3e: roster-6 ai-params.json keys exist ---
+
+--- T3f: Harappa own archetype path (ekonomia discriminator) ---
+  FAIL: Harappa own arch (ekonomia=5): eko (0) >= Koszary (3)
+
+--- T3g: Asyria wojsko>ekonomia (imperium oblężnicze) ---
+
+--- T3h: roster-6 CIV_TO_ARCH roundtrip (no throw) ---
+
+--- T4a: idle fallback (a) — unit far from everything, has own city ---
+
+--- T4b: idle fallback (b) — unit with no own cities moves toward map center ---
+
+--- T4c: idle fallback does NOT override attack behavior ---
+
+--- T4d: idle fallback does NOT force move when unit already at/adjacent to own city ---
+
+--- T5a: canAfford gate — koszary blocked, fallback to affordable ---
+
+--- T5b: canAfford gate — all blocked -> AI saves (no build command) ---
+
+--- T6a: clusterCenter+radius -> planCityFounding prefers hex inside cluster ---
+
+--- T6b: no clusterCenter -> planCityFounding still works (regression) ---
+
+--- T6c: planCityFounding w klastrze -> foundCityAt ---
+
+--- T6d: clusterStateTargets -> planCityFounding blocked (consolidation) ---
+
+--- T6e: planCityFounding prefers hex inside cluster ---
+
+--- T6g: AI-LOCAL-Q1=A faza lokalna tura 20 LUB 1 skaut ---
+
+--- T6f: decideAITurn z clusterStateTargets -> brak foundCityAt ---
+
+--- T7a: decideAIReaction - przewaga AI -> bitwa ---
+
+--- T7b: decideAIReaction - slabosc -> odwrot ---
+
+--- T7c: decideAIReaction - pokoj + przyjazn -> odwrot ---
+
+--- T7d: decideAIReaction - terytorium podnosi ratio ---
+
+--- T7e: decideAIReaction - agresja obniza prog (agresywny archetyp bije przy nizszym ratio) ---
+
+--- T7f: decideAIReaction - cenna jednostka -> ostrozniejsca (prog wyzszy) ---
+
+--- T8a: decideAIReinforcements - dorzuca kandydatow az do targetu ---
+
+--- T8b: decideAIReinforcements - nie dorzuca gdy juz duzy zapas ---
+
+--- T8c: decideAIReinforcements - pomija zbyt dalekich (dystans > 1) ---
+
+--- T8d: decideAIReinforcements - kolejnosc wg wartosci (tani najpierw) ---
+
+--- T9a: decideAIDiplomacy - silny+agresywny+wrogi -> wypowiedz_wojne ---
+  FAIL: T9a: jedna komenda
+  FAIL: T9a: typ=wypowiedz_wojne (got undefined)
+  FAIL: T9a: targetId=rzym-1
+
+--- T9b: decideAIDiplomacy - bardzo silny -> zadaj_trybut (nie wojna) ---
+
+--- T9c: decideAIDiplomacy - slaby w wojnie -> zaproponuj_pokoj ---
+
+--- T9d: decideAIDiplomacy - b. slaby w wojnie -> oferuj_trybut_za_pokoj ---
+
+--- T9e: decideAIDiplomacy - przyjazny/pokoj -> brak agresywnych komend (sojusz/handel OK) ---
+
+--- T9f: decideAIDiplomacy - agresja ponizej progu -> brak wojny mimo przewagi ---
+
+--- T9g: decideAIDiplomacy - rownosc sil -> brak komendy ---
+
+--- T9h: decideAIDiplomacy - wiele relacji mieszanych -> komendy per partner ---
+  FAIL: T9h: partner C -> wypowiedz_wojne (got undefined)
+
+--- T9i: decideAIDiplomacy - max 1 komenda per partner ---
+
+--- T9j: decideAIDiplomacy - powod jest niepustym stringiem ---
+  FAIL: T9j: co najmniej jedna komenda
+
+--- T9k: decideAIDiplomacy Priorytet 3b (zaproponuj_pakt) — zywy test progNapRelacja 90->110 (R-DYPLO-PROG-NAP-90-DO-110-Q1) ---
+
+--- T2S-a: zaproponuj_sojusz gdy rowny partner + willingnessAlly >= PROG_SOJUSZ ---
+  FAIL: T2S-a: zaproponuj_sojusz dla rownego partnera z wysoka relacja; got: []
+  FAIL: T2S-a: targetId prawidlowy
+  FAIL: T2S-a: powod niepusty
+
+--- T2S-b: zaproponuj_handel gdy neutralny + handlowosc >= 0.4 + willingnessTrade >= PROG_HANDEL ---
+  FAIL: T2S-b: zaproponuj_handel dla neutralnej relacji + handlowosc=0.7; got: []
+  FAIL: T2S-b: targetId prawidlowy
+
+--- T2S-b2: cooldown blokuje kolejny zaproponuj_handel ---
+  FAIL: T2S-b2: po cooldownie (tura 36) handel wraca; got: []
+
+--- T2S-c: brak sojuszu gdy ofiara (rw > 0.7 -> dominacja, nie rowny partner) ---
+
+--- T2S-d: priorytet - wojna bije sojusz ---
+
+--- T2S-e: max 1 komenda per partner (sojusz + handel nie razem) ---
+
+--- T4S-a: loadDifficultyParams - rosnacy agresjaMnoznik per poziom ---
+
+--- T4S-b: loadDifficultyParams - rosnacy dyplomacjaAktywnosc + celObranie ---
+
+--- T4S-c: decideAIReaction agresjaMnoznik=1.2 bije czesciej niz 0.85 (graniczny input) ---
+
+--- T4S-d: decideAIDiplomacy - wyzszy agresjaMnoznik czesciej wypowiada wojne ---
+  FAIL: T4S-d: mnoznik=1.5 effAgresja=0.6 >= 0.5 -> wypowiedz_wojne; got: []
+
+--- T5a: canAfford odfiltrowuje wszystkich -> brak build (AI oszczedza) ---
+
+--- T5b: canAfford filtruje drogie, AI wybiera tansze o lepszym score ---
+
+--- T5c: brak canAfford -> zachowanie jak dotad (regresja=0) ---
+
+--- T5d: itemCost prefers cheaper items w tym samym score-band ---
+
+--- T5e: Kamien (Praca) - canAfford z epoką Kamień nie blokuje przez brak Pieniadza ---
+
+--- T5f: canAfford=true dla jednego, reszta false -> buduje to jedno ---
+
+--- T5g: itemCost bez canAfford -> brak efektu (regresja) ---
+
+--- T5h: endTurn zawsze ostatni przy roznym canAfford ---
+
+--- T7D-a: defensiveCopy -> brak foundCityAt i build ---
+
+--- T7D-b: defensiveCopy -> brak founding mimo pracy ---
+
+--- T7D-c: defensiveCopy -> riposta na sasiedniego wroga (AI, nie gracz) ---
+
+--- T7D-g: defensiveCopy -> brak ataku na gracza bez wojny ---
+
+--- T7D-d: defensiveCopy -> brak marszu na odlegle miasto wroga ---
+
+--- T7D-e: 20 tur defensiveCopy — zero foundCityAt (regresja D-START) ---
+
+--- T7D-f: bez defensiveCopy -> foundCityAt gdy stac (regresja) ---
+
+--- T7D-l: defensiveCopy -> MP idzie po wolna chatke WE WLASNYM terytorium ---
+
+--- T7D-m: defensiveCopy -> chatka POZA wlasnym terytorium MP jest ignorowana ---
+
+--- T7D-n: defensiveCopy -> atak na sasiedniego wroga wygrywa priorytetem nad chatka ---
+
+--- T7D-o: defensiveCopy -> chatka WE WLASNYM terytorium, MP bez miasta-siostry (brak posilkow) ---
+
+--- T7D-p: runda 2 -- po ZEBRANIU chatki (wioska.istnieje=false) MP juz jej NIE goni (koniec oscylacji rundy 1) ---
+
+--- T8a: R-AI-FOUNDING-THROTTLE-Q1=A pickSourceCityForFounding wymaga pop >= 3 ---
+
+--- T8b: countFreeIndependentCityStates ---
+
+--- T8c: planCityFounding z pop>=5 i civEra<=3 omija blokade skautow ---
+
+--- T10a: miasto-panstwo bez odkrycia -> pre_contact, brak handlu ---
+
+--- T10b: miasto-panstwo po odkryciu -> simplified, handel mozliwy ---
+  FAIL: T10b: zaproponuj_handel po odkryciu; got: []
+
+--- T10c: obca cywilizacja bez odkrycia -> pre_contact ---
+
+--- T11-scout-a: pełna cywilizacja w fazie startowej -> kolejka Zwiadowca ---
+
+--- T11-scout-b: defensiveCopy (państwo-miasto) -> brak Zwiadowca ---
+
+--- T7D-h: defensiveCopy z garnizonem (na progu) -> infrastruktura, nie kolejny Wojownik ---
+
+--- T7D-i: defensiveCopy bez garnizonu -> nadal Wojownik pierwszy ---
+
+--- T7D-j: defensiveCopy + garnizon + isProductionAllowed odrzuca budynki -> Wojownik ---
+
+--- T7D-k: defensiveCopy + garnizon (na progu) + isProductionAllowed tylko studnia -> studnia ---
+
+--- T11-scout-c: zwiadowca rusza w stronę neutralnej wioski ---
+
+--- T11-scout-d: po 2 zwiadowcach nie wymusza trzeciego w early phase ---
+
+--- T12-dip-a: pokojowa cywilizacja -> pakt/handlu, bez haraczu ---
+
+--- T12-dip-b: agresywna cywilizacja -> szybciej wojna niz pokojowa ---
+
+--- T12-dip-c: agresywna zada haracz, pokojowa nie ---
+
+--- T12-dip-d: resolveDiplomacyCivBias klasyfikuje profile ---
+
+--- T12-dip-e: brak kontaktu + oferta handlu -> zaproponuj_audiencje ---
+
+--- T13: AI-MANAGE-Q1=A isMajorAiOwner ---
+
+--- T14-p1-1a: majorEarly econ building mult = 0.70 ---
+
+--- T14-p1-1b: L1 majorEarly konczy sie tura 25, L2 tura 40 ---
+
+--- T14-p2: L3 majorEarly max turn 25 gdy startowe_miasta≥1 (P2-Q2=A) ---
+
+--- T14-p1-1c: majorEarly stolarnia score ×0.70 (ranking vs biblioteka) ---
+
+--- T14-p1-2a: scout repeat penalty constant = 80 ---
+
+--- T14-p1-2b: drugi scout score −80 vs pierwszy (ta sama economyScore) ---
+
+ai-test: 276 passed, 18 failed
+EXIT=1

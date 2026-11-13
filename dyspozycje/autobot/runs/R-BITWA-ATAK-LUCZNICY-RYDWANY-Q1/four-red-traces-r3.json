@@ -1,0 +1,1560 @@
+[
+  {
+    "scenario": {
+      "doctrine": "steady",
+      "rangedLines": 2,
+      "priorityVariant": 1,
+      "terrainVariant": "engaged",
+      "activeUnits": 42,
+      "turns": 5
+    },
+    "trace": [
+      {
+        "type": "ranged-pick",
+        "unitId": "atk-archer-26",
+        "targetId": null,
+        "at": [
+          12,
+          36
+        ],
+        "targetAt": null,
+        "distance": null,
+        "range": 3,
+        "ammo": 20,
+        "rank": 3,
+        "moveLeft": 2,
+        "acted": false,
+        "turn": 0,
+        "enemies": [
+          {
+            "id": "def-infantry-7",
+            "at": [
+              16,
+              36
+            ],
+            "distance": 4,
+            "class": "melee",
+            "priority": 2
+          },
+          {
+            "id": "def-infantry-6",
+            "at": [
+              16,
+              35
+            ],
+            "distance": 5,
+            "class": "melee",
+            "priority": 2
+          },
+          {
+            "id": "def-infantry-8",
+            "at": [
+              16,
+              37
+            ],
+            "distance": 5,
+            "class": "melee",
+            "priority": 2
+          },
+          {
+            "id": "def-javelin-17",
+            "at": [
+              17,
+              36
+            ],
+            "distance": 5,
+            "class": "ranged",
+            "priority": 1
+          }
+        ]
+      },
+      {
+        "type": "move",
+        "unitId": "atk-archer-26",
+        "role": "archer",
+        "from": "12,36",
+        "q": 12,
+        "r": 35,
+        "moveLeftBefore": 2,
+        "moveLeftAfter": 1,
+        "turn": 0
+      },
+      {
+        "type": "move",
+        "unitId": "atk-archer-26",
+        "role": "archer",
+        "from": "12,35",
+        "q": 12,
+        "r": 34,
+        "moveLeftBefore": 1,
+        "moveLeftAfter": 0,
+        "turn": 0
+      },
+      {
+        "type": "activation",
+        "unitId": "atk-archer-26",
+        "doctrine": "steady",
+        "turn": 0,
+        "before": {
+          "q": 12,
+          "r": 36,
+          "moveLeft": 2,
+          "acted": false,
+          "ammoLeft": 20
+        },
+        "after": {
+          "q": 12,
+          "r": 34,
+          "moveLeft": 0,
+          "acted": false,
+          "ammoLeft": 20
+        }
+      },
+      {
+        "type": "ranged-pick",
+        "unitId": "atk-slinger-30",
+        "targetId": null,
+        "at": [
+          10,
+          35
+        ],
+        "targetAt": null,
+        "distance": null,
+        "range": 4,
+        "ammo": 20,
+        "rank": 5,
+        "moveLeft": 2,
+        "acted": false,
+        "turn": 0,
+        "enemies": [
+          {
+            "id": "def-infantry-6",
+            "at": [
+              16,
+              35
+            ],
+            "distance": 6,
+            "class": "melee",
+            "priority": 2
+          }
+        ]
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-30",
+        "role": "slinger",
+        "from": "10,35",
+        "q": 10,
+        "r": 34,
+        "moveLeftBefore": 2,
+        "moveLeftAfter": 1,
+        "turn": 0
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-30",
+        "role": "slinger",
+        "from": "10,34",
+        "q": 10,
+        "r": 33,
+        "moveLeftBefore": 1,
+        "moveLeftAfter": 0,
+        "turn": 0
+      },
+      {
+        "type": "activation",
+        "unitId": "atk-slinger-30",
+        "doctrine": "steady",
+        "turn": 0,
+        "before": {
+          "q": 10,
+          "r": 35,
+          "moveLeft": 2,
+          "acted": false,
+          "ammoLeft": 20
+        },
+        "after": {
+          "q": 10,
+          "r": 33,
+          "moveLeft": 0,
+          "acted": false,
+          "ammoLeft": 20
+        }
+      },
+      {
+        "type": "ranged-pick",
+        "unitId": "atk-archer-26",
+        "targetId": null,
+        "at": [
+          12,
+          34
+        ],
+        "targetAt": null,
+        "distance": null,
+        "range": 3,
+        "ammo": 20,
+        "rank": 3,
+        "moveLeft": 2,
+        "acted": false,
+        "turn": 1,
+        "enemies": [
+          {
+            "id": "def-infantry-5",
+            "at": [
+              16,
+              34
+            ],
+            "distance": 4,
+            "class": "melee",
+            "priority": 2
+          },
+          {
+            "id": "def-infantry-4",
+            "at": [
+              16,
+              33
+            ],
+            "distance": 5,
+            "class": "melee",
+            "priority": 2
+          },
+          {
+            "id": "def-infantry-6",
+            "at": [
+              16,
+              35
+            ],
+            "distance": 5,
+            "class": "melee",
+            "priority": 2
+          },
+          {
+            "id": "def-javelin-15",
+            "at": [
+              17,
+              34
+            ],
+            "distance": 5,
+            "class": "ranged",
+            "priority": 1
+          }
+        ]
+      },
+      {
+        "type": "move",
+        "unitId": "atk-archer-26",
+        "role": "archer",
+        "from": "12,34",
+        "q": 12,
+        "r": 33,
+        "moveLeftBefore": 2,
+        "moveLeftAfter": 1,
+        "turn": 1
+      },
+      {
+        "type": "move",
+        "unitId": "atk-archer-26",
+        "role": "archer",
+        "from": "12,33",
+        "q": 12,
+        "r": 32,
+        "moveLeftBefore": 1,
+        "moveLeftAfter": 0,
+        "turn": 1
+      },
+      {
+        "type": "activation",
+        "unitId": "atk-archer-26",
+        "doctrine": "steady",
+        "turn": 1,
+        "before": {
+          "q": 12,
+          "r": 34,
+          "moveLeft": 2,
+          "acted": false,
+          "ammoLeft": 20
+        },
+        "after": {
+          "q": 12,
+          "r": 32,
+          "moveLeft": 0,
+          "acted": false,
+          "ammoLeft": 20
+        }
+      },
+      {
+        "type": "ranged-pick",
+        "unitId": "atk-slinger-30",
+        "targetId": null,
+        "at": [
+          10,
+          33
+        ],
+        "targetAt": null,
+        "distance": null,
+        "range": 4,
+        "ammo": 20,
+        "rank": 5,
+        "moveLeft": 2,
+        "acted": false,
+        "turn": 1,
+        "enemies": [
+          {
+            "id": "def-infantry-4",
+            "at": [
+              16,
+              33
+            ],
+            "distance": 6,
+            "class": "melee",
+            "priority": 2
+          }
+        ]
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-30",
+        "role": "slinger",
+        "from": "10,33",
+        "q": 10,
+        "r": 32,
+        "moveLeftBefore": 2,
+        "moveLeftAfter": 1,
+        "turn": 1
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-30",
+        "role": "slinger",
+        "from": "10,32",
+        "q": 10,
+        "r": 31,
+        "moveLeftBefore": 1,
+        "moveLeftAfter": 0,
+        "turn": 1
+      },
+      {
+        "type": "activation",
+        "unitId": "atk-slinger-30",
+        "doctrine": "steady",
+        "turn": 1,
+        "before": {
+          "q": 10,
+          "r": 33,
+          "moveLeft": 2,
+          "acted": false,
+          "ammoLeft": 20
+        },
+        "after": {
+          "q": 10,
+          "r": 31,
+          "moveLeft": 0,
+          "acted": false,
+          "ammoLeft": 20
+        }
+      },
+      {
+        "type": "ranged-pick",
+        "unitId": "atk-archer-26",
+        "targetId": null,
+        "at": [
+          12,
+          32
+        ],
+        "targetAt": null,
+        "distance": null,
+        "range": 3,
+        "ammo": 20,
+        "rank": 3,
+        "moveLeft": 2,
+        "acted": false,
+        "turn": 2,
+        "enemies": [
+          {
+            "id": "def-infantry-3",
+            "at": [
+              16,
+              32
+            ],
+            "distance": 4,
+            "class": "melee",
+            "priority": 2
+          },
+          {
+            "id": "def-infantry-2",
+            "at": [
+              16,
+              31
+            ],
+            "distance": 5,
+            "class": "melee",
+            "priority": 2
+          },
+          {
+            "id": "def-infantry-4",
+            "at": [
+              16,
+              33
+            ],
+            "distance": 5,
+            "class": "melee",
+            "priority": 2
+          }
+        ]
+      },
+      {
+        "type": "move",
+        "unitId": "atk-archer-26",
+        "role": "archer",
+        "from": "12,32",
+        "q": 12,
+        "r": 31,
+        "moveLeftBefore": 2,
+        "moveLeftAfter": 1,
+        "turn": 2
+      },
+      {
+        "type": "move",
+        "unitId": "atk-archer-26",
+        "role": "archer",
+        "from": "12,31",
+        "q": 12,
+        "r": 30,
+        "moveLeftBefore": 1,
+        "moveLeftAfter": 0,
+        "turn": 2
+      },
+      {
+        "type": "activation",
+        "unitId": "atk-archer-26",
+        "doctrine": "steady",
+        "turn": 2,
+        "before": {
+          "q": 12,
+          "r": 32,
+          "moveLeft": 2,
+          "acted": false,
+          "ammoLeft": 20
+        },
+        "after": {
+          "q": 12,
+          "r": 30,
+          "moveLeft": 0,
+          "acted": false,
+          "ammoLeft": 20
+        }
+      },
+      {
+        "type": "ranged-pick",
+        "unitId": "atk-slinger-30",
+        "targetId": null,
+        "at": [
+          10,
+          31
+        ],
+        "targetAt": null,
+        "distance": null,
+        "range": 4,
+        "ammo": 20,
+        "rank": 5,
+        "moveLeft": 2,
+        "acted": false,
+        "turn": 2,
+        "enemies": [
+          {
+            "id": "def-infantry-2",
+            "at": [
+              16,
+              31
+            ],
+            "distance": 6,
+            "class": "melee",
+            "priority": 2
+          }
+        ]
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-30",
+        "role": "slinger",
+        "from": "10,31",
+        "q": 10,
+        "r": 30,
+        "moveLeftBefore": 2,
+        "moveLeftAfter": 1,
+        "turn": 2
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-30",
+        "role": "slinger",
+        "from": "10,30",
+        "q": 10,
+        "r": 29,
+        "moveLeftBefore": 1,
+        "moveLeftAfter": 0,
+        "turn": 2
+      },
+      {
+        "type": "activation",
+        "unitId": "atk-slinger-30",
+        "doctrine": "steady",
+        "turn": 2,
+        "before": {
+          "q": 10,
+          "r": 31,
+          "moveLeft": 2,
+          "acted": false,
+          "ammoLeft": 20
+        },
+        "after": {
+          "q": 10,
+          "r": 29,
+          "moveLeft": 0,
+          "acted": false,
+          "ammoLeft": 20
+        }
+      },
+      {
+        "type": "ranged-pick",
+        "unitId": "atk-archer-26",
+        "targetId": null,
+        "at": [
+          12,
+          30
+        ],
+        "targetAt": null,
+        "distance": null,
+        "range": 3,
+        "ammo": 20,
+        "rank": 3,
+        "moveLeft": 2,
+        "acted": false,
+        "turn": 3,
+        "enemies": [
+          {
+            "id": "def-infantry-1",
+            "at": [
+              16,
+              30
+            ],
+            "distance": 4,
+            "class": "melee",
+            "priority": 2
+          },
+          {
+            "id": "def-infantry-0",
+            "at": [
+              16,
+              29
+            ],
+            "distance": 5,
+            "class": "melee",
+            "priority": 2
+          },
+          {
+            "id": "def-infantry-2",
+            "at": [
+              16,
+              31
+            ],
+            "distance": 5,
+            "class": "melee",
+            "priority": 2
+          }
+        ]
+      },
+      {
+        "type": "move",
+        "unitId": "atk-archer-26",
+        "role": "archer",
+        "from": "12,30",
+        "q": 12,
+        "r": 29,
+        "moveLeftBefore": 2,
+        "moveLeftAfter": 1,
+        "turn": 3
+      },
+      {
+        "type": "move",
+        "unitId": "atk-archer-26",
+        "role": "archer",
+        "from": "12,29",
+        "q": 12,
+        "r": 28,
+        "moveLeftBefore": 1,
+        "moveLeftAfter": 0,
+        "turn": 3
+      },
+      {
+        "type": "activation",
+        "unitId": "atk-archer-26",
+        "doctrine": "steady",
+        "turn": 3,
+        "before": {
+          "q": 12,
+          "r": 30,
+          "moveLeft": 2,
+          "acted": false,
+          "ammoLeft": 20
+        },
+        "after": {
+          "q": 12,
+          "r": 28,
+          "moveLeft": 0,
+          "acted": false,
+          "ammoLeft": 20
+        }
+      },
+      {
+        "type": "ranged-pick",
+        "unitId": "atk-slinger-30",
+        "targetId": null,
+        "at": [
+          10,
+          29
+        ],
+        "targetAt": null,
+        "distance": null,
+        "range": 4,
+        "ammo": 20,
+        "rank": 5,
+        "moveLeft": 2,
+        "acted": false,
+        "turn": 3,
+        "enemies": [
+          {
+            "id": "def-infantry-0",
+            "at": [
+              16,
+              29
+            ],
+            "distance": 6,
+            "class": "melee",
+            "priority": 2
+          }
+        ]
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-30",
+        "role": "slinger",
+        "from": "10,29",
+        "q": 10,
+        "r": 28,
+        "moveLeftBefore": 2,
+        "moveLeftAfter": 1,
+        "turn": 3
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-30",
+        "role": "slinger",
+        "from": "10,28",
+        "q": 10,
+        "r": 27,
+        "moveLeftBefore": 1,
+        "moveLeftAfter": 0,
+        "turn": 3
+      },
+      {
+        "type": "activation",
+        "unitId": "atk-slinger-30",
+        "doctrine": "steady",
+        "turn": 3,
+        "before": {
+          "q": 10,
+          "r": 29,
+          "moveLeft": 2,
+          "acted": false,
+          "ammoLeft": 20
+        },
+        "after": {
+          "q": 10,
+          "r": 27,
+          "moveLeft": 0,
+          "acted": false,
+          "ammoLeft": 20
+        }
+      },
+      {
+        "type": "ranged-pick",
+        "unitId": "atk-archer-26",
+        "targetId": null,
+        "at": [
+          12,
+          28
+        ],
+        "targetAt": null,
+        "distance": null,
+        "range": 3,
+        "ammo": 20,
+        "rank": 3,
+        "moveLeft": 2,
+        "acted": false,
+        "turn": 4,
+        "enemies": [
+          {
+            "id": "def-cavalry-32",
+            "at": [
+              16,
+              28
+            ],
+            "distance": 4,
+            "class": "mounted",
+            "priority": 0
+          },
+          {
+            "id": "def-infantry-0",
+            "at": [
+              16,
+              29
+            ],
+            "distance": 5,
+            "class": "melee",
+            "priority": 2
+          },
+          {
+            "id": "def-cavalry-34",
+            "at": [
+              16,
+              27
+            ],
+            "distance": 5,
+            "class": "mounted",
+            "priority": 0
+          },
+          {
+            "id": "def-cavalry-38",
+            "at": [
+              17,
+              28
+            ],
+            "distance": 5,
+            "class": "mounted",
+            "priority": 0
+          }
+        ]
+      },
+      {
+        "type": "move",
+        "unitId": "atk-archer-26",
+        "role": "archer",
+        "from": "12,28",
+        "q": 13,
+        "r": 28,
+        "moveLeftBefore": 2,
+        "moveLeftAfter": 1,
+        "turn": 4
+      },
+      {
+        "type": "activation",
+        "unitId": "atk-archer-26",
+        "doctrine": "steady",
+        "turn": 4,
+        "before": {
+          "q": 12,
+          "r": 28,
+          "moveLeft": 2,
+          "acted": false,
+          "ammoLeft": 20
+        },
+        "after": {
+          "q": 13,
+          "r": 28,
+          "moveLeft": 1,
+          "acted": false,
+          "ammoLeft": 20
+        }
+      },
+      {
+        "type": "ranged-pick",
+        "unitId": "atk-slinger-30",
+        "targetId": null,
+        "at": [
+          10,
+          27
+        ],
+        "targetAt": null,
+        "distance": null,
+        "range": 4,
+        "ammo": 20,
+        "rank": 5,
+        "moveLeft": 2,
+        "acted": false,
+        "turn": 4,
+        "enemies": [
+          {
+            "id": "def-cavalry-34",
+            "at": [
+              16,
+              27
+            ],
+            "distance": 6,
+            "class": "mounted",
+            "priority": 0
+          }
+        ]
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-30",
+        "role": "slinger",
+        "from": "10,27",
+        "q": 11,
+        "r": 27,
+        "moveLeftBefore": 2,
+        "moveLeftAfter": 1,
+        "turn": 4
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-30",
+        "role": "slinger",
+        "from": "11,27",
+        "q": 12,
+        "r": 27,
+        "moveLeftBefore": 1,
+        "moveLeftAfter": 0,
+        "turn": 4
+      },
+      {
+        "type": "activation",
+        "unitId": "atk-slinger-30",
+        "doctrine": "steady",
+        "turn": 4,
+        "before": {
+          "q": 10,
+          "r": 27,
+          "moveLeft": 2,
+          "acted": false,
+          "ammoLeft": 20
+        },
+        "after": {
+          "q": 12,
+          "r": 27,
+          "moveLeft": 0,
+          "acted": false,
+          "ammoLeft": 20
+        }
+      }
+    ]
+  },
+  {
+    "scenario": {
+      "doctrine": "steady",
+      "rangedLines": 3,
+      "priorityVariant": 1,
+      "terrainVariant": "engaged",
+      "activeUnits": 42,
+      "turns": 5
+    },
+    "trace": [
+      {
+        "type": "ranged-pick",
+        "unitId": "atk-slinger-28",
+        "targetId": null,
+        "at": [
+          10,
+          35
+        ],
+        "targetAt": null,
+        "distance": null,
+        "range": 4,
+        "ammo": 20,
+        "rank": 5,
+        "moveLeft": 2,
+        "acted": false,
+        "turn": 0,
+        "enemies": [
+          {
+            "id": "def-infantry-6",
+            "at": [
+              16,
+              35
+            ],
+            "distance": 6,
+            "class": "melee",
+            "priority": 2
+          }
+        ]
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-28",
+        "role": "slinger",
+        "from": "10,35",
+        "q": 10,
+        "r": 34,
+        "moveLeftBefore": 2,
+        "moveLeftAfter": 1,
+        "turn": 0
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-28",
+        "role": "slinger",
+        "from": "10,34",
+        "q": 10,
+        "r": 33,
+        "moveLeftBefore": 1,
+        "moveLeftAfter": 0,
+        "turn": 0
+      },
+      {
+        "type": "activation",
+        "unitId": "atk-slinger-28",
+        "doctrine": "steady",
+        "turn": 0,
+        "before": {
+          "q": 10,
+          "r": 35,
+          "moveLeft": 2,
+          "acted": false,
+          "ammoLeft": 20
+        },
+        "after": {
+          "q": 10,
+          "r": 33,
+          "moveLeft": 0,
+          "acted": false,
+          "ammoLeft": 20
+        }
+      },
+      {
+        "type": "ranged-pick",
+        "unitId": "atk-slinger-30",
+        "targetId": null,
+        "at": [
+          9,
+          35
+        ],
+        "targetAt": null,
+        "distance": null,
+        "range": 4,
+        "ammo": 20,
+        "rank": 6,
+        "moveLeft": 2,
+        "acted": false,
+        "turn": 0,
+        "enemies": []
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-30",
+        "role": "slinger",
+        "from": "9,35",
+        "q": 9,
+        "r": 34,
+        "moveLeftBefore": 2,
+        "moveLeftAfter": 1,
+        "turn": 0
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-30",
+        "role": "slinger",
+        "from": "9,34",
+        "q": 9,
+        "r": 33,
+        "moveLeftBefore": 1,
+        "moveLeftAfter": 0,
+        "turn": 0
+      },
+      {
+        "type": "activation",
+        "unitId": "atk-slinger-30",
+        "doctrine": "steady",
+        "turn": 0,
+        "before": {
+          "q": 9,
+          "r": 35,
+          "moveLeft": 2,
+          "acted": false,
+          "ammoLeft": 20
+        },
+        "after": {
+          "q": 9,
+          "r": 33,
+          "moveLeft": 0,
+          "acted": false,
+          "ammoLeft": 20
+        }
+      },
+      {
+        "type": "ranged-pick",
+        "unitId": "atk-slinger-28",
+        "targetId": null,
+        "at": [
+          10,
+          33
+        ],
+        "targetAt": null,
+        "distance": null,
+        "range": 4,
+        "ammo": 20,
+        "rank": 5,
+        "moveLeft": 2,
+        "acted": false,
+        "turn": 1,
+        "enemies": [
+          {
+            "id": "def-infantry-4",
+            "at": [
+              16,
+              33
+            ],
+            "distance": 6,
+            "class": "melee",
+            "priority": 2
+          }
+        ]
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-28",
+        "role": "slinger",
+        "from": "10,33",
+        "q": 10,
+        "r": 32,
+        "moveLeftBefore": 2,
+        "moveLeftAfter": 1,
+        "turn": 1
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-28",
+        "role": "slinger",
+        "from": "10,32",
+        "q": 10,
+        "r": 31,
+        "moveLeftBefore": 1,
+        "moveLeftAfter": 0,
+        "turn": 1
+      },
+      {
+        "type": "activation",
+        "unitId": "atk-slinger-28",
+        "doctrine": "steady",
+        "turn": 1,
+        "before": {
+          "q": 10,
+          "r": 33,
+          "moveLeft": 2,
+          "acted": false,
+          "ammoLeft": 20
+        },
+        "after": {
+          "q": 10,
+          "r": 31,
+          "moveLeft": 0,
+          "acted": false,
+          "ammoLeft": 20
+        }
+      },
+      {
+        "type": "ranged-pick",
+        "unitId": "atk-slinger-30",
+        "targetId": null,
+        "at": [
+          9,
+          33
+        ],
+        "targetAt": null,
+        "distance": null,
+        "range": 4,
+        "ammo": 20,
+        "rank": 6,
+        "moveLeft": 2,
+        "acted": false,
+        "turn": 1,
+        "enemies": []
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-30",
+        "role": "slinger",
+        "from": "9,33",
+        "q": 9,
+        "r": 32,
+        "moveLeftBefore": 2,
+        "moveLeftAfter": 1,
+        "turn": 1
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-30",
+        "role": "slinger",
+        "from": "9,32",
+        "q": 9,
+        "r": 31,
+        "moveLeftBefore": 1,
+        "moveLeftAfter": 0,
+        "turn": 1
+      },
+      {
+        "type": "activation",
+        "unitId": "atk-slinger-30",
+        "doctrine": "steady",
+        "turn": 1,
+        "before": {
+          "q": 9,
+          "r": 33,
+          "moveLeft": 2,
+          "acted": false,
+          "ammoLeft": 20
+        },
+        "after": {
+          "q": 9,
+          "r": 31,
+          "moveLeft": 0,
+          "acted": false,
+          "ammoLeft": 20
+        }
+      },
+      {
+        "type": "ranged-pick",
+        "unitId": "atk-slinger-28",
+        "targetId": null,
+        "at": [
+          10,
+          31
+        ],
+        "targetAt": null,
+        "distance": null,
+        "range": 4,
+        "ammo": 20,
+        "rank": 5,
+        "moveLeft": 2,
+        "acted": false,
+        "turn": 2,
+        "enemies": [
+          {
+            "id": "def-infantry-2",
+            "at": [
+              16,
+              31
+            ],
+            "distance": 6,
+            "class": "melee",
+            "priority": 2
+          }
+        ]
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-28",
+        "role": "slinger",
+        "from": "10,31",
+        "q": 10,
+        "r": 30,
+        "moveLeftBefore": 2,
+        "moveLeftAfter": 1,
+        "turn": 2
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-28",
+        "role": "slinger",
+        "from": "10,30",
+        "q": 10,
+        "r": 29,
+        "moveLeftBefore": 1,
+        "moveLeftAfter": 0,
+        "turn": 2
+      },
+      {
+        "type": "activation",
+        "unitId": "atk-slinger-28",
+        "doctrine": "steady",
+        "turn": 2,
+        "before": {
+          "q": 10,
+          "r": 31,
+          "moveLeft": 2,
+          "acted": false,
+          "ammoLeft": 20
+        },
+        "after": {
+          "q": 10,
+          "r": 29,
+          "moveLeft": 0,
+          "acted": false,
+          "ammoLeft": 20
+        }
+      },
+      {
+        "type": "ranged-pick",
+        "unitId": "atk-slinger-30",
+        "targetId": null,
+        "at": [
+          9,
+          31
+        ],
+        "targetAt": null,
+        "distance": null,
+        "range": 4,
+        "ammo": 20,
+        "rank": 6,
+        "moveLeft": 2,
+        "acted": false,
+        "turn": 2,
+        "enemies": []
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-30",
+        "role": "slinger",
+        "from": "9,31",
+        "q": 9,
+        "r": 30,
+        "moveLeftBefore": 2,
+        "moveLeftAfter": 1,
+        "turn": 2
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-30",
+        "role": "slinger",
+        "from": "9,30",
+        "q": 9,
+        "r": 29,
+        "moveLeftBefore": 1,
+        "moveLeftAfter": 0,
+        "turn": 2
+      },
+      {
+        "type": "activation",
+        "unitId": "atk-slinger-30",
+        "doctrine": "steady",
+        "turn": 2,
+        "before": {
+          "q": 9,
+          "r": 31,
+          "moveLeft": 2,
+          "acted": false,
+          "ammoLeft": 20
+        },
+        "after": {
+          "q": 9,
+          "r": 29,
+          "moveLeft": 0,
+          "acted": false,
+          "ammoLeft": 20
+        }
+      },
+      {
+        "type": "ranged-pick",
+        "unitId": "atk-slinger-28",
+        "targetId": null,
+        "at": [
+          10,
+          29
+        ],
+        "targetAt": null,
+        "distance": null,
+        "range": 4,
+        "ammo": 20,
+        "rank": 5,
+        "moveLeft": 2,
+        "acted": false,
+        "turn": 3,
+        "enemies": [
+          {
+            "id": "def-infantry-0",
+            "at": [
+              16,
+              29
+            ],
+            "distance": 6,
+            "class": "melee",
+            "priority": 2
+          }
+        ]
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-28",
+        "role": "slinger",
+        "from": "10,29",
+        "q": 10,
+        "r": 28,
+        "moveLeftBefore": 2,
+        "moveLeftAfter": 1,
+        "turn": 3
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-28",
+        "role": "slinger",
+        "from": "10,28",
+        "q": 11,
+        "r": 28,
+        "moveLeftBefore": 1,
+        "moveLeftAfter": 0,
+        "turn": 3
+      },
+      {
+        "type": "activation",
+        "unitId": "atk-slinger-28",
+        "doctrine": "steady",
+        "turn": 3,
+        "before": {
+          "q": 10,
+          "r": 29,
+          "moveLeft": 2,
+          "acted": false,
+          "ammoLeft": 20
+        },
+        "after": {
+          "q": 11,
+          "r": 28,
+          "moveLeft": 0,
+          "acted": false,
+          "ammoLeft": 20
+        }
+      },
+      {
+        "type": "ranged-pick",
+        "unitId": "atk-slinger-30",
+        "targetId": null,
+        "at": [
+          9,
+          29
+        ],
+        "targetAt": null,
+        "distance": null,
+        "range": 4,
+        "ammo": 20,
+        "rank": 6,
+        "moveLeft": 2,
+        "acted": false,
+        "turn": 3,
+        "enemies": []
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-30",
+        "role": "slinger",
+        "from": "9,29",
+        "q": 10,
+        "r": 29,
+        "moveLeftBefore": 2,
+        "moveLeftAfter": 1,
+        "turn": 3
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-30",
+        "role": "slinger",
+        "from": "10,29",
+        "q": 11,
+        "r": 29,
+        "moveLeftBefore": 1,
+        "moveLeftAfter": 0,
+        "turn": 3
+      },
+      {
+        "type": "activation",
+        "unitId": "atk-slinger-30",
+        "doctrine": "steady",
+        "turn": 3,
+        "before": {
+          "q": 9,
+          "r": 29,
+          "moveLeft": 2,
+          "acted": false,
+          "ammoLeft": 20
+        },
+        "after": {
+          "q": 11,
+          "r": 29,
+          "moveLeft": 0,
+          "acted": false,
+          "ammoLeft": 20
+        }
+      },
+      {
+        "type": "ranged-pick",
+        "unitId": "atk-slinger-28",
+        "targetId": null,
+        "at": [
+          11,
+          28
+        ],
+        "targetAt": null,
+        "distance": null,
+        "range": 4,
+        "ammo": 20,
+        "rank": 5,
+        "moveLeft": 2,
+        "acted": false,
+        "turn": 4,
+        "enemies": [
+          {
+            "id": "def-cavalry-32",
+            "at": [
+              16,
+              28
+            ],
+            "distance": 5,
+            "class": "mounted",
+            "priority": 0
+          },
+          {
+            "id": "def-infantry-0",
+            "at": [
+              16,
+              29
+            ],
+            "distance": 6,
+            "class": "melee",
+            "priority": 2
+          },
+          {
+            "id": "def-cavalry-34",
+            "at": [
+              16,
+              27
+            ],
+            "distance": 6,
+            "class": "mounted",
+            "priority": 0
+          },
+          {
+            "id": "def-cavalry-38",
+            "at": [
+              17,
+              28
+            ],
+            "distance": 6,
+            "class": "mounted",
+            "priority": 0
+          }
+        ]
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-28",
+        "role": "slinger",
+        "from": "11,28",
+        "q": 12,
+        "r": 28,
+        "moveLeftBefore": 2,
+        "moveLeftAfter": 1,
+        "turn": 4
+      },
+      {
+        "type": "activation",
+        "unitId": "atk-slinger-28",
+        "doctrine": "steady",
+        "turn": 4,
+        "before": {
+          "q": 11,
+          "r": 28,
+          "moveLeft": 2,
+          "acted": false,
+          "ammoLeft": 20
+        },
+        "after": {
+          "q": 12,
+          "r": 28,
+          "moveLeft": 1,
+          "acted": false,
+          "ammoLeft": 20
+        }
+      },
+      {
+        "type": "ranged-pick",
+        "unitId": "atk-slinger-30",
+        "targetId": null,
+        "at": [
+          11,
+          29
+        ],
+        "targetAt": null,
+        "distance": null,
+        "range": 4,
+        "ammo": 20,
+        "rank": 6,
+        "moveLeft": 2,
+        "acted": false,
+        "turn": 4,
+        "enemies": [
+          {
+            "id": "def-infantry-0",
+            "at": [
+              16,
+              29
+            ],
+            "distance": 5,
+            "class": "melee",
+            "priority": 2
+          },
+          {
+            "id": "def-infantry-1",
+            "at": [
+              16,
+              30
+            ],
+            "distance": 6,
+            "class": "melee",
+            "priority": 2
+          },
+          {
+            "id": "def-cavalry-32",
+            "at": [
+              16,
+              28
+            ],
+            "distance": 6,
+            "class": "mounted",
+            "priority": 0
+          }
+        ]
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-30",
+        "role": "slinger",
+        "from": "11,29",
+        "q": 11,
+        "r": 28,
+        "moveLeftBefore": 2,
+        "moveLeftAfter": 1,
+        "turn": 4
+      },
+      {
+        "type": "move",
+        "unitId": "atk-slinger-30",
+        "role": "slinger",
+        "from": "11,28",
+        "q": 11,
+        "r": 27,
+        "moveLeftBefore": 1,
+        "moveLeftAfter": 0,
+        "turn": 4
+      },
+      {
+        "type": "activation",
+        "unitId": "atk-slinger-30",
+        "doctrine": "steady",
+        "turn": 4,
+        "before": {
+          "q": 11,
+          "r": 29,
+          "moveLeft": 2,
+          "acted": false,
+          "ammoLeft": 20
+        },
+        "after": {
+          "q": 11,
+          "r": 27,
+          "moveLeft": 0,
+          "acted": false,
+          "ammoLeft": 20
+        }
+      }
+    ]
+  }
+]

@@ -25,7 +25,7 @@
 Triari to jednostka typu **Wręcz** z epoki **Żelazo**. Unikalna dla **Rzymska**.
 ### Rekrutacja i utrzymanie
 - **Koszt:** 0 ¤, 1 mieszkańców
-- **Tech:** Hutnictwo żelaza
+- **Tech:** Sztuka wojenna
 - **Utrzymanie:** 0 ¤/t, 1 żywności/t
 - **Ruch:** 2 (mapa) / 4 (bitwa)
 - **Siła w polu:** 62

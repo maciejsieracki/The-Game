@@ -274,6 +274,13 @@ const EXPLICIT_PARAMS = [
 /** Nazwy nosne DOWODU -- te NIE moga zostac zaslepione automatycznie. Gdyby ktoras trafila na
  *  liste auto-zaslepek, znaczyloby to, ze kotwica naprawy zniknela ze zrodla, a harness po cichu
  *  „naprawil" sobie brak — dokladnie ta klasa falszywej zieleni, przed ktora chroni sekcja E2. */
+/** Lokalne render() potrzebne wycinkowi, ale NIE będące funkcjami modułowymi ani nośnikiem
+ *  dowodu. `snap` (EmpireDetailSnap z `getSnap()`) jest w wycinku WYŁĄCZNIE przekazywany do
+ *  `mountMassRecruitmentControls(bodyEl, snap)` -- funkcji zaślepionej no-opem, której ciało nie
+ *  dotyka scrollTop (E3). Dostarczany jako pusty obiekt; bez tego E1 oznaczał go jako
+ *  nierozwiązany identyfikator (`ReferenceError: snap is not defined`, sekcja S1-S4 czerwona). */
+const RUNNER_CONTEXT = ['snap'];
+
 const LOAD_BEARING = [
   'bodyEl', 'body', 'block', 'pendingScrollSection', 'resetScrollOnNextRender',
   'prevScrollTop', 'scrollTarget', 'wireMocViewButtons', 'requestAnimationFrame', 'scrollToSection',
@@ -333,12 +340,17 @@ function buildRunner(snippet, extraStubNames) {
   const fn = new Function(
     ...EXPLICIT_PARAMS,
     ...extra,
+    ...RUNNER_CONTEXT,
     snippet + '\nreturn { scrollTarget: scrollTarget, pendingScrollSectionAfter: pendingScrollSection, '
       + 'resetScrollOnNextRenderAfter: resetScrollOnNextRender };',
   );
   // Auto-zaslepki sa DOKLEJANE na koncu listy argumentow, wiec wszystkie dotychczasowe wywolania
-  // runnera (8 argumentow) zostaja bez zmian.
-  return (...args) => fn(...args, ...extra.map(() => () => {}));
+  // runnera (8 argumentow) zostaja bez zmian. Kontekst render() (RUNNER_CONTEXT) idzie za nimi.
+  return (...args) => fn(
+    ...args,
+    ...extra.map(() => () => {}),
+    ...RUNNER_CONTEXT.map(() => ({})),
+  );
 }
 
 // --- E. KONTRAKT SRODOWISKA WYCINKA (dodane 2026-09-06, P-DESIGN-11-ZAKLADEK-DROBIAZGI-Q1/N1) ---
@@ -366,6 +378,7 @@ console.log('   auto-zaslepki wykryte w wycinku: ' + (autoStubs.length ? autoStu
 // wprost, zamiast zostawiac mylacy ReferenceError w srodku dowodu behawioralnego.
 const unresolved = [...snippetIdents].filter((n) => (
   !EXPLICIT_PARAMS.includes(n)
+  && !RUNNER_CONTEXT.includes(n)
   && !autoStubs.includes(n)
   && !snippetLocals.has(n)
   && !JS_RESERVED_OR_GLOBAL.has(n)

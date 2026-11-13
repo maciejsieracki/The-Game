@@ -1,0 +1,47 @@
+[PRZED] SRC=/dev/shm/wdbr-pre-src/gra/src
+FAIL: [A base] API reguly "wewnatrz obwarowania" istnieje (defenderInsideFortification/fortificationDefenseBonusForUnit/wallCrownShooterRange)
+[mut-skip] def-mutEq: brak wzorca (src pre-zmiana)
+[mut-skip] def-mutSide: brak wzorca (src pre-zmiana)
+[mut-skip] def-mutInside: brak wzorca (src pre-zmiana)
+[mut-skip] def-mutRange: brak wzorca (src pre-zmiana)
+PASS: A-MUT q>=wallCol (kafel muru liczony jako wnetrze) => test CZERWONY (nietautologiczny)
+PASS: A-MUT brak sprawdzenia strony (atakujacy) => test CZERWONY (nietautologiczny)
+PASS: A-MUT brak reguly "za murem" (tylko korona) => test CZERWONY (nietautologiczny)
+PASS: A-MUT zasieg x1.5 floor => test CZERWONY (nietautologiczny)
+PASS: C1 Auto: structureDefenseBonusFor(miasto) = cityWallDefenseBonusPercent (ta sama funkcja co taktyka; dla CALEGO rostera obroncow na heksie miasta)
+PASS: C2 Auto: effectiveDefenderM stosuje bonus do CALEJ Obrony rostera (split.defense * (1 + combinedDefPct/100))
+[PRZED] vite base 63 s
+[PRZED] POMIAR mur {"hasApi":false,"wallCol":40,"total":200,"n":{"def":28,"crownMelee":true,"crownArcher":true,"crownCata":false,"rest":true},"crown":200,"interior":0,"interiorJustBehind":0,"outside":0,"wallTileNoCrown":0,"restPos":{"q":42,"onWall":false,"bonus":0},"atkOnCrown":0,"archer":{"rangeBase":3,"onCrown":3,"offCrown":3,"atStart":null},"melee":{"rangeBase":0,"range":0},"startRanges":[{"base":3,"range":3},{"base":3,"range":3},{"base":3,"range":3},{"base":3,"range":3},{"base":3,"range":3},{"base":3,"range":3}]}
+[PRZED] POMIAR skip {"hasApi":false,"tactical":null,"err":null,"hasInstantField":false,"instant":{"crown":null,"inner":null,"outer":null}}
+PASS: [B mur] B0 total bonus sceny = 200% (mur)
+PASS: [B mur] B0b scena ma obroncow: korona-wrecz, korona-strzelec, poza korona
+PASS: [B mur] B1 obronca na koronie: bonus 200%
+FAIL: [B mur] B2 obronca ZA murem (q=wallCol+3, nie korona): bonus 200% (NOWA REGULA) -- 0
+FAIL: [B mur] B3 obronca tuz za murem (q=wallCol+1): bonus 200% -- 0
+PASS: [B mur] B4 obronca POZA murem (q=wallCol-2): 0
+PASS: [B mur] B5 kafel muru bez korony (wyburzony): 0
+PASS: [B mur] B6 atakujacy na koronie: 0 (bonus nie dotyczy atakujacych)
+FAIL: [B mur] B7 jednostka startujaca ZA murem (jazda/machina) ma bonus 200% -- {"q":42,"onWall":false,"bonus":0}
+FAIL: [B mur] B8 strzelec na koronie: zasieg x2 (3 -> 3) -- {"rangeBase":3,"onCrown":3,"offCrown":3,"atStart":null}
+FAIL: [B mur] B9 zasieg strzelca na koronie widoczny juz od STARTU sceny (podswietlenie UI) -- [{"base":3,"range":3},{"base":3,"range":3},{"base":3,"range":3},{"base":3,"range":3},{"base":3,"range":3},{"base":3,"range":3}]
+PASS: [B mur] B10 wrecz na koronie: zasieg bez zmian (0)
+FAIL: [B mur] B12 "Pomin" zwraca bonus per obronca (lastInstantDefBonus) -- {"hasApi":false,"tactical":null,"err":null,"hasInstantField":false,"instant":{"crown":null,"inner":null,"outer":null}}
+PASS: [B mur] B15 brak bledow JS (pageerror)
+[PRZED] POMIAR palisada {"hasApi":false,"wallCol":40,"total":100,"n":{"def":28,"crownMelee":true,"crownArcher":true,"crownCata":false,"rest":true},"crown":100,"interior":0,"interiorJustBehind":0,"outside":0,"wallTileNoCrown":0,"restPos":{"q":42,"onWall":false,"bonus":0},"atkOnCrown":0,"archer":{"rangeBase":3,"onCrown":3,"offCrown":3,"atStart":null},"melee":{"rangeBase":0,"range":0},"startRanges":[{"base":3,"range":3},{"base":3,"range":3},{"base":3,"range":3},{"base":3,"range":3},{"base":3,"range":3},{"base":3,"range":3}]}
+[PRZED] POMIAR skip palisada {"hasApi":false,"tactical":null,"err":null,"hasInstantField":false,"instant":{"crown":null,"inner":null,"outer":null}}
+PASS: [B palisada] B0 total bonus sceny = 100% (palisada)
+PASS: [B palisada] B0b scena ma obroncow: korona-wrecz, korona-strzelec, poza korona
+PASS: [B palisada] B1 obronca na koronie: bonus 100%
+FAIL: [B palisada] B2 obronca ZA murem (q=wallCol+3, nie korona): bonus 100% (NOWA REGULA) -- 0
+FAIL: [B palisada] B3 obronca tuz za murem (q=wallCol+1): bonus 100% -- 0
+PASS: [B palisada] B4 obronca POZA murem (q=wallCol-2): 0
+PASS: [B palisada] B5 kafel muru bez korony (wyburzony): 0
+PASS: [B palisada] B6 atakujacy na koronie: 0 (bonus nie dotyczy atakujacych)
+FAIL: [B palisada] B7 jednostka startujaca ZA murem (jazda/machina) ma bonus 100% -- {"q":42,"onWall":false,"bonus":0}
+FAIL: [B palisada] B8 strzelec na koronie: zasieg x2 (3 -> 3) -- {"rangeBase":3,"onCrown":3,"offCrown":3,"atStart":null}
+FAIL: [B palisada] B9 zasieg strzelca na koronie widoczny juz od STARTU sceny (podswietlenie UI) -- [{"base":3,"range":3},{"base":3,"range":3},{"base":3,"range":3},{"base":3,"range":3},{"base":3,"range":3},{"base":3,"range":3}]
+PASS: [B palisada] B10 wrecz na koronie: zasieg bez zmian (0)
+FAIL: [B palisada] B12 "Pomin" zwraca bonus per obronca (lastInstantDefBonus) -- {"hasApi":false,"tactical":null,"err":null,"hasInstantField":false,"instant":{"crown":null,"inner":null,"outer":null}}
+PASS: [B palisada] B15 brak bledow JS (pageerror)
+--- 22 ok, 13 fail
+EXIT=1

@@ -1,0 +1,83 @@
+========================================================================
+P-ARMIA-CHIP-PELNE-JEDNOSTKI -- pelne jednostki z puli rekrutow (4 miejsca)
+========================================================================
+
+A. Bundle real source: src/game/manpower.ts + src/ui/formatPl.ts
+  PASS: bundle eksportuje unitManpowerCost
+  PASS: bundle eksportuje rekrutUnitEquivalents
+  PASS: bundle eksportuje empirePoborTotals
+  PASS: bundle eksportuje cityManpowerCurrent
+  PASS: bundle eksportuje formatLiczbaPl
+
+A2. rekrutUnitEquivalents(pula, epoka, maxMult) === floor(pula / unitManpowerCost(epoka, maxMult))
+  PASS: pula=0 epoka=1 maxMult=1 -> koszt=1000, rekrutEkw=0 (want 0)
+  PASS: pula=999 epoka=1 maxMult=1 -> koszt=1000, rekrutEkw=0 (want 0)
+  PASS: pula=1000 epoka=1 maxMult=1 -> koszt=1000, rekrutEkw=1 (want 1)
+  PASS: pula=12345 epoka=3 maxMult=1 -> koszt=4000, rekrutEkw=3 (want 3)
+  PASS: pula=20400 epoka=5 maxMult=1.5 -> koszt=24000, rekrutEkw=0 (want 0)
+  PASS: pula=500 epoka=2 maxMult=1 -> koszt=2000, rekrutEkw=0 (want 0)
+
+B. main.ts: buildHudState + buildEmpireDetailSnap licza z jednego zrodla
+  PASS: main.ts importuje rekrutUnitEquivalents i unitManpowerCost z ./game/manpower
+  PASS: main.ts NIE definiuje wlasnej funkcji unitManpowerCost (jedyna implementacja w manpower.ts)
+  PASS: main.ts NIE definiuje wlasnej funkcji rekrutUnitEquivalents (jedyna implementacja w manpower.ts)
+  PASS: main.ts zawiera buildHudState(ownerId = ME()): HudState
+  FAIL: buildHudState zwraca rekrutEkw z epoki ps.era i mnożnika mpMults.costMult
+  FAIL: buildHudState zwraca kosztJednostki z epoki ps.era i mnożnika mpMults.costMult
+  PASS: main.ts zawiera funkcje buildEmpireDetailSnap(): EmpireDetailSnap
+  PASS: buildEmpireDetailSnap (power:{...}) zwraca rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka, mpMults.costMult)
+  PASS: buildEmpireDetailSnap (power:{...}) zwraca kosztJednostki: unitManpowerCost(epoka, mpMults.costMult)
+
+C. hud.ts: chip "Armia" (rate) czyta s.rekrutEkw; pole zadeklarowane w HudState
+  PASS: HudState deklaruje rekrutEkw?: number
+  PASS: HudState deklaruje kosztJednostki?: number
+  PASS: hud.ts zawiera blok chip6cHtml({ label: 'Armia', ... })
+  PASS: chip "Armia": rate = s.rekrutEkw (przez ...cn(..., s.rekrutEkw ?? 0), skrot k/M) -- pelne jednostki, nie surowa pula/regen
+  PASS: chip "Armia": value dalej s.armyUnitsOnMap ?? 0 (przez ...cn, skrot k/M) -- ZRODLO NIEZMIENIONE (wojsko na mapie)
+  PASS: chip "Armia" NIE uzywa juz s.rekruciRegenPerTurn jako "rate" (przeniesione do tooltipu)
+  PASS: środkowy Manpower pokazuje samą liczbę pełnych jednostek w nawiasie
+  PASS: tooltip Manpower wyjaśnia liczbę pełnych jednostek i koszt jednostki
+  PASS: main.ts: buildHudState liczy rekrutEkw TA SAMA para funkcji co panel (rekrutUnitEquivalents + unitManpowerCost)
+
+D. empireDetailPanel.ts: kolumna JEDN. + wiersz RAZEM (cityPoborMiniRekruci)
+  PASS: empireDetailPanel.ts importuje formatLiczbaPl z ./formatPl
+  PASS: empireDetailPanel.ts zawiera funkcje cityPoborMiniRekruci
+  PASS: nagłówek tabeli dostał kolumnę JEDN.
+  PASS: wartość per-miasto liczona jako c.rekruci / p.kosztJednostki (TEN SAM koszt co #1/#2, nie osobny)
+  PASS: wartość per-miasto renderowana przez formatLiczbaPl(ekwMiasto, 1) -- 1 miejsce po przecinku, NIE floorowana
+  PASS: kod NIE flooruje/roundinguje ekwMiasto przed wyświetleniem (brak Math.floor(ekwMiasto)/Math.round(ekwMiasto))
+  PASS: wiersz RAZEM wstawia p.rekrutEkw WPROST w kolumnie JEDN. (identyczny numer co chip/notatka, nie przeliczony lokalnie)
+  PASS: notatka ogólna nad tabelą nadal pokazuje "można werbować" p.rekrutEkw + koszt p.kosztJednostki (pkt 2a/2b zadania)
+  PASS: EmpireDetailSnap.power deklaruje rekrutEkw: number oraz kosztJednostki: number (typ zgodny z main.ts)
+
+E. Fixture: floor(suma JEDN. per-miasto) == rekrutEkw (chip Armia == panel)
+  PASS: koszt jednostki w epoce fixture > 0 (test ma sens)
+  PASS: floor(suma niezaokraglonych JEDN. per-miasto) === rekrutEkw chipu/panelu (spojnosc 4 miejsc)
+  PASS: obca cywilizacja (ownerId=1) wykluczona z pobor.rekruci (fixture nie przecieka miedzy cywilizacjami)
+  PASS: unitManpowerCost(epoka=1, maxMult=1) === 1000 (punkt odniesienia formatowania)
+  PASS: formatLiczbaPl(2600 / 1000, 1) === "2,6" (przykład z treści zadania)
+  PASS: formatLiczbaPl(3000 / 1000, 1) === "3" (całkowita wartość, bez zbędnego ",0")
+  PASS: formatLiczbaPl(0, 1) === "0" (miasto bez rekrutów -> 0, nie puste pole)
+
+F. Dowod mutacyjny: zmiana kosztu (maxMult) porusza 4 miejsca w lockstep
+  PASS: Krok 0 -- fixture ma sens: manpower KAZDEGO miasta gracza NIEZMIENIONY miedzy stanami (dowod, ze clamp cityManpowerMax nie zadzialal -- jedyna zmienna to koszt, nie pula)
+  PASS: Krok 1 -- koszt jednostki faktycznie sie zmienil miedzy stanami (maxMult 1 -> 2 podwaja koszt: unitManpowerCost)
+  PASS: Krok 2 -- #1/#2/#4 rekrutEkw (chip "Armia" / notatka "mozna werbowac" / wiersz RAZEM) zmienia sie W LOCKSTEP z kosztem (floor(pula/koszt) w obu stanach, B < A bo koszt 2x)
+  PASS: Krok 3 -- #3 KAZDY wiersz kolumny JEDN. per-miasto zmienia sie proporcjonalnie (ekwMiasto_B == ekwMiasto_A / 2, dla kazdego miasta gracza, bez wyjatku)
+  PASS: Krok 4 -- floor(suma JEDN. per-miasto) === rekrutEkw chipu/RAZEM trzyma sie POD OBOMA stanami naraz (sekcja E to sprawdzala tylko na jednym, nieruchomym stanie)
+
+F2. Weryfikacja negatywna -- mutacje production code lapane przez inwariant sekcji F
+  PASS: MUT-F1: kotwica podmiany istnieje w manpower.ts (rekrutUnitEquivalents)
+  PASS: MUT-F1: podmiana faktycznie zmienila zrodlo
+  PASS: MUT-F1: zbudowana bez bledu esbuild (mutacja jest syntaktycznie poprawnym TS)
+  PASS: MUT-F1 ("chip ignoruje maxMult, liczy koszt osobno") lapana CZERWONO przez inwariant sekcji F
+  PASS: manpower.ts przywrocony do oryginalu po MUT-F1
+  PASS: MUT-F2: kotwica podmiany istnieje w manpower.ts (empirePoborTotals)
+  PASS: MUT-F2: podmiana faktycznie zmienila zrodlo
+  PASS: MUT-F2: zbudowana bez bledu esbuild
+  PASS: MUT-F2 ("pula przecieka z obcej cywilizacji, foreign 99999 wlicza sie do rekrutEkw") lapana CZERWONO przez inwariant sekcji F
+  PASS: manpower.ts przywrocony do oryginalu po MUT-F2
+
+========================================================================
+FAILED: 58 passed, 2 failed
+EXIT=1

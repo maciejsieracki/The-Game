@@ -1,0 +1,21 @@
+army-merge-dismiss-bounce-test (R-MERGE-DISMISS, zgloszenie blokujace 2026-07-26)
+
+  [OK] modal Polaczenie armii pokazany (heks docelowy zajety)
+  [OK] panel realnie otwarty w DOM
+  [OK] PRZED dismissem: zwiadowca stoi tam, gdzie go wyslano (6,5)
+  [OK] overlay .civ-amp-overlay istnieje w DOM
+  [OK] panel zamknal sie po kliku w tlo
+  [OK] dismiss NIE wywoluje onSeparate (Zostaw osobno)
+  [OK] dismiss mapuje sie na onMerge (bezpieczny, bez ruchu jednostek)
+  [OK] PO dismissie: zwiadowca WCIAZ na (6,5) -- NIE zostal cofniety do miasta (5,5). Bylo: 6,5
+  [OK] S2: modal pokazany
+  [OK] S2: panel zamknal sie po Escape
+  [OK] S2: Escape NIE wywoluje onSeparate
+  [OK] S2: PO Escape zwiadowca WCIAZ na (11,10), nie cofniety. Bylo: 11,10
+  [OK] S3: modal pokazany
+  [OK] S3: przycisk "Zostaw osobno" istnieje
+  [OK] S3: swiadomy klik "Zostaw osobno" nadal wywoluje onSeparate
+  [OK] S3: po swiadomym "Zostaw osobno" jednostka wraca do (wolnego) punktu startu -- to oczekiwane, celowe dzialanie przycisku
+
+army-merge-dismiss-bounce-test: 16 pass, 0 fail
+EXIT=0

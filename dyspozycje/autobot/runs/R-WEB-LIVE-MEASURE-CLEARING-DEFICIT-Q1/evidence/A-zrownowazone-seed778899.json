@@ -1,0 +1,5127 @@
+{
+ "tag": "A-zrownowazone-seed778899",
+ "seed": 778899,
+ "focus": "zrownowazone",
+ "startTurn": 1,
+ "techs": 13,
+ "policy": {
+  "focus": "zrownowazone",
+  "tryb": "auto",
+  "onlyWorked": true,
+  "pracaAutoPercent": 100,
+  "wolnoWycinacLas": true
+ },
+ "build": {
+  "before": {
+   "budowaFocus": "zrownowazone",
+   "budowaTryb": "zrownowazone"
+  },
+  "after": {
+   "budowaFocus": "zrownowazone",
+   "budowaTryb": "reczny"
+  },
+  "perCity": [
+   {
+    "budowaFocus": "zrownowazone",
+    "budowaTryb": "reczny"
+   }
+  ]
+ },
+ "popFixture": 9,
+ "scen": {
+  "cand": [
+   {
+    "q": 47,
+    "r": 23,
+    "dist": 1,
+    "river": true,
+    "teren": "laka",
+    "nakladkaBefore": "las"
+   },
+   {
+    "q": 48,
+    "r": 23,
+    "dist": 1,
+    "river": true,
+    "teren": "rownina",
+    "nakladkaBefore": "las"
+   },
+   {
+    "q": 46,
+    "r": 24,
+    "dist": 1,
+    "river": true,
+    "teren": "laka",
+    "nakladkaBefore": "las"
+   },
+   {
+    "q": 48,
+    "r": 24,
+    "dist": 1,
+    "river": true,
+    "teren": "laka",
+    "nakladkaBefore": "las"
+   },
+   {
+    "q": 46,
+    "r": 25,
+    "dist": 1,
+    "river": true,
+    "teren": "laka",
+    "nakladkaBefore": "las"
+   },
+   {
+    "q": 47,
+    "r": 25,
+    "dist": 1,
+    "river": true,
+    "teren": "laka",
+    "nakladkaBefore": "las"
+   },
+   {
+    "q": 47,
+    "r": 22,
+    "dist": 2,
+    "river": true,
+    "teren": "laka",
+    "nakladkaBefore": "las"
+   },
+   {
+    "q": 48,
+    "r": 22,
+    "dist": 2,
+    "river": true,
+    "teren": "laka",
+    "nakladkaBefore": "las"
+   },
+   {
+    "q": 46,
+    "r": 23,
+    "dist": 2,
+    "river": true,
+    "teren": "laka",
+    "nakladkaBefore": "las"
+   },
+   {
+    "q": 48,
+    "r": 25,
+    "dist": 2,
+    "river": true,
+    "teren": "rownina",
+    "nakladkaBefore": "las"
+   },
+   {
+    "q": 46,
+    "r": 26,
+    "dist": 2,
+    "river": true,
+    "teren": "laka",
+    "nakladkaBefore": "las"
+   },
+   {
+    "q": 47,
+    "r": 26,
+    "dist": 2,
+    "river": true,
+    "teren": "laka",
+    "nakladkaBefore": "las"
+   }
+  ],
+  "nCand": 20
+ },
+ "riverFound": true,
+ "target": {
+  "q": 47,
+  "r": 23,
+  "dist": 1,
+  "river": true,
+  "teren": "laka",
+  "nakladkaBefore": "las"
+ },
+ "assign": {
+  "tryb": "reczny",
+  "reczne": {
+   "47,23": 1
+  }
+ },
+ "hexAfterPlant": {
+  "hk": "47,23",
+  "nakladka": "las",
+  "teren": "laka",
+  "river": true,
+  "layers": [],
+  "clearing": null,
+  "worked": true
+ },
+ "rows": [
+  {
+   "turnAfter": 5,
+   "pracaBefore": 400,
+   "pracaAfter": 364,
+   "kosztAutoUlepszen": 43,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 5,
+     "k": "47,23",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 5,
+     "k": "47,23",
+     "layers": [
+      "tartak",
+      "oboz_lowiecki"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 6,
+   "pracaBefore": 364,
+   "pracaAfter": 157,
+   "kosztAutoUlepszen": 215,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 6,
+     "k": "47,23",
+     "layers": [
+      "tartak",
+      "oboz_lowiecki",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 6,
+     "k": "48,24",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 6,
+     "k": "47,26",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 6,
+     "k": "49,24",
+     "layers": [
+      "farma",
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 6,
+     "k": "47,21",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 6,
+     "k": "46,23",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 6,
+     "k": "14,14",
+     "layers": [
+      "droga"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 7,
+   "pracaBefore": 157,
+   "pracaAfter": 94,
+   "kosztAutoUlepszen": 60,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 7,
+     "k": "47,23",
+     "layers": [
+      "tartak",
+      "oboz_lowiecki",
+      "droga",
+      "posterunek"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 8,
+   "pracaBefore": 94,
+   "pracaAfter": 89,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 8,
+     "k": "91,58",
+     "layers": [
+      "droga"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 9,
+   "pracaBefore": 89,
+   "pracaAfter": 84,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 9,
+     "k": "86,60",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 9,
+     "k": "94,53",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 9,
+     "k": "14,18",
+     "layers": [
+      "kamieniolom"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 10,
+   "pracaBefore": 84,
+   "pracaAfter": 79,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 11,
+   "pracaBefore": 79,
+   "pracaAfter": 74,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 11,
+     "k": "15,17",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 11,
+     "k": "18,13",
+     "layers": [
+      "tartak"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 12,
+   "pracaBefore": 74,
+   "pracaAfter": 69,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 12,
+     "k": "42,27",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 12,
+     "k": "90,51",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 12,
+     "k": "95,60",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 12,
+     "k": "14,16",
+     "layers": [
+      "droga"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 13,
+   "pracaBefore": 69,
+   "pracaAfter": 64,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 14,
+   "pracaBefore": 64,
+   "pracaAfter": 59,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 14,
+     "k": "49,27",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 14,
+     "k": "37,33",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 14,
+     "k": "90,51",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 14,
+     "k": "94,55",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 14,
+     "k": "14,16",
+     "layers": [
+      "droga",
+      "farma"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 15,
+   "pracaBefore": 59,
+   "pracaAfter": 54,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 15,
+     "k": "88,60",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 15,
+     "k": "18,16",
+     "layers": [
+      "farma"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 16,
+   "pracaBefore": 54,
+   "pracaAfter": 49,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 16,
+     "k": "87,56",
+     "layers": [
+      "kopalnia_miedzi"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 16,
+     "k": "14,16",
+     "layers": [
+      "droga",
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 16,
+     "k": "13,19",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 16,
+     "k": "18,13",
+     "layers": [
+      "tartak",
+      "oboz_lowiecki"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 17,
+   "pracaBefore": 49,
+   "pracaAfter": 44,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 17,
+     "k": "43,31",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 17,
+     "k": "90,58",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 17,
+     "k": "94,53",
+     "layers": [
+      "tartak",
+      "oboz_lowiecki"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 17,
+     "k": "18,15",
+     "layers": [
+      "farma"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 18,
+   "pracaBefore": 44,
+   "pracaAfter": 39,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 18,
+     "k": "91,51",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 18,
+     "k": "93,61",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 18,
+     "k": "14,14",
+     "layers": [
+      "droga",
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 18,
+     "k": "12,21",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 18,
+     "k": "20,12",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 18,
+     "k": "17,14",
+     "layers": [
+      "kamieniolom"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 19,
+   "pracaBefore": 39,
+   "pracaAfter": 34,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 19,
+     "k": "95,54",
+     "layers": [
+      "glinianka"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 20,
+   "pracaBefore": 34,
+   "pracaAfter": 29,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 20,
+     "k": "42,29",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 20,
+     "k": "44,29",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 20,
+     "k": "86,56",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 20,
+     "k": "15,14",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 20,
+     "k": "17,18",
+     "layers": [
+      "farma"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 21,
+   "pracaBefore": 29,
+   "pracaAfter": 24,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 21,
+     "k": "39,29",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 21,
+     "k": "85,61",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 21,
+     "k": "94,54",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 21,
+     "k": "13,18",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 21,
+     "k": "15,17",
+     "layers": [
+      "kamieniolom",
+      "kopalnia_miedzi"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 21,
+     "k": "18,13",
+     "layers": [
+      "tartak",
+      "oboz_lowiecki",
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 21,
+     "k": "49,25",
+     "layers": [
+      "farma"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 22,
+   "pracaBefore": 24,
+   "pracaAfter": 19,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 22,
+     "k": "91,51",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 22,
+     "k": "94,54",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 23,
+   "pracaBefore": 19,
+   "pracaAfter": 14,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 23,
+     "k": "90,59",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 23,
+     "k": "15,14",
+     "layers": [
+      "droga",
+      "kopalnia_cyny"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 23,
+     "k": "14,13",
+     "layers": [
+      "kopalnia_cyny"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 23,
+     "k": "14,14",
+     "layers": [
+      "droga",
+      "kamieniolom",
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 23,
+     "k": "19,13",
+     "layers": [
+      "farma"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 24,
+   "pracaBefore": 14,
+   "pracaAfter": 9,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 24,
+     "k": "42,29",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 24,
+     "k": "86,61",
+     "layers": [
+      "kopalnia_cyny"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 24,
+     "k": "86,60",
+     "layers": [
+      "kamieniolom",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 24,
+     "k": "14,17",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 24,
+     "k": "15,15",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 24,
+     "k": "15,14",
+     "layers": [
+      "droga",
+      "kopalnia_cyny",
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 24,
+     "k": "15,15",
+     "layers": [
+      "farma",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 24,
+     "k": "49,25",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 25,
+   "pracaBefore": 9,
+   "pracaAfter": 4,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 25,
+     "k": "90,58",
+     "layers": [
+      "droga",
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 25,
+     "k": "90,60",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 25,
+     "k": "89,55",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 25,
+     "k": "15,15",
+     "layers": [
+      "farma",
+      "droga",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 25,
+     "k": "14,17",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 25,
+     "k": "12,21",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 25,
+     "k": "13,18",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 25,
+     "k": "17,18",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 25,
+     "k": "13,14",
+     "layers": [
+      "droga"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 26,
+   "pracaBefore": 4,
+   "pracaAfter": 0,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 26,
+     "k": "41,28",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 26,
+     "k": "42,27",
+     "layers": [
+      "kamieniolom",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 26,
+     "k": "41,34",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 26,
+     "k": "37,32",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 26,
+     "k": "91,57",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 26,
+     "k": "91,60",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 26,
+     "k": "18,16",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 26,
+     "k": "18,15",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 26,
+     "k": "19,13",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 26,
+     "k": "12,21",
+     "layers": [
+      "farma",
+      "bydlo",
+      "posterunek"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 26,
+     "k": "15,14",
+     "layers": [
+      "droga",
+      "kopalnia_cyny",
+      "tartak",
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 26,
+     "k": "50,25",
+     "layers": [
+      "tartak"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 27,
+   "pracaBefore": 0,
+   "pracaAfter": 0,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 27,
+     "k": "90,59",
+     "layers": [
+      "droga",
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 27,
+     "k": "95,54",
+     "layers": [
+      "glinianka",
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 27,
+     "k": "89,55",
+     "layers": [
+      "tartak",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 27,
+     "k": "89,56",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 27,
+     "k": "14,16",
+     "layers": [
+      "droga",
+      "farma",
+      "bydlo",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 27,
+     "k": "15,15",
+     "layers": [
+      "farma",
+      "droga",
+      "bydlo",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 27,
+     "k": "13,13",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 27,
+     "k": "13,13",
+     "layers": [
+      "kamieniolom",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 27,
+     "k": "12,13",
+     "layers": [
+      "droga"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 28,
+   "pracaBefore": 0,
+   "pracaAfter": 0,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 28,
+     "k": "39,30",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 28,
+     "k": "86,58",
+     "layers": [
+      "posterunek"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 28,
+     "k": "90,60",
+     "layers": [
+      "droga",
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 28,
+     "k": "18,17",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 28,
+     "k": "14,14",
+     "layers": [
+      "droga",
+      "kamieniolom",
+      "tartak",
+      "kopalnia_miedzi"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 28,
+     "k": "13,14",
+     "layers": [
+      "droga",
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 28,
+     "k": "14,17",
+     "layers": [
+      "farma",
+      "bydlo",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 28,
+     "k": "13,13",
+     "layers": [
+      "kamieniolom",
+      "droga",
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 28,
+     "k": "13,19",
+     "layers": [
+      "tartak",
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 28,
+     "k": "13,19",
+     "layers": [
+      "tartak",
+      "glinianka",
+      "droga"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 29,
+   "pracaBefore": 0,
+   "pracaAfter": 0,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 29,
+     "k": "46,34",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 29,
+     "k": "90,60",
+     "layers": [
+      "droga",
+      "tartak",
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 29,
+     "k": "88,60",
+     "layers": [
+      "tartak",
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 29,
+     "k": "18,17",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 29,
+     "k": "13,18",
+     "layers": [
+      "farma",
+      "bydlo",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 29,
+     "k": "18,13",
+     "layers": [
+      "tartak",
+      "oboz_lowiecki",
+      "glinianka",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 29,
+     "k": "13,20",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 29,
+     "k": "13,20",
+     "layers": [
+      "tartak",
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 29,
+     "k": "13,20",
+     "layers": [
+      "tartak",
+      "glinianka",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 29,
+     "k": "19,13",
+     "layers": [
+      "farma",
+      "bydlo",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 29,
+     "k": "19,14",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 29,
+     "k": "19,14",
+     "layers": [
+      "tartak",
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 29,
+     "k": "12,21",
+     "layers": [
+      "farma",
+      "bydlo",
+      "posterunek",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 29,
+     "k": "20,12",
+     "layers": [
+      "kamieniolom",
+      "tartak"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 30,
+   "pracaBefore": 0,
+   "pracaAfter": 0,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 30,
+     "k": "42,29",
+     "layers": [
+      "farma",
+      "bydlo",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 30,
+     "k": "43,27",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 30,
+     "k": "44,29",
+     "layers": [
+      "tartak",
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 30,
+     "k": "37,32",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 30,
+     "k": "86,60",
+     "layers": [
+      "kamieniolom",
+      "droga",
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 30,
+     "k": "89,56",
+     "layers": [
+      "droga",
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 30,
+     "k": "14,17",
+     "layers": [
+      "farma",
+      "bydlo",
+      "droga",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 30,
+     "k": "13,18",
+     "layers": [
+      "farma",
+      "bydlo",
+      "droga",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 30,
+     "k": "18,15",
+     "layers": [
+      "farma",
+      "bydlo",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 30,
+     "k": "12,13",
+     "layers": [
+      "droga",
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 30,
+     "k": "13,12",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 30,
+     "k": "51,27",
+     "layers": [
+      "kopalnia_miedzi"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 31,
+   "pracaBefore": 0,
+   "pracaAfter": 0,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 31,
+     "k": "37,32",
+     "layers": [
+      "farma",
+      "bydlo",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 31,
+     "k": "38,31",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 31,
+     "k": "88,59",
+     "layers": [
+      "kopalnia_miedzi"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 31,
+     "k": "17,18",
+     "layers": [
+      "farma",
+      "bydlo",
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 31,
+     "k": "20,12",
+     "layers": [
+      "kamieniolom",
+      "tartak",
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 31,
+     "k": "20,13",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 31,
+     "k": "20,14",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 31,
+     "k": "19,17",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 31,
+     "k": "13,12",
+     "layers": [
+      "tartak",
+      "kamieniolom"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 32,
+   "pracaBefore": 0,
+   "pracaAfter": 0,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 32,
+     "k": "44,31",
+     "layers": [
+      "kopalnia_miedzi"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 32,
+     "k": "87,57",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 32,
+     "k": "84,59",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 32,
+     "k": "89,56",
+     "layers": [
+      "droga",
+      "glinianka",
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 32,
+     "k": "90,54",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 32,
+     "k": "18,16",
+     "layers": [
+      "farma",
+      "bydlo",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 32,
+     "k": "19,13",
+     "layers": [
+      "farma",
+      "bydlo",
+      "droga",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 32,
+     "k": "13,12",
+     "layers": [
+      "tartak",
+      "kamieniolom",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 32,
+     "k": "12,14",
+     "layers": [
+      "kamieniolom"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 33,
+   "pracaBefore": 0,
+   "pracaAfter": 0,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 33,
+     "k": "43,27",
+     "layers": [
+      "droga",
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 33,
+     "k": "44,31",
+     "layers": [
+      "kopalnia_miedzi",
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 33,
+     "k": "39,31",
+     "layers": [
+      "kopalnia_miedzi"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 33,
+     "k": "94,52",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 33,
+     "k": "91,57",
+     "layers": [
+      "droga",
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 33,
+     "k": "12,21",
+     "layers": [
+      "farma",
+      "bydlo",
+      "posterunek",
+      "droga",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 33,
+     "k": "17,18",
+     "layers": [
+      "farma",
+      "bydlo",
+      "glinianka",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 33,
+     "k": "12,14",
+     "layers": [
+      "kamieniolom",
+      "kopalnia_miedzi"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 33,
+     "k": "50,25",
+     "layers": [
+      "tartak",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 33,
+     "k": "50,26",
+     "layers": [
+      "droga"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 34,
+   "pracaBefore": 0,
+   "pracaAfter": 0,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 34,
+     "k": "49,28",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 34,
+     "k": "92,57",
+     "layers": [
+      "kopalnia_miedzi"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 34,
+     "k": "90,58",
+     "layers": [
+      "droga",
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 34,
+     "k": "90,54",
+     "layers": [
+      "tartak",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 34,
+     "k": "91,55",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 34,
+     "k": "18,17",
+     "layers": [
+      "farma",
+      "bydlo",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 34,
+     "k": "12,20",
+     "layers": [
+      "posterunek"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 34,
+     "k": "20,12",
+     "layers": [
+      "kamieniolom",
+      "tartak",
+      "glinianka",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 34,
+     "k": "12,14",
+     "layers": [
+      "kamieniolom",
+      "kopalnia_miedzi",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 34,
+     "k": "14,12",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 34,
+     "k": "14,12",
+     "layers": [
+      "tartak",
+      "kopalnia_miedzi"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 35,
+   "pracaBefore": 0,
+   "pracaAfter": 0,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "41,34",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "46,34",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "37,33",
+     "layers": [
+      "tartak",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "39,30",
+     "layers": [
+      "glinianka",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "89,60",
+     "layers": [
+      "kopalnia_miedzi"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "90,59",
+     "layers": [
+      "droga",
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "86,61",
+     "layers": [
+      "kopalnia_cyny",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "15,16",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "18,16",
+     "layers": [
+      "farma",
+      "bydlo",
+      "irygacja",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "19,14",
+     "layers": [
+      "tartak",
+      "glinianka",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "17,18",
+     "layers": [
+      "farma",
+      "bydlo",
+      "glinianka",
+      "irygacja",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "18,17",
+     "layers": [
+      "farma",
+      "bydlo",
+      "irygacja",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "20,13",
+     "layers": [
+      "glinianka",
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "20,13",
+     "layers": [
+      "glinianka",
+      "tartak",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "20,14",
+     "layers": [
+      "glinianka",
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "20,15",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "14,22",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "15,21",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "16,20",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "17,19",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "19,17",
+     "layers": [
+      "glinianka",
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "50,26",
+     "layers": [
+      "droga",
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 35,
+     "k": "51,26",
+     "layers": [
+      "droga"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 36,
+   "pracaBefore": 0,
+   "pracaAfter": 0,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 36,
+     "k": "40,29",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 36,
+     "k": "40,29",
+     "layers": [
+      "kamieniolom",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 36,
+     "k": "44,30",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 36,
+     "k": "45,29",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 36,
+     "k": "88,61",
+     "layers": [
+      "kopalnia_miedzi"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 36,
+     "k": "87,60",
+     "layers": [
+      "kopalnia_miedzi"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 36,
+     "k": "91,57",
+     "layers": [
+      "droga",
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 36,
+     "k": "88,55",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 36,
+     "k": "89,54",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 36,
+     "k": "15,16",
+     "layers": [
+      "farma",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 36,
+     "k": "18,15",
+     "layers": [
+      "farma",
+      "bydlo",
+      "irygacja",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 36,
+     "k": "20,14",
+     "layers": [
+      "glinianka",
+      "tartak",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 36,
+     "k": "17,19",
+     "layers": [
+      "tartak",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 36,
+     "k": "19,17",
+     "layers": [
+      "glinianka",
+      "tartak",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 36,
+     "k": "18,20",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 36,
+     "k": "20,18",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 36,
+     "k": "21,17",
+     "layers": [
+      "glinianka"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 37,
+   "pracaBefore": 0,
+   "pracaAfter": 0,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 37,
+     "k": "85,60",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 37,
+     "k": "84,60",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 37,
+     "k": "84,59",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 37,
+     "k": "25,12",
+     "layers": [
+      "warzelnia_soli"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 37,
+     "k": "12,16",
+     "layers": [
+      "warzelnia_soli"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 37,
+     "k": "12,17",
+     "layers": [
+      "warzelnia_soli"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 37,
+     "k": "12,19",
+     "layers": [
+      "warzelnia_soli"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 37,
+     "k": "12,12",
+     "layers": [
+      "warzelnia_soli"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 37,
+     "k": "16,20",
+     "layers": [
+      "tartak",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 37,
+     "k": "54,28",
+     "layers": [
+      "kopalnia_cyny"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 38,
+   "pracaBefore": 0,
+   "pracaAfter": 0,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 38,
+     "k": "42,35",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 38,
+     "k": "38,34",
+     "layers": [
+      "kopalnia_cyny"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 38,
+     "k": "82,59",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 38,
+     "k": "81,59",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 38,
+     "k": "81,58",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 38,
+     "k": "95,54",
+     "layers": [
+      "glinianka",
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 38,
+     "k": "91,55",
+     "layers": [
+      "droga",
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 38,
+     "k": "20,15",
+     "layers": [
+      "tartak",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 38,
+     "k": "15,21",
+     "layers": [
+      "tartak",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 38,
+     "k": "20,16",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 38,
+     "k": "18,19",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 38,
+     "k": "19,18",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 38,
+     "k": "19,20",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 38,
+     "k": "20,19",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 38,
+     "k": "13,26",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 38,
+     "k": "22,18",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 38,
+     "k": "24,16",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 38,
+     "k": "13,15",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 38,
+     "k": "13,16",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 38,
+     "k": "12,15",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 38,
+     "k": "51,26",
+     "layers": [
+      "droga",
+      "tartak"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 39,
+   "pracaBefore": 0,
+   "pracaAfter": 0,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 39,
+     "k": "43,36",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 39,
+     "k": "83,59",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 39,
+     "k": "91,60",
+     "layers": [
+      "droga",
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 39,
+     "k": "88,58",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 39,
+     "k": "88,59",
+     "layers": [
+      "kopalnia_miedzi",
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 39,
+     "k": "88,60",
+     "layers": [
+      "tartak",
+      "glinianka",
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 39,
+     "k": "88,55",
+     "layers": [
+      "droga",
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 39,
+     "k": "14,22",
+     "layers": [
+      "tartak",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 39,
+     "k": "18,20",
+     "layers": [
+      "glinianka",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 39,
+     "k": "20,18",
+     "layers": [
+      "glinianka",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 39,
+     "k": "12,16",
+     "layers": [
+      "warzelnia_soli",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 39,
+     "k": "12,17",
+     "layers": [
+      "warzelnia_soli",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 39,
+     "k": "13,17",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 39,
+     "k": "13,17",
+     "layers": [
+      "glinianka",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 39,
+     "k": "14,13",
+     "layers": [
+      "kopalnia_cyny",
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 39,
+     "k": "14,13",
+     "layers": [
+      "kopalnia_cyny",
+      "kamieniolom",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 39,
+     "k": "49,25",
+     "layers": [
+      "farma",
+      "bydlo",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 39,
+     "k": "49,27",
+     "layers": [
+      "kamieniolom",
+      "droga"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 40,
+   "pracaBefore": 0,
+   "pracaAfter": 0,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "14,23",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "21,17",
+     "layers": [
+      "glinianka",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "19,20",
+     "layers": [
+      "glinianka",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "20,19",
+     "layers": [
+      "glinianka",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "15,13",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "15,13",
+     "layers": [
+      "kamieniolom",
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "15,13",
+     "layers": [
+      "kamieniolom",
+      "glinianka",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "15,16",
+     "layers": [
+      "farma",
+      "irygacja",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "16,13",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "16,14",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "16,15",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "12,18",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "14,12",
+     "layers": [
+      "tartak",
+      "kopalnia_miedzi",
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "14,12",
+     "layers": [
+      "tartak",
+      "kopalnia_miedzi",
+      "kamieniolom",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "14,18",
+     "layers": [
+      "kamieniolom",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "15,12",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "15,17",
+     "layers": [
+      "kamieniolom",
+      "kopalnia_miedzi",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "17,13",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "44,36",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "39,29",
+     "layers": [
+      "kamieniolom",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "37,34",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "83,59",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "94,54",
+     "layers": [
+      "farma",
+      "bydlo",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "95,54",
+     "layers": [
+      "glinianka",
+      "farma",
+      "bydlo",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "87,58",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "87,61",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "87,61",
+     "layers": [
+      "kamieniolom",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "94,53",
+     "layers": [
+      "tartak",
+      "oboz_lowiecki",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "86,61",
+     "layers": [
+      "kopalnia_cyny",
+      "droga",
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "87,57",
+     "layers": [
+      "glinianka",
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "87,57",
+     "layers": [
+      "glinianka",
+      "tartak",
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "89,57",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 40,
+     "k": "90,53",
+     "layers": [
+      "droga"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 41,
+   "pracaBefore": 0,
+   "pracaAfter": 0,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "13,24",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "22,16",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "19,21",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "21,19",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "16,12",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "16,12",
+     "layers": [
+      "kamieniolom",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "16,16",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "17,12",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "17,14",
+     "layers": [
+      "kamieniolom",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "17,15",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "12,19",
+     "layers": [
+      "warzelnia_soli",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "14,19",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "14,19",
+     "layers": [
+      "kamieniolom",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "15,18",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "16,17",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "17,16",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "42,35",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "43,36",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "44,36",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "90,58",
+     "layers": [
+      "droga",
+      "farma",
+      "bydlo",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "90,59",
+     "layers": [
+      "droga",
+      "farma",
+      "bydlo",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "91,57",
+     "layers": [
+      "droga",
+      "farma",
+      "bydlo",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "88,59",
+     "layers": [
+      "kopalnia_miedzi",
+      "kamieniolom",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "88,60",
+     "layers": [
+      "tartak",
+      "glinianka",
+      "kamieniolom",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "85,60",
+     "layers": [
+      "glinianka",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "57,28",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 41,
+     "k": "58,28",
+     "layers": [
+      "farma"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 42,
+   "pracaBefore": 0,
+   "pracaAfter": 0,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 42,
+     "k": "22,15",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 42,
+     "k": "13,25",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 42,
+     "k": "18,22",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 42,
+     "k": "22,18",
+     "layers": [
+      "glinianka",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 42,
+     "k": "18,12",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 42,
+     "k": "18,14",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 42,
+     "k": "18,14",
+     "layers": [
+      "glinianka",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 42,
+     "k": "12,12",
+     "layers": [
+      "warzelnia_soli",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 42,
+     "k": "12,20",
+     "layers": [
+      "posterunek",
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 42,
+     "k": "12,20",
+     "layers": [
+      "posterunek",
+      "glinianka",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 42,
+     "k": "14,20",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 42,
+     "k": "15,19",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 42,
+     "k": "16,18",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 42,
+     "k": "17,17",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 42,
+     "k": "46,36",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 42,
+     "k": "94,54",
+     "layers": [
+      "farma",
+      "bydlo",
+      "droga",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 42,
+     "k": "95,54",
+     "layers": [
+      "glinianka",
+      "farma",
+      "bydlo",
+      "droga",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 42,
+     "k": "84,59",
+     "layers": [
+      "farma",
+      "bydlo",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 42,
+     "k": "93,61",
+     "layers": [
+      "kamieniolom",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 42,
+     "k": "90,51",
+     "layers": [
+      "farma",
+      "bydlo",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 42,
+     "k": "57,28",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 43,
+   "pracaBefore": 0,
+   "pracaAfter": 0,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "23,14",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "13,26",
+     "layers": [
+      "glinianka",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "23,17",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "19,12",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "19,12",
+     "layers": [
+      "glinianka",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "19,15",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "19,15",
+     "layers": [
+      "kamieniolom",
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "19,15",
+     "layers": [
+      "kamieniolom",
+      "glinianka",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "13,21",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "14,21",
+     "layers": [
+      "kopalnia_miedzi"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "14,21",
+     "layers": [
+      "kopalnia_miedzi",
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "14,21",
+     "layers": [
+      "kopalnia_miedzi",
+      "kamieniolom",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "42,30",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "44,26",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "46,36",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "85,61",
+     "layers": [
+      "farma",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "83,59",
+     "layers": [
+      "farma",
+      "bydlo",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "85,61",
+     "layers": [
+      "farma",
+      "irygacja",
+      "posterunek"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "88,58",
+     "layers": [
+      "kamieniolom",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "94,52",
+     "layers": [
+      "glinianka",
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "94,52",
+     "layers": [
+      "glinianka",
+      "tartak",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "49,25",
+     "layers": [
+      "farma",
+      "bydlo",
+      "droga",
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 43,
+     "k": "53,26",
+     "layers": [
+      "glinianka"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 44,
+   "pracaBefore": 0,
+   "pracaAfter": 0,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "tartak",
+     "oboz_lowiecki",
+     "droga",
+     "posterunek"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "24,13",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "24,16",
+     "layers": [
+      "glinianka",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "15,20",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "16,19",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "19,16",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "19,16",
+     "layers": [
+      "glinianka",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "12,22",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "13,22",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "18,18",
+     "layers": [
+      "glinianka"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "18,18",
+     "layers": [
+      "glinianka",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "21,12",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "21,13",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "21,14",
+     "layers": [
+      "kopalnia_miedzi"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "21,14",
+     "layers": [
+      "kopalnia_miedzi",
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "41,34",
+     "layers": [
+      "farma",
+      "bydlo",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "46,34",
+     "layers": [
+      "farma",
+      "bydlo",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "42,35",
+     "layers": [
+      "farma",
+      "bydlo",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "39,30",
+     "layers": [
+      "glinianka",
+      "droga",
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "85,59",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "85,60",
+     "layers": [
+      "glinianka",
+      "droga",
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "87,58",
+     "layers": [
+      "kamieniolom",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "84,60",
+     "layers": [
+      "glinianka",
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "84,60",
+     "layers": [
+      "glinianka",
+      "tartak",
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "86,57",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "86,57",
+     "layers": [
+      "tartak",
+      "kopalnia_cyny"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "86,57",
+     "layers": [
+      "tartak",
+      "kopalnia_cyny",
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "81,59",
+     "layers": [
+      "glinianka",
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "91,55",
+     "layers": [
+      "droga",
+      "glinianka",
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 44,
+     "k": "51,31",
+     "layers": [
+      "glinianka"
+     ]
+    }
+   ],
+   "clearingAll": []
+  }
+ ],
+ "final": {
+  "hk": "47,23",
+  "nakladka": "las",
+  "teren": "laka",
+  "river": true,
+  "layers": [
+   "tartak",
+   "oboz_lowiecki",
+   "droga",
+   "posterunek"
+  ],
+  "clearing": null,
+  "worked": true
+ },
+ "errors": []
+}

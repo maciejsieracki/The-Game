@@ -3695,6 +3695,156 @@ export function rebalanceLandFractionPangea(
 }
 
 /**
+ * R-WEB-PANGEA-LAND-FRACTION-Q1: dosyp lądu Pangei do celu PO etapach, które go tną
+ * (progi `fillMinScore` maski w rebalance/enforce zatrzymują wzrost ~4 pp przed celem).
+ * Rośnie WYŁĄCZNIE przy istniejącym lądzie (kontakt >= minLandNeighbors suchych sąsiadów
+ * -> brak nowych wysp/zatok/korytarzy), warstwami, wg wyniku maski; omija margines mapy
+ * i bufor szerokościowy. Woda = Morze lub PlytkieMorze (pierścień wybrzeża odtwarza
+ * `applyCoastRing` wołany po tej funkcji). Tylko Pangea.
+ */
+export function topUpPangeaLandFraction(
+  hexes: Record<string, Hex>,
+  landScores: Map<string, number>,
+  targetLandFraction: number,
+  width: number,
+  height: number,
+  minLandNeighbors = 3,
+  maxRounds = 12,
+): number {
+  const clamped = Math.max(0.15, Math.min(0.85, targetLandFraction));
+  const keys = Object.keys(hexes);
+  const targetLand = Math.round(keys.length * clamped);
+  let { land } = countLandSeaHexes(hexes);
+  if (land >= targetLand) return 0;
+  const buf = latitudinalOceanBufferRows(height, false);
+  let added = 0;
+  for (let round = 0; round < maxRounds && land < targetLand; round++) {
+    const cands: string[] = [];
+    for (const k of keys) {
+      const h = hexes[k]!;
+      if (!isWaterTerrainLocal(h.terenBazowy)) continue;
+      const { q, r } = parseHexKey(k);
+      if (isInMapBorder(q, r, width, height)) continue;
+      if (hexBorderDistance(q, r, width, height) <= MAP_MARGIN_LAND_ZONE_HEXES) continue;
+      if (r < buf || r >= height - buf) continue;
+      if (countLandNeighbors(hexes, q, r) < minLandNeighbors) continue;
+      cands.push(k);
+    }
+    if (cands.length === 0) break;
+    cands.sort((a, b) => {
+      const d = (landScores.get(b) ?? 0) - (landScores.get(a) ?? 0);
+      return Math.abs(d) > 1e-9 ? d : a.localeCompare(b);
+    });
+    for (const k of cands) {
+      if (land >= targetLand) break;
+      // Kandydaci odfiltrowani przed pętlą (>=3 suche sąsiady); dopiski tej rundy tylko zwiększają sąsiedztwo, więc bez ponownego sprawdzenia.
+      setHexToLaka(hexes[k]!);
+      land++;
+      added++;
+    }
+  }
+  // R-WEB-PANGEA-LAND-FRACTION-OTHER-Q1: faza 2 - przy duzym niedoborze (> PANGEA_TOPUP_DEFICIT_PHASE2_FRACTION
+  // mapy; typowo deklarowane <= 50% oraz Maly 60%) faza 1 wyczerpuje maxRounds (~1 warstwa/runde, tylko
+  // kandydaci z >= 3 suchymi sasiadami, ~30-100 heksow/runde), a baza maski dostarcza tylko ~10-40% mapy.
+  // Sufit: wnetrze (poza strefa brzegowa d<=10 i buforem szerokosci) daje na Malym max ~66,4% - Maly 70% poza zasiegiem.
+  // Faza 2 = dylatacja brzegu: warstwa po warstwie, kandydaci z >= 2 (w ostatecznosci >= 1) suchym sasiadem,
+  // kolejnosc: wynik maski malejaco, potem odleglosc od srodka mapy rosnaco (zwarty obrys, bez
+  // kierunkowego biasu klucza), az do celu. Przy niedoborze <= progu NIC nie robi => mapy Pangea
+  // ze Standardowym 60%/70% pozostaja bajt-w-bajt takie same.
+  const deficitThreshold = Math.round(keys.length * PANGEA_TOPUP_DEFICIT_PHASE2_FRACTION);
+  if (targetLand - land > deficitThreshold) {
+    for (let round = 0; round < PANGEA_TOPUP_PHASE2_MAX_ROUNDS && land < targetLand; round++) {
+      let cands: string[] = [];
+      for (const minNb of [2, 1]) {
+        cands = [];
+        for (const k of keys) {
+          const h = hexes[k]!;
+          if (!isWaterTerrainLocal(h.terenBazowy)) continue;
+          const { q, r } = parseHexKey(k);
+          if (isInMapBorder(q, r, width, height)) continue;
+          if (hexBorderDistance(q, r, width, height) <= MAP_MARGIN_LAND_ZONE_HEXES) continue;
+          if (r < buf || r >= height - buf) continue;
+          if (countLandNeighbors(hexes, q, r) < minNb) continue;
+          cands.push(k);
+        }
+        if (cands.length > 0) break;
+      }
+      if (cands.length === 0) break;
+      const cd = new Map<string, number>();
+      for (const k of cands) {
+        const { q, r } = parseHexKey(k);
+        cd.set(k, mapCenterDistanceNorm(q, r, width, height));
+      }
+      cands.sort((a, b) => {
+        const d = (landScores.get(b) ?? 0) - (landScores.get(a) ?? 0);
+        if (Math.abs(d) > 1e-9) return d;
+        const dc = cd.get(a)! - cd.get(b)!;
+        return Math.abs(dc) > 1e-9 ? dc : a.localeCompare(b);
+      });
+      for (const k of cands) {
+        if (land >= targetLand) break;
+        setHexToLaka(hexes[k]!);
+        land++;
+        added++;
+      }
+    }
+    // Faza 3 (Maly 70%): wnetrze wyczerpane (sufit ~66,4%) - dilacja do strefy brzegowej, d >= MIN_D,
+    // z sufitem udzialu lada w pierscieniu (istniejace pierscienie 4-10 nie sa przycinane, tylko nie rosna ponad sufit).
+    if (land < targetLand) {
+      const ringTotal = new Map<number, number>();
+      const ringLand = new Map<number, number>();
+      for (const k of keys) {
+        const { q, r } = parseHexKey(k);
+        const d = hexBorderDistance(q, r, width, height);
+        ringTotal.set(d, (ringTotal.get(d) ?? 0) + 1);
+        if (!isWaterTerrainLocal(hexes[k]!.terenBazowy)) ringLand.set(d, (ringLand.get(d) ?? 0) + 1);
+      }
+      for (let round = 0; round < PANGEA_TOPUP_PHASE2_MAX_ROUNDS && land < targetLand; round++) {
+        const cands: string[] = [];
+        const cd = new Map<string, number>();
+        const dOf = new Map<string, number>();
+        for (const k of keys) {
+          const h = hexes[k]!;
+          if (!isWaterTerrainLocal(h.terenBazowy)) continue;
+          const { q, r } = parseHexKey(k);
+          const d = hexBorderDistance(q, r, width, height);
+          if (d < PANGEA_TOPUP_MARGIN_MIN_D || d > MAP_MARGIN_LAND_ZONE_HEXES) continue;
+          if (r < buf || r >= height - buf) continue;
+          if ((ringLand.get(d) ?? 0) >= (ringTotal.get(d) ?? 0) * PANGEA_TOPUP_MARGIN_RING_CEIL) continue;
+          if (countLandNeighbors(hexes, q, r) < 2) continue;
+          cands.push(k);
+          cd.set(k, mapCenterDistanceNorm(q, r, width, height));
+          dOf.set(k, d);
+        }
+        if (cands.length === 0) break;
+        cands.sort((a, b) => {
+          const dc = cd.get(a)! - cd.get(b)!;
+          return Math.abs(dc) > 1e-9 ? dc : a.localeCompare(b);
+        });
+        for (const k of cands) {
+          if (land >= targetLand) break;
+          const d = dOf.get(k)!;
+          if ((ringLand.get(d) ?? 0) >= (ringTotal.get(d) ?? 0) * PANGEA_TOPUP_MARGIN_RING_CEIL) continue;
+          setHexToLaka(hexes[k]!);
+          ringLand.set(d, (ringLand.get(d) ?? 0) + 1);
+          land++;
+          added++;
+        }
+      }
+    }
+  }
+  return added;
+}
+
+/** Faza 3: najmniejsza odleglosc od krawedzi (d), do ktorej wolno dosypac lad; pierscien nie przekroczy tego ulamka. */
+const PANGEA_TOPUP_MARGIN_MIN_D = 4;
+const PANGEA_TOPUP_MARGIN_RING_CEIL = 0.6;
+
+/** Faza 2 dosypywania Pangei: wlaczana gdy po fazie 1 brakuje > tego ulamka heksow mapy (1,5 pp). */
+const PANGEA_TOPUP_DEFICIT_PHASE2_FRACTION = 0.015;
+const PANGEA_TOPUP_PHASE2_MAX_ROUNDS = 200;
+
+/**
  * Dopasowuje udział lądu per kontynent — budżet wg potencjału maski w strefie centrum.
  * Kończy globalną rekonsyliacją (zaokrąglenia).
  */
@@ -5992,8 +6142,9 @@ function estimateLandCentroidFromSeed(
   let count = 0;
   const queue: string[] = [mouthKey];
   const seen = new Set<string>([mouthKey]);
-  while (queue.length > 0 && seen.size < visitCap) {
-    const k = queue.shift()!;
+  let queueHead = 0;
+  while (queueHead < queue.length && seen.size < visitCap) {
+    const k = queue[queueHead++]!;
     const { q, r } = parseHexKey(k);
     const h = hexes[k];
     if (h && isRiverLandTerrain(h.terenBazowy)) {
@@ -8466,8 +8617,9 @@ export function buildOceanReachableRiverHexKeys(
     for (const p of path) seed(hexKey(p.q, p.r));
   }
 
-  while (queue.length > 0) {
-    const k = queue.shift()!;
+  let queueHead = 0;
+  while (queueHead < queue.length) {
+    const k = queue[queueHead++]!;
     const { q, r } = parseHexKey(k);
     const h = hexes[k];
     if (!h?.rzeka?.krawedzie?.length) continue;
@@ -10352,8 +10504,9 @@ function bfsNearestRiverHexOnLowland(
   const startK = hexKey(sq, sr);
   const queue: Array<[number, number, number]> = [[sq, sr, 0]];
   const visited = new Set<string>([startK]);
-  while (queue.length > 0) {
-    const [q, r, d] = queue.shift()!;
+  let queueHead = 0;
+  while (queueHead < queue.length) {
+    const [q, r, d] = queue[queueHead++]!;
     const k = hexKey(q, r);
     if (riverKeys.has(k) && d > 0) return { q, r, dist: d };
     if (d >= maxDist) continue;
@@ -10392,8 +10545,9 @@ function bfsLowlandRiverPath(
   const cameFrom = new Map<string, string>();
   const queue: string[] = [startK];
   const visited = new Set<string>([startK]);
-  while (queue.length > 0) {
-    const current = queue.shift()!;
+  let queueHead = 0;
+  while (queueHead < queue.length) {
+    const current = queue[queueHead++]!;
     if (current === targetK) {
       const path: RiverCoord[] = [];
       let cur: string | undefined = current;
@@ -10541,8 +10695,9 @@ export function maxDryLowlandPatchSize(
     const queue = [k];
     visited.add(k);
     let size = 0;
-    while (queue.length > 0) {
-      const cur = queue.shift()!;
+    let queueHead = 0;
+    while (queueHead < queue.length) {
+      const cur = queue[queueHead++]!;
       size++;
       const { q, r } = parseHexKey(cur);
       for (const [dq, dr] of HEX_DIRECTIONS) {
@@ -10693,8 +10848,9 @@ function fillDryLowlandPatches(
       const component: Array<[number, number]> = [];
       const queue = [k];
       visited.add(k);
-      while (queue.length > 0) {
-        const cur = queue.shift()!;
+      let queueHead = 0;
+      while (queueHead < queue.length) {
+        const cur = queue[queueHead++]!;
         const { q, r } = parseHexKey(cur);
         component.push([q, r]);
         for (const [dq, dr] of HEX_DIRECTIONS) {
@@ -10776,8 +10932,9 @@ function findAllOversizedDryLandPatches(
     const component: Array<[number, number]> = [];
     const queue = [k];
     visited.add(k);
-    while (queue.length > 0) {
-      const cur = queue.shift()!;
+    let queueHead = 0;
+    while (queueHead < queue.length) {
+      const cur = queue[queueHead++]!;
       const { q, r } = parseHexKey(cur);
       component.push([q, r]);
       for (const [dq, dr] of HEX_DIRECTIONS) {
@@ -10804,8 +10961,9 @@ function findLargestDryLowlandPatch(
     const component: Array<[number, number]> = [];
     const queue = [k];
     visited.add(k);
-    while (queue.length > 0) {
-      const cur = queue.shift()!;
+    let queueHead = 0;
+    while (queueHead < queue.length) {
+      const cur = queue[queueHead++]!;
       const { q, r } = parseHexKey(cur);
       component.push([q, r]);
       for (const [dq, dr] of HEX_DIRECTIONS) {
@@ -11938,7 +12096,8 @@ export type HexWithZloze = Hex & { zloze?: string; zlozeMinEra?: number };
  * Regula zloza: jaka Nakladke (lub znacznik `zloze`) i na jakim terenie.
  * - miedz / zelazo -> hex.zloze na Gory (widocznosc per epoka — deposit-era.ts)
  * - glina -> Nakladka.ZlozeGliny na Laka lub ląd z rzeką (NIE woda/wybrzeże)
- * - konie -> Nakladka.ZlozeKonia na Rownina
+ * - konie -> Nakladka.ZlozeKonia na Rownina; NIGDY na lesie — konie wyparte pod las przesuwa na końcu
+ *   generacji relocateForestHorses (R-WEB-HORSE-RESOURCE-TERRAIN-Q1, Maciej 2026-11-03)
  * - owce -> Nakladka.ZlozeOwiec na Wzgórza (złoże = ulepszenie owce)
  * - bydlo -> Nakladka.ZlozeBydla na Łąka/Równina (złoże = ulepszenie bydło)
  * - wegiel-> hex.zloze='wegiel' na Gory
@@ -12456,6 +12615,57 @@ export function stripDepositsFromWater(hexes: Record<string, Hex>): number {
     if (had) n++;
   }
   return n;
+}
+
+/**
+ * R-WEB-HORSE-RESOURCE-TERRAIN-Q1 (decyzja właściciela 2026-11-03): koń NIGDY na lesie.
+ *
+ * placeDeposits (las jest nakładany PRZED złożami) zapisuje konia na heksie z Nakladka.Las jako
+ * `hex.zloze='konie'` (las zostaje) — renderer rysuje wtedy konia, a kwalifikator Stadniny
+ * (nakladka === ZlozeKonia) go nie widzi. Ta funkcja woła się RAZ, na FINALNYM stanie mapy
+ * (generator.ts, po ostatnim przebiegu reliefu/złóż), i PRZESUWA każdego takiego konia na
+ * najbliższy (hexDistanceAxial; remis -> pierwszy wg numerycznej kolejności kluczy q,r) heks
+ * Równiny bez nakładki i bez innego złoża (nie woda). Dlaczego na końcu, a nie w placeDeposits:
+ * późniejsze przebiegi (bootstrap fair-play, cap reliefu) nadpisywały by przesuniętego konia, a
+ * wyniki pozostałych zasobów/terenu MUSZĄ pozostać bitowo identyczne (zero PRNG, zero zmian
+ * poza heksem źródłowym i docelowym). Liczba koni zachowana; brak miejsca = koń zostaje (log 0).
+ * Zwraca liczbę przesuniętych koni. Wczytywane zapisy nie przechodzą przez generator -> nietknięte.
+ */
+export function relocateForestHorses(hexes: Record<string, Hex>): number {
+  const keys = Object.keys(hexes).sort((a, b) => {
+    const [aq, ar] = a.split(',').map(Number);
+    const [bq, br] = b.split(',').map(Number);
+    return aq !== bq ? (aq! - bq!) : (ar! - br!);
+  });
+  const horseRule = DEPOSIT_RULES.find((r) => r.id === 'konie');
+  if (!horseRule) return 0;
+  const displaced: string[] = [];
+  const free: Array<{ key: string; q: number; r: number }> = [];
+  for (const k of keys) {
+    const h = hexes[k] as HexWithZloze;
+    if (h.nakladka === Nakladka.Las && h.zloze === 'konie') { displaced.push(k); continue; }
+    if (h.nakladka !== Nakladka.Brak || h.zloze) continue;
+    if (isWaterTerrainLocal(h.terenBazowy) || !horseRule.allowedOn(h)) continue;
+    const [q, r] = k.split(',').map(Number) as [number, number];
+    free.push({ key: k, q, r });
+  }
+  let moved = 0;
+  for (const from of displaced) {
+    const [fq, fr] = from.split(',').map(Number) as [number, number];
+    let best = -1;
+    let bestD = Infinity;
+    for (let i = 0; i < free.length; i++) {
+      if (free[i]!.key === '') continue; // już zajęty przez wcześniej przesuniętego konia
+      const d = hexDistanceAxial(fq, fr, free[i]!.q, free[i]!.r);
+      if (d < bestD) { bestD = d; best = i; }
+    }
+    if (best < 0) continue; // brak wolnej Równiny — koń zostaje (nie kasujemy złoża)
+    delete (hexes[from] as HexWithZloze).zloze;
+    hexes[free[best]!.key]!.nakladka = Nakladka.ZlozeKonia;
+    free[best]!.key = '';
+    moved++;
+  }
+  return moved;
 }
 
 /** Liczy złoża/nakładki surowcowe na morzu lub wybrzeżu (0 = OK). C-MAP-SOL-ZIEMIA=B: bez wyjątków. */

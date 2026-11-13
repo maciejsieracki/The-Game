@@ -24,7 +24,7 @@
 ### Co robi
 Garnizon to **stała załoga porządkowa** miasta regionalnego — quasi-policja. Wojsko stacjonujące w mieście jest tymczasowe i przeznaczone do prowadzenia wojen; garnizon zostaje na miejscu i odpowiada za to, żeby prawo obowiązywało również wtedy, gdy armii nie ma w pobliżu.
 
-**Plony na turę: żadne.** Garnizon nie daje Pracy, Pieniądza, Żywności, Nauki ani Kultury i **nie daje szczęścia** — jest formacją porządkową, nie kulturową. Jego jedyną wartością jest **Prawo** miasta.
+**Plony na turę: żadne.** Garnizon nie daje Pracy, podatku, Żywności, Nauki ani Kultury i **nie daje szczęścia** — jest formacją porządkową, nie kulturową. Jego jedyną wartością jest **Prawo** miasta.
 
 > **Uwaga o kolejności wersji:** wkład Garnizonu w Prawo wchodzi wraz z przebudową skali Prawa. Dopóki ta zmiana nie jest wydana, Garnizon jest **kosztem bez korzyści** — buduj go dopiero wtedy, gdy Prawo faktycznie liczy się w Twojej wersji gry.
 

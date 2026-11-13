@@ -1,0 +1,3 @@
+
+[build-mode-hud-affordability-test] 7 pass, 0 fail
+EXIT=0

@@ -58,6 +58,7 @@ const ZLOZE_LABEL: Record<string, string> = {
   stal:     'Stal',
   zloto:    'Złoto',
   cyna:     'Ruda cyny',
+  kon:      'Koń',
 };
 
 /** Klucze ASCII z terrain-improvements.json → etykieta panelu (resources.json Surowiec). */
@@ -356,7 +357,9 @@ export function getResourceAccessForCity(
   currentEra = 99,
   options: ResourceAccessOptions = {},
 ): string[] {
-  return getCityResourceAccessForCity(
-    city, map, placedImprovements, currentEra, options,
-  ).active;
+  // Tylko `active` — nie liczymy `potential` (collectDepositPotential skanuje cały
+  // zasięg widzenia miasta; wynik i tak by odrzucono). Wynik identyczny z
+  // getCityResourceAccessForCity(...).active.
+  void currentEra;
+  return sortLabels(collectActiveAccess(city, map, placedImprovements, options));
 }

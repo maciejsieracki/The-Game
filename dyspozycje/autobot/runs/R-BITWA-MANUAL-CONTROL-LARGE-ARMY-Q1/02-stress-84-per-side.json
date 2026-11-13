@@ -1,0 +1,627 @@
+{
+  "label": "headless production BattleScene action matrix; animation/renderer stubbed",
+  "seed": 20261028,
+  "rosterScale": 2,
+  "unitsPerSide": 84,
+  "scenariosRun": 12,
+  "activations": 6,
+  "redCount": 7,
+  "failures": [
+    {
+      "unitId": "atk-archer-52",
+      "scenario": {
+        "doctrine": "steady",
+        "lines": "lines2",
+        "priority": "priority0",
+        "terrain": "engaged"
+      },
+      "condition": "steady/lines2/priority0/engaged: atk-archer-52 remained outside range without reducing distance (4->4)",
+      "firstActivation": {
+        "turn": 0,
+        "from": [
+          12,
+          36
+        ],
+        "to": [
+          12,
+          36
+        ],
+        "moveLeft": 2,
+        "neighbors": [
+          {
+            "q": 13,
+            "r": 36,
+            "occupiedBy": "atk-archer-44",
+            "passable": true
+          },
+          {
+            "q": 11,
+            "r": 36,
+            "occupiedBy": "atk-slinger-58",
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 37,
+            "occupiedBy": "atk-archer-53",
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 35,
+            "occupiedBy": null,
+            "passable": true
+          }
+        ]
+      },
+      "lastActivation": {
+        "turn": 5,
+        "from": [
+          12,
+          36
+        ],
+        "to": [
+          12,
+          36
+        ],
+        "moveLeft": 2,
+        "neighbors": [
+          {
+            "q": 13,
+            "r": 36,
+            "occupiedBy": "atk-archer-44",
+            "passable": true
+          },
+          {
+            "q": 11,
+            "r": 36,
+            "occupiedBy": null,
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 37,
+            "occupiedBy": "atk-archer-53",
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 35,
+            "occupiedBy": "atk-slinger-57",
+            "passable": true
+          }
+        ]
+      },
+      "routeAttempts": 6,
+      "lastRouteStep": null
+    },
+    {
+      "unitId": "atk-archer-53",
+      "scenario": {
+        "doctrine": "steady",
+        "lines": "lines2",
+        "priority": "priority0",
+        "terrain": "engaged"
+      },
+      "condition": "steady/lines2/priority0/engaged: atk-archer-53 remained outside range without reducing distance (4->4)",
+      "firstActivation": {
+        "turn": 0,
+        "from": [
+          12,
+          37
+        ],
+        "to": [
+          12,
+          37
+        ],
+        "moveLeft": 2,
+        "neighbors": [
+          {
+            "q": 13,
+            "r": 37,
+            "occupiedBy": "atk-archer-45",
+            "passable": true
+          },
+          {
+            "q": 11,
+            "r": 37,
+            "occupiedBy": "atk-slinger-59",
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 38,
+            "occupiedBy": "atk-archer-54",
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 36,
+            "occupiedBy": "atk-archer-52",
+            "passable": true
+          }
+        ]
+      },
+      "lastActivation": {
+        "turn": 5,
+        "from": [
+          12,
+          37
+        ],
+        "to": [
+          12,
+          37
+        ],
+        "moveLeft": 2,
+        "neighbors": [
+          {
+            "q": 13,
+            "r": 37,
+            "occupiedBy": "atk-archer-45",
+            "passable": true
+          },
+          {
+            "q": 11,
+            "r": 37,
+            "occupiedBy": null,
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 38,
+            "occupiedBy": "atk-slinger-62",
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 36,
+            "occupiedBy": "atk-archer-52",
+            "passable": true
+          }
+        ]
+      },
+      "routeAttempts": 6,
+      "lastRouteStep": null
+    },
+    {
+      "unitId": "atk-archer-49",
+      "scenario": {
+        "doctrine": "steady",
+        "lines": "lines2",
+        "priority": "priority1",
+        "terrain": "engaged"
+      },
+      "condition": "steady/lines2/priority1/engaged: atk-archer-49 remained outside range without reducing distance (4->4)",
+      "firstActivation": {
+        "turn": 0,
+        "from": [
+          12,
+          33
+        ],
+        "to": [
+          12,
+          31
+        ],
+        "moveLeft": 0,
+        "neighbors": [
+          {
+            "q": 13,
+            "r": 31,
+            "occupiedBy": null,
+            "passable": true
+          },
+          {
+            "q": 11,
+            "r": 31,
+            "occupiedBy": null,
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 32,
+            "occupiedBy": null,
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 30,
+            "occupiedBy": "atk-archer-48",
+            "passable": true
+          }
+        ]
+      },
+      "lastActivation": {
+        "turn": 5,
+        "from": [
+          12,
+          23
+        ],
+        "to": [
+          12,
+          21
+        ],
+        "moveLeft": 0,
+        "neighbors": [
+          {
+            "q": 13,
+            "r": 21,
+            "occupiedBy": null,
+            "passable": true
+          },
+          {
+            "q": 11,
+            "r": 21,
+            "occupiedBy": null,
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 22,
+            "occupiedBy": null,
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 20,
+            "occupiedBy": "atk-infantry-7",
+            "passable": true
+          }
+        ]
+      },
+      "routeAttempts": 0,
+      "lastRouteStep": null
+    },
+    {
+      "unitId": "atk-archer-50",
+      "scenario": {
+        "doctrine": "steady",
+        "lines": "lines2",
+        "priority": "priority1",
+        "terrain": "engaged"
+      },
+      "condition": "steady/lines2/priority1/engaged: atk-archer-50 remained outside range without reducing distance (4->4)",
+      "firstActivation": {
+        "turn": 0,
+        "from": [
+          12,
+          34
+        ],
+        "to": [
+          12,
+          32
+        ],
+        "moveLeft": 0,
+        "neighbors": [
+          {
+            "q": 13,
+            "r": 32,
+            "occupiedBy": "atk-archer-40",
+            "passable": true
+          },
+          {
+            "q": 11,
+            "r": 32,
+            "occupiedBy": null,
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 33,
+            "occupiedBy": null,
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 31,
+            "occupiedBy": "atk-archer-49",
+            "passable": true
+          }
+        ]
+      },
+      "lastActivation": {
+        "turn": 5,
+        "from": [
+          12,
+          24
+        ],
+        "to": [
+          12,
+          22
+        ],
+        "moveLeft": 0,
+        "neighbors": [
+          {
+            "q": 13,
+            "r": 22,
+            "occupiedBy": null,
+            "passable": true
+          },
+          {
+            "q": 11,
+            "r": 22,
+            "occupiedBy": null,
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 23,
+            "occupiedBy": null,
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 21,
+            "occupiedBy": "atk-archer-49",
+            "passable": true
+          }
+        ]
+      },
+      "routeAttempts": 0,
+      "lastRouteStep": null
+    },
+    {
+      "unitId": "atk-archer-51",
+      "scenario": {
+        "doctrine": "steady",
+        "lines": "lines2",
+        "priority": "priority1",
+        "terrain": "engaged"
+      },
+      "condition": "steady/lines2/priority1/engaged: atk-archer-51 remained outside range without reducing distance (4->4)",
+      "firstActivation": {
+        "turn": 0,
+        "from": [
+          12,
+          35
+        ],
+        "to": [
+          12,
+          33
+        ],
+        "moveLeft": 0,
+        "neighbors": [
+          {
+            "q": 13,
+            "r": 33,
+            "occupiedBy": "atk-archer-41",
+            "passable": true
+          },
+          {
+            "q": 11,
+            "r": 33,
+            "occupiedBy": null,
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 34,
+            "occupiedBy": null,
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 32,
+            "occupiedBy": "atk-archer-50",
+            "passable": true
+          }
+        ]
+      },
+      "lastActivation": {
+        "turn": 5,
+        "from": [
+          12,
+          25
+        ],
+        "to": [
+          12,
+          23
+        ],
+        "moveLeft": 0,
+        "neighbors": [
+          {
+            "q": 13,
+            "r": 23,
+            "occupiedBy": null,
+            "passable": true
+          },
+          {
+            "q": 11,
+            "r": 23,
+            "occupiedBy": null,
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 24,
+            "occupiedBy": null,
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 22,
+            "occupiedBy": "atk-archer-50",
+            "passable": true
+          }
+        ]
+      },
+      "routeAttempts": 0,
+      "lastRouteStep": null
+    },
+    {
+      "unitId": "atk-archer-52",
+      "scenario": {
+        "doctrine": "steady",
+        "lines": "lines2",
+        "priority": "priority1",
+        "terrain": "engaged"
+      },
+      "condition": "steady/lines2/priority1/engaged: atk-archer-52 remained outside range without reducing distance (4->5)",
+      "firstActivation": {
+        "turn": 0,
+        "from": [
+          12,
+          36
+        ],
+        "to": [
+          12,
+          36
+        ],
+        "moveLeft": 2,
+        "neighbors": [
+          {
+            "q": 13,
+            "r": 36,
+            "occupiedBy": "atk-archer-44",
+            "passable": true
+          },
+          {
+            "q": 11,
+            "r": 36,
+            "occupiedBy": "atk-slinger-58",
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 37,
+            "occupiedBy": "atk-archer-53",
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 35,
+            "occupiedBy": null,
+            "passable": true
+          }
+        ]
+      },
+      "lastActivation": {
+        "turn": 5,
+        "from": [
+          11,
+          41
+        ],
+        "to": [
+          11,
+          43
+        ],
+        "moveLeft": 0,
+        "neighbors": [
+          {
+            "q": 12,
+            "r": 43,
+            "occupiedBy": "atk-slinger-63",
+            "passable": true
+          },
+          {
+            "q": 10,
+            "r": 43,
+            "occupiedBy": null,
+            "passable": true
+          },
+          {
+            "q": 11,
+            "r": 44,
+            "occupiedBy": null,
+            "passable": true
+          },
+          {
+            "q": 11,
+            "r": 42,
+            "occupiedBy": null,
+            "passable": true
+          }
+        ]
+      },
+      "routeAttempts": 1,
+      "lastRouteStep": null
+    },
+    {
+      "unitId": "atk-archer-53",
+      "scenario": {
+        "doctrine": "steady",
+        "lines": "lines2",
+        "priority": "priority1",
+        "terrain": "engaged"
+      },
+      "condition": "steady/lines2/priority1/engaged: atk-archer-53 remained outside range without reducing distance (4->6)",
+      "firstActivation": {
+        "turn": 0,
+        "from": [
+          12,
+          37
+        ],
+        "to": [
+          12,
+          37
+        ],
+        "moveLeft": 2,
+        "neighbors": [
+          {
+            "q": 13,
+            "r": 37,
+            "occupiedBy": "atk-archer-45",
+            "passable": true
+          },
+          {
+            "q": 11,
+            "r": 37,
+            "occupiedBy": "atk-slinger-59",
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 38,
+            "occupiedBy": "atk-archer-54",
+            "passable": true
+          },
+          {
+            "q": 12,
+            "r": 36,
+            "occupiedBy": "atk-archer-52",
+            "passable": true
+          }
+        ]
+      },
+      "lastActivation": {
+        "turn": 5,
+        "from": [
+          10,
+          41
+        ],
+        "to": [
+          10,
+          43
+        ],
+        "moveLeft": 0,
+        "neighbors": [
+          {
+            "q": 11,
+            "r": 43,
+            "occupiedBy": "atk-archer-52",
+            "passable": true
+          },
+          {
+            "q": 9,
+            "r": 43,
+            "occupiedBy": null,
+            "passable": true
+          },
+          {
+            "q": 10,
+            "r": 44,
+            "occupiedBy": null,
+            "passable": true
+          },
+          {
+            "q": 10,
+            "r": 42,
+            "occupiedBy": null,
+            "passable": true
+          }
+        ]
+      },
+      "routeAttempts": 1,
+      "lastRouteStep": null
+    }
+  ]
+}

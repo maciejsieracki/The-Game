@@ -1,0 +1,6 @@
+  PASS: rozdzielenie na tym samym heksie ma koszt 0
+  PASS: rozdzielenie na sąsiedni heks pobiera rzeczywisty koszt pola (2)
+  PASS: po rozdziale wspólna pula wynosi 4 - 2 = 2
+  PASS: obie odłączone jednostki zachowują tę samą pozostałą pulę ruchu
+\narmy-split-movement-test: 4 pass, 0 fail
+EXIT=0

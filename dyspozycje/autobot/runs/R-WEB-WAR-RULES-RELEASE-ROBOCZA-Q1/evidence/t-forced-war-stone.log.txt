@@ -1,0 +1,9 @@
+--- kontrakt Q1/Q3, R-WOJNA-WYMUSZONA-REGULY-Q1 Część A/C ---
+--- trigger po turn 25 i guardy ownera (R-WOJNA-WYMUSZONA-REGULY-Q1 Część A) ---
+--- R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): shouldEndStoneForcedWarByDuration ---
+--- target guard: najbliższy i wykluczenia ---
+--- 2 miasta, odpoczynek i cooldown ---
+--- decideAIDiplomacy: finalny target guard ---
+--- save/load i mutacje stanu ---
+PASSED: 38 / FAILED: 0 / TOTAL: 38
+EXIT=0

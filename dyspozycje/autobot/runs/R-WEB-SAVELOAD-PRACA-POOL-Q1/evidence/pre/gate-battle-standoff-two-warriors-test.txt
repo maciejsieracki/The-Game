@@ -1,0 +1,4 @@
+PASS _startBattle without commander 1v1 gap 3: auto turn begins, blows and contact
+PASS _startBattle without commander 2v2 gap 3: auto turn begins, blows and contact
+PASS _startBattle with commander: stays manual, waits for orders (round 0, no blows)
+EXIT=0

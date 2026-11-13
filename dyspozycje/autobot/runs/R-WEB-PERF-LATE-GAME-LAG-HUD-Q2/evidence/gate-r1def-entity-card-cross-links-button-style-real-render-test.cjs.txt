@@ -1,0 +1,40 @@
+PASS: (0) ENTITY_CARD_CSS nie stosuje juz text-decoration:underline dla linkow krzyzowych
+PASS: (0) ENTITY_CARD_CSS zawiera nosna deklaracje obwodki przycisku nawigacyjnego
+PASS: (0) cityPanel.ts: DOKLADNIE 3 reguly .dc-v-btn (dwie z reconu + trzecia, .civ-cs .detail-card)
+PASS: (0) cityPanel.ts: ZADNA regula .dc-v-btn nie nosi juz text-decoration:underline
+PASS: (0) .okolica-info-link ZOSTAJE poza zakresem (nadal underline dotted — decyzja w 01-operator.md)
+[entity-card-cross-links-button-style] domyslny Chromium niedostepny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+PASS: (A) wiersz grid ".entity-card-row-value" wyglada jak PRZYCISK (obwodka + tlo, bez underline)
+PASS: (A) wiersz z odznaka ".entity-card-row-action-text" wyglada jak PRZYCISK
+PASS: (A) pigulka ".entity-card-pill-text" (sam <button>) wyglada jak PRZYCISK
+PASS: (A) kontener ".entity-card-pill" linku NIE maluje juz pudelka ani cursor:pointer (byl nieklikalny — martwa strefa)
+PASS: (A) stopka ".entity-card-civpedia-link" wyglada jak PRZYCISK
+PASS: (A) ZERO text-decoration:underline na wszystkich czterech klasach
+PASS: (A) wiersz z odznaka NIE rozciaga sie na cala szerokosc karty (flex:1 zneutralizowane)
+PASS: (B) primary jest wyraznie ciezszy: grubszy font niz przycisk nawigacyjny
+PASS: (B) primary jest UPPERCASE, przycisk nawigacyjny NIE jest
+PASS: (B) primary ma wyrazniejszy padding poziomy niz przycisk nawigacyjny
+PASS: (B) primary ma INNE (jasne, zlote) wypelnienie niz ciemne tlo przycisku nawigacyjnego
+PASS: (B) secondary ma grubsza (2px) obwodke niz przycisk nawigacyjny (1px) — trzy szczeble skali
+PASS: (C) cityPanel: ".entity-card.bld-detail-card .dc-v-btn" wyglada jak PRZYCISK
+PASS: (C) cityPanel: ".civ-detail-scope .detail-card .dc-v-btn" wyglada jak PRZYCISK
+PASS: (C) cityPanel: ".civ-cs .detail-card .dc-v-btn" (kopia pominieta w reconie) wyglada jak PRZYCISK
+PASS: (D) ".entity-card-action-primary" NIEZMIENIONY (700, uppercase, padding 7px 18px)
+PASS: (D) ".entity-card-action-secondary" NIEZMIENIONY (600, uppercase, 2px obwodka)
+PASS: (D) odznaka ".entity-card-row-badge" (informacyjna) BEZ obwodki i z pigulkowym radiusem
+PASS: (D) odznaka ".entity-card-badge" (informacyjna) BEZ obwodki i z pigulkowym radiusem
+PASS: (F) ".okolica-info-link" ZOSTAJE linkiem (kropkowane podkreslenie, brak obwodki) — swiadoma decyzja
+PASS: (E) prawdziwa karta z danych gry ma klikalny przycisk krzyzowy w stylu przycisku
+PASS: (E) elementFromPoint na srodku przycisku trafia w SAM PRZYCISK (padding nie przesloniety)
+PASS: (E) klik otwiera ZAGNIEZDZONA karte docelowa — zero regresu nawigacji
+PASS: (H) kazdy pomalowany przycisk nawigacyjny jest klikalny w CALEJ powierzchni (4 srodki krawedzi + srodek, zero martwej strefy)
+PASS: (H) probka objela realne przyciski nawigacyjne (asercja nie jest pusta)
+
+-- Mutacja: usuniecie nosnej deklaracji obwodki z arkuszy --
+PASS: (G) mutacja: ".entity-card-row-value" PRZESTAJE wygladac jak przycisk (test realnie testuje)
+PASS: (G) mutacja: ".entity-card-pill-text" PRZESTAJE wygladac jak przycisk
+PASS: (G) mutacja: ".civ-cs .detail-card .dc-v-btn" PRZESTAJE wygladac jak przycisk
+PASS: brak bledow konsoli/pageerror w trakcie renderu
+
+[entity-card-cross-links-button-style] 34 pass, 0 fail
+EXIT=0

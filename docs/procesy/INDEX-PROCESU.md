@@ -28,7 +28,7 @@ zmieniaj `gra/` dla paczki dokumentacyjnej.
 | Temat i status | `dyspozycje/REJESTR-PROSB-I-ZADAN.md` | jeden status z listy zamkniętej |
 | Aktywne ABC | `dyspozycje/PYTANIA-OTWARTE.md` | pełne ABC; po odpowiedzi ECHO i odsyłacz decyzji |
 | Decyzja właściciela | `docs/decyzje/<ID>.md` | wariant, data, kryteria i konsekwencje |
-| Przebieg AutoBot | `dyspozycje/autobot/runs/<ID>/` | `00-dispatch` → `01-operator` → `02-evaluator` → `03-final-control` → `04-integration` |
+| Przebieg AutoBot | `dyspozycje/autobot/runs/<ID>/` | `00-dispatch` → `01-operator` → `02-evaluator` → warunkowa Obrona → niezależny Final Control → integracja |
 | Przekazanie | `dyspozycje/_handoff/KANAL-PRACA.md` | krótki wpis + `CZEKAM-NA:` |
 | Publikacja | `dyspozycje/WERSJE.md` | tylko po wykonanym deployu: fala, md5, stempel, commit, zakres, status |
 | Pamięć procesu | `playbook.md`; `playbook.json` jest generowany | zmieniaj Markdown, JSON tylko generatorem |
@@ -69,15 +69,30 @@ spójności dokumentacji.
 ## 4. Obowiązujący obieg i ten sam ID
 
 ```text
-Operator GPT-5.6 Luna High
-  → Evaluator GPT-5.6 Luna High
-  → Final Control GPT-5.6 Luna High (osobny subagent)
-  → integracja orkiestratora GPT-5.6 Luna Medium
+Operator Codex: gpt-6-luna / high
+  → Evaluator Codex: gpt-6-luna / high
+  → [warunkowo] Obrona po konkretnych zarzutach
+  → niezależny Final Control Codex: gpt-6-luna / high
+  → integracja orkiestratora według aktualnie skonfigurowanego routingu
   → READY_FOR_DEPLOY
   → osobna autoryzacja deploy/push
 ```
 
-`FAIL`, techniczny `BLOCK`, `TIMEOUT`, `INFRA`, `ZWIS`, błąd izolacji, brak dowodu albo niegotowość Final Control wracają bez czekania do Operatora → Evaluatora → Final Control tylko po wykonaniu guarda licznika rund przed dispatchiem i wyłącznie dla rund 1–5. Próba 6 zostaje zatrzymana statusem `LIMIT-5-EXCEEDED`; zachowaj pełne ID. Wznowienie po limicie wymaga jawnej decyzji orkiestratora/właściciela i nie resetuje licznika. `ZWIS` nie anuluje pracy — watchdog sprawdza Git i artefakty.
+Maksymalnie cztery tematy mogą być aktywne jednocześnie, niezależnie od ich etapu;
+każdy temat liczy jeden slot. W obrębie ID role działają sekwencyjnie: Operator →
+Evaluator → Obrona wyłącznie po konkretnych zarzutach → niezależny Final Control.
+Używaj jawnie `gpt-6-luna` / `high` wyłącznie dla Codex Operatora, Evaluatora i Final Control; nie narzucaj integratorowi modelu ani effortu. Routing Obrony i Claude pozostaje bez zmian.
+`FAIL`, techniczny `BLOCK`, `TIMEOUT`, `INFRA`, `ZWIS`, błąd izolacji, brak dowodu albo
+niegotowość Final Control wracają do kolejnej roli Operatora z tym samym ID tylko po
+guardzie rund i wyłącznie dla rund 1–5. Próba 6 zostaje zatrzymana statusem
+`LIMIT-5-EXCEEDED`; zachowaj pełne ID. Wznowienie po limicie wymaga jawnej decyzji
+orkiestratora/właściciela i nie resetuje licznika.
+
+Po Final Control orkiestrator wykonuje integrację `main` → deploy Robocza →
+push/readback → cleanup, a po potwierdzeniu 11/11 uruchamia następny kwalifikowany temat.
+Zmiana wyłącznie procesowa ma deploy `N/A` z powodem. Gdy wywoływalnego schedulera nie
+ma, kolejkę i aktywne tematy odczytuje się oraz zapisuje przy każdym zakończeniu etapu
+i raporcie statusu. Nie twierdź, że watchdog lub sesja obudzi się w tle.
 
 Jedyną pauzą jest `ABC-OCZEKUJE` wymagające decyzji właściciela. Decyzje prowadzi się
 wyłącznie w głównym czacie orkiestratora (C-043), a zapisuje plikowo. `READY_FOR_DEPLOY`

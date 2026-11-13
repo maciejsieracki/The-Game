@@ -1,0 +1,96 @@
+# OBRONA (Z4): WLASNY przebieg bazowy 79 narzedzi gra/tools/*render* w tym temacie.
+# Baza = origin/main 6a673c838b306dbad47dd33d58f5f5a72882a71c, osobny worktree poza repo (node tools/<narzedzie> z gra/, bez argumentow,
+# timeout 400 s, jedna przegladarka naraz; ten sam runner co u Operatora). Teraz = kolumna "EXIT teraz" z gate-render-all.txt Operatora
+# (kod tematu ca9701022). 5 pozostalych narzedzi ma osobne bramki gate-* (bez zmian).
+# Kolumny: narzedzie | EXIT teraz | EXIT baza (obrona) | sek. bazy | werdykt
+army-merge-panel-scroll-real-render-test.cjs | 1 | 1 | 1 | TAKI_SAM_JAK_BAZA | ostatnia linia bazy: }
+barb-karencja-czas-trwania-real-render-test.cjs | 0 | 0 | 2 | PASS (oba)
+budmode-ulepszenia-sort-locked-real-render-test.cjs | 0 | 0 | 2 | PASS (oba)
+build-mode-lock-tip-position-real-render-test.cjs | 0 | 0 | 2 | PASS (oba)
+build-panel-ulepszenia-scroll-real-render-test.cjs | 0 | 0 | 8 | PASS (oba)
+building-card-overlap-real-render-test.cjs | 0 | 0 | 2 | PASS (oba)
+building-detail-card-hover-layout-real-render-test.cjs | 0 | 0 | 2 | PASS (oba)
+citypanel-uwagi-hostcard-removed-real-render-test.cjs | 0 | 0 | 2 | PASS (oba)
+civpedia-cross-link-style-real-render-test.cjs | 0 | 0 | 2 | PASS (oba)
+diplomacy-audience-deals-active-first-real-render-test.cjs | 0 | 0 | 1 | PASS (oba)
+diplomacy-audience-zoom-cutoff-real-render-test.cjs | 0 | 0 | 3 | PASS (oba)
+diplomacy-przemarsz-duplikat-real-render-test.cjs | 0 | 0 | 1 | PASS (oba)
+drogi-tooltip-real-render-test.cjs | 0 | 0 | 1 | PASS (oba)
+dyplo-karta-decyzji-bilans-skrot-real-render-test.cjs | 0 | 0 | 1 | PASS (oba)
+dyplo-przemarsz-checkbox-przycisk-real-render-test.cjs | 0 | 0 | 2 | PASS (oba)
+dyplo-traktat-handlowy-wybor-czasu-real-render-test.cjs | 0 | 0 | 5 | PASS (oba)
+empire-autofeed-btn-label-real-render-test.cjs | 0 | 0 | 1 | PASS (oba)
+empire-recruit-panel-real-render-test.cjs | 1 | 1 | 1 | TAKI_SAM_JAK_BAZA | ostatnia linia bazy: }
+empire-trade-route-split-real-render-test.cjs | 0 | 0 | 21 | PASS (oba)
+emporion-build-list-real-render-test.cjs | 0 | 0 | 2 | PASS (oba)
+entity-card-action-buttons-real-render-test.cjs | 1 | 1 | 1 | TAKI_SAM_JAK_BAZA | ostatnia linia bazy: [entity-card-action-buttons-real-render-test] 30 pass, 1 fail
+entity-card-cross-links-button-style-real-render-test.cjs | 0 | 0 | 2 | PASS (oba)
+entity-card-diorama-real-render-test.cjs | 0 | 0 | 8 | PASS (oba)
+entity-card-single-dialog-real-render-test.cjs | 0 | 0 | 2 | PASS (oba)
+entitycard-rozwiniete-scrollbar-real-render-test.cjs | 1 | 1 | 1 | TAKI_SAM_JAK_BAZA | ostatnia linia bazy: }
+et-turn-lbl-kontrast-real-render-test.cjs | 0 | 0 | 2 | PASS (oba)
+ev4-r4q2-przycisk-real-render-test.cjs | 1 | 1 | 2 | TAKI_SAM_JAK_BAZA | ostatnia linia bazy:     at main (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/obr-usm/base/gra/tools/ev
+garrison-panel-pinning-real-render-test.cjs | 1 | 0 | 8 | ROZNICA
+hotseat-etap6e-render-noop-test.cjs | 1 | 1 | 401 | TAKI_SAM_JAK_BAZA | ostatnia linia bazy: [hotseat-etap6e-render-noop] [PRZED] tura 14 (turn=15, units=21, cities=9, panel=tak): stateHash=b70ecef4d604...
+hud-topbar-bigger-numbers-real-render-test.cjs | 2 | 2 | 0 | TAKI_SAM_JAK_BAZA | ostatnia linia bazy: Wygeneruj: git show 4905bac05:gra/src/ui/hud.ts > gra/src/ui/hud.__base.ts (plik tymczasowy, nie commituj; usun po tesci
+karta-technologia-uklad-real-render-test.cjs | 0 | 0 | 2 | PASS (oba)
+kopalnia-cyny-render-test.cjs | 0 | 0 | 0 | PASS (oba)
+korupcja-tekst-gracz-real-render-test.cjs | 0 | 0 | 2 | PASS (oba)
+menu-trudnosc-tooltip-real-render-test.cjs | 0 | 0 | 33 | PASS (oba)
+mgla-odkrycie-wzdluz-sciezki-live-render-test.cjs | 0 | 0 | 1 | PASS (oba)
+miasta-panstwa-wylaczone-ui-render-test.cjs | 1 | 1 | 54 | TAKI_SAM_JAK_BAZA | ostatnia linia bazy:     at main (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/obr-usm/base/gra/tools/mi
+oboz-lowiecki-las-znika-render-test.cjs | 1 | 1 | 239 | TAKI_SAM_JAK_BAZA | ostatnia linia bazy:  FAIL  TERRAIN_ALLOW.lodzie_rybackie === {Wybrzeze, Morze} (rozlaczne z Wzgorza/Gory) -- "TerenBazowy.PlytkieMorze, Tere
+porzadek-panel-punkty-absolutne-real-render-test.cjs | 0 | 0 | 2 | PASS (oba)
+praca-budmode-slider-max-real-render-test.cjs | 0 | 0 | 1 | PASS (oba)
+praca-jeden-podzial-real-render-test.cjs | 0 | 0 | 2 | PASS (oba)
+praca-panel-budowy-warstwa-real-render-test.cjs | 1 | 1 | 5 | TAKI_SAM_JAK_BAZA | ostatnia linia bazy: [praca-panel-budowy-warstwa-real-render-test] 26 pass, 2 fail
+praca-panel-emoji-brand-icons-real-render-test.cjs | 0 | 0 | 2 | PASS (oba)
+r-bitwa-etykieta-tozsamosc-strony-real-render-test.cjs | 1 | 1 | 24 | TAKI_SAM_JAK_BAZA | ostatnia linia bazy: }
+recruit-card-manpower-real-render-test.cjs | 0 | 0 | 2 | PASS (oba)
+recruit-card-quantity-real-render-test.cjs | 1 | 1 | 1 | TAKI_SAM_JAK_BAZA | ostatnia linia bazy: }
+recruit-card-stock-chip-real-render-test.cjs | 0 | 0 | 1 | PASS (oba)
+recruitment-panel-height-real-render-test.cjs | 0 | 0 | 4 | PASS (oba)
+render-unit-sharpness-measure.cjs | 0 | 0 | 67 | PASS (oba)
+river-render-diag.cjs | 1 | 1 | 0 | TAKI_SAM_JAK_BAZA | ostatnia linia bazy: Node.js v22.22.0
+science-hub-unlock-icons-real-render-test.cjs | 0 | 0 | 2 | PASS (oba)
+science-picker-tooltip-icons-real-render-test.cjs | 0 | 0 | 3 | PASS (oba)
+sidepanel-blocking-card-cutoff-real-render-test.cjs | 1 | 1 | 93 | TAKI_SAM_JAK_BAZA | ostatnia linia bazy: -- (A) karta diplo-pend-3-zaproponuj_handel_surowiec-12-0, viewport 1280x700 --
+sidepanel-diplo-dismiss-real-render-test.cjs | 1 | 0 | 266 | ROZNICA
+sidepanel-event-header-wydarzenie-real-render-test.cjs | 0 | 0 | 20 | PASS (oba)
+sidepanel-event-przekierowania-real-render-test.cjs | 1 | 1 | 134 | TAKI_SAM_JAK_BAZA | ostatnia linia bazy:   FAIL (C) trade-lost-12-r9: klik w karte bez miejsca docelowego nie otwiera zadnego widoku -- {"clicked":{"hit":false,"
+siege-surrender-enter-city-test.cjs | 0 | 0 | 0 | PASS (oba)
+siege-surrender-forecast-live-test.cjs | 2 | 2 | 0 | TAKI_SAM_JAK_BAZA | ostatnia linia bazy: brak --dist <katalog>
+siege-surrender-forecast-test.cjs | 0 | 0 | 0 | PASS (oba)
+surrender-rekrutacja-build-gate-test.cjs | 1 | 1 | 0 | TAKI_SAM_JAK_BAZA | ostatnia linia bazy: FAIL: surrender usuwa legacy, zwraca Pracę staremu właścicielowi i filtruje kolejkę dla nowego
+szczescie-audyt-e-etykiety-panelu-real-render-test.cjs | 0 | 0 | 3 | PASS (oba)
+tartak-wzgorze-las-real-render-test.cjs | 0 | 1 | 116 | LEPIEJ NIZ BAZA (teraz 0) | ostatnia linia bazy: == WARIANT PRZED (poprawka cofnieta w locie) ==
+tax-slider-thumb-align-real-render-test.cjs | 0 | 0 | 32 | PASS (oba)
+unit-detail-card-hover-layout-real-render-test.cjs | 0 | 0 | 1 | PASS (oba)
+unit-info-card-badges-real-render-test.cjs | 0 | 0 | 1 | PASS (oba)
+unit-info-card-viewport-height-real-render-test.cjs | 0 | 0 | 6 | PASS (oba)
+wydarzenia-zbadano-karta-tech-real-render-test.cjs | 1 | 1 | 218 | TAKI_SAM_JAK_BAZA | ostatnia linia bazy:   FAIL (B8) lama: karta boczna „Lama" otwarta z wierszem „Warunek" -- []
+zelazo-celtowie-miecznik-rydwan-real-render-test.cjs | 1 | 1 | 83 | TAKI_SAM_JAK_BAZA | ostatnia linia bazy: zelazo-celtowie-miecznik-rydwan-real-render-test: 81 pass, 1 fail
+zelazo-celtowie-soldurii-gaesatae-real-render-test.cjs | 0 | 0 | 19 | PASS (oba)
+zelazo-falanga-real-render-test.cjs | 0 | 0 | 20 | PASS (oba)
+zelazo-germanie-real-render-test.cjs | 0 | 0 | 56 | PASS (oba)
+zelazo-jezdziec-oszczepami-real-render-test.cjs | 1 | 1 | 23 | TAKI_SAM_JAK_BAZA | ostatnia linia bazy: zelazo-jezdziec-oszczepami-real-render-test: 55 pass, 2 fail
+zelazo-katapulta-real-render-test.cjs | 0 | 0 | 50 | PASS (oba)
+zelazo-konnica-asyryjska-real-render-test.cjs | 1 | 1 | 21 | TAKI_SAM_JAK_BAZA | ostatnia linia bazy: zelazo-konnica-asyryjska-real-render-test: 30 pass, 1 fail
+zelazo-mezopotamia-real-render-test.cjs | 0 | 0 | 29 | PASS (oba)
+zelazo-slowianie-zulusi-real-render-test.cjs | 0 | 0 | 97 | PASS (oba)
+zelazo-srodziemnomorze-real-render-test.cjs | 0 | 0 | 32 | PASS (oba)
+zelazo-super-rzym-grecja-real-render-test.cjs | 0 | 0 | 54 | PASS (oba)
+zelazo-zrzuty-25-jednostek-render.cjs | 1 | 1 | 1 | TAKI_SAM_JAK_BAZA | ostatnia linia bazy: [zelazo-zrzuty-25] podaj --out <katalog> (POZA repo) albo --no-shots
+zloze-zloto-render-test.cjs | 0 | 0 | 0 | PASS (oba)
+
+PODSUMOWANIE: 79 narzedzi; PASS w obu 54; nie-PASS rowne bazie 22; rozne od bazy 3 (garrison-panel-pinning-real-render-test.cjs teraz=1 baza=0; sidepanel-diplo-dismiss-real-render-test.cjs teraz=1 baza=0; tartak-wzgorze-las-real-render-test.cjs teraz=0 baza=1)
+
+# Rozbieznosci z WLASNA baza -- powtorzenia na kodzie tematu (worktree obrony, e866e18):
+#  sidepanel-diplo-dismiss-real-render-test: teraz (log Operatora) 1, baza (obrona) 0 -> powtorzenie na kodzie tematu: sidepanel-diplo-dismiss-real-render-test: 35 pass, 0 fail (EXIT=0). Niestabilne srodowiskowo, nie regresja.
+#  garrison-panel-pinning-real-render-test, powtorzenie 1 na kodzie tematu: [garrison-panel-pinning-real-render-test] 16 pass, 0 fail
+#  garrison-panel-pinning-real-render-test, powtorzenie 2 na kodzie tematu: [garrison-panel-pinning-real-render-test] 16 pass, 0 fail
+#  garrison-panel-pinning-real-render-test, powtorzenie 3 na kodzie tematu: [garrison-panel-pinning-real-render-test] 16 pass, 0 fail
+#  tartak-wzgorze-las-real-render-test: teraz 0, baza (obrona) 1 -- temat nie pogarsza.
+#  render-unit-sharpness-measure: baza (obrona) 0, teraz 0 (Operator mial baze 1 z innego tematu).
+WYNIK: 0 regresji wzgledem WLASNEJ bazy tego tematu (3 rozbieznosci: 2 niestabilne -- przechodza na kodzie tematu; 1 lepiej niz baza).
+EXIT=0

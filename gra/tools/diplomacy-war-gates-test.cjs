@@ -55,6 +55,7 @@ ok(!isNapBlockingWarDeclaration(false), 'brak NAP — brak blokady');
 
 ok(isPeaceCurrencyAction('pokoj'), 'pokoj = peace currency');
 ok(isPeaceCurrencyAction('trybut_oferta'), 'trybut_oferta = peace currency');
+ok(isPeaceCurrencyAction('rozejm'), 'rozejm = peace currency (R-WEB-TRUCE-Q1 r3 N2)');
 ok(!isPeaceCurrencyAction('handel'), 'handel ≠ peace currency');
 
 ok(payloadHasCurrencyPayment({ goldOnce: 50 }), 'goldOnce wykryte');
@@ -68,6 +69,14 @@ ok(
 ok(
   !isCurrencyProposalForbiddenDuringWar('pokoj', { goldOnce: 50 }, true),
   'pokoj+złoto dozwolone w wojnie',
+);
+ok(
+  !isCurrencyProposalForbiddenDuringWar('rozejm', { goldOnce: 50 }, true),
+  'rozejm+złoto dozwolone w wojnie (R-WEB-TRUCE-Q1 r3 N2, mutacja: usunięcie rozejm z zestawu łamie tę linię)',
+);
+ok(
+  !isCurrencyProposalForbiddenDuringWar('rozejm', { giveItems: [{ typ: 'praca', id: 'praca', ilosc: 5 }] }, true),
+  'rozejm+praca dozwolona w wojnie (N2)',
 );
 ok(
   !isCurrencyProposalForbiddenDuringWar('handel', { goldOnce: 50 }, false),

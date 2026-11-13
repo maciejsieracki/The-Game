@@ -1,0 +1,2 @@
+tsc --noEmit na obronie r1 (worktree wf_91eeffff-e69-3, npm ci --ignore-scripts)
+EXIT=0

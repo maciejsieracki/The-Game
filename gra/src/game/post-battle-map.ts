@@ -6,14 +6,15 @@
 
 import type { GameMap } from '../types/map';
 import type { City } from './cities';
-import { wasIndependentCityStateBeforeCapture } from './cities';
+import { wasIndependentCityStateBeforeCapture, applyCapturePopulationLoss } from './cities';
 import { isBarbarian } from './barbarians';
 import { onCityCapturedCulture } from './conquest-stability';
 import { applyPostCaptureLawOnCapture } from './post-capture-law';
 import type { RuntimeUnit } from '../units/setup';
+import type { BattleEventLog } from '../units/battleRoster';
 import { hexNeighborCoords, isCivilianUnit } from '../units/setup';
 import { syncStackRuchLeft } from './armyMerge';
-import { applyLossPctToRoster } from './auto-battle-power';
+import { applyLossPctToRoster, isFieldBattleUnit } from './auto-battle-power';
 import type { UnitPowerInput } from './unit-power';
 import { registerBattleWon } from './veteran';
 
@@ -42,6 +43,8 @@ export interface PostBattleMapInput {
   winner: MapBattleWinner;
   lossAtkPct?: number;
   lossDefPct?: number;
+  /** Unit identity emitted by the battle/event log for this resolution. */
+  battleEventLog?: BattleEventLog;
   manualSurvivors?: ManualSurvivor[];
   getDef: (u: RuntimeUnit) => UnitPowerInput & Record<string, unknown>;
   maxHpOf: (def: UnitPowerInput) => number;
@@ -49,10 +52,41 @@ export interface PostBattleMapInput {
   isUnitAt: (q: number, r: number, exceptId?: string | number) => boolean;
   rng?: () => number;
   cityOnBattleHex?: City | null;
+  /** R1 (obwarowanie bez wylomu): wygrana atakujacego NIE czysci miasta ani nie wchodzi na heks bitwy. */
+  holdPositionAfterWin?: boolean;
+}
+
+/**
+ * R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1: komunikat przed bitwa ręczną o jednostkach
+ * w rezerwie (ponad limit pola bitwy -- nie wejda do walki, wracaja nietkniete).
+ * Czysta funkcja tekstowa; zwraca '' gdy nikt nie jest w rezerwie.
+ */
+export function battleReserveNotice(
+  atkCount: number,
+  defCount: number,
+  maxPerSide: number,
+  playerSide: 'atk' | 'def' | null,
+): string {
+  const parts: string[] = [];
+  const atkRes = Math.max(0, atkCount - maxPerSide);
+  const defRes = Math.max(0, defCount - maxPerSide);
+  if (playerSide === 'atk' && atkRes > 0) parts.push(atkRes + ' jednostek w rezerwie (nie wejd\u0105 do bitwy)');
+  else if (playerSide === 'def' && defRes > 0) parts.push(defRes + ' jednostek w rezerwie (nie wejd\u0105 do bitwy)');
+  else if (playerSide === null && (atkRes > 0 || defRes > 0)) {
+    parts.push('W rezerwie (nie wejd\u0105 do bitwy): ' + atkRes + ' / ' + defRes);
+  }
+  return parts.join('');
 }
 
 export interface PostBattleMapResult {
   removedIds: string[];
+  /**
+   * R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1: ocalali PRZEGRANEJ strony, ktorzy
+   * cofneli sie o 2 heksy (id), oraz ci, dla ktorych nie bylo legalnej trasy 2 heksow
+   * (zostaje dotychczasowe zachowanie: 1 heks / start / miejsce -- brak kasacji i teleportu).
+   */
+  retreatedTwoHexIds: string[];
+  retreatNoTwoHexRouteIds: string[];
 }
 
 function removeUnitById(units: RuntimeUnit[], id: string | number): void {
@@ -64,18 +98,56 @@ function liveUnit(units: RuntimeUnit[], id: string | number): RuntimeUnit | unde
   return units.find(u => u.id === id);
 }
 
+function loggedIdsForSide(
+  input: PostBattleMapInput,
+  side: 'attacker' | 'defender',
+): Set<string> | null {
+  // Keep the legacy direct-helper contract for callers that predate the event
+  // seam. All production battle paths pass a log; once present, an omitted ID
+  // is deliberately not inferred from roster order or position.
+  if (!input.battleEventLog) return null;
+  const ids = side === 'attacker'
+    ? input.battleEventLog.attackerUnitIds
+    : input.battleEventLog.defenderUnitIds;
+  return new Set((ids ?? []).map(String));
+}
+
+function loggedIdsForBattle(input: PostBattleMapInput): Set<string> | null {
+  if (!input.battleEventLog) return null;
+  return new Set([
+    ...(input.battleEventLog.attackerUnitIds ?? []),
+    ...(input.battleEventLog.defenderUnitIds ?? []),
+  ].map(String));
+}
+
 function applyAutoLosses(input: PostBattleMapInput): Set<string> {
   const dead = new Set<string>();
-  const toRows = (roster: RuntimeUnit[]) =>
-    roster.map(u => ({
-      id: String(u.id),
-      typeId: u.typeId,
-      def: input.getDef(u),
-      hp: u.hp,
-    }));
+  // A battle roster may contain units that participate in the encounter but
+  // are outside field AUTO combat (siege/civilian or zero-power rows). They
+  // must not receive the field loss percentage; use the same target predicate
+  // as M-power calculation before entering the HP-loss helper.
+  const toRows = (roster: RuntimeUnit[], loggedIds: Set<string> | null) => {
+    const rows: Array<{
+      id: string;
+      typeId: string;
+      def: UnitPowerInput;
+      hp?: number;
+    }> = [];
+    for (const u of roster) {
+      if (loggedIds && !loggedIds.has(String(u.id))) continue;
+      const def = input.getDef(u);
+      if (!isFieldBattleUnit(u.typeId, def)) continue;
+      rows.push({ id: String(u.id), typeId: u.typeId, def, hp: u.hp });
+    }
+    return rows;
+  };
 
   if (input.lossAtkPct != null && input.lossAtkPct > 0) {
-    for (const row of applyLossPctToRoster(toRows(input.atkRoster), input.lossAtkPct, input.maxHpOf)) {
+    for (const row of applyLossPctToRoster(
+      toRows(input.atkRoster, loggedIdsForSide(input, 'attacker')),
+      input.lossAtkPct,
+      input.maxHpOf,
+    )) {
       const u = liveUnit(input.units, row.id);
       if (!u) continue;
       if (row.dead) dead.add(row.id);
@@ -84,7 +156,11 @@ function applyAutoLosses(input: PostBattleMapInput): Set<string> {
   }
 
   if (input.lossDefPct != null && input.lossDefPct > 0) {
-    for (const row of applyLossPctToRoster(toRows(input.defRoster), input.lossDefPct, input.maxHpOf)) {
+    for (const row of applyLossPctToRoster(
+      toRows(input.defRoster, loggedIdsForSide(input, 'defender')),
+      input.lossDefPct,
+      input.maxHpOf,
+    )) {
       const u = liveUnit(input.units, row.id);
       if (!u) continue;
       if (row.dead) dead.add(row.id);
@@ -98,10 +174,14 @@ function applyAutoLosses(input: PostBattleMapInput): Set<string> {
 
 function applyManualSurvivors(input: PostBattleMapInput): void {
   const live = new Set((input.manualSurvivors ?? []).map(s => String(s.id)));
+  const loggedIds = loggedIdsForBattle(input);
   const hpMap = new Map(
     (input.manualSurvivors ?? []).map(s => [String(s.id), s.hp] as const),
   );
   for (const u of [...input.atkRoster, ...input.defRoster]) {
+    // A partial event log is a partial result, not proof that an unlogged unit
+    // died. Complete manual BattleScene results log every radius-1 roster unit.
+    if (loggedIds && !loggedIds.has(String(u.id))) continue;
     if (!live.has(String(u.id))) {
       removeUnitById(input.units, u.id);
       continue;
@@ -205,20 +285,104 @@ export function applyDefenderPreBattleRetreat(input: DefenderPreBattleRetreatInp
   placeFanOutGroup(pbInput, defAlive, lead, dir, false);
 }
 
+
+/** Odleglosc heksow (axial). */
+function axialDist(aq: number, ar: number, bq: number, br: number): number {
+  const dq = aq - bq;
+  const dr = ar - br;
+  return (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2;
+}
+
+/**
+ * R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1: czy heks jest legalnym polem odwrotu
+ * dla grupy (stosu) przegranych: przechodni, bez jednostek spoza grupy, bez cudzego miasta.
+ * Jednostki wlasnej grupy nie blokuja (stos cofa sie razem).
+ */
+function retreatHexFreeForGroup(
+  input: PostBattleMapInput,
+  q: number,
+  r: number,
+  group: ReadonlySet<string | number>,
+  ownerId: number,
+  strictEmpty: boolean,
+): boolean {
+  if (!input.isPassableHex(q, r)) return false;
+  for (const x of input.units) {
+    if (x.q !== q || x.r !== r || group.has(x.id)) continue;
+    if (strictEmpty || x.ownerId !== ownerId) return false;
+  }
+  const city = input.cities.find(c => c.q === q && c.r === r);
+  if (city && city.ownerId !== ownerId) return false;
+  return true;
+}
+
+/**
+ * Odwrot przegranych o DOKLADNIE 2 heksy po kierunku (dq,dr) -- grupami wg heksu wyjsciowego
+ * (stos zostaje razem). Pierwszy heks musi byc przechodni i nie zajety przez obcych, drugi
+ * (cel) calkiem wolny. Zwraca id jednostek, ktore sie cofnely; reszta zostaje nietknieta
+ * (wolajacy stosuje dotychczasowe zachowanie -- bez nowej kasacji/teleportu).
+ */
+function tryTwoHexRetreat(
+  input: PostBattleMapInput,
+  members: RuntimeUnit[],
+  dq: number,
+  dr: number,
+  steps: 1 | 2 = 2,
+): Set<string | number> {
+  const done = new Set<string | number>();
+  if (dq === 0 && dr === 0) return done;
+  const groups = new Map<string, RuntimeUnit[]>();
+  for (const u of members) {
+    const k = u.q + ',' + u.r;
+    const g = groups.get(k);
+    if (g) g.push(u); else groups.set(k, [u]);
+  }
+  for (const g of groups.values()) {
+    const head = g[0]!;
+    const ids = new Set<string | number>(g.map(x => x.id));
+    const q1 = head.q + dq;
+    const r1 = head.r + dr;
+    const q2 = head.q + dq * steps;
+    const r2 = head.r + dr * steps;
+    if (steps === 2 && !retreatHexFreeForGroup(input, q1, r1, ids, head.ownerId, false)) continue;
+    if (!retreatHexFreeForGroup(input, q2, r2, ids, head.ownerId, true)) continue;
+    for (const u of g) {
+      u.q = q2;
+      u.r = r2;
+      done.add(u.id);
+    }
+  }
+  return done;
+}
+
 function placeFanOutGroup(
   input: PostBattleMapInput,
   roster: RuntimeUnit[],
   lead: RuntimeUnit,
   direction: { q: number; r: number },
   stayOnCityCenter = false,
+  twoHex?: { retreated: string[]; noRoute: string[] },
 ): void {
   const dq = direction.q - input.battleQ;
   const dr = direction.r - input.battleR;
   const order = [lead, ...roster.filter(u => u.id !== lead.id)];
 
+  let twoHexDone = new Set<string | number>();
+  if (twoHex) {
+    const movable = order
+      .map(ref => liveUnit(input.units, ref.id))
+      .filter((u): u is RuntimeUnit => !!u)
+      .filter(u => !(stayOnCityCenter && input.cityOnBattleHex
+        && u.q === input.cityOnBattleHex.q && u.r === input.cityOnBattleHex.r));
+    twoHexDone = tryTwoHexRetreat(input, movable, dq, dr);
+    for (const id of twoHexDone) twoHex.retreated.push(String(id));
+    for (const u of movable) if (!twoHexDone.has(u.id)) twoHex.noRoute.push(String(u.id));
+  }
+
   for (const ref of order) {
     const u = liveUnit(input.units, ref.id);
     if (!u) continue;
+    if (twoHexDone.has(u.id)) continue;
 
     if (stayOnCityCenter && input.cityOnBattleHex &&
         u.q === input.cityOnBattleHex.q && u.r === input.cityOnBattleHex.r) {
@@ -254,8 +418,11 @@ function pickLiveDefLead(
   return onBattle ?? defAlive[0]!;
 }
 
-/** Ocalali obrońcy fan-out −1 heks (pole i miasto — Maciej B 2026-06-26). Centrum miasta = wipe przed fan-out. */
-function retreatDefendersAfterAtkWin(input: PostBattleMapInput): void {
+/** Ocalali obrońcy odwrót o 2 heksy od zwycięzcy (R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1; bez trasy 2 heksów: dawny fan-out). Pierwotnie −1 heks (pole i miasto — Maciej B 2026-06-26). Centrum miasta = wipe przed fan-out. */
+function retreatDefendersAfterAtkWin(
+  input: PostBattleMapInput,
+  twoHex?: { retreated: string[]; noRoute: string[] },
+): void {
   const defAlive = input.defRoster
     .map(r => liveUnit(input.units, r.id))
     .filter((u): u is RuntimeUnit => !!u);
@@ -263,7 +430,7 @@ function retreatDefendersAfterAtkWin(input: PostBattleMapInput): void {
   if (!lead) return;
 
   const dir = pickRetreatTargetAwayFromAttacker(input);
-  placeFanOutGroup(input, defAlive, lead, dir, !!input.cityOnBattleHex);
+  placeFanOutGroup(input, defAlive, lead, dir, !!input.cityOnBattleHex, twoHex);
 }
 
 function retreatDefendersOnTie(input: PostBattleMapInput): void {
@@ -304,7 +471,11 @@ function moveAtkRosterOntoBattleHex(input: PostBattleMapInput): void {
   if (moved.length > 1) syncStackRuchLeft(moved);
 }
 
-function retreatAtkRosterToStart(input: PostBattleMapInput): void {
+function retreatAtkRosterToStart(
+  input: PostBattleMapInput,
+  twoHex?: { retreated: string[]; noRoute: string[] },
+): void {
+  const back: RuntimeUnit[] = [];
   for (const ref of input.atkRoster) {
     const u = liveUnit(input.units, ref.id);
     if (!u) continue;
@@ -313,6 +484,28 @@ function retreatAtkRosterToStart(input: PostBattleMapInput): void {
       u.q = start.q;
       u.r = start.r;
     }
+    back.push(u);
+  }
+  if (!twoHex) return; // bitwa o miasto/oblezenie: bez odwrotu 2 heksy (dotychczasowe zachowanie)
+  // Odwrot o 2 heksy od obroncy: dalej wzdluz kierunku bitwa -> start (tylko gdy start
+  // sasiaduje z heksem bitwy). Oblegajacy (oblegaCityId) zostaja na pozycji blokady --
+  // zachowanie ograniczen oblezenia bez zmian.
+  const groups = new Map<string, RuntimeUnit[]>();
+  for (const u of back) {
+    if (u.oblegaCityId) { twoHex.noRoute.push(String(u.id)); continue; }
+    if (axialDist(u.q, u.r, input.battleQ, input.battleR) !== 1) {
+      twoHex.noRoute.push(String(u.id));
+      continue;
+    }
+    const k = u.q + ',' + u.r;
+    const g = groups.get(k);
+    if (g) g.push(u); else groups.set(k, [u]);
+  }
+  for (const g of groups.values()) {
+    const head = g[0]!;
+    // Start sasiaduje z heksem bitwy: 2 heksy od bitwy = 1 krok dalej od startu.
+    const done = tryTwoHexRetreat(input, g, head.q - input.battleQ, head.r - input.battleR, 1);
+    for (const u of g) (done.has(u.id) ? twoHex.retreated : twoHex.noRoute).push(String(u.id));
   }
 }
 
@@ -339,8 +532,14 @@ function registerVeteranProgressAfterBattle(input: PostBattleMapInput): void {
   if (input.winner === 'remis') return;
 
   const winningRoster = input.winner === 'atakujacy' ? input.atkRoster : input.defRoster;
+  // R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1: jednostki w rezerwie (poza limitem pola
+  // bitwy) nie walczyly -- nie dostaja wygranej (log zdarzen = kto realnie wystapil).
+  const logged = loggedIdsForSide(input, input.winner === 'atakujacy' ? 'attacker' : 'defender');
   const ids = new Set<string | number>();
-  for (const ref of winningRoster) ids.add(ref.id);
+  for (const ref of winningRoster) {
+    if (logged && !logged.has(String(ref.id))) continue;
+    ids.add(ref.id);
+  }
 
   for (const id of ids) {
     const u = liveUnit(input.units, id);
@@ -351,8 +550,20 @@ function registerVeteranProgressAfterBattle(input: PostBattleMapInput): void {
 
 export function applyPostBattleMap(input: PostBattleMapInput): PostBattleMapResult {
   const removedIds: string[] = [];
+  const twoHex = { retreated: [] as string[], noRoute: [] as string[] };
 
+  // DECYZJA WLASCICIELA 2026-11-11: odwrot ocalalych przegranej dotyczy TYLKO walki w polu.
+  // W MIESCIE (heks bitwy = miasto: szturm, obrona miasta, oblezenie) przegrani gina jak dotad.
+  const cityBattle = !!input.cityOnBattleHex;
+  const fieldTwoHex = cityBattle ? undefined : twoHex;
   if (input.manualSurvivors !== undefined) {
+    if (cityBattle && input.winner !== 'remis') {
+      // Ocalali PRZEGRANEJ strony nie wracaja na mape (zachowanie bazy: eksport tylko zwyciezcow).
+      const loserIds = new Set(
+        (input.winner === 'atakujacy' ? input.defRoster : input.atkRoster).map(u => String(u.id)),
+      );
+      input.manualSurvivors = input.manualSurvivors.filter(s => !loserIds.has(String(s.id)));
+    }
     applyManualSurvivors(input);
   } else {
     const dead = applyAutoLosses(input);
@@ -361,12 +572,14 @@ export function applyPostBattleMap(input: PostBattleMapInput): PostBattleMapResu
 
   registerVeteranProgressAfterBattle(input);
 
-  if (input.winner === 'atakujacy') {
+  if (input.winner === 'atakujacy' && input.holdPositionAfterWin === true) {
+    // R1: mur/palisada stoi -- atakujacy zostaja pod murami, miasto nie pada.
+  } else if (input.winner === 'atakujacy') {
     if (input.cityOnBattleHex) wipeDefenderOnCityCenter(input);
-    retreatDefendersAfterAtkWin(input);
+    retreatDefendersAfterAtkWin(input, fieldTwoHex);
     moveAtkRosterOntoBattleHex(input);
   } else if (input.winner === 'obronca') {
-    retreatAtkRosterToStart(input);
+    retreatAtkRosterToStart(input, fieldTwoHex);
     for (const ref of input.defRoster) {
       const u = liveUnit(input.units, ref.id);
       if (u) u.defLossesThisTurn = (u.defLossesThisTurn ?? 0) + 1;
@@ -382,7 +595,7 @@ export function applyPostBattleMap(input: PostBattleMapInput): PostBattleMapResu
   }
 
   spendAttackMpOnLive(input.units, input.atkRoster, input.atkAnchor.id);
-  return { removedIds };
+  return { removedIds, retreatedTwoHexIds: twoHex.retreated, retreatNoTwoHexRouteIds: twoHex.noRoute };
 }
 
 export function snapshotRosterPositions(roster: RuntimeUnit[]): Map<string | number, BattleStartPos> {
@@ -422,6 +635,9 @@ export function applyCityCaptureAfterBattle(
   // (wołane niżej z main.ts przez captureOpts.onOwnerChanged, PO ustawieniu city.ownerId) —
   // patrz cities.ts, wasIndependentCityStateBeforeCapture.
   const wasIndependentCityState = wasIndependentCityStateBeforeCapture(city);
+  // R-WEB-CITY-MILITIA-NO-POPULATION-LOSS-Q1: zdobycie obcego miasta = -1 obywatel (min. 1);
+  // odzyskanie własnego bez straty. Wspólny punkt wszystkich zbrojnych ścieżek zdobycia.
+  applyCapturePopulationLoss(city, atkOwner, prevOwner, city.rebelPreviousOwnerId);
   for (let i = units.length - 1; i >= 0; i--) {
     const u = units[i]!;
     if (u.ownerId === city.ownerId && u.q === city.q && u.r === city.r) {

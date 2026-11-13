@@ -243,6 +243,7 @@ export function showGamePauseMenu(): void {
     cfg?.onSfxVolumeChange?.(v);
   });
 
+
   const autosaveFreqInput = box.querySelector('[data-act="autosave-freq"]') as HTMLInputElement | null;
   autosaveFreqInput?.addEventListener('change', () => {
     const n = Math.max(1, Math.min(20, Math.round(Number(autosaveFreqInput.value) || 1)));

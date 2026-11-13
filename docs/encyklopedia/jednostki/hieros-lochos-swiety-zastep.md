@@ -25,7 +25,7 @@
 Hieros Lochos (Święty Zastęp) to **super-jednostka** (jednorazowa, max 1 sztuka w grze) typu **Wręcz** z epoki **Brąz**. Unikalna dla **Grecka**. Od decyzji Macieja (2026-07-23) to **hoplici elitarni** uzbrojeni w **dory** (długa włócznia pchana) i **aspis** (okrągła tarcza) — nie miecznicy, mimo klasyfikacji bazowej `Swordsman` w danych.
 ### Rekrutacja i utrzymanie
 - **Koszt:** 0 ¤, 1 mieszkańców (darmowa — nie rekrutuje się jak zwykła jednostka)
-- **Tech:** —
+- **Tech:** Sztuka wojenna
 - **Utrzymanie:** 0 ¤/t, 1 żywności/t
 - **Ruch:** 2 (mapa) / 4 (bitwa)
 - **Siła w polu:** 63

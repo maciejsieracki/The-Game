@@ -1,0 +1,35 @@
+{
+ "actor": "zrownowazone",
+ "perCityStrict": true,
+ "seeds": [
+  11,
+  12,
+  13,
+  14,
+  15
+ ],
+ "worlds": [
+  "kontynenty",
+  "wyspy"
+ ],
+ "TURNS": 100,
+ "foodImprovements": 645,
+ "offWorked": 0,
+ "offWorkedButOtherCityWorks": 0,
+ "offPct": 0,
+ "causes": {},
+ "byKey": {
+  "farma": 180,
+  "bydlo": 180,
+  "owce": 4,
+  "irygacja": 180,
+  "lodzie_rybackie": 81,
+  "wyrab": 20
+ },
+ "irrigation": 180,
+ "livestock": 184,
+ "effectiveFoodFromImprovements": 1852,
+ "allFoodFromImprovementsIncludingUnworked": 1966,
+ "avgPickMsPerTurn": 14.25
+}
+EXIT=0

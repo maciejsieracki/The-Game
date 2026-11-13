@@ -1,0 +1,8 @@
+# R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1
+STATUS: REGISTERED
+DOMAIN: GAME
+Owner2026-11-11: survivingunitsafterlostbattlemustretreattwohexback ratherthanvanishcompletely.
+GOAL: reconcilebattleoutcome surviving/routed/dead/reserves tostrategicmap; onlytrulykilledunitsremoved, survivinglosersretreat2hexawayfromwinningforce andpreserveHP/experience/generalidentity. PlayerAIparity, manual/auto/Skip andattacker/defender, field/siege paths. Readactualexistingretreat logic first (mainretreatHexPassable around33388, battleundeployedlostpriorfix). Not pre-battlewithdrawalordefeatlastcityelimination withoutaudit.
+SCOPE: exactallowlistbeforeedit, no arbitrarycapture/killfallback ornewteleport overwater/blockedtiles. Legal2hexroute/passability/enemyownership/occupiedhex/edgecases; ifnolayoutlegal2hex route, reportexistingbehavior anddecisionneeded ratherthansilentlyinventbalance. Ordinaryclear2hexcase canproceed independently. Preserveexistinggarrison/siegeblockadeconstraints andspecificlast-cityrules unlessownerexplicitlyoverridesafterconflictaudit.
+TESTS: actualresultapplication→worldunits goldensurvivorsmove2 vsdeadremoved; lowHP/routed/reserves/groups/general; AIplayer, auto/manual/Skipparity, reachable2 vsedge/blocked/siege/nolegalroute, save-loadafterretreat. Browserbattleactualflowandmeaningfulhelpertests; noonlysource-textproof. IndependentLunaHigh roles→main/Robocza/push/readback.
+QUEUE: registeredurgentbattlefollowup nextqualifiedslot (max4), distinctfromdeadunitvisualregression.

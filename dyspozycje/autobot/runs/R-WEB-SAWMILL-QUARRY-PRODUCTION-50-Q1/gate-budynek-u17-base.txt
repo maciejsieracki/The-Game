@@ -1,0 +1,9 @@
+-- PYTANIE-84 U-17: Warsztat kamieniarski +10% Kamienia (civ-wide, addytywnie) --
+PASS: kamieniolom w terytorium daje kamien > 0
+FAIL: bez Warsztatu: kamien = baza z mapy (got 205, want 200)
+FAIL: 1 Warsztat: kamien ×1.10 (floor) (got 225, want 220)
+FAIL: 2 Warsztaty: kamien ×1.20 (floor, addytywnie) (got 225, want 240)
+PASS: Stolarnia: drewno ×1.10 (got 220, want 220)
+FAIL: Warsztat kamieniarski: kamien ×1.10 (analog Stolarni) (got 225, want 220)
+2 passed, 4 failed
+EXIT=1

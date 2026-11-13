@@ -1,0 +1,59 @@
+PASS: (0) sciencePicker.ts eksportuje techUnlockItems() zamiast techUnlockSummary()
+PASS: (0) techUnlockItems() nie emituje już żadnego generycznego emoji
+PASS: (0) scienceHubHud.ts nie wstawia już wiersza „Odblok." jednym textContent
+PASS: (0) scienceHubHud.ts renderuje ikonę pozycji przez resolver marki (a nie glif)
+PASS: (0) buildingIconSvg dostaje def z `kategoria` (nie `undefined`) — inaczej hub ≠ cityPanel
+PASS: (0) techUnlockItems() odsiewa placeholdery we wszystkich trzech kategoriach
+[science-hub-unlock-icons-real-render-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+PASS: fixture: hub badań wyrenderował wiersz dla każdej technologii z tech.json
+PASS: fixture: część technologii faktycznie ma odblokowania do pokazania
+PASS: (A) „Oswojenie zwierząt" ma wiersz „Odblok."
+PASS: (A) „Oswojenie zwierząt" — każda pozycja ma własną ikonę SVG (liczba svg == liczba slotów)
+PASS: (A) „Oswojenie zwierząt" — żaden slot ikony nie jest zerowy wizualnie
+PASS: (A) „Oswojenie zwierząt" — ZERO surowych emoji w tekście widzianym przez gracza
+PASS: (A) „Oswojenie zwierząt" — treść etykiet zachowana (wiersz nadal zaczyna się od „Odblok.:")
+PASS: (A) „Obróbka drewna" ma wiersz „Odblok."
+PASS: (A) „Obróbka drewna" — każda pozycja ma własną ikonę SVG (liczba svg == liczba slotów)
+PASS: (A) „Obróbka drewna" — żaden slot ikony nie jest zerowy wizualnie
+PASS: (A) „Obróbka drewna" — ZERO surowych emoji w tekście widzianym przez gracza
+PASS: (A) „Obróbka drewna" — treść etykiet zachowana (wiersz nadal zaczyna się od „Odblok.:")
+PASS: (A) „Łowiectwo" ma wiersz „Odblok."
+PASS: (A) „Łowiectwo" — każda pozycja ma własną ikonę SVG (liczba svg == liczba slotów)
+PASS: (A) „Łowiectwo" — żaden slot ikony nie jest zerowy wizualnie
+PASS: (A) „Łowiectwo" — ZERO surowych emoji w tekście widzianym przez gracza
+PASS: (A) „Łowiectwo" — treść etykiet zachowana (wiersz nadal zaczyna się od „Odblok.:")
+PASS: (B) „Obróbka drewna" / budynek „stolarnia" — ikona rozwiązana w danych gry (cityPanel/buildings.json:stolarnia (Stolarnia))
+PASS: (B) „Obróbka drewna" / budynek „stolarnia" — ikona w hubie IDENTYCZNA z tą samą encją gdzie indziej w grze
+PASS: (B) „Obróbka drewna" / surowiec „drewno" — ikona rozwiązana w danych gry (brandAssets/mapResourceIconSvg:drewno)
+PASS: (B) „Obróbka drewna" / surowiec „drewno" — ikona w hubie IDENTYCZNA z tą samą encją gdzie indziej w grze
+PASS: (B) „Obróbka drewna" / ulepszenie „tartak" — ikona rozwiązana w danych gry (buildModeHud/IMPROVEMENTS:tartak (Tartak))
+PASS: (B) „Obróbka drewna" / ulepszenie „tartak" — ikona w hubie IDENTYCZNA z tą samą encją gdzie indziej w grze
+PASS: (B) „Łowiectwo" / ulepszenie „oboz_lowiecki" — ikona rozwiązana w danych gry (buildModeHud/IMPROVEMENTS:oboz_lowiecki (Obóz łowiecki))
+PASS: (B) „Łowiectwo" / ulepszenie „oboz_lowiecki" — ikona w hubie IDENTYCZNA z tą samą encją gdzie indziej w grze
+PASS: (B) „Oswojenie zwierząt" / surowiec „bydlo" — ikona rozwiązana w danych gry (brandAssets/mapResourceIconSvg:bydlo)
+PASS: (B) „Oswojenie zwierząt" / surowiec „bydlo" — ikona w hubie IDENTYCZNA z tą samą encją gdzie indziej w grze
+PASS: (B) „Oswojenie zwierząt" / ulepszenie „bydlo" — ikona rozwiązana w danych gry (buildModeHud/IMPROVEMENTS:bydlo (Pastwisko))
+PASS: (B) „Oswojenie zwierząt" / ulepszenie „bydlo" — ikona w hubie IDENTYCZNA z tą samą encją gdzie indziej w grze
+PASS: (B) porównanie objęło wszystkie trzy kategorie (budynek + surowiec + ulepszenie)
+PASS: (C) żadna technologia nie ma złamanego/pustego slotu ikony
+PASS: (C) ŻADNA technologia nie pokazuje już surowego emoji w wierszu „Odblok."
+PASS: (C) technologie bez odblokowań nie dostają pustego wiersza „Odblok." (zamiast pustego miejsca — brak wiersza)
+PASS: (C) sprawdzono rozrzut technologii, nie tylko trzy nazwane
+PASS: (C) zero wyjątków JS przy renderze całej listy
+PASS: (D) każda etykieta surowca pokazywana w hubie trafia we WPIS mapy marki (nie w _default)
+PASS: (D) „krowa/byk" ze zgłoszenia właściciela jest rozwiązane na bydło, nie na kamień
+PASS: (F) każdy budynek w wierszu „Odblok." ma `def` w buildings.json (iconKey to realne id)
+PASS: (F) KAŻDY budynek w hubie ma ikonę IDENTYCZNĄ z ikoną tego budynku w cityPanel (nie tylko 3 nazwane)
+PASS: (F) „Trybunał" (zarzut 1 Evaluatora: hub bld-default vs cityPanel bld-admin) objęty porównaniem i zgodny
+PASS: (G) każdy `iconKey` ulepszenia odpowiada istniejącej encji (IMPROVEMENTS / improvement-icon-map)
+PASS: (G) żadna pozycja „Odblok." nie jest placeholderem („—", „brak") z ikoną marki obok
+PASS: (G) „Matematyka" (tech.json: „Odblokowuje ulepszenie terenu" = „—") nie pokazuje już wiersza „Odblok."
+
+-- Mutacja (kontrola negatywna): odtworzenie renderu sprzed poprawki --
+PASS: (E) mutacja „Oswojenie zwierząt" — asercja (A) faktycznie czerwienieje (emoji wraca, ikony znikają)
+PASS: (E) mutacja „Obróbka drewna" — asercja (A) faktycznie czerwienieje (emoji wraca, ikony znikają)
+PASS: (E) mutacja „Łowiectwo" — asercja (A) faktycznie czerwienieje (emoji wraca, ikony znikają)
+PASS: (E) kontrola negatywna objęła wszystkie trzy technologie z kryteriów
+
+Wynik: 53 PASS / 0 FAIL
+EXIT=0

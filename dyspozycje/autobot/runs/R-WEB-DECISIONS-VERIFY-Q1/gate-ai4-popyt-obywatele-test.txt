@@ -1,0 +1,4 @@
+  [OK] Q2o: main.ts (AI GRACZA) podaje Zasade 1 i realne niedobory panstwa (R3: per fotel hOid zamiast stalej 0 — wielu graczy, main.ts)
+  [OK] Q2p: main.ts (AI GRACZA) obsluguje `wyrab` sciezka wycinki, nie jako warstwe ulepszenia
+ai4-popyt-obywatele-test: 55 passed, 0 failed
+EXIT=0

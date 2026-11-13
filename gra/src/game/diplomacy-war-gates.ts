@@ -7,8 +7,10 @@
 import type { BasketItem } from './diplomacy-pn-engine';
 
 /** Akcje, w których płatność złotem/pracą jest częścią ugody pokojowej. */
-export const PEACE_CURRENCY_ACTION_IDS = new Set(['pokoj', 'trybut_oferta']);
+// R-WEB-TRUCE-Q1 r3 (N2): rozejm ma te same bramki walutowe w wojnie co pokój.
+export const PEACE_CURRENCY_ACTION_IDS = new Set(['pokoj', 'rozejm', 'trybut_oferta']);
 
+/** Waluta w wojnie dozwolona dla pokoju i rozejmu (wspólna bramka, R-WEB-TRUCE-Q1 r3 N2). */
 export function isPeaceCurrencyAction(actionId: string): boolean {
   return PEACE_CURRENCY_ACTION_IDS.has(actionId);
 }

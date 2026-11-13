@@ -53,6 +53,8 @@ export { decideAITurn, isHomeDefenseThreatForCity, assignHomeDefenders, AI_HOME_
 export { hexDistance } from ${JSON.stringify(AI_SRC + '/units/setup')};
 export { cityTerritoryRadius } from ${JSON.stringify(AI_SRC + '/map/territory')};
 export { computePlayerVisibility, buildUnitSightResolver, DEFAULT_SIGHT } from ${JSON.stringify(AI_SRC + '/game/visibility')};
+export { setArmyConsolidationOverride } from ${JSON.stringify(AI_SRC + '/game/army-consolidation')};
+export { setHomeWarDefenseOverride } from ${JSON.stringify(AI_SRC + '/game/ai-war-home-defense')};
 export { BARBARIAN_OWNER_ID } from ${JSON.stringify(AI_SRC + '/game/barbarians')};
 `;
 
@@ -79,6 +81,7 @@ const {
   decideAITurn, isHomeDefenseThreatForCity, assignHomeDefenders,
   AI_HOME_DEFENSE_VICINITY_HEX, hexDistance, cityTerritoryRadius,
   computePlayerVisibility, buildUnitSightResolver, DEFAULT_SIGHT, BARBARIAN_OWNER_ID,
+  setArmyConsolidationOverride, setHomeWarDefenseOverride,
 } = AI;
 
 // --- tiny assertion framework ----------------------------------------------
@@ -142,6 +145,20 @@ function makeGameData() {
 
 const data = makeGameData();
 
+/**
+ * Uruchamia `fn` z jawnie ustawionymi flagami nakladek, ktore pojawily sie PO napisaniu tego testu
+ * (R-WEB-TEST-DEBT-AI-Q2): konsolidacja armii (army-consolidation.ts: w pokoju jednostka stojaca
+ * w miescie zbiorki jest wstrzymywana, inne jadą na zbiorke) oraz nakladka obrony kraju
+ * (ai-war-home-defense.ts, applyHomeWarPriorities). `undefined` = zostaw domyslna wartosc.
+ * Flagi zawsze wracaja do domyslnych (null) po wykonaniu.
+ */
+function withOverlays({ consolidation, homeWar }, fn) {
+  if (consolidation !== undefined) setArmyConsolidationOverride(consolidation);
+  if (homeWar !== undefined) setHomeWarDefenseOverride(homeWar);
+  try { return fn(); }
+  finally { setArmyConsolidationOverride(null); setHomeWarDefenseOverride(null); }
+}
+
 // ---------------------------------------------------------------------------
 // T1: scenariusz bazowy -- zagrożenie WEWNĄTRZ zasięgu wykrywania (miasto pop=5,
 // promień terytorium=5, zasięg wykrywania=5+2*2=9), odległe wrogie miasto istnieje
@@ -179,13 +196,22 @@ console.log('\n--- T2: zagrożenie TUŻ POZA zasięgiem (dystans 10 > 9) -- obro
   const unit = makeUnit('u1', 1, 25, 25);
 
   eq(hexDistance(threat.q, threat.r, myCity.q, myCity.r), 10, 'T2 setup: zagrożenie 10 hex od miasta');
-  const result = decideAITurn(1, [unit, threat], [myCity, enemyCity], map, data, {});
 
+  // (a) Domyslna konfiguracja (konsolidacja armii ON): jednostka stoi w miescie zbiorki i jest
+  //     wstrzymywana (brak komendy) -- ale w KAZDYM razie NIE rusza w strone zagrozenia.
+  const resultDefault = decideAITurn(1, [unit, threat], [myCity, enemyCity], map, data, {});
+  const movesToThreat = resultDefault.filter(c => c.unitId === unit.id && c.type === 'move' && c.toR > 25);
+  eq(movesToThreat.length, 0, `T2(a): domyslna konfiguracja -- ZADNEGO ruchu W STRONE zagrozenia (obrona domu nie wyzwolona) (got ${JSON.stringify(movesToThreat)})`);
+
+  // (b) Konsolidacja armii OFF (izolacja pierwotnej tezy testu): marsz na wrogie miasto jak dawniej.
+  const result = withOverlays({ consolidation: false }, () =>
+    decideAITurn(1, [unit, threat], [myCity, enemyCity], map, data, {}));
   const cmd = result.find(c => c.unitId === unit.id);
-  assert(cmd !== undefined, 'T2: jednostka dostaje jakąś komendę');
+  assert(cmd !== undefined, 'T2(b): jednostka dostaje jakąś komendę (konsolidacja OFF)');
   if (cmd !== undefined) {
-    eq(cmd.type, 'move', 'T2: komenda to ruch');
-    assert(cmd.toQ < 25, `T2: ruch W STRONĘ wrogiego miasta (toQ<25), obrona domu nie wyzwolona (got toQ=${cmd.toQ}, toR=${cmd.toR})`);
+    eq(cmd.type, 'move', 'T2(b): komenda to ruch');
+    assert(cmd.toQ < 25, `T2(b): ruch W STRONĘ wrogiego miasta (toQ<25), obrona domu nie wyzwolona (got toQ=${cmd.toQ}, toR=${cmd.toR})`);
+    assert(cmd.toR <= 25, `T2(b): ruch NIE w strone zagrozenia (toR<=25) (got toR=${cmd.toR})`);
   }
 }
 
@@ -231,12 +257,18 @@ console.log('\n--- T4: miasto pop=15, zagrożenie 20 hex (poza realnym zasięgie
   const unit = makeUnit('u1', 1, 25, 25);
 
   eq(hexDistance(threat.q, threat.r, myCity.q, myCity.r), 20, 'T4 setup: zagrożenie 20 hex od miasta');
-  const result = decideAITurn(1, [unit, threat], [myCity, enemyCity], map, data, {});
+  const resultDefault = decideAITurn(1, [unit, threat], [myCity, enemyCity], map, data, {});
+  const movesToThreat = resultDefault.filter(c => c.unitId === unit.id && c.type === 'move' && c.toR > 25);
+  eq(movesToThreat.length, 0, `T4(a): domyslna konfiguracja -- ZADNEGO ruchu W STRONE zagrozenia (got ${JSON.stringify(movesToThreat)})`);
+
+  const result = withOverlays({ consolidation: false }, () =>
+    decideAITurn(1, [unit, threat], [myCity, enemyCity], map, data, {}));
   const cmd = result.find(c => c.unitId === unit.id);
-  assert(cmd !== undefined, 'T4: jednostka dostaje jakąś komendę');
+  assert(cmd !== undefined, 'T4(b): jednostka dostaje jakąś komendę (konsolidacja OFF)');
   if (cmd !== undefined) {
-    eq(cmd.type, 'move', 'T4: komenda to ruch');
-    assert(cmd.toQ < 25, `T4: ruch W STRONĘ wrogiego miasta (toQ<25), obrona domu nie wyzwolona dla zagrożenia poza zasięgiem (got toQ=${cmd.toQ}, toR=${cmd.toR})`);
+    eq(cmd.type, 'move', 'T4(b): komenda to ruch');
+    assert(cmd.toQ < 25, `T4(b): ruch W STRONĘ wrogiego miasta (toQ<25), obrona domu nie wyzwolona dla zagrożenia poza zasięgiem (got toQ=${cmd.toQ}, toR=${cmd.toR})`);
+    assert(cmd.toR <= 25, `T4(b): ruch NIE w strone zagrozenia (toR<=25) (got toR=${cmd.toR})`);
   }
 }
 
@@ -275,7 +307,12 @@ console.log('\n--- T5 (runda 3 pkt 3): podwójne zaangażowanie -- obrońca na h
   eq(assignments.get('A') && assignments.get('A').id, 'x2', 'T5 setup: A przydzielone do X2 (najbliższy-dostępny)');
   eq(assignments.get('B') && assignments.get('B').id, 'x', 'T5 setup: B przydzielone do X (jedyny pozostały)');
 
-  const result = decideAITurn(1, [unitA, unitB, x, x2], [city1, city2], map, data, {});
+  // Izolacja logiki 4b2/handledThreatIds: wylaczone nakladki dodane PO tym tescie, ktore
+  // legalnie wydaja B ruch niezalezny od przydzialu obrony domu (R-WEB-TEST-DEBT-AI-Q2):
+  //  - konsolidacja armii (zbiorka w miescie zbiorki),
+  //  - nakladka obrony kraju (applyHomeWarPriorities: wolna jednostka polowa idzie na wroga na wlasnym terenie).
+  const result = withOverlays({ consolidation: false, homeWar: false }, () =>
+    decideAITurn(1, [unitA, unitB, x, x2], [city1, city2], map, data, {}));
 
   const attackA = result.find(c => c.unitId === 'A' && c.type === 'attack');
   assert(attackA !== undefined, 'T5: A atakuje sąsiednie zagrożenie w kroku 4b');

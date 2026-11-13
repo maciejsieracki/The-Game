@@ -1,0 +1,16 @@
+[PreBattle] flush rzucił wyjątek -- element odrzucony z kolejki, sprzątam ekran {
+  where: 'C-real',
+  error: Error: boom-C
+      at Object.get [as atakujacy] (/home/user/The-Game/.claude/worktrees/wf_3a680124-f25-1/gra/tools/endturn-battle-deadlock-test.cjs:409:51)
+      at buildOverlay (/home/user/The-Game/.claude/worktrees/wf_3a680124-f25-1/gra/tools/.endturn-deadlock-bundle.cjs:727:38)
+      at showPreBattle (/home/user/The-Game/.claude/worktrees/wf_3a680124-f25-1/gra/tools/.endturn-deadlock-bundle.cjs:339:15)
+      at flushDeferredAutoPreBattle (/home/user/The-Game/.claude/worktrees/wf_3a680124-f25-1/gra/tools/.endturn-deadlock-bundle.cjs:396:3)
+      at flushDeferredPreBattleSafely (eval at makeWrapper (/home/user/The-Game/.claude/worktrees/wf_3a680124-f25-1/gra/tools/endturn-battle-deadlock-test.cjs:387:32), <anonymous>:5:5)
+      at runScenario (/home/user/The-Game/.claude/worktrees/wf_3a680124-f25-1/gra/tools/endturn-battle-deadlock-test.cjs:417:11)
+      at runUiPart (/home/user/The-Game/.claude/worktrees/wf_3a680124-f25-1/gra/tools/endturn-battle-deadlock-test.cjs:437:17)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async main (/home/user/The-Game/.claude/worktrees/wf_3a680124-f25-1/gra/tools/endturn-battle-deadlock-test.cjs:459:3)
+}
+
+endturn-battle-deadlock-test: 38 pass, 0 fail
+EXIT=0

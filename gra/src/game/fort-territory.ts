@@ -1,9 +1,21 @@
 /**
  * game/fort-territory.ts
- * R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA, krok 2 (Maciej 2026-08-09/13):
- * Fort/Posterunek jako "miekka rezerwacja" zasiegu zakladania miast (Q2=B:
- * WYLACZNIE prawo do zalozenia miasta w promieniu, nic wiecej — granice
- * terytorium sie nie przesuwaja). PURE — bez DOM/main.ts.
+ * AKTUALNIE (decyzja wlasciciela 2026-10-31, rejestr #15-#17, R-WEB-OUTPOST-FORT-TERRITORY-Q1):
+ * Posterunek (promien 3) i fort (promien 5) to TWARDE terytorium wlasciciela jak miasto
+ * (nie "miekka rezerwacja"; stary promien 10 i Q2=B "granice sie nie przesuwaja" NIEAKTUALNE).
+ * HISTORIA: R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA, krok 2 (Maciej 2026-08-09/13) —
+ * "miekka rezerwacja" zasiegu zakladania miast (Q2=B: WYLACZNIE prawo do zalozenia miasta
+ * w promieniu). PURE — bez DOM/main.ts.
+ *
+ * ZASTAPIONE decyzja wlasciciela 2026-10-31 (R-WEB-OUTPOST-FORT-TERRITORY-Q1):
+ * Q2=B ("granice sie nie przesuwaja") NIE OBOWIAZUJE. Posterunek (r=3) i fort
+ * (r=5) tworza TWARDE terytorium wlasciciela jak miasto — wchodza do
+ * `territoryOwnerAt` (fortTerritoryNodes nizej; main.ts buildAllTerritoryNodes),
+ * obcy nie buduje tam ulepszen ani miast (isHexInForeignFortTerritory), a
+ * wlasciciel buduje i rezerwuje pod przyszle miasta (poza limitem cityLimitBase —
+ * fort nie jest miastem). Reguly 3/4 (kontestacja, przejecie) zostaja jako
+ * rozstrzyganie sporow o ten sam heks. / EN: Q2=B superseded — forts/outposts
+ * are HARD territory like cities.
  *
  * Rejestr wlasciciela per-hex trzymany OSOBNO od `placedImprovements`
  * (main.ts): `territoryOwnerAt` nie moze rozstrzygnac wlasciciela fortu
@@ -23,7 +35,7 @@
  * 4 — takeover on city founding) and isHexReservedByRivalFort (rule 3 —
  * contestation on build).
  */
-import { axialDistance, cityTerritoryRadius, type CityNode } from '../map/territory';
+import { axialDistance, cityTerritoryRadius, territoryOwnerAt, type CityNode, type TerritoryNode } from '../map/territory';
 import { hexKeysWithinRadius } from './okolica';
 import type { GameMap } from '../types/map';
 
@@ -45,6 +57,67 @@ export interface FortNode {
    * wlasciciela jest przejecie przez CUDZE miasto (regula 4).
    */
   contestedUseless?: boolean;
+  /**
+   * R3 Q-B=B (wlasciciel 2026-10-31): znacznik kolejnosci budowy. Sporny heks (nakladajace sie
+   * zasiegi fortow ROZNYCH cywilizacji) nalezy do wczesniejszego fortu (mniejsze `builtAtTurn`,
+   * przy remisie mniejsze `seq`). Stare zapisy: backfillFortOrder (kolejnosc w tablicy).
+   * Przejecie/zdobycie NIE zmienia znacznika (fort zachowuje "wiek").
+   */
+  builtAtTurn?: number;
+  seq?: number;
+}
+
+/**
+ * R-WEB-FORT-OUTPOST-PLACEMENT-RULES-Q1 (decyzja wlasciciela 2026-11-03) — JEDEN wspolny predykat
+ * lokalizacji POSTERUNKU (gracz: panel + strazniki main.ts; automat; AI):
+ * heks (q,r) musi NALEZEC do terytorium `ownerId` (wg `territoryOwnerAt`) ORAZ przylegac do jego
+ * granicy, tj. miec >= 1 z 6 sasiadow, ktory NIE jest terytorium `ownerId` (wolny, morze, obce).
+ * Posterunek rozszerza teren, ale nie stoi "byle gdzie". FORT nie ma tego ograniczenia
+ * (moze stac gdziekolwiek -- zakladanie miast na innych kontynentach/wyspach).
+ * Brak wezlow terytorium -> false (nie ma czyjego terenu). / EN: single shared outpost predicate.
+ */
+export function isOutpostPlacementAllowed(
+  q: number,
+  r: number,
+  ownerId: number,
+  allNodes: readonly TerritoryNode[],
+): boolean {
+  if (allNodes.length === 0) return false;
+  if (territoryOwnerAt(q, r, allNodes) !== ownerId) return false;
+  const nbs: ReadonlyArray<readonly [number, number]> = [
+    [q + 1, r], [q - 1, r], [q, r + 1], [q, r - 1], [q + 1, r - 1], [q - 1, r + 1],
+  ];
+  for (const [nq, nr] of nbs) {
+    if (territoryOwnerAt(nq, nr, allNodes) !== ownerId) return true;
+  }
+  return false;
+}
+
+/** Komunikat odmowy dla gracza (posterunek poza regula granicy). */
+export const OUTPOST_PLACEMENT_DENIED_HINT =
+  'Posterunek mozna postawic tylko na wlasnym terytorium, przy jego granicy. Fort mozna postawic gdziekolwiek.';
+
+/** Nastepny numer kolejny budowy fortu (max(seq)+1; 0 dla pustego rejestru). */
+export function nextFortSeq(forts: readonly FortNode[]): number {
+  let m = -1;
+  for (const f of forts) if (typeof f.seq === 'number' && f.seq > m) m = f.seq;
+  return m + 1;
+}
+
+/**
+ * Backfill starych zapisow (bez `seq`): kolejnosc w tablicy = kolejnosc budowy, `builtAtTurn`=0
+ * (nieznana tura -> traktowane jako najstarsze). Wpisy z `seq` nietkniete. Zwraca liczbe uzupelnionych.
+ */
+export function backfillFortOrder(forts: FortNode[]): number {
+  let n = 0;
+  let next = nextFortSeq(forts);
+  for (const f of forts) {
+    if (typeof f.seq === 'number') continue;
+    f.seq = next++;
+    if (typeof f.builtAtTurn !== 'number') f.builtAtTurn = 0;
+    n++;
+  }
+  return n;
 }
 
 /** FortNode -> CityNode (do isInTerritory/cityTerritoryRadius z map/territory.ts). */
@@ -57,6 +130,46 @@ export function fortNodeAsCityNode(f: Pick<FortNode, 'q' | 'r' | 'type'>): CityN
     isFort: f.type === 'fort',
     isOutpost: f.type === 'posterunek',
   };
+}
+
+/**
+ * R-WEB-OUTPOST-FORT-TERRITORY-Q1 (decyzja 2026-10-31): wezly TWARDEGO terytorium z
+ * fortow/posterunkow (z wlascicielem) — dopisywane do wezlow miast w
+ * `buildAllTerritoryNodes` (main.ts). `contestedUseless` (regula 3) NIE tworzy
+ * terytorium. / EN: hard-territory nodes from forts/outposts.
+ */
+export function fortTerritoryNodes(forts: readonly FortNode[]): TerritoryNode[] {
+  const out: TerritoryNode[] = [];
+  for (const f of forts) {
+    if (f.contestedUseless) continue;
+    const node: TerritoryNode = { ...fortNodeAsCityNode(f), ownerId: f.ownerId };
+    if (typeof f.seq === 'number') node.order = { turn: f.builtAtTurn ?? 0, seq: f.seq };
+    out.push(node);
+  }
+  return out;
+}
+
+/**
+ * Czy hex (q,r) jest TERYTORIUM obcego fortu/posterunku (w jego promieniu i
+ * rozstrzygniety na jego korzysc wg `territoryOwnerAt` na `allNodes`) — obcy
+ * (`ownerId`) nie zaklada tam miasta. Blokuje WYLACZNIE terytorium z fortow
+ * (terytorium obcych miast: bez zmian). / EN: foreign fort territory blocks city founding.
+ */
+export function isHexInForeignFortTerritory(
+  q: number,
+  r: number,
+  ownerId: number,
+  forts: readonly FortNode[],
+  allNodes: readonly TerritoryNode[],
+): boolean {
+  let inForeignFortRadius = false;
+  for (const f of forts) {
+    if (f.ownerId === ownerId || f.contestedUseless) continue;
+    if (axialDistance(q, r, f.q, f.r) <= cityTerritoryRadius(fortNodeAsCityNode(f))) { inForeignFortRadius = true; break; }
+  }
+  if (!inForeignFortRadius) return false;
+  const owner = territoryOwnerAt(q, r, allNodes);
+  return owner !== null && owner !== ownerId;
 }
 
 /**
@@ -211,4 +324,77 @@ export function findEvacuationHexOutsideCity(
     prevRingKeys = new Set(withinKeys);
   }
   return null;
+}
+
+
+/** Minimalny opis jednostki do rozstrzygania zdobycia fortu przez wejscie wojska. */
+export interface FortCaptureUnit {
+  ownerId: number;
+  q: number;
+  r: number;
+  /** true = jednostka bojowa (nie cywil/osadnik/robotnik). */
+  military: boolean;
+}
+
+/** Zdarzenie zdobycia fortu/posterunka przez wejscie wojska (Q-A=A). */
+export interface FortCaptureEvent {
+  q: number;
+  r: number;
+  type: FortImprovementType;
+  prevOwnerId: number;
+  newOwnerId: number;
+}
+
+/**
+ * Q-A=A (wlasciciel 2026-10-31): WEJSCIE WOJSKA NA HEKS fortu/posterunka — gdy na heksie stoi
+ * jednostka wojskowa cywilizacji w stanie wojny z wlascicielem (`isEnemy`), a wlasciciel nie ma
+ * tam zadnej jednostki, fort przechodzi do wroga RAZEM z calym terytorium (zasieg r=3/5 wynika
+ * z `fortTerritoryNodes`, wiec zmiana `ownerId` przenosi granice). MUTUJE `forts` in-place.
+ * Zachowane reguly: pusty fort bez wojny/sojusznik/pokoj — bez zdobycia; jednostka wlasciciela
+ * na heksie — bez zdobycia (walka starym torem bitwy); barbarzyncy nie zdobywaja fortow
+ * (ZALOZENIE: Q-A mowi o cywilizacji w stanie wojny). Heks zajety przez >1 wrogow ROZNYCH
+ * wlascicieli albo przez obie strony — bez zdobycia (DECISION_REQUIRED Q-E, stary mechanizm).
+ * Zdobyty fort zachowuje `contestedUseless` i znacznik kolejnosci (wiek).
+ * / EN: capture by entering the hex; owner flips, territory follows.
+ */
+export function applyFortCaptureByOccupation(
+  forts: FortNode[],
+  units: readonly FortCaptureUnit[],
+  isEnemy: (attackerOwnerId: number, defenderOwnerId: number) => boolean,
+  isBarbarianOwner: (ownerId: number) => boolean = () => false,
+): FortCaptureEvent[] {
+  const events: FortCaptureEvent[] = [];
+  for (const f of forts) {
+    const here = units.filter(u => u.q === f.q && u.r === f.r);
+    if (here.length === 0) continue;
+    if (here.some(u => u.ownerId === f.ownerId)) continue; // wlasciciel ma jednostke -> brak zdobycia
+    const attackers = here.filter(u => u.military && !isBarbarianOwner(u.ownerId) && isEnemy(u.ownerId, f.ownerId));
+    if (attackers.length === 0) continue;
+    const attackerOwners = new Set(attackers.map(u => u.ownerId));
+    if (attackerOwners.size !== 1) continue; // spor wielu wrogow -> Q-E
+    if (here.some(u => !attackerOwners.has(u.ownerId))) continue; // obca/neutralna jednostka obok -> Q-E
+    const newOwnerId = attackers[0]!.ownerId;
+    events.push({ q: f.q, r: f.r, type: f.type, prevOwnerId: f.ownerId, newOwnerId });
+    f.ownerId = newOwnerId;
+  }
+  return events;
+}
+
+/**
+ * R-WEB-FORT-VISION-FOG-Q1 (zgloszenie wlasciciela 2026-11-02): fort/posterunek jest ZRODLEM WZROKU
+ * wlasciciela o promieniu rownym promieniowi jego terytorium (fort 5, posterunek 3) — cale kolo
+ * terytorium jest odkryte i widoczne jak przy miescie. `contestedUseless` nie daje terytorium,
+ * wiec nie daje tez wzroku. Fort wroga nie jest zrodlem wzroku `ownerId`. PURE.
+ * / EN: forts/outposts as sight sources with radius == territory radius.
+ */
+export function fortSightSources(
+  forts: readonly FortNode[],
+  ownerId: number,
+): Array<{ q: number; r: number; radius: number }> {
+  const out: Array<{ q: number; r: number; radius: number }> = [];
+  for (const f of forts) {
+    if (f.ownerId !== ownerId || f.contestedUseless) continue;
+    out.push({ q: f.q, r: f.r, radius: cityTerritoryRadius(fortNodeAsCityNode(f)) });
+  }
+  return out;
 }

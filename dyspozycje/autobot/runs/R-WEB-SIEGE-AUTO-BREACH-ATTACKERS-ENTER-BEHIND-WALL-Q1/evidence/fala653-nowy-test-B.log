@@ -1,0 +1,11 @@
+BUILD ok in 81 s
+RUN {"mode":"auto","winner":"remis","round":150,"breached":true,"wallS":38.4,"atk":{"lost":5,"remaining":12,"hp":2685},"def":{"lost":2,"remaining":4,"hp":144},"ev":222,"inside":2,"onBreachTile":0,"hist":{"samples":4821,"infOnBreach":314,"infInside":4733,"anyOnBreach":316,"maxInfInside":4,"firstInfInsideRound":24,"firstInfOnBreachRound":23},"manual":null}
+PASS: B0 scenariusz oblezenia: obleznicza w rosterze, mur z kaflami
+PASS: B1 mur/brama padly: co najmniej jedno zdarzenie wylomu w AUTO (kafel muru lub brama), kafle muru ubyly lub brama otwarta
+PASS: B2 wylom ustawia wallEverBreached (wynik bitwy niesie wallBreached -> miasto do zdobycia)
+PASS: B3 wylom padl PRZED koncem bitwy (nie zalozony retroaktywnie): tura wylomu < tura konca
+INFO B4 stan koncowy: onBreachTile=0 (informacyjnie, nie asercja)
+PASS: B4 SZTURM po wylomie: w ktorejs klatce po wylomie zywy atakujacy stoi NA zburzonym kaflu muru / otwartej bramie (historycznie)
+PASS: B4b PIECHOTA ZA MUREM: zywy piechur (bez machin) stoi ZA linia muru (q > kolumna muru) w ciagu 3 tur od wylomu (historycznie)
+PASS: B5 brak bledow JS
+--- 7 ok, 0 fail, 0 defekt(y) gry, 0 NIE_ZMIERZONO, 0 znany(ch) defekt(ow) (B4b)

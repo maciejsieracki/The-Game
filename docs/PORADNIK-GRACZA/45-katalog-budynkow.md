@@ -3,7 +3,7 @@
 > **Poradnik gracza (Pełny)** · Część VII §45 · dane: `gra/data/buildings.json`
 > Pełne karty Wiki: `docs/encyklopedia/budynki/` · spis: `docs/PORADNIK-GRACZA-SPIS-TRESCI.md`
 
-> **WERYFIKACJA 2026-08-04 (rev. G2):** Obrona miasta = **wyłącznie % Obrony** (Mury +200%, Cytadela/Baszta +100% każda obok). Kuźnie = **ścieżka A Pancerz** po wizycie; Koszary/Akademia wojskowa/Warsztat = **ścieżka B** miękkie staty. Targowisko = **Pieniądz/t**, nie mnożnik handlu. **Cytadela** (`id: fort`) to **osobny budynek obok Murów**, nie upgrade slotu. **Wielka Kuźnia** — parkowana (epoka 4, poza 3 epokami v1). Pełne karty: `docs/encyklopedia/budynki/`.
+> **WERYFIKACJA 2026-08-04 (rev. G2):** Obrona miasta = **wyłącznie % Obrony** (Mury +200%, Cytadela/Baszta +100% każda obok). Kuźnie = **ścieżka A Pancerz** po wizycie; Koszary/Akademia wojskowa/Warsztat = **ścieżka B** miękkie staty. Targowisko = **Podatek/t** (stały przyrost) **oraz** premia do dochodu z tras handlowych (nie mnoży lokalnego podatku). **Cytadela** (`id: fort`) to **osobny budynek obok Murów**, nie upgrade slotu. **Wielka Kuźnia** — parkowana (epoka 4, poza 3 epokami v1). Pełne karty: `docs/encyklopedia/budynki/`.
 
 Budynki wznosisz w zakładce **Produkcja** panelu miasta. Koszt budowy to **praca** z puli imperium; utrzymanie — **złoto** co turę. **Maks. poziomów** zależy od budynku (np. Targowisko **3**, Mury **2**, kuźnie wojskowe często **1**) — patrz karta w Civpedii, nie zakładaj „zawsze 10". Część budynków dodatkowo kosztuje **surowce z magazynu** przy wejściu do kolejki (Część VIII §53.2).
 
@@ -13,7 +13,7 @@ Budynki wznosisz w zakładce **Produkcja** panelu miasta. Koszt budowy to **prac
 |---------|---------------------|-----------|
 | Świątynia | 6 ceramiki | Garncarnia |
 | Biblioteka | 5 ceramiki | Garncarnia |
-| Spichlerz II *(brak w tabeli głównej — §82.1c)* | 10 cegły | Cegielnia |
+| Spichlerz Królewski *(brak w tabeli głównej — §82.1c)* | 10 cegły | Cegielnia |
 | Akwedukt *(brak w tabeli głównej)* | 12 cegły | Cegielnia |
 | Pretorium | 9 cegły | Cegielnia |
 | Łaźnia publiczna | 10 cegły | Cegielnia |
@@ -30,15 +30,16 @@ Brak materiału w magazynie blokuje wejście do kolejki — karta budynku pokazu
 | Stolarnia | Produkcja | Kamień | Obróbka drewna | 20 pracy | 1 ¤/t | +5 praca | [Stolarnia](../encyklopedia/budynki/stolarnia.md) |
 | Warsztat kamieniarski | Produkcja | Kamień | Murarstwo | 20 pracy | 1 ¤/t | +4 praca | [Warsztat kamieniarski](../encyklopedia/budynki/kamieniarski.md) |
 | Kuźnia brązu | Produkcja+Wojsko | Brąz | Brązownictwo | 30 pracy | 2 ¤/t | +6 praca, +1 ¤; +15% Pancerz (wizyta) | [Kuźnia brązu](../encyklopedia/budynki/kuznia.md) |
-| Targowisko (Rynek) | Pieniadz | Kamień | Wymiana | 25 pracy | 1 ¤/t | +5 ¤/t (max 3 poz.) | [Targowisko (Rynek)](../encyklopedia/budynki/targowisko.md) |
-| Port handlowy | Pieniadz | Brąz | Żegluga | 30 pracy | 2 ¤/t | +1 praca, +5 złoto | [Port handlowy](../encyklopedia/budynki/port.md) |
+| Targowisko (Rynek) | Podatek | Kamień | Wymiana | 25 pracy | 1 ¤/t | +5 ¤/t (max 3 poz.) | [Targowisko (Rynek)](../encyklopedia/budynki/targowisko.md) |
+| Port handlowy | Podatek | Brąz | Żegluga | 30 pracy | 2 ¤/t | +1 praca, +5 podatek | [Port handlowy](../encyklopedia/budynki/port.md) |
 | Spichlerz | Zywnosc | Kamień | Garncarstwo | 20 pracy | 1 ¤/t | +2 żywność | [Spichlerz](../encyklopedia/budynki/spichlerz.md) |
-| Swiatynia | Kultura | Kamień | Mistycyzm | 25 pracy | 1 ¤/t | +2 kultura, +2 szczęście | [Swiatynia](../encyklopedia/budynki/swiatynia.md) |
+| Świątynia | Kultura | Kamień | Mistycyzm | 25 pracy | 1 ¤/t | +2 kultura, +2 szczęście | [Świątynia](../encyklopedia/budynki/swiatynia.md) |
 | Biblioteka | Nauka | Brąz | Pismo | 25 pracy | 1 ¤/t | +3 nauka, +1 kultura | [Biblioteka](../encyklopedia/budynki/biblioteka.md) |
 | Studnia | Zdrowie | Kamień | Gospodarka wodna | 15 pracy | 1 ¤/t | +1 szczęście | [Studnia](../encyklopedia/budynki/studnia.md) |
-| Mury | Obrona | Brąz | Budownictwo | 35 pracy | 2 ¤/t | +200% Obrony (max 2 poz.) | [Mury](../encyklopedia/budynki/mury.md) |
+| Mury kamienne | Obrona | Kamień | Murarstwo | 35 pracy | 2 ¤/t | +150% Obrony (max 2 poz.) | [Mury kamienne](../encyklopedia/budynki/mury-kamienne.md) |
+| Mury ceglane | Obrona | Brąz | Budownictwo | 35 pracy | 2 ¤/t | +200% Obrony (max 2 poz.) | [Mury ceglane](../encyklopedia/budynki/mury.md) |
 | Koszary | Wojsko | Brąz | Wojskowosc | 25 pracy | 2 ¤/t | +2 praca; +20% miękkie (wizyta) | [Koszary](../encyklopedia/budynki/koszary.md) |
-| Magazyn | Produkcja+Pieniadz | Brąz | Handel | 20 pracy | 1 ¤/t | +1 praca, +1 złoto | [Magazyn](../encyklopedia/budynki/magazyn.md) |
+| Magazyn | Produkcja+Podatek | Brąz | Handel | 20 pracy | 1 ¤/t | +1 praca, +1 podatek | [Magazyn](../encyklopedia/budynki/magazyn.md) |
 | Stela / Pomnik | Kultura | Kamień | Murarstwo | 15 pracy | 0 ¤/t | +1 kultura | [Stela / Pomnik](../encyklopedia/budynki/stela.md) |
 | Palac | Kultura/Administracja | Kamień | — | 40 pracy | 2 ¤/t | +3 kultura, +1 szczęście (+5% mnożnik) | [Palac](../encyklopedia/budynki/palac.md) |
 | Kuźnia żelaza | Produkcja+Wojsko | Żelazo | Hutnictwo żelaza | 60 pracy | 3 ¤/t | +8 praca, +2 ¤; +15% Pancerz (wizyta) | [Kuźnia żelaza](../encyklopedia/budynki/kuznia_zelaza.md) |
@@ -48,7 +49,7 @@ Brak materiału w magazynie blokuje wejście do kolejki — karta budynku pokazu
 | Warsztat oblężniczy | Wojsko | Żelazo | Oblężnictwo | 65 pracy | 3 ¤/t | Katapulta; +10% miękkie | [Warsztat oblężniczy](../encyklopedia/budynki/warsztat_oblezniczy.md) |
 | Akademia | Nauka | Żelazo | Filozofia | 70 pracy | 3 ¤/t | +6 nauka, +5 kultura (obok Biblioteki) | [Akademia](../encyklopedia/budynki/akademia.md) |
 | Teatr | Kultura | Żelazo | Filozofia | 55 pracy | 2 ¤/t | +4 kultura, +3 szczęście | [Teatr](../encyklopedia/budynki/teatr.md) |
-| Sąd | Administracja | Żelazo | Kodeks prawa | 55 pracy | 2 ¤/t | +2 złoto, +1 kultura, +2 szczęście | [Sąd](../encyklopedia/budynki/sad.md) |
+| Sąd | Administracja | Żelazo | Kodeks prawa | 55 pracy | 2 ¤/t | +2 podatek, +1 kultura, +2 szczęście | [Sąd](../encyklopedia/budynki/sad.md) |
 | Pretorium | Administracja | Żelazo | Prawo | 75 pracy | 3 ¤/t | +2 praca, +3 ¤, +5 kultura; Prawo regionalne | [Pretorium](../encyklopedia/budynki/pretorium.md) |
 | Łaźnia publiczna | Zdrowie | Żelazo | Medycyna | 50 pracy | 2 ¤/t | +1 żywność, +1 kultura, +3 szczęście | [Łaźnia publiczna](../encyklopedia/budynki/laznia_publiczna.md) |
 | Akademia wojskowa | Wojsko | Żelazo | Sztuka wojenna | 80 pracy | 4 ¤/t | +3 praca, +2 ¤; +20% miękkie (wizyta) | [Akademia wojskowa](../encyklopedia/budynki/akademia_wojskowa.md) |
@@ -89,43 +90,43 @@ Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarb
 
 **Kuźnia brązu** (Produkcja+Wojsko) odblokowuje się w epoce **Brąz** po technologii **Brązownictwo**. Koszt **30** pracy ( **maks. 1 poziom** — wyższy tier = awans na Kuźnię żelaza). Utrzymanie: **2** ¤/t.
 
-Daje: **+6 Pracy/t**, **+1 Pieniądza/t** oraz **+15% Pancerza** (ścieżka A) jednostkom, które **odwiedziły** miasto po zbudowaniu kuźni.
+Daje: **+6 Pracy/t**, **+1 podatku/t** oraz **+15% Pancerza** (ścieżka A) jednostkom, które **odwiedziły** miasto po zbudowaniu kuźni.
 **Wymagania:** dostęp do **Rudy (miedź)** w imperium.
 
 
 ### Przykład liczbowy
 
 Koszt **30** pracy przy **7** pracy/t na budynki (70%) → **~4** tury budowy.
-Bonus **+6 praca, +1 złoto** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+6 praca, +1 podatek** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/kuznia.md`](../encyklopedia/budynki/kuznia.md)
 
 ### Targowisko (Rynek)
 
-**Targowisko (Rynek)** (Pieniądz) odblokowuje się w epoce **Kamień** po technologii **Wymiana**. Koszt od **25** pracy; **maks. 3 poziomy** (Targowisko → Rynek → Giełda). Utrzymanie: **1** ¤/t.
+**Targowisko (Rynek)** (Podatek) odblokowuje się w epoce **Kamień** po technologii **Wymiana**. Koszt od **25** pracy; **maks. 3 poziomy** (Targowisko → Rynek → Giełda). Utrzymanie: **1** ¤/t.
 
-Daje **Pieniądz na turę:** **+5 / +8 / +11 ¤/t** (poz. 1–3). **Bez mnożnika %** handlu ani Daniny.
+Daje **Podatek na turę:** **+5 / +8 / +11 ¤/t** (poz. 1–3). Osobna premia Targowiska: **+50%** (poziom normalny; +62% łatwy / +38% trudny) **wyłącznie do dochodu z tras handlowych** — nie mnoży lokalnego podatku miejskiego ani Daniny.
 
 
 ### Przykład liczbowy
 
 Koszt **25** pracy przy **7** pracy/t na budynki (70%) → **~3** tury budowy.
-Bonus **+3 złoto** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+3 podatek** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/targowisko.md`](../encyklopedia/budynki/targowisko.md)
 
 ### Port handlowy
 
-**Port handlowy** (Pieniadz) odblokowuje się w epoce **Brąz** po technologii **Żegluga**. Pierwsze wzniesienie kosztuje **30** pracy; każdy kolejny poziom +**10**. Utrzymanie: **2** ¤ na turę (rosnie o **1** per poziom).
+**Port handlowy** (Podatek) odblokowuje się w epoce **Brąz** po technologii **Żegluga**. Pierwsze wzniesienie kosztuje **30** pracy; każdy kolejny poziom +**10**. Utrzymanie: **2** ¤ na turę (rosnie o **1** per poziom).
 
-Na poziomie 1 daje: **+1 praca, +5 złoto**. Każdy kolejny poziom dodaje: **+3 złoto**.
+Na poziomie 1 daje: **+1 praca, +5 podatek**. Każdy kolejny poziom dodaje: **+3 podatek**.
 **Wymagania:** wybrzeze morskie lub rzeka.
 
 
 ### Przykład liczbowy
 
 Koszt **30** pracy przy **7** pracy/t na budynki (70%) → **~4** tury budowy.
-Bonus **+1 praca, +5 złoto** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+1 praca, +5 podatek** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/port.md`](../encyklopedia/budynki/port.md)
 
@@ -144,9 +145,9 @@ Bonus **+2 żywność** — przy **4** polach w okolicy suma skalowana liniowo z
 Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/spichlerz.md`](../encyklopedia/budynki/spichlerz.md)
 
-### Swiatynia
+### Świątynia
 
-**Swiatynia** (Kultura) odblokowuje się w epoce **Kamień** po technologii **Mistycyzm**. Pierwsze wzniesienie kosztuje **25** pracy; każdy kolejny poziom +**10**. Utrzymanie: **1** ¤ na turę (rosnie o **1** per poziom).
+**Świątynia** (Kultura) odblokowuje się w epoce **Kamień** po technologii **Mistycyzm**. Pierwsze wzniesienie kosztuje **25** pracy; każdy kolejny poziom +**10**. Utrzymanie: **1** ¤ na turę (rosnie o **1** per poziom).
 
 Na poziomie 1 daje: **+2 kultura, +2 szczęście**. Każdy kolejny poziom dodaje: **+1 kultura, +1 szczęście**.
 **Wymagania:** brak.
@@ -190,12 +191,11 @@ Bonus **+1 szczęście** — przy **4** polach w okolicy suma skalowana liniowo 
 Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/studnia.md`](../encyklopedia/budynki/studnia.md)
 
-### Mury
+### Mury kamienne i ceglane
 
-**Mury** (Obrona) odblokowuje się w epoce **Brąz** po technologii **Budownictwo**. Koszt od **35** pracy + **8× drewno, 16× kamień**; **maks. 2 poziomy**. Utrzymanie: **2** ¤/t.
+**Mury kamienne** odblokowują się po **Murarstwie** w epoce Kamienia i dają **+150% Obrony**. **Mury ceglane** odblokowują się po **Budownictwie** w epoce Brązu i dają **+200% Obrony**. Ceglane Mury zachowują dawny identyfikator `mury`, więc istniejące zapisy zachowują ten sam poziom obrony. Każdy etap zastępuje słabszą fortyfikację; bonusy się nie sumują. Cytadela i Baszta nadal dodają swoje niezależne bonusy.
 
-Daje **+200% Obrony** broniącym się jednostkom — bonus **procentowy**, nie płaski „+5 obrony". Zastępują bonus **Palisady** (+100%). **Cytadela** i **Baszta** to osobne budynki dokładane obok (każda +100% dodatkowo).
-
+Oba warianty używają dotychczasowego kosztu i utrzymania Murów: **35** pracy + **80** drewna, **80** kamienia i **80** cegły; **maks. 2 poziomy**, +12 pracy i +1 ¤/t na poziom.
 
 ### Przykład liczbowy
 
@@ -220,16 +220,16 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 
 ### Magazyn
 
-**Magazyn** (Produkcja+Pieniadz) odblokowuje się w epoce **Brąz** po technologii **Handel**. Pierwsze wzniesienie kosztuje **20** pracy; każdy kolejny poziom +**8**. Utrzymanie: **1** ¤ na turę (rosnie o **0** per poziom).
+**Magazyn** (Produkcja+Podatek) odblokowuje się w epoce **Brąz** po technologii **Handel**. Pierwsze wzniesienie kosztuje **20** pracy; każdy kolejny poziom +**8**. Utrzymanie: **1** ¤ na turę (rosnie o **0** per poziom).
 
-Na poziomie 1 daje: **+1 praca, +1 złoto**. Każdy kolejny poziom dodaje: **+1 praca, +1 złoto**.
+Na poziomie 1 daje: **+1 praca, +1 podatek**. Każdy kolejny poziom dodaje: **+1 praca, +1 podatek**.
 **Wymagania:** brak.
 
 
 ### Przykład liczbowy
 
 Koszt **20** pracy przy **7** pracy/t na budynki (70%) → **~2** tury budowy.
-Bonus **+1 praca, +1 złoto** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+1 praca, +1 podatek** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/magazyn.md`](../encyklopedia/budynki/magazyn.md)
 
@@ -268,14 +268,14 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 
 **Kuźnia żelaza** (Produkcja+Wojsko) — **upgrade Kuźni brązu** w epoce **Żelazo** (tech **Hutnictwo żelaza**). Koszt **60** pracy; **maks. 1 poziom**. Utrzymanie: **3** ¤/t.
 
-Daje **+8 Pracy/t**, **+2 Pieniądza/t**, **+15% Pancerza** (ścieżka A, po wizycie).
+Daje **+8 Pracy/t**, **+2 podatku/t**, **+15% Pancerza** (ścieżka A, po wizycie).
 **Wymagania:** Kuźnia brązu w mieście + **żelazo** w imperium.
 
 
 ### Przykład liczbowy
 
 Koszt **60** pracy przy **7** pracy/t na budynki (70%) → **~8** tury budowy.
-Bonus **+8 praca, +2 złoto** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+8 praca, +2 podatek** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **3** ¤/t × **10** tur = **30** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/kuznia_zelaza.md`](../encyklopedia/budynki/kuznia_zelaza.md)
 
@@ -287,7 +287,7 @@ Utrzymanie **3** ¤/t × **10** tur = **30** ¤ — uwzględnij w bilansie skarb
 ### Przykład liczbowy
 
 Koszt **90** pracy przy **7** pracy/t na budynki (70%) → **~12** tury budowy.
-Bonus **+12 praca, +3 złoto** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+12 praca, +3 podatek** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **4** ¤/t × **10** tur = **40** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/wielka_kuznia.md`](../encyklopedia/budynki/wielka_kuznia.md)
 
@@ -311,14 +311,14 @@ Utrzymanie **3** ¤/t × **10** tur = **30** ¤ — uwzględnij w bilansie skarb
 
 **Warsztat oblężniczy** (Wojsko) w epoce **Żelazo** po tech **Oblężnictwo**. Koszt **65** pracy + kamień; **maks. 1 poziom**. Utrzymanie: **3** ¤/t.
 
-**+4 Pracy/t**, **+2 Pieniądza/t**, **+10% miękkich** (ścieżka B). **Odblokowuje Katapultę** w rekrutacji miasta.
+**+4 Pracy/t**, **+2 podatku/t**, **+10% miękkich** (ścieżka B). **Odblokowuje Katapultę** w rekrutacji miasta.
 **Wymagania:** Koszary w tym mieście.
 
 
 ### Przykład liczbowy
 
 Koszt **65** pracy przy **7** pracy/t na budynki (70%) → **~9** tury budowy.
-Bonus **+4 praca, +2 złoto** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+4 praca, +2 podatek** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **3** ¤/t × **10** tur = **30** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/warsztat_oblezniczy.md`](../encyklopedia/budynki/warsztat_oblezniczy.md)
 
@@ -357,7 +357,7 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 
 **Sąd** (Administracja) odblokowuje się w epoce **Żelazo** po technologii **Kodeks prawa**. Pierwsze wzniesienie kosztuje **55** pracy; każdy kolejny poziom +**12**. Utrzymanie: **2** ¤ na turę (rosnie o **1** per poziom).
 
-Na poziomie 1 daje: **+2 złoto, +1 kultura, +2 szczęście**. Każdy kolejny poziom dodaje: **+1 złoto, +1 kultura, +1 szczęście**.
+Na poziomie 1 daje: **+2 podatek, +1 kultura, +2 szczęście**. Każdy kolejny poziom dodaje: **+1 podatek, +1 kultura, +1 szczęście**.
 **Wymagania:** brak.
 **Uwaga:** Redukuje korupcje (anty-korupcja); zwiekszony porzadek publiczny; zadowolenie z praworz.
 
@@ -365,7 +365,7 @@ Na poziomie 1 daje: **+2 złoto, +1 kultura, +2 szczęście**. Każdy kolejny po
 ### Przykład liczbowy
 
 Koszt **55** pracy przy **7** pracy/t na budynki (70%) → **~7** tury budowy.
-Bonus **+2 złoto, +1 kultura, +2 szczęście** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+2 podatek, +1 kultura, +2 szczęście** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/sad.md`](../encyklopedia/budynki/sad.md)
 
@@ -373,13 +373,13 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 
 **Pretorium** (Administracja) — **tylko miasta regionalne** (upgrade Dworu Zarządcy). Epoka **Żelazo**, tech **Prawo**. Koszt **75** pracy; **maks. 1 poziom**. Utrzymanie: **3** ¤/t.
 
-Daje **+2 Pracy/t**, **+3 Pieniądza/t**, **+5 Kultury/t** oraz **Prawo** miasta regionalnego. **Bez bonusu obrony** i bez mnożnika podatkowego.
+Daje **+2 Pracy/t**, **+3 podatku/t**, **+5 Kultury/t** oraz **Prawo** miasta regionalnego. **Bez bonusu obrony** i bez mnożnika podatkowego.
 
 
 ### Przykład liczbowy
 
 Koszt **75** pracy przy **7** pracy/t na budynki (70%) → **~10** tury budowy.
-Bonus **+2 praca, +3 złoto, +5 kultura** — Prawo regionalne, nie obrona.
+Bonus **+2 praca, +3 podatek, +5 kultura** — Prawo regionalne, nie obrona.
 Utrzymanie **3** ¤/t × **10** tur = **30** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/pretorium.md`](../encyklopedia/budynki/pretorium.md)
 
@@ -403,14 +403,14 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 
 **Akademia wojskowa** (Wojsko) w epoce **Żelazo** po tech **Sztuka wojenna**. Koszt **80** pracy; **maks. 1 poziom**. Utrzymanie: **4** ¤/t.
 
-**Obok Koszar** (niezależny budynek). **+3 Pracy/t**, **+2 Pieniądza/t**, **+20% miękkich** (ścieżka B, po wizycie). Z Koszarami = +40%; z Warsztatem do +50%.
+**Obok Koszar** (niezależny budynek). **+3 Pracy/t**, **+2 podatku/t**, **+20% miękkich** (ścieżka B, po wizycie). Z Koszarami = +40%; z Warsztatem do +50%.
 **Wymagania:** Koszary w tym mieście.
 
 
 ### Przykład liczbowy
 
 Koszt **80** pracy przy **7** pracy/t na budynki (70%) → **~11** tury budowy.
-Bonus **+3 praca, +2 złoto** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+3 praca, +2 podatek** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **4** ¤/t × **10** tur = **40** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/akademia_wojskowa.md`](../encyklopedia/budynki/akademia_wojskowa.md)
 

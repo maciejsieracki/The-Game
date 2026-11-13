@@ -1,0 +1,5 @@
+48 OK, 0 FAIL
+18 OK, 0 FAIL
+wyrab-rzeka-d1-test: 3 passed, 0 failed
+27 OK, 0 FAIL
+EXIT=0

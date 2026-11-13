@@ -23,6 +23,25 @@ export const BATTLE_ENEMY = '#c84040';
 export const BATTLE_ENEMY_TEXT = '#e08a8a';
 export const BATTLE_ENEMY_BG = 'rgba(200,64,64,0.08)';
 
+/**
+ * Straty w bitwie (R-WEB-BATTLE-DAMAGE-COLORS-PLAYER-RED-ENEMY-YELLOW-Q1).
+ * Kolor strat zależy od tego, czyja jednostka traci HP — NIE od strony na mapie:
+ * straty GRACZA = czerwone, straty PRZECIWNIKA = żółte. Jedyne źródło tych kolorów
+ * dla liczb obrażeń, kafli ekranu wyniku i znaczników strat w podsumowaniu.
+ * Teksty na ciemnym tle (WCAG AA dla tekstu normalnego), żółty = #ffd54a (jak ROUTED).
+ */
+export const BATTLE_LOSS_PLAYER = '#e5484d';        // obwódka/ikona strat gracza
+export const BATTLE_LOSS_PLAYER_TEXT = '#ff7070';   // liczba/etykieta strat gracza
+export const BATTLE_LOSS_PLAYER_BG = 'rgba(229,72,77,0.08)';
+export const BATTLE_LOSS_ENEMY = '#ffd54a';         // obwódka/ikona strat przeciwnika
+export const BATTLE_LOSS_ENEMY_TEXT = '#ffd54a';    // liczba/etykieta strat przeciwnika
+export const BATTLE_LOSS_ENEMY_BG = 'rgba(255,213,74,0.08)';
+
+/** Kolor tekstu liczby strat dla jednostki: gracz = czerwony, przeciwnik = żółty. */
+export function battleLossTextColor(isPlayerUnit: boolean): string {
+  return isPlayerUnit ? BATTLE_LOSS_PLAYER_TEXT : BATTLE_LOSS_ENEMY_TEXT;
+}
+
 /** Roster — kolory rodzajów (C-09) */
 export const ROSTER_MOUNTED = BATTLE_PLAYER_TEXT;
 export const ROSTER_MELEE = BATTLE_GOLD;

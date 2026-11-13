@@ -1,0 +1,16 @@
+PASS: diagram displays source and six labeled map directions
+PASS: graphical cells and source marker show no coordinate labels
+PASS: same-city source choice is selectable in the center
+PASS: E selects its matching axial destination
+PASS: NE selects its matching axial destination
+PASS: NW selects its matching axial destination
+PASS: W selects its matching axial destination
+PASS: SW selects its matching axial destination
+PASS: SE selects its matching axial destination
+PASS: unavailable terrain neighbor is disabled and explains why
+PASS: same-city destination still returns the source coordinates
+PASS: picker fits 150 percent equivalent viewport
+PASS: picker fits narrow viewport without horizontal overflow
+PASS: direction buttons can receive keyboard focus
+
+army-split-graphical-hex-picker-test: 14 pass, 0 fail

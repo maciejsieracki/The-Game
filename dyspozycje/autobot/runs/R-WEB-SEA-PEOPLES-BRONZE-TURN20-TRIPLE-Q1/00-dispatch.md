@@ -1,0 +1,7 @@
+# R-WEB-SEA-PEOPLES-BRONZE-TURN20-TRIPLE-Q1
+STATUS: REGISTERED
+DOMAIN: GAME
+Owner 2026-11-11: komunikat początku Epoki Ludów Morza w 20. turze Brązu; trzykrotna liczba jednostek na każdym poziomie trudności barbarzyńców; najazdy przez resztę Brązu do wejścia danej nacji w Żelazo.
+GOAL: owner-relative Bronze entry timestamp, start at elapsed20 and end on owner Iron entry; once-only visible notification with save/load dedup; x3 unit count using existing base of selected barbarian difficulty. Do not triple strength or unrelated economic/difficulty params; disabled barbarians remain disabled. Existing spawned raiders retirement must follow existing lifecycle unless needed to stop new boosted raids; do not silently delete units.
+AUDIT FIRST: existing Ludy Morza feature already present in barbarians.ts and main.ts around42557; extend its actual scope rather than duplicate. Distinguish global/player era gating from owner-target era, shared camps/AI-player parity. Explicit allowlist before code edits and quantitative baseline/new tests for turn19/20/21, Bronze→Iron, reload notification, difficulty values, off mode and shared-owner targets.
+QUEUE: registered behind active4 (walls,Skip,alliance,bronze50/75); next qualified free slot. Separate cavalryIron task also queued; preserve both. Operator/Evaluator/FC Luna high independent; eventual merge/Robocza/push/readback, not yet implemented.

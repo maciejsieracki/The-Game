@@ -1,0 +1,59 @@
+[
+  {
+    "waypoint": [
+      10,
+      10
+    ],
+    "attacks": [
+      {
+        "unit": "infantry",
+        "target": "route-threat",
+        "distance": 1
+      }
+    ],
+    "moveCount": 7,
+    "finalOrder": "none"
+  },
+  {
+    "dry": true,
+    "firstMove": "4,20",
+    "attacks": []
+  },
+  {
+    "path": [
+      "3,40",
+      "3,41",
+      "4,41",
+      "5,41",
+      "5,40",
+      "6,40",
+      "7,40"
+    ],
+    "firstStep": "3,41",
+    "attacks": []
+  },
+  {
+    "groupOrders": [
+      {
+        "type": "attackMove",
+        "col": 9,
+        "row": 50
+      },
+      {
+        "type": "attackMove",
+        "col": 9,
+        "row": 51
+      }
+    ],
+    "queued": [
+      "group-a",
+      "group-b"
+    ]
+  },
+  {
+    "rendererModeLabel": true,
+    "enemyClickRemainsExactTarget": true
+  }
+]
+battle-attack-move-order-test: passed
+EXIT=0

@@ -1,0 +1,3220 @@
+{
+ "file": "/tmp/civ-mem3-heap-pre/seed4242-t1.heapsnapshot",
+ "nodes": 1604199,
+ "edges": 5918131,
+ "reachable": 1604179,
+ "totalSelfMB": 213.9,
+ "totalsMB": {
+  "synthetic": 0,
+  "hidden": 1.54,
+  "code": 10.38,
+  "string": 65.49,
+  "number": 5.56,
+  "concatenated string": 0.08,
+  "array": 17.32,
+  "symbol": 0,
+  "object shape": 0.89,
+  "closure": 1.21,
+  "object": 17.5,
+  "native": 93.9,
+  "sliced string": 0,
+  "regexp": 0
+ },
+ "byClass": [
+  {
+   "cls": "system / ExternalStringData",
+   "count": 328,
+   "selfMB": 77.126,
+   "retainedMB": 77.126
+  },
+  {
+   "cls": "(string)",
+   "count": 207456,
+   "selfMB": 65.576,
+   "retainedMB": 142.702
+  },
+  {
+   "cls": "system / JSArrayBufferData",
+   "count": 8557,
+   "selfMB": 15.584,
+   "retainedMB": 15.584
+  },
+  {
+   "cls": "(array) (object elements)",
+   "count": 87282,
+   "selfMB": 11.385,
+   "retainedMB": 11.385
+  },
+  {
+   "cls": "(code)",
+   "count": 96269,
+   "selfMB": 10.38,
+   "retainedMB": 11.273
+  },
+  {
+   "cls": "Object",
+   "count": 223401,
+   "selfMB": 6.179,
+   "retainedMB": 25.423
+  },
+  {
+   "cls": "(number)",
+   "count": 463105,
+   "selfMB": 5.557,
+   "retainedMB": 5.557
+  },
+  {
+   "cls": "(array) ",
+   "count": 1179,
+   "selfMB": 4.797,
+   "retainedMB": 11.011
+  },
+  {
+   "cls": "Array",
+   "count": 142401,
+   "selfMB": 2.278,
+   "retainedMB": 35.792
+  },
+  {
+   "cls": "closure",
+   "count": 38705,
+   "selfMB": 1.212,
+   "retainedMB": 9.285
+  },
+  {
+   "cls": "(array) (object properties)",
+   "count": 520,
+   "selfMB": 1.137,
+   "retainedMB": 1.207
+  },
+  {
+   "cls": "Og",
+   "count": 67596,
+   "selfMB": 1.082,
+   "retainedMB": 11.355
+  },
+  {
+   "cls": "U",
+   "count": 7835,
+   "selfMB": 1.034,
+   "retainedMB": 24.578
+  },
+  {
+   "cls": "tM",
+   "count": 35133,
+   "selfMB": 0.984,
+   "retainedMB": 2.249
+  },
+  {
+   "cls": "AA",
+   "count": 39202,
+   "selfMB": 0.941,
+   "retainedMB": 2.352
+  },
+  {
+   "cls": "JM",
+   "count": 2847,
+   "selfMB": 0.934,
+   "retainedMB": 2.298
+  },
+  {
+   "cls": "(object shape)",
+   "count": 16416,
+   "selfMB": 0.89,
+   "retainedMB": 1.038
+  },
+  {
+   "cls": "(hidden) system / PropertyArray",
+   "count": 23204,
+   "selfMB": 0.754,
+   "retainedMB": 0.757
+  },
+  {
+   "cls": "ArrayBuffer",
+   "count": 8628,
+   "selfMB": 0.541,
+   "retainedMB": 16.127
+  },
+  {
+   "cls": "zQ",
+   "count": 14459,
+   "selfMB": 0.521,
+   "retainedMB": 1.381
+  },
+  {
+   "cls": "Float32Array",
+   "count": 5946,
+   "selfMB": 0.415,
+   "retainedMB": 13.13
+  },
+  {
+   "cls": "jm",
+   "count": 10646,
+   "selfMB": 0.383,
+   "retainedMB": 1.234
+  },
+  {
+   "cls": "oI",
+   "count": 6995,
+   "selfMB": 0.364,
+   "retainedMB": 13.271
+  },
+  {
+   "cls": "system / Context",
+   "count": 11253,
+   "selfMB": 0.336,
+   "retainedMB": 24.319
+  },
+  {
+   "cls": "hA",
+   "count": 2689,
+   "selfMB": 0.333,
+   "retainedMB": 25.509
+  },
+  {
+   "cls": "(hidden) system / FunctionTemplateInfo",
+   "count": 5070,
+   "selfMB": 0.324,
+   "retainedMB": 0.424
+  },
+  {
+   "cls": "ya",
+   "count": 834,
+   "selfMB": 0.28,
+   "retainedMB": 0.639
+  },
+  {
+   "cls": "gg",
+   "count": 14678,
+   "selfMB": 0.235,
+   "retainedMB": 0.695
+  },
+  {
+   "cls": "Uint16Array",
+   "count": 2657,
+   "selfMB": 0.182,
+   "retainedMB": 3.591
+  },
+  {
+   "cls": "FM",
+   "count": 2544,
+   "selfMB": 0.172,
+   "retainedMB": 13.48
+  },
+  {
+   "cls": "kMA",
+   "count": 10644,
+   "selfMB": 0.17,
+   "retainedMB": 0.17
+  },
+  {
+   "cls": "(hidden) system / WeakArrayList",
+   "count": 1750,
+   "selfMB": 0.169,
+   "retainedMB": 0.169
+  },
+  {
+   "cls": "WebGLBuffer",
+   "count": 1506,
+   "selfMB": 0.108,
+   "retainedMB": 0.108
+  },
+  {
+   "cls": "hi",
+   "count": 4519,
+   "selfMB": 0.09,
+   "retainedMB": 0.199
+  },
+  {
+   "cls": "(hidden) system / ArrayList",
+   "count": 196,
+   "selfMB": 0.088,
+   "retainedMB": 0.095
+  },
+  {
+   "cls": "WebGLVertexArrayObject",
+   "count": 694,
+   "selfMB": 0.077,
+   "retainedMB": 0.078
+  },
+  {
+   "cls": "CanvasRenderingContext2D",
+   "count": 72,
+   "selfMB": 0.069,
+   "retainedMB": 0.07
+  },
+  {
+   "cls": "oZ",
+   "count": 2723,
+   "selfMB": 0.065,
+   "retainedMB": 0.262
+  },
+  {
+   "cls": "Xi",
+   "count": 1172,
+   "selfMB": 0.061,
+   "retainedMB": 1.115
+  },
+  {
+   "cls": "Sr",
+   "count": 2183,
+   "selfMB": 0.052,
+   "retainedMB": 0.314
+  },
+  {
+   "cls": "SVGAnimatedLength",
+   "count": 812,
+   "selfMB": 0.052,
+   "retainedMB": 0.052
+  },
+  {
+   "cls": "(hidden) system / PropertyCell",
+   "count": 2543,
+   "selfMB": 0.051,
+   "retainedMB": 0.078
+  },
+  {
+   "cls": "(hidden) system / DoubleStringCache",
+   "count": 1,
+   "selfMB": 0.049,
+   "retainedMB": 0.049
+  },
+  {
+   "cls": "WebGLUniformLocation",
+   "count": 830,
+   "selfMB": 0.046,
+   "retainedMB": 0.046
+  },
+  {
+   "cls": "SVGPathElement",
+   "count": 328,
+   "selfMB": 0.044,
+   "retainedMB": 0.099
+  },
+  {
+   "cls": "hg",
+   "count": 133,
+   "selfMB": 0.038,
+   "retainedMB": 0.082
+  },
+  {
+   "cls": "(hidden) system / AccessorPair",
+   "count": 2907,
+   "selfMB": 0.035,
+   "retainedMB": 0.035
+  },
+  {
+   "cls": "Text",
+   "count": 427,
+   "selfMB": 0.034,
+   "retainedMB": 0.034
+  },
+  {
+   "cls": "SVGAnimatedTransformList",
+   "count": 511,
+   "selfMB": 0.033,
+   "retainedMB": 0.033
+  },
+  {
+   "cls": "PerformanceLongAnimationFrameTiming",
+   "count": 200,
+   "selfMB": 0.029,
+   "retainedMB": 0.029
+  },
+  {
+   "cls": "SVGAnimatedString",
+   "count": 511,
+   "selfMB": 0.029,
+   "retainedMB": 0.029
+  },
+  {
+   "cls": "<canvas width=\"64\" height=\"64\">",
+   "count": 48,
+   "selfMB": 0.026,
+   "retainedMB": 0.074
+  },
+  {
+   "cls": "TaskAttributionTiming",
+   "count": 201,
+   "selfMB": 0.026,
+   "retainedMB": 0.026
+  },
+  {
+   "cls": "SVGSVGElement",
+   "count": 146,
+   "selfMB": 0.025,
+   "retainedMB": 0.089
+  },
+  {
+   "cls": "Yto",
+   "count": 783,
+   "selfMB": 0.025,
+   "retainedMB": 0.17
+  },
+  {
+   "cls": "SVGAnimatedNumber",
+   "count": 383,
+   "selfMB": 0.025,
+   "retainedMB": 0.025
+  },
+  {
+   "cls": "PerformanceLongTaskTiming",
+   "count": 201,
+   "selfMB": 0.023,
+   "retainedMB": 0.048
+  },
+  {
+   "cls": "OkA",
+   "count": 365,
+   "selfMB": 0.019,
+   "retainedMB": 0.193
+  },
+  {
+   "cls": "(hidden) system / AccessorInfo",
+   "count": 1918,
+   "selfMB": 0.016,
+   "retainedMB": 0.016
+  },
+  {
+   "cls": "El",
+   "count": 64,
+   "selfMB": 0.015,
+   "retainedMB": 0.041
+  },
+  {
+   "cls": "(hidden) system / FunctionTemplateRareData",
+   "count": 285,
+   "selfMB": 0.011,
+   "retainedMB": 0.087
+  },
+  {
+   "cls": "SVGCircleElement",
+   "count": 81,
+   "selfMB": 0.01,
+   "retainedMB": 0.035
+  },
+  {
+   "cls": "(hidden) system / ObjectTemplateInfo",
+   "count": 364,
+   "selfMB": 0.01,
+   "retainedMB": 0.093
+  },
+  {
+   "cls": "V8EventListener",
+   "count": 253,
+   "selfMB": 0.01,
+   "retainedMB": 0.018
+  },
+  {
+   "cls": "dC",
+   "count": 68,
+   "selfMB": 0.01,
+   "retainedMB": 0.142
+  },
+  {
+   "cls": "Map",
+   "count": 548,
+   "selfMB": 0.009,
+   "retainedMB": 9.79
+  },
+  {
+   "cls": "(hidden) system / ProtectedFixedArray",
+   "count": 564,
+   "selfMB": 0.008,
+   "retainedMB": 0.008
+  },
+  {
+   "cls": "SVGAnimatedRect",
+   "count": 124,
+   "selfMB": 0.008,
+   "retainedMB": 0.008
+  },
+  {
+   "cls": "SVGAnimatedPreserveAspectRatio",
+   "count": 124,
+   "selfMB": 0.008,
+   "retainedMB": 0.008
+  },
+  {
+   "cls": "T",
+   "count": 102,
+   "selfMB": 0.007,
+   "retainedMB": 0.181
+  },
+  {
+   "cls": "Bl",
+   "count": 52,
+   "selfMB": 0.007,
+   "retainedMB": 0.096
+  },
+  {
+   "cls": "<canvas width=\"128\" height=\"128\">",
+   "count": 12,
+   "selfMB": 0.007,
+   "retainedMB": 0.019
+  },
+  {
+   "cls": "Set",
+   "count": 408,
+   "selfMB": 0.007,
+   "retainedMB": 1.027
+  },
+  {
+   "cls": "EventListener",
+   "count": 262,
+   "selfMB": 0.006,
+   "retainedMB": 0.025
+  },
+  {
+   "cls": "bg",
+   "count": 40,
+   "selfMB": 0.006,
+   "retainedMB": 0.061
+  },
+  {
+   "cls": "WebGLShader",
+   "count": 91,
+   "selfMB": 0.006,
+   "retainedMB": 0.007
+  },
+  {
+   "cls": "cto",
+   "count": 199,
+   "selfMB": 0.005,
+   "retainedMB": 0.103
+  },
+  {
+   "cls": "vB",
+   "count": 66,
+   "selfMB": 0.005,
+   "retainedMB": 0.186
+  },
+  {
+   "cls": "(hidden) system / SharedFunctionInfoWrapper",
+   "count": 563,
+   "selfMB": 0.005,
+   "retainedMB": 0.005
+  },
+  {
+   "cls": "WebGLProgram",
+   "count": 47,
+   "selfMB": 0.004,
+   "retainedMB": 0.004
+  },
+  {
+   "cls": "CSSStyleSheet",
+   "count": 24,
+   "selfMB": 0.004,
+   "retainedMB": 0.004
+  },
+  {
+   "cls": "bMA",
+   "count": 68,
+   "selfMB": 0.004,
+   "retainedMB": 2.727
+  },
+  {
+   "cls": "<span>",
+   "count": 37,
+   "selfMB": 0.004,
+   "retainedMB": 0.006
+  },
+  {
+   "cls": "(hidden) system / NativeContext",
+   "count": 3,
+   "selfMB": 0.004,
+   "retainedMB": 0.211
+  },
+  {
+   "cls": "HTMLDocument",
+   "count": 7,
+   "selfMB": 0.003,
+   "retainedMB": 0.009
+  },
+  {
+   "cls": "(hidden) system / WeakFixedArray",
+   "count": 45,
+   "selfMB": 0.003,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "SVGRectElement",
+   "count": 25,
+   "selfMB": 0.003,
+   "retainedMB": 0.014
+  },
+  {
+   "cls": "XMLDocument",
+   "count": 1,
+   "selfMB": 0.003,
+   "retainedMB": 0.006
+  },
+  {
+   "cls": "<audio preload=\"auto\" src=\"data:audio/mpeg;base64,SUQzAwAAAAAvNEdFT0IAABeqAAAAYX",
+   "count": 2,
+   "selfMB": 0.003,
+   "retainedMB": 0.006
+  },
+  {
+   "cls": "(hidden) system / Foreign",
+   "count": 352,
+   "selfMB": 0.003,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "(hidden) system / ClassPositions",
+   "count": 229,
+   "selfMB": 0.003,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "GA",
+   "count": 38,
+   "selfMB": 0.003,
+   "retainedMB": 0.073
+  },
+  {
+   "cls": "ZkA",
+   "count": 74,
+   "selfMB": 0.003,
+   "retainedMB": 0.112
+  },
+  {
+   "cls": "xto",
+   "count": 44,
+   "selfMB": 0.003,
+   "retainedMB": 0.367
+  },
+  {
+   "cls": "<span class=\"da-good\">",
+   "count": 24,
+   "selfMB": 0.002,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "DOMTokenList",
+   "count": 43,
+   "selfMB": 0.002,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "<span class=\"meta\">",
+   "count": 22,
+   "selfMB": 0.002,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "<span class=\"ic\">",
+   "count": 22,
+   "selfMB": 0.002,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<span class=\"civ-build-info-ic\" role=\"button\" tabindex=\"0\" title=\"Podgląd karty ",
+   "count": 21,
+   "selfMB": 0.002,
+   "retainedMB": 0.008
+  },
+  {
+   "cls": "Performance",
+   "count": 9,
+   "selfMB": 0.002,
+   "retainedMB": 0.082
+  },
+  {
+   "cls": "Window",
+   "count": 11,
+   "selfMB": 0.002,
+   "retainedMB": 0.085
+  },
+  {
+   "cls": "<span style=\"display:inline-flex;width:12px;height:12px;vertical-align:-2px;marg",
+   "count": 18,
+   "selfMB": 0.002,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "eK",
+   "count": 9,
+   "selfMB": 0.002,
+   "retainedMB": 0.005
+  },
+  {
+   "cls": "WebGLTexture",
+   "count": 28,
+   "selfMB": 0.002,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "StyleEngine",
+   "count": 2,
+   "selfMB": 0.002,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "AudioParam",
+   "count": 22,
+   "selfMB": 0.002,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "mto",
+   "count": 44,
+   "selfMB": 0.002,
+   "retainedMB": 0.006
+  },
+  {
+   "cls": "<div class=\"da-body\">",
+   "count": 14,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<div class=\"da-nm\">",
+   "count": 14,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "WebGL2RenderingContext",
+   "count": 4,
+   "selfMB": 0.001,
+   "retainedMB": 0.016
+  },
+  {
+   "cls": "CSSStyleDeclaration",
+   "count": 27,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "HTMLDivElement",
+   "count": 80,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "qp",
+   "count": 4,
+   "selfMB": 0.001,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "<span class=\"mbtn-lbl\">",
+   "count": 10,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<button class=\"arrbtn\">",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-lbl\">",
+   "count": 11,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<div class=\"da-note\">",
+   "count": 11,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<canvas width=\"72\" height=\"126\">",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "Error",
+   "count": 43,
+   "selfMB": 0.001,
+   "retainedMB": 0.006
+  },
+  {
+   "cls": "pIo",
+   "count": 8,
+   "selfMB": 0.001,
+   "retainedMB": 0.01
+  },
+  {
+   "cls": "Element",
+   "count": 10,
+   "selfMB": 0.001,
+   "retainedMB": 0.008
+  },
+  {
+   "cls": "<span class=\"mbtn-ic\">",
+   "count": 9,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-med gold\">",
+   "count": 10,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"v\">",
+   "count": 10,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"da-abtn-cell\">",
+   "count": 10,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "WC",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.01
+  },
+  {
+   "cls": "TypedArray",
+   "count": 36,
+   "selfMB": 0.001,
+   "retainedMB": 0.007
+  },
+  {
+   "cls": "ExtensionTracker",
+   "count": 40,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<button class=\"mbtn tg-btn-outline\">",
+   "count": 5,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<span class=\"da-ttip-lbl\">",
+   "count": 9,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"da-ttip\">",
+   "count": 9,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<div>",
+   "count": 9,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "FB",
+   "count": 33,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "RemotePlayback",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "x5",
+   "count": 44,
+   "selfMB": 0.001,
+   "retainedMB": 0.164
+  },
+  {
+   "cls": "Float64Array",
+   "count": 14,
+   "selfMB": 0.001,
+   "retainedMB": 0.004
+  },
+  {
+   "cls": "<div class=\"da-sec-title\">",
+   "count": 8,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "WeakMap",
+   "count": 48,
+   "selfMB": 0.001,
+   "retainedMB": 0.059
+  },
+  {
+   "cls": "AudioContext",
+   "count": 3,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "(hidden) system / InterceptorInfo",
+   "count": 31,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "Bi",
+   "count": 11,
+   "selfMB": 0.001,
+   "retainedMB": 0.019
+  },
+  {
+   "cls": "Attr",
+   "count": 14,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "Nm",
+   "count": 32,
+   "selfMB": 0.001,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "PerformanceEventTiming",
+   "count": 3,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<b>",
+   "count": 7,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "SVGGElement",
+   "count": 10,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "HTMLSpanElement",
+   "count": 40,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "FontFaceSet",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "(hidden) system / RegExpDataWrapper",
+   "count": 81,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "SVGEllipseElement",
+   "count": 4,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "(hidden) system / IrRegExpData",
+   "count": 10,
+   "selfMB": 0.001,
+   "retainedMB": 0.012
+  },
+  {
+   "cls": "GainNode",
+   "count": 7,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-fsep\" aria-hidden=\"true\">",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-figs\">",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-line\">",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-top\">",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-body\">",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<div class=\"da-goods-cat-body is-collapsed\">",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<div class=\"da-goods\">",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<div class=\"da-attr-row\">",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"da-goods-cat-chevron\">",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<div class=\"da-goods-cat\">",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "DOMTimer",
+   "count": 3,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "ihA",
+   "count": 3,
+   "selfMB": 0.001,
+   "retainedMB": 0.006
+  },
+  {
+   "cls": "MutationObserver",
+   "count": 8,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "N5",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.004
+  },
+  {
+   "cls": "oIo",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<canvas width=\"237\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"397\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"407\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"256\" height=\"213\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"512\" height=\"168\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"402\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas data-engine=\"three.js r169\" width=\"1280\" height=\"800\" style=\"display: bl",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"280\" height=\"170\" style=\"\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "iIo",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-val\">",
+   "count": 5,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-rate\">",
+   "count": 5,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "CSSParserToken",
+   "count": 42,
+   "selfMB": 0.001,
+   "retainedMB": 0.009
+  },
+  {
+   "cls": "CSSAnimation",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "Navigator",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "HTMLButtonElement",
+   "count": 28,
+   "selfMB": 0,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "W0",
+   "count": 11,
+   "selfMB": 0,
+   "retainedMB": 0.029
+  },
+  {
+   "cls": "HTMLStyleElement",
+   "count": 25,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "Dt",
+   "count": 8,
+   "selfMB": 0,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-sep\" aria-hidden=\"true\">",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-net pos\">",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-rate pos\">",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<div class=\"da-rel-partner-empty\">",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<div class=\"da-rel-partner-title\">",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<div class=\"da-rel-partner-group\">",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<span class=\"da-goods-cat-none\">",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<span class=\"lbl\">",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<div class=\"da-rfact\">",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<div class=\"da-empty\">",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<span class=\"cnt\">",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<h3>",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "KeyframeEffect",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "CIo",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.004
+  },
+  {
+   "cls": "<div class=\"lbl\">",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "ScriptedAnimationController",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "IntersectionObserver",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-goods-cat-hdr\" data-goods-cat=\"technologie\">",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-goods-cat-hdr is-empty\" data-goods-cat=\"inne\">",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-goods-cat-hdr is-empty\" data-goods-cat=\"surowce\"",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<button type=\"button\" role=\"tab\" class=\"sp-tab\" aria-selected=\"false\" data-sp-ta",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "NhA",
+   "count": 12,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<button class=\"mbtn tg-btn-outline soon tg-btn-disabled\">",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<button class=\"mbtn tg-btn-outline\" disabled=\"\">",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "StyleSheetCollection",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "AudioBufferSourceNode",
+   "count": 5,
+   "selfMB": 0,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "DocumentTimeline",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<span class=\"hint\">",
+   "count": 3,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"slbl-ic\">",
+   "count": 3,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<span class=\"vdesc\">",
+   "count": 3,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<div class=\"sctl\">",
+   "count": 3,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<div class=\"slbl\">",
+   "count": 3,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<div class=\"srow\">",
+   "count": 3,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "PerformanceNavigationTiming",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "ShadowRoot",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "StereoPannerNode",
+   "count": 5,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "iI",
+   "count": 3,
+   "selfMB": 0,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "Event",
+   "count": 6,
+   "selfMB": 0,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "YK",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.012
+  },
+  {
+   "cls": "NavigateEvent",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"da-tag\">",
+   "count": 3,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<span class=\"val\">",
+   "count": 3,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<span class=\"da-abtn-note\" title=\"Niedostępne u rywala tego samego typu\">",
+   "count": 3,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<span class=\"sp-tab-count\">",
+   "count": 3,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<span class=\"sp-tab-label\">",
+   "count": 3,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "nIo",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.016
+  },
+  {
+   "cls": "(regexp)",
+   "count": 10,
+   "selfMB": 0,
+   "retainedMB": 0.013
+  },
+  {
+   "cls": "Navigation",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "InjectedScript",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.023
+  },
+  {
+   "cls": "(hidden) private symbol",
+   "count": 56,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "IDBDatabase",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "NamedNodeMap",
+   "count": 9,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "(hidden) system / ScriptContextTable",
+   "count": 3,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"badge-soon\">",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABogAAAOtCAIAAAA95HBeAABx",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<img decoding=\"sync\" src=\"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wB",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<img decoding=\"sync\" src=\"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22h",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "gCo",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.006
+  },
+  {
+   "cls": "V8EventHandlerNonNull",
+   "count": 7,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<h2>",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "EE",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.004
+  },
+  {
+   "cls": "WebGLFramebuffer",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<img class=\"dip-leader-ic\" src=\"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABA",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<img class=\"p-ic-portrait\" src=\"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABA",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "qkA",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "NodeList",
+   "count": 8,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-rate zero\">",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<h4>",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<div class=\"da-abar gold\">",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<i style=\"width:52%\">",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<span class=\"da-goods-cat-count\">",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<span class=\"da-wiar-badge pos\" title=\"Wiarygodność (W) = globalna reputacja two",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<div class=\"da-civname has-brand-tip\" title=\"ofensywna piechota + inżynieria · L",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<div class=\"da-civleader\">",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<div class=\"da-civtitle\">",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<div class=\"da-civtitle-row\">",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<div class=\"da-portrait\">",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<span class=\"da-per-turn\">",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<div class=\"dip-leader-medallion\" style=\"border-color:#8B1A1A;box-shadow:inset 0",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "AudioTrack",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<script type=\"text/javascript\">",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<script>",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "ScriptRunner",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "f0o",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "Storage",
+   "count": 5,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "IhA",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "AudioDestinationNode",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "AbortSignal",
+   "count": 3,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-abtn warbtn\" data-aid=\"11\" title=\"Wypowiedz wojn",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-abtn peacebtn\" data-aid=\"10\" disabled=\"\" title=\"",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-abtn\" data-aid=\"14\" title=\"Umowa wymiany\" aria-l",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-abtn\" data-aid=\"5\" title=\"Traktat handlowy\" aria",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-abtn\" data-aid=\"2\" disabled=\"\" title=\"zablokowan",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-abtn\" data-aid=\"3\" disabled=\"\" title=\"Niedostępn",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-abtn\" data-aid=\"12\" disabled=\"\" title=\"Niedostęp",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-abtn\" data-aid=\"13\" disabled=\"\" title=\"Niedostęp",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-abtn\" data-aid=\"15\" disabled=\"\" title=\"zablokowa",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-deal\" data-aid=\"14\" title=\"Koszyk towarów jednor",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-deal\" data-aid=\"5\" title=\"Otwiera i utrzymuje sz",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-deal\" data-aid=\"11\" title=\"Formalna deklaracja s",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-deal locked\" data-aid=\"2\" title=\"Obie strony zob",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-deal locked\" data-aid=\"3\" title=\"Formalne przymi",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-deal locked\" data-aid=\"4\" title=\"Zezwolenie na p",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-deal locked\" data-aid=\"6\" title=\"Przekazanie wyn",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-deal locked\" data-aid=\"7\" title=\"Prośba do cywil",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-deal locked\" data-aid=\"8\" title=\"Respekt propone",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-deal locked\" data-aid=\"9\" title=\"W wojnie: przew",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-deal locked\" data-aid=\"10\" title=\"Zakończenie ak",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-deal locked\" data-aid=\"15\" title=\"Po aktywnym wa",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-deal locked\" data-aid=\"12\" title=\"Miasto-państwo",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-deal locked\" data-aid=\"13\" title=\"Jednostronny d",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" data-exit=\"\">",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" class=\"end-turn et-signal\" data-end=\"\" aria-disabled=\"fals",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<button type=\"button\" class=\"sp-action-btn tg-btn-primary\" data-sp-open=\"prod-em",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<button type=\"button\" role=\"tab\" class=\"sp-tab sp-tab-active\" aria-selected=\"tru",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  }
+ ],
+ "byClassRetained": [
+  {
+   "cls": "(string)",
+   "count": 207456,
+   "selfMB": 65.576,
+   "retainedMB": 142.702
+  },
+  {
+   "cls": "system / ExternalStringData",
+   "count": 328,
+   "selfMB": 77.126,
+   "retainedMB": 77.126
+  },
+  {
+   "cls": "Array",
+   "count": 142401,
+   "selfMB": 2.278,
+   "retainedMB": 35.792
+  },
+  {
+   "cls": "hA",
+   "count": 2689,
+   "selfMB": 0.333,
+   "retainedMB": 25.509
+  },
+  {
+   "cls": "Object",
+   "count": 223401,
+   "selfMB": 6.179,
+   "retainedMB": 25.423
+  },
+  {
+   "cls": "U",
+   "count": 7835,
+   "selfMB": 1.034,
+   "retainedMB": 24.578
+  },
+  {
+   "cls": "system / Context",
+   "count": 11253,
+   "selfMB": 0.336,
+   "retainedMB": 24.319
+  },
+  {
+   "cls": "ArrayBuffer",
+   "count": 8628,
+   "selfMB": 0.541,
+   "retainedMB": 16.127
+  },
+  {
+   "cls": "system / JSArrayBufferData",
+   "count": 8557,
+   "selfMB": 15.584,
+   "retainedMB": 15.584
+  },
+  {
+   "cls": "FM",
+   "count": 2544,
+   "selfMB": 0.172,
+   "retainedMB": 13.48
+  },
+  {
+   "cls": "oI",
+   "count": 6995,
+   "selfMB": 0.364,
+   "retainedMB": 13.271
+  },
+  {
+   "cls": "Float32Array",
+   "count": 5946,
+   "selfMB": 0.415,
+   "retainedMB": 13.13
+  },
+  {
+   "cls": "(array) (object elements)",
+   "count": 87282,
+   "selfMB": 11.385,
+   "retainedMB": 11.385
+  },
+  {
+   "cls": "Og",
+   "count": 67596,
+   "selfMB": 1.082,
+   "retainedMB": 11.355
+  },
+  {
+   "cls": "(code)",
+   "count": 96269,
+   "selfMB": 10.38,
+   "retainedMB": 11.273
+  },
+  {
+   "cls": "(array) ",
+   "count": 1179,
+   "selfMB": 4.797,
+   "retainedMB": 11.011
+  },
+  {
+   "cls": "Map",
+   "count": 548,
+   "selfMB": 0.009,
+   "retainedMB": 9.79
+  },
+  {
+   "cls": "closure",
+   "count": 38705,
+   "selfMB": 1.212,
+   "retainedMB": 9.285
+  },
+  {
+   "cls": "(number)",
+   "count": 463105,
+   "selfMB": 5.557,
+   "retainedMB": 5.557
+  },
+  {
+   "cls": "Uint16Array",
+   "count": 2657,
+   "selfMB": 0.182,
+   "retainedMB": 3.591
+  },
+  {
+   "cls": "bMA",
+   "count": 68,
+   "selfMB": 0.004,
+   "retainedMB": 2.727
+  },
+  {
+   "cls": "AA",
+   "count": 39202,
+   "selfMB": 0.941,
+   "retainedMB": 2.352
+  },
+  {
+   "cls": "JM",
+   "count": 2847,
+   "selfMB": 0.934,
+   "retainedMB": 2.298
+  },
+  {
+   "cls": "tM",
+   "count": 35133,
+   "selfMB": 0.984,
+   "retainedMB": 2.249
+  },
+  {
+   "cls": "zQ",
+   "count": 14459,
+   "selfMB": 0.521,
+   "retainedMB": 1.381
+  },
+  {
+   "cls": "jm",
+   "count": 10646,
+   "selfMB": 0.383,
+   "retainedMB": 1.234
+  },
+  {
+   "cls": "(array) (object properties)",
+   "count": 520,
+   "selfMB": 1.137,
+   "retainedMB": 1.207
+  },
+  {
+   "cls": "Xi",
+   "count": 1172,
+   "selfMB": 0.061,
+   "retainedMB": 1.115
+  },
+  {
+   "cls": "(object shape)",
+   "count": 16416,
+   "selfMB": 0.89,
+   "retainedMB": 1.038
+  },
+  {
+   "cls": "Set",
+   "count": 408,
+   "selfMB": 0.007,
+   "retainedMB": 1.027
+  },
+  {
+   "cls": "(hidden) system / PropertyArray",
+   "count": 23204,
+   "selfMB": 0.754,
+   "retainedMB": 0.757
+  },
+  {
+   "cls": "gg",
+   "count": 14678,
+   "selfMB": 0.235,
+   "retainedMB": 0.695
+  },
+  {
+   "cls": "ya",
+   "count": 834,
+   "selfMB": 0.28,
+   "retainedMB": 0.639
+  },
+  {
+   "cls": "cT",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.487
+  },
+  {
+   "cls": "C1",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.468
+  },
+  {
+   "cls": "s1",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.459
+  },
+  {
+   "cls": "(hidden) system / FunctionTemplateInfo",
+   "count": 5070,
+   "selfMB": 0.324,
+   "retainedMB": 0.424
+  },
+  {
+   "cls": "xto",
+   "count": 44,
+   "selfMB": 0.003,
+   "retainedMB": 0.367
+  },
+  {
+   "cls": "Sr",
+   "count": 2183,
+   "selfMB": 0.052,
+   "retainedMB": 0.314
+  },
+  {
+   "cls": "(synthetic) (GC roots)",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.307
+  },
+  {
+   "cls": "oZ",
+   "count": 2723,
+   "selfMB": 0.065,
+   "retainedMB": 0.262
+  },
+  {
+   "cls": "(hidden) system / NativeContext",
+   "count": 3,
+   "selfMB": 0.004,
+   "retainedMB": 0.211
+  },
+  {
+   "cls": "hi",
+   "count": 4519,
+   "selfMB": 0.09,
+   "retainedMB": 0.199
+  },
+  {
+   "cls": "OkA",
+   "count": 365,
+   "selfMB": 0.019,
+   "retainedMB": 0.193
+  },
+  {
+   "cls": "vB",
+   "count": 66,
+   "selfMB": 0.005,
+   "retainedMB": 0.186
+  },
+  {
+   "cls": "T",
+   "count": 102,
+   "selfMB": 0.007,
+   "retainedMB": 0.181
+  },
+  {
+   "cls": "(synthetic) (Global handles)",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.176
+  },
+  {
+   "cls": "kMA",
+   "count": 10644,
+   "selfMB": 0.17,
+   "retainedMB": 0.17
+  },
+  {
+   "cls": "Yto",
+   "count": 783,
+   "selfMB": 0.025,
+   "retainedMB": 0.17
+  },
+  {
+   "cls": "(hidden) system / WeakArrayList",
+   "count": 1750,
+   "selfMB": 0.169,
+   "retainedMB": 0.169
+  },
+  {
+   "cls": "x5",
+   "count": 44,
+   "selfMB": 0.001,
+   "retainedMB": 0.164
+  },
+  {
+   "cls": "PF",
+   "count": 6,
+   "selfMB": 0,
+   "retainedMB": 0.145
+  },
+  {
+   "cls": "dC",
+   "count": 68,
+   "selfMB": 0.01,
+   "retainedMB": 0.142
+  },
+  {
+   "cls": "(synthetic) (Strong root list)",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.127
+  },
+  {
+   "cls": "InternalNode",
+   "count": 9580,
+   "selfMB": 0,
+   "retainedMB": 0.126
+  },
+  {
+   "cls": "O5",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.124
+  },
+  {
+   "cls": "ZkA",
+   "count": 74,
+   "selfMB": 0.003,
+   "retainedMB": 0.112
+  },
+  {
+   "cls": "WebGLBuffer",
+   "count": 1506,
+   "selfMB": 0.108,
+   "retainedMB": 0.108
+  },
+  {
+   "cls": "cto",
+   "count": 199,
+   "selfMB": 0.005,
+   "retainedMB": 0.103
+  },
+  {
+   "cls": "SVGPathElement",
+   "count": 328,
+   "selfMB": 0.044,
+   "retainedMB": 0.099
+  },
+  {
+   "cls": "Bl",
+   "count": 52,
+   "selfMB": 0.007,
+   "retainedMB": 0.096
+  },
+  {
+   "cls": "(hidden) system / ArrayList",
+   "count": 196,
+   "selfMB": 0.088,
+   "retainedMB": 0.095
+  },
+  {
+   "cls": "(hidden) system / ObjectTemplateInfo",
+   "count": 364,
+   "selfMB": 0.01,
+   "retainedMB": 0.093
+  },
+  {
+   "cls": "Window / file://",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.093
+  },
+  {
+   "cls": "SVGSVGElement",
+   "count": 146,
+   "selfMB": 0.025,
+   "retainedMB": 0.089
+  },
+  {
+   "cls": "(hidden) system / FunctionTemplateRareData",
+   "count": 285,
+   "selfMB": 0.011,
+   "retainedMB": 0.087
+  },
+  {
+   "cls": "Window",
+   "count": 11,
+   "selfMB": 0.002,
+   "retainedMB": 0.085
+  },
+  {
+   "cls": "Performance",
+   "count": 9,
+   "selfMB": 0.002,
+   "retainedMB": 0.082
+  },
+  {
+   "cls": "hg",
+   "count": 133,
+   "selfMB": 0.038,
+   "retainedMB": 0.082
+  },
+  {
+   "cls": "(hidden) system / PropertyCell",
+   "count": 2543,
+   "selfMB": 0.051,
+   "retainedMB": 0.078
+  },
+  {
+   "cls": "WebGLVertexArrayObject",
+   "count": 694,
+   "selfMB": 0.077,
+   "retainedMB": 0.078
+  },
+  {
+   "cls": "<canvas width=\"64\" height=\"64\">",
+   "count": 48,
+   "selfMB": 0.026,
+   "retainedMB": 0.074
+  },
+  {
+   "cls": "GA",
+   "count": 38,
+   "selfMB": 0.003,
+   "retainedMB": 0.073
+  },
+  {
+   "cls": "CanvasRenderingContext2D",
+   "count": 72,
+   "selfMB": 0.069,
+   "retainedMB": 0.07
+  },
+  {
+   "cls": "bg",
+   "count": 40,
+   "selfMB": 0.006,
+   "retainedMB": 0.061
+  },
+  {
+   "cls": "WeakMap",
+   "count": 48,
+   "selfMB": 0.001,
+   "retainedMB": 0.059
+  },
+  {
+   "cls": "SVGAnimatedLength",
+   "count": 812,
+   "selfMB": 0.052,
+   "retainedMB": 0.052
+  },
+  {
+   "cls": "(hidden) system / DoubleStringCache",
+   "count": 1,
+   "selfMB": 0.049,
+   "retainedMB": 0.049
+  },
+  {
+   "cls": "Window / ://",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.048
+  },
+  {
+   "cls": "PerformanceLongTaskTiming",
+   "count": 201,
+   "selfMB": 0.023,
+   "retainedMB": 0.048
+  },
+  {
+   "cls": "WebGLUniformLocation",
+   "count": 830,
+   "selfMB": 0.046,
+   "retainedMB": 0.046
+  },
+  {
+   "cls": "El",
+   "count": 64,
+   "selfMB": 0.015,
+   "retainedMB": 0.041
+  },
+  {
+   "cls": "(hidden) system / AccessorPair",
+   "count": 2907,
+   "selfMB": 0.035,
+   "retainedMB": 0.035
+  },
+  {
+   "cls": "UtilityScript",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.035
+  },
+  {
+   "cls": "SVGCircleElement",
+   "count": 81,
+   "selfMB": 0.01,
+   "retainedMB": 0.035
+  },
+  {
+   "cls": "Text",
+   "count": 427,
+   "selfMB": 0.034,
+   "retainedMB": 0.034
+  },
+  {
+   "cls": "SVGAnimatedTransformList",
+   "count": 511,
+   "selfMB": 0.033,
+   "retainedMB": 0.033
+  },
+  {
+   "cls": "W0",
+   "count": 11,
+   "selfMB": 0,
+   "retainedMB": 0.029
+  },
+  {
+   "cls": "PerformanceLongAnimationFrameTiming",
+   "count": 200,
+   "selfMB": 0.029,
+   "retainedMB": 0.029
+  },
+  {
+   "cls": "SVGAnimatedString",
+   "count": 511,
+   "selfMB": 0.029,
+   "retainedMB": 0.029
+  },
+  {
+   "cls": "TaskAttributionTiming",
+   "count": 201,
+   "selfMB": 0.026,
+   "retainedMB": 0.026
+  },
+  {
+   "cls": "EventListener",
+   "count": 262,
+   "selfMB": 0.006,
+   "retainedMB": 0.025
+  },
+  {
+   "cls": "SVGAnimatedNumber",
+   "count": 383,
+   "selfMB": 0.025,
+   "retainedMB": 0.025
+  },
+  {
+   "cls": "LqA",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.023
+  },
+  {
+   "cls": "InjectedScript",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.023
+  },
+  {
+   "cls": "<canvas width=\"128\" height=\"128\">",
+   "count": 12,
+   "selfMB": 0.007,
+   "retainedMB": 0.019
+  },
+  {
+   "cls": "Bi",
+   "count": 11,
+   "selfMB": 0.001,
+   "retainedMB": 0.019
+  },
+  {
+   "cls": "V8EventListener",
+   "count": 253,
+   "selfMB": 0.01,
+   "retainedMB": 0.018
+  },
+  {
+   "cls": "tIo",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.017
+  },
+  {
+   "cls": "(hidden) system / AccessorInfo",
+   "count": 1918,
+   "selfMB": 0.016,
+   "retainedMB": 0.016
+  },
+  {
+   "cls": "nIo",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.016
+  },
+  {
+   "cls": "WebGL2RenderingContext",
+   "count": 4,
+   "selfMB": 0.001,
+   "retainedMB": 0.016
+  },
+  {
+   "cls": "Document",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.014
+  },
+  {
+   "cls": "SVGRectElement",
+   "count": 25,
+   "selfMB": 0.003,
+   "retainedMB": 0.014
+  },
+  {
+   "cls": "(regexp)",
+   "count": 10,
+   "selfMB": 0,
+   "retainedMB": 0.013
+  },
+  {
+   "cls": "Om",
+   "count": 10,
+   "selfMB": 0,
+   "retainedMB": 0.012
+  },
+  {
+   "cls": "(hidden) system / IrRegExpData",
+   "count": 10,
+   "selfMB": 0.001,
+   "retainedMB": 0.012
+  },
+  {
+   "cls": "YK",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.012
+  },
+  {
+   "cls": "(synthetic) C++ Persistent roots",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.011
+  },
+  {
+   "cls": "pIo",
+   "count": 8,
+   "selfMB": 0.001,
+   "retainedMB": 0.01
+  },
+  {
+   "cls": "gIo",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.01
+  },
+  {
+   "cls": "WC",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.01
+  },
+  {
+   "cls": "Math",
+   "count": 3,
+   "selfMB": 0,
+   "retainedMB": 0.009
+  },
+  {
+   "cls": "CSSParserToken",
+   "count": 42,
+   "selfMB": 0.001,
+   "retainedMB": 0.009
+  },
+  {
+   "cls": "HTMLDocument",
+   "count": 7,
+   "selfMB": 0.003,
+   "retainedMB": 0.009
+  },
+  {
+   "cls": "(hidden) system / ProtectedFixedArray",
+   "count": 564,
+   "selfMB": 0.008,
+   "retainedMB": 0.008
+  },
+  {
+   "cls": "(hidden) system / ContextCell",
+   "count": 5,
+   "selfMB": 0,
+   "retainedMB": 0.008
+  },
+  {
+   "cls": "Element",
+   "count": 10,
+   "selfMB": 0.001,
+   "retainedMB": 0.008
+  },
+  {
+   "cls": "SVGAnimatedRect",
+   "count": 124,
+   "selfMB": 0.008,
+   "retainedMB": 0.008
+  },
+  {
+   "cls": "SVGAnimatedPreserveAspectRatio",
+   "count": 124,
+   "selfMB": 0.008,
+   "retainedMB": 0.008
+  }
+ ],
+ "topDominators": [
+  {
+   "cls": "(string)",
+   "retainedMB": 70.65,
+   "selfB": 48,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / ExternalStringData",
+   "retainedMB": 70.65,
+   "selfB": 70650451,
+   "edge": "2 / backing_store",
+   "chain": [
+    "2 / backing_store <- (string)"
+   ]
+  },
+  {
+   "cls": "system / Context",
+   "retainedMB": 9.6,
+   "selfB": 424,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / Context",
+   "retainedMB": 9.26,
+   "selfB": 51968,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "Map",
+   "retainedMB": 3.85,
+   "selfB": 16,
+   "edge": "VR",
+   "chain": [
+    "VR <- system / Context"
+   ]
+  },
+  {
+   "cls": "(array) ",
+   "retainedMB": 3.85,
+   "selfB": 458772,
+   "edge": "table",
+   "chain": [
+    "table <- Map",
+    "VR <- system / Context"
+   ]
+  },
+  {
+   "cls": "system / Context",
+   "retainedMB": 3.5,
+   "selfB": 5548,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 2.9,
+   "selfB": 2900268,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 2.72,
+   "selfB": 2719372,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "Map",
+   "retainedMB": 2.23,
+   "selfB": 16,
+   "edge": "Wh",
+   "chain": [
+    "Wh <- system / Context"
+   ]
+  },
+  {
+   "cls": "(array) ",
+   "retainedMB": 2.23,
+   "selfB": 458772,
+   "edge": "table",
+   "chain": [
+    "table <- Map",
+    "Wh <- system / Context"
+   ]
+  },
+  {
+   "cls": "Array",
+   "retainedMB": 1.79,
+   "selfB": 16,
+   "edge": "rH",
+   "chain": [
+    "rH <- system / Context"
+   ]
+  },
+  {
+   "cls": "Object",
+   "retainedMB": 1.41,
+   "selfB": 52,
+   "edge": "[1094]",
+   "chain": [
+    "[1094] <- system / Context"
+   ]
+  },
+  {
+   "cls": "Array",
+   "retainedMB": 1.41,
+   "selfB": 16,
+   "edge": "[0]",
+   "chain": [
+    "[0] <- Array",
+    "rH <- system / Context"
+   ]
+  },
+  {
+   "cls": "Object",
+   "retainedMB": 1.41,
+   "selfB": 24,
+   "edge": "spawnCache",
+   "chain": [
+    "spawnCache <- Object",
+    "[1094] <- system / Context"
+   ]
+  },
+  {
+   "cls": "Array",
+   "retainedMB": 1.22,
+   "selfB": 16,
+   "edge": "qYA",
+   "chain": [
+    "qYA <- system / Context"
+   ]
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992848,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992848,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992848,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992848,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992848,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 991176,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.98,
+   "selfB": 982816,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.98,
+   "selfB": 52,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / ExternalStringData",
+   "retainedMB": 0.98,
+   "selfB": 976131,
+   "edge": "1 / backing_store",
+   "chain": [
+    "1 / backing_store <- (string)"
+   ]
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.98,
+   "selfB": 52,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / ExternalStringData",
+   "retainedMB": 0.98,
+   "selfB": 975295,
+   "edge": "1 / backing_store",
+   "chain": [
+    "1 / backing_store <- (string)"
+   ]
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.97,
+   "selfB": 52,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / ExternalStringData",
+   "retainedMB": 0.97,
+   "selfB": 971951,
+   "edge": "1 / backing_store",
+   "chain": [
+    "1 / backing_store <- (string)"
+   ]
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.97,
+   "selfB": 968608,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.96,
+   "selfB": 956908,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.95,
+   "selfB": 52,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / ExternalStringData",
+   "retainedMB": 0.95,
+   "selfB": 951055,
+   "edge": "1 / backing_store",
+   "chain": [
+    "1 / backing_store <- (string)"
+   ]
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.95,
+   "selfB": 946040,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.94,
+   "selfB": 52,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / ExternalStringData",
+   "retainedMB": 0.94,
+   "selfB": 936843,
+   "edge": "1 / backing_store",
+   "chain": [
+    "1 / backing_store <- (string)"
+   ]
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.93,
+   "selfB": 934336,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.93,
+   "selfB": 928484,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.93,
+   "selfB": 927648,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.92,
+   "selfB": 922636,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.92,
+   "selfB": 919292,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.92,
+   "selfB": 919292,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.92,
+   "selfB": 918456,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.92,
+   "selfB": 918456,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.92,
+   "selfB": 52,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / ExternalStringData",
+   "retainedMB": 0.92,
+   "selfB": 915111,
+   "edge": "1 / backing_store",
+   "chain": [
+    "1 / backing_store <- (string)"
+   ]
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.91,
+   "selfB": 913440,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.9,
+   "selfB": 895884,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.89,
+   "selfB": 891704,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.89,
+   "selfB": 886688,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.88,
+   "selfB": 883348,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.87,
+   "selfB": 868300,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.86,
+   "selfB": 859104,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.85,
+   "selfB": 851580,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.85,
+   "selfB": 846564,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.83,
+   "selfB": 827340,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "Object",
+   "retainedMB": 0.68,
+   "selfB": 24,
+   "edge": "landCache",
+   "chain": [
+    "landCache <- Object",
+    "spawnCache <- Object",
+    "[1094] <- system / Context"
+   ]
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.64,
+   "selfB": 52,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / ExternalStringData",
+   "retainedMB": 0.64,
+   "selfB": 639492,
+   "edge": "1 / backing_store",
+   "chain": [
+    "1 / backing_store <- (string)"
+   ]
+  },
+  {
+   "cls": "hA",
+   "retainedMB": 0.59,
+   "selfB": 124,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "Array",
+   "retainedMB": 0.59,
+   "selfB": 16,
+   "edge": "children",
+   "chain": [
+    "children <- hA"
+   ]
+  },
+  {
+   "cls": "Array",
+   "retainedMB": 0.55,
+   "selfB": 16,
+   "edge": "ni",
+   "chain": [
+    "ni <- system / Context"
+   ]
+  },
+  {
+   "cls": "Object",
+   "retainedMB": 0.52,
+   "selfB": 48,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / Context",
+   "retainedMB": 0.52,
+   "selfB": 104,
+   "edge": "?",
+   "chain": [
+    "? <- Object"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,20 @@
+Regresje gra/tools (PRZED = HEAD 1117c6515 wyeksportowany do /dev/shm, PO = worktree z poprawka)
+Sieciowe/non-browser PO (EXIT 0): city-wall-towers, palisade-battle-wall-rules, siege-defenders, siege-ai, map-siege,
+  oblezenie-remis-endsiege, oblezenie-siege-lifted-po-bitwie, militia-garrison-router-siege, ai-siege-requires-war,
+  city-defense-terrain-gate, combat, army-hunger-combat, auto-battle-power, auto-battle-loss-audit, battle-formation-rules,
+  battle-roster, battle-summary, battle-initial-placement-runtime, battle-standoff-two-warriors, battle-melee-attack-doctrine,
+  battle-ranged-mounted-doctrine, map-field-battle, post-battle-map, pr141-combat-defense-behavior, battle-manual-choice-contract,
+  battle-manual-orders-routing, battle-large-mixed-doctrine-matrix, battle-flank-close-formation, battle-dead-unit-disappearance,
+  battle-mode-save-reload-contract, battle-attack-move-order, battle-hp-display, pr141-combat-offense-behavior,
+  pr141-g1-combat-activation, pr141-matrix-only-combat, endturn-battle-deadlock, endturn-battle-deadlock-exec
+Browser PO (EXIT 0): bitwa-obroncy-mur-kolumny-test (9 ok / 0 fail; vite+Chromium)
+ZMIENIONY test (uzasadnienie w komentarzu w pliku): city-siege-wall-rules-test.cjs -- pinezka starej reguly
+  `defender.onWallWalkway ? total : 0` zastapiona pinezka `_wallBonusProcFor(defender)`: PRZED 48 OK/2 FAIL (stara pinezka lamie sie
+  na nowej regule), PO aktualizacji 50 OK / 0 FAIL.
+Czerwone TAKZE PRZED (identyczna liczba FAIL PRZED i PO => nie z tego tematu): mur-paradoks-test (28 pass/1 fail),
+  auto-battle-simultaneous-test, battle-loot-test (4 FAIL-linie), pr141-combat-defense-owner-route-test.
+NIE_ZMIERZONO (srodowisko: testy twardo wskazuja /usr/bin/chromium, brak w sandboxie; lub wymagaja zewnetrznego distDir):
+  battle-ranged-approach-regression, battle-natural-near-range-r6, palisade-towers-live, palisade-map-city-live,
+  battle-natural-chariot-r5, battle-doctrine-live-r3/r4, battle-manual-*-live, battle-large-return-live,
+  battle-mode-choice-labels, battle-attack-move-pointer, battle-manual-melee-browser.
+EXIT=0

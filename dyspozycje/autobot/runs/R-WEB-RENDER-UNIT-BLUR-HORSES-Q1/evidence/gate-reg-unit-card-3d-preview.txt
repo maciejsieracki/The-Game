@@ -1,0 +1,35 @@
+PASS: cityPanel.ts: literał `medallion: {...}` znaleziony w buildUnitDetailCardViaEntityCard (dopasowanie nawiasów)
+PASS: cityPanel.ts: buildUnitDetailCardViaEntityCard nadal woła unitAdapter(u, {}) (dane BEZ zmian, tylko medalion nadpisany)
+PASS: cityPanel.ts: buildUnitDetailCardViaEntityCard nadal woła renderEntityCard(cardData) (nie built bezpośrednio — nadpisanie faktycznie użyte)
+[unit-card-3d-preview-coverage-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+
+-- (A) entityCards/renderer.ts::buildEntityCardData("unit", ...) — realny render --
+PASS: (A) brak błędów konsoli/pageerror
+PASS: (A) data.medallion.kind === "unit3d" (nadpisany, nie domyślna ikona)
+[(A) renderMode] canvas-3d
+PASS: (A) medalion faktycznie coś zamontował: realny <canvas> (WebGL) LUB fallback tekstowy (parytet środowiska, reguła przeciw samooszukiwaniu)
+
+-- (B) unitInfoCard.ts::buildUnitInfoCard (lista armii, nietknięta) — parytet --
+PASS: (B) dataset.unit3dHook === "buildUnitModel" (marker karty listy armii niezmieniony)
+[(B) renderMode] canvas-3d
+PASS: (B) karta listy armii nadal montuje realny <canvas> LUB fallback tekstowy — zero regresu
+PASS: (B)+(A) PARYTET środowiska: oba call-site'y dają ten sam typ wyniku w tym samym środowisku (canvas<->canvas albo fallback<->fallback)
+
+-- (C) building/technology/improvement/wonder — medalion niezmieniony ("icon") --
+PASS: (C) building: medallion.kind === "icon" (bez zmian)
+PASS: (C) improvement: medallion.kind === "icon" (bez zmian)
+PASS: (C) wonder: medallion.kind === "icon" (bez zmian)
+PASS: (C) technology: medallion.kind === "icon" (bez zmian)
+
+-- (D) cityPanel.ts::buildUnitDetailCardViaEntityCard (panel rekrutacji miasta) — realny render literału wyciętego z żywego pliku --
+[(D) renderMode] canvas-3d
+PASS: (D) karta rekrutacji (literał z cityPanel.ts) montuje realny <canvas> LUB fallback tekstowy
+PASS: (D)+(B) PARYTET środowiska: karta rekrutacji daje ten sam typ wyniku co karta listy armii
+
+-- (E) Mutacja: cofnięcie nadpisania medalionu w cityPanel.ts (musi złapać czerwono) --
+PASS: (E) mutacja faktycznie zmieniła źródło (kotwica zamiany istnieje)
+PASS: (E) mutacja (override medalionu usunięty) złapana czerwono przez sekcję (D) tego samego testu
+PASS: (E) plik cityPanel.ts przywrócony do stanu oryginalnego po mutacji
+
+[unit-card-3d-preview-coverage-test] 18 pass, 0 fail
+EXIT=0

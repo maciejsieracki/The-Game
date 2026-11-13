@@ -1,0 +1,32 @@
+{"kind":"start","seed":18,"seedSeen":18,"setup":{"cities":2}}
+{"kind":"turn","seed":18,"turnBefore":1,"turnAfter":2,"ok":true,"ms":18839,"events":[{"id":"auto-ration-t2","title":"Automatycznie obniżono racje żywnościowe","subtitle":"Rzym: 4 → 1,5 · Mediolan: 4 → 6","kind":"enemy","blocking":false,"origin":null,"turn":2}]}
+{"kind":"turn","seed":18,"turnBefore":2,"turnAfter":3,"ok":true,"ms":14162,"events":[{"id":"border-march-violated","title":"Granice naruszone","subtitle":"Twoje granice naruszone — Kapua · Rzymianie · miasto-państwo: −5 pkt Zaufania/turę u każdej naruszającej cywilizacji","kind":"diplo","blocking":false,"origin":null,"turn":3}]}
+{"kind":"turn","seed":18,"turnBefore":3,"turnAfter":4,"ok":true,"ms":15993,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":4,"turnAfter":5,"ok":true,"ms":12818,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":5,"turnAfter":6,"ok":true,"ms":12879,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":6,"turnAfter":7,"ok":true,"ms":14542,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":7,"turnAfter":8,"ok":true,"ms":13460,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":8,"turnAfter":9,"ok":true,"ms":11781,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":9,"turnAfter":10,"ok":true,"ms":12055,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":10,"turnAfter":11,"ok":true,"ms":11954,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":11,"turnAfter":12,"ok":true,"ms":12082,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":12,"turnAfter":13,"ok":true,"ms":13134,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":13,"turnAfter":14,"ok":true,"ms":13157,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":14,"turnAfter":15,"ok":true,"ms":11930,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":15,"turnAfter":16,"ok":true,"ms":11585,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":16,"turnAfter":17,"ok":true,"ms":11398,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":17,"turnAfter":18,"ok":true,"ms":9939,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":18,"turnAfter":19,"ok":true,"ms":11584,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":19,"turnAfter":20,"ok":true,"ms":11983,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":20,"turnAfter":21,"ok":true,"ms":12341,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":21,"turnAfter":22,"ok":true,"ms":10455,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":22,"turnAfter":23,"ok":true,"ms":8790,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":23,"turnAfter":24,"ok":true,"ms":8505,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":24,"turnAfter":25,"ok":true,"ms":10206,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":25,"turnAfter":26,"ok":true,"ms":9506,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":26,"turnAfter":27,"ok":true,"ms":11607,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":27,"turnAfter":28,"ok":true,"ms":10960,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":28,"turnAfter":29,"ok":true,"ms":13744,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":29,"turnAfter":30,"ok":true,"ms":12499,"events":[]}
+{"kind":"turn","seed":18,"turnBefore":30,"turnAfter":31,"ok":true,"ms":11415,"events":[]}
+{"kind":"done","pageErrors":[]}

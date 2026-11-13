@@ -1,0 +1,10 @@
+hud-moc-warstwa-test.cjs EXIT=1
+hud-obywatele-chip-test.cjs EXIT=1
+hud-skarbiec-test.cjs EXIT=1
+hud-tooltip-body-mounted-panels-test.cjs EXIT=124
+sidepanel-hud-deadzone-test.cjs EXIT=124
+siege-blockade-no-recruit-reinforce-test.cjs EXIT=124
+siege-tower-breach-everywhere-test.cjs EXIT=124
+tech-discovery-badge-diorama-test.cjs EXIT=1
+trade-routes-hud-filter-test.cjs EXIT=1
+DONE

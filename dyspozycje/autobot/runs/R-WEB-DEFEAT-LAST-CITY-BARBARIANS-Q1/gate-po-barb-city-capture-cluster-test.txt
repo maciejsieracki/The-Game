@@ -1,0 +1,5 @@
+
+barb-city-capture-cluster-test: 94 passed, 2 failed
+  FAIL: 1d: okno zawiera wywołanie tryAutoCaptureEmptyCityAt(bcmd.toQ, bcmd.toR, [bu]) -- FAKTYCZNE przejęcie, nie tylko sprawdzenie formuły
+  FAIL: 1f: tryAutoCaptureEmptyCityAt wołane WEWNĄTRZ `if (barbCanWalkIntoEmptyCity)`, nie bezwarunkowo
+EXIT=1

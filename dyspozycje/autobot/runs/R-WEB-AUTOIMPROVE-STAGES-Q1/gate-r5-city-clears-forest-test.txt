@@ -1,0 +1,27 @@
+
+=== A. LOGIKA na realnej mapie ===
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=2 terrain=12 landSea=155 relief=155 coast=21 riversMain=1004 riversFill=926 forest=10 deposits=17 starts=106 total=2409
+  [OK] A0 mapa ma lasy do testu (n=100)
+  [OK] A1 zalozenie miasta na KAZDYM z 40 heksow lasu usuwa Las (zle=0)
+  [OK] A2a heks bez lasu: nakladka bez zmian
+  [OK] A2b zloze zwierzece (macierz B ZOSTAJE) nietkniete
+  [OK] A3a clearForestUnderCity wyeksportowana
+  [OK] A3b usuwa Las i zwraca true
+  [OK] A3c idempotentna: drugi raz false, bez zmian
+  [OK] A3d heks poza mapa: false bez wyjatku
+  [OK] A4a tartak i oboz nie przezywaja zalozenia miasta
+  [OK] A4b droga i farma zostaja (macierz B)
+  [OK] A4c strip lasu (siatka) usuwa tylko tartak/oboz
+
+=== B. OKABLOWANIE main.ts (tekst zrodla) ===
+  [OK] B1a znaleziono wolania foundCityAt( w main.ts: 8
+  [OK] B1b KAZDE foundCityAt( ma finalizeCityFounding( w oknie 30 linii
+  [OK] B2 finalizeCityFounding woła applyCityFoundingToHex (czyszczenie lasu)
+  [OK] B3a enforceNoForestUnderCities: usuwa Las, tartak/oboz, chowa dekor
+  [OK] B3b reapplyCityHexDecorHides woła siatkę (load + presety)
+  [OK] B3c siatka wolana na granicy tury
+  [OK] B4 wczytanie zapisu (restoreGameFromSave(saved)) -> reapplyCityHexDecorHides()
+
+city-clears-forest-test: 18 pass / 0 fail
+EXIT=0

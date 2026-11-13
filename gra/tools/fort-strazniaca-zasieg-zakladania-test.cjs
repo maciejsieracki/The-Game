@@ -112,8 +112,9 @@ console.log('\n--- A1: fortNodeAsCityNode + cityTerritoryRadius (fort=10, poster
 {
   const fort = fortNodeAsCityNode({ q: 0, r: 0, type: 'fort' });
   const post = fortNodeAsCityNode({ q: 0, r: 0, type: 'posterunek' });
-  eq(cityTerritoryRadius(fort), 10, 'A1a: fort radius = 10');
-  eq(cityTerritoryRadius(post), 5, 'A1b: posterunek radius = 5');
+  // Decyzja wlasciciela 2026-10-31 (R-WEB-OUTPOST-FORT-TERRITORY-Q1): fort r=5 (bylo 10).
+  eq(cityTerritoryRadius(fort), 5, 'A1a: fort radius = 5');
+  eq(cityTerritoryRadius(post), 3, 'A1b: posterunek radius = 3 (bylo 5)');
 }
 
 console.log('\n--- A2: foundingNodesForOwner — wlasne miasta + wlasne, nie-skontestowane forty ---');
@@ -323,7 +324,8 @@ console.log('\n--- B1: fort/posterunek POZA wlasnym terytorium -- wymog wlasnej 
     ownUnitHexKeys: new Set([`${farHex.q},${farHex.r}`]), // jednostka STOI tam
   });
   assert(qualWithUnit('fort', farHex.q, farHex.r), 'B1c: Z wlasna jednostka na hexie -- fort kwalifikuje sie poza terytorium');
-  assert(qualWithUnit('posterunek', farHex.q, farHex.r), 'B1d: to samo dla posterunka');
+  // R-WEB-FORT-OUTPOST-PLACEMENT-RULES-Q1 (2026-11-03): posterunek poza wlasnym terenem NIE, nawet z jednostka (tylko przy granicy).
+  assert(!qualWithUnit('posterunek', farHex.q, farHex.r), 'B1d: posterunek poza terytorium NIE kwalifikuje sie nawet z jednostka (nowa regula granicy)');
 }
 
 console.log('\n--- B2: fort/posterunek na terenie CUDZEGO miasta -- zawsze zablokowane (regula 1) ---');
@@ -356,7 +358,8 @@ console.log('\n--- B3: fort/posterunek WEWNATRZ wlasnego terytorium -- BEZ wymog
     ownUnitHexKeys: new Set(), // BRAK jednostki -- musi mimo to przejsc
   });
   assert(qual('fort', insideHex.q, insideHex.r), 'B3a: fort WEWNATRZ wlasnego terytorium kwalifikuje sie BEZ jednostki (zachowanie sprzed kroku 2)');
-  assert(qual('posterunek', insideHex.q, insideHex.r), 'B3b: to samo dla posterunka');
+  // Posterunek: tylko przy granicy (dist 3 od miasta r=10 to glab) -- NIE (krawedz OK pokrywa fort-outpost-placement-rules-test).
+  assert(!qual('posterunek', insideHex.q, insideHex.r), 'B3b: posterunek w GLEBI wlasnego terenu NIE (R-WEB-FORT-OUTPOST-PLACEMENT-RULES-Q1)');
 }
 
 console.log('\n--- B4: fort/posterunek na terenie NIECZYIM (poza kazdym terytorium), z jednostka -- kwalifikuje ---');
@@ -434,7 +437,7 @@ console.log('\n--- C2: planCityFounding Z wlasnym fortem AI -- rozszerza zasieg 
   const cityRadius = cityTerritoryRadius({ q: 30, r: 30, pop: srcPop, level: 1 });
   // Fort AI daleko poza zasiegiem miasta -- otwiera nowy klaster zakladania.
   const fortQ = 30, fortR = 30 + cityRadius + 8;
-  const fortRadius = 10; // fort=10
+  const fortRadius = 5; // fort=5 (decyzja 2026-10-31, bylo 10)
   assert(hexDistance(fortQ, fortR, city.q, city.r) > cityRadius,
     'C2-sanity: fort faktycznie POZA zasiegiem samego miasta');
 
@@ -524,7 +527,7 @@ console.log('\n--- C4: planExpansionFortBuilding (F3) -- heks z JUZ postawionym 
   const opts = {
     ...baseOpts,
     pracaAvailable: 1000,
-    improvementTechs: new Set(['Obróbka drewna', 'Murarstwo']),
+    improvementTechs: new Set(['Obróbka drewna', 'Murarstwo', 'Wojskowość']),
     placedImprovements: new Map([[occupiedHexKey, 'posterunek']]),
   };
   const cmd = planExpansionFortBuilding(5, [city], [unitOnOccupied, unitOnClean], map, opts);
@@ -552,7 +555,7 @@ console.log('\n--- C5: planExpansionFortBuilding (F4) -- Miasto-Panstwo (opts.de
   const baseTestOpts = {
     ...baseOpts,
     pracaAvailable: 1000,
-    improvementTechs: new Set(['Obróbka drewna', 'Murarstwo']),
+    improvementTechs: new Set(['Obróbka drewna', 'Murarstwo', 'Wojskowość']),
   };
 
   // Kontrola pozytywna: DOKLADNIE ta sama sytuacja BEZ defensiveCopy -- MUSI zwrocic

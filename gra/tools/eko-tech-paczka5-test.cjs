@@ -82,8 +82,15 @@ function mapWith(...hexes) {
   ok(!noPop.active.includes('Brąz'), 'brak Brązu bez popalni mimo Pieca');
 
   const placed = new Map([['1,0', 'kopalnia_miedzi']]);
-  const withBraz = M.getCityResourceAccessForCity(city, map, placed, 99, { builtIds: [PIEC] });
-  ok(withBraz.active.includes('Brąz'), 'Kopalnia miedzi + Piec → active Brąz');
+  // DOSTEP-SUROWCE-Q1 (daacd43a8): Brąz jako aktywny surowiec pochodzi ze STOCKU państwa
+  // (empireStock.braz > 0 + Piec), a nie z samej kopalni na mapie. Asercja z kopalnią
+  // bez stocku jest nieaktualna; sens (kopalnia + Piec + Brąz w magazynie → active) zachowany.
+  const withBrazNoStock = M.getCityResourceAccessForCity(city, map, placed, 99, { builtIds: [PIEC] });
+  ok(!withBrazNoStock.active.includes('Brąz'), 'Kopalnia miedzi + Piec BEZ stocku Brązu → brak active (DOSTEP-SUROWCE-Q1)');
+  const withBraz = M.getCityResourceAccessForCity(city, map, placed, 99, {
+    builtIds: [PIEC], empireStock: { braz: 10 },
+  });
+  ok(withBraz.active.includes('Brąz'), 'Kopalnia miedzi + Piec + stock Brązu → active Brąz');
   ok(withBraz.active.includes('Ruda'), 'kopalnia_miedzi → active Ruda');
 }
 

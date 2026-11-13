@@ -1,0 +1,583 @@
+{
+  "tag": "r2-a-s42-zywnosc",
+  "focus": "zywnosc",
+  "seed": 42,
+  "turns": [
+    {
+      "ok": true,
+      "turn": 1,
+      "ms": 15929,
+      "lasLeftMe": 64,
+      "cutMe": 0,
+      "cutAi": 0,
+      "lc": {
+        "farma": 6
+      },
+      "lcAi": {}
+    },
+    {
+      "ok": true,
+      "turn": 2,
+      "ms": 12728,
+      "lasLeftMe": 60,
+      "cutMe": 4,
+      "cutAi": 0,
+      "lc": {
+        "farma": 8
+      },
+      "lcAi": {}
+    },
+    {
+      "ok": true,
+      "turn": 3,
+      "ms": 12157,
+      "lasLeftMe": 56,
+      "cutMe": 8,
+      "cutAi": 0,
+      "lc": {
+        "farma": 10
+      },
+      "lcAi": {}
+    },
+    {
+      "ok": true,
+      "turn": 4,
+      "ms": 12332,
+      "lasLeftMe": 52,
+      "cutMe": 12,
+      "cutAi": 0,
+      "lc": {
+        "farma": 12
+      },
+      "lcAi": {}
+    },
+    {
+      "ok": true,
+      "turn": 5,
+      "ms": 11746,
+      "lasLeftMe": 48,
+      "cutMe": 16,
+      "cutAi": 0,
+      "lc": {
+        "farma": 12,
+        "bydlo": 12
+      },
+      "lcAi": {
+        "farma": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 6,
+      "ms": 11906,
+      "lasLeftMe": 44,
+      "cutMe": 20,
+      "cutAi": 0,
+      "lc": {
+        "farma": 12,
+        "bydlo": 12,
+        "irygacja": 12
+      },
+      "lcAi": {
+        "farma": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 7,
+      "ms": 13337,
+      "lasLeftMe": 41,
+      "cutMe": 24,
+      "cutAi": 1,
+      "lc": {
+        "farma": 13,
+        "bydlo": 12,
+        "irygacja": 12
+      },
+      "lcAi": {
+        "farma": 3
+      }
+    },
+    {
+      "ok": true,
+      "turn": 8,
+      "ms": 15150,
+      "lasLeftMe": 37,
+      "cutMe": 28,
+      "cutAi": 4,
+      "lc": {
+        "farma": 13,
+        "bydlo": 13,
+        "irygacja": 12
+      },
+      "lcAi": {
+        "farma": 4
+      }
+    },
+    {
+      "ok": true,
+      "turn": 9,
+      "ms": 15013,
+      "lasLeftMe": 33,
+      "cutMe": 32,
+      "cutAi": 4,
+      "lc": {
+        "farma": 13,
+        "bydlo": 13,
+        "irygacja": 13
+      },
+      "lcAi": {
+        "farma": 4
+      }
+    },
+    {
+      "ok": true,
+      "turn": 10,
+      "ms": 13827,
+      "lasLeftMe": 31,
+      "cutMe": 34,
+      "cutAi": 4,
+      "lc": {
+        "farma": 13,
+        "bydlo": 13,
+        "irygacja": 13,
+        "warzelnia_soli": 1
+      },
+      "lcAi": {
+        "tartak": 3,
+        "farma": 5
+      }
+    },
+    {
+      "ok": true,
+      "turn": 11,
+      "ms": 13239,
+      "lasLeftMe": 29,
+      "cutMe": 36,
+      "cutAi": 6,
+      "lc": {
+        "farma": 13,
+        "bydlo": 13,
+        "irygacja": 13,
+        "warzelnia_soli": 1
+      },
+      "lcAi": {
+        "tartak": 4,
+        "farma": 7
+      }
+    },
+    {
+      "ok": true,
+      "turn": 12,
+      "ms": 14888,
+      "lasLeftMe": 27,
+      "cutMe": 38,
+      "cutAi": 10,
+      "lc": {
+        "farma": 14,
+        "bydlo": 13,
+        "irygacja": 13,
+        "warzelnia_soli": 1
+      },
+      "lcAi": {
+        "tartak": 4,
+        "farma": 7
+      }
+    },
+    {
+      "ok": true,
+      "turn": 13,
+      "ms": 12818,
+      "lasLeftMe": 25,
+      "cutMe": 40,
+      "cutAi": 13,
+      "lc": {
+        "farma": 14,
+        "bydlo": 14,
+        "irygacja": 13,
+        "warzelnia_soli": 1
+      },
+      "lcAi": {
+        "tartak": 5,
+        "farma": 16
+      }
+    },
+    {
+      "ok": true,
+      "turn": 14,
+      "ms": 12060,
+      "lasLeftMe": 23,
+      "cutMe": 42,
+      "cutAi": 18,
+      "lc": {
+        "farma": 14,
+        "bydlo": 14,
+        "irygacja": 14,
+        "warzelnia_soli": 1
+      },
+      "lcAi": {
+        "tartak": 5,
+        "farma": 18
+      }
+    },
+    {
+      "ok": true,
+      "turn": 15,
+      "ms": 12113,
+      "lasLeftMe": 21,
+      "cutMe": 44,
+      "cutAi": 22,
+      "lc": {
+        "farma": 14,
+        "bydlo": 14,
+        "irygacja": 14,
+        "warzelnia_soli": 1
+      },
+      "lcAi": {
+        "tartak": 6,
+        "farma": 26
+      }
+    },
+    {
+      "ok": true,
+      "turn": 16,
+      "ms": 13488,
+      "lasLeftMe": 19,
+      "cutMe": 46,
+      "cutAi": 28,
+      "lc": {
+        "farma": 15,
+        "bydlo": 14,
+        "irygacja": 14,
+        "warzelnia_soli": 1
+      },
+      "lcAi": {
+        "tartak": 8,
+        "farma": 28,
+        "bydlo": 6
+      }
+    },
+    {
+      "ok": true,
+      "turn": 17,
+      "ms": 11645,
+      "lasLeftMe": 17,
+      "cutMe": 48,
+      "cutAi": 35,
+      "lc": {
+        "farma": 15,
+        "bydlo": 15,
+        "irygacja": 14,
+        "warzelnia_soli": 1
+      },
+      "lcAi": {
+        "tartak": 9,
+        "farma": 33,
+        "bydlo": 11
+      }
+    },
+    {
+      "ok": true,
+      "turn": 18,
+      "ms": 12092,
+      "lasLeftMe": 15,
+      "cutMe": 50,
+      "cutAi": 45,
+      "lc": {
+        "farma": 15,
+        "bydlo": 15,
+        "irygacja": 15,
+        "warzelnia_soli": 1
+      },
+      "lcAi": {
+        "tartak": 9,
+        "farma": 38,
+        "bydlo": 19,
+        "oboz_lowiecki": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 19,
+      "ms": 12152,
+      "lasLeftMe": 14,
+      "cutMe": 51,
+      "cutAi": 55,
+      "lc": {
+        "farma": 16,
+        "bydlo": 15,
+        "irygacja": 15,
+        "warzelnia_soli": 1
+      },
+      "lcAi": {
+        "farma": 44,
+        "tartak": 9,
+        "oboz_lowiecki": 5,
+        "bydlo": 20
+      }
+    },
+    {
+      "ok": true,
+      "turn": 20,
+      "ms": 13192,
+      "lasLeftMe": 14,
+      "cutMe": 51,
+      "cutAi": 64,
+      "lc": {
+        "farma": 16,
+        "bydlo": 16,
+        "irygacja": 15,
+        "warzelnia_soli": 1
+      },
+      "lcAi": {
+        "farma": 48,
+        "tartak": 9,
+        "oboz_lowiecki": 5,
+        "bydlo": 26
+      }
+    },
+    {
+      "ok": true,
+      "turn": 21,
+      "ms": 10368,
+      "lasLeftMe": 12,
+      "cutMe": 53,
+      "cutAi": 72,
+      "lc": {
+        "farma": 17,
+        "bydlo": 16,
+        "irygacja": 15,
+        "warzelnia_soli": 1
+      },
+      "lcAi": {
+        "farma": 55,
+        "tartak": 9,
+        "oboz_lowiecki": 5,
+        "bydlo": 26,
+        "warzelnia_soli": 2
+      }
+    },
+    {
+      "ok": true,
+      "turn": 22,
+      "ms": 9503,
+      "lasLeftMe": 11,
+      "cutMe": 54,
+      "cutAi": 92,
+      "lc": {
+        "farma": 17,
+        "bydlo": 17,
+        "irygacja": 15,
+        "warzelnia_soli": 1
+      },
+      "lcAi": {
+        "farma": 80,
+        "warzelnia_soli": 9,
+        "tartak": 9,
+        "oboz_lowiecki": 5,
+        "bydlo": 26
+      }
+    },
+    {
+      "ok": true,
+      "turn": 23,
+      "ms": 9528,
+      "lasLeftMe": 9,
+      "cutMe": 56,
+      "cutAi": 108,
+      "lc": {
+        "farma": 17,
+        "bydlo": 17,
+        "irygacja": 17,
+        "warzelnia_soli": 1
+      },
+      "lcAi": {
+        "farma": 84,
+        "warzelnia_soli": 11,
+        "tartak": 9,
+        "oboz_lowiecki": 5,
+        "kamieniolom": 20,
+        "bydlo": 33,
+        "owce": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 24,
+      "ms": 8025,
+      "lasLeftMe": 11,
+      "cutMe": 58,
+      "cutAi": 126,
+      "lc": {
+        "farma": 18,
+        "bydlo": 17,
+        "irygacja": 17,
+        "warzelnia_soli": 1
+      },
+      "lcAi": {
+        "farma": 104,
+        "warzelnia_soli": 11,
+        "tartak": 9,
+        "oboz_lowiecki": 5,
+        "kamieniolom": 20,
+        "bydlo": 33,
+        "owce": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 25,
+      "ms": 9269,
+      "lasLeftMe": 7,
+      "cutMe": 62,
+      "cutAi": 145,
+      "lc": {
+        "farma": 18,
+        "bydlo": 18,
+        "irygacja": 17,
+        "warzelnia_soli": 1
+      },
+      "lcAi": {
+        "farma": 117,
+        "warzelnia_soli": 11,
+        "tartak": 9,
+        "oboz_lowiecki": 5,
+        "kamieniolom": 20,
+        "bydlo": 33,
+        "owce": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 26,
+      "ms": 10809,
+      "lasLeftMe": 3,
+      "cutMe": 66,
+      "cutAi": 169,
+      "lc": {
+        "farma": 18,
+        "bydlo": 18,
+        "irygacja": 18,
+        "warzelnia_soli": 1
+      },
+      "lcAi": {
+        "farma": 125,
+        "warzelnia_soli": 11,
+        "tartak": 9,
+        "oboz_lowiecki": 5,
+        "kamieniolom": 20,
+        "bydlo": 35,
+        "owce": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 27,
+      "ms": 10344,
+      "lasLeftMe": 5,
+      "cutMe": 68,
+      "cutAi": 195,
+      "lc": {
+        "farma": 19,
+        "bydlo": 18,
+        "irygacja": 18,
+        "warzelnia_soli": 1
+      },
+      "lcAi": {
+        "farma": 136,
+        "warzelnia_soli": 11,
+        "tartak": 9,
+        "oboz_lowiecki": 5,
+        "kamieniolom": 20,
+        "bydlo": 35,
+        "owce": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 28,
+      "ms": 10611,
+      "lasLeftMe": 2,
+      "cutMe": 70,
+      "cutAi": 215,
+      "lc": {
+        "farma": 19,
+        "bydlo": 19,
+        "irygacja": 18,
+        "warzelnia_soli": 1
+      },
+      "lcAi": {
+        "farma": 139,
+        "warzelnia_soli": 11,
+        "lama": 2,
+        "tartak": 9,
+        "oboz_lowiecki": 5,
+        "kamieniolom": 33,
+        "bydlo": 35,
+        "owce": 1
+      }
+    }
+  ],
+  "start": {
+    "seedSeen": 42,
+    "mapLog": "[NewGame] Mapa: 76x52 seed=42 typ=kontynenty rywale=4 typy=5",
+    "genMs": 14805
+  },
+  "setup": {
+    "cities": 2,
+    "policy": {
+      "focus": "zywnosc",
+      "tryb": "auto",
+      "pracaAutoPercent": 100,
+      "onlyWorked": true
+    }
+  },
+  "lasStart": {
+    "me": 64,
+    "meWorked": 0,
+    "ai": 287
+  },
+  "me": {
+    "cut": 70,
+    "cutNoCit": 70,
+    "cutWithCit": 0,
+    "assigned": 8,
+    "assignedPct": 11.4,
+    "assignedAfterNoCit": 8,
+    "lagAvg": 4.38,
+    "lagMax": 26
+  },
+  "ai": {
+    "cut": 215,
+    "cutNoCit": 209,
+    "cutWithCit": 6,
+    "assigned": 62,
+    "assignedPct": 28.8,
+    "assignedAfterNoCit": 56,
+    "lagAvg": 3.18,
+    "lagMax": 10
+  },
+  "firstCutTurn": 2,
+  "firstCutTurnAi": 7,
+  "final": {
+    "lc": {
+      "farma": 19,
+      "bydlo": 19,
+      "irygacja": 18,
+      "warzelnia_soli": 1
+    },
+    "lcAi": {
+      "farma": 139,
+      "warzelnia_soli": 11,
+      "lama": 2,
+      "tartak": 9,
+      "oboz_lowiecki": 5,
+      "kamieniolom": 33,
+      "bydlo": 35,
+      "owce": 1
+    },
+    "lasLeftMe": 2,
+    "msAvg": 12152
+  },
+  "pageErrors": []
+}

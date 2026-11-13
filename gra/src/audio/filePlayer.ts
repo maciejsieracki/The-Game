@@ -3,8 +3,10 @@
 // DWIE niezależne playlisty (własny stan, własna PARA <audio> A/B, różna
 // reguła powtórzeń):
 //
-//   - kamienPlaylist — muzyka epoki KAMIENIA w rozgrywce (utwory z
-//     ./utwory/kamien/): shuffle + KAŻDY UTWÓR 3x POD RZĄD, potem następny.
+//   - eraMusicPlaylist — muzyka tła rozgrywki, KUMULATYWNA po epokach (kamień;
+//     od brązu kamień+brąz; od żelaza kamień+brąz+żelazo — patrz eraTierUrls()
+//     / setEraMusicTier(); awans epoki dołącza utwory, nie przerywa grającego):
+//     shuffle + KAŻDY UTWÓR 3x POD RZĄD, potem następny.
 //     Sterowana przez router epok w muzyka-antyczna.ts (usesFilePlayer()).
 //   - introPlaylist — muzyka ekranów PRZED rozgrywką: menu główne, wybór
 //     cywilizacji, ustawienia (utwory z ./utwory/intro/): shuffle + KAŻDY
@@ -81,9 +83,13 @@
 //     ponownego gestu.
 //
 // API modułu (używane WYŁĄCZNIE przez muzyka-antyczna.ts):
-//   kamienPlaylist, introPlaylist — obiekty FilePlaylist:
+//   eraMusicPlaylist, introPlaylist — obiekty FilePlaylist:
 //     hasTracks() / start() / startWithFadeIn(fadeMs) / stop() / setVolume(v: 0..1) / isPlaying()
 // ============================================================================
+
+import civMusicManifest from '../../data/civ-music.json';
+import { resolveCivDiplomacyTracks } from './civMusic';
+import type { CivMusicManifest } from './civMusic';
 
 /** Długość przenikania między utworami (i między powtórzeniami tego samego
  *  utworu) — JEDNA stała, dostrajalna po odsłuchu. Właściciel: "po sekundzie"
@@ -111,9 +117,21 @@ export interface FilePlaylist {
    * ui-params.json). No-op, jeśli już gra albo brak plików (jak start()).
    */
   startWithFadeIn(fadeMs: number): void;
-  stop(): void;
+  stop(onStopped?: () => void): void;
   setVolume(v: number): void;
   isPlaying(): boolean;
+  /** Cofa playlistę na początek (kolejka od nowa, w tym utwory otwierające
+   *  `leadCount`). No-op, gdy playlista gra. Użycie: muzyka cywilizacji w
+   *  dyplomacji — każde otwarcie rozmowy zaczyna od przywitania. */
+  rewind(): void;
+  /** Podmienia pulę utworów NA ŻYWO (playlista kumulatywna epok). Utwory,
+   *  które już były w puli, zachowują miejsce w bieżącej turze; NOWE
+   *  wsiadają w losowe miejsca jeszcze niezagranej reszty tury (shuffle
+   *  zachowany). Grający utwór NIE jest przerywany — dogrywa się (z resztą
+   *  powtórzeń) nawet wtedy, gdy nowa pula już go nie zawiera. */
+  setTracks(urls: readonly string[]): void;
+  /** Aktualna pula (kopia) — diagnostyka/testy. */
+  getTracks(): readonly string[];
 }
 
 /** Ta sama krzywa percepcyjna głośności co suwak w silniku syntezy (patrz
@@ -158,12 +176,20 @@ function buildShuffledQueue(trackCount: number, avoidFirst: number | null): numb
  *  przejść, także między powtórzeniami, przenika (patrz nagłówek pliku).
  *  kolejnosc: 'losowa' (domyślnie) tasuje przy każdej turze; 'stala' gra
  *  zawsze w kolejności podanej w trackUrls — decyzja właściciela C-MUZ-Q6=A
- *  dla intro (dramaturgia menu: spokojne otwarcie, mocne zamknięcie). */
+ *  dla intro (dramaturgia menu: spokojne otwarcie, mocne zamknięcie).
+ *  leadCount: pierwsze N utworów (indeksy 0..N-1) gra JEDNORAZOWO na początku
+ *  (np. przywitanie cywilizacji); kolejne tury pętlą już tylko po pozostałych
+ *  (pętla negocjacji; 'losowa' tasuje wtedy tylko ogon). Gdy ogon pusty —
+ *  pętla po całości (lead jest ignorowany). */
 function createPlaylist(
-  trackUrls: readonly string[],
+  initialUrls: readonly string[],
   repeatsPerTrack: number,
   kolejnosc: 'losowa' | 'stala' = 'losowa',
+  leadCount = 0,
 ): FilePlaylist {
+  // Pula utworów jest zmienna TYLKO dla playlisty kumulatywnej (setTracks);
+  // pozostałe playlisty nigdy jej nie ruszają.
+  let trackUrls: readonly string[] = initialUrls;
   const els: [HTMLAudioElement | null, HTMLAudioElement | null] = [null, null];
   let activeIdx: 0 | 1 = 0;
   let queue: number[] = [];
@@ -190,6 +216,22 @@ function createPlaylist(
 
   function hasTracks(): boolean { return trackUrls.length > 0; }
 
+  /** Efektywna liczba utworów otwierających (grane raz). */
+  const lead = leadCount > 0 && leadCount < trackUrls.length ? leadCount : 0;
+
+  /** Nowa kolejka. first=true: pierwsza tura (lead + ogon); inaczej wyłącznie
+   *  ogon (pętla). lastPlayed: indeks ostatniego utworu poprzedniej tury. */
+  function newQueue(first: boolean, lastPlayed: number | null): number[] {
+    const from = first ? 0 : lead;
+    const idx = Array.from({ length: trackUrls.length - from }, (_, i) => from + i);
+    if (kolejnosc === 'stala') return idx;
+    if (lead === 0) return buildShuffledQueue(trackUrls.length, lastPlayed);
+    const headLen = first ? lead : 0;
+    const tail = buildShuffledQueue(trackUrls.length - lead, lastPlayed !== null && lastPlayed >= lead ? lastPlayed - lead : null)
+      .map((i) => i + lead);
+    return [...idx.slice(0, headLen), ...tail];
+  }
+
   function currentUrl(): string | null {
     const i = queue[queuePos];
     return i === undefined ? null : (trackUrls[i] ?? null);
@@ -208,9 +250,7 @@ function createPlaylist(
     repeatsLeft = repeatsPerTrack;
     if (queuePos >= queue.length) {
       const lastOfOldQueue = queue[queue.length - 1] ?? null;
-      queue = kolejnosc === 'stala'
-        ? Array.from({ length: trackUrls.length }, (_, i) => i)
-        : buildShuffledQueue(trackUrls.length, lastOfOldQueue);
+      queue = newQueue(false, lastOfOldQueue);
       queuePos = 0;
     }
   }
@@ -385,9 +425,7 @@ function createPlaylist(
     clearStopFade(); // gdyby start() trafił w trakcie fade-out po stop()
     playing = true;
     if (queue.length === 0) {
-      queue = kolejnosc === 'stala'
-        ? Array.from({ length: trackUrls.length }, (_, i) => i)
-        : buildShuffledQueue(trackUrls.length, null);
+      queue = newQueue(true, null);
       queuePos = 0;
       repeatsLeft = repeatsPerTrack;
     }
@@ -406,9 +444,7 @@ function createPlaylist(
     clearStartFade();
     playing = true;
     if (queue.length === 0) {
-      queue = kolejnosc === 'stala'
-        ? Array.from({ length: trackUrls.length }, (_, i) => i)
-        : buildShuffledQueue(trackUrls.length, null);
+      queue = newQueue(true, null);
       queuePos = 0;
       repeatsLeft = repeatsPerTrack;
     }
@@ -443,7 +479,7 @@ function createPlaylist(
    *  zwalnia zasoby OBU elementów A/B. Pozycja w playliście ZOSTAJE —
    *  kolejny start() wraca do tego samego utworu z zapamiętaną liczbą
    *  pozostałych powtórzeń. */
-  function stop(): void {
+  function stop(onStopped?: () => void): void {
     playing = false;
     clearMonitor();
     clearCrossfadeTimer();
@@ -452,7 +488,7 @@ function createPlaylist(
     clearStartFade();
     const a = els[0];
     const b = els[1];
-    if (!a && !b) return; // nigdy nie odtwarzano / już zwolnione
+    if (!a && !b) { onStopped?.(); return; } // nigdy nie odtwarzano / już zwolnione
     const startVolA = a ? a.volume : 0;
     const startVolB = b ? b.volume : 0;
     const t0 = performance.now();
@@ -465,6 +501,7 @@ function createPlaylist(
         clearStopFade();
         releaseEl(0);
         releaseEl(1);
+        onStopped?.();
       }
     }, RAMP_STEP_MS);
   }
@@ -504,7 +541,57 @@ function createPlaylist(
 
   function isPlaying(): boolean { return playing; }
 
-  return { hasTracks, start, startWithFadeIn, stop, setVolume, isPlaying };
+  function rewind(): void {
+    if (playing) return;
+    queue = [];
+    queuePos = 0;
+    repeatsLeft = repeatsPerTrack;
+  }
+
+  /** Podmiana puli na żywo — patrz FilePlaylist.setTracks. Dedupe po URL;
+   *  kolejka (reszta tury) przemapowana po URL-ach, nowe utwory wstawione w
+   *  losowe miejsca reszty tury. Nie dotyka elementów <audio> ani crossfade. */
+  function setTracks(next: readonly string[]): void {
+    const nu = Array.from(new Set(next));
+    const old = trackUrls;
+    if (nu.length === old.length && nu.every((u, i) => u === old[i])) return;
+    const oldSet = new Set(old);
+    const idxOf = new Map<string, number>();
+    nu.forEach((u, i) => idxOf.set(u, i));
+    const curUrl = currentUrl();
+    const tail: number[] = [];
+    for (const qi of queue.slice(queuePos + 1)) {
+      const u = old[qi];
+      const ni = u === undefined ? undefined : idxOf.get(u);
+      if (ni !== undefined) tail.push(ni);
+    }
+    const fresh: number[] = [];
+    nu.forEach((u, i) => { if (!oldSet.has(u)) fresh.push(i); });
+    for (const f of shuffle(fresh)) {
+      tail.splice(Math.floor(Math.random() * (tail.length + 1)), 0, f);
+    }
+    trackUrls = nu;
+    if (queue.length === 0) return; // jeszcze nie startowała — kolejka powstanie z nowej puli
+    const curIdx = curUrl === null ? undefined : idxOf.get(curUrl);
+    if (curIdx !== undefined) {
+      queue = [curIdx, ...tail];
+      queuePos = 0;
+    } else if (playing) {
+      // Grający utwór wypadł z puli (zmniejszenie) — dogrywa się; selectNext()
+      // z repeatsLeft=1 i queuePos=-1 przejdzie na pierwszy element reszty.
+      queue = tail;
+      queuePos = -1;
+      repeatsLeft = 1;
+    } else {
+      queue = [];
+      queuePos = 0;
+      repeatsLeft = repeatsPerTrack;
+    }
+  }
+
+  function getTracks(): readonly string[] { return trackUrls.slice(); }
+
+  return { hasTracks, start, startWithFadeIn, stop, setVolume, isPlaying, rewind, setTracks, getTracks };
 }
 
 // ---------------------------------------------------------------------------
@@ -516,24 +603,43 @@ function createPlaylist(
 // kolejnego utworu do katalogu wystarczy, zero zmian w kodzie.
 // ---------------------------------------------------------------------------
 
-const kamienModules = import.meta.glob('./utwory/kamien/*.mp3', {
+// AUDIO W PLIKACH-SASIADACH (R-WEB-BUILD-SPLIT-AUDIO-SIDECAR-Q1): w buildzie bajty mp3 leza w audio-pack-N.js obok
+// HTML (rejestr window.__CIV_AUDIO__). Gdy pliku-sasiada brak, modul zasobu zwraca pusty URL — odrzucamy go tu,
+// wiec brakujaca muzyka to po prostu pusta playlista (cichy fallback, zero bledow). W dev (Vite) URL-e sa pelne.
+function dropEmptyUrls(rec: Record<string, string>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const k of Object.keys(rec)) {
+    const u = rec[k];
+    if (typeof u === 'string' && u !== '') out[k] = u;
+  }
+  return out;
+}
+
+const kamienModules = dropEmptyUrls(import.meta.glob('./utwory/kamien/*.mp3', {
   eager: true,
   import: 'default',
-}) as Record<string, string>;
+}) as Record<string, string>);
 const KAMIEN_URLS: readonly string[] = Object.keys(kamienModules).sort()
   .map((k) => kamienModules[k] as string);
 
-const brazModules = import.meta.glob('./utwory/braz/*.mp3', {
+const zelazoModules = dropEmptyUrls(import.meta.glob('./utwory/zelazo/*.mp3', {
   eager: true,
   import: 'default',
-}) as Record<string, string>;
+}) as Record<string, string>);
+const ZELAZO_URLS: readonly string[] = Object.keys(zelazoModules).sort()
+  .map((k) => zelazoModules[k] as string);
+
+const brazModules = dropEmptyUrls(import.meta.glob('./utwory/braz/*.mp3', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>);
 const BRAZ_URLS: readonly string[] = Object.keys(brazModules).sort()
   .map((k) => brazModules[k] as string);
 
-const introModules = import.meta.glob('./utwory/intro/*.mp3', {
+const introModules = dropEmptyUrls(import.meta.glob('./utwory/intro/*.mp3', {
   eager: true,
   import: 'default',
-}) as Record<string, string>;
+}) as Record<string, string>);
 // Intro: STAŁA kolejność (decyzja właściciela C-MUZ-Q6=A) — dramaturgia menu:
 // spokojne otwarcie, energiczne zamknięcie. Nowy utwór dorzucony do katalogu
 // NIE wskoczy sam we właściwe miejsce — dopisz go tutaj.
@@ -552,19 +658,19 @@ const INTRO_URLS: readonly string[] = INTRO_KOLEJNOSC
 // Dyplomacja: fallback w ./utwory/dyplomacja/*.mp3 (1 utwór, pętla); per-cywilizacja
 // w ./utwory/dyplomacja/<civId>/ (stała kolejność, 3× pod rząd każdy utwór — patrz
 // DYPLOMACJA_CIV_TRACK_ORDER). Wybór po civId w diplomacyPlaylistForCiv().
-const dyplomacjaModules = import.meta.glob('./utwory/dyplomacja/*.mp3', {
+const dyplomacjaModules = dropEmptyUrls(import.meta.glob('./utwory/dyplomacja/*.mp3', {
   eager: true,
   import: 'default',
-}) as Record<string, string>;
+}) as Record<string, string>);
 const DYPLOMACJA_URLS: readonly string[] = Object.keys(dyplomacjaModules).sort()
   .map((k) => dyplomacjaModules[k] as string);
 
 // Per-cywilizacja: ./utwory/dyplomacja/<civId>/*.mp3 — stała kolejność, 3× pod rząd
 // każdy utwór, potem następny (A×3 → B×3 → A×3…), crossfade między przejściami.
-const dyplomacjaCivModules = import.meta.glob('./utwory/dyplomacja/*/*.mp3', {
+const dyplomacjaCivModules = dropEmptyUrls(import.meta.glob('./utwory/dyplomacja/*/*.mp3', {
   eager: true,
   import: 'default',
-}) as Record<string, string>;
+}) as Record<string, string>);
 
 /** Kolejność utworów per civId (klucz = typCywilizacji / ikonaId z civs.json). */
 const DYPLOMACJA_CIV_TRACK_ORDER: Readonly<Record<string, readonly string[]>> = {
@@ -592,6 +698,38 @@ function buildCivDiplomacyUrls(civId: string): readonly string[] {
 
 const civDiplomacyPlaylistCache = new Map<string, FilePlaylist>();
 
+// MUZYKA CYWILIZACJI (przywitanie + negocjacje): manifest data/civ-music.json,
+// pliki w ./utwory/dyplomacja/_civ/<civId>/ (podkatalog `_civ` celowo poza
+// globem `dyplomacja/*/*.mp3` powyżej). Logika wyboru: civMusic.ts (czysta).
+const civMusicModules = dropEmptyUrls(import.meta.glob('./utwory/dyplomacja/_civ/*/*.mp3', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>);
+const CIV_MUSIC_AVAILABLE: Record<string, string> = {};
+for (const k of Object.keys(civMusicModules)) {
+  const m = k.match(/\/_civ\/([^/]+)\/([^/]+)$/);
+  if (m) CIV_MUSIC_AVAILABLE[`${m[1]}/${m[2]}`] = civMusicModules[k] as string;
+}
+const civMusicPlaylistCache = new Map<string, FilePlaylist>();
+
+function getCivMusicPlaylist(civId: string): FilePlaylist | null {
+  try {
+    // Wybór przy KAŻDYM otwarciu rozmowy (rotacja listy przywitań); playlista
+    // cache'owana po zestawie URL-i, więc każde przywitanie ma własną playlistę.
+    const sel = resolveCivDiplomacyTracks(civMusicManifest as CivMusicManifest, civId, CIV_MUSIC_AVAILABLE, DYPLOMACJA_URLS);
+    if (!sel) return null;
+    const key = `${sel.leadCount}|${sel.urls.join('|')}`;
+    let pl = civMusicPlaylistCache.get(key) ?? null;
+    if (!pl) {
+      pl = createPlaylist(sel.urls, 1, 'losowa', sel.leadCount);
+      civMusicPlaylistCache.set(key, pl);
+    }
+    return pl;
+  } catch {
+    return null; // bezpieczny fallback na dotychczasowy dźwięk dyplomacji
+  }
+}
+
 function getOrCreateCivDiplomacyPlaylist(civId: string): FilePlaylist | null {
   const cached = civDiplomacyPlaylistCache.get(civId);
   if (cached) return cached.hasTracks() ? cached : null;
@@ -602,41 +740,55 @@ function getOrCreateCivDiplomacyPlaylist(civId: string): FilePlaylist | null {
   return pl;
 }
 
-const preBattleModules = import.meta.glob('./utwory/prebattle/*.mp3', {
+const preBattleModules = dropEmptyUrls(import.meta.glob('./utwory/prebattle/*.mp3', {
   eager: true,
   import: 'default',
-}) as Record<string, string>;
+}) as Record<string, string>);
 const PREBATTLE_URLS: readonly string[] = Object.keys(preBattleModules).sort()
   .map((k) => preBattleModules[k] as string);
 
-const bitwaModules = import.meta.glob('./utwory/bitwa/*.mp3', {
+const bitwaModules = dropEmptyUrls(import.meta.glob('./utwory/bitwa/*.mp3', {
   eager: true,
   import: 'default',
-}) as Record<string, string>;
+}) as Record<string, string>);
 const BITWA_URLS: readonly string[] = Object.keys(bitwaModules).sort()
   .map((k) => bitwaModules[k] as string);
 
-const zwyciestwoModules = import.meta.glob('./utwory/zwyciestwo/*.mp3', {
+const zwyciestwoModules = dropEmptyUrls(import.meta.glob('./utwory/zwyciestwo/*.mp3', {
   eager: true,
   import: 'default',
-}) as Record<string, string>;
+}) as Record<string, string>);
 const ZWYCIESTWO_URLS: readonly string[] = Object.keys(zwyciestwoModules).sort()
   .map((k) => zwyciestwoModules[k] as string);
 
-const porazkaModules = import.meta.glob('./utwory/porazka/*.mp3', {
+const porazkaModules = dropEmptyUrls(import.meta.glob('./utwory/porazka/*.mp3', {
   eager: true,
   import: 'default',
-}) as Record<string, string>;
+}) as Record<string, string>);
 const PORAZKA_URLS: readonly string[] = Object.keys(porazkaModules).sort()
   .map((k) => porazkaModules[k] as string);
 
-/** Kamień: shuffle + 3x pod rząd (~90 s/utwór), z crossfade 1,5 s na każdym
- *  przejściu (także między powtórzeniami). */
-export const kamienPlaylist: FilePlaylist = createPlaylist(KAMIEN_URLS, 3);
+/** Pula utworów epoki MUZYKI (1=kamień, 2=brąz, 3=żelazo) — KUMULATYWNA:
+ *  tier 1 = kamień; tier 2 = kamień + brąz; tier 3 = kamień + brąz + żelazo
+ *  (katalog utwory/zelazo/ może nie istnieć — wtedy tier 3 = tier 2; gdy
+ *  pojawią się w nim mp3, dołączą bez zmian w kodzie). Bez duplikatów. */
+export function eraTierUrls(tier: number): readonly string[] {
+  const all: string[] = [...KAMIEN_URLS];
+  if (tier >= 2) all.push(...BRAZ_URLS);
+  if (tier >= 3) all.push(...ZELAZO_URLS);
+  return Array.from(new Set(all));
+}
 
-/** Brąz (era>=2, dopóki kolejne epoki nie dostaną własnej playlisty): ten sam
- *  mechanizm co Kamień — shuffle + 3x pod rząd, crossfade 1,5 s. */
-export const brazPlaylist: FilePlaylist = createPlaylist(BRAZ_URLS, 3);
+/** Muzyka tła rozgrywki: JEDNA playlista kumulatywna po epokach (shuffle +
+ *  3x pod rząd, crossfade 1,5 s — parametry bez zmian). Awans epoki woła
+ *  setEraMusicTier(): nowe utwory dołączają do puli, bieżący nie jest
+ *  przerywany. */
+export const eraMusicPlaylist: FilePlaylist = createPlaylist(eraTierUrls(1), 3);
+
+/** Ustawia epokę muzyki (1..3, inne wartości przycięte) = przebudowa puli. */
+export function setEraMusicTier(tier: number): void {
+  eraMusicPlaylist.setTracks(eraTierUrls(Math.max(1, Math.min(3, Math.floor(tier)))));
+}
 
 /** Intro (ekrany przed rozgrywką): shuffle + 1x, z crossfade 1,5 s. */
 export const introPlaylist: FilePlaylist = createPlaylist(INTRO_URLS, 1, 'stala');
@@ -647,6 +799,9 @@ export const dyplomacjaPlaylist: FilePlaylist = createPlaylist(DYPLOMACJA_URLS, 
 /** Wybiera playlistę dyplomacji: per-civ gdy są utwory, inaczej wspólny fallback. */
 export function diplomacyPlaylistForCiv(civId: string | undefined): FilePlaylist {
   if (civId) {
+    const music = getCivMusicPlaylist(civId);
+    if (music) { music.rewind(); return music; } // każde otwarcie rozmowy od przywitania
+
     const civPl = getOrCreateCivDiplomacyPlaylist(civId);
     if (civPl) return civPl;
   }
@@ -655,7 +810,8 @@ export function diplomacyPlaylistForCiv(civId: string | undefined): FilePlaylist
 
 /** Wszystkie playlisty dyplomacji (fallback + per-civ) — do setVolume(). */
 export function allDiplomacyPlaylists(): readonly FilePlaylist[] {
-  return [dyplomacjaPlaylist, ...civDiplomacyPlaylistCache.values()];
+  const music = [...civMusicPlaylistCache.values()];
+  return [dyplomacjaPlaylist, ...civDiplomacyPlaylistCache.values(), ...music];
 }
 
 /** Pre-battle: 1 utwór, pętla póki nakładka przedbitewna otwarta. */

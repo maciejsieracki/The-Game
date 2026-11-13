@@ -1,0 +1,8 @@
+{
+  "stage": 11,
+  "wave": 614,
+  "publication": "622ac7b560016e512b66a8d9b97f06ccf6b5faae",
+  "md5": "3dee4cf71e318dbbe84a98b8e856e803",
+  "verification": "EvalfollowupFC PASS,focus27,13regressions,typecheck,cleanbuild,HTTPaudioPASS,git3artifactsbyteequal",
+  "limits": "priorHTTPblockade57; no livepurchasecampaignafterlegacycorrection; filegateINFRA"
+}

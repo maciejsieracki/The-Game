@@ -32,10 +32,12 @@ import type { GameData } from '../data/loader';
 import { TerenBazowy } from '../types/hex';
 import type { City } from './cities';
 import { addForeignCityBlocks } from './city-hex-movement';
-import { canCaptureCityWithoutBattle } from './siegeDefenders';
+import { canCaptureCityWithoutBattle, type CityDefRosterOptions } from './siegeDefenders';
 import type { Hex } from '../types/hex';
 import type { RuntimeUnit } from '../units/setup';
-import { hexDistance, computePath, pathCost, keyOf, isWaterTerrain, embarkMoveCost, terrainMoveCost, isCivilianUnit } from '../units/setup';
+import { hexDistance, computePath, pathCost, keyOf, isWaterTerrain, embarkMoveCost, terrainMoveCost, isCivilianUnit, buildMoveOccupancy, endBlockedKeys, MoveOccupancy } from '../units/setup';
+import { farthestStepWithinBudget } from './ai-move-range';
+import { isWarAllInCapitalEnabled, planWarAllInCapital, type WarAllInContext } from './warAllInCapital';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -394,10 +396,24 @@ export function canBarbarianWalkIntoEmptyCity(
   destCity: City | undefined,
   units: readonly RuntimeUnit[],
   difficulty: SeaRaidDifficulty,
+  /**
+   * R-WEB-PALISADE-BATTLE-WALL-RULES-Q1 (R1): miasto z murem/palisada nie pada bez
+   * wylomu, a barbarzyncy nie maja machin oblezniczych => nie wchodza do obwarowanego
+   * pustego miasta (jednostka nie jest nawet przesuwana na heks miasta).
+   */
+  destCityFortified: boolean = false,
+  /**
+   * R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1 (spec M2, runda 2): ukonczone budynki + epoka
+   * wlasciciela miasta. Bez nich miasto z budynkiem Garnizon i bez wojska bylo uznane
+   * za puste (barbarzynca wchodzil na heks, a tryAutoCaptureEmptyCityAt odmawial
+   * zdobycia -- wrog w miescie bez bitwy). Milicja zawsze liczy sie jako obronca.
+   */
+  defenderOptions?: CityDefRosterOptions,
 ): boolean {
   return destCity !== undefined
+    && !destCityFortified
     && shouldAllowBarbCityCapture(difficulty)
-    && canCaptureCityWithoutBattle(destCity, units);
+    && canCaptureCityWithoutBattle(destCity, units, defenderOptions);
 }
 
 /**
@@ -689,6 +705,60 @@ export function pickBronzeBarbUnit(seed: number): string {
   return LUDY_MORZA_BARB_UNIT_IDS[idx]!;
 }
 
+/**
+ * R-WEB-SEA-PEOPLES-BRONZE-TURN20-TRIPLE-Q1 (właściciel 2026-11-11): Epoka Ludów Morza
+ * startuje w 20. turze OD WEJŚCIA danej nacji w Brąz (liczone per właściciel, nie od
+ * startu gry) i trwa do wejścia tej nacji w Żelazo. W tym oknie liczba jednostek
+ * barbarzyńców (limit na obóz i limit rajdów morskich) jest potrojona względem bazy
+ * wybranej trudności barbarzyńców.
+ * / EN: the Sea Peoples epoch starts on the 20th turn AFTER the owner enters Bronze
+ * (per-owner, not from game start) and lasts until that owner enters Iron. Inside that
+ * window the barbarian unit count (per-camp cap and sea-raid cap) is tripled over the
+ * selected barbarian difficulty's base.
+ */
+export const SEA_PEOPLES_BOOST_ELAPSED_TURNS = 20;
+
+/** Mnożnik liczby jednostek barbarzyńców w oknie Epoki Ludów Morza. / EN: unit multiplier inside the window. */
+export const SEA_PEOPLES_UNIT_MULT = 3;
+
+/**
+ * Czy okno Epoki Ludów Morza jest aktywne dla danego właściciela w tej turze.
+ * - brak wejścia w Brąz (`bronzeEntryTurn` undefined) -> false;
+ * - wejście w Żelazo (`ironEntryTurn` <= turn) -> false (okno zamyka się na wejściu w Żelazo);
+ * - `elapsed = turn - bronzeEntryTurn`; aktywne gdy `elapsed >= SEA_PEOPLES_BOOST_ELAPSED_TURNS`.
+ * ZAŁOŻENIE: elapsed liczony jako różnica tur (turn 20 po wejściu = elapsed 20 -> aktywne).
+ * / EN: true when the window is open for this owner on this turn.
+ */
+export function seaPeoplesBoostActive(
+  bronzeEntryTurn: number | undefined,
+  ironEntryTurn: number | undefined,
+  turn: number,
+): boolean {
+  if (bronzeEntryTurn === undefined) return false;
+  if (ironEntryTurn !== undefined && turn >= ironEntryTurn) return false;
+  return turn - bronzeEntryTurn >= SEA_PEOPLES_BOOST_ELAPSED_TURNS;
+}
+
+/**
+ * Zwraca parametry barbarzyńców z potrojonym `unitsPerCamp` gdy okno jest aktywne, inaczej
+ * te same obiekt-wartości. Tylko strona SPAWNU (tickCamps / spawnSeaPeoplesRaiders) -- reszta
+ * (ruch, gotowość do rajdu) dostaje bazowe parametry. Pozostałe pola bez zmian.
+ * / EN: returns params with unitsPerCamp x3 when active; used on the spawn side only.
+ */
+export function boostBarbParamsForSeaPeoples(params: BarbParams, active: boolean): BarbParams {
+  if (!active) return params;
+  return { ...params, unitsPerCamp: params.unitsPerCamp * SEA_PEOPLES_UNIT_MULT };
+}
+
+/**
+ * Powiadomienie o starcie okna jest jednorazowe: emituj tylko gdy okno aktywne i jeszcze
+ * nie wysłane (flaga zapisywana w save meta, więc przeżywa save/load).
+ * / EN: one-shot notice — emit only when active and not yet shown (flag persisted in save meta).
+ */
+export function shouldEmitSeaPeoplesEpochNotice(active: boolean, alreadyShown: boolean): boolean {
+  return active && !alreadyShown;
+}
+
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
@@ -732,15 +802,21 @@ function nearest<T extends HasQR>(q: number, r: number, items: T[]): T | undefin
 }
 
 /** Set of "q,r" keys occupied by units other than `excludeId` (for pathing). */
-function occupiedExcluding(units: RuntimeUnit[], excludeId: string): Set<string> {
-  const occ = new Set<string>();
-  for (const u of units) {
-    if (u.id !== excludeId) occ.add(keyOf(u.q, u.r));
+function occupiedExcluding(units: RuntimeUnit[], excludeId: string): MoveOccupancy {
+  // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: obce jednostki blokuja, WLASNE (ten sam ownerId) = przejscie.
+  const moverOwner = units.find(u => u.id === excludeId)?.ownerId;
+  if (moverOwner === undefined) {
+    const all = new MoveOccupancy();
+    for (const u of units) if (u.id !== excludeId) all.add(keyOf(u.q, u.r));
+    return all;
   }
-  return occ;
+  return buildMoveOccupancy(units, moverOwner, [excludeId]);
 }
 
-/** First hex along the least-cost path toward (destQ,destR), or null. */
+/**
+ * Krok w kierunku (destQ,destR) = najdalszy heks trasy w budżecie `ruchLeft`
+ * (R-WEB-AI-MOVE-RANGE-Q1; dawniej path[0], czyli 1 heks na turę), or null.
+ */
 function firstStep(
   unit: RuntimeUnit,
   map: GameMap,
@@ -751,7 +827,7 @@ function firstStep(
 ): { q: number; r: number } | null {
   const path = computePath(unit, map, destQ, destR, occupied, costFn);
   if (path.length === 0) return null;
-  return path[0] ?? null;
+  return farthestStepWithinBudget(path, unit.ruchLeft, map, costFn, endBlockedKeys(occupied)) ?? path[0] ?? null;
 }
 
 /**
@@ -1751,6 +1827,7 @@ export function decideBarbarianMoves(
   canEngageOwner?: (targetOwnerId: number) => boolean,
   difficulty?: SeaRaidDifficulty,
   turn?: number,
+  warAllIn?: WarAllInContext,
 ): BarbCommand[] {
   const commands: BarbCommand[] = [];
   const engageOk = canEngageOwner ?? ((_targetOwnerId: number) => true);
@@ -1798,7 +1875,49 @@ export function decideBarbarianMoves(
   // R-ARMIA-KONCENTRACJA-AI-BARB-Q1=A: rally precedes chase/attack. A unit
   // receives at most one command below; once the group is physically gathered
   // at the camp, the existing tactical planner resumes unchanged.
-  const rallyCommands = planBarbarianRally(barbUnits, camps, map, allUnits, cities);
+  // R-WEB-WAR-ALLIN-CAPITAL-Q1 (TYMCZASOWE, flaga WAR_ALLIN_CAPITAL_ENABLED): barbarzyncy w
+  // wojnie z kims (engageOk) wysylaja WSZYSTKIE jednostki bojowe na NAJBLIZSZA stolice takiego
+  // przeciwnika (liczona od polozenia grupy). Garnizony wlasnych miast barbarzynskich zostaja.
+  // Zastepuje rally/odwrot/poscig dla tych jednostek; atak sasiedniego wroga zostaje.
+  const allInTargets = isWarAllInCapitalEnabled() && warAllIn !== undefined
+    ? warAllIn.targets.filter(t => engageOk(t.ownerId) && !isBarbarian(t.ownerId))
+    : [];
+  const allInActive = allInTargets.length > 0;
+  const barbCityHexes = new Set(
+    cities.filter(c => c.ownerId !== undefined && isBarbarian(c.ownerId)).map(c => keyOf(c.q, c.r)),
+  );
+  const allInEligible = allInActive
+    ? barbUnits.filter(u =>
+      u.ruchLeft > 0 && u.embarked !== true && u.seaRaider !== true
+      && !isCivilianUnit(u) && !barbCityHexes.has(keyOf(u.q, u.r)))
+    : [];
+  if (allInEligible.length > 0) {
+    // Jednostki w kontakcie z wrogiem walcza (atak), reszta maszeruje wg planu.
+    const marchers: RuntimeUnit[] = [];
+    for (const u of allInEligible) {
+      const adj = enemies.find(e => hexDistance(u.q, u.r, e.q, e.r) === 1 && engageOk(e.ownerId));
+      if (adj !== undefined) commands.push({ type: 'attack', unitId: u.id, targetUnitId: adj.id });
+      else marchers.push(u);
+    }
+    // Statycznie nietranzytowe: obce (nie-barbarzynskie) miasta (addForeignCityBlocks);
+    // jednostki jako `occupied` (ograniczaja tylko wybor kroku -- brak krokow wstecz).
+    const blocked = new Set<string>();
+    for (const c of cities) {
+      if (c.ownerId !== undefined && isBarbarian(c.ownerId)) continue;
+      blocked.add(keyOf(c.q, c.r));
+    }
+    const occupied = new Set(allUnits.map(u => keyOf(u.q, u.r)));
+    // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: wlasne jednostki (ten sam wlasciciel) = przejscie w marszu.
+    const passThrough = marchers.length > 0 && marchers.every(u => u.ownerId === marchers[0]!.ownerId)
+      ? buildMoveOccupancy(allUnits, marchers[0]!.ownerId, []).passThrough
+      : undefined;
+    const plan = planWarAllInCapital(marchers, allInTargets, { map, blocked, occupied, passThrough });
+    // Kolejnosc komend = kolejnosc planu (przod kolumny zwalnia heksy tylnym).
+    for (const o of plan.orders) commands.push({ type: 'move', unitId: o.unitId, toQ: o.step.q, toR: o.step.r });
+  }
+  const allInUnitIds = new Set(allInEligible.map(u => u.id));
+
+  const rallyCommands = allInActive ? [] : planBarbarianRally(barbUnits, camps, map, allUnits, cities);
   const ralliedUnitIds = new Set(rallyCommands.map(c => c.unitId));
   const rallyCampIds = new Set(
     rallyCommands
@@ -1832,6 +1951,8 @@ export function decideBarbarianMoves(
     // TEMAT #15: jednostki Ludów Morza (rajderzy / zaokrętowane) prowadzi
     // decideSeaPeoplesRaids — logika lądowa ich nie rusza.
     if (unit.embarked === true || unit.seaRaider === true) continue;
+
+    if (allInUnitIds.has(unit.id)) continue; // komendy wydane wyzej (kolejnosc planu)
 
     const occ = addForeignCityBlocks(
       occupiedExcluding(allUnits, unit.id),

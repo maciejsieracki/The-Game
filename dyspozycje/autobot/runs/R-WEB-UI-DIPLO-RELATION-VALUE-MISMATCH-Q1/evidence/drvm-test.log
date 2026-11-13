@@ -1,0 +1,24 @@
+[drvm] build vite -> /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/drvm-dist
+  OK   zalozenie pierwszego miasta gracza
+  OK   setup: kontakt, nie-wojna
+  OK   REALNY endTurn: AI zlozyla propozycje graczowi (stol)
+  OK   okno dyplomacji (klik karty HUD): otwarte
+  [raw] wiersze .da-pn-rel-mod: ["Wpływ Relacji na deal−88,4%Relacja 11,6 · Twoja strona słabsza (−88,4% PW); oni: baza"]
+  [raw] linie Relacja: ["zablokowana — wymaga Zaufania 30 (masz 0.6) i Relacji 110 (masz 90)","zablokowana — wymaga Zaufania 90 (masz 0.6) i Relacji 130 (masz 90)","zablokowana — wymaga Zaufania 45 (masz 0.6) i Relacji 100 (masz 90)","WPŁYW RELACJI NA DEAL","Relacja 11,6 · Twoja strona słabsza (−88,4% PW); oni: baza","Stan bieżący: Relacja 90 / 200 · Zaufanie 1 / 100 · Respekt 89 / 100 · nastawienie: Życzliwy","RELACJE Z TOBĄ","Relacja","RELACJE Z INNYMI","ZABLOKOWANA — WYMAGA ZAUFANIA 90 (MASZ 0.6) I RELACJI 130 (MASZ 90)","ZABLOKOWANA — WYMAGA ZAUFANIA 30 (MASZ 0.6) I RELACJI 110 (MASZ 90)"]
+  [raw] linie Zaufanie: ["zablokowana — wymaga Zaufania 30 (masz 0.6) i Relacji 110 (masz 90)","zablokowana — wymaga Zaufania 90 (masz 0.6) i Relacji 130 (masz 90)","zablokowana — wymaga Zaufania 45 (masz 0.6) i Relacji 100 (masz 90)","zablokowana — wymaga Zaufania 70 (masz 0.6)","zablokowana — wymaga Zaufania 50 (masz 0.6)","Stan bieżący: Relacja 90 / 200 · Zaufanie 1 / 100 · Respekt 89 / 100 · nastawienie: Życzliwy","Zaufanie","(Zaufanie + Respekt)","ZABLOKOWANA — WYMAGA ZAUFANIA 90 (MASZ 0.6) I RELACJI 130 (MASZ 90)","ZABLOKOWANA — WYMAGA ZAUFANIA 30 (MASZ 0.6) I RELACJI 110 (MASZ 90)"]
+  [raw] linie Respekt: ["zablokowana — wymaga Respektu 70 (masz 50)","zablokowana — wymaga Respektu 70 (masz 50)","Stan bieżący: Relacja 90 / 200 · Zaufanie 1 / 100 · Respekt 89 / 100 · nastawienie: Życzliwy","Respekt","(Zaufanie + Respekt)","ZABLOKOWANA — WYMAGA RESPEKTU 70 (MASZ 50)"]
+  [raw] linie wojna/pokoj: ["POKÓJ","Potencjał sojuszniczy","Wypowiedzenie wojny","Pakt o nieagresji","Sojusz (pełny lub defensywny)","Wspólny wróg / namowa do wojny","Propozycja pokoju / zawieszenia broni","niedostępna — nie trwa wojna","Potencjał sojuszniczy","W stanie wojny z","W sojuszu z","Pakt o nieagresji z"]
+  OK   wiersz „Wpływ Relacji na deal” pokazuje 11,6 (wartość PW)
+  OK   okno pokazuje „Relacja 90 / 200” (audiencja) w TYM SAMYM oknie
+  OK   okno pokazuje „Respekt 89 / 100” (efektywny, prawy panel)
+  OK   blokady pokazują „masz 50” (zapisany Respekt, trzecia wielkość)
+  [shot] /home/user/The-Game/.claude/worktrees/wf_9a7fd245-bef-3/dyspozycje/autobot/runs/R-WEB-UI-DIPLO-RELATION-VALUE-MISMATCH-Q1/evidence/drvm-01-okno-relacja.png
+  [raw-war] wiersze .da-pn-rel-mod: []
+  [raw-war] linie Relacja: ["Stan bieżący: Relacja 90 / 200 · Zaufanie 1 / 100 · Respekt 89 / 100 · nastawienie: Wrogi (etykieta Wrogi: limit wojenny 29)","RELACJE Z TOBĄ","Relacja","RELACJE Z INNYMI"]
+  [raw-war] linie Respekt: ["Stan bieżący: Relacja 90 / 200 · Zaufanie 1 / 100 · Respekt 89 / 100 · nastawienie: Wrogi (etykieta Wrogi: limit wojenny 29)","Respekt","(Zaufanie + Respekt)"]
+  [raw-war] linie wojna/pokoj: ["WOJNA","Potencjał sojuszniczy","Propozycja pokoju / zawieszenia broni","Pakt o nieagresji","zablokowany — trwa wojna","Sojusz (pełny lub defensywny)","zablokowany — trwa wojna","zablokowane — trwa wojna","handel niedostępny w wojnie","handel niedostępny w wojnie","Wspólny wróg / namowa do wojny","zablokowane — wymaga pokoju (trwa wojna)"]
+  [shot] /home/user/The-Game/.claude/worktrees/wf_9a7fd245-bef-3/dyspozycje/autobot/runs/R-WEB-UI-DIPLO-RELATION-VALUE-MISMATCH-Q1/evidence/drvm-02-okno-wojna.png
+  OK   faza wojny: okno dyplomacji otwarte (pomiar wykonany)
+  OK   zero console.error / pageerror
+
+diplomacy-relation-value-mismatch-live-test: 10 pass, 0 fail

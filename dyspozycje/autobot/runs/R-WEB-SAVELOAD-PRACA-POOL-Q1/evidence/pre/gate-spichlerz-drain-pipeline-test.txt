@@ -1,0 +1,4 @@
+  PASS: zamiana I↔II (hard): zmiana K_II nie wpływa na Spichlerz I (got 75)
+  PASS: próg (hard): magazyn 30 < 60 → brak wypłaty (got 30)
+spichlerz-drain-pipeline-test: 21 pass, 0 fail
+EXIT=0

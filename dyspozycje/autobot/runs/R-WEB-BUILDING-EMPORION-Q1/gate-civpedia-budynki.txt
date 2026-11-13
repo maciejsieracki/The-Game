@@ -1,0 +1,3 @@
+
+[civpedia-budynki-historia-test] 146 pass, 0 fail
+EXIT=0

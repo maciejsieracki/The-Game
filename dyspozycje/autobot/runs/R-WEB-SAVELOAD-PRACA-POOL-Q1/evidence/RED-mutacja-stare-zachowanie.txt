@@ -1,0 +1,17 @@
+[saveload-praca-pool-live] vite build -> /tmp/civ-saveload-praca-pCZXwg
+  OK  P0 fixture: dokladnie 1 miasto gracza (n=1)
+ FAIL P1 pula 405 przy 1 miescie zachowana po round-trip (po=0)
+ FAIL P1 pula 1500 przy 1 miescie zachowana po round-trip (po=0)
+ FAIL P1 pula 5000 przy 1 miescie zachowana po round-trip (po=0)
+ FAIL P2 stary zapis 5e9 (absurd, dawny map-total) -> przyciete do progu 1_000_000 (po=0)
+ FAIL P2 stary zapis 1_000_000 (granica, hak testowy) zostaje (po=0)
+ FAIL P2 stary zapis 999_999 zostaje (po=0)
+ FAIL P2 stary zapis -5 -> 0 (po=-5)
+  OK  P2 stary zapis "abc" -> 0 (po=0)
+  OK  P2 stary zapis null -> 0 (po=0)
+  OK  P2 stary zapis 0 -> 0 (po=0)
+ FAIL P3.1 hot-seat: pula fotela 0 (405) zachowana przy dwoch fotelach (po=0)
+  [info P3.2] pula fotela 1: przed=77 po=77 (pracaPoolByHuman poza snapshotem — poza zakresem tematu)
+  OK  C zero pageerror/console.error (n=0)
+
+saveload-praca-pool-live-test: 5 pass / 8 fail

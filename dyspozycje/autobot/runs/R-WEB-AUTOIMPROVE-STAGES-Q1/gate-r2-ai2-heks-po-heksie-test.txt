@@ -1,0 +1,49 @@
+A. petla po HEKSACH, nie po TYPACH
+  [OK] picker zwrocil >= 4 ulepszenia (jest 6)
+  [OK] zaden heks nie wraca po przerwie (sekwencja: 4,5 4,5 4,5 4,5 4,5 5,5)
+  [OK] pierwsze DWA ulepszenia trafiaja na TEN SAM heks (4,5 vs 4,5)
+  [OK] ... i sa to ROZNE typy (farma / bydlo) — czyli domykanie heksa, nie ten sam typ na dwoch heksach
+  [OK] E3: bez rzeki trzoda nie powstaje (hodowla tylko przy rzece)
+B. heks z rzeka ma priorytet przed heksem bez rzeki
+  [OK] maxItemsPerCity=1 -> dokladnie 1 pick (jest 1)
+  [OK] pierwszy pick trafia na heks Z RZEKA (8,5), nie na blizszy heks bez rzeki (jest 8,5)
+C. brak duplikatu tego samego ulepszenia na tym samym heksie
+  [OK] 20 tur x maxItemsPerCity=1: zero duplikatow warstwy
+D. AI CYWILIZACJI — limit maxItemsPerCity: 1 NIETKNIETY (ECHO: „Zostaw limit, zmien kolejnosc")
+  [OK] ai.ts / planCityImprovements nadal przekazuje `maxItemsPerCity: 1` do pickera
+  [OK] ai.ts / planCityImprovements nadal przekazuje `pracaBudgetPercent: 100`
+  [OK] decideAITurn: dokladnie 1 ulepszenie na miasto na ture (2 rozkazow przy 2 miastach)
+E. AI CYWILIZACJI buduje TARTAK (przed runda 2: 0 na wszystkich ziarnach)
+  [OK] PRZY NIEDOBORZE drewna AI cywilizacji stawia tartak w 12 turach na mapie lesnej (1 szt.)
+  [OK] RUNDA 4 / ZASADA 1: BEZ niedoboru tartak nie powstaje ani razu (0 szt.)
+F. straznik tekstowy main.ts — konfiguracja wywolania pickera na sciezce AI GRACZA
+  [OK] main.ts zawiera wywolanie `pickAutoImprovements` auto-ulepszen gracza
+  [OK] main.ts (AI GRACZA): `skipWyrab: true` — gracz nie karczuje automatem
+  [OK] main.ts (AI GRACZA): budzet z polityki gracza (`pracaAutoPercent`), nie 100%
+  [OK] main.ts (AI GRACZA): profil (`getFocus`) i filtr obrabianych heksow (`getOnlyWorked`) nadal przekazywane
+  [OK] main.ts (AI GRACZA): brak `maxItemsPerCity` — throttle 1/ture jest WYLACZNIE mechanizmem AI cywilizacji
+  [OK] zrodlo eksportuje ZERO_YIELD_IMPROVEMENTS (kontrakt W-B rundy 3): posterunek,fort
+  [OK] zrodlo eksportuje JEDEN_NA_ILU_OBYWATELI (10)
+G. W-B: zbior ulepszen ZEROPLONOWYCH policzony Z DANYCH, nie z listy w kodzie
+  [OK] dane plonow daja niepusty zbior kluczy zeroplonowych (fort,posterunek)
+  [OK] ZERO_YIELD_IMPROVEMENTS = zbior policzony z tileYield (stala: [fort,posterunek] vs dane: [fort,posterunek])
+H. W-B: posterunek/fort NIE domykaja heksa i maja pulap ceil(pop/10) na miasto
+  [OK] ulepszen zeroplonowych 1..2 na miasto (jest 2: posterunek,fort)
+  [OK] pulap ceil(pop/10)=1 dotrzymany dla posterunek (jest 1)
+  [OK] pulap ceil(pop/10)=1 dotrzymany dla fort (jest 1)
+  [OK] heks domykany plonowo (6,6) nie dostal posterunku ani fortu
+  [OK] obrona stoi na GRANICY zasiegu miasta — dalej (6,6) niz najdalsza praca na plon (1)
+I. WYRAB: AI CYWILIZACJI faktycznie wycina las na heksie z rzeka (GOAL tematu)
+  [OK] decideAITurn wydal rozkaz `wyrab` w 30 turach (5 szt.)
+  [OK] PIERWSZY wyrab trafia na heks Z RZEKA (7,8)
+  [OK] farma powstaje PO wyrebie na tym samym heksie (5 szt., np. 7,8 @t2)
+  [OK] minimum lesne miasta dotrzymane mimo wycinki: tartak 2, oboz 1
+  [OK] zaden heks z tartakiem albo obozem nie zostal wyciety
+  [OK] posterunek i fort NADAL powstaja poza sekwencja domykania (posterunek 1, fort 1)
+  [OK] ... i nie przekraczaja pulapu 1 na miasto
+L. sciezka AI GRACZA: silnik wycinki jest WSPOLNY — blokuje ja wylacznie `skipWyrab` z main.ts
+  [OK] skipWyrab: true (konfiguracja main.ts) -> zero wyrebow (0)
+  [OK] ten sam picker przy skipWyrab: false -> wyrab jest (1 szt.)
+
+ai2-heks-po-heksie-test: 36 passed, 0 failed
+EXIT=0

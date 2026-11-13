@@ -1,0 +1,49 @@
+[1] golden 25/25/25 — stany po turze identyczne jak przed zmianą
+  PASS: golden N-1/N/N+1 jednomiastowy (fallback-const)
+  PASS: golden N-1/N/N+1 jednomiastowy (literal)
+  PASS: golden N-1/N/N+1 jednomiastowy (JSON)
+  PASS: golden dwa miasta I, pula 49 → 1 wypłata (24 zostaje)
+  PASS: golden dwa miasta I, pula 50 → 2 wypłaty (0/0)
+  PASS: golden dwa miasta I, pula 51 → 2 wypłaty (0/1)
+  PASS: miasto z I+II: jedna wypłata ceramiki (50→25), jak dotąd
+  PASS: dryRun: wynik jak runtime, bez mutacji magazynu
+  PASS: II przy 26/26: ceramika 26→1, sól 26→1 (runtime)
+[2] klucze JSON są czytane (każdy osobno, per trudność)
+  PASS: JSON easy: wartości realne 25/25/25 (bez zmiany danych)
+  PASS: JSON normal: wartości realne 25/25/25 (bez zmiany danych)
+  PASS: JSON hard: wartości realne 25/25/25 (bez zmiany danych)
+  PASS: klucz Spichlerz I (ceramika) easy=10 czytany, II/sól bez zmian
+  PASS: Spichlerz I zużywa 10 ceramiki (easy): 100→90
+  PASS: klucz Spichlerz I (ceramika) normal=40 czytany, II/sól bez zmian
+  PASS: Spichlerz I zużywa 40 ceramiki (normal): 100→60
+  PASS: klucz Spichlerz I (ceramika) hard=60 czytany, II/sól bez zmian
+  PASS: Spichlerz I zużywa 60 ceramiki (hard): 100→40
+  PASS: klucz Spichlerz II (ceramika) easy=10 czytany, I bez zmian
+  PASS: Spichlerz II zużywa 10 ceramiki (easy), sól nadal 25
+  PASS: Spichlerz I nadal 25 przy zmienionym kluczu II (easy) — brak mieszania kluczy
+  PASS: klucz Spichlerz II (ceramika) normal=40 czytany, I bez zmian
+  PASS: Spichlerz II zużywa 40 ceramiki (normal), sól nadal 25
+  PASS: Spichlerz I nadal 25 przy zmienionym kluczu II (normal) — brak mieszania kluczy
+  PASS: klucz Spichlerz II (ceramika) hard=60 czytany, I bez zmian
+  PASS: Spichlerz II zużywa 60 ceramiki (hard), sól nadal 25
+  PASS: Spichlerz I nadal 25 przy zmienionym kluczu II (hard) — brak mieszania kluczy
+  PASS: klucz Sól II easy=10 czytany, ceramika bez zmian
+  PASS: Spichlerz II zużywa 10 soli (easy), ceramika 25
+  PASS: klucz Sól II normal=40 czytany, ceramika bez zmian
+  PASS: Spichlerz II zużywa 40 soli (normal), ceramika 25
+  PASS: klucz Sól II hard=60 czytany, ceramika bez zmian
+  PASS: Spichlerz II zużywa 60 soli (hard), ceramika 25
+  PASS: zamiana I↔II: II nie czyta klucza I
+[3] fallback 25 (brak klucza / NaN / ujemny / brak danych)
+  PASS: brak klucza → 25
+  PASS: wartość nie-liczbowa → 25
+  PASS: ujemna → 25
+  PASS: null → 25
+  PASS: 0 jest poprawną wartością (nie fallback)
+  PASS: brak raw (null/undefined) → 25/25/25
+  PASS: brak wartości tylko dla hard → 25 dla hard
+  PASS: brak wartości hard nie wpływa na easy
+  PASS: R-WEB-SPICHLERZ-HUD-PARAMS-Q1: brak drugiego źródła prawdy (SPICHLERZ_DRAIN_DEFAULT_PARAMS usunięty)
+  PASS: SPICHLERZ_DRAIN_FALLBACK_PER_TURN = 25
+spichlerz-drain-keys-test: 44 pass, 0 fail
+EXIT=0

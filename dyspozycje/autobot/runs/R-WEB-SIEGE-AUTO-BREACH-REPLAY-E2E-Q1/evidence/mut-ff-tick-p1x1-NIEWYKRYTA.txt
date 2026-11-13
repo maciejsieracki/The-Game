@@ -1,0 +1,7 @@
+BUILD ok in 27 s MUTACJA=ff-tick
+RUN {"mode":"auto","winner":"remis","round":24,"breached":true,"wallS":46.4,"atk":{"lost":0,"remaining":17,"hp":3413},"def":{"lost":0,"remaining":6,"hp":231},"ev":7,"inside":0,"onBreachTile":5,"manual":null}
+RUN {"mode":"skip","winner":"remis","round":24,"breached":true,"wallS":0.2,"atk":{"lost":0,"remaining":17,"hp":3413},"def":{"lost":0,"remaining":6,"hp":231},"ev":7,"inside":0,"onBreachTile":5,"manual":null}
+PASS: P1a 1x AUTO: bitwa oblezenia zakonczona w limicie 120 s (bez przeskoku, speedIdx 0), brak bledow JS
+PASS: P1b 1x: wynik AUTO == SKIP (zwyciezca, tura, wylom, straty, HP, kafle muru, wszystkie jednostki)
+PASS: P1c 1x: oblezenie z wylomem w obu trybach (wylom po kaflu/bramie)
+--- 3 ok, 0 fail, 0 defekt(y) gry, 0 NIE_ZMIERZONO [MUTACJA ff-tick]

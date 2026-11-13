@@ -1,0 +1,4 @@
+  log: [],
+  name: 'Error'
+}
+EXIT=1

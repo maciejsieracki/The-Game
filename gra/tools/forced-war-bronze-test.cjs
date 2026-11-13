@@ -53,8 +53,6 @@ export {
   WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   isEligibleForBronzeForcedWar,
   pickBronzeForcedWarTargetId,
-  shouldEndBronzeForcedWarByCityCount,
-  shouldEndBronzeForcedWarByDuration,
   isRestingFromBronzeForcedWar,
   serializeBronzeForcedWarState,
   restoreBronzeForcedWarState,
@@ -89,8 +87,6 @@ const {
   WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   isEligibleForBronzeForcedWar,
   pickBronzeForcedWarTargetId,
-  shouldEndBronzeForcedWarByCityCount,
-  shouldEndBronzeForcedWarByDuration,
   isRestingFromBronzeForcedWar,
   serializeBronzeForcedWarState,
   restoreBronzeForcedWarState,
@@ -138,31 +134,31 @@ assert(
   'T2a: napastnik LUB obrońca (flaga zbiorcza any-role) → NIE eligible',
 );
 
-console.log('\n--- R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): próg 25 tur OD WEJŚCIA W BRĄZ ---');
-eq(WOJNA_WYMUSZONA_START_TURY_OD_EPOKI, 25, 'stała progu = 25 tur');
+console.log('\n--- R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A) + R-WEB-ERA-DELAY-Q1: próg 20 tur OD WEJŚCIA W BRĄZ ---');
+eq(WOJNA_WYMUSZONA_START_TURY_OD_EPOKI, 20, 'stała progu = 20 tur (R-WEB-ERA-DELAY-Q1, z JSON)');
 assert(
   !isEligibleForBronzeForcedWar({
-    isMainAiCiv: true, isAlreadyAtWarAnyRole: false, currentTurn: 124, eraEnterTurn: 100,
+    isMainAiCiv: true, isAlreadyAtWarAnyRole: false, currentTurn: 119, eraEnterTurn: 100,
   }),
-  'tura 124, wejście w Brąz w turze 100 → 24 tur < 25, NIE eligible',
+  'tura 119, wejście w Brąz w turze 100 → 19 tur < 20, NIE eligible',
 );
 assert(
   isEligibleForBronzeForcedWar({
-    isMainAiCiv: true, isAlreadyAtWarAnyRole: false, currentTurn: 125, eraEnterTurn: 100,
+    isMainAiCiv: true, isAlreadyAtWarAnyRole: false, currentTurn: 120, eraEnterTurn: 100,
   }),
-  'tura 125, wejście w Brąz w turze 100 → dokładnie 25 tur, eligible',
+  'tura 120, wejście w Brąz w turze 100 → dokładnie 20 tur, eligible',
 );
 assert(
   isEligibleForBronzeForcedWar({
-    isMainAiCiv: true, isAlreadyAtWarAnyRole: false, currentTurn: 260, eraEnterTurn: 235,
+    isMainAiCiv: true, isAlreadyAtWarAnyRole: false, currentTurn: 255, eraEnterTurn: 235,
   }),
-  'cywilizacja, która weszła w Brąz PÓŹNIEJ (tura 235) → próg mierzony NIEZALEŻNIE od startu gry, 25 tur od TEJ tury wystarcza',
+  'cywilizacja, która weszła w Brąz PÓŹNIEJ (tura 235) → próg mierzony NIEZALEŻNIE od startu gry, 20 tur od TEJ tury wystarcza',
 );
 assert(
   !isEligibleForBronzeForcedWar({
-    isMainAiCiv: true, isAlreadyAtWarAnyRole: false, currentTurn: 259, eraEnterTurn: 235,
+    isMainAiCiv: true, isAlreadyAtWarAnyRole: false, currentTurn: 254, eraEnterTurn: 235,
   }),
-  'ta sama cywilizacja tydzień wcześniej (259, 24 tur od 235) → jeszcze NIE eligible',
+  'ta sama cywilizacja tydzień wcześniej (254, 19 tur od 235) → jeszcze NIE eligible',
 );
 assert(
   isEligibleForBronzeForcedWar({
@@ -171,16 +167,13 @@ assert(
   'eraEnterTurn undefined (stary zapis sprzed tej naprawy) → próg POMINIĘTY, eligible natychmiast (zero regresu na starych zapisach)',
 );
 
-console.log('\n--- R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): shouldEndBronzeForcedWarByDuration ---');
-eq(WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR, 25, 'stała limitu czasu trwania pary = 25 tur');
-assert(!shouldEndBronzeForcedWarByDuration(24, 0), 'tura 24, start 0 → wojna trwa (< 25 tur)');
-assert(shouldEndBronzeForcedWarByDuration(25, 0), 'tura 25, start 0 → limit osiągnięty');
-assert(shouldEndBronzeForcedWarByDuration(55, 30), 'tura 55, start 30 → 25 tur, limit osiągnięty');
-assert(!shouldEndBronzeForcedWarByDuration(40, 30), 'tura 40, start 30 → 10 tur, wojna trwa');
-assert(
-  !shouldEndBronzeForcedWarByDuration(500, undefined),
-  'startTurn undefined (stary zapis) → currentTurn - currentTurn === 0, NIGDY nie kończy samym tym wywołaniem',
-);
+console.log('\n--- R-WEB-PEACE-RULES-R8R9-Q1 R9: brak automatycznego końca wojny Brązu (czas / 2 miasta) ---');
+eq(WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR, 20, 'stała limitu czasu pozostaje (nieużywana do auto-końca)');
+  {
+    // R-WEB-PEACE-RULES-R8R9-Q1 R9: helper auto-końca usunięty z modułu (kontrakt źródła).
+    const srcTxt = require('fs').readFileSync(require('path').resolve(__dirname, '..', 'src', 'game', 'forced-war-bronze.ts'), 'utf8');
+    assert(!/shouldEnd\w*ForcedWarBy(CityCount|Duration)/.test(srcTxt), 'R9: brak shouldEnd*ForcedWarBy(CityCount|Duration) w forced-war-bronze.ts');
+  }
 
 // R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1: sekcja "pickBronzeForcedWarTargetIdCoordinated"
 // USUNIĘTA -- funkcja zniknęła z forced-war-bronze.ts (main.ts woła teraz JEDNĄ wspólną
@@ -219,12 +212,8 @@ eq(
   'T9d: remis dystansu → niższy ownerId wygrywa (deterministyczne)',
 );
 
-console.log('\n--- T3 (c): próg 2 miast zdobytych/straconych → automatyczny pokój ---');
-assert(!shouldEndBronzeForcedWarByCityCount(0, 0), 'T3a: 0/0 → wojna trwa');
-assert(!shouldEndBronzeForcedWarByCityCount(1, 1), 'T3b: 1/1 → wojna trwa (próg nieosiągnięty)');
-assert(shouldEndBronzeForcedWarByCityCount(2, 0), 'T3c: napastnik zdobył 2 → koniec (pokój)');
-assert(shouldEndBronzeForcedWarByCityCount(0, 2), 'T3d: napastnik stracił 2 (obrońca zdobył 2) → koniec');
-assert(shouldEndBronzeForcedWarByCityCount(2, 2), 'T3e: oba jednocześnie osiągają próg → koniec');
+console.log('\n--- T3 (c): R-WEB-PEACE-RULES-R8R9-Q1 R9: 2 miasta NIE kończą wojny Brązu automatycznie ---');
+assert(WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE === 2, 'T3a: stała progu miast pozostaje 2 (nieużywana do auto-końca)');
 
 console.log('\n--- T4 (d): odpoczynek po pokoju blokuje szukanie nowego celu ---');
 assert(isRestingFromBronzeForcedWar(105, 120), 'T4a: tura 105 < restUntil 120 → odpoczywa');
@@ -301,8 +290,8 @@ const dipNoForcePeaceLocked = decideAIDiplomacy({
   bronzeForceWarTargetId: 7,
 });
 assert(
-  !dipNoForcePeaceLocked.some(c => c.type === 'wypowiedz_wojne'),
-  'DA4: peaceLocked (cooldown) → brak wymuszonej wojny',
+  dipNoForcePeaceLocked.some(c => c.type === 'wypowiedz_wojne'),
+  'DA4 (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1): peaceLocked (cooldown) NIE blokuje wymuszonej wojny',
 );
 
 const dipNoForceNap = decideAIDiplomacy({
@@ -313,8 +302,8 @@ const dipNoForceNap = decideAIDiplomacy({
   bronzeForceWarTargetId: 7,
 });
 assert(
-  !dipNoForceNap.some(c => c.type === 'wypowiedz_wojne'),
-  'DA5: pakt nieagresji z celem → brak wymuszonej wojny',
+  dipNoForceNap.some(c => c.type === 'wypowiedz_wojne'),
+  'DA5 (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1): pakt nieagresji z celem NIE blokuje wymuszonej wojny',
 );
 
 console.log('\n--- T10 (B3, runda 2): sojusz z SAMYM CELEM blokuje decideAIDiplomacy ---');

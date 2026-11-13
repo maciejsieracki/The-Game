@@ -1,0 +1,4 @@
+BUILD ok in 91 s: /dev/shm/civ-wsiege-2344-3pkg6l/dist
+RUN {"mode":"auto","seed":1,"errors":[],"timeout":false,"winner":"obronca","round":400,"virtMs":8721539,"breached":true,"siegeWallCol":40,"framesRun":68188,"atk":{"total":39,"lost":26,"remaining":13,"hp":2658},"def":{"total":28,"lost":11,"remaining":17,"hp":763},"endLine":"=== PAT: 400 tur bez rozstrzygniecia -- rozstrzygniecie po morale armii ===","logTail":["Wieza (Oszczepnik) chybia w Horseman (93>=34%).","=== PAT: 400 tur bez rozstrzygniecia -- rozstrzygniecie po morale armii ===","=== Koniec bitwy: zwyciestwo OBRONCY ==="]}
+PASS: L0 auto seed 1: bitwa zakonczona w limicie, brak bledow JS
+--- 1 ok, 0 fail (uruchom z WSKIP_COMPARE=1 WSKIP_OUT=... dla porownania par)

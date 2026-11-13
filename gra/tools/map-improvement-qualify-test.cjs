@@ -348,7 +348,8 @@ ok(!stadninaPoWyrebie.includes('oboz_lowiecki'), 'kontrola: oboz lowiecki NADAL 
 // zeby izolowac regule lasu od reguly zloza — bez tego kazda asercja bylaby tautologiczna, patrz
 // wzorzec w tools/hodowla-las-test.cjs). PRZED poprawka ta asercja czerwienieje (dowod
 // nietautologicznosci, weryfikowany przez Operatora przed commitem — patrz raport rundy).
-const qRzymKonUnlocked = qual({ civ: 'rzym', tradeRouteKonUnlocked: true });
+// R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1: bramka epoki -- odblokowany Koń liczy się od epoki 3.
+const qRzymKonUnlocked = qual({ civ: 'rzym', tradeRouteKonUnlocked: true, era: 3 });
 ok(qRzymKonUnlocked('stadnina', 3, 1), 'ZYWY TEST GOAL 1: stadnina KWALIFIKUJE SIE na Lace+Las po odblokowaniu Konia');
 ok(M.computeImprovementBuildImpact('stadnina', hexes['3,1'], []) !== null,
   'ZYWY TEST: gate commitu (computeImprovementBuildImpact) NIE blokuje stadniny na Lace+Las');

@@ -1,0 +1,336 @@
+EXIT=0
+[newgame-bottom-navigation-test] budowanie bundla (vite build)...
+[newgame-bottom-navigation-test] build OK.
+[newgame-bottom-navigation-test] fallback Chromium: /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+
+== desktop (1770x970, deviceScaleFactor=1) ==
+  OK  desktop: devicePixelRatio = 1 (skala 100%)
+  OK  desktop/intro: aktywny krok = Intro
+  MEASURE desktop/intro CTA konfiguracji: {"selector":".civ-newgame .cta-hero","left":673.40625,"top":546.375,"right":1096.59375,"bottom":610.375,"width":423.1875,"height":64,"display":"flex","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":970,"rootClientHeight":970,"devicePixelRatio":1}
+  OK  desktop/intro CTA konfiguracji: istnieje, ma rozmiar, jest w całości w viewport
+  OK  desktop/intro CTA konfiguracji: środek nie jest zasłonięty i trafia w element
+  OK  desktop/intro: dolna nawigacja nie pojawia się przed krokiem 2
+  OK  desktop/epoka: aktywny krok = Epoka
+  MEASURE desktop/epoka Wstecz: {"selector":".civ-newgame .nav .nb.back","left":417,"top":922,"right":556.203125,"bottom":958,"width":139.203125,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":970,"rootClientHeight":970,"devicePixelRatio":1}
+  OK  desktop/epoka Wstecz: istnieje, ma rozmiar, jest w całości w viewport
+  OK  desktop/epoka Wstecz: środek nie jest zasłonięty i trafia w element
+  MEASURE desktop/epoka Dalej: {"selector":".civ-newgame .nav .nb.next","left":1229.5,"top":922,"right":1352.984375,"bottom":958,"width":123.484375,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":970,"rootClientHeight":970,"devicePixelRatio":1}
+  OK  desktop/epoka Dalej: istnieje, ma rozmiar, jest w całości w viewport
+  OK  desktop/epoka Dalej: środek nie jest zasłonięty i trafia w element
+  OK  desktop: Wstecz z epoki wraca do Intro
+  OK  desktop/cywilizacja: aktywny krok = Cywilizacja
+  MEASURE desktop/cywilizacja Wstecz: {"selector":".civ-newgame .nav .nb.back","left":417,"top":922,"right":556.203125,"bottom":958,"width":139.203125,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":970,"rootClientHeight":970,"devicePixelRatio":1}
+  OK  desktop/cywilizacja Wstecz: istnieje, ma rozmiar, jest w całości w viewport
+  OK  desktop/cywilizacja Wstecz: środek nie jest zasłonięty i trafia w element
+  MEASURE desktop/cywilizacja Dalej: {"selector":".civ-newgame .nav .nb.next","left":1229.5,"top":922,"right":1352.984375,"bottom":958,"width":123.484375,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":970,"rootClientHeight":970,"devicePixelRatio":1}
+  OK  desktop/cywilizacja Dalej: istnieje, ma rozmiar, jest w całości w viewport
+  OK  desktop/cywilizacja Dalej: środek nie jest zasłonięty i trafia w element
+  OK  desktop/cywilizacja: uchwyt zwijania profilu jest dostępny
+  OK  desktop/cywilizacja: parametry są domyślnie zwinięte
+  OK  desktop/cywilizacja: sekcja ma nazwę Parametry cywilizacji
+  OK  desktop/cywilizacja: uchwyt rozwija szczegóły
+  OK  desktop/macierz: licznik (93) odpowiada liczbie kart
+  OK  desktop/macierz: każda karta jest domyślnie zwinięta
+  OK  desktop/macierz: wybrany parametr można rozwinąć do podglądu
+  OK  desktop/macierz: podgląd parametru można ponownie zwinąć
+  OK  desktop/macierz: wyszukiwanie nadal filtruje karty parametrów
+  OK  desktop/macierz: wyszukany parametr pozostaje zwinięty do ręcznego podglądu
+  OK  desktop/macierz: filtr kategorii nadal pokazuje pasujące pozycje
+  OK  desktop/macierz: filtrowanie nie rozwija automatycznie kart
+  OK  desktop/cywilizacja: uchwyt ponownie zwija profil
+  MEASURE desktop/cywilizacja Dalej po zwinięciu: {"selector":".civ-newgame .nav .nb.next","left":1229.5,"top":922,"right":1352.984375,"bottom":958,"width":123.484375,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":970,"rootClientHeight":970,"devicePixelRatio":1}
+  OK  desktop/cywilizacja Dalej po zwinięciu: istnieje, ma rozmiar, jest w całości w viewport
+  OK  desktop/cywilizacja Dalej po zwinięciu: środek nie jest zasłonięty i trafia w element
+  OK  desktop/cywilizacja: Dalej mieści się w ekranie bez przewijania głównego kontenera
+  OK  desktop: Wstecz z cywilizacji wraca do Epoki
+  OK  desktop/ustawienia: aktywny krok = Ustawienia
+  MEASURE desktop/ustawienia Wstecz: {"selector":".civ-newgame .nav .nb.back","left":417,"top":922,"right":556.203125,"bottom":958,"width":139.203125,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":970,"rootClientHeight":970,"devicePixelRatio":1}
+  OK  desktop/ustawienia Wstecz: istnieje, ma rozmiar, jest w całości w viewport
+  OK  desktop/ustawienia Wstecz: środek nie jest zasłonięty i trafia w element
+  OK  desktop/ustawienia: końcowa akcja znajduje się w stałej nawigacji
+  OK  desktop/ustawienia: nie ma duplikatu Start w przewijanej treści
+  OK  desktop/ustawienia: co najmniej 5 kandydatów AI do scenariusza
+  OK  desktop/ustawienia: scenariusz 5/5 faktycznie zaznaczył 5 cywilizacji
+  MEASURE desktop/ustawienia dolna nawigacja: {"selector":".civ-newgame .nav","left":385,"top":909,"right":1385,"bottom":970,"width":1000,"height":61,"display":"flex","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":970,"rootClientHeight":970,"devicePixelRatio":1}
+  OK  desktop/ustawienia dolna nawigacja: istnieje, ma rozmiar, jest w całości w viewport
+  OK  desktop/ustawienia dolna nawigacja: środek nie jest zasłonięty i trafia w element
+  MEASURE desktop/ustawienia Start: {"selector":".civ-newgame .nav .nb.next","left":1159.375,"top":922,"right":1352.984375,"bottom":958,"width":193.609375,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":970,"rootClientHeight":970,"devicePixelRatio":1}
+  OK  desktop/ustawienia: Zaawansowane jest osiągalne w wewnętrznym przewijaniu treści
+  MEASURE desktop/ustawienia root overflow: {"selector":".civ-newgame .nav","left":385,"top":909,"right":1385,"bottom":970,"width":1000,"height":61,"display":"flex","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":970,"rootClientHeight":970,"devicePixelRatio":1}
+  OK  desktop/ustawienia: dolna nawigacja jest stale widoczna bez przewijania root
+  OK  desktop/ustawienia: Start pozostaje widoczny bez przewijania treści
+  OK  desktop/mutacja: ukrycie .nav jest wykrywane jako niewidoczne
+  OK  desktop/mutacja: po usunięciu mutacji .nav wraca do viewport
+  OK  desktop: dolna nawigacja Wstecz działa po scenariuszu 5/5
+  OK  desktop/ustawienia hot-seat: akcja stopki zmienia się na Dalej
+  OK  desktop/fotel 2: Start znajduje się w prawej nawigacji
+  OK  desktop/fotel 2: parametry domyślnie zwinięte
+  OK  desktop/fotel 2: parametry można rozwinąć
+  OK  desktop: kliknięcie Start uruchamia ścieżkę startu i ukrywa kreator
+  OK  desktop: zero console.error/pageerror przed i podczas przejścia Start
+
+== mały ekran (1365x768, deviceScaleFactor=1) ==
+  OK  mały ekran: devicePixelRatio = 1 (skala 100%)
+  OK  mały ekran/intro: aktywny krok = Intro
+  MEASURE mały ekran/intro CTA konfiguracji: {"selector":".civ-newgame .cta-hero","left":470.90625,"top":545.75,"right":894.09375,"bottom":609.75,"width":423.1875,"height":64,"display":"flex","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":768,"rootClientHeight":768,"devicePixelRatio":1}
+  OK  mały ekran/intro CTA konfiguracji: istnieje, ma rozmiar, jest w całości w viewport
+  OK  mały ekran/intro CTA konfiguracji: środek nie jest zasłonięty i trafia w element
+  OK  mały ekran/intro: dolna nawigacja nie pojawia się przed krokiem 2
+  OK  mały ekran/epoka: aktywny krok = Epoka
+  MEASURE mały ekran/epoka Wstecz: {"selector":".civ-newgame .nav .nb.back","left":214.5,"top":720,"right":353.703125,"bottom":756,"width":139.203125,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":768,"rootClientHeight":768,"devicePixelRatio":1}
+  OK  mały ekran/epoka Wstecz: istnieje, ma rozmiar, jest w całości w viewport
+  OK  mały ekran/epoka Wstecz: środek nie jest zasłonięty i trafia w element
+  MEASURE mały ekran/epoka Dalej: {"selector":".civ-newgame .nav .nb.next","left":1027,"top":720,"right":1150.484375,"bottom":756,"width":123.484375,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":768,"rootClientHeight":768,"devicePixelRatio":1}
+  OK  mały ekran/epoka Dalej: istnieje, ma rozmiar, jest w całości w viewport
+  OK  mały ekran/epoka Dalej: środek nie jest zasłonięty i trafia w element
+  OK  mały ekran: Wstecz z epoki wraca do Intro
+  OK  mały ekran/cywilizacja: aktywny krok = Cywilizacja
+  MEASURE mały ekran/cywilizacja Wstecz: {"selector":".civ-newgame .nav .nb.back","left":214.5,"top":720,"right":353.703125,"bottom":756,"width":139.203125,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":768,"rootClientHeight":768,"devicePixelRatio":1}
+  OK  mały ekran/cywilizacja Wstecz: istnieje, ma rozmiar, jest w całości w viewport
+  OK  mały ekran/cywilizacja Wstecz: środek nie jest zasłonięty i trafia w element
+  MEASURE mały ekran/cywilizacja Dalej: {"selector":".civ-newgame .nav .nb.next","left":1027,"top":720,"right":1150.484375,"bottom":756,"width":123.484375,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":768,"rootClientHeight":768,"devicePixelRatio":1}
+  OK  mały ekran/cywilizacja Dalej: istnieje, ma rozmiar, jest w całości w viewport
+  OK  mały ekran/cywilizacja Dalej: środek nie jest zasłonięty i trafia w element
+  OK  mały ekran/cywilizacja: uchwyt zwijania profilu jest dostępny
+  OK  mały ekran/cywilizacja: parametry są domyślnie zwinięte
+  OK  mały ekran/cywilizacja: sekcja ma nazwę Parametry cywilizacji
+  OK  mały ekran/cywilizacja: uchwyt rozwija szczegóły
+  OK  mały ekran/macierz: licznik (93) odpowiada liczbie kart
+  OK  mały ekran/macierz: każda karta jest domyślnie zwinięta
+  OK  mały ekran/macierz: wybrany parametr można rozwinąć do podglądu
+  OK  mały ekran/macierz: podgląd parametru można ponownie zwinąć
+  OK  mały ekran/macierz: wyszukiwanie nadal filtruje karty parametrów
+  OK  mały ekran/macierz: wyszukany parametr pozostaje zwinięty do ręcznego podglądu
+  OK  mały ekran/macierz: filtr kategorii nadal pokazuje pasujące pozycje
+  OK  mały ekran/macierz: filtrowanie nie rozwija automatycznie kart
+  OK  mały ekran/cywilizacja: uchwyt ponownie zwija profil
+  MEASURE mały ekran/cywilizacja Dalej po zwinięciu: {"selector":".civ-newgame .nav .nb.next","left":1027,"top":720,"right":1150.484375,"bottom":756,"width":123.484375,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":768,"rootClientHeight":768,"devicePixelRatio":1}
+  OK  mały ekran/cywilizacja Dalej po zwinięciu: istnieje, ma rozmiar, jest w całości w viewport
+  OK  mały ekran/cywilizacja Dalej po zwinięciu: środek nie jest zasłonięty i trafia w element
+  OK  mały ekran/cywilizacja: Dalej mieści się w ekranie bez przewijania głównego kontenera
+  OK  mały ekran: Wstecz z cywilizacji wraca do Epoki
+  OK  mały ekran/ustawienia: aktywny krok = Ustawienia
+  MEASURE mały ekran/ustawienia Wstecz: {"selector":".civ-newgame .nav .nb.back","left":214.5,"top":720,"right":353.703125,"bottom":756,"width":139.203125,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":768,"rootClientHeight":768,"devicePixelRatio":1}
+  OK  mały ekran/ustawienia Wstecz: istnieje, ma rozmiar, jest w całości w viewport
+  OK  mały ekran/ustawienia Wstecz: środek nie jest zasłonięty i trafia w element
+  OK  mały ekran/ustawienia: końcowa akcja znajduje się w stałej nawigacji
+  OK  mały ekran/ustawienia: nie ma duplikatu Start w przewijanej treści
+  OK  mały ekran/ustawienia: co najmniej 5 kandydatów AI do scenariusza
+  OK  mały ekran/ustawienia: scenariusz 5/5 faktycznie zaznaczył 5 cywilizacji
+  MEASURE mały ekran/ustawienia dolna nawigacja: {"selector":".civ-newgame .nav","left":182.5,"top":707,"right":1182.5,"bottom":768,"width":1000,"height":61,"display":"flex","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":768,"rootClientHeight":768,"devicePixelRatio":1}
+  OK  mały ekran/ustawienia dolna nawigacja: istnieje, ma rozmiar, jest w całości w viewport
+  OK  mały ekran/ustawienia dolna nawigacja: środek nie jest zasłonięty i trafia w element
+  MEASURE mały ekran/ustawienia Start: {"selector":".civ-newgame .nav .nb.next","left":956.875,"top":720,"right":1150.484375,"bottom":756,"width":193.609375,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":768,"rootClientHeight":768,"devicePixelRatio":1}
+  OK  mały ekran/ustawienia: Zaawansowane jest osiągalne w wewnętrznym przewijaniu treści
+  MEASURE mały ekran/ustawienia root overflow: {"selector":".civ-newgame .nav","left":182.5,"top":707,"right":1182.5,"bottom":768,"width":1000,"height":61,"display":"flex","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":768,"rootClientHeight":768,"devicePixelRatio":1}
+  OK  mały ekran/ustawienia: dolna nawigacja jest stale widoczna bez przewijania root
+  OK  mały ekran/ustawienia: Start pozostaje widoczny bez przewijania treści
+  OK  mały ekran/mutacja: ukrycie .nav jest wykrywane jako niewidoczne
+  OK  mały ekran/mutacja: po usunięciu mutacji .nav wraca do viewport
+  OK  mały ekran: dolna nawigacja Wstecz działa po scenariuszu 5/5
+  OK  mały ekran/ustawienia hot-seat: akcja stopki zmienia się na Dalej
+  OK  mały ekran/fotel 2: Start znajduje się w prawej nawigacji
+  OK  mały ekran/fotel 2: parametry domyślnie zwinięte
+  OK  mały ekran/fotel 2: parametry można rozwinąć
+  OK  mały ekran: kliknięcie Start uruchamia ścieżkę startu i ukrywa kreator
+  OK  mały ekran: zero console.error/pageerror przed i podczas przejścia Start
+
+== 150% zoom — viewport CSS (1180x647, deviceScaleFactor=1) ==
+  OK  150% zoom — viewport CSS: devicePixelRatio = 1 (skala 100%)
+  OK  150% zoom — viewport CSS/intro: aktywny krok = Intro
+  MEASURE 150% zoom — viewport CSS/intro CTA konfiguracji: {"selector":".civ-newgame .cta-hero","left":378.40625,"top":482.71875,"right":801.59375,"bottom":546.71875,"width":423.1875,"height":64,"display":"flex","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":647,"rootClientHeight":647,"devicePixelRatio":1}
+  OK  150% zoom — viewport CSS/intro CTA konfiguracji: istnieje, ma rozmiar, jest w całości w viewport
+  OK  150% zoom — viewport CSS/intro CTA konfiguracji: środek nie jest zasłonięty i trafia w element
+  OK  150% zoom — viewport CSS/intro: dolna nawigacja nie pojawia się przed krokiem 2
+  OK  150% zoom — viewport CSS/epoka: aktywny krok = Epoka
+  MEASURE 150% zoom — viewport CSS/epoka Wstecz: {"selector":".civ-newgame .nav .nb.back","left":122,"top":603.8125,"right":261.203125,"bottom":639.8125,"width":139.203125,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":647,"rootClientHeight":647,"devicePixelRatio":1}
+  OK  150% zoom — viewport CSS/epoka Wstecz: istnieje, ma rozmiar, jest w całości w viewport
+  OK  150% zoom — viewport CSS/epoka Wstecz: środek nie jest zasłonięty i trafia w element
+  MEASURE 150% zoom — viewport CSS/epoka Dalej: {"selector":".civ-newgame .nav .nb.next","left":934.5,"top":603.8125,"right":1057.984375,"bottom":639.8125,"width":123.484375,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":647,"rootClientHeight":647,"devicePixelRatio":1}
+  OK  150% zoom — viewport CSS/epoka Dalej: istnieje, ma rozmiar, jest w całości w viewport
+  OK  150% zoom — viewport CSS/epoka Dalej: środek nie jest zasłonięty i trafia w element
+  OK  150% zoom — viewport CSS: Wstecz z epoki wraca do Intro
+  OK  150% zoom — viewport CSS/cywilizacja: aktywny krok = Cywilizacja
+  MEASURE 150% zoom — viewport CSS/cywilizacja Wstecz: {"selector":".civ-newgame .nav .nb.back","left":122,"top":603.8125,"right":261.203125,"bottom":639.8125,"width":139.203125,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":647,"rootClientHeight":647,"devicePixelRatio":1}
+  OK  150% zoom — viewport CSS/cywilizacja Wstecz: istnieje, ma rozmiar, jest w całości w viewport
+  OK  150% zoom — viewport CSS/cywilizacja Wstecz: środek nie jest zasłonięty i trafia w element
+  MEASURE 150% zoom — viewport CSS/cywilizacja Dalej: {"selector":".civ-newgame .nav .nb.next","left":934.5,"top":603.8125,"right":1057.984375,"bottom":639.8125,"width":123.484375,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":647,"rootClientHeight":647,"devicePixelRatio":1}
+  OK  150% zoom — viewport CSS/cywilizacja Dalej: istnieje, ma rozmiar, jest w całości w viewport
+  OK  150% zoom — viewport CSS/cywilizacja Dalej: środek nie jest zasłonięty i trafia w element
+  OK  150% zoom — viewport CSS/cywilizacja: uchwyt zwijania profilu jest dostępny
+  OK  150% zoom — viewport CSS/cywilizacja: parametry są domyślnie zwinięte
+  OK  150% zoom — viewport CSS/cywilizacja: sekcja ma nazwę Parametry cywilizacji
+  OK  150% zoom — viewport CSS/cywilizacja: uchwyt rozwija szczegóły
+  OK  150% zoom — viewport CSS/macierz: licznik (93) odpowiada liczbie kart
+  OK  150% zoom — viewport CSS/macierz: każda karta jest domyślnie zwinięta
+  OK  150% zoom — viewport CSS/macierz: wybrany parametr można rozwinąć do podglądu
+  OK  150% zoom — viewport CSS/macierz: podgląd parametru można ponownie zwinąć
+  OK  150% zoom — viewport CSS/macierz: wyszukiwanie nadal filtruje karty parametrów
+  OK  150% zoom — viewport CSS/macierz: wyszukany parametr pozostaje zwinięty do ręcznego podglądu
+  OK  150% zoom — viewport CSS/macierz: filtr kategorii nadal pokazuje pasujące pozycje
+  OK  150% zoom — viewport CSS/macierz: filtrowanie nie rozwija automatycznie kart
+  OK  150% zoom — viewport CSS/cywilizacja: uchwyt ponownie zwija profil
+  MEASURE 150% zoom — viewport CSS/cywilizacja Dalej po zwinięciu: {"selector":".civ-newgame .nav .nb.next","left":934.5,"top":603.8125,"right":1057.984375,"bottom":639.8125,"width":123.484375,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":647,"rootClientHeight":647,"devicePixelRatio":1}
+  OK  150% zoom — viewport CSS/cywilizacja Dalej po zwinięciu: istnieje, ma rozmiar, jest w całości w viewport
+  OK  150% zoom — viewport CSS/cywilizacja Dalej po zwinięciu: środek nie jest zasłonięty i trafia w element
+  OK  150% zoom — viewport CSS/cywilizacja: Dalej mieści się w ekranie bez przewijania głównego kontenera
+  OK  150% zoom — viewport CSS: Wstecz z cywilizacji wraca do Epoki
+  OK  150% zoom — viewport CSS/ustawienia: aktywny krok = Ustawienia
+  MEASURE 150% zoom — viewport CSS/ustawienia Wstecz: {"selector":".civ-newgame .nav .nb.back","left":122,"top":603.8125,"right":261.203125,"bottom":639.8125,"width":139.203125,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":647,"rootClientHeight":647,"devicePixelRatio":1}
+  OK  150% zoom — viewport CSS/ustawienia Wstecz: istnieje, ma rozmiar, jest w całości w viewport
+  OK  150% zoom — viewport CSS/ustawienia Wstecz: środek nie jest zasłonięty i trafia w element
+  OK  150% zoom — viewport CSS/ustawienia: końcowa akcja znajduje się w stałej nawigacji
+  OK  150% zoom — viewport CSS/ustawienia: nie ma duplikatu Start w przewijanej treści
+  OK  150% zoom — viewport CSS/ustawienia: co najmniej 5 kandydatów AI do scenariusza
+  OK  150% zoom — viewport CSS/ustawienia: scenariusz 5/5 faktycznie zaznaczył 5 cywilizacji
+  MEASURE 150% zoom — viewport CSS/ustawienia dolna nawigacja: {"selector":".civ-newgame .nav","left":90,"top":595.625,"right":1090,"bottom":647,"width":1000,"height":51.375,"display":"flex","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":647,"rootClientHeight":647,"devicePixelRatio":1}
+  OK  150% zoom — viewport CSS/ustawienia dolna nawigacja: istnieje, ma rozmiar, jest w całości w viewport
+  OK  150% zoom — viewport CSS/ustawienia dolna nawigacja: środek nie jest zasłonięty i trafia w element
+  MEASURE 150% zoom — viewport CSS/ustawienia Start: {"selector":".civ-newgame .nav .nb.next","left":864.375,"top":603.8125,"right":1057.984375,"bottom":639.8125,"width":193.609375,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":647,"rootClientHeight":647,"devicePixelRatio":1}
+  OK  150% zoom — viewport CSS/ustawienia: Zaawansowane jest osiągalne w wewnętrznym przewijaniu treści
+  MEASURE 150% zoom — viewport CSS/ustawienia root overflow: {"selector":".civ-newgame .nav","left":90,"top":595.625,"right":1090,"bottom":647,"width":1000,"height":51.375,"display":"flex","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":647,"rootClientHeight":647,"devicePixelRatio":1}
+  OK  150% zoom — viewport CSS/ustawienia: dolna nawigacja jest stale widoczna bez przewijania root
+  OK  150% zoom — viewport CSS/ustawienia: Start pozostaje widoczny bez przewijania treści
+  OK  150% zoom — viewport CSS/mutacja: ukrycie .nav jest wykrywane jako niewidoczne
+  OK  150% zoom — viewport CSS/mutacja: po usunięciu mutacji .nav wraca do viewport
+  OK  150% zoom — viewport CSS: dolna nawigacja Wstecz działa po scenariuszu 5/5
+  OK  150% zoom — viewport CSS/ustawienia hot-seat: akcja stopki zmienia się na Dalej
+  OK  150% zoom — viewport CSS/fotel 2: Start znajduje się w prawej nawigacji
+  OK  150% zoom — viewport CSS/fotel 2: parametry domyślnie zwinięte
+  OK  150% zoom — viewport CSS/fotel 2: parametry można rozwinąć
+  OK  150% zoom — viewport CSS: kliknięcie Start uruchamia ścieżkę startu i ukrywa kreator
+  OK  150% zoom — viewport CSS: zero console.error/pageerror przed i podczas przejścia Start
+
+== 2K DCI (2048x1080, deviceScaleFactor=1) ==
+  OK  2K DCI: devicePixelRatio = 1 (skala 100%)
+  OK  2K DCI/intro: aktywny krok = Intro
+  MEASURE 2K DCI/intro CTA konfiguracji: {"selector":".civ-newgame .cta-hero","left":812.40625,"top":546.375,"right":1235.59375,"bottom":610.375,"width":423.1875,"height":64,"display":"flex","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":1080,"rootClientHeight":1080,"devicePixelRatio":1}
+  OK  2K DCI/intro CTA konfiguracji: istnieje, ma rozmiar, jest w całości w viewport
+  OK  2K DCI/intro CTA konfiguracji: środek nie jest zasłonięty i trafia w element
+  OK  2K DCI/intro: dolna nawigacja nie pojawia się przed krokiem 2
+  OK  2K DCI/epoka: aktywny krok = Epoka
+  MEASURE 2K DCI/epoka Wstecz: {"selector":".civ-newgame .nav .nb.back","left":556,"top":1032,"right":695.203125,"bottom":1068,"width":139.203125,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":1080,"rootClientHeight":1080,"devicePixelRatio":1}
+  OK  2K DCI/epoka Wstecz: istnieje, ma rozmiar, jest w całości w viewport
+  OK  2K DCI/epoka Wstecz: środek nie jest zasłonięty i trafia w element
+  MEASURE 2K DCI/epoka Dalej: {"selector":".civ-newgame .nav .nb.next","left":1368.5,"top":1032,"right":1491.984375,"bottom":1068,"width":123.484375,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":1080,"rootClientHeight":1080,"devicePixelRatio":1}
+  OK  2K DCI/epoka Dalej: istnieje, ma rozmiar, jest w całości w viewport
+  OK  2K DCI/epoka Dalej: środek nie jest zasłonięty i trafia w element
+  OK  2K DCI: Wstecz z epoki wraca do Intro
+  OK  2K DCI/cywilizacja: aktywny krok = Cywilizacja
+  MEASURE 2K DCI/cywilizacja Wstecz: {"selector":".civ-newgame .nav .nb.back","left":556,"top":1032,"right":695.203125,"bottom":1068,"width":139.203125,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":1080,"rootClientHeight":1080,"devicePixelRatio":1}
+  OK  2K DCI/cywilizacja Wstecz: istnieje, ma rozmiar, jest w całości w viewport
+  OK  2K DCI/cywilizacja Wstecz: środek nie jest zasłonięty i trafia w element
+  MEASURE 2K DCI/cywilizacja Dalej: {"selector":".civ-newgame .nav .nb.next","left":1368.5,"top":1032,"right":1491.984375,"bottom":1068,"width":123.484375,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":1080,"rootClientHeight":1080,"devicePixelRatio":1}
+  OK  2K DCI/cywilizacja Dalej: istnieje, ma rozmiar, jest w całości w viewport
+  OK  2K DCI/cywilizacja Dalej: środek nie jest zasłonięty i trafia w element
+  OK  2K DCI/cywilizacja: uchwyt zwijania profilu jest dostępny
+  OK  2K DCI/cywilizacja: parametry są domyślnie zwinięte
+  OK  2K DCI/cywilizacja: sekcja ma nazwę Parametry cywilizacji
+  OK  2K DCI/cywilizacja: uchwyt rozwija szczegóły
+  OK  2K DCI/macierz: licznik (93) odpowiada liczbie kart
+  OK  2K DCI/macierz: każda karta jest domyślnie zwinięta
+  OK  2K DCI/macierz: wybrany parametr można rozwinąć do podglądu
+  OK  2K DCI/macierz: podgląd parametru można ponownie zwinąć
+  OK  2K DCI/macierz: wyszukiwanie nadal filtruje karty parametrów
+  OK  2K DCI/macierz: wyszukany parametr pozostaje zwinięty do ręcznego podglądu
+  OK  2K DCI/macierz: filtr kategorii nadal pokazuje pasujące pozycje
+  OK  2K DCI/macierz: filtrowanie nie rozwija automatycznie kart
+  OK  2K DCI/cywilizacja: uchwyt ponownie zwija profil
+  MEASURE 2K DCI/cywilizacja Dalej po zwinięciu: {"selector":".civ-newgame .nav .nb.next","left":1368.5,"top":1032,"right":1491.984375,"bottom":1068,"width":123.484375,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":1080,"rootClientHeight":1080,"devicePixelRatio":1}
+  OK  2K DCI/cywilizacja Dalej po zwinięciu: istnieje, ma rozmiar, jest w całości w viewport
+  OK  2K DCI/cywilizacja Dalej po zwinięciu: środek nie jest zasłonięty i trafia w element
+  OK  2K DCI/cywilizacja: Dalej mieści się w ekranie bez przewijania głównego kontenera
+  OK  2K DCI: Wstecz z cywilizacji wraca do Epoki
+  OK  2K DCI/ustawienia: aktywny krok = Ustawienia
+  MEASURE 2K DCI/ustawienia Wstecz: {"selector":".civ-newgame .nav .nb.back","left":556,"top":1032,"right":695.203125,"bottom":1068,"width":139.203125,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":1080,"rootClientHeight":1080,"devicePixelRatio":1}
+  OK  2K DCI/ustawienia Wstecz: istnieje, ma rozmiar, jest w całości w viewport
+  OK  2K DCI/ustawienia Wstecz: środek nie jest zasłonięty i trafia w element
+  OK  2K DCI/ustawienia: końcowa akcja znajduje się w stałej nawigacji
+  OK  2K DCI/ustawienia: nie ma duplikatu Start w przewijanej treści
+  OK  2K DCI/ustawienia: co najmniej 5 kandydatów AI do scenariusza
+  OK  2K DCI/ustawienia: scenariusz 5/5 faktycznie zaznaczył 5 cywilizacji
+  MEASURE 2K DCI/ustawienia dolna nawigacja: {"selector":".civ-newgame .nav","left":524,"top":1019,"right":1524,"bottom":1080,"width":1000,"height":61,"display":"flex","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":1080,"rootClientHeight":1080,"devicePixelRatio":1}
+  OK  2K DCI/ustawienia dolna nawigacja: istnieje, ma rozmiar, jest w całości w viewport
+  OK  2K DCI/ustawienia dolna nawigacja: środek nie jest zasłonięty i trafia w element
+  MEASURE 2K DCI/ustawienia Start: {"selector":".civ-newgame .nav .nb.next","left":1298.375,"top":1032,"right":1491.984375,"bottom":1068,"width":193.609375,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":1080,"rootClientHeight":1080,"devicePixelRatio":1}
+  OK  2K DCI/ustawienia: Zaawansowane jest osiągalne w wewnętrznym przewijaniu treści
+  MEASURE 2K DCI/ustawienia root overflow: {"selector":".civ-newgame .nav","left":524,"top":1019,"right":1524,"bottom":1080,"width":1000,"height":61,"display":"flex","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":1080,"rootClientHeight":1080,"devicePixelRatio":1}
+  OK  2K DCI/ustawienia: dolna nawigacja jest stale widoczna bez przewijania root
+  OK  2K DCI/ustawienia: Start pozostaje widoczny bez przewijania treści
+  OK  2K DCI/mutacja: ukrycie .nav jest wykrywane jako niewidoczne
+  OK  2K DCI/mutacja: po usunięciu mutacji .nav wraca do viewport
+  OK  2K DCI: dolna nawigacja Wstecz działa po scenariuszu 5/5
+  OK  2K DCI/ustawienia hot-seat: akcja stopki zmienia się na Dalej
+  OK  2K DCI/fotel 2: Start znajduje się w prawej nawigacji
+  OK  2K DCI/fotel 2: parametry domyślnie zwinięte
+  OK  2K DCI/fotel 2: parametry można rozwinąć
+  OK  2K DCI: kliknięcie Start uruchamia ścieżkę startu i ukrywa kreator
+  OK  2K DCI: zero console.error/pageerror przed i podczas przejścia Start
+
+== 4K UHD (3840x2160, deviceScaleFactor=1) ==
+  OK  4K UHD: devicePixelRatio = 1 (skala 100%)
+  OK  4K UHD/intro: aktywny krok = Intro
+  MEASURE 4K UHD/intro CTA konfiguracji: {"selector":".civ-newgame .cta-hero","left":1708.40625,"top":546.375,"right":2131.59375,"bottom":610.375,"width":423.1875,"height":64,"display":"flex","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":2160,"rootClientHeight":2160,"devicePixelRatio":1}
+  OK  4K UHD/intro CTA konfiguracji: istnieje, ma rozmiar, jest w całości w viewport
+  OK  4K UHD/intro CTA konfiguracji: środek nie jest zasłonięty i trafia w element
+  OK  4K UHD/intro: dolna nawigacja nie pojawia się przed krokiem 2
+  OK  4K UHD/epoka: aktywny krok = Epoka
+  MEASURE 4K UHD/epoka Wstecz: {"selector":".civ-newgame .nav .nb.back","left":1452,"top":2112,"right":1591.203125,"bottom":2148,"width":139.203125,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":2160,"rootClientHeight":2160,"devicePixelRatio":1}
+  OK  4K UHD/epoka Wstecz: istnieje, ma rozmiar, jest w całości w viewport
+  OK  4K UHD/epoka Wstecz: środek nie jest zasłonięty i trafia w element
+  MEASURE 4K UHD/epoka Dalej: {"selector":".civ-newgame .nav .nb.next","left":2264.5,"top":2112,"right":2387.984375,"bottom":2148,"width":123.484375,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":2160,"rootClientHeight":2160,"devicePixelRatio":1}
+  OK  4K UHD/epoka Dalej: istnieje, ma rozmiar, jest w całości w viewport
+  OK  4K UHD/epoka Dalej: środek nie jest zasłonięty i trafia w element
+  OK  4K UHD: Wstecz z epoki wraca do Intro
+  OK  4K UHD/cywilizacja: aktywny krok = Cywilizacja
+  MEASURE 4K UHD/cywilizacja Wstecz: {"selector":".civ-newgame .nav .nb.back","left":1452,"top":2112,"right":1591.203125,"bottom":2148,"width":139.203125,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":2160,"rootClientHeight":2160,"devicePixelRatio":1}
+  OK  4K UHD/cywilizacja Wstecz: istnieje, ma rozmiar, jest w całości w viewport
+  OK  4K UHD/cywilizacja Wstecz: środek nie jest zasłonięty i trafia w element
+  MEASURE 4K UHD/cywilizacja Dalej: {"selector":".civ-newgame .nav .nb.next","left":2264.5,"top":2112,"right":2387.984375,"bottom":2148,"width":123.484375,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":2160,"rootClientHeight":2160,"devicePixelRatio":1}
+  OK  4K UHD/cywilizacja Dalej: istnieje, ma rozmiar, jest w całości w viewport
+  OK  4K UHD/cywilizacja Dalej: środek nie jest zasłonięty i trafia w element
+  OK  4K UHD/cywilizacja: uchwyt zwijania profilu jest dostępny
+  OK  4K UHD/cywilizacja: parametry są domyślnie zwinięte
+  OK  4K UHD/cywilizacja: sekcja ma nazwę Parametry cywilizacji
+  OK  4K UHD/cywilizacja: uchwyt rozwija szczegóły
+  OK  4K UHD/macierz: licznik (93) odpowiada liczbie kart
+  OK  4K UHD/macierz: każda karta jest domyślnie zwinięta
+  OK  4K UHD/macierz: wybrany parametr można rozwinąć do podglądu
+  OK  4K UHD/macierz: podgląd parametru można ponownie zwinąć
+  OK  4K UHD/macierz: wyszukiwanie nadal filtruje karty parametrów
+  OK  4K UHD/macierz: wyszukany parametr pozostaje zwinięty do ręcznego podglądu
+  OK  4K UHD/macierz: filtr kategorii nadal pokazuje pasujące pozycje
+  OK  4K UHD/macierz: filtrowanie nie rozwija automatycznie kart
+  OK  4K UHD/cywilizacja: uchwyt ponownie zwija profil
+  MEASURE 4K UHD/cywilizacja Dalej po zwinięciu: {"selector":".civ-newgame .nav .nb.next","left":2264.5,"top":2112,"right":2387.984375,"bottom":2148,"width":123.484375,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":2160,"rootClientHeight":2160,"devicePixelRatio":1}
+  OK  4K UHD/cywilizacja Dalej po zwinięciu: istnieje, ma rozmiar, jest w całości w viewport
+  OK  4K UHD/cywilizacja Dalej po zwinięciu: środek nie jest zasłonięty i trafia w element
+  OK  4K UHD/cywilizacja: Dalej mieści się w ekranie bez przewijania głównego kontenera
+  OK  4K UHD: Wstecz z cywilizacji wraca do Epoki
+  OK  4K UHD/ustawienia: aktywny krok = Ustawienia
+  MEASURE 4K UHD/ustawienia Wstecz: {"selector":".civ-newgame .nav .nb.back","left":1452,"top":2112,"right":1591.203125,"bottom":2148,"width":139.203125,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":2160,"rootClientHeight":2160,"devicePixelRatio":1}
+  OK  4K UHD/ustawienia Wstecz: istnieje, ma rozmiar, jest w całości w viewport
+  OK  4K UHD/ustawienia Wstecz: środek nie jest zasłonięty i trafia w element
+  OK  4K UHD/ustawienia: końcowa akcja znajduje się w stałej nawigacji
+  OK  4K UHD/ustawienia: nie ma duplikatu Start w przewijanej treści
+  OK  4K UHD/ustawienia: co najmniej 5 kandydatów AI do scenariusza
+  OK  4K UHD/ustawienia: scenariusz 5/5 faktycznie zaznaczył 5 cywilizacji
+  MEASURE 4K UHD/ustawienia dolna nawigacja: {"selector":".civ-newgame .nav","left":1420,"top":2099,"right":2420,"bottom":2160,"width":1000,"height":61,"display":"flex","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":2160,"rootClientHeight":2160,"devicePixelRatio":1}
+  OK  4K UHD/ustawienia dolna nawigacja: istnieje, ma rozmiar, jest w całości w viewport
+  OK  4K UHD/ustawienia dolna nawigacja: środek nie jest zasłonięty i trafia w element
+  MEASURE 4K UHD/ustawienia Start: {"selector":".civ-newgame .nav .nb.next","left":2194.375,"top":2112,"right":2387.984375,"bottom":2148,"width":193.609375,"height":36,"display":"block","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":2160,"rootClientHeight":2160,"devicePixelRatio":1}
+  OK  4K UHD/ustawienia: Zaawansowane jest osiągalne w wewnętrznym przewijaniu treści
+  MEASURE 4K UHD/ustawienia root overflow: {"selector":".civ-newgame .nav","left":1420,"top":2099,"right":2420,"bottom":2160,"width":1000,"height":61,"display":"flex","visibility":"visible","disabled":false,"fullyInViewport":true,"hitByCenter":true,"rootScrollTop":0,"rootScrollHeight":2160,"rootClientHeight":2160,"devicePixelRatio":1}
+  OK  4K UHD/ustawienia: dolna nawigacja jest stale widoczna bez przewijania root
+  OK  4K UHD/ustawienia: Start pozostaje widoczny bez przewijania treści
+  OK  4K UHD/mutacja: ukrycie .nav jest wykrywane jako niewidoczne
+  OK  4K UHD/mutacja: po usunięciu mutacji .nav wraca do viewport
+  OK  4K UHD: dolna nawigacja Wstecz działa po scenariuszu 5/5
+  OK  4K UHD/ustawienia hot-seat: akcja stopki zmienia się na Dalej
+  OK  4K UHD/fotel 2: Start znajduje się w prawej nawigacji
+  OK  4K UHD/fotel 2: parametry domyślnie zwinięte
+  OK  4K UHD/fotel 2: parametry można rozwinąć
+  OK  4K UHD: kliknięcie Start uruchamia ścieżkę startu i ukrywa kreator
+  OK  4K UHD: zero console.error/pageerror przed i podczas przejścia Start
+
+270 pass · 0 fail

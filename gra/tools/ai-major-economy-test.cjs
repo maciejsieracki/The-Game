@@ -26,7 +26,6 @@ export {
   chooseCityProduction,
   loadDifficultyParams,
   computeMajorAiEarlyGame,
-  computeMajorArchetypeMilitaryFraction,
   AI_MAJOR_EARLY_PROCENT_BUDYNKI,
   isMajorAiOwner,
 } from '../src/game/ai';
@@ -68,7 +67,6 @@ const {
   chooseCityProduction,
   loadDifficultyParams,
   computeMajorAiEarlyGame,
-  computeMajorArchetypeMilitaryFraction,
   AI_MAJOR_EARLY_PROCENT_BUDYNKI,
   autoRaiseRationsForGrowth,
   autoBalanceRationsToSolvency,
@@ -142,13 +140,11 @@ console.log('\n-- B. Major early peace: procentBudynki zostaje na stalej 50 (R-A
   eq(r.procentBudynki, 50, 'major early peace -> procentBudynki konweruje do stalej 50');
 }
 
-console.log('\n-- C. Archetype 60/40 fraction (ai-params) --');
-{
-  const warrior = computeMajorArchetypeMilitaryFraction({ wojsko: 2, ekonomia: -1, nauka: 0, obrona: 0 });
-  const econ = computeMajorArchetypeMilitaryFraction({ wojsko: -1, ekonomia: 1, nauka: 0, obrona: 0 });
-  assert(warrior >= 0.58 && warrior <= 0.62, `wojowniczy ~60% mil (got ${warrior})`);
-  assert(econ >= 0.38 && econ <= 0.42, `gospodarczy ~40% mil (got ${econ})`);
-}
+// The former ai-params-derived 60/40 contract was intentionally removed by
+// PR141's bounded release (b4d37d9f8): chooseCityProduction now uses the
+// matrix-backed civilization profile, with the old derived fraction fixed at
+// 0.5. Current profile-priority behavior is covered by
+// ai-production-priority-test.cjs; do not restore the retired expectation here.
 
 function makeMap() {
   const hexes = {};

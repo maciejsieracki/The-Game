@@ -1,0 +1,51 @@
+A. next-active-unit.ts (realny modul, esbuild)
+  [OK] GREEN A1 a->b->c->a (zapetlenie)
+  [OK] GREEN A1b brak zaznaczenia -> pierwsza
+  [OK] GREEN A2 kolejka = tylko aktywna
+  [OK] GREEN A2b pojedyncza aktywna -> ta sama (cykl 1)
+  [OK] GREEN A3 oblegajaca (bez ruchu) w kolejce, a->siege
+  [OK] GREEN A3b oblegajaca ale miasto juz nieoblegane -> poza kolejka
+  [OK] GREEN A4 garnizon oblieganego wlasnego miasta w kolejce
+  [OK] GREEN A4b ten sam garnizon, miasto NIEoblegane -> pomijany
+  [OK] GREEN A4c cudze oblegane miasto (inny wlasciciel) nie wciaga mojej jednostki
+  [OK] GREEN A5 uspiona/ufortyfikowana w oblezeniu nadal pominieta
+  [OK] GREEN A6 brak aktywnych -> null
+  [OK] GREEN A7 hot-seat: fotel 1 widzi tylko swoje
+  [OK] GREEN A8 zaznaczona poza kolejka (wyczerpany ruch) -> start od poczatku listy (semantyka istniejacego bebna)
+A-RED. ta sama scenariusze na BAZIE (army-cycle: stara logika kolejki) -- siege MUSI byc czerwone
+  [OK] baza: oblegajaca (A3) i oblegana (A4) NIE trafiaja do kolejki
+  [OK] baza: reszta regul (A1,A2,A5-A8) bez zmian = brak regresji zachowania
+B. mutacje next-active-unit.ts (kazda musi wywrocic A)
+  [OK] mutacja "siege zawsze false" wywraca A
+  [OK] mutacja "oblegana: ignoruj oblegane" wywraca A
+  [OK] mutacja "oblegana: ignoruj wlasciciela" wywraca A
+  [OK] mutacja "usun filtr sentry/fort/auto" wywraca A
+  [OK] mutacja "pomin canMove" wywraca A
+  [OK] mutacja "pomin isMe" wywraca A
+  [OK] mutacja "nextActiveUnit delta -1" wywraca A
+  [OK] mutacja "kolejka pusta" wywraca A
+C. strukturalna main.ts
+  [OK] main.ts importuje activeUnitQueue
+  [OK] beben/Zwiedzaj (cyclablePlayerArmyLeads) BEZ oblezenia -- stara kolejka
+  [OK] spaceActiveUnitQueue() deleguje do activeUnitQueue
+  [OK] cycleToAdjacentPlayerUnit: opts.siege -> kolejka Spacji
+  [OK] tylko 1 wywolanie z siege:true (Spacja); bęben (finishedId) i Zwiedzaj (u.id) bez
+  [OK] bęben i Zwiedzaj bez siege
+  [OK] strzalki HUD (All) bez zmian
+  [OK] Spacja: pole tekstowe -> return
+  [OK] Spacja: modal/panel (isWorldMapUnitMode) -> return; inaczej cykl +1
+D. zywa (Chromium)
+  [OK] D1 3 jednostki testowe (aktywna / bez ruchu / ufortyfikowana)
+  [OK] D2 Spacja nie wybiera jednostki bez ruchu ani ufortyfikowanej
+  [OK] D3 w pelnym obiegu pomijane: bez ruchu i ufortyfikowana
+  [OK] D4 aktywna jednostka jest w obiegu (zapetlenie)
+  [OK] D5 pole tekstowe aktywne -> Spacja bez efektu
+  [OK] D7 jest wlasne miasto do testu oblezenia
+  [OK] D8 miasto NIEoblegane: oblegajaca i oblegana (ruch 0) poza kolejka Spacji
+  [OK] D9 Spacja doskakuje na jednostke OBLEGAJACA (oblegaCityId -> oblegane)
+  [OK] D10 Spacja doskakuje na stos OBLEGANY (jednostki w oblegamym miescie; lider stosu reprezentuje hex)
+  [OK] D11 przy oblezeniu nadal pomijane: bez ruchu i ufortyfikowana
+  [OK] D6 zero pageerror
+
+wynik: 43 OK, 0 FAIL
+EXIT=0

@@ -491,31 +491,31 @@ check(
 console.log('');
 
 // ---------------------------------------------------------------------------
-// 10. R-MOC-TABLICZKA-CO-POKAZYWAC-Q1=B (Maciej 2026-08-07): tabliczka nad
-// zetonem (i panel pre-battle) maja pokazywac Moc EFEKTYWNA, nie nominalna.
+// 10. R-MOC-TABLICZKA-VS-CIVPOWER-Q1 (Maciej 2026-08-09): tabliczka nad
+// zetonem pokazuje Moc EFEKTYWNA; panel pre-battle pozostaje nominalny.
 // Wdrozenie: game/armyMerge.ts::stackFieldPowerM sam sie NIE zmienil -- to
 // wciaz sumRosterFieldM(stack.map(u => ({typeId, def: defOf(u)}))). Zmienilo
-// sie WYLACZNIE `defOf` wstrzykiwane z main.ts (syncUnitsRender), ktore od tej
-// decyzji przekazuje combatPowerScaledDefFor(u) zamiast surowego lookupUnitDef.
+// sie WYLACZNIE `defOf` wstrzykiwane z main.ts (syncUnitsRender), ktore
+// przekazuje combatPowerFullDisplayDefFor(u) zamiast surowego lookupUnitDef.
 // Ten test wola PRAWDZIWA stackFieldPowerM() (nie reimplementacje) z DWOMA
-// wariantami defOf -- nominalnym (stary main.ts::defForUnit) i weteransko-
+// wariantami defOf -- nominalnym (surowy wiersz units.json) i weteransko-
 // przeskalowanym (main.ts::combatPowerFullDisplayDefFor dzis, dla gracza,
 // jednostka NIE ufortyfikowana/NIE w garnizonie miasta z murem -- wtedy
 // combatPowerFullDisplayDefFor == combatPowerScaledDefFor == veteranScaledDefFor,
 // patrz main.ts fortifyFieldScaledDefFor/combatPowerScaledDefFor/
 // combatPowerFullDisplayDefFor, R-MOC-TABLICZKA-VS-CIVPOWER-Q1) -- i dowodzi,
-// ze podmiana defOf faktycznie zmienia liczbe na tabliczce z 49 na 58.0,
+// ze podmiana defOf faktycznie zmienia liczbe na tabliczce z 98 na 116,
 // dokladnie jak w sekcji 9 (auto-bitwa) -- ZERO ROZJAZDU miedzy tabliczka a
 // wynikiem auto-walki dla tego samego skladu.
 // ---------------------------------------------------------------------------
-console.log('10. Tabliczka/pre-battle (armyMerge.ts::stackFieldPowerM) -- Moc EFEKTYWNA');
+console.log('10. Tabliczka nad zetonem (armyMerge.ts::stackFieldPowerM) -- Moc EFEKTYWNA');
 
 const stackKonnicaWeteran = [{ id: 'u1', typeId: 'Konnica', ownerId: 0 }];
 
 const mTabliczkaNominalna = stackFieldPowerM(stackKonnicaWeteran, (u) => konnicaRaw);
 check(
-  'PRZED (nominalna, C-MOC-Q1=A): stackFieldPowerM(Konnica gwiazdki=3, defOf=nominalny) == 49',
-  approxEq(mTabliczkaNominalna, 49, 0.05),
+  'Nominalna: stackFieldPowerM(Konnica, defOf=surowy) == armyFieldPower(units.json) (' + mRekrut + ')',
+  approxEq(mTabliczkaNominalna, mRekrut, 0.05),
   mTabliczkaNominalna,
 );
 
@@ -524,22 +524,22 @@ const mTabliczkaEfektywna = stackFieldPowerM(
   (u) => veteranScaledUnitRow(konnicaRaw, 3), // battlesSurvived=3 -> ★★★, frac=0.20
 );
 check(
-  'PO (efektywna, R-MOC-TABLICZKA-CO-POKAZYWAC-Q1=B): stackFieldPowerM(Konnica gwiazdki=3, defOf=weteran-przeskalowany) == 58.0',
+  'PO (efektywna, R-MOC-TABLICZKA-VS-CIVPOWER-Q1): stackFieldPowerM(Konnica, defOf=weteran-przeskalowany) == ' + expectedMWeteran,
   approxEq(mTabliczkaEfektywna, expectedMWeteran, 0.05),
   mTabliczkaEfektywna + ' vs oczekiwane ' + expectedMWeteran,
 );
 check(
-  'Tabliczka PO == Auto-moc (M) sekcji 9 dla identycznego skladu (58.0 == 58.0, zero rozjazdu)',
+  'Tabliczka PO == Auto-moc (M) sekcji 9 dla identycznego skladu (' + expectedMWeteran + ', zero rozjazdu)',
   approxEq(mTabliczkaEfektywna, mWeteran, 0.05),
   mTabliczkaEfektywna + ' vs ' + mWeteran,
 );
 check(
-  'Tabliczka PO (58) > tabliczka PRZED (49) -- premia weterana teraz WIDOCZNA na tokenie',
+  'Tabliczka PO (' + mTabliczkaEfektywna + ') > nominalna (' + mTabliczkaNominalna + ') -- premia weterana widoczna na tokenie',
   mTabliczkaEfektywna > mTabliczkaNominalna,
 );
 
 // Sekcje 9-10 wyzej dowodza tylko, ze WSTRZYKNIETA przeskalowana definicja daje
-// 58 -- nie dowodza, ze main.ts FAKTYCZNIE wstrzykuje ja do tabliczki. Cofniecie
+// M poziomu 3 -- nie dowodza, ze main.ts FAKTYCZNIE wstrzykuje ja do tabliczki. Cofniecie
 // jedynej istotnej linii (main.ts::syncUnitsRender, StackVitalsDeps.defOf)
 // zostawiloby powyzsze testy zielonymi. Asercja zrodlowa lapie wlasnie to
 // (Evaluator, nota N7, 2026-08-07): czyta main.ts jako tekst (wzor jak w

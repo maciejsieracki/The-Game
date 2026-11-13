@@ -14,6 +14,9 @@ import {
 import { improvementIconSvg } from './icons/brandAssets';
 import { techIconSvg } from './techIcons';
 import { openEntityCard } from './entityCards/renderer';
+import { AUTO_BUILD_DISABLED_HINT, AUTO_IMPROVE_NEEDS_ADMINISTRATOR_HINT } from '../game/auto-build-gate';
+import { administratorIconHtml, ADMINISTRATOR_ICON_CSS } from './icons/administratorIcon';
+import { openAdministratorPanel, isAdministratorPanelOpen, type AdministratorPanelModel } from './administratorPanel';
 import type { UlepszeniaFocus, UlepszeniaTryb, UlepszeniaPracaPercent, UlepszeniaEmpirePolicy } from '../game/cities';
 // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: `PODZIAL_PRACY_PULA_LBL*` / `PODZIAL_PRACY_PULA_TIP`
 // (nazwy warstwy (a) — `CityPodzialPracy.procentBudynki`) juz tu NIE sa importowane: ten panel
@@ -84,9 +87,26 @@ export interface BuildModeHudConfig {
   getPracaPool?: () => number;
   /** Auto-ulepszenia terenu — polityka państwa + wyjątek per miasto (R-AUTO-V2-Q3=C). */
   listPlayerCities?: () => { id: string; name: string }[];
+  /**
+   * R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: czy „Automatyzacja budowy” gracza jest włączona w Ustawieniach.
+   * Brak haka = włączona. Wyłączona: blok „Automatyzacja ulepszeń terenu” zastępuje podpowiedź.
+   */
+  isAutoBuildEnabled?: () => boolean;
+  /**
+   * R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: administrator ulepszeń wybranego miasta (zatrudnij/zwolnij).
+   * Auto-ulepszenia terenu w mieście działają tylko przy działającym administratorze. Brak haków = brak sekcji.
+   */
+  getImprovementAdministratorState?: (cityId: string) => ImprovementAdministratorUiState | null;
+  onHireImprovementAdministrator?: (cityId: string) => boolean;
+  onDismissImprovementAdministrator?: (cityId: string) => boolean;
   getUlepszeniaCityId?: () => string | null;
   onUlepszeniaCityIdChange?: (cityId: string) => void;
   getUlepszeniaEmpireState?: () => UlepszeniaEmpirePolicy | null;
+  /**
+   * Q3: stały wskaźnik „Budżet niewydany” (żywność powstaje tylko na polach z obywatelami); `null` = brak ostrzeżenia.
+   * R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1: bez przycisku „Wyłącz filtr” — reguła nie ma przełącznika.
+   */
+  getUnspentBudgetWarning?: () => { waitingHexes: number } | null;
   /**
    * R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: pozycje `getEmpirePracaSplit` /
    * `onEmpirePracaSplitChange` USUNIETE. Sterowaly warstwa (a) — polem
@@ -100,9 +120,6 @@ export interface BuildModeHudConfig {
    */
   onUlepszeniaEmpireFocusChange?: (focus: UlepszeniaFocus) => void;
   onUlepszeniaEmpireTrybChange?: (tryb: UlepszeniaTryb) => void;
-  onUlepszeniaEmpireOnlyWorkedChange?: (onlyWorked: boolean) => void;
-  /** R4-Q2=C: „wolno wycinać las" dla automatu GRACZA — zakres PAŃSTWO. */
-  onUlepszeniaEmpireWyrabChange?: (wolnoWycinacLas: boolean) => void;
   /** Historyczny budżet automatu ulepszeń; zakres 0–100%, osobny od nadrzędnego splitu Pracy. */
   onUlepszeniaEmpirePracaPercentChange?: (pracaAutoPercent: UlepszeniaPracaPercent) => void;
   getUlepszeniaCityOverride?: (cityId: string) => boolean;
@@ -111,18 +128,76 @@ export interface BuildModeHudConfig {
   getUlepszeniaEffectiveState?: (cityId: string) => {
     focus: UlepszeniaFocus;
     tryb: UlepszeniaTryb;
-    onlyWorked: boolean;
     pracaAutoPercent: UlepszeniaPracaPercent;
-    /** R4-Q2=C: „wolno wycinać las" — efektywna wartość dla tego miasta. */
-    wolnoWycinacLas: boolean;
     override: boolean;
   } | null;
   onUlepszeniaCityFocusChange?: (cityId: string, focus: UlepszeniaFocus) => void;
   onUlepszeniaCityTrybChange?: (cityId: string, tryb: UlepszeniaTryb) => void;
-  onUlepszeniaCityOnlyWorkedChange?: (cityId: string, onlyWorked: boolean) => void;
-  /** R4-Q2=C: „wolno wycinać las" dla automatu GRACZA — zakres MIASTO. */
-  onUlepszeniaCityWyrabChange?: (cityId: string, wolnoWycinacLas: boolean) => void;
   onUlepszeniaCityPracaPercentChange?: (cityId: string, pracaAutoPercent: UlepszeniaPracaPercent) => void;
+}
+
+/** R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: stan administratora ulepszeń miasta dla panelu ulepszeń. */
+export interface ImprovementAdministratorUiState {
+  hired: boolean;
+  working: boolean;
+  upkeep: number;
+  hireCost: number;
+  blockReasonText: string | null;
+  description: string;
+  /** Skarbiec państwa (Pieniądz) — panel administratora liczy, ile brakuje do zatrudnienia. */
+  treasury?: number | null;
+  /** Rodzaj blokady zatrudnienia; `brak_srodkow` NIE blokuje otwarcia panelu (panel pokazuje, ile brakuje). */
+  blockReason?: 'ma_administratora' | 'brak_srodkow' | null;
+}
+
+/** Etykieta adnotacji przy zablokowanych kontrolkach automatyzacji ulepszeń (bez działającego administratora). */
+export const AUTO_IMPROVE_LOCKED_NOTE = 'Wymaga administratora ulepszeń';
+
+/** Model panelu wyboru administratora ulepszeń z danych stanu UI (liczby z silnika przez main.ts). */
+export function improvementAdministratorPanelModel(st: ImprovementAdministratorUiState, cityName: string): AdministratorPanelModel {
+  // `brak_srodkow` pokazuje panel z informacją „brakuje X”; tylko inne powody są twardą blokadą.
+  const hard = st.blockReason !== undefined ? (st.blockReason === 'brak_srodkow' ? null : st.blockReasonText) : st.blockReasonText;
+  return {
+    kind: 'improvements',
+    cityName,
+    hired: st.hired,
+    working: st.working,
+    hireCost: st.hireCost,
+    upkeep: st.upkeep,
+    treasury: st.treasury ?? null,
+    blockReasonText: st.hired ? null : hard,
+  };
+}
+
+/** Wiersz administratora ulepszeń (ikona „A” z kilofem + przycisk otwierający panel wyboru + stan). */
+function renderImprovementAdministratorRow(st: ImprovementAdministratorUiState): string {
+  const state = st.hired ? (st.working ? 'ok' : 'idle') : 'off';
+  const icon = administratorIconHtml({ size: 16, state, variant: 'improvements' });
+  const hardBlock = !st.hired && improvementAdministratorPanelModel(st, '').blockReasonText !== null;
+  const title = st.hired
+    ? `Administrator ulepszeń: ${st.working ? 'pracuje' : 'nie pracuje — brak środków w skarbcu państwa'}. `
+      + `Utrzymanie ${st.upkeep} Pieniądza na turę. Kliknij, aby zobaczyć szczegóły lub zwolnić (bez zwrotu ${st.hireCost}).`
+    : (hardBlock
+      ? (st.blockReasonText ?? '')
+      : `Wybierz administratora ulepszeń — koszt ${st.hireCost} Pieniądza, utrzymanie ${st.upkeep} Pieniądza na turę`);
+  const label = st.hired ? 'Administrator ulepszeń ✓' : 'Administrator ulepszeń +';
+  const attr = st.hired ? 'data-imp-admin-dismiss' : 'data-imp-admin-hire';
+  const status = st.hired ? (st.working ? 'working' : 'idle') : (hardBlock ? 'blocked' : 'available');
+  let html = '<div class="civ-build-imp-admin" data-imp-admin-row>'
+    + `<button type="button" class="civ-build-hbtn civ-build-imp-admin-btn${st.hired ? ' active' : ''}${st.hired && !st.working ? ' idle' : ''}" `
+    + `${attr} data-imp-admin-open aria-haspopup="dialog" data-imp-admin-state="${status}" ${hardBlock ? 'disabled ' : ''}title="${title.replace(/"/g, '&quot;')}">${icon}<span>${label}</span></button>`;
+  // R-WEB-UI-IMPROVEMENT-ADMIN-TOOLTIP-Q1: w treści panelu krótki komunikat; pełne wyjaśnienie, koszt i utrzymanie
+  // są w tooltipie (atrybut title) tego samego elementu — najechanie myszą pokazuje pełny tekst.
+  if (!st.hired) {
+    const full = `${AUTO_IMPROVE_NEEDS_ADMINISTRATOR_HINT}. Kliknij przycisk, aby zobaczyć, czym jest administrator i co daje. `
+      + `Koszt ${st.hireCost} Pieniądza, utrzymanie ${st.upkeep} Pieniądza na turę.`;
+    html += `<div class="civ-build-city-split-note" data-imp-admin-hint data-lock-hint="${full.replace(/"/g, '&quot;')}">${AUTO_IMPROVE_LOCKED_NOTE}</div>`;
+  } else if (!st.working) {
+    const full = 'Administrator ulepszeń nie pracuje (brak środków w skarbcu państwa) — auto-ulepszenia w tym mieście wstrzymane.';
+    html += `<div class="civ-build-city-split-note" data-imp-admin-hint data-lock-hint="${full}">Administrator nie pracuje — brak środków</div>`;
+  }
+  html += '</div>';
+  return html;
 }
 
 export interface BuildModeHudApi {
@@ -208,7 +283,7 @@ const ULEPSZENIA_FOCUS_TITLES: Record<UlepszeniaFocus, string> = {
   zywnosc: 'Żywność — farma, hodowla, irygacja',
   surowce: 'Surowce — tartak, kamieniołom, kopalnie',
   infrastruktura: 'Infrastruktura — drogi, fort',
-  zrownowazone: 'Zrównoważone — żywność, surowce, infra',
+  zrownowazone: 'Zrównoważone — żywność; przy niedoborze tylko brakujący surowiec; drogi na końcu',
 };
 
 const ULEPSZENIA_PROFILES: UlepszeniaFocus[] = [
@@ -283,9 +358,17 @@ html.civ-ui-zoom-active .civ-build-panel{right:${HUD_ZOOM_EDGE_PX}px;
 .civ-build-auto-btn:hover{background:rgba(232,216,138,.08);border-color:rgba(232,216,138,.35);}
 .civ-build-auto-btn.on{background:rgba(232,216,138,.15);border-color:rgba(232,216,138,.5);color:#f0e8b8;}
 .civ-build-auto-btn.reczny{margin-left:2px;}
+.civ-build-auto-btn:disabled{opacity:.45;cursor:not-allowed;}
+.civ-build-auto-btn:disabled:hover{background:transparent;border-color:rgba(232,216,138,.25);}
+.civ-build-lock-note{margin:2px 0 4px;color:#e0a090;font-size:10.5px;}
+.civ-build-hbtn:disabled{opacity:.5;cursor:not-allowed;}
 .civ-build-auto-row{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:10px;color:#9a9070;flex-wrap:wrap;}
 .civ-build-auto-row label{display:inline-flex;align-items:center;gap:4px;cursor:pointer;}
 .civ-build-auto-city-wrap{margin-top:4px;}
+${ADMINISTRATOR_ICON_CSS}
+.civ-build-imp-admin{margin:6px 0 2px;}
+.civ-build-imp-admin-btn{display:inline-flex;align-items:center;gap:6px;}
+.civ-build-imp-admin-btn.idle{border-color:#c0392b;color:#e8a49b;}
 .civ-build-auto-eff{font-size:9px;color:#8a8060;line-height:1.35;margin:4px 0 2px;}
 .civ-build-auto-override{font-size:10px;color:#9a9070;margin:4px 0;}
 .civ-build-hbtn{background:rgba(232,216,138,.08);border:1px solid rgba(232,216,138,.22);color:#d4cba0;
@@ -300,6 +383,13 @@ html.civ-ui-zoom-active .civ-build-panel{right:${HUD_ZOOM_EDGE_PX}px;
 .civ-build-percent-head{display:flex;align-items:baseline;gap:6px;font-size:10px;color:#9a9070;}
 .civ-build-percent-head b{font-size:11px;color:#f0e8b8;}
 .civ-build-city-split-note{font-size:9px;color:#9a9070;line-height:1.35;margin:4px 0 2px;}
+/* R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1: stały wskaźnik „Budżet niewydany” pod suwakiem puli automatu.
+   Jeden element (nie toast), zawija tekst — bez poziomego przewijania na wąskim ekranie. */
+.civ-build-unspent{margin:6px 0 2px;padding:6px 8px;border:1px solid rgba(240,170,70,.55);border-left-width:3px;
+  background:rgba(240,170,70,.10);color:#f3dcae;border-radius:4px;font-size:10px;line-height:1.4;
+  display:flex;flex-direction:column;gap:5px;min-width:0;overflow-wrap:anywhere;word-break:break-word;}
+.civ-build-unspent b{color:#ffd58a;}
+.civ-build-unspent .civ-build-hbtn{align-self:flex-start;max-width:100%;}
 /* R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: suwak warstwy (c) jest renderowany takze
    przy trybie recznym — wtedy nieaktywny, z krotkim wyjasnieniem pod spodem. */
 .civ-build-percent-row.off .civ-build-percent-head{opacity:.55;}
@@ -325,16 +415,20 @@ function renderUlepszeniaProfileRow(
   focus: UlepszeniaFocus,
   tryb: UlepszeniaTryb,
   scope: 'empire' | 'city',
+  locked = false,
 ): string {
-  let html = '<div class="civ-build-auto-profiles">';
+  // Zablokowane (brak działającego administratora ulepszeń): przyciski nieaktywne, zapisany wybór zostaje widoczny.
+  const lockAttr = locked ? ` disabled aria-disabled="true" data-locked="1"` : '';
+  const lockTitle = (t: string): string => (locked ? `${AUTO_IMPROVE_LOCKED_NOTE} — ${t}` : t);
+  let html = `<div class="civ-build-auto-profiles${locked ? ' locked' : ''}">`;
   for (const id of ULEPSZENIA_PROFILES) {
     const on = tryb !== 'reczny' && id === focus ? ' on' : '';
-    html += `<button type="button" class="civ-build-auto-btn${on}" data-ulepszenia-${scope}-focus="${id}"`
-      + ` title="${ULEPSZENIA_FOCUS_TITLES[id]}">${ULEPSZENIA_FOCUS_LABELS[id]}</button>`;
+    html += `<button type="button" class="civ-build-auto-btn${on}" data-ulepszenia-${scope}-focus="${id}"${lockAttr}`
+      + ` title="${lockTitle(ULEPSZENIA_FOCUS_TITLES[id])}">${ULEPSZENIA_FOCUS_LABELS[id]}</button>`;
   }
   const recOn = tryb === 'reczny' ? ' on' : '';
-  html += `<button type="button" class="civ-build-auto-btn reczny${recOn}" data-ulepszenia-${scope}-reczny`
-    + ` title="Ręczny — buduj ulepszenia na mapie (🔨)">Ręczny</button>`;
+  html += `<button type="button" class="civ-build-auto-btn reczny${recOn}" data-ulepszenia-${scope}-reczny${lockAttr}`
+    + ` title="${lockTitle('Ręczny — buduj ulepszenia na mapie (🔨)')}">Ręczny</button>`;
   html += '</div>';
   return html;
 }
@@ -391,6 +485,29 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
   lockTip.className = 'civ-build-lock-tip';
   document.body.appendChild(lockTip);
 
+  /**
+   * Blokada kontrolek automatyzacji ulepszeń terenu bez administratora (decyzja DODATEK 2 tematu
+   * R-WEB-UI-IMPROVEMENT-AUTOMATION-LOCKED-WITHOUT-ADMIN-Q1):
+   *  - MIASTO: zablokowane, gdy to miasto nie ma DZIAŁAJĄCEGO administratora ulepszeń (ten sam warunek co „wstrzymane”),
+   *  - PAŃSTWO: polityka państwa jest wspólna dla miast, więc zablokowana tylko wtedy, gdy ŻADNE miasto gracza
+   *    nie ma działającego administratora ulepszeń (nigdzie by nie zadziałała). Przy choć jednym — aktywna.
+   * Brak haka stanu administratora = brak blokady (zgodność wsteczna).
+   */
+  function cityImprovementAutomationLocked(cityId: string | null): boolean {
+    if (!config.getImprovementAdministratorState || !cityId) return false;
+    const st = config.getImprovementAdministratorState(cityId);
+    return st !== null && !st.working;
+  }
+  function empireImprovementAutomationLocked(): boolean {
+    if (!config.getImprovementAdministratorState) return false;
+    const cities = config.listPlayerCities?.() ?? [];
+    if (cities.length === 0) return false;
+    return cities.every(c => {
+      const st = config.getImprovementAdministratorState!(c.id);
+      return st !== null && !st.working;
+    });
+  }
+
   let unbindOutside: (() => void) | null = null;
 
   function syncOutsideDismiss(): void {
@@ -403,6 +520,8 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       const target = ev.target;
       if (!(target instanceof Node)) return;
       if (el.contains(target) || bannerEl.contains(target)) return;
+      // Panel wyboru administratora (modalny) leży poza `el` — klik w niego nie wychodzi z trybu budowy.
+      if (target instanceof Element && target.closest('.civ-adm-panel-host')) return;
       // Cały lewy toolbar — przełączenie trybu w jednym kliknięciu (nie dismiss przed click).
       if (target instanceof Element && target.closest('.civ-map-toolbar')) return;
       // Klik w mapę — zawsze obsługuje main.ts (mouseup); nie zamykaj trybu przed założeniem miasta.
@@ -548,31 +667,30 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       const empireState = config.getUlepszeniaEmpireState?.() ?? null;
       const effState = uCityId ? config.getUlepszeniaEffectiveState?.(uCityId) ?? null : null;
       const cityOverride = uCityId ? (config.getUlepszeniaCityOverride?.(uCityId) ?? false) : false;
-      if (playerCities.length > 0 && empireState) {
+      const autoBuildOn = config.isAutoBuildEnabled ? config.isAutoBuildEnabled() : true;
+      if (playerCities.length > 0 && empireState && !autoBuildOn) {
+        // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: bez automatyzacji budowy — żadnych profili/suwaków auto, tylko podpowiedź.
+        html += '<div class="civ-build-auto" data-auto-build-locked="1">';
+        html += '<div class="lbl">Automatyzacja ulepszeń terenu</div>';
+        html += `<div class="civ-build-city-split-note" data-auto-build-hint>${AUTO_BUILD_DISABLED_HINT}</div>`;
+        html += '</div>';
+      }
+      if (playerCities.length > 0 && empireState && autoBuildOn) {
         html += '<div class="civ-build-auto">';
         html += '<div class="lbl">Automatyzacja ulepszeń terenu</div>';
+        const empireLocked = empireImprovementAutomationLocked();
+        const cityLocked = cityImprovementAutomationLocked(uCityId);
+        if (empireLocked) {
+          html += `<div class="civ-build-lock-note" data-ulepszenia-locked-note="empire" title="Żadne miasto nie ma działającego administratora ulepszeń, więc profil państwa nigdzie nie zadziała.">${AUTO_IMPROVE_LOCKED_NOTE}</div>`;
+        }
         html += renderUlepszeniaProfileRow(
           empireState.focus,
           empireState.tryb,
           'empire',
+          empireLocked,
         );
-        if (empireState.tryb === 'auto') {
-          const onE = empireState.onlyWorked ? ' active' : '';
-          html += '<div class="civ-build-auto-row">';
-          html += `<button type="button" class="civ-build-hbtn${onE}" data-ulepszenia-empire-only-worked`
-            + ` aria-pressed="${empireState.onlyWorked ? 'true' : 'false'}"`
-            + ` title="Buduj tylko na polach z obywatelami (👤); złoża surowców są wyjątkiem">Tylko pola z obywatelami</button>`;
-          html += '</div>';
-          // R4-Q2=C (R-AI-WYRAB-PRZY-RZECE-FARMY-Q1, runda 4): przełącznik wyrębu dla
-          // automatu GRACZA, zakres PAŃSTWO. Domyślnie WYŁĄCZONY.
-          const onW = empireState.wolnoWycinacLas ? ' active' : '';
-          html += '<div class="civ-build-auto-row">';
-          html += `<button type="button" class="civ-build-hbtn${onW}" data-ulepszenia-empire-wyrab`
-            + ` aria-pressed="${empireState.wolnoWycinacLas ? 'true' : 'false'}"`
-            + ` title="Pozwól automatowi wycinać las (wyrąb pod farmę przy rzece). Domyślnie wyłączone.">`
-            + `Wolno wycinać las</button>`;
-          html += '</div>';
-        }
+        // R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1: przyciski „Tylko pola z obywatelami” i „Wolno wycinać las” USUNIĘTE
+        // (właściciel 2026-11-04) — żywność zawsze tylko przy obywatelach, wycinka pod farmę zawsze dozwolona.
         // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1 (pkt 2): suwak warstwy (c)
         // (`UlepszeniaEmpirePolicy.pracaAutoPercent`) renderuje sie TAKZE przy
         // `tryb === 'reczny'` — wtedy `disabled`, z wyjasnieniem. Wczesniej byl schowany
@@ -592,12 +710,21 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
               + `To NIE jest ten podział — to tempo wydawania samego automatu.`,
             MAX_ULEPSZENIA_PRACA_AUTO_PERCENT,
             {
-              disabled: !trybAuto,
-              note: trybAuto
-                ? ''
-                : 'Tryb ręczny — cała pula zostaje na pracę ręczną. Suwak zadziała po włączeniu automatyzacji (profil powyżej).',
+              disabled: !trybAuto || empireLocked,
+              note: empireLocked
+                ? AUTO_IMPROVE_LOCKED_NOTE
+                : trybAuto
+                  ? ''
+                  : 'Tryb ręczny — cała pula zostaje na pracę ręczną. Suwak zadziała po włączeniu automatyzacji (profil powyżej).',
             },
           );
+          // R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1: stały wskaźnik niewydanego budżetu (znika, gdy warunek ustąpi).
+          const unspent = trybAuto ? (config.getUnspentBudgetWarning?.() ?? null) : null;
+          if (unspent && unspent.waitingHexes > 0) {
+            html += '<div class="civ-build-unspent" role="status" data-ulepszenia-unspent>'
+              + `<span><b>Budżet niewydany:</b> żywność powstaje tylko na polach z obywatelami (${unspent.waitingHexes} pól czeka na obywatela).</span>`
+              + '</div>';
+          }
         }
         if (playerCities.length > 1) {
           html += '<div class="civ-build-auto-city-wrap">';
@@ -611,18 +738,26 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
           const sole = playerCities[0];
           if (sole) html += `<div class="civ-build-wonders-sub">${sole.name}</div>`;
         }
+        const impAdm = uCityId ? (config.getImprovementAdministratorState?.(uCityId) ?? null) : null;
+        if (impAdm) html += renderImprovementAdministratorRow(impAdm);
+        if (cityLocked) {
+          html += `<div class="civ-build-lock-note" data-ulepszenia-locked-note="city" title="Ustawienia tego miasta są nieaktywne; zapisany wybór wróci po zatrudnieniu administratora ulepszeń.">${AUTO_IMPROVE_LOCKED_NOTE}</div>`;
+        }
         if (effState) {
           const effLabel = effState.tryb === 'reczny'
             ? 'Ręczny'
             : `${ULEPSZENIA_FOCUS_LABELS[effState.focus]} · ${effState.pracaAutoPercent}% Pracy`
-              + (effState.onlyWorked ? ' · tylko 👤' : '');
-          html += `<div class="civ-build-auto-eff">Efekt w mieście: ${effLabel}`
+              ;
+          const impOff = impAdm !== null && !impAdm.working;
+          // R-WEB-UI-IMPROVEMENT-ADMIN-TOOLTIP-Q1: przyczyna „wstrzymane” w tooltipie, w treści krótko.
+          const effTitle = impOff ? ' title="Brak działającego administratora ulepszeń — auto-ulepszenia w tym mieście wstrzymane."' : '';
+          html += `<div class="civ-build-auto-eff"${effTitle}>Efekt w mieście: ${impOff ? 'wstrzymane' : effLabel}`
             + (effState.override ? ' (własne)' : ' (państwo)') + '</div>';
         }
         const onOv = cityOverride ? ' active' : '';
         html += `<div class="civ-build-auto-override">`
           + `<button type="button" class="civ-build-hbtn${onOv}" data-ulepszenia-city-override`
-          + ` aria-pressed="${cityOverride ? 'true' : 'false'}">Własne ustawienia tego miasta</button>`
+          + ` aria-pressed="${cityOverride ? 'true' : 'false'}"${cityLocked ? ` disabled aria-disabled="true" title="${AUTO_IMPROVE_LOCKED_NOTE}"` : ''}>Własne ustawienia tego miasta</button>`
           + '</div>';
         if (cityOverride && uCityId && effState) {
           html += '<div class="lbl">Ustawienia miasta — lokalny split</div>';
@@ -633,20 +768,8 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
             effState.focus,
             effState.tryb,
             'city',
+            cityLocked,
           );
-          if (effState.tryb === 'auto') {
-            const onC = effState.onlyWorked ? ' active' : '';
-            html += '<div class="civ-build-auto-row">';
-            html += `<button type="button" class="civ-build-hbtn${onC}" data-ulepszenia-city-only-worked`
-              + ` aria-pressed="${effState.onlyWorked ? 'true' : 'false'}">Tylko pola z obywatelami</button>`;
-            html += '</div>';
-            // R4-Q2=C: ten sam przełącznik w zakresie MIASTA (override lokalny).
-            const onWC = effState.wolnoWycinacLas ? ' active' : '';
-            html += '<div class="civ-build-auto-row">';
-            html += `<button type="button" class="civ-build-hbtn${onWC}" data-ulepszenia-city-wyrab`
-              + ` aria-pressed="${effState.wolnoWycinacLas ? 'true' : 'false'}">Wolno wycinać las</button>`;
-            html += '</div>';
-          }
           // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1 (pkt 2): ten sam wzorzec co wyzej,
           // dla lokalnego pola warstwy (c) `City.ulepszeniaPracaPercent`.
           {
@@ -661,10 +784,12 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
                 + `„Indywidualne"). To NIE jest podział Pracy między budynki a pulę imperium.`,
               MAX_ULEPSZENIA_PRACA_AUTO_PERCENT,
               {
-                disabled: !trybAutoC,
-                note: trybAutoC
-                  ? ''
-                  : 'Ręczny w tym mieście — suwak zadziała po wybraniu profilu automatu powyżej.',
+                disabled: !trybAutoC || cityLocked,
+                note: cityLocked
+                  ? AUTO_IMPROVE_LOCKED_NOTE
+                  : trybAutoC
+                    ? ''
+                    : 'Ręczny w tym mieście — suwak zadziała po wybraniu profilu automatu powyżej.',
               },
             );
           }
@@ -773,7 +898,7 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       });
     });
 
-    el.querySelectorAll('[data-found-city][data-lock-hint]').forEach(item => {
+    el.querySelectorAll('[data-found-city][data-lock-hint], [data-imp-admin-hint][data-lock-hint]').forEach(item => {
       const elItem = item as HTMLElement;
       const hint = elItem.getAttribute('data-lock-hint');
       if (!hint) return;
@@ -823,28 +948,13 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
     el.querySelectorAll('[data-ulepszenia-empire-focus]').forEach(btn => {
       btn.addEventListener('click', () => {
         const focus = (btn as HTMLElement).getAttribute('data-ulepszenia-empire-focus') as UlepszeniaFocus;
-        if (focus) config.onUlepszeniaEmpireFocusChange?.(focus);
+        if (focus && !empireImprovementAutomationLocked()) config.onUlepszeniaEmpireFocusChange?.(focus);
         render();
       });
     });
 
     el.querySelector('[data-ulepszenia-empire-reczny]')?.addEventListener('click', () => {
-      config.onUlepszeniaEmpireTrybChange?.('reczny');
-      render();
-    });
-
-    const empireOnlyWorkedBtn = el.querySelector('[data-ulepszenia-empire-only-worked]') as HTMLButtonElement | null;
-    empireOnlyWorkedBtn?.addEventListener('click', () => {
-      const current = config.getUlepszeniaEmpireState?.()?.onlyWorked ?? false;
-      config.onUlepszeniaEmpireOnlyWorkedChange?.(!current);
-      render();
-    });
-
-    // R4-Q2=C: przełącznik wyrębu automatu GRACZA — zakres PAŃSTWO.
-    const empireWyrabBtn = el.querySelector('[data-ulepszenia-empire-wyrab]') as HTMLButtonElement | null;
-    empireWyrabBtn?.addEventListener('click', () => {
-      const current = config.getUlepszeniaEmpireState?.()?.wolnoWycinacLas ?? false;
-      config.onUlepszeniaEmpireWyrabChange?.(!current);
+      if (!empireImprovementAutomationLocked()) config.onUlepszeniaEmpireTrybChange?.('reczny');
       render();
     });
 
@@ -861,7 +971,7 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
     });
     empirePercentInput?.addEventListener('change', () => {
       const pct = Math.max(0, Math.min(100, Math.round(Number(empirePercentInput.value))));
-      config.onUlepszeniaEmpirePracaPercentChange?.(pct);
+      if (!empireImprovementAutomationLocked()) config.onUlepszeniaEmpirePracaPercentChange?.(pct);
       render();
     });
 
@@ -869,35 +979,14 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       btn.addEventListener('click', () => {
         const cityId = config.getUlepszeniaCityId?.();
         const focus = (btn as HTMLElement).getAttribute('data-ulepszenia-city-focus') as UlepszeniaFocus;
-        if (cityId && focus) config.onUlepszeniaCityFocusChange?.(cityId, focus);
+        if (cityId && focus && !cityImprovementAutomationLocked(cityId)) config.onUlepszeniaCityFocusChange?.(cityId, focus);
         render();
       });
     });
 
     el.querySelector('[data-ulepszenia-city-reczny]')?.addEventListener('click', () => {
       const cityId = config.getUlepszeniaCityId?.();
-      if (cityId) config.onUlepszeniaCityTrybChange?.(cityId, 'reczny');
-      render();
-    });
-
-    const cityOnlyWorkedBtn = el.querySelector('[data-ulepszenia-city-only-worked]') as HTMLButtonElement | null;
-    cityOnlyWorkedBtn?.addEventListener('click', () => {
-      const cityId = config.getUlepszeniaCityId?.();
-      if (cityId) {
-        const current = config.getUlepszeniaEffectiveState?.(cityId)?.onlyWorked ?? false;
-        config.onUlepszeniaCityOnlyWorkedChange?.(cityId, !current);
-      }
-      render();
-    });
-
-    // R4-Q2=C: przełącznik wyrębu automatu GRACZA — zakres MIASTO.
-    const cityWyrabBtn = el.querySelector('[data-ulepszenia-city-wyrab]') as HTMLButtonElement | null;
-    cityWyrabBtn?.addEventListener('click', () => {
-      const cityId = config.getUlepszeniaCityId?.();
-      if (cityId) {
-        const current = config.getUlepszeniaEffectiveState?.(cityId)?.wolnoWycinacLas ?? false;
-        config.onUlepszeniaCityWyrabChange?.(cityId, !current);
-      }
+      if (cityId && !cityImprovementAutomationLocked(cityId)) config.onUlepszeniaCityTrybChange?.(cityId, 'reczny');
       render();
     });
 
@@ -911,18 +1000,34 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
     cityPercentInput?.addEventListener('change', () => {
       const cityId = config.getUlepszeniaCityId?.();
       const pct = Math.max(0, Math.min(100, Math.round(Number(cityPercentInput.value))));
-      if (cityId) config.onUlepszeniaCityPracaPercentChange?.(cityId, pct);
+      if (cityId && !cityImprovementAutomationLocked(cityId)) config.onUlepszeniaCityPracaPercentChange?.(cityId, pct);
       render();
     });
 
     const overrideBtn = el.querySelector('[data-ulepszenia-city-override]') as HTMLButtonElement | null;
     overrideBtn?.addEventListener('click', () => {
       const cityId = config.getUlepszeniaCityId?.();
-      if (cityId) {
+      if (cityId && !cityImprovementAutomationLocked(cityId)) {
         const current = config.getUlepszeniaCityOverride?.(cityId) ?? false;
         config.onUlepszeniaCityOverrideChange?.(cityId, !current);
       }
       render();
+    });
+
+    // Przycisk „Administrator ulepszeń +/✓” otwiera mały panel wyboru (opis, bonusy, koszt, utrzymanie, Zatrudnij/Zwolnij).
+    el.querySelector('[data-imp-admin-open]')?.addEventListener('click', () => {
+      const cityId = config.getUlepszeniaCityId?.();
+      if (!cityId || isAdministratorPanelOpen()) return;
+      const cityName = (config.listPlayerCities?.() ?? []).find(c => c.id === cityId)?.name ?? '';
+      openAdministratorPanel({
+        getModel: () => {
+          const st = config.getImprovementAdministratorState?.(cityId) ?? null;
+          return st ? improvementAdministratorPanelModel(st, cityName) : null;
+        },
+        onHire: () => config.onHireImprovementAdministrator?.(cityId) ?? false,
+        onDismiss: () => config.onDismissImprovementAdministrator?.(cityId) ?? false,
+        onClose: () => render(),
+      });
     });
 
     const citySel = el.querySelector('[data-ulepszenia-city]') as HTMLSelectElement | null;

@@ -29,6 +29,11 @@
     "epsilon_ponad_flee": 1,
     "_epsilon_ponad_flee_opis": "R2-1 (ratyfikacja wlasciciela, wariant A) -- KLAMP DOLNY: morale_startowe = max(fleeMorale + epsilon, morale_bazowe * (1 - spadek)). Prog ucieczki to morale <= fleeMorale, wiec sama ROWNOSC oznacza rout; epsilon to margines PONAD progiem, ktory wymusza ostra nierownosc. Jednostka wchodzi maksymalnie zdemoralizowana, ale NIE zlamana. 1 punkt morale, bo biezaca pula jest zaokraglana do liczb calkowitych. Klamp NIE dotyka moraleMax ani fleeMorale i nie zmienia wynikow tam, gdzie nie jest potrzebny (tabela r=1,5/2/3/5/10 bez zmian)."
   },
+  "ranged_damage_mult": {
+    "_opis": "R-WEB-BATTLE-RANGED-DAMAGE-MULT-Q1 (decyzja wlasciciela 2026-11-09): mnoznik obrazen POCISKU (finalnie, po pancerzu i kontrach, przed zaokragleniem do int, podloga 1). slinger = jednostki Typ 'Slinger' (Procarz, Procarz (Huaracoc)) x3. lucznik_piesi = piesi lucznicy: Typ 'Distance' o nazwie zaczynajacej sie od 'Lucznik' (Lucznik + warianty cywilizacyjne) x2. Oszczepnicy (Typ Distance, nazwa Oszczepnik) i strzelcy konni (Typ Mount) BEZ zmian. Jedna implementacja: game/unit-power.ts rangedDamageMultFor() (uzywana przez combat.ts rangedShotDamage i battleScene.ts _singleBlow, oraz fieldPower/armyFieldPower).",
+    "slinger": 3,
+    "lucznik_piesi": 2
+  },
   "river_attack_mult": 0.75,
   "brod": {
     "_opis": "C-BTL-BROD-Q1 wariant C -- mechanika brodu (Ford) na planszy bitwy taktycznej (battleScene.ts). karaAtak/karaObrona sa numerycznie te same co river_attack_mult (0.75=1-0.25) ale to OSOBNY, dedykowany dla brodu wpis (tamten zasila swiatowy resolveCombat/instant-resolve dla starcia z obronca-na-rzece; ten zasila per-tile Ford w bitwie taktycznej -- oba moga byc strojone niezaleznie w przyszlosci).",
@@ -46,10 +51,22 @@
     "hill_defense_mult": 1.5,
     "mountain_defense_mult": 1.75,
     "fortify_obrona_bonus": 2,
+    "bez_wylomu_max_tur": 150,
+    "_bez_wylomu_max_tur_opis": "R-WEB-BATTLE-SKIP-SIEGE-TRUE-RESULT-Q1 (ABC wlasciciela 2026-11-10): sufit tur taktycznej bitwy OBLEZENIA, w ktorej nikt nie zrobil wylomu (mur/palisada/brama stoi). Po osiagnieciu = REMIS (odparty szturm): atakujacy sie wycofuje, obie strony ponosza straty z przebiegu, miasto zostaje przy obroncy, bez lupu/weteranow/punktow mocy. Ten sam werdykt w AUTO, w recznej i w Pomin do wyniku. Wartosc 150 = ZALOZENIE (wlasciciel nie podal liczby) -- latwo zmienic tutaj. Bitwa z wylomem ma osobny sufit FF_MAX_ROUNDS=400 (rozstrzygniecie po morale).",
     "fortify_obrona_proc": 50,
     "_fortify_obrona_proc_opis": "ufortyfikowanyWPolu (fortyfikacja W POLU, NIE garnizon): +50% Obrony jednostki (mnożnik na efektywnej Obronie przed terenem/brodem). Garnizon miasta nadal używa fortify_obrona_bonus (flat +2 pkt).",
-    "militia_pop_fraction": 0.2,
+    "_militia_opis": "R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1 (spec wlasciciela 2026-11-03): Milicja = 1 jednostka na 1 mieszkanca (militia_pop_fraction 1.0), ZAWSZE przy ataku na miasto z ukonczonym budynkiem Garnizon, jako wsparcie realnych obroncow. Polowa wrecz (nieparzysta: dodatkowa wrecz), polowa dystans; typy wg EPOKI wlasciciela miasta (militia_roster, nazwy z units.json). Wrecz: staty x militia_strength_fraction (min 1 gdy oryginal > 0). Dystans: PELNE staty. Morale ('Morale bazowe') x militia_morale_fraction, z podloga 'Morale ucieczki' + militia_morale_min_margin_over_flee (inaczej jednostka bylaby zlamana od startu). Polegli milicjanci zmniejszaja ludnosc (min. 1 zostaje).",
+    "_militia_regen_opis": "R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1 (zgloszenie wlasciciela 2026-11-03): gdy Milicja miasta zostanie CALKOWICIE zniszczona (zero zywych milicjantow po bitwie/szturmie), miasto przez militia_regen_turns TUR (globalnych) nie wystawia Milicji; dopiero po uplywie okresu Milicja sie odnawia (liczba = aktualna ludnosc). Stan: City.militiaRegenAtTurn (tura, od ktorej Milicja znow walczy).",
+    "militia_regen_turns": 5,
+    "militia_pop_fraction": 1.0,
     "militia_strength_fraction": 0.5,
+    "militia_morale_fraction": 0.5,
+    "militia_morale_min_margin_over_flee": 3,
+    "militia_roster": {
+      "kamien": { "wrecz": "Wojownik", "dystans": "Oszczepnik" },
+      "braz": { "wrecz": "Włócznik", "dystans": "Łucznik" },
+      "zelazo": { "wrecz": "Wojownik z mieczem i tarczą", "dystans": "Procarz" }
+    },
     "siege_max_rounds": 30
   },
   "siege_ai": {

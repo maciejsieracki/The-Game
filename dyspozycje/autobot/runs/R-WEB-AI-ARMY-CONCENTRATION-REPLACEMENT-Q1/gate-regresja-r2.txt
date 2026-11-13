@@ -1,0 +1,9 @@
+army-concentration-test EXIT=0 army-concentration-test: 56 passed, 0 failed
+army-consolidation-test EXIT=0 mutation "brak miasta zapasowego": KILLED
+army-consolidation-e2e-test EXIT=0 army-consolidation e2e: 6 passed / 0 failed
+army-recruitment-concentration-test EXIT=0 army-recruitment-concentration-test: 29 passed, 0 failed
+ai-general-war-campaign-test EXIT=0 ai-general-war-campaign-test: 51 passed, 0 failed
+war-allin-capital-test EXIT=1 94 passed, 4 failed
+ai-war-gate-test EXIT=0 ai-war-gate-test: 24 passed, 0 failed
+ai-siege-requires-war-test EXIT=1 --- 47 ok, 1 fail
+army-merge-bounce-test EXIT=0 army-merge-bounce-test: 4 pass, 0 fail

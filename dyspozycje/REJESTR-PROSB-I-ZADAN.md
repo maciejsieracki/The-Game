@@ -1,5 +1,386 @@
 # REJESTR PRÓŚB I ZADAŃ — kanoniczny indeks + historia
 
+## `R-PROC-CODEX-FOUR-TOPICS-20261110` — aktywna zmiana procesu
+
+- **STATUS:** `OPERATOR` — runda 3/5, administracyjna korekta aktywna po `FINAL CONTROL FAIL`; po raporcie Operatora wymagane są niezależny Evaluator i Final Control. Bieżące artefakty: `dyspozycje/autobot/runs/R-PROC-CODEX-FOUR-TOPICS-20261110/00-dispatch.md`, `50-final-control.md` i `22-operator-response-r3.md`.
+- **HISTORICAL STATUS (runda 1):** wcześniejszy wpis `OPERATOR` / Evaluator jako następny etap jest nieaktualny; nie jest bieżącym werdyktem ani późniejszym PASS. Final Control dla rundy 2 zakończył się `FAIL` w `50-final-control.md`.
+- **DOMAIN:** `PROCESS`.
+- **GOAL:** ograniczyć pulę do maksymalnie czterech aktywnych tematów, utrzymać role Operator → Evaluator → warunkowa Obrona → niezależny Final Control sekwencyjnie per temat, ustawić role Codex na `gpt-6-luna/high`, oraz domykać autoryzowaną kolejkę przez integrację `main` → deploy Robocza → push/readback → cleanup → natychmiast kolejny kwalifikowany temat; rejestrować rzeczywiste statusy i kontrolę heartbeat bez fikcyjnego schedulerowego wybudzenia.
+- **RUN:** `dyspozycje/autobot/runs/R-PROC-CODEX-FOUR-TOPICS-20261110/`; dispatch przed rozpoczęciem pracy. Brak zmian w kodzie gry.
+- **KOLEJKA:** `dyspozycje/autobot/KOLEJKA-CODEX-FOUR-TOPICS-20261110.md` — snapshot 11:40:08 UTC jest historyczny; świeży odczyt do kolejnego dispatchu znajduje się w `22-operator-response-r3.md`.
+- **SCOPE:** `README.md`, `docs/decyzje/R-PROC-AUTOBOT.md`, `docs/procesy/INDEX-PROCESU.md`, `.cursor/rules/autobot-evaluator-operator.mdc`, `.claude/skills/civ-autobot/SKILL.md`, `dyspozycje/autobot/runs/README.md`, rejestr i run.
+- **DEPLOY/PUSH:** nie wykonano; proces-only Robocza jest `N/A`. Owner delegation zezwala na dalszy cykl po niezależnej kontroli.
+
+## `R-HANDLOWA-WYMIANA-CZAS-BEZTERMINOWY-30T-Q1` — PASS-WITH-NOTES / niezintegrowane
+
+- ZGŁOSZENIE: cykliczna wymiana handlowa kończyła się maksymalnie po 20 turach, mimo że stepper pokazywał `+100`; brakowało trybu bezterminowego.
+- ZAKRES: limit 30 tur, opcja „Bezterminowo”, jawne pole `exchangeDurationTurns` (`null` = bez końca; brak = historyczny fallback do `turns`). `turns` pozostaje skończonym horyzontem wyceny.
+- STATUS: `DEPLOY-ROBOCZA / REMOTE-READBACK-PASS`; release `401893417f2a47545c44ef5bba168dc10d0fcf31` pushed to `origin/main`; bundle/manifest/START remote readback zgodny.
+- TESTY: TypeScript PASS, domena 53/53, render UI 12/12; access mode zachowuje cap 20 bez przycisku bezterminowego; szerszy `diplomacy-proposal-test` 186/188 z dwoma błędami asercji pokoju w wojnie potwierdzonymi jako identyczne na bazie. Final Control: `dyspozycje/autobot/runs/R-HANDLOWA-WYMIANA-CZAS-BEZTERMINOWY-30T-Q1/30-final-control.md`.
+- OPERATOR: `autobot/trade-duration-indefinite-q1`; ślad: `dyspozycje/autobot/runs/R-HANDLOWA-WYMIANA-CZAS-BEZTERMINOWY-30T-Q1/`.
+- ZGODNOŚĆ: istniejące aktywne umowy zapisują liczbowe `wygasaTura` i pozostają bez zmian; nowe umowy bezterminowe korzystają z już obsługiwanego `wygasaTura: null`.
+## `R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1` — Operator r3
+
+- STATUS: **OPERATOR r3 PASS — niezależna kontrola oczekuje; brak publikacji.**
+- Przyczyna r2→r3: test izolowanego panelu nie odtwarzał `transform:scale()` na `body`, którego używa zoom UI gry. Panel `position:fixed` montowany wewnątrz transformowanego `body` tracił geometrię viewportu.
+- Naprawa: modal jest montowany na `document.documentElement`, poza transformowanym `body`; roster pozostaje jedynym scroll regionem, a CTA poza nim.
+- Weryfikacja r3: komponent Chromium 34/34; produkcyjny `Gra-ROBOCZA.html` z rzeczywistym zoomem 150% i stosem 88+1 — 9/9; TypeScript i `git diff --check` PASS. Raport: `dyspozycje/autobot/runs/R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1/07-operator-runda3.md`.
+- Granica: harness wstrzykuje kandydacki komponent na prawdziwą stronę Roboczej; nie dowodzi, że poprawka jest w aktualnie opublikowanym bundlu. Nie wykonywano merge, push ani deploy.
+
+## `R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1` — Final Control r2
+
+- STATUS: **PASS — zakres kontraktu UI**, bez READY_FOR_DEPLOY i bez publikacji.
+- Final Control niezależnie uruchomił Chromium regression: 31/31 PASS, TypeScript PASS, `git diff --check` PASS.
+- 59 istniejących jednostek + wiersz przybywającej jednostki, 600×413 CSS px / DPR 1.5: widoczny i przeciągalny thumb przewija do ostatniego wiersza; oba CTA są widoczne w stopce; marginesy zmierzone 28.59 px u góry / 27.88 px u dołu.
+- Granica: callback testowy jest licznikiem fixture; pełna transakcja scalania w grze nie została wykonana. Raport: `dyspozycje/autobot/runs/R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1/05-final-control.md`.
+- Final Control nie zmienił kodu produktu; brak commit, push, merge i deploy.
+## `R-BITWA-ATAK-MARSZEM-HEX-Q1` — rozkaz Atakuj-marszem do wskazanego heksa
+
+- **STATUS:** `OPERATOR DEFENSE COMPLETE — FINAL CONTROL REQUIRED` — evaluator returned PASS-WITH-NOTES; operator defense addresses both notes and adds mixed 42-unit, two-activation regression. Owner override 2026-10-29 waives Kanban for this project. No Kanban card/graph was used.
+- **Wymaganie:** wskazanie pustego heksa rozkazem „Atakuj-marszem” kieruje jednostki do tego miejsca, atakuje napotkanych po drodze wrogów i po rozwiązaniu starcia wznawia marsz do punktu. Zwykły ruch i kliknięcie jednostki wroga zachowują dotychczasowe odmienne znaczenie.
+- **Zakres:** wyłącznie ręczna bitwa, z dotychczasowym warunkiem wodza/generała dla kontroli polowej. Rozkaz ma respektować legalny zasięg/wyczerpanie amunicji, trasowanie, odwołanie i postęp tury.
+- **Run:** `dyspozycje/autobot/runs/R-BITWA-ATAK-MARSZEM-HEX-Q1/`; podstawa `747ade419e9771f5a94eb1f82f174ceda100eaa1`; nie wdrożono.
+
+## `R-AI-GENERAL-WAR-5TURN-ATTACK-Q1` + `R-ARMY-COMMANDER-UNIT-MARKERS-20261028` — wspólna integracja ROBOCZA
+
+- STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS; baza `85f8c5f0e0aa6ff46aa8b85a03d0bc0c71d86268`; oba zakresy niezależnie zaakceptowane (AI: PASS; oznaczenia: PASS-WITH-NOTES).
+- AI: po pięciu pełnych turach zbiórki kampania przechodzi do ataku; live Chromium przez produkcyjny end-turn wykonał w szóstej turze ruch 4/4 jednostek, łącznie z fizycznym wodzem. Test logiki 31/31; test live 24/24.
+- Oznaczenia: odrębna gwiazda wodza nad trzema gwiazdami doświadczenia, emblemat cywilizacji 4×; test 11/11. Final Control dopuszcza integrację na podstawie mapowego render proof; brak pełnego gameplay screenshot z wojskowym oddziałem pozostaje odnotowaną uwagą.
+- Wspólne testy integracyjne: army consolidation 6/6, era-war offense 7/7, TypeScript PASS, `git diff --check` PASS. AI morska kampania i test dużego imperium są poza tymi dwoma zakresami.
+- Raporty: `dyspozycje/autobot/runs/R-AI-GENERAL-WAR-5TURN-ATTACK-Q1/` oraz `dyspozycje/autobot/runs/R-ARMY-COMMANDER-UNIT-MARKERS-20261028/`.
+- Artefakt Roboczej: MD5 `e5eb21d82c2be611ab9c491327f696c3`, SHA-256 `76078759e78f3cb466156cec296da925759dd685764dc42242d9a5f02ef40eb2`, `70,021,251` B; verifier PASS. Lokalny Chromium: HTTP 200, HUD + 2 canvasy, bez pageerror; jedno 404 faviconu serwera testowego.
+- Push do `origin/main` i publikacja bundle’a: `c72cd08a2de33a0f4ff920e6b314503a50811cb0`; GitHub Raw bundle/manifest/START zwróciły HTTP 200, SHA/MD5/rozmiar bundla zgodne. Receipt: `dyspozycje/autobot/runs/R-AI-GENERAL-WAR-5TURN-ATTACK-Q1/06-release-receipt.json`.
+
+## `R-CIV-ALL-TOPICS-ROBOCZA-20261027` — DEPLOY-ROBOCZA / remote readback PASS
+
+- STATUS: DEPLOY-ROBOCZA — testowy, ograniczony release; nie jest odbiorem pełnej rozgrywki.
+- GOAL: opublikować tematy zatwierdzone poza testem wydajności; pomiar wydajności i pełny 100-turowy save/load nie wchodzą do tego wydania.
+- Source main `92d124b721dbd4405b4547301751499316b9ec4c`; release commit `fc18c02efd5359844c2439217e8855d549417d0a`.
+- Bundle MD5 `2f4d87176ffcfc2aa6cdf44e3e562981`, SHA-256 `38526ae35906328b1e2a76c4158f28795c04c7ad945ad9d03a452993e023d692`, 69,998,033 B; verifier PASS; raw GitHub readback zgodny dla bundle/manifest/START.
+- Zakres: AI armie/kopalnie/jednostki epokowe; koszty ulepszeń; żywność mieszkańców; przejście muzyki; liczba pełnych jednostek HUD; rozdział handlu/podatku; ręczne Praca→podatek. Optymalizacja zasobów wchodzi do bundle’a, jej test wydajności pozostaje odroczony.
+- Final Control: PASS-WITH-NOTES; brak 100-turowego gameplay/save-load w tym odbiorze. Szczegóły: `dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/`.
+- DEPLOY/PUSH: wykonano; brak promocji do KANON/FINALNA, brak twierdzenia o wdrożeniu na zewnętrznym hostingu.
+
+
+## `R-CYWILIZACJE-MACIERZ-EKO-WEALTH-MANPOWER-SPOL-PROD-REBASE-Q1-20260925` — bounded F-01/F-02/F-03 ROBOCZA DEPLOY (2026-10-17)
+
+- STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS — tylko selektywnie zaakceptowane F-01, F-02 i F-03 r2 semantic-classification artifacts. Nie jest to akceptacja całego PR141 ani macierzy 93×15.
+- Owner instruction (2026-10-17): deploy as much completed work as can be safely published. Orchestrator recorded the scope on existing workerless gate `t_ceb77ee5`; that gate remains blocked, unassigned and runless.
+- Base `dca87077eb16b6b8f6f747944906466c89deda28`; product candidate `3c11d0b8b651745b7a5e61b6db69ed45690aa380`; branch `hermes/integration/accepted-f01-f02-f03-20261017`.
+- Allowlist: `gra/src/game/civ-matrix-semantic.ts`, `gra/tools/civ-matrix-semantic-labels-test.cjs`; bundle `gra-robocza/Gra-ROBOCZA.html`, manifest and hub are publication artifacts only.
+- F-01 `t_8a2396ee/run60`, F-02 `t_cf652715/run63`, F-03 r2 `t_de434c66/run68`: each independently accepted for selective Orchestrator integration only. Tests on the clean current-base integration: semantic `348/0`, meta-roster `63/0`, combat `6/6`, army-hunger combat `13/13`, TypeScript PASS, Vite `893` modules, local HTTP/Chromium smoke `200` with canvas/HUD and zero page/console errors, bundle verifier `VERIFY OK`.
+- Bundle candidate: MD5 `0e3ad637add786c556fd2fa148a99d82`, SHA-256 `6a8ce858da0c30b4db833f33a454ad0ae807171f2fbc490c97f4197c26ca39dc`, `69,936,305` bytes.
+- Excluded and still held: F-04 (360 unapproved values), F-05/G11, seven other combat holds, runtime/full gameplay acceptance, Rally Point PR142, worldgen and all unrelated dirty worktrees. Raw matrix values and original `0/9` accepted-obligation ledger unchanged.
+- Merge/publish: fast-forward push to `origin/main`, publish SHA `47981902f4aa98c254e8c1e7d04bab8b13776f4a`; remote main/branch readback and pinned artifact hashes/bytes verified, bundle + manifest HTTP 200, Chromium smoke PASS. Receipt: `dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-EKO-WEALTH-MANPOWER-SPOL-PROD-REBASE-Q1-20260925/release-20261017/receipt.json`.
+
+## `R-GAME-END-TURN-INPUT-REPAIR-Q1` — DEPLOY-ROBOCZA, remote readback PASS (2026-10-09)
+
+- STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS. Tylko bounded naprawa „Zakończ turę”, nie odbiór całego produktu. Branch/main `fd629959191dc4e46b59cf19bdb5941e27c2ef79`; zdalny bundle/manifest zgodny bajtowo/hashami, Chromium HTTP smoke pobranego bundla PASS.
+- Owner A: wydzielić i wdrożyć end-turn osobno; wcześniejsza zgoda main/push zachowana.
+- Source `c63a7bc89757cf165e7752e3dc0d124abdb06506`, bundle `b407a5421b4aa5f537c600a21d5bea54ba7a2737`, base `69ccb145a8682f9c2754834afbb16a8d1eaaf825`; branch `hermes/integration/end-turn-only-20261009`.
+- Operator `t_4e7f423a/run43`, niezależny Evaluator `t_3a306fbd/run44`, Final Control `t_9aac456c/run45`: bounded PASS-WITH-NOTES, zero zarzutów. Źródła zgodne z zaakceptowanymi hashami.
+- Świeże typecheck/build/regresje PASS; minifikowany bundle i zwykłe onboarding/dialog Back/trusted clicks potwierdziły 1→2→3, zero page/console errors. Ostemplowany bundle HTTP smoke 200 i UI/canvas PASS.
+- Wersja: [WERSJE.md](WERSJE.md); receipt: `autobot/runs/R-GAME-END-TURN-INPUT-REPAIR-Q1/release-20261009/receipt.json`.
+- `t_9c7bf537` i kolejne process gates pozostają workerless; komentarze dokumentują integrację/publikację, nie wolno ich dispatchować.
+- Rally Point `t_b5997c1d/run48` pozostaje TRIAGE/BLOCK 5/5, jego Evaluator/Final Control zablokowane; brak retry i brak zmian Rally w tej publikacji. Worldgen, PR141, matrix i Desktop otwarte. Pełny gameplay/worldgen NOT_PROVEN; oryginalny ledger 0/9 bez zmiany.
+
+
+## FALA 388 — DEPLOYED / REMOTE READBACK PASS
+
+- Board `the-game-real24`, profile `default`, project `p_9ae9ac64`; base `origin/main@7d02dfc5b73e992e389dd01992a52159e943a621`; local integration commit `95fd93050585c19584700e34205da74576f2150f`.
+- Scope: `R-AUTO-BITWY-STRATY-ROZKLAD-MOC-PARAMETRY-Q1`, `R-FULL-EPOCH-COSTS-Q1`, `R-START-CIVILIZATION-CITYSTATES-Q1`, `R-STARTOWE-ZWIADOWCA-PO-JEDNYM-Q1`, `R-MILITIA-GARRISON-Q1`, `R-CITIES-BUILDINGS-PRODUCTION-Q1`.
+- Final Control: `t_449872b9/run726`, `t_0b7ea103/run738`, `t_9f092ab3/run741`, `t_633d081e/run729`, `t_4fce5bc7/run745`, `t_d7c5ad3a/run750`; terminal product acceptance for all six, with notes preserved in their reports.
+- Local ROBOCZA artifact: MD5 `0816f385ef6b38e368ca11c0edf11ae5`, SHA-256 `4962b053c46d121f779ac9dca46cb1860b2281c223c413c3eb981cb34651ede4`, `69881460` bytes, verifier `VERIFY OK`.
+- Publish commit and remote `origin/main`: `1a181406d88a554d1f0e8586160cc04cca0b99e0`; remote bundle/manifest readback is byte-identical, HTTP smoke returned `200`, and verifier is `VERIFY OK`. This entry reconciles the Final Control `REGISTRY_GAP`.
+- Status: `DEPLOYED — ROBOCZA`; no promotion to KANON/FINALNA and no Rust publication.
+
+## DEPLOY WAVE — GAMEPLAY BUGS — DEPLOYED 2026-09-16
+
+- Target: `gra-robocza`; source branch and `origin/main` both read back as `2aeb52743476bd1175789049b350a34f1888dda3`; source integration commit `0180d17231b62d2a5012c9c23d8a42d91c09f1e1`.
+- Remote bundle: MD5 `7040d499548170e3805f231b5cac2e46`, SHA-256 `afd817232f8c6769024e160bdb3abfc3ac3c8b4e1760858f2ef4aec0a9657f22`, `69862548` bytes; manifest readback exact; verifier was `VERIFY OK`.
+- Deployed scope: recruitment half-costs, colony name pool, Greece allocation/matrix/active parameters, AI Work owner envelope, AI combat correction `0.95/1.00/1.05`.
+- Excluded: Barbarian product changes (`INFRA/TIMEOUT`, no product diff), popularity-name policy recovery, Rust R20–R24, KANON/FINALNA.
+- Receipt: `dyspozycje/autobot/runs/R-DEPLOY-GAME-BUGS-20260916/deploy-robocza-receipt.md`.
+
+## CURRENT RECONCILIATION — READBACK 2026-09-16
+
+> Ta sekcja supersedesuje starsze statusy poniżej. Źródła live: board `the-game-real24`, project `p_9ae9ac64`, profile `default`, `origin/main=31bee1d376a4365a6d22185d53c89e6aab78b86d`; ostatnia fala gameplayowa jest na `gra-robocza`.
+
+### Deployment readback
+
+- Ostatni deploy gameplayowy do `gra-robocza`: fala `R-DEPLOY-GAME-BUGS-20260916`, source `0180d172`, publikacja `2aeb5274`, końcowy docs/readback `31bee1d3`; bundle MD5 `7040d499548170e3805f231b5cac2e46`, SHA-256 `afd817232f8c6769024e160bdb3abfc3ac3c8b4e1760858f2ef4aec0a9657f22`, `69862548` bajtów, `VERIFY OK`.
+- Poprzedni deploy kolejki nazw `9d22166c` pozostaje historią; nie jest nowszy od fali gameplayowej.
+- `ROBOCZA-MANIFEST.json`, `WERSJE.md`, receipt i remote readback są zgodne. Nie wykonano promocji do KANON/FINALNA.
+- Po fali gameplayowej: clean `origin/main` typecheck i direct Vite build `889` modułów przechodzą; bundle `gra-robocza` ma `VERIFY OK`, a post-publish Chromium smoke zwrócił HTTP `200`, canvas i UI bez `pageerror`. Brak promocji do KANON/FINALNA.
+- `ROBOCZA-MANIFEST.json` skorygowano do rzeczywistego SHA-256 i rozmiaru bundla; `WERSJE.md` nie otrzymuje fikcyjnego nowego wpisu.
+- R20 Rust: świeży `cargo fmt`, `cargo test --all-targets`, Clippy i diff-check PASS; commit `5dc5fddc5352ab2467efde76136f22403efe2f84` wypchnięty na branch `hermes/R-RUSTREAL-20-SAVE-LOAD-Q1-RECOVERY-R2-20260915`. Rust pozostaje osobnym lane’em i nie jest wdrożeniem do `gra-robocza`.
+
+### Aktualna klasyfikacja tematów
+
+- **Już wdrożone/obecne w ROBOCZA:** historyczne `R-AI-DYPLO-ONLY-MIASTA-PANSTWA-Q1`, `R-REKRUTACJA-KOSZT-50-DREWNO-Q1`; no-op/test-only `R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1`, `R-BUDYNKI-KARTY-GRAFIKA-TEKST-OVERLAP-Q1`, `R-REKRUTACJA-KARTY-BRAK-REKRUTOW-Q1`; oraz fala `R-DEPLOY-GAME-BUGS-20260916`: `R-REKRUTACJA-KOSZTY-POLOWA-ALL-Q1`, `R-MIASTA-KOLONIA-NAZWA-POOL-Q1`, `R-CYWILIZACJE-GRECJA-AKTYWNE-PARAMETRY-Q1`, `R-CYWILIZACJE-GRECJA-MACIERZ-TRUDNOSC-SKALOWANIE-Q1`, `R-CYWILIZACJE-GRECJA-ALOKACJE-Q1`, `R-CYWILIZACJE-GRECJA-ALOKACJE-PANSTWA-MIASTA-Q1`, `R-CYWILIZACJE-GRECJA-MACIERZ-113-Q1`, `R-AI-PRACA-BUDYNKI-ULEPSZENIA-Q1`, `R-AI-BUDZET-SKARB-NAUKA-ZAMOZNOSC-Q1`.
+- **Zamknięte jakościowo bez osobnego produktu/deployu:** `R-AI-PRODUKCJA-WOJSKO-RALLY-ATTACK-Q1` (audit-only, brak diffu), `R-AI-TRUDNOSC-ODWROTNE-PARAMETRY-Q1` (audit-only), `R-CYWILIZACJE-GRECJA-MACIERZ-UNWIRED-CONSUMERS-Q1` (unwired/audit), `R-MIASTA-KOLONIA-REGRES-Q1` (`40/0`, brak diffu), `R-REKRUTACJA-MANPOWER-ZWROT-DISBAND-Q1` (brak defektu/diffu). Te tematy nie mają czego ponownie wdrażać bez nowego dowodu produktu.
+- **Dokumentacja zakończona fazowo, lecz bez publikacji/owner integration:** `R-DOCS-P1-SCOPE-Q1`, `R-DOCS-P2-INVENTORY-Q1`, `R-DOCS-P3-SOURCES-OF-TRUTH-Q1`, `R-DOCS-P3-PRECEDENCE-DECISIONS-Q1`, `R-DOCS-P4-PRIMARY-DRIFT-Q1`, `R-DOCS-P5-INDEX-CONSOLIDATION-Q1`, `R-DOCS-P6-NONDESTRUCTIVE-CONSOLIDATION-Q1`, `R-DOCS-UNKNOWN-NEEDS-REVIEW-Q1`, `R-DOCS-DESTRUCTIVE-CONSOLIDATION-Q1`. Bramy process-only pozostają `blocked/unassigned`; legacy validator destrukcyjnej konsolidacji `FAIL` pozostaje jawny.
+- **Nieukończone / w toku:** `R-BARBARIANCY-OBRONA-GRANICA-ATAK-MIAST-Q1` (Operator timeouty, bounded evidence, brak diffu), `R-NAZWY-MIAST-PANSTWA-POOL-POPULARNOSC-Q1` (owner A wybrany, recovery timeout, brak diffu), `R-RUSTREAL-15-DIPLOMACY-Q1` (Defense blocked, staging scheduled mimo PASS recovery), `R-RUSTREAL-20-SAVE-LOAD-Q1` (branch pushed, brak web/Rust release deployu), `R-RUSTREAL-21-REPLAY-Q1` (Final Control/staging PASS, brak merge/push/deploy), `R-RUSTREAL-22-TAURI-BRIDGE-Q1` (Operator/Evaluator scheduled), `R-RUSTREAL-23-STEAM-ADAPTER-Q1` (Operator/Evaluator scheduled), `R-RUSTREAL-24-PARITY-BENCH-CI-Q1` (todo), `R-STARTOWE-CYWILIZACJE-ZWIADOWCA-Q1` (LIMIT-5-EXCEEDED; brak automatycznej rundy 6).
+
+## WYKONANE TEMATY GAME BUGS — READBACK 2026-09-14
+
+Poniższe wpisy są podsumowaniem wykonanych tematów produktowych z boardu `Game Bugs`. `PASS`/`PASS-WITH-NOTES` oznacza lokalnie zweryfikowany temat; nie oznacza integracji z `main`, publikacji ani deployu.
+
+| Temat | Wykonane zadanie / rozwiązany problem | Dowód | Stan następny |
+|---|---|---|---|
+| `R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1` | Uporządkowano pierwsze stolice oraz rozdzielono pule nazw miast cywilizacji i państw-miast; Asyria używa `Aszur`, Fenicja `Byblos`, a wszystkie 15 cywilizacji ma kompletne pule. | Final Control `PASS`; 15 pul po `100 + 10`, brak kolizji w obrębie cywilizacji, testy nazw i typecheck zielone. Gate `t_fdcc6503`. | `INTEGRATION_REQUIRED`; bez merge/push/deploy. |
+| `R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1` | `DEPLOY-ROBOCZA — NO-OP RE-PUBLISHED` | Final Control `t_1bf336de`/run `355` potwierdził, że cztery osie są już obecne; wszystkie 6 allowlisted blobs identyczne z remote, static/live evidence PASS (`90/0`, `16/0`, `18/0`, `31/0`, `25/0`, `13/0`), brak zmiany produktu. Ten sam zatwierdzony bundle został ponownie opublikowany do `gra-robocza`: MD5 `9d22166c7de999a12971a857d8cd3c65`, SHA-256 `858e6763b77ebb93f7e29e4e5ff71a62d28d6ebc684971f59513f30eee1b116b`, verifier `VERIFY OK`. Receipt: `dyspozycje/autobot/runs/R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1/04-noop-deploy-receipt.md`. | `INFRA-045/046` timeouty Evaluatorów zachowane jako historia; `t_9009f348` no-op gate zamknięty; re-publish/push receipt w bieżącym commicie |
+| `R-MIASTA-CYWILIZACJE-PANSTWA-WSPOLNA-LISTA-Q1` | Ujednolicono źródło nazw: stolica jest pod indeksem `0`, zwykłe miasta korzystają z prefiksu, a państwa-miasta z sufiksu; usunięto rozjazd między pulami i call-site’ami. | Final Control `PASS-WITH-NOTES`; 15 pul po 110, lustro `civs.json` `15/15`, brak pustych wpisów/duplikatów/kolizji, testy `125/0`, `9/0`, `7/0`, typecheck. Gate `t_41ed54cf`. | `INTEGRATION_REQUIRED`; gate pozostaje `blocked/unassigned` i wymaga Orkiestratora. |
+| `R-KREATOR-DOLNA-NAWIGACJA-Q1` | Sprawdzono zgłoszenie o zasłanianiu dolnej nawigacji Kreatora. W aktualnym kodzie problem nie występuje; nie zmieniano `newGameFlow.ts`, dodano czuły test regresji. | Final Control `PASS-WITH-NOTES`; prawdziwy Chromium `70/0` w 2K i 4K, mutant zakończony wymaganym `FAIL`, typecheck/build zielone. Gate `t_6e141657`. | `INTEGRATION_REQUIRED` dla allowlistowanego testu; bez zmiany logiki gry. |
+| `R-BUDYNKI-KARTY-GRAFIKA-TEKST-OVERLAP-Q1` / `INFRA-004` | `DEPLOY-ROBOCZA — NO-OP INTEGRATED` | Final Control `t_8eeeb6bd`/run `359` PASS-WITH-NOTES, `numbered_objections=[]`; real Chromium overlap `21/0`, hover/layout `11/0`, node-check `3/3`, typecheck and diff-check PASS. Allowlisted product/test files identical to remote; behavior already present in `gra-robocza`, verifier `VERIFY OK`. Receipt: `dyspozycje/autobot/runs/R-BUDYNKI-KARTY-GRAFIKA-TEKST-OVERLAP-Q1/04-noop-integration-receipt.md`. | `t_bd1b2f89` closed by Orchestrator; no product diff, no bundle rebuild |
+| `R-REKRUTACJA-KARTY-BRAK-REKRUTOW-Q1` / `INFRA-006` | `DEPLOY-ROBOCZA — PRODUCT ALREADY INTEGRATED; TEST HARNESS INTEGRATED` | Final Control `t_cf130583`/run `360` PASS-WITH-NOTES, zero zarzutów; real Chromium `17/0` i `15/0`, logic `213/213`, tsc/diff-check PASS, mutation guard `9 PASS / 8 FAIL` expected. Product `gra/src`/`gra/data` bez zmian; zintegrowano wyłącznie dwa allowlistowane harnessy testowe. Receipt: `dyspozycje/autobot/runs/R-REKRUTACJA-KARTY-BRAK-REKRUTOW-Q1/04-integration-receipt.md`. | `t_b1ad8cb3` waiting for commit/push readback; bundle bez rebuildu, bo bajty produktu bez zmian |
+
+### Zamknięty temat bez poprawki produktu
+
+`P-PRACA-KARTA-MIASTA-VS-POPUP-IMPERIUM-ROZJAZD-Q1` został przez właściciela wyłączony jako stary audyt. Final Control `t_72a0c5d0/run91` zakończył się `PASS` bez zmiany produktu; gate `t_58449e94` i jego łańcuch są zamykane jako nieaktualne, bez usuwania raportów, runów ani historii.
+
+### Porządek kart wykonanych
+
+Archiwizacja zachowuje karty, eventy, zależności, raporty i worktree. Nie archiwizować rodzica, dopóki aktywna bramka zależy od jego historii. W tym readbacku do archiwizacji kwalifikują się `t_2c3482d8`, `t_a929bfbc`, `t_903a50bc` — zamknięty łańcuch technicznego routingu bez aktywnego dziecka. Stary audyt `P-PRACA-KARTA-MIASTA-VS-POPUP-IMPERIUM-ROZJAZD-Q1` pozostaje oznaczony jako niewznawiany, ale jego `t_58449e94` musi zachować `blocked/unassigned`; dlatego jego rodzice i bramka nie są archiwizowane, dopóki obowiązuje ta ochrona procesu. Pozostałe karty `done` pozostają rodzicami aktywnych bramek `INTEGRATION_REQUIRED`.
+
+## BŁĘDY PROCESU — REJESTR NUMEROWANY
+
+### `INFRA-062` — niezależny reviewer przerwany bez terminalnego werdyktu
+
+- **STATUS:** `RECORDED — NOT A PRODUCT PASS`
+- **ZAKRES:** release review fali `R-DEPLOY-GAME-BUGS-20260916`.
+- **OBJAW:** trzy próby niezależnej kontroli diffu zakończyły się `interrupted`/oczekiwaniem na odpowiedź modelu; żadna nie dostarczyła terminalnego JSON-werdyktu.
+- **SKUTEK:** wcześniejsze trzy próby nie dostarczyły terminalnego JSON-werdyktu i nie są liczone jako PASS. Późniejszy bounded release reviewer `deleg_273eca53` zakończył się jednak `PASS` bez security concerns, logic errors i unrelated changes.
+- **KOREKTA:** zachowano przerwane próby jako historię; częściowa kontrola wskazała nieużywany import, który usunięto w `0180d172`. Końcowy bounded review, typecheck, Vite, focused gates, manifest, remote hash readback i post-publish smoke są zapisane w receipcie.
+- **PREWENCJA:** ograniczać review handoff do jawnego zakresu i czasu; timeout/przerwanie klasyfikować jako `INFRA`, nigdy jako `PASS`.
+
+### `INFRA-002` — błędny rerun starego Final Control
+
+- **STATUS:** `RESOLVED/RETRY`
+- **KARTA:** `t_02234a0f` — `R-MIASTA-CYWILIZACJE-PANSTWA-WSPOLNA-LISTA-Q1 — Final Control`
+- **OBJAW:** run `35` został zablokowany jako `INFRA/ROUTING_ERROR`, ponieważ na istniejącej, historycznej karcie ustawiono `--reasoning ultra`, mimo że jej kontrakt wymagał `reasoning_effort=max`.
+- **SKUTEK:** run `35` nie jest ważnym werdyktem produktu; zachowano go jako dowód błędnego routingu.
+- **KOREKTA:** przywrócono starej karcie `gpt-5.6-luna`, `openai-codex`, `reasoning_effort=max`, `service_tier=priority`; ponowiono tę samą kartę bez tworzenia duplikatu.
+
+### `INFRA-003` — worker zniknął po jednorazowym dispatchu
+
+- **STATUS:** `RESOLVED/RETRY`
+- **KARTA:** `t_02234a0f`
+- **OBJAW:** run `36` otrzymał poprawny routing żądany przez kartę, ale proces workera zakończył się jako `pid not alive` bez własnego logu ani tracebacku.
+- **PRZYCZYNA:** nieustalona — potwierdzony jest wyłącznie zgon PID-u `2388284`; fakt, że run został uruchomiony przez jednorazowy CLI `dispatch --max 1`, jest kontekstem korelacyjnym, nie dowodem przyczyny źródłowej.
+- **SKUTEK:** run `36` ma status `crashed/gave_up`; nie zawiera werdyktu produktu ani dowodu Final Control.
+- **KOREKTA:** zachowano run `36`, odblokowano tę samą kartę z routingiem `gpt-5.6-luna/openai-codex/reasoning=max/service_tier=priority`; ponowienie pozostawiono persistent daemonowi.
+
+### `INFRA-004` — grafika nachodzi na tytuł karty budynku
+
+- **STATUS:** `DO-INTEGRACJI — INTEGRATION_REQUIRED`
+- **TEMAT:** `R-BUDYNKI-KARTY-GRAFIKA-TEKST-OVERLAP-Q1`
+- **KARTA KANBANA:** `t_13d1b59e` — Operator `done` (run `39`); Evaluator `t_a9b27138`, run `45`, `PASS-WITH-NOTES`; Final Control `t_47c5ef18`, run `68`, `PASS-WITH-NOTES` lokalnie; kanoniczna bramka `t_086633d9` `blocked/capability`, workerless/unassigned, parent `t_47c5ef18`; merge/push/deploy nie wykonano
+- **OBJAW:** na karcie budynku „Palisada drewniana" tytuł nachodzi na dolną część panelu ilustracji, nad etykietami epoki/poziomu; granica grafika–tekst jest nieczytelna.
+- **DOWÓD:** `/home/ubuntu/.hermes/images/upload_20260913_204642_1.png`, SHA-256 `ca3fcc1560ea24b0027fb451f60ba20f016e9fb55d405d534f0a333b882bee97`, 655×477 px.
+- **KONTEKST:** wcześniejszy `R-CIVPEDIA-KARTY-SPOJNOSC-Q1` był zintegrowany; Operator musi rozstrzygnąć żywym pomiarem, czy obecny objaw jest regresem, nieobjętą ścieżką legacy czy osobnym wariantem renderera.
+- **PREWENCJA:** nie uznawać screenshotu ani samego istnienia CSS za diagnozę; wymagany realny browser, `getBoundingClientRect()`, długie i krótkie nazwy oraz test mutacyjny.
+
+### `INFRA-005` — jednostki wojskowe ukryte przy braku Manpower
+
+- **STATUS:** `SUPERSEDED — OWNER CORRECTION`
+- **TEMAT:** `R-REKRUTACJA-JEDNOSTKI-MANPOWER-WIDOCZNOSC-Q1`
+- **KARTA KANBANA:** `t_ab224d6d` — `archived`, `unassigned`; run `40` `reclaimed`, run `41` `blocked`
+- **OBJAW:** w panelu `REKRUTACJA` widoczny jest tylko `Zwiadowca · Kamień`; podstawowe jednostki wojskowe epoki Kamienia nie są widoczne, gdy pula Manpower/rekrutów jest niewystarczająca. W UI nie ma jawnego wyjaśnienia braku Manpower ani jego aktualnego stanu obok Drewna.
+- **DOWÓD:** `/home/ubuntu/.hermes/images/upload_20260913_205314_2.png`, SHA-256 `a1e010a3694c15088eff4579d707d2994284325672321bbbe751a95ad69f6f12`, 645×603 px; zrzut pokazuje `Skarb: 48`, `Dostępne: 1`, `Kolejka: 0` i tylko zwiadowcę.
+- **KOREKTA WŁAŚCICIELA:** poprzednia hipoteza katalogu „jednostki znikają przez Manpower" została wycofana jako osobny temat. Właściciel wskazał, że przyczyną jest niewystarczająca ludność do poboru; właściwy temat to `INFRA-006`: jawna informacja o dostępnych, wymaganych i brakujących rekrutach na karcie jednostki.
+- **WYNIK PROCESOWY:** runy `40` i `41` nie dostarczyły werdyktu produktu ani zmian do integracji. Run `40` miał historycznie niewłaściwie zakwestionowaną trasę w komentarzu workera, ale został zatrzymany na żądanie właściciela; eventy, komentarze i raportowy ślad pozostają zachowane; temat nie będzie odblokowywany ani ponownie dispatchowany.
+
+### `INFRA-006` — karta jednostki nie pokazuje dostępnych i brakujących rekrutów
+
+- **STATUS:** `DO-INTEGRACJI — INTEGRATION_REQUIRED`
+- **TEMAT:** `R-REKRUTACJA-KARTY-BRAK-REKRUTOW-Q1`
+- **KARTA KANBANA:** `t_34d2a22a` — Operator `done` (run `42`); Evaluator `t_89fd9830`, run `43`, `PASS` bez zarzutów; Final Control `t_58b34de4`, run `65`, `PASS-WITH-NOTES` bez zarzutów; bramka Orkiestratora `t_36c3a815` `blocked/unassigned`, workerless `INTEGRATION_REQUIRED`
+- **OBJAW:** karty Oszczepnika i Wojownika pokazują czerwony koszt `50 Drewno` oraz nieaktywny przycisk `Rekrutuj`, ale wskaźnik `1 tys.` z ikoną osoby nie jest opisany jako rekruci/Manpower. Użytkownik nie widzi, ilu rekrutów ma dostępnych, ilu wymaga dana jednostka ani ilu brakuje; przez to blokada może wyglądać jak brak technologii lub brak możliwości budowy.
+- **DOWÓD:** `/home/ubuntu/.hermes/images/upload_20260913_211252_3.png`, SHA-256 `3ad74e61e776c108a318c7904c849c28b19e9198cf444ceeaec1a88bd1fcc04f`, 579×623 px; `Oszczepnik` i `Wojownik` mają `50 Drewno`, `1 tys.` przy ikonie osoby i disabled `Rekrutuj`, a `Zwiadowca` ma aktywną akcję.
+- **OCZEKIWANIE WŁAŚCICIELA:** na każdej widocznej karcie jednostki, obok informacji o Drew­nie, pokazać jednoznacznie aktualnych rekrutów, wymaganych rekrutów i brakującą liczbę, np. `Rekruci: dostępne / potrzebne` oraz `Brakuje: N`; zachować istniejące ostrzeżenie surowcowe. Komunikat ma wskazywać rekrutów jako przyczynę blokady, a nie technologię/budowę.
+- **ZAKRES:** `gra/src/ui/cityPanel.ts` i `gra/src/ui/unitRecruitCard.ts`; `gra/src/game/manpower.ts` tylko jeśli potrzebny odczyt źródła; `gra/src/game/production.ts` wyłącznie jeśli Operator udowodni, że katalog miesza widoczność z affordability; ukierunkowane testy w `gra/tools/`; artefakty runu.
+- **KRYTERIA:** przy braku rekrutów karta pozostaje widoczna, pokazuje `dostępne`, `potrzebne` i `brakuje`, przycisk jest disabled, a tooltip/etykieta rozróżnia brak rekrutów od braku Drewna/technologii; przy wystarczającej puli istniejąca rekrutacja działa bez zmiany kosztów, poboru, utrzymania i kolejki; źródło licznika jest zgodne z guardem zakupu; realny Chromium, test mutacyjny, typecheck i testy regresji przechodzą.
+- **PREWENCJA:** nie używać samego `1 tys.` ani `Dostępne` jako nieopisanych liczb; nie zmieniać osobnego problemu katalogu/limitu ludności z `INFRA-005`.
+
+### `INFRA-007` — pętla AutoBot nie może zależeć od Desktopu
+
+- **STATUS:** `DO-INTEGRACJI — INTEGRATION_REQUIRED`
+- **TEMAT:** `R-AUTOBOT-PETLA-SERWEROWA-Q1`
+- **KARTA KANBANA:** Operator repair `t_cec6c111`, run `76`, `PASS-WITH-NOTES`; Evaluator repair `t_575c848c`, run `77`, `PASS-WITH-NOTES` (`25/25`, `13/13`, zero acceptance gaps); Final Control run `79`, karta `t_3c8307ab`, `PASS-WITH-NOTES` lokalnie; gate `t_06ed36bf` `blocked/capability`, parent `t_3c8307ab`, `assignee=null`, `worker=null`; integracja i live-install pozostają Orchestrator-only
+- **OBJAW:** po zamknięciu Desktopu rozmowa orkiestratora przestaje wykonywać kolejne przejścia, więc terminalny Operator/Evaluator może pozostawić dalszą fazę bez uruchomienia mimo trwałego boardu i aktywnego gatewaya.
+- **POTWIERDZONY KONTEKST:** serverowy dispatcher `the-game-bugs` działa, ale jest zwykłym dispatcherem zależności; nie jest jeszcze dowodem semantycznego obiegu Operator → Evaluator → Defense warunkowo → Final Control. Istniejący receiver `autobot-monitor` jest związany z innym boardem i nie może być przełączony bez kwalifikacji.
+- **CEL:** zbudować i niezależnie zweryfikować server-only supervisor dla `the-game-bugs`, który pilnuje istniejących, jawnie powiązanych kart i przeżywa zamknięcie Desktopu.
+- **ZAKRES:** świeży readback boardu/grafu/runu/eventu przed operacją; wszystkie kwalifikowane karty bez sztucznego limitu; przejście Operator → Evaluator; Evaluator bez zarzutów → Final Control; Evaluator z konkretnymi numerowanymi zarzutami → jedna Defense → Final Control; Final Control → workerless `INTEGRATION_REQUIRED`; trwały receipt, idempotencja, replay i eskalacja `INFRA/DECISION_REQUIRED`.
+- **ZAKAZY:** nie tworzyć nowych tematów produktowych, nie uruchamiać `INTEGRATION_REQUIRED`, nie używać `t_41ed54cf`, nie pisać bezpośrednio do SQLite, nie zmieniać `gra/**`, nie wykonywać merge/push/deploy/live-installu ani restartu gatewaya w fazie Operatora.
+- **DOWÓD ODBIORU:** raport Operatora, testy RED→GREEN, fixture zamkniętego Desktopu, obie gałęzie Evaluatora, negative control/mutant, receipt po replayu, allowlist-only diff i instrukcja kontrolowanego live canary.
+
+### `INFRA-008` — polityka odrzuca zapisany routing Final Control Luna Ultra
+
+- **STATUS:** `FINAL CONTROL — PASS-WITH-NOTES / LIVE INFRA-PENDING`
+- **TEMAT:** `R-AUTOBOT-ROUTING-FINAL-CONTROL-LUNA-ULTRA-Q1`
+- **KARTA KANBANA:** `t_2c3482d8` — Operator `done` (run `46`); Evaluator `t_a929bfbc` `done` (`PASS-WITH-NOTES`, local `INFRA/PENDING`); Final Control `t_903a50bc` `done` (`PASS-WITH-NOTES`, run `58` po recovery), exact `gpt-5.6-luna-900k/openai-codex/max/priority`; runtime nieprzełączony
+- **OBJAW:** utworzenie następnej karty dla `R-REKRUTACJA-KARTY-BRAK-REKRUTOW-Q1` z `process_phase=final-control`, modelem `gpt-5.6-luna-900k`, `reasoning=max` i `service_tier=priority` zakończyło się błędem `kanban: route does not match process_phase final-control`.
+- **SKUTEK:** nie utworzono karty ani workera Final Control; temat `INFRA-006` został zatrzymany wyłącznie na tej bramce.
+- **CEL:** dopasować politykę nowo tworzonych kart do literalnej decyzji właściciela, zachowując niezmienione istniejące karty/runy i routing Operatora/Evaluatora/Defense.
+- **ZAKRES:** `hermes_cli/kanban_model_policy.py`, testy polityki i raport/evidence; bez zmian w The-Game, board DB, profilach, credentials, aktywnych runach i gatewayu.
+- **DOWÓD ODBIORU:** test RED→GREEN, canary na fixture, diff/allowlist/secret scan, raport z hashem oraz osobny Evaluator/Final Control; live przełączenie pozostaje osobną bramką.
+
+### `INFRA-009` — polityka odrzuca routing Operatora `max`
+
+- **STATUS:** `FINAL CONTROL — PASS-WITH-NOTES / LIVE INFRA-PENDING`
+- **TEMAT:** `R-AUTOBOT-ROUTING-OPERATOR-MAX-Q1`
+- **KARTA KANBANA:** `t_56b93aa2` — Operator `done`, run `48`; Evaluator `t_266f38c2` `done` (`PASS-WITH-NOTES`, run `57` po recovery); Final Control `t_ad2024fc` `done` (`PASS-WITH-NOTES`, run `63`), exact `gpt-5.6-luna-900k/openai-codex/max/priority`; runtime nieprzełączony
+- **OBJAW:** run `44` karty `INFRA-007` użył `gpt-5.6-luna/openai-codex/max/priority`, lecz aktywny dispatcher z `hermes-routing-fix` wymagał dla Operatora `high` i zablokował gotowy artefakt.
+- **CEL:** dopasować politykę nowych kart Operatora do decyzji właściciela `gpt-5.6-luna/openai-codex/max/priority`, zachowując istniejące karty/runy i bez modyfikacji The-Game.
+- **BOOTSTRAP:** sam techniczny Operator naprawy uruchamiany jest jedyną aktualnie akceptowaną trasą `high/priority`; wyjątek dotyczy wyłącznie naprawy walidatora i nie zmienia kontraktu kart produktowych.
+- **DOWÓD ODBIORU:** test RED→GREEN, canary na disposable boardzie, test niezmienności istniejącego runu, diff/allowlist/secret scan, niezależny Evaluator i Final Control; brak live-installu w fazie Operatora.
+
+### `INFRA-010` — zastąpiona generacja profilowego `state.db` przerwała terminalizację workerów
+
+- **STATUS:** `RECOVERED — RETRY TRACE PRESERVED`
+- **OBJAW:** workery Final Control/Evaluator kończyły proces z `rc=0`, ale nie mogły wykonać `kanban_complete`/`kanban_block`, ponieważ procesy trzymały usunięte `/home/ubuntu/.hermes/profiles/the-game-bugs/state.db-wal` i `state.db-shm`; dispatcher zapisał protocol violation i zachował runy.
+- **POTWIERDZONA PRZYCZYNA:** równoległy profilowy gateway/izolowane procesy `serve` używały starej generacji profilowej bazy podczas, gdy ścieżka wskazywała nową generację. Nie przypisuję przyczyny samej treści raportów.
+- **KOREKTA:** zatrzymano dispatcher przed retry, zatrzymano wyłącznie znane procesy profilu/workerów, zweryfikowano brak usuniętych uchwytów i `PRAGMA integrity_check=ok`, uruchomiono świeży `hermes-gateway-the-game-bugs.service` z `systemd linger`; nie użyto `doctor --fix`, ręcznego kasowania WAL ani ręcznej kopii `state.db`.
+- **SKUTEK:** zachowano runy protocol violation `49/50/51/52/53/54/55/56`; skuteczne readbacki `INFRA-009 Evaluator run 57` i `INFRA-008 Final Control run 58` zakończyły się `PASS-WITH-NOTES`. Product Final Control `INFRA-004`/`INFRA-006` ponowiono po odtworzeniu śladu.
+- **PREWENCJA:** przed wznowieniem dispatcher musi mieć stabilny profilowy gateway, świeży `state.db` readback i brak usuniętych sidecarów; recovery nie może oznaczać ręcznej terminalizacji ani duplikowania kart.
+
+### `INFRA-011` — niekompletny kanoniczny ślad `INFRA-004`
+
+- **STATUS:** `RECOVERED — FINAL CONTROL PASS-WITH-NOTES`
+- **TEMAT:** `R-BUDYNKI-KARTY-GRAFIKA-TEKST-OVERLAP-Q1`
+- **OBJAW:** Final Control run `64` potwierdził zielone testy produktu, ale zablokował kartę z powodu niekompletnego `00-dispatch.md` i braku proweniencji model/effort per rola.
+- **KOREKTA:** raport `64` zachowany jako `03-final-control-run-64-BLOCK.md`; ślad procesowy uzupełniony w worktree; ta sama karta `t_47c5ef18` uruchomiona ponownie jako run `68`, który zakończył się `PASS-WITH-NOTES`; bramka `t_086633d9` jest workerless/unassigned; implementacja produktu bez zmian.
+- **DOWÓD:** raport runu `68`, świeży readback Kanbana i artefakt `04` gate’u; integracji nie wykonano.
+
+### `INFRA-012` — worker run `70` nie wystartował z powodu złego entrypointu
+
+- **STATUS:** `RECOVERED — RUN 70 RECLAIMED`
+- **TEMAT:** `R-AUTOBOT-PETLA-SERWEROWA-Q1`
+- **OBJAW:** ręczne uruchomienie świeżego Operatora `t_5f3e9e0e/run 70` użyło release entrypointu `/home/ubuntu/.hermes/hermes-agent/hermes`, którego interpreter nie miał `python-dotenv`; proces zakończył się `ModuleNotFoundError: dotenv` przed startem agenta, a Kanban pozostawił osierocony run `running` bez PID.
+- **KOREKTA:** run `70` został natywnie zreclaimowany jako launch failure; następny claim używa staging `.venv/bin/hermes`, z potwierdzonym `dotenv` i dev dependencies. Run `44` pozostaje niezmieniony.
+- **DOWÓD:** `proc_ebbd4a401713`, `exit_code=1`, `ModuleNotFoundError: dotenv`; readback run `70` = `reclaimed`.
+
+### `INFRA-013` — stagingowy worker dostał argv bez subkomendy `chat`
+
+- **STATUS:** `RECOVERED — RUN 71 RECLAIMED`
+- **TEMAT:** `R-AUTOBOT-PETLA-SERWEROWA-Q1`
+- **OBJAW:** stagingowy entrypoint uruchomiono jako `... -q work kanban task t_5f3e9e0e`; Hermes v`0.21.2` wymaga `chat -q "work kanban task t_5f3e9e0e"`, więc parser zwrócił `invalid choice: 'work'` przed startem agenta, a run `71` pozostał `running` bez PID.
+- **KOREKTA:** run `71` został natywnie zreclaimowany; run `72` uruchomiono przez dokładny argv `_worker_argv` z `hermes_cli/kanban_db_dispatch.py:2131`, przez stagingowy `.venv/bin/hermes`.
+- **DOWÓD:** `proc_6c8d86dd4e15`, `exit_code=2`, parser `invalid choice: 'work'`; readback runu `71` = `reclaimed`; run `72` pozostaje aktywny.
+
+### `INFRA-014` — zdublowana bramka `INFRA-004` została usunięta z aktywnego obiegu
+
+- **STATUS:** `RECOVERED — DUPLICATE ARCHIVED`
+- **TEMAT:** `R-BUDYNKI-KARTY-GRAFIKA-TEKST-OVERLAP-Q1`
+- **OBJAW:** podczas ręcznego tworzenia gate’u po Final Control automatyczny obieg zdążył już utworzyć kanoniczną kartę `t_086633d9` z parentem `t_47c5ef18`; utworzono przejściowo duplikat `t_06842331` z innym kluczem i bez strukturalnego parenta.
+- **KOREKTA:** `t_06842331` natywnie zarchiwizowano; zachowano kanoniczną `t_086633d9`, zablokowano ją jako `PROCESS-ONLY / capability`, `assignee=null`, `worker=null`, z parentem `t_47c5ef18`.
+- **DOWÓD:** świeży readback obu kart i `task_links`; aktywny obieg zawiera tylko `t_086633d9`.
+
+### `INFRA-015` — ręczny worker `72` utracił lease przed native respawnem
+
+- **STATUS:** `RECOVERED — STALE RUN RECLAIMED`
+- **TEMAT:** `R-AUTOBOT-PETLA-SERWEROWA-Q1`
+- **OBJAW:** run `72` był uruchomiony ręcznie poza native dispatcherem, więc nie dostał `worker_pid` ani heartbeatów; po wygaśnięciu claimu native dispatcher zreclaimował run `72` i uruchomił świeży run `74`, zanim stary proces został zakończony.
+- **KOREKTA:** stary proces `2736392` zakończono przez jego kontrolowany process handle przed terminalnym zapisem; run `72` zachowano jako `reclaimed/stale_lock`; nie zatrzymano ani nie reclaimowano runu `74`. Dalsze próby pozostają wyłącznie native-dispatcher-owned.
+- **DOWÓD:** run `72` `reclaimed`, error `stale_lock=nAgents-ovh:2736232`; run `74` zakończył się `done/PASS-WITH-NOTES`, native readback ma `worker_pid=null`, a znane PID `2760877` nie jest uruchomiony; exact route zapisany jako `gpt-5.6-luna/openai-codex/max/priority`; PID `2736392` nieaktywny.
+
+### `INFRA-016` — Evaluator FAIL bez autoryzowanej karty Defense
+
+- **STATUS:** `RECOVERED — FINAL CONTROL RETRY`
+- **TEMAT:** `R-AUTOBOT-PETLA-SERWEROWA-Q1`
+- **OBJAW:** Evaluator `t_d286598f`, run `75`, zgłosił 12 konkretnych luk kontraktowych w 13 adversarial probes; native graph nie zawierał wtedy karty Defense ani Final Control.
+- **KOREKTA:** Operator repair `t_cec6c111`/run `76` naprawił luki; Evaluator repair `t_575c848c`/run `77` potwierdził `25/25` i `13/13` bez zarzutów; Final Control retry `t_3c8307ab`/run `79` jest aktywny. Defense pominięta, a gate `t_06ed36bf` utworzony workerless.
+- **DOWÓD:** historyczny FAIL `75` zachowany; aktualna re-ewaluacja `77` ma `acceptance_gaps=0`.
+
+### `INFRA-018` — Final Control nie mógł utworzyć workerless gate’u przez `kanban_create`
+
+- **STATUS:** `RECOVERED — FINAL CONTROL PASS / GATE BLOCKED`
+- **TEMAT:** `R-AUTOBOT-PETLA-SERWEROWA-Q1`
+- **OBJAW:** Final Control run `78` miał wszystkie lokalne bramki `PASS-WITH-NOTES`, ale agentowe `kanban_create` odrzucało wymagane `assignee=null`; agent nie utworzył niezgodnej karty z workerem i zakończył BLOCK.
+- **KOREKTA:** Orkiestrator natywnie utworzył gate `t_06ed36bf` z parentem `t_3c8307ab`, stable idempotency key `R-AUTOBOT-PETLA-SERWEROWA-Q1:integration-required:repair:r1:a2`, `status=blocked`, `assignee=null`, `worker=null`; Final Control run `79` zakończył się `PASS-WITH-NOTES`.
+- **DOWÓD:** świeży readback gate’u i runu `79`; nie utworzono duplikatu ani nie wykonano merge/push/deploy/live-install.
+
+### `INFRA-019` — process-only gate został automatycznie wypromowany do `ready`
+
+- **STATUS:** `RECOVERED — GATE REBLOCKED`
+- **TEMAT:** `R-AUTOBOT-PETLA-SERWEROWA-Q1`
+- **OBJAW:** po zakończeniu parenta `t_3c8307ab` automat zmienił nowy gate `t_06ed36bf` z `blocked` na `ready`, mimo `PROCESS-ONLY` i `assignee=null`; worker nie został uruchomiony, ale status naruszał ochronę gate’u.
+- **KOREKTA:** natywną komendą `block --kind capability` przywróciłem `t_06ed36bf` do `blocked`; assignee i worker pozostały puste.
+- **DOWÓD:** readback `t_06ed36bf`: `blocked/capability`, `assignee=null`, `worker=null`, parent `t_3c8307ab`; gate nie został dispatchowany.
+
+### `INFRA-020` — kolejka `the-game-bugs` nie ma kwalifikowanego anchoru projektu
+
+- **STATUS:** `PARTIALLY RECOVERED — ANCHOR FIXED; CONTRACT ALIAS OPEN`
+- **TEMAT:** `R-AUTOBOT-PETLA-SERWEROWA-Q1` / kolejka The-Game Bugs
+- **OBJAW:** świeży readback profilu `the-game-bugs` zwrócił `No projects yet`; nie istniał w nim projekt kolejki, mimo że karty miały historycznie `project_id=p_9ae9ac64` należący do projektu `the-game` w profilu `default` z boardem `the-game-real24`.
+- **KOREKTA:** wspieraną komendą utworzyłem projekt `the-game-bugs` (`p_eb144524`) z primary `/home/ubuntu/projects/The-Game` i boardem `the-game-bugs`; readback projektu, folderu, boardu i `git rev-parse` jest poprawny. Na tej podstawie utworzono kartę `t_52168fd0` i uruchomiono run `81`.
+- **DRUGA LUKA KONTRAKTOWA:** wymagany przez wspólny skill plik root `AUTOBOT-KANBAN.md` nadal nie istnieje; aktywny odpowiednik projektu to `docs/decyzje/R-PROC-AUTOBOT-HERMES-KANBAN.md`. Luka pozostaje zapisana i ogranicza kolejne fale, ale bieżący dispatch ma pełny kontrakt w `00-dispatch.md`.
+- **SKUTEK:** board `the-game-bugs` ma jedną kwalifikowaną kartę `running` (`t_52168fd0/run81`); dwie `ready` są stare, beztreściowe, przypisane do nieistniejącego profilu `legacy` i nadal pozostają poza dispatch-em.
+- **DOWÓD:** readback projektu/anchoru, `tasks/task_links/task_events`, `notify-list` (`notify+wake`, owner `default`), gateway `the-game-bugs`, provider `openai-codex`, host resources; nie zmieniono kodu gry, `main`, remote, merge, push ani deployu.
+- **NASTĘPNY KROK:** odebrać terminalny event `t_52168fd0/run81`, wykonać technical/context readback i uruchomić kwalifikowanego Evaluatora; przed kolejną niezależną falą domknąć lukę kontraktu `AUTOBOT-KANBAN.md` przez osobną ścieżkę procesu.
+
+### `INFRA-021` — guard zatrzymał Operatora przez zapis artefaktu poza allowlistą
+
+- **STATUS:** `RECOVERED — RETRY ACTIVE`
+- **TEMAT:** `P-PRACA-KARTA-MIASTA-VS-POPUP-IMPERIUM-ROZJAZD-Q1`, karta `t_52168fd0`
+- **OBJAW:** Operator `run 81` nie zapisał raportu, ponieważ w jego worktree śledzony plik `dyspozycje/autobot/runs/R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1/zrzut-runda1-trzy-zetony-brutto.png` zmienił rozmiar `23487 → 23925 B` poza allowlistą bieżącego runu. `HEAD=BASE_HEAD=1a355346ef12c7cdbb27dd6fb9d7da2b56c3682b`; worker zakończył się bez wyniku produktu.
+- **KOREKTA:** zmienioną kopię zachowano poza repo/worktree: `/home/ubuntu/.hermes/attachments/P-PRACA-KARTA-MIASTA-VS-POPUP-IMPERIUM-ROZJAZD-Q1-foreign-R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1-20260914.png`, `SHA-256=ce779572f043452de49af9840249c9ede82a87a32b8e60d8b2f8cce509908b8e`; następnie w worktree przywrócono wyłącznie znany blob bazowy `SHA-256=cdfaf9e9bb657d2fa7fcced55366888c18bf0fc52596891e9e945b77af85019a`. Dispatch rozszerzono o containment: testy pomocnicze nie mogą pisać do śledzonych ścieżek historycznych runów.
+- **DOWÓD:** readback `git status --short` po korekcie pokazuje wyłącznie bieżący nieśledzony katalog artefaktów; `git diff --check` przechodzi; plik PNG nie jest już zmodyfikowany. Natywne `unblock` i dry-run wskazały tylko `t_52168fd0`, po czym uruchomiono retry `run 82` z PID `3056452`, claim `nAgents-ovh:3056440`.
+- **NASTĘPNY KROK:** odebrać terminalny event `run 82`; przy sukcesie wykonać technical/context readback i uruchomić niezależnego Evaluatora, przy ponownym zapisie poza allowlistą pozostawić kartę `BLOCK` i nie odwracać kolejnych zmian bez ich archiwizacji.
+
+### `INFRA-022` — aktywny run nie może wykonać natywnej terminalizacji
+
+- **STATUS:** `OPEN — INFRA/ROUTING_ERROR — RECONCILIATION ACTIVE`
+- **TEMAT:** `P-PRACA-KARTA-MIASTA-VS-POPUP-IMPERIUM-ROZJAZD-Q1`, karta `t_52168fd0`
+- **OBJAW:** worker run `84` zapisał artefakty korekty i zgłosił gotowość, ale jego `kanban_complete`, `kanban_heartbeat` i `kanban_block` zostały odrzucone jako `unknown id/stale run/not running`; jednocześnie świeży readback karty nadal pokazuje `running`, `current_run_id=84`, PID `3095977` oraz kolejne eventy `heartbeat`.
+- **DOWÓD:** `hermes kanban --board the-game-bugs show t_52168fd0 --json` — run `84/running`, worker PID żyje, ostatni readback zawiera heartbeat; log Kanbana zawiera literalne błędy natywnych operacji terminalizacji. Worktree ma `HEAD=BASE_HEAD=origin/main=1a355346ef12c7cdbb27dd6fb9d7da2b56c3682b`, brak tracked diffu, `git diff --check` przechodzi, a sześć artefaktów runu jest zgodnych z manifestem SHA-256.
+- **PRZYCZYNA:** nieustalona. Nie klasyfikuję tego jako zakończenia produktu ani nie reclaimuję/restartuję aktywnego procesu w ciemno; worker pozostaje pod kontrolą natywnego dispatchera.
+- **SKUTEK:** nie wolno jeszcze uruchomić Evaluatora ani tworzyć następnej karty; brak terminalnego eventu i transition receipt. Nie wykonano zmian kodu, merge, push, deployu ani restartu gatewaya.
+- **NASTĘPNY KROK:** dispatcher/gateway ma wykonać bezpieczną rekonsyliację tego samego task/run; po rzeczywistym terminalnym evencie wykonać technical/context readback i dopiero wtedy utworzyć/uruchomić jedynego uprawnionego Evaluatora. Nie tworzyć duplikatu.
+
+### `INFRA-023` — dispatcher utworzył Evaluatora na niewłaściwej bazie
+
+- **STATUS:** `RECOVERED — INVALID CARD ARCHIVED; CORRECT CARD BLOCKED FOR READBACK`
+- **TEMAT:** `P-PRACA-KARTA-MIASTA-VS-POPUP-IMPERIUM-ROZJAZD-Q1`
+- **OBJAW:** natywne `kanban create` utworzyło kartę `t_a1eded98` z automatycznym workspace `/home/ubuntu/projects/The-Game/.worktrees/t_a1eded98` i branch `...-evaluator` na lokalnym HEAD `a99f7de59ce643441b641d3b7b11404b6cbdcd82`, mimo kontraktu `BASE_HEAD/origin/main=1a355346ef12c7cdbb27dd6fb9d7da2b56c3682b`. Workspace nie zawierał artefaktów Operatora. Gateway zdążył uruchomić `run86`; worker został zatrzymany po potwierdzeniu złego routingu, a dispatcher zapisał `crashed` (`pid 3118064 not alive`).
+- **KOREKTA:** karta `t_a1eded98` została zarchiwizowana bez kasowania jej workspace ani branchu. Zachowany, przygotowany worktree `/home/ubuntu/projects/The-Game-worktrees/P-PRACA-KARTA-MIASTA-VS-POPUP-IMPERIUM-ROZJAZD-Q1-EVALUATOR` ma branch `hermes/P-PRACA-KARTA-MIASTA-VS-POPUP-IMPERIUM-ROZJAZD-Q1-EVALUATOR`, HEAD dokładnie `1a355346`, czysty tracked diff, `git diff --check` przechodzi i zawiera skopiowane read-only artefakty Operatora oraz `02-dispatch.md`. Karta `t_eedd43af` (pierwsza próba na tym worktree) została zarchiwizowana po `run87` z `Unknown skill(s): game-state-debugging`; aktualny bezpieczny dispatch to `t_c7d1ffe6`, bez wymuszonej flagi skilla.
+- **DOWÓD:** readback tasks/task_links/task_events/task_runs; `t_a1eded98` ma `archived`, run86 `crashed`, workspace zachowany; `t_eedd43af` ma `archived`, run87 `crashed`, a `t_c7d1ffe6` ma parent link `t_52168fd0`, `status=ready`, `worker=null`, `current_run_id=null`; poprawny worktree `HEAD=origin/main=1a355346`, brak zmian śledzonych.
+- **NASTĘPNY KROK:** po potwierdzeniu karty `t_c7d1ffe6` wykonać jeden native dispatch; po terminalnym Evaluatorze uruchomić warunkowo Obronę tylko przy konkretnych zarzutach, następnie Final Control. Nie uruchamiać zarchiwizowanych kart `t_a1eded98`, `t_eedd43af` ani `t_2e6a4cd7`.
+|
+### `INFRA-024` — triage specifier nie jest dostępny dla gotowego dispatchu
+
+- **STATUS:** `RECOVERED — EVALUATOR PASS / FINAL CONTROL PASS`
+- **TEMAT:** `P-PRACA-KARTA-MIASTA-VS-POPUP-IMPERIUM-ROZJAZD-Q1`
+- **OBJAW:** natywne `kanban specify t_2e6a4cd7 --json` zwróciło `ok=false`, `reason=LLM error: RuntimeError`; karta pozostała w `triage`. Nie jest to błąd produktu ani testu The‑Game.
+- **KOREKTA:** karta `t_2e6a4cd7` została zarchiwizowana; gotowy kontrakt `02-dispatch.md` istniał już w przygotowanym worktree, więc utworzono bezpośrednią kartę `t_c7d1ffe6` z parentem `t_52168fd0`, właściwym worktree/branch na `origin/main`, routingiem `gpt-5.6-luna/openai-codex/max/priority` i bez nieobsługiwanej flagi `--skill`.
+- **DOWÓD:** `t_2e6a4cd7` ma `archived`, brak runu; `t_c7d1ffe6` ma parent link `t_52168fd0`, `status=done`, `run89`, `outcome=completed`, terminalny event i puste zarzuty Evaluatora; preflight worktree `HEAD=origin/main=1a355346`, brak tracked diffu, `git diff --check` przechodzi. Final Control `t_72a0c5d0/run91` zakończył się `PASS` bez zmian produktu; gate `t_58449e94` pozostaje blocked/workerless.
+- **NASTĘPNY KROK:** Evaluator jest zakończony i zaakceptowany; Final Control `t_72a0c5d0/run91` również zakończony `PASS`. Dalszy krok jest zapisany w bramce `t_58449e94`: osobny readback Orkiestratora i decyzja właściciela; nie tworzyć Defense ani nie dispatchować kolejnej karty.
+
+### `INFRA-025` — Final Control wystartował z nieprawidłowym workspace’em
+
+- **STATUS:** `RECOVERED — FINAL CONTROL PASS / GATE CREATED`
+- **TEMAT:** `P-PRACA-KARTA-MIASTA-VS-POPUP-IMPERIUM-ROZJAZD-Q1`
+- **KARTA:** `t_72a0c5d0` — Final Control; parent `t_c7d1ffe6`/run `89` zakończony i zaakceptowany
+- **OBJAW:** pierwszy start `run90` zakończył się `gave_up/spawn_failed`, ponieważ ścieżka `/home/ubuntu/projects/The-Game-worktrees/P-PRACA-KARTA-MIASTA-VS-POPUP-IMPERIUM-ROZJAZD-Q1-FINAL-CONTROL` nie wskazywała na repozytorium Git. Run nie wykonał pracy merytorycznej.
+- **PRZYCZYNA:** workspace z kontraktu karty nie był w chwili pierwszego dispatchu utworzonym repozytoryjnym worktree; potwierdzony jest błąd routingu workspace’u, nie przyczyna produktu.
+- **KOREKTA:** zachowano run90 i tę samą kartę/idempotency; utworzono izolowany worktree pod dokładną ścieżką karty z HEAD Evaluatora `1a355346ef12c7cdbb27dd6fb9d7da2b56c3682b`, branch `hermes/P-PRACA-KARTA-MIASTA-VS-POPUP-IMPERIUM-ROZJAZD-Q1-FINAL-CONTROL`, po czym wykonano wspierane `unblock` i retry `run91`.
+- **DOWÓD:** świeży `show/runs/log` potwierdza `run90=gave_up` z literalnym błędem workspace’u, `run91=done/completed`, PID zakończony, poprawny katalog Git, HEAD/base `1a355346`, terminalny event i receipt; nie utworzono duplikatu Final Control.
+- **WYNIK:** Final Control run91 = `PASS`, bez zarzutów i bez zmian produktu. Status procesowy pozostaje `DECISION_REQUIRED`; utworzono workerless gate `t_58449e94`, który pozostaje zablokowany do readbacku Orkiestratora i decyzji właściciela.
+- **NASTĘPNY KROK:** nie uruchamiać drugiego Final Control ani gate’u `t_58449e94`; wykonać osobny Orchestrator readback i oczekiwać decyzji właściciela przed jakimkolwiek patchem produktu.
+
+### `INFRA-026` — bramka `INTEGRATION_REQUIRED` została chwilowo wypromowana
+
+- **STATUS:** `RECOVERED — PROCESS GATE REBLOCKED / OWNER HOLD`
+- **TEMAT:** `P-PRACA-KARTA-MIASTA-VS-POPUP-IMPERIUM-ROZJAZD-Q1`
+- **KARTA:** `t_58449e94` — `INTEGRATION_REQUIRED`, parent `t_72a0c5d0`/run `91`
+- **OBJAW:** po utworzeniu jako `blocked`, workerless i bez assignee bramka otrzymała natywny event `promoted` do `ready`; ochronny odczyt natychmiast wykrył, że jest to karta `PROCESS-ONLY`, a nie praca dla workera.
+- **PRZYCZYNA:** automatyczna promocja nie rozróżniła bramki Orkiestratora od zwykłej karty wykonawczej. Nie powstał worker ani run roboczy.
+- **KOREKTA:** bramkę zablokowano natywną blokadą typu `capability`; readback potwierdza `status=blocked`, `assignee=null`, `worker=null`, `current_run_id=null`, parent `t_72a0c5d0` i zapisany powód ochronny.
+- **DOWÓD:** `show/runs` karty `t_58449e94`: eventy `created → promoted → blocked`, run `92=blocked`, brak procesu; board nie ma aktywnego workera dla tej bramki.
+- **SKUTEK:** gate pozostaje wyłącznie dla Orkiestratora. Nie wykonywać `promote`, `unblock`, `dispatch`, tworzenia Defense ani duplikatu.
+- **NASTĘPNY KROK:** osobny readback Orkiestratora i odrębna decyzja właściciela o wariancie live-vs-last-tick; dopiero po tej decyzji można rozważyć osobny temat implementacyjny.
+
 ## AKTYWNA PACZKA DOKUMENTACYJNA — `R-PROC-AUTOBOT-PAKIETY-1-3-Q1`
 
 GOAL: dokończyć pakiety dokumentacyjne 1–3 i wdrożyć jeden, zamknięty obieg AutoBot
@@ -35,7 +416,10 @@ historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgady
 
 | ID | STATUS KANONICZNY | Dowód / punkt odniesienia |
 |---|---|---|
-| `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1` | `ZDEPLOYOWANE (korekta statusu, 2026-08-21)` | Status `OPERATOR`/„gotowy do dispatchu” byl NIEAKTUALNY — mechanizm jest w pelni zaimplementowany w `gra/src/game/forced-war-stone.ts` (stale `WOJNA_KAMIEN_WYMUSZONA_START_TURY=20`, `_MAX_MIASTA_...=2`, `_ODPOCZYNEK_TUR=20`, `_COOLDOWN_...=20` — 1:1 z ECHO Q1=A/Q3=A) i wpiety w `main.ts`/`ai.ts` (`stoneForceWarTargetId`) analogicznie do mechanizmu Brązu. Zdeployowane FALA 298 (`4322f5aa`, potwierdzone w `WERSJE.md`: „Stone 32/32 + guard 18/18"). Zweryfikowane ponownie 2026-08-21: `node gra/tools/forced-war-stone-test.cjs` + `forced-war-stone-main-guard-test.cjs` nadal zielone. Nic do dispatchu. |
+| `R-REKRUTACJA-JEDNOSTKI-MANPOWER-WIDOCZNOSC-Q1` | `ZAMKNIĘTE` | `INFRA-005`; karta `t_ab224d6d` zarchiwizowana po korekcie właściciela; run `40` `reclaimed`, run `41` `blocked`, bez wyniku produktu. Zakres zastąpiony przez `R-REKRUTACJA-KARTY-BRAK-REKRUTOW-Q1` / `INFRA-006`. |
+| `R-REKRUTACJA-KARTY-BRAK-REKRUTOW-Q1` | `OPERATOR` | `INFRA-006`; karta Operatora `t_34d2a22a`, run `42`, worker `2466246`, uruchomiony po terminalnym parent `t_13d1b59e`; zrzut `/home/ubuntu/.hermes/images/upload_20260913_211252_3.png`; zakres: jawne dostępne/wymagane/brakujące rekruty na istniejących kartach jednostek. |
+| `R-MIASTA-CYWILIZACJE-PANSTWA-WSPOLNA-LISTA-Q1` | `DO-INTEGRACJI` | Final Control `t_02234a0f`, run `37`, `PASS-WITH-NOTES`; Evaluator `t_642f708e` run `32` and Obrona `t_21560714` run `34` zakończone. Zweryfikowano 15×110, mirror, indeks 0, suffix, brak duplikatów/kolizji, call-site’y, typecheck i testy obszaru. Zatwierdzony branch `hermes/R-MIASTA-CYWILIZACJE-PANSTWA-WSPOLNA-LISTA-Q1`, commit `b9a12ba70e881a86b77176a931cb5f7dde00182b`, remote readback zgodny. Handoff operatora: `dyspozycje/_handoff/KANAL-PRACA.md`. Jawne noty: 3 istniejące failures `start-preview`, timeout placement/hub-chain `cluster-start`, normalizacja `Assur→Aszur`; integracja i deploy jeszcze niewykonane. Historyczne incydenty routingu: `INFRA-001/002/003`. |
+|| `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1` | `ZDEPLOYOWANE (korekta statusu, 2026-08-21)` | Status `OPERATOR`/„gotowy do dispatchu” byl NIEAKTUALNY — mechanizm jest w pelni zaimplementowany w `gra/src/game/forced-war-stone.ts` (stale `WOJNA_KAMIEN_WYMUSZONA_START_TURY=20`, `_MAX_MIASTA_...=2`, `_ODPOCZYNEK_TUR=20`, `_COOLDOWN_...=20` — 1:1 z ECHO Q1=A/Q3=A) i wpiety w `main.ts`/`ai.ts` (`stoneForceWarTargetId`) analogicznie do mechanizmu Brązu. Zdeployowane FALA 298 (`4322f5aa`, potwierdzone w `WERSJE.md`: „Stone 32/32 + guard 18/18"). Zweryfikowane ponownie 2026-08-21: `node gra/tools/forced-war-stone-test.cjs` + `forced-war-stone-main-guard-test.cjs` nadal zielone. Nic do dispatchu. |
 | `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1` | `RECON ZAMKNIĘTY (3/4), 1 REALNY BUG WYDZIELONY` | Recon runda 2 (2026-08-21): pytania §4 2-4 (Popalnia brązu, koszty jednostek, kontrakt ogólny) potwierdzone jako zamknięte przez `R-TECH-ULEPSZENIA-TERENU-SYNC-Q1`/T3. Pytanie 1 (12 vs 20 jednostek) — Operator błędnie uznał za martwy tekst bez konsumenta; **Evaluator (FAIL) znalazł 2 żywe konsumenty**: `techTreeView.ts::parseUnlockBuildings()` (hover-karta drzewka, pokazuje stare 12 zamiast 20) i `sciencePicker.ts` (tooltip badań, naiwny split po przecinku BEZ usunięcia prefiksu "Jednostki:" — myli fragmenty listy jednostek z budynkami). Realny, dziś działający bug — wydzielony jako `R-TECHTREE-SCIENCEPICKER-JEDNOSTKI-STALE-Q1`. |
 | `R-UI-WYKONAJ-DECYZJA-OVERLAP-Q1` | `ZINTEGROWANE` | Przyczyna znaleziona i naprawiona: `.et-hint`/`.et-tooltip` były dziećmi `.et-wrap` (owijał tylko przycisk końca tury), więc `position:absolute` liczyło się względem złego kontekstu i nakładało na zawsze-obecny (disabled gdy brak blokady) przycisk „Wykonaj" nad nim. Naprawa: oba elementy są teraz dziećmi `.civ-bottom-bar` bezpośrednio. **Zweryfikowane realną przeglądarką (Playwright/Chromium)** — zrzuty ekranu potwierdzają nakładanie na starym kodzie i czyste rozdzielenie po naprawie, pixel-for-pixel. Operator→Evaluator→Final Control PASS, 33/33 nowy test + zero regresji. Zintegrowane do `main`. |
 | `R-CIVPEDIA-KARTA-AKCJE-NIE-DZIALAJA-Q1` | `ZDEPLOYOWANE, FALA 308` | Zgłoszenie właściciela na żywo (FALA 307, stempel `6c1433ef`): przyciski „Rozpocznij badanie"/„Otwórz drzewo" nie reagowały na klik. Przyczyna: `.entity-card` bez własnego `position` malowało się przed `.tdn-back` (tło, `position:fixed`) w kolejności CSS stacking-context — tło przechwytywało kliknięcia mimo poprawnego DOM/listenerów. Fix: `position:relative` na `.entity-card`. Znalezione i zweryfikowane realną przeglądarką (Playwright/Chromium, `elementFromPoint`+`page.mouse.click`) — jsdom dawał fałszywie zielony wynik. Test mutacyjny (usunięcie fixu → regres wraca, 6/12 FAIL) potwierdza że nowe testy faktycznie łapią ten bug. Operator→Evaluator→Final Control PASS, zdeployowane. |
@@ -48,24 +432,18 @@ historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgady
 | `R-TRZY-KARTY-WDROZENIE-Q1` | `ZINTEGROWANE` | Trzy karty wdrożone: Karta 1 (tokeny + `techDiscoveryNotice.ts`) Operator PASS-WITH-NOTES + Evaluator WARUNKOWY PASS (kod OK, zastrzeżenie czysto procesowe o kolejności commitów, rozwiązane przez Final Control); Karta 2 (`unitInfoCard.ts`) Operator FAIL (brak Esc, nieprawdziwe TESTY) → poprawka → Operator PASS + Evaluator PASS; Karta 3 (`sidePanelHud.ts`+`bottomBarHud.ts`) Operator PASS + Evaluator PASS-WITH-NOTES (drobne nieścisłości statystyk w raporcie, niemerytoryczne), z wykonanym test mutacyjnym potwierdzającym twardy zakaz blokady tury. Final Control (orkiestrator): pełna regresja na całości pięciu plików razem — `tsc` 0, 13 zestawów testów zielonych, 2 znane przedistniejące awarie (`unit-info-card-army-interaction-test` 5/2, niezwiązane z tym diffem, potwierdzone przez oba Evaluatory). ECHO: blokada tury = NIE (potwierdzone 6 lipca, karty zostają sygnałem); przycisk „Zignoruj" przy buncie = TAK; rant slotu 3D = złoto kanonu. Otwarte dla właściciela (nierozstrzygnięte, nieblokujące): przycisk „Otwórz hub badań" pominięty (rozbieżność handoffu designera z realną makietą, zweryfikowana niezależnie dwa razy — Operator i Evaluator). Dispatch: `dyspozycje/autobot/runs/R-TRZY-KARTY-WDROZENIE-Q1/`. |
 | `P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1` | `DEPLOY-ROBOCZA` | Korekta potwierdzona w FALI 293 `8fa80b7c`; wpis nie jest już otwarty. |
 | `R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1` | `ZDEPLOYOWANE, FALA 310` | Watki A-F: (A) usunięty zdublowany suwak, (C ECHO=A) cap 50% wymuszony też na historycznym automacie ulepszeń miasta, (D) naprawa „+N" niezgodności puli PRACA IMPERIUM, (F) przeprojektowanie prezentacji panelu — dwie kolumny Budynki/Ulepszenia. Runda 2 Final Control dała FAIL proceduralny (branch odgałęziony przed FALA 304); naprawione mergem `main`→branch (zero konfliktów w `gra/`), runda 3 Operator→Evaluator→Final Control PASS (Final Control: PASS-WITH-NOTES, patrz `PYTANIA-OTWARTE.md`). Zmergowane do `main`, zdeployowane FALA 310. `tsc` 0; 149 testów tematu + `logic-test` 213/213 + `tech-tree-test` 19/19 + `research-test` 33/33 + `unit-replace-test` 13/13 + `combat-test` 6/6. |
+| `P-PRACA-KARTA-MIASTA-VS-POPUP-IMPERIUM-ROZJAZD-Q1` | `OPERATOR — t_52168fd0/run 84 (retry po INFRA-021; terminalizacja zatrzymana przez INFRA-022)` | Własny recon rozjazdu live `cityPanel.ts::computeView()` vs snapshot `_lastPlayerCityEcon` w popupie `empireDetailPanel.ts`; karta utworzona po świeżym readbacku Kanbana, worktree `/home/ubuntu/projects/The-Game-worktrees/P-PRACA-KARTA-MIASTA-VS-POPUP-IMPERIUM-ROZJAZD-Q1`, branch `hermes/P-PRACA-KARTA-MIASTA-VS-POPUP-IMPERIUM-ROZJAZD-Q1`, baza `origin/main` `1a355346`, `notify+wake` potwierdzone. Recon-only: bez zmian produktu; run 84 ma artefakty i żywy proces, ale nie ma jeszcze terminalnego eventu ani transition receipt z powodu INFRA-022; Evaluator pozostaje niewłączony.`
 | `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` | `CAŁA MIGRACJA T1-T10 ZDEPLOYOWANA, FALA 315` | T1+T1b+T3 FALA 307, T4 FALA 309, T8 FALA 311, T5 FALA 312, T7b FALA 313, T6+T9 FALA 314, T10 FALA 315. Ostatni krok (linkowanie krzyżowe 4×4), system `entityCards` (4 kinds/4 adaptery) kompletny. Operator+Evaluator+Final Control PASS niezależnie, 3 niezależne testy real-Chromium stosu Esc/overlay przy zagnieżdżonych kartach. Trywialny fast-forward. Cała migracja zakończona i zdeployowana. Nic do dispatchu. |
 | `P-DESIGN-11-ZAKLADEK-DROBIAZGI-RUNDA-2-BEZ-AKCJI` | `ZDEPLOYOWANE, FALA 313` | N5/N9/N11/N12 naprawione w `empireDetailPanel.ts` zgodnie z ECHO. N5 ma znaną, udokumentowaną usterkę zaokrągleń (±1 złoto w ~10-20% kombinacji, kosmetyczna, nie dotyka skarbca) potwierdzoną niezależnie przez Evaluatora i Final Control. N1 zamknięte bez akcji. Operator→Evaluator→Final Control PASS/PASS-WITH-NOTES. Zdeployowane. Pełny recon mechaniki szlaków i dokładnej przyczyny N5: `P-HANDEL-SZLAKI-MECHANIKA-RECON-Q1` w `PYTANIA-OTWARTE.md`. |
 | `R-HANDEL-SZLAKI-PRZEBUDOWA-Q1` | `ZAKOŃCZONE — T1+T2+T2b+T3+T4+T6 WSZYSTKIE ZINTEGROWANE do main (T6 commit 2e6aac59), już w bundlu ROBOCZA (potwierdzone 2026-09-03 przy weryfikacji kolejki — wiersz był stały, tabela poniżej nieaktualizowana od T2b)` | Przebudowa mechaniki szlaków handlowych. ECHO (2026-08-21, pełna treść `docs/decyzje/R-HANDEL-SZLAKI-PRZEBUDOWA-Q1.md`): odwrócenie zależności od dystansu osobno per medium (ląd max=12/morze max=20, identyczny szczyt); bonus morski ×2 sumuje się z istniejącym `PORT_SEA_TRADE_BONUS_PIENIADZ`; 5% przypisane per trasa jako stały procent JEJ WŁASNEGO dochodu, zastępuje stary globalny mnożnik w `economy.ts` (realny transfer budżetu); limit „jedna umowa" bez zmian (już istnieje per-para, temat T5 wypada z zakresu); Port zostaje wymogiem istnienia trasy morskiej. Finalne doprecyzowanie: opcja zawarcia `UmowaSzlakow` w panelu dyplomacji dostępna WYŁĄCZNIE gdy (a) dostępność lądowa istnieje (port niepotrzebny), LUB (b) brak lądu ale OBIE strony mają port — inaczej opcja niedostępna w panelu (nowy gate na poziomie propozycji traktatu, nie tylko powstania trasy). Ląd ma bezwarunkowe pierwszeństwo, nie wybór po dochodzie. Stawki ×5 tylko na stałych dystansowych. Podział T1(wzór)→T2(morze×2+priorytet lądu)→T2b(nowy: gate propozycji traktatu w dyplomacji)→T3(rozdzielenie gatingu budynkami)→T4(atrybucja 5%)→T6(UI). **T1 zakończone: Operator→Evaluator→Final Control wszystkie PASS (workflow `wf_e9da30e1-0e2`), zweryfikowane niezależnie przez orkiestratora (tsc czyste, vite build OK, testy handel/econ zgodne z raportami, 5 bramek referencyjnych zielone), zmergowane fast-forward do `main` i wypchnięte jako commit `65315319` (2026-08-22).** **T2 zakończone: Operator/Evaluator PASS, Final Control PASS-WITH-NOTES (uwaga niewiążąca o `detectBestConnection` — patrz decyzja §Postęp; nie blokuje READY_FOR_DEPLOY), workflow `wf_5973ab38-00f` (wymagał 1 wznowienia po INFRA-blokerze braku miejsca na dysku przy tworzeniu worktree — orkiestrator posprzątał ~24GB starych, już zmergowanych worktree i wznowił). Zweryfikowane niezależnie (tsc/build/testy/5 bramek zielone), zmergowane fast-forward do `main` commit `a3276dda`, wypchnięte (2026-08-22). Rozwiązuje też `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1`.** **T2b zakończone: Operator/Evaluator/Final Control wszystkie PASS (workflow `wf_39d8ddec-8ff`), reużyto istniejącej `citiesHaveTradeConnection` (funkcja E6) — zero nowej logiki połączeniowej, nowe pole `hasTradeConnection` na `DiplomacyActionLockContext`, gate w `resolveDiplomacyActionLock` case '5' z priorytetem `atWar>hasHandel>hasTradeConnection>relacjaGate`, UI bez zmian. Zweryfikowane niezależnie (tsc/build/testy diplomacy+handel/econ/5 bramek zielone), zmergowane fast-forward do `main` commit `f303760a`, wypchnięte (2026-08-22).** **Zbiorczy deploy ROBOCZA wykonany (2026-08-22): FALA 316, `gra-robocza/Gra-ROBOCZA.html` + 6 bundli playtestowych + świeży build `Gra-ROBOCZA-POLE-BITWY.html`, manifest md5 `5bcde74d`, `verify-robocza-bundle.cjs` -> VERIFY OK, commit `9aa8959d`, wypchnięte do `origin/main`.** T3/T4/T6 w kolejce, nie dispatchowane jeszcze. |
-| `P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1` | `ZINTEGROWANE 2026-08-22 (main `a1951c1c`, FALA 317 #1, commit integracji `36dff8e9`) — korekta statusu 2026-09-11, wiersz był STALE` | Zgłoszenie właściciela (2026-08-22): suwak „Automatyzacja ulepszeń terenu → Ręczny" (`UlepszeniaEmpirePolicy.pracaAutoPercent`) błędnie ograniczony do 0-50% zamiast 0-100% — pomyłkowe rozszerzenie stałej `MAX_PRACA_WSPOLNY_WOREK_PROCENT=50` z NIEZALEŻNEGO pola `EmpirePracaSplit.procentUlepszenia` (to drugie ma zostać 0-50%, poprawne). Recon potwierdził dokładną przyczynę w `clampUlepszeniaPracaPercent()` (`cities.ts:208-211`), 2 wywołania w `main.ts`, 3 pliki testowe do aktualizacji. Pełny opis w `PYTANIA-OTWARTE.md`. **Potwierdzone 2026-09-11: `MAX_ULEPSZENIA_PRACA_AUTO_PERCENT=100` w dzisiejszym `gra/src/game/cities.ts:237`, `clampUlepszeniaPracaPercent()` używa tej stałej (`:256`) — cap 0-100% realnie w kodzie. Nic do dispatchu.** |
-| `P-PRACA-SPLIT-UI-JEDEN-SUWAK-Q1` | `ZINTEGROWANE 2026-08-22 (main `d6df594f`, FALA 317 #2, commit integracji `36dff8e9`) — korekta statusu 2026-09-11, wiersz był STALE` | Zgłoszenie właściciela (2026-08-22, czysty UX, bez zmiany parametrów): panel „PODZIAŁ PRACY" (`renderEmpirePracaBudgetSplitSection()`, `empireDetailPanel.ts:1120-1154`) ma dziś dwa osobne boksy Budynki/Ulepszenia zamiast jednego suwaka pełnej szerokości z etykietami po bokach + klikalne min/max na krańcach. Gotowy gradient CSS (`laborSliderFillStyle()`) już istnieje jako martwy kod z wcześniejszego, świadomie zastąpionego wzorca — częściowy powrót na żądanie właściciela. Pełny opis w `PYTANIA-OTWARTE.md`. **Potwierdzone 2026-09-11: `laborSliderFillStyle()` i `renderEmpirePracaBudgetSplitSection()` (jeden suwak) obecne i wpięte w `gra/src/ui/empireDetailPanel.ts:1222`/`1378`/`1339` w dzisiejszym kodzie. Nic do dispatchu.** |
-| `P-SPICHLERZ-AUTO-ZYWIENIE-MASOWY-PRZYCISK-Q1` | `ZINTEGROWANE 2026-08-22 (main `f115a79a`, FALA 317 #3, commit integracji `36dff8e9`) — korekta statusu 2026-09-11, wiersz był STALE` | Zgłoszenie właściciela (2026-08-22): nowy przycisk w panelu „SPICHLERZ CENTRALNY" (`renderDefaultPoziomRacjiSection()`, `empireDetailPanel.ts:134-161`) ustawiający `autoWyzywienie=true` dla wszystkich miast bez `poziomRacjiOverride`. Oba mechanizmy (`city.autoWyzywienie`, `city.poziomRacjiOverride` + wzorzec masowej propagacji `broadcastPoziomRacjiToOwnerCities()`) już istnieją — prosta zmiana, nie wymaga nowego mechanizmu ekonomii. Pełny opis w `PYTANIA-OTWARTE.md`. **Potwierdzone 2026-09-11: `renderDefaultPoziomRacjiSection()` i wzorzec `broadcastPoziomRacjiToOwnerCities` obecne w dzisiejszym `gra/src/ui/empireDetailPanel.ts:147`/`2912`. Nic do dispatchu.** |
-| `P-PRACA-PANEL-IKONY-NIESPOJNE-Q1` | `ZINTEGROWANE 2026-08-22 (main `141eab19`, FALA 317 #4, commit integracji `36dff8e9`) — korekta statusu 2026-09-11, wiersz był STALE` | Zgłoszenie regresu (2026-08-22): panel miasta „PODZIAŁ PRACY" ma DWIE różne ikony dla „Ulepszenia" (`tb-build` młotek vs `chip-crate` skrzynka, ta druga dodana commitem `bd03ed3e`/Wątek F 2026-08-21). ECHO właściciela: ujednolicić do `chip-crate` (skrzynka), zachować ikony (nie przechodzić na tekst), Operator ma dodatkowo zweryfikować wizualnie (Playwright) czy ikona wagi realnie gdzieś występuje. Pełny opis w `PYTANIA-OTWARTE.md`. **Potwierdzone 2026-09-11: `chip-crate` ujednolicone w dzisiejszym `gra/src/ui/empireDetailPanel.ts` (np. linia 3188). Nic do dispatchu.** |
-| `P-CIVPEDIA-KARTY-LINKI-NIEOSTYLOWANE-REGRES-T10-Q1` | `ZINTEGROWANE 2026-08-22 (main `11c71851`, FALA 317 #6, commit integracji `36dff8e9`) — korekta statusu 2026-09-11, wiersz był STALE` | Regres z T10 (FALA 315, commit `f17e257e`): brak CSS dla `.entity-card-row-key`/`.entity-card-row-value` w `entityCards/renderer.ts` — linkowalne wartości renderują się jako nieostylowane, białe `<button>`. Naprawa: 1 blok CSS w `ENTITY_CARD_CSS`, wspólny dla wszystkich 4 adapterów. Brak wzorca designera dla stylu linku (świadomie odroczone w brief). Dodatkowy zakres: ten sam typ usterki w karcie budynku wewnątrz panelu budowy miasta (`cityPanel.ts`, inny komponent). Pełny opis w `PYTANIA-OTWARTE.md`. Przy weryfikacji Final Control znalazł niezależny, żywy bug tej samej klasy — wydzielony jako `P-CIVPEDIA-KARTY-AKCJE-PRZYCISKI-NIEOSTYLOWANE-Q1`. **Potwierdzone 2026-09-11: `.entity-card-row-value{overflow-wrap:anywhere;}` i selektor `button.entity-card-row-value` obecne w dzisiejszym `gra/src/ui/entityCards/renderer.ts:895`/`910`. Nic do dispatchu.** |
-| `P-CIVPEDIA-KARTY-NOTATKI-DEWELOPERSKIE-Q1` | `ZINTEGROWANE 2026-08-22 (main `cd453fbc`, FALA 317 #7, commit integracji `36dff8e9`) — korekta statusu 2026-09-11, wiersz był STALE` | Karty ulepszeń pokazują graczowi surowy wewnętrzny dziennik balansu (`surowiecOdblokowany_uwaga` w `terrain-improvements.json`, 9/14 kluczy dotkniętych). Czysto opisowe, nie source-of-truth (`surowiec_ilosc_tura` to prawdziwa liczba używana przez silnik). Nie regres — pole zawsze pełniło tę funkcję. Naprawa: `improvementAdapter.ts` przestaje renderować to pole graczowi; dane JSON zostają nietknięte. Pełny opis w `PYTANIA-OTWARTE.md`. **Potwierdzone 2026-09-11: pole `surowiecOdblokowany_uwaga` istnieje wyłącznie w typie `improvementAdapter.ts:53` (deklaracja pola przyjmowanego z JSON), zero renderu do gracza w dzisiejszym kodzie. Nic do dispatchu.** |
-| `P-BUILDMODE-LOCKTIP-ZASLANIA-LISTE-Q1` | `ZINTEGROWANE 2026-08-22 (main `9d3724b7`, FALA 317 #8, commit integracji `36dff8e9`) — korekta statusu 2026-09-11, wiersz był STALE` | Tooltip „zablokowane przez technologię" w panelu „ULEPSZENIA TERENU" (`buildModeHud.ts::showLockTip()`) pozycjonowany sztywnym offsetem bez sprawdzenia viewportu/listy — zasłania wiersze poniżej. Gotowy wzorzec flip/clamp już istnieje 3× w repo (`techTreeView.ts`, `hoverDetailDock.ts`, `hudTitleTooltip.ts`). Mała, jednomiejscowa naprawa. Pełny opis w `PYTANIA-OTWARTE.md`. **Potwierdzone 2026-09-11: `showLockTip()` w dzisiejszym `gra/src/ui/buildModeHud.ts:426` liczy pozycję z komentarzem jawnie odwołującym się do flip/clamp (`:262-269`, `:436-438`), zasięg viewportu uwzględniony. Nic do dispatchu.** |
-| `P-CIVPEDIA-KARTY-AKCJE-PRZYCISKI-NIEOSTYLOWANE-Q1` | `ZINTEGROWANE 2026-08-22 (main `519a56c7`, FALA 317 #9, commit integracji `36dff8e9`) — korekta statusu 2026-09-11, wiersz był STALE` | Znalezisko Final Control przy weryfikacji `P-CIVPEDIA-KARTY-LINKI-NIEOSTYLOWANE-REGRES-T10-Q1`: `.entity-card-action`/`-primary`/`-secondary` (przyciski „Rozpocznij badanie"/„Otwórz drzewo", `data.actions`, żywa ścieżka) nie mają ŻADNEGO CSS od T1, identyczny brzydki natywny wygląd jak `row-value` przed naprawą. Nie regres, poza allowlistą poprzedniego tematu — wydzielone osobno. Naprawa: styl wypełnionego przycisku (nie link), analogicznie do `.entity-card-more`, plus nowy test renderujący kartę z `actions`. Pełny opis w `PYTANIA-OTWARTE.md`. **Potwierdzone 2026-09-11: klasy `.entity-card-action-primary`/`-secondary` ze stylem (gradient/obwódka, komentarz „Wzorzec tla/obwodki") obecne w dzisiejszym `gra/src/ui/entityCards/renderer.ts:902-906`. Nic do dispatchu.** |
-| `P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES2-Q1` | `ZINTEGROWANE 2026-08-22 (main `cff12e17`, FALA 317 #5, commit integracji `36dff8e9`) — WIERSZ DODANY 2026-09-11, temat był ZINTEGROWANY ale bez własnej pozycji w tym indeksie` | Drugie zgłoszenie tego samego obszaru (pierwsze: `R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1` Wątek D, FALA 310): pula Pracy imperium deklarowała przyrost +3/turę, realny przyrost turę-po-turze był tylko +1. Przyczyna: `refreshLiveEmpireRatesUnsafe()` (żywa projekcja HUD) nadpisywała poprawnie policzony `_lastPracaRate` z końca tury niepełną formułą (znała tylko upkeep, pomijała 3 pozostałe drenaże). Fix: nowa flaga-guard `_pracaRateFreshFromEndTurn`. Pełny opis w `PYTANIA-OTWARTE.md`. **Potwierdzone 2026-09-11: `_pracaRateFreshFromEndTurn` żywe w dzisiejszym `gra/src/main.ts` (deklaracja `:11140`, set `:32073`, konsumpcja `:18061-18063`, reset `:10913`). Nic do dispatchu.** |
-| `P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1` | `ZINTEGROWANE 2026-08-22 (main `3b1e70b6`, FALA 318, commit integracji `3b1e70b6`) — WIERSZ DODANY 2026-09-11, temat był ZINTEGROWANY ale bez własnej pozycji w tym indeksie` | Znalezisko Operatora (2026-08-22, nie zgłoszenie właściciela wprost) przy pracy nad `P-PRACA-PANEL-IKONY-NIESPOJNE-Q1`: panel miasta „PODZIAŁ PRACY" pokazywał surowe emoji (🔨/🏛/📦/👤) zamiast ikon marki. Naprawione przez istniejący system `CP_INLINE_EMOJI_BRAND`/`cpInlineIcons()`, dodane brakujące mapowanie `📦`→`chip-crate`, naprawione 2 miejsca omijające helper (hero + intro karty). Pełny opis w `PYTANIA-OTWARTE.md`. Analogiczny wzorzec w innych panelach wydzielony jako `P-EMOJI-SUROWE-INNE-PANELE-Q1` (nie dispatchowany). **Potwierdzone 2026-09-11: `CP_INLINE_EMOJI_BRAND`/`cpInlineIcons()` obecne i używane w dzisiejszym `gra/src/ui/cityPanel.ts:863`/`1805`/`1835`. Nic do dispatchu.** |
-| `P-PRACA-BUDMODE-SLIDER-MAX-50-NIESPOJNY-Q1` | `ZINTEGROWANE 2026-08-23 (main `85ea0292`, FALA 319, commit integracji `ab66195c`) — WIERSZ DODANY 2026-09-11, temat był ZINTEGROWANY ale bez własnej pozycji w tym indeksie` | Trzecie zgłoszenie tego samego obszaru (pierwsze: FALA 310 Wątek D; drugie: `P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1`): suwaki „budżetu automatu" ulepszeń terenu (empire+city) w panelu budowy były fizycznie ograniczone do 50% mimo naprawionego wcześniej backendu — druga część tego samego regresu (backend/`clampUlepszeniaPracaPercent` naprawiony pod `P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1`, ten temat naprawiał UI suwaka osobno). Pełny opis w `PYTANIA-OTWARTE.md`. **Potwierdzone 2026-09-11: commit `85ea0292` (merge `autobot/PRACA-BUDMODE-SLIDER-MAX-Q1`) jest przodkiem dzisiejszego `HEAD`, zmienia `gra/src/ui/buildModeHud.ts`. Nic do dispatchu.** |
-| `P-SPICHLERZ-AUTO-ZYWIENIE-PRZYCISK-TEKST-Q1` | `ZINTEGROWANE 2026-08-23 (main `c3bd483b`, FALA 319, commit integracji `ab66195c`) — WIERSZ DODANY 2026-09-11, temat był ZINTEGROWANY ale bez własnej pozycji w tym indeksie` | Zgłoszenie właściciela (2026-08-22, ze zrzutu ekranu panelu Spichlerza centralnego, przycisk z `P-SPICHLERZ-AUTO-ZYWIENIE-MASOWY-PRZYCISK-Q1`): „Tutaj powinna być tylko na przycisku nazwa auto-wyżywienie, a wszystkie pozostałe informacje w tooltipie." Etykieta skrócona do „Włącz Auto-Żywienie", pełne wyjaśnienie przeniesione do natywnego `title`. Pełny opis w `PYTANIA-OTWARTE.md`. **Potwierdzone 2026-09-11: etykieta „Włącz Auto-Żywienie" + tooltip `title` obecne w dzisiejszym `gra/src/ui/empireDetailPanel.ts:~175-186`, komentarz w kodzie cytuje wprost to ID. UWAGA — nie mylić z późniejszym, ŚWIADOMYM cofnięciem przez właściciela części tej decyzji (ECHO „2+3”, temat następczy `R-SPICHLERZ-STAN-I-PRZELACZNIK-Q1`, „ZAREJESTROWANE, NIE DISPATCHOWANE" — patrz niżej w tym pliku) — TEN temat (`PRZYCISK-TEKST-Q1`, czysto etykieta+tooltip) jest zintegrowany i zamknięty, następca dotyczy osobnej decyzji (przełącznik trwały vs akcja jednorazowa) i nie jest częścią tej listy weryfikacji. Nic do dispatchu z tego konkretnego tematu.** |
-| `P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES3-Q1` | `ZINTEGROWANE 2026-08-23 (main `b5a245e4`, FALA 319, commit integracji `ab66195c`) — WIERSZ DODANY 2026-09-11, temat był ZINTEGROWANY ale bez własnej pozycji w tym indeksie` | Trzecie zgłoszenie tego samego obszaru (pierwsze: FALA 310 Wątek D; drugie: `P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES2-Q1`, ZINTEGROWANE main `cff12e17`): drugi, bliźniaczy bug tej samej klasy — guard end-of-turu z REGRES2 chronił tylko `_lastPracaRate`, nie chronił równoległego nadpisania `_lastPlayerCityEcon` (tabela popupu imperium) projekcją zamiast realnym tickiem tury. Fix: guard rozszerzony o `refreshPlayerCityEcon(preview.perCity)`. Pełny opis w `PYTANIA-OTWARTE.md`. **Potwierdzone 2026-09-11: commit `b5a245e4` (merge `autobot/PRACA-PULA-REGRES3-Q1`) jest przodkiem dzisiejszego `HEAD`. Nic do dispatchu.** |
-| `P-WYDARZENIA-NAGLOWEK-KONIEC-TURY-ZBEDNY-Q1` | `ZINTEGROWANE 2026-08-22 (main `7d1fee7d`, FALA 319, commit integracji `ab66195c`) — WIERSZ DODANY 2026-09-11, temat był ZINTEGROWANY ale bez własnej pozycji w tym indeksie` | Zgłoszenie właściciela: karty zdarzeń w panelu bocznym pokazywały redundantne „Koniec tury" jako duży nagłówek zamiast „Wydarzenie". Fix: generyczny fallback `title:'Koniec tury'` (`eot-event-defer.ts:167`) zmieniony na `''`; gdy `title===''`, słowo „Wydarzenie" awansuje z małego overline do dużego, tytułowego slotu (klasa `.sp-title-generic`); zdarzenia ze specyficznym tytułem (np. „Dyplomacja") bez zmian; klucz deduplikacji przełączony z `title+subtitle` na sam `subtitle`. Pełny opis w `PYTANIA-OTWARTE.md`. **Potwierdzone 2026-09-11: `.sp-title-generic`/logika „Wydarzenie" w dzisiejszym `gra/src/ui/sidePanelHud.ts` (komentarze i implementacja ok. l. 40/808-810). Nic do dispatchu.** |
-| `P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1` | `ZINTEGROWANE 2026-08-23 (main `d146c0c6`, FALA 319, commit integracji `ab66195c`) — 2 DECISION_REQUIRED czekają na właściciela — WIERSZ DODANY 2026-09-11, temat był ZINTEGROWANY ale bez własnej pozycji w tym indeksie` | Zgłoszenie właściciela: pełny audyt wszystkich typów kart w panelu bocznym zdarzeń — który typ ma zostać czysto informacyjny, a który powinien być klikalny i przekierowywać do docelowego miejsca w grze. Wynik: 8 rodzin dostało klikalny skrót do już istniejącego miejsca docelowego (eliminacje, wojny, naruszenia granic, chatki, szlaki handlowe, auto-racje, nowa epoka), zasada „karta nie może obiecać przejścia, którego handler nie wykona" (`sp-no-link`/`cursor:default` gdy brak potwierdzonego celu). Dwa DECISION_REQUIRED nadal czekają na właściciela: `P-WYDARZENIA-ELIMINACJA-PODBOJ-KARTA-Q1` i `P-WYDARZENIA-EOT-KONTEKST-DLUG-Q1` (osobne wpisy w `PYTANIA-OTWARTE.md`, NIE część tej weryfikacji). Pełny opis w `PYTANIA-OTWARTE.md`. **Potwierdzone 2026-09-11: `sidePanelEventLinkFor`/`sidePanelEventLinkKind` (z `game/side-panel-event-link.ts`) żywe w dzisiejszym `gra/src/main.ts` (import `:946-950`, użycie `:15196-15197`). Sam audyt/implementacja tego tematu jest zintegrowana; dwie decyzje produktowe pozostają otwarte jako OSOBNE tematy, nie do dispatchu jako ten ID.** |
+| `P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1` | `NOWE — recon zamknięty, gotowe do dispatchu (wstrzymane na wyraźne polecenie właściciela)` | Zgłoszenie właściciela (2026-08-22): suwak „Automatyzacja ulepszeń terenu → Ręczny" (`UlepszeniaEmpirePolicy.pracaAutoPercent`) błędnie ograniczony do 0-50% zamiast 0-100% — pomyłkowe rozszerzenie stałej `MAX_PRACA_WSPOLNY_WOREK_PROCENT=50` z NIEZALEŻNEGO pola `EmpirePracaSplit.procentUlepszenia` (to drugie ma zostać 0-50%, poprawne). Recon potwierdził dokładną przyczynę w `clampUlepszeniaPracaPercent()` (`cities.ts:208-211`), 2 wywołania w `main.ts`, 3 pliki testowe do aktualizacji. Pełny opis w `PYTANIA-OTWARTE.md`. |
+| `P-PRACA-SPLIT-UI-JEDEN-SUWAK-Q1` | `NOWE — recon zamknięty, gotowe do dispatchu (wstrzymane na wyraźne polecenie właściciela)` | Zgłoszenie właściciela (2026-08-22, czysty UX, bez zmiany parametrów): panel „PODZIAŁ PRACY" (`renderEmpirePracaBudgetSplitSection()`, `empireDetailPanel.ts:1120-1154`) ma dziś dwa osobne boksy Budynki/Ulepszenia zamiast jednego suwaka pełnej szerokości z etykietami po bokach + klikalne min/max na krańcach. Gotowy gradient CSS (`laborSliderFillStyle()`) już istnieje jako martwy kod z wcześniejszego, świadomie zastąpionego wzorca — częściowy powrót na żądanie właściciela. Pełny opis w `PYTANIA-OTWARTE.md`. |
+| `P-SPICHLERZ-AUTO-ZYWIENIE-MASOWY-PRZYCISK-Q1` | `NOWE — recon zamknięty, gotowe do dispatchu (wstrzymane na wyraźne polecenie właściciela)` | Zgłoszenie właściciela (2026-08-22): nowy przycisk w panelu „SPICHLERZ CENTRALNY" (`renderDefaultPoziomRacjiSection()`, `empireDetailPanel.ts:134-161`) ustawiający `autoWyzywienie=true` dla wszystkich miast bez `poziomRacjiOverride`. Oba mechanizmy (`city.autoWyzywienie`, `city.poziomRacjiOverride` + wzorzec masowej propagacji `broadcastPoziomRacjiToOwnerCities()`) już istnieją — prosta zmiana, nie wymaga nowego mechanizmu ekonomii. Pełny opis w `PYTANIA-OTWARTE.md`. |
+| `P-PRACA-PANEL-IKONY-NIESPOJNE-Q1` | `ECHO ZAPISANE — gotowe do dispatchu (wstrzymane na wyraźne polecenie właściciela)` | Zgłoszenie regresu (2026-08-22): panel miasta „PODZIAŁ PRACY" ma DWIE różne ikony dla „Ulepszenia" (`tb-build` młotek vs `chip-crate` skrzynka, ta druga dodana commitem `bd03ed3e`/Wątek F 2026-08-21). ECHO właściciela: ujednolicić do `chip-crate` (skrzynka), zachować ikony (nie przechodzić na tekst), Operator ma dodatkowo zweryfikować wizualnie (Playwright) czy ikona wagi realnie gdzieś występuje. Pełny opis w `PYTANIA-OTWARTE.md`. |
+| `P-CIVPEDIA-KARTY-LINKI-NIEOSTYLOWANE-REGRES-T10-Q1` | `NOWE — recon zamknięty, WYMAGA jednej decyzji stylu` | Regres z T10 (FALA 315, commit `f17e257e`): brak CSS dla `.entity-card-row-key`/`.entity-card-row-value` w `entityCards/renderer.ts` — linkowalne wartości renderują się jako nieostylowane, białe `<button>`. Naprawa: 1 blok CSS w `ENTITY_CARD_CSS`, wspólny dla wszystkich 4 adapterów. Brak wzorca designera dla stylu linku (świadomie odroczone w brief). Dodatkowy zakres: ten sam typ usterki w karcie budynku wewnątrz panelu budowy miasta (`cityPanel.ts`, inny komponent). Pełny opis w `PYTANIA-OTWARTE.md`. |
+| `P-CIVPEDIA-KARTY-NOTATKI-DEWELOPERSKIE-Q1` | `NOWE — recon zamknięty, gotowe do dispatchu bez ABC` | Karty ulepszeń pokazują graczowi surowy wewnętrzny dziennik balansu (`surowiecOdblokowany_uwaga` w `terrain-improvements.json`, 9/14 kluczy dotkniętych). Czysto opisowe, nie source-of-truth (`surowiec_ilosc_tura` to prawdziwa liczba używana przez silnik). Nie regres — pole zawsze pełniło tę funkcję. Naprawa: `improvementAdapter.ts` przestaje renderować to pole graczowi; dane JSON zostają nietknięte. Pełny opis w `PYTANIA-OTWARTE.md`. |
+| `P-BUILDMODE-LOCKTIP-ZASLANIA-LISTE-Q1` | `NOWE — recon zamknięty, gotowe do dispatchu bez ABC` | Tooltip „zablokowane przez technologię" w panelu „ULEPSZENIA TERENU" (`buildModeHud.ts::showLockTip()`) pozycjonowany sztywnym offsetem bez sprawdzenia viewportu/listy — zasłania wiersze poniżej. Gotowy wzorzec flip/clamp już istnieje 3× w repo (`techTreeView.ts`, `hoverDetailDock.ts`, `hudTitleTooltip.ts`). Mała, jednomiejscowa naprawa. Pełny opis w `PYTANIA-OTWARTE.md`. |
+| `P-CIVPEDIA-KARTY-AKCJE-PRZYCISKI-NIEOSTYLOWANE-Q1` | `NOWE — recon zamknięty (znalezisko Final Control), gotowe do dispatchu bez ABC` | Znalezisko Final Control przy weryfikacji `P-CIVPEDIA-KARTY-LINKI-NIEOSTYLOWANE-REGRES-T10-Q1`: `.entity-card-action`/`-primary`/`-secondary` (przyciski „Rozpocznij badanie"/„Otwórz drzewo", `data.actions`, żywa ścieżka) nie mają ŻADNEGO CSS od T1, identyczny brzydki natywny wygląd jak `row-value` przed naprawą. Nie regres, poza allowlistą poprzedniego tematu — wydzielone osobno. Naprawa: styl wypełnionego przycisku (nie link), analogicznie do `.entity-card-more`, plus nowy test renderujący kartę z `actions`. Pełny opis w `PYTANIA-OTWARTE.md`. |
 | `P-HANDEL-SZLAKI-MECHANIKA-RECON-Q1` | `RECON ZAMKNIĘTY` | Pełne wyjaśnienie mechaniki szlaków handlowych (aktywacja: pokój+traktat+łączność+sloty; dochód: `floor(8−0.4×dystans)` złota + 5%/trasa Handlu) i dokładnej przyczyny usterki N5 (mismatch `floor` forward vs `round` reverse w `main.ts`/`empireDetailPanel.ts` — kosmetyczny, nie dotyka skarbca). Pełny opis w `PYTANIA-OTWARTE.md`. Wydzielone nowe znalezisko: `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1`. |
 | `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1` | `ROZWIĄZANE (zweryfikowane reconem 2026-09-07)` | Recon potwierdził: kod jest dziś SPÓJNY — wszystkie 3 miejsca liczące dochód trasy (panel Handlu, chip HUD, skarbiec) wołają identyczną `tradeRouteTotalDistanceIncome`/`computeTradeRouteIncomeByCity` z `trade-routes.ts`, zero duplikatu wzoru. Rozwiązane przy T2 `R-HANDEL-SZLAKI-PRZEBUDOWA-Q1` (merge `a3276dda`, 2026-08-22) — ten wpis rejestru był po prostu nieaktualny. Nic do dispatchu. |
 | `P-SCIENCE-HUB-TEST-BASELINE-2-4-Q1` | `ZINTEGROWANE` | Przyczyna: stary próg `>=5` w teście od początku (era Kamień ma stabilnie 4 technologie Poziom=1 bez prereq). Naprawiony na `>=4` + komentarz. Zero zmian w `gra/src/`/`gra/data/`. Operator→Evaluator→Final Control PASS. Zintegrowane do `main`. |
@@ -118,7 +496,7 @@ historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgady
 | `R-HOTSEAT-ETAP6F-START-MIGRACJA-Q1` | `ZINTEGROWANE` | Commit `0a1b6b7e`. Implementacja WYŁĄCZNIE części (i) — "prosta migracja" — pod-etapu 6f planu hot-seat, na podstawie zamkniętego recon. `restoreAiRosterFromSave` (ścieżka legacy-save bez zapisanego rosteru AI): `.filter(id=>id!==0)` → `.filter(id=>isAiOwner(humanSeats,id))`, wykluczając WSZYSTKICH ludzi (dziś `[0]`, docelowo `[0,1]`), nie tylko ownera 0. `repairAiRosterFromMap`/`fillAiOwnerCivMap` — bez zmian kodu, jawnie udokumentowane źródłowo dlaczego (pierwsza już generyczna przez `allAiOwnerIdsOnMap()`/`isAiOwner`; druga operuje na `aiStartHexes`, który z definicji nie zawiera ownerId ludzi dopóki nie istnieje drugi heks startowy — to jest część (ii), NOWA funkcjonalność, poza zakresem tego tematu). Nowa bramka headless Node `hotseat-etap6f-start-migracja-test.cjs`: scenariusz z symulowanym `humanOwnerIds=[0,1]` (nietautologiczny — regresja na starym kodzie, fix na nowym, nie tylko `[0]` co byłoby tautologią przy jednym elemencie). Operator→Evaluator→Final Control PASS, zero zarzutów, wszystkie 3 role zweryfikowały ten sam diff niezależnie z identycznym wynikiem. tsc czysty, 5 bramek referencyjnych zielone. Część (ii) tego podetapu (drugi heks startowy, drugi wybór cywilizacji w menu) pozostaje niedispatchowana — wymaga projektu nowej funkcjonalności, nie migracji. |
 | `R-HOTSEAT-ETAP6E-PREREQ-BOOT-TDZ-Q1` | `ZINTEGROWANE` | Commit `7dcb3c21`. Prerekwizyt odblokowujący `R-HOTSEAT-ETAP6E-RENDER-Q1`, który znalazł realny blokujący problem: migracja miejsc kategorii render na `isMe()`/`ME()` psuła start gry przez Temporal Dead Zone — `_cityRenderOpts()` (main.ts ok. 2440-2506) jest wołane bezwarunkowo na starcie, długo przed deklaracją `humanSeats`/`ME()`/`isMe()` (Etap 6a). Naprawa: forward-declare `meForRender` przed `_cityRenderOpts()` — wzorzec identyczny z już istniejącym w tej samej funkcji rozwiązaniem tego samego problemu (`cityBuiltIdsForRender`/`cityProdForRender`, z komentarzem źródłowym "unika TDZ przy pierwszym sync"), fallback = dzisiejsze zachowanie (`HUMAN_OWNER_PRIMARY`), zero zmiany logiki. **Kontrola negatywna wykonana niezależnie TRZYKROTNIE** (Operator, Evaluator, Final Control — każdy osobno odtworzył realny crash `ReferenceError: Cannot access ... before initialization` na kodzie sprzed fixu, potwierdzając że test faktycznie wykrywa TDZ, nie fałszywie-zieloną bramkę). Operator→Evaluator→Final Control PASS, zero zarzutów. tsc czysty, 5 bramek referencyjnych zielone. Potwierdzony brak nakładania z równoległymi `R-HOTSEAT-ETAP6C-ECONOMY-Q1`/`R-HOTSEAT-ETAP7-SAVELOAD-Q1`. Następny krok: wznowienie `R-HOTSEAT-ETAP6E-RENDER-Q1` na tej samej gałęzi/ID bez blokady TDZ. |
 | `R-HOTSEAT-ETAP6C-ECONOMY-Q1` | `ZINTEGROWANE` | Commit `c271f065`. Implementacja Etapu 6c (podetap "ekonomia" Etapu 6) na podstawie zamkniętego recon: 32 miejsca core (22 main.ts + 5 write-site cache + 5 `game/*.ts`) zmigrowane na `isHuman(ownerId)` (NIE `isMe` — ekonomia liczy wszystkich ludzi jednocześnie). **Krytyczne znalezisko recon zaadresowane**: blok bankowania Skarbiec/Nauka/utrzymanie w `runWorldEndTurn()` przepisany na pętlę po `humanSeats.humanOwnerIds` (symetria z pętlą AI). Klaster F (auto-ulepszenia terenu) — Evaluator znalazł że filtr wstępny `isHuman` nie wystarczał, ~15 dalszych wywołań wewnątrz było zaszytych na literał 0 (realne mieszanie danych/puli Pracy między fotelami) — naprawione pętlą po `humanOwnerIds` z konsekwentnym `hOid`. 2 rundy Evaluatora + Obrona + Final Control. **Final Control: zero NAPRAW, integracja niezablokowana**, ale 2 pozycje sklasyfikowane `DO DECYZJI CZŁOWIEKA` (nie blokują tej integracji, dziś behawioralny no-op) — patrz osobny wpis `P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-Q1` niżej. Nowa bramka `hotseat-etap6c-economy-noop-test.cjs`: 70/70. tsc czysty, 5 bramek referencyjnych + 6 bramek ekonomii/trudności zielone. Następny krok: implementacja Etapu 6d (dyplomacja — wymaga ABC właściciela co do zakresu) po pozostałych podetapach. |
-| `P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-Q1` | `ECHO 2026-09-11 = przebuduj cache per-fotel teraz; recon zamknięty 2026-09-11 (commit 569d74fc); implementacja w dispatchu` | Dwie pozycje sklasyfikowane przez Final Control jako `DO DECYZJI CZŁOWIEKA`, nieblokujące integracji migracji (dziś no-op, bo `humanOwnerIds` ma długość 1): **(1)** brak bramki dowodu no-op opartej o żywy Chromium dla Klastra F (auto-ulepszenia terenu, DOM-bound) i Klastra G (write-site cache HUD-bound) w Etapie 6c — dostarczona bramka jest w 100% headless Node, co dispatch tego tematu wprost wymagał inaczej (wzorem recon §5/§6); headless wystarcza jako dowód logiki, ale brak wizualnego potwierdzenia. **(2)** `setOwnerPracaPool()` (main.ts, akcesor Etapu 3, NIE zmieniony w Etapie 6c) ma bezwarunkowy efekt uboczny `_lastPraca = playerPracaPool` — ale `playerPracaPool` jest aliasowane WYŁĄCZNIE dla `HUMAN_OWNER_PRIMARY` (fotel 0). Przy realnym drugim fotelu człowieka HUD-owy czip „Praca" po końcu tury pokazywałby pulę fotela 0, nie fotela który właśnie skończył turę — realne mieszanie danych HUD. **ECHO właściciela 2026-09-11 (pytanie zadane po zamknięciu Etapu 8-UI, kiedy problem stał się realny na ścieżce krytycznej): przebuduj cache `_last*` na strukturę per-fotel TERAZ, jako osobny temat.** Pełny przebieg (recon zamknięty, drugie ECHO co do zakresu, dispatch implementacji) opisany w osobnej sekcji `P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-Q1 — DALSZY PRZEBIEG` niżej w pliku (poza tabelą). |
+| `P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-Q1` | `NOWE — ABC (znalezisko Final Control tematu R-HOTSEAT-ETAP6C-ECONOMY-Q1, DO ZROBIENIA przed produkcyjnym włączeniem drugiego fotela)` | Dwie pozycje sklasyfikowane przez Final Control jako `DO DECYZJI CZŁOWIEKA`, nieblokujące integracji migracji (dziś no-op, bo `humanOwnerIds` ma długość 1): **(1)** brak bramki dowodu no-op opartej o żywy Chromium dla Klastra F (auto-ulepszenia terenu, DOM-bound) i Klastra G (write-site cache HUD-bound) w Etapie 6c — dostarczona bramka jest w 100% headless Node, co dispatch tego tematu wprost wymagał inaczej (wzorem recon §5/§6); headless wystarcza jako dowód logiki, ale brak wizualnego potwierdzenia. **(2)** `setOwnerPracaPool()` (main.ts, akcesor Etapu 3, NIE zmieniony w Etapie 6c) ma bezwarunkowy efekt uboczny `_lastPraca = playerPracaPool` — ale `playerPracaPool` jest aliasowane WYŁĄCZNIE dla `HUMAN_OWNER_PRIMARY` (fotel 0). Przy realnym drugim fotelu człowieka HUD-owy czip „Praca" po końcu tury pokazywałby pulę fotela 0, nie fotela który właśnie skończył turę — realne mieszanie danych HUD. Poprawna naprawa wymaga decyzji architektonicznej (przebudowa cache `_last*` na per-fotel) wykraczającej poza migrację literałów. **Obowiązkowe do zamknięcia PRZED faktycznym uruchomieniem drugiego fotela produkcyjnie** (Etap 8 planu) — nie blokuje dalszej migracji literałów w podetapach 6d/6e/6f. |
 | `R-HOTSEAT-ETAP7-SAVELOAD-Q1` | `ZINTEGROWANE — OSTATNI etap całego planu hot-seat` | Commit `67f20587`. Format zapisu v3 (`gracze[]`, `exploredByHuman`, `humanOwnerIds`, `activeHumanOwnerId`), zgodny z **ABC-4**: ZERO funkcji migrującej v2→v3, stare zapisy przestają działać z czytelnym komunikatem (`IncompatibleSaveFormatError`, próg `ver<3` przed destrukturyzacją) zamiast cichej awarii/wczytania śmieci. Kolejność `openStartupMainMenu()`/`showHintMessage()` poprawna (ta sama klasa buga co historyczny N-ZINDEX-TOAST, naprawiona już na etapie recon). **2 żywe dowody Chromium**: pełny roundtrip zapis→wczytanie z 2 fotelami ludzkimi i niepustym stanem (potwierdzony odczytem IndexedDB), realny toast komunikatu dla wstrzykniętego zapisu v2 przez prawdziwy dialog „Wczytaj grę" — zrzuty w `dyspozycje/autobot/runs/R-HOTSEAT-ETAP7-SAVELOAD-Q1/dowody/`. Operator→Evaluator→Final Control PASS, zero zarzutów w żadnej rundzie. Nowa bramka `hotseat-etap7-saveload-test.cjs`: 59/59. tsc czysty, 5 bramek referencyjnych zielone. **Z integracją tego tematu Etap 7 (ostatni z całego planu hot-seat) jest zamknięty** — pozostają: implementacja pozostałych podetapów Etapu 6 (6d poza zamigrowanym podzbiorem silnika, 6e w toku, 6f część (ii) nowa funkcjonalność) przed faktycznym uruchomieniem hot-seatu (Etap 8, poza tym planem). |
 | `P-HOTSEAT-ETAP7-FIXTURE-BUMP-Q1` | `ZINTEGROWANE` | Commit `75468ee0`. `gra/tools/barb-camp-blacklist-test.cjs` (crashował na fixturze `wersja:1`) i `gra/tools/fsa-autosave-test.cjs` (2/55 asercji failowały na `wersja:2`) zaktualizowane do formatu v3 (`gracze[]`/`exploredByHuman`/`humanOwnerIds`/`activeHumanOwnerId`, `wersja:3`) — semantyka testowanych danych zachowana, zero zmian w `gra/src`. Operator→Evaluator→Final Control PASS, zero zarzutów w żadnej rundzie. Nietautologiczność potwierdzona dwukrotnie niezależnie (Operator, Evaluator, Final Control — każdy własną mutacją `save.ts`). `barb-camp-blacklist-test.cjs` 19/19, `fsa-autosave-test.cjs` 55/55, tsc czysty, 5 bramek referencyjnych zielone. Nic do dispatchu z tego tematu. |
 | `R-HOTSEAT-ETAP6D-DIPLOMACY-ENGINE-Q1` | `ZINTEGROWANE (podzbiór — pod-etap 6d NIE w pełni zamknięty)` | Commit `6ce48d7d`. Implementacja OGRANICZONEGO, w pełni udokumentowanego podzbioru pod-etapu 6d (dyplomacja) na podstawie zamkniętego recon (`c6015522`): 20 nazwanych funkcji z tabeli §4 recon zmigrowane na `isHuman`/`isMe`/`ME()` (95 podmian w main.ts), wzorem `R-HOTSEAT-ETAP6F-START-MIGRACJA-Q1`. 9 aliasów nienazwanych wprost w reconie sprawdzone osobiście przez Operatora i niezależnie przez Evaluatora z cytatem ciała funkcji (`isActiveDiploOwner`, `setDiploRelation`, `establishDiplomaticContact`, `checkNewDiplomaticContacts`, `buildDiploTreasury` — już zmigrowana wcześniej w 6b, zero zmian tutaj —, `joinAllyToWar`, `applyAllianceObligationsOnWar`, `runDiplomacyTurnTick`, `buildDiplomacyLockContextBase`). Wzorzec „literał 0 jako argument" sprawdzony dla WSZYSTKICH 20 funkcji (recon sam przyznał sprawdzenie tylko 2/19) — zero rzeczywistych trafień, tylko potwierdzone false-positive. Evaluator runda 1: **zero zarzutów**. Final Control: **PASS**, gotowość TAK — własna, niezależna weryfikacja zasięgu diffu (brace-matched ekstrakt granic 20 funkcji, 0 zmienionych linii poza nimi), własne świeże uruchomienie wszystkich bramek, potwierdzony brak nakładania z równoległym `R-HOTSEAT-ETAP6E-RENDER-Q1`. Nowa bramka `hotseat-etap6d-diplomacy-engine-test.cjs`: 38/38, nietautologiczny dowód PO≠SPRZED dla `humanOwnerIds=[0,1]`. tsc czysty, 5 bramek referencyjnych zielone. **Poza zakresem tego tematu, jawnie odłożone**: pozostałe ~116 miejsc core dyplomacji + dev/playtest harness (`forceBronzeForcedWarDominoOnPlayer`, `playtestWalkaMapy`) + `game/forced-war-bronze.ts`/`game/forced-war-stone.ts`/`game/diplomacy-border-march.ts` — czekają na decyzję właściciela co do dalszego zakresu (kontynuacja pełnej inwentaryzacji vs. podział na pod-kategorie). |
@@ -126,135 +504,14 @@ historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgady
 | `R-PROC-WIELOAGENT-GITHUB-Q1` | `ZINTEGROWANE (dokument)` | Nowy plik `dyspozycje/PROTOKOL-WSPOLPRACA-WIELOAGENTOWA-GITHUB.md` — samowystarczalny protokół dla zewnętrznych agentów-Workerów (pierwszy: „Hermes", inna maszyna/kontener w chmurze, zero współdzielonego systemu plików z tą sesją). Ustala twardy podział ról: **wyłącznie ta sesja (Orkiestrator) robi `git push`/merge na `main`**; każdy Worker pracuje na gałęzi `hermes/<PEŁNE-ID>` (prefiks `H-` dla ID, żeby nigdy nie zderzyć się z istniejącym rejestrem `R-`/`P-`/`C-`), przekazuje pracę wyłącznie przez Pull Request, nigdy nie edytuje współdzielonych plików bookkeepingu (`REJESTR-PROSB-I-ZADAN.md`, `WERSJE.md`, `PYTANIA-OTWARTE.md`, `KANAL-PRACA.md`, `gra-robocza/**`, `playbook.json`) ani nie dotyka `main` bezpośrednio. Zawiera pełny kontrakt raportu (dispatch + raport końcowy, wzorem AutoBot), format PR, 10 twardych zasad (w tym C-001 build/dev, zakaz `git add -A`, zero sekretów, balans gry wymaga ABC, parytet gracz↔AI), procedurę integracji po stronie Orkiestratora i checklist. Docs-only, zero zmian w `gra/`. Dyspozycja właściciela wprost: „daj bardzo szczegółową dyspozycję... wystarczy powiedzieć: sczytaj ten plik". Do przekazania: instrukcja `Zanim zaczniesz pracę w tym repozytorium, przeczytaj w całości dyspozycje/PROTOKOL-WSPOLPRACA-WIELOAGENTOWA-GITHUB.md z brancha main i stosuj się do niego dokładnie.` Rozszerzone o §1a (rejestr agentów i zakresów — podział wg podsystemu gry, Hermes = intake dowolnej domeny) i krok 0 workflow (`git clone`/`git pull` PRZED czytaniem pliku — zgłoszone jako brakujące przez właściciela). Gotowa wklejka do kopiowania (bez czytania całego protokołu za każdym razem): `dyspozycje/_handoff/WKLEJKA-NOWY-AGENT.md`. |
 | `R-ENTITYCARD-ROZWINIETE-SEKCJE-SCROLLBAR-Q1` | `ZINTEGROWANE` | Sekcje karty technologii domyślnie rozwinięte (`openDefault: false→true` w `technologyAdapter.ts`) + trwale widoczny, stylowany pasek przewijania `.entity-card-dialog` (CSS, `scrollbar-gutter:stable`+`scrollbar-width:thin`+`::-webkit-scrollbar`). Runda 1 błędnie na Sonnet 5 (temat wizualny wymaga §5a Opus 5) — Evaluator sam zgłosił naruszenie, orkiestrator zdyspozycjonował rundę 2 na Opus 5 dla Operatora+Evaluatora, weryfikującą istniejący kod własnym żywym zrzutem Chromium (analiza pikseli, nie tylko atrybuty DOM). Evaluator rundy 2 zgłosił 4 zarzuty: #2 (bramka tautologiczna — stare kryterium zielone też na starym kodzie) i #5 (pliki tymczasowe pod stałymi nazwami w `gra/tools/`, nie w `.gitignore`) naprawione przez Obronę w branchu (bramka 21→29 asercji, `fs.mkdtempSync`); #3/#4 (dopisanie do rejestru + tabeli §6) uznane słusznie za zadania integracyjne poza allowlistą tematu, wykonane teraz przez orkiestratora (patrz niżej ABC „Pokaż pozostałe N" i wiersz §6 `R-PROC-AUTOBOT.md`). Final Control (Sonnet 5) ODDALIŁ wszystkie 4 zarzuty własnym niezależnym przebiegiem (w tym podmianą realnych plików na wersję sprzed tematu, żeby dowieść że naprawiona bramka realnie czerwienieje). Bramka tematu 29/0, 5 bramek referencyjnych zielone, `tsc` czysty. Nic do dispatchu z tego tematu. |
 | `R-ULEPSZENIA-FARMA-IRYGACJA-BYDLO-STACK-Q1` | `ZINTEGROWANE` | Commit `a3649f23`. Usunięte wzajemne wykluczanie irygacja/bydło w `canAddFoodLayer()` (`gra/src/map/improvement-build.ts`) — pole z rzeką może mieć jednocześnie farmę+irygację+bydło (grafika już na to pozwalała, mechanika nie). Kanon `KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md` rozszerzony append-only (§11). Operator→Evaluator→Final Control PASS, żywy zrzut Chromium (build+render potrójnego stosu). Bramka tematu 133/134 (1 fail pre-istniejący, potwierdzony identyczny na czystej bazie przez Final Control, niezwiązany z tym diffem). 5 bramek referencyjnych zielone. Nic do dispatchu. |
-| `P-CIVPEDIA-KARTA-JEDNOSTKI-POKAZ-POZOSTALE-N-Q1` | `ZINTEGROWANE (main e5ecf4b6)` | Karta technologii: sekcja „Jednostki" chowa nadmiar za przyciskiem „Pokaż pozostałe N" (`previewLimit`, `UNIT_PREVIEW=3` w `technologyAdapter.ts:195-198`, `renderer.ts:242-254`) — dotyczy 5 technologii: Brązownictwo (20 jednostek), Hutnictwo żelaza (19), Jeździectwo (8), Łucznictwo (6), Obróbka żelaza (4). **ECHO właściciela 2026-09-11: usuń limit `UNIT_PREVIEW`/„Pokaż pozostałe N" całkowicie — zawsze pokazuj wszystkie jednostki.** 1 runda: Evaluator 2 zarzuty (osierocony komentarz + martwy `compactHeaderOnExpand:true`; podejrzenie regresu w `entity-card-cross-links-nested-overlay-test.cjs`) — Obrona naprawiła pierwszy, obaliła drugi dowodem (flakowatość pre-istniejąca też na czystym `origin/main`, 1/3 przebiegów). Final Control PASS, pełna niezależna weryfikacja (żywy Chromium/Playwright własnym skryptem, policzone wiersze DOM dla wszystkich 5 technologii, 0 ukrytych/0 przycisków). Zintegrowane w tym drzewie z powtórną weryfikacją: `tsc` czysty, 5 bramek referencyjnych + 9 bramek entity-cards/CivPedia (w tym `entity-card-contract-test` 75/75) bez regresu. Zrzut `dowody/civpedia-brazownictwo-wszystkie-jednostki.png`. **Follow-up zarejestrowany osobno (nie blokuje)**: 2 istniejące bramki stały się fałszywie czerwone/nieaktualne wskutek tej legalnej zmiany — `P-TEST-TECH-UNLOCK-UNITS-TRIPWIRE-PRZEPROJEKTOWAC-Q1` i `P-TEST-ENTITYCARD-DIORAMA-SEKCJA-D-NIEAKTUALNA-Q1`, patrz niżej. Ślad dispatchu: `dyspozycje/autobot/runs/P-CIVPEDIA-KARTA-JEDNOSTKI-POKAZ-POZOSTALE-N-Q1/`. |
+| `P-CIVPEDIA-KARTA-JEDNOSTKI-POKAZ-POZOSTALE-N-Q1` | `NOWE — ABC (znalezisko Final Control, poza zakresem tematu macierzystego)` | Karta technologii: sekcja „Jednostki" chowa nadmiar za przyciskiem „Pokaż pozostałe N" (`previewLimit`, `UNIT_PREVIEW=3` w `technologyAdapter.ts:195-198`, `renderer.ts:242-254`) — dotyczy 5 technologii: Brązownictwo (20 jednostek), Hutnictwo żelaza (19), Jeździectwo (8), Łucznictwo (6), Obróbka żelaza (4). Sekcja ma `openDefault: true`, ale nadal wymaga kliknięcia żeby zobaczyć resztę — sprzeczne z dosłownym zgłoszeniem właściciela „wszystkie elementy rozwinięte". Wymaga decyzji ABC: usunąć limit całkowicie, czy zostawić jako świadomy mechanizm UX przeciw kartom na 20+ wierszy (np. podnieść próg zamiast usuwać). Znalezisko Operatora+Evaluatora+Final Control tematu `R-ENTITYCARD-ROZWINIETE-SEKCJE-SCROLLBAR-Q1` (poza jego allowlistą — `technologyAdapter.ts` tam ograniczone wyłącznie do linii `openDefault`). |
 | `R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1` | `ZINTEGROWANE` | Commit `2e57c2dd`. Część A (bug): strażnik ponownej weryfikacji `nakladka===Las` bezpośrednio przed komitem tartak/oboz_lowiecki do `placedImprovements`, w pętli AI i w pętli automatu ulepszeń gracza (Evaluator znalazł to drugie miejsce, Obrona naprawiła w tej samej rundzie) — zamyka wyścig: plan budowy powstał gdy hex miał las, komit wykonał się po tym jak las już zniknął. Część B (**decyzja projektowa orkiestratora, autonomiczna w nocy, DO POTWIERDZENIA RANO — ABC**): tartak dołączony do `FOREST_DEPENDENT_IMPROVEMENT_KEYS` — znika teraz razem z lasem jak obóz łowiecki, odwracając wcześniejszy kanon udokumentowany wyłącznie w komentarzu/teście (dotyczył innego, wizualnego scenariusza — znikania lasu na wzgórzu, nie ręcznej wycinki mimo istniejącego tartaku). Zgłoszone przez właściciela dwukrotnie, żywo, ze zrzutami przed/po. Operator→Evaluator→Obrona→Final Control PASS, test wyścigu 13/13 (7/13 czerwienieje na starym kodzie), test end-to-end Części B potwierdza zero ocalałych tartaków po wyrębie (538/538). 6 przekotwiczonych plików z jawną adnotacją, zero nowych regresji. 5 bramek referencyjnych zielone. |
 | `R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1` | `ZINTEGROWANE, DEPLOY-ROBOCZA` | Commit `8a9a1271`, 3 rundy (runda 2 FAIL naprawiony). Żywy bug zgłoszony przez właściciela (zrzut ekranu, baner „BOOT ERROR" w turze 1) — dwa fixy: (1) próg tury `turn>=25` dla dołączenia gracza do puli parowania wojny wymuszonej, spójny z AI; (2) usunięcie bezterminowego przechwytywania `console.error` w `gra/index.html` (BOOT ERROR CATCHER), które zamieniało każdy zwykły log w czerwony baner „crash". 5 zastałych bramek testowych naprawionych (re-anchor, SEDNO zachowane). Final Control PASS, własna niezależna próbka + przeliczenie plików (realnie 14, nie 15/17). Pełne podsumowanie wyżej (linia ok. 6280). Nic do dispatchu. |
 
-## `P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-Q1` — DALSZY PRZEBIEG (poza tabelą, 2026-09-11)
-
-**RECON `P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-RECON-Q1` ZAMKNIĘTY 2026-09-11**
-(Operator→Evaluator PASS, zero zarzutów, dokument
-`dyspozycje/autobot/runs/P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-RECON-Q1/01-operator-recon.md`,
-integracja docs-only commit `569d74fc`): klaster cache to CO NAJMNIEJ 9 zmiennych
-(`playerPracaPool`, `_lastPraca`, `_lastPracaUpkeep`, `_lastPracaAutoUlepszeniaKoszt`,
-`_lastPracaCudaKoszt`, `_lastKultura`, `_lastPracaRate`, `_pracaRateFreshFromEndTurn`,
-`_lastKulturaRate`), mechanizm regresji dokładnie zlokalizowany w `setOwnerPracaPool`
-(main.ts:27599-27607, zawsze czyta singleton zamiast `v`/`ownerId`).
-
-**Nowe, WIĘKSZE znalezisko wykraczające poza pierwotne pytanie właściciela**: sama
-`playerPracaPool` (silnik — koszty założenia miasta/wyrębu/kolejki budowy, upkeep
-końca tury, reset gry, save/load) jest TEŻ twardo przypięta do fotela 0 w wielu
-miejscach spoza tego cache — migracja samego cache naprawi WYŁĄCZNIE wyświetlanie,
-nie realne koszty/pulę fotela 2. Wydzielone jako osobny, niedispatchowany temat
-`P-HOTSEAT-PLAYERPRACAPOOL-SILNIK-PER-FOTEL-Q1` (patrz niżej).
-
-**ECHO właściciela 2026-09-11 (drugie pytanie, po recon): najpierw sam cache TERAZ,
-migracja silnika `playerPracaPool` OSOBNO, później.** Implementacja migracji cache
-(wariant C+A z recon §7: pełna migracja 9 zmiennych na `Map<ownerId,T>`, BEZ ruszania
-`playerPracaPool` silnika) — ślad dispatchu:
-`dyspozycje/autobot/runs/P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1/`.
-
-**ZINTEGROWANE 2026-09-12 (commit `54f297dc`).** 2 rundy: runda 1 Evaluator 4
-zarzuty (drugie nieaudytowane miejsce zapisu `_lastPracaRate` w
-`refreshLiveEmpireRatesUnsafe`, brak zgłoszenia wyjątku
-`_pracaRateFreshFromEndTurn`+martwy kod, niezweryfikowany zrzut ekranu w
-raporcie, cytat nieistniejącego wpisu playbooka) — Obrona naprawiła
-wszystkie 4, ale Final Control mimo 4×ODDAL wykrył WŁASNĄ, nową wadę:
-`pracaUpkeepPreview` twardo zaszyte na `.get(0)` zamiast `.get(ME())`
-(main.ts, wtedy ~18113-18115) — agregat FAIL. Runda 2: naprawione
-(`.get(ME())` + `setOwnerLastPracaUpkeep` dostał realnego wołającego dla
-`ownerId≠0` + nowy scenariusz testowy (h) z różnym utrzymaniem obu foteli).
-Final Control rundy 2: PASS-WITH-NOTES, pełna niezależna weryfikacja
-(3 warianty mutant-testingu potwierdzające że obie naprawy rund 1 i 2 są
-NIEZALEŻNIE konieczne, zero wzajemnego maskowania; cały `git diff` main.ts
-przeczytany linia po linii, zero przecięcia z 6 zakazanymi zakresami
-silnika `playerPracaPool`). Nowa bramka
-`hotseat-etap6c-lastpraca-per-fotel-test.cjs` (scenariusze a-h +
-`--assert-mutant`). `tsc` czysty, 5 bramek referencyjnych +
-`hotseat-etap6c-economy-noop-test` 70/70 + `hotseat-drugi-fotel-tura-test`
-4/4 bez regresu. **Follow-up niezablokowany, osobno zarejestrowany**:
-Final Control zauważył że `praca-pula-rate-parity-test.cjs` i
-`praca-auto-ulepszenia-koszt-split-test.cjs` straciły zdolność wykrywania
-regresji (regex dopasowany do starego kształtu kodu, semantyka
-niezmieniona, 0 fail w obu) — patrz
-`P-PRACA-BRAMKI-REGEX-OSLEPIONE-PO-LASTPRACA-Q1` niżej.
-
-## `P-PRACA-BRAMKI-REGEX-OSLEPIONE-PO-LASTPRACA-Q1` — PROCESS/GAME — **ZINTEGROWANE (main a0ded7d0)**
-
-Znalezisko Final Control rundy 2 tematu `P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1`
-(commit `54f297dc`): dwie istniejące bramki regresyjne —
-`gra/tools/praca-pula-rate-parity-test.cjs` i
-`gra/tools/praca-auto-ulepszenia-koszt-split-test.cjs` — dopasowują wynik
-literalnym regexem do starego kształtu kodu (np. wzorzec
-`_lastPracaRate -= pick.kosztPraca;`), który po migracji cache Pracy na
-per-fotel zmienił się na semantycznie identyczny, ale inaczej zapisany
-`setOwnerLastPracaRate(hOid, ownerLastPracaRate(hOid) - pick.kosztPraca)`.
-Final Control potwierdził czytaniem kodu + własną numeryczną symulacją, że
-to NIE jest regresja funkcjonalna (0 fail w obu bramkach), ale same bramki
-straciły zdolność wykrywania przyszłej regresji w tym miejscu — utraciły
-swój cel ochronny bez zauważenia (ironiczny odpowiednik incydentu C-031 tej
-sesji, tylko dla regexów bramek zamiast audytu STATUS). Naprawa: zaktualizować
-wzorce regex w obu plikach testowych do nowego kształtu kodu, bez zmiany
-semantyki asercji. Nie wymaga ABC (czysto techniczna naprawa testu). Brak
-dispatchu jeszcze.
-
-## `P-TEST-TECH-UNLOCK-UNITS-TRIPWIRE-PRZEPROJEKTOWAC-Q1` — PROCESS — **ZINTEGROWANE (main 00e9ee0e)**
-
-Znalezisko Final Control tematu `P-CIVPEDIA-KARTA-JEDNOSTKI-POKAZ-POZOSTALE-N-Q1`
-(commit `e5ecf4b6`): `gra/tools/tech-unlock-units-test.cjs` zawiera mechaniczny
-tripwire oparty o `git diff --stat` wymuszający ZERO zmian w
-`technologyAdapter.ts` — z definicji czerwony dla KAŻDEJ legalnej edycji tego
-pliku, niezależnie od tego czy zmiana jest poprawna czy nie (potwierdzone tym
-tematem: 40/1, jedyny fail to sam tripwire, reszta asercji zielona). Bramka
-straciła zdolność odróżniania regresji od legalnej zmiany. Naprawa: przeprojektować
-test na asercje semantyczne (np. „sekcja Jednostki nadal pokazuje poprawne dane
-po odblokowaniu technologii") zamiast blokować KAŻDĄ edycję pliku. Nie wymaga
-ABC (czysto techniczna naprawa testu). Brak dispatchu jeszcze.
-
-## `P-TEST-ENTITYCARD-DIORAMA-SEKCJA-D-NIEAKTUALNA-Q1` — PROCESS — **ZINTEGROWANE (main 1de5f309)**
-
-Znalezisko Final Control tematu `P-CIVPEDIA-KARTA-JEDNOSTKI-POKAZ-POZOSTALE-N-Q1`
-(commit `e5ecf4b6`): sekcja D `gra/tools/entity-card-diorama-real-render-test.cjs`
-(5 FAIL+timeout) testuje wprost przycisk „Pokaż pozostałe"/`compactHeaderOnExpand`
-dla kart technologii — usunięty świadomie i legalnie tym tematem (ECHO właściciela:
-zawsze pokazuj wszystkie jednostki). Sekcje A/B/C/E (diorama jednostek/budynków/
-cudów) nadal 100% zielone — problem jest lokalny do sekcji D. Naprawa: przepisać
-lub usunąć sekcję D, żeby nie testowała trwale usuniętego mechanizmu. Nie wymaga
-ABC (czysto techniczna naprawa/usunięcie testu nieaktualnego mechanizmu). Brak
-dispatchu jeszcze.
-
-Znalezisko recon `P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-RECON-Q1` §4 (dokument
-`dyspozycje/autobot/runs/P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-RECON-Q1/01-operator-recon.md`):
-zmienna modułowa `playerPracaPool` (main.ts:11065, aliasowana WYŁĄCZNIE do
-`HUMAN_OWNER_PRIMARY` przez `playerPracaCell`, main.ts:10784-10787) jest nadal
-używana BEZPOŚREDNIO (nie przez per-fotel akcesory `ownerPracaPool`/
-`setOwnerPracaPool` już istniejące od Etapu 3) w starszym, centralnym kodzie
-tury gracza: koszt założenia miasta (13013-13020), koszt wycinki (13195-13210),
-kolejka budowy (13241-13314), koniec tury/upkeep (31791-31824), reset nowej
-gry/save-load (36040-36901, 37809-37840). Przy realnym drugim fotelu-człowieku
-te miejsca liczyłyby koszty/pulę TYLKO dla fotela 0, niezależnie od tego, kto
-faktycznie gra — błąd SILNIKA, nie tylko wyświetlania.
-
-**ECHO właściciela 2026-09-11: świadomie odłożone — najpierw zamknąć migrację
-cache `_last*` (`P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1`), migracja silnika
-jako OSOBNY temat później.** Wymaga własnego recon przed implementacją (większy,
-ryzykowniejszy zakres niż cache — dotyka realnej ekonomii, nie tylko HUD).
-
-**RECON `P-HOTSEAT-PLAYERPRACAPOOL-SILNIK-PER-FOTEL-Q1` ZAMKNIĘTY 2026-09-12**
-(Operator→Evaluator→Final Control PASS, dokument `dyspozycje/autobot/runs/
-P-HOTSEAT-PLAYERPRACAPOOL-SILNIK-PER-FOTEL-Q1/01-operator-recon.md`, commit
-`4c451bfd`): świeża mapa miejsc SILNIKA po migracji cache `54f297dc` — linie
-przesunięte względem starego reconu, pełna lista w dokumencie. `main.ts:32120`
-(`hOidPracaPool`) rozstrzygnięte jako JUŻ poprawny per-fotel kod, nie kolizja.
-**Nowe, poważniejsze znalezisko**: save-load (`main.ts` ok. 29723 zapis,
-38032-38033 odczyt) serializuje `playerPracaPool` jako pojedynczą liczbę —
-drugi fotel człowieka traci pulę Pracy przy zapisie/wczytaniu gry, osobny i
-poważniejszy problem niż migracja HUD/upkeep. Rekomendacja Operatora: Wariant
-C (UI-handlery + upkeep końca tury + save-load) w dwóch osobnych rundach
-implementacji. Implementacja NIE dispatchowana jeszcze — czeka na decyzję
-właściciela o zakresie/priorytecie.
-
 ### Zasada migracji i historii
+
+| `R-AUTOBOT-SUBAGENT-USAGE-REPORT-Q1` | `NOWE — telemetria` | Standard `--usage-file`, wrapper `run-autobot-agent-with-usage.sh`, raport `RAPORT SUBAGENTÓW` i dane sumaryczne/per-agent; zmiana procesu AutoBot, bez zmiany kodu gry. |
+| `R-AUTOBOT-ROUTING-CONTROLLER-PREFLIGHT-Q1` | `BLOCK` | Preflight wykazał działający native create/link, parent gating i idempotency replay (`t_7380c898`→`t_826bd202`), ale nie może wystawić PASS: legacy cards nie mają jawnego idempotency key w readbacku, a worker nie ma pełnej enumeracji/update kart. Raporty `01-operator.md` i `02-evaluator.md`; brak zmian w kodzie, merge, push i deployu. |
 
 Wiersze oraz sekcje poniżej są append-only historią. Stare etykiety (`W TOKU`,
 `WDROŻONE`, `ZDEPLOYOWANE`, `SCALONE`, `CZEKA-NA-DECYZJĘ`, `SUPERSEDED` itd.)
@@ -332,6 +589,12 @@ orkiestratora; subagenci są kanałami technicznymi.
 | AI-MOC-NEXT-Q1 | 2026-08-05 | Co dalej z luką Mocy AI | **ZDEPLOYOWANE `ff7c5e49`** (FALA 239) · B=metryki | Maciej `2`=B · overlay Diag major AI · `docs/decyzje/AI-MOC-NEXT-Q1.md` · bez balansu |
 | P-AI-MAJOR-ABSORB | 2026-08-05 | Absorpcja AI major→major | **ZDEPLOYOWANE** F240 Faza1 + **F241 Faza2** `178073f9` | F2=B any-civ Hard · `P-AI-ABSORB-F2.md` |
 | P-AI-ABSORB-F2 | 2026-08-05 | Faza 2 absorb any-civ | **ZDEPLOYOWANE `178073f9`** (FALA 241) Q1=B | tylko Hard · `docs/decyzje/P-AI-ABSORB-F2.md` |
+| R-AI-DYPLO-ONLY-MIASTA-PANSTWA-Q1 | 2026-09-15 | Dyplomatyczne przejęcie tylko własnych państw-miast; korekta: późny major→major | **RECOVERY OPERATOR `t_9ee02a82`/run `310` → EVALUATOR `t_345425b1`/run `316` PASS-WITH-NOTES → FINAL CONTROL `t_009a0ff3`/run `321` PASS-WITH-NOTES → INTEGRATED LOCAL `f5a1ce51`; gate `t_f099943e` done/run325** — aktualny kontrakt: własne MP od początku; major→major tylko `hard`, od tury 25, ratio Mocy ≥10; `[supersedes: wcześniejsze ECHO A]` | Push/deploy pozostają osobnym krokiem; names future spec nie jest implementowany |
+| R-REKRUTACJA-MANPOWER-ZWROT-DISBAND-Q1 | 2026-09-15 | Po rozwiązaniu jednostki Manpower prawdopodobnie nie wraca do puli | **OPERATOR `t_6bda120d`/run `311` → EVALUATOR `t_15ae9f44`/run `313` PASS-WITH-NOTES → FINAL CONTROL `t_aa612ea3`/run `314` PASS → INTEGRATED NO_PRODUCT_DIFF; gate `t_20aa866e` done/run327** — runtime harness pozostaje evidence-only | Zweryfikowano 3 × 1000 → +3000 z kontrolą clampu; nie było zmiany gameplay code |
+| R-REKRUTACJA-KOSZT-50-DREWNO-Q1 | 2026-09-15 | Koszt rekrutacji i utrzymania jednostek epoki Kamienia | **OPERATOR `t_81bcf260`/run `312` → EVALUATOR `t_0ca86eb7`/run `315` FAIL → DEFENSE `t_cee97646`/run `320` PASS → FINAL CONTROL `t_78a7578b`/run `322` PASS → INTEGRATED LOCAL `f5a1ce51`; gate `t_dc64d2f3` done/run326** | Efektywne wartości potwierdzone: pieniądze `10/6/6/8/20/26/9/14/9/14`, Drewno `25`, Taran `38`, pieniężny upkeep bez zmian, surowcowy `5`, Taran `8`; push/deploy pozostają osobnym krokiem |
+| R-NAZWY-MIAST-PANSTWA-POOL-POPULARNOSC-Q1 | 2026-09-15 | Wspólna kolejka 110 nazw na cywilizację; pierwsza wolna nazwa dla stolicy, państwa-miasta, founding gracza/AI i obcych klastrów; suffixy `II/III` po wyczerpaniu | **DEPLOY-ROBOCZA `9d22166c` — Final Control `t_521cda84`/run `347` PASS-WITH-NOTES, zero zarzutów; commit remote `f4967698`** — właściciel A+C wdrożony; limit jednego typu cywilizacji bez zmian | Kod `baa7c3ef`; receipt `0e639c7c`; bundle SHA-256 `858e6763b77ebb93f7e29e4e5ff71a62d28d6ebc684971f59513f30eee1b116b`; `VERIFY OK`; `INFRA-043` map-gen timeout zapisany jako nota procesu |
+
+| R-THE-GAME-OWNER-CORRECTIONS-BATCH-20260915-Q1 | 2026-09-15 | Plan wykonania zleconych korekt właściciela | **PLAN REGISTER — karta `t_d3f54794`, blocked/unassigned** | Rejestr planu; nie dispatchować jako workera; następne fazy wyłącznie z kart tematów |
 | AI-BALANS-UNLOCK-Q1 | 2026-08-05 | Odblokuj strojenie liczb AI | **ECHO B** · FALA 241 docs · STEP1→F242 | wolno małe kroki · `AI-BALANS-UNLOCK-Q1.md` |
 | AI-BALANS-STEP1 | 2026-08-05 | L3 kolonizacja: pop źródła 4 | **ZDEPLOYOWANE `5b6ee97d`** (FALA 242) | `AI_COLONIZATION_SOURCE_MIN_POP_L3=4` · test 13/13 · `AI-BALANS-STEP1.md` |
 | AI-BALANS-STEP5 | 2026-08-06 | bonus_produkcja → realna Praca major AI | **ZDEPLOYOWANE** FALA 253 `b8704216` | P0-1 formalizacja (wiring F229) · test 18/18 · `AI-BALANS-STEP5.md` |
@@ -3125,50 +3388,7 @@ skopiowaną 1:1 z `empireDetailPanel.ts` (border `#4a2a2a`, tło `rgba(224,122,1
 | R-TECH-ULEPSZENIA-TERENU-SYNC-Q1 | 2026-08-21 | Naprawa dwóch bugów znalezionych w recon `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1`: widmowe/nieaktualne nazwy ulepszeń terenu w `tech.json` (Brązownictwo, Murarstwo, Oswojenie zwierząt, Wojskowość) + systemowy zły dobór ikony w `techDiscoveryNotice.ts` dla wszystkich technologii z tą sekcją. | **READY_FOR_DEPLOY (Final Control, PASS-WITH-NOTES) — czeka na integrację** | Operator PASS (48/48 testów, `tsc` czysty) → Evaluator PASS (adwersaryjnie, niezależny skrypt weryfikacyjny 0/18 rozbieżności) → Final Control PASS-WITH-NOTES: uwaga nieblokująca, poza zakresem — `tech.Uwagi` dla Brązownictwa ("ABC-7: Popalnia brązu na mapie") przecieka do gracza OSOBNYM kanałem (`cityPanel.ts::appendTechDetailBlock`, poza allowlistą tego tematu), zarejestrowane osobno niżej jako `P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1`. `terrain-improvements.json` nietknięty. Ślad: `dyspozycje/autobot/runs/R-TECH-ULEPSZENIA-TERENU-SYNC-Q1/`. |
 | P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1 — **ZDEPLOYOWANE, FALA 306** | 2026-08-21 | Znalezisko Final Control przy okazji `R-TECH-ULEPSZENIA-TERENU-SYNC-Q1`: pole `tech.Uwagi` (notatki deweloperskie, np. "ABC-7: Popalnia brązu na mapie") przecieka do gracza w `cityPanel.ts::appendTechDetailBlock()` (wywoływane z paneli budynku/jednostki) — filtr `playerFacingNote()` rozpoznaje tylko wzorce `PYTANIE`/`DECYZJA`/`DEC-\d{8}`/"patrz unit-building-bonuses", NIE rozpoznaje "ABC-7:". `techDiscoveryNotice.ts` (ten sam problem, inne miejsce) już świadomie NIE renderuje `Uwagi` — `cityPanel.ts` to przeoczył. | **ZDEPLOYOWANE, FALA 306** | Runda 1: dodano wzorzec `ABC-\d+` do `isDevOnlyPlayerText()` (whole-string reject) — Evaluator złapał regres: cała notatka Brązownictwa znikała, w tym legalna treść "kończy Epokę 1". Runda 2: przeniesiono rozpoznawanie do `stripInlineDevAnnotations()` (partial strip) — `playerFacingNote("kończy Epokę 1; ABC-7: ...")` teraz zwraca "kończy Epokę 1", nie `null`. Operator→Evaluator (PASS-WITH-NOTES)→Final Control PASS. Testy: `citypanel-uwagi-abc-filter-test.cjs` 35/35, `tsc` czysty. Znalezisko poza zakresem (Evaluator): analogiczny, nieblokujący problem w `buildings.json`/`terrain-improvements.json` (notatki ABC bez dwukropka po numerze, lub z długim ciągiem dalszym, przeciekają częściowo) — zarejestrowane niżej jako `P-BUDYNKI-UWAGI-ABC-CZESCIOWY-WYCIEK-Q1`. Ślad: `dyspozycje/autobot/runs/P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1/`. |
 | P-TECH-CARD-TEST-NIE-TESTUJE-AKTYWNEJ-SCIEZKI-Q1 | 2026-08-21 | Znalezisko Evaluatora przy `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` T3: `gra/tools/technology-discovery-card-visual-test.cjs` sekcja [2] robi `fs.readFileSync`+regex na SUROWYM TEKŚCIE `techDiscoveryNotice.ts`, nie na wyrenderowanym DOM aktywnej ścieżki — ponieważ stara implementacja (`_legacyShowTechDiscoveryNotice`) zostaje w tym samym pliku jako fallback, wzorce testu (np. `UNIT_PREVIEW = 3`, `tdn-card--compact`) trafiają w martwy kod fallbacku, nie w nową ścieżkę `entityCards`. Test dałby ten sam wynik (48 PASS) nawet gdyby aktywna ścieżka była całkowicie zepsuta. Final Control napisał jednorazowy harness DOM (esbuild+jsdom, bunduje realny kod, faktycznie woła `showTechDiscoveryNotice()`) i potwierdził poprawność na żywo (23/23), ale ten harness NIE został zapisany jako trwały test w repo. | **ZAMKNIĘTE przy okazji `R-CIVPEDIA-KARTA-AKCJE-NIE-DZIALAJA-Q1` (2026-08-21)** | Dokładnie ta luka materializowała się naprawdę: FALA 307 regres (przyciski „Rozpocznij badanie"/„Otwórz drzewo" nie reagujące na klik) przeszedł niezauważony przez zielony `technology-discovery-card-visual-test.cjs`, bo test nadal sprawdza tylko tekst źródła. Naprawiono dodając DWA trwałe testy: `gra/tools/tech-discovery-card-click-test.cjs` (esbuild+jsdom, realnie woła `showTechDiscoveryNotice()`, realny `button.click()`/`dispatchEvent(MouseEvent)` na przyciskach stopki) ORAZ `gra/tools/tech-discovery-card-real-click-test.cjs` (esbuild+Playwright/Chromium żywy, `elementFromPoint()`+`page.mouse.click()` — realny hit-test, bo jsdom NIE robi layoutu i `button.click()`/`dispatchEvent` w jsdom omija hit-testing, więc nie wykryłby faktycznej przyczyny tego konkretnego regresu, patrz `R-CIVPEDIA-KARTA-AKCJE-NIE-DZIALAJA-Q1`). Oba testy zweryfikowane przez `git stash` na PRZED-naprawą kodzie: jsdom PASS (fałszywie zielony, jak przewidziano), Playwright 6/12 FAIL (łapie regres). Ważne dla T4-T7b: ten sam wzorzec (realny hit-test przez żywy Chromium, nie tylko wywołanie handlera) warto powtórzyć dla kolejnych migracji kart. |
-| P-BUDYNKI-UWAGI-ABC-CZESCIOWY-WYCIEK-Q1 — **ZINTEGROWANE 2026-09-12 (commit `bc7ab7f6`)** | 2026-08-21 | Znalezisko Evaluatora przy okazji `P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1` (runda 2): ten sam filtr (`isDevOnlyPlayerText`/`stripInlineDevAnnotations`/`playerFacingNote`) miał dwie klasy niepełnego wycięcia notatek ABC w `buildings.json`: (a) partial-strip do pierwszej kropki (wielozdaniowe notatki dev zostawiały środkowe zdania), (b) brak dwukropka po numerze ABC (np. „(merge bez zmian, ABC-21 B)."). | **ZINTEGROWANE** | Naprawione: (1) wielozdaniowa notatka „ABC-N:" wycinana do początku OSTATNIEGO zdania tekstu; (2) nawias zawierający `ABC-\d+` wycinany w całości niezależnie od pozycji dwukropka. **Znalezisko przy okazji Operatora+Evaluatora**: pole `uwagi` budynków NIE jest dziś renderowane w ŻADNEJ ścieżce UI — komentarz w `buildingAdapter.ts:19` sugerujący `playerFacingNote(def.uwagi)` jest aspiracyjny/nieaktualny (`buildBuildingDetailCardViaEntityCard` dopełnia wyłącznie sekcję „Technologie"). Pierwotny „wyciek" formalnie nie występuje dziś na żywo — dowód wizualny Chromium niewykonalny w allowliście tej rundy z tego powodu (BLOCK zgłoszony przez obie role, zaakceptowany przez orkiestratora jako uzasadniony: filtr zweryfikowany jednostkowo 44/44 + ręczna symulacja wszystkich 5 realnych wpisów `ABC-` przez obie role niezależnie, zero regresu 2 bramek referencyjnych). Nowe, osobno zarejestrowane pytanie: `P-BUDYNKI-UWAGI-WPIAC-DO-UI-Q1` (czy w ogóle wpinać renderowanie, patrz niżej). Dwa drobne, nieblokujące znaleziska Evaluatora: (i) 2 z 5 wpisów mają RESZTKOWY, nie-ABC dev-tekst (np. „SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25:", „GRUPY-BUDYNKOW :") poza zakresem tego dispatchu (wzorzec inny niż „ABC-<numer>"); (ii) nowa logika cięcia „do ostatniego zdania" obsługuje tylko PIERWSZE wystąpienie „ABC-\d+" w polu — dziś nieistotne (żaden wpis nie ma dwóch adnotacji ABC w jednym `uwagi`), ale warto pilnować przy przyszłych wpisach danych. Ślad: `dyspozycje/autobot/runs/P-BUDYNKI-UWAGI-ABC-CZESCIOWY-WYCIEK-Q1/`. |
-
-## `P-BUDYNKI-UWAGI-WPIAC-DO-UI-Q1` — GAME — **PORZUCONE 2026-09-12 (ECHO cofnięte)**
-
-Znalezisko Operatora+Evaluatora tematu `P-BUDYNKI-UWAGI-ABC-CZESCIOWY-WYCIEK-Q1`:
-pole `uwagi` budynków (`buildings.json`) NIE jest dziś renderowane w ŻADNEJ
-ścieżce UI, mimo że komentarz w `gra/src/ui/entityCards/buildingAdapter.ts:19`
-sugeruje, że karta budynku wywołuje `playerFacingNote(def.uwagi)` — to
-nieaktualne/aspiracyjne, `buildBuildingDetailCardViaEntityCard()`
-(`cityPanel.ts:7515`) dopełnia WYŁĄCZNIE sekcję „Technologie". Dla porównania:
-`wonderAdapter.ts` i `improvementAdapter.ts` CELOWO nie renderują `uwagi` (dev-
-tekst, jawnie udokumentowane w nagłówkach tych plików) — więc istnieje realny
-precedens ZAMIERZONEGO ukrywania tego pola dla innych typów encji.
-
-**Pytanie ABC do właściciela**: czy wpiąć wiersz „Uwagi" do karty budynku
-(analogicznie do technologii, korzystając z już poprawionego filtra), czy
-zostawić pole CELOWO nierenderowane (jak cuda świata/ulepszenia terenu) i
-zaktualizować mylący komentarz w `buildingAdapter.ts:19`? Nie wymaga
-implementacji — czysta decyzja produktowa, oba warianty są tanie do
-wykonania.
-
-**ECHO właściciela 2026-09-12: wpiąć wiersz „Uwagi" do karty budynku.** Ślad
-dispatchu: `dyspozycje/autobot/runs/P-BUDYNKI-UWAGI-WPIAC-DO-UI-Q1/`.
-
-**PORZUCONE 2026-09-12 po Final Control (DECISION_REQUIRED).** Operator
-zaimplementował wariant B (osobny tile „Uwagi" w
-`buildBuildingDetailCardViaEntityCard()`, `cityPanel.ts`), Evaluator PASS
-zero zarzutów — ale Final Control, robiąc pełną niezależną weryfikację mimo
-braku zarzutów (zgodnie ze standardem tej sesji), znalazł RZECZYWISTY
-konflikt z wcześniejszą, udokumentowaną decyzją właściciela: temat
-`R-KARTY-HISTORIA-INFRA-Q1` (ECHO 2026-09-01) świadomie USUNĄŁ wiersz
-„Uwagi" z pełnych kart budynku/jednostki (ówczesny filtr dev-tekstu
-przeciekał różne style, np. „B-SUROW-BUD-03:”/„C-TARASY-Q1 Maciej data:”) i
-zostawił dedykowaną bramkę-strażnika
-`gra/tools/citypanel-uwagi-hostcard-removed-real-render-test.cjs`
-chroniącą przed reintrodukcją — ta bramka zregresowała (12/12→9/12) przez
-implementację tego tematu. Zapytany o to wprost, właściciel odpowiedział
-**„Nie wiedziałem — cofam ECHO z 09-12”** (2026-09-12). Implementacja
-(commit lokalny `5bc6fa9b`, worktree `wt-budynki-uwagi-wpiac-do-ui`) NIE
-została zintegrowana, zgałąź/worktree usunięte. Karta budynku pozostaje BEZ
-sekcji „Uwagi”, zgodnie z pierwotną decyzją `R-KARTY-HISTORIA-INFRA-Q1`.
-Ewentualny przyszły powrót do tego tematu wymaga NAJPIERW jawnego
-zaadresowania konfliktu z tamtą bramką-strażnikiem (aktualizacja/wycofanie
-jej, ze świadomością pierwotnego uzasadnienia), nie samej implementacji.
+| P-BUDYNKI-UWAGI-ABC-CZESCIOWY-WYCIEK-Q1 | 2026-08-21 | Znalezisko Evaluatora przy okazji `P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1` (runda 2): ten sam filtr (`isDevOnlyPlayerText`/`stripInlineDevAnnotations`/`playerFacingNote`) gate'uje też pole `uwagi` (małą literą) w `buildings.json`, renderowane graczowi w `cityPanel.ts:7138`. Część wpisów ABC w `buildings.json` przecieka częściowo: (a) regex wycina tylko do pierwszej kropki, więc dłuższe notatki dev (np. "ABC-20 B: suma bonusów Port... JSON. LANCUCH W GORE: ... martwe. Budowla portowa...") zostawiają wewnętrzny komentarz po pierwszym zdaniu; (b) wpisy bez dwukropka po numerze (np. "... merge bez zmian, ABC-21 B).") w ogóle nie pasują do regexa i przechodzą nietknięte. Potwierdzone: to NIE regresja tego tematu — te same wpisy przeciekały w całości już PRZED jakąkolwiek naprawą filtra (stan nie gorszy, częściowo lepszy). | **OTWARTE — nie rozpoczęte, tylko odnotowane** | Nie wymaga ABC (bug filtra/regexa, nie decyzja). Poza zakresem `P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1` (ten dotyczył wyłącznie `tech.json`/`cityPanel.ts::appendTechDetailBlock`). Brak brancha/dispatchu — do zarejestrowania z pełnym GOAL/allowlistą przed startem. |
 
 Uwaga: `R-UI-PRZYCISK-ZAKONCZ-TURE-DUPLIKAT-Q1` i `R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1` — patrz sekcje narracyjne
 z 2026-08-21 wyżej w tym pliku (zarejestrowane równolegle przez inną sesję pod tym samym ID; status pierwszego
@@ -4394,6 +4614,26 @@ zamiast cichego zaakceptowania złamania §5a.
   referencyjnych + 7 bramek związanych). Zintegrowane allowlist-only. Worktree
   i branch posprzątane.
 
+  UZUPEŁNIENIE 2026-10-29: deterministyczny test real-render w Chromium
+  `R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1` sprawdza także tartak na
+  leśnym wzgórzu. Potwierdzono `overlay=Las`, relief wzgórza, model na wysokości
+  powierzchni oraz dekor lasu 3→3 po budowie; kontrolna mutacja odtwarza regresję
+  3→1. Po późniejszym wyrębie tartak znika zgodnie z osobnym kontraktem
+  `R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1`. Operator 8/8, niezależny Evaluator
+  8/8, testy relief/qualify/typecheck zielone. Kod produktu bez zmian; dodano
+  regresyjny test i dowody. Raporty `06-operator-visual-closeout.md` oraz
+  `07-evaluator-visual-closeout.md` i screenshoty są w katalogu runu.
+
+  Final Control r2 wykrył dwie końcowe spacje w raporcie Evaluatora; Operator
+  usunął je i `git diff --check cc2c6a50..995de7b5` przeszedł. Final Control
+  retry: PASS-WITH-NOTES. Integracja zawiera wyłącznie regresyjny test, dowody
+  i raporty — nie zmienia kodu produktu. Aktualna Robocza z publikacji
+  `682a6b9a` została zbudowana z kodu źródłowego zawierającego tę naprawę;
+  ponowny deploy bundla nie jest potrzebny. Integracyjne bramki: Chromium
+  8/8, relief 8/8, kwalifikacja budowy 133/133, relief kopalni 24/24,
+  TypeScript PASS, `git diff --check` PASS. Raport Final Control retry:
+  `09-final-control-retry.md`.
+
 Kolejna kontrola zaplanowana automatycznie; po zamknięciu wszystkich powyższych
 — integracja allowlist-only każdego PASS, potem pełny deploy ROBOCZA (build →
 stamp → manifest → weryfikacja → FALA w `WERSJE.md`) i raport końcowy dla
@@ -4523,8 +4763,7 @@ z góry ustalonego zakresu) — dispatchowane równolegle.
 | ID | Prośba | Status | Uwagi |
 |---|---|---|---|
 | `P-USTAWIENIA-MIASTA-PANSTWA-WYLACZONE-Q1` | "W ustawieniach państw-miast, kiedy robimy generator, powinna być opcja nie tylko wyboru trudności [...] ale też 'wyłączone', czyli całkowicie miasta i państwa się nie generują. Są tylko same cywilizacje." | **ZINTEGROWANE** (`799fe21d`) | Domain GAME — Operator+Evaluator+Final Control Sonnet 5, effort HIGH. 4. opcja "Wyłączone" (wzorzec `barbariansLevel`/"Brak"), `clampMiastaPanstwaCount` poluzowany do 0 wyłącznie dla tej opcji. Evaluator złapał zarzut: `generator.ts:659` (gęstość chatek) nadal liczył jakby było 1 miasto-państwo — Obrona naprawiła (drugi punkt podłączenia `allowZero`), dowiedzione żywym testem end-to-end (10 vs 20 chatek). Final Control PASS. Znana kosmetyczna usterka poza allowlistą (etykieta "N w klastrze" na ekranie startu) — nienaprawiona, nieblokująca. Testy 55/55+13/13 (żywy Chromium), tsc + 5 bramek referencyjnych zielone. |
-| `R-MIASTA-PANSTWA-STARTOWE-JEDNOSTKI-Q1` | "Na najtrudniejszym poziomie [...] każde państwo-miasto powinno zaczynać od razu z dwiema jednostkami wojskowymi. Na najłatwiejszym zero, na normalnym jedna jednostka." | **ZINTEGROWANE** (`e5baa201`) — **tabela odwrócona i rozszerzona przez `H-MIASTA-PANSTWA-WOJSKO-ODNOWA-Q1` (patrz niżej)** | Domain GAME. Nowa `grantCityStateStartUnits`/`cityStateStartUnitCount` (easy=0/normal=1/hard=2), wpięta w OBU strukturalnie rozłącznych punktach foundowania miasta-państwa, zero zmian w foundowaniu gracza/cywilizacji AI. Evaluator złapał zarzut braku żywego dowodu (ekstrakcja funkcji zamiast realnego bootu) — Obrona naprawiła (żywy test Chromium, 22/22, 3 pełne generacje świata). Final Control PASS. Testy: 22/22 żywy render + 16/16 + 68/68, tsc + 5 bramek referencyjnych zielone. |
-| `H-MIASTA-PANSTWA-WOJSKO-ODNOWA-Q1` | Zlecenie właściciela 2026-09-11: obce państwa-miasta AI mają szybciej padać (odwrócić tabelę powyżej) + zweryfikować przydzielanie/uzupełnianie wojska. | **ZINTEGROWANE** (`9950ba24`) — **oś gracza (`playerStartUnitCount`) odwrócona 2026-09-13 przez `R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1` (patrz niżej), pozostałe trzy osie bez zmian** | Domain GAME. Rozdzielono trzy niezależne tabele: gracz `playerStartUnitCount` easy=1/normal=2/hard=3 (NOWA); obce klastry AI `foreignCityStateStartUnitCount` easy=2/normal=1/hard=0 (ODWRÓCONA względem `R-MIASTA-PANSTWA-STARTOWE-JEDNOSTKI-Q1` — mają szybciej padać na łatwym); państwa-miasta typu/fotela gracza nadal sterowane wyłącznie niezależnym suwakiem `_menuCityStateDifficulty` (`cityStateStartUnitCount`, niezmieniona). Dodatkowo naprawiono guard: pełna armia startowa gracza przyznawana WYŁĄCZNIE przy pierwszym mieście danego ownera/fotela (wcześniej każde kolejne miasto dublowało grant) — znalezisko własnego Evaluatora procesu, naprawione w tej samej rundzie. Audyt odnowy Manpower/HP (2%/turę, HP 40/30/20% wg trudności) bez zmian — mechanika poprawna. Proces prowadzony równolegle przez system orkiestracji „Hermes" (OpenAI gpt-5.6-luna) na osobnej gałęzi (`hermes/H-MIASTA-PANSTWA-WOJSKO-ODNOWA-Q1-kanban-r2`), przejęty i zintegrowany przez tę sesję po świeżym, niezależnym Evaluatorze (poprzedni `02-evaluator.md` był nieaktualny — opisywał stan sprzed guard-fixu) i Final Control. Integracja metodą scoped diff od faktycznego merge-base (`46bfc81e`), NIE naiwnego `origin/main..HEAD` (który myląco wyglądał jak cofnięcie 5 innych, już zintegrowanych tematów tej sesji). Testy: 9 bramek tematu (79+16+22+63+12+13+16+29+59, w tym 2 żywe Chromium) + 5 bramek referencyjnych + tsc — wszystkie zielone, w tym własna mutacja Final Control potwierdzająca guard. Ślad: `dyspozycje/autobot/runs/H-MIASTA-PANSTWA-WOJSKO-ODNOWA-Q1/`. |
+| `R-MIASTA-PANSTWA-STARTOWE-JEDNOSTKI-Q1` | "Na najtrudniejszym poziomie [...] każde państwo-miasto powinno zaczynać od razu z dwiema jednostkami wojskowymi. Na najłatwiejszym zero, na normalnym jedna jednostka." | **ZINTEGROWANE** (`e5baa201`) | Domain GAME. Nowa `grantCityStateStartUnits`/`cityStateStartUnitCount` (easy=0/normal=1/hard=2), wpięta w OBU strukturalnie rozłącznych punktach foundowania miasta-państwa, zero zmian w foundowaniu gracza/cywilizacji AI. Evaluator złapał zarzut braku żywego dowodu (ekstrakcja funkcji zamiast realnego bootu) — Obrona naprawiła (żywy test Chromium, 22/22, 3 pełne generacje świata). Final Control PASS. Testy: 22/22 żywy render + 16/16 + 68/68, tsc + 5 bramek referencyjnych zielone. |
 | (pytanie, bez kodu) | "Sprawdź, czy w kodzie jest zawieranie sojuszy [między miastami-państwami] w najtrudniejszym poziomie, bo ja nie widzę, żeby te państwa-miasta zawierały ze sobą sojusze. Coś tam chyba nie zadziałało i się wyłączyło." | **SPRAWDZONE — MECHANIZM DZIAŁA, NIE JEST WYŁĄCZONY** | Recon: `formSisterAlliancesIfThreatened()` (`main.ts:16866-16931`) jest wołane co turę (`main.ts:30680`), NIE jest martwym kodem. To NIE jest spontaniczny/losowy sojusz — zawiera się WYŁĄCZNIE gdy jednostka-zagrożenie gracza wejdzie w promień 2 heksów od siostrzanego miasta-państwa TEGO SAMEGO klastra/typu (`unitTriggersSisterAllianceThreat`), próg zależny od trudności (`citySupportByDifficulty`, hard='strong'=najniższy próg). Prawdopodobne wyjaśnienie braku obserwacji: gracz nie podszedł wystarczająco blisko, wymaga ≥2 sióstr tego samego typu klastra, lub stary zapis ma `clusterPlacement===null` (funkcja wychodzi natychmiast). Nie dispatchowane jako naprawa — jeśli właściciel nadal nie widzi sojuszy mimo bliskiego podejścia do 2+ sióstr, zgłoś ponownie z konkretnym scenariuszem do dalszego recon. |
 | `R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1` | "Państwa-miasta powinny się na początku skupić na budowie jednostek wojskowych, żeby się obronić. W tej chwili nie są w ogóle wyzwaniem. Ewentualnie powinny budować palisadę jako budynki, rekrutować jednostki i na początku skupić się na tym w dużej mierze." | **ZINTEGROWANE** (`52cbd838`) | Domain GAME, balans AI — Operator+Evaluator+Final Control Sonnet 5, effort HIGH. Cap wojska MP hard 4→7, normal 1→3 (easy bez zmian), nowy prog `CS_EARLY_GARRISON_TARGET` (easy=1/normal=2/hard=3) jako brama wojsko→ekonomia, usunieta kara score za mury/koszary po progu, Palisada dodana jako pierwszy tanszy wybor obronny przed Murami — wszystko wewnatrz `opts.defensiveCopy`, zero wplywu na cywilizacje AI (potwierdzone zywa symulacja bajt-identyczna). Final Control PASS, testy nowe/rozszerzone zielone, sweep 74 plikow bez nowych regresji, tsc + 5 bramek referencyjnych zielone. |
 
@@ -8198,134 +8437,181 @@ orkiestratora: porównanie before/after wszystkich pól potwierdziło zero zmian
 poza `Opis`/`Top3` dla dokładnie tych 13 wpisów. `tsc --noEmit` czysty, 5 bramek
 referencyjnych zielone, `entity-card-historia-section-test` 36/36,
 `entity-card-contract-test` 75/75, `civpedia-jednostki-j1-test` 161/161,
-`civpedia-jednostki-j2-test` 157/157. Pozostaje U2-U6 (62/75 jednostek).
+`civpedia-jednostki-j2-test.cjs` 157/157. Pozostaje U2-U6 (62/75 jednostek).
 
-**`R-KARTY-OPIS-TOP3-U2-Q1` — ZINTEGROWANE 2026-09-11 (commit `79122460`).** 13
-jednostek: Triari, Jeździec chiński, Hu Ben Wei (Gwardia Tygrysa), Impi,
-Oszczepnik Zulu (Izijula), uThulwana (Białe Tarcze), Wojownik z maczugą (Chaska),
-Wojownik z toporem, Procarz (Huaracoc), Oszczepnik (Estólica), Królewska
-Gwardia, Rydwan konny, Łucznik egipski. Zero zarzutów Evaluatora — lekcja z U1
-(sprawdzać remisy pól liczbowych przed superlatywem) zastosowana poprawnie za
-pierwszym razem: 6 remisów w tej partii opisane wprost, superlatywy tylko przy
-unikalnych ekstremach. `tsc` czysty, 5 bramek referencyjnych zielone,
-`entity-card-historia-section-test` 36/36, `entity-card-contract-test` 75/75,
-`civpedia-jednostki-j1-test` 161/161, `civpedia-jednostki-j2-test` 157/157.
-26/75 jednostek zrobione, pozostaje U3-U6 (49/75).
+### `INFRA-027` — recovery AI użyła superseded decyzji absorpcji
 
-**`R-KARTY-OPIS-TOP3-U3-Q1` — ZINTEGROWANE 2026-09-11 (commit `4367a5e5`).** 13
-jednostek: Rydwan egipski, Wojownik z khopesh, Medżaj (Gwardia Faraona), Łucznik
-nubijski, Łucznik sumeryjski, Rydwan sumeryjski, Włócznik sumeryjski, Gwardia
-Królewska Sumeru, Wojownik mykeński, Rydwan mykeński, Wojownik Sherden,
-Halabardnik Shang, Rydwan Shang. Zero zarzutów Evaluatora — dyscyplina
-sprawdzania remisów utrzymana (Atak=10, Obrona=8 3-way, Health=190, bonusy
-rydwanów 4-way opisane wprost). `tsc` czysty, 5 bramek referencyjnych zielone,
-`entity-card-historia-section-test` 36/36, `entity-card-contract-test` 75/75,
-`civpedia-jednostki-j1-test` 161/161, `civpedia-jednostki-j2-test` 157/157.
-39/75 jednostek zrobione, pozostaje U4-U6 (36/75).
+- **STATUS:** `RECOVERY — DO WERYFIKACJI`
+- **TEMAT:** `R-AI-DYPLO-ONLY-MIASTA-PANSTWA-Q1`
+- **KARTY/RUNY:** Operator `t_f2158fb8`, run `299`; Evaluator run `303` — terminal `PASS` względem starego kontraktu.
+- **OBJAW:** dispatch i karta wymagały całkowitego wyłączenia major→major, chociaż późniejsza decyzja właściciela jawnie superseded ten wariant: major→major ma pozostać możliwe na `hard`, od 25. tury i przy mocy agresora co najmniej 10× mocy ofiary.
+- **KLASYFIKACJA:** `INFRA/SCOPE_MISMATCH`; PASS runu `303` nie jest akceptacją aktualnej reguły gameplayu.
+- **DOWÓD:** treść karty `t_f2158fb8` zawiera „całkowicie wyłączyć ... major→major”; aktualny artefakt decyzji `docs/decyzje/R-AI-DYPLO-ONLY-MIASTA-PANSTWA-Q1.md` w § „Superseding ECHO” wymaga `hard`, `turn >= 25`, `power ratio >= 10`.
+- **KOREKTA:** zachowano runy `299/303`; zapisano `attempt-2/00-dispatch.md` w tym samym worktree z aktualnym kontraktem. Nie uruchamiać Final Control dla starego zakresu.
+- **NASTĘPNY DOWÓD:** recovery Operator → niezależny Evaluator → Defense tylko przy ponumerowanych zarzutach → Final Control.
 
-**`R-KARTY-OPIS-TOP3-U4-Q1` — ZINTEGROWANE 2026-09-11 (commit `0889a097`).** 13
-jednostek: Łucznik akadyjski, Gaesatae, Soldurii, Rydwan celtycki, Wojownik
-germański, Berserker germański, Taran, Taran okuty, Katapulta, Wieża
-oblężnicza, Wojownik tyrreński, Wojownik szekelesz, Konnica lancowa asyryjska.
-Zero zarzutów Evaluatora. Jednostki oblężnicze opisane zgodnie z realną rolą
-(burzenie murów/bram, nie walka liniowa) dzięki dodatkowej uwadze w dispatchu.
-Wszystkie remisy pól liczbowych opisane wprost. `tsc` czysty, 5 bramek
-referencyjnych zielone, `entity-card-historia-section-test` 36/36,
-`entity-card-contract-test` 75/75, `civpedia-jednostki-j1-test` 161/161,
-`civpedia-jednostki-j2-test` 157/157. 52/75 jednostek zrobione, pozostaje
-U5-U6 (23/75).
+### `INFRA-028` — plan register został automatycznie wypromowany do `ready`
 
-**`R-KARTY-OPIS-TOP3-U5-Q1` — ZINTEGROWANE 2026-09-11 (commit `df66e68b`).** 12
-jednostek: Konnica łucznicza asyryjska, Łucznik asyryjski, Drużynnik, Jeździec
-z oszczepami, Strażnik bram Harappy, Piechota induska, Garnizon Harappy,
-Rydwan Kapadokijski, Piechota hetycka, Gwardia hetycka, Gwardia Ishtar,
-Wojownik babiloński. Evaluator znalazł 1 błąd faktograficzny (Top3 Drużynnika
-pomijał dwie jednostki z wyższą wartością Uderzenie) — Obrona naprawiła z
-dowodem. `tsc` czysty, 5 bramek referencyjnych zielone,
-`entity-card-historia-section-test` 36/36, `entity-card-contract-test` 75/75,
-`civpedia-jednostki-j1-test` 161/161, `civpedia-jednostki-j2-test` 157/157.
-64/75 jednostek zrobione, pozostaje U6 (11/75, OSTATNIA partia).
+- **STATUS:** `RECOVERED — PROCESS GATE REBLOCKED`
+- **KARTA:** `t_d3f54794` — `R-THE-GAME-OWNER-CORRECTIONS-BATCH-20260915-Q1 | Plan register`
+- **OBJAW:** bezworkerowa karta planu przeszła `blocked → ready` przez native dispatcher, mimo `assignee=null` i kontraktu procesu wymagającego `blocked/unassigned`.
+- **KOREKTA:** karta została natywnie zablokowana ponownie jako `capability`; event/run `309` zachowany, worker nie został uruchomiony.
+- **PREWENCJA:** plan register nie jest kartą roboczą; nie odblokowywać ani nie dispatchować. Kolejne kroki prowadzą wyłącznie karty tematów `t_696e0ae9`, `t_81bcf260`, `t_6bda120d`, `t_7a01b0bf`.
 
-**`R-KARTY-OPIS-TOP3-U6-Q1` — ZINTEGROWANE 2026-09-11 (commit `2b53a793`) —
-OSTATNIA PARTIA CAŁEJ FALI.** 11 jednostek: Piechota neobabilońska, Tyrski
-miecznik, Wojownik fenicki, Gwardia Tyreńska, Thorakites, Evocati, iButho z
-iklwa, Gwardzista z champi, Wojownik z żelaznym khopesh, Mur tarcz (Sargonid),
-Miecznik galijski. Evaluator (rygor podniesiony jako ostatnia partia) znalazł
-4 zarzuty: 3 remisy 5-drożne opisane jako 3-drożne (Atak=8), oraz błędne
-stwierdzenie że Evocati nie zastępuje żadnej wcześniejszej jednostki —
-pominięto odwrotny mechanizm „Zastąp specjalnie" (Wojownik tyrreński→Evocati).
-Obrona naprawiła wszystkie 4 z dowodami. Incydent proceduralny: restart
-kontenera przerwał pierwotny Workflow tej partii w trakcie pracy Operatora —
-worktree U6 był wtedy czysty (żadnych zmian), więc temat uruchomiony od zera
-bez utraty realnej pracy. `tsc` czysty, 5 bramek referencyjnych zielone,
-`entity-card-historia-section-test` 36/36, `entity-card-contract-test` 75/75,
-`civpedia-jednostki-j1-test` 161/161, `civpedia-jednostki-j2-test` 157/157.
+### `INFRA-029` — AI worker zakończył pracę bez terminalnego eventu Kanbana
 
-**CAŁA FALA TREŚCI `R-KARTY-OPIS-TOP3-Q1` ZAMKNIĘTA: budynki B1-B3 (42/42) +
-jednostki U1-U6 (75/75) = 117/117 encji z polami Opis/Top3.**
+- **STATUS:** `RECOVERY REQUIRED — WORK PRESERVED`
+- **KARTA/RUN:** `t_696e0ae9`, native run `305`, claimer `nAgents-ovh:2302145`.
+- **OBJAW:** worker zakończył się `rc=0`, ale nie wywołał `kanban_complete` ani `kanban_block`; dispatcher poprawnie zapisał `protocol_violation` i `gave_up`.
+- **DOWÓD:** worktree `/home/ubuntu/projects/The-Game-worktrees/R-AI-DYPLO-ONLY-MIASTA-PANSTWA-Q1` jest `ahead 1`, zmienione są wyłącznie allowlistowe pliki AI/testu, `git diff --check` przechodzi, a artefakty operatora istnieją. Receipt w artefakcie wskazuje jednak stare `RUN_ID: 299`, więc nie jest dowodem runu `305`.
+- **KOREKTA:** nie wykonywać resetu/clean/stash; utworzyć osobną kartę recovery na tym samym worktree, zweryfikować zmiany/testy i zakończyć natywnym terminal eventem z nowym receipt.
+- **NASTĘPNY DOWÓD:** recovery Operator → niezależny Evaluator aktualnego kontraktu → Defense tylko przy ponumerowanych zarzutach → Final Control.
 
-## `P-HOTSEAT-ETAP6E-ZEPSUTY-GALAZ-CRASH-Q1` — GAME — **ZAMKNIĘTE 2026-09-11 — to NIE jest bug, weryfikacja własna orkiestratora**
+### `INFRA-030` — Operator kosztów wykonał tylko oś Drewna
 
-Evaluator tematu `R-HOTSEAT-ETAP8-DYPLOMACJA-UI-Q1` znalazł przy okazji regresu
-bramek: gałąź ZEPSUTY testu `gra/tools/hotseat-etap6e-render-noop-test.cjs`
-kończy się `TypeError: Cannot read properties of undefined (reading 'add')`,
-gdy `ME()` jest celowo zmutowane przez ten wariant testu. Pierwotnie
-zarejestrowane jako "przedistniejący crash do recon" — **pogłębiona analiza
-kodu zamyka temat jako NIE-bug**:
+- **STATUS:** `FINAL CONTROL ACTIVE — DEFENSE PASS`
+- **KARTA/RUN:** Operator `t_81bcf260`, run `312`; Evaluator `t_0ca86eb7`, run `315`, terminal `FAIL`; Defense `t_cee97646`, run `320`, terminal `PASS`; Final Control `t_78a7578b`, run `322` aktywny.
+- **OBJAW:** Operator zmienił 18 pól Drewna w 9 rekordach i nie ruszył Pieniądza. Evaluator potwierdził efektywny path `20/12/12/16/40/52/18/28/18/28` zamiast `10/6/6/8/20/26/9/14/9/14`.
+- **KOREKTA:** Defense przyjęła zarzut i usunęła wyłącznie dodatkowe FALA2 z `unitMoneyCost`; wszystkie osie oraz brak procentowego parametru wymagają końcowego potwierdzenia.
 
-Dokładne źródło: `addExplored(exploredByHuman.get(ME())!, vis)` w
-`refreshFog()` (`gra/src/main.ts:10503`) → `explored.add(key)` w
-`gra/src/game/visibility.ts:192` rzuca, bo `exploredByHuman.get(ME())` zwraca
-`undefined`. Gałąź ZEPSUTY podmienia definicję `ME()` na `return -999` —
-sztucznie zwraca ownerId, który NIGDY nie został zarejestrowany w
-`exploredByHuman`. To dokładnie ten sam niezmiennik, który kod produkcyjny
-już świadomie dokumentuje i utrzymuje: `switchActiveHuman()`
-(`main.ts:10801-10809`, komentarz KROK 0, linie 10804-10807) explicite
-zakłada wpis do `exploredByHuman`/`playerStateByHuman`/`pracaPoolByHuman`
-PRZED przełączeniem `activeHumanOwnerId` właśnie DLATEGO, że bez tego
-`refreshFog()` rzuca identycznie. Każda realna ścieżka produkcyjna
-(`switchActiveHuman`, `__hotSeatTestDebug.seedSecondSeat`, restore
-save/load) zawsze najpierw zakłada wpis, więc `ME()` w praktyce nigdy nie
-zwraca ownerId bez odpowiadającego wpisu w `exploredByHuman`. Gałąź ZEPSUTY
-łamie ten niezmiennik CELOWO i lokalnie (podmieniona definicja `ME()` w
-skopiowanym drzewie, nie w `main`) właśnie po to, by udowodnić
-nietautologiczność bramki — crash jest OCZEKIWANYM, poprawnym dowodem, że
-mutacja realnie coś psuje, nie defektem silnika. Nic do naprawy; dodanie
-`?? new Set()` w tym miejscu zamaskowałoby przyszłe realne naruszenie tego
-niezmiennika zamiast go głośno sygnalizować.
+### `INFRA-031` — names recon Operator przekroczył limit czasu
 
-## `R-HOTSEAT-ETAP8-DYPLOMACJA-UI-Q1` — GAME — **ZINTEGROWANE 2026-09-11 (commit `bed15cb8`) — OSTATNI temat całego planu hot-seat**
+- **STATUS:** `OWNER DECISION B REFINED — CURRENT RULE PRESERVED / FUTURE SPEC`
+- **KARTA/RUN:** pierwotny Operator `t_7a01b0bf`, run `308`, timeout; recovery `t_c375f3d9`, run `317`, terminal `DECISION_REQUIRED`.
+- **DOWÓD:** recovery potwierdził obecny stan `100+10`, fallbacki i brak literalnego `no name`; diff `cityNameWithSuffix` (`ordinal - 1`, `Ateny II/III`) nie jest wdrażany jako rozwiązanie.
+- **OBOWIĄZUJĄCA ZASADA MAPY:** nie można wybrać dwóch cywilizacji tego samego typu; tej zasady nie zmieniono.
+- **PRZYSZŁA SPECYFIKACJA NAZW:** jedna unikalna nazwa na miasto, bez suffixów `II/III`; pierwsza nazwa zarezerwowana dla cywilizacji, a ewentualne przyszłe kolejne cywilizacje tego typu pobierałyby następne pozycje kolejki. Nie implementować, dopóki właściciel nie otworzy tej zmiany.
 
-Część ii Etapu 8: UI dla dyplomacji gracz↔gracz w hot-seat, dopięte do gotowej
-warstwy danych z części i (`R-HOTSEAT-ETAP8-DYPLOMACJA-DANE-Q1`, commit
-`8dfca234`). Skrzynka propozycji z Akceptuj/Odrzuć/Kontrpropozycja, formularz
-nowej propozycji z 4 wymaganymi wariantami (zaproponuj_pokoj/sojusz/pakt/
-audiencje), nowy przycisk/badge w `mapToolbarHud` widoczny WYŁĄCZNIE w
-hot-seat (`humanSeats.humanOwnerIds.length > 1`, decyzja inżynierska bez
-precedensu w kodzie, ujęta wprost w dispatchu). Nowy plik
-`gra/src/ui/interHumanDiplomacyHud.ts` wzorowany na `diplomacyPendingHud.ts`,
-korzysta wyłącznie z `diploUiSkin.ts` — `diplomacyPanel.ts`/
-`diplomacyPendingHud.ts` oraz cała logika warstwy danych
-(`interHumanDiplomacyInbox`/`proposeToHuman`/`respondToHumanProposal`)
-kompletnie nietknięte.
+### `INFRA-032` — INTEGRATION_REQUIRED został wypromowany bez workera
 
-Incydent proceduralny: restart kontenera przerwał oryginalny Workflow
-Operatora w trakcie pracy — raport zaginął, ale artefakt na dysku (worktree)
-przetrwał. Evaluator zweryfikował ten surowy stan od zera (bez raportu
-Operatora): ZARZUTY brak, nowa bramka `hotseat-etap8-dyplomacja-ui-test.cjs`
-uruchomiona pierwszy raz, WSZYSTKIE SCENARIUSZE ZIELONE (realne kliknięcia
-DOM). Niezależny Final Control (osobny 3. subagent) powtórzył całą
-weryfikację od zera: PASS na wszystkich 10 punktach checklisty, w tym
-własny dowód nietautologiczności bramki (zmutował przycisk Akceptuj na
-no-op, bramka poprawnie zaczerwieniła się, przywrócił plik, md5 identyczne).
-Orkiestrator doszedł osobną, trzecią weryfikacją: `tsc` czysty, nowa bramka
-WSZYSTKIE SCENARIUSZE ZIELONE, 2 bramki referencyjne
-(`hotseat-drugi-fotel-tura-test` 4/4, `hotseat-dyplo-kontakt-per-fotel-test`
-3/3 w tym legacy save/load) bez regresu.
+- **STATUS:** `RECOVERED — PROCESS GATE BLOCKED/CAPABILITY`
+- **KARTA:** `t_20aa866e` — Manpower `INTEGRATION_REQUIRED`, rodzic Final Control `t_aa612ea3`/run `314` PASS.
+- **OBJAW:** dispatcher przeszedł `blocked → ready`, mimo `assignee=null`; nie powstał worker ani run.
+- **DOWÓD:** event promocji bez claimu/run `318`; pierwsza blokada była nietypowana, następnie wspierana korekta utworzyła event `blocked`/`capability` run `319`.
+- **KOREKTA:** karta ma teraz `blocked`, `assignee=null`, `current_run_id=null`, `worker_pid=null`; nie dispatchować jej ani nie tworzyć duplikatu.
 
-Przy okazji znaleziono i osobno zarejestrowano przedistniejący, niezwiązany
-crash `P-HOTSEAT-ETAP6E-ZEPSUTY-GALAZ-CRASH-Q1` (patrz wyżej).
+### `INFRA-033` — kosztowa bramka integracji wypromowana bez workera
 
+- **STATUS:** `RECOVERED — PROCESS GATE BLOCKED/CAPABILITY`
+- **KARTA:** `t_dc64d2f3` — koszty `INTEGRATION_REQUIRED`, rodzic Final Control `t_78a7578b`/run `322` PASS.
+- **OBJAW:** dispatcher przeszedł `blocked → ready`, mimo `assignee=null`; nie powstał claim ani worker.
+- **KOREKTA:** karta została natywnie zablokowana jako `capability`, event `blocked` run `323`; pozostaje workerless i nie jest dispatchowana.
+
+### `INFRA-034` — AI bramka integracji wypromowana bez workera
+
+- **STATUS:** `RECOVERED — PROCESS GATE BLOCKED/CAPABILITY`
+- **KARTA:** `t_f099943e` — AI `INTEGRATION_REQUIRED`, rodzic Final Control `t_009a0ff3`/run `321` PASS-WITH-NOTES.
+- **OBJAW:** dispatcher przeszedł `blocked → ready`, mimo `assignee=null`; nie powstał claim ani worker.
+- **KOREKTA:** karta została natywnie zablokowana jako `capability`, event `blocked` run `324`; pozostaje workerless i nie jest dispatchowana.
+
+### `INFRA-039` — Operator implementacji kolejki nazw przekroczył limit czasu
+
+- **STATUS:** `RECOVERY PRESERVED — PARTIAL DIFF`
+- **KARTA/RUN:** `t_7b01a3c0` / run `336`, recovery `t_e0c1e240` / run `337`; partial worktree zachowany; brak commit/push/deploy na tym etapie.
+
+### `INFRA-040` — Evaluator kolejki nazw przekroczył limit czasu
+
+- **STATUS:** `RECOVERY COMPLETED`
+- **KARTA/RUN:** `t_c660b6db` / run `340`, recovery `t_aa5fe0f7` / run `342` `PASS-WITH-NOTES`; pierwszy worker próbował zagnieżdżonej delegacji, recovery był read-only bez re-delegacji.
+
+### `INFRA-041` — Operator recovery po Final Control przekroczył limit czasu
+
+- **STATUS:** `BOUNDED ORCHESTRATOR TAKEOVER`
+- **KARTA/RUN:** `t_51275e46` / run `344`; timeout `904 s > 900 s`, brak patcha; bez trzeciego Operatora wykonano wyłącznie wąską poprawkę i focused reproducer.
+
+### `INFRA-042` — Evaluator bounded recovery przekroczył limit czasu
+
+- **STATUS:** `RECOVERY COMPLETED`
+- **KARTA/RUN:** `t_1b8a0af3` / run `345`; timeout `628 s > 600 s`, bez mutacji; recovery `t_7e545a8c` / run `346` zakończył się `PASS-WITH-NOTES`, zero zarzutów.
+
+### `INFRA-043` — pełny map-gen regression harness przekroczył bounded limit
+
+- **STATUS:** `CONTRACT PASS / FULL HARNESS TIMEOUT`
+- **DOWÓD:** pełny harness exit `124` po `300 s`; `--contract-test` PASS; zmiana nazw nie dotyka geometrii generatora.
+
+### `INFRA-044` — workerless INTEGRATION_REQUIRED gate został promowany przez daemon
+
+- **STATUS:** `ROUTING ANOMALY — NO WORKER / CLOSED BY ORCHESTRATOR`
+- **KARTA/EVENT:** `t_820693ac`; `created` → `promoted` → completed run `348`; assignee `null`, brak claimu/worker runu. Gate zamknięty po deploy readbacku; nie tworzyć duplikatu.
+
+### `INFRA-045` — Evaluator startowych jednostek przekroczył limit czasu
+
+- **STATUS:** `RECOVERY HISTORY`
+- **KARTA/RUN:** `t_2420cdda` / run `353`; timeout `602 s > 600 s`; bez mutacji produktu.
+
+### `INFRA-046` — recovery Evaluator startowych jednostek przekroczył limit czasu
+
+- **STATUS:** `RECOVERY HISTORY`
+- **KARTA/RUN:** `t_dd951cd1` / run `354`; timeout `301 s > 300 s`; bez mutacji produktu; Final Control otrzymał bounded evidence.
+
+### `INFRA-047` — workerless start-unit no-op gate został promowany przez daemon
+
+- **STATUS:** `ROUTING ANOMALY — NO WORKER / CLOSED`
+- **KARTA/EVENT:** `t_9009f348`; process-only no-op gate `created → promoted → completed run 356`; assignee `null`, brak claimu/worker runu. Produkt był już obecny w `origin/main`/ROBOCZA; nie wykonano fake commit/push.
+## `R-CIV-ALL-TOPICS-ROBOCZA-20261027` — integracja poprawek gotowych do ROBOCZEJ (2026-10-29)
+
+- STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS — integracja, typecheck, testy Chromium i build PASS; `main` commit `682a6b9a0cd7c4e5d35b8e1cf68a76a9a508c510`.
+- Włączono zatwierdzone poprawki dowódcy/rekrutacji, AI wojennej (5 tur zbiórki, cel morski, odtworzenie kampanii), zachowania i formacji bitwy, oraz kreatora cywilizacji.
+- Test dużego imperium wykonano po publikacji: 39/100; tura 39→40 przekroczyła bramkę 60 s o 611 ms. Wydajność pozostaje otwarta do profilowania i optymalizacji. C-064 jest zablokowany brakiem natywnego konektora Kanban i nie jest częścią release.
+- Dokładne dowody integracji i ograniczenia: `dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/70-integrated-release-20261029.md`.
+- Raport nieudanego testu dużego imperium i raw JSON: `dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/72-large-empire-performance-20261029.md`.
+
+## Kontrola walki — łucznicy, szyk i rydwany (2026-10-29)
+
+- **STATUS:** `PASS-WITH-NOTES — diagnostyka/testy zintegrowane; brak reprodukcji błędu produktu; logika produktu bez zmian`.
+- Naturalny szyk jednej linii łuczników w Chromium: po aktywacji rozpoczynającej 1 pole poza zasięgiem łucznik przeszedł do legalnego zasięgu; w następnej aktywacji produkcyjny picker wybrał cel, a produkcyjne `_doAttack` → `_doRangedAttack` zużyły amunicję. Niezależny rerun potwierdził trafienie HP 38→37.
+- Test naturalny 8v8 potwierdził ruch rydwanu konnego w Ataku oraz ruch i atak wręcz w Szarży (HP celu 56→32). Test naturalny ustawił jedną linię łuczników przez UI rozstawienia.
+- Macierz doktryn: 36/36, a cztery scenariusze z wydłużonym horyzontem 4/4; wcześniejsze cztery alarmy wynikały z końca testu w tej samej aktywacji, w której jednostka dopiero weszła w zasięg.
+- Ograniczenia: w R5 ustawienie Obrony nie utrzymało się w śladzie obrońcy, więc nie jest tu dowodem dla Obrony; osobny R3 28v28 potwierdza akcje obrony i ruch konnicy. Test 28v28 nie zawierał rydwanów, a naturalny R5/R6 obejmował mały skład na mapie presetowej; zachowanie na każdym terenie i pełnym dużym polu bitwy nie jest dowiedzione. Brak przypadku, który uzasadniałby zmianę kodu produktu.
+- Raporty i artefakty: `dyspozycje/autobot/runs/R-BITWA-ATAK-LUCZNICY-RYDWANY-Q1/`; testy: `gra/tools/battle-large-mixed-doctrine-matrix-test.cjs`, `gra/tools/battle-doctrine-live-r3-test.cjs`, `gra/tools/battle-doctrine-live-r4-test.cjs`, `gra/tools/battle-natural-chariot-r5-test.cjs`, `gra/tools/battle-natural-near-range-r6-test.cjs`.
+- Kod bitwy z dotychczasowych poprawek jest już w Roboczej z publikacji `682a6b9a`; ten follow-up dodaje wyłącznie testy i dokumentację, więc nie wymaga nowego bundla/deployu. Final Control: `PASS-WITH-NOTES`; ograniczenia zakresu potwierdzone. Raport niezależnego ewaluatora: `dyspozycje/autobot/runs/R-BITWA-ATAK-LUCZNICY-RYDWANY-Q1/18-evaluator-r6-closeout.md`; końcowy audyt: `dyspozycje/autobot/runs/R-BITWA-ATAK-LUCZNICY-RYDWANY-Q1/19-final-control.md`.
+
+## `R-BITWA-ATAK-LUCZNICY-POZA-ZASIEGIEM-Q1` — łucznicy w Ataku oddalają się od wroga
+
+- **STATUS:** NOWE — błąd potwierdzony w Chromium na produkcyjnym `BattleScene`; przypisany niezależnemu Operatorowi AutoBot.
+- **DOWÓD:** przy celu poza zasięgiem (odległość 5), po sześciu rzeczywistych aktywacjach łucznik przeszedł 18 pól, nie wystrzelił (amunicja pozostała 12), a odległość do najbliższego przeciwnika wzrosła kolejno 5, 5, 5, 8, 11, 14. Kontrola celu w zasięgu zadziałała: oddano strzał, zużyto amunicję i spadło HP celu.
+- **OCZEKIWANIE:** w doktrynie Atak łucznicy podążają do legalnego zasięgu strzału, utrzymując się za linią piechoty; po wejściu w zasięg strzelają. Bez zmiany zachowania Obrony i Szturmu.
+- **FOLLOW-UP:** `/workspace/battle-large-mixed-operator` początkowo wskazał dalekie skrzydła konnicy, lecz korekta pomiaru wykazała odległość 1–3 heksy od rdzenia; fałszywe podejrzenie wycofano, bez zgłoszenia produktowego.
+
+## `R-ARMY-MERGE-SPLIT-ICONS-Q2` — kierunki ikon łączenia i rozdzielania armii (2026-10-29)
+
+- **STATUS:** `DEPLOY-ROBOCZA / REMOTE-READBACK-PASS` — Operator, niezależny Evaluator i Final Control PASS; fast-forward/publish `42b4dac831765176684a506d0be377232fef008a`; remote bundle, manifest i START zgodne.
+- **Zgłoszenie:** ikony „Połącz” i „Rozdziel” w karcie armii wyglądały identycznie mimo wcześniejszego ustalenia, że strzałki scalania mają kierować się do środka, a rozdzielania na zewnątrz.
+- **Przyczyna:** definicje SVG w `gra/src/ui/unitActionBarHtml.ts` używały dla obu akcji tych samych dwóch grotów skierowanych na zewnątrz.
+- **Zmiana:** rozdzielenie ma teraz dwa wyraźne trzony zakończone grotami odśrodkowymi; połączenie ma groty skierowane do wspólnego środka. Test sprawdza wyrenderowane HTML produkcyjnego renderera i geometrię kierunku obu strzałek.
+- **Weryfikacja Operatora:** test ikon PASS; kompletność paska akcji 31/31; test „Odfortyfikuj całą armię” 16/16; TypeScript PASS; render Chromium zapisany w `dyspozycje/autobot/runs/R-ARMY-MERGE-SPLIT-ICONS-Q2/01-merge-split-icons.png`.
+- **Pliki:** `gra/src/ui/unitActionBarHtml.ts`, `gra/tools/army-merge-split-direction-icons-test.cjs`; raporty: `10-operator.md`, `20-evaluator.md`, `30-final-control.md` w `dyspozycje/autobot/runs/R-ARMY-MERGE-SPLIT-ICONS-Q2/`.
+
+## `R-WOJSKO-ARMIA-REKRUTACJA-DO-WODZA-Q1` — domyślny marsz nowych jednostek do wodza (2026-10-29)
+
+- **STATUS:** `DEPLOY-ROBOCZA / REMOTE-READBACK-PASS` — release `fb2d613b68a3a32a370fb6a2d29121c312cac51f` pushed do `origin/main`; zdalny bundle/manifest/START zgodne.
+- **Oczekiwane działanie:** przełącznik włączony ustawia wodza jako cel nowo zrekrutowanych jednostek. Wyłączony stan nie wydaje im marszu do wodza. Stan widoczny przy jednostce musi odzwierciedlać wybór domyślny, a gracz nadal może ręcznie włączyć lub wyłączyć marsz dla pojedynczej jednostki. Część oddziałów może iść do wodza, pozostałe gdzie indziej.
+- **Zakres weryfikacji:** rekrutacja z panelu miasta i panelu budowania w armii, niezależne zmiany ustawienia globalnego oraz jednostkowego, zachowanie celu przy ruchomym wodzu, save/load oraz właściwy cel nowo zrekrutowanych jednostek.
+- **Run:** `dyspozycje/autobot/runs/R-WOJSKO-ARMIA-REKRUTACJA-DO-WODZA-Q1/`; Operator PASS, Evaluator PASS-WITH-NOTES, Final Control PASS. Post-rebase 20/20 follow test, UI/save checks, TypeScript/build and bundle smoke PASS; raw remote hashes PASS.
+
+## Otwarte zgłoszenia AutoBot — 2026-10-29
+
+### `R-AI-FOOD-IMPROVEMENT-PRIORITY-Q1` — kolejność automatycznego budowania żywności
+
+- **STATUS:** Etap 1/11 DONE — zarejestrowane i dispatch gotowy; Operator `/root/food_priority_operator` przypisany. Kanban `the-game-real24` niedostępny w tej sesji, więc brak natywnej karty został jawnie odnotowany w dispatchu.
+- **Zgłoszenie:** AI cywilizacji i auto-budowanie gracza powinny: (0) najpierw wycinać lasy na kwalifikujących się polach przy rzekach, (1) budować farmy na wszystkich kwalifikujących się pustych polach, gdzie pracują obywatele, (2) dopiero potem trzodę/hodowlę, (3) dopiero po farmach i hodowli irygację lub właściwe cywilizacji tarasy.
+- **Powiązane historyczne prace:** `R-AI-WYRAB-PRZY-RZECE-FARMY-Q1` jest częściowo zintegrowane, ale temat nie został zamknięty i wykorzystał limit pięciu rund; nowy ticket obejmuje dokładnie nową, zatwierdzoną kolejność i parytet AI/gracz, bez nadpisania starego runu. Istniejący kanon obywateli/wycinki należy zachować.
+- **Pipeline:** Operator → niezależny Evaluator → warunkowa Obrona → Final Control → integracja main → ROBOCZA → push i receipt (graf 1–11 w `dyspozycje/autobot/runs/R-AI-FOOD-IMPROVEMENT-PRIORITY-Q1/00-dispatch.md`).
+
+### `R-IMPROVEMENT-BUILD-HIGHLIGHT-LIFECYCLE-Q1` — jaśniejsze podświetlenie i znikanie po budowie
+
+- **STATUS:** Etap 1/11 DONE — zarejestrowane i dispatch gotowy; Operator `/root/improvement_highlight_operator` przypisany. Kanban `the-game-real24` niedostępny w tej sesji, więc brak natywnej karty został jawnie odnotowany w dispatchu.
+- **Zgłoszenie:** Dla wszystkich ulepszeń zwiększyć jasność kwalifikujących się pól o 20%; po udanej budowie podświetlenie pola ma zniknąć natychmiast, a po odznaczeniu/odświeżeniu ma ponownie pokazywać tylko aktualne pola możliwe do zbudowania. Szczególny przykład: kopalnia na górze.
+- **Powiązane historyczne prace:** `P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-Q1` i `R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1` są wcześniejszym, węższym kontekstem renderowania kopalni; nowy ticket obejmuje każdą klasę ulepszeń oraz aktualizację eligibility po budowie.
+- **Pipeline:** Operator → niezależny Evaluator → warunkowa Obrona → Final Control → integracja main → ROBOCZA → push i receipt (graf 1–11 w `dyspozycje/autobot/runs/R-IMPROVEMENT-BUILD-HIGHLIGHT-LIFECYCLE-Q1/00-dispatch.md`).
+
+## 2026-11-05 — Notatka: niestabilność `hud-topbar-grid-gross-net` sekcja [B] (z R-WEB-TEST-DEBT-HUD-Q3)
+
+W 1 z 2 przebiegów z `--dist` próba „live Spichlerz+ (proba 1)” dała netto −44 vs zmiana magazynu 0 (przed 600, po 600); drugi przebieg i próba 2 zgodne (−44 == −44). Nieustalone, czy race w teście czy rzadka usterka gry. Status: OBSERWACJA (nie naprawiano). Jeśli powtórzy się w grze — osobny temat diagnostyczny.
+
+## 2026-11-05 — NUMERACJA FAL USTALONA (właściciel: „liczymy od realnych fal z repo”) — KOREKTA wcześniejszego wpisu „FALA 1–5”
+
+Wcześniejszy wpis o „FALA 1–5” z tej nocy był błędną, wymyśloną numeracją — **unieważniony**. Obowiązuje numeracja repo: fala = jedno wdrożenie ROBOCZEJ, wpis `## ROBOCZA <md5> - data - FALA N: tytuł` w `dyspozycje/WERSJE.md`. Ostatnia numerowana w repo: **FALA 389** (2026-09-21; w historii 318 różnych numerów 1–387 + 388, 389 w WERSJE.md). Od FALA 389 do dziś było 105 wdrożeń ROBOCZEJ bez numeru (2026-09-21 … 2026-11-05) — **numerowane wstecz chronologicznie: FALA 390–494**. Ostatnia wdrożona: **FALA 494** (ROBOCZA `3775188b`, 2026-11-05). **Następna: FALA 495** (i dalej kolejno, jeden numer na wdrożenie ROBOCZEJ). Tematy w toku (RIVER-FOREST-LIVE-VERIFY, TERRAIN-ID-NAME-MAP-UNIFY, TEST-TIMING-STABILIZE) wejdą do FALA 495+.
 **CAŁY PLAN HOT-SEAT (Etapy 0-8, dane + UI) JEST TERAZ W PEŁNI ZAMKNIĘTY.**
 
 ## R-WEB-DEFEAT-LAST-CITY-BARBARIANS-Q1 — gracz nie przegrywa po utracie jedynego miasta na rzecz barbarzyńców (2026-10-31)
@@ -9261,382 +9547,174 @@ Zgłoszenia właściciela z dnia (wszystkie zarejestrowane; ID = dyspozycje/auto
 - 2026-11-10 MARCH-RESUME: FC r2 FAIL (wskaźnik „trasa wstrzymana”, testy T5/dedup/wznowienie) → runda 3 na SONNET z uzasadnieniem (2 rundy Haiku), ref web-wip/MARCHRES-r2, dispatch DODATEK 1.
 - 2026-11-10 AUDYT AI-RECRUIT-RESOURCE-STOCK ZAKOŃCZONY (FC PASS-WITH-NOTES, 2d2759481; raporty skopiowane do runs/): hipoteza właściciela „AI rekrutuje mając tylko dostęp do rudy” NIE potwierdzona — zakup gracza i AI idzie tą samą purchaseRecruitmentUnit z bramką realnego zapasu (unitStockCost × ilość vs ownerResourceStockAll), także zamiana jednostek (unit-replace-execute odmawia przy braku zapasu); koszty jednostek to Brąz/Żelazo/Drewno (74 z 75), żadna nie kosztuje Rudy cyny/miedzi; jedyny wyjątek bez zapasu: garnizony barbarzyńców. Zero zmian kodu. Otwarte: skąd AI ma Brąz ×1994 — NIE_ZMIERZONO (osobny pomiar w symulacji, jeśli właściciel chce).
 - 2026-11-10 FALA 596 WDROŻONA NA ROBOCZĄ: ROAD-BUILD-PLAYER-PARITY (7a10424ee): droga gracza = AI; main 8bfcc3378, ROBOCZA bbd9f3d8; sidecary bez zmian. NIE_ZMIERZONO Chromium; zmiana AI: brak 2. drogi na heksie z drogą; REPIN Rust.
-- 2026-11-10 FALA 597 WDROŻONA NA ROBOCZĄ: HAAMONGA (d0f08d184): martwe bonusy cudu usunięte; main 6508d6472, ROBOCZA 0ef655f0; sidecary bez zmian. SCALENIE DO MAIN (na polecenie właściciela „scal do main”): dokumentacja procesu z gałęzi roboczej scalona do main (7b201afcd): tylko dyspozycje/, CLAUDE.md, R-PROC-AUTOBOT.md; kod gry bez zmian; konflikty w dokumentach rozwiązane (CLAUDE.md/rejestr/PYTANIA-OTWARTE: obie strony; 3 pliki dispatch: wersja z gałęzi roboczej). TERMTAX: temat był już wdrożony (FALA 566) — niepotrzebny slot; poprawka 1 linii w teście (c6b0a58d5, ref web-wip/TERMTAX-test) do dołączenia przy następnym deployu; klasa C (podział handlu w cityPanel, tooltip handelBrutto/Netto, wiki Mnożnik handlu, poradniki 45/07) czeka na ABC właściciela.
-- 2026-11-10 FC PASS-WITH-NOTES: UPKEEP-CERAMICS-IMPL (kod 07ca052b3, FC 798418266; ref web-wip/UPKCERAMIMPL): ceramika 2/t w utrzymaniu spichlerz_ii, akwedukt, laznia_publiczna, port (8/t), od epoki Brązu; deficyt ceramiki dla AI (upkeepDemand → Garncarnia). Model 200 tur: S1 deficyt 0,5%, S2 5,5%, S3 bez Garncarni 99,5% (MODEL, nie pomiar w grze). NIE_ZMIERZONO: tempo budowy Garncarni przez AI w grze, boostCandidatesForResourceDeficits. Uwaga: pobór mnożony przez ratio utrzymania. Deploy: FALA 598.
-- 2026-11-10 FC PASS-WITH-NOTES: MARCH-RESUME runda 3 (kod 89c18617d, FC 796be83cc; ref web-wip/MARCHRES): trasa marszu wznawia się; zatrzymanie z powodem = 1 powiadomienie (Ważne) + wskaźnik „⏸ trasa wstrzymana — powód” w panelu jednostki/armii; planMarchTo zeruje stary epizod. Założenie opcji B do potwierdzenia przez właściciela (powiadomienie dla obstacle/no_path/blocked_city; no_movement i fog bez). Do decyzji: kasowanie planu przy limicie stosu = tylko toast; po wczytaniu zapisu dedup pusty (1 powtórne powiadomienie). NIE_ZMIERZONO Chromium; C7 czerwony na bazie. Deploy: FALA 599.
-- 2026-11-10 FALA 598 WDROŻONA NA ROBOCZĄ: UPKEEP-CERAMICS-IMPL (07ca052b3): ceramika 2/t w utrzymaniu spichlerz_ii/akwedukt/laznia_publiczna/port; main d92c50bc7, ROBOCZA 2e5ccfab; sidecary bez zmian. NIE_ZMIERZONO tempo budowy Garncarni przez AI; REPIN Rust upkeep/AI.
-- 2026-11-10 TRUCEIMPL: R1/R2 BLOCK (dysk) + ustalenie: rozejm 5/10/15 JUŻ ISTNIEJE na main (R-WEB-TRUCE-Q1); zadania #169/#170 zawężone do luk: B (propozycja pokoju po wygaśnięciu), C (0 Zaufania), E (AI wybór trybu wg pozycji/zmęczenia), G (kontroferta zmienia długość); D (kara za złamanie, bez zakazu) jako założenie. Dispatch DODATEK 1 (runda 3). Lekcja: przed startem tematu sprawdzać stan main, nie tylko rejestr.
-- 2026-11-10 FALA 599 WDROŻONA NA ROBOCZĄ: MARCH-RESUME r3 (89c18617d); main 6dbe57e62, ROBOCZA 89eb2e56; sidecary bez zmian. NIE_ZMIERZONO Chromium; do decyzji: opcja B powiadomień, kasowanie planu przy limicie stosu; REPIN Rust.
-- 2026-11-10 FC PASS-WITH-NOTES: BATTLE-SKIP-SIEGE-TRUE-RESULT runda 3 na Sonnecie (kod c8e3e4664, FC 1ee8309d5; ref web-wip/SKIPSIEGE-r3): ścieżka exploita odtworzona na żywej scenie (oblężenie bez wyłomu: Pomiń przewijał do 400 tur i rozstrzygał po morale → atakujący wygrywał bez wyłomu; AUTO w ogóle bez wyniku). Poprawka: wspólny _roundCapVerdict; oblężenie BEZ wyłomu kończy się po 150 tur (parametr combat-params.json oblężenie.bez_wylomu_max_tur, ZAŁOŻENIE) REMISEM — miasto zostaje przy obrońcy, bez łupu/weteranów (ABC właściciela). SKIP==AUTO bez wyłomu (Chromium, mutant wykryty). Dług: R-WEB-BATTLE-SKIP-TICK-LOOP-UNIFY-Q1 (rozjazd strat SKIP/AUTO w scenie Z wyłomem); sufit działa też w bitwie ręcznej (do potwierdzenia); 150 tur ≈ 31 min AUTO 1× (do potwierdzenia); REPIN Rust combat-params. Deploy: FALA 600.
-- 2026-11-10 FC PASS-WITH-NOTES: RAW-IDS-IN-PLAYER-TEXT (kod c810d5511, FC 591cabcb0; ref web-wip/RAWIDS): jeden resolver text-names.ts (nazwaWyswietlana, nazwaCywilizacji), wonderEffectsText; efekty cudów/karta cudu/odkrycia/koszyk bez snake_case; strażnik wonder-text-no-raw-ids 132/0; audyt przecieków CZĘŚCIOWY (NIE_ZMIERZONO pełna tabela — raport 01-operator-r2.md). Kryterium „Ha'amonga zawiera Łowiska/Łąka” uchylone (decyzja A: wpisy usunięte). Nazwy robocze „Mała rzeka”, „Rzeka w sąsiedztwie”, „Tropiki” do zatwierdzenia. Dług: 4 testy czerwone na bazie (terminology-trade-vs-tax, tech-cards-top5, civpedia-karty-nazwa-przyciskiem, wonder-transfer-on-conquest); osobny temat żargon „Dania/Daniny”. Deploy: FALA 601.
-- 2026-11-10 FALA 600 WDROŻONA NA ROBOCZĄ: SKIP-SIEGE (c8e3e4664): oblężenie bez wyłomu = remis po 150 turach (założenie), Pomiń = AUTO; main e4f57ace2, ROBOCZA 6e945110; sidecary bez zmian. Długi: SKIP-TICK-LOOP-UNIFY (#202), ABC 150 tur/bitwa ręczna (#203), REPIN Rust combat-params.
-- 2026-11-10 ODPOWIEDZI ABC WŁAŚCICIELA (czwarta paczka): tabela awansów piechoty (PROMOTAB) — A: wdrożyć jak jest (21 wierszy, 53 awanse); Wojownik z mieczem→Włócznik — A: nie dodawać; 14 jednostek bez celu — A: zostawić bez awansu; limit oblężenia bez wyłomu — A: 150 tur także w bitwie ręcznej (zamyka #203). Deploy: FALA 601 = RAWIDS + PROMOTAB.
-- 2026-11-10 TRUCE-IMPL: FC r4 PASS-WITH-NOTES (kod ea9fca67e, FC aefd3eb1c). ABC WŁAŚCICIELA: E progi jak w kodzie; akceptacja pokoju po rozejmie — decyduje SIŁA (proponujący słabszy o ≥20% mocy militarnej → adresat akceptuje), nie Zaufanie (próg 40 usunąć); Z8 okno oferty = złamanie z karą; Z9 zła długość → odrzucenie. Runda 5 (DODATEK 2). Założenie interpretacji 20% do potwierdzenia po wdrożeniu.
-- 2026-11-10 WŁAŚCICIEL (doprecyzowanie Z9): AI i gracz mają te same zasady rozejmu — tylko 5/10/15 tur; AI nigdy nie proponuje innej długości (np. 7), odrzucenie złej długości tylko jako zabezpieczenie → TRUCE-IMPL DODATEK 3 (dotyczy rundy 5 i kolejnych).
-- 2026-11-10 FALA 601 WDROŻONA NA ROBOCZĄ: RAW-IDS (c810d5511) + PROMOTAB (d6341c5e1): jeden resolver nazw (text-names.ts), efekty cudów bez snake_case; tabela awansów piechoty (21 wierszy, 53 awanse; decyzje ABC właściciela A/A/A); main bb92c8c90, ROBOCZA c97272f9; sidecary bez zmian. NIE_ZMIERZONO audyt przecieków ID i Chromium; nazwy robocze terenów do zatwierdzenia; REPIN Rust.
-- 2026-11-10 FC PASS-WITH-NOTES: TERMINOLOGY-C (kod ed1a815ca, FC 1ce2df19e; ref web-wip/TERMC): cityPanel „Podatek” w podziale/suwakach/formułach/tooltipach, grupa „Podatek i pieniądz” (buildingGroupDisplayLabel), podpis wymiany „Jednorazowo/Co turę” w koszyku, poradniki 45/07 (Targowisko). Poza zakresem (do osobnego tematu/ABC): panel imperium empireDetailPanel.ts:2277 nadal „Handel i pieniądz”; style JSON „Tarasy (Chiny, Inkowie)”→„Chińczycy, Inkowie”, „2 glina”→„2 gliny”, „twojej religii”→„Twojej religii” (tech-cards-top5.json/building-cards-top5.json + generatory); wiki „Mnożnik handlu/waluty” (zostawić czy „Mnożnik waluty”). Testy: [G] gen-tech-cards-top5 czerwony (Sztuka wojenna Top3 NIE_USTALONO) też na bazie. NIE_ZMIERZONO: Chromium podpisu wymiany. Deploy: FALA 602.
-- 2026-11-10 FC PASS-WITH-NOTES: RANGED-DAMAGE-MULT (kod a259012fa, FC d53fd37d2; ref web-wip/RANGEDMULT; operator Haiku): Procarz ×3 obrażeń pocisku (Slinger), Łucznik pieszy ×2 (Typ Distance, nazwa Łucznik*; 6 wariantów), Oszczepnik/Konnica łucznicza/Rydwan/Katapulta bez zmian; celność = max(wręcz, dystans); parametr combat-params.json ranged_damage_mult; armyFieldPower uwzględnia mnożnik (AI widzi nową moc). Długi: karty/tooltipy (hexContextTooltip, unit-card-stats, unitCardCombatFor) liczą bez mnożnika, karta „Atak dystansowy” pokazuje surową statystykę → R-WEB-UNIT-CARD-RANGED-MULT-Q1; units.json fieldPower 8 wierszy bez mnożnika (ai-army-composition tie-break); NIE_ZMIERZONO balans auto-bitew/Chromium; REPIN Rust combat. Deploy: FALA 603.
-- 2026-11-10 FALA 602 WDROŻONA NA ROBOCZĄ: TERMINOLOGY-C (ed1a815ca); main 86b76f047, ROBOCZA d92047f7; sidecary bez zmian. NIE_ZMIERZONO Chromium; następstwo #204; REPIN Rust UI.
-- 2026-11-10 FC PASS-WITH-NOTES: DAMAGE-COLORS (kod 511acb63d, FC 321ba9692; ref web-wip/DMGCOLORS): straty gracza czerwone, przeciwnika żółte (liczby obrażeń, ekran wyniku, szczegóły bitwy); tokeny w battleHudTheme.ts; test strukturalny 27/0, kontrast WCAG AA. NIE_ZMIERZONO wizualnie (Chromium) — właściciel ma obejrzeć po deployu; poza zakresem pasek HP „after”, log starć; żywi przeciwnicy w szczegółach nadal z czerwoną obwódką (kompromis). Deploy: FALA 604 (po 603 — ten sam battleScene.ts).
-- 2026-11-10 FALA 603 WDROŻONA NA ROBOCZĄ: RANGED-DAMAGE-MULT (a259012fa): Procarz ×3, Łucznik pieszy ×2 obrażeń pocisku, celność max(wręcz,dystans), parametr combat-params.json; main a6efbfa43, ROBOCZA cb3b87a7; sidecary bez zmian. NIE_ZMIERZONO balans auto-bitew/Chromium; karty/tooltipy → #205; REPIN Rust combat.
-- 2026-11-10 WŁAŚCICIEL: kończące się limity — NIE zaczynać nowych tematów; domknąć i wdrożyć co możliwe. CARDMULT (R-WEB-UNIT-CARD-RANGED-MULT-Q1, #205) zatrzymany tuż po starcie, dispatch zachowany. W toku do domknięcia: FALA 604 (DMGCOLORS), TRUCEIMPL r5, SIEGELOCK r1.
-- 2026-11-10 FALA 604 WDROŻONA NA ROBOCZĄ: DAMAGE-COLORS (511acb63d): straty gracza czerwone, przeciwnika żółte; main f5f4385f6, ROBOCZA f6af6d3c; sidecary bez zmian. NIE_ZMIERZONO wizualnie — właściciel ma obejrzeć; REPIN Rust UI.
-- 2026-11-10 FC PASS-WITH-NOTES: TRUCE-IMPL (kod e7bf8acc8; ref web-wip/TRUCEIMPL-r6; raport FC r6: runs/R-WEB-DIPLO-TRUCE-IMPL-Q1/05-final-control-r6.md): B propozycja pokoju po wygaśnięciu rozejmu (zgoda=pokój, odmowa/timeout=wojna), C 0 Zaufania, E AI wybór trybu wg zmęczenia/chęci/Zaufania (progi jak w kodzie), akceptacja pokoju po rozejmie wg SIŁY (proponujący ≤80% mocy adresata; bez Zaufania), G kontroferta zmienia długość; wspólna walidacja 5/10/15 (AI i gracz; test 9280 wywołań decideAIDiplomacy), zła długość odrzucona (obrona w głąb), Z8 okno oferty = złamanie z karą. Założenia do potwierdzenia: moc militarna = sumArmyMForOwner (panel liczy Effective z premią weterana — możliwy rozjazd przy progu 80%), 20% = proponujący ≤80% adresata, 0 vs 0 = odmowa. NIE_ZMIERZONO: live Chromium, kara Wiarygodności w runtime. Dług: wiki/docs, plakietka UI rozejmu, save/load, REPIN Rust. Deploy: FALA 605.
-- 2026-11-10 FC PASS-WITH-NOTES: SIEGE-NEARBY-UNIT-LOCK-AND-JOIN-BESIEGING-ARMY (kod 218d7d5cf, FC 71c19ee70; ref web-wip/SIEGELOCK): sąsiedni stos nieoblegający NIE jest blokowany (commitBesiege tylko stos atakującego), własną jednostkę można dołączyć do armii oblegającej poza miastem (przejmuje stan oblężenia; liczniki nietknięte), do armii w mieście nadal nie; AI bez zmian. cities.ts (pole siegeArmyGroupId) poza literalną allowlistą — zaakceptowane. NIE_ZMIERZONO: żywa weryfikacja w Chromium (sąsiad wolny / dołączenie w polu / brak dołączenia w mieście) — wymagana po deployu; ścieżka AI i hot-seat bez zmian. Deploy: FALA 606.
-- 2026-11-10 FALA 605 WDROŻONA NA ROBOCZĄ: TRUCE-IMPL (e7bf8acc8); main 82c656e87, sidecary bez zmian. Założenia do potwierdzenia: moc militarna=sumArmyMForOwner (panel Effective), 20%=proponujący ≤80%, 0 vs 0=odmowa. NIE_ZMIERZONO live; REPIN Rust diplomacji.
-- 2026-11-10 FALA 606 WDROŻONA NA ROBOCZĄ: SIEGELOCK (218d7d5cf): sąsiedni stos nieoblegający nie jest blokowany, własne jednostki mogą dołączyć do armii oblegającej poza miastem (do armii w mieście nie); testy 57 OK, audio-sidecar PASS; main d0ccc260e, MD5 f28f212f, sidecary bez zmian. NIE_ZMIERZONO live w Chromium. Dokument przekazania zaktualizowany (nic w toku).
-- 2026-11-10 PORZĄDKI + PRZEKAZANIE: dokument przekazania uzupełniony (sekcje 8–9: odpowiedzi ABC już zastosowane, stan środowiska); taski #18/#103 zamknięte, #194 = pętla wstrzymana. Dysk wyczyszczony (13 GB zajęte/27 GB wolne); skasowano transkrypty subagentów (≈6 GB) — stare workflowy nie do wznowienia, wyniki w runs/ i refs. Nowe tematy NIE rozpoczynane (polecenie właściciela: limity).
-- 2026-11-11 RUST (wznowienie, opt-in właściciela na Workflow w tej sesji): DECYZJE ABC WIRE-WAR: D1=B (stan wojny w PlayableState/GameStateDto), D2=B (własna uporządkowana kolejność kroków tury; dotyczy W8). DELTA-6 FC PASS-WITH-NOTES r2/5 (FC 41f23f61e, ref refs/keep/R-RUSTPORT-REPIN-DELTA-6-Q1-fc), zintegrowane docs aec9542fe. W toku (Haiku): ROZEJM (wbl8w1fu7), DYSTANS-MULT (wqkx0917x), OBLEZENIE-LIMIT-150 (wp4eh5t9r); startują: WIRE-WAR-STATE (W1), EKONOMIA-CERAMIKA. Nowe tematy z pomiaru: dryf sojusz_pelny 130/151 i era wojny 40/20 (DANE), machiny oblężnicze, ai-army-composition, unit-replace, army-follow-auto-merge, pokojAiAi/przewagaMilitarna — patrz REPIN-DELTA-6.md §4.
-- 2026-11-11 RUST: DYSTANS-MULT FC PASS-WITH-NOTES r2/5 zintegrowany FF na parity-v2 (6d74770df; kod d0275ae57; ref refs/keep/R-RUSTPORT-REPIN-WALKA-DYSTANS-MULT-Q1-fc): formuły mnożnika pocisku + parametr + wektory 2517 wartości (0 rozbieżności z webem). DŁUG OTWARTY: mnożnik martwy kod do czasu pętli strzałów/fieldPower w Rust (nowy temat). Wyjątek allowlisty units_combat.rs zaakceptowany (deny_unknown_fields). CERAMIKA r1 BLOCK/FAIL (zero pracy) → r2 z DODATKIEM 1.
-- 2026-11-11 RUST: OBLEZENIE-LIMIT-150 (zawężony GOAL: czyste funkcje + parametr bez_wylomu_max_tur=150) FC PASS-WITH-NOTES r3/5 zintegrowany FF na parity-v2 (5261decd7; kod 11739a35f; merge z DYSTANS bez konfliktu; wektory 400+336+15 z weba). DŁUG: pętla taktyczna/mur/wyłom/commitBesiege (#217).
-- 2026-11-11 RUST: WIRE-WAR-STATE (W1) FC PASS-WITH-NOTES r3/5 (Sonnet r3) zintegrowany na parity-v2 (merge bez konfliktów; kod 335f29970, FC dd97a8f10; bramki po scaleniu: fmt, clippy --all-targets -D warnings, lib 22 + 6 celów zielone; FC zmierzył pełny cargo test 324 binarki 0 failed). WarTurnState w PlayableState/GameStateDto (D1=B). Uwaga: wektory z origin/main 000358dec (pin 638e90bea; różnica 3 plików NIE_ZMIERZONO).
-- 2026-11-11 RUST: ROZEJM 5/10/15 FC PASS-WITH-NOTES (r3 Sonnet + obrona; FC 519ff7f67, kod 5df81ba45) zintegrowany na parity-v2 (merge czysty; bramki po scaleniu: fmt, clippy --all-targets, lib + 8 celów zielone). Podpięte w żywej ścieżce propozycji: Z9, startTruce, 0 Zaufania, PairMetaWeb, Z8 (z guardem barbarzyńcy/skip_n2). DŁUG W6: tick rozejmu z pętli tury, ai_truce_or_peace_mode, kontroferta L11, kary N2 odwet/sojusz/NAP, wektor turns w koszyku PW.
-- 2026-11-11 RUST: AI-ZAKUP-REALNY-STAN-DROGI FC PASS-WITH-NOTES (r3 Sonnet; FC 6233ab7b0, kod 512d1efa0) zintegrowany na parity-v2 (merge czysty; bramki: fmt, clippy --all-targets, lib + 7 celów zielone). Zrobione: ai_resource_needs + ai_try_purchase_unit (atomowy zakup na realnym magazynie, wektory 75x472 z weba), korekta reguły DROGA (FALA 596) + road_build_block_reason (wektory 107 stanów). DŁUGI: D-AIZAKUP-WIRE (wpięcie w turę = W4/D7), D-PICK-4 (4 usunięte scenariusze pick.json), D-PICK-PIN (mieszany pin wektorów 180c08305), D-M16-DROGA-PIN, D-STADNINA (isLivestockUnlockedForPlacement/horseStockAvailable), REPIN auto-ulepszeń (~989 scenariuszy pick.json), D-FULL-CARGO-TEST (NIE_ZMIERZONO).
-- 2026-11-11 RUST: WIRE-WAR-WORLDVIEW (W2) FC PASS-WITH-NOTES r1/5 zintegrowany na parity-v2 (merge czysty; kod 1e9095ff8, FC 29a264fe0; bramki: fmt, clippy, lib + 6 celów zielone). WarWorldView + adaptery; wektory z weba tylko dla buildWarCityTargets. DŁUG W3: wektory dla adapterów home/wave/siege/enter i konstrukcji kandydatów sąsiadów (web buduje inline: ai.ts:3580/3927, main.ts:17558, 40316-40327 — wymaga wyciągnięcia builderów w gra/ lub wektora integracyjnego).
-- 2026-11-11 RUST: ARMIA-FOLLOW-AUTOMERGE FC PASS-WITH-NOTES r1/5 zintegrowany na parity-v2 (kod 32581479f, FC acabd51b9; merge czysty; bramki: fmt, clippy, lib + 4 cele zielone). followLeaderAutoMergeDecision + canJoinStackAt, wektory z weba 3097 scenariuszy (cmp bajt w bajt), mutacje wykrywane. DŁUG: brak callera (promptMergeIfCoLocated web main.ts:14518; Rust co_located_for_merge_prompt recruitment.rs:560 bez wywołania) — seria W.
-- 2026-11-11 RUST: DYPLOMACJA-DANE-SOJUSZ-ERA FC PASS-WITH-NOTES r2/5 zintegrowany na parity-v2 (kod 90a2fcdbc, FC 5a4e76bc6; merge czysty; bramki po scaleniu: fmt, clippy --all-targets, lib + 54 binarek dyplomacji/wojen/rozejmu/zakupu/W1-W2/FOLLOW 0 failed; FC: pełny cargo test 328 binarek 0 failed na kodzie tematu). Dane: sojusz 151→130, zaufanie 91→90, umowa-min 130, era wojny 20→40 (kamień 25→40). DALSZY DRYF (poza tematem, nowe tematy REPIN): progSojuszWillingnessMin 0,54 (Rust 0,68), progNapZaufanie, ekspansjaGranica*, progNapBezterminowyRelacja=151 (brak konsumenta w Rust).
-- 2026-11-11 RUST: WIRE-WAR-FORCED-STEP (W3) FC PASS-WITH-NOTES r2/5 zintegrowany na parity-v2 (kod 98e0fa64c, FC 63fe5289c; merge czysty; bramki: fmt, clippy --all-targets, lib + 7 celów, 0 failed). forced_war_step: sweep → Krok A → pula gracza → parowanie → ownerLoop; 24 testy (kamień/brąz/żelazo, parowanie, kolejność, wznowienie). DŁUG: wektory z weba (blok inline w runAiPhase) → W8/generator; W3-5 era w predykacie wyczerpania (zmiana sygnatury war_forced_pairing.rs); W3-7 brak dedupu po ownerId w assign_forced_war_pairings.
-- 2026-11-11 RUST: ZAPIS-MIGRACJE-FALA509 FC PASS-WITH-NOTES r3/5 (Sonnet r3) zintegrowany na parity-v2 (kod ad31af5b1, FC c6b81febd; merge czysty; bramki: fmt, clippy --all-targets, lib + 30 binarek zapisu/W1-W3/marszów/rozejmu/zakupu 0 failed). Migracje: demote_generals_over_limit, enforce_army_stack_limit (500), SaveSnapshot::migrate_on_load, UnitDto.is_general addytywnie, semantyka Map w planned_marches_to_save (pathfinding.rs, wyjątek allowlisty zaakceptowany). DŁUG/NOWE TEMATY: loader zapisu wołający migrate_on_load (Rust nie ma loadera; format zapisu web nieczytany), R-RUSTPORT-P6-WIRE-EPOCH-WAR-FLAG-Q1 (konsument playerEpochWarEnabled w turze), migracja na starcie tury (enforce_army_stack_limit do pętli tury), wektor planned_marches z weba.
-- 2026-11-11 RUST: OBLEZENIE-MASZYNY FC PASS-WITH-NOTES r1/5 zintegrowany na parity-v2 (kod e518b676d, FC 976326bf6; merge czysty; bramki: fmt, clippy --all-targets, lib + 5 celów 0 failed). siege_engine_build.rs: 9 powodów blokady, kwota 1/10, wektory z weba 52 przypadki (w tym realne jednostki Siege), raw Tech '-'/'—'. DŁUG: parametr unitsPerSiegeEngine jako stała Rust (nowy plik data/ łamie data_loader 29 plików — wymaga rozszerzenia allowlisty), kolejka siegeMachines.ts nie portowana, wpięcie w turę (W-seria).
-- 2026-11-11 RUST: WIRE-WAR-DECLARE-CLEANUP (W4) FC PASS-WITH-NOTES r2/5 zintegrowany na parity-v2 (kod 78f9a2d59, FC 088b2b824; merge czysty; bramki: fmt, clippy --all-targets, lib + 8 celów 0 failed). war_turn_declare.rs (475 LOC): deklaracja wojny wymuszonej, cleanup przy pokoju (forced + regularna), koniec wg liczby miast (bezpiecznik ForcedWarPair), blokada pokoju epoki (kolejność: blokada przed cleanup), zakup AI jako krok (ai_try_purchase_unit). DŁUG: W3-7 dedup po ownerId, zdejmowanie blokady epoki, wektory z weba (logika inline main.ts), moduł+testy 916 LOC >600 (uzasadnione Z7).
-
-## 2026-11-11 — Rust: UNIT-REPLACE i CERAMIKA-GARNCARSTWO zintegrowane (parity-v2 ad628b9d4)
-- R-RUSTPORT-REPIN-UNIT-REPLACE-Q1: kod f1d3a5f71, FC 8b04e99c6 PASS; merge cd7145e23; bramki fmt/clippy/6 binarek 0 failed. Długi: L-1 tabela awansów INFANTRY (21/23 brak w Rust units.json → osobny temat DATA), L-2 klucz `ai_zamiana_jednostek_limit_udzial`, L-3 wpięcie w turę.
-- R-RUSTPORT-REPIN-EKONOMIA-CERAMIKA-GARNCARSTWO-Q1 (runda 4, Sonnet): kod 3303624e5, FC 6476ffdd3 PASS-WITH-NOTES; merge ad628b9d4; bramki fmt/clippy/17 binarek 0 failed (pełne 324 binarek: dowód Evaluatora r4, 0 failed). Orkiestrator RATYFIKUJE Z-R4-1 (wektory q5/q6/empirefood/order_lane z hybrydy hybrid2 + nakładka zakresu tematu) i zmianę `tests/building_costs.rs` (43 budynki). Długi REPIN do zarejestrowania (NIE startować do odwołania — polecenie właściciela 2026-11-11: najpierw web): (1) korupcja Pałac II/III + Trybunał; (2) odlewnie brązu 25/50; (3) handel kontaktowy + emporion w TRADE_BUILDING_IDS; (4) łodzie rybackie 6/6/6 + units.json/terrain-yields; (5) `civBonusy` w zapisie (player.rs).
-- POLECENIE WŁAŚCICIELA 2026-11-11: po zakończeniu bieżących tematów Rust NIE odpalać nowych tematów Rust, dopóki nie skończą się tematy WEB. W toku Rust: W5 MARCH-PLAN, DANE-2, PICK-STADNINA (r3).
-
-## 2026-11-11 — Web: dokończenie tematów Codexa (Claude, po FC)
-- R-WEB-CAVALRY-IRON-ONLY-Q1: FC PASS-WITH-NOTES, integrować 12737d11c (baza 4919be9dc), ref refs/keep/…-fc (378737f12). Nie uruchomiono testów kart w przeglądarce (wynik tylko z raportu Operatora).
-- R-WEB-EMPIRE-RECRUIT-AFFORDABILITY-SUMMARY-Q1: FC PASS-WITH-NOTES, integrować f87985d7c (kod = fb6f1885d + test), baza 1e48b8282. Dług bazowy live 20/23 (L16–L18) istniał przed zmianą.
-- R-WEB-MELEE-CROSS-TYPE-NEXT-ERA-REPLACEMENT-Q1: niezależny FC PASS (Codex, 5624b11b6), kandydat e42266cf1, baza 186d0f03b.
-- R-BITWA-DEAD-UNIT-DISAPPEARS-Q2: Operator Sonnet r2 w toku (odtworzenie ducha).
-
-## 2026-11-11 — FALA 620 wdrożona na ROBOCZĄ (main 261e736de, MD5 b9e1f437f34828881bde06584955f9f5)
-Zawartość: R-WEB-CAVALRY-IRON-ONLY-Q1 (12737d11c), R-WEB-EMPIRE-RECRUIT-AFFORDABILITY-SUMMARY-Q1 (f87985d7c), R-WEB-MELEE-CROSS-TYPE-NEXT-ERA-REPLACEMENT-Q1 (e42266cf1/5624b11b6), R-BITWA-DEAD-UNIT-DISAPPEARS-Q2 (70da7e6ee: TYLKO narzędzia testowe, wynik NIE_ODTWORZONO). Odczyt Raw MD5 zgodny, trzy sidecary zgodne. Merge konnicy miał konflikt w wygenerowanym `tech-cards-top5.json` — zregenerowany generatorem (`--check` OK), nie edytowany ręcznie.
-Do decyzji właściciela: DEAD-UNIT-Q2 — opcja A zamknąć jako NIE_ODTWORZONO (test e2e zostaje jako bramka regresji) / opcja B prośba o zrzut lub zapis zgłoszonego przypadku. Długi: auto:siege e2e NIE_ZMIERZONO (timeout swiftshader), brak e2e z wyłomem+replay+bitwa ręczna, live-test rekrutacji 20/23 (L16–L18 = baza).
-Kolejka webowa: dyspozycje/KOLEJKA-WEB-PO-OBECNYCH-OPERATORACH-20261111.md. Start: BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX (Sonnet).
-
-## 2026-11-11 — Rust: DYPLOMACJA-DANE-2 zintegrowane (parity-v2, merge FC ed130181d)
-R-RUSTPORT-REPIN-DYPLOMACJA-DANE-2-Q1: kod 475eb353a (runda 2), FC ed130181d PASS; bramki po merge: fmt/clippy/17 binarek 0 failed (pełne 338 binarek: dowód Operatora/Obrony, FC odtworzył 22 binarki dyplomacji). Dane diplomacy*.json = web (cmp 5/5), progSojuszWillingnessMin 0,54, progNapZaufanie podłączony. Długi: port reguły balansu przewagaMilitarna/pokojAiAi, progNapBezterminowyRelacja (bez konsumenta), ekspansja graniczna Brąz −3/Żelazo −4 (bez konsumenta), sisterAlliance, 3 klucze WAR_RULES_PARAMS, wektory aiDiplomacyStance. Rust: nowe tematy wstrzymane do końca kolejki web.
-
-## 2026-11-11 — Rust: W5 WIRE-WAR-MARCH-PLAN zintegrowane (parity-v2)
-R-RUSTPORT-P6-WIRE-WAR-MARCH-PLAN-Q1 (runda 4/5, op. Sonnet r3): kod 8bccc4034 FC PASS-WITH-NOTES; bramki po merge: fmt/clippy/9 binarek (lib + march core/adapter/vectors + wire_war_*) 0 failed. Planer `plan_war_march` (kampania → dom → fala → all-in) zwraca komendy, niczego nie wykonuje; 500 wektorów z weba dla planHomeWar/planForcedWarWave. Długi W8: odchylenie Z5 od weba (flankowanie, bramka historii/fal), Z3/Z4, wektory kampanii i all-in, czułość mutantowa kampanii/all-in; kolejne: W6 (dyplomacja tury), W7, W8 — NIE startować do końca kolejki web.
 
-## 2026-11-11 — FALA 621 wdrożona na ROBOCZĄ (main adb5c1653, MD5 0348f31ecae968fea80a506ce5ebdfe0)
-R-WEB-AI-TRADE-PROPOSALS-TO-PLAYER-Q1: FC PASS-WITH-NOTES, kod a7f0800fe (f20b81654 + poprawki obrony b920196b6: cooldown po końcowych filtrach, testy negatywne, branch-test 10/0). Odczyt Raw MD5 zgodny, sidecary zgodne. Niezmierzone: wiring main.ts end-to-end, realny tick dostaw, UI/Chromium, stare zapisy. Start następnych: IRON-STUD-ADJACENCY, BATTLE-DEFEAT-SURVIVOR-RETREAT (w toku), RECRUIT-FOLLOW-GENERAL-BY-ORIGIN.
+## 2026-11-10T13:01:24.304590+01:00 — odczyt orkiestratora Codex (snapshot, nie bezterminowy status)
+- R-PROC-CODEX-FOUR-TOPICS-20261110: korekta Operatora r3 zakończona (22-operator-response-r3.md), niezależny Evaluator r3 aktywny. Wcześniejsze statusy Operator r1/r3 są historią; bieżąca bramka wynika z najnowszego raportu w runie, nie ze starego wpisu.
+- R-WEB-POLISH-LANGUAGE-AUDIT-Q1: Evaluator r2 aktywny po implementacji PL01/PL03; PL02 i pełny zakres audytu UI pozostają częściowe.
+- R-WEB-AI-MAJOR-ECONOMY-TEST-DEBT-Q1: Operator aktywny; brak gotowej poprawki do integracji.
+- R-WEB-PR141-F04-YIELDS-TEST-DEBT-Q1: Evaluator aktywny po korekcie fixture testu; bez zmian produktu.
+- Dokładnie4 aktywne tematy w chwili odczytu. Pełne ID obu testów ekonomii zostały zarejestrowane w00-dispatch.md, z jawną retrospektywną notą dla wcześniejszego dispatchu narzędziowego.
+- Zakończone i wypchnięte: FALA607(2ee58aa2, trzy poprawki), FALA608(6c95bf48, Haamonga), komentarz Garncarstwa, battle-loot12/12, weterani79/79, terminologia796/796, audyt widoczności Rekrutuj wszystkie. Receipty90 w odpowiadających runach. Nie otwierać ponownie jako niezaimplementowanych bez nowego dowodu.
 
-## 2026-11-11 — Odpowiedzi właściciela (ABC) po FALI 621
-- R-BITWA-DEAD-UNIT-DISAPPEARS-Q2: **A — zamknięte jako NIE_ODTWORZONO** (kandydat 70da7e6ee wdrożony w FALI 620: tylko test e2e jako bramka regresji). Nowe zgłoszenie z krokami → nowy temat.
-- Garnizon w zdobytym mieście (wipeDefenderOnCityCenter): **zostaje obecne zachowanie — giną** (miasto zdobyte). Brak zmian; zamyka uwagę z R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1 (Evaluator zarzut 1).
-- R-WEB-ADMINISTRATOR-AUTOBUILD-GATE-Q1: właściciel prosi o LISTĘ istniejących budynków administracyjnych (przekazana w czacie: Pałac I/II/III, Sąd, Dom Starszyzny/Dwór Zarządcy/Pretorium, Trybunał, Garnizon) i sam wskaże wybór — temat czeka na tę odpowiedź.
-- #201 („Przydziel obywatela?”): właściciel prosi o dokładniejszy opis opcji — przekazany w czacie; czeka na odpowiedź.
+## 2026-11-10T14:02:57.956073+01:00 — nowe zgłoszenie wyboru docelowego heksu
+- R-WEB-ARMY-SPLIT-GRAPHICAL-HEX-PICKER-Q1: etap1/11, zarejestrowane; współrzędne zastąpić graficznym wyborem sześciu pól wokół jednostki, zachowując reguły rozdzielenia. Dispatch: runs/R-WEB-ARMY-SPLIT-GRAPHICAL-HEX-PICKER-Q1/00-dispatch.md.
+- Ostatnie próby Operatorów Luna dla Polish r3, D-FOG-F, food-grace i tech-cards zakończyły się limitem użycia. Status WSTRZYMANY/INFRA, nie aktywna praca. Brak zgody na ciche zastąpienie innym modelem; modele pozostają LunaHigh.
 
-## 2026-11-11 — FALA 622 wdrożona na ROBOCZĄ (main 546fdf6bf, MD5 ed9a203205c922bf4d277bed985d3ee8)
-R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1: FC PASS-WITH-NOTES, kod e06f87d9f (bazowy e758eba8f + poprawki Obrony cfa6dd064: druga kopia panelu miasta, regex testu, test źródłowy followIntent). Raw MD5 i 3 sidecary zgodne. Niezmierzone: Chromium na żywej grze (do obejrzenia na ROBOCZEJ: miasto startuje z OFF, Armia dziedziczy), dług bazowy hexHasRoomFor w harnessie dwóch testów, martwy kod purchaseRecruitmentUnits.
-IRON-STUD-ADJACENCY: FC PASS-WITH-NOTES (1dff44b63) → FALA 623 w toku. SURVIVOR-RETREAT: DODATEK 3 (odwrót tylko w polu, w mieście giną) — runda 2 w toku. Start: BRICK-CYCLES-75-100.
+## Odczyt Codex po wznowieniu limitowanych ról — 2026-11-10
+Wznowione roleLunaHigh: army_split_graphical_hex_operator; polish_language_audit_operator r3; d_fog_measure_scripts_operator; food_grace_tests_operator. Max4aktywnetematy. Wcześniejsze komunikaty o limicie pozostają historią; nowa diagnoza/testy nie są z góryPASS. Techcards czeka na wolnyslot. Stan etapów: STAN-ZADAN-CODEX-20261110.md.
 
-## 2026-11-11 — Decyzje i zgłoszenia właściciela (administratorzy, ikony, #201, wycofanie)
-- Odwrót ocalałych: TYLKO walka w polu (przegrana strona — wszyscy ocalali mogą się wycofać); w mieście giną. Zawężenie wpisane jako DODATEK 3 do R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1 (runda 2 uruchomiona ponownie).
-- #201 → „2 b+c”: przycisk centrujący kamerę + zakładka Ważne (R-WEB-UI-FARM-ASSIGN-HINT-CAMERA-IMPORTANT-Q1).
-- R-WEB-UI-CITY-BUILDINGS-RESOURCE-ICONS-Q1: właściciel — „zamieniłbym wszystkie te nazwy surowców na symbole surowców i liczby, bo to jest strasznie nieczytelne” (zrzut listy budynków miasta).
-- R-WEB-CITY-ADMINISTRATOR-Q1 (zastępuje R-WEB-ADMINISTRATOR-AUTOBUILD-GATE-Q1): ABC „Umiarkowane”: zatrudnienie 40 Pieniądza, utrzymanie 2/3/4 / turę (tier I/II/III) z BUDŻETU PAŃSTWA; korupcja −10%, produkcja +3%, podatki +3% (×1/×1,5/×2,25); 1 administrator indywidualnie na miasto; brak środków państwa = nie pracuje (bez efektów i bez autobudowy); autobudowa BUDYNKÓW tylko z administratorem. Przycisk w nagłówku obok „Ustaw jako stolicę”.
-- R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: administrator ulepszeń w panelu ulepszeń; auto-ulepszenia tylko z nim; bez niego ręcznie.
-- R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: automatyczna rekrutacja w panelu Rekrutacja tylko z wybranym generałem; nowe jednostki idą do wybranego generała; bez wyboru — dotychczasowe zasady (najbliższy generał); rekrutacja ręczna w panelu Armia bez zmian.
+## 2026-11-10T14:57:41.808240+01:00 — planpoFALI609 / decyzjawłaściciela
+SztukawojennaTop3: „Odblokowuje jednostki epoki Żelaza”, bezliczby — kwalifikacjaTECH-CARDS. Graficzny splitFALA60911/11, unittextbatch11/11,parentPolishauditPARTIAL. Następne4przewidziane: TECH-CARDS, POLISH-UI-ROUTES-AUDIT-Q2, WONDER-TRANSFER-TEST-DEBT, BATTLE-SIEGE-NEARBY-UNITS-JOIN. Dispatchzapisanyprzeduruchomieniami; brakstarychFAŁ589-606wotwartejpracy.
 
-## 2026-11-11 — FALA 623 wdrożona na ROBOCZĄ (main 681a0a828, MD5 be5d3e417eae4afa10bdac9141016adc)
-R-WEB-IRON-STUD-ADJACENCY-Q1: FC PASS-WITH-NOTES, kod 1dff44b63. Raw MD5 i 3 sidecary zgodne. Niezmierzone: dodatnia ścieżka live (budowa przy sąsiedzie + odjęcie 50 koni), koszt wydajności tooltipu.
-Rust: PICK-STADNINA r3 zintegrowane na parity-v2 (db390d49d): kod cc7bbf00f FC PASS-WITH-NOTES; bramki fmt/clippy/12 binarek (pick shard 0/2, relief, terrain, m16, ceramika, building_costs, W5 core) 0 failed, pełny cargo test wg Operatora 2564 passed; pin jeden cffe39cb9; 4 scenariusze zgodne; M16 `droga` odtworzone z weba. Dług: łodzie rybackie 6/6/6 (data/terrain-improvements.json) — osobny REPIN ekonomii.
-Ikona administratora (pomysł właściciela „A”): pieczęć/laur z „A” w dispatchach administratorów.
 
-## 2026-11-11 — FALA 624 wdrożona na ROBOCZĄ (main cfa5d1e65, MD5 603c7016ed3f92fca02dc6fc1f37c1ca)
-R-WEB-UI-FARM-ASSIGN-HINT-CAMERA-IMPORTANT-Q1 (#201 „2 b+c”): FC PASS-WITH-NOTES, kod 6a50daeb3. Raw MD5 i sidecary zgodne. Dowód Chromium na wstrzykniętej karcie; realny wpis do obejrzenia na ROBOCZEJ.
-R-WEB-UI-CITY-BUILDINGS-RESOURCE-ICONS-Q1: FC PASS-WITH-NOTES (b6a919b96) → FALA 625 w toku. Uwagi FC: zakres kart budowy i jednostek (nazwy tekstem w buildingStockCostChipsHtml, formatResourceUpkeepSummary, unitResourceUpkeepChipsHtml) poza GOAL — możliwy follow-up; czytelność małych ikon na żywej grze NIE_ZMIERZONO. W toku: SURVIVOR-RETREAT r2, BRICK-CYCLES, CITY-ADMINISTRATOR; start SEA-PEOPLES.
+## R-WEB-ARMY-CITY-RECRUIT-ZERO-BATCH-Q1 — 2026-11-10
+STATUS: ZAREJESTROWANE. GOAL: ilości0 i dwa globalne przyciski Rekrutuj wszystko w Armia/rekrutacja per miasto. Właściciel potwierdził screenshot Ateny/Sparta. Oddzielny panel HUD pozostaje. Dispatch: `autobot/runs/R-WEB-ARMY-CITY-RECRUIT-ZERO-BATCH-Q1/00-dispatch.md`.
 
-## 2026-11-11 — FALA 625 wdrożona na ROBOCZĄ (main 0571c8731, MD5 881b150cf8474c463b2c7f65e12725b9)
-R-WEB-UI-CITY-BUILDINGS-RESOURCE-ICONS-Q1: FC PASS-WITH-NOTES, kod b6a919b96. Raw MD5 i 3 sidecary zgodne. Follow-up do decyzji: nazwy tekstem w kartach kosztu budowy i w kosztach utrzymania jednostek (buildingStockCostChipsHtml, formatResourceUpkeepSummary, unitResourceUpkeepChipsHtml); czytelność ikon ~9 px NIE_ZMIERZONO na żywej grze.
-R-WEB-SEA-PEOPLES-BRONZE-TURN20-TRIPLE-Q1: FC PASS-WITH-NOTES, kod a88d05607 → FALA 626 w toku. DO DECYZJI WŁAŚCICIELA (nieblokujące): okno liczone dla gracza (owner 0), a spawn barbarzyńców jest globalny; parity dla nacji AI niewdrożona; próg „20. tura” = elapsed ≥ 20 od wejścia w Brąz; stary zapis z flagą brak może pokazać komunikat raz po wczytaniu; Chromium NIE_ZMIERZONO.
 
-## 2026-11-11 — FALA 626 wdrożona na ROBOCZĄ (main 37bcf8ebb, MD5 6911acc968413f9e7e4089698c874ef0)
-R-WEB-SEA-PEOPLES-BRONZE-TURN20-TRIPLE-Q1: FC PASS-WITH-NOTES, kod a88d05607. Raw MD5 i sidecary zgodne. Notatki (okno gracza/spawn globalny/AI bez parytetu/próg 20 tur/Chromium NIE_ZMIERZONO) w FALI 625 wpisie.
-R-WEB-UNIT-CARD-RANGED-MULT-Q1 (#205): cel był już wdrożony w FALI 607 (39f8e2ce0); runda dodała tylko test HTML tooltipa (unit-card-ranged-mult-test 32 OK) i zrzut Chromium (harness) — FC PASS-WITH-NOTES (ec28410a2), kandydat testowy do następnej fali; #205 ZAMKNIĘTE.
+## R-WEB-CAVALRY-FRONT-FLANKS-PLACEMENT-Q1 — 2026-11-10
+STATUS: ZAREJESTROWANE. GOAL: konnica/rydwany: dodać Zprzodu, domyślnie Zboku; sprawdzić niedziałające faktyczne rozstawienie. Screenshot/czatwłaściciela. Run:autobot/runs/R-WEB-CAVALRY-FRONT-FLANKS-PLACEMENT-Q1.
 
-## 2026-11-11 — Przekazanie od innej sesji: Rust P6-REPIN-DYSTANS-PETLA (dług #216), NIEWYPCHNIĘTE
-Inna sesja (kontener e9dda8db…) opisała w raporcie przekazania `dyspozycje/rust-port/p6/P6-REPIN-DYSTANS-PETLA-HANDOFF.md` (worktree /tmp/wt-dystans, gałąź `autobot/p6-repin-dystans`, commit `3b7841f14`; „bez push”): ustalenia + jak odtworzyć wektory z weba; kolejne kroki: Evaluator i Final Control, pełny `cargo test` (niezmierzony), port modyfikatorów wejścia fazy, faza zwarcia i podpięcie do `resolve_combat` (wymaga DECYZJI WŁAŚCICIELA); pułapki: niewersjonowany `Cargo.lock`, wolny fetch repo. STAN: w tym kontenerze commit `3b7841f14` i plik NIE istnieją (gałąź nie jest na origin) — praca jest dostępna tylko po wypchnięciu `autobot/p6-repin-dystans` przez tamtą sesję. Rust jest wstrzymany do końca kolejki web (polecenie właściciela), więc temat czeka; po odblokowaniu: pobrać gałąź, zweryfikować, poprowadzić Evaluator/FC (ten sam ID: R-RUSTPORT-P6-REPIN-DYSTANS-PETLA), ABC przed fazą zwarcia.
 
-## 2026-11-11 — Rust DYSTANS-PETLA: gałąź WYPCHNIĘTA (przekazanie od innej sesji)
-`origin/autobot/p6-repin-dystans` = `3b7841f145a1178408805d91765477cf4cfdd937` (83bc866e6 kod+testy+wektory+dokumentacja; 3b7841f14 handoff `dyspozycje/rust-port/p6/P6-REPIN-DYSTANS-PETLA-HANDOFF.md`); baza parity-v2 `6d74770df`; ta sama praca także na `claude/amazing-ramanujan-1rae7n`. Merge z aktualnym `rust-port/parity-v2` (db390d49d) CZYSTY (merge-tree). ref `refs/keep/R-RUSTPORT-REPIN-WALKA-DYSTANS-PETLA-Q1-op-r1`. Zakres: `combat.rs::ranged_phase::resolve_ranged_phase` (faza dystansowa z combat.ts l.1008–1067), `unit_power.rs::field_power`, testy `p6_repin_dystans_petla` (600 walk), `p6_repin_dystans_fieldpower` (400 jednostek), wektory z weba (esbuild, Node 22). Operator PASS-WITH-NOTES r1/5; NIE przeszło Evaluatora/FC; pełny `cargo test` NIE_ZMIERZONO; pętla niepodpięta do `resolve_combat`; faza zwarcia wymaga DECYZJI WŁAŚCICIELA. PLAN: po końcu kolejki web — Evaluator + FC (Workflow, ten sam ID), integracja na parity-v2, ABC przed fazą zwarcia. Rust wstrzymany do tego czasu.
+## R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1 — PILNE2026-11-10
+STATUS: ZAREJESTROWANE. Właścicielpotwierdził40tur odwejściawKAŻDĄepokę; braknakładaniawojenepoki, normalwarsbez zmian. Prioritetprzedkonnicą, ta jawniepauzowana w4/11. Dispatchautobot/runs/R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1.
 
-## 2026-11-11 — Odpowiedzi ABC właściciela (po FALI 626)
-Machiny oblężnicze poza Zastąp (F0 → poprawka testu); ikony surowców wszędzie (nowy temat ICONS-EVERYWHERE); Ludy Morza bez zmian (okno gracza); administrator ulepszeń = ten sam koszt, bez bonusów, tylko autobudowa ulepszeń. Dispatche w runs/ (R-WEB-UI-RESOURCE-ICONS-EVERYWHERE-Q1, R-WEB-TEST-DEBT-UNIT-REPLACE-F0-Q1, R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1).
 
-## 2026-11-11 — R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1 (zgłoszenie + ABC właściciela)
-Właściciel: przełącznik automatyzacji w ustawieniach zamienić na pytanie w kreatorze nowej gry „Administratorzy: włączone/wyłączone”. ABC: bez administratorów = brak automatyzacji (wszystko ręcznie); domyślnie wył., tylko w kreatorze (na stałe, bez zmiany w trakcie gry); opcja nie obejmuje armii (generał rekrutujący niezależny); stare zapisy: administratorzy wył. + jednorazowe powiadomienie. Dispatch: runs/R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1/ (start po CITY- i IMPROVEMENT-ADMINISTRATOR).
+## R-WEB-BORDER-RELATIONS-ERA-PENALTY-Q1 — PILNE2026-11-10
+STATUS: ZAREJESTROWANE. GOAL: Kara za wspólną granicę: Kamień zachowuje obecnąwartość, Brąz−3/turę, Żelazo−4/turę. Dotyczy istniejącegoczynnika, nie nowej kary. Sprawdzić obecneskalowanie owner/epoka i oba kierunki relacji, pokazywanąwartość UI zgodną z rzeczywistym tickiem. Nie wymyślać agregacji różnych epok jeśliprodukcjajużma wzorzec; jeśli brak i rzeczywistadecyzjabilansowa zgłoś. Daneparametrynieliterały; zachować warunekwspólnejgranicy i liczby miast, zwykłeczynnikibez zmian.
+Dispatchautobot/runs/R-WEB-BORDER-RELATIONS-ERA-PENALTY-Q1/00-dispatch.md
 
-## 2026-11-11 — FALA 627 wdrożona na ROBOCZĄ (main 494480569, MD5 e1fabc32d46e3a64a40c6b0df89f8ed2)
-R-WEB-CITY-ADMINISTRATOR-Q1: FC PASS-WITH-NOTES, kod dda3d8c30 (Sonnet r1/5). Administrator miasta: zatrudnienie 40, utrzymanie 2/3/4 z budżetu państwa, korupcja −10% / produkcja +3% / podatki +3% ×tier, autobudowa budynków gracza tylko z administratorem, przycisk obok „Ustaw jako stolicę”, ikona „A”, AI, zapis. Raw MD5 i sidecary zgodne. ZAŁOŻENIE (zgodne z decyzją o kreatorze): bramka autobudowy tylko dla gracza; AI buduje jak dotąd. NIE_ZMIERZONO w żywej grze: zapis/wczytanie, powiadomienia, zgodność Bilansu plonów z HUD. Dług: ikona A w powiadomieniach tekstowa; wiersz utrzymania administratora bez ikony.
-R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (#138): FC FAIL r1 (regresja ai-war-defend-home T9 29/1 — nakładka sprzężona z isHomeWarDefenseEnabled) → runda 2 (DODATEK 2). Do decyzji właściciela: próg sił 0,8 i zasięg 3 ruchów (balans).
 
-- 2026-11-11 · FALA 628 WDROŻONA (ROBOCZA, main afac264c4, MD5 11ffdb9f…, Raw zgodne, 3× audio-pack MD5 zgodne): R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (FC r2 PASS-WITH-NOTES, kod 4c37bab13; ref `refs/keep/R-WEB-AI-WAR-ARMY-SEEKS-Q1-fc`, wip `web-wip/AI-SEEKS`). Nakładka odsprzężona od isHomeWarDefenseEnabled. Do ABC właściciela: próg sił 0,8 i zasięg 3 ruchy. Dług Rust: REPIN (LEDGER). Następne: RAW-IDS r2 (w toku), potem FALA 629+.
+## R-WEB-WAR-PEACE-TRUCE-FIRST-TEN-TURNS-Q1 — PILNE2026-11-10
+STATUS: ZAREJESTROWANE. GOAL: Każda wojna (epoki lub zwykła): żadnapropozycjarozjemu/pokoju przez pierwszych10pełnychtur odstartupary. Od elapsed10 wolno; elapsed0..9blok. Zmęczeniewojną/inneprocesynadalbiegną, nieresetowaćich. Sprawdzićwszystkieautomatyczne i ręczneścieżkiskładaniaofert/AI-AI/AIgracz/graczAI i serwerguardnieUIonly. Nie zmieniaćakceptacjibalansupóźniej. Wznowieniewojny pokoniecrozejmu iponownawojna musząkorzystaćz istniejącejsemantykistartudoprecyzowaćdowodem, niezresetowaćhistoriiwbrewmechanice. Save/load i aktualnependingofertyprzedzmianąsprawdzić. Jedenparametrminimalnych10dlaspójności, nie tylko warweariness8→10 bezresztyścieżek.
+Dispatchautobot/runs/R-WEB-WAR-PEACE-TRUCE-FIRST-TEN-TURNS-Q1/00-dispatch.md
 
-- 2026-11-11 · FALA 629 WDROŻONA (ROBOCZA): R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1 (FC PASS-WITH-NOTES, kod 65b45f729; ref `refs/keep/R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1-fc`, wip `web-wip/ARMY-AUTO-RECRUIT-GENERAL`). Długi bazowe: recruitment-batch-contract, general-capital-recruitment-order, empire-recruit-live L16-18 (DEFAULT_QTY=0).
 
-- 2026-11-11 · FALA 629 = 07d2fbd72 (Raw MD5 b0f37e1d…, audio-pack MD5 zgodne). TEST-DEBT-UNIT-REPLACE-F0: FC PASS (kod e16f6f7c0, tylko test unit-replace-full-cost, ref `refs/keep/R-WEB-TEST-DEBT-UNIT-REPLACE-F0-Q1-fc`, wip `web-wip/UNIT-REPLACE-F0`) — zmiana wyłącznie testowa, integracja razem z następną FALĄ (630).
+## R-WEB-POTTERY-RESTORE-PREVIOUS-COST-Q1 — PILNE2026-11-10
+STATUS: ZAREJESTROWANE. WłaścicielkazałprzywrócićkosztGarncarstwa. Potwierdzonagitobniżka40→5PN/FALA594; cel40PNbezpozostałychzmian. Runautobot/runs/R-WEB-POTTERY-RESTORE-PREVIOUS-COST-Q1.
 
-- 2026-11-11 · FALA 630 WDROŻONA (ROBOCZA): R-WEB-UI-RAW-IDS-AUDIT-Q1 (FC PASS-WITH-NOTES, aa8f6b06b; ref `refs/keep/R-WEB-UI-RAW-IDS-AUDIT-Q1-fc`, wip `web-wip/RAW-IDS`) + R-WEB-TEST-DEBT-UNIT-REPLACE-F0-Q1 (e16f6f7c0). Luka: zrzuty Chromium kart ulepszenia/odkrycia (NIE_ZMIERZONO) — wzrokowa weryfikacja właściciela.
-- 2026-11-11 · DECYZJA ABC (właściciel): administrator ulepszeń — AI BEZ administratora (opcja B: AI ulepsza teren jak dotąd, za darmo). Odstępstwo od parytetu jest świadome; FC r1 miał jedyny NAPRAW właśnie na parytecie → temat wraca do FC (tryb fc) na kandydacie 058cc56e9.
 
-- 2026-11-11 · FALA 631 WDROŻONA (ROBOCZA): R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1 (FC PASS-WITH-NOTES, 058cc56e9; ref `refs/keep/R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1-fc`, wip `web-wip/IMPROVEMENT-ADMINISTRATOR`). AI bez administratora (decyzja ABC B). Nowy dług: R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE; REPIN Rust (blok JSON administrator_ulepszen + utrzymanie).
+## R-WEB-BRONZE-FOUNDRY-OUTPUT-25-50-Q1 — PILNE2026-11-10
+STATUS: ZAREJESTROWANE. Produkcjabrązu max25wepoceBrązu/50wepoceŻelaza, inputsbez zmian, niezmieniaćsamegożelaza. Runautobot/runs/R-WEB-BRONZE-FOUNDRY-OUTPUT-25-50-Q1.
 
-- 2026-11-11 · FALA 631 = 09ddc9345 (Raw MD5 89f5a5d6…). FALA 632 WDROŻONA (ROBOCZA): R-WEB-BRICK-CYCLES-75-100-Q1 (FC PASS-WITH-NOTES, f7fcc9663; ref `refs/keep/R-WEB-BRICK-CYCLES-75-100-Q1-fc`, wip `web-wip/BRICK-CYCLES`). Dług Rust: REPIN cykle cegielni. Odblokowuje RESOURCE-BUILDING-ENABLE-TOGGLE (potrzebny dispatch).
 
-- 2026-11-11 · FALA 632 = 674f9faef (Raw MD5 b66d2638…). FALA 633 WDROŻONA (ROBOCZA): R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1 (FC PASS-WITH-NOTES, kod 7bed9d379/raport 5df05c456; ref `refs/keep/R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1-fc`, wip `web-wip/SURVIVOR-RETREAT`). Odwrót tylko w polu; w mieście giną. Dług: zamknięte granice a legalność odwrotu, Chromium przez main.ts; REPIN Rust.
+## R-WEB-STONE-RESEARCH-COSTS-PRIORITY-Q1 — PILNE2026-11-10
+STATUS: ZAREJESTROWANE. Gospodarka wodna i Koło bazowo180PN. Brązownictwo480PN wymaga doprecyzowania błędu dyktowania (pytanie wysłane); Garncarstwo40PN zatwierdzone, wspólna partia danych z istniejącymID. Inne parametry bez zmian.
 
-- 2026-11-11 · FALA 633 = 733db93d1 (Raw MD5 6f3edba8…). FALA 634 WDROŻONA (ROBOCZA): R-WEB-UI-RESOURCE-ICONS-EVERYWHERE-Q1 (FC PASS-WITH-NOTES, 8930288b5; ref `refs/keep/R-WEB-UI-RESOURCE-ICONS-EVERYWHERE-Q1-fc`, wip `web-wip/RESOURCE-ICONS`). Wydzielone: R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1 (karty encji). Do wzrokowej weryfikacji właściciela: panel imperium, karta kosztu budowy.
 
-- 2026-11-11 · FALA 634 = 4e6403477 (Raw MD5 3af2e8f3…). FALA 635 WDROŻONA (ROBOCZA): R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1 (FC PASS-WITH-NOTES, ed0675270; ref `refs/keep/R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1-fc`, wip `web-wip/ADMINISTRATORS-WIZARD`). Założenie do potwierdzenia właściciela: AI nadal zatrudnia administratorów MIASTA (efekty ekonomiczne) niezależnie od opcji — zgodnie z DODATKIEM 2 AI poza opcją. Do wzrokowej weryfikacji: kreator nowej gry, stary zapis z automatyzacją.
+## R-WEB-BRONZEWORKING-RESEARCH-COST-480-Q1 — POTWIERDZONE2026-11-10
+STATUS: ZAREJESTROWANE. WłaścicieljednoznaczniepotwierdziłBrązownictwo480PN. Nie czeka jużnaodpowiedź. Pozostałezatwierdzonekoszty40/180/180wdrożone613; sprawdzićcałyzestawbezpowielaniaimplementacji.
 
-- 2026-11-11 · FALA 635 = 0ca51a30c (Raw MD5 134d6fdc…). FALA 636 WDROŻONA (ROBOCZA): R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1 (FC PASS-WITH-NOTES, ebddbfe61; ref `refs/keep/R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1-fc`, wip `web-wip/ENABLE-TOGGLE`). DO DECYZJI WŁAŚCICIELA (ABC): czy wyłączenie budynku ma zerować także jego własne plony (Praca Cegielni, Żywność Garncarni, Praca Stolarni) — wdrożona szeroka interpretacja; agregat bez Stolarni i Kamieniarskiego; brak prognozy następnej tury. Dług Rust: REPIN.
 
-- 2026-11-11 · R-WEB-BATTLE-SKIP-TICK-LOOP-UNIFY-Q1 (#202): FC PASS-WITH-NOTES — temat był JUŻ wdrożony w FALI 618 (kod 239bb988b, wspólny _scaledWallDelta AUTO/SKIP); zero zmian kodu, deploy N/A. Zmierzone: battle-skip-siege-parity 17/0, battle-skip-equals-auto-resolve (Chromium, seed 7) 38/0, siege-*/oblezenie-* 0 fail. NIE_ZMIERZONO: AUTO 1x pełna bitwa, dodatkowe ziarna.
+## Aktualizacja domknięć i aktywnej czwórki — 2026-11-10 po FALI616
+Poniższe statusy zastępują wcześniejsze wpisy REGISTERED/oczekiwania na decyzję tych samych ID; historycznych dowodów nie usuwać.
 
-- 2026-11-11 · FALA 636 = ed2fe8490 (Raw MD5 dcbdf9f5…). FALA 637 WDROŻONA (ROBOCZA): R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1 (3 rundy: Haiku r1 FAIL → r2/obrona; FC PASS-WITH-NOTES, 26cc1b767; ref `refs/keep/R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1-fc`, wip `web-wip/ADMIN-ICON`). Do wzrokowej weryfikacji właściciela: chip nagłówka miasta, hasła Civpedii administratora, wiersz utrzymania administratorów.
+|ID|Stan|Dowód|
+|---|---|---|
+|R-WEB-WAR-PEACE-TRUCE-FIRST-TEN-TURNS-Q1|ZAKOŃCZONE11/11|90-release-612.json|
+|R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1|ZAKOŃCZONE11/11|90-release-613.json|
+|R-WEB-STONE-RESEARCH-COSTS-PRIORITY-Q1|ZAKOŃCZONE11/11|90-release-613.json|
+|R-WEB-POTTERY-RESTORE-PREVIOUS-COST-Q1|ZAKOŃCZONE11/11|linked90-release-613.json|
+|R-WEB-SIEGE-ENGINES-BUILT-ONLY-DURING-SIEGE-Q1|ZAKOŃCZONE11/11|90-release-614.json|
+|R-WEB-BRONZEWORKING-RESEARCH-COST-480-Q1|ZAKOŃCZONE11/11|90-release-615.json; nieoczekujedecyzji|
+|R-WEB-BRONZE-FOUNDRY-OUTPUT-25-50-Q1|ZAKOŃCZONE11/11|90-release-616.json|
+|R-WEB-CAVALRY-FRONT-FLANKS-PLACEMENT-Q1|ZAKOŃCZONE11/11|90-release-616.json|
+|R-WEB-BORDER-RELATIONS-ERA-PENALTY-Q1|W TOKU5/11|runtimeprzeszedł; gating41→followup42, niepublikowaćprzedFC|
+|R-WEB-BATTLE-SKIP-TICK-LOOP-UNIFY-Q1|W TOKU|OperatoractualsceneHTTPbreachtest, niepowtarzać589/600|
+|R-WEB-DIPLO-ALLIANCE-JOIN-WAR-CALL-TO-ARMS-Q1|W TOKU|OperatorpotwierdziłexistingN4+lukępersistencji/historii prośby|
+|R-WEB-AI-TRADE-PROPOSALS-TO-PLAYER-Q1|W TOKU|Operatorcyklicznaoferta barterowa; confirmedcooldown15|
 
-- 2026-11-11 · #112 (glod-wojska-karencja-test): ZAMKNIĘTE jako NIEAKTUALNE — na main test daje 40/0 (naprawa fixture w 581d61d3d), x4 (R_STAWKI_FALA2_MULT) zamierzone wg r-stawki-strojenie.ts i rejestru; mutacja 2→1 czerwona (32/8). Zero zmian kodu, deploy N/A. Dług dok.: tabela referencji w docs/decyzje/R-PROC-AUTOBOT.md (tech-tree 19→20, unit-replace 13→21) jest starsza niż main.
+Max4aktywne tematy, role osobno,sekwencyjnie w temacie. Właściciel polecił start następnego od razu po zwolnieniu slotu. Buildy już wypchnięte usuwać; źródła, raporty i readback w Git. Bieżący stan: autobot/STAN-ZADAN-CODEX-20261110.md.
 
-- 2026-11-11 · FALA 637 = cbfb12dc5 (Raw MD5 8e2329b6…). FALA 638 WDROŻONA (ROBOCZA): R-WEB-RENDER-FALANGA-UNIT-MODEL-PHALANGITE-Q1 (FC PASS-WITH-NOTES, 88e8b9bfa; ref `refs/keep/R-WEB-RENDER-FALANGA-UNIT-MODEL-PHALANGITE-Q1-fc`, wip `web-wip/FALANGA-MODEL`). DO WZROKOWEJ OCENY WŁAŚCICIELA: wygląd falangity w żywej bitwie/na mapie. Dług Rust: REPIN modelu Falangi.
 
-- 2026-11-11 · DECYZJE ABC (właściciel): (1) ENABLE-TOGGLE — wyłączony budynek surowcowy ZERUJE też własne plony (Praca Cegielni, Żywność Garncarni, Praca Stolarni) — wdrożone w FALI 636 zostaje, zero zmian. (2) AIREPL (#185) — BEZ limitu zamian Zastąp AI na turę (jak dotąd; ogranicza tylko skarbiec i rezerwa zakupu) — dług zamknięty, bez zmian w kodzie.
+## R-WEB-POLISH-UI-ROUTES-AUDIT-Q3 — 2026-11-10
+STATUS: ZAREJESTROWANE. KolejnypokryciaaktywnychtrasUI/Civpedia poQ2/ETA/wdrożeniach; parentPARTIAL, niepowielaćgotowychzmian. OperatorREADONLY→Evalkwalifikacji→wąskaimplementacja. Wypełnia4slotpozwolnieniuprzezgranicę617.
 
-- 2026-11-11 · #192 (ai-major-economy-test, pr141-f04-yields-activation-test): ZAMKNIĘTE jako NIEAKTUALNE — na main 31/0 i 135 checks (computeMajorArchetypeMilitaryFraction usunięty kontraktem testu w d20533090; yields naprawione w 583b33198). FC PASS, zero zmian kodu, deploy N/A.
 
-- 2026-11-11 · #191 (battle-loot-test, weterani-test): ZAMKNIĘTE jako NIEAKTUALNE — na main 12/0 i 79/0 (naprawy 6d425e3db, 9fbd2285a z 2026-11-10). FC PASS, zero zmian kodu, deploy N/A.
+## R-WEB-WALL-TIERS-MASONRY-BRICK-Q1 — PILNE2026-11-10
+STATUS: ZAREJESTROWANE. Palisada50%, kamienny100%poMurarstwie, ceglany200%poBudownictwie. Ceglastymodelprzejściowoten samkamiennyzredmaterial. Aktualizacja kartbadań/budynków/Civpedia obowiązkowa. Futuregeometria: R-WEB-BRICK-WALL-DEDICATED-MODEL-FUTURE-Q1 przed1.
 
-- 2026-11-11 · FALA 638 = 10141fdcb (Raw MD5 d0ea0107…). FALA 639 WDROŻONA (ROBOCZA): R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1 (FC PASS-WITH-NOTES, 5ec479d27; ref `refs/keep/R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1-fc`, wip `web-wip/ENTITYCARDS`). Luka do decyzji (osobny temat, jeśli właściciel zechce): bonusy plonów cudów (wonderAdapter BONUS_LABEL) i wiersze plonów (Żywność/Kamień) nadal tekstem; Pieniądz w utrzymaniu budynku tekstem.
 
-- 2026-11-11 · #193 D-FOG-F-MEASURE: ZAMKNIĘTE jako NIEAKTUALNE — 3 skrypty measure (longrun-100-turns-leak-q1, memory-growth-rootcause-q1, memory-unit-static-merge-game) mają już wstrzykiwanie fogRevealKeyFEnabled przez łańcuch --prepare od commitu 6a23dc4dc (2026-11-10); fog-reveal-key-f-option-test 25/0; 1-turowy przebieg Chromium memory-unit-static-merge OK. FC PASS, zero zmian kodu. NADAL OTWARTE (osobne, poza zakresem): D-FOG-F-PLAYTEST (sandbox ?playtest=), martwy argument fogRevealKeyFEnabled w haku startNewGame measure, 100-turowe przebiegi NIE_ZMIERZONO, D-FOG-F-REPIN-RUST; wpis dyspozycje/WERSJE.md:233 do aktualizacji przy następnym deployu.
+### Korekta R-WEB-WALL-TIERS-MASONRY-BRICK-Q1 — najnowszeECHO2026-11-10
+Właścicielpoprawiłbonusy: PALISADA100%, KAMIEŃ150%, CEGŁA200%. Zastępujewcześniejsze50/100/200. Karty/Civpedia/tech/modeljakwdispatchu, testytężnajnowszewartości. Operatorpowiadomiony.
 
-- 2026-11-11 · DECYZJA ABC (właściciel): wiki „Mnożnik handlu/waluty” → „Mnożnik waluty” (opcja A; bez zmian mechaniki; silnik nie używa meta_mnoznik_waluta, realny mnożnik podatku = Mennica 1,5) + poprawka PORADNIK-GRACZA-SPIS-TRESCI.md:2352. Temat: R-WEB-TERMINOLOGY-CURRENCY-MULT-LABEL-Q1.
+## 2026-11-11 — R-WEB-AI-BRONZE-STOCK-EXCESS-Q1
+STATUS: W REALIZACJI
+DOMAIN: GAME
+Zgłoszenie: Inkowie, 24818 brązu w kontrpropozycji. Podejrzenie nadmiernej produkcji lub błędnego licznika; przyczyna niepotwierdzona. Operator audytuje źródło liczby i zachowanie bieżącej produkcji, bez arbitralnego limitu zapasów. Dispatch: `autobot/runs/R-WEB-AI-BRONZE-STOCK-EXCESS-Q1/00-dispatch.md`. Zajmuje slot czasowo odłożonego kandydata barteru f20b81654.
 
-- 2026-11-11 · FALA 639 = af1235544 (Raw MD5 3c75f0a4…). FALA 640 WDROŻONA (ROBOCZA): R-WEB-TERMINOLOGY-C-FOLLOWUP-Q1 (FC PASS-WITH-NOTES, 7ce943a24; ref `refs/keep/R-WEB-TERMINOLOGY-C-FOLLOWUP-Q1-fc`, wip `web-wip/TERMINOLOGY-C-FOLLOWUP`). Dług: [G] gen-building-cards-top5 --check NIEZGODNY z generatorem (bazowy). Pkt (c) wiki → R-WEB-TERMINOLOGY-CURRENCY-MULT-LABEL-Q1 (decyzja ABC A).
+## 2026-11-11 — R-WEB-CAVALRY-IRON-ONLY-Q1
+STATUS: OTWARTE
+DOMAIN: GAME
+Właściciel zlecił przeniesienie każdego typu konnicy do Żelaza. Rydwany oddzielnie. Zarejestrowane do najbliższego wolnego slotu, bez zmiany kosztów/statystyk i bez dopisywania niezatwierdzonego wymogu Akademii. Dispatch w `autobot/runs/R-WEB-CAVALRY-IRON-ONLY-Q1/00-dispatch.md`.
 
-- 2026-11-11 · FALA 640 = f8af35f87 (Raw MD5 adf5fc8c…). FALA 641 WDROŻONA (ROBOCZA): R-WEB-TERMINOLOGY-CURRENCY-MULT-LABEL-Q1 (FC PASS-WITH-NOTES, 5e26f2293; ref `refs/keep/R-WEB-TERMINOLOGY-CURRENCY-MULT-LABEL-Q1-fc`, wip `web-wip/CURRENCY-MULT-LABEL`). Otwarte: wartość 'Mnożnik waluty' per civ w encyklopedii (z macierzy) ≠ realny mennicaMnoznikPoWalucie 1,5 w silniku — do decyzji (ABC) przy najbliższej okazji.
-
-- 2026-11-11 · DECYZJE ABC (właściciel): (1) „Mnożnik waluty” — WDROŻYĆ PER CYWILIZACJĘ (silnik zaczyna używać wartości z civ-matrix meta_mnoznik_waluta; zmiana balansu — temat R-WEB-CURRENCY-MULT-PER-CIV-Q1); (2) ikony także w plonach i bonusach cudów (wonderAdapter + wiersze plonów) — temat R-WEB-UI-RESOURCE-ICONS-YIELDS-WONDERS-Q1; (3) panel produkcji: agregat obejmuje wszystkie 7 budynków (Stolarnia, Kamieniarski) + prognoza następnej tury — temat R-WEB-RESOURCE-BUILDING-PANEL-FORECAST-Q1.
-
-- 2026-11-11 · DECYZJA ABC (właściciel): mnożnik waluty per cywilizacja = wartość z macierzy + korekta trudności, z DOLNYM limitem 1,38 (= dzisiejsze 'hard'), bez górnego (opcja D). Temat R-WEB-CURRENCY-MULT-PER-CIV-Q1 runda 2.
-
-- 2026-11-11 · FALA 641 = a8b063989 (Raw MD5 fbcde734…). FALA 642 WDROŻONA (ROBOCZA): R-WEB-TEST-DEBT-BUILDING-CARDS-TOP5-GENERATOR-Q1 (FC PASS-WITH-NOTES, 3f9f66034; ref `refs/keep/R-WEB-TEST-DEBT-BUILDING-CARDS-TOP5-GENERATOR-Q1-fc`, wip `web-wip/BUILDING-CARDS-GENERATOR`). Długi: parametryzacja korekty Cegielni, 2 kopie budynki-top5.csv, aktualizacja punktów odniesienia R-PROC-AUTOBOT §6.
-
-- 2026-11-11 · FALA 642 = d356b626e (Raw MD5 dd13546f…). FALA 643 WDROŻONA (ROBOCZA): R-WEB-POLISH-LANGUAGE-AUDIT-Q1 runda 1 (FC PASS-WITH-NOTES, 664afd593; ref `refs/keep/R-WEB-POLISH-LANGUAGE-AUDIT-Q1-fc-r1`, wip `web-wip/POLISH-LANGUAGE-r1`). Audyt częściowy; runda 2 (gra/src/ui, main.ts) + lista 10 pozycji do ABC (w raporcie runu) — do zadania.
-
-- 2026-11-11 · R-WEB-CURRENCY-MULT-PER-CIV-Q1: kandydat D (a9cc36f43, FC PASS-WITH-NOTES, ref `refs/keep/R-WEB-CURRENCY-MULT-PER-CIV-Q1-fc-D`, wip `web-wip/CURRENCY-MULT-PER-CIV`) GOTOWY, NIE WDROŻONY — właściciel prosił o pełną tabelę wyników przed decyzją (tabela przedstawiona 2026-11-11: A 1:1 / B górny 2,5 / D dolny 1,38 / E zostaw globalne); decyzja otwarta. Integracja wymaga merge z konfliktem w gen-building-cards-top5.korekty.json (zachować oba wpisy: Cegielnia + Targowisko).
-
-- 2026-11-11 · DECYZJA (właściciel, po tabeli): CURRENCY-MULT-PER-CIV — wdrożyć opcję D (dolny limit 1,38) z korektą: Asyria tylko nieznacznie gorsza niż Babilonia (założenie: −0,1: normal 2,3 → 2,2). Runda 3 w toku.
-
-- 2026-11-11 · FALA 643 = 93a618b17 (Raw MD5 c8198ae5…). FALA 644 WDROŻONA (ROBOCZA): R-WEB-RESOURCE-BUILDING-PANEL-FORECAST-Q1 (FC PASS-WITH-NOTES, 29b2161d4; ref `refs/keep/R-WEB-RESOURCE-BUILDING-PANEL-FORECAST-Q1-fc`, wip `web-wip/PANEL-FORECAST`). Znane: drewno z wycinki poza prognozą; dług bazowy building-upkeep-resources-test D10 (asercja buildingAdapter.ts nieaktualna po ENTITYCARDS) — do synchronizacji osobnym tematem.
-
-- 2026-11-11 · FALA 644 = b4c4b7757 (Raw MD5 108507b6…). FALA 645 WDROŻONA (ROBOCZA): R-WEB-CURRENCY-MULT-PER-CIV-Q1 (W1; FC PASS-WITH-NOTES, 800ecf7a1; ref `refs/keep/R-WEB-CURRENCY-MULT-PER-CIV-Q1-fc`, wip `web-wip/CURRENCY-MULT-PER-CIV-r3`). Decyzja właściciela D + Asyria nieznacznie gorsza niż Babilonia (przyjęte −0,1: 2,7/2,2/1,7). DO OBSERWACJI BALANSU przez właściciela na ROBOCZEJ (podatek z Mennicą rośnie na łatwym/normalnym). Dług Rust: REPIN econ-params + civ-matrix.
-
-- 2026-11-11 · FALA 645 = 4ee2aba61 (Raw MD5 481fb28c…). FALA 646 WDROŻONA (ROBOCZA): W2 R-WEB-UI-RESOURCE-ICONS-YIELDS-WONDERS-Q1 (3 rundy; FC PASS-WITH-NOTES, d4f8ccfe2; ref `refs/keep/R-WEB-UI-RESOURCE-ICONS-YIELDS-WONDERS-Q1-fc`, wip `web-wip/YIELDS-WONDERS`). Nowy temat: R-WEB-UI-RESOURCE-ICONS-TECH-DISCOVERY-NOTICE-Q1 (okno odkrycia technologii). Do wzrokowej weryfikacji właściciela: karty Top 5 i cudów (chipy).
-
-- 2026-11-11 · FALA 646 = c90eb3e18 (Raw MD5 81b1893a…). FALA 647 WDROŻONA (ROBOCZA): W5 R-WEB-POLISH-LANGUAGE-AUDIT-Q1 runda 2 — UI i main.ts (FC PASS-WITH-NOTES, 300f423de; ref `refs/keep/R-WEB-POLISH-LANGUAGE-AUDIT-Q1-fc-r2`, wip `web-wip/POLISH-LANGUAGE-r2`). Jednorazowa akceptacja orkiestratora: zmiana gra/src/game/manpower.ts (formatter napisu) poza allowlistą. Długi: formatMiastaCount (formatPl.ts:50) błędny dla 22–24/32–34 miast; terminology-trade-vs-tax [P] Mennica (karta odkrycia, 798/1) czerwony po FALI 645; ABC właściciela: lista ~8 pozycji rundy 2 + 10 pozycji rundy 1 (raporty w runs/R-WEB-POLISH-LANGUAGE-AUDIT-Q1).
-
-- 2026-11-11 · FALA 647 = 6b58d5796 (Raw MD5 4929ba50…). FALA 648 WDROŻONA (ROBOCZA): W3 R-WEB-UI-EMPIRE-RECRUIT-ALL-LIVE-VERIFY-Q1 (FC PASS-WITH-NOTES, 148c57b56; ref refs/keep/R-WEB-UI-EMPIRE-RECRUIT-ALL-LIVE-VERIFY-Q1-fc, web-wip wypchnięty). Zakres: wyłącznie testy (nowy empire-recruit-all-live-test 29/0, mutanty rally 26/3 i default1 21/8 czerwone; korekta przestarzałego empire-recruit-live-test L16-L18). Kod gry bez zmian. Main 6ade0f0ec, ROBOCZA MD5 9773ee33…, audio-pack MD5 zgodne 5b990bc3…/0a9a1047…/9e88be9f…. Bramki: tsc 0, logic 213/213, tech-tree 20/0, research ALL GREEN, unit-replace 21/21, combat OK, audio-sidecar PASS. NIE_ZMIERZONO: zrodzenie 9 jednostek w wielu turach (mapa playtestowa konczy sie dominacja po turze 1). Uwaga procesu: dep3.sh traktuje 2. argument jako liste plikow testowych, nie opis — podawac nazwy plikow albo pusty.
-
-- 2026-11-11 · ZGŁOSZENIA WŁAŚCICIELA (test ROBOCZEJ po FALI 648): (1) panel „Automatyzacja ulepszeń terenu” pozwala wybierać profil/suwak mimo braku administratora ulepszeń → temat W9 R-WEB-UI-IMPROVEMENT-AUTOMATION-LOCKED-WITHOUT-ADMIN-Q1 (Haiku, uruchomiony); (2) w banerze pracy panelu miasta rośnie Praca na ulepszenia przy 100% podziału na budynki, przy każdej turze (brak zapisu) → temat W10 R-WEB-WORK-POOL-ACCUMULATES-DESPITE-100-BUILDINGS-Q1 (Sonnet, odtworzenie własnym testem; łączy się z audytem WORK-ALLOCATION-POOL-DOUBLE-CREDIT). W8 R-WEB-PL-PLURAL-MIASTA-KOLEJKI-Q1: FC PASS-WITH-NOTES (654c721bc), kod formatPl już poprawny na main — dotychczasowa notatka „formatMiastaCount błędny” była nieaktualna; realne błędy w lokalnych kopiach (turnsPl) → temat R-WEB-PL-PLURAL-LOCAL-COPIES-Q1.
-
-- 2026-11-11 · ZGŁOSZENIE WŁAŚCICIELA (zrzut): panel „Rozdziel armię” — heksy docelowe nie przylegają ściśle (nierówne szczeliny), ma być plaster miodu → W11 R-WEB-UI-ARMY-SPLIT-HEX-HONEYCOMB-Q1 (Sonnet, pomiar w Chromium).
-
-- 2026-11-11 · ZGŁOSZENIE WŁAŚCICIELA: przycisk „Administrator ulepszeń +” bez informacji (czym jest, koszt, utrzymanie) → dopisane do W9 (DODATEK 3), bo te same pliki.
-
-- 2026-11-11 · ZGŁOSZENIA WŁAŚCICIELA (zrzuty): (a) panel imperium → Rekrutacja pokazuje surowy HTML chipów w linii „Magazyn:” (esc(stock) escapuje HTML chipów; regresja po ikonach) → W13 R-WEB-UI-RAW-HTML-IN-RECRUIT-PANEL-STOCK-Q1 (Sonnet, z audytem całego UI); (b) w widoku miasta lewy i prawy panel zasłaniają banery górne (surowce/produkcja) → W12 R-WEB-UI-CITY-SIDE-PANELS-OVERLAP-TOPBANNERS-Q1 (Sonnet, pomiar w Chromium). Start gdy zwolni się slot (6/6 zajęte: W4,W6,W7,W9,W10,W11), kolejność: W13, W12, PL-PLURAL-LOCAL.
-
-- 2026-11-11 · ZGŁOSZENIE WŁAŚCICIELA (zrzut): kontrolka przybliżenia „− 150% +” i ikony po lewej leżą NAD otwartym panelem Dyplomacji; mają chować się pod panelami rozwijanymi → W14 R-WEB-UI-TOOLBAR-ZOOM-BEHIND-EXPANDED-PANELS-Q1 (Sonnet). INCYDENT: dysk 100% (ENOSPC) przy 6 workflowach + deploy — W6 padł na FC (wznowiony z cache), poprawka: sprzątać worktree zakończonych tematów NATYCHMIAST po refs/keep + web-wip, limit 6 tematów wymaga ≥ 6 GB wolnego.
-
-- 2026-11-11 · ZGŁOSZENIE WŁAŚCICIELA: fortyfikacje — palisada, mur kamienny i mur ceglany stoją obok siebie i płaci się za każdą; ma być łańcuch awansu „Ulepsz” (Palisada → Mur kamienny → Mur ceglany), poprzednia znika, utrzymanie tylko za aktualną → W15 R-WEB-FORTIFICATIONS-UPGRADE-CHAIN-ANALYSIS-Q1 (Sonnet; analiza + reprodukcja; implementacja po ABC o koszcie awansu).
-
-- 2026-11-11 · DECYZJE ABC WŁAŚCICIELA (AskUserQuestion): (1) W10 praca z pustej kolejki — ZOSTAW zasadę (pusta kolejka kieruje Pracę do puli imperium) + podpowiedź w UI; zmierzone: to wyjątek silnika, panel pokazywał surowy suwak; poprawiono WYŚWIETLANIE (effectivePracaRouting, FC 058f49303); do zrobienia osobny mały temat: komunikat „kolejka pusta — Praca idzie do puli” w panelu miasta. Skarga NIE jest „naprawiona w stanie gry” — to zamierzone zachowanie, naprawiono komunikację. (2) W4 handel AI — OGRANICZ ile AI oddaje (limit nadpłaty do bilansu PW), temat do runda 2 R-WEB-AI-TRADE-WIRING-E2E-Q1 (kandydat obrony ae3b823f4, refs/keep …-obrona, web-wip). W13 R-WEB-UI-RAW-HTML-IN-RECRUIT-PANEL-STOCK-Q1 FC PASS 1b2695644; W12 CITY-SIDE-PANELS FC PASS 6ebbaf0c; PL-PLURAL-LOCAL FC PASS 2ee4f3043; W11 FC PASS 6d40a8749 (pointy-top przyjęty świadomie); W7 FC PASS de5b64c19; W8 FC PASS 654c721bc — wszystkie do FALI 649.
-
-- 2026-11-11 · W6 R-WEB-SIEGE-AUTO-BREACH-REPLAY-E2E-Q1: FC PASS-WITH-NOTES bc2392703 (test-only, exit 3 przez realne defekty; NIE integrowany do main do czasu naprawy R5, żeby nie wprowadzać czerwonego testu). Defekty: R5 replay nie przywraca terenu muru (tileDiff 7) → W16 R-WEB-SIEGE-REPLAY-RESTORE-WALL-TERRAIN-Q1 (Sonnet, start); B4b AUTO: atakujący nigdy nie wchodzą ZA mur (inside=0, tryb ręczny inside=2) → do decyzji ABC właściciela (zamierzone?); bitwa NIE jest zapisywana w save (save.ts 0 trafień) → do decyzji; rozjazd _skipInstantFallback (atakujący) vs SKIP 400 tur (obrońca) → do zbadania (klasa FALI 618).
-
-- 2026-11-11 · FALA 648 = 6ade0f0ec (W3 testy). FALA 649 WDROŻONA (ROBOCZA, main 1a42785d4, Raw MD5 9e9b8a1a2b001b9c2cbf5766006f2071, audio-pack MD5 zgodne 5b990bc3…/0a9a1047…/9e88be9f…): W11 plaster miodu w „Rozdziel armię” (6d40a8749), W12 panele miasta pod banerami (6ebbaf0c), W13 surowy HTML w panelu rekrutacji (1b2695644), W10 podział Pracy — wyświetlanie zgodne z silnikiem (058f49303; zasada pustej kolejki zostaje, decyzja ABC), W7 ikony w oknie odkrycia tech (de5b64c19), W8 test odmiany (654c721bc), PL-PLURAL-LOCAL: realne błędy odmiany „22 tur/kart” (2ee4f3043). Bramki: tsc 0; logic 213/213; tech-tree 20/0; research ALL GREEN; unit-replace 21/21; combat OK; audio-sidecar PASS. NIE_ZMIERZONO: panele miasta tylko na rendererze z fixturą (nie pełna gra); lewy baner poza oknem przy 1366/1280 px (osobny temat); toasty/tooltipy bez sweepa DOM. ZGŁOSZENIA WŁAŚCICIELA do realizacji: (a) panel rekrutacji — liczby mają się zapamiętywać przy otwartym panelu i zerować po „Zamknij” → W17; (b) machiny oblężnicze — widoczne tylko dostępne wg technologii (na początku tylko taran), reszta NIEWIDOCZNA (nie szara) → W18; (c) atak armii — linia ma iść równo do przodu o tyle samo pól aż do przeszkody, bez rozsypywania → W19.
-
-- 2026-11-11 · DECYZJE ABC WŁAŚCICIELA (fortyfikacje, W15 FC PASS 4abb6573e): koszt awansu = PEŁNY koszt jak dziś (nie różnica; stary znika bez zwrotu); przeskok na mur ceglany dozwolony (od zera pełny koszt); stare zapisy: zostaje najwyższa fortyfikacja, niższe usunięte bez zwrotu; Cytadela osobna (nie zastępuje murów). Uwaga: odpowiedź na pyt. o przeskok zawierała „jako awans różnica”, sprzeczne z pełnym kosztem — rozstrzygnięto na rzecz pyt. 1 (pełny koszt). → W20 R-WEB-FORTIFICATIONS-UPGRADE-CHAIN-IMPL-Q1 (Sonnet).
-
-- 2026-11-11 · ZGŁOSZENIA I DECYZJA WŁAŚCICIELA (bitwa): uciekający (routed) nie są dziś ścigani i niszczeni, po bitwie wracają jako ocalali i trzeba atakować ponownie → decyzja: routed mają być atakowani i ginąć, uciekać do granicy mapy, a ocalali routed znikają po bitwie; ogólnie więcej zabitych → W21 R-WEB-BATTLE-ROUTED-UNITS-PURSUED-AND-DESTROYED-Q1 (Sonnet; kolejka po W19; kolizje battleScene z W16/W19).
-
-- 2026-11-11 · W21 (bitwa trwa do rozstrzygnięcia uciekinierów): właściciel ZATWIERDZIŁ założenia — ocalali nadal pod istniejącym odwrotem na mapie; prędkość ucieczki bez zmian.
-
-- 2026-11-11 · ZGŁOSZENIE WŁAŚCICIELA (zrzut): panel budynków surowcowych (Stolarnia/Garncarnia/Warsztat kamieniarski, Włączony) — brakuje procentu wykorzystania mocy w następnej turze, by wyłączać zbędne (np. nadmiar garncarni); budynki bez przerobu = 100
-- 2026-11-11 · ZGŁOSZENIE WŁAŚCICIELA (zrzut): panel budynków surowcowych (Stolarnia/Garncarnia/Warsztat kamieniarski, Włączony) — brakuje procentu wykorzystania mocy w następnej turze, by wyłączać zbędne (np. nadmiar garncarni); budynki bez przerobu = 100 procent; nowe surowce (deski, kamień ciosany) NA PRZYSZŁOŚĆ → W22 R-WEB-UI-RESOURCE-BUILDING-UTILIZATION-PERCENT-Q1 (Sonnet; dispatch na docs-branch).
-- 2026-11-11 · POLECENIE WŁAŚCICIELA: kończy testy na dziś; nie może prowadzić bitew, bo wojska ciągle uciekają → PRIORYTET 1 = W21 (bitwa trwa do rozstrzygnięcia uciekinierów). Wszystkie zgłoszone błędy/poprawki wprowadzić do tasków i realizować autonomicznie w pętli AutoBot.
-
-- 2026-11-11 DECYZJA (ABC Taran): Taran nadal wymaga „Obróbki drewna"; bez żadnej dostępnej machiny pozostaje samo oblężenie. Zarzut 5 W17 zamknięty jako zgodny z decyzją; W18 zawężony (DODATEK w dispatchu).
-
-- 2026-11-11 DOPRECYZOWANIE (Taran/machiny): bez machin oblężniczych armia musi oblegać (głód/blokada) i nie zdobędzie miasta szturmem; W18 DODATEK 2 — najpierw pomiar, czy kod to dziś egzekwuje (gracz i AI).
-
-- 2026-11-11 FALA 650 WDROŻONA na ROBOCZĄ (main 75f4183bb, MD5 index 453c476e, audio-pack 1/2/3 zgodne z Raw): W17 — liczniki panelu rekrutacji zapamiętane przy otwartym panelu i zerowane po „Zamknij". Bramki: tsc, 5 referencyjnych, 4 testy tematu, audio-sidecar PASS.
-
-- 2026-11-11 FALA 651 WDROŻONA na ROBOCZĄ (main fb0f7ad95, MD5 index fb8c7652, audio-pack zgodne z Raw): W9 — administrator ulepszeń: blokada automatyzacji bez administratora + panel wyboru administratora (FC 85e26f708). Otwarte: zatrudnienie administratora bez okna potwierdzenia (ABC #262).
-- 2026-11-11 W4 r2 (R-WEB-AI-TRADE-WIRING-E2E-Q1): DECISION_REQUIRED — bramka uczciwości AI i podgląd „Przyjmij" gracza wykluczają się przy Relacji <100 (pomiar potwierdzony przez Evaluatora). Opcje A1/A2/B/C — pytanie ABC do właściciela.
-
-- 2026-11-12 FALA 652 WDROŻONA na ROBOCZĄ (main ca2bbd683, MD5 index 3d624885, audio-pack zgodne z Raw): W14 — zoom/minimapa/ikony mapy pod panelami rozwijanymi (Z_MAP_CONTROLS=309); W20 — fortyfikacje jako łańcuch awansu Palisada→Mur kamienny→Mur ceglany (pełny koszt, niższe etapy znikają, migracja zapisów). FC ba664b124 + 49380189e. Otwarte: Cytadela blokuje mury (reguła sprzed zmiany) — ewentualne ABC; dług Rust REPIN.
-
-- 2026-11-12 FALA 653 WDROŻONA na ROBOCZĄ (main dee73a067, MD5 index 16ffc1de, audio-pack zgodne z Raw): W21 — pościg uciekinierów (routed są celami, bitwa trwa do rozstrzygnięcia), W16 — replay oblężenia przywraca teren muru, W22 — procent wykorzystania mocy budynków surowcowych w panelu imperium. FC ef814bfdb + aee31622d + 67e8b985d. Uwaga: battle-skip-equals-auto-resolve-test (38/0 w FC) pominięty w deployu z powodu restartów kontenera. Otwarte ABC: piechota nie dogania uciekającej piechoty; rout całej armii po załamaniu morale; sufit pościgu; zgodność z auto; B4b.
-
-- 2026-11-12 FALA 654 WDROŻONA na ROBOCZĄ (FC af12bab71): W18 — bez machin oblężniczych przycisk Szturm wyłączony (panel oblężenia i menu ataku) z komunikatem „Potrzebne machiny oblężnicze — pozostaje oblężenie"; widoczność machin wg technologii była już w main; AI bez zmian (już nie szturmuje bez machin). Otwarte: opcjonalny temat LIVE-VERIFY (pełny przebieg w Chromium). Decyzja właściciela: Taran nadal wymaga Obróbki drewna.
-
-- 2026-11-12 FALA 655 WDROŻONA na ROBOCZĄ (FC b4490c596): W24 — pas banerów widoku miasta zawija się i mieści w oknie 1366/1280/1024 px (CSS cityPanel.ts + cityUxFrame.ts, allowlista rozszerzona); baner mapy (hud.ts) mieścił się już wcześniej. Do potwierdzenia przez właściciela: czy to ten baner. W23 (kolejka pusta) FC PASS e04d66317 — czeka na deploy.
-
-- 2026-11-12 FALA 656 WDROŻONA na ROBOCZĄ (FC e04d66317): W23 — panel miasta (Podział pracy) pokazuje „Kolejka pusta — Praca idzie do puli imperium", gdy kolejka pusta i niewstrzymana; silnik bez zmian. Runda 2 poprawiła tylko błędną asercję testu (minimum podziału 50%).
-
-- 2026-11-12 FALA 657 WDROŻONA na ROBOCZĄ (FC 773e8b1e3): W19 — sufit tempa rangi piechoty wręcz (doktryna steady): rozrzut frontu z 8–15 do maks. 2 kolumn w testach headless; anty-freeze po 10 rundach. Poza zakresem: strzelcy, konnica, machiny. Otwarte ABC: próg LINE_ADVANCE_STALL_ROUNDS=10, reguła „najwolniejszy wyznacza tempo" (500v500: 54 tury zamiast 42). Dług Rust REPIN: ruch w bitwie taktycznej.
-
-- 2026-11-12 DECYZJE ABC właściciela: (1) POŚCIG W21 = zostaw jak jest (C): konnica i piechota próbują dogonić; otoczony przeciwnik ginie; kto uciekł z okrążenia, ucieknie, chyba że gracz ma konnicę, która dobije wszystkich — BEZ nowych reguł pościgu; (2) HANDEL AI W4 = A1 (wyrównane oferty AI→gracz, współczynnik 1, „Przyjmij" bez zmian) → runda 3; (3) W19 natarcie linii = zostaje (próg 10 rund, tempo najwolniejszej jednostki); (4) administrator = DODAĆ okno potwierdzenia zatrudnienia → temat R-WEB-UI-ADMINISTRATOR-HIRE-CONFIRM-Q1.
-
-- 2026-11-12 DECYZJE ABC (cd.): B4b = NAPRAW (temat R-WEB-SIEGE-AUTO-BREACH-ATTACKERS-ENTER-BEHIND-WALL-Q1); zapis bitwy = zapis tylko poza bitwą (temat R-WEB-BATTLE-SAVE-DISABLED-DURING-BATTLE-Q1); audyt polszczyzny = popraw wszystko bez pytania o każdą pozycję (R-WEB-POLISH-LANGUAGE-AUDIT-Q1, DODATEK); Cytadela blokująca mury = ZOSTAJE.
-
-- 2026-11-12 KOREKTA PROCESU (właściciel: „cały czas muszę o tym przypominać"): modele per etap wg CLAUDE.md zasada 2 — Operator HAIKU domyślnie, SONNET tylko z pisemnym uzasadnieniem, Obrona HAIKU, Evaluator i FC SONNET. Dotąd uruchamiałem Operatora i Obronę na Sonnet bez uzasadnień (W4 r3, W25–W28 i wcześniej). Zasada zapisana: dyspozycje/ZASADA-MODELI-WORKFLOW.md, pamięć sesji, skrypt WEB-NEW.js (wymusza args.sonnetWhy; Obrona zawsze Haiku), heartbeat.
-
-- 2026-11-12 FALA 658 WDROŻONA na ROBOCZĄ (FC 2306c021e): W25 — zatrudnienie administratora (miasta i ulepszeń) pyta o potwierdzenie z kosztem i bonusami (natywne window.confirm jak przy zwolnieniu); koszty/bonusy/zasady bez zmian. Operator i Obrona tego tematu szły na Sonnet wbrew zasadzie modeli — błąd procesu, zasada zapisana w CLAUDE.md (commit f7c91b431).
-
-- 2026-11-12 AUDYT KOMPLETNOŚCI TASKÓW (na prośbę właściciela): dopisano brakujące pozycje — R-WEB-SIEGE-SKIP-INSTANT-FALLBACK-DIVERGENCE-Q1 (rozjazd _skipInstantFallback, wcześniej tylko „do zbadania"), R-WEB-TEST-DEBT-BATTLE-HUD-WORK-Q3 (dług testowy z FALI 651–658), R-WEB-FORTIFICATIONS-OLD-SAVE-QUEUE-CLEANUP-Q1 (stare zapisy z wieloma etapami łańcucha w kolejce płacą za zbędny etap, bez komunikatu — uwaga FC W20). Nieustalone/otwarte: audyty BRONZE-STOCK bez reprodukcji NIE są naprawione; pytania z W9 (redundancja komunikatów, „Bez dodatkowych bonusów") — drobna kosmetyka tekstowa, do włączenia w W28; mieszana armia (strzelcy/konnica/machiny poza sufitem tempa W19) — obserwacja.
-
-- 2026-11-12 FALA 659 WDROŻONA na ROBOCZĄ (FC e4f34618d, 4 rundy): W28 — poprawki polszczyzny: „obyw./turę" i „szt./turę" → pełne słowa, „Równowaga(W)"/„wynik" zamiast żargonu, etykiety rozmiaru mapy „Maleńki"/„Bardzo ogromny" (klucze bez zmian, także ekran generowania, zapisy, panel wydajności), odmiana „N tur", rozszerzony strażnik. Nie ruszono (decyzje poza zakresem): „upgrade" w wymaganiach, „Zrówn." w nagłówkach, zapis ×N, Dur-Sharrukin, Emporion/Wielka Kuźnia top3, „złoto" vs „Pieniądz".
-
-- 2026-11-12 FALA 660 WDROŻONA na ROBOCZĄ (FC 5d2dc2310, 3 rundy; decyzja ABC właściciela A1): W4 — AI składa wyrównane oferty (współczynnik relacji 1, limit nadpłaty) i „Przyjmij” działa bez forceAccept (live Chromium 44/0). Otwarte: oferty rzadkie przy ścisłej równości PW (1–6/400 par; częstość w pełnej grze NIE_ZMIERZONO) → ABC tolerancja/pomiar; sprzeczny tekst panelu „Wpływ relacji” przy aktywnym „Przyjmij” (relationDealText, diplomacyAcceptanceBalance.ts) → osobny temat; jednorazowy handel AI→gracz bez górnego limitu.
-- 2026-11-12 WYNIKI FC (do wdrożenia): W27 zapis zablokowany w bitwie 81c03affe PASS; W26 B4b dd17894a4 PASS-WITH-NOTES (tylko test — B4b nie odtwarza się na bazie b0b0e3f86 z pomiarem historycznym; kod gry bez zmian); W29 fallback affa09bd5 PASS-WITH-NOTES (tylko test; ABC: ujednolicić fallback czy udokumentować rozjazd); W30 dług testowy FC FAIL → runda 2 (favicon 404 w harnessie, klasyfikacja battle-ranged-approach-regression).
-
-- 2026-11-12 FALA 661 WDROŻONA na ROBOCZĄ (FC 81c03affe + dd17894a4 + affa09bd5): W27 — zapis gry (Ctrl+S, szybki zapis, autozapis) zablokowany w trakcie bitwy z komunikatem, po bitwie działa (decyzja właściciela); W26 B4b — tylko test: B4b nie odtwarza się z pomiarem historycznym (kod gry bez zmian); W29 — tylko test fallbacku. Otwarte ABC: ujednolicić fallback czy udokumentować rozjazd.
-- 2026-11-12 W31 R-WEB-UI-DIPLO-RELATION-DEAL-TEXT-CONSISTENT-Q1: FC PASS-WITH-NOTES 15d5b0833 (kod 8b2eb4a41) — czeka na deploy FALA 662; ABC: ton czerwony wiersza przy symetrycznej ofercie; osobny temat: rozjazd „Relacja 11,6” vs „90/200”.
-
-- 2026-11-12 FALA 662 WDROŻONA na ROBOCZĄ (FC 15d5b0833, kod 8b2eb4a41): W31 — panel „Wpływ relacji na deal” nie pisze „musisz dać więcej”, gdy oferta AI→gracz ma aktywne „Przyjmij” (wariant incomingAccepted; reguły handlu bez zmian). Otwarte: ton czerwony wiersza przy symetrycznej ofercie (ABC), rozjazd „Relacja 11,6” vs „90/200” (osobny temat, task #275).
-
-- 2026-11-12 FALA 663 WDROŻONA na ROBOCZĄ (FC 14766036, tylko testy/harness; kod gry bez zmian): W30 — dług testowy: favicon 204 w harnessie pointer-test, battle-ranged-approach-regression zielony (~290 s, limit 280 s był za krótki), praca-jeden i grupy-budynkow zaktualizowane bez osłabienia asercji. Otwarte: mgla-sciezka-inwariant 41/1 (rozszerzenie whitelisty wymaga ECHO właściciela), niestabilność chariot-r5 nieudowodniona.
-
-- 2026-11-12 FALA 664 WDROŻONA na ROBOCZĄ (FC 1aa181709): W32 — wczytanie starego zapisu z kilkoma etapami łańcucha fortyfikacji w kolejce: zostaje najwyższy etap, niższe usuwane bez zwrotu kosztu i postępu, jednorazowy komunikat po wczytaniu; reguły i koszty bez zmian. Komunikat w żywej grze → W34. W36 (R-PROC-AUTOBOT §6, FC a20c9f9dc, tylko dokumentacja) czeka na integrację.
-
-- 2026-11-12 DECYZJE ABC właściciela (cd.): (1) etykiety relacji w oknie dyplomacji = wariant B (rozdziel perspektywy AI/gracza; 11,6 to NIE „zapisana”) + ton wiersza NEUTRALNY przy „Możesz przyjąć” → R-WEB-UI-DIPLO-RELATION-LABELS-AND-TONE-Q1; (2) rozjazd fallbacku W29 = najpierw pomiar strat → R-WEB-SIEGE-FALLBACK-LOSS-MEASURE-Q1; (3) górny limit nadpłaty w jednorazowych ofertach AI→gracz = DODAJ → R-WEB-AI-TRADE-ONESHOT-OVERPAY-LIMIT-Q1. W33 (analiza relacji) zakończone FC PASS-WITH-NOTES e607cc120 (tylko test).
-
-- 2026-11-12 FALA 665 WDROŻONA na ROBOCZĄ (FC 9ee05d2a8 + a20c9f9dc): W38 — jednorazowa oferta handlowa AI→gracz nie oddaje więcej PW niż AI otrzymuje (filtr enqueue, helper aiOneshotHandelOverpaysPlayer; decyzja właściciela „dodaj limit”); oferta jest odrzucana, nie przycinana; evaluateProposal bez zmian. W36 — tabela bramek w R-PROC-AUTOBOT §6 odświeżona (tech-tree 20, unit-replace 21, moc jednostek 6/0), niezmierzone wiersze oznaczone NIE_ZMIERZONO. Częstość ofert po filtrze → pomiar W35.
-
-- 2026-11-12 W39 R-WEB-SIEGE-FALLBACK-LOSS-MEASURE-Q1: FC PASS-WITH-NOTES 1ec3a2505 (tylko narzędzie pomiarowe gra/tools/measure-siege-fallback-vs-skip-auto.cjs, wchodzi z kolejną FALĄ). Wynik pomiaru: _skipInstantFallback (computeInstantResult na kopiach, nie mutuje rosterów) daje INNE wyniki niż SKIP/AUTO (z wyłomem: zwycięzca zależy od ziarna; SKIP: obrońca po PAT 400 tur, straty 26/11–13), ale w normalnym przepływie UI ta ścieżka jest NIEOSIĄGALNA — „Pomiń” w fazie rozstawiania woła _endDeployPhase → _startBattle (started=true). DECYZJA WŁAŚCICIELA: udokumentować, BEZ zmian w kodzie. AUTO 1× niezmierzony (pełny przebieg ~50 min/komórkę); wymagałby wznawialnego runnera — nie zlecam bez zgłoszonego problemu.
-
-### FALA 666 (2026-11-12) — wdrożone na ROBOCZĄ
-- main 81e357dee, MD5 index 915466b5b368205ae223b4f804989568 (Raw = lokalny), audio-pack 1–3 zgodne.
-- W37 R-WEB-UI-DIPLO-RELATION-LABELS-AND-TONE-Q1: etykiety „Relacja z perspektywy AI / gracza", neutralny ton przy symetrycznej wymianie.
-- W39 R-WEB-SIEGE-FALLBACK-LOSS-MEASURE-Q1: tylko narzędzie pomiarowe (decyzja: udokumentować, bez zmian w grze).
-- W34 r2 R-WEB-LIVE-VERIFY-WAVE-650-664-Q1 pkt 4: FC PASS-WITH-NOTES (komunikat kolejki fortyfikacji raz na wczytanie; powtarzalność N>=3 i widoczność przy otwartym menu NIE_ZMIERZONO) — tylko skrypt/evidence, bez deployu kodu.
-
-### Decyzje ABC właściciela 2026-11-12 (wieczór)
-- mgla-sciezka-inwariant: odpowiedź A (rozszerz whitelistę) — POMIAR: test dziś 42 pass / 0 fail, więc dług już nieaktualny, bez tematu.
-- Tempo mieszanej armii: TAK — temp R-WEB-BATTLE-MIXED-ARMY-ADVANCE-PACE-Q1 (równe tempo do wzwarcia wręcz; potem konnica wg trybu ataku, strzelcy w maksymalnym dystansie w zasięgu strzału).
-- BRONZE-STOCK: zamknij jako nieodtworzone (wznowienie po nowej reprodukcji).
-
-### Zgłoszenie właściciela 2026-11-12: nadmiar miedzi
-Jedna cywilizacja ma ~24 000 szt. miedzi krótko po wejściu w epokę miedzi — traktowane jako błąd/przeciek. Temat R-WEB-AUDIT-COPPER-INCOME-LEAK-Q1 (audyt źródeł miedzi + naprawa), Operator OPUS 5.5 na wyraźne życzenie właściciela (wyjątek od zasady modeli).
-
-### Zgłoszenie właściciela 2026-11-12: BOOT ERROR przy otwarciu gry (zalew ResizeObserver)
-Gra z pliku Gra-ROBOCZA.html pokazuje czerwony overlay „BOOT ERROR" z setkami linii „ResizeObserver loop completed…". Hipoteza: fitCitySideTop (cityUxFrame.ts, commit 6ebbaf0c1) tworzy nowy ResizeObserver przy każdym wywołaniu z callbacka. Temat R-WEB-CITY-SIDE-TOP-RO-LOOP-BOOT-ERROR-Q1 (Operator HAIKU, błąd krytyczny, bez pytania). Zlecenie właściciela „tooltip zamiast tekstu w panelu administratora ulepszeń" zostaje w kolejce po tym tematu.
-
-### Zgłoszenie właściciela 2026-11-12: bitwa — jednostka barbarzyńców „z supermocą”
-Jednostka barbarzyńców o tej samej mocy co gracza zniszczyła jednostkę gracza bez strat po jego stronie. Temat R-WEB-BATTLE-BARB-UNIT-OVERPOWER-AUDIT-Q1 (audyt read-only, Operator HAIKU): tabela modyfikatorów obrażeń obu stron, przyczyna, propozycja poprawki (bez commita). Nie mylić z FALĄ 626 (×3 liczby jednostek barbarzyńców, nie siły). Pytania o parametry: do właściciela ABC po wyniku.
-
-### DECYZJA ABC właściciela 2026-11-12: stabilne wyniki bitew (wariant B)
-Źródła rozrzutu: AUTO upset 20% przy stosunku sił < 1,15 (auto-battle-params.ts:40–41); rzut Math.random na każde uderzenie (battleScene.ts ~9085, combat.ts rng). Temat R-WEB-BATTLE-DETERMINISTIC-EXPECTED-OUTCOME-Q1 — wartości oczekiwane zamiast losowania, AUTO=SKIP. Progi bez zmian bez ABC.
-
-### DECYZJA ABC właściciela 2026-11-12: przełącznik trafień w ustawieniach zaawansowanych
-Zamiast jednej mechaniki: „Trafienia: losowe / pewne” w ustawieniach zaawansowanych generowania mapy. Domyślnie w nowych grach: PEWNE (100% trafień, obrona przez pancerz, AUTO bez upsetu). Stare zapisy bez pola = LOSOWE (bez zmian wyniku). Temat R-WEB-BATTLE-HIT-MODE-SETTING-Q1 (Sonnet — uzasadnienie w dispatchu).
-
-### Zgłoszenie właściciela 2026-11-12: teksty administratora ulepszeń → tooltip
-Długie komunikaty w panelu automatyzacji ulepszeń (zrzut, miasto Ateny) przenieść do tooltipu; w treści krótki komunikat. Temat R-WEB-UI-IMPROVEMENT-ADMIN-TOOLTIP-Q1 (Operator HAIKU), task #287.
-
-### FALA 667 (2026-11-12) — wdrożone na ROBOCZĄ: BOOT ERROR (pętla ResizeObserver przy panelu miasta)
-- main 6c9a36bd5, MD5 bundla 0fb9441f023980e17fd2f41f6d832f76 (Raw = lokalny), audio-pack-1/2/3 zgodne z Raw (5b990bc3, 0a9a1047, 9e88be9f).
-- Źródło: FC d5e5e8635 (PASS-WITH-NOTES, wf_92288458) na bazie 81e357dee; integracja a988c3ddc (FF względem main). Ref zachowany: refs/keep/R-WEB-CITY-SIDE-TOP-RO-LOOP-BOOT-ERROR-Q1-fc; gałąź web-wip/R-WEB-CITY-SIDE-TOP-RO-LOOP-BOOT-ERROR-Q1.
-- Zakres: fitCitySideTop tworzy jeden ResizeObserver zamiast nowego przy każdym wywołaniu; obserwacja tylko przy zmianie zestawu elementów; przeliczenie przez requestAnimationFrame. Filtry w index.html i main.ts ignorują wyłącznie komunikat „ResizeObserver loop completed with undelivered notifications”.
-- Weryfikacja: tsc 0; npm ci 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; city-side-panels 61/0; city-RO boot-error 1/0, expand-click 5/0, live 7/0; audio-sidecar-test EXIT=0; live Chromium RO=0 po otwarciu panelu miasta, PASS 7/0.
-- NIE_ZMIERZONO: prawdziwe kliknięcie „Więcej szczegółów” w pełnej grze z kartą jednostki. Przyczynowość kliknięcia nie jest udowodniona; udowodniona jest przyczyna (ponowne tworzenie ResizeObserver), którą poprawka usuwa. Do potwierdzenia przez właściciela na żywo.
-- Commit FC: Co-Authored-By pominięty (zasada: bez identyfikatora modelu w commitach); Claude-Session zachowany.
-
-### FALA 668 (2026-11-12) — wdrożone na ROBOCZĄ: przełącznik trafień + tooltip administratora
-- main aeb52465e, MD5 bundla b6490d0bce91076ad4da4ad518d6c29e (Raw = lokalny), audio-pack 1–3 zgodne z Raw (5b990bc3, 0a9a1047, 9e88be9f).
-- Źródła: R-WEB-BATTLE-HIT-MODE-SETTING-Q1 (#285) kandydat 6fef8773c, FC PASS-WITH-NOTES; R-WEB-UI-IMPROVEMENT-ADMIN-TOOLTIP-Q1 (#287) kandydat 54a4a1715, FC PASS-WITH-NOTES (wf_57083201). Integracja 54b050ac5 (merge obu FC na bazie 6c9a36bd5, konflikty: brak).
-- Zakres 1 (#285): ustawienia zaawansowane mapy — „Trafienia: losowe / pewne”. Domyślnie w nowej grze PEWNE (100% trafień, obrona przez pancerz, AUTO bez upsetu). Stare zapisy bez pola = LOSOWE (wynik bez zmian). Parytet SKIP=AUTO w trybie pewne.
-- Zakres 2 (#287): w panelu automatyzacji ulepszeń krótki komunikat; pełne wyjaśnienie, koszt i utrzymanie w tooltipie najechanego elementu (natywny title nie użyty — showLockTip).
-- Weryfikacja: tsc 0; npm ci 0; logic 213/213; hit-mode-test 18/0; improvement-admin-tooltip-real-render-test 14/0; battle-skip-equals-auto-resolve-test 42/0; newgame-settings-layout-reposition-test PASS; vite build 14,559 kB; audio-sidecar-test PASS EXIT=0.
-- NIE_ZMIERZONO: przełącznik i zapis/wczytanie trybu pewne w pełnej grze (Chromium); parytet AUTO=SKIP dla seedów 2, 3, 7 w trybie pewne (zmierzono seed 7); zrzut administratora z żywej gry. Do potwierdzenia przez właściciela na żywo.
-
-### Decyzje właściciela 2026-11-12 (W40, tempo mieszanej armii, #282)
-- TOL = 2 (zmierzona wartość).
-- TOL_RANK1 = 2 (zamiast zmierzonego 1 bez zapasu; rekomendacja przyjęta).
-- Kryterium 3 (strzelcy po wejściu wroga w zwarcie) w tej samej rundzie 4/5, bez osobnego tematu.
-- Status: runda 4/5 do uruchomienia po zwolnieniu dysku (próg 6 GB dla startu).
-
-## ZGŁOSZENIA WŁAŚCICIELA — sesja 2026-11-12 (zapisane 20:xx; stan na chwilę zapisu)
-
-### Z-1 HUD: surowce w jednym rzędzie na górze, boczne bloki obniżone (zrzut 13.webp)
-- Zgłoszenie: surowce miały być na samej górze obok siebie, równomiernie; tylko lewy i prawy panel boczny obniżyć, żeby nie nachodziły. Obecnie chipy leżą pionowo.
-- Ustalenie: zamiar właściciela nadpisuje „dwa piętra" z układu A (2026-11-07) w tej części. Przyczyna: siatka 6 kolumn w hud.ts nie działa przy tej szerokości; fallback wygrywa pionowo.
-- Temat: R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1, #308. Dispatch 0cee0a857 (docs). Kryteria K1–K8 w dispatchu, weryfikacja na zrzutach Chromium 1920×1080 i 1366×768.
-- Status: w kolejce (4 sloty zajęte w chwili zgłoszenia).
-
-### Z-2 Administrator: natywne okno przy zatrudnieniu + mieszanie administratorów
-- Zgłoszenie: po zatrudnieniu administratora pojawia się natywne okno przeglądarki („Komunikat z bieżącej strony … OK”). Wychodzi z pełnego ekranu. Nie powinno go być.
-- Zgłoszenie 2: teksty mieszają administratora ulepszeń z administratorem miasta. Administrator miasta wymaga budynku administracyjnego i ma bonusy miasta. Administrator ulepszeń nie wymaga budynku, nie ma bonusów miasta i działa tylko na ulepszeniach terenu. Każdy tekst ma mieć osobne, konkretne komunikaty.
-- Źródło: administratorPanel.ts:306 (window.confirm zatrudnienia, dubluje przycisk „Zatrudnij”) i :315 (zwolnienie). Teksty: administratorPanel.ts, buildModeHud.ts, cityPanel.ts.
-- Temat: R-WEB-ADMIN-NATIVE-DIALOG-AND-TEXT-SPLIT-Q1. Dispatch 294e6489c + korekta 5bbb1fffff66 (docs). Workflow wf_fb44a822 w toku (Operator HAIKU).
-
-### Z-3 Bitwa: po utracie morale wojsko nie ucieka i nikt nie goni
-- Zgłoszenie: mimo przewagi wojska nie ucieka po utracie morale, nikt go nie goni, bitwa po prostu się kończy (zrzut: panel po walce, Inkowie, 1 obrońca, HP 20→9/20).
-- Ustalenie (kod, origin/main aeb52465e): `_checkEnd()` rozstrzyga uciekinierów w `_resolveRemainingRouted()` od razu (zginął w pościgu / uciekł z planszy), bez symulowania ruchu i bez tur ucieczki. Zamiar z W21 (FALA 653): uciekinierzy uciekają, zwycięzca goni, bitwa trwa do końca pościgu.
-- Temat: R-WEB-BATTLE-ROUT-NO-FLEE-NO-PURSUIT-LIVE-BUG-Q1 (dispatch a184d96ef, docs). Gotowy do startu, czeka na slot.
-
-### Z-4 Bitwa: równe tempo armii nadal nie działa na żywo (zrzut z gry)
-- Zgłoszenie: górna część armii idzie szybciej, dolna zwalnia, linia się rozjeżdża. Równe podejście nadal nie działa.
-- Ustalenie: W19 był oznaczony jako wdrożony bez weryfikacji na zrzutach; W40 (mieszana armia) zakończył się FAIL po 5 rundach. Testy nie różnicują bazy od poprawki.
-- Temat: R-WEB-BATTLE-PACE-EQUAL-LINE-LIVE-BUG-Q1 (dispatch a184d96ef, docs). Gotowy do startu, czeka na slot.
-
-### Z-5 Przeciek miedzi (#283/#290) — decyzje właściciela
-- Zatwierdzone: limit kopalń z niedoboru = 1 na typ na turę (miedź, cyna, żelazo).
-- Otwarte: model przepływu na szlaku (kandydat 605036e6b: połowa różnicy). Pytanie: czy szlak w ogóle ma przesuwać zapasy, czy ma dawać tylko dochód. Właściciel nie odpowiedział w pytaniu ABC (wysłał wiadomość), więc decyzja jest otwarta.
-- Stan: W41 zakończony, DECISION_REQUIRED. Ref `refs/keep/R-WEB-AUDIT-COPPER-INCOME-LEAK-Q1-fc`, gałąź web-wip wypchnięta.
-
-### Z-6 Respekt AI (#298) — decyzje właściciela
-- Audyt zakończony FC PASS-WITH-NOTES (r3, kandydat 1e09d1e4c). Ustalenia: 29 wynika z limitu wojny na zapisanym respekcie, 67 z efektywnej Mocy na panelu (różne chwile); zdarzenia militarne nie docierają do silnika (respekt nadpisywany co turę).
-- Otwarte (pytanie ABC bez odpowiedzi): A bez zmian (rekomendacja), B(2) podpięcie zdarzeń militarnych (wymaga zmiany nadpisywania), C osobny składnik Strach. Oraz: czy Zaufanie w wojnie spada dla par bez wspólnej granicy.
-
-### Z-7 Zgłoszenia z 2026-11-12 do późniejszego rozpisania
-- Inne natywne okna gry (window.confirm): main.ts:9367, main.ts:25930, saveLoadDialog.ts:346, empireDetailPanel.ts:1529, cityPanel.ts:12135. Poza zakresem Z-2; do decyzji właściciela.
-
-## FALA 669 — ROBOCZA eb4ecfaa (2026-11-12) — rozdzielanie armii pod miastem wroga (zgłoszenie właściciela)
-
-- Temat: R-WEB-ARMY-SPLIT-ENEMY-CITY-BLOCK-Q1. FC PASS-WITH-NOTES (d8a0666d1), integracja i deploy na ROBOCZĄ: main 6a0cbba28, MD5 eb4ecfaa (raw zgodny), sidecary audio-pack-1/2/3 zgodne.
-- Zakres: rozdzielenie armii i ruch pod-stosu nie wchodzą na obce miasto ani heks z obcą jednostką.
-- Dowód: tsc OK, logic 213/213, test 14/0, mutacja wpięcia wykryta. Chromium NIE_ZMIERZONO — zalecany smoke w grze.
-
-## FALA 670 — ROBOCZA 6eee943a (2026-11-12) — powiadomienie „Kolejka pusta” tylko gdy można coś zbudować
-
-- Temat: R-WEB-NOTIF-EMPTY-QUEUE-ONLY-BUILDABLE-Q1 (runda 3). FC PASS-WITH-NOTES (9ab5b6883), integracja i deploy na ROBOCZĄ: main b77a0b7b9, MD5 6eee943a (raw zgodny), sidecary zgodne.
-- Zakres: bramka budynków, ulepszeń i odcisku używa predykatu panelu produkcji (buildingCanBuildNow); test behawioralny.
-- Dowód: tsc OK, logic 213/213, test 16/0. Chromium NIE_ZMIERZONO — zalecany smoke w grze.
-
-## FALA 671 — ROBOCZA 70d6a2a0 (2026-11-12) — Konnica 7 w bitwie (rydwany bez zmian)
-
-- Temat: R-WEB-CHARIOT-MOVE-6-DATA-Q1 (runda 2). FC PASS-WITH-NOTES (f1b2aedae, kod 897d3294), integracja i deploy na ROBOCZĄ: main 8c447758e, MD5 70d6a2a0 (raw zgodny), sidecary zgodne.
-- Zakres: w bitwie „Konnica” ma ruch 7; rydwany bez zmian (woły 5, konne 6); pole Ruch (mapa) bez zmian.
-- Dowód: tsc OK, logic 213/213, chariot-move-6-data-test 163/0. Chromium NIE_ZMIERZONO — zalecany smoke na polu bitwy (ucieczki konnicy).
-- Dług bazowy (poza tematem): rydwan-konnica-x2-test — niezgodności Rydwan (woły) Drewno/Brąz.
-
-## FALA 672 — ROBOCZA 1c2cdb70 (2026-11-12) — bitwa: neverRout zostają, reszta ucieka i jest gonina
-
-- Temat: R-WEB-BATTLE-NEVERROUT-HOLD-FIGHT-Q1. FC PASS-WITH-NOTES (10c4bb0b6). Integracja i deploy na ROBOCZĄ: main 15b4327ba, MD5 1c2cdb70 (raw zgodny), sidecary zgodne.
-- Zakres: po załamaniu morale armii jednostki „walczy do śmierci” nie uciekają i walczą dalej; zwykłe uciekają i są gonione; bitwa kończy się, gdy neverRout zginą, uciekinierzy zejdą albo minie limit tur.
-- Dowód: tsc OK, logic 213/213, battle-neverrout-hold-test 58/0, mutacja 4 FAIL. Chromium NIE_ZMIERZONO — zalecany smoke w bitwie.
-
-## FALA 673 — ROBOCZA 853a8ff7 (2026-11-12) — administrator państwa: silnik
-
-- Temat: R-WEB-ADMIN-PANSTWO-MIASTO-TWO-TYPES-Q1 (silnik #316, runda 5). FC PASS-WITH-NOTES (68ea765ec). Integracja i deploy na ROBOCZĄ: main 34584b4da, MD5 853a8ff7 (raw zgodny), sidecary zgodne.
-- Zakres: administrator ulepszeń jako stan Państwa; jeden koszt utrzymania na Państwo; tryb automatyzacji jeden dla Państwa (Z4 w trzech miejscach main.ts); migracja zapisu z administratora miasta.
-- Dowód: tsc OK, logic 213/213, admin-panstwo-city-gate-test 36/0. Chromium NIE_ZMIERZONO.
-- Długi: panel Państwa i nazwy → #327; handlery UI per miasto (main.ts ~27120–27190, buildModeHud.ts) do przepięcia w #327.
+## 2026-11-11 — R-WEB-SEA-PEOPLES-BRONZE-TURN20-TRIPLE-Q1
+STATUS: OTWARTE
+DOMAIN: GAME
+Nowe zlecenie: od20.tury własnej epoki Brązu komunikat Epoki Ludów Morza i3×liczebność najazdów na każdym aktywnym poziomie barbarzyńców, do wejścia nacji w Żelazo. Istniejący mechanizm Ludów Morza wymaga audytu, nie duplikacji. Zarejestrowane w kolejce przy limicie4 aktywnych tematów; dispatch w `autobot/runs/R-WEB-SEA-PEOPLES-BRONZE-TURN20-TRIPLE-Q1/00-dispatch.md`.
+
+## 2026-11-11 — R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1
+STATUS: OTWARTE
+DOMAIN: GAME
+Idź do wodza: wspólne ustawienie dziedziczą tylko zamówienia z Armii/Rekrutacji, rekrutacja bezpośrednia w mieście domyślnie wyłączona. Zachować indywidualny przełącznik jednostki. Zarejestrowane w kolejce, max4 tematy. Dispatch w `autobot/runs/R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1/00-dispatch.md`.
+
+## 2026-11-11 — R-WEB-IRON-STUD-ADJACENCY-Q1
+STATUS: OTWARTE
+DOMAIN: GAME
+Stadnina bez surowca Koń w Żelazie wymaga bezpośredniego sąsiedztwa istniejącej stadniny. Istniejących stadnin zapisów nie usuwać. Wspólna reguła gracza/AI/autobudowy oraz podświetlenia i wykonania. Dispatch `autobot/runs/R-WEB-IRON-STUD-ADJACENCY-Q1/00-dispatch.md`; kolejka przy max4 aktywnych tematach.
+
+## 2026-11-11 — R-WEB-WORK-ALLOCATION-POOL-DOUBLE-CREDIT-Q1
+STATUS: OTWARTE
+DOMAIN: GAME
+Pilne: przy0%pula/100%budynki panel13295Pracy/t pokazuje0dopuli, alepula58092+9857. Zbadać bilans tury, ewentualny zwrot niewykorzystanejPracy/forecast i podwójne naliczanie; niezakładaćprzyczynyzezdjęcia. Dispatch `autobot/runs/R-WEB-WORK-ALLOCATION-POOL-DOUBLE-CREDIT-Q1/00-dispatch.md`; priorytetnajbliższegoslotuporelease618.
+
+## 2026-11-11 — R-WEB-BRICK-CYCLES-75-100-Q1
+STATUS: OTWARTE
+DOMAIN: GAME
+Cegielnia75cykliBrąz/100Żelazo, zużycieproporcjonalne. Przyistniejącejrecepturze oznacza150gliny75drewna→225cegieł i200gliny100drewna→400cegieł. Zarejestrowanedonajbliższegoslotu max4, dispatch `autobot/runs/R-WEB-BRICK-CYCLES-75-100-Q1/00-dispatch.md`.
+
+## 2026-11-11 — R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1
+STATUS: OTWARTE
+DOMAIN: GAME
+Przełącznikwłącz/wyłączmiejskiebudynkiprodukującesurowce. Wyłączeniewstrzymujeprodukcję,zużyciewejśćikosztyutrzymania; stantrwały, starezapisyON. Bezrefundukosztubudowy. Dispatch `autobot/runs/R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1/00-dispatch.md`; kolejkaprzymax4tematach.
+- DODATEK2026-11-11 do R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: na końcu paneluMiasta lista wszystkichmiastwyłączniezbudynkamisurowcowymi iichprzełącznikami; globalnieper-surowiec produkcjarealizowana vsprzeróbpotencjalny (przypełnymzaopatrzeniu), jasnoodróżnićwyłączonąmocizasilanie.
+
+## 2026-11-11 — R-WEB-EMPIRE-RECRUIT-AFFORDABILITY-SUMMARY-Q1
+STATUS: OTWARTE
+DOMAIN: GAME
+PanelRekrutacjacałacywilizacja: limitilości/wyraźnyczerwonybrakprzybrakuzasobów, wspólnakontrolakosztukoszyka, blokadaniedostępnejrekrutacji. Dodatkowopodsumowaniepertypisumaryczniejużrekrutowanych(wkolejkach) iosobnowybranychdozamówienia. Zarejestrowane w `autobot/runs/R-WEB-EMPIRE-RECRUIT-AFFORDABILITY-SUMMARY-Q1/00-dispatch.md`, max4aktywnetematynadalobowiązuje.
+
+## 2026-11-11 — R-WEB-ADMINISTRATOR-AUTOBUILD-GATE-Q1
+STATUS: DECISION_REQUIRED
+DOMAIN: GAME
+Automatyczna budowa ma wymagać Administratora. Powiązanie z Ratuszem było propozycją asystenta, nie zatwierdzoną decyzją właściciela. Do ustalenia budynek i zakres automat budynków/ulepszeń. Dispatch `autobot/runs/R-WEB-ADMINISTRATOR-AUTOBUILD-GATE-Q1/00-dispatch.md`; brak operatora do czasu rozstrzygnięcia.
+
+## 2026-11-11 — uzupełnienie audytu zgłoszeń / stan po przeglądzie czatu
+- R-WEB-CAVALRY-IRON-ONLY-Q1: rozszerzenie właściciela obejmuje WSZYSTKIE jednostki Żelaza po Sztuce wojennej, w tym Katapultę; operator działa. Nie dodawać wymogu Akademii bez decyzji.
+- R-WEB-SIEGE-ENGINES-BUILT-ONLY-DURING-SIEGE-Q1 [related_to R-WEB-CAVALRY-IRON-ONLY-Q1]: ponowne zgłoszenie widocznej rekrutacji machin. Bieżąca bramka27/27PASS, produkcja miejska i Zastąp wykluczają Siege; operator konnicy audytuje wszystkie ścieżki. Budowa jedynie podczas aktywnego oblężenia pozostaje regułą. Brak dowodu pozwalającego uznać zgłoszenie za naprawione ponownie.
+- R-WEB-BRONZE-OUTPUT-50-75-Q1: zamknięte11/11, FALA618/push4919be9dc, receipt90-release-618.json. Zastępuje historyczne25/50.
+- R-WEB-WORK-ALLOCATION-POOL-DOUBLE-CREDIT-Q1: audyt90c485a1c na origin/codex/work-pool, brak potwierdzonego dublowania. Zgodny bilans możliwy przez idle/completion zwroty; potrzebny zapis/stan jednej tury. Operator przeniesiony do limitów rekrutacji; temat nie jest naprawiony ani aktywnie poprawiany.
+- R-WEB-AI-BRONZE-STOCK-EXCESS-Q1: audyt nie potwierdził błędu, 24818 poniżej limitów; brak historii zapasu/zapisu. Nie działa operator poprawki bez reprodukcji.
+
+## 2026-11-11 — R-WEB-MELEE-CROSS-TYPE-NEXT-ERA-REPLACEMENT-Q1
+STATUS: OTWARTE
+DOMAIN: GAME
+„Zastąp”: awans piechoty wręcz do następnej epoki ma dopuszczać miecznika↔włócznika/falangitę, zamiast wymogu identycznego typu. Zgłoszony przykład: Wojownik mykeński→grecka piechota Żelaza. Zachować bramki nacji/badań/budynków/kosztów/limitów i doświadczenie; nie rozszerzać na konnicę, dystans ani machiny. Dispatch `autobot/runs/R-WEB-MELEE-CROSS-TYPE-NEXT-ERA-REPLACEMENT-Q1/00-dispatch.md`. Zarejestrowane w kolejce, operator jeszcze nieuruchomiony.
+- DODATEK2026-11-11 do R-WEB-MELEE-CROSS-TYPE-NEXT-ERA-REPLACEMENT-Q1: wyjątkowe jednostki objęte limitem jednej sztuki mogą być zamieniane wyłącznie na wyjątkowe; zwykłe wyłącznie na zwykłe. Zachować istniejący limit, także w zbiorczej zamianie. Odróżnić limitowaną Super-jednostkę od zwykłego narodowego wariantu Klasa=Specjalna; nie zmieniać zakresu limitu per armia/cywilizacja bez ustalenia.
+- KOREKTAWŁAŚCICIELA2026-11-11 do R-WEB-MELEE-CROSS-TYPE-NEXT-ERA-REPLACEMENT-Q1: limit wyjątkowej zadziałał (zamienił tylko jedną), wcześniejszy dopisek normal↔wyjątkowe WYCOFANY. Zachować istniejące limity/ścieżki wyjątkowych. Nadal naprawić Wojownik mykeński→Falanga/Thorakites i inne legalne przejścia między typami piechoty wręcz do następnej epoki. Aktualny dispatch zastępuje wycofany dopisek.
+- ROZSZERZENIE2026-11-11 R-WEB-MELEE-CROSS-TYPE-NEXT-ERA-REPLACEMENT-Q1: ogólna reguła dla wszystkich cywilizacji i dostępnej piechoty wręcz, dowolny typ broni→dowolny typ broni przy zachowaniu pozostałych bramek. Nie tylko Grecy/awans do kolejnej epoki. Brąz ma bazowego Włócznika i Wojownika z mieczem i tarczą; obecne Żelazo nie ma uniwersalnego miecznika (piechota narodowa).
+
+## 2026-11-11 — R-BITWA-DEAD-UNIT-DISAPPEARS-Q2
+STATUS: OTWARTE
+DOMAIN: GAME
+[related_to R-BITWA-DEAD-UNIT-DISAPPEARS-Q1] Ponownezgłoszenie: całkowiciezniszczonejednostkinadalwidocznenapolubitwy. Q1wdrożonawcześniej6b7f40b4; sprawdzićregresję/inneścieżki,zegarSkip/fade,nieusuwaćjednostektylkoroutowanych. Dispatch `autobot/runs/R-BITWA-DEAD-UNIT-DISAPPEARS-Q2/00-dispatch.md`. Pilnenajbliższegoslotu,max4.
+
+## 2026-11-11 — R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1
+STATUS: OTWARTE
+DOMAIN: GAME
+Ocalałejednostkiprzegranejarmii mająwycofaćsię2heksyodprzeciwnika, niezniknąć. Auditwynikubitwy→mapa,zabici/rout/żywi/rezerwy,playerAI/manualAUTOskip ioblężenia. Bezniezleconegozabijania/teleportu gdybraklegalnejtrasy; zbadaćdotychczasowyfallback. Dispatch `autobot/runs/R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1/00-dispatch.md`, kolejkapilnych,max4.
+
+## Dyspozycja właściciela — 2026-11-11, zamknięcie bieżącej puli
+ZAKAZ rozpoczynania nowych tematów do kolejnej decyzji właściciela. Dokończyć wyłącznie cztery już rozpoczęte: R-WEB-CAVALRY-IRON-ONLY-Q1; R-WEB-EMPIRE-RECRUIT-AFFORDABILITY-SUMMARY-Q1; R-WEB-MELEE-CROSS-TYPE-NEXT-ERA-REPLACEMENT-Q1; R-BITWA-DEAD-UNIT-DISAPPEARS-Q2. Role kolejnych etapów tych samych tematów wolno uruchamiać. Po zwolnieniu slotu NIE dobierać z kolejki. Wszystkie pozostałe zgłoszenia zachować zarejestrowane, bez operatora. Zabezpieczać częściowe wyniki commit/push, nie czekać do końca limitu.
+
+## 2026-11-13 — FALA 674 wdrożona na ROBOCZĄ (main a4b7a546, MD5 6cb9e6c47fb146bac4c02d36d68316f8)
+R-WEB-DIPLO-TRUCE-UNTIL-TURN-DISPLAY-Q1 (#319, ABC tak): napis „Rozejm do tury N” w relacji dyplomacji przy aktywnym rozejmie. Kod 13d5cb0b7 (merge fb5e16314); FC PASS-WITH-NOTES; tsc 0, logic 213/213, test truce 15/0. Raw MD5 zgodne. Chromium NIE_ZMIERZONO: napis do obejrzenia na ROBOCZEJ.

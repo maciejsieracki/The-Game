@@ -4,6 +4,7 @@
  * callbacki do wpiecia przez MASTER (tryb Budowa jak „Załóż miasto").
  */
 
+import { getRiverPathHexSet } from './freshwater';
 import type { GameMap } from '../types/map';
 import { TerenBazowy, Nakladka, Ulepszenie } from '../types/hex';
 import type { ImprovementKey } from '../render/improvements';
@@ -19,9 +20,13 @@ import {
 } from './territory';
 import { isTerritoryHexOwnedBy } from './territory-work';
 import { hexKeysWithinRadius } from '../game/okolica';
+import { isOutpostPlacementAllowed } from '../game/fort-territory';
 import { isWaterTerrain } from '../units/setup';
 import terrainImprovements from '../../data/terrain-improvements.json';
 import {
+  hexHasHorseDeposit,
+  STADNINA_HORSE_COST,
+  STADNINA_FREE_FROM_ERA,
   isLivestockAllowed,
   isLivestockUnlockedForPlacement,
   livestockKeyFromImprovement,
@@ -38,7 +43,7 @@ import {
   getImprovementLockHint,
   type ImprovementActionTyp,
 } from '../game/improvement-tech';
-import { scaleImprovementWorkCost } from '../game/r-stawki-strojenie';
+import { scaleTerrainImprovementWorkCost } from '../game/terrain-improvements';
 
 // ---------------------------------------------------------------------------
 // Typy kontraktu
@@ -143,6 +148,8 @@ export interface ImprovementBuildCallbacks {
   createBuildRequest(key: ImprovementKey, q: number, r: number): ImprovementBuildRequest | null;
   /** Raycaster mapy — gdy activeKey ustawiony w createImprovementBuildApi. */
   handleHexClick?(q: number, r: number): ImprovementBuildRequest | null;
+  /** Czytelny powód, czemu droga nie może stać na heksie (tylko opis UI; null = dozwolona). */
+  roadBlockReason?(q: number, r: number): string | null;
 }
 
 export interface ImprovementBuildModeOptions {
@@ -425,11 +432,13 @@ export function isStadninaBlockedOnForest(_key: string, _nakladka: Nakladka): bo
  * i przeszła do `FOREST_BLOCKED_IMPROVEMENT_KEYS` niżej.
  *
  * `owce`/`bydlo`/`lama` DOPISANE 2026-08-27 (R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1, ECHO
- * właściciela „Tak, odwracamy — wszystkie trzy", uchyla zakaz z 2026-07-29). Wpis jest tu
- * jawny, a nie „przez brak w zbiorze zakazanych", żeby ten zbiór pozostał czytelnym kanonem
- * tego, co wolno postawić w lesie. Zachowanie `isImprovementBlockedOnForest` jest dla tych
- * trzech kluczy identyczne w obu wariantach (przed dopisaniem wpadały w końcowe
- * `FOREST_BLOCKED_IMPROVEMENT_KEYS.has(key) === false`).
+ * właściciela „Tak, odwracamy — wszystkie trzy", uchyla zakaz z 2026-07-29).
+ * STAN OBOWIĄZUJĄCY (R-WEB-AUTOIMPROVE-STAGES-Q1, ABC-2 właściciela 2026-10-31: „konieczność
+ * wycinania lasu; nie ściągamy blokad"): `bydlo` i `owce` są w `FOREST_BLOCKED_IMPROVEMENT_KEYS`
+ * (NA LESIE NIE — najpierw wycinka) i ta blokada ZOSTAJE; z trzech wpisów tylko `lama` realnie
+ * współistnieje z lasem. Wpisy `bydlo`/`owce` w tym zbiorze są martwe: `isImprovementBlockedOnForest`
+ * sprawdza najpierw `FOREST_BLOCKED_IMPROVEMENT_KEYS`, więc blokada wygrywa (kod bez zmian).
+ * Trzoda NIE wymaga złoża ani żadnych zasobów (Q1 tego samego dnia).
  *
  * `stadnina` DOPISANA 2026-09-03 (P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1, ECHO właściciela:
  * „Stadnina […] jest ulepszeniem surowcowym, więc nie może podlegać takim samym zasadom jak
@@ -457,9 +466,10 @@ const FOREST_BLOCKED_IMPROVEMENT_KEYS = new Set<string>([
   // ta dziura, którą temat obozu łowieckiego znalazł jako P7).
   'farma',
   // Trzoda wymaga najpierw usunięcia lasu; ten wpis jest także drugim gate'em
-  // dla rzeczywistej ścieżki applyBuildRequest poza panelem.
+  // dla rzeczywistej ścieżki applyBuildRequest poza panelem. ABC-2 (właściciel 2026-10-31):
+  // blokada ZOSTAJE („konieczność wycinania lasu; nie ściągamy blokad”).
   'bydlo',
-  // Owce zachowują istniejącą blokadę budowy na lesie.
+  // Owce zachowują istniejącą blokadę budowy na lesie (ABC-2: blokada zostaje).
   'owce',
 ]);
 
@@ -794,7 +804,7 @@ export function depositAllowsPlayerImprovement(
     case 'lama':
       return nakladka === Nakladka.ZlozeLamy;
     case 'stadnina':
-      return hex.nakladka === Nakladka.ZlozeKonia;
+      return hexHasHorseDeposit(hex);
     // R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1: obóz przestaje być wyjątkiem rezerwy złoża
     // na złożu zwierzęcym BEZ lasu — wyjątkiem jest wyłącznie las (dowolny teren pod nim).
     case 'oboz_lowiecki':
@@ -887,7 +897,41 @@ function hexNeighbors(q: number, r: number): Array<{ q: number; r: number }> {
   ];
 }
 
-function buildRiverHexSet(map: GameMap): Set<string> {
+/**
+ * R-WEB-IRON-STUD-ADJACENCY-Q1 (Owner 2026-11-11): klucze heksów ze ZBUDOWANĄ stadniną. Heks z
+ * kolejki tury (`pendingUndoKeys`, `hexKey:stadnina`) NIE liczy się jako istniejący.
+ */
+export function builtStudHexKeys(
+  placed: ReadonlyMap<string, string | readonly string[]>,
+  pendingUndoKeys?: ReadonlySet<string>,
+): Set<string> {
+  const out = new Set<string>();
+  for (const [hk, v] of placed) {
+    if (pendingUndoKeys?.has(`${hk}:stadnina`)) continue;
+    if (keysOnPlacedHex(v).some(k => k.toLowerCase().trim() === 'stadnina')) out.add(hk);
+  }
+  return out;
+}
+
+/**
+ * R-WEB-IRON-STUD-ADJACENCY-Q1: czy któryś z 6 BEZPOŚREDNICH sąsiadów heksa (q,r) to zbudowana
+ * stadnina w TERYTORIUM GRACZA (własność: ten sam kanon co budowa — `isHexInPlayerTerritoryForState`;
+ * obca/wroga stadnina nie wlicza się). `builtStuds` = migawka z chwili tworzenia kwalifikatora
+ * (dla AI: przed pętlą wyboru, więc własne kolejki automatu nie liczą się jako istniejące).
+ */
+export function hasBuiltOwnStudNeighbor(
+  state: ImprovementBuildState,
+  q: number,
+  r: number,
+  builtStuds?: ReadonlySet<string>,
+): boolean {
+  const studs = builtStuds
+    ?? builtStudHexKeys(buildPlacedImprovementsMap(state.map, state.placedImprovements), state.pendingUndoKeys);
+  return hexNeighbors(q, r).some(n =>
+    studs.has(`${n.q},${n.r}`) && isHexInPlayerTerritoryForState(state, n.q, n.r));
+}
+
+export function buildRiverHexSet(map: GameMap): Set<string> {
   const set = new Set<string>();
   for (const path of map.riverPaths) {
     for (const p of path) set.add(`${p.q},${p.r}`);
@@ -895,11 +939,36 @@ function buildRiverHexSet(map: GameMap): Set<string> {
   return set;
 }
 
+/**
+ * R-WEB-IRRIGATION-RIVER-DEFINITION-UNIFY-Q1 (decyzja właściciela 2026-11-04, ABC D2=A): JEDNA definicja „przy rzece”
+ * dla ręcznej budowy irygacji, kwalifikatora, tooltipów i automatu (picker FOOD E1–E3, `onRiverHex`).
+ * Heks jest „przy rzece”, gdy: ma własne `rzeka.obecna`, LUB leży w `riverPaths`, LUB którykolwiek z 6 sąsiadów leży
+ * w `riverPaths` albo ma `rzeka.obecna` (rzeka WIDOCZNA na mapie). Jezioro/morze NIE wchodzą (D1=A).
+ * `riverHexSet` opcjonalny — wołający z pętli podaje gotowy (`buildRiverHexSet(map)`), by nie liczyć go per heks.
+ * EN: single "next to a river" definition shared by manual build, qualifier, tooltips and the auto-improver.
+ */
+export function isHexNearRiver(
+  map: GameMap,
+  q: number,
+  r: number,
+  // R6: domyślnie zbiór rzek z pamięci per referencja `riverPaths` (freshwater.ts, ta sama zawartość co buildRiverHexSet)
+  riverHexSet: ReadonlySet<string> = getRiverPathHexSet(map),
+): boolean {
+  if (map.hexes[`${q},${r}`]?.rzeka?.obecna) return true;
+  if (riverHexSet.has(`${q},${r}`)) return true;
+  for (const nb of hexNeighbors(q, r)) {
+    const nk = `${nb.q},${nb.r}`;
+    if (riverHexSet.has(nk)) return true;
+    if (map.hexes[nk]?.rzeka?.obecna) return true;
+  }
+  return false;
+}
+
 type JsonImprovement = { koszt_praca?: number; nazwa?: string; epoka?: number };
 
 function readWorkCost(key: ImprovementKey): number {
   const entry = (terrainImprovements as unknown as Record<string, JsonImprovement>)[key];
-  return scaleImprovementWorkCost(entry?.koszt_praca ?? 20);
+  return scaleTerrainImprovementWorkCost(entry?.koszt_praca ?? 20, entry?.epoka);
 }
 
 const NAKLADKI_ZWIERZECZE = new Set<Nakladka>([
@@ -917,13 +986,50 @@ function hexZloze(hex: HexWithZloze | undefined): string | undefined {
   return hex?.zloze;
 }
 
+/**
+ * R-WEB-ROAD-BUILD-PLAYER-PARITY-WITH-AI-Q1: heks dotyka drogi (sieć z `roadKeys` albo z mapy)
+ * albo miasta. Jedna definicja dla gracza, AI i automatyzacji (ten sam stan wejściowy).
+ */
+function roadAdjacencyOk(state: ImprovementBuildState, q: number, r: number): boolean {
+  const { map, cityNodes } = state;
+  const roadKeys = state.roadKeys ?? new Set<string>();
+  for (const nb of hexNeighbors(q, r)) {
+    const nbKey = `${nb.q},${nb.r}`;
+    if (roadKeys.has(nbKey)) return true;
+    const nbHex = map.hexes[nbKey];
+    if (nbHex && hexHasRoad(nbHex)) return true;
+    for (const node of cityNodes) {
+      if (nb.q === node.q && nb.r === node.r) return true;
+    }
+  }
+  for (const node of cityNodes) {
+    if (axialDistance(q, r, node.q, node.r) === 1) return true;
+  }
+  return false;
+}
+
+/**
+ * R-WEB-ROAD-BUILD-PLAYER-PARITY-WITH-AI-Q1: powód, dlaczego droga NIE może stać na heksie
+ * (null = dozwolona). Opis tej samej reguły co `qualifies('droga')` — nie zmienia wyniku.
+ */
+export function roadBuildBlockReason(state: ImprovementBuildState, q: number, r: number): string | null {
+  const hexKey = `${q},${r}`;
+  const hex = state.map.hexes[hexKey] as HexWithZloze | undefined;
+  if (!hex) return 'Poza mapą.';
+  if (!TERENY_LADU.has(hex.terenBazowy)) return 'Droga stoi tylko na lądzie (nie na wodzie ani morzu).';
+  if (!isHexInPlayerTerritoryForState(state, q, r)) return 'Droga może powstać tylko na twoim terytorium.';
+  const existing = getHexLayers(hexKey, hex, buildPlacedImprovementsMap(state.map, state.placedImprovements));
+  if (existing.some(isRoadImprovementKey) || hex.ulepszenie === Ulepszenie.Droga
+    || hex.ulepszenie === Ulepszenie.DrogaBrukowana) return 'Tu już jest droga.';
+  if (!roadAdjacencyOk(state, q, r)) return 'Droga musi łączyć się z miastem lub już istniejącą drogą.';
+  return null;
+}
+
 function createQualifier(state: ImprovementBuildState) {
   const { map, cityNodes, playerCivArchetype } = state;
   const playerEra = state.playerEra ?? 1;
   const playerOwnerIdNum = state.playerOwnerIdNum ?? 0;
   const territoryNodes = state.territoryNodes ?? [];
-  const placedKeys = state.placedKeys ?? new Set<string>();
-  const roadKeys = state.roadKeys ?? new Set<string>();
   const ownUnitHexKeys = state.ownUnitHexKeys ?? new Set<string>();
   const riverHexSet = buildRiverHexSet(map);
   const placedMap = buildPlacedImprovementsMap(map, state.placedImprovements);
@@ -935,6 +1041,9 @@ function createQualifier(state: ImprovementBuildState) {
   // computeEmpireLivestockUnlocks(placedMap) nie jest tu już w ogóle potrzebne.
   const tradeRouteKonUnlocked = !!state.tradeRouteKonUnlocked;
   const horseStockAvailable = state.horseStockAvailable ?? 0;
+  // R-WEB-IRON-STUD-ADJACENCY-Q1: migawka zbudowanych stadnin W CHWILI tworzenia kwalifikatora
+  // (AI: przed pętlą wyboru — jego własne kolejki tej tury nie liczą się jako sąsiad).
+  const builtStudsAtStart = builtStudHexKeys(placedMap, state.pendingUndoKeys);
 
   function inPlayerTerritory(q: number, r: number): boolean {
     if (territoryNodes.length > 0) {
@@ -944,30 +1053,11 @@ function createQualifier(state: ImprovementBuildState) {
   }
 
   function isRoadQualified(q: number, r: number): boolean {
-    for (const nb of hexNeighbors(q, r)) {
-      const nbKey = `${nb.q},${nb.r}`;
-      if (roadKeys.has(nbKey)) return true;
-      const nbHex = map.hexes[nbKey];
-      if (nbHex && hexHasRoad(nbHex)) return true;
-      for (const node of cityNodes) {
-        if (nb.q === node.q && nb.r === node.r) return true;
-      }
-    }
-    for (const node of cityNodes) {
-      if (axialDistance(q, r, node.q, node.r) === 1) return true;
-    }
-    return false;
+    return roadAdjacencyOk(state, q, r);
   }
 
-  function isRiverAdjacent(q: number, r: number): boolean {
-    const hex = map.hexes[`${q},${r}`];
-    if (hex?.rzeka?.obecna) return true;
-    if (riverHexSet.has(`${q},${r}`)) return true;
-    for (const nb of hexNeighbors(q, r)) {
-      if (riverHexSet.has(`${nb.q},${nb.r}`)) return true;
-    }
-    return false;
-  }
+  // Jedna wspólna definicja „przy rzece” (R-WEB-IRRIGATION-RIVER-DEFINITION-UNIFY-Q1) — `isHexNearRiver`.
+  const isRiverAdjacent = (q: number, r: number): boolean => isHexNearRiver(map, q, r, riverHexSet);
 
   function qualifies(key: ImprovementKey, q: number, r: number): boolean {
     const hexKey = `${q},${r}`;
@@ -997,7 +1087,13 @@ function createQualifier(state: ImprovementBuildState) {
     // WOLNE WSPÓŁISTNIENIE + „jeden per bok" (Maciej 2026-07-09, §5): różne sektory współistnieją;
     // kolizja w tym samym sektorze / solo-hodowla → computeImprovementBuildImpact + confirm w UI.
     if (key !== 'droga' && existing.includes(key)) return false;
-    if (key === 'droga' && placedKeys.has(hexKey)) return false;
+    // R-WEB-ROAD-BUILD-PLAYER-PARITY-WITH-AI-Q1: droga blokowana TYLKO gdy heks już ma drogę.
+    // Dawniej `placedKeys.has(hexKey)` odrzucał KAŻDY heks z ulepszeniem (farma, trzoda…), a AI
+    // (bez `placedKeys` w stanie) takie heksy kwalifikował — rozjazd gracz/AI. Stan drogi liczony
+    // z tych samych danych (`existing`) dla gracza i AI; farma+droga to dozwolona warstwa (docs).
+    if (key === 'droga' && existing.some(isRoadImprovementKey)) return false;
+    if (key === 'droga' && (hex.ulepszenie === Ulepszenie.Droga
+      || hex.ulepszenie === Ulepszenie.DrogaBrukowana)) return false;
 
     let terrainOk = false;
     switch (key) {
@@ -1019,13 +1115,13 @@ function createQualifier(state: ImprovementBuildState) {
         terrainOk = FLAT_FARM.has(teren)
           && inPlayerTerritory(q, r)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
-          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable);
+          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable, playerEra);
         break;
       case 'owce':
         terrainOk = isOwceBaseTerrain(teren, nakladka)
           && inPlayerTerritory(q, r)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
-          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable);
+          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable, playerEra);
         break;
       // R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1 (2026-08-27): jw. — lama kwalifikuje się na
       // Wzgórzach/Górach niezależnie od nakładki Las (bramka cywilizacji Inków bez zmian).
@@ -1034,7 +1130,7 @@ function createQualifier(state: ImprovementBuildState) {
           && (TERRAIN_ALLOW.lama?.has(teren) ?? false)
           && inPlayerTerritory(q, r)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
-          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable);
+          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable, playerEra);
         break;
       // P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (ECHO właściciela 2026-09-03): stadnina jest
       // ulepszeniem SUROWCOWYM (jak glinianka/tartak/kopalnie), nie pastwiskiem — nakładka
@@ -1049,7 +1145,8 @@ function createQualifier(state: ImprovementBuildState) {
         terrainOk = inPlayerTerritory(q, r)
           && (teren === TerenBazowy.Laka || teren === TerenBazowy.Rownina)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
-          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable);
+          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable, playerEra,
+            hasBuiltOwnStudNeighbor(state, q, r, builtStudsAtStart));
         break;
       case 'droga':
         return TERENY_LADU.has(teren) && inPlayerTerritory(q, r) && isRoadQualified(q, r);
@@ -1065,7 +1162,16 @@ function createQualifier(state: ImprovementBuildState) {
       // to another civ's CITY territory; rule 2 — a rival fort there does NOT
       // block), but require the builder's OWN unit physically present on the hex
       // at build time (Q1 clarification — also lifts fog of war by construction).
-      case 'posterunek':
+      // R-WEB-FORT-OUTPOST-PLACEMENT-RULES-Q1 (wlasciciel 2026-11-03): POSTERUNEK tylko na
+      // wlasnym terytorium PRZY GRANICY (wspolny predykat isOutpostPlacementAllowed); NADPISUJE
+      // regule kroku 2 (posterunek poza terenem + jednostka). FORT (nizej) -- bez zmian: gdziekolwiek.
+      case 'posterunek': {
+        const outpostNodes: readonly TerritoryNode[] = territoryNodes.length > 0
+          ? territoryNodes
+          : cityNodes.map(c => ({ ...c, ownerId: playerOwnerIdNum }));
+        terrainOk = TERENY_LADU.has(teren) && isOutpostPlacementAllowed(q, r, playerOwnerIdNum, outpostNodes);
+        break;
+      }
       case 'fort': {
         const owner = territoryNodes.length > 0 ? territoryOwnerAt(q, r, territoryNodes) : null;
         const rivalCityTerritory = owner !== null && owner !== playerOwnerIdNum;
@@ -1404,6 +1510,98 @@ export function getForestBuildBlockReason(
   return 'Brak lasu w twoim terytorium';
 }
 
+/**
+ * R-WEB-STADNINA-NO-HEX-FALSE-NEGATIVE-Q1: zbiór heksów, które w ogóle MOGĄ przejść
+ * `qualifies()` (D13 perf — zamiast skanu całej mapy). PRZYCZYNA FAŁSZYWEGO „Brak heksów w
+ * twoim terytorium": zbiór był liczony WYŁĄCZNIE z `state.cityNodes` (miasta), a od
+ * R-WEB-OUTPOST-FORT-TERRITORY-Q1 (2026-10-31) posterunek (r=3) i fort (r=5) tworzą TWARDE
+ * terytorium (`state.territoryNodes`, `ownerId` = gracz) — złoże konia (i każde inne złoże)
+ * w terytorium posterunku/fortu poza pierścieniem miast+1 NIE było kandydatem, mimo że
+ * `inPlayerTerritory()` je akceptował. Teraz dodajemy też węzły terytorium NALEŻĄCE do gracza.
+ * EN: candidate set now also covers the player's fort/outpost territory nodes.
+ */
+export function buildCandidateHexKeys(state: ImprovementBuildState, margin = 1): Set<string> {
+  const { map } = state;
+  const set = new Set<string>();
+  for (const node of state.cityNodes) {
+    const rad = cityTerritoryRadius(node) + margin;
+    for (const k of hexKeysWithinRadius(node.q, node.r, rad, map)) set.add(k);
+  }
+  const ownerNum = state.playerOwnerIdNum ?? 0;
+  if (state.territoryNodes) {
+    for (const node of state.territoryNodes) {
+      if (node.ownerId !== ownerNum) continue;
+      const rad = cityTerritoryRadius(node) + margin;
+      for (const k of hexKeysWithinRadius(node.q, node.r, rad, map)) set.add(k);
+    }
+  }
+  if (state.roadKeys) for (const k of state.roadKeys) set.add(k);
+  if (state.placedKeys) for (const k of state.placedKeys) set.add(k);
+  if (state.pendingUndoKeys) {
+    for (const composite of state.pendingUndoKeys) {
+      const idx = composite.lastIndexOf(':');
+      if (idx > 0) set.add(composite.slice(0, idx));
+    }
+  }
+  if (state.ownUnitHexKeys) for (const k of state.ownUnitHexKeys) set.add(k);
+  return set;
+}
+
+/** Test „heks w terytorium gracza" dla skanu przyczyn — ta sama logika co `inPlayerTerritory` w createQualifier. */
+function isHexInPlayerTerritoryForState(state: ImprovementBuildState, q: number, r: number): boolean {
+  const territoryNodes = state.territoryNodes ?? [];
+  const owner = state.playerOwnerIdNum ?? 0;
+  if (territoryNodes.length > 0) return isTerritoryHexOwnedBy(q, r, owner, territoryNodes);
+  return isPlayerTerritoryHex(q, r, state.cityNodes, territoryNodes, owner);
+}
+
+/**
+ * Prawdziwy powód braku heksów dla Stadniny — rozróżnia (a) brak złoża konia w terytorium,
+ * (b) złoże poza terytorium, (c) wszystkie złoża już zabudowane stadniną, (d) zły teren.
+ * Zwraca null gdy istnieje kwalifikujący heks. Nie zmienia reguł — tylko komunikat.
+ */
+export function getStadninaBuildBlockReason(state: ImprovementBuildState): string | null {
+  const ownerNum = state.playerOwnerIdNum ?? 0;
+  if (state.cityNodes.length === 0 && !(state.territoryNodes ?? []).some(n => n.ownerId === ownerNum)) {
+    return 'Najpierw załóż miasto — bez terytorium nie zbudujesz stadniny.';
+  }
+  const qual = createQualifier(state);
+  const placedMap = buildPlacedImprovementsMap(state.map, state.placedImprovements);
+  let inTerritory = 0;
+  let alreadyBuilt = 0;
+  let wrongTerrain = 0;
+  let outside = 0;
+  // margin 4: widzimy też złoża tuż POZA terytorium (komunikat „poza twoim terytorium"); wołane tylko gdy brak kandydata.
+  for (const hk of buildCandidateHexKeys(state, 4)) {
+    const hex = state.map.hexes[hk];
+    if (!hex) continue;
+    if (qual('stadnina', hex.coords.q, hex.coords.r)) return null;
+    if (!hexHasHorseDeposit(hex)) continue;
+    if (!isHexInPlayerTerritoryForState(state, hex.coords.q, hex.coords.r)) { outside++; continue; }
+    inTerritory++;
+    if (getHexLayers(hk, hex, placedMap).includes('stadnina')) { alreadyBuilt++; continue; }
+    if (hex.terenBazowy !== TerenBazowy.Laka && hex.terenBazowy !== TerenBazowy.Rownina) wrongTerrain++;
+  }
+  if (inTerritory > 0) {
+    if (alreadyBuilt >= inTerritory) {
+      return 'Wszystkie złoża konia w twoim terytorium mają już stadninę.';
+    }
+    if (wrongTerrain > 0) {
+      return 'Złoże konia w twoim terytorium leży na terenie, na którym stadnina nie stanie (wymaga łąki lub równiny).';
+    }
+  }
+  if (outside > 0 && inTerritory === 0) {
+    return 'Złoże konia jest poza twoim terytorium — powiększ miasto albo postaw posterunek bliżej.';
+  }
+  // R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1: w epokach 1–2 magazyn koni NIE odblokowuje
+  // stadniny poza złożem (bramka epoki w isLivestockUnlockedForPlacement), więc komunikat nie może go sugerować.
+  if ((state.playerEra ?? 1) < STADNINA_FREE_FROM_ERA) {
+    return 'Wymagane złoże konia na twoim terytorium. Do epoki Żelaza stadnina stoi wyłącznie na złożu konia (poza złożem dopiero od epoki Żelaza).';
+  }
+  const stock = Math.floor(state.horseStockAvailable ?? 0);
+  return `Wymagane złoże konia na twoim terytorium (albo ${STADNINA_HORSE_COST} koni w magazynie imperium, masz ${stock}, i stadnina już zbudowana na sąsiednim heksie w twoim terytorium).`;
+}
+
 // ---------------------------------------------------------------------------
 // Fabryka API
 // ---------------------------------------------------------------------------
@@ -1432,23 +1630,7 @@ export function createImprovementBuildApi(
   //     terytorium kwalifikują się WYŁĄCZNIE na hexie z własną jednostką — patrz Q1=B).
   // Każdy heks SPOZA tego zbioru zwróciłby z qualifies() false, więc wynik jest
   // IDENTYCZNY jak przy pełnym skanie (predykat qualifies bez zmian).
-  const candidateHexKeys: Set<string> = (() => {
-    const set = new Set<string>();
-    for (const node of state.cityNodes) {
-      const rad = cityTerritoryRadius(node) + 1;
-      for (const k of hexKeysWithinRadius(node.q, node.r, rad, map)) set.add(k);
-    }
-    if (state.roadKeys) for (const k of state.roadKeys) set.add(k);
-    if (state.placedKeys) for (const k of state.placedKeys) set.add(k);
-    if (state.pendingUndoKeys) {
-      for (const composite of state.pendingUndoKeys) {
-        const idx = composite.lastIndexOf(':');
-        if (idx > 0) set.add(composite.slice(0, idx));
-      }
-    }
-    if (state.ownUnitHexKeys) for (const k of state.ownUnitHexKeys) set.add(k);
-    return set;
-  })();
+  const candidateHexKeys: Set<string> = buildCandidateHexKeys(state);
 
   const getWorkCost = (key: ImprovementKey): number =>
     getImprovementMeta(key)?.kosztPraca ?? readWorkCost(key);
@@ -1483,7 +1665,9 @@ export function createImprovementBuildApi(
       const territoryHint = unlocked && !canPlaceAny
         ? (key === 'wyrab' || key === 'tartak'
           ? (getForestBuildBlockReason(state, key) ?? 'Brak lasu w twoim terytorium')
-          : 'Brak heksów w twoim terytorium')
+          : key === 'stadnina'
+            ? (getStadninaBuildBlockReason(state) ?? 'Brak heksów w twoim terytorium')
+            : 'Brak heksów w twoim terytorium')
         : null;
       return {
         key,
@@ -1550,6 +1734,7 @@ export function createImprovementBuildApi(
     getQualifyingHexes,
     createBuildRequest,
   };
+  api.roadBlockReason = (q: number, r: number) => roadBuildBlockReason(state, q, r);
   if (mode.activeKey) {
     api.handleHexClick = handleHexClick;
   }

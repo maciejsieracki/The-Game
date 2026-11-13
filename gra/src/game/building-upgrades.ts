@@ -8,6 +8,7 @@ import miastoParams from '../../data/miasto-params.json';
 const STRUCTURAL_DEFENSE_PARAM_KEY: Readonly<Record<string, keyof typeof miastoParams>> = {
   palisada: 'bonus_obrona_palisada_proc',
   mury: 'bonus_obrona_mur_proc',
+  mury_kamienne: 'bonus_obrona_mur_kamienny_proc',
   fort: 'bonus_obrona_cytadela_proc',
   baszta: 'bonus_obrona_baszta_proc',
 };
@@ -16,6 +17,8 @@ export type BuildingUpgradeLite = {
   id: string;
   nazwa: string;
   upgradeFrom?: string;
+  /** true = poprzednik (`upgradeFrom`) NIE jest wymagany (przeskok): awans, gdy stoi, inaczej budowa od zera. */
+  upgradeSkip?: boolean;
   suppressed?: boolean;
   baza?: Record<string, number>;
   przyrost?: Record<string, number>;
@@ -48,6 +51,52 @@ export function upgradeChainSteps(
     cur = from ? byId.get(from) : undefined;
   }
   return chain;
+}
+
+/** Minimalny węzeł łańcucha awansów (wystarcza id + relacja). */
+export type UpgradeChainNode = { id: string; upgradeFrom?: string; upgradeSkip?: boolean };
+
+/**
+ * Niższe etapy łańcucha fortyfikacji z przeskokiem (Palisada -> Mury kamienne -> Mury ceglane):
+ * idzie w dół po `upgradeFrom` dopóki bieżący etap ma `upgradeSkip`. Najbliższy poprzednik pierwszy.
+ * Budynki bez `upgradeSkip` (zwykłe awanse, wymagany poprzednik) zwracają [].
+ */
+export function skipChainLowerIds(
+  buildingId: string,
+  buildings: readonly UpgradeChainNode[],
+): string[] {
+  const byId = new Map(buildings.map(b => [b.id, b]));
+  const out: string[] = [];
+  let cur = byId.get(buildingId);
+  while (cur && cur.upgradeSkip === true) {
+    const from = (cur.upgradeFrom ?? '').trim();
+    if (!from || out.includes(from)) break;
+    out.push(from);
+    cur = byId.get(from);
+  }
+  return out;
+}
+
+/** Wyższe etapy łańcucha z przeskokiem, które zastępują `buildingId`. */
+export function skipChainHigherIds(
+  buildingId: string,
+  buildings: readonly UpgradeChainNode[],
+): string[] {
+  return buildings
+    .filter(b => b.upgradeSkip === true && skipChainLowerIds(b.id, buildings).includes(buildingId))
+    .map(b => b.id);
+}
+
+/** Najbliższy zbudowany niższy etap łańcucha (źródło awansu) albo null (budowa od zera). */
+export function skipChainUpgradeSource(
+  buildingId: string,
+  builtIds: readonly string[],
+  buildings: readonly UpgradeChainNode[],
+): string | null {
+  for (const id of skipChainLowerIds(buildingId, buildings)) {
+    if (builtIds.includes(id)) return id;
+  }
+  return null;
 }
 
 /** Etykieta kolejki produkcji (UPG-PROD A). */
@@ -137,7 +186,7 @@ export function cityHasAmfiteatrLine(builtIds: readonly string[]): boolean {
 
 /** Mury, Cytadela (fort) lub wczesna Palisada drewniana. */
 export function cityHasMurLine(builtIds: readonly string[]): boolean {
-  return builtIds.includes('mury') || builtIds.includes('fort') || builtIds.includes('palisada');
+  return builtIds.includes('mury') || builtIds.includes('mury_kamienne') || builtIds.includes('fort') || builtIds.includes('palisada');
 }
 
 /** Bonus procentowy Obrony jednostek w mieście (miasto-params.json), jeśli budynek go daje. */
@@ -156,8 +205,8 @@ export function buildingStructuralDefenseBonusLine(buildingId: string): string |
   if (buildingId === 'palisada') {
     return `Obrona (jednostki broniące miasta) +${proc}% — zastąpione przez Mury kamienne`;
   }
-  if (buildingId === 'mury') {
-    return `Obrona (jednostki broniące miasta) +${proc}% — zastępuje Palisadę drewnianą`;
+  if (buildingId === 'mury' || buildingId === 'mury_kamienne') {
+    return `Obrona (jednostki broniące miasta) +${proc}% — zastępuje słabszą fortyfikację`;
   }
   if (buildingId === 'fort') {
     return `Obrona (jednostki broniące miasta) +${proc}% dodatkowo (wymaga Murów w mieście)`;

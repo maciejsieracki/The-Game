@@ -2,18 +2,20 @@
  * diplomacyAudience.ts — ekran audiencji dyplomatycznej (D3-Q1…Q4).
  * DECOUPLED: zero importów game/*; callbacki z SILNIK.
  */
-import type { CivBonusLite } from '../game/production';
 import { startDiplomacyMusic, stopDiplomacyMusic } from '../audio/muzyka-antyczna';
 import {
   effectiveNastawienieScores,
   nastawienieHintPl,
+  warRelationCapApplies,
   nastawienieLabelFromScore,
   TRAKTAT_HANDLOWY_LABEL,
+  truceUntilTurnLabelPl,
   wiarygodnoscBadgeHtml,
   wiarygodnoscTooltipPl,
   wiarygodnoscTooltipDefPl,
   type FormalDiplomaticKind,
 } from '../game/diplomacy-display';
+import { WAR_RELATION_SCORE_CAP } from '../game/diplomacy';
 import {
   wiarygodnoscLabelPl,
   wiarygodnoscTooltipRozbiciePl,
@@ -37,6 +39,7 @@ import {
 } from './diplomacyNegotiationModal';
 import { actionUsesTradeBasket, getTradeBasketMode, showTradeBasketModal, openQuickDealBasket, type TradeBasketInitial } from './diplomacyTradeBasket';
 import { civCardDisplayName, leaderName } from './leaderPortraits';
+import { formatFullNumber } from './formatCompactNumber';
 import { civBrandLineForKey } from './civBrandDisplay';
 import type { TradeGoodsCategories } from '../game/diplomacy-goods';
 import { renderNegotiationTableDealSideHtml, negotiationTableDealSideHasContent } from './diplomacyDealDisplay';
@@ -52,7 +55,6 @@ import {
 } from '../game/diplomacy-proposals';
 import type { ProposalPayload } from '../game/diplomacy-proposals';
 import {
-  audienceActionBarLockNote,
   audienceActionStatusNote,
   uiActionAllowsMultipleOwnOnTable,
 } from '../game/diplomacy-audience-actions';
@@ -69,7 +71,7 @@ export interface AudienceAction {
    * "brak kontaktu", ta bramka zostaje osobna — patrz buildAudienceActions).
    */
   locked?: boolean;
-  /** Notka w formacie makiety: „zablokowana — wymaga Zaufania 91 (masz 34)". */
+  /** Notka w formacie makiety: „zablokowana — wymaga Zaufania 90 (masz 34)". */
   lockNote?: string;
   /** Umowa/traktat już zawarta między stronami (stan `active` z makiety v1.1). */
   active?: boolean;
@@ -100,6 +102,14 @@ export interface DiplomacyAudienceState {
   playerPower?: number;
   /** Obiektywna Moc rozmówcy. */
   otherPower?: number;
+  /** Pula rekrutów (Manpower bieżący) gracza — suma miast imperium (ta sama definicja co panel werbu). */
+  playerRecruits?: number;
+  /** Maksimum puli rekrutów gracza (suma miast). */
+  playerRecruitsMax?: number;
+  /** Pula rekrutów (Manpower bieżący) rozmówcy — suma miast jego imperium. */
+  otherRecruits?: number;
+  /** Maksimum puli rekrutów rozmówcy (suma miast). */
+  otherRecruitsMax?: number;
   /** Stosunek tekstowy np. „2:1". */
   powerRatioLabel?: string;
   /**
@@ -113,6 +123,10 @@ export interface DiplomacyAudienceState {
     detail?: string;
     sinceTurns?: number;
     breakPenaltyLabel?: string;
+    /** R-WEB-DIPLO-ACTIVE-TREATIES-RESOURCE-DEALS-Q1: wiersze cyklicznej wymiany surowców. */
+    exchanges?: readonly { text: string; status: 'ok' | 'fail' | 'pending'; statusText: string }[];
+    /** „co turę, pozostało N tur" / „co turę, bezterminowo". */
+    frequencyLabel?: string;
   }[];
   /**
    * J: JAWNY formalny status relacji (odrębny od nastawienia/tier). Odpowiada na
@@ -198,6 +212,12 @@ export interface DiplomacyAudienceState {
    * (nie ma traktatu, do którego by się to odnosiło).
    */
   formalStatusDetail?: { sinceTurns?: number; breakPenaltyLabel?: string };
+  /**
+   * R-WEB-DIPLO-TRUCE-UNTIL-TURN-DISPLAY-Q1: tura końca aktywnego rozejmu tej pary (null/brak = brak rozejmu)
+   * oraz bieżąca tura. Napis „Rozejm do tury N” pokazuje się tylko przy aktywnym rozejmie.
+   */
+  truceUntilTurn?: number | null;
+  currentTurn?: number;
 
   /**
    * C-DYP-Q1=A (2026-07-26, Maciej — pełny stół negocjacyjny z kontrofertą): wpisy
@@ -303,8 +323,6 @@ export interface DiplomacyAudienceConfig {
    * dyspozycja). Brak = zakładka ukryta (np. wywołanie audiencji bez kontekstu listy).
    */
   onOpenKnownFactions?: () => void;
-  /** Bonusy cywilizacji (civs.json) — SILNIK: civBonusyForOwnerId. */
-  getCivBonusy?: (ownerId: number) => readonly CivBonusLite[];
   /** Kontekst modali negocjacji (wrogowie, tech, opłaty granic). */
   getNegotiationContext?: (actionId: string) => NegotiationModalContext | null;
   /**
@@ -556,6 +574,10 @@ function handleAudienceEscape(): void {
 const RESPEKT_TOOLTIP_PL =
   'Respekt = jak duża jest wasza Moc w porównaniu z tą nacją. 50 = równi. Wyżej = jesteś silniejszy.';
 
+const REKRUCI_TOOLTIP_PL =
+  'Rekruci = pula werbu cywilizacji (Manpower): ile jednostek może teraz zrekrutować. '
+  + 'Suma puli wszystkich jej miast; odnawia się co turę, a werbunek ją zużywa.';
+
 const STYLE_ID = 'civ-diplo-aud-css-1e';
 
 function ensureStyles(): void {
@@ -660,6 +682,7 @@ ${DIPLO_1E_SHARED_CSS}
 .da-rel-row.relacja-total{margin-top:6px;border-top:1px dashed rgba(232,216,138,.12);padding-top:6px;}
 .da-rel-row.relacja-total .v{color:#e8d88a;font-weight:700;}
 .da-rel-sum-hint{font-size:0.58em;color:#6a6058;margin-left:4px;}
+.da-war-cap-note{font-size:0.8em;font-weight:600;color:#d9a05b;margin-left:6px;}
 .da-rbar.relacja-total{background:rgba(232,216,138,.12);}
 .da-rbar.relacja-total i{background:linear-gradient(90deg,#8a7050,#e8d88a);}
 .da-rbar{height:6px;border-radius:4px;background:rgba(0,0,0,.4);overflow:hidden;margin-bottom:6px;border:1px solid rgba(0,0,0,.3);}
@@ -951,17 +974,22 @@ ${DIPLO_1E_SHARED_CSS}
 @media (max-width:760px){.da-mainrow{flex-wrap:wrap;}.da-card{width:100%;flex:1 1 auto;}}
 
 /* ===== FAZA 3 pkt 8 — pasek szybkich akcji (SAME IKONY, 46×46) + „Szybka Umowa" ===== */
-.da-actionbar{display:flex;align-items:flex-end;gap:9px;justify-content:center;flex-wrap:wrap;padding-top:2px;}
-.da-abtn-cell{display:inline-flex;flex-direction:column;align-items:center;gap:2px;max-width:74px;}
-.da-abtn-note{font-size:0.5em;line-height:1.2;color:#e08a8a;text-align:center;max-width:70px;
-  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.da-actionbar{display:flex;align-items:flex-start;gap:8px 9px;justify-content:center;flex-wrap:wrap;padding-top:2px;}
+.da-abtn-cell{display:inline-flex;flex-direction:column;align-items:center;width:84px;flex:0 0 84px;}
+.da-abtn-cell--cta{width:auto;flex:0 0 auto;margin-left:6px;}
+.da-abtn-slot{height:52px;display:flex;align-items:center;justify-content:center;}
+.da-abtn-lbl{margin-top:4px;font-size:11px;line-height:1.2;font-weight:600;letter-spacing:.02em;color:#ffffff;
+  text-align:center;white-space:nowrap;}
+.da-abtn-cell.is-locked .da-abtn-lbl{color:#c9ced8;}
+.da-abtn .da-abtn-lock{position:absolute;right:-5px;top:-5px;width:13px;height:13px;padding:2px;border-radius:50%;
+  background:#0a0d14;border:1px solid rgba(201,206,216,.55);color:#c9ced8;}
 .da-ttip{position:relative;display:inline-flex;}
 .da-ttip>.da-ttip-lbl{position:absolute;bottom:54px;left:50%;transform:translateX(-50%);opacity:0;
   pointer-events:none;transition:opacity .12s;white-space:nowrap;background:rgba(8,10,16,.96);
   border:1px solid rgba(232,216,138,.4);color:#e8d88a;padding:3px 9px;border-radius:6px;font-size:9.5px;
   font-weight:700;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 4px 12px rgba(0,0,0,.55);z-index:9;}
 .da-ttip:hover>.da-ttip-lbl{opacity:1;}
-.da-abtn{width:46px;height:46px;border-radius:10px;border:1px solid rgba(232,216,138,.3);
+.da-abtn{position:relative;width:46px;height:46px;border-radius:10px;border:1px solid rgba(232,216,138,.3);
   background:linear-gradient(180deg,#161c28,#0a0d14);color:#e8d88a;display:flex;align-items:center;
   justify-content:center;cursor:pointer;box-shadow:0 1px 6px rgba(0,0,0,.4);}
 .da-abtn svg{width:19px;height:19px;}
@@ -1221,6 +1249,10 @@ function formalBannerHtml(st: DiplomacyAudienceState): string {
   const icon = dipBrandIconHtml(iconByKind[st.formalStatus.kind] ?? 'dip-peace', 19, 'da-b-ic');
   const detail = st.formalStatusDetail;
   const subParts: string[] = [];
+  const truceLabel = st.currentTurn !== undefined && st.formalStatus.kind !== 'wojna'
+    ? truceUntilTurnLabelPl(st.truceUntilTurn, st.currentTurn)
+    : null;
+  if (truceLabel) subParts.push(truceLabel);
   if (detail?.sinceTurns !== undefined) subParts.push('obowiązuje od ' + detail.sinceTurns + ' tur');
   if (detail?.breakPenaltyLabel) subParts.push('zerwanie: ' + detail.breakPenaltyLabel);
   const sub = subParts.length > 0
@@ -1245,8 +1277,17 @@ function stanceBadgeHtml(st: DiplomacyAudienceState): string {
   const cls = hostile ? 'da-stance-badge hostile' : 'da-stance-badge';
   return (
     '<span class="' + cls + '" title="' + esc(nastawienieHintPl(atWar)) + '">' +
-    esc(label) + '</span>'
+    esc(label) + '</span>' + warCapNoteHtml(st)
   );
+}
+
+/** Dopisek „limit wojenny 29” — tylko przy wojnie, gdy surowa wartość jest obcinana w etykiecie. */
+function warCapNoteHtml(st: DiplomacyAudienceState): string {
+  if (!warRelationCapApplies(st.zaufanie, st.respekt, audienceAtWar(st))) return '';
+  return ' <span class="da-war-cap-note" title="' + esc(
+    'Limit wojenny: w wojnie suma Zaufania i Respektu nie może przekroczyć ' + WAR_RELATION_SCORE_CAP
+    + ' (nastawienie nie może być przyjazne — etykieta ograniczona do „Wrogi”). Wartości powyżej są prawdziwe.',
+  ) + '">(etykieta Wrogi: limit wojenny ' + WAR_RELATION_SCORE_CAP + ')</span>';
 }
 
 function personalityTagsHtml(tags: readonly string[] | undefined): string {
@@ -1268,18 +1309,38 @@ function cultureLineHtml(st: DiplomacyAudienceState): string {
   return html;
 }
 
-function bonusListHtml(bonusy: readonly CivBonusLite[]): string {
-  const lines = bonusy.map(b => (b.opis ?? '').trim()).filter(Boolean).slice(0, 2);
-  if (lines.length === 0) return '';
-  return '<ul class="da-bonus">' + lines.map(l => '<li>' + esc(l) + '</li>').join('') + '</ul>';
+/** Pasek atrybutu (Moc militarna / Potencjał sojuszniczy) — bez wartości bezwzględnej 0..100. */
+function attrBarHtml(
+  label: string,
+  valueLabel: string,
+  pct: number,
+  tone: 'you' | 'them' | 'gold',
+  tooltip?: string,
+): string {
+  const p = Math.max(0, Math.min(100, Math.round(pct)));
+  const tip = tooltip ? ' title="' + esc(tooltip) + '"' : '';
+  return (
+    '<div class="da-attr-row"' + tip + '><span>' + esc(label) + '</span><span class="v">' + esc(valueLabel) + '</span></div>' +
+    '<div class="da-abar ' + tone + '"><i style="width:' + p + '%"></i></div>'
+  );
 }
 
-/** Pasek atrybutu (Moc militarna / Potencjał sojuszniczy) — bez wartości bezwzględnej 0..100. */
-function attrBarHtml(label: string, valueLabel: string, pct: number, tone: 'you' | 'them' | 'gold'): string {
-  const p = Math.max(0, Math.min(100, Math.round(pct)));
-  return (
-    '<div class="da-attr-row"><span>' + esc(label) + '</span><span class="v">' + esc(valueLabel) + '</span></div>' +
-    '<div class="da-abar ' + tone + '"><i style="width:' + p + '%"></i></div>'
+/** Wiersz „Rekruci” (pula werbu cywilizacji): wartość „bieżąca / maks.” z spacjami tysięcy. Brak danych = pusty. */
+function recruitsAttrHtml(
+  current: number | undefined,
+  max: number | undefined,
+  tone: 'you' | 'them',
+): string {
+  if (current === undefined || max === undefined) return '';
+  const cur = Math.max(0, Math.round(current));
+  const mx = Math.max(0, Math.round(max));
+  const pct = mx > 0 ? (cur / mx) * 100 : 0;
+  return attrBarHtml(
+    'Rekruci',
+    formatFullNumber(cur) + ' / ' + formatFullNumber(mx),
+    pct,
+    tone,
+    REKRUCI_TOOLTIP_PL,
   );
 }
 
@@ -1348,7 +1409,7 @@ function otherLeaderHtml(st: DiplomacyAudienceState): string {
 }
 
 /** FAZA 2 pkt 1 — LEWA karta (gracz): medalion, atrybuty, reputacja, skarbiec, dobra handlowe. */
-function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonusLite[]): string {
+export function playerCardHtml(st: DiplomacyAudienceState): string {
   const maxPower = Math.max(st.playerPower ?? 0, st.otherPower ?? 0, 1);
   const powerPct = ((st.playerPower ?? 0) / maxPower) * 100;
   const potencjal = st.sojuszPotencjal;
@@ -1370,6 +1431,7 @@ function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonus
       '<div>' +
         '<div class="da-sec-title">Atrybuty</div>' +
         attrBarHtml('Moc militarna', String(st.playerPower ?? 0), powerPct, 'you') +
+        recruitsAttrHtml(st.playerRecruits, st.playerRecruitsMax, 'you') +
         (potencjal ? attrBarHtml('Potencjał sojuszniczy', potencjal.label, potencjal.pct, 'gold') : '') +
       '</div>' +
       (st.playerWiarygodnosc !== undefined
@@ -1390,7 +1452,6 @@ function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonus
         '<div class="da-sec-title">Dobra handlowe</div>' +
         goodsCategoriesHtml(st.playerGoodsCats, 'player') +
       '</div>' +
-      bonusListHtml(playerBon) +
     '</div>'
   );
 }
@@ -1402,12 +1463,12 @@ function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonus
  * `st.otherRelations` i renderuje sekcję „Relacje z innymi", nie tylko że silnik (main.ts)
  * poprawnie oblicza dane w oderwaniu (pokrywa osobny test na diplomacy-pair-summary.ts).
  */
-export function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly CivBonusLite[]): string {
+export function otherCardHtml(st: DiplomacyAudienceState): string {
   const maxPower = Math.max(st.playerPower ?? 0, st.otherPower ?? 0, 1);
   const powerPct = ((st.otherPower ?? 0) / maxPower) * 100;
   const potencjal = st.sojuszPotencjal;
   const atWar = audienceAtWar(st);
-  const relScores = effectiveNastawienieScores(st.zaufanie, st.respekt, atWar);
+  const relScores = effectiveNastawienieScores(st.zaufanie, st.respekt);
   return (
     '<div class="da-card them">' +
       (cfg?.onFocusCapital ? dipCapitalLocateBtnHtml() : '') +
@@ -1426,6 +1487,7 @@ export function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly Civ
       '<div>' +
         '<div class="da-sec-title">Atrybuty</div>' +
         attrBarHtml('Moc militarna', String(st.otherPower ?? 0), powerPct, 'them') +
+        recruitsAttrHtml(st.otherRecruits, st.otherRecruitsMax, 'them') +
         (potencjal ? attrBarHtml('Potencjał sojuszniczy', potencjal.label, potencjal.pct, 'gold') : '') +
       '</div>' +
       '<div>' +
@@ -1441,7 +1503,6 @@ export function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly Civ
       otherRelationsSectionHtml(st.otherRelations) +
       cultureLineHtml(st) +
       personalityTagsHtml(st.personalityTags) +
-      bonusListHtml(otherBon) +
     '</div>'
   );
 }
@@ -1490,9 +1551,9 @@ function relacjaTotalHtml(st: DiplomacyAudienceState): string {
   ) + '"';
   return (
     '<div class="da-rel-row relacja-total"' + tip + '>'
-    + '<span>Relacja</span>'
+    + '<span>Relacja z perspektywy gracza</span>'
     + '<span class="v">' + relTotal + ' / 200' + formatPerTurnDelta(st.relacjaDeltaPerTurn) + '</span>'
-    + '<span class="da-rel-sum-hint">(Zaufanie + Respekt)</span>'
+    + '<span class="da-rel-sum-hint">(Zaufanie + Respekt)</span>' + warCapNoteHtml(st)
     + '</div>'
     + '<div class="da-rbar relacja-total"><i style="width:' + pct + '%"></i></div>'
   );
@@ -1647,17 +1708,27 @@ const ACTION_BAR_SVG: Record<string, string> = {
 };
 
 /** Mapowanie przycisk paska → id akcji z siatki (data/diplomacy.json akcje_dyplomatyczne). */
-const ACTION_BAR_SPECS: ReadonlyArray<{ svg: keyof typeof ACTION_BAR_SVG; aid: string; label: string; extraCls?: string }> = [
-  { svg: 'war', aid: '11', label: 'Wypowiedz wojnę', extraCls: 'warbtn' },
-  { svg: 'peace', aid: '10', label: 'Zaproponuj pokój', extraCls: 'peacebtn' },
-  { svg: 'alliance', aid: '3', label: 'Sojusz' },
-  { svg: 'pact', aid: '2', label: 'Pakt o nieagresji' },
-  { svg: 'trade', aid: '5', label: TRAKTAT_HANDLOWY_LABEL },
-  { svg: 'trade', aid: '14', label: 'Umowa wymiany' },
-  { svg: 'gift', aid: '13', label: 'Przekaż dar' },
-  { svg: 'vassal', aid: '12', label: 'Wasalizacja' },
-  { svg: 'vassal', aid: '15', label: 'Wchłonięcie' },
+/**
+ * R-WEB-DIPLO-QUICK-ACTIONS-BAR-READABLE-Q1 — `short` to JEDNO słowo (≤ 12 znaków, bez
+ * wielokropka) wyświetlane pod ikoną. `label` (pełna nazwa) zostaje w hover-pigułce i aria
+ * dla odblokowanej akcji; pełny powód blokady idzie do title/aria (nigdy pod ikonę).
+ */
+const ACTION_BAR_SPECS: ReadonlyArray<{ svg: keyof typeof ACTION_BAR_SVG; aid: string; label: string; short: string; extraCls?: string }> = [
+  { svg: 'war', aid: '11', label: 'Wypowiedz wojnę', short: 'Wojna', extraCls: 'warbtn' },
+  { svg: 'peace', aid: '10', label: 'Zaproponuj pokój', short: 'Pokój', extraCls: 'peacebtn' },
+  { svg: 'alliance', aid: '3', label: 'Sojusz', short: 'Sojusz' },
+  { svg: 'pact', aid: '2', label: 'Pakt o nieagresji', short: 'Pakt' },
+  { svg: 'trade', aid: '5', label: TRAKTAT_HANDLOWY_LABEL, short: 'Handel' },
+  { svg: 'trade', aid: '14', label: 'Umowa wymiany', short: 'Wymiana' },
+  { svg: 'gift', aid: '13', label: 'Przekaż dar', short: 'Dar' },
+  { svg: 'vassal', aid: '12', label: 'Wasalizacja', short: 'Wasal' },
+  { svg: 'vassal', aid: '15', label: 'Wchłonięcie', short: 'Wchłonięcie' },
 ];
+
+/** Kłódka nakładana na zablokowany przycisk paska (stan sygnalizowany wizualnie, nie tekstem). */
+const ACTION_BAR_LOCK_SVG =
+  '<svg class="da-abtn-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true">' +
+  '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>';
 
 /**
  * FAZA 3 pkt 8 — pasek szybkich akcji. SAME IKONY (46×46, bez podpisów), pełna nazwa
@@ -1675,18 +1746,19 @@ export function actionBarHtml(st: DiplomacyAudienceState): string {
     const enabled = action ? action.enabled : false;
     const isLocked = action ? (action.locked || !action.enabled) : true;
     const tip = enabled ? spec.label : (action?.lockNote || (isLocked ? action?.tooltip : undefined) || spec.label);
-    const lockNote = audienceActionBarLockNote(action);
-    const cls = 'da-abtn' + (spec.extraCls ? ' ' + spec.extraCls : '');
+    const cls = 'da-abtn' + (spec.extraCls ? ' ' + spec.extraCls : '') + (isLocked ? ' is-locked' : '');
     const actionIcon = dipBrandIconHtml(actionIconId(spec.aid), 24, 'da-action-ic') || ACTION_BAR_SVG[spec.svg];
     const visibleTip = enabled ? spec.label : (tip || spec.label);
     const btn =
       '<span class="da-ttip"><span class="da-ttip-lbl">' + esc(visibleTip) + '</span>' +
       '<button type="button" class="' + cls + '" data-aid="' + esc(spec.aid) + '"' +
-      (enabled ? '' : ' disabled') + ' title="' + esc(tip) + '" aria-label="' + esc(visibleTip) + '">' + actionIcon + '</button>' +
+      (enabled ? '' : ' disabled') + ' title="' + esc(tip) + '" aria-label="' + esc(visibleTip) + '">' +
+      actionIcon + (isLocked ? ACTION_BAR_LOCK_SVG : '') + '</button>' +
       '</span>';
     return (
-      '<span class="da-abtn-cell">' + btn +
-      (lockNote ? '<span class="da-abtn-note" title="' + esc(lockNote) + '">' + esc(lockNote) + '</span>' : '') +
+      '<span class="da-abtn-cell' + (isLocked ? ' is-locked' : '') + '">' +
+      '<span class="da-abtn-slot">' + btn + '</span>' +
+      '<span class="da-abtn-lbl">' + esc(spec.short) + '</span>' +
       '</span>'
     );
   }).join('');
@@ -1694,14 +1766,14 @@ export function actionBarHtml(st: DiplomacyAudienceState): string {
   const handel = byId.get('14');
   const handelEnabled = handel ? handel.enabled : false;
   const qdTitle = handelEnabled ? 'auto-uczciwa wymiana' : (handel?.lockNote || handel?.tooltip || 'Wymiana niedostępna');
-  const qdLockNote = handelEnabled ? '' : audienceActionBarLockNote(handel);
   const quickdealBtn =
     '<button type="button" class="da-quickdeal"' + (handelEnabled ? '' : ' disabled') +
     ' title="' + esc(qdTitle) + '" aria-label="' + esc(qdTitle) + '">' + ACTION_BAR_SVG.quickdeal +
-    '<span>SZYBKA WYMIANA<small>auto-uczciwa oferta</small></span></button>';
+    '<span>SZYBKA WYMIANA<small>auto-uczciwa oferta</small></span>' +
+    (handelEnabled ? '' : ACTION_BAR_LOCK_SVG) + '</button>';
   const quickdeal =
-    '<span class="da-abtn-cell">' + quickdealBtn +
-    (qdLockNote ? '<span class="da-abtn-note" title="' + esc(qdLockNote) + '">' + esc(qdLockNote) + '</span>' : '') +
+    '<span class="da-abtn-cell da-abtn-cell--cta' + (handelEnabled ? '' : ' is-locked') + '">' +
+    '<span class="da-abtn-slot">' + quickdealBtn + '</span>' +
     '</span>';
 
   return '<div class="da-actionbar">' + btns + quickdeal + '</div>';
@@ -1867,6 +1939,13 @@ export function treatiesColumnHtml(
     else if (t.detail) metaParts.push(t.detail);
     const meta = metaParts.length > 0 ? '<div class="da-meta">' + esc(metaParts.join(' · ')) + '</div>' : '';
     const pen = t.breakPenaltyLabel ? '<div class="da-pen">kara zerwania: ' + esc(t.breakPenaltyLabel) + '</div>' : '';
+    /* R-WEB-DIPLO-ACTIVE-TREATIES-RESOURCE-DEALS-Q1: co, ile, jak często + status ostatniej dostawy. */
+    const exch = (t.exchanges ?? []).map(x =>
+      '<div class="da-meta da-exch" data-exch-status="' + x.status + '">' + esc(x.text) +
+      '<br><span class="da-exch-st" style="' + (x.status === 'fail' ? 'color:#ff8a80;font-weight:700' : '') + '">' +
+      esc(x.statusText) + '</span></div>',
+    ).join('');
+    const freq = t.frequencyLabel ? '<div class="da-meta da-freq">' + esc(t.frequencyLabel) + '</div>' : '';
     const dealId = t.id;
     const enabled = canBreak && !!dealId;
     const brkTitle = enabled
@@ -1874,7 +1953,7 @@ export function treatiesColumnHtml(
       : 'Zerwij traktat — niedostępne';
     return (
       '<div class="da-treaty">' + icon +
-        '<div><div class="da-nm">' + esc(t.label) + '</div>' + meta + pen + '</div>' +
+        '<div><div class="da-nm">' + esc(t.label) + '</div>' + meta + freq + exch + pen + '</div>' +
         /* Zaległość #2 — ikona rozerwanego ogniwa + podpis „Zerwij traktat" TYLKO na hover. */
         '<span class="da-ttip"><span class="da-ttip-lbl" style="bottom:34px">Zerwij traktat</span>' +
         '<button type="button" class="da-brk" data-deal-id="' + esc(dealId ?? '') + '"' +
@@ -2159,16 +2238,17 @@ function relBreakdownHtml(st: DiplomacyAudienceState): string {
     '<div class="da-rfact"><span class="lbl">' + esc(f.label) + '</span><span class="val">' + fmtVal(f.value, f.perTurn) + '</span></div>',
   ).join('') || '<div class="da-empty">Brak czynników.</div>';
   const atWar = audienceAtWar(st);
-  const relScores = effectiveNastawienieScores(st.zaufanie, st.respekt, atWar);
+  const relScores = effectiveNastawienieScores(st.zaufanie, st.respekt);
   const label = nastawienieLabelFromScore(st.zaufanie, st.respekt, { atWar });
   return (
     '<div class="da-relbreak">' +
       '<div class="da-relcol pos"><h4>Za co Cię lubią</h4>' + posRows + '</div>' +
       '<div class="da-relcol neg"><h4>Za co Cię nie lubią</h4>' + negRows + '</div>' +
-      '<div class="da-relbreak-foot">Stan bieżący: <b>Relacja '
+      '<div class="da-relbreak-foot">Stan bieżący: <b>Relacja z perspektywy gracza '
         + (st.relacjaTotal ?? (st.zaufanie + st.respekt)) + ' / 200</b> · '
         + '<b>Zaufanie ' + relScores.zaufanie + ' / 100</b> · '
-        + '<b>Respekt ' + relScores.respekt + ' / 100</b> · nastawienie: <b>' + esc(label) + '</b></div>' +
+        + '<b>Respekt ' + relScores.respekt + ' / 100</b> · nastawienie: <b>' + esc(label) + '</b>'
+        + warCapNoteHtml(st) + '</div>' +
     '</div>'
   );
 }
@@ -2181,8 +2261,6 @@ function render(): void {
     return;
   }
 
-  const playerBon = cfg.getCivBonusy?.(0) ?? [];
-  const otherBon = cfg.getCivBonusy?.(cfg.ownerId) ?? [];
   const headIc = dipBrandIconHtml('tb-diplomacy', 24, 'dip-ic') ?? '';
   const knownFactionsTab = cfg.onOpenKnownFactions
     ? '<button type="button" class="da-tab da-tab-known">' +
@@ -2205,7 +2283,7 @@ function render(): void {
       '</div>' +
       formalBannerHtml(st) +
       '<div class="da-mainrow">' +
-        playerCardHtml(st, playerBon) +
+        playerCardHtml(st) +
         '<div class="da-center">' +
           '<div class="da-tabs">' + knownFactionsTab +
             '<span class="da-tab on">' + dipBrandIconHtml('tb-diplomacy', 12) + 'Stół negocjacji</span>' +
@@ -2217,7 +2295,7 @@ function render(): void {
           '</div>' +
           relBreakdownHtml(st) +
         '</div>' +
-        otherCardHtml(st, otherBon) +
+        otherCardHtml(st) +
       '</div>' +
       actionBarHtml(st) +
     '</div>';

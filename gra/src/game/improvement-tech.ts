@@ -3,7 +3,8 @@
  * Decyzja Maciej B1-Q1=B (2026-06-29): źródło prawdy bramki = terrain-improvements.json (tech 1:1).
  */
 import terrainJson from '../../data/terrain-improvements.json';
-import { scaleImprovementWorkCost } from './r-stawki-strojenie';
+import { scaleTerrainImprovementWorkCost } from './terrain-improvements';
+import { humanizeId } from './text-names';
 
 export type ImprovementActionTyp = 'wycinka' | 'ulepszenie';
 
@@ -100,9 +101,9 @@ function readMeta(key: string): ImprovementMeta | null {
     : undefined;
   return {
     key,
-    nazwa: row.nazwa ?? key,
+    nazwa: row.nazwa ?? humanizeId(key),
     epoka: row.epoka ?? 1,
-    kosztPraca: scaleImprovementWorkCost(row.koszt_praca ?? 0),
+    kosztPraca: scaleTerrainImprovementWorkCost(row.koszt_praca ?? 0, row.epoka),
     techId: normalizeTech(row.tech ?? null),
     typ,
     clearing,

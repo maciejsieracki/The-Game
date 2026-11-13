@@ -1,0 +1,22 @@
+Buduje produkcyjny artefakt vite -> /tmp/civ-bitwa-etyk-dist-26252-mpy26e (C-001: vite bezposrednio z node_modules, poza npm run build)...
+vite v5.4.21 building for production...
+transforming...
+✓ 954 modules transformed.
+rendering chunks...
+[plugin vite:singlefile] 
+
+[plugin vite:singlefile] Inlining: index-CdeNePDy.js
+computing gzip size...
+../../../../../../../tmp/civ-bitwa-etyk-dist-26252-mpy26e/index.html  70,193.93 kB │ gzip: 48,783.39 kB
+✓ built in 29.91s
+Hook __postBattleSummaryTestDebug obecny w produkcyjnym bundlu (vite build).
+page.evaluate: TypeError: Cannot read properties of undefined (reading 'children')
+    at medalOf (eval at evaluate (:303:30), <anonymous>:7:40)
+    at eval (eval at evaluate (:303:30), <anonymous>:8:16)
+    at UtilityScript.evaluate (<anonymous>:305:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+    at readCorners (/home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/gra/tools/r-bitwa-etykieta-tozsamosc-strony-real-render-test.cjs:149:15)
+    at /home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/gra/tools/r-bitwa-etykieta-tozsamosc-strony-real-render-test.cjs:226:22 {
+  log: []
+}
+EXIT=1

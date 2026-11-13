@@ -29,45 +29,13 @@ Bez obu warunków (co jest normą — Cursor/GPT nie mają koncepcji Workflow z
 `effort` per agent) zostań w tym pliku: role różnicujesz wyłącznie treścią
 promptu, bez parametru effort. Pełne uzasadnienie: playbook C-061.
 
-## Plan Kanban przed pracą (C-063)
+## Rejestr i etapy bez Kanbanu
 
-Każdy nowy lub odnowiony temat The-Game najpierw dostaje kartę na `the-game-real24`.
-Przed pierwszym workerem karta musi zawierać pełny **graf** (nie listę): `topic_id`,
-`GOAL`, binarne kryteria, allowlistę, zależności, worktree, limit rund, wszystkie fazy
-oraz przyszłe `blocked` gates, w tym `OWNER_HOLD`/`DECISION_REQUIRED`. Wszystkie takie
-karty używają jednego profilu `game`; rola jest `process_phase`, a przejście jest
-`transition receipt`, nigdy osobnym profilem per rola. `native_status` nie wyznacza
-następcy.
-
-```text
-[karta] → [Operator] → [Evaluator]
-                         ├─ zarzuty > 0 → [Obrona] → [Final Control]
-                         └─ zarzuty = 0 ───────────→ [Final Control]
-                                                    ├─ PASS + terminal event/readback → [integracja]
-                                                    │                                  → [READY_FOR_DEPLOY]
-                                                    │                                  → [osobna zgoda push/deploy]
-                                                    └─ FAIL | NAPRAW ─┐
-[terminalna P1/P2/P3/P4] -- BLOCK | TIMEOUT | INFRA | ZWIS ──────────┴─> [retry guard R]
-[R] -- round < 5 ─> [Operator: ten sam ID, następna runda]
-[R] -- round = 5 ─> [LIMIT-5-EXCEEDED: blocked]
-[LIMIT-5] -- jawna decyzja ─> [manual resume: ten sam ID/licznik] ─> [Operator]
-[any started phase] -- OWNER_HOLD | DECISION_REQUIRED ─> [blocked successor H]
-[H] -- decyzja/zależność przywrócona ─> [qualified next node]
-[terminal event] → [technical + context readback] → [legal successor]
-[legal successor] → [deterministic idempotency key] → [create once] → [notify] → [wake/dispatch profile game]
-```
-
-Po każdym terminalnym przejściu Kanbana (np. `kanban_complete`, `kanban_block`,
-`review_requested` lub `changes_requested`, gdy kończy bieżącą fazę) z obserwowalnym eventem
-wykonaj technical/context readback karty, eventu, grafu, dispatchu i artefaktów. Z grafu idempotentnie utwórz i
-wybudź wyłącznie legalnego sukcesora: `FAIL`/`NAPRAW`/`BLOCK`/`TIMEOUT`/`INFRA`/`ZWIS`
-idą przez R, guard wybiera retry albo `LIMIT-5-EXCEEDED`, a jawna decyzja wznawia ten
-sam ID bez resetu licznika. Receipt zapisuje `event_id`, `idempotency_key`, oba
-readbacki oraz wyniki `notify` i `wake`; brak legalnego następcy nie może być zgadywany
-z tytułu, raportu ani statusu. Obrona powstaje tylko przy niepustych, konkretnych
-zarzutach. `OWNER_HOLD`/`DECISION_REQUIRED` blokuje tylko przyszłych następców, a
-rozpoczęty worker może dokończyć fazę. Jeśli kwalifikowany następca istnieje, nie wolno
-raportować, że nic nie może ruszyć. Pełny opis: `R-PROC-AUTOBOT.md` §2c.
+Kanban nie jest używany. Prowadź każdy temat w `dyspozycje/autobot/runs/<pełne-ID>/`,
+sprawdzaj realne artefakty i status operatora. Raportuj etap 1–11 według
+`dyspozycje/autobot/runs/README.md`. Brak aktywnego procesu lub wymaganego artefaktu
+oznacza `WSTRZYMANY/BLOCKED` z przyczyną. Po raporcie wykonaj readback i dispatch
+kwalifikowanego następnego etapu.
 
 ## Kolejność czytania na starcie sesji
 
@@ -173,18 +141,34 @@ w tle, równolegle do dalszej pracy orkiestratora.
 ## Obieg
 
 ```text
-Operator GPT-5.6 Luna High
-→ Evaluator GPT-5.6 Luna High
-→ Final Control GPT-5.6 Luna High
-→ integracja orkiestratora GPT-5.6 Luna Medium
+Operator Codex: gpt-6-luna / high
+→ Evaluator Codex: gpt-6-luna / high
+→ [warunkowo] Obrona po konkretnych zarzutach Evaluatora
+→ niezależny Final Control Codex: gpt-6-luna / high
+→ integracja orkiestratora według aktualnie skonfigurowanego routingu
 → READY_FOR_DEPLOY
 → osobna bramka deploy/push
 ```
 
-W dispatchach Codex (`multi_agent_v1`) Operator i Evaluator MUSZĄ jawnie używać
-`model=gpt-5.6-luna` oraz `reasoning_effort=high`; nie wolno polegać na modelu
-odziedziczonym po orkiestratorze. Final Control używa tego samego modelu i effortu,
-a integracja orkiestratora `gpt-5.6-luna` z `reasoning_effort=medium`.
+W dispatchach Codex (`multi_agent_v1`) Operator, Evaluator i Final Control MUSZĄ
+jawnie używać `model=gpt-6-luna` oraz `reasoning_effort=high`; nie wolno
+polegać na modelu odziedziczonym po orkiestratorze. Integrator używa aktualnie
+skonfigurowanego routingu; ta norma nie narzuca mu modelu ani effortu. Routing Obrony
+i Claude pozostaje zgodny z istniejącymi zasadami per środowisko.
+
+Maksymalnie cztery tematy mogą być aktywne jednocześnie. W ramach jednego ID role
+działają sekwencyjnie: Operator → Evaluator → Obrona wyłącznie po zarzutach → niezależny
+Final Control. Kolejny etap rusza dopiero po readbacku artefaktu poprzedniej roli.
+Rezerwuj pozostałe sloty i zasoby na orkiestrację, integrację i blokady. `WAITING` lub
+`BLOCKED` bez aktywnej pracy nie jest statusem aktywnym; nie zgłaszaj „w toku” bez
+potwierdzonej roli lub gotowego artefaktu oczekującego na następny dispatch.
+
+Po Final Control orkiestrator integruje `main` → deploy Robocza → push/readback → cleanup,
+a dopiero po dowodzie etapu 11/11 natychmiast uruchamia następny kwalifikowany temat.
+Deploy wyłącznie procesowy oznacza `N/A` z powodem. Jeśli brak wywoływalnego schedulera,
+zapisuj heartbeat/readback kolejki przy każdym zakończeniu etapu i raporcie statusu;
+nie twierdź, że proces obudzi się sam w tle. Bieżąca kolejka jest w
+`dyspozycje/autobot/KOLEJKA-CODEX-FOUR-TOPICS-20261110.md`.
 
 Przed dispatchiem zapisz pełne ID, `GOAL`, kryteria końca, allowlistę, izolację i plan
 testów. Raport Operatora uruchamia Evaluatora, a `PASS` prowadzi do Final Control.
@@ -235,7 +219,7 @@ adresuje go przy najbliższym wolnym slocie, nie zostawia biernie czekającego. 
 
 Każdy dispatch zapisuje jeden i tylko jeden rekord z allowlistą pól:
 `agent_id`, `temat`, `rola`, `runda`, `start`, `oczekiwany_artefakt`, `ostatni_status`,
-`timestamp_zakonczenia`, `routing_nastepnego_kroku`. Watchdog sprawdza rekordy co minutę
+`timestamp_zakonczenia`, `routing_nastepnego_kroku`. Jeśli dostępny jest wywoływalny scheduler/watchdog, zapisz jego rzeczywisty rytm; w przeciwnym razie wykonuj readback kolejki przy każdym zakończeniu etapu i raporcie statusu, bez deklaracji tła lub przyszłego wybudzenia.
 i wymaga terminalnego raportu albo jawnej klasyfikacji: `completed`, `interrupted`,
 `timeout`, `not_found`, `BLOCK` lub `CLOSED`; brak notyfikacji nie jest stanem oczekiwania.
 `not_found` bez artefaktu daje `BLOCK`, cisza daje `ZWIS`, a timeout daje `TIMEOUT`.
@@ -300,7 +284,7 @@ zmian, bo jest niezależny od projektu.
 | {zestaw-statusow-raportu} | `PASS` · `PASS-WITH-NOTES` · `FAIL` · `BLOCK` · `TIMEOUT` · `INFRA` · `LIMIT-5-EXCEEDED` · `DECISION_REQUIRED` · `INTEGRATION_PENDING` | `R-PROC-AUTOBOT.md` §4 |
 | {model-wykonawcy} / {model-sprawdzajacego} / {model-kontroli-koncowej} — Claude Code, Ścieżka A | Sonnet 5 Medium / Sonnet 5 High / Sonnet 5 High (osobny subagent) | `R-PROC-AUTOBOT.md` §5a; C-062 |
 | — wyjątek graficzny/wizualny | Operator **i** Evaluator → Opus 5 (effort Medium/High); Final Control zostaje Sonnet 5 High | `R-PROC-AUTOBOT.md` §5a, decyzja właściciela 2026-08-22 |
-| — Codex `multi_agent_v1` | Operator/Evaluator/Final Control → `gpt-5.6-luna`, `reasoning_effort=high`; integracja orkiestratora → `gpt-5.6-luna`, `medium` | `R-PROC-AUTOBOT.md` §1, §1a; C-052 |
+| — Codex `multi_agent_v1` | Operator/Evaluator/Final Control → `gpt-6-luna`, `reasoning_effort=high`; integrator uses its current configured route; Defense follows existing per-environment route | `R-PROC-AUTOBOT.md` §1, §1a; decyzja właściciela 2026-11-10 |
 | {liczba-podejsc-przed-eskalacja} | **5 rund** na jedno pełne ID, potem `LIMIT-5-EXCEEDED`; cichy reset = naruszenie | C-050, C-053, `R-PROC-AUTOBOT.md` §3, §3a |
 | {liczba-tematow-rownoleglych} | pula 6 subagentów. **Jeśli watchdog dzieli z nią limit wątków/procesów — efektywna pojemność to 5 tematów**, szósty slot rezerwowany dla watchdoga. **Jeśli działa poza tą pulą — zapisz to jawnie, nie zakładaj domyślnie** | C-060, `R-PROC-AUTOBOT.md` §5 |
 | {czas-do-uznania-zawieszenia} | ok. **7 minut** ciszy = `ZWIS` | `.cursor/rules/subagent-watchdog.mdc`; §„Ledger i watchdog" wyżej |

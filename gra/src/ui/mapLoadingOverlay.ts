@@ -1,6 +1,7 @@
 /**
  * mapLoadingOverlay.ts — panel postępu generacji mapy (DYSPOZYCJA-WYDAJNOSC C2 + C2b).
  */
+import { mapSizeDisplayLabel } from '../util/map-size-display';
 import { CIV_BRAND_SCOPE_VARS, ensureBrandRootTokens } from './brandTokenVars';
 import { MAP_GEN_PHASE_TOTAL } from '../map/mapGenProgress';
 
@@ -168,7 +169,7 @@ function restoreCanvasPointerEvents(): void {
 }
 
 function overlayCopy(opts: MapLoadingOverlayOptions): { title: string; meta: string; hint: string; phaseStart: string } {
-  const sizePart = opts.mapSizeMetric ?? opts.rozmiarLabel;
+  const sizePart = opts.mapSizeMetric ?? mapSizeDisplayLabel(opts.rozmiarLabel);
   if (opts.mode === 'load') {
     // Tylko etykieta zapisu dla gracza — bez ziarna i bez technicznego opisu regeneracji mapy.
     const meta = opts.saveLabel?.trim()

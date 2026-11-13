@@ -1,0 +1,1 @@
+{"tag":"lv-mine","seed":18,"focus":"zywnosc","workers":"forest","turns":20,"firstCutTurn":null,"sumWorkedBefore":266,"sumCut":0,"sumMissed":266,"missedTurns":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"rfOwned0":66,"rfOwnedWorked0":14,"aiRfOwnedFirstLast":[325,256],"aiRfWorkedMax":1,"aiPersistMissedSum":1}

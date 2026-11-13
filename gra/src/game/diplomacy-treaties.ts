@@ -52,6 +52,18 @@ export interface HandelSurowiecCyklicznyItem {
    * `sellerNiedostarczylTuryZRzedu` obu sprzężonych pozycji).
    */
   buyerNieZaplacilTuryZRzedu?: number;
+  /**
+   * R-WEB-DIPLO-ACTIVE-TREATIES-RESOURCE-DEALS-Q1 — wynik OSTATNIEJ tury rozliczenia tej
+   * pozycji (tylko do wyświetlania w kolumnie „Aktywne traktaty"; nie wpływa na zasady
+   * ani liczby). `ok` = dostawa (i zapłata) doszła do skutku; `powod` (gdy !ok) = kto
+   * zawinił: sprzedawca (brak surowca), kupujący (brak środków na zapłatę) albo partner
+   * barteru (atomowość — druga pozycja pary nie miała zapasu).
+   */
+  ostatniaDostawa?: {
+    tura: number;
+    ok: boolean;
+    powod?: 'sprzedawca' | 'kupujacy' | 'partner';
+  };
 }
 
 /**

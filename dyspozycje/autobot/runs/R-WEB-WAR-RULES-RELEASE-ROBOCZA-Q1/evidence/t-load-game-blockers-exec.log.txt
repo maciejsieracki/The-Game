@@ -1,0 +1,28 @@
+-- L1: kolejka niepusta + blokady -> prepareSessionForLoad
+  ok   L1 przed: kolejka odlozonych bitew niepusta
+  ok   L1 przed: koniec tury zablokowany (stan wyjsciowy)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   L1 po load: kolejka wyczyszczona
+  ok   L1 po load: endTurnInProgress/aiCmdResume/aiTurnAwaitingBattle zresetowane
+  ok   L1 po load: canPlayerInitiateEndTurn() === true
+-- L2: otwarty ekran bitwy + kolejka -> prepareSessionForLoad
+  ok   L2 przed: ekran bitwy otwarty
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   L2 po load: ekran bitwy zamkniety
+  ok   L2 po load: kolejka pusta
+  ok   L2 po load: canPlayerInitiateEndTurn() === true
+-- L3: aiTurnAwaitingBattle + aiCmdResume (bez kolejki) -> prepareSessionForLoad
+  info L3 przed (healStale sprząta osierocone flagi): canPlayer=true
+  ok   L3 po load: canPlayerInitiateEndTurn() === true
+-- K1: kontrola bez wczytania -- blokada musi zostac
+  ok   K1 bez load: koniec tury nadal zablokowany (kolejka+blokady)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   K1b bez load: otwarty ekran bitwy blokuje (legalna blokada)
+-- mutacje (kazda musi czerwienic swoj scenariusz)
+  ok   M3 (bez aiCmdResume=null) RÓWNOWAZNA: po load nadal odblokowane (healStale)
+  ok   mutacja M1 bez clearDeferredAutoPreBattleQueue czerwieni L1
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   mutacja M2 bez hidePreBattle czerwieni L2
+load-blockers-exec: 15 PASS / 0 FAIL
+EXIT=0

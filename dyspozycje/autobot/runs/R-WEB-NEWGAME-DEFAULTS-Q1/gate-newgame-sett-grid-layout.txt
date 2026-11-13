@@ -1,0 +1,34 @@
+[newgame-sett-grid-layout-test] budowanie bundla (vite build, wyłącznie dozwolona komenda z CLAUDE.md)...
+[newgame-sett-grid-layout-test] build OK.
+[newgame-sett-grid-layout-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+
+-- Scenariusz 1: stan domyślny (1920x1080) --
+ FAIL [domyślne, 1920x1080] dokładnie 6 kart bezpośrednio w .sett-grid (hipoteza (a): brak owijającego kontenera)
+ FAIL [domyślne, 1920x1080] pomiar kart niekompletny — reszta asercji geometrii pominięta
+
+-- Scenariusz 2: Rozmiar mapy = "Super Huge" (najdłuższa etykieta wartości) --
+  OK  [Super Huge] wartość faktycznie zmieniona na "Super Huge" (kontrola sensu scenariusza)
+ FAIL [Rozmiar mapy = Super Huge] dokładnie 6 kart bezpośrednio w .sett-grid (hipoteza (a): brak owijającego kontenera)
+ FAIL [Rozmiar mapy = Super Huge] pomiar kart niekompletny — reszta asercji geometrii pominięta
+
+-- Scenariusz 3: 5 cywilizacji AI zaznaczonych (panel przewijany) --
+ FAIL [5 cywilizacji AI zaznaczonych] dokładnie 6 kart bezpośrednio w .sett-grid (hipoteza (a): brak owijającego kontenera)
+ FAIL [5 cywilizacji AI zaznaczonych] pomiar kart niekompletny — reszta asercji geometrii pominięta
+  OK  [5 AI] .ai-civ-panel NIE rośnie ponad wysokość .sett-grid (przewija się wewnątrz, nie rozpycha layoutu)
+
+-- Scenariusz 4 (viewport węższy, bez rebuildu — ten sam bundle): 1366x768 --
+ FAIL [1366x768] dokładnie 6 kart bezpośrednio w .sett-grid (hipoteza (a): brak owijającego kontenera)
+ FAIL [1366x768] pomiar kart niekompletny — reszta asercji geometrii pominięta
+
+-- Dowód mutacyjny A: wydłużona etykieta w JEDNEJ karcie wiersza — stretch MUSI wyrównać wysokości --
+  OK  [mutacja A] treść faktycznie wydłużona (kontrola sensu scenariusza)
+  OK  [mutacja A] mimo różnej długości treści, align-items:stretch WYMUSZA identyczną wysokość obu kart wiersza
+
+-- Dowód mutacyjny B1: sam regres align-items:start (na żywo, bez ruszania .srow) --
+  OK  [mutacja B1] sam align-items:start NIE rozjeżdża wysokości — warstwa obrony 2 (.srow{height:100%}) działa niezależnie od warstwy 1
+
+-- Dowód mutacyjny B2: align-items:start + zniesienie .srow height:100% RAZEM — asercja MUSI złapać rozjazd --
+  OK  [mutacja B2] ze złamaniem OBU warstw naraz, wysokości wiersza 1 FAKTYCZNIE się rozjeżdżają (dowód, że asercja "ta sama wysokość" wyżej ma siłę wykrywającą, nie jest tautologią)
+
+6 pass · 8 fail
+EXIT=1

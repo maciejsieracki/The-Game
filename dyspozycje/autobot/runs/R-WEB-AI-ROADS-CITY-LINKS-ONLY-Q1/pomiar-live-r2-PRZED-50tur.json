@@ -1,0 +1,528 @@
+{
+  "tag": "przed",
+  "turns": [
+    {
+      "ok": true,
+      "ms": 9116,
+      "turn": 2,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 6555,
+      "turn": 3,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 6859,
+      "turn": 4,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 6967,
+      "turn": 5,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 6492,
+      "turn": 6,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 6588,
+      "turn": 7,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 7390,
+      "turn": 8,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 6570,
+      "turn": 9,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 7409,
+      "turn": 10,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 6918,
+      "turn": 11,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 7433,
+      "turn": 12,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 9379,
+      "turn": 13,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 8157,
+      "turn": 14,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 7294,
+      "turn": 15,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 7038,
+      "turn": 16,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 7262,
+      "turn": 17,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 7291,
+      "turn": 18,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 7556,
+      "turn": 19,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 7740,
+      "turn": 20,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 7853,
+      "turn": 21,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 7899,
+      "turn": 22,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 5824,
+      "turn": 23,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 5356,
+      "turn": 24,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 5685,
+      "turn": 25,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 5544,
+      "turn": 26,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 6006,
+      "turn": 27,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 5754,
+      "turn": 28,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 6894,
+      "turn": 29,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 5941,
+      "turn": 30,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 6065,
+      "turn": 31,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 5849,
+      "turn": 32,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 6773,
+      "turn": 33,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 7810,
+      "turn": 34,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 7409,
+      "turn": 35,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 7730,
+      "turn": 36,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 8094,
+      "turn": 37,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 8859,
+      "turn": 38,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 9329,
+      "turn": 39,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 9373,
+      "turn": 40,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 9731,
+      "turn": 41,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 9497,
+      "turn": 42,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 9938,
+      "turn": 43,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 10395,
+      "turn": 44,
+      "roads": 0,
+      "byOwner": {},
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 10624,
+      "turn": 45,
+      "roads": 26,
+      "byOwner": {
+        "0": 26
+      },
+      "tri": 0,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 11388,
+      "turn": 46,
+      "roads": 66,
+      "byOwner": {
+        "0": 66
+      },
+      "tri": 95,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 11220,
+      "turn": 47,
+      "roads": 80,
+      "byOwner": {
+        "0": 80
+      },
+      "tri": 121,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 10693,
+      "turn": 48,
+      "roads": 93,
+      "byOwner": {
+        "0": 93
+      },
+      "tri": 142,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 10740,
+      "turn": 49,
+      "roads": 93,
+      "byOwner": {
+        "0": 93
+      },
+      "tri": 142,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 10891,
+      "turn": 50,
+      "roads": 93,
+      "byOwner": {
+        "0": 93
+      },
+      "tri": 142,
+      "dead": 0,
+      "cities": 5
+    },
+    {
+      "ok": true,
+      "ms": 11062,
+      "turn": 51,
+      "roads": 93,
+      "byOwner": {
+        "0": 93
+      },
+      "tri": 142,
+      "dead": 0,
+      "cities": 5
+    }
+  ],
+  "start": {
+    "seedSeen": 7,
+    "mapLog": "[NewGame] Mapa: 76x52 seed=7 typ=kontynenty rywale=4 typy=5",
+    "genMs": 12629
+  },
+  "setup": {
+    "cities": 5
+  },
+  "pageErrors": []
+}

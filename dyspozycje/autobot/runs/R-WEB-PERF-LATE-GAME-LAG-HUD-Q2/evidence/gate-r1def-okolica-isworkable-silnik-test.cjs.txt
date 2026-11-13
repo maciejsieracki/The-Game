@@ -1,0 +1,28 @@
+
+-- P-HEKS-ISWORKABLE: silnik wyklucza Gory/Morze, stare reczne zapisy nie licza sie bez migracji --
+
+1. tryb AUTO — silnik (cityWorkedTilesForEconomy) wyklucza Gory pod fokusem "produkcja"
+PASS: 1 centrum + 6 robotnikow (pop=6) (got 7, want 7)
+PASS: silnik: ZERO przypisanych pol na Gorach mimo fokusu "produkcja" (Praca=4, najwyzsza w grze)
+PASS: kontrola: BEZ filtra terenu ten sam scenariusz WYBIERA Gory (dowod ze test jest czuly na regresje)
+
+2. tryb AUTO — silnik (workedHexCoordsForCity) wyklucza Morze pod fokusem "podatki"
+PASS: 1 robotnik (pop=1) (got 1, want 1)
+PASS: silnik: heks Morza (3,0) NIE wybrany mimo fokusu "podatki" (Podatek=2 > Rownina=1)
+
+3. tryb RECZNY — STARY zapis: silnik NIE liczy produkcji z nielegalnych pol (bez migracji)
+PASS: 1 centrum + 3 legalne pola licza sie do produkcji (2 z 5 wpisow nielegalne, pomijane) (got 4, want 4)
+PASS: zero pol Gor w wyniku silnika mimo wpisu w okolicaReczne
+PASS: zero pol Morza w wyniku silnika mimo wpisu w okolicaReczne
+PASS: suma Pracy/ture = 8 pkt (centrum 2 + 3 legalne pola x2 Praca kazde, Gory/Morze pominiete) (got 8, want 8)
+PASS: workedHexCoordsForCity: rowniez tylko 3 legalne pola (parytet z cityWorkedTilesForEconomy) (got 3, want 3)
+PASS: okolicaReczne wciaz ten sam obiekt po odczycie przez silnik (got {"2,0":1,"0,2":1,"-2,0":1,"1,0":1,"3,0":1}, want {"2,0":1,"0,2":1,"-2,0":1,"1,0":1,"3,0":1})
+PASS: okolicaReczne zawartosc niezmieniona (5 wpisow, w tym Gory+Morze, nadal obecne w danych) (got "{\"2,0\":1,\"0,2\":1,\"-2,0\":1,\"1,0\":1,\"3,0\":1}", want "{\"2,0\":1,\"0,2\":1,\"-2,0\":1,\"1,0\":1,\"3,0\":1}")
+
+4. isLandWorkableHex — parytet bezposredni z terenem uzytym w silniku powyzej
+PASS: Rownina (2,0) -> workable (zgodne z Sekcja 3) (got true, want true)
+PASS: Gory (1,0) -> NIE workable (zgodne z Sekcja 3) (got false, want false)
+PASS: Morze (3,0) -> NIE workable (zgodne z Sekcja 3) (got false, want false)
+
+OKOLICA-ISWORKABLE-SILNIK OK (15/15)
+EXIT=0

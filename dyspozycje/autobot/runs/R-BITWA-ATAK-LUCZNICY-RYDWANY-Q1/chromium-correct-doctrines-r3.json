@@ -1,0 +1,10930 @@
+{
+  "roster": {
+    "attacker": 28,
+    "defender": 28,
+    "ranged": 30,
+    "mounted": 16,
+    "hasRanged": true,
+    "hasMounted": true,
+    "atk": [
+      {
+        "id": "atk0",
+        "name": "Hastati",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          30,
+          73
+        ]
+      },
+      {
+        "id": "atk1",
+        "name": "Hastati",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          30,
+          74
+        ]
+      },
+      {
+        "id": "atk2",
+        "name": "Hastati",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          30,
+          75
+        ]
+      },
+      {
+        "id": "atk3",
+        "name": "Hastati",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          30,
+          76
+        ]
+      },
+      {
+        "id": "atk4",
+        "name": "Hastati",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          30,
+          77
+        ]
+      },
+      {
+        "id": "atk5",
+        "name": "Hastati",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          30,
+          78
+        ]
+      },
+      {
+        "id": "atk6",
+        "name": "Hastati",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          30,
+          79
+        ]
+      },
+      {
+        "id": "atk7",
+        "name": "Hastati",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          30,
+          80
+        ]
+      },
+      {
+        "id": "atk8",
+        "name": "Hastati",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          30,
+          81
+        ]
+      },
+      {
+        "id": "atk9",
+        "name": "Hastati",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          30,
+          83
+        ]
+      },
+      {
+        "id": "atk10",
+        "name": "Archer",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          29,
+          73
+        ]
+      },
+      {
+        "id": "atk11",
+        "name": "Archer",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          29,
+          74
+        ]
+      },
+      {
+        "id": "atk12",
+        "name": "Archer",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          29,
+          75
+        ]
+      },
+      {
+        "id": "atk13",
+        "name": "Archer",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          29,
+          76
+        ]
+      },
+      {
+        "id": "atk14",
+        "name": "Archer",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          29,
+          77
+        ]
+      },
+      {
+        "id": "atk15",
+        "name": "Archer",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          29,
+          78
+        ]
+      },
+      {
+        "id": "atk16",
+        "name": "Archer",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          29,
+          79
+        ]
+      },
+      {
+        "id": "atk17",
+        "name": "Archer",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          29,
+          80
+        ]
+      },
+      {
+        "id": "atk18",
+        "name": "Archer",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          29,
+          81
+        ]
+      },
+      {
+        "id": "atk19",
+        "name": "Archer",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          29,
+          82
+        ]
+      },
+      {
+        "id": "atk20",
+        "name": "Horseman",
+        "ranged": false,
+        "mounted": true,
+        "pos": [
+          31,
+          78
+        ]
+      },
+      {
+        "id": "atk21",
+        "name": "Horseman",
+        "ranged": false,
+        "mounted": true,
+        "pos": [
+          31,
+          76
+        ]
+      },
+      {
+        "id": "atk22",
+        "name": "Horseman",
+        "ranged": false,
+        "mounted": true,
+        "pos": [
+          31,
+          79
+        ]
+      },
+      {
+        "id": "atk23",
+        "name": "Horseman",
+        "ranged": false,
+        "mounted": true,
+        "pos": [
+          31,
+          75
+        ]
+      },
+      {
+        "id": "atk24",
+        "name": "Horseman",
+        "ranged": false,
+        "mounted": true,
+        "pos": [
+          31,
+          80
+        ]
+      },
+      {
+        "id": "atk25",
+        "name": "Horseman",
+        "ranged": false,
+        "mounted": true,
+        "pos": [
+          31,
+          74
+        ]
+      },
+      {
+        "id": "atk26",
+        "name": "Horseman",
+        "ranged": false,
+        "mounted": true,
+        "pos": [
+          30,
+          82
+        ]
+      },
+      {
+        "id": "atk27",
+        "name": "Horseman",
+        "ranged": false,
+        "mounted": true,
+        "pos": [
+          31,
+          73
+        ]
+      }
+    ],
+    "def": [
+      {
+        "id": "def0",
+        "name": "Phalanx",
+        "ranged": false,
+        "mounted": false,
+        "pos": [
+          36,
+          72
+        ]
+      },
+      {
+        "id": "def1",
+        "name": "Phalanx",
+        "ranged": false,
+        "mounted": false,
+        "pos": [
+          36,
+          73
+        ]
+      },
+      {
+        "id": "def2",
+        "name": "Phalanx",
+        "ranged": false,
+        "mounted": false,
+        "pos": [
+          36,
+          74
+        ]
+      },
+      {
+        "id": "def3",
+        "name": "Phalanx",
+        "ranged": false,
+        "mounted": false,
+        "pos": [
+          36,
+          75
+        ]
+      },
+      {
+        "id": "def4",
+        "name": "Phalanx",
+        "ranged": false,
+        "mounted": false,
+        "pos": [
+          36,
+          76
+        ]
+      },
+      {
+        "id": "def5",
+        "name": "Phalanx",
+        "ranged": false,
+        "mounted": false,
+        "pos": [
+          36,
+          77
+        ]
+      },
+      {
+        "id": "def6",
+        "name": "Phalanx",
+        "ranged": false,
+        "mounted": false,
+        "pos": [
+          36,
+          78
+        ]
+      },
+      {
+        "id": "def7",
+        "name": "Phalanx",
+        "ranged": false,
+        "mounted": false,
+        "pos": [
+          36,
+          79
+        ]
+      },
+      {
+        "id": "def8",
+        "name": "Phalanx",
+        "ranged": false,
+        "mounted": false,
+        "pos": [
+          36,
+          80
+        ]
+      },
+      {
+        "id": "def9",
+        "name": "Phalanx",
+        "ranged": false,
+        "mounted": false,
+        "pos": [
+          36,
+          81
+        ]
+      },
+      {
+        "id": "def10",
+        "name": "Archer",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          37,
+          72
+        ]
+      },
+      {
+        "id": "def11",
+        "name": "Archer",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          37,
+          73
+        ]
+      },
+      {
+        "id": "def12",
+        "name": "Archer",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          37,
+          74
+        ]
+      },
+      {
+        "id": "def13",
+        "name": "Archer",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          37,
+          75
+        ]
+      },
+      {
+        "id": "def14",
+        "name": "Archer",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          37,
+          76
+        ]
+      },
+      {
+        "id": "def15",
+        "name": "Archer",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          37,
+          77
+        ]
+      },
+      {
+        "id": "def16",
+        "name": "Archer",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          37,
+          78
+        ]
+      },
+      {
+        "id": "def17",
+        "name": "Archer",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          37,
+          79
+        ]
+      },
+      {
+        "id": "def18",
+        "name": "Archer",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          37,
+          80
+        ]
+      },
+      {
+        "id": "def19",
+        "name": "Archer",
+        "ranged": true,
+        "mounted": false,
+        "pos": [
+          37,
+          81
+        ]
+      },
+      {
+        "id": "def20",
+        "name": "Horseman",
+        "ranged": false,
+        "mounted": true,
+        "pos": [
+          36,
+          71
+        ]
+      },
+      {
+        "id": "def21",
+        "name": "Horseman",
+        "ranged": false,
+        "mounted": true,
+        "pos": [
+          36,
+          82
+        ]
+      },
+      {
+        "id": "def22",
+        "name": "Horseman",
+        "ranged": false,
+        "mounted": true,
+        "pos": [
+          36,
+          70
+        ]
+      },
+      {
+        "id": "def23",
+        "name": "Horseman",
+        "ranged": false,
+        "mounted": true,
+        "pos": [
+          36,
+          83
+        ]
+      },
+      {
+        "id": "def24",
+        "name": "Horseman",
+        "ranged": false,
+        "mounted": true,
+        "pos": [
+          36,
+          69
+        ]
+      },
+      {
+        "id": "def25",
+        "name": "Horseman",
+        "ranged": false,
+        "mounted": true,
+        "pos": [
+          36,
+          84
+        ]
+      },
+      {
+        "id": "def26",
+        "name": "Horseman",
+        "ranged": false,
+        "mounted": true,
+        "pos": [
+          37,
+          71
+        ]
+      },
+      {
+        "id": "def27",
+        "name": "Horseman",
+        "ranged": false,
+        "mounted": true,
+        "pos": [
+          37,
+          82
+        ]
+      }
+    ]
+  },
+  "roundTwo": {
+    "round": 2,
+    "manual": false,
+    "finished": false,
+    "actions": [
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          31,
+          78
+        ],
+        "to": [
+          32,
+          78
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          78
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          32,
+          78
+        ],
+        "to": [
+          33,
+          78
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          33,
+          78
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          33,
+          78
+        ],
+        "to": [
+          34,
+          78
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          78
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          78
+        ],
+        "to": [
+          34,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          79
+        ],
+        "to": [
+          34,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          31,
+          76
+        ],
+        "to": [
+          32,
+          76
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          76
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          32,
+          76
+        ],
+        "to": [
+          32,
+          75
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          75
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          32,
+          75
+        ],
+        "to": [
+          32,
+          74
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          74
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          32,
+          74
+        ],
+        "to": [
+          32,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          73
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          32,
+          73
+        ],
+        "to": [
+          32,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          31,
+          79
+        ],
+        "to": [
+          32,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          32,
+          79
+        ],
+        "to": [
+          33,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          33,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          33,
+          79
+        ],
+        "to": [
+          34,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          34,
+          79
+        ],
+        "to": [
+          34,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          31,
+          75
+        ],
+        "to": [
+          32,
+          75
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          75
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          32,
+          75
+        ],
+        "to": [
+          32,
+          74
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          74
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          32,
+          74
+        ],
+        "to": [
+          32,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          73
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          32,
+          73
+        ],
+        "to": [
+          32,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          32,
+          72
+        ],
+        "to": [
+          32,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          31,
+          80
+        ],
+        "to": [
+          32,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          32,
+          80
+        ],
+        "to": [
+          33,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          33,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          33,
+          80
+        ],
+        "to": [
+          34,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          34,
+          80
+        ],
+        "to": [
+          34,
+          81
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          81
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          31,
+          74
+        ],
+        "to": [
+          32,
+          74
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          74
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          32,
+          74
+        ],
+        "to": [
+          32,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          73
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          32,
+          73
+        ],
+        "to": [
+          32,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          32,
+          72
+        ],
+        "to": [
+          32,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          32,
+          71
+        ],
+        "to": [
+          33,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          33,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk26",
+        "from": [
+          30,
+          82
+        ],
+        "to": [
+          31,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          31,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk26",
+        "from": [
+          31,
+          82
+        ],
+        "to": [
+          32,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk26",
+        "from": [
+          32,
+          82
+        ],
+        "to": [
+          33,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          33,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk26",
+        "from": [
+          33,
+          82
+        ],
+        "to": [
+          34,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk26",
+        "from": [
+          34,
+          82
+        ],
+        "to": [
+          35,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          35,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          31,
+          73
+        ],
+        "to": [
+          31,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          31,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          31,
+          72
+        ],
+        "to": [
+          31,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          31,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          31,
+          71
+        ],
+        "to": [
+          32,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          32,
+          71
+        ],
+        "to": [
+          33,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          33,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          33,
+          71
+        ],
+        "to": [
+          34,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          34,
+          71
+        ],
+        "to": [
+          35,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          35,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          31,
+          78
+        ],
+        "to": [
+          32,
+          78
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          78
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          31,
+          76
+        ],
+        "to": [
+          32,
+          76
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          76
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          31,
+          79
+        ],
+        "to": [
+          32,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          31,
+          80
+        ],
+        "to": [
+          32,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk26",
+        "from": [
+          30,
+          82
+        ],
+        "to": [
+          31,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          31,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          32,
+          78
+        ],
+        "to": [
+          33,
+          78
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          33,
+          78
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          32,
+          76
+        ],
+        "to": [
+          32,
+          75
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          75
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          32,
+          79
+        ],
+        "to": [
+          33,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          33,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          32,
+          80
+        ],
+        "to": [
+          33,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          33,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk26",
+        "from": [
+          31,
+          82
+        ],
+        "to": [
+          32,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          33,
+          78
+        ],
+        "to": [
+          34,
+          78
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          78
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          32,
+          75
+        ],
+        "to": [
+          32,
+          74
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          74
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk26",
+        "from": [
+          32,
+          82
+        ],
+        "to": [
+          33,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          33,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          78
+        ],
+        "to": [
+          34,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          32,
+          74
+        ],
+        "to": [
+          32,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          73
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk26",
+        "from": [
+          33,
+          82
+        ],
+        "to": [
+          34,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          79
+        ],
+        "to": [
+          34,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk26",
+        "from": [
+          34,
+          82
+        ],
+        "to": [
+          35,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          35,
+          82
+        ]
+      },
+      {
+        "type": "shot-start",
+        "id": "def18",
+        "targetId": "atk20",
+        "ammo": 12,
+        "targetHp": 56,
+        "at": [
+          37,
+          80
+        ],
+        "targetAt": [
+          34,
+          80
+        ],
+        "round": 1,
+        "doctrine": "defensive"
+      },
+      {
+        "type": "shot-start",
+        "id": "def19",
+        "targetId": "atk26",
+        "ammo": 12,
+        "targetHp": 56,
+        "at": [
+          37,
+          81
+        ],
+        "targetAt": [
+          35,
+          82
+        ],
+        "round": 1,
+        "doctrine": "defensive"
+      },
+      {
+        "type": "shot-complete",
+        "id": "def18",
+        "targetId": "atk20",
+        "ammo": 12,
+        "targetHp": 56,
+        "at": [
+          37,
+          80
+        ],
+        "targetAt": [
+          34,
+          80
+        ],
+        "round": 1,
+        "doctrine": "defensive",
+        "ammoAfter": 11,
+        "targetHpAfter": 56
+      },
+      {
+        "type": "shot-complete",
+        "id": "def19",
+        "targetId": "atk26",
+        "ammo": 12,
+        "targetHp": 56,
+        "at": [
+          37,
+          81
+        ],
+        "targetAt": [
+          35,
+          82
+        ],
+        "round": 1,
+        "doctrine": "defensive",
+        "ammoAfter": 11,
+        "targetHpAfter": 56
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          80
+        ],
+        "to": [
+          34,
+          81
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          34,
+          81
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          81
+        ],
+        "to": [
+          34,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          34,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          82
+        ],
+        "to": [
+          34,
+          81
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          34,
+          81
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          81
+        ],
+        "to": [
+          34,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          34,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          32,
+          73
+        ],
+        "to": [
+          33,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          73
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          33,
+          73
+        ],
+        "to": [
+          33,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          33,
+          72
+        ],
+        "to": [
+          33,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          33,
+          71
+        ],
+        "to": [
+          34,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          34,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          34,
+          71
+        ],
+        "to": [
+          35,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          35,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          33,
+          79
+        ],
+        "to": [
+          34,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          34,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          34,
+          79
+        ],
+        "to": [
+          35,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          35,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          35,
+          79
+        ],
+        "to": [
+          35,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          35,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          31,
+          75
+        ],
+        "to": [
+          32,
+          75
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          32,
+          75
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          32,
+          75
+        ],
+        "to": [
+          32,
+          74
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          32,
+          74
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          32,
+          74
+        ],
+        "to": [
+          33,
+          74
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          74
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          33,
+          74
+        ],
+        "to": [
+          33,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          73
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          33,
+          73
+        ],
+        "to": [
+          33,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          33,
+          80
+        ],
+        "to": [
+          33,
+          81
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          81
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          33,
+          81
+        ],
+        "to": [
+          34,
+          81
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          34,
+          81
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          34,
+          81
+        ],
+        "to": [
+          34,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          34,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          34,
+          82
+        ],
+        "to": [
+          34,
+          81
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          34,
+          81
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          31,
+          74
+        ],
+        "to": [
+          32,
+          74
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          32,
+          74
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          32,
+          74
+        ],
+        "to": [
+          33,
+          74
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          74
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          33,
+          74
+        ],
+        "to": [
+          33,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          73
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          33,
+          73
+        ],
+        "to": [
+          33,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          33,
+          72
+        ],
+        "to": [
+          33,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          31,
+          73
+        ],
+        "to": [
+          31,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          31,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          31,
+          72
+        ],
+        "to": [
+          31,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          31,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          31,
+          71
+        ],
+        "to": [
+          32,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          32,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          32,
+          71
+        ],
+        "to": [
+          33,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          33,
+          71
+        ],
+        "to": [
+          34,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          34,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          34,
+          71
+        ],
+        "to": [
+          35,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          35,
+          71
+        ]
+      }
+    ],
+    "ranged": [
+      {
+        "id": "atk0",
+        "ammo": 2,
+        "hp": 38,
+        "pos": [
+          33,
+          72
+        ],
+        "acted": false
+      },
+      {
+        "id": "atk1",
+        "ammo": 2,
+        "hp": 38,
+        "pos": [
+          30,
+          72
+        ],
+        "acted": false
+      },
+      {
+        "id": "atk2",
+        "ammo": 2,
+        "hp": 38,
+        "pos": [
+          32,
+          77
+        ],
+        "acted": false
+      },
+      {
+        "id": "atk3",
+        "ammo": 2,
+        "hp": 38,
+        "pos": [
+          31,
+          76
+        ],
+        "acted": false
+      },
+      {
+        "id": "atk4",
+        "ammo": 2,
+        "hp": 38,
+        "pos": [
+          30,
+          76
+        ],
+        "acted": false
+      },
+      {
+        "id": "atk5",
+        "ammo": 2,
+        "hp": 38,
+        "pos": [
+          31,
+          78
+        ],
+        "acted": false
+      },
+      {
+        "id": "atk6",
+        "ammo": 2,
+        "hp": 38,
+        "pos": [
+          30,
+          78
+        ],
+        "acted": true
+      },
+      {
+        "id": "atk7",
+        "ammo": 2,
+        "hp": 38,
+        "pos": [
+          33,
+          81
+        ],
+        "acted": false
+      },
+      {
+        "id": "atk8",
+        "ammo": 2,
+        "hp": 38,
+        "pos": [
+          31,
+          81
+        ],
+        "acted": false
+      },
+      {
+        "id": "atk9",
+        "ammo": 2,
+        "hp": 38,
+        "pos": [
+          34,
+          83
+        ],
+        "acted": false
+      },
+      {
+        "id": "atk10",
+        "ammo": 12,
+        "hp": 16,
+        "pos": [
+          29,
+          71
+        ],
+        "acted": false
+      },
+      {
+        "id": "atk11",
+        "ammo": 12,
+        "hp": 16,
+        "pos": [
+          29,
+          74
+        ],
+        "acted": false
+      },
+      {
+        "id": "atk12",
+        "ammo": 12,
+        "hp": 16,
+        "pos": [
+          30,
+          75
+        ],
+        "acted": true
+      },
+      {
+        "id": "atk13",
+        "ammo": 12,
+        "hp": 16,
+        "pos": [
+          29,
+          76
+        ],
+        "acted": true
+      },
+      {
+        "id": "atk14",
+        "ammo": 12,
+        "hp": 16,
+        "pos": [
+          29,
+          77
+        ],
+        "acted": true
+      },
+      {
+        "id": "atk15",
+        "ammo": 12,
+        "hp": 16,
+        "pos": [
+          29,
+          77
+        ],
+        "acted": true
+      },
+      {
+        "id": "atk16",
+        "ammo": 12,
+        "hp": 16,
+        "pos": [
+          29,
+          79
+        ],
+        "acted": false
+      },
+      {
+        "id": "atk17",
+        "ammo": 12,
+        "hp": 16,
+        "pos": [
+          30,
+          80
+        ],
+        "acted": true
+      },
+      {
+        "id": "atk18",
+        "ammo": 12,
+        "hp": 16,
+        "pos": [
+          30,
+          81
+        ],
+        "acted": false
+      },
+      {
+        "id": "atk19",
+        "ammo": 12,
+        "hp": 16,
+        "pos": [
+          29,
+          81
+        ],
+        "acted": true
+      },
+      {
+        "id": "def10",
+        "ammo": 12,
+        "hp": 16,
+        "pos": [
+          37,
+          72
+        ],
+        "acted": false
+      },
+      {
+        "id": "def11",
+        "ammo": 12,
+        "hp": 16,
+        "pos": [
+          37,
+          73
+        ],
+        "acted": false
+      },
+      {
+        "id": "def12",
+        "ammo": 12,
+        "hp": 16,
+        "pos": [
+          37,
+          74
+        ],
+        "acted": false
+      },
+      {
+        "id": "def13",
+        "ammo": 12,
+        "hp": 16,
+        "pos": [
+          37,
+          75
+        ],
+        "acted": false
+      },
+      {
+        "id": "def14",
+        "ammo": 12,
+        "hp": 16,
+        "pos": [
+          37,
+          76
+        ],
+        "acted": false
+      },
+      {
+        "id": "def15",
+        "ammo": 12,
+        "hp": 16,
+        "pos": [
+          37,
+          77
+        ],
+        "acted": false
+      },
+      {
+        "id": "def16",
+        "ammo": 12,
+        "hp": 16,
+        "pos": [
+          37,
+          78
+        ],
+        "acted": false
+      },
+      {
+        "id": "def17",
+        "ammo": 12,
+        "hp": 16,
+        "pos": [
+          37,
+          79
+        ],
+        "acted": false
+      },
+      {
+        "id": "def18",
+        "ammo": 11,
+        "hp": 16,
+        "pos": [
+          37,
+          80
+        ],
+        "acted": false
+      },
+      {
+        "id": "def19",
+        "ammo": 11,
+        "hp": 16,
+        "pos": [
+          37,
+          81
+        ],
+        "acted": false
+      }
+    ],
+    "mounted": [
+      {
+        "id": "atk20",
+        "hp": 56,
+        "pos": [
+          34,
+          80
+        ],
+        "acted": true
+      },
+      {
+        "id": "atk21",
+        "hp": 56,
+        "pos": [
+          33,
+          73
+        ],
+        "acted": false
+      },
+      {
+        "id": "atk22",
+        "hp": 56,
+        "pos": [
+          34,
+          79
+        ],
+        "acted": false
+      },
+      {
+        "id": "atk23",
+        "hp": 56,
+        "pos": [
+          32,
+          75
+        ],
+        "acted": false
+      },
+      {
+        "id": "atk24",
+        "hp": 56,
+        "pos": [
+          33,
+          80
+        ],
+        "acted": true
+      },
+      {
+        "id": "atk25",
+        "hp": 56,
+        "pos": [
+          31,
+          74
+        ],
+        "acted": true
+      },
+      {
+        "id": "atk26",
+        "hp": 56,
+        "pos": [
+          35,
+          82
+        ],
+        "acted": false
+      },
+      {
+        "id": "atk27",
+        "hp": 56,
+        "pos": [
+          31,
+          72
+        ],
+        "acted": false
+      },
+      {
+        "id": "def20",
+        "hp": 56,
+        "pos": [
+          36,
+          71
+        ],
+        "acted": false
+      },
+      {
+        "id": "def21",
+        "hp": 56,
+        "pos": [
+          36,
+          82
+        ],
+        "acted": false
+      },
+      {
+        "id": "def22",
+        "hp": 56,
+        "pos": [
+          36,
+          70
+        ],
+        "acted": false
+      },
+      {
+        "id": "def23",
+        "hp": 56,
+        "pos": [
+          36,
+          83
+        ],
+        "acted": false
+      },
+      {
+        "id": "def24",
+        "hp": 56,
+        "pos": [
+          36,
+          69
+        ],
+        "acted": false
+      },
+      {
+        "id": "def25",
+        "hp": 56,
+        "pos": [
+          36,
+          84
+        ],
+        "acted": false
+      },
+      {
+        "id": "def26",
+        "hp": 56,
+        "pos": [
+          37,
+          71
+        ],
+        "acted": false
+      },
+      {
+        "id": "def27",
+        "hp": 56,
+        "pos": [
+          37,
+          82
+        ],
+        "acted": false
+      }
+    ]
+  },
+  "final": {
+    "round": 4,
+    "manual": false,
+    "finished": false,
+    "actions": [
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          31,
+          78
+        ],
+        "to": [
+          32,
+          78
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          78
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          32,
+          78
+        ],
+        "to": [
+          33,
+          78
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          33,
+          78
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          33,
+          78
+        ],
+        "to": [
+          34,
+          78
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          78
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          78
+        ],
+        "to": [
+          34,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          79
+        ],
+        "to": [
+          34,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          31,
+          76
+        ],
+        "to": [
+          32,
+          76
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          76
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          32,
+          76
+        ],
+        "to": [
+          32,
+          75
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          75
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          32,
+          75
+        ],
+        "to": [
+          32,
+          74
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          74
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          32,
+          74
+        ],
+        "to": [
+          32,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          73
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          32,
+          73
+        ],
+        "to": [
+          32,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          31,
+          79
+        ],
+        "to": [
+          32,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          32,
+          79
+        ],
+        "to": [
+          33,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          33,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          33,
+          79
+        ],
+        "to": [
+          34,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          34,
+          79
+        ],
+        "to": [
+          34,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          31,
+          75
+        ],
+        "to": [
+          32,
+          75
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          75
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          32,
+          75
+        ],
+        "to": [
+          32,
+          74
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          74
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          32,
+          74
+        ],
+        "to": [
+          32,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          73
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          32,
+          73
+        ],
+        "to": [
+          32,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          32,
+          72
+        ],
+        "to": [
+          32,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          31,
+          80
+        ],
+        "to": [
+          32,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          32,
+          80
+        ],
+        "to": [
+          33,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          33,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          33,
+          80
+        ],
+        "to": [
+          34,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          34,
+          80
+        ],
+        "to": [
+          34,
+          81
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          81
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          31,
+          74
+        ],
+        "to": [
+          32,
+          74
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          74
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          32,
+          74
+        ],
+        "to": [
+          32,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          73
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          32,
+          73
+        ],
+        "to": [
+          32,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          32,
+          72
+        ],
+        "to": [
+          32,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          32,
+          71
+        ],
+        "to": [
+          33,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          33,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk26",
+        "from": [
+          30,
+          82
+        ],
+        "to": [
+          31,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          31,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk26",
+        "from": [
+          31,
+          82
+        ],
+        "to": [
+          32,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk26",
+        "from": [
+          32,
+          82
+        ],
+        "to": [
+          33,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          33,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk26",
+        "from": [
+          33,
+          82
+        ],
+        "to": [
+          34,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk26",
+        "from": [
+          34,
+          82
+        ],
+        "to": [
+          35,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          35,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          31,
+          73
+        ],
+        "to": [
+          31,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          31,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          31,
+          72
+        ],
+        "to": [
+          31,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          31,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          31,
+          71
+        ],
+        "to": [
+          32,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          32,
+          71
+        ],
+        "to": [
+          33,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          33,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          33,
+          71
+        ],
+        "to": [
+          34,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          34,
+          71
+        ],
+        "to": [
+          35,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          35,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          31,
+          78
+        ],
+        "to": [
+          32,
+          78
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          78
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          31,
+          76
+        ],
+        "to": [
+          32,
+          76
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          76
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          31,
+          79
+        ],
+        "to": [
+          32,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          31,
+          80
+        ],
+        "to": [
+          32,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk26",
+        "from": [
+          30,
+          82
+        ],
+        "to": [
+          31,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          31,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          32,
+          78
+        ],
+        "to": [
+          33,
+          78
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          33,
+          78
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          32,
+          76
+        ],
+        "to": [
+          32,
+          75
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          75
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          32,
+          79
+        ],
+        "to": [
+          33,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          33,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          32,
+          80
+        ],
+        "to": [
+          33,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          33,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk26",
+        "from": [
+          31,
+          82
+        ],
+        "to": [
+          32,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          33,
+          78
+        ],
+        "to": [
+          34,
+          78
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          78
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          32,
+          75
+        ],
+        "to": [
+          32,
+          74
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          74
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk26",
+        "from": [
+          32,
+          82
+        ],
+        "to": [
+          33,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          33,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          78
+        ],
+        "to": [
+          34,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          32,
+          74
+        ],
+        "to": [
+          32,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          32,
+          73
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk26",
+        "from": [
+          33,
+          82
+        ],
+        "to": [
+          34,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          79
+        ],
+        "to": [
+          34,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          34,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk26",
+        "from": [
+          34,
+          82
+        ],
+        "to": [
+          35,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 1,
+        "after": [
+          35,
+          82
+        ]
+      },
+      {
+        "type": "shot-start",
+        "id": "def18",
+        "targetId": "atk20",
+        "ammo": 12,
+        "targetHp": 56,
+        "at": [
+          37,
+          80
+        ],
+        "targetAt": [
+          34,
+          80
+        ],
+        "round": 1,
+        "doctrine": "defensive"
+      },
+      {
+        "type": "shot-start",
+        "id": "def19",
+        "targetId": "atk26",
+        "ammo": 12,
+        "targetHp": 56,
+        "at": [
+          37,
+          81
+        ],
+        "targetAt": [
+          35,
+          82
+        ],
+        "round": 1,
+        "doctrine": "defensive"
+      },
+      {
+        "type": "shot-complete",
+        "id": "def18",
+        "targetId": "atk20",
+        "ammo": 12,
+        "targetHp": 56,
+        "at": [
+          37,
+          80
+        ],
+        "targetAt": [
+          34,
+          80
+        ],
+        "round": 1,
+        "doctrine": "defensive",
+        "ammoAfter": 11,
+        "targetHpAfter": 56
+      },
+      {
+        "type": "shot-complete",
+        "id": "def19",
+        "targetId": "atk26",
+        "ammo": 12,
+        "targetHp": 56,
+        "at": [
+          37,
+          81
+        ],
+        "targetAt": [
+          35,
+          82
+        ],
+        "round": 1,
+        "doctrine": "defensive",
+        "ammoAfter": 11,
+        "targetHpAfter": 56
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          80
+        ],
+        "to": [
+          34,
+          81
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          34,
+          81
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          81
+        ],
+        "to": [
+          34,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          34,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          82
+        ],
+        "to": [
+          34,
+          81
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          34,
+          81
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          81
+        ],
+        "to": [
+          34,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          34,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          32,
+          73
+        ],
+        "to": [
+          33,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          73
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          33,
+          73
+        ],
+        "to": [
+          33,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          33,
+          72
+        ],
+        "to": [
+          33,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          33,
+          71
+        ],
+        "to": [
+          34,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          34,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          34,
+          71
+        ],
+        "to": [
+          35,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          35,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          33,
+          79
+        ],
+        "to": [
+          34,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          34,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          34,
+          79
+        ],
+        "to": [
+          35,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          35,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          35,
+          79
+        ],
+        "to": [
+          35,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          35,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          31,
+          75
+        ],
+        "to": [
+          32,
+          75
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          32,
+          75
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          32,
+          75
+        ],
+        "to": [
+          32,
+          74
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          32,
+          74
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          32,
+          74
+        ],
+        "to": [
+          33,
+          74
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          74
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          33,
+          74
+        ],
+        "to": [
+          33,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          73
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          33,
+          73
+        ],
+        "to": [
+          33,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          33,
+          80
+        ],
+        "to": [
+          33,
+          81
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          81
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          33,
+          81
+        ],
+        "to": [
+          34,
+          81
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          34,
+          81
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          34,
+          81
+        ],
+        "to": [
+          34,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          34,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          34,
+          82
+        ],
+        "to": [
+          34,
+          81
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          34,
+          81
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          31,
+          74
+        ],
+        "to": [
+          32,
+          74
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          32,
+          74
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          32,
+          74
+        ],
+        "to": [
+          33,
+          74
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          74
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          33,
+          74
+        ],
+        "to": [
+          33,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          73
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          33,
+          73
+        ],
+        "to": [
+          33,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          33,
+          72
+        ],
+        "to": [
+          33,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          31,
+          73
+        ],
+        "to": [
+          31,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          31,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          31,
+          72
+        ],
+        "to": [
+          31,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          31,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          31,
+          71
+        ],
+        "to": [
+          32,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          32,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          32,
+          71
+        ],
+        "to": [
+          33,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          33,
+          71
+        ],
+        "to": [
+          34,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          34,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          34,
+          71
+        ],
+        "to": [
+          35,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          35,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          32,
+          73
+        ],
+        "to": [
+          33,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          73
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          33,
+          79
+        ],
+        "to": [
+          34,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          34,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          31,
+          75
+        ],
+        "to": [
+          32,
+          75
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          32,
+          75
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          31,
+          73
+        ],
+        "to": [
+          31,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          31,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          34,
+          79
+        ],
+        "to": [
+          35,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          35,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          32,
+          75
+        ],
+        "to": [
+          32,
+          74
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          32,
+          74
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          35,
+          79
+        ],
+        "to": [
+          35,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          35,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          32,
+          74
+        ],
+        "to": [
+          33,
+          74
+        ],
+        "mounted": true,
+        "doctrine": "steady",
+        "round": 2,
+        "after": [
+          33,
+          74
+        ]
+      },
+      {
+        "type": "doctrine-change",
+        "from": "steady",
+        "to": "aggressive",
+        "round": 2
+      },
+      {
+        "type": "shot-start",
+        "id": "def10",
+        "targetId": "atk0",
+        "ammo": 12,
+        "targetHp": 38,
+        "at": [
+          37,
+          72
+        ],
+        "targetAt": [
+          34,
+          72
+        ],
+        "round": 2,
+        "doctrine": "defensive"
+      },
+      {
+        "type": "shot-start",
+        "id": "def15",
+        "targetId": "atk2",
+        "ammo": 12,
+        "targetHp": 38,
+        "at": [
+          37,
+          77
+        ],
+        "targetAt": [
+          34,
+          77
+        ],
+        "round": 2,
+        "doctrine": "defensive"
+      },
+      {
+        "type": "shot-start",
+        "id": "def17",
+        "targetId": "atk22",
+        "ammo": 12,
+        "targetHp": 56,
+        "at": [
+          37,
+          79
+        ],
+        "targetAt": [
+          35,
+          80
+        ],
+        "round": 2,
+        "doctrine": "defensive"
+      },
+      {
+        "type": "shot-start",
+        "id": "def18",
+        "targetId": "atk22",
+        "ammo": 11,
+        "targetHp": 56,
+        "at": [
+          37,
+          80
+        ],
+        "targetAt": [
+          35,
+          80
+        ],
+        "round": 2,
+        "doctrine": "defensive"
+      },
+      {
+        "type": "shot-start",
+        "id": "def19",
+        "targetId": "atk7",
+        "ammo": 11,
+        "targetHp": 38,
+        "at": [
+          37,
+          81
+        ],
+        "targetAt": [
+          34,
+          81
+        ],
+        "round": 2,
+        "doctrine": "defensive"
+      },
+      {
+        "type": "shot-complete",
+        "id": "def10",
+        "targetId": "atk0",
+        "ammo": 12,
+        "targetHp": 38,
+        "at": [
+          37,
+          72
+        ],
+        "targetAt": [
+          34,
+          72
+        ],
+        "round": 2,
+        "doctrine": "defensive",
+        "ammoAfter": 11,
+        "targetHpAfter": 38
+      },
+      {
+        "type": "shot-complete",
+        "id": "def15",
+        "targetId": "atk2",
+        "ammo": 12,
+        "targetHp": 38,
+        "at": [
+          37,
+          77
+        ],
+        "targetAt": [
+          34,
+          77
+        ],
+        "round": 2,
+        "doctrine": "defensive",
+        "ammoAfter": 11,
+        "targetHpAfter": 38
+      },
+      {
+        "type": "shot-complete",
+        "id": "def17",
+        "targetId": "atk22",
+        "ammo": 12,
+        "targetHp": 56,
+        "at": [
+          37,
+          79
+        ],
+        "targetAt": [
+          35,
+          80
+        ],
+        "round": 2,
+        "doctrine": "defensive",
+        "ammoAfter": 11,
+        "targetHpAfter": 55
+      },
+      {
+        "type": "shot-complete",
+        "id": "def18",
+        "targetId": "atk22",
+        "ammo": 11,
+        "targetHp": 56,
+        "at": [
+          37,
+          80
+        ],
+        "targetAt": [
+          35,
+          80
+        ],
+        "round": 2,
+        "doctrine": "defensive",
+        "ammoAfter": 10,
+        "targetHpAfter": 55
+      },
+      {
+        "type": "shot-complete",
+        "id": "def19",
+        "targetId": "atk7",
+        "ammo": 11,
+        "targetHp": 38,
+        "at": [
+          37,
+          81
+        ],
+        "targetAt": [
+          34,
+          81
+        ],
+        "round": 2,
+        "doctrine": "defensive",
+        "ammoAfter": 10,
+        "targetHpAfter": 38
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          80
+        ],
+        "to": [
+          34,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          34,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          79
+        ],
+        "to": [
+          34,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          34,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          80
+        ],
+        "to": [
+          34,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          34,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          33,
+          73
+        ],
+        "to": [
+          33,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          33,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          33,
+          72
+        ],
+        "to": [
+          33,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          33,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          33,
+          71
+        ],
+        "to": [
+          34,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          34,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          34,
+          71
+        ],
+        "to": [
+          35,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          35,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          35,
+          80
+        ],
+        "to": [
+          35,
+          81
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          35,
+          81
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          35,
+          81
+        ],
+        "to": [
+          35,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          35,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          35,
+          80
+        ],
+        "to": [
+          35,
+          81
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          35,
+          81
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          33,
+          74
+        ],
+        "to": [
+          34,
+          74
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          34,
+          74
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          34,
+          74
+        ],
+        "to": [
+          34,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          34,
+          73
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          34,
+          73
+        ],
+        "to": [
+          35,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          35,
+          73
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          35,
+          73
+        ],
+        "to": [
+          35,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          35,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          35,
+          72
+        ],
+        "to": [
+          35,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          35,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          33,
+          80
+        ],
+        "to": [
+          33,
+          81
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          33,
+          81
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          33,
+          81
+        ],
+        "to": [
+          33,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          33,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          33,
+          82
+        ],
+        "to": [
+          34,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          34,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          34,
+          82
+        ],
+        "to": [
+          33,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          33,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          33,
+          82
+        ],
+        "to": [
+          34,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          34,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          34,
+          82
+        ],
+        "to": [
+          33,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          33,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          31,
+          74
+        ],
+        "to": [
+          31,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          31,
+          73
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          31,
+          73
+        ],
+        "to": [
+          32,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          32,
+          73
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          32,
+          73
+        ],
+        "to": [
+          32,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          32,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          32,
+          72
+        ],
+        "to": [
+          32,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          32,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          32,
+          71
+        ],
+        "to": [
+          33,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          33,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          31,
+          72
+        ],
+        "to": [
+          32,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          32,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          32,
+          72
+        ],
+        "to": [
+          32,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          32,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          32,
+          71
+        ],
+        "to": [
+          33,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          33,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          33,
+          71
+        ],
+        "to": [
+          34,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          34,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          34,
+          71
+        ],
+        "to": [
+          35,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          35,
+          71
+        ]
+      },
+      {
+        "type": "shot-start",
+        "id": "atk0",
+        "targetId": "def0",
+        "ammo": 2,
+        "targetHp": 40,
+        "at": [
+          34,
+          72
+        ],
+        "targetAt": [
+          36,
+          72
+        ],
+        "round": 3,
+        "doctrine": "aggressive"
+      },
+      {
+        "type": "shot-start",
+        "id": "atk2",
+        "targetId": "def5",
+        "ammo": 2,
+        "targetHp": 40,
+        "at": [
+          34,
+          77
+        ],
+        "targetAt": [
+          36,
+          77
+        ],
+        "round": 3,
+        "doctrine": "aggressive"
+      },
+      {
+        "type": "shot-start",
+        "id": "atk9",
+        "targetId": "def23",
+        "ammo": 2,
+        "targetHp": 56,
+        "at": [
+          34,
+          83
+        ],
+        "targetAt": [
+          36,
+          83
+        ],
+        "round": 3,
+        "doctrine": "aggressive"
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          80
+        ],
+        "to": [
+          34,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          34,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          33,
+          73
+        ],
+        "to": [
+          33,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          33,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          35,
+          80
+        ],
+        "to": [
+          35,
+          81
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          35,
+          81
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          33,
+          74
+        ],
+        "to": [
+          34,
+          74
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          34,
+          74
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          33,
+          80
+        ],
+        "to": [
+          33,
+          81
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          33,
+          81
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          31,
+          74
+        ],
+        "to": [
+          31,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          31,
+          73
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          79
+        ],
+        "to": [
+          34,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          34,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          35,
+          81
+        ],
+        "to": [
+          35,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          35,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          34,
+          74
+        ],
+        "to": [
+          34,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          34,
+          73
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          31,
+          73
+        ],
+        "to": [
+          32,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          32,
+          73
+        ]
+      },
+      {
+        "type": "shot-complete",
+        "id": "atk0",
+        "targetId": "def0",
+        "ammo": 2,
+        "targetHp": 40,
+        "at": [
+          34,
+          72
+        ],
+        "targetAt": [
+          36,
+          72
+        ],
+        "round": 3,
+        "doctrine": "aggressive",
+        "ammoAfter": 1,
+        "targetHpAfter": 39
+      },
+      {
+        "type": "shot-complete",
+        "id": "atk2",
+        "targetId": "def5",
+        "ammo": 2,
+        "targetHp": 40,
+        "at": [
+          34,
+          77
+        ],
+        "targetAt": [
+          36,
+          77
+        ],
+        "round": 3,
+        "doctrine": "aggressive",
+        "ammoAfter": 1,
+        "targetHpAfter": 40
+      },
+      {
+        "type": "shot-complete",
+        "id": "atk9",
+        "targetId": "def23",
+        "ammo": 2,
+        "targetHp": 56,
+        "at": [
+          34,
+          83
+        ],
+        "targetAt": [
+          36,
+          83
+        ],
+        "round": 3,
+        "doctrine": "aggressive",
+        "ammoAfter": 1,
+        "targetHpAfter": 54
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          80
+        ],
+        "to": [
+          34,
+          79
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          34,
+          79
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          35,
+          80
+        ],
+        "to": [
+          35,
+          81
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          35,
+          81
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          34,
+          73
+        ],
+        "to": [
+          35,
+          73
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          35,
+          73
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          32,
+          73
+        ],
+        "to": [
+          32,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          32,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          35,
+          73
+        ],
+        "to": [
+          35,
+          72
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          35,
+          72
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          35,
+          72
+        ],
+        "to": [
+          35,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 3,
+        "after": [
+          35,
+          71
+        ]
+      },
+      {
+        "type": "shot-start",
+        "id": "def10",
+        "targetId": "atk0",
+        "ammo": 11,
+        "targetHp": 38,
+        "at": [
+          37,
+          72
+        ],
+        "targetAt": [
+          34,
+          72
+        ],
+        "round": 3,
+        "doctrine": "defensive"
+      },
+      {
+        "type": "shot-start",
+        "id": "def14",
+        "targetId": "atk3",
+        "ammo": 12,
+        "targetHp": 38,
+        "at": [
+          37,
+          76
+        ],
+        "targetAt": [
+          34,
+          76
+        ],
+        "round": 3,
+        "doctrine": "defensive"
+      },
+      {
+        "type": "shot-start",
+        "id": "def15",
+        "targetId": "atk2",
+        "ammo": 11,
+        "targetHp": 38,
+        "at": [
+          37,
+          77
+        ],
+        "targetAt": [
+          34,
+          77
+        ],
+        "round": 3,
+        "doctrine": "defensive"
+      },
+      {
+        "type": "shot-start",
+        "id": "def16",
+        "targetId": "atk5",
+        "ammo": 12,
+        "targetHp": 38,
+        "at": [
+          37,
+          78
+        ],
+        "targetAt": [
+          34,
+          78
+        ],
+        "round": 3,
+        "doctrine": "defensive"
+      },
+      {
+        "type": "shot-start",
+        "id": "def17",
+        "targetId": "atk20",
+        "ammo": 11,
+        "targetHp": 56,
+        "at": [
+          37,
+          79
+        ],
+        "targetAt": [
+          34,
+          79
+        ],
+        "round": 3,
+        "doctrine": "defensive"
+      },
+      {
+        "type": "shot-start",
+        "id": "def18",
+        "targetId": "atk22",
+        "ammo": 10,
+        "targetHp": 55,
+        "at": [
+          37,
+          80
+        ],
+        "targetAt": [
+          35,
+          81
+        ],
+        "round": 3,
+        "doctrine": "defensive"
+      },
+      {
+        "type": "shot-start",
+        "id": "def19",
+        "targetId": "atk7",
+        "ammo": 10,
+        "targetHp": 38,
+        "at": [
+          37,
+          81
+        ],
+        "targetAt": [
+          34,
+          81
+        ],
+        "round": 3,
+        "doctrine": "defensive"
+      },
+      {
+        "type": "shot-complete",
+        "id": "def10",
+        "targetId": "atk0",
+        "ammo": 11,
+        "targetHp": 38,
+        "at": [
+          37,
+          72
+        ],
+        "targetAt": [
+          34,
+          72
+        ],
+        "round": 3,
+        "doctrine": "defensive",
+        "ammoAfter": 10,
+        "targetHpAfter": 38
+      },
+      {
+        "type": "shot-complete",
+        "id": "def14",
+        "targetId": "atk3",
+        "ammo": 12,
+        "targetHp": 38,
+        "at": [
+          37,
+          76
+        ],
+        "targetAt": [
+          34,
+          76
+        ],
+        "round": 3,
+        "doctrine": "defensive",
+        "ammoAfter": 11,
+        "targetHpAfter": 38
+      },
+      {
+        "type": "shot-complete",
+        "id": "def15",
+        "targetId": "atk2",
+        "ammo": 11,
+        "targetHp": 38,
+        "at": [
+          37,
+          77
+        ],
+        "targetAt": [
+          34,
+          77
+        ],
+        "round": 3,
+        "doctrine": "defensive",
+        "ammoAfter": 10,
+        "targetHpAfter": 37
+      },
+      {
+        "type": "shot-complete",
+        "id": "def16",
+        "targetId": "atk5",
+        "ammo": 12,
+        "targetHp": 38,
+        "at": [
+          37,
+          78
+        ],
+        "targetAt": [
+          34,
+          78
+        ],
+        "round": 3,
+        "doctrine": "defensive",
+        "ammoAfter": 11,
+        "targetHpAfter": 37
+      },
+      {
+        "type": "shot-complete",
+        "id": "def17",
+        "targetId": "atk20",
+        "ammo": 11,
+        "targetHp": 56,
+        "at": [
+          37,
+          79
+        ],
+        "targetAt": [
+          34,
+          79
+        ],
+        "round": 3,
+        "doctrine": "defensive",
+        "ammoAfter": 10,
+        "targetHpAfter": 56
+      },
+      {
+        "type": "shot-complete",
+        "id": "def18",
+        "targetId": "atk22",
+        "ammo": 10,
+        "targetHp": 55,
+        "at": [
+          37,
+          80
+        ],
+        "targetAt": [
+          35,
+          81
+        ],
+        "round": 3,
+        "doctrine": "defensive",
+        "ammoAfter": 9,
+        "targetHpAfter": 55
+      },
+      {
+        "type": "shot-complete",
+        "id": "def19",
+        "targetId": "atk7",
+        "ammo": 10,
+        "targetHp": 38,
+        "at": [
+          37,
+          81
+        ],
+        "targetAt": [
+          34,
+          81
+        ],
+        "round": 3,
+        "doctrine": "defensive",
+        "ammoAfter": 9,
+        "targetHpAfter": 38
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          79
+        ],
+        "to": [
+          34,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          34,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          34,
+          80
+        ],
+        "to": [
+          35,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          35,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk20",
+        "from": [
+          35,
+          80
+        ],
+        "to": [
+          34,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          34,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          33,
+          72
+        ],
+        "to": [
+          33,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          33,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          33,
+          71
+        ],
+        "to": [
+          33,
+          70
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          33,
+          70
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          33,
+          70
+        ],
+        "to": [
+          34,
+          70
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          34,
+          70
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk21",
+        "from": [
+          34,
+          70
+        ],
+        "to": [
+          35,
+          70
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          35,
+          70
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          35,
+          81
+        ],
+        "to": [
+          35,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          35,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          35,
+          80
+        ],
+        "to": [
+          35,
+          81
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          35,
+          81
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk22",
+        "from": [
+          35,
+          81
+        ],
+        "to": [
+          35,
+          80
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          35,
+          80
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          35,
+          71
+        ],
+        "to": [
+          34,
+          70
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          34,
+          70
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          34,
+          70
+        ],
+        "to": [
+          33,
+          70
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          33,
+          70
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk23",
+        "from": [
+          33,
+          70
+        ],
+        "to": [
+          32,
+          70
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          32,
+          70
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          33,
+          81
+        ],
+        "to": [
+          33,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          33,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          33,
+          82
+        ],
+        "to": [
+          33,
+          81
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          33,
+          81
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          33,
+          81
+        ],
+        "to": [
+          33,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          33,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          33,
+          82
+        ],
+        "to": [
+          33,
+          81
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          33,
+          81
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          33,
+          81
+        ],
+        "to": [
+          33,
+          82
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          33,
+          82
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk24",
+        "from": [
+          33,
+          82
+        ],
+        "to": [
+          33,
+          81
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          33,
+          81
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          32,
+          72
+        ],
+        "to": [
+          32,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          32,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          32,
+          71
+        ],
+        "to": [
+          33,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          33,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          33,
+          71
+        ],
+        "to": [
+          33,
+          70
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          33,
+          70
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          33,
+          70
+        ],
+        "to": [
+          34,
+          70
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          34,
+          70
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk25",
+        "from": [
+          34,
+          70
+        ],
+        "to": [
+          35,
+          70
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          35,
+          70
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          31,
+          72
+        ],
+        "to": [
+          31,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          31,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          31,
+          71
+        ],
+        "to": [
+          32,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          32,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          32,
+          71
+        ],
+        "to": [
+          33,
+          71
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          33,
+          71
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          33,
+          71
+        ],
+        "to": [
+          33,
+          70
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          33,
+          70
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          33,
+          70
+        ],
+        "to": [
+          34,
+          70
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          34,
+          70
+        ]
+      },
+      {
+        "type": "mounted-move",
+        "id": "atk27",
+        "from": [
+          34,
+          70
+        ],
+        "to": [
+          35,
+          70
+        ],
+        "mounted": true,
+        "doctrine": "aggressive",
+        "round": 4,
+        "after": [
+          35,
+          70
+        ]
+      },
+      {
+        "type": "shot-start",
+        "id": "atk0",
+        "targetId": "def0",
+        "ammo": 1,
+        "targetHp": 39,
+        "at": [
+          34,
+          72
+        ],
+        "targetAt": [
+          36,
+          72
+        ],
+        "round": 4,
+        "doctrine": "aggressive"
+      },
+      {
+        "type": "shot-start",
+        "id": "atk1",
+        "targetId": "def20",
+        "ammo": 2,
+        "targetHp": 56,
+        "at": [
+          34,
+          71
+        ],
+        "targetAt": [
+          36,
+          71
+        ],
+        "round": 4,
+        "doctrine": "aggressive"
+      },
+      {
+        "type": "shot-start",
+        "id": "atk2",
+        "targetId": "def5",
+        "ammo": 1,
+        "targetHp": 40,
+        "at": [
+          34,
+          77
+        ],
+        "targetAt": [
+          36,
+          77
+        ],
+        "round": 4,
+        "doctrine": "aggressive"
+      },
+      {
+        "type": "shot-start",
+        "id": "atk3",
+        "targetId": "def4",
+        "ammo": 2,
+        "targetHp": 40,
+        "at": [
+          34,
+          76
+        ],
+        "targetAt": [
+          36,
+          76
+        ],
+        "round": 4,
+        "doctrine": "aggressive"
+      },
+      {
+        "type": "shot-start",
+        "id": "atk5",
+        "targetId": "def6",
+        "ammo": 2,
+        "targetHp": 40,
+        "at": [
+          34,
+          78
+        ],
+        "targetAt": [
+          36,
+          78
+        ],
+        "round": 4,
+        "doctrine": "aggressive"
+      },
+      {
+        "type": "shot-start",
+        "id": "atk8",
+        "targetId": "def21",
+        "ammo": 2,
+        "targetHp": 38,
+        "at": [
+          34,
+          82
+        ],
+        "targetAt": [
+          36,
+          82
+        ],
+        "round": 4,
+        "doctrine": "aggressive"
+      },
+      {
+        "type": "shot-start",
+        "id": "atk9",
+        "targetId": "def23",
+        "ammo": 1,
+        "targetHp": 54,
+        "at": [
+          34,
+          83
+        ],
+        "targetAt": [
+          36,
+          83
+        ],
+        "round": 4,
+        "doctrine": "aggressive"
+      },
+      {
+        "type": "shot-start",
+        "id": "atk18",
+        "targetId": "def23",
+        "ammo": 12,
+        "targetHp": 54,
+        "at": [
+          33,
+          83
+        ],
+        "targetAt": [
+          36,
+          83
+        ],
+        "round": 4,
+        "doctrine": "aggressive"
+      }
+    ],
+    "atk": [
+      {
+        "id": "atk0",
+        "hp": 38,
+        "ammo": 0,
+        "pos": [
+          34,
+          72
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "atk1",
+        "hp": 38,
+        "ammo": 1,
+        "pos": [
+          34,
+          71
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "atk2",
+        "hp": 37,
+        "ammo": 0,
+        "pos": [
+          34,
+          77
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "atk3",
+        "hp": 38,
+        "ammo": 1,
+        "pos": [
+          34,
+          76
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "atk4",
+        "hp": 38,
+        "ammo": 2,
+        "pos": [
+          33,
+          75
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "atk5",
+        "hp": 37,
+        "ammo": 1,
+        "pos": [
+          34,
+          78
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "atk6",
+        "hp": 38,
+        "ammo": 2,
+        "pos": [
+          33,
+          79
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "atk7",
+        "hp": 38,
+        "ammo": 2,
+        "pos": [
+          34,
+          81
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "atk8",
+        "hp": 38,
+        "ammo": 1,
+        "pos": [
+          34,
+          82
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "atk9",
+        "hp": 38,
+        "ammo": 0,
+        "pos": [
+          34,
+          83
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "atk10",
+        "hp": 16,
+        "ammo": 12,
+        "pos": [
+          32,
+          70
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "atk11",
+        "hp": 16,
+        "ammo": 12,
+        "pos": [
+          30,
+          73
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "atk12",
+        "hp": 16,
+        "ammo": 12,
+        "pos": [
+          30,
+          74
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "atk13",
+        "hp": 16,
+        "ammo": 12,
+        "pos": [
+          30,
+          76
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "atk14",
+        "hp": 16,
+        "ammo": 12,
+        "pos": [
+          33,
+          77
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "atk15",
+        "hp": 16,
+        "ammo": 12,
+        "pos": [
+          29,
+          76
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "atk16",
+        "hp": 16,
+        "ammo": 12,
+        "pos": [
+          31,
+          78
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "atk17",
+        "hp": 16,
+        "ammo": 12,
+        "pos": [
+          32,
+          80
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "atk18",
+        "hp": 16,
+        "ammo": 11,
+        "pos": [
+          33,
+          83
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "atk19",
+        "hp": 16,
+        "ammo": 12,
+        "pos": [
+          32,
+          81
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "atk20",
+        "hp": 56,
+        "ammo": null,
+        "pos": [
+          34,
+          79
+        ],
+        "mounted": true,
+        "ranged": false
+      },
+      {
+        "id": "atk21",
+        "hp": 56,
+        "ammo": null,
+        "pos": [
+          33,
+          71
+        ],
+        "mounted": true,
+        "ranged": false
+      },
+      {
+        "id": "atk22",
+        "hp": 55,
+        "ammo": null,
+        "pos": [
+          35,
+          80
+        ],
+        "mounted": true,
+        "ranged": false
+      },
+      {
+        "id": "atk23",
+        "hp": 18,
+        "ammo": null,
+        "pos": [
+          35,
+          71
+        ],
+        "mounted": true,
+        "ranged": false
+      },
+      {
+        "id": "atk24",
+        "hp": 56,
+        "ammo": null,
+        "pos": [
+          33,
+          82
+        ],
+        "mounted": true,
+        "ranged": false
+      },
+      {
+        "id": "atk25",
+        "hp": 56,
+        "ammo": null,
+        "pos": [
+          32,
+          71
+        ],
+        "mounted": true,
+        "ranged": false
+      },
+      {
+        "id": "atk26",
+        "hp": 38,
+        "ammo": null,
+        "pos": [
+          35,
+          82
+        ],
+        "mounted": true,
+        "ranged": false
+      },
+      {
+        "id": "atk27",
+        "hp": 56,
+        "ammo": null,
+        "pos": [
+          31,
+          71
+        ],
+        "mounted": true,
+        "ranged": false
+      }
+    ],
+    "def": [
+      {
+        "id": "def0",
+        "hp": 39,
+        "ammo": null,
+        "pos": [
+          36,
+          72
+        ],
+        "mounted": false,
+        "ranged": false
+      },
+      {
+        "id": "def1",
+        "hp": 40,
+        "ammo": null,
+        "pos": [
+          36,
+          73
+        ],
+        "mounted": false,
+        "ranged": false
+      },
+      {
+        "id": "def2",
+        "hp": 40,
+        "ammo": null,
+        "pos": [
+          36,
+          74
+        ],
+        "mounted": false,
+        "ranged": false
+      },
+      {
+        "id": "def3",
+        "hp": 40,
+        "ammo": null,
+        "pos": [
+          36,
+          75
+        ],
+        "mounted": false,
+        "ranged": false
+      },
+      {
+        "id": "def4",
+        "hp": 40,
+        "ammo": null,
+        "pos": [
+          36,
+          76
+        ],
+        "mounted": false,
+        "ranged": false
+      },
+      {
+        "id": "def5",
+        "hp": 40,
+        "ammo": null,
+        "pos": [
+          36,
+          77
+        ],
+        "mounted": false,
+        "ranged": false
+      },
+      {
+        "id": "def6",
+        "hp": 40,
+        "ammo": null,
+        "pos": [
+          36,
+          78
+        ],
+        "mounted": false,
+        "ranged": false
+      },
+      {
+        "id": "def7",
+        "hp": 40,
+        "ammo": null,
+        "pos": [
+          36,
+          79
+        ],
+        "mounted": false,
+        "ranged": false
+      },
+      {
+        "id": "def8",
+        "hp": 40,
+        "ammo": null,
+        "pos": [
+          36,
+          80
+        ],
+        "mounted": false,
+        "ranged": false
+      },
+      {
+        "id": "def9",
+        "hp": 22,
+        "ammo": null,
+        "pos": [
+          36,
+          81
+        ],
+        "mounted": false,
+        "ranged": false
+      },
+      {
+        "id": "def10",
+        "hp": 16,
+        "ammo": 10,
+        "pos": [
+          37,
+          72
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "def11",
+        "hp": 16,
+        "ammo": 12,
+        "pos": [
+          37,
+          73
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "def12",
+        "hp": 16,
+        "ammo": 12,
+        "pos": [
+          37,
+          74
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "def13",
+        "hp": 16,
+        "ammo": 12,
+        "pos": [
+          37,
+          75
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "def14",
+        "hp": 16,
+        "ammo": 11,
+        "pos": [
+          37,
+          76
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "def15",
+        "hp": 16,
+        "ammo": 10,
+        "pos": [
+          37,
+          77
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "def16",
+        "hp": 16,
+        "ammo": 11,
+        "pos": [
+          37,
+          78
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "def17",
+        "hp": 16,
+        "ammo": 10,
+        "pos": [
+          37,
+          79
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "def18",
+        "hp": 16,
+        "ammo": 9,
+        "pos": [
+          37,
+          80
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "def19",
+        "hp": 16,
+        "ammo": 9,
+        "pos": [
+          37,
+          81
+        ],
+        "mounted": false,
+        "ranged": true
+      },
+      {
+        "id": "def20",
+        "hp": 56,
+        "ammo": null,
+        "pos": [
+          36,
+          71
+        ],
+        "mounted": true,
+        "ranged": false
+      },
+      {
+        "id": "def21",
+        "hp": 20,
+        "ammo": null,
+        "pos": [
+          36,
+          82
+        ],
+        "mounted": true,
+        "ranged": false
+      },
+      {
+        "id": "def22",
+        "hp": 56,
+        "ammo": null,
+        "pos": [
+          36,
+          70
+        ],
+        "mounted": true,
+        "ranged": false
+      },
+      {
+        "id": "def23",
+        "hp": 54,
+        "ammo": null,
+        "pos": [
+          36,
+          83
+        ],
+        "mounted": true,
+        "ranged": false
+      },
+      {
+        "id": "def24",
+        "hp": 56,
+        "ammo": null,
+        "pos": [
+          36,
+          69
+        ],
+        "mounted": true,
+        "ranged": false
+      },
+      {
+        "id": "def25",
+        "hp": 56,
+        "ammo": null,
+        "pos": [
+          36,
+          84
+        ],
+        "mounted": true,
+        "ranged": false
+      },
+      {
+        "id": "def26",
+        "hp": 56,
+        "ammo": null,
+        "pos": [
+          37,
+          71
+        ],
+        "mounted": true,
+        "ranged": false
+      },
+      {
+        "id": "def27",
+        "hp": 56,
+        "ammo": null,
+        "pos": [
+          37,
+          82
+        ],
+        "mounted": true,
+        "ranged": false
+      }
+    ]
+  },
+  "completedShots": [
+    {
+      "type": "shot-complete",
+      "id": "def17",
+      "targetId": "atk22",
+      "ammo": 12,
+      "targetHp": 56,
+      "at": [
+        37,
+        79
+      ],
+      "targetAt": [
+        35,
+        80
+      ],
+      "round": 2,
+      "doctrine": "defensive",
+      "ammoAfter": 11,
+      "targetHpAfter": 55
+    },
+    {
+      "type": "shot-complete",
+      "id": "def18",
+      "targetId": "atk22",
+      "ammo": 11,
+      "targetHp": 56,
+      "at": [
+        37,
+        80
+      ],
+      "targetAt": [
+        35,
+        80
+      ],
+      "round": 2,
+      "doctrine": "defensive",
+      "ammoAfter": 10,
+      "targetHpAfter": 55
+    },
+    {
+      "type": "shot-complete",
+      "id": "atk0",
+      "targetId": "def0",
+      "ammo": 2,
+      "targetHp": 40,
+      "at": [
+        34,
+        72
+      ],
+      "targetAt": [
+        36,
+        72
+      ],
+      "round": 3,
+      "doctrine": "aggressive",
+      "ammoAfter": 1,
+      "targetHpAfter": 39
+    },
+    {
+      "type": "shot-complete",
+      "id": "atk9",
+      "targetId": "def23",
+      "ammo": 2,
+      "targetHp": 56,
+      "at": [
+        34,
+        83
+      ],
+      "targetAt": [
+        36,
+        83
+      ],
+      "round": 3,
+      "doctrine": "aggressive",
+      "ammoAfter": 1,
+      "targetHpAfter": 54
+    },
+    {
+      "type": "shot-complete",
+      "id": "def15",
+      "targetId": "atk2",
+      "ammo": 11,
+      "targetHp": 38,
+      "at": [
+        37,
+        77
+      ],
+      "targetAt": [
+        34,
+        77
+      ],
+      "round": 3,
+      "doctrine": "defensive",
+      "ammoAfter": 10,
+      "targetHpAfter": 37
+    },
+    {
+      "type": "shot-complete",
+      "id": "def16",
+      "targetId": "atk5",
+      "ammo": 12,
+      "targetHp": 38,
+      "at": [
+        37,
+        78
+      ],
+      "targetAt": [
+        34,
+        78
+      ],
+      "round": 3,
+      "doctrine": "defensive",
+      "ammoAfter": 11,
+      "targetHpAfter": 37
+    }
+  ],
+  "mountedMoves": [
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        31,
+        78
+      ],
+      "to": [
+        32,
+        78
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        78
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        32,
+        78
+      ],
+      "to": [
+        33,
+        78
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        33,
+        78
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        33,
+        78
+      ],
+      "to": [
+        34,
+        78
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        34,
+        78
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        34,
+        78
+      ],
+      "to": [
+        34,
+        79
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        34,
+        79
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        34,
+        79
+      ],
+      "to": [
+        34,
+        80
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        34,
+        80
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        31,
+        76
+      ],
+      "to": [
+        32,
+        76
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        76
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        32,
+        76
+      ],
+      "to": [
+        32,
+        75
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        75
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        32,
+        75
+      ],
+      "to": [
+        32,
+        74
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        74
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        32,
+        74
+      ],
+      "to": [
+        32,
+        73
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        73
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        32,
+        73
+      ],
+      "to": [
+        32,
+        72
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        72
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk22",
+      "from": [
+        31,
+        79
+      ],
+      "to": [
+        32,
+        79
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        79
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk22",
+      "from": [
+        32,
+        79
+      ],
+      "to": [
+        33,
+        79
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        33,
+        79
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk22",
+      "from": [
+        33,
+        79
+      ],
+      "to": [
+        34,
+        79
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        34,
+        79
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk22",
+      "from": [
+        34,
+        79
+      ],
+      "to": [
+        34,
+        80
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        34,
+        80
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        31,
+        75
+      ],
+      "to": [
+        32,
+        75
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        75
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        32,
+        75
+      ],
+      "to": [
+        32,
+        74
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        74
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        32,
+        74
+      ],
+      "to": [
+        32,
+        73
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        73
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        32,
+        73
+      ],
+      "to": [
+        32,
+        72
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        72
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        32,
+        72
+      ],
+      "to": [
+        32,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        31,
+        80
+      ],
+      "to": [
+        32,
+        80
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        80
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        32,
+        80
+      ],
+      "to": [
+        33,
+        80
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        33,
+        80
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        33,
+        80
+      ],
+      "to": [
+        34,
+        80
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        34,
+        80
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        34,
+        80
+      ],
+      "to": [
+        34,
+        81
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        34,
+        81
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        31,
+        74
+      ],
+      "to": [
+        32,
+        74
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        74
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        32,
+        74
+      ],
+      "to": [
+        32,
+        73
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        73
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        32,
+        73
+      ],
+      "to": [
+        32,
+        72
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        72
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        32,
+        72
+      ],
+      "to": [
+        32,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        32,
+        71
+      ],
+      "to": [
+        33,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        33,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk26",
+      "from": [
+        30,
+        82
+      ],
+      "to": [
+        31,
+        82
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        31,
+        82
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk26",
+      "from": [
+        31,
+        82
+      ],
+      "to": [
+        32,
+        82
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        82
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk26",
+      "from": [
+        32,
+        82
+      ],
+      "to": [
+        33,
+        82
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        33,
+        82
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk26",
+      "from": [
+        33,
+        82
+      ],
+      "to": [
+        34,
+        82
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        34,
+        82
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk26",
+      "from": [
+        34,
+        82
+      ],
+      "to": [
+        35,
+        82
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        35,
+        82
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        31,
+        73
+      ],
+      "to": [
+        31,
+        72
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        31,
+        72
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        31,
+        72
+      ],
+      "to": [
+        31,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        31,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        31,
+        71
+      ],
+      "to": [
+        32,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        32,
+        71
+      ],
+      "to": [
+        33,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        33,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        33,
+        71
+      ],
+      "to": [
+        34,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        34,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        34,
+        71
+      ],
+      "to": [
+        35,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        35,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        31,
+        78
+      ],
+      "to": [
+        32,
+        78
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        78
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        31,
+        76
+      ],
+      "to": [
+        32,
+        76
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        76
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk22",
+      "from": [
+        31,
+        79
+      ],
+      "to": [
+        32,
+        79
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        79
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        31,
+        80
+      ],
+      "to": [
+        32,
+        80
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        80
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk26",
+      "from": [
+        30,
+        82
+      ],
+      "to": [
+        31,
+        82
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        31,
+        82
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        32,
+        78
+      ],
+      "to": [
+        33,
+        78
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        33,
+        78
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        32,
+        76
+      ],
+      "to": [
+        32,
+        75
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        75
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk22",
+      "from": [
+        32,
+        79
+      ],
+      "to": [
+        33,
+        79
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        33,
+        79
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        32,
+        80
+      ],
+      "to": [
+        33,
+        80
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        33,
+        80
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk26",
+      "from": [
+        31,
+        82
+      ],
+      "to": [
+        32,
+        82
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        82
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        33,
+        78
+      ],
+      "to": [
+        34,
+        78
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        34,
+        78
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        32,
+        75
+      ],
+      "to": [
+        32,
+        74
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        74
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk26",
+      "from": [
+        32,
+        82
+      ],
+      "to": [
+        33,
+        82
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        33,
+        82
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        34,
+        78
+      ],
+      "to": [
+        34,
+        79
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        34,
+        79
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        32,
+        74
+      ],
+      "to": [
+        32,
+        73
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        32,
+        73
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk26",
+      "from": [
+        33,
+        82
+      ],
+      "to": [
+        34,
+        82
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        34,
+        82
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        34,
+        79
+      ],
+      "to": [
+        34,
+        80
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        34,
+        80
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk26",
+      "from": [
+        34,
+        82
+      ],
+      "to": [
+        35,
+        82
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 1,
+      "after": [
+        35,
+        82
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        34,
+        80
+      ],
+      "to": [
+        34,
+        81
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        34,
+        81
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        34,
+        81
+      ],
+      "to": [
+        34,
+        82
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        34,
+        82
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        34,
+        82
+      ],
+      "to": [
+        34,
+        81
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        34,
+        81
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        34,
+        81
+      ],
+      "to": [
+        34,
+        82
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        34,
+        82
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        32,
+        73
+      ],
+      "to": [
+        33,
+        73
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        33,
+        73
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        33,
+        73
+      ],
+      "to": [
+        33,
+        72
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        33,
+        72
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        33,
+        72
+      ],
+      "to": [
+        33,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        33,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        33,
+        71
+      ],
+      "to": [
+        34,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        34,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        34,
+        71
+      ],
+      "to": [
+        35,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        35,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk22",
+      "from": [
+        33,
+        79
+      ],
+      "to": [
+        34,
+        79
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        34,
+        79
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk22",
+      "from": [
+        34,
+        79
+      ],
+      "to": [
+        35,
+        79
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        35,
+        79
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk22",
+      "from": [
+        35,
+        79
+      ],
+      "to": [
+        35,
+        80
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        35,
+        80
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        31,
+        75
+      ],
+      "to": [
+        32,
+        75
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        32,
+        75
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        32,
+        75
+      ],
+      "to": [
+        32,
+        74
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        32,
+        74
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        32,
+        74
+      ],
+      "to": [
+        33,
+        74
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        33,
+        74
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        33,
+        74
+      ],
+      "to": [
+        33,
+        73
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        33,
+        73
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        33,
+        73
+      ],
+      "to": [
+        33,
+        72
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        33,
+        72
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        33,
+        80
+      ],
+      "to": [
+        33,
+        81
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        33,
+        81
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        33,
+        81
+      ],
+      "to": [
+        34,
+        81
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        34,
+        81
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        34,
+        81
+      ],
+      "to": [
+        34,
+        82
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        34,
+        82
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        34,
+        82
+      ],
+      "to": [
+        34,
+        81
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        34,
+        81
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        31,
+        74
+      ],
+      "to": [
+        32,
+        74
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        32,
+        74
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        32,
+        74
+      ],
+      "to": [
+        33,
+        74
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        33,
+        74
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        33,
+        74
+      ],
+      "to": [
+        33,
+        73
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        33,
+        73
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        33,
+        73
+      ],
+      "to": [
+        33,
+        72
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        33,
+        72
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        33,
+        72
+      ],
+      "to": [
+        33,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        33,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        31,
+        73
+      ],
+      "to": [
+        31,
+        72
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        31,
+        72
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        31,
+        72
+      ],
+      "to": [
+        31,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        31,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        31,
+        71
+      ],
+      "to": [
+        32,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        32,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        32,
+        71
+      ],
+      "to": [
+        33,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        33,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        33,
+        71
+      ],
+      "to": [
+        34,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        34,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        34,
+        71
+      ],
+      "to": [
+        35,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        35,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        32,
+        73
+      ],
+      "to": [
+        33,
+        73
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        33,
+        73
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk22",
+      "from": [
+        33,
+        79
+      ],
+      "to": [
+        34,
+        79
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        34,
+        79
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        31,
+        75
+      ],
+      "to": [
+        32,
+        75
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        32,
+        75
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        31,
+        73
+      ],
+      "to": [
+        31,
+        72
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        31,
+        72
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk22",
+      "from": [
+        34,
+        79
+      ],
+      "to": [
+        35,
+        79
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        35,
+        79
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        32,
+        75
+      ],
+      "to": [
+        32,
+        74
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        32,
+        74
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk22",
+      "from": [
+        35,
+        79
+      ],
+      "to": [
+        35,
+        80
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        35,
+        80
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        32,
+        74
+      ],
+      "to": [
+        33,
+        74
+      ],
+      "mounted": true,
+      "doctrine": "steady",
+      "round": 2,
+      "after": [
+        33,
+        74
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        34,
+        80
+      ],
+      "to": [
+        34,
+        79
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        34,
+        79
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        34,
+        79
+      ],
+      "to": [
+        34,
+        80
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        34,
+        80
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        34,
+        80
+      ],
+      "to": [
+        34,
+        79
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        34,
+        79
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        33,
+        73
+      ],
+      "to": [
+        33,
+        72
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        33,
+        72
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        33,
+        72
+      ],
+      "to": [
+        33,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        33,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        33,
+        71
+      ],
+      "to": [
+        34,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        34,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        34,
+        71
+      ],
+      "to": [
+        35,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        35,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk22",
+      "from": [
+        35,
+        80
+      ],
+      "to": [
+        35,
+        81
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        35,
+        81
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk22",
+      "from": [
+        35,
+        81
+      ],
+      "to": [
+        35,
+        80
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        35,
+        80
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk22",
+      "from": [
+        35,
+        80
+      ],
+      "to": [
+        35,
+        81
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        35,
+        81
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        33,
+        74
+      ],
+      "to": [
+        34,
+        74
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        34,
+        74
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        34,
+        74
+      ],
+      "to": [
+        34,
+        73
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        34,
+        73
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        34,
+        73
+      ],
+      "to": [
+        35,
+        73
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        35,
+        73
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        35,
+        73
+      ],
+      "to": [
+        35,
+        72
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        35,
+        72
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        35,
+        72
+      ],
+      "to": [
+        35,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        35,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        33,
+        80
+      ],
+      "to": [
+        33,
+        81
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        33,
+        81
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        33,
+        81
+      ],
+      "to": [
+        33,
+        82
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        33,
+        82
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        33,
+        82
+      ],
+      "to": [
+        34,
+        82
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        34,
+        82
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        34,
+        82
+      ],
+      "to": [
+        33,
+        82
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        33,
+        82
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        33,
+        82
+      ],
+      "to": [
+        34,
+        82
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        34,
+        82
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        34,
+        82
+      ],
+      "to": [
+        33,
+        82
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        33,
+        82
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        31,
+        74
+      ],
+      "to": [
+        31,
+        73
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        31,
+        73
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        31,
+        73
+      ],
+      "to": [
+        32,
+        73
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        32,
+        73
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        32,
+        73
+      ],
+      "to": [
+        32,
+        72
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        32,
+        72
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        32,
+        72
+      ],
+      "to": [
+        32,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        32,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        32,
+        71
+      ],
+      "to": [
+        33,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        33,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        31,
+        72
+      ],
+      "to": [
+        32,
+        72
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        32,
+        72
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        32,
+        72
+      ],
+      "to": [
+        32,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        32,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        32,
+        71
+      ],
+      "to": [
+        33,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        33,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        33,
+        71
+      ],
+      "to": [
+        34,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        34,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        34,
+        71
+      ],
+      "to": [
+        35,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        35,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        34,
+        80
+      ],
+      "to": [
+        34,
+        79
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        34,
+        79
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        33,
+        73
+      ],
+      "to": [
+        33,
+        72
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        33,
+        72
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk22",
+      "from": [
+        35,
+        80
+      ],
+      "to": [
+        35,
+        81
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        35,
+        81
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        33,
+        74
+      ],
+      "to": [
+        34,
+        74
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        34,
+        74
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        33,
+        80
+      ],
+      "to": [
+        33,
+        81
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        33,
+        81
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        31,
+        74
+      ],
+      "to": [
+        31,
+        73
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        31,
+        73
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        34,
+        79
+      ],
+      "to": [
+        34,
+        80
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        34,
+        80
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk22",
+      "from": [
+        35,
+        81
+      ],
+      "to": [
+        35,
+        80
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        35,
+        80
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        34,
+        74
+      ],
+      "to": [
+        34,
+        73
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        34,
+        73
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        31,
+        73
+      ],
+      "to": [
+        32,
+        73
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        32,
+        73
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        34,
+        80
+      ],
+      "to": [
+        34,
+        79
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        34,
+        79
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk22",
+      "from": [
+        35,
+        80
+      ],
+      "to": [
+        35,
+        81
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        35,
+        81
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        34,
+        73
+      ],
+      "to": [
+        35,
+        73
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        35,
+        73
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        32,
+        73
+      ],
+      "to": [
+        32,
+        72
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        32,
+        72
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        35,
+        73
+      ],
+      "to": [
+        35,
+        72
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        35,
+        72
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        35,
+        72
+      ],
+      "to": [
+        35,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 3,
+      "after": [
+        35,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        34,
+        79
+      ],
+      "to": [
+        34,
+        80
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        34,
+        80
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        34,
+        80
+      ],
+      "to": [
+        35,
+        80
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        35,
+        80
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk20",
+      "from": [
+        35,
+        80
+      ],
+      "to": [
+        34,
+        80
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        34,
+        80
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        33,
+        72
+      ],
+      "to": [
+        33,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        33,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        33,
+        71
+      ],
+      "to": [
+        33,
+        70
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        33,
+        70
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        33,
+        70
+      ],
+      "to": [
+        34,
+        70
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        34,
+        70
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk21",
+      "from": [
+        34,
+        70
+      ],
+      "to": [
+        35,
+        70
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        35,
+        70
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk22",
+      "from": [
+        35,
+        81
+      ],
+      "to": [
+        35,
+        80
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        35,
+        80
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk22",
+      "from": [
+        35,
+        80
+      ],
+      "to": [
+        35,
+        81
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        35,
+        81
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk22",
+      "from": [
+        35,
+        81
+      ],
+      "to": [
+        35,
+        80
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        35,
+        80
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        35,
+        71
+      ],
+      "to": [
+        34,
+        70
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        34,
+        70
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        34,
+        70
+      ],
+      "to": [
+        33,
+        70
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        33,
+        70
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk23",
+      "from": [
+        33,
+        70
+      ],
+      "to": [
+        32,
+        70
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        32,
+        70
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        33,
+        81
+      ],
+      "to": [
+        33,
+        82
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        33,
+        82
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        33,
+        82
+      ],
+      "to": [
+        33,
+        81
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        33,
+        81
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        33,
+        81
+      ],
+      "to": [
+        33,
+        82
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        33,
+        82
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        33,
+        82
+      ],
+      "to": [
+        33,
+        81
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        33,
+        81
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        33,
+        81
+      ],
+      "to": [
+        33,
+        82
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        33,
+        82
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk24",
+      "from": [
+        33,
+        82
+      ],
+      "to": [
+        33,
+        81
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        33,
+        81
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        32,
+        72
+      ],
+      "to": [
+        32,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        32,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        32,
+        71
+      ],
+      "to": [
+        33,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        33,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        33,
+        71
+      ],
+      "to": [
+        33,
+        70
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        33,
+        70
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        33,
+        70
+      ],
+      "to": [
+        34,
+        70
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        34,
+        70
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk25",
+      "from": [
+        34,
+        70
+      ],
+      "to": [
+        35,
+        70
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        35,
+        70
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        31,
+        72
+      ],
+      "to": [
+        31,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        31,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        31,
+        71
+      ],
+      "to": [
+        32,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        32,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        32,
+        71
+      ],
+      "to": [
+        33,
+        71
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        33,
+        71
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        33,
+        71
+      ],
+      "to": [
+        33,
+        70
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        33,
+        70
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        33,
+        70
+      ],
+      "to": [
+        34,
+        70
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        34,
+        70
+      ]
+    },
+    {
+      "type": "mounted-move",
+      "id": "atk27",
+      "from": [
+        34,
+        70
+      ],
+      "to": [
+        35,
+        70
+      ],
+      "mounted": true,
+      "doctrine": "aggressive",
+      "round": 4,
+      "after": [
+        35,
+        70
+      ]
+    }
+  ],
+  "checks": [
+    [
+      "mixed production roster has ranged and mounted units",
+      true
+    ],
+    [
+      "real production _doRangedAttack completed with target HP loss",
+      true
+    ],
+    [
+      "active real shots occurred under steady, defensive, and aggressive doctrines",
+      false
+    ],
+    [
+      "real production _doMove moved at least one cavalry/chariot",
+      true
+    ],
+    [
+      "steady/defensive and aggressive doctrines were configured",
+      true
+    ],
+    [
+      "no browser page or console errors",
+      true
+    ]
+  ],
+  "errors": []
+}

@@ -50,7 +50,9 @@ const RE_STATE_DECL = /let pendingEraChangeToastForNextTurn: DeferredEotHint \| 
 // Blok 2 — notifyPlayerEraChangeIfAdvanced: podczas endTurnInProgress ZAPAMIĘTAJ zamiast
 // wołać showHintMessage (co i tak wpadłoby do generycznej kolejki deferredEotHints).
 // ---------------------------------------------------------------------------
-const RE_BRANCH = /function notifyPlayerEraChangeIfAdvanced\(prevEra: number\): void \{[\s\S]{0,100}?const toastHtml = eraChangeNotifyToastHtml\(player\.era\);[\s\S]{0,600}?if \(endTurnInProgress\) \{\s*\n\s*pendingEraChangeToastForNextTurn = \{ msg: toastHtml, durationMs: ERA_CHANGE_NOTIFY\.toastDurationMs \};\s*\n\s*\} else \{\s*\n\s*showHintMessage\(toastHtml, ERA_CHANGE_NOTIFY\.toastDurationMs\);\s*\n\s*\}/;
+// Okno {0,800} (nie 100): po dodaniu komentarzy P-EPOKA-TOAST-EOT-POLYKANY między `if` a `toastHtml`
+// kotwica z 100 znaków przestała trafiać, mimo że kod jest poprawny (klasa A: stale okno regexa).
+const RE_BRANCH = /function notifyPlayerEraChangeIfAdvanced\(prevEra: number\): void \{[\s\S]{0,800}?const toastHtml = eraChangeNotifyToastHtml\(player\.era\);[\s\S]{0,600}?if \(endTurnInProgress\) \{\s*\n\s*pendingEraChangeToastForNextTurn = \{ msg: toastHtml, durationMs: ERA_CHANGE_NOTIFY\.toastDurationMs \};\s*\n\s*\} else \{\s*\n\s*showHintMessage\(toastHtml, ERA_CHANGE_NOTIFY\.toastDurationMs\);\s*\n\s*\}/;
 
 // Trwały wpis warEventLog zostaje NIETKNIĘTY (bezwarunkowy, poza if/else) — to on już wcześniej
 // omijał kolejkę (R-WYDARZENIA-FILTR-KATEGORII); ta naprawa dotyczy WYŁĄCZNIE toastu.
@@ -85,13 +87,18 @@ const RE_FLUSH_FN = /function flushPendingEraChangeToast\(\): void \{\s*\n\s*if 
 // `endTurnTransition();` IMMEDIATELY before `endTurnInProgress = false;` — verified (node -e)
 // to occur in main.ts EXACTLY ONCE, only inside triggerPlayerEndTurn's `finally` block.
 // ---------------------------------------------------------------------------
-const RE_FLUSH_WIRED_AFTER_FALSE = /endTurnTransition\(\);\s*\n\s*endTurnInProgress = false;[\s\S]{0,2200}?flushPendingEraChangeToast\(\);/;
+// Okno {0,3500} (nie 2200): między `endTurnInProgress = false;` a wywołaniem flush w finally
+// stoją dziś bloki komentowane (cache plakietek, memdebug, preBattle) — ok. 3100 znaków. Kotwica
+// `endTurnTransition(); endTurnInProgress = false;` pozostaje jednoznaczna (klasa A: stale okno).
+const RE_FLUSH_WIRED_AFTER_FALSE = /endTurnTransition\(\);\s*\n\s*endTurnInProgress = false;[\s\S]{0,3500}?flushPendingEraChangeToast\(\);/;
 
 // ---------------------------------------------------------------------------
 // Blok 5 — REGRESJA: ogólny mechanizm defer (showHintMessage/shouldDeferEotEvents/
 // deferredEotHints) dla WSZYSTKICH INNYCH komunikatów końca tury MUSI zostać nienaruszony.
 // ---------------------------------------------------------------------------
-const RE_GENERIC_DEFER_INTACT = /function showHintMessage\(msg: string, durationMs: number = 3000\): void \{\s*\n\s*if \(shouldDeferEotEvents\(endTurnInProgress\)\) \{\s*\n\s*deferredEotHints\.push\(\{ msg, durationMs \}\);\s*\n\s*return;\s*\n\s*\}/;
+// Sygnatura showHintMessage jest wieloliniowa i ma parametry ctx/aboveBattle (klasa A: stara
+// jednoliniowa sygnatura z 2-parametrowa lista przestała istnieć); push niesie `...ctx`.
+const RE_GENERIC_DEFER_INTACT = /function showHintMessage\(\s*\n\s*msg: string,\s*\n\s*durationMs: number = 3000,[\s\S]{0,600}?\): void \{\s*\n\s*if \(shouldDeferEotEvents\(endTurnInProgress\)\) \{\s*\n\s*deferredEotHints\.push\(\{ msg, durationMs, \.\.\.ctx \}\);\s*\n\s*return;\s*\n\s*\}/;
 
 // ---------------------------------------------------------------------------
 // Blok 6 — N2 (Evaluator, werdykt 6936d4d3, 2026-08-16): resetEndTurnBlockers() (wołane z
@@ -101,7 +108,9 @@ const RE_GENERIC_DEFER_INTACT = /function showHintMessage\(msg: string, duration
 // endTurnInProgress, ale NIE pending → oryginalna async sekwencja i tak dobiega do finally i
 // wypuszcza toast "Nowa epoka" w świeżo wczytanej grze.
 // ---------------------------------------------------------------------------
-const RE_RESET_CLEARS_PENDING_TOAST = /function resetEndTurnBlockers\(reason: string\): void \{[\s\S]{0,1500}?aiCmdResume = null;[\s\S]{0,700}?pendingEraChangeToastForNextTurn = null;[\s\S]{0,80}?endTurnTransition\(\);/;
+// Okna poszerzone (klasa A): komentarze F4/N2 i wpis eventDeferQueue.clear() leżą między
+// `aiCmdResume = null;` a `pendingEraChangeToastForNextTurn = null;` (ok. 1000 znaków).
+const RE_RESET_CLEARS_PENDING_TOAST = /function resetEndTurnBlockers\(reason: string\): void \{[\s\S]{0,1500}?aiCmdResume = null;[\s\S]{0,2500}?pendingEraChangeToastForNextTurn = null;[\s\S]{0,120}?endTurnTransition\(\);/;
 
 assert(RE_STATE_DECL.test(src), 'Blok 1: stan pendingEraChangeToastForNextTurn zadeklarowany (osobno od deferredEotHints)');
 assert(RE_BRANCH.test(src), 'Blok 2: notifyPlayerEraChangeIfAdvanced podczas endTurnInProgress zapamiętuje toast zamiast wołać showHintMessage (unika generycznej kolejki)');
@@ -174,8 +183,8 @@ assertMutationCaught('M4: flushPendingEraChangeToast nie zeruje pendingEraChange
 // dokładnie to, przed czym ostrzega zlecenie: "nie chodzi o rozluźnienie defer dla WSZYSTKICH").
 assertMutationCaught('M5: showHintMessage przestaje w ogóle sprawdzać shouldDeferEotEvents (rozluźnienie defer dla WSZYSTKICH komunikatów)',
   src.replace(
-    "function showHintMessage(msg: string, durationMs: number = 3000): void {\n      if (shouldDeferEotEvents(endTurnInProgress)) {\n        deferredEotHints.push({ msg, durationMs });\n        return;\n      }",
-    'function showHintMessage(msg: string, durationMs: number = 3000): void {',
+    "      if (shouldDeferEotEvents(endTurnInProgress)) {\n        deferredEotHints.push({ msg, durationMs, ...ctx });\n        return;\n      }",
+    '',
   ));
 
 // M6: usunięcie deklaracji stanu (kompilacja padnie, ale tekstowo też musi zaczerwienić bramkę).
@@ -193,11 +202,11 @@ assertMutationCaught('M6: usunięcie deklaracji pendingEraChangeToastForNextTurn
 // dziurę zgłoszoną przez Evaluatora.
 assertMutationCaught('M7: flushPendingEraChangeToast() przeniesione z finally triggerPlayerEndTurn do healStaleEndTurnBlockers (scenariusz Evaluatora)',
   src.replace(
-    "          flushDeferredAutoPreBattle();\n          // P-EPOKA-TOAST-EOT-POLYKANY: toast awansu epoki odłożony z fazy EOT — wypuść go\n          // NAPRAWDĘ dopiero TERAZ, endTurnInProgress jest już false (patrz komentarz przy\n          // flushPendingEraChangeToast).\n          flushPendingEraChangeToast();\n",
-    "          flushDeferredAutoPreBattle();\n",
+    "          flushPendingEraChangeToast();\n          syncPlayerUnitSelectionOnMap();",
+    "          syncPlayerUnitSelectionOnMap();",
   ).replace(
-    "      if (endTurnInProgress && !isTurnTransitionActive()) {\n        console.warn('[EndTurn] Clearing stale endTurnInProgress (brak overlay)');\n        endTurnInProgress = false;\n        endTurnStartedAt = 0;\n      }",
-    "      if (endTurnInProgress && !isTurnTransitionActive()) {\n        console.warn('[EndTurn] Clearing stale endTurnInProgress (brak overlay)');\n        endTurnInProgress = false;\n        endTurnStartedAt = 0;\n        flushPendingEraChangeToast();\n      }",
+    "      if (!activeWorldEndTurnPipeline && endTurnInProgress && !isTurnTransitionActive()) {\n        console.warn('[EndTurn] Clearing stale endTurnInProgress (brak overlay)');\n        endTurnInProgress = false;\n        endTurnStartedAt = 0;\n      }",
+    "      if (!activeWorldEndTurnPipeline && endTurnInProgress && !isTurnTransitionActive()) {\n        console.warn('[EndTurn] Clearing stale endTurnInProgress (brak overlay)');\n        endTurnInProgress = false;\n        endTurnStartedAt = 0;\n        flushPendingEraChangeToast();\n      }",
   ));
 
 // M8 (N2, Evaluator werdykt 6936d4d3): resetEndTurnBlockers() PRZESTAJE zerować
@@ -205,8 +214,8 @@ assertMutationCaught('M7: flushPendingEraChangeToast() przeniesione z finally tr
 // domknął 2026-08-14 dla deferredAutoRequests, w TEJ SAMEJ funkcji).
 assertMutationCaught('M8: resetEndTurnBlockers nie zeruje pendingEraChangeToastForNextTurn (regresja N2)',
   src.replace(
-    '      pendingEraChangeToastForNextTurn = null;\n      endTurnTransition();\n      if (isPreBattleOpen()) hidePreBattle();',
-    '      endTurnTransition();\n      if (isPreBattleOpen()) hidePreBattle();',
+    '      pendingEraChangeToastForNextTurn = null;\n      eventDeferQueue.clear();\n      endTurnTransition();\n      if (isPreBattleOpen()) hidePreBattle();',
+    '      eventDeferQueue.clear();\n      endTurnTransition();\n      if (isPreBattleOpen()) hidePreBattle();',
   ));
 
 console.log('\n' + (8 - mutFailed) + '/8 mutacji złapanych, ' + mutFailed + ' NIEZŁAPANYCH');

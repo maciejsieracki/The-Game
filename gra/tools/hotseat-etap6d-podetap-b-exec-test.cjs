@@ -159,7 +159,7 @@ console.log('\n2. foreignCivsMissingTradeTreatyForCity — realne wykonanie\n');
       getDiploRelation: (a, b) => { calls.getDiploRelation.push([a, b]); return { status: 'pokoj' }; },
       hasSzlakowTreaty: (deals, a, b) => { calls.hasSzlakowTreaty.push([a, b]); return false; },
       activeDeals: [],
-      citiesHaveTradeConnection: () => true,
+      externalTradeContactOk: () => true, tradeContactBetween: () => true, // R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1 (dawniej citiesHaveTradeConnection)
       map: {}, cityBuilt: new Map(), DEFAULT_TRADE_ROUTE_PARAMS: {},
       buildAllTerritoryNodes: () => [],
       ownerDiploLabel: (id) => 'AI-' + id,

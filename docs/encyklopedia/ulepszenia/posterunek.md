@@ -23,7 +23,7 @@
 
 ### Co robi
 Ulepszenie **Posterunek (Strażnica)** na polu w **twoim terytorium**. Teren: ląd w/na krawędzi własnego zasięgu.
-**Warunek:** NIE miasto, BEZ plonów; ROZSZERZA zasięg terytorium o promień 5 pól; odkrywa mgłę; węzeł sieci dróg; +50% Obrony jednostkom obozującym na polu
+**Warunek:** NIE miasto, BEZ plonów; ROZSZERZA zasięg terytorium o promień 3 pól; odkrywa mgłę; węzeł sieci dróg; +50% Obrony jednostkom obozującym na polu
 ### Strategia
 - Buduj z trybu **Budowa** (lewy panel mapy) — koszt w **pracy** ze skarbca imperium.
 - Przypisz heks w **Okolica** miasta, które ma nadwyżkę pracy.

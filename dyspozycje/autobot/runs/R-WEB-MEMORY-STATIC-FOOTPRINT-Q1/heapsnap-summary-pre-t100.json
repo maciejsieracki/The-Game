@@ -1,0 +1,3290 @@
+{
+ "file": "/tmp/civ-mem2-heap/pre/seed4242-t100.heapsnapshot",
+ "nodes": 4249181,
+ "edges": 14895536,
+ "reachable": 4249167,
+ "totalSelfMB": 430.7,
+ "totalsMB": {
+  "synthetic": 0,
+  "hidden": 2.35,
+  "code": 25.02,
+  "string": 67.88,
+  "number": 16.6,
+  "concatenated string": 0.28,
+  "array": 38.83,
+  "symbol": 0,
+  "object shape": 1.05,
+  "closure": 3.81,
+  "object": 56.38,
+  "native": 218.46,
+  "regexp": 0,
+  "sliced string": 0
+ },
+ "byClass": [
+  {
+   "cls": "system / ExternalStringData",
+   "count": 361,
+   "selfMB": 147.904,
+   "retainedMB": 147.904
+  },
+  {
+   "cls": "(string)",
+   "count": 287841,
+   "selfMB": 68.16,
+   "retainedMB": 216.064
+  },
+  {
+   "cls": "system / JSArrayBufferData",
+   "count": 53063,
+   "selfMB": 66.179,
+   "retainedMB": 66.179
+  },
+  {
+   "cls": "(array) (object elements)",
+   "count": 244988,
+   "selfMB": 30.75,
+   "retainedMB": 30.75
+  },
+  {
+   "cls": "(code)",
+   "count": 156325,
+   "selfMB": 25.023,
+   "retainedMB": 26.217
+  },
+  {
+   "cls": "(number)",
+   "count": 1383727,
+   "selfMB": 16.605,
+   "retainedMB": 16.605
+  },
+  {
+   "cls": "Object",
+   "count": 428691,
+   "selfMB": 11.753,
+   "retainedMB": 79.436
+  },
+  {
+   "cls": "Array",
+   "count": 463491,
+   "selfMB": 7.416,
+   "retainedMB": 133.968
+  },
+  {
+   "cls": "(array) ",
+   "count": 1613,
+   "selfMB": 6.464,
+   "retainedMB": 13.578
+  },
+  {
+   "cls": "U",
+   "count": 41690,
+   "selfMB": 5.503,
+   "retainedMB": 111.501
+  },
+  {
+   "cls": "AA",
+   "count": 176652,
+   "selfMB": 4.24,
+   "retainedMB": 10.599
+  },
+  {
+   "cls": "closure",
+   "count": 119842,
+   "selfMB": 3.808,
+   "retainedMB": 23.697
+  },
+  {
+   "cls": "ArrayBuffer",
+   "count": 53424,
+   "selfMB": 3.33,
+   "retainedMB": 69.51
+  },
+  {
+   "cls": "Og",
+   "count": 189222,
+   "selfMB": 3.028,
+   "retainedMB": 31.788
+  },
+  {
+   "cls": "Float32Array",
+   "count": 39267,
+   "selfMB": 2.718,
+   "retainedMB": 55.941
+  },
+  {
+   "cls": "jQ",
+   "count": 63307,
+   "selfMB": 2.279,
+   "retainedMB": 6.196
+  },
+  {
+   "cls": "yM",
+   "count": 6614,
+   "selfMB": 2.169,
+   "retainedMB": 5.241
+  },
+  {
+   "cls": "tM",
+   "count": 65922,
+   "selfMB": 1.846,
+   "retainedMB": 4.219
+  },
+  {
+   "cls": "Vm",
+   "count": 51188,
+   "selfMB": 1.843,
+   "retainedMB": 5.937
+  },
+  {
+   "cls": "Ja",
+   "count": 5094,
+   "selfMB": 1.712,
+   "retainedMB": 3.899
+  },
+  {
+   "cls": "Pi",
+   "count": 31620,
+   "selfMB": 1.644,
+   "retainedMB": 15.397
+  },
+  {
+   "cls": "(array) (object properties)",
+   "count": 1249,
+   "selfMB": 1.617,
+   "retainedMB": 1.711
+  },
+  {
+   "cls": "system / Context",
+   "count": 51912,
+   "selfMB": 1.311,
+   "retainedMB": 40.47
+  },
+  {
+   "cls": "(hidden) system / PropertyArray",
+   "count": 36663,
+   "selfMB": 1.06,
+   "retainedMB": 1.069
+  },
+  {
+   "cls": "(object shape)",
+   "count": 19716,
+   "selfMB": 1.047,
+   "retainedMB": 1.594
+  },
+  {
+   "cls": "Uint16Array",
+   "count": 14149,
+   "selfMB": 0.969,
+   "retainedMB": 17.274
+  },
+  {
+   "cls": "hA",
+   "count": 7543,
+   "selfMB": 0.935,
+   "retainedMB": 122.581
+  },
+  {
+   "cls": "ag",
+   "count": 57192,
+   "selfMB": 0.915,
+   "retainedMB": 2.218
+  },
+  {
+   "cls": "gMA",
+   "count": 51186,
+   "selfMB": 0.819,
+   "retainedMB": 0.819
+  },
+  {
+   "cls": "WebGLBuffer",
+   "count": 9852,
+   "selfMB": 0.709,
+   "retainedMB": 0.709
+  },
+  {
+   "cls": "iI",
+   "count": 12491,
+   "selfMB": 0.649,
+   "retainedMB": 55.951
+  },
+  {
+   "cls": "(hidden) system / WeakArrayList",
+   "count": 5165,
+   "selfMB": 0.634,
+   "retainedMB": 0.634
+  },
+  {
+   "cls": "T",
+   "count": 8653,
+   "selfMB": 0.623,
+   "retainedMB": 17.879
+  },
+  {
+   "cls": "KkA",
+   "count": 10395,
+   "selfMB": 0.541,
+   "retainedMB": 3.013
+  },
+  {
+   "cls": "Ml",
+   "count": 1700,
+   "selfMB": 0.394,
+   "retainedMB": 0.843
+  },
+  {
+   "cls": "OF",
+   "count": 14587,
+   "selfMB": 0.35,
+   "retainedMB": 1.4
+  },
+  {
+   "cls": "(hidden) system / FunctionTemplateInfo",
+   "count": 5070,
+   "selfMB": 0.324,
+   "retainedMB": 0.424
+  },
+  {
+   "cls": "WebGLVertexArrayObject",
+   "count": 2784,
+   "selfMB": 0.312,
+   "retainedMB": 0.312
+  },
+  {
+   "cls": "RM",
+   "count": 4539,
+   "selfMB": 0.308,
+   "retainedMB": 57.912
+  },
+  {
+   "cls": "hi",
+   "count": 14889,
+   "selfMB": 0.298,
+   "retainedMB": 0.655
+  },
+  {
+   "cls": "al",
+   "count": 1683,
+   "selfMB": 0.229,
+   "retainedMB": 2.933
+  },
+  {
+   "cls": "CanvasRenderingContext2D",
+   "count": 223,
+   "selfMB": 0.219,
+   "retainedMB": 0.221
+  },
+  {
+   "cls": "XMLDocument",
+   "count": 40,
+   "selfMB": 0.127,
+   "retainedMB": 0.229
+  },
+  {
+   "cls": "rg",
+   "count": 412,
+   "selfMB": 0.117,
+   "retainedMB": 0.245
+  },
+  {
+   "cls": "kr",
+   "count": 4163,
+   "selfMB": 0.1,
+   "retainedMB": 0.599
+  },
+  {
+   "cls": "GA",
+   "count": 1323,
+   "selfMB": 0.095,
+   "retainedMB": 3.099
+  },
+  {
+   "cls": "(hidden) system / ArrayList",
+   "count": 196,
+   "selfMB": 0.088,
+   "retainedMB": 0.095
+  },
+  {
+   "cls": "SVGPathElement",
+   "count": 512,
+   "selfMB": 0.07,
+   "retainedMB": 0.159
+  },
+  {
+   "cls": "SVGAnimatedLength",
+   "count": 996,
+   "selfMB": 0.064,
+   "retainedMB": 0.064
+  },
+  {
+   "cls": "(hidden) system / PropertyCell",
+   "count": 2543,
+   "selfMB": 0.051,
+   "retainedMB": 0.134
+  },
+  {
+   "cls": "(hidden) system / DoubleStringCache",
+   "count": 1,
+   "selfMB": 0.049,
+   "retainedMB": 0.049
+  },
+  {
+   "cls": "tK",
+   "count": 211,
+   "selfMB": 0.049,
+   "retainedMB": 0.096
+  },
+  {
+   "cls": "SVGAnimatedTransformList",
+   "count": 749,
+   "selfMB": 0.048,
+   "retainedMB": 0.048
+  },
+  {
+   "cls": "WebGLUniformLocation",
+   "count": 800,
+   "selfMB": 0.045,
+   "retainedMB": 0.045
+  },
+  {
+   "cls": "SVGAnimatedString",
+   "count": 749,
+   "selfMB": 0.042,
+   "retainedMB": 0.042
+  },
+  {
+   "cls": "Performance",
+   "count": 48,
+   "selfMB": 0.041,
+   "retainedMB": 0.141
+  },
+  {
+   "cls": "(hidden) system / ProtectedFixedArray",
+   "count": 2202,
+   "selfMB": 0.038,
+   "retainedMB": 0.038
+  },
+  {
+   "cls": "SVGAnimatedNumber",
+   "count": 580,
+   "selfMB": 0.037,
+   "retainedMB": 0.037
+  },
+  {
+   "cls": "Window",
+   "count": 50,
+   "selfMB": 0.036,
+   "retainedMB": 0.19
+  },
+  {
+   "cls": "Text",
+   "count": 437,
+   "selfMB": 0.035,
+   "retainedMB": 0.035
+  },
+  {
+   "cls": "(hidden) system / AccessorPair",
+   "count": 2903,
+   "selfMB": 0.035,
+   "retainedMB": 0.035
+  },
+  {
+   "cls": "StyleEngine",
+   "count": 41,
+   "selfMB": 0.034,
+   "retainedMB": 0.042
+  },
+  {
+   "cls": "SVGSVGElement",
+   "count": 183,
+   "selfMB": 0.033,
+   "retainedMB": 0.115
+  },
+  {
+   "cls": "<canvas width=\"64\" height=\"64\">",
+   "count": 59,
+   "selfMB": 0.033,
+   "retainedMB": 0.091
+  },
+  {
+   "cls": "zC",
+   "count": 219,
+   "selfMB": 0.032,
+   "retainedMB": 0.451
+  },
+  {
+   "cls": "TaskAttributionTiming",
+   "count": 238,
+   "selfMB": 0.03,
+   "retainedMB": 0.03
+  },
+  {
+   "cls": "PerformanceLongAnimationFrameTiming",
+   "count": 200,
+   "selfMB": 0.029,
+   "retainedMB": 0.029
+  },
+  {
+   "cls": "uto",
+   "count": 210,
+   "selfMB": 0.029,
+   "retainedMB": 0.257
+  },
+  {
+   "cls": "PerformanceLongTaskTiming",
+   "count": 238,
+   "selfMB": 0.027,
+   "retainedMB": 0.057
+  },
+  {
+   "cls": "Kwo",
+   "count": 755,
+   "selfMB": 0.024,
+   "retainedMB": 0.164
+  },
+  {
+   "cls": "<canvas width=\"128\" height=\"128\">",
+   "count": 43,
+   "selfMB": 0.024,
+   "retainedMB": 0.067
+  },
+  {
+   "cls": "(hidden) system / SharedFunctionInfoWrapper",
+   "count": 2201,
+   "selfMB": 0.018,
+   "retainedMB": 0.018
+  },
+  {
+   "cls": "(hidden) system / AccessorInfo",
+   "count": 1918,
+   "selfMB": 0.016,
+   "retainedMB": 0.016
+  },
+  {
+   "cls": "Map",
+   "count": 839,
+   "selfMB": 0.013,
+   "retainedMB": 11.933
+  },
+  {
+   "cls": "FontFaceSet",
+   "count": 41,
+   "selfMB": 0.013,
+   "retainedMB": 0.013
+  },
+  {
+   "cls": "SVGCircleElement",
+   "count": 95,
+   "selfMB": 0.012,
+   "retainedMB": 0.042
+  },
+  {
+   "cls": "wi",
+   "count": 162,
+   "selfMB": 0.012,
+   "retainedMB": 0.284
+  },
+  {
+   "cls": "(hidden) system / FunctionTemplateRareData",
+   "count": 285,
+   "selfMB": 0.011,
+   "retainedMB": 0.087
+  },
+  {
+   "cls": "<img decoding=\"sync\" src=\"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22h",
+   "count": 49,
+   "selfMB": 0.011,
+   "retainedMB": 0.019
+  },
+  {
+   "cls": "CSSStyleSheet",
+   "count": 64,
+   "selfMB": 0.011,
+   "retainedMB": 0.011
+  },
+  {
+   "cls": "SVGAnimatedRect",
+   "count": 161,
+   "selfMB": 0.01,
+   "retainedMB": 0.01
+  },
+  {
+   "cls": "SVGAnimatedPreserveAspectRatio",
+   "count": 161,
+   "selfMB": 0.01,
+   "retainedMB": 0.01
+  },
+  {
+   "cls": "V8EventListener",
+   "count": 257,
+   "selfMB": 0.01,
+   "retainedMB": 0.018
+  },
+  {
+   "cls": "(hidden) system / ObjectTemplateInfo",
+   "count": 364,
+   "selfMB": 0.01,
+   "retainedMB": 0.093
+  },
+  {
+   "cls": "Event",
+   "count": 85,
+   "selfMB": 0.01,
+   "retainedMB": 0.011
+  },
+  {
+   "cls": "Set",
+   "count": 552,
+   "selfMB": 0.009,
+   "retainedMB": 1.882
+  },
+  {
+   "cls": "ScriptedAnimationController",
+   "count": 41,
+   "selfMB": 0.009,
+   "retainedMB": 0.018
+  },
+  {
+   "cls": "IntersectionObserver",
+   "count": 41,
+   "selfMB": 0.008,
+   "retainedMB": 0.01
+  },
+  {
+   "cls": "nkA",
+   "count": 225,
+   "selfMB": 0.008,
+   "retainedMB": 0.358
+  },
+  {
+   "cls": "EventListener",
+   "count": 326,
+   "selfMB": 0.008,
+   "retainedMB": 0.035
+  },
+  {
+   "cls": "StyleSheetCollection",
+   "count": 41,
+   "selfMB": 0.008,
+   "retainedMB": 0.008
+  },
+  {
+   "cls": "xI",
+   "count": 105,
+   "selfMB": 0.008,
+   "retainedMB": 0.147
+  },
+  {
+   "cls": "DocumentTimeline",
+   "count": 41,
+   "selfMB": 0.008,
+   "retainedMB": 0.008
+  },
+  {
+   "cls": "PerformanceNavigationTiming",
+   "count": 41,
+   "selfMB": 0.007,
+   "retainedMB": 0.007
+  },
+  {
+   "cls": "bg",
+   "count": 40,
+   "selfMB": 0.006,
+   "retainedMB": 0.061
+  },
+  {
+   "cls": "<audio preload=\"auto\" src=\"data:audio/mpeg;base64,SUQzAwAAAAAvNEdFT0IAABeqAAAAYX",
+   "count": 4,
+   "selfMB": 0.006,
+   "retainedMB": 0.011
+  },
+  {
+   "cls": "WebGLShader",
+   "count": 87,
+   "selfMB": 0.006,
+   "retainedMB": 0.006
+  },
+  {
+   "cls": "Navigation",
+   "count": 41,
+   "selfMB": 0.006,
+   "retainedMB": 0.008
+  },
+  {
+   "cls": "<canvas width=\"72\" height=\"126\">",
+   "count": 10,
+   "selfMB": 0.006,
+   "retainedMB": 0.015
+  },
+  {
+   "cls": "CustomElementRegistry",
+   "count": 40,
+   "selfMB": 0.005,
+   "retainedMB": 0.005
+  },
+  {
+   "cls": "(hidden) system / WeakFixedArray",
+   "count": 112,
+   "selfMB": 0.005,
+   "retainedMB": 0.005
+  },
+  {
+   "cls": "$B",
+   "count": 68,
+   "selfMB": 0.005,
+   "retainedMB": 0.192
+  },
+  {
+   "cls": "Jwo",
+   "count": 192,
+   "selfMB": 0.005,
+   "retainedMB": 0.099
+  },
+  {
+   "cls": "ScriptRunner",
+   "count": 41,
+   "selfMB": 0.004,
+   "retainedMB": 0.004
+  },
+  {
+   "cls": "WebGLProgram",
+   "count": 45,
+   "selfMB": 0.004,
+   "retainedMB": 0.004
+  },
+  {
+   "cls": "yMA",
+   "count": 68,
+   "selfMB": 0.004,
+   "retainedMB": 2.727
+  },
+  {
+   "cls": "VisibilityStateEntry",
+   "count": 41,
+   "selfMB": 0.004,
+   "retainedMB": 0.004
+  },
+  {
+   "cls": "<span>",
+   "count": 37,
+   "selfMB": 0.004,
+   "retainedMB": 0.006
+  },
+  {
+   "cls": "<span class=\"da-good\">",
+   "count": 36,
+   "selfMB": 0.004,
+   "retainedMB": 0.004
+  },
+  {
+   "cls": "(hidden) system / NativeContext",
+   "count": 3,
+   "selfMB": 0.004,
+   "retainedMB": 0.223
+  },
+  {
+   "cls": "HTMLDocument",
+   "count": 7,
+   "selfMB": 0.003,
+   "retainedMB": 0.009
+  },
+  {
+   "cls": "SVGRectElement",
+   "count": 24,
+   "selfMB": 0.003,
+   "retainedMB": 0.013
+  },
+  {
+   "cls": "(hidden) system / Foreign",
+   "count": 352,
+   "selfMB": 0.003,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "<canvas width=\"282\" height=\"48\">",
+   "count": 5,
+   "selfMB": 0.003,
+   "retainedMB": 0.008
+  },
+  {
+   "cls": "(hidden) system / ClassPositions",
+   "count": 227,
+   "selfMB": 0.003,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "DOMTokenList",
+   "count": 46,
+   "selfMB": 0.003,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "AudioParam",
+   "count": 33,
+   "selfMB": 0.003,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "<img decoding=\"sync\" src=\"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wB",
+   "count": 11,
+   "selfMB": 0.003,
+   "retainedMB": 0.004
+  },
+  {
+   "cls": "_wo",
+   "count": 42,
+   "selfMB": 0.003,
+   "retainedMB": 0.356
+  },
+  {
+   "cls": "WebGLTexture",
+   "count": 41,
+   "selfMB": 0.002,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "FragmentDirective",
+   "count": 41,
+   "selfMB": 0.002,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<span class=\"meta\">",
+   "count": 22,
+   "selfMB": 0.002,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "<span class=\"ic\">",
+   "count": 22,
+   "selfMB": 0.002,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"211\" height=\"48\">",
+   "count": 4,
+   "selfMB": 0.002,
+   "retainedMB": 0.006
+  },
+  {
+   "cls": "<canvas width=\"225\" height=\"48\">",
+   "count": 4,
+   "selfMB": 0.002,
+   "retainedMB": 0.006
+  },
+  {
+   "cls": "<span class=\"civ-build-info-ic\" role=\"button\" tabindex=\"0\" title=\"Podgląd karty ",
+   "count": 21,
+   "selfMB": 0.002,
+   "retainedMB": 0.008
+  },
+  {
+   "cls": "V8EventHandlerNonNull",
+   "count": 65,
+   "selfMB": 0.002,
+   "retainedMB": 0.008
+  },
+  {
+   "cls": "<span style=\"display:inline-flex;width:12px;height:12px;vertical-align:-2px;marg",
+   "count": 18,
+   "selfMB": 0.002,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "RemotePlayback",
+   "count": 4,
+   "selfMB": 0.002,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"222\" height=\"48\">",
+   "count": 3,
+   "selfMB": 0.002,
+   "retainedMB": 0.005
+  },
+  {
+   "cls": "<canvas width=\"271\" height=\"48\">",
+   "count": 3,
+   "selfMB": 0.002,
+   "retainedMB": 0.005
+  },
+  {
+   "cls": "<canvas width=\"233\" height=\"48\">",
+   "count": 3,
+   "selfMB": 0.002,
+   "retainedMB": 0.005
+  },
+  {
+   "cls": "NavigationActivation",
+   "count": 41,
+   "selfMB": 0.002,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "IntersectionObserverDelegate",
+   "count": 41,
+   "selfMB": 0.002,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "AudioContext",
+   "count": 4,
+   "selfMB": 0.002,
+   "retainedMB": 0.004
+  },
+  {
+   "cls": "ywo",
+   "count": 42,
+   "selfMB": 0.002,
+   "retainedMB": 0.006
+  },
+  {
+   "cls": "<div class=\"da-body\">",
+   "count": 14,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<div class=\"da-nm\">",
+   "count": 14,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "WebGL2RenderingContext",
+   "count": 4,
+   "selfMB": 0.001,
+   "retainedMB": 0.018
+  },
+  {
+   "cls": "CSSStyleDeclaration",
+   "count": 27,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "Viewport",
+   "count": 41,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "VisualViewport",
+   "count": 41,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "HTMLDivElement",
+   "count": 80,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "Kp",
+   "count": 4,
+   "selfMB": 0.001,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "SVGGElement",
+   "count": 14,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<span class=\"mbtn-lbl\">",
+   "count": 10,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<button class=\"arrbtn\">",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-lbl\">",
+   "count": 11,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"260\" height=\"48\">",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "<canvas width=\"252\" height=\"48\">",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "<canvas width=\"265\" height=\"48\">",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "<canvas width=\"255\" height=\"48\">",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "<canvas width=\"249\" height=\"48\">",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "<canvas width=\"256\" height=\"48\">",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "<canvas width=\"340\" height=\"48\">",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "<canvas width=\"298\" height=\"48\">",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "<canvas width=\"241\" height=\"48\">",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "<canvas width=\"244\" height=\"48\">",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "<canvas width=\"310\" height=\"48\">",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "<canvas width=\"277\" height=\"48\">",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "<canvas width=\"231\" height=\"48\">",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "<canvas width=\"236\" height=\"48\">",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "<canvas width=\"243\" height=\"48\">",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "Error",
+   "count": 43,
+   "selfMB": 0.001,
+   "retainedMB": 0.006
+  },
+  {
+   "cls": "UhA",
+   "count": 34,
+   "selfMB": 0.001,
+   "retainedMB": 0.004
+  },
+  {
+   "cls": "Element",
+   "count": 10,
+   "selfMB": 0.001,
+   "retainedMB": 0.008
+  },
+  {
+   "cls": "<span class=\"mbtn-ic\">",
+   "count": 9,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-med gold\">",
+   "count": 10,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"v\">",
+   "count": 10,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"da-abtn-cell\">",
+   "count": 10,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<div class=\"da-note\">",
+   "count": 10,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "VC",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.01
+  },
+  {
+   "cls": "TypedArray",
+   "count": 36,
+   "selfMB": 0.001,
+   "retainedMB": 0.007
+  },
+  {
+   "cls": "ExtensionTracker",
+   "count": 40,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<button class=\"mbtn tg-btn-outline\">",
+   "count": 5,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<span class=\"da-ttip-lbl\">",
+   "count": 9,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"da-ttip\">",
+   "count": 9,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<div>",
+   "count": 9,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "GainNode",
+   "count": 9,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "TB",
+   "count": 33,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "(hidden) system / RegExpDataWrapper",
+   "count": 105,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "W5",
+   "count": 42,
+   "selfMB": 0.001,
+   "retainedMB": 0.156
+  },
+  {
+   "cls": "<div class=\"da-sec-title\">",
+   "count": 8,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "(hidden) system / InterceptorInfo",
+   "count": 31,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "Attr",
+   "count": 14,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "dm",
+   "count": 32,
+   "selfMB": 0.001,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "PerformanceEventTiming",
+   "count": 3,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<b>",
+   "count": 7,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "ShadowRoot",
+   "count": 4,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "HTMLSpanElement",
+   "count": 40,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "WeakMap",
+   "count": 39,
+   "selfMB": 0.001,
+   "retainedMB": 0.212
+  },
+  {
+   "cls": "(hidden) system / IrRegExpData",
+   "count": 10,
+   "selfMB": 0.001,
+   "retainedMB": 0.022
+  },
+  {
+   "cls": "SVGEllipseElement",
+   "count": 4,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-fsep\" aria-hidden=\"true\">",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-figs\">",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-line\">",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-top\">",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-body\">",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<div class=\"da-goods-cat-body is-collapsed\">",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<div class=\"da-goods\">",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<div class=\"da-attr-row\">",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"da-goods-cat-chevron\">",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<div class=\"da-goods-cat\">",
+   "count": 6,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "DOMTimer",
+   "count": 3,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "dkA",
+   "count": 3,
+   "selfMB": 0.001,
+   "retainedMB": 0.006
+  },
+  {
+   "cls": "d5",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.004
+  },
+  {
+   "cls": "AudioBuffer",
+   "count": 11,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "MutationObserver",
+   "count": 7,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "sto",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<canvas width=\"512\" height=\"168\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"256\" height=\"213\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"280\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"301\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"254\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"258\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"312\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"273\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"232\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"293\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"275\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"304\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"309\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"216\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"228\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"253\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"267\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"365\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"229\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"350\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"315\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"305\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"379\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"400\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"190\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"235\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"286\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"323\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"268\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"251\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"403\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"297\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"341\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"306\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"311\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"285\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"230\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"307\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"207\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"264\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"263\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"188\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"226\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"224\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"198\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"445\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"351\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"206\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"247\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"270\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"325\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"246\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"218\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"262\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"274\" height=\"48\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas data-engine=\"three.js r169\" width=\"1280\" height=\"800\" style=\"display: bl",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "<canvas width=\"280\" height=\"170\" style=\"\">",
+   "count": 1,
+   "selfMB": 0.001,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "Qto",
+   "count": 2,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-val\">",
+   "count": 5,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-rate\">",
+   "count": 5,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-net pos\">",
+   "count": 5,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-rate pos\">",
+   "count": 5,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<span class=\"lbl\">",
+   "count": 5,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<div class=\"da-rfact\">",
+   "count": 5,
+   "selfMB": 0.001,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "CSSParserToken",
+   "count": 42,
+   "selfMB": 0.001,
+   "retainedMB": 0.009
+  },
+  {
+   "cls": "CSSAnimation",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "Navigator",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "HTMLButtonElement",
+   "count": 28,
+   "selfMB": 0,
+   "retainedMB": 0.002
+  },
+  {
+   "cls": "W0",
+   "count": 11,
+   "selfMB": 0,
+   "retainedMB": 0.046
+  },
+  {
+   "cls": "HTMLStyleElement",
+   "count": 25,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "Dt",
+   "count": 8,
+   "selfMB": 0,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "<span class=\"civ-hud-chip-sep\" aria-hidden=\"true\">",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<div class=\"da-rel-partner-title\">",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<div class=\"da-rel-partner-group\">",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<span class=\"da-goods-cat-count\">",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<div class=\"da-empty\">",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<span class=\"cnt\">",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<h3>",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "kto",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.004
+  },
+  {
+   "cls": "AudioTrack",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "KeyframeEffect",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "<div class=\"lbl\">",
+   "count": 4,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-goods-cat-hdr\" data-goods-cat=\"technologie\">",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-goods-cat-hdr is-empty\" data-goods-cat=\"inne\">",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<button type=\"button\" class=\"da-goods-cat-hdr\" data-goods-cat=\"surowce\">",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<button type=\"button\" role=\"tab\" class=\"sp-tab\" aria-selected=\"false\" data-sp-ta",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<button class=\"mbtn tg-btn-outline soon tg-btn-disabled\">",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  },
+  {
+   "cls": "<button class=\"mbtn tg-btn-outline\" disabled=\"\">",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0
+  },
+  {
+   "cls": "AudioBufferSourceNode",
+   "count": 5,
+   "selfMB": 0,
+   "retainedMB": 0.003
+  },
+  {
+   "cls": "aE",
+   "count": 5,
+   "selfMB": 0,
+   "retainedMB": 0.015
+  },
+  {
+   "cls": "<span class=\"hint\">",
+   "count": 3,
+   "selfMB": 0,
+   "retainedMB": 0.001
+  }
+ ],
+ "byClassRetained": [
+  {
+   "cls": "(string)",
+   "count": 287841,
+   "selfMB": 68.16,
+   "retainedMB": 216.064
+  },
+  {
+   "cls": "system / ExternalStringData",
+   "count": 361,
+   "selfMB": 147.904,
+   "retainedMB": 147.904
+  },
+  {
+   "cls": "Array",
+   "count": 463491,
+   "selfMB": 7.416,
+   "retainedMB": 133.968
+  },
+  {
+   "cls": "hA",
+   "count": 7543,
+   "selfMB": 0.935,
+   "retainedMB": 122.581
+  },
+  {
+   "cls": "U",
+   "count": 41690,
+   "selfMB": 5.503,
+   "retainedMB": 111.501
+  },
+  {
+   "cls": "Object",
+   "count": 428691,
+   "selfMB": 11.753,
+   "retainedMB": 79.436
+  },
+  {
+   "cls": "ArrayBuffer",
+   "count": 53424,
+   "selfMB": 3.33,
+   "retainedMB": 69.51
+  },
+  {
+   "cls": "system / JSArrayBufferData",
+   "count": 53063,
+   "selfMB": 66.179,
+   "retainedMB": 66.179
+  },
+  {
+   "cls": "RM",
+   "count": 4539,
+   "selfMB": 0.308,
+   "retainedMB": 57.912
+  },
+  {
+   "cls": "iI",
+   "count": 12491,
+   "selfMB": 0.649,
+   "retainedMB": 55.951
+  },
+  {
+   "cls": "Float32Array",
+   "count": 39267,
+   "selfMB": 2.718,
+   "retainedMB": 55.941
+  },
+  {
+   "cls": "system / Context",
+   "count": 51912,
+   "selfMB": 1.311,
+   "retainedMB": 40.47
+  },
+  {
+   "cls": "Og",
+   "count": 189222,
+   "selfMB": 3.028,
+   "retainedMB": 31.788
+  },
+  {
+   "cls": "(array) (object elements)",
+   "count": 244988,
+   "selfMB": 30.75,
+   "retainedMB": 30.75
+  },
+  {
+   "cls": "(code)",
+   "count": 156325,
+   "selfMB": 25.023,
+   "retainedMB": 26.217
+  },
+  {
+   "cls": "closure",
+   "count": 119842,
+   "selfMB": 3.808,
+   "retainedMB": 23.697
+  },
+  {
+   "cls": "T",
+   "count": 8653,
+   "selfMB": 0.623,
+   "retainedMB": 17.879
+  },
+  {
+   "cls": "Uint16Array",
+   "count": 14149,
+   "selfMB": 0.969,
+   "retainedMB": 17.274
+  },
+  {
+   "cls": "(number)",
+   "count": 1383727,
+   "selfMB": 16.605,
+   "retainedMB": 16.605
+  },
+  {
+   "cls": "Pi",
+   "count": 31620,
+   "selfMB": 1.644,
+   "retainedMB": 15.397
+  },
+  {
+   "cls": "(array) ",
+   "count": 1613,
+   "selfMB": 6.464,
+   "retainedMB": 13.578
+  },
+  {
+   "cls": "Map",
+   "count": 839,
+   "selfMB": 0.013,
+   "retainedMB": 11.933
+  },
+  {
+   "cls": "AA",
+   "count": 176652,
+   "selfMB": 4.24,
+   "retainedMB": 10.599
+  },
+  {
+   "cls": "jQ",
+   "count": 63307,
+   "selfMB": 2.279,
+   "retainedMB": 6.196
+  },
+  {
+   "cls": "Vm",
+   "count": 51188,
+   "selfMB": 1.843,
+   "retainedMB": 5.937
+  },
+  {
+   "cls": "yM",
+   "count": 6614,
+   "selfMB": 2.169,
+   "retainedMB": 5.241
+  },
+  {
+   "cls": "tM",
+   "count": 65922,
+   "selfMB": 1.846,
+   "retainedMB": 4.219
+  },
+  {
+   "cls": "Ja",
+   "count": 5094,
+   "selfMB": 1.712,
+   "retainedMB": 3.899
+  },
+  {
+   "cls": "GA",
+   "count": 1323,
+   "selfMB": 0.095,
+   "retainedMB": 3.099
+  },
+  {
+   "cls": "KkA",
+   "count": 10395,
+   "selfMB": 0.541,
+   "retainedMB": 3.013
+  },
+  {
+   "cls": "al",
+   "count": 1683,
+   "selfMB": 0.229,
+   "retainedMB": 2.933
+  },
+  {
+   "cls": "yMA",
+   "count": 68,
+   "selfMB": 0.004,
+   "retainedMB": 2.727
+  },
+  {
+   "cls": "ag",
+   "count": 57192,
+   "selfMB": 0.915,
+   "retainedMB": 2.218
+  },
+  {
+   "cls": "Set",
+   "count": 552,
+   "selfMB": 0.009,
+   "retainedMB": 1.882
+  },
+  {
+   "cls": "(array) (object properties)",
+   "count": 1249,
+   "selfMB": 1.617,
+   "retainedMB": 1.711
+  },
+  {
+   "cls": "(object shape)",
+   "count": 19716,
+   "selfMB": 1.047,
+   "retainedMB": 1.594
+  },
+  {
+   "cls": "OF",
+   "count": 14587,
+   "selfMB": 0.35,
+   "retainedMB": 1.4
+  },
+  {
+   "cls": "(hidden) system / PropertyArray",
+   "count": 36663,
+   "selfMB": 1.06,
+   "retainedMB": 1.069
+  },
+  {
+   "cls": "Ml",
+   "count": 1700,
+   "selfMB": 0.394,
+   "retainedMB": 0.843
+  },
+  {
+   "cls": "gMA",
+   "count": 51186,
+   "selfMB": 0.819,
+   "retainedMB": 0.819
+  },
+  {
+   "cls": "WebGLBuffer",
+   "count": 9852,
+   "selfMB": 0.709,
+   "retainedMB": 0.709
+  },
+  {
+   "cls": "hi",
+   "count": 14889,
+   "selfMB": 0.298,
+   "retainedMB": 0.655
+  },
+  {
+   "cls": "(hidden) system / WeakArrayList",
+   "count": 5165,
+   "selfMB": 0.634,
+   "retainedMB": 0.634
+  },
+  {
+   "cls": "kr",
+   "count": 4163,
+   "selfMB": 0.1,
+   "retainedMB": 0.599
+  },
+  {
+   "cls": "InternalNode",
+   "count": 19745,
+   "selfMB": 0,
+   "retainedMB": 0.565
+  },
+  {
+   "cls": "tT",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.519
+  },
+  {
+   "cls": "o1",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.511
+  },
+  {
+   "cls": "(synthetic) (GC roots)",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.493
+  },
+  {
+   "cls": "i1",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.459
+  },
+  {
+   "cls": "zC",
+   "count": 219,
+   "selfMB": 0.032,
+   "retainedMB": 0.451
+  },
+  {
+   "cls": "(synthetic) C++ Persistent roots",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.439
+  },
+  {
+   "cls": "(hidden) system / FunctionTemplateInfo",
+   "count": 5070,
+   "selfMB": 0.324,
+   "retainedMB": 0.424
+  },
+  {
+   "cls": "nkA",
+   "count": 225,
+   "selfMB": 0.008,
+   "retainedMB": 0.358
+  },
+  {
+   "cls": "_wo",
+   "count": 42,
+   "selfMB": 0.003,
+   "retainedMB": 0.356
+  },
+  {
+   "cls": "(synthetic) (Global handles)",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.33
+  },
+  {
+   "cls": "WebGLVertexArrayObject",
+   "count": 2784,
+   "selfMB": 0.312,
+   "retainedMB": 0.312
+  },
+  {
+   "cls": "wi",
+   "count": 162,
+   "selfMB": 0.012,
+   "retainedMB": 0.284
+  },
+  {
+   "cls": "uto",
+   "count": 210,
+   "selfMB": 0.029,
+   "retainedMB": 0.257
+  },
+  {
+   "cls": "vbi",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.252
+  },
+  {
+   "cls": "rg",
+   "count": 412,
+   "selfMB": 0.117,
+   "retainedMB": 0.245
+  },
+  {
+   "cls": "XMLDocument",
+   "count": 40,
+   "selfMB": 0.127,
+   "retainedMB": 0.229
+  },
+  {
+   "cls": "Window / file://",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.227
+  },
+  {
+   "cls": "(hidden) system / NativeContext",
+   "count": 3,
+   "selfMB": 0.004,
+   "retainedMB": 0.223
+  },
+  {
+   "cls": "CanvasRenderingContext2D",
+   "count": 223,
+   "selfMB": 0.219,
+   "retainedMB": 0.221
+  },
+  {
+   "cls": "WeakMap",
+   "count": 39,
+   "selfMB": 0.001,
+   "retainedMB": 0.212
+  },
+  {
+   "cls": "$B",
+   "count": 68,
+   "selfMB": 0.005,
+   "retainedMB": 0.192
+  },
+  {
+   "cls": "Window",
+   "count": 50,
+   "selfMB": 0.036,
+   "retainedMB": 0.19
+  },
+  {
+   "cls": "dF",
+   "count": 6,
+   "selfMB": 0,
+   "retainedMB": 0.171
+  },
+  {
+   "cls": "Kwo",
+   "count": 755,
+   "selfMB": 0.024,
+   "retainedMB": 0.164
+  },
+  {
+   "cls": "(synthetic) (Strong root list)",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.159
+  },
+  {
+   "cls": "SVGPathElement",
+   "count": 512,
+   "selfMB": 0.07,
+   "retainedMB": 0.159
+  },
+  {
+   "cls": "W5",
+   "count": 42,
+   "selfMB": 0.001,
+   "retainedMB": 0.156
+  },
+  {
+   "cls": "xI",
+   "count": 105,
+   "selfMB": 0.008,
+   "retainedMB": 0.147
+  },
+  {
+   "cls": "Performance",
+   "count": 48,
+   "selfMB": 0.041,
+   "retainedMB": 0.141
+  },
+  {
+   "cls": "x5",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.139
+  },
+  {
+   "cls": "(hidden) system / PropertyCell",
+   "count": 2543,
+   "selfMB": 0.051,
+   "retainedMB": 0.134
+  },
+  {
+   "cls": "SVGSVGElement",
+   "count": 183,
+   "selfMB": 0.033,
+   "retainedMB": 0.115
+  },
+  {
+   "cls": "Jwo",
+   "count": 192,
+   "selfMB": 0.005,
+   "retainedMB": 0.099
+  },
+  {
+   "cls": "tK",
+   "count": 211,
+   "selfMB": 0.049,
+   "retainedMB": 0.096
+  },
+  {
+   "cls": "(hidden) system / ArrayList",
+   "count": 196,
+   "selfMB": 0.088,
+   "retainedMB": 0.095
+  },
+  {
+   "cls": "(hidden) system / ObjectTemplateInfo",
+   "count": 364,
+   "selfMB": 0.01,
+   "retainedMB": 0.093
+  },
+  {
+   "cls": "<canvas width=\"64\" height=\"64\">",
+   "count": 59,
+   "selfMB": 0.033,
+   "retainedMB": 0.091
+  },
+  {
+   "cls": "(hidden) system / FunctionTemplateRareData",
+   "count": 285,
+   "selfMB": 0.011,
+   "retainedMB": 0.087
+  },
+  {
+   "cls": "<canvas width=\"128\" height=\"128\">",
+   "count": 43,
+   "selfMB": 0.024,
+   "retainedMB": 0.067
+  },
+  {
+   "cls": "SVGAnimatedLength",
+   "count": 996,
+   "selfMB": 0.064,
+   "retainedMB": 0.064
+  },
+  {
+   "cls": "bg",
+   "count": 40,
+   "selfMB": 0.006,
+   "retainedMB": 0.061
+  },
+  {
+   "cls": "PerformanceLongTaskTiming",
+   "count": 238,
+   "selfMB": 0.027,
+   "retainedMB": 0.057
+  },
+  {
+   "cls": "(hidden) system / DoubleStringCache",
+   "count": 1,
+   "selfMB": 0.049,
+   "retainedMB": 0.049
+  },
+  {
+   "cls": "Window / ://",
+   "count": 1,
+   "selfMB": 0,
+   "retainedMB": 0.048
+  },
+  {
+   "cls": "SVGAnimatedTransformList",
+   "count": 749,
+   "selfMB": 0.048,
+   "retainedMB": 0.048
+  },
+  {
+   "cls": "W0",
+   "count": 11,
+   "selfMB": 0,
+   "retainedMB": 0.046
+  },
+  {
+   "cls": "WebGLUniformLocation",
+   "count": 800,
+   "selfMB": 0.045,
+   "retainedMB": 0.045
+  },
+  {
+   "cls": "SVGCircleElement",
+   "count": 95,
+   "selfMB": 0.012,
+   "retainedMB": 0.042
+  },
+  {
+   "cls": "SVGAnimatedString",
+   "count": 749,
+   "selfMB": 0.042,
+   "retainedMB": 0.042
+  },
+  {
+   "cls": "StyleEngine",
+   "count": 41,
+   "selfMB": 0.034,
+   "retainedMB": 0.042
+  },
+  {
+   "cls": "UtilityScript",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.039
+  },
+  {
+   "cls": "(hidden) system / ProtectedFixedArray",
+   "count": 2202,
+   "selfMB": 0.038,
+   "retainedMB": 0.038
+  },
+  {
+   "cls": "SVGAnimatedNumber",
+   "count": 580,
+   "selfMB": 0.037,
+   "retainedMB": 0.037
+  },
+  {
+   "cls": "(hidden) system / AccessorPair",
+   "count": 2903,
+   "selfMB": 0.035,
+   "retainedMB": 0.035
+  },
+  {
+   "cls": "Text",
+   "count": 437,
+   "selfMB": 0.035,
+   "retainedMB": 0.035
+  },
+  {
+   "cls": "EventListener",
+   "count": 326,
+   "selfMB": 0.008,
+   "retainedMB": 0.035
+  },
+  {
+   "cls": "TaskAttributionTiming",
+   "count": 238,
+   "selfMB": 0.03,
+   "retainedMB": 0.03
+  },
+  {
+   "cls": "PerformanceLongAnimationFrameTiming",
+   "count": 200,
+   "selfMB": 0.029,
+   "retainedMB": 0.029
+  },
+  {
+   "cls": "(regexp)",
+   "count": 10,
+   "selfMB": 0,
+   "retainedMB": 0.023
+  },
+  {
+   "cls": "InjectedScript",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.023
+  },
+  {
+   "cls": "(hidden) system / IrRegExpData",
+   "count": 10,
+   "selfMB": 0.001,
+   "retainedMB": 0.022
+  },
+  {
+   "cls": "<img decoding=\"sync\" src=\"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22h",
+   "count": 49,
+   "selfMB": 0.011,
+   "retainedMB": 0.019
+  },
+  {
+   "cls": "WebGL2RenderingContext",
+   "count": 4,
+   "selfMB": 0.001,
+   "retainedMB": 0.018
+  },
+  {
+   "cls": "ScriptedAnimationController",
+   "count": 41,
+   "selfMB": 0.009,
+   "retainedMB": 0.018
+  },
+  {
+   "cls": "V8EventListener",
+   "count": 257,
+   "selfMB": 0.01,
+   "retainedMB": 0.018
+  },
+  {
+   "cls": "(hidden) system / SharedFunctionInfoWrapper",
+   "count": 2201,
+   "selfMB": 0.018,
+   "retainedMB": 0.018
+  },
+  {
+   "cls": "Dto",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.017
+  },
+  {
+   "cls": "(hidden) system / AccessorInfo",
+   "count": 1918,
+   "selfMB": 0.016,
+   "retainedMB": 0.016
+  },
+  {
+   "cls": "Math",
+   "count": 3,
+   "selfMB": 0,
+   "retainedMB": 0.016
+  },
+  {
+   "cls": "Sto",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.016
+  },
+  {
+   "cls": "<canvas width=\"72\" height=\"126\">",
+   "count": 10,
+   "selfMB": 0.006,
+   "retainedMB": 0.015
+  },
+  {
+   "cls": "aE",
+   "count": 5,
+   "selfMB": 0,
+   "retainedMB": 0.015
+  },
+  {
+   "cls": "Document",
+   "count": 2,
+   "selfMB": 0,
+   "retainedMB": 0.015
+  },
+  {
+   "cls": "FontFaceSet",
+   "count": 41,
+   "selfMB": 0.013,
+   "retainedMB": 0.013
+  },
+  {
+   "cls": "SVGRectElement",
+   "count": 24,
+   "selfMB": 0.003,
+   "retainedMB": 0.013
+  }
+ ],
+ "topDominators": [
+  {
+   "cls": "(string)",
+   "retainedMB": 140.42,
+   "selfB": 48,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / ExternalStringData",
+   "retainedMB": 140.42,
+   "selfB": 140421818,
+   "edge": "2 / backing_store",
+   "chain": [
+    "2 / backing_store <- (string)"
+   ]
+  },
+  {
+   "cls": "system / Context",
+   "retainedMB": 19.88,
+   "selfB": 51788,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / Context",
+   "retainedMB": 9.6,
+   "selfB": 424,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / Context",
+   "retainedMB": 5.9,
+   "selfB": 5480,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "Map",
+   "retainedMB": 3.85,
+   "selfB": 16,
+   "edge": "tH",
+   "chain": [
+    "tH <- system / Context"
+   ]
+  },
+  {
+   "cls": "(array) ",
+   "retainedMB": 3.85,
+   "selfB": 458772,
+   "edge": "table",
+   "chain": [
+    "table <- Map",
+    "tH <- system / Context"
+   ]
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 2.9,
+   "selfB": 2900268,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 2.72,
+   "selfB": 2719372,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "hA",
+   "retainedMB": 2.59,
+   "selfB": 124,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "Array",
+   "retainedMB": 2.59,
+   "selfB": 16,
+   "edge": "children",
+   "chain": [
+    "children <- hA"
+   ]
+  },
+  {
+   "cls": "Object",
+   "retainedMB": 2.38,
+   "selfB": 48,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / Context",
+   "retainedMB": 2.38,
+   "selfB": 104,
+   "edge": "?",
+   "chain": [
+    "? <- Object"
+   ]
+  },
+  {
+   "cls": "Object",
+   "retainedMB": 2.37,
+   "selfB": 28,
+   "edge": "M",
+   "chain": [
+    "M <- system / Context",
+    "? <- Object"
+   ]
+  },
+  {
+   "cls": "Map",
+   "retainedMB": 2.23,
+   "selfB": 16,
+   "edge": "AS",
+   "chain": [
+    "AS <- system / Context"
+   ]
+  },
+  {
+   "cls": "(array) ",
+   "retainedMB": 2.23,
+   "selfB": 458772,
+   "edge": "table",
+   "chain": [
+    "table <- Map",
+    "AS <- system / Context"
+   ]
+  },
+  {
+   "cls": "Array",
+   "retainedMB": 1.79,
+   "selfB": 16,
+   "edge": "qR",
+   "chain": [
+    "qR <- system / Context"
+   ]
+  },
+  {
+   "cls": "Object",
+   "retainedMB": 1.41,
+   "selfB": 52,
+   "edge": "[1079]",
+   "chain": [
+    "[1079] <- system / Context"
+   ]
+  },
+  {
+   "cls": "Array",
+   "retainedMB": 1.41,
+   "selfB": 16,
+   "edge": "[0]",
+   "chain": [
+    "[0] <- Array",
+    "qR <- system / Context"
+   ]
+  },
+  {
+   "cls": "Object",
+   "retainedMB": 1.41,
+   "selfB": 24,
+   "edge": "spawnCache",
+   "chain": [
+    "spawnCache <- Object",
+    "[1079] <- system / Context"
+   ]
+  },
+  {
+   "cls": "Array",
+   "retainedMB": 1.22,
+   "selfB": 16,
+   "edge": "YYA",
+   "chain": [
+    "YYA <- system / Context"
+   ]
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992852,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992848,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992848,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992848,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992848,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 992848,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.99,
+   "selfB": 991176,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.98,
+   "selfB": 982816,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.98,
+   "selfB": 52,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / ExternalStringData",
+   "retainedMB": 0.98,
+   "selfB": 976131,
+   "edge": "1 / backing_store",
+   "chain": [
+    "1 / backing_store <- (string)"
+   ]
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.98,
+   "selfB": 52,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / ExternalStringData",
+   "retainedMB": 0.98,
+   "selfB": 975295,
+   "edge": "1 / backing_store",
+   "chain": [
+    "1 / backing_store <- (string)"
+   ]
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.97,
+   "selfB": 52,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / ExternalStringData",
+   "retainedMB": 0.97,
+   "selfB": 971951,
+   "edge": "1 / backing_store",
+   "chain": [
+    "1 / backing_store <- (string)"
+   ]
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.97,
+   "selfB": 968608,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.96,
+   "selfB": 956908,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.95,
+   "selfB": 52,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / ExternalStringData",
+   "retainedMB": 0.95,
+   "selfB": 951055,
+   "edge": "1 / backing_store",
+   "chain": [
+    "1 / backing_store <- (string)"
+   ]
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.95,
+   "selfB": 946040,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.94,
+   "selfB": 52,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / ExternalStringData",
+   "retainedMB": 0.94,
+   "selfB": 936843,
+   "edge": "1 / backing_store",
+   "chain": [
+    "1 / backing_store <- (string)"
+   ]
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.93,
+   "selfB": 52,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / ExternalStringData",
+   "retainedMB": 0.93,
+   "selfB": 934335,
+   "edge": "1 / backing_store",
+   "chain": [
+    "1 / backing_store <- (string)"
+   ]
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.93,
+   "selfB": 928484,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.93,
+   "selfB": 927648,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.92,
+   "selfB": 922636,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.92,
+   "selfB": 919292,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.92,
+   "selfB": 919292,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.92,
+   "selfB": 918456,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.92,
+   "selfB": 918456,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.92,
+   "selfB": 52,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / ExternalStringData",
+   "retainedMB": 0.92,
+   "selfB": 915111,
+   "edge": "1 / backing_store",
+   "chain": [
+    "1 / backing_store <- (string)"
+   ]
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.91,
+   "selfB": 913440,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.9,
+   "selfB": 895884,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.89,
+   "selfB": 891704,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.89,
+   "selfB": 886688,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.88,
+   "selfB": 883348,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.87,
+   "selfB": 868300,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.86,
+   "selfB": 859104,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.85,
+   "selfB": 851580,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.85,
+   "selfB": 846564,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.83,
+   "selfB": 827340,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "Map",
+   "retainedMB": 0.74,
+   "selfB": 16,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "(array) ",
+   "retainedMB": 0.74,
+   "selfB": 132,
+   "edge": "table",
+   "chain": [
+    "table <- Map"
+   ]
+  },
+  {
+   "cls": "Object",
+   "retainedMB": 0.68,
+   "selfB": 24,
+   "edge": "landCache",
+   "chain": [
+    "landCache <- Object",
+    "spawnCache <- Object",
+    "[1079] <- system / Context"
+   ]
+  },
+  {
+   "cls": "Map",
+   "retainedMB": 0.66,
+   "selfB": 16,
+   "edge": "8",
+   "chain": [
+    "8 <- (array) ",
+    "table <- Map"
+   ]
+  },
+  {
+   "cls": "(array) ",
+   "retainedMB": 0.66,
+   "selfB": 1812,
+   "edge": "table",
+   "chain": [
+    "table <- Map",
+    "8 <- (array) ",
+    "table <- Map"
+   ]
+  },
+  {
+   "cls": "(string)",
+   "retainedMB": 0.64,
+   "selfB": 52,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / ExternalStringData",
+   "retainedMB": 0.64,
+   "selfB": 639492,
+   "edge": "1 / backing_store",
+   "chain": [
+    "1 / backing_store <- (string)"
+   ]
+  },
+  {
+   "cls": "Object",
+   "retainedMB": 0.6,
+   "selfB": 28,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "system / Context",
+   "retainedMB": 0.56,
+   "selfB": 132,
+   "edge": "?",
+   "chain": []
+  },
+  {
+   "cls": "Array",
+   "retainedMB": 0.55,
+   "selfB": 16,
+   "edge": "ni",
+   "chain": [
+    "ni <- system / Context"
+   ]
+  }
+ ]
+}

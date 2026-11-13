@@ -39,10 +39,30 @@ function isKeptDeposit(n: Nakladka): boolean {
 }
 
 /**
+ * R-WEB-CITY-CLEARS-FOREST-Q1 — JEDNA reguła „pod miastem nie ma lasu" (właściciel 2026-10-31:
+ * „jeżeli stawiam miasto, to automatycznie jest wycinany las, więc lasu nigdy nie ma tam, gdzie
+ * jest miasto"). Natychmiastowa wycinka: bez kosztu Pracy, bez wieloturowego `hexClearingStates`.
+ * Wołana z `clearHexForCityCenter` (KAŻDE założenie miasta przez `finalizeCityFounding`) oraz z
+ * siatki bezpieczeństwa `enforceNoForestUnderCities` (main.ts: wczytanie zapisu, granica tury).
+ * @returns true gdy las faktycznie usunięto.
+ */
+export function clearForestFromHex(hex: { nakladka: Nakladka } | undefined): boolean {
+  if (!hex || hex.nakladka !== Nakladka.Las) return false;
+  hex.nakladka = Nakladka.Brak;
+  return true;
+}
+
+/** Wariant po współrzędnych: czyści Las z heksa (q,r) mapy. */
+export function clearForestUnderCity(map: GameMap, q: number, r: number): boolean {
+  return clearForestFromHex(map.hexes[`${q},${r}`]);
+}
+
+/**
  * Czyści nakładki/złoża heksa centrum wg macierzy B.
  * @param mountainClearsAll heks Góry → kasuje WSZYSTKO (zostaje miasto + bonusy terenu).
  */
 export function clearHexForCityCenter(hex: HexExt, mountainClearsAll = true): void {
+  clearForestFromHex(hex);
   if (mountainClearsAll) {
     hex.nakladka = Nakladka.Brak;
     hex.ulepszenie = Ulepszenie.Brak;
@@ -51,9 +71,7 @@ export function clearHexForCityCenter(hex: HexExt, mountainClearsAll = true): vo
     return;
   }
   // Macierz B (nie-Góry): las ZNIKA, złoża naturalne/zwierzęce (nakładka) + hex.zloze ZOSTAJĄ.
-  if (hex.nakladka === Nakladka.Las) {
-    hex.nakladka = Nakladka.Brak;
-  } else if (hex.nakladka !== Nakladka.Brak && !isKeptDeposit(hex.nakladka)) {
+  if (hex.nakladka !== Nakladka.Brak && !isKeptDeposit(hex.nakladka)) {
     hex.nakladka = Nakladka.Brak;
   }
   // Warstwy ulepszeń (hex.ulepszenie/ulepszenia/improvementKey) ustawia wołający przez

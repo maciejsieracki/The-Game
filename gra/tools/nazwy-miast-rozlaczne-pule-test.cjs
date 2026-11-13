@@ -1,19 +1,17 @@
 'use strict';
 /**
  * node tools/nazwy-miast-rozlaczne-pule-test.cjs
- * Bramka tematu R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1.
+ * Bramka danych historycznego tematu nazw miast, zaktualizowana do wspólnej sekwencji.
  *
- * Pilnuje czterech binarnych kryteriów końca tego tematu:
+ * Pilnuje binarnych kryteriów wspólnego kontraktu:
  *  (K1) `miasta_cywilizacji[0]` = `Aszur` dla Asyrii i `Byblos` dla Fenicji, przy czym
  *       `Ninive` i `Tyr` NADAL są na swoich listach (tylko na dalszych pozycjach).
- *  (K2) przecięcie `miasta_panstwa` z `miasta_cywilizacji` jest PUSTE dla każdej cywilizacji
- *       (wzorzec `chinczycy`: państwa-miasta to mniejsze ośrodki i państwa zależne,
- *       nie powtórki stolic).
- *  (K3) dokładnie 100 nazw w `miasta_cywilizacji` i dokładnie 10 w `miasta_panstwa` —
- *       kryterium anty-obejściowe: rozłączność NIE może być osiągnięta skróceniem listy.
- *  (K4) brak duplikatów wewnątrz każdej z list.
- *  (K5) `civs.json:nazwyKlastra` = `miasta_panstwa` (lustro wymuszane przez
- *       `validateCityNamesPools` w `src/game/civ-names.ts`).
+ *  (K2) 100 nazw cywilizacji + 10 istniejących nazw państw-miast tworzy jedną
+ *       sekwencję `miasta_cywilizacji`, bez drugiego pola źródłowego.
+ *  (K3) pierwszy element jest stolicą; suffix od indeksu 100 zachowuje nazwy
+ *       państw-miast i nie może zwrócić indeksu 0.
+ *  (K4) brak duplikatów w całej sekwencji.
+ *  (K5) `civs.json:nazwyMiast` = wspólna sekwencja z puli.
  *
  * Bramka celowo czyta same dane (bez bundla) — jest odporna na zmiany w `src/`.
  */
@@ -29,7 +27,7 @@ function assert(cond, msg, detail) {
   else { failed++; console.error('FAIL:', msg, detail === undefined ? '' : '→ ' + JSON.stringify(detail)); }
 }
 
-console.log('nazwy-miast-rozlaczne-pule-test (R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1)\n');
+console.log('nazwy-miast-rozlaczne-pule-test (wspólna sekwencja nazw)\n');
 console.log('-- (K1) pierwsze pozycje Asyrii i Fenicji --');
 
 const PIERWSZE = { asyria: 'Aszur', fenicjanie: 'Byblos' };
@@ -42,41 +40,39 @@ for (const id of Object.keys(PIERWSZE)) {
   assert(idx > 0, `(K1) ${id}: „${stara}" nadal na liście, na dalszej pozycji`, idx);
 }
 
-console.log('\n-- (K2/K3/K4) rozłączność, liczności, duplikaty — WSZYSTKIE cywilizacje --');
+console.log('\n-- (K2/K3/K4) wspólna sekwencja, liczności, duplikaty — WSZYSTKIE cywilizacje --');
 
 const ids = Object.keys(pools);
 assert(ids.length === 15, '(K3) 15 cywilizacji w puli', ids.length);
 
-const kolizje = [];
 const zleDlugosci = [];
 const duplikaty = [];
+const drugieZrodla = [];
 for (const id of ids) {
   const cyw = pools[id].miasta_cywilizacji || [];
-  const pan = pools[id].miasta_panstwa || [];
-  const setCyw = new Set(cyw);
-  const wspolne = pan.filter((n) => setCyw.has(n));
-  if (wspolne.length) kolizje.push({ id, wspolne });
-  if (cyw.length !== 100 || pan.length !== 10) {
-    zleDlugosci.push({ id, cyw: cyw.length, pan: pan.length });
+  if (cyw.length !== 110) {
+    zleDlugosci.push({ id, wspolna: cyw.length });
   }
   if (new Set(cyw).size !== cyw.length) duplikaty.push({ id, lista: 'miasta_cywilizacji' });
-  if (new Set(pan).size !== pan.length) duplikaty.push({ id, lista: 'miasta_panstwa' });
+  if (Object.prototype.hasOwnProperty.call(pools[id], 'miasta_panstwa')) {
+    drugieZrodla.push(id);
+  }
 }
 
-assert(kolizje.length === 0,
-  '(K2) przecięcie miasta_panstwa × miasta_cywilizacji puste dla każdej cywilizacji', kolizje);
 assert(zleDlugosci.length === 0,
-  '(K3) dokładnie 100 nazw cywilizacji i 10 nazw państw-miast per cywilizacja', zleDlugosci);
+  '(K2/K3) dokładnie 110 nazw w jednej sekwencji per cywilizacja', zleDlugosci);
 assert(duplikaty.length === 0,
-  '(K4) brak duplikatów wewnątrz list', duplikaty);
+  '(K4) brak duplikatów w całej wspólnej sekwencji', duplikaty);
+assert(drugieZrodla.length === 0,
+  '(K2) brak niezależnego pola miasta_panstwa', drugieZrodla);
 
-console.log('\n-- (K5) lustro civs.json:nazwyKlastra --');
+console.log('\n-- (K5) synchronizacja civs.json:nazwyMiast --');
 
 const rozjazd = (civs.cywilizacje || [])
   .filter((c) => c.ikonaId && pools[c.ikonaId])
-  .filter((c) => JSON.stringify(c.nazwyKlastra || []) !== JSON.stringify(pools[c.ikonaId].miasta_panstwa))
+  .filter((c) => JSON.stringify(c.nazwyMiast || []) !== JSON.stringify(pools[c.ikonaId].miasta_cywilizacji))
   .map((c) => c.ikonaId);
-assert(rozjazd.length === 0, '(K5) civs.json:nazwyKlastra = miasta_panstwa dla każdej cywilizacji', rozjazd);
+assert(rozjazd.length === 0, '(K5) civs.json:nazwyMiast = miasta_cywilizacji dla każdej cywilizacji', rozjazd);
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed  (' + path.basename(__filename) + ')');
 process.exit(failed > 0 ? 1 : 0);

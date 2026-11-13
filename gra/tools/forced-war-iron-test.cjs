@@ -17,13 +17,13 @@ fs.writeFileSync(entry, `
 export {
   EPOKA_ZELAZO_NUMER,
   WOJNA_ZELAZO_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE,
+  WOJNA_ZELAZO_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR,
   WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
   WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI,
   isEligibleForIronForcedWar,
   isIronEraEntry,
   pickIronForcedWarTargetId,
-  shouldEndIronForcedWarByCityCount,
   isRestingFromIronForcedWar,
   serializeIronForcedWarState,
   restoreIronForcedWarState,
@@ -73,13 +73,13 @@ try {
   const {
     EPOKA_ZELAZO_NUMER: ironEra,
     WOJNA_ZELAZO_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE: cityLimit,
+    WOJNA_ZELAZO_WYMUSZONA_MAX_CZAS_TRWANIA_TUR: durationTurns,
     WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR: restTurns,
     WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR: cooldownTurns,
     WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI: startTuryOdEpoki,
     isEligibleForIronForcedWar,
     isIronEraEntry,
     pickIronForcedWarTargetId,
-    shouldEndIronForcedWarByCityCount,
     isRestingFromIronForcedWar,
     serializeIronForcedWarState,
     restoreIronForcedWarState,
@@ -89,6 +89,7 @@ try {
   console.log('--- kontrakt parametrów (dispatch §PARAMETR: wartości jak Brąz/Kamień) ---');
   eq(ironEra, 3, 'Żelazo to epoka numer 3 (KOLEJNOSC_EPOK = Kamien/Braz/Zelazo)');
   eq(cityLimit, 2, 'pokój po 2 miastach');
+  eq(durationTurns, 20, 'automatyczny pokój po maksymalnie 20 turach');
   eq(restTurns, 20, 'odpoczynek 20 tur');
   eq(cooldownTurns, 20, 'cooldown tej samej cywilizacji 20 tur');
 
@@ -110,8 +111,8 @@ try {
   assert(!eligibility({ isMainAiCiv: false }), 'brak dla gracza/miasta-państwa/barbarzyńcy');
   assert(!eligibility({ isAlreadyAtWarAnyRole: true }), 'brak dla ownera już w wojnie (dowolna rola)');
 
-  console.log('--- R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: próg 25 tur od WEJŚCIA W ŻELAZO ---');
-  eq(startTuryOdEpoki, 25, 'próg startu Żelaza = 25 tur od wejścia w epokę (jak Brąz)');
+  console.log('--- R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1 + R-WEB-ERA-DELAY-Q1: próg 20 tur od WEJŚCIA W ŻELAZO ---');
+  eq(startTuryOdEpoki, 20, 'próg startu Żelaza = 20 tur od wejścia w epokę (R-WEB-ERA-DELAY-Q1, z JSON)');
 
   // Kryterium końca 1 (dispatch): 0 tur po wejściu w Żelazo -> NIE kwalifikuje się, mimo że
   // wszystkie pozostałe warunki (główna cywilizacja AI, brak wojny) są spełnione -- dziś (przed
@@ -122,18 +123,18 @@ try {
   );
   assert(
     !eligibility({ currentTurn: 40 + startTuryOdEpoki - 1, eraEnterTurn: 40 }),
-    'próg NIE jest spełniony jedną turą przed 25 (24 tury od wejścia)',
+    'próg NIE jest spełniony jedną turą przed 20 (19 tur od wejścia)',
   );
 
-  // Kryterium końca 2 (dispatch): dokładnie 25 tur po wejściu, nadal poza wojną -> KWALIFIKUJE
+  // Kryterium końca 2 (dispatch): dokładnie 20 tur po wejściu, nadal poza wojną -> KWALIFIKUJE
   // się (próg spełniony, granica włącznie: >=).
   assert(
     eligibility({ currentTurn: 40 + startTuryOdEpoki, eraEnterTurn: 40 }),
-    'kryterium 2: dokładnie 25 tur po wejściu w Żelazo KWALIFIKUJE się (próg spełniony, granica >=)',
+    'kryterium 2: dokładnie 20 tur po wejściu w Żelazo KWALIFIKUJE się (próg spełniony, granica >=)',
   );
   assert(
     eligibility({ currentTurn: 40 + startTuryOdEpoki + 10, eraEnterTurn: 40 }),
-    'próg pozostaje spełniony długo po 25 turach (nie jest to jednorazowe okno)',
+    'próg pozostaje spełniony długo po 20 turach (nie jest to jednorazowe okno)',
   );
 
   // Kryterium końca 3 (dispatch, ZERO REGRESJI): wojna z miastem-państwem (isAlreadyAtWarAnyRole)
@@ -219,9 +220,12 @@ try {
   );
 
   console.log('--- 2 miasta, odpoczynek i cooldown ---');
-  assert(!shouldEndIronForcedWarByCityCount(1, 1), '1 zdobyte i 1 utracone nie kończy wojny');
-  assert(shouldEndIronForcedWarByCityCount(2, 0), '2 zdobyte kończą wojnę pokojem');
-  assert(shouldEndIronForcedWarByCityCount(0, 2), '2 utracone kończą wojnę pokojem');
+  // R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna Żelaza NIE kończy się automatycznie (ani po 2 miastach, ani po 20 turach).
+  {
+    // R-WEB-PEACE-RULES-R8R9-Q1 R9: helper auto-końca usunięty z modułu (kontrakt źródła).
+    const srcTxt = require('fs').readFileSync(require('path').resolve(__dirname, '..', 'src', 'game', 'forced-war-iron.ts'), 'utf8');
+    assert(!/shouldEnd\w*ForcedWarBy(CityCount|Duration)/.test(srcTxt), 'R9: brak shouldEnd*ForcedWarBy(CityCount|Duration) w forced-war-iron.ts');
+  }
   assert(isRestingFromIronForcedWar(100, 120), 'odpoczynek działa przed restUntil');
   assert(!isRestingFromIronForcedWar(120, 120), 'odpoczynek kończy się na restUntil');
   assert(!isRestingFromIronForcedWar(100, undefined), 'brak wpisu restUntil = brak odpoczynku');
@@ -254,8 +258,9 @@ try {
     'BEZ ironForceWarTargetId ta sama relacja NIE daje DOW (dowód, że to mechanizm, nie ogólna reguła)',
   );
   assert(!ironCommand({ stanWojny: true }).some(c => c.type === 'wypowiedz_wojne'), 'target już w wojnie blokuje DOW');
-  assert(!ironCommand({ peaceLocked: true }).some(c => c.type === 'wypowiedz_wojne'), 'peace lock (w tym cooldown pary) blokuje DOW');
-  assert(!ironCommand({ hasNapTreaty: true }).some(c => c.type === 'wypowiedz_wojne'), 'NAP blokuje DOW');
+  assert(ironCommand({ peaceLocked: true }).some(c => c.type === 'wypowiedz_wojne'), 'peace lock (w tym cooldown pary) NIE blokuje wojny epoki (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1)');
+  assert(ironCommand({ hasNapTreaty: true }).some(c => c.type === 'wypowiedz_wojne'), 'NAP NIE blokuje wojny epoki (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1)');
+  assert(!ironCommand({ hasAllianceTreaty: true }).some(c => c.type === 'wypowiedz_wojne'), 'sojusz z celem nadal blokuje wojnę Żelaza');
   assert(!ironCommand({ hasAllianceTreaty: true }).some(c => c.type === 'wypowiedz_wojne'), 'sojusz z celem blokuje DOW');
 
   console.log('--- ironForceWarTargetId bez pasującej relacji (żaden target, w tym gracz) ---');

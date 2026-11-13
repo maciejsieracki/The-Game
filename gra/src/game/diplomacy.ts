@@ -21,7 +21,10 @@ import { StanWojny }                 from '../types/diplomacy';
 import { TypCywilizacji }            from '../types/player';
 import type { Player }               from '../types/player';
 import diplomacyData from '../../data/diplomacy.json';
+// R-WEB-WAR-AGGRESSOR-FLAG-Q1: parametry flagi agresora (sekcja na końcu pliku).
+import aggressorParamsJson from '../../data/diplomacy-aggressor-params.json';
 import type { GameDifficulty } from './difficulty-cost';
+import type { CivMatrixDifficulty } from './civ-matrix';
 import {
   nastawienieBazoweZaufanieDelta,
   resolveArchetypeAggression,
@@ -29,6 +32,7 @@ import {
 } from './civ-ai-data';
 import { isBarbarian } from './barbarians';
 import { applyWiarygodnoscTempoDoDelty, zaufanieDryfOdWiarygodnosci } from './diplomacy-credibility';
+import { resolveWarPeaceProfile, warWearinessShare } from './diplomacy-war-peace-profile';
 
 // ---------------------------------------------------------------------------
 // Re-exported Relation interface (spec-aligned alias over RelacjaDyplomatyczna)
@@ -154,14 +158,18 @@ export const DIPLOMACY_PARAMS = {
   wspolnaReligia_zaufanie_perTura:  0.5,
   /** "Odmienna religia" (-0.5/ture, max -10) */
   odmiennaReligia_zaufanie_perTura: -0.5,
-  /** "Kara za wspólną granicę" (-2/ture) */
+  /** "Kara za wspólną granicę" dla epoki Kamienia (-2/turę). */
   ekspansjaGranica_zaufanie_perTura: -2,
+  /** Kara za wspólną granicę dla epoki Brązu (-3/turę). */
+  ekspansjaGranicaBraz_zaufanie_perTura: -3,
+  /** Kara za wspólną granicę dla epoki Żelaza (-4/turę). */
+  ekspansjaGranicaZelazo_zaufanie_perTura: -4,
   /** "Urazy historyczne (zanikajace)" (-2/ture; fades every 20 turns) */
   urazyHistoryczne_zaufanie_perTura: -2,
 
   // ---- thresholds (progi akcji; sekcja C) ----
-  /** Zaufanie >= 91 required for SojuszWojskowy (przy równowadze sił >90%) */
-  progSojuszZaufanie:        91,
+  /** Zaufanie >= 90 required for SojuszWojskowy (Maciej 2026-11-09: 130 Relacji + 90 Zaufania; przy spełnieniu obu bramki siły nie blokują) */
+  progSojuszZaufanie:        90,
   /** Zaufanie >= 70 required for WymianaTechnologii */
   progWymianaTechZaufanie:   70,
   /** Respekt >= 70 required to demand Wasalizacja */
@@ -170,10 +178,12 @@ export const DIPLOMACY_PARAMS = {
   progWchloniecieRespekt:    90,
   /** Relacja < 30 = diplomacy nearly impossible */
   progMinimalnyRelacja:      30,
-  /** Relacja >= 151 = sojusz (Maciej 2026-06-30: powyżej 150) */
-  progSojuszRelacja:         151,
-  /** Twarda podłoga Relacji na dobrowolne umowy pozytywne (>150); premia siły nie obniża */
-  progUmowaMinRelacja:       151,
+  /** Relacja >= 130 = sojusz (Maciej 2026-11-09, wcześniej 151) */
+  progSojuszRelacja:         130,
+  /** Twarda podłoga Relacji na dobrowolne umowy pozytywne (= próg sojuszu 130); premia siły nie obniża */
+  progUmowaMinRelacja:       130,
+  /** Relacja >= 151 = AI proponuje NAP bezterminowy (wydzielone z progSojuszRelacja, runda 2 C) */
+  progNapBezterminowyRelacja: 151,
 
   // ---- starting values (wartosci startowe) ----
   startZaufanie: 20,
@@ -200,8 +210,14 @@ export const DIPLOMACY_PARAMS = {
   progPoboczneWojna:     15,
 
   // ---- propozycje v1.1 (Panel-D → evaluateProposal) ----
-  /** Relacja >= wartość wymagana do NAP (Maciej 2026-09-03: 110 @ normal; tylko Rel, bez Zauf) */
+  /** Relacja >= wartość wymagana do NAP (Maciej 2026-09-03: 110 @ normal; od 2026-11-05 OBOK Zaufania — progNapZaufanie) */
   progNapRelacja:                  110,
+  /**
+   * R-WEB-DIPLO-NAP-TRUST-30-Q1 (decyzja właściciela 2026-11-05): pakt o nieagresji wymaga
+   * ORAZ Relacji ≥ progNapRelacja ORAZ Zaufania ≥ tego progu. Wartość STAŁA na wszystkich
+   * trudnościach — celowo NIE w DIPLO_ZAUFANIE_THRESHOLD_KEYS (brak ±delta trudności).
+   */
+  progNapZaufanie:                 30,
   /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża/surowce (Maciej 2026-07-26: 0 = od neutralnej) */
   progHandelRelacja:               0,
   /** @deprecated v1.2 — usunięte „tylko równi”; zostaje w JSON dla roundtrip */
@@ -218,7 +234,7 @@ export const DIPLOMACY_PARAMS = {
   /** Bonus willingnessAlly gdy rozmówca silniejszy (AI słabsze — sojusz z hegemonem) */
   progSojuszPremiaSilniejszyInny:  0.20,
   /** aiDiplomacyStance.willingnessAlly min dla sojuszu */
-  progSojuszWillingnessMin:        0.68,
+  progSojuszWillingnessMin:        0.54,
   /** v1.3 — max podwyżka progów gdy respondent (AI) silniejszy od proponenta */
   progSojuszKaraSilniejszyMax:     0.40,
   /** v1.3 — wkład przewagi respondenta (1/milProponent − 1) × skok */
@@ -479,6 +495,7 @@ const DIPLO_RELATION_THRESHOLD_KEYS: readonly (keyof DiplomacyParams)[] = [
   'progMinimalnyRelacja',
   'progSojuszRelacja',
   'progUmowaMinRelacja',
+  'progNapBezterminowyRelacja',
   'progNapRelacja',
   'progGraniceRelacja',
   'progPoboczneHandel',
@@ -577,6 +594,18 @@ export function getEffectiveDiplomacyParams(
   return scaleDiplomacyParamsForDifficulty(getBaseDiplomacyParams(), difficulty);
 }
 
+/** Wartość istniejącej kary granicznej według wyższej epoki właścicieli pary. */
+export function sharedBorderPenaltyForEpochs(
+  epochA: number,
+  epochB: number,
+  params: DiplomacyParams = getEffectiveDiplomacyParams(),
+): number {
+  const pairEpoch = Math.max(epochA, epochB);
+  if (pairEpoch >= 3) return params.ekspansjaGranicaZelazo_zaufanie_perTura;
+  if (pairEpoch >= 2) return params.ekspansjaGranicaBraz_zaufanie_perTura;
+  return params.ekspansjaGranica_zaufanie_perTura;
+}
+
 /** Testy / hot-reload — opcjonalnie reset cache. */
 export function resetEffectiveDiplomacyParamsCache(): void {
   _baseDiplomacyParams = null;
@@ -637,6 +666,25 @@ export function diplomacyAllianceMinZaufanie(
     minZ = Math.max(params.progSojuszPremiaGracz2xMinZaufanie, minZ);
   }
   return minZ;
+}
+
+/**
+ * R-WEB-DIPLO-ALLIANCE-THRESHOLD-130-TRUST-90-Q1 (Maciej 2026-11-09): "rdzeń" sojuszu =
+ * Relacja >= progSojuszRelacja (130, po ulgach słodzika/delcie agresora, nie poniżej
+ * progUmowaMinRelacja) ORAZ Zaufanie >= progSojuszZaufanie (90, po ulgach słodzika). Gdy rdzeń
+ * spełniony, bramki SIŁY (hegemon, kara siły respondenta, słaby proponent) nie
+ * blokują sojuszu. GOTOWOŚĆ AI (willingnessAlly) zostaje (runda 2, decyzja A). Wiarygodność, wojna i duplikat traktatu nadal obowiązują.
+ */
+export function allianceCoreMet(
+  zaufanie: number,
+  score: number,
+  relThreshold: number,
+  params: DiplomacyParams = getEffectiveDiplomacyParams(),
+  zaufanieEase = 0,
+): boolean {
+  const minZ = Math.max(0, params.progSojuszZaufanie - zaufanieEase);
+  const minScore = diplomacyTreatyMinRelacja(relThreshold, params);
+  return zaufanie >= minZ && score >= minScore;
 }
 
 /** v1.3 — premia proponenta + kara respondenta + strefa hegmona (Maciej 2026-06-30). */
@@ -711,12 +759,12 @@ export const SISTER_ALLIANCE_THRESHOLD_SCALE: Record<'low' | 'normal' | 'strong'
  * diplomacyTreatyMinRelacja — Relacja < progMinimalnyRelacja = "dyplomacja prawie
  * niemożliwa", więc nawet zdyskontowany próg sojuszu nie może zejść poniżej tego dna).
  *
- * WAŻNE: `progUmowaMinRelacja` (globalnie 151 — "twarda podłoga na dobrowolne umowy,
+ * WAŻNE: `progUmowaMinRelacja` (globalnie 130 — "twarda podłoga na dobrowolne umowy,
  * premia siły NIE obniża") jest tu przeskalowany RAZEM z `progSojuszRelacja`
  * (do tej samej wartości). aiDiplomacyStance liczy próg sojuszu przez
  * diplomacyTreatyMinRelacja(adjustedThreshold, params) = max(params.progUmowaMinRelacja,
- * adjustedThreshold) — gdyby progUmowaMinRelacja został globalny (151), próg sojuszu
- * sióstr byłby ZAWSZE 151 niezależnie od skali (bug — obniżka nie miałaby efektu).
+ * adjustedThreshold) — gdyby progUmowaMinRelacja został globalny (130), próg sojuszu
+ * sióstr byłby ZAWSZE 130 niezależnie od skali (bug — obniżka nie miałaby efektu).
  * Dla par sióstr "twarda podłoga" to WŁAŚNIE ich własny, obniżony próg sojuszu.
  *
  * Nie zmienia `base` (immutable) ani globalnego getEffectiveDiplomacyParams().
@@ -838,6 +886,9 @@ export type DiplomaticEvent =
   | 'trybut_oferta_przyjeta'    // 1.8 tribute OFFER accepted: payer avoids attack (+5 Zaufanie)
   | 'wymiana_tech_gratis'       // 1.6 free technology exchange (+5 Zaufanie)
   | 'zerwanie_handlu'          // 1.5 zerwanie umowy handlowej (−10 Zaufanie; szablon §1.5: −15 Relacja/−10 Zaufanie)
+  // R-WEB-TREATY-TRADE-FREE-BREAK-AFTER-10-Q1: dobrowolne zerwanie umowy handlowej po ≥10 turach
+  // od zawarcia — zdarzenie śledzone (status/ślad), ale BEZ kary Zaufania (dZ=0).
+  | 'zerwanie_handlu_bez_kary'
   // --- Makieta DYPLOMACJA v1.1 domknięcie zaległości (2026-07-23) ---
   | 'zerwanie_traktatu';       // dobrowolne zerwanie traktatu (NAP/sojusz/granice/wasal) przez
                                // stronę — NIE wymuszone wojną (to 'zlamana_obietnica', -40,
@@ -1021,6 +1072,12 @@ export function applyDiplomaticEvent(
       dZ = -10;
       break;
 
+    case 'zerwanie_handlu_bez_kary':
+      // R-WEB-TREATY-TRADE-FREE-BREAK-AFTER-10-Q1: umowa handlowa zerwana po ≥10 turach od
+      // zawarcia — brak kary Zaufania (decyzja właściciela 2026-11-05).
+      dZ = 0;
+      break;
+
     case 'zerwanie_traktatu':
       // Dobrowolne zerwanie traktatu (przycisk „Zerwij" — Makieta DYPLOMACJA v1.1):
       // -15 Zaufanie jednorazowo. Mniejsze niż 'zlamana_obietnica' (-40), bo to
@@ -1099,6 +1156,13 @@ export interface AIDiplomacyContext {
    * 0 when at peace.
    */
   turnsAtWar: number;
+  /** Poziom używany do odczytu wartości skali z macierzy cywilizacji. */
+  civMatrixDifficulty?: CivMatrixDifficulty;
+  /**
+   * R-WEB-WAR-AGGRESSOR-FLAG-Q1: druga strona (`otherPlayer`) ma aktywną flagę agresora.
+   * true = wyższy próg Relacji na sojusz i mnożnik willingnessAlly (parametry w JSON).
+   */
+  celAgresorAktywny?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -1128,7 +1192,7 @@ export interface AIDiplomacyStance {
   willingnessTrade: number;
   /**
    * Willingness to form or accept a SojuszWojskowy.
-   * Requires Zaufanie >= progSojuszZaufanie (91) AND Relacja >= progSojuszRelacja (151).
+   * Requires Zaufanie >= progSojuszZaufanie (90) AND Relacja >= progSojuszRelacja (130).
    */
   willingnessAlly: number;
 }
@@ -1258,10 +1322,13 @@ export function aiDiplomacyStance(
   const archAggression = resolveArchetypeAggression(
     aiPlayer.typCywilizacji,
     ARCHETYPE_AGGRESSION[aiPlayer.typCywilizacji] ?? 0.40,
+    undefined,
+    context.civMatrixDifficulty,
   );
   const archTrade = resolveArchetypeTrade(
     aiPlayer.typCywilizacji,
     ARCHETYPE_TRADE[aiPlayer.typCywilizacji] ?? 0.50,
+    context.civMatrixDifficulty,
   );
 
   // -- War willingness --
@@ -1283,7 +1350,12 @@ export function aiDiplomacyStance(
   // High when: weaker militarily, war drags on, or moderate goodwill.
   let peaceW: number;
   if (rel.status === 'wojna') {
-    const warWeariness     = clamp(context.turnsAtWar / 20, 0, 0.50);
+    // R-WEB-PEACE-RULES-Q1 R4: zmęczenie = min(0.5, turnsAtWar / T(civ)), T ≤ 20 (D4).
+    // Wcześniej clamp(turnsAtWar/20) z turnsAtWar podawanym jako stała (ai.ts 5/main 1) = martwe.
+    const warWeariness     = warWearinessShare(
+      context.turnsAtWar,
+      resolveWarPeaceProfile(aiPlayer.typCywilizacji).zmeczenieT,
+    );
     const militaryPressure = context.militaryRatio < 1
       ? (1 - context.militaryRatio) * 0.40
       : 0;
@@ -1314,14 +1386,18 @@ export function aiDiplomacyStance(
     aiRespektShare,
     p,
   );
+  // R-WEB-WAR-AGGRESSOR-FLAG-Q1: wobec agresora (flaga aktywna) próg sojuszu wyżej o deltę z JSON.
+  const agresorDeltaSojusz = deltaRelacjiSojusz(context.celAgresorAktywny === true);
+  // Runda 2 (B): rdzeń 130/90 pomija hegemona i karę siły (gotowość zostaje) — jak evaluateProposal.
+  const coreMet = allianceCoreMet(zaufanie, score, p.progSojuszRelacja + agresorDeltaSojusz, p);
   let minAllyZ = diplomacyAllianceMinZaufanie(adj, otherMilOverAi, p);
   let minAllyScore = diplomacyTreatyMinRelacja(
-    p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore,
+    p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore + agresorDeltaSojusz,
     p,
   );
 
   let allyW = 0;
-  if (!adj.hegemonBlocksAlliance && zaufanie >= minAllyZ && score >= minAllyScore) {
+  if ((coreMet || (!adj.hegemonBlocksAlliance && zaufanie >= minAllyZ && score >= minAllyScore))) {
     const loyaltyBonus: number =
       aiPlayer.typCywilizacji === TypCywilizacji.Chinczycy ? 0.20
       : aiPlayer.typCywilizacji === TypCywilizacji.Inkowie ? 0.15
@@ -1338,11 +1414,14 @@ export function aiDiplomacyStance(
         0,
         1,
       );
-    } else if (aiMilOverOther > 1) {
+    } else if (aiMilOverOther > 1 && !coreMet) {
       // Hegemon / silniejsze AI — mniejsza motywacja sojuszu równoprawnego.
       allyW = clamp(allyW - adj.allyWPenalty, 0, 1);
     }
   }
+
+  // R-WEB-WAR-AGGRESSOR-FLAG-Q1: gorsza chęć sojuszu wobec agresora (mnożnik z JSON; 1 bez flagi).
+  allyW = clamp(allyW * mnoznikWillingnessAlly(context.celAgresorAktywny === true), 0, 1);
 
   return {
     willingnessWar:   parseFloat(warW.toFixed(4)),
@@ -1443,8 +1522,8 @@ export const TIER_NAMES = ['Wojna', 'Wrogi', 'Neutralny', 'Przyjazny', 'Sojusz']
  *   0 = Wojna      (status === 'wojna', overrides score)
  *   1 = Wrogi      (score <  30  = DIPLOMACY_PARAMS.progMinimalnyRelacja)
  *   2 = Neutralny  (score <  60  -- fixed midpoint between progMinimalny/progSojusz)
- *   3 = Przyjazny  (score < 151  = DIPLOMACY_PARAMS.progSojuszRelacja)
- *   4 = Sojusz     (status === 'sojusz' overrides score; OR score >= 151)
+ *   3 = Przyjazny  (score < 130  = DIPLOMACY_PARAMS.progSojuszRelacja)
+ *   4 = Sojusz     (status === 'sojusz' overrides score; OR score >= 130)
  *
  * Status is SOVEREIGN over score:
  *   - 'wojna'  -> always 0, regardless of score
@@ -1457,8 +1536,22 @@ export function relationTier(rel: Relation): 0 | 1 | 2 | 3 | 4 {
   const s = relationScore(rel);
   if (s < DIPLOMACY_PARAMS.progMinimalnyRelacja) return 1; // Wrogi  (< 30)
   if (s < 60)                                    return 2; // Neutralny (< 60)
-  if (s < DIPLOMACY_PARAMS.progSojuszRelacja)    return 3; // Przyjazny (< 151)
-  return 4;                                                // Sojusz (>= 151)
+  if (s < DIPLOMACY_PARAMS.progSojuszRelacja)    return 3; // Przyjazny (< 130)
+  return 4;                                                // Sojusz (>= 130)
+}
+
+/**
+ * R-WEB-DIPLO-ALLIANCE-BLOCKED-AT-TRUST-100-Q1 (DODATEK 1) — tier DO WYŚWIETLENIA.
+ * `relationTier` zwraca 4 („Sojusz") także dla samego score >= progSojuszRelacja bez traktatu
+ * (to „próg sojuszu osiągnięty", nie sojusz) — emblemat/„Relacja: Sojusz" mówił wtedy „sojusz",
+ * a listy „Sojusze"/„W sojuszu z" (liczone z activeDeals) pokazywały „brak". Jedno źródło prawdy
+ * dla UI = faktyczny traktat sojuszu: tier 4 TYLKO gdy istnieje aktywny sojusz (i brak wojny).
+ */
+export function relationTierDisplay(rel: Relation, hasAllianceDeal: boolean): 0 | 1 | 2 | 3 | 4 {
+  const t = relationTier(rel);
+  if (t === 0) return 0;
+  if (hasAllianceDeal) return 4;
+  return t === 4 ? 3 : t;
 }
 
 // ---------------------------------------------------------------------------
@@ -1647,6 +1740,8 @@ export interface TickCtx {
    * `ekspansjaPrzyGranicy` — czysty licznik miast, zero związku z faktyczną granicą.
    */
   karaWspolnaGranica?: boolean;
+  /** Resolved shared-border penalty for the pair's higher owner epoch. */
+  karaWspolnaGranicaDelta?: number;
   /**
    * REL-WIARYG-DRIFT-Q1 — globalna Wiarygodność strony (nie per para), źródło
    * pasywnego dryfu Zaufania `zaufanieDryfOdWiarygodnosci(W)` (niezależnego od umów).
@@ -1701,7 +1796,9 @@ export function computeTickZaufanieDelta(ctx: TickCtx, atWar: boolean): number {
   if (ctx.wspolnyWrog)          dZ += p.wspolnyWrog_zaufanie_perTura;
   if (ctx.wspolnaReligia)       dZ += p.wspolnaReligia_zaufanie_perTura;
   if (ctx.odmiennaReligia)      dZ += p.odmiennaReligia_zaufanie_perTura;
-  if (ctx.karaWspolnaGranica) dZ += p.ekspansjaGranica_zaufanie_perTura;
+  if (ctx.karaWspolnaGranica) {
+    dZ += ctx.karaWspolnaGranicaDelta ?? p.ekspansjaGranica_zaufanie_perTura;
+  }
 
   dZ = applyWiarygodnoscTempoDoDelty(dZ, ctx.wiarygodnoscSelf);
 
@@ -1757,4 +1854,176 @@ export function tickDiplomacy(rdip: RelacjaDyplomatyczna, ctx: TickCtx): Relacja
     traktaty:         aktywne,
     urazyHistoryczne: noweUrazy,
   };
+}
+// R-WEB-WAR-AGGRESSOR-FLAG-Q1 — flaga agresora i casus belli.
+// Parametry: gra/data/diplomacy-aggressor-params.json (nie w kodzie).
+// Funkcje czyste zwracają NOWE obiekty (bez mutacji). Stan silnika trzymany jest w tym module
+// (ustawStanAgresorow / ustawStanCasusBelli), zapisywany i wczytywany w SaveGame.meta przez main.ts.
+
+
+export interface AggressorParams {
+  flagaAgresora: { trwaTur: number };
+  wplywNaAI: { relacjaDeltaSojusz: number; willingnessAllyMnoznik: number };
+  casusBelli: { trwaTur: number };
+}
+
+export const AGGRESSOR_PARAMS: AggressorParams = aggressorParamsJson as unknown as AggressorParams;
+
+/**
+ * Przyczyna wypowiedzenia wojny. Tylko 'bez_powodu' nadaje flagę agresora.
+ * - casus_belli: wypowiedzenie po odmowie trybutu/ultimatum (aktywne casus belli wobec celu).
+ * - wymuszona_epoka: wojna wymuszona epoki (prefiks R-EPOKA-*-WYMUSZONA-WOJNA).
+ * - hamulec: wojna z progu zaufania (hamulec Relacji).
+ * - wymuszona_inna: obowiązek sojuszniczy lub ochrona rebelii (wymuszone wejście w wojnę).
+ */
+export type WarCause = 'bez_powodu' | 'casus_belli' | 'wymuszona_epoka' | 'hamulec' | 'wymuszona_inna';
+
+/** Czy wypowiedzenie wojny tej przyczyny nadaje flagę agresora (GOAL 1 i 3). */
+export function czyDajeFlageAgresora(cause: WarCause): boolean {
+  return cause === 'bez_powodu';
+}
+
+/**
+ * Wejście wyboru przyczyny. Priorytety: hamulec > wymuszona epoka > wymuszona inna
+ * > casus belli > bez powodu. Hamulec i wymuszenia NIE nadają flagi nawet przy aktywnym casus belli.
+ */
+export interface WarCauseInput {
+  hamulec?: boolean;
+  wymuszonaEpoka?: boolean;
+  wymuszonaInna?: boolean;
+  casusBelliAktywny?: boolean;
+  /** R-WEB-TRUCE-Q1 r3 (N1): wypowiedzenie w oknie aktywnego rozejmu = złamanie → bez_powodu (flaga agresora), nawet przy casus belli. */
+  zlamanieRozejmu?: boolean;
+}
+
+export function przyczynaWypowiedzenia(input: WarCauseInput): WarCause {
+  if (input.hamulec) return 'hamulec';
+  if (input.wymuszonaEpoka) return 'wymuszona_epoka';
+  if (input.wymuszonaInna) return 'wymuszona_inna';
+  if (input.zlamanieRozejmu) return 'bez_powodu';
+  if (input.casusBelliAktywny) return 'casus_belli';
+  return 'bez_powodu';
+}
+
+/** Mapa ownerId -> tura, do której (wyłącznie) trwa flaga agresora. */
+export type AggressorState = Record<string, number>;
+
+/** Nadaje flagę agresora od `turn` (jeśli przyczyna na to pozwala). Zwraca nowy stan. */
+export function ustawFlageAgresora(
+  state: AggressorState,
+  ownerId: number,
+  turn: number,
+  cause: WarCause,
+  params: AggressorParams = AGGRESSOR_PARAMS,
+): AggressorState {
+  if (!czyDajeFlageAgresora(cause)) return state;
+  if (!Number.isFinite(turn) || !Number.isFinite(ownerId)) return state;
+  const doTury = turn + params.flagaAgresora.trwaTur;
+  const prev = state[String(ownerId)];
+  if (prev !== undefined && prev >= doTury) return state;
+  return { ...state, [String(ownerId)]: doTury };
+}
+
+/** Czy `ownerId` jest agresorem w turze `turn` (aktywna dla turn < doTury). */
+export function czyAgresor(state: AggressorState, ownerId: number, turn: number): boolean {
+  const doTury = state[String(ownerId)];
+  if (doTury === undefined || !Number.isFinite(doTury) || !Number.isFinite(turn)) return false;
+  return turn < doTury;
+}
+
+/** Mnożnik willingnessAlly wobec agresora u INNEGO AI (1 = bez zmian). */
+export function mnoznikWillingnessAlly(aktywnaFlaga: boolean, params: AggressorParams = AGGRESSOR_PARAMS): number {
+  return aktywnaFlaga ? params.wplywNaAI.willingnessAllyMnoznik : 1;
+}
+
+/**
+ * Przesunięcie progu Relacji dla sojuszu wobec agresora (0 gdy brak flagi). Wartość DODATNIA
+ * podnosi próg (trudniej o sojusz/pakt), zgodnie z GOAL (4) „gorsza chęć sojuszu".
+ */
+export function deltaRelacjiSojusz(aktywnaFlaga: boolean, params: AggressorParams = AGGRESSOR_PARAMS): number {
+  return aktywnaFlaga ? params.wplywNaAI.relacjaDeltaSojusz : 0;
+}
+
+/** Casus belli: klucz `requester>target` -> tura końca (wyłącznie). */
+export type CasusBelliState = Record<string, number>;
+
+export function casusBelliKey(requester: number, target: number): string {
+  return `${requester}>${target}`;
+}
+
+export function ustawCasusBelli(
+  state: CasusBelliState,
+  requester: number,
+  target: number,
+  turn: number,
+  params: AggressorParams = AGGRESSOR_PARAMS,
+): CasusBelliState {
+  if (!Number.isFinite(requester) || !Number.isFinite(target) || !Number.isFinite(turn)) return state;
+  if (requester === target) return state;
+  const key = casusBelliKey(requester, target);
+  const doTury = turn + params.casusBelli.trwaTur;
+  const prev = state[key];
+  if (prev !== undefined && prev >= doTury) return state;
+  return { ...state, [key]: doTury };
+}
+
+export function maCasusBelli(state: CasusBelliState, requester: number, target: number, turn: number): boolean {
+  const doTury = state[casusBelliKey(requester, target)];
+  if (doTury === undefined || !Number.isFinite(doTury) || !Number.isFinite(turn)) return false;
+  return turn < doTury;
+}
+
+/** Serializacja do zapisu: tylko wpisy z poprawną liczbą. */
+export function serializujMape(state: Record<string, number>): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const k of Object.keys(state)) {
+    const v = state[k];
+    if (typeof v === 'number' && Number.isFinite(v)) out[k] = v;
+  }
+  return out;
+}
+
+/** Wczytanie z zapisu; brak lub uszkodzone dane = pusty stan (stary zapis bez pola). */
+export function wczytajMape(raw: unknown): Record<string, number> {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+  return serializujMape(raw as Record<string, number>);
+}
+
+// ---------------------------------------------------------------------------
+// Stan silnika (singleton modułu; main.ts resetuje go przy nowej grze i wczytaniu zapisu).
+// ---------------------------------------------------------------------------
+
+let stanAgresorow: AggressorState = {};
+let stanCasusBelli: CasusBelliState = {};
+
+export function pobierzStanAgresorow(): AggressorState { return stanAgresorow; }
+export function pobierzStanCasusBelli(): CasusBelliState { return stanCasusBelli; }
+export function ustawStanAgresorow(s: AggressorState): void { stanAgresorow = serializujMape(s); }
+export function ustawStanCasusBelli(s: CasusBelliState): void { stanCasusBelli = serializujMape(s); }
+export function resetStanAgresora(): void { stanAgresorow = {}; stanCasusBelli = {}; }
+
+/** Czy owner jest agresorem (aktywna flaga) w turze `turn`. */
+export function czyAgresorAktywny(ownerId: number, turn: number): boolean {
+  return czyAgresor(stanAgresorow, ownerId, turn);
+}
+
+/** Tura końca (wyłącznie) aktywnej flagi agresora owner'a; undefined gdy flagi nie ma w turze `turn`. */
+export function doTuryFlagiAgresora(ownerId: number, turn: number): number | undefined {
+  if (!czyAgresorAktywny(ownerId, turn)) return undefined;
+  return stanAgresorow[String(ownerId)];
+}
+
+/** Czy `requester` ma aktywne casus belli wobec `target` w turze `turn`. */
+export function maCasusBelliAktywne(requester: number, target: number, turn: number): boolean {
+  return maCasusBelli(stanCasusBelli, requester, target, turn);
+}
+
+/** Rejestruje wypowiedzenie wojny (flaga agresora tylko dla przyczyny 'bez_powodu'). */
+export function zarejestrujWypowiedzenie(attackerId: number, turn: number, cause: WarCause): void {
+  stanAgresorow = serializujMape(ustawFlageAgresora(stanAgresorow, attackerId, turn, cause));
+}
+
+/** Rejestruje odmowę trybutu/ultimatum: żądający dostaje casus belli wobec adresata. */
+export function zarejestrujCasusBelli(requester: number, target: number, turn: number): void {
+  stanCasusBelli = serializujMape(ustawCasusBelli(stanCasusBelli, requester, target, turn));
 }

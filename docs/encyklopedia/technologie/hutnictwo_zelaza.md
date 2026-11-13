@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Hutnictwo żelaza** — epoka **Brąz** (poziom 6), koszt **240** PN (tempo Szybka), wymaga: Brązownictwo. Odblokowuje budynki: Odlewnia żelaza, Kuźnia żelaza; jednostki: Hastati, Falanga, Drużynnik, Garnizon Harappy, Gwardia hetycka, Piechota neobabilońska, Tyrski miecznik, Gwardia Tyreńska, Thorakites, iButho z iklwa, Wojownik z żelaznym khopesh, Mur tarcz (Sargonid), Miecznik galijski, Rydwan celtycki, Konnica lancowa asyryjska, Konnica łucznicza asyryjska, Jeździec z oszczepami; surowce: żelazo.
+**Hutnictwo żelaza** — epoka **Brąz** (poziom 6), koszt **240** PN (tempo Szybka), wymaga: Brązownictwo. Odblokowuje budynki: Odlewnia żelaza, Kuźnia żelaza; surowce: żelazo.
 
 ---
 
@@ -30,7 +30,7 @@
 
 ### Co odblokowuje
 - **Budynki:** Odlewnia żelaza, Kuźnia żelaza
-- **Jednostki:** Hastati, Falanga, Drużynnik, Garnizon Harappy, Gwardia hetycka, Piechota neobabilońska, Tyrski miecznik, Gwardia Tyreńska, Thorakites, iButho z iklwa, Wojownik z żelaznym khopesh, Mur tarcz (Sargonid), Miecznik galijski, Rydwan celtycki, Konnica lancowa asyryjska, Konnica łucznicza asyryjska, Jeździec z oszczepami
+- **Jednostki:** brak (jednostki epoki Żelaza odblokowuje Sztuka wojenna)
 - **Ulepszenia terenu:** brak
 - **Surowce:** żelazo
 

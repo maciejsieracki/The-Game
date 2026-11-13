@@ -1,0 +1,39 @@
+SERVER 404 for /favicon.ico
+18:25:48 worldgen done after ms 167022
+18:25:58 canvas/HUD {"canvases":2,"hud":true}
+18:26:01 city founded, click at 700 450
+18:26:04   dismissed Wróć
+18:26:05   dismissed Wróć
+18:26:07   dismissed Wróć
+18:26:08   dismissed Wróć
+18:26:13 founded true turn 1
+18:27:11 MEM [memdebug] koniec tury=2 · geometries=274 · textures=18 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=305.3
+18:27:13 end-turn #1 TURA 1 -> 2 memdebug new lines: 1 waited ms 33000
+18:28:08 MEM [memdebug] koniec tury=3 · geometries=274 · textures=18 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=309.6
+18:28:09 end-turn #2 TURA 2 -> 3 memdebug new lines: 1 waited ms 30000
+18:29:17 MEM [memdebug] koniec tury=4 · geometries=274 · textures=18 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=293.0
+18:29:19 end-turn #3 TURA 3 -> 4 memdebug new lines: 1 waited ms 36000
+18:30:34 MEM [memdebug] koniec tury=5 · geometries=274 · textures=18 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=314.2
+18:30:35 end-turn #4 TURA 4 -> 5 memdebug new lines: 1 waited ms 36000
+18:32:06 MEM [memdebug] koniec tury=6 · geometries=274 · textures=18 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=308.9
+18:32:09 end-turn #5 TURA 5 -> 6 memdebug new lines: 1 waited ms 42000
+18:33:27 MEM [memdebug] koniec tury=7 · geometries=274 · textures=21 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=322.0
+18:33:29 end-turn #6 TURA 6 -> 7 memdebug new lines: 1 waited ms 39000
+18:34:46 MEM [memdebug] koniec tury=8 · geometries=274 · textures=22 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=301.0
+18:34:46 end-turn #7 TURA 7 -> 8 memdebug new lines: 1 waited ms 36000
+18:36:04 MEM [memdebug] koniec tury=9 · geometries=274 · textures=22 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=333.2
+18:36:06 end-turn #8 TURA 8 -> 9 memdebug new lines: 1 waited ms 36000
+MEMDEBUG_LOGS_BEGIN
+[memdebug] koniec tury=2 · geometries=274 · textures=18 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=305.3
+[memdebug] koniec tury=3 · geometries=274 · textures=18 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=309.6
+[memdebug] koniec tury=4 · geometries=274 · textures=18 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=293.0
+[memdebug] koniec tury=5 · geometries=274 · textures=18 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=314.2
+[memdebug] koniec tury=6 · geometries=274 · textures=18 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=308.9
+[memdebug] koniec tury=7 · geometries=274 · textures=21 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=322.0
+[memdebug] koniec tury=8 · geometries=274 · textures=22 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=301.0
+[memdebug] koniec tury=9 · geometries=274 · textures=22 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=333.2
+MEMDEBUG_LOGS_END
+TREND [{"n":1,"before":1,"after":2,"newMem":1},{"n":2,"before":2,"after":3,"newMem":1},{"n":3,"before":3,"after":4,"newMem":1},{"n":4,"before":4,"after":5,"newMem":1},{"n":5,"before":5,"after":6,"newMem":1},{"n":6,"before":6,"after":7,"newMem":1},{"n":7,"before":7,"after":8,"newMem":1},{"n":8,"before":8,"after":9,"newMem":1}]
+BAD_RESPONSES []
+ERRORS ["console.error: Failed to load resource: the server responded with a status of 404 (Not Found) @ {\"url\":\"http://127.0.0.1:42525/favicon.ico\",\"line\":0,\"column\":0,\"lineNumber\":0,\"columnNumber\":0}"]
+EXIT=0

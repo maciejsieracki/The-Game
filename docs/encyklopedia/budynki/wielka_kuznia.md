@@ -25,7 +25,7 @@
 **⏸️ PARKOWANE — poza zakresem gry v1 (3 epoki).**
 
 W przyszłej epoce (poza Kamieniem/Brązem/Żelazem) Wielka Kuźnia miałaby **zastąpić** Kuźnię żelaza i dawać:
-- **+20 Pracy/t**, **+5 Pieniądza/t** (wartości z `buildings.json`)
+- **+20 Pracy/t**, **+5 podatku/t** (wartości z `buildings.json`)
 - **+15% Pancerza** (ścieżka A) — **nie** kumuluje z Kuźnią żelaza, bo ją zastępuje
 - **Nie produkuje stali** (stal = Wielka odlewnia)
 

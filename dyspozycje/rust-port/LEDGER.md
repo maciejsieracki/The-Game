@@ -954,3 +954,24 @@ Port ERAIGN/ERADELAY (web 5dd53e60f): `is_era_forced_war_ignoring_r1`, `is_war_t
 - 2026-11-09 00:12: WIRE-WAR-TURN-PLAN FC PASS r3/5 zintegrowany FF na parity-v2 (43f4064b0): plan 8 partii W1–W8 (~4230 LOC, szacunek), tabele pomiarowe, ABC D1–D8. Pytania ABC D1–D4 zadane właścicielowi; D5–D8 domyślnie A (R) jako techniczne. Nowych tematów Rust do czasu odpowiedzi nie otwieram.
 
 - 2026-11-09: WSTRZYMANIE RUST na polecenie właściciela (limit). Trigger godzinowy wyłączony. Decyzje D3 (1:1 z webem) i D4 (własny format + migracja) zapisane w REJESTR-PROSB-I-ZADAN.md; D1/D2 do ponownego zadania z wadami i zaletami. Brak aktywnych Workflow Rust. Wznowienie: tylko po sygnale właściciela.
+
+## 2026-11-10 — R-WEB-BATTLE-SIEGE-NEARBY-UNITS-JOIN-Q1 — wymagany parytet Rust P3+
+
+- Dokładne źródło web: ID `R-WEB-BATTLE-SIEGE-NEARBY-UNITS-JOIN-Q1`, kandydat/commit `8784fdd49c5eadb432ebb0e8e23359740bd7d9b5` (`codex/siege-nearby-609`). Status webowy na wpisie: kandydat **FAIL Final Control**; wpis nie oznacza integracji, wydania ani pozytywnej bramki.
+- Zobowiązanie parytetu: w etapie Rust P3+ odwzorować regułę składu oblężenia dla miasta i sześciu sąsiednich heksów: uczestniczą principalowie obu stron oraz ich formalni aktywni sojusznicy uczestniczący w tej wojnie i wrogo nastawieni do principalnego przeciwnika; sama wojna z przeciwnikiem nie wystarcza do członkostwa. Nie dołączać niezależnych trzecich stron ani neutralnych/barbarzyńców hostile wobec obu stron. Zachować limit 500, rezerwy oraz istniejącą atrybucję jednostek do ich właścicieli.
+- Status Rust: **NIE ROZPOCZĘTO / odroczone do P3+**. Ten wpis jest wyłącznie śledzeniem dokładnego źródła i wymagania parytetu; nie autoryzuje teraz zmian Rust ani pracy poza kolejnością/wstrzymaniem Rust.
+- Korekta procesu z 2026-11-10 po Final Control: ten dokładny wpis LEDGER został dopisany po pierwotnej edycji webowej, zgodnie z autoryzacją orkiestratora; nie był obecny w pierwotnej allowliście Operatora.
+
+## 2026-11-11 — R-WEB-DIPLO-ALLIANCE-JOIN-WAR-CALL-TO-ARMS-Q1 — wymaga parytetu Rust
+
+- Przywrócony zakres web: wezwania gracza do wypełnienia formalnego obowiązku sojuszniczego są zapisane jako trwałe wpisy `pendingDiplomacyInbox`, z identyfikatorem stabilnym dla wojny; wynik dołączenia/odmowy trafia do `allianceWarCallHistory`.
+- Walidacja odpowiedzi i odczytu wymaga nadal trwającej wojny głównej i aktywnego obowiązku; nieaktualne wezwania wygasają bez kary. Gracz nie może dołączyć do wojny przeciw własnemu formalnemu sojusznikowi. Odmowa zachowuje istniejące −15 Wiarygodności i zrywa wyłącznie traktat tego fotela.
+- Rust: **NIE ROZPOCZĘTO**. To śledzenie źródła webowego dla przyszłego parytetu, nie autoryzuje implementacji Rust poza kolejnością ani nie zmienia stanu wstrzymania.
+- Weryfikacja kandydata: `gra/tools/alliance-war-call-saveload-test.cjs` 7/7 (serializer, history dedupe, trwałe `expired`); expanded HTTP + `/usr/bin/chromium` + IndexedDB reload + real resolver PASS: refusal applies N4 once and blocks same-hook replay across reload; acceptance records joined and blocks replay; wrong hot-seat seat leaves the call pending until its recipient seat is active. `alliance-war-obligation-test.cjs` 14/14, `diplo-alliance-gate-test.cjs` 18/18, `npm run typecheck` EXIT 0.
+
+## 2026-11-11 — R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 — wymagany parytet Rust (wybór celu armii w wojnie AI)
+
+- Źródło web: ID `R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1`, baza `37bcf8ebb`, kandydat Operatora r2 (odsprzegniecie od obrony domu; SHA w raporcie `dyspozycje/autobot/runs/R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1/10-operator-claude.md`). Status: kandydat przed Evaluatorem; wpis nie oznacza integracji.
+- Reguła do odwzorowania w Rust: nakładka po obronie domu (`applyArmySeeksEnemyArmy`, `gra/src/game/ai-war-army-seeks-army.ts`): najsilniejsze skupisko własne (łączenie <=3 hex, bez garnizonu = najsłabsza jednostka na heksie własnego miasta) idzie na najsilniejsze WIDOCZNE skupisko wroga (wojna+kontakt, bez barbarzyńców), gdy dystans <= N*ruch_najwolniejszej+1 i siła własna/wroga >= próg. Atak gdy w zasięgu, inaczej zbliżanie (`firstStep`). Pomijana, gdy: wróg w pierścieniu zagrożenia własnego miasta, utracone miasto do odbicia. Nakładka jest NIEZALEŻNA od `isHomeWarDefenseEnabled` (własny przełącznik `ai_wojna_armia_szuka_armii_wlaczone`; r2) — w Rust NIE wiązać jej z flagą obrony domu.
+- Parametry (ai-params.json): `ai_wojna_armia_szuka_armii_wlaczone`=1, `..._zasieg_ruchow`=3, `..._prog_sil`=0.8.
+- Status Rust: **NIE ROZPOCZĘTO** (śledzenie parytetu; nie autoryzuje pracy Rust poza kolejnością).

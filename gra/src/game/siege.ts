@@ -15,8 +15,9 @@
  *       hit%      = clamp(50 + (Atak - Obrona) * 5, 10, 90)
  *       obrazenia = max(1, Atak - Pancerz + Przebicie) + Uderzenie (tylko R1/szarza)
  *   - PROJEKT-GRY-master.md SS9c "Milicja wieśniaków": miasto atakowane/oblegane
- *       wystawia ~20% mieszkancow jako milicje (chlopi z widlami, ~1/2 Wojownika
- *       Ep. Kamienia).
+ *       wystawia 100% mieszkancow (1 mieszkaniec = 1 jednostka; spec wlasciciela
+ *       2026-11-03) jako milicje, pod warunkiem budynku Garnizon; polowa wrecz
+ *       (staty x0,5), polowa dystans (pelne staty), typy wg epoki.
  *   - data/terrain-combat.json -> "Wzgórza" Bonus Obrona "+50%" (miasto na
  *       wzgorzu => obronca x1.5 Obrony), spojnie z combat.ts terrainDefenseMultiplier.
  *
@@ -149,6 +150,19 @@ export const MILITIA_POP_FRACTION = OBL.militia_pop_fraction;
  */
 export const MILITIA_STRENGTH_FRACTION = OBL.militia_strength_fraction;
 
+/** Okres odnowy Milicji (tury globalne) po jej calkowitym zniszczeniu (combat-params.json oblezenie.militia_regen_turns). */
+export const MILITIA_REGEN_TURNS: number = OBL.militia_regen_turns;
+
+/** Morale fraction of a militiaman vs the regular counterpart (spec 2026-11-03; 'Morale bazowe' x this). */
+export const MILITIA_MORALE_FRACTION: number = OBL.militia_morale_fraction;
+
+/** Floor margin above 'Morale ucieczki' so a militiaman is not routed from the very first tick. */
+export const MILITIA_MORALE_MIN_MARGIN_OVER_FLEE: number = OBL.militia_morale_min_margin_over_flee;
+
+/** Era key -> units.json names of the melee / ranged militia counterpart (combat-params.json militia_roster). */
+export const MILITIA_ROSTER: Readonly<Record<'kamien' | 'braz' | 'zelazo', { wrecz: string; dystans: string }>> =
+  OBL.militia_roster;
+
 /** Default maximum exchange rounds in a single siege attack before a stalemate. */
 export const SIEGE_MAX_ROUNDS = OBL.siege_max_rounds;
 
@@ -197,6 +211,12 @@ export interface SiegeUnit {
 
   /** If true the unit ignores the rout threshold and fights to HP <= 0. */
   unbreakable?: boolean;
+
+  /** Number of virtual militiamen represented by this pooled defender. */
+  militiaCount?: number;
+
+  /** Marker for a virtual militia defender; never persisted as a map unit. */
+  isMilitia?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -246,6 +266,28 @@ export interface SiegeCity {
 
   /** Current population -- used to derive militia strength (SS9c). Optional. */
   population?: number;
+
+  /** Completed building ids; only a completed Garnizon may raise virtual militia. */
+  completedBuildingIds?: CompletedBuildingIdCollection;
+
+  /** Optional queued ids, intentionally ignored for militia eligibility. */
+  queuedBuildingIds?: CompletedBuildingIdCollection;
+}
+
+/** Building-id collection supplied by a completed-state adapter. */
+export type CompletedBuildingIdCollection = readonly string[] | ReadonlySet<string>;
+
+const GARRISON_BUILDING_ID = 'garnizon';
+
+function hasCompletedGarrison(
+  city: Pick<SiegeCity, 'completedBuildingIds'>,
+  override?: CompletedBuildingIdCollection,
+): boolean {
+  const ids = override ?? city.completedBuildingIds;
+  if (!ids) return false;
+  return 'has' in ids
+    ? ids.has(GARRISON_BUILDING_ID)
+    : ids.includes(GARRISON_BUILDING_ID);
 }
 
 // ---------------------------------------------------------------------------
@@ -453,6 +495,16 @@ export function applyCityBonus(defender: SiegeUnit, bonus: CityDefenseBonus): Si
 // ---------------------------------------------------------------------------
 
 /** Stone-age Warrior baseline (TW v3 from units.json "Wojownik") used to scale militia. */
+export interface MilitiaWarriorParameters {
+  Atak: number;
+  Obrona: number;
+  Uderzenie: number;
+  Pancerz: number;
+  Przebicie: number;
+  weaponDamage: number;
+  Health: number;
+}
+
 const STONE_WARRIOR: Readonly<SiegeUnit> = {
   typNazwa: 'Wojownik',
   rola: 'Wrecz',
@@ -466,9 +518,14 @@ const STONE_WARRIOR: Readonly<SiegeUnit> = {
   progDezercji: 0.4,
 };
 
+function roundHalfUp(value: number): number {
+  return Math.floor(value + 0.5);
+}
+
 /**
- * Build a militia defender for a city (SS9c): ~20% of population stand to defend,
- * each with ~1/2 the strength of a Stone-age Warrior. We model the whole militia
+ * Build a POOLED militia defender for the abstract siege math (SS9c): one militiaman per
+ * inhabitant (militia_pop_fraction), each with ~1/2 the strength of a Stone-age Warrior.
+ * (The 3D / roster battle uses the per-unit squad of siegeDefenders.buildMilitiaSquad.) We model the whole militia
  * as a single pooled SiegeUnit whose Health scales with the number of militiamen,
  * and whose offensive/defensive stats are halved. Militia never routs from morale
  * (defends to the last). Returns null when there is no population to draw on.
@@ -479,37 +536,52 @@ export function makeMilitia(
   population: number,
   popFraction: number = MILITIA_POP_FRACTION,
   strengthFraction: number = MILITIA_STRENGTH_FRACTION,
+  warrior: Readonly<MilitiaWarriorParameters> = STONE_WARRIOR,
 ): SiegeUnit | null {
   const count = Math.floor(Math.max(0, population) * popFraction);
   if (count <= 0) return null;
+  const atak = Math.max(1, roundHalfUp(warrior.Atak * strengthFraction));
+  const obrona = Math.max(1, roundHalfUp(warrior.Obrona * strengthFraction));
+  const uderzenie = Math.max(0, roundHalfUp(warrior.Uderzenie * strengthFraction));
+  const pancerz = Math.max(0, roundHalfUp(warrior.Pancerz * strengthFraction));
+  const przebicie = Math.max(0, roundHalfUp(warrior.Przebicie * strengthFraction));
+  const weaponDamage = Math.max(1, roundHalfUp(warrior.weaponDamage * strengthFraction));
+  const healthPerMilitiaman = Math.max(1, roundHalfUp(warrior.Health * strengthFraction));
   return {
     typNazwa: 'Milicja',
     rola: 'Wrecz',
-    Atak: Math.max(1, Math.round(STONE_WARRIOR.Atak * strengthFraction)),
-    Obrona: Math.max(1, Math.round(STONE_WARRIOR.Obrona * strengthFraction)),
-    Uderzenie: Math.max(0, Math.round(STONE_WARRIOR.Uderzenie * strengthFraction)),
-    Pancerz: Math.max(0, Math.round(STONE_WARRIOR.Pancerz * strengthFraction)),
-    Przebicie: 0,
-    weaponDamage: Math.max(1, Math.round(STONE_WARRIOR.weaponDamage * strengthFraction)),
+    Atak: atak,
+    Obrona: obrona,
+    Uderzenie: uderzenie,
+    Pancerz: pancerz,
+    Przebicie: przebicie,
+    weaponDamage,
     // Pool HP: each militiaman contributes a share of the Warrior's HP, halved.
-    Health: Math.max(1, Math.round(count * STONE_WARRIOR.Health * strengthFraction)),
+    Health: Math.max(1, count * healthPerMilitiaman),
     progDezercji: null, // militia defends to the last
     unbreakable: true,
+    militiaCount: count,
+    isMilitia: true,
   };
 }
 
 /**
- * Return the effective garrison for defending a city: the real garrison, and if
- * it is empty, the auto-raised militia (SS9c) when population allows. Pure.
+ * Return the effective garrison for defending a city: the real garrison plus the
+ * auto-raised militia (SS9c) when a completed Garnizon and eligible population
+ * allow it (militia supports real defenders, it no longer needs an empty garrison).
+ * Pure. Queued/missing buildings do not qualify.
  */
 export function effectiveGarrison(
   city: SiegeCity,
   popFraction: number = MILITIA_POP_FRACTION,
+  completedBuildingIds?: CompletedBuildingIdCollection,
 ): SiegeUnit[] {
   const alive = city.garrison.filter((u) => u.Health > 0);
-  if (alive.length > 0) return alive;
+  // Spec 2026-11-03 (M2): with a completed Garnizon the militia ALWAYS joins the
+  // real defenders (appended after them, so real units still take the first blow).
+  if (!hasCompletedGarrison(city, completedBuildingIds)) return alive;
   const militia = makeMilitia(city.population ?? 0, popFraction);
-  return militia ? [militia] : [];
+  return militia ? [...alive, militia] : alive;
 }
 
 // ---------------------------------------------------------------------------
@@ -527,10 +599,12 @@ export interface SiegeAttackOpts {
   /** Max exchange rounds before a stalemate. Default SIEGE_MAX_ROUNDS. */
   maxRounds?: number;
   /**
-   * If true, auto-raise militia (SS9c) when the garrison is empty so an
-   * undefended-but-populated city still resists. Default true.
+   * If true, allow virtual militia (SS9c) when the garrison is empty and the
+   * city has a completed Garnizon. Default true.
    */
   useMilitia?: boolean;
+  /** Optional completed-state adapter override; queued ids are not consulted. */
+  completedBuildingIds?: CompletedBuildingIdCollection;
 }
 
 export interface SiegeAttackResult {
@@ -567,10 +641,11 @@ export interface SiegeAttackResult {
  * is reached.
  *
  * Does NOT mutate inputs. Returns the outcome (defender HP loss / death, attacker
- * losses) so the turn loop can apply the result. If the garrison is empty and
- * useMilitia is true, an auto-raised militia (SS9c) defends; if there is also no
- * militia, the city is undefended -> immediate attackerWins with the attacker
- * unharmed (the caller can then capture via captureCity).
+ * losses) so the turn loop can apply the result. If the garrison is empty,
+ * `useMilitia` is true, and completed Garnizon state is present, an auto-raised
+ * militia (SS9c) defends; otherwise the city is undefended -> immediate
+ * attackerWins with the attacker unharmed (the caller can then capture via
+ * captureCity).
  *
  * @param attacker  the attacking unit (snapshot)
  * @param city      the besieged city
@@ -591,7 +666,7 @@ export function resolveSiegeAttack(
 
   // Pick the top defender (real garrison first, else militia if enabled).
   const garrison = useMilitia
-    ? effectiveGarrison(city)
+    ? effectiveGarrison(city, MILITIA_POP_FRACTION, opts.completedBuildingIds)
     : city.garrison.filter((u) => u.Health > 0);
 
   const rawDefender = garrison[0];

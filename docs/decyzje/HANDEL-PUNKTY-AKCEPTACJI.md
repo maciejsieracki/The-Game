@@ -14,8 +14,8 @@
 
 | Element | Punkty | Jednostka |
 |---------|--------|-----------|
-| Sojusz pełny | 500 | umowa (próg Relacji 151) |
-| Sojusz defensywny | 420 | umowa (próg Relacji 151) |
+| Sojusz pełny | 500 | umowa (próg Relacji 130) |
+| Sojusz defensywny | 420 | umowa (próg Relacji 130) |
 | Pakt nieagresji (NAP) | 200 | umowa (próg Relacji 50) |
 | Traktat handlowy (`umowa_szlakow`) | 80 | umowa |
 | Umowa handlowa AI (`umowa_handlowa`) | 80 | umowa |

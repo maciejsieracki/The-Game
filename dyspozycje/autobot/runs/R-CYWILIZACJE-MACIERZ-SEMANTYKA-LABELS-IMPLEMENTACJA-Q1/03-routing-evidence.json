@@ -1,0 +1,185 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PASS-WITH-NOTES",
+  "domain": "GAME",
+  "topic": "R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1",
+  "role": "independent-evaluator",
+  "phase": "evaluator",
+  "taskId": "t_b62c133a",
+  "runId": 893,
+  "priorEvaluator": {
+    "taskId": "t_02f263c1",
+    "runId": 892,
+    "status": "PASS-WITH-NOTES",
+    "objections": [],
+    "productEvidence": "read back from 02-evaluator.md and 02-evidence.json",
+    "routingIncident": "Prior Evaluator was created with project_id=null; this recovery card repairs and independently verifies the route.",
+    "deployment": "not performed"
+  },
+  "routingReadback": {
+    "board": "the-game-real24",
+    "profile": "default",
+    "project": {
+      "id": "p_9ae9ac64",
+      "slug": "the-game",
+      "name": "The Game Box",
+      "board": "the-game-real24",
+      "primary": "/home/ubuntu/projects/The-Game",
+      "primaryGitRoot": "/home/ubuntu/projects/The-Game"
+    },
+    "parentTaskId": "t_29f09234",
+    "workspaceKind": "dir",
+    "workspacePath": "/home/ubuntu/projects/The-Game/.worktrees/civ-matrix-semantic-labels-implementation-20260921",
+    "branch": "hermes/R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1-20260921",
+    "branchReadback": "git branch --show-current; the task body carries the same branch because the shared workspace is dir-based",
+    "baseSha": "f4c89d0081c622c16b207d338b49c8bacafc4553",
+    "headSha": "f4c89d0081c622c16b207d338b49c8bacafc4553",
+    "originMainSha": "f4c89d0081c622c16b207d338b49c8bacafc4553",
+    "taskProjection": {
+      "statusAtReadback": "running",
+      "assignee": "default",
+      "projectId": "p_9ae9ac64",
+      "processPhase": "evaluator",
+      "model": "gpt-5.6-luna",
+      "provider": "openai-codex",
+      "reasoningEffort": "max",
+      "serviceTier": "priority",
+      "completionContract": "local-only"
+    },
+    "nativeCreatedEvent": {
+      "eventId": 15331,
+      "projectId": "p_9ae9ac64",
+      "processPhase": "evaluator",
+      "modelOverride": "gpt-5.6-luna",
+      "providerOverride": "openai-codex",
+      "reasoningEffort": "max",
+      "serviceTier": "priority",
+      "workspacePath": "/home/ubuntu/projects/The-Game/.worktrees/civ-matrix-semantic-labels-implementation-20260921",
+      "parentTaskId": "t_29f09234",
+      "branchNameInPayload": null,
+      "idempotencyKeyInPayload": false
+    },
+    "idempotency": {
+      "key": "R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1:evaluator:routing-recovery-20260921",
+      "source": "durable tasks.idempotency_key row",
+      "uniqueTaskCount": 1,
+      "freshAgainstPriorEvaluatorKey": "t_29f09234-evaluator-q1"
+    },
+    "runProjection": {
+      "runId": 893,
+      "profile": "default",
+      "statusAtReadback": "running",
+      "requestedModel": "gpt-5.6-luna",
+      "requestedProvider": "openai-codex",
+      "requestedReasoningEffort": "max",
+      "requestedServiceTier": "priority"
+    },
+    "projectionNote": "The native created payload omits idempotency_key and branch_name for this dir workspace. The durable task row, uniqueness query, task body, and live Git branch provide those readbacks; no value was inferred or fabricated."
+  },
+  "boundedStructuralReconciliation": {
+    "parameters": 113,
+    "civilizations": 15,
+    "expectedCells": 1695,
+    "actualCells": 1695,
+    "uniqueCells": 1695,
+    "parameterStatusCounts": {
+      "REAL_GAMEPLAY": 11,
+      "UI_ONLY": 5,
+      "UNWIRED": 97
+    },
+    "cellStatusCounts": {
+      "REAL_GAMEPLAY": 165,
+      "UI_ONLY": 75,
+      "UNWIRED": 1455
+    },
+    "decisionRequiredIds": "D_REQUIRED-001..D_REQUIRED-097",
+    "decisionRequiredRowsComplete": true,
+    "sourceHashesVerified": 9,
+    "priorEvaluatorObjections": 0
+  },
+  "sourceHashes": {
+    "gra/data/civ-matrix.json": "ad67e771608c2ebad8fed5e84e3d8ecd6e2a2b496fbfe42025ddb39ef27a2ea7",
+    "gra/src/game/civ-matrix.ts": "3bc9f443c9c8850175bb8b62adbc69547494eeed7b66159af65b48e5ab596ede",
+    "gra/src/game/civ-matrix-semantic.ts": "0dc69e4e4ab192f1d11b3addfb9403132ff3a78f9985fc8458eaf3abbad30997",
+    "gra/src/ui/newGameFlow.ts": "2ab94a3e9e88533a734535d4cccbd001e9a735206b5698d5d7f57d6475073e74",
+    "gra/tools/civ-matrix-semantic-labels-test.cjs": "db4dbf3bfb7061c5a39ec0b41832c48ed69df8ac12a54da2519ab21053b6daa7",
+    "gra/src/game/civ-ai-data.ts": "8cdf765fbb6184e4f7e1a223132e0c8aaf3fed1e386d0db30be67b20fa4f0eeb",
+    "gra/src/game/diplomacy.ts": "f71a7e8c6e24710b3872dca7aac43f051caee21b4979301998a4441a8173e212",
+    "gra/src/game/diplomacy-display.ts": "4c907285d3e35e47b5cf82d4a6aabc94358a093f283651311407417b0aedadc5",
+    "gra/src/game/population-growth-v85.ts": "68383594cd81b3f66d8a1874635300f05a610bf058843d1b6ace551d4a4428e8"
+  },
+  "boundedChecks": [
+    {
+      "command": "node tools/civ-matrix-semantic-labels-test.cjs",
+      "exitCode": 0,
+      "result": "PASS 41; FAIL 0",
+      "scope": "read-only focused semantic contract"
+    },
+    {
+      "command": "node ./node_modules/typescript/bin/tsc --noEmit",
+      "exitCode": 0,
+      "result": "PASS",
+      "scope": "read-only typecheck"
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "result": "PASS",
+      "scope": "read-only whitespace check"
+    },
+    {
+      "command": "independent JSON/hash/status reconciliation",
+      "exitCode": 0,
+      "result": "PASS; matrix, 01-* and 02-* evidence agree",
+      "scope": "113 parameters, 15 civilizations, 1695 cells, status counts, D_REQUIRED range and 9 source hashes"
+    }
+  ],
+  "priorEvidenceReadback": {
+    "reportedProductStatus": "PASS-WITH-NOTES",
+    "reportedTests": [
+      "TypeScript 5.9.3 PASS",
+      "semantic focused PASS 41/0",
+      "Greece regression PASS 390/0",
+      "difficulty regression PASS 16/0",
+      "direct Vite production build PASS; 891 modules",
+      "Chromium production artifact PASS; 113 rows, 11 active, 102 inactive, search/filter verified, 0 errors",
+      "git diff --check PASS"
+    ],
+    "reExecutedInRecovery": [
+      "semantic focused test",
+      "TypeScript noEmit",
+      "git diff --check",
+      "structural/hash reconciliation"
+    ],
+    "NotReExecutedInRecovery": [
+      "production build",
+      "Chromium smoke",
+      "Greece regression",
+      "difficulty regression"
+    ],
+    "reason": "Prior Evaluator evidence was read back; this recovery is bounded to routing/provenance and does not repeat broad product work."
+  },
+  "allowlist": {
+    "writeAllowed": [
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1/03-evaluator-routing-recovery.md",
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1/03-routing-evidence.json",
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1/03-transition-receipt.md"
+    ],
+    "productFilesModifiedByRecovery": [],
+    "productFilesAndPriorArtifactsReadOnly": true,
+    "commit": false,
+    "push": false,
+    "merge": false,
+    "deploy": false
+  },
+  "unresolved": {
+    "decisionRequired": "97 parameters remain explicitly UNWIRED/D_REQUIRED-001..097; they are not claimed implemented.",
+    "routing": "Prior null project_id is repaired for t_b62c133a; native event/task/run readback is internally consistent. The event payload projection note is preserved above.",
+    "deployment": "not performed",
+    "naturalWar": "SHADOW_ONLY and out of scope",
+    "rustTauri": "out of scope"
+  },
+  "objections": [],
+  "verdict": "PASS-WITH-NOTES for the bounded partial implementation and repaired Evaluator routing; DECISION_REQUIRED remains for the 97 consumer rows.",
+  "nextGate": "Read back the terminal completion event for t_b62c133a before any Defense or Final Control routing; do not create a successor from a non-terminal recovery run."
+}

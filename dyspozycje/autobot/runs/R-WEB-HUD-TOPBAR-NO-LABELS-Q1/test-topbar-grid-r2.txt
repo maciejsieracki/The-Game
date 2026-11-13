@@ -1,0 +1,172 @@
+[A] render prawdziwego renderBarD1B + CSS w Chromium
+  ok   real 1280px/small: kolejnosc DOM Skarbiec,Praca,Spichlerz,Handel,Nauka,Surowce
+  ok   real 1280px/small: gora 3 komorki w jednym rzedzie, dol 3 w drugim (pod gora)
+  ok   real 1280px/small: kolejnosc od lewej rosnaca w obu rzedach
+  ok   real 1280px/small: kolumny wyrownane (Skarbiec/Handel, Praca/Nauka, Spichlerz/Surowce)
+  ok   real 1280px/small: zaden tekst nie jest przyciety (scrollWidth<=clientWidth)
+  ok   real 1280px/small: komorki nie nakladaja sie
+  ok   real 1280px/small: baner (prawy brzeg 510) konczy sie przed medalionem Mocy (520)
+  ok   real 1280px/small: dol banera (95px) nie wchodzi w pasek narzedzi mapy (TOOLBAR_TOP_PX=104)
+  ok   real 1280px/small: brak poziomego przewijania strony
+  ok   real 1280px/small: medaliony ikon widoczne w kazdej komorce (szerokosc >= 14px; kolejnosc ICON zachowana)
+  ok   real 1280px/big: kolejnosc DOM Skarbiec,Praca,Spichlerz,Handel,Nauka,Surowce
+  ok   real 1280px/big: gora 3 komorki w jednym rzedzie, dol 3 w drugim (pod gora)
+  ok   real 1280px/big: kolejnosc od lewej rosnaca w obu rzedach
+  ok   real 1280px/big: kolumny wyrownane (Skarbiec/Handel, Praca/Nauka, Spichlerz/Surowce)
+  ok   real 1280px/big: zaden tekst nie jest przyciety (scrollWidth<=clientWidth)
+  ok   real 1280px/big: komorki nie nakladaja sie
+  ok   real 1280px/big: baner (prawy brzeg 510) konczy sie przed medalionem Mocy (520)
+  ok   real 1280px/big: dol banera (95px) nie wchodzi w pasek narzedzi mapy (TOOLBAR_TOP_PX=104)
+  ok   real 1280px/big: brak poziomego przewijania strony
+  ok   real 1280px/big: medaliony ikon widoczne w kazdej komorce (szerokosc >= 14px; kolejnosc ICON zachowana)
+  ok   real 1280px/huge: kolejnosc DOM Skarbiec,Praca,Spichlerz,Handel,Nauka,Surowce
+  ok   real 1280px/huge: gora 3 komorki w jednym rzedzie, dol 3 w drugim (pod gora)
+  ok   real 1280px/huge: kolejnosc od lewej rosnaca w obu rzedach
+  ok   real 1280px/huge: kolumny wyrownane (Skarbiec/Handel, Praca/Nauka, Spichlerz/Surowce)
+  ok   real 1280px/huge: zaden tekst nie jest przyciety (scrollWidth<=clientWidth)
+  ok   real 1280px/huge: komorki nie nakladaja sie
+  ok   real 1280px/huge: baner (prawy brzeg 510) konczy sie przed medalionem Mocy (520)
+  ok   real 1280px/huge: dol banera (95px) nie wchodzi w pasek narzedzi mapy (TOOLBAR_TOP_PX=104)
+  ok   real 1280px/huge: brak poziomego przewijania strony
+  ok   real 1280px/huge: medaliony ikon widoczne w kazdej komorce (szerokosc >= 14px; kolejnosc ICON zachowana)
+  ok   real 1280px/nodef: kolejnosc DOM Skarbiec,Praca,Spichlerz,Handel,Nauka,Surowce
+  ok   real 1280px/nodef: gora 3 komorki w jednym rzedzie, dol 3 w drugim (pod gora)
+  ok   real 1280px/nodef: kolejnosc od lewej rosnaca w obu rzedach
+  ok   real 1280px/nodef: kolumny wyrownane (Skarbiec/Handel, Praca/Nauka, Spichlerz/Surowce)
+  ok   real 1280px/nodef: zaden tekst nie jest przyciety (scrollWidth<=clientWidth)
+  ok   real 1280px/nodef: komorki nie nakladaja sie
+  ok   real 1280px/nodef: baner (prawy brzeg 510) konczy sie przed medalionem Mocy (520)
+  ok   real 1280px/nodef: dol banera (95px) nie wchodzi w pasek narzedzi mapy (TOOLBAR_TOP_PX=104)
+  ok   real 1280px/nodef: brak poziomego przewijania strony
+  ok   real 1280px/nodef: medaliony ikon widoczne w kazdej komorce (szerokosc >= 14px; kolejnosc ICON zachowana)
+  ok   real 1280px: pozycje/rozmiary komorek IDENTYCZNE dla small i big (brak przeskakiwania)
+  ok   real 1280px: pozycje/rozmiary komorek IDENTYCZNE dla small i huge (brak przeskakiwania)
+  ok   real 1280px: pozycje/rozmiary komorek IDENTYCZNE dla small i nodef (brak przeskakiwania)
+  ok   real 1024px/small: kolejnosc DOM Skarbiec,Praca,Spichlerz,Handel,Nauka,Surowce
+  ok   real 1024px/small: gora 3 komorki w jednym rzedzie, dol 3 w drugim (pod gora)
+  ok   real 1024px/small: kolejnosc od lewej rosnaca w obu rzedach
+  ok   real 1024px/small: kolumny wyrownane (Skarbiec/Handel, Praca/Nauka, Spichlerz/Surowce)
+  ok   real 1024px/small: zaden tekst nie jest przyciety (scrollWidth<=clientWidth)
+  ok   real 1024px/small: komorki nie nakladaja sie
+  ok   real 1024px/small: baner (prawy brzeg 382) konczy sie przed medalionem Mocy (392)
+  ok   real 1024px/small: dol banera (102px) nie wchodzi w pasek narzedzi mapy (TOOLBAR_TOP_PX=104)
+  ok   real 1024px/small: brak poziomego przewijania strony
+  ok   real 1024px/small: medaliony ikon widoczne w kazdej komorce (szerokosc >= 14px; kolejnosc ICON zachowana)
+  ok   real 1024px/big: kolejnosc DOM Skarbiec,Praca,Spichlerz,Handel,Nauka,Surowce
+  ok   real 1024px/big: gora 3 komorki w jednym rzedzie, dol 3 w drugim (pod gora)
+  ok   real 1024px/big: kolejnosc od lewej rosnaca w obu rzedach
+  ok   real 1024px/big: kolumny wyrownane (Skarbiec/Handel, Praca/Nauka, Spichlerz/Surowce)
+  ok   real 1024px/big: zaden tekst nie jest przyciety (scrollWidth<=clientWidth)
+  ok   real 1024px/big: komorki nie nakladaja sie
+  ok   real 1024px/big: baner (prawy brzeg 382) konczy sie przed medalionem Mocy (392)
+  ok   real 1024px/big: dol banera (102px) nie wchodzi w pasek narzedzi mapy (TOOLBAR_TOP_PX=104)
+  ok   real 1024px/big: brak poziomego przewijania strony
+  ok   real 1024px/big: medaliony ikon widoczne w kazdej komorce (szerokosc >= 14px; kolejnosc ICON zachowana)
+  ok   real 1024px/huge: kolejnosc DOM Skarbiec,Praca,Spichlerz,Handel,Nauka,Surowce
+  ok   real 1024px/huge: gora 3 komorki w jednym rzedzie, dol 3 w drugim (pod gora)
+  ok   real 1024px/huge: kolejnosc od lewej rosnaca w obu rzedach
+  ok   real 1024px/huge: kolumny wyrownane (Skarbiec/Handel, Praca/Nauka, Spichlerz/Surowce)
+  ok   real 1024px/huge: zaden tekst nie jest przyciety (scrollWidth<=clientWidth)
+  ok   real 1024px/huge: komorki nie nakladaja sie
+  ok   real 1024px/huge: baner (prawy brzeg 382) konczy sie przed medalionem Mocy (392)
+  ok   real 1024px/huge: dol banera (102px) nie wchodzi w pasek narzedzi mapy (TOOLBAR_TOP_PX=104)
+  ok   real 1024px/huge: brak poziomego przewijania strony
+  ok   real 1024px/huge: medaliony ikon widoczne w kazdej komorce (szerokosc >= 14px; kolejnosc ICON zachowana)
+  ok   real 1024px/nodef: kolejnosc DOM Skarbiec,Praca,Spichlerz,Handel,Nauka,Surowce
+  ok   real 1024px/nodef: gora 3 komorki w jednym rzedzie, dol 3 w drugim (pod gora)
+  ok   real 1024px/nodef: kolejnosc od lewej rosnaca w obu rzedach
+  ok   real 1024px/nodef: kolumny wyrownane (Skarbiec/Handel, Praca/Nauka, Spichlerz/Surowce)
+  ok   real 1024px/nodef: zaden tekst nie jest przyciety (scrollWidth<=clientWidth)
+  ok   real 1024px/nodef: komorki nie nakladaja sie
+  ok   real 1024px/nodef: baner (prawy brzeg 382) konczy sie przed medalionem Mocy (392)
+  ok   real 1024px/nodef: dol banera (102px) nie wchodzi w pasek narzedzi mapy (TOOLBAR_TOP_PX=104)
+  ok   real 1024px/nodef: brak poziomego przewijania strony
+  ok   real 1024px/nodef: medaliony ikon widoczne w kazdej komorce (szerokosc >= 14px; kolejnosc ICON zachowana)
+  ok   real 1024px: pozycje/rozmiary komorek IDENTYCZNE dla small i big (brak przeskakiwania)
+  ok   real 1024px: pozycje/rozmiary komorek IDENTYCZNE dla small i huge (brak przeskakiwania)
+  ok   real 1024px: pozycje/rozmiary komorek IDENTYCZNE dla small i nodef (brak przeskakiwania)
+  ok   real 800px/small: kolejnosc DOM Skarbiec,Praca,Spichlerz,Handel,Nauka,Surowce
+  ok   real 800px/small: gora 3 komorki w jednym rzedzie, dol 3 w drugim (pod gora)
+  ok   real 800px/small: kolejnosc od lewej rosnaca w obu rzedach
+  ok   real 800px/small: kolumny wyrownane (Skarbiec/Handel, Praca/Nauka, Spichlerz/Surowce)
+  ok   real 800px/small: zaden tekst nie jest przyciety (scrollWidth<=clientWidth)
+  ok   real 800px/small: komorki nie nakladaja sie
+  ok   real 800px/small: baner (prawy brzeg 270) konczy sie przed medalionem Mocy (280)
+  ok   real 800px/small: dol banera (93px) nie wchodzi w pasek narzedzi mapy (TOOLBAR_TOP_PX=104)
+  ok   real 800px/small: brak poziomego przewijania strony
+  ok   real 800px/small: medaliony ikon widoczne w kazdej komorce (szerokosc >= 14px; kolejnosc ICON zachowana)
+  ok   real 800px/big: kolejnosc DOM Skarbiec,Praca,Spichlerz,Handel,Nauka,Surowce
+  ok   real 800px/big: gora 3 komorki w jednym rzedzie, dol 3 w drugim (pod gora)
+  ok   real 800px/big: kolejnosc od lewej rosnaca w obu rzedach
+  ok   real 800px/big: kolumny wyrownane (Skarbiec/Handel, Praca/Nauka, Spichlerz/Surowce)
+  ok   real 800px/big: zaden tekst nie jest przyciety (scrollWidth<=clientWidth)
+  ok   real 800px/big: komorki nie nakladaja sie
+  ok   real 800px/big: baner (prawy brzeg 270) konczy sie przed medalionem Mocy (280)
+  ok   real 800px/big: dol banera (93px) nie wchodzi w pasek narzedzi mapy (TOOLBAR_TOP_PX=104)
+  ok   real 800px/big: brak poziomego przewijania strony
+  ok   real 800px/big: medaliony ikon widoczne w kazdej komorce (szerokosc >= 14px; kolejnosc ICON zachowana)
+  ok   real 800px/huge: kolejnosc DOM Skarbiec,Praca,Spichlerz,Handel,Nauka,Surowce
+  ok   real 800px/huge: gora 3 komorki w jednym rzedzie, dol 3 w drugim (pod gora)
+  ok   real 800px/huge: kolejnosc od lewej rosnaca w obu rzedach
+  ok   real 800px/huge: kolumny wyrownane (Skarbiec/Handel, Praca/Nauka, Spichlerz/Surowce)
+  ok   real 800px/huge: zaden tekst nie jest przyciety (scrollWidth<=clientWidth)
+  ok   real 800px/huge: komorki nie nakladaja sie
+  ok   real 800px/huge: baner (prawy brzeg 270) konczy sie przed medalionem Mocy (280)
+  ok   real 800px/huge: dol banera (93px) nie wchodzi w pasek narzedzi mapy (TOOLBAR_TOP_PX=104)
+  ok   real 800px/huge: brak poziomego przewijania strony
+  ok   real 800px/huge: medaliony ikon widoczne w kazdej komorce (szerokosc >= 14px; kolejnosc ICON zachowana)
+  ok   real 800px/nodef: kolejnosc DOM Skarbiec,Praca,Spichlerz,Handel,Nauka,Surowce
+  ok   real 800px/nodef: gora 3 komorki w jednym rzedzie, dol 3 w drugim (pod gora)
+  ok   real 800px/nodef: kolejnosc od lewej rosnaca w obu rzedach
+  ok   real 800px/nodef: kolumny wyrownane (Skarbiec/Handel, Praca/Nauka, Spichlerz/Surowce)
+  ok   real 800px/nodef: zaden tekst nie jest przyciety (scrollWidth<=clientWidth)
+  ok   real 800px/nodef: komorki nie nakladaja sie
+  ok   real 800px/nodef: baner (prawy brzeg 270) konczy sie przed medalionem Mocy (280)
+  ok   real 800px/nodef: dol banera (93px) nie wchodzi w pasek narzedzi mapy (TOOLBAR_TOP_PX=104)
+  ok   real 800px/nodef: brak poziomego przewijania strony
+  ok   real 800px/nodef: medaliony ikon widoczne w kazdej komorce (szerokosc >= 14px; kolejnosc ICON zachowana)
+  ok   real 800px: pozycje/rozmiary komorek IDENTYCZNE dla small i big (brak przeskakiwania)
+  ok   real 800px: pozycje/rozmiary komorek IDENTYCZNE dla small i huge (brak przeskakiwania)
+  ok   real 800px: pozycje/rozmiary komorek IDENTYCZNE dla small i nodef (brak przeskakiwania)
+  ok   real 640px/small: kolejnosc 3+3 zachowana
+  ok   real 640px/small: 3 w rzedzie gora, 3 dol
+  ok   real 640px/small: zaden tekst nie jest przyciety
+  ok   real 640px/small: ikony widoczne (prog 12 px)
+  ok   real 640px/small: pozycje identyczne z small
+  ok   real 640px/small: brak poziomego przewijania
+  info 640px: prawy brzeg banera 190 vs medalion Mocy x=245 (bez nakladania)
+  ok   real 640px/huge: kolejnosc 3+3 zachowana
+  ok   real 640px/huge: 3 w rzedzie gora, 3 dol
+  ok   real 640px/huge: zaden tekst nie jest przyciety
+  ok   real 640px/huge: ikony widoczne (prog 12 px)
+  ok   real 640px/huge: pozycje identyczne z small
+  ok   real 640px/huge: brak poziomego przewijania
+  ok   real: Skarbiec brutto +480 / netto −120
+  ok   real: Praca = PROGNOZA: netto +20, brutto +23 (prognoza + 3 utrzymanie)
+  ok   real: bez prognozy Praca spada na zrealizowane saldo (netto +22 / brutto +25)
+  ok   real: Spichlerz brutto +30 / netto +5
+  ok   real: Handel brutto +82 / netto +82
+  ok   real: Nauka brutto +15 / netto +15
+  ok   real: Surowce brutto +120 / netto +40 — OBA to sumy po surowcach (ta sama wielkosc)
+  ok   real: Surowce bez deficytu pokazuje sume netto +55
+  ok   real: deficyt pojedynczego surowca = czerwony chip Surowce (shortage), brak deficytu = nie
+  ok   real: kazda komorka BEZ slownych etykiet "brutto"/"netto" (R-WEB-HUD-TOPBAR-NO-LABELS-Q1)
+  ok   real: duze liczby skracane k/M (1,2M / −999,9k)
+  ok   real: netto ujemne = czerwone (#ee6c6c, jak DEFICIT-RED)
+  ok   real: netto dodatnie = zielone (--tg-green)
+  ok   real: (info) klasa shortage obecna jako dotad
+  ok   real: kontrast wszystkich tekstow komorek >= 4,5:1 na tle banera rgb(20,26,38)
+  ok   real: tooltip kazdej komorki zawiera rozbicie BRUTTO -> NETTO
+  ok   real: tooltip Surowce: najgorszy bilans + rozbicie per surowiec
+  ok   real: skrocone liczby maja pelna wartosc w tooltipie
+[M] mutacje
+  ok   MUTANT "zamiana rzedow (Handel/Nauka/Surowce na gorze)" jest WYKRYTY przez bramke (28 czerwonych asercji)
+  ok   MUTANT "netto = brutto (Skarbiec)" jest WYKRYTY przez bramke (3 czerwonych asercji)
+  ok   MUTANT "netto ujemne nie jest czerwone" jest WYKRYTY przez bramke (1 czerwonych asercji)
+  ok   MUTANT "4 kolumny siatki (zawijanie Handel do gory)" jest WYKRYTY przez bramke (41 czerwonych asercji)
+  ok   MUTANT "Surowce: netto = najgorszy pojedynczy surowiec (mieszanie wielkosci)" jest WYKRYTY przez bramke (2 czerwonych asercji)
+  ok   MUTANT "Praca: netto z zrealizowanej tury zamiast prognozy" jest WYKRYTY przez bramke (1 czerwonych asercji)
+  ok   MUTANT "ikony ukryte <=900px" jest WYKRYTY przez bramke (4 czerwonych asercji)
+[B] POMINIETO (brak --dist) -- NIE_ZMIERZONO w tym uruchomieniu
+
+OK: hud-topbar-grid-gross-net-test (1199 ok, 0 fail)

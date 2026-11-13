@@ -116,7 +116,6 @@ async function main() {
 
   const {
     createSidePanelHud,
-    filterSidePanelEvents,
     dismissEotOrEraWarLogEntry,
     deferredHintsToSidePanelEvents,
   } = require(BUNDLE);
@@ -135,7 +134,7 @@ async function main() {
     else { fail++; console.error('  [FAIL]', msg); }
   }
 
-  console.log('sidepanel-events-toolbar-test (R-WYDARZENIA-FILTR-KATEGORII, N1+N2)\n');
+  console.log('sidepanel-events-toolbar-test (R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1; dawniej R-WYDARZENIA-FILTR-KATEGORII N1+N2)\n');
 
   // -------------------------------------------------------------------------
   // Wspolne dane: 2 wydarzenia "nasze" + 1 wydarzenie handlu AI-AI (origin:'other-civs',
@@ -160,52 +159,42 @@ async function main() {
   );
 
   // -------------------------------------------------------------------------
-  // SCENARIUSZ (a)+(b): domyslnie przelacznik WYLACZONY -> wpis other-civs ukryty w DOM;
-  // klik chipa -> pokazuje go.
+  // SCENARIUSZ (a)+(b) -- R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: trzy zakladki zamiast chipa.
+  // Domyslnie zakladka „Wazne" (jest tam wpis wojny); klik zakladki „Dyplomacja" pokazuje
+  // handel AI-AI (origin:other-civs), klik „Inne" pokazuje komunikat produkcji.
   // -------------------------------------------------------------------------
   {
     let events = buildEvents();
-    let dismissAllCalls = 0;
-
     const api = createSidePanelHud({
       getEvents: () => events,
       onEventDismiss: (id) => { events = events.filter(e => e.id !== id); },
-      onDismissAll: () => { dismissAllCalls++; events = []; },
+      onDismissAll: () => { events = []; },
     });
     document.body.appendChild(api.el);
 
-    const cardsInitial = api.el.querySelectorAll('.sp-event[data-id]');
-    assert(cardsInitial.length === 2, '(a) domyslnie widoczne 2/3 karty (war-, prod-empty-), got ' + cardsInitial.length);
-    assert(
-      api.el.querySelector('.sp-event[data-id="war-7-1-0"]') != null
-        && api.el.querySelector('.sp-event[data-id="prod-empty-city0"]') != null,
-      '(a) widoczne sa dokladnie te dwie "nasze" karty',
-    );
-    assert(
-      [...cardsInitial].every(c => c.getAttribute('data-id').indexOf('eot-hint-') !== 0),
-      '(a) karta handlu AI-AI (eot-hint-*, origin:other-civs) NIE jest w DOM domyslnie',
-    );
+    const ids = () => [...api.el.querySelectorAll('.sp-event[data-id]')].map(c => c.getAttribute('data-id'));
+    const tabBtn = (tab) => api.el.querySelector('[data-sp-tab="' + tab + '"]');
+    const countOf = (tab) => tabBtn(tab).querySelector('.sp-tab-count').textContent;
+    const click = (el) => el.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
 
-    const toggleChip = api.el.querySelector('[data-sp-toggle-other-civs]');
-    assert(toggleChip != null, '(a) chip przelacznika "Inne cyw." istnieje w DOM');
-    assert(
-      !toggleChip.classList.contains('sp-toolbar-chip-active'),
-      '(a) chip domyslnie NIE ma klasy active (wizualnie wylaczony)',
-    );
+    assert(tabBtn('dyplomacja') != null && tabBtn('wazne') != null && tabBtn('inne') != null,
+      '(a) sa trzy zakladki: dyplomacja / wazne / inne');
+    assert(api.el.querySelector('[data-sp-toggle-other-civs]') == null, '(a) chip "Inne cyw." usuniety z DOM');
+    assert(countOf('wazne') === '1' && countOf('dyplomacja') === '1' && countOf('inne') === '1',
+      '(a) liczniki zakladek 1/1/1, got ' + countOf('wazne') + '/' + countOf('dyplomacja') + '/' + countOf('inne'));
+    assert(tabBtn('wazne').classList.contains('sp-tab-active'), '(a) domyslna zakladka = Wazne (jest wpis wojny)');
+    assert(ids().length === 1 && ids()[0] === 'war-7-1-0', '(a) w „Wazne” tylko karta wojny, got ' + ids().join(','));
+    assert(!ids().some(i => i.indexOf('eot-hint-') === 0), '(a) handel AI-AI NIE jest w DOM domyslnie');
 
-    toggleChip.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+    click(tabBtn('dyplomacja'));
+    assert(ids().length === 1 && ids()[0].indexOf('eot-hint-') === 0,
+      '(b) klik „Dyplomacja” pokazuje wylacznie handel AI-AI, got ' + ids().join(','));
+    assert(tabBtn('dyplomacja').classList.contains('sp-tab-active') && !tabBtn('wazne').classList.contains('sp-tab-active'),
+      '(b) aktywna zakladka przenosi sie na Dyplomacja');
 
-    const cardsAfterToggle = api.el.querySelectorAll('.sp-event[data-id]');
-    assert(cardsAfterToggle.length === 3, '(b) po kliku przelacznika widoczne WSZYSTKIE 3 karty, got ' + cardsAfterToggle.length);
-    assert(
-      [...cardsAfterToggle].some(c => c.getAttribute('data-id').indexOf('eot-hint-') === 0),
-      '(b) karta handlu AI-AI jest teraz w DOM',
-    );
-    const toggleChipAfter = api.el.querySelector('[data-sp-toggle-other-civs]');
-    assert(
-      toggleChipAfter.classList.contains('sp-toolbar-chip-active'),
-      '(b) chip ma teraz klase active',
-    );
+    click(tabBtn('inne'));
+    assert(ids().length === 1 && ids()[0] === 'prod-empty-city0',
+      '(b) klik „Inne” pokazuje wylacznie komunikat produkcji, got ' + ids().join(','));
 
     api.destroy();
   }
@@ -225,8 +214,8 @@ async function main() {
     document.body.appendChild(api.el);
 
     assert(
-      api.el.querySelectorAll('.sp-event[data-id]').length === 2,
-      '(c) przed "Usun wszystkie": 2 widoczne karty',
+      api.el.querySelectorAll('.sp-event[data-id]').length === 1,
+      '(c) przed "Usun wszystkie": 1 karta w aktywnej zakladce „Wazne”',
     );
 
     const dismissAllBtn = api.el.querySelector('[data-sp-dismiss-all]');
@@ -236,16 +225,53 @@ async function main() {
       dismissAllBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
     }
 
+    // R2 (FC R1 FAIL): zakres = dotychczasowy (widoczne informacyjne, BEZ ukrytego handlu AI<->AI).
+    // Wojna (Wazne) i produkcja (Inne) znikaja; handel AI-AI (origin other-civs, zakladka
+    // Dyplomacja nieaktywna) zostaje, tak jak przy dawnym chipie OFF.
     assert(
-      dismissAllBtn != null && api.el.querySelectorAll('.sp-event[data-id]').length === 0,
-      '(c) po "Usun wszystkie": 0 kart w DOM',
+      dismissAllBtn != null && events.length === 1 && events[0].origin === 'other-civs',
+      '(c) po "Zamknij wszystkie informacyjne": zostaje WYLACZNIE ukryty handel AI-AI, got ' + events.map(e => e.id).join(','),
     );
     assert(
-      dismissAllBtn != null && api.el.querySelector('.sp-placeholder') != null,
-      '(c) placeholder "Brak wydarzen w tej turze" widoczny po wyczyszczeniu',
+      dismissAllBtn != null && api.el.querySelectorAll('.sp-event[data-id]').length === 0,
+      '(c) po "Zamknij wszystkie informacyjne": 0 kart w DOM aktywnej zakladki',
     );
 
     api.destroy();
+  }
+
+  // -------------------------------------------------------------------------
+  // SCENARIUSZ (c2) R2: naglowek NIE wlicza ukrytego handlu AI<->AI; w zakladce Dyplomacja
+  // (handel widoczny) naglowek i „Zamknij wszystkie informacyjne” obejmuja go.
+  // -------------------------------------------------------------------------
+  {
+    let events = buildEvents(); // wojna (wazne), produkcja (inne), handel AI-AI (origin other-civs)
+    const api = createSidePanelHud({
+      getEvents: () => events,
+      onEventDismiss: (id) => { events = events.filter(e => e.id !== id); },
+    });
+    document.body.appendChild(api.el);
+    const header = () => api.el.querySelector('.sp-header').textContent;
+    const click = (el) => el.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+
+    assert(/^2 informacyjne$/.test(header()),
+      '(c2) naglowek w „Wazne” liczy 2 informacyjne (bez ukrytego handlu AI-AI), got "' + header() + '"');
+    click(api.el.querySelector('[data-sp-tab="dyplomacja"]'));
+    assert(/^3 informacyjne$/.test(header()),
+      '(c2) naglowek w „Dyplomacja” liczy 3 (handel AI-AI widoczny), got "' + header() + '"');
+    click(api.el.querySelector('[data-sp-dismiss-all]'));
+    assert(events.length === 0, '(c2) „Zamknij wszystkie” w Dyplomacji usuwa tez handel AI-AI, got ' + events.length);
+    api.destroy();
+
+    // Domyslna zakladka nie przeskakuje na Dyplomacje z powodu samego handlu AI-AI.
+    let only = [buildEvents()[2]];
+    const api2 = createSidePanelHud({ getEvents: () => only, onEventDismiss: (id) => { only = only.filter(e => e.id !== id); } });
+    document.body.appendChild(api2.el);
+    assert(api2.el.querySelector('[data-sp-tab="inne"]').classList.contains('sp-tab-active'),
+      '(c2) sam handel AI-AI nie wybiera zakladki Dyplomacja jako domyslnej (aktywna: Inne)');
+    assert(api2.el.querySelector('[data-sp-dismiss-all]') == null,
+      '(c2) tylko ukryty handel AI-AI -> brak przycisku „Zamknij wszystkie informacyjne”');
+    api2.destroy();
   }
 
   // -------------------------------------------------------------------------
@@ -261,8 +287,8 @@ async function main() {
       'brak onDismissAll w configu -> przycisk "Usun wszystkie" nie istnieje w DOM (wsteczna zgodnosc)',
     );
     assert(
-      api.el.querySelector('[data-sp-toggle-other-civs]') != null,
-      'chip przelacznika istnieje niezaleznie od onDismissAll',
+      api.el.querySelector('[data-sp-tab="wazne"]') != null,
+      'zakladki istnieja niezaleznie od onDismissAll',
     );
     api.destroy();
   }

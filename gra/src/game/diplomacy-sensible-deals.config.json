@@ -1,0 +1,6 @@
+{
+  "_opis": "R-WEB-DIPLO-DEALS-SENSIBLE-Q1: progi sensownych ofert handlowych AI->gracz. ZALOZENIA Operatora R1 (do potwierdzenia przez Evaluatora).",
+  "deficitTurns": 10,
+  "surplusMultiple": 20,
+  "usePerTurnFallbackPakiety": 1
+}

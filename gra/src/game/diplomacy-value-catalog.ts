@@ -23,7 +23,8 @@ export type WartoscPozycjaTyp =
   | 'jednostka'
   | 'surowiec_boolean'
   | 'surowiec_ilosc'
-  | 'zywnosc';
+  | 'zywnosc'
+  | 'miasto';
 
 export type WartoscKatalogReguly = {
   pn_zloto?: { skala?: number };
@@ -444,6 +445,12 @@ export interface DiplomacySumPnOptions {
   turnsMultiplier?: number;
   /** Gdy true + turnsMultiplier>1 — mnoży PN pozycji ilościowych (¤/Praca/żywność/sztuki surowca). */
   perTurn?: boolean;
+  /**
+   * R-WEB-PEACE-CITY-CESSION-Q1 r2: typ akcji dyplomatycznej (ProposalActionId jako string).
+   * Pozycja 'miasto' jest WAŻNA wyłącznie dla akcji z `MIASTO_AKCJE_DOZWOLONE`; bez
+   * dozwolonej akcji (brak pola lub inna akcja) `diplomacySumPn` zwraca null (fail-safe).
+   */
+  actionId?: string;
 }
 
 function applyBasketSideDifficultyPn(
@@ -469,7 +476,21 @@ function applyBasketSideDifficultyPn(
 
 /** Suma PN pozycji w koszyku (null jeśli któraś pozycja nieznana). */
 export function diplomacySumPn(
-  items: Array<{ typ: WartoscPozycjaTyp; id: string; ilosc?: number; level?: number; tempo?: TempoGry | number }>,
+  items: Array<{
+    typ: WartoscPozycjaTyp;
+    id: string;
+    ilosc?: number;
+    level?: number;
+    tempo?: TempoGry | number;
+    /** R-WEB-PEACE-CITY-CESSION-Q1: wycena miasta (`diplomacyPnMiasto`) — tylko dla typ 'miasto'. */
+    cityPn?: number;
+    /**
+     * R-WEB-PEACE-CITY-CESSION-Q1 r2: waga pozycji 'miasto' po stronie ODDAJĄCEJ
+     * (`diplomacyMiastoWagaBilansu`, domyślnie MIASTO_WAGA_ODDAJACEGO). Po stronie
+     * przyjmującej waga = 1.
+     */
+    cityWeight?: number;
+  }>,
   opts?: DiplomacySumPnOptions,
 ): number | null {
   let sum = 0;
@@ -503,12 +524,26 @@ export function diplomacySumPn(
         // diplomacyPnSurowiecIlosc już mnoży przez qty (sztuki) — jak zloto/praca/zywnosc.
         pn = diplomacyPnSurowiecIlosc(item.id, qty);
         break;
+      case 'miasto': {
+        // R-WEB-PEACE-CITY-CESSION-Q1: wartość miasta policzona przez wołającego (dane miasta).
+        // r2: tylko w akcji dozwolonej (pokój/wasal) — inaczej null (fail-safe, nie wycena).
+        if (!diplomacyMiastoAkcjaDozwolona(opts?.actionId)) return null;
+        if (!(typeof item.cityPn === 'number' && Number.isFinite(item.cityPn) && item.cityPn >= 0)) return null;
+        const wagaOddajacego = typeof item.cityWeight === 'number' && Number.isFinite(item.cityWeight) && item.cityWeight >= 0
+          ? item.cityWeight
+          : MIASTO_WAGA_ODDAJACEGO;
+        // Waga dotyczy WYŁĄCZNIE strony oddającej (side 'give'); przyjmujący liczy 1.
+        const waga = opts?.side === 'give' ? wagaOddajacego : 1;
+        pn = Math.round(item.cityPn * waga);
+        break;
+      }
       default:
         return null;
     }
     if (pn == null) return null;
     const qtyMult =
       item.typ === 'zloto' || item.typ === 'praca' || item.typ === 'zywnosc' || item.typ === 'surowiec_ilosc'
+        || item.typ === 'miasto'
         ? 1
         : qty;
     let linePn = applyBasketSideDifficultyPn(pn * qtyMult, opts);
@@ -728,4 +763,235 @@ export function diplomacyProgDarRelacja(
 export function diplomacyHandelZaufaniePerTura(): number {
   const P = getBaseDiplomacyParams();
   return P.handel_zaufanie_perTura;
+}
+
+// ---------------------------------------------------------------------------
+// R-WEB-PEACE-CITY-CESSION-Q1 (Maciej 2026-10-30): miasto jako pozycja koszyka pokoju.
+// Pozycja 'miasto' wchodzi WYŁĄCZNIE do propozycji pokoju (i wasalizacji) — nie do handlu
+// zwykłego. Wycena PW: 400 + 120·populacja + 2·Σ(kosztBudowy·1.10^(poziom−1)) budynków
+// + 500 za cud świata + cena bazowa złóż w obrębie miasta. Zakaz: stolica i ostatnie miasto.
+// / EN: city as a peace-basket item. Price = 400 + 120·pop + 2·Σ building PW + 500/wonder +
+// deposit base prices. Capital and last city are not cedable.
+// ---------------------------------------------------------------------------
+
+/** Baza wyceny miasta (PW). */
+export const MIASTO_PN_BAZA = 400;
+/** PW za każdego obywatela (populacja). */
+export const MIASTO_PN_NA_OBYWATELA = 120;
+/** Mnożnik sumy PW budynków w wycenie miasta. */
+export const MIASTO_PN_MNOZNIK_BUDYNKOW = 2;
+/** PW za cud świata w mieście. */
+export const MIASTO_PN_NA_CUD = 500;
+/** Waga strony ODDAJĄCEJ miasto w bilansie pokoju. */
+export const MIASTO_WAGA_ODDAJACEGO = 1.5;
+/** Współczynnik ekspansywności AI w wadze oddawanego miasta: ×(1 + 0.1·(eks−3)). */
+export const MIASTO_AI_EKSPANSYWNOSC_KROK = 0.1;
+export const MIASTO_AI_EKSPANSYWNOSC_BAZA = 3;
+
+export interface MiastoWycenaBudynek {
+  id: string;
+  /** Poziom budynku (domyślnie 1). */
+  level?: number;
+}
+
+export interface MiastoWycenaInput {
+  populacja: number;
+  budynki: ReadonlyArray<MiastoWycenaBudynek>;
+  /** Liczba cudów świata w mieście. */
+  cudy?: number;
+  /** Suma cen bazowych złóż w obrębie miasta (PW, `diplomacyPnZloze`). */
+  zlozaPn?: number;
+}
+
+/**
+ * Wycena miasta w PW (1 PW = 1 ¤). Budynek bez wpisu w buildings.json wnosi 0 PW.
+ * Przykład: 4 obywateli + 3 budynki kosztu 30 → 400 + 480 + 2·90 = 1060 PW.
+ */
+export function diplomacyPnMiasto(input: MiastoWycenaInput): number {
+  const pop = Math.max(0, Math.floor(Number.isFinite(input.populacja) ? input.populacja : 0));
+  let sumaBudynkow = 0;
+  for (const b of input.budynki) {
+    const pn = diplomacyPnBudynek(b.id, b.level ?? 1);
+    if (pn != null) sumaBudynkow += pn;
+  }
+  // r2: NaN/Infinity w cudach i złożach nie może przeniknąć do wyceny (→ 0).
+  const cudy = Number.isFinite(input.cudy ?? 0) ? Math.max(0, Math.floor(input.cudy ?? 0)) : 0;
+  const zloza = Number.isFinite(input.zlozaPn ?? 0) ? Math.max(0, input.zlozaPn ?? 0) : 0;
+  return Math.round(
+    MIASTO_PN_BAZA
+      + MIASTO_PN_NA_OBYWATELA * pop
+      + MIASTO_PN_MNOZNIK_BUDYNKOW * sumaBudynkow
+      + MIASTO_PN_NA_CUD * cudy
+      + zloza,
+  );
+}
+
+/** Akcje, w których koszyk może zawierać pozycję 'miasto' (pokój i wasalizacja). */
+export const MIASTO_AKCJE_DOZWOLONE: ReadonlyArray<string> = Object.freeze(['pokoj', 'wasal']);
+
+/** Czy pozycja 'miasto' jest dozwolona w tej akcji dyplomatycznej. */
+export function diplomacyMiastoAkcjaDozwolona(actionId: string | null | undefined): boolean {
+  return typeof actionId === 'string' && MIASTO_AKCJE_DOZWOLONE.includes(actionId);
+}
+
+/**
+ * Cena bazowa złóż w obrębie miasta (PW) = Σ `diplomacyPnZloze` po id złóż.
+ * Złoże bez ceny bazowej (nieznane id) wnosi 0 PW.
+ */
+export function diplomacyPnZlozaMiasta(zlozaIds: ReadonlyArray<string>): number {
+  let sum = 0;
+  for (const id of zlozaIds) {
+    const pn = diplomacyPnZloze(id);
+    if (pn != null && Number.isFinite(pn) && pn > 0) sum += pn;
+  }
+  return sum;
+}
+
+/**
+ * Zakaz oddania miasta: stolica i ostatnie miasto właściciela są nienaruszalne.
+ * Zwraca powód odmowy albo null, gdy oddanie jest dozwolone.
+ */
+export function diplomacyMiastoZakaz(input: {
+  cityId: string;
+  capitalCityId: string | null | undefined;
+  ownerCityIds: ReadonlyArray<string>;
+}): string | null {
+  if (input.capitalCityId && input.cityId === input.capitalCityId) {
+    return 'Stolicy nie można oddać w pokoju';
+  }
+  if (!input.ownerCityIds.includes(input.cityId)) {
+    return 'Miasto nie należy do oddającego';
+  }
+  if (input.ownerCityIds.length <= 1) {
+    return 'Nie można oddać ostatniego miasta';
+  }
+  return null;
+}
+
+/**
+ * Waga pozycji „miasto" w bilansie pokoju. Strona oddająca: ×1.5. Gdy oddaje AI,
+ * dodatkowo ×(1 + 0.1·(ai_ekspansywnosc − 3)) — ekspansywne AI wyżej ceni swoje miasta.
+ */
+export function diplomacyMiastoWagaBilansu(opts: {
+  oddajacyJestAI: boolean;
+  aiEkspansywnosc?: number;
+}): number {
+  if (!opts.oddajacyJestAI) return 1;
+  const eks = opts.aiEkspansywnosc ?? MIASTO_AI_EKSPANSYWNOSC_BAZA;
+  const mnoznikAI = 1 + MIASTO_AI_EKSPANSYWNOSC_KROK * (eks - MIASTO_AI_EKSPANSYWNOSC_BAZA);
+  return MIASTO_WAGA_ODDAJACEGO * mnoznikAI;
+}
+
+// ---------------------------------------------------------------------------
+// R-WEB-PEACE-CITY-CESSION-Q1 r2: plan cesji miasta w pokoju (czysta funkcja).
+// Wykonanie (zmiana właściciela) w main.ts `transferCityByTreaty`; ścieżka pokojowa
+// NIE woła skutków wojennych podboju. ZAŁOŻENIA Z1 (jednostki oddającego wracają do
+// niego, przesunięte na wolny heks), Z2 (budynki zostają). Z3 (niepokój) — BLOKADA.
+// ---------------------------------------------------------------------------
+
+export interface CessionUnit {
+  id: string;
+  ownerId: number;
+  q: number;
+  r: number;
+}
+
+export interface CessionHex {
+  q: number;
+  r: number;
+}
+
+export interface CityCessionInput {
+  cityId: string;
+  /** Aktualny właściciel miasta (musi być równy fromOwnerId). */
+  cityOwnerId: number;
+  fromOwnerId: number;
+  toOwnerId: number;
+  cityQ: number;
+  cityR: number;
+  /** Id miast właściciela oddającego (włącznie z oddawanym). */
+  ownerCityIds: ReadonlyArray<string>;
+  capitalCityId: string | null | undefined;
+  units: ReadonlyArray<CessionUnit>;
+  /** Sąsiedzi heksa, kolejność deterministyczna. */
+  neighborsOf: (q: number, r: number) => ReadonlyArray<CessionHex>;
+  /** Heks, na który może wejść jednostka (istnieje, bez jednostki, bez miasta). */
+  isFreeHex: (q: number, r: number) => boolean;
+  /** Maksymalny promień BFS szukania wolnego heksu dla jednostek (domyślnie 3). */
+  maxRing?: number;
+}
+
+export type CityCessionPlan =
+  | { ok: false; reason: string }
+  | {
+      ok: true;
+      /** Ruchy jednostek oddającego z heksu miasta (właściciel bez zmian). */
+      unitMoves: Array<{ unitId: string; q: number; r: number }>;
+    };
+
+const DEFAULT_MAX_RING = 3;
+
+/** Plan cesji: walidacja zakazów + ruchy jednostek. Czysta funkcja, bez efektów ubocznych. */
+export function planCityCession(input: CityCessionInput): CityCessionPlan {
+  if (input.fromOwnerId === input.toOwnerId) {
+    return { ok: false, reason: 'Cesja do tego samego właściciela' };
+  }
+  if (input.cityOwnerId !== input.fromOwnerId) {
+    return { ok: false, reason: 'Miasto nie należy do oddającego' };
+  }
+  const zakaz = diplomacyMiastoZakaz({
+    cityId: input.cityId,
+    capitalCityId: input.capitalCityId,
+    ownerCityIds: input.ownerCityIds,
+  });
+  if (zakaz) return { ok: false, reason: zakaz };
+
+  // Jednostki oddającego na heksie miasta (Z1).
+  const garrison = input.units.filter(
+    u => u.ownerId === input.fromOwnerId && u.q === input.cityQ && u.r === input.cityR,
+  );
+  const claimed = new Set<string>();
+  const key = (q: number, r: number) => `${q},${r}`;
+  const unitMoves: Array<{ unitId: string; q: number; r: number }> = [];
+  const maxRing = Math.max(1, Math.floor(input.maxRing ?? DEFAULT_MAX_RING));
+
+  for (const unit of garrison) {
+    const target = findNearestFreeHex(input, claimed, maxRing, key);
+    if (!target) {
+      return { ok: false, reason: 'Brak wolnego pola dla jednostek w mieście' };
+    }
+    claimed.add(key(target.q, target.r));
+    unitMoves.push({ unitId: unit.id, q: target.q, r: target.r });
+  }
+  return { ok: true, unitMoves };
+}
+
+/** BFS po sąsiadach od heksu miasta; zwraca pierwszy wolny, niezajęty przez plan heks. */
+function findNearestFreeHex(
+  input: CityCessionInput,
+  claimed: ReadonlySet<string>,
+  maxRing: number,
+  key: (q: number, r: number) => string,
+): CessionHex | null {
+  const start = key(input.cityQ, input.cityR);
+  const seen = new Set<string>([start]);
+  let frontier: CessionHex[] = [{ q: input.cityQ, r: input.cityR }];
+  for (let ring = 1; ring <= maxRing; ring++) {
+    const next: CessionHex[] = [];
+    for (const h of frontier) {
+      for (const n of input.neighborsOf(h.q, h.r)) {
+        const k = key(n.q, n.r);
+        if (seen.has(k)) continue;
+        seen.add(k);
+        if (claimed.has(k)) {
+          next.push(n);
+          continue;
+        }
+        if (input.isFreeHex(n.q, n.r)) return { q: n.q, r: n.r };
+        next.push(n);
+      }
+    }
+    frontier = next;
+  }
+  return null;
 }

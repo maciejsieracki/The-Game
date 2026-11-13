@@ -1,0 +1,13 @@
+
+-- R-WEB-SAWMILL-QUARRY-PRODUCTION-50-Q1: ekonomia tury, epoka 1 --
+
+PASS: terytorium: Tartak epoka 1 = drewno +50 (got 50, want 50)
+PASS: terytorium: Kamieniołom epoka 1 = kamień +50 (jednocześnie z Tartakiem) (got 50, want 50)
+PASS: terytorium: dwa Tartaki epoka 1 = drewno +100 (got 100, want 100)
+PASS: start: Tartak epoka 1 = 50 (terytorium) (got 50, want 50)
+PASS: start: heks centrum Równina+Las = drewno 20 (5 teren + 15 las) (got 20, want 20)
+PASS: start: magazyn drewna po turze = 50 + 20 = 70 (got 70, want 70)
+PASS: kamieniołom na centrum epoka 1 = kamień +50 (got 50, want 50)
+
+7 PASS, 0 FAIL
+EXIT=0

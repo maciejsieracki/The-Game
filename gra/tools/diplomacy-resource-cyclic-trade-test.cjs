@@ -21,7 +21,7 @@ const entryFile = path.resolve(__dirname, '.dip-res-cyclic-entry.ts');
 fs.writeFileSync(entryFile, `
 export {
   evaluateProposal, resolvePlayerAcceptsAiPending, aiCommandToPendingProposal,
-  buildHandelSurowiecCykliczny, clampDealTurns,
+  buildHandelSurowiecCykliczny, clampDealTurns, clampExchangeDurationTurns, resolveExchangeExpiry,
 } from '../src/game/diplomacy-proposals.ts';
 export { canAiProposeResourceTrade, AI_RESOURCE_TRADE_DEFAULT_TURNS } from '../src/game/diplomacy-economy.ts';
 export { decideAIDiplomacy } from '../src/game/ai.ts';
@@ -41,7 +41,7 @@ esbuild.buildSync({
 
 const {
   evaluateProposal, resolvePlayerAcceptsAiPending, aiCommandToPendingProposal,
-  buildHandelSurowiecCykliczny, clampDealTurns,
+  buildHandelSurowiecCykliczny, clampDealTurns, clampExchangeDurationTurns, resolveExchangeExpiry,
   canAiProposeResourceTrade, AI_RESOURCE_TRADE_DEFAULT_TURNS,
   decideAIDiplomacy, transferSurowiecIlosc, diplomacyHandelSurowcePakietWielkosc,
 } = require(BUNDLE);
@@ -127,6 +127,33 @@ ok(r.deal?.handelSurowiecCykliczny?.[0]?.pakietyPerTura === 10, 'handel per_turn
 ok(r.deal?.handelSurowiecCykliczny?.[0]?.sellerOwnerId === 0
   && r.deal?.handelSurowiecCykliczny?.[0]?.buyerOwnerId === 1, 'handel per_turn: sprzedawca=0 (gracz), kupujacy=1 (AI)');
 ok(r.deal?.handelPayload === undefined, 'handel per_turn: BRAK handelPayload (nie duplikuje jednorazowego transferu)');
+
+// Jawny termin wymiany jest oddzielony od `turns` (horyzontu wyceny PN).
+ok(clampDealTurns(30) === 20 && clampExchangeDurationTurns(30) === 30 && clampExchangeDurationTurns(31) === 30,
+  'cyclic exchange supports 30 turns while treaty-duration clamp remains at 20');
+ok(resolveExchangeExpiry(10, { turns: 30, exchangeDurationTurns: 30 }) === 40,
+  'expiry: jawne 30 tur wygasa po 30 turach');
+ok(resolveExchangeExpiry(10, { turns: 30, exchangeDurationTurns: null }) === null,
+  'expiry: null oznacza jawnie bezterminową wymianę');
+ok(resolveExchangeExpiry(10, { turns: 12, exchangeDurationTurns: undefined }) === 22,
+  'expiry: brak jawnego pola zachowuje starszy termin z turns');
+const finite30 = evaluateProposal(prop('handel', 0, 1, {
+  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 10 }],
+  receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 1 }],
+  resourceTradeMode: 'per_turn', turns: 30, exchangeDurationTurns: 30,
+}), ctx());
+ok(finite30.accepted && finite30.deal?.wygasaTura === 40,
+  'handel per_turn: oferta 30 tur tworzy aktywną umowę do tury 40');
+const permanent = evaluateProposal(prop('handel', 0, 1, {
+  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 10 }],
+  receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 1 }],
+  resourceTradeMode: 'per_turn', turns: 30, exchangeDurationTurns: null,
+}), ctx());
+ok(permanent.accepted && permanent.deal?.wygasaTura === null,
+  'handel per_turn: null tworzy umowę, która nie wygasa');
+const persistedPermanent = JSON.parse(JSON.stringify(permanent.deal));
+ok(persistedPermanent.wygasaTura === null,
+  'zapis/odczyt JSON zachowuje bezterminowe wygasaTura=null');
 
 // -- 2b. ownerId-agnostyczne: AI (owner=3) proponuje graczowi (owner=0) — ten sam kod --
 // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13), krok podniesiony 5→10 przez

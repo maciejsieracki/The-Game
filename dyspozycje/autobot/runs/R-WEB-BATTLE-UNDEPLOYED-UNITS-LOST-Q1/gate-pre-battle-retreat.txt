@@ -1,0 +1,2 @@
+pre-battle-defender-retreat-test: OK
+EXIT=0

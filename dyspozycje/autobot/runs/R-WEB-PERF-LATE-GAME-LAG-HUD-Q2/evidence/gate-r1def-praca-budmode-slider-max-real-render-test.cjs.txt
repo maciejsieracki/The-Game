@@ -1,0 +1,19 @@
+[praca-budmode-slider-max-real-render-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+PASS: fixture: panel wyrenderowany bez błędu bootstrapu, HTML niepusty
+PASS: (A) suwak empire „budżet automatu" wyrenderowany w DOM
+PASS: (A) suwak empire ma max="100" (NIE "50" — naprawiona regresja)
+PASS: (A) suwak empire przyjmuje wartość 77% (>50, dowód że sam RENDER wartości też nie ścina do 50)
+PASS: (B) suwak city „budżet automatu" wyrenderowany w DOM
+PASS: (B) suwak city ma max="100" (NIE "50" — naprawiona regresja)
+PASS: (B) suwak city przyjmuje wartość 88% (>50)
+PASS: (C1) cap warstwy (a) (podzial Pracy budynki/pula imperium) nadal = 50 u zrodla w cities.ts
+PASS: (C2) panel imperium (jedyne globalne miejsce warstwy (a)) nadal klampuje do MAX_PROCENT_PULI_IMPERIUM
+PASS: (C3) panel trybu budowy nie ma juz ZADNEGO suwaka warstwy (a) — dwie warstwy nie stoja tu obok siebie
+PASS: brak błędów konsoli/pageerror w trakcie renderu
+
+-- Mutacja: ręczne cofnięcie max="100" -> max="50" na żywym DOM, asercje MUSZĄ zapalić się na czerwono --
+PASS: (D) mutacja: po ręcznym cofnięciu do max="50" asercja "(A) max=100" faktycznie by PADŁA (test nie jest tautologią)
+PASS: (D) mutacja: po ręcznym cofnięciu do max="50" asercja "(B) max=100" faktycznie by PADŁA (test nie jest tautologią)
+
+[praca-budmode-slider-max-real-render-test] 13 pass, 0 fail
+EXIT=0

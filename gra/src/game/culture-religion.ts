@@ -4,7 +4,8 @@
  *
  * Task D3. PURE, deterministic, DOM-free module with its OWN explicit input
  * interfaces -- decoupled exactly like economy.ts (EconomyCity) and siege.ts
- * (SiegeCity / SiegeUnit). It does NOT import any other src/ module: the runtime
+ * (SiegeCity / SiegeUnit). It imports only the civilization matrix for the
+ * existing religion-gated trade multiplier; the runtime
  * City (src/game/cities.ts) and the richer types/city.ts are owned/edited by a
  * concurrent session, so we mirror only the fields culture/religion math needs
  * onto local interfaces (CultureCity / ReligionCity) and let callers map their
@@ -42,6 +43,8 @@
  * Identifiers are ASCII; Polish appears only in comments and in religion/civ
  * string values that must match the JSON data exactly.
  */
+
+import { civMatrixParam, loadCivMatrix } from './civ-matrix';
 
 // ===========================================================================
 // Shared difficulty + raw society-param row shapes (mirror society-params.json)
@@ -114,10 +117,10 @@ export interface SocietyParamsLike {
 /** One row of civs.json cywilizacje[]. */
 interface RawCivRow {
   Cywilizacja?: string;
+  ikonaId?: string;
+  typCywilizacji?: string;
   /** Religion name assigned to this civ (matches society-params religie_cywilizacji). */
   Religia?: string;
-  /** Trade -> Money multiplier for this civ (e.g. 2.3 for Greeks). */
-  mnoznikHandelPieniadz?: number;
   [key: string]: unknown;
 }
 
@@ -333,6 +336,13 @@ export interface CultureAccrualResult {
   granicaRozszerzona: boolean;
 }
 
+/** Scale the current incoming city-culture yield by a `mul_proc` modifier. */
+export function cultureAccrualWithModifier(perTurn: number, modifier: number): number {
+  const base = Math.max(0, finiteOr(perTurn, 0));
+  const factor = Number.isFinite(modifier) ? Math.max(0, 1 + modifier) : 1;
+  return base * factor;
+}
+
 /**
  * Add this turn's culture to a city and report whether a border threshold was
  * crossed. Does NOT mutate the input city (returns a result the caller applies).
@@ -487,6 +497,19 @@ export interface ReligionParams {
   konwersjaSwiatyniaPct: number;
   /** Additive bonus %/turn from Kamienne kręgi (summed with konwersjaBazaPct). KULT-BUD-02: +2 normal. */
   konwersjaKregiPct: number;
+}
+
+/** Apply `religia_spread_proc` to base city slots only; additive building slots stay separate. */
+export function religionParamsWithSpreadModifier(
+  params: ReligionParams,
+  modifier: number,
+): ReligionParams {
+  const factor = Number.isFinite(modifier) ? 1 + modifier : 1;
+  if (factor === 1) return params;
+  return {
+    ...params,
+    szybkoscSzerzeniaBazowa: params.szybkoscSzerzeniaBazowa * factor,
+  };
 }
 
 /** Sane default Religion params (mirror the "normal" difficulty in the JSON). */
@@ -1220,9 +1243,8 @@ export interface TradeMultResult {
    */
   multiplier: number;
   /**
-   * The raw mnoznikHandelPieniadz value from civs.json for the owner civ
-   * (regardless of the gate or dominant-religion check). Useful for UI display.
-   * null when the owner civ is not found in civs.json or the field is missing.
+   * The matrix `meta_mnoznik_waluta` value for the owner civ, regardless of the
+   * gate/dominance check. Null when owner or matrix identity cannot be resolved.
    */
   civBaseMultiplier: number | null;
   /**
@@ -1238,10 +1260,10 @@ export interface TradeMultResult {
 }
 
 /**
- * Compute the per-city trade/money multiplier that comes from religion dominance.
+ * Compute the per-city matrix trade/money multiplier gated by religion dominance.
  *
- * Mechanics (per CYWILIZACJE-do-MASTER_mnoznik-handel-pole.md + EKONOMIA.md):
- *   - Each civ has a mnoznikHandelPieniadz in civs.json (e.g. Grecy = 2.3).
+ * Mechanics:
+ *   - The owner civilization's value is `meta_mnoznik_waluta` from civ-matrix.json.
  *   - The multiplier applies to a CITY only when:
  *       (a) the gate is open (caller passes gated = true -- represents
  *           Waluta + Mennica tech/building requirement; gate logic lives in
@@ -1249,13 +1271,8 @@ export interface TradeMultResult {
  *       (b) the city's dominant religion is the OWNER civ's religion.
  *   - Otherwise the function returns multiplier = 1 (no change).
  *
- * Pure, deterministic, no side effects. Reads civs.json via CivsDataLike.
- * Missing JSON keys fall back gracefully (null / 1.0).
- *
- * MISSING PARAMS NOTE: society-params.json has no dedicated
- * "religia_mnoznik_handel_*" row -- the per-civ values live in civs.json
- * (mnoznikHandelPieniadz). If that field is absent for a civ the multiplier
- * falls back to FALLBACK_TRADE_MULT (1.0 -- neutral, no bonus, no penalty).
+ * Pure, deterministic, no side effects. civs.json supplies identity/religion
+ * only; it is never a numerical fallback. Missing identity is neutral.
  *
  * @param cityReligion - current ReligionState of the city.
  * @param ownerCivName - name of the city owner's civilization (e.g. "Grecy").
@@ -1283,12 +1300,17 @@ export function cityTradeMultiplier(
     }
   }
 
-  // Read the raw civ-level trade multiplier (mnoznikHandelPieniadz).
+  // Read the owner matrix value; known raw zero remains authoritative.
   let civBaseMultiplier: number | null = null;
   if (civRow !== null) {
-    const v = civRow.mnoznikHandelPieniadz;
-    if (typeof v === 'number' && Number.isFinite(v) && v > 0) {
-      civBaseMultiplier = v;
+    const candidateIds = [civRow.ikonaId, civRow.typCywilizacji, civRow.Cywilizacja]
+      .filter((id): id is string => typeof id === 'string' && id.length > 0);
+    const matrixRow = loadCivMatrix().cywilizacje.find(row => candidateIds.some(id => [
+      row.ikonaId, row.typCywilizacji, row.Cywilizacja,
+    ].some(matrixId => matrixId.toLowerCase() === id.toLowerCase())));
+    if (matrixRow) {
+      const value = civMatrixParam(matrixRow.ikonaId, 'meta_mnoznik_waluta');
+      if (Number.isFinite(value)) civBaseMultiplier = value;
     }
   }
 
@@ -1296,7 +1318,7 @@ export function cityTradeMultiplier(
   const dom = dominantReligion(cityReligion, religionParams);
   const domReligion = dom.status === 'dominant' ? dom.religion : null;
 
-  // Owner civ's religion (from civs.json row, falling back to null).
+  // Owner civ's religion is identity data and remains the gate's source.
   let ownerReligion: string | null = null;
   if (civRow !== null) {
     const r = civRow.Religia;

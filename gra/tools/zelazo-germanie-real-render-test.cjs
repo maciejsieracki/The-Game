@@ -603,7 +603,7 @@ function assertGeometry(m, pix, dist, soft) {
     armPen[u.key] = +satDepth(obb(w), obb(up)).toFixed(4);
   }
   const nf = byName(m.falanga), nt = byName(m.thorakites);
-  armPen.falangita = +satDepth(obb(nf['falangita-dory-shaft']), obb(nf['falangita-arm-right-upper'])).toFixed(4);
+  armPen.falangita = +satDepth(obb(nf['falangita-sarissa-shaft']), obb(nf['falangita-arm-right-upper'])).toFixed(4);
   armPen.thorakites = +satDepth(obb(nt['th-spear-shaft']), obb(nt['th-arm-right-upper'])).toFixed(4);
   // chwyt (piesc) MUSI istniec i miescic sie w pasmie rodziny — bron ani nie
   // mija dloni, ani nie tonie w niej na wylot
@@ -614,7 +614,7 @@ function assertGeometry(m, pix, dist, soft) {
     if (!w || !fi) { brakCzesci = true; fistPen[u.key] = NaN; continue; }
     fistPen[u.key] = +satDepth(obb(w), obb(fi)).toFixed(4);
   }
-  fistPen.falangita = +satDepth(obb(nf['falangita-dory-shaft']), obb(nf['falangita-arm-right-fist'])).toFixed(4);
+  fistPen.falangita = +satDepth(obb(nf['falangita-sarissa-shaft']), obb(nf['falangita-arm-right-fist'])).toFixed(4);
   fistPen.thorakites = +satDepth(obb(nt['th-spear-shaft']), obb(nt['th-arm-right-fist'])).toFixed(4);
   t('H2', '(H2) bron NIE przenika ramienia reki uzbrojonej — 0.0000 jak Falangita (T3) i Thorakites (T6); chwyt w pasmie rodziny',
     !brakCzesci
@@ -723,7 +723,7 @@ function assertGeometry(m, pix, dist, soft) {
 
   // H13 — WIDOCZNOSC BRONI z kamery gry (klasa bledu T6/A1). Prog to 0.60
   // widocznosci dory Falangity policzonej W TYM SAMYM renderze.
-  const visF = weaponVisibility(m.falanga, ['falangita-arm-right-fist', 'falangita-dory-shaft', 'falangita-dory-tip']).vis;
+  const visF = weaponVisibility(m.falanga, ['falangita-arm-right-fist', 'falangita-sarissa-shaft', 'falangita-sarissa-tip']).vis;
   const vis = {}, scr = {};
   for (const u of UNITS) {
     const w = weaponVisibility(m[u.key], WEAPON_CHAIN[u.key]);

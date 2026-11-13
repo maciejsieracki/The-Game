@@ -12,7 +12,7 @@ import {
   treatyPwForRole,
 } from '../game/diplomacy-pn-engine';
 import { diplomacyFairGivePn } from '../game/diplomacy-value-catalog';
-import { formatLiczbaPl } from './formatPl';
+import { formatLiczbaPl, formatUmowyCount } from './formatPl';
 
 export interface NegotiationBalanceSource {
   id?: string;
@@ -67,7 +67,16 @@ export const RELATION_DEAL_TOOLTIP =
   + 'Niska Relacja = niższe PW Twojej strony — trzeba dopłacić do bilansu. '
   + 'Partner zawsze na bazie traktatu.';
 
-type RelationDealContext = 'treaty' | 'trade';
+/** Dopisek tooltipu: wiersz wpływu liczy Relację z perspektywy AI, audiencja — z perspektywy gracza. */
+export const RELATION_DEAL_PERSPECTIVE_NOTE =
+  'Liczona z perspektywy AI (proponenta); w audiencji Relacja gracza może mieć inną wartość.';
+
+/**
+ * 'incomingAccepted' — przychodząca oferta AI→gracz, którą gracz może przyjąć (Przyjmij aktywne).
+ * Tekst nie może wtedy mówić „musisz dać więcej", bo werdykt pod spodem mówi „Możesz przyjąć".
+ * Wariant czysto wyświetlany: liczby i bramki (canAccept, pwBalance) są bez zmian.
+ */
+type RelationDealContext = 'treaty' | 'trade' | 'incomingAccepted';
 
 function formatModPctSigned(modPct: number): string {
   if (modPct === 0) return '0%';
@@ -83,6 +92,8 @@ function relationModTone(modPct: number): 'better' | 'worse' | 'neutral' {
 
 function relationDealText(relTotal: number, context: RelationDealContext): string {
   const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
+  // Oferta przyjmowalna (Przyjmij aktywne): tekst neutralny, bez „strona słabsza” i bez czerwieni.
+  if (context === 'incomingAccepted') return 'wymiana symetryczna';
   if (context === 'trade') {
     if (relTotal >= 100) return 'parytet 1:1 przy uczciwej wymianie';
     const mult = formatLiczbaPl(100 / Math.max(1, relTotal));
@@ -105,20 +116,28 @@ export function renderRelationDealModRowHtml(
   context: RelationDealContext = 'treaty',
 ): string {
   const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
-  const tone = context === 'trade'
-    ? (relTotal >= 100 ? 'neutral' : 'worse')
-    : relationModTone(modPct);
+  const tone = context === 'incomingAccepted'
+    ? 'neutral'
+    : context === 'trade'
+      ? (relTotal >= 100 ? 'neutral' : 'worse')
+      : relationModTone(modPct);
   const dealText = relationDealText(relTotal, context);
+  // Wartość Relacji w tym wierszu jest z perspektywy AI (proponenta) — nie z perspektywy gracza
+  // (audiencja pokazuje „Relacja z perspektywy gracza”, np. 90 / 200).
   const relDisplay = context === 'trade' && relTotal >= 100
-    ? 'Relacja ≥100'
-    : `Relacja ${formatLiczbaPl(relTotal)}`;
+    ? 'Relacja z perspektywy AI ≥100'
+    : `Relacja z perspektywy AI ${formatLiczbaPl(relTotal)}`;
   const pctBadge = modPct !== 0
     ? '<span class="da-pn-rel-mod-pct">' + esc(formatModPctSigned(modPct)) + '</span>'
     : '';
   const balanceNote = context === 'treaty' && modPct !== 0
     ? ' <span class="da-pn-rel-mod-balance">(punkt balansu: 100)</span>'
     : '';
-  const tip = ' title="' + esc(RELATION_DEAL_TOOLTIP + ' ' + formatRelationModLabel(relTotal)) + '"';
+  // Przy 'incomingAccepted' werdykt to „Możesz przyjąć” — tooltip nie może mówić „trzeba dopłacić”.
+  const tipBase = context === 'incomingAccepted' ? '' : RELATION_DEAL_TOOLTIP + ' ';
+  const tip = ' title="' + esc(
+    tipBase + RELATION_DEAL_PERSPECTIVE_NOTE + ' ' + formatRelationModLabel(relTotal),
+  ) + '"';
 
   return (
     '<div class="da-pn-rel-mod ' + tone + '"' + tip + '>'
@@ -418,7 +437,7 @@ export function balancePanelDataFromRows(
   return {
     ...base,
     actionLabel: actionable.length > 1
-      ? `Pakiet na stole (${actionable.length} umów)`
+      ? `Pakiet na stole (${formatUmowyCount(actionable.length)})`
       : base.actionLabel,
     myOfferPn,
     theirOfferPn,
@@ -636,7 +655,12 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
     ? treatyMetaHtml(playerTreatyPw, partnerTreatyPw, relTotal, 'Traktat', treatyBase)
     : '';
 
-  const relModRow = relationRowFromBalance(their, data.myBalance);
+  // Oferta AI→gracz z aktywnym „Przyjmij" (verdict „Możesz przyjąć"): wiersz Relacji nie może
+  // pokazywać wariantu 'trade' („musisz dać więcej…"), bo przeczy werdyktowi (dispatch
+  // R-WEB-UI-DIPLO-RELATION-DEAL-TEXT-CONSISTENT-Q1). Oferta gracz→AI zostaje bez zmian.
+  const relModRow = incomingTrade && data.canAccept !== false
+    ? renderRelationDealModRowHtml(relTotal, 'incomingAccepted')
+    : relationRowFromBalance(their, data.myBalance);
 
   const relNote = their.relRequired != null && their.relBalance != null && their.relBalance < 0
     ? '<div class="da-pn-bal-meta warn">Relacja ' + formatLiczbaPl(their.relCurrent ?? 0)

@@ -1,0 +1,9 @@
+[A] golden przez advanceCityEconomy (digest base === head)
+  GOLDEN-DIGEST sha256=9fe8c371221e194ae0590d0068400813a93e93fb5350984797c97e8ddcd555a2 (scenariuszy: 126)
+  PASS: golden: wynik zgodny z analitycznym 25/25/25 (N-1/N/N+1, jedno i dwa miasta, sól imperium-wide)
+  PASS: golden: Spichlerz I przy 25 ceramiki zużywa 25 (25→0)
+  PASS: golden: dwa miasta z I, pula 50 → dwie wypłaty (0/0), jak dotąd
+  PASS: golden: miasto z I+II przy 25/25 — jedna wypłata ceramiki i sól zużyta (ZAŁOŻENIE: patrz raport)
+[B] pominięte (SPICH_GOLDEN_ONLY=1, tryb bazowy)
+spichlerz-drain-pipeline-test: 4 pass, 0 fail
+EXIT=0

@@ -1,0 +1,2 @@
+battle-mode-choice-labels-test: PASS — both labels, help, selection and start summary
+EXIT=0

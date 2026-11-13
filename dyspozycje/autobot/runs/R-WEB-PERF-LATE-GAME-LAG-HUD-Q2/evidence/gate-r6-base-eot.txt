@@ -1,0 +1,6 @@
+[perf] build identity: {"reused":"/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/base-build","gitHead":"base-33855a540"}
+[perf] eot {"wall":24676,"jsMs":16515.3,"nativeMs":1192.1,"gcMs":160.4,"glNativeMs":102.3,"cnt":{"buildHudState":24,"collectTurnEvents":21,"border":4,"refreshFog":3}}
+[perf] eot {"wall":25190,"jsMs":17625.7,"nativeMs":650.9,"gcMs":432.2,"glNativeMs":199.6,"cnt":{"buildHudState":21,"collectTurnEvents":18,"border":4,"refreshFog":3}}
+[perf] result written: /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/base-eot.json
+
+EXIT=NIE_ZAPISANO (plik wynikowy pomiaru JSON bez kodu wyjscia; dopisane w obronie R2 bez ponownego uruchomienia, kod nieodtworzony)

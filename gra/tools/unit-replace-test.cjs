@@ -37,6 +37,8 @@ export {
   availableReplacementsFor,
   availableProduction,
   epochNumber,
+  newestAvailableSameTypeUnit,
+  unitNacjaForCivKey,
 } from '../src/game/production';
 export {
   buildReplaceAvailabilityCtx,
@@ -62,7 +64,7 @@ try {
 }
 
 const M = require(BUNDLE_FILE);
-const { availableReplacementsFor, buildReplaceAvailabilityCtx } = M;
+const { availableReplacementsFor, buildReplaceAvailabilityCtx, newestAvailableSameTypeUnit, unitNacjaForCivKey } = M;
 
 const unitsJson = require('../data/units.json');
 const DATA = { buildings: [], units: Object.values(unitsJson) };
@@ -82,7 +84,7 @@ function assert(cond, msg, extra) {
   }
 }
 
-// Ctx: Rzym gracz w epoce Zelazo (3), Hutnictwo zelaza + Brazownictwo zbadane,
+// Ctx: Rzym gracz w epoce Zelazo (3), Hutnictwo zelaza + Sztuka wojenna + Brazownictwo zbadane,
 // bez bonusow cyw (civBonusy=[]) -- specTokens puste, wiec jednostki "Specjalna"
 // innych nacji i tak odpadaja na bramce Nacja. builtBuildingIds zawiera Odlewnie
 // zelaza + hasKopalniaNaZlozuZelaza=true (dec. wlasciciela 2026-07-19: jednostki
@@ -92,7 +94,10 @@ const RZYM_ZELAZO_CTX = {
   epoch: 3,
   civUnitNacja: 'Rzym',
   civBonusy: [],
-  builtBuildingIds: ['odlewnia_zelaza'],
+  // Klasa A (R-WEB-TEST-DEBT-PREEXISTING-B-Q1): bramka Koszar (production.ts passesAvailabilityGates,
+  // epoka >= Braz wymaga 'koszary') dodana w e06ad53c8 ("complete non-performance Robocza fixes"),
+  // po ostatniej zmianie tego testu. Fixture musi odzwierciedlac ten swiadomy warunek gry.
+  builtBuildingIds: ['odlewnia_zelaza', 'koszary'],
   placedImprovements: null,
   hasKopalniaNaZlozuZelaza: true,
   // UNIT-REPLACE-EVOCATI-Q1 runda 2: passesAvailabilityGates (production.ts) sprawdza
@@ -105,9 +110,82 @@ const RZYM_ZELAZO_CTX = {
   // z listy zamienników mimo ze test celowo symuluje gracza z pelnym dostepem do surowcow.
   empireResourceStock: { braz: 10, zelazo: 10, drewno: 10 },
 };
-const TECHS_ZELAZO = ['Brazownictwo', 'Brązownictwo', 'Hutnictwo żelaza'];
+const TECHS_ZELAZO = ['Brazownictwo', 'Brązownictwo', 'Hutnictwo żelaza', 'Sztuka wojenna'];
+const GREECE_IRON_CTX = {
+  ...RZYM_ZELAZO_CTX,
+  civUnitNacja: 'Grecja',
+};
 
 console.log('\n[unit-replace-test] Running tests...\n');
+
+// The cross-type expansion uses this exact units.json Typ allowlist, not model
+// category, attack stats, or name guessing. `Hastati` has a secondary missile
+// attack but remains Swordsman infantry; Distance/Slinger remain ranged.
+{
+  const meleeTypes = ['Swordsman', 'Spearman', 'Falangite', 'Offensive'];
+  const otherTypes = ['Distance', 'Slinger', 'Mount', 'Siege', 'Civilian', 'Naval'];
+  const fixtureUnit = (name, typ) => ({
+    ...unitsJson.find(u => u.Jednostka === 'Wojownik'),
+    Jednostka: name,
+    Typ: typ,
+    Nacja: '',
+    Epoka: 'Kamień',
+    Tech: '-',
+    'W zamian za': '—',
+    'Zastąp specjalnie': '—',
+    'Super-jednostka': '—',
+    'Pieniądz (koszt)': 8,
+    Surowiec: '—',
+    'Surowiec (ilość)': 0,
+  });
+  const matrixUnits = [
+    ...meleeTypes.map((typ, i) => fixtureUnit(`Infantry ${i}`, typ)),
+    ...otherTypes.map((typ, i) => fixtureUnit(`Other ${i}`, typ)),
+    fixtureUnit('Other Distance peer', 'Distance'),
+  ];
+  const matrixData = { units: matrixUnits, buildings: [] };
+  const civs = require('../data/civs.json').cywilizacje;
+  const allCivs = civs.map(c => ({ key: c.ikonaId, nation: unitNacjaForCivKey(c.ikonaId) }));
+  const ctxFor = nation => ({
+    epoch: 3,
+    civUnitNacja: nation,
+    civBonusy: [],
+    builtBuildingIds: ['koszary'],
+    empireResourceStock: { braz: 100, zelazo: 100, drewno: 100 },
+  });
+  let matrixOk = true;
+  for (const civ of allCivs) {
+    for (let source = 0; source < meleeTypes.length; source++) {
+      const sourceName = `Infantry ${source}`;
+      const ids = availableReplacementsFor(sourceName, matrixData, [], ctxFor(civ.nation)).map(i => i.id);
+      for (let target = 0; target < meleeTypes.length; target++) {
+        const shouldInclude = source !== target;
+        if (ids.includes(`Infantry ${target}`) !== shouldInclude) {
+          matrixOk = false;
+          console.error(`  [FAIL] ${civ.key}: ${meleeTypes[source]} -> ${meleeTypes[target]}: ${JSON.stringify(ids)}`);
+        }
+      }
+      if (otherTypes.some((_, i) => ids.includes(`Other ${i}`))) {
+        matrixOk = false;
+        console.error(`  [FAIL] ${civ.key}: melee source leaked into a non-melee type: ${JSON.stringify(ids)}`);
+      }
+    }
+  }
+  assert(matrixOk, `cross-type melee matrix passes for all ${allCivs.length} civilizations; no ranged/mount/siege/civilian/naval leak`);
+  const rangedIds = availableReplacementsFor('Other 0', matrixData, [], ctxFor(allCivs[0]?.nation)).map(i => i.id);
+  assert(rangedIds.includes('Other Distance peer')
+    && rangedIds.filter(id => id.startsWith('Infantry ')).length === 0
+    && !rangedIds.includes('Other 1'), 'Distance remains in its own same-Typ path and cannot cross into melee or Slinger');
+}
+
+// Same-Typ era mapping is deterministic, ignores cross-Typ named substitutions,
+// and keeps units.json order for equal-era candidates.
+{
+  const best = newestAvailableSameTypeUnit('Wojownik', ['Wojownik z mieczem i tarczą', 'Evocati'], DATA.units);
+  assert(best?.Jednostka === 'Evocati', 'newest same-Typ candidate is selected');
+  const crossTypeOnly = newestAvailableSameTypeUnit('Wojownik tyrreński', ['Evocati'], DATA.units);
+  assert(crossTypeOnly === null, 'cross-Typ named replacement is excluded from automatic mapping');
+}
 
 // --- Scenario 1: Hastati (Rzym, Zelazo, Typ=Swordsman) ----------------------
 console.log('1. Rzym / Zelazo -- zamienniki dla Hastati (Typ=Swordsman)');
@@ -140,6 +218,17 @@ console.log('\n2b. Bez tech "Hutnictwo żelaza" -- Evocati NIE jest jeszcze "dos
   assert(!ids.includes('Evocati'), 'Evocati zniknal (nieodblokowany w epoce Brazu)', 'ids=' + JSON.stringify(ids));
 }
 
+// --- Scenario 2c: Mycenaean -> Falanga / Thorakites (actual cross-Typ data) ---
+console.log('\n2c. Grecja / Zelazo -- Wojownik mykeński -> Falanga (Falangite) i Thorakites (Spearman)');
+{
+  const items = availableReplacementsFor('Wojownik mykeński', DATA, TECHS_ZELAZO, GREECE_IRON_CTX);
+  const ids = items.map(i => i.id);
+  assert(ids.includes('Falanga'), 'Falanga (Falangite) dostępna mimo innego Typ', 'ids=' + JSON.stringify(ids));
+  assert(ids.includes('Thorakites'), 'Thorakites (Spearman) dostępny mimo innego Typ', 'ids=' + JSON.stringify(ids));
+  assert(ids.includes('Hieros Lochos (Święty Zastęp)'), 'istniejąca ścieżka specjalna/Super pozostała dostępna', 'ids=' + JSON.stringify(ids));
+  assert(!ids.includes('Triari'), 'nacja pozostaje bramką dla cross-Typ piechoty', 'ids=' + JSON.stringify(ids));
+}
+
 // --- Scenario 3: nieznana jednostka -> pusta lista --------------------------
 console.log('\n3. Nieznana nazwa jednostki -> []');
 {
@@ -161,7 +250,8 @@ console.log('\n4. buildReplaceAvailabilityCtx (main.ts "Zastąp" -- pokrycie UNI
 {
   const baseParams = {
     epoch: 3,
-    builtBuildingIds: ['odlewnia_zelaza'],
+    // Klasa A: 'koszary' -- patrz komentarz w RZYM_ZELAZO_CTX (e06ad53c8).
+    builtBuildingIds: ['odlewnia_zelaza', 'koszary'],
     civBonusy: [],
     civUnitNacja: 'Rzym',
     placedImprovements: null,

@@ -69,16 +69,19 @@ function findUnit(name) {
 console.log('\n-- unitResourceUpkeep: pojedyncze jednostki --');
 
 const wojownik = findUnit('Wojownik');
-deepEq(M.unitResourceUpkeep(wojownik), { drewno: 2 }, 'Wojownik -> {drewno:2}');
+// Klasa A (R-WEB-TEST-DEBT-PREEXISTING-B-Q1): 4c1126de1 "apply half ... resource upkeep costs"
+// zmienil units.json (Wojownik utrzymanie 5 -> 3, Math.round(5/2)); asercja byla sprzed tego balansu.
+deepEq(M.unitResourceUpkeep(wojownik), { drewno: 3 }, 'Wojownik -> {drewno:3} (units.json po 4c1126de1)');
 
 const wlocznik = findUnit('Włócznik');
-deepEq(M.unitResourceUpkeep(wlocznik), { braz: 2 }, 'Włócznik -> {braz:2}');
+// Klasa A: units.json po 4c1126de1 (utrzymanie 10 -> 5) x mnoznik Braz x2 (scaleCostByEpoch) = 10.
+deepEq(M.unitResourceUpkeep(wlocznik), { braz: 10 }, 'Włócznik -> {braz:10} (5 x Brąz x2)');
 
 console.log('\n-- unitStockCost: rekrutacja Włócznik (×5) --');
 deepEq(
   M.unitStockCost(wlocznik),
-  { braz: 10 },
-  'Włócznik unitStockCost -> {braz:10} (stara baza ×5)',
+  { braz: 50 },
+  'Włócznik unitStockCost -> {braz:50} (Surowiec 25 po 4c1126de1 x Brąz x2)',
 );
 
 console.log('\n-- totalUnitResourceUpkeep: suma po jednostkach --');
@@ -88,8 +91,8 @@ const twoSpearmen = [
 ];
 deepEq(
   M.totalUnitResourceUpkeep(twoSpearmen, typeId => findUnit(typeId)),
-  { braz: 4 },
-  '2× Włócznik -> {braz:4}',
+  { braz: 20 },
+  '2× Włócznik -> {braz:20}',
 );
 
 console.log('\n-- edge cases --');

@@ -1,0 +1,22 @@
+PASS: M0: komparator zawiera linię członu epoki (kotwica mutacji)
+
+-- CZESC A: komparator (czysta logika) --
+FAIL: A1: epoka malejąco (Żelazo, potem Brąz, potem Kamień), w epoce siła malejąco -- ["Bez-epoki","Z-mocny","B-mocny","K-mocny","Z-remis-drogi","Z-remis-a","Z-remis-b","Z-slaby","B-slaby","K-slaby"]
+FAIL: A2: jednostka bez epoki = najstarsza (w grupie Kamień, wg siły -- najmocniejsza z grupy) -- ["Bez-epoki","Z-mocny","B-mocny","K-mocny","Z-remis-drogi","Z-remis-a","Z-remis-b","Z-slaby","B-slaby","K-slaby"]
+PASS: A3: remis siły -- koszt malejąco, potem nazwa rosnąco (Z-remis-drogi, a, b)
+PASS: A4: deterministyczne -- odwrócone wejście daje ten sam porządek
+PASS: A5: nie mutuje wejścia
+PASS: A6: brak definicji -> na końcu
+PASS: A7: rangi epok: brak=0, nieznana=0, Żelazo=2; kolejność epok Kamień,Brąz,Żelazo
+
+-- CZESC B: prawdziwy Chromium, prawdziwe dane, oba panele --
+PASS: B0: brak bledow strony
+  [epoka 1] Taran(Kamień,352.5) | Rydwan (woły)(Kamień,104) | Wojownik(Kamień,27) | Łucznik(Kamień,17.5) | Oszczepnik(Kamień,12) | Zwiadowca(Kamień,6)
+  [epoka 2] Wieża oblężnicza(Brąz,451) | Taran okuty(Brąz,377.5) | Taran(Kamień,352.5) | Rydwan mykeński(Brąz,105) | Rydwan (woły)(Kamień,104) | Konnica(Brąz,98) | Wojownik mykeński(Brąz,34.5) | Wojownik(Kamień,27) | Galera(Brąz,25) | Łucznik(Kamień,17.5) | Procarz(Brąz,12) | Oszczepnik(Kamień,12) | Zwiadowca(Kamień,6)
+  [epoka 3] Wieża oblężnicza(Brąz,451) | Taran okuty(Brąz,377.5) | Katapulta(Żelazo,128) | Rydwan mykeński(Brąz,105) | Konnica(Brąz,98) | Hieros Lochos (Święty Zastęp)(Żelazo,63) | Falanga(Żelazo,52.5) | Thorakites(Żelazo,41) | Wojownik mykeński(Brąz,34.5) | Galera(Brąz,25) | Procarz(Brąz,12) | Zwiadowca(Kamień,6)
+FAIL: B1: dla epok 1..3 -- epoka malejąco, siła malejąco w epoce, DOM miasta == DOM Armii == model, pierwszy wiersz widoczny -- ["E2: Taran(Kamień) przed Rydwan mykeński(Brąz) -- starsza epoka wyżej","E3: Taran okuty(Brąz) przed Katapulta(Żelazo) -- starsza epoka wyżej","E3: pierwsza jednostka nie z najnowszej epoki"]
+PASS: B2: epoka 3 zawiera jednostki z >=2 epok (test nie jest pusty)
+FAIL: B3: epoka 3 -- pierwszy wiersz obu paneli to Żelazo -- [{"name":"Wieża oblężnicza","meta":"Oblężnicza · Brąz"},{"name":"Wieża oblężnicza","meta":"Oblężnicza · Brąz"}]
+
+=== recruit-list-order-by-era-test: 8 pass, 4 fail ===
+EXIT=1

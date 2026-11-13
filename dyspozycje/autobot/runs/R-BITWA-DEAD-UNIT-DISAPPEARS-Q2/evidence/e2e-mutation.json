@@ -1,0 +1,62 @@
+{
+  "generatedAt": "2026-11-11T11:21:36.235Z",
+  "exe": "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+  "results": [
+    {
+      "mode": "skip",
+      "siege": false,
+      "done": true,
+      "finished": true,
+      "roundNo": 4,
+      "stats": {
+        "frames": 8,
+        "maxDeadSeen": 10,
+        "orphanMax": 10,
+        "checks": 4,
+        "hp0Alive": 0,
+        "deadVisible": 15,
+        "deadAttached": 15
+      },
+      "kills": 10,
+      "violations": [
+        "frame2: dead still attached atk20 removed=true",
+        "frame2: dead still visible atk20",
+        "frame2: dead holds tile atk20",
+        "frame2: dead still attached def21 removed=true",
+        "frame2: dead still visible def21",
+        "frame2: dead holds tile def21",
+        "frame2: orphan model group in scene (b376bfa8-37de-4781-b07b-41b132e36ca9)",
+        "frame2: orphan model group in scene (b895f9ba-8c0d-470f-8f3e-26929c196053)",
+        "frame3: dead still attached atk20 removed=true",
+        "frame3: dead still visible atk20",
+        "frame3: dead holds tile atk20",
+        "frame3: dead still attached def21 removed=true",
+        "frame3: dead still visible def21",
+        "frame3: dead holds tile def21",
+        "frame3: dead still attached def23 removed=true"
+      ],
+      "nViolations": 60,
+      "alive": [
+        16,
+        21
+      ],
+      "roster": [
+        28,
+        28
+      ],
+      "sceneChildren": 10742,
+      "winner": "obronca",
+      "logTail": [
+        "  -> Hastati wyeliminowany",
+        "  -> Archer ZALAMUJE MORALE i ucieka z pola!",
+        "  -> Archer ZALAMUJE MORALE i ucieka z pola!",
+        "Archer trafia Hastati za 2 (HP 1/38).",
+        "=== Morale armii ATAKUJACEGO zalamane (19% < 25%) -- armia w rozsypce! ===",
+        "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+      ],
+      "timedOut": false,
+      "ms": 6361,
+      "errors": []
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+EXIT=0
+Run: node tools/battle-standoff-two-warriors-test.cjs (cwd gra/), base gra/src = 4d1916f2c (HEAD, unchanged)
+PASS AUTO 1v1 gap 0: blows
+PASS AUTO 1v1 gap 1: blows
+PASS AUTO 1v1 gap 3: blows
+PASS AUTO 2v2 gap 3: blows and contact
+PASS manual 2 rounds -> AUTO 2v2 gap 3: blows and contact
+PASS manual 2 rounds -> AUTO 1v1 gap 3: blows and contact

@@ -1,0 +1,160 @@
+PASS: brak bledow strony (base/cur): [[],[]]
+PASS: deposits/konie: depositDisplayScale 2 -> 4 (2x)
+PASS: deposits/konie: skala koncowa 1.2000 -> 2.4000 (2x)
+PASS: deposits/konie: wymiary bbox 2x (0.237 -> 0.475)
+PASS: deposits/konie: uziemienie proporcjonalne (minY 0.0130 -> 0.0160), origin bez zmian
+PASS: deposits/konie: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx 0.9391 -> 1.8782)
+PASS: deposits/owce: depositDisplayScale 1 -> 2 (2x)
+PASS: deposits/owce: skala koncowa 0.6000 -> 1.2000 (2x)
+PASS: deposits/owce: wymiary bbox 2x (0.303 -> 0.606)
+PASS: deposits/owce: uziemienie proporcjonalne (minY 0.0100 -> 0.0100), origin bez zmian
+PASS: deposits/owce: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx -0.2047 -> -0.4094)
+PASS: deposits/bydlo: depositDisplayScale 1 -> 2 (2x)
+PASS: deposits/bydlo: skala koncowa 0.6000 -> 1.2000 (2x)
+PASS: deposits/bydlo: wymiary bbox 2x (0.440 -> 0.879)
+PASS: deposits/bydlo: uziemienie proporcjonalne (minY 0.0100 -> 0.0100), origin bez zmian
+PASS: deposits/bydlo: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx 0.1609 -> 0.3218)
+PASS: deposits/lama: depositDisplayScale 1 -> 2 (2x)
+PASS: deposits/lama: skala koncowa 0.6000 -> 1.2000 (2x)
+PASS: deposits/lama: wymiary bbox 2x (0.052 -> 0.105)
+PASS: deposits/lama: uziemienie proporcjonalne (minY 0.0100 -> 0.0100), origin bez zmian
+PASS: deposits/lama: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+PASS: deposits/glina: depositDisplayScale 1 -> 2 (2x)
+PASS: deposits/glina: skala koncowa 0.4205 -> 0.8409 (2x)
+PASS: deposits/glina: wymiary bbox 2x (0.550 -> 1.100)
+PASS: deposits/glina: uziemienie proporcjonalne (minY 0.0098 -> 0.0096), origin bez zmian
+PASS: deposits/glina: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx -0.0141 -> -0.0281)
+PASS: deposits/ruda: depositDisplayScale 1 -> 2 (2x)
+PASS: deposits/ruda: skala koncowa 0.6000 -> 1.2000 (2x)
+PASS: deposits/ruda: wymiary bbox 2x (0.100 -> 0.200)
+PASS: deposits/ruda: uziemienie proporcjonalne (minY -0.0023 -> -0.0146), origin bez zmian
+PASS: deposits/ruda: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx 0.0006 -> 0.0013)
+PASS: deposits/miedz: depositDisplayScale 1 -> 2 (2x)
+PASS: deposits/miedz: skala koncowa 0.3844 -> 0.7688 (2x)
+PASS: deposits/miedz: wymiary bbox 2x (0.550 -> 1.100)
+PASS: deposits/miedz: uziemienie proporcjonalne (minY 0.0087 -> 0.0074), origin bez zmian
+PASS: deposits/miedz: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx 0.0057 -> 0.0114)
+PASS: deposits/zelazo: depositDisplayScale 1 -> 2 (2x)
+PASS: deposits/zelazo: skala koncowa 0.4545 -> 0.9090 (2x)
+PASS: deposits/zelazo: wymiary bbox 2x (0.550 -> 1.100)
+PASS: deposits/zelazo: uziemienie proporcjonalne (minY 0.0069 -> 0.0037), origin bez zmian
+PASS: deposits/zelazo: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx -0.0154 -> -0.0307)
+PASS: deposits/wegiel: depositDisplayScale 1 -> 2 (2x)
+PASS: deposits/wegiel: skala koncowa 0.4099 -> 0.8198 (2x)
+PASS: deposits/wegiel: wymiary bbox 2x (0.549 -> 1.097)
+PASS: deposits/wegiel: uziemienie proporcjonalne (minY 0.0100 -> 0.0100), origin bez zmian
+PASS: deposits/wegiel: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx 0.0060 -> 0.0120)
+PASS: deposits/sol: depositDisplayScale 1 -> 2 (2x)
+PASS: deposits/sol: skala koncowa 0.4073 -> 0.8146 (2x)
+PASS: deposits/sol: wymiary bbox 2x (0.493 -> 0.987)
+PASS: deposits/sol: uziemienie proporcjonalne (minY 0.0077 -> 0.0053), origin bez zmian
+PASS: deposits/sol: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx -0.0140 -> -0.0280)
+PASS: deposits/zloto: depositDisplayScale 1 -> 2 (2x)
+PASS: deposits/zloto: skala koncowa 0.4185 -> 0.8370 (2x)
+PASS: deposits/zloto: wymiary bbox 2x (0.558 -> 1.115)
+PASS: deposits/zloto: uziemienie proporcjonalne (minY 0.0031 -> -0.0038), origin bez zmian
+PASS: deposits/zloto: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx 0.0146 -> 0.0292)
+PASS: deposits/cyna: depositDisplayScale 1 -> 2 (2x)
+PASS: deposits/cyna: skala koncowa 0.4526 -> 0.9053 (2x)
+PASS: deposits/cyna: wymiary bbox 2x (0.546 -> 1.092)
+PASS: deposits/cyna: uziemienie proporcjonalne (minY 0.0069 -> 0.0038), origin bez zmian
+PASS: deposits/cyna: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx 0.0030 -> 0.0060)
+PASS: depositsElev/konie: depositDisplayScale 2 -> 4 (2x)
+PASS: depositsElev/konie: skala koncowa 1.2000 -> 2.4000 (2x)
+PASS: depositsElev/konie: wymiary bbox 2x (0.237 -> 0.475)
+PASS: depositsElev/konie: uziemienie proporcjonalne (minY 0.0130 -> 0.0160), origin bez zmian
+PASS: depositsElev/konie: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx 0.9391 -> 1.8782)
+PASS: depositsElev/owce: depositDisplayScale 1 -> 2 (2x)
+PASS: depositsElev/owce: skala koncowa 0.6000 -> 1.2000 (2x)
+PASS: depositsElev/owce: wymiary bbox 2x (0.303 -> 0.606)
+PASS: depositsElev/owce: uziemienie proporcjonalne (minY 0.0100 -> 0.0100), origin bez zmian
+PASS: depositsElev/owce: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx -0.2047 -> -0.4094)
+PASS: depositsElev/bydlo: depositDisplayScale 1 -> 2 (2x)
+PASS: depositsElev/bydlo: skala koncowa 0.4641 -> 0.9282 (2x)
+PASS: depositsElev/bydlo: wymiary bbox 2x (0.340 -> 0.680)
+PASS: depositsElev/bydlo: uziemienie proporcjonalne (minY 0.0100 -> 0.0100), origin bez zmian
+PASS: depositsElev/bydlo: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx 0.1245 -> 0.2489)
+PASS: depositsElev/lama: depositDisplayScale 1 -> 2 (2x)
+PASS: depositsElev/lama: skala koncowa 0.6000 -> 1.2000 (2x)
+PASS: depositsElev/lama: wymiary bbox 2x (0.052 -> 0.105)
+PASS: depositsElev/lama: uziemienie proporcjonalne (minY 0.0100 -> 0.0100), origin bez zmian
+PASS: depositsElev/lama: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+PASS: depositsElev/glina: depositDisplayScale 1 -> 2 (2x)
+PASS: depositsElev/glina: skala koncowa 0.2599 -> 0.5198 (2x)
+PASS: depositsElev/glina: wymiary bbox 2x (0.340 -> 0.680)
+PASS: depositsElev/glina: uziemienie proporcjonalne (minY 0.0099 -> 0.0097), origin bez zmian
+PASS: depositsElev/glina: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx -0.0087 -> -0.0174)
+PASS: depositsElev/ruda: depositDisplayScale 1 -> 2 (2x)
+PASS: depositsElev/ruda: skala koncowa 0.6000 -> 1.2000 (2x)
+PASS: depositsElev/ruda: wymiary bbox 2x (0.100 -> 0.200)
+PASS: depositsElev/ruda: uziemienie proporcjonalne (minY -0.0023 -> -0.0146), origin bez zmian
+PASS: depositsElev/ruda: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx 0.0006 -> 0.0013)
+PASS: depositsElev/miedz: depositDisplayScale 1 -> 2 (2x)
+PASS: depositsElev/miedz: skala koncowa 0.2376 -> 0.4753 (2x)
+PASS: depositsElev/miedz: wymiary bbox 2x (0.340 -> 0.680)
+PASS: depositsElev/miedz: uziemienie proporcjonalne (minY 0.0092 -> 0.0084), origin bez zmian
+PASS: depositsElev/miedz: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx 0.0035 -> 0.0070)
+PASS: depositsElev/zelazo: depositDisplayScale 1 -> 2 (2x)
+PASS: depositsElev/zelazo: skala koncowa 0.2809 -> 0.5619 (2x)
+PASS: depositsElev/zelazo: wymiary bbox 2x (0.340 -> 0.680)
+PASS: depositsElev/zelazo: uziemienie proporcjonalne (minY 0.0081 -> 0.0061), origin bez zmian
+PASS: depositsElev/zelazo: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx -0.0095 -> -0.0190)
+PASS: depositsElev/wegiel: depositDisplayScale 1 -> 2 (2x)
+PASS: depositsElev/wegiel: skala koncowa 0.2534 -> 0.5068 (2x)
+PASS: depositsElev/wegiel: wymiary bbox 2x (0.339 -> 0.678)
+PASS: depositsElev/wegiel: uziemienie proporcjonalne (minY 0.0100 -> 0.0100), origin bez zmian
+PASS: depositsElev/wegiel: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx 0.0037 -> 0.0074)
+PASS: depositsElev/sol: depositDisplayScale 1 -> 2 (2x)
+PASS: depositsElev/sol: skala koncowa 0.2518 -> 0.5036 (2x)
+PASS: depositsElev/sol: wymiary bbox 2x (0.305 -> 0.610)
+PASS: depositsElev/sol: uziemienie proporcjonalne (minY 0.0086 -> 0.0071), origin bez zmian
+PASS: depositsElev/sol: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx -0.0086 -> -0.0173)
+PASS: depositsElev/zloto: depositDisplayScale 1 -> 2 (2x)
+PASS: depositsElev/zloto: skala koncowa 0.2587 -> 0.5174 (2x)
+PASS: depositsElev/zloto: wymiary bbox 2x (0.345 -> 0.689)
+PASS: depositsElev/zloto: uziemienie proporcjonalne (minY 0.0057 -> 0.0015), origin bez zmian
+PASS: depositsElev/zloto: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx 0.0090 -> 0.0180)
+PASS: depositsElev/cyna: depositDisplayScale 1 -> 2 (2x)
+PASS: depositsElev/cyna: skala koncowa 0.2798 -> 0.5596 (2x)
+PASS: depositsElev/cyna: wymiary bbox 2x (0.338 -> 0.675)
+PASS: depositsElev/cyna: uziemienie proporcjonalne (minY 0.0081 -> 0.0062), origin bez zmian
+PASS: depositsElev/cyna: srodek XZ modelu wzgledem origin skaluje sie proporcjonalnie (cx 0.0019 -> 0.0037)
+PASS: ulepszenie fort: wymiary 2x (w 0.213 -> 0.427)
+PASS: ulepszenie fort: uziemienie minY -0.0000 -> -0.0000 (proporcjonalne 2x, origin bez zmian)
+PASS: ulepszenie fort: bbox miesci sie w promieniu heksa (R=0.958 <= 1.0)
+PASS: ulepszenie posterunek: wymiary 2x (w 0.093 -> 0.186)
+PASS: ulepszenie posterunek: uziemienie minY -0.0005 -> -0.0009 (proporcjonalne 2x, origin bez zmian)
+PASS: ulepszenie posterunek: bbox miesci sie w promieniu heksa (R=0.859 <= 1.0)
+PASS: ulepszenie farma: wymiary 1x (w 0.484 -> 0.484)
+PASS: ulepszenie farma: uziemienie minY -0.0000 -> -0.0000 (proporcjonalne 1x, origin bez zmian)
+PASS: ulepszenie tartak: wymiary 1x (w 0.339 -> 0.339)
+PASS: ulepszenie tartak: uziemienie minY -0.0000 -> -0.0000 (proporcjonalne 1x, origin bez zmian)
+PASS: ulepszenie kopalnia_miedzi: wymiary 1x (w 0.269 -> 0.269)
+PASS: ulepszenie kopalnia_miedzi: uziemienie minY -0.0000 -> -0.0000 (proporcjonalne 1x, origin bez zmian)
+PASS: ulepszenie kamieniolom: wymiary 1x (w 0.404 -> 0.404)
+PASS: ulepszenie kamieniolom: uziemienie minY -0.0000 -> -0.0000 (proporcjonalne 1x, origin bez zmian)
+PASS: ulepszenie oboz_lowiecki: wymiary 1x (w 0.381 -> 0.381)
+PASS: ulepszenie oboz_lowiecki: uziemienie minY -0.0000 -> -0.0000 (proporcjonalne 1x, origin bez zmian)
+PASS: ulepszenie glinianka: wymiary 1x (w 0.395 -> 0.395)
+PASS: ulepszenie glinianka: uziemienie minY -0.0000 -> -0.0000 (proporcjonalne 1x, origin bez zmian)
+PASS: ulepszenie warzelnia_soli: wymiary 1x (w 0.353 -> 0.353)
+PASS: ulepszenie warzelnia_soli: uziemienie minY -0.0000 -> -0.0000 (proporcjonalne 1x, origin bez zmian)
+PASS: ulepszenie stadnina: wymiary 1x (w 0.349 -> 0.349)
+PASS: ulepszenie stadnina: uziemienie minY -0.0000 -> -0.0000 (proporcjonalne 1x, origin bez zmian)
+PASS: ulepszenie pastwisko: wymiary 1x (w 0.400 -> 0.400)
+PASS: ulepszenie pastwisko: uziemienie minY -0.0000 -> -0.0000 (proporcjonalne 1x, origin bez zmian)
+PASS: ulepszenie tarasy: wymiary 1x (w 0.636 -> 0.636)
+PASS: ulepszenie tarasy: uziemienie minY 0.0000 -> 0.0000 (proporcjonalne 1x, origin bez zmian)
+PASS: ulepszenie droga: wymiary 1x (w 1.732 -> 1.732)
+PASS: ulepszenie droga: uziemienie minY -0.0000 -> -0.0000 (proporcjonalne 1x, origin bez zmian)
+INFO: czas klatki (swiftshader, srednia 20 klatek) deposits: przed 2.57 ms, po 2.67 ms
+PASS: wydajnosc deposits: po (2.67 ms) bez znaczacego spadku wzgledem przed (2.57 ms)
+INFO: czas klatki (swiftshader, srednia 20 klatek) forts: przed 1.64 ms, po 2.46 ms
+PASS: wydajnosc forts: po (2.46 ms) bez znaczacego spadku wzgledem przed (1.64 ms)
+INFO: czas klatki (swiftshader, srednia 20 klatek) combo: przed 2.18 ms, po 1.90 ms
+PASS: wydajnosc combo: po (1.90 ms) bez znaczacego spadku wzgledem przed (2.18 ms)
+INFO: czas klatki (swiftshader, srednia 20 klatek) close: przed 0.67 ms, po 0.72 ms
+PASS: wydajnosc close: po (0.72 ms) bez znaczacego spadku wzgledem przed (0.67 ms)
+
+WYNIK: 153 PASS, 0 FAIL
+EXIT=0

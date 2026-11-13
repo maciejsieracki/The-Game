@@ -1,0 +1,8 @@
+sidepanel-event-tabs-classify-test (R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1 r2)
+  zrodlo: src/ui/old-tabs-tmp.ts
+  [FAIL] Budowa ukonczona: Magazyn (nazwa budynku): oczekiwano inne, jest wazne
+  [FAIL] Technologia odkryta: Atak z flanki (nazwa techu): oczekiwano inne, jest wazne
+  [FAIL] zysk gracza: fort zdobyty razem z terytorium: oczekiwano inne, jest wazne
+
+FAIL (3)
+EXIT=1

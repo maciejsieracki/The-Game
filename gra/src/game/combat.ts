@@ -1,8 +1,10 @@
 import type { CivBonusEntry } from './civ-bonuses';
-import { applyMultiplier, civCombatStatMultipliers } from './civ-bonuses';
+import { applyMultiplier, civCombatStatMultipliers, civWallDefenseMultiplier } from './civ-bonuses';
 import type { BuildingCombatBonus } from './unit-building-bonuses';
 import { mergeBuildingBonusIntoStatMultipliers } from './unit-building-bonuses';
 import { applyVeteranFracToCombatUnit } from './veteran';
+import { isCertainHitMode } from './hit-mode';
+import { effectiveMaxHp } from './unit-card-stats';
 import { applyArmyHungerStatMultToCombatUnit } from './army-starvation';
 import { applyGoldDeficitStatMultToCombatUnit } from './gold-deficit';
 import combatParamsRaw from '../../data/combat-params.json';
@@ -11,7 +13,7 @@ import combatParamsRaw from '../../data/combat-params.json';
 // (auto-battle-power.ts / auto-battle-params.json, wezel W1) nie jest tu
 // modyfikowana w zaden sposob.
 import { isFieldBattleUnit } from './auto-battle-power';
-import { armyFieldPower } from './unit-power';
+import { armyFieldPower, rangedDamageMultFor } from './unit-power';
 import type { UnitPowerInput } from './unit-power';
 
 /** Panel-C: stałe walki (export-c.py → combat-params.json). */
@@ -105,6 +107,16 @@ export interface CombatUnit {
   /** Zdrowie — max HP. */
   health: number;
 
+  /**
+   * Canonical runtime HP bridge. When present, `health` is the current HP and
+   * these two fields keep the effective max/current values from being rebuilt
+   * from an already-bonused combat snapshot.
+   */
+  canonicalEffectiveMaxHp?: number;
+  canonicalCurrentHp?: number;
+  /** Veteran health fraction already applied by a caller to `health`. */
+  veteranHealthBonusFrac?: number;
+
   /** "Prog dezercji (% health)" - rout threshold as a fraction [0..1], e.g. 0.25. */
   'Prog dezercji (% health)': number | null;
 
@@ -189,6 +201,8 @@ export function combatUnitFromDef(
     ? null
     : combatNormField(progRaw, 0.25);
   const maxHp = combatNormField(def['health'] ?? def['Health'], 30);
+  const canonicalEffectiveMaxHp = combatNormField(def['__canonicalEffectiveMaxHp'], NaN);
+  const canonicalCurrentHp = combatNormField(def['__canonicalCurrentHp'], NaN);
   return {
     typNazwa: opts.typNazwa ?? String(def['Jednostka'] ?? ''),
     counterTyp: String(def['Typ'] ?? opts.typNazwa ?? def['Jednostka'] ?? ''),
@@ -204,6 +218,8 @@ export function combatUnitFromDef(
     piercing: unitRowStat(def, 'piercing', 'Przebicie', 0),
     chargeBonus: unitRowStat(def, 'chargeBonus', 'Uderzenie', 0),
     health: opts.hp ?? maxHp,
+    canonicalEffectiveMaxHp: Number.isFinite(canonicalEffectiveMaxHp) ? canonicalEffectiveMaxHp : undefined,
+    canonicalCurrentHp: Number.isFinite(canonicalCurrentHp) ? canonicalCurrentHp : undefined,
     'Prog dezercji (% health)': prog,
     missileAttack: combatNormField(def['missileAttack'], 0),
     'Zasieg ataku (hex)': (combatStatField(def, 'Zasięg ataku (hex)', 'Zasieg ataku (hex)') ?? null) as number | string | null,
@@ -322,6 +338,12 @@ export interface ResolveCombatOpts {
   /** RDY-01: bonusy cyw broniacego. */
   defenderCivBonusy?: readonly CivBonusEntry[];
 
+  /** Context gates for Matrix terrain/territory/wall bonuses. */
+  attackerOwnTerritory?: boolean;
+  defenderOwnTerritory?: boolean;
+  defenderOnWallWalkway?: boolean;
+  shallowSea?: boolean;
+
   /**
    * Sciezki ulepszen jednostek (2026-07-25, unit-building-bonuses.ts): bonus
    * Pancerza (pancerz) i pozostalych statow bojowych (other) ATAKUJACEGO,
@@ -384,7 +406,7 @@ export interface ResolveCombatOpts {
 
   /**
    * P-AI-MOC-BONUS=A: bonus trudności AI (bonusWalka) — tylko major AI, nie gracz.
-   * Mnożnik ataku/obrony/ranged (1.05 = +5%). Domyślnie 1 (brak bonusu).
+   * Mnożnik ataku/obrony/ranged (0.95 = -5%, 1.05 = +5%). Domyślnie 1 (brak bonusu).
    */
   attackerDifficultyCombatMult?: number;
 
@@ -446,6 +468,32 @@ export function damageTw(
  */
 export function rangeDamageTw(missileAttack: number, armor: number): number {
   return Math.max(1, missileAttack - armor);
+}
+
+/**
+ * R-WEB-BATTLE-RANGED-DAMAGE-MULT-Q1: celnosc pocisku = max(Atak wrecz, Atak
+ * dystansowy) strzelca (zamiast samego Ataku wrecz).
+ */
+export function rangedShotAccuracy(meleeAttack: number, missileAttack: number): number {
+  return Math.max(meleeAttack, missileAttack);
+}
+
+/**
+ * R-WEB-BATTLE-RANGED-DAMAGE-MULT-Q1: koncowe obrazenia pocisku auto-walki.
+ * Mnoznik klasy strzelca (unit-power.ts rangedDamageMultFor) i kontra mnozone PRZED
+ * zaokragleniem do int; podloga 1.
+ */
+export function rangedShotDamage(
+  shooter: Pick<CombatUnit, 'counterTyp' | 'typNazwa'>,
+  missileAttack: number,
+  armor: number,
+  counterMult: number,
+): number {
+  const raw = rangeDamageTw(missileAttack, armor) * counterMult * rangedDamageMultFor({
+    Typ: shooter.counterTyp,
+    Jednostka: shooter.typNazwa,
+  });
+  return Math.max(1, Math.round(raw));
 }
 
 /** Alias kompatybilnosci — uzywa TW Rome 2. */
@@ -797,14 +845,31 @@ export function resolveCombat(
   defender: CombatUnit,
   opts: ResolveCombatOpts = {},
 ): CombatResult {
+  // The canonical runtime bridge carries effective max/current HP explicitly.
+  // Legacy pure callers still provide only `health`, so they use the additive
+  // resolver below as a backwards-compatible fallback.
+  const attackerVeteranAlreadyApplied = opts.attackerVeteranBonusFrac === undefined
+    && attacker.veteranHealthBonusFrac !== undefined;
+  const defenderVeteranAlreadyApplied = opts.defenderVeteranBonusFrac === undefined
+    && defender.veteranHealthBonusFrac !== undefined;
+  const attackerVeteranBonusFrac = opts.attackerVeteranBonusFrac
+    ?? attacker.veteranHealthBonusFrac
+    ?? 0;
+  const defenderVeteranBonusFrac = opts.defenderVeteranBonusFrac
+    ?? defender.veteranHealthBonusFrac
+    ?? 0;
   // TRZECI SYSTEM (weterani, game/veteran.ts) -- patrz komentarz przy
   // ResolveCombatOpts.attackerVeteranBonusFrac powyzej dla uzasadnienia,
   // dlaczego wpiecie na samym poczatku (przeslonieciem parametrow) jest
   // rownowazne wpiecu po civ+building mods. Gdy frac=0 (domyslnie) funkcja
   // zwraca WEJSCIOWY obiekt bez zadnej modyfikacji (zero ryzyka szumu
   // zmiennoprzecinkowego dla wszystkich istniejacych wywolan).
-  attacker = applyVeteranFracToCombatUnit(attacker, opts.attackerVeteranBonusFrac ?? 0);
-  defender = applyVeteranFracToCombatUnit(defender, opts.defenderVeteranBonusFrac ?? 0);
+  if (!attackerVeteranAlreadyApplied) {
+    attacker = applyVeteranFracToCombatUnit(attacker, attackerVeteranBonusFrac);
+  }
+  if (!defenderVeteranAlreadyApplied) {
+    defender = applyVeteranFracToCombatUnit(defender, defenderVeteranBonusFrac);
+  }
 
   const hungerMult = opts.armyHungerStatMult ?? 0.75;
   if (opts.attackerArmyHungry) {
@@ -823,6 +888,8 @@ export function resolveCombat(
   }
 
   const rng = opts.rng ?? (() => Math.random());
+  // R-WEB-BATTLE-HIT-MODE-SETTING-Q1: tryb 'pewne' = kazde uderzenie trafia (bez rzutu).
+  const certainHits = isCertainHitMode();
   const position: AttackerPosition = opts.attackerPosition ?? 'front';
   const maxRounds = opts.maxRounds ?? TW.max_rounds;
   const attackerMoved = opts.attackerMoved ?? true;
@@ -833,20 +900,30 @@ export function resolveCombat(
   const log: string[] = [];
   const routed: ('attacker' | 'defender')[] = [];
 
+  const atkCivMods = civCombatStatMultipliers(opts.attackerCivBonusy, attacker, {
+    side: 'attacker',
+    terrain: defenderTerrain,
+    isChargeRound: false,
+    ownTerritory: opts.attackerOwnTerritory,
+    onWallWalkway: false,
+    shallowSea: opts.shallowSea,
+  });
+  const atkCivHealth = atkCivMods.health;
   const atkBaseMods = mergeBuildingBonusIntoStatMultipliers(
-    civCombatStatMultipliers(opts.attackerCivBonusy, attacker, {
-      side: 'attacker',
-      terrain: defenderTerrain,
-      isChargeRound: false,
-    }),
+    atkCivMods,
     opts.attackerBuildingBonus,
   );
+  const defCivMods = civCombatStatMultipliers(opts.defenderCivBonusy, defender, {
+    side: 'defender',
+    terrain: defenderTerrain,
+    isChargeRound: false,
+    ownTerritory: opts.defenderOwnTerritory,
+    onWallWalkway: opts.defenderOnWallWalkway,
+    shallowSea: opts.shallowSea,
+  });
+  const defCivHealth = defCivMods.health;
   const defBaseMods = mergeBuildingBonusIntoStatMultipliers(
-    civCombatStatMultipliers(opts.defenderCivBonusy, defender, {
-      side: 'defender',
-      terrain: defenderTerrain,
-      isChargeRound: false,
-    }),
+    defCivMods,
     opts.defenderBuildingBonus,
   );
 
@@ -863,8 +940,36 @@ export function resolveCombat(
   const defPanc0 = applyMultiplier(defender.armor, defBaseMods.pancerz);
   const defMissile0 = applyMultiplier(defender.missileAttack ?? 0, defBaseMods.rangedAtk) * defDiffMult;
 
-  let hpAtk = Math.round(applyMultiplier(attacker.health, atkBaseMods.health));
-  let hpDef = Math.round(applyMultiplier(defender.health, defBaseMods.health));
+  const canonicalAtkMax = attacker.canonicalEffectiveMaxHp;
+  const canonicalDefMax = defender.canonicalEffectiveMaxHp;
+  let hpAtk: number;
+  let hpDef: number;
+  if (Number.isFinite(canonicalAtkMax)) {
+    const current = attacker.canonicalCurrentHp ?? attacker.health;
+    const effectiveMax = applyMultiplier(canonicalAtkMax!, atkCivHealth);
+    hpAtk = Math.round(Math.max(0, Math.min(effectiveMax, current)));
+  } else {
+    const attackerHealthAfterTransient = attacker.health / (1 + attackerVeteranBonusFrac);
+    const attackerHealthAfterCiv = applyMultiplier(attackerHealthAfterTransient, atkCivHealth);
+    hpAtk = Math.round(effectiveMaxHp(
+      attackerHealthAfterCiv,
+      opts.attackerBuildingBonus?.other ?? 0,
+      attackerVeteranBonusFrac,
+    ));
+  }
+  if (Number.isFinite(canonicalDefMax)) {
+    const current = defender.canonicalCurrentHp ?? defender.health;
+    const effectiveMax = applyMultiplier(canonicalDefMax!, defCivHealth);
+    hpDef = Math.round(Math.max(0, Math.min(effectiveMax, current)));
+  } else {
+    const defenderHealthAfterTransient = defender.health / (1 + defenderVeteranBonusFrac);
+    const defenderHealthAfterCiv = applyMultiplier(defenderHealthAfterTransient, defCivHealth);
+    hpDef = Math.round(effectiveMaxHp(
+      defenderHealthAfterCiv,
+      opts.defenderBuildingBonus?.other ?? 0,
+      defenderVeteranBonusFrac,
+    ));
+  }
   const hpAtkStart = hpAtk;
   const hpDefStart = hpDef;
 
@@ -899,10 +1004,13 @@ export function resolveCombat(
   // structureDefBonusPct=200 means defender.Obrona is tripled (1 + 200/100 = 3x).
   const structBonusPct = opts.structureDefBonusPct ?? 0;
   const structMult = 1 + Math.max(0, structBonusPct) / 100;
+  const wallCivMult = opts.defenderOnWallWalkway
+    ? civWallDefenseMultiplier(opts.defenderCivBonusy, defender)
+    : 1;
 
   // Final effective stats (base civ mods; charge-round extras applied in melee)
   const atkEffMelee = atkMelee0 * terrRiverMult;
-  const defFinalObrona = defEffObrona * terrDefMult * structMult;
+  const defFinalObrona = defEffObrona * terrDefMult * structMult * wallCivMult;
 
   const atkIsRanged = isRangedUnit(attacker);
   const defIsRanged = isRangedUnit(defender);
@@ -927,10 +1035,13 @@ export function resolveCombat(
       // Attacker shoots
       if (atkIsRanged && ammoAtk > 0) {
         ammoAtk--;
-        const hitPct = hitChanceTw(atkEffMelee, defFinalObrona);
-        const roll = rng() * 100;
+        const hitPct = certainHits ? 100 : hitChanceTw(
+          rangedShotAccuracy(atkMelee0, atkMissile0) * terrRiverMult,
+          defFinalObrona,
+        );
+        const roll = certainHits ? 0 : rng() * 100;
         if (roll < hitPct) {
-          const dmg = Math.round(rangeDamageTw(atkMissile0, defPanc0) * ctrAtkVsDef);
+          const dmg = rangedShotDamage(attacker, atkMissile0, defPanc0, ctrAtkVsDef);
           hpDef -= dmg;
           log.push(
             `R${totalRounds}[Dyst-ATK] trafienie (${roll.toFixed(1)}<${hitPct}%) -> ${dmg} obra. Obronca HP: ${hpDef}`,
@@ -945,10 +1056,10 @@ export function resolveCombat(
       // Defender shoots back (if alive)
       if (defIsRanged && ammoDef > 0 && hpDef > 0) {
         ammoDef--;
-        const hitPct = hitChanceTw(defMelee0, atkObrona0);
-        const roll = rng() * 100;
+        const hitPct = certainHits ? 100 : hitChanceTw(rangedShotAccuracy(defMelee0, defMissile0), atkObrona0);
+        const roll = certainHits ? 0 : rng() * 100;
         if (roll < hitPct) {
-          const dmg = Math.round(rangeDamageTw(defMissile0, atkPanc0) * ctrDefVsAtk);
+          const dmg = rangedShotDamage(defender, defMissile0, atkPanc0, ctrDefVsAtk);
           hpAtk -= dmg;
           log.push(
             `R${totalRounds}[Dyst-DEF] trafienie (${roll.toFixed(1)}<${hitPct}%) -> ${dmg} obra. Atakujacy HP: ${hpAtk}`,
@@ -1005,6 +1116,9 @@ export function resolveCombat(
           side: 'attacker',
           terrain: defenderTerrain,
           isChargeRound: isCharge,
+          ownTerritory: opts.attackerOwnTerritory,
+          onWallWalkway: false,
+          shallowSea: opts.shallowSea,
         }),
         opts.attackerBuildingBonus,
       );
@@ -1013,15 +1127,18 @@ export function resolveCombat(
           side: 'defender',
           terrain: defenderTerrain,
           isChargeRound: isCharge,
+          ownTerritory: opts.defenderOwnTerritory,
+          onWallWalkway: opts.defenderOnWallWalkway,
+          shallowSea: opts.shallowSea,
         }),
         opts.defenderBuildingBonus,
       );
 
-      const roundAtkMelee = applyMultiplier(attacker.meleeAttack, atkRoundMods.atk) * terrRiverMult;
+      const roundAtkMelee = applyMultiplier(attacker.meleeAttack, atkRoundMods.atk) * atkDiffMult * terrRiverMult;
       const roundAtkCharge = applyMultiplier(attacker.chargeBonus, atkRoundMods.uderzenie);
-      const roundDefMelee = applyMultiplier(defender.meleeAttack, defRoundMods.atk);
-      const roundDefObrona = applyMultiplier(defender.meleeDefence, defRoundMods.obrona);
-      const roundAtkObrona = applyMultiplier(attacker.meleeDefence, atkRoundMods.obrona);
+      const roundDefMelee = applyMultiplier(defender.meleeAttack, defRoundMods.atk) * defDiffMult;
+      const roundDefObrona = applyMultiplier(defender.meleeDefence, defRoundMods.obrona) * defDiffMult;
+      const roundAtkObrona = applyMultiplier(attacker.meleeDefence, atkRoundMods.obrona) * atkDiffMult;
       const roundAtkPanc = applyMultiplier(attacker.armor, atkRoundMods.pancerz);
       const roundDefPanc = applyMultiplier(defender.armor, defRoundMods.pancerz);
 
@@ -1032,8 +1149,8 @@ export function resolveCombat(
       const chargeHitBonus = isCharge ? roundAtkCharge : 0;
 
       // Attacker hits defender
-      const atkHitPct = hitChanceTw(roundAtkMelee, defFinalObrona, chargeHitBonus);
-      const atkRoll = rng() * 100;
+      const atkHitPct = certainHits ? 100 : hitChanceTw(roundAtkMelee, defFinalObrona, chargeHitBonus);
+      const atkRoll = certainHits ? 0 : rng() * 100;
       if (atkRoll < atkHitPct) {
         const rawDmg = damageTw(
           attacker.weaponDamage,
@@ -1054,8 +1171,8 @@ export function resolveCombat(
       }
 
       // Defender counter-attacks simultaneously
-      const defHitPct = hitChanceTw(roundDefMelee, roundAtkObrona);
-      const defRoll = rng() * 100;
+      const defHitPct = certainHits ? 100 : hitChanceTw(roundDefMelee, roundAtkObrona);
+      const defRoll = certainHits ? 0 : rng() * 100;
       if (defRoll < defHitPct) {
         const rawDmg = damageTw(
           defender.weaponDamage,

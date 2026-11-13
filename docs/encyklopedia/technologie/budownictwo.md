@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Budownictwo** — epoka **Brąz** (poziom 6), koszt **170** PN (tempo Szybka), wymaga: Matematyka + Murarstwo. Odblokowuje budynki: Mury, Akwedukt.
+**Budownictwo** — epoka **Brąz** (poziom 6), koszt **170** PN (tempo Szybka), wymaga: Matematyka + Murarstwo. Odblokowuje budynki: Mury ceglane (+200% Obrony), Akwedukt.
 
 ---
 
@@ -28,7 +28,7 @@
 - **Koszt nauki:** 170 PN (baza, tempo Szybka — mnożnik tempa wg `tech-tempo.ts`)
 
 ### Co odblokowuje
-- **Budynki:** Mury, Akwedukt
+- **Budynki:** Mury ceglane (+200% Obrony), Akwedukt
 - **Jednostki:** brak
 - **Ulepszenia terenu:** brak
 - **Surowce:** brak

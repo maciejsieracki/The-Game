@@ -87,7 +87,10 @@ const preBattleSrc = fs.readFileSync(PREBATTLE_TS, 'utf8');
   const fnEnd = fnStart >= 0 ? mainSrc.indexOf('\n      }', fnStart) : -1;
   const fnBody = (fnStart >= 0 && fnEnd > fnStart) ? mainSrc.slice(fnStart, fnEnd) : '';
 
-  ok(/battleUiResolving = true;\s*\n\s*try \{\s*\n\s*updateHud\(\);\s*\n\s*refreshD1bHud\(\);\s*\n\s*onResolved\(\);\s*\n\s*\} finally \{\s*\n\s*battleUiResolving = false;\s*\n\s*\}/.test(fnBody),
+  // AKTUALIZACJA R-TEST-DEBT-MISC-Q5: w finally po `battleUiResolving = false;` dołożono
+  // sprzątanie activeBattleUnitIds i flush kolejki (R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1 r.3),
+  // więc wzorzec nie wymaga już zamknięcia bloku zaraz po fladze -- kolejność jest pinowana.
+  ok(/battleUiResolving = true;\s*\n\s*try \{\s*\n\s*updateHud\(\);\s*\n\s*refreshD1bHud\(\);\s*\n\s*onResolved\(\);\s*\n\s*\} finally \{\s*\n\s*battleUiResolving = false;/.test(fnBody),
     '[F1-A3] finishIncomingBattleUi: battleUiResolving=true PRZED try{updateHud();refreshD1bHud();onResolved();}finally{battleUiResolving=false;} -- kolejność wywołań NIETKNIĘTA, tylko owinięta flagą');
 
   // Kontrola: onResolved() nadal PRZED flushDeferredAutoPreBattle() (pin z barbarzyncy-
@@ -110,7 +113,10 @@ const preBattleSrc = fs.readFileSync(PREBATTLE_TS, 'utf8');
   const hsStart = mainSrc.indexOf('function healStaleEndTurnBlockers(): void {');
   const hsEnd = hsStart >= 0 ? mainSrc.indexOf('\n    function canPlayerInitiateEndTurn', hsStart) : -1;
   const hsBody = (hsStart >= 0 && hsEnd > hsStart) ? mainSrc.slice(hsStart, hsEnd) : '';
-  ok(/if \(!preBattle && !battleUiResolving && !hasPendingAutoPreBattle\(\) && \(aiTurnAwaitingBattle \|\| aiCmdResume\)\) \{/.test(hsBody),
+  // AKTUALIZACJA R-TEST-DEBT-MISC-Q5: warunek wyniesiony do stałej `hasStaleAiResume`
+  // (= aiTurnAwaitingBattle || aiCmdResume != null); semantyka ta sama.
+  ok(/const hasStaleAiResume = aiTurnAwaitingBattle \|\| aiCmdResume != null;/.test(hsBody)
+    && /if \(!preBattle && !battleUiResolving && !hasPendingAutoPreBattle\(\) && hasStaleAiResume\) \{/.test(hsBody),
     '[F1-A5] healStaleEndTurnBlockers gałąź 1 sprawdza !battleUiResolving (dodatkowy warunek obok hasPendingAutoPreBattle); runda 4: BEZ pendingBattleStuck (przeniesiony)');
 }
 
@@ -144,9 +150,17 @@ const preBattleSrc = fs.readFileSync(PREBATTLE_TS, 'utf8');
     '[F2-A9 runda 4] main.ts deklaruje healStuckDeferredPreBattleQueueOnEndTurnAttempt()');
   const tpetIdx = mainSrc.indexOf('function triggerPlayerEndTurn(): void {');
   ok(tpetIdx >= 0, '[F2-A10 runda 4] znaleziono function triggerPlayerEndTurn(');
+  // AKTUALIZACJA R-TEST-DEBT-MISC-Q5: triggerPlayerEndTurn jest cienkim wrapperem
+  // (advanceSeat()); sprzątanie kolejki jest w advanceSeat() PRZED bramką canPlayerInitiateEndTurn
+  // (R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1 r6). Pin: heal < gate w ciele advanceSeat, wywołanie w triggerPlayerEndTurn.
   const tpetHead = tpetIdx >= 0 ? mainSrc.slice(tpetIdx, tpetIdx + 400) : '';
-  ok(/function triggerPlayerEndTurn\(\): void \{\s*\n\s*healStuckDeferredPreBattleQueueOnEndTurnAttempt\(\);\s*\n\s*if \(!canPlayerInitiateEndTurn\(\)\) \{/.test(tpetHead),
-    '[F2-A11 runda 4] triggerPlayerEndTurn woła healStuckDeferredPreBattleQueueOnEndTurnAttempt() JAKO PIERWSZĄ instrukcję, PRZED sprawdzeniem canPlayerInitiateEndTurn() -- inaczej G2 (early return) omijałby sprzątanie');
+  const advIdx = mainSrc.indexOf('function advanceSeat(');
+  const advBody = advIdx >= 0 ? mainSrc.slice(advIdx, advIdx + 4000) : '';
+  const healAdvIdx = advBody.indexOf('healStuckDeferredPreBattleQueueOnEndTurnAttempt();');
+  const gateAdvIdx = advBody.indexOf('if (!canPlayerInitiateEndTurn())');
+  ok(/function triggerPlayerEndTurn\(\): void \{[\s\S]{0,400}?advanceSeat\(\);/.test(tpetHead)
+    && healAdvIdx > 0 && gateAdvIdx > healAdvIdx,
+    '[F2-A11 runda 4] triggerPlayerEndTurn -> advanceSeat(); w advanceSeat healStuckDeferredPreBattleQueueOnEndTurnAttempt() PRZED bramką canPlayerInitiateEndTurn() -- inaczej G2 (early return) omijałby sprzątanie');
 }
 
 // --- F3 -----------------------------------------------------------------

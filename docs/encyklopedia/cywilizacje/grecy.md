@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Grecy** — defensywna piechota. Jednostka unikalna: **Falanga (Hoplita)**. Religia: Politeizm olimpijski.
+**Grecy** — defensywna piechota. Jednostki specjalne według rosteru: **Falanga, Wojownik mykeński, Rydwan mykeński, Thorakites**. Religia: Politeizm olimpijski.
 
 ---
 
@@ -24,20 +24,12 @@
 **Grecy** to typ cywilizacji dostępny w wersji 1.0. Charakter: *defensywna piechota*.
 
 **Epoki startowe w kreatorze:** Kamień, Brąz, Żelazo.
-**Jednostka specjalna:** Falanga (Hoplita).
+**Zamienniki według rosteru:** Falanga, Wojownik mykeński, Rydwan mykeński, Thorakites
 **Religia państwa:** Politeizm olimpijski.
 **Przykładowe miasta w klastrze:** Ateny, Sparta, Korynt, Teby, Argos….
 **Władcy (imiona per epoka):** Kamień — Minos · Brąz — Agamemnon · Żelazo — Leonidas · Antyk — Aleksander Wielki.
 
-**Bonus startowy:** +Obrona piechoty; silna od frontu, odpiera szarżę.
-
-**Trzy linie bonusów (macierz):**
-- Falanga: +20% obrony piechoty przy ataku frontalnym (szyld i oszczep)
-- Hoplita = ulepszona piechota z tarczą; silna od frontu, odpiera szarżę kawalerii
-- Morskie szlaki handlowe: +15% złota z portów i dróg morskich (Korynt, Ateny)
-- Mniejsze państwa-miasta: wolniejsza odnowa poboru (−15% regen/turę vs standard 10%)
-
-**Słabsza strona (balans):** wolniejszy ruch.
+**Bonusy cywilizacji:** Obowiązujące bonusy i modyfikatory cywilizacji wynikają z macierzy parametrów. Dawne bonusy opisowe nie są doliczane.
 
 **Profil AI (skala 0–9):** agresja 4/9 — umiarkowana.
 
@@ -55,7 +47,7 @@
 
 ## Wzory
 
-Mnożnik handlu/waluty: **2.3** (meta macierzy).
+Mnożnik waluty: **2.3** (meta macierzy). Wartość dotyczy poziomu trudności Normalny; poziom trudności koryguje ją (Łatwy +0,5, Trudny −0,5), a żaden poziom nie schodzi poniżej minimum 1,38. Działa po odkryciu Waluty i zbudowaniu Mennicy.
 
 ---
 

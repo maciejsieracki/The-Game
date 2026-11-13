@@ -63,7 +63,7 @@ Osobna akcja dyplomatyczna (v1, tylko MP): wasal ≥ **10 tur**, Respekt ≥ **9
 
 ## Przykład liczbowy
 
-Gracz z **W = +15** (Uczciwy) proponuje **sojusz** — bramka W≥0 **spełniona**. Przy **Relacji 140** i **Zaufaniu 85** (progi sojuszu: Relacja 151, Zaufanie 91) brakuje jeszcze kilku punktów — dar +100 PN da max **+1 Zaufania** w tej turze (limit 5/turę, nie 10).
+Gracz z **W = +15** (Uczciwy) proponuje **sojusz** — bramka W≥0 **spełniona**. Przy **Relacji 140** i **Zaufaniu 85** (progi sojuszu: Relacja 130, Zaufanie 90) brakuje jeszcze kilku punktów Zaufania — dar +100 PN da max **+1 Zaufania** w tej turze (limit 5/turę, nie 10).
 
 ---
 

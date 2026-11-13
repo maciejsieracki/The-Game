@@ -1,0 +1,7 @@
+WYNIK {"tokens":475,"reps":3,"heapMB":{"off":67.01,"on":29.29,"samplesOff":[67,67.01,67.01],"samplesOn":[29.29,29.29,29.3]},"deltaMB":37.72,"syncMs":{"off":675.2,"on":858,"samplesOff":[675.2,700.7,674.4],"samplesOn":[858,820.5,1166.8]},"meshesPerToken":{"off":67.1,"on":19.3}}
+  OK  H1 sterta on mniejsza od off o >= 15 MB -- {"off":67.01,"on":29.29,"delta":37.72}
+  OK  H2 meshe na zeton on < 40% off -- {"off":67.1,"on":19.3}
+  OK  H3 czas sync on <= 2,5x off -- {"off":675.2,"on":858}
+
+memory-unit-static-merge-heap: 3 pass, 0 fail
+EXIT=0

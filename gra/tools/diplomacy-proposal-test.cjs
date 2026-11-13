@@ -1,3 +1,5 @@
+// R-WEB-TEST-DEBT-B-DIAG-Q1 r1: KLASA A rozstrzygnieta -- asercje pokoju 19e dostosowane do
+// kierunkowej bramki R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1 (e27418db, 2026-09-07). Kod gry bez zmian.
 'use strict';
 /** diplomacy-proposal-test.cjs — v1.1 evaluateProposal (15 scenariuszy) */
 const fs = require('fs');
@@ -209,12 +211,12 @@ r = evaluateProposal(prop('sojusz_pelny'), ctx({
 }));
 ok(r.accepted && r.deal?.rodzaj === 'sojusz_pelny', 'sojusz pełny accept');
 
-// 4a Sojusz reject — Relacja dokładnie 150 (≤150)
+// 4a Sojusz reject — Relacja 129 (< 130, próg 2026-11-09)
 r = evaluateProposal(prop('sojusz_pelny'), ctx({
-  relation: rel(95, 55),
+  relation: rel(95, 34),
   militaryRatio: 1,
 }));
-ok(!r.accepted, 'sojusz reject relacja 150');
+ok(!r.accepted, 'sojusz reject relacja 129');
 
 // 4b Sojusz reject — równowaga Zauf 75 (<91)
 r = evaluateProposal(prop('sojusz_pelny'), ctx({
@@ -254,12 +256,12 @@ r = evaluateProposal(prop('sojusz_pelny'), ctx({
 ok(r.accepted, 'sojusz gracz 3× silniejszy zauf 85 rel 151');
 
 r = evaluateProposal(prop('sojusz_pelny'), ctx({
-  relation: rel(90, 60),
+  relation: rel(90, 39),
   militaryRatio: 3,
   proposerRespekt: 75,
   responderRespekt: 25,
 }));
-ok(!r.accepted, 'sojusz reject gracz 3× rel 150');
+ok(!r.accepted, 'sojusz reject gracz 3× rel 129');
 
 // 5c2 — gracz 2×: sojusz od 85 Zauf., Rel ≥151
 r = evaluateProposal(prop('sojusz_pelny'), ctx({
@@ -279,12 +281,12 @@ r = evaluateProposal(prop('sojusz_pelny'), ctx({
 ok(r.accepted, 'sojusz gracz 2× silniejszy zauf 85 rel 151');
 
 r = evaluateProposal(prop('sojusz_pelny'), ctx({
-  relation: rel(85, 65),
+  relation: rel(85, 44),
   militaryRatio: 2,
   proposerRespekt: 67,
   responderRespekt: 33,
 }));
-ok(!r.accepted, 'sojusz reject gracz 2× rel 150');
+ok(!r.accepted, 'sojusz reject gracz 2× rel 129');
 
 // 5d Sojusz — gracz 2× silniejszy, wysokie zaufanie, Rel >150
 r = evaluateProposal(prop('sojusz_pelny'), ctx({
@@ -302,7 +304,75 @@ r = evaluateProposal(prop('sojusz_pelny'), ctx({
   proposerRespekt: 25,
   responderRespekt: 75,
 }));
-ok(!r.accepted && r.reason.includes('Hegemon'), 'sojusz reject hegemon AI 3× zauf 100');
+ok(r.accepted && r.deal?.rodzaj === 'sojusz_pelny', 'R-WEB-DIPLO-ALLIANCE-THRESHOLD-130-TRUST-90-Q1: hegemon AI 3× zauf 100 rel 175 -> rdzeń 130/90 wyłącza bramkę siły (accept)');
+
+// 5d2 Hegemon — Zaufanie 89 (< 90) -> bramka siły nadal działa
+r = evaluateProposal(prop('sojusz_pelny'), ctx({
+  relation: rel(89, 75),
+  militaryRatio: 0.33,
+  proposerRespekt: 25,
+  responderRespekt: 75,
+}));
+ok(!r.accepted && r.reason.includes('Hegemon'), 'hegemon AI 3×, zauf 89 rel 164: rdzeń niespełniony -> Hegemon blokuje');
+
+// 5d3 Hegemon — Relacja 129 (< 130), Zaufanie 100 -> bramka siły nadal działa
+r = evaluateProposal(prop('sojusz_pelny'), ctx({
+  relation: rel(100, 29),
+  militaryRatio: 0.33,
+  proposerRespekt: 25,
+  responderRespekt: 75,
+}));
+ok(!r.accepted, 'hegemon AI 3×, zauf 100 rel 129: rdzeń niespełniony -> odrzucone');
+
+// 5d4 Dokładnie 130 / 90 przy hegemonie -> accept; komunikat blokady po polsku z progami
+r = evaluateProposal(prop('sojusz_pelny'), ctx({
+  relation: rel(90, 40),
+  militaryRatio: 0.33,
+  proposerRespekt: 25,
+  responderRespekt: 75,
+}));
+ok(r.accepted, 'runda 3: hegemon AI 3×, dokładnie 90/130, Grecy (gotowość 0.64 >= próg 0.54) -> accept (bramka siły pominięta)');
+// runda 3: neutralna cywilizacja (0.54) przy równej sile przechodzi próg 0.54 (porównanie >=)
+r = evaluateProposal(prop('sojusz_pelny'), ctx({
+  relation: rel(90, 40),
+  militaryRatio: 1,
+  proposerRespekt: 40,
+  responderRespekt: 60,
+  responderPlayer: { typCywilizacji: 'egipt' },
+  proposerPlayer: { typCywilizacji: 'rzymianie' },
+}));
+ok(r.accepted, 'runda 3: 130/90, równa siła, neutralny Egipt (gotowość 0.54 >= 0.54) -> accept: ' + r.reason);
+r = evaluateProposal(prop('sojusz_pelny'), ctx({
+  relation: rel(90, 40),
+  militaryRatio: 0.33,
+  proposerRespekt: 25,
+  responderRespekt: 75,
+  responderPlayer: { typCywilizacji: 'chinczycy' },
+  proposerPlayer: { typCywilizacji: 'rzymianie' },
+}));
+ok(r.accepted, 'runda 2 (A): hegemon AI 3×, dokładnie 90/130, Chińczycy (bonus lojalności, gotowość >= 0.54) -> accept mimo hegemona (bramka siły pominięta)');
+r = evaluateProposal(prop('sojusz_pelny'), ctx({
+  relation: rel(90, 40),
+  militaryRatio: 1,
+  proposerRespekt: 40,
+  responderRespekt: 60,
+  responderPlayer: { typCywilizacji: 'zulusi' },
+  proposerPlayer: { typCywilizacji: 'rzymianie' },
+}));
+ok(!r.accepted && r.reason.includes('Brak gotowości do sojuszu'), 'runda 2 (A): 130/90 + gotowość poniżej progu (Zulusi) -> odrzut: ' + r.reason);
+r = evaluateProposal(prop('sojusz_pelny'), ctx({ relation: rel(89, 41), militaryRatio: 1 }));
+ok(!r.accepted && /Relacji 130 i Zaufania 90/.test(r.reason) && /masz Zaufanie 89/.test(r.reason), 'komunikat blokady PL: ' + r.reason);
+r = evaluateProposal(prop('sojusz_pelny'), ctx({ relation: rel(90, 39), militaryRatio: 1 }));
+ok(!r.accepted && /Relacji 130 i Zaufania 90/.test(r.reason) && /masz Relację 129/.test(r.reason), 'komunikat blokady PL (Relacja): ' + r.reason);
+
+// 5d5 Słaby proponent (milRatio<0.5, Respekt<=) przy rdzeniu 130/90 -> accept
+r = evaluateProposal(prop('sojusz_defensywny'), ctx({
+  relation: rel(95, 40),
+  militaryRatio: 0.4,
+  proposerRespekt: 20,
+  responderRespekt: 80,
+}));
+ok(r.accepted, 'słaby proponent mil 0.4, zauf 95 rel 135 -> rdzeń wyłącza bramki siły');
 
 // 5e AI 2× silniejsze — wymaga bardzo wysokiego zaufania (minZ≈105)
 r = evaluateProposal(prop('sojusz_pelny'), ctx({
@@ -311,7 +381,7 @@ r = evaluateProposal(prop('sojusz_pelny'), ctx({
   proposerRespekt: 33,
   responderRespekt: 67,
 }));
-ok(!r.accepted, 'sojusz reject AI 2× zauf 100 (kara siły respondenta)');
+ok(r.accepted, 'AI 2× zauf 100 rel 167: rdzeń 130/90 wyłącza karę siły respondenta (accept)');
 
 r = evaluateProposal(prop('sojusz_pelny'), ctx({
   relation: rel(50, 67),
@@ -434,7 +504,7 @@ r = evaluateProposal(prop('handel', 0, 1, {
   turns: 7,
 }), ctx({ relation: rel(60, 50), turn: 10 }));
 ok(!r.accepted && r.reason.includes('SUROW-TERYT'), 'handel zloze odrzucony po wycofaniu dostepu');
-ok(clampDealTurns(25) === 20 && clampDealTurns(0) === 1, 'clampDealTurns 1-20');
+ok(clampDealTurns(25) === 20 && clampDealTurns(0) === 1, 'clampDealTurns treaty cap remains 1-20');
 ok(proposalHasResourceAccess({ giveItems: [{ typ: 'zloze', id: 'zelazo' }] }), 'proposalHasResourceAccess zloze');
 
 // 10c resolvePokojTrustTier — sojusz > NAP > pokoj
@@ -620,15 +690,27 @@ ok(
 );
 ok(!/niechęć/i.test(r.reason ?? ''), 'AI→gracz handel accept: komunikat bez "niechęć" (multiplier neutralny=1)');
 
+// R-WEB-AI-TRADE-WIRING-E2E-Q1 r4 (zarzuty Evaluatora 1-2; ABC A1 z DODATKU 3): dla ofert AI→gracz
+// bramka uczciwosci AI uzywa wspolczynnika relacji 1 (AI_PROPOSER_FAIRNESS_REL_TOTAL = 100), wiec
+// wymagane givePn >= receivePn (=100), a NIE 200 @ Relacji 50 jak dawniej. Stara asercja "199 < 200 PW
+// odrzucone" opisywala stara regule. Nowa, jawnie opisana regula:
+// (a) bramka AI przepuszcza 199 PW za 100 PW (strona AI),
+// (b) podglad „Przyjmij" GRACZA (niezmieniony, previewIncomingPlayerAccept) ODRZUCA ta sama oferte
+//     (netPw < 0), wiec nadplata AI nie da sie przyjac i gracz nie jest oszukiwany,
+// (c) bramka AI odrzuca oferte ponizej receivePn (99 < 100).
 r = evaluateProposal(prop('handel', 1, 0, { goldOnce: 199, receivePn: 100 }), aiToPlayerCtx);
-ok(!r.accepted, 'AI→gracz handel poniżej progu neutralnego (oferta 199 PW < wymagane 200 PW @ Relacji 50): odrzucenie');
+ok(r.accepted, 'A1 AI→gracz handel (AI 199 PW za 100 PW, rel 1): bramka AI przepuszcza (wymagane ≥ 100 = receivePn, nie 200)');
+// (b) podglad „Przyjmij" gracza (previewIncomingPlayerAccept, netPw) dla ofert koszyka/mieszanych jest
+// pokryty w tools/ai-trade-wiring-e2e-live-test.cjs (previewAccept na zywo) i w ai-trade-proposal-to-player-test.
+r = evaluateProposal(prop('handel', 1, 0, { goldOnce: 99, receivePn: 100 }), aiToPlayerCtx);
+ok(!r.accepted, 'A1 AI→gracz handel poniżej receivePn (oferta 99 PW < wymagane 100 PW @ rel 1): odrzucenie');
 ok(
   !/niechęć/i.test(r.reason ?? ''),
   'AI→gracz handel reject: komunikat NIE przypisuje przyczyny nieistniejącej "niechęci AI" (AI jest proponentem, nie respondentem, w tym kierunku)',
 );
 ok(
-  (r.reason ?? '').includes('200') && (r.reason ?? '').includes('199'),
-  'AI→gracz handel reject: komunikat z realnymi liczbami PW (wymagane ≥ 200 PW, oferta 199 PW)',
+  (r.reason ?? '').includes('100') && (r.reason ?? '').includes('99'),
+  'AI→gracz handel reject: komunikat z realnymi liczbami PW (wymagane ≥ 100 PW, oferta 99 PW)',
 );
 
 // R-DYPLOMACJA-HANDEL-BRAMKA-PRIORYTET-Q1=B+C runda 4 (naprawa FAIL rundy 3): PODŁOGA
@@ -992,18 +1074,32 @@ ok(
 // NIGDY nie blokuje — nietknięte tą rundą) i tak nigdy nie były realną ochroną; jedyna realna
 // blokada (case 'pokoj', gap>0) została usunięta. accepted:true teraz zawsze, pwBalance
 // NIETKNIĘTY (nadal ujemny — informacyjnie, GOAL 2 dispatchu rundy 4).
-r = evaluateProposal(prop('pokoj', 0, 1, {}), ctx({ stanWojny: true, relation: rel(25, 24, 'wojna') }));
+// AKTUALIZACJA R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1 (Maciej, ECHO 2026-09-07, commit e27418db —
+// częściowe odwrócenie rundy 4): bramka bilansu PW pokoju jest KIERUNKOWA (diplomacy-proposals.ts
+// ~1448: `authorIsPlayer && pokojPwBalance < 0` -> reject). Gdy AI proponuje pokój graczowi — NIGDY
+// nie blokuje (decyzja rundy 4 zachowana); gdy GRACZ jest autorem warunków — musi wyrównać bilans.
+// Poprzednia wersja asercji używała proposerOwnerId=0 (= gracz), więc trafiała w gałąź "gracz
+// proponuje" i oczekiwała accepted:true — nieaktualne wobec decyzji z 2026-09-07 (KLASA A).
+// (a) AI (owner 1) proponuje pokój graczowi (owner 0): PRZYJĘTY mimo ujemnego pwBalance.
+r = evaluateProposal(prop('pokoj', 1, 0, {}), ctx({ stanWojny: true, relation: rel(25, 24, 'wojna') }));
 ok(
   r.accepted && typeof r.pwBalance === 'number' && r.pwBalance < 0,
-  'RUNDA 4: pokój bez koszyka podczas wojny @ niska Rel — PRZYJĘTY (pwBalance nigdy nie blokuje '
-  + '\'pokoj\', decyzja właściciela); pwBalance nadal poprawnie ujemny (informacyjnie)',
+  'pokój proponowany PRZEZ AI bez koszyka podczas wojny @ niska Rel — PRZYJĘTY (pwBalance ujemny '
+  + 'informacyjnie; R-DYPLO-POKOJ-KIERUNEK: partner proponuje -> bramka pomijana)',
 );
-// ...i przy Relacji bliskiej neutralnej (capowanej WAR_RELATION_SCORE_CAP=29 podczas wojny) —
-// RUNDA 4: również przyjęty, mimo że baza pokoju (500 PW) nadal nie jest pokryta samą Relacją
-// @ tym capie (pwBalance ujemny, ale to już wyłącznie informacyjne — nie blokuje).
+r = evaluateProposal(prop('pokoj', 1, 0, {}), ctx({ stanWojny: true, relation: rel(50, 50, 'wojna') }));
+ok(r.accepted, 'pokój proponowany PRZEZ AI bez koszyka @ wojna, Relacja neutralna: PRZYJĘTY mimo '
+  + 'WAR_RELATION_SCORE_CAP (runda 4 zachowana dla kierunku AI -> gracz)');
+// (b) GRACZ (owner 0) proponuje pokój bez koszyka: ujemny bilans BLOKUJE i niesie liczbę.
+r = evaluateProposal(prop('pokoj', 0, 1, {}), ctx({ stanWojny: true, relation: rel(25, 24, 'wojna') }));
+ok(
+  !r.accepted && typeof r.pwBalance === 'number' && r.pwBalance < 0 && r.reason.includes('Brakuje'),
+  'pokój proponowany PRZEZ GRACZA bez koszyka podczas wojny @ niska Rel — ODRZUCONY z "Brakuje N PW" '
+  + '(R-DYPLO-POKOJ-KIERUNEK: gracz proponuje i bilans ujemny -> musi wyrównać)',
+);
 r = evaluateProposal(prop('pokoj', 0, 1, {}), ctx({ stanWojny: true, relation: rel(50, 50, 'wojna') }));
-ok(r.accepted, 'RUNDA 4: pokój bez koszyka @ wojna, Relacja przedwojenna neutralna: PRZYJĘTY mimo '
-  + 'WAR_RELATION_SCORE_CAP (dawniej wymagał dopłaty — blokada usunięta tą rundą)');
+ok(!r.accepted && typeof r.pwBalance === 'number' && r.pwBalance < 0,
+  'pokój proponowany PRZEZ GRACZA bez koszyka @ wojna, Relacja neutralna: nadal ODRZUCONY (cap wojenny)');
 
 // ---------------------------------------------------------------------------
 // 19f-g R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A — zakres treatyPnGate receive-side

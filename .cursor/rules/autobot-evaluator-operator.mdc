@@ -9,76 +9,60 @@ Każdy temat ma pełne ID, `GOAL`, kryteria końca, allowlistę i izolowany work
 Obowiązuje:
 
 ```text
-Operator GPT-5.6 Luna High
-→ Evaluator GPT-5.6 Luna High
-→ Final Control GPT-5.6 Luna High (osobny subagent)
-→ integracja głównego orkiestratora GPT-5.6 Luna Medium
+Operator Codex: gpt-6-luna / high
+→ Evaluator Codex: gpt-6-luna / high
+→ [warunkowo] Obrona Operatora po konkretnych zarzutach Evaluatora
+→ niezależny Final Control Codex: gpt-6-luna / high (osobny subagent)
+→ integracja głównego orkiestratora według aktualnie skonfigurowanego routingu
 → READY_FOR_DEPLOY
 → osobna bramka deploy/push
 ```
 
-## C-063 — Kanban przed pracą, graf i legalny następca
+`gpt-6-luna / high` dotyczy ról Codex od 2026-11-10. Nie zmienia routingu Claude Code.
 
-Każde nowe lub odnowione zadanie The-Game najpierw dostaje kartę na boardzie
-`the-game-real24`. Przed pierwszym workerem karta ma pełny graf, nie płaską listę:
-pełne ID/`topic_id`, `GOAL`, binarne kryteria, minimalną allowlistę, zależności,
-worktree, limit rund, wszystkie fazy i przyszłe bramki `blocked`, w tym
-`OWNER_HOLD`/`DECISION_REQUIRED`.
+Po pozytywnym Final Control orkiestrator integruje do `main`, publikuje na Roboczą,
+wykonuje push/readback, sprząta zasoby i wtedy uruchamia następny kwalifikowany temat,
+zapisując cel 11/11. Zmiana wyłącznie procesowa ma deploy Roboczej `N/A` z powodem.
+Jeżeli wywoływalny scheduler nie jest dostępny, kolejkę sprawdza się i zapisuje przy
+każdym zakończeniu etapu i raporcie statusu; nie deklaruj automatycznego wybudzenia w tle.
 
-Wszystkie nowe i odnowione karty używają jednego profilu `game`. Rola nie jest profilem:
-zapisuj ją jako `process_phase`, a przejście jako `transition receipt`; nie twórz
-profili per rola. `native_status` jest wyłącznie stanem dostawcy i nie wybiera roli
-ani następcy.
+## Etapy AutoBot bez Kanbanu
 
-```text
-[karta] → [Operator] → [Evaluator]
-                         ├─ zarzuty > 0 → [Obrona] → [Final Control]
-                         └─ zarzuty = 0 ───────────→ [Final Control]
-                                                    ├─ PASS + terminal event/readback → [integracja]
-                                                    │                                  → [READY_FOR_DEPLOY]
-                                                    │                                  → [osobna zgoda push/deploy]
-                                                    └─ FAIL | NAPRAW ─┐
-[terminalna P1/P2/P3/P4] -- BLOCK | TIMEOUT | INFRA | ZWIS ──────────┴─> [retry guard R]
-[R] -- round < 5 ─> [Operator: ten sam ID, następna runda]
-[R] -- round = 5 ─> [LIMIT-5-EXCEEDED: blocked]
-[LIMIT-5] -- jawna decyzja ─> [manual resume: ten sam ID/licznik] ─> [Operator]
-[any started phase] -- OWNER_HOLD | DECISION_REQUIRED ─> [blocked successor H]
-[H] -- decyzja/zależność przywrócona ─> [qualified next node]
-[terminal event] → [technical + context readback] → [legal successor]
-[legal successor] → [deterministic idempotency key] → [create once] → [notify] → [wake/dispatch profile game]
-```
-
-Po każdym terminalnym przejściu Kanbana (np. `kanban_complete`, `kanban_block`,
-`review_requested` lub `changes_requested`, gdy kończy bieżącą fazę) z obserwowalnym eventem
-orkiestrator robi technical readback oraz context readback karty, eventu, grafu, dispatchu,
-kontraktu i artefaktów.
-Następnie z grafu wybiera i idempotentnie tworzy/dispatchuje wyłącznie legalnego
-sukcesora: `FAIL`/`NAPRAW`/`BLOCK`/`TIMEOUT`/`INFRA`/`ZWIS` idą przez R, guard wybiera
-retry albo `LIMIT-5-EXCEEDED`, a jawna decyzja wznawia ten sam ID bez resetu licznika.
-Receipt zapisuje `event_id`, `idempotency_key`, oba readbacki oraz wyniki `notify` i
-`wake`. Aktywna karta nie może powstać bez notify+wake; przyszła karta bez spełnionej
-zależności pozostaje jawnie `blocked`. Obrona powstaje tylko przy niepustej liście
-konkretnych zarzutów — pusta Obrona jest zakazana. `OWNER_HOLD`/`DECISION_REQUIRED`
-blokuje tylko przyszłych następców, a rozpoczęty worker może dokończyć fazę. Nie pisz
-„nic nie może ruszyć", jeśli readback wskazuje kwalifikowany następny etap. Pełny
-kanon: `R-PROC-AUTOBOT.md` §2c.
+Nie używamy Kanbana w tym repozytorium. Rejestruj każdy temat w
+`dyspozycje/autobot/runs/<pełne-ID>/` i odczytuj rzeczywiste artefakty przed zmianą
+etapu. Raport używa skali 1–11 z `dyspozycje/autobot/runs/README.md`; proces bez
+działającego operatora lub brakującego artefaktu oznacz `WSTRZYMANY/BLOCKED` wraz z
+przyczyną. Nie twierdź, że temat jest „w trakcie” bez aktywnej pracy.
 
 ## Kontrakt modelu dla dispatchu Codex
 
-Przy użyciu `multi_agent_v1` każdy dispatch Operatora i Evaluatora musi jawnie
-ustawić `model: "gpt-5.6-luna"` oraz `reasoning_effort: "high"`. Dziedziczenie
-modelu po orkiestratorze jest niedozwolone. Final Control również używa Luna High;
-integracja orkiestratora używa Luna Medium. Raport i `00-dispatch.md` zapisują
-żądany model oraz effort.
+Przy użyciu `multi_agent_v1` Codex Operator, Evaluator i Final Control muszą jawnie
+ustawić `model: "gpt-6-luna"` oraz
+`reasoning_effort: "high"`. Dziedziczenie modelu po orkiestratorze jest niedozwolone.
+Nie narzucaj integratorowi modelu ani effortu; używa aktualnie skonfigurowanego routingu.
+Raport i `00-dispatch.md` zapisują jawny model i effort dla Operatora, Evaluatora i Final
+Control. Routing Obrony zależy od istniejących zasad per środowisko. Routing Claude pozostaje bez zmian.
 
-Raport Operatora uruchamia Evaluatora bez czekania. Jedna runda to jeden faktyczny
+## Limit i sekwencja
+
+Maksymalnie cztery tematy mogą być aktywne jednocześnie, na dowolnych różnych etapach;
+jeden temat liczy się jako jeden slot. W obrębie jednego ID role działają wyłącznie
+sekwencyjnie: Operator → Evaluator → Obrona tylko po konkretnych zarzutach → niezależny
+Final Control. Kolejna rola rusza po raporcie poprzedniej. Pozostaw pozostałe sloty i
+zasoby na orkiestrację, integrację i blokady. `WAITING` oraz `BLOCKED` bez aktywnej roli
+nie są aktywne. Status potwierdzaj artefaktem i readbackiem; nie twórz fikcyjnego
+„w toku”.
+
+Raport Operatora uruchamia Evaluatora po zapisaniu raportu. Po `PASS` bez zarzutów uruchom
+Final Control; przy zarzutach najpierw uruchom Obronę Operatora, potem Final Control.
+Jedna runda to jeden faktyczny
 dispatch Operatora i przypisany Evaluator; runda początkowa oraz każda korekta są
-liczone jawnie, a licznik zwiększa się przed dispatchiem. Po `PASS` uruchom Final Control;
-po jego pozytywnym wyniku orkiestrator integruje wyłącznie zatwierdzoną allowlistę.
+liczone jawnie, a licznik zwiększa się przed dispatchiem. Pozytywny Final Control
+przekazuje temat do integracji zatwierdzonej allowlisty.
 Żadna rola poza orkiestratorem po integracji nie wystawia `READY_FOR_DEPLOY`.
 
 `FAIL`, techniczny `BLOCK`, `TIMEOUT`, `INFRA`, `ZWIS` albo niegotowość Final Control
-wracają do `Operator → Evaluator → Final Control` z tym samym pełnym ID, ale tylko
+wracają do `Operator → Evaluator → [warunkowo Obrona] → niezależny Final Control` z tym samym pełnym ID, ale tylko
 jeżeli następna runda ma numer ≤5. Po piątej nieudanej/niezamkniętej rundzie blokada
 przed kolejnym dispatchiem jest obowiązkowa: raportuj
 `LIMIT-5-EXCEEDED`, liczbę rund, ostatni werdykt, blokadę
@@ -95,7 +79,8 @@ commita za zakończenie. Każdy dispatch ma dokładnie jeden rekord ledgeru z po
 `agent_id`, `temat`, `rola`, `runda`, `start`, `oczekiwany_artefakt`, `ostatni_status`,
 `timestamp_zakonczenia`, `routing_nastepnego_kroku`. Rekord przechodzi jawnie przez
 `pending → running → completed|interrupted|timeout|not_found|BLOCK|CLOSED` (brak raportu
-nie może zostać pustym przebiegiem). Watchdog sprawdza każdy aktywny rekord co minutę;
+nie może zostać pustym przebiegiem). Jeśli nie ma wywoływalnego schedulera, nie deklaruj
+monitoringu w tle; zapisuj kolejkę przy każdym zakończeniu etapu i raporcie statusu. Gdy scheduler jest dostępny, odnotuj jego faktyczny stan i heartbeat.
 `not_found` bez dowodu raportu klasyfikuje jako `BLOCK`, ciszę jako `ZWIS`, a przekroczenie
 limitu jako `TIMEOUT`. `FAIL`/`BLOCK` automatycznie routuje do tego samego ID i Operatora
 po guardzie rundy. Przy nieznanym statusie nie wolno tworzyć duplikatu ani dispatchować

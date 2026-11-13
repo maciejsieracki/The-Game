@@ -1,0 +1,14 @@
+PASS: (A) computeViewport: przesunięcie kamery przesuwa ramkę (x/y)
+PASS: (A) computeViewport: zoom zmienia rozmiar ramki (w/h)
+PASS: (B) update(): ramka rysowana z viewport danych (pełne odświeżenie)
+PASS: (B) updateViewport(VP2): ramka PRZESUWA się na nowe miejsce
+PASS: (B) updateViewport: NIE przerysowuje heksów (brak nowych fill), tylko składa warstwę bazową
+PASS: (B) updateViewport: wynik zgodny z pełnym update() z tymi samymi danymi (bez tautologii)
+PASS: (B) zoom: updateViewport(VP3) zmienia rozmiar ramki (w/h)
+PASS: (B) ta sama ramka (kopia) → brak kolejnego rysowania (tani sprawdzian)
+PASS: (B) brak ramki (undefined) → rysowana warstwa bazowa bez ramki
+PASS: (B) pełne update() po zmianie danych nadal przerysowuje heksy
+PASS: (C) main.ts: renderLoop wywołuje updateMinimapViewport(computeViewport(map, cameraGroundTarget())) bez bramki dirty
+PASS: (C) hud.ts: eksport updateMinimapViewport deleguje do minimapApi.updateViewport
+
+OK: 12 testów minimap-viewport-rect-follow

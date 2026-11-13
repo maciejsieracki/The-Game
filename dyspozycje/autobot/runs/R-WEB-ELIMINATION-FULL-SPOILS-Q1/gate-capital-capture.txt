@@ -1,0 +1,20 @@
+1. cityFoundOrder / wasCapitalOfOldOwner -- kolejnosc numeryczna
+2. Zdarzenie 1 -- przejecie stolicy, cywilizacja przezywa
+3. Zdarzenie 2 -- ostatnie miasto = eliminacja (pelny transfer)
+4. Przejecie zwyklego (nie-stolecznego) miasta -> null, brak transferu
+5. Miasto-panstwo (jedyne miasto) -> zawsze eliminacja
+6. oldestCityOfOwner / remainingCitiesOfOwner
+7. designatedCapitalId zastepuje legacy "najstarsze miasto"
+8. Sukcesja -- nowa stolica = najstarsze z pozostalych miast oldOwner
+9. Eliminacja -> brak sukcesji (newCapitalIdForOldOwner=null)
+10. computeObjectivePower -- skladowa "zdobycze" (Power-zdobycze)
+11. disbandOwnerUnits — brak jednostek po eliminacji ownerId
+12. barbarianCaptorResourceAccess -- no-op zapisów DO newOwner, per-setter
+13. barbarianCapturedPowerGain -- Power zdobyczy barbarzyńcy zawsze 0
+14. applyBarbarianAwareCapitalCapturePlunder -- oba guardy zintegrowane
+16. Transfer puli pracy PRZY ELIMINACJI -- liczby PRZED/PO obu stron
+17. Barbarzynski zdobywca + eliminacja -- pula pracy NIE trafia na konto barbarzyncow
+15. main.ts wiring -- statyczna weryfikacja (uzupełnienie realnego wykonania z 12-14)
+
+CAPITAL-CAPTURE-TEST OK (107/107)
+EXIT=0

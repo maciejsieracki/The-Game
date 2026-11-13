@@ -10,7 +10,7 @@
 - [Targowisko (Rynek)](budynki/targowisko.md)
 - [Port handlowy](budynki/port.md)
 - [Spichlerz](budynki/spichlerz.md)
-- [Swiatynia](budynki/swiatynia.md)
+- [Świątynia](budynki/swiatynia.md)
 - [Biblioteka](budynki/biblioteka.md)
 - [Studnia](budynki/studnia.md)
 - [Mury](budynki/mury.md)
@@ -78,6 +78,7 @@
 - [Wojownik germański](jednostki/wojownik-germanski.md)
 - [Berserker germański](jednostki/berserker-germanski.md)
 - [Taran](jednostki/taran.md)
+- [Taran okuty](jednostki/taran-okuty.md)
 - [Katapulta](jednostki/katapulta.md)
 - [Wieża oblężnicza](jednostki/wieza-obleznicza.md)
 - [Wojownik tyrreński](jednostki/wojownik-tyrrenski.md)
@@ -127,4 +128,4 @@
 
 ## Pojęcia (ręczne)
 
-Folder `pojecia/` — szczęście, porządek, bunt, suwaki, Spichlerz, [drzewko technologii](pojecia/drzewko-technologii.md), [cuda świata — przegląd](pojecia/cuda-swiata.md), [bród w bitwie](pojecia/brod.md), [szlaki handlowe](pojecia/szlaki-handlowe.md), [handel surowcami — dyplomacja](pojecia/handel-surowcami-dyplomacja.md), [władcy — portrety i imiona](pojecia/wladcy.md), [Wiarygodność](pojecia/wiarygodnosc.md), [Manpower — rekruci](pojecia/manpower-rekruci.md), [Założenie miasta](pojecia/zalozanie-miasta.md)…
+Folder `pojecia/` — szczęście, porządek, bunt, suwaki, Spichlerz, [drzewko technologii](pojecia/drzewko-technologii.md), [cuda świata — przegląd](pojecia/cuda-swiata.md), [bród w bitwie](pojecia/brod.md), [szlaki handlowe](pojecia/szlaki-handlowe.md), [handel surowcami — dyplomacja](pojecia/handel-surowcami-dyplomacja.md), [władcy — portrety i imiona](pojecia/wladcy.md), [Wiarygodność](pojecia/wiarygodnosc.md), [Manpower — rekruci](pojecia/manpower-rekruci.md), [Założenie miasta](pojecia/zalozanie-miasta.md), [Administrator miasta](pojecia/administrator-miasta.md), [Administrator ulepszeń](pojecia/administrator-ulepszen.md)…

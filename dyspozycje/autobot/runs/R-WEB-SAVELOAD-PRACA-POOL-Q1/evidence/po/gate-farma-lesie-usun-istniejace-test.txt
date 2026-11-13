@@ -1,0 +1,4 @@
+  [OK] zakres: hodowla na zlozu (bez lasu) NIETKNIETA
+
+=== farma-lesie-usun-istniejace: 143 OK / 0 FAIL ===
+EXIT=0

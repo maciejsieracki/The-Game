@@ -42,6 +42,7 @@ import { categoryOf } from '../../units/setup';
 import { unitInfographicLabel, unitInfographicSvg } from '../unitInfographic';
 import { resolveTechnologyRow, resolveUnitRow, technologyIdFromName, unitToSlug } from './registry';
 import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
+import { resourcesFromList, yieldValueFields } from './resourceRows';
 
 const COUNTERS = countersData as unknown as CounterDef[];
 
@@ -57,6 +58,21 @@ function text(value: unknown): string {
 function hasValue(value: unknown): boolean {
   const t = text(value);
   return t !== '' && t !== '—';
+}
+
+/** Wiersz „surowiec × ilość" jako dane (ikona + liczba w rendererze). Surowiec spoza listy
+ * ikon (nieznana nazwa) wraca do zwykłego tekstu `nazwa × ilość`. */
+function unitResourceRow(label: string, name: unknown, amount: unknown): EntityCardRow {
+  if (!hasValue(name)) return { label, value: '' };
+  const qty = text(amount);
+  const { resources, rest } = resourcesFromList(text(name), qty);
+  if (resources.length === 0) return { label, value: `${text(name)} × ${qty}` };
+  return { label, value: rest ? `${rest} × ${qty}` : '', resources };
+}
+
+/** Wiersz plonu (Pieniądz/Żywność) jako chip „liczba + ikona"; pusta wartość → zwykły pusty `value` (wiersz odfiltrowany). */
+function yieldRowIfValue(id: string, v: string): Pick<EntityCardRow, 'value' | 'valueParts'> {
+  return hasValue(v) ? yieldValueFields(id, v) : { value: v };
 }
 
 /** 1:1 z `cityPanel.ts::unitExtraField` — odczyt pól spoza typowanego `UnitDef`
@@ -87,6 +103,49 @@ function collectCounters(unit: UnitDef): string[] {
  * puste sekcje), zero wymyślonej treści. */
 interface Top3Entry { tytul?: unknown; tekst?: unknown }
 
+/** Tłumaczenie wyłącznie warstwy prezentacji: `Top3` pozostaje niezmienione w units.json,
+ * bo jego tytuły i teksty są wolną treścią, nie polami statystyk ani kluczami parsowanymi
+ * przez adapter. Nieznane etykiety pozostają bez zmian. */
+function unitTop3DisplayText(value: unknown): string {
+  let out = text(value);
+  out = out
+    .replace(/\bPodwójny bonus: Spearman (\+?\d+%) i Mount (\+?\d+%)/gi,
+      'Podwójna premia: przeciw włócznikom $1 i jednostkom konnym $2')
+    .replace(/\bOffensive \+(\d+%), Distance i Slinger \+(\d+%)/gi,
+      'przeciw jednostkom ofensywnym +$1, przeciw jednostkom dystansowym i procarzom +$2')
+    .replace(/\bBonus vs Distance\/Slinger\b/gi, 'Premia przeciw jednostkom dystansowym i procarzom')
+    .replace(/\bNajwyższe Health\b/gi, 'Najwyższa wartość zdrowia')
+    .replace(/\bNajniższe Health\b/gi, 'Najniższa wartość zdrowia')
+    .replace(/\bWysokie Health\b/gi, 'Wysoka wytrzymałość')
+    .replace(/\bNiskie Health\b/gi, 'Niska wytrzymałość')
+    .replace(/\bNiższe Health\b/gi, 'Mniej zdrowia')
+    .replace(/\bHealth zaledwie (\d+)\b/gi, 'Zaledwie $1 pkt. zdrowia')
+    .replace(/\bHealth tylko (\d+)\b/gi, 'Tylko $1 pkt. zdrowia')
+    .replace(/\b(\d+) punkt(y|ów) Health\b/gi, '$1 punkt$2 zdrowia')
+    .replace(/\b(\d+(?:[,.]\d+)?) Health\b/gi, '$1 pkt. zdrowia')
+    .replace(/\bHealth (\d+)\b/gi, 'Zdrowie: $1')
+    .replace(/\bHealth\b/gi, 'zdrowie')
+    .replace(/\bfieldPower\b/g, 'Moc')
+    .replace(/\bBonus vs Swordsman\b/gi, 'Premia przeciw miecznikom')
+    .replace(/\bjednostkami typu Swordsman\b/gi, 'jednostkami miecznymi')
+    .replace(/\bBonus vs Offensive\b/gi, 'Premia przeciw jednostkom ofensywnym')
+    .replace(/\bBonus vs Distance\b/gi, 'Premia przeciw jednostkom dystansowym')
+    .replace(/\bBonus vs Slinger\b/gi, 'Premia przeciw procarzom')
+    .replace(/\bBonus vs Spearman\b/gi, (match) =>
+      match.charAt(0) === match.charAt(0).toLowerCase() ? 'premia przeciw włócznikom' : 'Premia przeciw włócznikom')
+    .replace(/\bAwans na Spearman\b/gi, 'Awans na Włócznika')
+    .replace(/\bJedyna jednostka typu Spearman\b/gi, 'Jedyna jednostka włócznicza')
+    .replace(/\bnie ma Typu "Spearman"/gi, 'nie należy do typu włóczników')
+    .replace(/\bformacji spearmanów\b/gi, 'formacji włóczników')
+    .replace(/\bvs Spearman\b/gi, 'przeciw włócznikom')
+    .replace(/\bvs Distance\b/gi, 'przeciw jednostkom dystansowym')
+    .replace(/\bvs Slinger\b/gi, 'przeciw procarzom')
+    .replace(/\bBonus vs Mount\b/gi, (match) =>
+      match.charAt(0) === match.charAt(0).toLowerCase() ? 'premia przeciw konnym' : 'Premia przeciw konnym')
+    .replace(/\bvs Mount\b/gi, 'przeciw konnym');
+  return out;
+}
+
 function top3Of(unit: UnitDef): EntityCardRow[] {
   const raw = (unit as unknown as Record<string, unknown>).Top3;
   if (!Array.isArray(raw)) return [];
@@ -94,7 +153,7 @@ function top3Of(unit: UnitDef): EntityCardRow[] {
     .map((item) => {
       if (typeof item === 'string') return { label: text(item), value: '' };
       const o = (item ?? {}) as Top3Entry;
-      return { label: text(o.tytul), value: text(o.tekst) };
+      return { label: unitTop3DisplayText(o.tytul), value: unitTop3DisplayText(o.tekst) };
     })
     .filter((r) => r.label !== '' || r.value !== '');
 }
@@ -143,8 +202,8 @@ export const unitAdapter: EntityCardAdapter<UnitDef> = (unit) => {
   const requirementsSection: EntityCardSection = { key: 'requirements', title: 'Wymagania', rows: reqRows };
 
   // --- 3. OPIS — proza, slot ZAWSZE obecny na indeksie 1 (patrz komentarz nad adapterem) —
-  // dopóki `Opis` nie istnieje w danych (dziś: 0/75), sekcja jest zawsze niewidoczna
-  // (renderer pomija pustą sekcję), zero wymyślonej treści. -----------------------------------
+  // `Opis` jest renderowany tylko wtedy, gdy pole w danych nie jest puste
+  // (renderer pomija pustą sekcję), bez wymyślania treści. -------------------------------------
   const opis = extra(unit, 'Opis');
   const descriptionSection: EntityCardSection = {
     key: 'description', title: 'Opis',
@@ -154,7 +213,7 @@ export const unitAdapter: EntityCardAdapter<UnitDef> = (unit) => {
 
   const sections: EntityCardSection[] = [requirementsSection, descriptionSection];
 
-  // --- 5. TOP 3 — jeśli dane istnieją (dziś: 0/75, batch przyszłej fali) ---------------------
+  // --- 5. TOP 3 — jeśli dane istnieją --------------------------------------------------------
   const top3 = top3Of(unit);
   if (top3.length > 0) sections.push({ key: 'top3', title: 'Top 3', rows: top3, layout: 'top3' });
 
@@ -229,24 +288,17 @@ export const unitAdapter: EntityCardAdapter<UnitDef> = (unit) => {
   // --- 9. KOSZTY — DWIE osobne pod-sekcje: „Koszt rekrutacji" i „Utrzymanie" (dotąd jedna
   // sekcja „Koszty i utrzymanie" mieszała jednorazowy wydatek z co-turowym) -------------------
   const recruitRows: EntityCardRow[] = [
-    { label: 'Koszt Pieniądza', value: text(unit['Pieniądz (koszt)']) },
-    {
-      label: 'Koszt surowca',
-      value: hasValue(unit.Surowiec) ? `${text(unit.Surowiec)} × ${text(unit['Surowiec (ilość)'])}` : '',
-    },
+    { label: 'Koszt Pieniądza', ...yieldRowIfValue('pieniadz', text(unit['Pieniądz (koszt)'])) },
+    unitResourceRow('Koszt surowca', unit.Surowiec, unit['Surowiec (ilość)']),
     { label: 'Ludność', value: text(unit.Ludność) },
-  ].filter((r) => hasValue(r.value));
+  ].filter((r) => hasValue(r.value) || (r.resources?.length ?? 0) > 0);
   sections.push({ key: 'cost-recruit', title: 'Koszt rekrutacji', rows: recruitRows });
 
   const upkeepRows: EntityCardRow[] = [
-    { label: 'Utrzymanie Pieniądza/turę', value: text(unit['Utrzymanie (Pieniądz/turę)']) },
-    {
-      label: 'Utrzymanie surowca/turę',
-      value: hasValue(unit['Utrzymanie surowiec'])
-        ? `${text(unit['Utrzymanie surowiec'])} × ${text(unit['Utrzymanie surowiec (ilość)'])}` : '',
-    },
-    { label: 'Żywność/turę', value: text(unit['żywność/turę']) },
-  ].filter((r) => hasValue(r.value));
+    { label: 'Utrzymanie Pieniądza/turę', ...yieldRowIfValue('pieniadz', text(unit['Utrzymanie (Pieniądz/turę)'])) },
+    unitResourceRow('Utrzymanie surowca/turę', unit['Utrzymanie surowiec'], unit['Utrzymanie surowiec (ilość)']),
+    { label: 'Żywność/turę', ...yieldRowIfValue('zywnosc', text(unit['żywność/turę'])) },
+  ].filter((r) => hasValue(r.value) || (r.resources?.length ?? 0) > 0);
   sections.push({ key: 'cost-upkeep', title: 'Utrzymanie', rows: upkeepRows });
 
   // --- Statusy — część niezależna od `options.statusLines` (dopełniane w unitInfoCard.ts).

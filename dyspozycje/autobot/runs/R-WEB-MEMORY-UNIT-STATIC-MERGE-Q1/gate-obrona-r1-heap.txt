@@ -1,0 +1,8 @@
+# OBRONA r1 (Z5): node tools/memory-unit-static-merge-heap.cjs na kodzie tematu (e866e18), 475 zetonow, 3 powtorzenia na strone.
+WYNIK {"tokens":475,"reps":3,"heapMB":{"off":67,"on":29.29,"samplesOff":[67,67,67],"samplesOn":[29.29,29.28,29.29]},"deltaMB":37.71,"syncMs":{"off":572.1,"on":836.3,"samplesOff":[547.2,572.1,580.6],"samplesOn":[845,836.3,653.9]},"meshesPerToken":{"off":67.1,"on":19.3}}
+  OK  H1 sterta on mniejsza od off o >= 15 MB -- {"off":67,"on":29.29,"delta":37.71}
+  OK  H2 meshe na zeton on < 40% off -- {"off":67.1,"on":19.3}
+  OK  H3 czas sync on <= 2,5x off -- {"off":572.1,"on":836.3}
+
+memory-unit-static-merge-heap: 3 pass, 0 fail
+EXIT=0

@@ -1,0 +1,4 @@
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=15 terrain=90 landSea=1106 relief=880 coast=157 riversMain=22997 riversFill=25962 forest=28 deposits=91 starts=469 total=51795
+map-deposits-era-test: 16 pass, 0 fail
+EXIT=0

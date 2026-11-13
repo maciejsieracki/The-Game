@@ -1,0 +1,3 @@
+# Operator response to Evaluator — R3
+
+**Disposition: accepted; no unresolved objection.** Evaluator's note about the controlled exact-target subcase is retained in the report and Final Control. That probe is separate from attack-march. Attack-march eligibility is checked directly before the real canvas click; the trace baseline is captured at issue; the post-issue strike records the explicit rout state; and continuation is observed on a normally scheduled activation in the following round. The run uses deterministic setup for reproducibility, but production pointer handling, strike resolution, routing, and turn activation are exercised. No product source change is indicated.

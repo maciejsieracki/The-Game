@@ -150,7 +150,6 @@ function pickerPutsFarm(map, q, r) {
     unlockedTechs: new Set(['rolnictwo', 'Rolnictwo']),
     pracaSurplusThreshold: 0,
     pracaBudgetPercent: 100,
-    maxItemsPerCity: 5,
     skipWyrab: true,
     playerEra: 1,
     priorityOverride: ['farma'],
@@ -354,7 +353,7 @@ async function main() {
       placedImprovements: new Map(),
       pracaAvailable: 100000,
       unlockedTechs: new Set(['rolnictwo', 'Rolnictwo']),
-      pracaSurplusThreshold: 0, pracaBudgetPercent: 100, maxItemsPerCity: 5,
+      pracaSurplusThreshold: 0, pracaBudgetPercent: 100,
       skipWyrab: true, playerEra: 1, priorityOverride: ['farma'],
     });
     return picks.some(p => p.key === 'farma' && p.q === q && p.r === r);

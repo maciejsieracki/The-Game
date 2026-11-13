@@ -1,0 +1,46 @@
+side-panel-event-link-test
+ (1) rodziny ze skrotem
+  OK:  border-march-violated -> map-focus
+  OK:  border-march-trespassing -> map-focus
+  OK:  village-* -> map-focus
+  OK:  war-* -> diplo-wars
+  OK:  elim-cs-* -> civ-elim
+  OK:  trade-new-* -> city-panel
+  OK:  trade-lost-* -> city-panel
+  OK:  auto-ration-t* -> empire-spichlerz
+  OK:  era-* -> tech-tree
+ (2) bez skrotu (wynik audytu, nie przypadek)
+  OK:  brak skrotu dla id "eot-hint-12-0"
+  OK:  brak skrotu dla id "edu-veteran-enemy-q3"
+  OK:  brak skrotu dla id "revolt-city3"
+  OK:  brak skrotu dla id "revolt-warn-city3"
+  OK:  brak skrotu dla id "prod-empty-city3"
+  OK:  brak skrotu dla id "diplo-pend-7"
+  OK:  brak skrotu dla id "negot-4"
+  OK:  brak skrotu dla id ""
+  OK:  brak skrotu dla id "wartburg-12"
+  OK:  brak skrotu dla id "erasmus-1"
+ (3) etykiety
+  OK:  etykieta map-focus
+  OK:  etykieta diplo-wars
+  OK:  etykieta civ-elim
+  OK:  etykieta city-panel
+  OK:  etykieta empire-spichlerz
+  OK:  etykieta tech-tree
+  OK:  kazda rodzina ma wlasna, unikalna etykiete
+ (4) heks chatki z id
+  OK:  village-12-3-4 -> q=3 r=4
+  OK:  village-7--3-4 -> q=-3 r=4 (ujemne q)
+  OK:  village-7-3--4 -> q=3 r=-4 (ujemne r)
+  OK:  village-0--3--7 -> q=-3 r=-7 (oba ujemne)
+  OK:  niepelne id chatki -> null
+  OK:  nadmiarowy czlon w id chatki -> null
+  OK:  obcy prefiks -> null
+  OK:  nieliczbowe czlony -> null
+ (5) N1 - blokujace zdarzenie nie dostaje linku, nawet gdyby techDone/cityCapture cos zwrocily
+  OK:  blokujace zdarzenie z id pasujacym literalnie do prefiksu tech-done- (syntetyczny przypadek) -> brak linku
+  OK:  blokujace zdarzenie z id pasujacym literalnie do prefiksu capture- (syntetyczny przypadek) -> brak linku
+  OK:  kontrola: to samo id bez blocking dostaje link (stub dziala, test nie jest martwy)
+
+side-panel-event-link-test: 37 pass, 0 fail
+EXIT=0

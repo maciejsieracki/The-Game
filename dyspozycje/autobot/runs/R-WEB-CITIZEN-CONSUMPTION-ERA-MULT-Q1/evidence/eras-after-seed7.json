@@ -1,0 +1,698 @@
+{
+ "seed": 7,
+ "rows": [
+  {
+   "era": 1,
+   "setE": {
+    "me": 1,
+    "ai": [
+     [
+      1,
+      1
+     ],
+     [
+      2,
+      1
+     ],
+     [
+      3,
+      1
+     ],
+     [
+      4,
+      1
+     ],
+     [
+      5,
+      1
+     ],
+     [
+      6,
+      1
+     ],
+     [
+      7,
+      1
+     ],
+     [
+      8,
+      1
+     ],
+     [
+      9,
+      1
+     ],
+     [
+      10,
+      1
+     ],
+     [
+      11,
+      1
+     ],
+     [
+      12,
+      1
+     ],
+     [
+      13,
+      1
+     ],
+     [
+      14,
+      1
+     ]
+    ]
+   },
+   "fixture": 1,
+   "popPlayerEmpire": 5,
+   "levelRequested": 4,
+   "player": [
+    {
+     "cityId": "city0",
+     "ownerEra": 1,
+     "pop": 5,
+     "poziomTick": 3.5,
+     "kosztRacji": 35,
+     "perPopLevel": 1
+    }
+   ],
+   "upkeepPlayer": {
+    "rate": 1,
+    "required": [
+     "drewno",
+     "glina"
+    ],
+    "deductions": {
+     "drewno": 5,
+     "glina": 5
+    },
+    "missing": []
+   },
+   "drainObserved": {
+    "drewno": 88,
+    "glina": -37
+   },
+   "aiSample": [
+    {
+     "ownerId": 11,
+     "cityId": "city1",
+     "ownerEra": 1,
+     "pop": 1,
+     "poziom": 4,
+     "kosztRacji": 8,
+     "mult": 1
+    },
+    {
+     "ownerId": 12,
+     "cityId": "city2",
+     "ownerEra": 1,
+     "pop": 1,
+     "poziom": 1.5,
+     "kosztRacji": 3,
+     "mult": 1
+    },
+    {
+     "ownerId": 13,
+     "cityId": "city3",
+     "ownerEra": 1,
+     "pop": 1,
+     "poziom": 3,
+     "kosztRacji": 6,
+     "mult": 1
+    },
+    {
+     "ownerId": 14,
+     "cityId": "city4",
+     "ownerEra": 1,
+     "pop": 1,
+     "poziom": 1.5,
+     "kosztRacji": 3,
+     "mult": 1
+    },
+    {
+     "ownerId": 1,
+     "cityId": "city5",
+     "ownerEra": 1,
+     "pop": 1,
+     "poziom": 2,
+     "kosztRacji": 4,
+     "mult": 1
+    },
+    {
+     "ownerId": 2,
+     "cityId": "city6",
+     "ownerEra": 1,
+     "pop": 1,
+     "poziom": 3.5,
+     "kosztRacji": 7,
+     "mult": 1
+    },
+    {
+     "ownerId": 3,
+     "cityId": "city7",
+     "ownerEra": 1,
+     "pop": 1,
+     "poziom": 3.5,
+     "kosztRacji": 7,
+     "mult": 1
+    },
+    {
+     "ownerId": 4,
+     "cityId": "city8",
+     "ownerEra": 1,
+     "pop": 1,
+     "poziom": 1,
+     "kosztRacji": 2,
+     "mult": 1
+    },
+    {
+     "ownerId": 5,
+     "cityId": "city9",
+     "ownerEra": 1,
+     "pop": 1,
+     "poziom": 2.5,
+     "kosztRacji": 5,
+     "mult": 1
+    },
+    {
+     "ownerId": 6,
+     "cityId": "city10",
+     "ownerEra": 1,
+     "pop": 1,
+     "poziom": 3.5,
+     "kosztRacji": 7,
+     "mult": 1
+    },
+    {
+     "ownerId": 7,
+     "cityId": "city11",
+     "ownerEra": 1,
+     "pop": 1,
+     "poziom": 3.5,
+     "kosztRacji": 7,
+     "mult": 1
+    },
+    {
+     "ownerId": 8,
+     "cityId": "city12",
+     "ownerEra": 1,
+     "pop": 1,
+     "poziom": 1,
+     "kosztRacji": 2,
+     "mult": 1
+    }
+   ],
+   "aiMultSet": [
+    1
+   ],
+   "aiUpkeepRates": {
+    "1": 1,
+    "2": 1,
+    "3": 1,
+    "4": 1,
+    "5": 1,
+    "6": 1,
+    "7": 1,
+    "8": 1,
+    "9": 1,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 1,
+    "14": 1
+   },
+   "myCityIds": [
+    "city0"
+   ]
+  },
+  {
+   "era": 2,
+   "setE": {
+    "me": 2,
+    "ai": [
+     [
+      1,
+      2
+     ],
+     [
+      2,
+      2
+     ],
+     [
+      3,
+      2
+     ],
+     [
+      4,
+      2
+     ],
+     [
+      5,
+      2
+     ],
+     [
+      6,
+      2
+     ],
+     [
+      7,
+      2
+     ],
+     [
+      8,
+      2
+     ],
+     [
+      9,
+      2
+     ],
+     [
+      10,
+      2
+     ],
+     [
+      11,
+      2
+     ],
+     [
+      12,
+      2
+     ],
+     [
+      13,
+      2
+     ],
+     [
+      14,
+      2
+     ]
+    ]
+   },
+   "fixture": 1,
+   "popPlayerEmpire": 5,
+   "levelRequested": 4,
+   "player": [
+    {
+     "cityId": "city0",
+     "ownerEra": 2,
+     "pop": 5,
+     "poziomTick": 2,
+     "kosztRacji": 30,
+     "perPopLevel": 1.5
+    }
+   ],
+   "upkeepPlayer": {
+    "rate": 1.5,
+    "required": [
+     "drewno",
+     "glina",
+     "kamien",
+     "ceramika"
+    ],
+    "deductions": {
+     "drewno": 7,
+     "glina": 7,
+     "kamien": 7,
+     "ceramika": 7
+    },
+    "missing": []
+   },
+   "drainObserved": {
+    "drewno": 70,
+    "glina": -35,
+    "kamien": 7,
+    "ceramika": 7
+   },
+   "aiSample": [
+    {
+     "ownerId": 11,
+     "cityId": "city1",
+     "ownerEra": 2,
+     "pop": 1,
+     "poziom": 2.5,
+     "kosztRacji": 7.5,
+     "mult": 1.5
+    },
+    {
+     "ownerId": 12,
+     "cityId": "city2",
+     "ownerEra": 2,
+     "pop": 1,
+     "poziom": 1,
+     "kosztRacji": 3,
+     "mult": 1.5
+    },
+    {
+     "ownerId": 13,
+     "cityId": "city3",
+     "ownerEra": 2,
+     "pop": 1,
+     "poziom": 2,
+     "kosztRacji": 6,
+     "mult": 1.5
+    },
+    {
+     "ownerId": 14,
+     "cityId": "city4",
+     "ownerEra": 2,
+     "pop": 1,
+     "poziom": 1,
+     "kosztRacji": 3,
+     "mult": 1.5
+    },
+    {
+     "ownerId": 1,
+     "cityId": "city5",
+     "ownerEra": 2,
+     "pop": 1,
+     "poziom": 1,
+     "kosztRacji": 3,
+     "mult": 1.5
+    },
+    {
+     "ownerId": 2,
+     "cityId": "city6",
+     "ownerEra": 2,
+     "pop": 1,
+     "poziom": 0,
+     "kosztRacji": 0,
+     "mult": null
+    },
+    {
+     "ownerId": 3,
+     "cityId": "city7",
+     "ownerEra": 2,
+     "pop": 1,
+     "poziom": 2,
+     "kosztRacji": 6,
+     "mult": 1.5
+    },
+    {
+     "ownerId": 4,
+     "cityId": "city8",
+     "ownerEra": 2,
+     "pop": 1,
+     "poziom": 0.5,
+     "kosztRacji": 1.5,
+     "mult": 1.5
+    },
+    {
+     "ownerId": 5,
+     "cityId": "city9",
+     "ownerEra": 2,
+     "pop": 1,
+     "poziom": 1.5,
+     "kosztRacji": 4.5,
+     "mult": 1.5
+    },
+    {
+     "ownerId": 6,
+     "cityId": "city10",
+     "ownerEra": 2,
+     "pop": 1,
+     "poziom": 2,
+     "kosztRacji": 6,
+     "mult": 1.5
+    },
+    {
+     "ownerId": 7,
+     "cityId": "city11",
+     "ownerEra": 2,
+     "pop": 1,
+     "poziom": 2,
+     "kosztRacji": 6,
+     "mult": 1.5
+    },
+    {
+     "ownerId": 8,
+     "cityId": "city12",
+     "ownerEra": 2,
+     "pop": 1,
+     "poziom": 0.5,
+     "kosztRacji": 1.5,
+     "mult": 1.5
+    }
+   ],
+   "aiMultSet": [
+    1.5,
+    null
+   ],
+   "aiUpkeepRates": {
+    "1": 1.5,
+    "2": 1.5,
+    "3": 1.5,
+    "4": 1.5,
+    "5": 1.5,
+    "6": 1.5,
+    "7": 1.5,
+    "8": 1.5,
+    "9": 1.5,
+    "10": 1.5,
+    "11": 1.5,
+    "12": 1.5,
+    "13": 1.5,
+    "14": 1.5
+   },
+   "myCityIds": [
+    "city0"
+   ]
+  },
+  {
+   "era": 3,
+   "setE": {
+    "me": 3,
+    "ai": [
+     [
+      1,
+      3
+     ],
+     [
+      2,
+      3
+     ],
+     [
+      3,
+      3
+     ],
+     [
+      4,
+      3
+     ],
+     [
+      5,
+      3
+     ],
+     [
+      6,
+      3
+     ],
+     [
+      7,
+      3
+     ],
+     [
+      8,
+      3
+     ],
+     [
+      9,
+      3
+     ],
+     [
+      10,
+      3
+     ],
+     [
+      11,
+      3
+     ],
+     [
+      12,
+      3
+     ],
+     [
+      13,
+      3
+     ],
+     [
+      14,
+      3
+     ]
+    ]
+   },
+   "fixture": 1,
+   "popPlayerEmpire": 5,
+   "levelRequested": 4,
+   "player": [
+    {
+     "cityId": "city0",
+     "ownerEra": 3,
+     "pop": 5,
+     "poziomTick": 2.5,
+     "kosztRacji": 37.5,
+     "perPopLevel": 1.5
+    }
+   ],
+   "upkeepPlayer": {
+    "rate": 2,
+    "required": [
+     "drewno",
+     "glina",
+     "kamien",
+     "ceramika",
+     "cegla"
+    ],
+    "deductions": {
+     "drewno": 10,
+     "glina": 10,
+     "kamien": 10,
+     "ceramika": 10,
+     "cegla": 10
+    },
+    "missing": []
+   },
+   "drainObserved": {
+    "drewno": 18,
+    "glina": -32,
+    "kamien": 10,
+    "ceramika": 35,
+    "cegla": 10
+   },
+   "aiSample": [
+    {
+     "ownerId": 11,
+     "cityId": "city1",
+     "ownerEra": 3,
+     "pop": 1,
+     "poziom": 2,
+     "kosztRacji": 8,
+     "mult": 2
+    },
+    {
+     "ownerId": 12,
+     "cityId": "city2",
+     "ownerEra": 3,
+     "pop": 1,
+     "poziom": 0.5,
+     "kosztRacji": 2,
+     "mult": 2
+    },
+    {
+     "ownerId": 13,
+     "cityId": "city3",
+     "ownerEra": 3,
+     "pop": 1,
+     "poziom": 1.5,
+     "kosztRacji": 6,
+     "mult": 2
+    },
+    {
+     "ownerId": 14,
+     "cityId": "city4",
+     "ownerEra": 3,
+     "pop": 1,
+     "poziom": 0.5,
+     "kosztRacji": 2,
+     "mult": 2
+    },
+    {
+     "ownerId": 1,
+     "cityId": "city5",
+     "ownerEra": 3,
+     "pop": 1,
+     "poziom": 1,
+     "kosztRacji": 4,
+     "mult": 2
+    },
+    {
+     "ownerId": 2,
+     "cityId": "city6",
+     "ownerEra": 3,
+     "pop": 1,
+     "poziom": 0,
+     "kosztRacji": 0,
+     "mult": null
+    },
+    {
+     "ownerId": 3,
+     "cityId": "city7",
+     "ownerEra": 3,
+     "pop": 1,
+     "poziom": 2,
+     "kosztRacji": 8,
+     "mult": 2
+    },
+    {
+     "ownerId": 4,
+     "cityId": "city8",
+     "ownerEra": 3,
+     "pop": 1,
+     "poziom": 0.5,
+     "kosztRacji": 2,
+     "mult": 2
+    },
+    {
+     "ownerId": 5,
+     "cityId": "city9",
+     "ownerEra": 3,
+     "pop": 1,
+     "poziom": 1,
+     "kosztRacji": 4,
+     "mult": 2
+    },
+    {
+     "ownerId": 6,
+     "cityId": "city10",
+     "ownerEra": 3,
+     "pop": 1,
+     "poziom": 2,
+     "kosztRacji": 8,
+     "mult": 2
+    },
+    {
+     "ownerId": 7,
+     "cityId": "city11",
+     "ownerEra": 3,
+     "pop": 1,
+     "poziom": 2,
+     "kosztRacji": 8,
+     "mult": 2
+    },
+    {
+     "ownerId": 8,
+     "cityId": "city12",
+     "ownerEra": 3,
+     "pop": 1,
+     "poziom": 0.5,
+     "kosztRacji": 2,
+     "mult": 2
+    }
+   ],
+   "aiMultSet": [
+    2,
+    null
+   ],
+   "aiUpkeepRates": {
+    "1": 2,
+    "2": 2,
+    "3": 2,
+    "4": 2,
+    "5": 2,
+    "6": 2,
+    "7": 2,
+    "8": 2,
+    "9": 2,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 2,
+    "14": 2
+   },
+   "myCityIds": [
+    "city0"
+   ]
+  }
+ ],
+ "errors": []
+}

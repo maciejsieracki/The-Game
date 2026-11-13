@@ -1,0 +1,10 @@
+Logi: /tmp/civ-notif-logs/after-7.jsonl
+Tury: 30 | wpisy informacyjne razem: 3 (widoczne wg dawnego chipa OFF: 3) | srednio/ture: 0.10 | max/ture: 1
+
+| # | typ (znormalizowany) | wystapien | tur z wpisem | zakladka (eventTabOf) |
+|---|---|---|---|---|
+| 1 | Automatycznie obniżono racje żywnościowe / X: # → # · Mediolan: # → # | 1 | 1 | wazne |
+| 2 | Granice naruszone / Twoje granice naruszone — Kapua · Rzymianie · miasto-państwo, Pompeje · Rzymianie · miasto | 1 | 1 | dyplomacja |
+| 3 | Granice naruszone / Twoje granice naruszone — Ostia · Rzymianie · miasto-państwo, Kapua · Rzymianie · miasto-p | 1 | 1 | dyplomacja |
+
+Podzial na zakladki (wystapienia): {"dyplomacja":2,"wazne":1,"inne":0}

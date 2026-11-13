@@ -1,0 +1,12 @@
+  OK   jest miasto do inscenizacji
+  OK   plakietka OBLEZENIE widoczna
+  OK   plakietka zawiera nazwe miasta
+  OK   plakietka ZAWSZE zawiera licznik "poddanie za N tur..."
+  OK   tooltip wyjasnia licznik
+  OK   kapitulacja oczekuje -> "poddanie za 1 turę"
+  OK   wieksze zapasy -> wiekszy licznik
+  OK   tura posunela sie (realny endTurn)
+  OK   po turze licznik nie wiekszy niz przed (zapasy zjedzone) albo miasto przejete
+  OK   brak bledow strony
+RESULT pass=10 fail=0
+EXIT=0

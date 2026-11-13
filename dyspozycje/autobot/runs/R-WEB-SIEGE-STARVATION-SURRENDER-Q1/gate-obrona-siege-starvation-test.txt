@@ -1,0 +1,66 @@
+A. jednostkowa
+  [OK] zapasy > 0: brak glodu, brak atrycji (etap 1)
+  [OK] miasto nieoblegane -> nic
+  [OK] tick zera zapasow: zapis startu (200), BEZ atrycji i BEZ poddania
+  [OK] etap 2: atrycja, 92% -> trzyma sie
+  [OK] remis dokladnie 50,0% = jeszcze sie trzyma
+  [OK] 49,5% < 50% -> poddanie
+  [OK] polowa garnizonu zginela, reszta zdrowa = 50% -> trzyma sie
+  [OK] garnizon pusty po starcie glodu -> poddanie
+  [OK] bez garnizonu i bez startu: sciezka historyczna (flaga, bez poddania w tym ticku)
+  [OK] flaga pending (stary zapis / bez garnizonu) -> poddanie w nastepnym ticku
+  [OK] stary zapis z pending i garnizonem -> poddanie (kompatybilnie)
+  [OK] brak hp/hpMax -> maxHP z getMaxHp, HP pelne
+B. przebieg oblezenia (replika N3, 5 jednostek, magazyn 40, ludnosc 6)
+  [OK] Latwy: magazyn = 0 w ticku 4 (40 / 11 -> ceil 4)
+  [OK] Latwy: garnizon zdrowy (500/500 HP) przez caly etap 1 i w ticku zera
+  [OK] Latwy: poddanie w ticku 13 (zero zapasow + 9)
+  [OK] Latwy: pierwszy tick atrycji zdejmuje 6 HP/jednostke
+  [OK] Normalny: magazyn = 0 w ticku 4 (40 / 11 -> ceil 4)
+  [OK] Normalny: garnizon zdrowy (500/500 HP) przez caly etap 1 i w ticku zera
+  [OK] Normalny: poddanie w ticku 11 (zero zapasow + 7)
+  [OK] Normalny: pierwszy tick atrycji zdejmuje 8 HP/jednostke
+  [OK] Trudny: magazyn = 0 w ticku 4 (40 / 11 -> ceil 4)
+  [OK] Trudny: garnizon zdrowy (500/500 HP) przez caly etap 1 i w ticku zera
+  [OK] Trudny: poddanie w ticku 10 (zero zapasow + 6)
+  [OK] Trudny: pierwszy tick atrycji zdejmuje 10 HP/jednostke
+C. prognoza plakietki == symulacja
+  [OK] dokladna prognoza == symulacja dla 540 scenariuszy (3 trudnosci x zapasy x ludnosc x garnizon x maxHP)
+  [OK] Latwy: model ulamkowy (bez listy jednostek) == symulacja (13)
+  [OK] Normalny: model ulamkowy (bez listy jednostek) == symulacja (11)
+  [OK] Trudny: model ulamkowy (bez listy jednostek) == symulacja (10)
+  [OK] n = floor(0,5/frac)+1: 9 / 7 / 6 (10% -> 5 tur = 50% NIE wystarcza)
+  [OK] licznik plakietki w kazdej turze == pozostale ticki do poddania (11 -> 1)
+D. bez garnizonu / stare zapisy
+  [OK] bez garnizonu: flaga w ticku zera zapasow (7), poddanie 1 tick pozniej
+  [OK] bez garnizonu: prognoza = ceil(M/Z)+1
+  [OK] stary zapis (zapasy 0, brak pola startu): pierwszy tick zapisuje start, potem 7 ticków atrycji
+  [OK] stary zapis z uszkodzonym garnizonem (60%): HP liczone jak sa -> 60->52->44% = 1 + 2 ticki
+  [OK] stary zapis z pending=true: poddanie w nastepnym ticku
+E. strukturalna (main.ts / turn-economy.ts / cities.ts)
+  [OK] main.ts importuje siegeStarvationState
+  [OK] N3: tick zera zapasow zapisuje start glodu
+  [OK] N3: atrycja WYLACZNIE w etapie glodu (applyAttrition), nie od pierwszej tury
+  [OK] N3: brak bezwarunkowej atrycji od pierwszej tury oblezenia
+  [OK] N3: kapitulacja wg ulamka HP po atrycji
+  [OK] N3: bez garnizonu -> dotychczasowa sciezka flagi
+  [OK] turn-economy.ts: etap 1 bez zmian (magazyn -= ludnosc + garnizon)
+  [OK] cities.ts: pole siegeStarveStartMaxHp (zapis)
+  [OK] main.ts: pole kasowane przy starcie/zdjeciu oblezenia (3 miejsca)
+  [OK] plakietka: prognoza z hpFrac trudnosci
+F. mutacje
+  [OK] mutacja "prog 0,5 -> 0,4" wywraca testy
+  [OK] mutacja "atrycja od pierwszej tury (food>0)" wywraca testy
+  [OK] mutacja "flaga bez HP (poddanie w ticku zera)" wywraca testy
+  [OK] mutacja "<= zamiast < (remis poddaje)" wywraca testy
+  [OK] mutacja "pusty garnizon nie poddaje" wywraca testy
+  [OK] mutacja "pending ignorowane" wywraca testy
+G. PRZED / PO (5 jednostek, magazyn 40, ludnosc 6) -- numery ticków (konców tur)
+  Latwy (6%): PRZED poddanie w ticku 5, HP po tickach 1-5 = 470/440/410/380/350 | PO zero zapasow w ticku 4, poddanie w ticku 13, HP po tickach 1-13 = 500/500/500/500/470/440/410/380/350/320/290/260/230
+  [OK] Latwy: PRZED 5 ticków -> PO 13
+  Normalny (8%): PRZED poddanie w ticku 5, HP po tickach 1-5 = 460/420/380/340/300 | PO zero zapasow w ticku 4, poddanie w ticku 11, HP po tickach 1-11 = 500/500/500/500/460/420/380/340/300/260/220
+  [OK] Normalny: PRZED 5 ticków -> PO 11
+  Trudny (10%): PRZED poddanie w ticku 5, HP po tickach 1-5 = 450/400/350/300/250 | PO zero zapasow w ticku 4, poddanie w ticku 10, HP po tickach 1-10 = 500/500/500/500/450/400/350/300/250/200
+  [OK] Trudny: PRZED 5 ticków -> PO 10
+RESULT pass=54 fail=0
+EXIT=0

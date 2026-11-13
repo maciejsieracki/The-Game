@@ -10,10 +10,11 @@ import {
   type EmpireResourceRow,
   type EmpireUchwalaRow,
 } from './empireDetailTypes';
-import { formatObywateleLabel, formatManpower } from '../game/manpower';
+import { formatObywateleLabel, formatManpowerCompact } from '../game/manpower';
 import { stockResourceLabel } from '../game/building-stock-cost';
 import { CITIZEN_UPKEEP_RATE_PER_CITIZEN } from '../game/citizen-resource-upkeep';
 import { resourceUsageTotal } from '../game/resource-usage-breakdown';
+import { taxForWorkAmount } from '../game/work-tax';
 import {
   MIASTA_TABLE_COLUMNS,
   visibleMiastaColumns,
@@ -26,11 +27,14 @@ import {
   powerRankingValueForMode, sortPowerRankingForMode, type PowerRankingViewMode,
 } from './powerOverlayHud';
 // Liczby do wyswietlenia bez smieci zmiennoprzecinkowych (Maciej 2026-07-26).
-import { formatLiczbaPl, signedPl } from './formatPl';
+import { formatLiczbaPl, signedPl, formatBudynkiCount, formatJednostkiCount, formatTurCountAcc, pluralPl } from './formatPl';
+import { formatCompactNumber } from './formatCompactNumber';
 import { treasuryBalanceSignedTxt } from './treasuryBalanceFormat';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
+import type { BuildingUtilizationView } from '../game/building-toggle';
+import { resourceAmountChipHtml, RESOURCE_CHIP_CSS } from './resourceAmountChip';
 import { daninaLabelGenitive } from '../game/danina-nazwa';
-import { HANDEL_PCT_STEP, MAX_PROCENT_NAUKA, adjustHandelSplit, normalizePodzialHandlu, snapHandelPct } from '../game/cities';
+import { HANDEL_PCT_STEP, adjustHandelSplit, normalizePodzialHandlu, snapHandelPct } from '../game/cities';
 import type { CityPodzialHandlu, CityPodzialPracy } from '../game/cities';
 import {
   MAX_PROCENT_PULI_IMPERIUM,
@@ -51,6 +55,8 @@ import {
   type EmpirePanelBlock,
 } from './empirePanelSectionMap';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
+import { administratorUpkeepValueHtml } from './icons/administratorIcon';
+import { getArmyRecruitDraftTotal, submitArmyRecruitmentDrafts, clearArmyRecruitDraftsOnPanelClose } from './cityPanel';
 export type { EmpireDetailSnap } from './empireDetailTypes';
 export { empireSectionFromHudAct, empirePanelBlockForSection } from './empirePanelSectionMap';
 
@@ -58,20 +64,71 @@ export interface EmpireHandelSplitUiConfig {
   getOwnerDefault?: (ownerId: number) => CityPodzialHandlu | null;
   onOwnerDefaultChange?: (ownerId: number, split: CityPodzialHandlu) => void;
   getDaninaLabel?: () => string;
+  // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: bez tego hooka WSZYSTKIE odczyty/zapisy tego
+  // panelu w tym module były zaszyte na literał `0` (HUMAN_OWNER_PRIMARY) — fotel 2
+  // (aktywny fotel ludzki != 0) widział/nadpisywał wyłącznie default fotela 0, nigdy
+  // własny wpis w `ownerDefaultPodzialHandlu`. Silnik (main.ts) woła to z `ME()` —
+  // domyślne `?? 0` zachowuje bit-identyczne zachowanie single-player (fotel 0 zawsze).
+  getActiveOwnerId?: () => number;
+}
+
+export interface EmpireMassRecruitmentUiConfig {
+  /** Mount the shared city recruitment list in the matching Army city section. */
+  mountCityRecruitment?: (cityId: string, host: HTMLElement) => boolean;
+  /** Mount the capital-only commander card above the per-city Army recruitment catalog. */
+  mountGeneralRecruitment?: (host: HTMLElement) => boolean;
+  getRecruitFollowGeneralDefault?: () => boolean;
+  onRecruitFollowGeneralDefaultChange?: (enabled: boolean) => void;
+}
+
+/**
+ * R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: wlaczanie/wylaczanie budynkow produkcyjnych z listy miast
+ * na dole zakladki Miasta. Silnik (main.ts) podpina `onToggle`; panel tylko wywoluje i sie odswieza.
+ */
+export interface EmpireProducerToggleUiConfig {
+  onToggle?: (cityId: string, buildingId: string, enabled: boolean) => void;
+}
+let producerToggleUi: EmpireProducerToggleUiConfig = {};
+export function configureEmpireProducerToggle(cfg: EmpireProducerToggleUiConfig): void {
+  producerToggleUi = { ...producerToggleUi, ...cfg };
 }
 
 let handelSplitUi: EmpireHandelSplitUiConfig = {};
+let massRecruitmentUi: EmpireMassRecruitmentUiConfig = {};
+let lastArmyRecruitMessage = '';
 
 /** DYSPOZYCJA-85-SUWAK: globalny domyślny podział podatku w panelu imperium. */
 export function configureEmpireHandelSplit(cfg: EmpireHandelSplitUiConfig): void {
   handelSplitUi = { ...handelSplitUi, ...cfg };
 }
 
+export function configureEmpireMassRecruitment(cfg: EmpireMassRecruitmentUiConfig): void {
+  massRecruitmentUi = { ...massRecruitmentUi, ...cfg };
+}
+
+export function resetEmpireMassRecruitmentMessage(): void {
+  lastArmyRecruitMessage = '';
+}
+
+/**
+ * Etykieta WYŚWIETLANA grupy budynków (klucz `grupa` z danych bez zmian).
+ * Taka sama mapa jak w cityPanel.ts (buildingGroupDisplayLabel): grupa o kluczu
+ * z danych z członem „Handel” liczy podatek, nie trasy (R-WEB-TERMINOLOGY-C-FOLLOWUP-Q1).
+ */
+const EMPIRE_BUILDING_GROUP_LABEL: Readonly<Record<string, string>> = {
+  'Handel i pieniądz': 'Podatek i pieniądz',
+};
+const empireBuildingGroupLabel = (grupa: string): string =>
+  EMPIRE_BUILDING_GROUP_LABEL[grupa] ?? grupa;
+
 function renderDefaultHandelSplitSection(): string {
   const getDef = handelSplitUi.getOwnerDefault;
   const onChange = handelSplitUi.onOwnerDefaultChange;
   if (!getDef || !onChange) return '';
-  const split = normalizePodzialHandlu(getDef(0) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 });
+  // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: `ownerId` aktywnego fotela — dawniej zaszyty `0`
+  // literał czytał/pisał WYŁĄCZNIE default fotela 0 niezależnie od tego, kto jest aktywny.
+  const ownerId = handelSplitUi.getActiveOwnerId?.() ?? 0;
+  const split = normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 });
   const daninaLbl = handelSplitUi.getDaninaLabel?.() ?? 'Podatek';
   const id = 'emp-handel-split';
   let h = `<div class="civ-emp-sect" data-section="ekonomia-handel-split" id="${id}">`
@@ -83,7 +140,7 @@ function renderDefaultHandelSplitSection(): string {
     { key: 'procentNauka' as const, label: 'Nauka', cls: 'blue' },
     { key: 'procentLuksus' as const, label: 'Zamożność', cls: '' },
   ]) {
-    const maxVal = row.key === 'procentNauka' ? MAX_PROCENT_NAUKA : 100;
+    const maxVal = 100; // R-WEB-TAX-SLIDER-DEFAULT-PANEL-NOT-EQUAL-Q1: wspólna skala 0–100 (limit Nauki 60% egzekwuje adjustHandelSplit)
     h += `<div class="civ-emp-zrow" style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:4px 0">`
       + `<label style="font-size:12px"><span class="${row.cls}">${row.label}</span></label>`
       + `<span data-pct="${row.key}"><b>${split[row.key]}%</b></span></div>`
@@ -91,12 +148,13 @@ function renderDefaultHandelSplitSection(): string {
       + `data-handel-key="${row.key}" style="width:100%;margin:0 0 6px" />`;
   }
   h += `</div><div class="civ-emp-foot">Suma = 100% · kroki ${HANDEL_PCT_STEP}% · dotyczy wszystkich miast bez własnego override.</div></div>`;
-  queueMicrotask(() => wireDefaultHandelSplitInputs(split, onChange));
+  queueMicrotask(() => wireDefaultHandelSplitInputs(split, ownerId, onChange));
   return h;
 }
 
 function wireDefaultHandelSplitInputs(
   initial: CityPodzialHandlu,
+  ownerId: number,
   onChange: (ownerId: number, split: CityPodzialHandlu) => void,
 ): void {
   const host = document.getElementById('emp-handel-split');
@@ -106,7 +164,7 @@ function wireDefaultHandelSplitInputs(
     inp.addEventListener('input', () => {
       const key = inp.dataset.handelKey as keyof CityPodzialHandlu;
       current = adjustHandelSplit(current, key, Number(inp.value));
-      onChange(0, { ...current });
+      onChange(ownerId, { ...current });
       for (const other of Array.from(host.querySelectorAll<HTMLInputElement>('input[data-handel-key]'))) {
         const k = other.dataset.handelKey as keyof CityPodzialHandlu;
         other.value = String(current[k]);
@@ -127,6 +185,10 @@ function wireDefaultHandelSplitInputs(
 export interface EmpireGlobalDefaultsUiConfig {
   getOwnerDefaultPodzialPracy?: (ownerId: number) => CityPodzialPracy | null;
   onOwnerDefaultPodzialPracyChange?: (ownerId: number, split: CityPodzialPracy) => void;
+  canConvertOwnerWorkToTax?: (ownerId: number) => boolean;
+  getOwnerWorkTaxRate?: (ownerId: number) => number;
+  previewOwnerWorkTaxEffect?: (ownerId: number, tax: number) => { skarb: number; nauka: number } | null;
+  onConvertOwnerWorkToTax?: (ownerId: number, amount: number) => number;
   // R-PRACA-JEDEN-PODZIAL-Q1: `getOwnerDefaultPracaSplit`/`onOwnerDefaultPracaSplitChange`
   // USUNIETE — byly DRUGIM, niezaleznym suwakiem tej samej Pracy. Globalny podzial
   // czyta i zapisuje wylacznie `getOwnerDefaultPodzialPracy`/`onOwnerDefaultPodzialPracyChange`.
@@ -136,6 +198,12 @@ export interface EmpireGlobalDefaultsUiConfig {
   // WSZYSTKICH miast ownera BEZ poziomRacjiOverride ustawia city.autoWyzywienie = true.
   // Nie jest stanem trwałym/toggle (spójne z broadcastPoziomRacjiToOwnerCities).
   onOwnerSetAutoWyzywienieForAll?: (ownerId: number) => void;
+  // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: patrz komentarz przy tym samym polu w
+  // EmpireHandelSplitUiConfig wyżej — identyczna wada, identyczna naprawa. Bez tego
+  // hooka renderDefaultPoziomRacjiSection/renderEmpirePracaBudgetSplitSection czytały i
+  // zapisywały WYŁĄCZNIE `ownerDefaultPoziomRacji.get(0)`/`ownerDefaultPodzialPracy.get(0)`
+  // niezależnie od tego, który fotel ludzki jest aktywny.
+  getActiveOwnerId?: () => number;
 }
 
 let empireGlobalDefaultsUi: EmpireGlobalDefaultsUiConfig = {};
@@ -148,7 +216,9 @@ function renderDefaultPoziomRacjiSection(): string {
   const getDef = empireGlobalDefaultsUi.getOwnerDefaultPoziomRacji;
   const onChange = empireGlobalDefaultsUi.onOwnerDefaultPoziomRacjiChange;
   if (!getDef || !onChange) return '';
-  const poziom = getDef(0) ?? 4;
+  // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: patrz komentarz w renderDefaultHandelSplitSection.
+  const ownerId = empireGlobalDefaultsUi.getActiveOwnerId?.() ?? 0;
+  const poziom = getDef(ownerId) ?? 4;
   const id = 'emp-zywnosc-racje';
   const steps = poziom / WYZYWIENIE_STEP;
   const minSteps = WYZYWIENIE_MIN / WYZYWIENIE_STEP;
@@ -160,7 +230,7 @@ function renderDefaultPoziomRacjiSection(): string {
   const fillPct = maxSteps > minSteps ? ((steps - minSteps) / (maxSteps - minSteps)) * 100 : 0;
   let h = `<div class="civ-emp-sect" data-section="ekonomia-zywnosc-racje" id="${id}">`
     + `<div class="civ-emp-eyebrow" style="margin-bottom:6px">DOMYŚLNE WYŻYWIENIE</div>`
-    + `<div class="civ-emp-note">Nowe miasta (i te bez własnego „Indywidualne") dziedziczą ten poziom Racji.</div>`;
+    + `<div class="civ-emp-note">Nowe miasta (i te bez własnego „Indywidualne”) dziedziczą ten poziom Racji.</div>`;
   h += `<div class="civ-emp-mini civ-emp-sp-slider-card">`
     + `<div class="civ-emp-sp-slider-hd">`
     + `<span class="civ-emp-slider-label">Wyżywienie</span>`
@@ -179,18 +249,19 @@ function renderDefaultPoziomRacjiSection(): string {
     // osobnego komponentu dla jednego elementu.
     // EN: label = feature name only; scope + caveats moved into the native `title` tooltip.
     const autofeedTip = 'Włącza Auto-Żywienie we wszystkich miastach bez indywidualnego '
-      + 'ustawienia poziomu Racji. Miasta z własnym ustawieniem („Indywidualne") pozostają '
+      + 'ustawienia poziomu Racji. Miasta z własnym ustawieniem („Indywidualne”) pozostają '
       + 'bez zmian. Akcja jednorazowa — ustawia stan teraz, nie jest trwałym przełącznikiem.';
     h += `<button type="button" class="civ-emp-autofeed-btn" data-autofeed-all-btn `
       + `title="${esc(autofeedTip).replace(/"/g, '&quot;')}">`
       + `Włącz Auto-Żywienie</button>`;
   }
   h += `</div>`;
-  queueMicrotask(() => wireDefaultPoziomRacjiInputs(onChange, onSetAutoWyzywienieForAll));
+  queueMicrotask(() => wireDefaultPoziomRacjiInputs(ownerId, onChange, onSetAutoWyzywienieForAll));
   return h;
 }
 
 function wireDefaultPoziomRacjiInputs(
+  ownerId: number,
   onChange: (ownerId: number, poziom: PoziomRacji) => void,
   onSetAutoWyzywienieForAll?: (ownerId: number) => void,
 ): void {
@@ -198,7 +269,7 @@ function wireDefaultPoziomRacjiInputs(
   if (!host) return;
   const autofeedBtn = host.querySelector<HTMLButtonElement>('button[data-autofeed-all-btn]');
   if (autofeedBtn && onSetAutoWyzywienieForAll) {
-    autofeedBtn.addEventListener('click', () => onSetAutoWyzywienieForAll(0));
+    autofeedBtn.addEventListener('click', () => onSetAutoWyzywienieForAll(ownerId));
   }
   const inp = host.querySelector<HTMLInputElement>('input[data-racje-key="poziom"]');
   if (!inp) return;
@@ -207,13 +278,13 @@ function wireDefaultPoziomRacjiInputs(
   inp.addEventListener('input', () => {
     const stepsNow = Number(inp.value);
     const poziom = stepsNow * WYZYWIENIE_STEP;
-    onChange(0, poziom);
+    onChange(ownerId, poziom);
     const lbl = host.querySelector('[data-racje-lbl] b');
     if (lbl) lbl.textContent = esc(formatWyzwienieLabel(poziom));
     // Wypełnienie toru musi nadążać za wartością (jak w suwakach Skarbca) — bez tego zielony
     // pasek zostałby na pozycji z renderu. / EN: keep the track fill in sync with the value.
     const pct = maxSteps > minSteps ? ((stepsNow - minSteps) / (maxSteps - minSteps)) * 100 : 0;
-    inp.style.background = sliderFillStyle(pct, '#4e9a3f', '#78c95a');
+    inp.style.background = sliderFillGradient(pct, '#4e9a3f', '#78c95a');
   });
 }
 
@@ -251,6 +322,7 @@ function blockForSection(section: string | null): EmpirePanelBlock {
 function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
   const css = `
+${RESOURCE_CHIP_CSS}
 .civ-emp-panel{position:fixed;top:0;right:0;bottom:0;width:min(404px,94vw);z-index:450;
   background:#141a24;border-left:1px solid #2b3543;color:#e8ebf0;
   box-shadow:-18px 0 44px rgba(0,0,0,0.45);
@@ -315,6 +387,16 @@ function ensureStyles(): void {
 .civ-emp-box{border:1px solid #2b3543;border-radius:8px;padding:10px 12px;background:#171e2a;}
 .civ-emp-box .k{font-size:10px;letter-spacing:1px;color:#7d8798;font-weight:600;}
 .civ-emp-box .v{font-size:14px;font-weight:700;margin-top:5px;color:#e8ebf0;}
+.civ-emp-work-tax{margin-top:12px;}
+.civ-emp-work-tax-controls{display:flex;gap:8px;align-items:center;margin-top:8px;}
+.civ-emp-work-tax input[type=number]{width:100px;min-height:32px;padding:5px 8px;border:1px solid rgba(232,216,138,.3);
+  border-radius:6px;background:#101722;color:#e8ebf0;font:inherit;color-scheme:dark;}
+.civ-emp-work-tax input[type=number]:focus{outline:2px solid rgba(217,164,65,.55);outline-offset:1px;border-color:#d9a441;}
+.civ-emp-work-tax button{min-height:32px;padding:5px 10px;border:1px solid rgba(217,164,65,.6);border-radius:6px;
+  background:linear-gradient(180deg,#4a3b1c,#302817);color:#f0d57b;font:inherit;font-size:12px;font-weight:600;cursor:pointer;}
+.civ-emp-work-tax button:hover:not(:disabled){background:linear-gradient(180deg,#5a4822,#3a301b);border-color:#e8d88a;}
+.civ-emp-work-tax button:focus-visible{outline:2px solid #e8d88a;outline-offset:2px;}
+.civ-emp-work-tax button:disabled{opacity:.45;cursor:not-allowed;}
 .civ-emp-tbl{margin-top:14px;}
 .civ-emp-tbl-h,.civ-emp-tbl-r{display:grid;grid-template-columns:1.35fr 0.5fr 0.55fr 0.5fr 0.5fr;
   column-gap:6px;}
@@ -392,6 +474,37 @@ function ensureStyles(): void {
 .civ-emp-kult-line.muted{font-size:12px;color:#9aa4b2;}
 .civ-emp-kult-line.gold{font-size:12px;color:#d9a441;}
 .civ-emp-empty{font-size:12px;color:#8a93a4;padding:8px 0;}
+.civ-emp-mass{margin-top:12px;padding:11px 10px 9px;border:1px solid #2b3543;border-radius:8px;
+  background:#171e2a;}
+.civ-emp-mass-hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px;}
+.civ-emp-mass-title{font-size:13px;font-weight:700;color:#d9a441;}
+.civ-emp-mass-sub{font-size:10.5px;color:#7d8798;text-align:right;}
+.civ-emp-mass-counters{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px;}
+.civ-emp-mass-counter{padding:7px 8px;border:1px solid #2b3543;border-radius:6px;background:#141a24;}
+.civ-emp-mass-counter .k{font-size:9px;letter-spacing:.55px;color:#7d8798;}
+.civ-emp-mass-counter .v{font-size:14px;font-weight:800;color:#e8ebf0;margin-top:2px;}
+.civ-emp-mass-pool{font-size:10.5px;color:#9aa4b2;margin:8px 0 2px;line-height:1.45;}
+.civ-emp-mass-batch{margin:8px 0;padding:0 2px;}
+.civ-emp-mass-batch button{width:100%;border:1px solid rgba(217,164,65,.65);border-radius:5px;background:#1a2230;color:#e8d88a;
+  font:inherit;font-weight:700;padding:6px 8px;cursor:pointer;}
+.civ-emp-mass-batch button:hover:not(:disabled){background:#263246;}
+.civ-emp-mass-batch button:disabled{opacity:.45;cursor:not-allowed;}
+.civ-emp-mass-batch-message{min-height:1.2em;padding:0 2px;font-size:11px;color:#e8d88a;}
+.civ-emp-mass-city{padding:9px 0 8px;border-top:1px solid #242c3a;}
+.civ-emp-mass-city:first-of-type{margin-top:7px;}
+.civ-emp-mass-city-hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:6px;}
+.civ-emp-mass-city-name{font-size:12px;font-weight:700;color:#e2e6ec;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.civ-emp-mass-queue{font-size:10px;color:#9aa4b2;white-space:nowrap;}
+.civ-emp-mass-empty{font-size:11px;color:#8a93a4;padding:6px 0 2px;}
+.civ-emp-mass-city-recruit-list.civ-cs{position:relative;inset:auto;z-index:auto;display:block;pointer-events:auto;
+  width:auto;height:auto;max-width:none;min-width:0;font-size:13px;overflow:visible;}
+.civ-emp-mass-city-recruit-list .civ-cs-drawer{width:auto;max-width:none;min-width:0;height:auto;overflow:visible;}
+.civ-emp-mass-city-recruit-list .civ-cs-res-strip{font-size:.82em;}
+.civ-emp-mass-city-recruit-list .unit-recruit-compact-row{font-size:1em;}
+.civ-emp-mass-rally{margin:10px 0;padding:8px;border:1px solid #2b3543;border-radius:7px;background:rgba(20,26,36,.68);}
+.civ-emp-mass-rally button{border:1px solid #49566a;border-radius:5px;background:#1a2230;color:#e8ebf0;font:inherit;font-size:11px;padding:6px 9px;cursor:pointer;}
+.civ-emp-mass-rally button:hover:not(:disabled){background:#263246;}
+.civ-emp-mass-rally button:disabled{opacity:.5;cursor:not-allowed;}
 .civ-emp-backdrop{position:fixed;inset:0;z-index:449;background:rgba(0,0,0,0.35);
   opacity:0;pointer-events:none;transition:opacity .2s;}
 .civ-emp-backdrop.open{opacity:1;pointer-events:auto;}
@@ -742,6 +855,10 @@ function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+function escAttr(s: string): string {
+  return esc(s).replace(/"/g, '&quot;');
+}
+
 /** Delta „+N / −N / —" ze stylem koloru (pos/neg/zero). */
 function deltaHtml(n: number): string {
   if (!Number.isFinite(n) || n === 0) return '<span class="d z">—</span>';
@@ -752,6 +869,8 @@ function deltaHtml(n: number): string {
 function formatRawCount(n: number): string {
   if (!Number.isFinite(n)) return '—';
   const r = Math.round(n * 10) / 10;
+  // R-WEB-HUD-NUMBER-ABBREV-Q1: od 1000 skrócony zapis („1,2k"); poniżej bez zmian.
+  if (Math.abs(r) >= 1000) return formatCompactNumber(r);
   return Number.isInteger(r) ? String(r) : r.toFixed(1);
 }
 
@@ -868,7 +987,7 @@ function routeBonusSplitHtml(premiaBudynku: number, budynekOdblokowany: boolean)
  */
 function cityBonusSplitHtml(premia: number, brakBudynku: number): string {
   if (brakBudynku > 0) {
-    const word = brakBudynku === 1 ? 'trasa' : brakBudynku >= 2 && brakBudynku <= 4 ? 'trasy' : 'tras';
+    const word = pluralPl(brakBudynku, 'trasa', 'trasy', 'tras');
     const tip = `${brakBudynku} ${word} bez budynku handlowego (Targowisko/Port) — dochód dystansowy `
       + 'naliczasz z nich normalnie, ale premia 5% czeka na budynek.';
     // Gdy ŻADNA trasa tego zakresu nie ma budynku, premia jest dokładnie 0 (najmniejsza możliwa
@@ -901,7 +1020,7 @@ export { treasuryBalanceSignedTxt } from './treasuryBalanceFormat';
 function formatResourceUpkeepEmpireLine(resources: Record<string, number> | undefined): string {
   const keys = Object.keys(resources ?? {});
   if (keys.length === 0) return '—';
-  return keys.map(k => `−${resources![k]} ${stockResourceLabel(k)}`).join(' · ');
+  return keys.map(k => resourceAmountChipHtml(k, `−${resources![k]}`)).join(' · ');
 }
 
 function cityEconMiniSkarbiec(
@@ -916,6 +1035,7 @@ function cityEconMiniSkarbiec(
   const utrzB = economy.bogactwoUtrzymanieBudynkow ?? 0;
   const utrzRes = economy.bogactwoUtrzymanieSurowcowBudynkow ?? {};
   const utrzJ = economy.bogactwoUtrzymanieJednostek ?? 0;
+  const utrzA = economy.bogactwoUtrzymanieAdministratorow; // undefined = opcja „Administratorzy” OFF (bez wiersza)
   const netto = economy.bogactwoRate ?? 0;
 
   const sumGrid = '1fr auto';
@@ -926,6 +1046,7 @@ function cityEconMiniSkarbiec(
   h += miniRow(['Utrzymanie budynków', treasuryBalanceSignedTxt(-utrzB)], sumGrid);
   h += miniRow(['Utrzymanie surowców budynków', formatResourceUpkeepEmpireLine(utrzRes)], sumGrid);
   h += miniRow(['Utrzymanie jednostek', treasuryBalanceSignedTxt(-utrzJ)], sumGrid);
+  if (utrzA !== undefined) h += miniRow(['Utrzymanie administratorów', administratorUpkeepValueHtml(utrzA)], sumGrid);
   h += miniRow(['<b>Netto skarbiec</b>', `<b>${treasuryBalanceSignedTxt(netto)}</b>`], sumGrid);
   h += '</div>';
 
@@ -939,7 +1060,7 @@ function cityEconMiniSkarbiec(
     ], grid);
   }
   h += '</div>';
-  h += '<div class="civ-emp-foot">„Do skarbca" = wpływ miasta po suwakach (Skarb %). Utrzymanie budynków (złoto) i wojska schodzi ze skarbca imperium. Utrzymanie surowców budynków schodzi z magazynu państwa (1/turę na typ z kosztu budowy). Jednostki na mapie = koszt imperium, nie per miasto w tabeli.</div>';
+  h += '<div class="civ-emp-foot">„Do skarbca” = wpływ miasta po suwakach (Skarb %). Utrzymanie budynków (złoto) i wojska schodzi ze skarbca imperium. Utrzymanie surowców budynków schodzi z magazynu państwa (1/turę na typ z kosztu budowy). Jednostki na mapie = koszt imperium, nie per miasto w tabeli.</div>';
   return h;
 }
 
@@ -967,16 +1088,41 @@ function tblValTxt(n: number): string {
 function formatResourceUpkeepEmpireLineColored(resources: Record<string, number> | undefined): string {
   const keys = Object.keys(resources ?? {});
   if (keys.length === 0) return '<span style="color:#6f7889">—</span>';
-  const lines = keys.map(k => `−${resources![k]} ${stockResourceLabel(k)}`).join('<br>');
+  const lines = keys.map(k => resourceAmountChipHtml(k, `−${resources![k]}`)).join('<br>');
   return `<span style="font-size:11.5px;color:#e07a7a;font-weight:600;line-height:1.35">${lines}</span>`;
 }
 
-/** Tor suwaka `.civ-emp-slider` częściowo wypełniony gradientem do wartości `pct` (%),
- *  reszta toru w kolorze tła — natywny input[type=range] z `-webkit-appearance:none` renderuje
- *  swoje tło wprost jako tor, więc to jedyne, czego trzeba do wizualnego „wypełnienia". */
-function sliderFillStyle(pct: number, colorFrom: string, colorTo: string): string {
-  const p = Math.max(0, Math.min(100, pct));
-  return `background:linear-gradient(90deg,${colorFrom} 0%,${colorTo} ${p}%,#1f2733 ${p}%,#1f2733 100%)`;
+/** Szerokość uchwytu `.civ-emp-slider` w px (CSS `::-webkit-slider-thumb`/`::-moz-range-thumb`).
+ *  R-WEB-TAX-SLIDER-THUMB-ALIGN-Q1: środek uchwytu przemieszcza się po torze od THUMB/2 do
+ *  (szerokość − THUMB/2), więc koniec wypełnienia musi leżeć w tym samym punkcie. */
+const SLIDER_THUMB_PX = 14;
+
+/** Pozycja uchwytu w % pełnego zakresu toru (0–100): (wartość − min) / (max − min). Jedna funkcja
+ *  dla wypełnienia i uchwytu — zakres bierzemy z atrybutów `min`/`max` inputa, nie z „100". */
+function sliderRangePct(value: number, min: number, max: number): number {
+  if (!(max > min)) return 0;
+  return Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
+}
+
+/** Pozycja końca wypełnienia = środek uchwytu, jako wyrażenie CSS dla gradientu. */
+function sliderThumbCenterCss(rangePct: number): string {
+  const f = Math.max(0, Math.min(100, rangePct)) / 100;
+  return `calc(${SLIDER_THUMB_PX / 2}px + (100% - ${SLIDER_THUMB_PX}px) * ${f})`;
+}
+
+/** Tor suwaka `.civ-emp-slider` częściowo wypełniony gradientem do pozycji uchwytu, reszta toru
+ *  w kolorze tła. `rangePct` = pozycja w % PEŁNEGO zakresu min..max (patrz `sliderRangePct`),
+ *  NIE surowa wartość — suwak Nauka ma max 60, więc 40% to 66,7% toru. */
+function sliderFillGradient(rangePct: number, colorFrom: string, colorTo: string): string {
+  const x = sliderThumbCenterCss(rangePct);
+  return `linear-gradient(90deg,${colorFrom} 0%,${colorTo} ${x},#1f2733 ${x},#1f2733 100%)`;
+}
+
+/** Jak `sliderFillGradient`, ale jako deklaracja do atrybutu `style="..."`. Przy aktualizacji
+ *  w JS przypisuj `sliderFillGradient()` do `el.style.background` (a NIE tę deklarację — ciąg
+ *  „background:…" przypisany do `style.background` jest nieprawidłowy i przeglądarka go ignoruje). */
+function sliderFillStyle(rangePct: number, colorFrom: string, colorTo: string): string {
+  return `background:${sliderFillGradient(rangePct, colorFrom, colorTo)}`;
 }
 
 /**
@@ -1035,7 +1181,7 @@ function renderSkarbiecSection(
     ? `<span style="font-size:11px;color:#78c95a;font-weight:600">+${handel} handel</span>`
     : '<span style="font-size:11px;color:#7d8798;font-weight:600">bez handlu</span>';
   const kosztySub = utrzB > 0
-    ? `<span style="font-size:11px;color:#e07a7a;font-weight:600">${utrzB} budynki</span>` : '';
+    ? `<span style="font-size:11px;color:#e07a7a;font-weight:600">utrzymanie budynków: ${utrzB} ¤</span>` : '';
   h += '<div class="civ-emp-two">'
     + `<div class="civ-emp-box"><div class="k">WPŁYWY / TURĘ</div><div class="v">${wplywy} ${wplywySub}</div></div>`
     + `<div class="civ-emp-box"${netto < 0 ? ' style="border-color:#4a2a2a"' : ''}><div class="k">KOSZTY / TURĘ</div>`
@@ -1079,7 +1225,7 @@ function renderSkarbiecSection(
     + `<div style="text-align:right">${treasuryBalanceSignedTxt(sumUtrz)}</div></div>`;
   h += '</div>';
 
-  h += '<div class="civ-emp-foot">„Do skarbca" = wpływ miasta po suwakach (Skarb %). Utrzymanie '
+  h += '<div class="civ-emp-foot">„Do skarbca” = wpływ miasta po suwakach (Skarb %). Utrzymanie '
     + 'budynków (złoto) i wojska schodzi ze skarbca imperium. Utrzymanie surowców budynków schodzi '
     + 'z magazynu państwa (1/turę na typ z kosztu budowy). Jednostki na mapie = koszt imperium, nie '
     + 'per miasto w tabeli.</div>';
@@ -1104,7 +1250,9 @@ function renderSkarbiecTaxSplitSection(baseAmount: number): string {
   const getDef = handelSplitUi.getOwnerDefault;
   const onChange = handelSplitUi.onOwnerDefaultChange;
   if (!getDef || !onChange) return '';
-  const split = normalizePodzialHandlu(getDef(0) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 });
+  // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: patrz komentarz w renderDefaultHandelSplitSection.
+  const ownerId = handelSplitUi.getActiveOwnerId?.() ?? 0;
+  const split = normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 });
   const daninaLbl = handelSplitUi.getDaninaLabel?.() ?? 'Podatek';
   const id = 'emp-skarbiec-tax-split';
   const rows: { key: keyof CityPodzialHandlu; label: string; cls: string; from: string; to: string }[] = [
@@ -1119,14 +1267,14 @@ function renderSkarbiecTaxSplitSection(baseAmount: number): string {
   for (const row of rows) {
     const pct = split[row.key];
     const amount = Math.round((baseAmount * pct) / 100);
-    const maxVal = row.key === 'procentNauka' ? MAX_PROCENT_NAUKA : 100;
+    const maxVal = 100; // R-WEB-TAX-SLIDER-DEFAULT-PANEL-NOT-EQUAL-Q1: wspólna skala 0–100 (limit Nauki 60% egzekwuje adjustHandelSplit)
     h += '<div>'
       + '<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:7px">'
       + `<span style="flex:1;font-size:12px;font-weight:600" class="civ-emp-slider-label ${row.cls}">${row.label}</span>`
       + `<span style="font-size:13px;font-weight:700;color:#e8ebf0" data-pct="${row.key}"><b>${pct}%</b></span>`
       + `<span style="font-size:11px;color:#7d8798" data-amt="${row.key}">≈ ${amount >= 0 ? '+' : ''}${amount}/turę</span></div>`
       + `<input type="range" class="civ-emp-slider ${row.cls}" min="0" max="${maxVal}" step="${HANDEL_PCT_STEP}" `
-      + `value="${pct}" style="${sliderFillStyle(pct, row.from, row.to)}" data-handel-key="${row.key}" `
+      + `value="${pct}" style="${sliderFillStyle(sliderRangePct(pct, 0, maxVal), row.from, row.to)}" data-handel-key="${row.key}" `
       + `data-grad-from="${row.from}" data-grad-to="${row.to}" /></div>`;
   }
   h += '<div style="display:flex;align-items:center;gap:8px;padding-top:9px;border-top:1px solid #232b38">'
@@ -1134,13 +1282,14 @@ function renderSkarbiecTaxSplitSection(baseAmount: number): string {
     + `${HANDEL_PCT_STEP}%</span><span data-sum-ok style="font-size:9.5px;font-weight:700;letter-spacing:.04em;`
     + 'color:#78c95a;background:rgba(120,201,90,.14);border-radius:999px;padding:2px 8px">SUMA OK</span></div>';
   h += `</div><div class="civ-emp-foot">Suma = 100% · kroki ${HANDEL_PCT_STEP}% · dotyczy wszystkich miast bez własnego override.</div></div>`;
-  queueMicrotask(() => wireSkarbiecTaxSplitInputs(split, baseAmount, onChange));
+  queueMicrotask(() => wireSkarbiecTaxSplitInputs(split, baseAmount, ownerId, onChange));
   return h;
 }
 
 function wireSkarbiecTaxSplitInputs(
   initial: CityPodzialHandlu,
   baseAmount: number,
+  ownerId: number,
   onChange: (ownerId: number, split: CityPodzialHandlu) => void,
 ): void {
   const host = document.getElementById('emp-skarbiec-tax-split');
@@ -1150,12 +1299,12 @@ function wireSkarbiecTaxSplitInputs(
     inp.addEventListener('input', () => {
       const key = inp.dataset.handelKey as keyof CityPodzialHandlu;
       current = adjustHandelSplit(current, key, Number(inp.value));
-      onChange(0, { ...current });
+      onChange(ownerId, { ...current });
       for (const other of Array.from(host.querySelectorAll<HTMLInputElement>('input[data-handel-key]'))) {
         const k = other.dataset.handelKey as keyof CityPodzialHandlu;
         const pct = current[k];
         other.value = String(pct);
-        other.style.background = sliderFillStyle(pct, other.dataset.gradFrom ?? '#6a4010', other.dataset.gradTo ?? '#d9a441');
+        other.style.background = sliderFillGradient(sliderRangePct(pct, Number(other.min), Number(other.max)), other.dataset.gradFrom ?? '#6a4010', other.dataset.gradTo ?? '#d9a441');
         const pctEl = host.querySelector(`[data-pct="${k}"] b`);
         if (pctEl) pctEl.textContent = `${pct}%`;
         const amtEl = host.querySelector(`[data-amt="${k}"]`);
@@ -1173,7 +1322,7 @@ function cityEconMiniPraca(rows: EmpireDetailSnap['cityEcon'], upkeep?: number):
   const grid = '1fr 1fr 1fr';
   let h = `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'DO PULI', 'DO BUDYNKÓW'], grid)}`;
   for (const c of rows) h += miniRow([esc(c.name), signedTxt(c.pracaPula), signedTxt(c.pracaBudynki)], grid);
-  h += '</div><div class="civ-emp-foot">„Do puli" trafia do globalnej puli Pracy (górny pasek). „Do budynków" zasila kolejkę w mieście.</div>';
+  h += '</div><div class="civ-emp-foot">„Do puli” trafia do globalnej puli Pracy (górny pasek). „Do budynków” zasila kolejkę w mieście.</div>';
   if (upkeep && upkeep > 0) {
     h += `<div class="civ-emp-foot">Ulepszenia (utrzymanie): −${Math.round(upkeep)} Praca/turę z puli — imperium płaci za każde zbudowane ulepszenie surowcowe.</div>`;
   }
@@ -1220,8 +1369,8 @@ function split2BarHtml(
  *  procentu podziału: dla suwaka 0–50 jest to `pctUlepszenia * 2`. Dzięki temu granica kolorów
  *  leży dokładnie pod uchwytem, zamiast żyć własnym życiem w innej skali. */
 function laborSliderFillStyle(pctUlepszeniaTrack: number): string {
-  const p = Math.max(0, Math.min(100, pctUlepszeniaTrack));
-  return `linear-gradient(90deg,#3a4657 0%,#8ec5ff ${p}%,#6a4010 ${p}%,#d9a441 100%)`;
+  const x = sliderThumbCenterCss(pctUlepszeniaTrack);
+  return `linear-gradient(90deg,#3a4657 0%,#8ec5ff ${x},#6a4010 ${x},#d9a441 100%)`;
 }
 
 /**
@@ -1325,7 +1474,7 @@ function renderPracaSection(
     + `<div style="text-align:right">${signedTxt(tblSumBud)}</div></div>`;
   h += '</div>';
 
-  h += '<div class="civ-emp-foot">„Do puli" trafia do globalnej puli Pracy (górny pasek). „Do budynków" zasila kolejkę w mieście.</div>';
+  h += '<div class="civ-emp-foot">„Do puli” trafia do globalnej puli Pracy (górny pasek). „Do budynków” zasila kolejkę w mieście.</div>';
   if (upkeep > 0) {
     h += `<div class="civ-emp-foot">Ulepszenia (utrzymanie): −${upkeep} Praca/turę z puli — imperium płaci za każde zbudowane ulepszenie surowcowe.</div>`;
   }
@@ -1337,6 +1486,51 @@ function renderPracaSection(
   }
 
   h += renderEmpirePracaBudgetSplitSection();
+  const ownerId = empireGlobalDefaultsUi.getActiveOwnerId?.() ?? 0;
+  if (empireGlobalDefaultsUi.canConvertOwnerWorkToTax?.(ownerId)) {
+    const max = Math.max(0, stock);
+    const taxRate = empireGlobalDefaultsUi.getOwnerWorkTaxRate?.(ownerId) ?? 1;
+    const previewText = (work: number, withEffect: boolean): string => {
+      const tax = taxForWorkAmount(work, taxRate);
+      const base = `${work} Pracy → ${tax} Podatku`;
+      if (!withEffect || tax < 1) return base;
+      const eff = empireGlobalDefaultsUi.previewOwnerWorkTaxEffect?.(ownerId, tax);
+      return eff
+        ? `${base} · na koniec tury: +${Math.max(0, Math.round(eff.skarb))} do Skarbca, +${Math.max(0, Math.round(eff.nauka))} do Nauki (wg silnika: suwak, korupcja, Mennica)`
+        : base;
+    };
+    h += `<div class="civ-emp-box civ-emp-work-tax" data-work-tax-convert>`
+      + '<div class="k">ZAMIANA PRACY NA PODATEK</div>'
+      + `<div class="v">Pozostała pula: ${max} Pracy · 1 Praca → ${taxRate} Podatku</div>`
+      + `<div class="civ-emp-work-tax-controls">`
+      + `<input type="number" min="0" max="${max}" step="1" value="0" data-work-tax-amount aria-label="Praca do zamiany na podatek" />`
+      + `<button type="button" data-work-tax-submit${max < 1 ? ' disabled' : ''}>Zamień na podatek</button></div>`
+      + `<div class="civ-emp-foot" data-work-tax-preview>${previewText(0, false)}</div>`
+      + '<div class="civ-emp-foot">Zamiana trafia do zwykłego strumienia podatku stolicy na koniec tury: po korupcji i Mennicy dzieli się wg suwaka Podatek/Nauka/Zamożność — do Skarbca idzie udział „Podatek” (Zamożność dodatkowo go mnoży). Dokładny wpływ pokazuje podgląd (po wpisaniu ilości), komunikat po zamianie i „+N/turę” przy Skarbcu. Niewykorzystana Praca zostaje w puli.</div></div>';
+    queueMicrotask(() => {
+      const host = document.querySelector<HTMLElement>('[data-work-tax-convert]');
+      const input = host?.querySelector<HTMLInputElement>('[data-work-tax-amount]');
+      const button = host?.querySelector<HTMLButtonElement>('[data-work-tax-submit]');
+      const preview = host?.querySelector<HTMLElement>('[data-work-tax-preview]');
+      // `input`: tani podglad Praca -> Podatek; `change` (Enter/blur): + realny wplyw na Skarbiec z silnika.
+      input?.addEventListener('input', () => {
+        const work = Math.max(0, Math.min(max, Math.floor(Number(input.value) || 0)));
+        if (preview) preview.textContent = previewText(work, false);
+      });
+      input?.addEventListener('change', () => {
+        const work = Math.max(0, Math.min(max, Math.floor(Number(input.value) || 0)));
+        if (preview) preview.textContent = previewText(work, true);
+      });
+      button?.addEventListener('click', () => {
+        if (!input) return;
+        const amount = Math.max(0, Math.min(max, Math.floor(Number(input.value) || 0)));
+        const tax = taxForWorkAmount(amount, taxRate);
+        // Odmowa (0 Pracy / 0 Podatku) idzie do hooka, ktory pokazuje powod - nie cichy brak reakcji.
+        if (amount >= 1 && tax >= 1 && !window.confirm(`Zamienić ${amount} Pracy na ${tax} Podatku?`)) return;
+        empireGlobalDefaultsUi.onConvertOwnerWorkToTax?.(ownerId, amount);
+      });
+    });
+  }
   h += '</div>';
   return h;
 }
@@ -1383,7 +1577,9 @@ function renderEmpirePracaBudgetSplitSection(): string {
   const getDef = empireGlobalDefaultsUi.getOwnerDefaultPodzialPracy;
   const onChange = empireGlobalDefaultsUi.onOwnerDefaultPodzialPracyChange;
   if (!getDef || !onChange) return '';
-  const pctU = procentPuliImperiumZBudynkow(getDef(0)?.procentBudynki);
+  // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: patrz komentarz w renderDefaultHandelSplitSection.
+  const ownerId = empireGlobalDefaultsUi.getActiveOwnerId?.() ?? 0;
+  const pctU = procentPuliImperiumZBudynkow(getDef(ownerId)?.procentBudynki);
   const pctB = 100 - pctU;
   const id = 'emp-praca-empire-budget-split';
   // R-PRACA-JEDEN-PODZIAL-Q1 (pkt 6, runda 2/F2): tooltip mowil „Nadrzedny podzial CALEJ
@@ -1426,7 +1622,7 @@ function renderEmpirePracaBudgetSplitSection(): string {
     const btnMax = host?.querySelector<HTMLButtonElement>('[data-praca-empire-split-max]');
     input.addEventListener('input', () => {
       const pctU = Math.max(0, Math.min(MAX_PROCENT_PULI_IMPERIUM, Math.round(Number(input.value))));
-      onChange(0, podzialPracyZProcentuPuli(pctU));
+      onChange(ownerId, podzialPracyZProcentuPuli(pctU));
       input.style.background = laborSliderFillStyle(pctU * 2);
       const hero = host?.querySelector('[data-praca-empire-split-hero]');
       if (hero) hero.textContent = `${PODZIAL_PRACY_PULA_LBL} ${pctU}%`;
@@ -1459,6 +1655,19 @@ function renderEmpirePracaBudgetSplitSection(): string {
  * `renderSkarbiecTaxSplitSection`, patrz `econSliderVisibilityForOnlyEconId` i box „ŹRÓDŁO
  * FINANSOWANIA" niżej, który tylko WSKAZUJE suwak, nie duplikuje go).
  */
+/**
+ * R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: wspolna linia „brutto -> netto" w nagłówkach zakładek
+ * (Nauka/Spichlerz/Surowce/Handel) — te same liczby co komórki HUD (HudState), bez 2. kalkulacji.
+ * Netto ujemne = klasa `neg` (czerwone), dodatnie/zero = `pos`.
+ */
+function grossNetSub(brutto: number | undefined, netto: number | undefined, unit: string, note = ''): string {
+  if (brutto === undefined || netto === undefined) return '';
+  const b = Math.round(brutto);
+  const n = Math.round(netto);
+  const cls = n < 0 ? 'neg' : 'pos';
+  return `<div class="civ-emp-hero-sub civ-emp-grossnet">Brutto <b>${signedPl(b)}</b> → netto <b class="${cls}">${signedPl(n)}</b> ${unit} / turę${note}</div>`;
+}
+
 function renderNaukaSection(
   rows: EmpireDetailSnap['cityEcon'],
   economy: EmpireDetailSnap['economy'],
@@ -1467,13 +1676,16 @@ function renderNaukaSection(
   const rate = Math.round(economy.naukaRate ?? 0);
   const bank = Math.floor(economy.nauka ?? 0);
   const getDef = handelSplitUi.getOwnerDefault;
-  const split = getDef ? normalizePodzialHandlu(getDef(0) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 }) : null;
+  // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: patrz komentarz w renderDefaultHandelSplitSection.
+  const ownerId = handelSplitUi.getActiveOwnerId?.() ?? 0;
+  const split = getDef ? normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 }) : null;
   const procentNauka = split ? split.procentNauka : 20;
   const heroCls = rate < 0 ? 'neg' : 'pos';
 
   let h = '<div class="civ-emp-sect" data-section="nauka">'
     + '<div class="civ-emp-eyebrow">NAUKA IMPERIUM</div>'
-    + `<div class="civ-emp-hero ${heroCls}">${signedPl(rate)} PN / turę</div>`;
+    + `<div class="civ-emp-hero ${heroCls}">${signedPl(rate)} PN / turę</div>`
+    + grossNetSub(rate, rate, 'PN', ' (Nauka nie ma dziś kosztów — brutto = netto)');
 
   if (rows.length === 0) {
     h += `<div class="civ-emp-hero-sub">Bank badań <b>${bank}</b> PN</div>`
@@ -1510,7 +1722,7 @@ function renderNaukaSection(
     const pctBar = Math.max(0, Math.min(100, Math.round(research.postepFraction * 100)));
     const etaTxt = research.turnsLeft == null
       ? '—'
-      : (research.turnsLeft > 0 ? `${research.turnsLeft} tur` : '<1 tury');
+      : (research.turnsLeft > 0 ? `${research.turnsLeft} ${turaCountWord(research.turnsLeft)}` : '<1 tury');
     h += '<div class="civ-emp-box"><div class="k">BADANE TERAZ</div>'
       + `<div class="v">${esc(research.targetLabel)}</div>`
       + `<div class="civ-emp-bar" style="margin-top:7px;height:6px;margin-bottom:0">`
@@ -1578,7 +1790,7 @@ function renderReligiaSection(religion: EmpireDetailSnap['religion']): string {
     + '<span class="civ-emp-relig-sub">religia państwowa · własna</span></span></div>';
 
   h += '<div class="civ-emp-two">'
-    + `<div class="civ-emp-box"><div class="k">WYZNAWCY</div><div class="v">${formatManpower(religion.totalAdherents)} `
+    + `<div class="civ-emp-box"><div class="k">WYZNAWCY</div><div class="v">${formatManpowerCompact(religion.totalAdherents)} `
     + `<span style="font-size:11px;color:#78c95a;font-weight:600">${religion.ownSharePct}%</span></div></div>`
     + `<div class="civ-emp-box"><div class="k">WIARA / TURĘ</div><div class="v">${signedTxt(religion.faithRatePerTurn)}</div></div>`
     + '</div>';
@@ -1605,12 +1817,12 @@ function renderReligiaSection(religion: EmpireDetailSnap['religion']): string {
     const relCell = c.religionLabel === '—'
       ? '<span style="color:#6f7889">—</span>'
       : `<span style="color:${c.isOwn ? '#d9a441' : '#9aa4b2'}">${esc(c.religionLabel)}</span>`;
-    h += miniRow([esc(c.name), relCell, formatManpower(c.adherents)], grid);
+    h += miniRow([esc(c.name), relCell, formatManpowerCompact(c.adherents)], grid);
   }
   h += '</div>';
 
   h += '<div class="civ-emp-foot">Pełne rozbicie per miasto — panel miasta, zakładka Religia. '
-    + '„Efekty" — bonusy religii państwa aktywne w mieście, gdzie ona dominuje.</div>';
+    + '„Efekty” — bonusy religii państwa aktywne w mieście, gdzie ona dominuje.</div>';
   h += '</div>';
   return h;
 }
@@ -1739,7 +1951,7 @@ export function cityMiastaMiniDetail(
   const grid = miastaColumnGridTemplate(cols);
 
   let h = `<div class="civ-emp-note">Miasta imperium: <b>${e.osiedla}</b>`
-    + ` · przyrost ludności łącznie: <b>${signedPl(e.ludnoscRate ?? 0)}</b> obyw./turę</div>`;
+    + ` · przyrost ludności łącznie: <b>${signedPl(e.ludnoscRate ?? 0)}</b> obywateli na turę</div>`;
   // Punkt (a): checkboxy widoczności kolumn nad tabelą.
   h += cityMiastaColFilterHtml();
   h += `<div class="civ-emp-mini-scroll"><div class="civ-emp-mini">`;
@@ -1769,7 +1981,7 @@ export function cityMiastaMiniDetail(
     switch (colId) {
       case 'miasto': return 'SUMA / ŚREDNIA';
       case 'obyw': return String(summary.obywTotal);
-      case 'ludnosc': return esc(formatManpower(summary.ludnoscAbsolutnaTotal));
+      case 'ludnosc': return esc(formatManpowerCompact(summary.ludnoscAbsolutnaTotal));
       case 'wzrost': return summary.wzrostProcentAvg != null ? `${summary.wzrostProcentAvg}%` : '—';
       case 'praca': return signedTxt(summary.pracaTotal);
       case 'pieniadz': return signedTxt(summary.pieniadzTotal);
@@ -1787,12 +1999,12 @@ export function cityMiastaMiniDetail(
     + 'ŻYWNOŚĆ = bilans lokalny miasta (produkcja − racje) · '
     + 'WZROST = szacowany % wzrostu ludności (szczegóły w panelu miasta) · '
     + 'SUROWCE = zapotrzebowanie surowcowe budynków wybudowanych W TYM mieście / turę (pełne, '
-    + 'bez klamrowania do zapasu magazynu — patrz „Zobacz szczegóły zużycia" niżej) — obywatele '
+    + 'bez klamrowania do zapasu magazynu — patrz „Zobacz szczegóły zużycia” niżej) — obywatele '
     + '(magazyn centralny) i wojsko (porusza się po mapie) są civ-wide, bez podziału na miasta; '
     + 'to POPYT przypisany do miasta — faktyczny drenaż magazynu idzie z puli CAŁEGO imperium '
     + '(surowiec może zejść z zapasu innego miasta); pełne rozbicie budynki/obywatele/wojsko per '
-    + 'surowiec: sekcja SUROWCE → karta surowca → „Zobacz szczegóły zużycia".</div>'
-    + '<div class="civ-emp-foot">Wiersz „SUMA / ŚREDNIA" na dole — suma dla każdej kolumny, poza '
+    + 'surowiec: sekcja SUROWCE → karta surowca → „Zobacz szczegóły zużycia”.</div>'
+    + '<div class="civ-emp-foot">Wiersz „SUMA / ŚREDNIA” na dole — suma dla każdej kolumny, poza '
     + 'WZROST (tam średnia z miast, dla których wzrost jest znany).</div>';
   // N1 (Evaluator, notatka na 89c16ec1): queueMicrotask(wireMiastaColFilter) NIE jest tu wołane —
   // ta funkcja bywa wołana 2x na render() (patrz detailFor w render()), co podpinałoby listenery
@@ -1927,6 +2139,7 @@ export function renderMiastoSection(
   e: EmpireDetailSnap['economy'],
   trade: EmpireDetailSnap['trade'],
   resources: EmpireResourceRow[],
+  producers?: EmpireDetailSnap['producers'],
 ): string {
   let h = '<div class="civ-emp-sect" data-section="miasto">'
     + '<div style="display:flex;align-items:center;gap:6px">'
@@ -2063,7 +2276,7 @@ export function renderMiastoSection(
     }
     h += '<div class="civ-emp-grp-sum">'
       + `<span class="nm">CAŁA CYWILIZACJA · ${nChecked} z ${prodRows.length}</span>`
-      + `<span class="val">${signedIntTxt(sumChecked)} szt./turę</span></div>`;
+      + `<span class="val">${signedIntTxt(sumChecked)} sztuk na turę</span></div>`;
     h += '</div>';
     h += '<div class="civ-emp-foot">Produkcja WŁASNA / turę (teren + konwertery, bez umów '
       + 'dyplomatycznych) — liczba całego imperium: silnik nie rozbija produkcji surowców na '
@@ -2094,16 +2307,16 @@ export function renderMiastoSection(
       for (const [grupa, count] of groupTotals) {
         if (count === 0) continue;
         h += '<div class="civ-emp-grp-row" style="cursor:default">'
-          + `<span class="nm">${esc(grupa)}</span>`
+          + `<span class="nm">${esc(empireBuildingGroupLabel(grupa))}</span>`
           + `<span class="val">${count}</span></div>`;
       }
       h += '<div class="civ-emp-grp-sum">'
         + '<span class="nm">RAZEM W ZAKRESIE</span>'
-        + `<span class="val">${totalBuildings} budynków</span></div>`;
+        + `<span class="val">${formatBudynkiCount(totalBuildings)}</span></div>`;
       h += '</div>';
     }
     h += '<div class="civ-emp-foot">Grupy wg `BUILDING_GROUP_ORDER` (building-upgrades.ts): '
-      + 'Prawo i administracja · Wojsko i obrona · Handel i pieniądz · Nauka i kultura · Wiara · '
+      + 'Prawo i administracja · Wojsko i obrona · Podatek i pieniądz · Nauka i kultura · Wiara · '
       + 'Zdrowie · Produkcja surowców · Żywność. Szczegóły efektów pojedynczego budynku: panel miasta.</div>';
   }
 
@@ -2157,9 +2370,9 @@ export function renderMiastoSection(
     h += anyQueue
       ? '<div class="civ-emp-foot">Pasek = UKOŃCZENIE pozycji na froncie (zgromadzony postęp ÷ jej '
         + 'koszt, 0-100%) — <b>nie</b> udział względem innych miast, inaczej niż pasek w sekcji '
-        + '„Produkcja nauki". Wygaszony pasek = kolejka wstrzymana, postęp nie rośnie. '
+        + '„Produkcja nauki”. Wygaszony pasek = kolejka wstrzymana, postęp nie rośnie. '
         + 'Procent dotyczy WYŁĄCZNIE pozycji na froncie kolejki (postęp Pracy '
-        + 'zgromadzony na tym budynku/jednostce). „W kolejce" = liczba pozycji ZA frontem — ich '
+        + 'zgromadzony na tym budynku/jednostce). „W kolejce” = liczba pozycji ZA frontem — ich '
         + 'ewentualny wcześniejszy postęp ten widok nie pokazuje.</div>'
       : '<div class="civ-emp-empty">Brak aktywnej produkcji w zakresie.</div>';
   }
@@ -2196,7 +2409,7 @@ export function renderMiastoSection(
     }
     h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
       + `<div>CAŁA CYWILIZACJA</div><div>${sObyw}</div>`
-      + `<div>${esc(formatManpower(sAbs))}</div></div>`;
+      + `<div>${esc(formatManpowerCompact(sAbs))}</div></div>`;
     h += '</div>';
     h += '<div class="civ-emp-foot">Tempo wzrostu i obrabiane pola — panel miasta.</div>';
   }
@@ -2256,8 +2469,130 @@ export function renderMiastoSection(
       : '<div class="civ-emp-empty">Brak aktywnych tras handlowych w zakresie.</div>';
   }
 
+  // — BUDYNKI PRODUKCYJNE: lista wszystkich miast + przełączniki (R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1) —
+  // Zawsze CAŁA cywilizacja (nie zależy od przełącznika zakresu) — jawne wymaganie właściciela.
+  h += renderProducersSection(producers);
+
   h += '</div>';
   return h;
+}
+
+/**
+ * R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1 (rozszerzenie UI właściciela 2026-11-11): na dole zakładki
+ * Miasta pełna lista miast, w każdym WYŁĄCZNIE budynki produkujące surowce z przełącznikiem
+ * Włączony/Wyłączony, oraz zbiorcze liczby per surowiec: produkcja faktyczna z OSTATNIEJ tury
+ * (historia) vs. możliwa przy włączonych budynkach vs. możliwa ze wszystkich zbudowanych.
+ * Czysto prezentacja migawki `producers` — zero liczenia ekonomii w panelu.
+ */
+/**
+ * R-WEB-UI-RESOURCE-BUILDING-UTILIZATION-PERCENT-Q1: komórka „wykorzystanie mocy w następnej turze" wiersza
+ * budynku surowcowego. Procent pochodzi z migawki (ten sam przebieg co prognoza produkcji) — panel tylko
+ * formatuje. Powód dla < 100%: brakujące wejścia jako chipy ikona+liczba (ile brakuje do pełnej mocy).
+ */
+export function utilizationCellHtml(b: { enabled: boolean; utilization?: BuildingUtilizationView }): string {
+  const cell = (inner: string, title: string): string =>
+    `<span class="civ-emp-util" data-prod-util style="font-size:11px;color:#9aa4b5;margin-right:8px;text-align:right" title="${esc(title)}">${inner}</span>`;
+  if (!b.enabled) return cell('<i data-prod-util-kind="off">wyłączony</i>', 'Budynek wyłączony — nie produkuje');
+  const u = b.utilization;
+  if (!u) return '';
+  if (u.kind === 'noConversion') {
+    return cell('<b data-prod-util-pct="100" style="color:#7fbf7f">100%</b> <span data-prod-util-kind="noConversion">bez przerobu</span>',
+      'Budynek nie przetwarza surowców (dodaje % do dopływu z mapy), więc zapas wejść go nie ogranicza');
+  }
+  const color = u.pct >= 100 ? '#7fbf7f' : (u.pct > 0 ? '#d9a441' : '#e07a6a');
+  let reason = '';
+  if (u.pct < 100) {
+    if (u.kind === 'asleep') reason = ' <span data-prod-util-kind="asleep">uśpiony (brak dostępu do złoża)</span>';
+    else if (u.limitedBy === 'magazyn') reason = ' <span data-prod-util-kind="magazyn">limit magazynu</span>';
+    else if (u.limitedBy === 'wejscie') {
+      const chips = Object.entries(u.missing).map(([k, n]) => resourceAmountChipHtml(k, `brakuje ${n}`)).join(' ');
+      reason = ` <span data-prod-util-kind="wejscie">${chips}</span>`;
+    }
+  }
+  const tip = u.kind === 'asleep'
+    ? 'Budynek jest uśpiony przez bramkę dostępu — w następnej turze nie ruszy'
+    : `Następna tura: ${u.cykle} z ${u.maxCykle} możliwych cykli (przy obecnych zapasach i limitach)`;
+  return cell(`<b data-prod-util-pct="${u.pct}" style="color:${color}">${u.pct}%</b>${reason}`, tip);
+}
+
+export function renderProducersSection(producers: EmpireDetailSnap['producers'] | undefined): string {
+  let h = subHdr('Budynki produkcyjne — włączanie i wyłączanie');
+  if (!producers || producers.cities.length === 0) {
+    return h + '<div class="civ-emp-empty">Brak zbudowanych budynków produkujących surowce.</div>';
+  }
+  if (producers.typeSummaries && producers.typeSummaries.length > 0) {
+    // Agregat per typ budynku w całej cywilizacji (np. „Garncarnia: 6 szt. · średnie wykorzystanie 35%").
+    h += '<div id="civ-emp-producers-type-sum" style="margin:2px 0 6px;font-size:11px;color:#9aa4b5">';
+    h += producers.typeSummaries.map(t => {
+      const avg = t.avgPct === null ? '—' : `${t.avgPct}%`;
+      const off = t.disabled > 0 ? ` (wyłączone: ${t.disabled})` : '';
+      return `<span data-prod-type="${esc(t.buildingId)}"><b>${esc(t.label)}</b>: ${t.count} szt.${off} · średnie wykorzystanie ${avg}</span>`;
+    }).join('<br>');
+    h += '</div>';
+  }
+  h += '<div class="civ-emp-grp-list" id="civ-emp-producers-list">';
+  for (const c of producers.cities) {
+    h += `<div class="civ-emp-grp-sum" data-prod-city="${esc(c.cityId)}"><span class="nm">${esc(c.name)}</span></div>`;
+    for (const b of c.buildings) {
+      h += `<div class="civ-emp-grp-row${b.enabled ? '' : ' off'}" style="cursor:default" `
+        + `data-prod-row="${esc(c.cityId)}|${esc(b.buildingId)}">`
+        + `<span class="nm">${esc(b.label)}</span>`
+        + utilizationCellHtml(b)
+        + `<button type="button" class="civ-emp-mocview-btn${b.enabled ? ' active' : ''}" style="flex:none;min-width:96px" `
+        + `data-prod-toggle="${esc(c.cityId)}|${esc(b.buildingId)}" data-prod-enabled="${b.enabled ? '1' : '0'}" `
+        + `title="${b.enabled ? 'Kliknij, aby wyłączyć: budynek przestaje produkować, zużywać surowce i kosztować utrzymanie' : 'Kliknij, aby włączyć'}">`
+        + `${b.enabled ? 'Włączony' : 'Wyłączony'}</button></div>`;
+    }
+  }
+  h += '</div>';
+  h += subHdr('Produkcja surowców — cała cywilizacja');
+  const grid = '1fr 0.85fr 0.95fr 0.9fr 0.9fr';
+  h += `<div class="civ-emp-mini" id="civ-emp-producers-agg">${miniHeader(['SUROWIEC', 'OSTATNIA TURA (ZREALIZOWANO)', 'PROGNOZA NASTĘPNEJ TURY', 'MAKSIMUM (WŁĄCZONE)', 'MAKSIMUM (WSZYSTKIE)'], grid)}`;
+  for (const r of producers.resources) {
+    h += miniRow([
+      esc(r.label),
+      r.realizedLastTurn === null ? '<span style="color:#6f7889">brak danych</span>' : String(Math.round(r.realizedLastTurn)),
+      r.forecastNextTurn === null ? '<span style="color:#6f7889">brak danych</span>' : String(Math.round(r.forecastNextTurn)),
+      String(r.potentialEnabled),
+      String(r.potentialInstalled),
+    ], grid);
+  }
+  h += '</div>';
+  h += '<div class="civ-emp-foot">OSTATNIA TURA (ZREALIZOWANO) = ile faktycznie wyprodukowano w ostatnio zakończonej turze '
+    + '(to historia; „brak danych” = jeszcze nie było przeliczonej tury po starcie/wczytaniu gry). '
+    + 'PROGNOZA NASTĘPNEJ TURY = ile wyprodukują budynki na koniec tej tury, jeśli do tego czasu nic się nie zmieni: '
+    + 'liczona tym samym kodem co prawdziwa tura, z uwzględnieniem wyłączonych budynków, tego, co masz teraz w magazynie '
+    + 'na wejściu, i tego, że Odlewnie oraz Huta biorą te same drewno i rudę. '
+    + 'MAKSIMUM (WŁĄCZONE) = ile dałyby tylko włączone budynki przy pełnym zaopatrzeniu, czyli górna granica, nie wynik. '
+    + 'MAKSIMUM (WSZYSTKIE) = to samo ze wszystkich zbudowanych, także wyłączonych. '
+    + 'Liczby zależą od epoki państwa i poziomu trudności. Wyłączony budynek nadal stoi (nic nie jest zwracane '
+    + 'ani niszczone), ale nie produkuje, nie zużywa surowców i nie kosztuje utrzymania. '
+    + 'Drewno i Kamień: Stolarnia i Warsztat kamieniarski dodają po +10% do dopływu drewna/kamienia z mapy '
+    + '(wszystkie budynki w państwie sumują się); po wyłączeniu tego bonusu nie ma. '
+    + 'Dla nich liczby oznaczają cały dopływ z mapy, a maksimum nie jest przycięte limitem magazynu.</div>';
+  h += '<div class="civ-emp-foot">WYKORZYSTANIE MOCY (procent przy budynku) = ile z maksymalnej przepustowości budynku zostanie '
+    + 'zrealizowane w następnej turze przy obecnych zapasach wejść i limitach — z tej samej prognozy co kolumna poniżej. '
+    + 'Niski procent = budynek jest zbędny (brakuje mu surowca) i można go wyłączyć. '
+    + 'Stolarnia i Warsztat kamieniarski nie przetwarzają surowców, więc zawsze pokazują 100%.</div>';
+  return h;
+}
+
+/** Podpięcie przełączników budynków produkcyjnych (delegacja po `data-prod-toggle`). */
+export function wireProducerToggles(host?: ParentNode, afterToggle?: () => void): void {
+  const scope: ParentNode | null = host ?? bodyEl;
+  if (scope === null) return;
+  for (const btn of Array.from(scope.querySelectorAll<HTMLButtonElement>('[data-prod-toggle]'))) {
+    btn.addEventListener('click', () => {
+      const raw = btn.dataset.prodToggle ?? '';
+      const sep = raw.indexOf('|');
+      if (sep < 0) return;
+      const cityId = raw.slice(0, sep);
+      const buildingId = raw.slice(sep + 1);
+      const wasEnabled = btn.dataset.prodEnabled === '1';
+      producerToggleUi.onToggle?.(cityId, buildingId, !wasEnabled);
+      if (afterToggle) afterToggle(); else render();
+    });
+  }
 }
 
 /**
@@ -2317,7 +2652,14 @@ export function renderObywateleSection(
   // Magazynu Państwa — panel nie zna epoki wprost, ale silnik już oznaczył nią te wiersze.
   // EN: same formula the engine uses — floor(population × rate) per resource required this era.
   const citizenResCount = resources.filter(r => r.citizenRequired === true).length;
-  const zuzyciePerTyp = Math.floor(sumObyw * CITIZEN_UPKEEP_RATE_PER_CITIZEN);
+  // R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1: stawka BIEŻĄCEJ epoki — ta sama, którą silnik użył do
+  // drenażu (`citizenRatePerCitizen` z wiersza surowca wymaganego przez obywateli). Brak wiersza
+  // → fallback 1,0 (`CITIZEN_UPKEEP_RATE_PER_CITIZEN`).
+  // / EN: current era's rate, taken from the engine's own row; fallback 1.0.
+  const citizenRate = resources.find(
+    r => r.citizenRequired === true && typeof r.citizenRatePerCitizen === 'number',
+  )?.citizenRatePerCitizen ?? CITIZEN_UPKEEP_RATE_PER_CITIZEN;
+  const zuzyciePerTyp = Math.floor(sumObyw * citizenRate);
   // `e.zadowolenie` (HudState, main.ts buildHudState()) NIE jest nigdzie wypełniane silnikiem —
   // zawsze `undefined` (pre-istniejące, niezależne od tego dociągnięcia). Realny, na żywo liczony
   // poziom Zadowolenia imperium bierzemy z `happiness.totalNetto` (suma tych samych
@@ -2330,11 +2672,11 @@ export function renderObywateleSection(
   const zadow = e.zadowolenie ?? (happiness.hasData ? happiness.totalNetto : null);
   const przyrost = Math.round(e.ludnoscRate ?? 0);
 
-  h += `<div class="civ-emp-hero">${esc(formatObywateleLabel(sumObyw))} · ${esc(formatManpower(sumAbs))} ludzi</div>`;
+  h += `<div class="civ-emp-hero">${esc(formatObywateleLabel(sumObyw))} · ${esc(formatManpowerCompact(sumAbs))} ludzi</div>`;
   h += '<div class="civ-emp-hero-sub">'
     + (zadow != null ? `Zadowolenie <b>${signedIntTxt(zadow)} Sz</b> · ` : '')
-    + `przyrost <b>${signedIntTxt(przyrost)}</b> obyw./turę · `
-    + `zużycie surowców <b>${zuzyciePerTyp}</b> szt./turę na każdy z <b>${citizenResCount}</b> `
+    + `przyrost <b>${signedIntTxt(przyrost)}</b> obywateli na turę · `
+    + `zużycie na turę: <b>${zuzyciePerTyp}</b> sztuk każdego z <b>${citizenResCount}</b> `
     + 'surowców epoki</div>';
 
   // — PODZIAŁ PRACY OBYWATELI —
@@ -2374,7 +2716,7 @@ export function renderObywateleSection(
     + `<span style="display:block;font-size:13px;font-weight:700;color:#d9a441">${esc(religion.stateReligionLabel)}</span>`
     + '<span style="display:block;font-size:11px;color:#7d8798;margin-top:2px">religia państwowa · własna</span></span>'
     + '<span style="flex:none;text-align:right">'
-    + `<span style="display:block;font-size:13px;font-weight:700;color:#e8ebf0">${esc(formatManpower(religion.totalAdherents))}</span>`
+    + `<span style="display:block;font-size:13px;font-weight:700;color:#e8ebf0">${esc(formatManpowerCompact(religion.totalAdherents))}</span>`
     + `<span style="display:block;font-size:10.5px;color:#7d8798">wyznawców · ${religion.ownSharePct}%</span></span></div>`;
   if (religion.foreignSharePct > 0) {
     h += `<div style="font-size:11px;color:#9aa4b2;margin-top:6px">Obca religia: `
@@ -2398,7 +2740,7 @@ export function renderObywateleSection(
       + `<div>CYWILIZACJA</div><div>${sZdrowie}</div></div>`;
     h += '</div>';
     h += '<div class="civ-emp-foot">Studnia · Akwedukt · Łaźnia publiczna. Podnoszą Zadowolenie '
-      + '(patrz „Budynki" w rozbiciu źródeł niżej) i cap populacji miasta.</div>';
+      + '(patrz „Budynki” w rozbiciu źródeł niżej) i cap populacji miasta.</div>';
   }
 
   // — SZCZĘŚCIE / ZADOWOLENIE — rozbicie na źródła (dociągnięcie
@@ -2436,7 +2778,7 @@ export function renderObywateleSection(
   }
   h += '<div class="civ-emp-foot">Źródła zsumowane ze wszystkich miast gracza, WPROST z tego samego '
     + 'rozbicia co panel miasta (Porządek → Szczęście). Liczba aktywnych źródeł zmienia się z turą '
-    + 'na turę (silnik pomija źródła o wartości 0) — nie jest sztywno „5", to realny stan gry.</div>';
+    + 'na turę (silnik pomija źródła o wartości 0) — nie jest sztywno „5”, to realny stan gry.</div>';
 
   // — PRAWO I ADMINISTRACJA (dociągnięcie P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA) — % Prawa per
   // miasto czytany WPROST z `cityOrderState.prawPct` (main.ts, ta sama liczba co panel miasta,
@@ -2504,7 +2846,7 @@ export function renderObywateleSection(
     const grid = '1fr 0.6fr 1fr';
     h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'OBYW.', 'ZUŻYCIE / TURĘ'], grid)}`;
     for (const c of cp) {
-      const z = Math.floor(c.ludki * CITIZEN_UPKEEP_RATE_PER_CITIZEN);
+      const z = Math.floor(c.ludki * citizenRate);
       h += miniRow([
         esc(c.name),
         String(c.ludki),
@@ -2514,11 +2856,14 @@ export function renderObywateleSection(
     h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
       + `<div>CYWILIZACJA</div><div>${sumObyw}</div><div>−${zuzyciePerTyp}</div></div>`;
     h += '</div>';
-    h += `<div class="civ-emp-foot">${formatLiczbaPl(CITIZEN_UPKEEP_RATE_PER_CITIZEN, 1)} szt. surowca `
-      + 'na obywatela na turę, z magazynu CENTRALNEGO imperium — liczba w kolumnie dotyczy KAŻDEGO '
+    // R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1: mnożnik epoki wyprowadzony ze stawki silnika
+    // (stawka = baza × m(epoka)) — brak zaszytych liczb.
+    const eraMultTxt = formatLiczbaPl(citizenRate / CITIZEN_UPKEEP_RATE_PER_CITIZEN, 1);
+    h += `<div class="civ-emp-foot">${formatLiczbaPl(citizenRate, 1)} szt. surowca `
+      + `na obywatela na turę (mnożnik epoki ×${eraMultTxt}), z magazynu CENTRALNEGO imperium — liczba w kolumnie dotyczy KAŻDEGO `
       + `z ${citizenResCount} surowców wymaganych w tej epoce osobno, nie ich sumy. Wiersz `
       + 'CYWILIZACJA to zużycie całego imperium (silnik liczy je od sumy obywateli, nie miasto po '
-      + 'mieście). Rozbicie per surowiec: zakładka Surowce → karta → „Zobacz szczegóły zużycia".</div>';
+      + 'mieście). Rozbicie per surowiec: zakładka Surowce → karta → „Zobacz szczegóły zużycia”.</div>';
   }
 
   h += '</div>';
@@ -2627,6 +2972,101 @@ export function renderArmiaProdukcjaMini(rows: EmpireDetailSnap['armiaProdukcja'
   }
   h += '</div>';
   return h;
+}
+
+/**
+ * Render Army recruitment as city sections. The unit controls themselves are mounted by the
+ * shared CityPanel renderer after this HTML is attached to the DOM.
+ */
+export function renderMassRecruitmentSection(
+  rows: EmpireDetailSnap['cityPobor'],
+  state: EmpireDetailSnap['massRecruitment'],
+): string {
+  const stock = Object.entries(state.stock)
+    .filter(([, amount]) => amount > 0)
+    .map(([key, amount]) => resourceAmountChipHtml(key, formatRawCount(amount)))
+    .join(' · ');
+  let h = `<div class="civ-emp-mass" data-mass-recruitment>`
+    + `<div class="civ-emp-mass-hd"><span class="civ-emp-mass-title">Rekrutacja</span>`
+    + `<span class="civ-emp-mass-sub">jednostki pogrupowane według miasta</span></div>`
+    + `<div class="civ-emp-mass-counters">`
+    + `<div class="civ-emp-mass-counter"><div class="k">W KOLEJCE</div>`
+    + `<div class="v" data-mass-recruitment-queued>${state.queuedCount}</div></div>`
+    + `<div class="civ-emp-mass-counter"><div class="k">UKOŃCZONE</div>`
+    + `<div class="v" data-mass-recruitment-completed>${state.completedCount}</div></div></div>`
+    + `<label class="civ-emp-rally-default" style="display:flex;align-items:center;gap:8px;margin:10px 0;padding:9px 11px;border:1px solid #927c4f;border-radius:6px;background:rgba(139,107,46,.18);font-weight:700">`
+    + `<input type="checkbox" data-recruit-follow-general ${massRecruitmentUi.getRecruitFollowGeneralDefault?.() !== false ? 'checked' : ''} />`
+    + `<span>Idź do wodza</span><small style="font-weight:400;opacity:.8"> · nowe jednostki będą maszerować i śledzić jego pozycję</small></label>`
+    + `<div class="civ-emp-mass-pool">Skarbiec: <b>${formatRawCount(state.treasury)} złota</b>`
+    + ` · Manpower: <b>${formatRawCount(state.manpower)}</b>`
+    + `${stock ? ` · Magazyn: <b>${stock}</b>` : ''}</div>`
+    + `<div class="civ-emp-mass-batch"><button type="button" data-army-recruit-all${getArmyRecruitDraftTotal() <= 0 ? ' disabled' : ''}>Rekrutuj wszystko</button></div>`
+    + `<div class="civ-emp-mass-leader"><div class="civ-emp-mass-leader-title">Wódz / Generał — rekrutacja w stolicy</div>`
+    + `<div data-general-recruitment-card></div></div>`;
+
+  if (rows.length === 0) {
+    return h + '<div class="civ-emp-mass-empty">Brak miast gracza do rekrutacji.</div>'
+      + `<div class="civ-emp-mass-batch"><button type="button" data-army-recruit-all disabled>Rekrutuj wszystko</button></div>`
+      + `<div class="civ-emp-mass-batch-message" data-army-recruit-message role="status">${esc(lastArmyRecruitMessage)}</div></div>`;
+  }
+
+  for (const row of rows) {
+    h += `<div class="civ-emp-mass-city" data-mass-recruitment-city="${escAttr(row.cityId)}">`
+      + `<div class="civ-emp-mass-city-hd"><span class="civ-emp-mass-city-name">${esc(row.name)}</span>`
+      + `<span class="civ-emp-mass-queue">kolejka: <b>${row.massRecruitment.queueCount}</b></span></div>`;
+    h += `<div data-mass-recruitment-cards="${escAttr(row.cityId)}"></div></div>`;
+  }
+  return h + `<div class="civ-emp-mass-batch"><button type="button" data-army-recruit-all${getArmyRecruitDraftTotal() <= 0 ? ' disabled' : ''}>Rekrutuj wszystko</button></div>`
+    + `<div class="civ-emp-mass-batch-message" data-army-recruit-message role="status">${esc(lastArmyRecruitMessage)}</div>`
+    + `<div class="civ-emp-foot">Każde miasto ma tę samą listę kart rekrutacji co jego panel. Kolejka i koszty są przypisane do wskazanego miasta.</div></div>`;
+}
+
+function mountMassRecruitmentCitiesInto(
+  host: ParentNode,
+  mountCityRecruitment?: EmpireMassRecruitmentUiConfig['mountCityRecruitment'],
+  mountGeneralRecruitment?: EmpireMassRecruitmentUiConfig['mountGeneralRecruitment'],
+): void {
+  const generalTarget = host.querySelector<HTMLElement>('[data-general-recruitment-card]');
+  if (generalTarget && !mountGeneralRecruitment?.(generalTarget)) {
+    generalTarget.textContent = 'Brak stolicy do rekrutacji dowódcy.';
+  }
+  for (const target of Array.from(host.querySelectorAll<HTMLElement>('[data-mass-recruitment-cards]'))) {
+    const cityId = target.dataset.massRecruitmentCards;
+    if (!cityId || !mountCityRecruitment?.(cityId, target)) {
+      target.innerHTML = '<div class="civ-emp-mass-empty">Nie udało się załadować rekrutacji tego miasta.</div>';
+    }
+  }
+}
+
+/** Mount the same per-city recruitment cards used by CityPanel. */
+export function mountMassRecruitmentControls(
+  host: ParentNode,
+  _snap: EmpireDetailSnap,
+  mountCityRecruitment: EmpireMassRecruitmentUiConfig['mountCityRecruitment'] = massRecruitmentUi.mountCityRecruitment,
+  mountGeneralRecruitment: EmpireMassRecruitmentUiConfig['mountGeneralRecruitment'] = massRecruitmentUi.mountGeneralRecruitment,
+): void {
+  const batchBtns = Array.from(host.querySelectorAll<HTMLButtonElement>('[data-army-recruit-all]'));
+  const syncBatchButtons = (): void => {
+    const disabled = getArmyRecruitDraftTotal() <= 0;
+    batchBtns.forEach(button => { button.disabled = disabled; });
+  };
+  batchBtns.forEach(button => button.addEventListener('click', () => {
+    const cityIds = Array.from(host.querySelectorAll<HTMLElement>('[data-mass-recruitment-city]'))
+      .map(city => city.dataset.massRecruitmentCity)
+      .filter((id): id is string => !!id);
+    const result = submitArmyRecruitmentDrafts(cityIds);
+    lastArmyRecruitMessage = result.message;
+    document.querySelectorAll<HTMLElement>('[data-army-recruit-message]').forEach(message => {
+      message.textContent = lastArmyRecruitMessage;
+    });
+    syncBatchButtons();
+  }));
+  const rallyToggle = host.querySelector<HTMLInputElement>('input[data-recruit-follow-general]');
+  if (rallyToggle) rallyToggle.addEventListener('change', () => {
+    massRecruitmentUi.onRecruitFollowGeneralDefaultChange?.(rallyToggle.checked);
+  });
+  mountMassRecruitmentCitiesInto(host, mountCityRecruitment, mountGeneralRecruitment);
+  syncBatchButtons();
 }
 
 function signedTxt(n: number): string {
@@ -2756,7 +3196,7 @@ function renderSpichlerzHeroSub(
  * PYTANIE-85 — Spichlerz centralny: nagłówek magazynu, podsumowanie tury
  * (kanoniczne etykiety) + tabela miast.
  */
-function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
+function renderSpichlerzCentralnySection(food: EmpireFoodSnap, economy?: EmpireDetailSnap['economy']): string {
   const pct = food.maxCap > 0
     ? Math.max(0, Math.min(100, Math.round((food.zapasy / food.maxCap) * 100)))
     : 0;
@@ -2786,7 +3226,8 @@ function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
     + `<div class="civ-emp-hero ${heroCls} civ-emp-sp-hero"><span>${food.zapasy}</span>`
     + (food.maxCap > 0 ? `<span class="cap">/ ${food.maxCap}</span>` : '')
     + `<span class="ic" aria-hidden="true">${brandIconSvg('res-food', 16)}</span></div>`
-    + renderSpichlerzHeroSub(food, pct, alarm, hasDeficit);
+    + renderSpichlerzHeroSub(food, pct, alarm, hasDeficit)
+    + (economy ? grossNetSub(economy.zywnoscWplywMiast ?? economy.zywnoscRate, economy.zywnoscRate, '🍞', ' (brutto = nadwyżka miast → centrala; netto = po deficytach miast i armii)') : '');
   if (food.maxCap > 0) {
     h += `<div class="civ-emp-bar civ-emp-sp-bar"><div class="${barCls}" style="width:${pct}%"></div></div>`;
   }
@@ -2959,7 +3400,7 @@ function resTooltipHtml(r: EmpireResourceRow): string {
     parts.push(prod === 0 ? 'Produkcja: brak zmiany w tej turze' : `Produkcja: ${signedTxt(prod)} / turę`);
   }
   // R-ZUZYCIE-SUROWCOW-OBYWATELE N2 (Maciej 2026-08-11): reguła pokrycia = magazyn centralny
-  // ZASPOKAJA CAŁĄ populację imperium tego ownera (stawka CITIZEN_UPKEEP_RATE_PER_CITIZEN szt.
+  // ZASPOKAJA CAŁĄ populację imperium tego ownera (stawka per epoka citizenUpkeepRateForEra szt.
   // surowca/obywatela/turę — kanon: citizen-resource-upkeep.ts), NIE starsza binarna
   // „magazyn > 0" — panel musi zgadzać się z tym, co faktycznie liczy silnik tury
   // (citizenUpkeepDrainForOwner / computeCitizenResourceDrain).
@@ -3160,7 +3601,7 @@ function pelnyCountWord(n: number): string {
  * / EN: pure reskin to the Power-section pattern — the hero line only aggregates the
  * cards rendered below; no data, numbers or business logic changed.
  */
-function renderSurowceSection(rows: EmpireResourceRow[]): string {
+function renderSurowceSection(rows: EmpireResourceRow[], economy?: EmpireDetailSnap['economy']): string {
   let sur = `<div class="civ-emp-sect sep" data-section="surowce">`;
   if (rows.length === 0) {
     sur += `<div class="civ-emp-eyebrow" style="margin-bottom:10px">MAGAZYN PAŃSTWA</div>`
@@ -3181,7 +3622,7 @@ function renderSurowceSection(rows: EmpireResourceRow[]): string {
   const magazyny = (capBase != null && capBonus != null && capBonus > 0 && cap > capBase)
     ? Math.round((cap - capBase) / capBonus)
     : 0;
-  const magSlowo = magazyny === 1 ? 'Magazyn' : (magazyny >= 2 && magazyny <= 4 ? 'Magazyny' : 'Magazynów');
+  const magSlowo = pluralPl(magazyny, 'Magazyn', 'Magazyny', 'Magazynów');
   const magTip = magazynPanstwaTooltip(cap, capBase, capBonus, magazyny, magSlowo);
 
   sur += `<div class="civ-emp-res-hdr-row" title="${magTip}">`
@@ -3229,13 +3670,16 @@ function renderSurowceSection(rows: EmpireResourceRow[]): string {
       : `obywatele: <b class="good">pokryte</b>`);
   }
   sur += `<div class="civ-emp-hero-sub civ-emp-res-sub">${subParts.join(' · ')}</div>`;
+  if (economy) {
+    sur += grossNetSub(economy.surowceBrutto, economy.surowceNetto, 'szt.', ' (suma po surowcach; netto po zużyciu obywateli, budynków i wojska)');
+  }
 
   if (stored.length > 0) {
     sur += `<div class="civ-emp-res-grid" style="margin-top:14px">${stored.map(resCardHtml).join('')}</div>`;
   }
 
   sur += `<div class="civ-emp-res-foodnote"><span class="k">Żywność</span>`
-    + `<span>ma osobny <b>magazyn centralny</b> — chip HUD „Spichlerz" · panel Spichlerz centralny. `
+    + `<span>ma osobny <b>magazyn centralny</b> — chip HUD „Spichlerz” · panel Spichlerz centralny. `
     + `Nie wchodzi do wspólnej puli surowców powyżej.</span></div>`;
 
   sur += `<div class="civ-emp-res-legend">`
@@ -3291,6 +3735,7 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
     + `<div class="civ-emp-res-hdr-row"><span class="civ-emp-res-hdr-ic" aria-hidden="true">${brandIconSvg('cp-trade', 14)}</span>`
     + `<span class="civ-emp-eyebrow">HANDEL — SZLAKI HANDLOWE</span></div>`
     + `<div class="civ-emp-hero ${heroCls}">${signedPl(t.totalIncome)} złota / turę</div>`
+    + grossNetSub(t.totalIncome, t.totalIncome, 'złota', ' (trasy nie mają kosztów; dochód jest już wliczony we wpływy Skarbca)')
     + `<div class="civ-emp-hero-sub"><b>${t.routes.length}</b> ${routeCountWord(t.routes.length)} · `
     + `<b>${t.activeDeals.length}</b> ${dealCountWord(t.activeDeals.length)}</div>`;
 
@@ -3345,7 +3790,7 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
     const dealGrid = '0.9fr 1.05fr 0.8fr 1.05fr';
     h += `<div class="civ-emp-mini">${miniHeader(['PARTNER', 'POZOSTAŁO', 'ZAUFANIE', 'TRASA'], dealGrid)}`;
     for (const d of t.activeDeals) {
-      const turnsCell = d.turnsLeft === null ? 'bezterminowa' : `${d.turnsLeft} tur`;
+      const turnsCell = d.turnsLeft === null ? 'bezterminowa' : `${d.turnsLeft} ${turaCountWord(d.turnsLeft)}`;
       const trustCell = `<span style="color:#78c95a">+${d.trustPerTurn}/turę</span>`;
       const routeCell = d.hasActiveRoute
         ? 'aktywny szlak'
@@ -3513,18 +3958,7 @@ function typCountWord(n: number): string {
   return isPlFewForm(n) ? 'typy' : 'typów';
 }
 
-/**
- * N4 (RUNDA 2, P-ARMIA-PANEL-BRAK-INFO-PRODUKCJA-JEDNOSTEK, Maciej 2026-08-16): odmiana
- * „tura/tury/tur" dla ETA w `renderArmiaProdukcjaMini()` — reużywa `isPlFewForm()` już
- * zdefiniowane wyżej zamiast duplikować regułę. Odpowiednik `tury(n)` z `cityPanel.ts`, ale
- * ten NIE jest wyeksportowany (moduł-prywatny) — zamiast go eksportować przez granicę modułu
- * wyłącznie dla jednej etykiety, dopisano lokalny wariant w idiomie już panującym w tym pliku
- * (`dealCountWord`/`typCountWord` obok).
- * EN: "tura/tury/tur" plural for the ETA label in `renderArmiaProdukcjaMini()` — reuses the
- * already-defined `isPlFewForm()` instead of duplicating the rule. Equivalent to `tury(n)` in
- * `cityPanel.ts`, but that one is module-private there — rather than exporting it across a
- * module boundary for a single label, this follows this file's own existing idiom instead.
- */
+/** Odmiana „tura/tury/tur” po liczebniku, z wyjątkiem 12–14. */
 function turaCountWord(n: number): string {
   if (n === 1) return 'tura';
   return isPlFewForm(n) ? 'tury' : 'tur';
@@ -3605,9 +4039,6 @@ function render(): void {
   const uchwalyHtml = renderUchwalyHtml(uchwaly);
 
   // — PARAMETRY GLOBALNE (zachowane, reskin) —
-  const bonusHtml = g.bonusy.map(b =>
-    `<div class="civ-emp-bonus">${esc(b.opis)}<span class="tag">${esc(b.realizuje)}</span></div>`,
-  ).join('');
   const params = `<div class="civ-emp-sect" data-section="parametry">`
     + `<div class="civ-emp-eyebrow">PARAMETRY GLOBALNE</div><div class="civ-emp-meta">`
     + `<div class="civ-emp-chip"><div class="k">Epoka</div><div class="v gold">${esc(e.epoka)}</div></div>`
@@ -3616,8 +4047,7 @@ function render(): void {
     + `<div class="civ-emp-chip"><div class="k">Osiedla</div><div class="v">${e.osiedla}/${e.osiedlaMax}</div></div>`
     + `<div class="civ-emp-chip wide"><div class="k">Religia państwowa</div><div class="v">${esc(g.religiaPanstwowa)}</div></div>`
     + `<div class="civ-emp-chip wide"><div class="k">Badania</div><div class="v">${esc(e.badana ?? '—')}</div></div>`
-    + `<div class="civ-emp-chip wide"><div class="k">Bonus startowy</div><div class="v">${esc(g.bonusStartowy)}</div></div>`
-    + `</div>${bonusHtml}${uchwalyHtml}</div>`;
+    + `</div>${uchwalyHtml}</div>`;
 
   // — MOC IMPERIUM —
   let moc = `<div class="civ-emp-sect sep" data-section="moc">`
@@ -3755,11 +4185,11 @@ function render(): void {
   // wydzielenie Skarbca w fazie 1. / EN: two independent top-level blocks replacing the shared
   // `econ-miasta` tab; `cityMiastaMiniDetail()` is NOT removed — it still backs the "Miasta" row
   // of the full overview, exactly as `cityEconMiniSkarbiec()` survived the phase-1 Treasury split.
-  const miasto = renderMiastoSection(ce, cp, e, snap.trade, snap.resources);
+  const miasto = renderMiastoSection(ce, cp, e, snap.trade, snap.resources, snap.producers);
   const obywatele = renderObywateleSection(ce, cp, e, p, k, snap.religion, snap.resources, snap.happiness);
 
   // — SPICHLERZ (Maciej 2026-07-28) — magazyn centralny żywności, bez wojska.
-  const spichlerz = renderSpichlerzCentralnySection(snap.food)
+  const spichlerz = renderSpichlerzCentralnySection(snap.food, e)
     .replace('data-section="spichlerz-centralny"', 'data-section="spichlerz"')
     .replace('class="civ-emp-sect"', 'class="civ-emp-sect sep"');
 
@@ -3788,7 +4218,7 @@ function render(): void {
   let armia = `<div class="civ-emp-sect sep" data-section="armia">`
     + `<div class="civ-emp-res-hdr-row"><span class="civ-emp-res-hdr-ic" aria-hidden="true">${brandIconSvg('tb-army', 14)}</span>`
     + `<span class="civ-emp-eyebrow">ARMIA</span></div>`
-    + `<div class="civ-emp-hero">${p.unitsOnMap} jednostek na mapie</div>`
+    + `<div class="civ-emp-hero">${formatJednostkiCount(p.unitsOnMap)} na mapie</div>`
     + `<div class="civ-emp-hero-sub">Rekruci <b>${esc(p.rekruciLabel)}</b> / <b>${esc(p.rekruciMaxLabel)}</b>`
     + ` · można werbować <b>${p.rekrutEkw}</b> jedn. (${p.kosztJednostki} rekr./szt.)</div>`
     + `<div class="civ-emp-bar"><div class="${rekrFill}" style="width:${rekrPct}%"></div></div>`;
@@ -3827,6 +4257,7 @@ function render(): void {
       + `${cityPoborMiniRekruci(cp, p, { skipHero: true })}</div>`;
   }
   armia += renderArmiaProdukcjaMini(snap.armiaProdukcja);
+  armia += renderMassRecruitmentSection(cp, snap.massRecruitment);
   // Naprawa N9 (Evaluator, runda 2): plakietka drukowała `<span class="d neg">−0 / turę</span>`
   // nawet przy ZEROWYM koszcie — czerwony kolor + minus czytają się jak ostrzeżenie/koszt, mimo
   // że koszt zero oznacza „nic nie kosztuje". Konwencja już istnieje w tym pliku: box
@@ -3852,7 +4283,7 @@ function render(): void {
     // jednego czerwonego `.civ-emp-alert`. Dwa poziomy pilności wracają przez modyfikator `.warn`.
     // / EN: AMBER variant — this is an UPCOMING event, not one already happening; the reskin had
     // flattened both urgency levels into the single red alert.
-    armia += `<div class="civ-emp-alert warn"><b>Głód wojska za ${e.zywnoscKarencjaZaTur} tur</b> — magazyn ujemny.</div>`;
+    armia += `<div class="civ-emp-alert warn"><b>Głód wojska za ${formatTurCountAcc(e.zywnoscKarencjaZaTur ?? 0)}</b> — magazyn ujemny.</div>`;
   }
   if (uchwaly.length > 0) {
     armia += renderUchwalyHtml(uchwaly);
@@ -3969,7 +4400,7 @@ function render(): void {
   kult += `<div class="civ-emp-foot">Szczegóły per miasto (źródła, progi) — panel miasta → zakładka Kultura. Przycisk Kultura na toolbarze = zasięg na mapie.</div></div>`;
 
   // — MAGAZYN PAŃSTWA (surowce, mockup „Magazyn surowców" — Maciej 2026-07-24) —
-  const sur = renderSurowceSection(snap.resources);
+  const sur = renderSurowceSection(snap.resources, e);
 
   // — HANDEL (TEMAT 14, Maciej 2026-07-24) — żeton HUD „Handel" obok Skarbca —
   const handel = renderHandelSection(snap.trade);
@@ -4001,6 +4432,7 @@ function render(): void {
   // to the very top.
   const prevScrollTop = bodyEl.scrollTop;
   bodyEl.innerHTML = body;
+  mountMassRecruitmentControls(bodyEl, snap);
   wireMocViewButtons();
   // N1 (Evaluator, notatka na 89c16ec1): JEDNO wywołanie na render() (przeniesione z wnętrza
   // cityMiastaMiniDetail — patrz komentarz tam) — filtr kolumn tabeli Miasta istnieje w DOM
@@ -4024,6 +4456,7 @@ function render(): void {
   // No double-wiring risk: unlike `wireMiastaColFilter` (note N1) these run once per render.
   wireMiastoScopeButtons();
   wireMiastoResFilter();
+  wireProducerToggles();
 
   // Scroll do podsekcji ma sens tylko w pełnym widoku; przy pojedynczym bloku i tak widać całość.
   const scrollTarget = block === 'all' ? pendingScrollSection : null;
@@ -4155,6 +4588,9 @@ export function showEmpireDetailPanel(section?: string): void {
 
 export function hideEmpireDetailPanel(): void {
   popOverlay('empire-detail-panel');
+  // R-WEB-UI-RECRUIT-PANEL-COUNTERS-RESET-ON-CLOSE-Q1: każda ścieżka zamknięcia (Zamknij, Esc, tło) zeruje szkice,
+  // ale TYLKO gdy panel był faktycznie otwarty (dismissToolbarSidePanels/closeAll wołają to bezwarunkowo).
+  if (open) clearArmyRecruitDraftsOnPanelClose();
   open = false;
   pendingScrollSection = null;
   root?.classList.remove('open');

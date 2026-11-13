@@ -1,0 +1,28 @@
+(a,b,c) [K1] centrum i pole obywatela na rzece poza riverPaths: farma przed jakakolwiek trzoda
+  [OK] [K1] farma stoi na centrum (9) i na polu obywatela (10) przy rzece poza riverPaths
+  [FAIL] [K1] obie farmy (9, 10) PRZED pierwsza trzoda (3) — rejestr #1: E1 < E3
+  [OK] [K1] pierwsza budowa to farma (jest: farma@12,10)
+  [OK] [K1] 12,12: farma(9) przed trzoda(-1) i irygacja(11)
+  [OK] [K1] 11,12: farma(10) przed trzoda(-1) i irygacja(12)
+(a,b,c) [K2] centrum i pole obywatela na rzece poza riverPaths: farma przed jakakolwiek trzoda
+  [OK] [K2] farma stoi na centrum (9) i na polu obywatela (10) przy rzece poza riverPaths
+  [FAIL] [K2] obie farmy (9, 10) PRZED pierwsza trzoda (3) — rejestr #1: E1 < E3
+  [OK] [K2] pierwsza budowa to farma (jest: farma@12,10)
+  [OK] [K2] 12,12: farma(9) przed trzoda(-1) i irygacja(11)
+  [OK] [K2] 11,12: farma(10) przed trzoda(-1) i irygacja(12)
+(c) [K1] heks rzeki w riverPaths: farma < trzoda < irygacja (bez zmian)
+  [OK] [K1] 12,9: farma(2) < bydlo(5) < irygacja(8)
+  [OK] [K1] 12,10: farma(0) < bydlo(3) < irygacja(6)
+  [OK] [K1] 13,10: farma(1) < bydlo(4) < irygacja(7)
+(c) [K2] heks rzeki w riverPaths: farma < trzoda < irygacja (bez zmian)
+  [OK] [K2] 12,9: farma(2) < bydlo(5) < irygacja(8)
+  [OK] [K2] 12,10: farma(0) < bydlo(3) < irygacja(6)
+  [OK] [K2] 13,10: farma(1) < bydlo(4) < irygacja(7)
+(d) heks TYLKO sasiadujacy z rzeka (bez wlasnej rzeki) nie jest E1 — farma po E3/E4 (E5), bez zmiany
+  [OK] heks przy rzece (12,11): farma(10) po farmie na rzece (0)
+  [OK] heks przy rzece (12,11): farma(10) dopiero po irygacji na rzece (6) — E5 po E1-E4
+(e) tylko „Oswojenie zwierzat” (brak Rolnictwa): trzoda moze byc pierwsza (ABC-5=A — technologia nie blokuje nizszych etapow)
+  [OK] bez Rolnictwa: pierwsza budowa to trzoda, zero farm (bydlo,bydlo,bydlo)
+
+autoclear-priority-q1-test: 17 passed, 2 failed
+EXIT=1

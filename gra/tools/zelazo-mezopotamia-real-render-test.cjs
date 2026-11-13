@@ -550,8 +550,8 @@ function assertRest(m, mezoSrc, unitsSrc, unitRows) {
   }
   for (const u of UNITS) {
     const row = unitRows.find((r) => r['Jednostka'] === u.pl);
-    check('(0c:' + u.pf + ') units.json: Epoka=Żelazo, Tech=Hutnictwo żelaza, Atak dystansowy=0, Nazwa EN zgodna',
-      row !== undefined && row['Epoka'] === 'Żelazo' && row['Tech'] === 'Hutnictwo żelaza'
+    check('(0c:' + u.pf + ') units.json: Epoka=Żelazo, Tech=Sztuka wojenna, Atak dystansowy=0, Nazwa EN zgodna',
+      row !== undefined && row['Epoka'] === 'Żelazo' && row['Tech'] === 'Sztuka wojenna'
       && row['Atak dystansowy'] === 0 && row['Nazwa EN'] === u.en,
       row && { e: row['Epoka'], t: row['Tech'], ad: row['Atak dystansowy'], en: row['Nazwa EN'] });
   }

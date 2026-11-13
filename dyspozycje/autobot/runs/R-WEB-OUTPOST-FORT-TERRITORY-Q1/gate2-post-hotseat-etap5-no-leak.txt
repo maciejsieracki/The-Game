@@ -1,0 +1,18 @@
+[hotseat-etap5-no-leak-test] budowanie bundla (vite build, jedyna dozwolona komenda buildu, C-001)...
+[hotseat-etap5-no-leak-test] build OK -> /tmp/civ-hotseat-etap5-noleak-30998-qg23ds
+[hotseat-etap5-no-leak-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+[hotseat-etap5-no-leak-test] [A] świeży startNewGame + foundPlayerStartCity...
+[hotseat-etap5-no-leak-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+[hotseat-etap5-no-leak-test] [B] świeży startNewGame BEZ foundPlayerStartCity (isAwaitingFirstPlayerCity musi zostać true)...
+[hotseat-etap5-no-leak-test] [B] próba 1/3 padła (page.evaluate: Target page, context or browser has been closed) -- ponawiam ze świeżym browser.launch()...
+[hotseat-etap5-no-leak-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+[hotseat-etap5-no-leak-test] [B] świeży startNewGame BEZ foundPlayerStartCity (isAwaitingFirstPlayerCity musi zostać true)...
+
+=== SCENARIUSZ A ===
+PASS: true
+
+=== SCENARIUSZ B ===
+PASS: true
+
+hotseat-etap5-no-leak-test: PASS (A=PASS, B=PASS)
+EXIT=124

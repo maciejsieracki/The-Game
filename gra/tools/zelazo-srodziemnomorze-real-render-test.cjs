@@ -398,7 +398,7 @@ const WEAPON_CHAIN = {
   kh: ['kh-khopesh-guard', 'kh-khopesh-straight', 'kh-khopesh-seg-0', 'kh-khopesh-seg-1', 'kh-khopesh-seg-2'],
   th: ['th-arm-right-fist', 'th-spear-shaft', 'th-spear-tip'],
 };
-const FALANGA_CHAIN = ['falangita-arm-right-fist', 'falangita-dory-shaft', 'falangita-dory-tip'];
+const FALANGA_CHAIN = ['falangita-arm-right-fist', 'falangita-sarissa-shaft', 'falangita-sarissa-tip'];
 
 /** Asercje ROZSTRZYGAJĄCE dispatch — mają padać na bundlu (D) dla nazw EN. */
 function assertDispatch(m, soft) {
@@ -631,8 +631,8 @@ function assertRest(m, z2Src, unitsSrc, unitRows) {
   }
   for (const u of UNITS) {
     const row = unitRows.find((r) => r['Jednostka'] === u.pl);
-    check('(0d:' + u.pf + ') units.json: Epoka=Żelazo, Tech=Hutnictwo żelaza, Atak dystansowy=0, Nazwa EN zgodna',
-      row !== undefined && row['Epoka'] === 'Żelazo' && row['Tech'] === 'Hutnictwo żelaza'
+    check('(0d:' + u.pf + ') units.json: Epoka=Żelazo, Tech=Sztuka wojenna, Atak dystansowy=0, Nazwa EN zgodna',
+      row !== undefined && row['Epoka'] === 'Żelazo' && row['Tech'] === 'Sztuka wojenna'
       && row['Atak dystansowy'] === 0 && row['Nazwa EN'] === u.en,
       row && { e: row['Epoka'], t: row['Tech'], ad: row['Atak dystansowy'], en: row['Nazwa EN'] });
   }

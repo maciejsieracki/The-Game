@@ -1,0 +1,4 @@
+  [OK] B3c siatka wolana na granicy tury
+  [OK] B4 wczytanie zapisu (restoreGameFromSave(saved)) -> reapplyCityHexDecorHides()
+city-clears-forest-test: 18 pass / 0 fail
+EXIT=0

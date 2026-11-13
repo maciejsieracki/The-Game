@@ -1,0 +1,16 @@
+army-merge-panel-scroll-real-render-test (R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1)
+
+PASS: source: overlay ma margines viewport 24 px, box-sizing i overflow hidden
+PASS: source: panel jest montowany poza transformowanym body
+PASS: source: box ma max-height dla viewportu vh/dvh z marginesem 24 px
+PASS: source: box jest flex columnem
+PASS: source: lista „Na polu” ma siatkę 3 kolumn, max-height i własny pionowy scroll
+PASS: source: header/result/footer są flex slotami niezależnymi od scrolla
+[army-merge-panel-scroll] domyślny Chromium niedostępny, fallback na /usr/bin/chromium
+browserType.launch: Failed to launch chromium because executable doesn't exist at /usr/bin/chromium
+    at launchBrowser (/home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/gra/tools/army-merge-panel-scroll-real-render-test.cjs:140:27)
+    at async main (/home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/gra/tools/army-merge-panel-scroll-real-render-test.cjs:336:19) {
+  log: [],
+  name: 'Error'
+}
+EXIT=1

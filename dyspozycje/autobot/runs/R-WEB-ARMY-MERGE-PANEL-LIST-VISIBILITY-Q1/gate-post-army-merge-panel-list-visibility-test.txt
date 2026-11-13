@@ -1,0 +1,108 @@
+army-merge-panel-list-visibility-test (R-WEB-ARMY-MERGE-PANEL-LIST-VISIBILITY-Q1)
+
+PASS: RED-PRE 1280x720 / 20 jedn.: stały licznik „Na polu · Dołącza · Razem" (PRZED nie spełnia)
+PASS: RED-PRE 1280x720 / 20 jedn.: wskaźnik „jeszcze N poniżej" (PRZED nie spełnia)
+PASS: 1280x720 / 20 jedn.: przyciski akcji w całości w viewporcie bez przewijania
+PASS: 1280x720 / 20 jedn.: panel mieści się w oknie (wysokość ≤ viewport − 48 px, bez poziomego overflow)
+PASS: 1280x720 / 20 jedn.: licznik „Razem" = Na polu + Dołącza = suma kolumn (data + tekst)
+PASS: 1280x720 / 20 jedn.: licznik spójny z paskiem „Armia — N jednostek" (jedno źródło liczby)
+PASS: 1280x720 / 20 jedn.: lista „Na polu" przewija się (nie cały panel); siatka kolumnowa
+PASS: 1280x720 / 20 jedn.: wskaźnik „jeszcze N poniżej" widoczny na górze listy i N = liczba niewidocznych kafelków
+PASS: 1280x720 / 20 jedn.: sekcja „Przybywa" widoczna bez przewijania (w viewporcie i w panelu)
+PASS: 1280x720 / 20 jedn.: a11y — dialog/aria-modal, lista z aria-label i tabindex=0, status
+PASS: 1280x720 / 20 jedn.: siatka 3 kolumny
+PASS: 1280x720 / 20 jedn.: 5 rzędów × 3 kolumny (15 kafelków) widocznych w całości bez przewijania
+PASS: RED-PRE 1280x720 / 20 jedn.: komplet (przyciski + licznik + wskaźnik) (PRZED nie spełnia)
+PASS: 1280x720 / 20 jedn.: po dojściu do końca wskaźnik znika, ostatnia jednostka widoczna
+PASS: 1280x720 / 20 jedn.: przyciski nadal w kadrze po przewinięciu listy
+PASS: 1280x720 / 20 jedn.: po powrocie na górę wskaźnik wraca z tą samą liczbą
+PASS: 1280x720 / 20 jedn.: w połowie przewijania N maleje i zgadza się z geometrią
+PASS: 1280x720 / 20 jedn.: klik we wskaźnik przewija listę do końca
+PASS: 1280x720 / 20 jedn.: klawiatura — PageDown na sfokusowanej liście przewija ją
+PASS: 1280x720 / 20 jedn.: fokus na liście jest widoczny/aktywny (element z tabindex)
+PASS: 1280x720 / 20 jedn.: Enter na „Zostaw osobno" wywołuje onSeparate (nie onMerge)
+PASS: 1280x720 / 20 jedn.: klik „Połącz armie" wywołuje onMerge i zamyka panel
+PASS: RED-PRE 1280x720 / 45 jedn.: stały licznik „Na polu · Dołącza · Razem" (PRZED nie spełnia)
+PASS: RED-PRE 1280x720 / 45 jedn.: wskaźnik „jeszcze N poniżej" (PRZED nie spełnia)
+PASS: 1280x720 / 45 jedn.: przyciski akcji w całości w viewporcie bez przewijania
+PASS: 1280x720 / 45 jedn.: panel mieści się w oknie (wysokość ≤ viewport − 48 px, bez poziomego overflow)
+PASS: 1280x720 / 45 jedn.: licznik „Razem" = Na polu + Dołącza = suma kolumn (data + tekst)
+PASS: 1280x720 / 45 jedn.: licznik spójny z paskiem „Armia — N jednostek" (jedno źródło liczby)
+PASS: 1280x720 / 45 jedn.: lista „Na polu" przewija się (nie cały panel); siatka kolumnowa
+PASS: 1280x720 / 45 jedn.: wskaźnik „jeszcze N poniżej" widoczny na górze listy i N = liczba niewidocznych kafelków
+PASS: 1280x720 / 45 jedn.: sekcja „Przybywa" widoczna bez przewijania (w viewporcie i w panelu)
+PASS: 1280x720 / 45 jedn.: a11y — dialog/aria-modal, lista z aria-label i tabindex=0, status
+PASS: 1280x720 / 45 jedn.: siatka 3 kolumny
+PASS: 1280x720 / 45 jedn.: 5 rzędów × 3 kolumny (15 kafelków) widocznych w całości bez przewijania
+PASS: RED-PRE 1280x720 / 45 jedn.: komplet (przyciski + licznik + wskaźnik) (PRZED nie spełnia)
+PASS: 1280x720 / 45 jedn.: po dojściu do końca wskaźnik znika, ostatnia jednostka widoczna
+PASS: 1280x720 / 45 jedn.: przyciski nadal w kadrze po przewinięciu listy
+PASS: 1280x720 / 45 jedn.: po powrocie na górę wskaźnik wraca z tą samą liczbą
+PASS: RED-PRE 1920x1080 / 20 jedn.: stały licznik „Na polu · Dołącza · Razem" (PRZED nie spełnia)
+PASS: RED-PRE 1920x1080 / 20 jedn.: wskaźnik „jeszcze N poniżej" (PRZED nie spełnia)
+PASS: 1920x1080 / 20 jedn.: przyciski akcji w całości w viewporcie bez przewijania
+PASS: 1920x1080 / 20 jedn.: panel mieści się w oknie (wysokość ≤ viewport − 48 px, bez poziomego overflow)
+PASS: 1920x1080 / 20 jedn.: licznik „Razem" = Na polu + Dołącza = suma kolumn (data + tekst)
+PASS: 1920x1080 / 20 jedn.: licznik spójny z paskiem „Armia — N jednostek" (jedno źródło liczby)
+PASS: 1920x1080 / 20 jedn.: lista „Na polu" przewija się (nie cały panel); siatka kolumnowa
+PASS: 1920x1080 / 20 jedn.: wskaźnik „jeszcze N poniżej" widoczny na górze listy i N = liczba niewidocznych kafelków
+PASS: 1920x1080 / 20 jedn.: sekcja „Przybywa" widoczna bez przewijania (w viewporcie i w panelu)
+PASS: 1920x1080 / 20 jedn.: a11y — dialog/aria-modal, lista z aria-label i tabindex=0, status
+PASS: 1920x1080 / 20 jedn.: siatka 3 kolumny
+PASS: 1920x1080 / 20 jedn.: 5 rzędów × 3 kolumny (15 kafelków) widocznych w całości bez przewijania
+PASS: RED-PRE 1920x1080 / 20 jedn.: komplet (przyciski + licznik + wskaźnik) (PRZED nie spełnia)
+PASS: 1920x1080 / 20 jedn.: po dojściu do końca wskaźnik znika, ostatnia jednostka widoczna
+PASS: 1920x1080 / 20 jedn.: przyciski nadal w kadrze po przewinięciu listy
+PASS: 1920x1080 / 20 jedn.: po powrocie na górę wskaźnik wraca z tą samą liczbą
+PASS: RED-PRE 1920x1080 / 45 jedn.: stały licznik „Na polu · Dołącza · Razem" (PRZED nie spełnia)
+PASS: RED-PRE 1920x1080 / 45 jedn.: wskaźnik „jeszcze N poniżej" (PRZED nie spełnia)
+PASS: 1920x1080 / 45 jedn.: przyciski akcji w całości w viewporcie bez przewijania
+PASS: 1920x1080 / 45 jedn.: panel mieści się w oknie (wysokość ≤ viewport − 48 px, bez poziomego overflow)
+PASS: 1920x1080 / 45 jedn.: licznik „Razem" = Na polu + Dołącza = suma kolumn (data + tekst)
+PASS: 1920x1080 / 45 jedn.: licznik spójny z paskiem „Armia — N jednostek" (jedno źródło liczby)
+PASS: 1920x1080 / 45 jedn.: lista „Na polu" przewija się (nie cały panel); siatka kolumnowa
+PASS: 1920x1080 / 45 jedn.: wskaźnik „jeszcze N poniżej" widoczny na górze listy i N = liczba niewidocznych kafelków
+PASS: 1920x1080 / 45 jedn.: sekcja „Przybywa" widoczna bez przewijania (w viewporcie i w panelu)
+PASS: 1920x1080 / 45 jedn.: a11y — dialog/aria-modal, lista z aria-label i tabindex=0, status
+PASS: 1920x1080 / 45 jedn.: siatka 3 kolumny
+PASS: 1920x1080 / 45 jedn.: 5 rzędów × 3 kolumny (15 kafelków) widocznych w całości bez przewijania
+PASS: RED-PRE 1920x1080 / 45 jedn.: komplet (przyciski + licznik + wskaźnik) (PRZED nie spełnia)
+PASS: 1920x1080 / 45 jedn.: po dojściu do końca wskaźnik znika, ostatnia jednostka widoczna
+PASS: 1920x1080 / 45 jedn.: przyciski nadal w kadrze po przewinięciu listy
+PASS: 1920x1080 / 45 jedn.: po powrocie na górę wskaźnik wraca z tą samą liczbą
+PASS: RED-PRE 360x640 / 20 jedn.: stały licznik „Na polu · Dołącza · Razem" (PRZED nie spełnia)
+PASS: RED-PRE 360x640 / 20 jedn.: wskaźnik „jeszcze N poniżej" (PRZED nie spełnia)
+PASS: 360x640 / 20 jedn.: przyciski akcji w całości w viewporcie bez przewijania
+PASS: 360x640 / 20 jedn.: panel mieści się w oknie (wysokość ≤ viewport − 48 px, bez poziomego overflow)
+PASS: 360x640 / 20 jedn.: licznik „Razem" = Na polu + Dołącza = suma kolumn (data + tekst)
+PASS: 360x640 / 20 jedn.: licznik spójny z paskiem „Armia — N jednostek" (jedno źródło liczby)
+PASS: 360x640 / 20 jedn.: lista „Na polu" przewija się (nie cały panel); siatka kolumnowa
+PASS: 360x640 / 20 jedn.: wskaźnik „jeszcze N poniżej" widoczny na górze listy i N = liczba niewidocznych kafelków
+PASS: 360x640 / 20 jedn.: sekcja „Przybywa" widoczna bez przewijania (w viewporcie i w panelu)
+PASS: 360x640 / 20 jedn.: a11y — dialog/aria-modal, lista z aria-label i tabindex=0, status
+PASS: 360x640 / 20 jedn.: mobile bez poziomego przewijania (body/dokument)
+PASS: RED-PRE 360x640 / 20 jedn.: komplet (przyciski + licznik + wskaźnik) (PRZED nie spełnia)
+PASS: 360x640 / 20 jedn.: po dojściu do końca wskaźnik znika, ostatnia jednostka widoczna
+PASS: 360x640 / 20 jedn.: przyciski nadal w kadrze po przewinięciu listy
+PASS: 360x640 / 20 jedn.: po powrocie na górę wskaźnik wraca z tą samą liczbą
+PASS: RED-PRE 360x640 / 45 jedn.: stały licznik „Na polu · Dołącza · Razem" (PRZED nie spełnia)
+PASS: RED-PRE 360x640 / 45 jedn.: wskaźnik „jeszcze N poniżej" (PRZED nie spełnia)
+PASS: 360x640 / 45 jedn.: przyciski akcji w całości w viewporcie bez przewijania
+PASS: 360x640 / 45 jedn.: panel mieści się w oknie (wysokość ≤ viewport − 48 px, bez poziomego overflow)
+PASS: 360x640 / 45 jedn.: licznik „Razem" = Na polu + Dołącza = suma kolumn (data + tekst)
+PASS: 360x640 / 45 jedn.: licznik spójny z paskiem „Armia — N jednostek" (jedno źródło liczby)
+PASS: 360x640 / 45 jedn.: lista „Na polu" przewija się (nie cały panel); siatka kolumnowa
+PASS: 360x640 / 45 jedn.: wskaźnik „jeszcze N poniżej" widoczny na górze listy i N = liczba niewidocznych kafelków
+PASS: 360x640 / 45 jedn.: sekcja „Przybywa" widoczna bez przewijania (w viewporcie i w panelu)
+PASS: 360x640 / 45 jedn.: a11y — dialog/aria-modal, lista z aria-label i tabindex=0, status
+PASS: 360x640 / 45 jedn.: mobile bez poziomego przewijania (body/dokument)
+PASS: RED-PRE 360x640 / 45 jedn.: komplet (przyciski + licznik + wskaźnik) (PRZED nie spełnia)
+PASS: 360x640 / 45 jedn.: po dojściu do końca wskaźnik znika, ostatnia jednostka widoczna
+PASS: 360x640 / 45 jedn.: przyciski nadal w kadrze po przewinięciu listy
+PASS: 360x640 / 45 jedn.: po powrocie na górę wskaźnik wraca z tą samą liczbą
+PASS: brak pageerror/console.error w Chromium
+
+METRYKI: {"1280x720/20/PRZED":{"boxHeight":538,"body":{"scrollTop":0,"scrollHeight":351,"clientHeight":351,"scrollWidth":1078,"clientWidth":1078},"buttonsVisible":true,"hasSummary":false,"hasMore":false,"scrollContainers":[]},"1280x720/20/PO":{"boxHeight":625,"grid":{"scrollTop":0,"scrollHeight":314,"clientHeight":262,"cols":3},"fullyVisible":15,"below":3,"buttonsVisible":true,"moreTxt":"▼ jeszcze 3 jednostki","sumTxt":"Na polu: 18 · Dołącza: 2 · Razem: 20","scrollContainers":["civ-amp-units"]},"1280x720/45/PRZED":{"boxHeight":672,"body":{"scrollTop":0,"scrollHeight":783,"clientHeight":485,"scrollWidth":1078,"clientWidth":1078},"buttonsVisible":true,"hasSummary":false,"hasMore":false,"scrollContainers":["civ-amp-body"]},"1280x720/45/PO":{"boxHeight":625,"grid":{"scrollTop":0,"scrollHeight":782,"clientHeight":262,"cols":3},"fullyVisible":15,"below":29,"buttonsVisible":true,"moreTxt":"▼ jeszcze 29 jednostek","sumTxt":"Na polu: 44 · Dołącza: 1 · Razem: 45","scrollContainers":["civ-amp-units"]},"1920x1080/20/PRZED":{"boxHeight":538,"body":{"scrollTop":0,"scrollHeight":351,"clientHeight":351,"scrollWidth":1078,"clientWidth":1078},"buttonsVisible":true,"hasSummary":false,"hasMore":false,"scrollContainers":[]},"1920x1080/20/PO":{"boxHeight":625,"grid":{"scrollTop":0,"scrollHeight":314,"clientHeight":262,"cols":3},"fullyVisible":15,"below":3,"buttonsVisible":true,"moreTxt":"▼ jeszcze 3 jednostki","sumTxt":"Na polu: 18 · Dołącza: 2 · Razem: 20","scrollContainers":["civ-amp-units"]},"1920x1080/45/PRZED":{"boxHeight":970,"body":{"scrollTop":0,"scrollHeight":783,"clientHeight":783,"scrollWidth":1078,"clientWidth":1078},"buttonsVisible":true,"hasSummary":false,"hasMore":false,"scrollContainers":[]},"1920x1080/45/PO":{"boxHeight":625,"grid":{"scrollTop":0,"scrollHeight":782,"clientHeight":262,"cols":3},"fullyVisible":15,"below":29,"buttonsVisible":true,"moreTxt":"▼ jeszcze 29 jednostek","sumTxt":"Na polu: 44 · Dołącza: 1 · Razem: 45","scrollContainers":["civ-amp-units"]},"360x640/20/PRZED":{"boxHeight":592,"body":{"scrollTop":0,"scrollHeight":1068,"clientHeight":405,"scrollWidth":310,"clientWidth":310},"buttonsVisible":true,"hasSummary":false,"hasMore":false,"scrollContainers":["civ-amp-body"]},"360x640/20/PO":{"boxHeight":559,"grid":{"scrollTop":0,"scrollHeight":470,"clientHeight":208,"cols":2},"fullyVisible":8,"below":10,"buttonsVisible":true,"moreTxt":"▼ jeszcze 10 jednostek","sumTxt":"Na polu: 18 · Dołącza: 2 · Razem: 20","scrollContainers":["civ-amp-units"]},"360x640/45/PRZED":{"boxHeight":592,"body":{"scrollTop":0,"scrollHeight":2316,"clientHeight":405,"scrollWidth":310,"clientWidth":310},"buttonsVisible":true,"hasSummary":false,"hasMore":false,"scrollContainers":["civ-amp-body"]},"360x640/45/PO":{"boxHeight":559,"grid":{"scrollTop":0,"scrollHeight":1146,"clientHeight":208,"cols":2},"fullyVisible":8,"below":36,"buttonsVisible":true,"moreTxt":"▼ jeszcze 36 jednostek","sumTxt":"Na polu: 44 · Dołącza: 1 · Razem: 45","scrollContainers":["civ-amp-units"]}}
+
+[army-merge-list-visibility] 101 pass, 0 fail
+EXIT=0

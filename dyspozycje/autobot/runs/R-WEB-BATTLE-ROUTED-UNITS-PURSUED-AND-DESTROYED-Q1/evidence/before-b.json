@@ -1,0 +1,254 @@
+[
+ {
+  "scen": "konnica vs piechota",
+  "seed": 1,
+  "mode": "skip",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "atakujacy",
+   "round": 2,
+   "atk": {
+    "total": 8,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 8
+   },
+   "def": {
+    "total": 14,
+    "killed": 4,
+    "fled": 0,
+    "routedLeft": 5,
+    "survived": 5
+   },
+   "exported": 18,
+   "exportedAtk": 8,
+   "exportedDef": 10,
+   "attacksOnRouted": 0,
+   "log": [
+    "=== Morale armii OBRONCY zalamane (25% < 25%) -- armia w rozsypce! ===",
+    "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+   ]
+  }
+ },
+ {
+  "scen": "konnica vs piechota",
+  "seed": 1,
+  "mode": "instant",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "atakujacy",
+   "round": 0,
+   "atk": {
+    "total": 8,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 8
+   },
+   "def": {
+    "total": 14,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 14
+   },
+   "exported": 8,
+   "exportedAtk": 8,
+   "exportedDef": 0,
+   "attacksOnRouted": 0,
+   "log": []
+  }
+ },
+ {
+  "scen": "konnica vs piechota",
+  "seed": 2,
+  "mode": "skip",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "atakujacy",
+   "round": 2,
+   "atk": {
+    "total": 8,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 8
+   },
+   "def": {
+    "total": 14,
+    "killed": 4,
+    "fled": 0,
+    "routedLeft": 5,
+    "survived": 5
+   },
+   "exported": 18,
+   "exportedAtk": 8,
+   "exportedDef": 10,
+   "attacksOnRouted": 0,
+   "log": [
+    "=== Morale armii OBRONCY zalamane (25% < 25%) -- armia w rozsypce! ===",
+    "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+   ]
+  }
+ },
+ {
+  "scen": "konnica vs piechota",
+  "seed": 2,
+  "mode": "instant",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "atakujacy",
+   "round": 0,
+   "atk": {
+    "total": 8,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 8
+   },
+   "def": {
+    "total": 14,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 14
+   },
+   "exported": 8,
+   "exportedAtk": 8,
+   "exportedDef": 0,
+   "attacksOnRouted": 0,
+   "log": []
+  }
+ },
+ {
+  "scen": "przewaga 2:1",
+  "seed": 1,
+  "mode": "skip",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "atakujacy",
+   "round": 8,
+   "atk": {
+    "total": 20,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 1,
+    "survived": 19
+   },
+   "def": {
+    "total": 10,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 7,
+    "survived": 3
+   },
+   "exported": 30,
+   "exportedAtk": 20,
+   "exportedDef": 10,
+   "attacksOnRouted": 0,
+   "log": [
+    "=== Morale armii OBRONCY zalamane (16% < 25%) -- armia w rozsypce! ===",
+    "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+   ]
+  }
+ },
+ {
+  "scen": "przewaga 2:1",
+  "seed": 1,
+  "mode": "instant",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "atakujacy",
+   "round": 0,
+   "atk": {
+    "total": 20,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 20
+   },
+   "def": {
+    "total": 10,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 10
+   },
+   "exported": 20,
+   "exportedAtk": 20,
+   "exportedDef": 0,
+   "attacksOnRouted": 0,
+   "log": []
+  }
+ },
+ {
+  "scen": "przewaga 2:1",
+  "seed": 2,
+  "mode": "skip",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "atakujacy",
+   "round": 9,
+   "atk": {
+    "total": 20,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 1,
+    "survived": 19
+   },
+   "def": {
+    "total": 10,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 7,
+    "survived": 3
+   },
+   "exported": 30,
+   "exportedAtk": 20,
+   "exportedDef": 10,
+   "attacksOnRouted": 0,
+   "log": [
+    "=== Morale armii OBRONCY zalamane (20% < 25%) -- armia w rozsypce! ===",
+    "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+   ]
+  }
+ },
+ {
+  "scen": "przewaga 2:1",
+  "seed": 2,
+  "mode": "instant",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "atakujacy",
+   "round": 0,
+   "atk": {
+    "total": 20,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 20
+   },
+   "def": {
+    "total": 10,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 10
+   },
+   "exported": 20,
+   "exportedAtk": 20,
+   "exportedDef": 0,
+   "attacksOnRouted": 0,
+   "log": []
+  }
+ }
+]

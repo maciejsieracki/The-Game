@@ -1,0 +1,13 @@
+
+--- T1: obronca przed barbarzyncami w bramce NIE jest przejmowany przez war-allin ---
+
+--- T2: jednostki marszu nie ida ku barbarzyncy (war-allin nadal steruje marszem) ---
+
+--- T3: barbarzynca poza bramka obrony -- brak przydzialu, war-allin przejmuje ---
+
+--- T4: najezdzca cywilizacji -- poza zakresem poprawki (DEFEND-HOME), zachowanie sprzed zmiany ---
+
+--- T5: determinizm ---
+
+war-allin-keep-barb-defense-test: 8 passed, 0 failed
+EXIT=0

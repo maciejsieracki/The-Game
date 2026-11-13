@@ -1,0 +1,2 @@
+capture-render-sync-test: 23 passed, 0 failed
+EXIT=0

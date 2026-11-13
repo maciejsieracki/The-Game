@@ -1,0 +1,4 @@
+pangea seed=1 hash=ecdcc4aa99ceeb72 land=59.49%
+pangea seed=42 hash=8d345ea78e3f5a62 land=59.15%
+pangea seed=99 hash=5da29363f423ba1b land=59.68%
+pangea seed=7777 hash=a5dcd09e004ce762 land=59.67%

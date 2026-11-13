@@ -1,0 +1,7 @@
+
+koniec-tury-f1-f4-runda3-test: 36 pass, 3 fail
+FAIL: [F1-A3] finishIncomingBattleUi: battleUiResolving=true PRZED try{updateHud();refreshD1bHud();onResolved();}finally{battleUiResolving=false;} -- kolejność wywołań NIETKNIĘTA, tylko owinięta flagą
+FAIL: [F1-A5] healStaleEndTurnBlockers gałąź 1 sprawdza !battleUiResolving (dodatkowy warunek obok hasPendingAutoPreBattle); runda 4: BEZ pendingBattleStuck (przeniesiony)
+FAIL: [F2-A11 runda 4] triggerPlayerEndTurn woła healStuckDeferredPreBattleQueueOnEndTurnAttempt() JAKO PIERWSZĄ instrukcję, PRZED sprawdzeniem canPlayerInitiateEndTurn() -- inaczej G2 (early return) omijałby sprzątanie
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+EXIT=1

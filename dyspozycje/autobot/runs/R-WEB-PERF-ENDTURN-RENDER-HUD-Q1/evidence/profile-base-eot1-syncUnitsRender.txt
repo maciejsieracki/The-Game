@@ -1,0 +1,31 @@
+syncUnitsRender total 771
+   499 syncStatChips:126379
+   494 syncStatChips:126379 > _syncStatChip:126633
+    96 syncForestForUnits:75886
+    91 syncForestForUnits:75886 > applyZoomLodDecor:75941
+    90 sync:104724
+    36 computeStackDisplay:105769
+    31 sync:104724 > _applyStackDisplay:104819
+    28 computeStackDisplay:105769 > stackVitals:105928
+    23 sync:104724 > (anon):203926
+    19 currentVisible:205393
+    19 _cityRenderOpts:219410
+    19 _cityRenderOpts:219410 > currentVisible:205393
+    19 currentVisible:205393 > ownPlayerVisibleHexes:205375
+     7 sync:104724 > applyUnitStatPlate:78832
+     6 sync:104724 > _tokenPlacement:104617
+     4 sync:104724 > _resolveOwnerColor:104558
+     3 sync:104724 > applyUnitUpgradeBadgeRow:78989
+     3 sync:104724 > buildUnitModel:101698
+     2 sync:104724 > _registerToken:105427
+     2 computeStackDisplay:105769 > pickStackRepresentative:105758
+     1 syncAllRuntimeUnitHpState:214903
+     1 visibleUnitsList:205644
+     1 visibleUnitsList:205644 > unitsVisibleOnMap:70975
+     1 syncAllRuntimeUnitHpState:214903 > syncRuntimeUnitHpState:214897
+     1 computeStackDisplay:105769 > stackRenderKey:105766
+     1 (anon):206021
+     1 sync:104724 > unitRingStanceForPlayer:203904
+     0 isCivilianUnit:51668
+     0 sync:104724 > barFraction:78771
+     0 sync:104724 > applyUnitVeteranBadgeStarCount:81973

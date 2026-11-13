@@ -76,6 +76,7 @@ export const DIPLO_FACTOR_LABELS_PL: Record<string, string> = {
   trybut_oferta_przyjeta: 'Oferta trybutu przyjęta',
   wymiana_tech_gratis: 'Wymiana technologii (gratis)',
   zerwanie_handlu: 'Zerwana umowa (przeszłość)',
+  zerwanie_handlu_bez_kary: 'Zerwana umowa po 10 turach (bez kary)',
   zerwanie_traktatu: 'Zerwanie traktatu (decyzja własna)',
   ultimatum_spelnione: 'Ultimatum spełnione',
   ultimatum_bezpodstawne: 'Ultimatum bezpodstawne',
@@ -107,6 +108,8 @@ export interface ContinuousFactorFlags {
   odmiennaReligia?: boolean;
   /** Realne sąsiedztwo terytorialne (granica lądowa) + obie strony >2 miasta. */
   karaWspolnaGranica?: boolean;
+  /** Resolved penalty for this pair, matching the live tick. */
+  karaWspolnaGranicaZaufaniePerTura?: number;
   /** Fakt statyczny pary (ustalony przy starcie kontaktu) — rywale tego samego typu cywilizacji. */
   rywalizacjaTenSamTyp?: boolean;
   /** REL-MP-SAME-Q1: gracz ↔ miasto-państwo kopii typu gracza (+20 start). */
@@ -182,7 +185,8 @@ export function buildRelationBreakdown(
     pushRow(pozytywne, negatywne, 'Odmienna religia', params.odmiennaReligia_zaufanie_perTura, true);
   }
   if (continuous.karaWspolnaGranica) {
-    pushRow(pozytywne, negatywne, 'Kara za wspólną granicę', params.ekspansjaGranica_zaufanie_perTura, true);
+    pushRow(pozytywne, negatywne, 'Kara za wspólną granicę',
+      continuous.karaWspolnaGranicaZaufaniePerTura ?? params.ekspansjaGranica_zaufanie_perTura, true);
   }
   if (continuous.rywalizacjaTenSamTyp) {
     pushRow(pozytywne, negatywne, 'Rywalizacja (ten sam typ nacji)', params.rywalizacjaTenSamTyp_zaufanie);

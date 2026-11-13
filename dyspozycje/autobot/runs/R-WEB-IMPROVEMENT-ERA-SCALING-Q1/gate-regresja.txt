@@ -1,0 +1,1 @@
+regresja 112 testow gra/tools PRZED=29 nieudanych, PO=29 nieudanych (te same, wczesniejsze); delta wylacznie nowy test RED->GREEN; oboz-lowiecki timeout tylko pod rownoleglym obciazeniem EXIT=0 solo

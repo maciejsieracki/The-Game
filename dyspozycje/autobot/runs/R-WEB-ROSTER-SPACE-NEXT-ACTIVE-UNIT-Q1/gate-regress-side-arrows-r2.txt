@@ -1,0 +1,25 @@
+side-panel-unit-cycle-arrows-test (R-KARTA-JEDNOSTKI-STRZALKI-CYKL)
+
+  PASS: 1) karta heksu: naglowek .sp-ctx-head OBECNY (regresja — nie ruszamy hex)
+  PASS: 1b) naglowek karty heksu ma niezmieniony tekst
+  PASS: 1c) karta heksu: BRAK strzalek cyklowania (nawet gdy canCycle=true)
+  PASS: 1d) tresc karty heksu wyrenderowana
+  PASS: 2) karta cudzej jednostki: naglowek .sp-ctx-head USUNIETY (dawne "Jednostka")
+  PASS: 2b) tekst "Jednostka" nigdzie w markupie karty cudzej jednostki
+  PASS: 2c) karta cudzej jednostki: .sp-ctx-nav FIZYCZNIE NIEOBECNY w DOM (nie tylko CSS display:none)
+  PASS: 2d) zero przyciskow .sp-ctx-nav-arr w DOM dla cudzej jednostki
+  PASS: 2e) tresc karty cudzej jednostki wyrenderowana
+  PASS: 2f) ownUnit undefined (nie tylko false) — strzalki nadal nieobecne
+  PASS: 3) karta wlasnej jednostki: naglowek .sp-ctx-head USUNIETY
+  PASS: 3b) karta wlasnej jednostki: .sp-ctx-nav OBECNY w DOM
+  PASS: 3c) dokladnie 2 przyciski strzalek (<- i ->)
+  PASS: 3d) strzalki NIE disabled, gdy canContextCycleUnit()=true
+  PASS: 4) znaleziono obie strzalki po data-sp-cycle
+  PASS: 4b) klik <- woła onContextCycleUnit(-1)
+  PASS: 4c) klik -> woła onContextCycleUnit(1)
+  PASS: 5) strzalki nadal OBECNE w DOM, gdy canCycle=false (tylko disabled, nie usuniete)
+  PASS: 5b) obie strzalki maja atrybut disabled=true
+  PASS: 5c) klik (dispatchEvent) na disabled strzalce NIE wola onContextCycleUnit (gwardia JS dziala naprawde)
+
+side-panel-unit-cycle-arrows-test: 20 pass, 0 fail
+EXIT=0

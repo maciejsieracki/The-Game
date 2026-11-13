@@ -1,0 +1,38 @@
+Bramki regresji (worktree, źródła PO = bieżący HEAD + zmiana; PRZED = origin/main ca289d8ce)
+
+GATE tsc (npx tsc --noEmit, gra/):                         EXIT=0  (pusty wynik)
+GATE unit tools/minimap-viewport-rect-follow-test.cjs:      EXIT=0  (12/12 PASS)
+GATE mutacja (updateViewport = return):                    EXIT=1  (test czerwieni się: "1 !== 2")
+GATE git diff --check:                                     EXIT=0
+
+GATE node hud-konwerter-dopasowanie-test.cjs:              EXIT=0
+GATE node hud-miasto-stan-cywilizacji-test.cjs:            EXIT=0
+GATE node hud-miasto-stock-tempo-test.cjs:                 EXIT=0
+GATE node hud-skarbiec-test.cjs:                           EXIT=0
+GATE node perf-hud-frame-memo-test.cjs:                    EXIT=0
+GATE node hud-armia-chip-jednostki-test.cjs:               EXIT=1  FAILED 58 passed, 2 failed
+     -> identycznie na PRZED (origin/main): FAILED 58 passed, 2 failed (przed-existing)
+GATE node hud-moc-warstwa-test.cjs:                        EXIT=1  WYNIK 21 PASS, 7 FAIL
+     -> identycznie na PRZED: WYNIK 21 PASS, 7 FAIL (przed-existing)
+GATE node hud-obywatele-chip-test.cjs:                     EXIT=1  FAILED 17 passed, 3 failed
+     -> identycznie na PRZED: FAILED 17 passed, 3 failed (przed-existing)
+
+GATE live minimapa-pasek-narzedzi-reorganizacja-live-test: EXIT=1  35 pass / 5 fail
+     -> wszystkie 5 FAIL w sekcji [PRZED] (merge-base HEAD origin/main == HEAD, czyli PRZED
+        to już bieżący main; asercje dotyczą starego układu). Sekcja [PO]: 0 FAIL.
+GATE live minimapa-ikona-robotnik-kolor-live-test:         EXIT=1  49 pass / 7 fail
+     -> wszystkie 7 FAIL w sekcji [PRZED] (ta sama przyczyna). Sekcja [PO]: 0 FAIL.
+     Zmiana w tym teście: TOUCHED_FILES = minimapHud.ts, hud.ts, main.ts (jak w pasek-teście);
+     bez tego bundle PRZED nie budował się (main.ts importuje nowy eksport z hud.ts).
+
+GATE live minimap-viewport-rect-follow-live-test (Chromium, bundle PO): EXIT=0
+GATE live minimap-viewport-rect-follow-live-test (Chromium, bundle PRZED): EXIT=1
+     -> PRZED: ramka po kliku w minimapę przesunięta o 0 px (bug reprodukowany)
+
+NIE_ZMIERZONO: pozostałe hud-*.cjs wymagające przeglądarki (live/pixel, np. hud-topbar-*,
+hud-gross-net-rest-test, hud-tooltip-body-mounted-panels-test, hud-zetony-*, hud-resource-deficit-red-test,
+hud-number-abbrev-test, hud-recruits-abbrev-test, hud-topbar-bigger-numbers-real-render-test) —
+nie uruchamiane w tym przebiegu (koszt: osobny build bundla na test). Zmiana nie dotyka ich ścieżek
+poza wywołaniem updateMinimapViewport w renderLoop i rozszerzeniem minimapHud.
+
+EXIT=0

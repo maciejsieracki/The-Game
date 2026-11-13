@@ -1,0 +1,42 @@
+{
+  "before": {
+    "s0": {
+      "pracaRate": 8,
+      "pracaUpkeep": 1,
+      "pracaAutoUlepszeniaKoszt": 0,
+      "pracaCudaKoszt": 0,
+      "kultura": 0,
+      "kulturaRate": 0
+    },
+    "s1": {
+      "pracaRate": 13,
+      "pracaUpkeep": 1,
+      "pracaAutoUlepszeniaKoszt": 0,
+      "pracaCudaKoszt": 0,
+      "kultura": 0,
+      "kulturaRate": 0
+    }
+  },
+  "after": {
+    "s0": {
+      "pracaRate": 0,
+      "pracaUpkeep": 0,
+      "pracaAutoUlepszeniaKoszt": 0,
+      "pracaCudaKoszt": 0,
+      "kultura": 0,
+      "kulturaRate": 0
+    },
+    "s1": {
+      "pracaRate": 0,
+      "pracaUpkeep": 0,
+      "pracaAutoUlepszeniaKoszt": 0,
+      "pracaCudaKoszt": 0,
+      "kultura": 0,
+      "kulturaRate": 0
+    }
+  },
+  "pools": {
+    "s0": 405,
+    "s1": 77
+  }
+}

@@ -5,7 +5,7 @@
     "epoka": "1=Kamien, 2=Braz, 3=Zelazo",
     "decyzje_MIASTO": "lodzie_rybackie = TAK teraz; kamieniolom OSOBNO od kopalni (rozne surowce); teren NIE daje +Nauka/+Kultura (te z budynkow/specjalistow/suwaka). Tarasy = +zywnosc (nie kultura).",
     "kanon_zywnosc_hodowla": "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) — obowiazuje nad tym plikiem do wdrozenia",
-    "decyzje_EKONOMIA": "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
+    "decyzje_EKONOMIA": "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=3 (epoka 2), fort=5 (epoka 3) [decyzja wlasciciela 2026-10-31, R-WEB-OUTPOST-FORT-TERRITORY-Q1: twarde terytorium jak miasto; bylo 5/10], miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
     "klucze_surowcow_ASCII": "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol | zloto",
     "pole_surowiec_ilosc_tura": "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE PO R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13, ×5 vs stan sprzed tej decyzji, ZASTEPUJE stawki 2026-08-12 nizej -- zloto WYLACZONE ze skalowania, waluta nie surowiec budowlany): Tartak->drewno 50 (bylo 10), Glinianka->glina 50 (bylo 10), Kamieniolom->kamien 50 (bylo 10), Kopalnia miedzi->ruda 20 (bylo 4), Kopalnia zelaza->ruda_zelaza 20 (bylo 4), Warzelnia soli->sol 50 (bylo 10), Stadnina->kon 25 (bylo 5), Kopalnia zlota->zloto 1 (BEZ ZMIAN -- wylaczone). Brak pola w JSON -> domyslnie 10/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa, rowniez x5 dla spojnosci -- bylo 2/ture)."
   },
@@ -51,13 +51,13 @@
       "handel": 3
     },
     "surowiecOdblokowany": "bydlo",
-    "surowiecOdblokowany_uwaga": "ABC-18: dostęp dopiero po postawieniu na złożu trzody",
-    "teren": "Łąka, Równina (także z nakładką Las)",
-    "warunek": "płaski ląd poza Pustynią; pierwsze pastwisko wymaga złoża bydła, po odblokowaniu bez złoża; nakładka Lasu nie przeszkadza.",
+    "surowiecOdblokowany_uwaga": "R-WEB-AUTOIMPROVE-STAGES-Q1 (Q1 właściciela 2026-10-31): trzoda NIE wymaga złoża ani żadnych zasobów (kod: livestock-unlock.ts `isLivestockUnlockedForPlacement`). Stary zapis ABC-18 („dopiero po postawieniu na złożu trzody”) jest przestarzały.",
+    "teren": "Łąka, Równina (bez nakładki Las — najpierw wycinka)",
+    "warunek": "płaski ląd poza Pustynią, bez nakładki Lasu (najpierw wycinka); bez złoża i bez żadnych zasobów.",
     "koszt_praca": 20,
     "tech": "Oswojenie zwierząt",
     "odblokowuje": "Trzoda (Rydwan po odblokowaniu)",
-    "uwagi": "R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): tekst gracza w `warunek` skrócony z surowej notatki deweloperskiej — pełna historia decyzji zachowana tu. Oryginał: plaski ląd; pierwsze: złoże bydła; potem po odblokowaniu — bez złoża; + farma lub solo; NIE na Pustyni; nakładka Las NIE przeszkadza — zakaz z 2026-07-29 COFNIĘTY 2026-08-27 (R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1, ECHO właściciela: „Tak, odwracamy — wszystkie trzy”)",
+    "uwagi": "R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): tekst gracza w `warunek` skrócony z surowej notatki deweloperskiej — pełna historia decyzji zachowana tu. Oryginał: plaski ląd; pierwsze: złoże bydła; potem po odblokowaniu — bez złoża; + farma lub solo; NIE na Pustyni; nakładka Las NIE przeszkadza — zakaz z 2026-07-29 COFNIĘTY 2026-08-27 (R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1, ECHO właściciela: „Tak, odwracamy — wszystkie trzy”). AKTUALNIE (R-WEB-AUTOIMPROVE-STAGES-Q1, ABC-2 właściciela 2026-10-31): trzoda i owce NA LESIE NIE — blokada zostaje („konieczność wycinania lasu; nie ściągamy blokad”), kod `improvement-build.ts` `FOREST_BLOCKED_IMPROVEMENT_KEYS`; trzoda nie wymaga złoża (Q1).",
     "historia": "Udomowienie zwierząt hodowlanych — kóz i owiec na Bliskim Wschodzie, bydła w Afryce i Azji, świń w Chinach i Europie — przebiegało mniej więcej równolegle z udomowieniem roślin, tworząc razem podstawę neolitycznej rewolucji rolniczej. Zwierzęta hodowlane dawały nie tylko mięso, ale też mleko, skóry, wełnę i nawóz użyźniający pola, a z czasem także siłę pociągową. W przeciwieństwie do polowania, hodowla pozwalała trzymać zapas żywca na czas nieurodzaju czy suszy, działając jak bufor bezpieczeństwa całej wspólnoty. Archeolodzy odróżniają udomowione stada od dzikich populacji po zmianach w budowie kości i strukturze wieku ubijanych zwierząt, co pozwala datować pierwsze zagrody na kontynentach niezależnie od siebie. Trzoda hodowlana uczyniła też ludzi bardziej osiadłymi niż sami myśliwi-zbieracze, bo stada trzeba było paść i pilnować blisko osady. To właśnie bliski kontakt człowieka ze zwierzętami hodowlanymi uczynił z niego również nosiciela — i czasem ofiarę — chorób odzwierzęcych, które później odmieniły bieg historii."
   },
   "owce": {
@@ -69,13 +69,13 @@
       "handel": 2
     },
     "surowiecOdblokowany": "owce",
-    "surowiecOdblokowany_uwaga": "pierwsze na zlozu owiec; solo na wzgorzu; bez farmy/bydla",
-    "teren": "Wzgórza (także z nakładką Las)",
-    "warunek": "wzgórze, także z nakładką Lasu; pierwsze pastwisko wymaga złoża owiec, po odblokowaniu bez złoża.",
+    "surowiecOdblokowany_uwaga": "solo na wzgórzu; bez farmy/bydła; NIE wymaga złoża owiec (Q1 właściciela 2026-10-31, R-WEB-AUTOIMPROVE-STAGES-Q1)",
+    "teren": "Wzgórza (bez nakładki Las — najpierw wycinka)",
+    "warunek": "wzgórze, bez nakładki Lasu (najpierw wycinka); bez złoża i bez żadnych zasobów.",
     "koszt_praca": 20,
     "tech": "Oswojenie zwierząt",
     "odblokowuje": "Owce (wełna / jedzenie)",
-    "uwagi": "R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): tekst gracza w `warunek` skrócony z surowej notatki deweloperskiej — pełna historia decyzji zachowana tu. Oryginał: solo wzgórze — otwarte LUB z nakładką Las; pierwsze: złoże owiec; potem wzgórze bez złoża po odblokowaniu; zakaz „nakładka Las zabroniona” (Maciej 2026-07-29) COFNIĘTY 2026-08-27 — R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1, ECHO właściciela: „Tak, odwracamy — wszystkie trzy” (owce, bydło, lama); historia decyzji zostaje, nie jest wymazywana",
+    "uwagi": "R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): tekst gracza w `warunek` skrócony z surowej notatki deweloperskiej — pełna historia decyzji zachowana tu. Oryginał: solo wzgórze — otwarte LUB z nakładką Las; pierwsze: złoże owiec; potem wzgórze bez złoża po odblokowaniu; zakaz „nakładka Las zabroniona” (Maciej 2026-07-29) COFNIĘTY 2026-08-27 — R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1, ECHO właściciela: „Tak, odwracamy — wszystkie trzy” (owce, bydło, lama); historia decyzji zostaje, nie jest wymazywana. AKTUALNIE (R-WEB-AUTOIMPROVE-STAGES-Q1, ABC-2 właściciela 2026-10-31): owce NA LESIE NIE — blokada zostaje (kod `FOREST_BLOCKED_IMPROVEMENT_KEYS`); owce nie wymagają złoża (Q1).",
     "historia": "Owca była jednym z pierwszych zwierząt udomowionych przez człowieka, prawdopodobnie już około 10 000 lat temu na terenach dzisiejszej Anatolii i Iranu, gdzie żyły ich dzikie przodkinie, muflony. Początkowo hodowano je głównie dla mięsa i skóry, lecz z czasem — wraz z selekcją osobników o gęstszym runie — owca stała się też kluczowym źródłem wełny, surowca, który zrewolucjonizował włókiennictwo w całej Eurazji. Pasterstwo owiec dobrze sprawdzało się na terenach zbyt jałowych lub zbyt stromych pod uprawę, jak wzgórza czy stepy, co czyniło je uzupełnieniem, a nie konkurencją dla rolnictwa. W wielu kulturach, od starożytnej Mezopotamii po średniowieczną Europę, handel wełną i tkaninami wełnianymi stał się fundamentem bogactwa całych regionów i miast. Pasterze owiec, prowadzący stada między pastwiskami sezonowymi, ukształtowali też charakterystyczny, na wpół koczowniczy styl życia zwany transhumancją, praktykowany do dziś w wielu górzystych regionach świata."
   },
   "lama": {
@@ -88,9 +88,9 @@
       "handel": 3
     },
     "surowiecOdblokowany": "lama",
-    "surowiecOdblokowany_uwaga": "TYLKO Inkowie; solo — bez innych ulepszen na heksie; pierwsze na zlozu lamy",
+    "surowiecOdblokowany_uwaga": "TYLKO Inkowie; solo — bez innych ulepszen na heksie; NIE wymaga złoża lamy (Q1 właściciela 2026-10-31, R-WEB-AUTOIMPROVE-STAGES-Q1)",
     "teren": "Wzgórza, Góry (także z nakładką Las)",
-    "warunek": "tylko cywilizacja Inków; wzgórza i góry, także z nakładką Lasu; pierwsze wymaga złoża lamy.",
+    "warunek": "tylko cywilizacja Inków; wzgórza i góry, także z nakładką Lasu; bez złoża i bez żadnych zasobów.",
     "koszt_praca": 20,
     "tech": "Oswojenie zwierząt",
     "odblokowuje": "Lama (transport / żywność)",
@@ -108,7 +108,7 @@
     "surowiecOdblokowany_uwaga": "ABC-18: tylko na złożu konia + tech Jeździectwo. PYTANIE-84-B3 (Maciej 2026-07-27): produkcja Koń do magazynu państwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/ture. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 5/turę (było 1/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 25/turę (było 5/turę).",
     "surowiec_ilosc_tura": 25,
     "teren": "Łąka, Równina",
-    "warunek": "heks ze złożem konia w terytorium (albo po imperialnym odblokowaniu Konia — bez złoża); nakładka Lasu nie przeszkadza.",
+    "warunek": "heks ze złożem konia w terytorium; od epoki Żelaza (3) także bez złoża, po imperialnym odblokowaniu Konia; nakładka Lasu nie przeszkadza.",
     "koszt_praca": 28,
     "tech": "Jeździectwo",
     "odblokowuje": "Koń (jednostki konne)",
@@ -124,6 +124,7 @@
       "handel": 2
     },
     "surowiecOdblokowany": "glina",
+    "zastosowanie_surowca": "Glina idzie do Cegielni (cegła na budowę m.in. Akademii i Sądu) i do Garncarni (ceramika dla Spichlerza).",
     "surowiecOdblokowany_uwaga": "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 15/ture (bylo 20 — magazyn PEŁNY); korekta balansu Maciej 2026-08-09: 4/ture (wyrownanie do kamieniolomu). NIE bonus.glina (2) -- osobne pola. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 10/turę (było 4/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 50/turę (było 10/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2 (Maciej 2026-08-13, B1): bonus.glina x5 → 10 (bylo 2) -- ten kanal (plon TileYield przez applyImprovementBonus) byl pominiety w Rundzie 1, ktora skalowala tylko surowiec_ilosc_tura wyzej.",
     "surowiec_ilosc_tura": 50,
     "teren": "złoże Gliny",
@@ -142,8 +143,9 @@
       "handel": 2
     },
     "surowiecOdblokowany": "kamien",
-    "surowiecOdblokowany_uwaga": "klucz 'kamien' wg Surowiec='Kamień' w resources.json; produkcja terytorialna bazowo 200/turę, skalowana +50% za epokę.",
-    "surowiec_ilosc_tura": 200,
+    "zastosowanie_surowca": "Kamień idzie na budowę murów (80), akweduktu (60), świątyni (40) i innych budynków.",
+    "surowiecOdblokowany_uwaga": "klucz 'kamien' wg Surowiec='Kamień' w resources.json; produkcja terytorialna bazowo 50/turę (epoka 1), skalowana +50% za epokę (50 / 75 / 113). Historia: R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (2026-08-13) = 50; commit 9175f031f (2026-09-09, Integracja PR #135 H-KAMIENIOLOM-KAMIEN-PRODUKCJA-Q1) podniósł do 200 = REGRES; 2026-10-31 przywrócone 50 decyzją właściciela (R-WEB-SAWMILL-QUARRY-PRODUCTION-50-Q1). ZAŁOŻENIE orkiestratora: skalowanie epoką z 9175f031f bez zmian.",
+    "surowiec_ilosc_tura": 50,
     "teren": "Wzgórza, Góry (kamień)",
     "warunek": "budulec — mury, budynki",
     "koszt_praca": 22,
@@ -200,8 +202,9 @@
       "handel": 3
     },
     "surowiecOdblokowany": "drewno",
-    "surowiecOdblokowany_uwaga": "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 10/ture (bylo 20 — magazyn PEŁNY); korekta balansu Maciej 2026-08-09: 4/ture (wyrownanie do kamieniolomu). R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 10/turę (było 4/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 50/turę (było 10/turę).",
-    "surowiec_ilosc_tura": 200,
+    "zastosowanie_surowca": "Drewno idzie na budowy (np. Stolarnia 25, Port 60) i rekrutację jednostek (np. Wojownik 13).",
+    "surowiecOdblokowany_uwaga": "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 10/ture (bylo 20 — magazyn PEŁNY); korekta balansu Maciej 2026-08-09: 4/ture (wyrownanie do kamieniolomu). R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 10/turę (było 4/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 50/turę (było 10/turę). Historia: commit 9175f031f (2026-09-09, PR #135 wiring) podniósł do 200/turę = REGRES; 2026-10-31 przywrócone 50/turę decyzją właściciela (R-WEB-SAWMILL-QUARRY-PRODUCTION-50-Q1). Skalowanie epoką (50 / 75 / 113) bez zmian.",
+    "surowiec_ilosc_tura": 50,
     "teren": "Ląd w terytorium (łąka, lasy, wzgórza…)",
     "warunek": "stałe ulepszenie; MOŻE na lesie — las NIE znika; odblokowuje dostęp do drewna (v0.1 bez ilości)",
     "koszt_praca": 25,
@@ -235,9 +238,9 @@
     "nazwa": "Łodzie rybackie",
     "epoka": 1,
     "bonus": {
-      "zywnosc": 2,
-      "praca": 3,
-      "handel": 3
+      "zywnosc": 6,
+      "praca": 6,
+      "handel": 6
     },
     "surowiecOdblokowany": null,
     "surowiecOdblokowany_uwaga": "ryby nie sa osobnym surowcem w resources.json v0.1; plony (zywnosc) jako substytut; DANE moze dodac klucz 'ryby' w przyszlosci",
@@ -258,6 +261,7 @@
       "handel": 3
     },
     "surowiecOdblokowany": "sol",
+    "zastosowanie_surowca": "Sól trafia do magazynu państwa; Spichlerz Królewski wymaga jej i zużywa 25 na turę (econ-params.json:397-402).",
     "surowiecOdblokowany_uwaga": "PYTANIE-84-U21/B2 (Maciej 2026-07-27): produkcja Sól do magazynu państwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 10/ture. Bonus heksa (+1 Żywność, +1 Pieniądz) zostaje obok surowca_ilosc_tura. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 50/turę (było 10/turę).",
     "surowiec_ilosc_tura": 50,
     "teren": "Wybrzeże, złoże soli (hex.zloze=sol)",
@@ -274,15 +278,15 @@
     "surowiecOdblokowany": null,
     "bonus_obrona_proc": 100,
     "bonus_wymaga_obozowania": true,
-    "zasieg_pol": 10,
-    "zasieg_terytorium": 10,
-    "zasieg_kontroli": 10,
+    "zasieg_pol": 5,
+    "zasieg_terytorium": 5,
+    "zasieg_kontroli": 5,
     "teren": "dowolny ląd w terytorium",
-    "warunek": "+100% Obrony jednostkom obozującym na polu fortu (bez plonów); rozszerza zasięg terytorium o promień 10 pól",
+    "warunek": "+100% Obrony jednostkom obozującym na polu fortu (bez plonów); tworzy teren zabezpieczony pod Twoją cywilizację w promieniu 5 pól (jak miasto: obca cywilizacja nie zbuduje tam ulepszeń ani miasta, a Ty rezerwujesz teren pod przyszłe miasta i surowce)",
     "koszt_praca": 25,
     "tech": "Wojskowość",
     "odblokowuje": "",
-    "uwagi": "ABC-10 Maciej 2026-07-04: Fort (mapa) ≠ Cytadela (miasto). Żelazo ep.3; zasięg 10; +100% Obrona obozowanie",
+    "uwagi": "ABC-10 Maciej 2026-07-04: Fort (mapa) ≠ Cytadela (miasto). Żelazo ep.3; zasięg 5 (od 2026-10-31, było 10); +100% Obrona obozowanie",
     "historia": "Fortyfikacje polowe budowane w otwartym terenie, poza murami miast, towarzyszyły wojskom od starożytności — rzymskie obozy warowne (castra) wznoszone każdej nocy na marszu legionów są jednym z najbardziej znanych przykładów zdyscyplinowanej sztuki fortyfikacyjnej. Proste wały ziemne, palisady i rowy pozwalały niewielkim garnizonom skutecznie bronić się przed liczniejszym przeciwnikiem i kontrolować kluczowe przejścia, brody czy granice. W średniowieczu podobną rolę pełniły drewniano-ziemne grody i strażnice graniczne, jak choćby limes rzymski czy Wielki Mur Chiński z jego licznymi fortami wartowniczymi. Fort w terenie nie służył do zamieszkania na stałe, lecz jako punkt oporu i obserwacji, wzmacniający obronność szerszego obszaru bez konieczności budowy pełnego miasta warownego."
   },
   "droga": {
@@ -293,11 +297,11 @@
     },
     "surowiecOdblokowany": null,
     "teren": "każdy przejezdny heks",
-    "warunek": "łączy TYLKO miasta i posterunki (MAPA pilnuje); ruch jednostek 3× szybszy (koszt wejścia ÷3); Handel (plon heksa) +2/turę",
+    "warunek": "łączy TYLKO miasta i posterunki (MAPA pilnuje); ruch jednostek 3× szybszy (koszt wejścia ÷3); Podatek (plon heksa) +2/turę",
     "koszt_praca": 15,
     "tech": "Koło",
     "odblokowuje": "",
-    "uwagi": "R-DROGI-RUCH-HANDEL-Q1 Maciej 2026-08-14: Handel (plon heksa) 1→2/turę (było 1)",
+    "uwagi": "R-DROGI-RUCH-HANDEL-Q1 Maciej 2026-08-14: Podatek (plon heksa) 1→2/turę (było 1)",
     "historia": "Najwcześniejsze drogi to zwykłe ubite ścieżki, wydeptane przez ludzi, zwierzęta juczne i pierwsze wozy, później utwardzane żwirem, drewnem lub warstwami ubitej gliny. Już w Mezopotamii i starożytnym Egipcie budowano proste trakty łączące osady i pola uprawne, a sieć dróg perskich (Droga Królewska, V wiek p.n.e.) umożliwiała szybki przepływ informacji i wojsk na tysiące kilometrów. Takie drogi nie miały jeszcze trwałej nawierzchni kamiennej, ale radykalnie skracały czas podróży i transportu towarów w porównaniu z marszem przez bezdroża. Ich budowa i utrzymanie — karczowanie, wyrównywanie terenu, usypywanie nasypów — było jednym z pierwszych wielkich przedsięwzięć infrastrukturalnych ludzkości, łączącym rozproszone osady w sieci wymiany handlowej."
   },
   "droga_brukowana": {
@@ -312,11 +316,11 @@
     "surowiecOdblokowany": null,
     "upgradeFrom": "droga",
     "teren": "hex z Drogi",
-    "warunek": "upgrade Drogi; ruch jednostek 5× szybszy (koszt wejścia ÷5); Handel (plon heksa) +3/turę; ta sama sieć dróg co Droga",
+    "warunek": "upgrade Drogi; ruch jednostek 5× szybszy (koszt wejścia ÷5); Podatek (plon heksa) +3/turę; ta sama sieć dróg co Droga",
     "koszt_praca": 25,
     "tech": "Drogi brukowane",
     "odblokowuje": "",
-    "uwagi": "T-TECH-9 Maciej 2026-07-04. R-DROGI-RUCH-HANDEL-Q1 Maciej 2026-08-14: ruch z +2 (odejmowanie) na 5× szybszy (dzielenie); Handel (plon heksa) 2→3/turę (było 2)",
+    "uwagi": "T-TECH-9 Maciej 2026-07-04. R-DROGI-RUCH-HANDEL-Q1 Maciej 2026-08-14: ruch z +2 (odejmowanie) na 5× szybszy (dzielenie); Podatek (plon heksa) 2→3/turę (było 2)",
     "historia": "Drogi brukowane, budowane z dopasowanych kamiennych płyt układanych na warstwach żwiru i piasku, to jeden ze szczytowych osiągnięć starożytnej inżynierii — najsłynniejszy przykład to sieć dróg rzymskich, licząca w szczycie imperium ponad 80 tysięcy kilometrów, z Via Appia (312 p.n.e.) jako pierwszą wielką arterią. Rzymianie budowali je w warstwach: fundament z grubego kamienia, warstwy żwiru i piasku, a na wierzchu dopasowane płyty bazaltowe lub granitowe, co dawało nawierzchnię trwałą przez stulecia i odporną na deszcze. Podobne technologie brukowania rozwinęły niezależnie Chiny za dynastii Qin i Han, budując drogi cesarskie łączące odległe prowincje. Brukowana nawierzchnia pozwalała na szybki, całoroczny przejazd wozów i wojsk niezależnie od pogody, co czyniło ją kluczowym narzędziem kontroli i administracji rozległych imperiów."
   },
   "kopalnia_miedzi": {
@@ -327,6 +331,7 @@
       "handel": 5
     },
     "surowiecOdblokowany": "ruda",
+    "zastosowanie_surowca": "Ruda miedzi idzie do Odlewni brązu, a brąz to koszt rekrutacji wojska epoki Brązu.",
     "surowiecOdblokowany_uwaga": "ruda miedzi (Odlewnia brązu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 4/turę (było 2/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 20/turę (było 4/turę).",
     "surowiec_ilosc_tura": 20,
     "teren": "Wzgórza, Góry, złoże miedzi (hex.zloze=miedz) lub legacy ZlozeRudy",
@@ -345,6 +350,7 @@
       "handel": 5
     },
     "surowiecOdblokowany": "ruda_zelaza",
+    "zastosowanie_surowca": "Ruda żelaza idzie do Odlewni żelaza, a żelazo to koszt rekrutacji wojska epoki Żelaza.",
     "surowiecOdblokowany_uwaga": "Ruda żelaza (Odlewnia żelaza); plon 2/t z kopalni_zelaza. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA = 2/ture. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 4/turę (było 2/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 20/turę (było 4/turę).",
     "surowiec_ilosc_tura": 20,
     "teren": "Wzgórza, Góry, złoże żelaza (hex.zloze=zelazo)",
@@ -363,6 +369,7 @@
       "handel": 5
     },
     "surowiecOdblokowany": "ruda_cyny",
+    "zastosowanie_surowca": "Cyna idzie do Odlewni brązu, która z rudy miedzi, drewna i cyny wytapia brąz.",
     "surowiecOdblokowany_uwaga": "Ruda cyny (Odlewnia brązu — TRZECI input konwertera Brązu obok ruda+drewno). Ta sama stawka co Kopalnia miedzi/żelaza dziś (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, Maciej 2026-08-13): 20/turę.",
     "surowiec_ilosc_tura": 20,
     "teren": "Wzgórza, Góry, złoże cyny (hex.zloze=cyna)",
@@ -381,7 +388,8 @@
       "handel": 10
     },
     "surowiecOdblokowany": "zloto",
-    "surowiecOdblokowany_uwaga": "PYTANIE-84-R9/B4 (Maciej 2026-07-27): Złoto do magazynu państwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/turę. Mennica zużywa 1 Złoto/turę ze skarbca przy mnożniku handlu→Pieniądz (U-13). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): Złoto ŚWIADOMIE WYŁĄCZONE z przeskalowania ×5 (waluta/handel, nie surowiec budowlany) — wartość BEZ ZMIAN.",
+    "zastosowanie_surowca": "Złoto jest warunkiem Mennicy: Mennica zużywa 1 sztukę złota na turę (src/game/zloto-access.ts:6).",
+    "surowiecOdblokowany_uwaga": "PYTANIE-84-R9/B4 (Maciej 2026-07-27): Złoto do magazynu państwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/turę. Mennica zużywa 1 Złoto/turę ze skarbca przy mnożniku podatku→Pieniądz (U-13). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): Złoto ŚWIADOMIE WYŁĄCZONE z przeskalowania ×5 (waluta/handel, nie surowiec budowlany) — wartość BEZ ZMIAN.",
     "surowiec_ilosc_tura": 1,
     "teren": "Wzgórza, Góry, złoże złota (hex.zloze=zloto)",
     "warunek": "złoże złota — produkcja do magazynu państwa",
@@ -398,15 +406,15 @@
     "surowiecOdblokowany": null,
     "bonus_obrona_proc": 50,
     "bonus_wymaga_obozowania": true,
-    "zasieg_pol": 5,
-    "zasieg_terytorium": 5,
+    "zasieg_pol": 3,
+    "zasieg_terytorium": 3,
     "teren": "ląd w/na krawędzi własnego zasięgu",
-    "warunek": "NIE miasto, BEZ plonów; ROZSZERZA zasięg terytorium o promień 5 pól; odkrywa mgłę; węzeł sieci dróg; +50% Obrony jednostkom obozującym na polu",
+    "warunek": "NIE miasto, BEZ plonów; tworzy teren zabezpieczony pod Twoją cywilizację w promieniu 3 pól (jak miasto: obca cywilizacja nie zbuduje tam ulepszeń ani miasta); odkrywa mgłę; węzeł sieci dróg; +50% Obrony jednostkom obozującym na polu",
     "koszt_praca": 30,
     "tech": "-",
     "tech_uwaga": "T-TECH-3 Maciej 2026-06-26: bramka AND w kodzie — Obróbka drewna + Murarstwo (improvement-tech.ts IMPROVEMENT_MULTI_TECH_REQ)",
     "odblokowuje": "",
-    "uwagi": "Brąz (epoka 2); zasieg_terytorium=5; +50% Obrona w trybie obozowania (decyzja Naster 2026-06-25)",
+    "uwagi": "Brąz (epoka 2); zasieg_terytorium=3 (od 2026-10-31, było 5); +50% Obrona w trybie obozowania (decyzja Naster 2026-06-25)",
     "historia": "Posterunki graniczne i strażnice towarzyszyły państwom niemal od zarania administracji terytorialnej — ich zadaniem było rozszerzanie kontroli poza mury miast, obserwacja szlaków i wczesne ostrzeganie przed najazdem. Rzymski limes, ciągnący się tysiącami kilometrów wzdłuż granic imperium, składał się właśnie z sieci niewielkich wież strażniczych (burgi) i fortów pomocniczych, utrzymujących łączność sygnałową między większymi garnizonami. Podobną funkcję pełniły chińskie wieże strażnicze wzdłuż Wielkiego Muru czy słowiańskie grody strażne na pograniczach wczesnośredniowiecznych księstw. Niewielka załoga posterunku nie mogła stawić czoła regularnej armii, ale dawała czas na mobilizację sił głównych i pozwalała kontrolować handel oraz przemieszczanie się ludzi na newralgicznych szlakach. Sieć takich placówek była tanim, ale skutecznym sposobem na utrzymanie władzy nad rozległym i słabo zaludnionym pograniczem."
   },
   "_miasto_zasieg_ref": {

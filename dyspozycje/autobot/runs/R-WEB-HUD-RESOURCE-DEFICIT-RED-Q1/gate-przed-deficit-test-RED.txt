@@ -1,0 +1,37 @@
+PASS: Skarbiec: normalny stan = złoty (val), bez klasy niedoboru
+FAIL: Skarbiec: goldRunway -> czerwony -- {"val":"rgb(232, 216, 138)","lbl":"rgb(138, 128, 112)","rate":"rgb(80, 176, 112)","short":false}
+PASS: Skarbiec: goldRunway kontrast WCAG AA >= 4.5 (12.13)
+FAIL: Skarbiec: goldZero -> czerwony -- {"val":"rgb(232, 216, 138)","lbl":"rgb(138, 128, 112)","rate":"rgb(80, 176, 112)","short":false}
+PASS: Skarbiec: goldZero kontrast WCAG AA >= 4.5 (12.13)
+FAIL: Skarbiec: goldEdge5 -> czerwony -- {"val":"rgb(232, 216, 138)","lbl":"rgb(138, 128, 112)","rate":"rgb(80, 176, 112)","short":false}
+PASS: Skarbiec: goldEdge5 kontrast WCAG AA >= 4.5 (12.13)
+FAIL: Skarbiec: all -> czerwony -- {"val":"rgb(232, 216, 138)","lbl":"rgb(138, 128, 112)","rate":"rgb(80, 176, 112)","short":false}
+PASS: Skarbiec: all kontrast WCAG AA >= 4.5 (12.13)
+PASS: Skarbiec: goldFarOk -> NIE czerwony (bez niedoboru)
+PASS: Skarbiec: goldEdge6 -> NIE czerwony (bez niedoboru)
+PASS: Skarbiec: powrót do złotego po uzupełnieniu
+PASS: Spichlerz: normalny stan = złoty (val), bez klasy niedoboru
+FAIL: Spichlerz: foodRunway -> czerwony -- {"val":"rgb(232, 216, 138)","lbl":"rgb(138, 128, 112)","rate":"rgb(208, 128, 48)","short":false}
+PASS: Spichlerz: foodRunway kontrast WCAG AA >= 4.5 (12.13)
+FAIL: Spichlerz: foodHunger -> czerwony -- {"val":"rgb(232, 216, 138)","lbl":"rgb(138, 128, 112)","rate":"rgb(208, 128, 48)","short":false}
+PASS: Spichlerz: foodHunger kontrast WCAG AA >= 4.5 (12.13)
+FAIL: Spichlerz: foodUnfed -> czerwony -- {"val":"rgb(232, 216, 138)","lbl":"rgb(138, 128, 112)","rate":"rgb(208, 128, 48)","short":false}
+PASS: Spichlerz: foodUnfed kontrast WCAG AA >= 4.5 (12.13)
+FAIL: Spichlerz: all -> czerwony -- {"val":"rgb(232, 216, 138)","lbl":"rgb(138, 128, 112)","rate":"rgb(208, 128, 48)","short":false}
+PASS: Spichlerz: all kontrast WCAG AA >= 4.5 (12.13)
+PASS: Spichlerz: foodFarOk -> NIE czerwony (bez niedoboru)
+PASS: Spichlerz: powrót do złotego po uzupełnieniu
+PASS: Surowce: normalny stan = złoty (val), bez klasy niedoboru
+FAIL: Surowce: res1 -> czerwony -- {"val":"rgb(232, 216, 138)","lbl":"rgb(138, 128, 112)","rate":"rgb(208, 128, 48)","short":false}
+FAIL: Surowce: res1 kontrast WCAG AA >= 4.5 (4.48)
+FAIL: Surowce: resMany -> czerwony -- {"val":"rgb(232, 216, 138)","lbl":"rgb(138, 128, 112)","rate":"rgb(208, 128, 48)","short":false}
+FAIL: Surowce: resMany kontrast WCAG AA >= 4.5 (4.48)
+FAIL: Surowce: all -> czerwony -- {"val":"rgb(232, 216, 138)","lbl":"rgb(138, 128, 112)","rate":"rgb(208, 128, 48)","short":false}
+FAIL: Surowce: all kontrast WCAG AA >= 4.5 (4.48)
+PASS: Surowce: resCapOnly -> NIE czerwony (bez niedoboru)
+PASS: Surowce: powrót do złotego po uzupełnieniu
+PASS: izolacja: niedobór złota nie czerwieni Spichlerza/Surowców
+FAIL: tooltip Surowców wymienia surowiec w niedoborze
+PASS: zero błędów JS
+[hud-resource-deficit-red-test] 20 pass, 15 fail
+EXIT=1

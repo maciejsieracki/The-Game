@@ -1,0 +1,2 @@
+autoimprove-irrigation-after-farms-test.cjs EXIT=null :: [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all) | [civ] mapGen ms | prep=0 terrain=6 landSea=332 relief=185 coast=258 riversMain=98 riversFill=166 forest=3 deposits=6 
+BATCH_FAILS=1

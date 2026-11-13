@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Kuźnia żelaza** — budynek (Produkcja+Wojsko), epoka Żelazo. **Upgrade Kuźni brązu** (zastępuje ją w mieście). Koszt **60** pracy, utrzymanie **3** ¤/t. Technologia **Hutnictwo żelaza**. **Maks. 1 poziom.** **+8 Pracy/t**, **+2 Pieniądza/t**, **+15% Pancerza** (ścieżka A) po wizycie w mieście.
+**Kuźnia żelaza** — budynek (Produkcja+Wojsko), epoka Żelazo. **Upgrade Kuźni brązu** (zastępuje ją w mieście). Koszt **60** pracy, utrzymanie **3** ¤/t. Technologia **Hutnictwo żelaza**. **Maks. 1 poziom.** **+8 Pracy/t**, **+2 podatku/t**, **+15% Pancerza** (ścieżka A) po wizycie w mieście.
 
 ---
 
@@ -24,7 +24,7 @@
 ### Co robi
 Kuźnia żelaza **zastępuje** Kuźnię brązu w tym samym mieście (`upgradeFrom: kuznia`).
 
-1. **Ekonomia:** **+8 Pracy/t**, **+2 Pieniądza/t**
+1. **Ekonomia:** **+8 Pracy/t**, **+2 podatku/t**
 2. **Ścieżka A — Pancerz:** **+15% Pancerza** dla jednostek, które **odwiedziły** miasto (kumuluje z poprzednim tierem łańcucha kuźni, max **+45%** gdy dostępna Wielka Kuźnia w przyszłej epoce)
 
 **Maks. 1 poziom** — nie ma 10 poziomów ani bonusu „siły przy produkcji".

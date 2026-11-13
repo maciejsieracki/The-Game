@@ -1,0 +1,32 @@
+worldgen done after ms 192375
+T1 body tail ℹ Skarbiec 0 0 Praca 0 0 Spichlerz 0 0 Nauka 0 0 Surowce Handel 0 Epoka kamienia 0 0 MOC Armia 0 0 Miasta 0 0 Obywatele 0 0 Kultura 0 0 Religia 0 0 CIVPEDIA MENU − 100% + ⛶ WYDARZENIA 🌍 Inne cyw. Brak wydarzeń w tej turze. WYKONAJ ZAKOŃCZ TURĘ TURA 1 · 4000 P.N.E. 🏛️ ZAŁÓŻ MIASTO — kliknij podświetlony hex (ESC = wyjście) ✕ Wyjdź MIASTO 🏛️ Załóż miasto FREE (pierwsze miasto)
+build mode ended after click at 700 450
+founded true YPU Niedostępne u rywala tego samego typu ZABLOKOWANA — WYMAGA RELACJI 110 (MASZ 98) zablokowana — wymaga Relacji 110 (masz 98) ZABLOKOWANA — NIE ZBADANO TECHNOLOGII WYMIANA zablokowana — nie zbadano technologii Wymiana UMOWA WYMIANY NIEDOSTĘPNE U RYWALA TEGO SAMEGO TYPU Niedostępne u rywala tego samego typu NIEDOSTĘPNE U RYWALA TEGO SAMEGO TYPU Niedostępne u rywala tego samego typu ZABLOKOWANA — BRAK AKTYWNEJ WASALIZACJI zablokowana — brak aktywnej wasalizacji SZYBKA WYMIANA auto-uczciwa oferta
+  dismissed Wróć
+  dismissed Wróć
+  dismissed Wróć
+  dismissed Wróć
+after end-turn #1 TURA 2 memdebug lines new: 0
+after end-turn #2 TURA 3 memdebug lines new: 0
+end-turn click fail locator.click: Timeout 20000ms exceeded.
+Call log:
+[2m  - waiting for getByRole
+after end-turn #3 TURA 4 memdebug lines new: 0
+end-turn click fail locator.click: Timeout 20000ms exceeded.
+Call log:
+[2m  - waiting for getByRole
+after end-turn #4 TURA 4 memdebug lines new: 0
+end-turn click fail locator.click: Timeout 20000ms exceeded.
+Call log:
+[2m  - waiting for getByRole
+after end-turn #5 TURA 4 memdebug lines new: 1
+end-turn click fail locator.click: Timeout 20000ms exceeded.
+Call log:
+[2m  - waiting for getByRole
+after end-turn #6 TURA 4 memdebug lines new: 0
+MEMDEBUG_LOGS_BEGIN
+[memdebug] koniec tury=4 · geometries=274 · textures=18 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=304.3
+[memdebug] koniec tury=4 · geometries=274 · textures=18 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=319.1
+MEMDEBUG_LOGS_END
+ERRORS ["console.error: Failed to load resource: the server responded with a status of 404 (Not Found)"]
+errs ["console.error: Failed to load resource: the server responded with a status of 404 (Not Found)"]

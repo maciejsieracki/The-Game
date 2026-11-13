@@ -1,0 +1,16 @@
+ai-major-economy-test.cjs kod=1
+citizen-resource-upkeep-test.cjs kod=1
+horse-resource-terrain-test.cjs kod=124
+hud-moc-warstwa-test.cjs kod=1
+hud-number-abbrev-test.cjs kod=0
+hud-obywatele-chip-test.cjs kod=1
+hud-skarbiec-test.cjs kod=1
+hud-tooltip-body-mounted-panels-test.cjs kod=124
+pr141-matrix-only-economy-test.cjs kod=1
+resource-usage-breakdown-test.cjs kod=1
+saveload-hud-cache-hotseat-live-test.cjs kod=124
+sidepanel-hud-deadzone-test.cjs kod=124
+trade-routes-hud-filter-test.cjs kod=1
+transient-webgl-resource-smoke.cjs kod=1
+unit-resource-upkeep-test.cjs kod=1
+EXIT=0

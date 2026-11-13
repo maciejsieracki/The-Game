@@ -1,0 +1,75 @@
+{
+  "topic": "R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922",
+  "role": "Final Control",
+  "round": 1,
+  "verdict": "PASS",
+  "checks": {
+    "owner_decision_spirit_and_letter": "PASS",
+    "no_dead_reference_only_type_usage": {
+      "result": "PASS",
+      "grep_gra_src_REFERENCE_ONLY_hits": [
+        "gra/src/game/civ-matrix-semantic.ts:131 (historical prose comment only)"
+      ],
+      "grep_gra_tools_REFERENCE_ONLY_hits": [
+        "gra/tools/civ-matrix-semantic-labels-test.cjs:147 (assertion message text explaining removal, not a type reference)"
+      ],
+      "grep_removed_ids_whole_gra_dir": [
+        "gra/tools/.scc-bundle.cjs (unchanged generated bundle, pre-existing)",
+        "gra/tools/.dip-audit-bundle.cjs (unchanged generated bundle, pre-existing)"
+      ]
+    },
+    "remaining_109_params_value_identity": {
+      "result": "PASS",
+      "method": "python json diff git show HEAD:gra/data/civ-matrix.json vs working tree",
+      "civ_count_before": 15,
+      "civ_count_after": 15,
+      "sampled_civs_seed42": ["Hetyci", "Rzymianie", "Grecy", "Słowianie", "Zulusi"],
+      "sample_value_mismatches": 0,
+      "full_15_civ_orphan_key_issues": 0,
+      "paramDefs_before": 113,
+      "paramDefs_after": 109,
+      "paramDefs_remaining_value_diffs": 0,
+      "defaults_before": 113,
+      "defaults_after": 109,
+      "defaults_remaining_value_diffs": 0,
+      "meta_kolumny_before": 113,
+      "meta_kolumny_after": 109
+    },
+    "branch_up_to_date_vs_origin_main": {
+      "result": "PASS",
+      "git_fetch_origin_main": "done",
+      "left_right_count_origin_main_ellipsis_HEAD": "0 1",
+      "interpretation": "0 commits exclusive to origin/main, 1 exclusive to HEAD (dispatch commit b00cfaef); fully up to date, no collision risk"
+    },
+    "gates_rerun_independently": {
+      "tsc_noEmit": "PASS exit 0",
+      "semantic_labels_test": "PASS 309; FAIL 0",
+      "meta_roster_wiring_test": "63 passed, 0 failed",
+      "git_diff_check_staged": "clean"
+    },
+    "diff_scope": {
+      "result": "PASS",
+      "files_changed": [
+        "gra/data/civ-matrix.json",
+        "gra/src/game/civ-matrix-semantic.ts",
+        "gra/tools/civ-matrix-meta-roster-wiring-test.cjs",
+        "gra/tools/civ-matrix-semantic-labels-test.cjs"
+      ]
+    }
+  },
+  "commit_action": {
+    "performed": true,
+    "staged_files": [
+      "gra/data/civ-matrix.json",
+      "gra/src/game/civ-matrix-semantic.ts",
+      "gra/tools/civ-matrix-meta-roster-wiring-test.cjs",
+      "gra/tools/civ-matrix-semantic-labels-test.cjs",
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922/"
+    ],
+    "push": "NIE WYKONANO",
+    "merge_to_main": "NIE WYKONANO",
+    "deploy": "NIE WYKONANO"
+  },
+  "next_phase": "workerless integration gate, pending explicit owner approval in chat (orchestrator creates it, not this task)",
+  "deploy_push": "NIE WYKONANO"
+}

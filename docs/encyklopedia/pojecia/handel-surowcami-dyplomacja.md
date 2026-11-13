@@ -20,7 +20,7 @@ W koszyku negocjacji dyplomacji możesz wymieniać surowce **ilościowe** (drewn
 
 ### Jak działa koszyk
 
-Panel negocjacji (`diplomacyTradeBasket.ts`) pozwala dodać pozycję „surowiec (ilość)" — wybierasz surowiec i liczbę **pakietów**; każdy pakiet to **10 sztuk** (`pakiet_wielkosc`, domyślnie 10, strojenie w `econ-params.json` → `handel_surowce`). Gra pokazuje etykietę w stylu „Drewno ×10 (pakiet) × 3 = 30 szt.".
+Panel negocjacji (`diplomacyTradeBasket.ts`) pozwala dodać pozycję „surowiec (ilość)" — wybierasz surowiec i liczbę **pakietów**; każdy pakiet to **10 sztuk** (domyślnie 10, wartość strojona w parametrach gry). Gra pokazuje etykietę w stylu „Drewno ×10 (pakiet) × 3 = 30 szt.".
 
 ### Cennik jednostkowy (normal, placeholder do strojenia)
 

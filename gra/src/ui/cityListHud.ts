@@ -46,6 +46,8 @@ export interface CityListEntry {
   /** Czy to stolica gracza (capitalCityIdForOwner) — plakietka „stolica"
    *  (MIASTA-ARMIE-PANEL-LEWY-2026-08-14 §5.3, zatwierdzone). */
   isCapital?: boolean;
+  /** R-WEB-UI-FARM-ASSIGN-CITIZEN-HINT-MANUAL-MODE-Q1: miasto w trybie ręcznym przydziału obywateli. */
+  manualTryb?: boolean;
 }
 
 export interface CityListHudConfig {
@@ -163,6 +165,7 @@ export function createCityListHud(config: CityListHudConfig): CityListHudApi {
 
         const badges: Array<{ text: string; variant: SideListBadgeVariant }> = [];
         if (c.isCapital) badges.push({ text: 'stolica', variant: 'gold' });
+        if (c.manualTryb) badges.push({ text: 'Tryb ręczny', variant: 'blue' });
         if (c.productionQueueEmpty) badges.push({ text: 'kolejka pusta', variant: 'neutral' });
 
         const nameRow = document.createElement('div');

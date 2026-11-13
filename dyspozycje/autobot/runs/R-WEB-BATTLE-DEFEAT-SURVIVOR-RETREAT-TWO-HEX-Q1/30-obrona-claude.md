@@ -1,0 +1,19 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1
+GOAL: w bitwie W POLU ocalali przegranej strony cofaja sie o 2 heksy od przeciwnika (nie gina); w MIESCIE/oblezeniu gina jak w bazie 261e736de; brak legalnej trasy 2 heksow = opisany edge case bez kasacji/teleportu (decyzja wlasciciela, DODATEK 3).
+ZMIANY/COMMIT: BRAK zmian kodu w tej rundzie obrony (runda 2, po Evaluatorze PASS-WITH-NOTES, 0 zarzutow blokujacych). Start i kod: 7bed9d3794c02ab7fa1dffe06c1631920b4293dd (potomek c5dd4a21f; baza main 261e736de). Zmieniony jest wylacznie ten raport (30-obrona-claude.md, nadpisuje wersje r1).
+
+ODPOWIEDZI NA ZARZUTY (wszystkie 6 to uwagi niblokujace)
+1. PRZYJMUJE jako znane ograniczenie, bez poprawki. Test Chromium uruchamia prawdziwe BattleScene i applyPostBattleMap na swiecie syntetycznym (isPassableHex: () => true); main.ts (applyMapBattleOutcome, retreatHexPassable, reveal mgly) jest poza harnessem, bo zyje w main.ts i nie da sie go uruchomic w izolacji bez zmiany architektury. NIE_ZMIERZONO: pelna petla gry w Chromium z odwrotem po bitwie w polu. Pokrycie main.ts: tsc + mgla-sciezka-inwariant (nowe zapisy pozycji sklasyfikowane, wynik 41/1 = baza).
+2. PRZYJMUJE jako luke pokrycia, bez poprawki. Bramka sceny (_mapExportRoster) jest pokryta tylko jednostkowo (mutacja: BS 42 pass / 2 fail); Chromium tego nie rozroznia, bo drugi filtr w applyPostBattleMap daje ten sam efekt widoczny na mapie. Zalozenie: dwie bramki sa redundantne celowo (obrona w glab); osobny dowod Chromium wymagalby wylacznie mutacji, nie kodu produkcyjnego.
+3. PRZYJMUJE. Po DODATKU 3 przegrani w miescie gina (jak baza), wiec scenariusz "przegrany atakujacy w miescie = odwrot" jest poza zakresem; test jednostkowy 13/13b dowodzi, ze nie wracaja na mape. Chromium siege konczy sie wygrana atakujacego (odpowiednik bazy: defOnMap=0).
+4. ODRZUCAM jako wade. Oblegajacy (oblegaCityId) w bitwie w polu nie cofaja sie (noRoute) - zgodnie z zachowaniem ograniczen blokady z R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1; nie gina, zostaja na heksie startowym. Dowod: post-battle-map.ts:495 (`if (u.oblegaCityId) { twoHex.noRoute.push(...); continue; }`), test dwuheksowy asercja retreatNoTwoHexRouteIds. Swiadome zalozenie; zmiana wymaga ABC.
+5. ODRZUCAM jako regresje, PRZYJMUJE jako dlug bazowy. Predykat legalnosci odwrotu (isPassableHex = retreatHexPassable: woda/gory + oblegane miasto; brak obcych jednostek; brak cudzego miasta) jest TEN SAM co w istniejacym fan-oucie bazy: `git show 261e736de:gra/src/main.ts` zawiera `isPassableHex: retreatHexPassable` w obu miejscach (linie 34035, 34196). Zamkniete granice nie byly tam sprawdzane. NIE_ZMIERZONO wplyw na zamkniete granice; ewentualna zmiana = osobny temat/ABC, nie ten.
+6. PRZYJMUJE jako zgodne z dispatchem. Brak legalnej trasy 2 heksow = dotychczasowe zachowanie (fan-out 1 heks / start), bez kasacji i teleportu; opisane w retreatNoTwoHexRouteIds, test dwuheksowy 44/0.
+
+TESTY: w tej rundzie obrony nie uruchamiano ponownie (w worktree brak gra/node_modules; brak zmian kodu od 7bed9d379). Wyniki Evaluatora na 7bed9d379 (raport dd29169ce): tsc exit 0, test tematu 44/0, undeployed 37/0, post-battle-map 32/0, siege-defenders 12/0, oblezenie-siege-lifted 16/0, oblezenie-remis-endsiege 271/0, dead-units PASS, skip-parity 38/0 i 17/0, map-field-battle 24/0, logic 213/213, tech-tree 20/0, research 33/0, unit-replace 21/21, combat 6/6; mgla-sciezka-inwariant 41/1 = baza (main.ts:28778, dlug bazowy); Chromium BROWSER PASS x3. Mutacje czerwienieja. To sa liczby Evaluatora, nie moje.
+BLOKADY: brak. Otwarte (nie blokujace): luki NIE_ZMIERZONO z zarzutow 1 i 5; wipeDefenderOnCityCenter bez zmian (decyzja wlasciciela).
+RUNDY: 2/5 (obrona)
+NASTEPNY KROK: Final Control na 7bed9d3794c02ab7fa1dffe06c1631920b4293dd (merge-tree z origin/main f49fcec9f czysty wg Evaluatora).
+DEPLOY/PUSH: NIE WYKONANO

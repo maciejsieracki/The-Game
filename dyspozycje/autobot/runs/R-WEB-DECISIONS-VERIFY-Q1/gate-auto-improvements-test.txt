@@ -1,0 +1,4 @@
+-- 17. FALA 292: STRUKTURA (regex na main.ts) — split absolutny jest policzony przed pickerem, a picker nie dzieli go drugi raz --
+-- 18. FALA 292: realny picker respektuje absolutny split mimo starego override per-miasto --
+auto-improvements-test: 46 passed, 0 failed
+EXIT=0

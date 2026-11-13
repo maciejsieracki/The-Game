@@ -1,0 +1,11 @@
+PASS: tartak is explicitly marked as relief-preserving
+PASS: a sawmill-only stack preserves the hill
+PASS: a conflicting non-preserving layer does not silently preserve relief
+PASS: main terrain preservation uses the tested relief predicate
+PASS: preserved wooded hill returns before the fallback that hides forest/relief decor
+PASS: sawmill sector gets elevated placement options on a preserved hill
+PASS: elevated placement samples the actual hill surface
+PASS: the spawned improvement visual receives the sampled relief placement
+
+sawmill-hill-relief-test: 8 assertions passed
+EXIT=0

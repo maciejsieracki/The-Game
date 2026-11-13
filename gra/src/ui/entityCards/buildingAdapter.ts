@@ -4,10 +4,13 @@
  * P-KARTA-PRZEBUDOWA-UKLAD-Q1 wg zaakceptowanego układu z `00-dispatch.md`).
  *
  * Kolejność `sections`: Wymagania (technologia/budynek-wymóg/dodatkowe warunki) → Opis
- * (proza, dziś zawsze pusta — brak danych) → [Rys historyczny, wstawiany przez
- * `renderer.ts::renderEntityCard` na stałym indeksie 2] → Top 3 (dziś zawsze pusty) →
- * Charakterystyka (BEZ poziomu — poziom w `headerChips`) → Efekty → Koszt budowy →
- * Koszt utrzymania → Poziomy. `headerChips` niesie Epokę/Poziom w nagłówku karty.
+ * (proza) → [Rys historyczny, wstawiany przez `renderer.ts::renderEntityCard` na stałym
+ * indeksie 2] → Top 5 (R-WEB-BUILDING-CARDS-TOP5-IMPLEMENT-Q1, dane z
+ * `data/building-cards-top5.json`; dawniej „Top 3” z `buildings.json`) → Co możesz teraz
+ * zrobić (NOWA, CZYNNOŚĆ → KORZYŚĆ) → Charakterystyka (BEZ poziomu — poziom w
+ * `headerChips`) → Efekty → Koszt budowy → Koszt utrzymania → Poziomy. `headerChips`
+ * niesie Epokę/Poziom w nagłówku karty. Budynki niedostępne (Wielka odlewnia, Wielka
+ * Kuźnia, Teatr) mają kartę ukrytą w `registry.ts::resolveBuildingRow`.
  *
  * ŚWIADOMIE NIE tutaj (host — `cityPanel.ts::buildBuildingDetailCard` — dopełnia po
  * `renderEntityCard()`, dokładnie wzorem T3/T4 „adapter = treść niezależna od
@@ -34,6 +37,7 @@
  */
 import type { BuildingDef } from '../../data/loader';
 import buildingsData from '../../../data/buildings.json';
+import buildingCardsTop5Data from '../../../data/building-cards-top5.json';
 import { buildingIconSvg } from '../icons/brandAssets';
 import {
   buildingEffectAtLevel,
@@ -42,9 +46,16 @@ import {
 } from '../../game/production';
 import type { BuildingCostPace } from '../../game/building-cost-tempo';
 import type { GameDifficulty } from '../../game/difficulty-cost';
-import { buildingUpkeep, buildingResourceUpkeep } from '../../game/economy-upkeep';
-import type { BuildingRecord } from '../../game/economy';
-import { buildingStockCost, stockResourceLabel } from '../../game/building-stock-cost';
+import { buildingUpkeep, buildingResourceUpkeep, readBuildingResourceUpkeepRatio } from '../../game/economy-upkeep';
+import econParamsData from '../../../data/econ-params.json';
+import {
+  BUILDING_HAPPINESS_BASE_PER_BUILDING,
+  buildingGivesHappiness,
+  buildingHappinessAtLevel,
+  type BuildingRecord,
+} from '../../game/economy';
+import { buildingStockCost } from '../../game/building-stock-cost';
+import { proseRowFields, yieldSentenceFields, yieldTitleFields, yieldValueFields } from './resourceRows';
 import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../../game/unit-building-bonuses';
 import { buildingStructuralDefenseBonusLine } from '../../game/building-upgrades';
 import { resolveTechnologyRow, technologyIdFromName } from './registry';
@@ -65,9 +76,9 @@ export interface BuildingCardCityState {
   buildCostPace: BuildingCostPace;
   /** `cfg.getDifficulty?.() ?? 'normal'` policzone przez hosta. */
   difficulty: GameDifficulty;
-  /** Zawsze `0` w dzisiejszym `buildBuildingDetailCard` (świadomy, niezmieniony hardcode
-   * — `const ownerId = 0;`), zachowane 1:1. */
+  /** Owner of the city used to resolve price effects. */
   ownerId: number;
+  civBonusy?: readonly import('../../game/production').CivBonusLite[];
 }
 
 const EPOCH_LABEL: Record<number, string> = { 1: 'Kamień', 2: 'Brąz', 3: 'Żelazo' };
@@ -96,18 +107,59 @@ function historicalNoteOf(building: BuildingDef): string | undefined {
   return t !== '' ? t : undefined;
 }
 
-/** `opis`/`top3` (P-KARTA-PRZEBUDOWA-UKLAD-Q1) — pola NIE istnieją jeszcze w `BuildingDef`
- * (batche treści dopiszą je osobno, ten temat jest wyłącznie strukturalny — patrz
- * `00-dispatch.md` GOAL). Czytamy bezpiecznie spoza typowanego kształtu, wzorem
- * `historicalNoteOf` wyżej. Zwraca `undefined`/`[]` gdy dane brakują — sekcja renderuje
- * się wtedy pusta (renderer pomija puste sekcje), zero wymyślonej treści. */
-function descriptionOf(building: BuildingDef): string | undefined {
+// --- R-WEB-BUILDING-CARDS-TOP5-IMPLEMENT-Q1: treść kart budynków z `data/building-cards-top5.json`
+// (generator `tools/gen-building-cards-top5.cjs` z `budynki-top5.csv`, FC c828a978f) — wzorem
+// etapu 1 (`technologyAdapter.ts` + `tech-cards-top5.json`). ---------------------------------
+
+/** Pozycja „Top 5” — tytuł z liczbą + jedno zdanie (decyzja właściciela (1)); `rodzaj`
+ * `warunek`/`rozbudowa` nigdy na Top1 (decyzja (3), pilnuje generator i test). */
+export interface BuildingTop5Item {
+  tytul: string;
+  liczba?: string;
+  zdanie: string;
+  rodzaj: 'efekt' | 'warunek' | 'rozbudowa';
+  dowod?: string;
+}
+/** „Co możesz teraz zrobić” — schemat CZYNNOŚĆ → KORZYŚĆ (decyzja (2)). */
+export interface BuildingCmzItem { czynnosc: string; korzysc: string }
+/** `ukryty` — budynek dziś niedostępny (decyzja (4)); `opisKarty` — opis bez odwołania do
+ * efektu martwego (nadpisuje `opis` z `buildings.json` WYŁĄCZNIE na karcie). */
+export interface BuildingCardContent {
+  top5: BuildingTop5Item[];
+  cmz: BuildingCmzItem[];
+  ukryty?: boolean;
+  opisKarty?: string;
+}
+
+const BUILDING_CARD_CONTENT = buildingCardsTop5Data as unknown as Record<string, BuildingCardContent | undefined>;
+
+/** Treść karty budynku albo `undefined`, gdy budynek nie ma wpisu (fallback na `top3`). */
+export function buildingCardContentOf(id: string): BuildingCardContent | undefined {
+  if (id.startsWith('_')) return undefined;
+  return BUILDING_CARD_CONTENT[id];
+}
+
+/** Jedno zdanie „Co możesz teraz zrobić”: „[CZYNNOŚĆ], aby [KORZYŚĆ].” — ten sam szablon co
+ * `technologyAdapter.ts::cmzSentence` (etap 1). */
+export function buildingCmzSentence(item: BuildingCmzItem): string {
+  return `${item.czynnosc}, aby ${item.korzysc}.`;
+}
+
+/** `opis` (P-KARTA-PRZEBUDOWA-UKLAD-Q1) — czytany spoza typowanego kształtu `BuildingDef`,
+ * wzorem `historicalNoteOf` wyżej. `opisKarty` z `building-cards-top5.json` ma pierwszeństwo
+ * (decyzja (4): opis bez odwołania do efektu martwego, np. Katapulta Warsztatu oblężniczego). */
+function descriptionOf(building: BuildingDef, content: BuildingCardContent | undefined): string | undefined {
+  const override = text(content?.opisKarty);
+  if (override !== '') return override;
   const t = text((building as unknown as Record<string, unknown>).opis);
   return t !== '' ? t : undefined;
 }
 
 interface Top3Entry { tytul?: unknown; tekst?: unknown }
 
+/** Dawne `top3` z `buildings.json` — WYŁĄCZNIE fallback dla budynku BEZ wpisu w
+ * `building-cards-top5.json` (dziś 0/43 — pilnuje `tools/building-cards-top5-test.cjs`).
+ * Pole `top3` zostaje w danych (konsument: `tools/emporion-building-test.cjs`). */
 function top3Of(building: BuildingDef): EntityCardRow[] {
   const raw = (building as unknown as Record<string, unknown>).top3;
   if (!Array.isArray(raw)) return [];
@@ -120,12 +172,15 @@ function top3Of(building: BuildingDef): EntityCardRow[] {
     .filter((r) => r.label !== '' || r.value !== '');
 }
 
-const YIELD_BRAND: { key: keyof BuildingDef['baza']; label: string }[] = [
-  { key: 'praca', label: 'Praca' },
-  { key: 'pieniadz', label: 'Pieniądz' },
-  { key: 'zywnosc', label: 'Żywność' },
-  { key: 'nauka', label: 'Nauka' },
-  { key: 'kultura', label: 'Kultura' },
+const YIELD_BRAND: { key: keyof BuildingDef['baza']; label: string; chip?: string }[] = [
+  { key: 'praca', label: 'Praca', chip: 'praca' },
+  // R-WEB-CARDS-RESOURCE-PURPOSE-Q1 (DODATEK 3): `baza.pieniadz` budynku wchodzi do bazy PODATKU
+  // (economy.ts:881-920 `handelBazowy = handelTerenu + pieniadzBudynkow`) — pieniądz powstaje dopiero
+  // po podziale podatku / w Mennicy. Klucz danych zostaje `pieniadz`, zmienia się tylko etykieta.
+  { key: 'pieniadz', label: 'Podatek', chip: 'podatek' },
+  { key: 'zywnosc', label: 'Żywność', chip: 'zywnosc' },
+  { key: 'nauka', label: 'Nauka', chip: 'nauka' },
+  { key: 'kultura', label: 'Kultura', chip: 'kultura' },
   { key: 'zadowolenie', label: 'Zadowolenie' },
   { key: 'obrona', label: 'Obrona' },
 ];
@@ -144,6 +199,28 @@ function formatYieldDetailValue(baza: number, przyrost: number, level: number): 
   return main;
 }
 
+/** Szczęście z budynku WG SILNIKA (`economy.ts::buildingHappinessAtLevel`): ryczałt +1 (tylko
+ * `dajeSzczescie: true`) + `baza/przyrost.zadowolenie`. Wiersz „Zadowolenie” w „Plony i efekty”
+ * pokazuje tę wartość — tę samą, co silnik i co Top 5 (R-WEB-TRYBUNAL-CARD-HAPPINESS-DISPLAY-Q1:
+ * wcześniej karta pokazywała surowe `baza/przyrost` bez ryczałtu, np. Trybunał „+1” zamiast „+2”). */
+function formatHappinessDetailValue(record: BuildingRecord, level: number): string {
+  const eff = buildingHappinessAtLevel(record, level);
+  const extra = eff - BUILDING_HAPPINESS_BASE_PER_BUILDING;
+  const levelNote = level > 1 ? `poziom ${level}: ` : '';
+  return extra > 0
+    ? `+${eff} pkt/turę (${levelNote}ryczałt +${BUILDING_HAPPINESS_BASE_PER_BUILDING}, zadowolenie +${extra})`
+    : `+${eff} pkt/turę (${levelNote}ryczałt +${BUILDING_HAPPINESS_BASE_PER_BUILDING})`;
+}
+
+/** Skala poziomów Szczęścia wg silnika; `null` gdy budynek nie zmienia wartości między poziomami. */
+function formatHappinessScaleRow(record: BuildingRecord, maksPoziom: number): string | null {
+  if (maksPoziom <= 1) return null;
+  const values: number[] = [];
+  for (let l = 1; l <= maksPoziom; l++) values.push(buildingHappinessAtLevel(record, l));
+  if (values.every((v) => v === values[0])) return null;
+  return values.map((v, i) => `L${i + 1}: +${v}`).join(' · ');
+}
+
 /** 1:1 z `cityPanel.ts::formatBuildingYieldScaleRow`. */
 function formatYieldScaleRow(def: BuildingDef, baza: number, przyrost: number): string | null {
   if (przyrost === 0 || def.maksPoziom <= 1) return null;
@@ -156,15 +233,37 @@ function formatYieldScaleRow(def: BuildingDef, baza: number, przyrost: number): 
 }
 
 /** 1:1 z `cityPanel.ts::formatBuildingUpkeepGridValue`, bez ikon inline (patrz wyżej). */
-function formatUpkeepValue(gold: number, resources: Record<string, number>): string {
-  if (gold === 0 && Object.keys(resources).length === 0) return 'utrzymanie zero';
-  const parts: string[] = [];
-  if (gold > 0) parts.push(`${gold} Pieniądza`);
-  const resKeys = Object.keys(resources);
-  if (resKeys.length > 0) {
-    parts.push(resKeys.map((k) => `−${resources[k]} ${stockResourceLabel(k)}/t`).join(' · '));
-  }
-  return parts.join(' + ');
+/** Polskie odmiany (mianownik / 2-4 / dopełniacz-mnoga) dla liczebników przy utrzymaniu. */
+const UPKEEP_NOUN_FORMS: Record<string, [string, string, string]> = {
+  'pieniądz': ['Pieniądz', 'Pieniądze', 'Pieniędzy'],
+  'drewno': ['drewno', 'drewna', 'drewien'],
+  'kamień': ['kamień', 'kamienie', 'kamieni'],
+  'cegła': ['cegła', 'cegły', 'cegieł'],
+  // R-WEB-BUILDING-UPKEEP-CERAMICS-IMPL-Q1: ceramika jako surowiec utrzymania (Spichlerz II, Akwedukt, Łaźnia, Port).
+  'ceramika': ['ceramika', 'ceramiki', 'ceramiki'],
+};
+
+function plUpkeepForm(n: number, forms: [string, string, string]): string {
+  const m10 = n % 10;
+  const m100 = n % 100;
+  if (m100 >= 12 && m100 <= 14) return forms[2];
+  if (m10 === 1) return forms[0];
+  if (m10 >= 2 && m10 <= 4) return forms[1];
+  return forms[2];
+}
+
+/** Karta budynku: „2 Pieniądze, [2 ikona drewna], [2 ikona kamienia] / turę” — surowce jako DANE
+ * (`resources`), renderer rysuje ikony (R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1). */
+function upkeepRowFields(gold: number, resources: Record<string, number>):
+  Pick<EntityCardRow, 'value' | 'resources' | 'resourcesSuffix'> {
+  const keys = Object.keys(resources);
+  if (gold === 0 && keys.length === 0) return { value: 'utrzymanie zero' };
+  // Pieniądz jako chip „N [ikona]" razem z surowcami (R-WEB-UI-RESOURCE-ICONS-YIELDS-WONDERS-Q1).
+  const chips = [
+    ...(gold > 0 ? [{ id: 'pieniadz', amount: gold }] : []),
+    ...keys.map((k) => ({ id: k, amount: resources[k] ?? 0 })),
+  ];
+  return { value: '', resources: chips, resourcesSuffix: '/ turę' };
 }
 
 const DEFAULT_CITY_STATE: BuildingCardCityState = {
@@ -182,7 +281,8 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
   // ============================================================================================
   // P-KARTA-PRZEBUDOWA-UKLAD-Q1 — układ zaakceptowany przez właściciela 2026-09-08 (patrz
   // `00-dispatch.md`): Nagłówek → Wymagania → Opis → [Rys historyczny, wspólny punkt
-  // pozycjonowania w renderer.ts] → Top 3 → Charakterystyka → Efekty → Koszt budowy →
+  // pozycjonowania w renderer.ts] → Top 5 → Co możesz teraz zrobić (R-WEB-BUILDING-CARDS-
+  // TOP5-IMPLEMENT-Q1) → Charakterystyka → Efekty → Koszt budowy →
   // Koszt utrzymania → Poziomy → Więcej informacji. Sekcje „Opis"/„Wymagania" MUSZĄ zostać
   // pierwsze dwie w tablicy `sections` (indeksy 0/1) — `renderEntityCard` wstawia Rys
   // historyczny na STAŁYM indeksie 2 tej listy, jednolicie dla wszystkich 5 kinds (patrz
@@ -207,12 +307,13 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
   const upgradeFromId = text((building as unknown as Record<string, unknown>).upgradeFrom);
   if (upgradeFromId !== '' && !isEmptyDataVal(upgradeFromId)) {
     const prev = ALL_BUILDINGS.find((b) => b.id === upgradeFromId);
-    const upgradeRow: EntityCardRow = { label: 'Wymagany budynek', value: prev ? prev.nazwa : upgradeFromId };
+    const skipChain = (building as unknown as Record<string, unknown>).upgradeSkip === true;
+    const upgradeRow: EntityCardRow = { label: skipChain ? 'Awans z (opcjonalnie)' : 'Wymagany budynek', value: prev ? prev.nazwa : upgradeFromId };
     if (prev) upgradeRow.linkTo = { kind: 'building', id: prev.id };
     reqRows.push(upgradeRow);
   }
   if (building.wymagania && !isEmptyDataVal(building.wymagania)) {
-    reqRows.push({ label: 'Dodatkowe warunki', value: text(building.wymagania) });
+    reqRows.push({ label: 'Dodatkowe warunki', ...proseRowFields(text(building.wymagania)) });
   }
   if (reqRows.length === 0) reqRows.push({ label: 'Wymagania', value: 'brak — dostępny od startu' });
   const requirementsSection: EntityCardSection = { key: 'requirements', title: 'Wymagania', rows: reqRows };
@@ -222,7 +323,8 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
   // przy budowie DOM, ale pozycja w tablicy zostaje zarezerwowana dla wspólnego punktu
   // wstawiania Rysu historycznego w rendererze). Zakaz wymyślania treści (dispatch) — dopóki
   // `opis` nie istnieje w danych, ta sekcja jest zawsze niewidoczna. -------------------------
-  const opis = descriptionOf(building);
+  const content = buildingCardContentOf(building.id);
+  const opis = descriptionOf(building, content);
   const descriptionSection: EntityCardSection = {
     key: 'description', title: 'Opis',
     rows: opis ? [{ label: '', value: opis }] : [],
@@ -231,9 +333,28 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
 
   const sections: EntityCardSection[] = [requirementsSection, descriptionSection];
 
-  // --- 5. TOP 3 — jeśli dane istnieją (dziś: 0/42, batch przyszłej fali) ---------------------
-  const top3 = top3Of(building);
-  if (top3.length > 0) sections.push({ key: 'top3', title: 'Top 3', rows: top3, layout: 'top3' });
+  // --- 5. TOP 5 (R-WEB-BUILDING-CARDS-TOP5-IMPLEMENT-Q1, decyzja właściciela (1)) — indeks 2
+  // tablicy `sections`, więc `renderer.ts::renderEntityCard` (HISTORIA_SECTION_INDEX = 2,
+  // NIETKNIĘTY) stawia Rys historyczny tuż PRZED nią: Top 5 jest zawsze bezpośrednio po Rysie.
+  // Tylko realne pozycje (1–5, bez dopełniania); layout `top3` renderera numeruje dowolną
+  // liczbę pozycji. Budynek ukryty (decyzja (4)) nie ma treści — sekcja się nie renderuje. ---
+  const top5Rows: EntityCardRow[] = content
+    ? (content.ukryty ? [] : content.top5.slice(0, 5).map((item) => ({ label: item.tytul, ...yieldTitleFields(item.tytul), value: item.zdanie })))
+    : top3Of(building);
+  if (top5Rows.length > 0) sections.push({ key: 'top5', title: 'Top 5', rows: top5Rows, layout: 'top3' });
+
+  // --- 5b. „Co możesz teraz zrobić” (NOWA, decyzja właściciela (2)) — zaraz po Top 5, maks. 3
+  // zdania „[CZYNNOŚĆ], aby [KORZYŚĆ].” z danych; ten sam wygląd co sekcja `actions` karty
+  // odkrycia (etap 1). Brak wpisu / budynek ukryty ⇒ brak sekcji (zero wymyślonej treści). ---
+  const actionRows: EntityCardRow[] = content && !content.ukryty
+    ? content.cmz.slice(0, 3).map((item) => ({ label: '', ...yieldSentenceFields(buildingCmzSentence(item)) }))
+    : [];
+  if (actionRows.length > 0) {
+    sections.push({
+      key: 'actions', title: 'Co możesz teraz zrobić', rows: actionRows,
+      collapsible: true, openDefault: true, highlighted: true, layout: 'prose',
+    });
+  }
 
   // --- 6. CHARAKTERYSTYKA — BEZ poziomu (poziom przeniesiony do nagłówka, patrz `headerChips`
   // w `return` niżej) -------------------------------------------------------------------------
@@ -246,13 +367,24 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
 
   // --- 7. EFEKTY/PLONY — 1:1 z dawną sekcją „Plony i efekty" ---------------------------------
   const yieldRows: EntityCardRow[] = [];
+  const happinessRecord = building as unknown as BuildingRecord;
   for (const y of YIELD_BRAND) {
+    if (y.key === 'zadowolenie') {
+      // Silnik daje Szczęście tylko budynkom `dajeSzczescie: true` i dolicza do nich ryczałt +1
+      // nawet bez `baza.zadowolenie` (Targowisko, Port, Stela). Budynek bez Szczęścia — brak wiersza.
+      if (!buildingGivesHappiness(happinessRecord)) continue;
+      yieldRows.push({ label: y.label, value: formatHappinessDetailValue(happinessRecord, displayLevel) });
+      const happinessScale = formatHappinessScaleRow(happinessRecord, building.maksPoziom);
+      if (happinessScale) yieldRows.push({ label: `${y.label} — skala poziomów`, value: happinessScale });
+      continue;
+    }
     const baza = building.baza[y.key] ?? 0;
     const inc = building.przyrost[y.key] ?? 0;
     if (baza === 0 && inc === 0) continue;
-    yieldRows.push({ label: y.label, value: formatYieldDetailValue(baza, inc, displayLevel) });
+    const yieldText = formatYieldDetailValue(baza, inc, displayLevel);
+    yieldRows.push({ label: y.label, ...(y.chip ? yieldValueFields(y.chip, yieldText) : { value: yieldText }) });
     const scale = formatYieldScaleRow(building, baza, inc);
-    if (scale) yieldRows.push({ label: `${y.label} — skala poziomów`, value: scale });
+    if (scale) yieldRows.push({ label: `${y.label} — skala poziomów`, ...(y.chip ? yieldValueFields(y.chip, scale) : { value: scale }) });
   }
   const mnoznikRole = mnoznikRoleForBuildingId(building.id);
   if (mnoznikRole) {
@@ -276,31 +408,37 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
   // --- 8. KOSZTY — DWIE osobne pod-sekcje: „Koszt budowy" i „Koszt utrzymania" (dotąd jedna
   // sekcja „Koszty budowy i utrzymania" mieszała jednorazowy wydatek z co-turowym) -----------
   const baseWork = itemCost('budynek', building.id, { buildings: ALL_BUILDINGS, units: [] }, 1);
-  const workCost = buildingWorkCost(baseWork, undefined, cityState.buildCostPace, cityState.ownerId, cityState.difficulty);
+  const workCost = buildingWorkCost(baseWork, cityState.civBonusy, cityState.buildCostPace, cityState.ownerId, cityState.difficulty);
   const stockCostDetail = buildingStockCost(building);
   const buildCostRows: EntityCardRow[] = [
-    { label: 'Praca (jednorazowo)', value: `${workCost} pkt Pracy` },
+    { label: 'Praca (jednorazowo)', ...yieldValueFields('praca', `${workCost} pkt`) },
   ];
   if (building.przyrostKosztu) {
-    buildCostRows.push({ label: 'Przyrost za poziom', value: `+${building.przyrostKosztu} pkt Pracy / poziom` });
+    buildCostRows.push({ label: 'Przyrost za poziom', ...yieldValueFields('praca', `+${building.przyrostKosztu} pkt / poziom`) });
   }
   const stockKeys = Object.keys(stockCostDetail);
   if (stockKeys.length > 0) {
     buildCostRows.push({
       label: 'Surowce (jednorazowo)',
-      value: `${stockKeys.map((k) => `${stockCostDetail[k]} ${stockResourceLabel(k)}`).join(' + ')} — z magazynu państwa`,
+      value: '',
+      resources: stockKeys.map((k) => ({ id: k, amount: stockCostDetail[k] ?? 0 })),
+      resourcesSuffix: '— z magazynu państwa',
     });
   }
   sections.push({ key: 'cost-build', title: 'Koszt budowy', rows: buildCostRows });
 
-  const upkeepGold = buildingUpkeep(building as unknown as BuildingRecord, 1);
-  const upkeepResources = buildingResourceUpkeep(building);
+  const upkeepLevel = cityState.hasCity ? displayLevel : 1;
+  const upkeepGold = buildingUpkeep(building as unknown as BuildingRecord, upkeepLevel);
+  const upkeepResources = buildingResourceUpkeep(building, upkeepLevel, readBuildingResourceUpkeepRatio(
+    econParamsData as unknown as Parameters<typeof readBuildingResourceUpkeepRatio>[0],
+    cityState.difficulty,
+  ));
   const upkeepCostRows: EntityCardRow[] = [
-    { label: 'Co turę', value: formatUpkeepValue(upkeepGold, upkeepResources) },
+    { label: 'Co turę', ...upkeepRowFields(upkeepGold, upkeepResources) },
   ];
   if (building.przyrostUtrzymania) {
     upkeepCostRows.push({
-      label: 'Przyrost za poziom', value: `+${building.przyrostUtrzymania} pkt Pieniądza / poziom`,
+      label: 'Przyrost za poziom', ...yieldValueFields('pieniadz', `+${building.przyrostUtrzymania} pkt / poziom`),
     });
   }
   sections.push({ key: 'cost-upkeep', title: 'Koszt utrzymania', rows: upkeepCostRows });

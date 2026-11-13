@@ -1,0 +1,59 @@
+  OK: Defekt A: znaleziono gałąź cywAction === 'wchloniecie' w applyProposalOutcome
+  OK: Defekt A: znaleziono koniec bloku (sąsiedni "if (result.deal) {")
+  OK: Defekt A: blok nadal woła annexCityStateToOwner(responderId, proposerId)
+  OK: Defekt A: DOKŁADNIE jedno showHintMessage( w bloku wchłonięcia (znaleziono 1) — to jest wyłącznie zwykły toast wchłonięcia (bez eliminacji); toast ELIMINACJA w tym bloku został RUNDĄ 5 usunięty na rzecz side-panel eventu (recordCivElimEvent w annexCityStateToOwner)
+  OK: Defekt A: wasEliminated jest liczone z realnego stanu eliminacji (eliminatedOwners), nie zgadywane z samego annexerId
+  OK: Defekt A (Runda 4): znaleziono function resolveNegotiationEntryAt
+  OK: Defekt A (Runda 4): znaleziono koniec resolveNegotiationEntryAt (kolejna funkcja resolvePendingNegotiationsForOwner)
+  OK: Defekt A (Runda 4): znaleziono wywołanie applyProposalOutcome(...) w resolveNegotiationEntryAt
+  OK: Defekt A (Runda 4): zmierzono bazową indentację wywołania applyProposalOutcome(...)
+  OK: Defekt A (Runda 4): znaleziono showHintMessage(ownerDiploLabel(awaitingId)...) PO applyProposalOutcome (generyczny toast musi nadal istnieć w kodzie, tylko warunkowo)
+  OK: Defekt A (Runda 4): showHintMessage(ownerDiploLabel(awaitingId)...) PO applyProposalOutcome NIE jest już bezwarunkowym bare statement na poziomie funkcji (indent bazowy 8, indent toastu 10 — musi być GŁĘBIEJ, czyli zagnieżdżony wewnątrz if-guarda, nie na tym samym poziomie co applyProposalOutcome) — to dokładnie wzorzec kolizji z rundy 3 (applyProposalOutcome scala toast eliminacji, a wywołujący i tak go nadpisuje drugim, bezwarunkowym wywołaniem na tym samym poziomie)
+  OK: Defekt A (Runda 4): resolveNegotiationEntryAt sprawdza entry.actionId === 'wchloniecie' PO applyProposalOutcome, żeby nie nadpisać już pokazanego, scalonego toastu eliminacji
+  OK: Defekt A (Runda 4): guard rozróżnia outcome.kind === 'accepted' — odrzucone wchłonięcie MUSI nadal dostawać generyczny toast "odrzuca propozycję" (applyProposalOutcome nic nie pokazuje sam, gdy !result.accepted)
+  OK: Defekt A (Runda 4): showHintMessage( nadal jest wołane w resolveNegotiationEntryAt po applyProposalOutcome (dla wszystkich przypadków poza accepted+wchloniecie) — zero-informacji dla gracza też jest błędem
+  OK: Defekt B/1: znaleziono function resolveSiegeSurrender
+  OK: Defekt B/1: znaleziono koniec resolveSiegeSurrender (kolejna funkcja endMapSiege)
+  OK: Defekt B/1: runCapitalCapturePlunder(...) NIE jest już wołane jako bare statement (wartość zwracana musi być odebrana)
+  OK: Defekt B/1: runCapitalCapturePlunder(city, oldOwner, newOwner) ma odebraną wartość zwracaną
+  OK: Defekt B/1: dokładnie 2 showHintMessage( w resolveSiegeSurrender (capture-scalony + no-capture), znaleziono 2 — 3 oznaczałoby regresję kolizji Defektu A w tej samej funkcji
+  OK: Defekt B/2: applyMapBattleOutcome.opts deklaruje onCityCaptured callback
+  OK: Defekt B/2: blok przejęcia miasta (siegeContext) faktycznie WOŁA opts.onCityCaptured
+  OK: Defekt B/2: finishSiegeStormBattle trzyma wynik callbacku w siegeCaptureInfo
+  OK: Defekt B/2: battleOpts przekazuje onCityCaptured, który zapisuje siegeCaptureInfo
+  OK: Defekt B/2: afterSiegeUi czyta siegeCaptureInfo?.eliminatedCivLabel przy budowie toastu „Szturm udany" (etykieta eliminacji nie ginie po cichu na ścieżce muru)
+  OK: Defekt C: runCapitalCapturePlunder zwraca obiekt z polem eliminatedDetails
+  OK: Defekt C: dokładnie 2 wywołania showCityCaptureNotice (przez wrapper Deferred) w main.ts (znaleziono 2)
+  OK: Defekt C: OBA call site'y showCityCaptureNotice przekazują eliminatedDetails (znaleziono 2/2)
+  OK: Defekt C: CityCaptureNoticeOpts (cityCaptureNotice.ts) deklaruje eliminatedDetails
+  OK: Defekt C: modal ELIMINACJA! renderuje eliminatedDetails (nie tylko nazwę cywilizacji)
+  OK: RUNDA 5 (a): blok cywAction === 'wchloniecie' w applyProposalOutcome NIE zawiera już tekstu ELIMINACJA w KODZIE (poza komentarzami) — przeniesiony do side-panel event + modal
+  OK: RUNDA 5: znaleziono function annexCityStateToOwner
+  OK: RUNDA 5: znaleziono koniec annexCityStateToOwner (kolejna funkcja eliminateOwner)
+  OK: RUNDA 5 (a): annexCityStateToOwner NIE woła już showHintMessage w ogóle (dawny toast ELIMINACJA usunięty, zastąpiony recordCivElimEvent)
+  OK: RUNDA 5 (b): annexCityStateToOwner woła recordCivElimEvent( DOKŁADNIE raz (znaleziono 1)
+  OK: RUNDA 5 (b): blok wchłonięcia w applyProposalOutcome NIE woła recordCivElimEvent — jedyne miejsce emisji zostaje annexCityStateToOwner (bez tego dublowałby się dokładnie tak jak dawny podwójny showHintMessage z Defektu A/Rundy 4)
+  OK: RUNDA 5 (b) [P-WYDARZENIA-ELIMINACJA-PODBOJ-KARTA-Q1]: 'recordCivElimEvent(' występuje w main.ts DOKŁADNIE 3 razy w całym pliku (1 deklaracja funkcji + wywołanie ze ścieżki dyplomatycznej + wywołanie ze ścieżki podboju) — znaleziono 3
+  OK: RUNDA 5 (d): recordCivElimEvent jest wywoływane wewnątrz if (annexerId === 0) { ... } — guard NIE jest odwrócony i NIE brakuje go
+  OK: RUNDA 5 (d): brak odwróconego warunku annexerId !== 0 wokół recordCivElimEvent
+  OK: RUNDA 5 (d): showHintMessage('Miasto-państwo wchłonięte...') jest wewnątrz if (!wasEliminated) { ... } — guard NIE jest odwrócony
+  OK: RUNDA 5 (d): brak odwróconego warunku (wasEliminated bez negacji) wokół zwykłego toastu
+  OK: RUNDA 5 (d): wasEliminated = proposerId === 0 && eliminatedOwners.has(responderId) — złożenie przez && (koniunkcja), nie ||
+  OK: RUNDA 5 (d): brak odwróconej wersji z || zamiast && w wasEliminated
+  OK: RUNDA 5 (c): znaleziono deklarację function recordCivElimEvent(...): void {
+  OK: RUNDA 5 (c): recordCivElimEvent przyjmuje csOwnerId, civLabel ORAZ details (pełna treść dla modalu, nie tylko nazwę)
+  OK: RUNDA 5 (c) [P-WYDARZENIA-ELIMINACJA-PODBOJ-KARTA-Q1]: recordCivElimEvent przyjmuje 4. parametr cause: 'dyplomacja' | 'podboj' = 'dyplomacja' (rozróżnienie ścieżki dyplomatycznej od podboju dla karty/modalu)
+  OK: RUNDA 5 (c) [P-WYDARZENIA-ELIMINACJA-PODBOJ-KARTA-Q1]: recordCivElimEvent zapisuje { civLabel, details, cause } pod evId do civElimEventDetails, do późniejszego odczytu przez modal
+  OK: RUNDA 5 (c): onEventClick rozpoznaje prefiks karty elim-cs-
+  OK: RUNDA 5 (c): onEventClick czyta civElimEventDetails po id karty
+  OK: RUNDA 5 (c) [P-WYDARZENIA-ELIMINACJA-PODBOJ-KARTA-Q1]: kliknięcie karty otwiera showCivElimNotice z pełną treścią (civLabel + details) ORAZ z cause (domyślnie 'dyplomacja', gdy info.cause brak — wsteczna zgodność ze starymi wpisami mapy)
+  OK: RUNDA 5 (c): CivElimNoticeOpts (civElimNotice.ts) deklaruje civLabel oraz details
+  OK: RUNDA 5 (c): modal civElimNotice.ts faktycznie renderuje civLabel (esc(civ)) i details (esc(details)), nie tylko przyjmuje je jako opcje
+  OK: RUNDA 5: znaleziono function handleSidePanelEventDismiss
+  OK: RUNDA 5: znaleziono koniec handleSidePanelEventDismiss (kolejna funkcja clearAllSidePanelEvents)
+  OK: RUNDA 5: handleSidePanelEventDismiss rozpoznaje prefiks elim-cs-
+  OK: RUNDA 5: dismiss karty elim-cs- usuwa ją TRWALE ze warEventLog (splice), nie tylko miękko na bieżącą turę — inaczej wracałaby w kolejnej turze mimo kliknięcia ✕
+  OK: RUNDA 5: dismiss karty elim-cs- sprząta też jej wpis w civElimEventDetails
+
+56 passed, 0 failed
+EXIT=0

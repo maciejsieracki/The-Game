@@ -350,7 +350,7 @@ console.log(`# POMIAR ROZDZIELONY — AI GRACZA vs AI CYWILIZACJI`);
 console.log(`# ziarna: ${SEEDS.join(', ')} · tur: ${TURNS} · mapa 36x28 „kontynenty", 3 miasta, promien 4, pop 6`);
 
 const civ = SEEDS.map(seed => ({ seed, ...runCiv(seed) }));
-const aggCiv = raportSciezki('AI CYWILIZACJI — prawdziwe wejscie decideAITurn (ai.ts:~1984, maxItemsPerCity=1)', civ);
+const aggCiv = raportSciezki('AI CYWILIZACJI — prawdziwe wejscie decideAITurn (ai.ts:~1984, limit sztuk/miasto usuniety)', civ);
 
 const PROFILE = ['zywnosc', 'surowce', 'infrastruktura', 'zrownowazone'];
 const aggPlayer = {};

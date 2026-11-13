@@ -265,7 +265,7 @@ const boxBlockSrc = extractIfBlock(
 );
 const footBlockSrc = extractIfBlock(
   empireDetailSource,
-  '„Do puli" trafia do globalnej puli Pracy',
+  '„Do puli” trafia do globalnej puli Pracy',
   'stopka auto-ulepszeń',
 );
 

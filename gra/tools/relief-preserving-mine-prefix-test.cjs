@@ -57,7 +57,7 @@ ok(!M.preservesHillReliefKey('niekopalnia'), '(d) "niekopalnia" NIE matchuje —
 ok(!M.preservesHillReliefKey('kopalniany'), '(d) "kopalniany" NIE matchuje — brak podkreślnika po prefiksie, nie jest ani "kopalnia" ani "kopalnia_*"');
 ok(!M.preservesHillReliefKey(''), '(d) pusty string NIE matchuje');
 ok(!M.preservesHillReliefKey('farma'), '(d) niepowiązany klucz "farma" NIE matchuje');
-ok(!M.preservesHillReliefKey('tartak'), '(d) niepowiązany klucz "tartak" NIE matchuje');
+ok(M.preservesHillReliefKey('tartak'), '(d) tartak zachowuje relief wzgórza pod zalesionym ulepszeniem');
 
 // preservesHillRelief (lista warstw) — musi wymagać KAŻDEJ warstwy z whitelisty
 ok(M.preservesHillRelief(['kopalnia_wegla']), 'preservesHillRelief: sama przyszła kopalnia_wegla -> true');

@@ -1,0 +1,38 @@
+== MUT s/"zwyciezcaMusiPrzyjac": 1/"zwyciezcaMusiPrzyjac": 0/
+FAIL: 7c: chroniony przegrywajacy => pokoj mimo ceny nie do pokrycia (got "offer_rejected", want "offer_accepted")
+FAIL: 7c: pokoj sfinalizowany
+FAIL: 7d: 3 utraty => zwyciezca musi przyjac (got "offer_rejected", want "offer_accepted")
+FAIL: 7f: wojna konczy sie pokojem w <= 40 turach (byla: 106)
+FAIL: 7f: przegrywajacy zachowuje >= 5 miast (ma 0) - brak eliminacji
+ai-war-weariness-peace-test: PASS=76 FAIL=5
+== MUT s/"ofertaOdTurWojny": 8/"ofertaOdTurWojny": 999/
+FAIL: przegrywajacy skladal oferte
+FAIL: stopien >= 2 przy duzej desperacji
+FAIL: wygrywajacy powinien zaakceptowac oferte z miastem
+FAIL: oferta za mala => odrzucona (got "none", want "offer_rejected")
+FAIL: po cooldownie kolejna oferta (got "none", want "offer_rejected")
+FAIL: licznik odrzuconych rosnie (eskalacja mnoznika) (got 0, want 2)
+FAIL: 4f: pierwsze 3 oferty odrzucone (za malo) (got "none,none,none", want "offer_rejected,offer_rejected,offer_rejected")
+FAIL: 4f: po odrzuceniach i pelnym zmeczeniu pokoj mimo niedoboru majatku (wyjscie awaryjne) (got "none", want "offer_accepted")
+FAIL: 4f: pokoj sfinalizowany
+FAIL: 4f: stan skasowany po pokoju (got 1, want 0)
+FAIL: 4h: realna wycena - bogaty przegrywajacy kupuje pokoj (got "none", want "offer_accepted")
+FAIL: 4h: realna wycena - biedny przegrywajacy sklada oferte (bez wyjatku)
+FAIL: 7a: przegrywajacy sklada oferte mimo niskiego zmeczenia (bylo: none)
+FAIL: 7c: chroniony przegrywajacy => pokoj mimo ceny nie do pokrycia (got "none", want "offer_accepted")
+TypeError: Cannot read properties of undefined (reading 'histogram')
+== MUT s/"tolerancjaZmeczenia": 0.5/"tolerancjaZmeczenia": 0/
+FAIL: 7g: duze zmeczenie => zwyciezca tez bierze mniej (symetria) (got "offer_rejected", want "offer_accepted")
+FAIL: 7h: nowe progi w war-weariness-params.json
+ai-war-weariness-peace-test: PASS=79 FAIL=2
+== MUT s/"minMiastPoOddaniu": 3/"minMiastPoOddaniu": 0/
+FAIL: 1 miasto => nigdy nie oddaje miasta
+FAIL: 7c: z 3 miast (= minMiastPoOddaniu) nie oddaje zadnego (got 1, want 0)
+ai-war-weariness-peace-test: PASS=79 FAIL=2
+== MUT s/"ochronaMaxMiast": 3/"ochronaMaxMiast": 0/
+FAIL: 7c: chroniony przegrywajacy => pokoj mimo ceny nie do pokrycia (got "offer_rejected", want "offer_accepted")
+FAIL: 7c: pokoj sfinalizowany
+FAIL: 7h: nowe progi w war-weariness-params.json
+ai-war-weariness-peace-test: PASS=78 FAIL=3
+restored
+EXIT=0 (kazda mutacja zabita; plik przywrocony)

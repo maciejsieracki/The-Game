@@ -1,0 +1,119 @@
+=== diplo-truce-r1 (tools/diplo-truce-r1-test.cjs)
+PASS: M5 (aktywny w N zamiast tylko przed N): L6/L10 wykrywają
+
+diplo-truce-r1-test: 30 pass / 0 fail
+EXIT=0
+=== diplo-truce-n6-saveload (tools/diplo-truce-n6-saveload-test.cjs)
+PASS: reset nowej gry: applyClusterStartPlan czyści diplomacyPairMeta (main.ts ~9714)
+
+8 pass / 0 fail
+EXIT=0
+=== diplo-truce-r4-ai (tools/diplo-truce-r4-ai-test.cjs)
+PASS: main.ts: akceptacja AI rozejmu idzie gałęzią cywAction===rozejm (długość z payloadu)
+
+diplo-truce-r4-ai-test: 24 pass / 0 fail
+EXIT=0
+=== diplomacy-war-gates (tools/diplomacy-war-gates-test.cjs)
+  OK: decideAIDiplomacy: NAP blokuje normalny DOW
+
+22 pass, 0 fail
+EXIT=0
+=== diplo-aggressor-unit (tools/diplo-aggressor-unit-test.cjs)
+diplo-aggressor-unit-test: 73 PASS, 0 FAIL
+EXIT=0
+=== diplo-aggressor-wiring (tools/diplo-aggressor-wiring-test.cjs)
+PASS diplomacy-proposals.ts: prog sojuszu, paktu i stance proponenta
+PASS UI panel: znacznik Agresor z tooltipem „do tury N"
+diplo-aggressor-wiring-test: 15 PASS, 0 FAIL
+EXIT=0
+=== diplomacy-city-cession (tools/diplomacy-city-cession-test.cjs)
+diplomacy-city-cession-test: 79 pass, 0 fail
+EXIT=0
+=== diplomacy-city-cession-r3 (tools/diplomacy-city-cession-r3-test.cjs)
+diplomacy-city-cession-r3-test: 73 pass, 0 fail
+EXIT=0
+=== diplomacy-city-picker-ui (tools/diplomacy-city-picker-ui-test.cjs)
+  OK  brak pageerror / console.error w scenariuszu
+diplomacy-city-picker-ui-test: 13 pass, 0 fail
+plomacy-city-picker-ui-test: 13 pass, 0 fail
+EXIT=0
+=== war-era-counter (tools/war-era-counter-test.cjs)
+--- B: okablowanie main.ts (tekstowe) ---
+WYNIK B: 16 / 16 OK
+war-era-counter-test: 82 pass / 0 fail
+EXIT=0
+=== war-rules-multiwar (tools/war-rules-multiwar-test.cjs)
+--- planner: W1 (engage) i W2 (podział) ---
+
+WYNIK: 57 OK / 0 FAIL
+EXIT=0
+=== war-rules-multiwar-main-guard (tools/war-rules-multiwar-main-guard-test.cjs)
+PASS: R3/zapis (r6): warRulesForcedEraDeclared w meta save tylko przy fladze ON
+
+21 PASS / 0 FAIL
+EXIT=0
+=== forced-war-relation-gate (tools/forced-war-relation-gate-test.cjs)
+--- B: okablowanie main.ts (R8) ---
+
+forced-war-relation-gate-test: 14 pass, 0 fail
+EXIT=0
+=== forced-war-stone (tools/forced-war-stone-test.cjs)
+--- decideAIDiplomacy: finalny target guard ---
+--- save/load i mutacje stanu ---
+PASSED: 31 / FAILED: 0 / TOTAL: 31
+EXIT=0
+=== forced-war-stone-main-guard (tools/forced-war-stone-main-guard-test.cjs)
+PASS: Kamień zachowuje własny moduł i rejestry (przywrócone po R9: nie zastąpione przez Brąz/Żelazo)
+PASS: main.ts: stoneForceWarTargetId ustawiane z forcedWarAssignmentByOwner (nowy rdzeń parowania), nie z usuniętego pickStoneForcedWarTargetIdCoordinated
+WYNIK: 15 PASS, 0 FAIL
+EXIT=0
+=== forced-war-iron (tools/forced-war-iron-test.cjs)
+--- rozdzielność od Kamienia i Brązu (osobne pola wejścia) ---
+--- save/load i mutacje stanu ---
+PASSED: 54 / FAILED: 0 / TOTAL: 54
+EXIT=0
+=== forced-war-iron-main-guard (tools/forced-war-iron-main-guard-test.cjs)
+PASS: rejestry Żelaza są ROZŁĄCZNE z Kamieniem i Brązem (żadne pole nie jest współdzielone)
+
+WYNIK: 35 PASS, 0 FAIL
+EXIT=0
+=== diplo-war-peace-profile-unit (tools/diplo-war-peace-profile-unit-test.cjs)
+diplo-war-peace-profile-unit-test: 198 pass / 0 fail
+EXIT=0
+=== diplo-war-peace-gate (tools/diplo-war-peace-gate-test.cjs)
+PASS: M2 (bramka bez progu 10 tur): przypadek B przechodzi (mutacja progu wykrywalna)
+
+diplo-war-peace-gate-test: 11 pass / 0 fail
+EXIT=0
+=== diplo-war-peace-sim (tools/diplo-war-peace-sim-test.cjs)
+PASS: M_HEALTH wykryty: zdrowie armii 0.1 nie daje chęci pokoju (sygnał c off)
+
+diplo-war-peace-sim-test: 22 pass / 0 fail
+EXIT=0
+=== diplo-war-peace-main-guard (tools/diplo-war-peace-main-guard-test.cjs)
+diplo-war-peace-main-guard-test: 28 pass / 0 fail
+EXIT=0
+=== diplo-war-peace-d7 (tools/diplo-war-peace-d7-test.cjs)
+PASS: M_D7 test pada: D7a w wersji ok jest rozróżnialna od mutanta
+
+diplo-war-peace-d7-test: 8 pass / 0 fail
+EXIT=0
+=== diplomacy (tools/diplomacy-test.cjs)
+
+[diplomacy-test] 148 passed, 0 failed (total 148).
+EXIT=0
+=== diplomacy-peace-lock (tools/diplomacy-peace-lock-test.cjs)
+  OK: wszyscy zablokowani → brak obowiązków
+
+9 pass, 0 fail
+EXIT=0
+=== civ-matrix-ai-diplomacy-wiring (tools/civ-matrix-ai-diplomacy-wiring-test.cjs)
+--- live consumer guards ---
+FAIL: main AI path reads the matrix profile per owner and difficulty
+RESULT: 42 passed, 1 failed
+EXIT=1
+=== ai (tools/ai-test.cjs)
+--- T14-p1-2b: drugi scout score −80 vs pierwszy (ta sama economyScore) ---
+
+ai-test: 274 passed, 20 failed
+EXIT=1

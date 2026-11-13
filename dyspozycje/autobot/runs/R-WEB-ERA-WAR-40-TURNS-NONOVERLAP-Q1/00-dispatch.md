@@ -1,0 +1,8 @@
+# R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1
+STATUS: REGISTERED1/11 PRIORITY URGENT
+DOMAIN: GAME
+DECYZJA WŁAŚCICIELA: 2026-11-10 odpowiedźliteralna „Kamień40, brąz40, żelazo40. Tylko pamiętaj, że40tura od wejścia w nową epokę, a nie40tura całkowita gry”. Zastępuje wcześniejsze20dlaBrązu/Żelaza. Dodatkowo brak dwóch równoczesnych wojen epoki danej cywilizacji: nowaepokaczeka aż poprzedniawojnaepoki zakończona; po zakończeniu startmożliwynatychmiastjeśliprógupłynął. Dotyczy tylko wojen epoki, zwykłe wojny bez zmian/nieblokujątejbramki. Identycznie graczAI/miastapaństwajeśliuczestnicząwepochwar.
+MODEL: CodexLuna high Operator/Evaluator/FC osobno,sekwencyjnie.
+GOAL: parametry40wewszystkichepokachodowneraepochentry, nieglobalclock; nieprzepuszczaćnakładaniaaktywnychforcederatagsinnychepok; niezużyćlicznikawojny przyodroczeniu, niezgubićzaległejwojny przezadvanceepoch. Zachować1naepokę/istniejącewoluminy i normalwarsrules. Wczytaniestaregozapisu ma odtworzyćzapisaneepochentry, nieustawiaćsztucznie40upłynęło; opiszkompatybilność.
+ALLOWLIST: przededycjąustalićkonkretneminimalnedatawar-rules-params, forcedwar/war-rules helpers, maincallers i testy/savecontext. BezpozostałychzmianAI/balansu. UwagaoperatorMachinyzmieniawłasnymainwinnymworktree, konfliktywracająOperatoromintegracji.
+TESTY: każdaepoka39blok/40otwarte poownerentry npglobal200/entry180→20blok, aktywnakamienna blokbronze/iron, aktywnabronzeblokiron, koniecwojny zwalniatakolejkęjeśliprógjużupłynął, normalwar nieblokuje, obiestrony eligibility, reload/save i graczAI. Testy rzeczywistejlogiki/callerwire, typecheck i sensowneregresje. Commitwłasnegokandydata, nopush/deploy/merge. Final11Robocza/push/readback.

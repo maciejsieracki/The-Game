@@ -1,0 +1,86 @@
+-- 1920px
+  ok   1920: B1 font glownej liczby >= 1,25x PRZED (min 1.692)
+  ok   1920/small: B2 zero przycinania w komorkach
+  ok   1920/small: B2 brak poziomego scrolla strony
+  ok   1920/mid: B2 zero przycinania w komorkach
+  ok   1920/mid: B2 brak poziomego scrolla strony
+  ok   1920/huge: B2 zero przycinania w komorkach
+  ok   1920/huge: B2 brak poziomego scrolla strony
+  ok   1920/mid: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1920/mid: B3 wysokosc banera stala
+   B3 1920/huge: zmiana trybu (1 linia -> hud-left-fallback) - pominiete
+  ok   1920: B4 przerwa miedzy liczba a przyrostami <= 6 px (max 0.0 px)
+  ok   1920: B4 symetria pustej przestrzeni lewo/prawo w zetonie <= 2 px (max 0.0 px)
+   puste boki zetonu (12): 20 24 20 16 24 20 | (2,3M): 60 64 60 63 55 59  [px na strone; symetryczne]
+  ok   1920: B4 puste boki NAJGORSZEGO zetonu (12) <= 100 px (max 23.9)
+  ok   1920: B4 puste boki NAJGORSZEGO zetonu (2,3M) <= 85 px (max 64.3)
+   cel dispatchu puste boki <= 12 px: NIEOSIAGNIETY (max 12: 24 px, max 2,3M: 64 px)
+   dryf w zetonie 12 -> 2,3M (px): medalion 40 40 40 46 31 39 | liczba 40 40 40 46 31 39
+  ok   1920: B5 kazda komorka ma brutto i netto
+   PRZED font: 13 13 13 13 13 13 | PO font: 22 22 22 22 22 22
+-- 1366px
+  ok   1366: B1 font glownej liczby >= 1,25x PRZED (min 1.692)
+  ok   1366/small: B2 zero przycinania w komorkach
+  ok   1366/small: B2 brak poziomego scrolla strony
+  ok   1366/mid: B2 zero przycinania w komorkach
+  ok   1366/mid: B2 brak poziomego scrolla strony
+  ok   1366/huge: B2 zero przycinania w komorkach
+  ok   1366/huge: B2 brak poziomego scrolla strony
+  ok   1366/mid: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1366/mid: B3 wysokosc banera stala
+  ok   1366/huge: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1366/huge: B3 wysokosc banera stala
+  ok   1366: B4 przerwa miedzy liczba a przyrostami <= 6 px (max 0.0 px)
+  ok   1366: B4 symetria pustej przestrzeni lewo/prawo w zetonie <= 2 px (max 0.0 px)
+   puste boki zetonu (12): 40 44 40 37 44 40 | (2,3M): 13 18 13 16 9 13  [px na strone; symetryczne]
+  ok   1366: B4 puste boki NAJGORSZEGO zetonu (12) <= 52 px (max 44.2)
+  ok   1366: B4 puste boki NAJGORSZEGO zetonu (2,3M) <= 36 px (max 18.1)
+   cel dispatchu puste boki <= 12 px: NIEOSIAGNIETY (max 12: 44 px, max 2,3M: 18 px)
+   dryf w zetonie 12 -> 2,3M (px): medalion -27 -26 -27 -20 -36 -28 | liczba -27 -26 -27 -20 -36 -28
+  ok   1366: B5 kazda komorka ma brutto i netto
+   PRZED font: 13 13 13 13 13 13 | PO font: 22 22 22 22 22 22
+-- 1024px
+  ok   1024: B1 font glownej liczby >= 1,25x PRZED (min 1.250)
+  ok   1024/small: B2 zero przycinania w komorkach
+  ok   1024/small: B2 brak poziomego scrolla strony
+  ok   1024/mid: B2 zero przycinania w komorkach
+  ok   1024/mid: B2 brak poziomego scrolla strony
+  ok   1024/huge: B2 zero przycinania w komorkach
+  ok   1024/huge: B2 brak poziomego scrolla strony
+  ok   1024/mid: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1024/mid: B3 wysokosc banera stala
+  ok   1024/huge: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1024/huge: B3 wysokosc banera stala
+  ok   1024: B4 przerwa miedzy liczba a przyrostami <= 6 px (max 0.0 px)
+  ok   1024: B4 symetria pustej przestrzeni lewo/prawo w zetonie <= 2 px (max 0.0 px)
+   puste boki zetonu (12): 26 28 26 23 28 26 | (2,3M): 7 11 7 9 4 7  [px na strone; symetryczne]
+  ok   1024: B4 puste boki NAJGORSZEGO zetonu (12) <= 30 px (max 28.3)
+  ok   1024: B4 puste boki NAJGORSZEGO zetonu (2,3M) <= 15 px (max 10.5)
+   cel dispatchu puste boki <= 12 px: NIEOSIAGNIETY (max 12: 28 px, max 2,3M: 11 px)
+   dryf w zetonie 12 -> 2,3M (px): medalion -18 -18 -18 -14 -24 -19 | liczba -18 -18 -18 -14 -24 -19
+  ok   1024: B5 kazda komorka ma brutto i netto
+   PRZED font: 12 12 12 12 12 12 | PO font: 15 15 15 15 15 15
+-- 640px
+  ok   640: B1 font glownej liczby >= 1,25x PRZED (min 1.333)
+  ok   640/small: B2 zero przycinania w komorkach
+  ok   640/small: B2 brak poziomego scrolla strony
+  ok   640/mid: B2 zero przycinania w komorkach
+  ok   640/mid: B2 brak poziomego scrolla strony
+  ok   640/huge: B2 zero przycinania w komorkach
+  ok   640/huge: B2 brak poziomego scrolla strony
+  ok   640/mid: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   640/mid: B3 wysokosc banera stala
+  ok   640/huge: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   640/huge: B3 wysokosc banera stala
+  ok   640: B4 przerwa miedzy liczba a przyrostami <= 6 px (max 0.0 px)
+  ok   640: B4 symetria pustej przestrzeni lewo/prawo w zetonie <= 2 px (max 0.0 px)
+   puste boki zetonu (12): 6 11 5 8 9 6 | (2,3M): 4 5 4 6 4 4  [px na strone; symetryczne]
+  ok   640: B4 puste boki NAJGORSZEGO zetonu (12) <= 15 px (max 10.6)
+  ok   640: B4 puste boki NAJGORSZEGO zetonu (2,3M) <= 12 px (max 6.3)
+   cel dispatchu puste boki <= 12 px: OSIAGNIETY (max 12: 11 px, max 2,3M: 6 px)
+   dryf w zetonie 12 -> 2,3M (px): medalion -2 -5 -1 -2 -5 -2 | liczba -2 -5 -1 -2 -5 -2
+  ok   640: B5 kazda komorka ma brutto i netto
+   PRZED font: 9 9 9 9 9 9 | PO font: 12 12 12 12 12 12
+
+PASS: hud-topbar-bigger-numbers-real-render-test (62 ok, 0 fail)
+EXIT=0

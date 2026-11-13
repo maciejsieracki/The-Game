@@ -1,0 +1,78 @@
+
+[r-wzrost-szczescie-dubel]
+
+  [OK] Wealth jest jedną, jawną linią +10
+  [OK] Ceramika NIE jest juz osobna linia rozpiski (G3 — liczy sie jako surowiec zaopatrzenia)
+  [OK] Spichlerz NIE jest juz osobna linia rozpiski (G3 — liczy sie jako budynek, +5)
+  [OK] kontrolowane kanaly = sam Wealth 10; Ceramika i Spichlerz nie dokladaja sie drugi raz
+  [OK] regula 111 po G3: ceramikaZadowolenie/spichlerzZadowolenie = 111 nie zmienia netto ani o punkt
+  [OK] regula 111 po G3: liczba wierszy rozpiski bez zmian (zaden dubel nie wraca)
+  [OK] Szczęście netto 12 daje +1% wzrostu
+  [OK] Wealth 100 nie podbija drugi raz wzrostu
+  [OK] zmiana wealthPoziom nie zmienia total przy stałym netto
+  [OK] Ceramika +1 po uzyskaniu dostępu
+  [OK] Ceramika pozostaje binarna, bez skalowania zapasem
+  [OK] reguła 111: dokładnie +1 dla 111 sztuk Ceramiki
+  [OK] reguła 111: bez dostępu brak bonusu
+  [OK] reguła 111: zerowy zapas nie jest dostępem
+  [OK] Podglad wzrostu niesie SAM Wealth 10 (G3/R3-D: Ceramika i Spichlerz juz sie nie dolicza)
+  [OK] Dzialajacy Spichlerz nie dodaje juz osobnego +1 do podgladu wzrostu (liczy sie jako budynek, G2)
+  [OK] Brak Ceramiki i dzialajacego Spichlerza — punkt odniesienia, ten sam wynik
+  [OK] R3-D: ceramika=true / spichlerz=true nie zmienia netto podgladu wzrostu
+  [OK] R3-D: ceramika=true / spichlerz=false nie zmienia netto podgladu wzrostu
+  [OK] R3-D: ceramika=false / spichlerz=true nie zmienia netto podgladu wzrostu
+  [OK] R3-D: ceramika=false / spichlerz=false nie zmienia netto podgladu wzrostu
+  [OK] R3-D: przy Wealth 0 flagi Ceramiki i Spichlerza tez wnosza dokladnie 0
+  [OK] zakres tematu: growth-happiness.ts jest dołączony do testu
+  [OK] zakres tematu: growth-happiness.ts istnieje i pozostaje zachowany
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=7 landSea=26 relief=17 coast=5 riversMain=9 riversFill=8 forest=1 deposits=2 starts=9 total=86
+  [OK] zasoby: preview pipeline ma wejście Sól
+  [OK] zasoby: preview pipeline ma wejście ruda miedzi
+  [OK] zasoby: preview pipeline ma wejście ruda żelaza
+  [OK] zasoby: preview pipeline ma wejście ruda cyny
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=40 relief=36 coast=18 riversMain=101 riversFill=30 forest=1 deposits=5 starts=19 total=254
+  [OK] Sól owner=0: preview Spichlerz II aktywny
+  [OK] Sól owner=0: runtime Spichlerz II aktywny
+  [OK] Sól owner=0: preview/runtime wzrost parytet
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=30 relief=31 coast=17 riversMain=12 riversFill=12 forest=3 deposits=5 starts=22 total=137
+  [OK] Sól owner=7: preview Spichlerz II aktywny
+  [OK] Sól owner=7: runtime Spichlerz II aktywny
+  [OK] Sól owner=7: preview/runtime wzrost parytet
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=2 terrain=8 landSea=106 relief=101 coast=20 riversMain=171 riversFill=341 forest=3 deposits=8 starts=45 total=804
+  [OK] preview/runtime: identyczny wzrost% dla gracza
+  [OK] preview/runtime: identyczny wzrost% dla AI
+  [OK] owner parity: AI i gracz mają identyczny wzrost%
+  [OK] preview: Ceramika dokładnie +1
+  [OK] runtime: Ceramika dokładnie +1
+  [OK] preview: Spichlerz aktywny
+  [OK] runtime: Spichlerz aktywny
+  [OK] same-turn production: preview/runtime pozostają zgodne po produkcji Ceramiki
+  [OK] same-turn production: preview/runtime mają identyczny stan Ceramiki po plonach/worked tiles
+  [OK] same-turn production: Ceramika z Garncarni podtrzymuje dokładnie +1
+  [OK] same-turn production: runtime podtrzymuje dokładnie +1
+  [OK] same-turn production AI: Ceramika podtrzymuje dokładnie +1
+  [OK] same-turn production AI: runtime podtrzymuje dokładnie +1
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=4 landSea=71 relief=66 coast=14 riversMain=212 riversFill=430 forest=6 deposits=15 starts=48 total=868
+  [OK] wiele Spichlerzy owner=0: preview pierwszy drain/bonus aktywny
+  [OK] wiele Spichlerzy owner=0: preview drugi nie pobiera dubla
+  [OK] wiele Spichlerzy owner=0: runtime pierwszy drain/bonus aktywny
+  [OK] wiele Spichlerzy owner=0: runtime drugi nie pobiera dubla
+  [OK] wiele Spichlerzy owner=0: preview/runtime pierwszy parytet
+  [OK] wiele Spichlerzy owner=0: preview/runtime drugi parytet
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=6 landSea=71 relief=57 coast=13 riversMain=141 riversFill=419 forest=3 deposits=7 starts=36 total=753
+  [OK] wiele Spichlerzy owner=7: preview pierwszy drain/bonus aktywny
+  [OK] wiele Spichlerzy owner=7: preview drugi nie pobiera dubla
+  [OK] wiele Spichlerzy owner=7: runtime pierwszy drain/bonus aktywny
+  [OK] wiele Spichlerzy owner=7: runtime drugi nie pobiera dubla
+  [OK] wiele Spichlerzy owner=7: preview/runtime pierwszy parytet
+  [OK] wiele Spichlerzy owner=7: preview/runtime drugi parytet
+
+[r-wzrost-szczescie-dubel] 59 pass, 0 fail
+
+EXIT=0

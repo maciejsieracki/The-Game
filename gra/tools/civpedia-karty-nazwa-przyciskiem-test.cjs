@@ -204,6 +204,23 @@ async function main() {
     check('(6) realny klik w NAZWĘ budynku otwiera kartę encji building/stolarnia',
       !!nested && nested.kind === 'building' && nested.id === 'stolarnia', nested);
 
+    // Native button activation must keep the same link target for keyboard users.
+    await page.setContent('<!DOCTYPE html><html><head><title>keyboard-name-button</title></head><body></body></html>');
+    await page.addScriptTag({ content: fs.readFileSync(OUTFILE, 'utf8') });
+    await page.evaluate(() => {
+      window.__showTechDiscoveryNotice({ techName: 'Obróbka drewna', eraIndex: 1, kind: 'preview' });
+    });
+    const nameButton = page.locator(TECH_HOST + '[data-section-key="buildings"] button[data-entity-kind="building"][data-entity-id="stolarnia"]');
+    await nameButton.focus();
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(200);
+    const keyboardNested = await page.evaluate(() => {
+      const c = document.querySelector('.entity-card-building');
+      return c ? { kind: c.getAttribute('data-entity-kind'), id: c.getAttribute('data-entity-id') } : null;
+    });
+    check('(6) Enter na natywnym przycisku nazwy otwiera building/stolarnia',
+      !!keyboardNested && keyboardNested.kind === 'building' && keyboardNested.id === 'stolarnia', keyboardNested);
+
     // --- (7) parytet z WZORCEM: pigułka Wymagań ----------------------------------------
     // Właściciel wskazał `button.entity-card-pill-text` jako jedyny wiersz zrobiony dobrze.
     // Przycisk nazwy ma wyglądać TAK SAMO, nie „podobnie".
@@ -242,12 +259,11 @@ async function main() {
     // Czwarta kolumna = OCZEKIWANA liczba linków krzyżowych na karcie. Nazywamy ją JAWNIE,
     // bo `links.every(...)` na zbiorze PUSTYM jest prawdziwe — bez tej asercji karta bez
     // linków przechodziłaby kontrolę stylu, nie mając czego sprawdzić, i nikt by nie
-    // zauważył, gdyby linki zniknęły też z pozostałych kart. Karta budynku nie ma dziś
-    // ANI JEDNEGO wiersza z `linkTo` (`buildingAdapter.ts` nie ustawia go nigdzie) — to
-    // udokumentowany stan zastany, nie brak pokrycia; jeśli kiedyś dostanie link, ta
-    // asercja zaczerwieni się i wymusi świadomą aktualizację zamiast cichego przejścia.
+    // zauważył, gdyby linki zniknęły też z pozostałych kart. Stolarnia ma jeden link
+    // `linkTo` do wymaganej technologii „Obróbka drewna”; jawny count pilnuje, by ten
+    // link i jego styl/hit-area pozostały sprawdzane.
     const others = [
-      ['building', 'stolarnia', 'BUDYNKU', 0],
+      ['building', 'stolarnia', 'BUDYNKU', 1],
       ['unit', 'taran', 'JEDNOSTKI', 1],
       ['improvement', 'tartak', 'ULEPSZENIA TERENU', 1],
     ];

@@ -1,0 +1,4 @@
+POMIAR ms/wywolanie decideAITurn (min z 3): stos 40 (stan ustalony) PO=210.62 bez bramki=190.59; chmura 40 (faza zbierania, 10 tur) PO=39.60 bez bramki=11.45
+POMIAR planFieldStackGather: stos 100 = 0.101 ms, chmura 100 = 3.165 ms na wywolanie
+33 passed, 0 failed
+EXIT=0

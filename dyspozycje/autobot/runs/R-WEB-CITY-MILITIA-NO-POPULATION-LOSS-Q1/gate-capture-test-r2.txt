@@ -1,0 +1,32 @@
+PASS API: applyCapturePopulationLoss istnieje
+PASS parametr capture_pop_loss z data/miasto-params.json = 1 (jest 1)
+PASS gracz zdobywa obce miasto: 10 -> 9 (jest 9)
+PASS AI zdobywa miasto gracza: 6 -> 5 (jest 5)
+PASS miasto-panstwo zdobyte: 4 -> 3 (jest 3)
+PASS barbarzyncy zdobywaja: 8 -> 7 (jest 7)
+PASS miasto o ludnosci 1 zostaje przy 1 (nie niszczone)
+PASS dla ludnosci 2..40 strata zawsze dokladnie 1 (bez podwojnego naliczenia)
+PASS A traci miasto: 10 -> 9, zapamietany poprzedni wlasciciel
+PASS odzyskanie WLASNEGO miasta: bez -1 (zostaje 9, jest 9)
+PASS zdobycie przez trzecia cywilizacje: -1 (jest 8)
+PASS odzyskanie miasta po buncie przez dawnego wlasciciela: bez -1 (jest 7)
+PASS zbuntowane miasto zdobyte przez INNEGO niz dawny wlasciciel: -1 (jest 6)
+PASS newOwner===prevOwner: 0
+PASS wiersz raportu "Ludnosc: -1"
+PASS brak wiersza przy braku straty (odzyskanie / pop 1)
+PASS main.ts: kapitulacja glodowa wola applyCapturePopulationLoss
+PASS main.ts: applyCityCaptureToMap dodaje wiersz Ludnosc -N
+PASS main.ts: kapitulacja dodaje wiersz Ludnosc -N
+PASS main.ts: captureCityWithoutBattle -> applyCityCaptureToMap (wspolny punkt)
+PASS main.ts: bitwa o miasto / szturm -> applyCityCaptureToMap
+PASS main.ts: applyCityCaptureToMap -> applyCityCaptureAfterBattle (punkt straty)
+PASS cesja traktatowa: bez straty ludnosci
+PASS aneksja dyplomatyczna: bez straty ludnosci
+PASS mutacja zlapana: loss-two
+PASS mutacja zlapana: no-min-one
+PASS mutacja zlapana: reclaim-not-excluded
+PASS mutacja zlapana: pb-call-removed
+PASS mutacja zlapana: rebel-snapshot-ignored
+
+29 PASS, 0 FAIL
+EXIT=0

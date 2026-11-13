@@ -1,0 +1,4 @@
+  PASS: brak hodowli na heksach bez rzeki (got [])
+
+Wynik: 10 PASS / 0 FAIL
+EXIT=0

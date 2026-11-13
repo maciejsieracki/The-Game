@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Religia** — epoka **Brąz** (poziom 4), koszt **96** PN (tempo Szybka), wymaga: Garncarstwo + Mistycyzm. Odblokowuje budynki: Świątynia (upgrade kręgów).
+**Religia** — epoka **Brąz** (poziom 4), koszt **192** PN (tempo Szybka), wymaga: Garncarstwo + Mistycyzm. Odblokowuje budynki: Świątynia (upgrade kręgów).
 
 ---
 
@@ -26,7 +26,7 @@
 - **Wymaga (prereq):** Garncarstwo + Mistycyzm
 - **Wymagany budynek:** Cegielnia
 - **Dostęp do surowca:** Ceramika
-- **Koszt nauki:** 96 PN (baza, tempo Szybka — mnożnik tempa wg `tech-tempo.ts`)
+- **Koszt nauki:** 192 PN (baza, tempo Szybka — mnożnik tempa wg `tech-tempo.ts`)
 
 ### Co odblokowuje
 - **Budynki:** Świątynia (upgrade kręgów)
@@ -35,7 +35,7 @@
 - **Surowce:** brak
 
 ### Uwagi
-T-TECH-8: upgrade kamienne_kregi → swiatynia (suma bonusów w JSON)
+T-TECH-8: Kręgi kamienne ulepszają się do Świątyni (suma bonusów w danych gry)
 
 **Powiązane:** Drzewko technologii · Nauka · Epoki
 

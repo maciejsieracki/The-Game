@@ -1,0 +1,22 @@
+
+--- A: promienie i territoryOwnerAt ---
+  FAIL: A1: promien posterunku 3 (got 5, want 3)
+  FAIL: A2: promien fortu 5 (got 10, want 5)
+  FAIL: A3: posterunek -> 37 heksow (r=3) nalezy do wlasciciela (got 91, want 37)
+  FAIL: A4: fort -> 91 heksow (r=5) nalezy do wlasciciela (got 331, want 91)
+  FAIL: A6: dist 4 poza posterunkiem (got 3, want null)
+  FAIL: A8: fort dist 6 poza (got 3, want null)
+
+--- B: obcy nie buduje ulepszen, wlasciciel buduje ---
+  FAIL: B5: poza zasiegiem fortu (dist 6) wlasciciel nie ma terytorium
+
+--- C: zakladanie miast, limit miast ---
+  FAIL: C3: poza zasiegiem fortu obcy moze
+  FAIL: C5: ... ale 91 heksow terytorium fortu pozostaje wlasnoscia gracza (limit nie dotyka terytorium) (got 331, want 91)
+
+--- D: spor o ten sam heks ---
+
+--- E: straznik main.ts ---
+
+=== fort-outpost-hard-territory-test: 19 passed, 9 failed ===
+EXIT=1

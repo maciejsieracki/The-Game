@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Germanie** — piechota leśna; zasadzki i furia bojowa. Jednostka unikalna: **Wojownik germański (framea)**. Religia: Religia germańska (Wotan / Odyn).
+**Germanie** — piechota leśna; zasadzki i furia bojowa. Jednostki specjalne według rosteru: **Berserker germański**. Religia: Religia germańska (Wotan / Odyn).
 
 ---
 
@@ -24,19 +24,12 @@
 **Germanie** to typ cywilizacji dostępny w wersji 1.0. Charakter: *piechota leśna; zasadzki i furia bojowa*.
 
 **Epoki startowe w kreatorze:** Brąz, Żelazo.
-**Jednostka specjalna:** Wojownik germański (framea).
+**Zamienniki według rosteru:** Berserker germański
 **Religia państwa:** Religia germańska (Wotan / Odyn).
 **Przykładowe miasta w klastrze:** Mattium, Feddersen Wierde, Hodde, Grøntoft, Flögeln….
 **Władcy (imiona per epoka):** Kamień — Mannus · Brąz — Ariowist · Żelazo — Arminiusz · Antyk — Alaryk I.
 
-**Bonus startowy:** +walka w lesie i +zasadzka (pierwszy cios); furia bojowa (+Atak na starciu).
-
-**Trzy linie bonusów (macierz):**
-- Zasadzka leśna: +25% ataku przy walce w lesie lub przy pierwszym ciosie z zasadzki
-- Furia bojowa: +15% ataku na starciu (bonus morale przy bezpośrednim kontakcie)
-- Framea = włócznia/oszczep germański; celny rzut + walka wręcz; specjalista od zasadzki
-
-**Słabsza strona (balans):** wolniejsza technologia/organizacja; słabsze oblężnictwo.
+**Bonusy cywilizacji:** Obowiązujące bonusy i modyfikatory cywilizacji wynikają z macierzy parametrów. Dawne bonusy opisowe nie są doliczane.
 
 **Profil AI (skala 0–9):** agresja 6/9 — umiarkowana.
 
@@ -54,7 +47,7 @@
 
 ## Wzory
 
-Mnożnik handlu/waluty: **1.7** (meta macierzy).
+Mnożnik waluty: **1.7** (meta macierzy). Wartość dotyczy poziomu trudności Normalny; poziom trudności koryguje ją (Łatwy +0,5, Trudny −0,5), a żaden poziom nie schodzi poniżej minimum 1,38. Działa po odkryciu Waluty i zbudowaniu Mennicy.
 
 ---
 

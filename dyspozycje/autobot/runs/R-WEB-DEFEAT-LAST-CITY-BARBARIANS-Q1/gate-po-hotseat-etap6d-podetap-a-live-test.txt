@@ -1,0 +1,24 @@
+[hotseat-etap6d-podetap-a-live-test] budowanie bundla (vite build, wyłącznie dozwolona komenda z CLAUDE.md)...
+[hotseat-etap6d-podetap-a-live-test] build OK.
+[hotseat-etap6d-podetap-a-live-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+
+-- A. Bootstrap ?playtest=mapa dobiega końca --
+  OK  bootstrap zakończony: citiesLen>0
+
+-- B. Setup: reset relacji gracz<->ownerId 1 na "neutralni" (REALNY setDiploRelation) --
+
+-- C. Otwarcie panelu audiencji (REALNA openDiplomacyAudience) --
+  OK  przycisk akcji "Wypowiedz wojnę" (data-aid=11) obecny i widoczny w audiencji
+
+-- D. Klik "Wypowiedz wojnę" -> modal zgody -> klik "Wypowiedz wojnę" w modalu --
+
+-- E. Dowód skutku: hint-toast + warEventLog (REALNA playerDeclareWarOnOwner, zmigrowana) --
+  OK  hint-toast obecny po deklaracji wojny
+  OK  hint-toast pokazuje "Wypowiedziałeś wojnę" (dokładny string z ciała funkcji)
+  OK  warEventLog dostał nowy wpis na głowie (recordWarDeclarationEvent(ME(),1) faktycznie wykonany)
+
+-- F. Konsola czysta --
+  OK  zero console.error / pageerror w całym scenariuszu
+
+6 pass · 0 fail
+EXIT=0

@@ -1,0 +1,16 @@
+
+--- populationGrowth B5-SPICH ---
+  [FAIL] bez Spichlerza: 18 food przy pop=1 → wzrost
+  [FAIL] bez Spichlerza: pop 2 (got 1, want 2)
+  [FAIL] bez Spichlerza: bufor zerowany po wzroście (got 18, want 0)
+  [FAIL] ze Spichlerzem: wzrost przy progu 18
+  [FAIL] ze Spichlerzem: 50% bufora po wzroście (18→9) (got 18, want 9)
+  [OK] bez Spichlerza: bufor kumuluje między turami (10+5) (got 15, want 15)
+
+--- advanceEmpireFood zapasy państwa ---
+  [FAIL] bez Spichlerza: 50% netto round((30−1)×50%)=15 (got 96, want 15)
+  [OK] bez Spichlerza: wystarczy na armie 1 jednostkę
+  [FAIL] ze Spichlerzem: zapasy kumulują (30-1) (got 96, want 29)
+
+spichlerz-wzrost-test: 2 passed, 7 failed
+EXIT=1

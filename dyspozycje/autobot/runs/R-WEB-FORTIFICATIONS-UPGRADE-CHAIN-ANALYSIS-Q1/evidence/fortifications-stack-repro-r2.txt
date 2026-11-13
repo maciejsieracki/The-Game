@@ -1,0 +1,78 @@
+
+=== (1) DANE (buildings.json / miasto-params.json) ===
+  palisada       epoka=1 tech="Obróbka drewna" kosztBudowy=22 praca(efekt)=22 surowce={drewno:120} utrzymanie=1+0/poz maksPoziom=1 upgradeFrom=null upkeepGold(L1)=2 upkeepRes(L1)={drewno:1}
+  mury_kamienne  epoka=1 tech="Murarstwo" kosztBudowy=35 praca(efekt)=35 surowce={drewno:160,kamien:160,cegla:160} utrzymanie=2+1/poz maksPoziom=2 upgradeFrom=null upkeepGold(L1)=4 upkeepRes(L1)={drewno:2,kamien:2,cegla:2}
+  mury           epoka=2 tech="Budownictwo" kosztBudowy=35 praca(efekt)=70 surowce={drewno:320,kamien:320,cegla:320} utrzymanie=2+1/poz maksPoziom=2 upgradeFrom=null upkeepGold(L1)=8 upkeepRes(L1)={drewno:2,kamien:2,cegla:2}
+  bonus obrony: palisada=+100% mur_kamienny=+150% mur_ceglany=+200%
+  [OK] D1 wszystkie trzy definicje istnieja
+  [OK] D2 (O2) brak pola upgradeFrom w lancuchu palisada/mury_kamienne/mury
+  [OK] D3 utrzymanie bazowe 1 / 2 / 2
+  [OK] D4 bonusy +100/+150/+200
+
+=== (1b) POZIOMY L1/L2 wg epoki (maksPoziom=2; poziom wynika z EPOKI miasta, nie jest zapisany per miasto) ===
+  palisada       epoka=1 poziom=1 praca=22 upkeepGold=2 upkeepRes={drewno:1}
+  palisada       epoka=2 poziom=1 praca=22 upkeepGold=2 upkeepRes={drewno:1}
+  palisada       epoka=3 poziom=1 praca=22 upkeepGold=2 upkeepRes={drewno:1}
+  palisada       epoka=4 poziom=1 praca=22 upkeepGold=2 upkeepRes={drewno:1}
+  mury_kamienne  epoka=1 poziom=1 praca=35 upkeepGold=4 upkeepRes={drewno:2,kamien:2,cegla:2}
+  mury_kamienne  epoka=2 poziom=2 praca=47 upkeepGold=6 upkeepRes={drewno:3,kamien:3,cegla:3}
+  mury_kamienne  epoka=3 poziom=2 praca=47 upkeepGold=6 upkeepRes={drewno:3,kamien:3,cegla:3}
+  mury_kamienne  epoka=4 poziom=2 praca=47 upkeepGold=6 upkeepRes={drewno:3,kamien:3,cegla:3}
+  mury           epoka=1 poziom=1 praca=70 upkeepGold=8 upkeepRes={drewno:2,kamien:2,cegla:2}
+  mury           epoka=2 poziom=1 praca=70 upkeepGold=8 upkeepRes={drewno:2,kamien:2,cegla:2}
+  mury           epoka=3 poziom=2 praca=94 upkeepGold=12 upkeepRes={drewno:3,kamien:3,cegla:3}
+  mury           epoka=4 poziom=2 praca=94 upkeepGold=12 upkeepRes={drewno:3,kamien:3,cegla:3}
+  [OK] Z1 mury_kamienne: L1 w epoce 1, L2 od epoki 2 (poziom z epoki, bez stanu per miasto)
+  [OK] Z2 mury: L1 w epoce 2, L2 od epoki 3
+  [OK] Z3 palisada: zawsze L1
+  utrzymanie zl: kamienne L2=6, ceglane L1=8, ceglane L2=12
+  [OK] Z4 utrzymanie rosnie z poziomem (L2 > L1) -- tabela A/B/C w raporcie liczy L1; L2 w sekcji 4a raportu
+
+=== (2b) FAKTYCZNE POTRACENIE surowcow (deductBuildingStockCostAcrossCities, ta sama funkcja co main.ts l.4783/4911/9924) ===
+  realnie pobrane z magazynow (3 etapy po kolei): drewno=600 kamien=480 cegla=480
+  [OK] F1 (O2) funkcja potracenia faktycznie pobiera PELNY koszt kazdego z 3 etapow: 600/480/480 (nie tylko arytmetyka cen)
+
+=== (2) SCENARIUSZ SEKWENCYJNY: palisada -> mury kamienne -> mury ceglane ===
+  T0 start (brak fortyfikacji)                 built=[] queue=[] upkeepGold=0 upkeepRes={-} defBonus=+0%
+  T1 palisada w kolejce (koszt pobrany)        built=[] queue=[palisada] upkeepGold=0 upkeepRes={-} defBonus=+0%
+  T2 palisada ukonczona                        built=[palisada] queue=[] upkeepGold=2 upkeepRes={drewno:1} defBonus=+100%
+  dostepne do budowy po palisadzie: [mury_kamienne,mury]
+  [OK] S1 (O2) po palisadzie "Buduj" oferuje Mury kamienne I Mury ceglane jako NOWE budynki
+  T3 mury kamienne w kolejce (palisada stoi)   built=[palisada] queue=[mury_kamienne] upkeepGold=2 upkeepRes={drewno:1} defBonus=+100%
+  [OK] S2 (O3) w trakcie budowy stoi stara palisada i placi utrzymanie
+  T4 mury kamienne ukonczone                   built=[mury_kamienne] queue=[] upkeepGold=4 upkeepRes={drewno:2,kamien:2,cegla:2} defBonus=+150%
+  [OK] S3 (O1) po ukonczeniu mury_kamienne palisada ZNIKA (jedna fortyfikacja)
+  T5 mury ceglane w kolejce (kamienne stoja)   built=[mury_kamienne] queue=[mury] upkeepGold=4 upkeepRes={drewno:2,kamien:2,cegla:2} defBonus=+150%
+  T6 mury ceglane ukonczone                    built=[mury] queue=[] upkeepGold=8 upkeepRes={drewno:2,kamien:2,cegla:2} defBonus=+200%
+  [OK] S4 (O1) po ukonczeniu mury kamienne ZNIKAJA (jedna fortyfikacja)
+  [OK] S5 utrzymanie w stanie ustalonym = tylko aktualna fortyfikacja
+  SUMA kosztow zaplaconych za sciezke palisada->kamienne->ceglane: praca=127 surowce={drewno:600,kamien:480,cegla:480}
+  koszt samych murow ceglanych (gdyby zbudowac od razu): praca=70 surowce={drewno:320,kamien:320,cegla:320}
+  [OK] S6 (O2) lacznie placi sie PELNY koszt Pracy kazdego z trzech etapow (bez odliczenia za zastepowany)
+  [OK] S7 (O2) lacznie placi sie PELNY koszt surowcow kazdego etapu (drewno z 3 etapow)
+
+=== (3) KOLEJKA: kilka fortyfikacji zamowionych naraz (O4) ===
+  palisada w kolejce -> dostepne: [mury_kamienne,mury]
+  [OK] Q1 (O4) przy palisadzie w kolejce MOZNA zamowic mury kamienne i ceglane (blokada tylko wyzszy->nizszy)
+  palisada+mury_kamienne w kolejce -> dostepne: [mury]
+  [OK] Q2 (O4) mozna dolozyc do kolejki jeszcze mury ceglane (trzy oplaty za jedno miasto)
+  [OK] Q3 zabezpieczenie: gdy stoja mury ceglane, nizsze etapy nie sa oferowane
+  ukonczenie w odwrotnej kolejnosci (mury, palisada, mury_kamienne) -> built=[mury]
+  [OK] Q4 straznik ukonczenia: zawsze zostaje najwyzszy etap, ale ZAPLACONO za wszystkie trzy
+
+=== (4) LEGACY ZAPIS: kilka fortyfikacji w cityBuilt naraz (O5) ===
+  legacy: palisada+kamienne+ceglane            built=[palisada,mury_kamienne,mury] queue=[] upkeepGold=14 upkeepRes={drewno:5,kamien:4,cegla:4} defBonus=+200%
+  [OK] L1 (O5) utrzymanie Pieniadza SUMUJE sie dla kazdego id w cityBuilt
+  [OK] L2 (O5) bonus obrony NIE sumuje sie -- tylko najwyzszy (+200%)
+  [OK] L3 (O5) utrzymanie surowcowe tez sie sumuje (drewno)
+  porownanie: tylko mury ceglane               built=[mury] queue=[] upkeepGold=8 upkeepRes={drewno:2,kamien:2,cegla:2} defBonus=+200%
+  nadplata legacy vs jedna fortyfikacja: zloto +6/ture, drewno +3/ture, kamien +2/ture, cegla +2/ture
+  [OK] L4 rozpoznanie obwarowania: mur
+
+=== (5) PARYTET GRACZ / AI (pinezki zrodla) ===
+  [OK] P1 blokada "wyzszy blokuje nizszy" jest we wspolnej dostepnosci (availableProduction) dla gracza i AI
+  [OK] P2 jedyna sciezka ukonczenia budynku (gracz i AI, tick produkcji miasta) = applyCompletedBuildingIds
+  [OK] P3 AI (ai.ts) nie forsuje palisady gdy stoi mur -- ta sama funkcja kosztu i ukonczenia co gracz
+  [OK] P4 AI: obie sciezki wyboru murow (obrona ~l.2018, boost ~l.2058) wymagaja braku mury ORAZ mury_kamienne; ternary kamienne->mury jest tam martwe (parytet: AI nie kupuje drugiego etapu tymi sciezkami)
+
+WYNIK: 28 OK, 0 FAIL

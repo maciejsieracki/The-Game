@@ -28,6 +28,10 @@ export {
   respektTooltipPl,
   treatyDisplayLabel,
   activeTreatyLabelsForPair,
+  formatDiploCivListLines,
+  formatDiploPlayerSummaryLines,
+  formatRecruitsUnitsPart,
+  RECRUITS_UNITS_TOOLTIP_PL,
 } from './game/diplomacy-display';
 `);
 
@@ -95,8 +99,8 @@ ok(trade.kind === 'handel' && trade.label === 'Traktat handlowy', 'formal: trakt
 ok(mod.nastawienieLabelFromScore(10, 10) === 'Wrogi', 'nastawienie: wrogi z score');
 ok(mod.nastawienieLabelFromScore(25, 25) === 'Neutralny', 'nastawienie: neutralny z score');
 ok(mod.nastawienieLabelFromScore(74, 54, { atWar: true }) === 'Wrogi', 'nastawienie: wojna → Wrogi mimo wysokiego score');
-ok(mod.effectiveNastawienieScores(74, 54, true).zaufanie === 0, 'effective scores: wojna clamp Z');
-ok(mod.effectiveNastawienieScores(74, 54, true).respekt === 29, 'effective scores: wojna clamp R');
+ok(mod.effectiveNastawienieScores(74, 54).zaufanie === 74, 'effective scores: prawdziwa wartość Z (bez obcięcia wojną)');
+ok(mod.effectiveNastawienieScores(74, 54).respekt === 54, 'effective scores: prawdziwa wartość R (bez obcięcia wojną)');
 
 ok(mod.treatyDisplayLabel('pakt_nieagresji') === 'Pakt nieagresji', 'etykieta: NAP');
 ok(mod.treatyDisplayLabel('sojusz_pelny') === 'Sojusz wojskowy', 'etykieta: wojskowy');
@@ -154,6 +158,30 @@ ok(legacyGoldSplit && legacyGoldSplit.theyOffer.length === 1
   && legacyGoldSplit.theyOffer[0].typ === 'zloto' && legacyGoldSplit.theyOffer[0].ilosc === 42,
   'legacy goldOnce: incoming they offer gold');
 ok(legacyGoldSplit && legacyGoldSplit.weOffer.length === 0, 'legacy goldOnce: incoming we offer nothing');
+
+// R-WEB-DIPLO-CITIZENS-VS-RECRUITS-SEPARATE-Q1 (dodatek 2): wiersz „Rekruci" w uproszczonej karcie listy.
+const nb = (t) => t.replace(/\u00a0/g, ' ');
+ok(nb(mod.formatRecruitsUnitsPart(1234, 5678)) === 'Rekruci: 1 234 / 5 678 jedn.', 'recruits part: format bieżąca / maks. jedn.');
+ok(nb(mod.formatRecruitsUnitsPart(-3, 0)) === 'Rekruci: 0 / 0 jedn.', 'recruits part: clamp <0');
+const civLines = mod.formatDiploCivListLines({
+  theirPopulation: 98, theirArmyCount: 4, theirRecruitsUnits: 12, theirRecruitsUnitsMax: 40,
+});
+ok(civLines.detailLine.includes('Armia: 4') && nb(civLines.detailLine).includes('Rekruci: 12 / 40'),
+  'civ list: wiersz Rekruci obok Obywatele/Armia');
+ok(!mod.formatDiploCivListLines({ theirPopulation: 98 }).detailLine.includes('Rekruci'),
+  'civ list: brak danych rekrutów -> brak wiersza');
+const plLines = mod.formatDiploPlayerSummaryLines({
+  militaryPower: 10, population: 50, armyCount: 2, recruitsUnits: 7, recruitsUnitsMax: 9,
+});
+ok(nb(plLines.detailLine).includes('Rekruci: 7 / 9 jedn.'), 'player summary: wiersz Rekruci');
+ok(!plLines.detailLine.includes('Ludność') && plLines.detailLine.includes('Obywatele: 50'), 'player summary: Obywatele zamiast Ludność');
+ok(civLines.detailLine.includes('Obywatele: 98') && !civLines.detailLine.includes('Ludność'), 'civ list: Obywatele zamiast Ludność');
+ok(mod.RECRUITS_UNITS_TOOLTIP_PL.includes('rekrutEkw'), 'tooltip Rekruci: przeliczenie jak rekrutEkw');
+// Ustawienie atrybutu title w diploListHud.ts (obie ścieżki: playerSummary + wpis obcej cywilizacji).
+// Guard źródłowy (nie DOM): liczy przypisania tooltipu; oczekiwane dokładnie 2.
+const HUD_SRC = fs.readFileSync(path.resolve(SRC, 'ui', 'diploListHud.ts'), 'utf8');
+const hudTitleAssigns = HUD_SRC.split('stats.title = RECRUITS_UNITS_TOOLTIP_PL').length - 1;
+ok(hudTitleAssigns === 2, 'diploListHud: tooltip Rekruci ustawiany w obu ścieżkach (playerSummary + obca cywilizacja), liczba=' + hudTitleAssigns);
 
 try { fs.unlinkSync(ENTRY); } catch (_) { /* ok */ }
 

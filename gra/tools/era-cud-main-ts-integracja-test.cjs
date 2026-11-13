@@ -81,7 +81,9 @@ const RE_CALLSITE_ACTION6 = /grantTech:\s*\(techId, toOwnerId\)\s*=>\s*grantTech
 // ---------------------------------------------------------------------------
 // Blok 3c — koniec tury (auto-research)
 // ---------------------------------------------------------------------------
-const RE_3C_KONIEC_TURY = /Auto-research: spend banked science on the cheapest available tech\.[\s\S]{0,150}?const step = researchStep\(player, data\.tech, researchGateForOwner\(0\), _menuDifficulty\);[\s\S]{0,400}?reconcilePlayerEraFromResearch\(\);[\s\S]{0,300}?const eraAdvanced = shouldNotifyPlayerEraChange\(prevPlayerEra, player\.era\);/;
+// Bramka: `researchGateForOwner(0)` (przed R-HOTSEAT-ETAP6C-ECONOMY-Q1) albo `(humanOwnerId)` (po).
+// Klasa A: literał `0` zamieniono na humanOwnerId; semantyka bez zmian (humanOwnerId===0 dziś).
+const RE_3C_KONIEC_TURY = /Auto-research: spend banked science on the cheapest available tech\.[\s\S]{0,1000}?const step = researchStep\(player, data\.tech, researchGateForOwner\((?:0|humanOwnerId)\), _menuDifficulty\);[\s\S]{0,400}?reconcilePlayerEraFromResearch\(\);[\s\S]{0,300}?const eraAdvanced = shouldNotifyPlayerEraChange\(prevPlayerEra, player\.era\);/;
 
 // ---------------------------------------------------------------------------
 // Blok 4 — ukończenie cudu (oba miejsca)
@@ -166,9 +168,10 @@ assertMutationCaught('M3: usunięcie reconcile z chatki (village hut)',
 // M4: usunięcie reconcile z bloku 3c (koniec tury) — celuje w DRUGIE wystąpienie (auto-research)
 assertMutationCaught('M4: usunięcie reconcile z końca tury (auto-research)',
   (() => {
-    const marker = 'const step = researchStep(player, data.tech, researchGateForOwner(0), _menuDifficulty);';
-    const first = src.indexOf(marker);
-    const second = src.indexOf(marker, first + 1);
+    // Marker = dowolna bramka (0 albo humanOwnerId), bo po ETAP6C drugie wystąpienie używa humanOwnerId.
+    const markerRe = /const step = researchStep\(player, data\.tech, researchGateForOwner\((?:0|humanOwnerId)\), _menuDifficulty\);/g;
+    const hits = [...src.matchAll(markerRe)].map(m => m.index);
+    const second = hits.length > 1 ? hits[1] : -1;
     if (second < 0) return src; // brak drugiego wystąpienia -> nie zmienia liczby PASS (sygnał błędu testu, nie mutacji)
     const before = src.slice(0, second);
     let rest = src.slice(second);

@@ -37,7 +37,7 @@ Ulepszenie **Bydło** na polu w **twoim terytorium**. Teren: Łąka, Równina.
 
 **Budowa:** **20 pracy** jednorazowo. Przy **8 pracy/t** z puli imperium → ok. **3 tur**.
 
-**Po ukończeniu:** heks daje +2 żywność/t, +3 praca/t (oprócz plonu bazowego terenu).
+**Po ukończeniu:** heks daje +2 żywności/t, +3 pracy/t (oprócz plonu bazowego terenu).
 
 **Zwrot pracy (uproszczenie):** czysty zysk **+2**/t vs bez ulepszenia → **10 tur** na „odrobienie" 20 pracy (ignorując bazę pola).
 

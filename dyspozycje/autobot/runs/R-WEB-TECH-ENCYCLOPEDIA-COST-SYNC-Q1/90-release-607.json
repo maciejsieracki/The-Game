@@ -1,0 +1,20 @@
+{
+  "stage": "11/11",
+  "status": "DEPLOYED_PUSHED_GIT_READBACK_PASS",
+  "publicationCommit": "2da63d941ac704cb8c3e2e1ca37a3d3a8f3979ec",
+  "sourceCommit": "79a6c778e",
+  "wave": 607,
+  "bundleMd5": "2ee58aa298dda83cf3d7fcda7a29382f",
+  "remoteReadback": "git ls-remote + fresh git fetch + byte-identical git show origin/main bundle/manifest/START; not HTTP Raw",
+  "checks": [
+    "Independent FC all three PASS-WITH-NOTES",
+    "production clean archive build PASS",
+    "HTTP audio-present and audio-absent runtime PASS",
+    "3 audio pack hashes unchanged",
+    "manifest/bundle verification PASS"
+  ],
+  "limits": [
+    "file:// original audio sidecar gate remains INFRA blocked by system browser; not claimed verified",
+    "unit-card rendered multiplier source-reviewed, not browser asserted"
+  ]
+}

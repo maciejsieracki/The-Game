@@ -1,0 +1,21 @@
+=== MUT-A
+  [FAIL] [K1] lista profilu „Zywnosc" nie zawiera tartaku ani obozu (farma,bydlo,owce,lama,tarasy,tartak,oboz_lowiecki,lodzie_rybackie,irygacja)
+  [FAIL] [K1] bez niedoboru: tartak 0, oboz 1 (== 0)
+  [FAIL] [K1] z niedoborem drewna: tartak 0, oboz 1 (== 0)
+autoimprove-stages-q1-test: 140 passed, 3 failed
+=== MUT-B
+  [FAIL] [K2] niedobor kamienia: tartak 2, oboz 2 (== 0)
+  [FAIL] [K3] niedobor kamienia: tartak 6, oboz 0 (== 0)
+autoimprove-stages-q1-test: 141 passed, 2 failed
+=== MUT-D
+  [FAIL] [K2=K3] bez niedoboru: identyczna sekwencja (K2: 0:wyrab@12,10 0:wyrab@13,10 0:wyrab@12,9 1:farma@12,10 1:farma@13,10 1:farma@12,9 2:bydlo@…)
+  [FAIL] [K2=K3] niedobor kamienia (t<3): identyczna sekwencja (K2: 0:kamieniolom@13,11 0:kamieniolom@11,11 0:wyrab@12,10 0:wyrab@13,10 0:wyrab@12,9 1:farma@1…)
+  [FAIL] [K3] max rozkazow na miasto w jednej turze = 1 (> 1; limit etapu = 3)
+  [FAIL] [K2=K3] cykl niedoboru (t<12): identyczna sekwencja
+autoimprove-stages-q1-test: 139 passed, 4 failed
+=== MUT-F
+  [FAIL] [K2] las w centrum + niedobor drewna: rozkazy na centrum = [tartak,oboz_lowiecki] (== brak)
+  [FAIL] [K2] laka w centrum, farma mozliwa: rozkazy na centrum = [farma,bydlo,irygacja] (== brak)
+  [FAIL] [K3] las w centrum + niedobor drewna: rozkazy na centrum = [tartak] (== brak)
+autoimprove-stages-q1-test: 140 passed, 3 failed
+EXIT=0

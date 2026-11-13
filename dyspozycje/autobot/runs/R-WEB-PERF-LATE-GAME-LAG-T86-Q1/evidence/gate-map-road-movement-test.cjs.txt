@@ -1,0 +1,2 @@
+map-road-movement-test: 26 pass, 0 fail
+EXIT=0

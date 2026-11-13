@@ -1,0 +1,41 @@
+PASS: (0) etykieta drugiego strumienia to JEDNA stała w game/cities.ts, nie literał w UI
+PASS: (0) panel imperium czyta WSPOLNA stala nazwy warstwy (a) (zywy kod, nie komentarz)
+PASS: (0) HUD trybu budowy NIE renderuje juz warstwy (a): zero nazw i zero markupu tego suwaka
+PASS: (0) pole `doUlepszen` niosące pulę imperium zniknęło z cityPanel.ts
+[praca-jeden-podzial-real-render-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+PASS: boot: sekcja „Podział pracy" wyrenderowana bez błędu, HTML niepusty
+PASS: (A) w sekcji jest DOKŁADNIE JEDEN suwak podziału Pracy
+PASS: (A) suwak ma min="50" na żywym elemencie DOM
+PASS: (A) suwak ma max="100" na żywym elemencie DOM
+PASS: (B) ulepszenia 0%: kolumny sumują się do 100% (100+0)
+PASS: (B) ulepszenia 0%: kolumna ulepszeń pokazuje dokładnie 0%
+PASS: (B) ulepszenia 0%: wartość suwaka = 100% budynków
+PASS: (B) ulepszenia 10%: kolumny sumują się do 100% (90+10)
+PASS: (B) ulepszenia 10%: kolumna ulepszeń pokazuje dokładnie 10%
+PASS: (B) ulepszenia 10%: wartość suwaka = 90% budynków
+PASS: (B) ulepszenia 20%: kolumny sumują się do 100% (80+20)
+PASS: (B) ulepszenia 20%: kolumna ulepszeń pokazuje dokładnie 20%
+PASS: (B) ulepszenia 20%: wartość suwaka = 80% budynków
+PASS: (B) ulepszenia 30%: kolumny sumują się do 100% (70+30)
+PASS: (B) ulepszenia 30%: kolumna ulepszeń pokazuje dokładnie 30%
+PASS: (B) ulepszenia 30%: wartość suwaka = 70% budynków
+PASS: (B) ulepszenia 40%: kolumny sumują się do 100% (60+40)
+PASS: (B) ulepszenia 40%: kolumna ulepszeń pokazuje dokładnie 40%
+PASS: (B) ulepszenia 40%: wartość suwaka = 60% budynków
+PASS: (B) ulepszenia 50%: kolumny sumują się do 100% (50+50)
+PASS: (B) ulepszenia 50%: kolumna ulepszeń pokazuje dokładnie 50%
+PASS: (B) ulepszenia 50%: wartość suwaka = 50% budynków
+PASS: (C) próba ustawienia 80% na ulepszenia jest klampowana przez przeglądarkę do 50% budynków
+PASS: (C) próba ustawienia 100% na ulepszenia jest klampowana do 50% budynków
+PASS: (C) wartość powyżej zakresu jest klampowana do 100% budynków (0% ulepszeń)
+PASS: (D) kolumna budynków nazwana „Budynki"
+PASS: (D) kolumna drugiego strumienia mówi „Ulepszenia" ORAZ „pula" (nie samo „Ulepszenia")
+PASS: (D) nagłówek sekcji mówi „Ulepszenia (pula imperium)"
+PASS: brak błędów konsoli/pageerror w trakcie renderu
+PASS: (E) MUT-1: po rozluźnieniu min suwak przyjmuje 20% budynków — asercja (A/C) faktycznie by PADŁA
+PASS: (E) MUT-2: rozjechana suma kolumn (100+50=150) — asercja (B) faktycznie by PADŁA
+PASS: (E) MUT-3: sama „Ulepszenia" bez słowa „pula" — asercja (D) faktycznie by PADŁA
+PASS: (E) po mutacjach DOM wrócił do stanu produkcyjnego (suma 100%, min=50)
+
+[praca-jeden-podzial-real-render-test] 37 pass, 0 fail
+EXIT=0

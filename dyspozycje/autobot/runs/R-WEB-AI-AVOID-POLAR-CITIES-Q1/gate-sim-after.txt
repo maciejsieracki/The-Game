@@ -1,0 +1,17 @@
+[kontynenty 4242] startAI=49 founded=148 aiCitiesT15=197 onPolar=0 r<=1=0 r<=2=0 foundedOnPolar=0 foundedR<=1=0 (7s)
+[kontynenty 7777] startAI=49 founded=145 aiCitiesT15=194 onPolar=0 r<=1=0 r<=2=0 foundedOnPolar=0 foundedR<=1=0 (5s)
+[kontynenty 1001] startAI=49 founded=159 aiCitiesT15=208 onPolar=0 r<=1=0 r<=2=0 foundedOnPolar=0 foundedR<=1=0 (5s)
+[kontynenty 2024] startAI=49 founded=137 aiCitiesT15=186 onPolar=0 r<=1=0 r<=2=0 foundedOnPolar=0 foundedR<=1=0 (5s)
+[kontynenty 31337] startAI=49 founded=148 aiCitiesT15=197 onPolar=0 r<=1=0 r<=2=0 foundedOnPolar=0 foundedR<=1=0 (7s)
+[pangea 4242] startAI=49 founded=217 aiCitiesT15=266 onPolar=0 r<=1=0 r<=2=3 foundedOnPolar=0 foundedR<=1=0 (14s)
+[pangea 7777] startAI=49 founded=240 aiCitiesT15=289 onPolar=0 r<=1=0 r<=2=1 foundedOnPolar=0 foundedR<=1=0 (14s)
+[pangea 1001] startAI=49 founded=236 aiCitiesT15=285 onPolar=0 r<=1=3 r<=2=3 foundedOnPolar=0 foundedR<=1=3 (12s)
+[pangea 2024] startAI=49 founded=259 aiCitiesT15=308 onPolar=0 r<=1=0 r<=2=1 foundedOnPolar=0 foundedR<=1=0 (13s)
+[pangea 31337] startAI=49 founded=258 aiCitiesT15=307 onPolar=0 r<=1=0 r<=2=1 foundedOnPolar=0 foundedR<=1=0 (12s)
+[wyspy 4242] startAI=49 founded=215 aiCitiesT15=264 onPolar=0 r<=1=5 r<=2=6 foundedOnPolar=0 foundedR<=1=1 (12s)
+[wyspy 7777] startAI=49 founded=242 aiCitiesT15=291 onPolar=0 r<=1=5 r<=2=8 foundedOnPolar=0 foundedR<=1=2 (12s)
+[wyspy 1001] startAI=49 founded=228 aiCitiesT15=277 onPolar=0 r<=1=7 r<=2=8 foundedOnPolar=0 foundedR<=1=2 (10s)
+[wyspy 2024] startAI=49 founded=225 aiCitiesT15=274 onPolar=0 r<=1=11 r<=2=11 foundedOnPolar=0 foundedR<=1=7 (10s)
+[wyspy 31337] startAI=49 founded=218 aiCitiesT15=267 onPolar=0 r<=1=5 r<=2=9 foundedOnPolar=0 foundedR<=1=1 (9s)
+RESULT {"runs":15,"aiCities":3810,"onPolar":0,"r1":36,"r2":51,"aiStart":735,"founded":3075,"foundedOnPolar":0,"foundedR1":16}
+EXIT=0

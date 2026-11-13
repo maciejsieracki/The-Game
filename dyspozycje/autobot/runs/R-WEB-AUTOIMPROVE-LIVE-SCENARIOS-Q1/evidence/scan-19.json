@@ -1,0 +1,41 @@
+{
+  "n": 26,
+  "best": [
+    {
+      "cap": false,
+      "q": 59,
+      "r": 12,
+      "forestOff": 2,
+      "forestRiv": 29,
+      "riverOpen": 3,
+      "noRiverNoForest": 0
+    },
+    {
+      "cap": false,
+      "q": 58,
+      "r": 13,
+      "forestOff": 2,
+      "forestRiv": 27,
+      "riverOpen": 6,
+      "noRiverNoForest": 0
+    },
+    {
+      "cap": false,
+      "q": 59,
+      "r": 13,
+      "forestOff": 2,
+      "forestRiv": 25,
+      "riverOpen": 7,
+      "noRiverNoForest": 0
+    },
+    {
+      "cap": false,
+      "q": 58,
+      "r": 14,
+      "forestOff": 2,
+      "forestRiv": 24,
+      "riverOpen": 7,
+      "noRiverNoForest": 0
+    }
+  ]
+}

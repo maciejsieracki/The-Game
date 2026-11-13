@@ -6,7 +6,7 @@
  *   Gracz wybiera Wzrost ludnosci (Wysoki/Normalny/Wolny) w zaawansowanych opcjach kreatora.
  *   Wartosc zapisuje sie w stanie gry (player.wzrostLudnosciPace).
  *   economy.ts / turn-economy.ts wywoluja applyGrowthThresholdPace() na progu 20 + N × wsp.
- *   NIE dotyka cap Akweduktu (5/15) — tylko koszt wzrostu w buforze zywnosci.
+ *   NIE dotyka cap Akweduktu (parametr akwedukt_max_ludnosci, 20) — tylko koszt wzrostu w buforze zywnosci.
  *
  * Maciej 2026-07-07: bazowy prog (Wysoki) = x1; Normalny x2; Wolny x4.
  * Dotyczy wszystkich graczy rowno (globalne tempo rozgrywki).

@@ -1,0 +1,32 @@
+owner-economy-test (per-owner isolation)
+
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=5 terrain=21 landSea=135 relief=166 coast=35 riversMain=2038 riversFill=1852 forest=6 deposits=23 starts=97 total=4379
+PASS: 3 miasta w perCity
+PASS: suma per-owner pieniadz = total mapy
+PASS: suma per-owner doPuli = totalPracaPula
+PASS: gracz dostaje mniej niz suma calej mapy
+PASS: sumEconomyForPlayerCities = sumEconomyForOwner(0)
+PASS: AI1 dostaje mniej niz suma calej mapy
+PASS: gracz NIE dostaje calej mapy (chyba ze wszystko zero)
+PASS: human owner with an empire Market can convert
+PASS: AI cannot use manual conversion
+PASS: conversion requires a Market somewhere in the owner empire
+PASS: selected Work decreases and tax aggregate is queued at 1:1
+PASS: queued Work tax survives a save/load metadata round-trip
+PASS: manual tax reaches the money share of normal city tax
+PASS: manual tax reaches the science share of normal city tax
+PASS: manual tax reaches the wealth share of normal city tax
+PASS: Market gross-trade bonus is not applied to converted Work tax
+PASS: manual tax passes through Currency and Mint modifier before allocation
+PASS: manual tax does not masquerade as route income
+PASS: totalPieniadz >= playerSum (regresja gdy rowne i >0 = leak)
+PASS: przy 3 miastach total >> player (wykrywalny leak)
+
+  player pieniadz/t: 3
+  AI1 pieniadz/t:    9
+  AI2 pieniadz/t:    5
+  MAP total/t:       17
+
+20 passed, 0 failed
+EXIT=0

@@ -1,0 +1,45 @@
+-- 1366px
+  ok   1366: B1 font glownej liczby >= 1,25x PRZED (min 1.308)
+  ok   1366/small: B2 zero przycinania w komorkach
+  ok   1366/small: B2 brak poziomego scrolla strony
+  FAIL 1366/mid: B2 zero przycinania w komorkach -- [["Skarbiec",["civ-hud-chip-val civ-res-c-skarbiec"]],["Praca",["civ-hud-chip-val civ-res-c-praca"]],["Spichlerz",["civ-hud-chip-val civ-res-c-zywnosc"]],["Nauka",["civ-hud-chip-val civ-res-c-nauka"]]]
+  ok   1366/mid: B2 brak poziomego scrolla strony
+  FAIL 1366/huge: B2 zero przycinania w komorkach -- [["Skarbiec",["civ-hud-chip-val civ-res-c-skarbiec"]],["Praca",["civ-hud-chip-val civ-res-c-praca"]],["Spichlerz",["civ-hud-chip-val civ-res-c-zywnosc"]],["Nauka",["civ-hud-chip-body","civ-hud-chip-line","civ-hud-chip-val civ-res-c-nauka"]]]
+  ok   1366/huge: B2 brak poziomego scrolla strony
+  ok   1366/mid: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1366/mid: B3 wysokosc banera stala
+  ok   1366/huge: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1366/huge: B3 wysokosc banera stala
+  ok   1366: B4 przerwa miedzy liczba a przyrostami <= 6 px (max 4.0 px)
+  ok   1366: B4 symetria pustej przestrzeni lewo/prawo w zetonie <= 2 px (max 0.0 px)
+   puste boki zetonu (12): 39 41 39 45 41 47 | (2,3M): 30 30 30 32 30 30  [px na strone; symetryczne]
+  ok   1366: B4 puste boki NAJGORSZEGO zetonu (12) <= 52 px (max 47.1)
+  ok   1366: B4 puste boki NAJGORSZEGO zetonu (2,3M) <= 36 px (max 32.3)
+   cel dispatchu puste boki <= 12 px: NIEOSIAGNIETY (max 12: 47 px, max 2,3M: 32 px)
+   dryf w zetonie 12 -> 2,3M (px): medalion -9 -11 -9 -12 -11 -17 | liczba -9 -11 -9 -12 -11 -17
+  ok   1366: B5 kazda komorka ma brutto i netto
+   PRZED font: 13 13 13 13 13 13 | PO font: 17 17 17 17 17 17
+-- 640px
+  ok   640: B1 font glownej liczby >= 1,25x PRZED (min 1.333)
+  FAIL 640/small: B2 zero przycinania w komorkach -- [["Skarbiec",["civ-hud-chip civ-hud-chip-cell civ-hud-chip-click civ-hud-chip-short","civ-hud-chip-body","civ-hud-chip-lbl","civ-hud-chip-line"]],["Praca",["civ-hud-chip civ-hud-chip-cell civ-hud-chip-click","civ-hud-chip-body","civ-hud-chip-lbl","civ-hud-chip-line"]],["Spichlerz",["civ-hud-chip civ-hud-chip-cell civ-hud-chip-click","civ-hud-chip-body","civ-hud-chip-lbl","civ-hud-chip-line"]],["Handel",["civ-hud-chip civ-hud-chip-cell civ-hud-chip-click","civ-hud-chip-body","civ-hud-chip-lbl","civ-hud-chip-line"]],["Nauka",["civ-hud-chip civ-hud-chip-cell civ-hud-chip-click","civ-hud-chip-body","civ-hud-chip-lbl","civ-hud-chip-line"]],["Surowce",["civ-hud-chip civ-hud-chip-cell civ-hud-chip-click","civ-hud-chip-body","civ-hud-chip-lbl","civ-hud-chip-line"]]]
+  ok   640/small: B2 brak poziomego scrolla strony
+  FAIL 640/mid: B2 zero przycinania w komorkach -- [["Skarbiec",["civ-hud-chip civ-hud-chip-cell civ-hud-chip-click civ-hud-chip-short","civ-hud-chip-body","civ-hud-chip-lbl","civ-hud-chip-line"]],["Praca",["civ-hud-chip civ-hud-chip-cell civ-hud-chip-click","civ-hud-chip-body","civ-hud-chip-lbl","civ-hud-chip-line"]],["Spichlerz",["civ-hud-chip civ-hud-chip-cell civ-hud-chip-click","civ-hud-chip-body","civ-hud-chip-lbl","civ-hud-chip-line"]],["Handel",["civ-hud-chip civ-hud-chip-cell civ-hud-chip-click","civ-hud-chip-body","civ-hud-chip-lbl","civ-hud-chip-line"]],["Nauka",["civ-hud-chip civ-hud-chip-cell civ-hud-chip-click","civ-hud-chip-body","civ-hud-chip-lbl","civ-hud-chip-line"]],["Surowce",["civ-hud-chip civ-hud-chip-cell civ-hud-chip-click","civ-hud-chip-body","civ-hud-chip-lbl","civ-hud-chip-line"]]]
+  ok   640/mid: B2 brak poziomego scrolla strony
+  FAIL 640/huge: B2 zero przycinania w komorkach -- [["Skarbiec",["civ-hud-chip civ-hud-chip-cell civ-hud-chip-click civ-hud-chip-short","civ-hud-chip-body","civ-hud-chip-lbl","civ-hud-chip-line"]],["Praca",["civ-hud-chip civ-hud-chip-cell civ-hud-chip-click","civ-hud-chip-body","civ-hud-chip-lbl","civ-hud-chip-line"]],["Spichlerz",["civ-hud-chip civ-hud-chip-cell civ-hud-chip-click","civ-hud-chip-body","civ-hud-chip-lbl","civ-hud-chip-line"]],["Handel",["civ-hud-chip civ-hud-chip-cell civ-hud-chip-click","civ-hud-chip-body","civ-hud-chip-lbl","civ-hud-chip-line"]],["Nauka",["civ-hud-chip civ-hud-chip-cell civ-hud-chip-click","civ-hud-chip-body","civ-hud-chip-lbl","civ-hud-chip-line"]],["Surowce",["civ-hud-chip civ-hud-chip-cell civ-hud-chip-click","civ-hud-chip-body","civ-hud-chip-lbl","civ-hud-chip-line"]]]
+  ok   640/huge: B2 brak poziomego scrolla strony
+  ok   640/mid: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   640/mid: B3 wysokosc banera stala
+  ok   640/huge: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   640/huge: B3 wysokosc banera stala
+  ok   640: B4 przerwa miedzy liczba a przyrostami <= 6 px (max 0.0 px)
+  ok   640: B4 symetria pustej przestrzeni lewo/prawo w zetonie <= 2 px (max 0.0 px)
+   puste boki zetonu (12): 24 24 24 24 24 24 | (2,3M): 24 24 24 24 24 24  [px na strone; symetryczne]
+  FAIL 640: B4 puste boki NAJGORSZEGO zetonu (12) <= 15 px (max 23.5)
+  FAIL 640: B4 puste boki NAJGORSZEGO zetonu (2,3M) <= 12 px (max 23.5)
+   cel dispatchu puste boki <= 12 px: NIEOSIAGNIETY (max 12: 24 px, max 2,3M: 24 px)
+   dryf w zetonie 12 -> 2,3M (px): medalion 0 0 0 0 0 0 | liczba 0 0 0 0 0 0
+  ok   640: B5 kazda komorka ma brutto i netto
+   PRZED font: 9 9 9 9 9 9 | PO font: 12 12 12 12 12 12
+
+FAIL: hud-topbar-bigger-numbers-real-render-test (25 ok, 7 fail)
+EXIT=1

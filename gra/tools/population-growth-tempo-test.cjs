@@ -95,13 +95,13 @@ assert(!rCapAq.wzrost && rCapAq.nowaLudnosc === 15, 'cap 15 z akweduktem — bra
 eq(getPopulationGrowthThresholdMultiplier(0, 'normalny', 'hard'), 4, 'hard gracz: normalny tempo x4');
 eq(getPopulationGrowthThresholdMultiplier(5, 'normalny', 'hard'), 1, 'hard AI: normalny tempo x1');
 
-const cityPop1 = { ludnosc: 1, zdrowie: 0, maSpichlerz: false, maAkwedukt: false, magazynZywnosci: 70 };
+const cityPop1 = { ludnosc: 1, zdrowie: 0, maSpichlerz: false, maAkwedukt: false, magazynZywnosci: 107 };
 const rGrowPlayer = populationGrowth(cityPop1, 5, params, 4);
-assert(rGrowPlayer.wzrost && rGrowPlayer.nowaLudnosc === 2, 'gracz hard: 70+5 >= 72 → wzrost');
+assert(rGrowPlayer.wzrost && rGrowPlayer.nowaLudnosc === 2, 'gracz hard: 107+5 >= (20+8)*4 → wzrost');
 
-const cityAi = { ludnosc: 1, zdrowie: 0, maSpichlerz: false, maAkwedukt: false, magazynZywnosci: 12 };
+const cityAi = { ludnosc: 1, zdrowie: 0, maSpichlerz: false, maAkwedukt: false, magazynZywnosci: 20 };
 const rGrowAi = populationGrowth(cityAi, 8, params, 1);
-assert(rGrowAi.wzrost && rGrowAi.nowaLudnosc === 2, 'AI hard: 12+8 >= 18 → wzrost');
+assert(rGrowAi.wzrost && rGrowAi.nowaLudnosc === 2, 'AI hard: 20+8 >= 20+8 → wzrost');
 
 const multAiEasy = getPopulationGrowthThresholdMultiplier(3, 'normalny', 'easy');
 eq(multAiEasy, 4, 'easy AI: normalny x4');

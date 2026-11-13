@@ -21,14 +21,14 @@ function assert(condition, message) {
 
 const splitIcon = hudSource.match(/\n  split:\n([\s\S]*?)(?=\n  ['"]?merge['"]?:|\n  replace:)/)?.[1] ?? '';
 const mergeIcon = hudSource.match(/\n  ['"]?merge['"]?:\n([\s\S]*?)(?=\n  \/\/ Zastąp|\n  replace:)/)?.[1] ?? '';
-assert(splitIcon.includes('M12 12H4') && splitIcon.includes('M12 12H20'),
-  'Rozdziel ma dwa ramiona wychodzące od środka');
-assert(splitIcon.includes('M8 8 4 12l4 4') && splitIcon.includes('M16 8 20 12l-4 4'),
-  'Rozdziel ma oba groty skierowane na zewnątrz');
-assert(mergeIcon.includes('M4 12H12') && mergeIcon.includes('M20 12H12'),
-  'Połącz ma dwa ramiona skierowane do środka');
-assert(mergeIcon.includes('M8 8 12 12l-4 4') && mergeIcon.includes('M16 8 12 12l4 4'),
-  'Połącz ma oba groty skierowane do środka');
+assert(splitIcon.includes('M12 20V12L4 4') && splitIcon.includes('M12 12 20 4'),
+  'Rozdziel ma wyraźny rozwidlający się ruch z centrum na zewnątrz');
+assert(splitIcon.includes('M10 4H4v6') && splitIcon.includes('M14 4h6v6'),
+  'Rozdziel ma groty skierowane ku zewnętrznym końcom');
+assert(mergeIcon.includes('M4 4 12 12') && mergeIcon.includes('M20 4 12 12'),
+  'Połącz ma dwa ramiona zbiegające się do wspólnego środka');
+assert(mergeIcon.includes('M8 12h4V8') && mergeIcon.includes('M12 8v4h4'),
+  'Połącz ma groty skierowane do wewnątrz');
 
 const splitStart = mainSource.indexOf('onSplit: (ids, destQ, destR) => {');
 const splitEnd = mainSource.indexOf('const campDestroyed = checkBarbCampDestroyedAt', splitStart);

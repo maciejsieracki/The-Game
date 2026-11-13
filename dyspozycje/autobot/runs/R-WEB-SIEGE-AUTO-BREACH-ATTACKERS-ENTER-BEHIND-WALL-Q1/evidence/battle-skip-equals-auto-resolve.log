@@ -1,0 +1,53 @@
+PASS: A1 formatEndLoss(-2443.1999999999925) = "0" (ujemne => 0)
+PASS: A2 formatEndLoss(2443.1999999999925) = "2443" (pl-PL: 4 cyfry bez separatora)
+PASS: A3 formatEndLoss(1584.999999999996) = "1585"
+PASS: A6 formatEndLoss(12443.6) = "12 444" (zaokraglenie + separator)
+PASS: A4 NaN, Infinity, wartosci ujemne => "0"
+PASS: A5 liczby calkowite bez separatora dla <1000
+PASS: C1 skip() istnieje
+PASS: C2 skip() nie wola computeInstantResult (osobny uproszczony rachunek)
+PASS: C3 brak sztucznego limitu czasu FF (FF_MAX_VIRTUAL_MS usuniety)
+PASS: C4 sufit przewijania liczony w turach (FF_MAX_ROUNDS) z rozstrzygnieciem PAT
+MANUAL-MID {"mode":"fix","setup":{"id":"atk0","busy":true,"manual":true,"acted":false,"round":0},"mid":{"busy":true,"acted":false},"res":{"finished":true,"winner":"atakujacy","launchesOfUnitInTurn1":0,"firstLaunchRound":0},"errors":[]}
+MANUAL-MID {"mode":"control","setup":{"id":"atk0","busy":true,"manual":true,"acted":false,"round":0},"mid":{"busy":true,"acted":false},"res":{"finished":true,"winner":"atakujacy","launchesOfUnitInTurn1":1,"firstLaunchRound":0},"errors":[]}
+PASS: D0 skip z trybu recznego w trakcie animacji: bitwa konczy sie, brak bledow JS
+PASS: D1 w chwili skip() trwa animacja rozkazu gracza (busy, acted=false)
+PASS: D2 jednostka z rozkazu NIE jest planowana drugi raz w AUTO w tej samej turze (brak duplikatu aktywacji w turze otwartej w chwili skip)
+PASS: D3 kontrola: stare zachowanie (natychmiastowe AUTO) daje duplikat -- test wykrywa regresje
+RUN {"seed":1,"auto1":{"mode":"auto","seed":1,"frames":4600,"errors":[],"winner":"obronca","round":22,"virtMs":70960,"deployAtStart":true,"framesRun":4486,"speedMul":1,"ffVirtualMs":0,"atk":{"total":28,"lost":28,"remaining":0,"hp":0},"def":{"total":28,"lost":11,"remaining":17,"hp":524},"pursuit":{"atkOnRouted":37,"killedRouted":5},"logLines":412,"endText":["Porażka"]},"skip":{"mode":"skip","seed":1,"frames":200,"errors":[],"winner":"obronca","round":22,"virtMs":70960,"deployAtStart":true,"framesRun":52,"speedMul":1,"ffVirtualMs":70960,"atk":{"total":28,"lost":28,"remaining":0,"hp":0},"def":{"total":28,"lost":11,"remaining":17,"hp":524},"pursuit":{"atkOnRouted":37,"killedRouted":5},"logLines":412,"endText":["Porażka"]}}
+RUN {"seed":2,"auto1":{"mode":"auto","seed":2,"frames":5400,"errors":[],"winner":"obronca","round":26,"virtMs":84384,"deployAtStart":true,"framesRun":5320,"speedMul":1,"ffVirtualMs":0,"atk":{"total":28,"lost":28,"remaining":0,"hp":0},"def":{"total":28,"lost":12,"remaining":16,"hp":509},"pursuit":{"atkOnRouted":44,"killedRouted":4},"logLines":537,"endText":["Porażka"]},"skip":{"mode":"skip","seed":2,"frames":200,"errors":[],"winner":"obronca","round":26,"virtMs":84320,"deployAtStart":true,"framesRun":47,"speedMul":1,"ffVirtualMs":84320,"atk":{"total":28,"lost":28,"remaining":0,"hp":0},"def":{"total":28,"lost":12,"remaining":16,"hp":509},"pursuit":{"atkOnRouted":44,"killedRouted":4},"logLines":537,"endText":["Porażka"]}}
+RUN {"seed":3,"auto1":{"mode":"auto","seed":3,"frames":5000,"errors":[],"winner":"atakujacy","round":23,"virtMs":77280,"deployAtStart":true,"framesRun":4886,"speedMul":1,"ffVirtualMs":0,"atk":{"total":28,"lost":17,"remaining":11,"hp":225},"def":{"total":28,"lost":28,"remaining":0,"hp":0},"pursuit":{"atkOnRouted":40,"killedRouted":6},"logLines":461,"endText":["Zwycięstwo"]},"skip":{"mode":"skip","seed":3,"frames":200,"errors":[],"winner":"atakujacy","round":23,"virtMs":77280,"deployAtStart":true,"framesRun":57,"speedMul":1,"ffVirtualMs":77280,"atk":{"total":28,"lost":17,"remaining":11,"hp":225},"def":{"total":28,"lost":28,"remaining":0,"hp":0},"pursuit":{"atkOnRouted":40,"killedRouted":6},"logLines":461,"endText":["Zwycięstwo"]}}
+RUN {"seed":7,"auto1":{"mode":"auto","seed":7,"frames":4400,"errors":[],"winner":"obronca","round":21,"virtMs":68112,"deployAtStart":true,"framesRun":4308,"speedMul":1,"ffVirtualMs":0,"atk":{"total":28,"lost":28,"remaining":0,"hp":0},"def":{"total":28,"lost":10,"remaining":18,"hp":595},"pursuit":{"atkOnRouted":32,"killedRouted":1},"logLines":426,"endText":["Porażka"]},"skip":{"mode":"skip","seed":7,"frames":200,"errors":[],"winner":"obronca","round":21,"virtMs":68080,"deployAtStart":true,"framesRun":52,"speedMul":1,"ffVirtualMs":68080,"atk":{"total":28,"lost":28,"remaining":0,"hp":0},"def":{"total":28,"lost":10,"remaining":18,"hp":595},"pursuit":{"atkOnRouted":32,"killedRouted":1},"logLines":426,"endText":["Porażka"]}}
+PASS: B0 seed 1: brak bledow JS
+PASS: B1 seed 1: skip konczy bitwe (zwyciezca ustalony, koniec pokazany)
+PASS: B2 seed 1: tura > 0 i czas wirtualny > 0 po skip
+PASS: B3 seed 1: straty i HP calkowite po skip
+PASS: B4 seed 1: SKIP == AUTO (zwyciezca, straty, HP, tura)
+PASS: B6 seed 1: poscig cwiczony (ataki na routed > 0) i SKIP == AUTO (ataki na routed, zabici jako routed)
+PASS: B5 seed 1: czas bitwy skip ~ auto (roznica <= 200 ms wirt., nie 3,5x)
+INFO seed 1 czas wirtualny: auto=70960 ms (tura 22), skip=70960 ms (tura 22)
+PASS: B0 seed 2: brak bledow JS
+PASS: B1 seed 2: skip konczy bitwe (zwyciezca ustalony, koniec pokazany)
+PASS: B2 seed 2: tura > 0 i czas wirtualny > 0 po skip
+PASS: B3 seed 2: straty i HP calkowite po skip
+PASS: B4 seed 2: SKIP == AUTO (zwyciezca, straty, HP, tura)
+PASS: B6 seed 2: poscig cwiczony (ataki na routed > 0) i SKIP == AUTO (ataki na routed, zabici jako routed)
+PASS: B5 seed 2: czas bitwy skip ~ auto (roznica <= 200 ms wirt., nie 3,5x)
+INFO seed 2 czas wirtualny: auto=84384 ms (tura 26), skip=84320 ms (tura 26)
+PASS: B0 seed 3: brak bledow JS
+PASS: B1 seed 3: skip konczy bitwe (zwyciezca ustalony, koniec pokazany)
+PASS: B2 seed 3: tura > 0 i czas wirtualny > 0 po skip
+PASS: B3 seed 3: straty i HP calkowite po skip
+PASS: B4 seed 3: SKIP == AUTO (zwyciezca, straty, HP, tura)
+PASS: B6 seed 3: poscig cwiczony (ataki na routed > 0) i SKIP == AUTO (ataki na routed, zabici jako routed)
+PASS: B5 seed 3: czas bitwy skip ~ auto (roznica <= 200 ms wirt., nie 3,5x)
+INFO seed 3 czas wirtualny: auto=77280 ms (tura 23), skip=77280 ms (tura 23)
+PASS: B0 seed 7: brak bledow JS
+PASS: B1 seed 7: skip konczy bitwe (zwyciezca ustalony, koniec pokazany)
+PASS: B2 seed 7: tura > 0 i czas wirtualny > 0 po skip
+PASS: B3 seed 7: straty i HP calkowite po skip
+PASS: B4 seed 7: SKIP == AUTO (zwyciezca, straty, HP, tura)
+PASS: B6 seed 7: poscig cwiczony (ataki na routed > 0) i SKIP == AUTO (ataki na routed, zabici jako routed)
+PASS: B5 seed 7: czas bitwy skip ~ auto (roznica <= 200 ms wirt., nie 3,5x)
+INFO seed 7 czas wirtualny: auto=68112 ms (tura 21), skip=68080 ms (tura 21)
+--- 42 ok, 0 fail; CZESC B: DONE

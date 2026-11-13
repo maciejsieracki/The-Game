@@ -1,0 +1,4 @@
+-- K. main.ts: parytet liczby wystąpień citizenUpkeepByOwner.clear() vs cityOrderState.clear() --
+
+citizen-resource-upkeep-test: 107 passed, 2 failed
+EXIT=1

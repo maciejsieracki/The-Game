@@ -1,0 +1,2 @@
+manual-rebalance-owner-era: pass=5 fail=0
+EXIT=0

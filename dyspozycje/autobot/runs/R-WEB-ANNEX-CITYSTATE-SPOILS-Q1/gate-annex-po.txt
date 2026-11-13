@@ -1,0 +1,92 @@
+1. Aneksja przez gracza (0): komplet majatku, MP wyzerowane
+  OK: 1a: wynik niepusty
+  OK: 1b: zloto 50 + 500 (got 550, want 550)
+  OK: 1c: skarbiec MP 0 (got 0, want 0)
+  OK: 1d: Praca 10 + 300 (got 310, want 310)
+  OK: 1e: Praca MP 0 (got 0, want 0)
+  OK: 1f: Nauka 5 + 900 (got 905, want 905)
+  OK: 1g: Nauka MP 0 (got 0, want 0)
+  OK: 1h: zywnosc 40 + 1200 (got 1240, want 1240)
+  OK: 1i: zywnosc MP 0 (got 0, want 0)
+  OK: 1j: surowiec drewno +11 (got 11, want 11)
+  OK: 1j: surowiec kamien +22 (got 22, want 22)
+  OK: 1j: surowiec glina +134 (got 134, want 134)
+  OK: 1j: surowiec ruda +40 (got 40, want 40)
+  OK: 1j: surowiec ruda_zelaza +5 (got 5, want 5)
+  OK: 1j: surowiec cegla +17 (got 17, want 17)
+  OK: 1j: surowiec sol +9 (got 9, want 9)
+  OK: 1j: surowiec wegiel +3 (got 3, want 3)
+  OK: 1k: 8 surowcow na liscie (got 8, want 8)
+  OK: 1l: magazyn MP wyzerowany (miasta przeszly) (got 0, want 0)
+  OK: 1m: aneksja NIE kopiuje technologii (nie jest zdobyciem)
+2. Aneksja przez AI (ownerId 3): to samo
+  OK: 2a: zloto AI (got 550, want 550)
+  OK: 2b: Praca AI (got 310, want 310)
+  OK: 2c: Nauka AI (got 905, want 905)
+  OK: 2d: zywnosc AI (got 1240, want 1240)
+  OK: 2e: glina AI (got 134, want 134)
+  OK: 2f: MP wyzerowane (got 0, want 0)
+3. Limit Spichlerza przejmujacego
+  OK: 3a: przycieto do pojemnosci (got 1000, want 1000)
+  OK: 3b: przejeta 960 (got 960, want 960)
+  OK: 3c: utracona 240 (got 240, want 240)
+  OK: 3d: razem 1200 (got 1200, want 1200)
+  OK: 3e: MP wyzerowane mimo nadwyzki (got 0, want 0)
+  OK: 3f: Spichlerz pelny -> nic nie wchodzi (got 40, want 40)
+  OK: 3g: calosc ginie (got 1200, want 1200)
+  OK: 3h: pojemnosc nieznana (0) -> bez przyciecia (got 1240, want 1240)
+4. Wiele miast MP: surowce sumowane
+  OK: 4a: glina 10+7 (got 17, want 17)
+  OK: 4b: ruda (got 5, want 5)
+  OK: 4c: sol (got 2, want 2)
+  OK: 4d: stan zwyciezcy +17 (got 17, want 17)
+5. Barbarzyncy
+  OK: 5a: barbarzynski "MP" nie jest aneksowalny (null) (got null, want null)
+  OK: 5b: nic nie przeszlo (got 50, want 50)
+  OK: 5c: barbarzynca NIE dostaje zlota (got 50, want 50)
+  OK: 5d: MP i tak traci skarbiec (got 0, want 0)
+  OK: 5e: Praca barbarzyncy bez zmian (got 10, want 10)
+  OK: 5f: Nauka barbarzyncy bez zmian (got 5, want 5)
+  OK: 5g: zywnosc barbarzyncy bez zmian (got 40, want 40)
+6. Idempotencja i brak majatku
+  OK: 6a: drugie wywolanie nie dubluje zlota (got 550, want 550)
+  OK: 6b: ... ani zywnosci (got 1240, want 1240)
+  OK: 6c: puste MP = zero (got 0, want 0)
+  OK: 6d: sam na siebie = null (got null, want null)
+7. Eliminacja przez zdobycie bez regresji (ten sam rdzen)
+  OK: 7a: eliminacja (got "eliminacja", want "eliminacja")
+  OK: 7b: zloto (got 550, want 550)
+  OK: 7c: Praca (got 310, want 310)
+  OK: 7d: Nauka (got 905, want 905)
+  OK: 7e: zywnosc (got 1240, want 1240)
+  OK: 7f: techy skopiowane (tylko eliminacja)
+  OK: 7g: 8 surowcow (got 8, want 8)
+8. Komunikat (okno) zawiera komplet
+  OK: 8: "Złoto ze skarbca: +500"
+  OK: 8: "Żywność ze spichlerza: +1200"
+  OK: 8: "Punkty nauki: +900"
+  OK: 8: "Pula pracy: +300"
+  OK: 8: 8 pozycji surowcow w raporcie (got 8, want 8)
+  OK: 8: glina +134 w komunikacie
+  OK: 8: limit Spichlerza widoczny w komunikacie
+9. Wiazanie main.ts (po zrodle)
+  OK: 9a: znaleziono annexCityStateToOwner
+  OK: 9b: wola rdzen z tymi samymi akcesorami co eliminacja i isBarbarian
+  OK: 9c: majatek przejety PRZED eliminateOwner (ktore kasuje skarbiec MP)
+  OK: 9d: po zmianie ownerId miast
+  OK: 9e: aneksja nie jest zdobyciem (brak kar/relacji/Mocy/technologii)
+  OK: 9f: komunikat budowany z wierszy bilansu (te same co okno zdobycia)
+  OK: 9g: komunikat niesie annexDetails
+  OK: 9h: definicja + 3 wywolania (propozycja gracz/AI, AI MP, AI major) -- wszystkie przez jedna funkcje (got 4, want 4)
+  OK: 9i: cena aneksji odjeta ze skarbca MP przed przejeciem (nie wraca do platnika)
+10. Mutacje rdzenia musza czerwienic test
+  OK: 10: mutacja "brak zerowania skarbca ofiary" zczerwienia test
+  OK: 10: mutacja "brak transferu Pracy" zczerwienia test
+  OK: 10: mutacja "brak przyciecia do pojemnosci" zczerwienia test
+  OK: 10: mutacja "brak zerowania zywnosci ofiary" zczerwienia test
+  OK: 10: mutacja "surowce nie sumowane (nadpisanie)" zczerwienia test
+  OK: 10: mutacja "brak transferu Nauki" zczerwienia test
+  OK: 10: mutacja "brak guardu barbarzynca-ofiara" zczerwienia test
+
+79 passed, 0 failed
+EXIT=0

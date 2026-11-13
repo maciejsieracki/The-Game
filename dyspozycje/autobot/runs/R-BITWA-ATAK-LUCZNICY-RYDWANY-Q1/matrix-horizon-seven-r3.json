@@ -1,0 +1,528 @@
+{
+  "label": "headless production BattleScene action matrix; animation/renderer stubbed",
+  "seed": 20261028,
+  "unitsPerSide": 42,
+  "errors": [],
+  "scenarios": [
+    {
+      "doctrine": "steady",
+      "rangedLines": 2,
+      "priorityVariant": 0,
+      "terrainVariant": "engaged",
+      "activeUnits": 42,
+      "turns": 7,
+      "summary": {
+        "infantry": {
+          "units": 14,
+          "moves": 0,
+          "shots": 0,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 14,
+          "initialDistance": {
+            "min": 1,
+            "max": 1,
+            "unitsWithTargetInRange": 14
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 1,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "javelin": {
+          "units": 6,
+          "moves": 0,
+          "shots": 42,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 42,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsWithTargetInRange": 6
+          },
+          "finalDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "archer": {
+          "units": 8,
+          "moves": 14,
+          "shots": 49,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 49,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 3,
+            "max": 4,
+            "unitsWithTargetInRange": 4
+          },
+          "finalDistance": {
+            "min": 3,
+            "max": 3,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "slinger": {
+          "units": 4,
+          "moves": 10,
+          "shots": 20,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 20,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 5,
+            "max": 6,
+            "unitsWithTargetInRange": 0
+          },
+          "finalDistance": {
+            "min": 4,
+            "max": 4,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "cavalry": {
+          "units": 7,
+          "moves": 14,
+          "shots": 0,
+          "melee": 42,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 1,
+            "max": 2,
+            "unitsWithTargetInRange": 6
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 2,
+            "unitsOutsideWeaponRange": 1
+          }
+        },
+        "chariot": {
+          "units": 3,
+          "moves": 32,
+          "shots": 0,
+          "melee": 5,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsWithTargetInRange": 0
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 2,
+            "unitsOutsideWeaponRange": 2
+          }
+        }
+      }
+    },
+    {
+      "doctrine": "steady",
+      "rangedLines": 2,
+      "priorityVariant": 1,
+      "terrainVariant": "engaged",
+      "activeUnits": 42,
+      "turns": 7,
+      "summary": {
+        "infantry": {
+          "units": 14,
+          "moves": 123,
+          "shots": 0,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 4,
+          "initialDistance": {
+            "min": 1,
+            "max": 1,
+            "unitsWithTargetInRange": 14
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 5,
+            "unitsOutsideWeaponRange": 8
+          }
+        },
+        "javelin": {
+          "units": 6,
+          "moves": 0,
+          "shots": 42,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 42,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsWithTargetInRange": 6
+          },
+          "finalDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "archer": {
+          "units": 8,
+          "moves": 19,
+          "shots": 46,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 46,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 3,
+            "max": 4,
+            "unitsWithTargetInRange": 4
+          },
+          "finalDistance": {
+            "min": 3,
+            "max": 3,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "slinger": {
+          "units": 4,
+          "moves": 21,
+          "shots": 16,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 16,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 5,
+            "max": 6,
+            "unitsWithTargetInRange": 0
+          },
+          "finalDistance": {
+            "min": 4,
+            "max": 4,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "cavalry": {
+          "units": 7,
+          "moves": 11,
+          "shots": 0,
+          "melee": 43,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 1,
+            "max": 2,
+            "unitsWithTargetInRange": 6
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 1,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "chariot": {
+          "units": 3,
+          "moves": 24,
+          "shots": 0,
+          "melee": 9,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsWithTargetInRange": 0
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 2,
+            "unitsOutsideWeaponRange": 1
+          }
+        }
+      }
+    },
+    {
+      "doctrine": "steady",
+      "rangedLines": 3,
+      "priorityVariant": 0,
+      "terrainVariant": "engaged",
+      "activeUnits": 42,
+      "turns": 7,
+      "summary": {
+        "infantry": {
+          "units": 14,
+          "moves": 0,
+          "shots": 0,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 14,
+          "initialDistance": {
+            "min": 1,
+            "max": 1,
+            "unitsWithTargetInRange": 14
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 1,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "javelin": {
+          "units": 6,
+          "moves": 0,
+          "shots": 42,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 42,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsWithTargetInRange": 6
+          },
+          "finalDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "archer": {
+          "units": 8,
+          "moves": 18,
+          "shots": 46,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 46,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 3,
+            "max": 5,
+            "unitsWithTargetInRange": 3
+          },
+          "finalDistance": {
+            "min": 3,
+            "max": 3,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "slinger": {
+          "units": 4,
+          "moves": 15,
+          "shots": 19,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 19,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 6,
+            "max": 7,
+            "unitsWithTargetInRange": 0
+          },
+          "finalDistance": {
+            "min": 4,
+            "max": 4,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "cavalry": {
+          "units": 7,
+          "moves": 14,
+          "shots": 0,
+          "melee": 42,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 1,
+            "max": 2,
+            "unitsWithTargetInRange": 6
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 2,
+            "unitsOutsideWeaponRange": 1
+          }
+        },
+        "chariot": {
+          "units": 3,
+          "moves": 32,
+          "shots": 0,
+          "melee": 5,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsWithTargetInRange": 0
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 2,
+            "unitsOutsideWeaponRange": 2
+          }
+        }
+      }
+    },
+    {
+      "doctrine": "steady",
+      "rangedLines": 3,
+      "priorityVariant": 1,
+      "terrainVariant": "engaged",
+      "activeUnits": 42,
+      "turns": 7,
+      "summary": {
+        "infantry": {
+          "units": 14,
+          "moves": 125,
+          "shots": 0,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 3,
+          "initialDistance": {
+            "min": 1,
+            "max": 1,
+            "unitsWithTargetInRange": 14
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 5,
+            "unitsOutsideWeaponRange": 8
+          }
+        },
+        "javelin": {
+          "units": 6,
+          "moves": 0,
+          "shots": 42,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 42,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsWithTargetInRange": 6
+          },
+          "finalDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "archer": {
+          "units": 8,
+          "moves": 27,
+          "shots": 42,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 42,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 3,
+            "max": 5,
+            "unitsWithTargetInRange": 3
+          },
+          "finalDistance": {
+            "min": 3,
+            "max": 3,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "slinger": {
+          "units": 4,
+          "moves": 32,
+          "shots": 10,
+          "melee": 0,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 10,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 6,
+            "max": 7,
+            "unitsWithTargetInRange": 0
+          },
+          "finalDistance": {
+            "min": 4,
+            "max": 4,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "cavalry": {
+          "units": 7,
+          "moves": 11,
+          "shots": 0,
+          "melee": 43,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 1,
+            "max": 2,
+            "unitsWithTargetInRange": 6
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 1,
+            "unitsOutsideWeaponRange": 0
+          }
+        },
+        "chariot": {
+          "units": 3,
+          "moves": 24,
+          "shots": 0,
+          "melee": 9,
+          "blockedMoves": 0,
+          "illegalAttacks": 0,
+          "ammoSpent": 0,
+          "idleUnits": 0,
+          "initialDistance": {
+            "min": 2,
+            "max": 2,
+            "unitsWithTargetInRange": 0
+          },
+          "finalDistance": {
+            "min": 1,
+            "max": 2,
+            "unitsOutsideWeaponRange": 1
+          }
+        }
+      }
+    }
+  ]
+}

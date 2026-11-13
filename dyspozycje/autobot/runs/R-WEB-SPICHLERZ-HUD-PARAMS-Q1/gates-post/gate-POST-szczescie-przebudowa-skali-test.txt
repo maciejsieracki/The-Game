@@ -1,0 +1,31 @@
+
+[szczescie-przebudowa-skali-test] R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1
+
+-- 2a. per budynek: 19 szczesciodajnych, 22 z zerem (G1) --
+  [FAIL] katalog budynkow ma 41 pozycji (19 + 22) -- got 42, want 41
+
+-- 2b. suma z budynkow 14 / 25 / 42 (lancuchy ulepszen zwiniete) --
+  [FAIL] 2b: epoka 1 — komplet to 11 budynkow -- got 12, want 11
+  [FAIL] 2b: epoka 2 — komplet to 23 budynki (nie 26) -- got 24, want 23
+  [FAIL] 2b: epoka 3 — komplet to 31 budynkow (nie 39) -- got 32, want 31
+
+-- 2c. kultura i religia proporcjonalnie (G4) --
+
+-- 2d. Wealth: cap epoki -> +10 (G6) --
+
+-- 2e. podatki liniowo -10 .. +10 (G7) --
+
+-- 2f. zaopatrzenie obywateli +-2 na surowiec (G8) --
+
+-- 2g. skan negatywny: 7 martwych parametrow + wiersze dublujace (G14/G3/G5/G12) --
+
+-- G9-G13: pozostale liczby wlasciciela w danych --
+
+-- 2h. scenariusz optymistyczny pop 8 = 58 / 85 / 118, szPct = 120% --
+
+-- 2i. cityPanel.ts liczy tym samym kodem co silnik (G15) --
+
+-- 2i (8). parytet FUNKCJONALNY: uruchomiony cityPanel == silnik --
+
+[szczescie-przebudowa-skali-test] 515 OK, 4 FAIL
+EXIT=1

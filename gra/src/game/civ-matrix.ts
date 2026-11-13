@@ -11,6 +11,9 @@ import matrixRaw from '../../data/civ-matrix.json';
 
 export type CivMatrixFormula = 'mul_proc' | 'mul_abs' | 'add' | 'flag' | 'skala' | 'stat_abs';
 
+/** Trzy poziomy trudności używane przez profile cywilizacji. */
+export type CivMatrixDifficulty = 'easy' | 'normal' | 'hard';
+
 export interface CivMatrixParamDef {
   domena: string;
   jednostka: string;
@@ -54,6 +57,43 @@ export function civMatrixParam(civKey: string, paramId: string): number {
   const row = resolveRow(civKey);
   if (!row) return DATA.defaults[paramId] ?? 0;
   return row.params[paramId] ?? DATA.defaults[paramId] ?? 0;
+}
+
+/**
+ * Wartość parametru dla poziomu trudności.
+ *
+ * Wartość płaska w `params` jest kanoniczną wartością Normal. Tylko pola
+ * oznaczone w definicji jako `skala` są skalowane przez trudność (Normal - 1
+ * na Easy, Normal + 1 na Hard, z ograniczeniem 1..10). Flagi, bonusy i
+ * statystyki cywilizacji pozostają cechą nację i nie są po cichu wzmacniane
+ * poziomem trudności.
+ */
+export function civMatrixParamAtDifficulty(
+  civKey: string,
+  paramId: string,
+  difficulty: CivMatrixDifficulty = 'normal',
+): number {
+  const normal = civMatrixParam(civKey, paramId);
+  if (difficulty === 'normal' || civMatrixParamDef(paramId)?.formula !== 'skala') return normal;
+  const delta = difficulty === 'easy' ? -1 : 1;
+  return Math.max(1, Math.min(10, normal + delta));
+}
+
+/**
+ * Pełny, jawny snapshot 113 parametrów dla poziomu trudności.
+ * Klucze pochodzą z `paramDefs`, więc brak parametru nie może zniknąć z
+ * raportu pokrycia ani z adaptera konsumenta.
+ */
+export function civMatrixParamsAtDifficulty(
+  civKey: string,
+  difficulty: CivMatrixDifficulty = 'normal',
+): Record<string, number> {
+  return Object.fromEntries(
+    Object.keys(DATA.paramDefs).map(paramId => [
+      paramId,
+      civMatrixParamAtDifficulty(civKey, paramId, difficulty),
+    ]),
+  );
 }
 
 /** Definicja parametru (modul docelowy, formula). */

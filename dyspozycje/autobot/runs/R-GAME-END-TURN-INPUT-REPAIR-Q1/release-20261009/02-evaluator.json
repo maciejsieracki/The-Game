@@ -1,0 +1,164 @@
+{
+  "status": "PASS-WITH-NOTES",
+  "domain": "GAME",
+  "role": "Evaluator",
+  "topic_id": "R-GAME-END-TURN-INPUT-REPAIR-Q1",
+  "incident": "ERR-GAME-2026-10-07-01",
+  "native_task_id": "t_3a306fbd",
+  "native_run_id": 44,
+  "round": "1/5",
+  "attempt": "attempt-20261007",
+  "actual_route": {
+    "provider": "openai-codex",
+    "model": "gpt-6-luna",
+    "effort": "max",
+    "service_tier": "normal"
+  },
+  "base_sha": "69ccb145a8682f9c2754834afbb16a8d1eaaf825",
+  "head_sha": "69ccb145a8682f9c2754834afbb16a8d1eaaf825",
+  "branch": "hermes/R-GAME-END-TURN-INPUT-REPAIR-Q1-20261007",
+  "product_acceptance": false,
+  "full_gameplay_acceptance": "NOT_PROVEN",
+  "no_release": true,
+  "numbered_objections": [],
+  "gate_results": {
+    "G1_product_red": "PASS",
+    "G2_fixed_input": "PASS",
+    "G3_real_gameplay_two_turns": "PASS",
+    "G4_regression_scope_save_load_ai": "PASS_WITH_NOTES",
+    "G5_independent_evaluator": "PASS",
+    "G6_no_release": "PASS"
+  },
+  "focused_test": {
+    "command": "node tools/end-turn-input-stability-test.cjs",
+    "node_check_exit": 0,
+    "exit": 0,
+    "behavior_groups": 10,
+    "unchanged_base_negative_control": {
+      "before_button_id": 1,
+      "after_button_id": 2,
+      "trusted_click_emitted": false,
+      "accepted_callback_count": 0
+    },
+    "base_source_sha256": "d42297ed5035ece4215bd5ad7d267496f36f0e7645add72d6f9c9cdc0dcc13d5",
+    "candidate_source_sha256": "b3a1195d06473f8ff61bb9c2d4e1178cd2aee6e094b6cb40adfadf092b166b88",
+    "focused_harness_sha256": "f34430a6f1c0df06189970bf46b0c52ddcc68414633748c82afd03703d1eb128"
+  },
+  "runtime_harness": {
+    "repo_path": "gra/tools/end-turn-gameplay-runtime-test.cjs",
+    "sha256": "fc02e8108b2c5134f3c09f156b87c1200a18b84755a10f0cfe5614176c59017c",
+    "node_check_exit": 0
+  },
+  "exact_request": {
+    "path": "/home/ubuntu/handoffs/hermes-route-repair-20261001/worldgen-deterministic-20261006/exact-browser-request.json",
+    "sha256": "63039ccf71247cd54c205aff82af8823825604a2f8b20b09dba07fe1bb885530"
+  },
+  "builds": {
+    "candidate": {
+      "command": "node ./node_modules/vite/bin/vite.js build --outDir /home/ubuntu/.hermes/cache/scratch/end-turn-evaluator-r44/candidate-dist --emptyOutDir --minify=false --sourcemap=hidden",
+      "exit": 0,
+      "file_count": 3,
+      "total_bytes": 158852116,
+      "index_html_sha256": "ad119802175c94e032d11d0e1bbb61f820bef27b9a36b75914eb9bdc10d0fae7",
+      "sorted_manifest_sha256_path_size_filehash": "8f19d39aad0e8f1730f7e01c6db198ba46b1582c6f1a17bfa87a97c5c1dfeeb5"
+    },
+    "unchanged_base": {
+      "source": "git archive 69ccb145a8682f9c2754834afbb16a8d1eaaf825 gra into named scratch; linked existing locked gra/node_modules read-only",
+      "command": "node /home/ubuntu/work/game-end-turn-input-repair-20261007/gra/node_modules/vite/bin/vite.js build --outDir /home/ubuntu/.hermes/cache/scratch/end-turn-evaluator-r44/unchanged-base-dist --emptyOutDir --minify=false --sourcemap=hidden",
+      "exit": 0,
+      "file_count": 3,
+      "total_bytes": 158816133,
+      "index_html_sha256": "804e248b36afa22bd27d2f3b7dd04f9085db62586abc7fa631f6ad09dd3e2e12",
+      "sorted_manifest_sha256_path_size_filehash": "436481b8bff6266ced08d570a65baac8a3f68db75f4f2605d590f80e89da8f10"
+    },
+    "manifest_method": "SHA-256 of newline-joined sorted lines '<relative-path> <bytes> <file-sha256>'"
+  },
+  "real_gameplay": {
+    "candidate_command": "WORLD_GEN_DIST=/home/ubuntu/.hermes/cache/scratch/end-turn-evaluator-r44/candidate-dist WORLD_GEN_REQUEST_FILE=/home/ubuntu/handoffs/hermes-route-repair-20261001/worldgen-deterministic-20261006/exact-browser-request.json WORLD_GEN_EVIDENCE_DIR=/home/ubuntu/.hermes/cache/scratch/end-turn-evaluator-r44/candidate-gameplay GAMEPLAY_EVIDENCE_PREFIX=evaluator-candidate node tools/end-turn-gameplay-runtime-test.cjs",
+    "candidate_timeout_ms": 180000,
+    "candidate_timeout_source": "harness default; environment override unset",
+    "candidate_exit": 0,
+    "candidate_status": "PASS",
+    "candidate_request_matches": true,
+    "candidate_map_sha256": "0751e62911860b1407735e386a1d2c65f5bcacfc1f230c3a3c5d2d6380e8717e",
+    "candidate_elapsed_ms": 313998,
+    "candidate_transitions": [
+      {
+        "before": 1,
+        "after": 2,
+        "trusted_clicks": 1,
+        "button_id_preserved": true,
+        "hud": "TURA 2 · 3950 P.N.E.",
+        "ready_after": true,
+        "overlay_absent_after": true
+      },
+      {
+        "before": 2,
+        "after": 3,
+        "trusted_clicks": 1,
+        "button_id_preserved": true,
+        "hud": "TURA 3 · 3900 P.N.E.",
+        "ready_after": true,
+        "overlay_absent_after": true
+      }
+    ],
+    "candidate_audience_back_dismissals": 3,
+    "candidate_errors": [],
+    "candidate_warning_count": 24,
+    "candidate_warning_note": "Includes two Force-clearing stuck transition (>8s) warnings from unchanged main.ts; both transitions resolved and returned to ready state.",
+    "unchanged_base_command": "WORLD_GEN_DIST=/home/ubuntu/.hermes/cache/scratch/end-turn-evaluator-r44/unchanged-base-dist WORLD_GEN_REQUEST_FILE=/home/ubuntu/handoffs/hermes-route-repair-20261001/worldgen-deterministic-20261006/exact-browser-request.json WORLD_GEN_EVIDENCE_DIR=/home/ubuntu/.hermes/cache/scratch/end-turn-evaluator-r44/unchanged-base-gameplay WORLD_GEN_TIMEOUT_MS=180000 GAMEPLAY_EVIDENCE_PREFIX=evaluator-base node tools/end-turn-gameplay-runtime-test.cjs",
+    "unchanged_base_exit": 1,
+    "unchanged_base_result": "EXPECTED_RED",
+    "unchanged_base_request_matches": true,
+    "unchanged_base_map_sha256": "0751e62911860b1407735e386a1d2c65f5bcacfc1f230c3a3c5d2d6380e8717e",
+    "unchanged_base_elapsed_ms": 430692,
+    "unchanged_base_transition": {
+      "before": 1,
+      "after": 1,
+      "trusted_clicks": 0,
+      "pointerdown_button_id": 19,
+      "pointerup_button_id": 20,
+      "engine_timeout_ms": 180000
+    },
+    "unchanged_base_errors": []
+  },
+  "active_human_readback": {
+    "supplemental_runtime_status": "PASS",
+    "supplemental_runtime_exit": 0,
+    "activeHumanOwnerId_before_after_both_turns": 0,
+    "transitions": ["1->2", "2->3"],
+    "map_sha256": "2393d7222f8f00c3085d10b7759dd1bd9c719d2f81870f4c447adf4414525eeb",
+    "request_matches": true,
+    "read_only_hook": "window.__hotSeatTestDebug.snapshotVisibleState().activeHumanOwnerId",
+    "scratch_harness_sha256": "499dcccfbc3008d6322b7bad4a1b9bfa4c28404f1182bfa60ef7542098dccd70"
+  },
+  "additional_tests": [
+    {"command": "node --check tools/end-turn-gameplay-runtime-test.cjs", "exit": 0},
+    {"command": "node ./node_modules/typescript/bin/tsc --noEmit", "exit": 0},
+    {"command": "node tools/bottom-bar-hud-wykonaj-overlap-test.cjs", "exit": 0, "passed": 33, "failed": 0},
+    {"command": "node tools/hotseat-etap7-saveload-test.cjs", "exit": 0, "passed": 59, "failed": 0, "scope_note": "roundtrip regression only; no in-browser save/load claim"},
+    {"command": "node tools/civ-ai-allocation-saveload-order-test.cjs", "exit": 0, "passed": 5, "failed": 0},
+    {"command": "git diff --check", "exit": 0}
+  ],
+  "untouched_surface_audit": {
+    "base_reference": "HEAD == 69ccb145a8682f9c2754834afbb16a8d1eaaf825",
+    "all_byte_identical": true,
+    "gra/data": {"tracked_files": 30, "unchanged": true, "sha256_manifest": "92ec0b3b3a41600fa736429e713e0425fe86e9e215208fed04ef3635acc47797"},
+    "gra/src/map": {"tracked_files": 25, "unchanged": true, "sha256_manifest": "499f2b9074857f628ebb7d9bdbd276f5511f5f2a58d618aa870ff6cfb598d3f2"},
+    "gra/src/game": {"tracked_files": 183, "unchanged": true, "sha256_manifest": "3a71ca084a93ea1ecaf9bb610d7d041d747bf48827cc1ee724f6d31a0fbfbb9a"},
+    "forbidden_singletons": {"files": ["gra/src/main.ts", "gra/src/ui/hud.ts", "gra/src/render/scene.ts", "gra/package.json", "gra/package-lock.json"], "all_byte_identical": true, "sha256_manifest": "4dab251f1062cd257a2ebd195727df9e63a7f09df90938389efadf8d3e7561b4"}
+  },
+  "notes": [
+    "Exact request SHA stayed 63039ccf71247cd54c205aff82af8823825604a2f8b20b09dba07fe1bb885530, but separate runs produced map SHA 0751e629... (candidate/base matched pair) and 2393d722... (candidate active-owner readback, also Operator's recorded hash). Cause not isolated; no generator/RNG/map changes are in scope.",
+    "Candidate runtime logged 24 warnings (including two >8s transition-recovery warnings in unchanged main.ts); 0 page/console errors and both turns returned to ready state.",
+    "Only active owner 0 was exercised; a second hotseat human was not clicked. Browser save/load was not run; only the separate 59/59 save/load regression was run.",
+    "The bounded two-turn gate does not prove full-game or original worldgen product acceptance."
+  ],
+  "next_gate": "Existing Final Control t_9aac456c; no integration or owner/product acceptance implied.",
+  "deploy_push": "NOT_EXECUTED",
+  "evaluator_changed_paths": [
+    "dyspozycje/autobot/runs/R-GAME-END-TURN-INPUT-REPAIR-Q1/attempt-20261007/02-evaluator.md",
+    "dyspozycje/autobot/runs/R-GAME-END-TURN-INPUT-REPAIR-Q1/attempt-20261007/02-evaluator.json",
+    "dyspozycje/autobot/runs/R-GAME-END-TURN-INPUT-REPAIR-Q1/attempt-20261007/evaluator-r44-*"
+  ]
+}

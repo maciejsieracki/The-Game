@@ -1,0 +1,78 @@
+== endturn-battle-deadlock-exec-test (R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1 r6) ==
+
+[A] origin/main fcd86933 -- deadlock
+    funkcje obecne w bazie: healStaleEndTurnBlockers, canPlayerInitiateEndTurn, hintEndTurnBlocked, healStuckDeferredPreBattleQueueOnEndTurnAttempt, advanceSeat, triggerPlayerEndTurn
+  ok   [A0] stan osierocony odtworzony: kolejka niepusta, ekranu brak
+  ok   [A1] na fcd86933 klik 1 i klik 2 NIE kończą tury (endTurn=0)
+  ok   [A2] na fcd86933 podpowiedź: „Zakończ ekran bitwy, potem zakończ turę.”
+  ok   [A3] na fcd86933 po 10 kliknięciach nadal endTurn=0 i brak ekranu (deadlock trwały)
+
+[B] poprawka: klik 1 otwiera bitwę, klik 2 kończy turę
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [B1] klik 1 OTWIERA ekran bitwy (flush-first) i nie kończy tury
+  ok   [B1b] otwarty ekran to odłożona bitwa WOJNA1; got WOJNA1
+  ok   [B1c] klik 1 pokazuje podpowiedź blokady przy otwartym ekranie
+  ok   [B2] po rozstrzygnięciu bitwy klik 2 KOŃCZY turę (endTurn=1)
+
+[C] legalna blokada zostaje
+  ok   [C1-setup] bitwa odłożona przy otwartym ekranie
+  ok   [C1] przy OTWARTYM ekranie bitwy klik NIE kończy tury (także po 9 s fałszywego czasu)
+  ok   [C1b] podpowiedź blokady zachowana przy otwartym ekranie
+  ok   [C1c] watchdog NIE rusza kolejki ani ekranu, gdy ekran jest otwarty
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [C2] przy otwartej audiencji (odroczenie legalne) klik NIE kończy tury
+  ok   [C2b] przy otwartej audiencji bitwa NIE jest pokazywana i NIE jest kasowana z kolejki
+
+[D] N=4, jedna bitwa rzuca w showPreBattle
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [D1 advanceSeat] kolejka niepusta przed kliknięciami (4 żądania odłożone)
+  ok   [D2 advanceSeat] wyjątek z showPreBattle NIE wychodzi z kliknięcia
+  ok   [D3 advanceSeat] koniec tury po 5 kliknięciach (≤ N+1=5)
+  ok   [D4 advanceSeat] FIFO: pokazane W0,W2,W3 (W1 odrzucona przy wyjątku); got ["W0","W2","W3"]
+  ok   [D5 advanceSeat] ostrzeżenie w logu, kolejka pusta, brak ducha ekranu
+  ok   [D1 triggerPlayerEndTurn] kolejka niepusta przed kliknięciami (4 żądania odłożone)
+  ok   [D2 triggerPlayerEndTurn] wyjątek z showPreBattle NIE wychodzi z kliknięcia
+  ok   [D3 triggerPlayerEndTurn] koniec tury po 5 kliknięciach (≤ N+1=5)
+  ok   [D4 triggerPlayerEndTurn] FIFO: pokazane W0,W2,W3 (W1 odrzucona przy wyjątku); got ["W0","W2","W3"]
+  ok   [D5 triggerPlayerEndTurn] ostrzeżenie w logu, kolejka pusta, brak ducha ekranu
+  ok   [D-base] na fcd86933 ten sam scenariusz NIE kończy tury (kontrola: test wykrywa deadlock)
+
+[E] watchdog 50 ms (fałszywy zegar)
+[PreBattle] Clearing deferred auto preBattle queue (4 zaległych żądań)
+  ok   [E0] watchdog obecny w main.ts
+  ok   [E1] po healStale z kolejką bez ekranu zaplanowany DOKŁADNIE jeden timer 50 ms; got [50]
+  ok   [E2] przed 50 ms nic się nie dzieje (kolejka czeka)
+  ok   [E3] timer 50 ms ODPALONY bez kliknięcia: otwiera odłożoną bitwę, kolejka pusta
+  ok   [E4] odpalenie zalogowane (console.warn watchdog), koniec tury NIE nastąpił bez kliknięcia
+  ok   [E5] audiencja otwarta w chwili odpalenia -> watchdog NIE otwiera ekranu, kolejka zachowana
+
+[G] scena bitwy otwarta: kolejka nietknięta, brak flusha na żywej scenie
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [G0] bitwa odłożona przy otwartej scenie
+  ok   [G1] watchdog (50 ms) NIE pokazuje pre-bitwy na żywej scenie; kolejka zachowana
+  ok   [G2] przy otwartej scenie klik NIE kończy tury (legalna blokada)
+  ok   [G3] flush-first i 8 s czyszczenie NIE ruszają kolejki przy otwartej scenie (po 9 s nadal czeka)
+  ok   [G4] po zamknięciu sceny kolejka wznawia się: pokazana WOJNA1
+  ok   [G5] po rozstrzygnięciu bitwy koniec tury (endTurn=1)
+
+[H] gameOver: klik nie wywołuje flush-first
+  ok   [H1] przy gameOver klik NIE otwiera ani nie czyści kolejki (kolejność bramek zachowana)
+
+[F] mutacje siatki (każda musi czerwienić swój scenariusz)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [F-M1] usunięcie flush-first w healStuck CZERWIENI scenariusz B (klik 1 nie otwiera bitwy)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [F-M1d] usunięcie flush-first CZERWIENI też scenariusz D (bez watchdoga kolejka nie drenuje)
+[PreBattle] Clearing deferred auto preBattle queue (4 zaległych żądań)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [F-M2] usunięcie watchdoga CZERWIENI scenariusz E (brak timera / brak otwarcia bez kliknięcia)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [F-M3] usunięcie try/catch CZERWIENI scenariusz D (wyjątek wychodzi z kliknięcia)
+  ok   [F-M4] osłabiona bramka (tylko isPreBattleOpen) CZERWIENI scenariusz C2 (koniec tury przy czekającej kolejce)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [F-M5] usunięcie bramki sceny w healStuck CZERWIENI scenariusz G (flush/clear na żywej scenie)
+  ok   [F-M6] usunięcie bramki sceny w watchdogu CZERWIENI scenariusz G (pre-bitwa na żywej scenie)
+  ok   [F-M7] heal bez bramek niezwiązanych z kolejką CZERWIENI scenariusz H (flush przy gameOver)
+
+endturn-battle-deadlock-exec-test: 46 pass, 0 fail
+EXIT=0

@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Falanga** (Wręcz, Brąz): rekrutacja **18** ¤ + **1** mieszk., utrzymanie **2** ¤/t i **1** żywn./t. Siła w polu **52.5**.
+**Falanga** (Wręcz, Brąz): rekrutacja **18** ¤ + **1** mieszk., utrzymanie **2** ¤/t i **1** żywn./t. Siła w polu **58.5**.
 
 ---
 
@@ -26,10 +26,10 @@ Falanga to jednostka typu **Wręcz** z epoki **Brąz**. Unikalna dla **Grecka**.
 ### Rekrutacja i utrzymanie
 - **Koszt:** 18 ¤, 1 mieszkańców
 - **Surowiec:** 5× żelazo
-- **Tech:** Hutnictwo żelaza
+- **Tech:** Sztuka wojenna
 - **Utrzymanie:** 2 ¤/t, 1 żywności/t
 - **Ruch:** 1 (mapa) / 3 (bitwa)
-- **Siła w polu:** 52.5
+- **Siła w polu:** 58.5
 ### Countery i taktyka
 - Słabsza od strony: masowe dystansowce z tyłu
 - W bitwie ręcznej: trzymaj linię, nie rozdzielaj na pojedyncze walki
@@ -45,7 +45,7 @@ Falanga to jednostka typu **Wręcz** z epoki **Brąz**. Unikalna dla **Grecka**.
 - Złoto: 2 × 20 = **40 ¤**
 - Żywność: 1 × 20 = **20** (z zapasów państwa, jeśli masz Spichlerz; inaczej z bieżącej produkcji)
 
-**Siła w polu:** **52.5** — porównaj z **Wojownikiem (~27)** lub **Wojownikiem z mieczem (~39)** na tym samym terenie.
+**Siła w polu:** **58.5** — porównaj z **Wojownikiem (~27)** lub **Wojownikiem z mieczem (~39)** na tym samym terenie.
 
 **Ruch 1** na mapie: z miasta A do B (3 heksy lasu) ≈ **1** tur marszu lub mniej na drodze.
 

@@ -1,0 +1,57 @@
+fortify-pole-test (dyspozycja 2026-07-26 "oblężenie + fortyfikacja w polu")
+
+  [OK] combat-params.json "oblężenie".fortify_obrona_proc jest liczbą dodatnią (50%)
+--- A. enterFieldFortify / exitFieldFortify (armyMerge.ts) ---
+  [OK] enterFieldFortify: ustawia ufortyfikowanyWPolu=true
+  [OK] enterFieldFortify: zeruje ruchLeft (CAŁY pozostały ruch, nie część)
+  [OK] enterFieldFortify na jednostce oblegającej: oblegaCityId NIETKNIĘTE (oblężenie trwa)
+  [OK] enterFieldFortify na jednostce oblegającej: flaga ustawiona mimo trwającego oblężenia
+  [OK] exitFieldFortify zwraca true, gdy jednostka była ufortyfikowana w polu
+  [OK] exitFieldFortify: ufortyfikowanyWPolu -> false
+  [OK] exitFieldFortify: oblegaCityId dalej NIETKNIĘTE (oblężenie nadal trwa po zdjęciu fortyfikacji)
+  [OK] exitFieldFortify jest no-opem (zwraca false) dla jednostki już nieufortyfikowanej
+  [OK] enterFieldFortify: zeruje ruchLeft
+  [OK] enterFieldFortify: zapisuje snapshot
+  [OK] exitFieldFortify przywraca snapshot (pełna pula gdy brak ruchów w turze)
+  [OK] anti-exploit pole: wejście z MP=0 -> odfort. nadal 0, nie pełna pula
+  [OK] exitGarnizon działa niezależnie od pola ufortyfikowanyWPolu
+  [OK] exitGarnizon nie ustawia ufortyfikowanyWPolu (stany ortogonalne)
+  [OK] enterFieldFortify: ustawia ufortyfikowanyWPolu=true (zwiadowca z autoExplore aktywnym)
+  [OK] C-025: enterFieldFortify zdejmuje autoExplore -- oba stany nigdy nie współistnieją
+  [OK] C-025: enterFieldFortify zdejmuje autoExplore także na jednostce oblegającej
+  [OK] C-025: oblegaCityId dalej nietknięte przy okazji zdjęcia autoExplore
+  [OK] C-025 kontrola: enterFieldFortify na jednostce bez autoExplore -- pole ustawione na false (brak regresji, brak wyjątku)
+
+--- B. fieldFortifyDefenseBonus (city-defense.ts) ---
+  [OK] fieldFortifyDefenseBonus(false): zwraca Obronę BEZ ZMIAN (zero regresji dla niefortyfikowanych)
+  [OK] fieldFortifyDefenseBonus(true): mnoży Obronę ×1.5 (+50% z combat-params.json)
+
+--- C. Ścieżka Auto (effectiveDefenderM, bitwa w polu) ---
+  [OK] Konnica ma niezerowy Atak i Obronę w rozbiciu M
+  [OK] Auto, płasko: przyrost M z fortyfikacji w polu (2.5) == +50% Obrony × mnożnik terenu (1) = 2.5 -- bonus SKALUJE się z terenem (% na Obronie przed mnożnikami)
+  [OK] Auto, na wzgórzu: przyrost M z fortyfikacji w polu (3.8) == +50% Obrony × mnożnik terenu (1.5) = 3.8 -- bonus SKALUJE się z terenem (% na Obronie przed mnożnikami)
+  [OK] KONTROLA: jednostka NIE fortyfikowana -- Obrona w rozbiciu M identyczna jak baseline (zero regresji)
+
+--- D. Fundament Taktyczna/"Pomiń" (resolveCombat) ---
+  [OK] Taktyczna/Pomiń, płasko: ufortyfikowany obrońca trudniejszy do trafienia (39% <= 40% bez fortyfikacji)
+  [OK] Taktyczna/Pomiń, płasko: hitChanceTw(atak, Obrona×(1+50%)×terrMult) (39%) == resolveCombat z bonusem wliczonym do meleeDefence (39%)
+  [OK] Taktyczna/Pomiń, na wzgórzu: ufortyfikowany obrońca trudniejszy do trafienia (37.5% <= 39% bez fortyfikacji)
+  [OK] Taktyczna/Pomiń, na wzgórzu: hitChanceTw(atak, Obrona×(1+50%)×terrMult) (37.5%) == resolveCombat z bonusem wliczonym do meleeDefence (37.5%)
+
+--- E. Przetrwanie zapisu gry (JSON round-trip) ---
+  [OK] JSON round-trip (save->load): ufortyfikowanyWPolu i oblegaCityId przetrwały bez zmian
+  [OK] Stary zapis (pole nieobecne) pozostaje undefined po wczytaniu
+  [OK] Stary zapis traktowany jako false wszędzie, gdzie kod sprawdza "=== true" (bez wyjątku/NaN)
+
+--- F. Garnizon bez palisady/murów (+50% Obrony) ---
+  [OK] shouldApplyGarrisonFortifyBonus([]): brak budynków obronnych → true
+  [OK] shouldApplyGarrisonFortifyBonus([palisada]): palisada → false (bonus budynku, nie fortify)
+  [OK] shouldApplyGarrisonFortifyBonus([mury]): mury → false
+  [OK] shouldApplyGarrisonFortifyBonus([baszta]): sama baszta → false (cityWallDefenseBonusPercent > 0)
+  [OK] unitGetsFortifyDefenseBonus: garnizon + brak palisady → +50% (jak pole)
+  [OK] unitGetsFortifyDefenseBonus: garnizon + palisada → bez ×1.5 od fortify
+  [OK] garnizon bez murów: Obrona ×1.5 (parity z polem)
+  [OK] garnizon z palisadą: Obrona bez zmian od fortify (budynek osobno)
+
+=== fortify-pole-test: 41 pass, 0 fail ===
+EXIT=0

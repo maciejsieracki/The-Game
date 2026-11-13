@@ -24,10 +24,14 @@
  * (dokładnie ten sam mechanizm co `buildingAdapter.ts`/`unitAdapter.ts`).
  */
 import terrainImprovementsData from '../../../data/terrain-improvements.json';
+import { ROAD_BRUK_MOVE_SPEED_MULT } from '../../map/road-movement';
+import { scaleTerrainImprovementWorkCost } from '../../game/terrain-improvements';
 import { improvementIconSvg } from '../icons/brandAssets';
 import { resolveImprovementRow, resolveTechnologyRow, technologyIdFromName } from './registry';
 import type { ImprovementRow } from './registry';
 import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
+import { humanizeId, nazwaWyswietlana, nazwyZListyId } from '../../game/text-names';
+import { resourcesFromList, proseRowFields, yieldChipIdFromKey, yieldValueFields } from './resourceRows';
 
 const PLACEHOLDER_ICON_SVG =
   '<svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true">' +
@@ -88,8 +92,8 @@ function hasValue(value: unknown): boolean {
 const BONUS_LABEL: Record<string, string> = {
   zywnosc: 'Żywność',
   praca: 'Praca',
-  handel: 'Handel',
-  pieniadz: 'Pieniądz',
+  handel: 'Podatek',
+  pieniadz: 'Podatek', // DODATEK 3: bonus.pieniadz ulepszenia wpada w TileYield.handel = podatek (terrain-improvements.ts:177)
   kamien: 'Kamień',
   drewno: 'Drewno',
 };
@@ -115,9 +119,22 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
   if (hasValue(improvement.typ)) {
     charRows.push({ label: 'Typ', value: text(improvement.typ) });
   }
+  // R-WEB-CARDS-RESOURCE-PURPOSE-Q1 (DODATEK 3): `handel` i `pieniadz` ulepszenia to jeden strumień
+  // PODATKU (terrain-improvements.ts:176-177) — jeden wiersz „Podatek” z sumą (np. Obóz łowiecki 2+1 = +3).
+  const podatekSuma = (typeof bonus.handel === 'number' ? bonus.handel : 0)
+    + (typeof bonus.pieniadz === 'number' ? bonus.pieniadz : 0);
+  let podatekDodany = false;
   for (const [k, v] of Object.entries(bonus)) {
     if (typeof v !== 'number' || v === 0) continue;
-    charRows.push({ label: BONUS_LABEL[k] ?? k, value: `${v > 0 ? '+' : ''}${v}`, emphasize: true });
+    if (k === 'handel' || k === 'pieniadz') {
+      if (podatekDodany || podatekSuma === 0) continue;
+      podatekDodany = true;
+      charRows.push({ label: 'Podatek', ...yieldValueFields('podatek', `${podatekSuma > 0 ? '+' : ''}${podatekSuma}`), emphasize: true });
+      continue;
+    }
+    const bonusId = yieldChipIdFromKey(k);
+    const bonusText = `${v > 0 ? '+' : ''}${v}`;
+    charRows.push({ label: BONUS_LABEL[k] ?? humanizeId(k), ...(bonusId ? yieldValueFields(bonusId, bonusText) : { value: bonusText }), emphasize: true });
   }
   if (hasValue(improvement.bonus_obrona_proc)) {
     charRows.push({ label: 'Obrona', value: `+${text(improvement.bonus_obrona_proc)}%` });
@@ -125,7 +142,8 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
   if (hasValue(improvement.bonus_ruch)) {
     charRows.push({
       label: 'Ruch',
-      value: `${text(improvement.bonus_ruch)}${improvement.bonus_ruch_uwaga ? ` (${text(improvement.bonus_ruch_uwaga)})` : ''}`,
+      // `bonus_ruch` to martwe pole (silnik go nie czyta); decyzja właściciela: pokaż realny efekt — koszt ruchu ÷ stała.
+      value: `${ROAD_BRUK_MOVE_SPEED_MULT}× szybszy ruch`,
     });
   }
   const characteristicsSection: EntityCardSection = {
@@ -146,7 +164,7 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
   const upgradeFromLinkTo = upgradeFromKey && resolveImprovementRow(upgradeFromKey) != null
     ? ({ kind: 'improvement', id: upgradeFromKey } as const) : undefined;
   const requirementRows: EntityCardRow[] = [
-    { label: 'Teren', value: text(improvement.teren) },
+    { label: 'Teren', ...proseRowFields(text(improvement.teren)) },
     {
       // T-KARTY-HISTORIA-INFRA-Q1 (c): `improvement.tech_uwaga` NIE jest już doklejane
       // do wartości — czysta nazwa technologii, bez dev-adnotacji w nawiasie. Pole
@@ -156,8 +174,13 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
       value: techName,
       linkTo: techLinkTo,
     },
-    { label: 'Koszt (Praca)', value: hasValue(improvement.koszt_praca) ? `${text(improvement.koszt_praca)} P` : '' },
-    { label: 'Warunek', value: text(improvement.warunek) },
+    {
+      label: 'Koszt (Praca)',
+      ...(hasValue(improvement.koszt_praca)
+        ? yieldValueFields('praca', `${text(scaleTerrainImprovementWorkCost(improvement.koszt_praca as number, improvement.epoka))} P`)
+        : { value: '' }),
+    },
+    { label: 'Warunek', ...proseRowFields(text(improvement.warunek), true) },
     {
       // T-KARTY-HISTORIA-INFRA-Q1 (c): `improvement.cywilizacje_uwaga` NIE jest już
       // doklejane — czysta lista cywilizacji, bez dev-adnotacji w nawiasie. Pole
@@ -168,7 +191,7 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
         ? improvement.cywilizacje.join(', ')
         : '',
     },
-    { label: 'Ulepszenie bazowe', value: upgradeFromKey, linkTo: upgradeFromLinkTo },
+    { label: 'Ulepszenie bazowe', value: nazwaWyswietlana(upgradeFromKey), linkTo: upgradeFromLinkTo },
   ].filter((r) => hasValue(r.value));
   const requirementsSection: EntityCardSection = {
     key: 'requirements', title: 'Wymagania', rows: requirementRows,
@@ -177,13 +200,25 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
   // --- Surowce i terytorium --------------------------------------------------------------------
   const resourceRows: EntityCardRow[] = [];
   if (hasValue(improvement.surowiecOdblokowany)) {
+    const unlocked = resourcesFromList(text(improvement.surowiecOdblokowany));
     resourceRows.push({
       label: 'Odblokowuje surowiec',
-      value: text(improvement.surowiecOdblokowany),
+      value: unlocked.rest ? nazwyZListyId(unlocked.rest) : '',
+      ...(unlocked.resources.length > 0 ? { resources: unlocked.resources } : {}),
     });
   }
+  // R-WEB-CARDS-RESOURCE-PURPOSE-Q1 (DODATEK 1): każdy surowiec ulepszenia mówi, do czego służy
+  // (dane: terrain-improvements.json `zastosowanie_surowca`, każde zdanie z dowodem w danych/silniku).
+  if (hasValue(improvement.zastosowanie_surowca)) {
+    resourceRows.push({ label: 'Do czego', ...proseRowFields(text(improvement.zastosowanie_surowca), true) });
+  }
   if (hasValue(improvement.surowiec_ilosc_tura)) {
-    resourceRows.push({ label: 'Produkcja surowca', value: `${text(improvement.surowiec_ilosc_tura)} / turę` });
+    // Surowiec produkcji = odblokowany przez to ulepszenie; gdy jednoznaczny — ikona + liczba.
+    const prodRes = resourcesFromList(text(improvement.surowiecOdblokowany)).resources;
+    const prodAmount = text(improvement.surowiec_ilosc_tura);
+    resourceRows.push(prodRes.length === 1
+      ? { label: 'Produkcja surowca', value: '', resources: [{ id: prodRes[0]!.id, amount: prodAmount }], resourcesSuffix: '/ turę' }
+      : { label: 'Produkcja surowca', value: `${prodAmount} / turę` });
   }
   if (hasValue(improvement.zasieg_terytorium)) {
     resourceRows.push({ label: 'Zasięg terytorium', value: `${text(improvement.zasieg_terytorium)} pól` });
@@ -206,7 +241,7 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
   // WYŁĄCZNIE renderowane tutaj.
   const unlockRows: EntityCardRow[] = [];
   if (hasValue(improvement.odblokowuje)) {
-    unlockRows.push({ label: 'Odblokowuje', value: text(improvement.odblokowuje) });
+    unlockRows.push({ label: 'Odblokowuje', ...proseRowFields(text(improvement.odblokowuje), true) });
   }
   if (improvement.wycinka === true) {
     unlockRows.push({ label: 'Wycinka lasu', value: 'Tak — usuwa nakładkę Las' });

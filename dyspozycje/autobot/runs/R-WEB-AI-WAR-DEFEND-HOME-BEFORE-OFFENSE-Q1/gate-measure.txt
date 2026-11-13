@@ -1,0 +1,24 @@
+PRZED {"seed":1,"civs":5,"exchanges":0,"exchangesWide":1,"captures":8,"recaptures":1,"battles":366,"invaderUnitTurns":184,"invaderTurns":93,"longestInvasion":25,"longInvasionEpisodes":4,"avgTurnMs":151.3}
+PO    {"seed":1,"civs":5,"exchanges":0,"exchangesWide":0,"captures":0,"recaptures":0,"battles":369,"invaderUnitTurns":39,"invaderTurns":30,"longestInvasion":5,"longInvasionEpisodes":3,"avgTurnMs":151.08}
+PRZED {"seed":2,"civs":6,"exchanges":0,"exchangesWide":1,"captures":5,"recaptures":1,"battles":400,"invaderUnitTurns":109,"invaderTurns":72,"longestInvasion":12,"longInvasionEpisodes":7,"avgTurnMs":214.4}
+PO    {"seed":2,"civs":6,"exchanges":0,"exchangesWide":0,"captures":0,"recaptures":0,"battles":468,"invaderUnitTurns":28,"invaderTurns":28,"longestInvasion":5,"longInvasionEpisodes":1,"avgTurnMs":206.07}
+PRZED {"seed":3,"civs":4,"exchanges":0,"exchangesWide":2,"captures":4,"recaptures":1,"battles":258,"invaderUnitTurns":263,"invaderTurns":54,"longestInvasion":25,"longInvasionEpisodes":3,"avgTurnMs":101.67}
+PO    {"seed":3,"civs":4,"exchanges":0,"exchangesWide":0,"captures":0,"recaptures":0,"battles":258,"invaderUnitTurns":4,"invaderTurns":3,"longestInvasion":3,"longInvasionEpisodes":0,"avgTurnMs":100.69}
+PRZED {"seed":4,"civs":5,"exchanges":0,"exchangesWide":0,"captures":5,"recaptures":0,"battles":337,"invaderUnitTurns":425,"invaderTurns":86,"longestInvasion":33,"longInvasionEpisodes":3,"avgTurnMs":129.14}
+PO    {"seed":4,"civs":5,"exchanges":0,"exchangesWide":1,"captures":4,"recaptures":2,"battles":351,"invaderUnitTurns":95,"invaderTurns":38,"longestInvasion":5,"longInvasionEpisodes":2,"avgTurnMs":155.67}
+PRZED {"seed":5,"civs":6,"exchanges":0,"exchangesWide":2,"captures":8,"recaptures":1,"battles":327,"invaderUnitTurns":161,"invaderTurns":98,"longestInvasion":16,"longInvasionEpisodes":9,"avgTurnMs":223.59}
+PO    {"seed":5,"civs":6,"exchanges":0,"exchangesWide":0,"captures":0,"recaptures":0,"battles":415,"invaderUnitTurns":23,"invaderTurns":22,"longestInvasion":3,"longInvasionEpisodes":0,"avgTurnMs":223.47}
+PRZED {"seed":6,"civs":4,"exchanges":0,"exchangesWide":0,"captures":3,"recaptures":0,"battles":264,"invaderUnitTurns":83,"invaderTurns":19,"longestInvasion":5,"longInvasionEpisodes":2,"avgTurnMs":107.44}
+PO    {"seed":6,"civs":4,"exchanges":0,"exchangesWide":0,"captures":0,"recaptures":0,"battles":356,"invaderUnitTurns":0,"invaderTurns":0,"longestInvasion":0,"longInvasionEpisodes":0,"avgTurnMs":98.41}
+
+SUMA po 6 ziarnach x 120 tur:
+  exchanges              PRZED=0  PO=0
+  exchangesWide          PRZED=6  PO=1
+  captures               PRZED=33  PO=4
+  recaptures             PRZED=4  PO=2
+  battles                PRZED=1952  PO=2217
+  invaderUnitTurns       PRZED=1225  PO=189
+  longInvasionEpisodes   PRZED=28  PO=6
+  avgTurnMs              PRZED=154.59  PO=155.90
+  longestInvasion(max)   PRZED=33  PO=5
+EXIT=0

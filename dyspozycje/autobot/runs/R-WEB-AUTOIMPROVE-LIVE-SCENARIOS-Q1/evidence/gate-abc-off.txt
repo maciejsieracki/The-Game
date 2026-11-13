@@ -1,0 +1,98 @@
+# wariant=off wolnoWycinacLas=false seed=18 site=24,30 foundOk=true
+las POZA rzeka (start): 24,29 25,30 26,29 26,30 27,29 27,30 | las przy rzece: 16
+
+## po tury 1->2 (subiektem decyzji sa miasta gracza: city0=stolica, city25=nowe)
+ etap#1 priorytety=[tartak,kamieniolom,kopalnia_miedzi,kopalnia_zelaza,kopalnia_cyny,warzelnia_soli,stadnina]
+    32 x odrzucony: wycinka wylaczona [naRzece=true]
+    12 x odrzucony: wycinka wylaczona [naRzece=false]
+ etap#2 tylko-heksy-rzeki priorytety=[farma]
+    32 x odrzucony: wycinka wylaczona [naRzece=true]
+    12 x odrzucony: wycinka wylaczona [naRzece=false]
+ wybrane (las): -
+ bramki(1.): {"etap":"priorytety=[tartak,kamieniolom,kopalnia_miedzi,kopalnia_zelaza,kopalnia_cyny,warzelnia_soli,stadnina]","sonda":false,"focus":"zrownowazone","demandActive":true,"citySkipWyrab":true,"wyrabWlaczony":false,"wyrabTylkoPodFarme":true,"riverForestClearingOnly":false,"offRiverClearing":false,"rzekiDoZagospodarowania":false,"lesneMinSpelnione":true,"wolnoKarczowacPozaRzeka":true,"forestLeftInRadius":64,"prog":3,"pracaLeft":999153,"globalSpent":842,"effectiveCityCap":999995,"onlyWorked":false,"techOk":true,"civOk":true,"kosztWyrab":2.5,"rekonstrukcja":true}
+ zmiany heksow:
+    21,30[rownina,rz] brak/- -> brak/farma
+    22,30[rownina,rz] zloze_gliny/- -> zloze_gliny/farma
+    23,30[laka,rz] brak/- -> brak/farma
+    24,29[rownina,bez-rz] las/- -> las/tartak
+    25,29[gory,bez-rz] brak/- -> brak/kamieniolom
+    25,30[rownina,bez-rz] las/- -> las/tartak
+    26,29[rownina,bez-rz] las/- -> las/tartak
+    26,30[laka,bez-rz] las/- -> las/tartak
+    27,27[rownina,rz] brak/- -> brak/farma
+    27,29[rownina,bez-rz] las/- -> las/tartak
+    27,30[rownina,bez-rz] las/- -> las/tartak
+
+## po tury 2->3 (subiektem decyzji sa miasta gracza: city0=stolica, city25=nowe)
+ etap#1 priorytety=[kopalnia_cyny]
+    32 x odrzucony: wycinka wylaczona [naRzece=true]
+    12 x odrzucony: wycinka wylaczona [naRzece=false]
+ etap#2 tylko-heksy-rzeki priorytety=[farma]
+    64 x odrzucony: wycinka wylaczona [naRzece=true]
+    24 x odrzucony: wycinka wylaczona [naRzece=false]
+ etap#3 wycinka-rzeka priorytety=[wyrab]
+    64 x odrzucony: wycinka wylaczona [naRzece=true]
+    24 x odrzucony: wycinka wylaczona [naRzece=false]
+ etap#4 priorytety=[bydlo,owce,lama]
+    32 x odrzucony: wycinka wylaczona [naRzece=true]
+    12 x odrzucony: wycinka wylaczona [naRzece=false]
+ wybrane (las): -
+ bramki(1.): {"etap":"priorytety=[kopalnia_cyny]","sonda":false,"focus":"zrownowazone","demandActive":true,"citySkipWyrab":true,"wyrabWlaczony":false,"wyrabTylkoPodFarme":true,"riverForestClearingOnly":false,"offRiverClearing":false,"rzekiDoZagospodarowania":false,"lesneMinSpelnione":true,"wolnoKarczowacPozaRzeka":true,"forestLeftInRadius":64,"prog":3,"pracaLeft":998574,"globalSpent":0,"effectiveCityCap":998574,"onlyWorked":false,"techOk":true,"civOk":true,"kosztWyrab":2.5,"rekonstrukcja":true}
+ zmiany heksow:
+    21,30[rownina,rz] brak/farma -> brak/farma+bydlo
+    22,30[rownina,rz] zloze_gliny/farma -> zloze_gliny/farma+bydlo
+    23,30[laka,rz] brak/farma -> brak/farma+bydlo
+    27,27[rownina,rz] brak/farma -> brak/farma+bydlo
+
+## po tury 3->4 (subiektem decyzji sa miasta gracza: city0=stolica, city25=nowe)
+ etap#1 priorytety=[kopalnia_cyny]
+    32 x odrzucony: wycinka wylaczona [naRzece=true]
+    12 x odrzucony: wycinka wylaczona [naRzece=false]
+ etap#2 tylko-heksy-rzeki priorytety=[farma]
+    64 x odrzucony: wycinka wylaczona [naRzece=true]
+    24 x odrzucony: wycinka wylaczona [naRzece=false]
+ etap#3 wycinka-rzeka priorytety=[wyrab]
+    64 x odrzucony: wycinka wylaczona [naRzece=true]
+    24 x odrzucony: wycinka wylaczona [naRzece=false]
+ etap#4 priorytety=[bydlo,owce,lama]
+    64 x odrzucony: wycinka wylaczona [naRzece=true]
+    24 x odrzucony: wycinka wylaczona [naRzece=false]
+ etap#5 priorytety=[irygacja,tarasy]
+    32 x odrzucony: wycinka wylaczona [naRzece=true]
+    12 x odrzucony: wycinka wylaczona [naRzece=false]
+ wybrane (las): -
+ bramki(1.): {"etap":"priorytety=[kopalnia_cyny]","sonda":false,"focus":"zrownowazone","demandActive":true,"citySkipWyrab":true,"wyrabWlaczony":false,"wyrabTylkoPodFarme":true,"riverForestClearingOnly":false,"offRiverClearing":false,"rzekiDoZagospodarowania":false,"lesneMinSpelnione":true,"wolnoKarczowacPozaRzeka":true,"forestLeftInRadius":64,"prog":3,"pracaLeft":997932,"globalSpent":0,"effectiveCityCap":997932,"onlyWorked":false,"techOk":true,"civOk":true,"kosztWyrab":2.5,"rekonstrukcja":true}
+ zmiany heksow:
+    21,30[rownina,rz] brak/farma+bydlo -> brak/farma+bydlo+irygacja
+    22,30[rownina,rz] zloze_gliny/farma+bydlo -> zloze_gliny/farma+bydlo+irygacja
+    27,27[rownina,rz] brak/farma+bydlo -> brak/farma+bydlo+irygacja
+
+## po tury 4->5 (subiektem decyzji sa miasta gracza: city0=stolica, city25=nowe)
+ etap#1 priorytety=[kopalnia_cyny]
+    32 x odrzucony: wycinka wylaczona [naRzece=true]
+    12 x odrzucony: wycinka wylaczona [naRzece=false]
+ etap#2 tylko-heksy-rzeki priorytety=[farma]
+    64 x odrzucony: wycinka wylaczona [naRzece=true]
+    24 x odrzucony: wycinka wylaczona [naRzece=false]
+ etap#3 wycinka-rzeka priorytety=[wyrab]
+    64 x odrzucony: wycinka wylaczona [naRzece=true]
+    24 x odrzucony: wycinka wylaczona [naRzece=false]
+ etap#4 priorytety=[bydlo,owce,lama]
+    64 x odrzucony: wycinka wylaczona [naRzece=true]
+    24 x odrzucony: wycinka wylaczona [naRzece=false]
+ etap#5 priorytety=[irygacja,tarasy]
+    64 x odrzucony: wycinka wylaczona [naRzece=true]
+    24 x odrzucony: wycinka wylaczona [naRzece=false]
+ etap#6 wycinka-poza-rzeka(E5) priorytety=[wyrab,farma]
+    32 x odrzucony: wycinka wylaczona [naRzece=true]
+    12 x odrzucony: wycinka wylaczona [naRzece=false]
+ wybrane (las): -
+ bramki(1.): {"etap":"priorytety=[kopalnia_cyny]","sonda":false,"focus":"zrownowazone","demandActive":true,"citySkipWyrab":true,"wyrabWlaczony":false,"wyrabTylkoPodFarme":true,"riverForestClearingOnly":false,"offRiverClearing":false,"rzekiDoZagospodarowania":false,"lesneMinSpelnione":true,"wolnoKarczowacPozaRzeka":true,"forestLeftInRadius":64,"prog":3,"pracaLeft":996335,"globalSpent":0,"effectiveCityCap":996335,"onlyWorked":false,"techOk":true,"civOk":true,"kosztWyrab":2.5,"rekonstrukcja":true}
+ zmiany heksow:
+    24,30[laka,bez-rz] brak/- -> brak/farma
+    26,28[rownina,bez-rz] brak/- -> brak/farma
+
+## Stan koncowy (r=3 wokol miasta): warstwy na heksach rzeka(rz)/poza-rzeka(bezRz): {"farma":{"rz":4,"bezRz":2},"bydlo":{"rz":4,"bezRz":0},"irygacja":{"rz":3,"bezRz":0},"tartak":{"rz":0,"bezRz":6},"kamieniolom":{"rz":0,"bezRz":1}}
+las pozostaly: 22 21,31(rz)[-] 21,32(rz)[-] 21,33(rz)[-] 22,29(rz)[-] 22,31(rz)[-] 22,32(rz)[-] 22,33(rz)[-] 23,29(rz)[-] 23,31(rz)[-] 23,32(rz)[-] 24,29(bez-rz)[tartak] 24,31(rz)[-] 24,32(rz)[-] 24,33(rz)[-] 25,30(bez-rz)[tartak] 25,31(rz)[-] 25,32(rz)[-] 26,29(bez-rz)[tartak] 26,30(bez-rz)[tartak] 26,31(rz)[-] 27,29(bez-rz)[tartak] 27,30(bez-rz)[tartak]
+zgodnosc hook.naRzece vs picker detail.naRzece: porownan=1144 niezgodnych=0
+EXIT=0

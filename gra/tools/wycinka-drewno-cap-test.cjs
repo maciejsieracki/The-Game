@@ -68,21 +68,16 @@ check('[0] terrain-improvements.json: wyrab.wycinka.tury === 1 (bez zmian, ECHO:
 // -----------------------------------------------------------------------
 const mainTs = fs.readFileSync(path.join(GRA, 'src', 'main.ts'), 'utf8');
 
-const gracz = mainTs.indexOf("showHintMessage(\n                'Wycinka: +'");
-check('[1] main.ts: hint gracza po wyrebie znaleziony (kotwica literalu)', gracz >= 0);
+// R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: komunikat gracza „Wycinka: +N Drewna” zostal
+// USUNIETY u zrodla (szum bez decyzji gracza). Zostaje tylko zapis drewna (przyciety do capu),
+// wiec asercje pilnuja: brak komunikatu, a wywolanie creditOwnerResourceStock nadal zapisuje.
+check('[1] main.ts: komunikat gracza "Wycinka: +...Drewna" USUNIETY (R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1)',
+  !mainTs.includes("'Wycinka: +' + drewnoCredited + ' Drewna")
+    && !mainTs.includes("'Wycinka: +' + drewnoCredit + ' Drewna"));
 
-check('[1] main.ts: sciezka GRACZA przypisuje zwrocona wartosc creditOwnerResourceStock'
-  + ' do zmiennej (drewnoCredited) PRZED komunikatem -- nie samo wywolanie bez uzycia zwrotu',
-  /const drewnoCredited = creditOwnerResourceStock\(\s*cities, ownerId, 'drewno', drewnoCredit, drewnoCap,\s*\);/
+check('[1] main.ts: sciezka GRACZA nadal zapisuje drewno przez creditOwnerResourceStock (z capem)',
+  /creditOwnerResourceStock\(\s*cities, ownerId, 'drewno', drewnoCredit, drewnoCap,\s*\);/
     .test(mainTs));
-
-check('[1] main.ts: komunikat gracza "Wycinka: +...' + ' Drewna" uzywa drewnoCredited'
-  + ' (PRZYCIETEJ wartosci), NIE surowej drewnoCredit',
-  mainTs.includes("'Wycinka: +' + drewnoCredited + ' Drewna"));
-
-check('[1] main.ts: stary, bledny wzorzec ("+ drewnoCredit + \' Drewna") W KOMUNIKACIE GRACZA'
-  + ' juz NIE wystepuje (naprawiony)',
-  !mainTs.includes("'Wycinka: +' + drewnoCredit + ' Drewna"));
 
 check('[1] main.ts: sciezka AI (wzorzec) nadal uzywa drewnoCredited w logu konsoli'
   + ' -- NIETKNIETA przez ten temat (dowod, ze naprawa nie wyszla poza allowlisty)',

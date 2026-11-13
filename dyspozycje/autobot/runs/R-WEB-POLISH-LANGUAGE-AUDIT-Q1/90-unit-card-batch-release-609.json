@@ -1,0 +1,19 @@
+{
+  "status": "SCOPED_UNIT_CARD_BATCH_DEPLOYED_PUSHED",
+  "wave": 609,
+  "source": "8109fb8e9",
+  "publicationCommit": "9f629e9578b0b8e0103eac195c851f503bf0d262",
+  "bundleMd5": "eed8b5c146e3e5e3bbce803fc98a1c43",
+  "checks": [
+    "UnitcardDOM75/75,unknown/rawdata preserved",
+    "IndependentEvalr4/FCr4,typecheckPASS",
+    "Cleanarchivebuild+HTTPsmokePASS",
+    "GitremoteartifactreadbackPASS"
+  ],
+  "limits": [
+    "Widgetfixture/adaptercontracttested,notfullcampaign",
+    "Offlinefile:// remainsmanagedbrowserINFRAblocked"
+  ],
+  "batchStage": "11/11",
+  "parentAuditStatus": "PARTIAL — other UI/Civpedia routes not exhaustively audited"
+}

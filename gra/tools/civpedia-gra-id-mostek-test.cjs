@@ -30,16 +30,27 @@
  */
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
-const assert = require('assert');
+const { execFileSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..', '..');
-const BUNDLE_PATH = path.join(ROOT, 'gra', 'src', 'data', 'wikiBundle.json');
+const TRACKED_BUNDLE_PATH = path.join(ROOT, 'gra', 'src', 'data', 'wikiBundle.json');
+const TEST_OUTPUT_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'civpedia-gra-id-mostek-'));
+const BUNDLE_PATH = path.join(TEST_OUTPUT_DIR, 'wikiBundle.json');
 const TERRAIN_JSON = path.join(ROOT, 'gra', 'data', 'terrain-improvements.json');
 const TECH_JSON = path.join(ROOT, 'gra', 'data', 'tech.json');
 const UNITS_JSON = path.join(ROOT, 'gra', 'data', 'units.json');
 const JEDNOSTKI_DIR = path.join(ROOT, 'docs', 'encyklopedia', 'jednostki');
 const TECHNOLOGIE_DIR = path.join(ROOT, 'docs', 'encyklopedia', 'technologie');
+const GENERATOR_PATH = path.join(ROOT, 'gra', 'tools', 'bundle-wiki-for-game.cjs');
+const trackedBundlePreimage = fs.readFileSync(TRACKED_BUNDLE_PATH);
+
+// Any interrupted/failing test can leave only its unique OS-temp output behind;
+// it cannot put the generated bundle into the checkout.
+process.once('exit', () => {
+  fs.rmSync(TEST_OUTPUT_DIR, { recursive: true, force: true });
+});
 
 let failures = 0;
 function check(label, cond) {
@@ -50,6 +61,10 @@ function check(label, cond) {
     console.log(`FAIL  ${label}`);
   }
 }
+
+// Generate the bundle consumed by all bridge assertions outside the checkout.
+// The command has no imports beyond the pure filesystem/Markdown generator.
+execFileSync(process.execPath, [GENERATOR_PATH, '--output', BUNDLE_PATH], { stdio: 'pipe' });
 
 // ---------------------------------------------------------------------------
 // Wspólny resolver -- dokładnie ten sam kontrakt co openEncyEntry/findEncyByGameId
@@ -201,28 +216,28 @@ console.log('=== T9 civpedia-gra-id-mostek-test ===\n');
   );
 }
 
-// 7) Idempotentność generatora (uruchomienie 2x -> identyczny wynik)
-// UWAGA: generator (bundle-wiki-for-game.cjs) pisze zawsze do śledzonego
-// BUNDLE_PATH -- nie ma parametru zmieniającego katalog wyjściowy, więc
-// naprawdę go uruchamiamy (bez mocków, zgodnie z sensem testu), ale
-// zapamiętujemy oryginalną zawartość PRZED i przywracamy ją bajt w bajt
-// PO -- w finally, niezależnie od wyniku -- żeby bramka nie brudziła
-// `git status` dla pliku danych (P-BUDYNKI-TRZY-NIESPOJNOSCI-IKON-I-BUNDLA).
+// 7) Idempotency and output-isolation guard. Every generator invocation writes
+// to a unique temporary destination; the tracked product bundle is never restored
+// because this test never opens it for writing.
 {
-  const genScript = path.join(ROOT, 'gra', 'tools', 'bundle-wiki-for-game.cjs');
-  const { execFileSync } = require('child_process');
-  const original = fs.readFileSync(BUNDLE_PATH, 'utf8');
+  const originalTracked = fs.readFileSync(TRACKED_BUNDLE_PATH);
+  check('tracked wikiBundle preimage unchanged since test startup', originalTracked.equals(trackedBundlePreimage));
+  const run1 = fs.readFileSync(BUNDLE_PATH, 'utf8');
+  execFileSync(process.execPath, [GENERATOR_PATH, '--output', BUNDLE_PATH], { stdio: 'pipe' });
+  const run2 = fs.readFileSync(BUNDLE_PATH, 'utf8');
+  check('node bundle-wiki-for-game.cjs --output <temp> is idempotent (2nd run byte-identical)', run1 === run2);
+  check('tracked wikiBundle unchanged after successful isolated generator runs', fs.readFileSync(TRACKED_BUNDLE_PATH).equals(trackedBundlePreimage));
+
+  let invalidOutputFailed = false;
   try {
-    execFileSync(process.execPath, [genScript], { stdio: 'pipe' });
-    const run1 = fs.readFileSync(BUNDLE_PATH, 'utf8');
-    execFileSync(process.execPath, [genScript], { stdio: 'pipe' });
-    const run2 = fs.readFileSync(BUNDLE_PATH, 'utf8');
-    check('node bundle-wiki-for-game.cjs jest idempotentny (2. przebieg bez zmian)', run1 === run2);
-  } finally {
-    fs.writeFileSync(BUNDLE_PATH, original, 'utf8');
-    const restored = fs.readFileSync(BUNDLE_PATH, 'utf8');
-    check('BUNDLE_PATH przywrócony bajt w bajt po teście idempotentności (git status czysty)', restored === original);
+    // A directory cannot be used as a file destination. This exercises a real
+    // post-build write failure while the tracked destination remains untouched.
+    execFileSync(process.execPath, [GENERATOR_PATH, '--output', TEST_OUTPUT_DIR], { stdio: 'pipe' });
+  } catch (err) {
+    invalidOutputFailed = err.status === 1;
   }
+  check('invalid output destination exits nonzero', invalidOutputFailed);
+  check('tracked wikiBundle unchanged after failed generator write', fs.readFileSync(TRACKED_BUNDLE_PATH).equals(trackedBundlePreimage));
 }
 
 console.log('');

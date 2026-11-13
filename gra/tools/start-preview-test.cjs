@@ -1,5 +1,5 @@
 'use strict';
-/** node tools/start-preview-test.cjs */
+/** node tools/start-preview-test.cjs — wspólna sekwencja nazw */
 
 const esbuild = require('esbuild');
 const path = require('path');
@@ -27,6 +27,7 @@ esbuild.buildSync({
 
 const M = require(bundle);
 const civs = require('../data/civs.json');
+const pools = require('../data/city-names-pools.json');
 
 let passed = 0;
 let failed = 0;
@@ -37,13 +38,16 @@ function assert(c, msg) {
 
 const p = M.buildStartPreview({
   civs,
+  cityNamesPools: pools,
   playerCivId: 'grecy',
   mapSizeMenuLabel: 'Standardowy',
+  cityStatesCount: 4,
+  activeTypesCount: 12,
 });
 
 assert(p.playerCapitalName === 'Ateny', 'stolica Grecy');
-assert(p.sameTypeRivalCount === 12, '12 rywali standard (balans ×2, 2026-07-20)');
-assert(p.sameTypeRivalNames[0] === 'Sparta', 'rywal [1] Sparta');
+assert(p.sameTypeRivalCount === 4, '4 rywali w legalnym zakresie mapy');
+assert(p.sameTypeRivalNames[0] === pools.grecy.miasta_cywilizacji[1], 'rywal [1] z common[1]');
 assert(p.activeTypesOnMap === 12, '12 typow standard (balans ×2, 2026-07-20)');
 assert(p.foreignTypesCount === 11, '11 obcych typow');
 assert(M.startPreviewSummaryRows(p).length === 4, '4 wiersze UI');

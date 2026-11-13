@@ -1,0 +1,148 @@
+[
+ {
+  "n": 1,
+  "gap": 0,
+  "manual": false,
+  "switchToAutoAfter": null,
+  "viaStart": null,
+  "rounds": 7,
+  "hits": 13,
+  "moves": 0,
+  "minDist": 1,
+  "sceneManual": false,
+  "awaiting": false
+ },
+ {
+  "n": 1,
+  "gap": 1,
+  "manual": false,
+  "switchToAutoAfter": null,
+  "viaStart": null,
+  "rounds": 7,
+  "hits": 12,
+  "moves": 1,
+  "minDist": 1,
+  "sceneManual": false,
+  "awaiting": false
+ },
+ {
+  "n": 1,
+  "gap": 3,
+  "manual": false,
+  "switchToAutoAfter": null,
+  "viaStart": null,
+  "rounds": 7,
+  "hits": 11,
+  "moves": 3,
+  "minDist": 1,
+  "sceneManual": false,
+  "awaiting": false
+ },
+ {
+  "n": 2,
+  "gap": 3,
+  "manual": false,
+  "switchToAutoAfter": null,
+  "viaStart": null,
+  "rounds": 7,
+  "hits": 22,
+  "moves": 6,
+  "minDist": 1,
+  "sceneManual": false,
+  "awaiting": false
+ },
+ {
+  "n": 2,
+  "gap": 3,
+  "manual": true,
+  "switchToAutoAfter": 2,
+  "viaStart": null,
+  "rounds": 7,
+  "hits": 22,
+  "moves": 6,
+  "minDist": 1,
+  "sceneManual": false,
+  "awaiting": false
+ },
+ {
+  "n": 1,
+  "gap": 3,
+  "manual": true,
+  "switchToAutoAfter": 2,
+  "viaStart": null,
+  "rounds": 7,
+  "hits": 11,
+  "moves": 3,
+  "minDist": 1,
+  "sceneManual": false,
+  "awaiting": false
+ },
+ {
+  "n": 1,
+  "gap": 3,
+  "manual": false,
+  "switchToAutoAfter": null,
+  "viaStart": {
+   "commander": false
+  },
+  "rounds": 0,
+  "hits": 0,
+  "moves": 0,
+  "minDist": 4,
+  "sceneManual": false,
+  "awaiting": false
+ },
+ {
+  "n": 2,
+  "gap": 3,
+  "manual": false,
+  "switchToAutoAfter": null,
+  "viaStart": {
+   "commander": false
+  },
+  "rounds": 0,
+  "hits": 0,
+  "moves": 0,
+  "minDist": 4,
+  "sceneManual": false,
+  "awaiting": false
+ },
+ {
+  "n": 1,
+  "gap": 3,
+  "manual": true,
+  "switchToAutoAfter": null,
+  "viaStart": {
+   "commander": true
+  },
+  "rounds": 0,
+  "hits": 0,
+  "moves": 0,
+  "minDist": 4,
+  "sceneManual": true,
+  "awaiting": true
+ }
+]
+PASS AUTO 1v1 gap 0: blows
+PASS AUTO 1v1 gap 1: blows
+PASS AUTO 1v1 gap 3: blows
+PASS AUTO 2v2 gap 3: blows and contact
+PASS manual 2 rounds -> AUTO 2v2 gap 3: blows and contact
+PASS manual 2 rounds -> AUTO 1v1 gap 3: blows and contact
+FAIL _startBattle without commander 1v1 gap 3: auto turn begins, blows and contact
+FAIL _startBattle without commander 2v2 gap 3: auto turn begins, blows and contact
+PASS _startBattle with commander: stays manual, waits for orders (round 0, no blows)
+AssertionError [ERR_ASSERTION]: 2 standoff check(s) failed
+
+2 !== 0
+
+    at main (/home/user/The-Game/.claude/worktrees/wf_935d2123-6af-1/gra/tools/battle-standoff-two-warriors-test.cjs:189:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 2,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+EXIT=1

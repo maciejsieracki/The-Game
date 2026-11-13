@@ -1,0 +1,25 @@
+node:internal/assert/utils:77
+    throw err;
+    ^
+
+AssertionError [ERR_ASSERTION]: dirty city models flush after AI completion/errors before barbarian UI paint
+    at Object.<anonymous> (/home/user/The-Game/.claude/worktrees/wf_2b55fc6e-f56-1/gra/tools/ai-city-render-batch-test.cjs:70:8)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+    at node:internal/main/run_main_module:36:49 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v22.22.0
+EXIT=1
+UWAGA: test czyta wylacznie tekst gra/src/main.ts; temat nie zmienia main.ts (git diff origin/main -- gra/src/main.ts pusty) => ten sam FAIL co na origin/main (por. R-WEB-MEMORY-STATIC-FOOTPRINT-Q1/gate-ai-city-render-batch-test.txt), nie regresja

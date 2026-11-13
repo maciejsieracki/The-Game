@@ -1,0 +1,37 @@
+PASS: Skarbiec: normalny stan = złoty (val), bez klasy niedoboru
+PASS: Skarbiec: goldRunway -> czerwony
+PASS: Skarbiec: goldRunway kontrast WCAG AA >= 4.5 (4.79)
+PASS: Skarbiec: goldZero -> czerwony
+PASS: Skarbiec: goldZero kontrast WCAG AA >= 4.5 (4.79)
+PASS: Skarbiec: goldEdge5 -> czerwony
+PASS: Skarbiec: goldEdge5 kontrast WCAG AA >= 4.5 (4.79)
+PASS: Skarbiec: all -> czerwony
+PASS: Skarbiec: all kontrast WCAG AA >= 4.5 (4.79)
+PASS: Skarbiec: goldFarOk -> NIE czerwony (bez niedoboru)
+PASS: Skarbiec: goldEdge6 -> NIE czerwony (bez niedoboru)
+PASS: Skarbiec: powrót do złotego po uzupełnieniu
+PASS: Spichlerz: normalny stan = złoty (val), bez klasy niedoboru
+PASS: Spichlerz: foodRunway -> czerwony
+PASS: Spichlerz: foodRunway kontrast WCAG AA >= 4.5 (4.79)
+PASS: Spichlerz: foodHunger -> czerwony
+PASS: Spichlerz: foodHunger kontrast WCAG AA >= 4.5 (4.79)
+PASS: Spichlerz: foodUnfed -> czerwony
+PASS: Spichlerz: foodUnfed kontrast WCAG AA >= 4.5 (4.79)
+PASS: Spichlerz: all -> czerwony
+PASS: Spichlerz: all kontrast WCAG AA >= 4.5 (4.79)
+PASS: Spichlerz: foodFarOk -> NIE czerwony (bez niedoboru)
+PASS: Spichlerz: powrót do złotego po uzupełnieniu
+PASS: Surowce: normalny stan = złoty (val), bez klasy niedoboru
+PASS: Surowce: res1 -> czerwony
+PASS: Surowce: res1 kontrast WCAG AA >= 4.5 (4.79)
+PASS: Surowce: resMany -> czerwony
+PASS: Surowce: resMany kontrast WCAG AA >= 4.5 (4.79)
+PASS: Surowce: all -> czerwony
+PASS: Surowce: all kontrast WCAG AA >= 4.5 (4.79)
+PASS: Surowce: resCapOnly -> NIE czerwony (bez niedoboru)
+PASS: Surowce: powrót do złotego po uzupełnieniu
+PASS: izolacja: niedobór złota nie czerwieni Spichlerza/Surowców
+PASS: tooltip Surowców wymienia surowiec w niedoborze
+PASS: zero błędów JS
+[hud-resource-deficit-red-test] 35 pass, 0 fail
+EXIT=0

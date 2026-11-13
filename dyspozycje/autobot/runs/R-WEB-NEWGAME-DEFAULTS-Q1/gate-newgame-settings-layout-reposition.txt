@@ -1,0 +1,2 @@
+newgame-settings-layout-reposition-test: PASS — Chromium placement, retained controls, persistence and game-start params verified
+EXIT=0

@@ -18,8 +18,8 @@
  * [2] KRYTERIUM UKOŃCZENIA T10 (dyspozycja, nie tylko "linki działają"): stos
  *     Esc/overlay przy >=2 zagnieżdżonych kartach. Scenariusz: otwórz kartę
  *     jednostki A ("Falanga"), z niej realny klik na klikalny wiersz
- *     "Technologia" -> otwiera zagnieżdżoną kartę technologii B ("Hutnictwo
- *     żelaza") NAD kartą A (A zostaje w DOM, nie zamyka się). Esc zamyka TYLKO
+ *     "Technologia" -> otwiera zagnieżdżoną kartę technologii B ("Sztuka
+ *     wojenna") NAD kartą A (A zostaje w DOM, nie zamyka się). Esc zamyka TYLKO
  *     B (A zostaje w DOM). Esc ponownie zamyka A (obie karty zniknęły z DOM).
  *
  * Dodatkowo: weryfikacja "brak podwójnego otwarcia" dla `row.badge` + `linkTo`
@@ -73,12 +73,12 @@ async function main() {
   const units = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'units.json'), 'utf8'));
   const falanga = units.find((u) => u.Jednostka === 'Falanga');
   check('fixture: "Falanga" istnieje w units.json, ma Tech + "W zamian za" rozwiązywalne',
-    !!falanga && falanga.Tech === 'Hutnictwo żelaza' && falanga['W zamian za'] === 'Włócznik',
+    !!falanga && falanga.Tech === 'Sztuka wojenna' && falanga['W zamian za'] === 'Włócznik',
     falanga && { Tech: falanga.Tech, zamiana: falanga['W zamian za'] });
 
   const tech = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'tech.json'), 'utf8')).technologie;
-  const hutnictwo = tech.find((t) => t.Technologia === 'Hutnictwo żelaza');
-  check('fixture: "Hutnictwo żelaza" istnieje w tech.json', !!hutnictwo);
+  const hutnictwo = tech.find((t) => t.Technologia === 'Sztuka wojenna');
+  check('fixture: "Sztuka wojenna" istnieje w tech.json', !!hutnictwo);
 
   fs.writeFileSync(
     ENTRY,
@@ -253,6 +253,11 @@ async function main() {
         const section = document.querySelector('[data-section-key="next"]');
         const btn = section?.querySelector('.entity-card-row-action-text[data-entity-kind="technology"]');
         if (!btn) return null;
+        // R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1 (świadoma zmiana): karta odkrycia urosła o sekcje
+        // „Top 5 korzyści”/CMZ, więc „Kolejne technologie” leżą poniżej widocznej części
+        // przewijanej karty — przewijamy wiersz do widoku przed pomiarem (realny gracz też musi
+        // przewinąć). Asercja [4] (dokładnie jedna nowa nakładka) bez zmian.
+        btn.scrollIntoView({ block: 'center' });
         const r = btn.getBoundingClientRect();
         return { cx: r.left + r.width / 2, cy: r.top + r.height / 2, entityId: btn.getAttribute('data-entity-id') };
       });

@@ -5,7 +5,7 @@
  * Specyfikacja właściciela: po wybraniu w trybie budowy KONKRETNEGO typu kopalni
  * (kopalnia_miedzi / kopalnia_zelaza / kopalnia_cyny / kopalnia_zlota — i tylko tych czterech)
  * wszystkie heksy w zasięgu terytorium gracza, na których TĘ kopalnię da się postawić,
- * podświetlają się na jasnoniebiesko z przezroczystością 30 %.
+ * podświetlają się na jasnoniebiesko z przezroczystością 36 % (+20% względem bazy 30%).
  *
  * Trzy warstwy asercji:
  *   (1) ZBIÓR HEKSÓW — realny `createImprovementBuildApi().getQualifyingHexes(key)`
@@ -14,7 +14,7 @@
  *       trzech kopalń (różne złoża = różne zbiory, więc przełączenie typu MUSI przeliczać).
  *       Plus grupa kopalń: `isMineImprovementKey` obejmuje dokładnie 4 klucze.
  *   (2) STYL I STRUKTURA WARSTWY — `MINE_ELIGIBLE_STYLE` + `buildRangeOverlayGroup`
- *       z src/render/rangeOverlay.ts: kolor jasnoniebieski, krycie DOKŁADNIE 0.30 oraz
+ *       z src/render/rangeOverlay.ts: kolor jasnoniebieski, krycie 0.36 (+20% alpha) oraz
  *       siatka oblekająca relief heksa. Test głębi ma pozostać włączony, a warstwa ma być
  *       rysowana poniżej żetonów jednostek (10/12) i etykiet miast (18/20), żeby nie
  *       przebijała globalnie przez teren ani jednostki.
@@ -182,15 +182,15 @@ ok(!M.isMineImprovementKey(null) && !M.isMineImprovementKey(undefined),
   'isMineImprovementKey(null/undefined) = false (brak wyboru = brak warstwy)');
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 2. STYL I STRUKTURA WARSTWY — jasnoniebieski, krycie 0.30, widoczny na Wzgórzach/Górach
+// 2. STYL I STRUKTURA WARSTWY — jasnoniebieski, krycie 0.36 (+20% względem bazy 0.30).
 // ─────────────────────────────────────────────────────────────────────────────
 console.log('\n2. MINE_ELIGIBLE_STYLE + buildRangeOverlayGroup');
 
 const S = M.MINE_ELIGIBLE_STYLE;
 
-ok(S.tintOpacity === 0.30,
-  `krycie warstwy = DOKŁADNIE 0.30 (spec właściciela „przezroczystość 30%"), jest ${S.tintOpacity}`);
-ok(M.MINE_ELIGIBLE_TINT_OPACITY === 0.30, 'stała MINE_ELIGIBLE_TINT_OPACITY = 0.30');
+ok(S.tintOpacity === 0.36,
+  `krycie warstwy = 0.36 (20% więcej niż bazowe 0.30), jest ${S.tintOpacity}`);
+ok(M.MINE_ELIGIBLE_TINT_OPACITY === 0.36, 'stała MINE_ELIGIBLE_TINT_OPACITY = 0.36');
 ok(S.tintColor === M.MINE_ELIGIBLE_TINT_COLOR,
   `styl używa stałej koloru ${hex(M.MINE_ELIGIBLE_TINT_COLOR)} (jedno źródło prawdy)`);
 
@@ -236,7 +236,7 @@ function fakeMap(entries) {
   ok(tint?.userData?.subdivisions === 4, 'relief jest dzielony na 4 odcinki w sektorze');
   ok(tint.material.color.getHex() === M.MINE_ELIGIBLE_TINT_COLOR,
     `materiał tinta w kolorze ${hex(M.MINE_ELIGIBLE_TINT_COLOR)}`);
-  ok(tint.material.opacity === 0.30, `materiał tinta ma opacity 0.30 (jest ${tint.material.opacity})`);
+  ok(tint.material.opacity === 0.36, `materiał tinta ma opacity 0.36 (jest ${tint.material.opacity})`);
   ok(tint.material.transparent === true, 'materiał tinta transparent (inaczej opacity nie działa)');
 
   // Warstwa leży na powierzchni reliefu, więc może być widoczna bez globalnego

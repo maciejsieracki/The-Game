@@ -227,14 +227,14 @@ function missingSteps(techName, unlockedSet) {
 const wymianaChain = techPrereqChainFixed('Wymiana');
 eq(
   [...wymianaChain].sort(),
-  ['Garncarstwo', 'Oswojenie zwierząt', 'Rolnictwo', 'Wymiana'].sort(),
-  'lancuch dla "Wymiana" = dokladnie {Garncarstwo, Rolnictwo, Oswojenie zwierząt, Wymiana} (bez sztucznego wpisu "+")',
+  ['Garncarstwo', 'Obróbka drewna', 'Łowiectwo', 'Oswojenie zwierząt', 'Rolnictwo', 'Wymiana'].sort(),
+  'lancuch dla "Wymiana" = dokladnie {Garncarstwo, Obróbka drewna, Łowiectwo, Rolnictwo, Oswojenie zwierząt, Wymiana} (bez sztucznego wpisu "+"; R-WEB-TECH-POTTERY-FIFTH: Garncarstwo wymaga 4 podstaw)',
 );
 assert(wymianaChain.indexOf('Wymiana') === wymianaChain.length - 1, 'sam tech docelowy ("Wymiana") jest ostatni w lancuchu');
 
 // Scenariusz ZGLOSZENIA: gracz ma zbadane WSZYSTKIE 4 -- karta MUSI byc zielona (met=true).
-const wszystkoZbadane = new Set(['Garncarstwo', 'Rolnictwo', 'Oswojenie zwierząt', 'Wymiana']);
-eq(missingSteps('Wymiana', wszystkoZbadane), [], 'po zbadaniu wszystkich 4 -- missingSteps() PUSTE (chip Targowiska = zielony)');
+const wszystkoZbadane = new Set(['Garncarstwo', 'Obróbka drewna', 'Łowiectwo', 'Rolnictwo', 'Oswojenie zwierząt', 'Wymiana']);
+eq(missingSteps('Wymiana', wszystkoZbadane), [], 'po zbadaniu calego lancucha (6 techow) -- missingSteps() PUSTE (chip Targowiska = zielony)');
 
 // Regresja bramki: brakuje TYLKO "Rolnictwo" (i w konsekwencji "Wymiana") -- MUSI zostac czerwona.
 const brakRolnictwa = new Set(['Garncarstwo', 'Oswojenie zwierząt']);

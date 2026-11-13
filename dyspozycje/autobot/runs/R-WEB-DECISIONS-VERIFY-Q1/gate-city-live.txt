@@ -1,0 +1,4 @@
+  OK  L5.1 las wstawiony pod miasto zniknal po granicy tury
+  OK  C zero pageerror/console.error (n=0)
+city-clears-forest-live-test: 17 pass / 0 fail
+EXIT=0
