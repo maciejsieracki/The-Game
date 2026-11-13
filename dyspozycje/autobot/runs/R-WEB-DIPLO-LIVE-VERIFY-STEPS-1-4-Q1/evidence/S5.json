@@ -1,0 +1,101 @@
+{
+  "scenario": "5",
+  "checks": [
+    {
+      "id": "S5.0",
+      "label": "zaufanie 0: odczyt w DOM = ustawienie",
+      "ok": "PASS",
+      "detail": {
+        "odczyt": 0,
+        "etykiety": []
+      }
+    },
+    {
+      "id": "S5.9",
+      "label": "zaufanie 9: odczyt w DOM = ustawienie",
+      "ok": "PASS",
+      "detail": {
+        "odczyt": 9,
+        "etykiety": []
+      }
+    },
+    {
+      "id": "S5.10",
+      "label": "zaufanie 10: odczyt w DOM = ustawienie",
+      "ok": "PASS",
+      "detail": {
+        "odczyt": 10,
+        "etykiety": []
+      }
+    },
+    {
+      "id": "S5.29",
+      "label": "zaufanie 29: odczyt w DOM = ustawienie",
+      "ok": "PASS",
+      "detail": {
+        "odczyt": 29,
+        "etykiety": []
+      }
+    },
+    {
+      "id": "S5.30",
+      "label": "zaufanie 30: odczyt w DOM = ustawienie",
+      "ok": "PASS",
+      "detail": {
+        "odczyt": 30,
+        "etykiety": []
+      }
+    },
+    {
+      "id": "S5.tekst",
+      "label": "dokładne nazwy etykiet (Wrogi/Relacja) dla progów 9/10 i 29/30",
+      "ok": "NIE_ZMIERZONO",
+      "detail": {
+        "powod": "etykiety odczytane jako surowy tekst (patrz etykiety); mapowanie na nazwy oczekiwane tylko w testach jednostkowych"
+      }
+    },
+    {
+      "id": "S5.errors",
+      "label": "brak błędów JS w scenariuszu",
+      "ok": "PASS",
+      "detail": []
+    }
+  ],
+  "measured": {
+    "etykiety": [
+      {
+        "zaufanieUstawione": 0,
+        "zaufanieOdczyt": 0,
+        "respektOdczyt": 100,
+        "etykiety": []
+      },
+      {
+        "zaufanieUstawione": 9,
+        "zaufanieOdczyt": 9,
+        "respektOdczyt": 100,
+        "etykiety": []
+      },
+      {
+        "zaufanieUstawione": 10,
+        "zaufanieOdczyt": 10,
+        "respektOdczyt": 100,
+        "etykiety": []
+      },
+      {
+        "zaufanieUstawione": 29,
+        "zaufanieOdczyt": 29,
+        "respektOdczyt": 100,
+        "etykiety": []
+      },
+      {
+        "zaufanieUstawione": 30,
+        "zaufanieOdczyt": 30,
+        "respektOdczyt": 100,
+        "etykiety": []
+      }
+    ]
+  },
+  "startedAt": "2026-11-13T17:45:50.624Z",
+  "errorsTotal": 0,
+  "finishedAt": "2026-11-13T17:47:41.210Z"
+}

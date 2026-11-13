@@ -1,0 +1,80 @@
+{
+  "scenario": "3",
+  "checks": [
+    {
+      "id": "S3.a",
+      "label": "skan przewagi siły przy zaufaniu 25 — odczyt punktu przełączenia mayDeclare",
+      "ok": "FAIL",
+      "detail": {
+        "punktPrzelaczenia": null,
+        "uwaga": "przewaga z Power (buildObjectivePower), nie z siły wojskowej; progi 14/20/28% zależą od charakteru AI (nie ustawiany tutaj)"
+      }
+    },
+    {
+      "id": "S3.b",
+      "label": "progi 25%/19%/27% oraz charakter agresywna/neutralna/ostrożna",
+      "ok": "NIE_ZMIERZONO",
+      "detail": {
+        "powod": "brak hooka ustawiającego charakter cywilizacji AI i odczytu siły wojskowej (krok 2); skan Power nie daje wymaganej miary"
+      }
+    },
+    {
+      "id": "S3.c",
+      "label": "zaufanie 0, AI silniejsza przez 2 tury → wypowiedzenie wojny",
+      "ok": "FAIL",
+      "detail": {
+        "statusStart": "neutralni",
+        "statusTury": [
+          "neutralni"
+        ],
+        "uwaga": "wypowiedzenie zależy też od gotowości (losowania) — brak wojny nie jest dowodem zakazu"
+      }
+    },
+    {
+      "id": "S3.d",
+      "label": "silniejszy gracz (AI słabsza) → brak automatycznej wojny przez 2 tury",
+      "ok": "PASS",
+      "detail": {
+        "statusTury": [
+          "neutralni"
+        ]
+      }
+    },
+    {
+      "id": "S3.e",
+      "label": "ostrzeżenie dla gracza raz na epizod",
+      "ok": "NIE_ZMIERZONO",
+      "detail": {
+        "powod": "ostrzeżenie „Ryzyko wojny” jest pokrywane w testach diplo-war-peace-live-test (hamulec); tu nie mierzone osobno"
+      }
+    },
+    {
+      "id": "S3.f",
+      "label": "brak błędów JS w scenariuszu",
+      "ok": "PASS",
+      "detail": []
+    }
+  ],
+  "measured": {
+    "progiSily_zaufanie25": [],
+    "zaufanie0_silniejsza": {
+      "statusStart": "neutralni",
+      "statusTury": [
+        "neutralni"
+      ],
+      "ostrzezenieWLogu": {
+        "found": false,
+        "texts": []
+      }
+    },
+    "silniejszyGracz": {
+      "statusStart": "neutralni",
+      "statusTury": [
+        "neutralni"
+      ]
+    }
+  },
+  "startedAt": "2026-11-13T17:38:08.917Z",
+  "errorsTotal": 0,
+  "finishedAt": "2026-11-13T17:43:17.412Z"
+}

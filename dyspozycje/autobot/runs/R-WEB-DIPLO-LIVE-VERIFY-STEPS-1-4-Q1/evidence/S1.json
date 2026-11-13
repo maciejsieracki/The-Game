@@ -1,0 +1,117 @@
+{
+  "scenario": "1",
+  "checks": [
+    {
+      "id": "S1.a",
+      "label": "przed wojną zaufanie odczytane z DOM (SETUP 40)",
+      "ok": "PASS",
+      "detail": {
+        "zaufanie": 40,
+        "respekt": 100,
+        "trustRaw": "40 / 100 +0.7 / turę",
+        "respektRaw": "100 / 100",
+        "tierLines": [],
+        "rows": [
+          "Wiarygodność+20 · Uczciwy",
+          "Zaufanie40 / 100 +0.7 / turę",
+          "Respekt100 / 100",
+          "Relacja z perspektywy gracza140 / 200 +0.7 / turę(Zaufanie + Respekt)"
+        ]
+      }
+    },
+    {
+      "id": "S1.b",
+      "label": "po wypowiedzeniu wojny i 1 turze zaufanie = 0",
+      "ok": "PASS",
+      "detail": {
+        "zaufanie": 0,
+        "respekt": 100
+      }
+    },
+    {
+      "id": "S1.c",
+      "label": "w kolejnej turze wojny zaufanie nadal = 0",
+      "ok": "PASS",
+      "detail": {
+        "zaufanie": 0,
+        "respekt": 100
+      }
+    },
+    {
+      "id": "S1.d",
+      "label": "respekt nie obcięty do 29 (wartość > 29 po turze wojny)",
+      "ok": "PASS",
+      "detail": {
+        "respekt": 100,
+        "uwaga": "respekt efektywny w UI może zależeć od siły; surowy wiersz w rows"
+      }
+    },
+    {
+      "id": "S1.e",
+      "label": "brak błędów JS w scenariuszu",
+      "ok": "PASS",
+      "detail": []
+    }
+  ],
+  "measured": {
+    "start": {
+      "zaufanie": 40,
+      "respekt": 100,
+      "trustRaw": "40 / 100 +0.7 / turę",
+      "respektRaw": "100 / 100",
+      "tierLines": [],
+      "rows": [
+        "Wiarygodność+20 · Uczciwy",
+        "Zaufanie40 / 100 +0.7 / turę",
+        "Respekt100 / 100",
+        "Relacja z perspektywy gracza140 / 200 +0.7 / turę(Zaufanie + Respekt)"
+      ]
+    },
+    "poWypowiedzeniuWojny": {
+      "zaufanie": 0,
+      "respekt": 100,
+      "trustRaw": "0 / 100",
+      "respektRaw": "100 / 100",
+      "tierLines": [],
+      "rows": [
+        "Wiarygodność+20 · Uczciwy",
+        "Zaufanie0 / 100",
+        "Respekt100 / 100",
+        "Relacja z perspektywy gracza100 / 200(Zaufanie + Respekt)"
+      ]
+    },
+    "poTurze1": {
+      "zaufanie": 0,
+      "respekt": 100,
+      "trustRaw": "0 / 100",
+      "respektRaw": "100 / 100",
+      "tierLines": [],
+      "rows": [
+        "Wiarygodność+20 · Uczciwy",
+        "Zaufanie0 / 100",
+        "Respekt100 / 100",
+        "Relacja z perspektywy gracza100 / 200(Zaufanie + Respekt)"
+      ]
+    },
+    "poTurze2": {
+      "zaufanie": 0,
+      "respekt": 100,
+      "trustRaw": "0 / 100",
+      "respektRaw": "100 / 100",
+      "tierLines": [],
+      "rows": [
+        "Wiarygodność+20 · Uczciwy",
+        "Zaufanie0 / 100",
+        "Respekt100 / 100",
+        "Relacja z perspektywy gracza100 / 200(Zaufanie + Respekt)"
+      ]
+    },
+    "tury": [
+      2,
+      2
+    ]
+  },
+  "startedAt": "2026-11-13T16:55:45.088Z",
+  "errorsTotal": 0,
+  "finishedAt": "2026-11-13T17:01:11.869Z"
+}
