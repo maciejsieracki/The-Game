@@ -682,3 +682,14 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - Cherry-pick `cd7cf1b77 8ae2f1864 f946ee378` na `5e8b116e8` bez konfliktów.
 - Bramki: `cargo fmt --check` OK, `cargo clippy --all-targets -- -D warnings` OK, pełny `cargo test --no-fail-fast`: **3275 passed, 0 failed, 1 ignored** (exit 0). Pierwszy przebieg padł na braku miejsca na dysku (ENOSPC), nie na kodzie.
 - **FF `parity-v2`: `5e8b116e8` → `d30e3ea24`.** Ref `refs/keep/R-RUSTPORT-P6-JS-MAX-INTEG-Q1-parity`. Worktree `integ-jsmax` usunięty.
+
+## Przebieg (13.11, heartbeat 17:18): cztery sloty
+- **Stan przed heartbeatem:** 2 aktywne Workflow (ZLOZA-B-PORT-Q1 na etapie Evaluatora; ZWYCIESTWO-IMPL-Q1 na etapie Obrony). EKONOMIA-BRAZ-ERA-Q1 w stanie `failed` (ENOSPC przy worktree).
+- **COMBAT-WEJSCIA-ROZPOZNANIE-R2-Q1 (#167):** FC PASS-WITH-NOTES (sha 0bd310ca7). Dokumenty zintegrowane na `claude/rust-sivvrn` (`f25a3201c`). **Plik `03-final-control.md` nie został zapisany** (brak miejsca na dysku w chwili FC); werdykt pochodzi z wyniku Workflow i jest tu zapisany jako źródło.
+- **INTEG-JS-MAX (#110/#174):** zintegrowane FF `parity-v2` `5e8b116e8` → `d30e3ea24`; pełny test 3275/0/1 (zapis wyżej).
+- **Uruchomione (baza = parity-v2 `d30e3ea24`):**
+  - COUNTER-FALANGITA-Q1 — poprawka mnożnika 1,30 wg pina (odstępstwo od webu, bez pytania) — `wf_7257b495-8f2`, Operator HAIKU.
+  - EKONOMIA-BRAZ-ERA-Q1 — wznowienie z cache (etap Operatora) — `wf_5b797905-328`.
+  - ZLOZA-B-PORT-Q1 — w toku (etap Evaluatora) — `wf_f811df3e-f53`.
+  - ZWYCIESTWO-IMPL-Q1 — w toku (etap Obrony) — `wf_b8c4665f-81f`.
+- **Dysk:** 8,3 GB wolne przed startami.
