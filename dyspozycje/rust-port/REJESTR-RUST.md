@@ -504,3 +504,20 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Korekta dispatchu:** klucz JSON to `"Zastąp specjalnie"` (wszystkie 75 jednostek), nie `zastap_specjalnie` (to nazwa w strukturze Rust). Poprawka w dispatchu przed startem.
 - **Blokady pozostałych slotów:** każdy pozostały temat wymaga decyzji właściciela (pytania w #156) albo zgody na allowlistę (#162, #111/#158), albo jest zablokowany DYSTANSEM (#161).
 - **Stan repo:** `parity-v2` = `cfa1edd31`. `claude/rust-sivvrn` przed tym wpisem = `f189ce037`.
+
+## Decyzje właściciela (gameplay) i decyzje techniczne orkiestratora
+**Gameplay (odpowiedzi właściciela):**
+- DYSTANS (#10): faza zwarcia jak na pinie. Odblokowuje #134–#137 i #100 (osobne tematy).
+- Szturm odparty (#60): jak na pinie (remis po 150 turach). Naprawa błędu pinu osobno.
+- W8 r7 kolejność faz (#63): jak na pinie.
+- REPIN-DRYFT 1–6 (#14–#19): przyjąć wartości z weba. Wymaga przesunięcia pinu (osobny krok po REPIN-DELTA-5).
+- units.json, 50 pól (#27): przyjąć wartości z pinu/weba. Wymaga przesunięcia pinu.
+
+**Techniczne (podjęte przez orkiestratora, bez pytania):**
+1. Commity własne bez nazwy modelu (CLAUDE.md). Opublikowanych nie przepisuję.
+2. Bez aliasu `umowa_handlowa`: test S3 wprost na `StreamDealKind`.
+3. Harness pipeline D4/D8: osobny temat.
+4. #110 JS-MAX: wariant (b) z FC, tabela zachowania zera per caller.
+5. #91: istniejące 360 sekwencji jako dowód; klauzula „pojedynczy cios” w #113.
+6. Allowlisty `ProdBody` i generatora: rozszerzane tylko o pliki potrzebne konkretnemu tematowi, z pełnymi bramkami.
+7. Wiring #104, #114, #115, #120: parytet z pinem.
