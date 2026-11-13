@@ -38,7 +38,12 @@ export interface WarPeaceParams {
   hamulecRelacji: { progKryzysuMinusPunkty: number; bazaN: number; wagaProgWojny: number; minN: number; maxN: number };
   /** R-WEB-DIPLO-PEACE-AI-AI-NONNEGATIVE-BALANCE-Q1: minimalny bilans PW KAZDEJ z dwoch AI przy pokoju AI↔AI. */
   pokojAiAi: { minBilansPW: number };
+  /** R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1: AI wypowiada wojnę tylko przy Zaufaniu pary < progZaufaniaWojny. */
+  wypowiedzenieZaufanie: { progZaufaniaWojny: number };
 }
+
+/** R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1: próg Zaufania pary dla wypowiedzenia wojny przez AI (30). */
+export const PROG_WOJNA_ZAUFANIE: number = (paramsRaw as unknown as WarPeaceParams).wypowiedzenieZaufanie.progZaufaniaWojny;
 
 export const WAR_PEACE_PARAMS = paramsRaw as unknown as WarPeaceParams;
 

@@ -214,3 +214,29 @@ export function isTributeBonusActive(meta: MilitaryPairFields | undefined, owner
   const b = meta?.trybutBonus;
   return b !== undefined && b.dla === ownerId && turn < b.doTury;
 }
+
+/**
+ * R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 (krok 3): rozstrzygnięcie hamulca zerowego Zaufania.
+ * Po N turach zerowego Zaufania wypowiada wojnę strona SILNIEJSZA wg siły militarnej
+ * (compareMilitaryStrength: większa siła → remis: większa armia → remis: mniejszy id).
+ * Bez progu 20% — nawet przewaga o włos wystarcza. Gdy silniejsza strona jest graczem,
+ * mayDeclare = false (gracz nigdy nie wypowiada wojny automatycznie, D7).
+ * / EN: Zero-trust brake outcome: the stronger military side declares; the player never auto-declares.
+ */
+export interface MilitaryBrakeOutcome {
+  declarer: string;
+  victim: string;
+  /** false = silniejsza strona to gracz: brak automatycznej deklaracji. */
+  mayDeclare: boolean;
+}
+
+export function militaryBrakeOutcome(
+  a: MilitarySide,
+  b: MilitarySide,
+  isPlayer: (id: string) => boolean,
+  params: MilitaryStrengthParams = DEFAULT_MILITARY_STRENGTH_PARAMS,
+): MilitaryBrakeOutcome {
+  const declarer = compareMilitaryStrength(a, b, params).silniejszyId;
+  const victim = declarer === a.id ? b.id : a.id;
+  return { declarer, victim, mayDeclare: !isPlayer(declarer) };
+}

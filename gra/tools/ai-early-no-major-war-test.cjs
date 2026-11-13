@@ -61,6 +61,9 @@ function hostileRelacja(partnerId, overrides = {}) {
     partnerId,
     relation: { zaufanie: 5, respekt: 5, status: 'pokoj' },
     respektWzgledny: 0.85,
+    // R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1: wypowiedzenie wymaga przewagi siły militarnej >=20%.
+    silaMilitarnaAI: { sila: 150, armiaPkt: 150 },
+    silaMilitarnaPartner: { sila: 100, armiaPkt: 100 },
     stanWojny: false,
     peaceLocked: false,
     hasNapTreaty: false,
