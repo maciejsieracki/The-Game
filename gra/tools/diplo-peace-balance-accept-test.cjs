@@ -98,20 +98,21 @@ check('M2: siła 100 vs 101 => strona z 100 słabsza', M.peaceMilitaryPosition(s
 }
 
 // ---- 2. AI proponuje pokoj (decideAIDiplomacy, partner = gracz '0') ----
-check('A1: AI silniejsza militarnie (125 vs 100), 30 tur => AI NIE proponuje pokoju',
-  !proposes(aiTurn({ silaAI: 125, silaPlr: 100, turnsAtWar: 30 })), aiTurn({ silaAI: 125, silaPlr: 100, turnsAtWar: 30 }));
+check('A1: AI silniejsza militarnie (125 vs 100), 12 tur => AI NIE proponuje pokoju',
+  !proposes(aiTurn({ silaAI: 125, silaPlr: 100, turnsAtWar: 12 })), aiTurn({ silaAI: 125, silaPlr: 100, turnsAtWar: 12 }));
 check('A2: AI silniejsza o 15% (115 vs 100) => AI NIE proponuje pokoju',
-  !proposes(aiTurn({ silaAI: 115, silaPlr: 100, turnsAtWar: 30 })));
+  !proposes(aiTurn({ silaAI: 115, silaPlr: 100, turnsAtWar: 12 })));
 check('A3: AI silniejsza o 1 jednostke siły (101 vs 100) => AI NIE proponuje pokoju (brak progu pasma)',
-  !proposes(aiTurn({ silaAI: 101, silaPlr: 100, turnsAtWar: 30 })));
+  !proposes(aiTurn({ silaAI: 101, silaPlr: 100, turnsAtWar: 12 })));
 check('A4: AI słabsza militarnie (75 vs 100), BEZ miasta => AI NIE proponuje pokoju wobec gracza (ZAŁOŻENIE Z5)',
-  !proposes(aiTurn({ silaAI: 75, silaPlr: 100, turnsAtWar: 30 })));
+  !proposes(aiTurn({ silaAI: 75, silaPlr: 100, turnsAtWar: 12 })));
 {
-  const c = aiTurn({ silaAI: 75, silaPlr: 100, turnsAtWar: 30, lost: 0 });
+  const c = aiTurn({ silaAI: 75, silaPlr: 100, turnsAtWar: 12, lost: 0 });
   check('A4b: AI słabsza bez miasta — brak zaproponuj_pokoj (nie ma słodzika)', !proposes(c), c);
 }
-check('A5: AI silniejsza militarnie, zmęczenie 120 tur => AI NIE proponuje (zmęczenie nie zdejmuje blokady)',
-  !proposes(aiTurn({ silaAI: 125, silaPlr: 100, turnsAtWar: 120 })));
+// R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: koniec zmęczenia (20 tur = 100%) zdejmuje blokadę — silniejsza AI proponuje pokój bezwarunkowy.
+check('A5: AI silniejsza militarnie, koniec zmęczenia (20 tur) => AI proponuje pokój bezwarunkowy',
+  proposes(aiTurn({ silaAI: 125, silaPlr: 100, turnsAtWar: 20 })));
 check('A6: AI silniejsza, wojna 9 tur (przed minimalnym czasem) => AI NIE proponuje',
   !proposes(aiTurn({ silaAI: 125, silaPlr: 100, turnsAtWar: 9 })));
 check('A7: przewaga militarna bez wojny nie generuje pokoju (kontrola)', (() => {
