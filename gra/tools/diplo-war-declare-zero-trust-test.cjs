@@ -109,6 +109,15 @@ async function main() {
   ok(wojny(a).length === 1 && wojny(a)[0].targetId === 'rzym-1',
     `wypowiedz_wojne wobec rzym-1 (zmierzone: ${JSON.stringify(a.map(c => c.type))})`);
 
+  // ---- (a2) granica Zaufania (obrona r1, zarzut 1): zaufanie >= 30 blokuje mimo przewagi AI +25% ----
+  console.log('(a2) granica Zaufania: 29 → wojna; 30 / 31 / 80 → brak (AI silniejsze o 25%)');
+  const a29 = decideAIDiplomacy(input({ zaufanie: 29, aiSila: 125 }), undefined, 1, 1, 'normal');
+  ok(wojny(a29).length === 1, `zaufanie 29 (< 30) + przewaga 25% → wypowiedzenie (zmierzone: ${JSON.stringify(a29.map(c => c.type))})`);
+  for (const z of [30, 31, 80]) {
+    const cz = decideAIDiplomacy(input({ zaufanie: z, aiSila: 125 }), undefined, 1, 1, 'normal');
+    ok(wojny(cz).length === 0, `zaufanie ${z} (>= 30) + przewaga 25% → brak wypowiedzenia (zmierzone: ${JSON.stringify(cz.map(c => c.type))})`);
+  }
+
   // ---- (b) ----
   console.log('(b) Zaufanie 25, AI silniejsze o 19% → brak');
   const b = decideAIDiplomacy(input({ zaufanie: 25, aiSila: 119 }), undefined, 1, 1, 'normal');
@@ -169,6 +178,17 @@ async function main() {
   });
   ok(JSON.stringify(warnings) === JSON.stringify([0, 4]),
     `dwa epizody zera → dwa ostrzeżenia (w turach ${JSON.stringify(warnings)}), zero w środku epizodu`);
+  // Źródło warunku wyświetlenia (main.ts processDiploCrisisQueue; obrona r1, zarzut 5): flaga per epizod,
+  // brak ostrzeżenia przy rozejmie/pokoju, ostrzeżenie także gdy AI stanie się silniejsza później w epizodzie.
+  const MAIN_SRC = fs.readFileSync(path.resolve(GRA, 'src', 'main.ts'), 'utf8');
+  const warnCond = (src) => src.includes('counter < nPair && warOutcome.mayDeclare')
+    && src.includes('!isPeaceLockedBetween(sa, sb) && !diploZeroTrustWarned.has(key)')
+    && src.includes('diploZeroTrustWarned.delete(k)');
+  ok(warnCond(MAIN_SRC), 'main.ts: ostrzeżenie = flaga per epizod + blokada rozejmu/pokoju + czyszczenie przy końcu epizodu');
+  ok(!warnCond(MAIN_SRC.replace(' && !diploZeroTrustWarned.has(key)', '')),
+    'mutacja (usunięta flaga per epizod) czerwieni warunek ostrzeżenia');
+  ok(!warnCond(MAIN_SRC.replace('&& !isPeaceLockedBetween(sa, sb) ', '')),
+    'mutacja (usunięta blokada rozejmu z ostrzeżenia) czerwieni warunek');
 
   // ---- (g) ----
   console.log('(g) karencja / rozejm / pakt / pokój blokują wypowiedzenie');

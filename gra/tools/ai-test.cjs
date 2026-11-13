@@ -2683,10 +2683,13 @@ console.log('\n--- T12-dip-b: agresywna cywilizacja -> szybciej wojna niz pokojo
     stanWojny: false,
     partnerTypCywilizacji: 'chinczycy',
   };
+  // R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 (obrona r1): OBA wywołania mają tę samą agresję (0.5) i te same
+  // warunki siły/zaufania; różni je wyłącznie charakter cywilizacji. Próg progWojnaAgresja (0.5) przesuwa
+  // resolveDiplomacyCivBias.warAgresjaBonus: agresywna −0.10 (efektywnie 0.34 po podbojBoost), pokojowa +0.10 (0.60).
   const aggressive = decideAIDiplomacy({
     myPlayerId: '3',
     myTypCywilizacji: 'zulusi',
-    agresja: 0.75,
+    agresja: 0.5,
     agresywnoscRaw: 9,
     sklonnoscDoPodboju: 5,
     tolerancjaRyzyka: 9,
@@ -2699,9 +2702,7 @@ console.log('\n--- T12-dip-b: agresywna cywilizacja -> szybciej wojna niz pokojo
   const peaceful = decideAIDiplomacy({
     myPlayerId: '4',
     myTypCywilizacji: 'chinczycy',
-    // R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1: próg siły militarnej nie ma już offsetu cywilizacji
-    // (warSilaBonus); charakter działa przez effAgresja (ABC A), więc pokojowa cywilizacja ma niską agresję.
-    agresja: 0.3,
+    agresja: 0.5,
     agresywnoscRaw: 2,
     sklonnoscDoPodboju: 1,
     tolerancjaRyzyka: 2,

@@ -45,7 +45,7 @@ const CHECKS = [
   ['P6: R1/R2 bramka wypowiedzenia', (m) => has(m, 'if (diploCrisisWarGateBlocked(declarer, victim)) continue;') && has(m, 'return evaluateInterCivWarGate({')],
   ['P6: strona silniejsza wypowiada (diploMilitaryBrakeOutcome -> militaryBrakeOutcome, D7)', (m) => has(m, 'diploMilitaryBrakeOutcome(') && has(m, 'if (!outcome.mayDeclare) continue;')],
   ['P6: pokoj blokuje wypowiedzenie', (m) => has(m, 'if (isPeaceLockedBetween(e.ownerA, e.ownerB)) continue;')],
-  ['P6/ZT: ostrzezenie gracza raz na epizod zerowego Zaufania (counter === 1)', (m) => has(m, 'counter === 1 && counter < nPair') && has(m, 'Zaufanie spadło do zera')],
+  ['P6/ZT: ostrzezenie gracza raz na epizod zerowego Zaufania (flaga per epizod, bez rozejmu)', (m) => has(m, 'diploZeroTrustWarned.has(key)') && has(m, '!isPeaceLockedBetween(sa, sb)') && has(m, 'Zaufanie spadło do zera')],
   ['P6: zapis licznika w save (flaga ON)', (m) => has(m, 'diplomacyCrisisCounters: Object.fromEntries(diplomacyCrisisCounters.entries())')],
   ['P6: odczyt licznika w load (stary zapis = 0)', (m) => has(m, 'parseCrisisCounters(saved.meta?.diplomacyCrisisCounters)')],
   ['P7: bonus z realnych dostaw (applyCyclicDeliveryOutcome ok)', (m) => has(m, 'if (brakeOn && ok) {') && has(m, 'applyDiploP7Bonuses(p7Delivered)')],

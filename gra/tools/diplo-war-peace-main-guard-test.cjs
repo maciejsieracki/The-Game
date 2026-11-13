@@ -27,7 +27,7 @@ const once = (src, s) => count(src, s) === 1;
 check('D7: gracz jako silniejsza strona nie deklaruje (guard mayDeclare w processDiploCrisisQueue)',
   once(MAIN, 'if (!outcome.mayDeclare) continue;') && count(MAIN, 'diploMilitaryBrakeOutcome(') === 3);
 check('D7: brak ostrzeżenia o automatycznej wojnie gdy gracz silniejszy (warOutcome.mayDeclare)',
-  MAIN.includes('&& warOutcome.mayDeclare) {'));
+  MAIN.includes('counter < nPair && warOutcome.mayDeclare'));
 // mutacje D7 (zachowaniowy test: diplo-war-peace-d7-test.cjs)
 check('mutacja D7 (usunięty guard) jest wykrywalna',
   count(MAIN.replace('if (!outcome.mayDeclare) continue;', ''), 'if (!outcome.mayDeclare) continue;') === 0);
@@ -42,9 +42,18 @@ check('R7: wywołania bez wartości Zaufania (AI↔AI, gracz↔AI)',
 check('R7: próg i N z wyższej strony pary (diploBrakeWarParams)',
   MAIN.includes('const higher = pa.progWojnyRelacji >= pb.progWojnyRelacji ? pa : pb;') || MAIN.includes('return { prog: brakeRelationThreshold(higher.progWojnyRelacji), n: higher.hamulecN };'));
 check('R7: kolejka używa N per para (nPair)', MAIN.includes('if (counter >= nPair) ready.push'));
-// mutacja R7/ZT: powrót do łącznej Relacji w liczniku kryzysu
-check('mutacja R7/ZT (feed Relacji) jest wykrywalna',
-  MAIN.replace('const zaufanie = getDiploRelation(a, b).zaufanie;', 'const zaufanie = relationScore(getDiploRelation(a, b));').includes('const zaufanie = relationScore(getDiploRelation(a, b));'));
+// mutacja R7/ZT: powrót do łącznej Relacji w liczniku kryzysu. Mutant MUSI przestać spełniać warunek
+// (wcześniejsza wersja porównywała tekst z własnym podstawieniem = zawsze true, obrona r1 zarzut 6).
+const r7ZtOk = (src) => src.includes('const zaufanie = getDiploRelation(a, b).zaufanie;') && !src.includes('const zaufanie = relationScore(');
+const MUT_R7 = MAIN.replace('const zaufanie = getDiploRelation(a, b).zaufanie;', 'const zaufanie = relationScore(getDiploRelation(a, b));');
+check('R7/ZT: warunek źródłowy spełniony dla kodu bazowego', r7ZtOk(MAIN));
+check('mutacja R7/ZT (feed Relacji) jest wykrywalna (mutant nie spełnia warunku)',
+  MUT_R7 !== MAIN && !r7ZtOk(MUT_R7));
+// mutacja ostrzeżenia zerowego Zaufania: usunięcie flagi per epizod albo blokady rozejmu z warunku wyświetlenia
+const warnOk = (src) => src.includes('!diploZeroTrustWarned.has(key)') && src.includes('!isPeaceLockedBetween(sa, sb)');
+check('ZT ostrzeżenie: flaga per epizod i blokada rozejmu w warunku (kod bazowy)', warnOk(MAIN));
+check('mutacja ostrzeżenia ZT (bez flagi per epizod) jest wykrywalna',
+  MAIN.replace(' && !diploZeroTrustWarned.has(key)', '') !== MAIN && !warnOk(MAIN.replace(' && !diploZeroTrustWarned.has(key)', '')));
 
 // ---- R2: licznik utraconych miast per wojna, oba lejki przejęcia ----
 check('R2: recordWarCityLossForPair w obu lejkach przejęcia miasta',

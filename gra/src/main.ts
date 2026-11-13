@@ -10007,6 +10007,8 @@ async function boot(): Promise<void> {
     const diplomacyPairMeta = new Map<string, DiploPairMeta>();
     /** R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2 (P6): licznik kryzysu Zaufania per para (klucz diploPairKey). Save/load. */
     const diplomacyCrisisCounters = new Map<string, number>();
+    /** R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 (obrona r1): pary, którym pokazano ostrzeżenie w BIEŻĄCYM epizodzie zera. Czyszczone, gdy wpis licznika znika. */
+    const diploZeroTrustWarned = new Set<string>();
     /** R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2 (P7): kolejne tury dostaw wymiany, klucz `${sprzedawca}>${kupujacy}`. Save/load. */
     const diplomacyTradeStreak = new Map<string, number>();
     /** R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r3 (P4): pary gracz↔AI, dla ktorych +1 dobrej woli jest aktywne W TEJ TURZE (ustawiane przy odliczeniu na poczatku tury; nie zapisywane). */
@@ -11869,6 +11871,10 @@ async function boot(): Promise<void> {
      */
     function processDiploCrisisQueue(): void {
       const ready: Array<{ ownerA: number; ownerB: number; counter: number }> = [];
+      // Koniec epizodu zera = wpis licznika usunięty (Zaufanie > 0 albo wojna): kasuj flagę ostrzeżenia.
+      for (const k of Array.from(diploZeroTrustWarned)) {
+        if (!diplomacyCrisisCounters.has(k)) diploZeroTrustWarned.delete(k);
+      }
       if (diplomacyCrisisCounters.size > 0) refreshObjectivePowerCache();
       for (const [key, counter] of Array.from(diplomacyCrisisCounters.entries())) {
         const parts = key.split('_').map(Number);
@@ -11884,9 +11890,12 @@ async function boot(): Promise<void> {
         // wybucha — ostrzeżenie o automatycznej wojnie z jego strony też nie jest pokazywane.
         // R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 (krok 3): siła militarna (nie Power).
         const warOutcome = diploMilitaryBrakeOutcome(sa, sb);
-        // Ostrzeżenie dla gracza: JEDNO powiadomienie na epizod zerowego Zaufania (counter === 1 =
-        // pierwsza tura zera; licznik wraca do 0, gdy Zaufanie wzrośnie powyżej 0).
-        if ((isMe(sa) || isMe(sb)) && counter === 1 && counter < nPair && warOutcome.mayDeclare) {
+        // Ostrzeżenie dla gracza: JEDNO powiadomienie na epizod zerowego Zaufania, w pierwszej turze
+        // epizodu, w której AI jest silniejsza (mayDeclare) i para nie jest zablokowana rozejmem/pokojem.
+        // Gdy AI stanie się silniejsza dopiero później w epizodzie, ostrzeżenie pada wtedy (flaga per epizod).
+        if ((isMe(sa) || isMe(sb)) && counter < nPair && warOutcome.mayDeclare
+          && !isPeaceLockedBetween(sa, sb) && !diploZeroTrustWarned.has(key)) {
+          diploZeroTrustWarned.add(key);
           const other = isMe(sa) ? sb : sa;
           showHintMessage(
             'Zaufanie spadło do zera — grozi wojna z ' + ownerDiploLabel(other) + ' za ' + (nPair - counter) + ' tur',
