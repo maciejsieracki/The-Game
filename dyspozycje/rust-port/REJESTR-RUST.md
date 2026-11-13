@@ -842,3 +842,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Aktywne Workflow (3 z 4):** ZWYCIESTWO-WIRING-Q1 r3 (Operator, HAIKU, od 20:45, `wf_00652ce1-d2a`); ZLOZA-B-REST-Q1 r3 (Obrona, HAIKU, od 19:10, `wf_d3ddfaff-163`); ZDOBYCIE-MIASTA-ROZPOZNANIE-Q1 (Operator, HAIKU, od 20:48, `wf_c9403e5f-f13`, rozpoznanie doc-only, baza `0ca58770e`, dispatch `e5cb8ce8d`).
 - **Czwarty slot pusty:** brak kolejnego gotowego dispatchu.
 - **Dysk:** 9,7 GB. **Parity:** `0ca58770e`.
+
+## ZDOBYCIE-MIASTA-ROZPOZNANIE (#175): FC PASS-WITH-NOTES (`8d44d8d23`), zintegrowane dokumentem
+- **Ustalenia kluczowe:** bramka zdobycia w `applyMapBattleOutcome` (pin `main.ts:34668-34677`) dotyczy każdego atakującego; tylko sprawdzenie obrońców dotyczy barbarzyńcy. Węzeł **applyCityCaptureAfterBattle** (`game/post-battle-map.ts`, wołanie `main.ts:36061`) — rdzeń zmiany właściciela — **brak w Rust**. Brak producenta `transferCityByTreaty` (`main.ts:36449`), `captureCityWithoutBattle` (`36368`). Moduły niepodłączone: `apply_transfer_with_effects` (`siege_transfer.rs:340`), `run_capital_capture_plunder` (`siege_capital_plunder.rs:504`), `check_defeat` (`victory.rs:261`).
+- **Druga ścieżka przegranej:** produkcyjne wejście barbarzyńcy `main.ts:43398` (callback `43406`), nie w Rust.
+- **Zakres do decyzji orkiestratora:** ZDOBYCIE-MIASTA-WIRING (#115) jako duży temat z podziałem na tematy (węzeł P9, bramki, cesja, druga ścieżka). Zależności od #106 (dyplomacja) i #120 (wypowiedzenie).
+- **NIE_ZMIERZONO:** pełna semantyka `applyMapBattleOutcome` w Rust, wołający spoza `rust-port/`, mapowanie `playerEverOwnedCityByOwner`.
+- Dokument zintegrowany na `claude/rust-sivvrn` (cherry-pick, bez zmian kodu).
