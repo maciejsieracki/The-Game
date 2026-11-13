@@ -1623,7 +1623,7 @@ import {
   registerAiPeaceRequest, isAiAiPeaceBalanceAllowed, aiAiPeaceRequiredPn, isForcedPeaceEligiblePair, runAiAiPeaceTick, requesterShare, isClearlyLosing,
   type AiPeaceRequest, type AiPeaceKind, type PeaceAsset,
 } from './game/diplomacy-ai-forced-peace';
-import { runWarWearinessTick, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
+import { runWarWearinessTick, militaryWearinessWiring, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
 import {
   isPeaceTreatyLocked,
   startPeaceTreatyLock,
@@ -36663,7 +36663,8 @@ async function boot(): Promise<void> {
             turnsSinceCityChange: wa.turnsSinceCityChange,
           };
         },
-        shareOf: (x, y) => requesterShare(objectivePowerForOwner(x), objectivePowerForOwner(y)),
+        // R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1: shareOf i weakerOf wg SIŁY MILITARNEJ (nie Power) — war-weariness.ts.
+        ...militaryWearinessWiring(diploMilitarySideOf),
         cityCountOf: o => cities.filter(c => c.ownerId === o).length,
         price: (winner, loser) => {
           const basePn = treatyBasePnFromConfig('pokoj');
