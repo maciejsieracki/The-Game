@@ -1,3 +1,17 @@
+# R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 — DODATEK orkiestratora, RUNDA 3/5 (2026-11-13) — CZYTAJ NAJPIERW
+
+FC rundy 2: FAIL, jeden zarzut (NAPRAW): brak dowodu behawioralnego dla okablowania pozycji militarnej w main.ts (diploProposalWarState ok. l.11743 i gateVerdict AI↔AI ok. l.36575). FC odwrócił strony w peaceMilitaryPosition w main.ts i wszystkie testy dyplomacji zostały zielone. KANDYDAT STARTOWY: 7465018358 (kod; raport FC 408c37b6d). Najpierw `git merge --no-ff origin/main` (f0853a6cc po FALACH 682–683: zmiany diplomacy.json i diplomacy.ts) i tsc. Ten sam ID i gałąź robocza. Zakres rundy 3 jest WĄSKI — nie ruszaj reszty.
+
+## Zadanie (jedyne)
+1. Wyciągnij wiązanie pozycji militarnej z main.ts do czystej, eksportowanej funkcji w gra/src/game/diplomacy-military-strength.ts (np. buildPeaceMilitaryStance(wejście: id stron, siły, punkty bitew, bonus trybutu, parametry) → { pozycja: 'silniejsza'|'slabsza'|'pasmo', silniejszyId, ... }), użyj jej w OBU miejscach main.ts (diploProposalWarState i gateVerdict AI↔AI) oraz w ai.ts (jeśli ma własne wiązanie) tak, żeby tie-break był jednym kodem. main.ts ma tylko zbierać dane i wywołać funkcję.
+2. Mutacje: M12 (odwrócenie stron w nowej funkcji) i M13 (użycie złej strony/tie-breaku w wywołaniu z main.ts — jeśli wywołanie w main.ts da się mutować tylko regexem, dodaj kontrolę strukturalną, która sprawdza, że main.ts NIE liczy już pozycji samodzielnie i że oba miejsca wywołują funkcję z tymi samymi argumentami kolejnością (id własne, id partnera)); mutacje dopisz do gra/tools/diplo-peace-gate-mutation-run.cjs; każda musi zaczerwienić test zachowania lub kontrolę strukturalną. Dodaj test zgodności tie-breaku ai.ts vs main.ts (ten sam wejściowy remis → ta sama strona silniejsza).
+3. Usuń martwe mapowanie oferuj_trybut_za_pokoj w diplomacy-proposals.ts i main.ts, jeśli żaden test na nim nie polega (gałąź w ai.ts usunięta w r2); jeśli test polega — zostaw i opisz.
+4. Wszystko inne bez zmian (krok 4b — wymuszony pokój po limicie tur — NIE w zakresie).
+
+## Kryteria końca (binarne)
+tsc 0; pięć bramek zielone; diplo-peace-weaker-seeks-city-only-test, diplo-peace-balance-accept-test 32/0, diplo-war-peace-main-guard-test 35/0, ai-test 297/0, diplomacy-test, diplo-war-declare-zero-trust-test, diplo-trust-numbers-test, diplo-json-descriptions-sync-test zielone; sim 19/3 (ten sam dług S3, S4b, M_TUR); mutacje M1–M13 wszystkie zabite (surowe wyjście).
+
+---
 # R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 — DODATEK orkiestratora, RUNDA 2/5 (2026-11-13) — CZYTAJ NAJPIERW
 
 Final Control rundy 1: FAIL (raport 92c852b5d). KANDYDAT STARTOWY: f2367587e (kod 063ce970b). Najpierw `git merge --no-ff origin/main` (ed95085a2 po FALI 681; konflikty rozwiąż zachowując obie zmiany, tylko w plikach z allowlisty) i sprawdź tsc. Ten sam ID i ta sama gałąź robocza.
