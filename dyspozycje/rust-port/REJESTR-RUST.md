@@ -668,3 +668,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Ostatni pin brany pod uwagę:** `origin/main` w chwili zamknięcia P6 (SHA zapisany wtedy, nie teraz). Od tego momentu właściciel zamraża zmiany gameplay w webie na czas przesunięcia; delta po tym SHA idzie do osobnego etapu.
 - **Do decyzji właściciela (przy zamknięciu P6):** potwierdzenie zamrożenia webu i wybór SHA ostatniego pinu.
 - **Raportowanie:** orkiestrator podaje stan punktu (SHA pinu, liczba commitów i zmian logiki gry od pinu) w każdym raporcie statusu i przy każdym zamknięciu etapu P6.
+
+## Przebieg (13.11, ~17:30): wyniki i awarie dyskowe
+- **COMBAT-WEJSCIA-ROZPOZNANIE-R2-Q1 (#167):** FC **PASS-WITH-NOTES** (werdykt w wyniku Workflow, sha 0bd310ca7; plik `03-final-control.md` nie został zapisany przez brak miejsca na dysku). Dokumenty do integracji: f9d5a2915 (operator), 0cd6c2c34 (ewaluator), 0bd310ca7 (obrona).
+  - **Rozbieżność z pinem:** `counter-multipliers.json`, para falangita→włócznik = 1,00, pin `07d2fbd72` (`combat.ts:553-580`) daje 1,30. Jedyna z 64 par. **Decyzja orkiestratora (parytet, bez pytania):** poprawić do 1,30 jako osobny temat R-RUSTPORT-P6-COUNTER-FALANGITA-Q1. To odstępstwo od webu, nie decyzja gameplay.
+  - Komentarz `combat.rs:185-187` twierdzi, że macierz odzwierciedla każdy kontratak — po poprawce będzie prawdziwy.
+- **INTEG-JS-MAX (#110):** pierwszy pełny test zakończył się błędem **ENOSPC** (brak miejsca podczas linkowania), nie błędem kodu. Fmt i clippy `-D warnings` przeszły. Pełny test uruchomiony ponownie (wynik do odczytu przed FF).
+- **EKONOMIA-BRAZ-ERA-Q1 (T-A):** pierwszy etap Operatora zakończony, drugi etap padł na tworzeniu worktree (ENOSPC). Wznowienie z cache po zwolnieniu miejsca: `resumeFromRunId: wf_5b797905-328`.
+- **Sprzątanie:** usunięto worktree zakończonych tematów (ZWYCIESTWO-FC, DYPLOMACJA-FC, SAVE-LOAD, JS-MAX-stary FC, EKONOMIA-nieudana). Dysk: z 132 KB do ok. 8 GB.
+- **Zasada:** nowe starty tylko przy ≥ 8 GB wolnego, wznowienia przy ≥ 4 GB.
