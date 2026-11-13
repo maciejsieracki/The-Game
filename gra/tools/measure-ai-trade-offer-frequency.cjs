@@ -181,7 +181,11 @@ async function main() {
     } else if (!(await page.evaluate(() => window.__aiTradeWiringTestDebug.foundFirstCity()))) throw new Error('nie udalo sie zalozyc miasta gracza');
     if (FAST) await page.evaluate(() => window.__aiTradeWiringTestDebug.setFastMode(true));
     if (ARM === 'prepared' && !resumed) await page.evaluate(ai => window.__aiTradeWiringTestDebug.prepare(ai), info.ai);
-    if (REL != null && !resumed) rep.relTotalAfter = await page.evaluate(([ai, t]) => window.__aiTradeWiringTestDebug.setRelationTotal(ai, t), [info.ai, REL]);
+    // r4/Z1: pin Relacji (hak setRelationPin, tylko ?civTest=1) wymuszany w tiku PRZED decyzjami AI; stan strony ginie przy wznowieniu, wiec pin ustawiany ZAWSZE.
+    if (REL != null) {
+      await page.evaluate(([ai, t]) => window.__aiTradeWiringTestDebug.setRelationPin(ai, t), [info.ai, REL]);
+      if (!resumed) rep.relTotalAfter = await page.evaluate(([ai, t]) => window.__aiTradeWiringTestDebug.setRelationTotal(ai, t), [info.ai, REL]);
+    }
 
     const s0 = await page.evaluate(() => window.__aiTradeWiringTestDebug.state());
     if (!resumed) rep.tableStart = s0.tableLen;
@@ -241,7 +245,7 @@ async function main() {
       }
       // rejectCooldowns z hooka: mierzy, czy odrzucenia wymuszone przez skrypt wplywaja na kooldowny ofert (zarzut 9).
       rep.rejectCooldownsMax = Math.max(rep.rejectCooldownsMax, st.rejectCooldowns.length);
-      rep.perTurn.push({ t: st.turn, cities: st.playerCities, pending: st.pending.length, deals: st.cyclicDeals.length, table: st.tableLen, rejCd: st.rejectCooldowns.length, scriptRejectedSoFar: rep.scriptRejected, relBeforeEnd, relTotalAi: st.relTotalAi });
+      rep.perTurn.push({ t: st.turn, cities: st.playerCities, pending: st.pending.length, deals: st.cyclicDeals.length, table: st.tableLen, rejCd: st.rejectCooldowns.length, scriptRejectedSoFar: rep.scriptRejected, relBeforeEnd, relTotalAi: st.relTotalAi, relAtDecision: st.relAtDecision });
     }
     const sEnd = await page.evaluate(() => window.__aiTradeWiringTestDebug.state());
     rep.tableEnd = sEnd.tableLen;
@@ -251,6 +255,9 @@ async function main() {
     rep.relTotalFirst = rep.perTurn.length ? rep.perTurn[0].relTotalAi : null;
     rep.relTotalLast = rep.perTurn.length ? rep.perTurn[rep.perTurn.length - 1].relTotalAi : null;
     rep.relDrift = (rep.relTotalSet != null && rep.perTurn.length) ? rep.perTurn.some(x => x.relTotalAi !== rep.relTotalSet) : null;
+    // r4/Z1: dowod — relacja widziana przez decyzje AI (relAtDecision) w kazdej turze = pin.
+    rep.relAtDecisionAllPinned = REL != null && rep.perTurn.length ? rep.perTurn.every(x => x.relAtDecision === REL) : null;
+    rep.relAtDecisionDistinct = [...new Set(rep.perTurn.map(x => x.relAtDecision))];
     rep.relPinnedBeforeEnd = REL != null ? rep.perTurn.every(x => x.relBeforeEnd === REL) : null;
     if (!rep.stoppedBy) { rep.stoppedBy = rep.turnsRun >= TURNS ? 'koniec przebiegu' : 'przerwany'; if (rep.stoppedBy === 'koniec przebiegu') { delete rep.seen; delete rep.savedSlot; } }
   } catch (e) {

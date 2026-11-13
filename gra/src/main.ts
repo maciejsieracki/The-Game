@@ -29856,6 +29856,12 @@ async function boot(): Promise<void> {
           setDiploRelation(ai, ME(), { ...rel, zaufanie, respekt: t - zaufanie });
           return relationTotal(getDiploRelation(ai, ME()));
         },
+        /** R4/Z1: przypina Relacje (total) pary ai<->gracz — wymuszana w kazdym ticku PRZED decyzjami AI; null = zdejmij pin. */
+        setRelationPin: (ai: number, total: number | null): number | null => {
+          civTestRuntime.relPin = total == null ? null : { ai, total: Math.max(0, Math.min(200, Math.round(total))) };
+          civTestRuntime.relAtDecision = null;
+          return civTestRuntime.relPin ? civTestRuntime.relPin.total : null;
+        },
         /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r3): tryb przyspieszony (bez renderer.render); tylko za ?civTest=1. */
         setFastMode: (on: boolean): boolean => { civTestRuntime.skipRender = !!on; return civTestRuntime.skipRender; },
         isFastMode: (): boolean => civTestRuntime.skipRender,
@@ -29928,6 +29934,7 @@ async function boot(): Promise<void> {
           })),
           tableLen: negotiationTable.length,
           /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r3): liczba miast gracza (pomiar nie ma sensu po ich utracie). */
+          relAtDecision: civTestRuntime.relAtDecision,
           playerCities: cities.filter(c => c.ownerId === ME()).length,
           /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: Relacja total pary AI(start)↔gracz — do pomiaru dryfu co turę. */
           relTotalAi: aiStartHexes[0]?.ownerId != null ? relationTotal(getDiploRelation(aiStartHexes[0].ownerId, ME())) : null,
@@ -41952,7 +41959,15 @@ async function boot(): Promise<void> {
                   ),
                   wiarygodnoscSelf: relStatus === 'wojna' ? undefined : getWiarygodnosc(ME()),
                 };
-                const relTicked = tickDiplomacy(relWithRespekt as any, tickCtx);
+                let relTicked = tickDiplomacy(relWithRespekt as any, tickCtx);
+                // R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r4/Z1): pin Relacji tylko z haka ?civTest=1 (relPin domyslnie null) —
+                // wymusza wartosc PO tiku, a PRZED decyzjami AI (relacjeDip, pickAiPlayerCyclicBarter); relAtDecision = to, co widzi AI.
+                if (civTestRuntime.relPin && civTestRuntime.relPin.ai === ownerId) {
+                  const pt = civTestRuntime.relPin.total;
+                  const pz = Math.floor(pt / 2);
+                  relTicked = { ...(relTicked as any), zaufanie: pz, respekt: pt - pz };
+                  civTestRuntime.relAtDecision = relationTotal(relTicked as any);
+                }
                 setDiploRelation(ME(), ownerId, relTicked as unknown as Relation);
 
                 const respektWzglednyPlr = (potAI + potPlr) > 0 ? potAI / (potAI + potPlr) : 0.5;
