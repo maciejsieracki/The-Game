@@ -328,8 +328,9 @@ function makeWorld() {
   // (E) AI wybiera tryb w decideAIDiplomacy — wejście: ułamek t/T, willingnessPeace ze stance, Zaufanie, słabość rw
   const eStart = aiSrc.indexOf('const peaceKindAi = aiTruceOrPeaceMode({');
   const eBody = eStart >= 0 ? aiSrc.slice(eStart, eStart + 500) : '';
-  check('E: ai.ts — fatigueFraction = warWearinessFraction(turnsAtWarRel, zmeczenieT)',
-    /fatigueFraction: warWearinessFraction\(turnsAtWarRel, warProfile\.zmeczenieT\)/.test(eBody));
+  // R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: ułamek zmęczenia = jeden licznik (wearyLevel = warWearinessLevel), bez drugiego zegara.
+  check('E: ai.ts — fatigueFraction = wearyLevel (jeden licznik zmęczenia)',
+    /fatigueFraction: wearyLevel\b/.test(eBody));
   check('E: ai.ts — willingnessPeace z stance (aiDiplomacyStance)',
     /willingnessPeace: stance\.willingnessPeace/.test(eBody));
   check('E: ai.ts — weaker tylko z progu słabości rw (sygnały peaceSignals nie czynią słabszym)',

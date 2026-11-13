@@ -23,11 +23,10 @@
 
 ### Poziom zmęczenia
 
-Poziom wynosi od 0 do 1 i sumuje trzy składniki:
+Poziom wynosi od 0 do 1 i sumuje dwa składniki (jeden licznik, bez zastoju):
 
-- **czas wojny**: 1 punkt na 200 tur wojny;
-- **utracone miasta**: 0,03 na każde miasto utracone przez obie strony;
-- **stagnacja**: od 30 tur bez zmian miast rośnie do 0,3 (przy 100 turach stagnacji).
+- **czas wojny**: 1 punkt na 20 tur wojny (5% na turę od startu wojny);
+- **utracone miasta**: 0,10 na każde miasto, które zmieniło właściciela (obie strony).
 
 Najwyższy osiągnięty poziom nie maleje (zapamiętany szczyt).
 
@@ -74,7 +73,7 @@ Gdy zmęczenie przekroczy 0,5, cena pokoju żądana przez AI od gracza spada: ra
 
 ## Przykład liczbowy
 
-Wojna trwa 100 tur (100/200 = 0,5), utracono 2 miasta (0,06) i nie zmienia się nic przez 40 tur (stagnacja 0,3 × 10/100 = 0,03). Poziom = 0,59, czyli powyżej progu chęci pokoju 0,5.
+Wojna trwa 10 tur (10/20 = 0,5), utracono 2 miasta (2 × 0,10 = 0,2). Poziom = 0,7, czyli powyżej progu chęci pokoju 0,5. Po 16 turze bez zmian (16/20 = 0,8) silniejsza strona sama proponuje pokój bezwarunkowy.
 
 ---
 
@@ -88,11 +87,8 @@ Wojna trwa 100 tur (100/200 = 0,5), utracono 2 miasta (0,06) i nie zmienia się 
 
 | Wartość | Skąd (plik:klucz) |
 |--------:|-------------------|
-| 200 | `war-weariness-params.json:zmeczenie.pelneTur` |
-| 0.03 | `war-weariness-params.json:zmeczenie.wagaStratMiasta` |
-| 30 | `war-weariness-params.json:zmeczenie.stagnacjaOdTur` |
-| 0.3 | `war-weariness-params.json:zmeczenie.stagnacjaWaga` |
-| 100 | `war-weariness-params.json:zmeczenie.stagnacjaSkalaTur` |
+| 20 | `war-weariness-params.json:zmeczenie.pelneTur` |
+| 0.1 | `war-weariness-params.json:zmeczenie.wagaStratMiasta` |
 | 0.5 | `war-weariness-params.json:zmeczenie.progChetnosci` |
 | 0.8 | `war-weariness-params.json:zmeczenie.progWzajemnyPokoj` |
 | 0.45 | `war-weariness-params.json:przegrywajacy.udzialWyraznie` |

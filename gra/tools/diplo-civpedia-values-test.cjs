@@ -208,7 +208,7 @@ ok(expectedValue('kod:etykieta-wrogi').value === 10 && expectedValue('kod:etykie
 const pw = jsonByName('power-params.json').skladniki;
 ok(pw.jednostka_wojskowa.pkt === 2.5 && pw.rekrut_ekw_jednostki.pkt === 10 && pw.miasto.pkt === 50 && pw.tech_zbadane.pkt === 80, 'składniki Power ≠ oczekiwane');
 const wz = jsonByName('war-weariness-params.json');
-ok(wz.zmeczenie.pelneTur === 200 && wz.zmeczenie.wagaStratMiasta === 0.03 && wz.zmeczenie.progChetnosci === 0.5 && wz.zmeczenie.progWzajemnyPokoj === 0.8, 'parametry zmęczenia ≠ oczekiwane');
+ok(wz.zmeczenie.pelneTur === 20 && wz.zmeczenie.wagaStratMiasta === 0.1 && wz.zmeczenie.progChetnosci === 0.5 && wz.zmeczenie.progWzajemnyPokoj === 0.8, 'parametry zmęczenia ≠ oczekiwane');
 
 // ---- Sekcja 3b: martwe parametry (klucz z tabeli Parametry musi być czytany przez kod) ----
 function walkTs(dir, acc) {

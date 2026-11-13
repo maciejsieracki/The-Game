@@ -18,8 +18,7 @@ import { peaceStanceOf, type PeaceStanceSide } from './diplomacy-military-streng
 
 export interface WarWearinessParams {
   zmeczenie: {
-    pelneTur: number; wagaStratMiasta: number; stagnacjaOdTur: number; stagnacjaWaga: number;
-    stagnacjaSkalaTur: number; progChetnosci: number; progWzajemnyPokoj: number;
+    pelneTur: number; wagaStratMiasta: number; progChetnosci: number; progWzajemnyPokoj: number;
     /** R-WEB-DIPLO-WEARINESS-UNCONDITIONAL-END-Q1: próg końca zmęczenia — od tego poziomu obie strony (także silniejsza) proponują pokój BEZWARUNKOWY. */
     progKoncaZmeczenia: number;
   };
@@ -55,17 +54,21 @@ export interface WarWearinessInput {
   turnsAtWar: number;
   /** Suma miast utraconych przez OBIE strony w tej wojnie. */
   lostCitiesTotal: number;
-  /** Tury od ostatniej zmiany posiadania miast (undefined = od początku wojny). */
+  /**
+   * Tury od ostatniej zmiany posiadania miast. R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: bez wpływu na poziom
+   * (składnik zastoju usunięty — jeden licznik). Pole zostaje tylko dla zgodności wywołań.
+   */
   turnsSinceCityChange?: number;
 }
 
-/** Poziom zmęczenia 0..1 (bez pamięci szczytu — szczyt trzyma stan pary). */
+/**
+ * Poziom zmęczenia 0..1 (bez pamięci szczytu — szczyt trzyma stan pary). Jeden licznik:
+ * turyWojny/pelneTur + wagaStratMiasta * miastaZmienioneWlasciciela, min(1, …).
+ */
 export function warWearinessLevel(inp: WarWearinessInput, P: WarWearinessParams = WAR_WEARINESS_PARAMS): number {
   const Z = P.zmeczenie;
   const turns = Math.max(0, inp.turnsAtWar);
-  const since = inp.turnsSinceCityChange ?? turns;
-  const stagn = Z.stagnacjaWaga * clamp((since - Z.stagnacjaOdTur) / Z.stagnacjaSkalaTur, 0, 1);
-  return clamp(turns / Z.pelneTur + Z.wagaStratMiasta * Math.max(0, inp.lostCitiesTotal) + stagn, 0, 1);
+  return clamp(turns / Z.pelneTur + Z.wagaStratMiasta * Math.max(0, inp.lostCitiesTotal), 0, 1);
 }
 
 /** Czynnik (0..1] ceny pokoju zadanej przez AI od gracza: maleje z zmęczeniem powyżej progu chęci. */

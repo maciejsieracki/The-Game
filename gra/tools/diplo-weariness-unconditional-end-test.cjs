@@ -90,13 +90,13 @@ function behaviour(W) {
 
   // (a) cena 0 -> pokoj bez miasta (zmeczenie 0,66 < 0,8; jedno miasto; chroniony z 2 miastami)
   {
-    const { deps, log } = mk({ turn: 400, turnsAtWar: 90, share1: 0.15, weaker: 1, lostA: 1, requiredPn: 0, assets: [] });
+    const { deps, log } = mk({ turn: 400, turnsAtWar: 10, share1: 0.15, weaker: 1, lostA: 1, requiredPn: 0, assets: [] });
     const r = W.runWarWearinessTick(deps)[0];
     chk('a1: cena 0, zmeczenie < 0,8 -> pokoj bez miasta (offer_accepted, brak miasta w planie)',
       r.action === 'offer_accepted' && r.plan.histogram.miasto === 0 && log.some((x) => x.ev === 'peace'));
   }
   {
-    const { deps, log } = mk({ turn: 400, turnsAtWar: 90, share1: 0.15, weaker: 1, lostA: 1, requiredPn: 0, assets: [], cityCount: (o) => (o === 1 ? 1 : 6) });
+    const { deps, log } = mk({ turn: 400, turnsAtWar: 10, share1: 0.15, weaker: 1, lostA: 1, requiredPn: 0, assets: [], cityCount: (o) => (o === 1 ? 1 : 6) });
     const r = W.runWarWearinessTick(deps)[0];
     chk('a2: cena 0 i jedno miasto -> pokoj bez miasta (nie blokuje guard jednego miasta)',
       r.action === 'offer_accepted' && log.some((x) => x.ev === 'peace' && x.l === 1));
@@ -105,13 +105,13 @@ function behaviour(W) {
     const { deps, log } = mk({ turn: 400, turnsAtWar: 90, share1: 0.15, weaker: 1, lostA: 3, requiredPn: 0, assets: [], cityCount: (o) => (o === 1 ? 2 : 6) });
     const r = W.runWarWearinessTick(deps)[0];
     const pe = log.find((x) => x.ev === 'peace');
-    chk('a3: cena 0, chroniony przegrywajacy z 2 miastami -> pokoj bez miasta, karencja chronionego 100',
-      r.action === 'offer_accepted' && !!pe && pe.lock === P.przegrywajacy.karencjaChronionegoTur && r.plan.histogram.miasto === 0);
+    chk('a3: 3 utraty w 10. turze = poziom 0,8 -> koniec zmeczenia: pokoj bez miasta i zaplaty, karencja chronionego 100',
+      r.action === 'mutual_peace' && !!pe && pe.lock === P.przegrywajacy.karencjaChronionegoTur && !log.some((x) => x.ev === 'pay'));
   }
 
   // (b) zmeczenie < 0,8: jedno miasto i cena > 0 -> brak oferty i brak pokoju
   {
-    const { deps, log } = mk({ turn: 400, turnsAtWar: 90, share1: 0.15, weaker: 1, lostA: 1, requiredPn: 500, assets: CITY_ASSETS, cityCount: (o) => (o === 1 ? 1 : 6) });
+    const { deps, log } = mk({ turn: 400, turnsAtWar: 10, share1: 0.15, weaker: 1, lostA: 1, requiredPn: 500, assets: CITY_ASSETS, cityCount: (o) => (o === 1 ? 1 : 6) });
     const r = W.runWarWearinessTick(deps)[0];
     chk('b1: zmeczenie < 0,8, jedno miasto, cena > 0 -> action none, brak pokoju',
       r.action === 'none' && !log.some((x) => x.ev === 'peace' || x.ev === 'pay'));
@@ -140,7 +140,7 @@ function behaviour(W) {
   }
   {
     // zmeczenie tuz ponizej progu: nadal reguly miasta (brak pokoju bez miasta przy cenie > 0)
-    const { deps, log } = mk({ turn: 400, turnsAtWar: 90, share1: 0.5, weaker: 2, lostA: 0, requiredPn: 500, assets: [] });
+    const { deps, log } = mk({ turn: 400, turnsAtWar: 10, share1: 0.5, weaker: 2, lostA: 0, requiredPn: 500, assets: [] });
     const r = W.runWarWearinessTick(deps)[0];
     const lvl = r.level;
     chk(`c4: zmeczenie ${lvl.toFixed(2)} < 0,8 -> brak pokoju bez miasta (reguly przed koncem)`,
@@ -149,7 +149,7 @@ function behaviour(W) {
 
   {
     // przed progiem: remis sil, slabsza (2) placi miastem; mutant z udzialem zamiast slabszej strony wskaze stronę 1
-    const { deps, log } = mk({ turn: 400, turnsAtWar: 90, share1: 0.5, weaker: 2, lostA: 0, requiredPn: 500, assets: CITY_ASSETS });
+    const { deps, log } = mk({ turn: 400, turnsAtWar: 10, share1: 0.5, weaker: 2, lostA: 0, requiredPn: 500, assets: CITY_ASSETS });
     W.runWarWearinessTick(deps);
     chk('c5: przed progiem, remis sil: przegrywa slabsza strona (2) i placi miastem', log.some((x) => x.ev === 'pay' && x.l === 2));
   }

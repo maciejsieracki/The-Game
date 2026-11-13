@@ -32,7 +32,7 @@ import {
 } from './civ-ai-data';
 import { isBarbarian } from './barbarians';
 import { applyWiarygodnoscTempoDoDelty, zaufanieDryfOdWiarygodnosci } from './diplomacy-credibility';
-import { resolveWarPeaceProfile, warWearinessShare } from './diplomacy-war-peace-profile';
+import { warWearinessLevel, WAR_WEARINESS_PARAMS } from './war-weariness';
 
 // ---------------------------------------------------------------------------
 // Re-exported Relation interface (spec-aligned alias over RelacjaDyplomatyczna)
@@ -1164,6 +1164,11 @@ export interface AIDiplomacyContext {
    * 0 when at peace.
    */
   turnsAtWar: number;
+  /**
+   * R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: miasta zmienione właścicielem w tej wojnie (obie strony).
+   * Brak / 0 = tylko licznik czasu wojny.
+   */
+  lostCitiesTotal?: number;
   /** Poziom używany do odczytu wartości skali z macierzy cywilizacji. */
   civMatrixDifficulty?: CivMatrixDifficulty;
   /**
@@ -1358,12 +1363,13 @@ export function aiDiplomacyStance(
   // High when: weaker militarily, war drags on, or moderate goodwill.
   let peaceW: number;
   if (rel.status === 'wojna') {
-    // R-WEB-PEACE-RULES-Q1 R4: zmęczenie = min(0.5, turnsAtWar / T(civ)), T ≤ 20 (D4).
-    // Wcześniej clamp(turnsAtWar/20) z turnsAtWar podawanym jako stała (ai.ts 5/main 1) = martwe.
-    const warWeariness     = warWearinessShare(
-      context.turnsAtWar,
-      resolveWarPeaceProfile(aiPlayer.typCywilizacji).zmeczenieT,
-    );
+    // R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: jedno źródło zmęczenia = warWearinessLevel (20 tur do 100%,
+    // +10% za zmienione miasto). Udział w chęci pokoju = 0.5 × poziom (waga jak dawniej maksUdzial).
+    // Drugi zegar (min(0.5, turnsAtWar / T(civ))) usunięty.
+    const warWeariness     = 0.5 * warWearinessLevel({
+      turnsAtWar: context.turnsAtWar,
+      lostCitiesTotal: Math.max(0, context.lostCitiesTotal ?? 0),
+    }, WAR_WEARINESS_PARAMS);
     const militaryPressure = context.militaryRatio < 1
       ? (1 - context.militaryRatio) * 0.40
       : 0;

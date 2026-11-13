@@ -7,7 +7,7 @@
 import matrixRaw from '../../data/civ-matrix.json';
 import paramsRaw from '../../data/diplomacy-war-peace-params.json';
 import aiParamsRaw from '../../data/ai-params.json';
-import { isWarWeary } from './war-weariness';
+import { isWarWeary, warWearinessLevel } from './war-weariness';
 import type { PeaceMilitaryPosition } from './diplomacy-military-strength';
 
 /**
@@ -303,8 +303,12 @@ export function aiPeaceSignals(input: PeaceSignalInput, profile: WarPeaceProfile
   if (input.turnsAtWar >= S.patTurWojny && sinceChange >= S.patBrakZmianyTur) {
     reasons.push('d');
   }
-  // (e): ułamek pełnego zmęczenia (0..1) ≥ progSygnaluPokoju (0.4 = ok. 0.4·T tur wojny).
-  if (warWearinessFraction(input.turnsAtWar, profile.zmeczenieT) >= params.zmeczenie.progSygnaluPokoju) {
+  // (e): poziom zmęczenia (jeden licznik, R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: 5%/turę + 10%/miasto) ≥ progSygnaluPokoju (0.4 = tura 8 bez strat).
+  if (warWearinessLevel({
+    turnsAtWar: input.turnsAtWar,
+    lostCitiesTotal: Math.max(0, input.lostCitiesInWar),
+    turnsSinceCityChange: input.turnsSinceCityChange,
+  }) >= params.zmeczenie.progSygnaluPokoju) {
     reasons.push('e');
   }
   if (input.armyHealthShare !== undefined && input.armyHealthShare < profile.progZdrowia) {

@@ -1,12 +1,9 @@
 {
   "_opis": "R-WEB-AI-WAR-WEARINESS-PEACE-Q1 (NOWY plik parametrow) - postepujace zmeczenie wojna per para + eskalacja oferty pokoju przegrywajacego. Logika: gra/src/game/war-weariness.ts. Zaden prog nie jest zahardkodowany w kodzie.",
   "zmeczenie": {
-    "_wzor": "poziom = min(1, turyWojny/pelneTur + wagaStratMiasta*(utratyMiastObuStron) + stagnacja); stagnacja = stagnacjaWaga*clamp((turyBezZmianyMiast - stagnacjaOdTur)/stagnacjaSkalaTur, 0, 1). Zapamietywany szczyt (monotonicznosc).",
-    "pelneTur": 200,
-    "wagaStratMiasta": 0.03,
-    "stagnacjaOdTur": 30,
-    "stagnacjaWaga": 0.3,
-    "stagnacjaSkalaTur": 100,
+    "_wzor": "poziom = min(1, turyWojny/pelneTur + wagaStratMiasta*(utratyMiastObuStron)). R-WEB-DIPLO-WEARINESS-20-TURNS-Q1 (decyzja wlasciciela 2026-11-13, wariant A): jeden licznik; 5% na ture od startu wojny + 10% za kazde miasto, ktore zmienilo wlasciciela (ktorejkolwiek strony); bez skladnika zastoju i bez drugiego zegara. Progi: 50% (tura 10) silniejszy obniza cene pokoju, slabszy szuka; 80% (tura 16) silniejszy sam proponuje pokoj bezwarunkowy; 100% (tura 20) wojna wygasa. Zapamietywany szczyt (monotonicznosc).",
+    "pelneTur": 20,
+    "wagaStratMiasta": 0.1,
     "progChetnosci": 0.5,
     "progWzajemnyPokoj": 0.8,
     "progKoncaZmeczenia": 0.8
@@ -27,8 +24,8 @@
     "_wyczerpanie": "Wyjscie awaryjne (zarzut 2): gdy szczyt zmeczenia >= progWzajemnyPokoj i odrzucono >= odrzuceniaDoKapitulacji ofert, wygrywajacy (rowniez wyczerpany) przyjmuje to, co przegrywajacy realnie moze zaplacic (nawet czesciowo) - pokoj nie jest blokowany niedoborem majatku.",
     "odrzuceniaDoKapitulacji": 3,
     "_LIVE_AUDIT_Q1": "R-WEB-AI-WAR-WEARINESS-LIVE-AUDIT-Q1: (1) wyraznie przegrywajacy skladaja oferty BEZ czekania na zmeczenie pary >= progChetnosci (bylo: min. ~100 tur wojny), ale nie wczesniej niz ofertaOdTurWojny, a bez zadnej utraty miasta dopiero od ofertaBezStratOdTur; (2) ochrona przed snowballem: przegrywajacy z <= ochronaMaxMiast miastami (po >= 1 utracie) albo z >= ochronaUtratyWojny utratami w tej wojnie -> zwyciezca MUSI przyjac oferte (bez dalszych miast - minMiastPoOddaniu); (3) symetria: zmeczenie obniza wymagania zwyciezcy o tolerancjaZmeczenia*poziom*cena.",
-    "ofertaOdTurWojny": 8,
-    "ofertaBezStratOdTur": 25,
+    "ofertaOdTurWojny": 3,
+    "ofertaBezStratOdTur": 6,
     "ochronaMaxMiast": 3,
     "ochronaUtratyWojny": 3,
     "zwyciezcaMusiPrzyjac": 1,
