@@ -659,3 +659,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
   - UI ekranu zwycięstwa (`victoryScreen.ts`): **poza zakresem silnika P6.19** (warstwa frontendu).
   - `graczKiedysMialMiasto`: **flaga w zapisie**, nie heurystyka z miast — technicznie czystsze i spójne z P6.20–P6.22; zmiana wymaga zgodności wczytywania z pinem (heurystyka `main.ts:46368-46370` zostaje jako ścieżka zgodności dla starych zapisów).
 - **Zgłoszenie procesowe:** commity Operatora `ebb607fb3` i `d37f55774` (DYPLOMACJA) zawierają linię `Co-Authored-By` z nazwą modelu, wbrew CLAUDE.md. Do nowych commitów nie przenosiłem tych linii; historii już wypchniętej nie przepisuję.
+
+## POLITYKA PINU (13.11, śledzony punkt; prowadzi orkiestrator)
+- **Pin obowiązujący teraz:** `07d2fbd72`. Wszystkie wektory i bramki P6 są z niego generowane. Nie przesuwamy go w trakcie P6.
+- **Co już wiemy:** web (`origin/main`) jest o ~2955 commitów dalej; zmiany logiki gry (`gra/src/game`, `battle`, `data`, `main.ts`) to ok. 60 plików i ok. 4000 linii. Zmiany idą codziennie.
+- **Zasada:** web-gameplay jest wdrażany 1:1 wg pina (CLAUDE.md, zasada 9). Nowe poprawki webowe nie wchodzą do Rust, dopóki nie przesuniemy pinu.
+- **Punkt przesunięcia pinu:** zamknięcie P6 (kryteria w `P6-ZAMKNIECIE-PLAN.md`), temat **#177 PIN-MOVE-PLAN**.
+- **Ostatni pin brany pod uwagę:** `origin/main` w chwili zamknięcia P6 (SHA zapisany wtedy, nie teraz). Od tego momentu właściciel zamraża zmiany gameplay w webie na czas przesunięcia; delta po tym SHA idzie do osobnego etapu.
+- **Do decyzji właściciela (przy zamknięciu P6):** potwierdzenie zamrożenia webu i wybór SHA ostatniego pinu.
+- **Raportowanie:** orkiestrator podaje stan punktu (SHA pinu, liczba commitów i zmian logiki gry od pinu) w każdym raporcie statusu i przy każdym zamknięciu etapu P6.
