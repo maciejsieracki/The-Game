@@ -7029,8 +7029,13 @@ export function decideAIDiplomacy(
           turnsSinceCityChange: rel.turnsSinceCityChange,
         })
       : 0;
+    // R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1: udział w desperacji = udział SIŁY MILITARNEJ (nie rw/Power).
+    const wearyMilSum = (rel.silaMilitarnaAI?.sila ?? 0) + (rel.silaMilitarnaPartner?.sila ?? 0);
+    const wearyShare = wearyMilSum > 0 && rel.silaMilitarnaAI
+      ? rel.silaMilitarnaAI.sila / wearyMilSum
+      : rw;
     const wearyDespair = rel.stanWojny && isWarWeary(wearyLevel)
-      ? loserDespair({ level: wearyLevel, share: rw, lostCities: Math.max(0, rel.lostCitiesInWar ?? 0) })
+      ? loserDespair({ level: wearyLevel, share: wearyShare, lostCities: Math.max(0, rel.lostCitiesInWar ?? 0) })
       : 0;
     const wearyStage = despairStage(wearyDespair);
     const wearyCityBonus = wearyStage >= 2 ? WAR_WEARINESS_PARAMS.czlowiek.rwProgBonusMax * wearyDespair : 0;

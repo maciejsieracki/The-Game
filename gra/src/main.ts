@@ -36663,7 +36663,18 @@ async function boot(): Promise<void> {
             turnsSinceCityChange: wa.turnsSinceCityChange,
           };
         },
-        shareOf: (x, y) => requesterShare(objectivePowerForOwner(x), objectivePowerForOwner(y)),
+        // R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1: udział i „słabsza strona" wg SIŁY MILITARNEJ (nie Power).
+        shareOf: (x, y) => {
+          const sx = diploMilitarySideOf(x, y).sila;
+          const sy = diploMilitarySideOf(y, x).sila;
+          return sx + sy > 0 ? sx / (sx + sy) : 0.5;
+        },
+        weakerOf: (x, y) => {
+          const sx = diploMilitarySideOf(x, y);
+          const sy = diploMilitarySideOf(y, x);
+          const posX = peaceStanceOf({ id: x, sila: sx.sila, armiaPkt: sx.armiaPkt }, { id: y, sila: sy.sila, armiaPkt: sy.armiaPkt });
+          return posX === 'slabsza' ? x : y;
+        },
         cityCountOf: o => cities.filter(c => c.ownerId === o).length,
         price: (winner, loser) => {
           const basePn = treatyBasePnFromConfig('pokoj');

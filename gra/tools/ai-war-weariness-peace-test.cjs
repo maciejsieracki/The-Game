@@ -74,7 +74,7 @@ const dA = W.loserDespair({ level: 0.5, share: 0.3, lostCities: 0 });
 const dB = W.loserDespair({ level: 1, share: 0.1, lostCities: 3 });
 ok(dB > dA, 'desperacja rosnie z zmeczeniem/slaboscia/stratami');
 eq(W.despairStage(0), 0, 'stopien 0'); eq(W.despairStage(0.99), 3, 'stopien 3');
-eq(W.stageCityLimit(1), 0, 'stopien 1: bez miast'); eq(W.stageCityLimit(2), 1, 'stopien 2: 1 miasto'); eq(W.stageCityLimit(3), 2, 'stopien 3: max 2 miasta');
+eq(W.stageCityLimit(0), 0, 'stopien 0: bez miast'); eq(W.stageCityLimit(1), 1, 'stopien 1: 1 miasto (zloto/surowce nie sa waluta pokoju, zmiana 2)'); eq(W.stageCityLimit(2), 1, 'stopien 2: 1 miasto'); eq(W.stageCityLimit(3), 2, 'stopien 3: max 2 miasta');
 ok(W.offerMultiplier(3, 0) > W.offerMultiplier(1, 0), 'oferta rosnie ze stopniem');
 ok(W.offerMultiplier(1, 3) > W.offerMultiplier(1, 0), 'oferta rosnie z odrzuceniami');
 const A = (kind, id, amount, pn, forbidden) => ({ kind, id, amount, pn, forbidden });
@@ -106,15 +106,17 @@ function mkDeps(o) {
 // 4a. rowna wojna bez konca -> po N turach pokoj
 {
   // R-WEB-DIPLO-PEACE-AI-AI-NONNEGATIVE-BALANCE-Q1 (2026-11-09): pokoj z wyczerpania wymaga bilansu >= 0 (winnerNeed: 0).
+  // R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1 (zmiana 3): pokój wzajemny BEZ zapłaty usunięty — bez miasta do oddania nie ma pokoju.
   const { deps, log } = mkDeps({ turn: 300, turnsAtWar: 200, share1: 0.5, winnerNeed: 0 });
   const r = W.runWarWearinessTick(deps);
-  eq(r[0].action, 'mutual_peace', 'rowna wojna 200 tur => pokoj z wyczerpania'); eq(log.filter(x => x.ev === 'peace').length, 1, 'pokoj sfinalizowany');
-  eq(deps.store.size, 0, 'stan pary skasowany po pokoju (reset)');
+  eq(r[0].action, 'offer_rejected', 'rowna wojna 200 tur bez miasta => brak pokoju bez zaplaty (zmiana 3)'); eq(log.filter(x => x.ev === 'peace').length, 0, 'brak pokoju sfinalizowanego');
+  eq(deps.store.size, 1, 'stan pary zostaje (wojna trwa)');
 }
 {
   // Regula wlasciciela 2026-11-09: ujemny bilans zwyciezcy blokuje takze pokoj z wyczerpania.
   const { deps, log } = mkDeps({ turn: 300, turnsAtWar: 200, share1: 0.5 });
-  eq(W.runWarWearinessTick(deps)[0].action, 'none', '4a-NN: rowna wojna 200 tur, bilans zwyciezcy < 0 => brak pokoju');
+  // R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1: bez miasta w ofercie (zmiana 4) — odrzucona, zero efektow.
+  eq(W.runWarWearinessTick(deps)[0].action, 'offer_rejected', '4a-NN: rowna wojna 200 tur, brak miasta / bilans < 0 => brak pokoju');
   eq(log.length, 0, '4a-NN: brak efektow');
 }
 {
@@ -126,7 +128,8 @@ function mkDeps(o) {
   const store2 = new Map();
   const base = { share1: 0.15, lostA: 3, turnsAtWar: 150, cities: 4, store: store2, winnerNeed: 900,
     assets: [A('zloto', 'zloto', 100, 100), A('miasto', 'c1', 1, 400), A('miasto', 'c2', 1, 800), A('miasto', 'cap', 1, 9999, true)] };
-  const { deps, log } = mkDeps({ ...base, turn: 400 });
+  // R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1: 6 miast => do 2 miast do oddania (złoto już nie wchodzi w ofertę).
+  const { deps, log } = mkDeps({ ...base, cities: 6, turn: 400 });
   const r = W.runWarWearinessTick(deps);
   ok(['offer_accepted', 'offer_rejected'].includes(r[0].action), 'przegrywajacy skladal oferte');
   ok(r[0].stage >= 2, 'stopien >= 2 przy duzej desperacji');
@@ -204,7 +207,8 @@ function mkDeps(o) {
   eq(W.runWarWearinessTick(d9)[0].action, 'none', '4g-TEN: elapsed 9 blokuje automatyczny pokój');
   eq(store10.get('1-2').peak, 1, '4g-TEN: zmęczenie nadal nalicza się w elapsed 9');
   const { deps: d10 } = mkDeps({ ...o, turn: 110, turnsAtWar: 10 });
-  eq(W.runWarWearinessTick(d10)[0].action, 'mutual_peace', '4g-TEN: elapsed 10 zwalnia automatyczny pokój');
+  // R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1: od elapsed 10 składana jest oferta (bez miasta => odrzucona; bez auto-pokoju).
+  eq(W.runWarWearinessTick(d10)[0].action, 'offer_rejected', '4g-TEN: elapsed 10 zwalnia oferte (bez miasta brak pokoju)');
 }
 // 4h. realna wycena (peaceOfferAiRequestPn / OwnBilans / tolerancja / baza z konfiguracji) zamiast atrap
 {
@@ -215,12 +219,15 @@ function mkDeps(o) {
   const tol = M.aiOfferPwSurplusTolerance('normal');
   const real = (o) => {
     const { deps, log } = mkDeps({ ...o });
-    deps.price = () => ({ requiredPn: req, balanceFor: (c) => M.peaceOfferAiOwnBilans(0, c, relTotal, basePn), tolerancePn: tol });
+    // R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1: cena dodatnia (przy zerowej relacji req = 0 i plan jest pusty — brak miasta => brak pokoju).
+    deps.price = () => ({ requiredPn: o.requiredPn ?? req, balanceFor: (c) => M.peaceOfferAiOwnBilans(0, c, relTotal, basePn), tolerancePn: tol });
     return { r: W.runWarWearinessTick(deps), log };
   };
-  const rich = [A('zloto', 'zloto', 100000, 100000), A('miasto', 'c1', 1, 400), A('miasto', 'c2', 1, 800)];
-  const x = real({ turn: 400, turnsAtWar: 150, share1: 0.15, lostA: 3, assets: rich });
-  eq(x.r[0].action, 'offer_accepted', '4h: realna wycena - bogaty przegrywajacy kupuje pokoj');
+  // R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1: płaci wyłącznie miastami (złoto nie wchodzi w ofertę).
+  const rich = [A('miasto', 'c1', 1, 400), A('miasto', 'c2', 1, 800), A('miasto', 'c3', 1, 900)];
+  const x = real({ turn: 400, turnsAtWar: 150, share1: 0.15, lostA: 3, cities: 6, assets: rich, requiredPn: basePn });
+  eq(x.r[0].action, 'offer_accepted', '4h: realna wycena - bogaty w miasta przegrywajacy kupuje pokoj miastem');
+  eq(x.r[0].plan.histogram.zloto, 0, '4h: zadnego zlota w planie');
   const y = real({ turn: 400, turnsAtWar: 150, share1: 0.15, lostA: 3, assets: [A('zloto', 'zloto', 1, 1)] });
   ok(['offer_rejected', 'offer_accepted'].includes(y.r[0].action), '4h: realna wycena - biedny przegrywajacy sklada oferte (bez wyjatku)');
 }
@@ -300,9 +307,11 @@ ok(/warWearinessByPairKey\.delete\(diploPairKey\(proposerId, responderId\)\)/.te
     const r = W.runWarWearinessTick(deps)[0];
     eq(W.runWarWearinessTick(mkDeps({ turn: 140, turnsAtWar: 40, since: 5, share1: 0.2, lostA: 1, cities: 3, winnerNeed: 999999, assets: cityAssets }).deps)[0].action,
       'offer_rejected', '7c-NN: ochrona NIE wymusza pokoju przy ujemnym bilansie zwyciezcy');
-    eq(r.action, 'offer_accepted', '7c: chroniony przegrywajacy => pokoj (bilans zwyciezcy >= 0)');
+    // R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1 (zmiana 4): ochrona wymaga MIASTA w ofercie; przy 3 miastach (= minMiastPoOddaniu)
+    // nie ma czego oddać => brak pokoju mimo ochrony (skutek: wojna trwa do decyzji silniejszej strony).
+    eq(r.action, 'offer_rejected', '7c: chroniony przegrywajacy z 3 miast nie kupuje pokoju (brak miasta do oddania)');
     eq(r.plan.histogram.miasto, 0, '7c: z 3 miast (= minMiastPoOddaniu) nie oddaje zadnego');
-    ok(log.some(x => x.ev === 'peace'), '7c: pokoj sfinalizowany');
+    ok(!log.some(x => x.ev === 'peace'), '7c: pokoj NIE sfinalizowany');
   }
   // 7d. ochrona po >= ochronaUtratyWojny utratach, nawet z duza liczba miast; oddaje co najwyzej tyle, by zostalo >= minMiastPoOddaniu
   {
@@ -344,14 +353,15 @@ ok(/warWearinessByPairKey\.delete\(diploPairKey\(proposerId, responderId\)\)/.te
   // 7i. parametr karencji z JSON + tick przekazuje go do finalize (zarzut 1 r2: bylo domyslne 10 tur => re-wojna po ~10 turach)
   ok(PP.karencjaPoPokojuTur > M.L.PEACE_TREATY_LOCK_TURNS, `7i: karencjaPoPokojuTur (${PP.karencjaPoPokojuTur}) > domyslne ${M.L.PEACE_TREATY_LOCK_TURNS}`);
   {
-    const { deps, log } = mkDeps({ turn: 130, turnsAtWar: 30, since: 10, share1: 0.2, lostA: 1, cities: 6, winnerNeed: 300, assets: gold(600) });
+    const { deps, log } = mkDeps({ turn: 130, turnsAtWar: 30, since: 10, share1: 0.2, lostA: 1, cities: 6, winnerNeed: 300, assets: cityAssets });
     W.runWarWearinessTick(deps);
-    eq(log.find(x => x.ev === 'peace').lock, PP.karencjaPoPokojuTur, '7i: oferta niechronionego -> finalize z karencja z JSON');
-    const { deps: dp, log: lp } = mkDeps({ turn: 140, turnsAtWar: 40, since: 5, share1: 0.2, lostA: 1, cities: 3, winnerNeed: 0, assets: cityAssets });
+    eq(log.find(x => x.ev === 'peace').lock, PP.karencjaPoPokojuTur, '7i: oferta niechronionego (miasto) -> finalize z karencja z JSON');
+    // zmiana 4: chroniony z 5 miastami i 3 utratami oddaje miasto (ochrona z miastem) -> dluzsza karencja
+    const { deps: dp, log: lp } = mkDeps({ turn: 160, turnsAtWar: 60, since: 3, share1: 0.1, lostA: 3, cities: 5, winnerNeed: 0, assets: cityAssets });
     W.runWarWearinessTick(dp);
     eq(lp.find(x => x.ev === 'peace').lock, PP.karencjaChronionegoTur, '7i: pokoj chronionego -> dluzsza karencja (karencjaChronionegoTur)');
     ok(PP.karencjaChronionegoTur > PP.karencjaPoPokojuTur, '7i: karencja chronionego > zwykla');
-    const { deps: d2, log: l2 } = mkDeps({ turn: 300, turnsAtWar: 200, share1: 0.5, winnerNeed: 0 });
+    const { deps: d2, log: l2 } = mkDeps({ turn: 300, turnsAtWar: 200, share1: 0.5, winnerNeed: 0, cities: 6, assets: cityAssets });
     W.runWarWearinessTick(d2);
     eq(l2.find(x => x.ev === 'peace').lock, PP.karencjaPoPokojuTur, '7i: pokoj z wyczerpania -> finalize z karencja z JSON');
   }
