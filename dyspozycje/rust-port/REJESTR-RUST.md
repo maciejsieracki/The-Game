@@ -609,3 +609,4 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Zamknięte:** melee zintegrowane FF na `parity-v2` = `5e8b116e8` (pełny test 3278 passed / 0 failed / 1 ignored; `cargo fmt --check` OK; clippy na tipie NIE_ZMIERZONO).
 - **Zgłoszenie dla właściciela (proces):** w jednym z wcześniejszych przebiegów Operator usunął poza repo plik `/home/user/tmp/x` (7,3 MB). Plik nie istnieje, nie da się go odtworzyć z repo.
 - **Dysk:** 10 GB wolne po sprzątaniu worktree rozpoznań ZŁOŻA i CRED-HAK (refy `refs/keep/…-fc`, `…-wip`).
+- **Odpowiedź właściciela (ABC, gameplay):** wojna klastra państw-miast wobec gracza **wchodzi do P6 teraz** (wariant rekomendowany). Odblokowuje T5 haka CRED-HAK (#120/#171); T1–T4 nie zależą od tej decyzji.
