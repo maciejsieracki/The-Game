@@ -458,3 +458,159 @@ fn p6_combat_harness_nan_roll_i_nan_hp() {
     });
     check_row(1, &nan_hp);
 }
+/// Jeden strzal lukiem atakujacego (obronca bez dystansu, ammo 1, HP duze): `rng` zwraca dokladnie `draw`.
+/// Wejscia odpowiadaja petli pinu `Phase 0: Ranged` (gra/src/game/combat.ts): `roll = rng() * 100`, `hit = roll < hitPct`.
+fn one_ranged_shot(draw: f64, def_final_obrona: f64) -> RangedPhaseResult {
+    let input = RangedPhaseInput {
+        attacker: RangedSide {
+            counter_typ: Some("Distance".to_owned()),
+            typ_nazwa: Some("Łucznik".to_owned()),
+            is_ranged: true,
+            ammo: 1,
+            hp: 50.0,
+            melee_attack: 10.0,
+            missile_attack: 10.0,
+            melee_defence: 5.0,
+            armor: 2.0,
+            counter_mult: 1.0,
+            rout_threshold: 0.0,
+            unbreakable: false,
+        },
+        defender: RangedSide {
+            counter_typ: None,
+            typ_nazwa: None,
+            is_ranged: false,
+            ammo: 0,
+            hp: 30.0,
+            melee_attack: 5.0,
+            missile_attack: 0.0,
+            melee_defence: 0.0,
+            armor: 2.0,
+            counter_mult: 1.0,
+            rout_threshold: 0.0,
+            unbreakable: false,
+        },
+        def_final_obrona,
+        river_mult: 1.0,
+        max_rounds: 5,
+        start_rounds: 0,
+    };
+    resolve_ranged_phase(input, || draw)
+}
+
+/// Szuka losowania `d` z `d * 100.0 == target` przez sasiedztwo bitowe od `target / 100.0`.
+/// Zwraca `None`, gdy takiego `d` nie ma (nie każda wartość roll = d*100 jest osiągalna).
+fn draw_giving_roll(target: f64) -> Option<f64> {
+    let base = target / 100.0;
+    let mut up = base;
+    let mut down = base;
+    for _ in 0..8 {
+        if up * 100.0 == target {
+            return Some(up);
+        }
+        if down * 100.0 == target {
+            return Some(down);
+        }
+        up = f64::from_bits(up.to_bits() + 1);
+        down = f64::from_bits(down.to_bits() - 1);
+    }
+    None
+}
+
+/// Szuka wejscia, dla ktorego hitPct `h` ma osiagalne losowania dla `h`, `h - 1 ulp` i `h + 1 ulp`.
+/// Zwraca (`defFinalObrona`, `h`, losowania: rowne, ponizej, powyzej).
+fn find_boundary_input() -> (f64, f64, f64, f64, f64) {
+    for k in 0..400u32 {
+        let obrona = 20.0 + f64::from(k) * 0.37;
+        let h = one_ranged_shot(0.0, obrona).shots[0].hit_pct;
+        if !(h.is_finite() && h > 0.0 && h < 100.0) {
+            continue;
+        }
+        let below = f64::from_bits(h.to_bits() - 1);
+        let above = f64::from_bits(h.to_bits() + 1);
+        if let (Some(d_eq), Some(d_below), Some(d_above)) = (
+            draw_giving_roll(h),
+            draw_giving_roll(below),
+            draw_giving_roll(above),
+        ) {
+            return (obrona, h, d_eq, d_below, d_above);
+        }
+    }
+    panic!("brak wejscia z osiagalnym roll == hitPct i roll = hitPct +/- 1 ulp");
+}
+
+#[test]
+fn p6_combat_harness_roll_na_hitpct_odwraca_trafienie() {
+    let (obrona, h, d_eq, d_below, d_above) = find_boundary_input();
+
+    // roll == hitPct: `roll < hitPct` jest false -> pudlo, bez obrazen, HP celu bez zmian.
+    let eq = one_ranged_shot(d_eq, obrona);
+    assert_eq!(
+        eq.shots[0].hit_pct.to_bits(),
+        h.to_bits(),
+        "roll==hitPct: hitPct bez zmian"
+    );
+    assert!(!eq.shots[0].hit, "roll == hitPct musi byc pudlem");
+    assert_eq!(
+        eq.shots[0].damage.to_bits(),
+        0.0f64.to_bits(),
+        "pudlo: obrazenia +0"
+    );
+    assert_eq!(
+        eq.hp_defender.to_bits(),
+        30.0f64.to_bits(),
+        "pudlo: HP obroncy bez zmian"
+    );
+
+    // roll tuz PONIZEJ hitPct (1 ulp): trafienie, obrazenia > 0, HP celu spada o obrazenia.
+    let lo = one_ranged_shot(d_below, obrona);
+    assert!(
+        lo.shots[0].hit,
+        "roll tuz ponizej hitPct musi byc trafieniem"
+    );
+    assert!(lo.shots[0].damage > 0.0, "trafienie: obrazenia > 0");
+    assert_eq!(
+        lo.hp_defender.to_bits(),
+        (30.0 - lo.shots[0].damage).to_bits(),
+        "trafienie: HP obroncy = 30 - obrazenia"
+    );
+
+    // roll tuz POWYZEJ hitPct (1 ulp): pudlo.
+    let hi = one_ranged_shot(d_above, obrona);
+    assert!(!hi.shots[0].hit, "roll tuz powyzej hitPct musi byc pudlem");
+    assert_eq!(
+        hi.shots[0].damage.to_bits(),
+        0.0f64.to_bits(),
+        "pudlo: obrazenia +0"
+    );
+}
+
+#[test]
+fn p6_combat_harness_znak_zera_w_polach_zdarzen() {
+    // Sprawdza bit znaku (nie tylko liczbe) pol zdarzen strzalow wyprodukowanych przez Rust.
+    let root: Value = serde_json::from_str(VEC).expect("vectors.json");
+    let cases = root["cases"].as_array().expect("cases");
+    let mut zera = 0u64;
+    let mut checked = 0u64;
+    for (n, row) in cases.iter().enumerate() {
+        let (res, _) = run_row(row);
+        for (k, shot) in res.shots.iter().enumerate() {
+            for (name, v) in [
+                ("hitPct", shot.hit_pct),
+                ("damage", shot.damage),
+                ("targetHp", shot.target_hp),
+            ] {
+                checked += 1;
+                if v == 0.0 {
+                    zera += 1;
+                    assert!(
+                        !v.is_sign_negative(),
+                        "przypadek {n} strzal {k}: pole {name} = -0 w zdarzeniu (pin daje +0)"
+                    );
+                }
+            }
+        }
+    }
+    assert!(checked > 0, "brak zdarzen strzalow do sprawdzenia");
+    assert!(zera > 0, "brak zer w polach zdarzen: test bez pokrycia");
+}
