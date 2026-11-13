@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Wojnę wypowiada się** wobec innej cywilizacji. Gracz decyduje sam; AI wypowiada wojnę, gdy spełni swoje warunki (relacja poniżej progu, przewaga siły, wiek gry). Wojna wymuszona przez epokę ma własne zasady startu.
+**Wojnę wypowiada się** wobec innej cywilizacji. Gracz decyduje sam; AI wypowiada wojnę, gdy spełni swoje warunki (relacja poniżej progu wojny, przewaga siły względnej i wysoka agresja, patrz niżej). Wojna wymuszona przez epokę ma własne zasady startu.
 
 ---
 
@@ -23,7 +23,19 @@
 
 ### Kiedy AI może wypowiedzieć wojnę
 
-Próg wojny zależy od profilu cywilizacji: wyjściowo **10**, rośnie do **70** wraz z jej skłonnością do wojny, ekspansją i podboju (granice 10–70). Próg kryzysu to próg wojny **minus 15**. Gdy Relacja spada poniżej progu kryzysu, rozpoczyna się **hamulec relacji**: licznik kryzysu trwa od 3 do 7 tur (zależnie od profilu) i dopiero po nim AI może wypowiedzieć wojnę.
+Próg wojny zależy od profilu cywilizacji: wzór z `diplomacy-war-peace-params.json:progWojnyRelacji` (rośnie wraz z wysoką skłonnością do wojny, ekspansją i podboju) jest zawsze w granicach **10–70**; gdy profilu brak, próg wynosi **30**. Próg kryzysu to próg wojny **minus 15**; przy parze cywilizacji brany jest wyższy z dwóch progów. Gdy łączna Relacja spada poniżej progu kryzysu, rozpoczyna się **hamulec relacji**: licznik kryzysu trwa od 3 do 7 tur (zależnie od profilu) i dopiero po nim AI może wypowiedzieć wojnę.
+
+### Przesłanki AI obecnie w grze
+
+AI wypowiada wojnę tylko wtedy, gdy jednocześnie:
+- nie toczy już wojny z tą cywilizacją i nie ma z nią pokoju zablokowanego ani paktu o nieagresji;
+- nie działa okno wczesnej fazy: przez pierwsze **25** tur (`ai.ts`, `AI_MAJOR_EARLY_NO_WAR_TURNS`) AI nie wypowiada wojny drugiej głównej cywilizacji AI (wojny z graczem i atak na miasto-państwo nie są objęte tym oknem);
+- ma wrogie nastawienie (`willingnessWar > 0`);
+- jej względna siła (respekt względny) wynosi co najmniej **0,6** (`ai.ts:6229`, `PROG_WOJNA_SILA`; obniżane o 0,12 przy skłonności do podboju ≥ 4);
+- jej agresja archetypu wynosi co najmniej **0,5** (`ai.ts:6235`, `PROG_WOJNA_AGRESJA`, z mnożnikiem trudności);
+- Relacja jest poniżej progu wojny tej cywilizacji (hamulec relacji jak wyżej).
+
+Gracz nie jest wciągany w wojnę automatycznie przez te przesłanki; wypowiada ją sam.
 
 ### Bramki wojen wymuszonych przez epokę
 
@@ -40,7 +52,7 @@ Próg wojny zależy od profilu cywilizacji: wyjściowo **10**, rośnie do **70**
 - Minus: wojna zeruje Zaufanie wobec wroga, więc odbudowa relacji trwa długo.
 
 **Dla AI**
-- Plus: AI, która ma przewagę, może wypowiedzieć wojnę, gdy relacja jest zbyt niska.
+- Plus: AI, która ma przewagę siły i wysoką agresję, może wypowiedzieć wojnę, gdy relacja jest zbyt niska.
 - Minus: hamulec relacji opóźnia wojnę o kilka tur od chwili spadku Relacji poniżej progu kryzysu.
 
 ### Zasady zatwierdzone, jeszcze niewdrożone
@@ -57,7 +69,7 @@ Próg wojny zależy od profilu cywilizacji: wyjściowo **10**, rośnie do **70**
 
 ## Przykład liczbowy
 
-Dwie cywilizacje o Relacji 25 i progu wojny 30 (w kolejnej turze relacja spada do 25, czyli poniżej progu): hamulec startuje, a AI może wypowiedzieć wojnę dopiero po zakończeniu kryzysu (3–7 tur wg profilu).
+Dwie cywilizacje z progiem wojny 30 (brak danych profilu) mają próg kryzysu 15. Relacja spada z 18 na 14, czyli poniżej 15: hamulec startuje i AI może wypowiedzieć wojnę dopiero po zakończeniu kryzysu (3–7 tur wg profilu). Przy Relacji 25 (powyżej progu kryzysu) hamulec nie działa.
 
 ---
 
@@ -77,6 +89,9 @@ Dwie cywilizacje o Relacji 25 i progu wojny 30 (w kolejnej turze relacja spada d
 | 70 | `diplomacy-war-peace-params.json:progWojnyRelacji.max` |
 | 30 | `diplomacy-war-peace-params.json:progWojnyRelacji.bazaBrakDanych` |
 | 15 | `diplomacy-war-peace-params.json:hamulecRelacji.progKryzysuMinusPunkty` |
+| 0.6 | `kod:ai-prog-wojna-sila` |
+| 0.5 | `kod:ai-prog-wojna-agresja` |
+| 25 | `kod:ai-early-no-war-turns` |
 | 8 | `diplomacy-war-peace-params.json:hamulecRelacji.bazaN` |
 | 3 | `diplomacy-war-peace-params.json:hamulecRelacji.minN` |
 | 7 | `diplomacy-war-peace-params.json:hamulecRelacji.maxN` |
@@ -90,4 +105,4 @@ Dwie cywilizacje o Relacji 25 i progu wojny 30 (w kolejnej turze relacja spada d
 
 ## Historia / decyzje
 
-Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Progi przewagi (20%, 30 Zaufania, 10 przy zerze) z DECYZJI WŁAŚCICIELA 2026-11-13 są w bloku niewdrożonym. Liczby przesłanek AI (siła względna, agresja) nie zostały zweryfikowane w tej rundzie i nie są podane w haśle.
+Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Progi (30 Zaufania, 10 przy zerze) z DECYZJI WŁAŚCICIELA 2026-11-13 są w bloku niewdrożonym. Runda 2 (obrona, zarzut 5): dopisano przesłanki AI z kodu (`ai.ts`), usunięto „wiek gry” z Wiki-S i poprawiono przykład (hamulec według progu kryzysu = próg wojny − 15).

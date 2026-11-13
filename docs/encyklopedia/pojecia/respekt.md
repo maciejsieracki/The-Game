@@ -29,22 +29,22 @@ Respekt jest **osobny dla każdej pary** cywilizacji. Składa się z Zaufaniem (
 
 **Dla gracza**
 - Plus: wysoki Respekt pozwala narzucać trybut i wasalizować miasta‑państwa.
-- Plus: wygrane bitwy i przewaga militarna podnoszą Respekt.
-- Minus: słabszość militarna obniża Respekt (−10).
+- Plus: wygrane bitwy podnoszą Respekt (+5 za każdą wygraną).
+- Minus: Respekt nie spada z samej słabości militarnej — w grze nie działa jeszcze kara za słabość (patrz sekcja niżej).
 - Minus: wojna nie obniża Respektu, więc przeciągnięta wojna nie „kasuje” go tak jak Zaufania; Respekt zmienia się tylko przez siłę i zdarzenia.
 
 **Dla AI**
-- Plus i minus są takie same jak dla gracza: Respekt rośnie z siłą i spada przy słabości.
+- Respekt AI wobec gracza rośnie wraz z udziałem mocy AI w sumie mocy obu stron (wzór, patrz Wiki-M) i wygranymi bitwami oraz trybutem; brak kary za słabość w grze.
 
 ### Źródła zmian
 
 | Źródło | Zmiana | Uwagi |
 |--------|--------|-------|
-| Przewaga militarna | +15 | jednorazowo, przy przewadze siły (próg w kodzie) |
-| Słabszy militarnie | −10 | jednorazowo |
-| Wygrana bitwa | +5 | za każdą wygraną |
-| Trybut zapłacony | +10 | |
-| Wspólny wróg zaakceptowany | +10 | |
+| Wygrana bitwa | +5 | za każdą wygraną (wywoływane przez grę) |
+| Trybut zapłacony | +10 | (wywoływane przez grę) |
+| Wspólny wróg zaakceptowany | +10 | zdefiniowane w kodzie; w grze nie jest jeszcze wywoływane |
+
+Zdarzenia „Przewaga militarna” (+15) i „Słabszy militarnie” (−10) są zapisane w kodzie (`diplomacy.ts`), ale gra ich nigdzie nie wywołuje: nie działają jako źródło Respektu i nie są podane w tabeli jako obowiązujące. Ta zmiana jest zgodna z decyzją właściciela o przepisaniu przewagi militarnej (wdrożenie w toku).
 
 Siła, z której liczony jest Respekt, to **Moc** (patrz hasło **Moc — podział na wojskowy i gospodarczy**). Respekt pary to udział mocy jednej nacji w sumie mocy obu.
 
@@ -90,9 +90,9 @@ Moc A = 600, Moc B = 400. Respekt A wobec B = round(100 × 600 / 1000) = **60**.
 | 10 | `diplomacy.json:params.trybut_respekt` |
 | 10 | `diplomacy.json:params.wspolnyWrogAkceptacja_respekt` |
 | 5 | `diplomacy.json:params.wygraBitwa_respekt` |
-| 15 | `diplomacy.json:params.przewagaMilitarna_respekt` |
-| -10 | `diplomacy.json:params.slabszyMilitarnie_respekt` |
 | 100 | `kod:respekt-wzor` (wzór Respektu: `Math.round(100 * potegaSelf / sum)`, skala 0–100, `diplomacy.ts`) |
+
+Uwaga: wartości `przewagaMilitarna_respekt` (+15) i `slabszyMilitarnie_respekt` (−10) są w `diplomacy.ts` i `diplomacy.json`, ale nie są wywoływane w grze, więc nie są tu obowiązującymi parametrami.
 
 Uwaga: limit składnika Respektu to 0–100 (`diplomacy.ts`, funkcja zdarzeń). Wojna nie zmienia Respektu.
 
@@ -100,4 +100,4 @@ Uwaga: limit składnika Respektu to 0–100 (`diplomacy.ts`, funkcja zdarzeń). 
 
 ## Historia / decyzje
 
-Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Zasady niewdrożone: DECYZJA WŁAŚCICIELA 2026-11-13.
+Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Runda 2 (obrona, zarzut 4): źródła „Przewaga militarna” i „Słabszy militarnie” usunięte z obowiązujących (brak wywołań w `main.ts`; grep: tylko definicja i `case` w `diplomacy.ts`). Zasady niewdrożone: DECYZJA WŁAŚCICIELA 2026-11-13.

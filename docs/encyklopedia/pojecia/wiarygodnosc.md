@@ -33,6 +33,15 @@ W przeciwieństwie do **Zaufania** i **Respektu** (liczone per para dyplomatyczn
 
 Start: Łatwy **+40** · Normalny **+20** · Trudny **0**.
 
+### Jak zmienia się Wiarygodność (runda 2, zarzut 7)
+
+- **Wartość startowa** zależy od poziomu trudności (patrz Pasma).
+- **Zdarzenia jednorazowe** (kary N1–N7, nagrody P1–P5) działają od chwili wystąpienia i wygasają liniowo w czasie zapominania: kara 40 / 80 / 120 tur (łatwy / normalny / trudny), nagroda 120 / 80 / 40 tur. Wartość nie spada poniżej **10%** wartości pierwotnej; ta podłoga zostaje na stałe.
+- **Strumienie na turę** (dopóki trwa umowa): sojusz **+1**, pakt o nieagresji **+0,5**, handel **+1,2 / +0,9 / +0,6** (łatwy / normalny / trudny), przemarsz **+0,8 / +0,6 / +0,4** (łatwy / normalny / trudny). Strumień gaśnie do zera i nie zostawia trwałego śladu.
+- **Wiarygodność → Zaufanie (tempo)**: dodatnie zmiany Zaufania mnoży się przez 1 + W/200, ujemne przez 1 − W/200. Przy W = +100 wzrost jest ×1,5 i spadek ×0,5; przy W = −100 odwrotnie.
+- **Dryf Zaufania**: co turę, poza wojną, Zaufanie zmienia się o W × 0,03 (±3 przy W = ±100).
+- **Wiarygodność ≠ Zaufanie**: Wiarygodność jest jedna dla całego imperium i mierzy historię dotrzymywania słowa. Zaufanie jest osobne dla każdej pary i mierzy bieżące nastawienie. Wiarygodność przyspiesza budowanie Zaufania, ale go nie zastępuje.
+
 ### Model relacji (FALA 206)
 
 ```
@@ -117,7 +126,15 @@ Wartości z `gra/data/diplomacy.json` (sekcja `params`). Każda wartość w tabe
 | 0 | `diplomacy.json:params.wiarygodnoscProgSojuszMin` |
 | 0 | `diplomacy.json:params.wiarygodnoscProgNapMin` |
 | 0.1 | `diplomacy.json:params.wiarygodnoscTrwalaPodlogaProcent` |
+| 1 | `diplomacy.json:params.wiarygodnoscS1SojuszPerTure` |
+| 0.5 | `diplomacy.json:params.wiarygodnoscS2NapPerTure` |
+| 0.9 | `diplomacy.json:params.wiarygodnoscS3HandelPerTureNormalny` |
+| 0.6 | `diplomacy.json:params.wiarygodnoscS4PrzemarszPerTureNormalny` |
+| 0.5 | `diplomacy.json:params.wiarygodnoscTempoAmplituda` |
+| 80 | `diplomacy.json:params.wiarygodnoscCzasZapomnieniaKaraNormalny` |
+| 80 | `diplomacy.json:params.wiarygodnoscCzasZapomnieniaNagrodaNormalny` |
+| 5 | `diplomacy.json:pn_relacja.max_zaufanie_na_ture` |
 
 ## Historia / decyzje
 
-FALA 206 (2026-08-03): D3 progi W, tempo W→Z, usunięcie Dźwigni 2, UI „Wpływ Relacji na deal". Hasło dodane rev. G 2026-08-04.
+Runda 2 (zarzut 7): dopisano strumienie, wygasanie, tempo i dryf z `diplomacy-credibility.ts`. FALA 206 (2026-08-03): D3 progi W, tempo W→Z, usunięcie Dźwigni 2, UI „Wpływ Relacji na deal". Hasło dodane rev. G 2026-08-04.

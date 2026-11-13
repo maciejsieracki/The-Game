@@ -93,6 +93,9 @@ const KOD_CHECKS = {
     const m = readText(path.join(SRC_GAME, 'power-objective.ts')).match(/battleModel === 'enemy_m_sum' \? (\d+) :/);
     return m ? Number(m[1]) : null;
   },
+  'ai-prog-wojna-sila': () => tsConst('ai.ts', 'PROG_WOJNA_SILA'),
+  'ai-prog-wojna-agresja': () => tsConst('ai.ts', 'PROG_WOJNA_AGRESJA'),
+  'ai-early-no-war-turns': () => tsConst('ai.ts', 'AI_MAJOR_EARLY_NO_WAR_TURNS'),
   'power-zdobycze-coeff': () => {
     const m = readText(path.join(SRC_GAME, 'power-objective.ts')).match(/row\('zdobycze'[^\n]*, (\d+), false\)/);
     return m ? Number(m[1]) : null;
@@ -109,6 +112,12 @@ function labelThreshold(label) {
 function truceOptions() {
   const m = readText(path.join(SRC_GAME, 'diplomacy-peace-lock.ts')).match(/TRUCE_DURATION_OPTIONS[^=]*=\s*Object\.freeze\(\[(\d+), (\d+), (\d+)\]\)/);
   return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : [null, null, null];
+}
+
+/** Stała `export const NAZWA = liczba;` w gra/src/game (dowolna liczba spacji przed =). */
+function tsConst(file, name) {
+  const m = readText(path.join(SRC_GAME, file)).match(new RegExp('const ' + name + '\\s*(?::[^=]+)?=\\s*([\\d.]+)'));
+  return m ? Number(m[1]) : null;
 }
 
 function constNumber(file, name) {
@@ -197,8 +206,54 @@ ok(pw.jednostka_wojskowa.pkt === 2.5 && pw.rekrut_ekw_jednostki.pkt === 10 && pw
 const wz = jsonByName('war-weariness-params.json');
 ok(wz.zmeczenie.pelneTur === 200 && wz.zmeczenie.wagaStratMiasta === 0.03 && wz.zmeczenie.progChetnosci === 0.5 && wz.zmeczenie.progWzajemnyPokoj === 0.8, 'parametry zmęczenia ≠ oczekiwane');
 
+// ---- Sekcja 3b: martwe parametry (klucz z tabeli Parametry musi być czytany przez kod) ----
+function walkTs(dir, acc) {
+  for (const f of fs.readdirSync(dir)) {
+    const p = path.join(dir, f);
+    if (fs.statSync(p).isDirectory()) walkTs(p, acc);
+    else if (p.endsWith('.ts')) acc.push(p);
+  }
+  return acc;
+}
+const SRC_ALL = walkTs(path.join(ROOT, 'gra', 'src'), []).map((f) => readText(f)).join('\n');
+for (const f of HASLA) {
+  const p = path.join(POJECIA, f);
+  if (!fs.existsSync(p)) continue;
+  const keys = [...readText(p).matchAll(/`diplomacy\.json:params\.([A-Za-z0-9_]+)`/g)].map((m) => m[1]);
+  for (const k of new Set(keys)) {
+    const uses = (SRC_ALL.match(new RegExp('\\b' + k + '\\b', 'g')) || []).length;
+    ok(uses >= 2, f + ': parametr „' + k + '” nie jest czytany w kodzie gra/src (martwy, uses=' + uses + ')');
+  }
+}
+
+// ---- Sekcja 3c: liczby w prozie (Start) zgodne z JSON ----
+const PROZA_START = [
+  ['zaufanie.md', 'startZaufanie'],
+  ['respekt.md', 'startRespekt'],
+];
+function checkProzaStart(text, name, key) {
+  const m = text.match(/Start: \*\*(-?\d+)\*\*/);
+  if (!m) return 'brak wzorca „Start: **N**” w ' + name;
+  return Number(m[1]) === dip[key] ? null : name + ': proza „Start” = ' + m[1] + ', a params.' + key + ' = ' + dip[key];
+}
+for (const [f, key] of PROZA_START) {
+  const p = path.join(POJECIA, f);
+  if (!fs.existsSync(p)) continue;
+  const prob = checkProzaStart(readText(p), f, key);
+  ok(prob === null, prob || (f + ': start OK'));
+}
+
 // ---- Sekcja 4: samo-test mutacji (zmiana liczby w haśle MUSI być wykryta) ----
 const zaufaniePath = path.join(POJECIA, 'zaufanie.md');
+{
+  const sp = path.join(POJECIA, 'zaufanie.md');
+  if (fs.existsSync(sp)) {
+    const orig = readText(sp);
+    const mutated = orig.replace('Start: **20**', 'Start: **21**');
+    ok(mutated !== orig, 'mutacja prozy: brak wzorca „Start: **20**” w zaufanie.md');
+    ok(checkProzaStart(mutated, 'zaufanie.md (mutacja)', 'startZaufanie') !== null, 'mutacja liczby w prozie „Start” NIE została wykryta');
+  }
+}
 if (fs.existsSync(zaufaniePath)) {
   const orig = readText(zaufaniePath);
   const needle = '| 20 | `diplomacy.json:params.startZaufanie` |';

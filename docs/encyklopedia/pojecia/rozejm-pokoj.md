@@ -31,6 +31,14 @@
 - Pokój jest stały. Po pokoju następuje **karencja** 40 tur; dla chronionego przegrywającego (patrz hasło **Zmęczenie wojną**) karencja trwa 100 tur.
 - Pokój z przegrywającym może kosztować miasta: przegrywający, który jest już wyczerpany wojną, oferuje miasta.
 
+### Bramki pokoju (obecnie w grze)
+
+Pokój proponowany przez gracza przechodzi przez bramki AI (runda 2, zarzut 6):
+- **Minimalny czas wojny**: od 1 do 8 tur zależnie od profilu cywilizacji (domyślnie 5). Przed tym czasem AI odrzuca pokój zawsze (`diplomacy-war-peace-params.json:minTurWojny`).
+- **Przewaga militarna powyżej 20%**: AI silniejsza o więcej niż 20% nie przyjmuje pokoju, dopóki zmęczenie wojną nie osiągnie progu chęci **0,5**. W kodzie ta blokada nie ma limitu tur; zdejmuje ją tylko zmęczenie.
+- **„Czuje się silniejsze”**: przez pierwsze **10** tur wojny AI odrzuca pokój, gdy jej udział siły wynosi co najmniej **0,55** i nie straciła żadnego miasta w tej wojnie.
+- **Mnożnik ceny**: cena pokoju zależy od siły i od profilu cywilizacji. Po **20** turach wojny bramka „czuje się silniejsze” i mnożnik siły przestają działać, a mnożnik cywilizacji jest ograniczony do 1.
+
 ### Kiedy AI proponuje rozejm, a kiedy pokój
 
 AI na początku wojny proponuje **rozejm**. Pokój stały proponuje, gdy spełni się jeden z warunków: zmęczenie wojną osiągnie pełny poziom (około 20 tur wojny), gotowość do pokoju wynosi co najmniej 0,7 albo Zaufanie wynosi co najmniej 60.
@@ -86,9 +94,15 @@ Wojna trwa 12 tur. Gracz proponuje rozejm na 10 tur. Po 10 turach pojawia się p
 | 40 | `war-weariness-params.json:przegrywajacy.karencjaPoPokojuTur` |
 | 100 | `war-weariness-params.json:przegrywajacy.karencjaChronionegoTur` |
 | 20 | `diplomacy-war-peace-params.json:cenaPokoju.turyBezOgraniczenAi` |
+| 5 | `diplomacy-war-peace-params.json:minTurWojny.baza` |
+| 1 | `diplomacy-war-peace-params.json:minTurWojny.min` |
+| 8 | `diplomacy-war-peace-params.json:minTurWojny.max` |
+| 0.55 | `diplomacy-war-peace-params.json:cenaPokoju.odrzucenieRwProg` |
+| 10 | `diplomacy-war-peace-params.json:cenaPokoju.odrzucenieMaxTurWojny` |
+| 0.5 | `war-weariness-params.json:zmeczenie.progChetnosci` |
 
 ---
 
 ## Historia / decyzje
 
-Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Zasady niewdrożone: DECYZJA WŁAŚCICIELA 2026-11-13. Wartości 5/10/15 i progi AI są w kodzie jako stałe, nie w JSON.
+Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Zasady niewdrożone: DECYZJA WŁAŚCICIELA 2026-11-13. Wartości 5/10/15 i progi AI są w kodzie jako stałe, nie w JSON. Runda 2 (zarzut 6): dopisano bramki pokoju z kodu (`diplomacy-war-peace-profile.ts`, `evaluatePeaceAiGate`) i wiersze minTurWojny / odrzucenie.
