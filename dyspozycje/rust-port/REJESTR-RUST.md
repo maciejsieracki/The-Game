@@ -758,3 +758,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Działanie:** cherry-pick `3a4c55929 8a31afd24 8fc46b8d7` na `origin/rust-port/parity-v2` (`94feb5e37`) w worktree `integ-victory`; pełny test w tle. FF po zielonym wyniku.
 - **Następnie:** świeży start ZWYCIESTWO-WIRING (baza = nowy parity). EKONOMIA-BRAZ-ERA r2 — świeży start (nie wznawiać).
 - **Dysk:** awaria ENOSPC przy starcie trzeciego tematu; usunięto worktree trzech zakończonych/nieudanych uruchomień (EKONOMIA r2, ZWYCIESTWO-WIRING, COUNTER, ZLOZA-B-PORT, ZWYCIESTWO-IMPL). Dysk: 16 GB wolne. Worktree ZLOZA-B-REST (w toku) zachowane.
+
+## ZWYCIESTWO-IMPL (P6.19-A): zintegrowane na parity-v2 (0ca58770e)
+- Cherry-pick `3a4c55929 8a31afd24 8fc46b8d7` na `94feb5e37`, bez konfliktów.
+- Pełny test na tipie: **3301 passed, 0 failed, 1 ignored** (exit 0); fmt OK; clippy `-D warnings` OK.
+- **FF `parity-v2`: `94feb5e37` → `0ca58770e`.** Worktree `integ-victory` usunięty.
+- Gotowe do wpięcia (ZWYCIESTWO-WIRING, świeży start).
