@@ -1,3 +1,9 @@
+## ROBOCZA 2d74db6a -- 2026-11-13 -- FALA 688: Koniec zmęczenia wojną: pokój bezwarunkowy, cena 0 bez miasta (testowa)
+
+- Zmęczenie wojną kończy się pokojem bezwarunkowym: gdy zmęczenie pary dojdzie do progu końca (0,8), silniejsza strona sama proponuje pokój bez żądania miasta i płatności (AI↔AI zawierane od razu, AI→gracz jako propozycja do decyzji gracza). Gdy cena pokoju wynosi zero, miasto nie jest oddawane (wyjątek od reguły ochrony jednego miasta).
+- Weryfikacja: tsc 0; logic 213/213; testy: koniec zmęczenia 22/0 (mutanty U1–U5, MAIN-U7), zmęczenie tylko miastami 29/0, ai-war-weariness-peace 99/0, diplomacy 149/0, ai 297/0, nonnegative 21/0; FC PASS-WITH-NOTES
+- Limity: Próg końca zmęczenia 0,8 to założenie do potwierdzenia; ścieżka wymuszonego pokoju po limicie tur nie ma ceny 0; AI→gracz niezmierzone na żywo; diplo-war-peace-sim ma 3 znane FAIL (S3, S4b, M_TUR)
+
 ## ROBOCZA 1a92cad2 -- 2026-11-13 -- FALA 687: Losowania w pętli tury z ziarna gry: to samo ziarno daje ten sam przebieg (testowa)
 
 - Nagrody z wiosek, wojna klastra państw-miast, automatyczny zwiad zwiadowców, akceptacja AI i sufiksy identyfikatorów używają generatora z ziarna gry; hak testowy ustawia ziarno gry; zwykła gra: ziarno nowej gry nadal losowe, format zapisu bez zmian; nowy test powtarzalności i zakaz Math.random w pętli tury.
