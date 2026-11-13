@@ -7005,8 +7005,9 @@ export function decideAIDiplomacy(
     // Brak danych siły = 'pasmo' (bez ograniczeń, jak dotąd dla braku danych).
     const peacePosMil: PeaceMilitaryPosition = rel.silaMilitarnaAI && rel.silaMilitarnaPartner
       ? peaceMilitaryPosition(
-          { id: 'ai', sila: rel.silaMilitarnaAI.sila, armiaPkt: rel.silaMilitarnaAI.armiaPkt },
-          { id: 'partner', sila: rel.silaMilitarnaPartner.sila, armiaPkt: rel.silaMilitarnaPartner.armiaPkt },
+          // Te same id co w main.ts (String(ownerId)) — remis rozstrzyga compareMilitaryStrength po id.
+          { id: inp.myPlayerId, sila: rel.silaMilitarnaAI.sila, armiaPkt: rel.silaMilitarnaAI.armiaPkt },
+          { id: rel.partnerId, sila: rel.silaMilitarnaPartner.sila, armiaPkt: rel.silaMilitarnaPartner.armiaPkt },
           PEACE_STRENGTH_GAP_PROC,
         )
       : 'pasmo';
@@ -7040,7 +7041,9 @@ export function decideAIDiplomacy(
       && !csBlocksCession
       && !aiFeelsStronger
       && aiPeaceTimeOk
-      && rw <= aiMiastoPrzekazRwProg(inp.agresywnoscRaw) + wearyCityBonus
+      // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: słabsza militarnie AI (siła) zawsze wyrównuje
+      // miastem; stara bramka rw (aiMiastoPrzekazRwProg) nie decyduje już o oddaniu miasta wobec gracza.
+      && peacePosMil === 'slabsza'
     ) {
       const wearyMinMiast = wearyDespair > 0 ? WAR_WEARINESS_PARAMS.czlowiek.minMiastAi : undefined;
       const pick = aiPickMiastoDoOddania(inp.miastaAI ?? [], inp.ekspansywnosc, {
@@ -7133,7 +7136,10 @@ export function decideAIDiplomacy(
       peaceSignals.reasons.push('f');
       peaceSignals.wantsPeace = true;
     }
-    if (rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)) {
+    // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: wobec gracza słabsza AI proponuje pokój WYŁĄCZNIE
+    // z miastem (blok N1a wyżej). Gdy nie ma miasta do oddania — brak propozycji (ZAŁOŻENIE Z5).
+    const peaceWeakerNoCityVsPlayer = rel.partnerId === '0' && peacePosMil === 'slabsza';
+    if (rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)) {
       // R-WEB-DIPLO-TRUCE-IMPL-Q1 (E): tryb wg pozycji i zmęczenia wojną (zaufanie z relacji);
       // bez sygnałów rozstrzygających — dotychczasowy wybór po turach wojny (aiPeaceProposalKind).
       // Sygnały: zmęczenie (ułamek t/T), willingnessPeace ze stance (gotowość do pokoju) i Zaufanie.
@@ -7315,10 +7321,10 @@ export function decideAIDiplomacy(
     // (20%, diplomacy-military-strength-params.json). Charakter (effAgresja, willingnessWar) nadal
     // decyduje, czy AI z tej możliwości skorzysta. Brak danych siły = brak przewagi.
     const milAiSide = rel.silaMilitarnaAI
-      ? { id: 'ai', sila: rel.silaMilitarnaAI.sila, armiaPkt: rel.silaMilitarnaAI.armiaPkt }
+      ? { id: inp.myPlayerId, sila: rel.silaMilitarnaAI.sila, armiaPkt: rel.silaMilitarnaAI.armiaPkt }
       : undefined;
     const milPartnerSide = rel.silaMilitarnaPartner
-      ? { id: 'partner', sila: rel.silaMilitarnaPartner.sila, armiaPkt: rel.silaMilitarnaPartner.armiaPkt }
+      ? { id: rel.partnerId, sila: rel.silaMilitarnaPartner.sila, armiaPkt: rel.silaMilitarnaPartner.armiaPkt }
       : undefined;
     const aiMaPrzewageMilitarna = milAiSide !== undefined
       && milPartnerSide !== undefined

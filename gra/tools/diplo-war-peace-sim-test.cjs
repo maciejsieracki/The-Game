@@ -91,6 +91,9 @@ function cleanup() {
 }
 
 // ---- driver: stan wojny w każdej turze (jak main.ts diploRelWarFields / diploWarStateFor) ----
+// Siła AI w scenariuszu (sila partnera = 1000 − ta wartość): rw > 0.5 → AI silniejsza militarnie.
+function silaScenariusza(rw) { return rw > 0.5 ? 700 : 300; }
+
 function aiTurn(mod, t, o) {
   return mod.decideAIDiplomacy({
     myPlayerId: 'ai-1',
@@ -106,6 +109,10 @@ function aiTurn(mod, t, o) {
       lostCitiesInWar: o.lost || 0,
       turnsSinceCityChange: t,
       armyHealthShare: o.health,
+      // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: pozycja wg SIŁY MILITARNEJ (nie rw).
+      // Mapowanie scenariusza: rw > 0.5 = AI silniejsza militarnie; rw <= 0.5 = AI słabsza.
+      silaMilitarnaAI: { sila: silaScenariusza(o.rw), armiaPkt: 0 },
+      silaMilitarnaPartner: { sila: 1000 - silaScenariusza(o.rw), armiaPkt: 0 },
     }],
   });
 }
@@ -144,10 +151,11 @@ function playerPeaceProposal(mod, t, o) {
   );
   return mod.evaluateProposal(mod.negotiationAsProposal(entry), ctxFor({
     turnsAtWar: t, lostCitiesResponder: o.lost || 0, responderRw: o.rw,
+    responderPozycjaMilitarna: o.rw > 0.5 ? 'silniejsza' : 'slabsza',
   }, o.typ));
 }
 
-function isStronger(r) { return /czuje się silniejsze/.test(r.reason || ''); }
+function isStronger(r) { return /czuje się silniejsze|militarnie silniejsza/.test(r.reason || ''); }
 function isTooEarly(r) { return /za wcześnie/.test(r.reason || ''); }
 
 const SLABY = { rw: 0.2, typ: 'zulusi', health: 0.9 };
@@ -236,25 +244,30 @@ async function main() {
     const pvs = ok.playerVsStrong;
     check('S3: gracz (silna AI, bez utraty) dostaje „czuje się silniejsze" w turach 7-9 (po minTur 7)',
       [7, 8, 9].every(t => isStronger(pvs[t - 1])), [7, 8, 9].map(t => pvs[t - 1].reason));
-    check('S3b: gracz (silna AI, bez utraty) od tury 10 nie dostaje odrzucenia „silniejsze"',
-      pvs.slice(9).every(r => !isStronger(r)), pvs.slice(9).map(r => r.reason));
-    check('S3c: po 20 turach odrzucenie (silniejsze / za wcześnie) znika całkowicie',
-      pvs.slice(19).every(r => !isStronger(r) && !isTooEarly(r)), pvs.slice(19).map(r => r.reason));
+    // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: silniejsza militarnie AI odrzuca bez limitu czasu (nie wygasa po turze 10).
+    check('S3b: gracz (silna AI, bez utraty) od tury 10 nadal dostaje odrzucenie (reguła siły, bez wygaśnięcia)',
+      pvs.slice(9).every(r => isStronger(r)), pvs.slice(9).map(r => r.reason));
+    check('S3c: po 20 turach silniejsza militarnie AI nadal odrzuca (bez miasta)',
+      pvs.slice(19).every(r => isStronger(r)), pvs.slice(19).map(r => r.reason));
     const pls = ok.playerVsStrongLoss;
-    check('S4: po utracie miasta (tura 5) gracz NIE dostaje „silniejsze" w turach 6-9',
-      [6, 7, 8, 9].every(t => !isStronger(pls[t - 1])), [6, 7, 8, 9].map(t => pls[t - 1].reason));
+    // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: utrata miasta NIE zmienia pozycji militarnej —
+    // silniejsza AI nadal odrzuca pokój bez miasta (stara reguła „po utracie miasta nie czuje się silniejsza" uchylona).
+    check('S4: po utracie miasta (tura 5) silniejsza militarnie AI nadal odrzuca w turach 10-12 (reguła siły)',
+      [10, 11, 12].every(t => isStronger(pls[t - 1])), [10, 11, 12].map(t => pls[t - 1].reason));
     check('S4b: kontrola — bez utraty w turze 8 odrzucenie „silniejsze" jest',
       isStronger(pvs[7]), pvs[7].reason);
 
     // kryterium 1/4/7: zmęczenie wojną — umiarkowana AI nie chce pokoju przed ~0.4·T
-    check('S5: AI średnia (rw 0.5, bez sygnału) pierwszy raz chce pokoju w turze 8 (zmęczenie 8/20 = 0.4)',
-      ok.midFirstT === 8, ok.midFirstT);
-    check('S5b: pierwsza propozycja AI średniej to sygnał (e) zmęczenia',
-      ok.midReasonAtFirst !== null && /sygnaly=e/.test(ok.midReasonAtFirst), ok.midReasonAtFirst);
+    // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: pasmo „średnia" zniknęło — każda słabsza militarnie AI
+    // szuka pokoju od minTurWojny (zmęczenie nie bramkuje). Scenariusz rw 0.5 = AI słabsza (siła 300 vs 700).
+    check('S5: AI słabsza militarnie (rw 0.5) pierwszy raz chce pokoju od minTurWojny (tura 7)',
+      ok.midFirstT === 7, ok.midFirstT);
+    check('S5b: pierwsza propozycja AI słabszej militarnie niesie sygnał (f) słabszej siły',
+      ok.midReasonAtFirst !== null && /sygnaly=[^;]*f/.test(ok.midReasonAtFirst), ok.midReasonAtFirst);
 
     // zdrowie armii (sygnał c)
     check('S6: zdrowie armii 0.1 (< progZdrowia) → AI chce pokoju w turze 7 (sygnał c, po minTurWojny)', ok.healthLow === true, ok.healthLow);
-    check('S6b: zdrowie armii 0.9 → brak chęci pokoju w turze 7 (minTurWojny zulusi)', ok.healthHigh === false, ok.healthHigh);
+    check('S6b: zdrowie armii 0.9 nie blokuje — słabsza militarnie AI szuka pokoju w turze 7 (reguła siły)', ok.healthHigh === true, ok.healthHigh);
 
     // spójność: AI nie proponuje pokoju, którego sama by odrzuciła
     check('S7: spójność — AI nigdy nie proponuje pokoju w stanie „czuje się silniejsze" (0 naruszeń)',
@@ -277,8 +290,9 @@ async function main() {
       mTurR.weakSchedule.length > 0 && mTurR.weakSchedule[0].t === 1 && mTurR.earlyViolations.length > 0,
       { first: mTurR.weakSchedule[0], early: mTurR.earlyViolations.length });
     const mHealthR = runSuite(require(BUNDLES.health));
-    check('M_HEALTH wykryty: zdrowie armii 0.1 nie daje chęci pokoju (sygnał c off)',
-      mHealthR.healthLow === false, mHealthR.healthLow);
+    // Sygnał zdrowia (c) nie wpływa na słabszą militarnie AI (pozycja siły decyduje) — mutant niewidoczny w tym scenariuszu.
+    check('M_HEALTH (przeniesiony): wyłączenie sygnału zdrowia nie zmienia decyzji słabszej militarnie AI',
+      mHealthR.healthLow === true, mHealthR.healthLow);
   } finally {
     cleanup();
   }

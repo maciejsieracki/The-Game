@@ -1378,6 +1378,16 @@ export function evaluateProposal(
           turnsSinceCityChange: ctx.warState.turnsSinceCityChange,
         }));
         basePn = Math.round(basePnCfg * r5Gate.priceMultiplier * wearyFactor);
+        // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (zarzut 5 / wymóg 4): złoto i surowce NIE są
+        // słodzikiem pokoju ani rozejmu — w każdej pozycji (słabsza i silniejsza AI) oferta z nimi jest
+        // odrzucana. Słodzikiem jest wyłącznie miasto (poniżej, dla 'stronger').
+        const nonCitySweetener = (payload.giveItems ?? []).find(i => i.typ === 'zloto' || i.typ === 'surowiec_ilosc');
+        if (nonCitySweetener) {
+          return {
+            accepted: false,
+            reason: 'Złoto i surowce nie są słodzikiem pokoju ani rozejmu — w ofercie wymagane są wyłącznie miasta',
+          };
+        }
         // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: militarnie silniejsza AI odrzuca pokój, chyba że
         // oferta zawiera MIASTO gracza o wartości PN ≥ ceny. Liczą się WYŁĄCZNIE miasta w giveItems
         // (pieniądze i surowce nie są słodzikiem). Cena jak dotąd (bez mnożnika od siły).
