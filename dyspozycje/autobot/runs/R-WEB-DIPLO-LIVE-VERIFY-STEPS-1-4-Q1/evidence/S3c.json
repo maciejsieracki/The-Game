@@ -1,0 +1,94 @@
+{
+  "scenario": "3c",
+  "started": "2026-11-13T19:59:51.418Z",
+  "tury": [
+    {
+      "krok": 1,
+      "tura": 2,
+      "zaufanieUstawione": 0,
+      "diagPrzed": {
+        "turn": 1,
+        "endTurnInProgress": false,
+        "modals": [],
+        "toast": {
+          "display": "none",
+          "html": "Miasto Rzym założone!",
+          "zIndex": "320"
+        }
+      },
+      "diagPo": {
+        "turn": 2,
+        "endTurnInProgress": false,
+        "modals": [],
+        "toast": {
+          "display": "none",
+          "html": "Miasto Rzym założone!",
+          "zIndex": "320"
+        }
+      },
+      "licznik": 5,
+      "status": "neutralni",
+      "zaufanie": 1,
+      "ostrzezenie": {
+        "found": false,
+        "texts": []
+      }
+    },
+    {
+      "krok": 2,
+      "tura": 3,
+      "zaufanieUstawione": 0,
+      "diagPrzed": {
+        "turn": 2,
+        "endTurnInProgress": false,
+        "modals": [],
+        "toast": {
+          "display": "none",
+          "html": "Miasto Rzym założone!",
+          "zIndex": "320"
+        }
+      },
+      "diagPo": {
+        "turn": 3,
+        "endTurnInProgress": false,
+        "modals": [],
+        "toast": {
+          "display": "none",
+          "html": "Miasto Rzym założone!",
+          "zIndex": "320"
+        }
+      },
+      "licznik": 6,
+      "status": "neutralni",
+      "zaufanie": 1,
+      "ostrzezenie": {
+        "found": false,
+        "texts": []
+      }
+    }
+  ],
+  "errors": [],
+  "ownerIds": [
+    1,
+    3,
+    5
+  ],
+  "cityCountAi": 1,
+  "ai": 1,
+  "brake": {
+    "prog": 15,
+    "n": 6
+  },
+  "start": {
+    "counter": 4,
+    "status": "neutralni",
+    "zaufanie": 0
+  },
+  "N": 6,
+  "oczekiwanie": {
+    "licznikPoTurze1": 5,
+    "licznikPoTurze2": 6,
+    "wojnaNajwczesniejPoTurze2": true
+  },
+  "zakonczone": "2026-11-13T20:03:48.285Z"
+}
