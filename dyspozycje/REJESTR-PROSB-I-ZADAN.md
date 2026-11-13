@@ -9747,3 +9747,6 @@ W toku: 4a rozejm i pokój (W50), audyt niedeterminizmu (W49), opisy diplomacy.j
 ## 2026-11-13 — FALA 682 wdrożona na ROBOCZĄ (MD5 272e14e43cb32f024a6a796a1ef5f7b4)
 Opisy w pliku dyplomacji zgodne z parametrami (R-WEB-DIPLO-JSON-DESCRIPTIONS-SYNC-Q1, 801888c60): zero zmian zachowania gry. FALA 683 (etykieta „Relacja” wg zaufania, a2dc4fa31) w budowie.
 Decyzje właściciela 2026-11-13 (ABC): (1) bonus „skłonności do wojny” cywilizacji wraca jako zmiana progu przewagi (wartości do ustalenia); (2) słabsza strona z jednym miastem NIE kupi pokoju do końca wojny (bez obejścia zmęczeniem); (3) częstość ofert handlowych AI: najpierw naprawa losowania (W53), potem ponowny pomiar.
+
+## 2026-11-13 — FALE 683–685 wdrożone na ROBOCZĄ (ostatnia: main c49a36761)
+FALA 683: etykieta „Relacja” wg zaufania (a2dc4fa31). FALA 684: równe tempo mieszanej armii do wzwarcia (42555395c). FALA 685: krok 4a — rozejm i pokój wg siły militarnej, słabsza szuka, silniejsza odrzuca, słodzik tylko miasto (5a50a5958), oraz usunięcie martwych zdarzeń religii/ultimatum i opisów danych dyplomacji (341f2f8ed). Testy: patrz WERSJE.md. W toku: losowanie z ziarnem (W53), administrator natywne okna (W55), próg charakteru cywilizacji (W56), krok 4b zmęczenie wojną (W57).
