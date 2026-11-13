@@ -1,0 +1,7 @@
+# R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1 — dispatch (2026-11-13)
+
+GOAL (krok 4b z 4, decyzje właściciela 2026-11-13): zmęczenie wojną nadal kończy długie wojny, ale WYŁĄCZNIE oddaniem miast (bez złota i surowców), miarą siły jest siła militarna, a słabsza strona z jednym miastem NIE może kupić pokoju do końca wojny. Szczegóły: DODATEK.
+
+BAZA: kandydat 5a50a5958 (krok 4a; potomek origin/main f0853a6cc). Operator: HAIKU. Evaluator/FC: SONNET.
+ALLOWLISTA: gra/src/game/war-weariness.ts, gra/data/war-weariness-params.json, gra/src/game/diplomacy-ai-offer-balance.ts, gra/src/game/diplomacy-ai-forced-peace.ts, gra/src/game/diplomacy-proposals.ts (tylko ścieżki zmęczenia/ochrony przegrywającego), gra/src/game/ai.ts (WYŁĄCZNIE bloki zmęczenia wojną/oferty przegrywającego), gra/src/game/diplomacy-military-strength.ts (pomocniki), gra/src/main.ts (WYŁĄCZNIE wywołania ścieżki zmęczenia/pokoju z zmęczenia — okablowanie wyciągaj do czystych funkcji jak w kroku 4a), istniejące testy w gra/tools/*.cjs tylko w asercjach o starych słodzikach (złoto/surowce) i mierze Power w zmęczeniu, NOWY gra/tools/diplo-weariness-city-only-test.cjs, dyspozycje/autobot/runs/R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1/**.
+ZAKAZ: wypowiadanie wojny (krok 3 i próg charakteru), liczby zaufania, etykiety, bramki pokoju z kroku 4a poza koniecznym dostosowaniem, power-objective.ts, WERSJE.md, gra-robocza/, rust-port/, npm run build/dev, git add -A, spawn_task i inne narzędzia zakładające sesje.
