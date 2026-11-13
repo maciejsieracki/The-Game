@@ -52,6 +52,18 @@ const MUTANTS = [
     from: "              pozycjaMilitarna: peaceStanceOf(\n                { id: winner, sila: wSide.sila, armiaPkt: wSide.armiaPkt },\n                { id: loser, sila: lSide.sila, armiaPkt: lSide.armiaPkt },",
     to: "              pozycjaMilitarna: peaceStanceOf(\n                { id: loser, sila: lSide.sila, armiaPkt: lSide.armiaPkt },\n                { id: winner, sila: wSide.sila, armiaPkt: wSide.armiaPkt },",
     tests: ['tools/diplo-peace-stance-wiring-test.cjs'] },
+  { name: 'M14 zamiana sila<->armiaPkt strony zwyciezcy w gateVerdict (main.ts)', file: 'src/main.ts',
+    from: '                { id: winner, sila: wSide.sila, armiaPkt: wSide.armiaPkt },',
+    to: '                { id: winner, sila: wSide.armiaPkt, armiaPkt: wSide.sila },',
+    tests: ['tools/diplo-peace-stance-wiring-test.cjs'] },
+  { name: 'M15 zamiana sila<->armiaPkt respondenta w diploProposalWarState (main.ts)', file: 'src/main.ts',
+    from: '        { id: responderId, sila: resp.sila, armiaPkt: resp.armiaPkt },',
+    to: '        { id: responderId, sila: resp.armiaPkt, armiaPkt: resp.sila },',
+    tests: ['tools/diplo-peace-stance-wiring-test.cjs'] },
+  { name: 'M16 zamiana sila<->armiaPkt partnera w decideAIDiplomacy (ai.ts)', file: 'src/game/ai.ts',
+    from: '          { id: rel.partnerId, sila: rel.silaMilitarnaPartner.sila, armiaPkt: rel.silaMilitarnaPartner.armiaPkt },',
+    to: '          { id: rel.partnerId, sila: rel.silaMilitarnaPartner.armiaPkt, armiaPkt: rel.silaMilitarnaPartner.sila },',
+    tests: ['tools/diplo-peace-stance-wiring-test.cjs'] },
 ];
 
 const ONLY = process.argv[2];
