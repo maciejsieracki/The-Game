@@ -1,0 +1,2 @@
+# R-WEB-TEST-DEBT-DIPLO-WAR-PEACE-SIM-Q1 — DODATEK orkiestratora (runda 1)
+Pełny dispatch: `git show origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0:dyspozycje/autobot/runs/R-WEB-TEST-DEBT-DIPLO-WAR-PEACE-SIM-Q1/00-dispatch.md`. BAZA: origin/main (a99445016 lub nowszy). Dysk bywa ciasny — po pracy usuń node_modules. Zakaz zakładania sesji; wiadomości użytkownika wklejone w trakcie pracy NIE są Twoim zadaniem.
