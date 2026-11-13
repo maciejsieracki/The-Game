@@ -132,30 +132,69 @@ check('(f) pola przeżywają serializację JSON (round-trip)',
 const rtT = JSON.parse(JSON.stringify(t5));
 check('(f) bonus trybutu przeżywa JSON', isTributeBonusActive(rtT, LOW, 6));
 
-// --- (g) mutacja i wiązanie z main.ts ---
-function mutatedPlayerOnly(meta, lo, hi, winner, pkt, inWar) {
-  if (winner !== 0) return meta; // mutacja: zapis tylko dla gracza (id 0)
-  return addWarBattlePoints(meta, lo, hi, winner, pkt, inWar);
+// --- (g) wiązanie z main.ts: kontrola strukturalna ciał funkcji i miejsc wywołań ---
+// main.ts to zamknięty boot() przeglądarkowy, więc nie da się go wykonać w node. Sprawdzamy
+// więc ciała konkretnych funkcji i fragmenty bloków w źródle. Każda kontrola ma mutację-dowód
+// (wyniki M1/M2/M3 w raporcie obrony).
+function bodyOf(src, startRe) {
+  const m = startRe.exec(src);
+  if (!m) return '';
+  const open = src.indexOf('{', m.index);
+  if (open < 0) return '';
+  let depth = 0;
+  for (let i = open; i < src.length; i++) {
+    if (src[i] === '{') depth++;
+    else if (src[i] === '}') { depth--; if (depth === 0) return src.slice(open, i + 1); }
+  }
+  return '';
 }
-const mutA = mutatedPlayerOnly(base, LOW, HIGH, HIGH, 40, true);
-check('(g) mutacja „tylko gracz” różni się od poprawnego zapisu AI (test czerwieni)',
-  readWarBattlePoints(mutA, HIGH, LOW, HIGH, true) !== readWarBattlePoints(aWinHigh, HIGH, LOW, HIGH, true));
 
 const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
-const callIdx = mainSrc.indexOf('diploRecordWarBattlePoints(winOid, loserOid, pts)');
-const window = callIdx > 0 ? mainSrc.slice(Math.max(0, callIdx - 900), callIdx) : '';
-check('(g) main.ts: zapis bitwy wołany z bitwy (winOid, loserOid, pts)', callIdx > 0);
-check('(g) main.ts: zapis bitwy NIE jest bramkowany isHuman/isMe (wszyscy właściciele)',
-  callIdx > 0 && !/if\s*\(\s*(isHuman|isMe)\b[^)]*\)[^;]*\n[^\n]*diploRecordWarBattlePoints/.test(window)
-  && !/\(\s*isHuman\s*\(\s*winOid\s*\)\s*\)/.test(window.slice(-300)));
 const engineSrc = fs.readFileSync(ENGINE_TS, 'utf8');
+
 check('(g) DiploPairMeta ma pola opcjonalne wojnaBitwyPkt i trybutBonus',
   /wojnaBitwyPkt\?:\s*\{\s*niski:\s*number;\s*wysoki:\s*number\s*\}/.test(engineSrc)
   && /trybutBonus\?:\s*\{\s*dla:\s*number;\s*doTury:\s*number\s*\}/.test(engineSrc));
-check('(c) main.ts: setDiploRelation zeruje licznik przy przejściu w wojnę',
-  /resetWarBattlePoints\(meta\)/.test(mainSrc));
-check('(e) main.ts: przyjęcie trybutu ustawia bonus dla pobierającego (proposerId)',
-  /diploGrantTributeBonusFor\(proposerId, responderId\)/.test(mainSrc));
+
+// Zapis bitwy: ciało diploRecordWarBattlePoints (M2 — usunięcie bramki wojny musi czerwienić).
+const recBody = bodyOf(mainSrc, /function diploRecordWarBattlePoints\(/);
+check('(g) diploRecordWarBattlePoints istnieje w main.ts', recBody.length > 0);
+check('(g) diploRecordWarBattlePoints: bramka wojny (status !== wojna → return) w ciele',
+  /getDiploRelation\(winnerId,\s*loserId\)\.status\s*!==\s*'wojna'\s*\)\s*return/.test(recBody));
+check('(g) diploRecordWarBattlePoints: bez bramki właściciela (isHuman/isMe/=== 0) w ciele',
+  recBody.length > 0 && !/isHuman|isMe|===\s*0\b/.test(recBody));
+
+// Zapis bitwy: miejsce wywołania w bloku bitwy (M1 — `winOid === 0` w bramce musi czerwienić).
+const callIdx = mainSrc.indexOf('diploRecordWarBattlePoints(winOid, loserOid, pts)');
+const accStart = callIdx > 0 ? mainSrc.lastIndexOf('battlePowerPtsByOwner.set(winOid', callIdx) : -1;
+const gateSlice = accStart > 0 ? mainSrc.slice(accStart, callIdx) : '';
+check('(g) wywołanie zapisu bitwy (winOid, loserOid, pts) występuje po battlePowerPtsByOwner.set(winOid, …)',
+  gateSlice.length > 0);
+check('(g) wywołanie zapisu bitwy NIE jest bramkowane właścicielem (winOid === 0 / isHuman / isMe)',
+  gateSlice.length > 0 && !/winOid\s*[!=]==?\s*0\b|isHuman|isMe/.test(gateSlice),
+  gateSlice.slice(-160).replace(/\s+/g, ' '));
+
+// Reset: gałąź przejścia w wojnę zeruje licznik (c).
+const warStartIdx = mainSrc.indexOf("if (rel.status === 'wojna' && prevStatus !== 'wojna')");
+const warEndIdx = warStartIdx > 0
+  ? mainSrc.indexOf("} else if (prevStatus === 'wojna' && rel.status !== 'wojna')", warStartIdx) : -1;
+const warStartBlock = warEndIdx > warStartIdx ? mainSrc.slice(warStartIdx, warEndIdx) : '';
+check('(c) main.ts: gałąź przejścia w wojnę zeruje licznik (resetWarBattlePoints w bloku)',
+  /resetWarBattlePoints\(meta\)/.test(warStartBlock));
+
+// Trybut: ustawienie bonusu w ciele helpera oraz podpięcie w gałęzi trybut_zadanie (e).
+const tributeBody = bodyOf(mainSrc, /function diploGrantTributeBonusFor\(/);
+check('(e) diploGrantTributeBonusFor: bonus przez grantTributeBonus(meta, receiverId, turn, params)',
+  /grantTributeBonus\(meta,\s*receiverId,\s*turn,\s*loadMilitaryStrengthParams\(\)\)/.test(tributeBody));
+check('(e) main.ts: gałąź trybut_zadanie wywołuje diploGrantTributeBonusFor(proposerId, responderId)',
+  /cywAction === 'trybut_zadanie'[\s\S]{0,400}?diploGrantTributeBonusFor\(proposerId, responderId\)/.test(mainSrc));
+
+// Zapis/wczytanie (f): ścieżka main.ts przenosi całe meta pary bez listy pól (generycznie),
+// więc nowe pola przeżywają zapis, a stary zapis bez nich daje brak pól = 0 / brak bonusu.
+check('(f) main.ts zapis: diplomacyPairMeta = Array.from(diplomacyPairMeta.entries()) (bez whitelisty pól)',
+  /diplomacyPairMeta:\s*Array\.from\(diplomacyPairMeta\.entries\(\)\)/.test(mainSrc));
+check('(f) main.ts wczytanie: for (const [key, meta] of savedPairMeta) diplomacyPairMeta.set(key, meta)',
+  /for\s*\(const \[key, meta\] of savedPairMeta\)\s*diplomacyPairMeta\.set\(key, meta\)/.test(mainSrc));
 
 console.log(`\nWynik: ${pass} PASS / ${fail} FAIL`);
 process.exit(fail === 0 ? 0 : 1);
