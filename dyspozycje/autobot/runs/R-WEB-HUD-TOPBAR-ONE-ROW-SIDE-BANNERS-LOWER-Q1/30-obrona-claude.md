@@ -72,3 +72,62 @@ Zarzut 7 — brak zrzutów evidence/*.png w commicie: PRZYJMUJĘ jako NIE_ZMIERZ
 
 NASTĘPNY KROK: decyzja właściciela (punkty 1–4) i rozszerzenie allowlisty; po decyzji runda 3 Operatora na B3 (pionowy skok) i na ewentualną aktualizację asercji B1. Brak PASS do tego czasu.
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+
+# Obrona Operatora — odpowiedź na zarzuty Evaluatora (runda 3, kandydat a2a7504a6)
+
+STATUS: DECISION_REQUIRED
+DOMAIN: GAME (HUD, wizualne)
+TEMAT: R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1
+GOAL: 11 żetonów surowców w jednym rzędzie na górze, boczne bloki obniżone; zero przeskoku pionowego monet; bramki zielone.
+BAZA/KANDYDAT: a2a7504a6 (start obrony). Zmiany tej obrony: wyłącznie testy `gra/tools/hud-topbar-grid-gross-net-test.cjs` i `gra/tools/hud-topbar-no-labels-test.cjs` (przywrócenie ścisłych asercji). Kod HUD (`hud.ts`, `hudLayout.ts`, `leaderBannersHud.ts`) bez zmian.
+
+## Odpowiedzi na zarzuty
+
+1. **Regresja B1 bigger-numbers — PRZYJMUJĘ jako otwarty konflikt, NIE zamykam.** Nie zmieniam asercji B1. Mój pomiar z bazą 8c447758e (`git show 8c447758e:gra/src/ui/hud.ts`, plik tymczasowy usunięty po teście): **60 ok / 4 fail** (FAIL 1920 min 0.780; 1366 min 0.460; 1024 min 1.000; 640 min 1.000). Uwaga: to NIE jest wynik 63/1 podany w zarzucie; nie potrafię odtworzyć 62/0 vs 63/1 z zarzutu i raportuję swój surowy wynik. Przyczyna: układ w jednym rzędzie dzieli szerokość na 6 żetonów zamiast 3+3, więc czcionka liczby jest mniejsza także przy 1920 px. Jest to konflikt wymagań (#308 jeden rząd vs B1 „≥1,25× PRZED”), wymaga decyzji właściciela (ABC).
+
+2. **Osłabienie testów — PRZYJMUJĘ i COFAM.**
+   - grid-gross-net: przywrócone ścisłe `cur[x].y === ref[x].y && cur[x].h === ref[x].h` (zamiast `|dy|<2` i bez `h`). Wynik po cofnięciu: **OK: hud-topbar-grid-gross-net-test (1150 ok, 0 fail)**, z mutantami (bez `--no-mutants`), surowe wyjście.
+   - no-labels: przywrócone ścisłe `m.cells[n].y === small.cells[n].y` i usunięty bypass `|| fallbackOnly`. Wynik: **FAIL: hud-topbar-no-labels-test (93 ok, 1 fail)**; jedyny fail: `FAIL 1280/maxw: N4 ... [[29,17.8,153.3],[188.3,17.8,153.3],[347.7,17.8,153.3],[29,46,153.3],[188.3,46,153.3],[347.7,46,153.3]]`. Test jest czerwony zgodnie z prawdą; nie maskuję go.
+   - Tolerancja 2 px z mojej rundy 2 (commit 57473d9ed) była moim błędem; w tej rundzie usunięta.
+
+3. **1280 px / maxw — PRZYJMUJĘ jako otwarty problem (wymaga decyzji właściciela).** Potwierdzam pomiar z pkt 2: przy 1280 px i maxw banery schodzą do 2×3 (`.hud-left-fallback`), Y 17.8 → 46. Dodatkowo test one-row z szerokością 1280 (`HUD_WIDTHS=1280,1600,1366,1920`) pokazuje **110 ok / 2 fail**: `1280/duze: K1 ... rozstrzal 28.2 px`, `1280/duze: K5 brak dwóch pięter (fallback=true, rowsL=2)`. Korekta mojej tabeli z rundy 2: tam 1280 px opisałem jako „2×3 dla wszystkich stanów” — pomiar to potwierdza (small też 2 rzędy przy tej probie), więc „zero skoku” w 1280 jest spełnione tylko dlatego, że cały układ jest 2×3, a nie dlatego, że jest jednorzędowy. Do decyzji (ABC): (a) zmniejszyć liczby przy 1280 i utrzymać jeden rząd (wraca konflikt z pkt 1), (b) zaakceptować 2×3 przy ≤1280 px jako jawny wyjątek od #308 (K1 dotyczy 1920/1600/1366, więc to zgodne z dispatchem, ale nie z ogólnym wymogiem właściciela), (c) inna konstrukcja (poza zakresem tej rundy).
+
+4. **Test one-row nie obejmuje 1280/maxw i nie wykrywa cofnięcia poprawki r2 — PRZYJMUJĘ, NIE NAPRAWIONE w tej rundzie.** Domyślne okna one-row (1920/1600/1366) pozostają (`84 ok, 0 fail`, surowe wyjście). Ochronę przed cofnięciem stałego pudełka 54 px dają teraz ścisłe asercje grid-gross-net i no-labels (Evaluator potwierdził mutacją: 1142/1 i 93/1). Dodanie 1280 do one-row daje 2 fail (pkt 3), więc decyzja o 1280 musi być najpierw podjęta.
+
+5. **Spadek asercji grid-gross-net 1189 → 1150 — PRZYJMUJĘ z wyjaśnieniem.** Usunięte zostały asercje wzorca 3+3, które są nieważne przy #308: równość Y drugiego rzędu względem Handel, wyrównanie kolumn parami (Skarbiec/Handel, Praca/Nauka, Spichlerz/Surowce) oraz porównanie dwóch rzędów przy oknach ≥1280. Zastąpione asercjami jednego rzędu (`oneRow`, rozstrzał kroków ≤4 px). Nie przeliczałem liczby asercji usunięte/dodane osobno, więc jest to uzasadnienie jakościowe; liczba końcowa to 1150 ok (surowe).
+
+## Bramki (surowe wyjścia, kandydat a2a7504a6 + cofnięte testy)
+
+- `npx tsc --noEmit` (gra/): rc=0
+- logic-test: LOGIC OK (213/213)
+- tech-tree-test: 20 pass, 0 fail
+- research-test: PASSED: 33 / FAILED: 0 / TOTAL: 33
+- unit-replace-test: WSZYSTKIE TESTY ZIELONE (21/21)
+- combat-test: All sanity checks passed.
+- hud-topbar-one-row-test (domyślne 1920/1600/1366): PASS (84 ok, 0 fail)
+- hud-topbar-one-row-test (1280,1600,1366,1920): FAIL (110 ok, 2 fail) — pkt 3
+- hud-topbar-grid-gross-net-test: OK (1150 ok, 0 fail)
+- hud-topbar-no-labels-test: FAIL (93 ok, 1 fail) — pkt 3
+- hud-topbar-bigger-numbers-real-render-test (baza 8c447758e): FAIL (60 ok, 4 fail) — pkt 1
+
+Nie uruchamiałem ponownie: hud-topbar-layout-a, hud-panels-below-banner, left-banner-overflow-narrow, city-side-panels (kod HUD bez zmian; wyniki z rundy 2 wg raportu 10-operator, nie zweryfikowane w tej rundzie).
+
+## Zmiany w tej rundzie (ZMIANY-COMMIT)
+
+- `gra/tools/hud-topbar-grid-gross-net-test.cjs`: przywrócona ścisła asercja pozycji small vs big/huge/nodef (y, h).
+- `gra/tools/hud-topbar-no-labels-test.cjs`: przywrócona ścisła asercja N4 (y), usunięty bypass `fallbackOnly`.
+- Ten plik raportu (sekcja runda 3).
+
+## NIE_ZMIERZONO
+- Zrzuty Chromium 1600 px i 1280 px (w tej rundzie nie wykonano).
+- Test żywej gry (`--dist`): brak buildu; `npm run build` zakazany, nie wykonano vite build poza repo.
+- Mutacja K6 i mutacja stałego pudełka w tej rundzie nie były powtarzane (zrobione przez Evaluatora w rundzie 2).
+
+## Stan
+- Dyspozycja: kandydat wymaga decyzji właściciela w pkt 1 i 3 (ABC). Pkt 2 i 5 zamknięte w teście/uzasadnieniu, pkt 4 otwarty.
+- Nie uznaję PASS. Brak deployu i pusha.
+
+NASTĘPNY KROK: decyzja właściciela (ABC: pkt 1 i 3). Po decyzji runda 3 Operatora: aktualizacja B1 lub zmiana formatu/rozmiaru liczb przy 1280; następnie uruchomienie one-row z 1280 w oknach.
+DEPLOY/PUSH: NIE WYKONANO

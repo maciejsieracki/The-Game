@@ -135,11 +135,8 @@ async function main() {
       // R-WEB-HUD-TOPBAR-LAYOUT-A-Q1: w TYM SAMYM trybie (te same klasy hud-left-*) pozycje x/y/szerokosci identyczne;
       // przy zmianie trybu (ekstremalne liczby -> pomniejszenie czcionek) wymagane sa te same kolumny (x, szerokosc).
       const sameTier = m.tier === small.tier;
-      const sameLayout = ORDER.every((n) => m.cells[n] && small.cells[n] && m.cells[n].x === small.cells[n].x && (!sameTier || Math.abs(m.cells[n].y - small.cells[n].y) < 2) && m.cells[n].w === small.cells[n].w);
-      // R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1: jedna linia (skala) jest stala dla malych/duzych liczb; jedyna
-      // dopuszczalna zmiana ukladu to awaryjne 2x3 (hud-left-fallback) przy skrajnych liczbach (udokumentowane w raporcie).
-      const fallbackOnly = !sameTier && /hud-left-fallback/.test(m.tier) && !/hud-left-fallback/.test(small.tier);
-      ok(sameLayout || fallbackOnly, `${w}/${st}: N4 pozycje i szerokosci komorek IDENTYCZNE jak dla malych liczb (albo awaryjne 2x3 przy skrajnych liczbach)`, ORDER.map((n) => m.cells[n] && [m.cells[n].x, m.cells[n].y, m.cells[n].w]));
+      const sameLayout = ORDER.every((n) => m.cells[n] && small.cells[n] && m.cells[n].x === small.cells[n].x && (!sameTier || m.cells[n].y === small.cells[n].y) && m.cells[n].w === small.cells[n].w);
+      ok(sameLayout, `${w}/${st}: N4 pozycje i szerokosci komorek IDENTYCZNE jak dla malych liczb`, ORDER.map((n) => m.cells[n] && [m.cells[n].x, m.cells[n].y, m.cells[n].w]));
       ok(!sameTier || Math.abs(m.banner.h - small.banner.h) < 0.5, `${w}/${st}: N4 wysokosc banera stala (w tym samym trybie)`, [m.banner.h, small.banner.h, m.tier, small.tier]);
       const clipped = ORDER.filter((n) => m.cells[n] && m.cells[n].over.length > 0);
       ok(clipped.length === 0, `${w}/${st}: N5 zero przycinania/przepelnienia w komorkach`, clipped.map((n) => [n, m.cells[n].over]));
