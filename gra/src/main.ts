@@ -1201,7 +1201,7 @@ import {
   relationScore, sisterAllianceDiplomacyParams, sisterAllianceEligible,
   isOwnerAtWarInRelations,
   type Relation, type AIDiplomacyContext, type PotegaKomponenty, type TickCtx,
-  type DiplomaticEvent, type DiplomacyParams,
+  type DiplomaticEvent, type DiplomacyParams, militaryWinRespectPair,
 } from './game/diplomacy';
 import {
   resolveDiplomacyActionLock,
@@ -12461,6 +12461,23 @@ async function boot(): Promise<void> {
       if (dZ !== 0) recordDiploFactor(a, b, event, dZ);
       if (dR !== 0) recordDiploFactor(a, b, event + '_respekt', dR);
       return next;
+    }
+
+    /**
+     * R-WEB-DIPLO-RESPECT-MILITARY-EVENTS-WIRE-Q1: zdarzenie 'wygrana_bitwa' (+5 Respekt, diplomacy.ts)
+     * dla pary gracz–partner, gdy GRACZ wygrywa bitwę. Przegrana gracza, remis, bitwy AI↔AI
+     * i barbarzyńcy nie zmieniają Respektu. Clamp wojenny (clampRelationForWar) działa jak zawsze.
+     */
+    function applyMilitaryWinRespectEvent(
+      atkRoster: RuntimeUnit[],
+      defRoster: RuntimeUnit[],
+      winner: 'atakujacy' | 'obronca' | 'remis',
+    ): void {
+      const pair = militaryWinRespectPair(winner, atkRoster[0]?.ownerId, defRoster[0]?.ownerId, isHuman, isBarbarian);
+      if (!pair) return;
+      const { winnerOwner, loserOwner } = pair;
+      const cur = getDiploRelation(winnerOwner, loserOwner);
+      setDiploRelation(winnerOwner, loserOwner, applyDiploEventTracked(winnerOwner, loserOwner, cur, 'wygrana_bitwa'));
     }
 
     function resetTrustPnGainedForPlayerTurn(): void {
@@ -34993,6 +35010,8 @@ async function boot(): Promise<void> {
       },
     ): BattleLoot | null {
       chargeCombatCredibilityPenalties(atkRoster, defRoster);
+      // R-WEB-DIPLO-RESPECT-MILITARY-EVENTS-WIRE-Q1: 'wygrana_bitwa' (+5 Respekt) przy wygranej gracza.
+      applyMilitaryWinRespectEvent(atkRoster, defRoster, winner);
       const battleQ = opts?.battleQ ?? defRoster[0]?.q ?? atkRoster[0]?.q ?? 0;
       const battleR = opts?.battleR ?? defRoster[0]?.r ?? atkRoster[0]?.r ?? 0;
       const atkStart = opts?.atkStart ?? snapshotRosterPositions(atkRoster);

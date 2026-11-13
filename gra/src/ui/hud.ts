@@ -651,8 +651,9 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
    LEWY BANER = 6 zetonow (Skarbiec·Praca·Spichlerz·Handel·Nauka·Surowce). Zeton ma dwa pietra:
    ikona po lewej na cala wysokosc; po prawej mala etykieta / DUZA liczba sumaryczna (--hud-cell-val) /
    „+brutto / +netto" = 70% liczby sumarycznej (--hud-cell-sm). Tryb wybiera fitHudTopbar() (JS, po renderze):
-   wszystkie 6 w JEDNEJ linii (6 rownych kolumn => pozycje zetonow STALE przy zmianie liczb), a gdy
-   najszerszy zeton sie nie miesci — klasa .hud-left-fallback = 2 rzedy po 3 (ten sam zeton, bez uciec).
+   wszystkie 6 w JEDNEJ linii (6 rownych kolumn => pozycje zetonow STALE przy zmianie liczb). Gdy najszerszy
+   zeton sie nie miesci, fitHudTopbar() zmniejsza skale --hud-k (od 1280 px; R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1);
+   klasa .hud-left-fallback = 2 rzedy po 3 zostaje jako ostatecznosc (waskie okno < 1280 px lub skala 0,36 nie wystarcza).
    Baner zajmuje cala szerokosc od lewego marginesu do medalionu Mocy (50vw − 150 px). */
 .civ-hud{--hud-cell-med:30px;--hud-cell-lbl:10px;--hud-cell-val:22px;}
 .civ-hud .civ-hud-banner-left{--hud-k:1;}
@@ -664,6 +665,12 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
 .civ-hud .hud-chip-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));width:100%;
   column-gap:6px;row-gap:4px;align-items:center;}
 .civ-hud .hud-left-fallback .hud-chip-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+/* R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1 (r2): w jednym rzedzie komorki maja STALE pudelko (52 px,
+   wysrodkowane w wierszu o wysokosci wnetrza powloki 44 px). Wysokosc tresci zalezy od skali (--hud-k) i liczb,
+   wiec bez stalego pudelka gorna krawedz komorki (i jej srodek przy innej wysokosci) skakalaby przy zmianie liczb.
+   Tresc (max ~52 px przy 1920 px) miesci sie w pudelku; wiersz nie rosnie, bo ma stala wysokosc. */
+.civ-hud .civ-hud-banner-left:not(.hud-left-fallback)>.civ-hud-banner-shell>.hud-chip-grid{height:100%;grid-template-rows:100%;align-items:center;}
+.civ-hud .civ-hud-banner-left:not(.hud-left-fallback) .civ-hud-chip-cell{height:54px;}  /* 54 = 52 tresci + 2 px paddingu klikalnego zetonu */
 .civ-hud .civ-hud-chip-line{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:0;min-height:0;height:auto;}
 .civ-hud .civ-hud-chip-figs{display:inline-flex;flex-direction:row;align-items:baseline;gap:3px;flex-shrink:0;
   margin-left:0;height:auto;line-height:1.1;font-size:calc(var(--hud-cell-val) * .7 * var(--hud-k,1));}
@@ -719,7 +726,12 @@ html .civ-map-toolbar{top:var(--civ-hud-toolbar-top,${TOOLBAR_TOP_PX}px);}
    (liczba nad przyrostem) → .hud-r-min (bez przyrostu; pelny opis w tooltipie). Etykiety schodza <= 1500 px. */
 .civ-hud .civ-hud-banner-right{max-width:max(150px,min(calc(50vw - 148px),900px));}
 .civ-hud .civ-hud-banner-right .hud-chip-row{flex-wrap:nowrap;row-gap:0;max-width:100%;min-width:0;}
-.civ-hud .hud-right-cluster{flex-direction:column-reverse;align-items:flex-end;gap:6px;}
+/* R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1: baner surowcow (prawy) jest PIERWSZY w klastrze = na samej gorze,
+   w tym samym rzedzie co lewy baner; przyciski Rekrutacja/Civpedia/Menu schodza POD baner (obnizony prawy panel). */
+.civ-hud .hud-right-cluster{flex-direction:column;align-items:flex-end;gap:8px;}  /* = HUD_RIGHT_RAIL_ROW_GAP_PX */
+/* Oba banery maja te sama wysokosc i wysrodkowana zawartosc: monety surowcow leza na jednej linii poziomej. */
+.civ-hud .civ-hud-banner-left>.civ-hud-banner-shell,
+.civ-hud .civ-hud-banner-right.civ-hud-banner-shell{height:56px;box-sizing:border-box;}  /* = HUD_RIGHT_CHIP_ROW_H_PX */
 .civ-hud .civ-hud-banner-right.civ-hud-banner-shell{padding:4px 8px;}
 .civ-hud .civ-hud-banner-right .civ-hud-chip-med{width:24px;height:24px;}
 .civ-hud .civ-hud-banner-right .civ-hud-chip-med svg:not(.civ-science-prog-ring){width:14px;height:14px;}
@@ -747,6 +759,9 @@ html .civ-map-toolbar{top:var(--civ-hud-toolbar-top,${TOOLBAR_TOP_PX}px);}
 .civ-hud .hud-r-tight .hud-chip-row{gap:6px;}
 .civ-hud .hud-r-stack .civ-hud-chip{display:inline-grid;grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:3px;row-gap:0;align-items:center;}
 .civ-hud .hud-r-stack .civ-hud-chip-med{grid-row:1 / span 2;grid-column:1;}
+/* R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1: w trybie stack etykieta pod moneta podnosila moneta o kilka px
+   (monety przestaly lezec na jednej linii z lewym banerem); nazwa zostaje w tooltipie chipa. */
+.civ-hud .hud-r-stack .civ-hud-chip-lbl{display:none;}
 .civ-hud .hud-r-stack .civ-hud-chip-val{grid-column:2;grid-row:1;line-height:1.05;font-size:12px;}
 .civ-hud .hud-r-stack .civ-hud-chip-rate{grid-column:2;grid-row:2;line-height:1.05;font-size:9px;}
 .civ-hud .hud-r-stack .hud-chip-row{gap:5px;}
@@ -1745,13 +1760,27 @@ export function fitHudTopbar(root: ParentNode | null = barEl): void {
     const cells = Array.from(grid.querySelectorAll<HTMLElement>('.civ-hud-chip-cell'));
     const leftOverflows = (): boolean => grid.scrollWidth > grid.clientWidth + 0.5
       || cells.some((c) => c.scrollWidth > c.clientWidth + 0.5);
-    if (leftOverflows()) {
-      left.classList.add('hud-left-fallback');
-      // Ostatnia deska ratunku przy ekstremalnych liczbach: pomniejszenie czcionek/ikon (kolumny zostaja rowne).
-      for (const cls of ['hud-left-compact', 'hud-left-tiny']) {
-        if (!leftOverflows()) break;
-        left.classList.add(cls);
+    // R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1: wszystkie 6 żetonów w JEDNEJ linii na samej górze.
+    // Najpierw skala (--hud-k) schodzi stopniami, aż żetony się zmieszczą; dwa rzędy (2×3) tylko jako
+    // ostateczność, gdy nawet najmniejsza skala (0,36 od 1280 px; 0,70 węziej) nie mieści linii.
+    left.style.removeProperty('--hud-k');
+    const narrowWin = typeof window !== 'undefined' && window.innerWidth < 1280;
+    if (narrowWin) {
+      // Wąskie okno (< 1280 px): zachowane dotychczasowe zachowanie — 2×3 i klasy kompakcji (bez skalowania liczb).
+      if (leftOverflows()) {
+        left.classList.add('hud-left-fallback');
+        for (const cls of ['hud-left-compact', 'hud-left-tiny']) {
+          if (!leftOverflows()) break;
+          left.classList.add(cls);
+        }
       }
+    } else {
+      // Od 1280 px jedna linia schodzi skala do 0,36 (maxw 999 999 999 przy 1280 px potrzebuje < 0,40); dopiero gdy i to nie wystarcza — 2×3 (ostateczność).
+      // Krok calkowity (setne): petla na float konczyla sie na 0,42 (0,40 - epsilon), a 0,40 i nizej nigdy nie bylo probowane.
+      for (let kk = 96; leftOverflows() && kk >= 36; kk -= 2) {
+        left.style.setProperty('--hud-k', (kk / 100).toFixed(2));
+      }
+      if (leftOverflows()) left.classList.add('hud-left-fallback');
     }
   }
   if (left !== null && typeof document !== 'undefined') {
