@@ -147,7 +147,32 @@ function behaviour(W) {
     const r = W.runWarWearinessTick(deps)[0];
     chk('g: remis sil - slabsza strona oferuje miasto (nie none)', r.action !== 'none');
   }
+  // (h) okablowanie miary SILY MILITARNEJ (obrona r1): helpery czyste, sideOf = sila + armia (bez Power).
+  {
+    const mil = (sila, armiaPkt) => ({ sila, armiaPkt });
+    chk('h1: udzial sily militarnej 300 vs 100 = 0,75; brak sily = 0,5',
+      Math.abs(W.wearinessMilitaryShare(300, 100) - 0.75) < 1e-9 && W.wearinessMilitaryShare(0, 0) === 0.5);
+    const sideA = (o) => (o === 1 ? mil(100, 10) : mil(300, 50));
+    const sideB = (o) => (o === 1 ? mil(300, 50) : mil(100, 10));
+    chk('h2: slabsza wg sily militarnej = 1 (sila 100 vs 300)', W.wearinessWeakerOf(1, 2, sideA) === 1);
+    chk('h3: slabsza wg sily militarnej = 2 (odwrotne sily)', W.wearinessWeakerOf(1, 2, sideB) === 2);
+    const wir = W.militaryWearinessWiring(sideA);
+    chk('h4: okablowanie: shareOf(1,2)=0,25 i weakerOf(1,2)=1 z sideOf',
+      Math.abs(wir.shareOf(1, 2) - 0.25) < 1e-9 && wir.weakerOf(1, 2) === 1);
+    chk('h5: udzial AI w desperacji = udzial sily (300/(300+100)); bez danych = fallback rw',
+      Math.abs(W.wearyMilitaryShare(mil(300, 0), mil(100, 0), 0.9) - 0.75) < 1e-9
+      && W.wearyMilitaryShare(undefined, mil(100, 0), 0.4) === 0.4
+      && W.wearyMilitaryShare(mil(0, 0), mil(0, 0), 0.3) === 0.3);
+  }
   return res;
+}
+
+/** Mutacje okablowania main.ts / ai.ts: test statyczny (wiring nie ma czystej funkcji w tym module). */
+const WIRING_MAIN = '...militaryWearinessWiring(diploMilitarySideOf),';
+const WIRING_AI = 'wearyMilitaryShare(rel.silaMilitarnaAI, rel.silaMilitarnaPartner, rw)';
+function wiringOk(mainSrc, aiSrc) {
+  const cnt = (s, t) => s.split(t).length - 1;
+  return cnt(mainSrc, WIRING_MAIN) === 1 && cnt(aiSrc, WIRING_AI) === 1;
 }
 
 /** Mutacje zrodla war-weariness.ts: kazda musi czerwienic co najmniej jeden test behawioralny. */
@@ -164,6 +189,20 @@ const MUTANTS = [
     to: 'd.finalize(loser, winner, L.karencjaPoPokojuTur);', gate: 'karencja 40/100 (e1, f)' },
   { id: 'M6-remis-bez-klampu', from: 'const shareForDespair = Math.min(loserShare, L.udzialWyraznie);', to: 'const shareForDespair = loserShare;',
     gate: 'remis sil: slabsza placi miastem (g)' },
+  { id: 'M7-udzial-stala', from: 'return silaX + silaY > 0 ? silaX / (silaX + silaY) : 0.5;', to: 'return 0.5;',
+    gate: 'udzial sily militarnej (h1, h4)' },
+  { id: 'M8-slabsza-odwrotnie', from: "return peaceStanceOf(self, partner) === 'slabsza' ? x : y;",
+    to: "return peaceStanceOf(partner, self) === 'slabsza' ? x : y;", gate: 'slabsza wg sily militarnej (h2, h3)' },
+  { id: 'M9-desperacja-rw', from: 'return sum > 0 && own ? own.sila / sum : fallbackRw;', to: 'return fallbackRw;',
+    gate: 'desperacja AI wg sily militarnej (h5)' },
+  { id: 'M10-okablowanie-stala', from: 'shareOf: (x, y) => wearinessMilitaryShare(sideOf(x, y).sila, sideOf(y, x).sila),',
+    to: 'shareOf: (x, y) => 0.5,', gate: 'okablowanie shareOf (h4)' },
+];
+
+/** Mutanty okablowania (main.ts / ai.ts): czerwienia test statyczny wiringOk. */
+const WIRING_MUTANTS = [
+  { id: 'W1-main-power', file: 'main', from: WIRING_MAIN, to: 'shareOf: (x, y) => requesterShare(objectivePowerForOwner(x), objectivePowerForOwner(y)),' },
+  { id: 'W2-ai-rw', file: 'ai', from: WIRING_AI, to: 'rw' },
 ];
 
 function run() {
@@ -174,6 +213,19 @@ function run() {
   const base = behaviour(loadW(ORIG));
   for (const c of base) report(c.ok, `behawior bazowy: ${c.name}`);
   console.log(`baza: ${base.filter((c) => c.ok).length}/${base.length} sprawdzen behawioralnych zielonych`);
+
+  const MAIN_SRC = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
+  const AI_SRC = fs.readFileSync(path.join(SRC, 'game', 'ai.ts'), 'utf8');
+  report(wiringOk(MAIN_SRC, AI_SRC), 'okablowanie main.ts/ai.ts: brak wywolania militaryWearinessWiring / wearyMilitaryShare');
+  for (const w of WIRING_MUTANTS) {
+    const src = w.file === 'main' ? MAIN_SRC : AI_SRC;
+    const hits = src.split(w.from).length - 1;
+    if (hits !== 1) { report(false, `mutant ${w.id}: fragment nie wystapil dokladnie raz (${hits})`); continue; }
+    const mutated = src.replace(w.from, w.to);
+    const ok = w.file === 'main' ? wiringOk(mutated, AI_SRC) : wiringOk(MAIN_SRC, mutated);
+    report(!ok, `mutant ${w.id} (okablowanie) PRZESZEDL - test statyczny go nie wykrywa`);
+    console.log(`mutant ${w.id} [okablowanie ${w.file}]: wykryty = ${!ok}`);
+  }
 
   for (const m of MUTANTS) {
     const hits = ORIG.split(m.from).length - 1;

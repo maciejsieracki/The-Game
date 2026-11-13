@@ -1623,7 +1623,7 @@ import {
   registerAiPeaceRequest, isAiAiPeaceBalanceAllowed, aiAiPeaceRequiredPn, isForcedPeaceEligiblePair, runAiAiPeaceTick, requesterShare, isClearlyLosing,
   type AiPeaceRequest, type AiPeaceKind, type PeaceAsset,
 } from './game/diplomacy-ai-forced-peace';
-import { runWarWearinessTick, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
+import { runWarWearinessTick, militaryWearinessWiring, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
 import {
   isPeaceTreatyLocked,
   startPeaceTreatyLock,
@@ -36663,18 +36663,8 @@ async function boot(): Promise<void> {
             turnsSinceCityChange: wa.turnsSinceCityChange,
           };
         },
-        // R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1: udział i „słabsza strona" wg SIŁY MILITARNEJ (nie Power).
-        shareOf: (x, y) => {
-          const sx = diploMilitarySideOf(x, y).sila;
-          const sy = diploMilitarySideOf(y, x).sila;
-          return sx + sy > 0 ? sx / (sx + sy) : 0.5;
-        },
-        weakerOf: (x, y) => {
-          const sx = diploMilitarySideOf(x, y);
-          const sy = diploMilitarySideOf(y, x);
-          const posX = peaceStanceOf({ id: x, sila: sx.sila, armiaPkt: sx.armiaPkt }, { id: y, sila: sy.sila, armiaPkt: sy.armiaPkt });
-          return posX === 'slabsza' ? x : y;
-        },
+        // R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1: shareOf i weakerOf wg SIŁY MILITARNEJ (nie Power) — war-weariness.ts.
+        ...militaryWearinessWiring(diploMilitarySideOf),
         cityCountOf: o => cities.filter(c => c.ownerId === o).length,
         price: (winner, loser) => {
           const basePn = treatyBasePnFromConfig('pokoj');

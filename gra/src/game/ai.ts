@@ -6195,6 +6195,7 @@ import type { GameDifficulty } from './difficulty-cost';
 import { TypCywilizacji } from '../types/player';
 import {
   WAR_WEARINESS_PARAMS, warWearinessLevel, isWarWeary, loserDespair, despairStage, offerMultiplier,
+  wearyMilitaryShare,
 } from './war-weariness';
 import {
   AI_TRADE_GOLD_MAX,
@@ -7030,10 +7031,7 @@ export function decideAIDiplomacy(
         })
       : 0;
     // R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1: udział w desperacji = udział SIŁY MILITARNEJ (nie rw/Power).
-    const wearyMilSum = (rel.silaMilitarnaAI?.sila ?? 0) + (rel.silaMilitarnaPartner?.sila ?? 0);
-    const wearyShare = wearyMilSum > 0 && rel.silaMilitarnaAI
-      ? rel.silaMilitarnaAI.sila / wearyMilSum
-      : rw;
+    const wearyShare = wearyMilitaryShare(rel.silaMilitarnaAI, rel.silaMilitarnaPartner, rw);
     const wearyDespair = rel.stanWojny && isWarWeary(wearyLevel)
       ? loserDespair({ level: wearyLevel, share: wearyShare, lostCities: Math.max(0, rel.lostCitiesInWar ?? 0) })
       : 0;

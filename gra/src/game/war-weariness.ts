@@ -14,6 +14,7 @@ import {
   type PeacePaymentPlan,
 } from './diplomacy-ai-forced-peace';
 import { PEACE_PROPOSAL_MIN_WAR_TURNS } from './diplomacy-peace-proposal-timing';
+import { peaceStanceOf, type PeaceStanceSide } from './diplomacy-military-strength';
 
 export interface WarWearinessParams {
   zmeczenie: {
@@ -304,4 +305,57 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
   // Sprzątanie stanu par, które nie są już w wojnie (pokój innym torem).
   for (const k of Array.from(d.store.keys())) if (!live.has(k)) d.store.delete(k);
   return out;
+}
+
+// ---------------------------------------------------------------------------
+// R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1 (obrona r1): wiring miary SIŁY MILITARNEJ dla zmęczenia wojną.
+// Jedyne miejsca, w których main.ts / ai.ts wiążą udział i „słabszą stronę" z tym modułem. Czyste funkcje
+// (bez DOM / stanu): wejściem jest `sideOf` (siła + armia wg silnika), NIE Power. Powrót do Power w okablowaniu
+// wymaga zmiany tych funkcji (czerwieni test diplo-weariness-city-only-test.cjs).
+// ---------------------------------------------------------------------------
+
+export interface WearinessMilitarySide {
+  sila: number;
+  armiaPkt: number;
+}
+
+/** Udział siły militarnej strony x w parze (0..1); brak siły po obu stronach = 0,5. */
+export function wearinessMilitaryShare(silaX: number, silaY: number): number {
+  return silaX + silaY > 0 ? silaX / (silaX + silaY) : 0.5;
+}
+
+/** Słabsza strona wg reguły peaceStanceOf (siła militarna; remis rozstrzyga armia i id). Zwraca id przegrywającego. */
+export function wearinessWeakerOf(
+  x: number,
+  y: number,
+  sideOf: (owner: number, other: number) => WearinessMilitarySide,
+): number {
+  const sx = sideOf(x, y);
+  const sy = sideOf(y, x);
+  const self: PeaceStanceSide = { id: x, sila: sx.sila, armiaPkt: sx.armiaPkt };
+  const partner: PeaceStanceSide = { id: y, sila: sy.sila, armiaPkt: sy.armiaPkt };
+  return peaceStanceOf(self, partner) === 'slabsza' ? x : y;
+}
+
+/** Okablowanie dla runWarWearinessTick: shareOf (udział siły) i weakerOf (słabsza strona), oba wg `sideOf`. */
+export function militaryWearinessWiring(
+  sideOf: (owner: number, other: number) => WearinessMilitarySide,
+): { shareOf: (x: number, y: number) => number; weakerOf: (x: number, y: number) => number } {
+  return {
+    shareOf: (x, y) => wearinessMilitaryShare(sideOf(x, y).sila, sideOf(y, x).sila),
+    weakerOf: (x, y) => wearinessWeakerOf(x, y, sideOf),
+  };
+}
+
+/**
+ * Udział desperacji AI (ai.ts): udział SIŁY MILITARNEJ AI w parze (własna / suma). Brak danych siły po którejkolwiek
+ * stronie → `fallbackRw` (dotychczasowy udział, tylko przy braku danych).
+ */
+export function wearyMilitaryShare(
+  own: WearinessMilitarySide | undefined,
+  partner: WearinessMilitarySide | undefined,
+  fallbackRw: number,
+): number {
+  const sum = (own?.sila ?? 0) + (partner?.sila ?? 0);
+  return sum > 0 && own ? own.sila / sum : fallbackRw;
 }
