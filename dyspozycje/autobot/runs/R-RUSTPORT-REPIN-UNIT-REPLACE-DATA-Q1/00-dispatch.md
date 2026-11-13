@@ -39,3 +39,23 @@ RUNDY: 1/5.
 
 ## KOREKTA (przed startem)
 Klucz JSON w obu plikach to `"Zastąp specjalnie"` (wszystkie 75 jednostek go mają). Nazwa `zastap_specjalnie` dotyczy tylko struktury Rust. Filtrować diff po kluczu `"Zastąp specjalnie"`.
+
+---
+
+## DODATEK r2 (po FC r1 = FAIL; runda 2/5, ten sam ID; decyzja orkiestratora)
+
+**Powód FAIL r1:** `units.json` z polem „Zastąp specjalnie” zmienił hash danych, a dwa strażniki w `p6_1d_civ_bonuses` (`embedded_data_is_byte_identical_to_data_used_for_vectors`, `strip_diacritics_matches_web_function_cut_verbatim`) przypinają stare hashe w `tests/p6_1d_vectors/web-vectors.json` (poza allowlistą r1).
+
+**Baza r2:** `a53d46932` (kod r1: units.json + test; ancestry z `cfa1edd31` potwierdzone). Nie zaczynaj od `cfa1edd31`.
+
+**ZAKRES r2 (twardy):**
+1. Dodać do allowlisty `rust-port/engine/tests/p6_1d_vectors/web-vectors.json`.
+2. Zaktualizować WYŁĄCZNIE pola hashy: `dataFnv.units` oraz hash `dataStringXor` (pole `strip`), na wartości zmierzone z obecnego `units.json` (zgodnie z testami: units=`5049afb95122976d`, dataStringXor=`b0dbfb9d862bf602`). Sprawdź to generatorem `gen-p61d-web-vectors.mjs`, jeśli działa w scratchpadzie; jeśli nie — policz FNV/XOR tym samym algorytmem co test i zapisz to w raporcie (NIE_ZMIERZONO dla generatora).
+3. KRYTERIUM: wszystkie tablice wektorów (civBonusy, civMatrix, cityNamesPools, wyniki funkcji) w `web-vectors.json` BAJT-W-BAJT identyczne z bazą; `git diff` pliku pokazuje tylko zmiany pól hashy. Jeśli wektory się zmieniły — STATUS BLOCK, bez commita.
+4. Nie zmieniać `units.json`, testu `p6_repin_unit_replace_data.rs`, ani asercji w `p6_1d_civ_bonuses`.
+
+**Bramki r2 (EXIT 0):** `cargo fmt --check`; `cargo clippy --all-targets -- -D warnings`; `cargo test --lib`; `p6_1d_civ_bonuses` (14/14); `p6_repin_unit_replace_data` (3/3); pełny `cargo test --no-fail-fast` z liczbami (oczekiwane: 0 failed). `CARGO_TARGET_DIR` poza repo, usuń po bramkach. Pełny test w tle, czytaj wynik z pliku (timeout 590 s w r1).
+
+**ALLOWLISTA r2:** `units.json` (bez zmian), `tests/p6_repin_unit_replace_data.rs` (bez zmian), `tests/p6_1d_vectors/web-vectors.json` (tylko pola hashy), `01-operator-r2.md`. ZAKAZ: `src/**`, `gra/`, `Cargo.toml`, `Cargo.lock` (nie commitować).
+
+**RAPORT:** `01-operator-r2.md` (nie nadpisuj r1). Commit BEZ linii `Co-Authored-By` z nazwą modelu. `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`. RUNDY: 2/5.
