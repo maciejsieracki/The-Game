@@ -1,15 +1,16 @@
 {
   "_opis": "R-WEB-AI-WAR-WEARINESS-PEACE-Q1 (NOWY plik parametrow) - postepujace zmeczenie wojna per para + eskalacja oferty pokoju przegrywajacego. Logika: gra/src/game/war-weariness.ts. Zaden prog nie jest zahardkodowany w kodzie.",
   "zmeczenie": {
-    "_wzor": "poziom = min(1, turyWojny/pelneTur + wagaStratMiasta*(utratyMiastObuStron)). R-WEB-DIPLO-WEARINESS-20-TURNS-Q1 (decyzja wlasciciela 2026-11-13, wariant A): jeden licznik; 5% na ture od startu wojny + 10% za kazde miasto, ktore zmienilo wlasciciela (ktorejkolwiek strony); bez skladnika zastoju i bez drugiego zegara. Progi: 50% (tura 10) silniejszy obniza cene pokoju, slabszy szuka; 80% (tura 16) silniejszy sam proponuje pokoj bezwarunkowy; 100% (tura 20) wojna wygasa. Zapamietywany szczyt (monotonicznosc).",
+    "_wzor": "poziom = min(1, turyWojny/pelneTur + wagaStratMiasta*(utratyMiastObuStron)); pelneTur=20, wagaStratMiasta=0,1. Jeden licznik (R-WEB-DIPLO-WEARINESS-20-TURNS-Q1, wariant A): 5% na ture od startu wojny + 10% za kazde miasto, ktore zmienilo wlasciciela (ktorejkolwiek strony); bez skladnika zastoju. Zapamietywany szczyt (monotonicznosc). Progi (kod: gra/src/game/war-weariness.ts): progChetnosci=0,5 (50%, tura 10 bez strat): od tego poziomu cena pokoju zadanej graczowi przez AI maleje (wearinessPeacePriceFactor) i wojna jest uznawana za zmeczona (isWarWeary). progWzajemnyPokoj=0,8 (80%) to wyjscie awaryjne, a progKoncaZmeczenia=0,8 (80%) to koniec zmeczenia: pokoj BEZWARUNKOWY (bez miasta i zaplaty) dla obu stron, takze silniejszej (AI<->AI: runWarWearinessTick, war-weariness.ts:264; AI->gracz: ai.ts ok. l.7050). Przy samej dlugosci wojny 80% to tura 16; kazde zmienione miasto przyblizza ten prog o 2 tury. Poziom 100% (tura 20) NIE ma osobnego skutku: min(1, ...) jest tylko gorna granica, a wojna konczy sie juz przy 0,8, i nie wczesniej niz po PEACE_PROPOSAL_MIN_WAR_TURNS=10 turach wojny (diplomacy-peace-proposal-timing.ts:2; war-weariness.ts:251).",
     "pelneTur": 20,
     "wagaStratMiasta": 0.1,
     "progChetnosci": 0.5,
     "progWzajemnyPokoj": 0.8,
-    "progKoncaZmeczenia": 0.8
+    "progKoncaZmeczenia": 0.8,
+    "_progi": "DWA OSOBNE parametry o tej samej wartosci 0,8 - nie scalac i nie zmieniac jednego bez drugiego. progWzajemnyPokoj czyta WYLACZNIE war-weariness.ts (wyjscie awaryjne: poziom >= progWzajemnyPokoj i odrzucen >= przegrywajacy.odrzuceniaDoKapitulacji, wtedy wygrywajacy przyjmuje to, co przegrywajacy realnie moze zaplacic). progKoncaZmeczenia czyta WYLACZNIE wearinessUnconditionalEndDue (war-weariness.ts:234), czyli pokoj bezwarunkowy na koncu zmeczenia (tick AI<->AI i ai.ts). Zmiana jednego nie zmienia drugiego."
   },
   "przegrywajacy": {
-    "_wzor": "desperacja = clamp(wagaZmeczenia*poziom + wagaSily*max(0,(udzialWyraznie-udzialSily)/udzialWyraznie) + wagaStrat*min(1,utraty/stratyNasycenie), 0, 1); stopien = liczba progow <= desperacja (0..3). Stopien 1: zloto+surowce; 2: + max 1 miasto; 3: + do maxMiastNaPokoj miast.",
+    "_wzor": "desperacja = clamp(wagaZmeczenia*poziom + wagaSily*max(0,(udzialWyraznie-udzialSily)/udzialWyraznie) + wagaStrat*min(1,utraty/stratyNasycenie), 0, 1); stopien = liczba progow <= desperacja (progiStopni=0,25 / 0,45 / 0,65; stopnie 0..3). W ofercie tylko MIASTA (planEscalatedPeacePayment; zloto i surowce nie wchodza w oferte zmeczenia). Limit miast (stageCityLimit, war-weariness.ts:113-117): stopien 1 = 1 miasto; stopien 2 = nadal 1 miasto, wyzszy mnoznik oferty (mnozniStopni); stopien 3 = do maxMiastNaPokoj=2 miast. Limit efektywny = min(limit stopnia, miasta przegrywajacego - minMiastPoOddaniu), a 0 miast, gdy battlePending (war-weariness.ts:292-294).",
     "udzialWyraznie": 0.45,
     "wagaZmeczenia": 0.5,
     "wagaSily": 0.5,

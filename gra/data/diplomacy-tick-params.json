@@ -1,9 +1,11 @@
 {
   "_opis": "R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2 — parametry P6 (hamulec wojny) i P7 (bonus Zaufania za wymianę 'na plusie', kalibracja WERSJA OSTATECZNA 2026-10-25: schodki, bez wzoru). Flaga DIPLO_TICK_WAR_BRAKE_ENABLED w kodzie (diplomacy-tick-war-brake.ts); OFF = zachowanie jak baza.",
   "flagaDomyslna": false,
+  "_uwagaFlagaDomyslna": "R-WEB-DESC-SYNC (zadanie #371): pole flagaDomyslna NIE jest czytane przez zaden kod (brak odczytu w gra/src). Realna wartosc domyslna flagi pakietu to DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT = true (gra/src/game/diplomacy-tick-war-brake.ts:7); isDiploTickWarBrakeEnabled (l.16-18) zwraca nadpisanie testowe albo te stala. Wartosc false w tym pliku jest wiec myląca; zmiana wartosci poza zakresem tego tematu.",
   "p6": {
     "kryzysProgZaufania": 0,
     "kryzysTurDoWojny": 5,
+    "_uwagaKryzysTurDoWojny": "R-WEB-DESC-SYNC (zadanie #371): wartosc 5 NIE wplywa na gre. main.ts:11876 nadpisuje pole: { ...diploTickP6, kryzysTurDoWojny: w.n }, gdzie w.n = hamulecN profilu wojny (diploBrakeWarParams, main.ts:11863). Dla profilu bazowego hamulecN = clamp(round(bazaN - wagaProgWojny*5), minN, maxN) = clamp(round(8 - 0,5*5), 3, 7) = 6 (diplomacy-war-peace-profile.ts:143; diplomacy-war-peace-params.json, sekcja hamulecRelacji). Realnie obowiazuje N=6. Niespojnosc 5 vs 6 zostaje do zadania #370; wartosc NIE zmieniona.",
     "kryzysOstrzezenieTurPrzed": 2
   },
   "p7": {
