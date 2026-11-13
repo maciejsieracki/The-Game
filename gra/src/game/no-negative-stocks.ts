@@ -188,6 +188,50 @@ export function planAiBalance(brakuje: readonly NnsBrak[], levers: readonly NnsL
   };
 }
 
+/**
+ * Wejście dla `buildAiLevers` — surowy opis dostępnych dźwigni jednego AI (bez stanu gry).
+ * Wołający (ai.ts/main.ts, etap C2) wypełnia to z realnego stanu ownera.
+ */
+export interface NnsAiLeverInput {
+  /** Dodatkowy dochód skarbca po podniesieniu podatku (0 = podatek niedostępny / bez zmiany). */
+  podatekSkarbiec: number;
+  /** Pozycje kolejki/budowy do wstrzymania; `zysk` = koszt złota/żywności nieponiesiony w tej turze. */
+  wstrzymania: ReadonlyArray<{ id: string; stock: NnsStock; zysk: number }>;
+  /** Jednostki wsparcia (nie obronne) do rozwiązania. `koszt` = wartość do sortowania (najdroższe pierwsze). */
+  jednostkiWsparcia: ReadonlyArray<{ id: string; stock: NnsStock; zysk: number; koszt: number }>;
+  /** Ostatnie jednostki obronne miasta — nigdy nie są rozwiązywane przez AI (zob. `eliminujeCywilizacje`). */
+  jednostkiObronne: ReadonlyArray<{ id: string; stock: NnsStock; zysk: number; koszt: number }>;
+}
+
+/**
+ * Buduje listę dźwigni AI z opisu stanu ownera. Czysta funkcja, deterministyczna.
+ * Dźwignie z `zysk` <= 0 lub niefinitywnym są pomijane. Jednostki obronne dostają
+ * `eliminujeCywilizacje: true`, więc `planAiBalance` nigdy po nie nie sięga.
+ */
+export function buildAiLevers(input: NnsAiLeverInput): NnsLever[] {
+  const dobre = (z: number): boolean => Number.isFinite(z) && z > 0;
+  const out: NnsLever[] = [];
+  if (dobre(input.podatekSkarbiec)) {
+    out.push({
+      id: 'podatek-skarbiec', rodzaj: 'podatek', stock: 'skarbiec',
+      zysk: input.podatekSkarbiec, koszt: 0, eliminujeCywilizacje: false,
+    });
+  }
+  for (const w of input.wstrzymania) {
+    if (!dobre(w.zysk)) continue;
+    out.push({ id: w.id, rodzaj: 'wstrzymanie', stock: w.stock, zysk: w.zysk, koszt: 0, eliminujeCywilizacje: false });
+  }
+  for (const j of input.jednostkiWsparcia) {
+    if (!dobre(j.zysk)) continue;
+    out.push({ id: j.id, rodzaj: 'rozwiazanie', stock: j.stock, zysk: j.zysk, koszt: j.koszt, eliminujeCywilizacje: false });
+  }
+  for (const j of input.jednostkiObronne) {
+    if (!dobre(j.zysk)) continue;
+    out.push({ id: j.id, rodzaj: 'rozwiazanie', stock: j.stock, zysk: j.zysk, koszt: j.koszt, eliminujeCywilizacje: true });
+  }
+  return out;
+}
+
 // ---------------------------------------------------------------------------
 // R-WEB-ECON-NO-NEGATIVE-STOCKS-A-Q1 — projekcja PO ticku (tylko odczyt, bez mutacji stanu gry).
 // Wołający podaje econ/stan PO autoracjach (jak przed realnym ticku w main.ts). Dla gracza i AI
