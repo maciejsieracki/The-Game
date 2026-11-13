@@ -34,5 +34,5 @@ Klamrowane W do −100…+100 przed wzorem.
 
 - sojusz +3, W=+100 → dZ = 4.5
 - sojusz +3, W=−100 → dZ = 1.5
-- ekspansja −2, W=+100 → dZ = −1
-- ekspansja −2, W=−100 → dZ = −3
+- ekspansja −2 (przykład historyczny; aktualnie −3/−4/−5 wg epoki pary), W=+100 → dZ = −1
+- ekspansja −2 (przykład historyczny), W=−100 → dZ = −3

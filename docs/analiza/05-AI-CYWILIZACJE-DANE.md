@@ -53,7 +53,7 @@ Trzy powiązane lane'y (CYWILIZACJE przejęło zakres DANE po zamknięciu sesji 
   - `computeRespekt` (T1=A, ratio-share: 50=parytet; słaby ulega nie atakuje) — ZATWIERDZONY przez Macieja (wagi 28/20/18/14/12/8)
   - `computePotegaNacji` (komponenty z UNITS/MIASTO/EKONOMIA)
   - `tickDiplomacy` (tura dyplomacji) + event `zerwanie_handlu`
-  - `relationTier(rel)`→0..4 + `TIER_NAMES` (5-tier: Wojna/Wrogi/Neutralny/Przyjazny/Sojusz; progi <15/<30/<60/<120/>=120)
+  - `relationTier(rel)`→0..4 + `TIER_NAMES` (5-tier: Wojna/Wrogi/Neutralny/Przyjazny/Sojusz; Wrogi = Zaufanie<10, progi score <60/<130/>=130)
   - Panel v0.1 = PODGLĄD (akcje wojna/pakt PO wpieciu applyDiplomaticEvent)
 - **Religie 9** w Spoleczenstwo-parametry.xlsx → "Religie cywilizacji" (źródło)
   - ⚠ `society-params.json` wciąż ma **7** → re-eksport = master/silnik

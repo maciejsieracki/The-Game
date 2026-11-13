@@ -234,7 +234,7 @@ Poniższe zdarzenia modyfikują **Zaufanie** (Z) lub **Respekt** (R) — a przez
 | **Odmienna religia** | Zaufanie | 0 (bez wpływu) | — | — | Religia nie wpływa na Zaufanie (`odmiennaReligia_zaufanie_perTura = 0`) |
 | **Wspólny wróg (aktywna kooperacja)** | Zaufanie | +1 / tura | + | co turę | Przez cały czas trwania współpracy przeciw wspólnemu wrogowi |
 | **Wspólny wróg — nawiązanie** | Zaufanie | +5 jednorazowo | + | jednorazowo | Bonus przy ustanowieniu wspólnego wroga |
-| **Bliskość granic (ekspansja w kierunku gracza)** | Zaufanie | −3 / −4 / −5 / tura wg epoki pary (max −20 — limit do weryfikacji w kodzie) | − | co turę | Gracz/AI zakłada miasto lub przesuwa wojska przy granicy |
+| **Bliskość granic (ekspansja w kierunku gracza)** | Zaufanie | −3 / −4 / −5 / tura wg epoki pary (brak osobnego limitu sumy w kodzie; składowa Zaufania clamp [0,100], diplomacy.ts:1083) | − | co turę | Gracz/AI zakłada miasto lub przesuwa wojska przy granicy |
 | **Złamanie paktu / umowy przez gracza** | Zaufanie | −40 jednorazowo | − | jednorazowo | Informacja rozchodzi się do sąsiadów (−5 Relacja u każdego) |
 | **Złamanie paktu / umowy przez AI** | Zaufanie | −20 jednorazowo | − | jednorazowo | Gracz traci Zaufanie do tej cywilizacji |
 | **Aktywna umowa handlowa** | Zaufanie | +1 / tura | + | co turę | Trwa przez czas umowy; znika po jej wygaśnięciu |
