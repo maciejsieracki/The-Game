@@ -1,41 +1,56 @@
-# R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1 — raport Operatora (runda 1/5)
+# R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1 — raport Operatora (runda 2/5)
 
 STATUS: BLOCK
 DOMAIN: GAME
-TEMAT: R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1 (podtemat C: AI równoważy się przed końcem tury + runner headless 15×3×150)
-GOAL: wpiąć `planAiBalance` (gra/src/game/no-negative-stocks.ts) w turę AI tak, by skarbiec i spichlerz AI nie schodziły poniżej zera od tury 11; runner headless 15 cywilizacji × 3 ziarna × 150 tur; test ai-test; mutacja.
-BAZA: origin/main 507d312ce (worktree wf_4f47ec8d-a69-1, detach). Kandydat r1 c43597936 jest przodkiem 507d312ce — jego moduł już jest w main (wersja po podtemacie A, 283 linie zamiast 178), więc nie był przenoszony.
+TEMAT: R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1 (podtemat C2: wpięcie równoważenia AI w turę + runner headless 15×3×150)
+GOAL: skarbiec i spichlerz AI nie schodzą poniżej zera od tury 11; wpięcie w main.ts; flaga; runner headless; test kar deficytu; mutacja pomiarowa.
+
+BAZA: kandydat ecb341abe (C1 + tools/no-negative-stocks-ai-test.cjs 8/0), po MERGE origin/main d419d3eaf (merge commit ed6fb99d0 na gałęzi worktree). Main ma już bramkę gracza (canPlayerInitiateEndTurn / nnsGateForPlayer) — nie ruszana.
 
 ## ZMIANY-COMMIT
-Brak zmian w kodzie gry (gra/src, gra/tools). Commit zawiera wyłącznie ten raport.
-Powód: patrz BLOKADY. Nie wpinałem równoważenia bez pomiaru — wpięcie bez runnera i bez testu mutacji nie spełnia kryteriów (a)–(e) i byłoby niezweryfikowane.
+Zakres zrealizowany w tej rundzie (allowlista: gra/src/game/no-negative-stocks.ts, gra/src/main.ts, gra/tools/no-negative-stocks-c2-test.cjs, raport):
+1. `gra/src/game/no-negative-stocks.ts`: dopisano `NNS_AI_BALANCE_TURN_MIN` (=11), flagę `setNnsAiBalanceEnabled` / `isNnsAiBalanceEnabled` (jedno miejsce, domyślnie włączona) oraz czystą funkcję `decideAiOwnerBalance(turn, skarbiecPo, spichlerzPo, levers)` → {aktywne, wstrzymajZakupy, rozwiazJednostki, plan}.
+2. `gra/src/main.ts` (bankowanie AI, tuż przed `aiSkarbiecByOwner.set(oid, aiSkarb)`): dla AI z `aiSkarb < 0` lub `getEmpireFoodReserve(oid) < 0` buduje dźwignie (`buildAiLevers`: wsparcie = cywilne jednostki poza garnizonem i oblężeniem, koszt złota = `utrzymanieJednostki / liczba jednostek`, bez podatków, bez jednostek obronnych) i wywołuje `decideAiOwnerBalance`. Gdy aktywne: dodaje owner do `aiNnsHoldOwners` i rozwiązuje wybrane jednostki przez nową `disbandAiSupportUnit(unitId, ownerId)` (nie rusza ownerId 0, nie rusza `disbandPlayerUnit`).
+3. `gra/src/main.ts` (ownerLoop, zakup jednostki AI): `wantsPurchase = !aiNnsHoldOwners.has(ownerId) && shouldAIPurchaseUnit(...)`.
+4. `gra/tools/no-negative-stocks-c2-test.cjs` (nowy): 15/0 — brama tury (10 wolne, 11 aktywne), brak minusu = nic, najdroższe wsparcie pierwsze, jednostka obronna nigdy nie rozwiązywana, flaga off = nic, plus asercje statyczne na wiązanie w main.ts (wywołanie, bramka zakupów, definicja i wpięcie disband).
 
-## TESTY (surowe wyjście, HEAD 507d312ce, przed jakąkolwiek zmianą)
-- `npx tsc --noEmit` (gra/): rc=0, bez komunikatów.
+Commit zawiera powyższe pliki + ten raport.
+
+## TESTY (surowe wyjścia, na zmienionym drzewie)
+- `npx tsc --noEmit -p .` (gra/): rc=0, bez komunikatów.
+- `node tools/no-negative-stocks-c2-test.cjs`: `no-negative-stocks-c2-test: 15 passed, 0 failed`
+- `node tools/no-negative-stocks-ai-test.cjs`: `no-negative-stocks-ai-test: 8 passed, 0 failed`
 - `node tools/no-negative-stocks-test.cjs`: `no-negative-stocks-test: 25 passed, 0 failed`
 - `node tools/no-negative-stocks-projection-test.cjs`: `no-negative-stocks-projection-test: 49 passed, 0 failed`
-- `npm ci --ignore-scripts` w gra/: rc=0. NIE uruchamiano `npm run build/dev` (zakaz).
-- Kryteria (a) symulacja 15×3×150, (b) brak eliminacji, (c) test kar deficytu, (d) mutacja: NIE_ZMIERZONO (nie zaimplementowano runnera ani testu AI).
+- `node tools/gold-deficit-test.cjs`: `gold-deficit-test: 55 pass, 0 fail` (istniejący test kar deficytu; NIE jest to test wymuszonego minusa w turze — patrz BLOKADY)
+- `npm ci --ignore-scripts` w gra/: wykonane. NIE uruchamiano `npm run build/dev` (zakaz).
 
-## BLOKADY (dlaczego BLOCK, z lokalizacjami w gra/src/main.ts i gra/src/game/ai.ts)
-1. Brak wpięcia AI. `planAiBalance` nie jest wołany nigdzie poza testami (grep po src/tools: tylko no-negative-stocks*-test.cjs).
-2. Kolejność tury: `econ = advanceCityEconomy(...)` ok. linii 39194; `advanceEmpireFood(...)` ok. 39408; blok „Bank treasury” z bankowaniem AI (`aiSkarb`, `aiSkarbiecByOwner.set`) ok. 39795–39830. Równoważenie AI musi zajść PRZED tym blokiem, a prognoza (`projectNnsAfterTick`) wymaga `econ` tej samej tury. Zmiana wydatków (wstrzymanie zakupu, rozwiązanie jednostki) zmienia utrzymanie, więc wymaga ponownego policzenia `econ` albo jawnej korekty prognozy. Nie zaprojektowane w tej rundzie.
-3. Rozwiązanie jednostki: `disbandPlayerUnit` (main.ts ok. 7376) sprawdza `u.ownerId !== 0` i zwraca false. AI potrzebuje wariantu per owner (zwrot manpower i surowców dla właściwego ownera) — nie istnieje.
-4. Podatki AI: `decideAIEconomySliders` (ai.ts ok. 7779) działa z cooldownem `minOdstepTur` i nie ma trybu „przed końcem tury”. Wymuszenie podatku poza cooldownem wymaga osobnego wejścia.
-5. Wstrzymanie zakupów: `shouldAIPurchaseUnit` (ai.ts, import w main.ts ok. 1318) — brak flagi „wstrzymaj” dla tury.
-6. Runner headless: istniejące narzędzia (np. `tools/measure-ai-trade-offer-frequency.cjs`) działają na żywym bundle w Chromium z hakami `window.__…` (bramka `?civTest=1`), wznawiane przez MEAS_PROFILE/MEAS_RESULT. Runner 15×3×150 wymaga nowego haka (15 cywilizacji AI, ziarno, quickSave/loadSlot) — nie istnieje. Szacunek: wielogodzinny pomiar w kawałkach 480 s, ok. 45 przebiegów.
-7. Test mutacji (wyłączenie równoważenia czerwieni test) wymaga flagi wyłączającej, której nie ma.
+## KRYTERIA — STAN
+- (a) runner headless 15 AI × 3 ziarna × 150 tur, surowe liczby po każdej turze od tury 11: NIE_ZROBIONE. Brak runnera (patrz BLOKADY 1).
+- (b) brak eliminacji przez równoważenie: NIE_ZMIERZONO (brak pomiaru). Projektowo: dźwignie `eliminujeCywilizacje` nie trafiają do planu, jednostki obronne nie są przekazywane do dźwigni, `disbandAiSupportUnit` odrzuca nie-cywilne jednostki.
+- (c) test kar deficytu przy wymuszonym minusie: NIE_ZROBIONE jako osobny test (istniejący gold-deficit-test 55/0 nie wymusza minusu w tej ścieżce).
+- (d) mutacja pomiarowa (flaga off → minusy): NIE_ZROBIONE. Flaga istnieje i działa w testach jednostkowych (`flaga off: brak działania`), ale bez runnera nie ma pomiaru trajektorii.
+- Test wiązania z main.ts: tylko STATYCZNY (regex na źródle main.ts), nie mutacja zachowania. Usunięcie wywołania spowoduje FAIL testu c2, ale nie była to mutacja wykonana w grze.
 
-## PROPOZYCJA DALSZEGO KROKU (do decyzji orkiestratora)
-- Runda 2 rozdzielona na dwa etapy: (C1) pure-helper w no-negative-stocks.ts: `buildAiLevers(stan ownera)` + test jednostkowy, w tym mutacja; (C2) wpięcie w main.ts przed blokiem „Bank treasury” z przeliczeniem `econ` i owner-aware disband (osobna funkcja, nie zmiana `disbandPlayerUnit`), potem runner headless.
-- Koszt wołania `projectEmpireFoodAfterTick` (O(owners²) na turę wg dispatchu) — zmierzyć przed wpięciem; jedno wywołanie na turę dla wszystkich AI albo cache.
-- Model: temat dotyka main.ts, ai.ts i runnera, więc orkiestrator ma rozważyć SONNET na Operatorze z uzasadnieniem (wiele ścieżek, ponowne liczenie econ). Ta runda nie ma podstawy do eskalacji wg zasady „po 2 nieudanych rundach” (to runda 1).
+## BLOKADY
+1. Runner headless 15×3×150 nie istnieje. Istniejące narzędzia (`tools/measure-ai-trade-offer-frequency.cjs`) działają na żywym bundle w Chromium z hakami `window.__…` (`?civTest=1`). Wymagają nowego haka (15 cywilizacji AI, ziarno, zapis/wczytanie slotu). Nie zbudowano go w tej rundzie. Szacunek z r1 pozostaje: wielogodzinny pomiar w kawałkach ≤480 s.
+2. Podatki AI nie są równoważone. `podatekSkarbiec: 0` — brak modelu zysku z podniesienia podatku w jednej turze (`decideAIEconomySliders` ma cooldown `minOdstepTur` i nie zwraca przewidywanego zysku). Dźwignia podatkowa jest więc NIE_ZMIERZONO i pominięta.
+3. Wstrzymanie zakupów jest ograniczone do zakupu jednostek (`shouldAIPurchaseUnit` / `purchaseRecruitmentUnit`). Wstrzymania kolejki budowy (gold/food w kolejce produkcji) nie są dźwignią (`wstrzymania: []`); to świadome zawężenie.
+4. Kolejność tury: bankowanie AI (main.ts ok. 39799) następuje PO `advanceEmpireFood` (ok. 39408), więc wartości `aiSkarb` i `getEmpireFoodReserve` w tym punkcie są już poticzkowe. Równoważenie działa więc na stanie po ticku tej tury, a efekt rozwiązania jednostek (zmniejszenie utrzymania) dotyka dopiero NASTĘPNEJ tury. Ruch ten nie zmienia bieżącego minusu skarbca — dźwignie tej tury to wstrzymanie zakupów i zwolnienie przyszłego utrzymania. To jest zgodne z dispatchem tylko częściowo (dispatch zakładał projekcję przed tickiem i ponowne liczenie econ — nie wdrożone; to decyzja wymagająca orkiestratora).
+5. Spichlerz: brak dźwigni żywnościowej. Dla spichlerza AI działa tylko wstrzymanie zakupów; nie ma wsparcia spichlerza.
+6. `disbandAiSupportUnit` nie zwraca złota ani surowców i nie sprząta oblężeń/zapisów poza `syncUnitsRender()`. Dispatch wymagał „minimalnego wariantu, bez zmian zachowania gracza” — spełnione, ale sprzątanie stanu (np. `plannedMarches`, `marchAttackTargets`, referencje w garnizonie) NIE_ZWERYFIKOWANE w grze.
+7. Nie uruchomiono gry w przeglądarce ani żadnego testu turowego AI. Wpięcie jest zweryfikowane wyłącznie typowo (tsc) i statycznie.
+
+## ZAŁOŻENIA (luki rozstrzygnięte w raporcie)
+- Jednostka wsparcia = `isCivilianUnit(u)` z `units/setup.ts`, poza garnizonem i oblężeniem. Pozostałe jednostki = obronne (nie przekazywane do dźwigni).
+- Koszt złota jednostki wsparcia = średnie utrzymanie jednostek ownera (`utrzymanieJednostki`) na jednostkę cywilną — przybliżenie, nie pomiar.
 
 ## UWAGI-DLA-ORKIESTRATORA
-- Dispatch referuje `00-dispatch.md` na origin/main; plik istnieje tylko na gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0`. Odczytano z tej gałęzi.
-- Kandydat r1 c43597936 nie wnosi nic nowego względem main (jest jego przodkiem; main ma wersję po A).
-- Nie wypchnięto niczego. Brak integracji, brak deployu.
+- Kandydat ecb341abe był bazą; merge origin/main d419d3eaf (ed6fb99d0) jest w gałęzi worktree. Nie pushowano.
+- Brak zmian w ai.ts (dispatch dopuszczał). Brak zmian w `disbandPlayerUnit`, `canPlayerInitiateEndTurn`, hud.ts.
+- Do decyzji: czy wymagać projekcji PRZED tickiem (ponowne liczenie econ) — to zmiana architektury tury, nie została zrobiona.
+- Rekomendacja modelu: runda 3 wymaga runnera (nowy hak) — orkiestrator decyduje o modelu (zasada 2: Sonnet po 2 nieudanych rundach Haiku TEGO tematu; to jest runda 2, więc Haiku domyślnie).
 
-NASTĘPNY KROK: orkiestrator decyduje o rundzie 2 (podział C1/C2) i o modelu Operatora.
+NASTĘPNY KROK: Evaluator/Final Control oceniają wpięcie C2; runda 3 — runner headless + test kar deficytu + mutacja pomiarowa (flaga off) + decyzja o projekcji przed tickiem.
 DEPLOY/PUSH: NIE WYKONANO
-RUNDY: 1/5 (ostatni werdykt: brak; decyzja orkiestratora wymagana)
+RUNDY: 2/5 (r1 BLOCK bez kodu; r2 C1 + częściowe C2 — runner NIE wykonany)

@@ -1315,6 +1315,7 @@ import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
 import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
 import { isTechDiscoveryNoticeOpen, showTechDiscoveryNotice } from './ui/techDiscoveryNotice';
 import { showCivElimNotice } from './ui/civElimNotice';
+import { buildAiLevers, decideAiOwnerBalance, isNnsAiBalanceEnabled } from './game/no-negative-stocks';
 import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIPurchaseUnit, loadAiPurchaseReserveParams, decideAIEconomySliders, aiSeedPodzialHandlu, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, AI_TRADE_BARTER_COOLDOWN_TURNS, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
 import { aiCityCaptureAllowed, aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory, snapshotAiTargetMemory, type AiTargetMemoryByOwner } from './game/ai-fog';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand, MiastoWycenaWejscie } from './game/ai';
@@ -7373,6 +7374,23 @@ async function boot(): Promise<void> {
     }
 
     /** Rozwiązanie jednostki gracza — usuwa z mapy, zwraca Manpower do puli imperium. */
+    /**
+     * R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1 (C2): rozwiązanie jednostki wsparcia AI (uogólnienie
+     * disbandPlayerUnit dla ownerId !== 0). Bez zwrotu złota, bez zmian zachowania gracza.
+     * Nigdy nie rusza jednostek nie-cywilnych, garnizonu ani oblężenia.
+     */
+    function disbandAiSupportUnit(unitId: string, ownerId: number): boolean {
+      if (ownerId === 0) return false;
+      const idx = units.findIndex(x => x.id === unitId);
+      if (idx < 0) return false;
+      const u = units[idx]!;
+      if (u.ownerId !== ownerId || u.inGarnizon === true || u.oblegaCityId) return false;
+      if (!isCivilianUnit(u)) return false;
+      units.splice(idx, 1);
+      syncUnitsRender();
+      return true;
+    }
+
     function disbandPlayerUnit(unitId: string): boolean {
       const idx = units.findIndex(x => x.id === unitId);
       if (idx < 0) return false;
@@ -10425,6 +10443,8 @@ async function boot(): Promise<void> {
     let rejectedOfferCooldowns: RejectedOfferCooldown[] = [];
     /** v1.1: skarbiec AI do ticka trybutu (T1A). */
     const aiSkarbiecByOwner = new Map<number, number>();
+    // C2 (R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1): AI wstrzymane w tej turze (wypełniane w bankowaniu tury).
+    const aiNnsHoldOwners = new Set<number>();
     /** R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1: przychód BRUTTO złota AI z ostatniego ticku
      *  (aiEcon.pieniadz z bloku bankowania AI) -- baza prognozy dochodu netto w
      *  aiPurchaseReserveInputs. Brak wpisu (tura 1, po wczytaniu zapisu) = reguła rezerwy
@@ -39817,6 +39837,35 @@ async function boot(): Promise<void> {
               // i musi widzieć identyczny mechanizm dla obu stron. setOwnerTreasury()
               // (inne wywołania — łup, przejęcie stolicy) nadal podłogowuje do 0,
               // tak samo jak dla gracza — symetria zachowana.
+              // C2 (R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1): równoważenie AI PO ticku. Wartości
+              // aiSkarb (skarbiec po bankowaniu) i getEmpireFoodReserve (spichlerz po advanceEmpireFood)
+              // są już poticzkowe. Dźwignie: wstrzymanie zakupów + rozwiązanie jednostek wsparcia
+              // (cywilne, poza garnizonem/oblężeniem). Podatków nie zmieniamy tu (brak modelu zysku).
+              const nnsSpichlerzPo = getEmpireFoodReserve(oid);
+              if (aiSkarb < 0 || nnsSpichlerzPo < 0) {
+                try {
+                  const nnsCivil = units.filter(u =>
+                    u.ownerId === oid && isCivilianUnit(u) && u.inGarnizon !== true && !u.oblegaCityId,
+                  );
+                  const nnsPerUnit = nnsCivil.length > 0
+                    ? (aiBalance?.utrzymanieJednostki ?? 0) / nnsCivil.length
+                    : 0;
+                  const nnsLevers = buildAiLevers({
+                    podatekSkarbiec: 0,
+                    wstrzymania: [],
+                    jednostkiWsparcia: nnsCivil.map(u => ({ id: u.id, stock: 'skarbiec' as const, zysk: nnsPerUnit, koszt: nnsPerUnit })),
+                    jednostkiObronne: [],
+                  });
+                  const nnsDec = decideAiOwnerBalance(turn, aiSkarb, nnsSpichlerzPo, nnsLevers);
+                  if (nnsDec.aktywne) {
+                    aiNnsHoldOwners.add(oid);
+                    for (const uid of nnsDec.rozwiazJednostki) disbandAiSupportUnit(uid, oid);
+                    console.warn(`[NNS-AI ${oid}] Po ticku: skarbiec=${Math.round(aiSkarb)} spichlerz=${Math.round(nnsSpichlerzPo)} — zakupy wstrzymane, rozwiązano=${nnsDec.rozwiazJednostki.length}, pokryte=${nnsDec.plan.pokryte}`);
+                  }
+                } catch (eNns) {
+                  console.error(`[NNS-AI ${oid}] Blad rownowazenia:`, eNns);
+                }
+              }
               aiSkarbiecByOwner.set(oid, aiSkarb);
 
               // Pula Nauki AI — symetryczna z graczem (totalNauka z ekonomii miast) + bonus trudności.
@@ -43729,7 +43778,9 @@ async function boot(): Promise<void> {
                     // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: jednostka
                     // nigdy nie wraca do kolejki Pracy. Zakup przechodzi przez
                     // tę samą bramkę skarbca/Manpower co zakup gracza.
-                    const wantsPurchase = shouldAIPurchaseUnit({
+                    // C2 (R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1): AI z ujemnym skarbcem/spichlerzem po ticku
+                    // nie zaczyna zakupów w tej turze (dźwignia „wstrzymanie”).
+                    const wantsPurchase = !aiNnsHoldOwners.has(ownerId) && shouldAIPurchaseUnit({
                       treasury: ownerTreasury(ownerId),
                       goldCost: item.koszt,
                       hasManpower: canAffordUnitManpowerEmpire(

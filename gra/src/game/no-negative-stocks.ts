@@ -325,3 +325,57 @@ export function projectNnsAfterTick(
     spichlerzPo: f.spichlerzPo,
   };
 }
+
+// ---------------------------------------------------------------------------
+// R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1 (etap C2) — równoważenie AI po ticku.
+// ---------------------------------------------------------------------------
+
+/** Pierwsza tura, od której równoważenie AI jest aktywne (tury 1–10 wolne). */
+export const NNS_AI_BALANCE_TURN_MIN = NNS_WOLNE_TURY + 1;
+
+/**
+ * Flaga równoważenia AI (jedno miejsce). Domyślnie włączona. Wyłączenie jest używane
+ * wyłącznie w mutacji pomiarowej (runner headless / testy), nigdy w grze.
+ */
+const nnsAiBalanceFlag = { enabled: true };
+
+export function isNnsAiBalanceEnabled(): boolean {
+  return nnsAiBalanceFlag.enabled;
+}
+
+export function setNnsAiBalanceEnabled(enabled: boolean): void {
+  nnsAiBalanceFlag.enabled = enabled;
+}
+
+export interface NnsAiOwnerDecision {
+  /** Czy równoważenie uruchomić dla tego ownera w tej turze. */
+  aktywne: boolean;
+  /** Wstrzymać zakupy/rekrutację AI w tej turze. */
+  wstrzymajZakupy: boolean;
+  /** Id dźwigni „rozwiazanie” (jednostki wsparcia) wybranych do rozwiązania, od najdroższej. */
+  rozwiazJednostki: string[];
+  plan: NnsAiPlan;
+}
+
+/**
+ * Decyzja równoważenia dla jednego AI po ticku. Czysta funkcja.
+ * `skarbiecPo` / `spichlerzPo` = prognoza po ticku (wartości przed podłogą).
+ */
+export function decideAiOwnerBalance(
+  turn: number,
+  skarbiecPo: number,
+  spichlerzPo: number,
+  levers: readonly NnsLever[],
+): NnsAiOwnerDecision {
+  const brakuje: NnsBrak[] = [];
+  if (skarbiecPo < 0) brakuje.push({ stock: 'skarbiec', ile: -skarbiecPo });
+  if (spichlerzPo < 0) brakuje.push({ stock: 'spichlerz', ile: -spichlerzPo });
+  const aktywne = isNnsAiBalanceEnabled() && turn >= NNS_AI_BALANCE_TURN_MIN && brakuje.length > 0;
+  const plan = planAiBalance(brakuje, aktywne ? levers : []);
+  return {
+    aktywne,
+    wstrzymajZakupy: aktywne,
+    rozwiazJednostki: plan.akcje.filter(a => a.rodzaj === 'rozwiazanie').map(a => a.leverId),
+    plan,
+  };
+}
