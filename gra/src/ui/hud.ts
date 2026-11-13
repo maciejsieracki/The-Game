@@ -653,7 +653,7 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
    „+brutto / +netto" = 70% liczby sumarycznej (--hud-cell-sm). Tryb wybiera fitHudTopbar() (JS, po renderze):
    wszystkie 6 w JEDNEJ linii (6 rownych kolumn => pozycje zetonow STALE przy zmianie liczb). Gdy najszerszy
    zeton sie nie miesci, fitHudTopbar() zmniejsza skale --hud-k (od 1280 px; R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1);
-   klasa .hud-left-fallback = 2 rzedy po 3 zostaje jako ostatecznosc (waskie okno < 1280 px lub skala 0,40 nie wystarcza).
+   klasa .hud-left-fallback = 2 rzedy po 3 zostaje jako ostatecznosc (waskie okno < 1280 px lub skala 0,36 nie wystarcza).
    Baner zajmuje cala szerokosc od lewego marginesu do medalionu Mocy (50vw − 150 px). */
 .civ-hud{--hud-cell-med:30px;--hud-cell-lbl:10px;--hud-cell-val:22px;}
 .civ-hud .civ-hud-banner-left{--hud-k:1;}
@@ -1762,7 +1762,7 @@ export function fitHudTopbar(root: ParentNode | null = barEl): void {
       || cells.some((c) => c.scrollWidth > c.clientWidth + 0.5);
     // R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1: wszystkie 6 żetonów w JEDNEJ linii na samej górze.
     // Najpierw skala (--hud-k) schodzi stopniami, aż żetony się zmieszczą; dwa rzędy (2×3) tylko jako
-    // ostateczność, gdy nawet najmniejsza skala (0,40 od 1280 px; 0,70 węziej) nie mieści linii.
+    // ostateczność, gdy nawet najmniejsza skala (0,36 od 1280 px; 0,70 węziej) nie mieści linii.
     left.style.removeProperty('--hud-k');
     const narrowWin = typeof window !== 'undefined' && window.innerWidth < 1280;
     if (narrowWin) {
@@ -1775,9 +1775,10 @@ export function fitHudTopbar(root: ParentNode | null = barEl): void {
         }
       }
     } else {
-      // Od 1280 px jedna linia schodzi skala do 0,40; dopiero gdy i to nie wystarcza — 2×3 (ostateczność).
-      for (let k = 0.96; leftOverflows() && k >= 0.40; k -= 0.02) {
-        left.style.setProperty('--hud-k', k.toFixed(2));
+      // Od 1280 px jedna linia schodzi skala do 0,36 (maxw 999 999 999 przy 1280 px potrzebuje < 0,40); dopiero gdy i to nie wystarcza — 2×3 (ostateczność).
+      // Krok calkowity (setne): petla na float konczyla sie na 0,42 (0,40 - epsilon), a 0,40 i nizej nigdy nie bylo probowane.
+      for (let kk = 96; leftOverflows() && kk >= 36; kk -= 2) {
+        left.style.setProperty('--hud-k', (kk / 100).toFixed(2));
       }
       if (leftOverflows()) left.classList.add('hud-left-fallback');
     }

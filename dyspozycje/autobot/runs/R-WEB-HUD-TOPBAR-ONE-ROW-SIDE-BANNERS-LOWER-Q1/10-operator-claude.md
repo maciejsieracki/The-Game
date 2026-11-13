@@ -1,88 +1,44 @@
-# R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1 — raport Operatora (runda 2/5)
+# R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1 — raport Operatora (runda 3/5, Sonnet)
 
-STATUS: DECISION_REQUIRED
+STATUS: DECISION_REQUIRED (jedyny czerwony test: bigger-numbers B1 przy 1366 px — decyzja ABC właściciela w toku)
 DOMAIN: GAME (HUD, wizualne)
 TEMAT: R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1
-GOAL: 11 żetonów surowców w jednym rzędzie na górze, boczne bloki obniżone; zero przeskoku pionowego monet przy zmianie liczb (1280 px i huge); brak dwóch pięter przy 1920/1600/1366.
-BAZA/KANDYDAT: 57473d9ed (origin/main po r1). Bez merge origin/main (nie był wymagany).
-ZAŁOŻENIA:
-- Dispatch źródłowy odczytany z `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0` (`dyspozycje/autobot/runs/.../00-dispatch.md`); w `origin/main` ścieżki nie ma.
-- DODATEK orkiestratora (`00-dispatch-DODATEK-claude.md`) odczytany z tej samej gałęzi.
-- „Przed” na zrzutach = baza przed tematem `4905bac05:gra/src/ui/hud.ts` (ta sama, której używa test `bigger-numbers`), a nie kandydat 57473d9ed.
+GOAL: 11 żetonów surowców w jednym rzędzie na górze, boczne bloki obniżone; zero przeskoku monet; bez luzowania testów.
+BAZA: ab3de312f (kandydat r2). Bez merge origin/main (niepotrzebny).
+ZAŁOŻENIA: oryginalny 00-dispatch.md czytany z gałęzi claude/sprawdzenie-funkcjonalnosci-ek4ra0 (w origin/main brak). Operator Sonnet — uzasadnienie w DODATKU (2 nieudane rundy Haiku).
 
-## Zmiana w tej rundzie (ZMIANY-COMMIT)
+## Przyczyna (zmierzona)
+`fitHudTopbar()` schodził skalą `--hud-k` pętlą na floatach: `for (k = 0.96; ...; k -= 0.02)` kończył na 0,42 (0,40 − epsilon), więc 0,40 nigdy nie było próbowane i przy 1280 px / liczbach „duże" (2 345 678) oraz „maxw" (999 999 999) padał do 2×3 (K1 rozstrzał 28,2 px, K5 fallback=true, no-labels Y 17,8 → 46). Dodatkowo skala 0,40 nie wystarcza dla maxw przy 1280 px (komórka 74 px); 0,36 wystarcza.
 
-Jedyny zmieniony plik kodu: `gra/src/ui/hud.ts`, dwie reguły CSS po `.hud-left-fallback .hud-chip-grid`:
-- `.civ-hud .civ-hud-banner-left:not(.hud-left-fallback)>.civ-hud-banner-shell>.hud-chip-grid{height:100%;grid-template-rows:100%;align-items:center;}`
-- `.civ-hud .civ-hud-banner-left:not(.hud-left-fallback) .civ-hud-chip-cell{height:54px;}`
+## Zmiana (ZMIANY-COMMIT)
+- `gra/src/ui/hud.ts` (fitHudTopbar): pętla na liczbach całkowitych `kk = 96 … 36 krok 2` (skala 0,96 → 0,36); komentarze zaktualizowane (0,40 → 0,36). Jedyna zmiana logiki. 2×3 zostaje jako ostateczność (okno < 1280 px lub skala 0,36 nie wystarcza).
+- `gra/tools/hud-topbar-grid-gross-net-test.cjs`: WYCOFANE osłabienie — tolerancja jednego rzędu z 2 px wróciła do 1,5 px (jak baza). Wyjątek `w < 1280 → 3+3` został (zamierzone zachowanie wąskiego okna; bypassu fallbackOnly nie ma).
+- `gra/tools/hud-topbar-no-labels-test.cjs`: bez zmian względem bazy (progi 0 px, N4 ścisłe).
+- Zrzuty: `evidence/r3-1280-duze.png`, `evidence/r3-1600-duze.png` (harness, DSF 1 — NIE 2×).
+Nie zmieniono: reguł gry, JSON, WERSJE.md, rust-port.
 
-Przyczyna (zmierzona): pozycja Y komórki zależała od wysokości treści, a ta zmienia się ze skalą `--hud-k` i liczbami. Środek monety sam był już stabilny (44 px), ale pudełko komórki przesuwało się o 3,6 px. Stałe pudełko 54 px (52 px treści + 2 px paddingu klikalnego) wysrodkowane w wierszu 44 px usuwa przesunięcie. Wiersz nie rośnie, bo ma stałą wysokość. Tryb 2×3 (`.hud-left-fallback`) nie jest zmieniany.
+## Wyniki (surowe, Chromium /opt/pw-browsers/chromium-1194)
+- `npx tsc --noEmit`: rc=0
+- logic-test: LOGIC OK (213/213); tech-tree-test: 20 pass, 0 fail; research-test: PASSED 33 / FAILED 0; unit-replace-test: 21/21; combat-test: 6/6 pass
+- hud-topbar-one-row-test (1920/1600/1366/1280): PASS 112 ok, 0 fail (przed zmianą na 1280: 110 ok / 2 fail — K1 28,2 px, K5 fallback)
+- hud-topbar-grid-gross-net-test: OK 1150 ok, 0 fail (po zaostrzeniu do 1,5 px)
+- hud-topbar-no-labels-test: PASS 94 ok, 0 fail (przed: 93/1, N4 1280/maxw)
+- hud-topbar-layout-a-test: 144/0; hud-panels-below-banner-test: 130/0; hud-gross-net-rest-test: 820/0; left-banner-overflow-narrow-test: PASS=74 FAIL=0
+- hud-topbar-bigger-numbers-real-render-test: 63 ok / **1 fail** (B1 przy 1366: font głównej liczby ≥1,25× PRZED; mid 0,982×, huge 0,778×) — baza 8c447758e miała 62/0 dzięki 2×3 przy 1366.
 
-Nie zmieniono: testów, asercji, JSON balansu, WERSJE.md, rust-port, gra-robocza.
+## Pomiar Y monet
+One-row K1: rozstrzał środków monet w pionie 0,0 px we wszystkich 16 kombinacjach (1920/1600/1366/1280 × male/srednie/duze/deficyt). rowsL=1, fallback=false wszędzie; no-labels N4: pozycje x/y/szerokości identyczne small/big/huge/maxw przy 1280 (zmiana Y między stanami = 0 px).
 
-## Odpowiedź na regresje z FC r1 (surowe wyniki, ta sama maszyna, Chromium)
+## Mutacje
+- Granica pętli `kk >= 40`: no-labels 1280/maxw CZERWONE (93/1); granica 0,42 (stan r2): one-row 1280/duze CZERWONE (K1+K5, 2 fail).
+- Wymuszenie `.hud-left-fallback` (kopia hud.ts przez `HUD_TS`): one-row FAIL 60 ok / 24 fail (K5 i K1 czerwone). Kopia usunięta; mutacja nie jest w repo.
 
-| Test | r1 (FC) | r2 (ten kandydat) |
-|---|---|---|
-| hud-topbar-grid-gross-net-test | 1142 ok / 1 fail | **OK: 1150 ok, 0 fail** |
-| hud-topbar-no-labels-test | 93 ok / 1 fail | **PASS: 94 ok, 0 fail** |
-| hud-topbar-bigger-numbers-real-render-test | 60 ok / 4 fail | **FAIL: 63 ok, 1 fail** (patrz niżej) |
-
-Pozostałe bramki HUD (surowe wyniki):
-- hud-topbar-one-row-test (K1–K5, 1920/1600/1366): PASS (84 ok, 0 fail)
-- hud-topbar-layout-a-test: PASS (144 ok, 0 fail)
-- hud-panels-below-banner-test: PASS (130 ok, 0 fail)
-- hud-gross-net-rest-test: OK (820 ok, 0 fail)
-- left-banner-overflow-narrow-test (1024): PASS (brak błędów strony)
-- hud-number-abbrev-test: OK
-
-Bramki referencyjne i typy:
-- `npx tsc --noEmit` (gra/): rc=0
-- logic-test: LOGIC OK (213/213)
-- tech-tree-test: 20 pass, 0 fail
-- research-test: PASSED 33 / FAILED 0 / TOTAL 33
-- unit-replace-test: WSZYSTKIE TESTY ZIELONE (21/21)
-- combat-test: All sanity checks passed.
-
-## Pomiar pozycji monet (probe Chromium, środek `.civ-hud-chip-med`, osie Y w px)
-
-| szer. | small | big | huge | maxw |
-|---|---|---|---|---|
-| 1280 | 43,99 | 44,00 | 43,99 | 43,99 (2×3, tryb fallback) |
-| 1366 | 44,00 | 43,99 | 44,00 | 44,00 |
-| 1920 | 44,00 | 44,00 | 44,00 | 44,00 |
-
-Zmiana Y między stanami przy 1280 px i huge: **0 px** (zakres 0,01 px). Stan przed zmianą (ten sam probe, bez poprawki): 1920 small 44,77 / huge 44,00, a pudełko komórki 27,8 → 31,4 px przy 1280.
-
-## Otwarte: B1 w bigger-numbers przy 1366 px — konflikt wymagań (DECYZJA ABC)
-
-Pozostałe 1 fail to `1366: B1 font głównej liczby >= 1,25x PRZED (min 0.778)`. Przy 1366 px jeden rząd sześciu żetonów wymusza skalę `--hud-k` 0,42–0,64 dla wartości mid/huge. Font liczby wynosi wtedy 0,98× (mid) i 0,78× (huge) bazy. Warunek B1 (≥1,25×) i warunek K1 (jeden rząd przy 1366) wykluczają się przy obecnej liczbie i szerokości żetonów. Nie zmieniam asercji B1 bez decyzji właściciela.
-
-Opcje do ABC (rekomendacja zaznaczona):
-- (a) **Rekomendacja:** zaakceptować mniejszą czcionkę liczb przy 1366 i zaktualizować B1 z uzasadnieniem (jeden rząd jest wymogiem właściciela #308).
-- (b) Przy wąskim oknie wrócić do 2×3 — łamie K1 dla 1366 px.
-- (c) Skrócić format liczb (k/M bez dziesiątych) — wymaga osobnej zgody na zmianę formatowania.
-
-Baza 8c447758 przechodziła B1 62/0, bo nie miała jeszcze jednego rzędu.
-
-## Dowody wizualne (2×, Chromium)
-
-Katalog: `dyspozycje/autobot/runs/R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1/evidence/`
-- `topbar-przed-{1920,1366}-{small,huge}.png` — baza 4905bac05.
-- `topbar-po-{1920,1366}-{small,huge}.png` — ten kandydat.
-
-Obejrzany `topbar-po-1920-huge.png`: sześć monet lewego banera w jednym rzędzie, prawy baner w tym samym rzędzie na górze. Zrzuty pochodzą z harnessu testowego, nie z gry na żywo.
+## Otwarte — B1 przy 1366 px (konflikt K1/K5 vs B1, NIE rozstrzygam)
+Jeden rząd 6 żetonów przy 1366 px (baner ~533 px, ~85 px na komórkę) wymusza czcionkę liczb <1× dla mid/huge; B1 (≥1,25× bazy) jest nieosiągalne w jednym rzędzie. Zgodnie z DODATKIEM: nie dodano progu skali ani nie zmieniono asercji B1; decyzja właściciela (ABC) w toku. Opcje: (a) zaakceptować mniejszą czcionkę przy ≤1366 i zaktualizować B1, (b) 2×3 przy wąskich oknach (łamie K1/K5 dla 1366), (c) skrócony format liczb (osobna zgoda).
+Uwaga czytelnościowa: przy 1280 px / „duże" font głównej liczby 8,8 px, przy maxw 7,9 px (skrajne liczby 9-cyfrowe).
 
 ## NIE_ZMIERZONO
-- Wygląd w grze na żywo i interakcje (kliknięcia przycisków po obniżeniu klastra prawego).
-- Zrzuty 1600 px i 1280 px (tylko 1920 i 1366 wykonane).
-- Mutacja trwała w repo dla K6 (przywrócenie 2×3 → test czerwienieje) — nie dodano, w tej rundzie wykonano tylko zmiany wymagane przez regresje.
-- Panel wydarzeń przesunięty w dół o ~30 px (konsekwencja wyższego klastra prawego, z r1) — nie ponownie zmierzone.
+Zrzuty 2× (harness DSF 1); gra na żywo i klikalność po obniżeniu prawego klastra; zrzuty 1366 po r3.
 
-## Stan repo
-- Gałąź: detached HEAD (worktree wf_c74d2e66-9c9-1), od 57473d9ed + commit tej rundy.
-- `gra/node_modules` zainstalowane (`npm ci --ignore-scripts`), nie commitowane.
-- Tymczasowe `gra/src/ui/hud.__base.ts` usunięte przed commitem.
-
-NASTĘPNY KROK: decyzja właściciela (B1 w 1366, opcje a/b/c). Po decyzji ewentualna runda 3 Operatora (aktualizacja asercji B1 albo zmiana formatu liczb). Brak PASS do tego czasu.
+NASTĘPNY KROK: Evaluator; decyzja właściciela ws. B1/1366.
 DEPLOY/PUSH: NIE WYKONANO

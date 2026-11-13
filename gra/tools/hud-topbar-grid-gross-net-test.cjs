@@ -144,7 +144,7 @@ function assertAll(res, label) {
       const c = m.cells;
       const sameY1 = ORDER_ROW1.every((x) => c[x] && Math.abs(c[x].y - c[ORDER_ROW1[0]].y) < 1.5);
       const sameY2 = ORDER_ROW2.every((x) => c[x] && Math.abs(c[x].y - c[ORDER_ROW2[0]].y) < 1.5);
-      const oneRow = [...ORDER_ROW1, ...ORDER_ROW2].every((x) => c[x] && Math.abs(c[x].y - c.Skarbiec.y) < 2);
+      const oneRow = [...ORDER_ROW1, ...ORDER_ROW2].every((x) => c[x] && Math.abs(c[x].y - c.Skarbiec.y) < 1.5);
       const twoRows = ORDER_ROW1.every((x) => c[x] && Math.abs(c[x].y - c[ORDER_ROW1[0]].y) < 1.5) && ORDER_ROW2.every((x) => c[x] && Math.abs(c[x].y - c[ORDER_ROW2[0]].y) < 1.5) && c.Handel.y > c.Skarbiec.y + 20;
       ok(oneRow || (w < 1280 && twoRows), `${label} ${w}px/${n}: R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1: wszystkie 6 komorek w JEDNYM rzedzie na gorze (od 1280 px; ponizej dozwolony awaryjny 3+3)`, { y: names.map((x) => c[x] && c[x].y) });
       const xs = (arr) => arr.map((x) => c[x] && c[x].x);
@@ -180,7 +180,7 @@ function assertAll(res, label) {
     for (const n of ['small', 'huge']) {
       const m = k0(w, n); const c = m.cells;
       ok(JSON.stringify(Object.keys(c)) === JSON.stringify([...ORDER_ROW1, ...ORDER_ROW2]), `${label} ${w}px/${n}: kolejnosc komorek zachowana`);
-      const one = [...ORDER_ROW1, ...ORDER_ROW2].every((x) => Math.abs(c[x].y - c.Skarbiec.y) < 2);
+      const one = [...ORDER_ROW1, ...ORDER_ROW2].every((x) => Math.abs(c[x].y - c.Skarbiec.y) < 1.5);
       const two = ORDER_ROW1.every((x) => Math.abs(c[x].y - c.Skarbiec.y) < 1.5) && ORDER_ROW2.every((x) => Math.abs(c[x].y - c.Handel.y) < 1.5) && c.Handel.y > c.Skarbiec.y + 20;
       ok(one || two, `${label} ${w}px/${n}: komorki w jednym rzedzie (ONE-ROW) albo awaryjnie 3+3 (waskie okno)`);
       ok(Object.values(c).every((v) => !v.clip), `${label} ${w}px/${n}: zaden tekst nie jest przyciety`, Object.entries(c).filter(([, v]) => v.clip).map(([k]) => k));
