@@ -1,23 +1,28 @@
-# DISPATCH R-RUSTPORT-P6-K5I2B2-POKRYCIE-R2-Q1 (runda 1)
+# DISPATCH R-RUSTPORT-P6-K5I2B2-POKRYCIE-R2-Q1 (runda 1) — zadanie #111 / #143
 
-TEMAT: K5I2B2-POKRYCIE-R2: asercja lucznik>=14 w teście pokrycia blow_full
-DOMENA: GAME. Baza: 23e33793e (czubek origin/rust-port/parity-v2). Worktree na `wip/R-RUSTPORT-P6-K5I2B2-POKRYCIE-R2-Q1`.
-Pin (tylko odczyt): `git show 07d2fbd72:<plik>` — znajdź właściwy plik grepem (NIE zakładaj gra/src/main.ts dla funkcji bitwy).
+TEMAT: pokrycie łuczników w teście blow_full: asercja lucznik>=14 oraz generator z gałęzią łuczników.
+DOMENA: GAME (testy). Baza: `cfa1edd31`. Worktree na `wip/R-RUSTPORT-P6-K5I2B2-POKRYCIE-R2-Q1`.
+Pin (tylko odczyt): `git show 07d2fbd72:gra/src/game/combat.ts` i `battleScene.ts` — gałąź łuczników.
 
-KROK 0 (obowiązkowy): `git grep` w `rust-port/engine` potwierdź stan wyjściowy. Jeśli zmiana już jest w kodzie — zamknij PASS z dowodem bez zmian.
+## KROK 0 (obowiązkowy, zatrzymuje temat jeśli już działa)
+Uruchom `cargo test --test p6_siege_tactics_blow_full` na `cfa1edd31`. Jeśli asercja `lucznik>=14` PRZECHODZI i generator daje ≥14 łuczników — STATUS PASS bez zmian w kodzie, wypisz liczby. Jeśli NIE — przejdź dalej.
 
-GOAL: Dodać asercję pokrycia łucznika (lucznik_ranged >= 14; regresja 14->2 musi failować) wzorem p6_siege_tactics_blow_env.rs:722-726 i liczników z :636-639.
+## GOAL
+Generator `p6_siege_tactics_blow_full_gen.mjs` obejmuje gałąź łuczników z pinu, wektory `p6_siege_tactics_blow_full_vectors/vectors.json` regenerowane bajt-w-bajt, asercja `lucznik >= 14` w `p6_siege_tactics_blow_full.rs` przechodzi na wektorach z pinu.
 
-ALLOWLISTA (tylko te pliki):
-- rust-port/engine/tests/p6_siege_tactics_blow_full.rs
-- dyspozycje/autobot/runs/R-RUSTPORT-P6-K5I2B2-POKRYCIE-R2-Q1/01-operator-r1.md
+## ALLOWLISTA
+- `rust-port/engine/tests/p6_siege_tactics_blow_full_gen.mjs`
+- `rust-port/engine/tests/p6_siege_tactics_blow_full_vectors/vectors.json`
+- `rust-port/engine/tests/p6_siege_tactics_blow_full.rs` (tylko asercja pokrycia; nie zmieniać asercji wartości ani wektorów poza regeneracją)
+- `dyspozycje/autobot/runs/R-RUSTPORT-P6-K5I2B2-POKRYCIE-R2-Q1/01-operator-r1.md`
+ZAKAZ: `src/**`, `gra/`, `Cargo.toml`, `Cargo.lock`, osłabianie asercji.
 
-KRYTERIA KOŃCA:
-1. Zmiana zgodna z pinem; dowód numerami linii Rust i pinu.
-2. Test z wektorami pinu (istniejący generator .mjs lub nowy, ze strażnikiem SHA-256 wyciętych fragmentów); liczniki niepustości > 0.
-3. Brak `#[ignore]`, brak osłabionych asercji, brak martwego wrappera.
-4. Bramki EXIT 0: `cargo fmt --check`; `cargo clippy --all-targets -- -D warnings`; `cargo test --lib`; nowy/zmieniony test.
-5. Jeśli wymagana zmiana poza allowlistą — BLOCK z dowodem, bez zmian w kodzie.
+## KRYTERIA KOŃCA
+1. Generator odtwarza vectors.json bajt-w-bajt; strażnik SHA-256 zgodny.
+2. Asercja `lucznik >= 14` przechodzi (zmierzone liczniki w raporcie).
+3. Bramki EXIT 0: fmt, clippy `-D warnings`, `cargo test --lib`, `p6_siege_tactics_blow_full`, pełny `cargo test --no-fail-fast` z liczbami. `CARGO_TARGET_DIR` poza repo.
+4. Brak `#[ignore]`, brak osłabionych asercji.
 
-NIE WOLNO: pushować do parity, integrować, dotykać gra/ i origin/main, commitować Cargo.lock, git add -A, git stash bez tagu, rebase na odłączonym HEAD. Commit BEZ nazwy modelu w treści; ostatnia linia: `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`.
-Raport: STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY/BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH (NIE WYKONANO).
+## RAPORT
+`01-operator-r1.md`: STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY/BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH (NIE WYKONANO).
+Commit BEZ linii `Co-Authored-By` z nazwą modelu. `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`. RUNDY: 1/5.
