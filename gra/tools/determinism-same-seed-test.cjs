@@ -50,9 +50,9 @@ check('A7 sufiks ID powtarzalny', R.gameIdSuffix(2222, 25, 'prod_', 7) === R.gam
 // Lista jawna wyjatkow. Wartosci = uzasadnienie + status wplywu na stan.
 const WYJATKI = {
   'city-founding.ts|rand: () => number = Math.random,':
-    'parametr domyslny pickSourceCityForFounding; wywolanie z ai.ts:3215 podaje rand (aiFoundingRand). Wplyw na stan: tak, tylko gdy wolajacy nie podaje rand (brak takiego wywolania w kodzie gry).',
+    'parametr domyslny pickSourceCityForFounding; wywolania z ai.ts (aiFoundingRand) i z main.ts (gameStreamRng "found-source", kontrola E1) podaja rand. Wplyw na stan: tylko bez rand (jedyny wolajacy bez rand = podpowiedz kosztu getFoundCityLockHint, tylko odczyt etykiety).',
   'city-founding.ts|const rand = opts?.rand ?? Math.random;':
-    'domyslny rand w evaluateFoundCityAffordance; ai.ts:3215 podaje rand. Wplyw na stan: tylko bez rand (brak w kodzie gry).',
+    'domyslny rand w evaluateFoundCityAffordance; ai.ts, main.ts (zalozenie miasta gracza i wykonanie foundCityAt AI) podaja rand ze strumienia ziarna (E1). Wplyw na stan: tylko bez rand (tylko podpowiedz kosztu, odczyt).',
   'city-state-difficulty.ts|rng: () => number = Math.random,':
     'resolveClusterCityStateWarOnPlayer (line ~120) i shouldCityStateRollWarOnPlayer (line ~146): main.ts podaje gameStreamRng (klaster wojny). Domyslny nieuzywany w grze.',
   'scout-auto-explore.ts|rng: () => number = Math.random,':
@@ -60,11 +60,11 @@ const WYJATKI = {
   'ai-cs-absorption.ts|rng: () => number = Math.random,':
     'rollAiCsAccept: main.ts (trybut/wasal) podaje gameStreamRng(cs-accept). Domyslny tylko dla testow. Wplyw na stan: tak, gdy brak rng.',
   'combat.ts|const rng = opts.rng ?? (() => Math.random());':
-    'resolveBattle-owy domyslny rng walki. NIE_ZMIERZONO: nie zbadano wszystkich wolajacych w turze; wplyw na stan: mozliwy. Kandydat do osobnego tematu.',
+    'resolveCombat: wolajacy w gra/src bez rng = battleScene.ts:20795 (skip-resolve "Pomin", zmienia wynik) i battle/manualBattle.ts:1062 (bitwa reczna). Wplyw na stan: TAK. Poza allowlista tego tematu (battleScene = zakaz; manualBattle spoza allowlisty). Kandydat do osobnego tematu.',
   'siege.ts|const rng = opts.rng ?? (() => Math.random());':
-    'domyslny rng resolveSiegeAttack. NIE_ZMIERZONO: nie zbadano wolajacych; wplyw na stan: mozliwy. Kandydat do osobnego tematu.',
+    'resolveSiegeAttack: brak wolajacych w gra/src (wolajacy tylko w tools/*.cjs, testy). Wplyw na stan w grze: brak (martwa domyslna sciezka). Pozostaje jako zabezpieczenie API.',
   'auto-battle-power.ts|const rng = input.rng ?? Math.random;':
-    'resolveAutoBattleByPower: wolane z main.ts (6 miejsc) i battle/mapFieldBattle.ts:476 BEZ rng. Wplyw na stan: TAK (rozstrzyga walke automatyczna). NIE naprawione w tym temacie (poza allowlista). Kandydat do osobnego tematu.',
+    'resolveAutoBattleByPower: domyslny rng tylko dla wolajacych BEZ rng (testy). Wszystkie wolania w gra/src podaja rng (kontrola D1/D2). Wplyw na stan w grze: brak od R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1.',
 };
 
 function walk(dir, out) {
@@ -114,6 +114,68 @@ const MAIN_ALLOWED = [
 const mainBad = mainHits.filter((h) => !MAIN_ALLOWED.some((a) => h.t.startsWith(a)));
 check('C1 main.ts: Math.random tylko w starcie nowej gry (SEED, newSeed)', mainBad.length === 0 && mainHits.length === 2,
   mainBad.length ? 'NIEDOZWOLONE: ' + mainBad.map((h) => h.i + ' ' + h.t).join(' ;; ') : 'trafien=' + mainHits.length + ' (oczekiwane 2)');
+
+// ---- D. walka automatyczna (resolveAutoBattleByPower) z ziarnem gry ---------
+// D1: kazde wolanie resolveAutoBattleByPower({...}) w gra/src podaje klucz rng (bez Math.random w grze).
+// D2: main.ts wiaze strumien z ziarnem (autoBattleRng) i przekazuje go do mapFieldBattle.
+const SRC_DIR = path.join(GRA, 'src');
+const CALL_HEAD = 'resolveAutoBattleByPower(';
+// Dopasowanie nawiasow zamiast regex [^}]*: obsluguje zagniezdzone klamry i nawiasy w argumentach.
+function callArgs(txt, openIdx) {
+  let depth = 0;
+  for (let i = openIdx; i < txt.length; i++) {
+    const c = txt[i];
+    if (c === '(') depth++;
+    else if (c === ')') { depth--; if (depth === 0) return txt.slice(openIdx + 1, i); }
+  }
+  return null;
+}
+const autoCalls = [];
+for (const f of walk(SRC_DIR, [])) {
+  const txt = fs.readFileSync(f, 'utf8');
+  let idx = -1;
+  while ((idx = txt.indexOf(CALL_HEAD, idx + 1)) !== -1) {
+    // pomin definicje (function resolveAutoBattleByPower) i import
+    const before = txt.slice(Math.max(0, idx - 9), idx);
+    if (/function\s*$/.test(before) || /import\s*\{[^}]*$/.test(txt.slice(Math.max(0, idx - 200), idx))) continue;
+    const args = callArgs(txt, idx + CALL_HEAD.length - 1);
+    if (args === null) continue;
+    const line = txt.slice(0, idx).split('\n').length;
+    // ZRODLO: rng musi byc strumieniem z ziarna gry (autoBattleRng lub deps.autoBattleRng?.), nie dowolnym kluczem
+    const rngM = /\brng\s*:\s*([^,}]*)/.exec(args);
+    const good = !!rngM && /(^|[.\s])autoBattleRng\??\.?\(/.test(rngM[1]) && !/Math\.random/.test(rngM[1]);
+    autoCalls.push({ where: path.relative(GRA, f) + ':' + line, bare: !good });
+  }
+}
+const bareCalls = autoCalls.filter((c) => c.bare);
+check('D1 kazde wolanie resolveAutoBattleByPower w gra/src podaje rng = autoBattleRng(...) (strumien z ziarna)', autoCalls.length >= 6 && bareCalls.length === 0,
+  bareCalls.length ? 'RNG NIE Z ZIARNA: ' + bareCalls.map((c) => c.where).join(', ') : 'wolan=' + autoCalls.length + ' (oczekiwane >= 6)');
+const mainTxt = fs.readFileSync(MAIN_TS, 'utf8');
+const mfbDeps = mainTxt.slice(mainTxt.indexOf('const mapFieldBattleDeps = {'), mainTxt.indexOf('const mapFieldBattleDeps = {') + 400);
+check('D2 main.ts: autoBattleRng z ziarna gry wiazany i przekazany do mapFieldBattleDeps',
+  /autoBattleRng\(defQ/.test(mainTxt) && /gameStreamRng\(_gameSeed, turn, 'auto-battle:'/.test(mainTxt) && mfbDeps.includes('autoBattleRng:'),
+  mfbDeps.includes('autoBattleRng:') ? '' : 'brak autoBattleRng w mapFieldBattleDeps');
+
+// ---- E. zalozenie miasta: remis miast-zrodel (R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1 r3 — zrodlo dryfu populacji/rekrutow AI) ----
+// E1: kazde wolanie evaluateFoundCityAffordance w main.ts (poza podpowiedzia kosztu `pc, 0`) podaje rand = gameStreamRng(_gameSeed, turn, 'found-source', ...).
+const EVAL_HEAD = 'evaluateFoundCityAffordance(';
+const evalCalls = [];
+{
+  let idx = -1;
+  while ((idx = mainTxt.indexOf(EVAL_HEAD, idx + 1)) !== -1) {
+    if (/import|^\s*$/.test(mainTxt.slice(Math.max(0, idx - 3), idx)) && mainTxt.slice(Math.max(0, idx - 40), idx).includes('  evaluateFoundCityAffordance,')) continue;
+    const args = callArgs(mainTxt, idx + EVAL_HEAD.length - 1);
+    if (args === null) continue;
+    const line = mainTxt.slice(0, idx).split('\n').length;
+    const good = /rand\s*:\s*gameStreamRng\(_gameSeed, turn, 'found-source'/.test(args);
+    const hint = /\bpc\s*,\s*0\s*$/.test(args.trim());
+    evalCalls.push({ line, good, hint });
+  }
+}
+const evalBad = evalCalls.filter((c) => !c.good && !c.hint);
+check('E1 main.ts: wolania evaluateFoundCityAffordance (zalozenie miasta gracza + foundCityAt AI) podaja rand z ziarna gry',
+  evalCalls.filter((c) => c.good).length === 2 && evalBad.length === 0,
+  evalBad.length ? 'BEZ RAND: ' + evalBad.map((c) => c.line).join(', ') : 'z rand=' + evalCalls.filter((c) => c.good).length + ', podpowiedz kosztu=' + evalCalls.filter((c) => c.hint).length);
 
 console.log(failed === 0 ? 'WYNIK: PASS' : 'WYNIK: FAIL (' + failed + ')');
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) { /* sprzatanie best-effort */ }

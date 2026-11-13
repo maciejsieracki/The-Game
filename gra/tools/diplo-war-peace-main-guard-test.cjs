@@ -106,8 +106,8 @@ check('R6/ZT: priorytet 4 liczy przewagę przez compareMilitaryStrength (≥20%)
 // mutacja R3: usunięcie sygnałów z priorytetu 2
 {
   // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: warunek priorytetu 2 ma postać z pozycją militarną.
-  const R3_COND = '!aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)';
-  const mutR3 = AI.replace(R3_COND, '!aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer && (rw <= progPokojSlabosc)');
+  const R3_COND = '!aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer && (peacePosMil === \'slabsza\' || peaceSignals.wantsPeace)';
+  const mutR3 = AI.replace(R3_COND, '!aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer && (peacePosMil === \'slabsza\')');
   check('mutacja R3 (sygnały wyłączone) jest wykrywalna: warunek zmieniony i brak sygnałów w priorytecie 2',
     AI.includes(R3_COND) && mutR3 !== AI && !mutR3.includes('|| peaceSignals.wantsPeace)'));
 }
@@ -116,7 +116,8 @@ check('R3(c): zdrowie armii liczone w main (diploArmyHealthShare) i podane do ai
   count(MAIN, 'diploArmyHealthShare(a)') === 1 && AI.includes('armyHealthShare: rel.armyHealthShare'));
 // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: „czuje się silniejsze" = pozycja militarna 'silniejsza' (nie rw).
 check('R3 spojnosc: AI nie proponuje pokoju gdy jest militarnie silniejsza (peacePosMil)',
-  AI.includes("const aiFeelsStronger = rel.stanWojny && peacePosMil === 'silniejsza';") && AI.includes('!aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer') && AI.includes('const aiPeaceTimeOk = turnsAtWarRel >= warProfile.minTurWojny;'));
+  AI.includes("const aiFeelsStronger = rel.stanWojny && peacePosMil === 'silniejsza';") && AI.includes('!aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer') && AI.includes('const aiPeaceTimeOk = turnsAtWarRel >= Math.max(warProfile.minTurWojny, PEACE_PROPOSAL_MIN_WAR_TURNS);'));
+// R-WEB-TEST-DEBT-DIPLO-WAR-PEACE-SIM-Q1 r3: literal bramki czasu zaktualizowany do r2 (AI od tury 10 = max(minTurWojny, PEACE_PROPOSAL_MIN_WAR_TURNS)); stary literal „stary harmonogram” → nowa reguła.
 {
   const mutSpojn = AI.replace("const aiFeelsStronger = rel.stanWojny && peacePosMil === 'silniejsza';", 'const aiFeelsStronger = false;');
   check('mutacja spojnosci R3 (AI proponuje mimo siły militarnej) jest wykrywalna', mutSpojn !== AI);

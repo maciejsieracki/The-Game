@@ -2009,6 +2009,16 @@ async function boot(): Promise<void> {
     // R-WEB-DETERMINISM-GAME-RNG-Q1: sufiksy ID z ziarna gry (unikalne dzieki licznikowi w przebiegu).
     let _detIdSeq = 0;
     const detIdSuffix = (salt: string): string => { _detIdSeq += 1; return gameIdSuffix(_gameSeed, turn, salt, _detIdSeq); };
+    // R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1: rzut upsetu auto-walki z ziarna gry (tura + heks obrony + lider atakujacego).
+    // R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1 (r4, DODATEK r2 pkt 1): licznik walk w turze w soli strumienia —
+    // dwie walki o ten sam heks i tego samego atakujacego w jednej turze nie maja identycznego strumienia.
+    let _autoBattleSeqTurn = -1;
+    let _autoBattleSeq = 0;
+    const autoBattleRng = (defQ: number, defR: number, atkId: string | number): (() => number) => {
+      if (_autoBattleSeqTurn !== turn) { _autoBattleSeqTurn = turn; _autoBattleSeq = 0; }
+      _autoBattleSeq += 1;
+      return gameStreamRng(_gameSeed, turn, 'auto-battle:' + defQ + ':' + defR + ':' + String(atkId) + ':' + _autoBattleSeq);
+    };
     const unitSight = buildUnitSightResolver(data.units, DEFAULT_SIGHT);
     const unitFoodTbl = buildUnitFoodTable(data.units as unknown as Record<string, unknown>[]);
 
@@ -16780,7 +16790,10 @@ async function boot(): Promise<void> {
       // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (audyt): literalny `0` -> `ME()` --
       // to jest ownerId FAKTYCZNIE zakładającego miasto fotela (aktywny w chwili kliku/B).
       const playerCities = cities.filter(c => c.ownerId === ME());
-      const aff = evaluateFoundCityAffordance(playerPracaPool, playerCities, ME());
+      // R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1 (r3): remis wielkosci miast-zrodel losowany ze strumienia ziarna gry (nie Math.random).
+      const aff = evaluateFoundCityAffordance(playerPracaPool, playerCities, ME(), {
+        rand: gameStreamRng(_gameSeed, turn, 'found-source', ME()),
+      });
       if (!aff.ok) {
         showHintMessage(aff.reason ?? 'Nie stać', 3000);
         return false;
@@ -30195,6 +30208,22 @@ async function boot(): Promise<void> {
           playerCities: cities.filter(c => c.ownerId === ME()).length,
           /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: Relacja total pary AI(start)↔gracz — do pomiaru dryfu co turę. */
           relTotalAi: aiStartHexes[0]?.ownerId != null ? relationTotal(getDiploRelation(aiStartHexes[0].ownerId, ME())) : null,
+          /** R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1: skrot stanu do porownania przebiegow — liczba jednostek, skarbiec
+           *  i zasoby magazynow miast, per wlasciciel (gracz + wlasciciele startowi AI). Tylko odczyt. */
+          digest: (() => {
+            const owners = [...new Set<number>([ME(), ...aiStartHexes.map(h => h.ownerId)])].sort((a, b) => a - b);
+            const unitsByOwner = Object.fromEntries(owners.map(o => [o, units.filter(u => u.ownerId === o).length]));
+            const treasuryByOwner = Object.fromEntries(owners.map(o => [o, Math.round(ownerTreasury(o) * 100) / 100]));
+            const stockByOwner = Object.fromEntries(owners.map(o => {
+              const tot: Record<string, number> = {};
+              for (const c of cities) {
+                if (c.ownerId !== o || !c.surowce) continue;
+                for (const [k, v] of Object.entries(c.surowce)) tot[k] = (tot[k] ?? 0) + (Number(v) || 0);
+              }
+              return [o, Object.fromEntries(Object.entries(tot).sort(([a], [b]) => a.localeCompare(b)))];
+            }));
+            return { units: unitsByOwner, treasury: treasuryByOwner, stock: stockByOwner };
+          })(),
           /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: WSZYSTKIE wpisy stolu z typem (cykliczne i jednorazowe). */
           entries: negotiationTable.map(n => ({
             id: n.id, actionId: n.actionId, cyclic: !!n.aiCyclicBarter,
@@ -31313,6 +31342,13 @@ async function boot(): Promise<void> {
         for (const [k, v] of Object.entries(snap)) if (k !== 'meta') put(k, v);
         for (const [k, v] of Object.entries(meta)) put('meta.' + k, v);
         return { bytes: json.length, hash: fnv(norm(json)), ms, sections, sectionHashes };
+      },
+      /** R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1 (r3, diagnostyka, tylko odczyt): sekcja migawki zapisu jako obiekt (znormalizowane ID grup stosu
+       *  bez zegara) — do bisekcji dryfu per element/pole przez tools/measure-ai-trade-offer-frequency.cjs (MEAS_PHASE=1). */
+      snapshotSectionObj: (name: string): unknown => {
+        const snap = buildSaveGameSnapshot('turn-slowdown-test') as unknown as Record<string, unknown>;
+        const norm = (s: string): string => s.replace(/"sg(-?\d+)_[0-9a-z]+_([0-9a-z]+)"/g, '"sg$1_T_$2"');
+        return JSON.parse(norm(JSON.stringify(snap[name] ?? null)));
       },
       collections: (): Record<string, number> => ({
         _menuCivIdByOwner: _menuCivIdByOwner.size,
@@ -34302,7 +34338,7 @@ async function boot(): Promise<void> {
           const aLeadDef = unitDefFor(atkLead);
           const mAtk = rosterFieldPowerM(atkRosterRef);
           const mDef = effectiveDefenderM(defRosterRef, dTeren4, dStructBonus4, aLeadDef, defUnit.q, defUnit.r);
-          const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
+          const powerRes = resolveAutoBattleByPower({ mAtk, mDef, rng: autoBattleRng(defUnit.q, defUnit.r, atkLead.id) });
 
           if (powerRes.winner === 'none') {
             showHintMessage('Atak: brak sił bojowych w składzie', 3000);
@@ -34781,7 +34817,7 @@ async function boot(): Promise<void> {
       const aLeadDef = unitDefFor(atkRoster[0]!);
       const mAtk = rosterFieldPowerM(atkRoster);
       const mDef = effectiveDefenderM(defRoster, terrain, structBonusPct, aLeadDef, battleQ, battleR);
-      const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
+      const powerRes = resolveAutoBattleByPower({ mAtk, mDef, rng: autoBattleRng(battleQ, battleR, atkRoster[0]!.id) });
       if (powerRes.winner === 'none') return powerRes;
 
       const winner: BattleResult['winner'] =
@@ -35052,7 +35088,7 @@ async function boot(): Promise<void> {
           const aLeadDef = unitDefFor(atkLead);
           const mAtk = rosterFieldPowerM(atkRosterRef);
           const mDef = effectiveDefenderM(defRosterRef, terrain, structBonusPct, aLeadDef, battleQ, battleR);
-          const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
+          const powerRes = resolveAutoBattleByPower({ mAtk, mDef, rng: autoBattleRng(battleQ, battleR, atkLead.id) });
           if (powerRes.winner === 'none') {
             showHintMessage('Bitwa: brak sił bojowych w składzie', 3000);
             finishIncomingBattleUi();
@@ -36614,13 +36650,24 @@ async function boot(): Promise<void> {
       });
     }
 
+    /**
+     * R-WEB-AUDIT-PEACE-GATE-MILITARY-STRENGTH-Q1: udział SIŁY MILITARNEJ prośącego w parze (nie Power/respekt).
+     * Decyzja właściciela (krok 4a): rozejm i pokój oceniane wg siły militarnej; słabszy szuka, silniejszy odrzuca.
+     */
+    function aiAiMilitaryRequesterShare(requesterId: number, otherId: number): number {
+      return requesterShare(
+        diploMilitarySideOf(requesterId, otherId, true).sila,
+        diploMilitarySideOf(otherId, requesterId, true).sila,
+      );
+    }
+
     /** Rejestruje prośbę przegrywającej AI (`requesterId`) o pokój/rozejm do zwycięzcy (`otherId`); start licznika tur. */
     function registerAiAiPeaceRequest(requesterId: number, otherId: number, cmdType: string, kind: AiPeaceKind): void {
       if (!aiAiForcedPeacePairEligible(requesterId, otherId)) return;
       if (peaceProposalIsTooEarly(requesterId, otherId, kind)) return;
       // „Wyraźnie przegrywa": prośby z sygnałów pat/zmęczenia przy równowadze sił nie tworzą przymusu pokoju.
       refreshObjectivePowerCache();
-      const share = requesterShare(objectivePowerForOwner(requesterId), objectivePowerForOwner(otherId));
+      const share = aiAiMilitaryRequesterShare(requesterId, otherId);
       if (!isClearlyLosing(share)) return;
       const key = diploPairKey(requesterId, otherId);
       if (registerAiPeaceRequest(aiAiPeaceRequestByPairKey, key, requesterId, otherId, turn, kind)) {
@@ -36661,11 +36708,13 @@ async function boot(): Promise<void> {
         store: aiAiPeaceRequestByPairKey,
         turn,
         pairEligible: aiAiForcedPeacePairEligible,
-        requesterShareOf: (rq, ot) => requesterShare(objectivePowerForOwner(rq), objectivePowerForOwner(ot)),
+        requesterShareOf: (rq, ot) => aiAiMilitaryRequesterShare(rq, ot),
         peaceAllowed: (loser, winner) =>
           diploWarStateFor(loser, winner).turnsAtWar >= PEACE_PROPOSAL_MIN_WAR_TURNS,
         gateVerdict: (winner, loser) => {
           const pot = (o: number): number => objectivePowerForOwner(o);
+          // Pole `rw` (Power) jest WYMAGANE typem PeaceAiGateInput, ale werdykt evaluatePeaceAiGate go nie czyta
+          // (R-WEB-AUDIT-PEACE-GATE-MILITARY-STRENGTH-Q1: decyduje wyłącznie pozycjaMilitarna + turnsAtWar).
           const winnerRw = (pot(winner) + pot(loser)) > 0 ? pot(winner) / (pot(winner) + pot(loser)) : 0.5;
           const warW = diploWarStateFor(winner, loser);
           if (warW.turnsAtWar < PEACE_PROPOSAL_MIN_WAR_TURNS) return 'too_early';
@@ -37362,6 +37411,7 @@ async function boot(): Promise<void> {
       cities,
       units,
       get turn() { return turn; },
+      autoBattleRng: (defQ: number, defR: number, atkId: string | number) => autoBattleRng(defQ, defR, atkId),
       getTerrainAt: (q: number, r: number): string => {
         const h = map.hexes[keyOf(q, r)];
         return h ? String(h.terenBazowy) : 'Rownina';
@@ -37589,7 +37639,7 @@ async function boot(): Promise<void> {
         const aLeadDef = unitDefFor(atkRoster[0]!);
         const mAtk = rosterFieldPowerM(atkRoster) + rosterSiegeMachinePowerM(atkRoster);
         const mDef = effectiveDefenderM(defRoster, dTeren, dStructBonus, aLeadDef, city.q, city.r);
-        const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
+        const powerRes = resolveAutoBattleByPower({ mAtk, mDef, rng: autoBattleRng(city.q, city.r, atkRoster[0]!.id) });
         if (powerRes.winner === 'none') return;
 
         const winner: BattleResult['winner'] =
@@ -37776,7 +37826,7 @@ async function boot(): Promise<void> {
           const aLeadDef = unitDefFor(atkLead);
           const mAtk = rosterFieldPowerM(atkRosterRef) + rosterSiegeMachinePowerM(atkRosterRef);
           const mDef = effectiveDefenderM(defRosterRef, dTeren, dStructBonus, aLeadDef, city!.q, city!.r);
-          const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
+          const powerRes = resolveAutoBattleByPower({ mAtk, mDef, rng: autoBattleRng(city!.q, city!.r, atkLead.id) });
           if (powerRes.winner === 'none') {
             showHintMessage('Szturm: brak sił bojowych w składzie', 3000);
             clearBattleUiState();
@@ -43491,6 +43541,9 @@ async function boot(): Promise<void> {
                     aiPracaPoolByOwner.get(ownerId) ?? 0,
                     cities.filter(c => c.ownerId === ownerId),
                     ownerId,
+                    // R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1 (r3): ZRODLO dryfu — remis wielkosci miast-zrodel (Math.random) rozjezdzal
+                    // populacje/rekrutow miast AI przy tym samym ziarnie; strumien z ziarna gry + tura + wlasciciel.
+                    { rand: gameStreamRng(_gameSeed, turn, 'found-source', ownerId) },
                   );
                   if (!aff.ok) continue;
                   // P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI (Maciej, decyzja A, 2026-08-09):

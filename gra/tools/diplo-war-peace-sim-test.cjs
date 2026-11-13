@@ -9,7 +9,7 @@
  * Cooldown propozycji AI = 3 tury (driver odtwarza AI_REJECTED_OFFER_COOLDOWN_TURNS).
  *
  * Mutanty (każdy musi być wykryty przez test zachowania):
- *   M_SIG    — ai.ts: sygnały pokoju wyłączone w priorytecie 2 (tylko rw <= progPokojSlabosc)
+ *   M_SIG    — ai.ts: sygnały pokoju wyłączone w priorytecie 2 (tylko pozycja militarna slabsza)
  *   M_FEEL   — ai.ts: AI proponuje pokój mimo „czuje się silniejsze" (brak !aiFeelsStronger)
  *   M_WEAR   — war-weariness.ts (ścieżka decyzji AI, warWearinessLevel): licznik tur zmęczenia zerowany (zostają tylko miasta)
  *   M_HEALTH — profile: sygnał (c) zdrowia armii wyłączony
@@ -234,7 +234,7 @@ async function main() {
   fs.writeFileSync(ENTRY, ENTRY_SRC, 'utf8');
   try {
     await buildBundle(BUNDLES.ok, []);
-    const mSig = mutantPlugin(AI_FILE, '(rw <= progPokojSlabosc || peaceSignals.wantsPeace)', '(rw <= progPokojSlabosc)');
+    const mSig = mutantPlugin(AI_FILE, "(peacePosMil === 'slabsza' || peaceSignals.wantsPeace)", "(peacePosMil === 'slabsza')");
     await buildBundle(BUNDLES.sig, [mSig.plugin]);
     const mFeel = mutantPlugin(AI_FILE, '!aiFeelsStronger && ', '');
     await buildBundle(BUNDLES.feel, [mFeel.plugin]);
@@ -268,8 +268,8 @@ async function main() {
       JSON.stringify(ts) === JSON.stringify(expected), { ts, minTurZulusi, minAI });
     check('S1a: AI słabsze nie proponuje pokoju przed bramką czasu (tura 10; R5a + „od tury 10")',
       ok.weakSchedule.every(x => x.t >= minAI), ts);
-    check('S1b: propozycje AI słabszej niosą powód sygnału (a)',
-      ok.weakSchedule.length > 0 && ok.weakSchedule.every(x => /sygnaly=a/.test(x.powod)), ok.weakSchedule[0]);
+    check('S1b: propozycje AI słabszej militarnie niosą powód pozycji (pozycja=slabsza, R-WEB-AUDIT-PEACE-GATE-MILITARY-STRENGTH-Q1)',
+      ok.weakSchedule.length > 0 && ok.weakSchedule.every(x => /pozycja=slabsza/.test(x.powod)), ok.weakSchedule[0]);
 
     // kryterium 1: AI silniejsze nie proponuje przed turą 10 (sygnał e nie może jej „przepchnąć")
     check('S2: AI silniejsze (rw 0.7) nie proponuje pokoju w turach 8 i 9 (sygnał e aktywny, ale „czuje się silniejsze")',
