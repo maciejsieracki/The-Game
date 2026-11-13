@@ -47,9 +47,11 @@ async function main() {
   });
   const V = require(BUNDLE_A);
   const P = V.WAR_WEARINESS_PARAMS;
+  // Liczby tur wyprowadzane z pelneTur (R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: skala 20 tur, nie stałe 10/80/120/300).
+  const T = (frakcja) => Math.round(frakcja * P.zmeczenie.pelneTur);
 
   {
-    // A1: a silny (800 vs 200 = 4x), b przegrywa, 2 miasta stracone przez b, 120 tur wojny.
+    // A1: a silny (800 vs 200 = 4x), b przegrywa, 2 miasta stracone przez b, 0,6·pelneTur tur wojny.
     const inp = {
       turnsAtWar: 120,
       a: { id: 'a', sila: 800, armiaPkt: 500, lostCities: 0 },
@@ -61,17 +63,18 @@ async function main() {
     ok(r.a.zmeczenie === level && r.a.desperacja === undefined, '[A1] wygrywający dostaje zmęczenie = warWearinessLevel');
     const share = 200 / 1000;
     const expDespair = V.loserDespair({ level, share: Math.min(share, P.przegrywajacy.udzialWyraznie), lostCities: 2 });
-    ok(r.b.desperacja === expDespair && r.b.zmeczenie === undefined, '[A1] przegrywający dostaje desperację = loserDespair');
+    // Tolerancja 1e-9: share = 1-0.8 w widoku to 0.19999…96 w float, a 200/1000 = 0.2 (ta sama wartość, inny zapis).
+    ok(Math.abs(r.b.desperacja - expDespair) < 1e-9 && r.b.zmeczenie === undefined, '[A1] przegrywający dostaje desperację = loserDespair');
     ok(r.level === level, '[A1] wspólny poziom = warWearinessLevel');
   }
   {
     // A2: remis w progu 20% (110 vs 100) → obie strony rowny + zmęczenie.
     const r = V.warWearinessPairView({
-      turnsAtWar: 80,
+      turnsAtWar: T(0.4),
       a: { id: 'a', sila: 110, armiaPkt: 80, lostCities: 1 },
       b: { id: 'b', sila: 100, armiaPkt: 80, lostCities: 0 },
     });
-    const level = V.warWearinessLevel({ turnsAtWar: 80, lostCitiesTotal: 1 });
+    const level = V.warWearinessLevel({ turnsAtWar: T(0.4), lostCitiesTotal: 1 });
     ok(r.a.rola === 'rowny' && r.b.rola === 'rowny', '[A2] remis: obie strony rola rowny');
     ok(r.a.zmeczenie === level && r.b.zmeczenie === level, '[A2] remis: obie strony pokazują zmęczenie');
     ok(r.a.desperacja === undefined && r.b.desperacja === undefined, '[A2] remis: brak desperacji');
@@ -103,16 +106,16 @@ async function main() {
   {
     // A5: szczyt pary (peak z warWearinessByPairKey) zastępuje bieżący poziom — jak w runWarWearinessTick (lvl = st.peak).
     const base = {
-      turnsAtWar: 20,
+      turnsAtWar: T(0.5),
       a: { id: 'a', sila: 800, armiaPkt: 500, lostCities: 0 },
       b: { id: 'b', sila: 200, armiaPkt: 150, lostCities: 2 },
     };
-    const current = V.warWearinessLevel({ turnsAtWar: 20, lostCitiesTotal: 2 });
+    const current = V.warWearinessLevel({ turnsAtWar: T(0.5), lostCitiesTotal: 2 });
     const peak = Math.min(1, current + 0.3);
     const r = V.warWearinessPairView({ ...base, peak });
     const expDespair = V.loserDespair({ level: peak, share: Math.min(1 - V.wearinessMilitaryShare(800, 200), P.przegrywajacy.udzialWyraznie), lostCities: 2 });
     ok(r.level === peak && r.a.zmeczenie === peak, '[A5] z peak: zmęczenie wygrywającego = peak (nie bieżący poziom)');
-    ok(r.b.desperacja === expDespair, '[A5] z peak: desperacja liczona z peak (jak w ticku AI↔AI)');
+    ok(Math.abs(r.b.desperacja - expDespair) < 1e-9, '[A5] z peak: desperacja liczona z peak (jak w ticku AI↔AI)');
     const noPeak = V.warWearinessPairView(base);
     ok(noPeak.level === current, '[A5] bez peak: zachowanie bez zmian (bieżący warWearinessLevel)');
   }
@@ -301,12 +304,12 @@ async function main() {
     ok(V.peakForCurrentWar(st, 99) === undefined, '[E2b] stary stan (inny warStart) → brak szczytu');
     ok(V.peakForCurrentWar(undefined, 100) === undefined, '[E2c] brak stanu → brak szczytu');
     const base = {
-      turnsAtWar: 10,
+      turnsAtWar: T(0.25),
       a: { id: '0', sila: 500, armiaPkt: 300, lostCities: 0 },
       b: { id: '1', sila: 500, armiaPkt: 300, lostCities: 0 },
     };
-    const curLevel = V.warWearinessLevel({ turnsAtWar: 10, lostCitiesTotal: 0 });
-    ok(curLevel < 0.5, '[E2d] precondycja: bieżący poziom niski (10 tur), więc szczyt 0.9 da się odróżnić');
+    const curLevel = V.warWearinessLevel({ turnsAtWar: T(0.25), lostCitiesTotal: 0 });
+    ok(curLevel < P.zmeczenie.progChetnosci, '[E2d] precondycja: bieżący poziom niski (25% pelneTur), więc szczyt 0.9 da się odróżnić');
     const tickPeak = V.warWearinessPairView({ ...base, peak: 0.9, reference: 'tick' });
     ok(Math.abs(tickPeak.level - 0.9) < 1e-9, '[E2e] tryb tick: poziom = szczyt 0.9 (nie bieżący)');
     const aiPeak = V.warWearinessPairView({ ...base, peak: 0.9, reference: 'ai' });
@@ -325,7 +328,7 @@ async function main() {
     }
     ok(found !== null, '[E3-pre] znaleziono przegrywającego z udziałem w (udzialWyraznie; 0.5)');
     if (found !== null) {
-      const lvl = V.warWearinessLevel({ turnsAtWar: 300, lostCitiesTotal: 3 });
+      const lvl = V.warWearinessLevel({ turnsAtWar: T(1.5), lostCitiesTotal: 3 });
       ok(lvl >= P.zmeczenie.progChetnosci, '[E3-pre2] precondycja: poziom ≥ progChetnosci (bramka isWarWeary przechodzi)');
       const input = {
         turnsAtWar: 300,

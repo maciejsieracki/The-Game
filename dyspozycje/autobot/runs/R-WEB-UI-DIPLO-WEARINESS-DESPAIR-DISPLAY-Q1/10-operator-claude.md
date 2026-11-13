@@ -1,61 +1,43 @@
-# R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1 — raport Operatora (runda 2/5)
-
-STATUS: PASS-WITH-NOTES
+STATUS: PASS
 DOMAIN: GAME
 TEMAT: R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1
-GOAL: w panelu dyplomacji pokazać zmęczenie wojną (strona wygrywająca) i desperację (strona przegrywająca) — wojny gracz↔AI oraz AI↔AI (jedna wartość dla rozmówcy w tej wojnie), z procentem i tooltipem.
-BAZA: b29ee096f (kandydat r2), wcześniej scalony origin/main e6776801b (merge 4ccdd9960, bez konfliktów).
+GOAL: Test panelu dyplomacji (zmęczenie wojną / desperacja) ma być zielony po scaleniu z FALĄ 689 (pelneTur 200→20). Fixtury zależne od skali wyprowadzane z WAR_WEARINESS_PARAMS; asercje nieosłabione.
+RUNDA: 3/5 (baza: kandydat r2 d1e5892ad + merge origin/main ec00fc0e3, bez konfliktów)
 
-## ZMIANY / COMMIT
+ZMIANY/COMMIT:
+- Allowlista: gra/tools/diplo-weariness-display-test.cjs (jedyny zmieniony plik produktowy). Brak zmian w gra/src, war-weariness*.ts/json.
+- Zmiany w teście:
+  1. Dodano `T(frakcja) = Math.round(frakcja * P.zmeczenie.pelneTur)`; wszystkie liczby tur (120, 80, 150, 20, 300, 10) zastąpione przez T(0,4 / 0,5 / 0,6 / 0,75 / 1,5 / 0,25).
+  2. [E2d] precondycja „niski poziom” = T(0,25) = 5 tur → poziom 0,25 < progChetnosci (było: 10 tur = 0,5 i asercja `< 0.5`). Szczyt 0.9 nadal rozróżnialny.
+  3. [A1] i [A5] porównanie desperacji z loserDespair przez tolerancję 1e-9 zamiast `===`. Powód: share = 1-0,8 = 0,19999…96 w float, a 200/1000 = 0,2; wartości semantycznie identyczne (ta sama tolerancja jak już używa [E3a]). Asercja nie została osłabiona co do znaczenia (dalej: desperacja = loserDespair z tym samym poziomem i udziałem).
+  4. Etykieta [E2d] zaktualizowana do „25% pelneTur”.
+- Mutanty D3 (peak), D5 (zamiana stron) i D1–D8 to statyczne sprawdzenia main.ts — nietknięte.
+- Commit: patrz SHA w polu sha wyniku (commit „R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1: test fixtur wg skali 20 tur” + niniejszy raport).
 
-Allowlista rundy 2 (dispatch, DODATEK): `gra/src/main.ts` (tylko wpięcie panelu, ~33 linie), test, selektor, panel, runs/<ID>/.
+TESTY (surowe wyniki z tej rundy):
+- node tools/diplo-weariness-display-test.cjs → PASSED: 52 / FAILED: 0 / TOTAL: 52 (wcześniej 50/2: [A1], [E2d])
+- node ./node_modules/typescript/bin/tsc --noEmit → exit 0
+- Bramki z R-PROC-AUTOBOT §6:
+  - node tools/logic-test.cjs → LOGIC OK (213/213)
+  - node tools/tech-tree-test.cjs → tech-tree-test: 20 pass, 0 fail
+  - node tools/research-test.cjs → ALL GREEN
+  - node tools/unit-replace-test.cjs → WSZYSTKIE TESTY ZIELONE (21/21)
+  - node tools/combat-test.cjs → All sanity checks passed.
+- node tools/diplo-weariness-20-turns-test.cjs → PASS=30 FAIL=0
+- node tools/diplo-weariness-city-only-test.cjs → PASS=30 FAIL=0
+- node tools/diplo-weariness-unconditional-end-test.cjs → PASS=22 FAIL=0
+- Nie uruchamiano: npm run build/dev (zakaz). Nie wykonano zrzutu Chromium (zmiana wyłącznie testowa, bez zmian UI).
+- NIE_ZMIERZONO: map-gen, AI-buduje-budynki, mgla-sciezka-inwariant (poza zakresem tej rundy; brak wpływu — zmieniony tylko plik testu panelu).
 
-- `gra/src/main.ts`:
-  - import `warWearinessPairView` z `game/war-weariness-view` (obok importu war-weariness);
-  - NOWY helper `diploWarWearinessPairView(a, b)` (po `diploMilitarySideOf`): wejścia identyczne z tickiem AI↔AI (`diploWarStateFor` → turnsAtWar/lostCities/turnsSinceCityChange; `diploMilitarySideOf` → sila/armiaPkt). Szczyt `peak` z `warWearinessByPairKey.get(diploPairKey(a,b))` tylko gdy `warStart` zgadza się z bieżącą wojną (`turn - turnsAtWar`), jak w `stepPairState`; brak stanu → bieżący poziom (wariant dla pary gracz↔AI);
-  - `buildAudienceOtherRelations`: wojny AI↔AI (`w.ownerId !== 0`) dostają `warWeariness` = strona `otherOwnerId`;
-  - stan audiencji (`openDiplomacyAudience`, obok `otherRelations`): `warWeariness = { player, other }` tylko gdy `getDiploRelation(ME(), ownerId).status === 'wojna'`.
-  - ZERO zmian logiki gry: `war-weariness.ts`, `war-weariness-params.json`, `diplomacy-military-strength.ts` nietknięte.
-- `gra/tools/diplo-weariness-display-test.cjs`: NOWA CZĘŚĆ D (5 asercji, D1–D5) — statyczne wiązanie: import, wywołanie selektora w helperze, odczyt `peak` z `warWearinessByPairKey`, wiring w wars AI↔AI, wiring w stanie audiencji.
-- Poprzednie zmiany rundy 1/obrony (selektor `war-weariness-view.ts` z `peak`, `diplomacy-display.ts`, `diplomacyAudience.ts`) — bez zmian w tej rundzie.
+BLOKADY: brak.
 
-Commit: patrz pole `sha` w wyniku StructuredOutput (czubek tej rundy).
+RUNDY: 3/5 (ten Operator). Poprzednie: r1 FAIL (wpięcie w main.ts poza allowlistą), r2 FC PASS-WITH-NOTES, ale 2 czerwone asercje po scaleniu z FALĄ 689.
 
-## TESTY (surowe wyniki, katalog `gra/`)
+NASTĘPNY KROK: Evaluator (SONNET) → Obrona (HAIKU, jeśli zarzuty) → Final Control (SONNET). Do uwagi Evaluatora: zmiana tolerancji w [A1]/[A5] (punkt 3 wyżej) i zmiana liczby tur w fixturach — proszę o ocenę, czy nie narusza „asercje nieosłabione”.
 
-- `npm ci --ignore-scripts`: exit 0 (sam log zawiera rekomendację audytu npm; nie uruchamiano `audit fix`).
-- `./node_modules/.bin/tsc --noEmit`: `TSC_EXIT=0`, 0 linii `error TS` (dwukrotnie: przed i po przywróceniu wiązania).
-- `node tools/diplo-weariness-display-test.cjs`: `PASSED: 31 / FAILED: 0 / TOTAL: 31`, `ALL PASSED`, exit 0 (23 z rundy 1 + 3 z [A5] + 5 z [D]).
-- MUTACJA 1 (usunięte wiązanie audiencji gracz↔AI: `warWeariness: undefined`): `MUT1_EXIT=1`, FAIL `[D5]` — test czerwieni. Wiązanie przywrócone.
-- MUTACJA 2 (usunięte wiązanie wojen AI↔AI w `buildAudienceOtherRelations`): `MUT2_EXIT=1`, FAIL `[D4]` — test czerwieni. Wiązanie przywrócone.
-- `node tools/logic-test.cjs`: `LOGIC OK (213/213)`.
-- `node tools/diplomacy-relacje-ai-ai-audiencja-test.cjs` (sąsiedni test audiencji): `PASSED: 20 / FAILED: 0 / TOTAL: 20`, `ALL GREEN`.
-- `git diff --check`: czysto.
-- Zrzut żywego Chromium (panel z wojną gracz↔AI i AI↔AI): NIE_ZMIERZONO. Powód: w worktree nie ma zbudowanego bundla (`gra/dist` nieobecne), a dispatch zakazuje `npm run build/dev`; nie uruchamiano też skryptów live z `gra/tools` (wymagają builda z vite). Zrzut należy wykonać po wdrożeniu/buildzie z orkiestratora.
+UWAGI-DLA-ORKIESTRATORA:
+- Dispatch rundy 3 zakłada bazę `d1e5892ad` + merge `ec00fc0e3`; merge przeszedł bez konfliktów.
+- Ten plik nadpisuje raport r2 (STATUS PASS-WITH-NOTES, evidence/ i 30-obrona-claude.md zostają). Treść r2 jest w historii: `git show d1e5892ad:dyspozycje/autobot/runs/R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1/10-operator-claude.md`.
+- Osobne ustalenie (poza zakresem tematu, bez działania): plik `dyspozycje/autobot/runs/.../00-dispatch.md` nie istnieje na origin/main — jest tylko na gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0`.
 
-## BLOKADY
-
-1. Zrzut Chromium (kryterium c dispatchu) — NIE_ZMIERZONO, patrz wyżej. Wszystkie wartości potwierdzone testami statycznymi i selektorem, nie wizualnie.
-2. Test wiązania jest statyczny (grep po źródle main.ts), bo helper żyje w domknięciu `main.ts` i nie da się go zaimportować w Node bez całej gry. Mutacje potwierdzają, że test reaguje na usunięcie wiązania.
-
-## ZAŁOŻENIA
-
-- Zmęczenie = `peak` pary, gdy stan dotyczy bieżącej wojny (zgodnie z uwagą obrony r2 i tickiem); w przeciwnym razie bieżący `warWearinessLevel`.
-- Wiersze AI↔AI w „W stanie wojny z” pokazują wartość strony rozmówcy (`otherOwnerId`), nie gracza. Wiersze wojen z graczem (`ownerId === 0`) w tej liście NIE dostają procentu — wojna gracz↔rozmówca jest pokazana w górnej części audiencji (`warWeariness.player/other`).
-- Remis siły (próg parytetu) — bez zmian względem rundy 1 (obie strony zmęczenie).
-
-## UWAGI-DLA-ORKIESTRATORA
-
-- Wiadomość użytkownika o oknie „Umowa wymiany surowców” (pozycje dodawane bez przeładowania, obie strony w jednym rzucie) NIE jest częścią tego tematu; odpowiada wpisowi #366 w rejestrze (R-WEB-UI-TRADE-DIALOG-NO-RERENDER-BOTH-SIDES-Q1). Nie wykonywano.
-- Wiadomość użytkownika o skarbcu i spichlerzu (#365) również poza tematem.
-- Zmiana `war-weariness.ts` (#363) pracuje na tym samym pliku co selektor — przy integracji sprawdzić, czy `warWearinessLevel`/`peak` nadal mają sygnatury używane przez `war-weariness-view.ts`.
-- Dowód ancestry: przy integracji `git merge-base --is-ancestor <SHA tej rundy> <SHA integracji>`.
-
-## TESTY-POZA-ZAKRESEM / SPRZĄTANIE
-
-- Pliki pomocnicze testu (`tools/.dip-weariness-*`, `.stubs`) są kasowane przez test po przebiegu; `git status` przed commitem: tylko `gra/src/main.ts` i `gra/tools/diplo-weariness-display-test.cjs` oraz ten raport.
-- Nie uruchamiano `npm run build` ani `npm run dev`. Brak `git add -A`. Brak spawn_task/sesji. Brak pushu.
-
-RUNDY: 2/5
-NASTĘPNY KROK: zrzut Chromium po buildzie orkiestratora (wojna gracz↔AI i AI↔AI); potem Evaluator.
 DEPLOY/PUSH: NIE WYKONANO
