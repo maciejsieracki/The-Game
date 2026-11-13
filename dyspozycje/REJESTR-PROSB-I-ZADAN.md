@@ -9771,3 +9771,7 @@ Podtemat skarbiec/spichlerz: W66 r1 FC FAIL (moduł niewpięty) → rozbicie na 
 
 ## 2026-11-13 — FALA 691 wdrożona na ROBOCZĄ (main 507d312ce, MD5 803a70a2)
 FALA 691: fundament zasady „skarbiec i spichlerz nie poniżej zera po turze” — moduł no-negative-stocks.ts z projekcją skarbca i spichlerza po turze (tylko odczyt; FC f2aa0b9b6, podtemat A/W67); BEZ zmiany zachowania gry (niewpięty). Dalej: B (W69: blokada „Zakończ turę” gracza + komunikat) w toku, C (równoważenie AI + runner 15×3×150) w kolejce.
+
+## 2026-11-13 — FALA 692 wdrożona na ROBOCZĄ (main d419d3eaf, MD5 867807d8)
+FALA 692: okno „Umowa wymiany surowców” bez przeładowania (aktualizacja w miejscu, obie strony w jednym rzucie, neutralna podpowiedź przy pustej stronie); FC f59974e03, W68. Nie zmierzono: pełna gra w Chromium, tryby traktat/pokój/wasal na żywo, wygląd podpowiedzi — do obejrzenia przez właściciela.
+W toku: W61 r3 (determinizm walk, Sonnet), W60 r3 (pomiar na żywo S2.c/S3.c), W69 (blokada tury gracza przy minusie, podtemat B), W70 (równoważenie AI, podtemat C).
