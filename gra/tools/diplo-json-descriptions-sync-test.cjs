@@ -193,6 +193,29 @@ function checkDescriptions(data, code) {
   });
   expect(sojRows >= 1, 'brak wiersza „Sojusze osiągalne gdy Relacja ≥”');
 
+  // 8. Ultimatum spełnione: zdarzenie ultimatum_spelnione usunięte jako martwe (brak emitera w kodzie),
+  // więc opis musi mówić wprost, że Zaufanie i Relacja u adresata się nie zmieniają.
+  const ultim = findAkcja(data, '9. Ultimatum');
+  expect(ultim !== null, 'brak akcji „9. Ultimatum …”');
+  if (ultim) {
+    expect(code.ultimatumSpelnione === null,
+      `zdarzenie ultimatum_spelnione wróciło do kodu (dZ = ${code.ultimatumSpelnione}), opis musi zostać zaktualizowany`);
+    expect(ultim.Efekt.includes('brak zmiany Zaufania i Relacji u adresata'),
+      'efekt ultimatum nie mówi „brak zmiany Zaufania i Relacji u adresata”');
+    expect(!ultim.Efekt.includes(`${MINUS}5 Zaufanie`) && !ultim.Efekt.includes(`${MINUS}5 Relacja`),
+      'efekt ultimatum podaje −5 Zaufanie/Relację, a kod nie wykonuje tego efektu');
+  }
+
+  // 9. Złamany pakt przez gracza: wiersz tabeli zdarzeń = params.zlamanaPaktGracz_zaufanie.
+  let zlamaneRows = 0;
+  walk(data, (o) => {
+    if (o['Zdarzenie / Działanie'] !== 'Złamany pakt przez gracza') return;
+    zlamaneRows += 1;
+    expect(String(o['Zmiana']) === String(P.zlamanaPaktGracz_zaufanie),
+      `wiersz „Złamany pakt przez gracza” podaje ${JSON.stringify(o['Zmiana'])} (params: ${P.zlamanaPaktGracz_zaufanie})`);
+  });
+  expect(zlamaneRows === 1, `oczekiwano 1 wiersza „Złamany pakt przez gracza”, znaleziono ${zlamaneRows}`);
+
   return { fails: out, checks: n };
 }
 
@@ -205,9 +228,11 @@ const code = {
   params: parseDiplomacyParams(src),
   zerwanieTraktatu: caseDZ(src, 'zerwanie_traktatu'),
   zerwanieHandlu: caseDZ(src, 'zerwanie_handlu'),
+  ultimatumSpelnione: caseDZ(src, 'ultimatum_spelnione'), // null = zdarzenie usunięte (martwe)
 };
 ok(code.zerwanieTraktatu === -15, `dZ zerwanie_traktatu = ${code.zerwanieTraktatu} (oczekiwano −15)`);
 ok(code.zerwanieHandlu === -10, `dZ zerwanie_handlu = ${code.zerwanieHandlu} (oczekiwano −10)`);
+ok(code.ultimatumSpelnione === null, `ultimatum_spelnione wróciło do kodu (dZ = ${code.ultimatumSpelnione}); oczekiwano usunięcia`);
 
 console.log('[1] Zgodność opisów diplomacy.json z kodem (stan obecny)');
 const real = checkDescriptions(data, code);
@@ -243,6 +268,19 @@ const mutations = [
   ['wypowiedzenie wojny: powrót −20 Zaufanie', (d) => {
     const a = findAkcja(d, '11. Wypowiedzenie wojny');
     a.Efekt = a.Efekt.replace('sama deklaracja nie zmienia Zaufania ani Relacji', '−20 Zaufanie');
+  }],
+  ['ultimatum: powrót opisu −5 Zaufanie (efekt nieistniejący w kodzie)', (d) => {
+    const a = findAkcja(d, '9. Ultimatum');
+    a.Efekt = a.Efekt.replace('brak zmiany Zaufania i Relacji u adresata', '−5 Zaufanie (a więc także −5 Relacja) u adresata');
+  }],
+  ['ultimatum: powrót opisu −5 Relacja', (d) => {
+    const a = findAkcja(d, '9. Ultimatum');
+    a.Efekt = a.Efekt.replace('brak zmiany Zaufania i Relacji u adresata', '−5 Relacja u adresata');
+  }],
+  ['złamany pakt przez gracza: wiersz −40 → −30', (d) => {
+    walk(d, (o) => {
+      if (o['Zdarzenie / Działanie'] === 'Złamany pakt przez gracza') o['Zmiana'] = '-30';
+    });
   }],
   ['próg sojuszu 130 → 120', (d) => {
     walk(d, (o) => {

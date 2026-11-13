@@ -872,7 +872,6 @@ export type DiplomaticEvent =
   | 'tarcia_graniczne'          // border friction event (jednorazowe zdarzenie; ciągła kara za granicę osobno, per tura)
   // trust bonuses
   | 'dar'                       // gift (free resource / Pieniadz)
-  | 'wspolna_religia'           // same religion established (one-shot +1 seed)
   | 'pomoc_sojusznikowi'        // helped ally in war (+10 Zaufanie)
   // respect events
   | 'wygrana_bitwa'             // won a battle (+5 Respekt)
@@ -884,7 +883,6 @@ export type DiplomaticEvent =
   // diplomacy.json modifier table), so their values are inline literals below
   // rather than DIPLOMACY_PARAMS keys (which mirror diplomacy.json exactly).
   | 'wojna_casus_belli'         // 1.11 war WITH casus belli (-10 Relacja => -10 Zaufanie)
-  | 'ultimatum_spelnione'       // 1.9 ultimatum met: addressee loses face (-5 Zaufanie)
   | 'ultimatum_bezpodstawne'    // 1.9 baseless ultimatum, low Respekt (-10 Zaufanie, -10 Respekt)
   | 'trybut_odmowa'             // 1.8 tribute demand refused (-10 Zaufanie; casus belli)
   | 'trybut_oferta_przyjeta'    // 1.8 tribute OFFER accepted: payer avoids attack (+5 Zaufanie)
@@ -1001,11 +999,6 @@ export function applyDiplomaticEvent(
       dZ = 0;
       break;
 
-    case 'wspolna_religia':
-      // Approximated as one-shot seed: +1 Zaufanie (per-turn handled by engine)
-      dZ = 1;
-      break;
-
     case 'pomoc_sojusznikowi':
       // "Pomoc w wojnie sojusznikowi" +10 Zaufanie jednorazowo
       dZ = p.pomocSojusznikowi_zaufanie;
@@ -1040,11 +1033,6 @@ export function applyDiplomaticEvent(
       // (Czysta deklaracja z karencją N1 — 'wojna_wypowiedziana' — nie obniża Zaufania.)
       dZ = -10;
       newStatus = 'wojna';
-      break;
-
-    case 'ultimatum_spelnione':
-      // 1.9 ultimatum met: -5 Relacja (addressee loses face) -> -5 Zaufanie.
-      dZ = -5;
       break;
 
     case 'ultimatum_bezpodstawne':
@@ -1794,8 +1782,8 @@ export interface TickCtx {
  *     po zsumowaniu dZ — mnożnik tempa WIAR-Q3=C (`applyWiarygodnoscTempoDoDelty`)
  *   dobraWola      +1 Zaufanie
  *   wspolnyWrog    +1 Zaufanie
- *   wspolnaReligia +0.5 Zaufanie  (TODO: cap akumulacyjny +15/−10 per religia)
- *   odmiennaReligia −0.5 Zaufanie (TODO: cap −10 dla odmiennej religii)
+ *   wspolnaReligia  — 0 Zaufanie (religia nie wpływa na Zaufanie; params wspolnaReligia_zaufanie_perTura = 0)
+ *   odmiennaReligia — 0 Zaufanie (params odmiennaReligia_zaufanie_perTura = 0)
  *   karaWspolnaGranica −2 Zaufanie
  *
  * Zanik urazów: co 20 tur (turn % 20 === 0) urazyHistoryczne zmniejszają się

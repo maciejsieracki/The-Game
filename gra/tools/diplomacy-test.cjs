@@ -144,7 +144,6 @@ eq(r1.zaufanie, 20, 'dar returns +0 (PN trust in silnik)');
 eq(applyDiplomaticEvent(rel(20, 30), 'handel').zaufanie,            20, 'handel +0 Z (W1-A PN)');
 eq(applyDiplomaticEvent(rel(20, 30), 'pomoc_sojusznikowi').zaufanie, 30, 'pomoc sojusznikowi +10 Z');
 eq(applyDiplomaticEvent(rel(20, 30), 'dar').zaufanie,              20, 'dar +0 Z (PN w silniku)');
-eq(applyDiplomaticEvent(rel(20, 30), 'wspolna_religia').zaufanie,  21, 'wspolna religia seed +1 Z');
 {
   const r = applyDiplomaticEvent(rel(20, 30), 'wspolny_wrog');
   eq(r.zaufanie, 25, 'wspolny wrog +5 Z');
@@ -199,7 +198,15 @@ eq(applyDiplomaticEvent(rel(20, 30), 'dar', { mnoznikPodarunku: 2 }).zaufanie, 2
   eq(r.respekt,  30,    'wojna casus belli: Respekt nietknięty');
   eq(r.status,  'wojna', 'wojna_casus_belli sets wojna');
 }
-eq(applyDiplomaticEvent(rel(20, 30), 'ultimatum_spelnione').zaufanie, 15, 'ultimatum spelnione -5 Z');
+// Martwe zdarzenia usunięte (R-WEB-DIPLO-RESIDUAL-RELIGION-EVENT-AND-TEXTS-Q1): guard na źródle.
+{
+  const srcDir = path.join(__dirname, '..', 'src', 'game');
+  const dipSrc = fs.readFileSync(path.join(srcDir, 'diplomacy.ts'), 'utf8');
+  const facSrc = fs.readFileSync(path.join(srcDir, 'diplomacy-factors.ts'), 'utf8');
+  for (const ev of ['wspolna_religia', 'ultimatum_spelnione']) {
+    eq(dipSrc.includes(`'${ev}'`) || facSrc.includes(ev), false, `zdarzenie ${ev} nie wraca do diplomacy.ts / diplomacy-factors.ts`);
+  }
+}
 {
   const r = applyDiplomaticEvent(rel(30, 40), 'ultimatum_bezpodstawne');
   eq(r.zaufanie, 20, 'ultimatum bezpodstawne -10 Z');

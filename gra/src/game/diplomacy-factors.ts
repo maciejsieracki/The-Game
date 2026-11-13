@@ -64,7 +64,6 @@ export const DIPLO_FACTOR_LABELS_PL: Record<string, string> = {
   zdrada: 'Zdrada / atak z zaskoczenia',
   szpieg_wykryty: 'Szpiegostwo wykryte',
   tarcia_graniczne: 'Tarcia graniczne',
-  wspolna_religia: 'Wspólna religia (nawiązanie)',
   wojna_wypowiedziana: 'Wypowiedzenie wojny',
   wojna_casus_belli: 'Wypowiedzenie wojny (casus belli)',
   pokoj: 'Zawarcie pokoju',
@@ -78,7 +77,6 @@ export const DIPLO_FACTOR_LABELS_PL: Record<string, string> = {
   zerwanie_handlu: 'Zerwana umowa (przeszłość)',
   zerwanie_handlu_bez_kary: 'Zerwana umowa po 10 turach (bez kary)',
   zerwanie_traktatu: 'Zerwanie traktatu (decyzja własna)',
-  ultimatum_spelnione: 'Ultimatum spełnione',
   ultimatum_bezpodstawne: 'Ultimatum bezpodstawne',
 };
 
