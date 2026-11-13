@@ -416,3 +416,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Otwarte decyzje właściciela:** (1) `war_turn_declare.rs` do allowlisty czy do #120; (2) alias `umowa_handlowa`; (3) harness pipeline dla kolejności D4/D8 (test woła prymitywy, nie `run_war_turn`); (4) które FC r1 jest wiążące.
 - **Dysk:** 4,2 GB przy starcie rundy 3.
 - **Stan repo:** `parity-v2` = `003d53f97` (bez zmian). `claude/rust-sivvrn` = `721dae521`.
+
+## Przebieg (heartbeat 09:18, trig_01DiSPBEtwmKWjgEKvcGWm7W): 1 aktywny temat (1 z 4 slotów)
+- **Sloty:** 1 aktywny Workflow: CRED-WOJNA-Q1 runda 3/5 (`wf_a4483abe-c33`), baza parity `003d53f97`. Operator (HAIKU) pracuje: pliki testowe przenoszone z r2 (zmiany widoczne w worktree `wf_a4483abe-c33-1` w chwili sprawdzenia). Etapy po Operatorze: Evaluator (SONNET), Obrona (HAIKU), FC (SONNET).
+- **Dlaczego nie 4 sloty:** pozostałe pending są zablokowane decyzją właściciela albo zgodą na allowlistę (lista w poprzednich przebiegach). Nie startowano tematów zablokowanych.
+- **Sprzątanie:** usunięto worktree rundy 2 CRED-WOJNA (`wf_f60f7f97-86e-1..4`, łącznie ok. 4,8 GB). Zapisano refy `refs/keep/R-RUSTPORT-P6-CRED-WOJNA-Q1-r2-{fc,code,obrona,eval}`. Commity dostępne przez refy. Worktree rundy 3 zostawiono (w użyciu).
+- **Dysk:** 2,9 GB przed sprzątaniem, 7,3 GB po. Próg 8 GB do startów z kodem Rust nadal niespełniony.
+- **Zamknięte w liście zadań:** #129 (wektory `_defenderCounters`, wykonane przez K5LOOP-KONTRATAK-Q1, FC PASS-WITH-NOTES, w parity-v2).
+- **Stan repo:** `parity-v2` = `003d53f97` (bez zmian). `claude/rust-sivvrn` przed tym wpisem = `da7c192ed`.
