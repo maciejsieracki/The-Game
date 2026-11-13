@@ -566,3 +566,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Do zrobienia przed FF:** pełny `cargo test` dla `fc74b6d1a` (melee) i dla `f946ee378` (js_max); oba po zakończeniu tematów, żeby nie przeciążyć dysku.
 - **Dysk:** 9,6 GB po sprzątaniu worktree melee i L-1.
 - **Stan repo:** `parity-v2` = `2fb290cf7`. `claude/rust-sivvrn` przed tym wpisem = `e49dfe78d`.
+
+## Przebieg (13.11): pokrycie łuczników (#111/#143) zintegrowane
+- **Wynik:** Operator PASS-WITH-NOTES (`a8d331fff`), Evaluator PASS-WITH-NOTES, Obrona PASS-WITH-NOTES, FC PASS-WITH-NOTES (`b69c8bc72`). Łucznik-dystansowy: 11 → 69 na 1200 wektorach. Asercja `lucznik_ranged >= 14` przechodzi.
+- **Integracja:** cherry-pick trzech commitów na `2fb290cf7` (bez konfliktów; brak nakładania się zmian), test `p6_siege_tactics_blow_full` 3/3, FF `parity-v2` = `c85e4e451`. Pełny test na zintegrowanym stanie NIE_ZMIERZONO; na bazie przed integracją 3261/0/1 (Operator i Obrona).
+- **Uwagi FC (decyzje techniczne):** próg 14 zbyt niski wobec 69 → zadanie #163. Procarz spadł 4 → 1 → zadanie #164 (SLINGER-POKRYCIE).
+- **Stan repo:** `parity-v2` = `c85e4e451`. `claude/rust-sivvrn` przed tym wpisem = `7d84093a9`.
