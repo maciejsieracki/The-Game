@@ -79,7 +79,7 @@ export function administratorHireDisabled(m: AdministratorPanelModel): boolean {
 }
 
 function titleFor(m: AdministratorPanelModel): string {
-  return m.kind === 'city' ? 'Administrator miasta' : 'Administrator ulepszeń';
+  return m.kind === 'city' ? 'Administrator miasta' : 'Administrator państwa';
 }
 
 /** Krótkie „czym jest / do czego służy” — treść opisowa z JSON (jedno źródło), bez żargonu. */
@@ -117,7 +117,7 @@ function bonusRows(m: AdministratorPanelModel): string {
 export function administratorHireConfirmText(m: AdministratorPanelModel): string {
   const what = m.kind === 'city' ? 'automatyczna budowa budynków' : 'automatyczne ulepszanie terenu';
   const lines: string[] = [
-    'Zatrudnić administratora (' + (m.kind === 'city' ? 'miasta' : 'ulepszeń') + ') w mieście ' + m.cityName + '?',
+    'Zatrudnić administratora (' + (m.kind === 'city' ? 'miasta' : 'państwa') + ') w mieście ' + m.cityName + '?',
     'Opłata jednorazowa: ' + m.hireCost + ' Pieniądza. Utrzymanie: ' + m.upkeep + ' Pieniądza na turę ze skarbca państwa.',
     'Bonusy:',
   ];

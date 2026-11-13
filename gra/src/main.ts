@@ -10355,6 +10355,17 @@ async function boot(): Promise<void> {
         description: improvementAdministratorDescription(),
       };
     }
+    /** Administrator państwa właściciela do panelu Państwa (skarbiec): stan + koszty z silnika. */
+    function stateAdministratorPanelRow(ownerId: number) {
+      const adm = stateAdmByOwner.get(ownerId);
+      return {
+        hired: ownerHasStateImprovementAdministrator(adm, ownerId),
+        working: ownerHasWorkingStateImprovementAdministrator(adm, ownerId),
+        upkeep: improvementAdministratorUpkeep(),
+        hireCost: improvementAdministratorHireCost(),
+        treasury: ownerTreasury(ownerId),
+      };
+    }
     /** R-WEB-CITY-ADMINISTRATOR-Q1: AI (parytet): zatrudnia, gdy stać i ma budynek administracyjny; płaci ze skarbca państwa. */
     function aiHireAdministrators(ownerId: number): void {
       let treasury = aiSkarbiecByOwner.get(ownerId) ?? 0;
@@ -22712,6 +22723,8 @@ async function boot(): Promise<void> {
         bogactwoUtrzymanieJednostek: Math.floor(_lastBogactwoUtrzymanieJednostek),
         // R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1 (zarzut 1): OFF -> undefined -> panel nie pokazuje wiersza.
         bogactwoUtrzymanieAdministratorow: administratorsEnabled ? Math.floor(_lastBogactwoUtrzymanieAdministratorow) : undefined,
+        // Panel Państwa: administrator państwa (jeden na Państwo). OFF -> undefined (brak wiersza).
+        administratorPanstwa: administratorsEnabled ? stateAdministratorPanelRow(ME()) : undefined,
         ludnosc: pop,
         ludnoscRate: Math.floor(_lastLudnoscRate),
         religionStock: relAgg.stateAdherents,
