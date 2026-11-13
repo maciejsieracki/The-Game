@@ -1,3 +1,9 @@
+## ROBOCZA 867807d8 -- 2026-11-13 -- FALA 692: Okno wymiany surowców bez przeładowania, obie strony w jednym rzucie (testowa)
+
+- W oknie „Umowa wymiany surowców” dodanie pozycji po którejkolwiek stronie (oferujemy / oferują) dopisuje ją w miejscu, bez przebudowy całego okna: zostają przewinięcie, tryb (jednorazowo / co turę), czas umowy, zaznaczone kafle i wpisane ilości w obu panelach. Obie strony można uzupełnić w dowolnej kolejności jedną propozycją; przy pustej stronie pojawia się neutralna podpowiedź zamiast ostrzeżenia o odrzuceniu. Wycena i reguły dyplomacji bez zmian.
+- Weryfikacja: tsc 0; logic 213/213; testy: okno wymiany bez przeładowania 19/19 (mutacja powrotu do innerHTML czerwieni), basket duplicate-ui 31/31, edit 25/25, transfer 24/24, diplomacy 149/0, ai 297/0; test w żywym Chromium na komponencie; FC PASS-WITH-NOTES
+- Limity: Nie zmierzono w pełnej grze w Chromium; tryby traktat/pokój/wasal klikane na żywo niezmierzone; wygląd neutralnej podpowiedzi do obejrzenia przez właściciela
+
 ## ROBOCZA 803a70a2 -- 2026-11-13 -- FALA 691: Fundament: projekcja skarbca i spichlerza po turze (bez zmiany zachowania gry) (testowa)
 
 - Dodano moduł liczący, ile będzie w skarbcu i spichlerzu państwa po turze (tylko odczyt, zgodny z realnym tickiem). Moduł nie jest jeszcze wpięty w grę, więc zachowanie gry się nie zmienia; służy do zasady „skarbiec i spichlerz nigdy poniżej zera po turze” (blokada tury gracza i równoważenie AI w kolejnych tematach).
