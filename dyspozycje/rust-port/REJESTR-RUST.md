@@ -909,3 +909,7 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Trwających Workflow: 0 (4 sloty puste).** Zakończone etapy: ZWYCIESTWO-WIRING r4 (FC — zintegrowane, `a381dd13f`), ZLOZA-B-REST r3 (FC — zintegrowane, `e51b61637`), ZDOBYCIE-MIASTA-ROZPOZNANIE (FC — dokumenty zintegrowane).
 - **Kandydaci bez gotowego dispatchu:** ZDOBYCIE-MIASTA-WIRING (#115 — rozbić na tematy wg rozpoznania: węzeł P9, bramki zdobycia, cesja, druga ścieżka przegranej), CRED-HAK-WYPOWIEDZENIE (#120 — rozpoznanie gotowe, T1–T5), ZLOZA-WIRING (#104/#172 — rozpoznanie gotowe), ZWYCIESTWO-LOAD (produkcyjne wczytanie stanu i flaga ze miast). Startu bez dispatchu nie wykonuję; napisanie dispatchów to kolejny krok.
 - **Dysk:** 11 GB. **Parity:** `a381dd13f`.
+
+## Przebieg (13.11, heartbeat 22:48): bez zmian
+- **Trwających Workflow: 0** (sloty puste). Brak gotowych dispatchów — kandydaci (#115, #120, #104/#172, ZWYCIESTWO-LOAD) czekają na decyzję kolejności i napisanie dispatchu.
+- **Dysk:** 11 GB. **Parity:** `a381dd13f`. Worktree: 2.
