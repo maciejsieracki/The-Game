@@ -362,10 +362,18 @@ const LUCZNIK_IDX = UNIT_ROWS.flatMap((u, i) => (String(u.Typ ?? '').trim() === 
   && String(u.Jednostka ?? '').trim().toLowerCase().startsWith('łucznik') ? [i] : []));
 if (LUCZNIK_IDX.length === 0) throw new Error('pin: brak wierszy piesich lucznikow w units.json');
 
+// Procarze z PINU (galaz rangedDamageMultFor: Typ 'Slinger', unit-power.ts): wiersze Typ 'Slinger'.
+const PROCARZ_IDX = UNIT_ROWS.flatMap((u, i) => (String(u.Typ ?? '').trim() === 'Slinger' ? [i] : []));
+if (PROCARZ_IDX.length === 0) throw new Error('pin: brak wierszy procarzy (Typ Slinger) w units.json');
+
 // Losowanie jednostki: wiersz z PINU + wejscia wywolania toCombatUnit (weteran, glod, deficyt) + rzadkie nadpisanie NaN/Inf.
-// preferLucznik: strzelec dystansowy - z szansa 0,25 wymuszony wiersz piesego lucznika (pokrycie galezi, bez zmiany zakresu).
+// preferLucznik: strzelec dystansowy - z szansa 0,25 wymuszony wiersz piesego lucznika, a przy nieudanym losowaniu
+// z szansa 0,25 wymuszony wiersz procarza (pokrycie galezi Slinger, bez zmiany zakresu i bez zmiany innych galezi).
 function unitDraw(preferLucznik = false) {
-  const idx = preferLucznik && chance(0.25) ? pick(LUCZNIK_IDX) : int(0, UNIT_ROWS.length - 1);
+  let idx;
+  if (preferLucznik && chance(0.35)) idx = pick(LUCZNIK_IDX);
+  else if (preferLucznik && chance(0.25)) idx = pick(PROCARZ_IDX);
+  else idx = int(0, UNIT_ROWS.length - 1);
   const ovr = chance(0.15) ? { [pick(OVR_FIELDS)]: pick([NaN, Infinity, -Infinity]) } : {};
   return {
     idx,
