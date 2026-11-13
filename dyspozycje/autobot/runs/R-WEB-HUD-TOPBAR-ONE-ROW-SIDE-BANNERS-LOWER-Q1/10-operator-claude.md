@@ -42,3 +42,18 @@ Zrzuty 2× (harness DSF 1); gra na żywo i klikalność po obniżeniu prawego kl
 
 NASTĘPNY KROK: Evaluator; decyzja właściciela ws. B1/1366.
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+# RUNDA 4/5 (Operator SONNET; baza 4ed8339a3)
+
+STATUS: PASS
+DOMAIN: GAME
+TEMAT: R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1
+GOAL: surowce w jednym rzedzie na gorze, boczne banery nizej (#308); r4: decyzja wlasciciela "Jak w bazie" dla B1 przy 1366 px.
+ZMIANY/COMMIT: jedyna zmiana kodu: gra/tools/hud-topbar-bigger-numbers-real-render-test.cjs — przy w===1366 usunieto wymog B1 >= 1,25x (log informacyjny min ratio, bez progu); inne szerokosci (1920/1024/640) bez zmian; zadnego nowego progu. hud.ts/hudLayout.ts bez zmian wzgledem 4ed8339a3. Ten raport.
+TESTY (surowe wyjscie): tsc --noEmit 0 bledow; logic 213/213; tech-tree 20 pass 0 fail; research ALL GREEN; unit-replace 21/21; combat "All sanity checks passed"; bigger-numbers PASS 63 ok 0 fail (przed zmiana 63 ok/1 fail: B1 1366 min 0,778); one-row PASS 140 ok 0 fail; grid-gross-net OK 1150 ok 0 fail; no-labels PASS 94 ok 0 fail; layout-a PASS 144 ok 0 fail. Mutacja (wymuszony fallback 2 pieter, HUD_TS=abs. sciezka): one-row FAIL 100 ok / 40 fail. Y monet miedzy stanami = 0 px (asercje one-row/no-labels zielone, tolerancja 1,5 px nie luzowana).
+UWAGA: licznik bigger-numbers to 63, nie 62 z dispatchu; 62 dotyczylo bazy 8c447758e (inny uklad), a liczba asercji zalezy od trybu B3 — kryterium to 0 fail. Nie zmierzono na 8c447758e (bundle bazy nie buduje sie z biezacym hudLayout) — NIE_ZMIERZONO. Test wymaga tymczasowej kopii gra/src/ui/hud.__base.ts (git show 4905bac05; usunieta, nie commitowana).
+BLOKADY: brak. Zrzuty Chromium nie powtarzane w r4 (brak zmian ukladu); zrzuty z r3 w evidence/.
+RUNDY: 4/5
+NASTEPNY KROK: Evaluator -> Final Control.
+DEPLOY/PUSH: NIE WYKONANO
