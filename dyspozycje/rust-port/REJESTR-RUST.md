@@ -863,3 +863,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
   - Trailer `Co-Authored-By` z nazwą modelu w commitach Operatora **nie przenosimy** do nowej integracji (CLAUDE.md zabrania nazwy modelu w artefaktach). Integracja idzie cherry-pickiem z czystym komunikatem; historii już wypchniętej nie przepisujemy.
   - **Osobny temat (nie teraz):** sortowanie id dawców/biorców — Rust porównuje bajtowo, pin `localeCompare`; widoczne tylko przy remisie zapasu i id typu `c1_0`/`c10_0`. Poza allowlistą.
 - **Integracja:** worktree `integ-zloza2` na `0ca58770e`, cherry-pick `5a6adf3fb..ca3235f00` (bez `-x`, z czystym komunikatem). Pełny test w tle; FF po zielonym wyniku.
+
+## ZWYCIESTWO-WIRING-Q1 (r3): FAIL — regresja roundtripu → DODATEK r4
+- **Wynik r3:** Operator BLOCK (kryterium 4: pełny test nie 0 failed), Evaluator FAIL, FC nie zakończył się (ENOSPC przy tworzeniu worktree). Przyczyna: `gracz_kiedys_mial_miasto` z `#[serde(skip)]` → test `p6_stan_ulepszenia::new_fields_roundtrip_and_default_is_omitted` pada (po roundtripie `false` przy `true` w stanie). To regresja tematu, nie błąd środowiska.
+- **Decyzja:** DODATEK r4 (baza `02eef7219`): persystować flagę z `skip_serializing_if` gdy `false`, ALE najpierw sprawdzić w pinie `save.ts`, czy pin zapisuje to pole; jeśli nie — derywacja z miast przy wczytaniu wg `main.ts:46368-46370`. Allowlista r4: test flagi i golden `p6_unit_replace_l3_state` wyłącznie o nowe pole.
+- **Gałąź zachowana:** `rust-port-wip/R-RUSTPORT-P6-ZWYCIESTWO-WIRING-Q1-r3-wip` (`1e3939b4d`). Worktree r3 usunięte (dysk).
+- **Start r4:** wstrzymany do ≥8 GB (dysk po sprzątaniu 8,6 GB, trwa test integracji ZLOZA-B-REST).
