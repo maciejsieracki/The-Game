@@ -1,3 +1,9 @@
+## ROBOCZA 0971e48c -- 2026-11-13 -- FALA 681: Nowe zasady wypowiadania wojny przez AI: zaufanie poniżej 30 i 20% przewagi siły militarnej, wojna przy zerowym zaufaniu (testowa)
+
+- AI wypowiada wojnę przy zaufaniu pary poniżej 30 i przewadze siły militarnej o co najmniej 20% (decyduje charakter cywilizacji); przy zerowym zaufaniu przez N tur silniejsza strona wypowiada wojnę; gracz nigdy automatycznie; ostrzeżenie dla gracza raz na epizod; siła liczona jako armia, rekruci, wygrane bitwy z tej wojny i bonus trybutu.
+- Weryfikacja: tsc 0; logic 213/213; zero-trust 43/0; main-guard 35/0; tick-brake 51/0; ai-test 296/0; diplomacy 148/0; vite build OK
+- Limity: Wykonanie w żywej grze i Chromium NIE_ZMIERZONO; usunięty bonus skłonności do wojny z bramki (do decyzji); zasady rozejmu i pokoju (krok 4) jeszcze stare; ostrzeżenie nie jest zapisywane w zapisie gry
+
 ## ROBOCZA 57b393b8 -- 2026-11-13 -- FALA 680: Etykiety nastawienia wg zaufania (Wrogi poniżej 10, Nieufny 10-29), Civpedia dyplomacji, pomiar ofert handlowych AI (testowa)
 
 - Zaufanie poniżej 10 = Wrogi, 10-29 = Nieufny, od 30 etykieta wg relacji; nowe hasła encyklopedii o dyplomacji, zaufaniu, respekcie, relacji, wiarygodności, Power i zasadach wojny i pokoju; narzędzie pomiaru częstości ofert handlowych AI (hak tylko za ?civTest=1).
