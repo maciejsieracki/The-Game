@@ -1,0 +1,7 @@
+# R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 — dispatch (2026-11-13)
+
+GOAL (krok 3 z 4, decyzje właściciela 2026-11-13): AI wypowiada wojnę według nowych zasad: zaufanie poniżej 30 + 20% przewagi siły militarnej (charakter cywilizacji decyduje, czy ją wykorzysta) oraz twardy hamulec: przy zerowym zaufaniu silniejsza strona po kilku turach wypowiada wojnę. Siła = „Siła militarna” z kroku 2 (armia + rekruci + wygrane bitwy z bieżącej wojny + bonus trybutu), NIE Power. Szczegóły: DODATEK.
+
+BAZA: kandydat 3950aae12 (zawiera krok 2 i licznik bitew; potomek origin/main d09df3e0b). Operator: HAIKU. Evaluator/FC: SONNET.
+ALLOWLISTA: gra/src/game/ai.ts (WYŁĄCZNIE blok wypowiadania wojny ok. 6852–7312 i powiązane stałe), gra/src/main.ts (WYŁĄCZNIE: kolejka kryzysu processDiploCrisisQueue ok. 11776–11870, pomocnik liczący siłę militarną narodu, ostrzeżenie dla gracza), gra/src/game/diplomacy-military-strength.ts (pomocniki), gra/data/diplomacy-war-peace-params.json (nowe klucze, stare oznacz jako nieużywane zamiast usuwać, jeśli używa ich test), gra/data/diplomacy-military-strength-params.json, istniejące testy w gra/tools/*.cjs (tylko asercje o starym progu wojny i hamulcu relacji), NOWY gra/tools/diplo-war-declare-zero-trust-test.cjs, dyspozycje/autobot/runs/R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1/**.
+ZAKAZ: pokój/rozejm/bramki pokoju/zmęczenie (krok 4), etykiety nastawienia i diplomacy-display.ts, liczby zaufania (rozejm 10, pokój 20, kary sąsiedztwa, religia), power-objective.ts, diplomacy.ts, WERSJE.md, gra-robocza/, rust-port/, npm run build/dev, git add -A.
