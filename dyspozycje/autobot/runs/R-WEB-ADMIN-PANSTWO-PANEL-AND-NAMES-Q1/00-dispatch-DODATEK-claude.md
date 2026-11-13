@@ -18,3 +18,14 @@ ALLOWLISTA ROZSZERZONA (tylko napisy i asercje na napisy):
 ZAKAZ: zmian kosztów, progów, auto-ulepszeń, reguł zatrudnienia, WERSJE.md, gra-robocza/, rust-port/, git add -A.
 ZASADA ZAKRESU (zatwierdzona): panel Państwa i teksty „administrator państwa” mówią o WSZYSTKICH miastach Państwa; „administrator miasta” — o jednym mieście. Nie łącz obu.
 KRYTERIA KOŃCA: tsc 0; 5 bramek z surowym wyjściem; admin-panstwo-panel-names-test 0 FAIL, z 0 trafieniami starej nazwy w gra/src, gra/data, gra/tools i wikiBundle; mutacja starej nazwy w pliku czerwieni test; trzy testy przeglądarkowe — jeśli niewykonalne w tej sesji, NIE_ZMIERZONO z powodem (nie zmieniać progów). Raport 10-operator-claude.md (runda 2). Nie integrujesz, nie pushujesz na main.
+
+## DODATEK (runda 3, 2026-11-13) — decyzja orkiestratora po FC FAIL r2
+BAZA: kandydat 7fa2da030 (FC r2). Popraw ten kandydat, nie zaczynaj od zera.
+ROZSZERZENIE ALLOWLISTY (tylko napisy i ich asercje):
+- docs/encyklopedia/pojecia/administrator-ulepszen.md — stara nazwa i zakres „jedno miasto” → „administrator państwa” (zakres całego Państwa); nazwa „administrator miasta” dla budynków w jednym mieście.
+- docs/encyklopedia/indeks.md — ta sama korekta nazw.
+- gra/data/ui-params.json:311 — tylko tekst „administratorów miast i ulepszeń” → zgodny z nowymi nazwami; bez zmian liczb.
+- gra/src/data/wikiBundle.json — WYŁĄCZNIE przez skrypt generacji bundle-wiki-for-game.cjs po edycji źródeł; nie edytuj ręcznie.
+- Pięć plików testowych (admin-panstwo-city-gate-test, administrators-wizard-test, improvement-administrator-test, live-verify-administrator-panel, live-verify-improvement-administrator) — ZAAKCEPTOWANE zmiany etykiet i asercji na napisy; nie osłabiaj progów ani liczb.
+DECYZJE: Z4 (asercja A2/[data]) — zostaje jak w r2 (lider państwa hardcoded w administratorPanel.ts; liczby z JSON nadal sprawdzane). Zakres „administrator państwa” = całe Państwo, zawsze.
+KRYTERIA KOŃCA: tsc 0; 5 bramek z surowym wyjściem; admin-panstwo-panel-names-test 0 FAIL, 0 trafień starej nazwy w gra/src, gra/data, gra/tools, docs/encyklopedia i wikiBundle; mutacja realna czerwieni test; administrator-panel-real-render, improvement-administrator, administrators-wizard, admin-panstwo-city-gate — 0 FAIL. Chromium tooltip/icon i live-verify: NIE_ZMIERZONO z powodem, jeśli niewykonalne. Raport 10-operator-claude.md (runda 3). Nie integrujesz, nie pushujesz na main.
