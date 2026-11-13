@@ -471,3 +471,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Otwarte (NIE_ZMIERZONO / poza zakresem):** produkcyjna kolejność D4/D8 względem P4 (test na prymitywach); alias `umowa_handlowa` pominięty (decyzja właściciela); wypowiedzenie gracza, sojusz, klaster, `zlozeGrants` (#120).
 - **Sprzątanie:** worktree `integ-r4` i target usunięte. Dysk 8,8 GB.
 - **Stan repo:** `parity-v2` = `cfa1edd31`. `claude/rust-sivvrn` przed tym wpisem = `57ae622aa`.
+
+## Przebieg (heartbeat 11:18, trig_01DiSPBEtwmKWjgEKvcGWm7W): 0 aktywnych Workflow, 0 z 4 slotów
+- **Sloty:** 0 aktywnych. Brak procesów cargo/clippy/rustc, brak worktree poza główną kopią. Journale `wf_e1c6a9ed-20e` i `wf_eb7eee9f-e01` mają start bez wyniku, ale bez procesu i bez worktree. Traktuję je jako porzucone po wcześniejszych restartach. Journal `wf_beebb55a-e4e` (zła baza) zatrzymany ręcznie.
+- **Zamknięte:** #103 CRED-WOJNA (integracja `cfa1edd31`, bramki zielone 3261/0/1). Otwarte, poza tematem: alias `umowa_handlowa` (decyzja właściciela), harness pipeline D4/D8 (osobny temat), wypowiedzenie gracza/sojusz/klaster (#120).
+- **Dlaczego nie uruchomiono 4 tematów:** pozostałe pozycje pending są zablokowane decyzją właściciela (allowlista `ProdBody`, #143/#146, #151 `Cargo.toml`, DYSTANS #134–#137, gameplay #10, #14–#19, #27, #60, #63) albo zależą od niezintegrowanego kodu. Nie startuję tematów tylko po to, żeby zapełnić sloty.
+- **Dysk:** 8,8 GB. Próg 8 GB do startów z kodem Rust spełniony, ale brak gotowego tematu do uruchomienia bez decyzji.
+- **Stan repo:** `parity-v2` = `cfa1edd31`. `claude/rust-sivvrn` przed tym wpisem = `588c198de`.
