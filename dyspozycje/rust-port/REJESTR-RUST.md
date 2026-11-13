@@ -800,3 +800,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Przyczyna:** wektory tych testów pochodzą z pina **4bbef081d** (brąz = huta × m(e)), a parytet docelowy to **07d2fbd72** (brąz 50/75 per epoka). To wersja pina w wektorach, nie błąd kodu.
 - **Decyzja orkiestratora:** rozszerzyć allowlistę o te testy/wektory/generatory i zregenerować z pina 07d2fbd72. Bez osłabiania asercji. DODATEK r3 wypchnięty, baza `b611211fc`, start świeży.
 - **Start r3:** wstrzymany — dysk 7,3 GB < 8 GB (próg dla pełnego testu).
+
+## Przebieg (13.11, heartbeat 19:47)
+- **Aktywne Workflow (2 z 4):** ZWYCIESTWO-WIRING-Q1 (Operator, HAIKU, od 18:40, `wf_ba1cfc1f-3e1`); ZLOZA-B-REST-Q1 r3 (Evaluator, SONNET, od 19:10, `wf_d3ddfaff-163`). Bez wyniku FC.
+- **EKONOMIA-BRAZ-ERA r3:** gotowa (DODATEK r3, baza `b611211fc`), start wstrzymany — dysk 7,8 GB < 8 GB.
+- **Sprzątanie:** usunięto worktree zakończonej rundy EKONOMIA r2; obrona r2 zapisana jako gałąź `rust-port-wip/R-RUSTPORT-P6-EKONOMIA-BRAZ-ERA-Q1-r2-obrona` (`b611211fc`).
+- **Parity:** `0ca58770e`.
