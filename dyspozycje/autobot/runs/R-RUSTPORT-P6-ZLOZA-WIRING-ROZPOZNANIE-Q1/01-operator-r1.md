@@ -16,3 +16,13 @@ Kluczowe ustalenia (dowody w dokumencie rozpoznania):
 - Rust: 0 wywołań deactivate/suspend, brak pola stanu zlozeGrants, brak tworzenia grantu (BasketItemKind::Deposit istnieje, diplomacy.rs:1747). ZlozeGrant + deactivate_zloze_grants_for_deal są tylko jako czyste funkcje (diplomacy.rs:4185, :4197), wołane wyłącznie z testów.
 - sync: produkcyjna sync_relation_from_deals (turn_war_dipl_steps.rs:275) wołana tylko w :1004 (kontakty gracza, pin :24319). sync_relation_status_from_deals (diplomacy.rs:4225) to duplikat, wołany tylko w testach. Pin wywołuje syncRelationFromDeals w 11 miejscach; Rust wpina 1.
 - treaties_broken_by_war (alliance_war_obligation.rs:251) nie jest w produkcji.
+
+## Weryfikacja Operatora (runda 1, ponowne uruchomienie na gałęzi wip)
+
+- Rozpoznanie wykonane wcześniej na tej gałęzi jako commit `86c09c574`; ta runda go zweryfikowała, nie przepisała.
+- Sprawdzone punkty kotwiczące (zgodne z treścią dokumentu): pin `main.ts` 12613 (push grantu), 22741/22774 (`breakTreatyVoluntarily`), 23689 (`suspendZlozeOnWar`), 23694, 24234, 24294 (4× `deactivateZlozeGrantsForDeal`), 22832 (`syncRelationFromDeals`), 24319, 37358, 47251-47253; Rust `diplomacy.rs` 4185 (`ZlozeGrant`), 4197 (`deactivate_zloze_grants_for_deal`), 4225 (`sync_relation_status_from_deals`); `turn_war_dipl_steps.rs` 275 (`sync_relation_from_deals`), 1004 (jedyne produkcyjne wywołanie); `alliance_war_obligation.rs` 251 (`treaties_broken_by_war`).
+- Wywołania `deactivate_zloze_grants_for_deal` i `sync_relation_status_from_deals` w `rust-port/engine/src`: tylko definicje w `diplomacy.rs`, zero wywołań produkcyjnych.
+- Incydent z poprzedniego wpisu: plik `/home/user/tmp/x` nie istnieje w tej sesji (`ls` zwraca brak). Nie da się go odtworzyć z repo. Zgłoszenie dla właściciela pozostaje otwarte.
+- Uwaga procesowa: dispatch zakazuje linii `Co-Authored-By` z nazwą modelu; commit zrobiono zgodnie z dispatchem, z linią `Claude-Session`.
+- SHA rozpoznania (commit zawierający dokument): `86c09c574`. SHA bazy: `fc2ed160f`.
+- Nie uruchamiano `cargo` (TESTY: NIE DOTYCZY). Brak zmian w `rust-port/**`, `gra/**`, `origin/main`. Brak push do `rust-port/parity-v2`.
