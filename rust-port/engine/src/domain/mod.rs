@@ -62,6 +62,7 @@ pub mod hex;
 mod ids;
 pub mod improvement_build;
 pub mod improvements;
+pub mod js_math;
 pub mod map_generator;
 pub mod map_snapshot;
 pub mod mapgen;

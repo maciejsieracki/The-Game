@@ -225,27 +225,11 @@ pub const IMPROVEMENT_FOR_DEFICIT: [(&str, &[&str]); 8] = [
     ("kon", &["stadnina"]),
 ];
 
-/// Web `Math.max` (propaguje NaN, w odroznieniu od `f64::max`).
-pub(crate) fn js_max(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        f64::NAN
-    } else if a > b {
-        a
-    } else {
-        b
-    }
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max_tie_b`.
+pub(crate) use crate::domain::js_math::js_max_tie_b as js_max;
 
-/// Web `Math.min` (propaguje NaN, w odroznieniu od `f64::min`).
-pub(crate) fn js_min(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        f64::NAN
-    } else if a < b {
-        a
-    } else {
-        b
-    }
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_min_tie_b`.
+pub(crate) use crate::domain::js_math::js_min_tie_b as js_min;
 
 /// Porownanie napisow jak JS `<`/`>` (jednostki UTF-16, nie bajty UTF-8).
 pub(crate) fn cmp_js_str(a: &str, b: &str) -> Ordering {

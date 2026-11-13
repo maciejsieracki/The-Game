@@ -145,14 +145,8 @@ pub fn parse_hex_key(key: &str) -> Option<(f64, f64)> {
     }
 }
 
-/// JS `Math.max(a, b)`: NaN jesli ktorykolwiek argument jest NaN (inaczej niz `f64::max`).
-fn js_max(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        f64::NAN
-    } else {
-        a.max(b)
-    }
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max_std`.
+use crate::domain::js_math::js_max_std as js_max;
 
 // ---------------------------------------------------------------------------------------------
 // territory.ts

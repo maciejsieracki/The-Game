@@ -32,23 +32,11 @@ use self::js_compat::{js_max, js_min};
 
 /// Pomocniki odtwarzajace semantyke JS tam, gdzie Rust rozni sie od ECMAScript.
 pub mod js_compat {
-    /// `Math.min(a, b)` z propagacja `NaN`.
-    pub fn js_min(a: f64, b: f64) -> f64 {
-        if a.is_nan() || b.is_nan() {
-            f64::NAN
-        } else {
-            a.min(b)
-        }
-    }
+    // Wspolna implementacja (konsolidacja #110): `domain::js_math::js_min_std`.
+    pub use crate::domain::js_math::js_min_std as js_min;
 
-    /// `Math.max(a, b)` z propagacja `NaN`.
-    pub fn js_max(a: f64, b: f64) -> f64 {
-        if a.is_nan() || b.is_nan() {
-            f64::NAN
-        } else {
-            a.max(b)
-        }
-    }
+    // Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max_std`.
+    pub use crate::domain::js_math::js_max_std as js_max;
 
     /// `Math.max(lo, Math.min(hi, x))`.
     pub fn js_clamp(lo: f64, hi: f64, x: f64) -> f64 {

@@ -32,14 +32,8 @@ pub fn road_bruk_min_move_cost() -> f64 {
     road_movement_value("ROAD_BRUK_MIN_MOVE_COST")
 }
 
-/// Web `Math.max(a, b)`: `NaN`, gdy ktorykolwiek argument to `NaN` (`f64::max` ignoruje `NaN`).
-fn js_max(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        f64::NAN
-    } else {
-        a.max(b)
-    }
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max_std`.
+use crate::domain::js_math::js_max_std as js_max;
 
 /// Web `isRoadImprovementKey` (`road-movement.ts:59`; re-eksport `improvement-build.ts:1569`):
 /// scisle rowne `'droga'` albo `'droga_brukowana'` (bez normalizacji, wielkosc liter ma znaczenie).

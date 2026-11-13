@@ -26,20 +26,8 @@ use std::collections::HashSet;
 use super::economy_yield::building_happiness_at_level;
 use super::production_units::building_level_for_epoch;
 
-/// JS `Math.min(a, b)`: NaN propaguje, `-0` mniejsze od `+0`.
-fn js_min(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        return f64::NAN;
-    }
-    if a == b {
-        return if a.is_sign_negative() { a } else { b };
-    }
-    if a < b {
-        a
-    } else {
-        b
-    }
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_min`.
+use crate::domain::js_math::js_min;
 
 /// Pola katalogu budynku potrzebne do liczenia Szczescia (web `BuildingHappinessCatalogEntry`).
 #[derive(Debug, Clone, Copy, PartialEq)]

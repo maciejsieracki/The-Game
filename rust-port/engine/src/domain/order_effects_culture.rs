@@ -60,24 +60,8 @@ fn clamp(x: f64, lo: f64, hi: f64) -> f64 {
     }
 }
 
-/// Web `Math.max(a, b)` (NaN zaraża; `max(+0,-0) = +0`).
-fn js_max(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        return f64::NAN;
-    }
-    if a == 0.0 && b == 0.0 {
-        return if a.is_sign_negative() && b.is_sign_negative() {
-            -0.0
-        } else {
-            0.0
-        };
-    }
-    if a > b {
-        a
-    } else {
-        b
-    }
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max`.
+use crate::domain::js_math::js_max;
 
 fn block<'a>(society: Option<&'a Value>, key: &str) -> Option<&'a Value> {
     society.and_then(|s| s.get(key)).filter(|v| v.is_object())

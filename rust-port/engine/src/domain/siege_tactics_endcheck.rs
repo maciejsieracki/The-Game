@@ -19,7 +19,6 @@
 //! `_armyMoraleRatio` i `_battleUnitsForMapExport` (wejscia liczbowe), `if (this.finished) return true` (wywolujacy).
 
 use crate::domain::siege_no_breach::{round_cap_verdict, RoundCapVerdict};
-use crate::domain::siege_tactics_blow::js_max;
 use crate::domain::siege_tactics_end::{battle_winner, siege_no_breach_repels_attack, BattleSide};
 
 /// Web `STALL_TURN_LIMIT` (`battleScene.ts:1119`): tury bez zmiany HP/morale/strat -> stan `stalled`.
@@ -55,10 +54,8 @@ pub struct StallUnit {
     pub out: bool,
 }
 
-/// Web `Math.max(0, x)` dla jednej wartosci. `NaN` zostaje `NaN`.
-fn js_max0(x: f64) -> f64 {
-    js_max(0.0, x)
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max0`.
+use crate::domain::js_math::js_max0;
 
 /// Web `Math.round` dla liczb (`+inf` przy polowce; `NaN`/`Inf` bez zmian).
 fn js_math_round(x: f64) -> f64 {

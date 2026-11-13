@@ -23,35 +23,11 @@ use std::collections::HashMap;
 
 use serde_json::Value;
 
-/// Web `Math.max(a, b)`: NaN propaguje; remis zero: +0 wygrywa z -0.
-pub fn js_max(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        return f64::NAN;
-    }
-    if a == b {
-        return if a.is_sign_negative() { b } else { a };
-    }
-    if a > b {
-        a
-    } else {
-        b
-    }
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max`.
+pub use crate::domain::js_math::js_max;
 
-/// Web `Math.min(a, b)`: NaN propaguje; remis zero: -0 wygrywa z +0.
-pub fn js_min(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        return f64::NAN;
-    }
-    if a == b {
-        return if a.is_sign_negative() { a } else { b };
-    }
-    if a < b {
-        a
-    } else {
-        b
-    }
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_min`.
+pub use crate::domain::js_math::js_min;
 
 /// Web `clamp(v, lo, hi) = Math.min(hi, Math.max(lo, v))` (war-weariness.ts:20).
 pub fn js_clamp(v: f64, lo: f64, hi: f64) -> f64 {

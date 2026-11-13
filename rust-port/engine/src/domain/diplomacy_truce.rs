@@ -103,15 +103,8 @@ pub fn is_peace_treaty_locked(meta: Option<&PairMetaWeb>, current_turn: f64) -> 
     }
 }
 
-/// `Math.max(1, Math.floor(x))` z propagacja NaN jak w JS (`Math.max(1, NaN)` = NaN).
-fn js_max_1_floor(x: f64) -> f64 {
-    let f = x.floor();
-    if f.is_nan() {
-        f64::NAN
-    } else {
-        f.max(1.0)
-    }
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max_1_floor`.
+use crate::domain::js_math::js_max_1_floor;
 
 /// Web: `startPeaceTreatyLock` (:27). `lock_turns: None` = domyslne `PEACE_TREATY_LOCK_TURNS`.
 /// Zwraca kopie z `peaceUntilTurn` i `n3Window = { turn, typ: 'pokoj', charged: false }`.

@@ -97,9 +97,8 @@ pub struct CivOrderModifiers {
     pub porzadek_wzrost_proc: Option<f64>,
 }
 
-fn js_max(a: f64, b: f64) -> f64 {
-    crate::domain::civ_matrix::js_compat::js_max(a, b)
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max_std`.
+use crate::domain::js_math::js_max_std as js_max;
 
 /// Web `orderEffectsWithCivMatrix` (`order.ts:162-179`).
 pub fn order_effects_with_civ_matrix(

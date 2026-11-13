@@ -381,35 +381,11 @@ fn debit(available: u64, required: u64, paid: &mut u64, unpaid: &mut u64) {
     *unpaid = required - *paid;
 }
 
-/// Web `Math.max(a, b)`: NaN propaguje; `Math.max(-0, 0)` = `0`.
-fn js_max(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        f64::NAN
-    } else if a > b {
-        a
-    } else if b > a {
-        b
-    } else if a.is_sign_positive() {
-        a
-    } else {
-        b
-    }
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max`.
+use crate::domain::js_math::js_max;
 
-/// Web `Math.min(a, b)`: NaN propaguje; `Math.min(0, -0)` = `-0`.
-fn js_min(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        f64::NAN
-    } else if a < b {
-        a
-    } else if b < a {
-        b
-    } else if a.is_sign_negative() {
-        a
-    } else {
-        b
-    }
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_min`.
+use crate::domain::js_math::js_min;
 
 /// P6.8D-P1 - `gold-deficit.ts` (web pin 91dc998a): kara za deficyt Zlota.
 ///

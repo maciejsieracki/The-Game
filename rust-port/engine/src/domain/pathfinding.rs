@@ -712,14 +712,8 @@ pub mod ruch_jednostek {
         }
     }
 
-    /// Web `Math.max(a, b)`: `NaN` jesli ktorykolwiek argument to `NaN`.
-    fn js_max(a: f64, b: f64) -> f64 {
-        if a.is_nan() || b.is_nan() {
-            f64::NAN
-        } else {
-            a.max(b)
-        }
-    }
+    // Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max_std`.
+    use crate::domain::js_math::js_max_std as js_max;
 
     // -----------------------------------------------------------------------
     // Model danych (podzbior `Hex` / `GameMap` / `RuntimeUnit` czytany przez te funkcje)

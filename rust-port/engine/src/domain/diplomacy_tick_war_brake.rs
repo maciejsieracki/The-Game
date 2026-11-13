@@ -107,35 +107,11 @@ pub fn crisis_pair_key(a: i64, b: i64) -> String {
     format!("{}-{}", a.min(b), a.max(b))
 }
 
-/// Web: `Math.max` (NaN-propagacja; `max(+0, -0) = +0`).
-fn js_max(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        return f64::NAN;
-    }
-    if a == 0.0 && b == 0.0 {
-        return if a.is_sign_negative() { b } else { a };
-    }
-    if a > b {
-        a
-    } else {
-        b
-    }
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max`.
+use crate::domain::js_math::js_max;
 
-/// Web: `Math.min` (NaN-propagacja; `min(+0, -0) = -0`).
-fn js_min(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        return f64::NAN;
-    }
-    if a == 0.0 && b == 0.0 {
-        return if a.is_sign_negative() { a } else { b };
-    }
-    if a < b {
-        a
-    } else {
-        b
-    }
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_min`.
+use crate::domain::js_math::js_min;
 
 /// Web: `Math.pow` (`pow(±1, NaN)` = NaN, `pow(±1, ±Infinity)` = NaN; w Rust `powf` dawalby 1).
 fn js_pow(base: f64, exp: f64) -> f64 {
