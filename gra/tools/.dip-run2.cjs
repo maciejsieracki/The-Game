@@ -88,7 +88,6 @@ eq(r1.zaufanie, 26, 'dar returns new Relation +6');
 eq(applyDiplomaticEvent(rel(20, 30), 'handel').zaufanie,            22, 'handel +2 Z');
 eq(applyDiplomaticEvent(rel(20, 30), 'pomoc_sojusznikowi').zaufanie, 30, 'pomoc sojusznikowi +10 Z');
 eq(applyDiplomaticEvent(rel(20, 30), 'dar').zaufanie,              26, 'dar +6 Z');
-eq(applyDiplomaticEvent(rel(20, 30), 'wspolna_religia').zaufanie,  21, 'wspolna religia seed +1 Z');
 { const r = applyDiplomaticEvent(rel(20, 30), 'wspolny_wrog');
   eq(r.zaufanie, 25, 'wspolny wrog +5 Z'); eq(r.respekt, 40, 'wspolny wrog +10 R'); }
 eq(applyDiplomaticEvent(rel(60, 30), 'zlamana_obietnica').zaufanie,    20, 'zlamana obietnica gracz -40 Z');
@@ -112,7 +111,6 @@ eq(applyDiplomaticEvent(rel(20, 95), 'przewaga_militarna').respekt, 100, 'Respek
 eq(applyDiplomaticEvent(rel(20, 30), 'dar', { mnoznikPodarunku: 2 }).zaufanie, 32, 'dar x2 mnoznik = +12');
 { const r = applyDiplomaticEvent(rel(50, 30), 'wojna_casus_belli');
   eq(r.zaufanie, 40, 'wojna z casus belli -10 Z'); eq(r.status, 'wojna', 'wojna_casus_belli sets wojna'); }
-eq(applyDiplomaticEvent(rel(20, 30), 'ultimatum_spelnione').zaufanie, 15, 'ultimatum spelnione -5 Z');
 { const r = applyDiplomaticEvent(rel(30, 40), 'ultimatum_bezpodstawne');
   eq(r.zaufanie, 20, 'ultimatum bezpodstawne -10 Z'); eq(r.respekt, 30, 'ultimatum bezpodstawne -10 R'); }
 eq(applyDiplomaticEvent(rel(20, 30), 'trybut_odmowa').zaufanie,        10, 'trybut odmowa -10 Z');

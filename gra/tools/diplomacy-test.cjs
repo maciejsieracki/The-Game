@@ -198,7 +198,15 @@ eq(applyDiplomaticEvent(rel(20, 30), 'dar', { mnoznikPodarunku: 2 }).zaufanie, 2
   eq(r.respekt,  30,    'wojna casus belli: Respekt nietknięty');
   eq(r.status,  'wojna', 'wojna_casus_belli sets wojna');
 }
-eq(applyDiplomaticEvent(rel(20, 30), 'ultimatum_spelnione').zaufanie, 15, 'ultimatum spelnione -5 Z');
+// Martwe zdarzenia usunięte (R-WEB-DIPLO-RESIDUAL-RELIGION-EVENT-AND-TEXTS-Q1): guard na źródle.
+{
+  const srcDir = path.join(__dirname, '..', 'src', 'game');
+  const dipSrc = fs.readFileSync(path.join(srcDir, 'diplomacy.ts'), 'utf8');
+  const facSrc = fs.readFileSync(path.join(srcDir, 'diplomacy-factors.ts'), 'utf8');
+  for (const ev of ['wspolna_religia', 'ultimatum_spelnione']) {
+    eq(dipSrc.includes(`'${ev}'`) || facSrc.includes(ev), false, `zdarzenie ${ev} nie wraca do diplomacy.ts / diplomacy-factors.ts`);
+  }
+}
 {
   const r = applyDiplomaticEvent(rel(30, 40), 'ultimatum_bezpodstawne');
   eq(r.zaufanie, 20, 'ultimatum bezpodstawne -10 Z');
