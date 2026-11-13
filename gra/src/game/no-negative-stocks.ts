@@ -115,7 +115,12 @@ export interface NnsLever {
   eliminujeCywilizacje: boolean;
 }
 
-/** Czy dostępne dźwignie gracza pokrywają brak (brak zakleszczenia). */
+/**
+ * Czy dostępne dźwignie gracza pokrywają brak (brak zakleszczenia).
+ * Kontrakt wołającego: `levers` zawiera WYŁĄCZNIE dźwignie dostępne w tym momencie (np. podatek
+ * ustawialny, jednostka do rozwiązania, pozycja w kolejce). Dostępność NIE jest sprawdzana w tej
+ * funkcji — to czysta arytmetyka sumy `zysk` bez `eliminujeCywilizacje`.
+ */
 export function czyRuchNaprawczy(brakuje: readonly NnsBrak[], levers: readonly NnsLever[]): boolean {
   return brakuje.every(b =>
     levers

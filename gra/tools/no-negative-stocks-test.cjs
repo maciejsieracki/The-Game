@@ -87,9 +87,22 @@ for (const t of [1, 5, 10]) {
   const brak = [{ stock: 'skarbiec', ile: 20 }];
   const podatek = { id: 'podatek_+10', rodzaj: 'podatek', stock: 'skarbiec', zysk: 25, koszt: 0, eliminujeCywilizacje: false };
   ok(M.czyRuchNaprawczy(brak, [podatek]) === true, 'podatek pokrywa brak');
-  const poPodatku = M.evaluateEndTurnStocks({ ...base, turn: 11, skarbiecObecny: 30, skarbiecPo: -20 + podatek.zysk });
+  // Wynik po dźwigni wyliczany z planu (nie ręcznie dodawany zysk): plan -> saldo po -> ocena.
+  const planGracza = M.planAiBalance(brak, [podatek]);
+  const poPlanie = planGracza.akcje.reduce((s, a) => s + a.zysk, 0);
+  const poPodatku = M.evaluateEndTurnStocks({ ...base, turn: 11, skarbiecObecny: 30, skarbiecPo: -20 + poPlanie });
+  ok(planGracza.pokryte === true && poPlanie === 25, 'plan z podatkiem pokrywa brak 20 (zysk 25)');
   ok(poPodatku.blokada === false, 'po podatku blokada znika');
   ok(M.czyRuchNaprawczy(brak, []) === false, 'bez dźwigni brak ruchu naprawczego');
+  // Dźwignia eliminująca cywilizację nie liczy się jako ruch naprawczy gracza.
+  const eliminacja = { ...podatek, id: 'elim', rodzaj: 'rozwiazanie', eliminujeCywilizacje: true, zysk: 999 };
+  ok(M.czyRuchNaprawczy(brak, [eliminacja]) === false, 'dźwignia eliminująca nie jest ruchem naprawczym');
+}
+
+// 6b) Wyjątek starego zapisu nie zmienia się przez dźwignie: ruch naprawczy niezbędny tylko przy blokadzie.
+{
+  const v = M.evaluateEndTurnStocks({ ...base, turn: 80, skarbiecObecny: -30, skarbiecPo: -25 });
+  ok(v.wyjatekStarego === true && v.blokada === false, 'stary zapis bez blokady (decyzja dispatch: prognoza nie gorsza)');
 }
 
 // 7) Plan AI: podatki, potem wstrzymanie, potem najdroższe jednostki; bez eliminacji.
