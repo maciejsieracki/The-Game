@@ -8,17 +8,12 @@
  * Czysty moduł: bez zależności od DOM/stanu gry, bez `Math.random`.
  */
 
-/** mulberry32 — deterministyczny generator [0,1) z 32-bitowego ziarna. */
-export function mulberry32(seed: number): () => number {
-  let a = seed >>> 0;
-  return function next(): number {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+/**
+ * mulberry32 — jedyna implementacja w repo to map/gen-helpers.ts (R-WEB-DETERMINISM-GAME-RNG-Q1,
+ * zamiast kopii; wyjścia zweryfikowane identyczne: 200000 próbek, 0 różnic).
+ */
+import { mulberry32 } from '../map/gen-helpers';
+export { mulberry32 };
 
 /** Hash FNV-1a 32-bit dla łańcucha (salt strumienia). */
 export function hashStr(s: string): number {
