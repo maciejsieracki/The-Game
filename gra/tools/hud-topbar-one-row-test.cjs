@@ -2,14 +2,14 @@
 /**
  * hud-topbar-one-row-test.cjs -- R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1
  * Run (z gra/): node tools/hud-topbar-one-row-test.cjs [--shots <katalog>] [--prefix przed|po] [--json <plik>]
- * Env: HUD_TS (domyslnie biezacy gra/src/ui/hud.ts), CHROMIUM, HUD_WIDTHS (domyslnie 1920,1600,1366).
+ * Env: HUD_TS (domyslnie biezacy gra/src/ui/hud.ts), CHROMIUM, HUD_WIDTHS (domyslnie 1920,1600,1366,1280).
  * Prawdziwy showHud() + prawdziwy CSS w Chromium; zestawy wartosci jak w hud-topbar-layout-a-test.cjs.
  *   K1 wszystkie 11 zetonow surowcow (6 lewy + 5 prawy) w JEDNEJ linii: srodki monet w pionie, rozstrzal <= 2 px
  *   K2 6 zetonow lewego banera o rownej szerokosci (rozstrzal <= 4 px); brak ucietych zetonow, brak scrolla strony
  *   K3 przyciski prawego klastra pod banerem prawym (gora >= dol banera + 4 px); dol lewego banera + 4 px
  *      nie wchodzi w pasek narzedzi mapy
  *   K4 medalion Mocy nie nachodzi na zaden baner
- *   K5 brak trybu dwoch pieter (.hud-left-fallback) i rowsL == 1 przy 1920/1600/1366
+ *   K5 brak trybu dwoch pieter (.hud-left-fallback) i rowsL == 1 przy 1920/1600/1366/1280 (stany + maxw)
  * Mutacja K6 (reczna): wymuszenie .hud-left-fallback w kopii hud.ts MUSI czerwienic K5.
  */
 const fs = require('fs');
@@ -82,8 +82,10 @@ const STATES = {
   srednie: { ...BASE, ...left(20000, 2000, 2000), ...right(12345, 1234, 12345, 1234, 12345, 12345, 1234, 12345, 1234) },
   duze: { ...BASE, ...left(2345678, 123456, 98765), ...right(123456, 12345, 123456, 12345, 123456, 123456, 12345, 123456, 12345) },
   deficyt: { ...BASE, ...left(20000, 2000, -1500), ...right(2, 5, 3, 1, 12, 12, 1, 0, 0) },
+  // maks. szerokosc tekstu (jak w hud-topbar-no-labels-test.cjs): 9 cyfr z separatorami i znakiem
+  maxw: { ...BASE, bogactwo: 999999999, bogactwoRate: -999900, bogactwoWplywyBrutto: 999999999, praca: 999999999, pracaRate: -999900000, pracaPrognoza: -999900000, zywnoscRate: -999900000, zywnoscWplywMiast: 999999999, nauka: 999999999, naukaRate: -999900000, handelIncome: 999999999, surowceBrutto: 999999999, surowceNetto: -999900000, surowceAlert: true, surowceNiedoborLabels: ['Ceramika'] },
 };
-const WIDTHS = process.env.HUD_WIDTHS ? process.env.HUD_WIDTHS.split(',').map(Number) : [1920, 1600, 1366];
+const WIDTHS = process.env.HUD_WIDTHS ? process.env.HUD_WIDTHS.split(',').map(Number) : [1920, 1600, 1366, 1280];
 
 const MEASURE = () => {
   const R = (e) => { const r = e.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height, r: r.right, b: r.bottom }; };

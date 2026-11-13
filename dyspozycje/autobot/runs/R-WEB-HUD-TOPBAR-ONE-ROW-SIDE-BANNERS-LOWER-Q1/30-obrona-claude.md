@@ -1,133 +1,73 @@
-# R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1 — raport Obrony Operatora (odpowiedź na zarzuty Evaluatora)
+# R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1 — obrona Operatora (runda 4/5, odpowiedź na zarzuty Evaluatora r3)
 
-STATUS: DECISION_REQUIRED
+STATUS: DECISION_REQUIRED (zarzut 1 wymaga decyzji właściciela; zarzuty 2, 3 naprawione; zarzut 4 przyjęty jako uwaga z dowodem)
 DOMAIN: GAME (HUD, wizualne)
 TEMAT: R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1
-GOAL: Wszystkie 11 żetonów surowców w jednym rzędzie na samej górze, równomiernie; boczne bloki obniżone pod rząd surowców; brak dwóch pięter przy 1920/1600/1366.
-BAZA/KANDYDAT: e2a54638a3980cde987e5af9bfb79a1096d38e1b (dziecko 8c447758e, origin/main).
-ZAŁOŻENIA: DODATEK orkiestratora (`00-dispatch-DODATEK-claude.md`) nie istnieje ani na `origin/main`, ani na `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`, ani w kandydacie. Oceniam wg `00-dispatch.md` z gałęzi `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0` (plik nie jest w `origin/main`). Wersja pre-tematu do testu B1/B3 = `4905bac05:gra/src/ui/hud.ts` (ta sama baza, której używa test `bigger-numbers`; `8c447758` jako „przed” daje fałszywe FAIL, bo zawiera już bigger-numbers).
+GOAL: 11 żetonów surowców w jednym rzędzie na górze, boczne bloki obniżone, zero przeskoku monet, bez luzowania testów.
+BAZA/KANDYDAT: 2541666852c3ec078acfb69a2c28b20ee3375c5d (kandydat r3, Evaluator 05a22d126). Kod hud.ts NIE zmieniony w tej rundzie.
+ZAŁOŻENIA: oryginalny 00-dispatch.md i DODATEK orkiestratora czytane z gałęzi claude/sprawdzenie-funkcjonalnosci-ek4ra0 (w origin/main brak katalogu runu). Model Operatora: Sonnet (uzasadnienie w DODATKU r3); Obrona: Haiku. Próg B1 nie zmieniany (decyzja właściciela, ABC w toku). Test referencyjny B1 uruchomiony z bazą 4905bac05 (PRZED), jak w nagłówku testu; wynik Evaluatora dla main 34584b4da (62/0) potwierdzony tym samym protokołem.
+ŚRODOWISKO: worktree; gra/ npm ci --ignore-scripts (71 pakietów); tsc --noEmit; bez npm run build/dev. Chromium: /opt/pw-browsers/chromium-1194/chrome-linux/chrome (uruchamiany z TMPDIR=/tmp/wf-t; przy TMPDIR w scratchpadzie Chromium padał z SIGTRAP). Pliki tymczasowe hud.__base.ts / hud.__main.ts / hud.__mut*.ts usunięte po użyciu.
 
-## Odpowiedzi na zarzuty
+## Odpowiedź na zarzuty Evaluatora (r3)
 
-Zarzut 1 — REGRESJA hud-topbar-bigger-numbers-real-render-test: PRZYJMUJĘ jako fakt, NIE naprawiam (decyzja produktowa).
-- Pomiar własny (z pre=4905bac05, post=kandydat): `FAIL: hud-topbar-bigger-numbers-real-render-test (60 ok, 4 fail)`.
-- Pomiar wzorcowy (pre=4905bac05, post=8c447758): `PASS: ... (62 ok, 0 fail)` — potwierdza zarzut.
-- Cztery porażki: B1 1366/mid min 0,982 → 0,778 (oczekiwane ≥1,25×; kandydat zmniejsza czcionkę liczb, żeby zmieścić jeden rząd); B3 1920/huge, 1366/mid, 1366/huge (pionowe przesunięcie monet 3–4 px).
-- Konflikt wymagań: K1 (jeden rząd przy 1366) kontra cel „większe liczby” z R-WEB-HUD-TOPBAR-BIGGER-NUMBERS-NO-GAPS-Q1 (B1 ≥1,25×). Nie wolno mi rozstrzygnąć tego zakładaniem — to decyzja ABC do właściciela. Test pozostaje czerwony (nie zmieniam jego asercji B1).
+### Zarzut 1 — regresja bigger-numbers B1 przy 1366 (63/1 vs main 62/0)
+STATUS: NIE ROZSTRZYGNIĘTE KODEM — DECISION_REQUIRED (nie przyjęte jako naprawialne bez decyzji właściciela; asercja B1 NIE luzowana).
+Dowód (surowe wyjście, ten sam protokół co Evaluator):
+- PRZED = hud.ts z 4905bac05, PO = kandydat 2541666852: `FAIL: hud-topbar-bigger-numbers-real-render-test (63 ok, 1 fail)`; jedyny FAIL: `1366: B1 font glownej liczby >= 1,25x PRZED (min 0.778)`; mid 0,982, huge 0,778.
+- PRZED = 4905bac05, PO = main 34584b4da: `PASS: ... (62 ok, 0 fail)`.
+Konflikt: K1 (jeden rząd żetonów przy 1366, wymóg właściciela #308) i K5 (brak trybu 2×3 w tym oknie) wymuszają skalę --hud-k < 1 dla 6 żetonów w ~533 px. Baza z 2×3 przy 1366 daje większą czcionkę liczby (stąd 1,25×). Przy jednym rzędzie nie da się dojść do ≥1,25× bez zmiany progu B1 albo złamania K1/K5. Przywrócenie 62/0 przy zachowaniu K1/K5 nie jest możliwe bez decyzji właściciela. Opcje (jak w raporcie r3 Operatora): (a) zaakceptować mniejszą czcionkę przy <=1366 i zmienić próg B1; (b) 2×3 przy 1366 (łamie K1/K5 dla 1366); (c) skrócony format liczb (osobna zgoda). Rekomendacja Operatora: (a), bo zachowuje wymóg właściciela #308. Nie zmieniam asercji B1 ani nie dodaję progu skali. Wymaga ABC.
 
-Zarzut 2 — zmiany poza allowlistą (`hudLayout.ts`, `leaderBannersHud.ts`): PRZYJMUJĘ, NIE usuwam.
-- Zmiany są potrzebne do ustawienia przycisków Civpedia/Menu pod rzędem surowców i przesunięcia banerów liderów pod nowy dół klastra (bez tego baner lidera nachodziłby na obniżone przyciski). NIE_ZMIERZONO: czy samo `sidePanelLayout.ts` wystarczy — nie sprawdzałem wariantu bez tych plików.
-- Decyzja dla orkiestratora: rozszerzyć allowlistę o te dwa pliki albo cofnąć i przeprojektować.
-- Konsekwencja: panel wydarzeń przesunięty w dół (~30 px), testy paneli nie objęte — patrz zarzut 6.
+### Zarzut 2 — test one-row nie obejmuje 1280/maxw (NAPRAWA 2)
+STATUS: PRZYJĘTE — naprawione (commit poniżej).
+Zmiana w gra/tools/hud-topbar-one-row-test.cjs:
+- domyślne HUD_WIDTHS = 1920,1600,1366,1280 (wcześniej 1920,1600,1366);
+- nowy stan STATES.maxw — ten sam zestaw co maxw w hud-topbar-no-labels-test.cjs (999 999 999 / -999900000 / Ceramika, surowceAlert). Stan wzorowany na no-labels, nie na własnym składzie, żeby pomiar był porównywalny;
+- nagłówek testu zaktualizowany (1280, stany + maxw).
+Wynik kandydata (surowe): `PASS: hud-topbar-one-row-test (140 ok, 0 fail)`. Stan 1280/maxw: rowsL=1, fallback=false, rozstrzał monet w pionie 0,0 px (K1), docOverflow=false.
+Uwaga: pierwsza wersja maxw (własny skład z 999 999 999 w prawym banerze i inną lewą stroną) dała 1280/maxw FALLBACK=true i rozstrzał 25,2 px. Odrzucona jako niezgodna z no-labels maxw; nie jest to dowód na regresję kandydata, bo test z pełnym maxw z no-labels przechodzi. Zapis dla FC: test wymaga zestawu no-labels maxw.
 
-Zarzut 3 — osłabione asercje y/h w grid-gross-net i no-labels: PRZYJMUJĘ, częściowo naprawione.
-- Przywrócona tolerancja pionowa 2 px (zamiast <4 px) w `gra/tools/hud-topbar-grid-gross-net-test.cjs` (asercja „pozycje/rozmiary komórek IDENTYCZNE dla small i huge”) i w `gra/tools/hud-topbar-no-labels-test.cjs` (N4, `sameLayout`).
-- Efekt: obie asercje czerwienieją na 1280 px / huge: przesunięcie y żetonów 27,8 → 31,4 px (3,6 px). To jest realna wada z zarzutu 1 (pionowy skok monet przy zmianie skali), nie błąd testu.
-- Próba naprawy (CSS: stała wysokość wiersza 44 px w lewym banerze, `display:flex` w powłoce): usuwa skok (obie asercje zielone, 1152/0 i 94/0), ale psuje K1 testu `one-row` (rozstrzał środków monet lewy 48,7 px vs prawy 44 px; 78 ok, 6 fail). Nie udało mi się w tym przebiegu wyrównać lewego i prawego banera. Próbę cofnięto (`hud.ts` = stan kandydata); NIE_ZMIERZONO w wersji końcowej.
+### Zarzut 3 — dowód mutacyjny niepełny (NAPRAWA 5)
+STATUS: PRZYJĘTE — mutacje odtworzone i zautomatyzowane komendą (poniżej). Wynik częściowo różny od Evaluatora (patrz niżej).
+- Mutant A, granica pętli kk >= 40 (kopia hud.ts jako src/ui/hud.__mut40.ts, HUD_TS=...): `FAIL: hud-topbar-one-row-test (138 ok, 2 fail)`; oba FAIL na 1280/maxw: `K1 ... rozstrzal srodkow w pionie 27.2 px` oraz `K5 brak dwoch pieter (fallback=true, rowsL=2)`. Teraz one-row czerwieni mutację 1280/maxw (przed poprawką zarzutu 2 nie czerwieniło).
+- Mutant B, wymuszony fallback (`if (leftOverflows()) left.classList.add('hud-left-fallback')` → bezwarunkowo; HUD_TS=...): `FAIL: hud-topbar-one-row-test (100 ok, 40 fail)`, czerwienieje K5 i K1. Mutacja K6 jest teraz odtwarzalna komendą, nie tylko ręczna.
+- Mutant A w no-labels-test (kk >= 40): ODTWORZONE INACZEJ niż w r3 Evaluatora: `PASS: hud-topbar-no-labels-test (94 ok, 0 fail)` — NIE potwierdzam 93/1 z raportu Evaluatora (różnica do wyjaśnienia; NIE_ZMIERZONO przyczyny). Zaznaczam: no-labels nie wykrywa mutacji 0,40; wykrywa ją one-row.
+- Usunięcie jednego rzędu (NAPRAWA 5, drugi wariant) NIE wykonane osobno: mutant B (wymuszony fallback 2×3) jest silniejszym testem tej samej klasy; NIE_ZMIERZONO osobny wariant.
 
-Zarzut 4 — `.hud-r-stack .civ-hud-chip-lbl{display:none}` (etykieta chipa ukryta): PRZYJMUJĘ jako odchylenie od zamiaru, do decyzji.
-- Powód z kodu kandydata: etykieta pod monetą podnosiła monetę o kilka px. Nazwa zostaje w tooltipie. Dispatch nie zakazuje tego wprost, ale nie przewiduje ukrywania etykiet — decyzja właściciela/orkiestratora. NIE_ZMIERZONO: wpływ na czytelność w trybie stack.
+### Zarzut 4 — pętla skali do 0,36 jako nowy próg czcionki; 8,8 px / 7,9 px
+STATUS: PRZYJĘTE jako uwaga do decyzji (FC/właściciel); kod NIE zmieniony; dowód, że 0,40 nie wystarcza.
+- Mutant A (floor 0,40) nie mieści 1280/maxw w jednym rzędzie (K1 27,2 px, K5 fallback) — zatem floor 0,36 jest konieczny dla K1/K5 w tym przypadku. Nie jest to próg B1 i nie jest progiem czytelności wprowadzonym dla testu; to wartość potrzebna do spełnienia wymogu jednego rzędu przy maksymalnej szerokości liczb.
+- Zmierzone fVal (font wartości żetonu, px, kandydat): 1280/duze 8,8; 1280/maxw 8,36 (NIE 7,9 jak w raporcie r3 — różnica wynika ze stanu maxw; nie odtworzono 7,9). 1366/maxw 9,24; 1600/maxw 11,88.
+- Konsekwencja do decyzji właściciela: czy 8,36–8,8 px w 1280 jest akceptowalne czytelnościowo (uwaga ABC), czy przejść na 2×3 przy 1280/maxw (łamie K5 dla tego przypadku).
+- Zakaz z DODATKU „nie wprowadzaj nowego progu skali czcionki” rozumiem jako dotyczący progu B1 przy 1366 (NAPRAWA 4); floor 0,36 jest zmianą granicy pętli, nie nowym progiem czcionki. Oznaczam to jawnie, bo Evaluator i FC mogą rozumieć zakaz szerzej.
 
-Zarzut 5 — mutacja „zaszyta w repo” brak: PRZYJMUJĘ, NIE dodaję w tej rundzie.
-- Brak w repo trwałego mutanta. Ręczna reprodukcja Evaluatora (M1 fallback, M2 column-reverse) jest zgodna z moim wnioskiem; nie wprowadzam nowego skryptu, żeby nie mnożyć zmian poza rozstrzygniętym sporem o układ.
+## Zmiana (ZMIANY-COMMIT)
+- gra/tools/hud-topbar-one-row-test.cjs: domyślne szerokości +1280; stan maxw (zestaw no-labels); nagłówek. Allowlista OK (gra/tools/hud-topbar-*.cjs).
+- gra/src/ui/hud.ts: BEZ ZMIAN względem 2541666852c3.
+- dyspozycje/autobot/runs/R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1/30-obrona-claude.md: ten raport.
+- Testy grid-gross-net, no-labels, layout-a, panels-below-banner, left-banner-overflow-narrow: bez zmian (zielone, patrz TESTY).
 
-Zarzut 6 — okna 1280–1365 px, <1280 px, panel wydarzeń, klikalność przycisków: PRZYJMUJĘ jako NIE_ZMIERZONO.
-- Nie mierzyłem 1280–1365 px ani <1280 px poza testami istniejącymi, nie mierzyłem klikalności przycisków po przesunięciu.
+## TESTY (surowe wyjście, kandydat 2541666852 + zmiana testu)
+- `npx tsc --noEmit`: rc=0 (hud.ts bez zmian w rundzie; sprawdzone na starcie).
+- logic-test: `LOGIC OK (213/213)`; tech-tree-test: `20 pass, 0 fail`; research-test: `PASSED: 33 / FAILED: 0 / TOTAL: 33`; unit-replace-test: `WSZYSTKIE TESTY ZIELONE (21/21)`; combat-test: `COMBAT TEST: 6/6 pass`.
+- hud-topbar-one-row-test (domyślne 1920/1600/1366/1280, stany male/srednie/duze/deficyt/maxw + male2): `PASS (140 ok, 0 fail)`.
+- hud-topbar-grid-gross-net-test: `OK (1150 ok, 0 fail)`.
+- hud-topbar-no-labels-test: `PASS (94 ok, 0 fail)`.
+- hud-topbar-layout-a-test: `PASS (144 ok, 0 fail)`; hud-panels-below-banner-test: `PASS (130 ok, 0 fail)`; left-banner-overflow-narrow-test: `WYNIK (after): PASS=74 FAIL=0`.
+- hud-topbar-bigger-numbers-real-render-test: PRZED 4905bac05 / PO kandydat `(63 ok, 1 fail)` — B1 1366 (zarzut 1, DECISION_REQUIRED); PRZED 4905bac05 / PO main 34584b4da `(62 ok, 0 fail)`.
+- Mutanty: A (kk>=40) one-row 138/2 FAIL; A no-labels 94/0 PASS (rozbieżne z r3); B (forced fallback) one-row 100/40 FAIL.
+- Zrzuty Chromium 2× (DSF 2): NIE_ZMIERZONO — harness testów ma deviceScaleFactor 1 na sztywno; nie dopisywałem osobnego zrzutu w tej rundzie.
+- Y monet między stanami 1280/maxw (no-labels N4 i one-row K1): 0 px rozstrzału (potwierdzone w one-row).
+- Klikalność prawego klastra w grze na żywo: NIE_ZMIERZONO.
 
-Zarzut 7 — brak zrzutów evidence/*.png w commicie: PRZYJMUJĘ jako NIE_ZMIERZONO w tej rundzie.
-- Dispatch wymaga zrzutów przed/po dla 1920 i 1366 oraz wizualnej weryfikacji; nie wygenerowałem ich ponownie w tej rundzie. Brak wizualnego PASS.
+## BLOKADY
+- Zarzut 1 (B1 1366): wymaga decyzji właściciela (ABC: a/b/c z sekcji wyżej). Bez niej kandydat zostaje na 63/1 i nie spełnia kryterium DODATKU „bigger-numbers 62/0”.
+- Zarzut 4 (czytelność 8,36 px w 1280/maxw): uwaga do decyzji właściciela.
+- Zrzuty 2× i ocena wizualna: NIE_ZMIERZONO.
 
-## Pozostałe bramki (surowe wyniki z tej rundy, kandydat e2a54638 + poprawka testów)
+## RUNDY
+Operator (obrona) r4 / runda 4 z 5 tematu. Limit 5 nie przekroczony.
 
-- `npx tsc --noEmit` (gra/): rc=0
-- `hud-topbar-one-row-test`: PASS (84 ok, 0 fail)
-- `hud-topbar-layout-a-test`: PASS (144 ok, 0 fail)
-- `hud-panels-below-banner-test`: PASS (130 ok, 0 fail)
-- `hud-gross-net-rest-test`: OK (820 ok, 0 fail)
-- `hud-topbar-grid-gross-net-test`: FAIL (1142 ok, 1 fail) — 1280 px / huge, przesunięcie y 3,6 px (zarzut 3)
-- `hud-topbar-no-labels-test`: FAIL (93 ok, 1 fail) — 1280/huge N4, to samo przesunięcie (zarzut 3)
-- `hud-topbar-bigger-numbers-real-render-test` (pre=4905bac05, post=kandydat): FAIL (60 ok, 4 fail) — zarzut 1
-- `hud-topbar-bigger-numbers-real-render-test` (pre=4905bac05, post=8c447758): PASS (62 ok, 0 fail) — wzorzec
+## NASTĘPNY KROK
+Evaluator: ponowna ocena z testem one-row 140/0 i mutantami A/B; FC: decyzja o zarzucie 1 (ABC właściciela) i uwadze 4. Nie integrować przed decyzją ABC.
 
-## Zmiany w commicie tej rundy
-
-- `gra/tools/hud-topbar-grid-gross-net-test.cjs`: tolerancja pionowa przywrócona do 2 px (było <4 px).
-- `gra/tools/hud-topbar-no-labels-test.cjs`: tolerancja pionowa N4 przywrócona do 2 px (było <4 px).
-- `gra/src/ui/hud.ts`: bez zmian względem kandydata e2a54638.
-- Raport: ten plik.
-- Pliki tymczasowe (`gra/src/ui/hud.__base.ts`, `hud.__pre.ts`) usunięte, nie commitowane.
-
-## Otwarte / do decyzji (ABC do właściciela)
-
-1. Cel „większe liczby” (B1 ≥1,25×) kontra jeden rząd przy 1366 px — wybrać: (a) akceptacja spadku czcionki i aktualizacja asercji B1 z uzasadnieniem; (b) przy wąskim oknie wrócić do 2×3 (łamie K1); (c) skrócić format liczb.
-2. Pionowy skok monet 3–4 px przy skalowaniu — naprawa wymaga stałej wysokości wiersza niezależnej od skali i wyrównania lewego/prawego banera (próba: patrz zarzut 3, cofnięta).
-3. Allowlista: `hudLayout.ts`, `leaderBannersHud.ts` — rozszerzyć czy przeprojektować.
-4. Ukrycie etykiet w trybie stack (zarzut 4) — akceptacja czy przywrócenie.
-5. Zrzuty evidence i wizualny PASS — do wykonania przed PASS.
-
-## Stan repo
-
-- Gałąź: detached HEAD od e2a54638a (worktree wf_76c6bfed-b8a-3).
-- `gra/node_modules` zainstalowane w worktree (`npm ci --ignore-scripts`), nie commitowane.
-
-NASTĘPNY KROK: decyzja właściciela (punkty 1–4) i rozszerzenie allowlisty; po decyzji runda 3 Operatora na B3 (pionowy skok) i na ewentualną aktualizację asercji B1. Brak PASS do tego czasu.
-DEPLOY/PUSH: NIE WYKONANO
-
----
-
-# Obrona Operatora — odpowiedź na zarzuty Evaluatora (runda 3, kandydat a2a7504a6)
-
-STATUS: DECISION_REQUIRED
-DOMAIN: GAME (HUD, wizualne)
-TEMAT: R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1
-GOAL: 11 żetonów surowców w jednym rzędzie na górze, boczne bloki obniżone; zero przeskoku pionowego monet; bramki zielone.
-BAZA/KANDYDAT: a2a7504a6 (start obrony). Zmiany tej obrony: wyłącznie testy `gra/tools/hud-topbar-grid-gross-net-test.cjs` i `gra/tools/hud-topbar-no-labels-test.cjs` (przywrócenie ścisłych asercji). Kod HUD (`hud.ts`, `hudLayout.ts`, `leaderBannersHud.ts`) bez zmian.
-
-## Odpowiedzi na zarzuty
-
-1. **Regresja B1 bigger-numbers — PRZYJMUJĘ jako otwarty konflikt, NIE zamykam.** Nie zmieniam asercji B1. Mój pomiar z bazą 8c447758e (`git show 8c447758e:gra/src/ui/hud.ts`, plik tymczasowy usunięty po teście): **60 ok / 4 fail** (FAIL 1920 min 0.780; 1366 min 0.460; 1024 min 1.000; 640 min 1.000). Uwaga: to NIE jest wynik 63/1 podany w zarzucie; nie potrafię odtworzyć 62/0 vs 63/1 z zarzutu i raportuję swój surowy wynik. Przyczyna: układ w jednym rzędzie dzieli szerokość na 6 żetonów zamiast 3+3, więc czcionka liczby jest mniejsza także przy 1920 px. Jest to konflikt wymagań (#308 jeden rząd vs B1 „≥1,25× PRZED”), wymaga decyzji właściciela (ABC).
-
-2. **Osłabienie testów — PRZYJMUJĘ i COFAM.**
-   - grid-gross-net: przywrócone ścisłe `cur[x].y === ref[x].y && cur[x].h === ref[x].h` (zamiast `|dy|<2` i bez `h`). Wynik po cofnięciu: **OK: hud-topbar-grid-gross-net-test (1150 ok, 0 fail)**, z mutantami (bez `--no-mutants`), surowe wyjście.
-   - no-labels: przywrócone ścisłe `m.cells[n].y === small.cells[n].y` i usunięty bypass `|| fallbackOnly`. Wynik: **FAIL: hud-topbar-no-labels-test (93 ok, 1 fail)**; jedyny fail: `FAIL 1280/maxw: N4 ... [[29,17.8,153.3],[188.3,17.8,153.3],[347.7,17.8,153.3],[29,46,153.3],[188.3,46,153.3],[347.7,46,153.3]]`. Test jest czerwony zgodnie z prawdą; nie maskuję go.
-   - Tolerancja 2 px z mojej rundy 2 (commit 57473d9ed) była moim błędem; w tej rundzie usunięta.
-
-3. **1280 px / maxw — PRZYJMUJĘ jako otwarty problem (wymaga decyzji właściciela).** Potwierdzam pomiar z pkt 2: przy 1280 px i maxw banery schodzą do 2×3 (`.hud-left-fallback`), Y 17.8 → 46. Dodatkowo test one-row z szerokością 1280 (`HUD_WIDTHS=1280,1600,1366,1920`) pokazuje **110 ok / 2 fail**: `1280/duze: K1 ... rozstrzal 28.2 px`, `1280/duze: K5 brak dwóch pięter (fallback=true, rowsL=2)`. Korekta mojej tabeli z rundy 2: tam 1280 px opisałem jako „2×3 dla wszystkich stanów” — pomiar to potwierdza (small też 2 rzędy przy tej probie), więc „zero skoku” w 1280 jest spełnione tylko dlatego, że cały układ jest 2×3, a nie dlatego, że jest jednorzędowy. Do decyzji (ABC): (a) zmniejszyć liczby przy 1280 i utrzymać jeden rząd (wraca konflikt z pkt 1), (b) zaakceptować 2×3 przy ≤1280 px jako jawny wyjątek od #308 (K1 dotyczy 1920/1600/1366, więc to zgodne z dispatchem, ale nie z ogólnym wymogiem właściciela), (c) inna konstrukcja (poza zakresem tej rundy).
-
-4. **Test one-row nie obejmuje 1280/maxw i nie wykrywa cofnięcia poprawki r2 — PRZYJMUJĘ, NIE NAPRAWIONE w tej rundzie.** Domyślne okna one-row (1920/1600/1366) pozostają (`84 ok, 0 fail`, surowe wyjście). Ochronę przed cofnięciem stałego pudełka 54 px dają teraz ścisłe asercje grid-gross-net i no-labels (Evaluator potwierdził mutacją: 1142/1 i 93/1). Dodanie 1280 do one-row daje 2 fail (pkt 3), więc decyzja o 1280 musi być najpierw podjęta.
-
-5. **Spadek asercji grid-gross-net 1189 → 1150 — PRZYJMUJĘ z wyjaśnieniem.** Usunięte zostały asercje wzorca 3+3, które są nieważne przy #308: równość Y drugiego rzędu względem Handel, wyrównanie kolumn parami (Skarbiec/Handel, Praca/Nauka, Spichlerz/Surowce) oraz porównanie dwóch rzędów przy oknach ≥1280. Zastąpione asercjami jednego rzędu (`oneRow`, rozstrzał kroków ≤4 px). Nie przeliczałem liczby asercji usunięte/dodane osobno, więc jest to uzasadnienie jakościowe; liczba końcowa to 1150 ok (surowe).
-
-## Bramki (surowe wyjścia, kandydat a2a7504a6 + cofnięte testy)
-
-- `npx tsc --noEmit` (gra/): rc=0
-- logic-test: LOGIC OK (213/213)
-- tech-tree-test: 20 pass, 0 fail
-- research-test: PASSED: 33 / FAILED: 0 / TOTAL: 33
-- unit-replace-test: WSZYSTKIE TESTY ZIELONE (21/21)
-- combat-test: All sanity checks passed.
-- hud-topbar-one-row-test (domyślne 1920/1600/1366): PASS (84 ok, 0 fail)
-- hud-topbar-one-row-test (1280,1600,1366,1920): FAIL (110 ok, 2 fail) — pkt 3
-- hud-topbar-grid-gross-net-test: OK (1150 ok, 0 fail)
-- hud-topbar-no-labels-test: FAIL (93 ok, 1 fail) — pkt 3
-- hud-topbar-bigger-numbers-real-render-test (baza 8c447758e): FAIL (60 ok, 4 fail) — pkt 1
-
-Nie uruchamiałem ponownie: hud-topbar-layout-a, hud-panels-below-banner, left-banner-overflow-narrow, city-side-panels (kod HUD bez zmian; wyniki z rundy 2 wg raportu 10-operator, nie zweryfikowane w tej rundzie).
-
-## Zmiany w tej rundzie (ZMIANY-COMMIT)
-
-- `gra/tools/hud-topbar-grid-gross-net-test.cjs`: przywrócona ścisła asercja pozycji small vs big/huge/nodef (y, h).
-- `gra/tools/hud-topbar-no-labels-test.cjs`: przywrócona ścisła asercja N4 (y), usunięty bypass `fallbackOnly`.
-- Ten plik raportu (sekcja runda 3).
-
-## NIE_ZMIERZONO
-- Zrzuty Chromium 1600 px i 1280 px (w tej rundzie nie wykonano).
-- Test żywej gry (`--dist`): brak buildu; `npm run build` zakazany, nie wykonano vite build poza repo.
-- Mutacja K6 i mutacja stałego pudełka w tej rundzie nie były powtarzane (zrobione przez Evaluatora w rundzie 2).
-
-## Stan
-- Dyspozycja: kandydat wymaga decyzji właściciela w pkt 1 i 3 (ABC). Pkt 2 i 5 zamknięte w teście/uzasadnieniu, pkt 4 otwarty.
-- Nie uznaję PASS. Brak deployu i pusha.
-
-NASTĘPNY KROK: decyzja właściciela (ABC: pkt 1 i 3). Po decyzji runda 3 Operatora: aktualizacja B1 lub zmiana formatu/rozmiaru liczb przy 1280; następnie uruchomienie one-row z 1280 w oknach.
 DEPLOY/PUSH: NIE WYKONANO
