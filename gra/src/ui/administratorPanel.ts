@@ -85,7 +85,8 @@ function titleFor(m: AdministratorPanelModel): string {
 /** Krótkie „czym jest / do czego służy” — treść opisowa z JSON (jedno źródło), bez żargonu. */
 function lead(m: AdministratorPanelModel): string {
   if (m.kind === 'city') {
-    return 'Administrator to osoba przypisana do jednego miasta (maksymalnie jeden na miasto). '
+    // Administrator miasta: wyłącznie budynki i bonusy TEGO miasta; wymaga budynku administracyjnego.
+    return 'Administrator miasta działa tylko w tym mieście i wymaga budynku administracyjnego w tym mieście (bez niego go nie zatrudnisz). '
       + administratorDescription();
   }
   // Administrator państwa: JEDEN na całe Państwo — nie „przypisany do miasta” (zakres w tekście, nie w JSON).
@@ -101,7 +102,7 @@ function scopeWhere(m: AdministratorPanelModel): string {
 function bonusRows(m: AdministratorPanelModel): string {
   if (m.kind === 'improvements') {
     return '<li data-adm-bonus="auto">Automatyczne ulepszanie terenu we wszystkich miastach Państwa — wg profilu wybranego w panelu budowy.</li>'
-      + '<li data-adm-bonus="none">Bez dodatkowych bonusów do produkcji, podatków ani korupcji.</li>';
+      + '<li data-adm-bonus="none">Nie daje żadnych dodatkowych bonusów.</li>';
   }
   const tier = (m.tier !== undefined && m.tier >= 1 ? Math.min(3, Math.round(m.tier)) : 1) as AdminTier;
   const scale = administratorTierScale(tier);
@@ -113,33 +114,6 @@ function bonusRows(m: AdministratorPanelModel): string {
     + '<li data-adm-bonus="auto">Automatyczna budowa budynków w tym mieście.</li>'
     + `<li class="civ-adm-panel-sub" data-adm-bonus="scale">Poziom budynku administracyjnego: ${tier}`
     + ` (skala ×${String(scale).replace('.', ',')}); wyższy poziom wzmacnia bonusy.</li>`;
-}
-
-/**
- * R-WEB-UI-ADMINISTRATOR-HIRE-CONFIRM-Q1: czysty tekst okna potwierdzenia zatrudnienia (koszt + bonusy, te same liczby co panel).
- * Zero nowych reguł — tylko odczyt z modelu i JSON (administratorBaseEffectsPct × skala poziomu).
- */
-export function administratorHireConfirmText(m: AdministratorPanelModel): string {
-  const what = m.kind === 'city' ? 'automatyczna budowa budynków' : 'automatyczne ulepszanie terenu';
-  const head = m.kind === 'city'
-    ? 'Zatrudnić administratora (miasta) w mieście ' + m.cityName + '?'
-    : 'Zatrudnić administratora państwa (jeden na całe Państwo)?';
-  const lines: string[] = [
-    head,
-    'Opłata jednorazowa: ' + m.hireCost + ' Pieniądza. Utrzymanie: ' + m.upkeep + ' Pieniądza na turę ze skarbca państwa.',
-    'Bonusy:',
-  ];
-  if (m.kind === 'improvements') {
-    lines.push('- ' + what + ' ' + scopeWhere(m) + ' wg wybranego profilu', '- bez dodatkowych bonusów do produkcji, podatków ani korupcji');
-  } else {
-    const tier = (m.tier !== undefined && m.tier >= 1 ? Math.min(3, Math.round(m.tier)) : 1) as AdminTier;
-    const scale = administratorTierScale(tier);
-    const base = administratorBaseEffectsPct();
-    const f = (v: number): string => fmtPct(v * scale);
-    lines.push('- korupcja w mieście: -' + f(base.korupcja) + '%', '- produkcja miasta: +' + f(base.produkcja) + '%',
-      '- ściągalność podatków miasta: +' + f(base.podatki) + '%', '- ' + what + ' w tym mieście');
-  }
-  return lines.join('\n');
 }
 
 /** Skutki: co się dzieje bez administratora i po zatrudnieniu. */
@@ -311,17 +285,15 @@ export function openAdministratorPanel(hooks: AdministratorPanelHooks): Administ
     dlg.querySelector('[data-adm-panel-confirm]')?.addEventListener('click', () => {
       const cur = hooks.getModel();
       if (!cur || cur.hired || administratorHireDisabled(cur)) return; // guard: bez środków/blokady — bez zatrudnienia
-      // Zatrudnienie kosztuje (nieodwracalnie) — potwierdzenie z kosztem i bonusami, symetrycznie do zwolnienia.
-      if (!window.confirm(administratorHireConfirmText(cur))) return;
+      // Potwierdzeniem zatrudnienia jest przycisk „Zatrudnij” w tym panelu (koszt i brak zwrotu są opisane powyżej).
+      // Bez natywnych okien dialogowych przeglądarki: wychodzą z pełnego ekranu.
       hooks.onHire();
       render('[data-adm-panel-dismiss]');
     });
     dlg.querySelector('[data-adm-panel-dismiss]')?.addEventListener('click', () => {
       const cur = hooks.getModel();
       if (!cur) return;
-      // Zwolnienie nieodwracalne (koszt nie wraca) — potwierdzenie jak przed wprowadzeniem panelu.
-      const what = cur.kind === 'city' ? 'autobudowa w tym mieście' : 'auto-ulepszenia terenu we wszystkich miastach Państwa';
-      if (!window.confirm('Zwolnić administratora? Koszt zatrudnienia nie podlega zwrotowi, a ' + what + ' przestaną działać.')) return;
+      // Zwolnienie: wyłącznie przycisk „Zwolnij” — w treści panelu jest jawne „koszt zatrudnienia nie wraca”.
       hooks.onDismiss();
       render('[data-adm-panel-confirm]');
     });
