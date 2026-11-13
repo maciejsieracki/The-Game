@@ -49,12 +49,24 @@ function verify(mainSrc, audSrc, maxRoundsValue) {
   // r.maxRounds w main.ts musi pochodzić z NEGOTIATION_MAX_ROUNDS.
   if (!/maxRounds:\s*NEGOTIATION_MAX_ROUNDS\b/.test(mainSrc)) errors.push('main.ts: maxRounds nie jest z NEGOTIATION_MAX_ROUNDS');
 
-  // Zachowanie: ten sam napis dla tej samej rundy i tego samego M w obu miejscach.
-  for (let round = 1; round <= 3; round++) {
-    const a = helper(round, maxRoundsValue);            // main: (n.round, NEGOTIATION_MAX_ROUNDS)
-    const b = helper(round, maxRoundsValue);            // audience: (r.round, r.maxRounds)
-    if (a !== b) errors.push('rozjazd napisu dla rundy ' + round + ': ' + a + ' vs ' + b);
-    if (a !== 'runda ' + round + '/' + maxRoundsValue) errors.push('zły napis dla rundy ' + round + ': ' + a);
+  // Zachowanie: M rozwiązywane z WYRAŻENIA w każdym miejscu wywołania (nie z jednej wartości
+  // podanej dwa razy). Dozwolone wyrażenia: NEGOTIATION_MAX_ROUNDS (= maxRoundsValue) oraz
+  // r.maxRounds, które w main.ts musi być przypisane z NEGOTIATION_MAX_ROUNDS.
+  // Każde inne wyrażenie (np. literał 99, NEGOTIATION_MAX_ROUNDS + 1) daje NaN -> rozjazd.
+  const valueOf = (expr) => {
+    if (expr === 'NEGOTIATION_MAX_ROUNDS') return maxRoundsValue;
+    if (expr === 'r.maxRounds' && /maxRounds:\s*NEGOTIATION_MAX_ROUNDS\b/.test(mainSrc)) return maxRoundsValue;
+    return NaN;
+  };
+  const mainExpr = mainCall ? mainCall[1].trim() : null;
+  const audExpr = audCall ? audCall[1].trim() : null;
+  if (mainExpr !== null && audExpr !== null) {
+    for (let round = 1; round <= 3; round++) {
+      const a = helper(round, valueOf(mainExpr));       // main: (n.round, NEGOTIATION_MAX_ROUNDS)
+      const b = helper(round, valueOf(audExpr));        // audience: (r.round, r.maxRounds)
+      if (a !== b) errors.push('rozjazd napisu dla rundy ' + round + ': ' + a + ' vs ' + b);
+      if (a !== 'runda ' + round + '/' + maxRoundsValue) errors.push('zły napis dla rundy ' + round + ': ' + a);
+    }
   }
   return errors;
 }
