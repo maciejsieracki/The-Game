@@ -106,3 +106,15 @@ NIE ROBIĆ (decyzje właściciela, poza tą rundą): alias `umowa_handlowa` → 
 BRAMKI r4 (EXIT 0): `cargo fmt --check`; `cargo clippy --all-targets -- -D warnings`; `cargo test --lib`; `p6_cred_wojna_gen`-owe testy parity (`p6_cred_wojna`, `p6_cred_wojna_vectors`, `p6_cred_wojna_forced`); `p6_cred_wojna_vectors_r2`; `p6_credibility`; `p6_wire_war_pipeline`; pełny `cargo test --no-fail-fast` z liczbami. `CARGO_TARGET_DIR` poza repo, usuń po bramkach. Dla testów pełnych użyj `timeout` powyżej 585 s albo uruchom w tle i czytaj wynik z pliku (FC r3 miał timeout).
 
 RUNDY: 4/5. Commit: **bez linii `Co-Authored-By` z nazwą modelu** (CLAUDE.md zabrania nazw modeli w artefaktach repo); zostaw `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`. NIE pushować do parity, nie integrować, nie dotykać `gra/`.
+
+---
+
+## DODATEK r4 — KROK 0 (strażnik bazy, obowiązkowy PRZED czymkolwiek innym)
+
+Poprzednia próba r4 (`wf_beebb55a-e4e`) wystartowała na obcej historii (commit `5d0c5f8d1`, „FALA 677”, ~10 000 zmienionych plików). Została zatrzymana, nic nie wypchnięto. Ta runda musi zacząć od bazy parity:
+
+1. `git fetch origin` i `git checkout -B wip/R-RUSTPORT-P6-CRED-WOJNA-Q1-r4 003d53f97`
+2. Sprawdź: `test "$(git rev-parse HEAD)" = 003d53f97...` (pełny SHA `003d53f97`). Jeśli NIE — **STOP**, status BLOCK z podaniem `git rev-parse HEAD`. Nie commituj.
+3. Dopiero po tym wykonaj zakres z DODATKU r4 (kroki 1–3, kryterium 0 usuniętych linii w testach parity).
+
+Wymagane po KROK 0: `git diff --stat 003d53f97 HEAD` pokazuje tylko pliki z allowlisty (≤ kilka plików), a nie tysiące.
