@@ -1,0 +1,1990 @@
+{
+ "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+ "victorySha256": "2f22949ba00bbfb754410f66fc5e1856b67dc0621d31ea310c6df39e6517bb8a",
+ "anchors": 10,
+ "cases": [
+  {
+   "input": {
+    "cityOwners": [],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "dominacja"
+   },
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "dominacja"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "zapamietana": false,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "zapamietana": false,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "zapamietana": false,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "zapamietana": false,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "zapamietana": false,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "zapamietana": false,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "zapamietana": false,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "dominacja"
+   },
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "zapamietana": false,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "zapamietana": false,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "dominacja"
+   },
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0,
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0,
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0,
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0,
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0,
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0,
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0,
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "dominacja"
+   },
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0,
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0,
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0,
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0,
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0,
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0,
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0,
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0,
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0,
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "dominacja"
+   },
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0,
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     0,
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": false
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "dominacja"
+   },
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "dominacja"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1,
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1,
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1,
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1,
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1,
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1,
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1,
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "dominacja"
+   },
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1,
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1,
+     1
+    ],
+    "zapamietana": false,
+    "flagaPinu": false,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": null,
+   "defeat": null,
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1,
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1,
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1,
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1,
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1,
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1,
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1,
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.9,
+    "potegiWszystkich": [
+     0.9,
+     0.2
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "dominacja"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1,
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.2,
+    "potegiWszystkich": [
+     0.2,
+     0.9
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  },
+  {
+   "input": {
+    "cityOwners": [
+     1,
+     1
+    ],
+    "zapamietana": true,
+    "flagaPinu": true,
+    "gracz": 0,
+    "potegaGracza": 0.5,
+    "potegiWszystkich": [
+     0.5,
+     0.5
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3
+   },
+   "victory": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "defeat": {
+    "winner": 0,
+    "rodzaj": "przegrana"
+   },
+   "eliminated": true
+  }
+ ]
+}

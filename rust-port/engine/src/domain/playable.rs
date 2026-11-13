@@ -517,13 +517,13 @@ pub struct PlayableState {
     /// pomijane w DTO i zapisie (zapis sprzed zmiany laduje sie przez `#[serde(default)]`).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub forts: Vec<PlayableFort>,
-    /// P6-ZWYCIESTWO-WIRING: flaga `graczKiedysMialMiasto` (pin main.ts:43472). Przy ocenie zwyciestwa
-    /// flaga = zapamietana `|| czy gracz ma miasto` (pin main.ts:46368-46370 odtwarza ze miast).
-    /// `#[serde(skip, default)]`: NIE_ZMIERZONO w zapisie. Zapisanie flagi zmienia JSON stanu sprzed tematu
-    /// i lamie golden `p6_unit_replace_l3_state` (poza allowlista). Po wczytaniu = `Some(false)`, a flaga
-    /// wraca przy najblizszym sprawdzeniu, jesli gracz ma miasto. Strata: gracz bez miast w chwili zapisu.
-    #[serde(skip, default = "gracz_kiedys_domyslnie")]
-    pub gracz_kiedys_mial_miasto: Option<bool>,
+    /// P6-ZWYCIESTWO-WIRING: flaga `graczKiedysMialMiasto` (pin main.ts:43472, per-owner set
+    /// `playerEverOwnedCityByOwner` dla fotela 1). Pin NIE zapisuje tej flagi (gra/src/game/save.ts nie
+    /// zawiera nazwy pola), wiec `#[serde(skip)]` jest zgodne z pinem i nie zmienia JSON (golden).
+    /// Po wczytaniu flaga = `false`, a efektywna wartosc przy ocenie = `flaga || gracz ma miasto`,
+    /// co odpowiada odtworzeniu ze miast z pinu (main.ts:46368-46370).
+    #[serde(skip)]
+    pub gracz_kiedys_mial_miasto: bool,
     /// P6-ZWYCIESTWO-WIRING: wynik konca gry (pin `gameOver`). `#[serde(skip)]`: pin nie zapisuje
     /// `gameOver` i resetuje go do `false` przy wczytaniu (main.ts:47333), wiec po wczytaniu gra trwa.
     #[serde(skip)]
@@ -557,15 +557,21 @@ impl PlayableStores {
     }
 }
 
-/// P6-ZWYCIESTWO-WIRING: domyslna wartosc flagi po wczytaniu (patrz pole `gracz_kiedys_mial_miasto`).
-fn gracz_kiedys_domyslnie() -> Option<bool> {
-    Some(false)
-}
-
 impl PlayableState {
     /// Adapter zdarzenia "wygrana bitwy" dla akumulatora mocy (R-RUSTPORT-P6-POWER-AKUMULATORY-WIRING-Q1).
     /// Deleguje do `WarTurnState::record_battle_win` (web main.ts:34487-34490). BRAK wolajacego w produkcji:
     /// petla walki Rust (`combat::resolve_combat`) nie ma produkcyjnego wywolania - patrz raport.
+    /// P6-ZWYCIESTWO-WIRING: odtworzenie flagi `graczKiedysMialMiasto` ze miast po wczytaniu zapisu
+    /// (pin main.ts:46368-46370: `playerEverOwnedCityByOwner` = fotele z miastem). Wywolywac po
+    /// deserializacji, PRZED pierwsza tura; bez tego flaga po wczytaniu = false (pole nie jest w zapisie).
+    pub fn odtworz_flage_zwyciestwa_ze_miast(&mut self) {
+        self.gracz_kiedys_mial_miasto = self.gracz_kiedys_mial_miasto
+            || self
+                .cities
+                .iter()
+                .any(|city| city.owner_id == HUMAN_PLAYER_ID);
+    }
+
     pub fn power_record_battle_win(&mut self, winner_owner_id: i64, enemy_field_m: f64) {
         self.war.record_battle_win(winner_owner_id, enemy_field_m);
     }
@@ -610,7 +616,7 @@ impl PlayableState {
             stores: PlayableStores::default(),
             economy: PlayableReplaceEconomy::default(),
             forts: Vec::new(),
-            gracz_kiedys_mial_miasto: gracz_kiedys_domyslnie(),
+            gracz_kiedys_mial_miasto: false,
             koniec_gry: None,
         }
     }
@@ -775,7 +781,9 @@ impl PlayableGame {
                 stores: PlayableStores::default(),
                 economy: PlayableReplaceEconomy::default(),
                 forts: Vec::new(),
-                gracz_kiedys_mial_miasto: Some(false),
+                // Stolica zalozona przy starcie = odpowiednik `playerEverOwnedCityByOwner.add(ME())`
+                // (pin main.ts:16508): gracz kiedys mial miasto, wiec przegrana po utracie wszystkich miast.
+                gracz_kiedys_mial_miasto: true,
                 koniec_gry: None,
             },
             phase_queue: EventQueue::new(),
@@ -1121,7 +1129,7 @@ impl PlayableGame {
             if entry.phase() == TurnPhase::Victory {
                 match self.evaluate_victory() {
                     Ok((flag, result)) => {
-                        self.state.gracz_kiedys_mial_miasto = Some(flag);
+                        self.state.gracz_kiedys_mial_miasto = flag;
                         if self.state.koniec_gry.is_none() {
                             self.state.koniec_gry = result;
                         }
@@ -1189,7 +1197,7 @@ impl PlayableGame {
         let state = &self.state;
         let gracz = HUMAN_PLAYER_ID.get() as i64;
         let has_city = state.cities.iter().any(|c| c.owner_id == HUMAN_PLAYER_ID);
-        let flag = state.gracz_kiedys_mial_miasto.unwrap_or(false) || has_city;
+        let flag = state.gracz_kiedys_mial_miasto || has_city;
         let (powers, era) = victory_power_inputs(state)?;
         let potega = *powers.get(&gracz).ok_or_else(|| {
             PlayableError::VictoryCheck("brak mocy gracza w wejsciu warunkow".to_owned())
@@ -1591,13 +1599,61 @@ mod unit_replace_error_tests {
         })
         .expect("nowa gra");
         game.advance_turn().expect("tura z miastem");
-        assert_eq!(game.state.gracz_kiedys_mial_miasto, Some(true));
+        assert!(game.state.gracz_kiedys_mial_miasto);
         assert_eq!(game.state.koniec_gry, None, "kamien: brak dominacji");
         game.state
             .cities
             .retain(|city| city.owner_id != HUMAN_PLAYER_ID);
         game.advance_turn().expect("tura po eliminacji");
         let result = game.state.koniec_gry.expect("przegrana po eliminacji");
+        assert_eq!(
+            result.rodzaj,
+            crate::domain::victory::VictoryKind::Przegrana
+        );
+    }
+
+    fn kamien_game() -> PlayableGame {
+        PlayableGame::new(StartGameParams {
+            epoch_id: "kamien".to_owned(),
+            ..StartGameParams::default()
+        })
+        .expect("nowa gra")
+    }
+
+    /// Pin checkDefeat z flaga `false` (`graczKiedysMialMiasto` = false): utrata miast nie przegrywa.
+    #[test]
+    fn bez_zapamietanego_miasta_utrata_miast_nie_daje_przegranej() {
+        let mut game = kamien_game();
+        game.state.cities.clear();
+        game.state.gracz_kiedys_mial_miasto = false;
+        game.advance_turn().expect("koniec tury");
+        assert_eq!(game.state.koniec_gry, None);
+        assert!(!game.state.gracz_kiedys_mial_miasto);
+    }
+
+    /// Wczytanie zapisu bez flagi (pin jej nie zapisuje): flaga = false po deserializacji; odtworzenie ze
+    /// miast (pin main.ts:46368-46370) przed utrata miasta daje przegrana na fazie Victory.
+    #[test]
+    fn wczytany_zapis_odtwarza_flage_ze_miast_przed_utrata() {
+        let game = kamien_game();
+        let json = serde_json::to_string(&game.state).expect("zapis");
+        let mut loaded: PlayableState = serde_json::from_str(&json).expect("wczytanie");
+        assert!(
+            !loaded.gracz_kiedys_mial_miasto,
+            "po wczytaniu flaga = false"
+        );
+        assert_eq!(loaded.koniec_gry, None);
+        loaded.odtworz_flage_zwyciestwa_ze_miast();
+        assert!(loaded.gracz_kiedys_mial_miasto, "stolica w zapisie");
+        loaded
+            .cities
+            .retain(|city| city.owner_id != HUMAN_PLAYER_ID);
+        let mut resumed = PlayableGame {
+            state: loaded,
+            phase_queue: game.phase_queue.clone(),
+        };
+        resumed.advance_turn().expect("tura po wczytaniu");
+        let result = resumed.state.koniec_gry.expect("przegrana po wczytaniu");
         assert_eq!(
             result.rodzaj,
             crate::domain::victory::VictoryKind::Przegrana
