@@ -102,10 +102,10 @@ async function readRel(page, ai) {
       return el ? (el.textContent || '').trim() : null;
     };
     const rows = Array.from(document.querySelectorAll('.da-rel-row')).map((r) => (r.textContent || '').trim());
-    const first = document.querySelector('.da-rel-row');
-    const root = first ? first.closest('[class*="da"]') : null;
-    const lines = root ? (root.innerText || '').split('\n').map((s) => s.trim()).filter(Boolean) : [];
-    const tierLines = lines.filter((s) => /Relacja|Nastawienie|Wrogi|Neutral|Przyja|Nieufn|Sojusz|Wojna|Pok[oó]j|Rozejm/i.test(s)).slice(0, 12);
+    // Etykiety nastawienia/Relacji: czytamy CAŁY tekst strony (innerText), bo kontener .da-rel-row
+    // nie obejmuje nagłówka „Nastawienie” ani etykiety progu (poprzedni selektor dawał pustą listę).
+    const lines = (document.body.innerText || '').split('\n').map((s) => s.trim()).filter(Boolean);
+    const tierLines = lines.filter((s) => /^(Nastawienie|Relacja|Nieufn|Wrogi|Neutraln|Przyja|Sojusz|Wojna|Rozejm|Pok[oó]j)/i.test(s)).slice(0, 12);
     return { trust: val('trust'), respect: val('respect'), rows, tierLines };
   });
   const num = (s) => {
@@ -144,17 +144,23 @@ async function scenario1(browser, errors, res, check) {
   const r0 = await readRel(page, AI);
   await page.evaluate((id) => window.__peaceRulesTestDebug.setPlayerWarWithAi(id, 1), AI);
   const r1 = await readRel(page, AI);
+  // Zapisany (nie efektywny) respekt: relationScore = zaufanie*1 + respekt*1 (clamp 0..200);
+  // w wojnie zaufanie = 0, więc odczyt getRelationTotal = zapisany respekt.
+  const storedWar = await page.evaluate((id) => window.__peaceRulesTestDebug.getRelationTotal(id), AI);
   const t1 = await endTurnReal(page);
+  const storedWarTura1 = await page.evaluate((id) => window.__peaceRulesTestDebug.getRelationTotal(id), AI);
   const r2 = await readRel(page, AI);
   const t2 = await endTurnReal(page);
   const r3 = await readRel(page, AI);
-  res.measured = { start: r0, poWypowiedzeniuWojny: r1, poTurze1: r2, poTurze2: r3, tury: [t1, t2] };
+  res.measured = { start: r0, poWypowiedzeniuWojny: r1, poTurze1: r2, poTurze2: r3, tury: [t1, t2], zapisanyRespektPoWypowiedzeniu: storedWar, zapisanyRespektPoTurze1: storedWarTura1 };
   check('S1.a', 'przed wojną zaufanie odczytane z DOM (SETUP 40)', r0.zaufanie === 40, r0);
   check('S1.b', 'po wypowiedzeniu wojny i 1 turze zaufanie = 0', r2.zaufanie === 0, { zaufanie: r2.zaufanie, respekt: r2.respekt });
   check('S1.c', 'w kolejnej turze wojny zaufanie nadal = 0', r3.zaufanie === 0, { zaufanie: r3.zaufanie, respekt: r3.respekt });
-  check('S1.d', 'respekt nie obcięty do 29 (wartość > 29 po turze wojny)',
-    r2.respekt !== null && r2.respekt > 29 ? true : (r2.respekt === null ? null : false),
-    { respekt: r2.respekt, uwaga: 'respekt efektywny w UI może zależeć od siły; surowy wiersz w rows' });
+  // Przed wojną zapisany respekt = 60 (setRelationForBrake(40,60)); w wojnie nie może spaść do 29 (dawny clamp).
+  check('S1.d', 'zapisany respekt w wojnie nie obcięty do 29 (getRelationTotal przy zaufaniu 0 > 29)',
+    storedWarTura1 > 29 && storedWar > 29,
+    { zapisanyPoWypowiedzeniu: storedWar, zapisanyPoTurze1: storedWarTura1, oczekiwane: 60, respektEfektywnyUI: r2.respekt,
+      uwaga: 'respekt efektywny w UI (100) to wartość z mocy, nie zapisana; zapisana wartość odczytana hakiem getRelationTotal' });
   check('S1.e', 'brak błędów JS w scenariuszu', errors.length === 0, errors.slice(0, 5));
   await page.close();
 }
@@ -208,7 +214,7 @@ async function scenario3(browser, errors, res, check) {
   const idxFlip = probes.findIndex((p) => p.mayDeclare !== 0);
   const before = idxFlip > 0 ? probes[idxFlip - 1] : null;
   const after = idxFlip >= 0 ? probes[idxFlip] : null;
-  check('S3.a', 'skan przewagi Power przy zaufaniu 25 — punkt przełączenia mayDeclare', 'NIE_ZMIERZONO',
+  if (doProbe) check('S3.a', 'skan przewagi Power przy zaufaniu 25 — punkt przełączenia mayDeclare', 'NIE_ZMIERZONO',
     { przelaczenie: after ? { przewagaAI_ponad_gracza_od: after.ratio, poprzedni_brak: before ? before.ratio : null } : null,
       powod: 'hak czyta Power (buildObjectivePower), nie siłę wojskową z kroku 2; progi 14/20/28% (charakter) nie są porównywalne z tym odczytem — rozbieżność do weryfikacji po stronie orkiestratora' });
   check('S3.b', 'progi 25%/19%/27% oraz charakter agresywna/neutralna/ostrożna', 'NIE_ZMIERZONO',
@@ -226,7 +232,7 @@ async function scenario3(browser, errors, res, check) {
   }
   const warnLog = await page.evaluate(() => window.__peaceRulesTestDebug.warEventLogHas('Ryzyko wojny z'));
   res.measured.zaufanie0_silniejsza = { statusStart, statusTury, ostrzezenieWLogu: warnLog };
-  if (doTurns) check('S3.c', 'zaufanie 0, AI silniejsza → wypowiedzenie wojny po N turach', 'NIE_ZMIERZONO',
+  if (doTurns) check('S3.c', 'zaufanie 0, AI silniejsza → wypowiedzenie wojny po N turach (zmierzone 1 tura)', 'NIE_ZMIERZONO',
     { statusStart, statusTury, powod: 'dispatch nie podaje N (liczby tur przy zaufaniu 0); zmierzono 1 turę bez wypowiedzenia (status neutralni) — wynik niejednoznaczny, N i losowanie gotowości wymagają osobnego pomiaru (koszt tury w przeglądarce ~100 s)' });
   // Silniejszy gracz → brak automatycznej wojny przez AI.
   await page.evaluate((id) => {
@@ -241,7 +247,7 @@ async function scenario3(browser, errors, res, check) {
     statusTury2.push(await page.evaluate((id) => window.__peaceRulesTestDebug.getStatus(id), AI));
   }
   res.measured.silniejszyGracz = { statusStart: statusStart2, statusTury: statusTury2 };
-  if (doTurns) check('S3.d', 'silniejszy gracz (AI słabsza) → brak automatycznej wojny przez 2 tury',
+  if (doTurns) check('S3.d', 'silniejszy gracz (AI słabsza) → brak automatycznej wojny (1 tura)',
     !statusTury2.includes('wojna'), { statusTury: statusTury2 });
   check('S3.e', 'ostrzeżenie dla gracza raz na epizod', 'NIE_ZMIERZONO',
     { powod: 'ostrzeżenie „Ryzyko wojny” jest pokrywane w testach diplo-war-peace-live-test (hamulec); tu nie mierzone osobno' });
@@ -257,7 +263,10 @@ async function scenario4(browser, errors, res, check) {
   await page.close();
   // Świeża strona: wojna od razu z wiekiem 5 tur (ten sam wzorzec co diplo-war-peace-live-test, scenariusz A1).
   page = await openFresh(browser, errors, false);
-  await page.evaluate((id) => window.__peaceRulesTestDebug.setPlayerWarWithAi(id, 5), AI);
+  // Wiek wojny = 12 (>= PEACE_PROPOSAL_MIN_WAR_TURNS = 10, src/game/diplomacy-peace-proposal-timing.ts:2).
+  // Poprzednio ustawiano 5, co trafiało w bramkę 10 tur — błąd przygotowania narzędzia, nie defekt gry.
+  await page.evaluate((id) => window.__peaceRulesTestDebug.setPlayerWarWithAi(id, 12), AI);
+  const wiekWojny = await page.evaluate((id) => window.__peaceRulesTestDebug.getWarTurns(id), AI);
   await page.evaluate((id) => window.__peaceRulesTestDebug.setAiPowerBonusForTest(id, 20000), AI);
   const sendSilniejsza = await page.evaluate((id) => window.__peaceRulesTestDebug.sendPeaceProposalForTest(id), AI);
   await wait(200);
@@ -268,18 +277,19 @@ async function scenario4(browser, errors, res, check) {
   const evSilniejsza = await page.evaluate((id) => window.__peaceRulesTestDebug.evaluatePeaceFromPlayer(id), AI);
   await page.evaluate((id) => window.__peaceRulesTestDebug.setAiPowerBonusForTest(id, -20000), AI);
   const evSlabsza = await page.evaluate((id) => window.__peaceRulesTestDebug.evaluatePeaceFromPlayer(id), AI);
-  res.measured = { minCzasWojny: evMinCzas, silniejszaAI_wyslanie: sendSilniejsza, silniejszaAI_toast: hint, silniejszaAI_ocena: evSilniejsza, slabszaAI_ocena: evSlabsza };
+  res.measured = { wiekWojnyPrzedOfertą: wiekWojny, minCzasWojny: evMinCzas, silniejszaAI_wyslanie: sendSilniejsza, silniejszaAI_toast: hint, silniejszaAI_ocena: evSilniejsza, slabszaAI_ocena: evSlabsza };
   check('S4.a', 'minimalny czas wojny (1 tura) blokuje pokój', evMinCzas.accepted === false,
     { accepted: evMinCzas.accepted, reason: evMinCzas.reason });
-  // Gałąź „AI czuje się silniejsze” NIE została osiągnięta w tym przebiegu: bramka 10 tur wojny zadziałała pierwsza
-  // (zaobserwowany komunikat w toście). Nie zgadujemy wyniku — raportujemy surowe odczyty.
-  const silniejszaOsiagnieta = /czuje się silniejsze/.test(hint.text) || /czuje się silniejsze/.test(String(evSilniejsza.reason || ''));
-  check('S4.b', 'silniejsza AI odrzuca ofertę gracza bez miasta (DOM)',
-    silniejszaOsiagnieta ? (sendSilniejsza.entryFound === true && hint.shown && evSilniejsza.accepted === false) : 'NIE_ZMIERZONO',
-    { toast: hint.text, ocena: evSilniejsza.reason, wyslanie: sendSilniejsza,
-      powod: silniejszaOsiagnieta ? null : 'gałąź „silniejsze” nieosiągnięta: bramka 10 tur wojny (komunikat w toście) zadziałała przed oceną siły; setup wieku wojny 5 tur nie zmienił tej bramki w tym przebiegu — do wyjaśnienia' });
-  check('S4.c', 'słabsza AI — ocena oferty pokoju bez miasta (dla porównania)', 'NIE_ZMIERZONO',
-    { accepted: evSlabsza.accepted, reason: evSlabsza.reason, powod: 'ten sam odczyt blokowany bramką 10 tur; wynik nie świadczy o zasadzie „słabsza AI”' });
+  // Oferta gracza bez miasta (actionId 10, PN 0) oceniana przez REALNE evaluateProposal: silniejsza AI
+  // odrzuca ją przez bilans PW („Brakuje N PW do uczciwej oferty pokoju”). Bramka „czuje się silniejsze”
+  // (ai.ts R5b) dotyczy propozycji składanej PRZEZ AI, nie oceny oferty gracza — stąd inna przyczyna odmowy.
+  const odrzucenieBilansem = evSilniejsza.accepted === false && !/dostępne po/.test(String(evSilniejsza.reason || ''));
+  check('S4.b', 'silniejsza AI odrzuca ofertę gracza bez miasta (ocena silnika + komunikat w DOM)',
+    wiekWojny.turnsAtWar >= 10 ? odrzucenieBilansem && hint.shown : 'NIE_ZMIERZONO',
+    { toast: hint.text, ocena: evSilniejsza.reason, wyslanie: sendSilniejsza, wiekWojny: wiekWojny.turnsAtWar,
+      uwaga: 'bilans PW (diplomacy-proposals.ts:1551); gałąź ai.ts R5b „czuje się silniejsze” dotyczy propozycji AI, nie oferty gracza' });
+  check('S4.c', 'kontrast: słabsza AI przy tej samej ofercie bez miasta', evSlabsza.accepted === true ? true : (evSlabsza.accepted === false ? false : 'NIE_ZMIERZONO'),
+    { accepted: evSlabsza.accepted, reason: evSlabsza.reason, uwaga: 'to nie jest punkt „słabsza AI proponuje z miastem” z dispatchu — pokazuje wyłącznie, że ta sama oferta zależy od siły AI' });
   check('S4.d', 'pokój z miastem o wartości PN ≥ ceny', 'NIE_ZMIERZONO',
     { powod: 'hak sendPeaceProposalForTest wysyła wyłącznie actionId 10 bez miasta/PN; brak hooka oferty z miastem po stronie gracza' });
   check('S4.e', 'oferta ze złotem/surowcami nie przełamuje oporu', 'NIE_ZMIERZONO',
@@ -310,8 +320,16 @@ async function scenario5(browser, errors, res, check) {
       row.zaufanieOdczyt === row.zaufanieUstawione,
       { odczyt: row.zaufanieOdczyt, etykiety: row.etykiety });
   }
-  check('S5.tekst', 'dokładne nazwy etykiet (Wrogi/Relacja) dla progów 9/10 i 29/30', 'NIE_ZMIERZONO',
-    { powod: 'etykiety odczytane jako surowy tekst (patrz etykiety); mapowanie na nazwy oczekiwane tylko w testach jednostkowych' });
+  // Oczekiwane nastawienie wg nastawienieLabelFromScore (diplomacy-display.ts:337-353): zaufanie < 10 → Wrogi;
+  // 10–29 → Nieufny; ≥ 30 → zależnie od Zaufania+Respektu. Respekt w UI jest EFEKTYWNY (100, z mocy), więc
+  // dla 30: s = 30 + 100 = 130 → Przyjazny (≥120). Oczekiwane wartości liczone z tych progów, nie z odczytu.
+  const oczekiwane = { 0: 'WROGI', 9: 'WROGI', 10: 'NIEUFNY', 29: 'NIEUFNY', 30: 'PRZYJAZNY' };
+  const etykieta = (r) => (r.etykiety || []).find((l) => /^(WROGI|NIEUFNY|NEUTRALNY|ŻYCZLIWY|PRZYJAZNY)$/i.test(l)) || null;
+  const zgodne = rows.map((r) => ({ zaufanie: r.zaufanieUstawione, odczyt: etykieta(r), oczekiwana: oczekiwane[r.zaufanieUstawione],
+    ok: etykieta(r) !== null && etykieta(r).toUpperCase() === oczekiwane[r.zaufanieUstawione] }));
+  res.measured.etykietyZgodnosc = zgodne;
+  check('S5.tekst', 'nazwa nastawienia zgodna z progami (0,9→Wrogi; 10,29→Nieufny; 30→Przyjazny)',
+    zgodne.every((z) => z.ok), zgodne);
   check('S5.errors', 'brak błędów JS w scenariuszu', errors.length === 0, errors.slice(0, 5));
   await page.close();
 }

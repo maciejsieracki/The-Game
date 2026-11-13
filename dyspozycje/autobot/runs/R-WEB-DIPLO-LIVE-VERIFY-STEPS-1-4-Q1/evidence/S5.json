@@ -7,7 +7,14 @@
       "ok": "PASS",
       "detail": {
         "odczyt": 0,
-        "etykiety": []
+        "etykiety": [
+          "Sojusz (pełny lub defensywny)",
+          "WROGI",
+          "Relacja z perspektywy gracza",
+          "Wojna",
+          "Pokój",
+          "Sojusz"
+        ]
       }
     },
     {
@@ -16,7 +23,14 @@
       "ok": "PASS",
       "detail": {
         "odczyt": 9,
-        "etykiety": []
+        "etykiety": [
+          "Sojusz (pełny lub defensywny)",
+          "WROGI",
+          "Relacja z perspektywy gracza",
+          "Wojna",
+          "Pokój",
+          "Sojusz"
+        ]
       }
     },
     {
@@ -25,7 +39,14 @@
       "ok": "PASS",
       "detail": {
         "odczyt": 10,
-        "etykiety": []
+        "etykiety": [
+          "Sojusz (pełny lub defensywny)",
+          "NIEUFNY",
+          "Relacja z perspektywy gracza",
+          "Wojna",
+          "Pokój",
+          "Sojusz"
+        ]
       }
     },
     {
@@ -34,7 +55,14 @@
       "ok": "PASS",
       "detail": {
         "odczyt": 29,
-        "etykiety": []
+        "etykiety": [
+          "Sojusz (pełny lub defensywny)",
+          "NIEUFNY",
+          "Relacja z perspektywy gracza",
+          "Wojna",
+          "Pokój",
+          "Sojusz"
+        ]
       }
     },
     {
@@ -43,16 +71,52 @@
       "ok": "PASS",
       "detail": {
         "odczyt": 30,
-        "etykiety": []
+        "etykiety": [
+          "Sojusz (pełny lub defensywny)",
+          "PRZYJAZNY",
+          "Relacja z perspektywy gracza",
+          "Wojna",
+          "Pokój",
+          "Sojusz"
+        ]
       }
     },
     {
       "id": "S5.tekst",
-      "label": "dokładne nazwy etykiet (Wrogi/Relacja) dla progów 9/10 i 29/30",
-      "ok": "NIE_ZMIERZONO",
-      "detail": {
-        "powod": "etykiety odczytane jako surowy tekst (patrz etykiety); mapowanie na nazwy oczekiwane tylko w testach jednostkowych"
-      }
+      "label": "nazwa nastawienia zgodna z progami (0,9→Wrogi; 10,29→Nieufny; 30→Przyjazny)",
+      "ok": "PASS",
+      "detail": [
+        {
+          "zaufanie": 0,
+          "odczyt": "WROGI",
+          "oczekiwana": "WROGI",
+          "ok": true
+        },
+        {
+          "zaufanie": 9,
+          "odczyt": "WROGI",
+          "oczekiwana": "WROGI",
+          "ok": true
+        },
+        {
+          "zaufanie": 10,
+          "odczyt": "NIEUFNY",
+          "oczekiwana": "NIEUFNY",
+          "ok": true
+        },
+        {
+          "zaufanie": 29,
+          "odczyt": "NIEUFNY",
+          "oczekiwana": "NIEUFNY",
+          "ok": true
+        },
+        {
+          "zaufanie": 30,
+          "odczyt": "PRZYJAZNY",
+          "oczekiwana": "PRZYJAZNY",
+          "ok": true
+        }
+      ]
     },
     {
       "id": "S5.errors",
@@ -67,35 +131,102 @@
         "zaufanieUstawione": 0,
         "zaufanieOdczyt": 0,
         "respektOdczyt": 100,
-        "etykiety": []
+        "etykiety": [
+          "Sojusz (pełny lub defensywny)",
+          "WROGI",
+          "Relacja z perspektywy gracza",
+          "Wojna",
+          "Pokój",
+          "Sojusz"
+        ]
       },
       {
         "zaufanieUstawione": 9,
         "zaufanieOdczyt": 9,
         "respektOdczyt": 100,
-        "etykiety": []
+        "etykiety": [
+          "Sojusz (pełny lub defensywny)",
+          "WROGI",
+          "Relacja z perspektywy gracza",
+          "Wojna",
+          "Pokój",
+          "Sojusz"
+        ]
       },
       {
         "zaufanieUstawione": 10,
         "zaufanieOdczyt": 10,
         "respektOdczyt": 100,
-        "etykiety": []
+        "etykiety": [
+          "Sojusz (pełny lub defensywny)",
+          "NIEUFNY",
+          "Relacja z perspektywy gracza",
+          "Wojna",
+          "Pokój",
+          "Sojusz"
+        ]
       },
       {
         "zaufanieUstawione": 29,
         "zaufanieOdczyt": 29,
         "respektOdczyt": 100,
-        "etykiety": []
+        "etykiety": [
+          "Sojusz (pełny lub defensywny)",
+          "NIEUFNY",
+          "Relacja z perspektywy gracza",
+          "Wojna",
+          "Pokój",
+          "Sojusz"
+        ]
       },
       {
         "zaufanieUstawione": 30,
         "zaufanieOdczyt": 30,
         "respektOdczyt": 100,
-        "etykiety": []
+        "etykiety": [
+          "Sojusz (pełny lub defensywny)",
+          "PRZYJAZNY",
+          "Relacja z perspektywy gracza",
+          "Wojna",
+          "Pokój",
+          "Sojusz"
+        ]
+      }
+    ],
+    "etykietyZgodnosc": [
+      {
+        "zaufanie": 0,
+        "odczyt": "WROGI",
+        "oczekiwana": "WROGI",
+        "ok": true
+      },
+      {
+        "zaufanie": 9,
+        "odczyt": "WROGI",
+        "oczekiwana": "WROGI",
+        "ok": true
+      },
+      {
+        "zaufanie": 10,
+        "odczyt": "NIEUFNY",
+        "oczekiwana": "NIEUFNY",
+        "ok": true
+      },
+      {
+        "zaufanie": 29,
+        "odczyt": "NIEUFNY",
+        "oczekiwana": "NIEUFNY",
+        "ok": true
+      },
+      {
+        "zaufanie": 30,
+        "odczyt": "PRZYJAZNY",
+        "oczekiwana": "PRZYJAZNY",
+        "ok": true
       }
     ]
   },
-  "startedAt": "2026-11-13T17:45:50.624Z",
+  "startedAt": "2026-11-13T18:23:14.305Z",
   "errorsTotal": 0,
-  "finishedAt": "2026-11-13T17:47:41.210Z"
+  "finishedAt": "2026-11-13T18:25:23.627Z"
 }

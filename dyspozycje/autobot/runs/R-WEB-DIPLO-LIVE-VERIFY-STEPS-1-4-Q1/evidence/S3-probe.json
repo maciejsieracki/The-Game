@@ -3,11 +3,14 @@
   "checks": [
     {
       "id": "S3.a",
-      "label": "skan przewagi siły przy zaufaniu 25 — odczyt punktu przełączenia mayDeclare",
-      "ok": "PASS",
+      "label": "skan przewagi Power przy zaufaniu 25 — punkt przełączenia mayDeclare",
+      "ok": "NIE_ZMIERZONO",
       "detail": {
-        "punktPrzelaczenia": null,
-        "uwaga": "przewaga z Power (buildObjectivePower), nie z siły wojskowej; progi 14/20/28% zależą od charakteru AI (nie ustawiany tutaj)"
+        "przelaczenie": {
+          "przewagaAI_ponad_gracza_od": 0,
+          "poprzedni_brak": -0.1
+        },
+        "powod": "hak czyta Power (buildObjectivePower), nie siłę wojskową z kroku 2; progi 14/20/28% (charakter) nie są porównywalne z tym odczytem — rozbieżność do weryfikacji po stronie orkiestratora"
       }
     },
     {
@@ -189,7 +192,7 @@
       "statusTury": []
     }
   },
-  "startedAt": "2026-11-13T17:43:42.770Z",
+  "startedAt": "2026-11-13T18:32:21.561Z",
   "errorsTotal": 0,
-  "finishedAt": "2026-11-13T17:45:29.890Z"
+  "finishedAt": "2026-11-13T18:34:03.546Z"
 }

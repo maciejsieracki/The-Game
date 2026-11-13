@@ -12,26 +12,27 @@
     },
     {
       "id": "S4.b",
-      "label": "silniejsza AI odrzuca ofertę gracza bez miasta (DOM)",
-      "ok": "NIE_ZMIERZONO",
+      "label": "silniejsza AI odrzuca ofertę gracza bez miasta (ocena silnika + komunikat w DOM)",
+      "ok": "PASS",
       "detail": {
-        "toast": "Pokój i rozejm będą dostępne po 10 pełnych turach wojny",
-        "ocena": "Pokój i rozejm dostępne po 10 pełnych turach wojny",
+        "toast": "Nie można wysłać — Brakuje 428 PW do uczciwej oferty pokoju @ Relacji (baza 475 PW) — dopłać, by wysłać",
+        "ocena": "Brakuje 428 PW do uczciwej oferty pokoju @ Relacji (baza 475 PW) — dopłać, by wysłać",
         "wyslanie": {
-          "entryFound": false,
-          "tableLen": 0
+          "entryFound": true,
+          "tableLen": 1
         },
-        "powod": "gałąź „silniejsze” nieosiągnięta: bramka 10 tur wojny (komunikat w toście) zadziałała przed oceną siły; setup wieku wojny 5 tur nie zmienił tej bramki w tym przebiegu — do wyjaśnienia"
+        "wiekWojny": 12,
+        "uwaga": "bilans PW (diplomacy-proposals.ts:1551); gałąź ai.ts R5b „czuje się silniejsze” dotyczy propozycji AI, nie oferty gracza"
       }
     },
     {
       "id": "S4.c",
-      "label": "słabsza AI — ocena oferty pokoju bez miasta (dla porównania)",
-      "ok": "NIE_ZMIERZONO",
+      "label": "kontrast: słabsza AI przy tej samej ofercie bez miasta",
+      "ok": "PASS",
       "detail": {
-        "accepted": false,
-        "reason": "Pokój i rozejm dostępne po 10 pełnych turach wojny",
-        "powod": "ten sam odczyt blokowany bramką 10 tur; wynik nie świadczy o zasadzie „słabsza AI”"
+        "accepted": true,
+        "reason": "Warunki pokoju spełnione",
+        "uwaga": "to nie jest punkt „słabsza AI proponuje z miastem” z dispatchu — pokazuje wyłącznie, że ta sama oferta zależy od siły AI"
       }
     },
     {
@@ -58,31 +59,35 @@
     }
   ],
   "measured": {
+    "wiekWojnyPrzedOfertą": {
+      "turnsAtWar": 12,
+      "lostCities": 0
+    },
     "minCzasWojny": {
       "accepted": false,
       "reason": "Pokój i rozejm dostępne po 10 pełnych turach wojny",
       "rw": 0.5
     },
     "silniejszaAI_wyslanie": {
-      "entryFound": false,
-      "tableLen": 0
+      "entryFound": true,
+      "tableLen": 1
     },
     "silniejszaAI_toast": {
       "shown": true,
-      "text": "Pokój i rozejm będą dostępne po 10 pełnych turach wojny"
+      "text": "Nie można wysłać — Brakuje 428 PW do uczciwej oferty pokoju @ Relacji (baza 475 PW) — dopłać, by wysłać"
     },
     "silniejszaAI_ocena": {
       "accepted": false,
-      "reason": "Pokój i rozejm dostępne po 10 pełnych turach wojny",
+      "reason": "Brakuje 428 PW do uczciwej oferty pokoju @ Relacji (baza 475 PW) — dopłać, by wysłać",
       "rw": 0.9335542745116344
     },
     "slabszaAI_ocena": {
-      "accepted": false,
-      "reason": "Pokój i rozejm dostępne po 10 pełnych turach wojny",
+      "accepted": true,
+      "reason": "Warunki pokoju spełnione",
       "rw": 0
     }
   },
-  "startedAt": "2026-11-13T17:59:20.784Z",
+  "startedAt": "2026-11-13T18:17:29.664Z",
   "errorsTotal": 0,
-  "finishedAt": "2026-11-13T18:02:09.502Z"
+  "finishedAt": "2026-11-13T18:20:42.947Z"
 }

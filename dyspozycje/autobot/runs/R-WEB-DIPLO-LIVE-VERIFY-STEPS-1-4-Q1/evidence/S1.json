@@ -10,7 +10,14 @@
         "respekt": 100,
         "trustRaw": "40 / 100 +0.7 / turę",
         "respektRaw": "100 / 100",
-        "tierLines": [],
+        "tierLines": [
+          "Sojusz (pełny lub defensywny)",
+          "PRZYJAZNY",
+          "Relacja z perspektywy gracza",
+          "Wojna",
+          "Pokój",
+          "Sojusz"
+        ],
         "rows": [
           "Wiarygodność+20 · Uczciwy",
           "Zaufanie40 / 100 +0.7 / turę",
@@ -39,11 +46,14 @@
     },
     {
       "id": "S1.d",
-      "label": "respekt nie obcięty do 29 (wartość > 29 po turze wojny)",
+      "label": "zapisany respekt w wojnie nie obcięty do 29 (getRelationTotal przy zaufaniu 0 > 29)",
       "ok": "PASS",
       "detail": {
-        "respekt": 100,
-        "uwaga": "respekt efektywny w UI może zależeć od siły; surowy wiersz w rows"
+        "zapisanyPoWypowiedzeniu": 60,
+        "zapisanyPoTurze1": 60,
+        "oczekiwane": 60,
+        "respektEfektywnyUI": 100,
+        "uwaga": "respekt efektywny w UI (100) to wartość z mocy, nie zapisana; zapisana wartość odczytana hakiem getRelationTotal"
       }
     },
     {
@@ -59,7 +69,14 @@
       "respekt": 100,
       "trustRaw": "40 / 100 +0.7 / turę",
       "respektRaw": "100 / 100",
-      "tierLines": [],
+      "tierLines": [
+        "Sojusz (pełny lub defensywny)",
+        "PRZYJAZNY",
+        "Relacja z perspektywy gracza",
+        "Wojna",
+        "Pokój",
+        "Sojusz"
+      ],
       "rows": [
         "Wiarygodność+20 · Uczciwy",
         "Zaufanie40 / 100 +0.7 / turę",
@@ -72,7 +89,15 @@
       "respekt": 100,
       "trustRaw": "0 / 100",
       "respektRaw": "100 / 100",
-      "tierLines": [],
+      "tierLines": [
+        "WOJNA",
+        "Sojusz (pełny lub defensywny)",
+        "WROGI",
+        "Relacja z perspektywy gracza",
+        "Wojna",
+        "Pokój",
+        "Sojusz"
+      ],
       "rows": [
         "Wiarygodność+20 · Uczciwy",
         "Zaufanie0 / 100",
@@ -85,7 +110,15 @@
       "respekt": 100,
       "trustRaw": "0 / 100",
       "respektRaw": "100 / 100",
-      "tierLines": [],
+      "tierLines": [
+        "WOJNA",
+        "Sojusz (pełny lub defensywny)",
+        "WROGI",
+        "Relacja z perspektywy gracza",
+        "Wojna",
+        "Pokój",
+        "Sojusz"
+      ],
       "rows": [
         "Wiarygodność+20 · Uczciwy",
         "Zaufanie0 / 100",
@@ -98,7 +131,15 @@
       "respekt": 100,
       "trustRaw": "0 / 100",
       "respektRaw": "100 / 100",
-      "tierLines": [],
+      "tierLines": [
+        "WOJNA",
+        "Sojusz (pełny lub defensywny)",
+        "WROGI",
+        "Relacja z perspektywy gracza",
+        "Wojna",
+        "Pokój",
+        "Sojusz"
+      ],
       "rows": [
         "Wiarygodność+20 · Uczciwy",
         "Zaufanie0 / 100",
@@ -109,9 +150,11 @@
     "tury": [
       2,
       2
-    ]
+    ],
+    "zapisanyRespektPoWypowiedzeniu": 60,
+    "zapisanyRespektPoTurze1": 60
   },
-  "startedAt": "2026-11-13T16:55:45.088Z",
+  "startedAt": "2026-11-13T18:08:42.087Z",
   "errorsTotal": 0,
-  "finishedAt": "2026-11-13T17:01:11.869Z"
+  "finishedAt": "2026-11-13T18:13:45.375Z"
 }
