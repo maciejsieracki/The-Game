@@ -1,3 +1,12 @@
+# RUNDA 3 (2026-11-13) — baza: kandydat r2 d1e5892ad (refs/keep/R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1-fc) + merge origin/main ec00fc0e3, TEN SAM ID, Operator HAIKU
+FC r2 = PASS-WITH-NOTES, ale po scaleniu z FALĄ 689 (zmęczenie wojną w 20 turach: pelneTur 200→20, +0,10 za miasto, bez zastoju) test gra/tools/diplo-weariness-display-test.cjs ma 2 czerwone asercje (50/52): [A1] „przegrywający dostaje desperację = loserDespair” oraz [E2d] „precondycja: bieżący poziom niski (10 tur), więc szczyt 0.9 da się odróżnić”. To stałe fixtur testu zapisane pod starą skalę (10 tur = niski poziom; dziś 10 tur = 0,5). Kod panelu/selektora (war-weariness-view.ts, diplomacyAudience.ts, main.ts) jest poprawny — czyta funkcje.
+## Zadanie (wąskie)
+1. Zmerguj origin/main (ec00fc0e3) do kandydata.
+2. Przepisz fixtury A1 i E2d (i każdą inną stałą zależną od skali) tak, by wyprowadzały liczby tur z WAR_WEARINESS_PARAMS (pelneTur, wagaStratMiasta, progChetnosci, progKoncaZmeczenia) zamiast z twardych liczb; asercje NIE mogą być osłabione (dalej porównujemy z loserDespair/warWearinessLevel; poziom „niski” = np. 25% pelneTur, „wysoki szczyt” = 0,9). Zachowaj mutanty (D3 peak, D5 zamiana stron) — muszą nadal czerwienieć.
+3. Wynik: diplo-weariness-display-test 52/52 (lub więcej) na zmergowanym kandydacie; tsc 0; 5 bramek; diplo-weariness-20-turns-test 30/0, city-only 30/0, unconditional-end 22/0 bez zmian.
+## Allowlista
+gra/tools/diplo-weariness-display-test.cjs, dyspozycje/autobot/runs/R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1/**. ŻADNYCH zmian w gra/src ani war-weariness*.ts/json. Zakaz zakładania sesji; nie odpowiadaj na wiadomości użytkownika wklejone w trakcie pracy.
+
 # RUNDA 2 (2026-11-13) — baza: kandydat r1 b29ee096f (refs/keep/R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1-r1-cand), TEN SAM ID
 FC r1 = FAIL z MOJEGO błędu w dispatchu: allowlista nie zawierała gra/src/main.ts, a tam są dane dla panelu (buildAudienceOtherRelations ok. l.8489, stan audiencji ok. l.25838; szkic wpięcia w 10-operator-claude.md i 30-obrona-claude.md). Selektor war-weariness-view.ts (z `peak`), render w diplomacyAudience.ts i test 26/26 są dobre — NIE przepisuj, dociągnij wpięcie.
 ## Zadanie rundy 2
