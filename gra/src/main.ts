@@ -12462,6 +12462,27 @@ async function boot(): Promise<void> {
       return next;
     }
 
+    /**
+     * R-WEB-DIPLO-RESPECT-MILITARY-EVENTS-WIRE-Q1: zdarzenie 'wygrana_bitwa' (+5 Respekt, diplomacy.ts)
+     * dla pary gracz–partner, gdy GRACZ wygrywa bitwę. Przegrana gracza, remis, bitwy AI↔AI
+     * i barbarzyńcy nie zmieniają Respektu. Clamp wojenny (clampRelationForWar) działa jak zawsze.
+     */
+    function applyMilitaryWinRespectEvent(
+      atkRoster: RuntimeUnit[],
+      defRoster: RuntimeUnit[],
+      winner: 'atakujacy' | 'obronca' | 'remis',
+    ): void {
+      if (winner === 'remis') return;
+      const atkOwner = atkRoster[0]?.ownerId;
+      const defOwner = defRoster[0]?.ownerId;
+      if (atkOwner === undefined || defOwner === undefined || atkOwner === defOwner) return;
+      const winnerOwner = winner === 'atakujacy' ? atkOwner : defOwner;
+      const loserOwner = winner === 'atakujacy' ? defOwner : atkOwner;
+      if (!isHuman(winnerOwner) || isHuman(loserOwner) || isBarbarian(loserOwner)) return;
+      const cur = getDiploRelation(winnerOwner, loserOwner);
+      setDiploRelation(winnerOwner, loserOwner, applyDiploEventTracked(winnerOwner, loserOwner, cur, 'wygrana_bitwa'));
+    }
+
     function resetTrustPnGainedForPlayerTurn(): void {
       for (const [key, meta] of diplomacyPairMeta.entries()) {
         if (meta.trustPnGainedThisTurn !== 0) {
@@ -34992,6 +35013,8 @@ async function boot(): Promise<void> {
       },
     ): BattleLoot | null {
       chargeCombatCredibilityPenalties(atkRoster, defRoster);
+      // R-WEB-DIPLO-RESPECT-MILITARY-EVENTS-WIRE-Q1: 'wygrana_bitwa' (+5 Respekt) przy wygranej gracza.
+      applyMilitaryWinRespectEvent(atkRoster, defRoster, winner);
       const battleQ = opts?.battleQ ?? defRoster[0]?.q ?? atkRoster[0]?.q ?? 0;
       const battleR = opts?.battleR ?? defRoster[0]?.r ?? atkRoster[0]?.r ?? 0;
       const atkStart = opts?.atkStart ?? snapshotRosterPositions(atkRoster);
