@@ -849,3 +849,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Zakres do decyzji orkiestratora:** ZDOBYCIE-MIASTA-WIRING (#115) jako duży temat z podziałem na tematy (węzeł P9, bramki, cesja, druga ścieżka). Zależności od #106 (dyplomacja) i #120 (wypowiedzenie).
 - **NIE_ZMIERZONO:** pełna semantyka `applyMapBattleOutcome` w Rust, wołający spoza `rust-port/`, mapowanie `playerEverOwnedCityByOwner`.
 - Dokument zintegrowany na `claude/rust-sivvrn` (cherry-pick, bez zmian kodu).
+
+## Przebieg (13.11, ~21:05): rozpoznanie zdobycia miasta zamknięte; awaria dysku
+- **ZDOBYCIE-MIASTA-ROZPOZNANIE:** FC PASS-WITH-NOTES, zintegrowane jako dokumenty (`adc43ee10` / `ff2b36344`). Wniosek: zakres #115 jest duży — trzeba go podzielić na tematy (węzeł P9 `applyCityCaptureAfterBattle`, bramki zdobycia, cesja, druga ścieżka przegranej w barbarzyńcy). Decyzja o podziale — do zrobienia przy kolejnym dispatchu.
+- **Awaria dysku:** dysk spadł do 1,0 GB przy trzech aktywnych workflow. Usunięto cztery worktree zakończonego rozpoznania (wyniki w gałęziach `wip/…` i w `claude/rust-sivvrn`). Dysk: 5,6 GB.
+- **Aktywne:** ZWYCIESTWO-WIRING-Q1 r3 (Operator, HAIKU, `wf_00652ce1-d2a`); ZLOZA-B-REST-Q1 r3 (Obrona, HAIKU, `wf_d3ddfaff-163`).
+- **Parity:** `0ca58770e`.
