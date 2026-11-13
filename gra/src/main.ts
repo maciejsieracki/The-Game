@@ -165,6 +165,7 @@ import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
 import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
 import { installCivTestHooks, isCivTestEnabled, civTestSeedOverride, civTestRuntime } from './game/civ-test-hooks';
+import { gameStreamRng, gameIdSuffix } from './game/game-rng';
 import { computeStartPlacements, computeReachable, computePath, setSiegeEntryBlocker, siegeScopeMemo, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, hexNeighborCoords, categoryOf, terrainMoveCost, isCivilianUnit, buildMoveOccupancy, trimSegmentEndOffPassThrough, type MoveOccupancy } from './units/setup';
 import { enterCityAfterSurrender } from './game/siege-enter-city';
 import { isCityUnderSiege, isSiegeEntryBlocked, besiegedCityAtHex, CITY_SIEGE_RECRUIT_BLOCK_PL } from './game/city-siege-state';
@@ -2000,8 +2001,12 @@ async function boot(): Promise<void> {
       );
     }
 
-    const SEED = Math.floor(Math.random() * 1e9);
+    // R-WEB-DETERMINISM-GAME-RNG-Q1: ziarno gry z ?civSeed (tylko ?civTest=1); bez haka — losowe jak dotad.
+    const SEED = (typeof location !== 'undefined' ? civTestSeedOverride(location.search) : null) ?? Math.floor(Math.random() * 1e9);
     let _gameSeed = SEED;
+    // R-WEB-DETERMINISM-GAME-RNG-Q1: sufiksy ID z ziarna gry (unikalne dzieki licznikowi w przebiegu).
+    let _detIdSeq = 0;
+    const detIdSuffix = (salt: string): string => { _detIdSeq += 1; return gameIdSuffix(_gameSeed, turn, salt, _detIdSeq); };
     const unitSight = buildUnitSightResolver(data.units, DEFAULT_SIGHT);
     const unitFoodTbl = buildUnitFoodTable(data.units as unknown as Record<string, unknown>[]);
 
@@ -4525,7 +4530,7 @@ async function boot(): Promise<void> {
       const ruch = applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
       const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
       const isSuper = def['Super-jednostka'] === 'TAK';
-      const newUnitId = 'prod_' + turn + '_' + cityId + '_' + Math.random().toString(36).slice(2);
+      const newUnitId = 'prod_' + turn + '_' + cityId + '_' + detIdSuffix('prod_');
       // Sciezki ulepszen jednostek (2026-07-25, unit-building-bonuses.ts): jednostka
       // rodzi sie juz na poziomie budynkow miasta, w ktorym powstala (Pancerz/
       // parametry miekkie); ownerId-agnostyczne -- dziala identycznie dla gracza i AI.
@@ -11359,7 +11364,7 @@ async function boot(): Promise<void> {
       const ruch = applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
       const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
       const isSuper = def['Super-jednostka'] === 'TAK';
-      const newUnitId = 'diffbonus_' + turn + '_' + ownerId + '_' + Math.random().toString(36).slice(2);
+      const newUnitId = 'diffbonus_' + turn + '_' + ownerId + '_' + detIdSuffix('diffbonus_');
       units.push({
         id: newUnitId,
         ownerId,
@@ -18516,7 +18521,7 @@ async function boot(): Promise<void> {
       const role = String(def['Rola (linia)'] ?? '');
       const movement = applyRuchSwiataPace(normFieldVal(def['Ruch'], 1), player.ruchSwiataPace ?? 'krotki');
       const newUnit: RuntimeUnit = {
-        id: 'siege-engine-' + turn + '-' + city.id + '-' + Math.random().toString(36).slice(2),
+        id: 'siege-engine-' + turn + '-' + city.id + '-' + detIdSuffix('siege-engine-'),
         ownerId: besiegerOwnerId,
         typeId: unitId,
         category: categoryOf(unitId, role, def['Super-jednostka'] === 'TAK', def.Typ),
@@ -30815,7 +30820,7 @@ async function boot(): Promise<void> {
       spawnTestUnitForPlayer: (q: number, r: number): string | null => {
         const template = units.find(u => !isCivilianUnit(u));
         if (!template) return null;
-        const id = 'hotseat5_testunit_' + Math.random().toString(36).slice(2);
+        const id = 'hotseat5_testunit_' + detIdSuffix('hotseat5_testunit_');
         units.push({ ...template, id, ownerId: 0, q, r, ruchLeft: template.ruch });
         return id;
       },
@@ -32511,7 +32516,7 @@ async function boot(): Promise<void> {
       let villageEraAdvanced = false;
 
       const grantGold = (label: string): void => {
-        const amount = villageGoldAmount(era);
+        const amount = villageGoldAmount(era, gameStreamRng(_gameSeed, turn, 'village-gold:' + q + ':' + r, ownerId));
         if (isPlayer) {
           player.skarbiec += amount;
         } else {
@@ -32547,7 +32552,7 @@ async function boot(): Promise<void> {
         rewardUnitIsMilitary: isVillageRewardUnitMilitary(era),
       });
 
-      const kind = pickVillageReward(Math.random(), { excludeUnit });
+      const kind = pickVillageReward(gameStreamRng(_gameSeed, turn, 'village-reward:' + q + ':' + r, ownerId)(), { excludeUnit });
 
       if (kind === 'zloto') {
         grantGold('skarb');
@@ -32620,7 +32625,7 @@ async function boot(): Promise<void> {
           const ruch = applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
           const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
           const isSuper = def['Super-jednostka'] === 'TAK';
-          const newUnitId = 'wioska_' + turn + '_' + q + '_' + r + '_' + Math.random().toString(36).slice(2);
+          const newUnitId = 'wioska_' + turn + '_' + q + '_' + r + '_' + detIdSuffix('wioska_');
           units.push({
             id: newUnitId,
             ownerId,
@@ -40588,7 +40593,7 @@ async function boot(): Promise<void> {
                 const ruch = applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
                 const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
                 const isSuper = def['Super-jednostka'] === 'TAK';
-                const newUnitId = 'rec_' + turn + '_' + cid + '_' + Math.random().toString(36).slice(2);
+                const newUnitId = 'rec_' + turn + '_' + cid + '_' + detIdSuffix('rec_');
                 const recBirthProgress = bestBuildingProgressAfterCityVisit(
                   undefined, cityBuilt.get(cid), data.buildings,
                 );
@@ -41200,7 +41205,7 @@ async function boot(): Promise<void> {
                 _menuCityStateDifficultyVsPlayer,
                 turn,
                 clusterWarMembers,
-                Math.random,
+                gameStreamRng(_gameSeed, turn, 'cs-war-cluster'),
               );
               for (const csOwnerId of clusterDowOwners) {
                 try {
@@ -42354,7 +42359,7 @@ async function boot(): Promise<void> {
                     if (!decision.action) continue;
 
                     if (decision.action === 'trybut') {
-                      if (rollAiCsAccept('trybut', csAbsParams)) {
+                      if (rollAiCsAccept('trybut', csAbsParams, gameStreamRng(_gameSeed, turn, 'cs-accept:trybut', ownerId))) {
                         const [p0, p1] = pairOwnerIds(ownerId, csId);
                         activeDeals = addTreaty(activeDeals, {
                           id: `ai_cs_trybut_${p0}_${p1}_${turn}`,
@@ -42377,7 +42382,7 @@ async function boot(): Promise<void> {
                         aiCsFailCount.set(pairKey, (aiCsFailCount.get(pairKey) ?? 0) + 1);
                       }
                     } else if (decision.action === 'wasal') {
-                      if (rollAiCsAccept('wasal', csAbsParams)) {
+                      if (rollAiCsAccept('wasal', csAbsParams, gameStreamRng(_gameSeed, turn, 'cs-accept:wasal', ownerId))) {
                         if (!hasTreaty(activeDeals, ownerId, csId, RodzajTraktatu.Wasalizacja)) {
                           const [p0, p1] = pairOwnerIds(ownerId, csId);
                           activeDeals = addTreaty(activeDeals, {
@@ -43945,7 +43950,7 @@ async function boot(): Promise<void> {
               const ruchBazowy = def ? normFieldVal(def['Ruch'], 2) : 2;
               const ruch = applyRuchSwiataPace(ruchBazowy, player.ruchSwiataPace ?? 'krotki');
               const newUnit: BarbUnit = {
-                id: 'barb_' + turn + '_' + spawn.campId + '_' + Math.random().toString(36).slice(2),
+                id: 'barb_' + turn + '_' + spawn.campId + '_' + detIdSuffix('barb_'),
                 ownerId: BARBARIAN_OWNER_ID,
                 typeId: spawn.typeId,
                 category: 'wojownik',
@@ -44020,7 +44025,7 @@ async function boot(): Promise<void> {
                 const gruchBazowy = gdef ? normFieldVal(gdef['Ruch'], 2) : 2;
                 const gruch = applyRuchSwiataPace(gruchBazowy, player.ruchSwiataPace ?? 'krotki');
                 const newGarrisonUnit: BarbUnit = {
-                  id: 'barbcity_' + turn + '_' + gspawn.cityId + '_' + Math.random().toString(36).slice(2),
+                  id: 'barbcity_' + turn + '_' + gspawn.cityId + '_' + detIdSuffix('barbcity_'),
                   ownerId: BARBARIAN_OWNER_ID,
                   typeId: gspawn.typeId,
                   category: 'wojownik',
@@ -44466,7 +44471,7 @@ async function boot(): Promise<void> {
             explored,
             humanOwnerId,
             unitSight,
-            Math.random,
+            gameStreamRng(_gameSeed, turn, 'scout-auto-explore', humanOwnerId),
             (u) => {
               // P-MGLA-ODKRYCIE-SCIEZKA-INWARIANT-Q1 — CZWARTE miejsce tego samego wzorca.
               // `advanceScoutAutoExplore` (scout-auto-explore.ts:234) przestawia `unit.q/r`
@@ -46559,6 +46564,7 @@ async function boot(): Promise<void> {
       playtestMiastoActive = false;
       // R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: `?civSeed=` działa tylko przy `?civTest=1`; bez tego = PLAYTEST_MAPA_SEED.
       const playtestRunSeed: number = civTestSeedOverride(typeof location !== 'undefined' ? location.search : '') ?? PLAYTEST_MAPA_SEED;
+      _gameSeed = playtestRunSeed; // R-WEB-DETERMINISM-GAME-RNG-Q1: ziarno gry = ziarno mapy w tym hakcie
       const mqTier = mapQualityTierFromQuery('high');
       const mqBundle = bundledMapQualityPreset(mqTier);
       const ptMapDensity = resolvePlaytestMapaWorldDensity();

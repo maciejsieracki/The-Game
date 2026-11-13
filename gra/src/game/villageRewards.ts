@@ -16,6 +16,7 @@
 
 import type { CityHexRef } from './city-hex-movement';
 import { canUnitOccupyCityHex } from './city-hex-movement';
+import { mulberry32 } from './game-rng';
 import type { RuntimeUnit } from '../units/setup';
 import { hexNeighborCoords, keyOf } from '../units/setup';
 
@@ -130,7 +131,13 @@ export function shouldExcludeUnitReward(a: {
  * Losowa kwota złota (liczba całkowita) w zakresie bazowym, skalowana erą.
  * `rand` domyślnie Math.random -- wstrzykiwalne dla testów deterministycznych.
  */
-export function villageGoldAmount(era: number, rand: () => number = Math.random): number {
+/**
+ * R-WEB-DETERMINISM-GAME-RNG-Q1: domyślny strumień = deterministyczny mulberry32 (ziarno stałe, bez Math.random).
+ * Ścieżka tury podaje własny strumień z ziarna gry (main.ts: gameStreamRng); domyślny służy testom/wywołaniom bez ziarna.
+ */
+const VILLAGE_DEFAULT_RNG = mulberry32(0x5eed0001);
+
+export function villageGoldAmount(era: number, rand: () => number = VILLAGE_DEFAULT_RNG): number {
   const e = Math.max(1, Math.floor(era));
   const span = VILLAGE_GOLD_BASE_MAX - VILLAGE_GOLD_BASE_MIN + 1;
   const base = VILLAGE_GOLD_BASE_MIN + Math.floor(rand() * span);
