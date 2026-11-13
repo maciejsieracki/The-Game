@@ -266,8 +266,17 @@ fn new_fields_roundtrip_and_default_is_omitted() {
     full.map.improvements = vec![layer(4, 4, Some("farma"), None)];
     full.forts = vec![fort(8, 4, 1, PlayableFortKind::Posterunek, Some(false))];
     let text = serde_json::to_string(&full).expect("serialize");
+    // P6-ZWYCIESTWO-WIRING (r4): pin NIE zapisuje `graczKiedysMialMiasto` (gra/src/game/save.ts: 0 trafien),
+    // wiec flaga nie wchodzi do JSON i po wczytaniu = false (odtworzenie ze miast wg main.ts:46368-46370).
+    // Oczekiwanie: reszta pol bez zmian, flaga zresetowana.
     let loaded: PlayableState = serde_json::from_str(&text).expect("roundtrip");
-    assert_eq!(loaded, full);
+    assert!(
+        !loaded.gracz_kiedys_mial_miasto,
+        "flaga nie jest zapisywana w zapisie (pin)"
+    );
+    let mut expected = full.clone();
+    expected.gracz_kiedys_mial_miasto = false;
+    assert_eq!(loaded, expected);
 }
 
 // ---------------------------------------------------------------------------------------------------------
