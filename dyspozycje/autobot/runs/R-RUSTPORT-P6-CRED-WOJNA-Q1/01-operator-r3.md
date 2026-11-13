@@ -26,7 +26,8 @@ TESTY:
   - Kompilacja testów na bazie parity bez poprawek: nie była potrzebna żadna naprawa testów.
   - Zakres: Test S3 wykonany wprost na StreamDealKind::LegacyTradeAgreement, bez aliasu umowa_handlowa (zgodnie z DODATKIEM r2/r3).
 BLOKADY:
-  - Decyzja właściciela (poza tą rundą, bez zmian): hak w declare_forced_wars (war_turn_declare.rs, pin 41931) -> #120 lub rozszerzenie allowlisty.
+  - KOREKTA (obrona r3, zarzut FC DROBNY): hak P4 w declare_forced_wars JEST wolany na bazie 003d53f97: war_turn_declare.rs:116 `note_war_declarations(state, &pairs, turn)` -> turn_war_dipl_steps.rs:895 `reg.note_war_entered`. Pokrycie testem: p6_cred_wojna_forced.rs (4 ok). Poprzedni zapis tej blokady był błędny i jest wycofany.
+  - Decyzja właściciela (poza tą rundą): wypowiedzenie gracza (web 13168/13205), sojusz 23806 (joinAllyToWar, brak wołania), klaster 40441 -> #120 (poza hakiem declare_forced_wars).
   - Decyzja właściciela (poza tą rundą, bez zmian): alias umowa_handlowa -> LegacyTradeAgreement (credibility.rs:597-598), pominięty.
   - Wiring zlozeGrants i harness pipeline dla kolejności D4/D8: osobne tematy, poza zakresem.
   - Konflikt zasad commit: dispatch r3 nakazuje commit bez nazwy modelu (bez Co-Authored-By z modelem); harness dołącza linię Co-Authored-By. Zastosowano dispatch; linia Claude-Session zachowana.
