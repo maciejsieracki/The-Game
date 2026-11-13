@@ -561,7 +561,10 @@ impl PlayableState {
     /// P6-ZWYCIESTWO-WIRING: odtworzenie flagi `graczKiedysMialMiasto` ze miast po wczytaniu zapisu
     /// (pin main.ts:46368-46370: `playerEverOwnedCityByOwner` = fotele z miastem). Wywolywac po
     /// deserializacji, PRZED pierwsza tura; bez tego flaga po wczytaniu = false (pole nie jest w zapisie).
-    /// BRAK wolajacego w produkcji (tylko test `wczytany_zapis_odtwarza_flage_ze_miast_przed_utrata`).
+    /// Tylko `cfg(test)`: produkcyjnej sciezki wczytania `PlayableState` nie ma (zakres r3, osobny temat),
+    /// wiec funkcja nie moze byc czescia zwyklego kodu. Test `wczytany_zapis_odtwarza_flage_ze_miast_przed_utrata`
+    /// opisuje kontrakt; po wpieciu wczytania nalezy usunac `cfg(test)` i wolac ja z tej sciezki.
+    #[cfg(test)]
     pub fn odtworz_flage_zwyciestwa_ze_miast(&mut self) {
         self.gracz_kiedys_mial_miasto = self.gracz_kiedys_mial_miasto
             || self
@@ -760,6 +763,9 @@ impl PlayableGame {
             movement_max: 1,
             selected: false,
         }];
+        // P6-ZWYCIESTWO-WIRING: flaga startowa = miasto gracza zalozone przy starcie (pin main.ts:16508 /
+        // nowa gra main.ts:45645-45646 dodaja fotel do zbioru miast). Nie jest sztywnym `true`.
+        let gracz_kiedys_mial_miasto = cities.iter().any(|city| city.owner_id == HUMAN_PLAYER_ID);
         let status = format!(
             "Sesja {} · {} · mapa {}. Wybierz jednostkę.",
             params.civ_name, params.epoch, params.map_size
@@ -782,9 +788,7 @@ impl PlayableGame {
                 stores: PlayableStores::default(),
                 economy: PlayableReplaceEconomy::default(),
                 forts: Vec::new(),
-                // Stolica zalozona przy starcie = odpowiednik `playerEverOwnedCityByOwner.add(ME())`
-                // (pin main.ts:16508): gracz kiedys mial miasto, wiec przegrana po utracie wszystkich miast.
-                gracz_kiedys_mial_miasto: true,
+                gracz_kiedys_mial_miasto,
                 koniec_gry: None,
             },
             phase_queue: EventQueue::new(),
@@ -1107,7 +1111,8 @@ impl PlayableGame {
         // Migawka przed przejsciem tury: blad fazy wojny cofa kolejke i stan wojny (brak polowicznego zuzycia).
         let queue_before = self.phase_queue.clone();
         let war_before = self.state.war.clone();
-        // Migawka pol zwyciestwa: blad po fazie Victory (np. niekompletna kolejka) cofa tez koniec gry i flage.
+        // Migawka pol zwyciestwa: niekompletna kolejka faz (blad przejscia tury) cofa tez koniec gry i flage.
+        // Sam blad sprawdzenia zwyciestwa nie cofa tury (semantyka pina, zob. faza Victory nizej).
         let koniec_before = self.state.koniec_gry;
         let flag_before = self.state.gracz_kiedys_mial_miasto;
         let mut phases = Vec::with_capacity(PHASE_COUNT);
@@ -1127,6 +1132,8 @@ impl PlayableGame {
                 }
             }
             // P6-ZWYCIESTWO-WIRING: sprawdzenie zwyciestwa/porazki gracza na fazie Victory (pin main.ts:43441-43483).
+            // Semantyka bledu jak w pinie: blad sprawdzenia jest logowany (pin: console.error w catch) i tura
+            // trwa dalej; NIE cofa tury ani stanu wojny. Flaga i koniec gry zostaja nietkniete.
             if entry.phase() == TurnPhase::Victory {
                 match self.evaluate_victory() {
                     Ok((flag, result)) => {
@@ -1136,9 +1143,7 @@ impl PlayableGame {
                         }
                     }
                     Err(error) => {
-                        self.phase_queue = queue_before;
-                        self.state.war = war_before;
-                        return Err(error);
+                        eprintln!("[Victory] Blad sprawdzania warunkow zwyciestwa: {error}");
                     }
                 }
             }
@@ -1197,36 +1202,24 @@ impl PlayableGame {
     fn evaluate_victory(&self) -> Result<(bool, Option<VictoryResult>), PlayableError> {
         let state = &self.state;
         let gracz = HUMAN_PLAYER_ID.get() as i64;
-        let has_city = state.cities.iter().any(|c| c.owner_id == HUMAN_PLAYER_ID);
-        let flag = state.gracz_kiedys_mial_miasto || has_city;
         let (powers, era) = victory_power_inputs(state)?;
         let potega = *powers.get(&gracz).ok_or_else(|| {
             PlayableError::VictoryCheck("brak mocy gracza w wejsciu warunkow".to_owned())
         })?;
-        let input = VictoryInput {
+        let input = VictoryTurnInput {
             city_owner_ids: state
                 .cities
                 .iter()
                 .map(|c| c.owner_id.get() as i64)
                 .collect(),
             gracz,
-            // Pin (main.ts:43479): `_menuAdvanced?.victoryMode ?? 'moc_i_dominacja'`. Brak menu w Rust
-            // (UI poza zakresem tematu), wiec zawsze domyslny tryb pina. Pin czyta tez
-            // `allTechInScopeResearched` i `rakietaWystrzelona` (ponizej stale false): nauka nieosiagalna
-            // przy NAUKA_WYMAGA_RAKIETY=true, bo pin nigdzie nie ustawia rakiety. Odstepstwo NIE_ZMIERZONO
-            // dla wariantu menu, zob. 02a-obrona.md.
-            victory_mode: Some(VictoryMode::MocIDominacja),
-            potega_gracza: Some(potega),
-            potegi_wszystkich: Some(powers.values().copied().collect()),
-            gracz_era: Some(era),
-            ostatnia_epoka: Some(OSTATNIA_EPOKA_GRY_V1),
-            wszystkie_tech_zbadane: Some(false),
-            rakieta_wystrzelona: Some(false),
-            epoka_koncowa: None,
-            nauka_ukonczona: None,
-            gracz_kiedys_mial_miasto: Some(flag),
+            flaga_zapisana: state.gracz_kiedys_mial_miasto,
+            potega_gracza: potega,
+            potegi_wszystkich: powers.values().copied().collect(),
+            gracz_era: era,
+            ostatnia_epoka: OSTATNIA_EPOKA_GRY_V1,
         };
-        Ok((flag, check_victory(&input)))
+        Ok(victory_turn_decision(&input))
     }
 
     fn enqueue_turn_phases(&mut self, turn: u32) {
@@ -1235,6 +1228,44 @@ impl PlayableGame {
                 .enqueue(turn, *phase, event_for_phase(turn, *phase));
         }
     }
+}
+
+/// P6-ZWYCIESTWO-WIRING: wejscie decyzji po turze (pin main.ts:43441-43483). `gracz` = fotel czlowieka.
+#[derive(Debug, Clone, PartialEq)]
+pub struct VictoryTurnInput {
+    /// Wlasciciele miast (ta sama kolejnosc co `cities`).
+    pub city_owner_ids: Vec<i64>,
+    pub gracz: i64,
+    /// Zapamietana flaga `graczKiedysMialMiasto` przed ocena (pin: Set `playerEverOwnedCityByOwner`).
+    pub flaga_zapisana: bool,
+    pub potega_gracza: f64,
+    pub potegi_wszystkich: Vec<f64>,
+    pub gracz_era: i64,
+    pub ostatnia_epoka: i64,
+}
+
+/// P6-ZWYCIESTWO-WIRING: decyzja warunkow zwyciestwa/porazki po turze. Zwraca (nowa flaga, wynik `checkVictory`).
+/// Nowa flaga = zapamietana albo gracz ma miasto teraz (pin: `Set.has` po dopisaniu miasta przy zalozeniu).
+/// Pin (main.ts:43479): `_menuAdvanced?.victoryMode ?? 'moc_i_dominacja'`. Brak menu w Rust (UI poza zakresem),
+/// wiec zawsze domyslny tryb pina. Rakieta zawsze false (pin nigdzie nie ustawia `rakietaWystrzelona`), wiec
+/// nauka pozostaje nieosiagalna przy `NAUKA_WYMAGA_RAKIETY`. `wszystkieTechZbadane` = false bez wplywu na wynik.
+pub fn victory_turn_decision(input: &VictoryTurnInput) -> (bool, Option<VictoryResult>) {
+    let flag = input.flaga_zapisana || input.city_owner_ids.contains(&input.gracz);
+    let victory_input = VictoryInput {
+        city_owner_ids: input.city_owner_ids.clone(),
+        gracz: input.gracz,
+        victory_mode: Some(VictoryMode::MocIDominacja),
+        potega_gracza: Some(input.potega_gracza),
+        potegi_wszystkich: Some(input.potegi_wszystkich.clone()),
+        gracz_era: Some(input.gracz_era),
+        ostatnia_epoka: Some(input.ostatnia_epoka),
+        wszystkie_tech_zbadane: Some(false),
+        rakieta_wystrzelona: Some(false),
+        epoka_koncowa: None,
+        nauka_ukonczona: None,
+        gracz_kiedys_mial_miasto: Some(flag),
+    };
+    (flag, check_victory(&victory_input))
 }
 
 /// P6-ZWYCIESTWO-WIRING: moc (`objectivePowerForOwner`) wszystkich wlascicieli i epoka gracza do warunkow
@@ -1664,5 +1695,22 @@ mod unit_replace_error_tests {
             result.rodzaj,
             crate::domain::victory::VictoryKind::Przegrana
         );
+    }
+    /// P6-ZWYCIESTWO-WIRING (r3, semantyka pina main.ts:43441-43483): blad sprawdzenia zwyciestwa jest logowany
+    /// (pin: console.error w catch) i tura trwa; blad NIE cofa tury. Wymuszenie bledu: nieznana epoka startu,
+    /// ktora `victory_power_inputs` odrzuca.
+    #[test]
+    fn blad_sprawdzenia_zwyciestwa_nie_cofa_tury() {
+        let mut game = kamien_game();
+        game.state.params.epoch_id = "nieznana-epoka".to_owned();
+        assert!(
+            game.evaluate_victory().is_err(),
+            "scenariusz: blad sprawdzenia"
+        );
+        let turn_before = game.state.turn;
+        game.advance_turn()
+            .expect("tura przechodzi mimo bledu sprawdzenia zwyciestwa");
+        assert_eq!(game.state.turn, turn_before + 1);
+        assert_eq!(game.state.koniec_gry, None, "blad nie ustawia konca gry");
     }
 }
