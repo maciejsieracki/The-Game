@@ -1,3 +1,9 @@
+## ROBOCZA 2110e07f -- 2026-11-13 -- FALA 684: Równe tempo mieszanej armii do pierwszego starcia (najwyżej 1 hex różnicy) (testowa)
+
+- Cała armia (piechota, strzelcy, konnica, machiny) idzie tempem najwolniejszej jednostki strony aż do pierwszego wzwarcia wręcz; sufit tempa liczony w punktach ruchu; nowy test na produkcyjnej pętli tury z 6 składami i 5 mutacjami.
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; pace-equal-line 23/0 (0 z 12 tur z różnicą >1 hex), W19 PASS, cavalry-flank PASS, standoff PASS; vite build OK
+- Limity: Teren o zmiennym koszcie ruchu NIE_ZMIERZONO (sufit w punktach ruchu, nie w hexach); weryfikacja na żywo w Chromium NIE_ZMIERZONO; test mierzy stronę atakującą
+
 ## ROBOCZA 91b26d7e -- 2026-11-13 -- FALA 683: Etykieta Relacja zgodna z zaufaniem: Wrogi tylko poniżej 10 (testowa)
 
 - Skala Relacja: Wrogi tylko przy zaufaniu poniżej 10; zaufanie 10-29 przy relacji poniżej 60 pokazuje Neutralny; progi 60 i 130, wojna i sojusz bez zmian.
