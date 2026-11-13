@@ -14,6 +14,8 @@
  *   M_WEAR   — profile: zmęczenie stałe 0.5 (powrót do martwej heurystyki)
  *   M_HEALTH — profile: sygnał (c) zdrowia armii wyłączony
  *   M_TUR    — ai.ts: AI składa propozycję pokoju bez bramki minTurWojny (R5a ↔ propozycje AI)
+ *   M_GATE   — timing: bramka czasu gracza (PEACE_PROPOSAL_MIN_WAR_TURNS) zdjęta do 1 tury
+ *   M_STRONG — proposals: odrzucenie „militarnie silniejsza" gracza wyłączone
  * Run: node tools/diplo-war-peace-sim-test.cjs
  */
 const fs = require('fs');
@@ -24,6 +26,8 @@ const GRA = path.resolve(__dirname, '..');
 const ENTRY = path.resolve(GRA, 'src', '.dip-warpeace-sim-entry.ts');
 const AI_FILE = path.resolve(GRA, 'src', 'game', 'ai.ts');
 const PROFILE = path.resolve(GRA, 'src', 'game', 'diplomacy-war-peace-profile.ts');
+const TIMING = path.resolve(GRA, 'src', 'game', 'diplomacy-peace-proposal-timing.ts');
+const PROPOSALS = path.resolve(GRA, 'src', 'game', 'diplomacy-proposals.ts');
 const BUNDLES = {
   ok: path.resolve(__dirname, '.dip-warpeace-sim-ok.cjs'),
   sig: path.resolve(__dirname, '.dip-warpeace-sim-msig.cjs'),
@@ -31,6 +35,8 @@ const BUNDLES = {
   wear: path.resolve(__dirname, '.dip-warpeace-sim-mwear.cjs'),
   health: path.resolve(__dirname, '.dip-warpeace-sim-mhealth.cjs'),
   tur: path.resolve(__dirname, '.dip-warpeace-sim-mtur.cjs'),
+  gate: path.resolve(__dirname, '.dip-warpeace-sim-mgate.cjs'),
+  strong: path.resolve(__dirname, '.dip-warpeace-sim-mstrong.cjs'),
 };
 
 let pass = 0;
@@ -156,7 +162,9 @@ function playerPeaceProposal(mod, t, o) {
 }
 
 function isStronger(r) { return /czuje się silniejsze|militarnie silniejsza/.test(r.reason || ''); }
-function isTooEarly(r) { return /za wcześnie/.test(r.reason || ''); }
+// Kod gracza (diplomacy-proposals.ts) pisze „Pokój i rozejm dostępne po 10 pełnych turach wojny";
+// stary regex /za wcześnie/ nie trafiał nigdy, więc S7b i M_TUR były puste (zarzut 2 Evaluatora).
+function isTooEarly(r) { return /za wcześnie|po 10 pełnych turach/.test(r.reason || ''); }
 
 const SLABY = { rw: 0.2, typ: 'zulusi', health: 0.9 };
 const SILNY = { rw: 0.7, typ: 'zulusi', health: 0.9 };
@@ -217,8 +225,13 @@ async function main() {
     await buildBundle(BUNDLES.tur, [mTur.plugin]);
     const mHealth = mutantPlugin(PROFILE, 'input.armyHealthShare !== undefined && input.armyHealthShare < profile.progZdrowia', 'false');
     await buildBundle(BUNDLES.health, [mHealth.plugin]);
+    const mGate = mutantPlugin(TIMING, 'export const PEACE_PROPOSAL_MIN_WAR_TURNS = 10;', 'export const PEACE_PROPOSAL_MIN_WAR_TURNS = 1;');
+    await buildBundle(BUNDLES.gate, [mGate.plugin]);
+    const mStrong = mutantPlugin(PROPOSALS, "if (r5Gate.verdict === 'stronger') {", "if (false) {");
+    await buildBundle(BUNDLES.strong, [mStrong.plugin]);
     check('(0) każdy mutant podmienił dokładnie 1 miejsce',
-      [mSig, mFeel, mWear, mHealth, mTur].every(m => m.info.applied === 1), [mSig.info, mFeel.info, mWear.info, mHealth.info, mTur.info]);
+      [mSig, mFeel, mWear, mHealth, mTur, mGate, mStrong].every(m => m.info.applied === 1),
+      [mSig.info, mFeel.info, mWear.info, mHealth.info, mTur.info, mGate.info, mStrong.info]);
 
     const ok = runSuite(require(BUNDLES.ok));
 
@@ -242,8 +255,10 @@ async function main() {
 
     // kryterium 1: gracz vs silniejsza AI: odrzucenie przed turą 10 z komunikatem
     const pvs = ok.playerVsStrong;
-    check('S3: gracz (silna AI, bez utraty) dostaje „czuje się silniejsze" w turach 7-9 (po minTur 7)',
-      [7, 8, 9].every(t => isStronger(pvs[t - 1])), [7, 8, 9].map(t => pvs[t - 1].reason));
+    // Zatwierdzone: „pierwsze propozycje pokoju od tury 10" — gracz w turach 7-9 dostaje odrzucenie CZASOWE
+    // (bramka PEACE_PROPOSAL_MIN_WAR_TURNS = 10 wyprzedza bramkę siły; kolejność bramek w evaluateProposal).
+    check('S3: gracz (silna AI, bez utraty) w turach 7-9 dostaje odrzucenie czasowe „po 10 pełnych turach wojny"',
+      [7, 8, 9].every(t => /po 10 pełnych turach/.test(pvs[t - 1].reason || '')), [7, 8, 9].map(t => pvs[t - 1].reason));
     // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: silniejsza militarnie AI odrzuca bez limitu czasu (nie wygasa po turze 10).
     check('S3b: gracz (silna AI, bez utraty) od tury 10 nadal dostaje odrzucenie (reguła siły, bez wygaśnięcia)',
       pvs.slice(9).every(r => isStronger(r)), pvs.slice(9).map(r => r.reason));
@@ -254,8 +269,9 @@ async function main() {
     // silniejsza AI nadal odrzuca pokój bez miasta (stara reguła „po utracie miasta nie czuje się silniejsza" uchylona).
     check('S4: po utracie miasta (tura 5) silniejsza militarnie AI nadal odrzuca w turach 10-12 (reguła siły)',
       [10, 11, 12].every(t => isStronger(pls[t - 1])), [10, 11, 12].map(t => pls[t - 1].reason));
-    check('S4b: kontrola — bez utraty w turze 8 odrzucenie „silniejsze" jest',
-      isStronger(pvs[7]), pvs[7].reason);
+    // S4b przeniesione z tury 8 (przed bramką czasu, zwraca „po 10 pełnych turach") na turę 10 — pierwszą po bramce.
+    check('S4b: kontrola — bez utraty w turze 10 (pierwsza tura po bramce czasu) odrzucenie „militarnie silniejsza" jest',
+      isStronger(pvs[9]), pvs[9].reason);
 
     // kryterium 1/4/7: zmęczenie wojną — umiarkowana AI nie chce pokoju przed ~0.4·T
     // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: pasmo „średnia" zniknęło — każda słabsza militarnie AI
@@ -289,6 +305,13 @@ async function main() {
     check('M_TUR wykryty: bez bramki minTurWojny AI składa propozycję w turze 1 (S1/S7b padają)',
       mTurR.weakSchedule.length > 0 && mTurR.weakSchedule[0].t === 1 && mTurR.earlyViolations.length > 0,
       { first: mTurR.weakSchedule[0], early: mTurR.earlyViolations.length });
+    const mGateR = runSuite(require(BUNDLES.gate));
+    check('M_GATE wykryty: bramka czasu gracza zdjęta do 1 tury — S3 (tury 7-9) nie dostaje już odrzucenia czasowego',
+      [7, 8, 9].some(t => !/po 10 pełnych turach/.test(mGateR.playerVsStrong[t - 1].reason || '')),
+      [7, 8, 9].map(t => mGateR.playerVsStrong[t - 1].reason));
+    const mStrongR = runSuite(require(BUNDLES.strong));
+    check('M_STRONG wykryty: bez odrzucenia „militarnie silniejsza" gracz dostaje odrzucenie inne niż siła w turze 10 (S3b/S4b padają)',
+      !isStronger(mStrongR.playerVsStrong[9]), mStrongR.playerVsStrong[9].reason);
     const mHealthR = runSuite(require(BUNDLES.health));
     // Sygnał zdrowia (c) nie wpływa na słabszą militarnie AI (pozycja siły decyduje) — mutant niewidoczny w tym scenariuszu.
     check('M_HEALTH (przeniesiony): wyłączenie sygnału zdrowia nie zmienia decyzji słabszej militarnie AI',
