@@ -1,0 +1,7 @@
+# R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1 — dispatch (2026-11-13)
+
+GOAL: walki automatyczne i oblężenia używają generatora z ziarna gry (jak reszta pętli tury po R-WEB-DETERMINISM-GAME-RNG-Q1), tak by to samo ziarno dawało ten sam przebieg także z bitwami. Szczegóły: DODATEK.
+
+BAZA: kandydat ff25b42ad (potomek origin/main ed95085a2; main jest dalej: po FALI 687 zawierać będzie ten kod). Operator: HAIKU. Evaluator/FC: SONNET.
+ALLOWLISTA: gra/src/game/auto-battle-power.ts (rng domyślny/wstrzykiwany), gra/src/game/combat.ts (tylko domyślny rng ok. l.890), gra/src/game/siege.ts (tylko domyślny rng ok. l.659), gra/src/game/game-rng.ts (pomocniki), gra/src/main.ts (WYŁĄCZNIE wywołania resolveAutoBattleByPower i podawanie rng — 6 miejsc), gra/src/ui/mapFieldBattle.ts (wywołanie ok. l.476), gra/src/game/ai.ts (tylko aiFoundingRand ok. l.3215, jeśli wpływa na stan), istniejące testy tylko w asercjach zależnych od konkretnych losowań, gra/tools/determinism-same-seed-test.cjs (rozszerzenie), gra/tools/measure-ai-trade-offer-frequency*.cjs (skrót stanu rozszerzyć o liczbę jednostek, skarbiec i zasoby), dyspozycje/autobot/runs/R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1/**.
+ZAKAZ: zmiana reguł gry i balansu, bitwa taktyczna na żywo (battleScene.ts — tylko wylistuj Math.random), przełącznik „Trafienia: losowe / pewne” (zachowanie bez zmian), WERSJE.md, gra-robocza/, rust-port/, npm run build/dev, git add -A, spawn_task i inne narzędzia zakładające sesje.
