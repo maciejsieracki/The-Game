@@ -884,3 +884,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Aktywne (1 z 4):** ZWYCIESTWO-WIRING-Q1 r4 (Operator, HAIKU, od ok. 21:35, `wf_7e991851-c78`).
 - **Puste sloty (3):** brak gotowych dispatchów. Kolejne kandydaci wymagają napisania dispatchu z rozpoznań: ZDOBYCIE-MIASTA-WIRING (#115, podział na tematy wg rozpoznania `R-RUSTPORT-P6-ZDOBYCIE-MIASTA-ROZPOZNANIE-Q1`), CRED-HAK T1 (#120, wg rozpoznania hak P4), ZLOZA-WIRING (#104/#172, wg rozpoznania ZLOZA-WIRING). Startu bez dispatchu nie wykonuję.
 - **Dysk:** 12 GB. **Parity:** `e51b61637`.
+
+## Przebieg (13.11, heartbeat 21:47): ZWYCIESTWO-WIRING r4 na etapie FC — niezakończone
+- **Stan:** FC (`wf_7e991851-c78`) ocenia kod r4 z worktree Operatora, bez commita Operatora i bez `01-operator-r4.md`. Status FC: PASS-WITH-NOTES, ale zapisany jako „nie zakończone: pełny cargo test w toku”. **Nie integrować** do czasu commita i pełnego testu z kodem zakończonym.
+- **Zmiana r4 (wg FC):** tylko `rust-port/engine/tests/p6_stan_ulepszenia.rs` (test roundtripu flagi). Funkcja `odtworz_flage_zwyciestwa_ze_miast` zostaje `#[cfg(test)]` — produkcyjnej ścieżki wczytania `PlayableState` nie ma (do osobnego tematu).
+- **Dysk:** 3,6 GB (poniżej progu startów; test FC w toku).
+- **Parity:** `e51b61637`.
