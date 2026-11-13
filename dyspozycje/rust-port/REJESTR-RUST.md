@@ -357,3 +357,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sloty:** 0 aktywnych Workflow. Dysk: 17 GB wolnego. Parity-v2 = `23e33793e` (bez zmian).
 - **Dlaczego bez startów:** pozostałe tematy z kolejki (#96, #97, #98, #109, #113) blokują się na fundamencie `ProdBody` (teren kafla, `morale_max`, stałe morale), a to wymaga rozszerzenia allowlisty na `army_leadership.rs` i testy `p6_siege_tactics_loop_body*.rs`. Zgody właściciela nie ma. Pozostałe pozycje czekają na decyzje ABC albo gameplay.
 - **Oczekiwane decyzje właściciela:** (1) zgoda na rozszerzenie allowlisty dla fundamentu `ProdBody`; (2) ABC: driver W8 (#114/#115), alias `umowa_handlowa`, komenda wypowiedzenia wojny gracza, `zlozeGrants`; (3) R7K7C-WIRING-Q2: kryteria 2–3 i polityka braku producenta salda; (4) gameplay: #60, #63, #27, #10, #14–#19.
+
+## Przebieg (dyspozycja 10 zadań, 02:xx): incydent git i start 4 tematów
+- **Incydent:** po weryfikacji statusu zadań zostawiłem główne repo na odłączonym HEAD (`origin/rust-port/parity-v2`). Tło uruchomiło `git rebase origin/claude/rust-sivvrn` z tego stanu i rebase zatrzymał się na konflikcie (ok. 7000 commitów z historii parity). Nic nie zostało zacommitowane ani wypchnięte. Wycofano `git rebase --abort` (HEAD wrócił do `23e33793e`), potem `git checkout claude/rust-sivvrn` (`86b9c2c36`). Drzewo czyste.
+- **Dispatche (zdalnie):** `bce95a514` — JS-MAX-SIGN-R2, K5I2B2-POKRYCIE-R2, COMBAT-HARNESS-R3, K5I2B2-DLUG-R2 (baza `23e33793e`).
+- **Aktywne Workflow (4):** JS-MAX-SIGN-R2 (#142, `wf_b2ecc0c9-7e9`), K5I2B2-POKRYCIE-R2 (#143, `wf_5a6c0cc5-796`), COMBAT-HARNESS-R3 (#144, `wf_3ebd25da-b46`), K5I2B2-DLUG-R2 (#145, `wf_33a86f3d-cdf`). Operator HAIKU, Evaluator/FC SONNET.
+- **W kolejce (blokada):** #146 K5-LOOP-WIEZE-R2 (gotowy, czeka na slot); #147 OUTCOME, #148 KONTRATAK-STRZELEC, #149 AUTO, #150 WYLOM — fundament ProdBody poza allowlistą; #151 float_roundtrip — Cargo.toml.
