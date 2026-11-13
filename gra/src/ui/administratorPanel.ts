@@ -88,14 +88,19 @@ function lead(m: AdministratorPanelModel): string {
     return 'Administrator to osoba przypisana do jednego miasta (maksymalnie jeden na miasto). '
       + administratorDescription();
   }
-  return 'Administrator to osoba przypisana do jednego miasta (maksymalnie jeden na miasto). '
-    + improvementAdministratorDescription();
+  // Administrator państwa: JEDEN na całe Państwo — nie „przypisany do miasta” (zakres w tekście, nie w JSON).
+  return 'Administrator państwa to jedna osoba na całe Państwo. Tryb auto ulepszeń terenu działa dla wszystkich miast Państwa.';
+}
+
+/** Zakres działania w tekstach: miasto („w tym mieście”) albo całe Państwo (administrator państwa). */
+function scopeWhere(m: AdministratorPanelModel): string {
+  return m.kind === 'city' ? 'w tym mieście' : 'we wszystkich miastach Państwa';
 }
 
 /** Lista bonusów: liczby z `administratorBaseEffectsPct` × skala poziomu (miasto) albo „brak bonusów” (ulepszenia). */
 function bonusRows(m: AdministratorPanelModel): string {
   if (m.kind === 'improvements') {
-    return '<li data-adm-bonus="auto">Automatyczne ulepszanie terenu w tym mieście — wg profilu wybranego w panelu budowy.</li>'
+    return '<li data-adm-bonus="auto">Automatyczne ulepszanie terenu we wszystkich miastach Państwa — wg profilu wybranego w panelu budowy.</li>'
       + '<li data-adm-bonus="none">Bez dodatkowych bonusów do produkcji, podatków ani korupcji.</li>';
   }
   const tier = (m.tier !== undefined && m.tier >= 1 ? Math.min(3, Math.round(m.tier)) : 1) as AdminTier;
@@ -116,13 +121,16 @@ function bonusRows(m: AdministratorPanelModel): string {
  */
 export function administratorHireConfirmText(m: AdministratorPanelModel): string {
   const what = m.kind === 'city' ? 'automatyczna budowa budynków' : 'automatyczne ulepszanie terenu';
+  const head = m.kind === 'city'
+    ? 'Zatrudnić administratora (miasta) w mieście ' + m.cityName + '?'
+    : 'Zatrudnić administratora państwa (jeden na całe Państwo)?';
   const lines: string[] = [
-    'Zatrudnić administratora (' + (m.kind === 'city' ? 'miasta' : 'państwa') + ') w mieście ' + m.cityName + '?',
+    head,
     'Opłata jednorazowa: ' + m.hireCost + ' Pieniądza. Utrzymanie: ' + m.upkeep + ' Pieniądza na turę ze skarbca państwa.',
     'Bonusy:',
   ];
   if (m.kind === 'improvements') {
-    lines.push('- ' + what + ' w tym mieście wg wybranego profilu', '- bez dodatkowych bonusów do produkcji, podatków ani korupcji');
+    lines.push('- ' + what + ' ' + scopeWhere(m) + ' wg wybranego profilu', '- bez dodatkowych bonusów do produkcji, podatków ani korupcji');
   } else {
     const tier = (m.tier !== undefined && m.tier >= 1 ? Math.min(3, Math.round(m.tier)) : 1) as AdminTier;
     const scale = administratorTierScale(tier);
@@ -140,15 +148,16 @@ function effectRows(m: AdministratorPanelModel): string {
   const what = m.kind === 'city' ? 'automatyczna budowa budynków' : 'automatyczne ulepszanie terenu';
   const on = m.kind === 'city' ? 'włączona' : 'włączone';
   const paused = m.kind === 'city' ? 'wstrzymana' : 'wstrzymane';
+  const where = scopeWhere(m);
   const upkeepChip = resourceAmountChipHtml('pieniadz', String(m.upkeep));
   if (m.hired) {
     return `<li data-adm-effect="state">${m.working
-      ? 'Administrator pracuje — ' + what + ' w tym mieście jest ' + on + '.'
+      ? 'Administrator pracuje — ' + what + ' ' + where + ' jest ' + on + '.'
       : 'Administrator nie pracuje (brak środków w skarbcu państwa na utrzymanie) — ' + what + ' jest ' + paused + ', dopóki skarbiec nie pokryje utrzymania.'}</li>`
       + `<li data-adm-effect="upkeep">Utrzymanie ${upkeepChip} na turę płaci skarbiec państwa.</li>`
-      + `<li data-adm-effect="dismiss">Po zwolnieniu ${what} w tym mieście przestaje działać, a koszt zatrudnienia nie wraca.</li>`;
+      + `<li data-adm-effect="dismiss">Po zwolnieniu ${what} ${where} przestaje działać, a koszt zatrudnienia nie wraca.</li>`;
   }
-  return `<li data-adm-effect="without">Bez administratora ${what} w tym mieście jest ${paused} — wszystko robisz ręcznie.</li>`
+  return `<li data-adm-effect="without">Bez administratora ${what} ${where} jest ${paused} — wszystko robisz ręcznie.</li>`
     + `<li data-adm-effect="after">Po zatrudnieniu ${what} zaczyna działać, a ${upkeepChip} na turę schodzi ze skarbca państwa (nie z zasobów miasta).</li>`
     + '<li data-adm-effect="where">Zwolnisz go w tym samym panelu (przycisk administratora).</li>';
 }
@@ -311,7 +320,7 @@ export function openAdministratorPanel(hooks: AdministratorPanelHooks): Administ
       const cur = hooks.getModel();
       if (!cur) return;
       // Zwolnienie nieodwracalne (koszt nie wraca) — potwierdzenie jak przed wprowadzeniem panelu.
-      const what = cur.kind === 'city' ? 'autobudowa w tym mieście' : 'auto-ulepszenia terenu w tym mieście';
+      const what = cur.kind === 'city' ? 'autobudowa w tym mieście' : 'auto-ulepszenia terenu we wszystkich miastach Państwa';
       if (!window.confirm('Zwolnić administratora? Koszt zatrudnienia nie podlega zwrotowi, a ' + what + ' przestaną działać.')) return;
       hooks.onDismiss();
       render('[data-adm-panel-confirm]');
