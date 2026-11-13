@@ -1,0 +1,6187 @@
+{
+ "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+ "sources": {
+  "gra/src/game/victory.ts": "2f22949ba00bbfb754410f66fc5e1856b67dc0621d31ea310c6df39e6517bb8a"
+ },
+ "constants": {
+  "ostatnia_epoka_gry_v1": 3,
+  "prog_dominacji_power": 0.5,
+  "dominacja_wymaga_ostatniej_epoki": true,
+  "nauka_wymaga_rakiety": true
+ },
+ "techs": [
+  {
+   "Technologia": "Rolnictwo",
+   "Epoka": "Kamień"
+  },
+  {
+   "Technologia": "Garncarstwo",
+   "Epoka": "Kamień"
+  },
+  {
+   "Technologia": "Miedz",
+   "Epoka": "Brąz"
+  },
+  {
+   "Technologia": "Zelazo",
+   "Epoka": "Żelazo"
+  },
+  {
+   "Technologia": "Pismo",
+   "Epoka": " Brąz "
+  },
+  {
+   "Technologia": "",
+   "Epoka": "Kamień"
+  },
+  {
+   "Technologia": null,
+   "Epoka": "Żelazo"
+  },
+  {
+   "Technologia": "Nieznana",
+   "Epoka": "Inna"
+  }
+ ],
+ "tech_scope": [
+  {
+   "ostatniaEpoka": 1,
+   "ids": [
+    "Rolnictwo",
+    "Garncarstwo"
+   ]
+  },
+  {
+   "ostatniaEpoka": 2,
+   "ids": [
+    "Rolnictwo",
+    "Garncarstwo",
+    "Miedz",
+    "Pismo"
+   ]
+  },
+  {
+   "ostatniaEpoka": 3,
+   "ids": [
+    "Rolnictwo",
+    "Garncarstwo",
+    "Miedz",
+    "Zelazo",
+    "Pismo"
+   ]
+  },
+  {
+   "ostatniaEpoka": 4,
+   "ids": [
+    "Rolnictwo",
+    "Garncarstwo",
+    "Miedz",
+    "Zelazo",
+    "Pismo"
+   ]
+  }
+ ],
+ "cases": [
+  {
+   "name": "dominacja_60_z_100",
+   "input": {
+    "name": "dominacja_60_z_100",
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "potegaGracza": 60,
+    "potegiWszystkich": [
+     60,
+     40
+    ],
+    "graczEra": 3
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "dominacja"
+    },
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.6,
+    "dominacja": true
+   }
+  },
+  {
+   "name": "dominacja_era2_brak",
+   "input": {
+    "name": "dominacja_era2_brak",
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "potegaGracza": 60,
+    "potegiWszystkich": [
+     60,
+     40
+    ],
+    "graczEra": 2
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.6,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "przyciecie_suma_ujemnych",
+   "input": {
+    "name": "przyciecie_suma_ujemnych",
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "potegaGracza": 40,
+    "potegiWszystkich": [
+     -50,
+     40,
+     60
+    ],
+    "graczEra": 3
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.4,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "przyciecie_moc_gracza_ujemna",
+   "input": {
+    "name": "przyciecie_moc_gracza_ujemna",
+    "cityOwners": [
+     0,
+     1
+    ],
+    "gracz": 0,
+    "potegaGracza": -5,
+    "potegiWszystkich": [
+     -10,
+     30,
+     70
+    ],
+    "graczEra": 3
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "suma_zero",
+   "input": {
+    "name": "suma_zero",
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "potegaGracza": 0,
+    "potegiWszystkich": [
+     0,
+     0
+    ],
+    "graczEra": 3
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "brak_potegi_wszystkich",
+   "input": {
+    "name": "brak_potegi_wszystkich",
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "potegaGracza": 100,
+    "potegiWszystkich": [],
+    "graczEra": 3
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "przegrana_po_eliminacji",
+   "input": {
+    "name": "przegrana_po_eliminacji",
+    "cityOwners": [
+     1,
+     2,
+     2
+    ],
+    "gracz": 0,
+    "graczEra": 2
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "brak_przegranej_przed_miastem",
+   "input": {
+    "name": "brak_przegranej_przed_miastem",
+    "cityOwners": [
+     1
+    ],
+    "gracz": 0,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "przegrana_flaga_true",
+   "input": {
+    "name": "przegrana_flaga_true",
+    "cityOwners": [],
+    "gracz": 0,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "przegrana_przed_nauka",
+   "input": {
+    "name": "przegrana_przed_nauka",
+    "cityOwners": [],
+    "gracz": 0,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "nauka_z_rakieta",
+   "input": {
+    "name": "nauka_z_rakieta",
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "nauka"
+    },
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "nauka_bez_rakiety",
+   "input": {
+    "name": "nauka_bez_rakiety",
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "nauka_bez_tech",
+   "input": {
+    "name": "nauka_bez_tech",
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "fallback_naukaUkonczona",
+   "input": {
+    "name": "fallback_naukaUkonczona",
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "epokaKoncowa": true,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "nauka"
+    },
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "fallback_tylko_epokaKoncowa",
+   "input": {
+    "name": "fallback_tylko_epokaKoncowa",
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "epokaKoncowa": true,
+    "naukaUkonczona": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "nowe_pola_przed_fallbackiem",
+   "input": {
+    "name": "nowe_pola_przed_fallbackiem",
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "wszystkieTechZbadane": false,
+    "epokaKoncowa": true,
+    "naukaUkonczona": true,
+    "rakietaWystrzelona": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "tryb_dominacja_blokuje_nauke",
+   "input": {
+    "name": "tryb_dominacja_blokuje_nauke",
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "victoryMode": "dominacja",
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "tryb_moc_blokuje_dominacje",
+   "input": {
+    "name": "tryb_moc_blokuje_dominacje",
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "victoryMode": "moc",
+    "potegaGracza": 90,
+    "potegiWszystkich": [
+     90,
+     10
+    ],
+    "graczEra": 3
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.9,
+    "dominacja": true
+   }
+  },
+  {
+   "name": "tryb_moc_i_dominacja_nauka",
+   "input": {
+    "name": "tryb_moc_i_dominacja_nauka",
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "victoryMode": "moc_i_dominacja",
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "nauka"
+    },
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "ostatnia_epoka_2",
+   "input": {
+    "name": "ostatnia_epoka_2",
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "potegaGracza": 70,
+    "potegiWszystkich": [
+     70,
+     30
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 2
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "dominacja"
+    },
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.7,
+    "dominacja": true
+   }
+  },
+  {
+   "name": "domyslna_era",
+   "input": {
+    "name": "domyslna_era",
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "potegaGracza": 99,
+    "potegiWszystkich": [
+     99,
+     1
+    ]
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.99,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "dokladnie_50_nie_dominacja",
+   "input": {
+    "name": "dokladnie_50_nie_dominacja",
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "potegaGracza": 50,
+    "potegiWszystkich": [
+     50,
+     50
+    ],
+    "graczEra": 3
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.5,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "ai_nie_wygrywa_gracz_1",
+   "input": {
+    "name": "ai_nie_wygrywa_gracz_1",
+    "cityOwners": [
+     0
+    ],
+    "gracz": 1,
+    "potegaGracza": 10,
+    "potegiWszystkich": [
+     90,
+     10
+    ],
+    "graczEra": 3
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.1,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_0",
+   "input": {
+    "cityOwners": [],
+    "gracz": 1,
+    "potegaGracza": 7,
+    "potegiWszystkich": [
+     -7,
+     41
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "nauka"
+    },
+    "defeat": null,
+    "eliminated": true,
+    "share": 0.17073170731707318,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_1",
+   "input": {
+    "cityOwners": [
+     2,
+     2
+    ],
+    "gracz": 1,
+    "potegiWszystkich": [
+     83,
+     -12,
+     58
+    ],
+    "ostatniaEpoka": 3,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_2",
+   "input": {
+    "cityOwners": [
+     3,
+     3,
+     1
+    ],
+    "gracz": 0,
+    "victoryMode": "dominacja",
+    "potegaGracza": -13,
+    "ostatniaEpoka": 3,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_3",
+   "input": {
+    "cityOwners": [
+     0,
+     0,
+     2,
+     0
+    ],
+    "gracz": 1,
+    "graczEra": 2,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_4",
+   "input": {
+    "cityOwners": [
+     3
+    ],
+    "gracz": 0,
+    "victoryMode": "dominacja",
+    "graczEra": 1,
+    "ostatniaEpoka": 1,
+    "wszystkieTechZbadane": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_5",
+   "input": {
+    "cityOwners": [
+     3,
+     1,
+     3
+    ],
+    "gracz": 2,
+    "victoryMode": "moc",
+    "potegaGracza": 31,
+    "rakietaWystrzelona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_6",
+   "input": {
+    "cityOwners": [
+     2,
+     1,
+     2
+    ],
+    "gracz": 2,
+    "potegaGracza": 69,
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": false,
+    "epokaKoncowa": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_7",
+   "input": {
+    "cityOwners": [
+     2,
+     3,
+     1,
+     3
+    ],
+    "gracz": 0,
+    "potegiWszystkich": [
+     110,
+     102
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 2,
+    "epokaKoncowa": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_8",
+   "input": {
+    "cityOwners": [
+     3,
+     3
+    ],
+    "gracz": 1,
+    "victoryMode": "dominacja",
+    "potegaGracza": 40,
+    "graczEra": 1,
+    "ostatniaEpoka": 4,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": false,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_9",
+   "input": {
+    "cityOwners": [
+     1,
+     1,
+     2,
+     0
+    ],
+    "gracz": 1,
+    "victoryMode": "moc_i_dominacja",
+    "potegaGracza": -12,
+    "graczEra": 2,
+    "ostatniaEpoka": 4,
+    "wszystkieTechZbadane": false,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_10",
+   "input": {
+    "cityOwners": [
+     3,
+     2
+    ],
+    "gracz": 1,
+    "potegiWszystkich": [
+     48,
+     -18,
+     -5
+    ],
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_11",
+   "input": {
+    "cityOwners": [],
+    "gracz": 2,
+    "victoryMode": "moc_i_dominacja",
+    "potegaGracza": 1,
+    "graczEra": 2,
+    "ostatniaEpoka": 4,
+    "wszystkieTechZbadane": true,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_12",
+   "input": {
+    "cityOwners": [],
+    "gracz": 0,
+    "victoryMode": "moc",
+    "ostatniaEpoka": 3,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_13",
+   "input": {
+    "cityOwners": [
+     1,
+     0,
+     2
+    ],
+    "gracz": 1,
+    "potegaGracza": 59,
+    "potegiWszystkich": [],
+    "graczEra": 1,
+    "wszystkieTechZbadane": false,
+    "epokaKoncowa": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_14",
+   "input": {
+    "cityOwners": [
+     2,
+     0
+    ],
+    "gracz": 0,
+    "potegaGracza": 57,
+    "potegiWszystkich": [
+     77,
+     116
+    ],
+    "ostatniaEpoka": 3,
+    "wszystkieTechZbadane": false,
+    "epokaKoncowa": false,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.29533678756476683,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_15",
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "gracz": 0,
+    "potegaGracza": 118,
+    "potegiWszystkich": [
+     -10,
+     2
+    ],
+    "rakietaWystrzelona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 59,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_16",
+   "input": {
+    "cityOwners": [],
+    "gracz": 1,
+    "victoryMode": "moc_i_dominacja",
+    "potegiWszystkich": [
+     -1,
+     77,
+     117,
+     29,
+     1
+    ],
+    "ostatniaEpoka": 4,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_17",
+   "input": {
+    "cityOwners": [
+     0,
+     2,
+     2
+    ],
+    "gracz": 2,
+    "victoryMode": "dominacja",
+    "potegaGracza": 70,
+    "potegiWszystkich": [
+     92,
+     -4,
+     -7,
+     68,
+     76
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 4,
+    "wszystkieTechZbadane": false,
+    "epokaKoncowa": false,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.2966101694915254,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_18",
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "gracz": 1,
+    "victoryMode": "moc",
+    "graczEra": 2,
+    "ostatniaEpoka": 4,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_19",
+   "input": {
+    "cityOwners": [
+     0,
+     1,
+     3
+    ],
+    "gracz": 2,
+    "potegaGracza": 48,
+    "potegiWszystkich": [
+     40
+    ],
+    "graczEra": 3,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": true,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "dominacja"
+    },
+    "defeat": null,
+    "eliminated": true,
+    "share": 1.2,
+    "dominacja": true
+   }
+  },
+  {
+   "name": "losowy_20",
+   "input": {
+    "cityOwners": [],
+    "gracz": 2,
+    "potegaGracza": 98,
+    "potegiWszystkich": [
+     82,
+     108,
+     -10,
+     18
+    ],
+    "graczEra": 3,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true,
+    "naukaUkonczona": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.47115384615384615,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_21",
+   "input": {
+    "cityOwners": [
+     3,
+     0,
+     2,
+     3
+    ],
+    "gracz": 2,
+    "victoryMode": "moc_i_dominacja",
+    "potegiWszystkich": [
+     21,
+     36
+    ],
+    "ostatniaEpoka": 1,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_22",
+   "input": {
+    "cityOwners": [
+     2
+    ],
+    "gracz": 0,
+    "potegiWszystkich": [
+     12,
+     72
+    ],
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": false,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_23",
+   "input": {
+    "cityOwners": [],
+    "gracz": 1,
+    "potegaGracza": 37,
+    "potegiWszystkich": [
+     17,
+     32
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 4,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.7551020408163265,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_24",
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "gracz": 0,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_25",
+   "input": {
+    "cityOwners": [
+     1,
+     2,
+     0
+    ],
+    "gracz": 1,
+    "victoryMode": "dominacja",
+    "potegiWszystkich": [
+     17,
+     87,
+     96,
+     -10,
+     31
+    ],
+    "graczEra": 3,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_26",
+   "input": {
+    "cityOwners": [],
+    "gracz": 1,
+    "graczEra": 3,
+    "wszystkieTechZbadane": true,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_27",
+   "input": {
+    "cityOwners": [
+     3,
+     0
+    ],
+    "gracz": 1,
+    "potegaGracza": 107,
+    "potegiWszystkich": [],
+    "ostatniaEpoka": 1,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_28",
+   "input": {
+    "cityOwners": [],
+    "gracz": 0,
+    "potegaGracza": -10,
+    "potegiWszystkich": [
+     64,
+     119,
+     81
+    ],
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_29",
+   "input": {
+    "cityOwners": [
+     1,
+     2
+    ],
+    "gracz": 2,
+    "potegaGracza": 54,
+    "potegiWszystkich": [
+     -12,
+     -10,
+     84,
+     37,
+     88
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": true,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.2583732057416268,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_30",
+   "input": {
+    "cityOwners": [],
+    "gracz": 1,
+    "potegaGracza": 107,
+    "potegiWszystkich": [
+     2,
+     37,
+     77
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": false,
+    "naukaUkonczona": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "dominacja"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.9224137931034483,
+    "dominacja": true
+   }
+  },
+  {
+   "name": "losowy_31",
+   "input": {
+    "cityOwners": [],
+    "gracz": 2,
+    "potegaGracza": -20,
+    "potegiWszystkich": [
+     101,
+     87
+    ],
+    "ostatniaEpoka": 3,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_32",
+   "input": {
+    "cityOwners": [
+     0,
+     0,
+     1
+    ],
+    "gracz": 0,
+    "victoryMode": "dominacja",
+    "potegaGracza": 45,
+    "potegiWszystkich": [],
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_33",
+   "input": {
+    "cityOwners": [
+     1,
+     0
+    ],
+    "gracz": 0,
+    "potegaGracza": 73,
+    "potegiWszystkich": [
+     -8
+    ],
+    "ostatniaEpoka": 3,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": false,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_34",
+   "input": {
+    "cityOwners": [],
+    "gracz": 2,
+    "potegiWszystkich": [
+     86,
+     32,
+     73,
+     29
+    ],
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": false,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_35",
+   "input": {
+    "cityOwners": [],
+    "gracz": 2,
+    "potegiWszystkich": [
+     59,
+     50,
+     102,
+     84,
+     50
+    ],
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": false,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_36",
+   "input": {
+    "cityOwners": [],
+    "gracz": 0,
+    "graczEra": 3,
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_37",
+   "input": {
+    "cityOwners": [
+     3
+    ],
+    "gracz": 1,
+    "potegaGracza": 52,
+    "potegiWszystkich": [
+     119,
+     5,
+     -2,
+     -10,
+     116
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.21666666666666667,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_38",
+   "input": {
+    "cityOwners": [],
+    "gracz": 1,
+    "victoryMode": "moc",
+    "potegaGracza": 106,
+    "potegiWszystkich": [
+     50,
+     18,
+     -14,
+     88
+    ],
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.6794871794871795,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_39",
+   "input": {
+    "cityOwners": [],
+    "gracz": 2,
+    "potegiWszystkich": [
+     39,
+     -11
+    ],
+    "graczEra": 2,
+    "wszystkieTechZbadane": true,
+    "epokaKoncowa": false,
+    "naukaUkonczona": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_40",
+   "input": {
+    "cityOwners": [
+     1,
+     1,
+     3
+    ],
+    "gracz": 0,
+    "potegaGracza": 75,
+    "ostatniaEpoka": 4,
+    "rakietaWystrzelona": false,
+    "naukaUkonczona": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_41",
+   "input": {
+    "cityOwners": [
+     3,
+     3
+    ],
+    "gracz": 1,
+    "victoryMode": "moc_i_dominacja",
+    "potegaGracza": 113,
+    "potegiWszystkich": [
+     58,
+     16
+    ],
+    "wszystkieTechZbadane": true,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 1.527027027027027,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_42",
+   "input": {
+    "cityOwners": [
+     3,
+     1
+    ],
+    "gracz": 0,
+    "victoryMode": "dominacja",
+    "potegaGracza": -5,
+    "potegiWszystkich": [
+     58,
+     9
+    ],
+    "graczEra": 2,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_43",
+   "input": {
+    "cityOwners": [
+     3,
+     2,
+     3
+    ],
+    "gracz": 2,
+    "victoryMode": "dominacja",
+    "potegiWszystkich": [
+     77,
+     110,
+     -2,
+     0,
+     -2
+    ],
+    "graczEra": 2,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_44",
+   "input": {
+    "cityOwners": [],
+    "gracz": 2,
+    "potegaGracza": 17,
+    "graczEra": 2,
+    "ostatniaEpoka": 3,
+    "wszystkieTechZbadane": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_45",
+   "input": {
+    "cityOwners": [
+     1,
+     2
+    ],
+    "gracz": 0,
+    "potegiWszystkich": [
+     54
+    ],
+    "graczEra": 1,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": false,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_46",
+   "input": {
+    "cityOwners": [
+     2,
+     2
+    ],
+    "gracz": 1,
+    "victoryMode": "dominacja",
+    "potegaGracza": 46,
+    "graczEra": 3,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_47",
+   "input": {
+    "cityOwners": [
+     1,
+     0
+    ],
+    "gracz": 2,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_48",
+   "input": {
+    "cityOwners": [
+     3,
+     1,
+     1
+    ],
+    "gracz": 2,
+    "potegaGracza": 85,
+    "graczEra": 2,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": true,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_49",
+   "input": {
+    "cityOwners": [
+     2,
+     3,
+     1,
+     2
+    ],
+    "gracz": 1,
+    "potegaGracza": 0,
+    "potegiWszystkich": [
+     80,
+     99,
+     104
+    ],
+    "graczEra": 1,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": true,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_50",
+   "input": {
+    "cityOwners": [],
+    "gracz": 1,
+    "victoryMode": "dominacja",
+    "potegiWszystkich": [
+     58,
+     20,
+     3,
+     -17,
+     72
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 4,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_51",
+   "input": {
+    "cityOwners": [
+     2,
+     0,
+     1
+    ],
+    "gracz": 1,
+    "victoryMode": "moc",
+    "potegaGracza": 112,
+    "potegiWszystkich": [],
+    "graczEra": 3,
+    "ostatniaEpoka": 4,
+    "wszystkieTechZbadane": true,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_52",
+   "input": {
+    "cityOwners": [],
+    "gracz": 1,
+    "potegaGracza": 71,
+    "potegiWszystkich": [
+     108,
+     102
+    ],
+    "graczEra": 3,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.3380952380952381,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_53",
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "gracz": 2,
+    "potegaGracza": -3,
+    "potegiWszystkich": [
+     103,
+     24
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 2,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_54",
+   "input": {
+    "cityOwners": [
+     3,
+     2,
+     1
+    ],
+    "gracz": 0,
+    "victoryMode": "moc",
+    "potegiWszystkich": [
+     91,
+     46,
+     100
+    ],
+    "ostatniaEpoka": 4,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_55",
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "gracz": 1,
+    "potegaGracza": 70,
+    "potegiWszystkich": [
+     68,
+     -10,
+     117
+    ],
+    "ostatniaEpoka": 3,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true,
+    "naukaUkonczona": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.3783783783783784,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_56",
+   "input": {
+    "cityOwners": [
+     1,
+     3
+    ],
+    "gracz": 1,
+    "victoryMode": "dominacja",
+    "potegaGracza": -9,
+    "potegiWszystkich": [
+     54,
+     18
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 1,
+    "wszystkieTechZbadane": true,
+    "epokaKoncowa": true,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_57",
+   "input": {
+    "cityOwners": [
+     3
+    ],
+    "gracz": 0,
+    "potegaGracza": 87,
+    "ostatniaEpoka": 4,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_58",
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "gracz": 1,
+    "victoryMode": "moc_i_dominacja",
+    "potegaGracza": 44,
+    "potegiWszystkich": [],
+    "graczEra": 3,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "nauka"
+    },
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_59",
+   "input": {
+    "cityOwners": [],
+    "gracz": 2,
+    "potegaGracza": 56,
+    "ostatniaEpoka": 1,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_60",
+   "input": {
+    "cityOwners": [
+     2,
+     2
+    ],
+    "gracz": 0,
+    "victoryMode": "moc_i_dominacja",
+    "potegaGracza": 54,
+    "potegiWszystkich": [
+     90,
+     17
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3,
+    "wszystkieTechZbadane": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "dominacja"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.5046728971962616,
+    "dominacja": true
+   }
+  },
+  {
+   "name": "losowy_61",
+   "input": {
+    "cityOwners": [
+     0,
+     2,
+     3,
+     1
+    ],
+    "gracz": 1,
+    "victoryMode": "moc_i_dominacja",
+    "potegaGracza": 18,
+    "potegiWszystkich": [],
+    "ostatniaEpoka": 4,
+    "wszystkieTechZbadane": false,
+    "epokaKoncowa": true,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_62",
+   "input": {
+    "cityOwners": [
+     2,
+     3,
+     3
+    ],
+    "gracz": 2,
+    "victoryMode": "moc",
+    "graczEra": 1,
+    "ostatniaEpoka": 3,
+    "wszystkieTechZbadane": true,
+    "epokaKoncowa": true,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "nauka"
+    },
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_63",
+   "input": {
+    "cityOwners": [
+     0,
+     1,
+     1,
+     3
+    ],
+    "gracz": 1,
+    "potegaGracza": 39,
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": false,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "nauka"
+    },
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_64",
+   "input": {
+    "cityOwners": [
+     1,
+     1,
+     3
+    ],
+    "gracz": 2,
+    "potegaGracza": 57,
+    "graczEra": 3,
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_65",
+   "input": {
+    "cityOwners": [
+     3
+    ],
+    "gracz": 0,
+    "ostatniaEpoka": 4,
+    "epokaKoncowa": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_66",
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "potegaGracza": 70,
+    "potegiWszystkich": [],
+    "graczEra": 1,
+    "ostatniaEpoka": 1,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_67",
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "potegaGracza": 79,
+    "graczEra": 3,
+    "rakietaWystrzelona": true,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_68",
+   "input": {
+    "cityOwners": [
+     2,
+     3,
+     0
+    ],
+    "gracz": 2,
+    "victoryMode": "moc",
+    "potegaGracza": 100,
+    "potegiWszystkich": [
+     117,
+     -1,
+     59,
+     42
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 1,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "nauka"
+    },
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.45871559633027525,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_69",
+   "input": {
+    "cityOwners": [],
+    "gracz": 1,
+    "victoryMode": "moc",
+    "potegaGracza": 82,
+    "graczEra": 3,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_70",
+   "input": {
+    "cityOwners": [
+     2,
+     0,
+     3,
+     0
+    ],
+    "gracz": 1,
+    "potegaGracza": 0,
+    "potegiWszystkich": [
+     47,
+     72,
+     92,
+     -6
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 1,
+    "rakietaWystrzelona": false,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_71",
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "victoryMode": "dominacja",
+    "potegiWszystkich": [
+     91,
+     16,
+     84
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 4,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": true,
+    "naukaUkonczona": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_72",
+   "input": {
+    "cityOwners": [
+     1,
+     0,
+     2
+    ],
+    "gracz": 0,
+    "victoryMode": "moc",
+    "potegiWszystkich": [
+     43
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 2,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_73",
+   "input": {
+    "cityOwners": [
+     2,
+     1,
+     0,
+     3
+    ],
+    "gracz": 0,
+    "potegiWszystkich": [
+     36,
+     1
+    ],
+    "ostatniaEpoka": 3,
+    "epokaKoncowa": true,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_74",
+   "input": {
+    "cityOwners": [
+     1,
+     0,
+     1,
+     1
+    ],
+    "gracz": 1,
+    "victoryMode": "dominacja",
+    "potegaGracza": 110,
+    "potegiWszystkich": [
+     28,
+     91,
+     3,
+     -8,
+     45
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": false,
+    "naukaUkonczona": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.6586826347305389,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_75",
+   "input": {
+    "cityOwners": [
+     2
+    ],
+    "gracz": 2,
+    "potegiWszystkich": [
+     58,
+     11,
+     64,
+     52
+    ],
+    "graczEra": 1,
+    "wszystkieTechZbadane": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_76",
+   "input": {
+    "cityOwners": [],
+    "gracz": 0,
+    "potegiWszystkich": [
+     -12,
+     26,
+     -8
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 1,
+    "wszystkieTechZbadane": true,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_77",
+   "input": {
+    "cityOwners": [
+     1,
+     3,
+     0
+    ],
+    "gracz": 0,
+    "victoryMode": "moc_i_dominacja",
+    "potegaGracza": 87,
+    "ostatniaEpoka": 3,
+    "wszystkieTechZbadane": true,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "nauka"
+    },
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_78",
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "potegaGracza": 28,
+    "potegiWszystkich": [
+     -11,
+     88,
+     13
+    ],
+    "graczEra": 1,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.27722772277227725,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_79",
+   "input": {
+    "cityOwners": [
+     2
+    ],
+    "gracz": 0,
+    "potegiWszystkich": [
+     89,
+     -15,
+     93
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 2,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_80",
+   "input": {
+    "cityOwners": [
+     1,
+     1,
+     2
+    ],
+    "gracz": 1,
+    "potegaGracza": 7,
+    "potegiWszystkich": [
+     53
+    ],
+    "graczEra": 2,
+    "wszystkieTechZbadane": false,
+    "epokaKoncowa": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.1320754716981132,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_81",
+   "input": {
+    "cityOwners": [],
+    "gracz": 1,
+    "victoryMode": "moc",
+    "potegiWszystkich": [
+     97
+    ],
+    "epokaKoncowa": false,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_82",
+   "input": {
+    "cityOwners": [],
+    "gracz": 0,
+    "potegiWszystkich": [
+     30,
+     -16,
+     32,
+     16,
+     98
+    ],
+    "graczEra": 3,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_83",
+   "input": {
+    "cityOwners": [
+     1,
+     3
+    ],
+    "gracz": 0,
+    "victoryMode": "dominacja",
+    "potegaGracza": 61,
+    "ostatniaEpoka": 3,
+    "epokaKoncowa": false,
+    "naukaUkonczona": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_84",
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "gracz": 1,
+    "potegiWszystkich": [
+     60,
+     35,
+     6
+    ],
+    "rakietaWystrzelona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_85",
+   "input": {
+    "cityOwners": [],
+    "gracz": 1,
+    "potegiWszystkich": [
+     95,
+     110,
+     21,
+     69,
+     86
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 2,
+    "epokaKoncowa": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_86",
+   "input": {
+    "cityOwners": [
+     3
+    ],
+    "gracz": 0,
+    "potegaGracza": 59,
+    "potegiWszystkich": [
+     17,
+     23,
+     39
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 3,
+    "epokaKoncowa": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0.7468354430379747,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_87",
+   "input": {
+    "cityOwners": [
+     1,
+     2,
+     0,
+     1
+    ],
+    "gracz": 1,
+    "potegaGracza": 28,
+    "potegiWszystkich": [
+     23,
+     25,
+     83,
+     42
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3,
+    "wszystkieTechZbadane": true,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "nauka"
+    },
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.16184971098265896,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_88",
+   "input": {
+    "cityOwners": [
+     2
+    ],
+    "gracz": 1,
+    "graczEra": 3,
+    "rakietaWystrzelona": true,
+    "naukaUkonczona": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_89",
+   "input": {
+    "cityOwners": [
+     3,
+     3,
+     0
+    ],
+    "gracz": 1,
+    "potegiWszystkich": [
+     35
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_90",
+   "input": {
+    "cityOwners": [
+     3,
+     2,
+     1,
+     0
+    ],
+    "gracz": 1,
+    "potegiWszystkich": [
+     23,
+     -8,
+     74,
+     40,
+     21
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "naukaUkonczona": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_91",
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "gracz": 1,
+    "potegaGracza": 30,
+    "potegiWszystkich": [
+     -14,
+     -15,
+     90,
+     44
+    ],
+    "ostatniaEpoka": 4,
+    "rakietaWystrzelona": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.22388059701492538,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_92",
+   "input": {
+    "cityOwners": [],
+    "gracz": 0,
+    "potegiWszystkich": [
+     75,
+     81,
+     55,
+     95
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 1,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_93",
+   "input": {
+    "cityOwners": [],
+    "gracz": 0,
+    "potegiWszystkich": [],
+    "graczEra": 2,
+    "ostatniaEpoka": 4,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_94",
+   "input": {
+    "cityOwners": [],
+    "gracz": 0,
+    "ostatniaEpoka": 3,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_95",
+   "input": {
+    "cityOwners": [
+     0,
+     0
+    ],
+    "gracz": 0,
+    "victoryMode": "moc",
+    "graczEra": 1,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_96",
+   "input": {
+    "cityOwners": [],
+    "gracz": 0,
+    "potegaGracza": 32,
+    "potegiWszystkich": [],
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_97",
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "victoryMode": "moc",
+    "potegiWszystkich": [
+     66,
+     -18,
+     85
+    ],
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": true,
+    "naukaUkonczona": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_98",
+   "input": {
+    "cityOwners": [],
+    "gracz": 2,
+    "potegaGracza": 93,
+    "potegiWszystkich": [
+     23,
+     86,
+     -2
+    ],
+    "graczEra": 2,
+    "rakietaWystrzelona": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.8532110091743119,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_99",
+   "input": {
+    "cityOwners": [
+     2,
+     0,
+     2,
+     3
+    ],
+    "gracz": 2,
+    "potegaGracza": 17,
+    "graczEra": 1,
+    "ostatniaEpoka": 3,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": false,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_100",
+   "input": {
+    "cityOwners": [
+     2
+    ],
+    "gracz": 0,
+    "potegaGracza": 89,
+    "potegiWszystkich": [
+     92,
+     1
+    ],
+    "rakietaWystrzelona": false,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0.956989247311828,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_101",
+   "input": {
+    "cityOwners": [
+     2,
+     1,
+     0
+    ],
+    "gracz": 0,
+    "potegaGracza": 68,
+    "potegiWszystkich": [
+     90,
+     56,
+     -13,
+     82,
+     -2
+    ],
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "naukaUkonczona": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.2982456140350877,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_102",
+   "input": {
+    "cityOwners": [
+     2
+    ],
+    "gracz": 0,
+    "potegaGracza": -20,
+    "potegiWszystkich": [
+     7,
+     13,
+     103,
+     112
+    ],
+    "ostatniaEpoka": 4,
+    "epokaKoncowa": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_103",
+   "input": {
+    "cityOwners": [
+     2
+    ],
+    "gracz": 0,
+    "potegaGracza": -4,
+    "potegiWszystkich": [
+     -13,
+     91,
+     119
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 2,
+    "epokaKoncowa": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_104",
+   "input": {
+    "cityOwners": [
+     2,
+     1,
+     1,
+     1
+    ],
+    "gracz": 2,
+    "victoryMode": "moc",
+    "potegaGracza": 74,
+    "potegiWszystkich": [
+     77
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 1,
+    "rakietaWystrzelona": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.961038961038961,
+    "dominacja": true
+   }
+  },
+  {
+   "name": "losowy_105",
+   "input": {
+    "cityOwners": [
+     3,
+     2,
+     1,
+     3
+    ],
+    "gracz": 0,
+    "potegaGracza": 31,
+    "graczEra": 1,
+    "ostatniaEpoka": 3,
+    "rakietaWystrzelona": false,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_106",
+   "input": {
+    "cityOwners": [
+     0,
+     3
+    ],
+    "gracz": 0,
+    "potegaGracza": 103,
+    "potegiWszystkich": [
+     90,
+     49,
+     38,
+     46
+    ],
+    "wszystkieTechZbadane": false,
+    "epokaKoncowa": true,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.4618834080717489,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_107",
+   "input": {
+    "cityOwners": [],
+    "gracz": 1,
+    "victoryMode": "dominacja",
+    "potegiWszystkich": [
+     27
+    ],
+    "graczEra": 3,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_108",
+   "input": {
+    "cityOwners": [
+     0,
+     0,
+     1
+    ],
+    "gracz": 1,
+    "potegaGracza": 100,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": true,
+    "naukaUkonczona": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_109",
+   "input": {
+    "cityOwners": [
+     3,
+     1
+    ],
+    "gracz": 1,
+    "potegaGracza": 103,
+    "ostatniaEpoka": 2,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true,
+    "naukaUkonczona": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_110",
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "gracz": 0,
+    "potegaGracza": -3,
+    "potegiWszystkich": [],
+    "graczEra": 1,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_111",
+   "input": {
+    "cityOwners": [
+     1,
+     1
+    ],
+    "gracz": 2,
+    "victoryMode": "moc",
+    "potegaGracza": 7,
+    "potegiWszystkich": [
+     119,
+     36,
+     -14
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 4,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.04516129032258064,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_112",
+   "input": {
+    "cityOwners": [
+     2,
+     1,
+     2,
+     3
+    ],
+    "gracz": 1,
+    "victoryMode": "moc",
+    "potegaGracza": 65,
+    "potegiWszystkich": [
+     85
+    ],
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.7647058823529411,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_113",
+   "input": {
+    "cityOwners": [
+     0,
+     2,
+     0,
+     0
+    ],
+    "gracz": 0,
+    "potegaGracza": 78,
+    "potegiWszystkich": [
+     98,
+     80,
+     85
+    ],
+    "rakietaWystrzelona": true,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.2965779467680608,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_114",
+   "input": {
+    "cityOwners": [
+     1,
+     0
+    ],
+    "gracz": 1,
+    "potegaGracza": 79,
+    "potegiWszystkich": [
+     101
+    ],
+    "graczEra": 2,
+    "wszystkieTechZbadane": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.7821782178217822,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_115",
+   "input": {
+    "cityOwners": [],
+    "gracz": 2,
+    "victoryMode": "moc",
+    "potegaGracza": 79,
+    "potegiWszystkich": [
+     70
+    ],
+    "graczEra": 2,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 1.1285714285714286,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_116",
+   "input": {
+    "cityOwners": [],
+    "gracz": 1,
+    "potegaGracza": 44,
+    "potegiWszystkich": [
+     -3,
+     85,
+     46,
+     -20
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 4,
+    "wszystkieTechZbadane": true,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.33587786259541985,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_117",
+   "input": {
+    "cityOwners": [
+     0,
+     0,
+     0
+    ],
+    "gracz": 2,
+    "potegiWszystkich": [
+     67,
+     11
+    ],
+    "ostatniaEpoka": 3,
+    "wszystkieTechZbadane": true,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_118",
+   "input": {
+    "cityOwners": [
+     1,
+     3,
+     3
+    ],
+    "gracz": 1,
+    "victoryMode": "moc",
+    "potegaGracza": 114,
+    "graczEra": 2,
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_119",
+   "input": {
+    "cityOwners": [
+     2,
+     2
+    ],
+    "gracz": 2,
+    "ostatniaEpoka": 2,
+    "rakietaWystrzelona": false,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_120",
+   "input": {
+    "cityOwners": [],
+    "gracz": 2,
+    "potegaGracza": 69,
+    "potegiWszystkich": [
+     113,
+     4,
+     47,
+     37
+    ],
+    "ostatniaEpoka": 3,
+    "wszystkieTechZbadane": true,
+    "epokaKoncowa": true,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.34328358208955223,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_121",
+   "input": {
+    "cityOwners": [],
+    "gracz": 0,
+    "victoryMode": "dominacja",
+    "potegaGracza": 59,
+    "potegiWszystkich": [],
+    "wszystkieTechZbadane": false,
+    "epokaKoncowa": true,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_122",
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "gracz": 2,
+    "victoryMode": "moc",
+    "potegaGracza": -17,
+    "potegiWszystkich": [
+     86,
+     40,
+     24,
+     55
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 2,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_123",
+   "input": {
+    "cityOwners": [
+     2,
+     0
+    ],
+    "gracz": 1,
+    "victoryMode": "moc",
+    "graczEra": 2,
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": true,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "nauka"
+    },
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_124",
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "victoryMode": "dominacja",
+    "graczEra": 1,
+    "ostatniaEpoka": 3,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": true,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_125",
+   "input": {
+    "cityOwners": [
+     3,
+     1
+    ],
+    "gracz": 0,
+    "victoryMode": "dominacja",
+    "potegaGracza": 101,
+    "potegiWszystkich": [
+     84,
+     37,
+     70,
+     77,
+     9
+    ],
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.36462093862815886,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_126",
+   "input": {
+    "cityOwners": [],
+    "gracz": 2,
+    "graczEra": 3,
+    "epokaKoncowa": true,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_127",
+   "input": {
+    "cityOwners": [
+     1,
+     1,
+     3
+    ],
+    "gracz": 1,
+    "victoryMode": "moc",
+    "graczEra": 2,
+    "ostatniaEpoka": 3,
+    "rakietaWystrzelona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_128",
+   "input": {
+    "cityOwners": [
+     2,
+     3,
+     1,
+     1
+    ],
+    "gracz": 1,
+    "potegiWszystkich": [
+     -2,
+     27
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3,
+    "wszystkieTechZbadane": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_129",
+   "input": {
+    "cityOwners": [
+     2,
+     1
+    ],
+    "gracz": 2,
+    "victoryMode": "moc_i_dominacja",
+    "potegiWszystkich": [
+     33
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 4,
+    "rakietaWystrzelona": false,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_130",
+   "input": {
+    "cityOwners": [
+     2,
+     3
+    ],
+    "gracz": 1,
+    "potegaGracza": 102,
+    "ostatniaEpoka": 3,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": false,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_131",
+   "input": {
+    "cityOwners": [
+     2
+    ],
+    "gracz": 0,
+    "victoryMode": "moc",
+    "ostatniaEpoka": 4,
+    "epokaKoncowa": true,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_132",
+   "input": {
+    "cityOwners": [],
+    "gracz": 0,
+    "potegaGracza": 112,
+    "graczEra": 1,
+    "ostatniaEpoka": 1,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_133",
+   "input": {
+    "cityOwners": [],
+    "gracz": 2,
+    "potegaGracza": 46,
+    "potegiWszystkich": [
+     38,
+     101
+    ],
+    "ostatniaEpoka": 1,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.33093525179856115,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_134",
+   "input": {
+    "cityOwners": [
+     0,
+     1
+    ],
+    "gracz": 2,
+    "potegiWszystkich": [],
+    "ostatniaEpoka": 4,
+    "wszystkieTechZbadane": false,
+    "epokaKoncowa": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_135",
+   "input": {
+    "cityOwners": [
+     2,
+     2,
+     3
+    ],
+    "gracz": 2,
+    "potegaGracza": 49,
+    "potegiWszystkich": [
+     108,
+     38,
+     2
+    ],
+    "ostatniaEpoka": 1,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.3310810810810811,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_136",
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "potegiWszystkich": [
+     40
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 4,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_137",
+   "input": {
+    "cityOwners": [
+     3,
+     0,
+     0,
+     1
+    ],
+    "gracz": 1,
+    "potegaGracza": 98,
+    "potegiWszystkich": [
+     19,
+     35
+    ],
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 1.8148148148148149,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_138",
+   "input": {
+    "cityOwners": [
+     3,
+     3
+    ],
+    "gracz": 0,
+    "potegaGracza": 62,
+    "potegiWszystkich": [
+     0
+    ],
+    "ostatniaEpoka": 1,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_139",
+   "input": {
+    "cityOwners": [
+     2,
+     2,
+     3,
+     0
+    ],
+    "gracz": 0,
+    "potegaGracza": 117,
+    "potegiWszystkich": [
+     42,
+     -18
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": false,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 2.7857142857142856,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_140",
+   "input": {
+    "cityOwners": [],
+    "gracz": 2,
+    "potegaGracza": 0,
+    "potegiWszystkich": [
+     47,
+     -11
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_141",
+   "input": {
+    "cityOwners": [
+     1,
+     2,
+     2
+    ],
+    "gracz": 0,
+    "potegiWszystkich": [
+     -10,
+     62
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3,
+    "epokaKoncowa": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_142",
+   "input": {
+    "cityOwners": [
+     3
+    ],
+    "gracz": 1,
+    "potegaGracza": 88,
+    "potegiWszystkich": [
+     93,
+     96
+    ],
+    "ostatniaEpoka": 2,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.4656084656084656,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_143",
+   "input": {
+    "cityOwners": [
+     2,
+     0,
+     2
+    ],
+    "gracz": 1,
+    "potegaGracza": 58,
+    "potegiWszystkich": [],
+    "graczEra": 2,
+    "epokaKoncowa": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_144",
+   "input": {
+    "cityOwners": [
+     3,
+     1,
+     1,
+     2
+    ],
+    "gracz": 1,
+    "potegiWszystkich": [
+     41,
+     101,
+     78,
+     66,
+     87
+    ],
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_145",
+   "input": {
+    "cityOwners": [
+     3
+    ],
+    "gracz": 0,
+    "potegaGracza": 41,
+    "graczEra": 2,
+    "ostatniaEpoka": 3,
+    "rakietaWystrzelona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_146",
+   "input": {
+    "cityOwners": [
+     3,
+     1
+    ],
+    "gracz": 1,
+    "potegaGracza": 31,
+    "potegiWszystkich": [
+     64,
+     -20,
+     72,
+     104
+    ],
+    "ostatniaEpoka": 1,
+    "epokaKoncowa": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.12916666666666668,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_147",
+   "input": {
+    "cityOwners": [
+     1,
+     3,
+     1
+    ],
+    "gracz": 0,
+    "potegaGracza": 40,
+    "potegiWszystkich": [
+     59,
+     7
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 4,
+    "rakietaWystrzelona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0.6060606060606061,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_148",
+   "input": {
+    "cityOwners": [
+     1,
+     0,
+     3,
+     1
+    ],
+    "gracz": 2,
+    "potegaGracza": 116,
+    "graczEra": 1,
+    "ostatniaEpoka": 3,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": true,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_149",
+   "input": {
+    "cityOwners": [],
+    "gracz": 1,
+    "potegiWszystkich": [
+     -9,
+     83
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 4,
+    "rakietaWystrzelona": true,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_150",
+   "input": {
+    "cityOwners": [],
+    "gracz": 1,
+    "victoryMode": "dominacja",
+    "potegaGracza": 35,
+    "potegiWszystkich": [
+     14,
+     114,
+     107,
+     25
+    ],
+    "ostatniaEpoka": 4,
+    "wszystkieTechZbadane": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0.1346153846153846,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_151",
+   "input": {
+    "cityOwners": [],
+    "gracz": 2,
+    "victoryMode": "moc",
+    "potegiWszystkich": [
+     112,
+     24
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": true,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_152",
+   "input": {
+    "cityOwners": [
+     3,
+     3,
+     3
+    ],
+    "gracz": 0,
+    "potegaGracza": 105,
+    "potegiWszystkich": [
+     115,
+     68,
+     36,
+     69,
+     8
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 4,
+    "wszystkieTechZbadane": false,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.3547297297297297,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_153",
+   "input": {
+    "cityOwners": [
+     3,
+     2,
+     0
+    ],
+    "gracz": 0,
+    "victoryMode": "dominacja",
+    "graczEra": 2,
+    "ostatniaEpoka": 4,
+    "epokaKoncowa": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_154",
+   "input": {
+    "cityOwners": [
+     3,
+     2,
+     1,
+     1
+    ],
+    "gracz": 1,
+    "potegiWszystkich": [
+     114,
+     -4,
+     2,
+     106,
+     104
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 4,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_155",
+   "input": {
+    "cityOwners": [
+     2,
+     0,
+     1
+    ],
+    "gracz": 2,
+    "ostatniaEpoka": 1,
+    "wszystkieTechZbadane": true,
+    "epokaKoncowa": true,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "nauka"
+    },
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_156",
+   "input": {
+    "cityOwners": [
+     1,
+     0
+    ],
+    "gracz": 0,
+    "victoryMode": "moc",
+    "potegaGracza": 33,
+    "ostatniaEpoka": 4,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_157",
+   "input": {
+    "cityOwners": [
+     1,
+     2,
+     3,
+     1
+    ],
+    "gracz": 1,
+    "victoryMode": "dominacja",
+    "ostatniaEpoka": 3,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_158",
+   "input": {
+    "cityOwners": [],
+    "gracz": 1,
+    "potegaGracza": 2,
+    "graczEra": 3,
+    "ostatniaEpoka": 4,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_159",
+   "input": {
+    "cityOwners": [],
+    "gracz": 2,
+    "victoryMode": "moc_i_dominacja",
+    "potegiWszystkich": [],
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_160",
+   "input": {
+    "cityOwners": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "gracz": 2,
+    "victoryMode": "dominacja",
+    "potegaGracza": 109,
+    "potegiWszystkich": [
+     28,
+     85,
+     116,
+     103,
+     4
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 1,
+    "wszystkieTechZbadane": true,
+    "epokaKoncowa": false,
+    "naukaUkonczona": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.3244047619047619,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_161",
+   "input": {
+    "cityOwners": [
+     1,
+     1,
+     3
+    ],
+    "gracz": 1,
+    "potegiWszystkich": [
+     5,
+     1,
+     -19
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 4,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_162",
+   "input": {
+    "cityOwners": [],
+    "gracz": 0,
+    "potegiWszystkich": [
+     62,
+     63,
+     16,
+     -4,
+     57
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 4,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_163",
+   "input": {
+    "cityOwners": [
+     3,
+     2,
+     2
+    ],
+    "gracz": 2,
+    "potegaGracza": 116,
+    "potegiWszystkich": [
+     -17,
+     90,
+     3,
+     50
+    ],
+    "ostatniaEpoka": 3,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.8111888111888111,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_164",
+   "input": {
+    "cityOwners": [
+     0,
+     2,
+     3
+    ],
+    "gracz": 2,
+    "victoryMode": "moc_i_dominacja",
+    "potegaGracza": 32,
+    "potegiWszystkich": [
+     7,
+     18,
+     16,
+     38
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.4050632911392405,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_165",
+   "input": {
+    "cityOwners": [],
+    "gracz": 1,
+    "victoryMode": "dominacja",
+    "graczEra": 2,
+    "ostatniaEpoka": 4,
+    "wszystkieTechZbadane": true,
+    "epokaKoncowa": false,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_166",
+   "input": {
+    "cityOwners": [
+     2,
+     0,
+     0
+    ],
+    "gracz": 1,
+    "potegaGracza": 63,
+    "ostatniaEpoka": 1,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_167",
+   "input": {
+    "cityOwners": [
+     1,
+     1
+    ],
+    "gracz": 0,
+    "potegaGracza": 111,
+    "potegiWszystkich": [
+     -10,
+     54,
+     93,
+     48
+    ],
+    "graczEra": 1,
+    "epokaKoncowa": true,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.5692307692307692,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_168",
+   "input": {
+    "cityOwners": [],
+    "gracz": 0,
+    "potegaGracza": 90,
+    "potegiWszystkich": [
+     -10
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 1,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_169",
+   "input": {
+    "cityOwners": [],
+    "gracz": 1,
+    "victoryMode": "dominacja",
+    "potegaGracza": 66,
+    "potegiWszystkich": [
+     40
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 4,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": false,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 1.65,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_170",
+   "input": {
+    "cityOwners": [
+     3,
+     2
+    ],
+    "gracz": 2,
+    "potegaGracza": 68,
+    "potegiWszystkich": [
+     105,
+     66
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 3,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": false,
+    "naukaUkonczona": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.39766081871345027,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_171",
+   "input": {
+    "cityOwners": [
+     2,
+     1,
+     3
+    ],
+    "gracz": 1,
+    "victoryMode": "moc",
+    "graczEra": 2,
+    "ostatniaEpoka": 4,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_172",
+   "input": {
+    "cityOwners": [
+     1,
+     3,
+     1
+    ],
+    "gracz": 1,
+    "victoryMode": "moc_i_dominacja",
+    "potegaGracza": 30,
+    "potegiWszystkich": [
+     35,
+     105
+    ],
+    "ostatniaEpoka": 1,
+    "wszystkieTechZbadane": false,
+    "epokaKoncowa": true,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.21428571428571427,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_173",
+   "input": {
+    "cityOwners": [
+     3
+    ],
+    "gracz": 0,
+    "ostatniaEpoka": 2,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_174",
+   "input": {
+    "cityOwners": [
+     0
+    ],
+    "gracz": 1,
+    "victoryMode": "moc",
+    "potegaGracza": -12,
+    "potegiWszystkich": [
+     91,
+     86,
+     7,
+     7
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 3,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": false,
+    "naukaUkonczona": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_175",
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "gracz": 1,
+    "potegaGracza": 103,
+    "potegiWszystkich": [
+     2,
+     99,
+     102
+    ],
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": true,
+    "naukaUkonczona": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.5073891625615764,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_176",
+   "input": {
+    "cityOwners": [
+     0,
+     0
+    ],
+    "gracz": 0,
+    "potegaGracza": 90,
+    "ostatniaEpoka": 4,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_177",
+   "input": {
+    "cityOwners": [
+     2
+    ],
+    "gracz": 1,
+    "victoryMode": "moc_i_dominacja",
+    "potegaGracza": 58,
+    "potegiWszystkich": [
+     65,
+     54,
+     -11,
+     39,
+     83
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 2,
+    "rakietaWystrzelona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.24066390041493776,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_178",
+   "input": {
+    "cityOwners": [
+     1,
+     3
+    ],
+    "gracz": 2,
+    "potegaGracza": 82,
+    "potegiWszystkich": [
+     30,
+     -9,
+     35,
+     59,
+     43
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 4,
+    "wszystkieTechZbadane": true,
+    "epokaKoncowa": false,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 0.49101796407185627,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_179",
+   "input": {
+    "cityOwners": [
+     1,
+     3,
+     2
+    ],
+    "gracz": 1,
+    "victoryMode": "moc",
+    "potegaGracza": 30,
+    "potegiWszystkich": [
+     3,
+     -2,
+     16,
+     59,
+     25
+    ],
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": true,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.2912621359223301,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_180",
+   "input": {
+    "cityOwners": [
+     1,
+     1,
+     2,
+     1
+    ],
+    "gracz": 1,
+    "graczEra": 3,
+    "ostatniaEpoka": 3,
+    "epokaKoncowa": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_181",
+   "input": {
+    "cityOwners": [
+     0,
+     2
+    ],
+    "gracz": 2,
+    "potegaGracza": -14,
+    "potegiWszystkich": [
+     71,
+     27,
+     82,
+     -15,
+     -8
+    ],
+    "graczEra": 1,
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "nauka"
+    },
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_182",
+   "input": {
+    "cityOwners": [
+     3,
+     3
+    ],
+    "gracz": 1,
+    "potegaGracza": 28,
+    "potegiWszystkich": [
+     12,
+     2,
+     1
+    ],
+    "ostatniaEpoka": 3,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 1.8666666666666667,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_183",
+   "input": {
+    "cityOwners": [
+     3
+    ],
+    "gracz": 2,
+    "graczEra": 3,
+    "ostatniaEpoka": 3,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_184",
+   "input": {
+    "cityOwners": [
+     2
+    ],
+    "gracz": 0,
+    "potegaGracza": 71,
+    "potegiWszystkich": [
+     92,
+     42
+    ],
+    "graczEra": 2,
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "dominacja"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.5298507462686567,
+    "dominacja": true
+   }
+  },
+  {
+   "name": "losowy_185",
+   "input": {
+    "cityOwners": [
+     0,
+     3
+    ],
+    "gracz": 1,
+    "graczEra": 1,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": true,
+    "naukaUkonczona": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_186",
+   "input": {
+    "cityOwners": [
+     2
+    ],
+    "gracz": 1,
+    "potegaGracza": -20,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_187",
+   "input": {
+    "cityOwners": [],
+    "gracz": 2,
+    "victoryMode": "dominacja",
+    "potegaGracza": 83,
+    "potegiWszystkich": [
+     25
+    ],
+    "graczEra": 1,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": true,
+    "share": 3.32,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_188",
+   "input": {
+    "cityOwners": [],
+    "gracz": 0,
+    "potegaGracza": 26,
+    "ostatniaEpoka": 3,
+    "rakietaWystrzelona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_189",
+   "input": {
+    "cityOwners": [
+     1
+    ],
+    "gracz": 1,
+    "victoryMode": "dominacja",
+    "potegiWszystkich": [
+     76
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 1,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": false,
+    "epokaKoncowa": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_190",
+   "input": {
+    "cityOwners": [
+     1,
+     2,
+     2,
+     2
+    ],
+    "gracz": 2,
+    "potegiWszystkich": [
+     67
+    ],
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "nauka"
+    },
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_191",
+   "input": {
+    "cityOwners": [
+     2
+    ],
+    "gracz": 2,
+    "graczEra": 3,
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": false,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": false,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_192",
+   "input": {
+    "cityOwners": [
+     1,
+     0,
+     0
+    ],
+    "gracz": 2,
+    "potegaGracza": 37,
+    "graczEra": 1,
+    "ostatniaEpoka": 1,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_193",
+   "input": {
+    "cityOwners": [
+     1,
+     2,
+     2
+    ],
+    "gracz": 0,
+    "victoryMode": "moc",
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": true,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_194",
+   "input": {
+    "cityOwners": [
+     3,
+     3,
+     0,
+     3
+    ],
+    "gracz": 0,
+    "potegiWszystkich": [
+     110,
+     24,
+     8,
+     79,
+     76
+    ],
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "nauka"
+    },
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_195",
+   "input": {
+    "cityOwners": [
+     2,
+     0,
+     1
+    ],
+    "gracz": 2,
+    "victoryMode": "moc",
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": false
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_196",
+   "input": {
+    "cityOwners": [],
+    "gracz": 0,
+    "potegaGracza": 66,
+    "graczEra": 1,
+    "ostatniaEpoka": 1,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true,
+    "epokaKoncowa": false,
+    "naukaUkonczona": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_197",
+   "input": {
+    "cityOwners": [
+     2,
+     0,
+     0
+    ],
+    "gracz": 1,
+    "potegaGracza": -9,
+    "potegiWszystkich": [
+     103,
+     110,
+     52,
+     -4,
+     110
+    ],
+    "graczEra": 3,
+    "ostatniaEpoka": 2,
+    "wszystkieTechZbadane": true,
+    "epokaKoncowa": true,
+    "graczKiedysMialMiasto": true
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 1,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_198",
+   "input": {
+    "cityOwners": [
+     2,
+     2,
+     1
+    ],
+    "gracz": 1,
+    "potegiWszystkich": [
+     -6,
+     72
+    ],
+    "graczEra": 3,
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true,
+    "naukaUkonczona": true,
+    "graczKiedysMialMiasto": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 1,
+     "rodzaj": "nauka"
+    },
+    "defeat": null,
+    "eliminated": false,
+    "share": 0,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "losowy_199",
+   "input": {
+    "cityOwners": [
+     3
+    ],
+    "gracz": 2,
+    "victoryMode": "dominacja",
+    "potegaGracza": 8,
+    "potegiWszystkich": [
+     20,
+     36,
+     -14
+    ],
+    "wszystkieTechZbadane": true,
+    "rakietaWystrzelona": true,
+    "naukaUkonczona": false
+   },
+   "expect": {
+    "victory": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "defeat": {
+     "winner": 2,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.14285714285714285,
+    "dominacja": false
+   }
+  }
+ ]
+}
