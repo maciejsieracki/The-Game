@@ -25,7 +25,8 @@ const ok = (cond, msg) => {
 
 // Linie niebędące komentarzem (komentarze JSDoc / // nie są tekstem dla gracza).
 const isCommentLine = (line) => /^\s*(\/\/|\*|\/\*)/.test(line);
-const OLD_NAME = /administrator\w*\s+ulepszeń/i;
+// \p{L} zamiast \w: JS \w nie łapie polskich liter (np. „administratorów” — „ó”). Zarzut N1 (Evaluator r3).
+const OLD_NAME = /administrator\p{L}*\s+ulepszeń/iu;
 
 /** Zwraca numery linii ze starą nazwą w tekstach (nie w komentarzach). */
 function findOldNames(text) {
@@ -34,6 +35,28 @@ function findOldNames(text) {
     if (!isCommentLine(line) && OLD_NAME.test(line)) hits.push(i + 1);
   });
   return hits;
+}
+
+/** Wszystkie linie (bez filtra komentarzy) — dla Markdown, gdzie wypunktowanie zaczyna się od „*”. */
+function findOldNamesAllLines(text) {
+  const hits = [];
+  text.split('\n').forEach((line, i) => {
+    if (OLD_NAME.test(line)) hits.push(i + 1);
+  });
+  return hits;
+}
+
+/** Rekurencyjnie zbiera pliki o podanych rozszerzeniach (ścieżki względem ROOT). */
+function collectFiles(absDir, exts) {
+  const out = [];
+  (function walkDir(dir) {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) walkDir(p);
+      else if (exts.some((x) => e.name.endsWith(x))) out.push(path.relative(ROOT, p));
+    }
+  })(absDir);
+  return out;
 }
 
 /** Kompiluje moduł TS ze źródła tekstowego (stdin esbuild) i zwraca wyeksportowane obiekty. */
@@ -102,8 +125,18 @@ const offenders = [];
 for (const f of GAME_TEXT_FILES) {
   for (const ln of findOldNames(read(f))) offenders.push(`${f}:${ln}`);
 }
+// Zarzut N2 (Evaluator r3): cały gra/data (nie tylko 1 JSON) i docs/encyklopedia (Markdown, bez filtra komentarzy).
+for (const f of collectFiles(path.join(ROOT, 'data'), ['.json'])) {
+  for (const ln of findOldNames(read(f))) offenders.push(`${f}:${ln}`);
+}
+const DOCS_ENCY = path.join(ROOT, '..', 'docs', 'encyklopedia');
+const docsFiles = fs.existsSync(DOCS_ENCY) ? collectFiles(DOCS_ENCY, ['.md']) : [];
+ok(docsFiles.length > 0, `docs/encyklopedia: znaleziono pliki Markdown do skanu (${docsFiles.length})`);
+for (const f of docsFiles) {
+  for (const ln of findOldNamesAllLines(read(f))) offenders.push(`${f}:${ln}`);
+}
 ok(offenders.length === 0,
-  `brak starej nazwy „administrator ulepszeń” w tekstach gry (trafienia: ${offenders.length}${offenders.length ? ' — ' + offenders.join(', ') : ''})`);
+  `brak starej nazwy „administrator ulepszeń” w tekstach gry, danych i docs/encyklopedia (trafienia: ${offenders.length}${offenders.length ? ' — ' + offenders.join(', ') : ''})`);
 const cityPanel = read('src/ui/cityPanel.ts');
 const bmh = read('src/ui/buildModeHud.ts');
 const adp = read('src/ui/administratorPanel.ts');
@@ -137,6 +170,9 @@ const mCity = realMutation('src/ui/cityPanel.ts', "'Administrator państwa: prac
 ok(mCity.applied && mCity.hits.length > 0, 'mutacja realna: stara nazwa w cityPanel.ts jest wykrywana');
 const mBmh = realMutation('src/ui/buildModeHud.ts', "'Wymaga administratora państwa'", "'Wymaga administratora ulepszeń'");
 ok(mBmh.applied && mBmh.hits.length > 0, 'mutacja realna: stara nazwa w buildModeHud.ts jest wykrywana');
+// N1: forma dopełniaczowa „administratorów ulepszeń” (polska litera w środku słowa) też MUSI być wykryta.
+const mCityGen = realMutation('src/ui/cityPanel.ts', "'Administrator państwa: pracuje'", "'Administratorów ulepszeń: pracuje'");
+ok(mCityGen.applied && mCityGen.hits.length > 0, 'mutacja realna: forma „administratorów ulepszeń” jest wykrywana');
 ok(read('src/ui/cityPanel.ts') === cityPanel && read('src/ui/buildModeHud.ts') === bmh, 'po mutacjach pliki przywrócone bajt po bajcie');
 const mutEdp = edp.replace("balRow('Administrator państwa'", "balRow('Administrator'");
 ok(!ROW_LINE.test(mutEdp), 'mutacja: usunięcie wiersza z panelu Państwa jest wykrywane');
