@@ -5,7 +5,7 @@
   "p6": {
     "kryzysProgZaufania": 0,
     "kryzysTurDoWojny": 5,
-    "_uwagaKryzysTurDoWojny": "R-WEB-DESC-SYNC (zadanie #371): wartosc 5 NIE wplywa na gre. main.ts:11876 nadpisuje pole: { ...diploTickP6, kryzysTurDoWojny: w.n }, gdzie w.n = hamulecN profilu wojny (diploBrakeWarParams, main.ts:11863). Dla profilu bazowego hamulecN = clamp(round(bazaN - wagaProgWojny*5), minN, maxN) = clamp(round(8 - 0,5*5), 3, 7) = 6 (diplomacy-war-peace-profile.ts:143; diplomacy-war-peace-params.json, sekcja hamulecRelacji). Realnie obowiazuje N=6. Niespojnosc 5 vs 6 zostaje do zadania #370; wartosc NIE zmieniona.",
+    "_uwagaKryzysTurDoWojny": "R-WEB-DESC-SYNC (zadanie #371): wartosc 5 NIE wplywa na gre. main.ts:11876 nadpisuje pole: { ...diploTickP6, kryzysTurDoWojny: w.n }, gdzie w.n = hamulecN profilu wojny (diploBrakeWarParams, main.ts:11863). N zalezy od pary, NIE jest stale 6 (zarzut 1 Evaluatora, dowod w raporcie 30-obrona-claude.md): para bierze profil strony o wyzszym progWojnyRelacji (main.ts:11859-11863). Profil bez wiersza w civ-matrix.json (hasData=false, diplomacy-war-peace-profile.ts:130-143) ma hamulecN = clamp(round(bazaN - wagaProgWojny*5), minN, maxN) = clamp(round(8 - 0,5*5), 3, 7) = 6. Profil z wierszem macierzy ma hamulecN = clamp(round(8 - 0,5*dip_prog_wojny), 3, 7) (diplomacy-war-peace-profile.ts:188); dla 15 wierszy civ-matrix.json (dip_prog_wojny 2-9) daje N = 4-7. Niespojnosc 5 vs 4-7 zostaje do zadania #370; wartosc NIE zmieniona.",
     "kryzysOstrzezenieTurPrzed": 2
   },
   "p7": {

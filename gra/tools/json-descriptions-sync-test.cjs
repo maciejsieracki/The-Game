@@ -213,6 +213,25 @@ if (dipCur) {
     typeof dipCur._uwagaFlagaDomyslna === 'string' && typeof dipCur.p6._uwagaKryzysTurDoWojny === 'string');
 }
 
+// c10: zakres N hamulca wojny z civ-matrix.json (ten sam wzór co diplomacy-war-peace-profile.ts:188) i N=6 dla profilu bez wiersza
+// (wzór z diplomacy-war-peace-profile.ts:143). Opis _uwagaKryzysTurDoWojny musi podawać te liczby.
+if (dipCur) {
+  const brakeP = JSON.parse(readRepoText('gra/data/diplomacy-war-peace-params.json')).hamulecRelacji;
+  const matrixRows = JSON.parse(readRepoText('gra/data/civ-matrix.json')).cywilizacje || [];
+  const clampN = (dip) => Math.min(brakeP.maxN, Math.max(brakeP.minN, Math.round(brakeP.bazaN - brakeP.wagaProgWojny * dip)));
+  const ns = matrixRows
+    .map((c) => (c.params || c)['dip_prog_wojny'])
+    .filter((v) => typeof v === 'number')
+    .map(clampN);
+  const nMin = Math.min(...ns);
+  const nMax = Math.max(...ns);
+  const noteKryzys = dipCur.p6._uwagaKryzysTurDoWojny;
+  check('c10: N profilu bez wiersza macierzy = 6 (wzór z diplomacy-war-peace-profile.ts:143) i opis go podaje',
+    clampN(5) === 6 && noteKryzys.includes('= 6'));
+  check('c10: opis _uwagaKryzysTurDoWojny podaje zakres N z civ-matrix.json (' + nMin + '-' + nMax + ')',
+    ns.length > 0 && noteKryzys.includes(nMin + '-' + nMax));
+}
+
 console.log('');
 console.log('json-descriptions-sync-test: ' + pass + ' pass / ' + fail + ' fail');
 process.exit(fail === 0 ? 0 : 1);
