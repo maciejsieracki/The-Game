@@ -56,6 +56,7 @@ import {
 } from './empirePanelSectionMap';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { administratorUpkeepValueHtml } from './icons/administratorIcon';
+import { stateAdministratorStatusHtml } from './stateAdministratorRow';
 import { getArmyRecruitDraftTotal, submitArmyRecruitmentDrafts, clearArmyRecruitDraftsOnPanelClose } from './cityPanel';
 export type { EmpireDetailSnap } from './empireDetailTypes';
 export { empireSectionFromHudAct, empirePanelBlockForSection } from './empirePanelSectionMap';
@@ -1203,6 +1204,9 @@ function renderSkarbiecSection(
   h += balRow('Utrzymanie surowców budynków', 'z magazynu państwa, nie ze złota',
     formatResourceUpkeepEmpireLineColored(utrzRes));
   h += balRow('Utrzymanie jednostek', null, tblValTxt(-utrzJ));
+  if (economy.administratorPanstwa) {
+    h += balRow('Administrator państwa', null, stateAdministratorStatusHtml(economy.administratorPanstwa));
+  }
   h += `<div class="civ-emp-tbl-sum" style="grid-template-columns:${bg}"><div>Netto skarbiec</div>`
     + `<div class="${nettoCls}">${treasuryBalanceSignedTxt(netto)}</div></div>`;
   h += '</div>';

@@ -155,6 +155,18 @@ export interface HudState {
   bogactwoUtrzymanieJednostek?: number;
   /** R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: utrzymanie administratorow / ture (juz w bilansie). */
   bogactwoUtrzymanieAdministratorow?: number;
+  /** Administrator państwa (panel Państwa): jeden na Państwo, tryb auto dla całego Państwa.
+   *  `undefined` = opcja „Administratorzy” OFF (brak wiersza w panelu). */
+  administratorPanstwa?: {
+    hired: boolean;
+    working: boolean;
+    /** Utrzymanie na turę (Pieniądz). */
+    upkeep: number;
+    /** Koszt jednorazowego zatrudnienia (Pieniądz). */
+    hireCost: number;
+    /** Stan skarbca właściciela (Pieniądz). */
+    treasury: number | null;
+  };
   /** P-BRAK-LACZNEJ-LICZBY-OBYWATELI-W-HUD (Maciej 2026-08-12): suma `population` wszystkich
    *  miast gracza (cities.filter(ownerId===0).reduce(+population)) — teraz wyświetlana wprost
    *  w górnym pasku HUD (chip „Obywatele"), nie tylko w panelu Moc/MIASTA.

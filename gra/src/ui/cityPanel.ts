@@ -10056,9 +10056,9 @@ function renderTopBarGarrison(mount: HTMLElement, city: City): void {
     const impChip = el('span', 'civ-v-garrison-label civ-v-adm-chip' + (impSt.working ? '' : ' is-idle'));
     impChip.setAttribute('data-imp-adm-chip', impSt.working ? 'working' : 'idle');
     impChip.title = impSt.working
-      ? 'Administrator ulepszeń: pracuje'
-      : 'Administrator ulepszeń: nie pracuje — brak środków w skarbcu państwa';
-    impChip.innerHTML = administratorChipInnerHtml('improvements', impSt.working, 'Administrator ulepszeń');
+      ? 'Administrator państwa: pracuje'
+      : 'Administrator państwa: nie pracuje — brak środków w skarbcu państwa';
+    impChip.innerHTML = administratorChipInnerHtml('improvements', impSt.working, 'Administrator państwa');
     mount.appendChild(impChip);
   }
   attachInteractiveDetail(label, showDetail, {

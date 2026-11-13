@@ -91,7 +91,7 @@ async function launchBrowser() {
   }
 }
 
-/** Konfiguracja HUD: miasto gracza `c1` z zadanym stanem administratora ulepszeń. */
+/** Konfiguracja HUD: miasto gracza `c1` z zadanym stanem administratora państwa. */
 function configFor(adm) {
   return `({
     listTypes: () => [{ key: 'farma', label: 'Farma', kosztPraca: 20, epoka: 1, techUnlocked: true }],
@@ -173,22 +173,22 @@ async function main() {
   // ---- Scenariusz 1: brak administratora ----
   const s1 = await scenario('brak', noAdm, undefined, undefined, 1, 'po-zmianie-brak-administratora-1440x900.png');
   check('S1: panel automatyzacji wyrenderowany (blok .civ-build-auto)', s1.autoBlock, s1);
-  check('S1: podpowiedź administratora widoczna i w treści krótka („Wymaga administratora ulepszeń")',
-    s1.hint.length === 1 && s1.hint[0] === 'Wymaga administratora ulepszeń' && s1.hintVisible, s1.hint);
+  check('S1: podpowiedź administratora widoczna i w treści krótka („Wymaga administratora państwa")',
+    s1.hint.length === 1 && s1.hint[0] === 'Wymaga administratora państwa' && s1.hintVisible, s1.hint);
   check(`S1: (a) każdy komunikat w treści panelu ≤ ${MAX_PANEL_TEXT} znaków`,
     [...s1.hint, ...s1.lockNotes, ...s1.eff, ...s1.adminBtnText].every(t => t.length <= MAX_PANEL_TEXT),
     { hint: s1.hint, lockNotes: s1.lockNotes, eff: s1.eff, btn: s1.adminBtnText });
   check('S1: (b) pełne wyjaśnienie w data-lock-hint podpowiedzi (co to administrator, koszt 40, utrzymanie 2)',
-    /Auto-ulepszenia terenu w tym mieście wymagają działającego administratora ulepszeń\..*Koszt 40 Pieniądza, utrzymanie 2 Pieniądza na turę\./.test(s1.hintLock[0] || ''),
+    /Auto-ulepszenia terenu wymagają działającego administratora państwa \(jeden na całe Państwo\)\..*Koszt 40 Pieniądza, utrzymanie 2 Pieniądza na turę\./.test(s1.hintLock[0] || ''),
     s1.hintLock);
   check('S1: (b) title notatki blokady państwa zawiera wyjaśnienie (żadne miasto nie ma administratora)',
-    s1.lockNoteTitles.some(t => /Żadne miasto nie ma działającego administratora ulepszeń/.test(t)), s1.lockNoteTitles);
+    s1.lockNoteTitles.some(t => /Żadne miasto nie ma działającego administratora państwa/.test(t)), s1.lockNoteTitles);
   check('S1: (b) title notatki blokady miasta zawiera wyjaśnienie (ustawienia nieaktywne)',
     s1.lockNoteTitles.some(t => /Ustawienia tego miasta są nieaktywne/.test(t)), s1.lockNoteTitles);
   check('S1: najechanie na podpowiedź pokazuje tooltip z pełnym tekstem (lock-tip widoczny)',
     !!(s1.tip && s1.tip.shown && /Auto-ulepszenia terenu.*Koszt 40 Pieniądza, utrzymanie 2/.test(s1.tip.text)), s1.tip);
   check('S1: (c) zablokowane przyciski automatyzacji (disabled) mają title z komunikatem',
-    s1.lockedButtonCount > 0 && s1.lockedButtonTitles.every(t => t.includes('Wymaga administratora ulepszeń')),
+    s1.lockedButtonCount > 0 && s1.lockedButtonTitles.every(t => t.includes('Wymaga administratora państwa')),
     { count: s1.lockedButtonCount, titles: s1.lockedButtonTitles });
 
   // ---- Scenariusz 2: zatrudniony, nie pracuje ----
@@ -201,7 +201,7 @@ async function main() {
     s2.hintLock.some(t => /brak środków w skarbcu państwa/.test(t)), s2.hintLock);
   check('S2: (a) „Efekt w mieście” krótki; przyczyna w title',
     s2.eff.some(t => t === 'Efekt w mieście: wstrzymane (państwo)' || t.startsWith('Efekt w mieście: wstrzymane')) &&
-    s2.effTitles.some(t => /Brak działającego administratora ulepszeń/.test(t)),
+    s2.effTitles.some(t => /Brak działającego administratora państwa/.test(t)),
     { eff: s2.eff, effTitles: s2.effTitles });
 
   // ---- (d) Mutacja: długi tekst z powrotem w treści musi czerwienić test ----

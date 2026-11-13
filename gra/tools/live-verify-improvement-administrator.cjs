@@ -1,7 +1,7 @@
 'use strict';
 /**
  * R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1 — dowód w REALNEJ grze (Chromium): panel ulepszeń (tryb budowy 🔨) z przyciskiem
- * „Administrator ulepszeń +/✓”; auto-ulepszenia terenu gracza działają TYLKO przy działającym administratorze.
+ * „Administrator państwa +/✓”; auto-ulepszenia terenu gracza działają TYLKO przy działającym administratorze.
  * Fazy: (1) bez administratora — N tur => warstwy ulepszeń bez zmian; (2) zatrudnienie KLIKIEM w panelu (koszt 40 ze skarbca)
  * — N tur => przybywają ulepszenia; (3) skarbiec 0 => administrator nie pracuje => brak nowych ulepszeń;
  * (4) zapis/wczytanie (round-trip snapshotu) niesie administratora; (5) ikona 16/24 px jasna/ciemna.
@@ -57,7 +57,7 @@ async function openBuildPanel(page) {
     });
     out.setup = await page.evaluate((id) => window.__civTest.adminSetup(id, null, 500), cap.id);
 
-    // (1) BEZ administratora ulepszeń
+    // (1) BEZ administratora państwa
     out.state1 = await impState(page, cap.id);
     out.panel1Open = await openBuildPanel(page);
     out.panel1 = await panelInfo(page);
