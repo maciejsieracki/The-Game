@@ -1,3 +1,9 @@
+## ROBOCZA 4265f100 -- 2026-11-13 -- FALA 690: Panel dyplomacji: zmęczenie wojną i desperacja (testowa)
+
+- W panelu dyplomacji przy wojnie z graczem widać zmęczenie wojną strony wygrywającej i desperację strony przegrywającej, a przy wojnach AI↔AI wymienionych obok wojny danej cywilizacji jedną wartość: desperację (gdy ta cywilizacja przegrywa) albo zmęczenie (gdy wygrywa), z podpowiedzią co to znaczy. Wartości liczone tymi samymi funkcjami co gra.
+- Weryfikacja: tsc 0; logic 213/213; testy: panel zmęczenia 52/0, zmęczenie 20 tur 30/0, tylko miastami 30/0, koniec zmęczenia 22/0, diplomacy 149/0, ai 297/0; FC PASS-WITH-NOTES
+- Limity: Zrzuty z żywego Chromium sprzed FALI 689 — zalecana krótka kontrola wizualna panelu po wdrożeniu; wartości procentowe w nowej wojnie zaczynają od 0%
+
 ## ROBOCZA 7bbebf6b -- 2026-11-13 -- FALA 689: Zmęczenie wojną zamyka się w 20 turach (testowa)
 
 - Zmęczenie wojną ma jeden licznik: 5% na turę od startu wojny + 10% za każde miasto, które zmieniło właściciela (bez zastoju i bez drugiego zegara). Progi: 50% (tura 10) silniejszy obniża cenę pokoju, słabszy szuka pokoju; 80% (tura 16) pokój bezwarunkowy; 100% (tura 20) wojna wygasa. Szansa AI na pokój i sygnały pokoju czytają ten sam licznik; hasło Civpedii przepisane na 20 tur.

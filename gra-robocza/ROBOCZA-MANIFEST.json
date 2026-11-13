@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "7bbebf6bff04fcf41bb61eadf45b2c26",
-  "bundleSha256": "4ab3b8b443b00d435824e514203bf922e58398290ed5f1199ba37d7e4012891f",
-  "bundleBytes": 14649783,
+  "bundleMd5": "4265f100facdf3ac600446a8b86a8e8e",
+  "bundleSha256": "b408e62ff594429a73b229a3db779b474d95b8542aca475236bbaf23d2f42e38",
+  "bundleBytes": 14652877,
   "sourceSnapshot": {
-    "source": "origin/main e6776801b + merge FC 7de57c5ed",
+    "source": "origin/main ec00fc0e3 + merge FC 84f1a54fc",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 689: Zmęczenie wojną ma jeden licznik: 5% na turę od startu wojny + 10% za każde miasto, które zmieniło właściciela (bez zastoju i bez drugiego zegara). Progi: 50% (tura 10) silniejszy obniża cenę pokoju, słabszy szuka pokoju; 80% (tura 16) pokój bezwarunkowy; 100% (tura 20) wojna wygasa. Szansa AI na pokój i sygnały pokoju czytają ten sam licznik; hasło Civpedii przepisane na 20 tur."
+    "FALA 690: W panelu dyplomacji przy wojnie z graczem widać zmęczenie wojną strony wygrywającej i desperację strony przegrywającej, a przy wojnach AI↔AI wymienionych obok wojny danej cywilizacji jedną wartość: desperację (gdy ta cywilizacja przegrywa) albo zmęczenie (gdy wygrywa), z podpowiedzią co to znaczy. Wartości liczone tymi samymi funkcjami co gra."
   ],
   "verification": [
-    "tsc 0; logic 213/213; testy: zmęczenie 20 tur 30/0, tylko miastami 30/0, koniec zmęczenia 22/0, ai-war-weariness-peace 99/0, ai-losing-war-asks 12/0, diplomacy 149/0, ai 297/0, civpedia-values 129, truce-impl 94/0; FC PASS-WITH-NOTES"
+    "tsc 0; logic 213/213; testy: panel zmęczenia 52/0, zmęczenie 20 tur 30/0, tylko miastami 30/0, koniec zmęczenia 22/0, diplomacy 149/0, ai 297/0; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "Pierwsze propozycje pokoju AI nadal od tury 10 (stała PEACE_PROPOSAL_MIN_WAR_TURNS) — decyzja właściciela otwarta; pełna gra AI↔AI i cykl wojna-pokój-wojna NIE ZMIERZONO; znane FAIL diplo-war-peace-sim S3/S4b/M_TUR i main-guard R6/ZT sprzed tematu"
+    "Zrzuty z żywego Chromium sprzed FALI 689 — zalecana krótka kontrola wizualna panelu po wdrożeniu; wartości procentowe w nowej wojnie zaczynają od 0%"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES 7de57c5ed: zmęczenie wojną w 20 turach (5% na turę + 10% za zmienione miasto, bez zastoju, jeden zegar). Uwagi: dane w grze nie przekazują jeszcze wszystkich scenariuszy pełnej gry AI↔AI (NIE ZMIERZONO pełna gra, cykl wojna-pokój-wojna w 20 turach); blokada 10 tur na pierwsze propozycje pokoju AI (PEACE_PROPOSAL_MIN_WAR_TURNS) maskuje bramki ofert 3/6 — decyzja właściciela otwarta; martwe pola zmeczenie.* w diplomacy-war-peace-params.json do sprzątania."
+    "notes": "FC PASS-WITH-NOTES 84f1a54fc: panel dyplomacji pokazuje zmęczenie wojną strony wygrywającej i desperację przegrywającej (gracz↔AI oba, AI↔AI jedna wartość). Uwaga: zrzuty Chromium sprzed FALI 689; zalecana krótka kontrola wizualna po wdrożeniu."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-13T19:27:04",
+  "hubGeneratedAt": "2026-11-13T19:45:07",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "7bbebf6bff04fcf41bb61eadf45b2c26",
-      "sizeBytes": 14649783
+      "md5": "4265f100facdf3ac600446a8b86a8e8e",
+      "sizeBytes": 14652877
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "7bbebf6bff04fcf41bb61eadf45b2c26",
-      "sizeBytes": 14649783
+      "md5": "4265f100facdf3ac600446a8b86a8e8e",
+      "sizeBytes": 14652877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "7bbebf6bff04fcf41bb61eadf45b2c26",
-      "sizeBytes": 14649783
+      "md5": "4265f100facdf3ac600446a8b86a8e8e",
+      "sizeBytes": 14652877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "7bbebf6bff04fcf41bb61eadf45b2c26",
-      "sizeBytes": 14649783
+      "md5": "4265f100facdf3ac600446a8b86a8e8e",
+      "sizeBytes": 14652877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "7bbebf6bff04fcf41bb61eadf45b2c26",
-      "sizeBytes": 14649783
+      "md5": "4265f100facdf3ac600446a8b86a8e8e",
+      "sizeBytes": 14652877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "7bbebf6bff04fcf41bb61eadf45b2c26",
-      "sizeBytes": 14649783
+      "md5": "4265f100facdf3ac600446a8b86a8e8e",
+      "sizeBytes": 14652877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "7bbebf6bff04fcf41bb61eadf45b2c26",
-      "sizeBytes": 14649783
+      "md5": "4265f100facdf3ac600446a8b86a8e8e",
+      "sizeBytes": 14652877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "7bbebf6bff04fcf41bb61eadf45b2c26",
-      "sizeBytes": 14649783
+      "md5": "4265f100facdf3ac600446a8b86a8e8e",
+      "sizeBytes": 14652877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "7bbebf6bff04fcf41bb61eadf45b2c26",
-      "sizeBytes": 14649783
+      "md5": "4265f100facdf3ac600446a8b86a8e8e",
+      "sizeBytes": 14652877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "7bbebf6bff04fcf41bb61eadf45b2c26",
-      "sizeBytes": 14649783
+      "md5": "4265f100facdf3ac600446a8b86a8e8e",
+      "sizeBytes": 14652877
     }
   ],
-  "md5": "7bbebf6bff04fcf41bb61eadf45b2c26",
+  "md5": "4265f100facdf3ac600446a8b86a8e8e",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
