@@ -389,3 +389,15 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Dlaczego nie uruchomiono nowych tematów:** `KOLEJKA-RUST.md` jest nieaktualna (migawka 23:18, „W toku” zawiera tematy już zintegrowane). Pozostałe pozycje pending są zablokowane decyzją właściciela (allowlista ProdBody: #107–#109, #112–#113, #147–#150; #143/#146 allowlista generatora; #151/#139 Cargo.toml; #120 komenda wypowiedzenia; #103 alias `umowa_handlowa`; #114/#115 driver W8; #134–#137 DYSTANS; gameplay #10, #14–#19, #27, #60, #63). Nie uruchamiano tematów zablokowanych.
 - **Taski do weryfikacji:** #104, #106, #114, #115 mają status in_progress bez aktywnego worktree i Workflow. Status NIE_ZMIERZONO.
 - **Stan repo:** `parity-v2` = `003d53f97` (po FF z #91). `claude/rust-sivvrn` = `b107fe9a4` przed tym wpisem.
+
+## Przebieg (heartbeat 08:18, trig_01DiSPBEtwmKWjgEKvcGWm7W): 1 aktywny temat (1 z 4 slotów)
+- **Sloty:** 1 aktywny Workflow: CRED-WOJNA-Q1 runda 2/5 (`wf_f60f7f97-86e`). Operator HAIKU, Evaluator i FC SONNET, Obrona HAIKU. Baza `15d85c2ee`. Dispatch DODATEK r2 wypchnięty jako `d1f0e3c59`.
+  - Zarzuty naprawialne z FC r1: brak ≥150 wektorów z pinu (generator + SHA-256), kolejność D4/D8 względem P4.
+  - Alias `umowa_handlowa` NIE w tej rundzie (decyzja właściciela). Test S3 na `StreamDealKind` bezpośrednio.
+- **Dlaczego nie 4 sloty:** pozostałe pending są zablokowane decyzją właściciela albo zgodą na allowlistę (lista w poprzednich przebiegach). Nie startowano tematów zablokowanych.
+- **Zrobione przy okazji (weryfikacja z repo, nie z listy zadań):**
+  - **K5LOOP-KONTRATAK-Q1 (#108):** FC PASS-WITH-NOTES, kod `d8fc4b3fd` i baza `bd4e4f63e` są przodkami parity (`003d53f97`). Zadanie #108 do zamknięcia.
+  - **#129 (wektory `_defenderCounters`):** wektory są w `p6_siege_tactics_loop_body_gen.mjs` przez KONTRATAK. Zamykam po potwierdzeniu w przeglądzie FC, nie na podstawie samej obecności pliku.
+  - **Lista zadań jest nieaktualna:** #91 zamknięte (FC PASS-WITH-NOTES, FF docs-only). #104, #106, #114, #115 mają status in_progress bez worktree i bez Workflow. Status NIE_ZMIERZONO.
+- **Dysk:** 9,5 GB. Próg 8 GB z CLAUDE.md spełniony.
+- **Stan repo:** `parity-v2` = `003d53f97`. `claude/rust-sivvrn` = `d1f0e3c59` po dispatchu r2.
