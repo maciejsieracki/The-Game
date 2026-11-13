@@ -46,3 +46,31 @@ DO DECYZJI CZŁOWIEKA — NIE ROBIĆ w r2:
 BRAMKI r2 (EXIT 0): `cargo fmt --check`; `cargo clippy --all-targets -- -D warnings`; `cargo test --lib`; `p6_cred_wojna`; `p6_credibility`; `p6_wire_war_pipeline`; pełny `cargo test --no-fail-fast` (dowód liczników). `CARGO_TARGET_DIR` poza repo, usuń po bramkach.
 
 RUNDY: 2/5. Raport: zapisz `01-operator-r2.md` (nie nadpisuj r1). Commit bez nazwy modelu, `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`. NIE pushować do parity, nie integrować, nie dotykać `gra/`.
+
+---
+
+## DODATEK r3 (po FC r2 = PASS-WITH-NOTES, decyzja orkiestratora; runda 3/5, ten sam ID)
+
+**Korekta bazy (błąd orkiestratora w DODATKU r2):** `15d85c2ee` NIE jest przodkiem `origin/claude/rust-sivvrn`. Jest 155 commitów za parity. Nie integrować `811f607ee`, bo cofnęłoby 155 commitów.
+
+Baza r3: `003d53f97` (czubek `origin/rust-port/parity-v2`). Jedyna obowiązująca.
+
+ZAKRES r3 (tylko przeniesienie testów z r2 na bazę parity):
+1. Przenieś z `811f607ee` (git show) cztery pliki i bez zmian w ich treści, o ile kompilują się na bazie parity:
+   - `rust-port/engine/tests/p6_cred_wojna_gen.mjs`
+   - `rust-port/engine/tests/p6_cred_wojna_vectors.rs`
+   - `rust-port/engine/tests/p6_cred_wojna_vectors/vectors.json`
+   - `dyspozycje/autobot/runs/R-RUSTPORT-P6-CRED-WOJNA-Q1/01-operator-r2.md` (raport r2 bez zmian)
+2. Jeśli testy nie kompilują się na parity: napraw WYŁĄCZNIE w tych plikach testowych (nie w `src/`). Zapisz w raporcie, co zmieniono i dlaczego.
+3. Generator `.mjs` odtwórz w scratchpadzie (esbuild zainstaluj w scratchpadzie, NIE w repo), wyjście ma być bajt-w-bajt zgodne z `vectors.json`. Liczniki z r2: hak 160 (147/13), kolejność 60 seq, S3 20x3.
+
+ALLOWLISTA r3: wyłącznie 4 pliki powyżej + `01-operator-r3.md`. ZAKAZ: `src/**` (w tym `credibility.rs`, `turn_war_pipeline.rs`, `turn_war_dipl_steps.rs`), `war_turn_declare.rs`, `gra/`, `Cargo.toml`, `Cargo.lock` (nie commitować).
+
+NIE ROBIĆ (decyzje właściciela, poza tą rundą):
+- hak w `declare_forced_wars` (`war_turn_declare.rs`, pin 41931): #120 lub rozszerzenie allowlisty.
+- alias `umowa_handlowa` → `LegacyTradeAgreement`: pominąć.
+- harness pipeline dla kolejności D4/D8: osobny temat (test nadal wywołuje prymitywy rejestru).
+
+BRAMKI r3 (EXIT 0): `cargo fmt --check`; `cargo clippy --all-targets -- -D warnings`; `cargo test --lib`; `p6_cred_wojna_vectors`; `p6_cred_wojna`; `p6_credibility`; `p6_wire_war_pipeline`; pełny `cargo test --no-fail-fast` (dowód liczników). `CARGO_TARGET_DIR` poza repo, usuń po bramkach.
+
+RUNDY: 3/5. Raport: `01-operator-r3.md`. Commit BEZ nazwy modelu (także bez `Co-Authored-By` z modelem), `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`. NIE pushować do parity, nie integrować, nie dotykać `gra/`.
