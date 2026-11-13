@@ -1,64 +1,65 @@
-# R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1 — obrona Operatora (runda 2, odpowiedź na zarzuty Evaluatora 8a6ecb63a)
+# R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1 — obrona, runda 2 (odpowiedź na zarzuty Evaluatora)
 
-STATUS: DECISION_REQUIRED
+STATUS: PASS-WITH-NOTES (kod i testy gotowe; dowód live ograniczony do tury 1 — patrz zarzut 1)
 DOMAIN: GAME
 TEMAT: R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1
-GOAL: w panelu dyplomacji pokazać zmęczenie wojną (strona wygrywająca) i desperację (strona przegrywająca) — wojny gracz↔AI oraz AI↔AI (jedna wartość dla rozmówcy), z procentem i tooltipem.
-BAZA/KANDYDAT: 152bf6f97c3f8fd49a3f49285eff4f56ece2d5f0 (start obrony, `git checkout --detach 152bf6f97`).
-SHA KOŃCOWY OBRONY: patrz commit tej rundy (pole `sha` w StructuredOutput).
+GOAL: panel dyplomacji pokazuje zmęczenie wojną strony wygrywającej i desperację strony przegrywającej (wojna gracz↔AI oraz AI↔AI), wartości z tych samych funkcji i tych samych wejść co tick.
+BAZA: kandydat 575c1ec31 (gałąź robocza `r2-obrona-diplo-weariness`, od 575c1ec31).
+ZMIANY-COMMIT: SHA końcowy w polu `sha` odpowiedzi (commit obrony r2 na gałęzi `r2-obrona-diplo-weariness`). Allowlista: `gra/src/game/war-weariness-view.ts`, `gra/src/main.ts` (wiązanie: helpery i wywołania, ok. 42 linie zmian), `gra/tools/diplo-weariness-display-test.cjs`, katalog `evidence/` w tym runie. `war-weariness.ts`, `war-weariness-params.json` i `diplomacy-military-strength.ts` NIE zmienione.
 
-## ODPOWIEDZI NA ZARZUTY
+## Odpowiedzi na zarzuty
 
-### Zarzut 1 — brak wpięcia danych w main.ts (GOAL niespełniony w grze)
-PRZYJMUJĘ merytorycznie. Dowód: `grep -n warWearinessPairView gra/src/main.ts` → brak trafień; `buildAudienceOtherRelations` (main.ts:8489) i budowa stanu audiencji (main.ts:25838) nie podają `warWeariness`.
-NIE WYKONANO w tej rundzie: `gra/src/main.ts` jest POZA ALLOWLISTĄ tematu (00-dispatch.md, linia „ALLOWLISTA”: war-weariness-view.ts, diplomacy-display.ts, diplomacyAudience.ts, test, runs/<ID>/**). Dopisanie main.ts bez decyzji byłoby naruszeniem allowlisty (FAIL wg R-PROC-AUTOBOT §9).
-DECYZJA ORKIESTRATORA WYMAGANA: rozszerzyć allowlistę o `gra/src/main.ts` (wąsko: `buildAudienceOtherRelations` i miejsce budowy stanu audiencji) albo wydzielić osobny temat R-WEB-DIPLO-WEARINESS-WIRING-Q1.
-Szkic wpięcia (dla wykonawcy po decyzji):
-- `buildAudienceOtherRelations(otherOwnerId)`: dla każdej wojny w `base.wars` → `warWearinessPairView({ turnsAtWar, turnsSinceCityChange, a, b, peak })`; `turnsAtWar`/`lostCities`/`turnsSinceCityChange` z `diploWarStateFor` (main.ts:11634), `sila`/`armiaPkt` z `diploMilitarySideOf` (main.ts:11690) — ta sama konstrukcja co `tickAiAiWarWeariness` (main.ts:36644); `peak` = `warWearinessByPairKey.get(diploPairKey(a, b))?.peak`; stronę `otherOwnerId` wybiera się z `rola/zmeczenie/desperacja`.
-- Stan audiencji przy `atWar`: `warWeariness = { player: <widok ME()>, other: <widok ownerId> }` z tym samym wywołaniem.
+### Zarzut 1 — brak zrzutu z żywego Chromium — PRZYJMUJĘ (zrobiony, z ograniczeniem)
+- Dowód: `evidence/01-panel-dyplomacji-ai1-wojna-gracz-i-ai.png` (element `.da-card.them`), `evidence/01b-pelny-ekran.png`, `evidence/01-dom-odczyt.json`, `evidence/02-konsola-bledy.json`.
+- Co pokazuje zrzut (odczyt z DOM, tura 1, scenariusz `?playtest=mapa`): wojna gracz↔Grecy — wiersze „Ty — Zmęczenie wojną 0%” i „Grecy — Zmęczenie wojną 0%”; wojna AI↔AI 1↔2 — w „W stanie wojny z” przy „Chińczycy” procent „Zmęczenie wojną 0%”. `errors: 0` (pageerror i console.error).
+- Metoda: bundle zbudowany `vite build` w KOPII `gra/` poza repo (`scratchpad/gracopy`), bo dispatch zabrania `npm run build` w `gra/`; Chromium z `/opt/pw-browsers/chromium-1194/chrome-linux/chrome` (domyślny headless-shell nie istnieje), skrypt `scratchpad/shot.cjs`.
+- OGRANICZENIE (NIE_ZMIERZONO): wartości są zerowe, bo wojny mają 0 tur. Próba postarzenia wojny przez `__eraTestDebug.endTurn()` kończyła grę ekranem „ZWYCIĘSTWO” już w turze 2 (scenariusz playtest). Desperacja >0 i procenty niezerowe NIE są zobrazowane live — pokrywają je testy E (funkcje czyste). Wygląd procentów przy wartościach >0 i tooltip: NIE_ZMIERZONO.
 
-### Zarzut 2 — brak zrzutu żywego Chromium (kryterium c)
-PRZYJMUJĘ jako wymóg. NIE_ZMIERZONO: bez wpięcia z zarzutu 1 panel nie ma danych, więc zrzut pokazałby tylko brak wierszy i nie został wykonany. Zrzut (wojna gracz↔AI i AI↔AI) należy zrobić po wpięciu.
+### Zarzut 2 — test wiązania tylko statyczny, mutanty M3/M4 przeżywają — PRZYJMUJĘ (naprawione)
+- Logika przeniesiona do czystych helperów, które test wykonuje behawioralnie (część E w `diplo-weariness-display-test.cjs`): `warWearinessSideView` (strona po id, nie po kolejności a/b), `peakForCurrentWar` (szczyt tylko dla bieżącej wojny), tryby `reference: 'tick' | 'ai'`.
+- Mutacje, każda na kopii i przywrócona (`scratchpad/mut.sh`, po przywróceniu `RESTORED_OK`, końcowo 52/52):
+  - M3 zamiana own/rival w `warWearinessSideView` → 49/51, FAIL 2 (E1a, E1b…);
+  - M4a szczyt zawsze undefined w helperze → FAIL 1 (E2a/E2e);
+  - M4b w main.ts brak odczytu szczytu → FAIL 1 (D3);
+  - M5 wojny AI↔AI bez wiązania → FAIL 1 (D4);
+  - M6 helper znowu używa `diploWarStateFor` (zapis) → FAIL 1 (D6);
+  - M7 zamiana gracz/rozmówca w main.ts → FAIL 1 (D5).
+- Test wiązania w main.ts pozostaje statyczny dla samego wywołania (D1–D8), ale zachowanie orientacji i szczytu jest sprawdzane na helperach wywoływanych przez te wywołania.
 
-### Zarzut 3 — brak testu wiązania main.ts z panelem
-PRZYJMUJĘ. Test wiązania (grep `warWearinessPairView(` i `peak` w main.ts) dziś byłby czerwony, bo wpięcia nie ma. Dodać razem z wpięciem (po decyzji z zarzutu 1). Nie dodaję testu czerwonego na tym kandydacie.
+### Zarzut 3 — wejścia pary gracz↔AI różnią się od ai.ts — PRZYJMUJĘ (dla pary gracz↔AI), tick AI↔AI bez zmian
+- Dla pary gracz↔AI (`reference: 'ai'`) helper robi dokładnie to, co `ai.ts` (l. ~7027–7037): poziom = bieżący `warWearinessLevel` (bez szczytu), udział siły NIEprzycięty, desperacja tylko gdy `isWarWeary(level)`, inaczej 0.
+- Dla pary AI↔AI (`reference: 'tick'`) zostaje zgodność z `runWarWearinessTick` (szczyt pary, udział przycięty do `udzialWyraznie`, bez bramki) — Evaluator potwierdził tę część jako poprawną.
+- Odstępstwo od dosłownego dispatchu (świadome): dispatch prosił o szczyt również dla pary gracz↔AI „jeśli stan jest”. Kod `ai.ts` dla gracza liczy z bieżącego poziomu, a `runWarWearinessTick` obsługuje pary AI↔AI — więc dla pary z graczem szczyt nie jest używany. NIE_ZMIERZONO: czy `warWearinessByPairKey` zawiera kiedykolwiek wpisy z graczem (nie sprawdzałem tego pliku/ścieżki poza tickiem).
+- Dowód testowy: E3 — znaleziona para z przegrywającym o udziale w (0,45; 0,5): tick → desperacja = `loserDespair(share = 0,45)` > 0 (E3a); ai → desperacja = 0 (E3b). E4 — ai poniżej `progChetnosci` → 0 (E4a), tick bez bramki > 0 (E4b).
 
-### Zarzut 4 — zmęczenie = bieżący poziom, a tick używa szczytu
-PRZYJMUJĘ, poprawka w tym commicie.
-Dowód z kodu (war-weariness.ts, `runWarWearinessTick`): `const st = stepPairState(...)` (ok. linii 233), `const lvl = st.peak;` (linia 234), `loserDespair({ level: lvl, ... })` (linia 260). Decyzje o pokoju i desperacja AI używają więc `peak`, nie bieżącego `warWearinessLevel`.
-Zmiana: `war-weariness-view.ts` przyjmuje opcjonalne `peak` (szczyt z `warWearinessByPairKey`). Gdy podany, `level = peak` (zmęczenie i desperacja z tej samej wartości co tick). Gdy brak, zachowanie bez zmian (bieżący `warWearinessLevel`), więc asercje A1–A4 nie zmieniają się.
-Test: `gra/tools/diplo-weariness-display-test.cjs`, nowa sekcja [A5]: z `peak` zmęczenie = peak; desperacja = `loserDespair` z peak; bez `peak` — stare zachowanie. Dla [A5] dodano eksport `wearinessMilitaryShare` we wpisie esbuild.
+### Zarzut 4 — helper może zapisać stan gry na ścieżce odczytu — PRZYJMUJĘ (czesciowo), szczyt ODRZUCAM
+- Naprawione zapisy na ścieżce odczytu:
+  - nowa `diploWarStateForRead` (main.ts) zastępuje `diploWarStateFor` w helperze: nie wywołuje `diploEnsureWarStart` (nie ustawia `wojnaStartTura`), nie zdejmuje stempla przy pokoju, nie wywołuje `setDiploPairMeta`. Wartości identyczne: brak stempla → początek = bieżąca tura, tak jak zwróciłby `diploEnsureWarStart`; pokój → zera. Test D6/D7.
+  - `diploMilitarySideOf(a, b, readOnly = true)` na ścieżce odczytu: `diplomacyPairMeta.get(...) ?? freshDiploPairMeta()` zamiast `getDiploPairMeta`, które tworzy domyślny wpis w `diplomacyPairMeta`. Tick nadal woła funkcję bez `readOnly` (zachowanie bez zmian). Test D8.
+  - Sprawdzone: w `objectivePowerByOwner` zapis jest tylko w pętli l. ~2910, nie wewnątrz `buildObjectivePowerForOwner` (l. 2780), którą woła ścieżka odczytu. Wnętrza `buildObjectivePowerForOwner` nie audytowałem w całości — NIE_ZMIERZONO, czy nie zapisuje do innych struktur.
+- ODRZUCAM `max(peak, current)`: tick AI↔AI (`runWarWearinessTick`) używa `st.peak` po `stepPairState` w danym momencie, a decyzje AI biorą ten sam szczyt. Panel z `max` pokazywałby wartość, której AI nie widzi przy decyzji. Różnica to najwyżej jedna tura opóźnienia szczytu, identyczna jak u AI. Dispatch wymaga „identycznych wejść z tickiem”.
+- NIE_ZMIERZONO: wpływ na determinizm (#349/#362) — nie uruchamiałem testu determinizmu ani pomiaru hash save po otwarciu panelu.
 
-## ZMIANY / COMMIT
-- `gra/src/game/war-weariness-view.ts` — pole `peak?: number` w `WarWearinessPairInput`; `level = peak ?? current`.
-- `gra/tools/diplo-weariness-display-test.cjs` — sekcja [A5] (3 asercje) + eksport `wearinessMilitaryShare`.
-- `dyspozycje/autobot/runs/R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1/30-obrona-claude.md` — ten raport.
-Allowlista: tylko pliki z listy i katalog runs/<ID>/. `git diff --check`: czysto. `main.ts`, `war-weariness.ts`, `war-weariness-params.json` nietknięte.
-
-## TESTY (surowe wyniki, katalog `gra/`)
-- `npm ci --ignore-scripts`: exit 0.
-- `./node_modules/.bin/tsc --noEmit`: exit 0, 0 linii `error TS`.
-- `node tools/diplo-weariness-display-test.cjs`: `PASSED: 26 / FAILED: 0 / TOTAL: 26`, `ALL PASSED` (było 23; +3 z [A5]).
-- `logic-test.cjs`: `LOGIC OK (213/213)`.
-- `tech-tree-test.cjs`: `tech-tree-test: 20 pass, 0 fail`.
-- `research-test.cjs`: `PASSED: 33 / FAILED: 0 / TOTAL: 33`, `ALL GREEN`.
-- `unit-replace-test.cjs`: `WSZYSTKIE TESTY ZIELONE (21/21)`.
-- `combat-test.cjs`: `COMBAT TEST: 6/6 pass`, `All sanity checks passed.`
-- Mutacja dla [A5]: NIE_ZMIERZONO (asercje [A5] sprawdzają wartość peak wprost).
-- Zrzut Chromium: NIE_ZMIERZONO (zarzut 2).
+## Testy i bramki (surowe wyniki)
+- `npx tsc --noEmit` (w `gra/`): TSC_EXIT=0, 0 linii w logu.
+- `node tools/diplo-weariness-display-test.cjs`: PASSED: 52 / FAILED: 0 / TOTAL: 52 (A 13, B 5, C 8, D 8, E 18).
+- Mutanty M3, M4a, M4b, M5, M6, M7: patrz zarzut 2; każdy czerwony, oryginały przywrócone (`RESTORED_OK`).
+- Przeglądarka: `scratchpad/shot.cjs` (TURNS=0), `worldTurn: 1`, `errors: 0`.
+- Nie uruchamiano innych testów gry (dispatch: bramki tematu). Dług testowy z innych tematów nie był przedmiotem tej rundy.
 
 ## BLOKADY
-1. Wpięcie danych w `gra/src/main.ts` poza allowlistą — wymaga decyzji orkiestratora (zarzut 1).
-2. Zrzut Chromium i test wiązania — zależne od (1).
+- Brak wartości >0 w zrzucie live (ograniczenie scenariusza playtest: zwycięstwo po turze 2). Opisane jako NIE_ZMIERZONO w zarzucie 1.
+- Wpływ na determinizm i zawartość save — NIE_ZMIERZONO (zarzut 4).
 
-## ZAŁOŻENIA
-- Zmęczenie w panelu = szczyt pary (`peak`), zgodnie z tickiem AI. To zmiana względem rundy 1 (bieżący poziom); uzasadnienie: zarzut 4 i kod linii 234/260.
-- Remis (próg parytetu z `compareMilitaryStrength`) — bez zmian względem rundy 1.
+## RUNDY
+2/5 (runda 2 obrony, ta sama para ID).
+
+## NASTĘPNY KROK
+Final Control r2: sprawdzić commit obrony na `r2-obrona-diplo-weariness`, ponowić `tsc` i test, a zarzut 4 (determinizm) potraktować jako otwarty do pomiaru przez orkiestratora.
 
 ## UWAGI-DLA-ORKIESTRATORA
-- Wiadomość użytkownika w tej rundzie („skarbiec i spichlerz nigdy poniżej zera po turze; pierwsze 10 tur wyjęte”) NIE jest częścią tego tematu i nie była wykonywana. Odpowiada wpisowi #365 w rejestrze — orkiestrator decyduje o osobnym temacie.
-- Przy integracji: sprawdzić `git merge-base --is-ancestor 152bf6f97 <SHA integracji>` oraz zgodność z #363 (`war-weariness.ts` — ten sam plik zmienia W-363).
+- W relayowanej prośbie użytkownika (okno „Umowa wymiany surowców”, dodawanie własnej i cudzej oferty w jednym oknie bez przeładowania) — to osobny temat (rejestr #366, R-WEB-UI-TRADE-DIALOG-NO-RERENDER-BOTH-SIDES-Q1). Nie wykonywałem go w tym kroku; decyzja o zakolejkowaniu należy do orkiestratora.
+- Nie tworzyłem sesji ani zadań (zakaz spawn_task/create_session respektowany).
+- Dopisałem `diploMilitarySideOf(..., readOnly = false)` — parametr domyślny zachowuje dotychczasowe zachowanie wszystkich istniejących wywołań.
 
-RUNDY: 2/5 (Operator, obrona)
-NASTĘPNY KROK: decyzja orkiestratora o allowlistcie main.ts (zarzut 1); po decyzji: wpięcie + test wiązania + zrzut Chromium (wojna gracz↔AI i AI↔AI), potem ponowny Evaluator.
 DEPLOY/PUSH: NIE WYKONANO

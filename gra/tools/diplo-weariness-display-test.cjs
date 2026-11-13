@@ -38,7 +38,7 @@ async function main() {
   const ENTRY_A = path.resolve(__dirname, '.dip-weariness-view-entry.ts');
   const BUNDLE_A = path.resolve(__dirname, '.dip-weariness-view-bundle.cjs');
   fs.writeFileSync(ENTRY_A, [
-    "export { warWearinessPairView } from '../src/game/war-weariness-view.ts';",
+    "export { warWearinessPairView, peakForCurrentWar, warWearinessSideView } from '../src/game/war-weariness-view.ts';",
     "export { warWearinessLevel, loserDespair, wearinessMilitaryShare, WAR_WEARINESS_PARAMS } from '../src/game/war-weariness.ts';",
   ].join('\n'), 'utf8');
   await esbuild.build({
@@ -247,14 +247,112 @@ async function main() {
     const mainSrc = fs.readFileSync(path.resolve(GRA, 'src', 'main.ts'), 'utf8');
     const importOk = /import\s*\{[^}]*warWearinessPairView[^}]*\}\s*from\s*'\.\/game\/war-weariness-view'/.test(mainSrc);
     ok(importOk, '[D1] main.ts importuje warWearinessPairView z game/war-weariness-view');
-    const helperM = mainSrc.match(/function diploWarWearinessPairView\(a: number, b: number\)[\s\S]*?\n    \}\n/);
+    const helperM = mainSrc.match(/function diploWarWearinessPairView\(a: number, b: number, reference: WarWearinessReference\)[\s\S]*?\n    \}\n/);
     ok(!!helperM && /warWearinessPairView\(\{/.test(helperM[0]), '[D2] helper diploWarWearinessPairView wywołuje selektor');
-    ok(!!helperM && /warWearinessByPairKey\.get\(diploPairKey\(a, b\)\)/.test(helperM[0]) && /peak/.test(helperM[0]),
-      '[D3] helper bierze szczyt pary z warWearinessByPairKey (jak tick AI↔AI)');
-    const warsWired = /const wars = base\.wars\.map\([\s\S]*?diploWarWearinessPairView\(otherOwnerId, w\.ownerId\)\.a/.test(mainSrc);
-    ok(warsWired, '[D4] buildAudienceOtherRelations: wojny AI↔AI dostają warWeariness z helpera');
-    const stateWired = /warWeariness: getDiploRelation\(ME\(\), ownerId\)\.status === 'wojna'[\s\S]*?diploWarWearinessPairView\(ME\(\), ownerId\)/.test(mainSrc);
-    ok(stateWired, '[D5] stan audiencji: warWeariness gracz↔rozmówca (tylko w wojnie)');
+    ok(!!helperM && /peakForCurrentWar\(warWearinessByPairKey\.get\(diploPairKey\(a, b\)\)/.test(helperM[0]) && /reference === 'tick'/.test(helperM[0]),
+      '[D3] helper bierze szczyt pary z warWearinessByPairKey (tylko tryb tick, jak tick AI↔AI)');
+    ok(!!helperM && /diploWarStateForRead\(a, b\)/.test(helperM[0]) && !/diploWarStateFor\(/.test(helperM[0]),
+      '[D6] helper czyta stan wojny przez diploWarStateForRead (bez zapisu do gry, zarzut 4)');
+    const readM = mainSrc.match(/function diploWarStateForRead[\s\S]*?\n    \}\n/);
+    ok(!!readM && !/diploEnsureWarStart\(|setDiploPairMeta\(|diplomacyPairMeta\.set\(|getDiploPairMeta\(/.test(readM[0]),
+      '[D7] diploWarStateForRead nie zapisuje stanu (brak diploEnsureWarStart / setDiploPairMeta / diplomacyPairMeta.set)');
+    const sideReadOnly = !!helperM && /diploMilitarySideOf\(a, b, true\)/.test(helperM[0]) && /diploMilitarySideOf\(b, a, true\)/.test(helperM[0]);
+    const sideM = mainSrc.match(/function diploMilitarySideOf\(ownerId: number, otherId: number, readOnly = false\)[\s\S]*?\n    \}\n/);
+    ok(sideReadOnly && !!sideM && /readOnly\s*\n?\s*\?\s*\(diplomacyPairMeta\.get\(/.test(sideM[0]),
+      '[D8] ścieżka odczytu liczy siłę z readOnly (bez zapisu domyślnego wpisu diplomacyPairMeta)');
+    const warsWired = /const wars = base\.wars\.map\([\s\S]*?diploWarWearinessPairView\(otherOwnerId, w\.ownerId, 'tick'\)[\s\S]*?\.own,/.test(mainSrc);
+    ok(warsWired, '[D4] buildAudienceOtherRelations: wojny AI↔AI dostają warWeariness (strona rozmówcy, tryb tick)');
+    const stateWired = /status === 'wojna'[\s\S]*?diploWarWearinessPairView\(ME\(\), ownerId, 'ai'\)/.test(mainSrc)
+      && /player: s\.own, other: s\.rival/.test(mainSrc);
+    ok(stateWired, '[D5] stan audiencji: warWeariness gracz↔rozmówca (tryb ai, strony po id, tylko w wojnie)');
+  }
+
+  // ===========================================================================
+  // CZĘŚĆ E — zachowanie helperów wiązania: orientacja stron po id, szczyt tylko tick, tryb ai vs tick.
+  // Mutacje: zamiana stron w warWearinessSideView → E1 czerwony; szczyt ignorowany → E2 czerwony;
+  // tryb ai bez bramki/udziału → E3/E4 czerwony.
+  // ===========================================================================
+  console.log('CZĘŚĆ E — zachowanie helperów (orientacja, szczyt, tryby)');
+  {
+    // E1: orientacja — strona o danym id dostaje swój widok, niezależnie od kolejności a/b.
+    const strongA = V.warWearinessPairView({
+      turnsAtWar: 120,
+      a: { id: '0', sila: 800, armiaPkt: 500, lostCities: 0 },
+      b: { id: '1', sila: 200, armiaPkt: 150, lostCities: 2 },
+    });
+    const s0 = V.warWearinessSideView(strongA, '0');
+    const s1 = V.warWearinessSideView(strongA, '1');
+    ok(s0.own.rola === 'wygrywa' && s0.rival.rola === 'przegrywa', '[E1a] own=0 (silny) → wygrywa, rival=1 → przegrywa');
+    ok(s1.own.rola === 'przegrywa' && s1.rival.rola === 'wygrywa', '[E1b] own=1 (słaby) → przegrywa, rival=0 → wygrywa');
+    ok(s0.own === strongA.a && s0.rival === strongA.b, '[E1c] own/rival to dokładnie strony a/b wskazane po id');
+    const weakA = V.warWearinessPairView({
+      turnsAtWar: 120,
+      a: { id: '1', sila: 200, armiaPkt: 150, lostCities: 2 },
+      b: { id: '0', sila: 800, armiaPkt: 500, lostCities: 0 },
+    });
+    ok(V.warWearinessSideView(weakA, '0').own.rola === 'wygrywa', '[E1d] odwrócona kolejność a/b: own=0 nadal wygrywa');
+    let thrown = false;
+    try { V.warWearinessSideView(strongA, '9'); } catch (_) { thrown = true; }
+    ok(thrown, '[E1e] nieznane id → błąd (brak cichego przypisania)');
+
+    // E2: szczyt tylko dla bieżącej wojny; tryb tick: poziom = szczyt; tryb ai: poziom = bieżący.
+    const st = { warStart: 100, peak: 0.9 };
+    ok(V.peakForCurrentWar(st, 100) === 0.9, '[E2a] szczyt zwracany dla zgodnego warStart');
+    ok(V.peakForCurrentWar(st, 99) === undefined, '[E2b] stary stan (inny warStart) → brak szczytu');
+    ok(V.peakForCurrentWar(undefined, 100) === undefined, '[E2c] brak stanu → brak szczytu');
+    const base = {
+      turnsAtWar: 10,
+      a: { id: '0', sila: 500, armiaPkt: 300, lostCities: 0 },
+      b: { id: '1', sila: 500, armiaPkt: 300, lostCities: 0 },
+    };
+    const curLevel = V.warWearinessLevel({ turnsAtWar: 10, lostCitiesTotal: 0 });
+    ok(curLevel < 0.5, '[E2d] precondycja: bieżący poziom niski (10 tur), więc szczyt 0.9 da się odróżnić');
+    const tickPeak = V.warWearinessPairView({ ...base, peak: 0.9, reference: 'tick' });
+    ok(Math.abs(tickPeak.level - 0.9) < 1e-9, '[E2e] tryb tick: poziom = szczyt 0.9 (nie bieżący)');
+    const aiPeak = V.warWearinessPairView({ ...base, peak: 0.9, reference: 'ai' });
+    ok(Math.abs(aiPeak.level - curLevel) < 1e-9, '[E2f] tryb ai: poziom = bieżący (szczyt ignorowany)');
+
+    // E3: przegrywający z udziałem siły w (udzialWyraznie; 0.5) — tick przycina, ai nie (jak ai.ts).
+    let found = null;
+    for (let sb = 700; sb <= 1000 && found === null; sb++) {
+      const v = V.warWearinessPairView({
+        turnsAtWar: 300,
+        a: { id: '0', sila: 1000, armiaPkt: 500, lostCities: 0 },
+        b: { id: '1', sila: sb, armiaPkt: 300, lostCities: 3 },
+      });
+      const share = sb / (1000 + sb);
+      if (v.b.rola === 'przegrywa' && share > P.przegrywajacy.udzialWyraznie && share < 0.5) found = { sb };
+    }
+    ok(found !== null, '[E3-pre] znaleziono przegrywającego z udziałem w (udzialWyraznie; 0.5)');
+    if (found !== null) {
+      const lvl = V.warWearinessLevel({ turnsAtWar: 300, lostCitiesTotal: 3 });
+      ok(lvl >= P.zmeczenie.progChetnosci, '[E3-pre2] precondycja: poziom ≥ progChetnosci (bramka isWarWeary przechodzi)');
+      const input = {
+        turnsAtWar: 300,
+        a: { id: '0', sila: 1000, armiaPkt: 500, lostCities: 0 },
+        b: { id: '1', sila: found.sb, armiaPkt: 300, lostCities: 3 },
+      };
+      const tick = V.warWearinessPairView({ ...input, reference: 'tick' });
+      const ai = V.warWearinessPairView({ ...input, reference: 'ai' });
+      const expTick = V.loserDespair({ level: lvl, share: P.przegrywajacy.udzialWyraznie, lostCities: 3 }, P);
+      ok(Math.abs(tick.b.desperacja - expTick) < 1e-9 && tick.b.desperacja > 0,
+        '[E3a] tick: desperacja z udziałem przyciętym do udzialWyraznie (> 0)');
+      ok(ai.b.desperacja === 0, '[E3b] ai: udział powyżej udzialWyraznie → desperacja 0 (jak ai.ts, bez przycięcia)');
+    }
+
+    // E4: tryb ai — desperacja tylko przy isWarWeary(poziom); tick — bez bramki.
+    const lowInput = {
+      turnsAtWar: 0,
+      a: { id: '0', sila: 1000, armiaPkt: 500, lostCities: 0 },
+      b: { id: '1', sila: 300, armiaPkt: 200, lostCities: 2 },
+    };
+    ok(V.warWearinessLevel({ turnsAtWar: 0, lostCitiesTotal: 2 }) < P.zmeczenie.progChetnosci,
+      '[E4-pre] precondycja: poziom poniżej progChetnosci');
+    const lowAi = V.warWearinessPairView({ ...lowInput, reference: 'ai' });
+    ok(lowAi.b.rola === 'przegrywa' && lowAi.b.desperacja === 0,
+      '[E4a] ai: poniżej progChetnosci desperacja = 0 (bramka isWarWeary, jak ai.ts)');
+    const lowTick = V.warWearinessPairView({ ...lowInput, reference: 'tick' });
+    ok(lowTick.b.desperacja > 0, '[E4b] tick: bez bramki desperacja > 0 (zgodnie z tickiem AI↔AI)');
   }
 
   // Sprzątanie plików pomocniczych testu (nie do repo — dopisane do .gitignore nie są; kasowane po teście).
