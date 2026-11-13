@@ -6198,7 +6198,6 @@ import {
 } from './war-weariness';
 import {
   AI_TRADE_GOLD_MAX,
-  AI_TRIBUTE_PEACE_MAX,
   AI_TRADE_AGREEMENT_SWEETENER_MARGIN,
   AI_TRADE_AGREEMENT_SWEETENER_MAX,
   scaleAiGenerousGoldOffer,
@@ -6808,7 +6807,8 @@ export function resolveDiplomacyCivBias(
  *
  * Dla każdej relacji (`relacje`) zwraca co najwyżej jedną komendę.
  * Priorytet komend (od najwyższego):
- *   1. oferuj_trybut_za_pokoj  (b. słaby w wojnie: respektWzgledny <= 0.25)
+ *   1. oferuj_miasto_za_pokoj  (słabsza militarnie AI wobec gracza: miasto AI jako jedyny słodzik;
+ *                               R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1, złoto usunięte)
  *   2. zaproponuj_pokoj        (słaby w wojnie:    respektWzgledny <= PROG_POKOJ_SLABOSC)
  *   3. zadaj_trybut            (duża przewaga, !stanWojny: respektWzgledny >= PROG_TRYBUT,
  *                               agresja średnia; preferowane przed wojną gdy b. silny)
@@ -7092,20 +7092,11 @@ export function decideAIDiplomacy(
       }
     }
 
-    // ---- Priorytet 1: oferuj_trybut_za_pokoj (b. słaby w trakcie wojny) ----
+    // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (D2, zarzut 1 Evaluatora r2): ZŁOTO NIE JEST słodzikiem
+    // pokoju w żadnym kierunku. Dawna gałąź „oferuj_trybut_za_pokoj" (złoto za pokój, b. słaby) została
+    // USUNIĘTA; słabsza militarnie AI oddaje wyłącznie miasto (blok N1a wyżej), a przy braku miasta nie
+    // proponuje pokoju wobec gracza (peaceWeakerNoCityVsPlayer). `csBlocksTribute` zostaje dla zadaj_trybut.
     const csBlocksTribute = inp.isMinorCivSelf === true || rel.isMinorCivPartner === true;
-    if (rel.stanWojny && rw <= p.progTrybutKrytyczny && !csBlocksTribute) {
-      const peaceGold = capAiGoldOffer(inp.skarbiecGold ?? 0, AI_TRIBUTE_PEACE_MAX);
-      if (peaceGold > 0) {
-        komendy.push({
-          type:     'oferuj_trybut_za_pokoj',
-          targetId: rel.partnerId,
-          powod:    `krytyczna slabosz w wojnie (respektWzgledny=${rw.toFixed(2)}): oferujemy ${peaceGold} ¤ za pokoj`,
-          goldOnce: peaceGold,
-        });
-        continue;
-      }
-    }
 
     // ---- Priorytet 2: zaproponuj_pokoj (słaby w trakcie wojny; R-WEB-PEACE-RULES-Q1 R3) ----
     // Sygnały: (a) rw <= progPokojSlabosc(civ); (b) utracone miasto i rw <= 0.5; (d) pat;

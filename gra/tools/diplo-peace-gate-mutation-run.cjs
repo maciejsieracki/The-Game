@@ -22,10 +22,10 @@ const MUTANTS = [
     tests: ['tools/diplo-peace-weaker-seeks-city-only-test.cjs'] },
   { name: 'M4 AI silniejsza nie proponuje (ai.ts aiFeelsStronger)', file: 'src/game/ai.ts',
     from: "const aiFeelsStronger = rel.stanWojny && peacePosMil === 'silniejsza';", to: 'const aiFeelsStronger = false;',
-    tests: ['tools/diplo-peace-balance-accept-test.cjs'] },
+    tests: ['tools/diplo-peace-balance-accept-test.cjs', 'tools/diplo-peace-weaker-seeks-city-only-test.cjs'] },
   { name: 'M5 słabsza bez miasta nie proponuje wobec gracza (ai.ts)', file: 'src/game/ai.ts',
     from: "const peaceWeakerNoCityVsPlayer = rel.partnerId === '0' && peacePosMil === 'slabsza';", to: 'const peaceWeakerNoCityVsPlayer = false;',
-    tests: ['tools/diplo-peace-balance-accept-test.cjs'] },
+    tests: ['tools/diplo-peace-balance-accept-test.cjs', 'tools/diplo-peace-weaker-seeks-city-only-test.cjs'] },
   { name: 'M6 forced-peace: silniejsza przyjmuje tylko za miasto (accept_paid)', file: 'src/game/diplomacy-ai-forced-peace.ts',
     from: "if (inp.winnerGateVerdict === 'stronger') {", to: 'if (false) {',
     tests: ['tools/ai-war-nearest-city-peace-2t-test.cjs'] },
@@ -38,10 +38,17 @@ const MUTANTS = [
   { name: 'M9 pasmo: próg rozniceSily ignorowany', file: 'src/game/diplomacy-military-strength.ts',
     from: "if (prog > 0 && withinBand) return 'pasmo';", to: '',
     tests: ['tools/diplo-peace-weaker-seeks-city-only-test.cjs'] },
+  { name: 'M10 ZLOTO: przywrocona galaz oferuj_trybut_za_pokoj (D2) przed zaproponuj_pokoj (ai.ts)', file: 'src/game/ai.ts',
+    from: '    // ---- Priorytet 2: zaproponuj_pokoj (słaby', to: "    if (rel.stanWojny && rw <= p.progTrybutKrytyczny && !csBlocksTribute && capAiGoldOffer(inp.skarbiecGold ?? 0, 50) > 0) { komendy.push({ type: 'oferuj_trybut_za_pokoj', targetId: rel.partnerId, powod: 'mut', goldOnce: capAiGoldOffer(inp.skarbiecGold ?? 0, 50) }); continue; }\n    // ---- Priorytet 2: zaproponuj_pokoj (słaby",
+    tests: ['tools/diplo-peace-weaker-seeks-city-only-test.cjs'] },
+  { name: 'M11 rodzaj oferty miasta zawsze pokoj (ai.ts cityOfferKind)', file: 'src/game/ai.ts',
+    from: 'const cityOfferKind = aiPeaceProposalKind(turnsAtWarRel);', to: "const cityOfferKind = 'pokoj' as const;",
+    tests: ['tools/diplo-peace-weaker-seeks-city-only-test.cjs'] },
 ];
 
+const ONLY = process.argv[2];
 const results = [];
-for (const m of MUTANTS) {
+for (const m of MUTANTS.filter(x => !ONLY || x.name.startsWith(ONLY))) {
   const abs = path.join(GRA, m.file);
   const original = fs.readFileSync(abs, 'utf8');
   const count = original.split(m.from).length - 1;

@@ -31,6 +31,7 @@ const ENTRY_SRC = [
   "export { evaluatePeaceAiGate, resolveWarPeaceProfile } from './game/diplomacy-war-peace-profile';",
   "export { peaceMilitaryPosition } from './game/diplomacy-military-strength';",
   "export { aiCommandToPendingProposal } from './game/diplomacy-proposals';",
+  "export { decideAIDiplomacy } from './game/ai';",
   "",
 ].join('\n');
 
@@ -118,6 +119,37 @@ async function main() {
     check('g1 pasmo 20%: 105 vs 100 => pasmo', pos(S('ai', 105), S('p', 100), 20) === 'pasmo');
     check('g2 pasmo 20%: 130 vs 100 => silniejsza (poza pasmem)', pos(S('ai', 130), S('p', 100), 20) === 'silniejsza');
     check('g3 pasmo 20%: 100 vs 130 => slabsza (poza pasmem)', pos(S('ai', 100), S('p', 130), 20) === 'slabsza');
+
+    // (h2) decideAIDiplomacy (ai.ts): zachowanie po stronie AI, nie tylko propozycje gracza.
+    // Złoto nie kupuje pokoju (D2): słabsza AI bez miasta nie składa żadnej oferty pokojowej do gracza.
+    const aiDecide = (turns, gold, nCities, aiSila, playerSila) => {
+      const miasta = Array.from({ length: nCities }, (_, i) => ({ cityId: 'c' + i, cityPn: 800, zakazane: false }));
+      return mod.decideAIDiplomacy({
+        myPlayerId: '1', agresja: 0.5, currentTurn: 80,
+        skarbiecGold: gold, miastaAI: miasta,
+        relacje: [{
+          partnerId: '0', relation: { zaufanie: 0, respekt: 29, status: 'wojna' }, respektWzgledny: 0.06,
+          stanWojny: true, turnsAtWar: turns, lostCitiesInWar: 0, turnsSinceCityChange: turns,
+          armyHealthShare: 0.9, peaceLocked: false,
+          silaMilitarnaAI: { sila: aiSila, armiaPkt: 0 }, silaMilitarnaPartner: { sila: playerSila, armiaPkt: 0 },
+        }],
+      }).filter(c => c.targetId === '0');
+    };
+    const PEACE_CMDS = new Set(['oferuj_miasto_za_pokoj', 'oferuj_trybut_za_pokoj', 'zaproponuj_pokoj']);
+    const weakNoCityGold = aiDecide(30, 5000, 1, 100, 200);
+    check('h1 D2: słabsza AI, 1 miasto, duże złoto -> brak oferty złota za pokój',
+      !weakNoCityGold.some(c => c.type === 'oferuj_trybut_za_pokoj'), weakNoCityGold);
+    check('h2 słabsza AI bez miasta do oddania (1 miasto) nie składa propozycji pokoju wobec gracza',
+      !weakNoCityGold.some(c => PEACE_CMDS.has(c.type)), weakNoCityGold);
+    const weakCityTruce = aiDecide(5, 5000, 6, 100, 200);
+    check('h3 słabsza AI z 6 miastami, wojna < 20 tur -> oferuj_miasto_za_pokoj z rodzajem rozejm',
+      weakCityTruce.length === 1 && weakCityTruce[0].type === 'oferuj_miasto_za_pokoj' && weakCityTruce[0].rodzaj === 'rozejm', weakCityTruce);
+    const weakCityPeace = aiDecide(30, 0, 6, 100, 200);
+    check('h4 słabsza AI z 6 miastami, wojna >= 20 tur -> oferuj_miasto_za_pokoj z rodzajem pokój',
+      weakCityPeace.length === 1 && weakCityPeace[0].type === 'oferuj_miasto_za_pokoj' && weakCityPeace[0].rodzaj !== 'rozejm', weakCityPeace);
+    const strongAi = aiDecide(30, 5000, 6, 200, 100);
+    check('h5 silniejsza AI nie składa oferty pokoju/rozejmu ani miasta wobec gracza',
+      !strongAi.some(c => PEACE_CMDS.has(c.type)), strongAi);
 
     console.log('');
     console.log('diplo-peace-weaker-seeks-city-only-test: ' + pass + ' pass / ' + fail + ' fail');
