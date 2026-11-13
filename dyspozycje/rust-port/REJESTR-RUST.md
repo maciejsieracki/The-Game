@@ -551,3 +551,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sprzątanie:** usunięto worktree nieudanego przebiegu (`wf_e18d3b41-1c6-1..3`) i cache `/tmp/claude-0/{tgt-ev,tgt-eval,tgt}` (nieużywane przez procesy). Refy: `refs/keep/R-RUSTPORT-P6-JS-MAX-CONSOLIDATE-R2-Q1-failed-{wip,eval,det}`. Dysk: 0,78 GB → 12 GB.
 - **Wznowienie:** `wmuwt571m` z `resumeFromRunId` (wykonane etapy z cache, Obrona i FC od nowa).
 - **Stan repo:** `parity-v2` = `cfa1edd31`. `claude/rust-sivvrn` przed tym wpisem = `07a0851c5`.
+
+## Przebieg (13.11): JS-MAX-CONSOLIDATE-R2-Q1 (#110) — FC PASS-WITH-NOTES, integracja odłożona
+- **Wynik:** Operator SONNET PASS (kod `cd7cf1b77`, pełny test 3167/0/1 partiami). Evaluator PASS-WITH-NOTES. Obrona `f946ee378` (usunięto prywatną kopię `js_max0` w `economy_yield.rs`). FC PASS-WITH-NOTES na `f946ee378`.
+- **Zapisane:** refy `refs/keep/R-RUSTPORT-P6-JS-MAX-CONSOLIDATE-R2-Q1-{fc,eval}`; gałąź `rust-port-wip/R-RUSTPORT-P6-JS-MAX-CONSOLIDATE-R2-Q1-fc` = `f946ee378`.
+- **Integracja odłożona:** Obrona zmieniła kod po pełnym teście Operatora, więc wymagany jest pełny `cargo test` na `f946ee378` przed FF. Dysk 7,3 GB przy 28 procesach cargo z trzech innych tematów. Uruchomię po ich zakończeniu.
+- **Uwagi zaakceptowane:** `pub mod js_math` (test integracyjny w `tests/`); warianty `*_std`/`*_tie_b` (decyzja dispatchu). Otwarte: 39 vs 38 definicji (nieweryfikowane).
+- **Stan repo:** `parity-v2` = `cfa1edd31`. `claude/rust-sivvrn` przed tym wpisem = `d4f63e0cc`.
