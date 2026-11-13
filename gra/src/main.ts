@@ -1625,6 +1625,7 @@ import {
   type AiPeaceRequest, type AiPeaceKind, type PeaceAsset,
 } from './game/diplomacy-ai-forced-peace';
 import { runWarWearinessTick, militaryWearinessWiring, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
+import { warWearinessPairView, type WarWearinessPairView } from './game/war-weariness-view';
 import {
   isPeaceTreatyLocked,
   startPeaceTreatyLock,
@@ -8496,8 +8497,13 @@ async function boot(): Promise<void> {
         isPlayer: id === 0,
       });
       const naps = dealPartnerIdsForOwner(activeDeals, otherOwnerId, 'nap').map(toPartner);
+      // R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1: wojny AI↔AI — jedna wartość dla rozmówcy (strona otherOwnerId).
+      const wars = base.wars.map(w => (w.ownerId === 0 ? w : {
+        ...w,
+        warWeariness: diploWarWearinessPairView(otherOwnerId, w.ownerId).a,
+      }));
       return {
-        wars: base.wars,
+        wars,
         alliances: base.alliances,
         naps,
         deals: base.deals,
@@ -11702,6 +11708,27 @@ async function boot(): Promise<void> {
         trybutBonusAktywny: isTributeBonusActive(meta, ownerId, turn),
       });
       return { sila, armiaPkt };
+    }
+
+    /**
+     * R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1: widok zmęczenia/desperacji pary (a, b) dla panelu dyplomacji.
+     * Wejścia IDENTYCZNE z tickiem AI↔AI (tickAiAiWarWeariness: warInfo + diploMilitarySideOf); szczyt pary z
+     * warWearinessByPairKey tylko gdy stan dotyczy BIEŻĄCEJ wojny (warStart jak w tiku); brak stanu → bieżący poziom.
+     */
+    function diploWarWearinessPairView(a: number, b: number): WarWearinessPairView {
+      const wa = diploWarStateFor(a, b);
+      const wb = diploWarStateFor(b, a);
+      const sa = diploMilitarySideOf(a, b);
+      const sb = diploMilitarySideOf(b, a);
+      const st = warWearinessByPairKey.get(diploPairKey(a, b));
+      const peak = st && st.warStart === turn - wa.turnsAtWar ? st.peak : undefined;
+      return warWearinessPairView({
+        turnsAtWar: wa.turnsAtWar,
+        turnsSinceCityChange: wa.turnsSinceCityChange,
+        a: { id: String(a), sila: sa.sila, armiaPkt: sa.armiaPkt, lostCities: wa.lostCities },
+        b: { id: String(b), sila: sb.sila, armiaPkt: sb.armiaPkt, lostCities: wb.lostCities },
+        peak,
+      });
     }
 
     /**
@@ -25838,6 +25865,10 @@ async function boot(): Promise<void> {
             actions: audienceActionsList,
             pendingNegotiations: buildPendingNegotiationRows(ownerId, audienceActionsList),
             otherRelations: buildAudienceOtherRelations(ownerId),
+            // R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1: wojna gracz↔rozmówca — zmęczenie/desperacja obu stron.
+            warWeariness: getDiploRelation(ME(), ownerId).status === 'wojna'
+              ? (() => { const v = diploWarWearinessPairView(ME(), ownerId); return { player: v.a, other: v.b }; })()
+              : undefined,
             relationBreakdown: getRelationBreakdown(ME(), ownerId),
             playerSkarbiec: Math.floor(player.skarbiec),
             playerZlotoPerTura: Math.floor(_lastPieniadzRate),

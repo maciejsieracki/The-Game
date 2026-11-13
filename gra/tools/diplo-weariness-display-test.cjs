@@ -238,6 +238,25 @@ async function main() {
     ok(!html.includes('war-weariness') && !html.includes('da-rel-war-wear'), '[C3] bez danych brak wierszy zmęczenia/desperacji');
   }
 
+  // ===========================================================================
+  // CZĘŚĆ D — wiązanie w main.ts (statyczne: wywołania selektora w ścieżce panelu dyplomacji).
+  // Mutacja: usunięcie wywołania diploWarWearinessPairView / pola warWeariness w main.ts → test czerwony.
+  // ===========================================================================
+  console.log('CZĘŚĆ D — wiązanie main.ts (panel dyplomacji)');
+  {
+    const mainSrc = fs.readFileSync(path.resolve(GRA, 'src', 'main.ts'), 'utf8');
+    const importOk = /import\s*\{[^}]*warWearinessPairView[^}]*\}\s*from\s*'\.\/game\/war-weariness-view'/.test(mainSrc);
+    ok(importOk, '[D1] main.ts importuje warWearinessPairView z game/war-weariness-view');
+    const helperM = mainSrc.match(/function diploWarWearinessPairView\(a: number, b: number\)[\s\S]*?\n    \}\n/);
+    ok(!!helperM && /warWearinessPairView\(\{/.test(helperM[0]), '[D2] helper diploWarWearinessPairView wywołuje selektor');
+    ok(!!helperM && /warWearinessByPairKey\.get\(diploPairKey\(a, b\)\)/.test(helperM[0]) && /peak/.test(helperM[0]),
+      '[D3] helper bierze szczyt pary z warWearinessByPairKey (jak tick AI↔AI)');
+    const warsWired = /const wars = base\.wars\.map\([\s\S]*?diploWarWearinessPairView\(otherOwnerId, w\.ownerId\)\.a/.test(mainSrc);
+    ok(warsWired, '[D4] buildAudienceOtherRelations: wojny AI↔AI dostają warWeariness z helpera');
+    const stateWired = /warWeariness: getDiploRelation\(ME\(\), ownerId\)\.status === 'wojna'[\s\S]*?diploWarWearinessPairView\(ME\(\), ownerId\)/.test(mainSrc);
+    ok(stateWired, '[D5] stan audiencji: warWeariness gracz↔rozmówca (tylko w wojnie)');
+  }
+
   // Sprzątanie plików pomocniczych testu (nie do repo — dopisane do .gitignore nie są; kasowane po teście).
   for (const f of [ENTRY_A, BUNDLE_A, ENTRY_B, BUNDLE_B, ENTRY_C, BUNDLE_C, ...Object.values(stubPath)]) {
     try { fs.unlinkSync(f); } catch (_) { /* brak pliku — bez znaczenia */ }
