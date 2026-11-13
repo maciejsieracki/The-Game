@@ -1969,6 +1969,15 @@ export function treatiesColumnHtml(
   );
 }
 
+/**
+ * R-WEB-DIPLO-NEGOTIATION-ROUND-COUNTER-UNIFY-Q1 — JEDEN wzorzec napisu licznika rund
+ * negocjacji. Używany przez ten moduł ORAZ main.ts (podpis zdarzenia tury). M
+ * (maxRounds) podaje wywołujący z NEGOTIATION_MAX_ROUNDS; napis nie zna wartości limitu.
+ */
+export function negotiationRoundCounterText(round: number, maxRounds: number): string {
+  return `runda ${round}/${maxRounds}`;
+}
+
 /** Meta wspólna dla karty oczekującej negocjacji (ważność; runda tylko po kontrofercie). */
 function pendingNegotiationMetaHtml(r: PendingNegotiationRow): string {
   const expLabel = r.expiresInTurns <= 0
@@ -1979,7 +1988,7 @@ function pendingNegotiationMetaHtml(r: PendingNegotiationRow): string {
     + r.maxRounds
     + ' rund negocjacji (kontrofert); potem tylko Przyjmij lub Odrzuć.';
   const visible = r.round > 1
-    ? `Kontroferta ${r.round}/${r.maxRounds} · ${expLabel}`
+    ? `${negotiationRoundCounterText(r.round, r.maxRounds)} · ${expLabel}`
     : expLabel;
   return '<div class="da-meta" title="' + esc(tooltip) + '">' + esc(visible) + '</div>';
 }
