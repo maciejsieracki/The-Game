@@ -627,3 +627,15 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **ZWYCIESTWO (#182):** `wf_0900e902-b40` padł tym samym błędem przy etapie FC (dysk 1,2 GB). Operator, Evaluator i Obrona zakończone; branche `wip/…-ZWYCIESTWO-ROZPOZNANIE-Q1`, `-eval`, `-obrona` zachowane. Worktree trzech etapów usunięte; **do wznowienia** przez `resumeFromRunId: wf_0900e902-b40`, gdy dysk pozwoli (≥ 4 GB).
 - **INTEG-JS-MAX (#110, `wf_a86b3a78-394`):** etap FC uruchomiony, bez wyniku od ok. 16:24. Stan niezweryfikowany, worktree (`-1`, `-2`, `-3`) zostają do sprawdzenia.
 - **Dysk:** 3,8 GB wolne po usunięciu worktree. Każdy etap Rust zajmuje około 1,2 GB, więc przy czterech równoległych rozpoznaniach dysk się zapycha. Zasada: nowe starty dopiero przy ≥ 8 GB, wznowienia przy ≥ 4 GB.
+
+## Zasada pytań do właściciela (13.11, wiążąca)
+- **Gameplay = parytet z wersją webową.** Nie pytać, czy coś ma być jak w webie. Wdrażać 1:1 wg pina (`gra/src` przy `07d2fbd72`), chyba że wskazano inaczej.
+- **Pytać wyłącznie o odstępstwa od webu** (świadome różnice, których pin nie wymusza) albo o zakres, którego web nie rozstrzyga.
+- **Decyzje techniczne** (format zapisu, struktura kodu, zależności) — orkiestrator decyduje sam i zapisuje w rejestrze.
+- Wcześniejsze pytania „brąz per epoka” i „AI odlewnie” były pytaniami o parytet; odpowiedzi (wariant pina, tak teraz w P6) potwierdzają zasadę.
+
+## Decyzje orkiestratora (13.11)
+- **D2 (siatka stosu na starcie tury):** parytet z pinem (main.ts:38138) — wpinać.
+- **D3 (wonderBuildSites):** parytet z pinem.
+- **D1 (format zapisu):** decyzja techniczna orkiestratora, do zapisu w temacie P6.20; kierunek: zgodność z zapisem webowym wersji 3 tam, gdzie to możliwe.
+- **Zmiana statusu relacji z hamulca (DYPLOMACJA, T3-A):** parytet z pinem (main.ts:11705-11713) — wpinać, bez pytania.
