@@ -132,7 +132,7 @@ function effectRows(m: AdministratorPanelModel): string {
       + `<li data-adm-effect="dismiss">Po zwolnieniu ${what} ${where} przestaje działać, a koszt zatrudnienia nie wraca.</li>`;
   }
   return `<li data-adm-effect="without">Bez administratora ${what} ${where} jest ${paused} — wszystko robisz ręcznie.</li>`
-    + `<li data-adm-effect="after">Po zatrudnieniu ${what} zaczyna działać, a ${upkeepChip} na turę schodzi ze skarbca państwa (nie z zasobów miasta).</li>`
+    + `<li data-adm-effect="after">Po zatrudnieniu ${what} zaczyna działać, a ${upkeepChip} na turę schodzi ze skarbca państwa (nie z zasobów miasta). Koszt zatrudnienia jest jednorazowy i po zwolnieniu nie wraca.</li>`
     + '<li data-adm-effect="where">Zwolnisz go w tym samym panelu (przycisk administratora).</li>';
 }
 

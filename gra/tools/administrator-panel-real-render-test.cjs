@@ -197,6 +197,24 @@ async function runSuite(browser, code, label) {
   check('A11c zatrudnienie (miasto) jednym kliknięciem „Zatrudnij”: zatrudniony, bez okna natywnego', H.city.hire === 1 && H.city.hired === '1', H.city);
   check('A11d brak natywnych okien (Playwright dialog) w całym przebiegu panelu administratora (oczekiwane 0)', nativeDialogs === 0, { nativeDialogs });
 
+  // Obrona r1 (R-WEB-ADMIN-NATIVE-DIALOG-AND-TEXT-SPLIT-Q1): przed kliknięciem „Zatrudnij” panel mówi, że koszt jest jednorazowy i nie wraca;
+  // lead miasta (wyrenderowany, nie tylko regex na źródle) wymaga budynku administracyjnego i nie opisuje ulepszeń terenu.
+  const U = await page.evaluate(() => {
+    document.querySelector('.civ-adm-panel-host')?.remove();
+    const T = window.__T;
+    const out = {};
+    for (const kind of ['improvements', 'city']) {
+      T.openAdministratorPanel({ getModel: () => ({ kind, cityName: 'Teby', hired: false, working: false, hireCost: 40, upkeep: 2, treasury: 100, tier: 2, blockReasonText: null }), onHire: () => true, onDismiss: () => true });
+      const dlg = document.querySelector('.civ-adm-panel');
+      out[kind] = { lead: (dlg.querySelector('[data-adm-lead]') || {}).textContent || '', effects: (dlg.querySelector('[data-adm-effects]') || {}).textContent || '' };
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    }
+    return out;
+  });
+  check('A11e przed zatrudnieniem (ulepszenia): panel mówi, że koszt jest jednorazowy i nie wraca', /nie wraca/.test(U.improvements.effects), U.improvements.effects);
+  check('A11f przed zatrudnieniem (miasto): panel mówi, że koszt jest jednorazowy i nie wraca', /nie wraca/.test(U.city.effects), U.city.effects);
+  check('A11g lead miasta (renderowany): wymaga budynku administracyjnego, bez ulepszeń terenu', /budynku administracyjnego/.test(U.city.lead) && !/ulepszani|wycink|farm/i.test(U.city.lead), U.city.lead);
+
   // zatrudnienie, Zwolnij, zamykanie
   const C = await page.evaluate(() => {
     document.querySelector('.civ-adm-panel-host')?.remove();
