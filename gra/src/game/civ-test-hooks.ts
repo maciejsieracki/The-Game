@@ -123,7 +123,7 @@ export const civTestRuntime: {
   skipRender: boolean;
   /** R4/Z1: przypieta Relacja (total 0-200) pary AI<->gracz, wymuszana PO tiku dyplomacji, a PRZED decyzjami AI w tej samej turze. */
   relPin: { ai: number; total: number } | null;
-  /** R4/Z1: Relacja total widziana przez decyzje AI w ostatniej turze (tylko gdy relPin ustawiony). */
+  /** R4/Z1: Relacja total ZAPISANA po wymuszeniu pinu w ostatniej turze (tylko gdy relPin ustawiony). Nie jest niezaleznym odczytem tego, co widza decyzje AI. */
   relAtDecision: number | null;
 } = { skipRender: false, relPin: null, relAtDecision: null };
 

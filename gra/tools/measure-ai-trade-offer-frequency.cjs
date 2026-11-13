@@ -3,8 +3,9 @@
  * measure-ai-trade-offer-frequency.cjs — R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (POMIAR, tylko odczyt).
  *
  * Mierzy, jak czesto AI skladala graczowi oferte handlowa w PELNEJ grze (zywy bundle vite, headless Chromium,
- * `?playtest=mapa&civTest=1`, realny endTurn, AI normalny). Zero zmian w gra/src: skrypt korzysta wylacznie z
- * istniejacego haka `window.__aiTradeWiringTestDebug` (ta sama bramka ?civTest=1 co reszta hakow).
+ * `?playtest=mapa&civTest=1`, realny endTurn, AI normalny). Skrypt NIE zmienia reguł gry; korzysta z haka
+ * `window.__aiTradeWiringTestDebug` (ta sama bramka ?civTest=1 co reszta hakow). Hak jest dodany w gra/src
+ * (r3: ziarno ?civSeed, tryb przyspieszony; r4: setRelationPin — pin Relacji PRZED decyzjami AI, tylko ?civTest=1).
  *
  * Liczone per przebieg (surowe liczby, bez progu):
  *   - offers        : nowe wpisy AI->gracz typu wymiana cykliczna (aiCyclicBarter) pojawiajace sie na stole,
@@ -18,8 +19,11 @@
  * skrypt” — gracz nie reaguje w tym tescie; to jest jawne zalozenie pomiaru.
  *
  * Ograniczenia (jawnie, nie ukrywane):
- *   - ziarno: stale PLAYTEST_MAPA_SEED (brak parametru URL ani haka zmiany ziarna) => 1 ziarno, NIE_ZMIERZONO 3 ziaren;
- *   - relacja: brak haka ustawiania poziomu relacji => 1 poziom (naturalny po setupie), NIE_ZMIERZONO 3 poziomow;
+ *   - ziarno: MEAS_SEED => ?civSeed (tylko z ?civTest=1); bez MEAS_SEED — PLAYTEST_MAPA_SEED. Powtarzalnosc
+ *     tego samego ziarna NIE jest gwarantowana (patrz r4: ten sam scenariusz daje rozne oferty w t25 vs t26);
+ *   - relacja: MEAS_REL => setRelationPin (r4, pin wymuszany w tiku przed decyzjami AI) + setRelationTotal przed
+ *     pierwsza tura; bez MEAS_REL — relacja naturalna po setupie. Pole relAtDecision to zapis pinu w tiku,
+ *     NIE niezalezny dowod widocznosci przez AI (dowodem jest relTotalAi po endTurn i symetryczny klucz relacji);
  *   - ramiona: „natural” = bez haka prepare (kontakt/technologia wg gry); „prepared” = prepare() raz na starcie
  *     (kontakt + technologia Wymiany, wyciszenie innych klas ofert) — tylko do porownania, NIE jest pomiarem naturalnym.
  *
@@ -125,7 +129,7 @@ async function main() {
   const rep = {
     arm: ARM,
     seedNote: SEED != null ? 'ziarno z ?civSeed=' + SEED + ' (tylko z civTest=1)' : 'PLAYTEST_MAPA_SEED (domyslne, brak ?civSeed)',
-    relationNote: REL != null ? 'przypiete haka setRelationTotal=' + REL + ' przed kazdym endTurn (relacja po turze moze dryfowac; patrz relDrift)' : 'naturalny (brak haka ustawiania relacji)',
+    relationNote: REL != null ? 'przypiety haka setRelationPin=' + REL + ' (wymuszany w tiku PO tickDiplomacy, PRZED decyzjami AI; relAtDecision = zapis pinu) + setRelationTotal=' + REL + ' przed startem i przed kazdym endTurn (relBeforeEnd)' : 'naturalny (brak haka ustawiania relacji)',
     seed: SEED, relTotalSet: REL, relTotalAfter: null, offersCyclic: 0, offersOneShot: 0, offersOneShotAll: 0, otherActions: {},
     turnsRequested: TURNS, turnsRun: 0, offers: 0, activePrzyjmij: 0, pairs: {}, cyclicDealsMax: 0,
     tableStart: 0, tableEnd: 0, tableGrowth: 0, scriptRejected: 0, rejectCooldownsMax: 0, per100: 0, aiOwner: null, stoppedBy: null,

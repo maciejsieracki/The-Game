@@ -41966,6 +41966,7 @@ async function boot(): Promise<void> {
                   const pt = civTestRuntime.relPin.total;
                   const pz = Math.floor(pt / 2);
                   relTicked = { ...(relTicked as any), zaufanie: pz, respekt: pt - pz };
+                  // Zapis wartosci PO wymuszeniu pinu (nie niezalezny dowod tego, co widzi AI; tautologia wzgledem pinu).
                   civTestRuntime.relAtDecision = relationTotal(relTicked as any);
                 }
                 setDiploRelation(ME(), ownerId, relTicked as unknown as Relation);
