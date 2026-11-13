@@ -38842,7 +38842,19 @@ async function boot(): Promise<void> {
       refreshLiveEmpireRates(); // dirty-gated: przelicza tylko po zmianie stanu ekonomii
       const f = _nnsHumanForecast;
       if (!f) return { blokada: false, komunikat: '' };
-      return decideEndTurnGate(f, _nnsZyskSkarbiec, _nnsZyskSpichlerz);
+      // Zarzut 4 (Evaluator): obecne salda czytane NA ŻYWO (cache dirty-gated mógłby mieć stare
+      // saldo po grantGold/transferze złota bez markCityStateDirty). Z cache zostaje tylko DELTA
+      // prognozy (netto tury), która zależy wyłącznie od ekonomii.
+      const skLive = playerStateByHuman.get(ME())?.skarbiec ?? 0;
+      const spLive = empireFoodStates.get(ME())?.zapasyPanstwa ?? 0;
+      const live: NnsProjection = {
+        turn: f.turn,
+        skarbiecObecny: skLive,
+        skarbiecPo: skLive + (f.skarbiecPo - f.skarbiecObecny),
+        spichlerzObecny: spLive,
+        spichlerzPo: spLive + (f.spichlerzPo - f.spichlerzObecny),
+      };
+      return decideEndTurnGate(live, _nnsZyskSkarbiec, _nnsZyskSpichlerz);
     }
 
     function canPlayerInitiateEndTurn(): boolean {

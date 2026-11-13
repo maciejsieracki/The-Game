@@ -106,12 +106,42 @@ function proj(turn, skObecny, skPo, spObecny, spPo) {
   ok(v.blokada === true && v.brakuje.length === 1 && v.brakuje[0].ile === 20, 'evaluate: brak 20 skarbca');
 }
 
-// (f) wiring w main.ts
+// Wycinek treści funkcji od sygnatury do domykającego nawiasu klamrowego (licznik klamer).
+function bodyOf(src, header) {
+  const start = src.indexOf(header);
+  if (start < 0) return '';
+  let i = src.indexOf('{', start + header.length - 1);
+  let depth = 0;
+  for (let j = i; j < src.length; j++) {
+    if (src[j] === '{') depth++;
+    else if (src[j] === '}') { depth--; if (depth === 0) return src.slice(start, j + 1); }
+  }
+  return '';
+}
+
+// (e)/(f) wiring i dryf w main.ts. UWAGA: to testy źródłowe (wzorce w kodzie), nie runtime.
+// Mutacje sprawdzone ręcznie: `if (false && nnsGateForPlayer().blokada)` i `skarbiecPo: 0`
+// muszą czerwienić ten test (patrz raport obrony, sekcja TESTY).
 {
   const src = fs.readFileSync(path.resolve(GRA_ROOT, 'src', 'main.ts'), 'utf8');
-  ok(src.includes('nnsGateForPlayer().blokada'), '(f) canPlayerInitiateEndTurn wola bramke NNS');
-  const hintIdx = src.indexOf('function hintEndTurnBlocked(): void {');
-  ok(hintIdx > 0 && src.slice(hintIdx, hintIdx + 9000).includes('nnsHint.komunikat'), '(f) hintEndTurnBlocked pokazuje komunikat NNS');
+  const canBody = bodyOf(src, 'function canPlayerInitiateEndTurn(): boolean {');
+  ok(/if\s*\(\s*nnsGateForPlayer\(\)\.blokada\s*\)\s*\{[^{}]*return\s+false\s*;[^{}]*\}/.test(canBody),
+    '(f) canPlayerInitiateEndTurn: `if (nnsGateForPlayer().blokada) { ...; return false; }` (nie wyłączone)');
+  const hintBody = bodyOf(src, 'function hintEndTurnBlocked(): void {');
+  ok(/const\s+nnsHint\s*=\s*nnsGateForPlayer\(\)\s*;\s*if\s*\(\s*nnsHint\.blokada\s*\)\s*\{\s*showHintMessage\(\s*nnsHint\.komunikat/.test(hintBody),
+    '(f) hintEndTurnBlocked: gałąź blokady pokazuje nnsHint.komunikat');
+  const nnsBody = bodyOf(src, 'function nnsGateForPlayer(): NnsGateResult {');
+  ok(/skarbiecPo:\s*skLive\s*\+\s*\(\s*f\.skarbiecPo\s*-\s*f\.skarbiecObecny\s*\)/.test(nnsBody) && /playerStateByHuman\.get\(ME\(\)\)\?\.skarbiec/.test(nnsBody),
+    '(f) nnsGateForPlayer: saldo żywe + delta prognozy (zarzut 4)');
+  // (e) dryf: prognoza HUD (refresh) i realny tick (blok „Bank treasury”) mają tę samą arytmetykę.
+  ok(/_nnsHumanForecast\s*=\s*\{[\s\S]*?skarbiecPo:\s*skarbiecObecnyNns\s*\+\s*_lastBogactwoRate/.test(src),
+    '(e) prognoza HUD: skarbiecPo = obecny + _lastBogactwoRate (netto HUD)');
+  ok(/_lastBogactwoRate\s*=\s*playerEcon\.pieniadz\s*-\s*bogactwoUpkeepPreview\.utrzymanieRazem/.test(src),
+    '(e) HUD netto = playerEcon.pieniadz - utrzymanieRazem');
+  ok(src.includes('hState.skarbiec += hEcon.pieniadz;') && src.includes('hState.skarbiec -= hBalance.utrzymanieRazem;'),
+    '(e) realny tick „Bank treasury”: skarbiec += pieniadz; -= utrzymanieRazem (ta sama arytmetyka)');
+  ok(src.includes('_lastBogactwoRate = hEcon.pieniadz - (hBalance?.utrzymanieRazem ?? 0);'),
+    '(e) rate po ticku = pieniadz - utrzymanieRazem (zgodnie z prognozą)');
 }
 
 fs.rmSync(ENTRY, { force: true });
