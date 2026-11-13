@@ -586,3 +586,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Dlaczego bez nowych startów:** dysk 7,8 GB, poniżej progu 8 GB z CLAUDE.md dla startów z kodem Rust. Kandydaci z kolejki (#107, #109, #112, #113, #147–#150 — ProdBody; #120 — hak wypowiedzenia; #139 — Cargo.toml) wymagają większych portów albo wymagają wykonania zadań wcześniejszych (ProdBody: #147 przed #109).
 - **Niezintegrowane, gotowe do pełnego testu:** wektory melee (`fc74b6d1a`), js_max (`f946ee378`). Pełny `cargo test` na tych commitach po zakończeniu obu operatorów.
 - **Stan repo:** `parity-v2` = `c85e4e451`. `claude/rust-sivvrn` przed tym wpisem = `3b36d7184`.
+
+## Przebieg (heartbeat 15:45): SLINGER-POKRYCIE zintegrowane, integracja js_max uruchomiona
+- **SLINGER-POKRYCIE (#163, #164) zintegrowane:** FC PASS-WITH-NOTES `fc2ed160f`. Procarz 1 → 32 (≥14), łucznik 69 → 76 (≥60). Operator zmienił szansę wymuszenia łucznika 0,25 → 0,35 (kontrola: przy 0,25 wynik 52 < 60), FC zaakceptował. FF `parity-v2` = `fc2ed160f`. Refy `refs/keep/…-SLINGER-POKRYCIE-Q1-{fc,op,rep}`, gałąź `rust-port-wip/…-fc`. Worktree usunięte.
+- **INTEG-JS-MAX-Q1 (#110) uruchomiony:** `wf_a86b3a78-394`, Operator HAIKU, dispatch `463f11474`, baza parity `fc2ed160f`. Cherry-pick `cfa1edd31..f946ee378` (3 commity), pełny test i FF po weryfikacji.
+- **Aktywne (2 z 4):** `wf_de513810-763` (COMBAT-RESOLVE-PETLA, #136) i `wf_a86b3a78-394` (INTEG-JS-MAX, #110).
+- **Dysk:** 12 GB (≥ 8 GB, starty z kodem Rust dozwolone).
+- **Stan repo:** `parity-v2` = `fc2ed160f`. `claude/rust-sivvrn` przed tym wpisem = `463f11474`.
