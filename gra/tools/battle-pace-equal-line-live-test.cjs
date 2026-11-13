@@ -61,7 +61,15 @@ const KINDS = {
   archer:   { nazwa: 'Lucznik', kategoria: 'lucznik', mp: 5, rank: 1, qOff: 6, rows: [0, 1, 2, 3, 4, 5, 6, 7], ranged: true },
   cavalry:  { nazwa: 'Konnica', kategoria: 'konnica', mp: 7, rank: 2, qOff: 0, rows: [-2, 9], mounted: true },
   siege:    { nazwa: 'Katapulta', kategoria: 'machina', mp: 7, rank: 3, qOff: 9, rows: [-1, 8], siege: true, ranged: true },
+  // Wariant "kolumna ~20 jednostek" (zrzut wlasciciela: dwie kolumny po ok. 20): 20 wierszy na strone.
+  infantryL: { nazwa: 'Wojownik', kategoria: 'miecznik', mp: 2, rank: 0, qOff: 0, rows: Array.from({ length: 20 }, (_, i) => i) },
+  archerL:   { nazwa: 'Lucznik', kategoria: 'lucznik', mp: 5, rank: 1, qOff: 6, rows: Array.from({ length: 20 }, (_, i) => i), ranged: true },
+  // Wersja "L": konnica i machiny poza blokiem 20 wierszy piechoty (wiersze 0..19 -> poza -2 i 21; bez kolizji startowej).
+  cavalryL:  { nazwa: 'Konnica', kategoria: 'konnica', mp: 7, rank: 2, qOff: 0, rows: [-2, 21], mounted: true },
+  siegeL:    { nazwa: 'Katapulta', kategoria: 'machina', mp: 7, rank: 3, qOff: 9, rows: [-1, 20], siege: true, ranged: true },
 };
+const DENSE_ROWS = 20;
+const SPARSE_ROWS = 8;
 
 function unit(id, side, q, r, kind, group) {
   const k = KINDS[kind];
@@ -92,7 +100,7 @@ function army(side, q0, kinds, rows, rowStart) {
 }
 
 function runSim(BattleScene, kinds, rounds = ROUNDS) {
-  const rows = 8, rowStart = 20;
+  const rows = kinds.includes('infantryL') ? DENSE_ROWS : SPARSE_ROWS, rowStart = 20;
   const atk = army('atk', 10, kinds, rows, rowStart);
   const def = army('def', 70, kinds, rows, rowStart);
   const queue = [], frames = [];
@@ -130,17 +138,25 @@ function runSim(BattleScene, kinds, rounds = ROUNDS) {
   queue.push(() => scene._beginTurn());
   let steps = 0;
   while (queue.length && steps < 1500000) { steps++; queue.shift()(); }
-  return { frames };
+  return { frames, scene };
 }
 
-/** Tury marszu do wzwarcia: pomiar tylko dopoki zadne dwie jednostki wrogich stron nie sa blizej niz 12 hexow. */
+const isMelee = kind => !KINDS[kind].ranged && !KINDS[kind].siege;
+
+/**
+ * Tury marszu do wzwarcia: pomiar dopoki zadna jednostka wrecz (piechota, konnica) obu stron nie stoi
+ * w zasiegu ataku wrecz (odleglosc <= 1 hex) -- dokladnie do momentu, w ktorym sufit zostaje zdjety
+ * (_paceCapFor: kontakt wrecz). Strzelcy i machiny nie koncza okna (ich sufit trwa do wzwarcia wrecz).
+ */
 function perRoundTravel(frames, side) {
   const out = [];
   for (let k = 0; k + 1 < frames.length; k++) {
     const a = frames[k], b = frames[k + 1];
-    const A = a.filter(u => u.side === 'atk'), D = a.filter(u => u.side === 'def');
-    const minGap = Math.min(...A.flatMap(x => D.map(y => Math.abs(x.q - y.q) + Math.abs(x.r - y.r))));
-    if (minGap < 12) break;
+    const A = a.filter(u => u.side === 'atk' && isMelee(u.kind)), D = a.filter(u => u.side === 'def' && isMelee(u.kind));
+    if (A.length && D.length) {
+      const minGap = Math.min(...A.flatMap(x => D.map(y => Math.abs(x.q - y.q) + Math.abs(x.r - y.r))));
+      if (minGap <= 1) break;
+    }
     const trav = {};
     const prev = new Map(a.map(u => [u.id, u]));
     for (const u of b.filter(x => x.side === side)) {
@@ -159,11 +175,34 @@ const COMPOSITIONS = {
   infantry_archers: ['infantry', 'archer'],
   infantry_archers_cavalry: ['infantry', 'archer', 'cavalry'],
   full_mixed: ['infantry', 'archer', 'cavalry', 'siege'],
+  dense_infantry_archers: ['infantryL', 'archerL'],
+  dense_full_mixed: ['infantryL', 'archerL', 'cavalryL', 'siegeL'],
 };
 
-function evaluate(BattleScene) {
+/**
+ * Symetria sufitu: po 1 turze (przed kontaktem) sufit KAZDEJ jednostki obu stron = najmniejsza pula ruchu
+ * tej strony (ta sama strona, ta sama liczba). Bezposredni odczyt _paceCapFor, bo obrońca w symulacji stoi
+ * (silnik trzyma obrone do kontaktu), wiec jego przebyte hexy nic by nie dowiodly.
+ */
+async function paceCapSymmetry(BattleScene) {
+  const out = [];
+  for (const [name, kinds] of Object.entries(COMPOSITIONS)) {
+    const { scene } = runSim(BattleScene, kinds, 1);
+    for (const side of ['atk', 'def']) {
+      const units = side === 'atk' ? scene.atk : scene.def;
+      const expect = Math.min(...units.map(u => scene._movementPointsFor(u.bu)));
+      const caps = units.map(u => scene._paceCapFor(u));
+      const ok = caps.every(c => c === expect);
+      out.push({ name, side, expect, caps: [...new Set(caps)], ok });
+    }
+  }
+  return out;
+}
+
+function evaluate(BattleScene, only = null) {
   const res = [];
   for (const [name, kinds] of Object.entries(COMPOSITIONS)) {
+    if (only && !only.includes(name)) continue;
     const { frames } = runSim(BattleScene, kinds);
     for (const side of ['atk']) {
       const rows = perRoundTravel(frames, side);
@@ -184,19 +223,32 @@ const MUTATIONS = {
   'sufit wylaczony dla strzelcow': '_u.rangedBase',
   'sufit wylaczony dla konnicy': '_u.mounted',
   'sufit wylaczony dla machin': 'isSiegeUnit(_u.bu)',
+  // K2: limit tylko dla grupy gornej (top); dolna grupa idzie bez sufitu -> rozjazd linii musi czerwienic test
+  'sufit tylko dla grupy gornej (bottom wylaczona)': "_u.groupId.endsWith('-bottom')",
 };
 
-module.exports = { loadBattleScene, runSim, evaluate, COMPOSITIONS };
+module.exports = { loadBattleScene, runSim, evaluate, paceCapSymmetry, COMPOSITIONS };
 
 async function main() {
   const checks = [];
-  const base = evaluate(await loadBattleScene(null));
+  const BS = await loadBattleScene(null);
+  const base = evaluate(BS);
   for (const r of base) {
     checks.push([`${r.name}/${r.side}: 0 z ${r.rounds} tur marszu z roznica > ${MAX_DIFF} hex (max roznica ${r.maxDiff})`,
       r.rounds >= 5 && r.bad === 0]);
   }
+  for (const s of await paceCapSymmetry(BS)) {
+    checks.push([`symetria sufitu ${s.name}/${s.side}: sufit kazdej jednostki = min pula strony (${s.expect}) [${s.caps.join(',')}]`, s.ok]);
+  }
+  // Mutacje na dwoch pelnych skladach (sparse + dense), zeby calosc miescila sie w limicie jednego Bash.
+  const parts = (process.env.PART || 'base,sym,mut').split(',');
+  if (!parts.includes('mut')) {
+    // PART=base,sym: tylko czesc bez mutacji (czas pojedynczego Bash < 590 s); pelny przebieg = bez PART.
+    checks.splice(0, checks.length, ...checks.filter(([label]) => !label.startsWith('mutacja')));
+  }
   for (const [label, pred] of Object.entries(MUTATIONS)) {
-    const mutated = evaluate(await loadBattleScene(pred));
+    if (!parts.includes('mut')) break;
+    const mutated = evaluate(await loadBattleScene(pred), ['full_mixed', 'dense_full_mixed']);
     const red = mutated.reduce((n, r) => n + r.bad, 0);
     checks.push([`mutacja "${label}" czerwieni test (tur z roznica > ${MAX_DIFF}: ${red})`, red > 0]);
   }
