@@ -621,3 +621,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Nie uruchomiono:** COMBAT-WEJSCIA runda 2 (wymaga dispatchu z bazą `5e8b116e8`, do napisania), ZLOŻA-B port `transferBasketItems` (#172, do napisania dispatch), CRED-HAK T1–T5 (T5 odblokowany decyzją właściciela 13.11).
 - **Dysk:** 8,9 GB wolne przed startem czterech rozpoznań.
 - **Brak zmian kodu** w tym przebiegu; zmiany tylko w dyspozycjach.
+
+## Przebieg (13.11, awarie dyskowe przy rozpoznaniach P6)
+- **DYPLOMACJA-MULTIWAR (#181):** pierwszy przebieg `wf_f638a0ba-62e` padł przy tworzeniu worktree (`WorktreeIsolationError`, dysk 354 MB). Usunięto worktree nieudanego etapu (ref `refs/keep/…-failed`). Wznowiono przez `resumeFromRunId` (wynik Operatora z cache).
+- **ZWYCIESTWO (#182):** `wf_0900e902-b40` padł tym samym błędem przy etapie FC (dysk 1,2 GB). Operator, Evaluator i Obrona zakończone; branche `wip/…-ZWYCIESTWO-ROZPOZNANIE-Q1`, `-eval`, `-obrona` zachowane. Worktree trzech etapów usunięte; **do wznowienia** przez `resumeFromRunId: wf_0900e902-b40`, gdy dysk pozwoli (≥ 4 GB).
+- **INTEG-JS-MAX (#110, `wf_a86b3a78-394`):** etap FC uruchomiony, bez wyniku od ok. 16:24. Stan niezweryfikowany, worktree (`-1`, `-2`, `-3`) zostają do sprawdzenia.
+- **Dysk:** 3,8 GB wolne po usunięciu worktree. Każdy etap Rust zajmuje około 1,2 GB, więc przy czterech równoległych rozpoznaniach dysk się zapycha. Zasada: nowe starty dopiero przy ≥ 8 GB, wznowienia przy ≥ 4 GB.
