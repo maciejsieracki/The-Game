@@ -8,14 +8,14 @@
 | tytuł | Rozejm i pokój |
 | kategoria | Dyplomacja |
 | poradnik_ref | Część XII §79.3 |
-| json_ref | `diplomacy-war-peace-params.json`, `diplomacy-peace-lock.ts` |
+| json_ref | `diplomacy-war-peace-params.json`, `war-weariness-params.json`, `diplomacy-peace-lock.ts` |
 | stan | Stan na 2026-11-13 (weryfikacja w kodzie) |
 
 ---
 
 ## Wiki‑S
 
-**Rozejm** kończy wojnę na określony czas (5, 10 albo 15 tur). Po jego upływie można zaproponować **pokój**. **Pokój** kończy wojnę na stałe i daje karencję, w której nie można wrócić do ataku.
+**Rozejm** kończy wojnę na określony czas (5, 10 albo 15 tur). Po jego upływie można zaproponować **pokój**. **Pokój** kończy wojnę na stałe i daje karencję, w której nie można wrócić do ataku. Jedynym słodzikiem przy pokoju jest **miasto**; złoto i surowce nie kupują pokoju.
 
 ---
 
@@ -31,19 +31,30 @@
 
 - Zawarcie pokoju ustawia Zaufanie pary na **20** (od razu; także przy pokoju po rozejmie, `diplomacy.json:pokoj_zaufanie_ustawienie`).
 - Pokój jest stały. Po pokoju następuje **karencja** 40 tur; dla chronionego przegrywającego (patrz hasło **Zmęczenie wojną**) karencja trwa 100 tur.
-- Pokój z przegrywającym może kosztować miasta: przegrywający, który jest już wyczerpany wojną, oferuje miasta.
+- Pokój z przegrywającym może kosztować miasta: przegrywający, który jest już wyczerpany wojną, oddaje miasta.
 
-### Bramki pokoju (obecnie w grze)
+### Zasady pokoju (wdrożone)
 
-Pokój proponowany przez gracza przechodzi przez bramki AI (runda 2, zarzut 6):
-- **Minimalny czas wojny**: od 1 do 8 tur zależnie od profilu cywilizacji (domyślnie 5). Przed tym czasem AI odrzuca pokój zawsze (`diplomacy-war-peace-params.json:minTurWojny`).
-- **Przewaga militarna powyżej 20%**: AI silniejsza o więcej niż 20% nie przyjmuje pokoju, dopóki zmęczenie wojną nie osiągnie progu chęci **0,5**. W kodzie ta blokada nie ma limitu tur; zdejmuje ją tylko zmęczenie.
-- **„Czuje się silniejsze”**: przez pierwsze **10** tur wojny AI odrzuca pokój, gdy jej udział siły wynosi co najmniej **0,55** i nie straciła żadnego miasta w tej wojnie.
-- **Mnożnik ceny**: cena pokoju zależy od siły i od profilu cywilizacji. Po **20** turach wojny bramka „czuje się silniejsze” i mnożnik siły przestają działać, a mnożnik cywilizacji jest ograniczony do 1.
+- **Słabsza strona szuka pokoju, silniejsza go odrzuca.** Silniejsza strona wg siły militarnej (patrz hasło **Siła militarna**) odrzuca pokój bez miasta. Słabsza strona i strona w paśmie wyrównania rozpatrywane są dalej.
+- **Próg różnicy siły w grze wynosi 0**: każda różnica decyduje. Wartość w `diplomacy-war-peace-params.json:progRozniceSilyPokoj` można zmienić bez kodu (np. 20 = różnica ±20% nie wymusza odrzucenia).
+- **Miasto jako jedyny słodzik.** Ceny pokoju są płacone wyłącznie miastami. Złoto i surowce nie wchodzą w ofertę pokoju.
+- **Minimalny czas wojny** zależy od profilu cywilizacji: od 1 do 8 tur (domyślnie 5). Przed tym czasem AI odrzuca pokój zawsze (`diplomacy-war-peace-params.json:minTurWojny`).
+- **Mnożnik ceny cywilizacji**: po **20** turach wojny (`cenaPokoju.turyBezOgraniczenAi`) mnożnik ceny jest ograniczony do **1,0**.
+
+### Zmęczenie wojną a pokój
+
+Licznik zmęczenia (5% na turę od startu wojny, +10% za każde zmienione miasto, patrz hasło **Zmęczenie wojną**) zmienia zasady pokoju:
+- **50%** — silniejsza strona obniża cenę pokoju, słabsza szuka pokoju;
+- **80%** — silniejsza strona sama proponuje pokój bezwarunkowy (cena 0 = bez miasta);
+- **100%** — wojna wygasa.
+
+Pierwsze propozycje pokoju AI pojawiają się od tury 10 wojny.
 
 ### Kiedy AI proponuje rozejm, a kiedy pokój
 
-AI na początku wojny proponuje **rozejm**. Pokój stały proponuje, gdy spełni się jeden z warunków: zmęczenie wojną osiągnie pełny poziom (około 20 tur wojny), gotowość do pokoju wynosi co najmniej 0,7 albo Zaufanie wynosi co najmniej 60.
+- AI nie proponuje pokoju, gdy jest militarnie silniejsza, ani zanim nie minie minimalny czas wojny.
+- AI proponuje, gdy jest słabsza (wobec gracza wyłącznie z miastem), albo gdy zachodzi jeden z sygnałów: utrata miasta w tej wojnie, pat (brak zmiany miast przez 10 tur po 15 turach wojny), zdrowie armii poniżej progu albo zmęczenie wojną co najmniej **0,4**.
+- Tryb: **pokój stały**, gdy zmęczenie osiągnęło 1, gotowość AI do pokoju wynosi co najmniej **0,7** albo Zaufanie co najmniej **60**; w pozostałych przypadkach **rozejm**. (Wartości z `diplomacy-peace-lock.ts`.)
 
 ### Plusy i minusy
 
@@ -57,20 +68,11 @@ AI na początku wojny proponuje **rozejm**. Pokój stały proponuje, gdy spełni
 - Plus: rozejm daje AI przerwę bez stałego pokoju.
 - Minus: pokój stały zamyka możliwość zdobycia miast, dlatego AI proponuje go dopiero przy spełnionych warunkach.
 
-### Zasady zatwierdzone, jeszcze niewdrożone
-
-> **DECYZJA WŁAŚCICIELA 2026-11-13, wdrożenie w toku.** Ten blok NIE opisuje obecnego stanu gry.
-
-- Słabsza strona proponuje pokój, silniejsza (o co najmniej 20%) odrzuca.
-- Pokój wyrównuje wyłącznie oddanie miasta; siła militarna wynosi 20% (miasto jako jedyny słodzik).
-- Zmęczenie wojną kończy wojny tylko miastami.
-- Znika warunek „czuje się silniejsze” i mnożnik ceny od siły; zostaje minimalny czas wojny.
-
 ---
 
 ## Przykład liczbowy
 
-Wojna trwa 12 tur. Gracz proponuje rozejm na 10 tur. Po 10 turach pojawia się propozycja pokoju; jeśli AI zgodzi się, wojna kończy się pokojem i zaczyna karencja 40 tur.
+Wojna trwa 12 tur. Gracz proponuje rozejm na 10 tur. Po 10 turach pojawia się propozycja pokoju; jeśli AI zgodzi się, wojna kończy się pokojem, Zaufanie ustawia się na 20 i zaczyna się karencja 40 tur. Gdyby AI była militarnie silniejsza, odrzuci pokój bez miasta.
 
 ---
 
@@ -91,6 +93,7 @@ Wojna trwa 12 tur. Gracz proponuje rozejm na 10 tur. Po 10 turach pojawia się p
 | 0.7 | `kod:truce-ai-willingness` (`diplomacy-peace-lock.ts`, `TRUCE_AI_WILLINGNESS_PEACE_MIN`) |
 | 60 | `kod:truce-ai-trust` (`diplomacy-peace-lock.ts`, `TRUCE_AI_TRUST_PEACE_MIN`) |
 | 0.20 | `diplomacy-war-peace-params.json:przewagaMilitarna.prog` |
+| 0 | `diplomacy-war-peace-params.json:progRozniceSilyPokoj.wartosc` |
 | 0 | `diplomacy-war-peace-params.json:pokojAiAi.minBilansPW` |
 | 40 | `war-weariness-params.json:przegrywajacy.karencjaPoPokojuTur` |
 | 100 | `war-weariness-params.json:przegrywajacy.karencjaChronionegoTur` |
@@ -98,12 +101,14 @@ Wojna trwa 12 tur. Gracz proponuje rozejm na 10 tur. Po 10 turach pojawia się p
 | 5 | `diplomacy-war-peace-params.json:minTurWojny.baza` |
 | 1 | `diplomacy-war-peace-params.json:minTurWojny.min` |
 | 8 | `diplomacy-war-peace-params.json:minTurWojny.max` |
-| 0.55 | `diplomacy-war-peace-params.json:cenaPokoju.odrzucenieRwProg` |
-| 10 | `diplomacy-war-peace-params.json:cenaPokoju.odrzucenieMaxTurWojny` |
+| 0.4 | `diplomacy-war-peace-params.json:zmeczenie.progSygnaluPokoju` |
 | 0.5 | `war-weariness-params.json:zmeczenie.progChetnosci` |
+| 0.8 | `war-weariness-params.json:zmeczenie.progWzajemnyPokoj` |
 
 ---
 
 ## Historia / decyzje
 
-Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Zasady niewdrożone: DECYZJA WŁAŚCICIELA 2026-11-13. Wartości 5/10/15 i progi AI są w kodzie jako stałe, nie w JSON. Runda 2 (zarzut 6): dopisano bramki pokoju z kodu (`diplomacy-war-peace-profile.ts`, `evaluatePeaceAiGate`) i wiersze minTurWojny / odrzucenie.
+Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1, runda 3). Zasady pokoju (siła militarna zamiast Power, miasto jako jedyny słodzik, usunięcie warunku „czuje się silniejsze” i mnożnika ceny od siły) są wdrożone (kroki 4a i 4b, FALA 685). Dawne wiersze tabeli (odrzucenie rw 0,55, odrzucenie po 10 turach) zostały usunięte, bo bramka `evaluatePeaceAiGate` ich nie używa.
+
+Rozbieżność do zgłoszenia: opis w `war-weariness-params.json` (`przegrywajacy`, stopnie 1–3) wspomina złoto i surowce, a kod (`war-weariness.ts`, plan zapłaty eskalowanej) używa wyłącznie miast. Hasło podaje stan z kodu.

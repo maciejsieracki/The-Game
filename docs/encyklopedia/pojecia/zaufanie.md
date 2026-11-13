@@ -34,7 +34,7 @@ Zaufanie jest liczone w zakresie **0–100** dla każdego składnika zdarzenia.
 - Plus: handel i traktaty dają go co turę bez wysiłku; dobra wola po wymianie dodaje +1 przez kilka tur.
 - Minus: złamany pakt (−40) lub zdrada (−50) kasuje miesiące budowania.
 - Minus: w wojnie Zaufanie spada do zera i wraca dopiero po jej zakończeniu.
-- Minus: sąsiedztwo granicą cofa Zaufanie co turę, tym mocniej im nowsza epoka (w karencji po pokoju lub rozejmie kara jest wstrzymana).
+- Minus: sąsiedztwo granicą cofa Zaufanie co turę, tym mocniej im nowsza epoka. Kara działa tylko wtedy, gdy obie strony mają po więcej niż 2 miasta i dzielą granicę lądową; w karencji po pokoju lub rozejmie jest wstrzymana (`main.ts`, `karaWspolnaGranica`).
 
 **Dla AI**
 - Plus: AI z wysokim Zaufaniem akceptuje więcej ofert i chętniej wchodzi w sojusz.
@@ -94,7 +94,7 @@ Wiarygodność (reputacja dotrzymywania słowa, patrz hasło **Wiarygodność**)
 
 ### Zasady zatwierdzone, jeszcze niewdrożone
 
-Zasady dotyczące Zaufania z decyzji właściciela 2026-11-13 zostały wdrożone (kara za sąsiedztwo −3/−4/−5 z wstrzymaniem w karencji, religia bez wpływu, ustawienie 10/20 po rozejmie i pokoju) i opisane wyżej w obecnych regułach. Dalsze zasady (siła militarna, wypowiadanie wojny, rozejm i pokój, etykiety nastawienia) są w haśle **Wypowiedzenie wojny** i **Rozejm i pokój**.
+Zasady dotyczące Zaufania z decyzji właściciela 2026-11-13 są wdrożone: kara za sąsiedztwo −3/−4/−5 z wstrzymaniem w karencji, religia bez wpływu, ustawienie 10/20 po rozejmie i pokoju, a w wojnie Zaufanie wynosi 0. Wypowiedzenie wojny przy Zaufaniu poniżej 30 i zerowe Zaufanie przez kilka tur opisują hasła **Wypowiadanie wojny** i **Rozejm i pokój**; siła militarna, od której zależą te decyzje, jest opisana w haśle **Siła militarna**.
 
 ---
 

@@ -36,6 +36,9 @@ Najwyższy osiągnięty poziom nie maleje (zapamiętany szczyt).
 |------|--------:|-----------|
 | Chęć pokoju | 0,5 | od tego poziomu strony są skłonne do pokoju |
 | Wzajemny pokój | 0,8 | przy takim zmęczeniu pokój może być zawarty bez dodatkowych warunków |
+| Koniec wojny | 1,0 | po 20 turach wojny bez zmian miast poziom dochodzi do 100% i wojna wygasa (`zmeczenie.pelneTur = 20`) |
+
+Pierwsze oferty przegrywającego mogą pojawić się od tury 3 wojny po utracie miasta, a bez utraty miast od tury 6 (`ofertaOdTurWojny`, `ofertaBezStratOdTur`).
 
 ### Przegrywający
 
@@ -43,9 +46,11 @@ Przegrywający (udział siły 45% lub mniej) zaczyna oferować pokój, gdy jego 
 
 | Stopień | Co oferuje |
 |--------:|-----------|
-| 1 | złoto i surowce |
-| 2 | złoto, surowce i jedno miasto |
-| 3 | złoto, surowce i do dwóch miast |
+| 1 | jedno miasto (pierwsze z puli) |
+| 2 | jedno miasto |
+| 3 | do dwóch miast |
+
+Od decyzji właściciela 2026-11-13 (wariant CITY-ONLY) złoto i surowce nie są walutą pokoju zmęczenia: oferta składa się wyłącznie z miast. Stopień 1 i 2 oddają najwyżej jedno miasto, stopień 3 do dwóch (`war-weariness.ts`, `stageCityLimit`).
 
 Po odrzuceniu oferty przegrywający czeka 3 tury, zanim złoży kolejną, a jego cena rośnie o 20%.
 
