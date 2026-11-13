@@ -484,3 +484,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Dlaczego bez startów:** wszystkie pozostałe pozycje pending czekają na decyzję właściciela (lista w poprzednim przebiegu) albo zależą od niezintegrowanego kodu.
 - **Dysk:** 8,8 GB.
 - **Stan repo:** `parity-v2` = `cfa1edd31`. `claude/rust-sivvrn` przed tym wpisem = `289e5750b`.
+
+## Przebieg (heartbeat 12:20, trig_01DiSPBEtwmKWjgEKvcGWm7W): bez zmian, 0 z 4 slotów
+- **Sloty:** 0 aktywnych Workflow. Brak procesów cargo/clippy/rustc, brak worktree poza główną kopią. Parity-v2 = `cfa1edd31`. Brak nowych decyzji od właściciela od 11:18.
+- **Dlaczego bez startów:** wszystkie pozostałe pozycje pending czekają na decyzję właściciela albo zależą od niezintegrowanego kodu (lista w przebiegu 10:24 i 11:18).
+- **Dysk:** 8,8 GB.
+- **Stan repo:** `parity-v2` = `cfa1edd31`. `claude/rust-sivvrn` przed tym wpisem = `1440a7c10`.
