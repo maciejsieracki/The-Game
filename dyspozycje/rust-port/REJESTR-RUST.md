@@ -580,3 +580,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Statusy zweryfikowane:** #114 ELIMINACJA-GRACZA zintegrowana (INTEG-B21, `cf281d785`) → completed. #104 ZLOŻA i #115 ZDOBYCIE-MIASTA: brak commitów i dispatchów → pending. #106 R7K7C-WIRING: dispatche Q1/Q2 istnieją, integracja nieznana → pending.
 - **Sprzątanie:** usunięto worktree zakończonych pokryć (`wf_07422301-117-1..4`) i stary worktree JS-MAX (`wf_e18d3b41-1c6-4`). Refy: `refs/keep/K5I2B2-POKRYCIE-R2-Q1-wt-final`, `…-failed-det4`. Dysk 16 GB.
 - **Stan repo:** `parity-v2` = `c85e4e451`. `claude/rust-sivvrn` przed tym wpisem = `914a80a8f`.
+
+## Przebieg (heartbeat 15:25, trig_01DiSPBEtwmKWjgEKvcGWm7W): 2 z 4 slotów, bez nowych startów
+- **Aktywne Workflow:** `wf_de513810-763` (COMBAT-RESOLVE-PETLA-Q1, #136, Operator SONNET; worktree na `8dff35d79`) oraz `wf_4613cb38-d39` (SLINGER-POKRYCIE-Q1, #163/#164, Operator HAIKU; worktree na `ff2df3314`).
+- **Dlaczego bez nowych startów:** dysk 7,8 GB, poniżej progu 8 GB z CLAUDE.md dla startów z kodem Rust. Kandydaci z kolejki (#107, #109, #112, #113, #147–#150 — ProdBody; #120 — hak wypowiedzenia; #139 — Cargo.toml) wymagają większych portów albo wymagają wykonania zadań wcześniejszych (ProdBody: #147 przed #109).
+- **Niezintegrowane, gotowe do pełnego testu:** wektory melee (`fc74b6d1a`), js_max (`f946ee378`). Pełny `cargo test` na tych commitach po zakończeniu obu operatorów.
+- **Stan repo:** `parity-v2` = `c85e4e451`. `claude/rust-sivvrn` przed tym wpisem = `3b36d7184`.
