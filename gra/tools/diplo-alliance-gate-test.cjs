@@ -69,7 +69,8 @@ ok(B.relationTierDisplay(hi, false) === 3, 'bez traktatu emblemat NIE „Sojusz"
 ok(B.relationTierDisplay(hi, true) === 4, 'z traktatem emblemat „Sojusz"');
 ok(B.relationTierDisplay({ zaufanie: 50, respekt: 50, status: 'sojusz' }, false) === 3, 'status=sojusz bez traktatu (nieaktualny) -> nie „Sojusz"');
 ok(B.relationTierDisplay({ zaufanie: 80, respekt: 80, status: 'wojna' }, true) === 0, 'wojna zawsze tier 0');
-ok(B.relationTierDisplay({ zaufanie: 10, respekt: 10, status: 'neutralni' }, false) === 1, 'niski score -> Wrogi bez zmian');
+ok(B.relationTierDisplay({ zaufanie: 9, respekt: 10, status: 'neutralni' }, false) === 1, 'zaufanie < 10 -> Wrogi');
+ok(B.relationTierDisplay({ zaufanie: 10, respekt: 10, status: 'neutralni' }, false) === 2, 'zaufanie 10 (niski score) -> Neutralny, nie Wrogi');
 
 // C) spójność w main.ts
 const main = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');

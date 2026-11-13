@@ -357,13 +357,14 @@ eq(relationTier(rel(100, 100, 'wojna')),  0, 'status=wojna -> tier 0 (Wojna), ni
 eq(relationTier(rel(0, 0, 'sojusz')),     4, 'status=sojusz -> tier 4 (Sojusz), niezaleznie od score');
 
 // score-based tiers (status neutralni/pokoj)
-eq(relationTier(rel(10, 10)),  1, 'score=20 (< 30) -> tier 1 (Wrogi)');
+eq(relationTier(rel(9, 10)),   1, 'zaufanie=9 (< 10) -> tier 1 (Wrogi)');
+eq(relationTier(rel(10, 0)),   2, 'zaufanie=10 (>= 10), score=10 -> tier 2 (Neutralny; nie Wrogi)');
 eq(relationTier(rel(25, 25)),  2, 'score=50 (>= 30, < 60) -> tier 2 (Neutralny; typowy start gry)');
 eq(relationTier(rel(50, 40)),  3, 'score=90 (>= 60, < 130) -> tier 3 (Przyjazny)');
 eq(relationTier(rel(80, 72)),  4, 'score=152 (>= 130) -> tier 4 (Sojusz)');
 
 // granice (boundary values)
-eq(relationTier(rel(15, 15)),  2, 'score=30 DOKLADNIE >= progMinimalny(30) -> tier 2 (Neutralny), granica');
+eq(relationTier(rel(15, 15)),  2, 'zaufanie=15 (>= 10), score=30 -> tier 2 (Neutralny), granica');
 
 
 // ===========================================================================
