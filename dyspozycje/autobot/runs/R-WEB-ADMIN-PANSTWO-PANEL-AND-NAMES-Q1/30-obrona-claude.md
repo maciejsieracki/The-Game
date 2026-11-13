@@ -1,51 +1,62 @@
-# R-WEB-ADMIN-PANSTWO-PANEL-AND-NAMES-Q1 — obrona Operatora (runda 2/5, odpowiedź na zarzuty Evaluatora 66e57c18f)
+# R-WEB-ADMIN-PANSTWO-PANEL-AND-NAMES-Q1 — obrona Operatora (runda 3, odpowiedź na zarzuty Evaluatora 014750a1a)
 
 STATUS: DECISION_REQUIRED
 DOMAIN: GAME
 TEMAT: R-WEB-ADMIN-PANSTWO-PANEL-AND-NAMES-Q1 (#327)
 GOAL: (1) panel Państwa pokazuje administratora państwa i jego stan; (2) w tekstach gracza tylko „administrator państwa” (ulepszenia, całe Państwo) i „administrator miasta” (budynki w mieście), bez starej nazwy i bez mieszania zakresów.
-BAZA: origin/main bff897c9b; start obrony: bed6f969d (runda 1); kod rundy 2: a0c19494a.
+BAZA: kandydat ac7e54c21 (baza 2c6b0d33a). Kod tej rundy: 0bb452066 (main.ts, 2 linie napisów).
 
 ## ZMIANY/COMMIT
-- a0c19494a — gra/src/ui/administratorPanel.ts (zakres państwa w tekstach), gra/tools/admin-panstwo-panel-names-test.cjs (zakres skanu, mutacje realne, 3 nowe asercje zakresu).
-- Allowlista: tylko te dwa pliki w kodzie + raport. Brak zmian w main.ts, JSON, auto-build-gate.ts, city-administrator.ts, testach przeglądarkowych, WERSJE.md, gra-robocza/, rust-port/.
+- 0bb452066 — gra/src/main.ts: powiadomienie migracyjne (subtitle ok. 47871) i podpowiedź (ok. 47876): zakres państwa „jeden na całe Państwo”, liczba miast tylko jako „wstrzymane dla: N miast”. Tylko napisy.
+- Pozostałe zmiany (z ac7e54c21) bez zmian w tej rundzie.
+- `git diff --check`: czysto. `git diff --stat HEAD~1 HEAD`: 1 plik, 2 wstawienia, 2 usunięcia.
 
 ## ODPOWIEDZI NA ZARZUTY
-Z1 (stare nazwy poza src/ui) — PRZYJMUJĘ jako zgodne z faktem; NIE NAPRAWIONE w tej rundzie.
-  Dowód: test r2 (sekcja 2) — 20 trafień poza src/ui: src/main.ts:10222, 10223, 10224, 10225, 10343, 27127, 27136, 27147, 27163, 27189, 27199, 27213, 47870, 47871, 47876; src/game/city-administrator.ts:189; src/game/auto-build-gate.ts:112; data/city-administrator-params.json:23, :27; src/data/wikiBundle.json:1.
-  Powód nienaprawienia: wszystkie te pliki są POZA allowlistą (main.ts tylko wiring stanu; reszta nie jest na liście). Naprawa wymaga rozszerzenia allowlisty przez orkiestratora. Nie rozszerzam jej sam.
-Z2 (test skanuje tylko src/ui; mutacje samospełniające się) — PRZYJMUJĘ.
-  Zmiana: skan obejmuje teraz src/ui, src/main.ts, src/game/{city-administrator,auto-build-gate,cities,civ-test-hooks}.ts, data/city-administrator-params.json, src/data/wikiBundle.json (komentarze odfiltrowane). Test czerwony na 20 trafieniach — to prawdziwy stan, nie maskowany.
-  Mutacje nazw są teraz REALNE: podmiana w cityPanel.ts i buildModeHud.ts na dysku, skan, przywrócenie w finally; asercja „pliki przywrócone bajt po bajcie” PASS. Mutacje wiringu (usunięcie wiersza/wiringu) nadal działają na treści pliku wczytanej z dysku.
-Z3 (regresja testów przeglądarkowych: improvement-admin-tooltip 4 FAIL, administrator-panel-real-render 2 FAIL) — PRZYJMUJĘ jako zgłoszone przez Evaluatora; NIE_ZMIERZONO w tej rundzie (nie uruchamiałem przeglądarkowych testów, bo pliki są poza allowlistą i nie aktualizuję ich). Decyzja orkiestratora: rozszerzyć allowlistę o te testy (aktualizacja asercji do nowych napisów) albo osobny temat.
-Z4 (mieszanie zakresów: „Zatrudnić administratora (państwa) w mieście X?”, opis „w tym mieście”) — PRZYJMUJĘ; NAPRAWIONE w a0c19494a (administratorPanel.ts, w allowliście).
-  - administratorHireConfirmText: państwo → „Zatrudnić administratora państwa (jeden na całe Państwo)?” (bez nazwy miasta); miasto → bez zmian „Zatrudnić administratora (miasta) w mieście X?”.
-  - Nowy helper scopeWhere(m): miasto → „w tym mieście”, państwo → „we wszystkich miastach Państwa”; użyty w bonusRows (ulepszenia), administratorHireConfirmText (ulepszenia), effectRows (stan, zwolnienie, bez administratora) i w potwierdzeniu auto-ulepszeń (linia ~314).
-  - lead() dla państwa: „Administrator państwa to jedna osoba na całe Państwo. Tryb auto ulepszeń terenu działa dla wszystkich miast Państwa.” — ZAŁOŻENIE: przestaje doklejać JSON opis_gracza (który mówi „w tym mieście”); tekst JSON pozostaje nietknięty w pliku i nadal jest w bazie dla miasta? NIE — dla miasta lead nadal używa administratorDescription(), JSON opis_gracza ulepszeń nie jest już wyświetlany w panelu. Wymaga akceptacji (patrz BLOKADY 1).
-  - Test: 3 nowe asercje zakresu PASS (pytanie państwa bez „w mieście X”; zakres „we wszystkich miastach Państwa”; brak doklejania JSON).
-Z5 (niewiążąca: Netto/legacy/upkeep) — przyjęte do wiadomości, bez zmian (zgodne z deklaracją rundy 1).
+Z1 (wikiBundle.json:1 — stara nazwa 10×; kryterium 0 trafień w wiki) — NIE PRZYJMUJĘ poprawki w allowliście; ZGŁASZAM BLOKADĘ DO DECYZJI ORKIESTRATORA.
+  Dowód: `gra/src/data/wikiBundle.json` jest generowany z `docs/encyklopedia/` (pojęcie `docs/encyklopedia/pojecia/administrator-ulepszen.md`: tytuł „Administrator ulepszeń” w linii 1, 6, 15, 21, 23, 27). Ręczna edycja bundla jest zakazana przez DODATEK, a regeneracja ze źródła odtworzyłaby starą nazwę. Źródło docs/encyklopedia NIE jest na allowliście DODATKU.
+  Wymagana decyzja: (a) rozszerzyć allowlistę o `docs/encyklopedia/pojecia/administrator-ulepszen.md` (+ ewentualnie `docs/encyklopedia/indeks.md`) i zregenerować bundle skryptem, albo (b) przyjąć dług i wyłączyć wiki z kryterium (wtedy test wymaga zmiany — NIE wykonuję tego sam). Do tego czasu `admin-panstwo-panel-names-test` = 23 pass / 1 fail (ten jeden FAIL to wiki).
 
-## TESTY (surowe wyniki, kod a0c19494a, uruchomione w gra/)
-- npm ci --ignore-scripts → exit 0 (w tej worktree node_modules utworzony przed testami).
-- node node_modules/typescript/bin/tsc --noEmit → TSC_EXIT=0 (bez wyjścia).
-- node tools/logic-test.cjs → "LOGIC OK (213/213)", exit 0.
-- node tools/tech-tree-test.cjs → "tech-tree-test: 20 pass, 0 fail", exit 0.
-- node tools/research-test.cjs → "PASSED: 33 / FAILED: 0 / TOTAL: 33", "ALL GREEN", exit 0.
-- node tools/unit-replace-test.cjs → "WSZYSTKIE TESTY ZIELONE (21/21)", exit 0.
-- node tools/combat-test.cjs → "COMBAT TEST: 6/6 pass", exit 0.
-- node tools/admin-panstwo-panel-names-test.cjs → "23 pass, 1 fail", exit 1. Jedyny FAIL: sekcja (2), 20 trafień starej nazwy poza src/ui (lista wyżej). Wszystkie pozostałe asercje (render 3 stanów, wiring, zakres, mutacje realne) PASS.
-- NIE_ZMIERZONO: testy przeglądarkowe (administrator-panel-real-render, improvement-admin-tooltip-real-render, administrator-icon-everywhere) i render panelu Państwa w żywej grze.
+Z2 (main.ts:47871 — „w miastach z działającym administratorem państwa (N miast bez niego)”, mieszanie zakresów) — PRZYJMUJĘ, NAPRAWIONE w 0bb452066.
+  Nowy tekst: „Automatyczne ulepszanie terenu działa teraz tylko przy działającym administratorze państwa (jeden na całe Państwo). Wstrzymane dla: N miast.” Podpowiedź: „…tylko przy administratorze państwa — wstrzymane dla: N miast (patrz „Ważne”)”.
+  Uwaga: test names nie wykrywa tej klasy błędu (skan szuka tylko starej frazy); nie dodawałem asercji, bo `bez niego` występuje w main.ts 7× w innych kontekstach (fałszywe trafienia).
 
-## BLOKADY (decyzja orkiestratora)
-1. Rozszerzenie allowlisty albo osobny temat na: napisy w gra/src/main.ts (17 linii powiadomień/podpowiedzi: 10222–10225, 10343, 27127–27213, 47870–47876), gra/src/game/auto-build-gate.ts:112 (stała AUTO_IMPROVE_NEEDS_ADMINISTRATOR_HINT), gra/src/game/city-administrator.ts:189, gra/data/city-administrator-params.json:23 i :27 (opis_gracza — także decyzja, czy tekst JSON ma zostać zmieniony, czy zostaje jako wiedza tylko dla miasta), gra/src/data/wikiBundle.json (generowany — regeneracja po zmianie JSON).
-2. Aktualizacja testów przeglądarkowych poza allowlistą (zarzut Z3): gra/tools/improvement-admin-tooltip-real-render-test.cjs, gra/tools/administrator-panel-real-render-test.cjs, gra/tools/administrator-icon-everywhere-render-test.cjs.
-3. Akceptacja założenia z Z4: panel ulepszeń państwa nie pokazuje już opisu JSON „w tym mieście” (zastąpiony tekstem o całym Państwie).
-4. Tekst podpowiedzi o trybie auto (ulepszenia) — wiersz w panelu Państwa „Administrator państwa” nie wchodzi do „Netto” (bez zmian, zgodnie z rundą 1).
+Z3 (gra/data/ui-params.json:311 — „administratorów miast i ulepszeń”) — PRZYJMUJĘ jako fakt; NIE NAPRAWIONE: plik poza allowlistą DODATKU (allowlista JSON obejmuje tylko `city-administrator-params.json`, pola opis_gracza).
+  Proponowana zmiana do zatwierdzenia przez orkiestratora (jedna linia, tylko napis): w `gra/data/ui-params.json:311` fraza „Możesz zatrudniać administratorów miast i ulepszeń (koszt ze skarbca państwa)” → „Możesz zatrudniać administratora państwa i administratorów miast (koszt ze skarbca państwa)”. Zakres: administrator państwa jeden na Państwo, miasta osobno — zgodnie z ZASADĄ ZAKRESU.
+  Wymagana decyzja: rozszerzyć allowlistę o `gra/data/ui-params.json` albo wskazać inny sposób.
+
+Z4 (osłabienie asercji A2 i [data] w administrator-panel-real-render-test) — ODRZUCAM przywrócenie starej asercji; PRZYJMUJĘ obserwację co do wartości dowodowej.
+  Dowód: stara asercja `r.lead.includes(PARAMS.administrator_ulepszen.opis_gracza)` nie może przejść po zmianie zakresu, bo JSON `administrator_ulepszen.opis_gracza` (city-administrator-params.json:27, już poprawiony w r2) jest także używany jako opis w Civpedii/tooltipie, a lead panelu dla państwa jest świadomie zapisany w `gra/src/ui/administratorPanel.ts` (funkcja `lead`, gałąź państwa) — decyzja zakresu z r1. Model panelu nie ma pola `description` (grep `description` w administratorPanel.ts: 0 trafień), więc podpięcie JSON wymagałoby zmiany modelu poza zakresem tego tematu.
+  Dowód data-driven pozostaje: [data] sprawdza liczby 77 i 9 z podmienionego JSON (koszt/utrzymanie) oraz −14% z efektów bazowych; A2 sprawdza „jedna osoba na całe Państwo”, „dla wszystkich miast Państwa” i brak „w tym mieście”.
+
+Z5 (5 plików testowych poza allowlistą: admin-panstwo-city-gate-test, administrators-wizard-test, improvement-administrator-test, live-verify-administrator-panel, live-verify-improvement-administrator) — PRZYJMUJĘ jako fakt; zmiany to etykiety i asercje na napisy (zmiana nazw z DODATKU), bez zmian progów. NIE_ZMIERZONO, czy bez nich testy czerwieniłyby się — nie sprawdzałem tej gałęzi. Wymagana akceptacja orkiestratora (rozszerzenie allowlisty testów).
+
+Z6 (informacyjnie: komentarze ze starą nazwą, klucz JSON administrator_ulepszen) — PRZYJMUJĘ jako informację; bez zmian (komentarze i klucze nie są tekstem gracza; klucz JSON `administrator_ulepszen` jest wpisany w kod i testy).
+
+## TESTY (surowe wyjście, na 0bb452066)
+- `npx tsc --noEmit`: exit 0.
+- logic-test: `LOGIC OK (213/213)`, exit 0.
+- tech-tree-test: `tech-tree-test: 20 pass, 0 fail`, exit 0.
+- research-test: `PASSED: 33 / FAILED: 0 / TOTAL: 33`, `ALL GREEN`, exit 0.
+- unit-replace-test: `WSZYSTKIE TESTY ZIELONE (21/21)`, exit 0.
+- combat-test: `COMBAT TEST: 6/6 pass`, exit 0.
+- admin-panstwo-panel-names-test: `23 pass, 1 fail` (exit 1). Jedyny FAIL: trafienie starej nazwy w `src/data/wikiBundle.json:1` (Z1, blokada decyzji). Mutacje realne (cityPanel, buildModeHud, wiring hud/main) — ok.
+- admin-panstwo-city-gate-test: `RESULT: 36 passed, 0 failed`, exit 0.
+- improvement-administrator-test: `59 passed, 0 failed`, exit 0.
+- administrators-wizard-test: `58 passed, 0 failed`, exit 0.
+- administrator-panel-real-render-test (Chromium): `48 PASS / 0 FAIL`, exit 0.
+- NIE_ZMIERZONO: dwa pozostałe testy przeglądarkowe z DODATKU (tooltip, icon-everywhere) — nie uruchamiane w tej rundzie; live-verify-* — wymagają żywej gry.
+- Mutacja starej nazwy w pliku: pokryta przez names-test (sekcja 3), potwierdzona w tej rundzie (`mutacja realna ... wykrywana` ok).
+
+## BLOKADY
+1. Z1: wikiBundle.json — źródło w docs/encyklopedia poza allowlistą. Wymaga decyzji (rozszerzyć allowlistę i regenerować, albo przyjąć dług).
+2. Z3: gra/data/ui-params.json:311 poza allowlistą. Wymaga decyzji (propozycja zmiany w obronie).
+3. Z5: akceptacja 5 plików testowych poza allowlistą.
 
 ## RUNDY
-2/5 (Operator, HAIKU). Zarzuty 1 i 3 wymagają decyzji orkiestratora (allowlista); 2 i 4 naprawione/domknięte w kodzie.
+Runda 3/5 (obrona). Poprzednie: r1 (a0c19494a), r2 (ac7e54c21 / 11f9d198b).
 
 ## NASTĘPNY KROK
-Decyzja orkiestratora w sprawie BLOKAD 1–3: (A) rozszerzyć allowlistę o pliki z BLOKADY 1 i 2 i wystawić Operatora r3 (zmiany wyłącznie napisów + aktualizacja asercji), albo (B) zaakceptować obecny stan jako częściowy i wydzielić R-WEB-ADMIN-NAMES-REST-Q1 dla pozostałych plików. Po decyzji: Evaluator → Final Control.
+Orkiestrator: decyzja o rozszerzeniu allowlisty dla Z1 (docs/encyklopedia + regeneracja wiki), Z3 (ui-params.json) i Z5 (testy). Po decyzji: Operator wprowadza wskazane zmiany; następnie Evaluator i Final Control.
 
+## DEPLOY/PUSH
 DEPLOY/PUSH: NIE WYKONANO
