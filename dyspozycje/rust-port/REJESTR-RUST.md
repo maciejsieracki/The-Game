@@ -521,3 +521,13 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 5. #91: istniejące 360 sekwencji jako dowód; klauzula „pojedynczy cios” w #113.
 6. Allowlisty `ProdBody` i generatora: rozszerzane tylko o pliki potrzebne konkretnemu tematowi, z pełnymi bramkami.
 7. Wiring #104, #114, #115, #120: parytet z pinem.
+
+## Przebieg (13.11, polecenie właściciela: odpalić operatorów, raport etapów P): 4 z 4 slotów
+- **Aktywne Workflow:**
+  - `wf_cd6b3e71-a5e` — UNIT-REPLACE L-1 (#153), Operator HAIKU.
+  - `wf_08013046-e0f` — COMBAT-MELEE-VEKTORY-Q1 (#134), Operator HAIKU. Wektory fazy zwarcia z pinu (combat.ts:842), bez portu.
+  - `wf_e18d3b41-1c6` — JS-MAX-CONSOLIDATE-R2-Q1 (#110, wariant b), Operator SONNET (uzasadnienie w dispatchu: diff w ok. 27 plikach, tabela semantyki per caller).
+  - `wf_07422301-117` — K5I2B2-POKRYCIE-R2-Q1 (#111/#143), Operator HAIKU. KROK 0 zatrzymuje, jeśli asercja już przechodzi.
+- **Dispatche** (baza parity `cfa1edd31`): `b03bd0e29`.
+- **Raport etapów P0–P11 i P6.x:** `scratchpad/raport-etapy-P-2026-11-13.md`, wysłany właścicielowi.
+- **Stan repo:** `parity-v2` = `cfa1edd31`. `claude/rust-sivvrn` przed tym wpisem = `b03bd0e29`.
