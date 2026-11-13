@@ -1,7 +1,7 @@
 # DISPATCH R-RUSTPORT-P6-ZWYCIESTWO-WIRING-Q1 (runda 1)
 
 TEMAT: ZWYCIESTWO-WIRING (P6.19-C): wpięcie końca gry do stanu i pętli tury
-DOMENA: GAME (implementacja). BAZA: `94feb5e37` (czubek `origin/rust-port/parity-v2`, pełny test 3284/0/1). Worktree na `wip/R-RUSTPORT-P6-ZWYCIESTWO-WIRING-Q1`. Przed startem: `git checkout --detach 94feb5e37`.
+DOMENA: GAME (implementacja). BAZA: `0ca58770e` (czubek `origin/rust-port/parity-v2`, pełny test 3284/0/1). Worktree na `wip/R-RUSTPORT-P6-ZWYCIESTWO-WIRING-Q1`. Przed startem: `git checkout --detach 0ca58770e`.
 Pin (tylko odczyt): `git show 07d2fbd72:<ścieżka>`.
 
 ## GOAL

@@ -27,7 +27,7 @@ Operator: Haiku. Pełna bramka przed commitem. Commit bez linii Co-Authored-By z
 
 ## DODATEK r2 (decyzje orkiestratora po FC FAIL r1, 13.11)
 
-**BAZA r2: `94feb5e37`** (aktualizacja: parity-v2 po ZLOZA-B; wcześniej `d30e3ea24`) (czubek origin/rust-port/parity-v2, zawiera JS-MAX `d30e3ea24`). Wcześniejsza baza `5e8b116e8` jest nieaktualna. PIERWSZY krok: `git checkout --detach 94feb5e37` w worktree.
+**BAZA r2: `0ca58770e`** (aktualizacja: parity-v2 po ZLOZA-B; wcześniej `d30e3ea24`) (czubek origin/rust-port/parity-v2, zawiera JS-MAX `d30e3ea24`). Wcześniejsza baza `5e8b116e8` jest nieaktualna. PIERWSZY krok: `git checkout --detach 0ca58770e` w worktree.
 Operator r1 nie zacommitował kodu (praca utracona). Runda 2 zaczyna od zera: commit na `wip/R-RUSTPORT-P6-EKONOMIA-BRAZ-ERA-Q1` + `refs/keep` przed raportem.
 
 ### Decyzje (parytet z webem, bez pytania do właściciela)
