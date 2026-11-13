@@ -1,32 +1,50 @@
-STATUS: PASS-WITH-NOTES
+STATUS: DECISION_REQUIRED
 DOMAIN: GAME
-TEMAT: R-RUSTPORT-P6-CRED-WOJNA-Q1
-GOAL: hak P4 "kazda wojna zeruje licznik bez wojny obu stron" (web main.ts:12223-12224) — dowod parytetu wektorami z pinu 07d2fbd72 + test S3 + zgodnosc wsteczna. Baza wg dispatchu r2: 654d1e4ab.
-ZMIANY/COMMIT: kod 66d181ea5 (gałąź lokalna rust-port-wip/R-RUSTPORT-P6-CRED-WOJNA-Q1-r2, NIE wypchnieta; ancestry 654d1e4ab -> 66d181ea5 sprawdzona w sesji). Dodane: rust-port/engine/tests/p6_cred_wojna_gen.mjs, rust-port/engine/tests/p6_cred_wojna_vectors.rs, rust-port/engine/tests/p6_cred_wojna_vectors/vectors.json. Produkcja (turn_war_dipl_steps.rs, turn_war_pipeline.rs, war_turn_declare.rs, credibility.rs, mod.rs) BEZ zmian wzgledem r1. Cargo.lock wygenerowany lokalnie, NIE commitowany. gra/, rust-port/engine/data/, Cargo.toml, WERSJE.md, origin/main nietkniete. Brak push i integracji.
-TESTY:
-- cargo fmt --check (rust-port/engine): EXIT 0.
-- cargo clippy --all-targets -- -D warnings: EXIT 0 (po poprawce field_reassign_with_default w p6_cred_wojna_vectors.rs).
-- cargo test --lib: 94 ok.
-- p6_cred_wojna: 7 ok (5 z r1 + 2 testy wsteczne/guard z r1 bez zmian asercji).
-- p6_cred_wojna_vectors (NOWY): 3 ok — zapis_wojny_i_odczyt_p4_zgodne_z_pinem_na_wektorach, s3_umowa_handlowa_legacy_kind_three_turns_matches_trade_route, stary_zapis_bez_klucza_last_war_laduje_sie_jako_zero_i_pierwsza_wojna_go_zapisuje.
-- p6_credibility: 15 ok (asercje z r1 bez zmian). p6_wire_war_pipeline 7 ok, p6_wire_war_dipl_steps 8 ok, p6_wire_war_declare 15 ok.
-- MUTACJA (kontrola czulosci): wylaczenie zapisu w note_war_declarations -> FAIL obu testow wektorowych (zapis_wojny_* i stary_zapis_*); plik przywrocony, diff src/ pusty.
-- Generator: node tests/p6_cred_wojna_gen.mjs <esbuild> <pin> <work> <out> -> "OK cases=200 steps=1063 pairs=1320 barbarianPairs=237 maxPairsInTurn=3 warWrites=1320 p4EventsRecorded=2064 codeSha256=87ff18365edcfef806e92b30d6ce9b781f4894a3c0a3fbc03bdc64db9569c464". Straznik SHA-256 plikow pinu (main.ts e80f9cb4..., diplomacy-peace-lock ab8e6b08..., diplomacy-pn-engine ee1b1aab..., barbarians b5a38a1c..., diplomacy.ts cdf34ef8..., pozostale jak w p6_credibility_gen.mjs) i kodu (87ff1836...) zgodny.
-- Pelny cargo test --no-fail-fast: NIE_ZMIERZONO (poza wymienionymi binariami).
+TEMAT: R-RUSTPORT-P6-CRED-WOJNA-Q1 (CRED-WOJNA, zadanie #103), runda Operatora 2/5 (dodatek r2 do dispatchu)
+GOAL: (a) pełne pokrycie ścieżek wejścia w wojnę hakiem P4 wg pinu 07d2fbd72 (tylko w zakresie allowlisty r2); (b) test 3 tur S3 dla umowa_handlowa porównany z wektorami pinu. Wynik: (b) ZROBIONE; (a) NIE w całości, patrz tabela ścieżek i BLOKADY.
+ZMIANY/COMMIT: baza 15d85c2ee (wip/R-RUSTPORT-P6-CRED-WOJNA-Q1). Kod produkcyjny `rust-port/engine/src` BEZ ZMIAN w tej rundzie. Nowe pliki (allowlista r2):
+  - rust-port/engine/tests/p6_cred_wojna_gen.mjs (generator: wykonuje tekst pinu w esbuild+node, straznik SHA-256 plików pinu i każdego wyciętego fragmentu `FRAG_SHA`),
+  - rust-port/engine/tests/p6_cred_wojna_vectors/vectors.json (wektory z pinu: 160 haków P4, 60 sekwencji kolejności D4/D8, 20 przypadków S3 x 3 tury),
+  - rust-port/engine/tests/p6_cred_wojna_vectors.rs (4 testy, bez #[ignore], bez osłabionych asercji).
+  Cargo.lock wygenerowany przez cargo w worktree: NIE commitowany.
+TESTY (wszystko na 15d85c2ee + te pliki; CARGO_TARGET_DIR poza repo; zmierzone):
+  - cargo fmt --check: EXIT 0
+  - cargo clippy --all-targets -- -D warnings: EXIT 0 (po zamianie złożonego typu na alias `Snap`)
+  - cargo test --lib: 94 ok, EXIT 0
+  - cargo test --test p6_cred_wojna: 7 ok
+  - cargo test --test p6_credibility: 15 ok
+  - cargo test --test p6_wire_war_pipeline: 7 ok
+  - cargo test --test p6_cred_wojna_vectors: 4 ok (hook_p4_counter_matches_pin_for_all_cases, p4_milestones_and_last_war_match_pin_in_both_orders, s3_trade_stream_umowa_handlowa_three_turns_matches_pin, vectors_carry_pin_and_guard_hashes)
+  - cargo test --no-fail-fast (cały crate): 3190 passed, 0 failed, EXIT 0
+  - Mutacja kontrolna: w `note_war_declarations` zamieniono `note_war_entered(a, b, turn)` na `note_war_entered(a, a, turn)` -> test hook_p4_counter_matches_pin_for_all_cases FAILED (3 pozostałe OK). Plik przywrócony z kopii; `git diff -- rust-port/engine/src` puste.
+  - Liczniki niepustości wektorów (z generatora, potwierdzone przez testy): hook: 160 przypadków, 147 zapisało licznik obu stron, 13 par z barbarzyńcą; kolejność: 375 kroków z kamieniem P4 > 0, 306 kroków różnych między kolejnością pinu a odwrotną; S3: 50 tur z wpisem strumienia handlu, 10 tur przerwanych dostawą.
+  - Walidacja generatora: SHA-256 plików pinu (main.ts e80f9cb4..., diplomacy-credibility.ts, diplomacy-treaties.ts, types/diplomacy.ts, difficulty-cost.ts, diplomacy.ts, diplomacy-peace-lock.ts, diplomacy-pn-engine.ts, barbarians.ts, data/diplomacy.json) OK; SHA-256 wyciętych fragmentów (16 funkcji, m.in. chargeWarDeclarationCredibility 5a29e9f6...) OK.
+
+NAPRAWY ZARZUTÓW r2 (z dodatku):
+  1. >=150 wektorów z pinu dla haka P4 i testu S3: ZROBIONE (160 haków; S3 3 tury na 20 przypadkach). Generator wykonuje TEKST pinu (chargeWarDeclarationCredibility i zależności wycięte z main.ts), nie port Rusta.
+  2. Kolejność D4/D8 względem P4: ZROBIONE. Wektory pinu w obu kolejnościach (pin: D4 przed D8; odwrotna: D8 przed D4). Test sprawdza, że Rust zgadza się z pinem w obu kolejnościach i że kolejność ma wpływ na wynik. Kolejność w produkcji: `run_dipl_steps` (turn_war_pipeline.rs:370, zawiera D4) przed `note_war_declarations` (turn_war_pipeline.rs:422), zgodnie z pinem.
+
+ZAKRES DOWODU HAKA (kryterium 1 dispatchu) — wykaz ścieżek pin vs Rust (numery linii wg 15d85c2ee i 07d2fbd72):
+  | Pin (main.ts) | Ścieżka pinu | Rust (15d85c2ee) | Status |
+  | 12223-12224 | skutek P4: licznik obu stron | `CredibilityRegistry::note_war_entered` (credibility.rs:854), `note_war_declarations` (turn_war_dipl_steps.rs:875-895) | POKRYTE, testami wektorowymi |
+  | 41931 | wojna wymuszona w pętli AI (stoneForceWarTargetId / ironForceWarTargetId) -> chargeWarDeclarationCredibility(ownerId, targetId) | `declare_forced_wars` (war_turn_declare.rs:105) — BEZ wołania haka (grep: jedyne wołanie haka to turn_war_pipeline.rs:422) | NIE POKRYTE. Plik poza allowlistą r2 (war_turn_declare.rs). Mapowanie na `declare_forced_wars` wnioskowane z nazw (do potwierdzenia). |
+  | 13168 | playerDeclareWarOnOwner -> chargeWarDeclarationCredibility(ME(), ownerId) | brak wołania (declare_war w diplomacy_truce_flow.rs:239/247 bez haka) | NIE POKRYTE. Poza zakresem r2 (#120). |
+  | 13205 | ownerDeclareWarOn -> chargeWarDeclarationCredibility(attackerId, defenderId) | brak wołania | NIE POKRYTE. Poza zakresem r2 (#120). |
+  | 23806 | joinAllyToWar (skipN2AllianceDefense) | brak wołania | NIE POKRYTE. Poza zakresem r2 (#120). |
+  | 40441 | wypowiedzenie klastra (csOwnerId, ME()) | brak wołania | NIE POKRYTE. Poza zakresem r2 (#120). |
+  | (gałąź z hamulca) | AI-AI i gracz-AI z may_declare, BrakePhaseOutput::declarations | turn_war_pipeline.rs:415-422 -> note_war_declarations | POKRYTE |
+
+  Zastrzeżenia do hamulca: Rust `note_war_entered` modeluje WYŁĄCZNIE licznik P4 obu stron (z barbarzyńcą: pominięcie, jak guard pinu). Gałęzie N1/N2 haka (kary zdrady, odwet, kasowanie oferty pokoju, zapis `truceUntilTurn`) są w pinie, ale w Rust ich brak w tym haku. Te skutki NIE są porównywane przez testy (NIE_ZMIERZONO w tym temacie; wektory generatora je liczą, test ich nie sprawdza).
+
 BLOKADY:
-(1) WEKTORY >= 150 (pkt 4 dispatchu): DOSTARCZONE. 200 przypadkow wykonuje TEKST pinu chargeWarDeclarationCredibility (main.ts:12176-12225) z guardem isBarbarian (r1) i domknieciem; obejmuje: wojny gracz-AI, AI-AI, barbarzynce (237 par), do 3 par w turze, kilka tur z odczytem P4 (tickWiarygodnoscBezWojnyMilestone) miedzy deklaracjami (kroki 3-8 na przypadek, skoki tur 1-45, okno P4 30).
-  Zakres wektorow (NIE_ZMIERZONO poza nim): activeDeals = [] i brak ofert rozejmu, wiec wektory NIE obejmuja zdarzen N2 (zlamanie NAP/sojuszu), N1 (rozejm) ani zwracanego truceBreach. Poziom trudnosci: tylko Normal.
-(2) TEST S3 dla umowa_handlowa (pkt 3): DOSTARCZONE wg decyzji orkiestratora (a): bez aliasu w stream_kind_of, test na StreamDealKind::LegacyTradeAgreement przez 3 tury. Pin: galaz `kind === UmowaHandlowa` daje strumien_handel tylko gdy wszystkie dostawy ok; test sprawdza rownosc z TradeRoute przy 100% dostaw oraz brak strumienia w turze 3 przy niedostarczeniu. Uwaga: w produkcji stan z Rust nie niesie surowego `umowa_handlowa` (serde scala z umowa_szlakow, hydrate na pinie tez migruje), wiec wariant jest testowany wprost, nie przez dane.
-(3) KOLEJNOSC D4 vs HAK (pkt 6 FC r1): POTWIERDZONE WEKTOREM. Pin: tickWiarygodnoscBezWojnyMilestone (runDiplomacyTurnTick, main.ts:24273) przed hamulcem (chargeWarDeclarationCredibility, main.ts:41931). Rust: run_dipl_steps (tick P4, turn_war_dipl_steps.rs ~654) przed run_brake_phase -> note_war_declarations (turn_war_pipeline.rs ~422). Wektor: wojna w turze T nie daje kamienia P4 w tej samej turze T (przyklad: przypadek wojna-0, wojna pary 2-0 w turze 20 -> P4=0 w turze 20).
-(4) ZGODNOSC WSTECZNA (pkt 4 dispatchu): stary zapis bez klucza wiarygodnoscOstatniaWojnaTuraByOwner laduje sie jako licznik od 0, zdarzenia zachowane, pierwsza wojna zapisuje klucz, round-trip spojny.
-(5) PUNKTY WOJNY POZA HAKIEM DO DECYZJI (dispatch r2: "wpiac jesli sciezka istnieje w Rust, inaczej opisac"; allowlista war_turn_declare.rs):
-  - Wypowiedzenie gracza (pin main.ts:13168 playerDeclareWarOnOwner) i ownerDeclareWarOn (main.ts:13205): NIE WPIETE. Dowod: w Rust brak produkcyjnego wolajacego. DiplomacyTruceFlow::declare_war_opts (src/domain/diplomacy_truce_flow.rs:247) jest wolany tylko z testow (tests/p6_repin_rozejm_silnik.rs) i w komentarzach siege_transfer*.rs. Wpiecie wymagaloby nowej sciezki komend (zakaz) i zmiany poza allowlista (diplomacy_truce_flow.rs). DECYZJA: osobny temat, czy zbudowac sciezke wypowiedzenia gracza.
-  - Ownerow wolajacych ownerDeclareWarOn na pinie (13262 bunt, 20504/20652 propozycje, 28924/29012): te same skutki, NIE WPIETE z tego samego powodu.
-  - Sojusz joinAllyToWar (main.ts:23806): w Rust sa czyste funkcje alliance_obligations_for_war_declaration / should_honor_alliance_war_obligation (src/domain/alliance_war_obligation.rs), wolane tylko z testow; brak produkcyjnej orkiestracji. NIE WPIETE: brak sciezki.
-  - Klaster panstw-miast (main.ts:40441, resolveClusterCityStateWarOnPlayer): brak odpowiednika w Rust (grep: brak). NIE WPIETE: brak sciezki.
-  - Wojna wymuszona W3 (war_turn_declare.rs): na pinie wywolania chargeWarDeclarationCredibility to 5 miejsc (13168, 13205, 23806, 40441, 41931); zadne nie lezy w bloku deklaracji wymuszonej (~41559-41595). War_turn_declare.rs NIE zmieniano. Weryfikacja: grep na pinie, bez wykonania.
-(6) DIFFICULTY=Normal i credibility_excluded_owners puste (pkt 2 dispatchu r1): bez zmian wzgledem r1 (brak producenta: NOT_IMPLEMENTED w turn_war_inputs.rs). Nie ponawiano w r2.
-(7) Decyzja gameplay: brak. Zmiana nie zmienia balansu; stan P4 zgodny z pinem dla opisanego zakresu.
-RUNDY: 2/5 (Operator r2, Haiku). Zadnych zmian src/ w r2 poza testami; r1 kod produkcyjny nie zmieniany.
-NASTEPNY KROK: Evaluator (Sonnet) weryfikuje: (a) wektory vs pin (generator, straznik SHA), (b) mutacja z sekcji TESTY, (c) decyzje (5) — czy wpinac wypowiedzenie gracza i sojusz/klaster w osobnym temacie. FC decyduje o statusie; deploy/push wylacznie po READY_FOR_DEPLOY.
-DEPLOY/PUSH: NIE WYKONANO
+  (1) Kryterium 1 NIE spełnione w całości: wojna wymuszona (pin 41931 -> declare_forced_wars, war_turn_declare.rs:105) nie woła haka. Wpięcie wymaga zmiany `war_turn_declare.rs`, którego NIE MA na allowliście r2. Decyzja orkiestratora: (a) rozszerzyć allowlistę o war_turn_declare.rs i wpiąć hak, albo (b) przenieść do #120 razem z 13168/13205/23806/40441.
+  (2) Sprzeczność źródeł — NIE_ZMIERZONO: dodatek r2 mówi, że FC r1 = FAIL z zarzutami 1-6. W gałęzi `origin/rust-port-wip/R-RUSTPORT-P6-CRED-WOJNA-Q1-fc` (6a4fc2d51) FC r1 to PASS-WITH-NOTES ("brak zmian kodu", bazy 23e33793e), a jego twierdzenie „wojna wymuszona pokryta (war_turn_declare.rs:116)” NIE zgadza się z kodem 15d85c2ee (brak haka w war_turn_declare.rs). Zarzuty 1-2 z dodatku wykonano; nie weryfikowano, skąd dokładnie wzięto zarzuty FC r1 (plik 03-final-control.md z tą treścią nie istnieje w 15d85c2ee).
+  (3) Baza dodatku: dodatek twierdzi, że 15d85c2ee jest przodkiem origin/claude/rust-sivvrn — FAŁSZ (`merge-base --is-ancestor` = nie). 15d85c2ee JEST przodkiem origin/rust-port/parity-v2 (169 commitów w przód). Użyto SHA 15d85c2ee zgodnie z dodatkiem.
+  (4) Nazwa raportu: zlecenie mówi „01-operator-r1.md”, dodatek r2 mówi „01-operator-r2.md (nie nadpisuj r1)”. Zapisano 01-operator-r2.md; r1 nietknięty.
+  (5) Alias `umowa_handlowa` -> `LegacyTradeAgreement` (credibility.rs:597-598): ZOSTAWIONY, zgodnie z dodatkiem (pkt „DO DECYZJI CZŁOWIEKA”). S3 testowany wprost na `StreamDealKind::LegacyTradeAgreement`. Zgodność semantyki potwierdzona pinem: `updateWiarygodnoscStreamsThisTurn` (main.ts) daje strumień handlu dla `umowa_handlowa` tylko gdy wszystkie dostawy są w porządku, tak jak `LegacyTradeAgreement` w `stream_active_tuples`.
+  (6) Stary generator `p6_credibility_gen.mjs` wołał hak P4 PRZED D4 w tej samej turze (kolejność odwrotna do pinu). Nie ruszano go (poza allowlistą, wektory `p6_credibility` zostają). Nowe wektory kolejności są pinu.
+  (7) Wiring zlozeGrants, wypowiedzenie gracza/sojusz/klaster: poza zakresem (jak w dodatku).
+
+RUNDY: 2/5 (Operator r2, Haiku). Kolejna runda tylko po decyzji z BLOKADY (1).
+NASTĘPNY KROK: Orkiestrator: decyzja BLOKADY (1) (allowlista war_turn_declare.rs vs #120) i rozstrzygnięcie (2). Evaluator r2 na tym SHA: sprawdzić wektory (generator + SHA fragmentów), mutacje testów i zakres ścieżek.
+DEPLOY/PUSH: NIE WYKONANO (commit lokalny na wip/R-RUSTPORT-P6-CRED-WOJNA-Q1; bez push, bez integracji, bez parity, bez gra/, bez origin/main).
