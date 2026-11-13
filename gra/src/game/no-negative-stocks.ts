@@ -20,6 +20,17 @@
  * Kary deficytu (gold-deficit.ts, głód wojska) zostają jako siatka bezpieczeństwa.
  */
 
+import type { EconomyTickResult, EconUnit, OwnerEraResolver } from './turn-economy';
+import { sumEconomyForOwner } from './turn-economy';
+import type { UpkeepParams, UnitFoodTable } from './economy-upkeep';
+import {
+  advanceEmpireFood,
+  restoreEmpireFoodRuntime,
+  snapshotEmpireFoodRuntime,
+  type EmpireFoodParams,
+  type EmpireFoodState,
+} from './empire-food';
+
 export const NNS_WOLNE_TURY = 10;
 
 export type NnsStock = 'skarbiec' | 'spichlerz';
@@ -174,5 +185,91 @@ export function planAiBalance(brakuje: readonly NnsBrak[], levers: readonly NnsL
     akcje,
     pokryte: pozostalo.skarbiec <= 0 && pozostalo.spichlerz <= 0,
     pozostalo,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// R-WEB-ECON-NO-NEGATIVE-STOCKS-A-Q1 — projekcja PO ticku (tylko odczyt, bez mutacji stanu gry).
+// Wołający podaje econ/stan PO autoracjach (jak przed realnym ticku w main.ts). Dla gracza i AI
+// ta sama funkcja, zero gałęzi po ownerId.
+// ---------------------------------------------------------------------------
+
+/**
+ * Skarbiec po ticku — ta sama arytmetyka co blok „Bank treasury” w main.ts (dochód miast
+ * `pieniadz` − `utrzymanieRazem` gdy > 0). Brak podłogi do 0 (symetria z realnym bankowaniem).
+ * UWAGA: to odwzorowanie arytmetyki bloku, nie wywołanie main.ts (main.ts nie jest importowalny).
+ */
+export function projectTreasuryAfterTick(
+  skarbiecObecny: number,
+  econ: Pick<EconomyTickResult, 'perCity' | 'upkeepByOwner'>,
+  ownerId: number,
+): number {
+  let s = skarbiecObecny + sumEconomyForOwner(econ, ownerId).pieniadz;
+  const u = econ.upkeepByOwner.get(ownerId)?.utrzymanieRazem ?? 0;
+  if (u > 0) s -= u;
+  return s;
+}
+
+export interface NnsFoodProjectionInput {
+  ownerId: number;
+  states: ReadonlyMap<number, EmpireFoodState>;
+  econ: EconomyTickResult;
+  units: ReadonlyArray<EconUnit>;
+  upkeep: UpkeepParams;
+  params: EmpireFoodParams;
+  foodTable?: UnitFoodTable;
+  builtByCity?: ReadonlyMap<string, readonly string[]>;
+  resolveOwnerEra?: OwnerEraResolver;
+}
+
+export interface NnsFoodProjection {
+  /** Spichlerz państwa PRZED klamrą do zera (wartość < 0 = niedobór po ticku). */
+  spichlerzPo: number;
+  /** Wartość zapisywana przez realny tick (po klamrze do 0 i capie) — z kopii, stan nie tknięty. */
+  zapasyPoRealne: number;
+  glodWojska: boolean;
+}
+
+/**
+ * Spichlerz państwa po ticku — wywołuje REALNE `advanceEmpireFood` na KOPII stanu, potem przywraca
+ * globalny cache HUD (`snapshotEmpireFoodRuntime`/`restoreEmpireFoodRuntime`). Stan wejściowy
+ * (`states`, `econ`) nie jest modyfikowany. Prognoza = `spichlerzStolicy − wojsko` (przed capem
+ * i klamrą; cap działa tylko w górę, więc nie zmienia znaku).
+ */
+export function projectEmpireFoodAfterTick(input: NnsFoodProjectionInput): NnsFoodProjection {
+  const obecny = input.states.get(input.ownerId)?.zapasyPanstwa ?? 0;
+  const snap = snapshotEmpireFoodRuntime();
+  try {
+    const clone = new Map<number, EmpireFoodState>();
+    for (const [k, v] of input.states) clone.set(k, { ...v });
+    const res = advanceEmpireFood(
+      input.econ, input.units, clone, input.upkeep, input.params,
+      input.foodTable, input.builtByCity, input.resolveOwnerEra,
+    );
+    const t = res.byOwner.get(input.ownerId);
+    if (!t) return { spichlerzPo: obecny, zapasyPoRealne: obecny, glodWojska: false };
+    return {
+      spichlerzPo: t.spichlerzStolicy - t.kosztArmii,
+      zapasyPoRealne: t.zapasyPo,
+      glodWojska: t.glodWojska,
+    };
+  } finally {
+    restoreEmpireFoodRuntime(snap);
+  }
+}
+
+/** Pełna prognoza NNS po ticku (skarbiec + spichlerz) dla jednego ownera. */
+export function projectNnsAfterTick(
+  turn: number,
+  skarbiecObecny: number,
+  food: NnsFoodProjectionInput,
+): NnsProjection {
+  const f = projectEmpireFoodAfterTick(food);
+  return {
+    turn,
+    skarbiecObecny,
+    skarbiecPo: projectTreasuryAfterTick(skarbiecObecny, food.econ, food.ownerId),
+    spichlerzObecny: food.states.get(food.ownerId)?.zapasyPanstwa ?? 0,
+    spichlerzPo: f.spichlerzPo,
   };
 }
