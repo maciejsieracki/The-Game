@@ -40,3 +40,32 @@ Operator r1 nie zacommitował kodu (praca utracona). Runda 2 zaczyna od zera: co
 - Bramki z kodami wyjścia: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --lib`, `p6_ekonomia_braz_era`, `p6_turn_econ_res_pipeline`, `p6_repin_ekon_f_converters`, PEŁNY `cargo test --no-fail-fast` (0 failed).
 - Dysk: start dopiero przy ≥ 8 GB wolnego (w r1 było 4,5–7,5 GB).
 - Wektory generowane generatorem wykonującym pin, SHA fragmentu pina w teście.
+
+---
+
+## DODATEK r3 (po FC FAIL r2, 13.11)
+
+**BAZA r3: `b611211fc`** (commit kodu r2 + obrona r2, potomek `0ca58770e`). Pierwszy krok: `git checkout --detach b611211fc`.
+Świeże uruchomienie (bez cache rund poprzednich).
+
+### Przyczyna FAIL r2
+Siedem testów „running web” (`p6_adv_city_econ_pipeline`, `p6_adv_q4_preview`, `p6_adv_q5_tick` x2, `p6_adv_q6_wire`, `p6_empirefood_e2e`) ma wektory brązu z pina **4bbef081d** (huta × m(e)). Pin docelowy parytetu to **07d2fbd72** (brąz 50/75 per epoka). To rozbieżność wersji pina w starych wektorach, nie błąd w kodzie brązu.
+
+### Decyzja orkiestratora (parytet, bez pytania do właściciela)
+Rozszerzyć allowlistę o pliki, których wektory zależą od brązu, i **zregenerować je z pina 07d2fbd72**:
+- `rust-port/engine/tests/p6_adv_city_econ_pipeline.rs`, `p6_adv_q4_*.rs`, `p6_adv_q5_*.rs`, `p6_adv_q6_*.rs`, `p6_empirefood_*.rs` (testy)
+- ich wektory `**/vectors`, `advance.json`, `q4/q5/q6` JSON, `p6_empirefood_vectors/**`
+- ich generatory `gen-*.mjs` / `*_gen.mjs` — **zmienić pin źródłowy z 4bbef081d na 07d2fbd72** (`git show 07d2fbd72:...`)
+
+### Zakazy
+- NIE osłabiać asercji, NIE `#[ignore]`, NIE usuwać testów. Zmiany wartości tylko tam, gdzie pin 07d2fbd72 różni się od 4bbef081d w brązie, z podaniem linii pina w raporcie.
+- Ten sam zakres nie dotyka innych wartości niż brąz (jeśli regeneracja zmienia coś poza brązem — zgłosić w BLOKADACH, nie akceptować po cichu).
+
+### Kryteria r3
+1. Wszystkie generatory wykonują pin **07d2fbd72** (SHA fragmentu w testach zaktualizowane i zweryfikowane).
+2. **Pełny `cargo test --no-fail-fast`: 0 failed** (kod wyjścia w raporcie). Jeśli timeout narzędzia — uruchomić w tle i odczytać log.
+3. `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --lib`: kody wyjścia.
+4. Raport `01-operator-r3.md` z SHA i listą zmienionych wektorów (plik, liczba zmienionych wartości, linie pina).
+
+### Gate dyskowy
+Start dopiero przy ≥ 8 GB wolnego. Przed pełnym testem sprawdzić `df -h /`.
