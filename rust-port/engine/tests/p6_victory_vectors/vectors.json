@@ -574,6 +574,109 @@
    }
   },
   {
+   "name": "eliminowany_dominacja_pierwsza",
+   "input": {
+    "name": "eliminowany_dominacja_pierwsza",
+    "cityOwners": [
+     1,
+     2
+    ],
+    "gracz": 0,
+    "potegaGracza": 60,
+    "potegiWszystkich": [
+     60,
+     40
+    ],
+    "graczEra": 3
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "dominacja"
+    },
+    "defeat": {
+     "winner": 0,
+     "rodzaj": "przegrana"
+    },
+    "eliminated": true,
+    "share": 0.6,
+    "dominacja": true
+   }
+  },
+  {
+   "name": "ulamkowe_dokladnie_0_5",
+   "input": {
+    "name": "ulamkowe_dokladnie_0_5",
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "potegaGracza": 1.5,
+    "potegiWszystkich": [
+     1.5,
+     1.5
+    ],
+    "graczEra": 3
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.5,
+    "dominacja": false
+   }
+  },
+  {
+   "name": "ulamkowe_powyzej_0_5",
+   "input": {
+    "name": "ulamkowe_powyzej_0_5",
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "potegaGracza": 1.6,
+    "potegiWszystkich": [
+     1.6,
+     1.4
+    ],
+    "graczEra": 3
+   },
+   "expect": {
+    "victory": {
+     "winner": 0,
+     "rodzaj": "dominacja"
+    },
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.5333333333333333,
+    "dominacja": true
+   }
+  },
+  {
+   "name": "ulamkowe_ujemne_przyciete",
+   "input": {
+    "name": "ulamkowe_ujemne_przyciete",
+    "cityOwners": [
+     0
+    ],
+    "gracz": 0,
+    "potegaGracza": 0.4,
+    "potegiWszystkich": [
+     -0.7,
+     0.4,
+     0.6
+    ],
+    "graczEra": 3
+   },
+   "expect": {
+    "victory": null,
+    "defeat": null,
+    "eliminated": false,
+    "share": 0.4,
+    "dominacja": false
+   }
+  },
+  {
    "name": "ai_nie_wygrywa_gracz_1",
    "input": {
     "name": "ai_nie_wygrywa_gracz_1",
@@ -607,9 +710,9 @@
    "input": {
     "cityOwners": [],
     "gracz": 1,
-    "potegaGracza": 7,
+    "potegaGracza": 7.1,
     "potegiWszystkich": [
-     -7,
+     -6.7,
      41
     ],
     "graczEra": 1,
@@ -627,7 +730,7 @@
     },
     "defeat": null,
     "eliminated": true,
-    "share": 0.17073170731707318,
+    "share": 0.17317073170731706,
     "dominacja": false
    }
   },
@@ -640,9 +743,9 @@
     ],
     "gracz": 1,
     "potegiWszystkich": [
-     83,
-     -12,
-     58
+     82.5,
+     -12.1,
+     57.8
     ],
     "ostatniaEpoka": 3,
     "wszystkieTechZbadane": true,
@@ -754,7 +857,7 @@
     ],
     "gracz": 2,
     "victoryMode": "moc",
-    "potegaGracza": 31,
+    "potegaGracza": 31.5,
     "rakietaWystrzelona": true,
     "graczKiedysMialMiasto": false
    },
@@ -775,7 +878,7 @@
      2
     ],
     "gracz": 2,
-    "potegaGracza": 69,
+    "potegaGracza": 68.4,
     "ostatniaEpoka": 2,
     "wszystkieTechZbadane": false,
     "epokaKoncowa": true,
@@ -800,8 +903,8 @@
     ],
     "gracz": 0,
     "potegiWszystkich": [
-     110,
-     102
+     109.7,
+     101.6
     ],
     "graczEra": 2,
     "ostatniaEpoka": 2,
@@ -830,7 +933,7 @@
     ],
     "gracz": 1,
     "victoryMode": "dominacja",
-    "potegaGracza": 40,
+    "potegaGracza": 40.2,
     "graczEra": 1,
     "ostatniaEpoka": 4,
     "rakietaWystrzelona": false,
@@ -863,7 +966,7 @@
     ],
     "gracz": 1,
     "victoryMode": "moc_i_dominacja",
-    "potegaGracza": -12,
+    "potegaGracza": -11.5,
     "graczEra": 2,
     "ostatniaEpoka": 4,
     "wszystkieTechZbadane": false,
@@ -888,8 +991,8 @@
     ],
     "gracz": 1,
     "potegiWszystkich": [
-     48,
-     -18,
+     48.4,
+     -17.4,
      -5
     ],
     "wszystkieTechZbadane": true,
@@ -918,7 +1021,7 @@
     "cityOwners": [],
     "gracz": 2,
     "victoryMode": "moc_i_dominacja",
-    "potegaGracza": 1,
+    "potegaGracza": 1.1,
     "graczEra": 2,
     "ostatniaEpoka": 4,
     "wszystkieTechZbadane": true,
@@ -967,7 +1070,7 @@
      2
     ],
     "gracz": 1,
-    "potegaGracza": 59,
+    "potegaGracza": 59.3,
     "potegiWszystkich": [],
     "graczEra": 1,
     "wszystkieTechZbadane": false,
@@ -991,8 +1094,8 @@
     "gracz": 0,
     "potegaGracza": 57,
     "potegiWszystkich": [
-     77,
-     116
+     77.1,
+     115.4
     ],
     "ostatniaEpoka": 3,
     "wszystkieTechZbadane": false,
@@ -1004,7 +1107,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 0.29533678756476683,
+    "share": 0.2961038961038961,
     "dominacja": false
    }
   },
@@ -1017,8 +1120,8 @@
     "gracz": 0,
     "potegaGracza": 118,
     "potegiWszystkich": [
-     -10,
-     2
+     -9.7,
+     2.7
     ],
     "rakietaWystrzelona": false,
     "graczKiedysMialMiasto": false
@@ -1027,7 +1130,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": true,
-    "share": 59,
+    "share": 43.7037037037037,
     "dominacja": false
    }
   },
@@ -1038,11 +1141,11 @@
     "gracz": 1,
     "victoryMode": "moc_i_dominacja",
     "potegiWszystkich": [
-     -1,
-     77,
-     117,
-     29,
-     1
+     -0.9,
+     76.4,
+     116.2,
+     29.6,
+     1.5
     ],
     "ostatniaEpoka": 4,
     "naukaUkonczona": false,
@@ -1066,13 +1169,13 @@
     ],
     "gracz": 2,
     "victoryMode": "dominacja",
-    "potegaGracza": 70,
+    "potegaGracza": 69.5,
     "potegiWszystkich": [
-     92,
+     91.6,
      -4,
-     -7,
-     68,
-     76
+     -6.6,
+     68.2,
+     76.3
     ],
     "graczEra": 3,
     "ostatniaEpoka": 4,
@@ -1085,7 +1188,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 0.2966101694915254,
+    "share": 0.2943667937314697,
     "dominacja": false
    }
   },
@@ -1119,9 +1222,9 @@
      3
     ],
     "gracz": 2,
-    "potegaGracza": 48,
+    "potegaGracza": 47.6,
     "potegiWszystkich": [
-     40
+     39.7
     ],
     "graczEra": 3,
     "wszystkieTechZbadane": false,
@@ -1136,7 +1239,7 @@
     },
     "defeat": null,
     "eliminated": true,
-    "share": 1.2,
+    "share": 1.198992443324937,
     "dominacja": true
    }
   },
@@ -1145,12 +1248,12 @@
    "input": {
     "cityOwners": [],
     "gracz": 2,
-    "potegaGracza": 98,
+    "potegaGracza": 97.6,
     "potegiWszystkich": [
-     82,
-     108,
-     -10,
-     18
+     81.9,
+     107.2,
+     -9.4,
+     17.8
     ],
     "graczEra": 3,
     "wszystkieTechZbadane": true,
@@ -1168,7 +1271,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 0.47115384615384615,
+    "share": 0.47172547124214587,
     "dominacja": false
    }
   },
@@ -1185,7 +1288,7 @@
     "victoryMode": "moc_i_dominacja",
     "potegiWszystkich": [
      21,
-     36
+     36.4
     ],
     "ostatniaEpoka": 1,
     "rakietaWystrzelona": false,
@@ -1208,8 +1311,8 @@
     ],
     "gracz": 0,
     "potegiWszystkich": [
-     12,
-     72
+     12.1,
+     71.7
     ],
     "wszystkieTechZbadane": false,
     "rakietaWystrzelona": false,
@@ -1234,7 +1337,7 @@
    "input": {
     "cityOwners": [],
     "gracz": 1,
-    "potegaGracza": 37,
+    "potegaGracza": 37.2,
     "potegiWszystkich": [
      17,
      32
@@ -1257,7 +1360,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 0.7551020408163265,
+    "share": 0.7591836734693879,
     "dominacja": false
    }
   },
@@ -1298,11 +1401,11 @@
     "gracz": 1,
     "victoryMode": "dominacja",
     "potegiWszystkich": [
-     17,
+     17.6,
      87,
-     96,
-     -10,
-     31
+     95.6,
+     -9.3,
+     31.6
     ],
     "graczEra": 3,
     "wszystkieTechZbadane": true,
@@ -1350,7 +1453,7 @@
      0
     ],
     "gracz": 1,
-    "potegaGracza": 107,
+    "potegaGracza": 106.4,
     "potegiWszystkich": [],
     "ostatniaEpoka": 1,
     "rakietaWystrzelona": false,
@@ -1376,11 +1479,11 @@
    "input": {
     "cityOwners": [],
     "gracz": 0,
-    "potegaGracza": -10,
+    "potegaGracza": -9.3,
     "potegiWszystkich": [
-     64,
-     119,
-     81
+     63.9,
+     118.5,
+     80.7
     ],
     "wszystkieTechZbadane": true,
     "rakietaWystrzelona": true,
@@ -1408,13 +1511,13 @@
      2
     ],
     "gracz": 2,
-    "potegaGracza": 54,
+    "potegaGracza": 53.9,
     "potegiWszystkich": [
      -12,
      -10,
-     84,
-     37,
-     88
+     84.1,
+     37.5,
+     87.4
     ],
     "graczEra": 1,
     "ostatniaEpoka": 3,
@@ -1427,7 +1530,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 0.2583732057416268,
+    "share": 0.25789473684210523,
     "dominacja": false
    }
   },
@@ -1436,11 +1539,11 @@
    "input": {
     "cityOwners": [],
     "gracz": 1,
-    "potegaGracza": 107,
+    "potegaGracza": 106.6,
     "potegiWszystkich": [
-     2,
-     37,
-     77
+     2.6,
+     37.5,
+     76.8
     ],
     "graczEra": 3,
     "ostatniaEpoka": 3,
@@ -1458,7 +1561,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 0.9224137931034483,
+    "share": 0.9118905047048759,
     "dominacja": true
    }
   },
@@ -1467,10 +1570,10 @@
    "input": {
     "cityOwners": [],
     "gracz": 2,
-    "potegaGracza": -20,
+    "potegaGracza": -19.2,
     "potegiWszystkich": [
-     101,
-     87
+     100.3,
+     87.3
     ],
     "ostatniaEpoka": 3,
     "wszystkieTechZbadane": false,
@@ -1503,7 +1606,7 @@
     ],
     "gracz": 0,
     "victoryMode": "dominacja",
-    "potegaGracza": 45,
+    "potegaGracza": 44.8,
     "potegiWszystkich": [],
     "wszystkieTechZbadane": false,
     "rakietaWystrzelona": true,
@@ -1553,8 +1656,8 @@
     "potegiWszystkich": [
      86,
      32,
-     73,
-     29
+     73.2,
+     28.8
     ],
     "wszystkieTechZbadane": true,
     "rakietaWystrzelona": false,
@@ -1582,11 +1685,11 @@
     "cityOwners": [],
     "gracz": 2,
     "potegiWszystkich": [
-     59,
+     58.6,
      50,
-     102,
-     84,
-     50
+     101.4,
+     84.1,
+     49.9
     ],
     "wszystkieTechZbadane": true,
     "rakietaWystrzelona": false,
@@ -1635,13 +1738,13 @@
      3
     ],
     "gracz": 1,
-    "potegaGracza": 52,
+    "potegaGracza": 52.4,
     "potegiWszystkich": [
-     119,
-     5,
-     -2,
-     -10,
-     116
+     118.3,
+     5.2,
+     -2.1,
+     -9.3,
+     115.1
     ],
     "graczEra": 2,
     "ostatniaEpoka": 2,
@@ -1660,7 +1763,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 0.21666666666666667,
+    "share": 0.2196144174350377,
     "dominacja": false
    }
   },
@@ -1670,12 +1773,12 @@
     "cityOwners": [],
     "gracz": 1,
     "victoryMode": "moc",
-    "potegaGracza": 106,
+    "potegaGracza": 105.5,
     "potegiWszystkich": [
-     50,
-     18,
-     -14,
-     88
+     49.5,
+     17.8,
+     -13.6,
+     87.9
     ],
     "wszystkieTechZbadane": false,
     "rakietaWystrzelona": true,
@@ -1693,7 +1796,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 0.6794871794871795,
+    "share": 0.6797680412371134,
     "dominacja": false
    }
   },
@@ -1703,7 +1806,7 @@
     "cityOwners": [],
     "gracz": 2,
     "potegiWszystkich": [
-     39,
+     39.4,
      -11
     ],
     "graczEra": 2,
@@ -1734,7 +1837,7 @@
      3
     ],
     "gracz": 0,
-    "potegaGracza": 75,
+    "potegaGracza": 74.6,
     "ostatniaEpoka": 4,
     "rakietaWystrzelona": false,
     "naukaUkonczona": false
@@ -1762,10 +1865,10 @@
     ],
     "gracz": 1,
     "victoryMode": "moc_i_dominacja",
-    "potegaGracza": 113,
+    "potegaGracza": 112.3,
     "potegiWszystkich": [
-     58,
-     16
+     58.3,
+     15.8
     ],
     "wszystkieTechZbadane": true,
     "epokaKoncowa": false,
@@ -1781,7 +1884,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 1.527027027027027,
+    "share": 1.515519568151147,
     "dominacja": false
    }
   },
@@ -1794,7 +1897,7 @@
     ],
     "gracz": 0,
     "victoryMode": "dominacja",
-    "potegaGracza": -5,
+    "potegaGracza": -4.4,
     "potegiWszystkich": [
      58,
      9
@@ -1831,10 +1934,10 @@
     "victoryMode": "dominacja",
     "potegiWszystkich": [
      77,
-     110,
-     -2,
-     0,
-     -2
+     109.4,
+     -1.5,
+     0.7,
+     -1.3
     ],
     "graczEra": 2,
     "rakietaWystrzelona": true,
@@ -1854,7 +1957,7 @@
    "input": {
     "cityOwners": [],
     "gracz": 2,
-    "potegaGracza": 17,
+    "potegaGracza": 17.2,
     "graczEra": 2,
     "ostatniaEpoka": 3,
     "wszystkieTechZbadane": true
@@ -1882,7 +1985,7 @@
     ],
     "gracz": 0,
     "potegiWszystkich": [
-     54
+     54.1
     ],
     "graczEra": 1,
     "rakietaWystrzelona": false,
@@ -1907,7 +2010,7 @@
     ],
     "gracz": 1,
     "victoryMode": "dominacja",
-    "potegaGracza": 46,
+    "potegaGracza": 46.1,
     "graczEra": 3,
     "wszystkieTechZbadane": false,
     "rakietaWystrzelona": true,
@@ -1992,11 +2095,11 @@
      2
     ],
     "gracz": 1,
-    "potegaGracza": 0,
+    "potegaGracza": 0.7,
     "potegiWszystkich": [
-     80,
-     99,
-     104
+     79.5,
+     98.6,
+     103.8
     ],
     "graczEra": 1,
     "wszystkieTechZbadane": true,
@@ -2009,7 +2112,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 0,
+    "share": 0.0024831500532103584,
     "dominacja": false
    }
   },
@@ -2020,11 +2123,11 @@
     "gracz": 1,
     "victoryMode": "dominacja",
     "potegiWszystkich": [
-     58,
+     58.2,
      20,
-     3,
-     -17,
-     72
+     2.9,
+     -16.9,
+     72.3
     ],
     "graczEra": 1,
     "ostatniaEpoka": 4,
@@ -2076,10 +2179,10 @@
    "input": {
     "cityOwners": [],
     "gracz": 1,
-    "potegaGracza": 71,
+    "potegaGracza": 71.4,
     "potegiWszystkich": [
      108,
-     102
+     101.9
     ],
     "graczEra": 3,
     "epokaKoncowa": false,
@@ -2095,7 +2198,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 0.3380952380952381,
+    "share": 0.34016198189614105,
     "dominacja": false
    }
   },
@@ -2106,10 +2209,10 @@
      1
     ],
     "gracz": 2,
-    "potegaGracza": -3,
+    "potegaGracza": -2.7,
     "potegiWszystkich": [
-     103,
-     24
+     102.2,
+     24.3
     ],
     "graczEra": 1,
     "ostatniaEpoka": 2,
@@ -2140,8 +2243,8 @@
     "gracz": 0,
     "victoryMode": "moc",
     "potegiWszystkich": [
-     91,
-     46,
+     90.8,
+     45.9,
      100
     ],
     "ostatniaEpoka": 4,
@@ -2165,11 +2268,11 @@
      1
     ],
     "gracz": 1,
-    "potegaGracza": 70,
+    "potegaGracza": 69.6,
     "potegiWszystkich": [
-     68,
-     -10,
-     117
+     68.3,
+     -10.1,
+     116.6
     ],
     "ostatniaEpoka": 3,
     "rakietaWystrzelona": true,
@@ -2180,7 +2283,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 0.3783783783783784,
+    "share": 0.37641968631692807,
     "dominacja": false
    }
   },
@@ -2193,9 +2296,9 @@
     ],
     "gracz": 1,
     "victoryMode": "dominacja",
-    "potegaGracza": -9,
+    "potegaGracza": -8.2,
     "potegiWszystkich": [
-     54,
+     53.7,
      18
     ],
     "graczEra": 1,
@@ -2242,7 +2345,7 @@
     ],
     "gracz": 1,
     "victoryMode": "moc_i_dominacja",
-    "potegaGracza": 44,
+    "potegaGracza": 43.9,
     "potegiWszystkich": [],
     "graczEra": 3,
     "wszystkieTechZbadane": true,
@@ -2265,7 +2368,7 @@
    "input": {
     "cityOwners": [],
     "gracz": 2,
-    "potegaGracza": 56,
+    "potegaGracza": 55.7,
     "ostatniaEpoka": 1,
     "wszystkieTechZbadane": true,
     "rakietaWystrzelona": false,
@@ -2295,10 +2398,10 @@
     ],
     "gracz": 0,
     "victoryMode": "moc_i_dominacja",
-    "potegaGracza": 54,
+    "potegaGracza": 54.5,
     "potegiWszystkich": [
-     90,
-     17
+     89.7,
+     16.8
     ],
     "graczEra": 3,
     "ostatniaEpoka": 3,
@@ -2315,7 +2418,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 0.5046728971962616,
+    "share": 0.5117370892018779,
     "dominacja": true
    }
   },
@@ -2330,7 +2433,7 @@
     ],
     "gracz": 1,
     "victoryMode": "moc_i_dominacja",
-    "potegaGracza": 18,
+    "potegaGracza": 18.1,
     "potegiWszystkich": [],
     "ostatniaEpoka": 4,
     "wszystkieTechZbadane": false,
@@ -2383,7 +2486,7 @@
      3
     ],
     "gracz": 1,
-    "potegaGracza": 39,
+    "potegaGracza": 39.4,
     "ostatniaEpoka": 2,
     "wszystkieTechZbadane": true,
     "rakietaWystrzelona": true,
@@ -2465,7 +2568,7 @@
      0
     ],
     "gracz": 0,
-    "potegaGracza": 70,
+    "potegaGracza": 69.6,
     "potegiWszystkich": [],
     "graczEra": 1,
     "ostatniaEpoka": 1,
@@ -2488,7 +2591,7 @@
      0
     ],
     "gracz": 0,
-    "potegaGracza": 79,
+    "potegaGracza": 79.1,
     "graczEra": 3,
     "rakietaWystrzelona": true,
     "naukaUkonczona": true
@@ -2511,12 +2614,12 @@
     ],
     "gracz": 2,
     "victoryMode": "moc",
-    "potegaGracza": 100,
+    "potegaGracza": 99.3,
     "potegiWszystkich": [
-     117,
-     -1,
-     59,
-     42
+     116.3,
+     -0.9,
+     58.5,
+     42.2
     ],
     "graczEra": 3,
     "ostatniaEpoka": 1,
@@ -2533,7 +2636,7 @@
     },
     "defeat": null,
     "eliminated": false,
-    "share": 0.45871559633027525,
+    "share": 0.4576036866359447,
     "dominacja": false
    }
   },
@@ -2543,7 +2646,7 @@
     "cityOwners": [],
     "gracz": 1,
     "victoryMode": "moc",
-    "potegaGracza": 82,
+    "potegaGracza": 81.4,
     "graczEra": 3,
     "wszystkieTechZbadane": true,
     "rakietaWystrzelona": false,
@@ -2576,10 +2679,10 @@
     "gracz": 1,
     "potegaGracza": 0,
     "potegiWszystkich": [
-     47,
-     72,
-     92,
-     -6
+     47.3,
+     71.5,
+     91.3,
+     -5.3
     ],
     "graczEra": 3,
     "ostatniaEpoka": 1,
@@ -2604,9 +2707,9 @@
     "gracz": 0,
     "victoryMode": "dominacja",
     "potegiWszystkich": [
-     91,
-     16,
-     84
+     90.7,
+     16.2,
+     84.3
     ],
     "graczEra": 2,
     "ostatniaEpoka": 4,
@@ -2633,7 +2736,7 @@
     "gracz": 0,
     "victoryMode": "moc",
     "potegiWszystkich": [
-     43
+     43.1
     ],
     "graczEra": 1,
     "ostatniaEpoka": 2,
@@ -2660,8 +2763,8 @@
     ],
     "gracz": 0,
     "potegiWszystkich": [
-     36,
-     1
+     36.1,
+     0.8
     ],
     "ostatniaEpoka": 3,
     "epokaKoncowa": true,
@@ -2687,13 +2790,13 @@
     ],
     "gracz": 1,
     "victoryMode": "dominacja",
-    "potegaGracza": 110,
+    "potegaGracza": 109.9,
     "potegiWszystkich": [
-     28,
-     91,
-     3,
-     -8,
-     45
+     28.1,
+     90.5,
+     3.6,
+     -7.7,
+     44.8
     ],
     "graczEra": 1,
     "ostatniaEpoka": 2,
@@ -2704,7 +2807,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 0.6586826347305389,
+    "share": 0.6580838323353294,
     "dominacja": false
    }
   },
@@ -2716,10 +2819,10 @@
     ],
     "gracz": 2,
     "potegiWszystkich": [
-     58,
+     57.7,
      11,
-     64,
-     52
+     64.1,
+     51.6
     ],
     "graczEra": 1,
     "wszystkieTechZbadane": true,
@@ -2740,8 +2843,8 @@
     "gracz": 0,
     "potegiWszystkich": [
      -12,
-     26,
-     -8
+     26.6,
+     -7.7
     ],
     "graczEra": 1,
     "ostatniaEpoka": 1,
@@ -2772,7 +2875,7 @@
     ],
     "gracz": 0,
     "victoryMode": "moc_i_dominacja",
-    "potegaGracza": 87,
+    "potegaGracza": 86.8,
     "ostatniaEpoka": 3,
     "wszystkieTechZbadane": true,
     "naukaUkonczona": true,
@@ -2796,11 +2899,11 @@
      0
     ],
     "gracz": 0,
-    "potegaGracza": 28,
+    "potegaGracza": 28.4,
     "potegiWszystkich": [
-     -11,
-     88,
-     13
+     -10.5,
+     88.2,
+     12.8
     ],
     "graczEra": 1,
     "wszystkieTechZbadane": false,
@@ -2813,7 +2916,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 0.27722772277227725,
+    "share": 0.28118811881188116,
     "dominacja": false
    }
   },
@@ -2825,9 +2928,9 @@
     ],
     "gracz": 0,
     "potegiWszystkich": [
-     89,
-     -15,
-     93
+     88.5,
+     -14.1,
+     92.9
     ],
     "graczEra": 3,
     "ostatniaEpoka": 2,
@@ -2858,7 +2961,7 @@
      2
     ],
     "gracz": 1,
-    "potegaGracza": 7,
+    "potegaGracza": 7.5,
     "potegiWszystkich": [
      53
     ],
@@ -2870,7 +2973,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 0.1320754716981132,
+    "share": 0.14150943396226415,
     "dominacja": false
    }
   },
@@ -2881,7 +2984,7 @@
     "gracz": 1,
     "victoryMode": "moc",
     "potegiWszystkich": [
-     97
+     96.6
     ],
     "epokaKoncowa": false,
     "naukaUkonczona": true
@@ -2906,11 +3009,11 @@
     "cityOwners": [],
     "gracz": 0,
     "potegiWszystkich": [
-     30,
-     -16,
-     32,
-     16,
-     98
+     30.6,
+     -15.6,
+     32.3,
+     16.7,
+     97.6
     ],
     "graczEra": 3,
     "wszystkieTechZbadane": true,
@@ -2941,7 +3044,7 @@
     ],
     "gracz": 0,
     "victoryMode": "dominacja",
-    "potegaGracza": 61,
+    "potegaGracza": 61.2,
     "ostatniaEpoka": 3,
     "epokaKoncowa": false,
     "naukaUkonczona": false
@@ -2968,9 +3071,9 @@
     ],
     "gracz": 1,
     "potegiWszystkich": [
-     60,
-     35,
-     6
+     59.8,
+     34.8,
+     6.4
     ],
     "rakietaWystrzelona": true,
     "graczKiedysMialMiasto": true
@@ -2995,11 +3098,11 @@
     "cityOwners": [],
     "gracz": 1,
     "potegiWszystkich": [
-     95,
-     110,
-     21,
-     69,
-     86
+     94.9,
+     109.4,
+     21.4,
+     68.5,
+     86.2
     ],
     "graczEra": 2,
     "ostatniaEpoka": 2,
@@ -3021,11 +3124,11 @@
      3
     ],
     "gracz": 0,
-    "potegaGracza": 59,
+    "potegaGracza": 59.1,
     "potegiWszystkich": [
-     17,
-     23,
-     39
+     16.9,
+     22.7,
+     38.7
     ],
     "graczEra": 2,
     "ostatniaEpoka": 3,
@@ -3036,7 +3139,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": true,
-    "share": 0.7468354430379747,
+    "share": 0.7547892720306514,
     "dominacja": false
    }
   },
@@ -3050,12 +3153,12 @@
      1
     ],
     "gracz": 1,
-    "potegaGracza": 28,
+    "potegaGracza": 28.1,
     "potegiWszystkich": [
-     23,
-     25,
-     83,
-     42
+     22.7,
+     24.8,
+     82.9,
+     41.6
     ],
     "graczEra": 3,
     "ostatniaEpoka": 3,
@@ -3071,7 +3174,7 @@
     },
     "defeat": null,
     "eliminated": false,
-    "share": 0.16184971098265896,
+    "share": 0.1633720930232558,
     "dominacja": false
    }
   },
@@ -3110,7 +3213,7 @@
     ],
     "gracz": 1,
     "potegiWszystkich": [
-     35
+     35.2
     ],
     "graczEra": 1,
     "ostatniaEpoka": 2,
@@ -3144,11 +3247,11 @@
     ],
     "gracz": 1,
     "potegiWszystkich": [
-     23,
-     -8,
-     74,
-     40,
-     21
+     23.5,
+     -7.5,
+     74.2,
+     40.1,
+     20.8
     ],
     "graczEra": 2,
     "ostatniaEpoka": 2,
@@ -3171,12 +3274,12 @@
      0
     ],
     "gracz": 1,
-    "potegaGracza": 30,
+    "potegaGracza": 30.4,
     "potegiWszystkich": [
-     -14,
+     -13.6,
      -15,
-     90,
-     44
+     89.4,
+     44.3
     ],
     "ostatniaEpoka": 4,
     "rakietaWystrzelona": false
@@ -3191,7 +3294,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 0.22388059701492538,
+    "share": 0.22737471952131638,
     "dominacja": false
    }
   },
@@ -3201,9 +3304,9 @@
     "cityOwners": [],
     "gracz": 0,
     "potegiWszystkich": [
-     75,
-     81,
-     55,
+     74.8,
+     80.7,
+     54.6,
      95
     ],
     "graczEra": 1,
@@ -3291,7 +3394,7 @@
    "input": {
     "cityOwners": [],
     "gracz": 0,
-    "potegaGracza": 32,
+    "potegaGracza": 31.9,
     "potegiWszystkich": [],
     "wszystkieTechZbadane": true,
     "rakietaWystrzelona": true,
@@ -3321,8 +3424,8 @@
     "victoryMode": "moc",
     "potegiWszystkich": [
      66,
-     -18,
-     85
+     -17.6,
+     84.7
     ],
     "rakietaWystrzelona": false,
     "epokaKoncowa": true,
@@ -3343,9 +3446,9 @@
     "gracz": 2,
     "potegaGracza": 93,
     "potegiWszystkich": [
-     23,
-     86,
-     -2
+     23.4,
+     86.1,
+     -1.8
     ],
     "graczEra": 2,
     "rakietaWystrzelona": false,
@@ -3362,7 +3465,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 0.8532110091743119,
+    "share": 0.8493150684931506,
     "dominacja": false
    }
   },
@@ -3399,10 +3502,10 @@
      2
     ],
     "gracz": 0,
-    "potegaGracza": 89,
+    "potegaGracza": 89.1,
     "potegiWszystkich": [
-     92,
-     1
+     91.6,
+     1.8
     ],
     "rakietaWystrzelona": false,
     "naukaUkonczona": false,
@@ -3412,7 +3515,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": true,
-    "share": 0.956989247311828,
+    "share": 0.9539614561027837,
     "dominacja": false
    }
   },
@@ -3427,11 +3530,11 @@
     "gracz": 0,
     "potegaGracza": 68,
     "potegiWszystkich": [
-     90,
-     56,
-     -13,
-     82,
-     -2
+     89.9,
+     56.2,
+     -12.9,
+     82.1,
+     -1.6
     ],
     "wszystkieTechZbadane": true,
     "rakietaWystrzelona": false,
@@ -3441,7 +3544,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 0.2982456140350877,
+    "share": 0.29798422436459243,
     "dominacja": false
    }
   },
@@ -3452,12 +3555,12 @@
      2
     ],
     "gracz": 0,
-    "potegaGracza": -20,
+    "potegaGracza": -19.8,
     "potegiWszystkich": [
-     7,
-     13,
-     103,
-     112
+     7.7,
+     13.5,
+     102.2,
+     111.7
     ],
     "ostatniaEpoka": 4,
     "epokaKoncowa": true
@@ -3485,9 +3588,9 @@
     "gracz": 0,
     "potegaGracza": -4,
     "potegiWszystkich": [
-     -13,
-     91,
-     119
+     -12.5,
+     90.5,
+     118.1
     ],
     "graczEra": 2,
     "ostatniaEpoka": 2,
@@ -3519,9 +3622,9 @@
     ],
     "gracz": 2,
     "victoryMode": "moc",
-    "potegaGracza": 74,
+    "potegaGracza": 73.7,
     "potegiWszystkich": [
-     77
+     76.8
     ],
     "graczEra": 2,
     "ostatniaEpoka": 1,
@@ -3532,7 +3635,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 0.961038961038961,
+    "share": 0.9596354166666667,
     "dominacja": true
    }
   },
@@ -3546,7 +3649,7 @@
      3
     ],
     "gracz": 0,
-    "potegaGracza": 31,
+    "potegaGracza": 30.9,
     "graczEra": 1,
     "ostatniaEpoka": 3,
     "rakietaWystrzelona": false,
@@ -3569,12 +3672,12 @@
      3
     ],
     "gracz": 0,
-    "potegaGracza": 103,
+    "potegaGracza": 102.2,
     "potegiWszystkich": [
-     90,
-     49,
-     38,
-     46
+     89.8,
+     48.5,
+     37.9,
+     45.5
     ],
     "wszystkieTechZbadane": false,
     "epokaKoncowa": true,
@@ -3585,7 +3688,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 0.4618834080717489,
+    "share": 0.4609833107803338,
     "dominacja": false
    }
   },
@@ -3596,7 +3699,7 @@
     "gracz": 1,
     "victoryMode": "dominacja",
     "potegiWszystkich": [
-     27
+     27.3
     ],
     "graczEra": 3,
     "naukaUkonczona": true,
@@ -3625,7 +3728,7 @@
      1
     ],
     "gracz": 1,
-    "potegaGracza": 100,
+    "potegaGracza": 99.7,
     "rakietaWystrzelona": false,
     "epokaKoncowa": true,
     "naukaUkonczona": false
@@ -3646,7 +3749,7 @@
      1
     ],
     "gracz": 1,
-    "potegaGracza": 103,
+    "potegaGracza": 103.1,
     "ostatniaEpoka": 2,
     "rakietaWystrzelona": true,
     "epokaKoncowa": true,
@@ -3667,7 +3770,7 @@
      1
     ],
     "gracz": 0,
-    "potegaGracza": -3,
+    "potegaGracza": -2.7,
     "potegiWszystkich": [],
     "graczEra": 1,
     "wszystkieTechZbadane": false,
@@ -3697,11 +3800,11 @@
     ],
     "gracz": 2,
     "victoryMode": "moc",
-    "potegaGracza": 7,
+    "potegaGracza": 7.7,
     "potegiWszystkich": [
-     119,
-     36,
-     -14
+     118.9,
+     36.1,
+     -13.6
     ],
     "graczEra": 1,
     "ostatniaEpoka": 4,
@@ -3719,7 +3822,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 0.04516129032258064,
+    "share": 0.04967741935483871,
     "dominacja": false
    }
   },
@@ -3734,9 +3837,9 @@
     ],
     "gracz": 1,
     "victoryMode": "moc",
-    "potegaGracza": 65,
+    "potegaGracza": 65.4,
     "potegiWszystkich": [
-     85
+     85.1
     ],
     "wszystkieTechZbadane": true,
     "rakietaWystrzelona": false,
@@ -3746,7 +3849,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 0.7647058823529411,
+    "share": 0.7685076380728556,
     "dominacja": false
    }
   },
@@ -3760,11 +3863,11 @@
      0
     ],
     "gracz": 0,
-    "potegaGracza": 78,
+    "potegaGracza": 77.7,
     "potegiWszystkich": [
-     98,
-     80,
-     85
+     97.4,
+     80.1,
+     84.4
     ],
     "rakietaWystrzelona": true,
     "naukaUkonczona": false,
@@ -3774,7 +3877,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 0.2965779467680608,
+    "share": 0.2966781214203895,
     "dominacja": false
    }
   },
@@ -3786,9 +3889,9 @@
      0
     ],
     "gracz": 1,
-    "potegaGracza": 79,
+    "potegaGracza": 78.8,
     "potegiWszystkich": [
-     101
+     100.2
     ],
     "graczEra": 2,
     "wszystkieTechZbadane": false,
@@ -3798,7 +3901,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 0.7821782178217822,
+    "share": 0.7864271457085827,
     "dominacja": false
    }
   },
@@ -3808,9 +3911,9 @@
     "cityOwners": [],
     "gracz": 2,
     "victoryMode": "moc",
-    "potegaGracza": 79,
+    "potegaGracza": 78.7,
     "potegiWszystkich": [
-     70
+     70.3
     ],
     "graczEra": 2,
     "wszystkieTechZbadane": false,
@@ -3828,7 +3931,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 1.1285714285714286,
+    "share": 1.1194879089615932,
     "dominacja": false
    }
   },
@@ -3837,12 +3940,12 @@
    "input": {
     "cityOwners": [],
     "gracz": 1,
-    "potegaGracza": 44,
+    "potegaGracza": 43.5,
     "potegiWszystkich": [
-     -3,
-     85,
-     46,
-     -20
+     -2.8,
+     85.2,
+     46.4,
+     -19.9
     ],
     "graczEra": 3,
     "ostatniaEpoka": 4,
@@ -3859,7 +3962,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 0.33587786259541985,
+    "share": 0.3305471124620061,
     "dominacja": false
    }
   },
@@ -3873,8 +3976,8 @@
     ],
     "gracz": 2,
     "potegiWszystkich": [
-     67,
-     11
+     67.3,
+     11.2
     ],
     "ostatniaEpoka": 3,
     "wszystkieTechZbadane": true,
@@ -3906,7 +4009,7 @@
     ],
     "gracz": 1,
     "victoryMode": "moc",
-    "potegaGracza": 114,
+    "potegaGracza": 113.3,
     "graczEra": 2,
     "ostatniaEpoka": 2,
     "wszystkieTechZbadane": true,
@@ -3947,11 +4050,11 @@
    "input": {
     "cityOwners": [],
     "gracz": 2,
-    "potegaGracza": 69,
+    "potegaGracza": 69.3,
     "potegiWszystkich": [
-     113,
-     4,
-     47,
+     112.8,
+     4.3,
+     47.5,
      37
     ],
     "ostatniaEpoka": 3,
@@ -3969,7 +4072,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 0.34328358208955223,
+    "share": 0.34375,
     "dominacja": false
    }
   },
@@ -3979,7 +4082,7 @@
     "cityOwners": [],
     "gracz": 0,
     "victoryMode": "dominacja",
-    "potegaGracza": 59,
+    "potegaGracza": 59.2,
     "potegiWszystkich": [],
     "wszystkieTechZbadane": false,
     "epokaKoncowa": true,
@@ -4007,12 +4110,12 @@
     ],
     "gracz": 2,
     "victoryMode": "moc",
-    "potegaGracza": -17,
+    "potegaGracza": -16.3,
     "potegiWszystkich": [
-     86,
-     40,
-     24,
-     55
+     86.2,
+     39.7,
+     24.1,
+     55.4
     ],
     "graczEra": 3,
     "ostatniaEpoka": 2,
@@ -4094,12 +4197,12 @@
     ],
     "gracz": 0,
     "victoryMode": "dominacja",
-    "potegaGracza": 101,
+    "potegaGracza": 100.8,
     "potegiWszystkich": [
-     84,
+     84.2,
      37,
-     70,
-     77,
+     70.3,
+     76.4,
      9
     ],
     "wszystkieTechZbadane": true,
@@ -4117,7 +4220,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 0.36462093862815886,
+    "share": 0.3640303358613218,
     "dominacja": false
    }
   },
@@ -4178,8 +4281,8 @@
     ],
     "gracz": 1,
     "potegiWszystkich": [
-     -2,
-     27
+     -1.4,
+     26.8
     ],
     "graczEra": 1,
     "ostatniaEpoka": 3,
@@ -4275,7 +4378,7 @@
    "input": {
     "cityOwners": [],
     "gracz": 0,
-    "potegaGracza": 112,
+    "potegaGracza": 111.6,
     "graczEra": 1,
     "ostatniaEpoka": 1,
     "rakietaWystrzelona": false,
@@ -4301,10 +4404,10 @@
    "input": {
     "cityOwners": [],
     "gracz": 2,
-    "potegaGracza": 46,
+    "potegaGracza": 45.6,
     "potegiWszystkich": [
-     38,
-     101
+     37.7,
+     100.4
     ],
     "ostatniaEpoka": 1,
     "wszystkieTechZbadane": true,
@@ -4321,7 +4424,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 0.33093525179856115,
+    "share": 0.3301955104996379,
     "dominacja": false
    }
   },
@@ -4361,11 +4464,11 @@
      3
     ],
     "gracz": 2,
-    "potegaGracza": 49,
+    "potegaGracza": 49.5,
     "potegiWszystkich": [
-     108,
-     38,
-     2
+     107.2,
+     38.4,
+     1.9
     ],
     "ostatniaEpoka": 1,
     "wszystkieTechZbadane": true,
@@ -4377,7 +4480,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 0.3310810810810811,
+    "share": 0.33559322033898303,
     "dominacja": false
    }
   },
@@ -4389,7 +4492,7 @@
     ],
     "gracz": 0,
     "potegiWszystkich": [
-     40
+     40.2
     ],
     "graczEra": 1,
     "ostatniaEpoka": 4,
@@ -4415,10 +4518,10 @@
      1
     ],
     "gracz": 1,
-    "potegaGracza": 98,
+    "potegaGracza": 97.7,
     "potegiWszystkich": [
      19,
-     35
+     34.7
     ],
     "wszystkieTechZbadane": true,
     "rakietaWystrzelona": false,
@@ -4428,7 +4531,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 1.8148148148148149,
+    "share": 1.819366852886406,
     "dominacja": false
    }
   },
@@ -4440,9 +4543,9 @@
      3
     ],
     "gracz": 0,
-    "potegaGracza": 62,
+    "potegaGracza": 62.4,
     "potegiWszystkich": [
-     0
+     0.5
     ],
     "ostatniaEpoka": 1,
     "rakietaWystrzelona": true,
@@ -4450,11 +4553,14 @@
     "graczKiedysMialMiasto": false
    },
    "expect": {
-    "victory": null,
+    "victory": {
+     "winner": 0,
+     "rodzaj": "dominacja"
+    },
     "defeat": null,
     "eliminated": true,
-    "share": 0,
-    "dominacja": false
+    "share": 124.8,
+    "dominacja": true
    }
   },
   {
@@ -4467,10 +4573,10 @@
      0
     ],
     "gracz": 0,
-    "potegaGracza": 117,
+    "potegaGracza": 116.6,
     "potegiWszystkich": [
-     42,
-     -18
+     42.3,
+     -17.3
     ],
     "graczEra": 1,
     "ostatniaEpoka": 2,
@@ -4482,7 +4588,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 2.7857142857142856,
+    "share": 2.756501182033097,
     "dominacja": false
    }
   },
@@ -4491,10 +4597,10 @@
    "input": {
     "cityOwners": [],
     "gracz": 2,
-    "potegaGracza": 0,
+    "potegaGracza": 0.3,
     "potegiWszystkich": [
-     47,
-     -11
+     46.6,
+     -10.4
     ],
     "graczEra": 3,
     "ostatniaEpoka": 2,
@@ -4512,7 +4618,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 0,
+    "share": 0.006437768240343348,
     "dominacja": false
    }
   },
@@ -4526,8 +4632,8 @@
     ],
     "gracz": 0,
     "potegiWszystkich": [
-     -10,
-     62
+     -9.5,
+     61.7
     ],
     "graczEra": 3,
     "ostatniaEpoka": 3,
@@ -4554,10 +4660,10 @@
      3
     ],
     "gracz": 1,
-    "potegaGracza": 88,
+    "potegaGracza": 87.5,
     "potegiWszystkich": [
-     93,
-     96
+     93.1,
+     96.2
     ],
     "ostatniaEpoka": 2,
     "rakietaWystrzelona": true,
@@ -4575,7 +4681,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 0.4656084656084656,
+    "share": 0.462229265715795,
     "dominacja": false
    }
   },
@@ -4588,7 +4694,7 @@
      2
     ],
     "gracz": 1,
-    "potegaGracza": 58,
+    "potegaGracza": 58.4,
     "potegiWszystkich": [],
     "graczEra": 2,
     "epokaKoncowa": true
@@ -4618,11 +4724,11 @@
     ],
     "gracz": 1,
     "potegiWszystkich": [
-     41,
-     101,
-     78,
-     66,
-     87
+     41.2,
+     100.6,
+     77.5,
+     65.6,
+     86.9
     ],
     "ostatniaEpoka": 2,
     "wszystkieTechZbadane": true,
@@ -4646,7 +4752,7 @@
      3
     ],
     "gracz": 0,
-    "potegaGracza": 41,
+    "potegaGracza": 41.5,
     "graczEra": 2,
     "ostatniaEpoka": 3,
     "rakietaWystrzelona": true,
@@ -4674,12 +4780,12 @@
      1
     ],
     "gracz": 1,
-    "potegaGracza": 31,
+    "potegaGracza": 30.9,
     "potegiWszystkich": [
-     64,
-     -20,
-     72,
-     104
+     63.5,
+     -19.5,
+     71.4,
+     104.1
     ],
     "ostatniaEpoka": 1,
     "epokaKoncowa": false
@@ -4688,7 +4794,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 0.12916666666666668,
+    "share": 0.1292887029288703,
     "dominacja": false
    }
   },
@@ -4701,10 +4807,10 @@
      1
     ],
     "gracz": 0,
-    "potegaGracza": 40,
+    "potegaGracza": 39.6,
     "potegiWszystkich": [
-     59,
-     7
+     58.6,
+     6.9
     ],
     "graczEra": 1,
     "ostatniaEpoka": 4,
@@ -4715,7 +4821,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": true,
-    "share": 0.6060606060606061,
+    "share": 0.6045801526717558,
     "dominacja": false
    }
   },
@@ -4729,7 +4835,7 @@
      1
     ],
     "gracz": 2,
-    "potegaGracza": 116,
+    "potegaGracza": 115.6,
     "graczEra": 1,
     "ostatniaEpoka": 3,
     "wszystkieTechZbadane": true,
@@ -4757,8 +4863,8 @@
     "cityOwners": [],
     "gracz": 1,
     "potegiWszystkich": [
-     -9,
-     83
+     -8.9,
+     82.8
     ],
     "graczEra": 3,
     "ostatniaEpoka": 4,
@@ -4780,12 +4886,12 @@
     "cityOwners": [],
     "gracz": 1,
     "victoryMode": "dominacja",
-    "potegaGracza": 35,
+    "potegaGracza": 34.6,
     "potegiWszystkich": [
-     14,
-     114,
-     107,
-     25
+     14.2,
+     113.5,
+     106.4,
+     25.2
     ],
     "ostatniaEpoka": 4,
     "wszystkieTechZbadane": false,
@@ -4796,7 +4902,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": true,
-    "share": 0.1346153846153846,
+    "share": 0.1334361743154647,
     "dominacja": false
    }
   },
@@ -4807,8 +4913,8 @@
     "gracz": 2,
     "victoryMode": "moc",
     "potegiWszystkich": [
-     112,
-     24
+     112.1,
+     23.7
     ],
     "graczEra": 1,
     "ostatniaEpoka": 3,
@@ -4835,13 +4941,13 @@
      3
     ],
     "gracz": 0,
-    "potegaGracza": 105,
+    "potegaGracza": 105.1,
     "potegiWszystkich": [
-     115,
-     68,
-     36,
-     69,
-     8
+     114.9,
+     68.2,
+     35.9,
+     69.2,
+     7.9
     ],
     "graczEra": 3,
     "ostatniaEpoka": 4,
@@ -4859,7 +4965,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 0.3547297297297297,
+    "share": 0.3549476528199932,
     "dominacja": false
    }
   },
@@ -4897,11 +5003,11 @@
     ],
     "gracz": 1,
     "potegiWszystkich": [
-     114,
-     -4,
-     2,
-     106,
-     104
+     113.4,
+     -3.9,
+     2.3,
+     105.2,
+     103.5
     ],
     "graczEra": 1,
     "ostatniaEpoka": 4,
@@ -4950,7 +5056,7 @@
     ],
     "gracz": 0,
     "victoryMode": "moc",
-    "potegaGracza": 33,
+    "potegaGracza": 32.8,
     "ostatniaEpoka": 4,
     "wszystkieTechZbadane": false,
     "rakietaWystrzelona": true,
@@ -4994,7 +5100,7 @@
    "input": {
     "cityOwners": [],
     "gracz": 1,
-    "potegaGracza": 2,
+    "potegaGracza": 2.7,
     "graczEra": 3,
     "ostatniaEpoka": 4,
     "wszystkieTechZbadane": true,
@@ -5052,13 +5158,13 @@
     ],
     "gracz": 2,
     "victoryMode": "dominacja",
-    "potegaGracza": 109,
+    "potegaGracza": 108.3,
     "potegiWszystkich": [
      28,
      85,
      116,
-     103,
-     4
+     102.9,
+     4.7
     ],
     "graczEra": 1,
     "ostatniaEpoka": 1,
@@ -5076,7 +5182,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 0.3244047619047619,
+    "share": 0.32174688057041,
     "dominacja": false
    }
   },
@@ -5090,9 +5196,9 @@
     ],
     "gracz": 1,
     "potegiWszystkich": [
-     5,
-     1,
-     -19
+     5.4,
+     0.8,
+     -18.1
     ],
     "graczEra": 1,
     "ostatniaEpoka": 4,
@@ -5115,11 +5221,11 @@
     "cityOwners": [],
     "gracz": 0,
     "potegiWszystkich": [
-     62,
-     63,
-     16,
-     -4,
-     57
+     62.2,
+     63.1,
+     16.3,
+     -3.4,
+     56.6
     ],
     "graczEra": 2,
     "ostatniaEpoka": 4,
@@ -5150,12 +5256,12 @@
      2
     ],
     "gracz": 2,
-    "potegaGracza": 116,
+    "potegaGracza": 115.4,
     "potegiWszystkich": [
-     -17,
-     90,
-     3,
-     50
+     -16.5,
+     89.4,
+     3.3,
+     49.7
     ],
     "ostatniaEpoka": 3,
     "rakietaWystrzelona": true,
@@ -5167,7 +5273,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 0.8111888111888111,
+    "share": 0.8103932584269663,
     "dominacja": false
    }
   },
@@ -5181,12 +5287,12 @@
     ],
     "gracz": 2,
     "victoryMode": "moc_i_dominacja",
-    "potegaGracza": 32,
+    "potegaGracza": 31.6,
     "potegiWszystkich": [
-     7,
-     18,
+     7.5,
+     18.3,
      16,
-     38
+     38.4
     ],
     "graczEra": 1,
     "ostatniaEpoka": 2,
@@ -5199,7 +5305,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 0.4050632911392405,
+    "share": 0.39401496259351626,
     "dominacja": false
    }
   },
@@ -5233,7 +5339,7 @@
      0
     ],
     "gracz": 1,
-    "potegaGracza": 63,
+    "potegaGracza": 62.6,
     "ostatniaEpoka": 1,
     "naukaUkonczona": false,
     "graczKiedysMialMiasto": false
@@ -5256,10 +5362,10 @@
     "gracz": 0,
     "potegaGracza": 111,
     "potegiWszystkich": [
-     -10,
-     54,
-     93,
-     48
+     -9.1,
+     54.4,
+     92.8,
+     47.9
     ],
     "graczEra": 1,
     "epokaKoncowa": true,
@@ -5276,7 +5382,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 0.5692307692307692,
+    "share": 0.5689390056381343,
     "dominacja": false
    }
   },
@@ -5285,9 +5391,9 @@
    "input": {
     "cityOwners": [],
     "gracz": 0,
-    "potegaGracza": 90,
+    "potegaGracza": 89.3,
     "potegiWszystkich": [
-     -10
+     -9.5
     ],
     "graczEra": 1,
     "ostatniaEpoka": 1,
@@ -5316,9 +5422,9 @@
     "cityOwners": [],
     "gracz": 1,
     "victoryMode": "dominacja",
-    "potegaGracza": 66,
+    "potegaGracza": 66.4,
     "potegiWszystkich": [
-     40
+     39.6
     ],
     "graczEra": 1,
     "ostatniaEpoka": 4,
@@ -5331,7 +5437,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": true,
-    "share": 1.65,
+    "share": 1.676767676767677,
     "dominacja": false
    }
   },
@@ -5343,10 +5449,10 @@
      2
     ],
     "gracz": 2,
-    "potegaGracza": 68,
+    "potegaGracza": 67.9,
     "potegiWszystkich": [
-     105,
-     66
+     104.9,
+     65.6
     ],
     "graczEra": 1,
     "ostatniaEpoka": 3,
@@ -5358,7 +5464,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 0.39766081871345027,
+    "share": 0.39824046920821116,
     "dominacja": false
    }
   },
@@ -5400,8 +5506,8 @@
     "victoryMode": "moc_i_dominacja",
     "potegaGracza": 30,
     "potegiWszystkich": [
-     35,
-     105
+     34.8,
+     104.4
     ],
     "ostatniaEpoka": 1,
     "wszystkieTechZbadane": false,
@@ -5413,7 +5519,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 0.21428571428571427,
+    "share": 0.21551724137931036,
     "dominacja": false
    }
   },
@@ -5445,12 +5551,12 @@
     ],
     "gracz": 1,
     "victoryMode": "moc",
-    "potegaGracza": -12,
+    "potegaGracza": -11.7,
     "potegiWszystkich": [
-     91,
-     86,
-     7,
-     7
+     90.9,
+     86.2,
+     6.8,
+     7.7
     ],
     "graczEra": 3,
     "ostatniaEpoka": 3,
@@ -5480,10 +5586,10 @@
      1
     ],
     "gracz": 1,
-    "potegaGracza": 103,
+    "potegaGracza": 102.5,
     "potegiWszystkich": [
-     2,
-     99,
+     2.7,
+     98.6,
      102
     ],
     "ostatniaEpoka": 2,
@@ -5497,7 +5603,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 0.5073891625615764,
+    "share": 0.5041810132808657,
     "dominacja": false
    }
   },
@@ -5531,13 +5637,13 @@
     ],
     "gracz": 1,
     "victoryMode": "moc_i_dominacja",
-    "potegaGracza": 58,
+    "potegaGracza": 57.6,
     "potegiWszystkich": [
-     65,
-     54,
-     -11,
-     39,
-     83
+     64.7,
+     54.4,
+     -10.6,
+     39.3,
+     83.2
     ],
     "graczEra": 3,
     "ostatniaEpoka": 2,
@@ -5553,7 +5659,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 0.24066390041493776,
+    "share": 0.23841059602649012,
     "dominacja": false
    }
   },
@@ -5565,13 +5671,13 @@
      3
     ],
     "gracz": 2,
-    "potegaGracza": 82,
+    "potegaGracza": 81.6,
     "potegiWszystkich": [
-     30,
-     -9,
-     35,
-     59,
-     43
+     30.2,
+     -8.8,
+     34.9,
+     58.6,
+     42.7
     ],
     "graczEra": 3,
     "ostatniaEpoka": 4,
@@ -5583,7 +5689,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": true,
-    "share": 0.49101796407185627,
+    "share": 0.4903846153846154,
     "dominacja": false
    }
   },
@@ -5597,13 +5703,13 @@
     ],
     "gracz": 1,
     "victoryMode": "moc",
-    "potegaGracza": 30,
+    "potegaGracza": 30.5,
     "potegiWszystkich": [
-     3,
-     -2,
-     16,
-     59,
-     25
+     3.2,
+     -1.8,
+     15.8,
+     59.1,
+     24.8
     ],
     "ostatniaEpoka": 2,
     "wszystkieTechZbadane": false,
@@ -5615,7 +5721,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": false,
-    "share": 0.2912621359223301,
+    "share": 0.29640427599611274,
     "dominacja": false
    }
   },
@@ -5650,13 +5756,13 @@
      2
     ],
     "gracz": 2,
-    "potegaGracza": -14,
+    "potegaGracza": -13.8,
     "potegiWszystkich": [
-     71,
-     27,
-     82,
-     -15,
-     -8
+     70.9,
+     27.4,
+     81.5,
+     -14.5,
+     -7.8
     ],
     "graczEra": 1,
     "ostatniaEpoka": 2,
@@ -5683,11 +5789,11 @@
      3
     ],
     "gracz": 1,
-    "potegaGracza": 28,
+    "potegaGracza": 27.7,
     "potegiWszystkich": [
-     12,
-     2,
-     1
+     12.4,
+     2.1,
+     1.2
     ],
     "ostatniaEpoka": 3,
     "wszystkieTechZbadane": true,
@@ -5699,7 +5805,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": true,
-    "share": 1.8666666666666667,
+    "share": 1.7643312101910829,
     "dominacja": false
    }
   },
@@ -5738,10 +5844,10 @@
      2
     ],
     "gracz": 0,
-    "potegaGracza": 71,
+    "potegaGracza": 70.7,
     "potegiWszystkich": [
-     92,
-     42
+     91.3,
+     42.1
     ],
     "graczEra": 2,
     "ostatniaEpoka": 2,
@@ -5759,7 +5865,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 0.5298507462686567,
+    "share": 0.5299850074962519,
     "dominacja": true
    }
   },
@@ -5797,7 +5903,7 @@
      2
     ],
     "gracz": 1,
-    "potegaGracza": -20,
+    "potegaGracza": -19.1,
     "wszystkieTechZbadane": false,
     "rakietaWystrzelona": false,
     "naukaUkonczona": true,
@@ -5823,9 +5929,9 @@
     "cityOwners": [],
     "gracz": 2,
     "victoryMode": "dominacja",
-    "potegaGracza": 83,
+    "potegaGracza": 82.7,
     "potegiWszystkich": [
-     25
+     25.4
     ],
     "graczEra": 1,
     "wszystkieTechZbadane": true,
@@ -5838,7 +5944,7 @@
     "victory": null,
     "defeat": null,
     "eliminated": true,
-    "share": 3.32,
+    "share": 3.255905511811024,
     "dominacja": false
    }
   },
@@ -5847,7 +5953,7 @@
    "input": {
     "cityOwners": [],
     "gracz": 0,
-    "potegaGracza": 26,
+    "potegaGracza": 25.8,
     "ostatniaEpoka": 3,
     "rakietaWystrzelona": true
    },
@@ -5874,7 +5980,7 @@
     "gracz": 1,
     "victoryMode": "dominacja",
     "potegiWszystkich": [
-     76
+     75.8
     ],
     "graczEra": 3,
     "ostatniaEpoka": 1,
@@ -5902,7 +6008,7 @@
     ],
     "gracz": 2,
     "potegiWszystkich": [
-     67
+     67.3
     ],
     "wszystkieTechZbadane": true,
     "rakietaWystrzelona": true,
@@ -5952,7 +6058,7 @@
      0
     ],
     "gracz": 2,
-    "potegaGracza": 37,
+    "potegaGracza": 36.7,
     "graczEra": 1,
     "ostatniaEpoka": 1,
     "rakietaWystrzelona": true,
@@ -6013,11 +6119,11 @@
     ],
     "gracz": 0,
     "potegiWszystkich": [
-     110,
-     24,
-     8,
+     109.4,
+     24.6,
+     8.2,
      79,
-     76
+     76.1
     ],
     "ostatniaEpoka": 2,
     "wszystkieTechZbadane": true,
@@ -6062,7 +6168,7 @@
    "input": {
     "cityOwners": [],
     "gracz": 0,
-    "potegaGracza": 66,
+    "potegaGracza": 65.9,
     "graczEra": 1,
     "ostatniaEpoka": 1,
     "wszystkieTechZbadane": true,
@@ -6093,13 +6199,13 @@
      0
     ],
     "gracz": 1,
-    "potegaGracza": -9,
+    "potegaGracza": -8.3,
     "potegiWszystkich": [
-     103,
-     110,
-     52,
-     -4,
-     110
+     102.2,
+     109.7,
+     52.2,
+     -3.3,
+     109.2
     ],
     "graczEra": 3,
     "ostatniaEpoka": 2,
@@ -6131,8 +6237,8 @@
     ],
     "gracz": 1,
     "potegiWszystkich": [
-     -6,
-     72
+     -5.4,
+     71.6
     ],
     "graczEra": 3,
     "wszystkieTechZbadane": true,
@@ -6161,9 +6267,9 @@
     "victoryMode": "dominacja",
     "potegaGracza": 8,
     "potegiWszystkich": [
-     20,
-     36,
-     -14
+     20.2,
+     36.1,
+     -13.8
     ],
     "wszystkieTechZbadane": true,
     "rakietaWystrzelona": true,
@@ -6179,7 +6285,7 @@
      "rodzaj": "przegrana"
     },
     "eliminated": true,
-    "share": 0.14285714285714285,
+    "share": 0.14209591474245117,
     "dominacja": false
    }
   }

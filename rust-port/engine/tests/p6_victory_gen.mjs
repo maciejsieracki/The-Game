@@ -23,14 +23,17 @@ const PIN = '07d2fbd72f758705f8e1d59cc4968027ffbafe75';
 const EXPECTED_SHA256 = '2f22949ba00bbfb754410f66fc5e1856b67dc0621d31ea310c6df39e6517bb8a';
 const VICTORY_REL = path.join('gra', 'src', 'game', 'victory.ts');
 const LOADER_REL = path.join('gra', 'src', 'data', 'e-start-params-loader.ts');
+const PIN_DATA_REL = path.join('gra', 'data', 'e-start-params.json');
 
 const rawText = readFileSync(path.join(WEB_ROOT, VICTORY_REL), 'utf8');
 const sha = createHash('sha256').update(rawText).digest('hex');
 if (sha !== EXPECTED_SHA256) throw new Error(`strazik SHA-256 victory.ts: ${sha} != ${EXPECTED_SHA256} (pin ${PIN})`);
 
-// Wartosci zwyciestwa: z pliku danych Rust (sync z pinem sprawdza test Rust) i fallbacki z loadera pinu.
-const eStartJson = JSON.parse(readFileSync(path.join('rust-port', 'engine', 'data', 'e-start-params.json'), 'utf8'));
-const Z = eStartJson.zwyciestwo;
+// Wartosci zwyciestwa: z PLIKU DANYCH PINU (gra/data/e-start-params.json w WEB_ROOT), nie z kopii Rust.
+// Dzieki temu test Rust porownuje stale Rust z pinem, a nie z samym soba.
+const pinEStart = JSON.parse(readFileSync(path.join(WEB_ROOT, PIN_DATA_REL), 'utf8'));
+const Z = pinEStart.zwyciestwo;
+if (!Z) throw new Error('brak bloku zwyciestwo w danych pinu');
 const loaderText = readFileSync(path.join(WEB_ROOT, LOADER_REL), 'utf8');
 for (const frag of ['? v : 3;', 'v < 1 ? v : 0.5;', '!== false']) {
   // Fallbacki pinu musza istniec w zrodle loadera (inaczej stub przestaje odpowiadac pinowi).
@@ -158,24 +161,34 @@ const manual = [
   { name: 'domyslna_era', cityOwners: [0], gracz: 0, potegaGracza: 99, potegiWszystkich: [99, 1] },
   // Remis dokladnie 50% -> NIE dominacja (ostro > 0.5).
   { name: 'dokladnie_50_nie_dominacja', cityOwners: [0], gracz: 0, potegaGracza: 50, potegiWszystkich: [50, 50], graczEra: 3 },
+  // Przypadek kolejnosci: gracz bez miast (kiedysMial domyslnie true), 60% mocy, era 3 -> dominacja pierwsza.
+  { name: 'eliminowany_dominacja_pierwsza', cityOwners: [1, 2], gracz: 0, potegaGracza: 60, potegiWszystkich: [60, 40], graczEra: 3 },
+  // Ulamkowy prog: udzial dokladnie 0.5 (1.5/3.0) -> NIE dominacja (ostro >).
+  { name: 'ulamkowe_dokladnie_0_5', cityOwners: [0], gracz: 0, potegaGracza: 1.5, potegiWszystkich: [1.5, 1.5], graczEra: 3 },
+  // Ulamkowy: udzial 0.53 > 0.5 -> dominacja.
+  { name: 'ulamkowe_powyzej_0_5', cityOwners: [0], gracz: 0, potegaGracza: 1.6, potegiWszystkich: [1.6, 1.4], graczEra: 3 },
+  // Ujemne ulamki w sumie przycinane do 0 (JS Math.max).
+  { name: 'ulamkowe_ujemne_przyciete', cityOwners: [0], gracz: 0, potegaGracza: 0.4, potegiWszystkich: [-0.7, 0.4, 0.6], graczEra: 3 },
   // AI nie wygrywa: gracz 1 bez miast (eliminowany), gracz 0 ma miasta i dominacje -> winner 0.
   { name: 'ai_nie_wygrywa_gracz_1', cityOwners: [0], gracz: 1, potegaGracza: 10, potegiWszystkich: [90, 10], graczEra: 3 },
 ];
 for (const m of manual) cases.push({ name: m.name, raw: m });
 
+// Moc ulamkowa (jedno miejsce po przecinku): ri(-200,1200)/10 daje wartosci -20.0..120.0 z krokiem 0.1.
+const pwr = () => ri(-200, 1200) / 10;
 // Losowe przypadki (LCG): 200 sztuk.
 for (let i = 0; i < 200; i++) {
   const nCities = ri(0, 4);
   const cityOwners = Array.from({ length: nCities }, () => ri(0, 3));
   const nPot = ri(0, 5);
-  const potegiWszystkich = maybe(() => Array.from({ length: nPot }, () => ri(-20, 120)));
+  const potegiWszystkich = maybe(() => Array.from({ length: nPot }, pwr));
   cases.push({
     name: `losowy_${i}`,
     raw: {
       cityOwners,
       gracz: ri(0, 2),
       victoryMode: rnd() < 0.5 ? undefined : MODES[ri(0, 3)],
-      potegaGracza: maybe(() => ri(-20, 120)),
+      potegaGracza: maybe(pwr),
       potegiWszystkich,
       graczEra: maybe(() => ri(1, 3)),
       ostatniaEpoka: maybe(() => ri(1, 4)),
