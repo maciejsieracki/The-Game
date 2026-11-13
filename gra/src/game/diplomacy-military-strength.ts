@@ -240,3 +240,33 @@ export function militaryBrakeOutcome(
   const victim = declarer === a.id ? b.id : a.id;
   return { declarer, victim, mayDeclare: !isPlayer(declarer) };
 }
+
+/** Próg różnicy siły dla pokoju w % (0 = każda różnica; wartość z diplomacy-war-peace-params.json). */
+export const DEFAULT_PEACE_STRENGTH_GAP_PROC = 0;
+
+/**
+ * R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (decyzja właściciela 2026-11-13): pozycja strony `a`
+ * względem `b` przy rozejmie/pokoju wg siły militarnej.
+ *  - 'silniejsza' — większa siła (idealny remis: reguła compareMilitaryStrength). Silniejsza strona
+ *    ODRZUCA pokój, chyba że oferta zawiera miasto o wartości PN ≥ ceny;
+ *  - 'slabsza'    — mniejsza siła. Zawsze szuka rozejmu lub pokoju (AI sama proponuje, z miastem);
+ *  - 'pasmo'      — różnica w paśmie progu (progRozniceProc > 0): brak ograniczeń.
+ * ZAŁOŻENIE: przy progu 0 (domyślnie) pasma nie ma — każda różnica decyduje.
+ * / EN: war-peace military position of side `a` against `b`.
+ */
+export type PeaceMilitaryPosition = 'silniejsza' | 'slabsza' | 'pasmo';
+
+export function peaceMilitaryPosition(
+  a: MilitarySide,
+  b: MilitarySide,
+  progRozniceProc: number = DEFAULT_PEACE_STRENGTH_GAP_PROC,
+  params: MilitaryStrengthParams = DEFAULT_MILITARY_STRENGTH_PARAMS,
+): PeaceMilitaryPosition {
+  const sa = nonNeg(a.sila);
+  const sb = nonNeg(b.sila);
+  const prog = nonNeg(progRozniceProc);
+  const withinBand = sa * 100 < sb * (100 + prog) && sb * 100 < sa * (100 + prog);
+  if (prog > 0 && withinBand) return 'pasmo';
+  const silniejszy = compareMilitaryStrength(a, b, params).silniejszyId;
+  return silniejszy === a.id ? 'silniejsza' : 'slabsza';
+}

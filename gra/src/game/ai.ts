@@ -78,11 +78,12 @@ import {
 } from './research';
 import { hexKeysWithinRadius } from './okolica';
 import {
-  resolveWarPeaceProfile, aiPeaceSignals, isFeelingStronger, militaryAdvantageClass,
-  peaceBlockedByMilitaryAdvantage, type WarPeaceProfile, warWearinessFraction,
-  PROG_WOJNA_ZAUFANIE,
+  resolveWarPeaceProfile, aiPeaceSignals, type WarPeaceProfile, warWearinessFraction,
+  PROG_WOJNA_ZAUFANIE, PEACE_STRENGTH_GAP_PROC,
 } from './diplomacy-war-peace-profile';
-import { compareMilitaryStrength, type MilitarySide } from './diplomacy-military-strength';
+import {
+  compareMilitaryStrength, peaceMilitaryPosition, type MilitarySide, type PeaceMilitaryPosition,
+} from './diplomacy-military-strength';
 import { aiTruceOrPeaceMode } from './diplomacy-peace-lock';
 import {
   AI_IMPROVEMENT_PRIORITY,
@@ -7000,11 +7001,16 @@ export function decideAIDiplomacy(
     // R-WEB-PEACE-CITY-CESSION-Q1 r4 (zarzut 4 Evaluatora): bramki czasu wojny i „czuje się
     // silniejsze" z R5a/R5b (ta sama definicja co zaproponuj_pokoj niżej) obowiązują także dla
     // oddania miasta (N1a) i żądania miasta (N1b). Przeniesione wyżej, przed bloki miast.
-    const aiFeelsStronger = rel.stanWojny && isFeelingStronger({
-      rw,
-      turnsAtWar: turnsAtWarRel,
-      lostCitiesInWar: Math.max(0, rel.lostCitiesInWar ?? 0),
-    });
+    // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: pozycja AI wg SIŁY MILITARNEJ (nie rw).
+    // Brak danych siły = 'pasmo' (bez ograniczeń, jak dotąd dla braku danych).
+    const peacePosMil: PeaceMilitaryPosition = rel.silaMilitarnaAI && rel.silaMilitarnaPartner
+      ? peaceMilitaryPosition(
+          { id: 'ai', sila: rel.silaMilitarnaAI.sila, armiaPkt: rel.silaMilitarnaAI.armiaPkt },
+          { id: 'partner', sila: rel.silaMilitarnaPartner.sila, armiaPkt: rel.silaMilitarnaPartner.armiaPkt },
+          PEACE_STRENGTH_GAP_PROC,
+        )
+      : 'pasmo';
+    const aiFeelsStronger = rel.stanWojny && peacePosMil === 'silniejsza';
     const aiPeaceTimeOk = turnsAtWarRel >= warProfile.minTurWojny;
 
     // ---- R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): AI ODDAJE miasto zamiast trybutu ----
@@ -7120,13 +7126,14 @@ export function decideAIDiplomacy(
     // (b) slabsza o >= prog -> AI MOZE proponowac pokoj (sygnal 'f'); (c) pomiedzy -> reguly dotychczasowe.
     // Miara sily = rw (objectivePower, jak wszystkie galezie pokoju). Zadanie miasta N1b wyzej NIE jest objete (ABC do orkiestratora).
     const advantageVsHuman = rel.stanWojny && rel.partnerId === '0';
-    const aiAdvantageBlocksPeace = advantageVsHuman && peaceBlockedByMilitaryAdvantage(rw, wearyLevel);
-    const aiWeakerByAdvantageProg = advantageVsHuman && militaryAdvantageClass(rw) === 'niedobor';
+    // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: słabsza militarnie AI zawsze szuka pokoju (sygnał 'f');
+    // silniejsza nie proponuje (aiFeelsStronger wyżej). Zmęczenie wojną nie zdejmuje już blokady.
+    const aiWeakerByAdvantageProg = rel.stanWojny && peacePosMil === 'slabsza';
     if (aiWeakerByAdvantageProg) {
       peaceSignals.reasons.push('f');
       peaceSignals.wantsPeace = true;
     }
-    if (!aiAdvantageBlocksPeace && rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)) {
+    if (rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)) {
       // R-WEB-DIPLO-TRUCE-IMPL-Q1 (E): tryb wg pozycji i zmęczenia wojną (zaufanie z relacji);
       // bez sygnałów rozstrzygających — dotychczasowy wybór po turach wojny (aiPeaceProposalKind).
       // Sygnały: zmęczenie (ułamek t/T), willingnessPeace ze stance (gotowość do pokoju) i Zaufanie.

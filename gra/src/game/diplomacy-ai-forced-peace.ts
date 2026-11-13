@@ -270,7 +270,9 @@ export function decideAiPeaceRequest(inp: AiPeaceDecisionInput): AiPeaceDecision
   if (turnsSince >= limit) {
     return { action: 'force', reason: `limit ${limit} tur od prośby`, balanceBefore, balanceAfter, turnsSince };
   }
-  if (inp.winnerGateVerdict !== 'ok') {
+  // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: militarnie silniejszy zwycięzca ('stronger') przyjmuje
+  // pokój WYŁĄCZNIE za miasto — plan pokrywający pełną cenę miastami (plan.full). Bez tego czeka.
+  if (inp.winnerGateVerdict === 'too_early' || (inp.winnerGateVerdict === 'stronger' && !inp.plan.full)) {
     return { action: 'wait', reason: `bramka zwycięzcy: ${inp.winnerGateVerdict}`, balanceBefore, balanceAfter, turnsSince };
   }
   if (inp.plan.full || balanceAfter >= -inp.tolerancePn) {

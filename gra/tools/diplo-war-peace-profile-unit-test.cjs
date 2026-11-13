@@ -109,9 +109,10 @@ near('R10: zulusi progZdrowia = klucz - 0.02*(tol-5), clamp 0.20-0.55', zulusi.p
 
 // ---- R5: bramka pokoju od gracza ----
 eq('R5a: za wcześnie (Zulusi minTur 7, tura 6)', M.evaluatePeaceAiGate({ rw: 0.3, turnsAtWar: 6, lostCitiesInWar: 0 }, zulusi).verdict, 'too_early');
-eq('R5b: silniejsze (rw 0.6, bez utraty, 5 tur)', M.evaluatePeaceAiGate({ rw: 0.6, turnsAtWar: 9, lostCitiesInWar: 0 }, rzym).verdict, 'stronger');
-eq('R5b: po utracie miasta NIE odrzuca', M.evaluatePeaceAiGate({ rw: 0.6, turnsAtWar: 9, lostCitiesInWar: 1 }, rzym).verdict, 'ok');
-eq('R5b: po 10 turach NIE odrzuca', M.evaluatePeaceAiGate({ rw: 0.6, turnsAtWar: 10, lostCitiesInWar: 0 }, rzym).verdict, 'ok');
+// R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: odrzucenie wg SIŁY MILITARNEJ (pozycjaMilitarna), nie rw.
+eq('R5b: militarnie silniejsza odrzuca (bez miasta)', M.evaluatePeaceAiGate({ rw: 0.6, turnsAtWar: 9, lostCitiesInWar: 0, pozycjaMilitarna: 'silniejsza' }, rzym).verdict, 'stronger');
+eq('R5b: militarnie słabsza NIE odrzuca', M.evaluatePeaceAiGate({ rw: 0.6, turnsAtWar: 9, lostCitiesInWar: 0, pozycjaMilitarna: 'slabsza' }, rzym).verdict, 'ok');
+eq('R5b: brak pozycji (rw 0.6) NIE odrzuca', M.evaluatePeaceAiGate({ rw: 0.6, turnsAtWar: 9, lostCitiesInWar: 0 }, rzym).verdict, 'ok');
 const g20 = M.evaluatePeaceAiGate({ rw: 0.9, turnsAtWar: 20, lostCitiesInWar: 0 }, zulusi);
 eq('R5e: po 20 turach brak odrzucenia (silniejsze)', g20.verdict, 'ok');
 eq('R5e: po 20 turach mnożnik <= 1', g20.priceMultiplier <= 1, true);
@@ -123,7 +124,8 @@ near('R5c: rw 1.0 -> max 2', M.peaceStrengthPriceMultiplier(1.0), 2);
 near('R5d: zulusi mnożnik cywilizacji 1.32', M.peaceCivPriceMultiplier(zulusi), 1.32);
 near('R5d: chinczycy 1+0.05*-3+0.04*-1=0.81', M.peaceCivPriceMultiplier(chin), 0.81);
 const gz = M.evaluatePeaceAiGate({ rw: 0.8, turnsAtWar: 12, lostCitiesInWar: 0 }, zulusi);
-near('R5 cena: zulusi rw0.8 = 1.6*1.32', gz.priceMultiplier, 1.6 * 1.32);
+// R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: mnożnik ceny od siły usunięty — zostaje mnożnik cywilizacji.
+near('R5 cena: zulusi rw0.8 = 1.32 (bez mnożnika siły)', gz.priceMultiplier, 1.32);
 
 // ---- R3(c): zdrowie armii ----
 eq('sygnał c: zdrowie armii 0.1 < progZdrowia (zulusi 0.40 -> prog ok.)', M.aiPeaceSignals({ rw: 0.9, turnsAtWar: 3, lostCitiesInWar: 0, armyHealthShare: 0.1 }, zulusi).reasons.includes('c'), true);
