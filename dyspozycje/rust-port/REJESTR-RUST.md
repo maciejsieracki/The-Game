@@ -855,3 +855,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Awaria dysku:** dysk spadł do 1,0 GB przy trzech aktywnych workflow. Usunięto cztery worktree zakończonego rozpoznania (wyniki w gałęziach `wip/…` i w `claude/rust-sivvrn`). Dysk: 5,6 GB.
 - **Aktywne:** ZWYCIESTWO-WIRING-Q1 r3 (Operator, HAIKU, `wf_00652ce1-d2a`); ZLOZA-B-REST-Q1 r3 (Obrona, HAIKU, `wf_d3ddfaff-163`).
 - **Parity:** `0ca58770e`.
+
+## ZLOZA-B-REST-Q1 (r3): FC PASS-WITH-NOTES (`ca3235f00`), integracja w toku
+- **Zakres wykonany:** gałęzie stanu `transferBasketItems` — tech, surowiec_boolean, surowiec_ilosc, praca — z wektorami stanu z pina (160→226 przypadków stanu, plus 207 zloze). Harness stanu w `p6_zloza_basket_gen.mjs`, strażniki SHA. Mutacje (clamp puli Pracy, tie-break dawców, trim klucza) dają FAIL. Rust zgadza się z pinem we wszystkich przypadkach — zmian produkcyjnych nie było.
+- **NIE_ZMIERZONO (jawnie):** zloto (`applyOneShotGoldTransfer`, brak ścieżki w Rust), żywność (`zapasyPanstwa`, brak zapisu w `OwnerFoodStates`), miasto (`transferCityByTreaty`, brak wariantu), jednostka (no-op na pinie). Efekty tech dla gracza 0 poza portem.
+- **Decyzje orkiestratora z FC:**
+  - Trailer `Co-Authored-By` z nazwą modelu w commitach Operatora **nie przenosimy** do nowej integracji (CLAUDE.md zabrania nazwy modelu w artefaktach). Integracja idzie cherry-pickiem z czystym komunikatem; historii już wypchniętej nie przepisujemy.
+  - **Osobny temat (nie teraz):** sortowanie id dawców/biorców — Rust porównuje bajtowo, pin `localeCompare`; widoczne tylko przy remisie zapasu i id typu `c1_0`/`c10_0`. Poza allowlistą.
+- **Integracja:** worktree `integ-zloza2` na `0ca58770e`, cherry-pick `5a6adf3fb..ca3235f00` (bez `-x`, z czystym komunikatem). Pełny test w tle; FF po zielonym wyniku.
