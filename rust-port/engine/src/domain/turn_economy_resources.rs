@@ -46,6 +46,10 @@ pub struct ConverterRecipe {
     pub output_amount: f64,
     pub throughput_param_key: &'static str,
     pub throughput_fallback: f64,
+    /// Web `throughputEraParamKeys` (`converters.ts`): jawne wiersze przepustowosci per epoka
+    /// wlasciciela, `(epoka, klucz budynki)` posortowane rosnaco. Pusta tablica = brak (receptura
+    /// korzysta z `throughput_param_key` i zwyklego skalowania). Brąz: wiersze 2 (50) i 3 (75).
+    pub throughput_era_param_keys: &'static [(u32, &'static str)],
 }
 
 /// Web `DEFAULT_CONVERTER_RECIPES` (`converters.ts:81-101`), w tej samej kolejnosci.
@@ -58,6 +62,7 @@ pub const DEFAULT_CONVERTER_RECIPES: [ConverterRecipe; 9] = [
         output_amount: 2.0,
         throughput_param_key: "budynek_cegielnia_przepustowosc",
         throughput_fallback: 50.0,
+        throughput_era_param_keys: &[],
     },
     ConverterRecipe {
         id: "garncarnia",
@@ -67,6 +72,7 @@ pub const DEFAULT_CONVERTER_RECIPES: [ConverterRecipe; 9] = [
         output_amount: 1.0,
         throughput_param_key: "budynek_garncarnia_przepustowosc",
         throughput_fallback: 50.0,
+        throughput_era_param_keys: &[],
     },
     ConverterRecipe {
         id: "huta",
@@ -76,6 +82,7 @@ pub const DEFAULT_CONVERTER_RECIPES: [ConverterRecipe; 9] = [
         output_amount: 1.0,
         throughput_param_key: "budynek_huta_przepustowosc",
         throughput_fallback: 50.0,
+        throughput_era_param_keys: &[],
     },
     ConverterRecipe {
         id: "odlewnia_brazu",
@@ -85,6 +92,10 @@ pub const DEFAULT_CONVERTER_RECIPES: [ConverterRecipe; 9] = [
         output_amount: 1.0,
         throughput_param_key: "budynek_huta_przepustowosc",
         throughput_fallback: 50.0,
+        throughput_era_param_keys: &[
+            (2, "budynek_huta_braz_epoka2_przepustowosc"),
+            (3, "budynek_huta_braz_epoka3_przepustowosc"),
+        ],
     },
     ConverterRecipe {
         id: "odlewnia_zelaza__braz",
@@ -94,6 +105,10 @@ pub const DEFAULT_CONVERTER_RECIPES: [ConverterRecipe; 9] = [
         output_amount: 1.0,
         throughput_param_key: "budynek_huta_przepustowosc",
         throughput_fallback: 50.0,
+        throughput_era_param_keys: &[
+            (2, "budynek_huta_braz_epoka2_przepustowosc"),
+            (3, "budynek_huta_braz_epoka3_przepustowosc"),
+        ],
     },
     ConverterRecipe {
         id: "odlewnia_zelaza__zelazo",
@@ -103,6 +118,7 @@ pub const DEFAULT_CONVERTER_RECIPES: [ConverterRecipe; 9] = [
         output_amount: 1.0,
         throughput_param_key: "budynek_odlewnia_zelaza_przepustowosc",
         throughput_fallback: 50.0,
+        throughput_era_param_keys: &[],
     },
     ConverterRecipe {
         id: "wielka_odlewnia__braz",
@@ -112,6 +128,10 @@ pub const DEFAULT_CONVERTER_RECIPES: [ConverterRecipe; 9] = [
         output_amount: 1.0,
         throughput_param_key: "budynek_huta_przepustowosc",
         throughput_fallback: 50.0,
+        throughput_era_param_keys: &[
+            (2, "budynek_huta_braz_epoka2_przepustowosc"),
+            (3, "budynek_huta_braz_epoka3_przepustowosc"),
+        ],
     },
     ConverterRecipe {
         id: "wielka_odlewnia__zelazo",
@@ -121,6 +141,7 @@ pub const DEFAULT_CONVERTER_RECIPES: [ConverterRecipe; 9] = [
         output_amount: 1.0,
         throughput_param_key: "budynek_odlewnia_zelaza_przepustowosc",
         throughput_fallback: 50.0,
+        throughput_era_param_keys: &[],
     },
     ConverterRecipe {
         id: "wielka_odlewnia__stal",
@@ -130,6 +151,7 @@ pub const DEFAULT_CONVERTER_RECIPES: [ConverterRecipe; 9] = [
         output_amount: 1.0,
         throughput_param_key: "budynek_wielka_odlewnia_przepustowosc",
         throughput_fallback: 50.0,
+        throughput_era_param_keys: &[],
     },
 ];
 
@@ -146,13 +168,41 @@ pub fn converter_building_id_for_recipe(recipe: &ConverterRecipe) -> &'static st
     recipe.building_id.unwrap_or(recipe.id)
 }
 
-/// Web `CONVERTER_FOUNDRY_ERA_RECIPE_IDS` (`converters.ts:147`): odlewnie skaluja cykle mnoznikiem
-/// m(e) (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1). `huta` NIE nalezy do zbioru (plaska).
-pub const CONVERTER_FOUNDRY_ERA_RECIPE_IDS: [&str; 6] = [
-    "odlewnia_brazu",
-    "odlewnia_zelaza__braz",
+/// Web `converterThroughputEraParamKey` (`converters.ts:177-185`): klucz wiersza przepustowosci dla
+/// epoki wlasciciela. `era` nieskonczona/<=1 -> 1; wybiera najwyzszy klucz `<= floor(era)`, a gdy
+/// zaden nie pasuje -- najmniejszy skonfigurowany (`configured[0]`). Receptura bez wierszy = `None`.
+pub fn converter_throughput_era_param_key(
+    recipe: &ConverterRecipe,
+    era: f64,
+) -> Option<&'static str> {
+    let rows = recipe.throughput_era_param_keys;
+    if rows.is_empty() {
+        return None;
+    }
+    let e = if era.is_finite() && era > 1.0 {
+        era.floor()
+    } else {
+        1.0
+    };
+    let mut best: Option<(u32, &'static str)> = None;
+    let mut smallest: (u32, &'static str) = rows[0];
+    for &(k, key) in rows {
+        if k < smallest.0 {
+            smallest = (k, key);
+        }
+        if f64::from(k) <= e && best.is_none_or(|(bk, _)| k > bk) {
+            best = Some((k, key));
+        }
+    }
+    Some(best.unwrap_or(smallest).1)
+}
+
+/// Web `CONVERTER_FOUNDRY_ERA_RECIPE_IDS` (`converters.ts:148-152`): odlewnie skaluja cykle mnoznikiem
+/// m(e) (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1). Odlewnie brazu (`odlewnia_brazu`,
+/// `odlewnia_zelaza__braz`, `wielka_odlewnia__braz`) NIE sa tu: maja jawne wiersze per epoka.
+/// `huta` NIE nalezy do zbioru (plaska).
+pub const CONVERTER_FOUNDRY_ERA_RECIPE_IDS: [&str; 3] = [
     "odlewnia_zelaza__zelazo",
-    "wielka_odlewnia__braz",
     "wielka_odlewnia__zelazo",
     "wielka_odlewnia__stal",
 ];
@@ -346,8 +396,10 @@ pub fn run_converters(
     cur
 }
 
-/// Web `converterThroughputsForOwner` budowany w `simulateResourcePipelineForPreview`
-/// (`turn-economy.ts:1428-1435`): per receptura `loadThroughput` + skalowanie epoka wlasciciela.
+/// Web `converterThroughputsForOwner` (sciezka ticku, `turn-economy.ts:2463-2490`): per receptura
+/// `loadThroughput` (fallback brazu = baza huty) + skalowanie epoka wlasciciela. Sciezka podgladu
+/// (`turn-economy.ts:1503`, fallback = `throughputFallback` receptury) rozni sie WYLACZNIE gdy brak
+/// wierszy brazu i nadpisana huta -- jawnie raportowane (`p6_ekonomia_braz_era.rs`).
 pub fn converter_throughputs_for_era(
     raw: &Value,
     difficulty: &str,
@@ -355,16 +407,21 @@ pub fn converter_throughputs_for_era(
 ) -> BTreeMap<String, f64> {
     let mut out = BTreeMap::new();
     for recipe in default_converter_recipes() {
+        // Web `converterThroughputsForEra` (`converters.ts`): receptura z `throughputEraParamKeys`
+        // bierze wiersz swojej epoki WPROST (bez mnoznika); pozostale -- klucz receptury + skalowanie.
+        // Baza receptury jak `converterThroughputs[recipe.id]` sciezki ticku (turn-economy.ts:2463-2468).
         let base = load_throughput(
             raw,
             recipe.throughput_param_key,
             difficulty,
             recipe.throughput_fallback,
         );
-        out.insert(
-            recipe.id.to_owned(),
-            converter_throughput_for_era(recipe.id, base, era),
-        );
+        let value = match converter_throughput_era_param_key(recipe, era) {
+            // Sciezka ticku (turn-economy.ts:2484): wiersz epoki, fallback = baza (huta dla brazu).
+            Some(era_key) => load_throughput(raw, era_key, difficulty, base),
+            None => converter_throughput_for_era(recipe.id, base, era),
+        };
+        out.insert(recipe.id.to_owned(), value);
         // Web `converterThroughputsForEra`: mnoznik wyjscia pod kluczem `<id>#outMult` tylko gdy != 1.
         let m = converter_output_multiplier_for_era(recipe.id, era);
         if m != 1.0 {

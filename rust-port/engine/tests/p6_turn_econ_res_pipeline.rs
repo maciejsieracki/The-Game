@@ -122,11 +122,22 @@ fn run_converter_matches_running_web() {
 fn throughput_for_era_and_stolarnia_inflow_match_web() {
     let d = data();
     for (i, c) in arr(&d, "eraCases").iter().enumerate() {
-        let got = converter_throughput_for_era(
-            c["id"].as_str().unwrap(),
-            num(&c["base"]),
-            num(&c["era"]),
-        );
+        let id = c["id"].as_str().unwrap();
+        let got = converter_throughput_for_era(id, num(&c["base"]), num(&c["era"]));
+        // REPIN-BRAZ-ERA (pin 07d2fbd72 converters.ts:148-152): brąz NIE jest w CONVERTER_FOUNDRY_ERA_RECIPE_IDS,
+        // ma jawne wiersze per epoka (throughputEraParamKeys) -> `converterThroughputForEra` zwraca bazę bez mnożnika.
+        // Stare wektory `out` dla brązu (50*m(e)) są nieaktualne; wartości per epoka: p6_ekonomia_braz_era.rs.
+        if matches!(
+            id,
+            "odlewnia_brazu" | "odlewnia_zelaza__braz" | "wielka_odlewnia__braz"
+        ) {
+            assert_eq!(
+                got,
+                num(&c["base"]),
+                "braz plaski w converterThroughputForEra #{i}"
+            );
+            continue;
+        }
         same(&format!("era #{i}"), &enc(got), &c["out"]);
     }
     for (i, c) in arr(&d, "outMultCases").iter().enumerate() {
@@ -515,8 +526,14 @@ fn converter_throughputs_for_era_match_web_vectors() {
         "budynek_huta_przepustowosc": {"normalny": 50},
         "budynek_odlewnia_zelaza_przepustowosc": {"normalny": 50},
         "budynek_wielka_odlewnia_przepustowosc": {"normalny": 50},
+        "budynek_huta_braz_epoka2_przepustowosc": {"normalny": 50},
+        "budynek_huta_braz_epoka3_przepustowosc": {"normalny": 75},
     }});
     let cases = arr(&d, "eraCases");
+    let n_eras = cases
+        .iter()
+        .filter(|c| c["id"] == "cegielnia" && num(&c["base"]) == 50.0)
+        .count();
     let covered = [
         "cegielnia",
         "garncarnia",
@@ -529,7 +546,7 @@ fn converter_throughputs_for_era_match_web_vectors() {
         "wielka_odlewnia__stal",
     ];
     let mut scaled_checked = 0;
-    let mut out_mult_checked = 0;
+    let mut braz_checked = 0;
     for era_case in cases
         .iter()
         .filter(|c| c["id"] == "cegielnia" && num(&c["base"]) == 50.0)
@@ -553,6 +570,21 @@ fn converter_throughputs_for_era_match_web_vectors() {
             } else {
                 "nieznany"
             };
+            // REPIN-BRAZ-ERA: brąz (3 receptury) ma wiersze per epoka właściciela zamiast mnożnika m(e).
+            // Pin converters.ts:177-185 + econ-params (epoka2=50, epoka3=75; era<=1/NaN/Inf -> wiersz epoki 2).
+            if matches!(
+                r.id,
+                "odlewnia_brazu" | "odlewnia_zelaza__braz" | "wielka_odlewnia__braz"
+            ) {
+                let want_braz = if era.is_finite() && era.floor() >= 3.0 {
+                    75.0
+                } else {
+                    50.0
+                };
+                assert_eq!(got[r.id], want_braz, "wiersz epoki brazu {}@{}", r.id, era);
+                braz_checked += 1;
+                continue;
+            }
             let want = cases
                 .iter()
                 .find(|c| {
@@ -565,7 +597,7 @@ fn converter_throughputs_for_era_match_web_vectors() {
                 &want["out"],
             );
             // Od REPIN-EKONOMIA-F: tylko Garncarnia skaluje cykle +10%; Cegielnia/Huta plaskie;
-            // odlewnie x m(e).
+            // odlewnie żelaza/stali x m(e) (brąz -- wyżej).
             if r.id == "garncarnia" && era > 1.0 && era.is_finite() {
                 assert!(got[r.id] > 50.0, "skalowanie epoka {} {}", r.id, era);
                 scaled_checked += 1;
@@ -573,17 +605,13 @@ fn converter_throughputs_for_era_match_web_vectors() {
             if r.id == "cegielnia" || r.id == "huta" {
                 assert_eq!(got[r.id], 50.0, "plaska {} @{}", r.id, era);
             }
-            if r.id == "odlewnia_brazu" && era.is_finite() && era >= 2.0 {
-                assert_eq!(got[r.id], 50.0 * (1.0 + 0.5 * (era.floor() - 1.0)));
-                out_mult_checked += 1;
-            }
         }
         if has_out_mult {
             assert_eq!(got["cegielnia#outMult"], 1.0 + 0.5 * (era.floor() - 1.0));
         }
     }
     assert_eq!(scaled_checked, 9, "era >1 skonczone x garncarnia");
-    assert_eq!(out_mult_checked, 7, "era >= 2 skonczone x odlewnia_brazu");
+    assert_eq!(braz_checked, 3 * n_eras, "3 receptury brazu x epoki");
     // brak wpisu w raw -> fallback receptury (nie 50)
     let fb = converter_throughputs_for_era(&json!({}), "normalny", 1.0);
     for r in DEFAULT_CONVERTER_RECIPES.iter() {

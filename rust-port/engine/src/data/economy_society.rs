@@ -179,6 +179,11 @@ pub struct EconParamsBudynki {
     pub budynek_cegielnia_przepustowosc: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
     #[serde(rename = "budynek_huta_przepustowosc")]
     pub budynek_huta_przepustowosc: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
+    /// Wiersze brazu per epoka wlasciciela (pin 07d2fbd72 econ-params; odczyt przez `throughputEraParamKeys`).
+    #[serde(rename = "budynek_huta_braz_epoka2_przepustowosc")]
+    pub budynek_huta_braz_epoka2_przepustowosc: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
+    #[serde(rename = "budynek_huta_braz_epoka3_przepustowosc")]
+    pub budynek_huta_braz_epoka3_przepustowosc: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
     #[serde(rename = "budynek_odlewnia_zelaza_przepustowosc")]
     pub budynek_odlewnia_zelaza_przepustowosc: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
     #[serde(rename = "budynek_wielka_odlewnia_przepustowosc")]

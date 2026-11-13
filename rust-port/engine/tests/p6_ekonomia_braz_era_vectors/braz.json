@@ -1,0 +1,2032 @@
+{
+ "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+ "fragmentSha256": "f0e28920dedcd63f6b5b0207facd5b574a33e03087ab7f13b204257df69ef318",
+ "difficulty": "normal",
+ "brazIds": [
+  "odlewnia_brazu",
+  "odlewnia_zelaza__braz",
+  "wielka_odlewnia__braz"
+ ],
+ "rawCases": {
+  "econ": {
+   "budynki": {
+    "budynek_mlyn_mnoznik_pracy": {
+     "easy": 3,
+     "normal": 2,
+     "hard": 1,
+     "jednostka": "×",
+     "opis": "Mnożnik Młyna na całą Pracę bazową miasta (Praca_brutto = Σ × wartość). [PT]"
+    },
+    "budynek_mlyn_bonus_pracy": {
+     "easy": 3,
+     "normal": 2,
+     "hard": 1,
+     "jednostka": "Praca/turę",
+     "opis": "Stały bonus Pracy dodawany przez Młyn po mnożniku. [PT]"
+    },
+    "budynek_cegielnia_bonus_pracy": {
+     "easy": 0.31,
+     "normal": 0.25,
+     "hard": 0.19,
+     "jednostka": "%",
+     "opis": "Premia Cegielni do lokalnej Pracy (+25% Pracy brutto). [PT]"
+    },
+    "budynek_targowisko_bonus_handlu": {
+     "easy": 0.62,
+     "normal": 0.5,
+     "hard": 0.38,
+     "jednostka": "%",
+     "opis": "Premia Targowiska wyłącznie do dochodu z tras handlowych (+62% easy / +50% normal / +38% hard); nie mnoży lokalnego podatku miejskiego. [PT]"
+    },
+    "budynek_stolarnia_bonus_drewna_civ": {
+     "easy": 0.1,
+     "normal": 0.1,
+     "hard": 0.1,
+     "jednostka": "%",
+     "opis": "Zadanie 2 (2026-07-23): Stolarnia +10% produkcji Drewna CALEJ CYWILIZACJI za kazda Stolarnie (civ-wide, stackuje addytywnie: ×(1+0.10×liczbaStolarni_ownera)). Wpiete w turn-economy.ts przy akumulacji City.surowce.drewno. PLACEHOLDER do strojenia."
+    },
+    "budynek_kamieniarski_bonus_kamienia_civ": {
+     "easy": 0.1,
+     "normal": 0.1,
+     "hard": 0.1,
+     "jednostka": "%",
+     "opis": "Zadanie 2 (2026-07-23): Warsztat kamieniarski +10% produkcji Kamienia CALEJ CYWILIZACJI za kazda sztuke (civ-wide, stackuje addytywnie: ×(1+0.10×liczbaWarsztatow_ownera)). Wpiete w turn-economy.ts przy akumulacji City.surowce.kamien. PLACEHOLDER do strojenia."
+    },
+    "budynek_garncarnia_bonus_zywnosci_lokalnie": {
+     "easy": 0.1,
+     "normal": 0.1,
+     "hard": 0.1,
+     "jednostka": "%",
+     "opis": "Zadanie 2 (2026-07-23): Garncarnia +10% Zywnosci LOKALNIE (tylko w miescie, gdzie stoi; NIE civ-wide), stackuje addytywnie: ×(1+0.10×garncarnie_w_miescie). Wpiete w economy.ts cityYieldPerTurn (zywnoscBrutto, przed konsumpcja). PLACEHOLDER do strojenia."
+    },
+    "ulepszenie_surowcowe_upkeep_praca": {
+     "easy": 1,
+     "normal": 1,
+     "hard": 1,
+     "jednostka": "Praca/turę/ulepszenie",
+     "opis": "ZADANIE 1 (Maciej 2026-07-23, decyzja B): KAZDE zbudowane ulepszenie surowcowe (tartak/kamieniolom/glinianka/kopalnia/kopalnia_miedzi + DOSTEPOWE warzelnia_soli/stadnina) zuzywa 1 Praca/ture z globalnej puli produkcji cywilizacji (playerPracaPool / aiPracaPoolByOwner w main.ts) -- ciagly upkeep, niezaleznie od obsadzenia ludnoscia. Zwolnione: zywnosciowe (farma/irygacja/tarasy/bydlo/owce/lama/oboz_lowiecki/lodzie_rybackie) + infrastruktura (droga/droga_brukowana/fort/posterunek/wyrab). Wpiete w turn-economy.ts computePracaUpkeepByOwner. PLACEHOLDER do strojenia (koszt=1)."
+    },
+    "budynek_mennica_mnoznik": {
+     "easy": 2,
+     "normal": 1,
+     "hard": 0,
+     "jednostka": "×",
+     "opis": "Parametr legacy, nieużywany przez bieżący kod. Obecny mnożnik Mennicy to globalne.mennica_mnoznik_po_walucie: lokalny podatek przed podziałem suwakami, aktywny w całym imperium przy Mennicy w stolicy, Walucie i dostępie do Złota. Zachowane wyłącznie dla zgodności starych zapisów/narzędzi."
+    },
+    "budynek_biblioteka_bonus_nauki": {
+     "easy": 0.37,
+     "normal": 0.3,
+     "hard": 0.23,
+     "jednostka": "ułamek — premia do Nauki miasta (0,30 = +30% Nauki tego miasta na turę)",
+     "opis": "Premia Biblioteki do Nauki miasta. Obniżona +50% → +30% (normalny) decyzją Maciej 2026-07-25 (PYTANIE 75 = C). Powód: dotąd tańsza i wcześniejsza Biblioteka dawała PIĘCIOKROTNIE więcej niż droższa Akademia (+50% vs +10%) — logika była odwrócona. Skalowanie trudnością w konwencji pliku (łatwy ×1,24 / trudny ×0,76). Stackuje ADDYTYWNIE z premią Akademii: Nauka × (1 + premia Biblioteki + premia Akademii) = ×1,50 na normalnym przy obu budynkach (Biblioteka i Akademia to para „w bok\" — stoją obok siebie, żadna nie zastępuje drugiej)."
+    },
+    "budynek_akademia_bonus_nauki": {
+     "easy": 0.25,
+     "normal": 0.2,
+     "hard": 0.15,
+     "jednostka": "ułamek — premia do Nauki miasta (0,20 = +20% Nauki tego miasta na turę)",
+     "opis": "Premia Akademii do Nauki miasta. Podniesiona +10% → +20% (normalny) decyzją Maciej 2026-07-25 (PYTANIE 75 = C) i objęta skalowaniem trudnością (łatwy ×1,24 / trudny ×0,76), którego wcześniej nie miała. Powód: Akademia jest droższa i późniejsza od Biblioteki, więc musi dawać wyraźnie mniej niż Biblioteka tylko dlatego, że jest drugim krokiem — a nie pięciokrotnie mniej. Stackuje ADDYTYWNIE z premią Biblioteki: Nauka × (1 + 0,30 + 0,20) = ×1,50 na normalnym."
+    },
+    "waluta_mnoznik": {
+     "easy": 2,
+     "normal": 2,
+     "hard": 2,
+     "jednostka": "×",
+     "opis": "Parametr legacy, nieużywany przez bieżący kod. Waluta sama nie mnoży dochodu. Obecny mnożnik Mennicy to globalne.mennica_mnoznik_po_walucie (easy ×1,62 / normal ×1,50 / hard ×1,38), stosowany do lokalnego podatku przed podziałem. Zachowane wyłącznie dla zgodności starych zapisów/narzędzi."
+    },
+    "targowisko_praca_na_podatek_kurs": {
+     "easy": 1,
+     "normal": 1,
+     "hard": 1,
+     "jednostka": "Podatek / Praca",
+     "opis": "Kurs ręcznej, jednorazowej zamiany Pracy z puli imperium na Podatek. Wymaga co najmniej jednego Targowiska w imperium; domyślnie 1:1. Nie uruchamia się automatycznie."
+    },
+    "budynek_tartak_przepustowosc": {
+     "easy": 3,
+     "normal": 2,
+     "hard": 1,
+     "jednostka": "szt/turę",
+     "opis": "Maks konwersja Drewno→Deski w Tartaku na turę. [PT]"
+    },
+    "budynek_cegielnia_przepustowosc": {
+     "easy": 50,
+     "normal": 50,
+     "hard": 50,
+     "jednostka": "szt/turę",
+     "opis": "Maks konwersja (Glina+Drewno)→Cegła w Cegielni na turę (baza przed skalowaniem epoką). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 3→10, flat na wszystkich trudnościach (cytat właściciela nie różnicował trudności); +10% tej bazy ADDYTYWNIE za każdą epokę cywilizacji właściciela, patrz converterThroughputForEra w converters.ts. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 10→50 (×5, produkcja budynkowa surowców fizycznych). R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1 (Maciej 2026-11-05): wartość BEZ zmian (50 cykli); ×2 cegły przez outputAmount 1→2 w recepturze (converters.ts), cykle Cegielni PŁASKIE (50), a epoka właściciela skaluje WYJŚCIE cegły +50% bazy/epokę (mnożnik 1 / 1,5 / 2 / 2,5 / 3; CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE, converterOutputMultiplierForEra) — działa także gdy produkcję ogranicza drewno."
+    },
+    "budynek_huta_przepustowosc": {
+     "easy": 50,
+     "normal": 50,
+     "hard": 50,
+     "jednostka": "szt/turę",
+     "opis": "Parametr bazowy/fallback konwersji rudy+drewna+cyny→Brąz. Receptury brązu używają jawnych przepustowości z wierszy budynek_huta_braz_epoka2_przepustowosc (50/t) i budynek_huta_braz_epoka3_przepustowosc (75/t od epoki 3 wzwyż), wg epoki właściciela. [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 1→5, flat na wszystkich trudnościach. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 5→25 (×5). R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 (decyzja właściciela 2026-11-05): baza żelaza/stali 25→50 (×2) cykli/turę; mnożnik epoki właściciela dotyczy wyłącznie żelaza i stali. R-WEB-BRONZE-OUTPUT-50-75-Q1: brąz 50/t w epoce 2 i 75/t od epoki 3, jawnie per-epoka."
+    },
+    "budynek_huta_braz_epoka2_przepustowosc": {
+     "easy": 50,
+     "normal": 50,
+     "hard": 50,
+     "jednostka": "szt/turę",
+     "opis": "Jawna przepustowość receptur produkujących Brąz w epoce właściciela 2 (epoka Brązu): 50/t. Wartość per era, bez mnożnika foundry; od epoki właściciela 3 obowiązuje osobny wiersz. R-WEB-BRONZE-OUTPUT-50-75-Q1 (2026-11-11)."
+    },
+    "budynek_huta_braz_epoka3_przepustowosc": {
+     "easy": 75,
+     "normal": 75,
+     "hard": 75,
+     "jednostka": "szt/turę",
+     "opis": "Jawna przepustowość receptur produkujących Brąz od epoki właściciela 3 (epoka Żelaza): 75/t, utrzymywana dla późniejszych epok. Wartość per era, bez mnożnika foundry. R-WEB-BRONZE-OUTPUT-50-75-Q1 (2026-11-11)."
+    },
+    "budynek_odlewnia_zelaza_przepustowosc": {
+     "easy": 50,
+     "normal": 50,
+     "hard": 50,
+     "jednostka": "szt/turę",
+     "opis": "Maks konwersja (Ruda żelaza+Drewno)→Żelazo w Odlewni żelaza / Wielka odlewnia na turę. Cykle × m(e) epoki WŁAŚCICIELA (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1: 1/1,5/2/2,5/3; converters.ts CONVERTER_FOUNDRY_ERA_RECIPE_IDS). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 1→5, flat na wszystkich trudnościach. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 5→25 (×5). R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 (decyzja właściciela 2026-11-05): 25→50 (×2) cykli/turę; mnożnik epoki właściciela na cykle; Wielka odlewnia w tej samej rodzinie (założenie)."
+    },
+    "budynek_wielka_odlewnia_przepustowosc": {
+     "easy": 50,
+     "normal": 50,
+     "hard": 50,
+     "jednostka": "szt/turę",
+     "opis": "Maks konwersja (Żelazo+Drewno)→Stal w Wielka odlewnia na turę (Maciej 2026-07-27: przeniesione z Wielka Kuźnia). Cykle × m(e) epoki WŁAŚCICIELA (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1: 1/1,5/2/2,5/3; converters.ts CONVERTER_FOUNDRY_ERA_RECIPE_IDS). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 1→5, flat na wszystkich trudnościach. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 5→25 (×5). R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 (decyzja właściciela 2026-11-05): 25→50 (×2) cykli/turę; mnożnik epoki właściciela na cykle; Wielka odlewnia w tej samej rodzinie (założenie)."
+    },
+    "budynek_garncarnia_przepustowosc": {
+     "easy": 50,
+     "normal": 50,
+     "hard": 50,
+     "jednostka": "szt/turę",
+     "opis": "Maks konwersja (Glina+Drewno)→Ceramika w Garncarni na turę (baza przed skalowaniem epoką, PYTANIE-84-B5). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 6→10, flat na wszystkich trudnościach; +10% tej bazy ADDYTYWNIE za każdą epokę cywilizacji właściciela, patrz converterThroughputForEra w converters.ts. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 10→50 (×5)."
+    },
+    "budynek_spichlerz_zuzywa_ceramika": {
+     "easy": 25,
+     "normal": 25,
+     "hard": 25,
+     "jednostka": "Ceramika/turę",
+     "opis": "PYTANIE-84-B6 (Maciej 2026-07-27): Spichlerz I zużywa Ceramikę ze skarbca państwa co turę; brak surowca → brak bonusów ludności (U-24=B, U-25B). Czytane przez loadSpichlerzDrainParams (building-resource-gate.ts:357, klucz ceramikaI) → paySpichlerzDrainForCity (building-resource-gate.ts:418) oraz turn-economy.ts:1375, :1407, :1548, :2479. R-WEB-SPICHLERZ-DRAIN-KEYS-Q1 (Operator, 2026-10-31)."
+    },
+    "budynek_spichlerz_ii_zuzywa_sol": {
+     "easy": 25,
+     "normal": 25,
+     "hard": 25,
+     "jednostka": "Sól/turę",
+     "opis": "PYTANIE-84-B7/U-2 (Maciej 2026-07-27): Spichlerz Królewski zużywa Sól ze skarbca × każdy działający Spichlerz Królewski płacący Sól; brak Soli → brak bonusu wojska (imperium-wide). Czytane przez loadSpichlerzDrainParams (building-resource-gate.ts:357, klucz solII) → paySpichlerzDrainForCity (building-resource-gate.ts:418, gałąź sol). R-WEB-SPICHLERZ-DRAIN-KEYS-Q1 (Operator, 2026-10-31)."
+    },
+    "budynek_spichlerz_ii_zuzywa_ceramika": {
+     "easy": 25,
+     "normal": 25,
+     "hard": 25,
+     "jednostka": "Ceramika/turę",
+     "opis": "PYTANIE-84-B8 (Maciej 2026-07-27): Spichlerz Królewski zużywa Ceramikę ze skarbca co turę (obok Soli); brak Ceramiki → brak bonusu ludności w mieście. Czytane przez loadSpichlerzDrainParams (building-resource-gate.ts:357, klucz ceramikaII; używany gdy miasto ma Spichlerz Królewski) → paySpichlerzDrainForCity (building-resource-gate.ts:418) oraz turn-economy.ts:1375, :1407, :1548, :2479. R-WEB-SPICHLERZ-DRAIN-KEYS-Q1 (Operator, 2026-10-31)."
+    },
+    "utrzymanie_surowce_wspolczynnik": {
+     "easy": 1,
+     "normal": 1,
+     "hard": 1,
+     "jednostka": "szt. surowca / 1 Pieniądz utrzymania / turę",
+     "opis": "R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1 (decyzja właściciela 2026-11-09): utrzymanie SUROWCOWE budynku jest proporcjonalne do jego utrzymania w Pieniądzu. Dla KAŻDEGO typu surowca z `koszt_surowce` (koszt budowy) budynek zużywa na turę floor(utrzymanie_Pieniądz(poziom) × ta wartość) sztuk; 1 = 1:1 (np. utrzymanie 2 Pieniądze i koszt drewno+kamień+cegła => 2 drewna + 2 kamienia + 2 cegły na turę). Pieniądz utrzymania zostaje bez zmian (surowce są DODATKOWO). Zastępuje dawną stałą 5 szt./typ. Czytane przez configureBuildingResourceUpkeepRatio (economy-upkeep.ts), wspólne dla ticka gracza i AI, podglądów i UI."
+    },
+    "utrzymanie_budynek": {
+     "easy": 1,
+     "normal": 1,
+     "hard": 2,
+     "jednostka": "Pieniądz/turę",
+     "opis": "Domyślna stawka utrzymania TYLKO dla budynku bez własnego wpisu `utrzymanie` w buildings.json. Od 2026-07-25 (decyzja właściciela 19=A) silnik czyta utrzymanie z danych każdego budynku (0–5 Pieniądz/turę, zróżnicowane per budynek) — ta wartość NIE nadpisuje ich, jest wyłącznie zabezpieczeniem na wypadek brakującego wpisu. Dziś wszystkie 39 budynków mają własną wartość, więc ta stawka faktycznie się nie stosuje. [PT]"
+    }
+   }
+  },
+  "empty": {},
+  "huta_only": {
+   "budynki": {
+    "budynek_huta_przepustowosc": {
+     "normal": 30
+    }
+   }
+  }
+ },
+ "cases": [
+  {
+   "raw": "econ",
+   "era": "NaN",
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "econ",
+   "era": "Infinity",
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "econ",
+   "era": "-Infinity",
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "econ",
+   "era": -3,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "econ",
+   "era": 0,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "econ",
+   "era": 0.5,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "econ",
+   "era": 1,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "econ",
+   "era": 1.5,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 52.5,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 52.5,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "econ",
+   "era": 2,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 1.5,
+    "garncarnia": 55.00000000000001,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 75,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 75,
+    "wielka_odlewnia__stal": 75
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 1.5,
+    "garncarnia": 55.00000000000001,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 75,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 75,
+    "wielka_odlewnia__stal": 75
+   }
+  },
+  {
+   "raw": "econ",
+   "era": 2.5,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 1.5,
+    "garncarnia": 57.49999999999999,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 75,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 75,
+    "wielka_odlewnia__stal": 75
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 1.5,
+    "garncarnia": 57.49999999999999,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 75,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 75,
+    "wielka_odlewnia__stal": 75
+   }
+  },
+  {
+   "raw": "econ",
+   "era": 2.999,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 1.5,
+    "garncarnia": 59.995,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 75,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 75,
+    "wielka_odlewnia__stal": 75
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 1.5,
+    "garncarnia": 59.995,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 75,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 75,
+    "wielka_odlewnia__stal": 75
+   }
+  },
+  {
+   "raw": "econ",
+   "era": 3,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 2,
+    "garncarnia": 60,
+    "huta": 50,
+    "odlewnia_brazu": 75,
+    "odlewnia_zelaza__braz": 75,
+    "odlewnia_zelaza__zelazo": 100,
+    "wielka_odlewnia__braz": 75,
+    "wielka_odlewnia__zelazo": 100,
+    "wielka_odlewnia__stal": 100
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 2,
+    "garncarnia": 60,
+    "huta": 50,
+    "odlewnia_brazu": 75,
+    "odlewnia_zelaza__braz": 75,
+    "odlewnia_zelaza__zelazo": 100,
+    "wielka_odlewnia__braz": 75,
+    "wielka_odlewnia__zelazo": 100,
+    "wielka_odlewnia__stal": 100
+   }
+  },
+  {
+   "raw": "econ",
+   "era": 3.5,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 2,
+    "garncarnia": 62.5,
+    "huta": 50,
+    "odlewnia_brazu": 75,
+    "odlewnia_zelaza__braz": 75,
+    "odlewnia_zelaza__zelazo": 100,
+    "wielka_odlewnia__braz": 75,
+    "wielka_odlewnia__zelazo": 100,
+    "wielka_odlewnia__stal": 100
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 2,
+    "garncarnia": 62.5,
+    "huta": 50,
+    "odlewnia_brazu": 75,
+    "odlewnia_zelaza__braz": 75,
+    "odlewnia_zelaza__zelazo": 100,
+    "wielka_odlewnia__braz": 75,
+    "wielka_odlewnia__zelazo": 100,
+    "wielka_odlewnia__stal": 100
+   }
+  },
+  {
+   "raw": "econ",
+   "era": 4,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 2.5,
+    "garncarnia": 65,
+    "huta": 50,
+    "odlewnia_brazu": 75,
+    "odlewnia_zelaza__braz": 75,
+    "odlewnia_zelaza__zelazo": 125,
+    "wielka_odlewnia__braz": 75,
+    "wielka_odlewnia__zelazo": 125,
+    "wielka_odlewnia__stal": 125
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 2.5,
+    "garncarnia": 65,
+    "huta": 50,
+    "odlewnia_brazu": 75,
+    "odlewnia_zelaza__braz": 75,
+    "odlewnia_zelaza__zelazo": 125,
+    "wielka_odlewnia__braz": 75,
+    "wielka_odlewnia__zelazo": 125,
+    "wielka_odlewnia__stal": 125
+   }
+  },
+  {
+   "raw": "econ",
+   "era": 5,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 3,
+    "garncarnia": 70,
+    "huta": 50,
+    "odlewnia_brazu": 75,
+    "odlewnia_zelaza__braz": 75,
+    "odlewnia_zelaza__zelazo": 150,
+    "wielka_odlewnia__braz": 75,
+    "wielka_odlewnia__zelazo": 150,
+    "wielka_odlewnia__stal": 150
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 3,
+    "garncarnia": 70,
+    "huta": 50,
+    "odlewnia_brazu": 75,
+    "odlewnia_zelaza__braz": 75,
+    "odlewnia_zelaza__zelazo": 150,
+    "wielka_odlewnia__braz": 75,
+    "wielka_odlewnia__zelazo": 150,
+    "wielka_odlewnia__stal": 150
+   }
+  },
+  {
+   "raw": "econ",
+   "era": 10,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 5.5,
+    "garncarnia": 95,
+    "huta": 50,
+    "odlewnia_brazu": 75,
+    "odlewnia_zelaza__braz": 75,
+    "odlewnia_zelaza__zelazo": 275,
+    "wielka_odlewnia__braz": 75,
+    "wielka_odlewnia__zelazo": 275,
+    "wielka_odlewnia__stal": 275
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 5.5,
+    "garncarnia": 95,
+    "huta": 50,
+    "odlewnia_brazu": 75,
+    "odlewnia_zelaza__braz": 75,
+    "odlewnia_zelaza__zelazo": 275,
+    "wielka_odlewnia__braz": 75,
+    "wielka_odlewnia__zelazo": 275,
+    "wielka_odlewnia__stal": 275
+   }
+  },
+  {
+   "raw": "empty",
+   "era": "NaN",
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "empty",
+   "era": "Infinity",
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "empty",
+   "era": "-Infinity",
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "empty",
+   "era": -3,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "empty",
+   "era": 0,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "empty",
+   "era": 0.5,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "empty",
+   "era": 1,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "empty",
+   "era": 1.5,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 52.5,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 52.5,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "empty",
+   "era": 2,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 1.5,
+    "garncarnia": 55.00000000000001,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 75,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 75,
+    "wielka_odlewnia__stal": 75
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 1.5,
+    "garncarnia": 55.00000000000001,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 75,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 75,
+    "wielka_odlewnia__stal": 75
+   }
+  },
+  {
+   "raw": "empty",
+   "era": 2.5,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 1.5,
+    "garncarnia": 57.49999999999999,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 75,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 75,
+    "wielka_odlewnia__stal": 75
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 1.5,
+    "garncarnia": 57.49999999999999,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 75,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 75,
+    "wielka_odlewnia__stal": 75
+   }
+  },
+  {
+   "raw": "empty",
+   "era": 2.999,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 1.5,
+    "garncarnia": 59.995,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 75,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 75,
+    "wielka_odlewnia__stal": 75
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 1.5,
+    "garncarnia": 59.995,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 75,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 75,
+    "wielka_odlewnia__stal": 75
+   }
+  },
+  {
+   "raw": "empty",
+   "era": 3,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 2,
+    "garncarnia": 60,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 100,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 100,
+    "wielka_odlewnia__stal": 100
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 2,
+    "garncarnia": 60,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 100,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 100,
+    "wielka_odlewnia__stal": 100
+   }
+  },
+  {
+   "raw": "empty",
+   "era": 3.5,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 2,
+    "garncarnia": 62.5,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 100,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 100,
+    "wielka_odlewnia__stal": 100
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 2,
+    "garncarnia": 62.5,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 100,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 100,
+    "wielka_odlewnia__stal": 100
+   }
+  },
+  {
+   "raw": "empty",
+   "era": 4,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 2.5,
+    "garncarnia": 65,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 125,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 125,
+    "wielka_odlewnia__stal": 125
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 2.5,
+    "garncarnia": 65,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 125,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 125,
+    "wielka_odlewnia__stal": 125
+   }
+  },
+  {
+   "raw": "empty",
+   "era": 5,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 3,
+    "garncarnia": 70,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 150,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 150,
+    "wielka_odlewnia__stal": 150
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 3,
+    "garncarnia": 70,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 150,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 150,
+    "wielka_odlewnia__stal": 150
+   }
+  },
+  {
+   "raw": "empty",
+   "era": 10,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 5.5,
+    "garncarnia": 95,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 275,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 275,
+    "wielka_odlewnia__stal": 275
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 5.5,
+    "garncarnia": 95,
+    "huta": 50,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 275,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 275,
+    "wielka_odlewnia__stal": 275
+   }
+  },
+  {
+   "raw": "huta_only",
+   "era": "NaN",
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 30,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 30,
+    "odlewnia_brazu": 30,
+    "odlewnia_zelaza__braz": 30,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 30,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "huta_only",
+   "era": "Infinity",
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 30,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 30,
+    "odlewnia_brazu": 30,
+    "odlewnia_zelaza__braz": 30,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 30,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "huta_only",
+   "era": "-Infinity",
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 30,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 30,
+    "odlewnia_brazu": 30,
+    "odlewnia_zelaza__braz": 30,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 30,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "huta_only",
+   "era": -3,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 30,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 30,
+    "odlewnia_brazu": 30,
+    "odlewnia_zelaza__braz": 30,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 30,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "huta_only",
+   "era": 0,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 30,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 30,
+    "odlewnia_brazu": 30,
+    "odlewnia_zelaza__braz": 30,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 30,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "huta_only",
+   "era": 0.5,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 30,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 30,
+    "odlewnia_brazu": 30,
+    "odlewnia_zelaza__braz": 30,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 30,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "huta_only",
+   "era": 1,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 30,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 50,
+    "huta": 30,
+    "odlewnia_brazu": 30,
+    "odlewnia_zelaza__braz": 30,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 30,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "huta_only",
+   "era": 1.5,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "garncarnia": 52.5,
+    "huta": 30,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   },
+   "path2": {
+    "cegielnia": 50,
+    "garncarnia": 52.5,
+    "huta": 30,
+    "odlewnia_brazu": 30,
+    "odlewnia_zelaza__braz": 30,
+    "odlewnia_zelaza__zelazo": 50,
+    "wielka_odlewnia__braz": 30,
+    "wielka_odlewnia__zelazo": 50,
+    "wielka_odlewnia__stal": 50
+   }
+  },
+  {
+   "raw": "huta_only",
+   "era": 2,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 1.5,
+    "garncarnia": 55.00000000000001,
+    "huta": 30,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 75,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 75,
+    "wielka_odlewnia__stal": 75
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 1.5,
+    "garncarnia": 55.00000000000001,
+    "huta": 30,
+    "odlewnia_brazu": 30,
+    "odlewnia_zelaza__braz": 30,
+    "odlewnia_zelaza__zelazo": 75,
+    "wielka_odlewnia__braz": 30,
+    "wielka_odlewnia__zelazo": 75,
+    "wielka_odlewnia__stal": 75
+   }
+  },
+  {
+   "raw": "huta_only",
+   "era": 2.5,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 1.5,
+    "garncarnia": 57.49999999999999,
+    "huta": 30,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 75,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 75,
+    "wielka_odlewnia__stal": 75
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 1.5,
+    "garncarnia": 57.49999999999999,
+    "huta": 30,
+    "odlewnia_brazu": 30,
+    "odlewnia_zelaza__braz": 30,
+    "odlewnia_zelaza__zelazo": 75,
+    "wielka_odlewnia__braz": 30,
+    "wielka_odlewnia__zelazo": 75,
+    "wielka_odlewnia__stal": 75
+   }
+  },
+  {
+   "raw": "huta_only",
+   "era": 2.999,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka2_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 1.5,
+    "garncarnia": 59.995,
+    "huta": 30,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 75,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 75,
+    "wielka_odlewnia__stal": 75
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 1.5,
+    "garncarnia": 59.995,
+    "huta": 30,
+    "odlewnia_brazu": 30,
+    "odlewnia_zelaza__braz": 30,
+    "odlewnia_zelaza__zelazo": 75,
+    "wielka_odlewnia__braz": 30,
+    "wielka_odlewnia__zelazo": 75,
+    "wielka_odlewnia__stal": 75
+   }
+  },
+  {
+   "raw": "huta_only",
+   "era": 3,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 2,
+    "garncarnia": 60,
+    "huta": 30,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 100,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 100,
+    "wielka_odlewnia__stal": 100
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 2,
+    "garncarnia": 60,
+    "huta": 30,
+    "odlewnia_brazu": 30,
+    "odlewnia_zelaza__braz": 30,
+    "odlewnia_zelaza__zelazo": 100,
+    "wielka_odlewnia__braz": 30,
+    "wielka_odlewnia__zelazo": 100,
+    "wielka_odlewnia__stal": 100
+   }
+  },
+  {
+   "raw": "huta_only",
+   "era": 3.5,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 2,
+    "garncarnia": 62.5,
+    "huta": 30,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 100,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 100,
+    "wielka_odlewnia__stal": 100
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 2,
+    "garncarnia": 62.5,
+    "huta": 30,
+    "odlewnia_brazu": 30,
+    "odlewnia_zelaza__braz": 30,
+    "odlewnia_zelaza__zelazo": 100,
+    "wielka_odlewnia__braz": 30,
+    "wielka_odlewnia__zelazo": 100,
+    "wielka_odlewnia__stal": 100
+   }
+  },
+  {
+   "raw": "huta_only",
+   "era": 4,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 2.5,
+    "garncarnia": 65,
+    "huta": 30,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 125,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 125,
+    "wielka_odlewnia__stal": 125
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 2.5,
+    "garncarnia": 65,
+    "huta": 30,
+    "odlewnia_brazu": 30,
+    "odlewnia_zelaza__braz": 30,
+    "odlewnia_zelaza__zelazo": 125,
+    "wielka_odlewnia__braz": 30,
+    "wielka_odlewnia__zelazo": 125,
+    "wielka_odlewnia__stal": 125
+   }
+  },
+  {
+   "raw": "huta_only",
+   "era": 5,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 3,
+    "garncarnia": 70,
+    "huta": 30,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 150,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 150,
+    "wielka_odlewnia__stal": 150
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 3,
+    "garncarnia": 70,
+    "huta": 30,
+    "odlewnia_brazu": 30,
+    "odlewnia_zelaza__braz": 30,
+    "odlewnia_zelaza__zelazo": 150,
+    "wielka_odlewnia__braz": 30,
+    "wielka_odlewnia__zelazo": 150,
+    "wielka_odlewnia__stal": 150
+   }
+  },
+  {
+   "raw": "huta_only",
+   "era": 10,
+   "eraParamKey": {
+    "cegielnia": null,
+    "garncarnia": null,
+    "huta": null,
+    "odlewnia_brazu": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "odlewnia_zelaza__zelazo": null,
+    "wielka_odlewnia__braz": "budynek_huta_braz_epoka3_przepustowosc",
+    "wielka_odlewnia__zelazo": null,
+    "wielka_odlewnia__stal": null
+   },
+   "path1": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 5.5,
+    "garncarnia": 95,
+    "huta": 30,
+    "odlewnia_brazu": 50,
+    "odlewnia_zelaza__braz": 50,
+    "odlewnia_zelaza__zelazo": 275,
+    "wielka_odlewnia__braz": 50,
+    "wielka_odlewnia__zelazo": 275,
+    "wielka_odlewnia__stal": 275
+   },
+   "path2": {
+    "cegielnia": 50,
+    "cegielnia#outMult": 5.5,
+    "garncarnia": 95,
+    "huta": 30,
+    "odlewnia_brazu": 30,
+    "odlewnia_zelaza__braz": 30,
+    "odlewnia_zelaza__zelazo": 275,
+    "wielka_odlewnia__braz": 30,
+    "wielka_odlewnia__zelazo": 275,
+    "wielka_odlewnia__stal": 275
+   }
+  }
+ ]
+}
