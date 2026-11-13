@@ -1118,6 +1118,26 @@ export function isRelationAtWar(
  * W stanie wojny score relacji nie może utrzymywać nastawienia „Przyjazny"/„Życzliwy".
  * Obniża Zaufanie, potem Respekt, do WAR_RELATION_SCORE_CAP (29).
  */
+/**
+ * R-WEB-DIPLO-RESPECT-MILITARY-EVENTS-WIRE-Q1: czysta decyzja „kto dostaje 'wygrana_bitwa'”.
+ * Zwraca parę {winnerOwner, loserOwner} tylko gdy wygrał GRACZ (człowiek) i przeciwnik nie jest
+ * człowiekiem ani barbarzyńcą. Remis, bitwa gdzie wygrywa AI, bitwa AI↔AI i barbarzyńcy → null.
+ */
+export function militaryWinRespectPair(
+  winner: 'atakujacy' | 'obronca' | 'remis',
+  atkOwner: number | undefined,
+  defOwner: number | undefined,
+  isHumanOwner: (ownerId: number) => boolean,
+  isBarbarianOwner: (ownerId: number) => boolean,
+): { winnerOwner: number; loserOwner: number } | null {
+  if (winner === 'remis') return null;
+  if (atkOwner === undefined || defOwner === undefined || atkOwner === defOwner) return null;
+  const winnerOwner = winner === 'atakujacy' ? atkOwner : defOwner;
+  const loserOwner = winner === 'atakujacy' ? defOwner : atkOwner;
+  if (!isHumanOwner(winnerOwner) || isHumanOwner(loserOwner) || isBarbarianOwner(loserOwner)) return null;
+  return { winnerOwner, loserOwner };
+}
+
 export function clampRelationForWar(rel: Relation): Relation {
   if (rel.status !== 'wojna') return rel;
   const score = relationScore(rel);

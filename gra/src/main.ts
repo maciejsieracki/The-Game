@@ -1201,7 +1201,7 @@ import {
   relationScore, sisterAllianceDiplomacyParams, sisterAllianceEligible,
   isOwnerAtWarInRelations,
   type Relation, type AIDiplomacyContext, type PotegaKomponenty, type TickCtx,
-  type DiplomaticEvent, type DiplomacyParams,
+  type DiplomaticEvent, type DiplomacyParams, militaryWinRespectPair,
 } from './game/diplomacy';
 import {
   resolveDiplomacyActionLock,
@@ -12472,13 +12472,9 @@ async function boot(): Promise<void> {
       defRoster: RuntimeUnit[],
       winner: 'atakujacy' | 'obronca' | 'remis',
     ): void {
-      if (winner === 'remis') return;
-      const atkOwner = atkRoster[0]?.ownerId;
-      const defOwner = defRoster[0]?.ownerId;
-      if (atkOwner === undefined || defOwner === undefined || atkOwner === defOwner) return;
-      const winnerOwner = winner === 'atakujacy' ? atkOwner : defOwner;
-      const loserOwner = winner === 'atakujacy' ? defOwner : atkOwner;
-      if (!isHuman(winnerOwner) || isHuman(loserOwner) || isBarbarian(loserOwner)) return;
+      const pair = militaryWinRespectPair(winner, atkRoster[0]?.ownerId, defRoster[0]?.ownerId, isHuman, isBarbarian);
+      if (!pair) return;
+      const { winnerOwner, loserOwner } = pair;
       const cur = getDiploRelation(winnerOwner, loserOwner);
       setDiploRelation(winnerOwner, loserOwner, applyDiploEventTracked(winnerOwner, loserOwner, cur, 'wygrana_bitwa'));
     }
