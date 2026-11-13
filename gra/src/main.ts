@@ -1315,7 +1315,7 @@ import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
 import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
 import { isTechDiscoveryNoticeOpen, showTechDiscoveryNotice } from './ui/techDiscoveryNotice';
 import { showCivElimNotice } from './ui/civElimNotice';
-import { buildAiLevers, decideAiOwnerBalance, isNnsAiBalanceEnabled } from './game/no-negative-stocks';
+import { buildAiLevers, decideAiOwnerBalance } from './game/no-negative-stocks';
 import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIPurchaseUnit, loadAiPurchaseReserveParams, decideAIEconomySliders, aiSeedPodzialHandlu, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, AI_TRADE_BARTER_COOLDOWN_TURNS, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
 import { aiCityCaptureAllowed, aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory, snapshotAiTargetMemory, type AiTargetMemoryByOwner } from './game/ai-fog';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand, MiastoWycenaWejscie } from './game/ai';
@@ -7373,11 +7373,11 @@ async function boot(): Promise<void> {
       focusCameraOnUnit(next);
     }
 
-    /** Rozwiązanie jednostki gracza — usuwa z mapy, zwraca Manpower do puli imperium. */
     /**
      * R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1 (C2): rozwiązanie jednostki wsparcia AI (uogólnienie
      * disbandPlayerUnit dla ownerId !== 0). Bez zwrotu złota, bez zmian zachowania gracza.
-     * Nigdy nie rusza jednostek nie-cywilnych, garnizonu ani oblężenia.
+     * Nigdy nie rusza jednostek nie-cywilnych, garnizonu ani oblężenia. Sprząta stan marszu
+     * (plannedMarches / marchAttackTargets) dla usuniętej jednostki.
      */
     function disbandAiSupportUnit(unitId: string, ownerId: number): boolean {
       if (ownerId === 0) return false;
@@ -7387,10 +7387,12 @@ async function boot(): Promise<void> {
       if (u.ownerId !== ownerId || u.inGarnizon === true || u.oblegaCityId) return false;
       if (!isCivilianUnit(u)) return false;
       units.splice(idx, 1);
+      clearPlannedMarch(unitId, true);
       syncUnitsRender();
       return true;
     }
 
+    /** Rozwiązanie jednostki gracza — usuwa z mapy, zwraca Manpower do puli imperium. */
     function disbandPlayerUnit(unitId: string): boolean {
       const idx = units.findIndex(x => x.id === unitId);
       if (idx < 0) return false;
@@ -39813,6 +39815,9 @@ async function boot(): Promise<void> {
             for (const c of cities) {
               if (isAiOwner(humanSeats, c.ownerId)) aiOwnerIds.add(c.ownerId);
             }
+            // C2 (R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1): wstrzymania są per tura — czyścimy przed
+            // bankowaniem AI, żeby wstrzymanie z poprzedniej tury nie trwało do końca gry.
+            aiNnsHoldOwners.clear();
             for (const oid of aiOwnerIds) {
               const aiEcon = sumEconomyForOwner(econ, oid);
               aiGoldIncomeByOwner.set(oid, aiEcon.pieniadz);
