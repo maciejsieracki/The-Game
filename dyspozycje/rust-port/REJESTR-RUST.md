@@ -764,3 +764,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - Pełny test na tipie: **3301 passed, 0 failed, 1 ignored** (exit 0); fmt OK; clippy `-D warnings` OK.
 - **FF `parity-v2`: `94feb5e37` → `0ca58770e`.** Worktree `integ-victory` usunięty.
 - Gotowe do wpięcia (ZWYCIESTWO-WIRING, świeży start).
+
+## Przebieg (13.11, ~19:00): integracja ZWYCIESTWO-IMPL i świeże starty
+- **ZWYCIESTWO-IMPL zintegrowane:** FF `parity-v2` `94feb5e37` → `0ca58770e`. Pełny test: **3301 passed, 0 failed, 1 ignored**.
+- **Świeże starty (baza `0ca58770e`, bez cache poprzednich BLOCK):**
+  - ZWYCIESTWO-WIRING-Q1 — `wf_ba1cfc1f-3e1`, Operator HAIKU.
+  - ZLOZA-B-REST-Q1 — `wf_6615211b-a5e`, Operator HAIKU.
+  - EKONOMIA-BRAZ-ERA-Q1 (runda 2) — `wf_a01b7169-2d9`, Operator HAIKU.
+- **Dysk:** 16 GB wolne przed startem.
+- **Dispatche:** baza zaktualizowana do `0ca58770e` (commit `61f507f12`).
