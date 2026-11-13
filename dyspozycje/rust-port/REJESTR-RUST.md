@@ -818,3 +818,8 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Start EKONOMIA-BRAZ-ERA r3** (baza `b611211fc`, świeżo, wektory z pina `07d2fbd72`) — `wf_208a3a6e-7a9`, Operator HAIKU.
 - **Trwa:** ZLOZA-B-REST r3 (Obrona, HAIKU, od 19:10, `wf_d3ddfaff-163`).
 - **Dysk:** 11 GB przed startami. **Parity:** `0ca58770e`.
+
+## Przebieg (13.11, heartbeat 20:18): trzy aktywne
+- **Aktywne (3 z 4):** ZWYCIESTWO-WIRING r2 (Operator, HAIKU, od 20:09, `wf_87db356b-8ec`); EKONOMIA-BRAZ-ERA r3 (Operator, HAIKU, od 20:09, `wf_208a3a6e-7a9`); ZLOZA-B-REST r3 (Obrona, HAIKU, od 19:10, `wf_d3ddfaff-163`). Bez wyniku FC.
+- **Czwarty slot pusty:** brak gotowego dispatchu.
+- **Dysk:** 9,6 GB. **Parity:** `0ca58770e`.
