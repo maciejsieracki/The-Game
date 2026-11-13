@@ -432,3 +432,13 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Nadpisany raport:** `01-operator-r2.md` został zmieniony przez r3. Do przywrócenia z refu `refs/keep/R-RUSTPORT-P6-CRED-WOJNA-Q1-r2-code` w rundzie 4.
 - **Dysk:** 2,1 GB przy trwającym `cargo test` w worktree rundy 3. Próg 2 GB z CLAUDE.md: nie zaczynam nowych startów, kończące się rundy idą dalej. Worktree rundy 3 zostają do werdyktu FC.
 - **Stan repo:** `parity-v2` = `003d53f97` (bez zmian). `claude/rust-sivvrn` przed tym wpisem = `1d946fe0b`.
+
+## Przebieg (CRED-WOJNA-Q1, runda 3 zamknięta, runda 4 uruchomiona): wariant A
+- **Runda 3 (`wf_a4483abe-c33`):** Operator PASS (`330c6a9ac`, pełny `cargo test` 3258/0/1). Evaluator PASS-WITH-NOTES. Obrona DECISION_REQUIRED (`c3a711cc1`). FC PASS-WITH-NOTES (`8f9410814`). Zarzut Z1: przeniesienie z r2 nadpisało testy parity (`003d53f97`). Usunięto test zgodności wstecz i test S3 z wersji parity. Osłabienie, nie uzupełnienie.
+- **Decyzja (techniczna, orkiestrator):** wariant A. Pliki parity wracają bajt-w-bajt. Zestaw r2 idzie jako nowe pliki `*_r2*`. Kryterium: 0 usuniętych linii w `rust-port/engine/tests` vs parity. DODATEK r4: `7eda73831`.
+- **Korekta mojego błędu:** zarzut „hak w `declare_forced_wars` nie jest wołany” był fałszywy. Hak jest w `war_turn_declare.rs:116` → `turn_war_dipl_steps.rs:895`, test `p6_cred_wojna_forced.rs` 4 ok. Decyzja „rozszerzyć allowlistę o `war_turn_declare.rs`” jest zbędna. Pozostaje tylko #120 (wypowiedzenie gracza, sojusz 23806, klaster 40441).
+- **Zabezpieczenie:** refy `refs/keep/R-RUSTPORT-P6-CRED-WOJNA-Q1-r3-{op,obrona,fc,eval}`. FC wypchnięty na `rust-port-wip/R-RUSTPORT-P6-CRED-WOJNA-Q1-r3-fc`. Worktree rundy 3 usunięte.
+- **Runda 4 (`wf_09962ba6-668`), baza parity `003d53f97`:** Operator (HAIKU) przywraca testy parity, dodaje zestaw r2 pod nowymi nazwami. Obrona HAIKU, Evaluator i FC SONNET.
+- **Uwaga do atrybucji:** harness dołącza do commitów linię `Co-Authored-By` z nazwą modelu. CLAUDE.md tego zakazuje w artefaktach repo. Commit `cc4554ec7` (r2 FC) jest już na `rust-port-wip` z taką linią. Nie przepisuję opublikowanej gałęzi bez decyzji właściciela.
+- **Dysk:** 7,2 GB po sprzątaniu rundy 3.
+- **Stan repo:** `parity-v2` = `003d53f97` (bez zmian). `claude/rust-sivvrn` przed tym wpisem = `7eda73831`.
