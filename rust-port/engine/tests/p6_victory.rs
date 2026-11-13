@@ -306,8 +306,9 @@ fn przypadki_reczne_kryteriow_konca() {
 
 #[test]
 fn mutacja_kolejnosci_zmienia_wynik() {
-    // Gdyby dominacja byla sprawdzana po przegranej, ten przypadek dalby przegrana zamiast dominacji:
-    // gracz bez miast, ale z 100% mocy przy pustej liscie potegi innych -> dominacja nieaktywna (potegi.len()=0).
+    // Przypadek A: gracz bez miast, pusta lista potegi innych -> dominacja nieaktywna (potegi.len()=0),
+    // wiec wynik to przegrana. Ten przypadek NIE testuje kolejnosci dominacja/przegrana (dominacja i tak
+    // nie zadziala); kolejnosc pilnuje przypadek B nizej.
     let bez_potegi = VictoryInput {
         city_owner_ids: vec![],
         gracz: 0,
@@ -319,6 +320,24 @@ fn mutacja_kolejnosci_zmienia_wynik() {
     assert_eq!(
         check_victory(&bez_potegi).map(|r| r.rodzaj),
         Some(VictoryKind::Przegrana)
+    );
+
+    // Przypadek B (kolejnosc dominacja przed przegrana): gracz BEZ miast (eliminowany, kiedysMial=true), ale
+    // z 60% mocy przy niepustej liscie innych i era 3. Pin (checkVictory: dominacja pierwsza) daje Dominacja.
+    // Mutacja "przegrana przed dominacja" dalaby Przegrana i ten test by padl.
+    let eliminowany_z_dominacja = VictoryInput {
+        city_owner_ids: vec![1, 2],
+        gracz: 0,
+        potega_gracza: Some(60.0),
+        potegi_wszystkich: Some(vec![60.0, 40.0]),
+        gracz_era: Some(3),
+        gracz_kiedys_mial_miasto: Some(true),
+        ..VictoryInput::default()
+    };
+    assert!(is_eliminated(0, &eliminowany_z_dominacja.city_owner_ids));
+    assert_eq!(
+        check_victory(&eliminowany_z_dominacja).map(|r| r.rodzaj),
+        Some(VictoryKind::Dominacja)
     );
 
     // Dominacja przed przegrana: gracz z miastem i 60% wygrywa, nawet gdy inne miasto ma AI.

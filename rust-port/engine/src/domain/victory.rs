@@ -5,8 +5,8 @@
 //! - `isEliminated` / `citiesOf` (victory.ts:128-138): wejscie `city_owner_ids` to tablica `ownerId` miast
 //!   (pole `ownerId` jest jedynym uzywanym przez pin); puste dopasowanie = wyeliminowany.
 //! - `powerShare` (victory.ts:141-146): udzial z `Math.max(0, p)` w sumie i `Math.max(0, potegaGracza)`.
-//!   Uwaga: JS `Math.max(0, NaN)` = NaN, Rust `f64::max(0.0, NaN)` = 0.0. Wejscia NaN nie sa objete parytetem
-//!   (NIE_ZMIERZONO; pin nie generuje NaN w mocy, patrz `p6_victory_gen.mjs`).
+//!   `Math.max(0, x)` z pinu przepuszcza NaN (JS: `Math.max(0, NaN)` = NaN); Rust `f64::max` by dal 0.0, dlatego
+//!   przycinanie idzie przez `js_max0`, ktory zachowuje NaN (zarzut obrony r1: rozbieznosc przy NaN w sumie).
 //! - `isDominacjaVictory` (victory.ts:149-157): era < ostatnia epoka -> false; udzial > `PROG_DOMINACJI_POWER`.
 //! - `isNaukaVictory` (victory.ts:160-167): wszystkie tech + (przy `NAUKA_WYMAGA_RAKIETY` rakieta).
 //! - `techIdsInGameScope` (victory.ts:189-202) i `allTechInScopeResearched` (victory.ts:170-179).
@@ -158,16 +158,25 @@ pub fn is_eliminated(player_id: i64, city_owner_ids: &[i64]) -> bool {
     cities_of(player_id, city_owner_ids) == 0
 }
 
+/// `Math.max(0, x)` z JS: NaN propaguje sie (w Rust `f64::max` zwrocilby 0.0).
+fn js_max0(x: f64) -> f64 {
+    if x.is_nan() {
+        x
+    } else {
+        x.max(0.0)
+    }
+}
+
 /// `powerShare` (victory.ts:141): udzial Power gracza w sumie (0..1).
 pub fn power_share(potega_gracza: f64, potegi: &[f64]) -> f64 {
     let mut sum = 0.0_f64;
     for &p in potegi {
-        sum += p.max(0.0);
+        sum += js_max0(p);
     }
     if sum <= 0.0 {
         return 0.0;
     }
-    potega_gracza.max(0.0) / sum
+    js_max0(potega_gracza) / sum
 }
 
 /// `isDominacjaVictory` (victory.ts:149): >50% Power w ostatniej epoce.
@@ -185,10 +194,23 @@ pub fn is_dominacja_victory(
 
 /// `isNaukaVictory` (victory.ts:160): wszystkie tech w zakresie + rakieta (gdy wymagana).
 pub fn is_nauka_victory(wszystkie_tech_zbadane: bool, rakieta_wystrzelona: bool) -> bool {
+    nauka_victory_with(
+        NAUKA_WYMAGA_RAKIETY,
+        wszystkie_tech_zbadane,
+        rakieta_wystrzelona,
+    )
+}
+
+/// Wariant `isNaukaVictory` z jawna flaga wymagania rakiety (ta sama logika co pin; flaga z danych).
+fn nauka_victory_with(
+    wymaga_rakiety: bool,
+    wszystkie_tech_zbadane: bool,
+    rakieta_wystrzelona: bool,
+) -> bool {
     if !wszystkie_tech_zbadane {
         return false;
     }
-    if !NAUKA_WYMAGA_RAKIETY {
+    if !wymaga_rakiety {
         return true;
     }
     rakieta_wystrzelona
@@ -301,6 +323,24 @@ mod tests {
         assert!(is_dominacja_victory(60.0, &[60.0, 40.0], 3, 3));
         assert!(!is_dominacja_victory(60.0, &[60.0, 40.0], 2, 3));
         assert!(!is_dominacja_victory(50.0, &[50.0, 50.0], 3, 3));
+    }
+
+    #[test]
+    fn nauka_galaz_bez_wymogu_rakiety_jak_w_pinie() {
+        // Pin: `if (!NAUKA_WYMAGA_RAKIETY) return true` po sprawdzeniu tech. Stala Rust = true, wiec ta galaz
+        // jest testowana tylko przez wariant z jawna flaga.
+        assert!(nauka_victory_with(false, true, false));
+        assert!(!nauka_victory_with(false, false, true));
+        assert!(!nauka_victory_with(true, true, false));
+        assert!(nauka_victory_with(true, true, true));
+    }
+
+    #[test]
+    fn power_share_propaguje_nan_jak_math_max() {
+        // JS: Math.max(0, NaN) = NaN -> suma NaN (sum <= 0 false), udzial NaN, dominacja false.
+        assert!(power_share(60.0, &[f64::NAN, 40.0]).is_nan());
+        assert!(power_share(f64::NAN, &[60.0, 40.0]).is_nan());
+        assert!(!is_dominacja_victory(60.0, &[f64::NAN, 40.0], 3, 3));
     }
 
     #[test]
