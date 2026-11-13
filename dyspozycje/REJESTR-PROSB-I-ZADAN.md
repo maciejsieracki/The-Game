@@ -9750,3 +9750,8 @@ Decyzje właściciela 2026-11-13 (ABC): (1) bonus „skłonności do wojny” cy
 
 ## 2026-11-13 — FALE 683–685 wdrożone na ROBOCZĄ (ostatnia: main c49a36761)
 FALA 683: etykieta „Relacja” wg zaufania (a2dc4fa31). FALA 684: równe tempo mieszanej armii do wzwarcia (42555395c). FALA 685: krok 4a — rozejm i pokój wg siły militarnej, słabsza szuka, silniejsza odrzuca, słodzik tylko miasto (5a50a5958), oraz usunięcie martwych zdarzeń religii/ultimatum i opisów danych dyplomacji (341f2f8ed). Testy: patrz WERSJE.md. W toku: losowanie z ziarnem (W53), administrator natywne okna (W55), próg charakteru cywilizacji (W56), krok 4b zmęczenie wojną (W57).
+
+## 2026-11-13 — FALE 686–687 wdrożone na ROBOCZĄ (ostatnia: main b39645641)
+FALA 686: próg wypowiedzenia wojny wg charakteru cywilizacji 14/20/28% (zakres 10–35%, zatwierdzone przez właściciela), administrator bez natywnych okien przeglądarki, krok 4b zmęczenie wojną tylko miastami (miara: siła militarna). FALA 687: losowania w pętli tury z ziarna gry (to samo ziarno = ten sam przebieg; wioski, klaster państw-miast, auto-zwiad, identyfikatory); walki automatyczne i oblężenia jeszcze nie (W61).
+Decyzja właściciela (2026-11-13): cena pokoju 0 = bez oddawania miasta; na końcu zmęczenia wojną także silniejsza strona proponuje pokój bezwarunkowy — W58 w toku (próg końca zmęczenia domyślnie 0,8). Otwarte pytania: potwierdzenie zwolnienia administratora (#360).
+Uwaga procesowa: wiadomości właściciela wysłane w trakcie pracy trafiły do operatorów W58 i W60 (odpowiedzieli na pytanie zamiast pracować) — oba uruchomione ponownie z mocniejszym zakazem w szablonie.
