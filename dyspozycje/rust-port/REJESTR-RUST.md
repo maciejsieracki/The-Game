@@ -464,3 +464,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Zabezpieczenie:** runda 4 zatrzymana restartem, potem zatrzymana przy złej bazie (`5d0c5f8d1`, obca historia). Worktree usunięte. Nic nie wypchnięto na parity.
 - **Dysk:** 8,8 GB po sprzątaniu worktree rundy 4 i cache (`tgt-eval`, `tt`, `tgt-k5c`, `ev_target`).
 - **Stan repo:** `parity-v2` = `003d53f97`. `claude/rust-sivvrn` przed tym wpisem = `92ae3d172` → `0233e7420` (rejestr).
+
+## Przebieg (CRED-WOJNA-Q1): integracja na parity-v2 (FF `003d53f97` → `cfa1edd31`)
+- **Weryfikacja orkiestratora na `cfa1edd31`:** `cargo fmt --check` EXIT 0. `cargo test --no-fail-fast` EXIT 0: 3261 passed, 0 failed, 1 ignored (istniejący `p6_order_lane.rs:1530`). `cargo clippy --all-targets -- -D warnings` EXIT 0. Target poza repo, usunięty po bramkach.
+- **Integracja:** FF `rust-port/parity-v2` = `cfa1edd31` (ancestry potwierdzone, zmiany tylko w testach i raportach).
+- **Otwarte (NIE_ZMIERZONO / poza zakresem):** produkcyjna kolejność D4/D8 względem P4 (test na prymitywach); alias `umowa_handlowa` pominięty (decyzja właściciela); wypowiedzenie gracza, sojusz, klaster, `zlozeGrants` (#120).
+- **Sprzątanie:** worktree `integ-r4` i target usunięte. Dysk 8,8 GB.
+- **Stan repo:** `parity-v2` = `cfa1edd31`. `claude/rust-sivvrn` przed tym wpisem = `57ae622aa`.
