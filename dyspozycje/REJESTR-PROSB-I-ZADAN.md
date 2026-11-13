@@ -9739,3 +9739,7 @@ Liczby zaufania (R-WEB-DIPLO-TRUST-NUMBERS-Q1, kod e8f3a80ab): po rozejmie zaufa
 ## 2026-11-13 — FALA 680 wdrożona na ROBOCZĄ (main 52fc1d5ca, MD5 57b393b86c3b97778a317d64121f6994)
 Etykiety nastawienia wg zaufania (R-WEB-DIPLO-LABELS-TRUST-THRESHOLDS-Q1, 9b9e851a6): zaufanie <10 Wrogi, 10–29 Nieufny, od 30 wg relacji. Civpedia dyplomacji (R-WEB-DIPLO-CIVPEDIA-Q1 r2, 84032f962). Pomiar częstości ofert handlowych AI (R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 r4, 2b6f6576f): prepared 3 ziarna × 3 relacje × 150 tur = 12 ofert (0,89/100 tur), tabela niepowtarzalna. Uwaga: relationTier w diplomacy.ts ma jeszcze progi 30.
 Krok 3 (wypowiadanie wojny, 646d95248) FC PASS-WITH-NOTES — do wdrożenia w FALI 681. Zgłoszenia: porządek opisów w diplomacy.json (#345), niedeterminizm gry (#346), usunięty offset warSilaBonus w bramce wojny (decyzja właściciela).
+
+## 2026-11-13 — FALA 681 wdrożona na ROBOCZĄ (main ed95085a2, MD5 0971e48c976916800b9ec0364ebcf796)
+Krok 3 (R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1, 646d95248): AI wypowiada wojnę przy zaufaniu <30 i przewadze siły militarnej ≥20% (charakter cywilizacji decyduje), przy zerowym zaufaniu przez N tur wypowiada silniejsza strona; gracz nigdy automatycznie; ostrzeżenie raz na epizod. tsc 0, zero-trust 43/0, main-guard 35/0, tick-brake 51/0, ai-test 296/0, diplomacy 148/0. Notka: usunięty offset warSilaBonus z bramki wojny; rozejm/pokój (krok 4) jeszcze według starych zasad.
+W toku: 4a rozejm i pokój (W50), audyt niedeterminizmu (W49), opisy diplomacy.json (W51), tempo mieszanej armii r2 (W46).
