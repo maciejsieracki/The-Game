@@ -874,3 +874,8 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - Pełny test na tipie integracji: **3310 passed, 0 failed, 1 ignored** (exit 0); fmt OK; clippy `-D warnings` OK.
 - **FF `parity-v2`: `0ca58770e` → `e51b61637`.** Zawiera gałęzie stanu tech, surowiec_boolean, surowiec_ilosc, praca z wektorami z pina. Zloto, żywność, miasto — NIE_ZMIERZONO (brak stanu w Rust).
 - Worktree `integ-zloza2` usunięty.
+
+## Przebieg (13.11, ~21:35): ZLOZA-B-REST zintegrowane; start ZWYCIESTWO-WIRING r4
+- **ZLOZA-B-REST r3:** FF `parity-v2` `0ca58770e` → `e51b61637`. Pełny test: **3310 passed, 0 failed, 1 ignored**. Gałęzie tech/surowce/praca z wektorami pina; złoto, żywność, miasto NIE_ZMIERZONO.
+- **Start ZWYCIESTWO-WIRING r4** (DODATEK r4, baza `02eef7219`, świeżo) — `wf_7e991851-c78`, Operator HAIKU. Uwaga: baza r4 pochodzi sprzed FF ZLOZA; przed integracją kod r4 trzeba przenieść na bieżący parity (konflikty możliwe tylko w pliku komendy/rejestru, nie w ZLOZA).
+- **Dysk:** 13 GB przed startem. **Parity:** `e51b61637`.
