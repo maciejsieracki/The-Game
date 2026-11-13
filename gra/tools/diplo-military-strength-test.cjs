@@ -111,14 +111,15 @@ console.log('(b) wygrane bitwy podnoszą siłę, gospodarka nie');
   const withBattles = computeMilitaryStrength({ armiaPkt: 100, rekrutPkt: 50, punktyWygranychBitewWojna: 40, trybutBonusAktywny: false });
   check('wygrane bitwy wojny zwiększają siłę o wagaBitew × punkty',
     near(withBattles - base, P.wagaBitew * 40), `delta=${withBattles - base}`);
-  // Gospodarka: miasta, tech, ludki, budynki nie mają wejścia w tej funkcji. Sprawdzamy,
-  // że dodatkowe pola gospodarcze (przekazane na siłę) nie zmieniają wyniku.
-  const withEconomy = computeMilitaryStrength({
-    armiaPkt: 100, rekrutPkt: 50, punktyWygranychBitewWojna: 0, trybutBonusAktywny: false,
-    miasta: 999, techZbadane: 999, sumaLudkow: 999, budynki: 999, kulturaImperium: 999,
-  });
-  check('gospodarka (miasta/tech/ludki/budynki/kultura) nie zmienia siły',
-    near(withEconomy, base), `base=${base} econ=${withEconomy}`);
+  check('siła 100 + 50 + 0 bitew = 150 (bazowy wynik)', near(base, 150), `base=${base}`);
+  // Gospodarka: NIE MA pola wejściowego. Test statyczny na źródle: ciało interfejsu
+  // MilitaryStrengthInput nie zawiera kluczy gospodarki. Celowo nie przekazujemy pól
+  // gospodarczych w runtime: funkcja by je zignorowała, a asercja byłaby tautologią.
+  const srcIface = fs.readFileSync(TS_FILE, 'utf8');
+  const ifaceBody = (srcIface.match(/export interface MilitaryStrengthInput \{([\s\S]*?)\n\}/) || [])[1] || '';
+  const econKeys = /\b(miasta|techZbadane|sumaLudkow|budynki|kulturaImperium|heksy\w*|ulepszenia\w*)\b/;
+  check('interfejs MilitaryStrengthInput nie ma pól gospodarki (miasta/tech/ludki/budynki/kultura)',
+    ifaceBody.length > 0 && !econKeys.test(ifaceBody), `body=${ifaceBody.length} chars`);
   // Power z gospodarką: zmiana miast/tech zmienia Power, ale nie zmienia składników military=true.
   const mk = loadMilitaryComponentKeys();
   const pA = computeObjectivePower({ ownerId: 1, epoka: 1, jednostki: 4, wygraneBitwy: 0, sumaLudkow: 0, rekrutEkw: 8, miasta: 1, heksyTerytorium: 0, budynki: 0, techZbadane: 0, ulepszeniaTerenu: 0 });
@@ -213,6 +214,32 @@ console.log('(g) parametry z JSON; brak magicznych liczb progu w kodzie; brak im
   const imports = src.split('\n').filter((l) => /^\s*(import|export)\b.*from\s+'/.test(l));
   const nonJson = imports.filter((l) => !/\.json'/.test(l));
   check('moduł importuje tylko JSON (brak importu silnika gry)', nonJson.length === 0, nonJson.join(' | '));
+}
+
+// ---------------------------------------------------------------------------
+console.log('(h) mutacja progu w parametrach musi czerwienić przypadki (d)');
+{
+  // Zestaw przypadków (d) z oczekiwanym wynikiem; zwraca liczbę niezgodności.
+  const countD = (params) => {
+    const exp = [[119, 100, 'brak'], [120, 100, 'A'], [100, 120, 'B'], [100, 119, 'brak']];
+    let bad = 0;
+    for (const [a, b, want] of exp) {
+      if (compareMilitaryStrength(side('A', a), side('B', b), params).przewaga !== want) bad++;
+    }
+    return bad;
+  };
+  // Mutacja idzie przez tę samą ścieżkę co odczyt z JSON (loadMilitaryStrengthParams na surowym obiekcie JSON).
+  const raw = JSON.parse(fs.readFileSync(PARAMS_JSON, 'utf8'));
+  const mutated = (wartosc) => {
+    const r = JSON.parse(JSON.stringify(raw));
+    r.progPrzewagiProc.wartosc = wartosc;
+    return loadMilitaryStrengthParams(r);
+  };
+  check('bez mutacji: przypadki (d) zgodne z oczekiwaniem', countD(P) === 0, `niezgodnosci=${countD(P)}`);
+  for (const v of [25, 30]) {
+    const bad = countD(mutated(v));
+    check(`mutacja progu na ${v}% czerwieni (d)`, bad > 0, `niezgodnosci=${bad}`);
+  }
 }
 
 // ---------------------------------------------------------------------------
