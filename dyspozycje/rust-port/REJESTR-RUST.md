@@ -869,3 +869,8 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Decyzja:** DODATEK r4 (baza `02eef7219`): persystować flagę z `skip_serializing_if` gdy `false`, ALE najpierw sprawdzić w pinie `save.ts`, czy pin zapisuje to pole; jeśli nie — derywacja z miast przy wczytaniu wg `main.ts:46368-46370`. Allowlista r4: test flagi i golden `p6_unit_replace_l3_state` wyłącznie o nowe pole.
 - **Gałąź zachowana:** `rust-port-wip/R-RUSTPORT-P6-ZWYCIESTWO-WIRING-Q1-r3-wip` (`1e3939b4d`). Worktree r3 usunięte (dysk).
 - **Start r4:** wstrzymany do ≥8 GB (dysk po sprzątaniu 8,6 GB, trwa test integracji ZLOZA-B-REST).
+
+## ZLOZA-B-REST (r3): zintegrowane na parity-v2 (`e51b61637`)
+- Pełny test na tipie integracji: **3310 passed, 0 failed, 1 ignored** (exit 0); fmt OK; clippy `-D warnings` OK.
+- **FF `parity-v2`: `0ca58770e` → `e51b61637`.** Zawiera gałęzie stanu tech, surowiec_boolean, surowiec_ilosc, praca z wektorami z pina. Zloto, żywność, miasto — NIE_ZMIERZONO (brak stanu w Rust).
+- Worktree `integ-zloza2` usunięty.
