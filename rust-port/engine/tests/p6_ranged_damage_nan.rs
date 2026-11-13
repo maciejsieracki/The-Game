@@ -119,19 +119,20 @@ fn p6_ranged_damage_nan_jawne_przypadki_js() {
     );
 }
 
+/// Regresja (NIE test wektorowy pinu i NIE dowod znaku zera):
+/// pancerz -0 daje ten sam wynik co pancerz +0 (JS: `10 - (-0) === 10 === 10 - (+0)`).
+/// Znak zera w wyniku ranged jest NIEOBSERWOWALNY: wynik to `js_max(1, ...)`, czyli NaN,
+/// Infinity albo liczba >= 1, nigdy zero. Znak zera `js_max`/`js_min` sprawdzaja
+/// wektory pinu bit-w-bit w `p6_js_max_sign.rs` (w tym przypadki -0).
 #[test]
-fn p6_ranged_damage_nan_pancerz_minus_zero_jak_js() {
-    // Pancerz -0: missile - (-0) === missile (JS); wynik dodatni, bez znaku ujemnego.
-    let dmg = ranged_shot_damage_f64(None, None, 10.0, -0.0, 1.0);
-    assert_eq!(dmg, 10.0);
-    assert!(dmg.is_sign_positive());
-    // Math.max(1, -0) === 1 (podloga): obrazenia ze zerowym missile i pancerzem ze znakiem zera nie daja -0.
-    let floor = ranged_shot_damage_f64(None, None, -0.0, 0.0, 1.0);
-    assert_eq!(floor, 1.0);
-    assert!(floor.is_sign_positive());
-    let floor_neg = ranged_shot_damage_f64(None, None, -0.0, -0.0, -0.0);
-    assert_eq!(floor_neg, 1.0);
-    assert!(floor_neg.is_sign_positive());
+fn p6_ranged_damage_nan_pancerz_minus_zero_rowny_plus_zero() {
+    let armor_minus = ranged_shot_damage_f64(None, None, 10.0, -0.0, 1.0);
+    let armor_plus = ranged_shot_damage_f64(None, None, 10.0, 0.0, 1.0);
+    assert_eq!(armor_minus, 10.0);
+    assert_eq!(armor_minus, armor_plus);
+    // Podloga 1 (Math.max(1, x)) dla zerowego missile i zerowych kontr o znaku zera.
+    assert_eq!(ranged_shot_damage_f64(None, None, -0.0, -0.0, -0.0), 1.0);
+    assert_eq!(ranged_shot_damage_f64(None, None, -0.0, 0.0, 1.0), 1.0);
 }
 
 #[test]
