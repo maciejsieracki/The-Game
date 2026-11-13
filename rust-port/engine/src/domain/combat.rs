@@ -1055,7 +1055,7 @@ pub mod unit_building_bonuses {
 /// (civ/budynki/trudnosc/glod/weterani -> `atkMelee0`, `atkMissile0`, ...), HP i amunicja
 /// startowe oraz wspolczynniki wyliczone przed faza (kontra, obrona koncowa, mnoznik rzeki).
 /// Te modyfikatory licza sie poza ta funkcja (patrz zalozenia w
-/// `dyspozycje/rust-port/p6/P6-REPIN-DYSTANS-PETLA.md`). Faza zwarcia nie jest portowana.
+/// `dyspozycje/rust-port/p6/P6-REPIN-DYSTANS-PETLA.md`). Faza zwarcia: modul [`melee_phase`] nizej (R-RUSTPORT-P6-COMBAT-RESOLVE-PETLA-Q1).
 pub mod ranged_phase {
     use crate::domain::unit_power::{hit_chance_tw, ranged_shot_accuracy, ranged_shot_damage_f64};
 
@@ -1263,6 +1263,283 @@ pub mod ranged_phase {
             rounds: total_rounds,
             routed,
             shots,
+        }
+    }
+}
+
+/// R-RUSTPORT-P6-COMBAT-RESOLVE-PETLA-Q1 -- port fazy zwarcia (melee) auto-walki
+/// (`gra/src/game/combat.ts` `resolveCombat`, blok "Phase 1 & 2: Melee", pin 07d2fbd72).
+///
+/// Zakres: CZYSTA petla rund zwarcia (szarza R1 + zwarcie R2+). Wejscia przed faza (HP po
+/// modyfikatorach, `defFinalObrona`, kontry, progi rout, mnozniki civ/budynkow rundy) sa
+/// wstrzykiwane tak jak w wektorach `p6_combat_melee_vectors` (poza zakresem: #135).
+pub mod melee_phase {
+    use crate::domain::civ_bonuses::apply_multiplier;
+    use crate::domain::siege_tactics_blow::damage_tw;
+    use crate::domain::unit_power::hit_chance_tw;
+
+    pub use super::ranged_phase::Side;
+
+    /// Statystyki jednostki uzywane w fazie zwarcia (pola `CombatUnit` z web, przed mnoznikami rundy).
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct MeleeUnit {
+        /// `counterTyp` (pole "Typ"); `negatesCharge` porownuje po `toLowerCase()` (bez trim).
+        pub counter_typ: String,
+        pub unbreakable: bool,
+        pub melee_attack: f64,
+        pub melee_defence: f64,
+        pub armor: f64,
+        pub charge_bonus: f64,
+        pub weapon_damage: f64,
+        pub piercing: f64,
+    }
+
+    /// Mnozniki rundy strony (`{atk, obrona, pancerz, uderzenie}` z civ/budynkow).
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct MeleeMods {
+        pub atk: f64,
+        pub obrona: f64,
+        pub pancerz: f64,
+        pub uderzenie: f64,
+    }
+
+    /// Wejscie fazy (nazwy jak zmienne w pinie).
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct MeleePhaseInput {
+        pub attacker: MeleeUnit,
+        pub defender: MeleeUnit,
+        pub attacker_moved: bool,
+        pub atk_diff_mult: f64,
+        pub def_diff_mult: f64,
+        pub terr_river_mult: f64,
+        pub hp_atk: f64,
+        pub hp_def: f64,
+        /// `totalRounds` przed faza (po fazie dystansowej).
+        pub total_rounds: u32,
+        pub max_rounds: u32,
+        pub def_final_obrona: f64,
+        pub ctr_atk_vs_def: f64,
+        pub ctr_def_vs_atk: f64,
+        pub rout_atk: f64,
+        pub rout_def: f64,
+        /// Mnozniki atakujacego w rundzie szarzy / zwyklej (`__modsAtk(isCharge)`).
+        pub mods_atk_charge: MeleeMods,
+        pub mods_atk_round: MeleeMods,
+        /// Mnozniki obroncy w rundzie szarzy / zwyklej.
+        pub mods_def_charge: MeleeMods,
+        pub mods_def_round: MeleeMods,
+    }
+
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub enum MeleePhase {
+        Charge,
+        Melee,
+    }
+
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct MeleeStep {
+        pub round: u32,
+        pub phase: MeleePhase,
+        pub side: Side,
+        pub hit: bool,
+        pub hit_pct: f64,
+        /// `finalDmg` (0 przy chybieniu); f64 z NaN/Inf/-0 jak w JS.
+        pub damage: f64,
+        /// HP celu po trafieniu; `None` przy chybieniu.
+        pub target_hp: Option<f64>,
+    }
+
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct MeleePhaseResult {
+        pub hp_atk: f64,
+        pub hp_def: f64,
+        pub rounds: u32,
+        pub routed: Vec<Side>,
+        pub limit_reached: bool,
+        pub steps: Vec<MeleeStep>,
+    }
+
+    /// `negatesCharge` z pinu: `counterTyp.toLowerCase()` rowne `spearman` albo `falangite`.
+    pub fn negates_charge(counter_typ: &str) -> bool {
+        let t = counter_typ.to_lowercase();
+        t == "spearman" || t == "falangite"
+    }
+
+    /// `Math.round` z JS wraz ze znakiem zera: wynik 0 dla x w [-0.5, 0) (i x = -0) to `-0`.
+    fn js_round(x: f64) -> f64 {
+        if !x.is_finite() {
+            return x;
+        }
+        let r = x.floor();
+        let out = if x - r >= 0.5 { r + 1.0 } else { r };
+        if out == 0.0 && x.is_sign_negative() {
+            -0.0
+        } else {
+            out
+        }
+    }
+
+    /// Port petli `while` z "Phase 1 & 2: Melee". `rng` zwraca [0,1) (jedno losowanie na krok,
+    /// kolejnosc ATK, DEF).
+    pub fn resolve_melee_phase(
+        input: MeleePhaseInput,
+        mut rng: impl FnMut() -> f64,
+    ) -> MeleePhaseResult {
+        let MeleePhaseInput {
+            attacker,
+            defender,
+            attacker_moved,
+            atk_diff_mult,
+            def_diff_mult,
+            terr_river_mult,
+            mut hp_atk,
+            mut hp_def,
+            mut total_rounds,
+            max_rounds,
+            def_final_obrona,
+            ctr_atk_vs_def,
+            ctr_def_vs_atk,
+            rout_atk,
+            rout_def,
+            mods_atk_charge,
+            mods_atk_round,
+            mods_def_charge,
+            mods_def_round,
+        } = input;
+        let mut routed: Vec<Side> = Vec::new();
+        let mut steps: Vec<MeleeStep> = Vec::new();
+        let mut limit_reached = false;
+
+        if hp_atk > 0.0 && hp_def > 0.0 && routed.is_empty() {
+            let def_bracing = attacker_moved && negates_charge(&defender.counter_typ);
+            let mut melee_round: u32 = 0;
+
+            while hp_atk > 0.0 && hp_def > 0.0 && routed.is_empty() {
+                melee_round += 1;
+                total_rounds += 1;
+
+                if total_rounds > max_rounds {
+                    limit_reached = true;
+                    break;
+                }
+
+                let is_charge = melee_round == 1 && !def_bracing;
+                let phase = if is_charge {
+                    MeleePhase::Charge
+                } else {
+                    MeleePhase::Melee
+                };
+                let (atk_mods, def_mods) = if is_charge {
+                    (mods_atk_charge, mods_def_charge)
+                } else {
+                    (mods_atk_round, mods_def_round)
+                };
+
+                let round_atk_melee = apply_multiplier(attacker.melee_attack, atk_mods.atk)
+                    * atk_diff_mult
+                    * terr_river_mult;
+                let round_atk_charge = apply_multiplier(attacker.charge_bonus, atk_mods.uderzenie);
+                let round_def_melee =
+                    apply_multiplier(defender.melee_attack, def_mods.atk) * def_diff_mult;
+                let round_atk_obrona =
+                    apply_multiplier(attacker.melee_defence, atk_mods.obrona) * atk_diff_mult;
+                let round_atk_panc = apply_multiplier(attacker.armor, atk_mods.pancerz);
+                let round_def_panc = apply_multiplier(defender.armor, def_mods.pancerz);
+
+                let charge_hit_bonus = if is_charge { round_atk_charge } else { 0.0 };
+
+                // Atakujacy bije obronce.
+                let atk_hit_pct =
+                    hit_chance_tw(round_atk_melee, def_final_obrona, charge_hit_bonus);
+                let atk_roll = rng() * 100.0;
+                // `roll < NaN` jest false (pudlo), jak w pinie.
+                if atk_roll < atk_hit_pct {
+                    let raw = damage_tw(
+                        attacker.weapon_damage,
+                        round_def_panc,
+                        attacker.piercing,
+                        round_atk_charge,
+                        is_charge,
+                    );
+                    let final_dmg = js_round(raw * ctr_atk_vs_def);
+                    hp_def -= final_dmg;
+                    steps.push(MeleeStep {
+                        round: total_rounds,
+                        phase,
+                        side: Side::Attacker,
+                        hit: true,
+                        hit_pct: atk_hit_pct,
+                        damage: final_dmg,
+                        target_hp: Some(hp_def),
+                    });
+                } else {
+                    steps.push(MeleeStep {
+                        round: total_rounds,
+                        phase,
+                        side: Side::Attacker,
+                        hit: false,
+                        hit_pct: atk_hit_pct,
+                        damage: 0.0,
+                        target_hp: None,
+                    });
+                }
+
+                // Obronca kontratakuje rownoczesnie.
+                let def_hit_pct = hit_chance_tw(round_def_melee, round_atk_obrona, 0.0);
+                let def_roll = rng() * 100.0;
+                if def_roll < def_hit_pct {
+                    let raw = damage_tw(
+                        defender.weapon_damage,
+                        round_atk_panc,
+                        defender.piercing,
+                        0.0,
+                        false,
+                    );
+                    let final_dmg = js_round(raw * ctr_def_vs_atk);
+                    hp_atk -= final_dmg;
+                    steps.push(MeleeStep {
+                        round: total_rounds,
+                        phase,
+                        side: Side::Defender,
+                        hit: true,
+                        hit_pct: def_hit_pct,
+                        damage: final_dmg,
+                        target_hp: Some(hp_atk),
+                    });
+                } else {
+                    steps.push(MeleeStep {
+                        round: total_rounds,
+                        phase,
+                        side: Side::Defender,
+                        hit: false,
+                        hit_pct: def_hit_pct,
+                        damage: 0.0,
+                        target_hp: None,
+                    });
+                }
+
+                // Rout / smierc.
+                let def_killed = hp_def <= 0.0;
+                let atk_killed = hp_atk <= 0.0;
+                let def_rout_check = !defender.unbreakable && rout_def > 0.0 && hp_def < rout_def;
+                let atk_rout_check = !attacker.unbreakable && rout_atk > 0.0 && hp_atk < rout_atk;
+
+                if (def_rout_check || def_killed) && !routed.contains(&Side::Defender) {
+                    routed.push(Side::Defender);
+                }
+                if (atk_rout_check || atk_killed) && !routed.contains(&Side::Attacker) {
+                    routed.push(Side::Attacker);
+                }
+            }
+        }
+
+        MeleePhaseResult {
+            hp_atk,
+            hp_def,
+            rounds: total_rounds,
+            routed,
+            limit_reached,
+            steps,
         }
     }
 }

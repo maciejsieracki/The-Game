@@ -197,3 +197,165 @@ fn melee_vectors_each_case_has_draw_per_step() {
         );
     }
 }
+
+// ---------------------------------------------------------------------------
+// R-RUSTPORT-P6-COMBAT-RESOLVE-PETLA-Q1: porownanie portu `melee_phase` z `expected` wektorow.
+// Porownanie bitowe (rozroznia -0 i +0); NaN rowne NaN.
+// ---------------------------------------------------------------------------
+
+use civ_engine::domain::combat::melee_phase::{
+    resolve_melee_phase, MeleeMods, MeleePhase, MeleePhaseInput, MeleeUnit, Side,
+};
+
+fn same(a: f64, b: f64) -> bool {
+    (a.is_nan() && b.is_nan()) || a.to_bits() == b.to_bits()
+}
+
+fn unit_of(v: &Value) -> MeleeUnit {
+    MeleeUnit {
+        counter_typ: v["counterTyp"].as_str().expect("counterTyp").to_string(),
+        unbreakable: v["unbreakable"].as_bool().expect("unbreakable"),
+        melee_attack: num(&v["meleeAttack"]),
+        melee_defence: num(&v["meleeDefence"]),
+        armor: num(&v["armor"]),
+        charge_bonus: num(&v["chargeBonus"]),
+        weapon_damage: num(&v["weaponDamage"]),
+        piercing: num(&v["piercing"]),
+    }
+}
+
+fn mods_of(v: &Value) -> MeleeMods {
+    MeleeMods {
+        atk: num(&v["atk"]),
+        obrona: num(&v["obrona"]),
+        pancerz: num(&v["pancerz"]),
+        uderzenie: num(&v["uderzenie"]),
+    }
+}
+
+fn side_of(s: &str) -> Side {
+    match s {
+        "attacker" => Side::Attacker,
+        "defender" => Side::Defender,
+        other => panic!("nieznana strona {other}"),
+    }
+}
+
+#[test]
+fn melee_port_matches_all_vector_cases() {
+    let root: Value = serde_json::from_str(VEC).expect("vectors.json jest poprawnym JSON");
+    let cases = root["cases"].as_array().expect("cases");
+    let mut n_steps = 0usize;
+    for (i, c) in cases.iter().enumerate() {
+        let inp = &c["input"];
+        let input = MeleePhaseInput {
+            attacker: unit_of(&inp["attacker"]),
+            defender: unit_of(&inp["defender"]),
+            attacker_moved: inp["attackerMoved"].as_bool().expect("attackerMoved"),
+            atk_diff_mult: num(&inp["atkDiffMult"]),
+            def_diff_mult: num(&inp["defDiffMult"]),
+            terr_river_mult: num(&inp["terrRiverMult"]),
+            hp_atk: num(&inp["hpAtk"]),
+            hp_def: num(&inp["hpDef"]),
+            total_rounds: inp["totalRounds"].as_u64().expect("totalRounds") as u32,
+            max_rounds: inp["maxRounds"].as_u64().expect("maxRounds") as u32,
+            def_final_obrona: num(&inp["defFinalObrona"]),
+            ctr_atk_vs_def: num(&inp["ctrAtkVsDef"]),
+            ctr_def_vs_atk: num(&inp["ctrDefVsAtk"]),
+            rout_atk: num(&inp["routAtk"]),
+            rout_def: num(&inp["routDef"]),
+            mods_atk_charge: mods_of(&inp["modsCharge"]["atk"]),
+            mods_atk_round: mods_of(&inp["modsRound"]["atk"]),
+            mods_def_charge: mods_of(&inp["modsCharge"]["def"]),
+            mods_def_round: mods_of(&inp["modsRound"]["def"]),
+        };
+        let draws: Vec<f64> = c["draws"]
+            .as_array()
+            .expect("draws")
+            .iter()
+            .map(num)
+            .collect();
+        let mut di = 0usize;
+        let res = resolve_melee_phase(input, || {
+            let d = *draws
+                .get(di)
+                .unwrap_or_else(|| panic!("przypadek {i}: brak losowan"));
+            di += 1;
+            d
+        });
+        let exp = &c["expected"];
+        assert_eq!(di, draws.len(), "przypadek {i}: zuzycie losowan");
+        assert!(
+            same(res.hp_atk, num(&exp["hpAtk"])),
+            "przypadek {i}: hpAtk {}",
+            res.hp_atk
+        );
+        assert!(
+            same(res.hp_def, num(&exp["hpDef"])),
+            "przypadek {i}: hpDef {}",
+            res.hp_def
+        );
+        assert_eq!(
+            res.rounds as u64,
+            exp["rounds"].as_u64().expect("rounds"),
+            "przypadek {i}: rounds"
+        );
+        let exp_routed: Vec<Side> = exp["routed"]
+            .as_array()
+            .expect("routed")
+            .iter()
+            .map(|s| side_of(s.as_str().expect("routed str")))
+            .collect();
+        assert_eq!(res.routed, exp_routed, "przypadek {i}: routed");
+        assert_eq!(
+            res.limit_reached,
+            exp["limitReached"].as_bool().expect("limitReached"),
+            "przypadek {i}: limitReached"
+        );
+        let exp_steps = exp["steps"].as_array().expect("steps");
+        assert_eq!(
+            res.steps.len(),
+            exp_steps.len(),
+            "przypadek {i}: liczba krokow"
+        );
+        for (k, (s, e)) in res.steps.iter().zip(exp_steps).enumerate() {
+            let w = format!("przypadek {i} krok {k}");
+            assert_eq!(
+                s.round as u64,
+                e["round"].as_u64().expect("round"),
+                "{w}: round"
+            );
+            let ph = match e["phase"].as_str().expect("phase") {
+                "charge" => MeleePhase::Charge,
+                _ => MeleePhase::Melee,
+            };
+            assert_eq!(s.phase, ph, "{w}: phase");
+            assert_eq!(
+                s.side,
+                side_of(e["side"].as_str().expect("side")),
+                "{w}: side"
+            );
+            assert_eq!(s.hit, e["hit"].as_bool().expect("hit"), "{w}: hit");
+            assert!(
+                same(s.hit_pct, num(&e["hitPct"])),
+                "{w}: hitPct {}",
+                s.hit_pct
+            );
+            assert!(
+                same(s.damage, num(&e["damage"])),
+                "{w}: damage {}",
+                s.damage
+            );
+            match (&e["targetHp"], s.target_hp) {
+                (Value::Null, None) => {}
+                (v, Some(h)) if !v.is_null() => {
+                    assert!(same(h, num(v)), "{w}: targetHp {h}")
+                }
+                _ => panic!("{w}: targetHp null vs Some"),
+            }
+        }
+        n_steps += exp_steps.len();
+    }
+    assert_eq!(n_steps as u64, u(&root["counts"], "steps"), "suma krokow");
+    println!("MELEE_PORT: przypadki={} kroki={}", cases.len(), n_steps);
+}
