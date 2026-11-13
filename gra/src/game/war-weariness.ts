@@ -20,6 +20,8 @@ export interface WarWearinessParams {
   zmeczenie: {
     pelneTur: number; wagaStratMiasta: number; stagnacjaOdTur: number; stagnacjaWaga: number;
     stagnacjaSkalaTur: number; progChetnosci: number; progWzajemnyPokoj: number;
+    /** R-WEB-DIPLO-WEARINESS-UNCONDITIONAL-END-Q1: próg końca zmęczenia — od tego poziomu obie strony (także silniejsza) proponują pokój BEZWARUNKOWY. */
+    progKoncaZmeczenia: number;
   };
   przegrywajacy: {
     udzialWyraznie: number; wagaZmeczenia: number; wagaSily: number; wagaStrat: number; stratyNasycenie: number;
@@ -220,6 +222,15 @@ export interface WearinessTickOutcome {
   plan?: PeacePaymentPlan;
 }
 
+/**
+ * R-WEB-DIPLO-WEARINESS-UNCONDITIONAL-END-Q1: czy na końcu zmęczenia wojną (poziom >= progKoncaZmeczenia) wojna
+ * kończy się pokojem BEZWARUNKOWYM (bez miasta, bez płatności). Dotyczy AI↔AI (tick) i AI→gracz (ai.ts, gracz decyduje).
+ * Czysta funkcja; minimalny czas wojny (PEACE_PROPOSAL_MIN_WAR_TURNS) sprawdza wołający.
+ */
+export function wearinessUnconditionalEndDue(level: number, P: WarWearinessParams = WAR_WEARINESS_PARAMS): boolean {
+  return level >= P.zmeczenie.progKoncaZmeczenia;
+}
+
 export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[] {
   const P = d.params ?? WAR_WEARINESS_PARAMS;
   const out: WearinessTickOutcome[] = [];
@@ -243,18 +254,30 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
     const loserShare = loser === pr.a ? shareA : 1 - shareA;
     const lostLoser = loser === pr.a ? w.lostA : w.lostB;
     const L = P.przegrywajacy;
+    const ownCities = d.cityCountOf(loser);
+    const protectedLoser = (ownCities <= L.ochronaMaxMiast && lostLoser >= 1) || lostLoser >= L.ochronaUtratyWojny;
+    // R-WEB-DIPLO-WEARINESS-UNCONDITIONAL-END-Q1: na końcu zmęczenia pokój BEZWARUNKOWY (bez miasta i zapłaty);
+    // obie strony (także silniejsza). Reguły „miasto za pokój" obowiązują tylko PRZED końcem zmęczenia.
+    if (wearinessUnconditionalEndDue(lvl, P)) {
+      const lockEnd = protectedLoser ? L.karencjaChronionegoTur : L.karencjaPoPokojuTur;
+      d.finalize(loser, winner, lockEnd);
+      d.log?.(`pokój bezwarunkowy AI${loser}↔AI${winner} na końcu zmęczenia (zmęczenie ${lvl.toFixed(2)}, bez miasta i zapłaty)`);
+      d.store.delete(key);
+      out.push({ pairKey: key, action: 'mutual_peace', level: lvl, stage: st.stage });
+      continue;
+    }
     // Desperacja liczona z udziałem nie większym niż próg „wyraźnie" (słabsza strona przy remisie nie wypada z oferty).
     const shareForDespair = Math.min(loserShare, L.udzialWyraznie);
 
     // LIVE-AUDIT-Q1: przegrywający NIE czeka na zmęczenie pary (>= progChetnosci = min. ~100 tur wojny):
     // oferta od ofertaOdTurWojny (po utracie miasta) albo od ofertaBezStratOdTur (bez strat).
-    const ownCities = d.cityCountOf(loser);
     if (w.turnsAtWar < L.ofertaOdTurWojny) { none(); continue; }
     if (lostLoser <= 0 && w.turnsAtWar < L.ofertaBezStratOdTur && !isWarWeary(lvl, P)) { none(); continue; }
-    // Zmiana 4: słabsza strona z JEDNYM miastem (lub bez miasta do oddania) nie kupuje pokoju do końca wojny.
-    if (ownCities <= 1) { none(); continue; }
-    // Ochrona przed snowballem: mało miast albo duże straty => zwycięzca musi przyjąć pokój (z miastem).
-    const protectedLoser = (ownCities <= L.ochronaMaxMiast && lostLoser >= 1) || lostLoser >= L.ochronaUtratyWojny;
+    // R-WEB-DIPLO-WEARINESS-UNCONDITIONAL-END-Q1: cena pokoju 0 → pokój bez oddawania miasta (także przy jednym mieście).
+    const price = d.price(winner, loser);
+    const priceZero = price.requiredPn <= 0;
+    // Zmiana 4: słabsza strona z JEDNYM miastem nie kupuje pokoju do końca wojny (cena 0 nie jest zakupem).
+    if (ownCities <= 1 && !priceZero) { none(); continue; }
 
     // Słabsza strona: eskalowana oferta (wyłącznie miasta).
     const despair = loserDespair({ level: lvl, share: shareForDespair, lostCities: lostLoser }, P);
@@ -262,7 +285,6 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
     if (st.stage <= 0) { none(); continue; }
     if (st.lastOfferTurn >= 0 && d.turn - st.lastOfferTurn < P.przegrywajacy.cooldownOfertTur) { none(); continue; }
 
-    const price = d.price(winner, loser);
     const required = price.requiredPn * offerMultiplier(st.stage, st.rejectedOffers, P);
     const maxCities = d.battlePending
       ? 0
@@ -287,7 +309,7 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
     // Regula nieujemnego bilansu AI↔AI (2026-11-09): ujemny bilans ktorejkolwiek AI blokuje pokoj takze przy ochronie/wyczerpaniu.
     const balanceOk = isAiAiPeaceBalanceAllowed(price.balanceFor(plan.coveredPn), price.loserBalanceFor?.(plan.coveredPn));
     // Zmiana 4: pokój wymaga oddania co najmniej jednego miasta (także przy ochronie i wyczerpaniu).
-    const cityGiven = plan.histogram.miasto > 0;
+    const cityGiven = priceZero || plan.histogram.miasto > 0;
     if (cityGiven && balanceOk && (mustAccept || exhausted || price.balanceFor(plan.coveredPn) >= -tol)) {
       d.pay(loser, winner, plan);
       d.log?.(

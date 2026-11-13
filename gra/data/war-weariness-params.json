@@ -8,7 +8,8 @@
     "stagnacjaWaga": 0.3,
     "stagnacjaSkalaTur": 100,
     "progChetnosci": 0.5,
-    "progWzajemnyPokoj": 0.8
+    "progWzajemnyPokoj": 0.8,
+    "progKoncaZmeczenia": 0.8
   },
   "przegrywajacy": {
     "_wzor": "desperacja = clamp(wagaZmeczenia*poziom + wagaSily*max(0,(udzialWyraznie-udzialSily)/udzialWyraznie) + wagaStrat*min(1,utraty/stratyNasycenie), 0, 1); stopien = liczba progow <= desperacja (0..3). Stopien 1: zloto+surowce; 2: + max 1 miasto; 3: + do maxMiastNaPokoj miast.",

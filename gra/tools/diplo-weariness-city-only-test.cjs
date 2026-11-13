@@ -99,21 +99,22 @@ function behaviour(W) {
   // (b) brak zlota i surowcow w ofercie
   {
     const assets = [A('zloto', 'zloto', 100000, 100000), A('surowiec_ilosc', 'zelazo', 50, 50), A('miasto', 'c1', 1, 400), A('miasto', 'c2', 1, 800), A('miasto', 'cap', 1, 9999, true)];
-    const { deps } = mk({ turn: 400, turnsAtWar: 150, share1: 0.15, weaker: 1, lostA: 3, assets });
+    // R-WEB-DIPLO-WEARINESS-UNCONDITIONAL-END-Q1: wejscie ponizej progu konca zmeczenia (0,8) — oferta miast.
+    const { deps } = mk({ turn: 400, turnsAtWar: 90, share1: 0.15, weaker: 1, lostA: 1, assets });
     const r = W.runWarWearinessTick(deps)[0];
     chk('b: oferta bez zlota i surowcow (histogram zloto=0, surowiec=0)',
       r.action !== 'none' && r.plan && r.plan.histogram.zloto === 0 && r.plan.histogram.surowiec_ilosc === 0);
   }
-  // (c) brak pokoju bez zaplaty: remis sil, zmeczenie >= 0.8, brak miast do oddania -> brak pokoju
+  // (c) brak pokoju bez zaplaty PRZED progiem konca zmeczenia: remis sil, zmeczenie < 0.8, brak miast -> brak pokoju
   {
-    const { deps, log } = mk({ turn: 300, turnsAtWar: 200, share1: 0.5, weaker: 2, winnerNeed: 0, assets: [] });
+    const { deps, log } = mk({ turn: 300, turnsAtWar: 90, share1: 0.5, weaker: 2, winnerNeed: 0, assets: [] });
     const r = W.runWarWearinessTick(deps)[0];
     chk('c: remis sil + zmeczenie: bez miasta brak pokoju (oferta odrzucona, brak finalize)',
       r.action === 'offer_rejected' && !log.some((x) => x.ev === 'peace'));
   }
-  // (d) przegrywajacy z JEDNYM miastem: brak oferty i brak pokoju
+  // (d) przegrywajacy z JEDNYM miastem (zmeczenie < 0.8): brak oferty i brak pokoju
   {
-    const { deps, log } = mk({ turn: 400, turnsAtWar: 150, share1: 0.15, weaker: 1, lostA: 3, cityCount: (o) => (o === 1 ? 1 : 6), assets: CITY_ASSETS });
+    const { deps, log } = mk({ turn: 400, turnsAtWar: 90, share1: 0.15, weaker: 1, lostA: 1, cityCount: (o) => (o === 1 ? 1 : 6), assets: CITY_ASSETS });
     const r = W.runWarWearinessTick(deps)[0];
     chk('d: przegrywajacy z jednym miastem nie kupuje pokoju (action none, brak finalize)',
       r.action === 'none' && !log.some((x) => x.ev === 'peace' || x.ev === 'pay'));
@@ -146,6 +147,12 @@ function behaviour(W) {
     const { deps } = mk({ turn: 330, turnsAtWar: 200, share1: 0.5, weaker: 2, lostB: 1, winnerNeed: 0, assets: CITY_ASSETS });
     const r = W.runWarWearinessTick(deps)[0];
     chk('g: remis sil - slabsza strona oferuje miasto (nie none)', r.action !== 'none');
+  }
+  // (g2) R-WEB-DIPLO-WEARINESS-UNCONDITIONAL-END-Q1: przed progiem konca zmeczenia (0,8) remis sil: slabsza (2) placi miastem
+  {
+    const { deps, log } = mk({ turn: 400, turnsAtWar: 90, share1: 0.5, weaker: 2, assets: CITY_ASSETS });
+    W.runWarWearinessTick(deps);
+    chk('g2: remis sil przed progiem: przegrywa slabsza strona (2) i placi miastem', log.some((x) => x.ev === 'pay' && x.l === 2));
   }
   // (h) okablowanie miary SILY MILITARNEJ (obrona r1): helpery czyste, sideOf = sila + armia (bez Power).
   {
@@ -181,9 +188,9 @@ const MUTANTS = [
     to: 'const loser = (shareA <= 0.5 ? pr.a : pr.b);', gate: 'slabsza wg sily militarnej (a2)' },
   { id: 'M2-zloto-w-puli-miast', from: "const pool = assets.filter(a => a.kind === 'miasto' && !a.forbidden && a.pn > 0)",
     to: "const pool = assets.filter(a => (a.kind === 'miasto' || a.kind === 'zloto') && !a.forbidden && a.pn > 0)", gate: 'brak zlota w ofertach (b)' },
-  { id: 'M3-bez-guardu-jednego-miasta', from: 'if (ownCities <= 1) { none(); continue; }', to: '/* usunieto guard */',
+  { id: 'M3-bez-guardu-jednego-miasta', from: 'if (ownCities <= 1 && !priceZero) { none(); continue; }', to: '/* usunieto guard */',
     gate: 'jedno miasto => brak pokoju (d)' },
-  { id: 'M4-bez-wymogu-miasta', from: 'const cityGiven = plan.histogram.miasto > 0;', to: 'const cityGiven = true;',
+  { id: 'M4-bez-wymogu-miasta', from: 'const cityGiven = priceZero || plan.histogram.miasto > 0;', to: 'const cityGiven = true;',
     gate: 'pokoj tylko z miastem (c, e2)' },
   { id: 'M5-karencja-bez-ochrony', from: 'd.finalize(loser, winner, protectedLoser ? L.karencjaChronionegoTur : L.karencjaPoPokojuTur);',
     to: 'd.finalize(loser, winner, L.karencjaPoPokojuTur);', gate: 'karencja 40/100 (e1, f)' },
