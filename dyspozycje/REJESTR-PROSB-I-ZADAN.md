@@ -9743,3 +9743,7 @@ Krok 3 (wypowiadanie wojny, 646d95248) FC PASS-WITH-NOTES — do wdrożenia w FA
 ## 2026-11-13 — FALA 681 wdrożona na ROBOCZĄ (main ed95085a2, MD5 0971e48c976916800b9ec0364ebcf796)
 Krok 3 (R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1, 646d95248): AI wypowiada wojnę przy zaufaniu <30 i przewadze siły militarnej ≥20% (charakter cywilizacji decyduje), przy zerowym zaufaniu przez N tur wypowiada silniejsza strona; gracz nigdy automatycznie; ostrzeżenie raz na epizod. tsc 0, zero-trust 43/0, main-guard 35/0, tick-brake 51/0, ai-test 296/0, diplomacy 148/0. Notka: usunięty offset warSilaBonus z bramki wojny; rozejm/pokój (krok 4) jeszcze według starych zasad.
 W toku: 4a rozejm i pokój (W50), audyt niedeterminizmu (W49), opisy diplomacy.json (W51), tempo mieszanej armii r2 (W46).
+
+## 2026-11-13 — FALA 682 wdrożona na ROBOCZĄ (MD5 272e14e43cb32f024a6a796a1ef5f7b4)
+Opisy w pliku dyplomacji zgodne z parametrami (R-WEB-DIPLO-JSON-DESCRIPTIONS-SYNC-Q1, 801888c60): zero zmian zachowania gry. FALA 683 (etykieta „Relacja” wg zaufania, a2dc4fa31) w budowie.
+Decyzje właściciela 2026-11-13 (ABC): (1) bonus „skłonności do wojny” cywilizacji wraca jako zmiana progu przewagi (wartości do ustalenia); (2) słabsza strona z jednym miastem NIE kupi pokoju do końca wojny (bez obejścia zmęczeniem); (3) częstość ofert handlowych AI: najpierw naprawa losowania (W53), potem ponowny pomiar.
