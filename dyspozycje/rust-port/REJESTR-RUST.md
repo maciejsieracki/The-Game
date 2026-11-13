@@ -823,3 +823,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Aktywne (3 z 4):** ZWYCIESTWO-WIRING r2 (Operator, HAIKU, od 20:09, `wf_87db356b-8ec`); EKONOMIA-BRAZ-ERA r3 (Operator, HAIKU, od 20:09, `wf_208a3a6e-7a9`); ZLOZA-B-REST r3 (Obrona, HAIKU, od 19:10, `wf_d3ddfaff-163`). Bez wyniku FC.
 - **Czwarty slot pusty:** brak gotowego dispatchu.
 - **Dysk:** 9,6 GB. **Parity:** `0ca58770e`.
+
+## EKONOMIA-BRAZ-ERA: DECYZJA — przeniesiona do REPIN econ (#177), NIE integrowana teraz
+- **Wynik r3:** FC FAIL (`3ad431966`). Założenie „pin 07d2fbd72 różni się od 4bbef081d tylko w brązie” było **fałszywe**. Diff `gra/`: `econ-params.json` (57/43), `converters.ts` (115/25), `turn-economy.ts` (225/75), `citizen-consumption-era.ts` (40/0). Dryf obejmuje cegielnię, odlewnie żelaza/stali, capy ludności, racje — nie tylko brąz.
+- **Wybór orkiestratora (opcja c):** brąz per epoka wchodzi **razem z całym przesunięciem pinu econ** w temacie #177 (po zamknięciu P6), a nie jako wycinek. Powód: cząstkowe wprowadzenie parytetu brązu daje mieszany stan (kod z 07d2fbd72 obok wektorów z 4bbef081d) i testy running-web nigdy nie przejdą bez pełnego REPIN. Opcji (b) (maska kolumn) nie wybieram — to odstępstwo od 1:1.
+- **Zachowane:** kod r2 `53d409a44` jako `rust-port-wip/R-RUSTPORT-P6-EKONOMIA-BRAZ-ERA-Q1-r2-kod`; raport r3 `afd5a1b90` jako `…-r3-raport`.
+- **Nie uruchamiać więcej rund EKONOMIA** do czasu REPIN econ.
+- **Konflikt atrybucji** (Co-Authored-By w commitach Operatora): nadal do rozstrzygnięcia procesowego — do potwierdzenia przez właściciela.
