@@ -9718,3 +9718,6 @@ ZAKAZ rozpoczynania nowych tematów do kolejnej decyzji właściciela. Dokończy
 
 ## 2026-11-13 — FALA 674 wdrożona na ROBOCZĄ (main a4b7a546, MD5 6cb9e6c47fb146bac4c02d36d68316f8)
 R-WEB-DIPLO-TRUCE-UNTIL-TURN-DISPLAY-Q1 (#319, ABC tak): napis „Rozejm do tury N” w relacji dyplomacji przy aktywnym rozejmie. Kod 13d5cb0b7 (merge fb5e16314); FC PASS-WITH-NOTES; tsc 0, logic 213/213, test truce 15/0. Raw MD5 zgodne. Chromium NIE_ZMIERZONO: napis do obejrzenia na ROBOCZEJ.
+
+## 2026-11-13 — FALA 675 wdrożona na ROBOCZĄ (main ce8f11c6, MD5 6207fb7baf0313602bb4bbdcbb53a888)
+R-WEB-DIPLO-NEGOTIATION-ROUND-COUNTER-UNIFY-Q1 (#320): jednolity napis „runda N/M” w karcie negocjacji i w zdarzeniu tury (M z NEGOTIATION_MAX_ROUNDS). Kod ad050c821 (merge 8f8414bdc); FC PASS-WITH-NOTES; tsc 0, logic 213/213, test 4/0. Raw MD5 zgodne. Zmiana tekstu „Kontroferta N/M” → „runda N/M” do potwierdzenia przez właściciela. Chromium NIE_ZMIERZONO.
