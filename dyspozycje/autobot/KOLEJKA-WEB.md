@@ -1,54 +1,65 @@
 # KOLEJKA WEB — stan na 2026-11-14 (baza origin/main 85f7961b1)
 
 Czytana przez heartbeat :17 i :47. Plik odświeżony w runie `R-PROC-KOLEJKA-WEB-REFRESH-Q1`
-(`dyspozycje/autobot/runs/R-PROC-KOLEJKA-WEB-REFRESH-Q1/10-operator-claude.md`).
+(`dyspozycje/autobot/runs/R-PROC-KOLEJKA-WEB-REFRESH-Q1/10-operator-claude.md`; poprawki po
+zarzutach Evaluatora: `dyspozycje/autobot/runs/R-PROC-KOLEJKA-WEB-REFRESH-Q1/30-obrona-claude.md`).
 W bazie 85f7961b1 plik nie istniał (historyczne wersje z commitów `f994d1de4`, `4e15ad222`
 nie leżą na main), dlatego powstał od nowa. Każda pozycja ma potwierdzenie w repo (ścieżka)
 albo w TaskList (numer `#`). Pozycje zamknięte nie są tu wymienione jako „do startu”.
+Nazwy w nawiasach z dopiskiem „robocza” nie są ID tematów w repo.
 
 ## Reguły (obowiązują heartbeat i operatorów)
 
 - Zawsze do 4 aktywnych tematów web (właściciel 2026-11-12). Heartbeat uruchamia kolejny
   temat **tylko z sekcji GOTOWE DO STARTU** i tylko po wypchnięciu dispatchu na gałąź orkiestratora.
+  Obecnie sekcja GOTOWE DO STARTU jest PUSTA: nic nie startuje automatycznie.
 - Operatorzy NIE zakładają sesji: `create_session`, `spawn_task`, `create_trigger`, `send_later`
   są zakazane (zakaz właściciela 2026-11-13).
 - Heartbeat NIE startuje tematu bez dispatchu i NIE zmienia balansu bez zgody właściciela
-  (balans = pozycje z sekcji DECYZJA).
-- Pozycje z sekcji DECYZJA, WSTRZYMANE i WYKLUCZONE nie są uruchamiane automatycznie (TaskList #325).
+  (balans = pozycje z sekcji CZEKA NA DECYZJĘ).
+- Pozycje z sekcji CZEKA NA DECYZJĘ, WSTRZYMANE i WYKLUCZONE nie są uruchamiane automatycznie (TaskList #325).
 - Po zakończeniu tematu: integracja, deploy ROBOCZA, push, sprzątanie dysku (worktree zakończonych workflowów).
 
 ## TRWAJĄCE (nie uruchamiać drugi raz)
 
-| ID | Co daje w grze | Źródło | Uwagi |
-|---|---|---|---|
-| R-WEB-ECON-NO-NEGATIVE-STOCKS-END-TURN-Q1 (TaskList #368, bramka „Zakończ turę”) | Skarbiec i spichlerz nie schodzą poniżej zera; dźwignie podatków/kolejki w bramce gracza | `runs/R-WEB-ECON-NO-NEGATIVE-STOCKS-END-TURN-Q1/` (10-operator-claude, 30-obrona-claude; brak FC) | W TaskList nazwa `…-GATE-LEVERS-Q1`; w repo katalog bez `GATE-LEVERS`. Model: Haiku. |
-| R-WEB-DETERMINISM-SAVE-LOAD-RESUME-Q1 (TaskList #373, W78 r1) | Wznowienie z zapisu odtwarza ten sam przebieg, co gra bez zapisu | TaskList #373 (in_progress); brak katalogu w bazie | Potwierdzić w worktree operatora przed startem kolejnego. Model: Haiku. |
+| ID | Co daje w grze | Źródło | Model Operatora | Pliki (konflikty) | Uwagi |
+|---|---|---|---|---|---|
+| R-WEB-ECON-NO-NEGATIVE-STOCKS-END-TURN-Q1 (TaskList #368, bramka „Zakończ turę”) | Skarbiec i spichlerz nie schodzą poniżej zera; dźwignie podatków/kolejki w bramce gracza | `runs/R-WEB-ECON-NO-NEGATIVE-STOCKS-END-TURN-Q1/` (10-operator-claude, 30-obrona-claude; brak FC) | HAIKU | ekonomia / bramka tury (NIE_ZMIERZONO — lista plików do ustalenia z dispatchu; pozostaje w kolizji z wdrożoną bramką #367, FALE 691/693/696) | W TaskList nazwa `…-GATE-LEVERS-Q1`; w repo katalog bez `GATE-LEVERS`. |
+| R-WEB-DETERMINISM-SAVE-LOAD-RESUME-Q1 (TaskList #373, W78 r1) | Wznowienie z zapisu odtwarza ten sam przebieg, co gra bez zapisu | TaskList #373 (in_progress); brak katalogu w bazie | HAIKU | zapis/wznowienie (nieustalone do czasu katalogu operatora) | Potwierdzić w worktree operatora przed startem kolejnego. |
 
-## GOTOWE DO STARTU (jest dispatch lub zadanie w TaskList, brak zamknięcia)
+## GOTOWE DO STARTU (jest dispatch w repo i brak zamknięcia)
 
-| ID | Co daje w grze | Model Operatora | Pliki (konflikty) |
-|---|---|---|---|
-| R-WEB-AI-ARMY-UPKEEP-Q1 | AI przestaje trzymać ~80 rozproszonych jednostek bez opłaty (zrzut Egipt, 2026-10-25); diagnoza na danych, potem poprawka | HAIKU | `gra/src/game/ai*.ts`, `auto-manage.ts`, `army-starvation.ts`, `citizen-resource-upkeep.ts`, `ai-upkeep*.ts`(nowy), `gra/data/ai-upkeep-params.json`(nowy). Konflikt z R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1 (FC PASS-WITH-NOTES, już w kodzie) — pliki `citizen-resource-upkeep.ts`. Dispatch `runs/R-WEB-AI-ARMY-UPKEEP-Q1/00-dispatch.md`, runda 1/5, bez outputu Operatora. |
-| R-WEB-LIVE-VERIFY-W18-W24 (TaskList #335, #272) | Potwierdzenie na żywo: pasek/tryb ręczny (W18, W24) i pomiar strat zwycięzcy w trybie ręcznym | HAIKU (read-only) | Brak allowlisty kodu; wymaga DISPATCH DO NAPISANIA przed startem (dispatch nie istnieje w repo). |
+Brak pozycji. Heartbeat nie uruchamia niczego z tej sekcji, dopóki orkiestrator nie wypchnie dispatchu
+i nie przeniesie pozycji tutaj (patrz Reguły).
 
 ## CZEKA NA DECYZJĘ WŁAŚCICIELA (nie uruchamiać bez odpowiedzi ABC)
 
-| TaskList | Temat | Co trzeba rozstrzygnąć | Stan repo / dowód |
-|---|---|---|---|
-| #374 | Balans miedzi | A bez zmian / B ujście proporcjonalne do kopalni (rekomendacja) / C niższy cap ruda / D limit kopalni | `runs/R-WEB-AUDIT-COPPER-INCOME-LEAK-Q1/` FC PASS-WITH-NOTES; brak błędu kodu (#283) |
-| #355 | Częstość ofert handlowych AI | Zwiększyć czy zostawić (pomiar ok. 0,89 oferty / 100 tur) | `runs/R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1/`; runda 5 zamknięta (#333) |
-| #360 | Zwolnienie administratora | A: potwierdzenie w grze / B: jeden przycisk | Brak dispatchu; zgłoszenie z #313 |
-| #361 | Próg końca zmęczenia wojną | Domyślnie 0,8, do potwierdzenia | Powiązane z #363 (wariant A, zamknięty) |
-| #370 | Zaufanie w wojnie (D1 dryf vs licznik N, D2 N=6 vs martwe pole 5) | D1, D2 | Zmierzone W76 (#370); tik zostawia 0 |
-| #311, #321, #334 | Przepływ surowca na szlaku (czy szlak przesuwa zapasy) | Tak/nie; kandydat 605036e6b do przeglądu | `runs/R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1/` (kontakt bez połączenia, zamknięty) |
-| #309 (Z-3) | Po utracie morale brak ucieczki i pościgu | Czy pokryte przez #245 i #314 | Brak dispatchu; weryfikacja pokrycia przed decyzją |
-| #272 / #335 | Pomiar strat zwycięzcy (ręczny) | Czy mierzyć i wdrażać | Patrz GOTOWE DO STARTU (LIVE-VERIFY) |
+| TaskList / ID | Temat | Co daje w grze | Co trzeba rozstrzygnąć | Model Operatora | Pliki (konflikty) | Stan repo / dowód |
+|---|---|---|---|---|---|---|
+| #374 | Balans miedzi | Ujście miedzi zgodne z kopalniami | A bez zmian / B ujście proporcjonalne do kopalni (rekomendacja) / C niższy cap ruda / D limit kopalni | HAIKU (po decyzji) | NIE_ZMIERZONO — lista plików do ustalenia po decyzji | `runs/R-WEB-AUDIT-COPPER-INCOME-LEAK-Q1/` FC PASS-WITH-NOTES; brak błędu kodu (#283) |
+| #355 | Częstość ofert handlowych AI | Ile ofert AI dostaje gracz | Zwiększyć czy zostawić (pomiar ok. 0,89 oferty / 100 tur) | HAIKU (po decyzji) | NIE_ZMIERZONO — lista plików do ustalenia po decyzji | `runs/R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1/`; runda 5 zamknięta (#333) |
+| #360 | Zwolnienie administratora | Czy zwolnienie wymaga potwierdzenia | A: potwierdzenie w grze / B: jeden przycisk | HAIKU (po decyzji) | UI administratora | Brak dispatchu; zgłoszenie z #313 |
+| #361 | Próg końca zmęczenia wojną | Kiedy kończy się zmęczenie wojną | Domyślnie 0,8, do potwierdzenia | HAIKU (po decyzji) | `war-weariness.ts` | Powiązane z #363 (wariant A, zamknięty) |
+| #370 | Zaufanie w wojnie (D1 dryf vs licznik N, D2 N=6 vs martwe pole 5) | Zaufanie w wojnie zachowuje się przewidywalnie | D1, D2 | HAIKU (po decyzji) | `diplomacy*`, `war-weariness.ts` | Zmierzone W76 (#370); tik zostawia 0 |
+| #311, #321, #334 | Przepływ surowca na szlaku (czy szlak przesuwa zapasy) | Czy szlak handlowy przenosi surowiec | Tak/nie; kandydat 605036e6b do przeglądu | HAIKU (po decyzji) | szlak handlowy | `runs/R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1/` (kontakt bez połączenia, zamknięty) |
+| R-WEB-AI-ARMY-UPKEEP-Q1 (dispatch `runs/R-WEB-AI-ARMY-UPKEEP-Q1/00-dispatch.md`, status DISPATCHED, bez outputu Operatora w repo) | AI przestaje trzymać ~80 rozproszonych jednostek bez opłaty (zrzut Egipt, 2026-10-25) | Czy wznowić temat od rundy 5 (`backup/final-4b3bc46f`), czy napisać nowy dispatch na świeżej bazie; decyzja właściciela o zwrocie manpower przy rozwiązaniu jednostek; kolizja z wycofaną bramką rekrutacji (`docs/decyzje/R-AI-RECRUIT-UPKEEP-GATE.md`, WYCOFANA 2026-08-26) | HAIKU (po decyzji) | `gra/src/game/ai*.ts`, `auto-manage.ts`, `army-starvation.ts`, `citizen-resource-upkeep.ts` (konflikt z R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1, FC PASS-WITH-NOTES, już w kodzie), `ai-upkeep*.ts` (nowy), `gra/data/ai-upkeep-params.json` (nowy); lista z dispatchu z 2026-10-25, do odświeżenia | `dyspozycje/autobot/BACKLOG-PO-ODNOWIENIU-LIMITU.md:7`: „runda 5 (branch `backup/final-4b3bc46f`; decyzja ownera o zwrocie manpower; flaga OFF)”; gałąź `origin/backup/final-4b3bc46f` istnieje; flaga `AI_UPKEEP_AWARE_RECRUITMENT_ENABLED` i `gra/data/ai-upkeep-params.json` NIE istnieją w bazie 85f7961b1 (grep pusty). Wpis „FAIL 4/5” nie znajduje się w `LEDGER.md` pod tym tematem (poprzednia wersja tej tabeli cytowała błędne linie). |
+| AI od tury 1 (decyzja „AI od tury 1”, TaskList #365, #367; #368 zostaje otwarte) | Skarbiec/spichlerz AI od tury 1 nie schodzą poniżej zera (rozszerzenie bramki na AI) | Czy AI ma spełniać tę samą bramkę skarbca od pierwszej tury; warianty do ustalenia z właścicielem przed pytaniem ABC | Decyzja właściciela (warianty ABC do przygotowania przez orkiestratora) | HAIKU (po decyzji) | NIE_ZMIERZONO — pliki do ustalenia w dispatchu (bramka tury AI) | TaskList #365 i #367: „decyzja „AI od tury 1” otwarta”; brak wpisu w repo (nie cytować rejestru jako źródła) |
+| ai-fog W2 | Mgła AI (ścieżka `ai-zdobycie K1b`/`ai-fog`) | Czy celowy FAIL W2 jest akceptowany | Akceptacja FAIL celowego / poprawka | HAIKU (po decyzji) | mgła AI | `runs/R-WEB-AI-ZDOBYCIE-FOG-DIAG-Q1/` FC PASS-WITH-NOTES; FAIL W2 celowy |
 
 ## DO WERYFIKACJI PRZEZ ORKIESTRATORA (status w TaskList niespójny z repo)
 
+- #272 / #335 (obserwacje na żywo: LIVE-VERIFY W18/W24 i pomiar strat zwycięzcy w trybie ręcznym):
+  pozycja OBSERWACJA, nie gotowy temat. Nie ma dispatchu ani katalogu w repo, a ID
+  `R-WEB-LIVE-VERIFY-W18-W24` to nazwa robocza. Część W24 (baner) jest już potwierdzona przez
+  #276 (W34 r2, `R-WEB-LIVE-VERIFY-WAVE-650-664-Q1`: r1 4 z 5 punktów PASS, r2 domyka punkt 4).
+  Pomiar strat zwycięzcy w trybie ręcznym pozostaje niezrealizowany. Do startu potrzebny
+  osobny dispatch (orkiestrator decyduje, czy go napisać).
+- #309 (Z-3, bitwa: po utracie morale brak ucieczki i pościgu): zgłoszenie do weryfikacji pokrycia,
+  NIE decyzja właściciela. Pokrycie możliwe przez #245 (W21, pościg, FALA 653) i #314 (NEVERROUT-HOLD-FIGHT,
+  completed). Orkiestrator potwierdza pokrycie i zamyka albo przenosi do CZEKA NA DECYZJĘ.
 - #299 (audyt obrażeń dystansowych vs pancerz): pending, ale audyt #305 i decyzja #323 (opcje A–D) są completed. Wybrana opcja nie jest w repo — potwierdzić, zamknąć zadanie.
 - #312 (respekt AI i zaufanie w wojnie bez granicy): pending, ale decyzja #322 completed — zamknąć, jeśli nie ma nowej pozycji.
-- #108 (lista długów): `ai-zdobycie K1b` i `ai-fog` — dispatch `runs/R-WEB-AI-ZDOBYCIE-FOG-DIAG-Q1/` FC PASS-WITH-NOTES; ai-fog W2 FAIL celowy, do decyzji właściciela (→ DECYZJA). `P-AI-ZDOBYCIE-MIASTA-CZTERY-LUKI-Q1` ma tylko operator-runda1, bez FC (status nieznany).
+- #108 (lista długów): `ai-zdobycie K1b` i `ai-fog` — dispatch `runs/R-WEB-AI-ZDOBYCIE-FOG-DIAG-Q1/` FC PASS-WITH-NOTES; ai-fog W2 FAIL celowy, do decyzji właściciela (→ CZEKA NA DECYZJĘ). `P-AI-ZDOBYCIE-MIASTA-CZTERY-LUKI-Q1` ma tylko operator-runda1, bez FC (status nieznany).
 - #108: `diplomacy-proposal r5Gate`, `audience 13160/27749`, `AI-CLOUD-GATHER-PERF` — brak dispatchu w repo i brak wpisu w TaskList; NIEPOTWIERDZONE, nie wpisywać do kolejki bez dispatchu.
 - #296 (sojusznik dołącza do wojny na wezwanie): completed, ale opis mówi „nie wdrożone” — potwierdzić.
 - #57 (nowe epoki Klasyczna/Średniowieczna): pending, WSTRZYMANE decyzją właściciela (dopiero przy nowej wersji Rust) — poza kolejką.
