@@ -1,37 +1,63 @@
-STATUS: BLOCK
-DOMAIN: GAME
+# R-WEB-MAPGEN-RIVERS-SEED22-HANG-DIAG-Q1 — obrona Operatora (odpowiedź na zarzuty Evaluatora), runda 3/5
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (diagnoza generatora; bez zmian gra/src i gra/data)
 TEMAT: R-WEB-MAPGEN-RIVERS-SEED22-HANG-DIAG-Q1
-GOAL: diagnoza zawieszenia generacji świata przy seedzie 22 na etapie „Rzeki — uzupełnianie” (przyczyna, powtarzalność, przegląd ziaren, miejsce w kodzie), bez zmian gra/src i gra/data.
-ZMIANY/COMMIT: jedyna zmiana w tej rundzie to raport i kopie checkpointów: dyspozycje/autobot/runs/R-WEB-MAPGEN-RIVERS-SEED22-HANG-DIAG-Q1/30-obrona-claude.md oraz evidence/checkpoint-real-real-22-r2.json, evidence/checkpoint-real-real-11-r2.json. Brak nowego narzędzia gra/tools/mapgen-rivers-seed22-diag-*.cjs (użyty istniejący runner gra/tools/world-overlay-midgame-diag-run.cjs bez zmian). Kandydat/baza: e7e744a62. SHA commita raportu: podany w polu sha odpowiedzi.
-TESTY:
-- git diff --check: czysto (exit 0).
-- tsc --noEmit -p gra/tsconfig.json na e7e744a62: exit 0 (sprawdzone, bez zmian w kodzie).
-- Build nieminifikowany poza repo: node gra/node_modules/vite/bin/vite.js build --minify false --outDir <scratchpad>/seed22-dist: OK w 32,8 s (gra/node_modules zainstalowane npm ci --ignore-scripts; katalog ignorowany przez git).
-- Seed 11 (odniesienie), 1 uruchomienie, realna ścieżka, 3 tury: wygenerowany świat po ok. 4:00–4:17 min przy load average 15–20 na 4 rdzeniach; endTurn tury 1 = 5602 ms; pageErrors = 0; stop = „koniec: 3 tur”. Wniosek: na tym hoście seed 11 NIE generuje się w 3–4 s jak w notatce poprzednika — czas jest zanieczyszczony obciążeniem.
-- Seed 22, 1 uruchomienie (w toku w chwili zapisu raportu): nadal w fazie „Kontynenty 7/10 · Rzeki — uzupełnianie” przy 8:51 min (overlay), 0 tur, limit 900 s nie został jeszcze osiągnięty. Końcowy wynik nieznany w chwili zapisu.
-- Tabela hipotez (a–d): (a) „kończy się po dłuższym czasie” — NIE_ZMIERZONO (brak zakończenia w 8:51 min, wynik pending); (b) pętla w kodzie uzupełniania rzek — NIE_ZMIERZONO (brak profilu stosu, brak pliku:linii); (c) zależność od obciążenia hosta — NIE_ZMIERZONO (brak pomiaru na cichym hoście; porównanie seed 11 ujawnia tylko, że obciążenie wydłuża wszystkie ziarna); (d) dotyczy innych ziaren/rozmiarów — NIE_ZMIERZONO (brak ≥10 ziaren).
-- Powtarzalność ≥3 uruchomień dla seeda 22: NIE_ZMIERZONO (1 uruchomienie).
-- Miejsce w kodzie / minimalna poprawka i test: NIE_ZMIERZONO.
-- Zrzut ekranu / logi stosu: NIE_ZMIERZONO.
+GOAL: odpowiedzieć na zarzuty 1–7 Evaluatora (96043e054): przyjąć z dowodem albo odrzucić z dowodem; skorygować raport Operatora (10-operator-claude.md) tam, gdzie tabela lub wniosek nie miały pokrycia w pomiarze.
+BAZA/KANDYDAT: 99300191c (kandydat r3), obrona od 99300191c; zmiany tylko w `dyspozycje/.../R-WEB-MAPGEN-RIVERS-SEED22-HANG-DIAG-Q1/**`.
 
-BLOKADY:
-- Host przeciążony (load average 15–20 na 4 rdzeniach, równoległe chromium z innych sesji) — czasy generacji nieporównywalne.
-- Brak nowego narzędzia diagnostycznego (próbkowanie postępu rzek w Workerze, liczniki iteracji) — NIE zbudowane w tej rundzie.
-- Brak uruchomień powtórzonych i przeglądu ziaren.
+## Podsumowanie odpowiedzi
 
-ODPOWIEDZI NA ZARZUTY EVALUATORA (6352fb9db):
-1. Brak narzędzia gra/tools/mapgen-rivers-seed22-diag-*.cjs — PRZYJMUJĘ. Nie napisano. Użyto istniejącego runnera bez modyfikacji.
-2. Brak tabeli hipotez a–d — PRZYJMUJĘ. Tabela powyżej: wszystkie pozycje NIE_ZMIERZONO.
-3. Brak powtarzalności ≥3 dla seeda 22 — PRZYJMUJĘ. Wykonano 1 uruchomienie, wynik niedokończony.
-4. Brak przeglądu ≥10 ziaren — PRZYJMUJĘ. Nie wykonano.
-5. Brak pliku:linia/funkcji pętli rzek oraz poprawki i testu — PRZYJMUJĘ. Nie zlokalizowano; nie opisano poprawki.
-6. Brak raportu Operatora i commita z pracą; kandydat = baza — PRZYJMUJĘ. Ta runda nie wytworzyła kodu ani narzędzia; kandydat pozostaje e7e744a62. Zostawiony tylko raport i checkpointy.
-7. Brak dowodu zrzutu/logów — PRZYJMUJĘ. Nie wykonano zrzutu; w evidence są checkpointy JSON, bez zrzutu.
+| Zarzut | Decyzja | Dowód |
+|---|---|---|
+| 1. Współczynnik ×1,5 skonfundowany | PRZYJMUJĘ — współczynnik ×1,5 WYCOFANY | Czysta para na tym samym hoście (load 1,3–1,8): plain 96,16 s, instr 99,15 s (`evidence/r4/plain22.log`, `instr22.log`). Narzut instrumentacji ≈3%, nie ×1,5. Load-zależność czasu pozostaje obserwacją, nie zmierzonym współczynnikiem. |
+| 2. „Seed 11/33 = 3–4 s” jako fakt | PRZYJMUJĘ — wycofane | Node: seed 11 Standardowy 292–295 s, seed 33 216–225 s (`sweep-standardowy-plain-22-11-33.tsv`, `evidence/r4/std11.log`, `std33.log`). Czas 3–4 s z checkpointu overlay NIE jest czasem generacji. Co dokładnie mierzy, NIE_ZMIERZONO. |
+| 3. Brak liczników dla 11 i 33 | PRZYJMUJĘ — DOMKNIĘTE pomiarem | Standardowy z licznikami (`--instr`): seed 11 → `growRiverInlandBeforeDrainage=6993`, `estimateLandCentroidFromSeed=6993`, `aStarRiverToTarget=6336`, CHECKSUM b329b72a, DONE t=295,13 s; seed 33 → 7850 / 7850 / 5379, CHECKSUM 36b49da9, DONE t=215,79 s. Oba zakończone, bez zapętlenia (`evidence/r4/std11.err`, `std33.err`). |
+| 4. Sweep równoległy, czasy górnym oszacowaniem | PRZYJMUJĘ — jako ograniczenie | Potwierdzone: czasy 1–10 Standardowy i 11/33 z przebiegów równoległych (load 4–10). Porównywalne są wyłącznie liczniki i pomiary sekwencyjne (seed 22 Mały para z pkt 1). |
+| 5. Node↔Worker i brak ukończenia w Chromium | PRZYJMUJĘ — zdanie „Node odtwarza ten sam kod Workera” NIE_ZMIERZONO | Nie porównano CHECKSUM z przeglądarką; w Chromium seed 22 nie ukończył się (>640 s, r2). Wniosek „nie zapętla się” opiera się na ukończeniu w Node (478–718 s) i na stałych licznikach, nie na przeglądarce. Wpływ innych ustawień gracza (worldDensity) NIE_ZMIERZONO. |
+| 6. Pliki `.ts`/`.sh` poza `*.cjs`; build.cjs | PRZYJMUJĘ jako odchylenie formalne (ZAŁOŻENIE z raportu, oddane pod decyzję orkiestratora) | `wrap.ts` jest importowany przez `build.cjs` (plugin esbuild), `sweep.sh` to pętla przeglądu; zmiana nazwy zepsuje build. Ścieżka esbuild jest argumentem `argv[2]` (`node gra/tools/mapgen-rivers-seed22-diag-build.cjs <esbuild-main.js> <out.js> [--instr]`); brak wbudowanego fallbacku — NIE_ZMIERZONO, czy `npm install` w katalogu tymczasowym jest konieczne po sprzątaniu `/tmp`. `tsc` nie uruchomiony (brak typescript w środowisku). |
+| 7. Pominięty czynnik 4 prób w `traceRiverForGridFill` | PRZYJMUJĘ — dopisane do propozycji poprawki | Kod `gra/src/map/gen-helpers.ts` l. 6972–6990: `tries = fastMode ? [acceptLen, …] : [catalogMinLen, max(acceptLen, floor(catalogMinLen*0,6)), acceptLen, 3]`, pętla `for (tryMin of tries)` z `traceRiver(...)` przy każdej próbie (z deduplikacją). Liczniki NIE rozdzielają udziału prób w kosztach; czynnik nie jest zmierzony osobno. Poprawka przez `landCentroid: ctx.massCentroid` usuwa BFS w każdym wywołaniu `traceRiver` niezależnie od liczby prób, ale zmniejszenia liczby prób nie obiecuje. Memoizacja z eksperymentu Evaluatora (seed 22 Mały, CHECKSUM bez zmian) dotyczy jednego ziarna. |
 
-Uwaga o dowodzie zawieszenia: w checkpoint-real-real-22-r2.json overlayProgress pokazuje „Rzeki — uzupełnianie” od ok. 2:14 do 8:51 bez zmiany etapu (stan w chwili zapisu). Samo to nie rozstrzyga, czy to zawieszenie, czy bardzo wolny postęp pod obciążeniem.
+## Korekty raportu Operatora (10-operator-claude.md) — obowiązują zamiast tam zapisanych treści
 
-NASTĘPNY KROK: runda 3 tego samego ID po ciszy hosta (load < 4): (1) dokończyć i odczytać wynik seeda 22 z checkpointu (proces w scratchpadzie, limit 900 s); (2) dodać w narzędziu diag próbkowanie postępu rzek (licznik iteracji/czasu w Workerze lub w generatorze rzek, bez zmian gra/src); (3) 3 uruchomienia seeda 22 i przegląd ≥10 ziaren z czasami; (4) wskazać plik:linia pętli i opisać minimalną poprawkę + test. Do rozstrzygnięcia przez orkiestratora: czy wykonać rundę 3 na czystym hoście, bo na obecnym obciążeniu wynik nie jest rozstrzygalny.
+1. Hipoteza (c): usunąć „×1,5 przy load 7–8”. Stan poprawny: czas zależy od obciążenia hosta (Mały seed 22: 96–101 s przy load 1,3–1,8; 107 s przy load 5,5 i ~250 s przy load 7,6, obie wartości z instr; Standardowy 478 s przy load 2,3 vs 707/718 s przy load 7–8). Ten rozrzut NIE jest rozdzielony od instrumentacji i od wielkości przebiegów równoległych — NIE_ZMIERZONO jako współczynnik. Liczniki są identyczne we wszystkich przebiegach (stałe).
+2. Tabela „seed 11/33 = 3–4 s”: usunąć. Zastąpić: seed 11 Standardowy 292–295 s (plain / instr), seed 33 216–225 s.
+3. Wiersz 11 i 33 w tabeli ziaren: wywołania centroid/grow = 6993 (11) i 7850 (33) zamiast NIE_ZMIERZONO.
+4. Zdanie „Node odtwarza ten sam kod Workera” i „w Chromium >640 s = zgodne z tym zakresem”: NIE_ZMIERZONO (brak porównania Node↔przeglądarka).
+5. Wniosek „seed 22 najwięcej wywołań”: po domknięciu pomiarem prawdziwe dla zbioru zmierzonego (ziarna 1–11, 22, 33 Standardowy): seed 22 = 18 590; pozostałe 5 974–12 136 (ziarna 1–10), 6 993 (11), 7 850 (33). Seed 22 ma ~1,5–3× więcej wywołań niż najbliższe; ocena „najgorszy” jest uzasadniona licznikami, nie czasem.
+6. Ścieżka narzędzi: `gra/tools/mapgen-rivers-seed22-diag-{build.cjs,prof.cjs,callers.cjs,sweep.sh,wrap.ts}` (+ `run.cjs` z r1) — dopisać, że `.ts`/`.sh` są poza literalnym wzorcem allowlisty (`*.cjs`).
 
-DEPLOY/PUSH: NIE WYKONANO (zgodnie z dispatchem: operator nie pushuje i nie integruje).
-RUNDY: 2/5 (runda 1: Evaluator BLOCK bez pracy Operatora; runda 2: ta obrona).
-UWAGI-DLA-ORKIESTRATORA: procesy diagnostyczne nadal działają w tle w scratchpadzie (seed 22 i seed 11, PIDs widoczne przez pgrep -f 'diag-run.cjs'); pliki wyjściowe: <scratchpad>/ev-s22/ i <scratchpad>/ev-s11/. Katalog gra/node_modules utworzony przez npm ci (ignorowany przez git) — do usunięcia przy sprzątaniu worktree.
+## Metoda tej rundy (nowe pomiary)
+- Build: `node gra/tools/mapgen-rivers-seed22-diag-build.cjs /tmp/claude-0/nm/node_modules/esbuild <out>.js [--instr]` (esbuild 0.28.2). Bundle w scratchpadzie, nie w repo.
+- Para czasowa seed 22 Mały, sekwencyjnie na tym samym hoście: plain `DONE t=96,16 s`, CHECKSUM 9f0c2884; instr `DONE t=99,15 s`, CHECKSUM 9f0c2884, COUNTERS 4745/4745/4745/7317. `uptime` przed: load 1,33 (09:04:48), po: 1,75 (09:08:03).
+- Standardowy seed 11 i 33 z `--instr`, równolegle w tle (`nohup timeout 900`), odpytywane co ~7 min. Load ~4–6.
+
+## ZMIANY/COMMIT
+- Dodane (allowlista runs/**): `dyspozycje/autobot/runs/R-WEB-MAPGEN-RIVERS-SEED22-HANG-DIAG-Q1/30-obrona-claude.md`, `evidence/r4/{plain22,instr22,std11,std33}.{log,err}`.
+- Kod gry (`gra/src`, `gra/data`): nietknięte. `git diff c17b33eaa..<SHA> -- gra/src gra/data` powinno być puste (sprawdzone w obronie: brak zmian w gra/src).
+- Commit: zobacz pole sha w wyniku (tylko ścieżki allowlisty, `git add <ścieżka>`).
+
+## TESTY (surowe wyjście)
+- `DONE seed=22 maly t=96.16s hexes=7992` / `CHECKSUM 9f0c2884` (plain).
+- `DONE seed=22 maly t=99.15s hexes=7992` / `CHECKSUM 9f0c2884` / `COUNTERS {"growRiverInlandBeforeDrainage":4745,"estimateLandCentroidFromSeed":4745,"aStarRiverToSea":4745,"aStarRiverToTarget":7317}` (instr).
+- `DONE seed=11 standardowy t=295.13s hexes=20160` / `CHECKSUM b329b72a` / `COUNTERS {"growRiverInlandBeforeDrainage":6993,"estimateLandCentroidFromSeed":6993,"aStarRiverToSea":6993,"aStarRiverToTarget":6336}`.
+- `DONE seed=33 standardowy t=215.79s hexes=20160` / `CHECKSUM 36b49da9` / `COUNTERS {"growRiverInlandBeforeDrainage":7850,"estimateLandCentroidFromSeed":7850,"aStarRiverToSea":7850,"aStarRiverToTarget":5379}`.
+- `git diff --check`: wynik w sekcji poleceń obrony.
+- Bramek gry (logic/tech-tree/research/unit-replace/combat) nie uruchamiano ponownie: kod gry nie zmieniony w tej rundzie (zielone w Evaluatorze na tym samym src).
+
+## BLOKADY
+- NIE_ZMIERZONO: współczynnik wpływu obciążenia na czas (poza parą 96/99 s); wpływ load na Standardowy; zgodność CHECKSUM Node vs przeglądarka; zachowanie w Chromium przy ukończeniu; udział 4 prób `traceRiverForGridFill` w koszcie; wpływ worldDensity; `tsc --noEmit`.
+- Brak zmian w kodzie — poprawka i test regresji pozostają w osobnym temacie po FC (zgodnie z dispatchem).
+
+## RUNDY
+3/5 (obrona rundy 3; Operator Sonnet uzasadniony po 2 BLOCK Haiku, zgodnie z dispatchem).
+
+## NASTĘPNY KROK
+Final Control (Sonnet) na 99300191c + commit obrony: sprawdzić, że korekty 1–6 są zgodne z evidence/r4 i z kodem; po FC temat naprawczy R-WEB-MAPGEN-RIVERS-FILL-CENTROID-PERF-Q1 (decyzja ABC o sumach kontrolnych przed zmianą).
+
+DEPLOY/PUSH: NIE WYKONANO
+
+## UWAGI-DLA-ORKIESTRATORA
+1. Główny wniosek nie zmienił się: seed 22 kończy się (478–718 s, zależnie od hosta), liczniki `estimateLandCentroidFromSeed` są stałe i większe niż dla 11/33 (1,5–3×), przyczyną jest BFS bez cache w `growRiverInlandBeforeDrainage` przy braku `landCentroid`. Defekt to wydajność/UX, nie nieskończona pętla.
+2. Decyzja ABC przed tematem naprawczym: zmiana centroidu zmienia wynik generacji (CHECKSUM b329b72a dla 11, 9f0c2884 dla Mały 22, 36b49da9 dla 33 mogą się zmienić).
+3. Allowlista: pliki `.ts`/`.sh` wymagają świadomej akceptacji orkiestratora (zarzut 6).
