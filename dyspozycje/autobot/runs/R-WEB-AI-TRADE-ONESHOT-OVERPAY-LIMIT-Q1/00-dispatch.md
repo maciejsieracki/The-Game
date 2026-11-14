@@ -1,0 +1,5 @@
+# R-WEB-AI-TRADE-ONESHOT-OVERPAY-LIMIT-Q1 (GAME, zmiana reguły wg decyzji właściciela; Haiku)
+DECYZJA WŁAŚCICIELA 2026-11-12: dodać górny limit nadpłaty w jednorazowych ofertach handlowych AI→gracz, spójny z ofertami cyklicznymi (FALA 660).
+Tło: po A1 oferty cykliczne mają limit givePn ≤ receivePn (selekcja i enqueue, main.ts ~20481); evaluateProposal przy responderIsPlayer używa współczynnika relacji 1 bez górnego limitu, więc jednorazowy handel (np. zaproponuj_handel_surowiec) AI→gracz może dać graczowi więcej PW niż AI dostaje.
+GOAL: jednorazowa oferta AI→gracz nie oferuje wartości PW większej niż AI otrzymuje (givePn ≤ receivePn); ścieżki: selekcja, filtr enqueue, evaluateProposal dla responderIsPlayer; podgląd „Przyjmij” gracza i bramka gracz→AI BEZ ZMIAN; oferty cykliczne bez zmian.
+KRYTERIA: test jednostkowy/branch (jednorazowa oferta z nadpłatą jest odrzucona/ograniczona); istniejące ai-trade-proposal-branch-test, ai-trade-proposal-to-player-test, diplomacy-proposal-test, dyplo-handel-oferta-ai-blokowana-test zielone; live test ai-trade-wiring-e2e nadal 44/0; mutacja czerwieni; tsc + 5 bramek.

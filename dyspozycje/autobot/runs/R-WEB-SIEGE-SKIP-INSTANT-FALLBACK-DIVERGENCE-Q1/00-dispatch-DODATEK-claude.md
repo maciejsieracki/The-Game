@@ -1,0 +1,4 @@
+# R-WEB-SIEGE-SKIP-INSTANT-FALLBACK-DIVERGENCE-Q1 — DODATEK (orkiestrator, 2026-11-12, runda 1/5)
+BAZA: origin/main (b0b0e3f86, po FALI 658). MODEL: Operator HAIKU, Obrona HAIKU, Evaluator/FC SONNET. Dispatch: 00-dispatch.md (gałąź claude/sprawdzenie-funkcjonalnosci-ek4ra0).
+ALLOWLISTA: gra/src/battle/** (battleScene.ts, autoBatchPhase.ts), gra/tools/*-test.cjs, dyspozycje/autobot/runs/R-WEB-SIEGE-SKIP-INSTANT-FALLBACK-DIVERGENCE-Q1/**. Zakaz: WERSJE.md, JSON balansu, rust-port. UWAGA: temat W26 (B4b, ten sam obszar battleScene.ts) idzie równolegle — NIE naprawiaj B4b; tylko pomiar i ewentualna poprawka fallbacku; przy konflikcie z W26 zgłoś w raporcie.
+ŚRODOWISKO: worktree; w gra/ npm ci --ignore-scripts; ZAKAZ npm run build/dev; Chromium przez Vite HTTP (build poza repo); długie testy bitew pojedynczo. Nie integrujesz, nie pushujesz.

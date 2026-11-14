@@ -1,0 +1,2 @@
+# DODATEK orkiestratora (R-WEB-BATTLE-DETERMINISTIC-EXPECTED-OUTCOME-Q1, 2026-11-12)
+BAZA: origin/main 81e357dee. Wskazówki: najpierw zmapuj wszystkich wywołujących resolveCombat i rozstrzygania uderzeń (grep), zanim zmienisz sygnatury; parytet AUTO=SKIP ma wspólny tick (FALA 618 / R-WEB-BATTLE-SKIP-TICK-LOOP-UNIFY) — nie łam go. Nie integrujesz, nie pushujesz. Zakaz npm run build/dev; tsc --noEmit; testy bitew z limitem 280 s.

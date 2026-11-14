@@ -1,0 +1,7 @@
+# R-WEB-DIPLO-RESIDUAL-RELIGION-EVENT-AND-TEXTS-Q1 — dispatch (2026-11-13)
+
+GOAL: domknąć trzy rozbieżności zgłoszone w R-WEB-DIPLO-JSON-DESCRIPTIONS-SYNC-Q1 (FC): (1) zdarzenie wspolna_religia (jednorazowe +1) wciąż istnieje w kodzie, choć religia ma nie wpływać na zaufanie (decyzja właściciela); (2) silnik zdarzenia 'pokoj' daje dZ=5, a po pokoju zaufanie jest ustawiane na 20 — sprawdzić kolejność i brak błędu; (3) opis „−5 Relacja u adresata” (diplomacy.json ok. l.305) i „−5 Relacja u każdego” (ok. l.471). Zero zmian zachowania, chyba że zdarzenie jest martwe (wtedy usunięcie). Szczegóły: DODATEK.
+
+BAZA: kandydat a2dc4fa31 (potomek 801888c60; origin/main jest dalej). Operator: HAIKU. Evaluator/FC: SONNET.
+ALLOWLISTA: gra/src/game/diplomacy.ts (zdarzenie wspolna_religia: tylko usunięcie martwego kodu albo komentarz; reszta bez zmian), gra/src/game/diplomacy-factors.ts (etykieta czynnika religii, jeśli osierocona), gra/data/diplomacy.json (tylko pola opisowe), istniejące testy w gra/tools/*.cjs tylko w asercjach o tym zdarzeniu, gra/tools/diplo-json-descriptions-sync-test.cjs (rozszerzenie), docs/encyklopedia/pojecia/*.md tylko jeśli opisują to zdarzenie, gra/src/data/wikiBundle.json (WYŁĄCZNIE regeneracja skryptem), dyspozycje/autobot/runs/R-WEB-DIPLO-RESIDUAL-RELIGION-EVENT-AND-TEXTS-Q1/**.
+ZAKAZ: ai.ts, main.ts, diplomacy-proposals.ts, parametry czytane przez kod, WERSJE.md, gra-robocza/, rust-port/, npm run build/dev, git add -A, spawn_task i inne narzędzia zakładające sesje.

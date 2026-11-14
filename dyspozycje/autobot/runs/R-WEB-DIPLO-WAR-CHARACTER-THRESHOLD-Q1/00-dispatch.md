@@ -1,0 +1,7 @@
+# R-WEB-DIPLO-WAR-CHARACTER-THRESHOLD-Q1 — dispatch (2026-11-13)
+
+GOAL (decyzja właściciela ABC B, 2026-11-13): charakter cywilizacji zmienia próg przewagi siły militarnej potrzebny do wypowiedzenia wojny: agresywne cywilizacje wypowiadają wojnę przy mniejszej przewadze, ostrożne przy większej (przykład z pytania: 15% i 30%; bazowo 20%). Bonus ma zastąpić dawny warSilaBonus usunięty w kroku 3. Wartości wyjściowe do akceptacji właściciela — raport ma je pokazać tabelą. Szczegóły: DODATEK.
+
+BAZA: kandydat 5a50a5958 (krok 4a; potomek origin/main f0853a6cc). Operator: HAIKU. Evaluator/FC: SONNET.
+ALLOWLISTA: gra/src/game/ai.ts (WYŁĄCZNIE blok wypowiadania wojny — próg przewagi), gra/src/game/diplomacy-war-peace-profile.ts (odczyt parametru), gra/data/diplomacy-war-peace-params.json lub gra/data/diplomacy-military-strength-params.json (nowy parametr z opisem po polsku), gra/data/ pliki profili cywilizacji TYLKO jeśli dawny bonus warSilaBonus był tam (odczytaj z historii git; nie dopisuj nowych pól do profili bez potrzeby), istniejące testy w gra/tools/*.cjs tylko w asercjach o progu wypowiedzenia wojny, NOWY gra/tools/diplo-war-character-threshold-test.cjs, dyspozycje/autobot/runs/R-WEB-DIPLO-WAR-CHARACTER-THRESHOLD-Q1/**.
+ZAKAZ: blok pokoju i rozejmu w ai.ts i diplomacy-proposals.ts (krok 4a/4b), zmiana progu 20% dla pary w kodzie (ma zostać wartością bazową z JSON), main.ts, WERSJE.md, gra-robocza/, rust-port/, npm run build/dev, git add -A, spawn_task i inne narzędzia zakładające sesje.

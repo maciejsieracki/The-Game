@@ -43,6 +43,27 @@ któregokolwiek → zgłoszenie zgubione. Ta komenda żyje TAKŻE w
 bo `playbook.md` i `README.md` wymagają świadomego `Read` i po kompaktowaniu
 długiej sesji potrafią zniknąć z pola widzenia. Historia incydentu: `playbook.md` → C-031.
 
+## ⚠ ZASADA MODELI — ZRÓŻNICOWANIE RÓL (właściciel, 2026-11-12; NIE WYMAGA PRZYPOMINANIA; czytaj przed KAŻDYM uruchomieniem Workflow)
+
+Limit zużycia schodzi szybko, więc role MAJĄ być zróżnicowane (zasada 2 niżej jest wiążąca, nie „wyjątkowa”):
+
+| Rola | Model |
+|---|---|
+| Operator | **HAIKU 5.5 — zawsze** |
+| Obrona Operatora | **HAIKU 5.5** |
+| Evaluator | SONNET 5.5 |
+| Final Control | SONNET 5.5 |
+| Integracja orkiestratora (merge-tree, FF, rejestry) | model sesji |
+
+Sonnet na Operatorze **wyłącznie** po DWÓCH nieudanych rundach Haiku TEGO SAMEGO tematu (FAIL lub BLOCK bez kodu), z pisemnym uzasadnieniem w dispatchu — nigdy z góry „bo temat trudny”, nigdy „dla pewności”. Rundy integracyjne (merge + bramki), dokumentacyjne i audytowe = Haiku.
+Skrypt Workflow web: `scratchpad/WEB-NEW.js` i generowane z niego `WEB-<ID>.js` (`mkwf.sh`). Skrypt wymusza: Operator = Haiku; Sonnet na Operatorze tylko z `args.haikuFailures >= 2` i `args.sonnetWhy`; Obrona zawsze Haiku (poza Opus dla grafiki/pamięci Rust). Przed każdym `Workflow` sprawdź, że `opModel` = Haiku.
+Nie startuj tematów „dla zapełnienia” slotów, jeśli brak realnej pracy bez zależności od decyzji gameplay — oszczędzaj limit.
+
+## ⚠ RAPORTOWANIE BACKGROUND TASKÓW (właściciel, 2026-11-12; obowiązkowe w KAŻDYM raporcie statusu)
+
+Nie podawaj samych numerów/ID. W każdym raporcie statusu wypisz tabelę trwających Workflow: **temat po polsku (co jest robione i po co) | etap (Operator/Evaluator/Obrona/FC, np. 2/4) | model aktualnego etapu (HAIKU/SONNET) | od jak dawna**. Przy zakończeniu tematu: werdykt FC, co zostało dostarczone (jedno zdanie, co to daje w grze) i co dalej.
+Workflow uruchamiaj z czytelną nazwą: `scratchpad/mkwf.sh <ID> "<opis po polsku>"` generuje `WEB-<ID>.js` z nazwą tematu i opisem modeli (Operator=HAIKU · Evaluator=SONNET · Obrona=HAIKU · FinalControl=SONNET).
+
 ## STAŁE ZASADY ORKIESTRATORA (właściciel przypomina je co sesję — czytaj PRZED każdą decyzją)
 
 1. **Cała praca merytoryczna przez Workflow** (Operator → Evaluator → Obrona → Final Control, max 5 rund,

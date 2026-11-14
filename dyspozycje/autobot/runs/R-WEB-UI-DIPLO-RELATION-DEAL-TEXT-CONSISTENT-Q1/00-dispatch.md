@@ -1,0 +1,4 @@
+# R-WEB-UI-DIPLO-RELATION-DEAL-TEXT-CONSISTENT-Q1 (GAME/UI, Haiku)
+GOAL: w oknie dyplomacji panel „Wpływ relacji na deal” nie może pisać „musisz dać więcej (×N PW), by oferta była uczciwa”, gdy poniżej stoi „Możesz przyjąć — wymiana symetryczna” i przycisk „Przyjmij” jest aktywny (oferta AI→gracz po A1, FALA 660). Panel ma pokazywać spójną informację zależnie od kierunku oferty (AI→gracz vs gracz→AI) i stanu „Przyjmij”. Tylko tekst/logika wyświetlania, BEZ zmiany reguł handlu, bramek ani wartości.
+KRYTERIA: test Chromium na realnym oknie dyplomacji (oferta AI→gracz z aktywnym „Przyjmij”: brak sprzeczności; oferta gracz→AI: dotychczasowy komunikat); zrzut obejrzany; mutacja czerwieni; tsc + 5 bramek.
+ŹRÓDŁO: raport FC W4 (zarzut 5): relationDealText w gra/src/ui/diplomacyAcceptanceBalance.ts.

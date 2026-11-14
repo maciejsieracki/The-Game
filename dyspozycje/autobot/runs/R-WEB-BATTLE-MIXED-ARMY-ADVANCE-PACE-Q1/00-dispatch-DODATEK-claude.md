@@ -1,0 +1,3 @@
+# DODATEK orkiestratora (R-WEB-BATTLE-MIXED-ARMY-ADVANCE-PACE-Q1, 2026-11-12)
+BAZA: origin/main 81e357dee. MODEL: Operator HAIKU 5.5, Obrona HAIKU, Evaluator/FC SONNET (CLAUDE.md zasada modeli).
+Kontekst: czytaj dyspozycje/autobot/runs/R-WEB-BATTLE-LINE-ADVANCE-UNIFORM-Q1/ (raporty W19) — tam jest implementacja sufitu tempa (reguła najwolniejszej jednostki, próg 10 rund); rozszerz ją na strzelców, konnicę i machiny do momentu pierwszego wzwarcia wręcz. Nie zmieniaj reguł walki po kontakcie ani flank konnicy (554/578). ŚRODOWISKO: worktree, npm ci --ignore-scripts, zakaz npm run build/dev, tsc --noEmit, testy bitew z limitem 280 s. Nie integrujesz, nie pushujesz.

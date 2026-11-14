@@ -1,0 +1,11 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-DIPLO-TRUCE-IMPL-Q1 (Final Control po rundzie operatora e7bf8acc8)
+GOAL: rozejm 5/10/15 wspólny dla gracza i AI; DODATEK 2 i 3 wdrożone.
+ZMIANY/COMMIT: SHA do integracji = e7bf8acc841a3ea5a2b2e9d9efbc7ec28fcd59cd. Przodkowie potwierdzeni: 82a8faf9d, bb92c8c90 (origin/main). Diff r6 vs 82a8faf9d = diplomacy-peace-lock.ts, ui/diplomacyTradeBasket.ts, tools/diplo-truce-impl-test.cjs (allowlista OK). git diff --check czysto.
+TESTY (odtworzone samodzielnie): diplo-truce-impl 94/0; diplo-truce-r1 30/0; diplo-truce-r4-ai 24/0; diplomacy-peace-lock 9/0; diplomacy-war-gates 22/0. tsc --noEmit: 0 błędów w diplomacy-peace-lock.ts i diplomacyTradeBasket.ts (reszta to braki typów środowiska).
+WERDYKTY ZARZUTÓW: 1 sweep AI (ODDAL: naprawione, realny decideAIDiplomacy 9280 wywołań, próba niepusta, rozejmy turns in {5,10,15}); 2 wspólna walidacja (ODDAL: UI importuje TRUCE_DURATION_OPTIONS/normalizeTruceDuration); 3 Z9 runtime (ODDAL: evaluateProposal odrzuca 0/7/11/20/-5/NaN/Inf testem runtime; finalizePeaceTreatyBetween w main.ts tylko regex, main.ts nieładowalne, NIE_ZMIERZONO runtime, guard defensywny); 4 przeszukanie ścieżek (ODDAL: udokumentowane + test statyczny); 5 Z8 (ODDAL: operator odwołał twierdzenie o runtime, wiring statyczny + predykat; NIE_ZMIERZONO kara Wiarygodności i skipN2); 6 R5-A (ODDAL: sumArmyMForOwner zgodnie z komentarzem w main.ts zakazującym Effective w progach; DO WIADOMOŚCI WŁAŚCICIELA: panel pokazuje Effective, możliwy rozjazd przy progu 80%); 7 R5-C (ODDAL: 0 vs 0 = odmowa, testy truceEndAiAccepts i truceEndTickPair); 8 tsc/live (ODDAL: NIE_ZMIERZONO live w przeglądarce). Zero NAPRAW.
+BLOKADY: brak technicznych. Założenia do potwierdzenia przez właściciela: R5-A, B (<=80%), R5-C.
+RUNDY: 5/5 (kod r6 jako odpowiedź na FC r5; bez eskalacji).
+NASTĘPNY KROK: integracja orkiestratora: merge e7bf8acc8 do main (sprawdź merge-base --is-ancestor), build poza repo, deploy ROBOCZA. Kolejność względem origin/rust-port/parity-v2 (43f4064b0): niezależne (gra/ vs rust-port/), nie jest przodkiem ani potomkiem; najpierw main, potem dług REPIN Rust (truceEndAiAccepts po sile, 5/10/15, 0 vs 0 odmowa).
+DEPLOY/PUSH: NIE WYKONANO

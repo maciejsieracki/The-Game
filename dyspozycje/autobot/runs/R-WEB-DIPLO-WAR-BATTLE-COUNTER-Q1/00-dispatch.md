@@ -1,0 +1,7 @@
+# R-WEB-DIPLO-WAR-BATTLE-COUNTER-Q1 — dispatch (2026-11-13)
+
+GOAL (przygotowanie do kroków 3 i 4): stan pary zapisuje (a) punkty wygranych bitew OSOBNO dla każdej strony, liczone tylko od początku bieżącej wojny tej pary (zerowane przy wybuchu wojny), dla wszystkich właścicieli (gracz, AI↔AI), oraz (b) czasowy bonus trybutu (+10% siły militarnej pobierającego przez 10 tur). Plus czyste funkcje odczytu dla siły militarnej. BEZ podpięcia do decyzji AI, pokoju ani UI. Szczegóły: DODATEK.
+
+BAZA: origin/main d09df3e0b (+ kandydat siły militarnej 42bf2d9df jako przodek zadania: git cherry-pick lub merge; nowe pliki diplomacy-military-strength.ts i diplomacy-military-strength-params.json). Operator: HAIKU. Evaluator/FC: SONNET.
+ALLOWLISTA: gra/src/game/diplomacy-pn-engine.ts (DiploPairMeta: tylko NOWE pola opcjonalne i freshDiploPairMeta), gra/src/game/diplomacy-military-strength.ts (dodać czyste pomocniki odczytu), gra/src/main.ts (WYŁĄCZNIE: zapis bitew per para, reset przy starcie wojny, zapis bonusu trybutu, serializacja/migracja zapisu), gra/data/diplomacy-military-strength-params.json (tylko jeśli potrzebny nowy opis), NOWY gra/tools/diplo-war-battle-counter-test.cjs, dyspozycje/autobot/runs/R-WEB-DIPLO-WAR-BATTLE-COUNTER-Q1/**.
+ZAKAZ: ai.ts, diplomacy.ts, diplomacy-proposals.ts, power-objective.ts, istniejące JSON balansu, UI, zmiany reguł gry, WERSJE.md, gra-robocza/, rust-port/, npm run build/dev, git add -A.

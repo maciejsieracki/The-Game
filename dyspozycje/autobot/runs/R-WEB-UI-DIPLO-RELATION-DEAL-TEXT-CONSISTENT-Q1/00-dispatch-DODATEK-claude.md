@@ -1,0 +1,4 @@
+# R-WEB-UI-DIPLO-RELATION-DEAL-TEXT-CONSISTENT-Q1 — DODATEK (orkiestrator, 2026-11-12, runda 1/5)
+BAZA: origin/main (6b9bcaf2b, po FALI 660). MODEL: Operator HAIKU, Obrona HAIKU, Evaluator/FC SONNET. Dispatch: 00-dispatch.md (gałąź claude/sprawdzenie-funkcjonalnosci-ek4ra0).
+ALLOWLISTA: gra/src/ui/diplomacyAcceptanceBalance.ts i okno dyplomacji (tylko wyświetlanie), gra/tools/*-test.cjs, dyspozycje/autobot/runs/R-WEB-UI-DIPLO-RELATION-DEAL-TEXT-CONSISTENT-Q1/**. Zakaz: gra/src/game/** (reguły handlu), JSON balansu, WERSJE.md, rust-port. Test live z ai-trade-wiring-e2e-live-test.cjs jako wzorzec scenariusza (oferta AI→gracz, 40 cegły za 10 żelaza).
+ŚRODOWISKO: worktree; w gra/ npm ci --ignore-scripts; ZAKAZ npm run build/dev; Chromium przez Vite HTTP (build poza repo). Nie integrujesz, nie pushujesz.

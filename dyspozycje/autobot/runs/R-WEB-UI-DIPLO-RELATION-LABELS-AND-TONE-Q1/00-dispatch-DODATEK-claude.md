@@ -1,0 +1,4 @@
+# R-WEB-UI-DIPLO-RELATION-LABELS-AND-TONE-Q1 — DODATEK (orkiestrator, 2026-11-12, runda 1/5)
+BAZA: kandydat e607cc120a4ed109f65c98b1646f2efa9334bde0 (web-wip/R-WEB-UI-DIPLO-RELATION-VALUE-MISMATCH-Q1-r2; zawiera test live z W33) + merge origin/main (b4853c8e6). MODEL: Operator HAIKU, Obrona HAIKU, Evaluator/FC SONNET.
+ALLOWLISTA: gra/src/ui/diplomacyAcceptanceBalance.ts, gra/src/ui/diplomacyAudience.ts (tylko wyświetlanie), pliki wiki/poradnika z tymi etykietami + regeneracja wikiBundle.json, gra/tools/*-test.cjs, dyspozycje/autobot/runs/R-WEB-UI-DIPLO-RELATION-LABELS-AND-TONE-Q1/**. ZAKAZ: gra/src/game/**, main.ts (poza ewentualną etykietą przekazywaną do UI), JSON balansu, WERSJE.md, rust-port.
+ŚRODOWISKO: worktree; w gra/ npm ci --ignore-scripts; ZAKAZ npm run build/dev; Chromium przez Vite HTTP (build poza repo). Nie integrujesz, nie pushujesz.

@@ -1,0 +1,4 @@
+# R-WEB-UI-DIPLO-RELATION-VALUE-MISMATCH-Q1 (GAME/UI, analiza + naprawa tylko wyświetlania, Haiku)
+Źródło: zarzut 3 Evaluatora/FC W31: okno dyplomacji pokazuje w wierszu „Wpływ relacji na deal” wartość „Relacja 11,6”, a w prawym panelu „Relacja 90 / 200” dla tego samego partnera/oferty. Rozjazd istniał przed FALĄ 662 (relTotal = their.relCurrent w renderPnBalancePanelHtml).
+GOAL: ustalić, co oznaczają obie liczby (inna skala/okno/zmienna?) i czy to błąd wyświetlania. Jeśli błąd — ujednolicić wyświetlanie (jedna prawdziwa wartość z czytelną etykietą), BEZ zmiany reguł handlu/bramek/wartości w silniku. Jeśli to dwie różne wielkości — dodać etykiety i opis. Jeśli wniosek wymaga decyzji produktowej — DECISION_REQUIRED.
+KRYTERIA: tabela: miejsce w UI → źródło wartości → znaczenie (z kodem); test Chromium na realnym oknie dyplomacji (wzorzec ai-trade-wiring-e2e-live-test.cjs) pokazujący obie wartości; mutacja czerwieni jeśli jest poprawka; tsc + 5 bramek.

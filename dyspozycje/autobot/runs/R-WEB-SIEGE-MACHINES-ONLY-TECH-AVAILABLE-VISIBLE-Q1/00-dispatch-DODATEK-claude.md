@@ -1,0 +1,23 @@
+# R-WEB-SIEGE-MACHINES-ONLY-TECH-AVAILABLE-VISIBLE-Q1 (orkiestrator, 2026-11-11) — zgłoszenie właściciela ze zrzutem ekranu
+BAZA: origin/main (`1a42785d4`, po FALI 649). MODEL: Operator SONNET 5.5 — UZASADNIENIE: bramka technologii/epoki w UI oblężenia + spójność z silnikiem (kto może budować które machiny), wpływ na AI i panel oblężenia; wymaga sprawdzenia danych technologii. Evaluator/FC Sonnet.
+ZGŁOSZENIE (właściciel, dosłownie): „Co do machin oblężniczych powinny być dostępne tylko te machiny, które są dostępne zgodnie z technologią. Wszystkie pozostałe powinny być w ogóle NIEWIDOCZNE. W danym momencie nawet nie ukryte czy zwyszarzone, tylko niewidoczne. Więc na początku jest tylko widoczny taran i tyle.” Zrzut: panel „OBLĘŻENIE” (gra/src/ui/siegeMapPanel.ts, sekcja „Zbuduj machinę w oblężeniu”) pokazuje jednocześnie Taran, Taran okuty, Katapultę i Wieżę oblężniczą (z tekstem „Potrzeba co najmniej 10 jednostek armii bez machin”), choć gracz nie ma technologii na wszystkie.
+GOAL: lista machin do zbudowania w panelu oblężenia (i ewentualnie we wszystkich innych miejscach UI, gdzie wybiera się machinę oblężniczą do budowy — sprawdź: rg 'Taran|Katapult|Wie[zż]a obl' w gra/src/ui) zawiera WYŁĄCZNIE machiny odblokowane technologią/epoką gracza (ten sam warunek, co silnik stosuje przy budowie — jedno źródło prawdy, np. dostępność jednostki z units.json/techów; zweryfikuj, jak dziś silnik decyduje, czy machina jest dostępna; jeśli silnik NIE sprawdza tech — to osobny wniosek w raporcie, zakres: UI + ewentualnie bramka silnika wymagana przez dane). Niedostępne machiny NIE są renderowane w ogóle (ani ukryte przez CSS, ani wyszarzone, ani z podpowiedzią — brak elementu w DOM). Na początku gry (bez technologii machin) widoczny jest tylko Taran (jeśli Taran jest dostępny od startu wg danych — zweryfikuj; jeśli dane mówią inaczej, opisz i podaj fakty). Po zdobyciu technologii kolejna machina pojawia się na liście. Dotyczy GRACZA; AI poza zakresem (sprawdź tylko, czy AI nie łamie tej samej reguły, i zgłoś w raporcie bez zmian).
+KRYTERIA: test jednostkowy (lista machin dla zestawów technologii: start / po Kuźni brązu / po żelazie… zgodnie z danymi) + test Chromium na prawdziwym panelu oblężenia: DOM nie zawiera przycisków ani tekstów niedostępnych machin (textContent i querySelectorAll), zrzuty „start” i „po technologii”; mutacja (usunięcie filtra) czerwieni test; tsc --noEmit; istniejące testy panelu oblężenia/machin zielone (siege-*, siege-engines-*, unit-replace-*), 5 bramek referencyjnych (logic-test, tech-tree-test, research-test, unit-replace-test, combat-test). Nie zmieniaj kosztów ani progów „10 jednostek bez machin”.
+ALLOWLISTA: gra/src/ui/siegeMapPanel.ts i inne miejsca UI wyboru machiny wskazane przez diagnozę, ewentualnie funkcja dostępności machin w gra/src/game/** (tylko odczyt warunku technologii, bez zmiany balansu), gra/tools/*-test.cjs, dyspozycje/autobot/runs/R-WEB-SIEGE-MACHINES-ONLY-TECH-AVAILABLE-VISIBLE-Q1/**. Zakaz: WERSJE.md, JSON danych balansu, rust-port.
+ŚRODOWISKO: izolowany worktree; w gra/ `npm ci --ignore-scripts`; ZAKAZ `npm run build`/`dev`; Chromium przez Vite HTTP. Weryfikacja wizualna obowiązkowa. Nie integrujesz, nie pushujesz.
+
+## DODATEK (2026-11-11) — DECYZJA WŁAŚCICIELA: Taran wymaga „Obróbki drewna"
+
+Właściciel: Taran wymaga technologii „Obróbka drewna" — NIE zmieniamy tego. Gdy nie ma żadnej dostępnej machiny,
+pozostaje samo oblężenie (bez machin; lista machin niewidoczna). Zarzut 5 z W17 (Taran od startu) NIE jest defektem.
+Kryteria W18: widoczne wyłącznie machiny dostępne wg technologii; zero dostępnych → brak sekcji machin, samo oblężenie działa.
+Nie dodawać Tarana do startu, nie zmieniać wymagań techów.
+
+## DODATEK 2 (2026-11-11) — doprecyzowanie właściciela
+
+Sens decyzji: bez machin oblężniczych armia MUSI oblegać miasto (blokada/głód → poddanie) i NIE jest w stanie zdobyć go szturmem.
+Kryteria dodatkowe (binarne), do POMIARU w obecnym kodzie przed zmianą:
+1. Czy dziś armia bez żadnej machiny może zdobyć miasto z fortyfikacjami szturmem/bitwą (ręczną i AUTO)? Podać wynik z dowodem (test/uruchomienie).
+2. Jeśli tak — szturm miasta z murem/fortyfikacją bez machiny jest zablokowany (przycisk niedostępny + komunikat 'Potrzebne machiny oblężnicze — pozostaje oblężenie'); oblężenie głodowe działa jak dotąd.
+3. Jeśli miasto nie ma fortyfikacji — NIE zmieniać dotychczasowych zasad (rozstrzygnięcie nie jest w decyzji właściciela; w razie wątpliwości DECISION_REQUIRED z opisem).
+4. Dotyczy też AI (nie zdobywa ufortyfikowanego miasta bez machin) — zmierzyć; zmiana AI tylko jeśli pomiar wykaże rozjazd.

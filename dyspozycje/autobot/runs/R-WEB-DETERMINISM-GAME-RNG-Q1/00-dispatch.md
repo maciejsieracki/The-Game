@@ -1,0 +1,7 @@
+# R-WEB-DETERMINISM-GAME-RNG-Q1 — dispatch (2026-11-13)
+
+GOAL: to samo ziarno gry daje ten sam przebieg (stan gry co turę), przynajmniej w trybie ?civTest=1 i — o ile to możliwe bez zmiany rozkładu losowości dla gracza — w zwykłej grze od ziarna nowej gry. Zamiana nieseedowanego Math.random w pętli tury na generator z ziarnem. Szczegóły: DODATEK. Decyzja właściciela (2026-11-13, ABC C): najpierw naprawa losowania, potem ponowny pomiar częstości ofert handlowych AI.
+
+BAZA: origin/main ed95085a2 (FALA 681). Operator: HAIKU. Evaluator/FC: SONNET.
+ALLOWLISTA: gra/src/main.ts (WYŁĄCZNIE miejsca z audytu: ok. 32394, 41036, 44291 oraz ewentualne dalsze znalezione w pętli tury; źródło ziarna ok. 1992), gra/src/game/villageRewards.ts (rng domyślny, ok. l.133), nowy lub istniejący moduł generatora z ziarnem w gra/src/game/ (użyj istniejącego, jeśli jest — grep mulberry32/xorshift/seededRng), gra/src/game/civ-test-hooks.ts (tylko podanie ziarna do generatora), istniejące testy w gra/tools/*.cjs tylko w asercjach zależnych od losowania, NOWY gra/tools/determinism-same-seed-test.cjs, narzędzia pomiarowe gra/tools/measure-ai-trade-offer-frequency*.cjs (tylko jeśli potrzebne do powtórzenia pomiaru), dyspozycje/autobot/runs/R-WEB-DETERMINISM-GAME-RNG-Q1/**.
+ZAKAZ: zmiana reguł gry i balansu, ai.ts i diplomacy*.ts (jeśli znajdziesz tam Math.random — wylistuj w raporcie, nie zmieniaj), WERSJE.md, gra-robocza/, rust-port/, npm run build/dev, git add -A, spawn_task i inne narzędzia zakładające sesje.

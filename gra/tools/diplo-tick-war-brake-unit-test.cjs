@@ -29,7 +29,8 @@ function eq(name, got, want) {
 }
 
 const p7 = PARAMS.p7;
-const p6 = PARAMS.p6;
+// N nie jest w JSON (R-WEB-DIPLO-TRUST-WAR-N6-CLEANUP-Q1): podajemy jawnie N=5 jak w silniku (profil wojny).
+const p6 = { ...PARAMS.p6, kryzysTurDoWojny: 5 };
 // epoka: 1 = kamien, 2 = braz, 3 = zelazo (ZALOZENIE r2)
 const bonus = (nadwyzkaPn, epoka = 1, zaufanie = 10, kolejneTuryDostaw = 2) =>
   M.tradeTrustBonusPerTura({ nadwyzkaPn, epoka, zaufanie, kolejneTuryDostaw }, p7);

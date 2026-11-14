@@ -40,7 +40,8 @@ Relacja i zwykły wskaźnik siły (respekt względny) nie wchodzą już do tej b
 - Gdy licznik dojdzie do N, wojnę wypowiada **silniejsza strona wg siły militarnej** (remis rozstrzyga armia, potem kolejność identyfikatorów).
 - **Gracz nigdy nie wypowiada wojny automatycznie z hamulca.** Gdy silniejszą stroną jest AI, gracz dostaje jedno ostrzeżenie na epizod zerowego Zaufania (komunikat z liczbą tur do wojny).
 - Hamulec wyłącza się, gdy Zaufanie wzrośnie powyżej zera albo gdy para już jest w wojnie.
-- Uwaga do pliku `diplomacy-tick-params.json`: pole `p6.kryzysTurDoWojny = 5` jest nadpisywane przez N z profilu (`main.ts`, `diploBrakeCrisisStep`), a pole `flagaDomyslna: false` jest nieaktualne. Flaga w kodzie (`DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT`, `diplomacy-tick-war-brake.ts`) ma wartość **włączoną**.
+- W wojnie Zaufanie pary **tkwi na zerze** (tick go nie podnosi), a licznik kryzysu nie liczy: para w wojnie ma licznik 0 i brak ostrzeżenia. Licznik ruszy dopiero po pokoju i ponownym spadku Zaufania do zera.
+- Pole N nie występuje w `diplomacy-tick-params.json` (dawne `p6.kryzysTurDoWojny` usunięto jako martwe): silnik podaje N z profilu wojny pary (`main.ts`, `diploBrakeCrisisStep`). Flaga w kodzie (`DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT`, `diplomacy-tick-war-brake.ts`) ma wartość **włączoną**; pole `flagaDomyslna` w JSON nie jest czytane.
 
 ### Bramki wojen wymuszonych przez epokę
 
@@ -75,7 +76,7 @@ Wrogi poniżej Zaufania 10, Nieufny przy Zaufaniu 10–29 (szczegóły: hasło *
 
 ## Przykład liczbowy
 
-Dwie cywilizacje, AI ma przewagę siły 25% (powyżej progu 20%), Zaufanie pary spada z 12 na 8 w jednej turze, potem na 0. Licznik zerowego Zaufania rośnie co turę. Po N = 6 turach (profil bazowy) silniejsza AI wypowiada wojnę, a gracz dostaje wcześniej jedno ostrzeżenie. Gdyby Zaufanie wzrosło do 1 przed upływem N tur, licznik się zeruje.
+Dwie cywilizacje, AI ma przewagę siły 25% (powyżej progu 20%), Zaufanie pary spada z 12 na 8 w jednej turze, potem na 0. Licznik zerowego Zaufania rośnie co turę. Po N tur (N z profilu pary, od 3 do 7) silniejsza AI wypowiada wojnę, a gracz dostaje wcześniej jedno ostrzeżenie. Gdyby Zaufanie wzrosło do 1 przed upływem N tur, licznik się zeruje.
 
 ---
 
@@ -114,4 +115,4 @@ Wiersze o progach Relacji (`progWojnyRelacji`, `hamulecRelacji.progKryzysuMinusP
 
 Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1, runda 3). Zasady „Zaufanie 30 / przewaga siły / zero przez N tur” są wdrożone (R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1, R-WEB-DIPLO-WAR-CHARACTER-THRESHOLD-Q1), zgodnie z DECYZJĄ WŁAŚCICIELA 2026-11-13. Bramka AI (`ai.ts`) nie używa już progu rw ani Relacji <30. Stara wersja hasła opisywała hamulec po Relacji i wczesne okno 25 tur; nie była zgodna z kodem.
 
-Rozbieżność do zgłoszenia: `diplomacy-tick-params.json` ma `flagaDomyslna: false` i `kryzysTurDoWojny: 5`, a w kodzie flaga jest włączona i N pochodzi z profilu (6 dla bazowego). Hasło podaje stan faktyczny z kodu.
+Rozbieżność usunięta (R-WEB-DIPLO-TRUST-WAR-N6-CLEANUP-Q1): martwe pole `kryzysTurDoWojny` z `diplomacy-tick-params.json` zostało usunięte; N pochodzi wyłącznie z profilu wojny pary. Pole `flagaDomyslna: false` w JSON nadal nie jest czytane przez kod (flaga w kodzie jest włączona). Hasło podaje stan faktyczny z kodu.

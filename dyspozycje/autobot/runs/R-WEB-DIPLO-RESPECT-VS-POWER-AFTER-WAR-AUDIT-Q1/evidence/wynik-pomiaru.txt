@@ -1,0 +1,30 @@
+## A. Składowe ΔZaufania/turę w wojnie (computeTickZaufanieDelta)
+- brak granicy, brak religii: ΔZ = 0
+- granica, epoka <Brąz (−2): ΔZ = -2
+- granica, epoka Brąz (−3): ΔZ = -3
+- granica −2 + wspólna religia +0,5: ΔZ = -1.5
+- granica −3 + wspólny wróg +1 + wspólna religia +0,5: ΔZ = -1.5
+- granica −2 + odmienna religia −0,5: ΔZ = -2.5
+- tylko wspólny wróg +1 (w wojnie dZ>0 → 0): ΔZ = 0
+- sharedBorderPenaltyForEpochs(0,0)=-2, (2,0)=-3, (3,1)=-4
+
+## B. Trajektoria 30 tur wojny (tickDiplomacy, status=wojna, granica −2, wspólna religia +0,5)
+Respekt LIVE (computeRespekt(100,10)) = 91  (kierunek poprawny: silniejszy > 50)
+
+| tura | Z | R (zapisany) | Relacja=Z+R | Respekt LIVE | ΔZ/turę |
+|---|---|---|---|---|---|
+| 1 | 0 | 29 | 29 | 91 | -1.5 |
+| 2 | 0 | 29 | 29 | 91 | -1.5 |
+| 3 | 0 | 29 | 29 | 91 | -1.5 |
+| 4 | 0 | 29 | 29 | 91 | -1.5 |
+| 5 | 0 | 29 | 29 | 91 | -1.5 |
+| 10 | 0 | 29 | 29 | 91 | -1.5 |
+| 15 | 0 | 29 | 29 | 91 | -1.5 |
+| 20 | 0 | 29 | 29 | 91 | -1.5 |
+| 25 | 0 | 29 | 29 | 91 | -1.5 |
+| 30 | 0 | 29 | 29 | 91 | -1.5 |
+
+## C. Zdarzenia militarne w wojnie (applyDiplomaticEvent + tick)
+- wygrana_bitwa (Respekt +5): po zdarzeniu R=29, po ticku R=29, Z=0 (limit wojenny: Z+R<=29)
+- przewaga_militarna (Respekt +15): po zdarzeniu R=29, po ticku R=29, Z=0 (limit wojenny: Z+R<=29)
+- 30 x wygrana_bitwa (+5) z tickiem wojny: R koncowe=29, Z=0, Z+R=29

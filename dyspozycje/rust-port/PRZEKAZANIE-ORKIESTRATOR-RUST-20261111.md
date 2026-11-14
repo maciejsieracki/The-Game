@@ -1,0 +1,49 @@
+# Przekazanie: osobny Orkiestrator RUST (2026-11-11)
+
+**Decyzja właściciela:** Rust i web prowadzą DWA osobne czaty-orkiestratory, równolegle. Ten dokument jest punktem startowym czatu RUST. Czat WEB (ten sam co dotąd; sesja `session_01Fs7eokPtaxbQL7KGTXXeWS`) od teraz NIE dotyka `rust-port/`, `origin/rust-port/parity-v2`, refs `refs/keep/R-RUSTPORT-*` ani wpisów Rust; czat RUST NIE dotyka `gra/`, `origin/main`, deployu ROBOCZA, wpisów web.
+
+## 0. Zasady (obowiązują, jak w `CLAUDE.md` + `README.md`)
+- Cała praca merytoryczna WYŁĄCZNIE przez Workflow (Operator → Evaluator → Obrona → Final Control, max 5 rund; FAIL wraca do TEGO SAMEGO ID z DODATKIEM + BAZĄ). Orkiestrator tylko: dispatch (zapisany i wypchnięty PRZED Workflow), uruchamia, czyta, integruje po FC, push, rejestr, sprzątanie. NIGDY nie poprawia kodu ręcznie ani nie rozwiązuje konfliktów w kodzie ręcznie. Nie zleca pracy poza ten czat (żadnych kart „Suggested task”, żadnych sesji pobocznych) — właściciel zabronił.
+- Modele: Operator HAIKU 5.5 domyślnie; SONNET 5.5 tylko z pisemnym UZASADNIENIEM w dispatchu albo po 2 nieudanych rundach Haiku; OPUS 5.5 tylko pamięć/GPU/grafika Rust; Obrona Haiku; Evaluator i FC Sonnet.
+- Decyzje produktowe i progi liczbowe → AskUserQuestion po polsku (max 4, rekomendacja pierwsza). Operator NIE zwraca BLOCK/DECISION_REQUIRED dla luk rozstrzygalnych ZAŁOŻENIEM. Liczby LOC z `wc -l`, partie ≤ 600 LOC (dziel testy).
+- Rust: do 4 operatorów równolegle (Haiku), `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` w worktree i usuwanie po bramce; worktree `--no-checkout` + `git sparse-checkout set rust-port dyspozycje`; wolne ≥ 8 GB przed startem nowego tematu z cargo (`df -h /`). Po KAŻDYM temacie: refs `refs/keep/<ID>-fc`, push `rust-port-wip/<NAZWA>`, push, `git worktree remove --force`, sprzątanie, DOPIERO POTEM następny.
+- Komunikacja z właścicielem po polsku, krótko, uczciwie (NIE_ZMIERZONO tam, gdzie nie zmierzono).
+
+## 1. Gałęzie i miejsca
+- Kod Rust: `origin/rust-port/parity-v2` (HEAD w chwili przekazania: `db390d49d`). Silnik: `rust-port/engine`. Integruje WYŁĄCZNIE czat RUST.
+- Dispatche/raporty dotychczasowe Rust: gałąź docs czatu WEB `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0` (tylko do ODCZYTU): `dyspozycje/autobot/runs/R-RUSTPORT-*/` (00-dispatch.md, DODATKI, raporty FC), `dyspozycje/rust-port/p6/*` (m.in. `P6-WIRE-WAR-TURN-PLAN.md`, `P6-WIRE-WAR-MARCH-PLAN.md`, `REPIN-DELTA-6.md`), plan `dyspozycje/rust-port/PLAN-PORT-RUST-TAURI-20261020.md` + `PLAN-AKTUALIZACJA-20261111.md`. Czat RUST tworzy NOWE dispatche/rejestr na SWOJEJ gałęzi sesji (przydzielonej przez środowisko) i prowadzi własny rejestr `dyspozycje/rust-port/REJESTR-RUST.md` (nie dopisuje do `REJESTR-PROSB-I-ZADAN.md` czatu web — unikanie konfliktów).
+- Refy kodu operatorów: `refs/keep/R-RUSTPORT-*-code/-fc` istnieją w repo czatu WEB (lokalnie) i jako gałęzie `origin/rust-port-wip/*` (UREPL, CERAM-r4, DANE2, W5MARCH, PICK-r3, W4DECL, MASZYNY, ZAPIS-r3, W3STEP, FOLLOW, DANE, W2VIEW, AIZAKUP-r3, ROZEJM-r3, …).
+- Szablon skryptu Workflow: `dyspozycje/rust-port/tools/PORT.js` + `mkport.sh <ID>` (generuje `PORT-<ID>.js` z `meta.name = ID`). Args: `{"id":"<ID>","tag":"<TAG>","split":false,"round":1,"opModel":"claude-sonnet-5-5"(opcjonalnie)}`. W szablonie dispatch jest czytany z `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0` — ZMIEŃ tę nazwę gałęzi na swoją (sed) i trzymaj dispatche na swojej gałęzi.
+
+## 2. Procedura integracji po FC PASS (sprawdzona dziś 8×)
+1. `git update-ref refs/keep/<ID>-code <SHA kodu FC>`; `git push origin <SHA>:refs/heads/rust-port-wip/<NAZWA>`; usuń worktree `wf_*` tego workflowu.
+2. `git fetch origin rust-port/parity-v2`; `git worktree add --no-checkout --detach /home/user/integ-rust origin/rust-port/parity-v2`; `git sparse-checkout init --cone; git sparse-checkout set rust-port dyspozycje; git checkout`.
+3. `git merge --no-edit -m "Integracja <ID>" <SHA do integracji z FC>`; sprawdź `git merge-base --is-ancestor <kod operatora> <SHA>` i `git diff --stat` (incydent 2026-11-08: merge z rodzicem main zamiast kodu operatora). Konflikt → NIE rozwiązuj ręcznie; runda integracyjna Operatora (Workflow).
+4. Bramki w tle (`nohup … &` + Monitor, bo polecenia > 120 s uciekają w tło): `cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test --no-fail-fast --lib --test <binarki tematu i sąsiednie>`; sprawdź `grep -E 'FAILED|failed;' | grep -v ' 0 failed'`.
+5. `git push origin HEAD:refs/heads/rust-port/parity-v2` (FF, po `git merge-base --is-ancestor origin/rust-port/parity-v2 HEAD`), wpis do rejestru, sprzątanie `/home/user/integ-rust`.
+
+## 3. Zintegrowane na `parity-v2` w tej sesji (2026-11-11, od `a006068f1`… do `db390d49d`)
+DELTA-6 (pomiar dryfu, docs), DYSTANS-MULT (`unit_power.rs`), OBLĘŻENIE-LIMIT-150 (zawężone), W1 (`war_turn_state.rs`, `state.war`), ROZEJM 5/10/15, AI-ZAKUP (`ai_resource_needs.rs`), W2 (`war_world_view.rs`), ARMIA-FOLLOW-AUTOMERGE, DANE (dyplomacja 130/90, era 40), W3 (`war_turn_forced.rs`), ZAPIS-MIGRACJE (`save_migrations.rs`), OBLĘŻENIE-MASZYNY (`siege_engine_build.rs`), W4 (`war_turn_declare.rs`), UNIT-REPLACE, EKONOMIA-CERAMIKA-GARNCARSTWO (r4, Sonnet), DANE-2 (dyplomacja 0,54 / NAP 30/151, rozejm/przewagaMilitarna dane), W5 (`ai_war_march_plan.rs`, 500 wektorów z weba), PICK-STADNINA (r3, jeden pin web `cffe39cb9`, 5128 scenariuszy).
+
+## 4. Gałąź CZEKAJĄCA na Evaluator/FC (ten sam ID)
+`origin/autobot/p6-repin-dystans` = `3b7841f145a1178408805d91765477cf4cfdd937` — temat `R-RUSTPORT-REPIN-WALKA-DYSTANS-PETLA-Q1` (dług #216): `combat.rs::ranged_phase::resolve_ranged_phase` (faza dystansowa z `combat.ts` l.1008–1067), `unit_power.rs::field_power`, testy `p6_repin_dystans_petla` (600 walk), `p6_repin_dystans_fieldpower` (400 jednostek), wektory z weba. Baza `6d74770df` (merge z `db390d49d` CZYSTY wg merge-tree). Operator PASS-WITH-NOTES r1; NIE przeszło Evaluatora/FC; pełny `cargo test` NIE_ZMIERZONO; pętla niepodpięta do `resolve_combat`; faza zwarcia wymaga DECYZJI WŁAŚCICIELA (ABC). Plik: `dyspozycje/rust-port/p6/P6-REPIN-DYSTANS-PETLA-HANDOFF.md` (na tej gałęzi). Pierwszy krok: Evaluator + FC.
+
+## 5. Kolejka Rust (priorytety do ustalenia z właścicielem)
+A. DYSTANS-PETLA (pkt 4) → Evaluator/FC → integracja → ABC: podpięcie do `resolve_combat` i faza zwarcia.
+B. Wire-war: W6 (dyplomacja tury + tick rozejmu + tryb AI + kontroferta L11), W7 (oblężenie / AI↔AI), W8 (pipeline `run_war_turn`; kolejność kroków D2=B — własna uporządkowana; D1=B stan wojny w `PlayableState`/`GameStateDto`, D3 progi 1:1 z webem, D4 własny format + migracja). Plan: `P6-WIRE-WAR-TURN-PLAN.md`, `P6-WIRE-WAR-MARCH-PLAN.md`.
+C. Długi z integracji: loader zapisu wołający `migrate_on_load`; `R-RUSTPORT-P6-WIRE-EPOCH-WAR-FLAG-Q1`; #217 pętla taktyczna oblężenia/mur/wyłom (L2–L5) + SIEGE-NEARBY-STAN (L9–L10); kolejka machin (`siegeMachines.ts`); wektory z weba dla adapterów W2/W3/W4 (logika inline w main.ts/ai.ts); W3-5 (era w predykacie wyczerpania), W3-7 (dedup po ownerId); W5: odchylenie Z5 od weba (flankowanie, bramka historii/fal), Z3/Z4, wektory kampanii/all-in; UNIT-REPLACE: L-1 tabela awansów INFANTRY (21/23 brak w Rust units.json), L-2 klucz `ai_zamiana_jednostek_limit_udzial`, L-3 wpięcie w turę.
+D. REPIN dryfu po czerwcu: korupcja Pałac II/III + Trybunał; odlewnie (web zmienił na 50/75 od FALI 618); handel kontaktowy + emporion w `TRADE_BUILDING_IDS`; łodzie rybackie 6/6/6 (`terrain-improvements.json`); `civBonusy` w zapisie; dane diplomacji: port reguły balansu `przewagaMilitarna`/`pokojAiAi`, `progNapBezterminowyRelacja` (bez konsumenta), ekspansja graniczna Brąz −3/Żelazo −4, sisterAlliance, `aiDiplomacyStance`.
+E. NOWY dryf weba FALA 620–626+ (czat WEB wciąż wdraża): konnica i wszystkie jednostki Żelaza wymagają Sztuki wojennej (units.json Era/Tech); Zastąp piechota wręcz → dowolna piechota wręcz (wszystkie nacje); koszyk rekrutacji; „Idź do wodza” wg pochodzenia zamówienia; stadnina w Żelazie tylko przy stadninie; AI proponuje cykliczną wymianę surowców; Ludy Morza ×3 od 20. tury po Brązie; w toku: cykle cegielni 75/100, odwrót ocalałych tylko w polu, administrator miasta/ulepszeń (nowa mechanika: koszty, korupcja −10%, produkcja/podatki +3%, autobudowa tylko z administratorem), generał rekrutujący, AI szuka głównej armii wroga. → po zakończeniu web: temat `R-RUSTPORT-REPIN-DELTA-7-Q1` (pomiar dryfu, tylko dokumentacja) z listą REPIN.
+F. P7–P11 (integracja Rust↔Tauri↔frontend, parity pass seedów itd.) — nierozpoczęte; UI po `9b019a7d8` (REPIN-UI-4); render L3.
+
+## 6. Pułapki (lekcje)
+- Operator Haiku często zwraca „martwy kod” (moduł bez podpięcia w produkcji) — dispatch musi wymagać podpięcia i testu behawioralnego, albo jawnie zawęzić GOAL.
+- „Plik poza allowlistą” = ZAŁOŻENIE do ratyfikacji orkiestratora, nie BLOCK.
+- Wektory z weba: `git archive origin/main gra/src gra/data` poza repo, Node 22 + esbuild, `stripTypeScriptTypes`; nie pisz wektorów ręcznie; piny danych (`vectors_pin_is_web_main_<sha>`) mają jedną wartość; `deny_unknown_fields` w strukturach danych.
+- Pełny `p6_8i_pick` ~550 s (limit narzędzia 590 s) — używaj `P6_8I_SHARD=k/2`. Pełny `cargo test` dziel na partie; długie polecenia uruchamiaj w tle i czekaj Monitorem.
+- Niewersjonowany `Cargo.lock` (artefakt cargo) — nie commituj, nie zostawiaj w worktree.
+- `/tmp/vbuild.log`-podobne logi: czytaj pod kątem BIEŻĄCEGO merge'a (stary log daje fałszywe „done”).
+- Fetch dużego repo przez proxy bywa wolny (minuty) — uruchamiaj w tle.
+
+## 7. Heartbeat czatu RUST
+Utwórz własny scheduled task (np. co godzinę, `create_trigger`, ten czat jako cel) z promptem: utrzymuj do 4 tematów Rust w toku, sprawdzaj Workflowy, po FC PASS integruj wg §2, po FAIL dopisek + kolejna runda, sprzątaj dysk, decyzje → AskUserQuestion. Heartbeat czatu WEB jest osobny i Rusta NIE rusza.

@@ -1,0 +1,2 @@
+# DODATEK orkiestratora (R-WEB-BATTLE-HIT-MODE-SETTING-Q1, 2026-11-12)
+BAZA: origin/main 81e357dee. Najpierw zmapuj: wszystkie wywołania resolveCombat i rozstrzygania uderzeń (grep), miejsce zapisu meta gry (dodaj pole hitMode z domyślnym "losowe" przy odczycie), panel ustawień zaawansowanych mapy (wzorzec: istniejące przełączniki zaawansowane). Parytet AUTO=SKIP ma wspólny tick (FALA 618 / R-WEB-BATTLE-SKIP-TICK-LOOP-UNIFY) — nie łam go. Nie integrujesz, nie pushujesz. Zakaz npm run build/dev; tsc --noEmit; testy bitew z limitem 280 s.
