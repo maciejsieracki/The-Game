@@ -71,6 +71,15 @@ const newBattleScene = (main.match(/new BattleScene\(/g) || []).length;
 const wired = (main.match(/combatRng:\s*battleCombatRng\(\)/g) || []).length;
 check('main: combatRng przy wszystkich tworzeniach BattleScene (4 miejsca)', wired >= 4, `new BattleScene=${newBattleScene}, combatRng=${wired}`);
 check('main: stan licznika w meta zapisu', /battleCombatSeq:\s*_battleCombatSeq/.test(main) && /battleCombatSeqTurn:\s*_battleCombatSeqTurn/.test(main));
+// Sciezka bitwy polowej z mapy (mapFieldBattle.ts -> deps.createBattleScene -> main.ts wrapper).
+const mapFieldSrc = stripComments(read('src/battle/mapFieldBattle.ts'));
+check('mapFieldBattle: brak Math.random', !/Math\.random/.test(mapFieldSrc));
+check('main: wrapper createBattleScene podpina combatRng z fabryki gry',
+  /createBattleScene:\s*\(opts:\s*BattleOpts\)\s*=>\s*new BattleScene\(\{\s*combatRng:\s*battleCombatRng\(\)\s*,\s*\.\.\.opts\s*\}\)/.test(main));
+// Zapis: stare zapisy bez pol maja domyslne -1 / 0 (defensywne odczytanie w restoreGameFromSave).
+check('main: stary zapis bez pol battleCombatSeq -> domyslnie -1/0',
+  /_battleCombatSeqTurn\s*=\s*typeof bcm\?\.battleCombatSeqTurn === 'number'[^;]*: -1;/.test(main)
+  && /_battleCombatSeq\s*=\s*typeof bcm\?\.battleCombatSeq === 'number'[^;]*: 0;/.test(main));
 
 if (failures.length) {
   console.log('\nFAILED ' + failures.length + ':\n- ' + failures.join('\n- '));

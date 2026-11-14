@@ -38057,7 +38057,9 @@ async function boot(): Promise<void> {
       applyMapBattleOutcomeWithSummary,
       clearBattleUiState: clearMapBattleUiState,
       battleMaxPerSide: BATTLE_MAX_PER_SIDE,
-      createBattleScene: (opts: BattleOpts) => new BattleScene(opts),
+      // R-WEB-BATTLE-MANUAL-RNG-DETERMINISM-Q1: bitwa polowa z mapy (mapFieldBattle) takze
+      // dostaje strumien walki z ziarna gry; wywolujacy moze nadpisac (opts ma pierwszenstwo).
+      createBattleScene: (opts: BattleOpts) => new BattleScene({ combatRng: battleCombatRng(), ...opts }),
       armyHungerBattleOpts,
       goldDeficitBattleOpts,
       difficultyBattleOpts,
