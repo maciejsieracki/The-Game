@@ -1,3 +1,9 @@
+## ROBOCZA 2ee91302 -- 2026-11-14 -- FALA 705: Powiadomienia: licznik zakladki Dyplomacja z blokujacymi propozycjami (testowa)
+
+- Licznik zakladki Dyplomacja wlicza blokujace propozycje diplo (np. propozycja pokoju od AI) i lista zakladki pokazuje ich kopie (bez ikony zamkniecia) obok oryginalu nad zakladkami; pozostale liczniki bez zmian (R-WEB-UI-NOTIF-DIPLO-TAB-COUNT-BLOCKING-Q1, decyzja wlasciciela B)
+- Weryfikacja: tsc 0, notif-diplo-tab-count-blocking 25/0 (baza czerwona), 5 bramek zielone, classify PASS, render-test Chromium 35/0, live Chromium licznik=1
+- Limity: Nie zmierzono: scenariusz war/T17 z realna propozycja AI; duplikat data-id oryginal+kopia
+
 ## ROBOCZA 746dbd76 -- 2026-11-14 -- FALA 704: Walka reczna i sceniczna: generator losowy walk AUTO (testowa)
 
 - Walka reczna i sceniczna (BattleScene: rzut trafienia, Pomin, bitwa polowa z mapy) uzywa strumienia losowego z ziarna gry jak walki AUTO (to samo ziarno = ten sam przebieg); licznik walk w turze w zapisie, stare zapisy dzialaja (R-WEB-BATTLE-MANUAL-RNG-DETERMINISM-Q1)
