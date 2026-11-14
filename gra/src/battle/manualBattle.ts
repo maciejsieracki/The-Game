@@ -82,6 +82,8 @@ export interface ManualBattleOpts {
   armyHungerStatMult?: number;
   /** Mnożnik statów bojowych przy deficycie Złota (domyślnie 0.75). */
   goldDeficitStatMult?: number;
+  /** R-WEB-BATTLE-MANUAL-RNG-DETERMINISM-Q1: strumien losowy walki (domyslnie Math.random). */
+  rng?: () => number;
 }
 
 export interface ManualBattleResult {
@@ -464,6 +466,8 @@ export class ManualBattle {
   private players: RuntimeUnit[] = [];
   private enemies: RuntimeUnit[] = [];
   private occByKey = new Map<string, RuntimeUnit>();
+  /** R-WEB-BATTLE-MANUAL-RNG-DETERMINISM-Q1: strumien losowy walki (resolveCombat rng). */
+  private combatRng: () => number = Math.random;
 
   // Podswietlenia (overlay meshes nad kafelkami)
   private highlightGroup = new THREE.Group();
@@ -510,6 +514,7 @@ export class ManualBattle {
     this.defenderCivBonusy = opts.defenderCivBonusy ?? [];
     this.armyHungerStatMult = opts.armyHungerStatMult ?? 0.75;
     this.goldDeficitStatMult = opts.goldDeficitStatMult ?? 0.75;
+    if (typeof opts.rng === 'function') this.combatRng = opts.rng;
 
     // ---- Overlay + UI ----
     this.overlay = document.createElement('div');
@@ -1060,6 +1065,7 @@ export class ManualBattle {
     const cuA = toCombatUnit(attacker.bu, this.armyHungerStatMult, this.goldDeficitStatMult);
     const cuD = toCombatUnit(defender.bu, this.armyHungerStatMult, this.goldDeficitStatMult);
     const result: CombatResult = resolveCombat(cuA, cuD, {
+      rng: this.combatRng,
       maxRounds: 30,
       attackerMoved: true,
       defenderTerrain: this.teren,
