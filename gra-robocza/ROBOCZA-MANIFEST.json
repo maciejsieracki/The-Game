@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "57aec16ccf81a58872bd57ad913a5fed",
-  "bundleSha256": "da2682c3d42f384954dad35f8aa4f325a739d35bfa3b21fc681fc28e03571ab6",
-  "bundleBytes": 14714655,
+  "bundleMd5": "c84bae63f1950bb0f31c542b0aeb92d1",
+  "bundleSha256": "2579c12eb24734a96572f53162923a431c7c0c5e205f0199336ffd758c14ed70",
+  "bundleBytes": 14715162,
   "sourceSnapshot": {
-    "source": "main 626d71c95 (merge FC TAX 3a3ef44b9 + LABOR 68f2bcde0)",
+    "source": "main 2125ee040 (merge FC MURY b1d5bd9ee)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 717: domyslny podzial podatkow nowej gry Skarb 30 / Nauka 60 / Zamoznosc 10 (AI i stare zapisy 20/60/20); domyslny podzial pracy Ulepszenia pula 50 / Budynki 50"
+    "FALA 718: Mury kamienne (mury_kamienne): koszt 80 drewna + 80 kamienia bez cegly (karta 160/160), Mury ceglane zachowuja cegle; hasla Civpedii i katalog budynkow poprawione"
   ],
   "verification": [
-    "tsc 0; logic 213/213; default-tax-split 28/0; default-labor-split 16/0; praca-jeden-podzial-kontrakt 634/0; build Vite zielony"
+    "tsc 0; logic 213/213; stone-walls-no-brick-cost 11/0; fortifications-stack-repro 49/0; koszty-surowcowe 161/0; Chromium: karta kosztu obu Murow"
   ],
   "limits": [
-    "NIE ZMIERZONO: zrzut panelu 30/60/10 w Chromium i wplyw 10 proc Zamoznosci na Szczescie; hotseat-ustawienia-kopiowane czerwony na bazie; dlug Rust REPIN"
+    "NIE ZMIERZONO: pelna budowa przy 0 cegly w grze; entity-card-contract-test (brak WebGL); utrzymanie surowcowe Murow kamiennych bez cegly (skutek jednego zrodla kosztu); dlug Rust REPIN danych"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES TAX r1 3a3ef44b9 + LABOR r1 68f2bcde0. Domyslny podzial podatkow nowej gry Skarb 30 / Nauka 60 / Zamoznosc 10 (stare zapisy i AI zostaja na 20/60/20), domyslny podzial pracy Ulepszenia pula 50 / Budynki 50. Testy default-tax-split 28/0, default-labor-split 16/0, praca-jeden-podzial-kontrakt 634/0, tsc 0, logic 213/213. NIE ZMIERZONO: zrzut panelu podatkow 30/60/10 w Chromium, wplyw 10 proc Zamoznosci na Szczescie. hotseat-ustawienia-kopiowane czerwony na bazie (dlug)."
+    "notes": "FC PASS-WITH-NOTES STONE-WALLS r1 b1d5bd9ee / kod 8f5e61dad. Mury kamienne bez kosztu cegly (80 drewna, 80 kamienia; karta 160/160), Mury ceglane zachowuja cegle. Skutek: utrzymanie surowcowe Murow kamiennych bez cegly. Testy stone-walls-no-brick-cost 11/0, fortifications-stack-repro 49/0, koszty-surowcowe 161/0, tsc 0, logic 213/213. NIE ZMIERZONO: pelna budowa w grze przy 0 cegly; entity-card-contract-test nie dobiegl (brak canvas/WebGL)."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-14T21:10:53",
+  "hubGeneratedAt": "2026-11-14T21:40:04",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "57aec16ccf81a58872bd57ad913a5fed",
-      "sizeBytes": 14714655
+      "md5": "c84bae63f1950bb0f31c542b0aeb92d1",
+      "sizeBytes": 14715162
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "57aec16ccf81a58872bd57ad913a5fed",
-      "sizeBytes": 14714655
+      "md5": "c84bae63f1950bb0f31c542b0aeb92d1",
+      "sizeBytes": 14715162
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "57aec16ccf81a58872bd57ad913a5fed",
-      "sizeBytes": 14714655
+      "md5": "c84bae63f1950bb0f31c542b0aeb92d1",
+      "sizeBytes": 14715162
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "57aec16ccf81a58872bd57ad913a5fed",
-      "sizeBytes": 14714655
+      "md5": "c84bae63f1950bb0f31c542b0aeb92d1",
+      "sizeBytes": 14715162
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "57aec16ccf81a58872bd57ad913a5fed",
-      "sizeBytes": 14714655
+      "md5": "c84bae63f1950bb0f31c542b0aeb92d1",
+      "sizeBytes": 14715162
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "57aec16ccf81a58872bd57ad913a5fed",
-      "sizeBytes": 14714655
+      "md5": "c84bae63f1950bb0f31c542b0aeb92d1",
+      "sizeBytes": 14715162
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "57aec16ccf81a58872bd57ad913a5fed",
-      "sizeBytes": 14714655
+      "md5": "c84bae63f1950bb0f31c542b0aeb92d1",
+      "sizeBytes": 14715162
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "57aec16ccf81a58872bd57ad913a5fed",
-      "sizeBytes": 14714655
+      "md5": "c84bae63f1950bb0f31c542b0aeb92d1",
+      "sizeBytes": 14715162
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "57aec16ccf81a58872bd57ad913a5fed",
-      "sizeBytes": 14714655
+      "md5": "c84bae63f1950bb0f31c542b0aeb92d1",
+      "sizeBytes": 14715162
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "57aec16ccf81a58872bd57ad913a5fed",
-      "sizeBytes": 14714655
+      "md5": "c84bae63f1950bb0f31c542b0aeb92d1",
+      "sizeBytes": 14715162
     }
   ],
-  "md5": "57aec16ccf81a58872bd57ad913a5fed",
+  "md5": "c84bae63f1950bb0f31c542b0aeb92d1",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

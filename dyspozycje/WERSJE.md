@@ -1,3 +1,9 @@
+## ROBOCZA c84bae63 -- 2026-11-14 -- FALA 718: Mury kamienne bez kosztu cegly (testowa)
+
+- Mury kamienne (mury_kamienne): koszt 80 drewna + 80 kamienia bez cegly (karta 160/160), Mury ceglane zachowuja cegle; hasla Civpedii i katalog budynkow poprawione
+- Weryfikacja: tsc 0; logic 213/213; stone-walls-no-brick-cost 11/0; fortifications-stack-repro 49/0; koszty-surowcowe 161/0; Chromium: karta kosztu obu Murow
+- Limity: NIE ZMIERZONO: pelna budowa przy 0 cegly w grze; entity-card-contract-test (brak WebGL); utrzymanie surowcowe Murow kamiennych bez cegly (skutek jednego zrodla kosztu); dlug Rust REPIN danych
+
 ## ROBOCZA 57aec16c -- 2026-11-14 -- FALA 717: Domyslne podatki 30/60/10 i podzial pracy 50/50 (testowa)
 
 - domyslny podzial podatkow nowej gry Skarb 30 / Nauka 60 / Zamoznosc 10 (AI i stare zapisy 20/60/20); domyslny podzial pracy Ulepszenia pula 50 / Budynki 50
