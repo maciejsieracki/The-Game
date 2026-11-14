@@ -1,0 +1,87 @@
+{
+ "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-c",
+ "seed": 7373,
+ "mode": "B",
+ "n": 12,
+ "k": 10,
+ "drop": [],
+ "records": [
+  {
+   "phase": "restore",
+   "turn": 12,
+   "digest": "{\"turn\":12,\"detIdSeq\":4,\"abTurn\":-1,\"abSeq\":0,\"dipSeq\":0,\"nUnits\":4,\"nCities\":1,\"len\":1582,\"fnv\":\"e9e09f7d\",\"fnvNoPP\":\"fc917cff\",\"lenNoPP\":1545}",
+   "counters": {
+    "turn": 12,
+    "detIdSeq": 4,
+    "abTurn": -1,
+    "abSeq": 0,
+    "dipSeq": 0
+   }
+  },
+  {
+   "phase": "resumed",
+   "turn": 13,
+   "digest": "{\"turn\":13,\"detIdSeq\":4,\"abTurn\":-1,\"abSeq\":0,\"dipSeq\":0,\"nUnits\":4,\"nCities\":1,\"len\":1582,\"fnv\":\"3bd7efee\",\"fnvNoPP\":\"c2766826\",\"lenNoPP\":1545}"
+  },
+  {
+   "phase": "resumed",
+   "turn": 14,
+   "digest": "{\"turn\":14,\"detIdSeq\":7,\"abTurn\":-1,\"abSeq\":0,\"dipSeq\":0,\"nUnits\":7,\"nCities\":1,\"len\":2115,\"fnv\":\"42733cd4\",\"fnvNoPP\":\"b7fdb48c\",\"lenNoPP\":2078}"
+  },
+  {
+   "phase": "resumed",
+   "turn": 15,
+   "digest": "{\"turn\":15,\"detIdSeq\":7,\"abTurn\":-1,\"abSeq\":0,\"dipSeq\":0,\"nUnits\":7,\"nCities\":1,\"len\":2154,\"fnv\":\"df3fdb96\",\"fnvNoPP\":\"64bcd91e\",\"lenNoPP\":2117}"
+  },
+  {
+   "phase": "resumed",
+   "turn": 16,
+   "digest": "{\"turn\":16,\"detIdSeq\":7,\"abTurn\":-1,\"abSeq\":0,\"dipSeq\":0,\"nUnits\":7,\"nCities\":1,\"len\":2154,\"fnv\":\"c0e6236\",\"fnvNoPP\":\"a5cce73e\",\"lenNoPP\":2117}"
+  },
+  {
+   "phase": "resumed",
+   "turn": 17,
+   "digest": "{\"turn\":17,\"detIdSeq\":7,\"abTurn\":-1,\"abSeq\":0,\"dipSeq\":0,\"nUnits\":7,\"nCities\":1,\"len\":2154,\"fnv\":\"7cb97fa8\",\"fnvNoPP\":\"3b2324f0\",\"lenNoPP\":2117}"
+  },
+  {
+   "phase": "resumed",
+   "turn": 18,
+   "digest": "{\"turn\":18,\"detIdSeq\":7,\"abTurn\":-1,\"abSeq\":0,\"dipSeq\":0,\"nUnits\":7,\"nCities\":1,\"len\":2155,\"fnv\":\"bfd20aa8\",\"fnvNoPP\":\"114a3df0\",\"lenNoPP\":2118}"
+  },
+  {
+   "phase": "resumed",
+   "turn": 19,
+   "digest": "{\"turn\":19,\"detIdSeq\":7,\"abTurn\":-1,\"abSeq\":0,\"dipSeq\":0,\"nUnits\":7,\"nCities\":1,\"len\":2154,\"fnv\":\"f6dd8169\",\"fnvNoPP\":\"aba8e2eb\",\"lenNoPP\":2117}"
+  },
+  {
+   "phase": "resumed",
+   "turn": 20,
+   "digest": "{\"turn\":20,\"detIdSeq\":7,\"abTurn\":-1,\"abSeq\":0,\"dipSeq\":0,\"nUnits\":7,\"nCities\":1,\"len\":2154,\"fnv\":\"baf05225\",\"fnvNoPP\":\"62c12f97\",\"lenNoPP\":2117}"
+  },
+  {
+   "phase": "resumed",
+   "turn": 21,
+   "digest": "{\"turn\":21,\"detIdSeq\":7,\"abTurn\":-1,\"abSeq\":0,\"dipSeq\":0,\"nUnits\":7,\"nCities\":1,\"len\":2154,\"fnv\":\"452d5425\",\"fnvNoPP\":\"4ddf0597\",\"lenNoPP\":2117}"
+  },
+  {
+   "phase": "resumed",
+   "turn": 22,
+   "digest": "{\"turn\":22,\"detIdSeq\":7,\"abTurn\":-1,\"abSeq\":0,\"dipSeq\":0,\"nUnits\":7,\"nCities\":1,\"len\":2154,\"fnv\":\"408e0cb4\",\"fnvNoPP\":\"e03fed6c\",\"lenNoPP\":2117}"
+  }
+ ],
+ "pageErrors": [],
+ "turnMs": [
+  339,
+  305,
+  304,
+  312,
+  305,
+  307,
+  303,
+  303,
+  304,
+  303
+ ],
+ "fastMode": true,
+ "done": true
+}
