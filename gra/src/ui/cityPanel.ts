@@ -1090,13 +1090,13 @@ function setShowEraBuildingPreview(on: boolean): void {
 /**
  * Domyslny podzial Daniny netto nowego miasta — MUSI byc zgodny z
  * DEFAULT_PODZIAL_HANDLU w game/cities.ts oraz z econ-params.json.
- * 20% Nauka / 60% Skarbiec / 20% Zamoznosc (decyzja Maciej 2026-07-25, PYTANIE 74 = A;
- * dawniej 20/70/10).
+ * 60% Nauka / 30% Skarbiec / 10% Zamoznosc (decyzja wlasciciela 2026-11-14,
+ * R-WEB-SETTINGS-DEFAULT-TAX-SPLIT-30-60-10-Q1; poprzednio 20/60/20).
  */
 const DEFAULT_PODZIAL_HANDLU: PodzialHandluSplit = {
-  procentPieniadz: 60,
-  procentNauka: 20,
-  procentLuksus: 20,
+  procentPieniadz: 30,
+  procentNauka: 60,
+  procentLuksus: 10,
 };
 
 /** Domyslny podzial Pracy (70% budynki). */
