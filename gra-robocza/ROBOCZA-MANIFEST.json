@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "e40f54565c8163f64043103e62c70664",
-  "bundleSha256": "223da5d691edf3e8d3ea910b52cd70e9a3bd7e91b1f41e9548cdaf9f44a50c14",
-  "bundleBytes": 14720532,
+  "bundleMd5": "942060c974b3148cdae6d4475ad224d2",
+  "bundleSha256": "b944454d2368a73de54ace58b81e9ec25aa1f954a4a207d5250d22625cf0d21e",
+  "bundleBytes": 14722010,
   "sourceSnapshot": {
-    "source": "main e6675958e (merge FC RACJA-6 144430c59 + WEARY-PW c6452991c)",
+    "source": "main 4f89a2071 (merge FC SPICHLERZ-CERAM f3300daf3)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 722: domyslna racja nowej gry gracza 6 (AI 4, stare zapisy 4); zmeczenie wojna jako pozycja PW Z = C x x^2 po stronie nie proponujacego (rabat 60 proc usuniety; AI i gracz; jedna funkcja dla tabeli i decyzji AI)"
+    "FALA 723: zuzycie ceramiki Spichlerza I 25->10, Spichlerza Krolewskiego 25->20 na miasto na ture; sol II 25 bez zmian; usuniete utrzymanie surowcowe 2 ceramiki ze Spichlerza II; karty, Civpedia, poradnik zaktualizowane"
   ],
   "verification": [
-    "tsc 0; logic 213/213; default-food-ration 26/0; diplo-weariness-pw-behavior 87/0; weariness-as-pw-peace-item 76/0; zrzuty z gry t11 +13 PW i t15 +330 PW; build Vite zielony"
+    "tsc 0; logic 213/213; building-upkeep-ceramics 645/0; spichlerz-drain-keys 56/0; spichlerz-drain-pipeline 33/0; mutacja czerwona; build Vite zielony"
   ],
   "limits": [
-    "NIE ZMIERZONO: Chromium panelu racji 6; stan silniejszej AI w pelnej grze; hotseat czerwony na bazie; do decyzji: C dla AI->gracz bez mnoznika cywilizacji, C 615 vs 500 zalezne od tury, lostCities tick vs tabela; dlug Rust REPIN"
+    "NIE ZMIERZONO: zrzut Chromium karty Spichlerza I/II; dlug bazowy building-upkeep-resources D10 i card-resource-purpose B/W; dlug Rust REPIN parametrow drain"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES RACJA-6 r1 144430c59 / kod bcb1d4914 oraz WEARY-PW r3 c6452991c / kod 25cabd622. Domyslna racja nowej gry gracza 6 (AI 4, stare zapisy 4); zmeczenie wojna jako pozycja PW przy pokoju Z = C x x^2 po stronie nie proponujacego, rabat 60 proc usuniety, gałąź bezwarunkowa AI z tej samej funkcji co tabela, kierunek AI->gracz. Testy default-food-ration 26/0, diplo-weariness-pw-behavior 87/0, weariness-as-pw-peace-item 76/0, tsc 0, logic 213/213. NIE ZMIERZONO: Chromium panelu racji 6; stan silniejszej AI w pelnej grze; hotseat-ustawienia-kopiowane czerwony na bazie. DO DECYZJI: cena pokoju C dla AI->gracz bez mnoznika cywilizacji; C 615 vs 500 zalezne od tury; wejscie lostCities (tick vs tabela)."
+    "notes": "FC PASS-WITH-NOTES SPICHLERZ-CERAM r1 f3300daf3 / kod 03f3fe6d5. Zuzycie ceramiki Spichlerza I 25->10, Spichlerza Krolewskiego 25->20 na miasto na ture (jedna wyplata na miasto); sol II 25 bez zmian; usuniete utrzymanie surowcowe 2 ceramiki ze Spichlerza II. Karty, Civpedia, poradnik i testy zaktualizowane. Testy ceramics-upkeep 645/0, drain-keys 56/0, drain-pipeline 33/0, tsc 0, logic 213/213; mutacja czerwona. NIE ZMIERZONO: zrzut Chromium karty Spichlerza I/II. Dlug bazowy: building-upkeep-resources D10, card-resource-purpose B/W. Dlug Rust REPIN parametrow drain."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-14T22:23:02",
+  "hubGeneratedAt": "2026-11-14T22:33:00",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "e40f54565c8163f64043103e62c70664",
-      "sizeBytes": 14720532
+      "md5": "942060c974b3148cdae6d4475ad224d2",
+      "sizeBytes": 14722010
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "e40f54565c8163f64043103e62c70664",
-      "sizeBytes": 14720532
+      "md5": "942060c974b3148cdae6d4475ad224d2",
+      "sizeBytes": 14722010
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "e40f54565c8163f64043103e62c70664",
-      "sizeBytes": 14720532
+      "md5": "942060c974b3148cdae6d4475ad224d2",
+      "sizeBytes": 14722010
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "e40f54565c8163f64043103e62c70664",
-      "sizeBytes": 14720532
+      "md5": "942060c974b3148cdae6d4475ad224d2",
+      "sizeBytes": 14722010
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "e40f54565c8163f64043103e62c70664",
-      "sizeBytes": 14720532
+      "md5": "942060c974b3148cdae6d4475ad224d2",
+      "sizeBytes": 14722010
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "e40f54565c8163f64043103e62c70664",
-      "sizeBytes": 14720532
+      "md5": "942060c974b3148cdae6d4475ad224d2",
+      "sizeBytes": 14722010
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "e40f54565c8163f64043103e62c70664",
-      "sizeBytes": 14720532
+      "md5": "942060c974b3148cdae6d4475ad224d2",
+      "sizeBytes": 14722010
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "e40f54565c8163f64043103e62c70664",
-      "sizeBytes": 14720532
+      "md5": "942060c974b3148cdae6d4475ad224d2",
+      "sizeBytes": 14722010
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "e40f54565c8163f64043103e62c70664",
-      "sizeBytes": 14720532
+      "md5": "942060c974b3148cdae6d4475ad224d2",
+      "sizeBytes": 14722010
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "e40f54565c8163f64043103e62c70664",
-      "sizeBytes": 14720532
+      "md5": "942060c974b3148cdae6d4475ad224d2",
+      "sizeBytes": 14722010
     }
   ],
-  "md5": "e40f54565c8163f64043103e62c70664",
+  "md5": "942060c974b3148cdae6d4475ad224d2",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

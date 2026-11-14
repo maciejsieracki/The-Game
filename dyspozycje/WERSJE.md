@@ -1,3 +1,9 @@
+## ROBOCZA 942060c9 -- 2026-11-14 -- FALA 723: Ceramika Spichlerza: Spichlerz I 10, Spichlerz Krolewski 20, bez utrzymania 2 ceramiki (testowa)
+
+- zuzycie ceramiki Spichlerza I 25->10, Spichlerza Krolewskiego 25->20 na miasto na ture; sol II 25 bez zmian; usuniete utrzymanie surowcowe 2 ceramiki ze Spichlerza II; karty, Civpedia, poradnik zaktualizowane
+- Weryfikacja: tsc 0; logic 213/213; building-upkeep-ceramics 645/0; spichlerz-drain-keys 56/0; spichlerz-drain-pipeline 33/0; mutacja czerwona; build Vite zielony
+- Limity: NIE ZMIERZONO: zrzut Chromium karty Spichlerza I/II; dlug bazowy building-upkeep-resources D10 i card-resource-purpose B/W; dlug Rust REPIN parametrow drain
+
 ## ROBOCZA e40f5456 -- 2026-11-14 -- FALA 722: Domyslna racja 6 i zmeczenie wojna jako pozycja PW przy pokoju (testowa)
 
 - domyslna racja nowej gry gracza 6 (AI 4, stare zapisy 4); zmeczenie wojna jako pozycja PW Z = C x x^2 po stronie nie proponujacego (rabat 60 proc usuniety; AI i gracz; jedna funkcja dla tabeli i decyzji AI)
