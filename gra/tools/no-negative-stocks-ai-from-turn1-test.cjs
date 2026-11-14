@@ -100,11 +100,12 @@ M.setNnsAiBalanceEnabled(false);
 M.setNnsAiBalanceEnabled(true);
 ok(M.isNnsAiBalanceEnabled() === true, 'flaga przywrócona na włączoną');
 
-// 7) Gracz: wyjątek 1–10 zostaje (bez blokady przy ujemnej prognozie), od 11 blokada.
+// 7) Gracz: od R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1 (2026-11-14) wyjątek 1–10 ZNIKA:
+//    prognoza < 0 blokuje od tury 1 (wyjątek tur wyłączony na stałe, `wyjatekTur === false`).
 const base = { skarbiecObecny: 100, skarbiecPo: 100, spichlerzObecny: 100, spichlerzPo: 100 };
 for (const t of [1, 5, 10]) {
   const v = M.evaluateEndTurnStocks({ ...base, turn: t, skarbiecPo: -50 });
-  ok(v.wyjatekTur === true && v.blokada === false, `gracz tura ${t}: bez blokady (wyjątek zostaje)`);
+  ok(v.wyjatekTur === false && v.blokada === true, `gracz tura ${t}: blokada od tury 1 (wyjątek usunięty)`);
 }
 {
   const v = M.evaluateEndTurnStocks({ ...base, turn: 11, skarbiecObecny: 30, skarbiecPo: -20 });

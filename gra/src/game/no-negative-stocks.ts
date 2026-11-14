@@ -501,7 +501,7 @@ export interface NnsPropozycjaPodatku {
   /** Ile punktów procentowych podatku dodać (dodatnia liczba całkowita). */
   punktyProcentowe: number;
   /** Szacunek LINIOWY z pełnej dźwigni podatku (nie z osobnej projekcji): patrz `propozycjaPodatkuDoZera`. */
-  szacunek: 'liniowy';
+  szacunek: 'liniowy' | 'krokowy';
   /** Brak w pełni pokrytego zera nawet przy maksymalnym podatku — wtedy `null`. */
   maksPunktow: number;
 }
@@ -523,6 +523,28 @@ export function propozycjaPodatkuDoZera(
   const potrzeba = Math.ceil(brak / zyskNaPunkt);
   if (potrzeba > punktyDostepne) return null;
   return { punktyProcentowe: Math.max(1, potrzeba), szacunek: 'liniowy', maksPunktow: punktyDostepne };
+}
+
+/**
+ * Wyszukiwanie po krokach suwaka podatku (kroki po 10 pkt %, R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1
+ * runda 2, punkt 3). `prognozaPoPodatku(pkt)` = skarbiec po turze przy podniesieniu podatku o `pkt` pkt %
+ * (ta sama funkcja projekcji co bramka). Zwraca NAJMNIEJSZY krok (10, 20, ... , maksimum), dla którego
+ * prognoza ≥ 0, albo `null` (flaga „niewystarczające” po stronie wołającego: nawet maksimum nie wystarcza).
+ * Czysta funkcja: nie modyfikuje stanu gry — callback musi być bezskutkowy.
+ */
+export function propozycjaPodatkuKrokami(
+  prognozaPoPodatku: (punktyProcentowe: number) => number,
+  punktyDostepne: number,
+  krok = 10,
+): NnsPropozycjaPodatku | null {
+  if (!(punktyDostepne > 0) || !(krok > 0)) return null;
+  for (let pkt = krok; ; pkt += krok) {
+    const p = Math.min(pkt, punktyDostepne);
+    if (prognozaPoPodatku(p) >= 0) {
+      return { punktyProcentowe: p, szacunek: 'krokowy', maksPunktow: punktyDostepne };
+    }
+    if (p >= punktyDostepne) return null;
+  }
 }
 
 const OPIS_DZWIGNI_ID: Record<string, string> = {

@@ -21,6 +21,7 @@ export {
   decideEndTurnGate,
   evaluateEndTurnStocks,
   propozycjaPodatkuDoZera,
+  propozycjaPodatkuKrokami,
 } from '../src/game/no-negative-stocks';
 `, 'utf8');
 
@@ -138,5 +139,19 @@ for (const t of [1, 20]) {
 
 fs.rmSync(ENTRY, { force: true });
 fs.rmSync(BUNDLE, { force: true });
+// Runda 2 pkt 3: wyszukiwanie po krokach 10% (ta sama projekcja co bramka; prognoza ≥ 0 po zastosowaniu).
+{
+  // Nieliniowa projekcja: każdy % podatku daje 1,3 złota, ale pierwsze 5 pkt są bez efektu (progi).
+  const proj = (pkt) => -40 + Math.max(0, pkt - 5) * 1.3;
+  const r = M.propozycjaPodatkuKrokami(proj, 100, 10);
+  ok(r !== null && r.punktyProcentowe === 40, 'krokami: najmniejszy krok dający prognozę ≥ 0 (40; kroki 10 i 20 i 30 za małe)');
+  ok(r !== null && proj(r.punktyProcentowe) >= 0, 'krokami: po zastosowaniu propozycji prognoza ≥ 0');
+  const brak = M.propozycjaPodatkuKrokami(() => -1, 30, 10);
+  ok(brak === null, 'krokami: nawet maksimum nie wystarcza -> null (niewystarczające)');
+  const maks = M.propozycjaPodatkuKrokami((pkt) => (pkt >= 25 ? 0 : -1), 25, 10);
+  ok(maks !== null && maks.punktyProcentowe === 25, 'krokami: ostatni krok ograniczony do maksimum');
+  ok(M.propozycjaPodatkuKrokami(() => 5, 0, 10) === null, 'krokami: brak dostępnych punktów -> null');
+}
+
 console.log(`end-turn-gate-projection-only-test: ${passed} passed, ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);
