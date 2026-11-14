@@ -4257,39 +4257,3 @@ pub fn deactivate_zloze_grants_for_deal(grants: &[ZlozeGrant], deal_id: &str) ->
         })
         .collect()
 }
-
-/// Web `dealInvolvesOwners` (`diplomacy-penalty-preview.ts:72`): strony traktatu = para (min, max).
-fn deal_involves_owners(deal: &ActiveDeal, a: PlayerId, b: PlayerId) -> bool {
-    deal.parties == CivilizationPair::new(a, b)
-}
-
-/// Web `hasTreaty(state, a, b, PaktNieagresji)` z `normalizeTreatyKind` (NAP ma kanoniczny kod `Nap`).
-fn has_nap_between(deals: &[ActiveDeal], a: PlayerId, b: PlayerId) -> bool {
-    deals
-        .iter()
-        .any(|deal| deal_involves_owners(deal, a, b) && deal.kind == TreatyKind::Nap)
-}
-
-/// Web `syncRelationFromDeals(a, b)` (`main.ts:22832`) jako czysta funkcja na jawnym stanie.
-/// Zwraca `Some(nowy status)` gdy web wywolalby `setDiploRelation`, albo `None` gdy status zostaje.
-/// Wojna nie jest nadpisywana. Sojusz ma pierwszenstwo przed paktem; neutralnosc nie jest ustawiana.
-pub fn sync_relation_status_from_deals(
-    current: RelationStatus,
-    deals: &[ActiveDeal],
-    a: PlayerId,
-    b: PlayerId,
-) -> Option<RelationStatus> {
-    if current == RelationStatus::War {
-        return None;
-    }
-    let has_alliance = deals
-        .iter()
-        .any(|deal| deal_involves_owners(deal, a, b) && deal.kind.is_alliance());
-    if has_alliance {
-        Some(RelationStatus::Alliance)
-    } else if has_nap_between(deals, a, b) {
-        Some(RelationStatus::Peace)
-    } else {
-        None
-    }
-}

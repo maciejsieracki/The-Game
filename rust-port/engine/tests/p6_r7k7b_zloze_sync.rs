@@ -3,9 +3,10 @@
 //! Wektory generuje `p6_r7k7b_zloze_sync_gen.mjs` (wykonanie tekstu pinu w node, strażnik SHA-256).
 
 use civ_engine::domain::diplomacy::{
-    deactivate_zloze_grants_for_deal, sync_relation_status_from_deals, ActiveDeal, RelationStatus,
-    TreatyKind, ZlozeGrant,
+    deactivate_zloze_grants_for_deal, ActiveDeal, CivilizationPair, DiplomacyState, Relation,
+    RelationStatus, TreatyKind, ZlozeGrant,
 };
+use civ_engine::domain::turn_war_dipl_steps::sync_relation_from_deals;
 use civ_engine::domain::PlayerId;
 use serde_json::Value;
 
@@ -101,9 +102,26 @@ fn sync_relation_from_deals_matches_pin_vectors() {
             .map(deal_from)
             .collect();
         let expected = status_from(&case["expected"]);
-        // None = web nie wola setDiploRelation, status zostaje.
-        let got = sync_relation_status_from_deals(current, &deals, a, b).unwrap_or(current);
+        // Jedyna produkcyjna implementacja: sync_relation_from_deals (mutujaca, na DiplomacyState).
+        let mut st = DiplomacyState::new();
+        st.set_relation(
+            CivilizationPair::new(a, b),
+            Relation::new(0.0, 0.0, current),
+        );
+        for deal in deals {
+            st.add_deal(deal);
+        }
+        let returned = sync_relation_from_deals(&mut st, a, b);
+        let got = st.relation(a, b).expect("relacja").status;
         assert_eq!(got, expected, "przypadek {}", case["name"]);
+        // Zwrot false = brak zapisu relacji, wiec status musi zostac.
+        if !returned {
+            assert_eq!(
+                got, current,
+                "przypadek {}: false przy zmianie statusu",
+                case["name"]
+            );
+        }
         if got != current {
             changed += 1;
         }
