@@ -7726,9 +7726,6 @@ async function boot(): Promise<void> {
       // R-WEB-DISBAND-UNIT-MARK-DIRTY-Q1: zmiana składu jednostek zmienia utrzymanie -> prognoza
       // ekonomii (tooltip i bramka „Zakończ turę”, dirty-gated) musi się przeliczyć natychmiast.
       // EN: unit removal changes upkeep -> the economy forecast (dirty-gated) must recompute now.
-      // R-WEB-DISBAND-UNIT-MARK-DIRTY-Q1: zmiana składu jednostek zmienia utrzymanie -> prognoza
-      // ekonomii (tooltip i bramka „Zakończ turę”, dirty-gated) musi się przeliczyć natychmiast.
-      // EN: unit removal changes upkeep -> the economy forecast (dirty-gated) must recompute now.
       markCityStateDirty();
       const cityLabel = cityAtUnit(u)?.name ?? cities.find(c => c.ownerId === 0)?.name ?? 'imperium';
       const stockRefundParts = formatDisbandStockRefundHint(stockRefundCredited);

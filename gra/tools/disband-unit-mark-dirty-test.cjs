@@ -13,7 +13,9 @@
  *      a dopiero po nim `refreshD1bHud()` (kolejność ma znaczenie: HUD czyta cache prognozy),
  *  (b) `disbandSelectedOrPickedUnits` (panel armii) nadal deleguje do `disbandPlayerUnit`
  *      (nie ma osobnej, nieoznaczającej ścieżki usuwania jednostek gracza),
- *  (c) mutacja: bez wywołania `markCityStateDirty()` w ciele test MUSI czerwienieć.
+ *  (c) mutacja: bez wywołania `markCityStateDirty()` w ciele test MUSI czerwienieć;
+ *      zakomentowanie wywołania (`// markCityStateDirty();`) też MUSI czerwienieć
+ *      (komentarze liniowe są usuwane przed sprawdzeniem).
  *
  * Run: node tools/disband-unit-mark-dirty-test.cjs
  */
@@ -37,8 +39,17 @@ function extractFn(name) {
   return end < 0 ? null : src.slice(head, end + 7);
 }
 
-const body = extractFn('disbandPlayerUnit');
-ok(body !== null, '(a) funkcja disbandPlayerUnit znaleziona w main.ts');
+// Usuwa komentarze liniowe (// ...), żeby zakomentowane wywołanie nie liczyło się jako obecne.
+function stripLineComments(text) {
+  return text.split('\n').map((line) => {
+    const i = line.indexOf('//');
+    return i >= 0 ? line.slice(0, i) : line;
+  }).join('\n');
+}
+
+const rawBody = extractFn('disbandPlayerUnit');
+ok(rawBody !== null, '(a) funkcja disbandPlayerUnit znaleziona w main.ts');
+const body = rawBody === null ? null : stripLineComments(rawBody);
 
 if (body) {
   const iSplice = body.indexOf('units.splice(idx, 1);');
