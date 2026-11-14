@@ -246,12 +246,25 @@ async function runSuite(browser, code, label) {
     T.openAdministratorPanel({ getModel: () => model, onHire: () => true, onDismiss: () => true, onClose: () => { calls.close++; } });
     document.querySelector('[data-adm-panel-cancel]:not(.civ-adm-panel-x)').click();
     const cancelClosed = !document.querySelector('.civ-adm-panel-host');
-    return { calls, afterHire, afterFirstClick, afterDismiss, beforeDismiss, escClosed, backClosed, cancelClosed };
+    // R-WEB-UI-ADMIN-DISMISS-CONFIRM-Q1: Anuluj w kroku potwierdzenia nie zwalnia; Esc w kroku zamyka panel bez zwolnienia.
+    const callsA14 = { ...calls };
+    model = { ...model, hired: true, working: true };
+    const dismissBefore = calls.dismiss;
+    T.openAdministratorPanel({ getModel: () => model, onHire: () => true, onDismiss: () => { calls.dismiss++; return true; }, onClose: () => { calls.close++; } });
+    dlg().querySelector('[data-adm-panel-dismiss]').click();
+    dlg().querySelector('[data-adm-dismiss-no]').click();
+    const afterCancel = { dismissCalls: calls.dismiss - dismissBefore, hired: model.hired, hasYes: !!dlg().querySelector('[data-adm-dismiss-yes]'), hasDismissBtn: !!dlg().querySelector('[data-adm-panel-dismiss]'), stillOpen: !!document.querySelector('.civ-adm-panel-host') };
+    dlg().querySelector('[data-adm-panel-dismiss]').click();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    const escInConfirm = { dismissCalls: calls.dismiss - dismissBefore, hired: model.hired, closed: !document.querySelector('.civ-adm-panel-host') };
+    return { calls: callsA14, afterHire, afterFirstClick, afterDismiss, beforeDismiss, escClosed, backClosed, cancelClosed, afterCancel, escInConfirm };
   });
   check('A12 po zatrudnieniu ten sam panel: stan, „Zwolnij”, utrzymanie', C.calls.hire === 1 && C.afterHire.hired === '1' && C.afterHire.hasDismiss && /Zatrudniony/.test(C.afterHire.status) && /Utrzymanie/.test(C.afterHire.effects), C);
   check('A13 Zwolnij (po potwierdzeniu „Zwolnij” w oknie) wywołuje onDismiss i wraca do stanu niezatrudnionego', C.calls.dismiss === 1 && C.afterDismiss.hired === '0' && C.afterDismiss.hasConfirm, C);
   check('A13a pierwszy klik „Zwolnij” NIE zwalnia: pokazuje krok potwierdzenia z „Zwolnij”/„Anuluj”', C.afterFirstClick.dismissCalls === 0 && C.afterFirstClick.hasYes, C.afterFirstClick);
-  check('A13b Zwolnij jednym przyciskiem „Zwolnij” (bez okna natywnego): przed kliknięciem zatrudniony, panel mówi, że koszt nie wraca', C.beforeDismiss.hired === '1' && C.beforeDismiss.warnsNoRefund, C.beforeDismiss);
+  check('A13b „Zwolnij” w panelu (bez okna natywnego, dwuetapowo): przed kliknięciem zatrudniony, panel mówi, że koszt nie wraca', C.beforeDismiss.hired === '1' && C.beforeDismiss.warnsNoRefund, C.beforeDismiss);
+  check('A13c Anuluj w kroku potwierdzenia NIE zwalnia: 0 wywołań onDismiss, nadal zatrudniony, panel otwarty, wraca stopka „Zwolnij”', C.afterCancel.dismissCalls === 0 && C.afterCancel.hired === true && !C.afterCancel.hasYes && C.afterCancel.hasDismissBtn && C.afterCancel.stillOpen, C.afterCancel);
+  check('A13d Esc w kroku potwierdzenia zamyka panel BEZ zwolnienia (0 wywołań onDismiss)', C.escInConfirm.dismissCalls === 0 && C.escInConfirm.hired === true && C.escInConfirm.closed, C.escInConfirm);
   check('A14 Esc, klik w tło i Anuluj zamykają panel (onClose x3)', C.escClosed && C.backClosed && C.cancelClosed && C.calls.close === 3, C);
   await page.waitForTimeout(150); // zdarzenia 'dialog' docierają asynchronicznie — daj im czas przed oceną
   check('A15 brak natywnych okien (Playwright dialog) po zwolnieniu i zamknięciach (oczekiwane 0)', nativeDialogs === 0, { nativeDialogs });
