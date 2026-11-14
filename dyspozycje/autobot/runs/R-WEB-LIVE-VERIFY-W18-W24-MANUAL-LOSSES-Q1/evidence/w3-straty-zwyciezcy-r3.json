@@ -1,0 +1,611 @@
+{
+  "runs": {
+    "B1-rowne-bitwa-duza-s1|skip": {
+      "cfg": {
+        "id": "B1-rowne-bitwa-duza-s1",
+        "pt": "bitwa-duza",
+        "rams": 0,
+        "chariots": 0,
+        "seed": 1,
+        "hit": "pewne",
+        "ratioLabel": "1:1 (preset bitwa-duza)"
+      },
+      "mode": "skip",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 988,
+        "defHp": 1008,
+        "deployPhase": true
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 17,
+        "wallBreached": false,
+        "siegeWallCol": -1,
+        "atk": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 988
+        },
+        "def": {
+          "total": 28,
+          "lost": 9,
+          "remaining": 19,
+          "hp": 497,
+          "hpMax": 1008
+        },
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "B1-rowne-bitwa-duza-s1|auto": {
+      "cfg": {
+        "id": "B1-rowne-bitwa-duza-s1",
+        "pt": "bitwa-duza",
+        "rams": 0,
+        "chariots": 0,
+        "seed": 1,
+        "hit": "pewne",
+        "ratioLabel": "1:1 (preset bitwa-duza)"
+      },
+      "mode": "auto",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 988,
+        "defHp": 1008,
+        "deployPhase": true
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 17,
+        "wallBreached": false,
+        "siegeWallCol": -1,
+        "atk": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 988
+        },
+        "def": {
+          "total": 28,
+          "lost": 9,
+          "remaining": 19,
+          "hp": 497,
+          "hpMax": 1008
+        },
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "B2-rowne-bitwa-duza-s2|skip": {
+      "cfg": {
+        "id": "B2-rowne-bitwa-duza-s2",
+        "pt": "bitwa-duza",
+        "rams": 0,
+        "chariots": 0,
+        "seed": 2,
+        "hit": "pewne",
+        "ratioLabel": "1:1 (preset bitwa-duza)"
+      },
+      "mode": "skip",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 988,
+        "defHp": 1008,
+        "deployPhase": true
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 17,
+        "wallBreached": false,
+        "siegeWallCol": -1,
+        "atk": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 988
+        },
+        "def": {
+          "total": 28,
+          "lost": 9,
+          "remaining": 19,
+          "hp": 497,
+          "hpMax": 1008
+        },
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "B2-rowne-bitwa-duza-s2|auto": {
+      "cfg": {
+        "id": "B2-rowne-bitwa-duza-s2",
+        "pt": "bitwa-duza",
+        "rams": 0,
+        "chariots": 0,
+        "seed": 2,
+        "hit": "pewne",
+        "ratioLabel": "1:1 (preset bitwa-duza)"
+      },
+      "mode": "auto",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 988,
+        "defHp": 1008,
+        "deployPhase": true
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 17,
+        "wallBreached": false,
+        "siegeWallCol": -1,
+        "atk": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 988
+        },
+        "def": {
+          "total": 28,
+          "lost": 9,
+          "remaining": 19,
+          "hp": 497,
+          "hpMax": 1008
+        },
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "B3-oblezenie-bazowe-s1|skip": {
+      "cfg": {
+        "id": "B3-oblezenie-bazowe-s1",
+        "pt": "oblezenie-duze",
+        "rams": 0,
+        "chariots": 0,
+        "seed": 1,
+        "hit": "pewne",
+        "ratioLabel": "bazowy (preset oblezenie-duze)"
+      },
+      "mode": "skip",
+      "start": {
+        "atkTotal": 39,
+        "defTotal": 28,
+        "atkHp": 4188,
+        "defHp": 1008,
+        "deployPhase": true
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 400,
+        "wallBreached": true,
+        "siegeWallCol": 40,
+        "atk": {
+          "total": 39,
+          "lost": 28,
+          "remaining": 11,
+          "hp": 2451,
+          "hpMax": 4188
+        },
+        "def": {
+          "total": 28,
+          "lost": 12,
+          "remaining": 16,
+          "hp": 671,
+          "hpMax": 1008
+        },
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "B3-oblezenie-bazowe-s1|auto": {
+      "cfg": {
+        "id": "B3-oblezenie-bazowe-s1",
+        "pt": "oblezenie-duze",
+        "rams": 0,
+        "chariots": 0,
+        "seed": 1,
+        "hit": "pewne",
+        "ratioLabel": "bazowy (preset oblezenie-duze)"
+      },
+      "mode": "auto",
+      "start": {
+        "atkTotal": 39,
+        "defTotal": 28,
+        "atkHp": 4188,
+        "defHp": 1008,
+        "deployPhase": true
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 400,
+        "wallBreached": true,
+        "siegeWallCol": 40,
+        "atk": {
+          "total": 39,
+          "lost": 28,
+          "remaining": 11,
+          "hp": 2451,
+          "hpMax": 4188
+        },
+        "def": {
+          "total": 28,
+          "lost": 12,
+          "remaining": 16,
+          "hp": 671,
+          "hpMax": 1008
+        },
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "B4-oblezenie-rydwany6-s1|skip": {
+      "cfg": {
+        "id": "B4-oblezenie-rydwany6-s1",
+        "pt": "oblezenie-duze",
+        "rams": 0,
+        "chariots": 6,
+        "seed": 1,
+        "hit": "pewne",
+        "ratioLabel": "atakujacy +6 rydwanow"
+      },
+      "mode": "skip",
+      "start": {
+        "atkTotal": 45,
+        "defTotal": 28,
+        "atkHp": 4860,
+        "defHp": 1008,
+        "deployPhase": true
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 400,
+        "wallBreached": true,
+        "siegeWallCol": 40,
+        "atk": {
+          "total": 45,
+          "lost": 33,
+          "remaining": 12,
+          "hp": 2535,
+          "hpMax": 4860
+        },
+        "def": {
+          "total": 28,
+          "lost": 13,
+          "remaining": 15,
+          "hp": 626,
+          "hpMax": 1008
+        },
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "B4-oblezenie-rydwany6-s1|auto": {
+      "cfg": {
+        "id": "B4-oblezenie-rydwany6-s1",
+        "pt": "oblezenie-duze",
+        "rams": 0,
+        "chariots": 6,
+        "seed": 1,
+        "hit": "pewne",
+        "ratioLabel": "atakujacy +6 rydwanow"
+      },
+      "mode": "auto",
+      "start": {
+        "atkTotal": 45,
+        "defTotal": 28,
+        "atkHp": 4860,
+        "defHp": 1008,
+        "deployPhase": true
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 400,
+        "wallBreached": true,
+        "siegeWallCol": 40,
+        "atk": {
+          "total": 45,
+          "lost": 33,
+          "remaining": 12,
+          "hp": 2517,
+          "hpMax": 4860
+        },
+        "def": {
+          "total": 28,
+          "lost": 13,
+          "remaining": 15,
+          "hp": 626,
+          "hpMax": 1008
+        },
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "B5-oblezenie-rydwany12-s1|skip": {
+      "cfg": {
+        "id": "B5-oblezenie-rydwany12-s1",
+        "pt": "oblezenie-duze",
+        "rams": 0,
+        "chariots": 12,
+        "seed": 1,
+        "hit": "pewne",
+        "ratioLabel": "atakujacy +12 rydwanow"
+      },
+      "mode": "skip",
+      "start": {
+        "atkTotal": 51,
+        "defTotal": 28,
+        "atkHp": 5532,
+        "defHp": 1008,
+        "deployPhase": true
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 400,
+        "wallBreached": true,
+        "siegeWallCol": 40,
+        "atk": {
+          "total": 51,
+          "lost": 30,
+          "remaining": 21,
+          "hp": 3361,
+          "hpMax": 5532
+        },
+        "def": {
+          "total": 28,
+          "lost": 10,
+          "remaining": 18,
+          "hp": 701,
+          "hpMax": 1008
+        },
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "B5-oblezenie-rydwany12-s1|auto": {
+      "cfg": {
+        "id": "B5-oblezenie-rydwany12-s1",
+        "pt": "oblezenie-duze",
+        "rams": 0,
+        "chariots": 12,
+        "seed": 1,
+        "hit": "pewne",
+        "ratioLabel": "atakujacy +12 rydwanow"
+      },
+      "mode": "auto",
+      "start": {
+        "atkTotal": 51,
+        "defTotal": 28,
+        "atkHp": 5532,
+        "defHp": 1008,
+        "deployPhase": true
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 400,
+        "wallBreached": true,
+        "siegeWallCol": 40,
+        "atk": {
+          "total": 51,
+          "lost": 30,
+          "remaining": 21,
+          "hp": 3361,
+          "hpMax": 5532
+        },
+        "def": {
+          "total": 28,
+          "lost": 10,
+          "remaining": 18,
+          "hp": 701,
+          "hpMax": 1008
+        },
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "B6-oblezenie-taran6-s2|skip": {
+      "cfg": {
+        "id": "B6-oblezenie-taran6-s2",
+        "pt": "oblezenie-duze",
+        "rams": 6,
+        "chariots": 0,
+        "seed": 2,
+        "hit": "pewne",
+        "ratioLabel": "atakujacy +6 taranow"
+      },
+      "mode": "skip",
+      "start": {
+        "atkTotal": 45,
+        "defTotal": 28,
+        "atkHp": 8388,
+        "defHp": 1008,
+        "deployPhase": true
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 137,
+        "wallBreached": true,
+        "siegeWallCol": 40,
+        "atk": {
+          "total": 45,
+          "lost": 26,
+          "remaining": 19,
+          "hp": 5428,
+          "hpMax": 8388
+        },
+        "def": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1008
+        },
+        "endText": [
+          "Zwycięstwo"
+        ]
+      },
+      "errors": []
+    },
+    "B6-oblezenie-taran6-s2|auto": {
+      "cfg": {
+        "id": "B6-oblezenie-taran6-s2",
+        "pt": "oblezenie-duze",
+        "rams": 6,
+        "chariots": 0,
+        "seed": 2,
+        "hit": "pewne",
+        "ratioLabel": "atakujacy +6 taranow"
+      },
+      "mode": "auto",
+      "start": {
+        "atkTotal": 45,
+        "defTotal": 28,
+        "atkHp": 8388,
+        "defHp": 1008,
+        "deployPhase": true
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 139,
+        "wallBreached": true,
+        "siegeWallCol": 40,
+        "atk": {
+          "total": 45,
+          "lost": 27,
+          "remaining": 18,
+          "hp": 5268,
+          "hpMax": 8388
+        },
+        "def": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1008
+        },
+        "endText": [
+          "Zwycięstwo"
+        ]
+      },
+      "errors": []
+    },
+    "K1-kontrola-losowe-bitwa-duza-s1|skip": {
+      "cfg": {
+        "id": "K1-kontrola-losowe-bitwa-duza-s1",
+        "pt": "bitwa-duza",
+        "rams": 0,
+        "chariots": 0,
+        "seed": 1,
+        "hit": "losowe",
+        "ratioLabel": "kontrola trybu: losowe (1:1)"
+      },
+      "mode": "skip",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 988,
+        "defHp": 1008,
+        "deployPhase": true
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 24,
+        "wallBreached": false,
+        "siegeWallCol": -1,
+        "atk": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 988
+        },
+        "def": {
+          "total": 28,
+          "lost": 20,
+          "remaining": 8,
+          "hp": 263,
+          "hpMax": 1008
+        },
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "K1-kontrola-losowe-bitwa-duza-s1|auto": {
+      "cfg": {
+        "id": "K1-kontrola-losowe-bitwa-duza-s1",
+        "pt": "bitwa-duza",
+        "rams": 0,
+        "chariots": 0,
+        "seed": 1,
+        "hit": "losowe",
+        "ratioLabel": "kontrola trybu: losowe (1:1)"
+      },
+      "mode": "auto",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 988,
+        "defHp": 1008,
+        "deployPhase": true
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 21,
+        "wallBreached": false,
+        "siegeWallCol": -1,
+        "atk": {
+          "total": 28,
+          "lost": 11,
+          "remaining": 17,
+          "hp": 410,
+          "hpMax": 988
+        },
+        "def": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1008
+        },
+        "endText": [
+          "Zwycięstwo"
+        ]
+      },
+      "errors": []
+    }
+  },
+  "meta": {
+    "chromium": "/usr/bin/chromium",
+    "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/w18w24-r3-build",
+    "runda": 3
+  }
+}
