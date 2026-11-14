@@ -1,3 +1,9 @@
+## ROBOCZA dc4ce140 -- 2026-11-14 -- FALA 711: Okno eliminacji ze stala maksymalna wysokoscia i przewijaniem (testowa)
+
+- Okno eliminacji i zdobycia miasta ma stala maksymalna wysokosc (wysokosc widoku minus margines) i przewija sie wewnatrz, naglowek nie jest przyciety; tylko CSS
+- Weryfikacja: tsc 0, logic-test 213/213, elimination-spectacle 84/0, full-spoils 114/0, toast-merge 56/0, nowy test okna 88/0 (4 rozmiary x 4 warianty), mutacja bazy czerwona
+- Limity: NIE ZMIERZONO: dokladny przypadek ze zrzutu wlasciciela nie odtworzony na bazie (wariant z widowiskiem mial juz max-height); zywa gra przez Vite. Jesli problem nadal wystepuje - prosze o rozmiar okna przegladarki i zrzut
+
 ## ROBOCZA 7c4eb83b -- 2026-11-14 -- FALA 710: AI rownowazy skarbiec i spichlerz od tury 1 (testowa)
 
 - AI od pierwszej tury pilnuje, by skarbiec i spichlerz nie spadaly ponizej zera (dotad od tury 11); gracz ma nadal wyjatek tur 1-10
