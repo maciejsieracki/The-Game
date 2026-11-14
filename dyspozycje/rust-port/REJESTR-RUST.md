@@ -1185,3 +1185,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sloty: 1 z 4 zajęty.** Pozostałe kandydaci (T2 ZLOZE-WIRE-WAR-BREAK etap a — po FF T1; WIEZE 2B — po rozpoznaniu wywołania schedule; #120 — pytanie ABC) czekają.
 - **Pytania ABC #115 i #120:** nadal bez odpowiedzi właściciela; w tym przebiegu zadano też pytanie o konwencję trailera `Co-Authored-By` (sprzeczność z zasadą bez nazwy modelu).
 - **Parity:** `6acb1d81b`. **Dysk:** 12 GB wolnego (sprawdzić przy następnym starcie).
+
+## Przebieg (14.11, po heartbeat 23:18): rozpoznanie #106 zakończone; sprzątanie dysku
+- **R7K7C-WIRING rozpoznanie** (`R-RUSTPORT-P6-R7K7C-WIRING-ROZPOZNANIE-Q1`): FC PASS-WITH-NOTES `0515603ee` (dokumentacja, zero kodu). Ustalenia: `apply_dipl_deltas_to_state` nie ma wołającego w produkcji; pin wpina to w D3 (`applyCyclicDeliveryOutcome`, main.ts ok. 23988–24023), nie w D6. Rozbieżność parytetu: podłoga Pracy `max(0)` per operacja w pinie (setOwnerPracaPool ok. 34880), w Rust raz na sumie delt (turn_war_dipl_steps.rs ok. 410–415, 1090–1093): kontrprzykład pula 5, umowa 1 płaci 10, umowa 2 dostaje 10 → pin 10, Rust 5.
+- **Pominięte w wpięciu (osobne tematy):** zapis `city_stock` (D3, turn_war_dipl_steps.rs ok. 136, 1009), `barbarian_grace` (brak pola i konsumenta; pin main.ts ok. 6020–6030).
+- **Brak wpisu = 0:** wdrażam 1:1 z pinem (AI `?? 0`, człowiek `get(id)!`); zgodnie z zasadą 9 to nie pytanie gameplay. Ta decyzja jest w raporcie jako rekomendacja A.
+- **Dokumentacja:** dwie kopie raportu (`01-operator-r1.md` i `p6/…Q1.md`) — poprawki w obu.
+- **Sprzątanie dysku:** dysk spadł do 2,1 GB przy starcie rozpoznania. Usunięto osiem worktree zakończonych tematów T1/T3 po zabezpieczeniu HEAD w `refs/keep/wf_*` i na remote (`rust-port-wip/wf_*`); raport FC T1 zapisany na `rust-port-wip/ZLOZE-EXPIRE-TRIBUTE-Q1-fc-report`. Dysk: 7,6 GB wolnego (po zakończeniu bramek T1 sprawdzić ponownie).
+- **Parity:** `6acb1d81b`. **Bramki T1** (`d22e75ed6`) w toku: fmt 0, clippy 0, test trwa.
