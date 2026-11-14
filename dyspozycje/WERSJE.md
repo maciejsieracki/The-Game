@@ -1,3 +1,9 @@
+## ROBOCZA 1394800a -- 2026-11-14 -- FALA 713: FALA 713 - AI nie ma ujemnego skarbca od tury 1 (testowa)
+
+- Skarbiec AI nie konczy tury ponizej zera od tury 1 (klamra dlugu AI bez pokrycia do 0, decyzja wlasciciela A); gracz bez zmian
+- Weryfikacja: tsc 0; logic 213/213; NNS ai-t2 11/0, c2 44/0, ai-from-turn1 27/0; T1-30 x3 ziarna: bez oslabienia AI; vite build OK
+- Limity: REPIN Rust po zmianie logiki AI; zywa gra przez Vite NIE ZMIERZONO
+
 ## ROBOCZA 7ee44c0f -- 2026-11-14 -- FALA 712: FALA 712 - teksty: zwolnienie administratora, Civpedia (testowa)
 
 - Potwierdzenie zwolnienia administratora (spojny tekst 'panstwa'); Civpedia: zaufanie.md naglowek wdrozone; wikiBundle zregenerowany

@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "7ee44c0f69b03632a3a8eff12cca28ad",
-  "bundleSha256": "8cf99d11e9104ea2934beb2301e6fbe7917279f197a76e2fbcdc795328f0cbdd",
-  "bundleBytes": 14703982,
+  "bundleMd5": "1394800aec4e59c645320cb24194fbe8",
+  "bundleSha256": "7cba61c327afb26a61167adb63199453e664dbf08f123e54cc348c137d3bf637",
+  "bundleBytes": 14704054,
   "sourceSnapshot": {
-    "source": "FC 2d03b4222 / integracja d9280dae7",
+    "source": "FC de9ca1a93 / integracja 1dd0378b4",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 712: Potwierdzenie zwolnienia administratora (spojny tekst 'panstwa'); Civpedia: zaufanie.md naglowek wdrozone; wikiBundle zregenerowany"
+    "FALA 713: Skarbiec AI nie konczy tury ponizej zera od tury 1 (klamra dlugu AI bez pokrycia do 0, decyzja wlasciciela A); gracz bez zmian"
   ],
   "verification": [
-    "tsc 0; logic-test 213/213; ui-text-leftovers-test i admin-dismiss-confirm-test zielone; vite build OK"
+    "tsc 0; logic 213/213; NNS ai-t2 11/0, c2 44/0, ai-from-turn1 27/0; T1-30 x3 ziarna: bez oslabienia AI; vite build OK"
   ],
   "limits": [
-    "Poradnik: czesc tekstow jeszcze niewdrozone (poza allowlista); zywa gra przez Vite NIE ZMIERZONO"
+    "REPIN Rust po zmianie logiki AI; zywa gra przez Vite NIE ZMIERZONO"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES TEXT-LEFT 2d03b4222. Teksty: potwierdzenie zwolnienia administratora spojne (panstwa), zaufanie.md naglowek (wdrozone), wikiBundle zregenerowany narzedziem po konflikcie scalenia. Testy ui-text-leftovers i admin-dismiss-confirm zielone. Pozostale jeszcze niewdrozone w sekcji poradnika (poza allowlista); civpedia-budynki/jednostki baseline czerwony. NIE ZMIERZONO: zywa gra przez Vite."
+    "notes": "FC PASS-WITH-NOTES AI-T2 de9ca1a93/fda9b9989. Skarbiec AI nigdy ponizej zera od tury 1 (klamra dlugu AI bez pokrycia do 0, zatwierdzona przez wlasciciela, opcja A). Pomiar T1-30 x3 ziarna: miasta AI 287 do 292, jednostki 184 do 188, skEnd<0 w T1-10 z 221/184/221 do 0/0/0. Konflikt z FALA 710 (ten sam prog) rozwiazany wyborem wersji main. NIE ZMIERZONO: REPIN Rust, czerwien testu behawioralnego na bazie."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-14T16:37:52",
+  "hubGeneratedAt": "2026-11-14T18:09:23",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "7ee44c0f69b03632a3a8eff12cca28ad",
-      "sizeBytes": 14703982
+      "md5": "1394800aec4e59c645320cb24194fbe8",
+      "sizeBytes": 14704054
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "7ee44c0f69b03632a3a8eff12cca28ad",
-      "sizeBytes": 14703982
+      "md5": "1394800aec4e59c645320cb24194fbe8",
+      "sizeBytes": 14704054
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "7ee44c0f69b03632a3a8eff12cca28ad",
-      "sizeBytes": 14703982
+      "md5": "1394800aec4e59c645320cb24194fbe8",
+      "sizeBytes": 14704054
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "7ee44c0f69b03632a3a8eff12cca28ad",
-      "sizeBytes": 14703982
+      "md5": "1394800aec4e59c645320cb24194fbe8",
+      "sizeBytes": 14704054
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "7ee44c0f69b03632a3a8eff12cca28ad",
-      "sizeBytes": 14703982
+      "md5": "1394800aec4e59c645320cb24194fbe8",
+      "sizeBytes": 14704054
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "7ee44c0f69b03632a3a8eff12cca28ad",
-      "sizeBytes": 14703982
+      "md5": "1394800aec4e59c645320cb24194fbe8",
+      "sizeBytes": 14704054
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "7ee44c0f69b03632a3a8eff12cca28ad",
-      "sizeBytes": 14703982
+      "md5": "1394800aec4e59c645320cb24194fbe8",
+      "sizeBytes": 14704054
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "7ee44c0f69b03632a3a8eff12cca28ad",
-      "sizeBytes": 14703982
+      "md5": "1394800aec4e59c645320cb24194fbe8",
+      "sizeBytes": 14704054
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "7ee44c0f69b03632a3a8eff12cca28ad",
-      "sizeBytes": 14703982
+      "md5": "1394800aec4e59c645320cb24194fbe8",
+      "sizeBytes": 14704054
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "7ee44c0f69b03632a3a8eff12cca28ad",
-      "sizeBytes": 14703982
+      "md5": "1394800aec4e59c645320cb24194fbe8",
+      "sizeBytes": 14704054
     }
   ],
-  "md5": "7ee44c0f69b03632a3a8eff12cca28ad",
+  "md5": "1394800aec4e59c645320cb24194fbe8",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
