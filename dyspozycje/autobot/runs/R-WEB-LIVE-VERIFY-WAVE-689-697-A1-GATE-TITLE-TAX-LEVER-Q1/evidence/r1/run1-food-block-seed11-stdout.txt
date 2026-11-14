@@ -1,0 +1,117 @@
+[
+ {
+  "k": "turn",
+  "v": 11
+ },
+ {
+  "k": "blockedAtUnits",
+  "v": 2
+ },
+ {
+  "k": "turnAtBlock",
+  "v": 11
+ },
+ {
+  "k": "title_afterHook",
+  "v": {
+   "title": "",
+   "cls": "end-turn is-disabled",
+   "disabled": false,
+   "text": "Zakończ turę"
+  }
+ },
+ {
+  "k": "title_afterOpenPanel",
+  "v": {
+   "title": "Nie można zakończyć tury: Spichlerz państwa (żywność): po turze zabraknie 3. Pomogą: podatek złota: +2 złota/turę; obniżka racji żywności: +8 żywności/turę; rozwiązanie jednostek (złoto): +12 złota/turę; rozwiązanie jednostek (żywność): +12 żywności/turę.",
+   "cls": "end-turn is-disabled",
+   "disabled": false,
+   "text": "Zakończ turę"
+  }
+ },
+ {
+  "k": "split_before",
+  "v": {
+   "procentPieniadz": "60",
+   "procentNauka": "20",
+   "procentLuksus": "20"
+  }
+ },
+ {
+  "k": "canEnd_beforeSlider",
+  "v": false
+ },
+ {
+  "k": "split_afterNauka60",
+  "v": {
+   "procentPieniadz": "30",
+   "procentNauka": "60",
+   "procentLuksus": "10"
+  }
+ },
+ {
+  "k": "canEnd_afterNauka60",
+  "v": false
+ },
+ {
+  "k": "title_afterSliderNauka60",
+  "v": {
+   "title": "Nie można zakończyć tury: Spichlerz państwa (żywność): po turze zabraknie 3. Pomogą: podatek złota: +6 złota/turę; obniżka racji żywności: +8 żywności/turę; rozwiązanie jednostek (złoto): +12 złota/turę; rozwiązanie jednostek (żywność): +12 żywności/turę.",
+   "cls": "end-turn is-disabled",
+   "disabled": false,
+   "text": "Zakończ turę"
+  }
+ },
+ {
+  "k": "hudSk_afterNauka60",
+  "v": "Skarbiec 10 +2 / −10 Praca 60 +6 / +6 S"
+ },
+ {
+  "k": "blockedClick_turn",
+  "v": {
+   "before": 11,
+   "after": 11
+  }
+ },
+ {
+  "k": "lever_splitBefore",
+  "v": {
+   "procentPieniadz": "30",
+   "procentNauka": "60",
+   "procentLuksus": "10"
+  }
+ },
+ {
+  "k": "lever_splitAfter",
+  "v": {
+   "procentPieniadz": "80",
+   "procentNauka": "0",
+   "procentLuksus": "20"
+  }
+ },
+ {
+  "k": "lever_canEndAfter",
+  "v": false
+ },
+ {
+  "k": "lever_button",
+  "v": {
+   "title": "Nie można zakończyć tury: Spichlerz państwa (żywność): po turze zabraknie 3. Pomogą: obniżka racji żywności: +8 żywności/turę; rozwiązanie jednostek (złoto): +12 złota/turę; rozwiązanie jednostek (żywność): +12 żywności/turę.",
+   "cls": "end-turn is-disabled",
+   "disabled": false,
+   "text": "Zakończ turę"
+  }
+ },
+ {
+  "k": "lever_hudSk",
+  "v": "Skarbiec 10 +7 / −5 Praca 60 +6 / +6 Sp"
+ },
+ {
+  "k": "lever_click_turn",
+  "v": {
+   "before": 11,
+   "after": 11
+  }
+ }
+]
+errors [] fatal -
