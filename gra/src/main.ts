@@ -2023,6 +2023,15 @@ async function boot(): Promise<void> {
       _autoBattleSeq += 1;
       return gameStreamRng(_gameSeed, turn, 'auto-battle:' + defQ + ':' + defR + ':' + String(atkId) + ':' + _autoBattleSeq);
     };
+    // R-WEB-BATTLE-MANUAL-RNG-DETERMINISM-Q1: strumien walki ręcznej/scenicznej z ziarna gry (ta sama
+    // fabryka gameStreamRng co auto-walka; licznik walk w turze w soli, zapisywany w meta zapisu).
+    let _battleCombatSeqTurn = -1;
+    let _battleCombatSeq = 0;
+    const battleCombatRng = (): (() => number) => {
+      if (_battleCombatSeqTurn !== turn) { _battleCombatSeqTurn = turn; _battleCombatSeq = 0; }
+      _battleCombatSeq += 1;
+      return gameStreamRng(_gameSeed, turn, 'battle-combat:' + _battleCombatSeq);
+    };
     const unitSight = buildUnitSightResolver(data.units, DEFAULT_SIGHT);
     const unitFoodTbl = buildUnitFoodTable(data.units as unknown as Record<string, unknown>[]);
 
@@ -35015,6 +35024,7 @@ async function boot(): Promise<void> {
           const defBus = rosterToBattleUnits(defRosterRef, 0xc84040);
           setMood('bitwa');
           const bs = new BattleScene({
+            combatRng: battleCombatRng(), // R-WEB-BATTLE-MANUAL-RNG-DETERMINISM-Q1
             attacker: atkBus,
             defender: defBus,
             teren: dTeren4,
@@ -35746,6 +35756,7 @@ async function boot(): Promise<void> {
           const defBus = rosterToBattleUnits(defRosterRef, 0xffd54a);
           setMood('bitwa');
           const bs = new BattleScene({
+            combatRng: battleCombatRng(), // R-WEB-BATTLE-MANUAL-RNG-DETERMINISM-Q1
             attacker: atkBus,
             defender: defBus,
             teren: terrain,
@@ -38046,7 +38057,9 @@ async function boot(): Promise<void> {
       applyMapBattleOutcomeWithSummary,
       clearBattleUiState: clearMapBattleUiState,
       battleMaxPerSide: BATTLE_MAX_PER_SIDE,
-      createBattleScene: (opts: BattleOpts) => new BattleScene(opts),
+      // R-WEB-BATTLE-MANUAL-RNG-DETERMINISM-Q1: bitwa polowa z mapy (mapFieldBattle) takze
+      // dostaje strumien walki z ziarna gry; wywolujacy moze nadpisac (opts ma pierwszenstwo).
+      createBattleScene: (opts: BattleOpts) => new BattleScene({ combatRng: battleCombatRng(), ...opts }),
       armyHungerBattleOpts,
       goldDeficitBattleOpts,
       difficultyBattleOpts,
@@ -38478,6 +38491,7 @@ async function boot(): Promise<void> {
           if (reserveNote) showHintMessage(reserveNote, 5000, undefined, true);
           setMood('bitwa');
           const bs = new BattleScene({
+            combatRng: battleCombatRng(), // R-WEB-BATTLE-MANUAL-RNG-DETERMINISM-Q1
             attacker: rosterToBattleUnits(atkRosterRef, 0xffd54a),
             defender: rosterToBattleUnits(defRosterRef, 0xc84040),
             teren: dTeren,
@@ -38600,6 +38614,7 @@ async function boot(): Promise<void> {
         return;
       }
       const bOpts: BattleOpts = {
+        combatRng: battleCombatRng(), // R-WEB-BATTLE-MANUAL-RNG-DETERMINISM-Q1
         attacker: armies.attacker,
         defender: armies.defender,
         teren: armies.teren,
@@ -38761,6 +38776,8 @@ async function boot(): Promise<void> {
           detIdSeq: _detIdSeq,
           autoBattleSeqTurn: _autoBattleSeqTurn,
           autoBattleSeq: _autoBattleSeq,
+          battleCombatSeqTurn: _battleCombatSeqTurn,
+          battleCombatSeq: _battleCombatSeq,
           newGameParams: _lastNewGameParams
             ? { ..._lastNewGameParams, seed: _gameSeed }
             : undefined,
@@ -47938,6 +47955,10 @@ async function boot(): Promise<void> {
         _detIdSeq = typeof m?.detIdSeq === 'number' && Number.isFinite(m.detIdSeq) ? m.detIdSeq : 0;
         _autoBattleSeqTurn = typeof m?.autoBattleSeqTurn === 'number' && Number.isFinite(m.autoBattleSeqTurn) ? m.autoBattleSeqTurn : -1;
         _autoBattleSeq = typeof m?.autoBattleSeq === 'number' && Number.isFinite(m.autoBattleSeq) ? m.autoBattleSeq : 0;
+        // R-WEB-BATTLE-MANUAL-RNG-DETERMINISM-Q1: stary zapis bez pol = -1 / 0 (brak walki w tej turze).
+        const bcm = m as { battleCombatSeqTurn?: unknown; battleCombatSeq?: unknown } | undefined;
+        _battleCombatSeqTurn = typeof bcm?.battleCombatSeqTurn === 'number' && Number.isFinite(bcm.battleCombatSeqTurn) ? bcm.battleCombatSeqTurn : -1;
+        _battleCombatSeq = typeof bcm?.battleCombatSeq === 'number' && Number.isFinite(bcm.battleCombatSeq) ? bcm.battleCombatSeq : 0;
       }
       // Backlog "cityOrderState nieczyszczone w restoreGameFromSave" (Evaluator rundy 4
       // R-ZUZYCIE-SUROWCOW-OBYWATELE N1, PYTANIA-OTWARTE.md): bez tego czyszczenia panel

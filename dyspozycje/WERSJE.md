@@ -1,3 +1,9 @@
+## ROBOCZA 746dbd76 -- 2026-11-14 -- FALA 704: Walka reczna i sceniczna: generator losowy walk AUTO (testowa)
+
+- Walka reczna i sceniczna (BattleScene: rzut trafienia, Pomin, bitwa polowa z mapy) uzywa strumienia losowego z ziarna gry jak walki AUTO (to samo ziarno = ten sam przebieg); licznik walk w turze w zapisie, stare zapisy dzialaja (R-WEB-BATTLE-MANUAL-RNG-DETERMINISM-Q1)
+- Weryfikacja: tsc 0, logic 213/213, manual-battle-rng-determinism OK (baza FAIL, mutacje FAIL), 5 bramek zielone
+- Limity: Nie zmierzono: test behawioralny (WebGL) i weryfikacja na zywo dwoch identycznych walk; oblezenie/main.ts:46 nadal Math.random
+
 ## ROBOCZA a6e17f38 -- 2026-11-14 -- FALA 703: Potwierdzenie przy zwolnieniu administratora (testowa)
 
 - Zwolnienie administratora miasta/ulepszen wymaga potwierdzenia Zwolnij/Anuluj w panelu administratora (Anuluj i Esc nie zwalniaja), bez okna natywnego (R-WEB-UI-ADMIN-DISMISS-CONFIRM-Q1)
