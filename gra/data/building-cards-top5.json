@@ -3,7 +3,7 @@
     "temat": "R-WEB-BUILDING-CARDS-TOP5-IMPLEMENT-Q1",
     "generator": "gra/tools/gen-building-cards-top5.cjs (+ gen-building-cards-top5.korekty.json)",
     "zrodloCsv": "budynki-top5.csv (FC c828a978f, docs 1c5009f71)",
-    "csvSha256": "ca618953dd658db67832da4555cc3139430c3a944754f03f018f0db579139cd5",
+    "csvSha256": "d3a79d928f41761227afa8c3d753cfe4d96c08c0bf06a743ee62f2396635cc3d",
     "pola": "top5:[{tytul, liczba?, zdanie, rodzaj:'efekt'|'warunek'|'rozbudowa', dowod?}] · cmz:[{czynnosc, korzysc}] · ukryty?:true · opisKarty?"
   },
   "stolarnia": {
@@ -290,7 +290,7 @@
       {
         "tytul": "Limit ludności miasta 5 → 8",
         "liczba": "5 → 8",
-        "zdanie": "Bez Spichlerza (i Akweduktu) miasto nie urośnie ponad 5 mieszkańców.",
+        "zdanie": "Bez Spichlerza (i Akweduktu) miasto nie urośnie ponad 5 mieszkańców. Spichlerz zużywa 10 ceramiki na turę.",
         "rodzaj": "efekt",
         "dowod": "gra/data/econ-params.json:24-37; gra/src/game/economy.ts:1053"
       },
@@ -338,7 +338,7 @@
       {
         "tytul": "Limit ludności miasta 8 → 12",
         "liczba": "8 → 12",
-        "zdanie": "Spichlerz Królewski podnosi sufit miasta bez Akweduktu do 12 mieszkańców; zużywa 25 ceramiki i 25 soli na turę.",
+        "zdanie": "Spichlerz Królewski podnosi sufit miasta bez Akweduktu do 12 mieszkańców; zużywa 20 ceramiki i 25 soli na turę.",
         "rodzaj": "efekt",
         "dowod": "gra/data/econ-params.json:38-44; gra/src/game/economy.ts:1053"
       },
@@ -384,7 +384,7 @@
       {
         "tytul": "Wytwarza ceramikę: do 50 sztuk na turę",
         "liczba": "do 50",
-        "zdanie": "Zamienia glinę i drewno w ceramikę; każdy Spichlerz zużywa jej 25 na turę, a bez niej nie daje bonusów ludności.",
+        "zdanie": "Zamienia glinę i drewno w ceramikę; każdy Spichlerz zużywa jej 10 na turę (Spichlerz Królewski 20), a bez niej nie daje bonusów ludności.",
         "rodzaj": "efekt",
         "dowod": "gra/src/game/converters.ts:85; gra/data/econ-params.json:383-389; gra/data/econ-params.json:390-396"
       },

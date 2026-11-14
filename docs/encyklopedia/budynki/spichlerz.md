@@ -27,6 +27,7 @@ Spichlerz wzmacnia miasto w kategorii **Zywnosc**. Poziom 1: **+2 żywności** (
 - **Budowa poz. 1:** 20 pracy
 - **Każdy kolejny poziom:** +8 pracy
 - **Utrzymanie:** 1 ¤/turę
+- **Zużycie ceramiki:** 10 ceramiki/turę ze skarbca państwa (R-WEB-DATA-SPICHLERZ-II-REMOVE-CERAMICS-UPKEEP-Q1, 2026-11-14; było 25). Brak ceramiki → miasto nie dostaje bonusu ludności. Spichlerz Królewski zużywa 20 ceramiki/turę (sam Spichlerz Królewski nie ma już utrzymania ceramiką).
 - Technologia **Garncarstwo**.
 - **Surowiec do budowy poz. 2 (Spichlerz Królewski):** 10× cegła (poz. 1 bez kosztu surowcowego)
 ### Strategia gracza
