@@ -188,6 +188,61 @@ export function planAiBalance(brakuje: readonly NnsBrak[], levers: readonly NnsL
   };
 }
 
+/**
+ * Wejście dla `buildAiLevers` — surowy opis dostępnych dźwigni jednego AI (bez stanu gry).
+ * Wołający (ai.ts/main.ts, etap C2) wypełnia to z realnego stanu ownera.
+ */
+export interface NnsAiLeverInput {
+  /** Dodatkowy dochód skarbca po podniesieniu podatku (0 = podatek niedostępny / bez zmiany). */
+  podatekSkarbiec: number;
+  /** Pozycje kolejki/budowy do wstrzymania; `zysk` = koszt złota/żywności nieponiesiony w tej turze. */
+  wstrzymania?: ReadonlyArray<{ id: string; stock: NnsStock; zysk: number }>;
+  /** Jednostki wsparcia (nie obronne) do rozwiązania. `koszt` = wartość do sortowania (najdroższe pierwsze). */
+  jednostkiWsparcia: ReadonlyArray<{ id: string; stock: NnsStock; zysk: number; koszt: number }>;
+  /** Ostatnie jednostki obronne miasta — nigdy nie są rozwiązywane przez AI (zob. `eliminujeCywilizacje`). */
+  jednostkiObronne: ReadonlyArray<{ id: string; stock: NnsStock; zysk: number; koszt: number }>;
+  /**
+   * C3: zysk spichlerza (żywność/turę) z obniżenia racji/suwaka wzrostu (tania dźwignia, ranga „podatek”,
+   * przed rozwiązywaniem jednostek). 0/brak = dźwignia niedostępna.
+   */
+  suwakZywnosc?: number;
+}
+
+/**
+ * Buduje listę dźwigni AI z opisu stanu ownera. Czysta funkcja, deterministyczna.
+ * Dźwignie z `zysk` <= 0 lub niefinitywnym są pomijane. Jednostki obronne dostają
+ * `eliminujeCywilizacje: true`, więc `planAiBalance` nigdy po nie nie sięga.
+ */
+export function buildAiLevers(input: NnsAiLeverInput): NnsLever[] {
+  const dobre = (z: number): boolean => Number.isFinite(z) && z > 0;
+  const out: NnsLever[] = [];
+  if (dobre(input.podatekSkarbiec)) {
+    out.push({
+      id: 'podatek-skarbiec', rodzaj: 'podatek', stock: 'skarbiec',
+      zysk: input.podatekSkarbiec, koszt: 0, eliminujeCywilizacje: false,
+    });
+  }
+  if (input.suwakZywnosc !== undefined && dobre(input.suwakZywnosc)) {
+    out.push({
+      id: 'suwak-zywnosc', rodzaj: 'podatek', stock: 'spichlerz',
+      zysk: input.suwakZywnosc, koszt: 0, eliminujeCywilizacje: false,
+    });
+  }
+  for (const w of input.wstrzymania ?? []) {
+    if (!dobre(w.zysk)) continue;
+    out.push({ id: w.id, rodzaj: 'wstrzymanie', stock: w.stock, zysk: w.zysk, koszt: 0, eliminujeCywilizacje: false });
+  }
+  for (const j of input.jednostkiWsparcia) {
+    if (!dobre(j.zysk)) continue;
+    out.push({ id: j.id, rodzaj: 'rozwiazanie', stock: j.stock, zysk: j.zysk, koszt: j.koszt, eliminujeCywilizacje: false });
+  }
+  for (const j of input.jednostkiObronne) {
+    if (!dobre(j.zysk)) continue;
+    out.push({ id: j.id, rodzaj: 'rozwiazanie', stock: j.stock, zysk: j.zysk, koszt: j.koszt, eliminujeCywilizacje: true });
+  }
+  return out;
+}
+
 // ---------------------------------------------------------------------------
 // R-WEB-ECON-NO-NEGATIVE-STOCKS-A-Q1 — projekcja PO ticku (tylko odczyt, bez mutacji stanu gry).
 // Wołający podaje econ/stan PO autoracjach (jak przed realnym ticku w main.ts). Dla gracza i AI
@@ -286,6 +341,59 @@ export function projectNnsAfterTick(
 }
 
 // ---------------------------------------------------------------------------
+// R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1 (etap C2) — równoważenie AI po ticku.
+// ---------------------------------------------------------------------------
+
+/** Pierwsza tura, od której równoważenie AI jest aktywne (tury 1–10 wolne). */
+export const NNS_AI_BALANCE_TURN_MIN = NNS_WOLNE_TURY + 1;
+
+/**
+ * Flaga równoważenia AI (jedno miejsce). Domyślnie włączona. Wyłączenie jest używane
+ * wyłącznie w mutacji pomiarowej (runner headless / testy), nigdy w grze.
+ */
+const nnsAiBalanceFlag = { enabled: true };
+
+export function isNnsAiBalanceEnabled(): boolean {
+  return nnsAiBalanceFlag.enabled;
+}
+
+export function setNnsAiBalanceEnabled(enabled: boolean): void {
+  nnsAiBalanceFlag.enabled = enabled;
+}
+
+export interface NnsAiOwnerDecision {
+  /** Czy równoważenie uruchomić dla tego ownera w tej turze. */
+  aktywne: boolean;
+  /** Wstrzymać zakupy/rekrutację AI w tej turze. */
+  wstrzymajZakupy: boolean;
+  /** Id dźwigni „rozwiazanie” (jednostki wsparcia) wybranych do rozwiązania, od najdroższej. */
+  rozwiazJednostki: string[];
+  plan: NnsAiPlan;
+}
+
+/**
+ * Decyzja równoważenia dla jednego AI po ticku. Czysta funkcja.
+ * `skarbiecPo` / `spichlerzPo` = prognoza po ticku (wartości przed podłogą).
+ */
+export function decideAiOwnerBalance(
+  turn: number,
+  skarbiecPo: number,
+  spichlerzPo: number,
+  levers: readonly NnsLever[],
+): NnsAiOwnerDecision {
+  const brakuje: NnsBrak[] = [];
+  if (skarbiecPo < 0) brakuje.push({ stock: 'skarbiec', ile: -skarbiecPo });
+  if (spichlerzPo < 0) brakuje.push({ stock: 'spichlerz', ile: -spichlerzPo });
+  const aktywne = isNnsAiBalanceEnabled() && turn >= NNS_AI_BALANCE_TURN_MIN && brakuje.length > 0;
+  const plan = planAiBalance(brakuje, aktywne ? levers : []);
+  return {
+    aktywne,
+    wstrzymajZakupy: aktywne,
+    rozwiazJednostki: plan.akcje.filter(a => a.rodzaj === 'rozwiazanie').map(a => a.leverId),
+    plan,
+  };
+}
+
 // R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1 — bramka „Zakończ turę” dla gracza.
 // ---------------------------------------------------------------------------
 
@@ -315,4 +423,46 @@ export function decideEndTurnGate(
   ];
   if (!czyRuchNaprawczy(v.brakuje, levers)) return { blokada: false, komunikat: '' };
   return { blokada: true, komunikat: v.komunikat };
+}
+
+
+// ---------------------------------------------------------------------------
+// R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1 (C3) — jednostki jako dźwignie (per jednostka, nie średnia).
+// ---------------------------------------------------------------------------
+
+/** Jednostka AI opisana dla planera: koszt utrzymania w złocie i żywności per jednostka. */
+export interface NnsAiUnitInfo {
+  id: string;
+  /** Utrzymanie złota/turę tej jednostki (tabela units.json × mnożniki, nie średnia). */
+  zloto: number;
+  /** Żywność/turę tej jednostki. */
+  zywnosc: number;
+  /** true = jednostka obronna (garnizon, jednostka w mieście własnym, wódz, oblężenie) — nigdy nie rozwiązywana. */
+  obronna: boolean;
+}
+
+/** Rozdziela jednostki na dźwignie (id `<unit>|g` = złoto, `<unit>|f` = żywność). */
+export function nnsAiUnitLeverInputs(units: readonly NnsAiUnitInfo[]): Pick<NnsAiLeverInput, 'jednostkiWsparcia' | 'jednostkiObronne'> {
+  const wsparcie: Array<{ id: string; stock: NnsStock; zysk: number; koszt: number }> = [];
+  const obronne: Array<{ id: string; stock: NnsStock; zysk: number; koszt: number }> = [];
+  for (const u of units) {
+    const target = u.obronna ? obronne : wsparcie;
+    if (u.zloto > 0) target.push({ id: u.id + '|g', stock: 'skarbiec', zysk: u.zloto, koszt: u.zloto });
+    if (u.zywnosc > 0) target.push({ id: u.id + '|f', stock: 'spichlerz', zysk: u.zywnosc, koszt: u.zywnosc });
+  }
+  return { jednostkiWsparcia: wsparcie, jednostkiObronne: obronne };
+}
+
+/** Id jednostek (bez sufiksu stocka) wybranych w planie do rozwiązania, bez duplikatów, w kolejności planu. */
+export function nnsUnitIdsFromPlan(plan: NnsAiPlan): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const a of plan.akcje) {
+    if (a.rodzaj !== 'rozwiazanie') continue;
+    const id = a.leverId.replace(/\|[gf]$/, '');
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
+  }
+  return out;
 }

@@ -1,0 +1,2435 @@
+{
+  "cells": [
+    {
+      "mode": "off",
+      "seed": 11,
+      "done": true,
+      "turnsRun": 40,
+      "ownersMajor": 13,
+      "ownersCityState": 28,
+      "rowsChecked": 753,
+      "violations": 410,
+      "carriedDebtViolations": 394,
+      "newOnsetViolations": 16,
+      "newOnsets": [
+        {
+          "turn": 11,
+          "oid": 4,
+          "civ": "fenicjanie",
+          "cityState": false,
+          "sk": 312,
+          "spichRaw": -12,
+          "glod": true,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 12,
+          "oid": 11,
+          "civ": "sumer",
+          "cityState": true,
+          "sk": -1,
+          "spichRaw": 0,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 13,
+          "oid": 7,
+          "civ": "germanie",
+          "cityState": false,
+          "sk": -2,
+          "spichRaw": 0,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 13,
+          "oid": 32,
+          "civ": "asyria",
+          "cityState": true,
+          "sk": -2,
+          "spichRaw": 0,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 14,
+          "oid": 31,
+          "civ": "asyria",
+          "cityState": false,
+          "sk": -3,
+          "spichRaw": 1,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 15,
+          "oid": 18,
+          "civ": "celtowie",
+          "cityState": true,
+          "sk": -2,
+          "spichRaw": 0,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 16,
+          "oid": 6,
+          "civ": "fenicjanie",
+          "cityState": true,
+          "sk": -1,
+          "spichRaw": 0,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 16,
+          "oid": 35,
+          "civ": "inkowie",
+          "cityState": true,
+          "sk": -2,
+          "spichRaw": 0,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 18,
+          "oid": 22,
+          "civ": "egipt",
+          "cityState": false,
+          "sk": -2,
+          "spichRaw": 2,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 18,
+          "oid": 36,
+          "civ": "inkowie",
+          "cityState": true,
+          "sk": -1,
+          "spichRaw": 6,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 19,
+          "oid": 13,
+          "civ": "hetyci",
+          "cityState": false,
+          "sk": -7,
+          "spichRaw": 4,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 19,
+          "oid": 23,
+          "civ": "egipt",
+          "cityState": true,
+          "sk": -3,
+          "spichRaw": 0,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 22,
+          "oid": 31,
+          "civ": "asyria",
+          "cityState": false,
+          "sk": -5,
+          "spichRaw": 1,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 29,
+          "oid": 4,
+          "civ": "fenicjanie",
+          "cityState": false,
+          "sk": -24,
+          "spichRaw": 4,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 39,
+          "oid": 22,
+          "civ": "egipt",
+          "cityState": false,
+          "sk": -12,
+          "spichRaw": 192,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 41,
+          "oid": 10,
+          "civ": "sumer",
+          "cityState": false,
+          "sk": -24,
+          "spichRaw": 333,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        }
+      ],
+      "longestChainTurns": 31,
+      "partial": false,
+      "stoppedBy": null,
+      "playerRefounds": 0,
+      "violTreasury": 401,
+      "violGranary": 76,
+      "minTreasury": -642,
+      "minGranaryRaw": -33,
+      "exceptions": 410,
+      "eliminated": 26,
+      "balanceActions": {},
+      "avgPreTickMs": 49.78,
+      "maxPreTickMs": 91.6,
+      "avgTurnMs": 2114
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "done": true,
+      "turnsRun": 40,
+      "ownersMajor": 13,
+      "ownersCityState": 28,
+      "rowsChecked": 772,
+      "violations": 387,
+      "carriedDebtViolations": 363,
+      "newOnsetViolations": 24,
+      "newOnsets": [
+        {
+          "turn": 11,
+          "oid": 1,
+          "civ": "grecy",
+          "cityState": false,
+          "sk": 202,
+          "spichRaw": -8,
+          "glod": true,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 11,
+          "oid": 34,
+          "civ": "fenicjanie",
+          "cityState": false,
+          "sk": -16,
+          "spichRaw": 1,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 11,
+          "oid": 37,
+          "civ": "germanie",
+          "cityState": false,
+          "sk": 75,
+          "spichRaw": -7,
+          "glod": true,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 12,
+          "oid": 13,
+          "civ": "egipt",
+          "cityState": false,
+          "sk": -33,
+          "spichRaw": -16,
+          "glod": true,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 12,
+          "oid": 28,
+          "civ": "babilonia",
+          "cityState": false,
+          "sk": 127,
+          "spichRaw": -4,
+          "glod": true,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 14,
+          "oid": 4,
+          "civ": "inkowie",
+          "cityState": false,
+          "sk": -2,
+          "spichRaw": -11,
+          "glod": true,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 15,
+          "oid": 8,
+          "civ": "hetyci",
+          "cityState": true,
+          "sk": -4,
+          "spichRaw": 8,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 15,
+          "oid": 14,
+          "civ": "egipt",
+          "cityState": true,
+          "sk": -1,
+          "spichRaw": 1,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 16,
+          "oid": 6,
+          "civ": "inkowie",
+          "cityState": true,
+          "sk": -1,
+          "spichRaw": 16,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 16,
+          "oid": 20,
+          "civ": "zulusi",
+          "cityState": true,
+          "sk": -4,
+          "spichRaw": 0,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 16,
+          "oid": 31,
+          "civ": "celtowie",
+          "cityState": false,
+          "sk": -1,
+          "spichRaw": 2,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 16,
+          "oid": 36,
+          "civ": "fenicjanie",
+          "cityState": true,
+          "sk": -1,
+          "spichRaw": 0,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 17,
+          "oid": 10,
+          "civ": "asyria",
+          "cityState": false,
+          "sk": -2,
+          "spichRaw": 1,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 18,
+          "oid": 5,
+          "civ": "inkowie",
+          "cityState": true,
+          "sk": -2,
+          "spichRaw": 1,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 18,
+          "oid": 16,
+          "civ": "sumer",
+          "cityState": false,
+          "sk": -4,
+          "spichRaw": 1,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 18,
+          "oid": 27,
+          "civ": "harappa",
+          "cityState": true,
+          "sk": -5,
+          "spichRaw": 1,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 19,
+          "oid": 22,
+          "civ": "chinczycy",
+          "cityState": false,
+          "sk": -8,
+          "spichRaw": 4,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 19,
+          "oid": 26,
+          "civ": "harappa",
+          "cityState": true,
+          "sk": -5,
+          "spichRaw": 0,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 20,
+          "oid": 34,
+          "civ": "fenicjanie",
+          "cityState": false,
+          "sk": -13,
+          "spichRaw": 7,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 21,
+          "oid": 25,
+          "civ": "harappa",
+          "cityState": false,
+          "sk": -10,
+          "spichRaw": 1,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 22,
+          "oid": 1,
+          "civ": "grecy",
+          "cityState": false,
+          "sk": 214,
+          "spichRaw": -8,
+          "glod": true,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 24,
+          "oid": 16,
+          "civ": "sumer",
+          "cityState": false,
+          "sk": -3,
+          "spichRaw": 7,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 28,
+          "oid": 13,
+          "civ": "egipt",
+          "cityState": false,
+          "sk": -41,
+          "spichRaw": 29,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 39,
+          "oid": 16,
+          "civ": "sumer",
+          "cityState": false,
+          "sk": -3,
+          "spichRaw": 2,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        }
+      ],
+      "longestChainTurns": 31,
+      "partial": false,
+      "stoppedBy": null,
+      "playerRefounds": 0,
+      "violTreasury": 374,
+      "violGranary": 36,
+      "minTreasury": -592,
+      "minGranaryRaw": -16,
+      "exceptions": 387,
+      "eliminated": 26,
+      "balanceActions": {},
+      "avgPreTickMs": 64.95,
+      "maxPreTickMs": 119.4,
+      "avgTurnMs": 2641
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "done": true,
+      "turnsRun": 40,
+      "ownersMajor": 13,
+      "ownersCityState": 28,
+      "rowsChecked": 765,
+      "violations": 418,
+      "carriedDebtViolations": 399,
+      "newOnsetViolations": 19,
+      "newOnsets": [
+        {
+          "turn": 12,
+          "oid": 19,
+          "civ": "zulusi",
+          "cityState": false,
+          "sk": 1,
+          "spichRaw": -8,
+          "glod": true,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 13,
+          "oid": 10,
+          "civ": "inkowie",
+          "cityState": false,
+          "sk": -5,
+          "spichRaw": 0,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 13,
+          "oid": 13,
+          "civ": "fenicjanie",
+          "cityState": false,
+          "sk": 41,
+          "spichRaw": -4,
+          "glod": true,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 14,
+          "oid": 1,
+          "civ": "harappa",
+          "cityState": false,
+          "sk": 258,
+          "spichRaw": -8,
+          "glod": true,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 15,
+          "oid": 21,
+          "civ": "zulusi",
+          "cityState": true,
+          "sk": -3,
+          "spichRaw": 18,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 16,
+          "oid": 4,
+          "civ": "chinczycy",
+          "cityState": false,
+          "sk": 88,
+          "spichRaw": -7,
+          "glod": true,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 16,
+          "oid": 8,
+          "civ": "hetyci",
+          "cityState": true,
+          "sk": -4,
+          "spichRaw": 5,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 17,
+          "oid": 3,
+          "civ": "harappa",
+          "cityState": true,
+          "sk": -2,
+          "spichRaw": 1,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 18,
+          "oid": 16,
+          "civ": "babilonia",
+          "cityState": false,
+          "sk": -2,
+          "spichRaw": 0,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 19,
+          "oid": 37,
+          "civ": "germanie",
+          "cityState": false,
+          "sk": -5,
+          "spichRaw": 1,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 20,
+          "oid": 2,
+          "civ": "harappa",
+          "cityState": true,
+          "sk": -6,
+          "spichRaw": 0,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 21,
+          "oid": 28,
+          "civ": "sumer",
+          "cityState": false,
+          "sk": -11,
+          "spichRaw": 2,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 24,
+          "oid": 4,
+          "civ": "chinczycy",
+          "cityState": false,
+          "sk": -21,
+          "spichRaw": 12,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 25,
+          "oid": 10,
+          "civ": "inkowie",
+          "cityState": false,
+          "sk": -1,
+          "spichRaw": 4,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 26,
+          "oid": 37,
+          "civ": "germanie",
+          "cityState": false,
+          "sk": -2,
+          "spichRaw": 2,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 27,
+          "oid": 7,
+          "civ": "hetyci",
+          "cityState": false,
+          "sk": -2,
+          "spichRaw": 0,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 27,
+          "oid": 25,
+          "civ": "egipt",
+          "cityState": false,
+          "sk": -16,
+          "spichRaw": 369,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 28,
+          "oid": 28,
+          "civ": "sumer",
+          "cityState": false,
+          "sk": -13,
+          "spichRaw": 3,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        },
+        {
+          "turn": 41,
+          "oid": 22,
+          "civ": "celtowie",
+          "cityState": false,
+          "sk": -12,
+          "spichRaw": 26,
+          "glod": false,
+          "przyczyna": "równoważenie wyłączone (flaga)"
+        }
+      ],
+      "longestChainTurns": 31,
+      "partial": false,
+      "stoppedBy": null,
+      "playerRefounds": 0,
+      "violTreasury": 404,
+      "violGranary": 24,
+      "minTreasury": -519,
+      "minGranaryRaw": -21,
+      "exceptions": 418,
+      "eliminated": 26,
+      "balanceActions": {},
+      "avgPreTickMs": 53.23,
+      "maxPreTickMs": 128.3,
+      "avgTurnMs": 2299
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "done": true,
+      "turnsRun": 150,
+      "ownersMajor": 13,
+      "ownersCityState": 2,
+      "rowsChecked": 2403,
+      "violations": 170,
+      "carriedDebtViolations": 168,
+      "newOnsetViolations": 2,
+      "newOnsets": [
+        {
+          "turn": 14,
+          "oid": 4,
+          "civ": "fenicjanie",
+          "cityState": false,
+          "sk": 322,
+          "spichRaw": 0,
+          "glod": true,
+          "przyczyna": "brak dostępnych dźwigni: pozostało skarbiec=322 spichlerz=0 (obecny skarbiec=318 spichlerz=1; po jednym obrońcy na miasto, wodzowie i oblegający nietykalni, podatek 100% i racje 0 wyczerpane)"
+        },
+        {
+          "turn": 15,
+          "oid": 1,
+          "civ": "grecy",
+          "cityState": false,
+          "sk": 36,
+          "spichRaw": -4,
+          "glod": true,
+          "przyczyna": "brak dostępnych dźwigni: pozostało skarbiec=76 spichlerz=-4 (obecny skarbiec=84 spichlerz=0; po jednym obrońcy na miasto, wodzowie i oblegający nietykalni, podatek 100% i racje 0 wyczerpane)"
+        }
+      ],
+      "longestChainTurns": 20,
+      "partial": false,
+      "stoppedBy": "limit czasu",
+      "playerRefounds": 1,
+      "violTreasury": 168,
+      "violGranary": 2,
+      "minTreasury": -217,
+      "minGranaryRaw": -4,
+      "exceptions": 170,
+      "eliminated": 26,
+      "balanceActions": {
+        "podatek": 189,
+        "rozwiaz": 23,
+        "racje": 191
+      },
+      "avgPreTickMs": 394.97,
+      "maxPreTickMs": 936.1,
+      "avgTurnMs": 26313
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "done": true,
+      "turnsRun": 150,
+      "ownersMajor": 13,
+      "ownersCityState": 0,
+      "rowsChecked": 2259,
+      "violations": 122,
+      "carriedDebtViolations": 120,
+      "newOnsetViolations": 2,
+      "newOnsets": [
+        {
+          "turn": 16,
+          "oid": 2,
+          "civ": "grecy",
+          "cityState": true,
+          "sk": -2,
+          "spichRaw": 6,
+          "glod": false,
+          "przyczyna": "brak dostępnych dźwigni: pozostało skarbiec=-2 spichlerz=6 (obecny skarbiec=0 spichlerz=2; po jednym obrońcy na miasto, wodzowie i oblegający nietykalni, podatek 100% i racje 0 wyczerpane)"
+        },
+        {
+          "turn": 21,
+          "oid": 5,
+          "civ": "inkowie",
+          "cityState": true,
+          "sk": -1,
+          "spichRaw": 16,
+          "glod": false,
+          "przyczyna": "brak dostępnych dźwigni: pozostało skarbiec=-1 spichlerz=16 (obecny skarbiec=0 spichlerz=11; po jednym obrońcy na miasto, wodzowie i oblegający nietykalni, podatek 100% i racje 0 wyczerpane)"
+        }
+      ],
+      "longestChainTurns": 15,
+      "partial": false,
+      "stoppedBy": "limit czasu",
+      "playerRefounds": 1,
+      "violTreasury": 122,
+      "violGranary": 0,
+      "minTreasury": -158,
+      "minGranaryRaw": 0,
+      "exceptions": 122,
+      "eliminated": 28,
+      "balanceActions": {
+        "podatek": 158,
+        "racje": 220,
+        "rozwiaz": 14
+      },
+      "avgPreTickMs": 374.35,
+      "maxPreTickMs": 750.5,
+      "avgTurnMs": 26560
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "done": true,
+      "turnsRun": 150,
+      "ownersMajor": 13,
+      "ownersCityState": 0,
+      "rowsChecked": 2260,
+      "violations": 158,
+      "carriedDebtViolations": 157,
+      "newOnsetViolations": 1,
+      "newOnsets": [
+        {
+          "turn": 19,
+          "oid": 2,
+          "civ": "harappa",
+          "cityState": true,
+          "sk": -3,
+          "spichRaw": 3,
+          "glod": false,
+          "przyczyna": "brak dostępnych dźwigni: pozostało skarbiec=-3 spichlerz=3 (obecny skarbiec=1 spichlerz=0; po jednym obrońcy na miasto, wodzowie i oblegający nietykalni, podatek 100% i racje 0 wyczerpane)"
+        }
+      ],
+      "longestChainTurns": 12,
+      "partial": false,
+      "stoppedBy": "limit czasu",
+      "playerRefounds": 3,
+      "violTreasury": 158,
+      "violGranary": 0,
+      "minTreasury": -158,
+      "minGranaryRaw": 0,
+      "exceptions": 158,
+      "eliminated": 28,
+      "balanceActions": {
+        "podatek": 180,
+        "rozwiaz": 19,
+        "racje": 186
+      },
+      "avgPreTickMs": 382.54,
+      "maxPreTickMs": 750.6,
+      "avgTurnMs": 28260
+    }
+  ],
+  "violationsByMode": {
+    "off": 1215,
+    "on": 450
+  },
+  "totalRowsByMode": {
+    "off": 2290,
+    "on": 6922
+  },
+  "eliminations": [
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 2,
+      "civ": "grecy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 3,
+      "civ": "grecy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 5,
+      "civ": "fenicjanie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 6,
+      "civ": "fenicjanie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 11,
+      "civ": "sumer",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 12,
+      "civ": "sumer",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 14,
+      "civ": "hetyci",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 15,
+      "civ": "hetyci",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 17,
+      "civ": "celtowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 18,
+      "civ": "celtowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 20,
+      "civ": "zulusi",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 21,
+      "civ": "zulusi",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 23,
+      "civ": "egipt",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 24,
+      "civ": "egipt",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 26,
+      "civ": "babilonia",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 27,
+      "civ": "babilonia",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 29,
+      "civ": "harappa",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 30,
+      "civ": "harappa",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 32,
+      "civ": "asyria",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 33,
+      "civ": "asyria",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 35,
+      "civ": "inkowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 36,
+      "civ": "inkowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 38,
+      "civ": "chinczycy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 39,
+      "civ": "chinczycy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 8,
+      "civ": "germanie",
+      "cityState": true,
+      "turn": 23,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 11,
+      "oid": 9,
+      "civ": "germanie",
+      "cityState": true,
+      "turn": 23,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 2,
+      "civ": "grecy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 3,
+      "civ": "grecy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 5,
+      "civ": "inkowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 6,
+      "civ": "inkowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 8,
+      "civ": "hetyci",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 11,
+      "civ": "asyria",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 12,
+      "civ": "asyria",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 14,
+      "civ": "egipt",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 15,
+      "civ": "egipt",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 17,
+      "civ": "sumer",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 18,
+      "civ": "sumer",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 20,
+      "civ": "zulusi",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 21,
+      "civ": "zulusi",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 23,
+      "civ": "chinczycy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 24,
+      "civ": "chinczycy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 26,
+      "civ": "harappa",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 27,
+      "civ": "harappa",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 29,
+      "civ": "babilonia",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 30,
+      "civ": "babilonia",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 33,
+      "civ": "celtowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 38,
+      "civ": "germanie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 39,
+      "civ": "germanie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 35,
+      "civ": "fenicjanie",
+      "cityState": true,
+      "turn": 23,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 36,
+      "civ": "fenicjanie",
+      "cityState": true,
+      "turn": 23,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 9,
+      "civ": "hetyci",
+      "cityState": true,
+      "turn": 29,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 33,
+      "oid": 32,
+      "civ": "celtowie",
+      "cityState": true,
+      "turn": 34,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 2,
+      "civ": "harappa",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 3,
+      "civ": "harappa",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 5,
+      "civ": "chinczycy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 6,
+      "civ": "chinczycy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 8,
+      "civ": "hetyci",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 9,
+      "civ": "hetyci",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 11,
+      "civ": "inkowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 12,
+      "civ": "inkowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 14,
+      "civ": "fenicjanie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 15,
+      "civ": "fenicjanie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 18,
+      "civ": "babilonia",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 20,
+      "civ": "zulusi",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 21,
+      "civ": "zulusi",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 23,
+      "civ": "celtowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 24,
+      "civ": "celtowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 26,
+      "civ": "egipt",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 27,
+      "civ": "egipt",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 32,
+      "civ": "asyria",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 33,
+      "civ": "asyria",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 35,
+      "civ": "grecy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 36,
+      "civ": "grecy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 38,
+      "civ": "germanie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 39,
+      "civ": "germanie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 29,
+      "civ": "sumer",
+      "cityState": true,
+      "turn": 23,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 30,
+      "civ": "sumer",
+      "cityState": true,
+      "turn": 23,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "off",
+      "seed": 44,
+      "oid": 17,
+      "civ": "babilonia",
+      "cityState": true,
+      "turn": 34,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 2,
+      "civ": "grecy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 3,
+      "civ": "grecy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 5,
+      "civ": "fenicjanie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 6,
+      "civ": "fenicjanie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 11,
+      "civ": "sumer",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 12,
+      "civ": "sumer",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 14,
+      "civ": "hetyci",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 15,
+      "civ": "hetyci",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 17,
+      "civ": "celtowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 18,
+      "civ": "celtowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 20,
+      "civ": "zulusi",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 21,
+      "civ": "zulusi",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 23,
+      "civ": "egipt",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 24,
+      "civ": "egipt",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 26,
+      "civ": "babilonia",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 27,
+      "civ": "babilonia",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 29,
+      "civ": "harappa",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 30,
+      "civ": "harappa",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 32,
+      "civ": "asyria",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 33,
+      "civ": "asyria",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 35,
+      "civ": "inkowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 36,
+      "civ": "inkowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 38,
+      "civ": "chinczycy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 39,
+      "civ": "chinczycy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 8,
+      "civ": "germanie",
+      "cityState": true,
+      "turn": 23,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 11,
+      "oid": 9,
+      "civ": "germanie",
+      "cityState": true,
+      "turn": 23,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 2,
+      "civ": "grecy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 3,
+      "civ": "grecy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 5,
+      "civ": "inkowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 6,
+      "civ": "inkowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 8,
+      "civ": "hetyci",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 11,
+      "civ": "asyria",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 12,
+      "civ": "asyria",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 14,
+      "civ": "egipt",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 15,
+      "civ": "egipt",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 17,
+      "civ": "sumer",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 18,
+      "civ": "sumer",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 20,
+      "civ": "zulusi",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 21,
+      "civ": "zulusi",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 23,
+      "civ": "chinczycy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 24,
+      "civ": "chinczycy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 26,
+      "civ": "harappa",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 27,
+      "civ": "harappa",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 29,
+      "civ": "babilonia",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 30,
+      "civ": "babilonia",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 32,
+      "civ": "celtowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 33,
+      "civ": "celtowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 38,
+      "civ": "germanie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 39,
+      "civ": "germanie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 35,
+      "civ": "fenicjanie",
+      "cityState": true,
+      "turn": 23,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 36,
+      "civ": "fenicjanie",
+      "cityState": true,
+      "turn": 23,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 9,
+      "civ": "hetyci",
+      "cityState": true,
+      "turn": 26,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 40,
+      "civ": "rzymianie",
+      "cityState": true,
+      "turn": 65,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 33,
+      "oid": 41,
+      "civ": "rzymianie",
+      "cityState": true,
+      "turn": 91,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 2,
+      "civ": "harappa",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 3,
+      "civ": "harappa",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 5,
+      "civ": "chinczycy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 6,
+      "civ": "chinczycy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 8,
+      "civ": "hetyci",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 9,
+      "civ": "hetyci",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 11,
+      "civ": "inkowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 12,
+      "civ": "inkowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 15,
+      "civ": "fenicjanie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 17,
+      "civ": "babilonia",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 18,
+      "civ": "babilonia",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 20,
+      "civ": "zulusi",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 21,
+      "civ": "zulusi",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 23,
+      "civ": "celtowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 24,
+      "civ": "celtowie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 26,
+      "civ": "egipt",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 27,
+      "civ": "egipt",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 32,
+      "civ": "asyria",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 33,
+      "civ": "asyria",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 35,
+      "civ": "grecy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 36,
+      "civ": "grecy",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 38,
+      "civ": "germanie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 39,
+      "civ": "germanie",
+      "cityState": true,
+      "turn": 22,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 29,
+      "civ": "sumer",
+      "cityState": true,
+      "turn": 23,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 30,
+      "civ": "sumer",
+      "cityState": true,
+      "turn": 23,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 14,
+      "civ": "fenicjanie",
+      "cityState": true,
+      "turn": 39,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 40,
+      "civ": "rzymianie",
+      "cityState": true,
+      "turn": 57,
+      "lastCities": 1,
+      "rowsLast10": 10
+    },
+    {
+      "mode": "on",
+      "seed": 44,
+      "oid": 41,
+      "civ": "rzymianie",
+      "cityState": true,
+      "turn": 87,
+      "lastCities": 1,
+      "rowsLast10": 10
+    }
+  ],
+  "msPerTurn": {}
+}
