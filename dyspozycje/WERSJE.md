@@ -1,3 +1,9 @@
+## ROBOCZA f166f88b -- 2026-11-14 -- FALA 709: Zaufanie w wojnie: martwe pole usuniete, opis w Civpedii (testowa)
+
+- Usuniete martwe pole kryzysTurDoWojny=5 z danych dyplomacji (licznik tur do wojny zalezy od profilu pary 3-7); Civpedia opisuje zaufanie 0 w wojnie i brak stalej N=6
+- Weryfikacja: tsc 0, logic-test 213/213, nowy test 17/0, json-descriptions-sync 19/0, war-brake-unit 69/0, regeneracja wikiBundle bez roznic
+- Limity: NIE ZMIERZONO: weryfikacja w przegladarce. Zachowanie gry bez zmian.
+
 ## ROBOCZA 7ef7779d -- 2026-11-14 -- FALA 708: Karty jednostek ze statystykami z silnika walki (testowa)
 
 - Karty jednostek (miasto, panel jednostki, karta w wiadomosci) pokazuja atak/obrone/zdrowie/pancerz/obrazenia tak jak liczy je silnik walki; wspolny modul unitEngineStats
