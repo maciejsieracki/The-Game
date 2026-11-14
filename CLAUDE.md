@@ -106,6 +106,11 @@ Workflow uruchamiaj z czytelną nazwą: `scripts/mkwf.sh <ID> "<opis po polsku>"
    (`gra/src` przy `07d2fbd72`). NIE pytaj, czy coś ma być jak w webie. Pytaj WYŁĄCZNIE o świadome
    odstępstwa od webu albo o zakres, którego web nie rozstrzyga. Decyzje techniczne podejmuj sam
    i zapisuj w `dyspozycje/rust-port/REJESTR-RUST.md`.
+10. **Pytania ABC do właściciela (wiążące; właściciel, 2026-11-14).** Każde pytanie ABC zawiera:
+   (a) **na początku** dokładny opis przedmiotu pytania: co jest zablokowane, co konkretnie działa
+   albo nie działa, z numerami plików/linii i pinu oraz co dokładnie zmieni każda odpowiedź (nie zakładaj,
+   że właściciel zna kontekst); (b) **przy każdej opcji** zalety i wady; (c) **zawsze** oznaczoną
+   rekomendację z uzasadnieniem (opcja z `(Recommended)` i dlaczego).
 
 ## Bariery krytyczne
 
