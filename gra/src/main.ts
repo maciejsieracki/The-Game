@@ -1628,7 +1628,7 @@ import {
   registerAiPeaceRequest, isAiAiPeaceBalanceAllowed, aiAiPeaceRequiredPn, isForcedPeaceEligiblePair, runAiAiPeaceTick, requesterShare, isClearlyLosing,
   type AiPeaceRequest, type AiPeaceKind, type PeaceAsset,
 } from './game/diplomacy-ai-forced-peace';
-import { runWarWearinessTick, militaryWearinessWiring, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
+import { runWarWearinessTick, militaryWearinessWiring, warWearinessLevel, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
 import { warWearinessPairView, peakForCurrentWar, warWearinessSideView, type WarWearinessPairView, type WarWearinessReference } from './game/war-weariness-view';
 import {
   isPeaceTreatyLocked,
@@ -30503,12 +30503,18 @@ async function boot(): Promise<void> {
         peaceTraceRows: (): Array<Record<string, unknown>> => peaceTraceState.rows.slice(),
         /** Odczyt pary AI->gracz (bez zapisu stanu): status, turnsAtWar wg odczytu bez stemplowania, relacja, kontakt. */
         peaceTracePair: (ai: number): Record<string, unknown> => {
-          const wr = diploWarStateForRead(ai, ME());
+          // R3 (ślad, czysty odczyt): BEZ getDiploRelation / diplomaticContactEstablishedSet / diploWarStateForRead —
+          // te wstawiają brakujące wpisy do Map i zmieniają skrót stanu (digest). Tylko Map.get + warStateFromRecord.
+          const trRelP = diplomacyRelations.get(ai < ME() ? `${ai}_${ME()}` : `${ME()}_${ai}`) ?? defaultNeutralRelation();
+          const trMetaP = diplomacyPairMeta.get(diploPairKey(ai, ME())) as (DiploPairMeta & WarPairMetaR1) | undefined;
+          const trWrP = trRelP.status !== 'wojna'
+            ? { turnsAtWar: 0, lostCities: 0 }
+            : warStateFromRecord(trMetaP?.wojnaMiasta, trMetaP?.wojnaStartTura ?? turn, String(ai), turn);
           return {
-            turn, ai, status: getDiploRelation(ai, ME()).status,
-            relTotal: relationTotal(getDiploRelation(ai, ME())),
-            turnsAtWar: wr.turnsAtWar, lostCities: wr.lostCities,
-            contactSet: diplomaticContactEstablishedSet().has(ai),
+            turn, ai, status: trRelP.status,
+            relTotal: relationTotal(trRelP),
+            turnsAtWar: trWrP.turnsAtWar, lostCities: trWrP.lostCities,
+            contactSet: diplomaticContactEstablishedByHuman.get(ME())?.has(ai) ?? false,
             queuedPeace: negotiationTable.filter(n => n.proposerOwnerId === ai && n.responderOwnerId === ME()
               && n.actionId === 'pokoj').map(n => n.actionId),
           };
@@ -43391,6 +43397,28 @@ async function boot(): Promise<void> {
                 };
                 diploInp.stoneForceWarTargetId = stoneForceWarTargetId;
                 diploInp.ironForceWarTargetId = ironForceWarTargetId;
+                // W80B-B1 r3 (hak read-only, tylko gdy peaceTraceState.on): stan wojny i zmęczenie TAK, jak wchodzą do
+                // decideAIDiplomacy (wpis relacji z diploInp, nie odczyt po endTurn). Zmęczenie = ta sama czysta funkcja
+                // warWearinessLevel na tych samych wejściach co ai.ts (wearyLevel). Bez zapisu do stanu gry.
+                if (peaceTraceState.on) {
+                  const trEntry = diploInp.relacje.find(r => r.partnerId === '0');
+                  const trTaw = trEntry?.stanWojny ? Math.max(0, trEntry.turnsAtWar ?? 0) : 0;
+                  const trFat = trEntry?.stanWojny
+                    ? warWearinessLevel({
+                      turnsAtWar: trTaw,
+                      lostCitiesTotal: Math.max(0, trEntry.lostCitiesInWar ?? 0) + Math.max(0, trEntry.zdobyteMiastaPartnera ?? 0),
+                      turnsSinceCityChange: trEntry.turnsSinceCityChange,
+                    })
+                    : 0;
+                  peaceTraceState.rows.push({
+                    turn, owner: ownerId, stage: 'wejscie-decyzji',
+                    stanWojny: trEntry?.stanWojny ?? null,
+                    turnsAtWarAI: trTaw,
+                    lostCitiesInWar: trEntry?.lostCitiesInWar ?? null,
+                    zdobyteMiastaPartnera: trEntry?.zdobyteMiastaPartnera ?? null,
+                    fatigueAI: Math.round(trFat * 1000) / 1000,
+                  });
+                }
                 const dipCmdsRaw = decideAIDiplomacy(
                   diploInp, undefined, diffParamsDip.agresjaMnoznik, diffParamsDip.dyplomacjaAktywnosc,
                   effectiveGameDifficultyForOwner(ownerId),

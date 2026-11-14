@@ -108,6 +108,8 @@ async function main() {
       while (guard++ < 12) {
         const can = await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd());
         if (can) break;
+        // R3 wariant kontrolny BEZ ingerencji (NOINTERVENE=1): bez dosypek, bez odrzucania ofert, bez uzupełniania kolejki.
+        if (process.env.NOINTERVENE === '1') break;
         // R2 (bramka NNS, założenie pomiaru): tylko DODATNIE dosypki złota/żywności, gdy bramka NNS blokuje koniec tury.
         const nnsB = await page.evaluate(() => window.__aiTradeWiringTestDebug.nnsGateBlocked());
         if (nnsB) {
@@ -156,6 +158,11 @@ async function main() {
           await page.evaluate(id => window.__aiTradeWiringTestDebug.reject(id), e.id);
         }
         await wait(100);
+      }
+      if (process.env.NOINTERVENE === '1' && !(await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd()))) {
+        rep.stoppedBy = 'wariant bez ingerencji: koniec tury zablokowany w turze ' + (rep.lastTurn ?? '?') + ' (bramka gry, bez dosypek)';
+        save(rep);
+        break;
       }
       try {
         await endTurnWait(page);
