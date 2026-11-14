@@ -1,0 +1,160 @@
+{
+  "scenario": "1",
+  "checks": [
+    {
+      "id": "S1.a",
+      "label": "przed wojną zaufanie odczytane z DOM (SETUP 40)",
+      "ok": "PASS",
+      "detail": {
+        "zaufanie": 40,
+        "respekt": 100,
+        "trustRaw": "40 / 100 +0.7 / turę",
+        "respektRaw": "100 / 100",
+        "tierLines": [
+          "Sojusz (pełny lub defensywny)",
+          "PRZYJAZNY",
+          "Relacja z perspektywy gracza",
+          "Wojna",
+          "Pokój",
+          "Sojusz"
+        ],
+        "rows": [
+          "Wiarygodność+20 · Uczciwy",
+          "Zaufanie40 / 100 +0.7 / turę",
+          "Respekt100 / 100",
+          "Relacja z perspektywy gracza140 / 200 +0.7 / turę(Zaufanie + Respekt)"
+        ]
+      }
+    },
+    {
+      "id": "S1.b",
+      "label": "po wypowiedzeniu wojny i 1 turze zaufanie = 0",
+      "ok": "PASS",
+      "detail": {
+        "zaufanie": 0,
+        "respekt": 100
+      }
+    },
+    {
+      "id": "S1.c",
+      "label": "w kolejnej turze wojny zaufanie nadal = 0",
+      "ok": "PASS",
+      "detail": {
+        "zaufanie": 0,
+        "respekt": 100
+      }
+    },
+    {
+      "id": "S1.d",
+      "label": "zapisany respekt w wojnie nie obcięty do 29 (getRelationTotal przy zaufaniu 0 > 29)",
+      "ok": "PASS",
+      "detail": {
+        "zapisanyPoWypowiedzeniu": 60,
+        "zapisanyPoTurze1": 60,
+        "oczekiwane": 60,
+        "respektEfektywnyUI": 100,
+        "uwaga": "respekt efektywny w UI (100) to wartość z mocy, nie zapisana; zapisana wartość odczytana hakiem getRelationTotal"
+      }
+    },
+    {
+      "id": "S1.e",
+      "label": "brak błędów JS w scenariuszu",
+      "ok": "PASS",
+      "detail": []
+    }
+  ],
+  "measured": {
+    "start": {
+      "zaufanie": 40,
+      "respekt": 100,
+      "trustRaw": "40 / 100 +0.7 / turę",
+      "respektRaw": "100 / 100",
+      "tierLines": [
+        "Sojusz (pełny lub defensywny)",
+        "PRZYJAZNY",
+        "Relacja z perspektywy gracza",
+        "Wojna",
+        "Pokój",
+        "Sojusz"
+      ],
+      "rows": [
+        "Wiarygodność+20 · Uczciwy",
+        "Zaufanie40 / 100 +0.7 / turę",
+        "Respekt100 / 100",
+        "Relacja z perspektywy gracza140 / 200 +0.7 / turę(Zaufanie + Respekt)"
+      ]
+    },
+    "poWypowiedzeniuWojny": {
+      "zaufanie": 0,
+      "respekt": 100,
+      "trustRaw": "0 / 100",
+      "respektRaw": "100 / 100",
+      "tierLines": [
+        "WOJNA",
+        "Sojusz (pełny lub defensywny)",
+        "WROGI",
+        "Relacja z perspektywy gracza",
+        "Wojna",
+        "Pokój",
+        "Sojusz"
+      ],
+      "rows": [
+        "Wiarygodność+20 · Uczciwy",
+        "Zaufanie0 / 100",
+        "Respekt100 / 100",
+        "Relacja z perspektywy gracza100 / 200(Zaufanie + Respekt)"
+      ]
+    },
+    "poTurze1": {
+      "zaufanie": 0,
+      "respekt": 100,
+      "trustRaw": "0 / 100",
+      "respektRaw": "100 / 100",
+      "tierLines": [
+        "WOJNA",
+        "Sojusz (pełny lub defensywny)",
+        "WROGI",
+        "Relacja z perspektywy gracza",
+        "Wojna",
+        "Pokój",
+        "Sojusz"
+      ],
+      "rows": [
+        "Wiarygodność+20 · Uczciwy",
+        "Zaufanie0 / 100",
+        "Respekt100 / 100",
+        "Relacja z perspektywy gracza100 / 200(Zaufanie + Respekt)"
+      ]
+    },
+    "poTurze2": {
+      "zaufanie": 0,
+      "respekt": 100,
+      "trustRaw": "0 / 100",
+      "respektRaw": "100 / 100",
+      "tierLines": [
+        "WOJNA",
+        "Sojusz (pełny lub defensywny)",
+        "WROGI",
+        "Relacja z perspektywy gracza",
+        "Wojna",
+        "Pokój",
+        "Sojusz"
+      ],
+      "rows": [
+        "Wiarygodność+20 · Uczciwy",
+        "Zaufanie0 / 100",
+        "Respekt100 / 100",
+        "Relacja z perspektywy gracza100 / 200(Zaufanie + Respekt)"
+      ]
+    },
+    "tury": [
+      2,
+      2
+    ],
+    "zapisanyRespektPoWypowiedzeniu": 60,
+    "zapisanyRespektPoTurze1": 60
+  },
+  "startedAt": "2026-11-13T18:08:42.087Z",
+  "errorsTotal": 0,
+  "finishedAt": "2026-11-13T18:13:45.375Z"
+}

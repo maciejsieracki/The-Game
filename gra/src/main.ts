@@ -164,7 +164,8 @@ import { trimSidePanelEventLog } from './game/retained-side-panel-events';
 import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
 import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
-import { installCivTestHooks, isCivTestEnabled } from './game/civ-test-hooks';
+import { installCivTestHooks, isCivTestEnabled, civTestSeedOverride, civTestRuntime } from './game/civ-test-hooks';
+import { gameStreamRng, gameIdSuffix } from './game/game-rng';
 import { computeStartPlacements, computeReachable, computePath, setSiegeEntryBlocker, siegeScopeMemo, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, hexNeighborCoords, categoryOf, terrainMoveCost, isCivilianUnit, buildMoveOccupancy, trimSegmentEndOffPassThrough, type MoveOccupancy } from './units/setup';
 import { enterCityAfterSurrender } from './game/siege-enter-city';
 import { isCityUnderSiege, isSiegeEntryBlocked, besiegedCityAtHex, CITY_SIEGE_RECRUIT_BLOCK_PL } from './game/city-siege-state';
@@ -952,7 +953,7 @@ import aiParamsRaw from '../data/ai-params.json';
 import diplomacyTickParams from '../data/diplomacy-tick-params.json';
 import {
   aiAiPairs, crisisStepForPair, dobraWolaTurnStep, isAiAiEligibleOwner, isDiploTickWarBrakeEnabled,
-  parseCrisisCounters, brakeWarOutcome, sortCrisisQueue, tradeTrustBonusPerTura,
+  parseCrisisCounters, sortCrisisQueue, tradeTrustBonusPerTura,
 } from './game/diplomacy-tick-war-brake';
 import {
   resolveAutoBattleByPower,
@@ -1162,7 +1163,8 @@ import {
   type SidePanelEventLink,
 } from './game/side-panel-event-link';
 import { isProductionBuildingEnabled, operationalBuiltIds, operationalBuiltByCity, setProductionBuildingEnabled, isToggleableProductionBuilding, buildEmpireProducersSnap } from './game/building-toggle';
-import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, addResourceCosts, readBuildingResourceUpkeepRatio, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
+import { decideEndTurnGate, projectEmpireFoodAfterTick, NNS_WOLNE_TURY, type NnsEndTurnLevers, type NnsGateResult, type NnsProjection } from './game/no-negative-stocks';
+import { unitUpkeep, unitFoodPerTurn, loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, addResourceCosts, readBuildingResourceUpkeepRatio, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex, computeLostToNearerSiblingByCity } from './game/okolica';
 import { getCityResourceAccessForCity, getResourceAccessForCity } from './game/resource-access';
@@ -1314,6 +1316,7 @@ import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
 import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
 import { isTechDiscoveryNoticeOpen, showTechDiscoveryNotice } from './ui/techDiscoveryNotice';
 import { showCivElimNotice } from './ui/civElimNotice';
+import { buildAiLevers, decideAiOwnerBalance, nnsAiUnitLeverInputs, nnsUnitIdsFromPlan, isNnsAiBalanceEnabled, setNnsAiBalanceEnabled, projectTreasuryAfterTick, NNS_AI_BALANCE_TURN_MIN, type NnsAiUnitInfo, type NnsLever } from './game/no-negative-stocks';
 import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIPurchaseUnit, loadAiPurchaseReserveParams, decideAIEconomySliders, aiSeedPodzialHandlu, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, AI_TRADE_BARTER_COOLDOWN_TURNS, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
 import { aiCityCaptureAllowed, aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory, snapshotAiTargetMemory, type AiTargetMemoryByOwner } from './game/ai-fog';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand, MiastoWycenaWejscie } from './game/ai';
@@ -1613,13 +1616,18 @@ import {
   type DiploPairMeta,
   type ZlozeGrant,
 } from './game/diplomacy-pn-engine';
-import { resolveWarPeaceProfile, brakeRelationThreshold, recordWarCityLoss, warStateFromRecord, evaluatePeaceAiGate, type WarPeaceProfile } from './game/diplomacy-war-peace-profile';
+import {
+  addWarBattlePoints, resetWarBattlePoints, grantTributeBonus, loadMilitaryStrengthParams,
+  computeMilitaryStrength, readWarBattlePoints, isTributeBonusActive, militaryBrakeOutcome, peaceStanceOf,
+} from './game/diplomacy-military-strength';
+import { resolveWarPeaceProfile, brakeRelationThreshold, recordWarCityLoss, warStateFromRecord, evaluatePeaceAiGate, PEACE_STRENGTH_GAP_PROC, type WarPeaceProfile } from './game/diplomacy-war-peace-profile';
 import { buildWarCityTargets } from './game/ai-war-target-select';
 import {
   registerAiPeaceRequest, isAiAiPeaceBalanceAllowed, aiAiPeaceRequiredPn, isForcedPeaceEligiblePair, runAiAiPeaceTick, requesterShare, isClearlyLosing,
   type AiPeaceRequest, type AiPeaceKind, type PeaceAsset,
 } from './game/diplomacy-ai-forced-peace';
-import { runWarWearinessTick, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
+import { runWarWearinessTick, militaryWearinessWiring, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
+import { warWearinessPairView, peakForCurrentWar, warWearinessSideView, type WarWearinessPairView, type WarWearinessReference } from './game/war-weariness-view';
 import {
   isPeaceTreatyLocked,
   startPeaceTreatyLock,
@@ -1628,6 +1636,7 @@ import {
   normalizeTruceDuration,
   TRUCE_DEFAULT_TURNS,
   isTruceWindowBreach,
+  isTruceActive,
   peaceFinalizeTrustEvent,
   truceEndTickPair,
   truceEndToWarCore,
@@ -1995,8 +2004,22 @@ async function boot(): Promise<void> {
       );
     }
 
-    const SEED = Math.floor(Math.random() * 1e9);
+    // R-WEB-DETERMINISM-GAME-RNG-Q1: ziarno gry z ?civSeed (tylko ?civTest=1); bez haka — losowe jak dotad.
+    const SEED = (typeof location !== 'undefined' ? civTestSeedOverride(location.search) : null) ?? Math.floor(Math.random() * 1e9);
     let _gameSeed = SEED;
+    // R-WEB-DETERMINISM-GAME-RNG-Q1: sufiksy ID z ziarna gry (unikalne dzieki licznikowi w przebiegu).
+    let _detIdSeq = 0;
+    const detIdSuffix = (salt: string): string => { _detIdSeq += 1; return gameIdSuffix(_gameSeed, turn, salt, _detIdSeq); };
+    // R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1: rzut upsetu auto-walki z ziarna gry (tura + heks obrony + lider atakujacego).
+    // R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1 (r4, DODATEK r2 pkt 1): licznik walk w turze w soli strumienia —
+    // dwie walki o ten sam heks i tego samego atakujacego w jednej turze nie maja identycznego strumienia.
+    let _autoBattleSeqTurn = -1;
+    let _autoBattleSeq = 0;
+    const autoBattleRng = (defQ: number, defR: number, atkId: string | number): (() => number) => {
+      if (_autoBattleSeqTurn !== turn) { _autoBattleSeqTurn = turn; _autoBattleSeq = 0; }
+      _autoBattleSeq += 1;
+      return gameStreamRng(_gameSeed, turn, 'auto-battle:' + defQ + ':' + defR + ':' + String(atkId) + ':' + _autoBattleSeq);
+    };
     const unitSight = buildUnitSightResolver(data.units, DEFAULT_SIGHT);
     const unitFoodTbl = buildUnitFoodTable(data.units as unknown as Record<string, unknown>[]);
 
@@ -4520,7 +4543,7 @@ async function boot(): Promise<void> {
       const ruch = applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
       const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
       const isSuper = def['Super-jednostka'] === 'TAK';
-      const newUnitId = 'prod_' + turn + '_' + cityId + '_' + Math.random().toString(36).slice(2);
+      const newUnitId = 'prod_' + turn + '_' + cityId + '_' + detIdSuffix('prod_');
       // Sciezki ulepszen jednostek (2026-07-25, unit-building-bonuses.ts): jednostka
       // rodzi sie juz na poziomie budynkow miasta, w ktorym powstala (Pancerz/
       // parametry miekkie); ownerId-agnostyczne -- dziala identycznie dla gracza i AI.
@@ -7361,6 +7384,292 @@ async function boot(): Promise<void> {
       focusCameraOnUnit(next);
     }
 
+    /**
+     * R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1 (C3): rozwiązanie jednostki AI przez równoważenie (uogólnienie
+     * disbandPlayerUnit dla ownerId !== 0; zachowanie gracza bez zmian). Parytet z graczem: zwrot Manpower
+     * i surowców (stockPaid) do puli państwa, BEZ zwrotu złota. Nigdy nie rusza: garnizonu, jednostek w
+     * obleganiu, wodzów, jednostek stojących w mieście własnym (obrona), jednostek w transporcie.
+     * Sprząta stan marszu (plannedMarches / marchAttackTargets) dla usuniętej jednostki.
+     */
+    function disbandAiSupportUnit(unitId: string, ownerId: number): boolean {
+      if (isHuman(ownerId)) return false;
+      const idx = units.findIndex(x => x.id === unitId);
+      if (idx < 0) return false;
+      const u = units[idx]!;
+      if (u.ownerId !== ownerId || nnsUnitIsDefender(u, ownerId)) return false;
+      const ep = empireEpochForOwner(ownerId);
+      const mpMults = civManpowerMultsForOwner(ownerId);
+      refundManpowerToEmpire(cities, ownerId, ep,
+        unitManpowerCostForType(u.typeId, ep, mpMults.maxMult, mpMults.costMult), mpMults.maxMult);
+      disbandStockRefundCredit(cities, ownerId, u,
+        ownerResourceCap(cities, cityBuilt, ownerId, data, _menuDifficulty, ep));
+      const wasGarnizon = u.inGarnizon === true;
+      const cityForGarnizon = cityAtUnit(u);
+      units.splice(idx, 1);
+      if (wasGarnizon && cityForGarnizon) syncGarnizonForCity(cityForGarnizon);
+      clearPlannedMarch(unitId, true);
+      syncUnitsRender();
+      return true;
+    }
+
+    /**
+     * Jednostki chronione przed równoważeniem AI: w KAŻDYM mieście własnym zostaje jeden najlepszy obrońca
+     * (najwyższe utrzymanie jako przybliżenie siły) — „nigdy ostatnie jednostki obronne miasta”. Nadmiarowy
+     * garnizon i armia polowa są do rozwiązania. Zawsze chronieni: wodzowie, oblegający, jednostki w transporcie.
+     */
+    function nnsProtectedDefenderIds(ownerId: number): Set<string> {
+      if (nnsUnitUpkeepTblCache === null) {
+        nnsUnitUpkeepTblCache = buildUnitUpkeepTable(data.units as unknown as Parameters<typeof buildUnitUpkeepTable>[0]);
+      }
+      const std = loadUpkeepParams(data.econParams, _menuDifficulty).jednostkaUtrzymanieStd;
+      const best = new Map<string, { id: string; score: number }>();
+      for (const u of units) {
+        if (u.ownerId !== ownerId || u.isGeneral === true || isCivilianUnit(u)) continue;
+        const c = cityAtUnit(u);
+        if (!c || c.ownerId !== ownerId) continue;
+        const score = unitUpkeep({ typeId: u.typeId } as unknown as Parameters<typeof unitUpkeep>[0], nnsUnitUpkeepTblCache, std);
+        const cur = best.get(c.id);
+        if (!cur || score > cur.score) best.set(c.id, { id: u.id, score });
+      }
+      return new Set([...best.values()].map(b => b.id));
+    }
+
+    /** Jednostka nietykalna dla równoważenia AI (wódz, oblężenie, transport, ostatni obrońca miasta). */
+    function nnsUnitIsDefender(u: RuntimeUnit, ownerId: number, protectedIds?: Set<string>): boolean {
+      if (u.oblegaCityId || u.isGeneral === true || u.embarked === true) return true;
+      return (protectedIds ?? nnsProtectedDefenderIds(ownerId)).has(u.id);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1 (C3): równoważenie AI PRZED tickiem tury.
+    // Kolejność (tańsze najpierw): suwaki (Handel: Nauka -> Pieniądz; racje: zapas -> spichlerz), potem
+    // rozwiązanie najdroższych jednostek (koszt per jednostka) — nigdy garnizonu/oblężenia/wodzów/jednostek
+    // w mieście własnym. Wstrzymanie zakupów jednostek i budowy w tej turze (`aiNnsHoldOwners`) włączane
+    // jest razem z równoważeniem (nie zmienia salda ticku — chroni następną turę przed nowym utrzymaniem).
+    // ---------------------------------------------------------------------------------------------
+    interface NnsAiLogRow {
+      turn: number; oid: number; civ: string;
+      sk0: number; sp0: number; sk1: number; sp1: number;
+      akcje: string[]; hold: boolean; pokryte: boolean; wyjatek: string | null; ms: number; iter: number;
+    }
+    interface NnsPostBankRow { turn: number; oid: number; skarb: number; spichRaw: number | null; glod: boolean }
+    const nnsAiLog: NnsAiLogRow[] = [];
+    const nnsPostBankLog: NnsPostBankRow[] = [];
+    const nnsAiTurnStats: Array<{ turn: number; ms: number; owners: number; negatywne: number }> = [];
+    const nnsAiOverrides = new Map<number, {
+      split?: { saved: CityPodzialHandlu; applied: CityPodzialHandlu };
+      rations?: Map<string, { poziom: number | undefined; procent: number | undefined }>;
+    }>();
+    let nnsUnitUpkeepTblCache: ReturnType<typeof buildUnitUpkeepTable> | null = null;
+
+    function nnsRecordPostBank(oid: number, skarb: number): void {
+      const t = getLastEmpireFoodTick(oid);
+      nnsPostBankLog.push({
+        turn, oid, skarb,
+        spichRaw: t ? t.spichlerzStolicy - t.kosztArmii : null,
+        glod: t ? t.glodWojska : false,
+      });
+      if (nnsPostBankLog.length > 40000) nnsPostBankLog.splice(0, 10000);
+    }
+
+    interface NnsPreCtx {
+      /** MUTOWALNA: rozwiązane jednostki są z niej usuwane, bo realny tick liczy z tej samej tablicy. */
+      econUnits: Array<EconUnit & { inGarnizon?: boolean; garrisonCityId?: string }>;
+      ownerCivMap: Map<number, string>;
+      tradeIncomeByCity: Map<string, number>;
+      maritimeTradeIncomeByCity: Map<string, number>;
+      zlotoAccess: ReturnType<typeof makeOwnerZlotoAccessResolver>;
+      territoryNodes: ReturnType<typeof buildAllTerritoryNodes>;
+      upkeepParams: ReturnType<typeof loadUpkeepParams>;
+      efParams: ReturnType<typeof buildEmpireFoodParams>;
+    }
+
+    /** Przywraca suwaki ustawione przez poprzednie równoważenie (tylko gdy nikt ich w międzyczasie nie zmienił). */
+    function nnsRestoreAiOverrides(oid: number): void {
+      const ov = nnsAiOverrides.get(oid);
+      if (!ov) return;
+      if (ov.split) {
+        const cur = ownerDefaultPodzialHandlu.get(oid);
+        const a = ov.split.applied;
+        if (cur && cur.procentNauka === a.procentNauka && cur.procentPieniadz === a.procentPieniadz && cur.procentLuksus === a.procentLuksus) {
+          ownerDefaultPodzialHandlu.set(oid, ov.split.saved);
+        }
+      }
+      if (ov.rations) {
+        for (const c of cities) {
+          const sv = ov.rations.get(c.id);
+          if (!sv || c.ownerId !== oid) continue;
+          if (c.poziomRacji === 0 && c.procentRozwoj === 0) { c.poziomRacji = sv.poziom; c.procentRozwoj = sv.procent; }
+        }
+      }
+      nnsAiOverrides.delete(oid);
+    }
+
+    function nnsAiPreTickBalance(ctx: NnsPreCtx): void {
+      aiNnsHoldOwners.clear();
+      if (turn < NNS_AI_BALANCE_TURN_MIN) return;
+      const tTurn0 = performance.now();
+      if (nnsUnitUpkeepTblCache === null) {
+        nnsUnitUpkeepTblCache = buildUnitUpkeepTable(data.units as unknown as Parameters<typeof buildUnitUpkeepTable>[0]);
+      }
+      const unitUpkeepTbl = nnsUnitUpkeepTblCache;
+      const ownerIds = new Set<number>();
+      for (const c of cities) if (isAiOwner(humanSeats, c.ownerId) && !isBarbarian(c.ownerId)) ownerIds.add(c.ownerId);
+      const rowsByOwner = new Map<number, Array<{ u: RuntimeUnit; e: (typeof ctx.econUnits)[number] }>>();
+      for (let i = 0; i < units.length; i++) {
+        const u = units[i]!;
+        if (!ownerIds.has(u.ownerId)) continue;
+        const e = ctx.econUnits[i];
+        if (!e || e.typeId !== u.typeId) continue;
+        let arr = rowsByOwner.get(u.ownerId);
+        if (!arr) { arr = []; rowsByOwner.set(u.ownerId, arr); }
+        arr.push({ u, e });
+      }
+      let negatywne = 0;
+      for (const oid of ownerIds) {
+        const t0 = performance.now();
+        nnsRestoreAiOverrides(oid);
+        const ownerCities = cities.filter(c => c.ownerId === oid);
+        if (ownerCities.length === 0) continue;
+        const rows = rowsByOwner.get(oid) ?? [];
+        const removed = new Set<string>();
+        const diff = effectiveGameDifficultyForOwner(oid);
+
+        const project = (opts?: { split?: CityPodzialHandlu; rationsZero?: boolean }) => {
+          const splitMap = opts?.split ? new Map(ownerDefaultPodzialHandlu).set(oid, opts.split) : ownerDefaultPodzialHandlu;
+          const savedR = new Map<string, { poziom: number | undefined; procent: number | undefined }>();
+          if (opts?.rationsZero) {
+            for (const c of ownerCities) { savedR.set(c.id, { poziom: c.poziomRacji, procent: c.procentRozwoj }); c.poziomRacji = 0; c.procentRozwoj = 0; }
+          }
+          try {
+            const preview = previewCityEconomy(
+              ownerCities, map, data, _menuDifficulty, cityBuilt, player.era, player.zbadane, ctx.ownerCivMap,
+              orderMultMap, empireEpochForOwner, unlockedTechSetForOwner, tradeRouteBuildingBonusByCity,
+              ctx.tradeIncomeByCity, ctx.territoryNodes, cityRelig, buildWonderCityYieldsByOwnerMap([oid]),
+              ctx.zlotoAccess, makeOwnerRuntimeActiveLabelsResolver(), makeOwnerEmpireStockResolver(),
+              splitMap, ownerDefaultPodzialPracy, ctx.maritimeTradeIncomeByCity, new Map(),
+            );
+            const eu = rows.filter(r => !removed.has(r.u.id)).map(r => r.e);
+            const upk = previewOwnerUpkeep(
+              oid, ownerCities, data, diff, cityBuilt, eu, empireEpochForOwner(oid),
+              aiResearchDone.get(oid) ?? new Set<string>(), empireEpochForOwner, unlockedTechSetForOwner, stateAdmByOwner,
+            );
+            const sk0 = aiSkarbiecByOwner.get(oid) ?? 0;
+            const skPo = projectTreasuryAfterTick(
+              sk0, { perCity: preview.perCity, upkeepByOwner: new Map([[oid, upk]]) } as unknown as Parameters<typeof projectTreasuryAfterTick>[1], oid,
+            );
+            const st = empireFoodStates.get(oid) ?? freshEmpireFoodState();
+            const f = projectEmpireFoodAfterTick({
+              ownerId: oid, states: new Map([[oid, st]]),
+              econ: preview as unknown as Parameters<typeof projectEmpireFoodAfterTick>[0]['econ'],
+              units: eu, upkeep: ctx.upkeepParams, params: ctx.efParams, foodTable: unitFoodTbl,
+              builtByCity: cityBuilt, resolveOwnerEra: empireEpochForOwner,
+            });
+            return { sk0, skPo, sp0: st.zapasyPanstwa, spPo: f.spichlerzPo };
+          } finally {
+            if (opts?.rationsZero) for (const c of ownerCities) { const sv = savedR.get(c.id)!; c.poziomRacji = sv.poziom; c.procentRozwoj = sv.procent; }
+          }
+        };
+
+        let cur = project();
+        const first = cur;
+        const akcje: string[] = [];
+        let hold = false;
+        let pokryte = true;
+        let wyjatek: string | null = null;
+        let iter = 0;
+        if (cur.skPo < 0 || cur.spPo < 0) {
+          negatywne++;
+          if (!isNnsAiBalanceEnabled()) {
+            pokryte = false; wyjatek = 'równoważenie wyłączone (flaga)';
+          } else {
+            hold = true;
+            aiNnsHoldOwners.add(oid);
+            for (iter = 1; iter <= 4; iter++) {
+              const curSplit = ownerDefaultPodzialHandlu.get(oid) ?? DEFAULT_PODZIAL_HANDLU;
+              let podatekZysk = 0;
+              let altSplit: CityPodzialHandlu | null = null;
+              if (cur.skPo < 0) {
+                const alt = normalizePodzialHandlu({
+                  procentNauka: 0, procentLuksus: curSplit.procentLuksus, procentPieniadz: 100 - curSplit.procentLuksus,
+                });
+                if (alt.procentNauka !== curSplit.procentNauka || alt.procentPieniadz !== curSplit.procentPieniadz) {
+                  altSplit = alt;
+                  podatekZysk = project({ split: alt }).skPo - cur.skPo;
+                }
+              }
+              let rationZysk = 0;
+              const rationsApplied = nnsAiOverrides.get(oid)?.rations !== undefined;
+              if (cur.spPo < 0 && !rationsApplied && ownerCities.some(c => c.poziomRacji !== 0 || c.procentRozwoj !== 0)) {
+                rationZysk = project({ rationsZero: true }).spPo - cur.spPo;
+              }
+              const protectedNow = nnsProtectedDefenderIds(oid);
+              const infos: NnsAiUnitInfo[] = rows.filter(r => !removed.has(r.u.id)).map(r => ({
+                id: r.u.id,
+                zloto: unitUpkeep(r.e as unknown as Parameters<typeof unitUpkeep>[0], unitUpkeepTbl, ctx.upkeepParams.jednostkaUtrzymanieStd),
+                zywnosc: unitFoodPerTurn(r.e, ctx.upkeepParams, unitFoodTbl),
+                obronna: nnsUnitIsDefender(r.u, oid, protectedNow),
+              }));
+              const levers: NnsLever[] = buildAiLevers({
+                podatekSkarbiec: podatekZysk,
+                suwakZywnosc: rationZysk,
+                ...nnsAiUnitLeverInputs(infos),
+              });
+              const dec = decideAiOwnerBalance(turn, cur.skPo, cur.spPo, levers);
+              if (!dec.aktywne || dec.plan.akcje.length === 0) break;
+              for (const a of dec.plan.akcje) {
+                if (a.leverId === 'podatek-skarbiec' && altSplit) {
+                  const ov = nnsAiOverrides.get(oid) ?? {};
+                  if (!ov.split) ov.split = { saved: curSplit, applied: altSplit };
+                  nnsAiOverrides.set(oid, ov);
+                  ownerDefaultPodzialHandlu.set(oid, altSplit);
+                  akcje.push('podatek');
+                } else if (a.leverId === 'suwak-zywnosc') {
+                  const ov = nnsAiOverrides.get(oid) ?? {};
+                  if (!ov.rations) {
+                    ov.rations = new Map();
+                    for (const c of ownerCities) { ov.rations.set(c.id, { poziom: c.poziomRacji, procent: c.procentRozwoj }); c.poziomRacji = 0; c.procentRozwoj = 0; }
+                  }
+                  nnsAiOverrides.set(oid, ov);
+                  akcje.push('racje');
+                }
+              }
+              for (const uid of nnsUnitIdsFromPlan(dec.plan)) {
+                if (disbandAiSupportUnit(uid, oid)) {
+                  removed.add(uid); akcje.push('rozwiaz:' + uid);
+                  // realny tick liczy utrzymanie/żywność z tej samej tablicy econUnits — usuń wpis rozwiązanej jednostki
+                  const row = rows.find(r => r.u.id === uid);
+                  const ei = row ? ctx.econUnits.indexOf(row.e) : -1;
+                  if (ei >= 0) ctx.econUnits.splice(ei, 1);
+                }
+              }
+              cur = project();
+              if (cur.skPo >= 0 && cur.spPo >= 0) break;
+            }
+            pokryte = cur.skPo >= 0 && cur.spPo >= 0;
+            if (!pokryte) {
+              wyjatek = 'brak dostępnych dźwigni: pozostało skarbiec=' + Math.round(cur.skPo) + ' spichlerz=' + Math.round(cur.spPo)
+                + ' (obecny skarbiec=' + Math.round(first.sk0) + ' spichlerz=' + Math.round(first.sp0)
+                + (first.sk0 < 0 ? '; dług powstały w turach wolnych 1-10 lub poza ticku' : '')
+                + '; po jednym obrońcy na miasto, wodzowie i oblegający nietykalni, podatek 100% i racje 0 wyczerpane)';
+            }
+          }
+        }
+        const ms = performance.now() - t0;
+        nnsAiLog.push({
+          turn, oid, civ: ctx.ownerCivMap.get(oid) ?? '?',
+          sk0: Math.round(first.skPo), sp0: Math.round(first.spPo), sk1: Math.round(cur.skPo), sp1: Math.round(cur.spPo),
+          akcje, hold, pokryte, wyjatek, ms: Math.round(ms * 10) / 10, iter,
+        });
+        if (hold) {
+          console.warn(`[NNS-AI ${oid}] tura ${turn}: po ticku skarbiec=${Math.round(first.skPo)} spichlerz=${Math.round(first.spPo)} -> ${Math.round(cur.skPo)}/${Math.round(cur.spPo)}; akcje=${akcje.join(',') || 'brak'}${wyjatek ? '; WYJĄTEK: ' + wyjatek : ''}`);
+        }
+      }
+      nnsAiTurnStats.push({ turn, ms: Math.round((performance.now() - tTurn0) * 10) / 10, owners: ownerIds.size, negatywne });
+      if (nnsAiLog.length > 40000) nnsAiLog.splice(0, 10000);
+      if (nnsAiTurnStats.length > 2000) nnsAiTurnStats.splice(0, 500);
+    }
+
     /** Rozwiązanie jednostki gracza — usuwa z mapy, zwraca Manpower do puli imperium. */
     function disbandPlayerUnit(unitId: string): boolean {
       const idx = units.findIndex(x => x.id === unitId);
@@ -8486,8 +8795,13 @@ async function boot(): Promise<void> {
         isPlayer: id === 0,
       });
       const naps = dealPartnerIdsForOwner(activeDeals, otherOwnerId, 'nap').map(toPartner);
+      // R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1: wojny AI↔AI — jedna wartość dla rozmówcy (strona otherOwnerId).
+      const wars = base.wars.map(w => (w.ownerId === 0 ? w : {
+        ...w,
+        warWeariness: warWearinessSideView(diploWarWearinessPairView(otherOwnerId, w.ownerId, 'tick'), String(otherOwnerId)).own,
+      }));
       return {
-        wars: base.wars,
+        wars,
         alliances: base.alliances,
         naps,
         deals: base.deals,
@@ -10003,6 +10317,8 @@ async function boot(): Promise<void> {
     const diplomacyPairMeta = new Map<string, DiploPairMeta>();
     /** R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2 (P6): licznik kryzysu Zaufania per para (klucz diploPairKey). Save/load. */
     const diplomacyCrisisCounters = new Map<string, number>();
+    /** R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 (obrona r1): pary, którym pokazano ostrzeżenie w BIEŻĄCYM epizodzie zera. Czyszczone, gdy wpis licznika znika. */
+    const diploZeroTrustWarned = new Set<string>();
     /** R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2 (P7): kolejne tury dostaw wymiany, klucz `${sprzedawca}>${kupujacy}`. Save/load. */
     const diplomacyTradeStreak = new Map<string, number>();
     /** R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r3 (P4): pary gracz↔AI, dla ktorych +1 dobrej woli jest aktywne W TEJ TURZE (ustawiane przy odliczeniu na poczatku tury; nie zapisywane). */
@@ -10407,6 +10723,8 @@ async function boot(): Promise<void> {
     let rejectedOfferCooldowns: RejectedOfferCooldown[] = [];
     /** v1.1: skarbiec AI do ticka trybutu (T1A). */
     const aiSkarbiecByOwner = new Map<number, number>();
+    // C2/C3 (R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1): AI wstrzymane w tej turze (wypełniane w nnsAiPreTickBalance).
+    const aiNnsHoldOwners = new Set<number>();
     /** R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1: przychód BRUTTO złota AI z ostatniego ticku
      *  (aiEcon.pieniadz z bloku bankowania AI) -- baza prognozy dochodu netto w
      *  aiPurchaseReserveInputs. Brak wpisu (tura 1, po wczytaniu zapisu) = reguła rezerwy
@@ -11352,7 +11670,7 @@ async function boot(): Promise<void> {
       const ruch = applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
       const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
       const isSuper = def['Super-jednostka'] === 'TAK';
-      const newUnitId = 'diffbonus_' + turn + '_' + ownerId + '_' + Math.random().toString(36).slice(2);
+      const newUnitId = 'diffbonus_' + turn + '_' + ownerId + '_' + detIdSuffix('diffbonus_');
       units.push({
         id: newUnitId,
         ownerId,
@@ -11550,10 +11868,15 @@ async function boot(): Promise<void> {
       // forced wars, and truce expiry on the exact turn, and preserves the start through save/load.
       if (rel.status === 'wojna' && prevStatus !== 'wojna') {
         const meta = getDiploPairMeta(a, b) as DiploPairMeta & { wojnaStartTura?: number };
-        if (meta.wojnaStartTura === undefined) setDiploPairMeta(a, b, { ...meta, wojnaStartTura: turn } as DiploPairMeta);
+        // R-WEB-DIPLO-WAR-BATTLE-COUNTER-Q1: nowa wojna = licznik punktów bitew od zera.
+        const base = resetWarBattlePoints(meta);
+        if (meta.wojnaStartTura === undefined) setDiploPairMeta(a, b, { ...base, wojnaStartTura: turn } as DiploPairMeta);
+        else setDiploPairMeta(a, b, base as DiploPairMeta);
       } else if (prevStatus === 'wojna' && rel.status !== 'wojna') {
         const meta = getDiploPairMeta(a, b) as DiploPairMeta & { wojnaStartTura?: number };
         if (meta.wojnaStartTura !== undefined) setDiploPairMeta(a, b, { ...meta, wojnaStartTura: undefined } as DiploPairMeta);
+        // R-WEB-DIPLO-WAR-BATTLE-COUNTER-Q1: koniec wojny — licznik nieczytelny (zerowany).
+        if (meta.wojnaBitwyPkt !== undefined) setDiploPairMeta(a, b, resetWarBattlePoints(getDiploPairMeta(a, b)) as DiploPairMeta);
       }
       refreshCityMapOutlines();
       // R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1: wewnętrzna obwódka granicy koduje relację
@@ -11629,6 +11952,18 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1: odczyt stanu wojny BEZ zapisu do gry (ścieżka renderu panelu).
+     * Te same wartości co diploWarStateFor: wojna bez stempla → początek = bieżąca tura (to samo, co zwróciłby
+     * diploEnsureWarStart, ale bez zapisu); pokój → zera. Stempla nie zdejmuje — robi to ścieżka tury.
+     */
+    function diploWarStateForRead(a: number, b: number): { turnsAtWar: number; lostCities: number; turnsSinceCityChange: number } {
+      if (getDiploRelation(a, b).status !== 'wojna') return { turnsAtWar: 0, lostCities: 0, turnsSinceCityChange: 0 };
+      const meta = diplomacyPairMeta.get(diploPairKey(a, b)) as (DiploPairMeta & WarPairMetaR1) | undefined;
+      const od = meta?.wojnaStartTura ?? turn;
+      return warStateFromRecord(meta?.wojnaMiasta, od, String(a), turn);
+    }
+
+    /**
      * R-WEB-PEACE-RULES-Q1 R1: tura początku BIEŻĄCEJ wojny pary. Stempel `wojnaStartTura` ustawiany
      * przy pierwszym zaobserwowaniu wojny (niezależnie od ścieżki wypowiedzenia — część ścieżek
      * nie ustawia wojnaOdTury) i zdejmowany przy pokoju w diploWarStateFor. ZAŁOŻENIE: ≤ 1 tura
@@ -11639,6 +11974,94 @@ async function boot(): Promise<void> {
       if (meta.wojnaStartTura !== undefined) return meta.wojnaStartTura;
       setDiploPairMeta(a, b, { ...meta, wojnaStartTura: turn } as DiploPairMeta);
       return turn;
+    }
+
+    /**
+     * R-WEB-DIPLO-WAR-BATTLE-COUNTER-Q1: punkty wygranej bitwy (ta sama wartość co składnik
+     * „Wygrane bitwy" w Power) dopisywane do licznika pary TYLKO gdy para jest w wojnie.
+     * Dotyczy każdego właściciela (gracz, AI↔AI). Power ani Respekt nie są zmieniane.
+     */
+    function diploRecordWarBattlePoints(winnerId: number, loserId: number, pts: number): void {
+      if (winnerId === loserId) return;
+      if (getDiploRelation(winnerId, loserId).status !== 'wojna') return;
+      const lowId = Math.min(winnerId, loserId);
+      const highId = Math.max(winnerId, loserId);
+      const meta = getDiploPairMeta(lowId, highId);
+      setDiploPairMeta(lowId, highId, addWarBattlePoints(meta, lowId, highId, winnerId, pts, true) as DiploPairMeta);
+    }
+
+    /**
+     * R-WEB-DIPLO-WAR-BATTLE-COUNTER-Q1: zaakceptowany trybut → czasowy bonus siły (+trybutBonusProc
+     * przez trybutBonusTur tur) dla pobierającego. Nie zmienia Power ani Respektu.
+     */
+    function diploGrantTributeBonusFor(receiverId: number, payerId: number): void {
+      const meta = getDiploPairMeta(receiverId, payerId);
+      setDiploPairMeta(receiverId, payerId, grantTributeBonus(meta, receiverId, turn, loadMilitaryStrengthParams()) as DiploPairMeta);
+    }
+
+    /**
+     * R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 (krok 2 → 3): siła militarna właściciela w parze, OSOBNO
+     * od Power. Armia i rekruci = składniki Power (`armia`, `rekruci`), wygrane bitwy = licznik
+     * BIEŻĄCEJ wojny pary (poza wojną 0), bonus trybutu aktywny w tej turze. Gospodarka nie wchodzi.
+     * / EN: military strength of owner in the pair (army + recruits from Power, war battle points, tribute bonus).
+     */
+    function diploMilitarySideOf(ownerId: number, otherId: number, readOnly = false): { sila: number; armiaPkt: number } {
+      const res = objectivePowerByOwner.get(ownerId) ?? buildObjectivePowerForOwner(ownerId);
+      const armiaPkt = res.components.find(c => c.key === 'armia')?.points ?? 0;
+      const rekrutPkt = res.components.find(c => c.key === 'rekruci')?.points ?? 0;
+      const lo = Math.min(ownerId, otherId);
+      const hi = Math.max(ownerId, otherId);
+      // readOnly (ścieżka renderu panelu): bez zapisu domyślnego wpisu do diplomacyPairMeta.
+      const meta = readOnly
+        ? (diplomacyPairMeta.get(diploPairKey(ownerId, otherId)) ?? freshDiploPairMeta())
+        : getDiploPairMeta(ownerId, otherId);
+      const inWar = getDiploRelation(ownerId, otherId).status === 'wojna';
+      const sila = computeMilitaryStrength({
+        armiaPkt,
+        rekrutPkt,
+        punktyWygranychBitewWojna: readWarBattlePoints(meta, ownerId, lo, hi, inWar),
+        trybutBonusAktywny: isTributeBonusActive(meta, ownerId, turn),
+      });
+      return { sila, armiaPkt };
+    }
+
+    /**
+     * R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1: widok zmęczenia/desperacji pary (a, b) dla panelu dyplomacji.
+     * Wejścia IDENTYCZNE z tickiem AI↔AI (tickAiAiWarWeariness: warInfo + diploMilitarySideOf); szczyt pary z
+     * warWearinessByPairKey tylko gdy stan dotyczy BIEŻĄCEJ wojny (warStart jak w tiku); brak stanu → bieżący poziom.
+     */
+    function diploWarWearinessPairView(a: number, b: number, reference: WarWearinessReference): WarWearinessPairView {
+      const wa = diploWarStateForRead(a, b);
+      const wb = diploWarStateForRead(b, a);
+      const sa = diploMilitarySideOf(a, b, true);
+      const sb = diploMilitarySideOf(b, a, true);
+      // Szczyt tylko w trybie 'tick' (AI↔AI); ai.ts (gracz↔AI) liczy z bieżącego poziomu.
+      const peak = reference === 'tick'
+        ? peakForCurrentWar(warWearinessByPairKey.get(diploPairKey(a, b)), turn - wa.turnsAtWar)
+        : undefined;
+      return warWearinessPairView({
+        turnsAtWar: wa.turnsAtWar,
+        turnsSinceCityChange: wa.turnsSinceCityChange,
+        a: { id: String(a), sila: sa.sila, armiaPkt: sa.armiaPkt, lostCities: wa.lostCities },
+        b: { id: String(b), sila: sb.sila, armiaPkt: sb.armiaPkt, lostCities: wb.lostCities },
+        peak,
+        reference,
+      });
+    }
+
+    /**
+     * R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 (krok 3): hamulec zerowego Zaufania — strona silniejsza
+     * wg siły militarnej wypowiada; gdy to gracz, mayDeclare = false (D7, bez automatycznej wojny).
+     */
+    function diploMilitaryBrakeOutcome(a: number, b: number): { declarer: number; victim: number; mayDeclare: boolean } {
+      const sa = diploMilitarySideOf(a, b);
+      const sb = diploMilitarySideOf(b, a);
+      const out = militaryBrakeOutcome(
+        { id: String(a), sila: sa.sila, armiaPkt: sa.armiaPkt },
+        { id: String(b), sila: sb.sila, armiaPkt: sb.armiaPkt },
+        (id) => isMe(Number(id)),
+      );
+      return { declarer: Number(out.declarer), victim: Number(out.victim), mayDeclare: out.mayDeclare };
     }
 
     /**
@@ -11674,11 +12097,20 @@ async function boot(): Promise<void> {
     ): ProposalEvalContext['warState'] {
       if (getDiploRelation(proposerId, responderId).status !== 'wojna') return undefined;
       const s = diploWarStateFor(responderId, proposerId);
+      // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: pozycja respondenta = siła militarna (nie rw).
+      const resp = diploMilitarySideOf(responderId, proposerId);
+      const prop = diploMilitarySideOf(proposerId, responderId);
+      const responderPozycjaMilitarna = peaceStanceOf(
+        { id: responderId, sila: resp.sila, armiaPkt: resp.armiaPkt },
+        { id: proposerId, sila: prop.sila, armiaPkt: prop.armiaPkt },
+        PEACE_STRENGTH_GAP_PROC,
+      );
       return {
         turnsAtWar: s.turnsAtWar,
         lostCitiesResponder: s.lostCities,
         turnsSinceCityChange: s.turnsSinceCityChange,
         responderRw,
+        responderPozycjaMilitarna,
       };
     }
 
@@ -11722,14 +12154,15 @@ async function boot(): Promise<void> {
 
     /**
      * P6: jeden krok histerezy kryzysu dla pary; licznik 0 = wpis usunięty.
-     * R-WEB-PEACE-RULES-Q1 R7 (D2): licznik liczy ŁĄCZNĄ Relację (relationScore), nie samo Zaufanie.
+     * R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 (krok 3): licznik liczy kolejne tury, w których ZAUFANIE
+     * pary = 0 (p6.kryzysProgZaufania), a nie łączną Relację. Para w wojnie nie liczy (crisisStepForPair).
      */
     function diploBrakeCrisisStep(a: number, b: number): ReturnType<typeof crisisStepForPair> {
       const key = diploPairKey(a, b);
       const atWar = getDiploRelation(a, b).status === 'wojna';
-      const relacja = relationScore(getDiploRelation(a, b));
+      const zaufanie = getDiploRelation(a, b).zaufanie;
       const w = diploBrakeWarParams(a, b);
-      const step = crisisStepForPair(diplomacyCrisisCounters.get(key) ?? 0, relacja, atWar, { ...diploTickP6, kryzysProgZaufania: w.prog, kryzysTurDoWojny: w.n });
+      const step = crisisStepForPair(diplomacyCrisisCounters.get(key) ?? 0, zaufanie, atWar, { ...diploTickP6, kryzysTurDoWojny: w.n });
       if (step.counter > 0) diplomacyCrisisCounters.set(key, step.counter);
       else diplomacyCrisisCounters.delete(key);
       return step;
@@ -11798,6 +12231,10 @@ async function boot(): Promise<void> {
      */
     function processDiploCrisisQueue(): void {
       const ready: Array<{ ownerA: number; ownerB: number; counter: number }> = [];
+      // Koniec epizodu zera = wpis licznika usunięty (Zaufanie > 0 albo wojna): kasuj flagę ostrzeżenia.
+      for (const k of Array.from(diploZeroTrustWarned)) {
+        if (!diplomacyCrisisCounters.has(k)) diploZeroTrustWarned.delete(k);
+      }
       if (diplomacyCrisisCounters.size > 0) refreshObjectivePowerCache();
       for (const [key, counter] of Array.from(diplomacyCrisisCounters.entries())) {
         const parts = key.split('_').map(Number);
@@ -11809,19 +12246,20 @@ async function boot(): Promise<void> {
         }
         // R-WEB-PEACE-RULES-Q1 R7: N per para (wyższy progWojnyRelacji), ostrzeżenie 2 tury przed.
         const nPair = diploBrakeWarParams(sa, sb).n;
-        const warnAtPair = nPair - diploTickP6.kryzysOstrzezenieTurPrzed;
         // D7 (właściciel 2026-10-30): gdy silniejsza strona pary to GRACZ, wojna z hamulca nie
         // wybucha — ostrzeżenie o automatycznej wojnie z jego strony też nie jest pokazywane.
-        const warOutcome = brakeWarOutcome(
-          { ownerId: sa, power: objectivePowerForOwner(sa) },
-          { ownerId: sb, power: objectivePowerForOwner(sb) },
-          (o) => isMe(o),
-        );
-        if ((isMe(sa) || isMe(sb)) && counter >= warnAtPair && counter < nPair && warOutcome.mayDeclare) {
+        // R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 (krok 3): siła militarna (nie Power).
+        const warOutcome = diploMilitaryBrakeOutcome(sa, sb);
+        // Ostrzeżenie dla gracza: JEDNO powiadomienie na epizod zerowego Zaufania, w pierwszej turze
+        // epizodu, w której AI jest silniejsza (mayDeclare) i para nie jest zablokowana rozejmem/pokojem.
+        // Gdy AI stanie się silniejsza dopiero później w epizodzie, ostrzeżenie pada wtedy (flaga per epizod).
+        if ((isMe(sa) || isMe(sb)) && counter < nPair && warOutcome.mayDeclare
+          && !isPeaceLockedBetween(sa, sb) && !diploZeroTrustWarned.has(key)) {
+          diploZeroTrustWarned.add(key);
           const other = isMe(sa) ? sb : sa;
           showHintMessage(
-            'Ryzyko wojny z ' + ownerDiploLabel(other) + ': ' + (nPair - counter) + ' tur do wypowiedzenia (łączna Relacja ≤ ' + diploBrakeWarParams(sa, sb).prog + ')',
-            4000,
+            'Zaufanie spadło do zera — grozi wojna z ' + ownerDiploLabel(other) + ' za ' + (nPair - counter) + ' tur',
+            4500,
           );
         }
         if (counter >= nPair) ready.push({ ownerA: sa, ownerB: sb, counter });
@@ -11834,11 +12272,8 @@ async function boot(): Promise<void> {
           continue;
         }
         if (isPeaceLockedBetween(e.ownerA, e.ownerB)) continue;
-        const outcome = brakeWarOutcome(
-          { ownerId: e.ownerA, power: objectivePowerForOwner(e.ownerA) },
-          { ownerId: e.ownerB, power: objectivePowerForOwner(e.ownerB) },
-          (o) => isMe(o),
-        );
+        // R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 (krok 3): silniejsza wg siły militarnej (remis: armia, id).
+        const outcome = diploMilitaryBrakeOutcome(e.ownerA, e.ownerB);
         // D7 (właściciel 2026-10-30): gracz NIGDY nie wypowiada wojny automatycznie z hamulca.
         // Gdy silniejsza strona to gracz, para zostaje w kolejce bez deklaracji (AI↔AI bez zmian).
         if (!outcome.mayDeclare) continue;
@@ -12079,16 +12514,26 @@ async function boot(): Promise<void> {
       const cur = getDiploRelation(proposerId, responderId);
       // (C) peaceFinalizeTrustEvent: rozejm (poprawna długość 5/10/15) → null (0 Zaufania); pokój stały → 'pokoj'.
       const isTruce = peaceFinalizeTrustEvent(truceTurns) === null;
+      // R-WEB-DIPLO-TRUST-NUMBERS-Q1: Zaufanie pary USTAWIANE od razu w chwili zawarcia —
+      // rozejm 10, pokój 20 (zostaje; rozejm → pokój daje 20). Wartości w diplomacy.json.
+      const trustSetpoint = isTruce
+        ? _diplomacyParams().rozejm_zaufanie_ustawienie
+        : _diplomacyParams().pokoj_zaufanie_ustawienie;
       if (isTruce) {
-        // R-WEB-DIPLO-TRUCE-IMPL-Q1 (C): rozejm NIE daje Zaufania (0) — tylko zmiana statusu
-        // na 'pokoj' (rozejm = status 'pokoj' + truceUntilTurn; pokój stały nadal +5).
+        // R-WEB-DIPLO-TRUCE-IMPL-Q1 (C) + R-WEB-DIPLO-TRUST-NUMBERS-Q1: rozejm = status 'pokoj' + truceUntilTurn,
+        // zaufanie ustawione na rozejm_zaufanie_ustawienie.
         setDiploRelation(proposerId, responderId, { ...cur, status: 'pokoj' });
+        setDiploRelation(proposerId, responderId, { ...getDiploRelation(proposerId, responderId), zaufanie: trustSetpoint });
       } else {
-        setDiploRelation(
-          proposerId,
-          responderId,
-          applyDiploEventTracked(proposerId, responderId, cur, 'pokoj'),
-        );
+        // Silnik zdarzenia 'pokoj' (+5 w applyDiplomaticEvent) nie jest tu używany do Zaufania:
+        // Zaufanie = pokoj_zaufanie_ustawienie. Respekt liczony jak w applyDiploEventTracked.
+        const afterPeace = applyDiplomaticEvent(cur, 'pokoj');
+        const dRPeace = afterPeace.respekt - cur.respekt;
+        if (dRPeace !== 0) recordDiploFactor(proposerId, responderId, 'pokoj_respekt', dRPeace);
+        setDiploRelation(proposerId, responderId, { ...afterPeace, zaufanie: trustSetpoint });
+      }
+      if (trustSetpoint !== cur.zaufanie) {
+        recordDiploFactor(proposerId, responderId, isTruce ? 'rozejm' : 'pokoj', trustSetpoint - cur.zaufanie);
       }
       if (isTruce) {
         // R-WEB-TRUCE-Q1 r3 (N1): rozejm NIE zakłada twardej blokady DOW (peaceUntilTurn) ani
@@ -16634,7 +17079,10 @@ async function boot(): Promise<void> {
       // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (audyt): literalny `0` -> `ME()` --
       // to jest ownerId FAKTYCZNIE zakładającego miasto fotela (aktywny w chwili kliku/B).
       const playerCities = cities.filter(c => c.ownerId === ME());
-      const aff = evaluateFoundCityAffordance(playerPracaPool, playerCities, ME());
+      // R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1 (r3): remis wielkosci miast-zrodel losowany ze strumienia ziarna gry (nie Math.random).
+      const aff = evaluateFoundCityAffordance(playerPracaPool, playerCities, ME(), {
+        rand: gameStreamRng(_gameSeed, turn, 'found-source', ME()),
+      });
       if (!aff.ok) {
         showHintMessage(aff.reason ?? 'Nie stać', 3000);
         return false;
@@ -18430,7 +18878,7 @@ async function boot(): Promise<void> {
       const role = String(def['Rola (linia)'] ?? '');
       const movement = applyRuchSwiataPace(normFieldVal(def['Ruch'], 1), player.ruchSwiataPace ?? 'krotki');
       const newUnit: RuntimeUnit = {
-        id: 'siege-engine-' + turn + '-' + city.id + '-' + Math.random().toString(36).slice(2),
+        id: 'siege-engine-' + turn + '-' + city.id + '-' + detIdSuffix('siege-engine-'),
         ownerId: besiegerOwnerId,
         typeId: unitId,
         category: categoryOf(unitId, role, def['Super-jednostka'] === 'TAK', def.Typ),
@@ -20453,7 +20901,9 @@ async function boot(): Promise<void> {
         // givePn/receivePn AI = 0/0 — payload dziś zawsze goły w tym miejscu (żaden branch
         // wyżej nie dotyczy 'zaproponuj_pokoj'); gdyby to się kiedyś zmieniło, resolveProposalPn
         // czytałby realne wartości, ale dziś jest to poza zakresem (payload:{} zawsze).
-        const neededPn = peaceOfferAiRequestPn(
+        // R-WEB-DIPLO-WEARINESS-UNCONDITIONAL-END-Q1: koniec zmęczenia = pokój BEZWARUNKOWY (bez płatności).
+        const unconditionalEnd = workingCmd.bezwarunkowy === true;
+        const neededPn = unconditionalEnd ? 0 : peaceOfferAiRequestPn(
           0, 0, relationTotal(relForPeace), basePnPeace, difficultyForPeace,
         );
         if (neededPn > 0) {
@@ -20464,7 +20914,7 @@ async function boot(): Promise<void> {
         }
         // Zakres: WYŁĄCZNIE rozejm (pokój zostaje bit w bit — ten sam ubytek zmierzony w kontroli
         // pokoju, decyzja o pokoju poza tym tematem; patrz raport R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1).
-        peaceBareAllowed = workingCmd.rodzaj === 'rozejm'
+        peaceBareAllowed = (workingCmd.rodzaj === 'rozejm' || unconditionalEnd)
           && neededPn <= 0
           && !converted.payload.giveItems?.length
           && !converted.payload.receiveItems?.length
@@ -22252,6 +22702,14 @@ async function boot(): Promise<void> {
      * is restored to `true` (retry on next trigger instead of permanent freeze) and the
      * error is logged instead of vanishing silently.
      */
+    // R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1: prognoza po turze dla fotela gracza (cache HUD, liczona w
+    // refreshLiveEmpireRatesUnsafe) + łączny zysk dźwigni „rozwiązanie wszystkich jednostek”.
+    let _nnsHumanForecast: NnsProjection | null = null;
+    let _nnsZyskSkarbiec = 0;
+    let _nnsZyskSpichlerz = 0;
+    // R-WEB-ECON-NO-NEGATIVE-STOCKS-END-TURN-GATE-LEVERS-Q1: dźwignie podatku i racji gracza (0 = niedostępne).
+    let _nnsPodatekZysk = 0;
+    let _nnsRacjeZysk = 0;
     function refreshLiveEmpireRates(): void {
       if (!empireEconDirty) return;   // D10: przelicz tylko po zmianie (trigger), nie co odświeżenie
       empireEconDirty = false;
@@ -22273,6 +22731,7 @@ async function boot(): Promise<void> {
       if (playerCities.length === 0) {
         _liveFoodBrutto = 0;
         _livePracaForecast = null;
+        _nnsHumanForecast = null;
         return;
       }
       const ownerCivMap = new Map<number, string>();
@@ -22368,6 +22827,87 @@ async function boot(): Promise<void> {
         readBuildingResourceUpkeepRatio(data.econParams, _menuDifficulty),
       );
       _lastBogactwoRate = playerEcon.pieniadz - bogactwoUpkeepPreview.utrzymanieRazem;
+      // R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1: prognoza po turze (skarbiec = obecny + netto HUD, ta sama
+      // arytmetyka co blok „Bank treasury”; spichlerz = realne advanceEmpireFood na KOPII stanu).
+      try {
+        const nnsFood = projectEmpireFoodAfterTick({
+          ownerId: ME(),
+          states: empireFoodStates,
+          econ: preview as unknown as Parameters<typeof projectEmpireFoodAfterTick>[0]['econ'],
+          units: playerEconUnitsForUpkeep,
+          upkeep: loadUpkeepParams(data.econParams, _menuDifficulty),
+          params: buildEmpireFoodParams(data.econParams, _menuDifficulty),
+          foodTable: unitFoodTbl,
+          builtByCity: cityBuilt,
+          resolveOwnerEra: empireEpochForOwner,
+        });
+        const skarbiecObecnyNns = playerStateByHuman.get(ME())?.skarbiec ?? 0;
+        _nnsHumanForecast = {
+          turn,
+          skarbiecObecny: skarbiecObecnyNns,
+          skarbiecPo: skarbiecObecnyNns + _lastBogactwoRate,
+          spichlerzObecny: empireFoodStates.get(ME())?.zapasyPanstwa ?? 0,
+          spichlerzPo: nnsFood.spichlerzPo,
+        };
+        _nnsZyskSkarbiec = Math.max(0, bogactwoUpkeepPreview.utrzymanieJednostki);
+        _nnsZyskSpichlerz = Math.max(0, nnsFood.kosztArmii);
+      } catch (errNns) {
+        // Brak prognozy = brak blokady (bezpieczny kierunek: nigdy nie zakleszcza tury).
+        _nnsHumanForecast = null;
+        console.error('[NNS] prognoza po turze nie powiodła się — brak blokady „Zakończ turę”:', errNns);
+      }
+      // R-WEB-ECON-NO-NEGATIVE-STOCKS-END-TURN-GATE-LEVERS-Q1: dźwignie podatku (podział na podatek) i racji
+      // (racje 0) dla fotela gracza — ta sama projekcja co AI (nnsAiPreTickBalance): realne previewCityEconomy
+      // z przełożonym podziałem / racjami, bez trwałej zmiany stanu (podział i racje przywracane w finally).
+      _nnsPodatekZysk = 0;
+      _nnsRacjeZysk = 0;
+      if (_nnsHumanForecast !== null && turn > NNS_WOLNE_TURY
+        && (_nnsHumanForecast.skarbiecPo < 0 || _nnsHumanForecast.spichlerzPo < 0)) {
+        try {
+          const previewWithSplit = (splitMap: typeof ownerDefaultPodzialHandlu) => previewCityEconomy(
+            playerCities, map, data, _menuDifficulty, cityBuilt, player.era, player.zbadane, ownerCivMap,
+            orderMultMap, empireEpochForOwner, unlockedTechSetForOwner, tradeRouteBuildingBonusByCity,
+            routeIncomePreview.totalByCity, buildAllTerritoryNodes(), undefined,
+            buildWonderCityYieldsByOwnerMap([0]), makeOwnerZlotoAccessResolver(),
+            makeOwnerRuntimeActiveLabelsResolver(), makeOwnerEmpireStockResolver(),
+            splitMap, ownerDefaultPodzialPracy, maritimeTradeIncomeByCityPreview, manualWorkTaxPreviewByCity,
+          );
+          const meSplit = ownerDefaultPodzialHandlu.get(ME()) ?? DEFAULT_PODZIAL_HANDLU;
+          const altSplit = normalizePodzialHandlu({
+            procentNauka: 0, procentLuksus: meSplit.procentLuksus, procentPieniadz: 100 - meSplit.procentLuksus,
+          });
+          if (altSplit.procentNauka !== meSplit.procentNauka || altSplit.procentPieniadz !== meSplit.procentPieniadz) {
+            const pAlt = previewWithSplit(new Map(ownerDefaultPodzialHandlu).set(ME(), altSplit));
+            _nnsPodatekZysk = Math.max(0, sumEconomyForPlayerCities(pAlt, cities).pieniadz - playerEcon.pieniadz);
+          }
+          if (_nnsHumanForecast.spichlerzPo < 0 && playerCities.some(c => c.poziomRacji !== 0 || c.procentRozwoj !== 0)) {
+            const savedRacje = playerCities.map(c => ({ c, poziom: c.poziomRacji, procent: c.procentRozwoj }));
+            for (const c of playerCities) { c.poziomRacji = 0; c.procentRozwoj = 0; }
+            try {
+              const pZero = previewWithSplit(ownerDefaultPodzialHandlu);
+              const fZero = projectEmpireFoodAfterTick({
+                ownerId: ME(),
+                states: empireFoodStates,
+                econ: pZero as unknown as Parameters<typeof projectEmpireFoodAfterTick>[0]['econ'],
+                units: playerEconUnitsForUpkeep,
+                upkeep: loadUpkeepParams(data.econParams, _menuDifficulty),
+                params: buildEmpireFoodParams(data.econParams, _menuDifficulty),
+                foodTable: unitFoodTbl,
+                builtByCity: cityBuilt,
+                resolveOwnerEra: empireEpochForOwner,
+              });
+              _nnsRacjeZysk = Math.max(0, fZero.spichlerzPo - _nnsHumanForecast.spichlerzPo);
+            } finally {
+              for (const sv of savedRacje) { sv.c.poziomRacji = sv.poziom; sv.c.procentRozwoj = sv.procent; }
+            }
+          }
+        } catch (errLev) {
+          // Brak dźwigni = bramka liczy tylko jednostki (bezpieczny kierunek: brak zakleszczenia).
+          _nnsPodatekZysk = 0;
+          _nnsRacjeZysk = 0;
+          console.error('[NNS] dźwignie podatku/racji gracza nie powiodły się — bramka bez tych dźwigni:', errLev);
+        }
+      }
       // NAPRAWA HUD-PRACA (ten sam wzorzec, ta sama zgloszenie): "+N" przy Pracy
       // liczylo tylko doPuli (wplyw brutto do puli imperium), pomijajac utrzymanie
       // Pracy za trwałe ulepszenia terenu (computePracaUpkeepByOwner, civ-wide/ture),
@@ -23163,14 +23703,18 @@ async function boot(): Promise<void> {
         }),
         dobraWolaAktywna: brakeFlags.dobraWolaAktywna,
         wspolnyWrog: brakeFlags.wspolnyWrog,
-        wspolnaReligia: sameCulture && !!religionA && !!religionB && religionA === religionB,
-        odmiennaReligia: !!religionA && !!religionB && religionA !== religionB,
         karaWspolnaGranica:
           cities.filter(c => c.ownerId === a).length > 2 && cities.filter(c => c.ownerId === b).length > 2
           && ownersShareLandBorderLive(a, b),
-        karaWspolnaGranicaDelta: sharedBorderPenaltyForEpochs(
-          empireEpochForOwner(a), empireEpochForOwner(b), _diplomacyParams(),
-        ),
+        // R-WEB-DIPLO-TRUST-NUMBERS-Q1: kara za sąsiedztwo = 0 w karencji po pokoju lub rozejmie
+        // (żeby ustawione 10/20 nie zostało natychmiast zjedzone). Flaga karaWspolnaGranica zostaje
+        // dla relacji (NAP); wpływ na Zaufanie niesie wyłącznie karaWspolnaGranicaDelta.
+        karaWspolnaGranicaDelta: (isPeaceLockedBetween(a, b)
+          || isTruceActive(getDiploPairMeta(a, b).truceUntilTurn, turn))
+          ? 0
+          : sharedBorderPenaltyForEpochs(
+            empireEpochForOwner(a), empireEpochForOwner(b), _diplomacyParams(),
+          ),
         wiarygodnoscSelf: atWar || !playerInPair
           ? wiarygodnoscAiAi
           : getWiarygodnosc(isHuman(a) ? a : b),
@@ -23207,8 +23751,6 @@ async function boot(): Promise<void> {
             : (isHuman(b) ? diplomaticContactEstablishedSet(b).has(a) : true),
           atWar,
         }),
-        wspolnaReligia: sameCulture && !!religionA && !!religionB && religionA === religionB,
-        odmiennaReligia: !!religionA && !!religionB && religionA !== religionB,
         karaWspolnaGranica: pairTickCtx.karaWspolnaGranica,
         karaWspolnaGranicaZaufaniePerTura: pairTickCtx.karaWspolnaGranicaDelta,
         rywalizacjaTenSamTyp: sameTypCiv && !isPlayerSameCivCityState,
@@ -24999,6 +25541,8 @@ async function boot(): Promise<void> {
       } else if (cywAction === 'trybut_zadanie') {
         const cur = getDiploRelation(proposerId, responderId);
         setDiploRelation(proposerId, responderId, applyDiploEventTracked(proposerId, responderId, cur, 'trybut_zaakceptowany'));
+        // R-WEB-DIPLO-WAR-BATTLE-COUNTER-Q1: pobierający (żądający) dostaje bonus siły trybutu.
+        diploGrantTributeBonusFor(proposerId, responderId);
       }
     }
 
@@ -25732,6 +26276,10 @@ async function boot(): Promise<void> {
             actions: audienceActionsList,
             pendingNegotiations: buildPendingNegotiationRows(ownerId, audienceActionsList),
             otherRelations: buildAudienceOtherRelations(ownerId),
+            // R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1: wojna gracz↔rozmówca — zmęczenie/desperacja obu stron.
+            warWeariness: getDiploRelation(ME(), ownerId).status === 'wojna'
+              ? (() => { const s = warWearinessSideView(diploWarWearinessPairView(ME(), ownerId, 'ai'), String(ME())); return { player: s.own, other: s.rival }; })()
+              : undefined,
             relationBreakdown: getRelationBreakdown(ME(), ownerId),
             playerSkarbiec: Math.floor(player.skarbiec),
             playerZlotoPerTura: Math.floor(_lastPieniadzRate),
@@ -26935,6 +27483,7 @@ async function boot(): Promise<void> {
         getYearLabel: () => Math.max(0, 4000 - (turn - 1) * 50) + ' p.n.e.',
         onExecutePending: () => executeFirstBlockingEvent(),
         canEndTurn: () => canPlayerInitiateEndTurn(),
+        getEndTurnTooltip: () => nnsEndTurnTooltipText(),
         hideEndTurn: () => playtestWalkaActive,
         getBlockingCount: () => countBlockingEvents(),
         onEndTurn: () => advanceSeat(),
@@ -29914,6 +30463,37 @@ async function boot(): Promise<void> {
           return ownerResourceStock(ownerId, key);
         },
         stock: (ownerId: number, key: string): number => ownerResourceStock(ownerId, key),
+        /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: ustawia Relacje (zaufanie+respekt=total, 0–200) pary ai↔gracz; zwraca total po zapisie. */
+        setRelationTotal: (ai: number, total: number): number => {
+          const t = Math.max(0, Math.min(200, Math.round(total)));
+          const rel = getDiploRelation(ai, ME());
+          const zaufanie = Math.floor(t / 2);
+          setDiploRelation(ai, ME(), { ...rel, zaufanie, respekt: t - zaufanie });
+          return relationTotal(getDiploRelation(ai, ME()));
+        },
+        /** R4/Z1: przypina Relacje (total) pary ai<->gracz — wymuszana w kazdym ticku PRZED decyzjami AI; null = zdejmij pin. */
+        setRelationPin: (ai: number, total: number | null): number | null => {
+          civTestRuntime.relPin = total == null ? null : { ai, total: Math.max(0, Math.min(200, Math.round(total))) };
+          civTestRuntime.relAtDecision = null;
+          return civTestRuntime.relPin ? civTestRuntime.relPin.total : null;
+        },
+        /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r3): tryb przyspieszony (bez renderer.render); tylko za ?civTest=1. */
+        setFastMode: (on: boolean): boolean => { civTestRuntime.skipRender = !!on; return civTestRuntime.skipRender; },
+        isFastMode: (): boolean => civTestRuntime.skipRender,
+        /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r3): stan okien bitwy blokujacych koniec tury. */
+        battleState: () => ({
+          preBattleOpen: isPreBattleOpen(), pendingAuto: hasPendingAutoPreBattle(),
+          sceneOpen: isBattleSceneOpen(), summaryOpen: isPostBattleSummaryOpen(), resolving: battleUiResolving,
+        }),
+        /** Wymusza pokazanie odlozonej bitwy z kolejki (ten sam flush co watchdog), gdy nic jej nie blokuje. */
+        flushBattles: (): boolean => {
+          if (isBattleSceneOpen() || isPostBattleSummaryOpen() || isPreBattleOpen()) return false;
+          if (!hasPendingAutoPreBattle()) return false;
+          flushDeferredPreBattleSafely('civTest');
+          return true;
+        },
+        /** Zamyka podsumowanie po bitwie (gdy otwarte). */
+        closeBattleSummary: (): boolean => { if (!isPostBattleSummaryOpen()) return false; hidePostBattleSummary(); return true; },
         /** Odczyt selekcji barteru AI (ta sama funkcja co wiring) — do rozroznienia selekcja vs wiring. */
         probeBarter: (ai: number) => {
           const b = pickAiPlayerCyclicBarter(ai);
@@ -29968,6 +30548,32 @@ async function boot(): Promise<void> {
             payload: JSON.parse(JSON.stringify(n.payload)), createdTurn: (n as any).createdTurn ?? null,
           })),
           tableLen: negotiationTable.length,
+          /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r3): liczba miast gracza (pomiar nie ma sensu po ich utracie). */
+          relAtDecision: civTestRuntime.relAtDecision,
+          playerCities: cities.filter(c => c.ownerId === ME()).length,
+          /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: Relacja total pary AI(start)↔gracz — do pomiaru dryfu co turę. */
+          relTotalAi: aiStartHexes[0]?.ownerId != null ? relationTotal(getDiploRelation(aiStartHexes[0].ownerId, ME())) : null,
+          /** R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1: skrot stanu do porownania przebiegow — liczba jednostek, skarbiec
+           *  i zasoby magazynow miast, per wlasciciel (gracz + wlasciciele startowi AI). Tylko odczyt. */
+          digest: (() => {
+            const owners = [...new Set<number>([ME(), ...aiStartHexes.map(h => h.ownerId)])].sort((a, b) => a - b);
+            const unitsByOwner = Object.fromEntries(owners.map(o => [o, units.filter(u => u.ownerId === o).length]));
+            const treasuryByOwner = Object.fromEntries(owners.map(o => [o, Math.round(ownerTreasury(o) * 100) / 100]));
+            const stockByOwner = Object.fromEntries(owners.map(o => {
+              const tot: Record<string, number> = {};
+              for (const c of cities) {
+                if (c.ownerId !== o || !c.surowce) continue;
+                for (const [k, v] of Object.entries(c.surowce)) tot[k] = (tot[k] ?? 0) + (Number(v) || 0);
+              }
+              return [o, Object.fromEntries(Object.entries(tot).sort(([a], [b]) => a.localeCompare(b)))];
+            }));
+            return { units: unitsByOwner, treasury: treasuryByOwner, stock: stockByOwner };
+          })(),
+          /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: WSZYSTKIE wpisy stolu z typem (cykliczne i jednorazowe). */
+          entries: negotiationTable.map(n => ({
+            id: n.id, actionId: n.actionId, cyclic: !!n.aiCyclicBarter,
+            proposer: n.proposerOwnerId, responder: n.responderOwnerId,
+          })),
           cyclicDeals: activeDeals.filter(d => (d.handelSurowiecCykliczny?.length ?? 0) > 0).map(d => ({
             id: d.id, items: JSON.parse(JSON.stringify(d.handelSurowiecCykliczny)),
           })),
@@ -30170,6 +30776,29 @@ async function boot(): Promise<void> {
       };
     }
 
+    // R-WEB-DETERMINISM-SAVE-LOAD-RESUME-Q1: hak pomiaru live (tylko ?civTest=1; zero wplywu bez parametru).
+    // Zapis/odczyt przez REALNE buildSaveGameSnapshot/restoreGameFromSave; digest = skrot stanu jednostek i miast
+    // + liczniki ID/walk. Uzywa go tools/determinism-save-load-resume-live.cjs.
+    if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
+      (window as any).__detHarness = {
+        snapshotJson: (): string => JSON.stringify(buildSaveGameSnapshot('det-harness')),
+        restoreJson: (s: string): void => { restoreGameFromSave(JSON.parse(s)); },
+        dropMetaKeys: (s: string, keys: string[]): string => { const o = JSON.parse(s); for (const k of keys) delete (o.meta as any)[k]; return JSON.stringify(o); },
+        counters: () => ({ turn, detIdSeq: _detIdSeq, abTurn: _autoBattleSeqTurn, abSeq: _autoBattleSeq, dipSeq: _dipUnitSeq }),
+        /** Pelny zrzut jednostek i miast (do diagnozy roznic). */
+        full: (): string => JSON.stringify({ units, cities }, (_k: string, v: any) => (v instanceof Map ? [...v.entries()] : v instanceof Set ? [...v] : v)),
+        digest: (): string => {
+          const rep = (_k: string, v: any) => (v instanceof Map ? [...v.entries()] : v instanceof Set ? [...v] : v);
+          const fnvOf = (s: string): string => { let x = 2166136261 >>> 0; for (let i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 16777619) >>> 0; } return x.toString(16); };
+          let full = '';
+          try { full = JSON.stringify({ units, cities }, rep); } catch (e) { full = 'ERR:' + String(e); }
+          // noPP: bez pola podzialPracy miasta (restore uzupelnia je domyslna wartoscia, zywy stan bywa bez pola).
+          let noPP = '';
+          try { noPP = JSON.stringify({ units, cities }, (k: string, v: any) => (k === 'podzialPracy' ? undefined : v instanceof Map ? [...v.entries()] : v instanceof Set ? [...v] : v)); } catch (e) { noPP = 'ERR'; }
+          return JSON.stringify({ turn, detIdSeq: _detIdSeq, abTurn: _autoBattleSeqTurn, abSeq: _autoBattleSeq, dipSeq: _dipUnitSeq, nUnits: units.length, nCities: cities.length, len: full.length, fnv: fnvOf(full), fnvNoPP: fnvOf(noPP), lenNoPP: noPP.length });
+        },
+      };
+    }
     // R-WEB-SAVELOAD-PRACA-POOL-Q1 — hak testowy WYLACZNIE dla tools/saveload-praca-pool-live-test.cjs.
     // Zero reimplementacji: REALNE buildSaveGameSnapshot -> restoreGameFromSave.
     (window as any).__pracaPoolSaveLoadTestDebug = {
@@ -30684,7 +31313,7 @@ async function boot(): Promise<void> {
       spawnTestUnitForPlayer: (q: number, r: number): string | null => {
         const template = units.find(u => !isCivilianUnit(u));
         if (!template) return null;
-        const id = 'hotseat5_testunit_' + Math.random().toString(36).slice(2);
+        const id = 'hotseat5_testunit_' + detIdSuffix('hotseat5_testunit_');
         units.push({ ...template, id, ownerId: 0, q, r, ruchLeft: template.ruch });
         return id;
       },
@@ -30826,6 +31455,142 @@ async function boot(): Promise<void> {
     // REALNYM `doStartGame` przez `__cityStateStartUnitsTestDebug.startNewGame`, tury
     // idą REALNYM `__eraTestDebug.endTurn()`, a miasto barbarzyńskie powstaje REALNĄ
     // ścieżką przejęcia `__rebelProtectionTestDebug.captureViaBattle`.
+    // R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1 (C3): hak pomiarowy runnera headless
+    // `tools/no-negative-stocks-headless-measure.cjs` (TYLKO ?civTest=1; w produkcji brak powierzchni).
+    // Czysty odczyt stanu + start nowej gry realnym doStartGame + przełącznik flagi równoważenia (mutacja pomiarowa).
+    if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
+      (window as any).__nnsMeasureDebug = {
+        startGame: (o: { seed: number; mapSize?: string; civTypes?: number; cityStates?: number; typSwiata?: string }): void => {
+          const mqTier = mapQualityTierFromQuery('high');
+          const mqBundle = bundledMapQualityPreset(mqTier);
+          const advanced: NewGameAdvancedOptions = {
+            barbariansLevel: 'normalny', battleAlwaysManual: false, victoryMode: 'moc_i_dominacja',
+            buildingCostPace: 'niski', kosztJednostekPace: 'niski', wzrostLudnosciPace: 'wysoki', ruchSwiataPace: 'krotki',
+            landFractionPercent: 30, landFractionCustom: false, cityStateDifficultyOverride: 'normal', cityLimitBase: 10,
+          };
+          void doStartGame({
+            civId: 'rzymianie', civName: 'Rzymianie', epoch: 'Epoka Brązu', epochId: 'braz', difficulty: 'Normalny',
+            mapSize: o.mapSize ?? 'Standardowy', rivals: String(o.cityStates ?? 2), speed: 'Normalna',
+            worldType: 'Kontynenty', typSwiata: o.typSwiata ?? 'kontynenty', seed: o.seed,
+            mapQualityLabel: qualityTierToLabel(mqTier), mapQuality: mqTier,
+            renderQualityLabel: qualityTierToLabel(mqBundle.renderQuality),
+            mapDetailQualityLabel: qualityTierToLabel(mqBundle.mapDetailQuality),
+            renderQuality: mqBundle.renderQuality, mapDetailQuality: mqBundle.mapDetailQuality,
+            civTypesCount: o.civTypes ?? 15, cityStatesCount: clampMiastaPanstwaCount(o.cityStates ?? 2),
+            worldDensity: { ...DEFAULT_WORLD_DENSITY },
+            worldDensityLabels: { resources: 'Normalnie', rivers: 'Normalnie', desert: 'Normalnie', forest: 'Normalnie', relief: 'Normalnie' },
+            advanced, villageRewardsEnabled: true,
+          } as NewGameParams);
+        },
+        /** Flaga równoważenia AI (mutacja pomiarowa: false = pomiar bez równoważenia). */
+        setBalance: (on: boolean): boolean => { setNnsAiBalanceEnabled(on); return isNnsAiBalanceEnabled(); },
+        isBalance: (): boolean => isNnsAiBalanceEnabled(),
+        setFast: (on: boolean): boolean => { civTestRuntime.skipRender = !!on; return civTestRuntime.skipRender; },
+        /** Stan właścicieli AI po turze: skarbiec, spichlerz (po klamrze), liczba miast/jednostek. */
+        snapshot: () => {
+          const ids = new Set<number>();
+          for (const c of cities) if (isAiOwner(humanSeats, c.ownerId) && !isBarbarian(c.ownerId)) ids.add(c.ownerId);
+          return {
+            turn,
+            owners: [...ids].map(oid => ({
+              oid, civ: civKeyForOwnerId(oid), cityState: isCityStateOwner(oid),
+              cities: cities.filter(c => c.ownerId === oid).length,
+              units: units.filter(u => u.ownerId === oid).length,
+              treasury: ownerTreasury(oid), granary: getEmpireFoodReserve(oid),
+            })),
+          };
+        },
+        /** Odbiera i czyści dzienniki równoważenia (przed-tickowy, po-bankowy, czas tury). */
+        drain: () => ({
+          log: nnsAiLog.splice(0, nnsAiLog.length),
+          bank: nnsPostBankLog.splice(0, nnsPostBankLog.length),
+          stats: nnsAiTurnStats.splice(0, nnsAiTurnStats.length),
+        }),
+        /** Wymusza skarbiec ownera AI (scenariusz testu turowego). */
+        forceTreasury: (oid: number, v: number): void => { aiSkarbiecByOwner.set(oid, v); },
+        endTurn: () => { triggerPlayerEndTurn(); },
+        isEndTurnInProgress: () => endTurnInProgress,
+        canEnd: () => canPlayerInitiateEndTurn(),
+        foundFirstCity: (): boolean => {
+          if (!isAwaitingFirstPlayerCity()) return true;
+          return playerStartHex ? tryFoundPlayerCityAt(playerStartHex.q, playerStartHex.r) : false;
+        },
+        awaitingFirstCity: (): boolean => isAwaitingFirstPlayerCity(),
+        /**
+         * Runner: bierny gracz (jedno miasto) bywa podbity przed 150. turą. Przenosi punkt startu gracza na pierwszy
+         * wolny hex, na którym wolno założyć miasto, i zakłada tam miasto (pomiar AI trwa dalej). Tylko ?civTest=1.
+         */
+        refoundPlayerAnywhere: (): { ok: boolean; tried: number; reasons: Record<string, number> } => {
+          if (!isAwaitingFirstPlayerCity()) return { ok: true, tried: 0, reasons: {} };
+          const keys = Object.keys(map.hexes);
+          const reasons: Record<string, number> = {};
+          let tried = 0;
+          for (let i = 0; i < keys.length; i++) {
+            const kp = keys[i]!.split(',');
+            const hq = Number(kp[0]); const hr = Number(kp[1]);
+            if (kp.length !== 2 || !Number.isFinite(hq) || !Number.isFinite(hr)) continue;
+            const h = { q: hq, r: hr };
+            const base = canFoundCity(h.q, h.r, cities, map, {
+              ...foundingTerritoryOpts(ME()), ownerId: ME(), ownerEra: player.era ?? 1,
+              gameConfig: { cityLimitBase: _menuCityLimitBase },
+            });
+            if (!base.ok) { reasons[base.reason] = (reasons[base.reason] ?? 0) + 1; continue; }
+            tried++;
+            playerStartHexByOwner.set(ME(), { q: h.q, r: h.r });
+            if (tryFoundPlayerCityAt(h.q, h.r)) return { ok: true, tried, reasons };
+            if (tried >= 40) break;
+          }
+          return { ok: false, tried, reasons };
+        },
+        /**
+         * Runner: bramka „Zakończ turę” gracza (podtemat B) zatrzymuje turę, gdy prognoza gracza < 0 i istnieje ruch
+         * naprawczy. Pomiar dotyczy AI, a gracz jest bierny — runner rozwiązuje jego jednostki partiami (ruch naprawczy).
+         */
+        disbandPlayerUnits: (n: number): number => {
+          let removed = 0;
+          for (let i = units.length - 1; i >= 0 && removed < n; i--) {
+            if (units[i]!.ownerId !== ME()) continue;
+            units.splice(i, 1); removed++;
+          }
+          markCityStateDirty(); // cache prognozy bramki gracza (dirty-gated) musi przeliczyć się po zmianie jednostek
+          return units.filter(u => u.ownerId === ME()).length;
+        },
+        /** Test hooka: usuwa miasta i jednostki gracza (symulacja podboju biernego gracza). */
+        debugKillPlayer: (forgetOwnership?: boolean): void => {
+          if (forgetOwnership) playerEverOwnedCityByOwner.clear(); // jak po wczytaniu zapisu (zbiór nie jest w zapisie)
+          for (let i = cities.length - 1; i >= 0; i--) if (cities[i]!.ownerId === ME()) cities.splice(i, 1);
+          for (let i = units.length - 1; i >= 0; i--) if (units[i]!.ownerId === ME()) units.splice(i, 1);
+        },
+        playerCities: (): number => cities.filter(c => c.ownerId === ME()).length,
+        worldReady: (): boolean => playerStartHex !== null,
+        quickSave: async (slot: string): Promise<boolean> => (await persistSaveToSlot(slot, 'nns-headless-measure')).ok,
+        loadSlot: async (slot: string): Promise<void> => { await loadGameFromSlot(slot, false); },
+        /** Scenariusz testu turowego: dokłada `n` kopii najdroższej jednostki bojowej ownera AI (na hexie oryginału). */
+        spawnAiUnits: (oid: number, n: number): { added: number; typeId: string | null; upkeepEach: number } => {
+          if (nnsUnitUpkeepTblCache === null) {
+            nnsUnitUpkeepTblCache = buildUnitUpkeepTable(data.units as unknown as Parameters<typeof buildUnitUpkeepTable>[0]);
+          }
+          const std = loadUpkeepParams(data.econParams, _menuDifficulty).jednostkaUtrzymanieStd;
+          let tpl: RuntimeUnit | null = null; let best = -1;
+          for (const u of units) {
+            if (u.ownerId !== oid || u.isGeneral === true || isCivilianUnit(u)) continue;
+            const sc = unitUpkeep({ typeId: u.typeId } as unknown as Parameters<typeof unitUpkeep>[0], nnsUnitUpkeepTblCache, std);
+            if (sc > best) { best = sc; tpl = u; }
+          }
+          if (!tpl) return { added: 0, typeId: null, upkeepEach: 0 };
+          for (let i = 0; i < n; i++) {
+            units.push({ ...tpl, id: 'nns-test-' + oid + '-' + i + '-' + turn, inGarnizon: false } as RuntimeUnit);
+          }
+          return { added: n, typeId: tpl.typeId, upkeepEach: best };
+        },
+        /** Licznik tur deficytu złota (kary gold-deficit) ownera. */
+        goldDeficitTurns: (oid: number): number => goldDeficitStates.get(oid)?.turyDeficytuZlota ?? 0,
+        unitCount: (oid: number): number => units.filter(u => u.ownerId === oid).length,
+        /** Dosypuje złota graczowi (runner nie gra — bramka „Zakończ turę” gracza nie może zatrzymać pomiaru AI). */
+        grantPlayerGold: (n: number): void => { const ps = playerStateByHuman.get(ME()); if (ps) ps.skarbiec += n; },
+      };
+    }
+
     (window as any).__aiBuildingsTestDebug = {
       BARBARIAN_OWNER_ID,
       /**
@@ -31081,6 +31846,13 @@ async function boot(): Promise<void> {
         for (const [k, v] of Object.entries(snap)) if (k !== 'meta') put(k, v);
         for (const [k, v] of Object.entries(meta)) put('meta.' + k, v);
         return { bytes: json.length, hash: fnv(norm(json)), ms, sections, sectionHashes };
+      },
+      /** R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1 (r3, diagnostyka, tylko odczyt): sekcja migawki zapisu jako obiekt (znormalizowane ID grup stosu
+       *  bez zegara) — do bisekcji dryfu per element/pole przez tools/measure-ai-trade-offer-frequency.cjs (MEAS_PHASE=1). */
+      snapshotSectionObj: (name: string): unknown => {
+        const snap = buildSaveGameSnapshot('turn-slowdown-test') as unknown as Record<string, unknown>;
+        const norm = (s: string): string => s.replace(/"sg(-?\d+)_[0-9a-z]+_([0-9a-z]+)"/g, '"sg$1_T_$2"');
+        return JSON.parse(norm(JSON.stringify(snap[name] ?? null)));
       },
       collections: (): Record<string, number> => ({
         _menuCivIdByOwner: _menuCivIdByOwner.size,
@@ -32380,7 +33152,7 @@ async function boot(): Promise<void> {
       let villageEraAdvanced = false;
 
       const grantGold = (label: string): void => {
-        const amount = villageGoldAmount(era);
+        const amount = villageGoldAmount(era, gameStreamRng(_gameSeed, turn, 'village-gold:' + q + ':' + r, ownerId));
         if (isPlayer) {
           player.skarbiec += amount;
         } else {
@@ -32416,7 +33188,7 @@ async function boot(): Promise<void> {
         rewardUnitIsMilitary: isVillageRewardUnitMilitary(era),
       });
 
-      const kind = pickVillageReward(Math.random(), { excludeUnit });
+      const kind = pickVillageReward(gameStreamRng(_gameSeed, turn, 'village-reward:' + q + ':' + r, ownerId)(), { excludeUnit });
 
       if (kind === 'zloto') {
         grantGold('skarb');
@@ -32489,7 +33261,7 @@ async function boot(): Promise<void> {
           const ruch = applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
           const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
           const isSuper = def['Super-jednostka'] === 'TAK';
-          const newUnitId = 'wioska_' + turn + '_' + q + '_' + r + '_' + Math.random().toString(36).slice(2);
+          const newUnitId = 'wioska_' + turn + '_' + q + '_' + r + '_' + detIdSuffix('wioska_');
           units.push({
             id: newUnitId,
             ownerId,
@@ -34070,7 +34842,7 @@ async function boot(): Promise<void> {
           const aLeadDef = unitDefFor(atkLead);
           const mAtk = rosterFieldPowerM(atkRosterRef);
           const mDef = effectiveDefenderM(defRosterRef, dTeren4, dStructBonus4, aLeadDef, defUnit.q, defUnit.r);
-          const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
+          const powerRes = resolveAutoBattleByPower({ mAtk, mDef, rng: autoBattleRng(defUnit.q, defUnit.r, atkLead.id) });
 
           if (powerRes.winner === 'none') {
             showHintMessage('Atak: brak sił bojowych w składzie', 3000);
@@ -34549,7 +35321,7 @@ async function boot(): Promise<void> {
       const aLeadDef = unitDefFor(atkRoster[0]!);
       const mAtk = rosterFieldPowerM(atkRoster);
       const mDef = effectiveDefenderM(defRoster, terrain, structBonusPct, aLeadDef, battleQ, battleR);
-      const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
+      const powerRes = resolveAutoBattleByPower({ mAtk, mDef, rng: autoBattleRng(battleQ, battleR, atkRoster[0]!.id) });
       if (powerRes.winner === 'none') return powerRes;
 
       const winner: BattleResult['winner'] =
@@ -34820,7 +35592,7 @@ async function boot(): Promise<void> {
           const aLeadDef = unitDefFor(atkLead);
           const mAtk = rosterFieldPowerM(atkRosterRef);
           const mDef = effectiveDefenderM(defRosterRef, terrain, structBonusPct, aLeadDef, battleQ, battleR);
-          const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
+          const powerRes = resolveAutoBattleByPower({ mAtk, mDef, rng: autoBattleRng(battleQ, battleR, atkLead.id) });
           if (powerRes.winner === 'none') {
             showHintMessage('Bitwa: brak sił bojowych w składzie', 3000);
             finishIncomingBattleUi();
@@ -35057,6 +35829,9 @@ async function boot(): Promise<void> {
             sumRosterFieldM(loserRoster.map(u => ({ typeId: u.typeId, def: unitDefFor(u) }))),
           );
           battlePowerPtsByOwner.set(winOid, (battlePowerPtsByOwner.get(winOid) ?? 0) + pts);
+          // R-WEB-DIPLO-WAR-BATTLE-COUNTER-Q1: ten sam pts do licznika pary (tylko w wojnie).
+          const loserOid = mapWinner === 'atakujacy' ? defRoster[0]?.ownerId : atkRoster[0]?.ownerId;
+          if (loserOid !== undefined) diploRecordWarBattlePoints(winOid, loserOid, pts);
         }
       }
 
@@ -36379,13 +37154,24 @@ async function boot(): Promise<void> {
       });
     }
 
+    /**
+     * R-WEB-AUDIT-PEACE-GATE-MILITARY-STRENGTH-Q1: udział SIŁY MILITARNEJ prośącego w parze (nie Power/respekt).
+     * Decyzja właściciela (krok 4a): rozejm i pokój oceniane wg siły militarnej; słabszy szuka, silniejszy odrzuca.
+     */
+    function aiAiMilitaryRequesterShare(requesterId: number, otherId: number): number {
+      return requesterShare(
+        diploMilitarySideOf(requesterId, otherId, true).sila,
+        diploMilitarySideOf(otherId, requesterId, true).sila,
+      );
+    }
+
     /** Rejestruje prośbę przegrywającej AI (`requesterId`) o pokój/rozejm do zwycięzcy (`otherId`); start licznika tur. */
     function registerAiAiPeaceRequest(requesterId: number, otherId: number, cmdType: string, kind: AiPeaceKind): void {
       if (!aiAiForcedPeacePairEligible(requesterId, otherId)) return;
       if (peaceProposalIsTooEarly(requesterId, otherId, kind)) return;
       // „Wyraźnie przegrywa": prośby z sygnałów pat/zmęczenia przy równowadze sił nie tworzą przymusu pokoju.
       refreshObjectivePowerCache();
-      const share = requesterShare(objectivePowerForOwner(requesterId), objectivePowerForOwner(otherId));
+      const share = aiAiMilitaryRequesterShare(requesterId, otherId);
       if (!isClearlyLosing(share)) return;
       const key = diploPairKey(requesterId, otherId);
       if (registerAiPeaceRequest(aiAiPeaceRequestByPairKey, key, requesterId, otherId, turn, kind)) {
@@ -36426,16 +37212,30 @@ async function boot(): Promise<void> {
         store: aiAiPeaceRequestByPairKey,
         turn,
         pairEligible: aiAiForcedPeacePairEligible,
-        requesterShareOf: (rq, ot) => requesterShare(objectivePowerForOwner(rq), objectivePowerForOwner(ot)),
+        requesterShareOf: (rq, ot) => aiAiMilitaryRequesterShare(rq, ot),
         peaceAllowed: (loser, winner) =>
           diploWarStateFor(loser, winner).turnsAtWar >= PEACE_PROPOSAL_MIN_WAR_TURNS,
         gateVerdict: (winner, loser) => {
           const pot = (o: number): number => objectivePowerForOwner(o);
+          // Pole `rw` (Power) jest WYMAGANE typem PeaceAiGateInput, ale werdykt evaluatePeaceAiGate go nie czyta
+          // (R-WEB-AUDIT-PEACE-GATE-MILITARY-STRENGTH-Q1: decyduje wyłącznie pozycjaMilitarna + turnsAtWar).
           const winnerRw = (pot(winner) + pot(loser)) > 0 ? pot(winner) / (pot(winner) + pot(loser)) : 0.5;
           const warW = diploWarStateFor(winner, loser);
           if (warW.turnsAtWar < PEACE_PROPOSAL_MIN_WAR_TURNS) return 'too_early';
+          // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: pozycja zwycięzcy = siła militarna (nie rw).
+          const wSide = diploMilitarySideOf(winner, loser);
+          const lSide = diploMilitarySideOf(loser, winner);
           return evaluatePeaceAiGate(
-            { rw: winnerRw, turnsAtWar: warW.turnsAtWar, lostCitiesInWar: warW.lostCities },
+            {
+              rw: winnerRw,
+              turnsAtWar: warW.turnsAtWar,
+              lostCitiesInWar: warW.lostCities,
+              pozycjaMilitarna: peaceStanceOf(
+                { id: winner, sila: wSide.sila, armiaPkt: wSide.armiaPkt },
+                { id: loser, sila: lSide.sila, armiaPkt: lSide.armiaPkt },
+                PEACE_STRENGTH_GAP_PROC,
+              ),
+            },
             resolveWarPeaceProfile(civKeyForOwnerId(winner)),
           ).verdict;
         },
@@ -36508,7 +37308,8 @@ async function boot(): Promise<void> {
             turnsSinceCityChange: wa.turnsSinceCityChange,
           };
         },
-        shareOf: (x, y) => requesterShare(objectivePowerForOwner(x), objectivePowerForOwner(y)),
+        // R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1: shareOf i weakerOf wg SIŁY MILITARNEJ (nie Power) — war-weariness.ts.
+        ...militaryWearinessWiring(diploMilitarySideOf),
         cityCountOf: o => cities.filter(c => c.ownerId === o).length,
         price: (winner, loser) => {
           const basePn = treatyBasePnFromConfig('pokoj');
@@ -37114,6 +37915,7 @@ async function boot(): Promise<void> {
       cities,
       units,
       get turn() { return turn; },
+      autoBattleRng: (defQ: number, defR: number, atkId: string | number) => autoBattleRng(defQ, defR, atkId),
       getTerrainAt: (q: number, r: number): string => {
         const h = map.hexes[keyOf(q, r)];
         return h ? String(h.terenBazowy) : 'Rownina';
@@ -37341,7 +38143,7 @@ async function boot(): Promise<void> {
         const aLeadDef = unitDefFor(atkRoster[0]!);
         const mAtk = rosterFieldPowerM(atkRoster) + rosterSiegeMachinePowerM(atkRoster);
         const mDef = effectiveDefenderM(defRoster, dTeren, dStructBonus, aLeadDef, city.q, city.r);
-        const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
+        const powerRes = resolveAutoBattleByPower({ mAtk, mDef, rng: autoBattleRng(city.q, city.r, atkRoster[0]!.id) });
         if (powerRes.winner === 'none') return;
 
         const winner: BattleResult['winner'] =
@@ -37528,7 +38330,7 @@ async function boot(): Promise<void> {
           const aLeadDef = unitDefFor(atkLead);
           const mAtk = rosterFieldPowerM(atkRosterRef) + rosterSiegeMachinePowerM(atkRosterRef);
           const mDef = effectiveDefenderM(defRosterRef, dTeren, dStructBonus, aLeadDef, city!.q, city!.r);
-          const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
+          const powerRes = resolveAutoBattleByPower({ mAtk, mDef, rng: autoBattleRng(city!.q, city!.r, atkLead.id) });
           if (powerRes.winner === 'none') {
             showHintMessage('Szturm: brak sił bojowych w składzie', 3000);
             clearBattleUiState();
@@ -37848,6 +38650,12 @@ async function boot(): Promise<void> {
           savedAt,
           saveOrigin: _saveOrigin,
           battleModeSettingVersion: _battleModeSettingVersion,
+          // R-WEB-DETERMINISM-SAVE-LOAD-RESUME-Q1: liczniki sufiksow ID i strumieni walk automatycznych
+          // (closure, poza zapisem). Bez nich wznowienie daje inne ID -> inne salty RNG -> inny przebieg.
+          // Stary zapis bez tych pol = 0 (dotychczasowe zachowanie).
+          detIdSeq: _detIdSeq,
+          autoBattleSeqTurn: _autoBattleSeqTurn,
+          autoBattleSeq: _autoBattleSeq,
           newGameParams: _lastNewGameParams
             ? { ..._lastNewGameParams, seed: _gameSeed }
             : undefined,
@@ -38589,6 +39397,33 @@ async function boot(): Promise<void> {
       }
     }
 
+    /** R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1: bramka skarbca/spichlerza dla fotela gracza (tury ≥ 11). */
+    function nnsGateForPlayer(): NnsGateResult {
+      refreshLiveEmpireRates(); // dirty-gated: przelicza tylko po zmianie stanu ekonomii
+      const f = _nnsHumanForecast;
+      if (!f) return { blokada: false, komunikat: '', dzwignie: [] };
+      // Zarzut 4 (Evaluator): obecne salda czytane NA ŻYWO (cache dirty-gated mógłby mieć stare
+      // saldo po grantGold/transferze złota bez markCityStateDirty). Z cache zostaje tylko DELTA
+      // prognozy (netto tury), która zależy wyłącznie od ekonomii.
+      const skLive = playerStateByHuman.get(ME())?.skarbiec ?? 0;
+      const spLive = empireFoodStates.get(ME())?.zapasyPanstwa ?? 0;
+      const live: NnsProjection = {
+        turn: f.turn,
+        skarbiecObecny: skLive,
+        skarbiecPo: skLive + (f.skarbiecPo - f.skarbiecObecny),
+        spichlerzObecny: spLive,
+        spichlerzPo: spLive + (f.spichlerzPo - f.spichlerzObecny),
+      };
+      const levers: NnsEndTurnLevers = { podatekSkarbiec: _nnsPodatekZysk, suwakZywnosc: _nnsRacjeZysk };
+      return decideEndTurnGate(live, _nnsZyskSkarbiec, _nnsZyskSpichlerz, levers);
+    }
+
+    /** Stały tooltip przycisku „Zakończ turę” przy aktywnej bramce NNS (pusty gdy brak blokady). */
+    function nnsEndTurnTooltipText(): string {
+      const g = nnsGateForPlayer();
+      return g.blokada ? g.komunikat : '';
+    }
+
     function canPlayerInitiateEndTurn(): boolean {
       healStaleEndTurnBlockers();
       if (playtestWalkaActive) {
@@ -38641,6 +39476,11 @@ async function boot(): Promise<void> {
         console.warn('[EndTurn] blocked: oferta handlowa AI czeka na decyzję gracza');
         return false;
       }
+      // R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1: skarbiec/spichlerz po turze < 0 i istnieje ruch naprawczy.
+      if (nnsGateForPlayer().blokada) {
+        console.warn('[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)');
+        return false;
+      }
       return true;
     }
 
@@ -38672,6 +39512,12 @@ async function boot(): Promise<void> {
       }
       if (endTurnInProgress) {
         showHintMessage('Trwa przejście tury — poczekaj chwilę.', 2500);
+        return;
+      }
+      // R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1: komunikat co zmienić (kwota i zasób).
+      const nnsHint = nnsGateForPlayer();
+      if (nnsHint.blokada) {
+        showHintMessage(nnsHint.komunikat, 6000);
         return;
       }
       if (aiTurnAwaitingBattle || aiCmdResume) {
@@ -38978,6 +39824,19 @@ async function boot(): Promise<void> {
 
           // R-WEB-CITY-ADMINISTRATOR-Q1: stan administratorów (koniec służby / finansowanie ze skarbca
           // państwa wg skarbca z POCZĄTKU ticku) PRZED ekonomią miast — efekty i utrzymanie w tej samej turze.
+          // R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1 (C3): równoważenie AI PRZED tickiem (projekcja po ticku raz na
+          // właściciela na turę; wynik wpływa na realny tick poniżej).
+          try {
+            nnsAiPreTickBalance({
+              econUnits, ownerCivMap, tradeIncomeByCity, maritimeTradeIncomeByCity,
+              zlotoAccess: makeOwnerZlotoAccessResolver(zlotoAccessForMennicaTick),
+              territoryNodes: territoryNodesForFood,
+              upkeepParams: loadUpkeepParams(data.econParams, _menuDifficulty),
+              efParams: buildEmpireFoodParams(data.econParams, _menuDifficulty),
+            });
+          } catch (eNnsPre) {
+            console.error('[NNS-AI] Blad rownowazenia przed tickiem:', eNnsPre);
+          }
           refreshCityAdministrators(true);
           const econ = advanceCityEconomy(
             cities, map, data, _menuDifficulty, econUnits, growthMultMap, cityBuilt,
@@ -39605,6 +40464,10 @@ async function boot(): Promise<void> {
               // i musi widzieć identyczny mechanizm dla obu stron. setOwnerTreasury()
               // (inne wywołania — łup, przejęcie stolicy) nadal podłogowuje do 0,
               // tak samo jak dla gracza — symetria zachowana.
+              // C3 (R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1): równoważenie AI odbywa się PRZED tickiem
+              // (nnsAiPreTickBalance, wywołane przed advanceCityEconomy). Tu tylko rejestr pomiarowy:
+              // skarbiec po bankowaniu i surowy spichlerz (przed klamrą do 0) tej tury.
+              nnsRecordPostBank(oid, aiSkarb);
               aiSkarbiecByOwner.set(oid, aiSkarb);
 
               // Pula Nauki AI — symetryczna z graczem (totalNauka z ekonomii miast) + bonus trudności.
@@ -40454,7 +41317,7 @@ async function boot(): Promise<void> {
                 const ruch = applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
                 const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
                 const isSuper = def['Super-jednostka'] === 'TAK';
-                const newUnitId = 'rec_' + turn + '_' + cid + '_' + Math.random().toString(36).slice(2);
+                const newUnitId = 'rec_' + turn + '_' + cid + '_' + detIdSuffix('rec_');
                 const recBirthProgress = bestBuildingProgressAfterCityVisit(
                   undefined, cityBuilt.get(cid), data.buildings,
                 );
@@ -41066,7 +41929,7 @@ async function boot(): Promise<void> {
                 _menuCityStateDifficultyVsPlayer,
                 turn,
                 clusterWarMembers,
-                Math.random,
+                gameStreamRng(_gameSeed, turn, 'cs-war-cluster'),
               );
               for (const csOwnerId of clusterDowOwners) {
                 try {
@@ -41988,12 +42851,25 @@ async function boot(): Promise<void> {
                     cities.filter(c => c.ownerId === ownerId).length > 2 &&
                     cities.filter(c => c.ownerId === ME()).length > 2 &&
                     ownersShareLandBorderLive(ownerId, ME()),
-                  karaWspolnaGranicaDelta: sharedBorderPenaltyForEpochs(
-                    empireEpochForOwner(ownerId), empireEpochForOwner(ME()), _diplomacyParams(),
-                  ),
+                  // R-WEB-DIPLO-TRUST-NUMBERS-Q1 (obrona r1, zarzut 1): karencja zeruje karę także w głównym ticku pary gracz↔AI.
+                  karaWspolnaGranicaDelta: (isPeaceLockedBetween(ME(), ownerId)
+                    || isTruceActive(getDiploPairMeta(ME(), ownerId).truceUntilTurn, turn))
+                    ? 0
+                    : sharedBorderPenaltyForEpochs(
+                      empireEpochForOwner(ownerId), empireEpochForOwner(ME()), _diplomacyParams(),
+                    ),
                   wiarygodnoscSelf: relStatus === 'wojna' ? undefined : getWiarygodnosc(ME()),
                 };
-                const relTicked = tickDiplomacy(relWithRespekt as any, tickCtx);
+                let relTicked = tickDiplomacy(relWithRespekt as any, tickCtx);
+                // R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r4/Z1): pin Relacji tylko z haka ?civTest=1 (relPin domyslnie null) —
+                // wymusza wartosc PO tiku, a PRZED decyzjami AI (relacjeDip, pickAiPlayerCyclicBarter); relAtDecision = to, co widzi AI.
+                if (civTestRuntime.relPin && civTestRuntime.relPin.ai === ownerId) {
+                  const pt = civTestRuntime.relPin.total;
+                  const pz = Math.floor(pt / 2);
+                  relTicked = { ...(relTicked as any), zaufanie: pz, respekt: pt - pz };
+                  // Zapis wartosci PO wymuszeniu pinu (nie niezalezny dowod tego, co widzi AI; tautologia wzgledem pinu).
+                  civTestRuntime.relAtDecision = relationTotal(relTicked as any);
+                }
                 setDiploRelation(ME(), ownerId, relTicked as unknown as Relation);
 
                 const respektWzglednyPlr = (potAI + potPlr) > 0 ? potAI / (potAI + potPlr) : 0.5;
@@ -42030,6 +42906,9 @@ async function boot(): Promise<void> {
                   partnerId: String(ME()),
                   relation: relTicked as unknown as Relation,
                   respektWzgledny: respektWzglednyPlr,
+                  // R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1: siła militarna obu stron (ai.ts P4).
+                  silaMilitarnaAI: diploMilitarySideOf(ownerId, ME()),
+                  silaMilitarnaPartner: diploMilitarySideOf(ME(), ownerId),
                   stanWojny: (relTicked as any).status === 'wojna',
                   lastOneShotGiftTurn: aiOneShotGiftLastTurn.get(ownerId),
                   hasHandelTreaty: tickCtx.aktywnyHandel,
@@ -42098,6 +42977,9 @@ async function boot(): Promise<void> {
                   partnerId: String(otherId),
                   relation: relAi,
                   respektWzgledny: respektWzgAi,
+                  // R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1: siła militarna obu stron (ai.ts P4).
+                  silaMilitarnaAI: diploMilitarySideOf(ownerId, otherId),
+                  silaMilitarnaPartner: diploMilitarySideOf(otherId, ownerId),
                   stanWojny: relAi.status === 'wojna',
                   partnerTypCywilizacji: civKeyForOwnerId(otherId),
                   // R-WEB-WAR-AGGRESSOR-FLAG-Q1: partner AI — flaga agresora wpływa na sojusz/pakt.
@@ -42201,7 +43083,7 @@ async function boot(): Promise<void> {
                     if (!decision.action) continue;
 
                     if (decision.action === 'trybut') {
-                      if (rollAiCsAccept('trybut', csAbsParams)) {
+                      if (rollAiCsAccept('trybut', csAbsParams, gameStreamRng(_gameSeed, turn, 'cs-accept:trybut', ownerId))) {
                         const [p0, p1] = pairOwnerIds(ownerId, csId);
                         activeDeals = addTreaty(activeDeals, {
                           id: `ai_cs_trybut_${p0}_${p1}_${turn}`,
@@ -42224,7 +43106,7 @@ async function boot(): Promise<void> {
                         aiCsFailCount.set(pairKey, (aiCsFailCount.get(pairKey) ?? 0) + 1);
                       }
                     } else if (decision.action === 'wasal') {
-                      if (rollAiCsAccept('wasal', csAbsParams)) {
+                      if (rollAiCsAccept('wasal', csAbsParams, gameStreamRng(_gameSeed, turn, 'cs-accept:wasal', ownerId))) {
                         if (!hasTreaty(activeDeals, ownerId, csId, RodzajTraktatu.Wasalizacja)) {
                           const [p0, p1] = pairOwnerIds(ownerId, csId);
                           activeDeals = addTreaty(activeDeals, {
@@ -43193,6 +44075,9 @@ async function boot(): Promise<void> {
                     aiPracaPoolByOwner.get(ownerId) ?? 0,
                     cities.filter(c => c.ownerId === ownerId),
                     ownerId,
+                    // R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1 (r3): ZRODLO dryfu — remis wielkosci miast-zrodel (Math.random) rozjezdzal
+                    // populacje/rekrutow miast AI przy tym samym ziarnie; strumien z ziarna gry + tura + wlasciciel.
+                    { rand: gameStreamRng(_gameSeed, turn, 'found-source', ownerId) },
                   );
                   if (!aff.ok) continue;
                   // P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI (Maciej, decyzja A, 2026-08-09):
@@ -43478,6 +44363,8 @@ async function boot(): Promise<void> {
                   const item = pick.item;
 
                   if (item.kind === 'budynek') {
+                    // C3 (R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1): wstrzymanie budowy AI w turze równoważenia.
+                    if (aiNnsHoldOwners.has(ownerId)) continue;
                     const def = data.buildings.find(b => b.id === item.id);
                     const cost = buildingStockCost(def);
                     if (Object.keys(cost).length > 0) {
@@ -43498,7 +44385,9 @@ async function boot(): Promise<void> {
                     // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: jednostka
                     // nigdy nie wraca do kolejki Pracy. Zakup przechodzi przez
                     // tę samą bramkę skarbca/Manpower co zakup gracza.
-                    const wantsPurchase = shouldAIPurchaseUnit({
+                    // C2 (R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1): AI z ujemnym skarbcem/spichlerzem po ticku
+                    // nie zaczyna zakupów w tej turze (dźwignia „wstrzymanie”).
+                    const wantsPurchase = !aiNnsHoldOwners.has(ownerId) && shouldAIPurchaseUnit({
                       treasury: ownerTreasury(ownerId),
                       goldCost: item.koszt,
                       hasManpower: canAffordUnitManpowerEmpire(
@@ -43792,7 +44681,7 @@ async function boot(): Promise<void> {
               const ruchBazowy = def ? normFieldVal(def['Ruch'], 2) : 2;
               const ruch = applyRuchSwiataPace(ruchBazowy, player.ruchSwiataPace ?? 'krotki');
               const newUnit: BarbUnit = {
-                id: 'barb_' + turn + '_' + spawn.campId + '_' + Math.random().toString(36).slice(2),
+                id: 'barb_' + turn + '_' + spawn.campId + '_' + detIdSuffix('barb_'),
                 ownerId: BARBARIAN_OWNER_ID,
                 typeId: spawn.typeId,
                 category: 'wojownik',
@@ -43867,7 +44756,7 @@ async function boot(): Promise<void> {
                 const gruchBazowy = gdef ? normFieldVal(gdef['Ruch'], 2) : 2;
                 const gruch = applyRuchSwiataPace(gruchBazowy, player.ruchSwiataPace ?? 'krotki');
                 const newGarrisonUnit: BarbUnit = {
-                  id: 'barbcity_' + turn + '_' + gspawn.cityId + '_' + Math.random().toString(36).slice(2),
+                  id: 'barbcity_' + turn + '_' + gspawn.cityId + '_' + detIdSuffix('barbcity_'),
                   ownerId: BARBARIAN_OWNER_ID,
                   typeId: gspawn.typeId,
                   category: 'wojownik',
@@ -44313,7 +45202,7 @@ async function boot(): Promise<void> {
             explored,
             humanOwnerId,
             unitSight,
-            Math.random,
+            gameStreamRng(_gameSeed, turn, 'scout-auto-explore', humanOwnerId),
             (u) => {
               // P-MGLA-ODKRYCIE-SCIEZKA-INWARIANT-Q1 — CZWARTE miejsce tego samego wzorca.
               // `advanceScoutAutoExplore` (scout-auto-explore.ts:234) przestawia `unit.q/r`
@@ -44967,7 +45856,8 @@ async function boot(): Promise<void> {
       // FPS cienie na żądanie: token jednostki (caster) rusza się co klatkę tylko podczas
       // animacji ruchu; galeria może obracać modele. Poza tym (pan/idle) shadow pass pomijany.
       if (isAnimating || galleryOn) renderer.shadowMap.needsUpdate = true;
-      renderer.render(scene, camera);
+      // R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r3): tryb przyspieszony pomiaru (flaga tylko z haka ?civTest=1).
+      if (!civTestRuntime.skipRender) renderer.render(scene, camera);
       if (isPerfDebugOverlayVisible()) {
         let meshCount = 0;
         let instancedCount = 0;
@@ -46403,6 +47293,9 @@ async function boot(): Promise<void> {
       playtestWalkaActive = false;
       bitwaDuzaActive = false;
       playtestMiastoActive = false;
+      // R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: `?civSeed=` działa tylko przy `?civTest=1`; bez tego = PLAYTEST_MAPA_SEED.
+      const playtestRunSeed: number = civTestSeedOverride(typeof location !== 'undefined' ? location.search : '') ?? PLAYTEST_MAPA_SEED;
+      _gameSeed = playtestRunSeed; // R-WEB-DETERMINISM-GAME-RNG-Q1: ziarno gry = ziarno mapy w tym hakcie
       const mqTier = mapQualityTierFromQuery('high');
       const mqBundle = bundledMapQualityPreset(mqTier);
       const ptMapDensity = resolvePlaytestMapaWorldDensity();
@@ -46417,7 +47310,7 @@ async function boot(): Promise<void> {
         speed: 'Normalna',
         worldType: 'Kontynenty',
         typSwiata: 'kontynenty',
-        seed: PLAYTEST_MAPA_SEED,
+        seed: playtestRunSeed,
         mapQualityLabel: qualityTierToLabel(mqTier),
         mapQuality: mqTier,
         renderQualityLabel: qualityTierToLabel(mqBundle.renderQuality),
@@ -46441,9 +47334,9 @@ async function boot(): Promise<void> {
       const rozmiar = rozmiarFromMenuLabel('Maly');
       // C1/C2: generacja mapy asynchronicznie + panel „Tworzenie świata".
       const loadWallT0 = performance.now();
-      const loading = showMapLoadingOverlay({ seed: PLAYTEST_MAPA_SEED, rozmiarLabel: 'Maly', typLabel: 'Kontynenty' });
+      const loading = showMapLoadingOverlay({ seed: playtestRunSeed, rozmiarLabel: 'Maly', typLabel: 'Kontynenty' });
       const mapGenWallT0 = performance.now();
-      const newMap = await generujSwiatAsync(PLAYTEST_MAPA_SEED, rozmiar, 'kontynenty', {
+      const newMap = await generujSwiatAsync(playtestRunSeed, rozmiar, 'kontynenty', {
         worldDensity: ptMapDensity.preset,
         mapSizeMenuLabel: 'Maly',
         difficulty: _menuDifficulty,
@@ -46626,7 +47519,7 @@ async function boot(): Promise<void> {
 
       showHintMessage(PLAYTEST_MAPA_HINT, 18000);
       console.log(
-        '[PlaytestMapa] seed=' + PLAYTEST_MAPA_SEED +
+        '[PlaytestMapa] seed=' + playtestRunSeed +
         ' miasto=' + (playerCity?.name ?? '?') +
         ' wrog=' + preset.enemyCityId +
         ' jednostek=' + units.length +
@@ -46887,6 +47780,13 @@ async function boot(): Promise<void> {
         _gameSeed = saved.seed;
       }
       turn = saved.tura;
+      // R-WEB-DETERMINISM-SAVE-LOAD-RESUME-Q1: przywrocenie licznikow z meta (brak pola = 0, jak dotad).
+      {
+        const m = saved.meta as { detIdSeq?: unknown; autoBattleSeqTurn?: unknown; autoBattleSeq?: unknown } | undefined;
+        _detIdSeq = typeof m?.detIdSeq === 'number' && Number.isFinite(m.detIdSeq) ? m.detIdSeq : 0;
+        _autoBattleSeqTurn = typeof m?.autoBattleSeqTurn === 'number' && Number.isFinite(m.autoBattleSeqTurn) ? m.autoBattleSeqTurn : -1;
+        _autoBattleSeq = typeof m?.autoBattleSeq === 'number' && Number.isFinite(m.autoBattleSeq) ? m.autoBattleSeq : 0;
+      }
       // Backlog "cityOrderState nieczyszczone w restoreGameFromSave" (Evaluator rundy 4
       // R-ZUZYCIE-SUROWCOW-OBYWATELE N1, PYTANIA-OTWARTE.md): bez tego czyszczenia panel
       // miasta (cityPanel.ts, resolveOrderState) po wczytaniu zapisu mógł pokazać OrderState

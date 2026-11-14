@@ -7,7 +7,8 @@
 import matrixRaw from '../../data/civ-matrix.json';
 import paramsRaw from '../../data/diplomacy-war-peace-params.json';
 import aiParamsRaw from '../../data/ai-params.json';
-import { isWarWeary } from './war-weariness';
+import { isWarWeary, warWearinessLevel } from './war-weariness';
+import type { PeaceMilitaryPosition } from './diplomacy-military-strength';
 
 /**
  * R10 (R-WEB-PEACE-RULES-Q1): klucz ai-params.json = baza progZdrowia (sygnał c, próg HP armii).
@@ -38,6 +39,29 @@ export interface WarPeaceParams {
   hamulecRelacji: { progKryzysuMinusPunkty: number; bazaN: number; wagaProgWojny: number; minN: number; maxN: number };
   /** R-WEB-DIPLO-PEACE-AI-AI-NONNEGATIVE-BALANCE-Q1: minimalny bilans PW KAZDEJ z dwoch AI przy pokoju AI↔AI. */
   pokojAiAi: { minBilansPW: number };
+  /** R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1: AI wypowiada wojnę tylko przy Zaufaniu pary < progZaufaniaWojny. */
+  wypowiedzenieZaufanie: { progZaufaniaWojny: number };
+}
+
+/** R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1: próg Zaufania pary dla wypowiedzenia wojny przez AI (30). */
+export const PROG_WOJNA_ZAUFANIE: number = (paramsRaw as unknown as WarPeaceParams).wypowiedzenieZaufanie.progZaufaniaWojny;
+
+interface PrzesuniecieProguWojny { wspolczynnikPpNaJednostke: number; min: number; max: number }
+
+/**
+ * R-WEB-DIPLO-WAR-CHARACTER-THRESHOLD-Q1: efektywny próg przewagi siły militarnej (w %) do wypowiedzenia
+ * wojny przez AI = bazowy progPrzewagiProc + przesunięcie charakteru (warSilaBonus z resolveDiplomacyCivBias),
+ * obcięty do [min, max] z przesunieciProguWojnyCharakter. Brak bonusu (0) → sama baza.
+ */
+export function progPrzewagiWypowiedzeniaWojnyProc(
+  bazaProc: number,
+  warSilaBonus: number,
+  params: { przesuniecieProguWojnyCharakter?: PrzesuniecieProguWojny } = paramsRaw as unknown as { przesuniecieProguWojnyCharakter?: PrzesuniecieProguWojny },
+): number {
+  const cfg = params.przesuniecieProguWojnyCharakter;
+  if (!cfg || !Number.isFinite(warSilaBonus)) return bazaProc;
+  const przesuniecie = cfg.wspolczynnikPpNaJednostke * warSilaBonus;
+  return Math.min(cfg.max, Math.max(cfg.min, bazaProc + przesuniecie));
 }
 
 export const WAR_PEACE_PARAMS = paramsRaw as unknown as WarPeaceParams;
@@ -279,8 +303,12 @@ export function aiPeaceSignals(input: PeaceSignalInput, profile: WarPeaceProfile
   if (input.turnsAtWar >= S.patTurWojny && sinceChange >= S.patBrakZmianyTur) {
     reasons.push('d');
   }
-  // (e): ułamek pełnego zmęczenia (0..1) ≥ progSygnaluPokoju (0.4 = ok. 0.4·T tur wojny).
-  if (warWearinessFraction(input.turnsAtWar, profile.zmeczenieT) >= params.zmeczenie.progSygnaluPokoju) {
+  // (e): poziom zmęczenia (jeden licznik, R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: 5%/turę + 10%/miasto) ≥ progSygnaluPokoju (0.4 = tura 8 bez strat).
+  if (warWearinessLevel({
+    turnsAtWar: input.turnsAtWar,
+    lostCitiesTotal: Math.max(0, input.lostCitiesInWar),
+    turnsSinceCityChange: input.turnsSinceCityChange,
+  }) >= params.zmeczenie.progSygnaluPokoju) {
     reasons.push('e');
   }
   if (input.armyHealthShare !== undefined && input.armyHealthShare < profile.progZdrowia) {
@@ -355,6 +383,11 @@ export interface PeaceAiGateInput {
    * Brak pola (AI<->AI, stare wywolania) = regula nie dziala (zachowanie dotychczasowe).
    */
   wearinessLevel?: number;
+  /**
+   * R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: pozycja AI wobec partnera wg siły militarnej
+   * (peaceMilitaryPosition). 'silniejsza' → verdict 'stronger'. Brak pola / 'slabsza' / 'pasmo' → 'ok'.
+   */
+  pozycjaMilitarna?: PeaceMilitaryPosition;
 }
 
 export interface PeaceAiGateResult {
@@ -365,18 +398,25 @@ export interface PeaceAiGateResult {
   reason?: string;
 }
 
-/** R5(b): AI „czuje się silniejsze" = rw ≥ 0.55 ∧ brak utraconego miasta ∧ turnsAtWar < 10 (bez efektu po 20 turach — tam bramka i tak zdjęta). */
+/**
+ * @deprecated R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: stara reguła „czuje się silniejsze" (rw ≥ 0.55)
+ * zastąpiona siłą militarną (pozycjaMilitarna). Zostaje wyłącznie jako funkcja pomocnicza starych testów.
+ */
 export function isFeelingStronger(input: PeaceAiGateInput, params: WarPeaceParams = WAR_PEACE_PARAMS): boolean {
   const C = params.cenaPokoju;
   return input.rw >= C.odrzucenieRwProg && input.lostCitiesInWar === 0 && Math.max(0, input.turnsAtWar) < C.odrzucenieMaxTurWojny;
 }
 
+/** Próg różnicy siły dla pokoju w % (diplomacy-war-peace-params.json: progRozniceSilyPokoj.wartosc; 0 = każda różnica). */
+export const PEACE_STRENGTH_GAP_PROC: number = (paramsRaw as unknown as { progRozniceSilyPokoj: { wartosc: number } }).progRozniceSilyPokoj.wartosc;
+
 /**
- * Bramka AI dla pokoju proponowanego przez gracza (R5 a/b/c/d/e).
- *  (a) minimalny czas wojny: turnsAtWar < minTurWojny → odrzucenie (zawsze, także po 20 turach — min ≤ 8).
- *  (b) „czuje się silniejsze": rw ≥ 0.55 ∧ brak utraconego miasta ∧ turnsAtWar < 10 → odrzucenie.
- *  (c) mnożnik siły; (d) mnożnik cywilizacji; (e) po 20 turach wojny (b) i (c) nie obowiązują,
- *      mnożnik cywilizacji ograniczony do ≤ 1.0 (ZAŁOŻENIE: „≤ 1.0 efektywnie").
+ * Bramka AI dla pokoju proponowanego przez gracza (R5, po R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1):
+ *  (a) minimalny czas wojny: turnsAtWar < minTurWojny → 'too_early' (zawsze; min ≤ 8). Zostaje.
+ *  (b) siła militarna: AI silniejsza (pozycjaMilitarna='silniejsza') → 'stronger' — odrzuca, chyba że
+ *      oferta zawiera miasto o wartości PN ≥ ceny (egzekwuje wywołujący, nie ta funkcja).
+ *      Słabsza / pasmo → 'ok'. Brak mnożnika ceny od siły.
+ *  (c) mnożnik cywilizacji; po turyBezOgraniczenAi tur ograniczony do ≤ 1.0 (ZAŁOŻENIE: „≤ 1.0 efektywnie").
  */
 export function evaluatePeaceAiGate(
   input: PeaceAiGateInput,
@@ -393,25 +433,18 @@ export function evaluatePeaceAiGate(
       reason: `za wcześnie na pokój — AI wymaga co najmniej ${minTur} tur wojny (obecnie ${turns})`,
     };
   }
-  if (input.wearinessLevel !== undefined && peaceBlockedByMilitaryAdvantage(input.rw, input.wearinessLevel, params)) {
+  // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (decyzja właściciela 2026-11-13): siła militarna
+  // decyduje, nie rw. Silniejsza AI odrzuca pokój bez miasta (verdict 'stronger'; wyjątek — oferta
+  // miasta o wartości PN ≥ ceny — egzekwuje wywołujący). Słabsza/pasmo: pokój rozpatrywany dalej.
+  // Mnożnik siły z ceny usunięty; zostaje mnożnik cywilizacji.
+  const civMult = peaceCivPriceMultiplier(profile, params);
+  const priceMultiplier = turns >= C.turyBezOgraniczenAi ? Math.min(1, civMult) : civMult;
+  if (input.pozycjaMilitarna === 'silniejsza') {
     return {
       verdict: 'stronger',
-      priceMultiplier: 1,
-      reason: `AI czuje się silniejsze (przewaga militarna większa niż ${Math.round(params.przewagaMilitarna.prog * 100)}%) — odrzuca pokój, dopóki nie zmęczy je wojna`,
+      priceMultiplier,
+      reason: 'AI jest militarnie silniejsza — odrzuca pokój, chyba że oferta zawiera miasto gracza o wartości PN nie niższej niż cena pokoju',
     };
   }
-  if (turns >= C.turyBezOgraniczenAi) {
-    return { verdict: 'ok', priceMultiplier: Math.min(1, peaceCivPriceMultiplier(profile, params)) };
-  }
-  if (isFeelingStronger(input, params)) {
-    return {
-      verdict: 'stronger',
-      priceMultiplier: 1,
-      reason: 'AI czuje się silniejsze — odrzuca pokój, dopóki nie straci miasta lub nie minie więcej tur wojny',
-    };
-  }
-  return {
-    verdict: 'ok',
-    priceMultiplier: peaceStrengthPriceMultiplier(input.rw, params) * peaceCivPriceMultiplier(profile, params),
-  };
+  return { verdict: 'ok', priceMultiplier };
 }

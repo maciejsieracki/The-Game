@@ -329,15 +329,24 @@ export function truceUntilTurnLabelPl(
   return 'Rozejm do tury ' + Math.floor(truceUntilTurn as number);
 }
 
-/** Nastawienie z score Zaufania+Respektu; w wojnie co najmniej „Wrogi". */
+/**
+ * Progi etykiety nastawienia wg ZAUFANIA (R-WEB-DIPLO-LABELS-TRUST-THRESHOLDS-Q1, ABC „C”, 2026-11-13).
+ * Osobne od progów umów (progMinimalnyRelacja = 30 pozostaje dla paktu/sojuszu) — nie wiązać ich.
+ * Zaufanie < NASTAWIENIE_PROG_WROGI_ZAUFANIE → „Wrogi”; < NASTAWIENIE_PROG_NIEUFNY_ZAUFANIE → „Nieufny”.
+ */
+export const NASTAWIENIE_PROG_WROGI_ZAUFANIE = 10;
+export const NASTAWIENIE_PROG_NIEUFNY_ZAUFANIE = 30;
+
+/** Nastawienie z Zaufania (progi niskie) i sumy Zaufania+Respektu (od Zaufania ≥ 30); w wojnie co najmniej „Wrogi". */
 export function nastawienieLabelFromScore(
   zaufanie: number,
   respekt: number,
   opts?: { atWar?: boolean },
 ): string {
   if (opts?.atWar) return 'Wrogi';
+  if (zaufanie < NASTAWIENIE_PROG_WROGI_ZAUFANIE) return 'Wrogi';
+  if (zaufanie < NASTAWIENIE_PROG_NIEUFNY_ZAUFANIE) return 'Nieufny';
   const s = Math.max(0, Math.min(200, Math.round(zaufanie + respekt)));
-  if (s < 30) return 'Wrogi';
   if (s < 45) return 'Nieufny';
   if (s < 60) return 'Neutralny';
   if (s < 120) return 'Życzliwy';
@@ -346,8 +355,8 @@ export function nastawienieLabelFromScore(
 
 /**
  * Zaufanie/Respekt do wyświetlenia — PRAWDZIWA wartość efektywna (ABC „B”, R-WEB-DIPLO-RESPECT-DISPLAY-TRUE-VALUE-Q1).
- * Limit wojenny (clampRelationForWar, 29) NIE obcina wartości w panelu: dotyczy wyłącznie etykiety „Wrogi”
- * i dopisku (zob. `warRelationCapApplies`). Mechanika (silnik) pozostaje bez zmian.
+ * W wojnie (clampRelationForWar) Zaufanie spada do zera; panel pokazuje wartość efektywną po tej regule.
+ * Etykieta „Wrogi” i dopisek (zob. `warRelationCapApplies`) nie zmieniają wartości.
  */
 export function effectiveNastawienieScores(
   zaufanie: number,
@@ -356,11 +365,37 @@ export function effectiveNastawienieScores(
   return { zaufanie, respekt };
 }
 
-/** True, gdy w wojnie surowy score relacji przekracza limit wojenny — wtedy UI dopisuje „limit wojenny 29”. */
+/** True, gdy w wojnie Zaufanie jest obcinane do zera — wtedy UI dopisuje „w wojnie zaufanie spada do zera”. */
 export function warRelationCapApplies(zaufanie: number, respekt: number, atWar: boolean): boolean {
   if (!atWar) return false;
   const c = clampRelationForWar({ zaufanie, respekt, status: 'wojna' });
   return c.zaufanie !== zaufanie || c.respekt !== respekt;
+}
+
+/** R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1: procent 0–100 z wartości 0..1 (obcięte do zakresu). */
+export function warWearinessPercentPl(value: number): string {
+  const v = Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : 0;
+  return Math.round(v * 100) + '%';
+}
+
+/** Etykieta i podpowiedź (jedno zdanie) dla zmęczenia wojną („wygrywa"/„rowny") albo desperacji („przegrywa"). */
+export function warWearinessLabelPl(view: {
+  zmeczenie?: number;
+  desperacja?: number;
+}): { label: string; tooltip: string } | null {
+  if (view.desperacja !== undefined) {
+    return {
+      label: 'Desperacja ' + warWearinessPercentPl(view.desperacja),
+      tooltip: 'Desperacja przegrywającego rośnie ze zmęczeniem wojną, słabością militarną i utratą miast; wysoka oznacza gotowość oddania miast za pokój.',
+    };
+  }
+  if (view.zmeczenie !== undefined) {
+    return {
+      label: 'Zmęczenie wojną ' + warWearinessPercentPl(view.zmeczenie),
+      tooltip: 'Zmęczenie wojną rośnie z każdą turą wojny i z utraconymi miastami; wysoka wartość zwiększa chęć pokoju.',
+    };
+  }
+  return null;
 }
 
 /** Krótki podpis pod etykietą nastawienia w audiencji. */

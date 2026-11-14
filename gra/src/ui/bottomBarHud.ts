@@ -27,6 +27,9 @@ export interface BottomBarHudConfig {
   onEndTurn?: () => void;
   /** false tylko gdy playtest / game over (domyślnie true). */
   canEndTurn?: () => boolean;
+  /** R-WEB-ECON-NO-NEGATIVE-STOCKS-END-TURN-GATE-LEVERS-Q1: stały tooltip przycisku przy blokadzie bramki
+   * skarbca/spichlerza (pusty = brak tooltipa). Ustawiany jako `title` przycisku „Zakończ turę”. */
+  getEndTurnTooltip?: () => string;
   /** Liczba oczekujących wydarzeń (do stanu WYKONAJ). */
   getBlockingCount?: () => number;
   /** Ukryj przycisk końca tury (playtest walki). */
@@ -213,6 +216,10 @@ export function createBottomBarHud(config: BottomBarHudConfig): BottomBarHudApi 
       : arrowHtml;
 
     const endVisuallyDisabled = hideEnd || !canEnd;
+    const endTip = hideEnd ? '' : (config.getEndTurnTooltip?.() ?? '');
+    const endTipAttr = endTip
+      ? ' title="' + endTip.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '"'
+      : '';
     // R-TRZY-KARTY-WDROZENIE-Q1: sygnał TYLKO gdy przycisk faktycznie klikalny i aktywny —
     // nigdy mieszany ze stanem is-disabled (playtest/game over), żeby nie nakładać dwóch
     // różnych znaczeń na ten sam wygląd. Klikalność end-turn (poniżej, data-end) jest od
@@ -249,7 +256,7 @@ export function createBottomBarHud(config: BottomBarHudConfig): BottomBarHudApi 
         + '<button type="button" class="end-turn'
         + (endVisuallyDisabled ? ' is-disabled' : '')
         + (showBlockSignal ? ' et-signal' : '')
-        + '" data-end aria-disabled="' + (endVisuallyDisabled ? 'true' : 'false') + '">'
+        + '" data-end aria-disabled="' + (endVisuallyDisabled ? 'true' : 'false') + '"' + endTipAttr + '>'
         + '<span class="et-action">' + (showBlockSignal ? warnArrowHtml : arrowHtml) + '<span>Zakończ turę</span></span></button>'
         + '</div>'
       ))

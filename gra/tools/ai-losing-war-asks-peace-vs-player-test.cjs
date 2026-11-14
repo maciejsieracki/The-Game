@@ -69,6 +69,8 @@ async function main() {
         skarbiecGold: gold, miastaAI: miasta,
         relacje: [Object.assign({
           partnerId: '0', relation: { zaufanie: 0, respekt: 29, status: 'wojna' }, respektWzgledny: rw, stanWojny: true,
+          // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: pozycja militarna (nie rw) decyduje; AI słabsza militarnie.
+          silaMilitarnaAI: { sila: 100, armiaPkt: 0 }, silaMilitarnaPartner: { sila: 200, armiaPkt: 0 },
           turnsAtWar: t, lostCitiesInWar: 0, turnsSinceCityChange: t, armyHealthShare: 0.9, peaceLocked: false,
         }, extra || {})],
       });
@@ -77,29 +79,36 @@ async function main() {
     const seenTypes = new Set();
     let everyStateHasOneCmd = true;
     const gaps = [];
-    for (const t of [3, 8, 20, 60, 150]) {
+    // R-WEB-TEST-DEBT-DIPLO-WAR-PEACE-SIM-Q1 r3: t 3 → 10, t 8 → 11 (+ 12 zamiast zdublowanego 10); AI proponuje pokój dopiero od tury 10 wojny (t=8 też łamało bramkę).
+    for (const t of [10, 11, 12, 15, 16, 20, 60]) {
       for (const gold of [0, 500]) {
         for (const nc of [2, 6]) {
           const cmds = decide(t, gold, nc).filter(c => c.targetId === '0');
           const peace = cmds.filter(c => PEACE_TYPES.has(c.type));
           peace.forEach(c => seenTypes.add(c.type));
-          if (peace.length !== 1) { everyStateHasOneCmd = false; gaps.push({ t, gold, nc, n: peace.length }); }
+          // R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: zaproponuj_pokoj (koniec zmeczenia, poziom >= 0,8) dopiero od tury 16.
+          if (t < 16 && peace.some(c => c.type === 'zaproponuj_pokoj')) { everyStateHasOneCmd = false; gaps.push({ t, gold, nc, zaproponuj: true }); }
+          // D2/Z5 (R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1): 6 miast -> dokladnie 1 komenda (miasto);
+          // 2 miasta (< minimum 3 miast do oddania) -> brak komendy pokojowej, zloto jej nie tworzy.
+          // R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: od t=10 (poziom >= 0,5, progChetnosci) zmęczenie obniża minimum miast (wearyMinMiast) -> 2 miasta wystarczają.
+          const want = (nc === 6 || t >= 10) ? 1 : 0;
+          if (peace.length !== want) { everyStateHasOneCmd = false; gaps.push({ t, gold, nc, n: peace.length }); }
         }
       }
     }
-    check('(1) Harappa: w kazdym stanie wojny >= 3 tur AI emituje dokladnie 1 komende pokojowa wobec gracza', everyStateHasOneCmd, gaps);
+    check('(1) Harappa: 6 miast lub t>=10 -> dokladnie 1 komenda pokojowa; 2 miasta (do t<10) -> zero komend pokojowych; zloto nie kupuje pokoju', everyStateHasOneCmd, gaps);
     check('(1) Harappa z >= 3 miastami: komenda pokojowa to oferuj_miasto_za_pokoj (zastepuje trybut i pokoj)',
-      decide(20, 500, 6).some(c => c.type === 'oferuj_miasto_za_pokoj')
-      && !decide(20, 500, 6).some(c => c.type === 'oferuj_trybut_za_pokoj' || c.type === 'zaproponuj_pokoj'));
-    check('(1) Harappa z 2 miastami i zlotem: trybut', decide(20, 500, 2).some(c => c.type === 'oferuj_trybut_za_pokoj'));
-    check('(1) Harappa z 2 miastami bez zlota: zaproponuj_pokoj', decide(20, 0, 2).some(c => c.type === 'zaproponuj_pokoj'));
-    check('(1) obserwowane typy komend obejmuja miasto, trybut i pokoj', seenTypes.size === 3, Array.from(seenTypes));
+      decide(15, 500, 6).some(c => c.type === 'oferuj_miasto_za_pokoj')
+      && !decide(15, 500, 6).some(c => c.type === 'oferuj_trybut_za_pokoj' || c.type === 'zaproponuj_pokoj'));
+    check('(1) Harappa z 2 miastami i zlotem: ZLOTO nie tworzy trybutu za pokoj (D2)', !decide(15, 500, 2).some(c => c.type === 'oferuj_trybut_za_pokoj'));
+    check('(1) Harappa z 2 miastami bez zlota (przed progiem chec 0,5, t=8): brak komend pokojowych (slabsza bez miasta do oddania)', !decide(8, 0, 2).some(c => PEACE_TYPES.has(c.type)));
+    check('(1) obserwowane typy komend: oferuj_miasto_za_pokoj, nigdy trybut za pokoj (D2); zaproponuj_pokoj tylko od tury 16', seenTypes.has('oferuj_miasto_za_pokoj') && !seenTypes.has('oferuj_trybut_za_pokoj') && gaps.every(g => !g.zaproponuj), Array.from(seenTypes));
 
     // ---- Test 2: mapowanie komendy miasta na propozycje stolu ----
-    const cityCmd = decide(20, 0, 6).find(c => c.type === 'oferuj_miasto_za_pokoj');
+    const cityCmd = decide(15, 0, 6).find(c => c.type === 'oferuj_miasto_za_pokoj');
     const conv = m.aiCommandToPendingProposal(cityCmd, 1, 0, 20);
-    check('(2) oferuj_miasto_za_pokoj -> actionId pokoj z giveItems miasto',
-      !!conv && conv.actionId === 'pokoj' && conv.payload.giveItems && conv.payload.giveItems[0].typ === 'miasto', conv);
+    check('(2) oferuj_miasto_za_pokoj (wojna 15 tur < 20) -> actionId rozejm z giveItems miasto',
+      !!conv && conv.actionId === 'rozejm' && conv.payload.giveItems && conv.payload.giveItems[0].typ === 'miasto', conv);
 
     // ---- Test 3: lancuch dispatchu w main.ts ----
     const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');

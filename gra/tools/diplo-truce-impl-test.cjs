@@ -280,7 +280,7 @@ function makeWorld() {
   check('C: finalize — rozejm (peaceFinalizeTrustEvent) ustawia tylko status, bez applyDiploEventTracked',
     /const isTruce = peaceFinalizeTrustEvent\(truceTurns\) === null;[\s\S]{0,900}?if \(isTruce\) \{[\s\S]{0,400}?setDiploRelation\(proposerId, responderId, \{ \.\.\.cur, status: 'pokoj' \}\);/.test(finBody));
   check('C: finalize — applyDiploEventTracked(…,\'pokoj\') tylko w gałęzi pokoju stałego',
-    /\} else \{\s*setDiploRelation\(\s*proposerId,\s*responderId,\s*applyDiploEventTracked\(proposerId, responderId, cur, 'pokoj'\)/.test(finBody));
+    /\} else \{[\s\S]{0,900}?applyDiplomaticEvent\(cur, 'pokoj'\)/.test(finBody));
   check('B: finalize zeruje truceEndOffer (zgoda gracza/AI kończy ofertę)',
     /truceEndOffer: undefined/.test(finBody));
 
@@ -328,12 +328,13 @@ function makeWorld() {
   // (E) AI wybiera tryb w decideAIDiplomacy — wejście: ułamek t/T, willingnessPeace ze stance, Zaufanie, słabość rw
   const eStart = aiSrc.indexOf('const peaceKindAi = aiTruceOrPeaceMode({');
   const eBody = eStart >= 0 ? aiSrc.slice(eStart, eStart + 500) : '';
-  check('E: ai.ts — fatigueFraction = warWearinessFraction(turnsAtWarRel, zmeczenieT)',
-    /fatigueFraction: warWearinessFraction\(turnsAtWarRel, warProfile\.zmeczenieT\)/.test(eBody));
+  // R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: ułamek zmęczenia = jeden licznik (wearyLevel = warWearinessLevel), bez drugiego zegara.
+  check('E: ai.ts — fatigueFraction = wearyLevel (jeden licznik zmęczenia)',
+    /fatigueFraction: wearyLevel\b/.test(eBody));
   check('E: ai.ts — willingnessPeace z stance (aiDiplomacyStance)',
     /willingnessPeace: stance\.willingnessPeace/.test(eBody));
-  check('E: ai.ts — weaker tylko z progu słabości rw (sygnały peaceSignals nie czynią słabszym)',
-    /weaker: weakerByPower,/.test(eBody) && /const weakerByPower = rw <= progPokojSlabosc;/.test(aiSrc));
+  check('E: ai.ts — weaker tylko z pozycji militarnej peacePosMil (sygnały peaceSignals nie czynią słabszym)',
+    /weaker: weakerByStrength,/.test(eBody) && /const weakerByStrength = peacePosMil === 'slabsza';/.test(aiSrc));
   check('E: ai.ts — rodzaj wybrany przez aiTruceOrPeaceMode trafia do komendy (rodzaj: peaceKindAi)',
     /rodzaj:\s+peaceKindAi,/.test(aiSrc));
   check('E: AI↔AI — rodzaj z cmd.rodzaj (decideAIDiplomacy), nie osobny wybór',

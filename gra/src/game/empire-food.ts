@@ -380,6 +380,20 @@ export function clearLastEmpireFoodTicks(): void {
   _maxCapByOwner = new Map();
 }
 
+/**
+ * R-WEB-ECON-NO-NEGATIVE-STOCKS-A-Q1: migawka globalnego cache HUD (`_lastTicks`, `_maxCapByOwner`)
+ * przed wywołaniem `advanceEmpireFood` na kopii stanu (projekcja tylko-odczytowa). Nie zmienia wyników.
+ */
+export function snapshotEmpireFoodRuntime(): { lastTicks: Map<number, EmpireFoodTick>; maxCap: Map<number, number> } {
+  return { lastTicks: _lastTicks, maxCap: new Map(_maxCapByOwner) };
+}
+
+/** Przywraca migawkę z `snapshotEmpireFoodRuntime` (po projekcji). */
+export function restoreEmpireFoodRuntime(snap: { lastTicks: Map<number, EmpireFoodTick>; maxCap: Map<number, number> }): void {
+  _lastTicks = snap.lastTicks;
+  _maxCapByOwner = new Map(snap.maxCap);
+}
+
 // --- SPICH-AUTO-Q1: auto-obniżenie racji do bilansu miast = 0 (przed wojskiem) ---
 
 /**

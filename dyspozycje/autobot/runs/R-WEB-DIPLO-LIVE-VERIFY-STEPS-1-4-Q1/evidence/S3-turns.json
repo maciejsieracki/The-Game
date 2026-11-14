@@ -1,0 +1,71 @@
+{
+  "scenario": "3",
+  "checks": [
+    {
+      "id": "S3.b",
+      "label": "progi 25%/19%/27% oraz charakter agresywna/neutralna/ostrożna",
+      "ok": "NIE_ZMIERZONO",
+      "detail": {
+        "powod": "brak hooka ustawiającego charakter cywilizacji AI i odczytu siły wojskowej (krok 2); skan Power nie daje wymaganej miary"
+      }
+    },
+    {
+      "id": "S3.c",
+      "label": "zaufanie 0, AI silniejsza → wypowiedzenie wojny po N turach (zmierzone 1 tura)",
+      "ok": "NIE_ZMIERZONO",
+      "detail": {
+        "statusStart": "neutralni",
+        "statusTury": [
+          "neutralni"
+        ],
+        "powod": "dispatch nie podaje N (liczby tur przy zaufaniu 0); zmierzono 1 turę bez wypowiedzenia (status neutralni) — wynik niejednoznaczny, N i losowanie gotowości wymagają osobnego pomiaru (koszt tury w przeglądarce ~100 s)"
+      }
+    },
+    {
+      "id": "S3.d",
+      "label": "silniejszy gracz (AI słabsza) → brak automatycznej wojny (1 tura)",
+      "ok": "PASS",
+      "detail": {
+        "statusTury": [
+          "neutralni"
+        ]
+      }
+    },
+    {
+      "id": "S3.e",
+      "label": "ostrzeżenie dla gracza raz na epizod",
+      "ok": "NIE_ZMIERZONO",
+      "detail": {
+        "powod": "ostrzeżenie „Ryzyko wojny” jest pokrywane w testach diplo-war-peace-live-test (hamulec); tu nie mierzone osobno"
+      }
+    },
+    {
+      "id": "S3.f",
+      "label": "brak błędów JS w scenariuszu",
+      "ok": "PASS",
+      "detail": []
+    }
+  ],
+  "measured": {
+    "progiSily_zaufanie25": [],
+    "zaufanie0_silniejsza": {
+      "statusStart": "neutralni",
+      "statusTury": [
+        "neutralni"
+      ],
+      "ostrzezenieWLogu": {
+        "found": false,
+        "texts": []
+      }
+    },
+    "silniejszyGracz": {
+      "statusStart": "neutralni",
+      "statusTury": [
+        "neutralni"
+      ]
+    }
+  },
+  "startedAt": "2026-11-13T18:34:08.230Z",
+  "errorsTotal": 0,
+  "finishedAt": "2026-11-13T18:38:41.913Z"
+}

@@ -1,0 +1,198 @@
+{
+  "scenario": "3",
+  "checks": [
+    {
+      "id": "S3.a",
+      "label": "skan przewagi Power przy zaufaniu 25 — punkt przełączenia mayDeclare",
+      "ok": "NIE_ZMIERZONO",
+      "detail": {
+        "przelaczenie": {
+          "przewagaAI_ponad_gracza_od": 0,
+          "poprzedni_brak": -0.1
+        },
+        "powod": "hak czyta Power (buildObjectivePower), nie siłę wojskową z kroku 2; progi 14/20/28% (charakter) nie są porównywalne z tym odczytem — rozbieżność do weryfikacji po stronie orkiestratora"
+      }
+    },
+    {
+      "id": "S3.b",
+      "label": "progi 25%/19%/27% oraz charakter agresywna/neutralna/ostrożna",
+      "ok": "NIE_ZMIERZONO",
+      "detail": {
+        "powod": "brak hooka ustawiającego charakter cywilizacji AI i odczytu siły wojskowej (krok 2); skan Power nie daje wymaganej miary"
+      }
+    },
+    {
+      "id": "S3.e",
+      "label": "ostrzeżenie dla gracza raz na epizod",
+      "ok": "NIE_ZMIERZONO",
+      "detail": {
+        "powod": "ostrzeżenie „Ryzyko wojny” jest pokrywane w testach diplo-war-peace-live-test (hamulec); tu nie mierzone osobno"
+      }
+    },
+    {
+      "id": "S3.f",
+      "label": "brak błędów JS w scenariuszu",
+      "ok": "PASS",
+      "detail": []
+    }
+  ],
+  "measured": {
+    "progiSily_zaufanie25": [
+      {
+        "bonus": 1039,
+        "power": {
+          "player": 2847,
+          "ai": 2078
+        },
+        "ratio": -0.27,
+        "mayDeclare": 0,
+        "cached": {
+          "player": 2847,
+          "ai": 2078,
+          "mayDeclareDeclarer": 0
+        }
+      },
+      {
+        "bonus": 1281,
+        "power": {
+          "player": 2847,
+          "ai": 2562
+        },
+        "ratio": -0.1,
+        "mayDeclare": 0,
+        "cached": {
+          "player": 2847,
+          "ai": 2562,
+          "mayDeclareDeclarer": 0
+        }
+      },
+      {
+        "bonus": 1424,
+        "power": {
+          "player": 2847,
+          "ai": 2848
+        },
+        "ratio": 0,
+        "mayDeclare": 2,
+        "cached": {
+          "player": 2847,
+          "ai": 2848,
+          "mayDeclareDeclarer": 2
+        }
+      },
+      {
+        "bonus": 1566,
+        "power": {
+          "player": 2847,
+          "ai": 3132
+        },
+        "ratio": 0.1,
+        "mayDeclare": 2,
+        "cached": {
+          "player": 2847,
+          "ai": 3132,
+          "mayDeclareDeclarer": 2
+        }
+      },
+      {
+        "bonus": 1694,
+        "power": {
+          "player": 2847,
+          "ai": 3388
+        },
+        "ratio": 0.19,
+        "mayDeclare": 2,
+        "cached": {
+          "player": 2847,
+          "ai": 3388,
+          "mayDeclareDeclarer": 2
+        }
+      },
+      {
+        "bonus": 1708,
+        "power": {
+          "player": 2847,
+          "ai": 3416
+        },
+        "ratio": 0.2,
+        "mayDeclare": 2,
+        "cached": {
+          "player": 2847,
+          "ai": 3416,
+          "mayDeclareDeclarer": 2
+        }
+      },
+      {
+        "bonus": 1779,
+        "power": {
+          "player": 2847,
+          "ai": 3558
+        },
+        "ratio": 0.25,
+        "mayDeclare": 2,
+        "cached": {
+          "player": 2847,
+          "ai": 3558,
+          "mayDeclareDeclarer": 2
+        }
+      },
+      {
+        "bonus": 1808,
+        "power": {
+          "player": 2847,
+          "ai": 3616
+        },
+        "ratio": 0.27,
+        "mayDeclare": 2,
+        "cached": {
+          "player": 2847,
+          "ai": 3616,
+          "mayDeclareDeclarer": 2
+        }
+      },
+      {
+        "bonus": 1851,
+        "power": {
+          "player": 2847,
+          "ai": 3702
+        },
+        "ratio": 0.3,
+        "mayDeclare": 2,
+        "cached": {
+          "player": 2847,
+          "ai": 3702,
+          "mayDeclareDeclarer": 2
+        }
+      },
+      {
+        "bonus": 2135,
+        "power": {
+          "player": 2847,
+          "ai": 4270
+        },
+        "ratio": 0.5,
+        "mayDeclare": 2,
+        "cached": {
+          "player": 2847,
+          "ai": 4270,
+          "mayDeclareDeclarer": 2
+        }
+      }
+    ],
+    "zaufanie0_silniejsza": {
+      "statusStart": "neutralni",
+      "statusTury": [],
+      "ostrzezenieWLogu": {
+        "found": false,
+        "texts": []
+      }
+    },
+    "silniejszyGracz": {
+      "statusStart": "neutralni",
+      "statusTury": []
+    }
+  },
+  "startedAt": "2026-11-13T18:32:21.561Z",
+  "errorsTotal": 0,
+  "finishedAt": "2026-11-13T18:34:03.546Z"
+}

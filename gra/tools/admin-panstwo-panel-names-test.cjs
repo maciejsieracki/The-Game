@@ -147,7 +147,7 @@ ok(bmh.includes('Administrator państwa ✓') && bmh.includes('Administrator pa�
 ok(adp.includes("'Administrator miasta' : 'Administrator państwa'"), 'administratorPanel.ts: tytuł państwa / miasta');
 ok(cityPanel.includes('Administrator miasta') && adp.includes('Administrator miasta'), 'nazwa „administrator miasta” zachowana (budynki w mieście)');
 // Zakresy (zarzut: nie mieszać nazw i zakresów): tekst państwa nie mówi „w tym mieście”.
-ok(adp.includes("'Zatrudnić administratora państwa (jeden na całe Państwo)?'"), 'administratorPanel.ts: pytanie zatrudnienia państwa bez „w mieście X”');
+ok(!/window\.confirm\(/.test(adp) && !adp.includes('Zatrudnić administratora'), 'administratorPanel.ts: zatrudnienie bez natywnego okna i bez pytania „w mieście X”');
 ok(adp.includes("'we wszystkich miastach Państwa'") && adp.includes('Administrator państwa to jedna osoba na całe Państwo'),
   'administratorPanel.ts: zakres państwa = „we wszystkich miastach Państwa” (lead, bonusy, skutki)');
 ok(!/Administrator to osoba przypisana do jednego miasta[^\n]*improvementAdministratorDescription/.test(adp),

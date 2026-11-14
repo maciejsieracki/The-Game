@@ -328,9 +328,10 @@ async function main() {
   {
     const { proposal, ctx } = aiPeaceProposal({ goldOnce: 300 }, RELACJE.neutralna);
     const resPrzed = mutR2_mod.evaluateProposal(proposal, ctx);
-    check('(2-PRZED-neutralna) DOWÓD REGRESJI: kod rundy 2 — dar 300 PW przy neutralnej relacji '
-      + 'nadal ujemny bilans (-55, dokładnie dowód Evaluatora)',
-      resPrzed.accepted === true && resPrzed.pwBalance === -55, resPrzed);
+    // R-WEB-DIPLO-WAR-TRUST-ZERO-NOT-RELATION-Q1: w wojnie Zaufanie = 0, limit 29 na sumę usunięty
+    // (relTotal = Respekt 50, nie 29) -> bilans rundy 2 dla neutralnej wynosi 50 (było -55 przy capie 29).
+    check('(2-PRZED-neutralna) kod rundy 2 — dar 300 PW przy neutralnej relacji (po usunięciu limitu 29: bilans +50, nie -55)',
+      resPrzed.accepted === true && resPrzed.pwBalance === 50, resPrzed);
   }
   {
     const { proposal, ctx } = aiPeaceProposal({ goldOnce: 300 }, RELACJE.zla);
@@ -428,9 +429,9 @@ async function main() {
     const resR2 = mutR2_mod.evaluateProposal(proposal, ctx);
     const resSwap = mutSwap_mod.evaluateProposal(proposal, ctx);
     check('(4a) PROOF pusty koszyk: sama zamiana argumentów (bez zmiany relTotal) daje '
-      + 'pwBalance BIT-IDENTYCZNY z rundą 2 dla neutralnej relacji (-355, nadal ujemny, '
+      + 'pwBalance BIT-IDENTYCZNY z rundą 2 dla neutralnej relacji (-250 po usunięciu limitu 29, nadal ujemny, '
       + 'canAccept nadal false) — zamiana SAMA W SOBIE nie naprawia kryterium końca #2',
-      resSwap.pwBalance === resR2.pwBalance && resSwap.pwBalance === -355,
+      resSwap.pwBalance === resR2.pwBalance && resSwap.pwBalance === -250,
       { resR2, resSwap });
   }
   {
@@ -439,10 +440,10 @@ async function main() {
     const resSwap = mutSwap_mod.evaluateProposal(proposal, ctx);
     console.log('  dar 300 PW, neutralna: runda2=' + resR2.pwBalance + ' swap-doslowny=' + resSwap.pwBalance);
     check('(4b) PROOF dar 300 PW: sama zamiana argumentów pogarsza wynik względem rundy 2 '
-      + '(-655 < -55) zamiast go naprawiać — dar od AI trafia do argumentu odejmowanego zamiast '
+      + '(-550 < 50, po usunięciu limitu 29) zamiast go naprawiać — dar od AI trafia do argumentu odejmowanego zamiast '
       + 'dodawanego, odwrócona polaryzacja — POTWIERDZA, że dosłowna zamiana z dispatchu jest '
       + 'niewystarczająca/błędna, uzasadniając odejście od niej w naprawie tej rundy',
-      resSwap.pwBalance < resR2.pwBalance && resSwap.pwBalance === -655,
+      resSwap.pwBalance < resR2.pwBalance && resSwap.pwBalance === -550,
       { resR2, resSwap });
   }
 

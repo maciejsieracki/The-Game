@@ -5,6 +5,15 @@
  */
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
+const DIPLO_PARAMS = require('../data/diplomacy.json').params;
+
+// Oczekiwana kara graniczna wyprowadzona z data/diplomacy.json (ekspansjaGranica*_zaufanie_perTura),
+// progi epok jak w diplomacy.ts sharedBorderPenaltyForEpochs: max(epoka) >=3 → Żelazo, >=2 → Brąz, inaczej Kamień.
+const expectedBorderPenalty = pairEpoch => {
+  if (pairEpoch >= 3) return DIPLO_PARAMS.ekspansjaGranicaZelazo_zaufanie_perTura;
+  if (pairEpoch >= 2) return DIPLO_PARAMS.ekspansjaGranicaBraz_zaufanie_perTura;
+  return DIPLO_PARAMS.ekspansjaGranica_zaufanie_perTura;
+};
 
 const GAME_URL = new URL(process.env.GAME_URL || 'http://127.0.0.1:612/?playtest=mapa');
 GAME_URL.searchParams.set('civTest', '1');
@@ -85,8 +94,8 @@ const close = (actual, expected, label) => assert.ok(Math.abs(actual - expected)
     assert.equal(eraSetup.syncB, 3, 'fixture research and wonder state recompute Iron owner');
     let evidence = await page.evaluate(([a, b]) => window.__borderEraPenaltyRuntimeTestDebug.pairEvidence(a, b), [a, b]);
     assert.equal(evidence.sharedLandBorder, true);
-    assert.equal(evidence.rate, -4);
-    assert.equal(evidence.breakdownValue, -4);
+    assert.equal(evidence.rate, expectedBorderPenalty(3), 'eras (2,3): max epoch 3 uses Iron border penalty from diplomacy.json');
+    assert.equal(evidence.breakdownValue, expectedBorderPenalty(3));
     const tick = await page.evaluate(([a, b]) => window.__borderEraPenaltyRuntimeTestDebug.applyProductionTick(a, b), [a, b]);
     close(tick.delta, evidence.previewDelta, 'production tick delta equals live preview');
     console.log('mixed-era pre-save', JSON.stringify({ evidence, tick }));
@@ -113,8 +122,8 @@ const close = (actual, expected, label) => assert.ok(Math.abs(actual - expected)
     }), [a, b]);
     assert.equal(restored.eraA, 2, 'AI owner A era restored from save');
     assert.equal(restored.eraB, 3, 'AI owner B era restored from save');
-    assert.equal(restored.evidence.rate, -4);
-    assert.equal(restored.evidence.breakdownValue, -4);
+    assert.equal(restored.evidence.rate, expectedBorderPenalty(3), 'restored eras (2,3): max epoch 3 uses Iron border penalty');
+    assert.equal(restored.evidence.breakdownValue, expectedBorderPenalty(3));
     const restoredTick = await page.evaluate(([a, b]) => window.__borderEraPenaltyRuntimeTestDebug.applyProductionTick(a, b), [a, b]);
     close(restoredTick.delta, restored.evidence.previewDelta, 'post-load production tick equals post-load live preview');
     console.log('roundtrip', JSON.stringify({ restored, tick: restoredTick }));
@@ -123,10 +132,10 @@ const close = (actual, expected, label) => assert.ok(Math.abs(actual - expected)
     await page.evaluate(([a, b]) => window.__borderEraPenaltyRuntimeTestDebug.setOwnerEraForTest(b, 2), [a, b]);
     const changed = await page.evaluate(([a, b]) => window.__borderEraPenaltyRuntimeTestDebug.pairEvidence(a, b), [a, b]);
     const reversed = await page.evaluate(([a, b]) => window.__borderEraPenaltyRuntimeTestDebug.pairEvidence(b, a), [a, b]);
-    assert.equal(changed.rate, -3, 'Stone/Bronze follows higher current owner era');
-    assert.equal(reversed.rate, -3, 'owner order does not change rate');
-    assert.equal(changed.breakdownValue, -3);
-    assert.equal(reversed.breakdownValue, -3);
+    assert.equal(changed.rate, expectedBorderPenalty(2), 'eras (2,2): Bronze border penalty from higher current owner era');
+    assert.equal(reversed.rate, expectedBorderPenalty(2), 'owner order does not change rate');
+    assert.equal(changed.breakdownValue, expectedBorderPenalty(2));
+    assert.equal(reversed.breakdownValue, expectedBorderPenalty(2));
 
     assert.equal(await page.evaluate(([a, b]) => window.__borderEraPenaltyRuntimeTestDebug.moveFixtureAwayForTest(a, b), [a, b]), true,
       'fixture can remove shared border while retaining >2 cities per owner');

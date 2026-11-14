@@ -1,0 +1,165 @@
+{
+  "scenario": "2c",
+  "started": "2026-11-13T19:35:10.269Z",
+  "epoki": [
+    {
+      "setEra": [
+        1,
+        1
+      ],
+      "eraA": 1,
+      "eraB": 1,
+      "sharedLandBorder": true,
+      "stawka": -3,
+      "previewDelta": -2.16,
+      "breakdownValue": -3,
+      "tickDelta": -2.16,
+      "zaufanieAfterTick": 27.34
+    },
+    {
+      "setEra": [
+        2,
+        2
+      ],
+      "eraA": 2,
+      "eraB": 2,
+      "sharedLandBorder": true,
+      "stawka": -4,
+      "previewDelta": -3.06,
+      "breakdownValue": -4,
+      "tickDelta": -3.0599999999999987,
+      "zaufanieAfterTick": 24.28
+    },
+    {
+      "setEra": [
+        3,
+        3
+      ],
+      "eraA": 3,
+      "eraB": 3,
+      "sharedLandBorder": true,
+      "stawka": -5,
+      "previewDelta": -3.9600000000000004,
+      "breakdownValue": -5,
+      "tickDelta": -3.960000000000001,
+      "zaufanieAfterTick": 20.32
+    },
+    {
+      "setEra": [
+        2,
+        3
+      ],
+      "eraA": 2,
+      "eraB": 3,
+      "sharedLandBorder": true,
+      "stawka": -5,
+      "previewDelta": -3.9600000000000004,
+      "breakdownValue": -5,
+      "tickDelta": -3.960000000000001,
+      "zaufanieAfterTick": 16.36
+    },
+    {
+      "setEra": [
+        1,
+        3
+      ],
+      "eraA": 1,
+      "eraB": 3,
+      "sharedLandBorder": true,
+      "stawka": -5,
+      "previewDelta": -3.9600000000000004,
+      "breakdownValue": -5,
+      "tickDelta": -3.960000000000001,
+      "zaufanieAfterTick": 12.399999999999999
+    },
+    {
+      "setEra": [
+        4,
+        4
+      ],
+      "eraA": 4,
+      "eraB": 4,
+      "sharedLandBorder": true,
+      "stawka": -5,
+      "previewDelta": -3.9600000000000004,
+      "breakdownValue": -5,
+      "tickDelta": -3.960000000000001,
+      "zaufanieAfterTick": 8.439999999999998
+    }
+  ],
+  "karencja": {
+    "ai": 1,
+    "start": {
+      "label": "start (stan po wczytaniu playtestu)",
+      "stawka": -5,
+      "eraA": 2,
+      "eraB": 4,
+      "status": "neutralni",
+      "truceUntilTurn": null,
+      "peaceUntilTurn": null,
+      "turn": 1
+    },
+    "wojna": {
+      "label": "wojna (wymuszona, 6 tur)",
+      "stawka": -5,
+      "eraA": 2,
+      "eraB": 4,
+      "status": "wojna",
+      "truceUntilTurn": null,
+      "peaceUntilTurn": null,
+      "turn": 1
+    },
+    "akceptacjaRozejmu": {
+      "accepted": true,
+      "reason": "Rozejm zawarty"
+    },
+    "rozejm": {
+      "label": "rozejm",
+      "stawka": 0,
+      "eraA": 2,
+      "eraB": 4,
+      "status": "pokoj",
+      "truceUntilTurn": 6,
+      "peaceUntilTurn": null,
+      "turn": 1
+    },
+    "pokoj": {
+      "label": "pokoj",
+      "stawka": 0,
+      "eraA": 2,
+      "eraB": 4,
+      "status": "pokoj",
+      "truceUntilTurn": null,
+      "peaceUntilTurn": 11,
+      "turn": 1
+    }
+  },
+  "errors": [],
+  "ownerIdsPrzedStartem": [
+    1
+  ],
+  "ownerIds": [
+    1,
+    3,
+    5
+  ],
+  "oczekiwanie": {
+    "kamien": -3,
+    "braz": -4,
+    "zelazo": -5,
+    "regula": "max(epokaA,epokaB) >=3 → zelazo; >=2 → braz; inaczej kamien (diplomacy.ts:602-611)"
+  },
+  "fixtura": {
+    "a": 1,
+    "b": 3,
+    "setup": {
+      "ownerA": 1,
+      "ownerB": 3,
+      "initialSharedLandBorder": false,
+      "fixtureCityCountA": 4,
+      "fixtureCityCountB": 4,
+      "sharedLandBorder": true
+    }
+  },
+  "zakonczone": "2026-11-13T19:38:46.475Z"
+}

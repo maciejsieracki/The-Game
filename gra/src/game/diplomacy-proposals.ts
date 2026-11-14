@@ -29,6 +29,7 @@ import {
 import { RodzajTraktatu } from '../types/diplomacy';
 import { czyAgresorAktywny, deltaRelacjiSojusz } from './diplomacy';
 import { resolveWarPeaceProfile, evaluatePeaceAiGate } from './diplomacy-war-peace-profile';
+import type { PeaceMilitaryPosition } from './diplomacy-military-strength';
 import { peaceProposalBlocked, PEACE_PROPOSAL_MIN_WAR_TURNS } from './diplomacy-peace-proposal-timing';
 import { warWearinessLevel, wearinessPeacePriceFactor } from './war-weariness';
 import type { Player } from '../types/player';
@@ -200,6 +201,11 @@ export interface ProposalEvalContext {
     lostCitiesResponder: number;
     turnsSinceCityChange?: number;
     responderRw: number;
+    /**
+     * R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: pozycja RESPONDENTA wg siły militarnej wobec proponenta
+     * (peaceMilitaryPosition). 'silniejsza' = odrzuca pokój bez miasta o wartości PN ≥ ceny.
+     */
+    responderPozycjaMilitarna?: PeaceMilitaryPosition;
   };
   /** Realne sąsiedztwo terytorialne (granica lądowa) + obie strony >2 miasta. */
   karaWspolnaGranica?: boolean;
@@ -708,7 +714,7 @@ export function treatyBasePnFromConfig(
   return payload ? base * treatyDurationPnMultiplier(actionId, payload) : base;
 }
 
-/** Relacja do progu PN traktatu — w wojnie z podłogą score (spójne z clampRelationForWar / UI). */
+/** Relacja do progu PN traktatu — w wojnie Zaufanie = 0 (clampRelationForWar), bez limitu 29 na sumę. */
 export function treatyEvalRelationTotal(rel: Relation): number {
   const clamped = rel.status === 'wojna' ? clampRelationForWar(rel) : rel;
   return relationTotal(clamped);
@@ -1357,20 +1363,12 @@ export function evaluateProposal(
             rw: ctx.warState.responderRw,
             turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
             lostCitiesInWar: Math.max(0, ctx.warState.lostCitiesResponder),
-            // DODATEK 1 (przewaga >20%): zmeczenie wojna zdejmuje blokade (ten sam wzor co wearyFactor nizej).
-            // ZALOZENIE (R-WEB-DIPLO-PEACE-BALANCE-ACCEPT-DIAG-Q1, odpowiedz na zarzut 4): lostCitiesTotal = tylko
-            // miasta utracone przez respondenta (AI), jak w istniejacym wearyFactor nizej. ai.ts (propozycja AI->gracz)
-            // dodaje dodatkowo zdobyteMiastaPartnera, bo tam ta wartosc jest dostepna w kontekscie. Roznica istniala
-            // przed ta zmiana; ujednolicenie zmienia wearyFactor i wymaga osobnej decyzji (nie robione tutaj).
-            wearinessLevel: warWearinessLevel({
-              turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
-              lostCitiesTotal: Math.max(0, ctx.warState.lostCitiesResponder),
-              turnsSinceCityChange: ctx.warState.turnsSinceCityChange,
-            }),
+            // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: pozycja respondenta wg siły militarnej (main.ts).
+            pozycjaMilitarna: ctx.warState.responderPozycjaMilitarna,
           },
           r5Profile,
         );
-        if (r5Gate.verdict !== 'ok') {
+        if (r5Gate.verdict === 'too_early') {
           return { accepted: false, reason: r5Gate.reason ?? 'AI odrzuca pokój' };
         }
         // R-WEB-AI-WAR-WEARINESS-PEACE-Q1: zmęczenie wojną obniża cenę pokoju zadaną od gracza (do rabatCenyPokojuMax).
@@ -1380,6 +1378,31 @@ export function evaluateProposal(
           turnsSinceCityChange: ctx.warState.turnsSinceCityChange,
         }));
         basePn = Math.round(basePnCfg * r5Gate.priceMultiplier * wearyFactor);
+        // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (zarzut 5 / wymóg 4): złoto i surowce NIE są
+        // słodzikiem pokoju ani rozejmu — w każdej pozycji (słabsza i silniejsza AI) oferta z nimi jest
+        // odrzucana. Słodzikiem jest wyłącznie miasto (poniżej, dla 'stronger').
+        const nonCitySweetener = (payload.giveItems ?? []).find(i => i.typ === 'zloto' || i.typ === 'surowiec_ilosc');
+        if (nonCitySweetener) {
+          return {
+            accepted: false,
+            reason: 'Złoto i surowce nie są słodzikiem pokoju ani rozejmu — w ofercie wymagane są wyłącznie miasta',
+          };
+        }
+        // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: militarnie silniejsza AI odrzuca pokój, chyba że
+        // oferta zawiera MIASTO gracza o wartości PN ≥ ceny. Liczą się WYŁĄCZNIE miasta w giveItems
+        // (pieniądze i surowce nie są słodzikiem). Cena jak dotąd (bez mnożnika od siły).
+        if (r5Gate.verdict === 'stronger') {
+          const cityItems = (payload.giveItems ?? []).filter(i => i.typ === 'miasto');
+          const cityGivePn = cityItems.length > 0
+            ? resolveProposalPn({ giveItems: cityItems, actionId }, pnOpts).givePn
+            : 0;
+          if (!(cityGivePn >= basePn)) {
+            return {
+              accepted: false,
+              reason: `${r5Gate.reason ?? 'AI odrzuca pokój'} — miasta w ofercie warte ${Math.round(cityGivePn)} PN, wymagane ${basePn} PN`,
+            };
+          }
+        }
       }
       const proposerIsPlayer = proposerOwnerId === (pnOpts.playerOwnerId ?? 0);
       const relTotal = treatyEvalRelationTotal(relation);
@@ -1413,6 +1436,8 @@ export function evaluateProposal(
       // ujemny WE WSZYSTKICH (np. -450/-355/-355), bo `partnerTreatyPnRequired(basePn)`=basePn
       // (500 dla pokoju) jest STAŁA, porównywana z rabatowaną `effectiveTreatyPnRequired`
       // ograniczoną przez `clampRelationForWar` (wywoływaną wewnątrz `treatyEvalRelationTotal`)
+      // [AKTUALIZACJA R-WEB-DIPLO-WAR-TRUST-ZERO: limit 29 zniesiony; w wojnie obniżane jest
+      // tylko Zaufanie do 0. Liczby poniżej (29/145/69/101) opisują stan SPRZED tej zmiany.]
       // do relTotal<=WAR_RELATION_SCORE_CAP(29) w trakcie wojny — `effectiveTreatyPnRequired
       // (500,29)`=145 << 500, więc bilans jest ujemny NIEZALEŻNIE od tego, jak dobra jest
       // relacja, dopóki trwa wojna (co dla 'pokoj' jest ZAWSZE prawdą — `!stanWojny` guard
@@ -1437,7 +1462,7 @@ export function evaluateProposal(
       // gałąź gracz-proponent (`givePn` pomaga, `receivePn` szkodzi — zweryfikowane testem
       // regresji, w tym scenariuszem daru) — zmieniony WYŁĄCZNIE `relTotal` wejściowy dla
       // gałęzi AI-proponenta: `relationTotal(relation)` SUROWA (bez `clampRelationForWar`),
-      // zamiast `treatyEvalRelationTotal` (wojennie ograniczonej do <=29). `clampRelationForWar`
+      // zamiast `treatyEvalRelationTotal` (wojennie: Zaufanie=0, dawniej także limit 29 — usunięty). `clampRelationForWar`
       // istnieje po to, by relacja WYŚWIETLANA (etykieta "Przyjazny"/"Życzliwy") i INNE traktaty
       // (sojusz, NAP — progi Relacji, które dawałyby "przyjazny" status mimo trwającej wojny)
       // nie ujawniały fałszywie dobrego stanu w trakcie wojny — nie po to, by WEWNĘTRZNA
@@ -1472,9 +1497,10 @@ export function evaluateProposal(
       // przycisk Przyjmij zawsze aktywny dla oferowanego pokoju. Sama liczba bilansu może
       // nadal być pokazywana informacyjnie, ale nie decyduje o canAccept." Powód (dowód
       // matematyczny Evaluatora rundy 3, patrz OBRONA runda 3 wyżej): podczas wojny
-      // `clampRelationForWar` ogranicza relTotal<=29, a AI w ogóle proponuje gołą (bez
+      // `clampRelationForWar` (sprzed R-WEB-DIPLO-WAR-TRUST-ZERO: ograniczał relTotal<=29; dziś zeruje
+      // tylko Zaufanie) a AI w ogóle proponuje gołą (bez
       // koszyka) ofertę pokoju WYŁĄCZNIE gdy jest słabsze — realny sufit relTotal w tym
-      // stanie to 69, co nigdy nie wystarcza do `partnerTreatyPnRequired`(=500 dla pokoju)
+      // stanie (sprzed zmiany) to 69, co nigdy nie wystarcza do `partnerTreatyPnRequired`(=500 dla pokoju)
       // przy jakiejkolwiek realnie osiągalnej Relacji podczas wojny — SAMA formuła
       // (nawet po naprawie kierunku rundy 3) nie da się naprawić bez zmiany zasad gry,
       // więc właściciel zdecydował: dla 'pokoj' (OBA kierunki — proposerIsPlayer=true I
@@ -2000,7 +2026,9 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
     case 'oferuj_trybut_za_pokoj':
       return `Oferujemy jednorazową zapłatę ${cmd.goldOnce ?? 0} ¤ w zamian za pokój.`;
     case 'oferuj_miasto_za_pokoj':
-      return 'Oferujemy pokój w zamian za przekazanie jednego z naszych miast.';
+      return cmd.rodzaj === 'rozejm'
+        ? 'Oferujemy rozejm w zamian za przekazanie jednego z naszych miast.'
+        : 'Oferujemy pokój w zamian za przekazanie jednego z naszych miast.';
     case 'zada_miasto_za_pokoj':
       return 'Warunkiem pokoju jest przekazanie jednego z twoich miast.';
     case 'wypowiedz_wojne':
@@ -2091,6 +2119,18 @@ export function aiCommandToPendingProposal(
       };
     case 'oferuj_miasto_za_pokoj':
       // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): AI (proponent) oddaje swoje miasto → giveItems.
+      // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (wymóg 3): rodzaj 'rozejm' → rozejm z tym samym miastem.
+      if (cmd.rodzaj === 'rozejm') {
+        return {
+          ...base,
+          id: makeDealId('pending-rozejm-miasto', turn, fromOwnerId, toOwnerId),
+          actionId: 'rozejm',
+          payload: {
+            turns: TRUCE_DEFAULT_TURNS,
+            giveItems: [{ typ: 'miasto', id: cmd.cityId, ilosc: 1, cityPn: cmd.cityPn, cityWeight: cmd.cityWeight }],
+          },
+        };
+      }
       return {
         ...base,
         id: makeDealId('pending-pokoj-miasto', turn, fromOwnerId, toOwnerId),

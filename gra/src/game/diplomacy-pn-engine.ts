@@ -99,6 +99,17 @@ export interface DiploPairMeta {
    */
   truceInitiatorId?: number;
   /**
+   * R-WEB-DIPLO-WAR-BATTLE-COUNTER-Q1 — punkty wygranych bitew z BIEŻĄCEJ wojny tej pary, osobno
+   * dla strony o niższym (`niski`) i wyższym (`wysoki`) id. Zerowane przy wybuchu wojny; poza
+   * wojną nieczytelne (readWarBattlePoints zwraca 0). Brak pola = 0 (stary zapis).
+   */
+  wojnaBitwyPkt?: { niski: number; wysoki: number };
+  /**
+   * R-WEB-DIPLO-WAR-BATTLE-COUNTER-Q1 — czasowy bonus siły trybutu (pobierający = `dla`),
+   * aktywny dopóki tura < `doTury`. Brak pola = brak bonusu (stary zapis).
+   */
+  trybutBonus?: { dla: number; doTury: number };
+  /**
    * R-WEB-DIPLO-TRUCE-IMPL-Q1 (B): oferta pokoju stałego po wygaśnięciu rozejmu, czekająca
    * na odpowiedź adresata. Zgoda → pokój; odmowa lub timeout (kolejna tura) → wojna.
    */

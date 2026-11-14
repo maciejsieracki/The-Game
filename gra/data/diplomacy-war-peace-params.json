@@ -54,7 +54,7 @@
     "bazaBrakDanych": 5
   },
   "zmeczenie": {
-    "_wzor": "udzial = maksUdzial * min(1, turyWojny / T); T = min(maksTur, bazaTur + wagaAgresja*ai_agresywnosc). Progi (e): ulamek min(1, t/T) >= progSygnaluPokoju. Pelne zmeczenie najpozniej po maksTur (20) turach (D4).",
+    "_wzor": "R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: zrodlem poziomu zmeczenia jest jeden licznik warWearinessLevel (war-weariness-params.json: 5%/ture + 10%/miasto, pelne po 20 turach). Sygnal (e) aiPeaceSignals: warWearinessLevel >= progSygnaluPokoju. Pola T/bazaTur/wagaAgresja/maksUdzial/zmeczenieT nie steruja juz decyzjami (pozostaly tylko w resolverze profilu; do usuniecia w osobnym temacie).",
     "maksUdzial": 0.5,
     "bazaTur": 15,
     "wagaAgresja": 1,
@@ -91,13 +91,27 @@
     "prog": 0.20,
     "epsilon": 1e-9
   },
+  "wypowiedzenieZaufanie": {
+    "_opis": "R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 (decyzja wlasciciela 2026-11-13) — AI moze wypowiedziec wojne (priorytet 4 decideAIDiplomacy) tylko gdy Zaufanie pary jest ponizej progZaufaniaWojny ORAZ przewaga sily militarnej AI wynosi co najmniej progPrzewagiProc (diplomacy-military-strength-params.json). Charakter cywilizacji (effAgresja, willingnessWar) nadal decyduje, czy wykorzysta mozliwosc.",
+    "progZaufaniaWojny": 30
+  },
+  "przesuniecieProguWojnyCharakter": {
+    "_opis": "R-WEB-DIPLO-WAR-CHARACTER-THRESHOLD-Q1 (decyzja wlasciciela ABC B, 2026-11-13) — prog przewagi sily militarnej, przy ktorym AI wypowiada wojne (priorytet 4), = bazowy progPrzewagiProc (diplomacy-military-strength-params.json, 20%) + przesuniecie z charakteru cywilizacji. Zrodlo przesuniecia: bias.warSilaBonus z resolveDiplomacyCivBias (ai.ts) — ten sam bonus, ktory dawniej przesuwal prog rw (0,6) w commicie 3950aae12. Wzor: przesuniecie_pp = wspolczynnikPpNaJednostke * warSilaBonus (ujemne = agresywna, dodatnie = ostrozna), wynik obciety do [min, max]. Wartosci wyjsciowe DO AKCEPTACJI wlasciciela.",
+    "wspolczynnikPpNaJednostke": 100,
+    "min": 10,
+    "max": 35
+  },
   "hamulecRelacji": {
-    "_opis": "R7 — hamulec wojny wg lacznej Relacji. Prog kryzysu = progWojnyRelacji(wyzszy z pary) - progKryzysuMinusPunkty; liczba tur N = clamp(round(bazaN - wagaProgWojny*dip_prog_wojny), minN, maxN). Strona gracza bez wiersza macierzy = progWojnyRelacji bazaBrakDanych.",
+    "_opis": "R7 — hamulec wojny. OD R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 licznik kryzysu liczy kolejne tury, w ktorych Zaufanie pary = 0 (p6.kryzysProgZaufania w diplomacy-tick-params.json), a nie lacznej Relacji; liczba tur N = clamp(round(bazaN - wagaProgWojny*dip_prog_wojny), minN, maxN) bez zmian. Silniejsza strona wg sily militarnej (diplomacy-military-strength.ts) wypowiada wojne po N turach. progKryzysuMinusPunkty i progWojnyRelacji zostaja w danych; prog Relacji z nich nie steruje juz licznikiem kryzysu (zostaje tylko jako informacja w getBrakeParams / tekstach).",
     "progKryzysuMinusPunkty": 15,
     "bazaN": 8,
     "wagaProgWojny": 0.5,
     "minN": 3,
     "maxN": 7
+  },
+  "progRozniceSilyPokoj": {
+    "wartosc": 0,
+    "opis": "R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (decyzja właściciela 2026-11-13): próg różnicy siły militarnej w procentach przy rozejmie i pokoju. 0 = każda różnica siły decyduje (silniejsza odrzuca bez miasta, słabsza szuka pokoju). Wartość 20 = różnica w paśmie ±20% nie wymusza ani odrzucenia, ani miasta. Zmiana bez kodu."
   },
   "pokojAiAi": {
     "_opis": "R-WEB-DIPLO-PEACE-AI-AI-NONNEGATIVE-BALANCE-Q1 (decyzja wlasciciela 2026-11-09): pokoj/rozejm miedzy DWIEMA cywilizacjami AI nie moze zostac zawarty, gdy bilans PW ktorejkolwiek z nich (po zaplacie) jest nizszy niz minBilansPW. Wyjatek gracza (pokoj zawsze do przyjecia przez gracza) NIE dotyczy tej sekcji.",

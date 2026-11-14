@@ -440,17 +440,17 @@ function freshRdip(zaufanie, status) {
 }
 
 {
-  // ekspansja −2 przy W=+100 → (dryf +3 + ekspansja −2) ×1.5 = +1.5
+  // ekspansja −3 przy W=+100 → (dryf +3 + ekspansja −3) ×1.5 = 0 (R-WEB-DIPLO-TRUST-NUMBERS-Q1: −3/−4/−5)
   const before = freshRdip(50, 'neutralni');
   const after = WC.tickDiplomacy(before, { turn: 1, karaWspolnaGranica: true, wiarygodnoscSelf: 100 });
-  ok(approxEqual(after.zaufanie, 51.5), `tickDiplomacy: ekspansja + dryf W=100 → dZ=+1.5 (got ${after.zaufanie})`);
+  ok(approxEqual(after.zaufanie, 50), `tickDiplomacy: ekspansja + dryf W=100 → dZ=0 (got ${after.zaufanie})`);
 }
 
 {
-  // ekspansja −2 przy W=−100 → (dryf −3 + ekspansja −2) ×1.5 = −7.5
+  // ekspansja −3 przy W=−100 → (dryf −3 + ekspansja −3) ×1.5 = −9
   const before = freshRdip(50, 'neutralni');
   const after = WC.tickDiplomacy(before, { turn: 1, karaWspolnaGranica: true, wiarygodnoscSelf: -100 });
-  ok(approxEqual(after.zaufanie, 42.5), `tickDiplomacy: ekspansja + dryf W=−100 → dZ=−7.5 (got ${after.zaufanie})`);
+  ok(approxEqual(after.zaufanie, 41), `tickDiplomacy: ekspansja + dryf W=−100 → dZ=−9 (got ${after.zaufanie})`);
 }
 
 {
@@ -519,15 +519,15 @@ function relOneShot(z, r = 30, status = 'neutralni') {
 }
 
 {
-  // tarcia_graniczne −2, W=+100 → ×0.5 = −1
+  // tarcia_graniczne −3, W=+100 → ×0.5 = −1.5
   const r = WC.applyDiplomaticEvent(relOneShot(20), 'tarcia_graniczne', {}, 100);
-  ok(approxEqual(r.zaufanie, 19), `one-shot tarcia W=+100 → −1 Z (got ${r.zaufanie})`);
+  ok(approxEqual(r.zaufanie, 18.5), `one-shot tarcia W=+100 → −1.5 Z (got ${r.zaufanie})`);
 }
 
 {
-  // tarcia_graniczne −2, W=−100 → ×1.5 = −3
+  // tarcia_graniczne −3, W=−100 → ×1.5 = −4.5
   const r = WC.applyDiplomaticEvent(relOneShot(20), 'tarcia_graniczne', {}, -100);
-  ok(approxEqual(r.zaufanie, 17), `one-shot tarcia W=−100 → −3 Z (got ${r.zaufanie})`);
+  ok(approxEqual(r.zaufanie, 15.5), `one-shot tarcia W=−100 → −4.5 Z (got ${r.zaufanie})`);
 }
 
 {

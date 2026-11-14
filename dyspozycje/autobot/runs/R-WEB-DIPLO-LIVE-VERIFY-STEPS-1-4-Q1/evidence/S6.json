@@ -1,0 +1,25 @@
+{
+  "scenario": "6",
+  "checks": [
+    {
+      "id": "S6.a",
+      "label": "przegrywający płaci tylko miastem (zmęczenie wojną)",
+      "ok": "NIE_ZMIERZONO",
+      "detail": {
+        "powod": "brak hooka wymuszającego zmęczenie wojną (siła militarna przegrywającego, licznik wojny >= progu) bez zmian kodu gry; pokrycie testami sim/jednostkowymi"
+      }
+    },
+    {
+      "id": "S6.b",
+      "label": "reguła końca zmęczenia (bezwarunkowy pokój) — osobny temat W58",
+      "ok": "NIE_ZMIERZONO",
+      "detail": {
+        "powod": "decyzja właściciela #361: próg końca zmęczenia do potwierdzenia; W58 nie jest rozstrzygnięty"
+      }
+    }
+  ],
+  "measured": null,
+  "startedAt": "2026-11-13T18:40:17.227Z",
+  "errorsTotal": 0,
+  "finishedAt": "2026-11-13T18:40:17.229Z"
+}

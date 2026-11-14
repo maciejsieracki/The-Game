@@ -1424,6 +1424,8 @@ console.log('\n--- T9a: decideAIDiplomacy - silny+agresywny+wrogi -> wypowiedz_w
       partnerId: 'rzym-1', partnerTypCywilizacji: 'rzymianie',
       relation: { zaufanie: 5, respekt: 5, status: 'neutralni' },
       respektWzgledny: 0.7,
+      // R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1: wypowiedzenie = zaufanie <30 + przewaga sily militarnej >=20%.
+      silaMilitarnaAI: { sila: 130, armiaPkt: 130 }, silaMilitarnaPartner: { sila: 100, armiaPkt: 100 },
       stanWojny: false,
     }],
   });
@@ -1472,7 +1474,7 @@ console.log('\n--- T9c: decideAIDiplomacy - slaby w wojnie -> zaproponuj_pokoj -
   assert(cmds[0] && cmds[0].type === 'zaproponuj_pokoj', `T9c: typ=zaproponuj_pokoj (got ${cmds[0] && cmds[0].type})`);
 }
 
-console.log('\n--- T9d: decideAIDiplomacy - b. slaby w wojnie -> oferuj_trybut_za_pokoj ---');
+console.log('\n--- T9d: decideAIDiplomacy - b. slaby w wojnie, ZLOTO nie kupuje pokoju (R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 D2) ---');
 {
   // stanWojny=true, respektWzgledny=0.2 <= 0.25 -> trybut za pokoj (priorytet nad zwyklym pokojem)
   const cmds = decideAIDiplomacy({
@@ -1486,10 +1488,13 @@ console.log('\n--- T9d: decideAIDiplomacy - b. slaby w wojnie -> oferuj_trybut_z
       relation: { zaufanie: 5, respekt: 5, status: 'wojna' },
       respektWzgledny: 0.2,
       stanWojny: true,
+      turnsAtWar: 100,
     }],
   });
   assert(cmds.length === 1, 'T9d: jedna komenda');
-  assert(cmds[0] && cmds[0].type === 'oferuj_trybut_za_pokoj', `T9d: typ=oferuj_trybut_za_pokoj (got ${cmds[0] && cmds[0].type})`);
+  // D2: dawna gałąź oferuj_trybut_za_pokoj (złoto za pokój) usunięta; bez miasta i bez danych siły -> zwykły pokój.
+  assert(cmds[0] && cmds[0].type === 'zaproponuj_pokoj', `T9d: typ=zaproponuj_pokoj, zloto nie tworzy oferty (got ${cmds[0] && cmds[0].type})`);
+  assert(!cmds.some(c => c.type === 'oferuj_trybut_za_pokoj'), 'T9d: brak oferuj_trybut_za_pokoj przy zlocie 100');
 }
 
 console.log('\n--- T9e: decideAIDiplomacy - przyjazny/pokoj -> brak agresywnych komend (sojusz/handel OK) ---');
@@ -1555,7 +1560,7 @@ console.log('\n--- T9g: decideAIDiplomacy - rownosc sil -> brak komendy ---');
 
 console.log('\n--- T9h: decideAIDiplomacy - wiele relacji mieszanych -> komendy per partner ---');
 {
-  // Partner A: b. slaby w wojnie -> oferuj_trybut_za_pokoj
+  // Partner A: b. slaby w wojnie -> zaproponuj_pokoj (D2: bez oferty złota)
   // Partner B: przyjazny -> brak komendy
   // Partner C: silny agresywny wrogi -> wypowiedz_wojne
   // P-AI-WOJNA-WCZESNA-FAZA-MIASTA-PANSTWA-Q1: currentTurn=30 (> okno 25 tur) — partner C
@@ -1568,15 +1573,15 @@ console.log('\n--- T9h: decideAIDiplomacy - wiele relacji mieszanych -> komendy 
     // skarbiecGold wymagane dla oferuj_trybut_za_pokoj (partner A) -- patrz T9d.
     skarbiecGold: 100,
     relacje: [
-      { partnerId: 'A', partnerTypCywilizacji: 'rzymianie', relation: { zaufanie: 5, respekt: 5, status: 'wojna' }, respektWzgledny: 0.15, stanWojny: true },
+      { partnerId: 'A', partnerTypCywilizacji: 'rzymianie', relation: { zaufanie: 5, respekt: 5, status: 'wojna' }, respektWzgledny: 0.15, stanWojny: true, turnsAtWar: 100 },
       { partnerId: 'B', partnerTypCywilizacji: 'rzymianie', relation: { zaufanie: 80, respekt: 50, status: 'pokoj' }, respektWzgledny: 0.52, stanWojny: false },
-      { partnerId: 'C', partnerTypCywilizacji: 'rzymianie', relation: { zaufanie: 5, respekt: 5, status: 'neutralni' }, respektWzgledny: 0.68, stanWojny: false },
+      { partnerId: 'C', partnerTypCywilizacji: 'rzymianie', relation: { zaufanie: 5, respekt: 5, status: 'neutralni' }, respektWzgledny: 0.68, silaMilitarnaAI: { sila: 130, armiaPkt: 130 }, silaMilitarnaPartner: { sila: 100, armiaPkt: 100 }, stanWojny: false },
     ],
   });
   const forA = cmds.find(c => c.targetId === 'A');
   const forB = cmds.find(c => c.targetId === 'B');
   const forC = cmds.find(c => c.targetId === 'C');
-  assert(forA && forA.type === 'oferuj_trybut_za_pokoj', `T9h: partner A -> oferuj_trybut_za_pokoj (got ${forA && forA.type})`);
+  assert(forA && forA.type === 'zaproponuj_pokoj', `T9h: partner A -> zaproponuj_pokoj, bez zlota (got ${forA && forA.type})`);
   // B: przyjazny (zaufanie=80, score=130) -> brak agresywnych komend (sojusz/handel OK w v0.2)
   const agresywneTypy = ['wypowiedz_wojne', 'zadaj_trybut', 'oferuj_trybut_za_pokoj'];
   assert(!forB || !agresywneTypy.includes(forB.type), `T9h: partner B -> brak agresywnych komend (got ${forB && forB.type})`);
@@ -1612,6 +1617,7 @@ console.log('\n--- T9j: decideAIDiplomacy - powod jest niepustym stringiem ---')
       partnerId: 'rzym-1', partnerTypCywilizacji: 'rzymianie',
       relation: { zaufanie: 5, respekt: 5, status: 'neutralni' },
       respektWzgledny: 0.7,
+      silaMilitarnaAI: { sila: 130, armiaPkt: 130 }, silaMilitarnaPartner: { sila: 100, armiaPkt: 100 },
       stanWojny: false,
     }],
   });
@@ -1933,10 +1939,11 @@ console.log('\n--- T4S-d: decideAIDiplomacy - wyzszy agresjaMnoznik czesciej wyp
       partnerId: 'rzym-1', partnerTypCywilizacji: 'rzymianie',
       relation: { zaufanie: 5, respekt: 5, status: 'neutralni' },
       respektWzgledny: 0.65,
+      silaMilitarnaAI: { sila: 130, armiaPkt: 130 }, silaMilitarnaPartner: { sila: 100, armiaPkt: 100 },
       stanWojny: false,
     }],
   };
-  
+
   const cmdsNiski  = decideAIDiplomacy(relInput, undefined, 1.0);  // mnoznik=1 -> effAgresja=0.4 < 0.5
   const cmdsWysoki = decideAIDiplomacy(relInput, undefined, 1.5);  // mnoznik=1.5 -> effAgresja=0.6 >= 0.5
   
@@ -2675,13 +2682,17 @@ console.log('\n--- T12-dip-b: agresywna cywilizacja -> szybciej wojna niz pokojo
     partnerId: '0',
     relation: { zaufanie: 5, respekt: 5, status: 'neutralni' },
     respektWzgledny: 0.65,
+    silaMilitarnaAI: { sila: 130, armiaPkt: 130 }, silaMilitarnaPartner: { sila: 100, armiaPkt: 100 },
     stanWojny: false,
     partnerTypCywilizacji: 'chinczycy',
   };
+  // R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 (obrona r1): OBA wywołania mają tę samą agresję (0.5) i te same
+  // warunki siły/zaufania; różni je wyłącznie charakter cywilizacji. Próg progWojnaAgresja (0.5) przesuwa
+  // resolveDiplomacyCivBias.warAgresjaBonus: agresywna −0.10 (efektywnie 0.34 po podbojBoost), pokojowa +0.10 (0.60).
   const aggressive = decideAIDiplomacy({
     myPlayerId: '3',
     myTypCywilizacji: 'zulusi',
-    agresja: 0.75,
+    agresja: 0.5,
     agresywnoscRaw: 9,
     sklonnoscDoPodboju: 5,
     tolerancjaRyzyka: 9,
@@ -2694,7 +2705,7 @@ console.log('\n--- T12-dip-b: agresywna cywilizacja -> szybciej wojna niz pokojo
   const peaceful = decideAIDiplomacy({
     myPlayerId: '4',
     myTypCywilizacji: 'chinczycy',
-    agresja: 0.75,
+    agresja: 0.5,
     agresywnoscRaw: 2,
     sklonnoscDoPodboju: 1,
     tolerancjaRyzyka: 2,

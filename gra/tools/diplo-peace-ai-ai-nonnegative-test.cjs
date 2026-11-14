@@ -63,7 +63,8 @@ function runTick({ winnerGap, loserGap, turnsSince = 0, gate = 'ok', gold = 1000
       loserBalanceFor: c => loserGap - c,
       tolerancePn: 20,
     }),
-    assets: () => (gold > 0 ? [{ kind: 'zloto', id: 'zloto', amount: gold, pn: gold }] : []),
+    // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (D2): zaplata pokoju AI<->AI to WYLACZNIE miasta (parametr gold = PN jednego miasta).
+    assets: () => (gold > 0 ? [{ kind: 'miasto', id: 'm1', amount: 1, pn: gold }] : []),
     cityCessionOk: () => true,
     battlePending: false,
     pay: (l, w, plan) => { paid = plan; },
@@ -76,7 +77,7 @@ function runTick({ winnerGap, loserGap, turnsSince = 0, gate = 'ok', gold = 1000
   check('T1: AI<->AI, bilanse nieujemne -> pokoj zawarty', r.finalized !== null && r.out[0].action === 'accept_paid', r.out[0]);
 }
 {
-  const r = runTick({ winnerGap: -80, loserGap: 200, gold: 1000 });
+  const r = runTick({ winnerGap: -80, loserGap: 200, gold: 100 });
   check('T2: bilans zwyciezcy ujemny przed zaplata, zaplata go wyrownuje -> zgoda', r.finalized !== null && r.paid.coveredPn >= 80, r.out[0]);
 }
 {
@@ -107,7 +108,10 @@ function runTick({ winnerGap, loserGap, turnsSince = 0, gate = 'ok', gold = 1000
 }
 
 // ---- 3. zmeczenie wojna (runWarWearinessTick) ----
-function weariness({ winnerGap, loserGap, gold = 1000 }) {
+// R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1 (obrona r1): przegrywający ma CZTERY miasta (zmiana 4: z jednym miastem pokój
+// nie zachodzi, więc scenariusz z 1 miastem nie sprawdzałby ochrony ani bilansu). Dla bilansów liczy się tylko gap.
+// base = wymagana bazowa cena PN (>0): przy 0 plan oferty jest pusty i pokoj nie zachodzi (zmiana 4 = oferta musi miec miasto).
+function weariness({ winnerGap, loserGap, gold = 1000, cities = 4, base = 100 }) {
   const store = new Map();
   let finalized = null;
   const out = M.runWarWearinessTick({
@@ -116,28 +120,33 @@ function weariness({ winnerGap, loserGap, gold = 1000 }) {
     pairKey: (a, b) => `${a}-${b}`,
     warInfo: () => ({ warStart: 0, turnsAtWar: 300, lostA: 0, lostB: 4, turnsSinceCityChange: 50 }),
     shareOf: (x) => (x === 1 ? 0.8 : 0.2),
-    cityCountOf: () => 1,
+    cityCountOf: (o) => (o === 2 ? cities : 1),
     price: () => ({
-      requiredPn: M.aiAiPeaceRequiredPn(0, winnerGap),
+      requiredPn: M.aiAiPeaceRequiredPn(base, winnerGap),
       balanceFor: c => winnerGap + c,
       loserBalanceFor: c => loserGap - c,
       tolerancePn: 20,
     }),
-    assets: () => (gold > 0 ? [{ kind: 'zloto', id: 'zloto', amount: gold, pn: gold }] : []),
+    // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (D2): zaplata pokoju AI<->AI to WYLACZNIE miasta (parametr gold = PN jednego miasta).
+    assets: () => (gold > 0 ? [{ kind: 'miasto', id: 'm1', amount: 1, pn: gold }] : []),
     cityCessionOk: () => true,
     battlePending: false,
+    // R-WEB-DIPLO-WEARINESS-UNCONDITIONAL-END-Q1: asercje o starych regulach (ochrona, bilans) przed koncem zmeczenia.
+    params: (() => { const pj = JSON.parse(require('fs').readFileSync(require('path').resolve(__dirname, '..', 'data', 'war-weariness-params.json'), 'utf8')); pj.zmeczenie.progKoncaZmeczenia = 2; return pj; })(),
     pay: () => {},
     finalize: (l, w) => { finalized = { l, w }; },
   });
   return { out, finalized };
 }
 {
-  const ok = weariness({ winnerGap: 0, loserGap: 100 });
-  check('W1: ochrona przegrywajacego, bilanse >= 0 -> pokoj', ok.finalized !== null, ok.out);
+  const ok = weariness({ winnerGap: 0, loserGap: 100, gold: 100 });
+  check('W1: ochrona przegrywajacego (4 miasta), bilanse >= 0 -> pokoj z miastem', ok.finalized !== null && ok.out[0].action === 'offer_accepted', ok.out);
   const bad = weariness({ winnerGap: -500, loserGap: 100, gold: 10 });
-  check('W2: ochrona przegrywajacego NIE wymusza pokoju przy ujemnym bilansie zwyciezcy', bad.finalized === null, bad.out);
+  check('W2: ochrona przegrywajacego NIE wymusza pokoju przy ujemnym bilansie zwyciezcy (4 miasta)', bad.finalized === null, bad.out);
   const bad2 = weariness({ winnerGap: -50, loserGap: 10, gold: 1000 });
   check('W3: pokoj za cene nie moze zrobic bilansu przegranego ujemnym', bad2.finalized === null, bad2.out);
+  const one = weariness({ winnerGap: 0, loserGap: 100, cities: 1 });
+  check('W4: przegrywajacy z JEDNYM miastem -> brak pokoju (zmiana 4)', one.finalized === null && one.out[0].action === 'none', one.out);
 }
 
 // ---- 4. wyjatek gracza nietkniety ----

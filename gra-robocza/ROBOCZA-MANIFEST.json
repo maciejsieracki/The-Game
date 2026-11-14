@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "1f0d44474eb9106f0c0b01e467679753",
-  "bundleSha256": "2a841b718faffa7b377f77963b80ba0533bb14cb578a6b881b84e8a12feb2fda",
-  "bundleBytes": 14565829,
+  "bundleMd5": "a02ef8a895263df8f0c79c991dbf39b6",
+  "bundleSha256": "31edaee01a99c01b16ce9fcce94268e8eade556ac7513d34fddc1ef6b2267420",
+  "bundleBytes": 14677373,
   "sourceSnapshot": {
-    "source": "dispatch R-WEB-ADMIN-PANSTWO-PANEL-AND-NAMES-Q1 r1-r3, FC d1b3f9810",
+    "source": "main fdee4d469 (FC 242d51289 + 54301d815)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 677: wiersz 'Administrator państwa' w skarbcu Państwa; teksty gracza tylko 'administrator państwa' (cały Państwo) i 'administrator miasta' (jedno miasto)"
+    "FALA 697: bramka Zakoncz ture gracza przy prognozie <0 uwzglednia dzwignie: zmiana podatku zlota, racje zywnosci, rozwiazanie jednostek; staly komunikat na przycisku (zasob, minus, lista dzwigni z liczbami); wznowienie gry z zapisu: zapisywane i odtwarzane liczniki detIdSeq i autoBattleSeq — ten sam przebieg co gra nieprzerwana (10/10 tur, ziarna 2222/4242/3131)"
   ],
   "verification": [
-    "tsc 0; logic 213/213; names-test 26/0; city-gate 36/0; vite build OK; FC PASS-WITH-NOTES d1b3f9810; Chromium NIE_ZMIERZONO (render wiersza Państwa, tooltip, icon, live-verify)"
+    "tsc 0; logic 213/213; gate-levers 25/0; endturn 19/0; no-negative-stocks 25/0; determinism-save-load-resume PASS; live Chromium 10/10 EQ; ai-test 297/0; diplomacy-test 149/0"
   ],
   "limits": [
-    "stare nazwy tylko w komentarzach kodu; administrator-miasta.md:29 mieszał zakresy (poza allowlistą, zostaje do decyzji)"
+    "NIE ZMIERZONO: tooltip w przegladarce, Chromium dla W77; dzwignia kolejki nie wdrozona (decyzja); stary zapis bez nowych pol 7/10; walka taktyczna a determinizm"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES d1b3f9810: Administrator panstwa — panel Panstwa i nazwy tekstow (runda 4 po N1-N2); stare nazwy tylko w komentarzach; Chromium NIE_ZMIERZONO (render wiersza Panstwa, tooltip, icon, live-verify)."
+    "notes": "FC PASS-WITH-NOTES: W77 242d51289 (bramka Zakoncz ture: dzwignie podatku i racji zywnosci + staly komunikat/tooltip; dzwignia kolejki NIE wdrozona - prognoza gracza nie zawiera kolejki, decyzja wlasciciela) oraz W78 54301d815 (wznowienie z zapisu: zapis i odtworzenie detIdSeq/autoBattleSeq; pomiar live ziarna 2222/4242/3131: 10/10 tur identyczne; stary zapis 7/10). NIE ZMIERZONO: tooltip w przegladarce, c3-turn-test Chromium dla W77, walka taktyczna a determinizm."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-13T05:30:09",
+  "hubGeneratedAt": "2026-11-14T03:51:31",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "1f0d44474eb9106f0c0b01e467679753",
-      "sizeBytes": 14565829
+      "md5": "a02ef8a895263df8f0c79c991dbf39b6",
+      "sizeBytes": 14677373
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "1f0d44474eb9106f0c0b01e467679753",
-      "sizeBytes": 14565829
+      "md5": "a02ef8a895263df8f0c79c991dbf39b6",
+      "sizeBytes": 14677373
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "1f0d44474eb9106f0c0b01e467679753",
-      "sizeBytes": 14565829
+      "md5": "a02ef8a895263df8f0c79c991dbf39b6",
+      "sizeBytes": 14677373
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "1f0d44474eb9106f0c0b01e467679753",
-      "sizeBytes": 14565829
+      "md5": "a02ef8a895263df8f0c79c991dbf39b6",
+      "sizeBytes": 14677373
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "1f0d44474eb9106f0c0b01e467679753",
-      "sizeBytes": 14565829
+      "md5": "a02ef8a895263df8f0c79c991dbf39b6",
+      "sizeBytes": 14677373
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "1f0d44474eb9106f0c0b01e467679753",
-      "sizeBytes": 14565829
+      "md5": "a02ef8a895263df8f0c79c991dbf39b6",
+      "sizeBytes": 14677373
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "1f0d44474eb9106f0c0b01e467679753",
-      "sizeBytes": 14565829
+      "md5": "a02ef8a895263df8f0c79c991dbf39b6",
+      "sizeBytes": 14677373
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "1f0d44474eb9106f0c0b01e467679753",
-      "sizeBytes": 14565829
+      "md5": "a02ef8a895263df8f0c79c991dbf39b6",
+      "sizeBytes": 14677373
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "1f0d44474eb9106f0c0b01e467679753",
-      "sizeBytes": 14565829
+      "md5": "a02ef8a895263df8f0c79c991dbf39b6",
+      "sizeBytes": 14677373
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "1f0d44474eb9106f0c0b01e467679753",
-      "sizeBytes": 14565829
+      "md5": "a02ef8a895263df8f0c79c991dbf39b6",
+      "sizeBytes": 14677373
     }
   ],
-  "md5": "1f0d44474eb9106f0c0b01e467679753",
+  "md5": "a02ef8a895263df8f0c79c991dbf39b6",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

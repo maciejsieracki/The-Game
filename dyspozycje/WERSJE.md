@@ -1,3 +1,123 @@
+## ROBOCZA a02ef8a8 -- 2026-11-13 -- FALA 697: Bramka Zakoncz ture: dzwignie podatku i racji + tooltip; wznowienie z zapisu deterministyczne (testowa)
+
+- bramka Zakoncz ture gracza przy prognozie <0 uwzglednia dzwignie: zmiana podatku zlota, racje zywnosci, rozwiazanie jednostek; staly komunikat na przycisku (zasob, minus, lista dzwigni z liczbami); wznowienie gry z zapisu: zapisywane i odtwarzane liczniki detIdSeq i autoBattleSeq — ten sam przebieg co gra nieprzerwana (10/10 tur, ziarna 2222/4242/3131)
+- Weryfikacja: tsc 0; logic 213/213; gate-levers 25/0; endturn 19/0; no-negative-stocks 25/0; determinism-save-load-resume PASS; live Chromium 10/10 EQ; ai-test 297/0; diplomacy-test 149/0
+- Limity: NIE ZMIERZONO: tooltip w przegladarce, Chromium dla W77; dzwignia kolejki nie wdrozona (decyzja); stary zapis bez nowych pol 7/10; walka taktyczna a determinizm
+
+## ROBOCZA 07b2016f -- 2026-11-13 -- FALA 696: Rownowazenie AI przed koncem tury + AI nie proponuje pokoju przed 10. tura (testowa)
+
+- AI rownowazy skarbiec i spichlerz przed tickiem (podatek, racje zywnosci, rozwiazanie jednostek) od tury 11 — pomiar 3 ziarna x 150 tur: od T31 zero minusow; AI nie proponuje pokoju przed 10. pelna tura wojny (max(minTurWojny, PEACE_PROPOSAL_MIN_WAR_TURNS)) dla wszystkich cywilizacji
+- Weryfikacja: tsc 0; logic 213/213; ai-test 297/0; diplomacy-test 149/0; diplo-war-peace-sim 25/0; no-negative-stocks ai 8/0, c2 43/0, projection 49/0, c3-turn-test Chromium 16/0; mutacja usuniecia nnsAiPreTickBalance czerwieni test
+- Limity: NIE ZMIERZONO: ziarno 22, pelne 15 civ x 3 x 150; 445 minusow z dlugu tur 1-10; dlug testowy bazowy weaker-seeks 29/3, main-guard 34/1
+
+## ROBOCZA 5e0a88f4 -- 2026-11-13 -- FALA 695: Bramka pokoju AI wg sily militarnej (testowa)
+
+- bramka AI 'proponuje pokoj' (priorytet 2 i wybor rodzaju) liczy slabosc pozycja militarna (peacePosMil) zamiast respektu wzglednego rw; progi bez zmian; AI-AI wniosek o pokoj tez wg sily militarnej
+- Weryfikacja: tsc 0; logic 213/213; ai-test 297/0; diplomacy-test 149/0; peace-gate-military-strength 14/0; ai-war-weariness-peace 99/0; mutacja bramki na rw czerwieni test
+- Limity: NIE ZMIERZONO: balans pasma rownej sily w pelnej grze; dlug bazowy weaker-seeks 29/3, main-guard 34/1, sim 19/3
+
+## ROBOCZA ca7979f1 -- 2026-11-13 -- FALA 694: Determinizm: założenie miasta i walki automatyczne z ziarna gry (testowa)
+
+- To samo ziarno gry daje teraz ten sam przebieg także przy zakładaniu miast (remis między miastami-źródłami ludności rozstrzygał dotąd losowanie spoza ziarna — rozjazd od ok. tury 21) oraz przy walkach automatycznych (strumień z ziarna, tury i identyfikatora walki, z licznikiem walk). Rozkład losowości i reguły gry bez zmian.
+- Weryfikacja: tsc 0; logic 213/213; test determinizmu PASS (kontrole D1/D2/E1); pomiar: ziarno 2222 tryb przyspieszony 6/6 = ten sam skrót, ziarno 1717 6/6, tryb normalny 3×40 tur identyczny z przyspieszonym; mutacja przywraca rozjazd; diplomacy 149/0, ai 297/0; FC PASS-WITH-NOTES
+- Limity: Wznowienie przebiegu z zapisu nadal nie jest deterministyczne (zadanie #373); walka taktyczna na żywo i combat.ts/siege.ts nadal korzystają z Math.random; pomiar z autoBattles tylko na ziarnie 1717
+
+## ROBOCZA 3aaec6cb -- 2026-11-13 -- FALA 693: Blokada „Zakończ turę” przy minusie w skarbcu lub spichlerzu (testowa)
+
+- Od tury 11 przycisk „Zakończ turę” jest blokowany, gdy prognoza po turze wychodzi poniżej zera w skarbcu lub spichlerzu państwa i gracz ma ruch naprawczy (rozwiązanie jednostek); po kliknięciu pojawia się komunikat, czego brakuje. W turach 1–10 bez blokady. Bez ruchu naprawczego tura może się zakończyć, żeby gra się nie zakleszczyła. Kary za deficyt zostają jako siatka bezpieczeństwa.
+- Weryfikacja: tsc 0; logic 213/213; testy: bramka końca tury 19/0, projekcja 49/0, logika 25/0, gold-deficit 55/0, diplomacy 149/0, ai 297/0; mutacje bramki czerwienią test; FC PASS-WITH-NOTES
+- Limity: Bramka liczy tylko rozwiązanie jednostek (nie podatki i kolejkę), komunikat tylko jako powiadomienie po kliknięciu; AI jeszcze się nie równoważy (podtemat C w toku); żywy Chromium niezmierzony; mgla-sciezka-inwariant 41/1 i end-turn-modal A5 to dług sprzed tematu
+
+## ROBOCZA 867807d8 -- 2026-11-13 -- FALA 692: Okno wymiany surowców bez przeładowania, obie strony w jednym rzucie (testowa)
+
+- W oknie „Umowa wymiany surowców” dodanie pozycji po którejkolwiek stronie (oferujemy / oferują) dopisuje ją w miejscu, bez przebudowy całego okna: zostają przewinięcie, tryb (jednorazowo / co turę), czas umowy, zaznaczone kafle i wpisane ilości w obu panelach. Obie strony można uzupełnić w dowolnej kolejności jedną propozycją; przy pustej stronie pojawia się neutralna podpowiedź zamiast ostrzeżenia o odrzuceniu. Wycena i reguły dyplomacji bez zmian.
+- Weryfikacja: tsc 0; logic 213/213; testy: okno wymiany bez przeładowania 19/19 (mutacja powrotu do innerHTML czerwieni), basket duplicate-ui 31/31, edit 25/25, transfer 24/24, diplomacy 149/0, ai 297/0; test w żywym Chromium na komponencie; FC PASS-WITH-NOTES
+- Limity: Nie zmierzono w pełnej grze w Chromium; tryby traktat/pokój/wasal klikane na żywo niezmierzone; wygląd neutralnej podpowiedzi do obejrzenia przez właściciela
+
+## ROBOCZA 803a70a2 -- 2026-11-13 -- FALA 691: Fundament: projekcja skarbca i spichlerza po turze (bez zmiany zachowania gry) (testowa)
+
+- Dodano moduł liczący, ile będzie w skarbcu i spichlerzu państwa po turze (tylko odczyt, zgodny z realnym tickiem). Moduł nie jest jeszcze wpięty w grę, więc zachowanie gry się nie zmienia; służy do zasady „skarbiec i spichlerz nigdy poniżej zera po turze” (blokada tury gracza i równoważenie AI w kolejnych tematach).
+- Weryfikacja: tsc 0; logic 213/213; testy: projekcja 49/0, logika 25/0, gold-deficit 55/0, empire-food-b5 34/0, ai 297/0, diplomacy 149/0; mutacje projekcji czerwienią test; FC PASS-WITH-NOTES
+- Limity: Moduł niewpięty w grę (podtematy B i C); parytet skarbca zweryfikowany odczytem arytmetyki z main.ts, nie uruchomieniem pełnego endTurn; koszt wołania per owner niezmierzony
+
+## ROBOCZA 4265f100 -- 2026-11-13 -- FALA 690: Panel dyplomacji: zmęczenie wojną i desperacja (testowa)
+
+- W panelu dyplomacji przy wojnie z graczem widać zmęczenie wojną strony wygrywającej i desperację strony przegrywającej, a przy wojnach AI↔AI wymienionych obok wojny danej cywilizacji jedną wartość: desperację (gdy ta cywilizacja przegrywa) albo zmęczenie (gdy wygrywa), z podpowiedzią co to znaczy. Wartości liczone tymi samymi funkcjami co gra.
+- Weryfikacja: tsc 0; logic 213/213; testy: panel zmęczenia 52/0, zmęczenie 20 tur 30/0, tylko miastami 30/0, koniec zmęczenia 22/0, diplomacy 149/0, ai 297/0; FC PASS-WITH-NOTES
+- Limity: Zrzuty z żywego Chromium sprzed FALI 689 — zalecana krótka kontrola wizualna panelu po wdrożeniu; wartości procentowe w nowej wojnie zaczynają od 0%
+
+## ROBOCZA 7bbebf6b -- 2026-11-13 -- FALA 689: Zmęczenie wojną zamyka się w 20 turach (testowa)
+
+- Zmęczenie wojną ma jeden licznik: 5% na turę od startu wojny + 10% za każde miasto, które zmieniło właściciela (bez zastoju i bez drugiego zegara). Progi: 50% (tura 10) silniejszy obniża cenę pokoju, słabszy szuka pokoju; 80% (tura 16) pokój bezwarunkowy; 100% (tura 20) wojna wygasa. Szansa AI na pokój i sygnały pokoju czytają ten sam licznik; hasło Civpedii przepisane na 20 tur.
+- Weryfikacja: tsc 0; logic 213/213; testy: zmęczenie 20 tur 30/0, tylko miastami 30/0, koniec zmęczenia 22/0, ai-war-weariness-peace 99/0, ai-losing-war-asks 12/0, diplomacy 149/0, ai 297/0, civpedia-values 129, truce-impl 94/0; FC PASS-WITH-NOTES
+- Limity: Pierwsze propozycje pokoju AI nadal od tury 10 (stała PEACE_PROPOSAL_MIN_WAR_TURNS) — decyzja właściciela otwarta; pełna gra AI↔AI i cykl wojna-pokój-wojna NIE ZMIERZONO; znane FAIL diplo-war-peace-sim S3/S4b/M_TUR i main-guard R6/ZT sprzed tematu
+
+## ROBOCZA 2d74db6a -- 2026-11-13 -- FALA 688: Koniec zmęczenia wojną: pokój bezwarunkowy, cena 0 bez miasta (testowa)
+
+- Zmęczenie wojną kończy się pokojem bezwarunkowym: gdy zmęczenie pary dojdzie do progu końca (0,8), silniejsza strona sama proponuje pokój bez żądania miasta i płatności (AI↔AI zawierane od razu, AI→gracz jako propozycja do decyzji gracza). Gdy cena pokoju wynosi zero, miasto nie jest oddawane (wyjątek od reguły ochrony jednego miasta).
+- Weryfikacja: tsc 0; logic 213/213; testy: koniec zmęczenia 22/0 (mutanty U1–U5, MAIN-U7), zmęczenie tylko miastami 29/0, ai-war-weariness-peace 99/0, diplomacy 149/0, ai 297/0, nonnegative 21/0; FC PASS-WITH-NOTES
+- Limity: Próg końca zmęczenia 0,8 to założenie do potwierdzenia; ścieżka wymuszonego pokoju po limicie tur nie ma ceny 0; AI→gracz niezmierzone na żywo; diplo-war-peace-sim ma 3 znane FAIL (S3, S4b, M_TUR)
+
+## ROBOCZA 1a92cad2 -- 2026-11-13 -- FALA 687: Losowania w pętli tury z ziarna gry: to samo ziarno daje ten sam przebieg (testowa)
+
+- Nagrody z wiosek, wojna klastra państw-miast, automatyczny zwiad zwiadowców, akceptacja AI i sufiksy identyfikatorów używają generatora z ziarna gry; hak testowy ustawia ziarno gry; zwykła gra: ziarno nowej gry nadal losowe, format zapisu bez zmian; nowy test powtarzalności i zakaz Math.random w pętli tury.
+- Weryfikacja: tsc 0; logic 213/213; determinism-same-seed PASS; diplomacy 149/0; ai-test 297/0; character-threshold 42/0; pomiar ziarno 2222: 6/6 fast i 3/3 normal identyczne, ziarno 1717 3/3; vite build OK
+- Limity: Walki automatyczne i oblężenia nadal na Math.random (temat W61); pomiar tylko 30 tur, skrót stanu bez jednostek/skarbca/zasobów; wykonanie w żywej grze NIE_ZMIERZONO
+
+## ROBOCZA 2e3318f1 -- 2026-11-13 -- FALA 686: Próg wojny wg charakteru cywilizacji, administrator bez okien przeglądarki, zmęczenie wojną tylko miastami (krok 4b) (testowa)
+
+- Agresywne cywilizacje wypowiadają wojnę przy przewadze siły militarnej od 14%, neutralne od 20%, ostrożne od 28% (zakres 10-35%); zatrudnienie i zwolnienie administratora bez natywnego okna przeglądarki, teksty administratora państwa i miasta rozdzielone; zmęczenie wojną liczone siłą militarną, przegrywający płaci wyłącznie miastami, pokój wzajemny bez zapłaty usunięty, strona z jednym miastem nie kupuje pokoju.
+- Weryfikacja: tsc 0; logic 213/213; character-threshold 42/0; weariness-city-only 28/0; ai-ai-nonnegative 21/0; weariness-peace 98/0; ai-test 297/0; diplomacy 149/0; admin testy zielone; vite build OK
+- Limity: Wykonanie w żywej grze NIE_ZMIERZONO; zwolnienie administratora jednym przyciskiem (pytanie do właściciela); chroniony przegrywający z co najmniej 2 miastami przy cenie 0 (decyzja właściciela: cena 0 = bez miasta i bezwarunkowy pokój na końcu zmęczenia — do wdrożenia)
+
+## ROBOCZA cdf4ac78 -- 2026-11-13 -- FALA 685: Rozejm i pokój wg siły militarnej: słabsza strona szuka, silniejsza odrzuca, słodzik tylko miasto; porządki w danych dyplomacji (testowa)
+
+- Słabsza militarnie strona szuka rozejmu lub pokoju, silniejsza odrzuca; opór przełamuje tylko oddanie miasta (cena PN jak dotąd); złoto i surowce nie słodzą pokoju w żadnym kierunku; słabsza AI dołącza miasto także do rozejmu; strona z jednym miastem nie kupi pokoju; wymuszony pokój AI-AI tylko za miasto; usunięte martwe zdarzenia religii i ultimatum; opisy w danych dyplomacji zgodne z kodem.
+- Weryfikacja: tsc 0; logic 213/213; peace-weaker-seeks 32/0; stance-wiring 10/0; balance-accept 32/0; main-guard 35/0; ai-test 297/0; diplomacy 149/0; json-sync 46/46; zero-trust 43/0; mutacje 16/16; vite build OK
+- Limity: Wiring w main.ts sprawdzany strukturalnie, nie behawioralnie; wykonanie w żywej grze NIE_ZMIERZONO; martwe mapowanie oferuj_trybut_za_pokoj zostaje; krok 4b (zmęczenie wojną) w toku
+
+## ROBOCZA 2110e07f -- 2026-11-13 -- FALA 684: Równe tempo mieszanej armii do pierwszego starcia (najwyżej 1 hex różnicy) (testowa)
+
+- Cała armia (piechota, strzelcy, konnica, machiny) idzie tempem najwolniejszej jednostki strony aż do pierwszego wzwarcia wręcz; sufit tempa liczony w punktach ruchu; nowy test na produkcyjnej pętli tury z 6 składami i 5 mutacjami.
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; pace-equal-line 23/0 (0 z 12 tur z różnicą >1 hex), W19 PASS, cavalry-flank PASS, standoff PASS; vite build OK
+- Limity: Teren o zmiennym koszcie ruchu NIE_ZMIERZONO (sufit w punktach ruchu, nie w hexach); weryfikacja na żywo w Chromium NIE_ZMIERZONO; test mierzy stronę atakującą
+
+## ROBOCZA 91b26d7e -- 2026-11-13 -- FALA 683: Etykieta Relacja zgodna z zaufaniem: Wrogi tylko poniżej 10 (testowa)
+
+- Skala Relacja: Wrogi tylko przy zaufaniu poniżej 10; zaufanie 10-29 przy relacji poniżej 60 pokazuje Neutralny; progi 60 i 130, wojna i sojusz bez zmian.
+- Weryfikacja: tsc 0; logic 213/213; relation-tier OK (mutacja 7 czerwonych); diplomacy 149/0; alliance-gate 19/0; display 45/0; labels-trust OK; civpedia 129; json-sync 36/36; vite build OK
+- Limity: Relacja Neutralny a Nastawienie Nieufny dla zaufania 10-29 (brak osobnego stopnia); wykonanie w żywej grze NIE_ZMIERZONO
+
+## ROBOCZA 272e14e4 -- 2026-11-13 -- FALA 682: Opisy w pliku dyplomacji zgodne z parametrami (bez zmiany zachowania gry) (testowa)
+
+- Poprawione opisy akcji i tabele referencyjne w danych dyplomacji: religia nie wpływa na zaufanie, kary za sąsiedztwo -3/-4/-5, wypowiedzenie wojny karze wiarygodność a nie zaufanie, odmowa obowiązku sojuszu to -15 wiarygodności; poprawione komentarze w kodzie dyplomacji; nowy test zgodności opisów z parametrami.
+- Weryfikacja: tsc 0; logic 213/213; json-descriptions-sync 36/36; civpedia-values 129; diplomacy 148/0; audience-actions 20/0; vite build OK
+- Limity: Parametry bez zmian (zachowanie gry bez zmian); kilka opisów NIE_ZMIERZONO w kodzie (zadanie w kolejce)
+
+## ROBOCZA 0971e48c -- 2026-11-13 -- FALA 681: Nowe zasady wypowiadania wojny przez AI: zaufanie poniżej 30 i 20% przewagi siły militarnej, wojna przy zerowym zaufaniu (testowa)
+
+- AI wypowiada wojnę przy zaufaniu pary poniżej 30 i przewadze siły militarnej o co najmniej 20% (decyduje charakter cywilizacji); przy zerowym zaufaniu przez N tur silniejsza strona wypowiada wojnę; gracz nigdy automatycznie; ostrzeżenie dla gracza raz na epizod; siła liczona jako armia, rekruci, wygrane bitwy z tej wojny i bonus trybutu.
+- Weryfikacja: tsc 0; logic 213/213; zero-trust 43/0; main-guard 35/0; tick-brake 51/0; ai-test 296/0; diplomacy 148/0; vite build OK
+- Limity: Wykonanie w żywej grze i Chromium NIE_ZMIERZONO; usunięty bonus skłonności do wojny z bramki (do decyzji); zasady rozejmu i pokoju (krok 4) jeszcze stare; ostrzeżenie nie jest zapisywane w zapisie gry
+
+## ROBOCZA 57b393b8 -- 2026-11-13 -- FALA 680: Etykiety nastawienia wg zaufania (Wrogi poniżej 10, Nieufny 10-29), Civpedia dyplomacji, pomiar ofert handlowych AI (testowa)
+
+- Zaufanie poniżej 10 = Wrogi, 10-29 = Nieufny, od 30 etykieta wg relacji; nowe hasła encyklopedii o dyplomacji, zaufaniu, respekcie, relacji, wiarygodności, Power i zasadach wojny i pokoju; narzędzie pomiaru częstości ofert handlowych AI (hak tylko za ?civTest=1).
+- Weryfikacja: tsc 0; logic 213/213; labels 21/21; civpedia-values 129; diplomacy 148/0; display 45/0; admin-panstwo 26/0; trust-numbers 22/0; vite build OK
+- Limity: Wykonanie w żywej grze i Chromium NIE_ZMIERZONO; relationTier w diplomacy.ts nadal progi 30 (druga etykieta Relacja: Wrogi może rozjechać się z Nastawieniem); pomiar ofert niepowtarzalny (niedeterminizm gry)
+
+## ROBOCZA 4ae92a00 -- 2026-11-13 -- FALA 679: Liczby zaufania (rozejm 10, pokój 20, sąsiedztwo -3/-4/-5, bez religii, karencja) oraz przygotowanie siły militarnej (testowa)
+
+- Po rozejmie zaufanie ustawia się na 10, po pokoju na 20; kara za sąsiedztwo -3/-4/-5 i wstrzymana w karencji; religia nie wpływa na zaufanie; dodane (jeszcze niepodpięte) funkcja siły militarnej i licznik wygranych bitew pary w wojnie oraz bonus trybutu.
+- Weryfikacja: tsc 0; logic 213/213; trust-numbers 22/0; military-strength 27/0; battle-counter 35/0; diplomacy-test 148/0; war-trust-only 11/0; military-events 24/0; vite build OK
+- Limity: Siła militarna i licznik bitew nie są jeszcze używane w decyzjach (kroki 3 i 4); wykonanie w żywej grze NIE_ZMIERZONO; Civpedia dyplomacji czeka na aktualizację do nowych liczb
+
+## ROBOCZA f4230eb2 -- 2026-11-13 -- FALA 678: Wojna obniza tylko zaufanie do zera (relacja i respekt bez obcinania do 29) (testowa)
+
+- W wojnie zaufanie jest sprowadzane do 0, respekt nietkniety, relacja = zaufanie + respekt bez limitu 29; ocena pokoju korzysta z prawdziwej relacji; dopisek w UI zmieniony.
+- Weryfikacja: tsc 0; logic 213/213; diplo-war-trust-only 11/0; diplomacy-test 148/0; military-events 24/0; vite build OK
+- Limity: Etykieta Wrogi w wojnie nadal twarda (krok 3); Chromium NIE_ZMIERZONO
+
 ## ROBOCZA 1f0d4447 -- 2026-11-12 -- FALA 677: Administrator państwa: panel Państwa i nazwy w tekstach (#327) (testowa)
 
 - wiersz 'Administrator państwa' w skarbcu Państwa; teksty gracza tylko 'administrator państwa' (cały Państwo) i 'administrator miasta' (jedno miasto)

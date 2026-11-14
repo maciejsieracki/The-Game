@@ -1,0 +1,217 @@
+{
+  "turns": 150,
+  "seeds": [
+    1111,
+    2222,
+    3333
+  ],
+  "rels": [
+    20,
+    80,
+    140
+  ],
+  "pending": 0,
+  "rows": [
+    {
+      "seed": 1111,
+      "rel": 20,
+      "status": "OK",
+      "turnsRun": 150,
+      "offers": 2,
+      "cyclic": 2,
+      "oneShot": 0,
+      "other": {},
+      "otherN": 0,
+      "per100": 1.33,
+      "per100Cyclic": 1.33,
+      "per100OneShot": 0,
+      "per100Other": 0,
+      "activePrzyjmij": 2,
+      "pairs": {
+        "sol->glina": 1,
+        "drewno->glina": 1
+      },
+      "relDrift": false,
+      "autoBattles": 2,
+      "scriptRejected": 0
+    },
+    {
+      "seed": 1111,
+      "rel": 80,
+      "status": "OK",
+      "turnsRun": 150,
+      "offers": 1,
+      "cyclic": 1,
+      "oneShot": 0,
+      "other": {},
+      "otherN": 0,
+      "per100": 0.67,
+      "per100Cyclic": 0.67,
+      "per100OneShot": 0,
+      "per100Other": 0,
+      "activePrzyjmij": 1,
+      "pairs": {
+        "sol->glina": 1
+      },
+      "relDrift": false,
+      "autoBattles": 4,
+      "scriptRejected": 0
+    },
+    {
+      "seed": 1111,
+      "rel": 140,
+      "status": "OK",
+      "turnsRun": 150,
+      "offers": 1,
+      "cyclic": 1,
+      "oneShot": 0,
+      "other": {},
+      "otherN": 0,
+      "per100": 0.67,
+      "per100Cyclic": 0.67,
+      "per100OneShot": 0,
+      "per100Other": 0,
+      "activePrzyjmij": 1,
+      "pairs": {
+        "sol->glina": 1
+      },
+      "relDrift": false,
+      "autoBattles": 4,
+      "scriptRejected": 0
+    },
+    {
+      "seed": 2222,
+      "rel": 20,
+      "status": "OK",
+      "turnsRun": 150,
+      "offers": 1,
+      "cyclic": 1,
+      "oneShot": 0,
+      "other": {},
+      "otherN": 0,
+      "per100": 0.67,
+      "per100Cyclic": 0.67,
+      "per100OneShot": 0,
+      "per100Other": 0,
+      "activePrzyjmij": 1,
+      "pairs": {
+        "drewno->glina": 1
+      },
+      "relDrift": false,
+      "autoBattles": 0,
+      "scriptRejected": 0
+    },
+    {
+      "seed": 2222,
+      "rel": 80,
+      "status": "OK",
+      "turnsRun": 150,
+      "offers": 2,
+      "cyclic": 2,
+      "oneShot": 0,
+      "other": {},
+      "otherN": 0,
+      "per100": 1.33,
+      "per100Cyclic": 1.33,
+      "per100OneShot": 0,
+      "per100Other": 0,
+      "activePrzyjmij": 2,
+      "pairs": {
+        "drewno->glina": 1,
+        "sol->glina": 1
+      },
+      "relDrift": false,
+      "autoBattles": 0,
+      "scriptRejected": 0
+    },
+    {
+      "seed": 2222,
+      "rel": 140,
+      "status": "OK",
+      "turnsRun": 150,
+      "offers": 1,
+      "cyclic": 1,
+      "oneShot": 0,
+      "other": {},
+      "otherN": 0,
+      "per100": 0.67,
+      "per100Cyclic": 0.67,
+      "per100OneShot": 0,
+      "per100Other": 0,
+      "activePrzyjmij": 1,
+      "pairs": {
+        "drewno->glina": 1
+      },
+      "relDrift": false,
+      "autoBattles": 0,
+      "scriptRejected": 0
+    },
+    {
+      "seed": 3333,
+      "rel": 20,
+      "status": "OK",
+      "turnsRun": 150,
+      "offers": 1,
+      "cyclic": 1,
+      "oneShot": 0,
+      "other": {},
+      "otherN": 0,
+      "per100": 0.67,
+      "per100Cyclic": 0.67,
+      "per100OneShot": 0,
+      "per100Other": 0,
+      "activePrzyjmij": 1,
+      "pairs": {
+        "sol->glina": 1
+      },
+      "relDrift": false,
+      "autoBattles": 0,
+      "scriptRejected": 0
+    },
+    {
+      "seed": 3333,
+      "rel": 80,
+      "status": "OK",
+      "turnsRun": 150,
+      "offers": 1,
+      "cyclic": 1,
+      "oneShot": 0,
+      "other": {},
+      "otherN": 0,
+      "per100": 0.67,
+      "per100Cyclic": 0.67,
+      "per100OneShot": 0,
+      "per100Other": 0,
+      "activePrzyjmij": 1,
+      "pairs": {
+        "sol->glina": 1
+      },
+      "relDrift": false,
+      "autoBattles": 0,
+      "scriptRejected": 0
+    },
+    {
+      "seed": 3333,
+      "rel": 140,
+      "status": "OK",
+      "turnsRun": 150,
+      "offers": 2,
+      "cyclic": 2,
+      "oneShot": 0,
+      "other": {},
+      "otherN": 0,
+      "per100": 1.33,
+      "per100Cyclic": 1.33,
+      "per100OneShot": 0,
+      "per100Other": 0,
+      "activePrzyjmij": 2,
+      "pairs": {
+        "sol->glina": 1,
+        "drewno->glina": 1
+      },
+      "relDrift": false,
+      "autoBattles": 0,
+      "scriptRejected": 0
+    }
+  ]
+}

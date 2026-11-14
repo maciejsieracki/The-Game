@@ -1,0 +1,8 @@
+{
+  "gate": true,
+  "civSeedRequested": 999,
+  "seedSeen": 999,
+  "seedExpected": 271828,
+  "hookPresent": false,
+  "pass": false
+}

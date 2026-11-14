@@ -5,6 +5,8 @@
 
 Dyplomacja to relacje z **odkrytymi** nacjami: zaufanie, szacunek i wynikowa **relacja** decydują, czy możesz handlować, podpisać pakt czy wypowiedzieć wojnę. Handel używa **punktów wartości (PN)**. Ten rozdział opisuje model relacji, audiencję króla, progi akcji i przemarsz — minimum v1.0 plus roadmap v1.1.
 
+**Hasła encyklopedii (Civpedia) z pełnymi parametrami i plusami/minusami** (stan 2026-11-13): [Zaufanie](../encyklopedia/pojecia/zaufanie.md) · [Respekt](../encyklopedia/pojecia/respekt.md) · [Relacja](../encyklopedia/pojecia/relacja.md) · [Moc — wojskowy i gospodarczy](../encyklopedia/pojecia/moc-podzial.md) · [Wypowiadanie wojny](../encyklopedia/pojecia/wypowiedzenie-wojny.md) · [Rozejm i pokój](../encyklopedia/pojecia/rozejm-pokoj.md) · [Zmęczenie wojną](../encyklopedia/pojecia/zmeczenie-wojna.md) · [Wiarygodność](../encyklopedia/pojecia/wiarygodnosc.md). Sekcje oznaczone „DECYZJA WŁAŚCICIELA 2026-11-13, wdrożenie w toku” opisują zasady jeszcze niewdrożone — nie obecny stan gry.
+
 ---
 
 ## 74. Model relacji
@@ -55,7 +57,6 @@ Wysoka relacja — handel, pakt, sojusz. Niska — ultimatum, wojna. Profil cywi
 ### Przykład liczbowy
 
 Relacja **+15** (neutralna). Prezent **+8** PN → **+23** — odblokowuje handel (próg **+20**).
-Wspólna religia **+10** relacji — sąsiad z twoją wiarą szybciej zgadza się na pakt.
 
 ### Strategia gracza
 
@@ -90,7 +91,6 @@ Powiadomienie „Spotkano nową cywilizację". Opcjonalna audiencja — zwykle n
 ### Przykład liczbowy
 
 Relacja **+15** (neutralna). Prezent **+8** PN → **+23** — odblokowuje handel (próg **+20**).
-Wspólna religia **+10** relacji — sąsiad z twoją wiarą szybciej zgadza się na pakt.
 
 ### Strategia gracza
 
@@ -145,7 +145,6 @@ Oczekująca propozycja wroga może być **blocking** (katalog A1-Q9). W wojnie c
 ### Przykład liczbowy
 
 Relacja **+15** (neutralna). Prezent **+8** PN → **+23** — odblokowuje handel (próg **+20**).
-Wspólna religia **+10** relacji — sąsiad z twoją wiarą szybciej zgadza się na pakt.
 
 ### Strategia gracza
 
@@ -195,7 +194,6 @@ Deklaracja wojny — zawsze możliwa (kary relacji). **Dwa różne sposoby strac
 ### Przykład liczbowy
 
 Relacja **+15** (neutralna). Prezent **+8** PN → **+23** — odblokowuje handel (próg **+20**).
-Wspólna religia **+10** relacji — sąsiad z twoją wiarą szybciej zgadza się na pakt.
 
 ### Strategia gracza
 
@@ -256,7 +254,6 @@ Za każde **100 PN** nadwyżki w korzystnej umowie → **+1 zaufanie**. **Max +5
 ### Przykład liczbowy
 
 Relacja **+15** (neutralna). Prezent **+8** PN → **+23** — odblokowuje handel (próg **+20**).
-Wspólna religia **+10** relacji — sąsiad z twoją wiarą szybciej zgadza się na pakt.
 
 ### Strategia gracza
 
@@ -291,7 +288,6 @@ Utrzymanie armii + głód wojska. Handel z wrogiem wstrzymany. Sojusznicy mogą 
 ### Przykład liczbowy
 
 Relacja **+15** (neutralna). Prezent **+8** PN → **+23** — odblokowuje handel (próg **+20**).
-Wspólna religia **+10** relacji — sąsiad z twoją wiarą szybciej zgadza się na pakt.
 
 ### Strategia gracza
 
@@ -365,7 +361,6 @@ Dedykowanego „eventu" handlu jednorazowego nie ma, ale **stół negocjacji 3-k
 ### Przykład liczbowy
 
 Relacja **+15** (neutralna). Prezent **+8** PN → **+23** — odblokowuje handel (próg **+20**).
-Wspólna religia **+10** relacji — sąsiad z twoją wiarą szybciej zgadza się na pakt.
 
 ### Strategia gracza
 

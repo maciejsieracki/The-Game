@@ -25,26 +25,35 @@ const once = (src, s) => count(src, s) === 1;
 
 // ---- D7: gracz nie wypowiada wojny z hamulca ----
 check('D7: gracz jako silniejsza strona nie deklaruje (guard mayDeclare w processDiploCrisisQueue)',
-  once(MAIN, 'if (!outcome.mayDeclare) continue;') && count(MAIN, 'brakeWarOutcome(') === 2);
+  once(MAIN, 'if (!outcome.mayDeclare) continue;') && count(MAIN, 'diploMilitaryBrakeOutcome(') === 3);
 check('D7: brak ostrzeżenia o automatycznej wojnie gdy gracz silniejszy (warOutcome.mayDeclare)',
-  MAIN.includes('&& warOutcome.mayDeclare) {'));
+  MAIN.includes('counter < nPair && warOutcome.mayDeclare'));
 // mutacje D7 (zachowaniowy test: diplo-war-peace-d7-test.cjs)
 check('mutacja D7 (usunięty guard) jest wykrywalna',
   count(MAIN.replace('if (!outcome.mayDeclare) continue;', ''), 'if (!outcome.mayDeclare) continue;') === 0);
 
-// ---- R7: hamulec feeds łączną Relację, N/prog per para ----
-check('R7: diploBrakeCrisisStep czyta relationScore (nie samo Zaufanie)',
-  MAIN.includes('const relacja = relationScore(getDiploRelation(a, b));'));
-check('R7: krok kryzysu z progiem i N per para',
-  MAIN.includes('{ ...diploTickP6, kryzysProgZaufania: w.prog, kryzysTurDoWojny: w.n })'));
+// ---- R7 (R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1): hamulec liczy ZAUFANIE = 0, N per para ----
+check('R7/ZT: diploBrakeCrisisStep czyta Zaufanie pary (nie łączną Relację)',
+  MAIN.includes('const zaufanie = getDiploRelation(a, b).zaufanie;') && !MAIN.includes('const zaufanie = relationScore('));
+check('R7/ZT: krok kryzysu z progiem zerowego Zaufania (p6) i N per para',
+  MAIN.includes('crisisStepForPair(diplomacyCrisisCounters.get(key) ?? 0, zaufanie, atWar, { ...diploTickP6, kryzysTurDoWojny: w.n })'));
 check('R7: wywołania bez wartości Zaufania (AI↔AI, gracz↔AI)',
   once(MAIN, 'diploBrakeCrisisStep(a, b);') && once(MAIN, 'diploBrakeCrisisStep(ME(), oid);'));
 check('R7: próg i N z wyższej strony pary (diploBrakeWarParams)',
   MAIN.includes('const higher = pa.progWojnyRelacji >= pb.progWojnyRelacji ? pa : pb;') || MAIN.includes('return { prog: brakeRelationThreshold(higher.progWojnyRelacji), n: higher.hamulecN };'));
 check('R7: kolejka używa N per para (nPair)', MAIN.includes('if (counter >= nPair) ready.push'));
-// mutacja R7: powrót do Zaufania
-check('mutacja R7 (feed Zaufania) jest wykrywalna',
-  count(MAIN.replace('const relacja = relationScore(getDiploRelation(a, b));', 'const relacja = getDiploRelation(a, b).zaufanie ?? 0;'), 'relationScore(getDiploRelation(a, b))') === 0);
+// mutacja R7/ZT: powrót do łącznej Relacji w liczniku kryzysu. Mutant MUSI przestać spełniać warunek
+// (wcześniejsza wersja porównywała tekst z własnym podstawieniem = zawsze true, obrona r1 zarzut 6).
+const r7ZtOk = (src) => src.includes('const zaufanie = getDiploRelation(a, b).zaufanie;') && !src.includes('const zaufanie = relationScore(');
+const MUT_R7 = MAIN.replace('const zaufanie = getDiploRelation(a, b).zaufanie;', 'const zaufanie = relationScore(getDiploRelation(a, b));');
+check('R7/ZT: warunek źródłowy spełniony dla kodu bazowego', r7ZtOk(MAIN));
+check('mutacja R7/ZT (feed Relacji) jest wykrywalna (mutant nie spełnia warunku)',
+  MUT_R7 !== MAIN && !r7ZtOk(MUT_R7));
+// mutacja ostrzeżenia zerowego Zaufania: usunięcie flagi per epizod albo blokady rozejmu z warunku wyświetlenia
+const warnOk = (src) => src.includes('!diploZeroTrustWarned.has(key)') && src.includes('!isPeaceLockedBetween(sa, sb)');
+check('ZT ostrzeżenie: flaga per epizod i blokada rozejmu w warunku (kod bazowy)', warnOk(MAIN));
+check('mutacja ostrzeżenia ZT (bez flagi per epizod) jest wykrywalna',
+  MAIN.replace(' && !diploZeroTrustWarned.has(key)', '') !== MAIN && !warnOk(MAIN.replace(' && !diploZeroTrustWarned.has(key)', '')));
 
 // ---- R2: licznik utraconych miast per wojna, oba lejki przejęcia ----
 check('R2: recordWarCityLossForPair w obu lejkach przejęcia miasta',
@@ -83,27 +92,35 @@ check('mutacja R1 (stała 5 w ai.ts) jest wykrywalna',
   count(AI.replace('const turnsAtWarRel = rel.stanWojny ? Math.max(0, rel.turnsAtWar ?? 0) : 0;', 'const turnsAtWarRel = rel.stanWojny ? 5 : 0;'), 'Math.max(0, rel.turnsAtWar ?? 0)') === 0);
 
 // ---- R4: zmęczenie w stance używa T(civ) ----
-check('R4: stance liczy zmęczenie przez warWearinessShare + zmeczenieT',
-  DIPLO.includes('warWearinessShare(') && DIPLO.includes('.zmeczenieT'));
+// R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: jedno źródło zmęczenia = warWearinessLevel (drugi zegar T/zmeczenieT usunięty z chęci pokoju).
+check('R4: stance liczy zmęczenie przez warWearinessLevel (jeden licznik 20 tur)',
+  DIPLO.includes('warWearinessLevel(') && !DIPLO.includes('warWearinessShare(') && !DIPLO.includes('.zmeczenieT'));
 check('R4: stała /20 usunięta z diplomacy.ts', !DIPLO.includes('context.turnsAtWar / 20'));
 
 // ---- R3 / R6: sygnały pokoju i próg wojny per cywilizacja w ai.ts ----
 check('R3: priorytet 2 używa sygnałów (aiPeaceSignals)', AI.includes('aiPeaceSignals(') && AI.includes('peaceSignals.wantsPeace'));
-check('R6: priorytet 4 używa progu wojny per cywilizacja', AI.includes('const progMinimalnyRelacja = warProfile.progWojnyRelacji;'));
+check('R6/ZT: priorytet 4 używa progu Zaufania (PROG_WOJNA_ZAUFANIE) i przewagi siły militarnej',
+  AI.includes('(rel.relation.zaufanie) < PROG_WOJNA_ZAUFANIE') || AI.includes('rel.relation.zaufanie < PROG_WOJNA_ZAUFANIE'));
+check('R6/ZT: priorytet 4 liczy przewagę przez compareMilitaryStrength (≥20%)',
+  AI.includes("compareMilitaryStrength(milAiSide, milPartnerSide).przewaga === 'A'"));
 // mutacja R3: usunięcie sygnałów z priorytetu 2
 {
-  const mutR3 = AI.replace('rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)', 'rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && (rw <= progPokojSlabosc)');
+  // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: warunek priorytetu 2 ma postać z pozycją militarną.
+  const R3_COND = '!aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer && (peacePosMil === \'slabsza\' || peaceSignals.wantsPeace)';
+  const mutR3 = AI.replace(R3_COND, '!aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer && (peacePosMil === \'slabsza\')');
   check('mutacja R3 (sygnały wyłączone) jest wykrywalna: warunek zmieniony i brak sygnałów w priorytecie 2',
-    mutR3 !== AI && !mutR3.includes('|| peaceSignals.wantsPeace)'));
+    AI.includes(R3_COND) && mutR3 !== AI && !mutR3.includes('|| peaceSignals.wantsPeace)'));
 }
 // R3(c)/R3 spójność: zdrowie armii podpięte, AI nie proponuje gdy czuje się silniejsze
 check('R3(c): zdrowie armii liczone w main (diploArmyHealthShare) i podane do ai.ts',
   count(MAIN, 'diploArmyHealthShare(a)') === 1 && AI.includes('armyHealthShare: rel.armyHealthShare'));
-check('R3 spojnosc: AI nie proponuje pokoju gdy czuje sie silniejsze (isFeelingStronger)',
-  AI.includes('const aiFeelsStronger = rel.stanWojny && isFeelingStronger({') && AI.includes('!aiFeelsStronger && aiPeaceTimeOk && (rw <= progPokojSlabosc') && AI.includes('const aiPeaceTimeOk = turnsAtWarRel >= warProfile.minTurWojny;'));
+// R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: „czuje się silniejsze" = pozycja militarna 'silniejsza' (nie rw).
+check('R3 spojnosc: AI nie proponuje pokoju gdy jest militarnie silniejsza (peacePosMil)',
+  AI.includes("const aiFeelsStronger = rel.stanWojny && peacePosMil === 'silniejsza';") && AI.includes('!aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer') && AI.includes('const aiPeaceTimeOk = turnsAtWarRel >= Math.max(warProfile.minTurWojny, PEACE_PROPOSAL_MIN_WAR_TURNS);'));
+// R-WEB-TEST-DEBT-DIPLO-WAR-PEACE-SIM-Q1 r3: literal bramki czasu zaktualizowany do r2 (AI od tury 10 = max(minTurWojny, PEACE_PROPOSAL_MIN_WAR_TURNS)); stary literal „stary harmonogram” → nowa reguła.
 {
-  const mutSpojn = AI.replace('rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && (rw', 'rel.stanWojny && aiPeaceTimeOk && (rw');
-  check('mutacja spojnosci R3 (AI proponuje mimo czucia sily) jest wykrywalna', mutSpojn !== AI);
+  const mutSpojn = AI.replace("const aiFeelsStronger = rel.stanWojny && peacePosMil === 'silniejsza';", 'const aiFeelsStronger = false;');
+  check('mutacja spojnosci R3 (AI proponuje mimo siły militarnej) jest wykrywalna', mutSpojn !== AI);
 }
 
 // ---- R5: bramka pokoju podpięta w buildProposalEvalContext ----

@@ -32,7 +32,7 @@ import {
 } from './civ-ai-data';
 import { isBarbarian } from './barbarians';
 import { applyWiarygodnoscTempoDoDelty, zaufanieDryfOdWiarygodnosci } from './diplomacy-credibility';
-import { resolveWarPeaceProfile, warWearinessShare } from './diplomacy-war-peace-profile';
+import { warWearinessLevel, WAR_WEARINESS_PARAMS } from './war-weariness';
 
 // ---------------------------------------------------------------------------
 // Re-exported Relation interface (spec-aligned alias over RelacjaDyplomatyczna)
@@ -154,16 +154,20 @@ export const DIPLOMACY_PARAMS = {
   dobraWola_zaufanie_perTura:       1,
   /** "Wspolny wrog (kooperacja trwa)" (+1/ture) */
   wspolnyWrog_zaufanie_perTura:     1,
-  /** "Wspolna religia" (+0.5/ture, max +15) */
-  wspolnaReligia_zaufanie_perTura:  0.5,
-  /** "Odmienna religia" (-0.5/ture, max -10) */
-  odmiennaReligia_zaufanie_perTura: -0.5,
-  /** "Kara za wspólną granicę" dla epoki Kamienia (-2/turę). */
-  ekspansjaGranica_zaufanie_perTura: -2,
-  /** Kara za wspólną granicę dla epoki Brązu (-3/turę). */
-  ekspansjaGranicaBraz_zaufanie_perTura: -3,
-  /** Kara za wspólną granicę dla epoki Żelaza (-4/turę). */
-  ekspansjaGranicaZelazo_zaufanie_perTura: -4,
+  /** Religia NIE wpływa na Zaufanie (R-WEB-DIPLO-TRUST-NUMBERS-Q1). Klucze zostają w JSON, wartość 0. */
+  wspolnaReligia_zaufanie_perTura:  0,
+  /** Religia NIE wpływa na Zaufanie (R-WEB-DIPLO-TRUST-NUMBERS-Q1). Klucz zostaje w JSON, wartość 0. */
+  odmiennaReligia_zaufanie_perTura: 0,
+  /** "Kara za wspólną granicę" dla epoki Kamienia (-3/turę). */
+  ekspansjaGranica_zaufanie_perTura: -3,
+  /** Kara za wspólną granicę dla epoki Brązu (-4/turę). */
+  ekspansjaGranicaBraz_zaufanie_perTura: -4,
+  /** Kara za wspólną granicę dla epoki Żelaza (-5/turę). */
+  ekspansjaGranicaZelazo_zaufanie_perTura: -5,
+  /** Zaufanie ustawiane OD RAZU w chwili zawarcia rozejmu (R-WEB-DIPLO-TRUST-NUMBERS-Q1). */
+  rozejm_zaufanie_ustawienie: 10,
+  /** Zaufanie ustawiane OD RAZU w chwili zawarcia pokoju i zostaje (R-WEB-DIPLO-TRUST-NUMBERS-Q1). */
+  pokoj_zaufanie_ustawienie: 20,
   /** "Urazy historyczne (zanikajace)" (-2/ture; fades every 20 turns) */
   urazyHistoryczne_zaufanie_perTura: -2,
 
@@ -865,10 +869,9 @@ export type DiplomaticEvent =
   | 'zlamana_obietnica'         // player broke a pact (-40 Zaufanie)
   | 'zlamana_obietnica_ai'      // AI broke a pact (-20 Zaufanie)
   | 'zdrada'                    // surprise attack (-50 Zaufanie)
-  | 'tarcia_graniczne'          // border friction / expansion near border (one-shot -2)
+  | 'tarcia_graniczne'          // border friction event (jednorazowe zdarzenie; ciągła kara za granicę osobno, per tura)
   // trust bonuses
   | 'dar'                       // gift (free resource / Pieniadz)
-  | 'wspolna_religia'           // same religion established (one-shot +1 seed)
   | 'pomoc_sojusznikowi'        // helped ally in war (+10 Zaufanie)
   // respect events
   | 'wygrana_bitwa'             // won a battle (+5 Respekt)
@@ -880,12 +883,11 @@ export type DiplomaticEvent =
   // diplomacy.json modifier table), so their values are inline literals below
   // rather than DIPLOMACY_PARAMS keys (which mirror diplomacy.json exactly).
   | 'wojna_casus_belli'         // 1.11 war WITH casus belli (-10 Relacja => -10 Zaufanie)
-  | 'ultimatum_spelnione'       // 1.9 ultimatum met: addressee loses face (-5 Zaufanie)
   | 'ultimatum_bezpodstawne'    // 1.9 baseless ultimatum, low Respekt (-10 Zaufanie, -10 Respekt)
   | 'trybut_odmowa'             // 1.8 tribute demand refused (-10 Zaufanie; casus belli)
   | 'trybut_oferta_przyjeta'    // 1.8 tribute OFFER accepted: payer avoids attack (+5 Zaufanie)
   | 'wymiana_tech_gratis'       // 1.6 free technology exchange (+5 Zaufanie)
-  | 'zerwanie_handlu'          // 1.5 zerwanie umowy handlowej (−10 Zaufanie; szablon §1.5: −15 Relacja/−10 Zaufanie)
+  | 'zerwanie_handlu'          // 1.5 zerwanie umowy handlowej (−10 Zaufanie; modelowane jako −10 Zaufanie, patrz case w applyDiplomaticEvent)
   // R-WEB-TREATY-TRADE-FREE-BREAK-AFTER-10-Q1: dobrowolne zerwanie umowy handlowej po ≥10 turach
   // od zawarcia — zdarzenie śledzone (status/ślad), ale BEZ kary Zaufania (dZ=0).
   | 'zerwanie_handlu_bez_kary'
@@ -934,7 +936,6 @@ export function applyDiplomaticEvent(
       break;
 
     case 'pokoj':
-      // paragraph 1.10: +5 Relacja after time -- soft approximation as +5 Zaufanie.
       dZ = 5;
       newStatus = 'pokoj';
       break;
@@ -983,10 +984,11 @@ export function applyDiplomaticEvent(
       //     REDEFINICJA-Q1: „Ekspansja przy granicy" — nazwa myląco sugerowała ekspansję
       //     zamiast sąsiedztwa) żyje osobno, w `computeTickZaufanieDelta`
       //     (`if (ctx.karaWspolnaGranica) dZ += ...`), i jest naliczany KAŻDEJ tury.
-      //     Pomiar: Zaufanie 50 → 48/46/44/42/40 w 5 turach.
-      // UI („−2/turę", `diplomacy-factors.ts` `perTurn: true`) opisuje ten drugi mechanizm
-      // i jest ZGODNE ze specyfikacją (`Dyplomacja/Dyplomacja-zasady.md` §3.2). Defektem
-      // był wyłącznie ten komentarz.
+      //     Pomiar (historyczny, przy −2/turę): Zaufanie 50 → 48/46/44/42/40 w 5 turach.
+      //     Aktualne wartości: −3/−4/−5 wg epoki (`ekspansjaGranica*_zaufanie_perTura`).
+      // UI (`diplomacy-factors.ts` `perTurn: true`) opisuje ten drugi mechanizm
+      // (specyfikacja: `Dyplomacja/Dyplomacja-zasady.md` §3.2). Wartość liczbowa w tym
+      // komentarzu nie jest źródłem prawdy — źródłem są parametry.
       dZ = p.ekspansjaGranica_zaufanie_perTura;
       break;
 
@@ -995,11 +997,6 @@ export function applyDiplomaticEvent(
     case 'dar':
       // D4-WYMIANA-PN: Zaufanie z wartości PN (diplomacyGiftTrustFromPn w silniku), nie flat +6.
       dZ = 0;
-      break;
-
-    case 'wspolna_religia':
-      // Approximated as one-shot seed: +1 Zaufanie (per-turn handled by engine)
-      dZ = 1;
       break;
 
     case 'pomoc_sojusznikowi':
@@ -1036,11 +1033,6 @@ export function applyDiplomaticEvent(
       // (Czysta deklaracja z karencją N1 — 'wojna_wypowiedziana' — nie obniża Zaufania.)
       dZ = -10;
       newStatus = 'wojna';
-      break;
-
-    case 'ultimatum_spelnione':
-      // 1.9 ultimatum met: -5 Relacja (addressee loses face) -> -5 Zaufanie.
-      dZ = -5;
       break;
 
     case 'ultimatum_bezpodstawne':
@@ -1099,8 +1091,10 @@ export function applyDiplomaticEvent(
 }
 
 /**
- * Maks. score (Zaufanie + Respekt) w stanie wojny — nastawienie co najmniej „Wrogi"
- * (relationTier / nastawienieLabelFromScore: score < progMinimalnyRelacja = 30).
+ * Stała referencyjna: progMinimalnyRelacja − 1 (= 29). NIE steruje clampem.
+ * W stanie wojny obniżane jest WYŁĄCZNIE Zaufanie (do zera, `clampRelationForWar`);
+ * Respekt nie jest zmieniany przez wojnę i nie ma limitu 29 na sumę.
+ * Tier „Relacja" (relationTier) jest liczony osobno: Wrogi wg Zaufania < 10 (RELATION_TIER_PROG_WROGI_ZAUFANIE).
  */
 export const WAR_RELATION_SCORE_CAP = DIPLOMACY_PARAMS.progMinimalnyRelacja - 1;
 
@@ -1116,7 +1110,9 @@ export function isRelationAtWar(
 
 /**
  * W stanie wojny score relacji nie może utrzymywać nastawienia „Przyjazny"/„Życzliwy".
- * Obniża Zaufanie, potem Respekt, do WAR_RELATION_SCORE_CAP (29).
+ * Decyzja właściciela (2026-11-13): w wojnie obniżane jest WYŁĄCZNIE Zaufanie — do zera.
+ * Respekt nie jest zmieniany z powodu wojny (brak limitu 29 na sumę).
+ * WAR_RELATION_SCORE_CAP pozostaje wyeksportowane wyłącznie jako stała referencyjna (nie steruje clampem).
  */
 /**
  * R-WEB-DIPLO-RESPECT-MILITARY-EVENTS-WIRE-Q1: czysta decyzja „kto dostaje 'wygrana_bitwa'”.
@@ -1140,16 +1136,8 @@ export function militaryWinRespectPair(
 
 export function clampRelationForWar(rel: Relation): Relation {
   if (rel.status !== 'wojna') return rel;
-  const score = relationScore(rel);
-  if (score <= WAR_RELATION_SCORE_CAP) return rel;
-  let excess = score - WAR_RELATION_SCORE_CAP;
-  let z = rel.zaufanie;
-  let r = rel.respekt;
-  const takeZ = Math.min(excess, z);
-  z -= takeZ;
-  excess -= takeZ;
-  r = Math.max(0, r - excess);
-  return { ...rel, zaufanie: z, respekt: r };
+  if (rel.zaufanie === 0) return rel;
+  return { ...rel, zaufanie: 0 };
 }
 
 // ---------------------------------------------------------------------------
@@ -1176,6 +1164,11 @@ export interface AIDiplomacyContext {
    * 0 when at peace.
    */
   turnsAtWar: number;
+  /**
+   * R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: miasta zmienione właścicielem w tej wojnie (obie strony).
+   * Brak / 0 = tylko licznik czasu wojny.
+   */
+  lostCitiesTotal?: number;
   /** Poziom używany do odczytu wartości skali z macierzy cywilizacji. */
   civMatrixDifficulty?: CivMatrixDifficulty;
   /**
@@ -1370,12 +1363,13 @@ export function aiDiplomacyStance(
   // High when: weaker militarily, war drags on, or moderate goodwill.
   let peaceW: number;
   if (rel.status === 'wojna') {
-    // R-WEB-PEACE-RULES-Q1 R4: zmęczenie = min(0.5, turnsAtWar / T(civ)), T ≤ 20 (D4).
-    // Wcześniej clamp(turnsAtWar/20) z turnsAtWar podawanym jako stała (ai.ts 5/main 1) = martwe.
-    const warWeariness     = warWearinessShare(
-      context.turnsAtWar,
-      resolveWarPeaceProfile(aiPlayer.typCywilizacji).zmeczenieT,
-    );
+    // R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: jedno źródło zmęczenia = warWearinessLevel (20 tur do 100%,
+    // +10% za zmienione miasto). Udział w chęci pokoju = 0.5 × poziom (waga jak dawniej maksUdzial).
+    // Drugi zegar (min(0.5, turnsAtWar / T(civ))) usunięty.
+    const warWeariness     = 0.5 * warWearinessLevel({
+      turnsAtWar: context.turnsAtWar,
+      lostCitiesTotal: Math.max(0, context.lostCitiesTotal ?? 0),
+    }, WAR_WEARINESS_PARAMS);
     const militaryPressure = context.militaryRatio < 1
       ? (1 - context.militaryRatio) * 0.40
       : 0;
@@ -1538,12 +1532,23 @@ export function toRelation(rdip: RelacjaDyplomatyczna): Relation {
 export const TIER_NAMES = ['Wojna', 'Wrogi', 'Neutralny', 'Przyjazny', 'Sojusz'] as const;
 
 /**
+ * Próg wrogości tieru UI: „Wrogi" tylko przy Zaufaniu poniżej tej wartości.
+ * Ta sama wartość co NASTAWIENIE_PROG_WROGI_ZAUFANIE w diplomacy-display.ts (źródło prawdy
+ * etykiety Nastawienia). Import z diplomacy-display.ts jest cykliczny (display importuje
+ * ten moduł), więc wartość jest powielona; zgodność pilnuje diplo-relation-tier-trust-test.cjs.
+ */
+export const RELATION_TIER_PROG_WROGI_ZAUFANIE = 10;
+
+/**
  * Maps a Relation to one of five UI tiers:
- *   0 = Wojna      (status === 'wojna', overrides score)
- *   1 = Wrogi      (score <  30  = DIPLOMACY_PARAMS.progMinimalnyRelacja)
- *   2 = Neutralny  (score <  60  -- fixed midpoint between progMinimalny/progSojusz)
- *   3 = Przyjazny  (score < 130  = DIPLOMACY_PARAMS.progSojuszRelacja)
- *   4 = Sojusz     (status === 'sojusz' overrides score; OR score >= 130)
+ *   0 = Wojna      (status === 'wojna', overrides everything)
+ *   1 = Wrogi      (Zaufanie < RELATION_TIER_PROG_WROGI_ZAUFANIE = 10; Respekt nie łagodzi)
+ *   2 = Neutralny  (Zaufanie >= 10 oraz score < 60)
+ *   3 = Przyjazny  (score >= 60 i < 130 = DIPLOMACY_PARAMS.progSojuszRelacja)
+ *   4 = Sojusz     (status === 'sojusz' overrides everything; OR score >= 130)
+ *
+ * Score = relationScore (Zaufanie + Respekt z mnożnikami). Brak osobnego tieru „Nieufny":
+ * Zaufanie 10–29 mieści się w tierze 2 (5 stopni UI zostaje bez zmian).
  *
  * Status is SOVEREIGN over score:
  *   - 'wojna'  -> always 0, regardless of score
@@ -1553,8 +1558,9 @@ export function relationTier(rel: Relation): 0 | 1 | 2 | 3 | 4 {
   if (rel.status === 'wojna')  return 0;
   if (rel.status === 'sojusz') return 4;
 
+  if (rel.zaufanie < RELATION_TIER_PROG_WROGI_ZAUFANIE) return 1; // Wrogi (Zaufanie < 10)
+
   const s = relationScore(rel);
-  if (s < DIPLOMACY_PARAMS.progMinimalnyRelacja) return 1; // Wrogi  (< 30)
   if (s < 60)                                    return 2; // Neutralny (< 60)
   if (s < DIPLOMACY_PARAMS.progSojuszRelacja)    return 3; // Przyjazny (< 130)
   return 4;                                                // Sojusz (>= 130)
@@ -1782,8 +1788,8 @@ export interface TickCtx {
  *     po zsumowaniu dZ — mnożnik tempa WIAR-Q3=C (`applyWiarygodnoscTempoDoDelty`)
  *   dobraWola      +1 Zaufanie
  *   wspolnyWrog    +1 Zaufanie
- *   wspolnaReligia +0.5 Zaufanie  (TODO: cap akumulacyjny +15/−10 per religia)
- *   odmiennaReligia −0.5 Zaufanie (TODO: cap −10 dla odmiennej religii)
+ *   wspolnaReligia  — 0 Zaufanie (religia nie wpływa na Zaufanie; params wspolnaReligia_zaufanie_perTura = 0)
+ *   odmiennaReligia — 0 Zaufanie (params odmiennaReligia_zaufanie_perTura = 0)
  *   karaWspolnaGranica −2 Zaufanie
  *
  * Zanik urazów: co 20 tur (turn % 20 === 0) urazyHistoryczne zmniejszają się
@@ -1814,8 +1820,7 @@ export function computeTickZaufanieDelta(ctx: TickCtx, atWar: boolean): number {
   }
   if (ctx.dobraWolaAktywna)     dZ += p.dobraWola_zaufanie_perTura;
   if (ctx.wspolnyWrog)          dZ += p.wspolnyWrog_zaufanie_perTura;
-  if (ctx.wspolnaReligia)       dZ += p.wspolnaReligia_zaufanie_perTura;
-  if (ctx.odmiennaReligia)      dZ += p.odmiennaReligia_zaufanie_perTura;
+  // Religia nie zmienia Zaufania (R-WEB-DIPLO-TRUST-NUMBERS-Q1): flagi ctx ignorowane.
   if (ctx.karaWspolnaGranica) {
     dZ += ctx.karaWspolnaGranicaDelta ?? p.ekspansjaGranica_zaufanie_perTura;
   }

@@ -120,9 +120,9 @@ eq(DIPLOMACY_PARAMS.progHandelRelacja,     0, 'prog Handel Relacja = 0');
 eq(DIPLOMACY_PARAMS.startZaufanie,           20, 'start Zaufanie = 20');
 eq(DIPLOMACY_PARAMS.startRespekt,            30, 'start Respekt = 30');
 eq(DIPLOMACY_PARAMS.turyEfektuPodarunku,      5, 'tury efektu podarunku = 5');
-approx(DIPLOMACY_PARAMS.wspolnaReligia_zaufanie_perTura,  0.5, 'wspolna religia +0.5/ture');
-approx(DIPLOMACY_PARAMS.odmiennaReligia_zaufanie_perTura, -0.5, 'odmienna religia -0.5/ture');
-eq(DIPLOMACY_PARAMS.ekspansjaGranica_zaufanie_perTura,   -2, 'ekspansja granica -2/ture');
+approx(DIPLOMACY_PARAMS.wspolnaReligia_zaufanie_perTura,  0, 'wspolna religia 0/ture (R-WEB-DIPLO-TRUST-NUMBERS-Q1)');
+approx(DIPLOMACY_PARAMS.odmiennaReligia_zaufanie_perTura, 0, 'odmienna religia 0/ture (R-WEB-DIPLO-TRUST-NUMBERS-Q1)');
+eq(DIPLOMACY_PARAMS.ekspansjaGranica_zaufanie_perTura,   -3, 'ekspansja granica -3/ture');
 
 // ===========================================================================
 // 2. relationScore -- Relacja = Zaufanie + Respekt, clamp [0,200]
@@ -144,7 +144,6 @@ eq(r1.zaufanie, 20, 'dar returns +0 (PN trust in silnik)');
 eq(applyDiplomaticEvent(rel(20, 30), 'handel').zaufanie,            20, 'handel +0 Z (W1-A PN)');
 eq(applyDiplomaticEvent(rel(20, 30), 'pomoc_sojusznikowi').zaufanie, 30, 'pomoc sojusznikowi +10 Z');
 eq(applyDiplomaticEvent(rel(20, 30), 'dar').zaufanie,              20, 'dar +0 Z (PN w silniku)');
-eq(applyDiplomaticEvent(rel(20, 30), 'wspolna_religia').zaufanie,  21, 'wspolna religia seed +1 Z');
 {
   const r = applyDiplomaticEvent(rel(20, 30), 'wspolny_wrog');
   eq(r.zaufanie, 25, 'wspolny wrog +5 Z');
@@ -155,7 +154,7 @@ eq(applyDiplomaticEvent(rel(20, 30), 'wspolna_religia').zaufanie,  21, 'wspolna 
 eq(applyDiplomaticEvent(rel(60, 30), 'zlamana_obietnica').zaufanie,    20, 'zlamana obietnica gracz -40 Z');
 eq(applyDiplomaticEvent(rel(20, 30), 'zlamana_obietnica').zaufanie,     0, 'zlamana obietnica clamps at 0');
 eq(applyDiplomaticEvent(rel(50, 30), 'zlamana_obietnica_ai').zaufanie, 30, 'zlamana obietnica AI -20 Z');
-eq(applyDiplomaticEvent(rel(20, 30), 'tarcia_graniczne').zaufanie,     18, 'tarcia graniczne -2 Z');
+eq(applyDiplomaticEvent(rel(20, 30), 'tarcia_graniczne').zaufanie,     17, 'tarcia graniczne -3 Z');
 eq(applyDiplomaticEvent(rel(20, 30), 'szpiegostwo_wykryte' /* not an event */).zaufanie, 20, 'unknown event is a no-op');
 
 // ---- respect events ----
@@ -168,13 +167,13 @@ eq(applyDiplomaticEvent(rel(20, 30), 'trybut_zaakceptowany').respekt, 40, 'trybu
 {
   const r = applyDiplomaticEvent(rel(60, 40), 'zdrada');
   eq(r.zaufanie, 0,      'zdrada -50 Z, potem clamp wojny');
-  eq(r.respekt,  29,     'zdrada clamp R (score<=29)');
+  eq(r.respekt,  40,     'zdrada: Respekt nietknięty przez wojnę (bez limitu 29)');
   eq(r.status,  'wojna', 'zdrada sets status wojna');
 }
 {
   const r = applyDiplomaticEvent(rel(50, 30), 'wojna_wypowiedziana');
   eq(r.zaufanie, 0,      'wojna — clamp Z (podłoga Wrogi, bez kary N1 deklaracji)');
-  eq(r.respekt,  29,     'wojna — clamp R do score<=29');
+  eq(r.respekt,  30,     'wojna — Respekt nietknięty (wojna obniża tylko Zaufanie)');
   eq(r.status,  'wojna', 'wojna_wypowiedziana sets wojna');
 }
 {
@@ -196,10 +195,18 @@ eq(applyDiplomaticEvent(rel(20, 30), 'dar', { mnoznikPodarunku: 2 }).zaufanie, 2
 {
   const r = applyDiplomaticEvent(rel(50, 30), 'wojna_casus_belli');
   eq(r.zaufanie, 0,     'wojna z casus belli -10 Z, potem clamp wojny');
-  eq(r.respekt,  29,    'wojna casus belli clamp R');
+  eq(r.respekt,  30,    'wojna casus belli: Respekt nietknięty');
   eq(r.status,  'wojna', 'wojna_casus_belli sets wojna');
 }
-eq(applyDiplomaticEvent(rel(20, 30), 'ultimatum_spelnione').zaufanie, 15, 'ultimatum spelnione -5 Z');
+// Martwe zdarzenia usunięte (R-WEB-DIPLO-RESIDUAL-RELIGION-EVENT-AND-TEXTS-Q1): guard na źródle.
+{
+  const srcDir = path.join(__dirname, '..', 'src', 'game');
+  const dipSrc = fs.readFileSync(path.join(srcDir, 'diplomacy.ts'), 'utf8');
+  const facSrc = fs.readFileSync(path.join(srcDir, 'diplomacy-factors.ts'), 'utf8');
+  for (const ev of ['wspolna_religia', 'ultimatum_spelnione']) {
+    eq(dipSrc.includes(`'${ev}'`) || facSrc.includes(ev), false, `zdarzenie ${ev} nie wraca do diplomacy.ts / diplomacy-factors.ts`);
+  }
+}
 {
   const r = applyDiplomaticEvent(rel(30, 40), 'ultimatum_bezpodstawne');
   eq(r.zaufanie, 20, 'ultimatum bezpodstawne -10 Z');
@@ -357,13 +364,14 @@ eq(relationTier(rel(100, 100, 'wojna')),  0, 'status=wojna -> tier 0 (Wojna), ni
 eq(relationTier(rel(0, 0, 'sojusz')),     4, 'status=sojusz -> tier 4 (Sojusz), niezaleznie od score');
 
 // score-based tiers (status neutralni/pokoj)
-eq(relationTier(rel(10, 10)),  1, 'score=20 (< 30) -> tier 1 (Wrogi)');
+eq(relationTier(rel(9, 10)),   1, 'zaufanie=9 (< 10) -> tier 1 (Wrogi)');
+eq(relationTier(rel(10, 0)),   2, 'zaufanie=10 (>= 10), score=10 -> tier 2 (Neutralny; nie Wrogi)');
 eq(relationTier(rel(25, 25)),  2, 'score=50 (>= 30, < 60) -> tier 2 (Neutralny; typowy start gry)');
 eq(relationTier(rel(50, 40)),  3, 'score=90 (>= 60, < 130) -> tier 3 (Przyjazny)');
 eq(relationTier(rel(80, 72)),  4, 'score=152 (>= 130) -> tier 4 (Sojusz)');
 
 // granice (boundary values)
-eq(relationTier(rel(15, 15)),  2, 'score=30 DOKLADNIE >= progMinimalny(30) -> tier 2 (Neutralny), granica');
+eq(relationTier(rel(15, 15)),  2, 'zaufanie=15 (>= 10), score=30 -> tier 2 (Neutralny), granica');
 
 
 // ===========================================================================
@@ -515,7 +523,7 @@ function mkRdip(zaufanie, respekt, urazyHistoryczne = 0, traktaty = []) {
 {
   // ekspansja przy granicy -> -2 Zaufanie/turę
   const r = tickDiplomacy(mkRdip(50, 30), { turn: 5, karaWspolnaGranica: true });
-  eq(r.zaufanie, 48, 'tickDiplomacy: ekspansja -> -2 Zaufanie');
+  eq(r.zaufanie, 47, 'tickDiplomacy: ekspansja -> -3 Zaufanie');
 }
 {
   // Clamp: Zaufanie nie schodzi poniżej 0

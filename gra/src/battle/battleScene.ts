@@ -2712,6 +2712,8 @@ export class BattleScene {
   // walks it. activeSide is kept only for the opening hint.
   private activeSide: 'atk' | 'def' = 'atk';
   private roundNo = 0;
+  /** R-WEB-BATTLE-PACE-EQUAL-LINE-LIVE-BUG-Q1: tempo marszu (pula ruchu) per strona, raz na runde. */
+  private _paceCache: { round: number; contact: boolean; bySide: Map<string, number> } | null = null;
   private _lineCapCache: { round: number; info: Map<string, { engaged: Set<string>; minMp: number }> } | null = null;
   /** Per jednostka (po bu.id; planowanie AUTO pracuje na klonach): rekord postepu i rundy bez rekordu. */
   private _lineAdvanceState: Map<string, { best: number; stall: number }> | undefined;
@@ -6115,6 +6117,9 @@ export class BattleScene {
     const siegeMachineNeverDoctrine = ru.side === 'atk' && this.siegeWallCol >= 0 && isSiegeUnit(ru.bu);
     if (!this._manualMode && !siegeDefenderNeverDoctrine && !siegeMachineNeverDoctrine) {
       if (this._isUnitDoctrineAuto(ru)) {
+        // Rowne tempo marszu calej armii do pierwszego wzwarcia (patrz _paceCapFor).
+        const paceCap = this._paceCapFor(ru);
+        if (Number.isFinite(paceCap)) ru.moveLeft = Math.min(ru.moveLeft, paceCap);
         if (ru.playerOrder.type !== 'none') ru.playerOrder = { type: 'none' };
         const meta = this._effectiveMetaForUnit(ru);
         if (meta.doctrine !== 'manual') {
@@ -8195,6 +8200,43 @@ export class BattleScene {
       lineReferenceProgress: currentProgress,
       previousLineReferenceProgress: previousReference,
     });
+  }
+
+  /**
+   * R-WEB-BATTLE-PACE-EQUAL-LINE-LIVE-BUG-Q1 (decyzja wlasciciela 2026-11-13): "rowne tempo" =
+   * w kazdej turze marszu (do pierwszego wzwarcia wrecz) roznica miedzy najszybsza a najwolniejsza
+   * jednostka armii wynosi co najwyzej 1 hex. Sufit obejmuje WSZYSTKIE klasy (piechota, strzelcy,
+   * konnica, machiny) i cala strone (nie tylko grupe/rang) -- najwolniejsza jednostka wyznacza tempo.
+   * Zwraca pule ruchu (sufit na ta ture) albo +Infinity gdy sufit nie obowiazuje.
+   * Wzwarcie wrecz = dowolna jednostka walczaca wrecz (tez konnica) po dowolnej stronie w kontakcie
+   * z wrogiem na POCZATKU rundy; od tego momentu cala armia jedzie wlasnym tempem.
+   */
+  private _paceExemptClass(_u: RuntimeBattleUnit): boolean {
+    return /*PACE_EXEMPT*/false;
+  }
+
+  private _paceCapFor(ru: RuntimeBattleUnit): number {
+    if (this.siegeWallCol >= 0 || ru.routed || this._paceExemptClass(ru)) return Number.POSITIVE_INFINITY;
+    if (this._effectiveMetaForUnit(ru).doctrine !== 'steady') return Number.POSITIVE_INFINITY;
+    let cache = this._paceCache;
+    if (!cache || cache.round !== this.roundNo) {
+      const contact = [...this.atk, ...this.def].some(u => !u.dead && !u.fadingOut && !u.removed && !u.routed
+        && !u.rangedBase && !isSiegeUnit(u.bu) && this._canAttackFrom(u, u.q, u.r));
+      cache = { round: this.roundNo, contact, bySide: new Map() };
+      this._paceCache = cache;
+    }
+    if (cache.contact) return Number.POSITIVE_INFINITY;
+    let pace = cache.bySide.get(ru.side);
+    if (pace === undefined) {
+      pace = Number.POSITIVE_INFINITY;
+      for (const u of ru.side === 'atk' ? this.atk : this.def) {
+        if (u.dead || u.fadingOut || u.removed || u.routed || this._paceExemptClass(u)) continue;
+        if (this._effectiveMetaForUnit(u).doctrine !== 'steady') continue;
+        pace = Math.min(pace, this._movementPointsFor(u.bu));
+      }
+      cache.bySide.set(ru.side, pace);
+    }
+    return pace;
   }
 
   private _lineAdvanceWithinCap(ru: RuntimeBattleUnit, candidateCol: number): boolean {
@@ -10795,6 +10837,7 @@ export class BattleScene {
     this.busy = false;
     this.roundNo = 0;
     this._lineCapCache = null;
+    this._paceCache = null;
     this._lineAdvanceState?.clear();
     this.activeSide = 'atk';
     this._manualMode = true;
