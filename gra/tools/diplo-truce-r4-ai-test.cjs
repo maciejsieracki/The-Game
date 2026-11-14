@@ -163,7 +163,9 @@ async function main() {
       { name: 'M1 granica <= zamiast <', file: AI_FILE, out: BUNDLE_M1,
         from: 'Math.max(0, turnsAtWar) < AI_ROZEJM_DO_TUR', to: 'Math.max(0, turnsAtWar) <= AI_ROZEJM_DO_TUR' },
       { name: 'M2 gałąź rozejmu w propozycji wyłączona', file: PROPOSALS, out: BUNDLE_M2,
-        from: "if (cmd.rodzaj === 'rozejm') {\n        return {", to: "if (false) {\n        return {" },
+        // R-WEB-TEST-DEBT-DIPLO-PEACE-BASE-Q1: wzorzec zawężony do gałęzi 'pending-rozejm' (bez miasta) — w pliku
+        // są dwie gałęzie rozejmu (pending-rozejm i pending-rozejm-miasto); stary wzorzec trafiał obie (applied=2).
+        from: "if (cmd.rodzaj === 'rozejm') {\n        return {\n          ...base,\n          id: makeDealId('pending-rozejm', ", to: "if (false) {\n        return {\n          ...base,\n          id: makeDealId('pending-rozejm', " },
       { name: 'M3 AI zawsze pokój (brak rodzaju w decyzji)', file: AI_FILE, out: BUNDLE_M3,
         from: 'rodzaj:   peaceKindAi,', to: "rodzaj:   'pokoj'," },
     ];
