@@ -5927,7 +5927,7 @@ export class BattleScene {
       return;
     }
     if ((resolution.kind === 'move' || resolution.kind === 'attack') && resolution.steps.length > 0) {
-      this._resolveAutoBatchMovement(ru, resolution, 0, complete);
+      this._resolveAutoBatchMovement(ru, resolution, 0, complete, true);
       return;
     }
     if (resolution.kind === 'move' || resolution.kind === 'hold') {
@@ -5964,8 +5964,21 @@ export class BattleScene {
     resolution: AutoBatchResolution,
     stepIdx: number,
     done: () => void,
+    normalPlan = false,
   ): void {
     if (this.finished || this._autoBattleSuspended || this._manualMode) return;
+    // R-WEB-BATTLE-FLEE-MOVE-HALF-Q1 (zarzut Evaluatora 1): jednostka zaplanowana jako ZWYKLY ruch, ktora
+    // zostala zlamana W TRAKCIE zamrozonej fali (np. po smierci sasiada), nie dokonczy zamrozonej sciezki
+    // normalnym tempem: przechodzi na _fleeStep z zapasem tury = mnoznik ucieczki minus to, co juz przeszla.
+    // Jednostki zlamane JUZ przy planowaniu maja sciezke policzona przez _fleeStep (klon planowania) -- ta
+    // galaz ich nie dotyczy (normalPlan = false).
+    if (normalPlan && ru.routed && ru.fleeBudgetRound !== this.roundNo) {
+      const spent = Math.max(0, this._movementPointsFor(ru.bu) - ru.moveLeft);
+      ru.fleeBudgetRound = this.roundNo;
+      ru.moveLeft = Math.max(0, Math.min(ru.moveLeft, this._fleeMovePointsFor(ru.bu) - spent));
+      this._fleeStep(ru, done);
+      return;
+    }
     if (stepIdx >= resolution.steps.length) {
       if (ru.routed) {
         const homeCol = this._fleeHomeCol(ru);
@@ -5991,7 +6004,7 @@ export class BattleScene {
       return;
     }
     this._doMove(ru, step.col, step.row, () => {
-      this._resolveAutoBatchMovement(ru, resolution, stepIdx + 1, done);
+      this._resolveAutoBatchMovement(ru, resolution, stepIdx + 1, done, normalPlan);
     });
   }
 
