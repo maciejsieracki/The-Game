@@ -125,9 +125,14 @@ function run(mod, label) {
   out.noWarState = mod.evaluateProposal(propose(mod, 0), ctxFor({
     warState: undefined, responderTyp: 'rzymianie', authorOwnerId: 0,
   }));
-  // G0: silne AI (rw 0.9), 12 tur, z utratą miasta (bramka nie odrzuca) -> mnożnik ceny > 1
+  // G0: silne AI (rw 0.9), 12 tur, z utratą miasta (bramka nie odrzuca) — R-WEB-TEST-DEBT-DIPLO-PEACE-BASE-Q1:
+  // rw NIE jest już mnożnikiem ceny (diplomacy-war-peace-profile.ts:441, zostaje tylko mnożnik cywilizacji).
   out.highRw = mod.evaluateProposal(propose(mod, 0), ctxFor({
     warState: { turnsAtWar: 12, lostCitiesResponder: 1, responderRw: 0.9 }, responderTyp: 'rzymianie', authorOwnerId: 0,
+  }));
+  // G1: ten sam stan, rw 0.5 — kontrola: cena pokoju nie zależy od rw.
+  out.lowRw = mod.evaluateProposal(propose(mod, 0), ctxFor({
+    warState: { turnsAtWar: 12, lostCitiesResponder: 1, responderRw: 0.5 }, responderTyp: 'rzymianie', authorOwnerId: 0,
   }));
   // F: AI autorem (propozycja AI) w tym samym stanie co B -> bramka nie dotyczy
   out.aiAuthor = mod.evaluateProposal(propose(mod, 1), ctxFor({
@@ -158,10 +163,12 @@ async function main() {
       !GATE_REASON.test(ok.noWarState.reason || ''), ok.noWarState);
     check('F: propozycja AI (autor = AI) nie podlega bramce',
       !GATE_REASON.test(ok.aiAuthor.reason || ''), ok.aiAuthor);
-    check('G: mnożnik ceny (rw 0.9 => x1.8 siła) podnosi wymagany PW: bilans głębszy niż bez warState',
-      typeof ok.highRw.pwBalance === 'number' && typeof ok.noWarState.pwBalance === 'number'
-      && ok.highRw.pwBalance < ok.noWarState.pwBalance,
-      { highRw: ok.highRw.pwBalance, noWarState: ok.noWarState.pwBalance });
+    // G (R-WEB-TEST-DEBT-DIPLO-PEACE-BASE-Q1): stara asercja „rw 0.9 => x1.8 podnosi PW” kodowała usunięty
+    // mnożnik siły (FALA 695, diplomacy-war-peace-profile.ts:436-441). Obowiązująca reguła: rw nie zmienia ceny.
+    check('G: rw nie jest mnożnikiem ceny pokoju — ten sam stan, rw 0.9 vs 0.5, identyczny bilans PW',
+      typeof ok.highRw.pwBalance === 'number' && typeof ok.lowRw.pwBalance === 'number'
+      && ok.highRw.pwBalance === ok.lowRw.pwBalance,
+      { highRw: ok.highRw.pwBalance, lowRw: ok.lowRw.pwBalance });
 
     const timing = require(BUNDLE_OK);
     const timingResult = (actionId, turnsAtWar, author = 1) => timing.evaluateProposal(

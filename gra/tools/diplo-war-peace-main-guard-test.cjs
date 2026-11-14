@@ -101,8 +101,12 @@ check('R4: stała /20 usunięta z diplomacy.ts', !DIPLO.includes('context.turnsA
 check('R3: priorytet 2 używa sygnałów (aiPeaceSignals)', AI.includes('aiPeaceSignals(') && AI.includes('peaceSignals.wantsPeace'));
 check('R6/ZT: priorytet 4 używa progu Zaufania (PROG_WOJNA_ZAUFANIE) i przewagi siły militarnej',
   AI.includes('(rel.relation.zaufanie) < PROG_WOJNA_ZAUFANIE') || AI.includes('rel.relation.zaufanie < PROG_WOJNA_ZAUFANIE'));
-check('R6/ZT: priorytet 4 liczy przewagę przez compareMilitaryStrength (≥20%)',
-  AI.includes("compareMilitaryStrength(milAiSide, milPartnerSide).przewaga === 'A'"));
+// R-WEB-TEST-DEBT-DIPLO-PEACE-BASE-Q1: przewaga liczona przez compareMilitaryStrength z progiem charakteru
+// (progPrzewagiWojnyProc = baza 20% + bias.warSilaBonus, ai.ts ~7364), nie ze stałym progiem domyślnym.
+check('R6/ZT: priorytet 4 liczy przewagę przez compareMilitaryStrength z progiem charakteru (progPrzewagiWojnyProc)',
+  AI.includes("compareMilitaryStrength(milAiSide, milPartnerSide, {")
+  && AI.includes("progPrzewagiProc: progPrzewagiWojnyProc")
+  && AI.includes("}).przewaga === 'A'"));
 // mutacja R3: usunięcie sygnałów z priorytetu 2
 {
   // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: warunek priorytetu 2 ma postać z pozycją militarną.

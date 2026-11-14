@@ -127,6 +127,8 @@ function propose(mod, actionId, payload) {
 const WAR_EARLY = { turnsAtWar: 3, lostCitiesResponder: 0, responderRw: 0.5 };
 const WAR_STRONGER = { turnsAtWar: 9, lostCitiesResponder: 0, responderRw: 0.6 };
 const WAR_LONG = { turnsAtWar: 20, lostCitiesResponder: 0, responderRw: 0.9 };
+// Pozycja militarna AI (siła) — bramka „stronger” czyta ją z warState (diplomacy-proposals.ts, r5Gate), nie z rw.
+const WAR_STRONGER12 = { turnsAtWar: 12, lostCitiesResponder: 0, responderRw: 0.6, responderPozycjaMilitarna: 'silniejsza' };
 const GATE_REASON = /za wcześnie|czuje się silniejsze/;
 
 function run(mod) {
@@ -135,6 +137,9 @@ function run(mod) {
     rozejmEarly: ev('rozejm', {}, ctxFor({ warState: WAR_EARLY })),
     pokojEarly: ev('pokoj', {}, ctxFor({ warState: WAR_EARLY })),
     rozejmStronger: ev('rozejm', {}, ctxFor({ warState: WAR_STRONGER })),
+    // R-WEB-TEST-DEBT-DIPLO-PEACE-BASE-Q1: 12 tur = globalny próg 10 tur przepuszczony, bramka profilu „czuje się silniejsze”.
+    rozejmStronger12: ev('rozejm', {}, ctxFor({ warState: WAR_STRONGER12 })),
+    pokojStronger12: ev('pokoj', {}, ctxFor({ warState: WAR_STRONGER12 })),
     pokojStronger: ev('pokoj', {}, ctxFor({ warState: WAR_STRONGER })),
     rozejmLong: ev('rozejm', {}, ctxFor({ warState: WAR_LONG })),
     pokojLong: ev('pokoj', {}, ctxFor({ warState: WAR_LONG })),
@@ -214,10 +219,19 @@ async function main() {
 
     // (2)-(5) propozycje
     const ok = run(require(BUNDLE_OK));
-    check('P1: rozejm za wcześnie (3 tury wojny) = odrzucenie „za wcześnie" jak pokój',
-      ok.rozejmEarly.accepted === false && /za wcześnie/.test(ok.rozejmEarly.reason || ''), ok.rozejmEarly);
-    check('P2: rozejm silniejsze AI (9 tur) = odrzucenie „czuje się silniejsze" jak pokój',
-      ok.rozejmStronger.accepted === false && /czuje się silniejsze/.test(ok.rozejmStronger.reason || ''), ok.rozejmStronger);
+    // R-WEB-TEST-DEBT-DIPLO-PEACE-BASE-Q1: obowiązujący globalny próg 10 pełnych tur (diplomacy-peace-proposal-timing,
+    // gracz→AI) zamyka propozycję PRZED bramką profilu. Rozejm ma tę samą odmowę co pokój (paryteta).
+    check('P1: rozejm za wcześnie (3 tury wojny) = odrzucenie progiem 10 tur, identycznie jak pokój',
+      ok.rozejmEarly.accepted === false && /10 pełnych tur/.test(ok.rozejmEarly.reason || '')
+      && ok.rozejmEarly.reason === ok.pokojEarly.reason, ok.rozejmEarly);
+    check('P2: rozejm silniejsze AI (9 tur) = odrzucenie progiem 10 tur, identycznie jak pokój',
+      ok.rozejmStronger.accepted === false && /10 pełnych tur/.test(ok.rozejmStronger.reason || '')
+      && ok.rozejmStronger.reason === ok.pokojStronger.reason, ok.rozejmStronger);
+    check('P2b: rozejm silniejsze AI (12 tur, pozycja militarna „silniejsza”) = odrzucenie bramką profilu, jak pokój',
+      ok.rozejmStronger12.accepted === false && /militarnie silniejsza/.test(ok.rozejmStronger12.reason || '')
+      // Parytet komunikatu bramki (bez kwoty PN — baza rozejmu ≠ baza pokoju, M2).
+      && ok.rozejmStronger12.reason.split(' — miasta')[0] === ok.pokojStronger12.reason.split(' — miasta')[0],
+      ok.rozejmStronger12);
     check('P3: rozejm po 20 turach nie podlega bramce czasu/siły',
       !GATE_REASON.test(ok.rozejmLong.reason || ''), ok.rozejmLong);
     check('P4: rozejm bez trwającej wojny odrzucony',
