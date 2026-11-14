@@ -29,8 +29,8 @@ Ich otwarte pytania są w sekcji CZEKA NA DECYZJĘ WŁAŚCICIELA (#375).
 
 ## GOTOWE DO STARTU (jest dispatch w repo i brak zamknięcia)
 
-Brak pozycji. Heartbeat nie uruchamia niczego z tej sekcji, dopóki orkiestrator nie wypchnie dispatchu
-i nie przeniesie pozycji tutaj (patrz Reguły).
+- R-WEB-LIVE-VERIFY-WAVE-689-697-A2-TRADE-DIALOG-DOM-Q1 (okno „Umowa wymiany surowców” bez przeładowania; HAIKU; dispatch `runs/…/00-dispatch.md` wypchnięty; skrypt `scratchpad/WEB-R-WEB-LIVE-VERIFY-WAVE-689-697-A2-TRADE-DIALOG-DOM-Q1.js`; args: id, tag A2-TRADE, mode full, cand 75e238e52, opModel haiku, round 1). Start gdy zwolni się slot.
+- B2 (reszta punktów W80B: panel bez nakładki, wojna AI↔AI ≥16 tur, zmiana miasta +10%) — dispatch do napisania PO diagnozie nakładki (R-WEB-WORLD-CREATION-OVERLAY-MIDGAME-DIAG-Q1) i wyniku B1.
 
 ## CZEKA NA DECYZJĘ WŁAŚCICIELA (nie uruchamiać bez odpowiedzi ABC)
 
