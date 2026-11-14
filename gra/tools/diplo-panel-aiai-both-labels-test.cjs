@@ -87,6 +87,9 @@ async function main() {
     }],
   });
   const { otherCardHtml } = require(BUNDLE);
+  // Sprzątanie: bundle jest już w pamięci; stuby i wejście są tymczasowe (nie zostają w drzewie roboczym).
+  for (const key of Object.keys(stubPath)) fs.rmSync(stubPath[key], { force: true });
+  fs.rmSync(ENTRY, { force: true });
 
   function baseState(extra) {
     return Object.assign({
@@ -167,6 +170,17 @@ async function main() {
     }), []);
     ok(html.includes('Zmęczenie wojną 40%') && html.includes('Desperacja 65%'), '[A6] wojna gracz↔AI: oba wiersze obecne');
     ok(html.includes('<span>Ty</span>') && html.includes('<span>Grecja</span>'), '[A6] wiersze podpisane „Ty” i nazwą rozmówcy');
+  }
+  {
+    // A7: pusta nazwa rozmówcy — znacznik bez prefiksu „: …” (brak ślepego „: Desperacja”).
+    const html = otherCardHtml(baseState({
+      otherCivName: '',
+      otherRelations: {
+        wars: [{ ownerId: 7, name: 'Hetyci', warWeariness: { rola: 'przegrywa', desperacja: 0.5 } }],
+        alliances: [], naps: [], deals: [],
+      },
+    }), []);
+    ok(html.includes('Desperacja 50%') && !html.includes(': Desperacja 50%'), '[A7] pusta nazwa rozmówcy: znacznik bez prefiksu');
   }
 
   // ===========================================================================

@@ -1609,8 +1609,10 @@ function warWearinessPartnerSuffixHtml(
 function warWearinessMarkHtml(who: string, view: AudienceWarWearinessView | undefined): string {
   const info = view ? warWearinessLabelPl(view) : null;
   if (!info) return '';
+  // Pusta nazwa (brak danych o rozmówcy) = znacznik bez prefiksu, zamiast ": Desperacja N%".
+  const prefix = who ? esc(who) + ': ' : '';
   return ' <span class="da-rel-war-wear" title="' + esc(info.tooltip) + '">'
-    + esc(who) + ': ' + esc(info.label) + '</span>';
+    + prefix + esc(info.label) + '</span>';
 }
 
 /** Suma Zaufanie + Respekt (0–200) — widoczna w panelu relacji audiencji. */
