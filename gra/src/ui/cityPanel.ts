@@ -1098,8 +1098,8 @@ const DEFAULT_PODZIAL_HANDLU: PodzialHandluSplit = {
   procentLuksus: 20,
 };
 
-/** Domyslny podzial Pracy (70% budynki). */
-const DEFAULT_PODZIAL_PRACY: PodzialPracySplit = { procentBudynki: 70 };
+/** Domyslny podzial Pracy (50% budynki / 50% pula) — lustro DEFAULT_PODZIAL_PRACY z game/cities.ts. */
+const DEFAULT_PODZIAL_PRACY: PodzialPracySplit = { procentBudynki: 50 };
 
 /** Etykieta suwaka handlu karmiącego pulę zamożności (UI — bez „Społ.” / „Wealth”). */
 const HANDEL_ZAMOZNOSC_LABEL = 'Zamożność';

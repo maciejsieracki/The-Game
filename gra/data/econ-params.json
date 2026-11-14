@@ -92,9 +92,9 @@
       "opis": "Domyślny udział strumienia Zamożność (Wealth) w podziale Daniny netto nowego miasta. Podniesiony 10% → 20% decyzją Maciej 2026-07-25 (PYTANIE 74 = A). Powód: 20% to dokładnie próg utrzymania poziomu Zamożności (20% pieniądza miasta przy poziomie 0), więc poziom Zamożności rusza z miejsca bez ręcznej interwencji; w nowej siatce Szczęścia przedział 20-29% daje +1 pkt Szczęścia na normalnym i 0 na trudnym (zamiast 0 / -1 przy dawnych 10%)."
     },
     "suwak_praca_budynki_domyslnie": {
-      "easy": 70,
-      "normal": 70,
-      "hard": 70,
+      "easy": 50,
+      "normal": 50,
+      "hard": 50,
       "jednostka": "%",
       "opis": "Domyślny udział strumienia Praca→Budynki w podziale Pracy netto. [PT]"
     },

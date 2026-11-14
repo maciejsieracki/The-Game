@@ -416,9 +416,9 @@ export const DEFAULT_PODZIAL_HANDLU: Readonly<CityPodzialHandlu> = {
   procentLuksus:   20,
 };
 
-/** Domyslny podzial Pracy — zgodny z buildEconParams (70% budynki). */
+/** Domyslny podzial Pracy — zgodny z buildEconParams (50% budynki / 50% pula). */
 export const DEFAULT_PODZIAL_PRACY: Readonly<CityPodzialPracy> = {
-  procentBudynki: 70,
+  procentBudynki: 50,
 };
 
 /**
