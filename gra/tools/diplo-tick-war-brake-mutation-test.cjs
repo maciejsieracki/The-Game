@@ -16,7 +16,8 @@ const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild')
 const ROOT = path.resolve(__dirname, '..');
 const SRC = fs.readFileSync(path.resolve(ROOT, 'src', 'game', 'diplomacy-tick-war-brake.ts'), 'utf8');
 const PARAMS = JSON.parse(fs.readFileSync(path.resolve(ROOT, 'data', 'diplomacy-tick-params.json'), 'utf8'));
-const P6 = PARAMS.p6;
+// N nie jest w JSON (R-WEB-DIPLO-TRUST-WAR-N6-CLEANUP-Q1): podajemy jawnie N=5 jak w silniku (profil wojny).
+const P6 = { ...PARAMS.p6, kryzysTurDoWojny: 5 };
 const P7 = PARAMS.p7;
 
 function loadModule(source) {

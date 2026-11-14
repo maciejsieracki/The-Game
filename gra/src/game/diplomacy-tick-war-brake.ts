@@ -20,7 +20,11 @@ export function isDiploTickWarBrakeEnabled(): boolean {
 export interface WarBrakeP6Params {
   /** Prog krytyczny Zaufania (wlacznie): Zaufanie <= prog liczy sie jako kryzys. */
   kryzysProgZaufania: number;
-  /** Liczba kolejnych tur kryzysu, po ktorych strona silniejsza wypowiada wojne. */
+  /**
+   * Liczba kolejnych tur kryzysu, po ktorych strona silniejsza wypowiada wojne.
+   * Podawana JAWNIE przez silnik (main.ts, diploBrakeCrisisStep) z profilu wojny pary (hamulecN);
+   * nie ma jej w gra/data/diplomacy-tick-params.json (R-WEB-DIPLO-TRUST-WAR-N6-CLEANUP-Q1).
+   */
   kryzysTurDoWojny: number;
   /** Ile tur przed wojna gracz dostaje ostrzezenie (gdy para dotyczy gracza). */
   kryzysOstrzezenieTurPrzed: number;
