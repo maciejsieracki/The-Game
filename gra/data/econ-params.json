@@ -409,11 +409,39 @@
       "opis": "Maks konwersja (Żelazo+Drewno)→Stal w Wielka odlewnia na turę (Maciej 2026-07-27: przeniesione z Wielka Kuźnia). Cykle × m(e) epoki WŁAŚCICIELA (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1: 1/1,5/2/2,5/3; converters.ts CONVERTER_FOUNDRY_ERA_RECIPE_IDS). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 1→5, flat na wszystkich trudnościach. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 5→25 (×5). R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 (decyzja właściciela 2026-11-05): 25→50 (×2) cykli/turę; mnożnik epoki właściciela na cykle; Wielka odlewnia w tej samej rodzinie (założenie)."
     },
     "budynek_garncarnia_przepustowosc": {
+      "easy": 30,
+      "normal": 30,
+      "hard": 30,
+      "jednostka": "szt/turę",
+      "opis": "Maks konwersja (Glina+Drewno)→Ceramika w Garncarni na turę w epoce właściciela 1: 30/t. Wartość per era, liniowo +20 na epokę (30/50/70/90/110), wiersze budynek_garncarnia_epokaN_przepustowosc. Ta sama wartość dla gracza i AI, flat na trudnościach. R-WEB-DATA-GARNCARNIA-THROUGHPUT-30-PLUS-20-PER-ERA-Q1 (decyzja właściciela 2026-11-14, ABC A): zastępuje poprzednie 50 cykli +10% bazy/epokę (50/55/60/65/70)."
+    },
+    "budynek_garncarnia_epoka2_przepustowosc": {
       "easy": 50,
       "normal": 50,
       "hard": 50,
       "jednostka": "szt/turę",
-      "opis": "Maks konwersja (Glina+Drewno)→Ceramika w Garncarni na turę (baza przed skalowaniem epoką, PYTANIE-84-B5). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 6→10, flat na wszystkich trudnościach; +10% tej bazy ADDYTYWNIE za każdą epokę cywilizacji właściciela, patrz converterThroughputForEra w converters.ts. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 10→50 (×5)."
+      "opis": "Jawna przepustowość Garncarni (cykle glina+drewno→ceramika) w epoce właściciela 2: 50/t. Wartość per era, bez mnożnika epoki. R-WEB-DATA-GARNCARNIA-THROUGHPUT-30-PLUS-20-PER-ERA-Q1 (2026-11-14)."
+    },
+    "budynek_garncarnia_epoka3_przepustowosc": {
+      "easy": 70,
+      "normal": 70,
+      "hard": 70,
+      "jednostka": "szt/turę",
+      "opis": "Jawna przepustowość Garncarni (cykle glina+drewno→ceramika) w epoce właściciela 3: 70/t. Wartość per era, bez mnożnika epoki. R-WEB-DATA-GARNCARNIA-THROUGHPUT-30-PLUS-20-PER-ERA-Q1 (2026-11-14)."
+    },
+    "budynek_garncarnia_epoka4_przepustowosc": {
+      "easy": 90,
+      "normal": 90,
+      "hard": 90,
+      "jednostka": "szt/turę",
+      "opis": "Jawna przepustowość Garncarni (cykle glina+drewno→ceramika) w epoce właściciela 4: 90/t. Wartość per era, bez mnożnika epoki. R-WEB-DATA-GARNCARNIA-THROUGHPUT-30-PLUS-20-PER-ERA-Q1 (2026-11-14)."
+    },
+    "budynek_garncarnia_epoka5_przepustowosc": {
+      "easy": 110,
+      "normal": 110,
+      "hard": 110,
+      "jednostka": "szt/turę",
+      "opis": "Jawna przepustowość Garncarni (cykle glina+drewno→ceramika) w epoce właściciela 5 wzwyż: 110/t. Wartość per era, bez mnożnika epoki. R-WEB-DATA-GARNCARNIA-THROUGHPUT-30-PLUS-20-PER-ERA-Q1 (2026-11-14)."
     },
     "budynek_spichlerz_zuzywa_ceramika": {
       "easy": 25,

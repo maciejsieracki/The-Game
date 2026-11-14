@@ -382,11 +382,11 @@
   "garncarnia": {
     "top5": [
       {
-        "tytul": "Wytwarza ceramikę: do 50 sztuk na turę",
-        "liczba": "do 50",
-        "zdanie": "Zamienia glinę i drewno w ceramikę; każdy Spichlerz zużywa jej 25 na turę, a bez niej nie daje bonusów ludności.",
+        "tytul": "Wytwarza ceramikę: 30 / 50 / 70 / 90 / 110 sztuk na turę (wg epoki)",
+        "liczba": "30–110",
+        "zdanie": "Zamienia glinę i drewno w ceramikę: 30 sztuk na turę w epoce 1, potem +20 na każdą epokę; każdy Spichlerz zużywa jej 25 na turę, a bez niej nie daje bonusów ludności.",
         "rodzaj": "efekt",
-        "dowod": "gra/src/game/converters.ts:85; gra/data/econ-params.json:383-389; gra/data/econ-params.json:390-396"
+        "dowod": "gra/src/game/converters.ts:93; gra/data/econ-params.json (budynek_garncarnia_przepustowosc, budynek_garncarnia_epoka2..5_przepustowosc)"
       },
       {
         "tytul": "Otwiera Spichlerz w każdym mieście (limit 5 → 8)",

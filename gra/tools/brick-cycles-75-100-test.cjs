@@ -91,8 +91,8 @@ eq(d3.consumed.glina, 200, 'panel era3: glina 200');
 eq(d3.consumed.drewno, 100, 'panel era3: drewno 100');
 
 console.log('-- H. pozostale receptury bez zmian (garncarnia/huta) --');
-eq(M.loadThroughput(econ, 'budynek_garncarnia_przepustowosc', 'normal', -1), 50, 'garncarnia baza 50');
-eq(Math.abs(M.converterThroughputsForEra(r => r.throughputFallback, 2).garncarnia - 55) < 1e-9, true, 'garncarnia era2 +10% bazy (55) bez zmian');
+eq(M.loadThroughput(econ, 'budynek_garncarnia_przepustowosc', 'normal', -1), 30, 'garncarnia baza 30');
+eq(M.loadThroughput(econ, 'budynek_garncarnia_epoka2_przepustowosc', 'normal', -1), 50, 'garncarnia era2 = 50 (jawny wiersz)');
 eq(M.converterThroughputsForEra(r => r.throughputFallback, 2).huta, 50, 'huta plaska');
 
 console.log(`\nbrick-cycles-75-100-test: ${passed} passed, ${failed} failed`);

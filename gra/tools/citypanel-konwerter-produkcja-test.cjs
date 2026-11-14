@@ -22,7 +22,7 @@
  *       `converterProductionDisplayForBuilding` z PRAWDZIWYM `econ-params.json`
  *       -- zero reimplementacji formuły w teście.
  *   [1c] Przypina TWARDE liczby z werdyktu Evaluatora (nie tylko `> 0`):
- *        Garncarnia era1/2/3 = 50/55/60 szt./turę (glina, drewno, ceramika);
+ *        Garncarnia era1/2/3 = 30/50/70 szt./turę (R-WEB-DATA-GARNCARNIA-THROUGHPUT-30-PLUS-20-PER-ERA-Q1; glina, drewno, ceramika);
  *        Odlewnia brązu era1 = ruda 50, drewno 50, ruda cyny 5, brąz 50;
  *        budynek bez receptury (np. spichlerz) -> null.
  *   [2] Text-anchor na `cityPanel.ts`: potwierdza, że UI importuje i woła
@@ -138,9 +138,11 @@ function assertGarncarniaEra(era, expected) {
   ok(Math.abs(r.produced.ceramika - expected) < EPS, `Garncarnia era${era}: produkcja Ceramika = ${expected} szt./turę (got ${r.produced.ceramika})`);
   console.log(`   Garncarnia era${era} (normal): -${r.consumed.glina} Glina/t · -${r.consumed.drewno} Drewno/t · +${r.produced.ceramika} Ceramika/t`);
 }
-assertGarncarniaEra(1, 50);
-assertGarncarniaEra(2, 55);
-assertGarncarniaEra(3, 60);
+assertGarncarniaEra(1, 30);
+assertGarncarniaEra(2, 50);
+assertGarncarniaEra(3, 70);
+assertGarncarniaEra(4, 90);
+assertGarncarniaEra(5, 110);
 
 {
   const r = engine.converterProductionDisplayForBuilding('odlewnia_brazu', econParams, 'normal', 1);
