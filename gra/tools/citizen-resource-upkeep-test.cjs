@@ -957,6 +957,38 @@ console.log('\n-- K. main.ts: parytet liczby wystąpień citizenUpkeepByOwner.cl
   );
 }
 
+// --- L. Kamień z ceramiką (R-WEB-DATA-CITIZEN-CERAMICS-STONE-AGE-Q1, runda 2 obrony) ---
+console.log('\n-- L. Kamień z ceramiką: drenaż pop 20, kara/premia za ceramikę, parytet AI --');
+{
+  // (a') drenaż: epoka 1, populacja 20, magazyn pełny -> ceramika 20 sztuk (1,0 × 20), bez odjęcia poniżej zera
+  const stockFull = { drewno: 100, glina: 100, ceramika: 100 };
+  const drain20 = M.computeCitizenResourceDrain(1, 20, stockFull);
+  eq(drain20.deductions.ceramika, 20, 'L1: Kamień, pop 20 -> deductions.ceramika = 20 (1,0 szt./obywatel × 20)');
+  eq(drain20.deductions.drewno, 20, 'L1b: Kamień, pop 20 -> deductions.drewno = 20');
+  eq(drain20.deductions.glina, 20, 'L1c: Kamień, pop 20 -> deductions.glina = 20');
+  deepEqSet(drain20.available, ['drewno', 'glina', 'ceramika'], 'L1d: Kamień, pop 20, pełny magazyn -> wszystkie 3 surowce available');
+
+  // (b') zachowanie kary: bez ceramiki w magazynie -> missing, −2 Szczęścia i −1% Rozwoju za ceramikę
+  const noCer = M.resolveCitizenResourceCoverage(1, { drewno: 50, glina: 50, ceramika: 0 });
+  deepEqSet(noCer.missing, ['ceramika'], 'L2: Kamień, ceramika=0 -> missing = [ceramika]');
+  eq(noCer.happinessDelta, 2 * M.CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE + M.CITIZEN_UPKEEP_HAPPINESS_PER_MISSING,
+    'L3: Kamień, ceramika=0 -> happinessDelta = 2 × (+2) + (−2) = +2');
+  eq(noCer.growthPctDelta, M.CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING, 'L4: Kamień, ceramika=0 -> growthPctDelta = −1 (kara Rozwoju za ceramikę)');
+  eq(M.CITIZEN_UPKEEP_HAPPINESS_PER_MISSING, -2, 'L5: kara Szczęścia za brakujący surowiec = −2');
+  eq(M.CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING, -1, 'L6: kara Rozwoju za brakujący surowiec = −1');
+
+  // z ceramiką: +2 (jak dla pozostałych), brak kary Rozwoju
+  const withCer = M.resolveCitizenResourceCoverage(1, { drewno: 50, glina: 50, ceramika: 5 });
+  eq(withCer.happinessDelta, 3 * M.CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE, 'L7: Kamień, ceramika>0 -> happinessDelta = 3 × (+2)');
+  eq(withCer.growthPctDelta, 0, 'L8: Kamień, ceramika>0 -> growthPctDelta = 0');
+
+  // (c') parytet AI/Państwa-Miasta: funkcje nie przyjmują ownerId, więc wynik zależy wyłącznie od (era, pop, magazyn)
+  eq(M.computeCitizenResourceDrain.length, 3, 'L9: computeCitizenResourceDrain(era, population, stock) -- brak parametru ownerId (parytet AI)');
+  eq(M.resolveCitizenResourceCoverage.length, 3, 'L10: resolveCitizenResourceCoverage(era, stock, population?) -- brak parametru ownerId (parytet AI)');
+  const aiLike = M.computeCitizenResourceDrain(1, 20, stockFull);
+  eq(JSON.stringify(aiLike), JSON.stringify(drain20), 'L11: ten sam wejściowy magazyn -> identyczny drenaż dla "AI" i gracza (ownerId nieobecne)');
+}
+
 // --- summary ---------------------------------------------------------------
 console.log(`\ncitizen-resource-upkeep-test: ${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(ENTRY_FILE); } catch (e) {}
