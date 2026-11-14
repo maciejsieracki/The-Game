@@ -88,6 +88,7 @@ function ensureStyles(): void {
 @keyframes ccn-in{from{opacity:0;transform:scale(.97) translateY(6px)}to{opacity:1;transform:none}}
 .civ-ccn-overlay{
   position:fixed;inset:0;z-index:660;display:flex;align-items:center;justify-content:center;
+  overflow-y:auto;overscroll-behavior:contain;
   background:rgba(4,8,18,0.62);backdrop-filter:blur(3px);animation:ccn-in .22s ease-out;
 }
 .civ-ccn{
@@ -96,7 +97,12 @@ function ensureStyles(): void {
   font:13px "Segoe UI",Tahoma,sans-serif;color:var(--text);
   min-width:min(360px,calc(100vw - 32px));max-width:420px;
   background:var(--panel);border:1px solid rgba(232,216,138,0.42);border-radius:14px;
-  box-shadow:0 20px 60px rgba(0,0,0,0.65);overflow:hidden;animation:ccn-in .28s ease-out;
+  box-shadow:0 20px 60px rgba(0,0,0,0.65);animation:ccn-in .28s ease-out;
+  /* R-WEB-UI-ELIMINATION-WINDOW-FIXED-HEIGHT-SCROLL-Q1: stała maksymalna wysokość = widok minus
+     margines, treść przewija się WEWNĄTRZ okna; margin:auto nie pozwala wyśrodkowanemu oknu
+     wyjść poza górną krawędź (nagłówek nie jest przycinany). */
+  max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);
+  overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;margin:auto;
   text-align:center;
 }
 .civ-ccn *{box-sizing:border-box;}
