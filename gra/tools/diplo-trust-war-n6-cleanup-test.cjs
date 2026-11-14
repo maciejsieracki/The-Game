@@ -5,7 +5,7 @@
  * Sprawdza:
  *  1. gra/data/diplomacy-tick-params.json NIE zawiera martwego pola p6.kryzysTurDoWojny ani jego _uwagi;
  *  2. N hamulca wojny pochodzi z profilu: po rozlozeniu p6 z JSON i jawnym N (jak w main.ts)
- *     wyzwolenie wojny nastepuje dokladnie w N-tej turze kryzysu, dla N z profilu (4 i 7);
+ *     wyzwolenie wojny nastepuje dokladnie w N-tej turze kryzysu, dla kazdego N z zakresu profilu (3..7);
  *  3. Civpedia (docs/encyklopedia/pojecia/wypowiedzenie-wojny.md) opisuje: w wojnie Zaufanie tkwi na zerze,
  *     licznik kryzysu nie liczy, liczba tur zalezy od profilu; NIE podaje stalego N = 6 / „6 tur”;
  *  4. ten sam tekst jest w bundlu Civpedii (gra/src/data/wikiBundle.json, wygenerowany narzedziem).
@@ -60,8 +60,12 @@ function warTurn(n) {
   }
   return null;
 }
-check('2a: N=4 z profilu -> wojna w 4. turze', warTurn(4) === 4);
-check('2b: N=7 z profilu -> wojna w 7. turze', warTurn(7) === 7);
+// Pelny zakres N profilu (clamp 3..7): wojna dokladnie w N-tej turze dla kazdego N.
+for (let n = 3; n <= 7; n++) {
+  check('2.' + n + ': N=' + n + ' z profilu -> wojna w ' + n + '. turze', warTurn(n) === n);
+}
+// Brak wartosci z JSON: bez jawnego N nie ma wojny w zadnej turze (N=undefined nie wyzwala wojny).
+check('2x: bez jawnego N (brak pola w JSON) wojna nie wyzwala sie', warTurn(undefined) === null);
 
 // 3. Civpedia: tekst o zerowym Zaufaniu w wojnie, bez stalego N
 check('3a: Civpedia: w wojnie Zaufanie tkwi na zerze', /Zaufanie pary \*\*tkwi na zerze\*\*/.test(WIKI_MD));
