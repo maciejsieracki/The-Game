@@ -1205,3 +1205,6 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Do zrobienia (dokumentacja, osobny FF):** `dyspozycje/rust-port/NIEPODPIETE-MODULY.md:274` wymienia usuniętą funkcję `sync_relation_status_from_deals`.
 - **Parity:** `533d46dd3`.
 - **Następne kandydaty:** wpięcie #106 (podłoga Pracy w Ledger, `city_stock`, D3); T2 (zerwanie i wojna, etap a); WIEZE 2B.
+- **Start (1 z 4):** `R-RUSTPORT-P6-ZLOZE-WIRE-WAR-BREAK-A-Q1` (T2 etap a: zerwanie traktatu przy wojnie i dobrowolne, czysta domena, bez wpinania), dispatch `87c79e5ca`, baza `533d46dd3`, Workflow `wf_43e15938-a5a`. Operator HAIKU, Evaluator/FC SONNET, Obrona HAIKU.
+- **Otwarte, do podjęcia:** wpięcie #106 (podłoga Pracy w Ledger, zapis `city_stock`, wpięcie w D3); etap b T2 (po #120 i po T2 a); WIEZE 2B.
+- **Pytania ABC #115, #120** i konwencja `Co-Authored-By`: bez odpowiedzi właściciela.
