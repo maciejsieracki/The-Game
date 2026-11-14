@@ -1,0 +1,218 @@
+{
+ "results": [
+  {
+   "viewport": [
+    1280,
+    800
+   ],
+   "vh": 800,
+   "bar": {
+    "top": 704,
+    "bottom": 780,
+    "left": 1060,
+    "right": 1260
+   },
+   "overlay": {
+    "top": 120,
+    "bottom": 694,
+    "left": 910,
+    "right": 1270
+   },
+   "foot": {
+    "top": 663,
+    "bottom": 693,
+    "left": 911,
+    "right": 1269
+   },
+   "acts": [
+    {
+     "label": "Oblegaj",
+     "top": 525,
+     "bottom": 653,
+     "left": 931,
+     "right": 1032
+    },
+    {
+     "label": "Szturm",
+     "top": 525,
+     "bottom": 653,
+     "left": 1040,
+     "right": 1140
+    },
+    {
+     "label": "Odwrót",
+     "top": 525,
+     "bottom": 653,
+     "left": 1148,
+     "right": 1249
+    }
+   ],
+   "machines": [
+    "Taran · 7 ¤ + 19 Drewno",
+    "Taran okuty · 18 ¤ + 76 Brąz",
+    "Katapulta · 36 ¤ + 152 Żelazo",
+    "Wieża oblężnicza · 20 ¤ + 76 Brąz"
+   ],
+   "bodyScrollable": true,
+   "machinesVisibleWithoutScroll": [
+    false,
+    false,
+    false,
+    false
+   ],
+   "machinesReachableByScroll": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "checks": [
+    {
+     "name": "pasek HUD obecny i widoczny",
+     "ok": true
+    },
+    {
+     "name": "panel oblezenia otwarty (3 akcje)",
+     "ok": true
+    },
+    {
+     "name": "przycisk \"Oblegaj\" w calosci nad banerem (bottom <= bar.top-4, bez przewijania)",
+     "ok": true
+    },
+    {
+     "name": "przycisk \"Szturm\" w calosci nad banerem (bottom <= bar.top-4, bez przewijania)",
+     "ok": true
+    },
+    {
+     "name": "przycisk \"Odwrót\" w calosci nad banerem (bottom <= bar.top-4, bez przewijania)",
+     "ok": true
+    },
+    {
+     "name": "stopka panelu nad banerem",
+     "ok": true
+    },
+    {
+     "name": "w panelu sa 4 machiny oblezenia",
+     "ok": true
+    },
+    {
+     "name": "treść przewijana (scrollHeight > clientHeight), machiny osiagalne przewijaniem",
+     "ok": true
+    },
+    {
+     "name": "stopka w poziomie mieści się w viewport (bez przewijania poziomego)",
+     "ok": true
+    }
+   ],
+   "pass": true
+  },
+  {
+   "viewport": [
+    1024,
+    768
+   ],
+   "vh": 768,
+   "bar": {
+    "top": 672,
+    "bottom": 748,
+    "left": 804,
+    "right": 1004
+   },
+   "overlay": {
+    "top": 120,
+    "bottom": 662,
+    "left": 654,
+    "right": 1014
+   },
+   "foot": {
+    "top": 631,
+    "bottom": 661,
+    "left": 655,
+    "right": 1013
+   },
+   "acts": [
+    {
+     "label": "Oblegaj",
+     "top": 493,
+     "bottom": 621,
+     "left": 675,
+     "right": 776
+    },
+    {
+     "label": "Szturm",
+     "top": 493,
+     "bottom": 621,
+     "left": 784,
+     "right": 884
+    },
+    {
+     "label": "Odwrót",
+     "top": 493,
+     "bottom": 621,
+     "left": 892,
+     "right": 993
+    }
+   ],
+   "machines": [
+    "Taran · 7 ¤ + 19 Drewno",
+    "Taran okuty · 18 ¤ + 76 Brąz",
+    "Katapulta · 36 ¤ + 152 Żelazo",
+    "Wieża oblężnicza · 20 ¤ + 76 Brąz"
+   ],
+   "bodyScrollable": true,
+   "machinesVisibleWithoutScroll": [
+    false,
+    false,
+    false,
+    false
+   ],
+   "machinesReachableByScroll": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "checks": [
+    {
+     "name": "pasek HUD obecny i widoczny",
+     "ok": true
+    },
+    {
+     "name": "panel oblezenia otwarty (3 akcje)",
+     "ok": true
+    },
+    {
+     "name": "przycisk \"Oblegaj\" w calosci nad banerem (bottom <= bar.top-4, bez przewijania)",
+     "ok": true
+    },
+    {
+     "name": "przycisk \"Szturm\" w calosci nad banerem (bottom <= bar.top-4, bez przewijania)",
+     "ok": true
+    },
+    {
+     "name": "przycisk \"Odwrót\" w calosci nad banerem (bottom <= bar.top-4, bez przewijania)",
+     "ok": true
+    },
+    {
+     "name": "stopka panelu nad banerem",
+     "ok": true
+    },
+    {
+     "name": "w panelu sa 4 machiny oblezenia",
+     "ok": true
+    },
+    {
+     "name": "treść przewijana (scrollHeight > clientHeight), machiny osiagalne przewijaniem",
+     "ok": true
+    },
+    {
+     "name": "stopka w poziomie mieści się w viewport (bez przewijania poziomego)",
+     "ok": true
+    }
+   ],
+   "pass": true
+  }
+ ],
+ "errors": [],
+ "verdict": "PASS"
+}
