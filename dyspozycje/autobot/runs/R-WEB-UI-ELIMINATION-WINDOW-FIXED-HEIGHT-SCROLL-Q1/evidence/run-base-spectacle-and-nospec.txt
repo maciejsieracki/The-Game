@@ -1,0 +1,59 @@
+elimination-window-scroll-test (R-WEB-UI-ELIMINATION-WINDOW-FIXED-HEIGHT-SCROLL-Q1)
+
+[1] wariant widowiskowy (spectacle), treść długa, rozwinięty „Pokaż wszystkie surowce”
+[spectacle 1280x720] {"ih":720,"box":{"top":11,"bottom":709,"h":698},"btn":{"top":2686.25,"bottom":2723.25,"h":37},"ttl":{"top":139.1875,"bottom":169.078125,"h":29.890625},"scrollH":2733,"clientH":696,"scrollTop":0,"overflowY":"auto"}
+  PASS: spectacle 1280x720: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  PASS: spectacle 1280x720: dolna krawędź modala <= innerHeight
+  PASS: spectacle 1280x720: wysokość modala <= wysokości widoku
+  PASS: spectacle 1280x720: nagłówek ELIMINACJA! w pełni widoczny
+  PASS: spectacle 1280x720: treść dłuższa niż okno -> przewijanie włączone (overflow-y auto)
+  PASS: spectacle 1280x720: po przewinięciu do końca przycisk „Wróć na mapę” w widoku
+[spectacle 1366x768] {"ih":768,"box":{"top":11,"bottom":757,"h":746},"btn":{"top":2686.25,"bottom":2723.25,"h":37},"ttl":{"top":139.1875,"bottom":169.078125,"h":29.890625},"scrollH":2733,"clientH":744,"scrollTop":0,"overflowY":"auto"}
+  PASS: spectacle 1366x768: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  PASS: spectacle 1366x768: dolna krawędź modala <= innerHeight
+  PASS: spectacle 1366x768: wysokość modala <= wysokości widoku
+  PASS: spectacle 1366x768: nagłówek ELIMINACJA! w pełni widoczny
+  PASS: spectacle 1366x768: treść dłuższa niż okno -> przewijanie włączone (overflow-y auto)
+  PASS: spectacle 1366x768: po przewinięciu do końca przycisk „Wróć na mapę” w widoku
+[spectacle 1920x1080] {"ih":1080,"box":{"top":11,"bottom":1069,"h":1058},"btn":{"top":2686.25,"bottom":2723.25,"h":37},"ttl":{"top":139.1875,"bottom":169.078125,"h":29.890625},"scrollH":2733,"clientH":1056,"scrollTop":0,"overflowY":"auto"}
+  PASS: spectacle 1920x1080: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  PASS: spectacle 1920x1080: dolna krawędź modala <= innerHeight
+  PASS: spectacle 1920x1080: wysokość modala <= wysokości widoku
+  PASS: spectacle 1920x1080: nagłówek ELIMINACJA! w pełni widoczny
+  PASS: spectacle 1920x1080: treść dłuższa niż okno -> przewijanie włączone (overflow-y auto)
+  PASS: spectacle 1920x1080: po przewinięciu do końca przycisk „Wróć na mapę” w widoku
+[spectacle 1000x560] {"ih":560,"box":{"top":11,"bottom":549,"h":538},"btn":{"top":2686.25,"bottom":2723.25,"h":37},"ttl":{"top":139.1875,"bottom":169.078125,"h":29.890625},"scrollH":2733,"clientH":536,"scrollTop":0,"overflowY":"auto"}
+  PASS: spectacle 1000x560: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  PASS: spectacle 1000x560: dolna krawędź modala <= innerHeight
+  PASS: spectacle 1000x560: wysokość modala <= wysokości widoku
+  PASS: spectacle 1000x560: nagłówek ELIMINACJA! w pełni widoczny
+  PASS: spectacle 1000x560: treść dłuższa niż okno -> przewijanie włączone (overflow-y auto)
+  PASS: spectacle 1000x560: po przewinięciu do końca przycisk „Wróć na mapę” w widoku
+
+[2] wariant bez spectacle (bilans zdobycia z wierszami), treść długa
+[nospec 1280x720] {"ih":720,"box":{"top":-862.296875,"bottom":1582.296875,"h":2444.59375},"btn":{"top":1522.296875,"bottom":1559.296875,"h":37},"ttl":null,"scrollH":2443,"clientH":2443,"scrollTop":0,"overflowY":"hidden"}
+  FAIL: nospec 1280x720: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  FAIL: nospec 1280x720: dolna krawędź modala <= innerHeight
+  FAIL: nospec 1280x720: wysokość modala <= wysokości widoku
+  FAIL: nospec 1280x720: treść dłuższa niż okno -> przewijanie włączone (overflow-y hidden)
+  FAIL: nospec 1280x720: po przewinięciu do końca przycisk „Wróć na mapę” w widoku
+[nospec 1366x768] {"ih":768,"box":{"top":-838.296875,"bottom":1606.296875,"h":2444.59375},"btn":{"top":1546.296875,"bottom":1583.296875,"h":37},"ttl":null,"scrollH":2443,"clientH":2443,"scrollTop":0,"overflowY":"hidden"}
+  FAIL: nospec 1366x768: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  FAIL: nospec 1366x768: dolna krawędź modala <= innerHeight
+  FAIL: nospec 1366x768: wysokość modala <= wysokości widoku
+  FAIL: nospec 1366x768: treść dłuższa niż okno -> przewijanie włączone (overflow-y hidden)
+  FAIL: nospec 1366x768: po przewinięciu do końca przycisk „Wróć na mapę” w widoku
+[nospec 1920x1080] {"ih":1080,"box":{"top":-682.296875,"bottom":1762.296875,"h":2444.59375},"btn":{"top":1702.296875,"bottom":1739.296875,"h":37},"ttl":null,"scrollH":2443,"clientH":2443,"scrollTop":0,"overflowY":"hidden"}
+  FAIL: nospec 1920x1080: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  FAIL: nospec 1920x1080: dolna krawędź modala <= innerHeight
+  FAIL: nospec 1920x1080: wysokość modala <= wysokości widoku
+  FAIL: nospec 1920x1080: treść dłuższa niż okno -> przewijanie włączone (overflow-y hidden)
+  FAIL: nospec 1920x1080: po przewinięciu do końca przycisk „Wróć na mapę” w widoku
+[nospec 1000x560] {"ih":560,"box":{"top":-942.296875,"bottom":1502.296875,"h":2444.59375},"btn":{"top":1442.296875,"bottom":1479.296875,"h":37},"ttl":null,"scrollH":2443,"clientH":2443,"scrollTop":0,"overflowY":"hidden"}
+  FAIL: nospec 1000x560: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  FAIL: nospec 1000x560: dolna krawędź modala <= innerHeight
+  FAIL: nospec 1000x560: wysokość modala <= wysokości widoku
+  FAIL: nospec 1000x560: treść dłuższa niż okno -> przewijanie włączone (overflow-y hidden)
+  FAIL: nospec 1000x560: po przewinięciu do końca przycisk „Wróć na mapę” w widoku
+
+24 PASS / 20 FAIL

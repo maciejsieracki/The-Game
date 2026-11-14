@@ -1,0 +1,95 @@
+elimination-spectacle-test (R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1)
+
+[1] kroniki
+  PASS: rekrutacja: licznik per właściciel rośnie
+  PASS: bitwy: gracz stracił 1, zniszczył 5
+  PASS: bitwy: AI straciła 5, zniszczyła 1
+  PASS: bitwy: liczba bitew po obu stronach
+  PASS: atrybucja vs: kto kogo zniszczył
+  PASS: bitwa właściciela z samym sobą ignorowana
+  PASS: NaN w stratach nie psuje liczników
+  PASS: bitwa wielostronna: straty sojusznika 7 przypisane 7, nie 0
+  PASS: bitwa wielostronna: straty sojusznika 9 przypisane 9
+  PASS: bitwa wielostronna: liczona raz dla pary głównej
+  PASS: bitwa wielostronna: vs tylko dla pary głównej
+  PASS: bitwa wielostronna: zniszczenia do głównego przeciwnika (ZAŁOŻENIE)
+  PASS: zdobycie miasta: zdobyte/utracone
+  PASS: rekordy: maks. miasta i szczyt ludności nie maleją
+  PASS: cud świata zliczony
+  PASS: zapis -> wczytanie bez utraty
+  PASS: stary zapis bez pola => pusta mapa (bez migracji)
+  PASS: wadliwe wpisy ignorowane / wyzerowane
+[2] dane ekranu
+  PASS: czas istnienia = tura upadku - tura startu kroniki + 1 (118)
+  PASS: dokonania: maks. miasta z licznika
+  PASS: dokonania: cuda z kroniki (historycznie)
+  PASS: dokonania: epoka
+  PASS: stary zapis: czas istnienia = brak danych
+  PASS: stary zapis: brak wymyślonych rekordów
+  PASS: stary zapis: wiersze wojenne wyeliminowanej = null (brak danych)
+  PASS: stary zapis: HTML bez NaN/undefined/null
+  PASS: brak kronik w ogóle: HTML bez NaN/undefined
+[3] render modalu
+  PASS: sekcja/tekst obecny: ELIMINACJA!
+  PASS: sekcja/tekst obecny: Rzymianie
+  PASS: sekcja/tekst obecny: Kamilus
+  PASS: sekcja/tekst obecny: Rzym
+  PASS: sekcja/tekst obecny: Dokonania
+  PASS: sekcja/tekst obecny: Statystyki wojenne
+  PASS: sekcja/tekst obecny: Wyprodukowane jednostki
+  PASS: sekcja/tekst obecny: Stracone jednostki
+  PASS: sekcja/tekst obecny: Zniszczone jednostki wroga
+  PASS: sekcja/tekst obecny: Zdobyte miasta
+  PASS: sekcja/tekst obecny: Utracone miasta
+  PASS: sekcja/tekst obecny: Stoczone bitwy
+  PASS: sekcja/tekst obecny: Brąz
+  PASS: sekcja/tekst obecny: Upadek w turze
+  PASS: sekcja/tekst obecny: 118 tur
+  PASS: sekcja/tekst obecny: Bilans zdobycia
+  PASS: sekcja/tekst obecny: Żywność ze spichlerza
+  PASS: sekcja/tekst obecny: Punkty nauki
+  PASS: sekcja/tekst obecny: Pula pracy
+  PASS: sekcja/tekst obecny: Wejdź do miasta
+  PASS: sekcja/tekst obecny: Wróć na mapę
+  PASS: sekcja/tekst obecny: Ancjum
+  PASS: sekcja/tekst obecny: civ-ccn-spectacle
+  PASS: sekcja/tekst obecny: elsp-bar
+  PASS: brak NaN/undefined w tekście modalu
+  PASS: słupki porównawcze: co najmniej 6 wierszy statystyk
+  PASS: zdanie docenienia widoczne
+  PASS: zamknięcie usuwa modal
+  PASS: karta wydarzeń: ekran + bilans + przycisk Zamknij
+  PASS: przycisk Zamknij obecny
+[4] regresja (bez spectacle)
+  PASS: stara forma eliminacji bez zmian
+  PASS: bez spectacle nie ma elementów widowiska
+  PASS: zwykłe zdobycie: Miasto zdobyte
+[5] prefers-reduced-motion
+  PASS: CSS: reduced-motion wyłącza animacje
+  PASS: reduced-motion: brak animacji, wartość końcowa od razu
+  PASS: bez reduced-motion: count-up startuje od 0
+  PASS: count-up kończy na wartości końcowej (2)
+[6] docenienie i odmiana
+  PASS: progi docenienia (ZAŁOŻENIE do akceptacji): 1,25 / 0,75 / 0,35
+  PASS: cztery różne zdania dla czterech progów
+  PASS: brak siły: neutralne zdanie
+  PASS: odmiana: tura/tury/tur
+  PASS: epitafium zależne od epoki
+[7] main.ts — punkty zliczania
+  PASS: rekrutacja: oba miejsca narodzin jednostki
+  PASS: bitwa: noteBattleOutcome w applyMapBattleOutcome
+  PASS: zdobycie miasta (bitwa/szturm): noteCityCapture
+  PASS: zdobycie miasta (kapitulacja głodowa): noteCityCapture
+  PASS: cud: noteWonderBuilt
+  PASS: tick rekordów tuż po turn++
+  PASS: zapis: meta.civChronicleByOwner
+  PASS: wczytanie: restore + legacy dla starych zapisów
+  PASS: ekran budowany PRZED eliminateOwner (migawka stanu)
+  PASS: karta wydarzeń niesie ekran i przekazuje go do modalu
+  PASS: modal zdobycia (showCityCaptureNoticeDeferred) dostaje ekran
+  PASS: kroniki czyszczone przy nowej grze / wczytaniu
+  PASS: restoreGameFromSave znaleziony (ciało wyizolowane)
+  PASS: wczytanie: civChronicleByOwner.clear() PRZED restoreChronicles
+  PASS: wczytanie: brak clear() po odtworzeniu kronik (także gałąź legacy)
+
+84 PASS, 0 FAIL
