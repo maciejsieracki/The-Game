@@ -1,3 +1,9 @@
+## ROBOCZA 7ee44c0f -- 2026-11-14 -- FALA 712: FALA 712 - teksty: zwolnienie administratora, Civpedia (testowa)
+
+- Potwierdzenie zwolnienia administratora (spojny tekst 'panstwa'); Civpedia: zaufanie.md naglowek wdrozone; wikiBundle zregenerowany
+- Weryfikacja: tsc 0; logic-test 213/213; ui-text-leftovers-test i admin-dismiss-confirm-test zielone; vite build OK
+- Limity: Poradnik: czesc tekstow jeszcze niewdrozone (poza allowlista); zywa gra przez Vite NIE ZMIERZONO
+
 ## ROBOCZA dc4ce140 -- 2026-11-14 -- FALA 711: Okno eliminacji ze stala maksymalna wysokoscia i przewijaniem (testowa)
 
 - Okno eliminacji i zdobycia miasta ma stala maksymalna wysokosc (wysokosc widoku minus margines) i przewija sie wewnatrz, naglowek nie jest przyciety; tylko CSS

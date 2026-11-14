@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "dc4ce14061fe374190371ed6c54aef03",
-  "bundleSha256": "13e9b07d75d71c19dea8c5e7b7a2054c0af1459398f09f36055a48f7e569e35a",
-  "bundleBytes": 14703923,
+  "bundleMd5": "7ee44c0f69b03632a3a8eff12cca28ad",
+  "bundleSha256": "8cf99d11e9104ea2934beb2301e6fbe7917279f197a76e2fbcdc795328f0cbdd",
+  "bundleBytes": 14703982,
   "sourceSnapshot": {
-    "source": "R-WEB-UI-ELIMINATION-WINDOW-FIXED-HEIGHT-SCROLL-Q1 FC 864567d2f",
+    "source": "FC 2d03b4222 / integracja d9280dae7",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 711: Okno eliminacji i zdobycia miasta ma stala maksymalna wysokosc (wysokosc widoku minus margines) i przewija sie wewnatrz, naglowek nie jest przyciety; tylko CSS"
+    "FALA 712: Potwierdzenie zwolnienia administratora (spojny tekst 'panstwa'); Civpedia: zaufanie.md naglowek wdrozone; wikiBundle zregenerowany"
   ],
   "verification": [
-    "tsc 0, logic-test 213/213, elimination-spectacle 84/0, full-spoils 114/0, toast-merge 56/0, nowy test okna 88/0 (4 rozmiary x 4 warianty), mutacja bazy czerwona"
+    "tsc 0; logic-test 213/213; ui-text-leftovers-test i admin-dismiss-confirm-test zielone; vite build OK"
   ],
   "limits": [
-    "NIE ZMIERZONO: dokladny przypadek ze zrzutu wlasciciela nie odtworzony na bazie (wariant z widowiskiem mial juz max-height); zywa gra przez Vite. Jesli problem nadal wystepuje - prosze o rozmiar okna przegladarki i zrzut"
+    "Poradnik: czesc tekstow jeszcze niewdrozone (poza allowlista); zywa gra przez Vite NIE ZMIERZONO"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES ELIM-SCROLL 0df8d7731/864567d2f. Okno eliminacji i zdobycia miasta (cityCaptureNotice, eliminationSpectacle): stala max-wysokosc (calc(100vh - 32px) z fallbackiem 100dvh), przewijanie wewnatrz okna, overscroll-behavior: contain; tylko CSS. Test elimination-window-scroll 88/0 (4 rozmiary x 4 warianty), mutacja bazy 48 PASS / 40 FAIL. UWAGA: dokladny wariant ze zrzutu wlasciciela (widowisko) NIE odtworzony na bazie (mial juz max-height i przewijanie) - zmiana to utwardzenie; przyczyna u wlasciciela NIE ZMIERZONO. NIE ZMIERZONO: zywa gra przez Vite."
+    "notes": "FC PASS-WITH-NOTES TEXT-LEFT 2d03b4222. Teksty: potwierdzenie zwolnienia administratora spojne (panstwa), zaufanie.md naglowek (wdrozone), wikiBundle zregenerowany narzedziem po konflikcie scalenia. Testy ui-text-leftovers i admin-dismiss-confirm zielone. Pozostale jeszcze niewdrozone w sekcji poradnika (poza allowlista); civpedia-budynki/jednostki baseline czerwony. NIE ZMIERZONO: zywa gra przez Vite."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-14T15:39:52",
+  "hubGeneratedAt": "2026-11-14T16:37:52",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "dc4ce14061fe374190371ed6c54aef03",
-      "sizeBytes": 14703923
+      "md5": "7ee44c0f69b03632a3a8eff12cca28ad",
+      "sizeBytes": 14703982
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "dc4ce14061fe374190371ed6c54aef03",
-      "sizeBytes": 14703923
+      "md5": "7ee44c0f69b03632a3a8eff12cca28ad",
+      "sizeBytes": 14703982
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "dc4ce14061fe374190371ed6c54aef03",
-      "sizeBytes": 14703923
+      "md5": "7ee44c0f69b03632a3a8eff12cca28ad",
+      "sizeBytes": 14703982
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "dc4ce14061fe374190371ed6c54aef03",
-      "sizeBytes": 14703923
+      "md5": "7ee44c0f69b03632a3a8eff12cca28ad",
+      "sizeBytes": 14703982
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "dc4ce14061fe374190371ed6c54aef03",
-      "sizeBytes": 14703923
+      "md5": "7ee44c0f69b03632a3a8eff12cca28ad",
+      "sizeBytes": 14703982
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "dc4ce14061fe374190371ed6c54aef03",
-      "sizeBytes": 14703923
+      "md5": "7ee44c0f69b03632a3a8eff12cca28ad",
+      "sizeBytes": 14703982
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "dc4ce14061fe374190371ed6c54aef03",
-      "sizeBytes": 14703923
+      "md5": "7ee44c0f69b03632a3a8eff12cca28ad",
+      "sizeBytes": 14703982
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "dc4ce14061fe374190371ed6c54aef03",
-      "sizeBytes": 14703923
+      "md5": "7ee44c0f69b03632a3a8eff12cca28ad",
+      "sizeBytes": 14703982
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "dc4ce14061fe374190371ed6c54aef03",
-      "sizeBytes": 14703923
+      "md5": "7ee44c0f69b03632a3a8eff12cca28ad",
+      "sizeBytes": 14703982
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "dc4ce14061fe374190371ed6c54aef03",
-      "sizeBytes": 14703923
+      "md5": "7ee44c0f69b03632a3a8eff12cca28ad",
+      "sizeBytes": 14703982
     }
   ],
-  "md5": "dc4ce14061fe374190371ed6c54aef03",
+  "md5": "7ee44c0f69b03632a3a8eff12cca28ad",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
