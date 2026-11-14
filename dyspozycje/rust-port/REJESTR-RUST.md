@@ -1128,3 +1128,13 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Czekają na decyzję właściciela (w czacie):** #115 ZDOBYCIE-MIASTA (A1/A2/A3) i #120 WYPOWIEDZENIE GRACZA (A/B). Gameplay decyzje (SZTURM ODPARTY, W8 r7 Q1–Q4, units.json vs pin, DYSTANS, REPIN-DRYFT) nie są moje.
 - **Dysk:** 17 GB wolnego (sprawdzone przed startem).
 - **Parity:** `a381dd13f` (sprawdzone fetch).
+
+## Przebieg (14.11, heartbeat 21:47): 2 z 4 slotów zajęte; 2 wolne, bez realnej pracy w tym ticku
+- **Trwających Workflow: 2** z 4.
+  - ZLOZE-GRANTS-STATE-Q1 (`wf_4c2b7e55-cfa`): Operator HAIKU zrobił r1 (PASS-WITH-NOTES po obronie, SHA obrony `b0cb6c48f`); Evaluator SONNET zgłosił zarzuty; teraz FC SONNET.
+  - WIEZE-MERGE-Q1 r2, ETAP 1 (`wf_38834851-4ff`): dispatch DODATEK r2 `23e7f909e`, baza `a381dd13f`. Zakres: `SiegeEnv` + `pick_tower_target` w produkcyjnym wołaniu + test z wektorami z pina. Strzał wieży i odroczenie 180 ms zostają na etap 2 i będą jawnie zgłoszone jako niezrobione. Operator HAIKU (pierwsza runda r2 po BLOCK r1 i FC FAIL r1).
+- **Dlaczego 2 sloty, nie 4:** pozostałe tematy z `TaskList` (#96–#119) są zablokowane albo wymagają decyzji właściciela (#115, #120 w czacie; #97, #98, #100, #109, #112, #113 zablokowane allowlistą lub zależne od WIEZE/OUTCOME). Kandydat #106 R7K7C-WIRING wymaga najpierw sprawdzenia statusu (#176), czego nie zrobiłem w tym ticku. Nie startuję tematów bez dispatchu i rozpoznania.
+- **Do zrobienia w następnym ticku:** sprawdzić #176 (R7K7C-WIRING), ewentualnie dispatch #106; po FC ZLOZE — runda integracyjna (Haiku) i sprzątanie worktree.
+- **Dysk:** 12 GB wolnego (sprawdzone przed startem WIEZE r2).
+- **Parity:** `a381dd13f`.
+- **Uwaga do commitów:** dwa wcześniejsze commity (dispatch ZLOZE, rejestr 21:18) mają trailer `Co-Authored-By` z nazwą modelu. Od tej chwili commity nie zawierają nazwy modelu (zgodnie z zasadą z promptu systemowego); historii nie przepisuję.
