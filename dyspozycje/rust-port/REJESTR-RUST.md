@@ -1165,3 +1165,15 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Następny krok:** po FF CITYTOWERS dispatch 2B (strzał wieży, odroczenie 180 ms, usunięcie placeholdera) od nowego czubka `parity-v2`.
 - **Pytania ABC #115 i #120:** nadal bez odpowiedzi właściciela, nie startowane.
 - **Parity:** `7193f5de2` (przed FF CITYTOWERS). **Dysk:** sprawdzić przy następnym starcie.
+
+## Przebieg (14.11, heartbeat 22:47 → 23:10): 2 z 4 slotów zajęte; CITYTOWERS zintegrowany; ZLOZE rozpoznanie zakończone
+- **CITYTOWERS 2A zintegrowany:** `parity-v2` `7193f5de2` → `04d50ad0d` (FC PASS-WITH-NOTES; bramki na `04d50ad0d`: fmt 0, clippy 0, pełny `cargo test` 0, 3348 passed, 0 failed). Refs: `refs/keep/WIEZE-CITYTOWERS-Q1-integ`, `rust-port-wip/WIEZE-CITYTOWERS-Q1`. Worktree usunięte.
+- **ZLOZE rozpoznanie (read-only) zakończone:** FC PASS-WITH-NOTES `39a6cb9fc` (po obronie `23a254445`). Dokumentacja FF na `parity-v2`: `04d50ad0d` → `6acb1d81b` (4 pliki, wyłącznie `dyspozycje/`, po rebase). Refs: `refs/keep/ZLOZE-WIRING-ROZPOZNANIE-Q2-fc`, `rust-port-wip/ZLOZE-WIRING-ROZPOZNANIE-Q2`.
+- **Ustalenia z rozpoznania:** w Rust brak deaktywacji grantów w czterech miejscach pina (zerwanie traktatu, wojna, wygaśnięcie D1, trybut D6); D1 i D6 mają jedno miejsce w `turn_war_dipl_steps.rs` (~918, ~959); `syncRelationStatusFromDeals` nie istnieje w pinie (jest `syncRelationFromDeals`).
+- **Start (2 z 4):**
+  - `R-RUSTPORT-P6-ZLOZE-WIRE-EXPIRE-TRIBUTE-Q1` (T1, `wf_8d58d816-713`): wpięcie deaktywacji w D1 i D6. Baza `6acb1d81b`.
+  - `R-RUSTPORT-P6-ZLOZE-SYNC-MERGE-Q1` (T3, `wf_914c7d5a-0cf`): scalenie dwóch funkcji sync relacji (najpierw równoważność, potem decyzja). Baza `6acb1d81b`.
+  - Dispatche `fccb14e9f`. Operator HAIKU, Evaluator/FC SONNET, Obrona HAIKU.
+- **T2 (ZLOZE-WIRE-WAR-BREAK)** czeka na T1 i na #120 CRED-HAK-WYPOWIEDZENIE (etap b). Etap a (czysta domena) można zrobić po T1.
+- **Pytania ABC #115 i #120:** nadal bez odpowiedzi właściciela, nie startowane.
+- **Parity:** `6acb1d81b`. **Dysk:** do sprawdzenia przed następnym startem.
