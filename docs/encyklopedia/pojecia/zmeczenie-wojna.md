@@ -74,7 +74,7 @@ Przegrywający z małą liczbą miast (do 3) albo po wielu stratach (co najmniej
 
 ### Cena pokoju od gracza
 
-Gdy zmęczenie przekroczy 0,5, cena pokoju żądana przez AI od gracza spada: rabat może sięgnąć do 60% wartości (cena spada do 40%).
+Zmęczenie wojną nie obniża ceny pokoju. Od poziomu 0,5 pojawia się w tabeli punktów wymiany (PW) jako pozycja „Zmęczenie wojną +N PW”: N = cena pokoju × x², gdzie x rośnie liniowo od 0 (przy 50%) do 1 (przy 80%). Czyli wolny start i przyspieszenie (krzywa kwadratowa). Reszta ceny do pokrycia to miasto. Przy 80% zmęczenia pozycja równa się całej cenie, pokój jest bezwarunkowy, a bilans wynosi 0.
 
 ### Panel dyplomacji
 
@@ -122,12 +122,11 @@ Wojna trwa 10 tur (10/20 = 0,5), utracono 2 miasta (2 × 0,10 = 0,2). Poziom = 0
 | 3 | `war-weariness-params.json:przegrywajacy.ochronaUtratyWojny` |
 | 40 | `war-weariness-params.json:przegrywajacy.karencjaPoPokojuTur` |
 | 100 | `war-weariness-params.json:przegrywajacy.karencjaChronionegoTur` |
-| 0.6 | `war-weariness-params.json:czlowiek.rabatCenyPokojuMax` |
 
 ---
 
 ## Historia / decyzje
 
-Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Rozbieżność z dodatkiem: dodatek podawał, że cena pokoju spada „do 60%”; plik `war-weariness-params.json` (`rabatCenyPokojuMax` 0,6) daje spadek o do 60%, czyli do 40% ceny. Hasło podaje wartość z pliku.
+Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Od 2026-11-14 (R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1, decyzja właściciela) stary rabat ceny 60% został usunięty; zmęczenie działa jako pozycja PW (funkcja `wearinessPeaceItemPw` w `war-weariness.ts`). Krzywa kwadratowa wybrana przez właściciela; próg końca zmęczenia 0,8 potwierdzony 2026-11-14.
 
 R-WEB-DOCS-CIVPEDIA-DIPLO-REDESIGN-Q1 (obrona, runda 2): próg końca zmęczenia 0,8 zamiast „100% wygasa”; bramki ofert 3/6 opisane jako nieosiągalne przed turą 10; panel dyplomacji opisany wg `diplomacyAudience.ts`. Akcja `mutual_peace` nie jest akcją gracza ani AI: to wynik ticku AI↔AI (`war-weariness.ts`, `runWarWearinessTick`) przy progu końca zmęczenia. Rozbieżności JSON wobec kodu (`_wzor` „100% wojna wygasa”, stopień 1 „złoto i surowce”) zgłoszone do orkiestratora.

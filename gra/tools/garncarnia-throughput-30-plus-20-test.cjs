@@ -88,7 +88,10 @@ console.log('\n-- (c) wykonanie: era 3, 200 gliny + 200 drewna -> 70 ceramiki, z
   eq(res.stores.drewno, 130, 'magazyn drewna = 200-70');
 }
 
-console.log('\n-- (d) parytet gracz/AI: ta sama sciezka, ten sam owner-era -> identyczny wynik --');
+// UWAGA: sekcja (d) sprawdza wyłącznie DETERMINIZM tej samej funkcji przy identycznych wejściach
+// (jeden owner-era = 3 dla obu stron). Realny parytet gracz/AI (dwa różne ownery, różne epoki
+// w jednym wywołaniu advanceCityEconomy) pokrywa converter-era-scaling-test.cjs, sekcja E.
+console.log('\n-- (d) determinizm: ta sama sciezka, identyczne wejscia (era 3, hard) -> identyczny wynik --');
 {
   const tpPlayer = M.converterThroughputsForEra(baseOfFor(econ, 'hard'), 3);
   const tpAi     = M.converterThroughputsForEra(baseOfFor(econ, 'hard'), 3);

@@ -173,6 +173,7 @@ import { daninaLabel, daninaLabelGenitive, daninaLabelAccusative, type DaninaLab
 import type { CityManpowerSnapshot } from '../game/manpower';
 import { civManpowerMaxMult, cityLudnoscAbsolutna, formatManpowerCompact, formatObywateleLabel, unitManpowerCost, unitManpowerCostForType } from '../game/manpower';
 import { defaultOwnerColor, mountUnitMiniPreview } from './unitMiniPreview';
+import { unitEngineStats } from './unitEngineStats';
 import {
   unitInfographicMedallionHtml,
   unitInfographicSvg,
@@ -1089,17 +1090,17 @@ function setShowEraBuildingPreview(on: boolean): void {
 /**
  * Domyslny podzial Daniny netto nowego miasta — MUSI byc zgodny z
  * DEFAULT_PODZIAL_HANDLU w game/cities.ts oraz z econ-params.json.
- * 20% Nauka / 60% Skarbiec / 20% Zamoznosc (decyzja Maciej 2026-07-25, PYTANIE 74 = A;
- * dawniej 20/70/10).
+ * 60% Nauka / 30% Skarbiec / 10% Zamoznosc (decyzja wlasciciela 2026-11-14,
+ * R-WEB-SETTINGS-DEFAULT-TAX-SPLIT-30-60-10-Q1; poprzednio 20/60/20).
  */
 const DEFAULT_PODZIAL_HANDLU: PodzialHandluSplit = {
-  procentPieniadz: 60,
-  procentNauka: 20,
-  procentLuksus: 20,
+  procentPieniadz: 30,
+  procentNauka: 60,
+  procentLuksus: 10,
 };
 
-/** Domyslny podzial Pracy (70% budynki). */
-const DEFAULT_PODZIAL_PRACY: PodzialPracySplit = { procentBudynki: 70 };
+/** Domyslny podzial Pracy (50% budynki / 50% pula) — lustro DEFAULT_PODZIAL_PRACY z game/cities.ts. */
+const DEFAULT_PODZIAL_PRACY: PodzialPracySplit = { procentBudynki: 50 };
 
 /** Etykieta suwaka handlu karmiącego pulę zamożności (UI — bez „Społ.” / „Wealth”). */
 const HANDEL_ZAMOZNOSC_LABEL = 'Zamożność';
@@ -8205,14 +8206,16 @@ function _legacyBuildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivElement 
     if (val == null || isEmptyDataVal(val)) return;
     gridDetailRow(gFight, label, fmt && typeof val === 'number' ? fmt(val) : String(val));
   };
-  fight('Atak w zwarciu', u.Atak);
-  fight('Obrona', u.Obrona);
-  fight('Obrażenia broni', u.Uderzenie);
-  fight('Pancerz', u.Pancerz);
-  fight('Przebicie', u.Przebicie);
+  // Wartości bojowe = silnik walki (ABC nr 8 = A, 2026-11-14), nie kolumny PL.
+  const es = unitEngineStats(u as unknown as Record<string, unknown>);
+  fight('Atak w zwarciu', es.atak);
+  fight('Obrona', es.obrona);
+  fight('Obrażenia broni', es.obrazeniaBroni);
+  fight('Pancerz', es.pancerz);
+  fight('Przebicie', es.przebicie);
   fight('Bonus szarży', unitExtraField(u, 'Bonus szarży'));
-  fight('Atak dystansowy', u['Atak dystansowy']);
-  fight('HP', u.Health);
+  fight('Atak dystansowy', es.atakDystansowy > 0 ? es.atakDystansowy : null);
+  fight('HP', es.hp);
   fight('Ruch (mapa)', u.Ruch, n => `${n} hex`);
   fight('Ruch (bitwa)', u['Ruch w bitwie (heksy)'], n => `${n} hex`);
   fight('Zasięg', u['Zasięg ataku (hex)']);

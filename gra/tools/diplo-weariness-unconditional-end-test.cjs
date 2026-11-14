@@ -196,7 +196,7 @@ function mainWiringOk(mainSrc) {
 const MUTANTS = [
   { id: 'U1-brak-galezi-konca', from: 'if (wearinessUnconditionalEndDue(lvl, P)) {', to: 'if (false) {',
     gate: 'pokoj bezwarunkowy na koncu zmeczenia (c1-c3, e1, e2)' },
-  { id: 'U2-prog-stały', from: 'return level >= P.zmeczenie.progKoncaZmeczenia;', to: 'return level >= 2;',
+  { id: 'U2-prog-stały', from: 'return wearinessPeaceX(level, P) >= 1;', to: 'return level >= 2;',
     gate: 'prog konca zmeczenia z JSON (f, c)' },
   { id: 'U3-cena-0-bez-zmiany', from: 'const priceZero = price.requiredPn <= 0;', to: 'const priceZero = false;',
     gate: 'cena 0 -> pokoj bez miasta (a1-a3)' },

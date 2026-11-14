@@ -3,7 +3,7 @@
  * no-negative-stocks-headless-measure.cjs — R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1 (C3).
  *
  * POMIAR PEŁNEJ GRY (realny bundle vite, headless Chromium, `?civTest=1`, realne „Zakończ turę”, realny
- * nnsAiPreTickBalance z main.ts). Kryterium (a): od tury 11 skarbiec i spichlerz każdej AI >= 0 po każdej turze;
+ * nnsAiPreTickBalance z main.ts). Kryterium (a): od tury 1 skarbiec i spichlerz każdej AI >= 0 po każdej turze;
  * (b) żadna cywilizacja nie jest eliminowana przez samo równoważenie; (d) mutacja pomiarowa — ten sam pomiar
  * z flagą równoważenia WYŁĄCZONĄ (`--modes on,off`) musi pokazać minusy.
  *
@@ -34,7 +34,8 @@ function arg(name, def) {
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const SLOT = 'nns-cell';
-const NNS_FREE_TURNS = 10;
+// Próg kryterium: AI równoważy od tury 1 (R-WEB-NNS-AI-BALANCE-FROM-TURN1-Q1); wyjątek 1–10 dotyczy wyłącznie gracza.
+const NNS_FREE_TURNS = 0;
 
 /** Agregacja komórek -> summary (czysta, bez przeglądarki; używana też przez --summarize). */
 function summarize(outDir) {
@@ -45,7 +46,7 @@ function summarize(outDir) {
     const rows = c.rows || [];
     const checked = rows.filter(r => r.turn > NNS_FREE_TURNS);
     const viol = checked.filter(r => r.sk < 0 || r.spichRaw < 0 || r.glod);
-    // klasyfikacja: ciągły dług (poprzednia tura tego właściciela też < 0 — w tym dług z tur wolnych 1-10, którego jedna tura
+    // klasyfikacja: ciągły dług (poprzednia tura tego właściciela też < 0 — ciągły dług, którego jedna tura
     // równoważenia nie spłaci) vs nowy minus (poprzednia tura >= 0 — realny błąd równoważenia / rozjazd projekcji)
     const byOwnerTurn = new Map();
     for (const r of rows) byOwnerTurn.set(r.oid + ':' + r.turn, r);
@@ -291,7 +292,7 @@ async function runCell(chromium, mode, seed, cellFile, prior) {
         if (l && l.akcje.length) for (const a of l.akcje) { const k = a.startsWith('rozwiaz') ? 'rozwiaz' : a; res.balanceActions[k] = (res.balanceActions[k] || 0) + 1; }
         if (ended > NNS_FREE_TURNS && (row.sk < 0 || row.spichRaw < 0 || row.glod)) {
           res.exceptions.push({ turn: ended, oid: o.oid, civ: o.civ, cityState: o.cityState, sk: row.sk, spichRaw: row.spichRaw, glod: row.glod,
-            przyczyna: l ? (l.wyjatek || (l.hold ? 'po równoważeniu nadal < 0 (rozjazd projekcji vs realny tick lub wydatki AI po bankowaniu): przed=' + l.sk0 + '/' + l.sp0 + ' po=' + l.sk1 + '/' + l.sp1 : 'projekcja >= 0, realny tick < 0 (rozjazd preview vs tick): proj=' + l.sk0 + '/' + l.sp0)) : 'brak wpisu równoważenia (tura < 11 lub właściciel bez miast w projekcji)' });
+            przyczyna: l ? (l.wyjatek || (l.hold ? 'po równoważeniu nadal < 0 (rozjazd projekcji vs realny tick lub wydatki AI po bankowaniu): przed=' + l.sk0 + '/' + l.sp0 + ' po=' + l.sk1 + '/' + l.sp1 : 'projekcja >= 0, realny tick < 0 (rozjazd preview vs tick): proj=' + l.sk0 + '/' + l.sp0)) : 'brak wpisu równoważenia (właściciel bez miast w projekcji)' });
         }
         alive.set(o.oid, o.cities);
       }
