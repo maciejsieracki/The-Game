@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "e40ee34ef8fd299b826635a559c5f25a",
-  "bundleSha256": "1be9609019b7e121252bdb3782c6198598913a2d6b9e57a6ec80384acba01716",
-  "bundleBytes": 14685184,
+  "bundleMd5": "ab171a4c72cff6d39c871bb4709eaee3",
+  "bundleSha256": "2da231dcbd6e31caa6e751118d50bedc97afa33e9a796a436f047e300f4280ec",
+  "bundleBytes": 14688203,
   "sourceSnapshot": {
-    "source": "NNS-QUEUE FC 2cfec295c/f2efafbb5",
+    "source": "RIVERS-PERF FC 43f11d042 + SIEGE-NARROW FC 1ea7f8bb7",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 706: Komunikat bramki Zakoncz ture nie wymienia dzwigni kolejki produkcji; pozostaja podatki, racje i rozwiazanie jednostki (R-WEB-NNS-GATE-REMOVE-QUEUE-LEVER-Q1, decyzja wlasciciela nr 4); zachowanie gracza bez zmian (komunikat evaluateEndTurnStocks byl martwy)"
+    "FALA 707: Generacja swiata: pamiec srodka ladu w etapie Rzeki-uzupelnianie (BFS ziarna 22 Maly 4745 -> 1, ta sama suma kontrolna; mapy Maly 1-10 i Standardowy 22 bez zmian) oraz panel oblezenia: zwarty blok machin w 2 kolumnach (R-WEB-MAPGEN-RIVERS-FILL-CENTROID-PERF-Q1, R-WEB-UI-SIEGE-PANEL-NARROW-MACHINES-BLOCK-Q1)"
   ],
   "verification": [
-    "tsc 0, levers 34/0, no-negative-stocks 25/0, projection 49/0, c3-turn 16/0, live Chromium tooltip bez kolejki"
+    "tsc 0, logic 213/213, mapgen-rivers-fill-centroid-cache PASS (4745x), siege-panel-machines-block-fit PASS 6/6 w FC, 5 bramek zielone"
   ],
   "limits": [
-    "Zmiana kosmetyczno-dokumentacyjna; nie zmierzono dzwigni rac na zywo"
+    "Nie zmierzono: Standardowy 1-10, czysty pomiar czasu generacji, siege-storm w Chromium; panel nadal wymaga przewiniecia (decyzja A)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES 2cfec295c (NNS-QUEUE): komunikat bramki Zakoncz ture nie wymienia dzwigni kolejki produkcji; pozostaja podatki, racje i rozwiazanie jednostki. Zmiana kosmetyczno-dokumentacyjna: komunikat evaluateEndTurnStocks byl w runtime martwy (bramka gracza nie liczyla kolejki juz wczesniej), wiec zachowanie gracza bez zmian. Testy no-negative-stocks levers 34/0, test 25/0, projection 49/0, endturn 19/0, ai 8/0, c2 43/0, c3-turn 16/0; live Chromium (Obrona): tooltip w blokadzie bez wzmianki o kolejce, dzwignia podatku odblokowuje. NIE ZMIERZONO: pelny zestaw 5 bramek w FC, dzwignia rac w live."
+    "notes": "FC PASS-WITH-NOTES RIVERS 43f11d042 + SIEGE-NARROW 1ea7f8bb7. RIVERS: pamiec srodka ladu w etapie Rzeki-uzupelnianie (generacja swiata); ziarno 22 Maly: BFS 4745 -> 1, ta sama suma kontrolna 9f0c2884; Maly 1-10 i Standardowy 22 bez zmiany ukladu (11/11). SIEGE: blok machin w panelu oblezenia zwarty (siatka 2 kolumny; 106/119/186 px dla 1/2/4 typow, wczesniej 112/166/274), widoczny w calosci po przewinieciu panelu, 1280x800 i 1366x768; decyzja wlasciciela A: zostawic. NIE ZMIERZONO: Standardowy 1-10, czysty pomiar czasu, siege-storm w Chromium."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-14T13:30:59",
+  "hubGeneratedAt": "2026-11-14T14:03:51",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "e40ee34ef8fd299b826635a559c5f25a",
-      "sizeBytes": 14685184
+      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
+      "sizeBytes": 14688203
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "e40ee34ef8fd299b826635a559c5f25a",
-      "sizeBytes": 14685184
+      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
+      "sizeBytes": 14688203
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "e40ee34ef8fd299b826635a559c5f25a",
-      "sizeBytes": 14685184
+      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
+      "sizeBytes": 14688203
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "e40ee34ef8fd299b826635a559c5f25a",
-      "sizeBytes": 14685184
+      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
+      "sizeBytes": 14688203
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "e40ee34ef8fd299b826635a559c5f25a",
-      "sizeBytes": 14685184
+      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
+      "sizeBytes": 14688203
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "e40ee34ef8fd299b826635a559c5f25a",
-      "sizeBytes": 14685184
+      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
+      "sizeBytes": 14688203
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "e40ee34ef8fd299b826635a559c5f25a",
-      "sizeBytes": 14685184
+      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
+      "sizeBytes": 14688203
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "e40ee34ef8fd299b826635a559c5f25a",
-      "sizeBytes": 14685184
+      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
+      "sizeBytes": 14688203
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "e40ee34ef8fd299b826635a559c5f25a",
-      "sizeBytes": 14685184
+      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
+      "sizeBytes": 14688203
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "e40ee34ef8fd299b826635a559c5f25a",
-      "sizeBytes": 14685184
+      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
+      "sizeBytes": 14688203
     }
   ],
-  "md5": "e40ee34ef8fd299b826635a559c5f25a",
+  "md5": "ab171a4c72cff6d39c871bb4709eaee3",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

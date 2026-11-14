@@ -1,3 +1,9 @@
+## ROBOCZA ab171a4c -- 2026-11-14 -- FALA 707: Rzeki szybciej + panel oblezenia zwezony (testowa)
+
+- Generacja swiata: pamiec srodka ladu w etapie Rzeki-uzupelnianie (BFS ziarna 22 Maly 4745 -> 1, ta sama suma kontrolna; mapy Maly 1-10 i Standardowy 22 bez zmian) oraz panel oblezenia: zwarty blok machin w 2 kolumnach (R-WEB-MAPGEN-RIVERS-FILL-CENTROID-PERF-Q1, R-WEB-UI-SIEGE-PANEL-NARROW-MACHINES-BLOCK-Q1)
+- Weryfikacja: tsc 0, logic 213/213, mapgen-rivers-fill-centroid-cache PASS (4745x), siege-panel-machines-block-fit PASS 6/6 w FC, 5 bramek zielone
+- Limity: Nie zmierzono: Standardowy 1-10, czysty pomiar czasu generacji, siege-storm w Chromium; panel nadal wymaga przewiniecia (decyzja A)
+
 ## ROBOCZA e40ee34e -- 2026-11-14 -- FALA 706: Bramka Zakoncz ture bez dzwigni kolejki (testowa)
 
 - Komunikat bramki Zakoncz ture nie wymienia dzwigni kolejki produkcji; pozostaja podatki, racje i rozwiazanie jednostki (R-WEB-NNS-GATE-REMOVE-QUEUE-LEVER-Q1, decyzja wlasciciela nr 4); zachowanie gracza bez zmian (komunikat evaluateEndTurnStocks byl martwy)
