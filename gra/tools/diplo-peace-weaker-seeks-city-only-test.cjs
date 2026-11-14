@@ -172,6 +172,13 @@ async function main() {
     check('h6 słabsza AI, koniec zmęczenia (30 tur): zaproponuj_pokoj bezwarunkowy, bez miasta i zapłaty',
       weakEndWeary.length === 1 && weakEndWeary[0].type === 'zaproponuj_pokoj' && weakEndWeary[0].bezwarunkowy === true
       && weakEndWeary[0].rodzaj === 'pokoj' && !weakEndWeary.some(c => c.type === 'oferuj_miasto_za_pokoj'), weakEndWeary);
+    // h6b (granica 0,8 = tura 16): od tury 16 poziom zmęczenia >= progKoncaZmeczenia, więc bezwarunkowy koniec
+    // wyprzedza gałąź „miasto za pokój” (rodzaj pokój, wojna >= 20 tur) — ta gałąź jest nieosiągalna przy
+    // obowiązujących progach (zmęczenie = tury/20 + 0,1·straty, straty tylko podnoszą poziom).
+    const weakBoundary16 = aiDecide(16, 0, 6, 100, 200);
+    check('h6b słabsza AI, granica 16 tur (zmęczenie 0,80): zaproponuj_pokoj bezwarunkowy, brak oferty miasta',
+      weakBoundary16.length === 1 && weakBoundary16[0].type === 'zaproponuj_pokoj' && weakBoundary16[0].bezwarunkowy === true
+      && !weakBoundary16.some(c => c.type === 'oferuj_miasto_za_pokoj'), weakBoundary16);
     // h5: silniejsza AI przed końcem zmęczenia (14 tur) nie składa żadnej oferty pokoju/rozejmu ani miasta.
     const strongAi = aiDecide(14, 5000, 6, 200, 100);
     check('h5 silniejsza AI przed końcem zmęczenia (14 tur) nie składa oferty pokoju/rozejmu ani miasta wobec gracza',
