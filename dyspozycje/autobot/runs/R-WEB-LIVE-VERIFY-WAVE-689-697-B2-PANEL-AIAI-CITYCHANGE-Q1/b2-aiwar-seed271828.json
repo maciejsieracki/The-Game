@@ -1,0 +1,1021 @@
+{
+  "scen": "aiwar",
+  "seed": 271828,
+  "tag": "",
+  "lastTurnRequested": 22,
+  "probeTurns": [
+    5,
+    10,
+    16,
+    20,
+    22
+  ],
+  "ai": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "warDeclaredAtTurn": 1,
+  "turns": [
+    {
+      "turn": 2,
+      "digest": "40c5e76e:143",
+      "owners": [],
+      "entriesBeforeReject": [],
+      "sec": 0.6
+    },
+    {
+      "turn": 3,
+      "digest": "cbac58b:143",
+      "owners": [],
+      "entriesBeforeReject": [],
+      "sec": 0.3
+    },
+    {
+      "turn": 4,
+      "digest": "ea7519a8:143",
+      "owners": [],
+      "entriesBeforeReject": [],
+      "sec": 0.4
+    },
+    {
+      "turn": 5,
+      "digest": "b54a0f8b:143",
+      "owners": [],
+      "entriesBeforeReject": [],
+      "sec": 0.5
+    },
+    {
+      "turn": 6,
+      "digest": "e0e31ad8:143",
+      "owners": [],
+      "entriesBeforeReject": [],
+      "sec": 0.3
+    },
+    {
+      "turn": 7,
+      "digest": "232e3d7b:143",
+      "owners": [],
+      "entriesBeforeReject": [],
+      "sec": 0.5
+    },
+    {
+      "turn": 8,
+      "digest": "52e58c83:142",
+      "owners": [],
+      "entriesBeforeReject": [],
+      "sec": 0.3
+    },
+    {
+      "turn": 9,
+      "digest": "ac412aa6:142",
+      "owners": [],
+      "entriesBeforeReject": [],
+      "sec": 0.5
+    },
+    {
+      "turn": 10,
+      "digest": "2ca0c270:143",
+      "owners": [],
+      "entriesBeforeReject": [],
+      "sec": 0.4
+    },
+    {
+      "turn": 11,
+      "digest": "c724da99:143",
+      "owners": [],
+      "entriesBeforeReject": [],
+      "sec": 0.4
+    },
+    {
+      "turn": 12,
+      "digest": "ee7ca346:143",
+      "owners": [],
+      "entriesBeforeReject": [],
+      "sec": 0.4
+    },
+    {
+      "turn": 13,
+      "digest": "cbc61723:143",
+      "owners": [],
+      "entriesBeforeReject": [],
+      "sec": 0.4
+    },
+    {
+      "turn": 14,
+      "digest": "23d193c2:141",
+      "owners": [],
+      "entriesBeforeReject": [],
+      "sec": 0.3
+    },
+    {
+      "turn": 15,
+      "digest": "17d600f9:141",
+      "owners": [],
+      "entriesBeforeReject": [],
+      "sec": 0.4
+    },
+    {
+      "turn": 16,
+      "digest": "7cf4ae36:139",
+      "owners": [],
+      "entriesBeforeReject": [],
+      "sec": 0.3
+    },
+    {
+      "turn": 17,
+      "digest": "839f30cf:143",
+      "owners": [],
+      "entriesBeforeReject": [],
+      "sec": 0.3
+    },
+    {
+      "turn": 18,
+      "digest": "e379f3be:143",
+      "owners": [],
+      "entriesBeforeReject": [],
+      "sec": 0.3
+    },
+    {
+      "turn": 19,
+      "digest": "c7176819:143",
+      "owners": [],
+      "entriesBeforeReject": [],
+      "sec": 0.4
+    },
+    {
+      "turn": 20,
+      "digest": "136c87d3:143",
+      "owners": [],
+      "entriesBeforeReject": [],
+      "sec": 0.3
+    },
+    {
+      "turn": 21,
+      "digest": "2e429a8c:143",
+      "owners": [],
+      "entriesBeforeReject": [],
+      "sec": 0.5
+    },
+    {
+      "turn": 22,
+      "digest": "1640a33:143",
+      "owners": [],
+      "entriesBeforeReject": [],
+      "sec": 0.4
+    },
+    {
+      "turn": 23,
+      "digest": "82afc644:143",
+      "owners": [],
+      "entriesBeforeReject": [],
+      "sec": 0.4
+    }
+  ],
+  "probes": [
+    {
+      "turn": 5,
+      "digest": "b54a0f8b:143",
+      "owners": [],
+      "pairStates": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 5
+          }
+        },
+        {
+          "a": 1,
+          "b": 2,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 5
+          }
+        }
+      ],
+      "cityCounts": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "entries": [],
+      "war": {
+        "battle": {
+          "preBattleOpen": false,
+          "pendingAuto": false,
+          "sceneOpen": false,
+          "summaryOpen": false,
+          "resolving": false
+        }
+      },
+      "overlayWait": {
+        "waitedMs": 10073,
+        "stillVisible": true,
+        "states": [
+          {
+            "visible": true,
+            "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 1:19"
+          }
+        ]
+      },
+      "screenshotNoOverlay": false,
+      "audience_1": {
+        "audienceOpen": true,
+        "audienceLines": [
+          "POKÓJ",
+          "Wypowiedzenie wojny",
+          "Wspólny wróg / namowa do wojny",
+          "zablokowana — wymaga Respektu 70 (masz 30)",
+          "Propozycja pokoju / zawieszenia broni",
+          "niedostępna — nie trwa wojna",
+          "zablokowana — wymaga Respektu 70 (masz 30)",
+          "Stan bieżący: Relacja z perspektywy gracza 116 / 200 · Zaufanie 22 / 100 · Respekt 94 / 100 · nastawienie: Nieufny",
+          "RELACJE Z TOBĄ",
+          "Zaufanie",
+          "Respekt",
+          "(Zaufanie + Respekt)",
+          "RELACJE Z INNYMI",
+          "W stanie wojny z",
+          "Inkowie Zmęczenie wojną 20%",
+          "WYPOWIEDZ WOJNĘ",
+          "Wojna",
+          "NIEDOSTĘPNA — NIE TRWA WOJNA",
+          "Pokój",
+          "ZABLOKOWANA — WYMAGA RESPEKTU 70 (MASZ 30)"
+        ],
+        "audienceTextFull": "Audiencja dyplomatyczna\nNASTĘPNE\nWróć\nPOKÓJ\nRzymianie\nKamillus\nWładca · Brąz\nW +20 · Uczciwy\nATRYBUTY\nMoc militarna\n1224\nRekruci\n2 000 / 2 000\nPotencjał sojuszniczy\nNiski\nREPUTACJA\nWiarygodność\n+20 · Uczciwy\nREJESTR WIARYGODNOŚCI\nWartość startowa (trudność)\n+20\nSuma składowych (przed klamrą): +20 · klamra: +20\nSKARBIEC\nPieniądz (¤)\n4\nDochód\n+5 / turę\nDOBRA HANDLOWE\n▸\nSurowce\n(3)\nDrewno ×4\nKamien ×4\nGlina ×44\n▸\nTechnologie\n(12)\nObróbka drewna\nMurarstwo\nRolnictwo\nŁowiectwo\nŁucznictwo\nOswojenie zwierząt\nGarncarstwo\nMistycyzm\nWymiana\nGospodarka wodna\nKoło\nBrązownictwo\n▸\nInne\n—\nZnane frakcje\nStół negocjacji\nMożliwe umowy\n14\nUmowa wymiany surowców\nUltimatum / groźba\nWypowiedzenie wojny\nPrezent / dar\nPakt o nieagresji\nzablokowana — wymaga Zaufania 30 (masz 22)\nSojusz (pełny lub defensywny)\nzablokowana — wymaga Zaufania 90 (masz 22) i Relacji 130 (masz 116)\nTraktat przemarszu\nzablokowana — wymaga Zaufania 45 (masz 22)\nTraktat handlowy\nbrak możliwego połączenia handlowego (ląd lub porty)\nWymiana / sprzedaż technologii\nzablokowana — wymaga Zaufania 70 (masz 22)\nWspólny wróg / namowa do wojny\nzablokowana — wymaga Zaufania 50 (masz 22)\nŻądanie / oferta trybutu\nzablokowana — wymaga Respektu 70 (masz 30)\nPropozycja pokoju / zawieszenia broni\nniedostępna — nie trwa wojna\nWasalizacja\nzablokowana — wymaga Respektu 70 (masz 30)\nWchłonięcie\nzablokowana — tylko miasta-państwa\nMy oferujemy\n0\nBrak naszych ofert.\nOni oferują\n0\nBrak ofert od nich.\nAktywne traktaty\n0\nBrak aktywnych traktatów.\nPUNKTY WYMIANY\nPW\nBrak aktywnej propozycji na stole — wyślij ofertę lub poczekaj na odpowiedź.\nZA CO CIĘ LUBIĄ\nWiarygodność (dryf)\n+0.6 / turę\nZA CO CIĘ NIE LUBIĄ\nRóżna kultura\n-5\nStan bieżący: Relacja z perspektywy gracza 116 / 200 · Zaufanie 22 / 100 · Respekt 94 / 100 · nastawienie: Nieufny\nAsyria\nSzamszi-Adad I\nPrzedstawiciel · Brąz\nW +20 · Uczciwy\nNIEUFNY\nATRYBUTY\nMoc militarna\n80\nRekruci\n0 / 0\nPotencjał sojuszniczy\nNiski\nRELACJE Z TOBĄ\nZaufanie\n22 / 100 +0.7 / turę\nRespekt\n94 / 100\nRelacja z perspektywy gracza\n116 / 200 +0.7 / turę\n(Zaufanie + Respekt)\nDOBRA HANDLOWE\n▸\nSurowce\n—\n▸\nTechnologie\n(1)\nWymiana\n▸\nInne\n—\nRELACJE Z INNYMI\nW stanie wojny z\nInkowie Zmęczenie wojną 20%\nW sojuszu z\nBrak.\nPakt o nieagresji z\nBrak.\nHandluje z\nBrak.\nKultura: Asyryjska · obca kultura\nWojowniczy\nSamotny wilk\nIzolacjonista\nWYPOWIEDZ WOJNĘ\nWojna\nNIEDOSTĘPNA — NIE TRWA WOJNA\nPokój\nZABLOKOWANA — WYMAGA ZAUFANIA 90 (MASZ 22) I RELACJI 130 (MASZ 116)\nSojusz\nZABLOKOWANA — WYMAGA ZAUFANIA 30 (MASZ 22)\nPakt\nBRAK MOŻLIWEGO POŁĄCZENIA HANDLOWEGO (LĄD LUB PORTY)\nHandel\nUMOWA WYMIANY\nWymiana\nPRZEKAŻ DAR\nDar\nZABLOKOWANA — WYMAGA RESPEKTU 70 (MASZ 30)\nWasal\nZABLOKOWANA — TYLKO MIASTA-PAŃSTWA\nWchłonięcie\nSZYBKA WYMIANA\nauto-uczciwa oferta",
+        "bodyHits": [
+          "POKÓJ",
+          "Wypowiedzenie wojny",
+          "Wspólny wróg / namowa do wojny",
+          "Propozycja pokoju / zawieszenia broni",
+          "niedostępna — nie trwa wojna",
+          "W stanie wojny z",
+          "Inkowie Zmęczenie wojną 20%",
+          "WYPOWIEDZ WOJNĘ",
+          "Wojna",
+          "NIEDOSTĘPNA — NIE TRWA WOJNA",
+          "Pokój"
+        ],
+        "totalBodyLines": 231
+      },
+      "shot_1": "b2-aiwar-seed271828-T5-aud1.png",
+      "proposalsAfterProbe": 0
+    },
+    {
+      "turn": 10,
+      "digest": "2ca0c270:143",
+      "owners": [],
+      "pairStates": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 10
+          }
+        },
+        {
+          "a": 1,
+          "b": 2,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 10
+          }
+        }
+      ],
+      "cityCounts": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "entries": [],
+      "war": {
+        "battle": {
+          "preBattleOpen": false,
+          "pendingAuto": false,
+          "sceneOpen": false,
+          "summaryOpen": false,
+          "resolving": false
+        }
+      },
+      "overlayWait": {
+        "waitedMs": 10075,
+        "stillVisible": true,
+        "states": [
+          {
+            "visible": true,
+            "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 1:33"
+          }
+        ]
+      },
+      "screenshotNoOverlay": false,
+      "audience_1": {
+        "audienceOpen": true,
+        "audienceLines": [
+          "POKÓJ",
+          "Wypowiedzenie wojny",
+          "Wspólny wróg / namowa do wojny",
+          "zablokowana — wymaga Respektu 70 (masz 30)",
+          "Propozycja pokoju / zawieszenia broni",
+          "niedostępna — nie trwa wojna",
+          "zablokowana — wymaga Respektu 70 (masz 30)",
+          "Stan bieżący: Relacja z perspektywy gracza 115 / 200 · Zaufanie 22 / 100 · Respekt 93 / 100 · nastawienie: Nieufny",
+          "RELACJE Z TOBĄ",
+          "Zaufanie",
+          "Respekt",
+          "(Zaufanie + Respekt)",
+          "RELACJE Z INNYMI",
+          "W stanie wojny z",
+          "Inkowie Zmęczenie wojną 45%",
+          "WYPOWIEDZ WOJNĘ",
+          "Wojna",
+          "NIEDOSTĘPNA — NIE TRWA WOJNA",
+          "Pokój",
+          "ZABLOKOWANA — WYMAGA RESPEKTU 70 (MASZ 30)"
+        ],
+        "audienceTextFull": "Audiencja dyplomatyczna\nNASTĘPNE\nWróć\nPOKÓJ\nRzymianie\nKamillus\nWładca · Brąz\nW +20 · Uczciwy\nATRYBUTY\nMoc militarna\n1141\nRekruci\n2 000 / 2 000\nPotencjał sojuszniczy\nNiski\nREPUTACJA\nWiarygodność\n+20 · Uczciwy\nREJESTR WIARYGODNOŚCI\nWartość startowa (trudność)\n+20\nSuma składowych (przed klamrą): +20 · klamra: +20\nSKARBIEC\nPieniądz (¤)\n17\nDochód\n+5 / turę\nDOBRA HANDLOWE\n▸\nSurowce\n(3)\nDrewno ×15\nKamien ×9\nGlina ×99\n▸\nTechnologie\n(12)\nObróbka drewna\nMurarstwo\nRolnictwo\nŁowiectwo\nŁucznictwo\nOswojenie zwierząt\nGarncarstwo\nMistycyzm\nWymiana\nGospodarka wodna\nKoło\nBrązownictwo\n▸\nInne\n—\nZnane frakcje\nStół negocjacji\nMożliwe umowy\n14\nUmowa wymiany surowców\nUltimatum / groźba\nWypowiedzenie wojny\nPrezent / dar\nPakt o nieagresji\nzablokowana — wymaga Zaufania 30 (masz 22)\nSojusz (pełny lub defensywny)\nzablokowana — wymaga Zaufania 90 (masz 22) i Relacji 130 (masz 115)\nTraktat przemarszu\nzablokowana — wymaga Zaufania 45 (masz 22)\nTraktat handlowy\nbrak możliwego połączenia handlowego (ląd lub porty)\nWymiana / sprzedaż technologii\nzablokowana — wymaga Zaufania 70 (masz 22)\nWspólny wróg / namowa do wojny\nzablokowana — wymaga Zaufania 50 (masz 22)\nŻądanie / oferta trybutu\nzablokowana — wymaga Respektu 70 (masz 30)\nPropozycja pokoju / zawieszenia broni\nniedostępna — nie trwa wojna\nWasalizacja\nzablokowana — wymaga Respektu 70 (masz 30)\nWchłonięcie\nzablokowana — tylko miasta-państwa\nMy oferujemy\n0\nBrak naszych ofert.\nOni oferują\n0\nBrak ofert od nich.\nAktywne traktaty\n0\nBrak aktywnych traktatów.\nPUNKTY WYMIANY\nPW\nBrak aktywnej propozycji na stole — wyślij ofertę lub poczekaj na odpowiedź.\nZA CO CIĘ LUBIĄ\nWiarygodność (dryf)\n+0.6 / turę\nZA CO CIĘ NIE LUBIĄ\nRóżna kultura\n-5\nStan bieżący: Relacja z perspektywy gracza 115 / 200 · Zaufanie 22 / 100 · Respekt 93 / 100 · nastawienie: Nieufny\nAsyria\nSzamszi-Adad I\nPrzedstawiciel · Brąz\nW +20 · Uczciwy\nNIEUFNY\nATRYBUTY\nMoc militarna\n80\nRekruci\n0 / 0\nPotencjał sojuszniczy\nNiski\nRELACJE Z TOBĄ\nZaufanie\n22 / 100 +0.7 / turę\nRespekt\n93 / 100\nRelacja z perspektywy gracza\n115 / 200 +0.7 / turę\n(Zaufanie + Respekt)\nDOBRA HANDLOWE\n▸\nSurowce\n—\n▸\nTechnologie\n(1)\nWymiana\n▸\nInne\n—\nRELACJE Z INNYMI\nW stanie wojny z\nInkowie Zmęczenie wojną 45%\nW sojuszu z\nBrak.\nPakt o nieagresji z\nBrak.\nHandluje z\nBrak.\nKultura: Asyryjska · obca kultura\nWojowniczy\nSamotny wilk\nIzolacjonista\nWYPOWIEDZ WOJNĘ\nWojna\nNIEDOSTĘPNA — NIE TRWA WOJNA\nPokój\nZABLOKOWANA — WYMAGA ZAUFANIA 90 (MASZ 22) I RELACJI 130 (MASZ 115)\nSojusz\nZABLOKOWANA — WYMAGA ZAUFANIA 30 (MASZ 22)\nPakt\nBRAK MOŻLIWEGO POŁĄCZENIA HANDLOWEGO (LĄD LUB PORTY)\nHandel\nUMOWA WYMIANY\nWymiana\nPRZEKAŻ DAR\nDar\nZABLOKOWANA — WYMAGA RESPEKTU 70 (MASZ 30)\nWasal\nZABLOKOWANA — TYLKO MIASTA-PAŃSTWA\nWchłonięcie\nSZYBKA WYMIANA\nauto-uczciwa oferta",
+        "bodyHits": [
+          "POKÓJ",
+          "Wypowiedzenie wojny",
+          "Wspólny wróg / namowa do wojny",
+          "Propozycja pokoju / zawieszenia broni",
+          "niedostępna — nie trwa wojna",
+          "W stanie wojny z",
+          "Inkowie Zmęczenie wojną 45%",
+          "WYPOWIEDZ WOJNĘ",
+          "Wojna",
+          "NIEDOSTĘPNA — NIE TRWA WOJNA",
+          "Pokój"
+        ],
+        "totalBodyLines": 231
+      },
+      "shot_1": "b2-aiwar-seed271828-T10-aud1.png",
+      "proposalsAfterProbe": 0
+    },
+    {
+      "turn": 16,
+      "digest": "7cf4ae36:139",
+      "owners": [],
+      "pairStates": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 16
+          }
+        },
+        {
+          "a": 1,
+          "b": 2,
+          "st": {
+            "status": "pokoj",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": 51,
+            "turn": 16
+          }
+        }
+      ],
+      "cityCounts": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "entries": [],
+      "war": {
+        "battle": {
+          "preBattleOpen": false,
+          "pendingAuto": false,
+          "sceneOpen": false,
+          "summaryOpen": false,
+          "resolving": false
+        }
+      },
+      "overlayWait": {
+        "waitedMs": 10069,
+        "stillVisible": true,
+        "states": [
+          {
+            "visible": true,
+            "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 1:46"
+          }
+        ]
+      },
+      "screenshotNoOverlay": false,
+      "audience_1": {
+        "audienceOpen": true,
+        "audienceLines": [
+          "POKÓJ",
+          "Wypowiedzenie wojny",
+          "Wspólny wróg / namowa do wojny",
+          "zablokowana — wymaga Respektu 70 (masz 30)",
+          "Propozycja pokoju / zawieszenia broni",
+          "niedostępna — nie trwa wojna",
+          "zablokowana — wymaga Respektu 70 (masz 30)",
+          "Stan bieżący: Relacja z perspektywy gracza 116 / 200 · Zaufanie 22 / 100 · Respekt 94 / 100 · nastawienie: Nieufny",
+          "RELACJE Z TOBĄ",
+          "Zaufanie",
+          "Respekt",
+          "(Zaufanie + Respekt)",
+          "RELACJE Z INNYMI",
+          "W stanie wojny z",
+          "WYPOWIEDZ WOJNĘ",
+          "Wojna",
+          "NIEDOSTĘPNA — NIE TRWA WOJNA",
+          "Pokój",
+          "ZABLOKOWANA — WYMAGA RESPEKTU 70 (MASZ 30)"
+        ],
+        "audienceTextFull": "Audiencja dyplomatyczna\nNASTĘPNE\nWróć\nPOKÓJ\nRzymianie\nKamillus\nWładca · Brąz\nW +20 · Uczciwy\nATRYBUTY\nMoc militarna\n1156\nRekruci\n4 000 / 4 000\nPotencjał sojuszniczy\nNiski\nREPUTACJA\nWiarygodność\n+20 · Uczciwy\nREJESTR WIARYGODNOŚCI\nWartość startowa (trudność)\n+20\nSuma składowych (przed klamrą): +20 · klamra: +20\nSKARBIEC\nPieniądz (¤)\n54\nDochód\n+6 / turę\nDOBRA HANDLOWE\n▸\nSurowce\n(3)\nDrewno ×29\nKamien ×5\nGlina ×190\n▸\nTechnologie\n(12)\nObróbka drewna\nMurarstwo\nRolnictwo\nŁowiectwo\nŁucznictwo\nOswojenie zwierząt\nGarncarstwo\nMistycyzm\nWymiana\nGospodarka wodna\nKoło\nBrązownictwo\n▸\nInne\n—\nZnane frakcje\nStół negocjacji\nMożliwe umowy\n14\nUmowa wymiany surowców\nUltimatum / groźba\nWypowiedzenie wojny\nPrezent / dar\nPakt o nieagresji\nzablokowana — wymaga Zaufania 30 (masz 22)\nSojusz (pełny lub defensywny)\nzablokowana — wymaga Zaufania 90 (masz 22) i Relacji 130 (masz 116)\nTraktat przemarszu\nzablokowana — wymaga Zaufania 45 (masz 22)\nTraktat handlowy\nbrak możliwego połączenia handlowego (ląd lub porty)\nWymiana / sprzedaż technologii\nzablokowana — wymaga Zaufania 70 (masz 22)\nWspólny wróg / namowa do wojny\nzablokowana — wymaga Zaufania 50 (masz 22)\nŻądanie / oferta trybutu\nzablokowana — wymaga Respektu 70 (masz 30)\nPropozycja pokoju / zawieszenia broni\nniedostępna — nie trwa wojna\nWasalizacja\nzablokowana — wymaga Respektu 70 (masz 30)\nWchłonięcie\nzablokowana — tylko miasta-państwa\nMy oferujemy\n0\nBrak naszych ofert.\nOni oferują\n0\nBrak ofert od nich.\nAktywne traktaty\n0\nBrak aktywnych traktatów.\nPUNKTY WYMIANY\nPW\nBrak aktywnej propozycji na stole — wyślij ofertę lub poczekaj na odpowiedź.\nZA CO CIĘ LUBIĄ\nWiarygodność (dryf)\n+0.6 / turę\nZA CO CIĘ NIE LUBIĄ\nRóżna kultura\n-5\nStan bieżący: Relacja z perspektywy gracza 116 / 200 · Zaufanie 22 / 100 · Respekt 94 / 100 · nastawienie: Nieufny\nAsyria\nSzamszi-Adad I\nPrzedstawiciel · Brąz\nW +20 · Uczciwy\nNIEUFNY\nATRYBUTY\nMoc militarna\n80\nRekruci\n0 / 0\nPotencjał sojuszniczy\nNiski\nRELACJE Z TOBĄ\nZaufanie\n22 / 100 +0.7 / turę\nRespekt\n94 / 100\nRelacja z perspektywy gracza\n116 / 200 +0.7 / turę\n(Zaufanie + Respekt)\nDOBRA HANDLOWE\n▸\nSurowce\n—\n▸\nTechnologie\n(1)\nWymiana\n▸\nInne\n—\nRELACJE Z INNYMI\nW stanie wojny z\nBrak.\nW sojuszu z\nBrak.\nPakt o nieagresji z\nBrak.\nHandluje z\nBrak.\nKultura: Asyryjska · obca kultura\nWojowniczy\nSamotny wilk\nIzolacjonista\nWYPOWIEDZ WOJNĘ\nWojna\nNIEDOSTĘPNA — NIE TRWA WOJNA\nPokój\nZABLOKOWANA — WYMAGA ZAUFANIA 90 (MASZ 22) I RELACJI 130 (MASZ 116)\nSojusz\nZABLOKOWANA — WYMAGA ZAUFANIA 30 (MASZ 22)\nPakt\nBRAK MOŻLIWEGO POŁĄCZENIA HANDLOWEGO (LĄD LUB PORTY)\nHandel\nUMOWA WYMIANY\nWymiana\nPRZEKAŻ DAR\nDar\nZABLOKOWANA — WYMAGA RESPEKTU 70 (MASZ 30)\nWasal\nZABLOKOWANA — TYLKO MIASTA-PAŃSTWA\nWchłonięcie\nSZYBKA WYMIANA\nauto-uczciwa oferta",
+        "bodyHits": [
+          "POKÓJ",
+          "Wypowiedzenie wojny",
+          "Wspólny wróg / namowa do wojny",
+          "Propozycja pokoju / zawieszenia broni",
+          "niedostępna — nie trwa wojna",
+          "W stanie wojny z",
+          "WYPOWIEDZ WOJNĘ",
+          "Wojna",
+          "NIEDOSTĘPNA — NIE TRWA WOJNA",
+          "Pokój"
+        ],
+        "totalBodyLines": 231
+      },
+      "shot_1": "b2-aiwar-seed271828-T16-aud1.png",
+      "proposalsAfterProbe": 0
+    },
+    {
+      "turn": 20,
+      "digest": "136c87d3:143",
+      "owners": [],
+      "pairStates": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 20
+          }
+        },
+        {
+          "a": 1,
+          "b": 2,
+          "st": {
+            "status": "pokoj",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": 51,
+            "turn": 20
+          }
+        }
+      ],
+      "cityCounts": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "entries": [],
+      "war": {
+        "battle": {
+          "preBattleOpen": false,
+          "pendingAuto": false,
+          "sceneOpen": false,
+          "summaryOpen": false,
+          "resolving": false
+        }
+      },
+      "overlayWait": {
+        "waitedMs": 10153,
+        "stillVisible": true,
+        "states": [
+          {
+            "visible": true,
+            "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 1:59"
+          }
+        ]
+      },
+      "screenshotNoOverlay": false,
+      "audience_1": {
+        "audienceOpen": true,
+        "audienceLines": [
+          "POKÓJ",
+          "Wypowiedzenie wojny",
+          "Wspólny wróg / namowa do wojny",
+          "zablokowana — wymaga Respektu 70 (masz 30)",
+          "Propozycja pokoju / zawieszenia broni",
+          "niedostępna — nie trwa wojna",
+          "zablokowana — wymaga Respektu 70 (masz 30)",
+          "Stan bieżący: Relacja z perspektywy gracza 116 / 200 · Zaufanie 22 / 100 · Respekt 94 / 100 · nastawienie: Nieufny",
+          "RELACJE Z TOBĄ",
+          "Zaufanie",
+          "Respekt",
+          "(Zaufanie + Respekt)",
+          "RELACJE Z INNYMI",
+          "W stanie wojny z",
+          "WYPOWIEDZ WOJNĘ",
+          "Wojna",
+          "NIEDOSTĘPNA — NIE TRWA WOJNA",
+          "Pokój",
+          "ZABLOKOWANA — WYMAGA RESPEKTU 70 (MASZ 30)"
+        ],
+        "audienceTextFull": "Audiencja dyplomatyczna\nNASTĘPNE\nWróć\nPOKÓJ\nRzymianie\nKamillus\nWładca · Brąz\nW +20 · Uczciwy\nATRYBUTY\nMoc militarna\n1171\nRekruci\n6 000 / 6 000\nPotencjał sojuszniczy\nNiski\nREPUTACJA\nWiarygodność\n+20 · Uczciwy\nREJESTR WIARYGODNOŚCI\nWartość startowa (trudność)\n+20\nSuma składowych (przed klamrą): +20 · klamra: +20\nSKARBIEC\nPieniądz (¤)\n84\nDochód\n+9 / turę\nDOBRA HANDLOWE\n▸\nSurowce\n(2)\nDrewno ×35\nGlina ×262\n▸\nTechnologie\n(12)\nObróbka drewna\nMurarstwo\nRolnictwo\nŁowiectwo\nŁucznictwo\nOswojenie zwierząt\nGarncarstwo\nMistycyzm\nWymiana\nGospodarka wodna\nKoło\nBrązownictwo\n▸\nInne\n—\nZnane frakcje\nStół negocjacji\nMożliwe umowy\n14\nUmowa wymiany surowców\nUltimatum / groźba\nWypowiedzenie wojny\nPrezent / dar\nPakt o nieagresji\nzablokowana — wymaga Zaufania 30 (masz 22)\nSojusz (pełny lub defensywny)\nzablokowana — wymaga Zaufania 90 (masz 22) i Relacji 130 (masz 116)\nTraktat przemarszu\nzablokowana — wymaga Zaufania 45 (masz 22)\nTraktat handlowy\nbrak możliwego połączenia handlowego (ląd lub porty)\nWymiana / sprzedaż technologii\nzablokowana — wymaga Zaufania 70 (masz 22)\nWspólny wróg / namowa do wojny\nzablokowana — wymaga Zaufania 50 (masz 22)\nŻądanie / oferta trybutu\nzablokowana — wymaga Respektu 70 (masz 30)\nPropozycja pokoju / zawieszenia broni\nniedostępna — nie trwa wojna\nWasalizacja\nzablokowana — wymaga Respektu 70 (masz 30)\nWchłonięcie\nzablokowana — tylko miasta-państwa\nMy oferujemy\n0\nBrak naszych ofert.\nOni oferują\n0\nBrak ofert od nich.\nAktywne traktaty\n0\nBrak aktywnych traktatów.\nPUNKTY WYMIANY\nPW\nBrak aktywnej propozycji na stole — wyślij ofertę lub poczekaj na odpowiedź.\nZA CO CIĘ LUBIĄ\nWiarygodność (dryf)\n+0.6 / turę\nZA CO CIĘ NIE LUBIĄ\nRóżna kultura\n-5\nStan bieżący: Relacja z perspektywy gracza 116 / 200 · Zaufanie 22 / 100 · Respekt 94 / 100 · nastawienie: Nieufny\nAsyria\nSzamszi-Adad I\nPrzedstawiciel · Brąz\nW +20 · Uczciwy\nNIEUFNY\nATRYBUTY\nMoc militarna\n80\nRekruci\n0 / 0\nPotencjał sojuszniczy\nNiski\nRELACJE Z TOBĄ\nZaufanie\n22 / 100 +0.7 / turę\nRespekt\n94 / 100\nRelacja z perspektywy gracza\n116 / 200 +0.7 / turę\n(Zaufanie + Respekt)\nDOBRA HANDLOWE\n▸\nSurowce\n—\n▸\nTechnologie\n(1)\nWymiana\n▸\nInne\n—\nRELACJE Z INNYMI\nW stanie wojny z\nBrak.\nW sojuszu z\nBrak.\nPakt o nieagresji z\nBrak.\nHandluje z\nBrak.\nKultura: Asyryjska · obca kultura\nWojowniczy\nSamotny wilk\nIzolacjonista\nWYPOWIEDZ WOJNĘ\nWojna\nNIEDOSTĘPNA — NIE TRWA WOJNA\nPokój\nZABLOKOWANA — WYMAGA ZAUFANIA 90 (MASZ 22) I RELACJI 130 (MASZ 116)\nSojusz\nZABLOKOWANA — WYMAGA ZAUFANIA 30 (MASZ 22)\nPakt\nBRAK MOŻLIWEGO POŁĄCZENIA HANDLOWEGO (LĄD LUB PORTY)\nHandel\nUMOWA WYMIANY\nWymiana\nPRZEKAŻ DAR\nDar\nZABLOKOWANA — WYMAGA RESPEKTU 70 (MASZ 30)\nWasal\nZABLOKOWANA — TYLKO MIASTA-PAŃSTWA\nWchłonięcie\nSZYBKA WYMIANA\nauto-uczciwa oferta",
+        "bodyHits": [
+          "POKÓJ",
+          "Wypowiedzenie wojny",
+          "Wspólny wróg / namowa do wojny",
+          "Propozycja pokoju / zawieszenia broni",
+          "niedostępna — nie trwa wojna",
+          "W stanie wojny z",
+          "WYPOWIEDZ WOJNĘ",
+          "Wojna",
+          "NIEDOSTĘPNA — NIE TRWA WOJNA",
+          "Pokój"
+        ],
+        "totalBodyLines": 230
+      },
+      "shot_1": "b2-aiwar-seed271828-T20-aud1.png",
+      "proposalsAfterProbe": 0
+    },
+    {
+      "turn": 22,
+      "digest": "1640a33:143",
+      "owners": [],
+      "pairStates": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 22
+          }
+        },
+        {
+          "a": 1,
+          "b": 2,
+          "st": {
+            "status": "pokoj",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": 51,
+            "turn": 22
+          }
+        }
+      ],
+      "cityCounts": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "entries": [],
+      "war": {
+        "battle": {
+          "preBattleOpen": false,
+          "pendingAuto": false,
+          "sceneOpen": false,
+          "summaryOpen": false,
+          "resolving": false
+        }
+      },
+      "overlayWait": {
+        "waitedMs": 10080,
+        "stillVisible": true,
+        "states": [
+          {
+            "visible": true,
+            "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 2:11"
+          }
+        ]
+      },
+      "screenshotNoOverlay": false,
+      "audience_1": {
+        "audienceOpen": true,
+        "audienceLines": [
+          "POKÓJ",
+          "Wypowiedzenie wojny",
+          "Wspólny wróg / namowa do wojny",
+          "zablokowana — wymaga Respektu 70 (masz 30)",
+          "Propozycja pokoju / zawieszenia broni",
+          "niedostępna — nie trwa wojna",
+          "zablokowana — wymaga Respektu 70 (masz 30)",
+          "Stan bieżący: Relacja z perspektywy gracza 116 / 200 · Zaufanie 22 / 100 · Respekt 94 / 100 · nastawienie: Nieufny",
+          "RELACJE Z TOBĄ",
+          "Zaufanie",
+          "Respekt",
+          "(Zaufanie + Respekt)",
+          "RELACJE Z INNYMI",
+          "W stanie wojny z",
+          "WYPOWIEDZ WOJNĘ",
+          "Wojna",
+          "NIEDOSTĘPNA — NIE TRWA WOJNA",
+          "Pokój",
+          "ZABLOKOWANA — WYMAGA RESPEKTU 70 (MASZ 30)"
+        ],
+        "audienceTextFull": "Audiencja dyplomatyczna\nNASTĘPNE\nWróć\nPOKÓJ\nRzymianie\nKamillus\nWładca · Brąz\nW +20 · Uczciwy\nATRYBUTY\nMoc militarna\n1171\nRekruci\n6 000 / 6 000\nPotencjał sojuszniczy\nNiski\nREPUTACJA\nWiarygodność\n+20 · Uczciwy\nREJESTR WIARYGODNOŚCI\nWartość startowa (trudność)\n+20\nSuma składowych (przed klamrą): +20 · klamra: +20\nSKARBIEC\nPieniądz (¤)\n102\nDochód\n+9 / turę\nDOBRA HANDLOWE\n▸\nSurowce\n(2)\nDrewno ×37\nGlina ×302\n▸\nTechnologie\n(12)\nObróbka drewna\nMurarstwo\nRolnictwo\nŁowiectwo\nŁucznictwo\nOswojenie zwierząt\nGarncarstwo\nMistycyzm\nWymiana\nGospodarka wodna\nKoło\nBrązownictwo\n▸\nInne\n—\nZnane frakcje\nStół negocjacji\nMożliwe umowy\n14\nUmowa wymiany surowców\nUltimatum / groźba\nWypowiedzenie wojny\nPrezent / dar\nPakt o nieagresji\nzablokowana — wymaga Zaufania 30 (masz 22)\nSojusz (pełny lub defensywny)\nzablokowana — wymaga Zaufania 90 (masz 22) i Relacji 130 (masz 116)\nTraktat przemarszu\nzablokowana — wymaga Zaufania 45 (masz 22)\nTraktat handlowy\nbrak możliwego połączenia handlowego (ląd lub porty)\nWymiana / sprzedaż technologii\nzablokowana — wymaga Zaufania 70 (masz 22)\nWspólny wróg / namowa do wojny\nzablokowana — wymaga Zaufania 50 (masz 22)\nŻądanie / oferta trybutu\nzablokowana — wymaga Respektu 70 (masz 30)\nPropozycja pokoju / zawieszenia broni\nniedostępna — nie trwa wojna\nWasalizacja\nzablokowana — wymaga Respektu 70 (masz 30)\nWchłonięcie\nzablokowana — tylko miasta-państwa\nMy oferujemy\n0\nBrak naszych ofert.\nOni oferują\n0\nBrak ofert od nich.\nAktywne traktaty\n0\nBrak aktywnych traktatów.\nPUNKTY WYMIANY\nPW\nBrak aktywnej propozycji na stole — wyślij ofertę lub poczekaj na odpowiedź.\nZA CO CIĘ LUBIĄ\nWiarygodność (dryf)\n+0.6 / turę\nZA CO CIĘ NIE LUBIĄ\nRóżna kultura\n-5\nStan bieżący: Relacja z perspektywy gracza 116 / 200 · Zaufanie 22 / 100 · Respekt 94 / 100 · nastawienie: Nieufny\nAsyria\nSzamszi-Adad I\nPrzedstawiciel · Brąz\nW +20 · Uczciwy\nNIEUFNY\nATRYBUTY\nMoc militarna\n80\nRekruci\n0 / 0\nPotencjał sojuszniczy\nNiski\nRELACJE Z TOBĄ\nZaufanie\n22 / 100 +0.7 / turę\nRespekt\n94 / 100\nRelacja z perspektywy gracza\n116 / 200 +0.7 / turę\n(Zaufanie + Respekt)\nDOBRA HANDLOWE\n▸\nSurowce\n—\n▸\nTechnologie\n(1)\nWymiana\n▸\nInne\n—\nRELACJE Z INNYMI\nW stanie wojny z\nBrak.\nW sojuszu z\nBrak.\nPakt o nieagresji z\nBrak.\nHandluje z\nBrak.\nKultura: Asyryjska · obca kultura\nWojowniczy\nSamotny wilk\nIzolacjonista\nWYPOWIEDZ WOJNĘ\nWojna\nNIEDOSTĘPNA — NIE TRWA WOJNA\nPokój\nZABLOKOWANA — WYMAGA ZAUFANIA 90 (MASZ 22) I RELACJI 130 (MASZ 116)\nSojusz\nZABLOKOWANA — WYMAGA ZAUFANIA 30 (MASZ 22)\nPakt\nBRAK MOŻLIWEGO POŁĄCZENIA HANDLOWEGO (LĄD LUB PORTY)\nHandel\nUMOWA WYMIANY\nWymiana\nPRZEKAŻ DAR\nDar\nZABLOKOWANA — WYMAGA RESPEKTU 70 (MASZ 30)\nWasal\nZABLOKOWANA — TYLKO MIASTA-PAŃSTWA\nWchłonięcie\nSZYBKA WYMIANA\nauto-uczciwa oferta",
+        "bodyHits": [
+          "POKÓJ",
+          "Wypowiedzenie wojny",
+          "Wspólny wróg / namowa do wojny",
+          "Propozycja pokoju / zawieszenia broni",
+          "niedostępna — nie trwa wojna",
+          "W stanie wojny z",
+          "WYPOWIEDZ WOJNĘ",
+          "Wojna",
+          "NIEDOSTĘPNA — NIE TRWA WOJNA",
+          "Pokój"
+        ],
+        "totalBodyLines": 230
+      },
+      "shot_1": "b2-aiwar-seed271828-T22-aud1.png",
+      "proposalsAfterProbe": 0
+    }
+  ],
+  "stoppedBy": "koniec zakresu",
+  "pageErrors": [],
+  "overlayLog": [
+    {
+      "m": "appendChild",
+      "turn": 1,
+      "t": 3490,
+      "stack": [
+        "at P6 (<BUNDLE>/index.html?civTest=1&civSeed=271828:4300:27)",
+        "at tB (<BUNDLE>/index.html?civTest=1&civSeed=271828:33253:307500)",
+        "at Object.startGame (<BUNDLE>/index.html?civTest=1&civSeed=271828:33253:202022)",
+        "at eval (eval at evaluate (:303:30), <anonymous>:1:31)",
+        "at UtilityScript.evaluate (<anonymous>:305:16)"
+      ]
+    }
+  ],
+  "startMs": 5182,
+  "overlayTimeline": [
+    {
+      "sec": 0,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 4/10 · Relief (góry i wzgórza) Upłynęło: 0:02"
+        }
+      ]
+    },
+    {
+      "sec": 5,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:07"
+        }
+      ]
+    },
+    {
+      "sec": 10,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:12"
+        }
+      ]
+    },
+    {
+      "sec": 15,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:17"
+        }
+      ]
+    },
+    {
+      "sec": 20,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:22"
+        }
+      ]
+    },
+    {
+      "sec": 25,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:27"
+        }
+      ]
+    },
+    {
+      "sec": 30,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:32"
+        }
+      ]
+    },
+    {
+      "sec": 35,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:37"
+        }
+      ]
+    },
+    {
+      "sec": 40,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:42"
+        }
+      ]
+    },
+    {
+      "sec": 45,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:47"
+        }
+      ]
+    },
+    {
+      "sec": 50,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:52"
+        }
+      ]
+    },
+    {
+      "sec": 55,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:57"
+        }
+      ]
+    },
+    {
+      "sec": 60,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 1:02"
+        }
+      ]
+    }
+  ],
+  "overlayAfterFound": [
+    {
+      "visible": true,
+      "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 1:02"
+    }
+  ],
+  "me": 0,
+  "prepared": [
+    {
+      "ai": 1,
+      "res": {
+        "techMe": true,
+        "techAi": true,
+        "contact": true,
+        "discovered": true,
+        "status": "neutralni"
+      }
+    },
+    {
+      "ai": 2,
+      "res": {
+        "techMe": true,
+        "techAi": true,
+        "contact": true,
+        "discovered": true,
+        "status": "neutralni"
+      }
+    }
+  ],
+  "observedAis": [
+    1
+  ],
+  "preTurn": {
+    "turn": 1,
+    "digest": "9b797e43:141",
+    "owners": [],
+    "pairStates": [
+      {
+        "a": 1,
+        "b": 0,
+        "st": {
+          "status": "neutralni",
+          "truceUntilTurn": null,
+          "peaceUntilTurn": null,
+          "turn": 1
+        }
+      },
+      {
+        "a": 1,
+        "b": 2,
+        "st": {
+          "status": "wojna",
+          "truceUntilTurn": null,
+          "peaceUntilTurn": null,
+          "turn": 1
+        }
+      }
+    ],
+    "cityCounts": {
+      "me": 1,
+      "ai0": 0,
+      "citiesLen": 1,
+      "aiOwners": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    "entries": [],
+    "war": {
+      "battle": {
+        "preBattleOpen": false,
+        "pendingAuto": false,
+        "sceneOpen": false,
+        "summaryOpen": false,
+        "resolving": false
+      }
+    }
+  },
+  "lastTurn": 23,
+  "turnTiming": [
+    {
+      "turn": 2,
+      "sec": 0.6,
+      "fast": true
+    },
+    {
+      "turn": 3,
+      "sec": 0.3,
+      "fast": true
+    },
+    {
+      "turn": 4,
+      "sec": 0.4,
+      "fast": true
+    },
+    {
+      "turn": 5,
+      "sec": 0.5,
+      "fast": true
+    },
+    {
+      "turn": 6,
+      "sec": 0.3,
+      "fast": true
+    },
+    {
+      "turn": 7,
+      "sec": 0.5,
+      "fast": true
+    },
+    {
+      "turn": 8,
+      "sec": 0.3,
+      "fast": true
+    },
+    {
+      "turn": 9,
+      "sec": 0.5,
+      "fast": true
+    },
+    {
+      "turn": 10,
+      "sec": 0.4,
+      "fast": true
+    },
+    {
+      "turn": 11,
+      "sec": 0.4,
+      "fast": true
+    },
+    {
+      "turn": 12,
+      "sec": 0.4,
+      "fast": true
+    },
+    {
+      "turn": 13,
+      "sec": 0.4,
+      "fast": true
+    },
+    {
+      "turn": 14,
+      "sec": 0.3,
+      "fast": true
+    },
+    {
+      "turn": 15,
+      "sec": 0.4,
+      "fast": true
+    },
+    {
+      "turn": 16,
+      "sec": 0.3,
+      "fast": true
+    },
+    {
+      "turn": 17,
+      "sec": 0.3,
+      "fast": true
+    },
+    {
+      "turn": 18,
+      "sec": 0.3,
+      "fast": true
+    },
+    {
+      "turn": 19,
+      "sec": 0.4,
+      "fast": true
+    },
+    {
+      "turn": 20,
+      "sec": 0.3,
+      "fast": true
+    },
+    {
+      "turn": 21,
+      "sec": 0.5,
+      "fast": true
+    },
+    {
+      "turn": 22,
+      "sec": 0.4,
+      "fast": true
+    },
+    {
+      "turn": 23,
+      "sec": 0.4,
+      "fast": true
+    }
+  ],
+  "elapsedSec": 137
+}
