@@ -1,3 +1,9 @@
+## ROBOCZA 57aec16c -- 2026-11-14 -- FALA 717: Domyslne podatki 30/60/10 i podzial pracy 50/50 (testowa)
+
+- domyslny podzial podatkow nowej gry Skarb 30 / Nauka 60 / Zamoznosc 10 (AI i stare zapisy 20/60/20); domyslny podzial pracy Ulepszenia pula 50 / Budynki 50
+- Weryfikacja: tsc 0; logic 213/213; default-tax-split 28/0; default-labor-split 16/0; praca-jeden-podzial-kontrakt 634/0; build Vite zielony
+- Limity: NIE ZMIERZONO: zrzut panelu 30/60/10 w Chromium i wplyw 10 proc Zamoznosci na Szczescie; hotseat-ustawienia-kopiowane czerwony na bazie; dlug Rust REPIN
+
 ## ROBOCZA bfecf63e -- 2026-11-14 -- FALA 716: FALA 716 - czestsze oferty handlowe AI: parytet wyceny (testowa)
 
 - Oferta handlowa AI do gracza: wycena przy wejsciu na stol liczona jak przy wyborze pary (mnoznik tur i tempo gry); pomiar 0,22 do 0,89 oferty na 100 tur; uczciwosc bez zmian
