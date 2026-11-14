@@ -1177,3 +1177,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **T2 (ZLOZE-WIRE-WAR-BREAK)** czeka na T1 i na #120 CRED-HAK-WYPOWIEDZENIE (etap b). Etap a (czysta domena) można zrobić po T1.
 - **Pytania ABC #115 i #120:** nadal bez odpowiedzi właściciela, nie startowane.
 - **Parity:** `6acb1d81b`. **Dysk:** do sprawdzenia przed następnym startem.
+
+## Przebieg (14.11, heartbeat 23:18): T1 i T3 po FC PASS-WITH-NOTES; start rozpoznania #106
+- **T1 ZLOZE-WIRE-EXPIRE-TRIBUTE:** FC PASS-WITH-NOTES `d22e75ed6` (baza `6acb1d81b`, 5 plików, w produkcji 7 linii w `turn_war_dipl_steps.rs`). Bramki na `d22e75ed6` w toku (fmt 0, clippy 0; pełny test trwa). FF po wyniku.
+- **T3 ZLOZE-SYNC-MERGE:** FC PASS-WITH-NOTES `3860f5bea` (baza `6acb1d81b`; obrona dopisała test relacji bez wpisu w stanie). Po FF T1: rebase na nowy czubek, bramki, FF. Do zrobienia przy integracji: aktualizacja `NIEPODPIETE-MODULY.md:274` (usunięta funkcja).
+- **Start (1 slot):** `R-RUSTPORT-P6-R7K7C-WIRING-ROZPOZNANIE-Q1` (#106), read-only, dispatch `0bcd26019`, Workflow `wf_5c19030b-5d7`. Ustalenie wstępne: `apply_dipl_deltas_to_state` (`turn_war_dipl_steps.rs:1031`) nie ma wołającego w produkcji; czeka na rozpoznanie odpowiednika w pinie.
+- **Sloty: 1 z 4 zajęty.** Pozostałe kandydaci (T2 ZLOZE-WIRE-WAR-BREAK etap a — po FF T1; WIEZE 2B — po rozpoznaniu wywołania schedule; #120 — pytanie ABC) czekają.
+- **Pytania ABC #115 i #120:** nadal bez odpowiedzi właściciela; w tym przebiegu zadano też pytanie o konwencję trailera `Co-Authored-By` (sprzeczność z zasadą bez nazwy modelu).
+- **Parity:** `6acb1d81b`. **Dysk:** 12 GB wolnego (sprawdzić przy następnym starcie).
