@@ -23,3 +23,20 @@ NIE WOLNO: pushować do parity, integrować, dotykać `gra/`/`origin/main`, comm
 Raport: STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY/BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH (NIE WYKONANO).
 
 REBASE 14.11: baza przepisana z 23e33793e na a381dd13f. Cele zweryfikowane na tej bazie (brak produkcyjnego wołającego potwierdzony przez git grep).
+
+## DODATEK r2 (14.11, decyzja właściciela: „Tak, uruchom r2”)
+- **Baza:** `a381dd13f` (czubek origin/rust-port/parity-v2). Operator r1 stał na `501f78c08` (błąd worktree), więc PRZED pracą: `git -C <worktree> checkout a381dd13f` i potwierdź `git merge-base --is-ancestor a381dd13f HEAD`. Bez tego BLOCK.
+- **Wariant (decyzja techniczna orkiestratora):** B — wrapper po stronie wołającego wg pina `gra/src/main.ts:17814-17828` (zasada 9). Wołający `run_capital_capture_plunder` musi być w produkcyjnej ścieżce zdobycia stolicy (nie w teście). Wariant A (zmiana sygnatury `apply_transfer_with_effects`) odrzucony.
+- **ALLOWLISTA r2 (poszerzona):**
+  - rust-port/engine/src/domain/siege_transfer.rs (wrapper/wołający)
+  - rust-port/engine/src/domain/siege_capital_plunder.rs (tylko jeśli potrzebna zmiana)
+  - rust-port/engine/src/domain/playable.rs (akumulatory zdobyczy, jeśli pin je tam trzyma)
+  - rust-port/engine/tests/p6_zdobycie_wiring*.rs (nowy test)
+  - rust-port/engine/tests/p6_zdobycie_wiring_gen.mjs (generator wektorów z tekstu pina w node)
+  - rust-port/engine/tests/p6_zdobycie_wiring_vectors/ (wygenerowane wektory)
+  - dyspozycje/autobot/runs/R-RUSTPORT-P6-ZDOBYCIE-WIRING-Q1/ (raporty r2)
+- **Test:** wektory z generatora `.mjs` wykonującego tekst pina w node; strażnik SHA-256 wyciętych fragmentów; liczniki niepustości > 0; porównanie akumulatorów zdobyczy. Bez `#[ignore]` i osłabionych asercji.
+- **Bramki (EXIT 0):** `cargo fmt --check`; `cargo clippy --all-targets -- -D warnings`; `cargo test --lib`; nowy test. Odtwórz je samodzielnie.
+- **Dysk:** przed startem `df -h /`. Poniżej 4 GB — STATUS BLOCK z przyczyną DISK, bez kodu.
+- **Kolejność w produkcji:** zgodnie z pinem, po przejęciu miasta i przed akumulacją zdobyczy. Nie zmieniaj kolejności względem pina.
+- **RUNDA:** r2 (dopisz 01-operator-r2.md, 02-evaluator-r2.md itd.). Commit bez nazwy modelu, ostatnia linia `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`. NIE pushuj do parity, NIE integruj, NIE dotykaj gra/ ani origin/main.
