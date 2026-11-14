@@ -79,6 +79,26 @@ function proj(turn, skObecny, skPo, spObecny, spPo) {
   ok(/podatek złota: \+13 złota\/turę/.test(g.komunikat), '(e) komunikat podaje dźwignię podatku z liczbą (13)');
   ok(/rozwiązanie jednostek \(złoto\): \+30 złota\/turę/.test(g.komunikat), '(e) komunikat podaje dźwignię jednostek (30)');
 }
+// (g) łączenie dźwigni: podatek 12 + jednostki 10 razem pokrywają minus skarbca 20 (żadna sama nie wystarcza)
+{
+  const pojedyncze = M.decideEndTurnGate(proj(12, 5, -20, 0, 0), 10, 0, { podatekSkarbiec: 12 });
+  ok(pojedyncze.blokada === true, '(g) podatek 12 + jednostki 10 razem >= 20 -> blokada');
+  ok(pojedyncze.dzwignie.some(d => d.id === 'podatek-skarbiec') && pojedyncze.dzwignie.some(d => d.id === 'rozwiaz-skarbiec'),
+    '(g) obie dźwignie (podatek + jednostki) wymienione w dzwignie');
+  const samPodatek = M.decideEndTurnGate(proj(12, 5, -20, 0, 0), 0, 0, { podatekSkarbiec: 12 });
+  ok(samPodatek.blokada === false, '(g) sam podatek 12 < 20 -> brak blokady (łączenie wymagane)');
+}
+// (h) minus obu zasobów: blokada tylko gdy KAŻDY brak pokryty; spichlerz bez dźwigni blokuje całość
+{
+  const niePokryty = M.decideEndTurnGate(proj(12, 5, -20, 3, -8), 30, 0, { podatekSkarbiec: 5 });
+  ok(niePokryty.blokada === false, '(h) skarbiec pokryty (35>=20), spichlerz bez dźwigni -> brak blokady (brak zakleszczenia)');
+  const spichlerzNiePokryty = M.decideEndTurnGate(proj(12, 5, -20, 3, -8), 30, 6, { podatekSkarbiec: 0 });
+  ok(spichlerzNiePokryty.blokada === false, '(h) skarbiec pokryty, spichlerz 6 < 8 -> brak blokady');
+  const obaPokryte2 = M.decideEndTurnGate(proj(12, 5, -20, 3, -8), 30, 8, { podatekSkarbiec: 0 });
+  ok(obaPokryte2.blokada === true, '(h) minus obu zasobów pokryty przez jednostki (30 >= 20, 8 >= 8) -> blokada');
+  ok(/Skarbiec/.test(obaPokryte2.komunikat) && /Spichlerz/.test(obaPokryte2.komunikat),
+    '(h) komunikat wymienia OBA zasoby na minusie');
+}
 // (f) wiring
 {
   const mainSrc = fs.readFileSync(path.join(GRA_ROOT, 'src', 'main.ts'), 'utf8');
@@ -86,6 +106,8 @@ function proj(turn, skObecny, skPo, spObecny, spPo) {
   ok(/getEndTurnTooltip: \(\) => nnsEndTurnTooltipText\(\)/.test(mainSrc), '(f) main.ts wiąże tooltip przycisku');
   const barSrc = fs.readFileSync(path.join(GRA_ROOT, 'src', 'ui', 'bottomBarHud.ts'), 'utf8');
   ok(/endTipAttr/.test(barSrc) && /getEndTurnTooltip/.test(barSrc), '(f) bottomBarHud ustawia title przycisku');
+  const hudSrc = fs.readFileSync(path.join(GRA_ROOT, 'src', 'ui', 'hud.ts'), 'utf8');
+  ok(/legacyEndTipAttr\(\) \+ '>/.test(hudSrc) && /cfg\?\.getEndTurnTooltip/.test(hudSrc), '(f) legacy hud.ts (renderBarLegacy) ustawia title przycisku Zakończ turę');
 }
 
 console.log(`no-negative-stocks-end-turn-gate-levers-test: ${passed} passed, ${failed} failed`);
