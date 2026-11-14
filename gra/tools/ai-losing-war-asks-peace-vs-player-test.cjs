@@ -79,7 +79,8 @@ async function main() {
     const seenTypes = new Set();
     let everyStateHasOneCmd = true;
     const gaps = [];
-    for (const t of [3, 8, 10, 15, 16, 20, 60]) {
+    // R-WEB-TEST-DEBT-DIPLO-WAR-PEACE-SIM-Q1 r3: t 3 → 10, t 8 → 11 (+ 12 zamiast zdublowanego 10); AI proponuje pokój dopiero od tury 10 wojny (t=8 też łamało bramkę).
+    for (const t of [10, 11, 12, 15, 16, 20, 60]) {
       for (const gold of [0, 500]) {
         for (const nc of [2, 6]) {
           const cmds = decide(t, gold, nc).filter(c => c.targetId === '0');

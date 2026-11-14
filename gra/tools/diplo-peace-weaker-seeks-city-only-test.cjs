@@ -155,7 +155,8 @@ async function main() {
       !weakNoCityGold.some(c => c.type === 'oferuj_trybut_za_pokoj'), weakNoCityGold);
     check('h2 słabsza AI bez miasta do oddania (1 miasto) nie składa propozycji pokoju wobec gracza',
       !weakNoCityGold.some(c => PEACE_CMDS.has(c.type)), weakNoCityGold);
-    const weakCityTruce = aiDecide(5, 5000, 6, 100, 200);
+    // R-WEB-TEST-DEBT-DIPLO-WAR-PEACE-SIM-Q1 r3: 5 → 10 (AI proponuje pokój dopiero od tury 10 wojny; wojna < 20 zachowana).
+    const weakCityTruce = aiDecide(10, 5000, 6, 100, 200);
     check('h3 słabsza AI z 6 miastami, wojna < 20 tur -> oferuj_miasto_za_pokoj z rodzajem rozejm',
       weakCityTruce.length === 1 && weakCityTruce[0].type === 'oferuj_miasto_za_pokoj' && weakCityTruce[0].rodzaj === 'rozejm', weakCityTruce);
     const weakCityPeace = aiDecide(30, 0, 6, 100, 200);

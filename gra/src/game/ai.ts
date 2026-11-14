@@ -6220,6 +6220,7 @@ import {
   aiAllowsOneSidedGoldGift,
   aiAllowsTradeAgreementSweetener,
 } from './diplomacy-ai-offer-balance';
+import { PEACE_PROPOSAL_MIN_WAR_TURNS } from './diplomacy-peace-proposal-timing';
 
 // ---------------------------------------------------------------------------
 // Strojalne progi (eksportowane, by testy mogły je sprawdzić)
@@ -7016,7 +7017,9 @@ export function decideAIDiplomacy(
         )
       : 'pasmo';
     const aiFeelsStronger = rel.stanWojny && peacePosMil === 'silniejsza';
-    const aiPeaceTimeOk = turnsAtWarRel >= warProfile.minTurWojny;
+    // R-WEB-TEST-DEBT-DIPLO-WAR-PEACE-SIM-Q1 r2: AI nie proponuje pokoju przed tą samą bramką czasu co gracz
+    // (PEACE_PROPOSAL_MIN_WAR_TURNS = 10, dla WSZYSTKICH cywilizacji), a nie tylko minTurWojny (zulusi 7).
+    const aiPeaceTimeOk = turnsAtWarRel >= Math.max(warProfile.minTurWojny, PEACE_PROPOSAL_MIN_WAR_TURNS);
 
     // ---- R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): AI ODDAJE miasto zamiast trybutu ----
     // Warunki: wojna z graczem, rw <= 0.15 − 0.01·(agresywność − 5), ≥ 3 miasta, a niezakazane

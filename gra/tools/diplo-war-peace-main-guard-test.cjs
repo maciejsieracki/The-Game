@@ -116,7 +116,8 @@ check('R3(c): zdrowie armii liczone w main (diploArmyHealthShare) i podane do ai
   count(MAIN, 'diploArmyHealthShare(a)') === 1 && AI.includes('armyHealthShare: rel.armyHealthShare'));
 // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: „czuje się silniejsze" = pozycja militarna 'silniejsza' (nie rw).
 check('R3 spojnosc: AI nie proponuje pokoju gdy jest militarnie silniejsza (peacePosMil)',
-  AI.includes("const aiFeelsStronger = rel.stanWojny && peacePosMil === 'silniejsza';") && AI.includes('!aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer') && AI.includes('const aiPeaceTimeOk = turnsAtWarRel >= warProfile.minTurWojny;'));
+  AI.includes("const aiFeelsStronger = rel.stanWojny && peacePosMil === 'silniejsza';") && AI.includes('!aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer') && AI.includes('const aiPeaceTimeOk = turnsAtWarRel >= Math.max(warProfile.minTurWojny, PEACE_PROPOSAL_MIN_WAR_TURNS);'));
+// R-WEB-TEST-DEBT-DIPLO-WAR-PEACE-SIM-Q1 r3: literal bramki czasu zaktualizowany do r2 (AI od tury 10 = max(minTurWojny, PEACE_PROPOSAL_MIN_WAR_TURNS)); stary literal „stary harmonogram” → nowa reguła.
 {
   const mutSpojn = AI.replace("const aiFeelsStronger = rel.stanWojny && peacePosMil === 'silniejsza';", 'const aiFeelsStronger = false;');
   check('mutacja spojnosci R3 (AI proponuje mimo siły militarnej) jest wykrywalna', mutSpojn !== AI);
