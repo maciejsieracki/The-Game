@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "69982981d0c9faf7f87e11b1720b8d0c",
-  "bundleSha256": "b08fbfbf28af2b74dac6f25251823d9199885bc08000cc38e54d58d59f8925c2",
-  "bundleBytes": 14683054,
+  "bundleMd5": "78c3a27842faccfd0098845b40546008",
+  "bundleSha256": "24f315fcd3bb74994d26ee1c3ee3769199fc49aaacc528383141a72c0b555d8c",
+  "bundleBytes": 14683268,
   "sourceSnapshot": {
-    "source": "origin/main 0ff8dfd41 + merge FC 0dafacd81",
+    "source": "AIAI-LABELS FC 52a380ca3/a3efdc702",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 701: gra/src/game/det-digest-normalize.ts + blok __detHarness.digest w main.ts: stackGroupId i city.siegeArmyGroupId normalizowane do kanonicznych indeksow (tylko hak testowy ?civTest=1, zero zmian logiki gry)"
+    "FALA 702: Karta rozmowcy w wojnie AI-AI pokazuje na liscie W stanie wojny z etykiety obu stron (rozmowca i partner): Desperacja albo Zmeczenie wojna z nazwa strony; tylko odczyt, wojny gracz-AI bez zmian (R-WEB-UI-DIPLO-PANEL-AIAI-BOTH-LABELS-Q1)"
   ],
   "verification": [
-    "tsc 0; logic 213/213; determinism-digest-stackgroup-test 5/5 (mutacje FAIL); tech-tree 20/0, research 33/0, unit-replace 21/21, combat 6/6 (FC/Operator); live Chromium 2x22 tury identyczne digesty (Evaluator)"
+    "tsc 0, logic 213/213, nowy test 17/0 (baza 8/9), diplo-weariness display 52/0 i 20-turns 30/0, 5 bramek zielone"
   ],
   "limits": [
-    "Wiecej ziaren, przebiegi powyzej 22 tur i stare zapisy nie zmierzone; sam freshStackGroupId nadal uzywa Date.now (decyzja o formacie ID poza zakresem)"
+    "Nie zmierzono w Chromium (zrzut karty rozmowcy w wojnie AI-AI); czesc B testu statyczna"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES cb17a63ef (DIGEST-NORM): digest stanu __detHarness (hak testowy ?civTest=1) normalizuje stackGroupId i city.siegeArmyGroupId (Date.now w armyMerge.ts:75) do kanonicznych indeksow - dwa przebiegi tego samego ziarna maja identyczne digesty bez zamrazania zegara (Evaluator live: 22/22 na ziarnach 271828 i 314159; baza rozjezdza sie w T18-22); test 5/5, mutacje FAIL. Zero zmian logiki gry. NIE ZMIERZONO: wiecej ziaren, przebiegi >22 tury, stare zapisy."
+    "notes": "FC PASS-WITH-NOTES 52a380ca3 (AIAI-LABELS): na karcie rozmowcy w wojnie AI-AI lista W stanie wojny z pokazuje obie strony wojny (rozmowca i partner): Desperacja albo Zmeczenie wojna z nazwa strony; tylko odczyt, wojny gracz-AI bez zmian. Test diplo-panel-aiai-both-labels 17/0 (baza 8/9, mutacje FAIL), tsc, 5 bramek, 4 testy diplo-weariness zielone. NIE ZMIERZONO: weryfikacja w Chromium (zrzut karty rozmowcy w wojnie AI-AI), czesc B testu statyczna."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-14T09:04:55",
+  "hubGeneratedAt": "2026-11-14T11:03:27",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "69982981d0c9faf7f87e11b1720b8d0c",
-      "sizeBytes": 14683054
+      "md5": "78c3a27842faccfd0098845b40546008",
+      "sizeBytes": 14683268
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "69982981d0c9faf7f87e11b1720b8d0c",
-      "sizeBytes": 14683054
+      "md5": "78c3a27842faccfd0098845b40546008",
+      "sizeBytes": 14683268
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "69982981d0c9faf7f87e11b1720b8d0c",
-      "sizeBytes": 14683054
+      "md5": "78c3a27842faccfd0098845b40546008",
+      "sizeBytes": 14683268
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "69982981d0c9faf7f87e11b1720b8d0c",
-      "sizeBytes": 14683054
+      "md5": "78c3a27842faccfd0098845b40546008",
+      "sizeBytes": 14683268
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "69982981d0c9faf7f87e11b1720b8d0c",
-      "sizeBytes": 14683054
+      "md5": "78c3a27842faccfd0098845b40546008",
+      "sizeBytes": 14683268
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "69982981d0c9faf7f87e11b1720b8d0c",
-      "sizeBytes": 14683054
+      "md5": "78c3a27842faccfd0098845b40546008",
+      "sizeBytes": 14683268
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "69982981d0c9faf7f87e11b1720b8d0c",
-      "sizeBytes": 14683054
+      "md5": "78c3a27842faccfd0098845b40546008",
+      "sizeBytes": 14683268
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "69982981d0c9faf7f87e11b1720b8d0c",
-      "sizeBytes": 14683054
+      "md5": "78c3a27842faccfd0098845b40546008",
+      "sizeBytes": 14683268
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "69982981d0c9faf7f87e11b1720b8d0c",
-      "sizeBytes": 14683054
+      "md5": "78c3a27842faccfd0098845b40546008",
+      "sizeBytes": 14683268
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "69982981d0c9faf7f87e11b1720b8d0c",
-      "sizeBytes": 14683054
+      "md5": "78c3a27842faccfd0098845b40546008",
+      "sizeBytes": 14683268
     }
   ],
-  "md5": "69982981d0c9faf7f87e11b1720b8d0c",
+  "md5": "78c3a27842faccfd0098845b40546008",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
