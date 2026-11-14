@@ -1,3 +1,9 @@
+## ROBOCZA c84369bc -- 2026-11-14 -- FALA 699: Panel oblezenia nie przyciety u dolu + hak testowy W18 (testowa)
+
+- gra/src/ui/siegeMapPanel.ts: przyciski Oblegaj/Szturm/Odwrot w nieprzewijanym doku, nakladka nad dolnym banerem HUD (fitOverlayAboveBottomBar, resize); hak ?civTest=1 (startPlayerSiege, setResearchedTechs, siegeOptions, fundPlayer) bez logiki gry
+- Weryfikacja: tsc 0; logic 213/213; test panelu oblezenia na buildzie wdrozeniowym PASS (1280x800: przyciski 525-653 przy limicie 700; 1024x768: 493-621 przy limicie 668), ten sam test na bazie FAIL; tech-tree 20/0, research 33/0, unit-replace 21/21, combat 6/6 (FC)
+- Limity: Telefon, klikalnosc, inne przegladarki niz Chromium, okna nizsze niz ~700 px nie zmierzone; machiny wymagaja przewiniecia panelu
+
 ## ROBOCZA 094e9a29 -- 2026-11-13 -- FALA 698: Lewy baner HUD w waskim oknie nie wystaje nad gorna krawedz (testowa)
 
 - w trybie fallback lewego banera (okno <1000 px szerokosci) powloka ma 88 px zamiast 56 px, wiec siatka chipow 2x3 nie wystaje 6 px nad gorna krawedz okna (800x600, 800x720, 800x900); uklad od 1000 px bez zmian
