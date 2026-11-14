@@ -74,7 +74,8 @@ const EXPECT = {
   '+Murarstwo|z palisada': ['mury_kamienne'],
   '+Murarstwo|z murami kamiennymi': [],
   '+Budownictwo|miasto bez muru': ['mury'],
-  '+Budownictwo|z palisada': ['mury'],
+  // Awans (nie nowa budowa): palisada stoi -> Mury kamienne i Mury ceglane pozostaja ulepszeniami (dispatch d).
+  '+Budownictwo|z palisada': ['mury_kamienne', 'mury'],
   '+Budownictwo|z murami kamiennymi': ['mury'],
 };
 

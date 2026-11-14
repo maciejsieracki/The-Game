@@ -26,6 +26,8 @@ Obrona miasta jest **wyłącznie procentowa** — Mury dają **+200% Obrony** je
 
 **Maks. 2 poziomy** (nie 10). Każdy poziom kosztuje więcej pracy (+**12** od poprzedniego). Po ukończeniu Murów ceglane zastępują Mury kamienne (+150%) albo Palisadę (+100%).
 
+**Nowa budowa:** gdy odblokowane jest Budownictwo, Mury ceglane są jedyną pozycją łańcucha na liście budowy — Palisada i Mury kamienne znikają (zgłoszenie właściciela). Ulepszenie już stojącej Palisady lub Murów kamiennych na Mury ceglane pozostaje dostępne.
+
 **Cytadela** i **Baszta** to **osobne** budynki obok Murów (nie upgrade tego samego slotu) — mogą dokładać kolejne +100% każda (razem z murami do **+400%**).
 
 ### Koszty

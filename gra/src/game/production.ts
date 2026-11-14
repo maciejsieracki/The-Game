@@ -869,9 +869,14 @@ function isWallTierBlockedByStrongerWall(
   buildings: readonly (UpgradeChainNode & { techUnlock?: string })[],
   unlockedTechs: ReadonlySet<string>,
 ): boolean {
-  // R-WEB-UI-FORTIFICATIONS-HIDE-SUPERSEDED-WALL-BUILD-OPTIONS-Q1: nowa budowa niższego etapu znika,
-  // gdy tech wyższego etapu jest odblokowany (ulepszenie już zbudowanego niższego zostaje — awans).
-  if (isFortificationSupersededForBuild(buildingId, unlockedTechs, buildings)) return true;
+  // R-WEB-UI-FORTIFICATIONS-HIDE-SUPERSEDED-WALL-BUILD-OPTIONS-Q1: NOWA budowa niższego etapu znika,
+  // gdy tech wyższego etapu jest odblokowany. Ulepszenie już zbudowanego niższego etapu (awans, np.
+  // Palisada -> Mury kamienne lub Palisada/Mury kamienne -> Mury ceglane) NIE jest ukrywane (zgłoszenie
+  // właściciela: „każdy z tych wcześniejszych murów może być zmieniony przez ulepszenie").
+  if (
+    skipChainUpgradeSource(buildingId, builtIds, buildings) === null &&
+    isFortificationSupersededForBuild(buildingId, unlockedTechs, buildings)
+  ) return true;
   const existsOrQueued = (id: string) => builtIds.includes(id) || buildingTypeQueued(id, queue);
   const higher = skipChainHigherIds(buildingId, buildings);
   if (higher.length > 0) {

@@ -111,14 +111,14 @@ console.log('\n=== (2) SCENARIUSZ: Palisada -> Mury kamienne -> Mury ceglane PRZ
   const rows = [];
   const snap = (turn, label) => { const s0 = snapshot(`${turn} ${label}`, built, queue); rows.push({ turn, built: built.slice(), gold: s0.gold, bonus: s0.bonus }); return s0; };
   snap('T0', 'start');
-  // R-WEB-UI-FORTIFICATIONS-HIDE-SUPERSEDED-WALL-BUILD-OPTIONS-Q1: przy odblokowanym Budownictwie nowa budowa
-  // palisady i murow kamiennych znika; od zera oferowany jest tylko najwyzszy odblokowany etap (przeskok).
-  assert(idsOf(built, queue).includes('mury') && !idsOf(built, queue).includes('palisada') && !idsOf(built, queue).includes('mury_kamienne'), 'S0 od zera (wszystkie techy): oferowane tylko mury ceglane, palisada i mury kamienne znikaja');
+  // R-WEB-UI-FORTIFICATIONS-HIDE-SUPERSEDED-WALL-BUILD-OPTIONS-Q1: od zera (Budownictwo odblokowane) nowa budowa
+  // palisady i murow kamiennych znika; oferowany jest tylko najwyzszy odblokowany etap (przeskok).
+  assert(idsOf(built, queue).includes('mury') && !idsOf(built, queue).includes('palisada') && !idsOf(built, queue).includes('mury_kamienne'), 'S0 od zera (wszystkie techy): oferowane tylko mury ceglane (przeskok), palisada i mury kamienne znikaja');
   const p1 = pay(cs, 'palisada'); queue = [item('palisada')]; snap('T1', 'palisada w kolejce');
   built = M.applyCompletedBuildingIds(built, 'palisada', buildings); queue = [];
   const s2 = snap('T2', 'palisada ukonczona');
-  assert(idsOf(built, queue).includes('mury') && !idsOf(built, queue).includes('palisada') && !idsOf(built, queue).includes('mury_kamienne'), 'S1 po palisadzie (wszystkie techy): awans na mury ceglane (przeskok), palisada i mury kamienne nie oferowane');
-  assert(nameOf(built, queue, 'mury') === 'Rozbuduj Palisada drewniana → Mury ceglane', 'S1b etykieta "Rozbuduj Palisada drewniana -> Mury ceglane" (jest: ' + nameOf(built, queue, 'mury') + ')');
+  assert(idsOf(built, queue).includes('mury_kamienne') && idsOf(built, queue).includes('mury') && !idsOf(built, queue).includes('palisada'), 'S1 po palisadzie wyzsze etapy oferowane jako awans, palisada nie');
+  assert(nameOf(built, queue, 'mury_kamienne') === 'Rozbuduj Palisada drewniana → Mury kamienne', 'S1b etykieta "Rozbuduj Palisada drewniana -> Mury kamienne" (jest: ' + nameOf(built, queue, 'mury_kamienne') + ')');
   const p2 = pay(cs, 'mury_kamienne'); queue = [item('mury_kamienne')];
   snap('T3', 'awans na mury kamienne w kolejce (palisada stoi)');
   assert(idsOf(built, queue).length === 0, 'S2 gdy awans czeka w kolejce, NIE da sie zamowic innego etapu lancucha (jeden etap naraz)');

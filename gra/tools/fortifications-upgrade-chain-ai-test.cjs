@@ -85,8 +85,7 @@ console.log('\n=== A1: palisada stoi, kopia obronna pod zagrozeniem ===');
   const r = aiCandidates(['palisada'], []);
   console.log('  kandydaci:', r.all.join(', '), '| lancuch:', r.chain.join(', ') || '-');
   assert(!r.chain.includes('palisada'), 'A1a AI nie proponuje palisady, gdy juz stoi');
-  // R-WEB-UI-FORTIFICATIONS-HIDE-SUPERSEDED-WALL-BUILD-OPTIONS-Q1: Budownictwo odblokowane -> Mury kamienne znikaja, awans z palisady idzie na Mury ceglane.
-  assert(r.chain.includes('mury') && !r.chain.includes('mury_kamienne'), 'A1b AI proponuje awans na Mury ceglane (Mury kamienne znikaja po Budownictwie)');
+  assert(r.chain.includes('mury_kamienne'), 'A1b AI proponuje awans na Mury kamienne');
 }
 
 console.log('\n=== A2: mury kamienne stoja ===');
@@ -132,6 +131,18 @@ console.log('\n=== A4: symulacja decyzji AI (wybor -> kolejka -> ukonczenie) ===
   const rank = id => CHAIN.indexOf(id);
   assert(maxStanding <= 1, 'A4a w miescie nigdy wiecej niz jedna fortyfikacja lancucha');
   assert(paid.every((id, i) => i === 0 || rank(id) > rank(paid[i - 1])), 'A4b kazdy kolejny zaplacony etap jest WYZSZY od poprzedniego (awans, brak doplat za ten sam/nizszy)');
+}
+
+console.log('\n=== A5 (R-WEB-UI-FORTIFICATIONS-HIDE-SUPERSEDED-WALL-BUILD-OPTIONS-Q1): od zera przy odblokowanym Budownictwie ===');
+{
+  // Nowa budowa przestarzalego muru (palisada, Mury kamienne) nie moze trafic do wyboru AI,
+  // gdy odblokowany jest tech wyzszego etapu. Test egzekwuje to przez REALNY gate (availableProduction).
+  const r0 = aiCandidates([], []);
+  console.log('  kandydaci (od zera):', r0.all.join(', ') || '-', '| lancuch:', r0.chain.join(', ') || '-');
+  assert(!r0.all.includes('palisada') && !r0.all.includes('mury_kamienne'), 'A5a od zera (Budownictwo odblokowane) AI nie wybiera palisady ani Murow kamiennych');
+  const r1 = aiCandidates(['mury_kamienne'], []);
+  console.log('  kandydaci (stoja kamienne):', r1.all.join(', ') || '-', '| lancuch:', r1.chain.join(', ') || '-');
+  assert(!r1.all.includes('palisada') && !r1.all.includes('mury_kamienne'), 'A5b mury kamienne stoja + Budownictwo: AI nie wybiera palisady ani drugich Murow kamiennych');
 }
 
 console.log(`\nWYNIK: ${pass} OK, ${fail} FAIL`);
