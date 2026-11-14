@@ -173,6 +173,7 @@ import { daninaLabel, daninaLabelGenitive, daninaLabelAccusative, type DaninaLab
 import type { CityManpowerSnapshot } from '../game/manpower';
 import { civManpowerMaxMult, cityLudnoscAbsolutna, formatManpowerCompact, formatObywateleLabel, unitManpowerCost, unitManpowerCostForType } from '../game/manpower';
 import { defaultOwnerColor, mountUnitMiniPreview } from './unitMiniPreview';
+import { unitEngineStats } from './unitEngineStats';
 import {
   unitInfographicMedallionHtml,
   unitInfographicSvg,
@@ -8205,14 +8206,16 @@ function _legacyBuildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivElement 
     if (val == null || isEmptyDataVal(val)) return;
     gridDetailRow(gFight, label, fmt && typeof val === 'number' ? fmt(val) : String(val));
   };
-  fight('Atak w zwarciu', u.Atak);
-  fight('Obrona', u.Obrona);
-  fight('Obrażenia broni', u.Uderzenie);
-  fight('Pancerz', u.Pancerz);
-  fight('Przebicie', u.Przebicie);
+  // Wartości bojowe = silnik walki (ABC nr 8 = A, 2026-11-14), nie kolumny PL.
+  const es = unitEngineStats(u as unknown as Record<string, unknown>);
+  fight('Atak w zwarciu', es.atak);
+  fight('Obrona', es.obrona);
+  fight('Obrażenia broni', es.obrazeniaBroni);
+  fight('Pancerz', es.pancerz);
+  fight('Przebicie', es.przebicie);
   fight('Bonus szarży', unitExtraField(u, 'Bonus szarży'));
-  fight('Atak dystansowy', u['Atak dystansowy']);
-  fight('HP', u.Health);
+  fight('Atak dystansowy', es.atakDystansowy > 0 ? es.atakDystansowy : null);
+  fight('HP', es.hp);
   fight('Ruch (mapa)', u.Ruch, n => `${n} hex`);
   fight('Ruch (bitwa)', u['Ruch w bitwie (heksy)'], n => `${n} hex`);
   fight('Zasięg', u['Zasięg ataku (hex)']);

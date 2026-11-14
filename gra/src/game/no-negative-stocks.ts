@@ -10,8 +10,8 @@
  *  - R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1 (2026-11-14): dla GRACZA liczy się
  *    WYŁĄCZNIE prognoza po turze, od tury 1 (bez wyjątku 1–10, bez porównania z stanem obecnym).
  *    Prognoza < 0 po reakcji automatu zarządzania → blokada, o ile istnieje ręczna dźwignia.
- *    Brak dźwigni = brak blokady (bez softlocku). AI: `NNS_WOLNE_TURY` nadal wyłącza równoważenie
- *    AI w turach 1–10 (bez zmian w tym temacie).
+ *    Brak dźwigni = brak blokady (bez softlocku). AI równoważy od tury 1
+ *    (`NNS_AI_BALANCE_TURN_MIN = 1`, decyzja 2026-11-14).
  *  - Gracz zawsze ma ruch naprawczy (podatek, racje, rozwiązanie jednostki); `czyRuchNaprawczy`
  *    sprawdza, czy dostępne dźwignie pokrywają brak. Kolejka produkcji NIE jest dźwignią gracza
  *    (R-WEB-NNS-GATE-REMOVE-QUEUE-LEVER-Q1: prognoza gracza jej nie zawiera; AI ma własny plan).
@@ -345,8 +345,8 @@ export function projectNnsAfterTick(
 // R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1 (etap C2) — równoważenie AI po ticku.
 // ---------------------------------------------------------------------------
 
-/** Pierwsza tura, od której równoważenie AI jest aktywne (tury 1–10 wolne). */
-export const NNS_AI_BALANCE_TURN_MIN = NNS_WOLNE_TURY + 1;
+/** Pierwsza tura, od której równoważenie AI jest aktywne (od tury 1; wyjątek 1–10 dotyczy wyłącznie gracza). */
+export const NNS_AI_BALANCE_TURN_MIN = 1;
 
 /**
  * Flaga równoważenia AI (jedno miejsce). Domyślnie włączona. Wyłączenie jest używane

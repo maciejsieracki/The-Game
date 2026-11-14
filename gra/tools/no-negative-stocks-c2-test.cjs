@@ -3,7 +3,7 @@
  * no-negative-stocks-c2-test.cjs — R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1 (etap C2, runda 3 obrony).
  *
  * Sprawdza:
- *  - decideAiOwnerBalance: brama tury (tury 1–10 wolne), flaga wylaczona (mutacja pomiarowa
+ *  - decideAiOwnerBalance: brama tury (AI od tury 1; wyjatek 1–10 tylko gracz), flaga wylaczona (mutacja pomiarowa
  *    w logice: bez minusa nie ma wstrzymania ani rozwiazania), wstrzymanie zakupow,
  *    wybor jednostek wsparcia od najdrozszej, brak rozwiazania jednostek obronnych,
  *  - kara deficytu Zlota przy WYMUSZONYM minusie skarbca (advanceGoldDeficit +
@@ -67,10 +67,12 @@ const levers = M.buildAiLevers({
   jednostkiObronne: [{ id: 'mur', stock: 'skarbiec', zysk: 5, koszt: 50 }],
 });
 
-// Brama tury: tury 1–10 wolne.
-ok(M.NNS_AI_BALANCE_TURN_MIN === 11, 'prog tury = 11');
+// Brama tury: AI równoważy od tury 1 (R-WEB-NNS-AI-BALANCE-FROM-TURN1-Q1); wyjątek 1–10 tylko dla gracza.
+ok(M.NNS_AI_BALANCE_TURN_MIN === 1, 'prog tury = 1');
 const wolna = M.decideAiOwnerBalance(10, -5, 0, levers);
-ok(wolna.aktywne === false && wolna.rozwiazJednostki.length === 0, 'tura 10: brak rownowazenia');
+ok(wolna.aktywne === true && wolna.wstrzymajZakupy === true, 'tura 10: AI równoważy');
+const tur1Ai = M.decideAiOwnerBalance(1, -5, 0, levers);
+ok(tur1Ai.aktywne === true && tur1Ai.wstrzymajZakupy === true, "tura 1: AI równoważy");
 
 // Brak minusu: nieaktywne.
 const czysto = M.decideAiOwnerBalance(20, 100, 100, levers);

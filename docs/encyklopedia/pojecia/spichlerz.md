@@ -72,3 +72,7 @@ Kod: `gra/src/game/no-negative-stocks.ts`, `main.ts` (`nnsGateForPlayer`, `decid
 ## Poradnik‑L
 
 → `docs/PORADNIK-GRACZA/06-miasto-spoleczenstwo.md` §39 · karta budynku: `encyklopedia/budynki/spichlerz.md`
+
+---
+
+Zobacz też: [Osłabienie w bitwie — głód wojska i deficyt złota](oslabienie-glod-deficyt.md).

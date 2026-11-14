@@ -770,6 +770,7 @@ import {
   type BattleSummaryWinner,
 } from './game/battle-summary';
 import type { PreBattleInfo, PreBattleUnit, PreBattleModifier } from './ui/preBattle';
+import { buildWeakenedNote, type WeakenedNote } from './ui/battle-weakened-note';
 import { showHud, updateHud as refreshD1bHudRaw, hideHud, markMinimapDirty, updateMinimapViewport } from './ui/hud';
 import { createScopeMemo, hudPureScope, scopeObjectId } from './game/frame-memo';
 import {
@@ -7519,6 +7520,7 @@ async function boot(): Promise<void> {
 
     function nnsAiPreTickBalance(ctx: NnsPreCtx): void {
       aiNnsHoldOwners.clear();
+      aiNnsUncoveredOwners.clear();
       if (turn < NNS_AI_BALANCE_TURN_MIN) return;
       const tTurn0 = performance.now();
       if (nnsUnitUpkeepTblCache === null) {
@@ -7659,6 +7661,7 @@ async function boot(): Promise<void> {
               if (cur.skPo >= 0 && cur.spPo >= 0) break;
             }
             pokryte = cur.skPo >= 0 && cur.spPo >= 0;
+            if (cur.skPo < 0) aiNnsUncoveredOwners.add(oid);
             if (!pokryte) {
               wyjatek = 'brak dostępnych dźwigni: pozostało skarbiec=' + Math.round(cur.skPo) + ' spichlerz=' + Math.round(cur.spPo)
                 + ' (obecny skarbiec=' + Math.round(first.sk0) + ' spichlerz=' + Math.round(first.sp0)
@@ -10743,6 +10746,8 @@ async function boot(): Promise<void> {
     const aiSkarbiecByOwner = new Map<number, number>();
     // C2/C3 (R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1): AI wstrzymane w tej turze (wypełniane w nnsAiPreTickBalance).
     const aiNnsHoldOwners = new Set<number>();
+    // R-WEB-NNS-AI-TURN2-NEGATIVE-TREASURY-Q1: AI, których skarbiec po równoważeniu nadal < 0 (dźwignie wyczerpane).
+    const aiNnsUncoveredOwners = new Set<number>();
     /** R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1: przychód BRUTTO złota AI z ostatniego ticku
      *  (aiEcon.pieniadz z bloku bankowania AI) -- baza prognozy dochodu netto w
      *  aiPurchaseReserveInputs. Brak wpisu (tura 1, po wczytaniu zapisu) = reguła rezerwy
@@ -20958,6 +20963,18 @@ async function boot(): Promise<void> {
         // R-WEB-PEACE-CITY-CESSION-Q1 r3: akcja propozycji — bramka pozycji 'miasto' (pokój/wasal).
         actionId: converted.actionId,
       };
+      // R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 (r3, O1 PARYTET WYCENY): wymiana cykliczna wycenia
+      // PN dokladnie tymi opcjami co wybor pary (pickAiPlayerCyclicBarter, pnOpts): mnoznik
+      // tur (per_turn) i tempoGry. Bez tego wejscie na stol liczy PN 10x mniej niz wybor pary
+      // (pomiar r3: enqGive=10 vs pickGive=100), trimming i bramki uczciwosci dzialaja na innej
+      // skali i oferta odpada. Inne typy ofert: opcje bez zmian (pnCyclicOpts === pnBalanceOpts).
+      const pnCyclicOpts = workingCmd.type === 'zaproponuj_wymiane_cykliczna'
+        ? {
+          ...pnBalanceOpts,
+          tempoGry: player.tempoGry ?? 'standardowa',
+          ...proposalPnTurnsMultiplier(clampedPayload),
+        }
+        : pnBalanceOpts;
       // R-DYPLOMACJA-BILANS-UNIFIKACJA-Q1 (GOAL b, recon jawny w raporcie Operatora):
       // generator dostał opcjonalny 5. param `fairness` (multiplier/treatyBasePn) — patrz
       // diplomacy-ai-offer-balance.ts. CELOWO NIE przekazany tutaj: w tym jedynym realnym
@@ -20972,12 +20989,19 @@ async function boot(): Promise<void> {
       // składników jest `generateCounterOffer` (diplomacy-proposals.ts) — kontroferta AI
       // na propozycję GRACZA, gdzie proposerOwnerId=gracz/responderOwnerId=AI odwraca oba
       // warunki na "aktywne"; poza allowlistą tego main.ts (WYŁĄCZNIE ten jeden call site).
-      const balancedPayload = trimProposalForZeroBalance(
-        clampedPayload,
-        relationTotal(relForBalance),
-        difficultyForBalance,
-        pnBalanceOpts,
-      );
+      // R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 (r3, O1): wymiana cykliczna jest juz wyrownana przez
+      // wybor pary (pickAiPlayerCyclicBarter: te same opcje PN, bramka uczciwosci, podglad gracza).
+      // Trim po wyborze zmienial wybrany payload (pomiar r3: receive 10 -> 0) i oferta zawsze
+      // odpadala w bramce givePn > receivePn. Dla wymiany cyklicznej trim pomijamy; gracz nadal
+      // ma podglad „Przyjmij" i filtr bilansu PW (ponizej).
+      const balancedPayload = workingCmd.type === 'zaproponuj_wymiane_cykliczna'
+        ? clampedPayload
+        : trimProposalForZeroBalance(
+          clampedPayload,
+          relationTotal(relForBalance),
+          difficultyForBalance,
+          pnBalanceOpts,
+        );
       if (
         !peaceBareAllowed
         && !balancedPayload.giveItems?.length
@@ -20994,7 +21018,7 @@ async function boot(): Promise<void> {
       if (
         sensibleBalanceFilterApplies(isDiploSensibleDealsEnabled(), workingCmd.type)
         && !isPlayerBalanceAcceptable(
-          aiProposalPlayerBenefitSurplus(balancedPayload, relationTotal(relForBalance), pnBalanceOpts),
+          aiProposalPlayerBenefitSurplus(balancedPayload, relationTotal(relForBalance), pnCyclicOpts),
         )
       ) {
         console.log(`[Dyplomacja] AI${ownerId} ${workingCmd.type}: odrzucone (bilans PW gracza < 0)`);
@@ -21008,7 +21032,7 @@ async function boot(): Promise<void> {
         return;
       }
       if (workingCmd.type === 'zaproponuj_wymiane_cykliczna') {
-        const { givePn, receivePn } = resolveProposalPn(balancedPayload, pnBalanceOpts);
+        const { givePn, receivePn } = resolveProposalPn(balancedPayload, pnCyclicOpts);
         const exactEvalCtx = buildProposalEvalContext(ownerId, ME());
         if (handelFairnessGate(givePn, receivePn, AI_PROPOSER_FAIRNESS_REL_TOTAL, 1)) return;
         // R-WEB-AI-TRADE-WIRING-E2E-Q1 r3 (A1): gorny limit — AI nie oddaje wiecej PW niz dostaje
@@ -24304,6 +24328,14 @@ async function boot(): Promise<void> {
       };
     }
 
+    /** R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 (r3, O1): para przechodzi wejście na stół tylko gdy clamp do realnych zasobów nie zmienia koszyka. */
+    function payloadKeepsRealResourcesForPick(ownerId: number, payload: import('./game/diplomacy-proposals').ProposalPayload): boolean {
+      const clamped = clampAiProposalPayloadToRealResources(ownerId, payload);
+      if (!clamped) return false;
+      return JSON.stringify([clamped.giveItems ?? [], clamped.receiveItems ?? []])
+        === JSON.stringify([payload.giveItems ?? [], payload.receiveItems ?? []]);
+    }
+
     function pickAiPlayerCyclicBarter(ownerId: number): ReturnType<typeof selectAiTradeBarter> {
       if (!ownerHasTradeTech(ownerId) || !ownerHasTradeTech(ME())) return null;
       const turns = AI_RESOURCE_TRADE_DEFAULT_TURNS;
@@ -24362,7 +24394,12 @@ async function boot(): Promise<void> {
             difficulty: _menuDifficulty,
             proposerOwnerId: ownerId,
             tempoGry: player.tempoGry ?? 'standardowa',
-          })?.accepted ?? true),
+          })?.accepted ?? true)
+          // R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 (r3, O1 parytet): wejscie na stol clampuje koszyk do
+          // zasobow realnych na caly czas wymiany (clampAiProposalPayloadToRealResources, turnsMult).
+          // Wybor pary sprawdza tylko podazny nadwyzke na tura; pomiar r3: para wybrana, po clampie
+          // receive 10 -> 0 i oferta odpadala. Wybieramy wiec wylacznie pary, ktore clamp przechodzi bez zmian.
+          && payloadKeepsRealResourcesForPick(ownerId, payload),
       });
     }
 
@@ -34860,6 +34897,26 @@ async function boot(): Promise<void> {
       return leaderNameFromPool(civ, idx, era);
     }
 
+    /**
+     * R-WEB-BATTLE-WEAKENED-HUNGER-DEFICIT-WARNING-Q1: ostrzeżenie w oknie przed bitwą o karze
+     * głodu wojska / deficytu Złota strony (TYLKO WYŚWIETLANIE). Flagi te same co w
+     * runtimeToBattleUnit (isArmyHungry/isGoldDeficit && !cywil); mnożniki z econ-params --
+     * te same wartości, które dostaje silnik (buildEmpireFoodParams / buildGoldDeficitParams).
+     */
+    function preBattleWeakenedForRoster(roster: RuntimeUnit[]): WeakenedNote | undefined {
+      const ownerId = roster[0]?.ownerId ?? 0;
+      const hasFighters = roster.some(u => !isCivilianUnit(u));
+      const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
+      const gdParams = buildGoldDeficitParams(data.econParams, _menuDifficulty);
+      return buildWeakenedNote({
+        hungry: hasFighters && isArmyHungry(ownerId),
+        goldDeficit: hasFighters && isGoldDeficit(ownerId),
+        glodWojskaMult: efParams.glodWojskaStatMult,
+        zlotoDeficytMult: gdParams.zlotoDeficytStatMult,
+        barbarian: isBarbarian(ownerId),
+      });
+    }
+
     function preBattleSideFromRoster(roster: RuntimeUnit[], title: string, civLabel: string): PreBattleInfo['atakujacy'] {
       const ownerId = roster[0]?.ownerId ?? 0;
       return {
@@ -34875,6 +34932,7 @@ async function boot(): Promise<void> {
         // dostawal portret/ikone Grecji zamiast wlasnego sygnetu. Flaga isBarbarian ma
         // pierwszenstwo nad civId w renderze (preBattle.ts / battleScene.ts).
         isBarbarian: isBarbarian(ownerId),
+        oslabienie: preBattleWeakenedForRoster(roster),
         units: roster.map(preBattleUnitFromRuntime),
       };
     }
@@ -38138,6 +38196,7 @@ async function boot(): Promise<void> {
       eraForOwnerId: empireEpochForOwner,
       civIdForOwner: civTypeForOwner,
       isCityStateForOwner: (ownerId: number) => isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
+      oslabienieForRoster: preBattleWeakenedForRoster,
       lookupUnitDef,
       runtimeToBattleUnit,
       fortifyScaledDefFor: combatPowerScaledDefFor,
@@ -40690,6 +40749,10 @@ async function boot(): Promise<void> {
               // (nnsAiPreTickBalance, wywołane przed advanceCityEconomy). Tu tylko rejestr pomiarowy:
               // skarbiec po bankowaniu i surowy spichlerz (przed klamrą do 0) tej tury.
               nnsRecordPostBank(oid, aiSkarb);
+              // R-WEB-NNS-AI-TURN2-NEGATIVE-TREASURY-Q1: dług AI, którego nie da się pokryć dźwigniami (np. 1 miasto,
+              // utrzymanie > dochód przy podatku 100% i bez jednostek poza obrońcą), nie narasta z tury na turę:
+              // skarbiec AI zamknięty w 0 (tylko owner z `aiNnsUncoveredOwners`; reszta bankowania bez zmian).
+              if (aiNnsUncoveredOwners.has(oid) && aiSkarb < 0) aiSkarb = 0;
               aiSkarbiecByOwner.set(oid, aiSkarb);
 
               // Pula Nauki AI — symetryczna z graczem (totalNauka z ekonomii miast) + bonus trudności.

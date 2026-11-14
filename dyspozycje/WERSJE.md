@@ -1,3 +1,57 @@
+## ROBOCZA bfecf63e -- 2026-11-14 -- FALA 716: FALA 716 - czestsze oferty handlowe AI: parytet wyceny (testowa)
+
+- Oferta handlowa AI do gracza: wycena przy wejsciu na stol liczona jak przy wyborze pary (mnoznik tur i tempo gry); pomiar 0,22 do 0,89 oferty na 100 tur; uczciwosc bez zmian
+- Weryfikacja: tsc 0; logic 213/213; ai-trade-offer-frequency-up 28/0; proposal-branch 10/0; proposal-to-player 25; vite build OK
+- Limity: Cel 3-6 ofert na 100 tur nieosiagniety (0,89); wymagana decyzja wlasciciela A/B/C/D; limit 1 oferty na AI na zywo NIE ZMIERZONO
+
+## ROBOCZA 31c3b98b -- 2026-11-14 -- FALA 715: FALA 715 - Civpedia: oslabienie przez glod i deficyt, poprawione teksty (testowa)
+
+- Nowe haslo Civpedii o oslabieniu jednostek przez glod wojska i deficyt zlota (gracz i AI, bez barbarzyncow); poprawione nieaktualne teksty niewdrozone; wikiBundle
+- Weryfikacja: tsc 0; logic 213/213; ui-text-leftovers zielone; diplo-civpedia-values 129; vite build OK
+- Limity: Tylko tresc Civpedii; zdarzenia Respektu przewaga militarna i slabszy militarnie niepodpiete w kodzie (osobny temat)
+
+## ROBOCZA 052dc9aa -- 2026-11-14 -- FALA 714: FALA 714 - ostrzezenie o oslabieniu w oknie przed bitwa (testowa)
+
+- Okno przed bitwa pokazuje ostrzezenie, gdy jednostki gracza sa oslabione przez glod wojska lub deficyt zlota (kara bez zmian; wyswietlanie)
+- Weryfikacja: tsc 0; logic 213/213; prebattle-weakened-warning 22/0; vite build OK; zrzuty Chromium okna z kara i bez
+- Limity: Civpedia (zdanie o karze) nie dodana; sciezka live kampania-bitwa NIE ZMIERZONO
+
+## ROBOCZA 1394800a -- 2026-11-14 -- FALA 713: FALA 713 - AI nie ma ujemnego skarbca od tury 1 (testowa)
+
+- Skarbiec AI nie konczy tury ponizej zera od tury 1 (klamra dlugu AI bez pokrycia do 0, decyzja wlasciciela A); gracz bez zmian
+- Weryfikacja: tsc 0; logic 213/213; NNS ai-t2 11/0, c2 44/0, ai-from-turn1 27/0; T1-30 x3 ziarna: bez oslabienia AI; vite build OK
+- Limity: REPIN Rust po zmianie logiki AI; zywa gra przez Vite NIE ZMIERZONO
+
+## ROBOCZA 7ee44c0f -- 2026-11-14 -- FALA 712: FALA 712 - teksty: zwolnienie administratora, Civpedia (testowa)
+
+- Potwierdzenie zwolnienia administratora (spojny tekst 'panstwa'); Civpedia: zaufanie.md naglowek wdrozone; wikiBundle zregenerowany
+- Weryfikacja: tsc 0; logic-test 213/213; ui-text-leftovers-test i admin-dismiss-confirm-test zielone; vite build OK
+- Limity: Poradnik: czesc tekstow jeszcze niewdrozone (poza allowlista); zywa gra przez Vite NIE ZMIERZONO
+
+## ROBOCZA dc4ce140 -- 2026-11-14 -- FALA 711: Okno eliminacji ze stala maksymalna wysokoscia i przewijaniem (testowa)
+
+- Okno eliminacji i zdobycia miasta ma stala maksymalna wysokosc (wysokosc widoku minus margines) i przewija sie wewnatrz, naglowek nie jest przyciety; tylko CSS
+- Weryfikacja: tsc 0, logic-test 213/213, elimination-spectacle 84/0, full-spoils 114/0, toast-merge 56/0, nowy test okna 88/0 (4 rozmiary x 4 warianty), mutacja bazy czerwona
+- Limity: NIE ZMIERZONO: dokladny przypadek ze zrzutu wlasciciela nie odtworzony na bazie (wariant z widowiskiem mial juz max-height); zywa gra przez Vite. Jesli problem nadal wystepuje - prosze o rozmiar okna przegladarki i zrzut
+
+## ROBOCZA 7c4eb83b -- 2026-11-14 -- FALA 710: AI rownowazy skarbiec i spichlerz od tury 1 (testowa)
+
+- AI od pierwszej tury pilnuje, by skarbiec i spichlerz nie spadaly ponizej zera (dotad od tury 11); gracz ma nadal wyjatek tur 1-10
+- Weryfikacja: tsc 0, logic-test 213/213, nowy test 27/0 (czerwony na bazie), c2 44/0, ai 8/0; pomiar seed 11 T1-30: naruszenia AI T1-10 70 -> 0, miasta i jednostki AI T30 bez zmian
+- Limity: NIE ZMIERZONO: ziarna 22 i 33, live Chromium 10 tur, test integracji main.ts T1-10. Dlug Rust: REPIN progu rownowazenia AI.
+
+## ROBOCZA f166f88b -- 2026-11-14 -- FALA 709: Zaufanie w wojnie: martwe pole usuniete, opis w Civpedii (testowa)
+
+- Usuniete martwe pole kryzysTurDoWojny=5 z danych dyplomacji (licznik tur do wojny zalezy od profilu pary 3-7); Civpedia opisuje zaufanie 0 w wojnie i brak stalej N=6
+- Weryfikacja: tsc 0, logic-test 213/213, nowy test 17/0, json-descriptions-sync 19/0, war-brake-unit 69/0, regeneracja wikiBundle bez roznic
+- Limity: NIE ZMIERZONO: weryfikacja w przegladarce. Zachowanie gry bez zmian.
+
+## ROBOCZA 7ef7779d -- 2026-11-14 -- FALA 708: Karty jednostek ze statystykami z silnika walki (testowa)
+
+- Karty jednostek (miasto, panel jednostki, karta w wiadomosci) pokazuja atak/obrone/zdrowie/pancerz/obrazenia tak jak liczy je silnik walki; wspolny modul unitEngineStats
+- Weryfikacja: tsc 0, logic-test 213/213, unit-card-stats-engine-canon-test PASS, unit-detail-card-entitycard-migration 40/0, vite build
+- Limity: NIE ZMIERZONO: zrzut Chromium karty Wojownika, wikiBundle/Civpedia, Bonus szarzy. Dla 67/75 jednostek zmieniaja sie widoczne liczby.
+
 ## ROBOCZA ab171a4c -- 2026-11-14 -- FALA 707: Rzeki szybciej + panel oblezenia zwezony (testowa)
 
 - Generacja swiata: pamiec srodka ladu w etapie Rzeki-uzupelnianie (BFS ziarna 22 Maly 4745 -> 1, ta sama suma kontrolna; mapy Maly 1-10 i Standardowy 22 bez zmian) oraz panel oblezenia: zwarty blok machin w 2 kolumnach (R-WEB-MAPGEN-RIVERS-FILL-CENTROID-PERF-Q1, R-WEB-UI-SIEGE-PANEL-NARROW-MACHINES-BLOCK-Q1)

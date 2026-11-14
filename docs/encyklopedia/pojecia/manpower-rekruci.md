@@ -64,3 +64,7 @@ Miasto **pop 10**, epoka Kamienia, max Manpower ≈ **10000** (10 × `manpowerNa
 ## Historia / decyzje
 
 Maciej 2026-08-03: `manpowerNaJednostke` ep1 **1000→500**. **COFNIĘTE 2026-08-10** (`R-MANPOWER-EPOKA1-500-VS-1000=A`): epoka 1 wraca do pełnej wartości **1000** (jak epoki 2+) — przy większej liczbie miast skala rekrutacji z połowicznym kosztem była zbyt gigantyczna. Maciej 2026-07-21: rekrutacja bez kosztu ludności miasta. Hasło dodane rev. G 2026-08-04.
+
+---
+
+Zobacz też: [Osłabienie w bitwie — głód wojska i deficyt złota](oslabienie-glod-deficyt.md).
