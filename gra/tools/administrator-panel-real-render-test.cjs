@@ -230,7 +230,10 @@ async function runSuite(browser, code, label) {
     dlg().querySelector('[data-adm-panel-confirm]').click();
     const afterHire = { hired: dlg().getAttribute('data-adm-hired'), hasDismiss: !!dlg().querySelector('[data-adm-panel-dismiss]'), status: dlg().querySelector('[data-adm-status]').textContent, effects: dlg().querySelector('[data-adm-effects]').textContent };
     const beforeDismiss = { hired: dlg().getAttribute('data-adm-hired'), warnsNoRefund: /nie wraca/.test(dlg().querySelector('[data-adm-effects]').textContent) };
+    // R-WEB-UI-ADMIN-DISMISS-CONFIRM-Q1: pierwszy klik „Zwolnij” tylko pokazuje krok potwierdzenia (bez zwolnienia).
     dlg().querySelector('[data-adm-panel-dismiss]').click();
+    const afterFirstClick = { dismissCalls: calls.dismiss, hasYes: !!dlg().querySelector('[data-adm-dismiss-yes]') };
+    dlg().querySelector('[data-adm-dismiss-yes]').click();
     const afterDismiss = { hired: dlg().getAttribute('data-adm-hired'), hasConfirm: !!dlg().querySelector('[data-adm-panel-confirm]') };
     // Esc zamyka
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
@@ -243,10 +246,11 @@ async function runSuite(browser, code, label) {
     T.openAdministratorPanel({ getModel: () => model, onHire: () => true, onDismiss: () => true, onClose: () => { calls.close++; } });
     document.querySelector('[data-adm-panel-cancel]:not(.civ-adm-panel-x)').click();
     const cancelClosed = !document.querySelector('.civ-adm-panel-host');
-    return { calls, afterHire, afterDismiss, beforeDismiss, escClosed, backClosed, cancelClosed };
+    return { calls, afterHire, afterFirstClick, afterDismiss, beforeDismiss, escClosed, backClosed, cancelClosed };
   });
   check('A12 po zatrudnieniu ten sam panel: stan, „Zwolnij”, utrzymanie', C.calls.hire === 1 && C.afterHire.hired === '1' && C.afterHire.hasDismiss && /Zatrudniony/.test(C.afterHire.status) && /Utrzymanie/.test(C.afterHire.effects), C);
-  check('A13 Zwolnij wywołuje onDismiss i wraca do stanu niezatrudnionego', C.calls.dismiss === 1 && C.afterDismiss.hired === '0' && C.afterDismiss.hasConfirm, C);
+  check('A13 Zwolnij (po potwierdzeniu „Zwolnij” w oknie) wywołuje onDismiss i wraca do stanu niezatrudnionego', C.calls.dismiss === 1 && C.afterDismiss.hired === '0' && C.afterDismiss.hasConfirm, C);
+  check('A13a pierwszy klik „Zwolnij” NIE zwalnia: pokazuje krok potwierdzenia z „Zwolnij”/„Anuluj”', C.afterFirstClick.dismissCalls === 0 && C.afterFirstClick.hasYes, C.afterFirstClick);
   check('A13b Zwolnij jednym przyciskiem „Zwolnij” (bez okna natywnego): przed kliknięciem zatrudniony, panel mówi, że koszt nie wraca', C.beforeDismiss.hired === '1' && C.beforeDismiss.warnsNoRefund, C.beforeDismiss);
   check('A14 Esc, klik w tło i Anuluj zamykają panel (onClose x3)', C.escClosed && C.backClosed && C.cancelClosed && C.calls.close === 3, C);
   await page.waitForTimeout(150); // zdarzenia 'dialog' docierają asynchronicznie — daj im czas przed oceną
