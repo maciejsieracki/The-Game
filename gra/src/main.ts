@@ -20958,6 +20958,18 @@ async function boot(): Promise<void> {
         // R-WEB-PEACE-CITY-CESSION-Q1 r3: akcja propozycji — bramka pozycji 'miasto' (pokój/wasal).
         actionId: converted.actionId,
       };
+      // R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 (r3, O1 PARYTET WYCENY): wymiana cykliczna wycenia
+      // PN dokladnie tymi opcjami co wybor pary (pickAiPlayerCyclicBarter, pnOpts): mnoznik
+      // tur (per_turn) i tempoGry. Bez tego wejscie na stol liczy PN 10x mniej niz wybor pary
+      // (pomiar r3: enqGive=10 vs pickGive=100), trimming i bramki uczciwosci dzialaja na innej
+      // skali i oferta odpada. Inne typy ofert: opcje bez zmian (pnCyclicOpts === pnBalanceOpts).
+      const pnCyclicOpts = workingCmd.type === 'zaproponuj_wymiane_cykliczna'
+        ? {
+          ...pnBalanceOpts,
+          tempoGry: player.tempoGry ?? 'standardowa',
+          ...proposalPnTurnsMultiplier(clampedPayload),
+        }
+        : pnBalanceOpts;
       // R-DYPLOMACJA-BILANS-UNIFIKACJA-Q1 (GOAL b, recon jawny w raporcie Operatora):
       // generator dostał opcjonalny 5. param `fairness` (multiplier/treatyBasePn) — patrz
       // diplomacy-ai-offer-balance.ts. CELOWO NIE przekazany tutaj: w tym jedynym realnym
@@ -20972,12 +20984,19 @@ async function boot(): Promise<void> {
       // składników jest `generateCounterOffer` (diplomacy-proposals.ts) — kontroferta AI
       // na propozycję GRACZA, gdzie proposerOwnerId=gracz/responderOwnerId=AI odwraca oba
       // warunki na "aktywne"; poza allowlistą tego main.ts (WYŁĄCZNIE ten jeden call site).
-      const balancedPayload = trimProposalForZeroBalance(
-        clampedPayload,
-        relationTotal(relForBalance),
-        difficultyForBalance,
-        pnBalanceOpts,
-      );
+      // R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 (r3, O1): wymiana cykliczna jest juz wyrownana przez
+      // wybor pary (pickAiPlayerCyclicBarter: te same opcje PN, bramka uczciwosci, podglad gracza).
+      // Trim po wyborze zmienial wybrany payload (pomiar r3: receive 10 -> 0) i oferta zawsze
+      // odpadala w bramce givePn > receivePn. Dla wymiany cyklicznej trim pomijamy; gracz nadal
+      // ma podglad „Przyjmij" i filtr bilansu PW (ponizej).
+      const balancedPayload = workingCmd.type === 'zaproponuj_wymiane_cykliczna'
+        ? clampedPayload
+        : trimProposalForZeroBalance(
+          clampedPayload,
+          relationTotal(relForBalance),
+          difficultyForBalance,
+          pnBalanceOpts,
+        );
       if (
         !peaceBareAllowed
         && !balancedPayload.giveItems?.length
@@ -20994,7 +21013,7 @@ async function boot(): Promise<void> {
       if (
         sensibleBalanceFilterApplies(isDiploSensibleDealsEnabled(), workingCmd.type)
         && !isPlayerBalanceAcceptable(
-          aiProposalPlayerBenefitSurplus(balancedPayload, relationTotal(relForBalance), pnBalanceOpts),
+          aiProposalPlayerBenefitSurplus(balancedPayload, relationTotal(relForBalance), pnCyclicOpts),
         )
       ) {
         console.log(`[Dyplomacja] AI${ownerId} ${workingCmd.type}: odrzucone (bilans PW gracza < 0)`);
@@ -21008,7 +21027,7 @@ async function boot(): Promise<void> {
         return;
       }
       if (workingCmd.type === 'zaproponuj_wymiane_cykliczna') {
-        const { givePn, receivePn } = resolveProposalPn(balancedPayload, pnBalanceOpts);
+        const { givePn, receivePn } = resolveProposalPn(balancedPayload, pnCyclicOpts);
         const exactEvalCtx = buildProposalEvalContext(ownerId, ME());
         if (handelFairnessGate(givePn, receivePn, AI_PROPOSER_FAIRNESS_REL_TOTAL, 1)) return;
         // R-WEB-AI-TRADE-WIRING-E2E-Q1 r3 (A1): gorny limit — AI nie oddaje wiecej PW niz dostaje
@@ -24212,6 +24231,14 @@ async function boot(): Promise<void> {
       };
     }
 
+    /** R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 (r3, O1): para przechodzi wejście na stół tylko gdy clamp do realnych zasobów nie zmienia koszyka. */
+    function payloadKeepsRealResourcesForPick(ownerId: number, payload: import('./game/diplomacy-proposals').ProposalPayload): boolean {
+      const clamped = clampAiProposalPayloadToRealResources(ownerId, payload);
+      if (!clamped) return false;
+      return JSON.stringify([clamped.giveItems ?? [], clamped.receiveItems ?? []])
+        === JSON.stringify([payload.giveItems ?? [], payload.receiveItems ?? []]);
+    }
+
     function pickAiPlayerCyclicBarter(ownerId: number): ReturnType<typeof selectAiTradeBarter> {
       if (!ownerHasTradeTech(ownerId) || !ownerHasTradeTech(ME())) return null;
       const turns = AI_RESOURCE_TRADE_DEFAULT_TURNS;
@@ -24270,7 +24297,12 @@ async function boot(): Promise<void> {
             difficulty: _menuDifficulty,
             proposerOwnerId: ownerId,
             tempoGry: player.tempoGry ?? 'standardowa',
-          })?.accepted ?? true),
+          })?.accepted ?? true)
+          // R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 (r3, O1 parytet): wejscie na stol clampuje koszyk do
+          // zasobow realnych na caly czas wymiany (clampAiProposalPayloadToRealResources, turnsMult).
+          // Wybor pary sprawdza tylko podazny nadwyzke na tura; pomiar r3: para wybrana, po clampie
+          // receive 10 -> 0 i oferta odpadala. Wybieramy wiec wylacznie pary, ktore clamp przechodzi bez zmian.
+          && payloadKeepsRealResourcesForPick(ownerId, payload),
       });
     }
 
