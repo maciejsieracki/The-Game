@@ -1,3 +1,9 @@
+## ROBOCZA 31c3b98b -- 2026-11-14 -- FALA 715: FALA 715 - Civpedia: oslabienie przez glod i deficyt, poprawione teksty (testowa)
+
+- Nowe haslo Civpedii o oslabieniu jednostek przez glod wojska i deficyt zlota (gracz i AI, bez barbarzyncow); poprawione nieaktualne teksty niewdrozone; wikiBundle
+- Weryfikacja: tsc 0; logic 213/213; ui-text-leftovers zielone; diplo-civpedia-values 129; vite build OK
+- Limity: Tylko tresc Civpedii; zdarzenia Respektu przewaga militarna i slabszy militarnie niepodpiete w kodzie (osobny temat)
+
 ## ROBOCZA 052dc9aa -- 2026-11-14 -- FALA 714: FALA 714 - ostrzezenie o oslabieniu w oknie przed bitwa (testowa)
 
 - Okno przed bitwa pokazuje ostrzezenie, gdy jednostki gracza sa oslabione przez glod wojska lub deficyt zlota (kara bez zmian; wyswietlanie)

@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "052dc9aad03363e5a7143c4be1220107",
-  "bundleSha256": "c93371afd78807edfbf59d5e9b8bb30f866a4164d5b929cabf7af4c77a6aaa6b",
-  "bundleBytes": 14705337,
+  "bundleMd5": "31c3b98b89fa8e562ecf68b25e60d3d0",
+  "bundleSha256": "8ff991df5fa0e98d48018a2c1a48bff03cf3bda542d1d6239961609dc9e7647a",
+  "bundleBytes": 14713977,
   "sourceSnapshot": {
-    "source": "FC 8c145d939 / integracja aa1c5d119",
+    "source": "FC dbbda29ee / integracja 4fb07735a",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 714: Okno przed bitwa pokazuje ostrzezenie, gdy jednostki gracza sa oslabione przez glod wojska lub deficyt zlota (kara bez zmian; wyswietlanie)"
+    "FALA 715: Nowe haslo Civpedii o oslabieniu jednostek przez glod wojska i deficyt zlota (gracz i AI, bez barbarzyncow); poprawione nieaktualne teksty niewdrozone; wikiBundle"
   ],
   "verification": [
-    "tsc 0; logic 213/213; prebattle-weakened-warning 22/0; vite build OK; zrzuty Chromium okna z kara i bez"
+    "tsc 0; logic 213/213; ui-text-leftovers zielone; diplo-civpedia-values 129; vite build OK"
   ],
   "limits": [
-    "Civpedia (zdanie o karze) nie dodana; sciezka live kampania-bitwa NIE ZMIERZONO"
+    "Tylko tresc Civpedii; zdarzenia Respektu przewaga militarna i slabszy militarnie niepodpiete w kodzie (osobny temat)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES BARB-WARN 8c145d939/8e8515c9e. Okno przed bitwa pokazuje ostrzezenie o oslabieniu jednostek gracza (glod wojska / deficyt zlota, procent z mnoznika silnika); kara bez zmian, barbarzyncy bez ostrzezenia. Test prebattle-weakened-warning 22/0 (render w Chromium, mutacja renderu 3 FAIL); zrzuty z kara i bez bez rozpychania okna. NIE ZMIERZONO: sciezka live kampania-bitwa; Civpedia (punkt 6) nie dodana."
+    "notes": "FC PASS-WITH-NOTES DOCS-CIV dbbda29ee/a7b36dd7c. Civpedia: nowe haslo o oslabieniu przez glod wojska i deficyt zlota (mnoznik 0,75; gracz i AI, barbarzyncy wylaczeni; ostrzezenie w oknie przed bitwa), poprawione nieaktualne teksty niewdrozone (respekt, moc-podzial, poradnik dyplomacji), wikiBundle zregenerowany narzedziem. Tylko tresc Civpedii, kod gry bez zmian. UWAGA: zdarzenia Respektu przewaga militarna +15 i slabszy militarnie -10 sa w kodzie niepodpiete (osobny temat)."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-14T18:23:17",
+  "hubGeneratedAt": "2026-11-14T20:19:40",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "052dc9aad03363e5a7143c4be1220107",
-      "sizeBytes": 14705337
+      "md5": "31c3b98b89fa8e562ecf68b25e60d3d0",
+      "sizeBytes": 14713977
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "052dc9aad03363e5a7143c4be1220107",
-      "sizeBytes": 14705337
+      "md5": "31c3b98b89fa8e562ecf68b25e60d3d0",
+      "sizeBytes": 14713977
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "052dc9aad03363e5a7143c4be1220107",
-      "sizeBytes": 14705337
+      "md5": "31c3b98b89fa8e562ecf68b25e60d3d0",
+      "sizeBytes": 14713977
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "052dc9aad03363e5a7143c4be1220107",
-      "sizeBytes": 14705337
+      "md5": "31c3b98b89fa8e562ecf68b25e60d3d0",
+      "sizeBytes": 14713977
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "052dc9aad03363e5a7143c4be1220107",
-      "sizeBytes": 14705337
+      "md5": "31c3b98b89fa8e562ecf68b25e60d3d0",
+      "sizeBytes": 14713977
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "052dc9aad03363e5a7143c4be1220107",
-      "sizeBytes": 14705337
+      "md5": "31c3b98b89fa8e562ecf68b25e60d3d0",
+      "sizeBytes": 14713977
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "052dc9aad03363e5a7143c4be1220107",
-      "sizeBytes": 14705337
+      "md5": "31c3b98b89fa8e562ecf68b25e60d3d0",
+      "sizeBytes": 14713977
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "052dc9aad03363e5a7143c4be1220107",
-      "sizeBytes": 14705337
+      "md5": "31c3b98b89fa8e562ecf68b25e60d3d0",
+      "sizeBytes": 14713977
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "052dc9aad03363e5a7143c4be1220107",
-      "sizeBytes": 14705337
+      "md5": "31c3b98b89fa8e562ecf68b25e60d3d0",
+      "sizeBytes": 14713977
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "052dc9aad03363e5a7143c4be1220107",
-      "sizeBytes": 14705337
+      "md5": "31c3b98b89fa8e562ecf68b25e60d3d0",
+      "sizeBytes": 14713977
     }
   ],
-  "md5": "052dc9aad03363e5a7143c4be1220107",
+  "md5": "31c3b98b89fa8e562ecf68b25e60d3d0",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
