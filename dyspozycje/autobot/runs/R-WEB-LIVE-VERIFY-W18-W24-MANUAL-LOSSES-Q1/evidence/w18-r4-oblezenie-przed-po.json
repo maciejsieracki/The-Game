@@ -1,0 +1,693 @@
+{
+  "scenario": "?playtest=oblez&civTest=1 (Ateny, wrogie miasto z murem; wojna z presetu)",
+  "phases": [
+    {
+      "id": "F-start-naturalny-preset",
+      "techs": null,
+      "researched": [],
+      "start": {
+        "ok": true,
+        "why": "tryb=oblezenie",
+        "q": 16,
+        "r": 8
+      },
+      "domPanel": {
+        "open": true,
+        "blockPresent": false,
+        "quota": "",
+        "buttons": [],
+        "notes": [],
+        "stats": "Zapasy: 20\nZużycie/turę: 4\nOblegających: 11\nAtrycja: brak (zapasy)"
+      },
+      "gateOptions": [
+        {
+          "unit": "Taran",
+          "tech": "Obróbka drewna",
+          "visible": false,
+          "allowed": false,
+          "reason": "technology_locked"
+        },
+        {
+          "unit": "Taran okuty",
+          "tech": "Brązownictwo",
+          "visible": false,
+          "allowed": false,
+          "reason": "technology_locked"
+        },
+        {
+          "unit": "Katapulta",
+          "tech": "Sztuka wojenna",
+          "visible": false,
+          "allowed": false,
+          "reason": "technology_locked"
+        },
+        {
+          "unit": "Wieża oblężnicza",
+          "tech": "Brązownictwo",
+          "visible": false,
+          "allowed": false,
+          "reason": "technology_locked"
+        }
+      ],
+      "screenshot": "w18-r3-F-start-naturalny-preset.png"
+    },
+    {
+      "id": "F0-brak-techow",
+      "techs": [],
+      "researched": [],
+      "start": {
+        "ok": true,
+        "why": "tryb=oblezenie",
+        "q": 16,
+        "r": 8
+      },
+      "domPanel": {
+        "open": true,
+        "blockPresent": false,
+        "quota": "",
+        "buttons": [],
+        "notes": [],
+        "stats": "Zapasy: 20\nZużycie/turę: 4\nOblegających: 11\nAtrycja: brak (zapasy)"
+      },
+      "gateOptions": [
+        {
+          "unit": "Taran",
+          "tech": "Obróbka drewna",
+          "visible": false,
+          "allowed": false,
+          "reason": "technology_locked"
+        },
+        {
+          "unit": "Taran okuty",
+          "tech": "Brązownictwo",
+          "visible": false,
+          "allowed": false,
+          "reason": "technology_locked"
+        },
+        {
+          "unit": "Katapulta",
+          "tech": "Sztuka wojenna",
+          "visible": false,
+          "allowed": false,
+          "reason": "technology_locked"
+        },
+        {
+          "unit": "Wieża oblężnicza",
+          "tech": "Brązownictwo",
+          "visible": false,
+          "allowed": false,
+          "reason": "technology_locked"
+        }
+      ],
+      "screenshot": "w18-r3-F0-brak-techow.png"
+    },
+    {
+      "id": "F1-tylko-Obrobka-drewna",
+      "techs": [
+        "Obróbka drewna"
+      ],
+      "researched": [
+        "Obróbka drewna"
+      ],
+      "start": {
+        "ok": true,
+        "why": "tryb=oblezenie",
+        "q": 16,
+        "r": 8
+      },
+      "domPanel": {
+        "open": true,
+        "blockPresent": true,
+        "quota": "Armia bez machin: 11 · pula na tę turę: 0/1",
+        "buttons": [
+          {
+            "text": "Taran · 7 ¤ + 19 Drewno",
+            "disabled": true,
+            "title": "Brak surowca w magazynie państwa."
+          }
+        ],
+        "notes": [
+          "Taran: Brak surowca w magazynie państwa."
+        ],
+        "stats": "Zapasy: 20\nZużycie/turę: 4\nOblegających: 11\nAtrycja: brak (zapasy)"
+      },
+      "gateOptions": [
+        {
+          "unit": "Taran",
+          "tech": "Obróbka drewna",
+          "visible": true,
+          "allowed": false,
+          "reason": "insufficient_resources"
+        },
+        {
+          "unit": "Taran okuty",
+          "tech": "Brązownictwo",
+          "visible": false,
+          "allowed": false,
+          "reason": "technology_locked"
+        },
+        {
+          "unit": "Katapulta",
+          "tech": "Sztuka wojenna",
+          "visible": false,
+          "allowed": false,
+          "reason": "technology_locked"
+        },
+        {
+          "unit": "Wieża oblężnicza",
+          "tech": "Brązownictwo",
+          "visible": false,
+          "allowed": false,
+          "reason": "technology_locked"
+        }
+      ],
+      "screenshot": "w18-r3-F1-tylko-Obrobka-drewna.png"
+    },
+    {
+      "id": "F2-tylko-Brazownictwo",
+      "techs": [
+        "Brązownictwo"
+      ],
+      "researched": [
+        "Brązownictwo"
+      ],
+      "start": {
+        "ok": true,
+        "why": "tryb=oblezenie",
+        "q": 16,
+        "r": 8
+      },
+      "domPanel": {
+        "open": true,
+        "blockPresent": true,
+        "quota": "Armia bez machin: 11 · pula na tę turę: 0/1",
+        "buttons": [
+          {
+            "text": "Taran okuty · 18 ¤ + 76 Brąz",
+            "disabled": true,
+            "title": "Brak surowca w magazynie państwa."
+          },
+          {
+            "text": "Wieża oblężnicza · 20 ¤ + 76 Brąz",
+            "disabled": true,
+            "title": "Brak surowca w magazynie państwa."
+          }
+        ],
+        "notes": [
+          "Taran okuty: Brak surowca w magazynie państwa.",
+          "Wieża oblężnicza: Brak surowca w magazynie państwa."
+        ],
+        "stats": "Zapasy: 20\nZużycie/turę: 4\nOblegających: 11\nAtrycja: brak (zapasy)"
+      },
+      "gateOptions": [
+        {
+          "unit": "Taran",
+          "tech": "Obróbka drewna",
+          "visible": false,
+          "allowed": false,
+          "reason": "technology_locked"
+        },
+        {
+          "unit": "Taran okuty",
+          "tech": "Brązownictwo",
+          "visible": true,
+          "allowed": false,
+          "reason": "insufficient_resources"
+        },
+        {
+          "unit": "Katapulta",
+          "tech": "Sztuka wojenna",
+          "visible": false,
+          "allowed": false,
+          "reason": "technology_locked"
+        },
+        {
+          "unit": "Wieża oblężnicza",
+          "tech": "Brązownictwo",
+          "visible": true,
+          "allowed": false,
+          "reason": "insufficient_resources"
+        }
+      ],
+      "screenshot": "w18-r3-F2-tylko-Brazownictwo.png"
+    },
+    {
+      "id": "F3-Obrobka-drewna+Brazownictwo",
+      "techs": [
+        "Obróbka drewna",
+        "Brązownictwo"
+      ],
+      "researched": [
+        "Obróbka drewna",
+        "Brązownictwo"
+      ],
+      "start": {
+        "ok": true,
+        "why": "tryb=oblezenie",
+        "q": 16,
+        "r": 8
+      },
+      "domPanel": {
+        "open": true,
+        "blockPresent": true,
+        "quota": "Armia bez machin: 11 · pula na tę turę: 0/1",
+        "buttons": [
+          {
+            "text": "Taran · 7 ¤ + 19 Drewno",
+            "disabled": true,
+            "title": "Brak surowca w magazynie państwa."
+          },
+          {
+            "text": "Taran okuty · 18 ¤ + 76 Brąz",
+            "disabled": true,
+            "title": "Brak surowca w magazynie państwa."
+          },
+          {
+            "text": "Wieża oblężnicza · 20 ¤ + 76 Brąz",
+            "disabled": true,
+            "title": "Brak surowca w magazynie państwa."
+          }
+        ],
+        "notes": [
+          "Taran: Brak surowca w magazynie państwa.",
+          "Taran okuty: Brak surowca w magazynie państwa.",
+          "Wieża oblężnicza: Brak surowca w magazynie państwa."
+        ],
+        "stats": "Zapasy: 20\nZużycie/turę: 4\nOblegających: 11\nAtrycja: brak (zapasy)"
+      },
+      "gateOptions": [
+        {
+          "unit": "Taran",
+          "tech": "Obróbka drewna",
+          "visible": true,
+          "allowed": false,
+          "reason": "insufficient_resources"
+        },
+        {
+          "unit": "Taran okuty",
+          "tech": "Brązownictwo",
+          "visible": true,
+          "allowed": false,
+          "reason": "insufficient_resources"
+        },
+        {
+          "unit": "Katapulta",
+          "tech": "Sztuka wojenna",
+          "visible": false,
+          "allowed": false,
+          "reason": "technology_locked"
+        },
+        {
+          "unit": "Wieża oblężnicza",
+          "tech": "Brązownictwo",
+          "visible": true,
+          "allowed": false,
+          "reason": "insufficient_resources"
+        }
+      ],
+      "screenshot": "w18-r3-F3-Obrobka-drewna+Brazownictwo.png"
+    },
+    {
+      "id": "F4-Obrobka-drewna+Brazownictwo+Sztuka-wojenna",
+      "techs": [
+        "Obróbka drewna",
+        "Brązownictwo",
+        "Sztuka wojenna"
+      ],
+      "researched": [
+        "Obróbka drewna",
+        "Brązownictwo",
+        "Sztuka wojenna"
+      ],
+      "start": {
+        "ok": true,
+        "why": "tryb=oblezenie",
+        "q": 16,
+        "r": 8
+      },
+      "domPanel": {
+        "open": true,
+        "blockPresent": true,
+        "quota": "Armia bez machin: 11 · pula na tę turę: 0/1",
+        "buttons": [
+          {
+            "text": "Taran · 7 ¤ + 19 Drewno",
+            "disabled": true,
+            "title": "Brak surowca w magazynie państwa."
+          },
+          {
+            "text": "Taran okuty · 18 ¤ + 76 Brąz",
+            "disabled": true,
+            "title": "Brak surowca w magazynie państwa."
+          },
+          {
+            "text": "Katapulta · 36 ¤ + 152 Żelazo",
+            "disabled": true,
+            "title": "Brak surowca w magazynie państwa."
+          },
+          {
+            "text": "Wieża oblężnicza · 20 ¤ + 76 Brąz",
+            "disabled": true,
+            "title": "Brak surowca w magazynie państwa."
+          }
+        ],
+        "notes": [
+          "Taran: Brak surowca w magazynie państwa.",
+          "Taran okuty: Brak surowca w magazynie państwa.",
+          "Katapulta: Brak surowca w magazynie państwa.",
+          "Wieża oblężnicza: Brak surowca w magazynie państwa."
+        ],
+        "stats": "Zapasy: 20\nZużycie/turę: 4\nOblegających: 11\nAtrycja: brak (zapasy)"
+      },
+      "gateOptions": [
+        {
+          "unit": "Taran",
+          "tech": "Obróbka drewna",
+          "visible": true,
+          "allowed": false,
+          "reason": "insufficient_resources"
+        },
+        {
+          "unit": "Taran okuty",
+          "tech": "Brązownictwo",
+          "visible": true,
+          "allowed": false,
+          "reason": "insufficient_resources"
+        },
+        {
+          "unit": "Katapulta",
+          "tech": "Sztuka wojenna",
+          "visible": true,
+          "allowed": false,
+          "reason": "insufficient_resources"
+        },
+        {
+          "unit": "Wieża oblężnicza",
+          "tech": "Brązownictwo",
+          "visible": true,
+          "allowed": false,
+          "reason": "insufficient_resources"
+        }
+      ],
+      "screenshot": "w18-r3-F4-Obrobka-drewna+Brazownictwo+Sztuka-wojenna.png"
+    }
+  ],
+  "errors": [],
+  "state0": {
+    "turn": 1,
+    "me": 0,
+    "praca": 0,
+    "cities": [
+      {
+        "id": "city0",
+        "ownerId": 1,
+        "q": 16,
+        "r": 9,
+        "pop": 4,
+        "name": "Ateny"
+      }
+    ],
+    "units": 1,
+    "forts": 0,
+    "policyMe": {
+      "focus": "zrownowazone",
+      "tryb": "reczny",
+      "pracaAutoPercent": 33
+    }
+  },
+  "closedOverlays": [],
+  "firstStart": {
+    "ok": true,
+    "why": "tryb=oblezenie",
+    "q": 16,
+    "r": 8
+  },
+  "addedUnits": 10,
+  "table": [
+    {
+      "phase": "F-start-naturalny-preset",
+      "unit": "Taran",
+      "tech": "Obróbka drewna",
+      "expectedVisible": false,
+      "domVisible": false,
+      "gateVisible": false,
+      "gateAllowed": false,
+      "gateReason": "technology_locked",
+      "ok": true
+    },
+    {
+      "phase": "F-start-naturalny-preset",
+      "unit": "Taran okuty",
+      "tech": "Brązownictwo",
+      "expectedVisible": false,
+      "domVisible": false,
+      "gateVisible": false,
+      "gateAllowed": false,
+      "gateReason": "technology_locked",
+      "ok": true
+    },
+    {
+      "phase": "F-start-naturalny-preset",
+      "unit": "Wieża oblężnicza",
+      "tech": "Brązownictwo",
+      "expectedVisible": false,
+      "domVisible": false,
+      "gateVisible": false,
+      "gateAllowed": false,
+      "gateReason": "technology_locked",
+      "ok": true
+    },
+    {
+      "phase": "F-start-naturalny-preset",
+      "unit": "Katapulta",
+      "tech": "Sztuka wojenna",
+      "expectedVisible": false,
+      "domVisible": false,
+      "gateVisible": false,
+      "gateAllowed": false,
+      "gateReason": "technology_locked",
+      "ok": true
+    },
+    {
+      "phase": "F0-brak-techow",
+      "unit": "Taran",
+      "tech": "Obróbka drewna",
+      "expectedVisible": false,
+      "domVisible": false,
+      "gateVisible": false,
+      "gateAllowed": false,
+      "gateReason": "technology_locked",
+      "ok": true
+    },
+    {
+      "phase": "F0-brak-techow",
+      "unit": "Taran okuty",
+      "tech": "Brązownictwo",
+      "expectedVisible": false,
+      "domVisible": false,
+      "gateVisible": false,
+      "gateAllowed": false,
+      "gateReason": "technology_locked",
+      "ok": true
+    },
+    {
+      "phase": "F0-brak-techow",
+      "unit": "Wieża oblężnicza",
+      "tech": "Brązownictwo",
+      "expectedVisible": false,
+      "domVisible": false,
+      "gateVisible": false,
+      "gateAllowed": false,
+      "gateReason": "technology_locked",
+      "ok": true
+    },
+    {
+      "phase": "F0-brak-techow",
+      "unit": "Katapulta",
+      "tech": "Sztuka wojenna",
+      "expectedVisible": false,
+      "domVisible": false,
+      "gateVisible": false,
+      "gateAllowed": false,
+      "gateReason": "technology_locked",
+      "ok": true
+    },
+    {
+      "phase": "F1-tylko-Obrobka-drewna",
+      "unit": "Taran",
+      "tech": "Obróbka drewna",
+      "expectedVisible": true,
+      "domVisible": true,
+      "gateVisible": true,
+      "gateAllowed": false,
+      "gateReason": "insufficient_resources",
+      "ok": true
+    },
+    {
+      "phase": "F1-tylko-Obrobka-drewna",
+      "unit": "Taran okuty",
+      "tech": "Brązownictwo",
+      "expectedVisible": false,
+      "domVisible": false,
+      "gateVisible": false,
+      "gateAllowed": false,
+      "gateReason": "technology_locked",
+      "ok": true
+    },
+    {
+      "phase": "F1-tylko-Obrobka-drewna",
+      "unit": "Wieża oblężnicza",
+      "tech": "Brązownictwo",
+      "expectedVisible": false,
+      "domVisible": false,
+      "gateVisible": false,
+      "gateAllowed": false,
+      "gateReason": "technology_locked",
+      "ok": true
+    },
+    {
+      "phase": "F1-tylko-Obrobka-drewna",
+      "unit": "Katapulta",
+      "tech": "Sztuka wojenna",
+      "expectedVisible": false,
+      "domVisible": false,
+      "gateVisible": false,
+      "gateAllowed": false,
+      "gateReason": "technology_locked",
+      "ok": true
+    },
+    {
+      "phase": "F2-tylko-Brazownictwo",
+      "unit": "Taran",
+      "tech": "Obróbka drewna",
+      "expectedVisible": false,
+      "domVisible": false,
+      "gateVisible": false,
+      "gateAllowed": false,
+      "gateReason": "technology_locked",
+      "ok": true
+    },
+    {
+      "phase": "F2-tylko-Brazownictwo",
+      "unit": "Taran okuty",
+      "tech": "Brązownictwo",
+      "expectedVisible": true,
+      "domVisible": true,
+      "gateVisible": true,
+      "gateAllowed": false,
+      "gateReason": "insufficient_resources",
+      "ok": true
+    },
+    {
+      "phase": "F2-tylko-Brazownictwo",
+      "unit": "Wieża oblężnicza",
+      "tech": "Brązownictwo",
+      "expectedVisible": true,
+      "domVisible": true,
+      "gateVisible": true,
+      "gateAllowed": false,
+      "gateReason": "insufficient_resources",
+      "ok": true
+    },
+    {
+      "phase": "F2-tylko-Brazownictwo",
+      "unit": "Katapulta",
+      "tech": "Sztuka wojenna",
+      "expectedVisible": false,
+      "domVisible": false,
+      "gateVisible": false,
+      "gateAllowed": false,
+      "gateReason": "technology_locked",
+      "ok": true
+    },
+    {
+      "phase": "F3-Obrobka-drewna+Brazownictwo",
+      "unit": "Taran",
+      "tech": "Obróbka drewna",
+      "expectedVisible": true,
+      "domVisible": true,
+      "gateVisible": true,
+      "gateAllowed": false,
+      "gateReason": "insufficient_resources",
+      "ok": true
+    },
+    {
+      "phase": "F3-Obrobka-drewna+Brazownictwo",
+      "unit": "Taran okuty",
+      "tech": "Brązownictwo",
+      "expectedVisible": true,
+      "domVisible": true,
+      "gateVisible": true,
+      "gateAllowed": false,
+      "gateReason": "insufficient_resources",
+      "ok": true
+    },
+    {
+      "phase": "F3-Obrobka-drewna+Brazownictwo",
+      "unit": "Wieża oblężnicza",
+      "tech": "Brązownictwo",
+      "expectedVisible": true,
+      "domVisible": true,
+      "gateVisible": true,
+      "gateAllowed": false,
+      "gateReason": "insufficient_resources",
+      "ok": true
+    },
+    {
+      "phase": "F3-Obrobka-drewna+Brazownictwo",
+      "unit": "Katapulta",
+      "tech": "Sztuka wojenna",
+      "expectedVisible": false,
+      "domVisible": false,
+      "gateVisible": false,
+      "gateAllowed": false,
+      "gateReason": "technology_locked",
+      "ok": true
+    },
+    {
+      "phase": "F4-Obrobka-drewna+Brazownictwo+Sztuka-wojenna",
+      "unit": "Taran",
+      "tech": "Obróbka drewna",
+      "expectedVisible": true,
+      "domVisible": true,
+      "gateVisible": true,
+      "gateAllowed": false,
+      "gateReason": "insufficient_resources",
+      "ok": true
+    },
+    {
+      "phase": "F4-Obrobka-drewna+Brazownictwo+Sztuka-wojenna",
+      "unit": "Taran okuty",
+      "tech": "Brązownictwo",
+      "expectedVisible": true,
+      "domVisible": true,
+      "gateVisible": true,
+      "gateAllowed": false,
+      "gateReason": "insufficient_resources",
+      "ok": true
+    },
+    {
+      "phase": "F4-Obrobka-drewna+Brazownictwo+Sztuka-wojenna",
+      "unit": "Wieża oblężnicza",
+      "tech": "Brązownictwo",
+      "expectedVisible": true,
+      "domVisible": true,
+      "gateVisible": true,
+      "gateAllowed": false,
+      "gateReason": "insufficient_resources",
+      "ok": true
+    },
+    {
+      "phase": "F4-Obrobka-drewna+Brazownictwo+Sztuka-wojenna",
+      "unit": "Katapulta",
+      "tech": "Sztuka wojenna",
+      "expectedVisible": true,
+      "domVisible": true,
+      "gateVisible": true,
+      "gateAllowed": false,
+      "gateReason": "insufficient_resources",
+      "ok": true
+    }
+  ],
+  "verdict": "PASS"
+}

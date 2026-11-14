@@ -30660,6 +30660,8 @@ async function boot(): Promise<void> {
           for (const n of names) s.add(n);
           return Array.from(s);
         },
+        /** Odczyt (tylko do pomiaru): zbior technologii gracza w stanie biezacym (np. stan startowy presetu). */
+        researchedTechs: (): string[] => Array.from(ownerResearchedTechs(0) as Set<string>),
         /** Opcje budowy machin z bramki (siegeEngineOptions) + widocznosc z visibleSiegeEngineOptions. */
         siegeOptions: (cityId: string): Array<{ unit: string; tech: string; visible: boolean; allowed: boolean; reason: string | null }> | null => {
           const c = cities.find(x => x.id === cityId);

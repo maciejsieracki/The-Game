@@ -36,7 +36,9 @@ function serve() {
 }
 
 // Fazy: kontrolowane zestawy technologii (jedyny hak izolujacy = setResearchedTechs).
+// techs: null = BEZ wywolania setResearchedTechs (stan naturalny presetu; zbior odczytany hakiem researchedTechs).
 const PHASES = [
+  { id: 'F-start-naturalny-preset', techs: null },
   { id: 'F0-brak-techow', techs: [] },
   { id: 'F1-tylko-Obrobka-drewna', techs: ['Obróbka drewna'] },
   { id: 'F2-tylko-Brazownictwo', techs: ['Brązownictwo'] },
@@ -83,7 +85,7 @@ async function readPanel(page) {
     out.closedOverlays = await closeOverlays();
 
     // Krok 0: wyznacz heks jednostki przy murze (start oblezenia = zwroci anchor), wycofaj, dodaj 10 jednostek, wroc.
-    await page.evaluate(() => window.__siegeBadgeTestDebug.setResearchedTechs([]));
+    // Krok 0 nie zmienia technologii (stan naturalny): startPlayerSiege nie zalezy od techow.
     const first = await page.evaluate(() => window.__siegeBadgeTestDebug.startPlayerSiege('city0'));
     out.firstStart = first;
     if (!first.ok) throw new Error('startPlayerSiege nie powiodl sie: ' + JSON.stringify(first));
@@ -94,15 +96,16 @@ async function readPanel(page) {
     await page.evaluate(() => window.__siegeBadgeTestDebug.fundPlayer(5000));
 
     for (const ph of PHASES) {
-      await page.evaluate((t) => window.__siegeBadgeTestDebug.setResearchedTechs(t), ph.techs);
+      if (ph.techs !== null) await page.evaluate((t) => window.__siegeBadgeTestDebug.setResearchedTechs(t), ph.techs);
       const st = await page.evaluate(() => window.__siegeBadgeTestDebug.startPlayerSiege('city0'));
       await page.waitForTimeout(700);
       await closeOverlays();
+      const researched = await page.evaluate(() => window.__siegeBadgeTestDebug.researchedTechs());
       const gate = await page.evaluate(() => window.__siegeBadgeTestDebug.siegeOptions('city0'));
       const dom = await readPanel(page);
       const shot = 'w18-r3-' + ph.id + '.png';
       await page.screenshot({ path: path.join(EVID, shot) });
-      out.phases.push({ id: ph.id, techs: ph.techs, start: st, domPanel: dom, gateOptions: gate, screenshot: shot });
+      out.phases.push({ id: ph.id, techs: ph.techs, researched, start: st, domPanel: dom, gateOptions: gate, screenshot: shot });
       await page.evaluate(() => { const b = document.querySelector('#civ-siege-map-panel [data-act="retreat"]'); if (b) b.click(); });
       await page.waitForTimeout(300);
     }
@@ -116,7 +119,7 @@ async function readPanel(page) {
   let fail = false;
   for (const ph of out.phases) {
     for (const [unit, tech] of Object.entries(NEED)) {
-      const expected = ph.techs.includes(tech);
+      const expected = ph.researched.includes(tech);
       const domVisible = (ph.domPanel.buttons || []).some((b) => b.text.startsWith(unit + ' ·'));
       const g = (ph.gateOptions || []).find((o) => o.unit === unit);
       const gateVisible = !!(g && g.visible);

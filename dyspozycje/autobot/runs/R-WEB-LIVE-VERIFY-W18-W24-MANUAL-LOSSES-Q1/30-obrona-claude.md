@@ -1,3 +1,65 @@
+STATUS: PASS-WITH-NOTES (obrona runda 4: zarzut 2 ODRZUCONY dowodem pomiaru stanu naturalnego; zarzut 4 PRZYJETY, mutacja wykonana i zapisana; zarzut 1 PRZYJETY jako NIE_ZMIERZONO; zarzut 3 ODRZUCONY jako podstawa FAIL)
+DOMAIN: GAME
+TEMAT: R-WEB-LIVE-VERIFY-W18-W24-MANUAL-LOSSES-Q1
+GOAL: odpowiedz na zarzuty Evaluatora do kandydata 364dab665 (potomek 2fffcab26; werdykt Evaluatora PASS-WITH-NOTES, bez FAIL). Start: 364dab66558748e74ca80ed41bef6f290b46b6c5. Punkt 1 (W18) mierzony ponownie: pomiar stanu naturalnego presetu i dowod mutacyjny. Punkty 2 i 3 bez zmian (poza zakresem tej rundy).
+
+ZMIANY-COMMIT (commit obrony r4, tylko wymienione sciezki, bez git add -A):
+- gra/src/main.ts: +2 linie w __siegeBadgeTestDebug (tylko ?civTest=1): odczyt `researchedTechs()` = Array.from(ownerResearchedTechs(0)). Bez zmian logiki gry; potrzebny do zmierzenia zbioru technologii w stanie naturalnym presetu (zarzut 2).
+- gra/tools/live-verify-w18-w24-manual-losses-w18r3.cjs: nowa faza `F-start-naturalny-preset` (techs: null, bez setResearchedTechs), usuniete wywolanie setResearchedTechs([]) z kroku 0, pole `researched` w kazdej fazie, oczekiwanie liczone ze zbioru faktycznego. 6 faz x 4 machiny = 24 sprawdzenia.
+- dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-W18-W24-MANUAL-LOSSES-Q1/evidence/w18-r4-oblezenie-przed-po.json (PASS 24/24, surowy JSON)
+- dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-W18-W24-MANUAL-LOSSES-Q1/evidence/w18-r4-MUTACJA-filter-true-oblezenie-przed-po.json (FAIL 14/24, dowod mutacyjny)
+- dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-W18-W24-MANUAL-LOSSES-Q1/evidence/w18-r4-F-start-naturalny-preset.png (zrzut obejrzany: brak bloku „Zbuduj machine”)
+- dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-W18-W24-MANUAL-LOSSES-Q1/evidence/w18-r4-run-base.log, w18-r4-run-mut.log (surowe wyjscie skryptu)
+- ten plik: sekcja r4 na gorze; sekcje r2/r3 zachowane nizej.
+- Mutacja gra/src/game/siege-engine-build.ts:110 byla WYLACZNIE tymczasowa (build mutanta w scratchpad); po pomiarze linia przywrocona, git diff tego pliku pusty.
+
+ODPOWIEDZI NA ZARZUTY
+
+Zarzut 1 (izolacja techu hakiem; panel otwierany od nowa, brak pomiaru odswiezenia otwartego panelu): PRZYJMUJE jako NIE_ZMIERZONO, bez zmiany werdyktu.
+  - Dispatch r3 dopuszcza hak setResearchedTechs, gdy pomiar bez niego jest niemozliwy (precedens: __siegeBadgeTestDebug).
+  - Skrypt otwiera panel na nowo w kazdej fazie (startPlayerSiege po Odwrot), wiec nie mierzy odswiezenia OTWARTEGO panelu po odkryciu techu.
+  - Powod techniczny: hak zmienia zbior technologii bez wywolania zdarzenia badan gry, wiec w skrypcie nie ma realnej sciezki odkrycia w trakcie oblezenia; sterowanie drzewkiem badan jest poza zakresem tej rundy. Nie twierdze, ze odswiezanie dziala.
+
+Zarzut 2 (F0 jest sztuczny; naturalny stan startowy presetu nie zmierzony): ODRZUCAM dowodem.
+  - Dodano faze `F-start-naturalny-preset`, w ktorej setResearchedTechs NIE jest wywolywane. Hak researchedTechs zwraca [] (evidence/w18-r4-oblezenie-przed-po.json, phases[0].researched = []).
+  - Zbior startowy presetu jest pusty, czyli identyczny z F0. Taran, Taran okuty, Wieza oblezn. i Katapulta: domPanel.buttons = [], gateReason = technology_locked, 4 z 4 sprawdzen ok=true.
+  - Zrzut evidence/w18-r4-F-start-naturalny-preset.png obejrzany: panel oblezenia bez bloku „Zbuduj machine w oblezeniu”.
+  - Ograniczenie (jawne): to stan presetu ?playtest=oblez, nie pelnej gry po wielu turach. ABC #261 (Taran od startu) na tym presecie NIE odtwarza sie.
+
+Zarzut 3 (realna budowa machiny nie wykazana; allowed=false, insufficient_resources): ODRZUCAM jako podstawe FAIL, PRZYJMUJE jako ograniczenie juz zapisane w r3.
+  - Dispatch r3 definiuje FAIL przez WIDOCZNOSC („FAIL = machina dostepna przed techem albo niedostepna po”). Widocznosc zmierzona w 24/24 sprawdzeniach. Zdolnosc budowy z surowcami = NIE_ZMIERZONO (brak miasta gracza w presecie; fundPlayer nie ma magazynu). Raport nie twierdzi, ze budowa dziala.
+
+Zarzut 4 (brak dowodu mutacyjnego w raporcie Operatora): PRZYJMUJE, wykonano wlasny dowod.
+  - Linia 110 gra/src/game/siege-engine-build.ts to `return options.filter(option => isSiegeEngineTechUnlocked(option.unit, unlockedTechs));` (visibleSiegeEngineOptions). Mutacja: `options.filter(option => true || isSiegeEngineTechUnlocked(...))`.
+  - Build mutanta (vite, outDir w scratchpad) + skrypt: VERDICT FAIL, 14 z 24 sprawdzen ok=false (np. F-start: Taran domVisible=true, gateVisible=true, expectedVisible=false). Plik: evidence/w18-r4-MUTACJA-filter-true-oblezenie-przed-po.json.
+  - Przywrocenie linii 110, build czysty, skrypt: VERDICT PASS, 24/24 ok (evidence/w18-r4-oblezenie-przed-po.json). Mutacja wykrywana w obu kierunkach.
+
+WYNIK W18 (r4): PASS 24/24 (widocznosc, DOM i bramka zgodne). Faza naturalna: 0 machin widocznych. F1 tylko Obrobka drewna: Taran widoczny, pozostale niewidoczne. F2 tylko Brazownictwo: Taran okuty i Wieza oblezn. widoczne, Taran i Katapulta niewidoczne. F3: Taran, Taran okuty, Wieza. F4: + Katapulta. Brak przypadku „dostepna przed techem” ani „niedostepna po”.
+Ograniczenia (bez zmian): zdolnosc budowy z surowcami NIE_ZMIERZONO; odswiezanie otwartego panelu NIE_ZMIERZONO; obserwacja wizualna przyciecia panelu przy 800 px (osobny temat, nie naprawiano).
+
+TESTY (liczby z surowego wyjscia):
+- `npx tsc --noEmit` w gra/: exit 0, 0 bledow.
+- `npx vite build --outDir <scratchpad>/dist-base` (poza repo): EXIT 0, index.html 14 677 820 B; dist-mut (mutant): EXIT 0.
+- tools/live-verify-w18-w24-manual-losses-w18r3.cjs na dist-base: `VERDICT PASS`, 24/24, errors=[].
+- tools/live-verify-w18-w24-manual-losses-w18r3.cjs na dist-mut: `VERDICT FAIL`, 14 nieudanych.
+- Bramki referencyjne (na zmienionym kodzie): logic-test `LOGIC OK (213/213)`; tech-tree-test `20 pass, 0 fail`; research-test `ALL GREEN`; unit-replace-test `WSZYSTKIE TESTY ZIELONE (21/21)`; combat-test `All sanity checks passed.` (exit 0 wszystkie).
+- git diff --check: wynik w polu ponizej (sprawdzone przed commitem).
+
+BLOKADY: brak. NIE_ZMIERZONO: odswiezanie otwartego panelu (zarz. 1), zdolnosc budowy z surowcami (zarz. 3), punkty 2 i 3 bez zmian z r2/r3.
+
+RUNDY: 4/5 (obrona r4; operator = runda 3 kandydata).
+
+NASTEPNY KROK: Evaluator r4 -> Final Control. Orkiestrator decyduje o wycofaniu hooka z produkcyjnego main.ts (brama ?civTest=1) i o osobnym temacie dla przycieciu panelu oblezenia przy 800 px.
+
+DEPLOY/PUSH: NIE WYKONANO
+
+UWAGI-DLA-ORKIESTRATORA:
+- Zmieniono wylacznie kod testowy pod ?civTest=1 (dwie linie w main.ts). Brak zmian w gra/data, WERSJE.md, gra-robocza/, rust-port/.
+- Po pracy usunieto gra/node_modules (npm ci w worktree) i dist w scratchpad.
+- Dispatch r3 zakazywal `npm run build`; uzyto `npx vite build --outDir` poza repo (jak w r3). `npm run build` nie uruchamiano.
+
+---- SEKCJE POPRZEDNICH RUND (r2, r3) PONIZEJ ----
+
 STATUS: PASS-WITH-NOTES (obrona runda 3: zarzuty 1-6 rozstrzygnięte; punkt 1 (W18) NIE_ZMIERZONO z podaniem przyczyny technicznej; punkt 3 zmierzony 7 przebiegów kontrolnych, klik-po-klik NIE_ZMIERZONO; punkt 2 bez zmian z r1)
 DOMAIN: GAME
 TEMAT: R-WEB-LIVE-VERIFY-W18-W24-MANUAL-LOSSES-Q1
