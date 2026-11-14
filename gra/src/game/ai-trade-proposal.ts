@@ -70,9 +70,10 @@ export function selectAiTradeBarter(input: {
       const receiveMax = diplomacyNormalizeSurowiecIlosc(
         receive.key, Math.floor(humanStockAvailable + Math.max(0, humanSurplus.netRate)),
       );
-      const aiNeedPerTurn = Math.max(receiveStep, Math.ceil(-receive.netRate));
-      const needMax = diplomacyNormalizeSurowiecIlosc(receive.key, aiNeedPerTurn);
-      const feasibleReceiveMax = Math.min(receiveMax, needMax);
+      // R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1: ilosc odbioru wyznacza NADWYZKA GRACZA
+      // (receiveMax z zapasu ponad rezerwe i netRate), a nie sztywny krok handlu. Deficyt AI
+      // (warunek wejscia petli) pozostaje wymagany; uczciwosc wyceny bramkami nie zmienia sie.
+      const feasibleReceiveMax = receiveMax;
       if (feasibleReceiveMax <= 0) continue;
 
       // Search down from each real feasible maximum. Normalization occurs before valuation,
