@@ -31,13 +31,16 @@
 //!   `tribute_break_pairs`: WPIETE (port 1:1 `diplomacy-economy.ts`), z wektorami z pinu.
 //! - `deactivateZlozeGrantsForDeal` (pin w `runDiplomacyTurnTick`: :24234 dla wygaslych, :24294 dla zerwanych w D6;
 //!   poza tym tick: :22774 `breakTreatyVoluntarily`, :23694 `breakTreatiesOnWar`): BRAK. Pin trzyma
-//!   `zlozeGrants` w stanie gry (`zlozeGrants = deactivateZlozeGrantsForDeal(...)`), a w Rust nie ma modelu ani
-//!   portu zlozeGrants (grep `zloze_grant|ZlozeGrant|zlozeGrant` w `engine/src` = pusty). Wywolanie nie jest
-//!   wpiete; luka jawna, nie ciche zero.
+//!   `zlozeGrants` w stanie gry (`zlozeGrants = deactivateZlozeGrantsForDeal(...)`). Rust ma model
+//!   (`DiplomacyState::zloze_grants`, `ZlozeGrant`) i czysta funkcje `deactivate_zloze_grants_for_deal`
+//!   (`diplomacy.rs`), ale NIE ma wywolania w tym ticku ani w `breakTreatyVoluntarily`/`breakTreatiesOnWar`.
+//!   Wywolanie nie jest wpiete (temat ZLOZA-WIRING); luka jawna, nie ciche zero.
 //! - D7 dobra wola: galaz z hamulcem (flaga ON, domyslna na pinie) wpieta wczesniej w `run_brake_phase`;
 //!   galaz bez hamulca (`tickDobraWolaOnRelation`) = `tick_dobra_wola_on_relation`, wolana tylko gdy
 //!   `DiplStepsInputs::brake_flag_off` (na pinie `DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT = true`, wylaczenie tylko w
-//!   testach). `syncRelationFromDeals` (:24319) dla kontaktow gracza: `sync_relation_from_deals`.
+//!   testach). `syncRelationFromDeals` (definicja pin :22832; wolanie :24319 dla kontaktow gracza) =
+//!   `sync_relation_from_deals` (jedyna implementacja; czysty duplikat `sync_relation_status_from_deals`
+//!   usuniety w R-RUSTPORT-P6-ZLOZE-SYNC-MERGE-Q1). Pozostale 10 wolan z pinu: NIE wpiete (raport).
 //!
 //! Efekty na zasoby poza `WarTurnState` (zapasy miast, skarbce, pula Pracy) NIE sa stosowane do `PlayableState`
 //! (poza allowlista klocka): raport niesie `city_resources` (stan po D3), `treasury_deltas`, `praca_deltas`
