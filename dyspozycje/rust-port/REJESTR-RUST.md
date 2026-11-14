@@ -1045,3 +1045,7 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Procesowo:** dwa tematy padły na ENOSPC przy tworzeniu worktree (dysk 560 MB). Po czyszczeniu cache i worktree zakończonych uruchomień: 15 GB wolnych. Zakończone worktree (`wf_9a1f0958-6c2-1..3`, `wf_08046de1-bd4-1..3`, `wf_5f9d8207-512-1..2`, `wf_4dca0cce-39a-1..3`) usunięte po sprawdzeniu, że były czyste; gałęzie `wip/*` zostają.
 - **Sloty:** 0 z 4 aktywnych. Następna runda wymaga decyzji (CRED-HAK A/B/C, ZLOZE a/b) albo mojego ruchu technicznego dla ZDOBYCIE (wariant B, DODATEK r2) i TOWER (scalenie z #96).
 - **Parity:** `a381dd13f`. Dysk wolny: 15 GB.
+
+## Przebieg (14.11, heartbeat 12:18): sloty puste, czeka na decyzje właściciela
+- **Trwających Workflow: 0** z 4. Nie uruchomiono nowych tematów: kandydaci z kolejki (CRED-HAK #120, ZLOZE #104, TOWER-TARGET #116) czekają na decyzję właściciela (zob. wpis wyżej). ZDOBYCIE-WIRING #115 wymaga rundy 2 (DODATEK r2: wariant B, poszerzona allowlista), a jego start wstrzymano do potwierdzenia.
+- **Parity:** `a381dd13f` (sprawdzone fetch). Dysk wolny: 15 GB.
