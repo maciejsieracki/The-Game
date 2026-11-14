@@ -9962,3 +9962,6 @@ FALA 722 (MD5 e40f5456, main 159d443b4): (a) domyślna racja nowej gry gracza = 
 
 ## 2026-11-14 — ABC właściciela po FALI 722 (zmęczenie jako PW): C stałe 615; AI→gracz bez mnożnika cywilizacji; licznik miast obu stron wszędzie
 Temat R-WEB-DIPLO-WEARINESS-PW-FOLLOWUP-C615-BOTH-CITIES-Q1 (dispatch gotowy, start gdy slot). Wcześniej potwierdzone: silniejsza AI = pełna cena (A); przy ofercie gracza liczy się zmęczenie AI (A).
+
+## 2026-11-14 — DECYZJA WŁAŚCICIELA: obywatele zużywają ceramikę już w epoce Kamienia (1 na obywatela na turę)
+Temat R-WEB-DATA-CITIZEN-CERAMICS-STONE-AGE-Q1 (dispatch gotowy, start gdy slot): ceramika dodana do listy surowców epoki 1; kara za brak (−2 Szczęścia, −1% rozwoju za surowiec) działa jak dotąd. Przeliczenie: jedno miasto, 20 obywateli, Kamień: Garncarnia 30 − obywatele 20 − Spichlerz I 10 = 0 (zapas 0 co turę, bez bufora); Brąz bez zmian (0 ze Spichlerzem II, +10 ze Spichlerzem I). Ryzyko do pomiaru: do zbudowania Garncarni (tech Garncarstwo piąta) wszystkie miasta w Kamieniu mają karę.
