@@ -1069,3 +1069,7 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 ## Przebieg (14.11, heartbeat 14:48): sloty puste, czeka na decyzje właściciela
 - **Trwających Workflow: 0** z 4. Bez zmian względem 14:18: kandydaci czekają na decyzje właściciela (CRED-HAK A/B/C, ZLOZE a/b, TOWER-TARGET), start ZDOBYCIE r2 wstrzymany do potwierdzenia.
 - **Parity:** `a381dd13f` (sprawdzone fetch). Dysk wolny: 15 GB.
+
+## Przebieg (14.11, heartbeat 15:18): sloty puste, czeka na decyzje właściciela
+- **Trwających Workflow: 0** z 4. Bez zmian względem 14:48: kandydaci czekają na decyzje właściciela (CRED-HAK A/B/C, ZLOZE a/b, TOWER-TARGET), start ZDOBYCIE r2 wstrzymany do potwierdzenia.
+- **Parity:** `a381dd13f` (sprawdzone fetch). Dysk wolny: 15 GB.
