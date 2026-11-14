@@ -1,3 +1,9 @@
+## ROBOCZA 69982981 -- 2026-11-14 -- FALA 701: Digest stanu testowego niezalezny od Date.now (testowa)
+
+- gra/src/game/det-digest-normalize.ts + blok __detHarness.digest w main.ts: stackGroupId i city.siegeArmyGroupId normalizowane do kanonicznych indeksow (tylko hak testowy ?civTest=1, zero zmian logiki gry)
+- Weryfikacja: tsc 0; logic 213/213; determinism-digest-stackgroup-test 5/5 (mutacje FAIL); tech-tree 20/0, research 33/0, unit-replace 21/21, combat 6/6 (FC/Operator); live Chromium 2x22 tury identyczne digesty (Evaluator)
+- Limity: Wiecej ziaren, przebiegi powyzej 22 tur i stare zapisy nie zmierzone; sam freshStackGroupId nadal uzywa Date.now (decyzja o formacie ID poza zakresem)
+
 ## ROBOCZA dea19d1e -- 2026-11-14 -- FALA 700: Rozwiazanie jednostki odswieza prognoze ekonomii (testowa)
 
 - gra/src/main.ts: disbandPlayerUnit wola markCityStateDirty() przed refreshD1bHud() - tooltip i bramka Zakoncz ture od razu pokazuja nowy stan po rozwiazaniu jednostki (panel armii pojedynczo i masowo deleguje do tej funkcji); hak read-only ?civTest=1 peaceTrace (W80B1) bez logiki gry
