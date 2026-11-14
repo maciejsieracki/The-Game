@@ -92,9 +92,9 @@
       "opis": "Domyślny udział strumienia Zamożność (Wealth) w podziale Daniny netto nowego miasta i nowej gry gracza. 10% (decyzja właściciela 2026-11-14, R-WEB-SETTINGS-DEFAULT-TAX-SPLIT-30-60-10-Q1; wcześniej 20%). Przy 10% przedział Szczęścia 20-29% nie obowiązuje (efekt Szczęścia Zamożności przy 10% wymaga pomiaru na żywo — NIE_ZMIERZONO). Seed AI nadal używa Zamożności 20% z LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14 (game/cities.ts)."
     },
     "suwak_praca_budynki_domyslnie": {
-      "easy": 70,
-      "normal": 70,
-      "hard": 70,
+      "easy": 50,
+      "normal": 50,
+      "hard": 50,
       "jednostka": "%",
       "opis": "Domyślny udział strumienia Praca→Budynki w podziale Pracy netto. [PT]"
     },

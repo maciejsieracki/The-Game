@@ -7809,7 +7809,7 @@ export function decideAIEconomySliders(
   // pierwszym seedowaniem). ZASADA 3 (przekierowanie nadwyżki, main.ts ok. 29679-29719)
   // to ODRĘBNY mechanizm, poza tą funkcją — nie ruszany tutaj, nadal przywraca do tej
   // samej stałej po ustaniu nadwyżki (main.ts ok. 29705-29707, fallback DEFAULT_PODZIAL_
-  // PRACY.procentBudynki=70 tam NIE jest już osiągalny dla AI, bo aiSliderStateByOwner
+  // PRACY.procentBudynki=50 tam NIE jest już osiągalny dla AI, bo aiSliderStateByOwner
   // trzyma zawsze 50 od pierwszego wywołania tej funkcji).
   if (procentBudynki !== AI_FIXED_PROCENT_BUDYNKI) {
     procentBudynki = AI_FIXED_PROCENT_BUDYNKI;
