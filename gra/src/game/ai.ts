@@ -7050,6 +7050,7 @@ export function decideAIDiplomacy(
       rel.stanWojny
       && rel.partnerId === '0'
       && aiPeaceTimeOk
+      // Ta sama funkcja x co w tabeli PW (war-weariness.ts: wearinessPeaceItemPw): x = 1 ⇔ Z = C ⇔ R = 0.
       && wearinessUnconditionalEndDue(wearyLevel)
     ) {
       komendy.push({

@@ -322,7 +322,7 @@ export interface PendingNegotiationRow {
    * samej bramki co `accepted`/`reason` (patrz diplomacy-proposals.ts ProposalEvalResult) —
    * `undefined` gdy akcja nie ma numerycznej bramki PW (np. nap/sojusz/wasal).
    */
-  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number };
+  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: { turnsAtWar: number; lostCities: number; level: number } };
   /** incoming: Przyjmij dostępne tylko gdy warunki spełnione (i brak legacy access). */
   canAccept?: boolean;
   /** own: czekamy na odpowiedź AI — akcja Przyjmij w panelu PN. */
