@@ -1,0 +1,690 @@
+{
+ "scenario": "real",
+ "tag": "real",
+ "seed": 11,
+ "map": "Standardowy",
+ "civTypes": 15,
+ "cityStates": 2,
+ "startedAt": "2026-11-14T06:32:19.544Z",
+ "overlayEventsAtStart": [
+  {
+   "kind": "attach-appendChild",
+   "t": 3096,
+   "turn": 1,
+   "cls": "civ-map-load-overlay",
+   "stack": [
+    "at rec (<anonymous>:8:109)",
+    "at Node.<computed> [as appendChild] (<anonymous>:14:23)",
+    "at showMapLoadingOverlay (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?civTest=1&civSeed=11:81307:19)",
+    "at doStartGame (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?civTest=1&civSeed=11:241918:25)",
+    "at Object.startGame (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?civTest=1&civSeed=11:236065:18)",
+    "at eval (eval at evaluate (:303:30), <anonymous>:1:31)",
+    "at UtilityScript.evaluate (<anonymous>:305:16)",
+    "at UtilityScript.<anonymous> (<anonymous>:1:44)"
+   ]
+  }
+ ],
+ "turns": [
+  {
+   "idx": 1,
+   "actions": [],
+   "preTurn": 1,
+   "postTurn": 2,
+   "endTurn": {
+    "ms": 2816,
+    "turn0": 1,
+    "turn1": 2,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 2,
+   "actions": [],
+   "preTurn": 2,
+   "postTurn": 3,
+   "endTurn": {
+    "ms": 1375,
+    "turn0": 2,
+    "turn1": 3,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 3,
+   "actions": [],
+   "preTurn": 3,
+   "postTurn": 4,
+   "endTurn": {
+    "ms": 1534,
+    "turn0": 3,
+    "turn1": 4,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 4,
+   "actions": [],
+   "preTurn": 4,
+   "postTurn": 5,
+   "endTurn": {
+    "ms": 1184,
+    "turn0": 4,
+    "turn1": 5,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 5,
+   "actions": [],
+   "preTurn": 5,
+   "postTurn": 6,
+   "endTurn": {
+    "ms": 1585,
+    "turn0": 5,
+    "turn1": 6,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 6,
+   "actions": [],
+   "preTurn": 6,
+   "postTurn": 7,
+   "endTurn": {
+    "ms": 1409,
+    "turn0": 6,
+    "turn1": 7,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 7,
+   "actions": [],
+   "preTurn": 7,
+   "postTurn": 8,
+   "endTurn": {
+    "ms": 1851,
+    "turn0": 7,
+    "turn1": 8,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 8,
+   "actions": [],
+   "preTurn": 8,
+   "postTurn": 9,
+   "endTurn": {
+    "ms": 1463,
+    "turn0": 8,
+    "turn1": 9,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 9,
+   "actions": [],
+   "preTurn": 9,
+   "postTurn": 10,
+   "endTurn": {
+    "ms": 1459,
+    "turn0": 9,
+    "turn1": 10,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 10,
+   "actions": [],
+   "preTurn": 10,
+   "postTurn": 11,
+   "endTurn": {
+    "ms": 1656,
+    "turn0": 10,
+    "turn1": 11,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 11,
+   "actions": [],
+   "preTurn": 11,
+   "postTurn": 12,
+   "endTurn": {
+    "ms": 1515,
+    "turn0": 11,
+    "turn1": 12,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 12,
+   "actions": [],
+   "preTurn": 12,
+   "postTurn": 13,
+   "endTurn": {
+    "ms": 1546,
+    "turn0": 12,
+    "turn1": 13,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 13,
+   "actions": [],
+   "preTurn": 13,
+   "postTurn": 14,
+   "endTurn": {
+    "ms": 1792,
+    "turn0": 13,
+    "turn1": 14,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 14,
+   "actions": [],
+   "preTurn": 14,
+   "postTurn": 15,
+   "endTurn": {
+    "ms": 1743,
+    "turn0": 14,
+    "turn1": 15,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 15,
+   "actions": [],
+   "preTurn": 15,
+   "postTurn": 16,
+   "endTurn": {
+    "ms": 1604,
+    "turn0": 15,
+    "turn1": 16,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 16,
+   "actions": [],
+   "preTurn": 16,
+   "postTurn": 17,
+   "endTurn": {
+    "ms": 1798,
+    "turn0": 16,
+    "turn1": 17,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 17,
+   "actions": [],
+   "preTurn": 17,
+   "postTurn": 18,
+   "endTurn": {
+    "ms": 1745,
+    "turn0": 17,
+    "turn1": 18,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 18,
+   "actions": [],
+   "preTurn": 18,
+   "postTurn": 19,
+   "endTurn": {
+    "ms": 1808,
+    "turn0": 18,
+    "turn1": 19,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 19,
+   "actions": [],
+   "preTurn": 19,
+   "postTurn": 20,
+   "endTurn": {
+    "ms": 1778,
+    "turn0": 19,
+    "turn1": 20,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 20,
+   "actions": [],
+   "preTurn": 20,
+   "postTurn": 21,
+   "endTurn": {
+    "ms": 1642,
+    "turn0": 20,
+    "turn1": 21,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 21,
+   "actions": [],
+   "preTurn": 21,
+   "postTurn": 22,
+   "endTurn": {
+    "ms": 3876,
+    "turn0": 21,
+    "turn1": 22,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 22,
+   "actions": [],
+   "preTurn": 22,
+   "postTurn": 23,
+   "endTurn": {
+    "ms": 2067,
+    "turn0": 22,
+    "turn1": 23,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 23,
+   "actions": [],
+   "preTurn": 23,
+   "postTurn": 24,
+   "endTurn": {
+    "ms": 1952,
+    "turn0": 23,
+    "turn1": 24,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 24,
+   "actions": [],
+   "preTurn": 24,
+   "postTurn": 25,
+   "endTurn": {
+    "ms": 1779,
+    "turn0": 24,
+    "turn1": 25,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 25,
+   "actions": [],
+   "preTurn": 25,
+   "postTurn": 26,
+   "endTurn": {
+    "ms": 1644,
+    "turn0": 25,
+    "turn1": 26,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 26,
+   "actions": [],
+   "preTurn": 26,
+   "postTurn": 27,
+   "endTurn": {
+    "ms": 2029,
+    "turn0": 26,
+    "turn1": 27,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 27,
+   "actions": [],
+   "preTurn": 27,
+   "postTurn": 28,
+   "endTurn": {
+    "ms": 2119,
+    "turn0": 27,
+    "turn1": 28,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 28,
+   "actions": [],
+   "preTurn": 28,
+   "postTurn": 29,
+   "endTurn": {
+    "ms": 2405,
+    "turn0": 28,
+    "turn1": 29,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 29,
+   "actions": [],
+   "preTurn": 29,
+   "postTurn": 30,
+   "endTurn": {
+    "ms": 2067,
+    "turn0": 29,
+    "turn1": 30,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 30,
+   "actions": [],
+   "preTurn": 30,
+   "postTurn": 31,
+   "endTurn": {
+    "ms": 2203,
+    "turn0": 30,
+    "turn1": 31,
+    "overlayDuringEnd": false,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": false,
+   "overlayVisibleAfter": false,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  }
+ ],
+ "harness": [
+  "założono pierwsze miasto (foundFirstCity)",
+  "setFast(true) — pominięcie renderu (tryb przyspieszony)"
+ ],
+ "pageErrors": [],
+ "endBlocks": [
+  "[EndTurn] blocked: awaitingFirstPlayerCity",
+  "[EndTurn] blocked: awaitingFirstPlayerCity",
+  "[EndTurn] blocked: awaitingFirstPlayerCity",
+  "[EndTurn] blocked: awaitingFirstPlayerCity",
+  "[EndTurn] blocked: awaitingFirstPlayerCity",
+  "[EndTurn] blocked: awaitingFirstPlayerCity",
+  "[EndTurn] blocked: awaitingFirstPlayerCity",
+  "[EndTurn] blocked: awaitingFirstPlayerCity",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress"
+ ],
+ "stopped": "koniec: 30 tur",
+ "done": true,
+ "overlayEventsTotal": 1,
+ "domAppearTotal": 1,
+ "finishedAt": "2026-11-14T06:36:46.241Z",
+ "overlayEventsFinal": [
+  {
+   "kind": "attach-appendChild",
+   "t": 3096,
+   "turn": 1,
+   "cls": "civ-map-load-overlay",
+   "stack": [
+    "at rec (<anonymous>:8:109)",
+    "at Node.<computed> [as appendChild] (<anonymous>:14:23)",
+    "at showMapLoadingOverlay (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?civTest=1&civSeed=11:81307:19)",
+    "at doStartGame (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?civTest=1&civSeed=11:241918:25)",
+    "at Object.startGame (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?civTest=1&civSeed=11:236065:18)",
+    "at eval (eval at evaluate (:303:30), <anonymous>:1:31)",
+    "at UtilityScript.evaluate (<anonymous>:305:16)",
+    "at UtilityScript.<anonymous> (<anonymous>:1:44)"
+   ]
+  }
+ ],
+ "domAppearFinal": 1
+}

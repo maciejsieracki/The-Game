@@ -1,0 +1,300 @@
+{
+ "scenario": "mapa",
+ "seed": 11,
+ "startedAt": "2026-11-14T07:20:56.684Z",
+ "console": [
+  {
+   "kind": "warning",
+   "text": "[EndTurn] triggerPlayerEndTurn: START tura 1"
+  },
+  {
+   "kind": "warning",
+   "text": "[EndTurn] blocked: endTurnInProgress"
+  },
+  {
+   "kind": "warning",
+   "text": "[EndTurn] blocked: endTurnInProgress"
+  },
+  {
+   "kind": "warning",
+   "text": "[EndTurn] blocked: endTurnInProgress"
+  },
+  {
+   "kind": "warning",
+   "text": "[EndTurn] blocked: endTurnInProgress"
+  },
+  {
+   "kind": "warning",
+   "text": "[EndTurn] triggerPlayerEndTurn: DONE tura 2"
+  },
+  {
+   "kind": "warning",
+   "text": "[EndTurn] triggerPlayerEndTurn: START tura 2"
+  },
+  {
+   "kind": "warning",
+   "text": "[EndTurn] blocked: endTurnInProgress"
+  },
+  {
+   "kind": "warning",
+   "text": "[EndTurn] blocked: endTurnInProgress"
+  },
+  {
+   "kind": "warning",
+   "text": "[EndTurn] blocked: endTurnInProgress"
+  },
+  {
+   "kind": "warning",
+   "text": "[EndTurn] blocked: endTurnInProgress"
+  },
+  {
+   "kind": "warning",
+   "text": "[EndTurn] triggerPlayerEndTurn: DONE tura 3"
+  },
+  {
+   "kind": "warning",
+   "text": "[EndTurn] triggerPlayerEndTurn: START tura 3"
+  },
+  {
+   "kind": "warning",
+   "text": "[EndTurn] blocked: endTurnInProgress"
+  },
+  {
+   "kind": "warning",
+   "text": "[EndTurn] blocked: endTurnInProgress"
+  },
+  {
+   "kind": "warning",
+   "text": "[EndTurn] blocked: endTurnInProgress"
+  },
+  {
+   "kind": "warning",
+   "text": "[EndTurn] blocked: endTurnInProgress"
+  },
+  {
+   "kind": "warning",
+   "text": "[EndTurn] blocked: endTurnInProgress"
+  },
+  {
+   "kind": "warning",
+   "text": "[EndTurn] triggerPlayerEndTurn: DONE tura 4"
+  }
+ ],
+ "turns": [
+  {
+   "ms": 371,
+   "turn0": 1,
+   "turn1": 2,
+   "overlayDuringEnd": true,
+   "endTurnSeen": true,
+   "blockedDuringEnd": 4
+  },
+  {
+   "ms": 257,
+   "turn0": 2,
+   "turn1": 3,
+   "overlayDuringEnd": true,
+   "endTurnSeen": true,
+   "blockedDuringEnd": 4
+  },
+  {
+   "ms": 286,
+   "turn0": 3,
+   "turn1": 4,
+   "overlayDuringEnd": true,
+   "endTurnSeen": true,
+   "blockedDuringEnd": 5
+  }
+ ],
+ "overlayDomCount": [
+  {
+   "when": "worldReady+3s",
+   "n": 1
+  },
+  {
+   "when": "po turze 1",
+   "n": 1
+  },
+  {
+   "when": "po turze 2",
+   "n": 1
+  },
+  {
+   "when": "po turze 3",
+   "n": 1
+  }
+ ],
+ "blk": [
+  {
+   "turn": 1,
+   "t": 7562,
+   "stack": [
+    "at canPlayerInitiateEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:230099:19)",
+    "at Object.canEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:225499:29)",
+    "at Object.render2 [as update] (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:135980:86)",
+    "at refreshD1BModules (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155372:50)",
+    "at file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155490:7",
+    "at Object.run (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:110127:11)",
+    "at updateHud (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155486:14)"
+   ]
+  },
+  {
+   "turn": 2,
+   "t": 7632,
+   "stack": [
+    "at canPlayerInitiateEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:230099:19)",
+    "at Object.canEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:225499:29)",
+    "at Object.render2 [as update] (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:135980:86)",
+    "at refreshD1BModules (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155372:50)",
+    "at file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155490:7",
+    "at Object.run (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:110127:11)",
+    "at updateHud (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155486:14)"
+   ]
+  },
+  {
+   "turn": 2,
+   "t": 7751,
+   "stack": [
+    "at canPlayerInitiateEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:230099:19)",
+    "at Object.canEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:225499:29)",
+    "at Object.render2 [as update] (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:135980:86)",
+    "at refreshD1BModules (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155372:50)",
+    "at file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155490:7",
+    "at Object.run (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:110127:11)",
+    "at updateHud (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155486:14)"
+   ]
+  },
+  {
+   "turn": 2,
+   "t": 7801,
+   "stack": [
+    "at canPlayerInitiateEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:230099:19)",
+    "at Object.canEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:225499:29)",
+    "at Object.render2 [as update] (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:135980:86)",
+    "at refreshD1BModules (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155372:50)",
+    "at file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155490:7",
+    "at Object.run (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:110127:11)",
+    "at updateHud (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155486:14)"
+   ]
+  },
+  {
+   "turn": 2,
+   "t": 8150,
+   "stack": [
+    "at canPlayerInitiateEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:230099:19)",
+    "at Object.canEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:225499:29)",
+    "at Object.render2 [as update] (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:135980:86)",
+    "at refreshD1BModules (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155372:50)",
+    "at file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155490:7",
+    "at Object.run (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:110127:11)",
+    "at updateHud (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155486:14)"
+   ]
+  },
+  {
+   "turn": 3,
+   "t": 8216,
+   "stack": [
+    "at canPlayerInitiateEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:230099:19)",
+    "at Object.canEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:225499:29)",
+    "at Object.render2 [as update] (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:135980:86)",
+    "at refreshD1BModules (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155372:50)",
+    "at file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155490:7",
+    "at Object.run (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:110127:11)",
+    "at updateHud (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155486:14)"
+   ]
+  },
+  {
+   "turn": 3,
+   "t": 8264,
+   "stack": [
+    "at canPlayerInitiateEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:230099:19)",
+    "at Object.canEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:225499:29)",
+    "at Object.render2 [as update] (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:135980:86)",
+    "at refreshD1BModules (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155372:50)",
+    "at file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155490:7",
+    "at Object.run (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:110127:11)",
+    "at updateHud (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155486:14)"
+   ]
+  },
+  {
+   "turn": 3,
+   "t": 8294,
+   "stack": [
+    "at canPlayerInitiateEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:230099:19)",
+    "at Object.canEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:225499:29)",
+    "at Object.render2 [as update] (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:135980:86)",
+    "at refreshD1BModules (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155372:50)",
+    "at file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155490:7",
+    "at Object.run (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:110127:11)",
+    "at updateHud (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155486:14)"
+   ]
+  },
+  {
+   "turn": 3,
+   "t": 8380,
+   "stack": [
+    "at canPlayerInitiateEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:230099:19)",
+    "at Object.canEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:225499:29)",
+    "at Object.render2 [as update] (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:135980:86)",
+    "at refreshD1BModules (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155372:50)",
+    "at file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155490:7",
+    "at Object.run (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:110127:11)",
+    "at updateHud (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155486:14)"
+   ]
+  },
+  {
+   "turn": 4,
+   "t": 8449,
+   "stack": [
+    "at canPlayerInitiateEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:230099:19)",
+    "at Object.canEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:225499:29)",
+    "at Object.render2 [as update] (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:135980:86)",
+    "at refreshD1BModules (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155372:50)",
+    "at file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155490:7",
+    "at Object.run (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:110127:11)",
+    "at updateHud (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155486:14)"
+   ]
+  },
+  {
+   "turn": 4,
+   "t": 8486,
+   "stack": [
+    "at canPlayerInitiateEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:230099:19)",
+    "at Object.canEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:225499:29)",
+    "at Object.render2 [as update] (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:135980:86)",
+    "at refreshD1BModules (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155372:50)",
+    "at file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155490:7",
+    "at Object.run (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:110127:11)",
+    "at updateHud (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155486:14)"
+   ]
+  },
+  {
+   "turn": 4,
+   "t": 8572,
+   "stack": [
+    "at canPlayerInitiateEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:230099:19)",
+    "at Object.canEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:225499:29)",
+    "at Object.render2 [as update] (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:135980:86)",
+    "at refreshD1BModules (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155372:50)",
+    "at file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155490:7",
+    "at Object.run (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:110127:11)",
+    "at updateHud (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155486:14)"
+   ]
+  },
+  {
+   "turn": 4,
+   "t": 8603,
+   "stack": [
+    "at canPlayerInitiateEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:230099:19)",
+    "at Object.canEndTurn (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:225499:29)",
+    "at Object.render2 [as update] (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:135980:86)",
+    "at refreshD1BModules (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155372:50)",
+    "at file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155490:7",
+    "at Object.run (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:110127:11)",
+    "at updateHud (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:155486:14)"
+   ]
+  }
+ ],
+ "stopped": "koniec: 3 tur",
+ "finishedAt": "2026-11-14T07:21:05.809Z"
+}

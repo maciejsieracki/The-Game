@@ -1,0 +1,157 @@
+{
+ "scenario": "mapa",
+ "tag": "mapa-100000",
+ "seed": 11,
+ "map": "Standardowy",
+ "civTypes": 15,
+ "cityStates": 2,
+ "startedAt": "2026-11-14T07:14:30.098Z",
+ "overlayEventsAtStart": [
+  {
+   "kind": "attach-appendChild",
+   "t": 3326,
+   "turn": 1,
+   "cls": "civ-map-load-overlay",
+   "stack": [
+    "at rec (<anonymous>:8:109)",
+    "at Node.<computed> [as appendChild] (<anonymous>:14:23)",
+    "at showMapLoadingOverlay (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:81307:19)",
+    "at doStartPlaytestMapaSwiata (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:242689:25)",
+    "at boot (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:243028:14)"
+   ]
+  }
+ ],
+ "turns": [
+  {
+   "idx": 1,
+   "actions": [
+    "awaitingFirstCity -> foundFirstCity=true"
+   ],
+   "preTurn": 1,
+   "postTurn": 2,
+   "endTurn": {
+    "ms": 314,
+    "turn0": 1,
+    "turn1": 2,
+    "overlayDuringEnd": true,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": true,
+   "overlayVisibleAfter": true,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 2,
+   "actions": [],
+   "preTurn": 2,
+   "postTurn": 3,
+   "endTurn": {
+    "ms": 350,
+    "turn0": 2,
+    "turn1": 3,
+    "overlayDuringEnd": true,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": true,
+   "overlayVisibleAfter": true,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 3,
+   "actions": [],
+   "preTurn": 3,
+   "postTurn": 4,
+   "endTurn": {
+    "ms": 708,
+    "turn0": 3,
+    "turn1": 4,
+    "overlayDuringEnd": true,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": true,
+   "overlayVisibleAfter": true,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  },
+  {
+   "idx": 4,
+   "actions": [],
+   "preTurn": 4,
+   "postTurn": 5,
+   "endTurn": {
+    "ms": 464,
+    "turn0": 4,
+    "turn1": 5,
+    "overlayDuringEnd": true,
+    "newOverlayEvents": 0,
+    "endTurnSeen": true,
+    "hung": false
+   },
+   "overlayVisibleBefore": true,
+   "overlayVisibleAfter": true,
+   "overlayEventsThisTurn": 0,
+   "playerCities": 1,
+   "awaitingFirstCity": false
+  }
+ ],
+ "harness": [
+  "grantPlayerGold(-100000) przed pierwszą turą (ARTEFAKT harnessu)",
+  "setFast(true) — pominięcie renderu (tryb przyspieszony)"
+ ],
+ "pageErrors": [],
+ "endBlocks": [
+  "[EndTurn] blocked: awaitingFirstPlayerCity",
+  "[EndTurn] blocked: awaitingFirstPlayerCity",
+  "[EndTurn] blocked: awaitingFirstPlayerCity",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress",
+  "[EndTurn] blocked: endTurnInProgress"
+ ],
+ "stopped": "koniec: 4 tur",
+ "done": true,
+ "overlayEventsTotal": 1,
+ "domAppearTotal": 1,
+ "finishedAt": "2026-11-14T07:14:39.505Z",
+ "overlayEventsFinal": [
+  {
+   "kind": "attach-appendChild",
+   "t": 3326,
+   "turn": 1,
+   "cls": "civ-map-load-overlay",
+   "stack": [
+    "at rec (<anonymous>:8:109)",
+    "at Node.<computed> [as appendChild] (<anonymous>:14:23)",
+    "at showMapLoadingOverlay (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:81307:19)",
+    "at doStartPlaytestMapaSwiata (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:242689:25)",
+    "at boot (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-dbg/index.html?playtest=mapa&civTest=1&civSeed=11:243028:14)"
+   ]
+  }
+ ],
+ "domAppearFinal": 1
+}
