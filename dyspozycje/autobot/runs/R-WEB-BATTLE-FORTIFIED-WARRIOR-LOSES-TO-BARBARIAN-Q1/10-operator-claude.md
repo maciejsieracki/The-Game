@@ -64,3 +64,43 @@ Decyzja właściciela A/B/C/D (powyżej). Po decyzji: Operator r2 z wybraną opc
 - Worktree ma wpisany node_modules w gra/ (npm ci --ignore-scripts, tylko do esbuild/tsc); to ignorowane przez git, do sprzątnięcia po integracji.
 
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+
+# RUNDA 2/5 — Operator (HAIKU), baza 236312c01 (origin/main, kandydat FC r1)
+
+STATUS: BLOCK
+DOMAIN: GAME
+TEMAT: R-WEB-BATTLE-FORTIFIED-WARRIOR-LOSES-TO-BARBARIAN-Q1
+GOAL: ustalić DLACZEGO barbarzyńca wygrywa niezależnie od kierunku ataku (DODATEK 4: najpierw rola atakującego, potem sonda sceny, księga, wniosek, naprawa tylko przy zmierzonym defekcie).
+ZMIANY/COMMIT: brak zmian w gra/src, gra/data, gra/tools. Commit wyłącznie tego raportu (narzędzie sondy NIE zostało napisane, patrz BLOKADY).
+TESTY: tsc i 5 bramek NIE_WYKONANO (brak gra/node_modules w worktree; bez zmian kodu nie ma czego bramkować). Sonda sceny NIE_ZMIERZONO (patrz niżej).
+BLOKADY:
+ - Pkt 2 DODATKU 4 (sonda sceny: _singleBlow / computeInstantResult / AUTO, oba kierunki, tryby "losowe"/"pewne", fort ON/OFF) NIE wykonana. Powód: BattleScene importuje Three.js i DOM; bundlowanie wymaga npm ci w worktree i harnessu DOM (lub przeglądarki, wzorzec live-verify-*.cjs). Ten etap wymaga osobnej rundy z zapewnionym środowiskiem.
+ - Pkt 1 (rola atakującego): CZĘŚCIOWO, tylko czytanie kodu, bez sondy (sekcja niżej). Nie jest dowodem uruchomieniowym.
+ - Pkt 3 (księga modyfikatorów z ścieżki rzeczywistej): NIE_ZMIERZONO.
+ - Pkt 4 (wniosek): NIE_ZMIERZONO. Nie rozstrzygam, czy zgłoszenie "barbarzyńca wygrywa także, gdy gracz atakuje" da się odtworzyć.
+ - Pkt 5 (naprawa): NIE wykonana, bo nie ma zmierzonego defektu.
+RUNDY: 2/5 (po tej rundzie: 3/5 do wykonania)
+NASTĘPNY KROK: runda 3 z zadaniem sondy sceny w środowisku z node_modules (npm ci w worktree albo kopia gra/), harness przez esbuild bundle BattleScene z mockiem DOM/THREE albo przez przeglądarkę (?civTest=1). Wejście: hipoteza H7 poniżej.
+DEPLOY/PUSH: NIE WYKONANO
+
+## Ustalenia z czytania kodu (NIE z pomiaru)
+
+1. Kolejność uderzeń w turze sceny (gra/src/battle/battleScene.ts):
+   - tryb ręczny (`this._manualMode`): `order.push(...player, ...enemy)` (linia 5691). Gracz zawsze działa przed wrogiem w każdej turze, niezależnie od tego, kto jest "atk".
+   - tryb nieręczny (AUTO sceniczny): pary `a[i], d[i]` (linie 5697-5700). Strona "atk" zawsze pierwsza w każdej parze.
+2. Szarża / pierwsze uderzenie: `isCharge = firstBlow && !bracesAgainstCharge(...)` (linia 9076), gdzie `firstBlow` to pierwszy cios pary `attacker>defender`. Bonus szarży dostaje pierwszy cios w kolejności tury, niezależnie od tego, kto zainicjował walkę.
+3. Strona gracza w scenie (`_playerControlSide()` = `_deployPlayerSideOpt`, battleScene.ts:12710; ustawiane w main.ts):
+   - main.ts:35034 bitwa polowa, gdy ATAKUJE gracz (`'atk'`): poprawne;
+   - main.ts:35766 bitwa przychodząca, gdy atakuje barbarzyńca/AI (`'def'`): poprawne, jeśli gracz jest obrońcą;
+   - main.ts:38501 szturm oblężniczy (`'atk'`, `launchSiegeStormFromMap`): zakłada, że gracz jest atakującym; NIE zweryfikowane, czy `anchor` zawsze jest graczem.
+   Hipoteza H7 (do zmierzenia, NIE potwierdzona): w ścieżce przychodzącej (35766) gracz ma stronę 'def', ale w trybie ręcznym działa PIERWSZY (pkt 1). Przy identycznych jednostkach gracz mógłby więc zadać pierwszy cios i dostać szarżę, czyli wynik przeciwny do zgłoszenia. Trzeba to zmierzyć.
+4. `fortifiedInField` (main.ts:34648, `unitGetsFortifyBonus(u)`) jest wpięte w `runtimeToBattleUnit` dla obu stron. Konsumpcja w `_singleBlow` (battleScene.ts:9110, `fieldFortifyDefenseBonus`) działa dla każdego obrońcy bez rozróżnienia gracz/AI. Brak asymetrii w tym miejscu (kod).
+5. `certainHit` (battleScene.ts:9139-9140): w trybie "pewne" `roll = 0`, `hitPct = 100`. Obrona nie wpływa na trafienie. To zgadza się z pomiarem resolveCombat z rundy 1 (200/0/0).
+
+## Ocena wobec zarzutów FC r1
+
+- Zarzut 3 (zła ścieżka pomiaru): NADAL OTWARTY. Ścieżka sceny nie zmierzona; ten raport tego nie zamyka.
+- Zarzut 2 (wniosek 'pewne' nie tłumaczy kierunku gracza): z kodu wynika, że kolejność w trybie ręcznym daje przewagę GRACZOWI, a w AUTO sceniczne stronie 'atk'. Oba mogą odwrócić oczekiwany wynik; wymaga pomiaru.
+- Zarzut 5 (macierz 3x3): NIE wykonana.
