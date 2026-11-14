@@ -144,7 +144,7 @@ for (const t of [1, 20]) {
     '(11a) main.ts: nnsGateForPlayer przekazuje prognozaPoPodatku (kroki 10% z projekcji previewCityEconomy) do decideEndTurnGate');
   ok(/autoRaiseRationsForGrowth\(\{[\s\S]*?requireProductionSurplus: true,[\s\S]*?onlyAutoManaged: true,/.test(mainSrc),
     '(11b) main.ts: projekcja odtwarza autoRaiseRationsForGrowth (parytet z tickiem, gracz)');
-  ok(/maxSafePoziomRacjiForCity\(\{\s*cityId: c\.id, ownerId: ME\(\), cities: playerCities,/.test(mainSrc),
+  ok(/maxSafePoziomRacjiForCity\(\{\s*cityId: c\.id, ownerId: ME\(\), cities: playerCities,[\s\S]*?c\.poziomRacji = maxSafeProj; clampedProj = true;/.test(mainSrc),
     '(11c) main.ts: projekcja odtwarza clamp Q3 (maxSafePoziomRacjiForCity dla wszystkich miast gracza)');
   ok(/for \(const sv of savedAutoRacje\) \{ sv\.c\.poziomRacji = sv\.poziom; sv\.c\.procentRozwoj = sv\.procent; \}/.test(mainSrc),
     '(11d) main.ts: projekcja przywraca racje miast w finally (brak efektów ubocznych)');
