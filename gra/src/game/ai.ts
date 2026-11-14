@@ -17,6 +17,7 @@ import type { Hex }     from '../types/hex';
 import { Nakladka }     from '../types/hex';
 import type { GameData, BuildingDef } from '../data/loader';
 import aiParamsRaw from '../../data/ai-params.json';
+import diplomacyAcceptanceRaw from '../../data/diplomacy-acceptance-points.json';
 import type { RuntimeUnit } from '../units/setup';
 import { isWarAllInCapitalEnabled, planWarAllInCapital, type WarAllInContext } from './warAllInCapital';
 import {
@@ -6532,10 +6533,10 @@ export const AI_MIASTO_ZADANIE_RW = 0.7;
 /** Tury wojny, po których silne AI żąda miasta (alternatywnie: zdobycie miasta gracza). */
 export const AI_MIASTO_ZADANIE_TURY_WOJNY = 20;
 /**
- * Cena bazowa pokoju w PW = traktaty.pokoj.punkty z diplomacy-acceptance-points.json (500).
- * Stała lustrzana — test r3 pilnuje zgodności z `treatyBasePnFromConfig('pokoj')`.
+ * Cena bazowa pokoju w PW = traktaty.pokoj.punkty z diplomacy-acceptance-points.json (615, stała C; R-WEB-DIPLO-WEARINESS-PW-FOLLOWUP-C615).
+ * Jedna prawda: czytane z JSON (nie lustro); test r3 pilnuje zgodności z `treatyBasePnFromConfig('pokoj')`.
  */
-export const AI_MIASTO_CENA_POKOJU_PN = 500;
+export const AI_MIASTO_CENA_POKOJU_PN: number = (diplomacyAcceptanceRaw as unknown as { traktaty: { pokoj: { punkty: number } } }).traktaty.pokoj.punkty;
 
 /** Próg rw oddania miasta: 0.15 − 0.01·(agresywność − 5); brak danych = agresywność 5. */
 export function aiMiastoPrzekazRwProg(agresywnoscRaw?: number): number {

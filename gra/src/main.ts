@@ -1631,7 +1631,7 @@ import {
   registerAiPeaceRequest, isAiAiPeaceBalanceAllowed, aiAiPeaceRequiredPn, isForcedPeaceEligiblePair, runAiAiPeaceTick, requesterShare, isClearlyLosing,
   type AiPeaceRequest, type AiPeaceKind, type PeaceAsset,
 } from './game/diplomacy-ai-forced-peace';
-import { runWarWearinessTick, militaryWearinessWiring, warWearinessLevel, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
+import { runWarWearinessTick, militaryWearinessWiring, warWearinessLevel, lostCitiesForWeariness, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
 import { warWearinessPairView, peakForCurrentWar, warWearinessSideView, type WarWearinessPairView, type WarWearinessReference } from './game/war-weariness-view';
 import {
   isPeaceTreatyLocked,
@@ -12130,9 +12130,13 @@ async function boot(): Promise<void> {
         { id: proposerId, sila: prop.sila, armiaPkt: prop.armiaPkt },
         PEACE_STRENGTH_GAP_PROC,
       );
+      // R-WEB-DIPLO-WEARINESS-PW-FOLLOWUP-C615-BOTH-CITIES-Q1: licznik zmęczenia = miasta utracone przez OBIE strony
+      // (ta sama funkcja co tick AI↔AI, war-weariness.ts lostCitiesForWeariness). Pole `lostCitiesResponder` — nazwa
+      // historyczna; wartość = suma, nie tylko respondent.
+      const lostProposerInWar = diploWarStateFor(proposerId, responderId).lostCities;
       return {
         turnsAtWar: s.turnsAtWar,
-        lostCitiesResponder: s.lostCities,
+        lostCitiesResponder: lostCitiesForWeariness(s.lostCities, lostProposerInWar),
         turnsSinceCityChange: s.turnsSinceCityChange,
         responderRw,
         responderPozycjaMilitarna,

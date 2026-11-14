@@ -74,7 +74,7 @@ Przegrywający z małą liczbą miast (do 3) albo po wielu stratach (co najmniej
 
 ### Cena pokoju od gracza
 
-Zmęczenie wojną nie obniża ceny pokoju. Od poziomu 0,5 pojawia się w tabeli punktów wymiany (PW) jako pozycja „Zmęczenie wojną +N PW”: N = cena pokoju × x², gdzie x rośnie liniowo od 0 (przy 50%) do 1 (przy 80%). Czyli wolny start i przyspieszenie (krzywa kwadratowa). Reszta ceny do pokrycia to miasto. Przy 80% zmęczenia pozycja równa się całej cenie, pokój jest bezwarunkowy, a bilans wynosi 0.
+Zmęczenie wojną nie obniża ceny pokoju. Od poziomu 0,5 pojawia się w tabeli punktów wymiany (PW) jako pozycja „Zmęczenie wojną +N PW”: N = cena pokoju × x², gdzie x rośnie liniowo od 0 (przy 50%) do 1 (przy 80%). Cena pokoju wynosi stałe 615 PW (nie zależy od cywilizacji ani od tury wojny). Czyli wolny start i przyspieszenie (krzywa kwadratowa). Reszta ceny do pokrycia to miasto. Przy 80% zmęczenia pozycja równa się całej cenie, pokój jest bezwarunkowy, a bilans wynosi 0.
 
 ### Panel dyplomacji
 
