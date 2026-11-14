@@ -87,6 +87,38 @@ fn deactivate_zloze_grants_for_deal_matches_pin_vectors() {
     assert!(hits > 0, "wektory musza zawierac trafienia deala");
 }
 
+/// Brak zapisanej relacji w stanie: mutator startuje od domyslnej (Neutral, jak `getDiploRelation`),
+/// NAP daje pokoj, sojusz ma pierwszenstwo, bez traktatu brak zapisu.
+#[test]
+fn sync_relation_from_deals_without_stored_relation() {
+    let a = p(1);
+    let b = p(2);
+
+    let mut nap_only = DiplomacyState::new();
+    nap_only.add_deal(ActiveDeal::new(TreatyKind::Nap, a, b, 1, None));
+    assert!(sync_relation_from_deals(&mut nap_only, a, b));
+    assert_eq!(
+        nap_only.relation(a, b).expect("relacja").status,
+        RelationStatus::Peace
+    );
+
+    let mut nap_and_alliance = DiplomacyState::new();
+    nap_and_alliance.add_deal(ActiveDeal::new(TreatyKind::Nap, a, b, 1, None));
+    nap_and_alliance.add_deal(ActiveDeal::new(TreatyKind::FullAlliance, a, b, 1, None));
+    assert!(sync_relation_from_deals(&mut nap_and_alliance, a, b));
+    assert_eq!(
+        nap_and_alliance.relation(a, b).expect("relacja").status,
+        RelationStatus::Alliance
+    );
+
+    let mut none = DiplomacyState::new();
+    assert!(!sync_relation_from_deals(&mut none, a, b));
+    assert!(
+        none.relation(a, b).is_none(),
+        "bez traktatu nie zapisujemy relacji"
+    );
+}
+
 #[test]
 fn sync_relation_from_deals_matches_pin_vectors() {
     let v = vectors();
@@ -103,17 +135,21 @@ fn sync_relation_from_deals_matches_pin_vectors() {
             .collect();
         let expected = status_from(&case["expected"]);
         // Jedyna produkcyjna implementacja: sync_relation_from_deals (mutujaca, na DiplomacyState).
+        // Zaufanie i respekt niezerowe: pin robi {...rel, status}, wiec musza przetrwac sync.
         let mut st = DiplomacyState::new();
         st.set_relation(
             CivilizationPair::new(a, b),
-            Relation::new(0.0, 0.0, current),
+            Relation::new(37.0, 21.0, current),
         );
         for deal in deals {
             st.add_deal(deal);
         }
         let returned = sync_relation_from_deals(&mut st, a, b);
-        let got = st.relation(a, b).expect("relacja").status;
+        let after = st.relation(a, b).expect("relacja").clone();
+        let got = after.status;
         assert_eq!(got, expected, "przypadek {}", case["name"]);
+        assert_eq!(after.trust, 37.0, "przypadek {}: zaufanie", case["name"]);
+        assert_eq!(after.respect, 21.0, "przypadek {}: respekt", case["name"]);
         // Zwrot false = brak zapisu relacji, wiec status musi zostac.
         if !returned {
             assert_eq!(
