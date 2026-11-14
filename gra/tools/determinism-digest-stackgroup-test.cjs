@@ -93,8 +93,23 @@ check('(d) wejscie niemodyfikowane, kolejnosc i pola bez stackGroupId zachowane'
   assert.deepStrictEqual(Object.keys(n.units[0]), Object.keys(s.units[0]));
 });
 
+// (e) numeracja idzie po stabilnie posortowanym id, nie po kolejnosci tablicy. Mutant numerujacy w kolejnosci
+// tablicy daje inne etykiety i ten test pada. Id tekstowe: porownanie leksykalne ('u10' < 'u2'); liczbowe: numeryczne.
+check('(e) numeracja grup idzie po id jednostek (sortowanie stabilne), nie po kolejnosci tablicy', () => {
+  // Id tekstowe, tablica w kolejnosci [u2, u10]: po sortowaniu leksykalnym u10 idzie pierwsze -> sgA (u10) = g0.
+  const txt = normalizeDetDigestStackGroups(
+    [{ id: 'u2', stackGroupId: 'sgB_1' }, { id: 'u10', stackGroupId: 'sgA_1' }], []);
+  assert.strictEqual(txt.units[1].stackGroupId, 'g0', 'u10 (leksykalnie pierwsze) powinno dostac g0');
+  assert.strictEqual(txt.units[0].stackGroupId, 'g1', 'u2 powinno dostac g1');
+  // Id liczbowe, tablica w kolejnosci [10, 2]: numerycznie 2 idzie pierwsze -> sgB (id 2) = g0.
+  const num = normalizeDetDigestStackGroups(
+    [{ id: 10, stackGroupId: 'sgA_1' }, { id: 2, stackGroupId: 'sgB_1' }], []);
+  assert.strictEqual(num.units[1].stackGroupId, 'g0', 'id 2 (numerycznie pierwsze) powinno dostac g0');
+  assert.strictEqual(num.units[0].stackGroupId, 'g1', 'id 10 powinno dostac g1');
+});
+
 if (failures) {
   console.log('determinism-digest-stackgroup-test: CZERWONY (' + failures + ' FAIL)');
   process.exit(1);
 }
-console.log('determinism-digest-stackgroup-test: ZIELONY (4/4)');
+console.log('determinism-digest-stackgroup-test: ZIELONY (5/5)');
