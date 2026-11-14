@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "78c3a27842faccfd0098845b40546008",
-  "bundleSha256": "24f315fcd3bb74994d26ee1c3ee3769199fc49aaacc528383141a72c0b555d8c",
-  "bundleBytes": 14683268,
+  "bundleMd5": "a6e17f3839737a02641add97df44c641",
+  "bundleSha256": "8a25066208e08023a7ed9cedede595f45c5be1b2826226ac24dd8c6da60a4579",
+  "bundleBytes": 14684096,
   "sourceSnapshot": {
-    "source": "AIAI-LABELS FC 52a380ca3/a3efdc702",
+    "source": "ADMIN-CONFIRM FC ce8e662e4/af2026fbf",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 702: Karta rozmowcy w wojnie AI-AI pokazuje na liscie W stanie wojny z etykiety obu stron (rozmowca i partner): Desperacja albo Zmeczenie wojna z nazwa strony; tylko odczyt, wojny gracz-AI bez zmian (R-WEB-UI-DIPLO-PANEL-AIAI-BOTH-LABELS-Q1)"
+    "FALA 703: Zwolnienie administratora miasta/ulepszen wymaga potwierdzenia Zwolnij/Anuluj w panelu administratora (Anuluj i Esc nie zwalniaja), bez okna natywnego (R-WEB-UI-ADMIN-DISMISS-CONFIRM-Q1)"
   ],
   "verification": [
-    "tsc 0, logic 213/213, nowy test 17/0 (baza 8/9), diplo-weariness display 52/0 i 20-turns 30/0, 5 bramek zielone"
+    "tsc 0, logic 213/213, admin-dismiss-confirm zielony (baza 7 FAIL), administrator-panel-real-render Chromium 55/0, city-administrator 119/0, 5 bramek zielone"
   ],
   "limits": [
-    "Nie zmierzono w Chromium (zrzut karty rozmowcy w wojnie AI-AI); czesc B testu statyczna"
+    "Nie zmierzono na zywo w pelnej grze (zrzut okna); live-verify-administrator-panel.cjs nieaktualny"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES 52a380ca3 (AIAI-LABELS): na karcie rozmowcy w wojnie AI-AI lista W stanie wojny z pokazuje obie strony wojny (rozmowca i partner): Desperacja albo Zmeczenie wojna z nazwa strony; tylko odczyt, wojny gracz-AI bez zmian. Test diplo-panel-aiai-both-labels 17/0 (baza 8/9, mutacje FAIL), tsc, 5 bramek, 4 testy diplo-weariness zielone. NIE ZMIERZONO: weryfikacja w Chromium (zrzut karty rozmowcy w wojnie AI-AI), czesc B testu statyczna."
+    "notes": "FC PASS-WITH-NOTES ce8e662e4 (ADMIN-CONFIRM): zwolnienie administratora (miasto i ulepszen) wymaga potwierdzenia Zwolnij/Anuluj w panelu administratora; Anuluj i Esc nie zwalniaja; bez okna natywnego (zgodnie z 17b1b401d). Test admin-dismiss-confirm czerwony na bazie (7 FAIL), administrator-panel-real-render w Chromium 55 PASS/0 FAIL, city-administrator 119/0, tsc, 5 bramek zielone. NIE ZMIERZONO: weryfikacja na zywo w pelnej grze i zrzut okna; live-verify-administrator-panel.cjs nieaktualny (zwolnienie dwuetapowe)."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-14T11:03:27",
+  "hubGeneratedAt": "2026-11-14T12:38:57",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "78c3a27842faccfd0098845b40546008",
-      "sizeBytes": 14683268
+      "md5": "a6e17f3839737a02641add97df44c641",
+      "sizeBytes": 14684096
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "78c3a27842faccfd0098845b40546008",
-      "sizeBytes": 14683268
+      "md5": "a6e17f3839737a02641add97df44c641",
+      "sizeBytes": 14684096
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "78c3a27842faccfd0098845b40546008",
-      "sizeBytes": 14683268
+      "md5": "a6e17f3839737a02641add97df44c641",
+      "sizeBytes": 14684096
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "78c3a27842faccfd0098845b40546008",
-      "sizeBytes": 14683268
+      "md5": "a6e17f3839737a02641add97df44c641",
+      "sizeBytes": 14684096
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "78c3a27842faccfd0098845b40546008",
-      "sizeBytes": 14683268
+      "md5": "a6e17f3839737a02641add97df44c641",
+      "sizeBytes": 14684096
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "78c3a27842faccfd0098845b40546008",
-      "sizeBytes": 14683268
+      "md5": "a6e17f3839737a02641add97df44c641",
+      "sizeBytes": 14684096
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "78c3a27842faccfd0098845b40546008",
-      "sizeBytes": 14683268
+      "md5": "a6e17f3839737a02641add97df44c641",
+      "sizeBytes": 14684096
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "78c3a27842faccfd0098845b40546008",
-      "sizeBytes": 14683268
+      "md5": "a6e17f3839737a02641add97df44c641",
+      "sizeBytes": 14684096
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "78c3a27842faccfd0098845b40546008",
-      "sizeBytes": 14683268
+      "md5": "a6e17f3839737a02641add97df44c641",
+      "sizeBytes": 14684096
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "78c3a27842faccfd0098845b40546008",
-      "sizeBytes": 14683268
+      "md5": "a6e17f3839737a02641add97df44c641",
+      "sizeBytes": 14684096
     }
   ],
-  "md5": "78c3a27842faccfd0098845b40546008",
+  "md5": "a6e17f3839737a02641add97df44c641",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
