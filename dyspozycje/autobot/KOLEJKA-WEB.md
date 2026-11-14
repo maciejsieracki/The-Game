@@ -73,3 +73,15 @@ Ich otwarte pytania są w sekcji CZEKA NA DECYZJĘ WŁAŚCICIELA (#375).
 ## ZAMKNIĘTE (nie wpisywać do kolejki)
 
 - PROC-GATE-REFERENCE-REFRESH-Q2 (#278, FALA 665), CITYSTATE-ARMY-FOOD-DIFFICULTY (FC PASS-WITH-NOTES), CITIZEN-UPKEEP-ERA-MULT (FC PASS-WITH-NOTES), mgla-sciezka-inwariant (#292), DIPLO-TRUCE-IMPL (#169, FC PASS-WITH-NOTES), W35 pomiar ofert (#277, runda 5), W40 tempo mieszanej armii (#282), W41 miedź (#283), R-WEB-MARCH-RESUME-NEXT-TURN (#176) i pozostałe pozycje TaskList oznaczone completed.
+
+## DECYZJE WŁAŚCICIELA 2026-11-14 (odpowiedzi ABC 1–14 + starsze) — tematy do dispatchu po zwolnieniu slotu (kolejno, ten sam plik = sekwencyjnie)
+Ruszyły od razu (dispatche wypchnięte): RIVERS-FILL-CENTROID-PERF (nr 12 A), BATTLE-MANUAL-RNG-DETERMINISM (nr 11 A), UI-SIEGE-PANEL-NARROW-MACHINES-BLOCK (nr 6), UI-ADMIN-DISMISS-CONFIRM (admin A).
+Do napisania dispatchu i startu (Haiku, Evaluator/FC Sonnet):
+1. R-WEB-UI-NOTIF-DIPLO-TAB-COUNT-BLOCKING-Q1 (nr 14 = B): licznik zakładki „Dyplomacja” wlicza blokujące propozycje diplo (sidePanelHud.ts ~760–769) ORAZ lista po kliknięciu zakładki pokazuje tę kartę (sidePanelEventFilter.ts filterSidePanelEventsByTab) — licznik musi odpowiadać liście; uwaga na „N wymaga decyzji” nad zakładkami (bez dublowania/spójnie). Diagnoza: runs/R-WEB-UI-NOTIF-DIPLO-TAB-COUNTER-DIAG-Q1/10-operator-claude.md.
+2. R-WEB-UI-UNIT-CARD-STATS-ENGINE-CANON-Q1 (nr 8 = A): statystyki silnika są kanoniczne; karty jednostek (PL/EN kolumny) mają pokazywać dokładnie wartości silnika — audyt rozbieżności z runs/R-WEB-BARB-WARRIOR-SUPERPOWER-AUDIT-Q1 (PL/EN mismatch), poprawić wyświetlanie, nie silnik.
+3. R-WEB-NNS-AI-BALANCE-FROM-TURN1-Q1 (nr 3 = tak): AI bilansuje skarbiec/spichlerz od tury 1 (bez wyjątku tur 1–10, który ma gracz); ai.ts/ai-economy; sekwencyjnie z pozycją 5 i 6 (ten sam plik ai.ts).
+4. R-WEB-NNS-GATE-REMOVE-QUEUE-LEVER-Q1 (nr 4 = usunąć): usunąć dźwignię „kolejka produkcji” z bramki „Zakończ turę” (nnsGateForPlayer/decideEndTurnGate/nnsEndTurnTooltipText, main.ts), zostają podatek i racje.
+5. R-WEB-AI-CITY-FOR-PEACE-BRANCH-ORDER-Q1 (nr 5 = przestawić kolejność, żeby gałąź „miasto za pokój” zaczęła działać; ai.ts ~7050–7080): ZMIENIA zachowanie AI przy pokoju → obowiązkowy pomiar na żywo wojen (nie psuć nr 13 = A: wojny AI↔AI zostają krótkie), testy diplo-war-peace-sim/ai-peace.
+6. R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 (oferty AI = A: zwiększyć do kilku na 100 tur): dostroić częstość ofert handlowych AI do gracza (z pomiaru W35: ~0,89/100 tur) bez spamu; cel kilka (np. 3–6) na 100 tur w scenariuszu pomiarowym; narzędzie pomiarowe z W35 (runs/R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1).
+7. R-WEB-DIPLO-TRUST-WAR-N6-CLEANUP-Q1 (D2 = N=6, usunąć martwe pole 5) + dokumentacja Civpedii (nr 2 = A: zostawić zachowanie i opisać w Civpedii zaufanie w wojnie: tik zostawia 0, licznik wojny N=6).
+Bez zmian (zamknięte decyzją): miedź A (bez zmian), nr 7 oferta 1:1 zostaje darem, nr 9 AUTO zostaje, nr 10 „pewne”: atakujący wygrywa w lustrze, nr 13 wojny AI↔AI zostają krótkie, szlak handlowy = tylko premia (bez przesuwania zapasów; kandydat 605036e6b NIE wchodzi), próg zmęczenia 0,8 potwierdzony.
