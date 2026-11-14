@@ -6,7 +6,10 @@ Baza: `533d46dd3` (czubek `origin/rust-port/parity-v2`). PRZED pracą: `git merg
 Pin (tylko odczyt): `git show 07d2fbd72:gra/src/main.ts` — `setOwnerPracaPool` (ok. 34865–34885: zapis puli z `max(0)`), `applyCyclicDeliveryOutcome` (ok. 23988–24025: Praca `:24021-24023`; drugie miejsce `:24154`).
 
 ## REPRODUKCJA ROZBIEŻNOŚCI (zrób to pierwsze, przed zmianą)
-Scenariusz: pula Pracy właściciela = 5; umowa 1 płaci 10; umowa 2 otrzymuje 10 (ta sama pula, w jednym kroku D3 w kolejności). Pin: wynik 10 (podłoga po każdej operacji: 5 → max(0, 5-10)=0 → 0+10=10). Rust (dziś): 5 (delty sumowane, podłoga raz na sumie: 5 + (-10+10) = 5 → nie zmienia? — UWAGA: zweryfikuj samodzielnie, kontrprzykład z rozpoznania to pula 5, umowa 1 płaci 10, umowa 2 dostaje 10: pin 10, Rust 5). Najpierw napisz test reprodukujący (czerwony), zapisz wynik z plik:linia.
+Scenariusz: pula Pracy właściciela = 5; w jednym kroku D3 umowa 1 zabiera 10 (delta −10), umowa 2 daje 10 (delta +10), w tej kolejności.
+- Pin: podłoga po każdej operacji. 5 − 10 = −5 → max(0) = 0; potem 0 + 10 = 10. Wynik pinu: 10.
+- Rust (dziś): delty sumowane (−10 + 10 = 0), podłoga raz na sumie: 5 + 0 = 5. Wynik Rust: 5.
+Najpierw napisz test reprodukujący (ma być CZERWONY na obecnym kodzie, wynik 5 zamiast 10), zapisz plik:linia.
 
 ## GOAL
 W `Ledger` (`rust-port/engine/src/domain/turn_war_dipl_steps.rs` ok. 409–415) i przy `apply` (ok. 1090–1093) podłoga Pracy jest stosowana po każdej operacji (wpis do puli) zgodnie z pinem `setOwnerPracaPool`. Wynik końcowy dla sekwencji operacji na jednej puli jest identyczny z pinem.
