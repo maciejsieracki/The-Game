@@ -44,7 +44,7 @@ Respekt jest **osobny dla każdej pary** cywilizacji. Składa się z Zaufaniem (
 | Trybut zapłacony | +10 | (wywoływane przez grę) |
 | Wspólny wróg zaakceptowany | +10 | zdefiniowane w kodzie; w grze nie jest jeszcze wywoływane |
 
-Zdarzenia „Przewaga militarna” (+15) i „Słabszy militarnie” (−10) są zapisane w kodzie (`diplomacy.ts`), ale gra ich nigdzie nie wywołuje: nie działają jako źródło Respektu i nie są podane w tabeli jako obowiązujące. Decyzja właściciela z 2026-11-13 przepisała przewagę militarną (+15 przy 50% przewagi, tylko siła wojskowa), ale to wywołanie nie zostało jeszcze dopięte w `main.ts`. Stan do potwierdzenia: nie działa w grze.
+Zdarzenia „Przewaga militarna” (+15) i „Słabszy militarnie” (−10) są zapisane w kodzie (`diplomacy.ts`), ale gra ich nigdzie nie wywołuje: nie działają jako źródło Respektu i nie są podane w tabeli jako obowiązujące. Decyzja właściciela z 2026-11-13 przepisała przewagę militarną (+15, tylko siła wojskowa; próg przewagi w kodzie to `progPrzewagiProc` = 20%, `diplomacy-military-strength-params.json`), ale to wywołanie nie zostało jeszcze dopięte w `main.ts`. Stan do potwierdzenia: nie działa w grze.
 
 Siła, z której liczony jest Respekt, to **Moc** (patrz hasło **Moc — podział na wojskowy i gospodarczy**). Respekt pary to udział mocy jednej nacji w sumie mocy obu.
 
