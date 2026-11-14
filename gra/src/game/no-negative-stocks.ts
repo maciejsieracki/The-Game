@@ -413,6 +413,12 @@ export interface NnsGateResult {
   propozycjaPodatku: NnsPropozycjaPodatku | null;
   /** true = reakcja automatu zmieniła prognozę (`extra.automat` użyte). */
   automatPoprawil: boolean;
+  /**
+   * R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1 r2 (zarzut 7/8): true = prognoza po turze
+   * jest < 0, a dostępne dźwignie gracza NIE pokrywają braku (albo nawet maksymalny podatek nie wystarcza).
+   * Bramka wtedy NIE blokuje (założenie: brak softlocku, Dodatek 2), ale UI dostaje jawny sygnał.
+   */
+  niewystarczajace: boolean;
 }
 
 /** Dźwignia pokazana graczowi w komunikacie bramki (zysk = poprawa salda po turze, dodatni). */
@@ -434,6 +440,12 @@ export interface NnsEndTurnLevers {
   podatekPunkty?: number;
   /** Prognoza PO reakcji automatu zarządzania (Dodatek 3: najpierw automat, potem gracz). undefined = brak. */
   automat?: { skarbiecPo?: number; spichlerzPo?: number };
+  /**
+   * r2 (zarzut 3): prognoza skarbca PO TURZE przy podniesieniu podatku o `pkt` punktów % (wartość bezwzględna,
+   * z tej samej projekcji co bramka, już po reakcji automatu). Gdy podana, propozycja podatku idzie krokami
+   * (propozycjaPodatkuKrokami); gdy brak — estymacja liniowa (szacunek 'liniowy').
+   */
+  prognozaPoPodatku?: (punktyProcentowe: number) => number;
 }
 
 function zyskNieujemny(z: number | undefined): number {
@@ -465,7 +477,7 @@ export function decideEndTurnGate(
     (extra.automat?.spichlerzPo !== undefined && extra.automat.spichlerzPo !== p.spichlerzPo);
   const v = evaluateEndTurnStocks(pPoAutomacie);
   if (!v.blokada) {
-    return { blokada: false, komunikat: '', dzwignie: [], zasob: null, prognoza: null, propozycjaPodatku: null, automatPoprawil };
+    return { blokada: false, komunikat: '', dzwignie: [], zasob: null, prognoza: null, propozycjaPodatku: null, automatPoprawil, niewystarczajace: false };
   }
   const levers: NnsLever[] = [
     { id: 'podatek-skarbiec', rodzaj: 'podatek', stock: 'skarbiec', zysk: zyskNieujemny(extra.podatekSkarbiec), koszt: 0, eliminujeCywilizacje: false },
@@ -475,16 +487,30 @@ export function decideEndTurnGate(
   ];
   if (!czyRuchNaprawczy(v.brakuje, levers)) {
     // Brak ręcznej dźwigni, która pokryje brak = brak blokady (bez martwego punktu / softlocku).
-    return { blokada: false, komunikat: '', dzwignie: [], zasob: null, prognoza: null, propozycjaPodatku: null, automatPoprawil };
+    // r2: jeśli jakakolwiek dźwignia istnieje (częściowo pokrywa), flaga „niewystarczające” idzie do UI.
+    return {
+      blokada: false, komunikat: '', dzwignie: [], zasob: null, prognoza: null, propozycjaPodatku: null,
+      automatPoprawil, niewystarczajace: levers.some(l => l.zysk > 0),
+    };
   }
   const dzwignie: NnsGateLever[] = levers
     .filter(l => l.zysk > 0)
     .map(l => ({ id: l.id, stock: l.stock, zysk: l.zysk, opis: opisDzwigni(l) }));
   // Pierwszy zasób na minusie (po automacie): skarbiec ma pierwszeństwo w komunikacie.
   const pierwszy = v.brakuje[0]!;
-  const propozycjaPodatku = v.brakuje.some(b => b.stock === 'skarbiec')
-    ? propozycjaPodatkuDoZera(-pPoAutomacie.skarbiecPo, extra.podatekPunkty ?? 0, extra.podatekSkarbiec ?? 0)
-    : null;
+  let propozycjaPodatku: NnsPropozycjaPodatku | null = null;
+  let niewystarczajace = false;
+  if (v.brakuje.some(b => b.stock === 'skarbiec')) {
+    const punkty = extra.podatekPunkty ?? 0;
+    if (extra.prognozaPoPodatku && punkty > 0) {
+      // r2 (zarzut 3): wyszukiwanie po krokach na tej samej projekcji co bramka.
+      propozycjaPodatku = propozycjaPodatkuKrokami(extra.prognozaPoPodatku, punkty, 10);
+    } else {
+      propozycjaPodatku = propozycjaPodatkuDoZera(-pPoAutomacie.skarbiecPo, punkty, extra.podatekSkarbiec ?? 0);
+    }
+    // r2 (zarzut 7/8): nawet maksymalny podatek nie wystarcza do zera skarbca.
+    niewystarczajace = propozycjaPodatku === null;
+  }
   return {
     blokada: true,
     komunikat: komunikatBramki(v.brakuje, dzwignie),
@@ -493,6 +519,7 @@ export function decideEndTurnGate(
     prognoza: pPoAutomacie[pierwszy.stock === 'skarbiec' ? 'skarbiecPo' : 'spichlerzPo'],
     propozycjaPodatku,
     automatPoprawil,
+    niewystarczajace,
   };
 }
 

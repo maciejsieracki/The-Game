@@ -153,5 +153,37 @@ fs.rmSync(BUNDLE, { force: true });
   ok(M.propozycjaPodatkuKrokami(() => 5, 0, 10) === null, 'krokami: brak dostępnych punktów -> null');
 }
 
+// (r2, zarzuty 3/7/8) Krokowa propozycja podatku w bramce + flaga „niewystarczające”.
+{
+  // Skarbiec po turze przy podatku +p pkt: -30 + 3*p (zysk 3 złota na punkt). Krok 10: 10->0? nie (-0), 20->30 ok.
+  const sk = (pkt) => -30 + 3 * pkt;
+  const g = M.decideEndTurnGate(proj(20, 5, sk(0), 0, 0), 0, 0,
+    { podatekSkarbiec: 30, podatekPunkty: 100, prognozaPoPodatku: sk });
+  ok(g.blokada === true, 'r2: skarbiec po turze -30 -> blokada');
+  ok(g.propozycjaPodatku !== null && g.propozycjaPodatku.szacunek === 'krokowy', 'r2: propozycja idzie krokami (szacunek krokowy)');
+  ok(g.propozycjaPodatku !== null && g.propozycjaPodatku.punktyProcentowe === 10, 'r2: najmniejszy krok 10 daje 0 (>=0)');
+  ok(g.propozycjaPodatku !== null && sk(g.propozycjaPodatku.punktyProcentowe) >= 0, 'r2: po zastosowaniu propozycji prognoza >= 0');
+  ok(g.niewystarczajace === false, 'r2: przy pokryciu flaga niewystarczające = false');
+
+  // Maksimum nie wystarcza: nawet +100 pkt daje -10 -> niewystarczające, propozycja null, bramka nadal blokuje.
+  const sk2 = (pkt) => -10 - 0 * pkt;
+  const g2 = M.decideEndTurnGate(proj(20, 5, sk2(0), 0, 0), 0, 0,
+    { podatekSkarbiec: 30, podatekPunkty: 100, prognozaPoPodatku: sk2 });
+  ok(g2.blokada === true && g2.propozycjaPodatku === null && g2.niewystarczajace === true,
+    'r2: maksymalny podatek nie wystarcza -> propozycja null + flaga niewystarczające (blokada zostaje)');
+
+  // Częściowa dźwignia (zysk < brak) -> brak blokady, ale flaga niewystarczające dla UI.
+  const g3 = M.decideEndTurnGate(proj(20, 5, -50, 0, 0), 0, 0, { podatekSkarbiec: 10, podatekPunkty: 10 });
+  ok(g3.blokada === false && g3.niewystarczajace === true, 'r2: dźwignia częściowa -> bez blokady, flaga niewystarczające = true');
+
+  // Brak jakiejkolwiek dźwigni -> brak blokady, flaga false (nic do zgłoszenia).
+  const g4 = M.decideEndTurnGate(proj(20, 5, -50, 0, 0), 0, 0, {});
+  ok(g4.blokada === false && g4.niewystarczajace === false, 'r2: brak dźwigni -> bez blokady, flaga false');
+
+  // Brak prognozaPoPodatku -> stara estymacja liniowa (szacunek 'liniowy').
+  const g5 = M.decideEndTurnGate(proj(20, 5, -5, 0, 0), 0, 0, { podatekSkarbiec: 20, podatekPunkty: 10 });
+  ok(g5.propozycjaPodatku !== null && g5.propozycjaPodatku.szacunek === 'liniowy', 'r2: bez callbacku -> szacunek liniowy (fallback)');
+}
+
 console.log(`end-turn-gate-projection-only-test: ${passed} passed, ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);

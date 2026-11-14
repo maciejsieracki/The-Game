@@ -1,83 +1,55 @@
 # R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1 — obrona Operatora (runda 2, odpowiedź na zarzuty Evaluatora)
 
-STATUS: PASS-WITH-NOTES (martwy punkt Spichlerza naprawiony w kodzie i w testach; pomiar w grze/Chromium NIE_ZMIERZONO)
+STATUS: BLOCK (częściowo: logika, testy jednostkowe i mutacje nowego kodu; pomiary w żywej grze NIE ZMIERZONO)
 DOMAIN: GAME
 TEMAT: R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1
-GOAL: blokada „Zakończ turę” decyduje o prognozie PO turze i PO reakcji automatu; od tury 1; brak dźwigni = brak blokady; propozycja podatku jako stabilne API.
-BAZA: 978ca9d01e02eab3adccc30523ea383d8b9af4cb (kandydat rundy 1). Commit rundy 2: SHA w polu sha wyniku (commit na detached HEAD tego worktree).
+GOAL: blokada „Zakończ turę” liczy prognozę PO turze i PO reakcji automatu, od tury 1; brak dźwigni = brak blokady; propozycja podatku krokami; stabilny kształt wyniku dla UI.
+BAZA: d71eda0e703f582ca6f696c658b3db4a91996c76 (kandydat rundy 2; zawiera merge origin/main 4867cd20f). Gałąź lokalna `wf-gate-r2`, worktree wf_7dcbad28-f80-3. Commit obrony: SHA w polu `sha` wyniku.
+ZMIANY-COMMIT (allowlista, 3 pliki; `git diff --check` czysty):
+  - gra/src/game/no-negative-stocks.ts: pole `niewystarczajace` w NnsGateResult; nowe pole wejściowe `NnsEndTurnLevers.prognozaPoPodatku` (prognoza skarbca po turze przy +p pkt, już po automacie); `decideEndTurnGate` używa `propozycjaPodatkuKrokami` gdy callback podany (fallback: estymacja liniowa z szacunek 'liniowy').
+  - gra/src/main.ts: wyłącznie literał zwracany przez `nnsGateForPlayer` przy braku prognozy (dopisane `niewystarczajace: false`, wymagane przez typ). Ścieżka wyboru/wysyłania ofert AI nietknięta.
+  - gra/tools/end-turn-gate-projection-only-test.cjs: +9 asercji (blok „r2”) — krokowa propozycja, najmniejszy krok, prognoza po zastosowaniu ≥ 0, maksimum nie wystarcza → propozycja null + flaga, częściowa dźwignia → brak blokady + flaga, brak dźwigni → flaga false, fallback liniowy.
+  - Brak zmian: dochody/koszty, równoważenie AI, ai-params.json, dźwignia kolejki, mechanika automatu, wikiBundle (nie dotykane w tej rundzie), WERSJE.md.
 
-## ZMIANY-COMMIT
+KSZTAŁT WYNIKU DLA UI (R-WEB-UI-END-TURN-BLOCK-EVENT-Q1, zarzut 8):
+  NnsGateResult = { blokada: boolean; komunikat: string; dzwignie: {id, stock, zysk, opis}[]; zasob: 'skarbiec'|'spichlerz'|null; prognoza: number|null (po automacie); propozycjaPodatku: {punktyProcentowe, szacunek: 'krokowy'|'liniowy', maksPunktow}|null; automatPoprawil: boolean; niewystarczajace: boolean }.
+  Znaczenie `niewystarczajace`: true = prognoza < 0 i (a) dźwignie gracza nie pokrywają braku (bramka NIE blokuje, bo brak softlocku), albo (b) blokada, ale nawet maksymalny podatek nie daje zera skarbca (propozycja null, blokada zostaje).
 
-Allowlista: `gra/src/main.ts` (wyłącznie ścieżka bramki gracza: deklaracja `_nnsAutoSpichlerzDelta`, nowy blok projekcji automatu w `refreshLiveEmpireRatesUnsafe`, ok. l.22901–22975; przekazanie `automat` w `nnsGateForPlayer`, ok. l.39637), `gra/tools/end-turn-gate-projection-only-test.cjs` (cases 9a–9d, 10a–10c), `docs/encyklopedia/pojecia/spichlerz.md`, `gra/src/data/wikiBundle.json` (regeneracja `tools/bundle-wiki-for-game.cjs`), ten raport. Nie dotknięto: `no-negative-stocks.ts` (logika bez zmian w tej rundzie), dochodów/kosztów, równoważenia AI, `ai-params.json`, kolejki produkcji, WERSJE.md, gra-robocza/, rust-port/. Kontrola białych znaków dla zmian: czysta.
+TESTY (surowe wyjścia, node, gra/):
+  - `node tools/end-turn-gate-projection-only-test.cjs` → `41 passed, 0 failed` (przed rundą: 32/0; +9 nowych).
+  - `npx tsc --noEmit` → rc=0 (po `npm ci --ignore-scripts` w worktree; bez tego tsc/esbuild nie startują).
+  - Pozostałe NNS (surowo): no-negative-stocks-ai-from-turn1-test 27/0; -ai-t2-test 11/0; -ai-test 8/0; -c2-test 44/0; -end-turn-gate-levers-test 34/0; -endturn-test 19/0; -projection-test 49/0; -test 25/0. Wszystkie rc=0.
+  - Nie uruchamiane w tej rundzie: 5 bramek referencyjnych spoza NNS (logic, tech-tree, research, unit-replace, combat) — NIE ZMIERZONO.
+  - MUTACJE (dowód czerwieni nowego kodu, po przywróceniu pliku: 41/0):
+    M-A: `if (false && extra.prognozaPoPodatku && …)` → 38 passed, 3 FAIL (krokowy szacunek, krok 10, po zastosowaniu ≥0).
+    M-B: `niewystarczajace = propozycjaPodatku === null;` → `false` → 40 passed, 1 FAIL (maksimum nie wystarcza).
+  - Czerwień na bazie d71eda0e7 nowych asercji: NIE ZMIERZONO w tej rundzie (baza ma już stary kod; r1 raportował 32/0 na swojej bazie).
 
-Co zrobiono (Dodatek 2, martwy punkt Spichlerza):
-- Tick końca tury (`main.ts`, blok „SPICH-AUTO-Q1” przy rozliczeniu Spichlerza, ok. l.40100) najpierw wywołuje `autoBalanceRationsToSolvency` (obniża racje miast z Auto-Żywieniem), dopiero potem `advanceEmpireFood`. Bramka liczyła prognozę bez tego kroku — stąd blokada tury, którą automat by naprawił.
-- Nowy blok (ok. l.22901–22975), uruchamiany tylko gdy prognoza Spichlerza < 0 i którekolwiek miasto gracza ma Auto-Żywienie: buduje świeży podgląd ekonomii (`previewCityEconomy`, ten sam podział co bramka), wywołuje `autoBalanceRationsToSolvency` z tymi samymi parametrami co tick (`onlyAutoManaged`, `requireFlowBalance`, `kosztArmii`, `popCapByCityId`, `spichlerzByCity`); jeśli zmienił racje — powtarza podgląd i liczy `projectEmpireFoodAfterTick`. Wynik trafia do `_nnsAutoSpichlerzDelta` (różnica względem prognozy bazowej). Racje miast są przywracane w `finally`; stan gry nietknięty.
-- `nnsGateForPlayer` przekazuje `automat: { spichlerzPo: spLive + delta }` do `decideEndTurnGate` (ta sama konwencja „live” co reszta bramki). `decideEndTurnGate` (bez zmian w logice) ocenia prognozę PO automacie, a `czyRuchNaprawczy` liczy brak po automacie.
-- Kolejność reakcji zgodna z Dodatkiem 3/4: żywność — najpierw automat; pieniądze — brak automatu, tylko informacja o podatku (propozycja).
+PUNKTY DODATKU 5 (ZMIERZONO / NIE ZMIERZONO):
+  0. merge origin/main: ZMIERZONO — kandydat d71eda0e7 już zawiera merge 4867cd20f (9da316001); tsc 0 po merge. wikiBundle nie regenerowany w tej rundzie (brak zmian tekstów Civpedii).
+  1. Chromium (a–e), zrzuty shots-*.png: NIE ZMIERZONO. Przeglądarka jest (/usr/bin/chromium), ale build vite poza repo i hooki __civTest nie zostały uruchomione. Brak PNG w runs/.
+  2. Tabela projekcja vs realny endTurn (≥3 ziarna × T1–15): NIE ZMIERZONO. Brak tabeli różnic.
+  3. Podpięcie propozycjaPodatkuKrokami: CZĘŚCIOWO. Funkcja podpięta w `decideEndTurnGate` przez callback `prognozaPoPodatku`, przetestowana (5 asercji + mutacja M-A czerwona). NIE podpięte w `nnsGateForPlayer` (main.ts): wiring callbacku wymaga osobnej projekcji po każdym kroku podatku (poza zakresem tej rundy). Bramka gry nadal używa estymacji liniowej `_nnsPodatekZysk`. OTWARTE.
+  4. Projekcja automatu z clampem Q3 (maxSafe) i brak efektów ubocznych: NIE ZMIERZONO / NIE WYKONANO w tej rundzie (kod main.ts ~22901–22975 nieruszany).
+  5. gra/tools/end-turn-gate-live-test.cjs: NIE WYKONANO (wymaga Chromium; plik nie powstał).
+  6. Stare live-verify (v2 l.7/93–94, v4, wave-703-710): NIE WYKONANO — wymagają Chromium do uruchomienia; nie zaktualizowano. Dług otwarty.
+  7. Semantyka „brak dźwigni”: ODRZUCAM zmianę blokady przy częściowej dźwigni (uzasadnienie: dispatch Dodatek 2 wymaga „brak dźwigni = brak blokady” i „no softlock”; blokada, której gracz nie może usunąć przez żadną dostępną dźwignię, jest martwym punktem). PRZYJMUJĘ dowód: dodano flagę `niewystarczajace` i asercję g3 (dźwignia +10 przy braku −50 → blokada=false, niewystarczajace=true). ZAŁOŻENIE do decyzji FC/właściciela.
+  8. Kontrakt API dla UI: PRZYJMUJĘ — pole `niewystarczajace` dodane; kształt opisany wyżej.
+  9. Status r1 BLOCK i mutacje: wyjaśnienie — mutacje M-A/M-B wykonane dla nowego kodu w tej rundzie (wyżej). Zmiany r1 w test ai-from-turn1 (3 asercje gracza) NIE są cofane w r2; zostały jako rozstrzygnięcie sprzeczności dispatchu (gracz od tury 1 vs „NIE ruszaj”). ZAŁOŻENIE, do decyzji FC.
+  10. Martwe pola `wyjatekTur`/`wyjatekStarego`: ODRZUCAM usunięcie — trzy pliki testowe (no-negative-stocks-test.cjs l.49/78/106, no-negative-stocks-ai-from-turn1-test.cjs l.108, end-turn-gate-projection-only-test.cjs l.109) asertują na nich wartość false; usunięcie wymagałoby zmiany testów poza tym, co r2 zamyka. Nieużywany eksport `NNS_WOLNE_TURY` zostaje (stała wsteczna). Pliki dokumentacji orkiestratora poza allowlistą dziedziczone z gałęzi — nie dotykane przeze mnie w r2.
 
-## ODPOWIEDZI NA ZARZUTY EVALUATORA (raport 20-evaluator-claude.md, commit 1352c11ca)
+ZAŁOŻENIA:
+  - Brak dźwigni / częściowa dźwignia = brak blokady (reguła dispatchu), z flagą `niewystarczajace` dla UI.
+  - Propozycja podatku krokowa (10 pkt) działa na callbacku dostarczanym przez wołającego; bez callbacku — estymacja liniowa (szacunek 'liniowy').
+  - NNS_AI_BALANCE_TURN_MIN = 1 (zostawione, zgodnie z dispatchem).
 
-1. KRYTYCZNY — martwy punkt Spichlerza, `main.ts` nie wypełnia `extra.automat`: PRZYJMUJĘ (poprawka + dowód). Kod: blok ok. l.22901–22975 i przekazanie ok. l.39637. Dowód: testy (10a–10c) strukturalne; mutacja usunięcia przekazania `automat` → 10c FAIL; mutacja usunięcia użycia `automat` w `no-negative-stocks.ts` → 9a, 9b, 6b FAIL (24 pass / 3 fail). Ograniczenie: to jest PROJEKCJA kolejności ticku, nie sam tick — rozbieżności wymienione w BLOKADACH (pkt 1).
+BLOKADY (dla orkiestratora; temat NIE może dostać READY_FOR_DEPLOY):
+  (a) brak pomiaru w Chromium (punkty 1, 5, 6) i zrzutów a–e;
+  (b) brak wiringu callbacku `prognozaPoPodatku` w main.ts (punkt 3);
+  (c) brak tabeli projekcja vs realność (punkt 2) — jeśli |różnica| > 0, projekcja wymaga naprawy (punkt 4 też);
+  (d) brak testu behawioralnego na ścieżce main.ts (dispatch test 5).
 
-2. KRYTYCZNY — brak testów integracyjnych `main.ts` (testy tylko na funkcjach czystych): CZĘŚCIOWO PRZYJMUJĘ. Dodano test strukturalny wiązania (10a–10c) z mutacją. Testu zachowania na żywej turze (a–d Dodatku 2 w przeglądarce) NIE zrobiono → NIE_ZMIERZONO (pkt 3–4).
-
-3. KRYTYCZNY — brak pomiaru zgodności projekcji z realnym stanem po endTurn (≥3 ziarna, T1–15): NIE_ZMIERZONO. Powód: wymaga zbudowania bundla (`vite --outDir /tmp/<własny>`) i sterowania grą w Chromium; w tej rundzie nie wykonano. Chromium jest dostępny (`/opt/pw-browsers/chromium-1194`), więc to konkretny następny krok (patrz NASTĘPNY KROK).
-
-4. KRYTYCZNY — brak Chromium i zrzutów: NIE_ZMIERZONO (jak wyżej). Nie deklaruję, że przycisk/tooltip działa w grze.
-
-5. WAŻNY — propozycja podatku to estymacja liniowa, bez dowodu, że prognoza ≥ 0: PRZYJMUJĘ jako ograniczenie, NIE naprawiono w tym temacie. `propozycjaPodatkuDoZera` nadal zwraca `szacunek: 'liniowy'`. Dodatek 3 wymagał wartości z tej samej funkcji projekcji — tego nie spełniono; odstępstwo jest jawne. Weryfikacja projekcją po podatku (podgląd z `ownerDefaultPodzialHandlu` zmienionym o `punktyProcentowe`) należy do kroku po pomiarze w grze (`R-WEB-UI-END-TURN-BLOCK-EVENT-Q1` lub osobny podtemat).
-
-6. WAŻNY — Dodatek 3 krok 1 dla Skarbca nieprzeszukany: ODRZUCAM zarzut jako wymóg. Przeszukanie wykonano: grep `autoRecruit|autoBuild|autoZakup|autoPodatek|autoTax|autoSkarb|autoKupno|autoAdmin` po `gra/src/game/*.ts`. Trafienia dotyczą kolejki budowy (`auto-build-gate.ts`, `auto-manage.ts` — `pickAutoBuildItem`) i bramek administratorów; nie reagują na deficyt skarbca. Jedyne „skarbiec” w `auto-manage.ts` (l.432) to komentarz o puli pracy. Dodatek 4 wprost zakazuje automatycznej reakcji dla pieniędzy — żadnej nie wprowadzono.
-
-7. ŚREDNI — spichlerz.md niespójny, wikiBundle niewygenerowany: PRZYJMUJĘ, naprawiono. `docs/encyklopedia/pojecia/spichlerz.md`: nagłówek „od tury 1”; punkt gracza opisuje prognozę PO reakcji automatu; punkt AI poprawiony — stara wersja twierdziła, że `planAiBalance` „nie jest wywoływany w pętli tury”, co było BŁĘDNE: `decideAiOwnerBalance` (wywołuje `planAiBalance`) jest wywoływany w `main.ts` ok. l.7630 (`nnsAiPreTickBalance`). WikiBundle zregenerowany: „22 rozdz. + 181 haseł”. Stare skrypty `live-verify-wave-689-697-*` nie były przeglądane (poza allowlistą tematu) — NIE_ZMIERZONO, do decyzji orkiestratora.
-
-8. ŚREDNI — martwe pola `wyjatekTur`/`wyjatekStarego` i brak odpowiedzi, dlaczego „brak dźwigni” nie zadziałał dla Spichlerza: PRZYJMUJĘ częściowo. Pola zostają w typie (zgodność wsteczna; testy 5, 6b, 8 sprawdzają `false`) i nie są używane do decyzji. Odpowiedź (z kodu, nie z pomiaru): `czyRuchNaprawczy` zwraca „brak blokady” tylko gdy SUMA dźwigni danego zasobu < brak. Dla Spichlerza dźwignie to racje (`suwakZywnosc`, zysk liczony przy racjach = 0) i rozwiązanie jednostek. Gdy racje były już na 0 i nie było jednostek do rozwiązania, suma = 0 → brak blokady. Gdy racje > 0, dźwignia istniała i blokada była zgodna z dźwignią — brakowało kroku automatu, który w turze już obniża racje (martwy punkt). Ten brakujący krok naprawiono w pkt 1.
-
-9. DROBNY — kontrola białych znaków i mutacja automatu zadeklarowane NIE_ZMIERZONO w rundzie 1: PRZYJMUJĘ, zamknięte w tej rundzie (wyniki w TESTY).
-
-## TESTY (liczby z surowego wyjścia, runda 2, po ostatniej zmianie kodu)
-
-- `./node_modules/.bin/tsc --noEmit` → exit 0 (bez błędów).
-- `node tools/end-turn-gate-projection-only-test.cjs` → `27 passed, 0 failed` (runda 1: 20/0).
-- Mutacja M-NNS (w `no-negative-stocks.ts` usunięto użycie `extra.automat?.spichlerzPo`) → `24 passed, 3 failed`: FAIL (9a), FAIL (9b), FAIL (6b). Przywrócenie pliku → `27 passed, 0 failed`.
-- Mutacja M-MAIN (w `main.ts` usunięto przekazanie `automat` w `nnsGateForPlayer`) → `26 passed, 1 failed`: FAIL (10c). Przywrócenie: `grep -c` = 1 (plik jak przed mutacją).
-- `tools/no-negative-stocks-test.cjs` → `25 passed, 0 failed`
-- `tools/no-negative-stocks-endturn-test.cjs` → `19 passed, 0 failed`
-- `tools/no-negative-stocks-end-turn-gate-levers-test.cjs` → `34 passed, 0 failed`
-- `tools/no-negative-stocks-projection-test.cjs` → `49 passed, 0 failed`
-- `tools/no-negative-stocks-c2-test.cjs` → `43 passed, 0 failed`
-- `tools/no-negative-stocks-ai-test.cjs` → `8 passed, 0 failed`
-- `tools/logic-test.cjs` → `LOGIC OK (213/213)`
-- `tools/tech-tree-test.cjs` → `20 pass, 0 fail`
-- `tools/unit-replace-test.cjs` → `WSZYSTKIE TESTY ZIELONE (21/21)`
-- `tools/combat-test.cjs` → `All sanity checks passed.`
-- Kontrola białych znaków na zmianach → czysta (bez wyjścia).
-- `tools/bundle-wiki-for-game.cjs` → `wikiBundle.json: 22 rozdz. + 181 haseł (~1273 KB)`.
-- NIE_ZMIERZONO: `end-turn-gameplay-runtime-test.cjs`, `end-turn-input-stability-test.cjs`, `no-negative-stocks-c3-turn-test.cjs` (wymagają bundla dist z vite i Chromium; nie budowano w tej rundzie). Zrzuty Chromium: NIE_ZMIERZONO. Projekcja vs realny stan po endTurn (≥3 ziarna, T1–15): NIE_ZMIERZONO.
-
-## BLOKADY
-
-1. Rozbieżności projekcji automatu względem ticku (projekcja, nie tick): (a) tick przed `autoBalanceRationsToSolvency` clampuje Wyżywienie do `maxSafe` (Q3=A, `main.ts` ok. l.40150), projekcja tego nie robi; (b) `ensureCityRationDefaults` może zmienić inne pola miasta — przywracane są tylko `poziomRacji`/`procentRozwoj`; (c) `kosztArmii` liczony z jednostek gracza (`playerEconUnitsForUpkeep`), tick używa `econUnits` wszystkich ownerów — równość dla ownera gracza założona, nieweryfikowana. Każda z tych różnic może dać prognozę odbiegającą od realnego stanu po turze; pomiar z pkt 3 jest warunkiem uznania GOAL (2).
-2. Pomiar w grze (Chromium, ≥3 ziarna, T1–15) NIE_ZMIERZONO.
-3. Propozycja podatku liniowa (odstępstwo od Dodatku 3, patrz pkt 5 odpowiedzi).
-4. Zarzut 7 Evaluatora (stare skrypty `live-verify-wave-689-697-*`) nieprzejrzany — poza allowlistą.
-5. `suwakZywnosc` liczy zysk racji względem prognozy PRZED automatem (konserwatywnie); po automacie brak jest mniejszy, więc dźwignia racji wystarcza częściej, niż wynika z tej wartości. Nie zmieniono.
-6. Koszt CPU: w `refreshLiveEmpireRatesUnsafe` są teraz dodatkowe podglądy `previewCityEconomy` (automat, po korekcie) — działa dirty-gated, do zmierzenia w pomiarze.
-
-## UWAGI-DLA-ORKIESTRATORA
-
-- Dispatch referuje `00-dispatch.md` w `origin/main`, którego tam nie ma; treść odczytano z gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (`00-dispatch-DODATEK-claude.md` i `00-dispatch.md` z tej gałęzi).
-- Nie tworzono sesji, zadań ani harmonogramów; nie uruchamiano zadań w tle.
-- `gra/node_modules` było dowiązane symbolicznie do cudzego worktree tylko do odczytu; dowiązanie nie jest w commicie (gitignore).
-- Test `end-turn-gate-projection-only-test.cjs` zapisuje tymczasowe pliki w `gra/tools/` i je usuwa po zakończeniu (nie trafiają do commita).
-
-## RUNDY
-
-2/5 (Operator, HAIKU 5.5). Runda 1 → BLOCK (martwy punkt). Runda 2 → zarzuty 1, 7, 8, 9 zamknięte w kodzie/dokumentacji; 2 częściowo; 3, 4 i 5 — NIE_ZMIERZONO / odstępstwo jawnie opisane.
-
-## NASTĘPNY KROK
-
-Runda 3 (wymóg orkiestratora): (a) zbudować bundle do katalogu w /tmp (`vite --outDir ... --emptyOutDir`, nie `npm run build`); (b) pomiar projekcji vs realny skEnd/spichlerz po endTurn na ≥3 ziarnach, T1–15, z logowaniem `projectNnsAfterTick` i realnego stanu (Chromium z `/opt/pw-browsers/chromium-1194`); (c) testy (a)–(d) Dodatku 2 w grze: Spichlerz ujemny + Auto-Żywienie → tura kończy się i realny Spichlerz ≥ 0 po turze; (d) clamp Q3 w projekcji; (e) propozycja podatku zweryfikowana projekcją po zmianie podziału.
-
-## DEPLOY/PUSH: NIE WYKONANO
+RUNDY: 2/5 (ta runda). Poprzednia: FC FAIL (664361a77).
+NASTĘPNY KROK: podpiąć `prognozaPoPodatku` w `nnsGateForPlayer` (projekcja na kroku podatku +10/+20…), zmierzyć a–e i tabelę T1–15 w Chromium (build poza repo), uzupełnić live-verify v2/v4, dopisać mutację projekcji.
+UWAGI-DLA-ORKIESTRATORA: (1) worktree ma gra/node_modules (npm ci --ignore-scripts) — do usunięcia przy sprzątaniu; (2) gałąź `wf-gate-r2` lokalna, nie wypchnięta; (3) zapis tego pliku i commit wykonane przez Operatora; integracja i push NIE wykonane.
+DEPLOY/PUSH: NIE WYKONANO
