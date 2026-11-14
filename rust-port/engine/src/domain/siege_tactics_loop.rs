@@ -35,6 +35,7 @@ use crate::domain::siege_tactics_fastforward::{
 };
 use crate::domain::siege_tactics_inputs_pos::{facing_toward, relative_hit, JsVal};
 use crate::domain::siege_tactics_roundcap::RoundCapState;
+use crate::domain::siege_tactics_tower::{pick_tower_target, TowerTarget};
 use crate::domain::siege_tactics_turnseq::{
     activate_next, activation_done, begin_turn, CheckSite, EndCheckSnapshot, SeqEvent, SeqStep,
     TurnSeqEnv, TurnSeqState, UnitRef,
@@ -47,6 +48,11 @@ pub trait LoopBody {
     fn start(&mut self, unit: UnitRef, st: &TurnSeqState) -> f64;
     /// Zakończenie ciała jednostki: efekt na stanie, przed callbackiem `_activateUnit`.
     fn complete(&mut self, unit: UnitRef, st: &mut TurnSeqState);
+    /// Pozycja `(q, r)` jednostki (web `u.q`, `u.r`) potrzebna `pickTowerTarget` w `_fireOneTower`.
+    /// Domyślnie `None`: jednostka bez pozycji nie jest brana pod uwagę przez wieże.
+    fn unit_cell(&self, _unit: UnitRef) -> Option<(i64, i64)> {
+        None
+    }
 }
 
 /// Klocek zegara: krok sekwencji (`_schedule(ms, () => _beginTurn())` / `_activateNext`) albo koniec ciała jednostki.
@@ -80,6 +86,13 @@ pub struct SiegeEnv<B: LoopBody> {
     pub body: B,
     /// Web `_fireSiegeTowers` (R4): jednostka trafiona przez wieżyczkę przy każdym początku tury (jeśli żyje).
     pub tower: Option<UnitRef>,
+    /// Web `siegeTowers` (etap 1): wiersze wież na kolumnie `siegeWallCol`, kolejność jak w pinie.
+    /// Puste = brak wież, wtedy działa placeholder [`Self::tower`].
+    pub tower_rows: Vec<i64>,
+    /// Web `towerRange` (`towerRangeFor`, `battleScene.ts:4168`).
+    pub tower_range: f64,
+    /// Web `wallTileHp.has(row)` (etap 1): wiersze, na których kafel muru jeszcze stoi.
+    pub wall_tile_rows: Vec<i64>,
     /// Web `wallEverBreached`.
     pub wall_ever_breached: bool,
     /// Web `siegeNoBreachMaxRounds`.
@@ -126,6 +139,48 @@ impl<B: LoopBody> SiegeEnv<B> {
             .collect();
         army_morale_ratio_without_commander(&army)
     }
+
+    /// Web `_fireSiegeTowers` (`battleScene.ts:4208-4219`) + `_fireOneTower` (`:4223-4232`), etap 1: każda wieża
+    /// z `tower_rows` (z kafelkiem muru) wybiera cel przez [`pick_tower_target`] spośród żywych atakujących
+    /// (filtr jak `this.atk.filter(...)` w pinie). Wybrany cel dostaje placeholder `dead` (do etapu 2).
+    /// Wybory są liczone przed zastosowaniem placeholderów, bo w pinie zmiana HP następuje później (`_schedule`).
+    /// Etap 1 NIE robi: odroczenia 180 ms (`_schedule`), strzału `_singleBlow` i `_destroyTowerAtRow`.
+    fn fire_towers_by_pick(&mut self, st: &mut TurnSeqState) {
+        let wall_col = st.siege_wall_col;
+        let mut picked: Vec<usize> = Vec::new();
+        for &row in &self.tower_rows {
+            if !self.wall_tile_rows.contains(&row) {
+                continue;
+            }
+            let mut refs: Vec<usize> = Vec::new();
+            let mut targets: Vec<TowerTarget> = Vec::new();
+            for (idx, u) in st.atk.iter().enumerate() {
+                let c = u.c;
+                if c.dead || c.fading_out || c.routed || c.removed {
+                    continue;
+                }
+                let Some((q, r)) = self.body.unit_cell(UnitRef {
+                    side: BattleSide::Attacker,
+                    idx,
+                }) else {
+                    continue;
+                };
+                refs.push(idx);
+                targets.push(TowerTarget {
+                    q,
+                    r,
+                    hp: c.hp,
+                    dead: c.dead,
+                });
+            }
+            if let Some(k) = pick_tower_target(wall_col, row, self.tower_range, &targets) {
+                picked.push(refs[k]);
+            }
+        }
+        for idx in picked {
+            st.atk[idx].c.dead = true;
+        }
+    }
 }
 
 impl<B: LoopBody> TurnSeqEnv for SiegeEnv<B> {
@@ -157,6 +212,11 @@ impl<B: LoopBody> TurnSeqEnv for SiegeEnv<B> {
     }
 
     fn fire_siege_towers(&mut self, st: &mut TurnSeqState) {
+        if !self.tower_rows.is_empty() {
+            self.fire_towers_by_pick(st);
+            return;
+        }
+        // Etap 1: placeholder bez wież (`tower_rows` puste). Usunięcie w etapie 2 razem z odroczeniem i strzałem.
         if let Some(r) = self.tower {
             let c = match r.side {
                 BattleSide::Attacker => &mut st.atk[r.idx].c,
@@ -633,6 +693,11 @@ impl<R: RollSource> ProdBody<R> {
 }
 
 impl<R: RollSource> LoopBody for ProdBody<R> {
+    fn unit_cell(&self, unit: UnitRef) -> Option<(i64, i64)> {
+        let pu = self.units[side_ix(unit.side)].get(unit.idx)?;
+        Some((pu.activate.q, pu.activate.r))
+    }
+
     fn start(&mut self, unit: UnitRef, st: &TurnSeqState) -> f64 {
         let ix = side_ix(unit.side);
         self.pending[ix][unit.idx] = None;

@@ -1,0 +1,10796 @@
+{
+ "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+ "source": "gra/src/game/city-towers.ts",
+ "file_sha256": "cc715ed61f65cb0b11fe38efe80e6c6a1742feefec2c0bb5e6ce142a4da8cbd4",
+ "fragment_sha256": "56a196fe638705e1883506e315b059116268e49b20b679a90db1448ebe3da333",
+ "note": "expected = indeks zwrocony przez pickTowerTarget pinu (-1 = brak celu); range NaN/Infinity jako napisy",
+ "counters": {
+  "cases": 400,
+  "hit": 132,
+  "none": 268,
+  "dead_matters": 42,
+  "range_matters": 186,
+  "own_tile_present": 11,
+  "tie_break": 12,
+  "nan_range": 13,
+  "inf_range": 16
+ },
+ "cases": [
+  {
+   "tower": {
+    "q": 3,
+    "r": 4
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 6,
+     "r": 6,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 6
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 8,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 0
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 4,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": -2,
+     "hp": 9,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 0
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 3,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 4
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 1,
+     "r": -1,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 4
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 4,
+     "r": 3,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 3,
+     "hp": 8,
+     "dead": true
+    },
+    {
+     "q": 2,
+     "r": 2,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 0
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 2,
+     "hp": 6,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 5
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 7,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 2
+   },
+   "range": "NaN",
+   "enemies": [
+    {
+     "q": -2,
+     "r": 8,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": -1,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 1,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 6,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": -1,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 3,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": 4
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 2
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 8,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 2
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 6,
+     "r": -2,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 0,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 3,
+     "hp": 5,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 3
+   },
+   "range": 1,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 5
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 1,
+     "hp": 2,
+     "dead": true
+    },
+    {
+     "q": 1,
+     "r": 5,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": -2,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 4,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 4
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 4,
+     "r": 6,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": -1,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 3
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 5,
+     "r": -2,
+     "hp": 7,
+     "dead": true
+    },
+    {
+     "q": 6,
+     "r": 1,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 0
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 1,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": -2,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": -1,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 0,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 3,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 5
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 4,
+     "r": 4,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 2,
+     "hp": 1,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 0
+   },
+   "range": 4,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 5
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 0,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 8,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 5,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 0,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 0,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 4,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 1
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 1,
+     "r": -2,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 6,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 4,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 0,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 6,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 3,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": 3
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 5
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 2,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": -1,
+     "r": 4,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 3,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 7,
+     "hp": 7,
+     "dead": true
+    },
+    {
+     "q": 7,
+     "r": 1,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 8,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 3
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 4,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": -2,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 1,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 5
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 5,
+     "hp": 2,
+     "dead": true
+    },
+    {
+     "q": 2,
+     "r": 6,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 3
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 1,
+     "r": 8,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": -1,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 7,
+     "hp": 5,
+     "dead": true
+    },
+    {
+     "q": 3,
+     "r": 6,
+     "hp": 8,
+     "dead": true
+    },
+    {
+     "q": 3,
+     "r": 6,
+     "hp": 3,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 6
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 6,
+     "r": -2,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 3,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 0,
+     "hp": 3,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 2
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 1,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 0,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 0,
+     "hp": 5,
+     "dead": true
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 4
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 2,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": -1,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 6,
+     "hp": 4,
+     "dead": true
+    },
+    {
+     "q": 8,
+     "r": 1,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 6
+   },
+   "range": "Infinity",
+   "enemies": [
+    {
+     "q": 1,
+     "r": 5,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 1,
+     "hp": 1,
+     "dead": true
+    },
+    {
+     "q": 0,
+     "r": 2,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 5,
+     "hp": 2,
+     "dead": true
+    },
+    {
+     "q": -2,
+     "r": 0,
+     "hp": 0,
+     "dead": true
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 5
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 0,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": -1,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 6
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 5,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 3,
+     "hp": 2,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 6
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 8,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 5,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": -2,
+     "r": 0,
+     "hp": 6,
+     "dead": true
+    },
+    {
+     "q": 2,
+     "r": 2,
+     "hp": 9,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 1
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 2,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 3
+   },
+   "range": 3,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 0
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 0,
+     "r": -2,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 7,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 1,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 6,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 8,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 5,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 2
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 0,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 5,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 3,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 6
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 0,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 0,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 1,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 0
+   },
+   "range": 0,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 1
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 1,
+     "hp": 3,
+     "dead": true
+    },
+    {
+     "q": 6,
+     "r": 2,
+     "hp": 8,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 2
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 0,
+     "hp": 3,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 3
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 0,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 3
+   },
+   "range": 3,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 5
+   },
+   "range": 1,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 0
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 0,
+     "hp": 8,
+     "dead": true
+    },
+    {
+     "q": 8,
+     "r": 4,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 6,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 6,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 6,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 3
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 4,
+     "r": 6,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 4,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 5
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 1,
+     "hp": 3,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 6
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 8,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": -2,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 5,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 4,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 7,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 3,
+     "hp": 9,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 5
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 0,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 3,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 3,
+     "hp": 3,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 0
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 4,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 6,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 6
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 4,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 4,
+     "hp": 4,
+     "dead": true
+    },
+    {
+     "q": 3,
+     "r": 0,
+     "hp": 2,
+     "dead": true
+    },
+    {
+     "q": 7,
+     "r": -1,
+     "hp": 1,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 3
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 1,
+     "r": 6,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 4,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 1,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": -2,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 7,
+     "hp": 9,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 0
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 7,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 2
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 4,
+     "r": 6,
+     "hp": 2,
+     "dead": true
+    },
+    {
+     "q": 0,
+     "r": 2,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 5
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 7,
+     "hp": 1,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 2
+   },
+   "range": 0,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 1
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 1,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 3,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 0,
+     "hp": 4,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 2
+   },
+   "range": 5,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 6
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 4,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 4,
+     "hp": 1,
+     "dead": true
+    },
+    {
+     "q": 8,
+     "r": 2,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 3
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 4,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 6,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 4,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 4,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 0
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 1,
+     "r": 4,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 4,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": -2,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 2,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 1,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 3
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 1,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": -1,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 3
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 7,
+     "r": -2,
+     "hp": 9,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 3
+   },
+   "range": 0,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 3
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 1,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 2,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 8,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 2,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": 1,
+     "r": -2,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 1,
+     "hp": 3,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 0
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 6,
+     "r": 1,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 6,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 3,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 0
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 3,
+     "hp": 6,
+     "dead": true
+    },
+    {
+     "q": 4,
+     "r": 4,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 2
+   },
+   "range": 0,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 5
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 3,
+     "r": -2,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 5,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 6,
+     "hp": 3,
+     "dead": true
+    },
+    {
+     "q": 4,
+     "r": 4,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 5,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 8,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 6
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 3,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 2
+   },
+   "range": "Infinity",
+   "enemies": [
+    {
+     "q": 3,
+     "r": 5,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 7,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 7,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": -1,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 4,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 7,
+     "hp": 1,
+     "dead": false
+    }
+   ],
+   "expected": 4
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 1
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 5,
+     "r": -1,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 3,
+     "hp": 8,
+     "dead": true
+    },
+    {
+     "q": 3,
+     "r": 3,
+     "hp": 1,
+     "dead": true
+    },
+    {
+     "q": 5,
+     "r": 3,
+     "hp": 3,
+     "dead": true
+    },
+    {
+     "q": 7,
+     "r": -1,
+     "hp": 3,
+     "dead": true
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 0
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 1,
+     "r": 2,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 5
+   },
+   "range": 2,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 6
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 1,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 2
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 8,
+     "r": -1,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 5,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 0
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 1,
+     "r": 1,
+     "hp": 2,
+     "dead": true
+    },
+    {
+     "q": 3,
+     "r": 6,
+     "hp": 0,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 4
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 6,
+     "r": 2,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 8,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 0,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 1,
+     "hp": 1,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 0
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 6,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": 6,
+     "r": 1,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 1,
+     "hp": 8,
+     "dead": true
+    },
+    {
+     "q": 3,
+     "r": 3,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": -2,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 5,
+     "hp": 1,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 1
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 1,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 4,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 8,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 8,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 2
+   },
+   "range": 0,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 5
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 6,
+     "r": 4,
+     "hp": 6,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 0
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 8,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 6,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": -1,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 0,
+     "hp": 1,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 3
+   },
+   "range": "NaN",
+   "enemies": [
+    {
+     "q": 2,
+     "r": 5,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 2,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 3,
+     "hp": 6,
+     "dead": true
+    },
+    {
+     "q": 8,
+     "r": 0,
+     "hp": 1,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 2
+   },
+   "range": "NaN",
+   "enemies": [
+    {
+     "q": -1,
+     "r": 2,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 5,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 6,
+     "hp": 3,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 4
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 5,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": 7,
+     "r": 3,
+     "hp": 9,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 4
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 7,
+     "hp": 2,
+     "dead": true
+    },
+    {
+     "q": -1,
+     "r": -2,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 2
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 6,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 6,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 2,
+     "hp": 4,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 4
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 4,
+     "r": 3,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 7,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 2,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 0
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 4,
+     "r": 0,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 1
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 4,
+     "r": 5,
+     "hp": 1,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 5
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 4,
+     "hp": 1,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 1
+   },
+   "range": "Infinity",
+   "enemies": [
+    {
+     "q": 7,
+     "r": 7,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 3,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 7,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 0,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": -2,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 4
+   },
+   "range": 4,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 1
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 4,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 7,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 5,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 0,
+     "hp": 0,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 6
+   },
+   "range": 6,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 1
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 6,
+     "hp": 1,
+     "dead": true
+    },
+    {
+     "q": -2,
+     "r": 0,
+     "hp": 4,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 6
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": -1,
+     "r": -2,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 8,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 8,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 5
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 0,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 1,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 5,
+     "hp": 9,
+     "dead": true
+    },
+    {
+     "q": 7,
+     "r": 0,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 8,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 2,
+     "hp": 6,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 0
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 7,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 1,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 3,
+     "hp": 8,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 1
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 0,
+     "hp": 9,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 1
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 7,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 3,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 6
+   },
+   "range": 4,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 3
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 6,
+     "r": 1,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 0,
+     "hp": 8,
+     "dead": true
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 6
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 8,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 6,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": -2,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 6,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": -2,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 2
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 4,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 7,
+     "hp": 5,
+     "dead": true
+    },
+    {
+     "q": 6,
+     "r": 2,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 2,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 3,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 6
+   },
+   "range": "NaN",
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 2
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 2,
+     "r": -2,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": -1,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 3,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 5,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": -1,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 4
+   },
+   "range": 2,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 0
+   },
+   "range": "NaN",
+   "enemies": [
+    {
+     "q": 6,
+     "r": 8,
+     "hp": 7,
+     "dead": true
+    },
+    {
+     "q": -2,
+     "r": -1,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": 8,
+     "r": -1,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": -1,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 1,
+     "hp": 9,
+     "dead": false
+    }
+   ],
+   "expected": 4
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 5
+   },
+   "range": -1,
+   "enemies": [
+    {
+     "q": 0,
+     "r": -2,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 0,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 6
+   },
+   "range": "NaN",
+   "enemies": [
+    {
+     "q": 5,
+     "r": 8,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 5,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 4,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 5,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 1
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 1,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 0,
+     "hp": 1,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 5
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 3,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": -1,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 6,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 1,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 0,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 3,
+     "hp": 4,
+     "dead": true
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 2
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 6,
+     "r": -1,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 5,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 5,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 5,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 4,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 2,
+     "hp": 3,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 2
+   },
+   "range": "Infinity",
+   "enemies": [
+    {
+     "q": 3,
+     "r": -1,
+     "hp": 1,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 6
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 1,
+     "r": 2,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 8,
+     "hp": 2,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 6
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 7,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 5,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 3,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 6,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 8,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 6,
+     "hp": 3,
+     "dead": false
+    }
+   ],
+   "expected": 3
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 0
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 3,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 2,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 0,
+     "hp": 3,
+     "dead": true
+    },
+    {
+     "q": 8,
+     "r": -1,
+     "hp": 7,
+     "dead": true
+    },
+    {
+     "q": 3,
+     "r": 4,
+     "hp": 9,
+     "dead": true
+    },
+    {
+     "q": 1,
+     "r": 1,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": 5
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 0
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 6,
+     "r": 1,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": -1,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": -2,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 7,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 0
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 3,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 1,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 1,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 4,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 0,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": 4
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 2
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 4,
+     "hp": 5,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 0
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 2,
+     "hp": 1,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 6
+   },
+   "range": 0,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 3
+   },
+   "range": -1,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 0
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 5,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 8,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": -2,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 2,
+     "hp": 7,
+     "dead": true
+    },
+    {
+     "q": 6,
+     "r": -1,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": -1,
+     "r": 8,
+     "hp": 9,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 3
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 7,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 5,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 4,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 8,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": -1,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 2
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 3,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 7,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 4,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 0,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 8,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 2,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 0
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 5,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 7,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 1,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 8,
+     "hp": 0,
+     "dead": true
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 5
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 0,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 6
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 2,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 3,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 3
+   },
+   "range": 6,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 1
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 3,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 2,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 8,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": -1,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 2,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 6,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 4
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 1,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 0,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 4
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 1,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 1,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": -1,
+     "hp": 5,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 5
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 2,
+     "hp": 8,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 5
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 1,
+     "r": 1,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 6,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 1
+   },
+   "range": "NaN",
+   "enemies": [
+    {
+     "q": 3,
+     "r": 3,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 0,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 6
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 2,
+     "hp": 5,
+     "dead": true
+    },
+    {
+     "q": 5,
+     "r": 0,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 7,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": -1,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 3,
+     "hp": 2,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 3
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 3,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 2,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 8,
+     "hp": 4,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 6
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 7,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": -1,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 5,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": -1,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 2,
+     "hp": 5,
+     "dead": true
+    },
+    {
+     "q": 4,
+     "r": 8,
+     "hp": 3,
+     "dead": false
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 5
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 1,
+     "r": 2,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": 2,
+     "r": -2,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 2
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 2,
+     "r": -2,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 6
+   },
+   "range": 1,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 0
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 1,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 7,
+     "hp": 1,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 5
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 4,
+     "r": 0,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": -2,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": -1,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 6,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": -2,
+     "hp": 7,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 0
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 6,
+     "hp": 8,
+     "dead": true
+    },
+    {
+     "q": 5,
+     "r": 6,
+     "hp": 4,
+     "dead": true
+    },
+    {
+     "q": 5,
+     "r": 6,
+     "hp": 6,
+     "dead": true
+    },
+    {
+     "q": 4,
+     "r": 1,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 5,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 7,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": 3
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 2
+   },
+   "range": "NaN",
+   "enemies": [
+    {
+     "q": 8,
+     "r": -1,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 6
+   },
+   "range": 2,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 2
+   },
+   "range": "NaN",
+   "enemies": [
+    {
+     "q": 0,
+     "r": 6,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": 2,
+     "r": 4,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 0,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 4,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 1,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 0
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 5,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 2,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 5,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 2
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 4,
+     "r": 2,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 6,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 4,
+     "hp": 1,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 3
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 7,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 3,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 8,
+     "hp": 9,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 2
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 3,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": -1,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 3,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 8,
+     "hp": 4,
+     "dead": true
+    },
+    {
+     "q": -2,
+     "r": 3,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 1,
+     "hp": 6,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 3
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 7,
+     "hp": 3,
+     "dead": true
+    },
+    {
+     "q": 2,
+     "r": 8,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 6,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 7,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 2,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 1,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": 4
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 3
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 8,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": -1,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 2
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 1,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 2,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 5
+   },
+   "range": -1,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 3
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 3,
+     "r": -1,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 0,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 3
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 3,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 6,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 4
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 0,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": -1,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 0
+   },
+   "range": 5,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 1
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 6,
+     "r": 3,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 7,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 2
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 0,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": -2,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 2,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": -1,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 6,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": -2,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 3
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 4,
+     "hp": 1,
+     "dead": true
+    },
+    {
+     "q": 6,
+     "r": 5,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 5,
+     "hp": 7,
+     "dead": true
+    },
+    {
+     "q": -2,
+     "r": 6,
+     "hp": 5,
+     "dead": true
+    },
+    {
+     "q": 6,
+     "r": 0,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 5,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 3
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 3,
+     "r": -2,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": -2,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 1,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 3
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 6,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 2,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 3,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 7,
+     "hp": 9,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 3
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 8,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 5,
+     "hp": 6,
+     "dead": true
+    },
+    {
+     "q": 1,
+     "r": 7,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 1,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 2
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": -1,
+     "r": -2,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": -1,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 2,
+     "hp": 3,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 6
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 7,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 4,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 6,
+     "hp": 4,
+     "dead": true
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 0
+   },
+   "range": "Infinity",
+   "enemies": [
+    {
+     "q": 4,
+     "r": 2,
+     "hp": 1,
+     "dead": true
+    },
+    {
+     "q": 2,
+     "r": 0,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 8,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": -1,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 4
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 2,
+     "r": -2,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 1,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 0,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 2
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 4,
+     "r": 1,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 6,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 8,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": -1,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 2,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 2,
+     "hp": 3,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 4
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 5,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 8,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 2,
+     "hp": 7,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 4
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 2,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 0
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 2,
+     "r": -1,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": -1,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": -2,
+     "hp": 9,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 4
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 0,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 5
+   },
+   "range": 5,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 6
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 4,
+     "r": -2,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 1
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 6,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 1,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 8,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 0
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 7,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 7,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": -1,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": -2,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 1,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 8,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 3
+   },
+   "range": 1,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 6
+   },
+   "range": -1,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 2,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": -1,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 1,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": -2,
+     "hp": 8,
+     "dead": true
+    },
+    {
+     "q": 5,
+     "r": 3,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 4
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 5,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 5,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": -2,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 6,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 1,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 8,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 2
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 8,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": -1,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 7,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 3,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 0,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 4,
+     "hp": 5,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 2
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 1,
+     "r": 0,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 6,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": -2,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 3
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 2,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 3,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 0,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 3
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 6,
+     "r": 5,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 4,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 1,
+     "hp": 0,
+     "dead": true
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 3
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 2,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 1
+   },
+   "range": 5,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 0
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 2,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": -1,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": -2,
+     "hp": 9,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 4
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 7,
+     "r": -2,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": 8,
+     "r": -2,
+     "hp": 4,
+     "dead": true
+    },
+    {
+     "q": 5,
+     "r": 0,
+     "hp": 9,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 0
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 0,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": -1,
+     "hp": 1,
+     "dead": true
+    },
+    {
+     "q": 3,
+     "r": 3,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 5,
+     "hp": 9,
+     "dead": true
+    },
+    {
+     "q": -2,
+     "r": 4,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 0,
+     "hp": 9,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 5
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 7,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 5,
+     "hp": 1,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 2
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": -2,
+     "r": -2,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": -2,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": 2,
+     "r": -2,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 5,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 7,
+     "hp": 6,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 5
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 0,
+     "r": -2,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 1,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 4,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 2,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 0
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 4,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 3,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 3,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 1
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 3,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 6,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 2
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 6,
+     "r": 8,
+     "hp": 6,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 5
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 1,
+     "hp": 5,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 5
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 7,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 5,
+     "hp": 7,
+     "dead": true
+    },
+    {
+     "q": 3,
+     "r": 8,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": -1,
+     "r": 7,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": 3
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 2
+   },
+   "range": -1,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 4
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 8,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 2,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 0,
+     "hp": 3,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 2
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 3,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": -1,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 0,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 8,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": -2,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 4,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 6
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 4,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 0,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 5
+   },
+   "range": "Infinity",
+   "enemies": [
+    {
+     "q": -2,
+     "r": -2,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 0
+   },
+   "range": 1,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 4
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 4,
+     "r": 4,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 3,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 6,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 4,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 0
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 3,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 4,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 0,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 0,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 3,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": 3
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 0
+   },
+   "range": 4,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 6
+   },
+   "range": 5,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 0
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 6,
+     "r": 7,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": -1,
+     "hp": 8,
+     "dead": true
+    },
+    {
+     "q": 5,
+     "r": 1,
+     "hp": 3,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 2
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 3,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 0,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 2,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 8,
+     "hp": 8,
+     "dead": true
+    },
+    {
+     "q": -1,
+     "r": -2,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 1,
+     "hp": 8,
+     "dead": true
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 4
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 4,
+     "r": 4,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 0
+   },
+   "range": 0,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 6
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 3,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 3,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": 7,
+     "r": 1,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 0
+   },
+   "range": 3,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 4
+   },
+   "range": 4,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 4
+   },
+   "range": "Infinity",
+   "enemies": [
+    {
+     "q": 8,
+     "r": 6,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 7,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 1,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 8,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 0,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 1,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": 3
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 6
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 6,
+     "r": -2,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 0
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 1,
+     "hp": 9,
+     "dead": true
+    },
+    {
+     "q": 0,
+     "r": 3,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 1,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 7,
+     "hp": 3,
+     "dead": true
+    },
+    {
+     "q": 7,
+     "r": 3,
+     "hp": 3,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 0
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 3,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 8,
+     "hp": 7,
+     "dead": true
+    },
+    {
+     "q": 5,
+     "r": 4,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 0
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 4,
+     "r": 1,
+     "hp": 8,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 2
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 5,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 6,
+     "hp": 6,
+     "dead": true
+    },
+    {
+     "q": 4,
+     "r": 2,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": 1,
+     "r": 6,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 5
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 6,
+     "r": 1,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": -2,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 7,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": -2,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": -1,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 3
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 2,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 0,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 7,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 3,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 0
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 8,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": -2,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 3,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": -2,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 0
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 3,
+     "r": -2,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 2,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 4,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 3
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 7,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": -1,
+     "hp": 8,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 3
+   },
+   "range": 2,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 4
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 3,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 1,
+     "hp": 1,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 6
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": -2,
+     "r": -1,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 4,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 5
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 3,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 1,
+     "hp": 9,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 4
+   },
+   "range": -1,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 2,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 4,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 2,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": -1,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 5
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 3,
+     "r": -2,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 7,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 8,
+     "hp": 3,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 5
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 1,
+     "r": 8,
+     "hp": 5,
+     "dead": true
+    },
+    {
+     "q": 5,
+     "r": 8,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": -1,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 3,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 8,
+     "hp": 4,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 6
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 1,
+     "r": 1,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": -2,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 4,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 6,
+     "hp": 5,
+     "dead": false
+    }
+   ],
+   "expected": 3
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 5
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 1,
+     "r": -2,
+     "hp": 4,
+     "dead": true
+    },
+    {
+     "q": 6,
+     "r": 1,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 7,
+     "hp": 3,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 5
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 4,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 6,
+     "hp": 8,
+     "dead": true
+    },
+    {
+     "q": 0,
+     "r": 5,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 7,
+     "hp": 7,
+     "dead": true
+    },
+    {
+     "q": 6,
+     "r": 8,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 5,
+     "hp": 5,
+     "dead": false
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 4
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 6,
+     "r": 0,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": -1,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 7,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 2,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 0,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 2
+   },
+   "range": "Infinity",
+   "enemies": [
+    {
+     "q": 5,
+     "r": -2,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": -1,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 1,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 2
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 8,
+     "r": -1,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 6,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": -1,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 0
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 4,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": -1,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": -1,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 3,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 4,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 7,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 3
+   },
+   "range": -1,
+   "enemies": [
+    {
+     "q": 6,
+     "r": 6,
+     "hp": 5,
+     "dead": true
+    },
+    {
+     "q": 1,
+     "r": 2,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 6
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 7,
+     "r": -1,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 1,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": -2,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 1,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 7,
+     "hp": 2,
+     "dead": true
+    },
+    {
+     "q": -1,
+     "r": -1,
+     "hp": 9,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 5
+   },
+   "range": 3,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 6
+   },
+   "range": 5,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 6
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 7,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": -2,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 8,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 5,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 3,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 6,
+     "hp": 2,
+     "dead": true
+    }
+   ],
+   "expected": 3
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 1
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 6,
+     "r": -2,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 0,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": -2,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 5,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 1,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": 4
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 5
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 5,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 3,
+     "hp": 9,
+     "dead": true
+    },
+    {
+     "q": 3,
+     "r": 6,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 1
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 7,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 0,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 6
+   },
+   "range": 5,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 6
+   },
+   "range": -1,
+   "enemies": [
+    {
+     "q": 4,
+     "r": 5,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": -1,
+     "hp": 6,
+     "dead": true
+    },
+    {
+     "q": 3,
+     "r": 7,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 0
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 3,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 2,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 8,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 7,
+     "hp": 4,
+     "dead": true
+    },
+    {
+     "q": -2,
+     "r": 3,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 6,
+     "hp": 9,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 0
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 4,
+     "hp": 5,
+     "dead": true
+    },
+    {
+     "q": 6,
+     "r": -2,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 4,
+     "hp": 2,
+     "dead": true
+    },
+    {
+     "q": 1,
+     "r": 6,
+     "hp": 8,
+     "dead": true
+    },
+    {
+     "q": 7,
+     "r": 5,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 0,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": 5
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 0
+   },
+   "range": 0,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 2
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 6,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 7,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 2,
+     "hp": 3,
+     "dead": false
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 2
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 0,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 4,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 4,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 0,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 1,
+     "hp": 9,
+     "dead": true
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 3
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 7,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": -1,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 5,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": -1,
+     "hp": 2,
+     "dead": true
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 6
+   },
+   "range": 2,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 6
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 1,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 0,
+     "hp": 3,
+     "dead": true
+    },
+    {
+     "q": 4,
+     "r": 6,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": -2,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 7,
+     "hp": 5,
+     "dead": true
+    },
+    {
+     "q": 1,
+     "r": 4,
+     "hp": 5,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 3
+   },
+   "range": -1,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 8,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 3,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 5,
+     "hp": 1,
+     "dead": true
+    },
+    {
+     "q": 8,
+     "r": 4,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 6,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 5,
+     "hp": 8,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 5
+   },
+   "range": 3,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 4
+   },
+   "range": -1,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 2
+   },
+   "range": 1,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 0
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 6,
+     "r": -2,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 6,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 0
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 6,
+     "r": 1,
+     "hp": 8,
+     "dead": true
+    },
+    {
+     "q": 4,
+     "r": 4,
+     "hp": 7,
+     "dead": true
+    },
+    {
+     "q": 3,
+     "r": 4,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": -1,
+     "r": 8,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 3
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 6,
+     "r": -1,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 7,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 2,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 5
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 7,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 5,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 2,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 2
+   },
+   "range": "Infinity",
+   "enemies": [
+    {
+     "q": 2,
+     "r": 5,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": 7,
+     "r": -2,
+     "hp": 5,
+     "dead": true
+    },
+    {
+     "q": 0,
+     "r": 3,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 0,
+     "hp": 8,
+     "dead": true
+    },
+    {
+     "q": -2,
+     "r": -2,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 4
+   },
+   "range": -1,
+   "enemies": [
+    {
+     "q": 6,
+     "r": 0,
+     "hp": 2,
+     "dead": true
+    },
+    {
+     "q": -2,
+     "r": 5,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 3,
+     "hp": 2,
+     "dead": true
+    },
+    {
+     "q": -2,
+     "r": -2,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": -2,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 6,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 2
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 6,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": -2,
+     "hp": 1,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 2
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 2,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 8,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 5,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 2,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": 3,
+     "r": -2,
+     "hp": 8,
+     "dead": true
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 4
+   },
+   "range": 0,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 5
+   },
+   "range": 3,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 6
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 8,
+     "hp": 3,
+     "dead": true
+    },
+    {
+     "q": 5,
+     "r": 5,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": -2,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": -2,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": -1,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 2
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 3,
+     "hp": 2,
+     "dead": true
+    },
+    {
+     "q": 7,
+     "r": 2,
+     "hp": 9,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 0
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 2,
+     "hp": 7,
+     "dead": true
+    },
+    {
+     "q": 8,
+     "r": -1,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 1,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 3,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 1,
+     "hp": 9,
+     "dead": true
+    },
+    {
+     "q": 5,
+     "r": 3,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 5
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 6,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 0,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 6,
+     "hp": 5,
+     "dead": false
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 5
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 6,
+     "r": -1,
+     "hp": 8,
+     "dead": true
+    },
+    {
+     "q": 4,
+     "r": -2,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": -2,
+     "hp": 7,
+     "dead": true
+    },
+    {
+     "q": 1,
+     "r": -2,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 1,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 5,
+     "hp": 5,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 2
+   },
+   "range": "Infinity",
+   "enemies": [
+    {
+     "q": 7,
+     "r": 5,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 0,
+     "hp": 2,
+     "dead": true
+    },
+    {
+     "q": -2,
+     "r": 3,
+     "hp": 2,
+     "dead": true
+    },
+    {
+     "q": 5,
+     "r": -2,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": -1,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 0,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": 5
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 2
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 8,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 2,
+     "hp": 3,
+     "dead": true
+    },
+    {
+     "q": 7,
+     "r": 6,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 5,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 3
+   },
+   "range": -1,
+   "enemies": [
+    {
+     "q": 4,
+     "r": 3,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": -1,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": -1,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 3,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 2,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 2
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 5,
+     "r": -1,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 2,
+     "hp": 9,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 0
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 1,
+     "r": 2,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 3
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 6,
+     "r": 5,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 2,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 2,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 7,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 5
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 8,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 0,
+     "hp": 5,
+     "dead": true
+    },
+    {
+     "q": 6,
+     "r": 3,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 4
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 1,
+     "r": 7,
+     "hp": 3,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 1
+   },
+   "range": "Infinity",
+   "enemies": [
+    {
+     "q": 0,
+     "r": 7,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": -2,
+     "hp": 6,
+     "dead": true
+    },
+    {
+     "q": 0,
+     "r": 1,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": -2,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 2,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 8,
+     "hp": 9,
+     "dead": true
+    }
+   ],
+   "expected": 3
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 1
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 0,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 5,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 6,
+     "hp": 7,
+     "dead": true
+    },
+    {
+     "q": 8,
+     "r": -1,
+     "hp": 4,
+     "dead": true
+    },
+    {
+     "q": 6,
+     "r": 0,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 5,
+     "hp": 9,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 4
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": -2,
+     "r": -1,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 6
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 1,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 2
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 3,
+     "hp": 8,
+     "dead": true
+    },
+    {
+     "q": 2,
+     "r": 1,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 2,
+     "hp": 1,
+     "dead": true
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 2
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 6,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": -1,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 5,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 0,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": 3
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 5
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 6,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": 4,
+     "r": -2,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 5,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 8,
+     "hp": 9,
+     "dead": true
+    },
+    {
+     "q": 8,
+     "r": 2,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 7,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 5
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 1,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 0,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 3,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 1
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 5,
+     "hp": 1,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 1
+   },
+   "range": "Infinity",
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 5
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 3,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 3,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 8,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": -1,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 1,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 2,
+     "hp": 5,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 1
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 0,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 1
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 4,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 3
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": -1,
+     "r": -1,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 4,
+     "hp": 2,
+     "dead": true
+    },
+    {
+     "q": -1,
+     "r": 2,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 1,
+     "hp": 3,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 1
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 4,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 7,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 4
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 3,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 0,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 6,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 3,
+     "hp": 2,
+     "dead": true
+    },
+    {
+     "q": 3,
+     "r": 8,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 0
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 3,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": -2,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 2,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 0,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 4,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 5
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 0,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 1
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 4,
+     "r": 3,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 3,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 5,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 5,
+     "hp": 3,
+     "dead": true
+    },
+    {
+     "q": 7,
+     "r": 5,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 4,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 2
+   },
+   "range": -1,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 2,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 8,
+     "hp": 6,
+     "dead": true
+    },
+    {
+     "q": 2,
+     "r": 0,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": -2,
+     "hp": 3,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 3
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 4,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": -1,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 5,
+     "hp": 7,
+     "dead": true
+    },
+    {
+     "q": 1,
+     "r": 3,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": 3
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 0
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 2,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 7,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 8,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 8,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 4
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 6,
+     "r": 7,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 8,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 4
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 1,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 6,
+     "hp": 1,
+     "dead": true
+    },
+    {
+     "q": 7,
+     "r": 3,
+     "hp": 3,
+     "dead": true
+    },
+    {
+     "q": 6,
+     "r": -1,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 1,
+     "hp": 9,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 4
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 3,
+     "hp": 9,
+     "dead": true
+    },
+    {
+     "q": -2,
+     "r": 4,
+     "hp": 3,
+     "dead": true
+    },
+    {
+     "q": 5,
+     "r": 8,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 1,
+     "hp": 6,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 0
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 3,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 1,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 6,
+     "hp": 9,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 1
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 6,
+     "hp": 9,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 5
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 1,
+     "r": 8,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 3,
+     "hp": 3,
+     "dead": true
+    },
+    {
+     "q": 6,
+     "r": 3,
+     "hp": 3,
+     "dead": true
+    },
+    {
+     "q": 2,
+     "r": 5,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": 3
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 2
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 8,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 1,
+     "hp": 1,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 4
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 3,
+     "r": -2,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": -2,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": 3,
+     "r": -1,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 0,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 3,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 5,
+     "hp": 9,
+     "dead": false
+    }
+   ],
+   "expected": 4
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 6
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 5,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": 8,
+     "r": 7,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 3,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": -2,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 7,
+     "hp": 8,
+     "dead": true
+    },
+    {
+     "q": -2,
+     "r": -1,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 3
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 3,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 8,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 0,
+     "hp": 3,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 1
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 7,
+     "r": -2,
+     "hp": 1,
+     "dead": true
+    },
+    {
+     "q": -1,
+     "r": 2,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 0,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 7,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": -2,
+     "hp": 8,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 3
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 5,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": -2,
+     "hp": 9,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 6
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 6,
+     "r": 4,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 7,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 4,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 0,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 0
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 1,
+     "r": 7,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 5,
+     "hp": 6,
+     "dead": true
+    },
+    {
+     "q": 4,
+     "r": 8,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 4,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 6,
+     "hp": 5,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 0
+   },
+   "range": 1,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 4
+   },
+   "range": 5,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 3
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 8,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 6,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": -2,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 2,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": -2,
+     "r": 6,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 2
+   },
+   "range": 4,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 0
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 2,
+     "hp": 6,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 0
+   },
+   "range": 3,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 6
+   },
+   "range": 3,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 4
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 4,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 6,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 3
+   },
+   "range": 5,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 3
+   },
+   "range": "Infinity",
+   "enemies": [
+    {
+     "q": 8,
+     "r": 7,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 5,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 1,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 6,
+     "hp": 9,
+     "dead": true
+    },
+    {
+     "q": 5,
+     "r": 7,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": 4
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 4
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 5,
+     "hp": 8,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 2
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 2,
+     "hp": 5,
+     "dead": true
+    },
+    {
+     "q": 0,
+     "r": -2,
+     "hp": 1,
+     "dead": true
+    },
+    {
+     "q": 0,
+     "r": 2,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 4
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 1,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 4,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 2,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 7,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 0,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": 1,
+     "r": 6,
+     "hp": 1,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 2
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 6,
+     "r": 7,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": -2,
+     "r": 0,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 1,
+     "hp": 9,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 5
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 1,
+     "r": 7,
+     "hp": 6,
+     "dead": true
+    },
+    {
+     "q": 6,
+     "r": -1,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 2,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 3,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 1,
+     "hp": 8,
+     "dead": true
+    }
+   ],
+   "expected": 3
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 3
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 1,
+     "r": 1,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 0,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 5,
+     "hp": 3,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 0
+   },
+   "range": 6,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 1
+   },
+   "range": -1,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 1,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": -2,
+     "hp": 1,
+     "dead": true
+    },
+    {
+     "q": 8,
+     "r": 2,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 5
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 0,
+     "hp": 6,
+     "dead": true
+    },
+    {
+     "q": 1,
+     "r": 7,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": 7,
+     "r": 6,
+     "hp": 6,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 2
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 5,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": -1,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": -2,
+     "hp": 9,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 0
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 5,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 0,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 6
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 1,
+     "r": 5,
+     "hp": 1,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 5
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 3,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 7,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 8,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 8,
+     "hp": 3,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 1
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 3,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 6,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 5,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": -1,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 1,
+     "hp": 3,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 4
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 6,
+     "r": 1,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 2,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 1,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": -2,
+     "hp": 5,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 2
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 5,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 2,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 2
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 4,
+     "r": 4,
+     "hp": 8,
+     "dead": true
+    },
+    {
+     "q": 5,
+     "r": 8,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 1,
+     "hp": 3,
+     "dead": true
+    },
+    {
+     "q": 3,
+     "r": 0,
+     "hp": 5,
+     "dead": false
+    }
+   ],
+   "expected": 3
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 3
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 1,
+     "r": 7,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 0,
+     "hp": 3,
+     "dead": true
+    },
+    {
+     "q": 0,
+     "r": -1,
+     "hp": 3,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 5
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 5,
+     "hp": 7,
+     "dead": true
+    },
+    {
+     "q": -2,
+     "r": 8,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 4
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 1,
+     "r": 3,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 4
+   },
+   "range": 0,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 6
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 0,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 2,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 6,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 3
+   },
+   "range": "Infinity",
+   "enemies": [
+    {
+     "q": 2,
+     "r": -2,
+     "hp": 4,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 3
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 7,
+     "r": -2,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 2,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 2,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 0,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 5,
+     "hp": 5,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 0
+   },
+   "range": "NaN",
+   "enemies": [
+    {
+     "q": 7,
+     "r": 0,
+     "hp": 8,
+     "dead": true
+    },
+    {
+     "q": 6,
+     "r": -2,
+     "hp": 1,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 0
+   },
+   "range": "NaN",
+   "enemies": [
+    {
+     "q": 2,
+     "r": 3,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 7,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 0,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 0,
+     "hp": 4,
+     "dead": true
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 4
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": -1,
+     "r": 2,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 7,
+     "hp": 1,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 6
+   },
+   "range": 4,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 5
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 2,
+     "hp": 3,
+     "dead": true
+    },
+    {
+     "q": -1,
+     "r": 6,
+     "hp": 6,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 2
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 5,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 6
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 1,
+     "hp": 9,
+     "dead": true
+    },
+    {
+     "q": 3,
+     "r": 2,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 4,
+     "hp": 9,
+     "dead": true
+    },
+    {
+     "q": 7,
+     "r": 5,
+     "hp": 9,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 4
+   },
+   "range": "NaN",
+   "enemies": [
+    {
+     "q": 6,
+     "r": 1,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 5
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 8,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 4,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": -1,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": -2,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 2
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 7,
+     "r": 5,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 8,
+     "hp": 8,
+     "dead": true
+    },
+    {
+     "q": 8,
+     "r": 2,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 5,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 2,
+     "hp": 8,
+     "dead": true
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 2
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 3,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": -2,
+     "hp": 9,
+     "dead": true
+    },
+    {
+     "q": 5,
+     "r": 6,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 7,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 4
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 3,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 1,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 1
+   },
+   "range": 6,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 5
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 1,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": -2,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 2,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 1,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": -1,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 5,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": 5
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 5
+   },
+   "range": "NaN",
+   "enemies": [
+    {
+     "q": 5,
+     "r": -2,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 7,
+     "hp": 4,
+     "dead": true
+    },
+    {
+     "q": 8,
+     "r": 6,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": 0,
+     "hp": 2,
+     "dead": true
+    },
+    {
+     "q": -2,
+     "r": -2,
+     "hp": 7,
+     "dead": false
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 1
+   },
+   "range": -1,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 1,
+     "hp": 6,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 1
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 8,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 6,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": -1,
+     "hp": 5,
+     "dead": true
+    },
+    {
+     "q": 0,
+     "r": 6,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": -1,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 1,
+     "hp": 6,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 4
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 3,
+     "r": 1,
+     "hp": 8,
+     "dead": true
+    },
+    {
+     "q": 1,
+     "r": 4,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 0,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 1,
+     "hp": 3,
+     "dead": false
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 5
+   },
+   "range": 3,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 5
+   },
+   "range": "Infinity",
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 4
+   },
+   "range": 3,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 2
+   },
+   "range": 4,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 7,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 1,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 5,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": -2,
+     "hp": 2,
+     "dead": false
+    }
+   ],
+   "expected": 2
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 6
+   },
+   "range": 1,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 3
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 1,
+     "r": 8,
+     "hp": 1,
+     "dead": true
+    },
+    {
+     "q": 0,
+     "r": -2,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 2,
+     "hp": 8,
+     "dead": true
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 2
+   },
+   "range": 5,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 5
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 5,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": 0
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 3
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 4,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 0,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 2
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 5,
+     "r": -2,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 3,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": -2,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 1,
+     "hp": 5,
+     "dead": true
+    },
+    {
+     "q": 0,
+     "r": 0,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 5
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 2,
+     "r": -2,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 2,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 3,
+     "hp": 3,
+     "dead": true
+    }
+   ],
+   "expected": 1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 4
+   },
+   "range": 1,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 0,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": 3,
+     "r": 2,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 4,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 2,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 7,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 6,
+     "hp": 0,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 1
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 2,
+     "r": -2,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 3,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 0
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 6,
+     "r": 6,
+     "hp": 2,
+     "dead": true
+    },
+    {
+     "q": 6,
+     "r": 3,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 4,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": -1,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 5,
+     "hp": 8,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 1
+   },
+   "range": 1,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 0,
+    "r": 6
+   },
+   "range": 2,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 3,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 7,
+     "hp": 5,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 1
+   },
+   "range": 5,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 6
+   },
+   "range": "Infinity",
+   "enemies": [
+    {
+     "q": 0,
+     "r": -1,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 3,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 6,
+     "r": 7,
+     "hp": 5,
+     "dead": true
+    },
+    {
+     "q": 8,
+     "r": 5,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 7,
+     "hp": 9,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": 3,
+     "hp": 9,
+     "dead": false
+    }
+   ],
+   "expected": 3
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 5
+   },
+   "range": 4,
+   "enemies": [],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 4,
+    "r": 5
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": -2,
+     "r": 3,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": -1,
+     "r": -2,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 7,
+     "r": 1,
+     "hp": 0,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 1,
+    "r": 3
+   },
+   "range": 0,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 3,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": 5,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 4,
+     "r": -1,
+     "hp": 8,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 6,
+    "r": 5
+   },
+   "range": 5,
+   "enemies": [
+    {
+     "q": 0,
+     "r": 3,
+     "hp": 5,
+     "dead": false
+    },
+    {
+     "q": 0,
+     "r": 6,
+     "hp": 9,
+     "dead": true
+    },
+    {
+     "q": 4,
+     "r": 5,
+     "hp": 9,
+     "dead": true
+    },
+    {
+     "q": 3,
+     "r": 2,
+     "hp": 6,
+     "dead": true
+    },
+    {
+     "q": 2,
+     "r": 5,
+     "hp": 5,
+     "dead": true
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 3
+   },
+   "range": 3,
+   "enemies": [
+    {
+     "q": 4,
+     "r": -1,
+     "hp": 4,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 1,
+     "hp": 7,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": 1,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 3,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 8,
+     "r": 4,
+     "hp": 2,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 2,
+     "hp": 6,
+     "dead": false
+    }
+   ],
+   "expected": 3
+  },
+  {
+   "tower": {
+    "q": 2,
+    "r": 5
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 8,
+     "r": 3,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": -2,
+     "r": 6,
+     "hp": 0,
+     "dead": true
+    },
+    {
+     "q": 7,
+     "r": 7,
+     "hp": 3,
+     "dead": false
+    },
+    {
+     "q": 2,
+     "r": -1,
+     "hp": 0,
+     "dead": false
+    },
+    {
+     "q": 1,
+     "r": -1,
+     "hp": 0,
+     "dead": false
+    }
+   ],
+   "expected": 3
+  },
+  {
+   "tower": {
+    "q": 3,
+    "r": 3
+   },
+   "range": -1,
+   "enemies": [
+    {
+     "q": 2,
+     "r": 2,
+     "hp": 3,
+     "dead": false
+    }
+   ],
+   "expected": -1
+  },
+  {
+   "tower": {
+    "q": 5,
+    "r": 6
+   },
+   "range": 6,
+   "enemies": [
+    {
+     "q": 5,
+     "r": 6,
+     "hp": 8,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 5,
+     "hp": 2,
+     "dead": true
+    },
+    {
+     "q": -2,
+     "r": 0,
+     "hp": 1,
+     "dead": false
+    },
+    {
+     "q": 5,
+     "r": 3,
+     "hp": 8,
+     "dead": true
+    },
+    {
+     "q": 0,
+     "r": 3,
+     "hp": 6,
+     "dead": false
+    },
+    {
+     "q": 3,
+     "r": 2,
+     "hp": 1,
+     "dead": false
+    }
+   ],
+   "expected": 5
+  }
+ ]
+}
