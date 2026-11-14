@@ -11,6 +11,11 @@
  *            Odczyt karty AI A (sekcja „W stanie wojny z” z procentem zmęczenia) w PROBE_TURNS, zmiany liczby miast
  *            per wlasciciel po kazdej turze (P3: zmiana wlasciciela miasta).
  *   speed  — wariant bez trybu przyspieszonego: wojna AI->gracz, setFastMode(false), czas kazdej tury (P4).
+ * r3: swiat jest dokonczony przed startem tur (czekanie na !overlayVisible && worldReady && awaitingFirstCity, limit GEN_SEC=900 s);
+ *     wojny prowadzimy z cywilizacjami GLOWNYMI (__borderEraPenaltyRuntimeTestDebug.ownerIds) — aiOwners[0..1] to MIASTA-PANSTWA (40,41);
+ *     DECLARE_TURN=N opoznia wojne do tury N miedzy cywilizacjami z >=2 miastami (AI zaklada miasta dopiero ok. T22);
+ *     CAPTURE_TURN/CAPTURE_DELAY: zdobycie miasta REALNA funkcja gry (__peaceRulesTestDebug.captureCityForTest -> applyCityCaptureToMap);
+ *     REDECLARE=1: ponowne declareWar AI<->AI po pokoju; po kazdej turze odczyt DOM karty AI (audLight) i zakladki „Dyplomacja” w probach.
  * Zadna logika gry nie jest zmieniana. Jedyne ingerencje w tury (jak w B1/W80B): odrzucanie ofert AI blokujacych
  * koniec tury (PO odczycie obserwacji danej tury) i DODATNIE dosypki zlota/zywnosci przy bramce NNS.
  *
@@ -389,7 +394,7 @@ async function main() {
       // OBSERWACJA tury (przed odrzuceniem ofert).
       const isProbe = PROBE.includes(turn);
       const obs = await observe(page, rep, turn, ais, isProbe);
-      rep.turns[rep.turns.length - 1] = { turn, digest: obs.digest, owners: obs.owners, cities: obs.cityCounts, pair: obs.pairStates, entriesBeforeReject: obs.entries, sec: turnSec };
+      rep.turns[rep.turns.length - 1] = { turn, digest: obs.digest, owners: obs.owners, cities: obs.cityCounts, pair: obs.pairStates, entriesBeforeReject: obs.entries, light: obs.audLight || null, sec: turnSec };
       if (isProbe) rep.probes.push(obs);
       // P3: zdobycie miasta REALNA funkcja gry (__peaceRulesTestDebug.captureCityForTest -> applyCityCaptureToMap), odczyt zmeczenia przed/po.
       if (CAPTURE_TURN && DECLARED && turn >= (DECLARE_TURN ? (rep.warDeclaredAtTurn || 0) + CAPTURE_DELAY : CAPTURE_TURN) && !(rep.capture && rep.capture.ok !== undefined)) {
