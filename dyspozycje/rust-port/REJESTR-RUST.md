@@ -1215,3 +1215,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Dysk:** 11 GB wolnego. **Parity:** `533d46dd3`.
 - **Otwarte:** wpięcie #106 w D3 i `city_stock` (po PRACA-FLOOR), etap b T2 (po #120), WIEZE 2B, dokumentacja `NIEPODPIETE-MODULY.md:274`.
 - **Pytania ABC #115, #120** i konwencja `Co-Authored-By`: bez odpowiedzi właściciela.
+
+## KOREKTA (14.11, po PRACA-FLOOR-LEDGER-Q1): rozbieżność „podłoga Pracy” NIE istnieje w osiągalnych stanach
+- **Mój błąd:** w rozpoznaniu `R-RUSTPORT-P6-R7K7C-WIRING-ROZPOZNANIE-Q1` (`0515603ee`) i w dispatchu PRACA-FLOOR zapisałem jako potwierdzoną rozbieżność „pula 5, umowa 1 płaci 10, umowa 2 dostaje 10: pin 10, Rust 5”. Nie sprawdziłem tego scenariusza. Wzięte z rozpoznania bez weryfikacji.
+- **Stan faktyczny (sprawdzone):** w kroku D3 bramka `buyer_ok` (Rust `turn_war_dipl_steps.rs:548–553`, pin `main.ts:24141–24147`) sprawdza pulę Pracy kupującego na żywym ledgerze przed każdą pozycją Work (`praca_of(buyer) >= z`). Pozycja, która zabrałaby więcej niż jest, jest odrzucana. Pula nie schodzi poniżej zera, więc podłoga per operacja i podłoga na sumie dają ten sam wynik.
+- **Wynik tematu:** `R-RUSTPORT-P6-PRACA-FLOOR-LEDGER-Q1` — Operator BLOCK (`096b16ab4`), Evaluator potwierdził BLOCK (`0108483fa`), FC PASS-WITH-NOTES (dokumentacja, zero kodu). Zamknięte bez zmian w kodzie. Raporty zachowane: `rust-port-wip/PRACA-FLOOR-LEDGER-Q1-fc` (`096b16ab4`), `rust-port-wip/wf_03ce4582-c3e-1..3` (refs/keep).
+- **Notatka z obrony (NIE_ZMIERZONO, nie rozstrzygnięte):** (a) zaokrąglenia f64 przy różnej kolejności sumowania (`0.39999999999999997` vs `0.3999999999999999`); (b) mapowanie braku wpisu dla AI: Rust `praca_of` zwraca błąd, pin daje 0 (`?? 0`) — do sprawdzenia testem, nie zmieniane; (c) self-transfer (kupujący = sprzedający) w ledgerze.
+- **Co zostaje z #106:** wpięcie `apply_dipl_deltas_to_state` w D3, zapis `city_stock` (D3) i `barbarian_grace` — te punkty z rozpoznania NIE były w tym temacie weryfikowane i wymagają ponownego rozpoznania przed dispatchem.
+- **Sloty:** 1 z 4 (T2 ZLOZE-WIRE-WAR-BREAK-A, Operator w toku).
