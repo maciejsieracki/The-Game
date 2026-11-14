@@ -1138,3 +1138,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Dysk:** 12 GB wolnego (sprawdzone przed startem WIEZE r2).
 - **Parity:** `a381dd13f`.
 - **Uwaga do commitów:** dwa wcześniejsze commity (dispatch ZLOZE, rejestr 21:18) mają trailer `Co-Authored-By` z nazwą modelu. Od tej chwili commity nie zawierają nazwy modelu (zgodnie z zasadą z promptu systemowego); historii nie przepisuję.
+
+## Przebieg (14.11, ZLOZE-GRANTS-STATE zintegrowany na parity-v2)
+- **Temat:** `R-RUSTPORT-P6-ZLOZE-GRANTS-STATE-Q1` (#104 część 1). Final Control PASS-WITH-NOTES, SHA `d6d197099`. Obrona r1 `b0cb6c48f` (alias `zlozeGrants`, test wczytania zapisu webowego). Evaluator r1 raport w `442eac1db`.
+- **Integracja:** ancestry `a381dd13f → d6d197099` OK; diff 8 plików, w allowliście. Bramki na `d6d197099` w worktree integracyjnym: `cargo fmt --check` EXIT 0; `cargo clippy --all-targets -- -D warnings` EXIT 0; pełny `cargo test` EXIT 0 (3332 passed, 0 failed).
+- **FF:** `origin/rust-port/parity-v2` `a381dd13f` → `d6d197099` (potwierdzone fetch).
+- **Refs:** `refs/keep/ZLOZE-GRANTS-STATE-Q1-fc` i `rust-port-wip/ZLOZE-GRANTS-STATE-Q1` na `d6d197099`.
+- **Sprzątanie:** usunięte worktree tematu (`integ-zloze`, `wf_4c2b7e55-cfa-1..4`) i `target` w scratchpadzie. Worktree WIEZE r2 (`wf_38834851-4ff-1`) zostaje, bo trwa.
+- **Dalej:** #104 część 2 (wiring do produkcji) jeszcze nie zrobiona; czeka na decyzję kolejności. Uwaga z FC: zapis pod kluczem snake_case; rename tylko jeśli część 2 tego wymaga.
+- **Parity:** `d6d197099`.
