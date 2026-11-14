@@ -42,7 +42,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.ai-nauka-podzial-tura1-seed-bundle
 const ENTRY_TS = `
 import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT } from '../src/map/generator';
 import { computeStartPlacements } from '../src/units/setup';
-import { foundCity, cityName, DEFAULT_PODZIAL_HANDLU, AI_FIXED_PROCENT_NAUKA } from '../src/game/cities';
+import { foundCity, cityName, LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14, AI_FIXED_PROCENT_NAUKA } from '../src/game/cities';
 import { freshOwnerDefaultPodzialHandlu } from '../src/game/empire-handel-split';
 import { loadGameData } from '../src/data/loader';
 import { previewCityEconomy, advanceCityEconomy } from '../src/game/turn-economy';
@@ -50,7 +50,7 @@ import { previewCityEconomy, advanceCityEconomy } from '../src/game/turn-economy
 export {
   generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT,
   computeStartPlacements,
-  foundCity, cityName, DEFAULT_PODZIAL_HANDLU, AI_FIXED_PROCENT_NAUKA,
+  foundCity, cityName, LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14, AI_FIXED_PROCENT_NAUKA,
   freshOwnerDefaultPodzialHandlu,
   loadGameData,
   previewCityEconomy, advanceCityEconomy,
@@ -81,7 +81,7 @@ try {
 const {
   generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT,
   computeStartPlacements,
-  foundCity, cityName, DEFAULT_PODZIAL_HANDLU, AI_FIXED_PROCENT_NAUKA,
+  foundCity, cityName, LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14, AI_FIXED_PROCENT_NAUKA,
   freshOwnerDefaultPodzialHandlu,
   loadGameData,
   previewCityEconomy, advanceCityEconomy,
@@ -93,9 +93,9 @@ function assert(name, cond, detail) {
   else { failed++; console.log(`FAIL: ${name}${detail ? ' -- ' + detail : ''}`); }
 }
 
-assert('fixture: DEFAULT_PODZIAL_HANDLU.procentNauka === 20 (default GRACZA)', DEFAULT_PODZIAL_HANDLU.procentNauka === 20);
+assert('fixture: LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14.procentNauka === 20 (dawny default GRACZA, sprzed 2026-11-14)', LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14.procentNauka === 20);
 assert('fixture: AI_FIXED_PROCENT_NAUKA === 60', AI_FIXED_PROCENT_NAUKA === 60);
-assert('fixture: freshOwnerDefaultPodzialHandlu() zwraca procentNauka=20 (to właśnie było błędnie seedowane AI)', freshOwnerDefaultPodzialHandlu().procentNauka === 20);
+assert('fixture: freshOwnerDefaultPodzialHandlu() zwraca nowy default gracza procentNauka=60 (R-WEB-SETTINGS-DEFAULT-TAX-SPLIT-30-60-10-Q1)', freshOwnerDefaultPodzialHandlu().procentNauka === 60);
 
 const data  = loadGameData();
 const map   = generateMap(DEFAULT_WIDTH, DEFAULT_HEIGHT, 9191);
@@ -178,7 +178,9 @@ function advanceArgs(ownerDefaultPodzialHandluByOwner_) {
 //    freshOwnerDefaultPodzialHandlu() dla KAŻDEGO ownera, w tym AI) -- tura 1 dawała
 //    procentNauka=20, nie 60. To DOKŁADNIE Zarzut 1 z Obrony Rundy 1.
 // ---------------------------------------------------------------------------
-const seedPrzedNaprawa = new Map([[1, freshOwnerDefaultPodzialHandlu()]]); // {procentNauka:20,...}
+// Regres odtwarzany na podziale sprzed 2026-11-14 (nauka 20%); nowy default gracza to 60%, więc
+// fixture regresu musi jawnie użyć dawnego seeda, a nie freshOwnerDefaultPodzialHandlu().
+const seedPrzedNaprawa = new Map([[1, { ...LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14 }]]); // {procentNauka:20,...}
 let naukaRegres;
 {
   const prev = previewCityEconomy(...previewArgs(seedPrzedNaprawa));
@@ -197,7 +199,7 @@ let naukaRegres;
 //    decideAIEconomySliders, musi już liczyć z procentNauka=60 w previewCityEconomy
 //    ORAZ w realnym advanceCityEconomy.
 // ---------------------------------------------------------------------------
-const seedPoNaprawie = new Map([[1, { ...DEFAULT_PODZIAL_HANDLU, procentNauka: AI_FIXED_PROCENT_NAUKA }]]);
+const seedPoNaprawie = new Map([[1, { ...LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14, procentNauka: AI_FIXED_PROCENT_NAUKA }]]);
 
 {
   const prev = previewCityEconomy(...previewArgs(seedPoNaprawie));

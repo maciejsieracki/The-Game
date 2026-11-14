@@ -6295,8 +6295,8 @@ async function boot(): Promise<void> {
           // P-AI-BADANIA-ZACOFANIE-Q1 (Runda 2, luka tury 1 -- Obrona Rundy 1, Zarzut 1,
           // PRZYJĘTE): dokładnie ten sam wzorzec co ownerDefaultPodzialPracy/
           // AI_FIXED_PROCENT_BUDYNKI wyżej w tym pliku. freshOwnerDefaultPodzialHandlu()
-          // zwraca DEFAULT_PODZIAL_HANDLU.procentNauka=20 (default GRACZA) -- bez tej
-          // gałęzi każdy nowy owner AI startował turę 1 z procentNauka=20, bo
+          // zwraca DEFAULT_PODZIAL_HANDLU.procentNauka=60 (default GRACZA) -- bez tej
+          // gałęzi każdy nowy owner AI startował turę 1 z procentNauka=60, bo
           // advanceCityEconomy czyta ten seed PRZED pierwszym wywołaniem
           // decideAIEconomySliders w tej samej turze. Seeduj AI (ownerId!==0, gracz zawsze
           // ma ownerId 0) od razu na AI_FIXED_PROCENT_NAUKA, żeby okno tury 1 nie istniało.
@@ -6440,7 +6440,7 @@ async function boot(): Promise<void> {
         // dwóch pozostałych seedów (spawn miasta-państwa / test wymuszonej wojny) --
         // owner mógł tu pojawić się po raz pierwszy bez przejścia przez żaden z nich.
         // Bez tej gałęzi resolveCityPodzialHandlu (main.ts niżej) dostawał `undefined`
-        // z mapy i padał na DEFAULT_PODZIAL_HANDLU.procentNauka=20 (default GRACZA) dla
+        // z mapy i padał na DEFAULT_PODZIAL_HANDLU.procentNauka=60 (default GRACZA) dla
         // tego ownera AI, dokładnie ta sama klasa błędu co ownerDefaultPodzialPracy wyżej.
         ownerDefaultPodzialHandlu.set(
           c.ownerId,
@@ -11852,7 +11852,7 @@ async function boot(): Promise<void> {
             // P-AI-BADANIA-ZACOFANIE-Q1 (Runda 2): wzorzec identyczny jak
             // initOwnerDefaultPodzialHandlu wyżej -- nowo powstały owner AI w trakcie gry
             // (nowe miasto-państwo/cywilizacja spawnowana tutaj) nie może dziedziczyć
-            // domyślnego procentNauka=20 gracza.
+            // domyślnego procentNauka=60 gracza.
             ownerDefaultPodzialHandlu.set(
               sc.ownerId,
               sc.ownerId === 0
