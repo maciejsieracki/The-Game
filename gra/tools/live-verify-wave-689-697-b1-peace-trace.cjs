@@ -96,9 +96,10 @@ async function main() {
     // REALNE wypowiedzenie wojny AI -> gracz (ownerDeclareWarOn), nie setWar.
     await page.evaluate(ai => window.__truceTestDebug.declareWar(ai, 0), info.ai);
     rep.warDeclaredAtTurn = await page.evaluate(() => window.__aiTradeWiringTestDebug.state().turn);
-    rep.relAfterDeclare = await page.evaluate(ai => window.__aiTradeWiringTestDebug.peaceTracePair(ai), info.ai);
+    rep.relAfterDeclare = process.env.NOTRACE === '1' ? null : await page.evaluate(ai => window.__aiTradeWiringTestDebug.peaceTracePair(ai), info.ai);
     save(rep);
-    await page.evaluate(() => window.__aiTradeWiringTestDebug.peaceTraceStart());
+    if (process.env.NOTRACE !== '1') await page.evaluate(() => window.__aiTradeWiringTestDebug.peaceTraceStart());
+    rep.traceOn = process.env.NOTRACE !== '1';
     for (let i = 0; i < WAR_TURNS; i++) {
       if (Date.now() - t0 > MAX_MS) { rep.stoppedBy = 'limit czasu'; break; }
       await clearBattles(page);
@@ -107,6 +108,16 @@ async function main() {
       while (guard++ < 12) {
         const can = await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd());
         if (can) break;
+        // R2 (bramka NNS, założenie pomiaru): tylko DODATNIE dosypki złota/żywności, gdy bramka NNS blokuje koniec tury.
+        const nnsB = await page.evaluate(() => window.__aiTradeWiringTestDebug.nnsGateBlocked());
+        if (nnsB) {
+          const curT = await page.evaluate(() => window.__aiTradeWiringTestDebug.state().turn);
+          const gg = await page.evaluate(() => { const h = window.__aiTradeWiringTestDebug; return [h.grantPlayerGold(200000), h.grantPlayerFood(100000)]; });
+          rep.nnsGrants = rep.nnsGrants || [];
+          rep.nnsGrants.push({ turn: curT, goldAfter: gg[0], foodAfter: gg[1] });
+          await wait(50);
+          continue;
+        }
         const ents = await page.evaluate(() => window.__truceTestDebug.negotiationEntries());
         if (!ents.length) {
           // Karta decyzji w panelu bocznym („wymaga decyzji”) bez wpisu na stole: klik przycisku odrzucenia (jak gracz).
@@ -166,12 +177,20 @@ async function main() {
         save(rep);
         break;
       }
-      const pair = await page.evaluate(ai => window.__aiTradeWiringTestDebug.peaceTracePair(ai), info.ai);
-      const rows = await page.evaluate(() => {
+      const pair = process.env.NOTRACE === '1'
+        ? { turn: await page.evaluate(() => window.__aiTradeWiringTestDebug.state().turn), ai: info.ai, nohook: true }
+        : await page.evaluate(ai => window.__aiTradeWiringTestDebug.peaceTracePair(ai), info.ai);
+      const rows = await page.evaluate(on => {
         const h = window.__aiTradeWiringTestDebug;
-        const r = h.peaceTraceStop(); h.peaceTraceStart(); return r;
+        const r = on ? h.peaceTraceStop() : []; if (on) h.peaceTraceStart(); return r;
+      }, rep.traceOn);
+      // Skrot stanu (FNV-1a po __detHarness.digest) — dowod kryterium 3 (hak nie zmienia przebiegu).
+      const dg = await page.evaluate(() => {
+        const s = window.__detHarness.digest(); let h = 2166136261;
+        for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+        return (h >>> 0).toString(16) + ':' + s.length;
       });
-      rep.turns.push({ pair, rows });
+      rep.turns.push({ pair, rows, digest: dg });
       rep.lastTurn = pair.turn;
       save(rep);
       console.log('[b1] tura ' + pair.turn + ' turnsAtWar=' + pair.turnsAtWar + ' status=' + pair.status + ' wiersze=' + rows.length);

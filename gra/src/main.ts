@@ -30514,6 +30514,21 @@ async function boot(): Promise<void> {
           };
         },
         isFastMode: (): boolean => civTestRuntime.skipRender,
+        /** W80B-B1 r2 (tylko ?civTest=1, tylko DODATNIE dosypki): gracz nie blokuje tury bramką NNS w runnerze pomiaru. Bez zmian logiki gry. */
+        grantPlayerGold: (n: number): number => {
+          const ps = playerStateByHuman.get(ME());
+          if (!(n > 0) || !ps) return -1;
+          ps.skarbiec += n;
+          return ps.skarbiec;
+        },
+        /** W80B-B1 r2: odczyt bramki NNS gracza (tylko odczyt). */
+        nnsGateBlocked: (): boolean => nnsGateForPlayer().blokada,
+        grantPlayerFood: (n: number): number => {
+          const st = empireFoodStates.get(ME());
+          if (!(n > 0) || !st) return -1;
+          st.zapasyPanstwa += n;
+          return st.zapasyPanstwa;
+        },
         /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r3): stan okien bitwy blokujacych koniec tury. */
         battleState: () => ({
           preBattleOpen: isPreBattleOpen(), pendingAuto: hasPendingAutoPreBattle(),
@@ -43450,18 +43465,23 @@ async function boot(): Promise<void> {
                     .filter(c => c.targetId === '0')
                     .map(c => c.type + ((c as { bezwarunkowy?: boolean }).bezwarunkowy ? '/bezw' : '')
                       + ((c as { rodzaj?: string }).rodzaj ? '/' + (c as { rodzaj?: string }).rodzaj : ''));
-                  const trWr = diploWarStateForRead(ownerId, ME());
+                  // Odczyty BEZ wstawiania (getDiploRelation / diplomaticContactEstablishedSet dopisują brakujący wpis do Map).
+                  const trRel = diplomacyRelations.get(ownerId < ME() ? `${ownerId}_${ME()}` : `${ME()}_${ownerId}`) ?? defaultNeutralRelation();
+                  const trMeta = diplomacyPairMeta.get(diploPairKey(ownerId, ME())) as (DiploPairMeta & WarPairMetaR1) | undefined;
+                  const trWr = trRel.status !== 'wojna'
+                    ? { turnsAtWar: 0, lostCities: 0 }
+                    : warStateFromRecord(trMeta?.wojnaMiasta, trMeta?.wojnaStartTura ?? turn, String(ownerId), turn);
                   peaceTraceState.rows.push({
                     turn, owner: ownerId, stage: 'filtry-warstwy',
-                    relStatus: getDiploRelation(ownerId, ME()).status,
-                    relTotal: relationTotal(getDiploRelation(ownerId, ME())),
+                    relStatus: trRel.status,
+                    relTotal: relationTotal(trRel),
                     turnsAtWar: trWr.turnsAtWar, lostCities: trWr.lostCities,
                     raw: trPlr(Array.isArray(dipCmdsRaw) ? dipCmdsRaw : []),
                     afterPlayerFacing: trPlr(dipCmdsPlayerFacing),
                     afterLayer: trPlr(dipCmdsLayered),
                     afterContact: trPlr(dipCmds),
                     dipLayer: String(dipLayer),
-                    contactSet: diplomaticContactEstablishedSet().has(ownerId),
+                    contactSet: diplomaticContactEstablishedByHuman.get(ME())?.has(ownerId) ?? false,
                   });
                 }
                 for (const cmd of dipCmds) {
