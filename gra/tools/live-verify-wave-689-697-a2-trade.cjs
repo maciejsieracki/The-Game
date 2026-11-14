@@ -32,7 +32,7 @@ const SHOTS = path.join(RUN_DIR, `shots-${TAG}`);
 const CHROME_CANDIDATES = ['/opt/pw-browsers/chromium-1194/chrome-linux/chrome', '/opt/pw-browsers/chromium/chrome-linux/chrome'];
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
-const res = { tag: TAG, dist: DIST, points: {}, checks: [], pageErrors: [], notes: [] };
+const res = { tag: TAG, dist: path.basename(DIST), points: {}, checks: [], pageErrors: [], notes: [] };
 function check(id, label, cond, detail) {
   res.checks.push({ id, label, status: cond ? 'PASS' : 'FAIL', detail: detail === undefined ? null : detail });
   console.log(`  ${cond ? 'OK  ' : 'FAIL'} [${id}] ${label}` + (cond || detail === undefined ? '' : ' -- ' + JSON.stringify(detail)));
@@ -121,18 +121,24 @@ async function main() {
         expando: !!box && box.__w2a2 === 1 && !!scroll && scroll.__w2a2 === 1 && !!colB && colB.__w2a2 === 1,
       };
     });
-    const itemsStr = side => ({ side, rows: null });
     const rowCount = side => page.locator(`.cdb-deal-row[data-side="${side}"]`).count();
 
     // Wybor surowca + ilosc + „Dodaj” po jednej stronie (chipy surowcow: typ surowiec_ilosc).
-    async function addResource(side) {
+    // excludeId: surowiec, ktorego NIE wybierac (po stronie „oferują” inny niz oferowany, zeby P3c
+    // rozrozniał obie strony).
+    async function addResource(side, excludeId) {
       const typChip = page.locator(`.cdb-chip-typ[data-side="${side}"][data-value="surowiec_ilosc"]`).first();
       if ((await typChip.count()) === 0) {
         const avail = await ev(s => Array.from(document.querySelectorAll(`.cdb-chip-typ[data-side="${s}"]`)).map(c => c.getAttribute('data-value')), side);
         throw new Error(`brak chipa typu surowiec_ilosc po stronie ${side}; dostępne: ${JSON.stringify(avail)}`);
       }
       await typChip.click();
-      const rc = page.locator(`.cdb-chip-resqty[data-side="${side}"]`).first();
+      const pickId = await ev(([s, ex]) => {
+        const ids = Array.from(document.querySelectorAll(`.cdb-chip-resqty[data-side="${s}"]`)).map(c => c.getAttribute('data-value'));
+        return ids.find(v => v !== ex) || null;
+      }, [side, excludeId || null]);
+      if (!pickId) throw new Error(`brak innego surowca niż ${excludeId} po stronie ${side}`);
+      const rc = page.locator(`.cdb-chip-resqty[data-side="${side}"][data-value="${pickId}"]`).first();
       const resId = await rc.getAttribute('data-value');
       const resLabel = ((await rc.textContent()) || '').replace(/\s+/g, ' ').replace(/\s*\d[\d\s]*$/, '').trim();
       await rc.click();
@@ -142,10 +148,14 @@ async function main() {
       return { resId, resLabel };
     }
 
-    // ---------- P4 (czesc przed dodaniem po drugiej stronie): podpowiedz przy pustej stronie ----------
+    // Stan „obie strony puste”: kod pokazuje podpowiedz tylko gdy DOKLADNIE jedna strona jest pusta
+    // (oneSideEmpty = XOR), wiec tu oczekiwane jest null. Zapis dla jawnosci (bez PASS/FAIL).
+    const bothEmptyHint = await ev(() => { const h = document.querySelector('.cdb-neutral-hint'); return h ? (h.textContent || '').trim() : null; });
+    res.bothEmptyHint = bothEmptyHint;
+
     // ---------- P2a: dodanie po stronie „oferujemy” (give) ----------
     const beforeGive = await sameNodes();
-    const giveRes = await addResource('give');
+    const giveRes = await addResource('give', null);
     const afterGive = await sameNodes();
     const giveRows = await rowCount('give');
     await shot('02-po-dodaniu-oferujemy.png');
@@ -167,7 +177,7 @@ async function main() {
 
     // ---------- P2b: dodanie po stronie „oferują” (recv) ----------
     const beforeRecv = await sameNodes();
-    const recvRes = await addResource('recv');
+    const recvRes = await addResource('recv', giveRes.resId);
     const afterRecv = await sameNodes();
     const recvRows = await rowCount('receive');
     const giveRowsAfterRecv = await rowCount('give');
@@ -206,10 +216,30 @@ async function main() {
     res.audLabels = { give: giveRes.resLabel, recv: recvRes.resLabel, found: labelsInAud };
     check('P3c', 'wpis propozycji w oknie audiencji zawiera obie strony (etykiety oferowanego i żądanego surowca)', labelsInAud[0] && labelsInAud[1], { give: giveRes.resLabel, recv: recvRes.resLabel, found: labelsInAud });
 
+    // ---------- P4 symetrycznie: strona „oferujemy” PUSTA, „oferują” wypełniona ----------
+    // Ponowne otwarcie okna (po Zaproponuj) i dodanie TYLKO po stronie „oferują”.
+    await btn14.click().catch(() => {});
+    await page.waitForSelector('.civ-diplo-basket-overlay > div .cdb-body-scroll', { timeout: 15000 }).catch(() => {});
+    const reopenedRows = { give: await rowCount('give'), receive: await rowCount('receive') };
+    res.reopenedRows = reopenedRows;
+    let hintGiveEmpty = null;
+    if (await page.locator('.cdb-add[data-side="recv"]').count()) {
+      await addResource('recv', null);
+      hintGiveEmpty = await ev(() => { const h = document.querySelector('.cdb-neutral-hint'); return h ? (h.textContent || '').trim() : null; });
+    }
+    res.hintGiveEmpty = hintGiveEmpty;
+    const symNeutral = !!hintGiveEmpty && /Dodaj, co oddasz w zamian/.test(hintGiveEmpty)
+      && reopenedRows.give === 0;
+    check('P4-give-empty', 'przy pustej stronie „oferujemy” (oferują wypełnione) neutralna podpowiedź „Dodaj, co oddasz w zamian…”', symNeutral, { hint: hintGiveEmpty, reopenedRows });
+
     res.points.P2 = { status: res.checks.filter(c => c.id.startsWith('P2')).every(c => c.status === 'PASS') ? 'PASS' : 'FAIL' };
     res.points.P3 = { status: res.checks.filter(c => c.id.startsWith('P3')).every(c => c.status === 'PASS') ? 'PASS' : 'FAIL' };
-    res.points.P4 = { status: res.checks.find(c => c.id === 'P4').status };
-    res.points.P5 = { status: 'PASS', detail: 'zrzuty 01–04 zapisane w ' + SHOTS + ' (obejrzane w sesji)' };
+    res.points.P4 = { status: ['P4', 'P4-give-empty'].every(id => (res.checks.find(c => c.id === id) || {}).status === 'PASS') ? 'PASS' : 'FAIL' };
+    const shotFiles = ['01-okno-otwarte-puste.png', '02-po-dodaniu-oferujemy.png', '03-po-dodaniu-oferuja-przed-zaproponuj.png', '04-po-zaproponuj.png'];
+    const shotSizes = shotFiles.map(f => { try { return fs.statSync(path.join(SHOTS, f)).size; } catch (_) { return 0; } });
+    const shotsOk = shotSizes.every(s => s > 0);
+    res.points.P5 = { status: shotsOk ? 'PASS' : 'FAIL', detail: { dir: path.relative(GRA, SHOTS), files: shotFiles, bytes: shotSizes } };
+    check('P5', 'zrzuty 01–04 zapisane w katalogu shots-<TAG> (niepuste pliki; sam fakt zapisu, oglądanie w raporcie)', shotsOk, { shotSizes });
     flush();
   } finally {
     await browser.close();

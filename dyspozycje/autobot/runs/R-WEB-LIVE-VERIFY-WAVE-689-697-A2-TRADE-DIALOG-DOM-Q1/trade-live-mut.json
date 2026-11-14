@@ -1,6 +1,6 @@
 {
  "tag": "mut",
- "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-trade-mut",
+ "dist": "dist-trade-mut",
  "points": {
   "P1": {
    "status": "PASS"
@@ -16,7 +16,21 @@
   },
   "P5": {
    "status": "PASS",
-   "detail": "zrzuty 01–04 zapisane w /home/user/The-Game/.claude/worktrees/wf_2b4d2b25-215-1/dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-WAVE-689-697-A2-TRADE-DIALOG-DOM-Q1/shots-mut (obejrzane w sesji)"
+   "detail": {
+    "dir": "../dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-WAVE-689-697-A2-TRADE-DIALOG-DOM-Q1/shots-mut",
+    "files": [
+     "01-okno-otwarte-puste.png",
+     "02-po-dodaniu-oferujemy.png",
+     "03-po-dodaniu-oferuja-przed-zaproponuj.png",
+     "04-po-zaproponuj.png"
+    ],
+    "bytes": [
+     309921,
+     289801,
+     316474,
+     441584
+    ]
+   }
   }
  },
  "checks": [
@@ -87,8 +101,8 @@
     },
     "recvRows": 1,
     "recvResId": {
-     "resId": "drewno",
-     "resLabel": "Drewno"
+     "resId": "glina",
+     "resLabel": "Glina"
     }
    }
   },
@@ -131,10 +145,35 @@
    "status": "PASS",
    "detail": {
     "give": "Drewno",
-    "recv": "Drewno",
+    "recv": "Glina",
     "found": [
      true,
      true
+    ]
+   }
+  },
+  {
+   "id": "P4-give-empty",
+   "label": "przy pustej stronie „oferujemy” (oferują wypełnione) neutralna podpowiedź „Dodaj, co oddasz w zamian…”",
+   "status": "PASS",
+   "detail": {
+    "hint": "Dodaj, co oddasz w zamian — albo wyślij jako dar",
+    "reopenedRows": {
+     "give": 0,
+     "receive": 0
+    }
+   }
+  },
+  {
+   "id": "P5",
+   "label": "zrzuty 01–04 zapisane w katalogu shots-<TAG> (niepuste pliki; sam fakt zapisu, oglądanie w raporcie)",
+   "status": "PASS",
+   "detail": {
+    "shotSizes": [
+     309921,
+     289801,
+     316474,
+     441584
     ]
    }
   }
@@ -281,6 +320,7 @@
    "disabled": true
   }
  ],
+ "bothEmptyHint": null,
  "hintAfterGive": "Dodaj, co chcesz dostać w zamian — albo wyślij jako dar",
  "giveLabel": "Drewno",
  "submitDisabledWhenOnlyGive": false,
@@ -299,10 +339,15 @@
  ],
  "audLabels": {
   "give": "Drewno",
-  "recv": "Drewno",
+  "recv": "Glina",
   "found": [
    true,
    true
   ]
- }
+ },
+ "reopenedRows": {
+  "give": 0,
+  "receive": 0
+ },
+ "hintGiveEmpty": "Dodaj, co oddasz w zamian — albo wyślij jako dar"
 }
