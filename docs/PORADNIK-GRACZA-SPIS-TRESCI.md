@@ -1015,7 +1015,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 
 **38.1.** Suwak **Daniny** (podatki / Danina netto; nazwa pliku Wiki historyczna „suwak handlu")
 - Trzy kierunki: **skarbiec (złoto) · nauka · luksus (bogactwo)**
-- Domyślnie: **60% skarbiec · 20% nauka · 20% luksus** (identycznie na wszystkich trudnościach)
+- Domyślnie: **30% skarbiec · 60% nauka · 10% luksus** (od 2026-11-14; identycznie na wszystkich trudnościach)
 - Nazwa zmienia się na **Podatek** po Walucie + Mennicy w stolicy (§49.3b, Część VIII)
 - Wpływ na szczęście: 10 przedziałów po 10 p.p. udziału luksusu, tabela pełna w §35.2a — duży udział = bonus; mały = kara wysokich podatków
 - Wpływ na skarbiec imperium i tempo badań; korupcja (§49.3a) i mnożnik Mennicy działają na całą pulę
@@ -1366,7 +1366,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 - Wymaga dostępu do złota (kopalnia własna lub szlak handlowy) — bez dostępu mnożnik śpi, nazwa wraca na Daninę, budynek zostaje
 
 **49.3c.** Co jeszcze wchodzi do puli Daniny
-- Podatek z budynków i z zamiany Pracy przez Targowisko — trafia do puli Daniny, dzieli się suwakiem 60/20/20
+- Podatek z budynków i z zamiany Pracy przez Targowisko — trafia do puli Daniny, dzieli się suwakiem 30/60/10
 
 **49.4.** Strategie gracza — zarządzanie skarbcem
 - Wczesna gra: utrzymanie niskie, unikaj pustego skarbca przed wojnou
@@ -3190,7 +3190,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 - W — panel miasta · ¤ — skarbiec imperium
 
 **C.3.4.** Przykład
-- 60/20/20 suwak (domyślny) → W rośnie wolniej niż przy 40/20/40
+- 30/60/10 suwak (domyślny) → W rośnie wolniej niż przy 40/20/40 (zdanie sprzed 2026-11-14, nie przeliczone)
 
 ---
 

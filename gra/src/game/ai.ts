@@ -49,7 +49,7 @@ import {
   type DifficultyLevel,
 } from './city-state-difficulty';
 import type { City, CityPodzialHandlu } from './cities';
-import { canFoundCity, MAX_PROCENT_NAUKA, AI_FIXED_PROCENT_BUDYNKI, AI_FIXED_PROCENT_NAUKA, DEFAULT_PODZIAL_HANDLU, isCityLostOf }    from './cities';
+import { canFoundCity, MAX_PROCENT_NAUKA, AI_FIXED_PROCENT_BUDYNKI, AI_FIXED_PROCENT_NAUKA, LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14, isCityLostOf }    from './cities';
 import { evaluateFoundCityAffordance } from './city-founding';
 import {
   aiBypassClusterConsolidation,
@@ -7710,7 +7710,8 @@ type RawAiRushRow = Record<string, number | string | undefined>;
  */
 export function aiSeedPodzialHandlu(): CityPodzialHandlu {
   const procentNauka = Math.min(AI_FIXED_PROCENT_NAUKA, 100);
-  const procentLuksus = Math.min(DEFAULT_PODZIAL_HANDLU.procentLuksus, 100 - procentNauka);
+  // Zamożność seeda AI = 20% (podział sprzed 2026-11-14), NIE nowy domyślny podział gracza 10%.
+  const procentLuksus = Math.min(LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14.procentLuksus, 100 - procentNauka);
   return {
     procentNauka,
     procentLuksus,

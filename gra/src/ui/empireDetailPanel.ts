@@ -129,7 +129,7 @@ function renderDefaultHandelSplitSection(): string {
   // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: `ownerId` aktywnego fotela — dawniej zaszyty `0`
   // literał czytał/pisał WYŁĄCZNIE default fotela 0 niezależnie od tego, kto jest aktywny.
   const ownerId = handelSplitUi.getActiveOwnerId?.() ?? 0;
-  const split = normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 });
+  const split = normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 30, procentNauka: 60, procentLuksus: 10 });
   const daninaLbl = handelSplitUi.getDaninaLabel?.() ?? 'Podatek';
   const id = 'emp-handel-split';
   let h = `<div class="civ-emp-sect" data-section="ekonomia-handel-split" id="${id}">`
@@ -1256,7 +1256,7 @@ function renderSkarbiecTaxSplitSection(baseAmount: number): string {
   if (!getDef || !onChange) return '';
   // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: patrz komentarz w renderDefaultHandelSplitSection.
   const ownerId = handelSplitUi.getActiveOwnerId?.() ?? 0;
-  const split = normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 });
+  const split = normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 30, procentNauka: 60, procentLuksus: 10 });
   const daninaLbl = handelSplitUi.getDaninaLabel?.() ?? 'Podatek';
   const id = 'emp-skarbiec-tax-split';
   const rows: { key: keyof CityPodzialHandlu; label: string; cls: string; from: string; to: string }[] = [
@@ -1682,7 +1682,7 @@ function renderNaukaSection(
   const getDef = handelSplitUi.getOwnerDefault;
   // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: patrz komentarz w renderDefaultHandelSplitSection.
   const ownerId = handelSplitUi.getActiveOwnerId?.() ?? 0;
-  const split = getDef ? normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 }) : null;
+  const split = getDef ? normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 30, procentNauka: 60, procentLuksus: 10 }) : null;
   const procentNauka = split ? split.procentNauka : 20;
   const heroCls = rate < 0 ? 'neg' : 'pos';
 

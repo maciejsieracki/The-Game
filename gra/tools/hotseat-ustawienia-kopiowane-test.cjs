@@ -138,8 +138,8 @@ async function main() {
 
     check(after.work && after.work.procentBudynki === 70,
       `fotel 2 ma DEFAULT_PODZIAL_PRACY=70, nie 50 (got ${JSON.stringify(after.work)})`);
-    check(after.trade && after.trade.procentPieniadz === 60 && after.trade.procentNauka === 20 && after.trade.procentLuksus === 20,
-      `fotel 2 ma DEFAULT_PODZIAL_HANDLU=60/20/20, nie fotela 1 (got ${JSON.stringify(after.trade)})`);
+    check(after.trade && after.trade.procentPieniadz === 30 && after.trade.procentNauka === 60 && after.trade.procentLuksus === 10,
+      `fotel 2 ma DEFAULT_PODZIAL_HANDLU=30/60/10 (Skarb/Nauka/Zamożność), nie fotela 1 (got ${JSON.stringify(after.trade)})`);
     check(after.ration === 4, `fotel 2 ma DEFAULT_POZIOM_RACJI=4, nie 1 (got ${after.ration})`);
     check(after.treasury !== 9876, `fotel 2 nie dziedziczy skarbca fotela 1 (got ${after.treasury})`);
     check(after.hud.zloto !== 9876 && after.hud.nauka !== 321,
