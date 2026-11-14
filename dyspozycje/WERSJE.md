@@ -1,3 +1,9 @@
+## ROBOCZA 052dc9aa -- 2026-11-14 -- FALA 714: FALA 714 - ostrzezenie o oslabieniu w oknie przed bitwa (testowa)
+
+- Okno przed bitwa pokazuje ostrzezenie, gdy jednostki gracza sa oslabione przez glod wojska lub deficyt zlota (kara bez zmian; wyswietlanie)
+- Weryfikacja: tsc 0; logic 213/213; prebattle-weakened-warning 22/0; vite build OK; zrzuty Chromium okna z kara i bez
+- Limity: Civpedia (zdanie o karze) nie dodana; sciezka live kampania-bitwa NIE ZMIERZONO
+
 ## ROBOCZA 1394800a -- 2026-11-14 -- FALA 713: FALA 713 - AI nie ma ujemnego skarbca od tury 1 (testowa)
 
 - Skarbiec AI nie konczy tury ponizej zera od tury 1 (klamra dlugu AI bez pokrycia do 0, decyzja wlasciciela A); gracz bez zmian
