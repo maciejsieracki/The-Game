@@ -62,6 +62,15 @@ export interface WarWearinessInput {
 }
 
 /**
+ * R-WEB-DIPLO-WEARINESS-PW-FOLLOWUP-C615-BOTH-CITIES-Q1 (ABC właściciela 2026-11-14, wariant A): JEDNA liczba miast dla
+ * zmęczenia wojną pary = miasta utracone przez OBIE strony w tej wojnie (suma). Używana przez tabelę PW
+ * (diplomacy-proposals.ts, przez main.ts) i przez tick AI↔AI (runWarWearinessTick) — ta sama dana wojny ⇒ ta sama liczba.
+ */
+export function lostCitiesForWeariness(lostA: number, lostB: number): number {
+  return Math.max(0, lostA) + Math.max(0, lostB);
+}
+
+/**
  * Poziom zmęczenia 0..1 (bez pamięci szczytu — szczyt trzyma stan pary). Jeden licznik:
  * turyWojny/pelneTur + wagaStratMiasta * miastaZmienioneWlasciciela, min(1, …).
  */
@@ -75,7 +84,7 @@ export function warWearinessLevel(inp: WarWearinessInput, P: WarWearinessParams 
  * R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (ABC właściciela 2026-11-14: krzywa KWADRATOWA, stary rabat 60% usunięty).
  * Zmęczenie wojną jako POZYCJA PW przy pokoju zadanym przez AI (nie rabat ceny):
  *   x = clamp((L − progChetnosci) / (progKoncaZmeczenia − progChetnosci), 0, 1),  Z = round(C × x²).
- * C = cena pokoju (PN, po mnożniku cywilizacji), L = poziom zmęczenia 0..1. Z trafia do tabeli PW po stronie
+ * C = cena pokoju (PN; stała z diplomacy-acceptance-points.json, bez mnożnika cywilizacji), L = poziom zmęczenia 0..1. Z trafia do tabeli PW po stronie
  * niebędącej proponującym; reszta do pokrycia R = C − Z (miasto). Przy L ≥ progKoncaZmeczenia: Z = C, R = 0.
  * Czysta funkcja; bez `rabatCenyPokojuMax` (usunięty z JSON).
  */
@@ -269,7 +278,7 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
     live.add(key);
     const w = d.warInfo(pr.a, pr.b);
     const level = warWearinessLevel(
-      { turnsAtWar: w.turnsAtWar, lostCitiesTotal: w.lostA + w.lostB, turnsSinceCityChange: w.turnsSinceCityChange }, P);
+      { turnsAtWar: w.turnsAtWar, lostCitiesTotal: lostCitiesForWeariness(w.lostA, w.lostB), turnsSinceCityChange: w.turnsSinceCityChange }, P);
     const st = stepPairState(d.store, key, w.warStart, level);
     const lvl = st.peak;
     const none = (): void => { out.push({ pairKey: key, action: 'none', level: lvl, stage: st.stage }); };
