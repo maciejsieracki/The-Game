@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "ebc457edd6c9d7901adb1240b585adbb",
-  "bundleSha256": "9c27f3164dfd9fe25c514477ec6f60d532833245419b4bee18939a835ad463d3",
-  "bundleBytes": 14716568,
+  "bundleMd5": "048335034644b42b0fdd2ac0b8f6b4ea",
+  "bundleSha256": "8e8a2670f6762cc61f2888627dfddddb01b6889d0deb3de5a82f23bc25251063",
+  "bundleBytes": 14716574,
   "sourceSnapshot": {
-    "source": "main 24264d18d (merge FC WALLS-SUPERSEDE 301cb1917)",
+    "source": "main 4debdee17 (merge FC BANNER 9075d05c1)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 719: nowa budowa palisady znika po odblokowaniu Murow kamiennych, Mury kamienne znikaja po odblokowaniu Murow ceglanych; ulepszenie stojacego muru zostaje; Cytadela i baszta bez zmian"
+    "FALA 720: baner formalnego statusu w audiencji ma prefiks Stan: i podpowiedz To nie jest propozycja; tony i podpis bez zmian"
   ],
   "verification": [
-    "tsc 0; logic 213/213; fortifications-superseded-build 38/0; stack-repro 49/0; upgrade-chain-ai 13/0; upgrade-chain-ui Chromium 17/0; build Vite zielony"
+    "tsc 0; logic 213/213; banner-test 14/0; real-render Chromium 3 stany 14/0 (czerwony na bazie 8 pass 6 fail)"
   ],
   "limits": [
-    "NIE ZMIERZONO: test sciezki administratora; palisada juz w kolejce zostaje po odblokowaniu Murarstwa (do decyzji); dlug Rust REPIN reguly muru"
+    "NIE ZMIERZONO: zapis Sumerow (czy status wojny jest poprawny na zywo); poradnik 12-dyplomacja.md l.110 nie zawiera prefiksu; brak banera Propozycja AI"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES WALLS-SUPERSEDE r1 301cb1917 / kod d27471925. Nowa budowa palisady znika po odblokowaniu Murow kamiennych, Mury kamienne znikaja po odblokowaniu ceglanych; ulepszenie stojacego muru zostaje; Cytadela i baszta bez zmian. Testy fortifications-superseded-build 38/0, stack-repro 49/0, upgrade-chain-ai 13/0, queue-cleanup 10/0, upgrade-chain-ui Chromium 17/0, tsc 0, logic 213/213. NIE ZMIERZONO: osobny test sciezki administratora; palisada juz w kolejce zostaje; dlug Rust REPIN."
+    "notes": "FC PASS-WITH-NOTES BANNER-STAN r1 9075d05c1 / kod efab9f88f. Baner formalnego statusu w audiencji dyplomatycznej ma prefiks Stan: oraz podpowiedz To nie jest propozycja; tony i podpis bez zmian. Testy banner 14/0, real-render Chromium 3 stany (pokoj wojna rozejm) 14/0 (czerwony na bazie 8/6), tsc 0, logic 213/213. NIE ZMIERZONO: zapis gry Sumerow; baner Propozycja AI nie istnieje; poradnik 12-dyplomacja.md l.110 bez prefiksu (poza allowlista)."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-14T21:59:35",
+  "hubGeneratedAt": "2026-11-14T22:04:24",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "ebc457edd6c9d7901adb1240b585adbb",
-      "sizeBytes": 14716568
+      "md5": "048335034644b42b0fdd2ac0b8f6b4ea",
+      "sizeBytes": 14716574
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "ebc457edd6c9d7901adb1240b585adbb",
-      "sizeBytes": 14716568
+      "md5": "048335034644b42b0fdd2ac0b8f6b4ea",
+      "sizeBytes": 14716574
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "ebc457edd6c9d7901adb1240b585adbb",
-      "sizeBytes": 14716568
+      "md5": "048335034644b42b0fdd2ac0b8f6b4ea",
+      "sizeBytes": 14716574
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "ebc457edd6c9d7901adb1240b585adbb",
-      "sizeBytes": 14716568
+      "md5": "048335034644b42b0fdd2ac0b8f6b4ea",
+      "sizeBytes": 14716574
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "ebc457edd6c9d7901adb1240b585adbb",
-      "sizeBytes": 14716568
+      "md5": "048335034644b42b0fdd2ac0b8f6b4ea",
+      "sizeBytes": 14716574
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "ebc457edd6c9d7901adb1240b585adbb",
-      "sizeBytes": 14716568
+      "md5": "048335034644b42b0fdd2ac0b8f6b4ea",
+      "sizeBytes": 14716574
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "ebc457edd6c9d7901adb1240b585adbb",
-      "sizeBytes": 14716568
+      "md5": "048335034644b42b0fdd2ac0b8f6b4ea",
+      "sizeBytes": 14716574
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "ebc457edd6c9d7901adb1240b585adbb",
-      "sizeBytes": 14716568
+      "md5": "048335034644b42b0fdd2ac0b8f6b4ea",
+      "sizeBytes": 14716574
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "ebc457edd6c9d7901adb1240b585adbb",
-      "sizeBytes": 14716568
+      "md5": "048335034644b42b0fdd2ac0b8f6b4ea",
+      "sizeBytes": 14716574
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "ebc457edd6c9d7901adb1240b585adbb",
-      "sizeBytes": 14716568
+      "md5": "048335034644b42b0fdd2ac0b8f6b4ea",
+      "sizeBytes": 14716574
     }
   ],
-  "md5": "ebc457edd6c9d7901adb1240b585adbb",
+  "md5": "048335034644b42b0fdd2ac0b8f6b4ea",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

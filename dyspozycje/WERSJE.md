@@ -1,3 +1,9 @@
+## ROBOCZA 04833503 -- 2026-11-14 -- FALA 720: Baner statusu w audiencji dyplomatycznej: Stan, nie propozycja (testowa)
+
+- baner formalnego statusu w audiencji ma prefiks Stan: i podpowiedz To nie jest propozycja; tony i podpis bez zmian
+- Weryfikacja: tsc 0; logic 213/213; banner-test 14/0; real-render Chromium 3 stany 14/0 (czerwony na bazie 8 pass 6 fail)
+- Limity: NIE ZMIERZONO: zapis Sumerow (czy status wojny jest poprawny na zywo); poradnik 12-dyplomacja.md l.110 nie zawiera prefiksu; brak banera Propozycja AI
+
 ## ROBOCZA ebc457ed -- 2026-11-14 -- FALA 719: Wyzszy mur zastepuje nizszy na liscie budowy (testowa)
 
 - nowa budowa palisady znika po odblokowaniu Murow kamiennych, Mury kamienne znikaja po odblokowaniu Murow ceglanych; ulepszenie stojacego muru zostaje; Cytadela i baszta bez zmian
