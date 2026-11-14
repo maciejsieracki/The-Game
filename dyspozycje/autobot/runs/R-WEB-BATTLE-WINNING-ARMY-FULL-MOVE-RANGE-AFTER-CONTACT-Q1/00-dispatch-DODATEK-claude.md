@@ -9,3 +9,6 @@ ALLOWLISTA: gra/src/battle/** (battleScene.ts, moduły tempa), gra/tools/*pace*|
 KRYTERIA BINARNE: (1) tabela pomiarowa ETAPU 1 w raporcie ZMIERZONO; (2) przyczyna wskazana liczbami; (3) jeśli naprawa — testy (a)–(c) + tsc 0 + 5 bramek referencyjnych + git diff --check czysty; wypisz czerwone-na-bazie osobno; (4) dług Rust: REPIN reguły zatrzasku (zapisz).
 UWAGI: równolegle FLEE-HALF (battleScene.ts) — baza po jego FC; scal z origin/main. Odwroty 3/turę (osobny temat) też dotyczą main.ts/battleScene — nie mieszaj.
 RAPORT: kontrakt STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY/BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH; punkty ZMIERZONO albo NIE ZMIERZONO z powodem.
+
+## DODATEK 1 orkiestratora (2026-11-14) — DOPRECYZOWANIE WŁAŚCICIELA (ABC): „A: pościg po rozbiciu wroga, bitwa automatyczna”
+Przypadek do pomiaru i poprawy: bitwa AUTOMATYCZNA (tryb AUTO, także Pomiń/SKIP — oba muszą dać ten sam wynik), gracz wygrywa i wróg zaczyna uciekać/jest rozbity; zwycięzcy mają ścigać go z pełnym zasięgiem ruchu własnej jednostki. Mierz w AUTO (scenicznym i skip). Ruch ręczny poza zakresem (nie zmieniaj).
