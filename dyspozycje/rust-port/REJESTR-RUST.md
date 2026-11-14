@@ -1120,3 +1120,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 ## Przebieg (14.11, heartbeat 20:48): sloty puste, czekają na decyzje właściciela
 - **Trwających Workflow: 0** z 4. Bez zmian względem 20:18: decyzje #115 (A1/A2/A3) i #120 (A/B) nadal czekają na właściciela; bez nich nie startuję kolejnych operatorów.
 - **Parity:** `a381dd13f` (sprawdzone fetch).
+
+## Przebieg (14.11, heartbeat 21:18): 1 z 4 slotów zajęty (ZLOZE-GRANTS-STATE), reszta czeka
+- **Trwających Workflow: 1** z 4. Start: `R-RUSTPORT-P6-ZLOZE-GRANTS-STATE-Q1` (`wf_4c2b7e55-cfa`), Operator HAIKU, Evaluator/FC SONNET, Obrona HAIKU. Dispatch `1010b2b37`, baza `a381dd13f`.
+- **Zakres (wariant a z pytania ABC):** pole `zloze_grants` w `DiplomacyState` z `#[serde(default)]` i testem kompatybilności zapisu, port `suspend_zloze_grants_for_war` (pin `diplomacy-pn-engine.ts:331-344`), wektory z pinu. Wiring do produkcji zostaje w #104 jako część 2.
+- **Dlaczego tylko 1 slot:** WIEZE-MERGE w wariancie „stage 1” wymaga nowego dispatchu (rundy r2 po BLOCK i FC FAIL), napiszę go w następnym ticku, po przeczytaniu raportów `01-operator-r1.md` i `02-evaluator.md`. Wpisy z `KOLEJKA-RUST.md` (W8 r3, UNIT-REPLACE L-3, Siege #217) są przestarzałe: W8 r3 już zintegrowany (#25), a KOLEJKA nie była odświeżana (#154).
+- **Czekają na decyzję właściciela (w czacie):** #115 ZDOBYCIE-MIASTA (A1/A2/A3) i #120 WYPOWIEDZENIE GRACZA (A/B). Gameplay decyzje (SZTURM ODPARTY, W8 r7 Q1–Q4, units.json vs pin, DYSTANS, REPIN-DRYFT) nie są moje.
+- **Dysk:** 17 GB wolnego (sprawdzone przed startem).
+- **Parity:** `a381dd13f` (sprawdzone fetch).
