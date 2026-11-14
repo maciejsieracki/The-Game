@@ -127,11 +127,17 @@ async function measure(page) {
           const root = document.querySelector('#civ-siege-map-panel');
           const body = root.querySelector('.civ-smp-body');
           const block = root.querySelector('[data-siege-engine-build]');
+          // Informacyjnie (bez wplywu na verdict, ZAL-1): pomiar PRZED przewinieciem (scrollTop=0).
+          const topBr = body.getBoundingClientRect();
+          const topBb = block ? block.getBoundingClientRect() : null;
+          const probeTop = { scrollTop: body.scrollTop, blockFullyVisibleAtTop: !!(topBb && topBb.top >= topBr.top - 0.5 && topBb.bottom <= topBr.bottom + 0.5), blockTop: topBb ? Math.round(topBb.top) : null, bodyBottom: Math.round(topBr.bottom) };
           body.scrollTop = body.scrollHeight;
           const br = body.getBoundingClientRect();
           const bb = block ? block.getBoundingClientRect() : null;
           const dk = root.querySelector('.civ-smp-dock').getBoundingClientRect();
           return {
+            _probeTop: probeTop,
+            blockBottom: bb ? Math.round(bb.bottom) : null,
             blockBottom: bb ? Math.round(bb.bottom) : null,
             dockTop: Math.round(dk.top),
             blockHeight: bb ? Math.round(bb.height) : null,
