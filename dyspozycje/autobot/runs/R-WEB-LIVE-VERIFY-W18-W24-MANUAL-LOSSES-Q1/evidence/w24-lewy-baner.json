@@ -1,0 +1,61 @@
+{
+  "sizes": {
+    "1000x700": {
+      "innerW": 1000,
+      "innerH": 700,
+      "docScrollW": 1000,
+      "docClientW": 1000,
+      "bodyScrollW": 1000,
+      "hasHorizontalScroll": false,
+      "leftBannerFound": true,
+      "leftBannerRect": {
+        "left": 20,
+        "right": 370,
+        "width": 350,
+        "top": 16,
+        "bottom": 72
+      },
+      "maxRight": 370,
+      "overflowing": [],
+      "fallbackClass": "fallback"
+    },
+    "800x600": {
+      "innerW": 800,
+      "innerH": 600,
+      "docScrollW": 800,
+      "docClientW": 800,
+      "bodyScrollW": 800,
+      "hasHorizontalScroll": false,
+      "leftBannerFound": true,
+      "leftBannerRect": {
+        "left": 20,
+        "right": 270,
+        "width": 250,
+        "top": 16,
+        "bottom": 72
+      },
+      "maxRight": 270,
+      "overflowing": [],
+      "fallbackClass": "fallback"
+    },
+    "640x480": {
+      "innerW": 640,
+      "innerH": 480,
+      "docScrollW": 640,
+      "docClientW": 640,
+      "bodyScrollW": 640,
+      "hasHorizontalScroll": false,
+      "leftBannerFound": true,
+      "leftBannerRect": {
+        "left": 20,
+        "right": 190,
+        "width": 170,
+        "top": 16,
+        "bottom": 72
+      },
+      "maxRight": 190,
+      "overflowing": [],
+      "fallbackClass": "fallback"
+    }
+  }
+}

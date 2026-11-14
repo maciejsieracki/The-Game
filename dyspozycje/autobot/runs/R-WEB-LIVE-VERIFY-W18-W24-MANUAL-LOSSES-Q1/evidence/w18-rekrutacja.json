@@ -1,0 +1,92 @@
+{
+  "phase": {
+    "przed": {
+      "names": [
+        "Rydwan (woły)",
+        "Wojownik",
+        "Łucznik",
+        "Oszczepnik"
+      ],
+      "siegeHits": [],
+      "sample": [
+        "Generał rekrutujący",
+        "Brak generała — zrekrutuj generała (w stolicy), aby włączyć rekrutację z tego panelu.",
+        "Nowe jednostki z tego panelu idą do wybranego generała.",
+        "Już w kolejkach: 0 · Wybrane w koszyku: 0",
+        "Koszyk: 0 ¤ / 0 ¤ · 0 rekrutów / 2000 dostępnych",
+        "Rydwan (woły)",
+        "15 ¤ · miasta: 1/1",
+        "w kolejkach: 0",
+        "wybrane w koszyku: 0",
+        "−",
+        "+",
+        "Rekrutuj",
+        "Wojownik",
+        "5 ¤ · miasta: 1/1",
+        "w kolejkach: 0",
+        "wybrane w koszyku: 0",
+        "−",
+        "+",
+        "Rekrutuj",
+        "Łucznik",
+        "3 ¤ · miasta: 1/1",
+        "w kolejkach: 0",
+        "wybrane w koszyku: 0",
+        "−",
+        "+",
+        "Rekrutuj",
+        "Oszczepnik",
+        "3 ¤ · miasta: 1/1",
+        "w kolejkach: 0",
+        "wybrane w koszyku: 0",
+        "−",
+        "+",
+        "Rekrutuj"
+      ]
+    },
+    "po": {
+      "names": [
+        "Rydwan (woły)",
+        "Wojownik",
+        "Łucznik",
+        "Oszczepnik"
+      ],
+      "siegeHits": [],
+      "sample": [
+        "Generał rekrutujący",
+        "Brak generała — zrekrutuj generała (w stolicy), aby włączyć rekrutację z tego panelu.",
+        "Nowe jednostki z tego panelu idą do wybranego generała.",
+        "Już w kolejkach: 0 · Wybrane w koszyku: 0",
+        "Koszyk: 0 ¤ / 0 ¤ · 0 rekrutów / 2000 dostępnych",
+        "Rydwan (woły)",
+        "15 ¤ · miasta: 1/1",
+        "w kolejkach: 0",
+        "wybrane w koszyku: 0",
+        "−",
+        "+",
+        "Rekrutuj",
+        "Wojownik",
+        "5 ¤ · miasta: 1/1",
+        "w kolejkach: 0",
+        "wybrane w koszyku: 0",
+        "−",
+        "+",
+        "Rekrutuj",
+        "Łucznik",
+        "3 ¤ · miasta: 1/1",
+        "w kolejkach: 0",
+        "wybrane w koszyku: 0",
+        "−",
+        "+",
+        "Rekrutuj",
+        "Oszczepnik",
+        "3 ¤ · miasta: 1/1",
+        "w kolejkach: 0",
+        "wybrane w koszyku: 0",
+        "−",
+        "+",
+        "Rekrutuj"
+      ]
+    }
+  }
+}
