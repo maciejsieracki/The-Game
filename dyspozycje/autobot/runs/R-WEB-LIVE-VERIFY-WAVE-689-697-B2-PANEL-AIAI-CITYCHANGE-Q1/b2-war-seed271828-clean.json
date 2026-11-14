@@ -1,0 +1,455 @@
+{
+  "scen": "war",
+  "seed": 271828,
+  "tag": "-clean",
+  "lastTurnRequested": 22,
+  "probeTurns": [
+    5,
+    10,
+    16,
+    17,
+    18,
+    20
+  ],
+  "ai": [],
+  "warDeclaredAtTurn": 1,
+  "turns": [],
+  "probes": [],
+  "stoppedBy": "blad endTurn: page.waitForFunction: Timeout 120000ms exceeded.",
+  "pageErrors": [],
+  "overlayLog": [],
+  "startMs": 5563,
+  "overlayTimeline": [
+    {
+      "sec": 0,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 4/10 · Relief (góry i wzgórza) Upłynęło: 0:02"
+        }
+      ]
+    },
+    {
+      "sec": 5,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:07"
+        }
+      ]
+    },
+    {
+      "sec": 10,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:12"
+        }
+      ]
+    },
+    {
+      "sec": 15,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:17"
+        }
+      ]
+    },
+    {
+      "sec": 20,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:22"
+        }
+      ]
+    },
+    {
+      "sec": 25,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:27"
+        }
+      ]
+    },
+    {
+      "sec": 30,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:32"
+        }
+      ]
+    },
+    {
+      "sec": 35,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:37"
+        }
+      ]
+    },
+    {
+      "sec": 40,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:42"
+        }
+      ]
+    },
+    {
+      "sec": 45,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:47"
+        }
+      ]
+    },
+    {
+      "sec": 50,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:52"
+        }
+      ]
+    },
+    {
+      "sec": 55,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:57"
+        }
+      ]
+    },
+    {
+      "sec": 60,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 1:02"
+        }
+      ]
+    },
+    {
+      "sec": 65,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 1:07"
+        }
+      ]
+    },
+    {
+      "sec": 70,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 1:12"
+        }
+      ]
+    },
+    {
+      "sec": 75,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 1:17"
+        }
+      ]
+    },
+    {
+      "sec": 80,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 1:22"
+        }
+      ]
+    },
+    {
+      "sec": 85,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 1:27"
+        }
+      ]
+    },
+    {
+      "sec": 90,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 1:32"
+        }
+      ]
+    },
+    {
+      "sec": 95,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 1:37"
+        }
+      ]
+    },
+    {
+      "sec": 100,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 1:43"
+        }
+      ]
+    },
+    {
+      "sec": 105,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 1:48"
+        }
+      ]
+    },
+    {
+      "sec": 110,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 1:53"
+        }
+      ]
+    },
+    {
+      "sec": 115,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 1:58"
+        }
+      ]
+    },
+    {
+      "sec": 120,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 2:03"
+        }
+      ]
+    },
+    {
+      "sec": 125,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 2:08"
+        }
+      ]
+    },
+    {
+      "sec": 130,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 2:13"
+        }
+      ]
+    },
+    {
+      "sec": 135,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 2:18"
+        }
+      ]
+    },
+    {
+      "sec": 140,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 2:23"
+        }
+      ]
+    },
+    {
+      "sec": 145,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 2:28"
+        }
+      ]
+    },
+    {
+      "sec": 150,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 2:33"
+        }
+      ]
+    },
+    {
+      "sec": 155,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 2:38"
+        }
+      ]
+    },
+    {
+      "sec": 160,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 2:43"
+        }
+      ]
+    },
+    {
+      "sec": 165,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 2:48"
+        }
+      ]
+    },
+    {
+      "sec": 170,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 2:53"
+        }
+      ]
+    },
+    {
+      "sec": 175,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 2:58"
+        }
+      ]
+    },
+    {
+      "sec": 180,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 3:03"
+        }
+      ]
+    },
+    {
+      "sec": 185,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 3:08"
+        }
+      ]
+    },
+    {
+      "sec": 190,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 3:13"
+        }
+      ]
+    },
+    {
+      "sec": 195,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 3:18"
+        }
+      ]
+    },
+    {
+      "sec": 200,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 3:23"
+        }
+      ]
+    },
+    {
+      "sec": 205,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 10/10 · Pozycje startowe Upłynęło: 3:28"
+        }
+      ]
+    },
+    {
+      "sec": 210,
+      "states": []
+    }
+  ],
+  "overlayAfterFound": [],
+  "me": 0,
+  "prepared": [
+    {
+      "res": {
+        "techMe": true,
+        "techAi": true,
+        "contact": true,
+        "discovered": true,
+        "status": "neutralni"
+      }
+    }
+  ],
+  "observedAis": [
+    null
+  ],
+  "preTurn": {
+    "turn": 1,
+    "digest": "5860550:139",
+    "owners": [],
+    "pairStates": [
+      {
+        "b": 0,
+        "st": {
+          "status": "wojna",
+          "truceUntilTurn": null,
+          "peaceUntilTurn": null,
+          "turn": 1
+        }
+      }
+    ],
+    "cityCounts": {
+      "me": 0,
+      "ai0": 0,
+      "citiesLen": 0,
+      "aiOwners": []
+    },
+    "entries": [],
+    "war": {
+      "battle": {
+        "preBattleOpen": false,
+        "pendingAuto": false,
+        "sceneOpen": false,
+        "summaryOpen": false,
+        "resolving": false
+      }
+    }
+  },
+  "elapsedSec": 341
+}
