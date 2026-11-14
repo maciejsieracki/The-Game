@@ -345,8 +345,8 @@ export function projectNnsAfterTick(
 // R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1 (etap C2) — równoważenie AI po ticku.
 // ---------------------------------------------------------------------------
 
-/** Pierwsza tura, od której równoważenie AI jest aktywne (tury 1–10 wolne). */
-export const NNS_AI_BALANCE_TURN_MIN = NNS_WOLNE_TURY + 1;
+/** Pierwsza tura, od której równoważenie AI jest aktywne (AI równoważy od tury 1; gracz — tury 1–10 wolne od blokady). */
+export const NNS_AI_BALANCE_TURN_MIN = 1;
 
 /**
  * Flaga równoważenia AI (jedno miejsce). Domyślnie włączona. Wyłączenie jest używane
