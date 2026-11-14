@@ -1,106 +1,88 @@
 STATUS: DECISION_REQUIRED
 DOMAIN: GAME
 TEMAT: R-WEB-BATTLE-FORTIFIED-WARRIOR-LOSES-TO-BARBARIAN-Q1
-GOAL: ustalić DLACZEGO Wojownik barbarzyńców wygrywa z Wojownikiem gracza (ufortyfikowanym i nie), w obu kierunkach ataku, i czy to defekt czy zamierzona reguła. Bez zmian kodu (zgodnie z dispatchem: zamierzone reguły -> DECISION_REQUIRED).
-ZMIANY/COMMIT: tylko ten raport. Brak zmian w gra/src, gra/data, gra/tools. Baza: 52a13c39d (origin/main 3f9e7a1d7 ma ten sam stan dla tych plików; dispatch wskazuje 52a13c39d).
+GOAL: ustalic POMIAREM (prawdziwa scena w Chromium), dlaczego Wojownik barbarzyncow wygrywa z Wojownikiem gracza w obu kierunkach ataku; naprawic defekt albo wystawic DECISION_REQUIRED z liczbami sceny.
+ZMIANY/COMMIT: baza 95640bcf9 (origin/main). Dodane WYLACZNIE narzedzia pomiarowe w gra/tools/ (zero zmian w gra/src, gra/data): battle-scene-probe-entry.ts/.html (prawdziwy BattleScene), battle-scene-probe.cjs (macierz, Chromium przez vite), battle-scene-probe-one.cjs (pojedynczy przebieg), auto-power-identical-probe.cjs (sciezka AUTO na mocy M, esbuild). Plus ten raport. SHA w polu sha odpowiedzi.
+RUNDY: 3/5 (Operator SONNET, uzasadnienie w DODATKU 5 dispatchu)
 
-## Wniosek w skrócie
-1. Przyczyna główna: ustawienie "Trafienia" = 'pewne' (domyślne dla NOWYCH gier, newGameFlow.ts:272 `hitMode: 'pewne'`, wprowadzone w ae600d5ed 2026-11-12). W trybie 'pewne' każde uderzenie trafia (battleScene.ts:9137-9142, combat.ts:1152/1174 `certainHits ? 100`), obrona NIE wpływa na trafienie, a pancerz jest taki sam (2 vs 2). Efekt: strona, która uderza pierwsza w wymianie, wygrywa 100% (zmierzone). Fortyfikacja +50% Obrony w tym trybie nie ma żadnego wpływu (zmierzone: 100/0 z fortem i bez).
-2. Przy 'losowe' (tryb poprzedni, stary zapis): atakujący wygrywa ~54%, obrona ~40%, remis ~6%; fort obrońcy zmienia wynik o ~3-4 pp. Pierwsze uderzenie daje przewagę, fort prawie nic.
-3. Nie znaleziono ukrytego bonusu barbarzyńców w silniku: Wojownik barbarzyński i Wojownik gracza mają identyczne statystyki po combatUnitFromDef (Atak 4 / Obrona 4 / Uderz 4 / Przeb 1 / Pancerz 2 / HP 22) — wynik z istniejącego narzędzia gra/tools/barb-warrior-audit-sim.cjs (prawdziwe combat.ts / auto-battle-power.ts / hit-mode.ts).
-4. Owner pisze, że barbarzyńca wygrywa też gdy GRACZ atakuje. Symulacja pokazuje "wygrywa atakujący" w obu rolach (pewne: 100% atakujący, losowe: ~54%). Czyli w silniku to nie "barbarzyńca" wygrywa, tylko "atakujący". Dlaczego w grze wygląda inaczej przy ataku gracza — NIE_ZMIERZONO (brak zapisu/ziarna właściciela; nie odtworzono ścieżki w scenie).
+## TL;DR (wniosek)
+Zgloszenie "barbarzynca wygrywa ZAWSZE, w obu kierunkach, fort nie pomaga" ODTWARZA SIE POMIAREM na prawdziwej scenie, ale NIE przez ukryty bonus barbarzyncy (barbarzynca i gracz sa w scenie symetryczni: ta sama funkcja toCombatUnit, te same statystyki 4/4/22/2, zero bonusow wg wlasciciela). Dwie zmierzone przyczyny:
+ (P1) KARA GRACZA: glod wojska / deficyt zlota = x0,75 na Atak, Obrone, Obrazenia, Przebicie, Szarze, HP, pocisk (bez pancerza) -- tylko dla jednostek GRACZA/AI (isArmyHungry: barbarzyncy jawnie wykluczeni, empire-food.ts:353; barbarzyncy nie maja Skarbca). Przy karze gracza barbarzynca wygrywa 82-90% (losowe) i 100% (pewne) w OBU kierunkach, takze przy forcie. To dokladnie opis wlasciciela. Kara jest ZAMIERZONA regula (econ-params.json glod_wojska_stat_mult / zloto_deficyt_stat_mult = 0,75, decyzje PYTANIE-85 i R-DEFICYT-ZLOTA-KARA-Q1=A), ale pre-bitewne okno NIE ostrzega o niej (preBattle.ts bez wzmianki), a stosuje sie takze przy zwyklym ujemnym Skarbcu/Spichlerzu.
+ (P2) KOLEJNOSC UDERZEN W SCENIE: w scenie (AUTO sceniczne / "Pomin" po starcie sceny / tryb reczny) pierwsze uderzenie i premie "Szarza" dostaje jednostka, ktora NIE musi pokonac dystansu (bronca albo gracz-trzymajacy), nie "atakujacy". Atakujacy traci pierwsza runde na dojscie (start: 5 heksow odstepu, atk (31,77), def (36,77)). Skutek: w "pewne" wygrywa strona stojaca (100%), w "losowe" obronca wygrywa ok. 62-65%. To nie jest wlasciwosc barbarzyncy -- wlasnosc roli. W kierunku "gracz atakuje barbarzynce" daje to wrazenie "barbarzynca zawsze wygrywa".
+Fortyfikacja (+50% Obrony) jest wpieta poprawnie na wszystkich sciezkach (battleScene.ts:9100-9106 _singleBlow, computeInstantResult, main.ts fortifyFieldScaledDefFor) -- w "pewne" nie ma wplywu (trafienie 100%, Obrona nie liczy sie; znane z r1), w "losowe" daje tylko ok. 3 pp w scenie.
 
-## Tabela wariantów (sim, 1v1, Wojownik vs Wojownik, N=200, ziarna LCG 1000+k*7919, resolveCombat)
-| tryb | atakujący fort | obrońca fort | atakujący wygrywa | obrońca wygrywa | remis |
+## Tabela pomiarow (identyczne Wojowniki 22 HP, teren Rownina, bez weterana/epoki/civ/trudnosci)
+Sciezki: POMIN = scene.skip() po starcie sceny (ta sama symulacja tickow co AUTO sceniczne, przewijana; w grze to guzik "Pomin" i AUTO), INSTANT = computeInstantResult (_skipInstantFallback, gdy scena niestartowana), AUTO-M = resolveAutoBattleByPower (guzik "Auto" w oknie przed bitwa), MANUAL = tryb reczny gracza (rozkaz "atak"/"trzymaj"). "bar atk" = barbarzynca atakuje gracza; "gr atk" = gracz atakuje barbarzynce. Procenty = wygrana BARBARZYNCY (reszta = gracz). N: scena losowe 60/komorke (NIE 200: ok. 2,5 s/bitwa w swiftshader, limit 590 s na polecenie), instant 300, AUTO-M 300, pewne i manual = 1-3 (deterministyczne).
+
+A. Bez kar gracza
+| sciezka | tryb | fort obroncy | bar atk | gr atk | uwagi |
 |---|---|---|---|---|---|
-| losowe | nie | nie | 54.0% | 39.5% | 6.5% |
-| losowe | nie | tak (x1.5 Obrony) | 50.5% | 43.0% | 6.5% |
-| losowe | tak | nie | 57.0% | 35.0% | 8.0% |
-| pewne | nie | nie | 100.0% | 0.0% | 0.0% |
-| pewne | nie | tak | 100.0% | 0.0% | 0.0% |
-| pewne | tak | nie | 100.0% | 0.0% | 0.0% |
+| POMIN (scena) | losowe | nie | 38,3% | 61,7% | obronca strzela pierwszy w 100% bitew (defStrikesFirst=100%) |
+| POMIN (scena) | losowe | tak | 35,0% | 65,0% | fort daje ok. 3 pp obroncy |
+| POMIN (scena) | pewne | nie/tak | 0% | 100% | obronca (strona stojaca) wygrywa 100%; fort bez efektu; 3/3 powtorzen |
+| INSTANT | losowe | nie | 71,0% | 29,0% | resolveCombat: atakujacy 71% (szarza R1) |
+| INSTANT | losowe | tak | 66,3% | 33,7% | |
+| INSTANT | pewne | nie/tak | 100% | 0% | atakujacy 100%, fort bez efektu |
+| AUTO-M | losowe/pewne | nie | remis 100% | | M=27 vs 27 -> "tie", straty po 40% |
+| AUTO-M | losowe/pewne | tak | 0% (obronca 100%) | | M obroncy 35,5, ratio 1,31 > progu upsetu 1,15 |
+| MANUAL pewne, gracz "atak" | pewne | nie | 0% | 0% (wygrywa gracz) | gracz wygrywa w obu rolach (pierwsze uderzenie w rundzie 2) |
+| MANUAL pewne, gracz "trzymaj" | pewne | nie | 100% | 100% | pasywny gracz przegrywa w obu rolach (barbarzynca wchodzi pierwszy) |
 
-Dodatkowo z tools/barb-warrior-audit-sim.cjs (N=200): Kamień, Wojownik vs Wojownik 3v3: losowe 61.5% barb-atak, pewne 100%; AUTO (strict M, remis M = tie) 0% dla atakującego przy równym M. AUTO: winner = attacker tylko gdy mAtk > mDef (auto-battle-power.ts:175-176), inaczej defender, a równe M = 'tie'. Nie tłumaczy to "zawsze wygrywa barbarzyńca".
+B. Z kara gracza (glod wojska x0,75 lub deficyt zlota x0,75), scena POMIN, losowe, N=40
+| kara | fort | bar atk | gr atk |
+|---|---|---|---|
+| glod | nie | 85,0% | 87,5% |
+| glod | tak | 82,5% | 90,0% |
+| deficyt zlota | nie | 85,0% (=wynik glodu, ta sama stala) | 87,5% |
+Z karą, "pewne", POMIN, glod, n=2: barbarzynca 100% w obu kierunkach, fort bez roznicy.
 
-## Ścieżki (sprawdzone kodem)
-- Fortyfikacja flaga: main.ts:34648 `fortifiedInField: unitGetsFortifyBonus(u)` (RuntimeUnit.ufortyfikowanyWPolu) -> battleScene.ts:9107-9111 fieldFortifyDefenseBonus -> tylko defFinalObrona -> tylko hitChanceTw. Flaga jest przekazywana (H4 nie potwierdzona jako błąd wpięcia). Czy fort jest aktywny już po turze rozkazu — NIE_ZMIERZONO.
-- Pancerz obrony nie zależy od fortyfikacji (battleScene.ts:9124 defArmor = cuD.armor * pancerz).
-- Kolejność uderzeń: resolveCombat melee zawsze ATK przed DEF w każdej rundzie (combat.ts ~1152-1174). Pierwsze uderzenie = zamierzona reguła silnika.
-- Difficulty: qualifiesForMajorAiDifficultyBonus wyklucza barbarzyńców (ai-difficulty-bonus.ts:17-19) -> brak mnożnika trudności dla barbarzyńców (H1 odrzucone dla trudności).
-- Civ bonusy: civBonusyForOwnerId (main.ts:10222) — dla właściciela barbarzyńskiego civKeyForOwnerId zwykle brak (wnioskowane z kodu, NIE_ZMIERZONO w sim).
-- Flaga _attackerIsBarbarian (battleScene.ts:2803) używana tylko do sygnetu/podsumowania (battle-summary.ts), NIE do liczb walki (H1: odrzucone w kodzie walki).
-- Regresja: ostatnie zmiany walki ręcznej (eb68e66d8, RNG z ziarna) nie zmieniają proporcji (tylko źródło rzutu, a w 'pewne' rzut nie jest losowany). Tryb 'pewne' jest jedyną zmianą, która daje 100/0. Bisectu commit-po-commicie NIE wykonano (brak czasu w rundzie 1) — NIE_ZMIERZONO dla pełnego bisectu, ale źródło wskazane: ae600d5ed.
+C. Role w scenie (dowod logiem, sondowane `scene._singleBlow`): w POMIN/AUTO runda 1 = "d1 a1 a2 d2 d2 ..." (d = strona broniaca): atakujacy w fazie 1 tylko dochodzi, obronca zadaje pierwszy cios (z Szarza: 5 obr. zamiast 3). Kod: battleScene.ts:5720 (_beginAutoBatchPhase('atk', a) -> faza atakujacych, potem obroncow), szarza przy pierwszym uderzeniu pary: battleScene.ts:9072-9078 (isCharge = firstBlow, NIE zalezy od roli). W trybie recznym kolejnosc: gracz najpierw, potem wrog (battleScene.ts:5688-5700): rozkaz "atak" gracza = gracz wygrywa, "trzymaj" = przegrywa.
+Rola atakujacego z mapy w main.ts jest poprawna (atakujacy=strona atk; deployPlayerSide 'def' gdy barbarzynca atakuje: main.ts:35766; 'atk' gdy gracz: 35034, 38501) -- sonda odwraca role, wynik jest identyczny wzgledem STRONY (atk/def), nie wlasciciela. Zadna sciezka nie rozroznia barbarzynca od gracza oprocz flag armyHungry/goldDeficit (runtimeToBattleUnit main.ts:34649-34650) i mnoznika trudnosci (barbarzyncy wykluczeni: qualifiesForMajorAiDifficultyBonus).
 
-## Dlaczego to DECISION_REQUIRED, a nie FAIL
-Reguła 'pewne' (obrona działa tylko przez pancerz) jest zapisana jako zamierzona w hit-mode.ts i w dispatchu (R-WEB-BATTLE-HIT-MODE-SETTING-Q1, decyzja właściciela). To nie jest ukryty bonus. Sprzeczność z regułą +50% Obrony leży w tym, że w 'pewne' obrona nie działa wcale. Zmiana tego wymaga decyzji właściciela (balans / kolejność).
+## Hipotezy
+- H1 ukryty bonus barbarzyncy: ODRZUCONA. Dowod: dla identycznych jednostek wynik zalezy od strony/kolejnosci, nie od wlasciciela; zadnych pol "barbarian" w toCombatUnit/_singleBlow/computeInstantResult poza etykietami UI (attackerIsBarbarian tylko HUD, main.ts:35057). Trudnosc: difficultyCombatMultForOwner main.ts:9903 -> 1 dla barbarzyncow.
+- H2 kara gracza: POTWIERDZONA (patrz B). battleScene.ts:1385-1390 (toCombatUnit), army-starvation.ts:35-52, gold-deficit.ts:149. Nie ma w pre-bitwie ostrzezenia.
+- H3 asymetria sciezki wywolania: CZESCIOWO POTWIERDZONA -- asymetria jest wzgledem STRONY, nie wlasciciela; dodatkowo INSTANT (atakujacy 71%) i scena (atakujacy 38%) daja ODWROTNE wyniki dla tych samych jednostek (rozjazd sciezek Pomin-bez-sceny vs scena). Sciezka "Pomin" w grze idzie przez scene gdy scena wystartowala (skip(): battleScene.ts:3710), wiec w UI zwykle obowiazuje kolumna POMIN.
+- H4 fortyfikacja niewpieta: ODRZUCONA (wpieta; w "pewne" nie dziala z definicji trafienia 100%, w "losowe" ok. 3 pp).
+- H5 pierwsze uderzenie: POTWIERDZONA jako glowny czynnik scenowy (P2). Rozmiar: pewne 0/100%, losowe 38/62%.
+- H6 regresja: zob. r2 (jedyny skok = ae600d5ed, "pewne" domyslne). Pomiar sceny nie wskazal nowej regresji w kodzie sceny; NIE_ZMIERZONO bisect sceny po starszych commitach (sonda importuje hit-mode.ts, istniejacy dopiero od ae600d5ed).
 
-## Opcje dla właściciela (z liczbami)
-A. Zostawić 'pewne' jako domyślne, ale dopisać, że fort/teren w 'pewne' nie działa (dokumentacja/Civpedia). Bez zmiany kodu. Wojownik zawsze wygrywa pierwszy uderzający.
-B. W 'pewne' obrona zmniejsza OBRAŻENIA (np. redukcja proporcjonalna do Obrony po fortach), zachowując brak rzutu. Wymaga wzoru i liczb (balans) — decyzja właściciela; NIE zmieniano.
-C. Domyślne 'pewne' zmienić na 'losowe' dla NOWYCH gier (wtedy fort daje tylko ~3-4 pp; pierwsze uderzenie ~54% — słabe odczucie fortu, też wymaga decyzji).
-D. Zmienić kolejność uderzeń (np. obrońca pierwszy przy forcie) — NIE zalecane bez decyzji (dispatch zakazuje bez decyzji).
+## Ksiega modyfikatorow (efektywne wartosci -- ZMIERZONE tylko to, co wynika z logow/kodu; reszta NIE_ZMIERZONO)
+Oba Wojowniki (units.json "Wojownik"): Atak 4 / Obrona 4 / HP 22 / Pancerz 2, identyczne dla obu stron (r1 + obliczenia sceny: pierwsze uderzenie 5 = 3 + Szarza 2, pozostale 3).
+| modyfikator | gracz | barbarzynca |
+|---|---|---|
+| baza | 4/4/22/2 | 4/4/22/2 |
+| weteran | 0 (sonda) -- w grze veteranCombatBonusFrac, ownerId-agnostyczne | 0 (barbarzyncy nie awansuja: NIE_ZMIERZONO w spawn barbarians.ts, ale brak kodu bonusu) |
+| epoka | brak w walce (statystyki z units.json) | j.w. |
+| civ | civBonusyForOwnerId (gracz) | puste/brak |
+| trudnosc | x1 (tylko major AI) | x1 |
+| teren | Rownina x1 | x1 |
+| fort | +50% Obrony tylko gdy ufortyfikowany i broniacy sie | 0 |
+| morale | 50 start, ucieczka przy 22, utrata = dmg/maxHP*100 | identyczne |
+| glod / deficyt zlota | x0,75 (gdy zapasy/Skarbiec < 0), wszystkie staty poza pancerzem; oba naraz x0,5625 | NIGDY (isArmyHungry wyklucza barbarzyncow; brak Skarbca) |
+| szarza | tylko pierwszy cios pary (kto pierwszy dojdzie), nie rola | j.w. |
+| general | NIE_ZMIERZONO (sonda 1v1 bez generala) | brak |
+Zapis/ziarno wlasciciela: NIE_ZMIERZONO (niedostepne).
 
-Rekomendacja Operatora: B, bo spełnia regułę +50% Obrony bez rzutu; wymaga liczb od właściciela.
+## Odpowiedz na pytanie wlasciciela "barbarzynca wygrywa takze gdy JA atakuje"
+Odtwarza sie w dwoch warunkach: (a) gracz ma kare glodu/deficytu zlota (82-90% w obu kierunkach), (b) tryb "pewne" (domyslny dla nowych gier, newGameFlow.ts:272) i gracz atakuje w scenie/AUTO/"Pomin": obronca (barbarzynca) strzela pierwszy z Szarza i wygrywa 100%. Dane do zebrania od wlasciciela: tryb "Trafienia" (losowe/pewne), czy czaszka glodu / deficyt zlota na jednostkach gracza w chwili bitwy (stan Skarbca i Spichlerza), kierunek ataku, tura, jednostki obu stron, sciezka (Auto przed bitwa / Pomin / reczna z rozkazem "atak" czy "trzymaj").
 
-## TESTY
-- Narzędzie: tools/barb-warrior-audit-sim.cjs (N=200) — wyniki jak wyżej (surowe wyjście).
-- Dodatkowy pomiar fort on/off w obu trybach: skrypt poza repo (scratchpad), resolveCombat z combatUnitFromDef, meleeDefence x1.5 dla fortu. Wyniki w tabeli.
-- tsc --noEmit, 5 bramek referencyjnych, test regresji: NIE_WYKONANO (brak zmian kodu, nic do weryfikacji regresją).
-- Test mutacyjny: NIE_WYKONANO (brak poprawki).
+## Opcje decyzji dla orkiestratora/wlasciciela (bez zmian kodu -- decyzje produktowe)
+- O1 (kara gracza, P1): A zostawic regule x0,75 i dodac OSTRZEZENIE w oknie przed bitwa ("Twoja armia jest oslabiona: glod/deficyt zlota -25%", z liczbami); B ograniczyc/zmniejszyc kare (np. x0,9) ; C wylaczyc kare w walce z barbarzyncami lub poza wojna z AI; D bez zmian. Rekomendacja: A (tani, uczciwy) + rozwazyc B.
+- O2 (kolejnosc/szarza, P2): A bez zmian (kto stoi, strzela pierwszy: opis w UI); B szarza R1 tylko dla atakujacego (jak resolveCombat) -- wyrownuje scena z INSTANT, atakujacy wygrywa wtedy duzo czesciej; C atakujacy zaczyna w zasiegu (bez rundy dojscia). Rekomendacja: wymaga decyzji produktowej, bo odwraca role.
+- O3 ("pewne", ae600d5ed): A zostawic i opisac, ze fort/teren nie dzialaja w "pewne"; B w "pewne" obrona zmniejsza obrazenia; C domyslnie "losowe" dla nowych gier; D szarza R1 tylko w "losowe".
+- O4 (rozjazd sciezek): INSTANT daje atakujacemu 71%, scena 38% dla tych samych jednostek; ujednolicic (osobna decyzja, tematy #269/#274 jej dotykaly).
 
-## BLOKADY
-- Brak zapisu/ziarna właściciela: nie odtworzono scenariusza w grze (NIE_ZMIERZONO).
-- Pełny bisect po commitach 2026-11-01..14: NIE_ZMIERZONO (wskazano ae600d5ed na podstawie kodu i zmierzonego efektu).
-- Pomiar "barbarzyńca vs gracz atakuje" w scenie ręcznej/Pomiń: NIE_ZMIERZONO.
+## Co NIE zostalo zrobione / uczciwie
+- N=60 w scenie dla "losowe" (nie 200): 2,5 s na bitwe, limit 590 s na polecenie. Roznice 38% vs 62% oraz 85-90% sa wielokrotnie poza bledem (SE ok. 6 pp przy N=60).
+- AUTO sceniczne w czasie rzeczywistym (scene._toggleManualMode bez skip) nie domyka sie w headless (petla poscigu po rout czeka na rAF) -- NIE_ZMIERZONO realtime; POMIN uzywa tej samej symulacji tickow (239bb988b ujednolicil AUTO/Pomin), wiec jest reprezentatywny.
+- Tryb reczny: pewne, 1 przebieg/komorke (deterministyczne); losowe-reczny NIE_ZMIERZONO (okolo 20 s/bitwa, scena po rout nie ustawia finished). Wynik wnioskowany z `routed` (pole inferred).
+- Bisect sceny po starszych commitach: NIE_ZMIERZONO.
+- Epoka/civ/generał/teren inny niz Rownina: NIE_ZMIERZONO.
+- Brak poprawki kodu: zadna zmierzona asymetria nie jest bledem wg obowiazujacych regul (kara glodu/deficytu i szarza pierwszego uderzenia sa zamierzone); zmiana = decyzja produktowa (O1-O4). Brak testu regresji (brak defektu).
 
-## RUNDY
-1/5 (Operator HAIKU). Nie było rundy 2.
-
-## NASTĘPNY KROK
-Decyzja właściciela A/B/C/D (powyżej). Po decyzji: Operator r2 z wybraną opcją (B wymaga wzoru i liczb).
-
-## UWAGI-DLA-ORKIESTRATORA
-- Obserwacja poza zakresem: task-list w sesji (#286/#309 itp.) — nie tworzono zadań ani sesji zgodnie z zakazem.
-- Worktree ma wpisany node_modules w gra/ (npm ci --ignore-scripts, tylko do esbuild/tsc); to ignorowane przez git, do sprzątnięcia po integracji.
-
+TESTY: `node node_modules/typescript/bin/tsc --noEmit` w gra/ -> exit 0. 5 bramek referencyjnych: NIE uruchomione (brak zmian w gra/src ani gra/data; zmieniono tylko narzedzia pomiarowe). Sondy: patrz tabele (surowe wyjscie JSON w konsoli; reprodukcja: `N=60 PAR=3 PATHS=pomin HITS=losowe TMO=30000 node tools/battle-scene-probe.cjs`; kara: dodaj `EXTRA='{"playerHungry":true}'`; AUTO-M: `N=300 node tools/auto-power-identical-probe.cjs`; Chromium: /opt/pw-browsers/chromium-1194 lub CHROMIUM_PATH).
+BLOKADY: brak (srodowisko dzialalo; npm ci --ignore-scripts ok).
+NASTEPNY KROK: orkiestrator pyta wlasciciela (ABC) O1-O4 z liczbami powyzej; po decyzji -> temat implementacyjny (np. ostrzezenie o oslabieniu w preBattle, korekta szarzy). Evaluator/FC: zweryfikowac tabele przez ponowne uruchomienie sond.
+UWAGI-DLA-ORKIESTRATORA: (1) preBattle nie informuje o karze glodu/deficytu zlota -- prawdopodobne zrodlo "supermocy" wroga; (2) w trybie "pewne" i przy karze nowa gra jest w praktyce przegrywalna wobec barbarzyncow; (3) rozjazd INSTANT vs scena (71% vs 38% dla atakujacego) moze zaskakiwac -- Pomin bez startu sceny daje inny wynik niz Pomin po starcie.
 DEPLOY/PUSH: NIE WYKONANO
-
----
-
-# RUNDA 2/5 — Operator (HAIKU), baza 236312c01 (origin/main, kandydat FC r1)
-
-STATUS: BLOCK
-DOMAIN: GAME
-TEMAT: R-WEB-BATTLE-FORTIFIED-WARRIOR-LOSES-TO-BARBARIAN-Q1
-GOAL: ustalić DLACZEGO barbarzyńca wygrywa niezależnie od kierunku ataku (DODATEK 4: najpierw rola atakującego, potem sonda sceny, księga, wniosek, naprawa tylko przy zmierzonym defekcie).
-ZMIANY/COMMIT: brak zmian w gra/src, gra/data, gra/tools. Commit wyłącznie tego raportu (narzędzie sondy NIE zostało napisane, patrz BLOKADY).
-TESTY: tsc i 5 bramek NIE_WYKONANO (brak gra/node_modules w worktree; bez zmian kodu nie ma czego bramkować). Sonda sceny NIE_ZMIERZONO (patrz niżej).
-BLOKADY:
- - Pkt 2 DODATKU 4 (sonda sceny: _singleBlow / computeInstantResult / AUTO, oba kierunki, tryby "losowe"/"pewne", fort ON/OFF) NIE wykonana. Powód: BattleScene importuje Three.js i DOM; bundlowanie wymaga npm ci w worktree i harnessu DOM (lub przeglądarki, wzorzec live-verify-*.cjs). Ten etap wymaga osobnej rundy z zapewnionym środowiskiem.
- - Pkt 1 (rola atakującego): CZĘŚCIOWO, tylko czytanie kodu, bez sondy (sekcja niżej). Nie jest dowodem uruchomieniowym.
- - Pkt 3 (księga modyfikatorów z ścieżki rzeczywistej): NIE_ZMIERZONO.
- - Pkt 4 (wniosek): NIE_ZMIERZONO. Nie rozstrzygam, czy zgłoszenie "barbarzyńca wygrywa także, gdy gracz atakuje" da się odtworzyć.
- - Pkt 5 (naprawa): NIE wykonana, bo nie ma zmierzonego defektu.
-RUNDY: 2/5 (po tej rundzie: 3/5 do wykonania)
-NASTĘPNY KROK: runda 3 z zadaniem sondy sceny w środowisku z node_modules (npm ci w worktree albo kopia gra/), harness przez esbuild bundle BattleScene z mockiem DOM/THREE albo przez przeglądarkę (?civTest=1). Wejście: hipoteza H7 poniżej.
-DEPLOY/PUSH: NIE WYKONANO
-
-## Ustalenia z czytania kodu (NIE z pomiaru)
-
-1. Kolejność uderzeń w turze sceny (gra/src/battle/battleScene.ts):
-   - tryb ręczny (`this._manualMode`): `order.push(...player, ...enemy)` (linia 5691). Gracz zawsze działa przed wrogiem w każdej turze, niezależnie od tego, kto jest "atk".
-   - tryb nieręczny (AUTO sceniczny): pary `a[i], d[i]` (linie 5697-5700). Strona "atk" zawsze pierwsza w każdej parze.
-2. Szarża / pierwsze uderzenie: `isCharge = firstBlow && !bracesAgainstCharge(...)` (linia 9076), gdzie `firstBlow` to pierwszy cios pary `attacker>defender`. Bonus szarży dostaje pierwszy cios w kolejności tury, niezależnie od tego, kto zainicjował walkę.
-3. Strona gracza w scenie (`_playerControlSide()` = `_deployPlayerSideOpt`, battleScene.ts:12710; ustawiane w main.ts):
-   - main.ts:35034 bitwa polowa, gdy ATAKUJE gracz (`'atk'`): poprawne;
-   - main.ts:35766 bitwa przychodząca, gdy atakuje barbarzyńca/AI (`'def'`): poprawne, jeśli gracz jest obrońcą;
-   - main.ts:38501 szturm oblężniczy (`'atk'`, `launchSiegeStormFromMap`): zakłada, że gracz jest atakującym; NIE zweryfikowane, czy `anchor` zawsze jest graczem.
-   Hipoteza H7 (do zmierzenia, NIE potwierdzona): w ścieżce przychodzącej (35766) gracz ma stronę 'def', ale w trybie ręcznym działa PIERWSZY (pkt 1). Przy identycznych jednostkach gracz mógłby więc zadać pierwszy cios i dostać szarżę, czyli wynik przeciwny do zgłoszenia. Trzeba to zmierzyć.
-4. `fortifiedInField` (main.ts:34648, `unitGetsFortifyBonus(u)`) jest wpięte w `runtimeToBattleUnit` dla obu stron. Konsumpcja w `_singleBlow` (battleScene.ts:9110, `fieldFortifyDefenseBonus`) działa dla każdego obrońcy bez rozróżnienia gracz/AI. Brak asymetrii w tym miejscu (kod).
-5. `certainHit` (battleScene.ts:9139-9140): w trybie "pewne" `roll = 0`, `hitPct = 100`. Obrona nie wpływa na trafienie. To zgadza się z pomiarem resolveCombat z rundy 1 (200/0/0).
-
-## Ocena wobec zarzutów FC r1
-
-- Zarzut 3 (zła ścieżka pomiaru): NADAL OTWARTY. Ścieżka sceny nie zmierzona; ten raport tego nie zamyka.
-- Zarzut 2 (wniosek 'pewne' nie tłumaczy kierunku gracza): z kodu wynika, że kolejność w trybie ręcznym daje przewagę GRACZOWI, a w AUTO sceniczne stronie 'atk'. Oba mogą odwrócić oczekiwany wynik; wymaga pomiaru.
-- Zarzut 5 (macierz 3x3): NIE wykonana.
