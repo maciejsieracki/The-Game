@@ -1,3 +1,9 @@
+## ROBOCZA e40f5456 -- 2026-11-14 -- FALA 722: Domyslna racja 6 i zmeczenie wojna jako pozycja PW przy pokoju (testowa)
+
+- domyslna racja nowej gry gracza 6 (AI 4, stare zapisy 4); zmeczenie wojna jako pozycja PW Z = C x x^2 po stronie nie proponujacego (rabat 60 proc usuniety; AI i gracz; jedna funkcja dla tabeli i decyzji AI)
+- Weryfikacja: tsc 0; logic 213/213; default-food-ration 26/0; diplo-weariness-pw-behavior 87/0; weariness-as-pw-peace-item 76/0; zrzuty z gry t11 +13 PW i t15 +330 PW; build Vite zielony
+- Limity: NIE ZMIERZONO: Chromium panelu racji 6; stan silniejszej AI w pelnej grze; hotseat czerwony na bazie; do decyzji: C dla AI->gracz bez mnoznika cywilizacji, C 615 vs 500 zalezne od tury, lostCities tick vs tabela; dlug Rust REPIN
+
 ## ROBOCZA a0956cb5 -- 2026-11-14 -- FALA 721: Ucieczka w bitwie z 50 procent ruchu (testowa)
 
 - uciekajace jednostki w bitwie poruszaja sie z 50 proc normalnego zasiegu: max(1, floor(zasieg x 0,5)); mnoznik w combat-params.json ucieczka.mnoznik_ruchu; zwykle jednostki bez zmian

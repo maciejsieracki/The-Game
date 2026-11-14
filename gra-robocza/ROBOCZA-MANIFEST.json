@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "a0956cb5b2521b3a66a4f65e79af3001",
-  "bundleSha256": "4ff20870a623d1e3676661e77e64d4b4cc4a3d0a218046c6e6c4343abc178bd4",
-  "bundleBytes": 14717567,
+  "bundleMd5": "e40f54565c8163f64043103e62c70664",
+  "bundleSha256": "223da5d691edf3e8d3ea910b52cd70e9a3bd7e91b1f41e9548cdaf9f44a50c14",
+  "bundleBytes": 14720532,
   "sourceSnapshot": {
-    "source": "main bde828956 (merge FC FLEE a35f28e7f)",
+    "source": "main e6675958e (merge FC RACJA-6 144430c59 + WEARY-PW c6452991c)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 721: uciekajace jednostki w bitwie poruszaja sie z 50 proc normalnego zasiegu: max(1, floor(zasieg x 0,5)); mnoznik w combat-params.json ucieczka.mnoznik_ruchu; zwykle jednostki bez zmian"
+    "FALA 722: domyslna racja nowej gry gracza 6 (AI 4, stare zapisy 4); zmeczenie wojna jako pozycja PW Z = C x x^2 po stronie nie proponujacego (rabat 60 proc usuniety; AI i gracz; jedna funkcja dla tabeli i decyzji AI)"
   ],
   "verification": [
-    "tsc 0; logic 213/213; battle-flee-move-half Chromium 43/0 (czerwony na bazie, mutacja czerwona); pursued-destroyed 30/0; neverrout 58/0; build Vite zielony"
+    "tsc 0; logic 213/213; default-food-ration 26/0; diplo-weariness-pw-behavior 87/0; weariness-as-pw-peace-item 76/0; zrzuty z gry t11 +13 PW i t15 +330 PW; build Vite zielony"
   ],
   "limits": [
-    "NIE ZMIERZONO: tryb AUTO sceniczny, zlamanie w trakcie fali, tryb Pomin (instant); dlug bazowy mgla-sciezka-inwariant 41/1; dlug Rust REPIN"
+    "NIE ZMIERZONO: Chromium panelu racji 6; stan silniejszej AI w pelnej grze; hotseat czerwony na bazie; do decyzji: C dla AI->gracz bez mnoznika cywilizacji, C 615 vs 500 zalezne od tury, lostCities tick vs tabela; dlug Rust REPIN"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES FLEE-HALF r1 a35f28e7f / kod e4be7a82d. Uciekajace jednostki w bitwie maja 50 proc ruchu: max(1, floor(normalny zasieg x 0,5)), mnoznik w combat-params.json ucieczka.mnoznik_ruchu. Zwykle jednostki bez zmian. Test battle-flee-move-half (Chromium, skip) 43/0 (czerwony na bazie, mutacja mnoznik=1 czerwona), pursued-destroyed 30/0, neverrout 58/0, tsc 0, logic 213/213. NIE ZMIERZONO: tryb AUTO sceniczny (watch), scenariusz zlamania w trakcie fali, runtime trybu Pomin (computeInstantResult nie ma ruchu uciekinierow). Dlug bazowy mgla-sciezka-inwariant 41/1 (ai.ts). Dlug Rust REPIN."
+    "notes": "FC PASS-WITH-NOTES RACJA-6 r1 144430c59 / kod bcb1d4914 oraz WEARY-PW r3 c6452991c / kod 25cabd622. Domyslna racja nowej gry gracza 6 (AI 4, stare zapisy 4); zmeczenie wojna jako pozycja PW przy pokoju Z = C x x^2 po stronie nie proponujacego, rabat 60 proc usuniety, gałąź bezwarunkowa AI z tej samej funkcji co tabela, kierunek AI->gracz. Testy default-food-ration 26/0, diplo-weariness-pw-behavior 87/0, weariness-as-pw-peace-item 76/0, tsc 0, logic 213/213. NIE ZMIERZONO: Chromium panelu racji 6; stan silniejszej AI w pelnej grze; hotseat-ustawienia-kopiowane czerwony na bazie. DO DECYZJI: cena pokoju C dla AI->gracz bez mnoznika cywilizacji; C 615 vs 500 zalezne od tury; wejscie lostCities (tick vs tabela)."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-14T22:20:09",
+  "hubGeneratedAt": "2026-11-14T22:23:02",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "a0956cb5b2521b3a66a4f65e79af3001",
-      "sizeBytes": 14717567
+      "md5": "e40f54565c8163f64043103e62c70664",
+      "sizeBytes": 14720532
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "a0956cb5b2521b3a66a4f65e79af3001",
-      "sizeBytes": 14717567
+      "md5": "e40f54565c8163f64043103e62c70664",
+      "sizeBytes": 14720532
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "a0956cb5b2521b3a66a4f65e79af3001",
-      "sizeBytes": 14717567
+      "md5": "e40f54565c8163f64043103e62c70664",
+      "sizeBytes": 14720532
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "a0956cb5b2521b3a66a4f65e79af3001",
-      "sizeBytes": 14717567
+      "md5": "e40f54565c8163f64043103e62c70664",
+      "sizeBytes": 14720532
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "a0956cb5b2521b3a66a4f65e79af3001",
-      "sizeBytes": 14717567
+      "md5": "e40f54565c8163f64043103e62c70664",
+      "sizeBytes": 14720532
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "a0956cb5b2521b3a66a4f65e79af3001",
-      "sizeBytes": 14717567
+      "md5": "e40f54565c8163f64043103e62c70664",
+      "sizeBytes": 14720532
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "a0956cb5b2521b3a66a4f65e79af3001",
-      "sizeBytes": 14717567
+      "md5": "e40f54565c8163f64043103e62c70664",
+      "sizeBytes": 14720532
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "a0956cb5b2521b3a66a4f65e79af3001",
-      "sizeBytes": 14717567
+      "md5": "e40f54565c8163f64043103e62c70664",
+      "sizeBytes": 14720532
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "a0956cb5b2521b3a66a4f65e79af3001",
-      "sizeBytes": 14717567
+      "md5": "e40f54565c8163f64043103e62c70664",
+      "sizeBytes": 14720532
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "a0956cb5b2521b3a66a4f65e79af3001",
-      "sizeBytes": 14717567
+      "md5": "e40f54565c8163f64043103e62c70664",
+      "sizeBytes": 14720532
     }
   ],
-  "md5": "a0956cb5b2521b3a66a4f65e79af3001",
+  "md5": "e40f54565c8163f64043103e62c70664",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
