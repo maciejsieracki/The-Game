@@ -942,3 +942,8 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Powód:** trzeci tick bez odpowiedzi na pytanie o pierwszy temat (ZDOBYCIE-MIASTA-WIRING #115 zalecane albo CRED-HAK-WYPOWIEDZENIE #120). Pytanie przerwały restarty workera, więc nie dało się go zadać w narzędziu AskUserQuestion. Nie zapisuję czterech dispatchów na tematy, których kolejności właściciel nie potwierdził.
 - **Po wyborze:** #115 najpierw rozbić na tematy; CRED-HAK (#120) ma gotowe rozpoznanie.
 - **Parity:** `a381dd13f`. Worktree: 2. Dysk wolny: 11 GB.
+
+## Przebieg (14.11, heartbeat 02:47): sloty puste, nadal czeka na wybór tematu
+- **Trwających Workflow: 0** z 4 (katalog `subagents/workflows/` pusty). Sloty nie zostały uruchomione.
+- **Powód:** czwarty tick bez odpowiedzi na pytanie o pierwszy temat (ZDOBYCIE-MIASTA-WIRING #115 zalecane albo CRED-HAK-WYPOWIEDZENIE #120). Nie zapisuję czterech dispatchów bez potwierdzenia kolejności.
+- **Parity:** `a381dd13f`. Worktree: 2. Dysk wolny: 11 GB.
