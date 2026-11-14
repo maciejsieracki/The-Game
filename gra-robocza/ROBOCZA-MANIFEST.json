@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "746dbd762ac2b46029cc9d3f6a876a21",
-  "bundleSha256": "da8e243b8291d37200222d9f0474a01077f25cacec2b217a2d53725dcdae8026",
-  "bundleBytes": 14684710,
+  "bundleMd5": "2ee91302a38e81f1ee4dbd3bfbf0f39f",
+  "bundleSha256": "b53153407bf11004d60c260f9e74a1772cb5dda4c05587bea6b3f2b98b60889e",
+  "bundleBytes": 14685212,
   "sourceSnapshot": {
-    "source": "MANUAL-RNG FC 67223cf5d/dddb96398",
+    "source": "TAB-COUNT FC fc29819f9",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 704: Walka reczna i sceniczna (BattleScene: rzut trafienia, Pomin, bitwa polowa z mapy) uzywa strumienia losowego z ziarna gry jak walki AUTO (to samo ziarno = ten sam przebieg); licznik walk w turze w zapisie, stare zapisy dzialaja (R-WEB-BATTLE-MANUAL-RNG-DETERMINISM-Q1)"
+    "FALA 705: Licznik zakladki Dyplomacja wlicza blokujace propozycje diplo (np. propozycja pokoju od AI) i lista zakladki pokazuje ich kopie (bez ikony zamkniecia) obok oryginalu nad zakladkami; pozostale liczniki bez zmian (R-WEB-UI-NOTIF-DIPLO-TAB-COUNT-BLOCKING-Q1, decyzja wlasciciela B)"
   ],
   "verification": [
-    "tsc 0, logic 213/213, manual-battle-rng-determinism OK (baza FAIL, mutacje FAIL), 5 bramek zielone"
+    "tsc 0, notif-diplo-tab-count-blocking 25/0 (baza czerwona), 5 bramek zielone, classify PASS, render-test Chromium 35/0, live Chromium licznik=1"
   ],
   "limits": [
-    "Nie zmierzono: test behawioralny (WebGL) i weryfikacja na zywo dwoch identycznych walk; oblezenie/main.ts:46 nadal Math.random"
+    "Nie zmierzono: scenariusz war/T17 z realna propozycja AI; duplikat data-id oryginal+kopia"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES 67223cf5d (MANUAL-RNG): walka reczna i sceniczna (BattleScene, rzut trafienia _singleBlow, Pomin/computeInstantResult, bitwa polowa z mapy) uzywa strumienia losowego z ziarna gry jak walki AUTO; licznik walk w turze w meta zapisu, stare zapisy maja domyslne -1/0. Test manual-battle-rng-determinism OK (baza FAIL, mutacja Math.random FAIL), tsc 0, 5 bramek zielone. NIE ZMIERZONO: test behawioralny (WebGL niedostepny w node) i weryfikacja na zywo dwoch identycznych walk; gra/src/oblezenie/main.ts:46 nadal Math.random (osobny temat)."
+    "notes": "FC PASS-WITH-NOTES fc29819f9 (TAB-COUNT): licznik zakladki Dyplomacja w panelu powiadomien wlicza blokujace propozycje diplo (np. propozycja pokoju od AI), a lista po kliknieciu zakladki pokazuje ich kopie (bez ikony zamkniecia) obok oryginalu nad zakladkami; karty enemy i inne blokujace bez zmian. Test notif-diplo-tab-count-blocking 25/0 (baza czerwona), tsc, 5 bramek, sidepanel-event-tabs-classify, render-test Chromium 35/0; live w Chromium (seed zdarzen): licznik Dyplomacja=1, klik pokazuje karte. NIE ZMIERZONO: scenariusz war/T17 z realna propozycja AI; duplikat data-id oryginal+kopia."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-14T13:07:03",
+  "hubGeneratedAt": "2026-11-14T13:22:35",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "746dbd762ac2b46029cc9d3f6a876a21",
-      "sizeBytes": 14684710
+      "md5": "2ee91302a38e81f1ee4dbd3bfbf0f39f",
+      "sizeBytes": 14685212
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "746dbd762ac2b46029cc9d3f6a876a21",
-      "sizeBytes": 14684710
+      "md5": "2ee91302a38e81f1ee4dbd3bfbf0f39f",
+      "sizeBytes": 14685212
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "746dbd762ac2b46029cc9d3f6a876a21",
-      "sizeBytes": 14684710
+      "md5": "2ee91302a38e81f1ee4dbd3bfbf0f39f",
+      "sizeBytes": 14685212
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "746dbd762ac2b46029cc9d3f6a876a21",
-      "sizeBytes": 14684710
+      "md5": "2ee91302a38e81f1ee4dbd3bfbf0f39f",
+      "sizeBytes": 14685212
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "746dbd762ac2b46029cc9d3f6a876a21",
-      "sizeBytes": 14684710
+      "md5": "2ee91302a38e81f1ee4dbd3bfbf0f39f",
+      "sizeBytes": 14685212
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "746dbd762ac2b46029cc9d3f6a876a21",
-      "sizeBytes": 14684710
+      "md5": "2ee91302a38e81f1ee4dbd3bfbf0f39f",
+      "sizeBytes": 14685212
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "746dbd762ac2b46029cc9d3f6a876a21",
-      "sizeBytes": 14684710
+      "md5": "2ee91302a38e81f1ee4dbd3bfbf0f39f",
+      "sizeBytes": 14685212
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "746dbd762ac2b46029cc9d3f6a876a21",
-      "sizeBytes": 14684710
+      "md5": "2ee91302a38e81f1ee4dbd3bfbf0f39f",
+      "sizeBytes": 14685212
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "746dbd762ac2b46029cc9d3f6a876a21",
-      "sizeBytes": 14684710
+      "md5": "2ee91302a38e81f1ee4dbd3bfbf0f39f",
+      "sizeBytes": 14685212
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "746dbd762ac2b46029cc9d3f6a876a21",
-      "sizeBytes": 14684710
+      "md5": "2ee91302a38e81f1ee4dbd3bfbf0f39f",
+      "sizeBytes": 14685212
     }
   ],
-  "md5": "746dbd762ac2b46029cc9d3f6a876a21",
+  "md5": "2ee91302a38e81f1ee4dbd3bfbf0f39f",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
