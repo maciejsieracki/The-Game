@@ -1,0 +1,5637 @@
+{
+  "scen": "aiwar",
+  "seed": 314159,
+  "tag": "",
+  "lastTurnRequested": 16,
+  "probeTurns": [
+    5,
+    10,
+    16
+  ],
+  "ai": [
+    1,
+    4,
+    7,
+    10,
+    13,
+    16,
+    19,
+    22,
+    25,
+    28,
+    31,
+    34,
+    37
+  ],
+  "warDeclaredAtTurn": 1,
+  "turns": [
+    {
+      "turn": 2,
+      "digest": "74047ca0:148",
+      "owners": [
+        {
+          "oid": 40,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 41,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 4,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 5,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 7,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 9,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 10,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 11,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 13,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 16,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 18,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 19,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 20,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 21,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 22,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 23,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 24,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 25,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 26,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 27,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 28,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 29,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 30,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 31,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 32,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 33,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 34,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 35,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 36,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 37,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 38,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 39,
+          "cities": 1,
+          "units": 1
+        }
+      ],
+      "cities": {
+        "me": 1,
+        "major0": 1,
+        "major1": 1,
+        "citiesLen": 42
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 2
+          }
+        },
+        {
+          "a": 1,
+          "b": 4,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 2
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "light": [
+        "Wypowiedzenie wojny",
+        "Wspólny wróg / namowa do wojny",
+        "niedostępna — nie trwa wojna",
+        "W stanie wojny z",
+        "Hetyci Chińczycy: Zmęczenie wojną 5% Hetyci: Zmęczenie wojną 5%",
+        "WYPOWIEDZ WOJNĘ",
+        "Wojna",
+        "NIEDOSTĘPNA — NIE TRWA WOJNA"
+      ],
+      "sec": 2.2
+    },
+    {
+      "turn": 3,
+      "digest": "f3262c52:148",
+      "owners": [
+        {
+          "oid": 40,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 41,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 4,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 7,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 9,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 10,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 11,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 13,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 16,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 18,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 19,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 20,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 21,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 22,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 23,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 24,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 25,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 26,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 27,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 28,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 29,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 30,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 31,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 32,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 33,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 34,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 35,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 36,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 37,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 38,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 39,
+          "cities": 1,
+          "units": 1
+        }
+      ],
+      "cities": {
+        "me": 1,
+        "major0": 1,
+        "major1": 1,
+        "citiesLen": 42
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 3
+          }
+        },
+        {
+          "a": 1,
+          "b": 4,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 3
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "light": [
+        "Wypowiedzenie wojny",
+        "Wspólny wróg / namowa do wojny",
+        "niedostępna — nie trwa wojna",
+        "W stanie wojny z",
+        "Hetyci Chińczycy: Zmęczenie wojną 10% Hetyci: Zmęczenie wojną 10%",
+        "WYPOWIEDZ WOJNĘ",
+        "Wojna",
+        "NIEDOSTĘPNA — NIE TRWA WOJNA"
+      ],
+      "sec": 2
+    },
+    {
+      "turn": 4,
+      "digest": "22df4234:148",
+      "owners": [
+        {
+          "oid": 40,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 41,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 1,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 4,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 7,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 9,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 10,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 11,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 13,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 16,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 18,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 19,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 20,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 21,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 22,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 23,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 24,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 25,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 26,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 27,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 28,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 29,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 30,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 31,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 32,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 33,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 34,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 35,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 36,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 37,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 38,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 39,
+          "cities": 1,
+          "units": 1
+        }
+      ],
+      "cities": {
+        "me": 1,
+        "major0": 1,
+        "major1": 1,
+        "citiesLen": 42
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 4
+          }
+        },
+        {
+          "a": 1,
+          "b": 4,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 4
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "light": [
+        "Wypowiedzenie wojny",
+        "Wspólny wróg / namowa do wojny",
+        "niedostępna — nie trwa wojna",
+        "W stanie wojny z",
+        "Hetyci Chińczycy: Zmęczenie wojną 15% Hetyci: Zmęczenie wojną 15%",
+        "WYPOWIEDZ WOJNĘ",
+        "Wojna",
+        "NIEDOSTĘPNA — NIE TRWA WOJNA"
+      ],
+      "sec": 1.4
+    },
+    {
+      "turn": 5,
+      "digest": "fc0de849:148",
+      "owners": [
+        {
+          "oid": 40,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 41,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 1,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 4,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 6,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 7,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 9,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 10,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 11,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 13,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 16,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 18,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 19,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 20,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 21,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 22,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 23,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 24,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 25,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 26,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 27,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 28,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 29,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 30,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 31,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 32,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 33,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 34,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 35,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 36,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 37,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 38,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 39,
+          "cities": 1,
+          "units": 1
+        }
+      ],
+      "cities": {
+        "me": 1,
+        "major0": 1,
+        "major1": 1,
+        "citiesLen": 42
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 5
+          }
+        },
+        {
+          "a": 1,
+          "b": 4,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 5
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "light": null,
+      "sec": 1.4
+    },
+    {
+      "turn": 6,
+      "digest": "a3ec47a0:148",
+      "owners": [
+        {
+          "oid": 40,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 41,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 1,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 4,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 6,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 7,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 8,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 9,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 10,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 11,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 13,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 16,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 18,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 19,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 20,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 21,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 22,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 23,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 24,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 25,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 26,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 27,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 28,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 29,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 30,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 31,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 32,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 33,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 34,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 35,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 36,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 37,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 38,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 39,
+          "cities": 1,
+          "units": 1
+        }
+      ],
+      "cities": {
+        "me": 1,
+        "major0": 1,
+        "major1": 1,
+        "citiesLen": 42
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 6
+          }
+        },
+        {
+          "a": 1,
+          "b": 4,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 6
+          }
+        }
+      ],
+      "entriesBeforeReject": [
+        {
+          "actionId": "umowa_handlowa",
+          "proposerOwnerId": 1,
+          "responderOwnerId": 0,
+          "rodzaj": null,
+          "turns": null
+        },
+        {
+          "actionId": "umowa_handlowa",
+          "proposerOwnerId": 4,
+          "responderOwnerId": 0,
+          "rodzaj": null,
+          "turns": null
+        }
+      ],
+      "light": [
+        "Wypowiedzenie wojny",
+        "Wspólny wróg / namowa do wojny",
+        "niedostępna — nie trwa wojna",
+        "W stanie wojny z",
+        "Hetyci Chińczycy: Zmęczenie wojną 25% Hetyci: Zmęczenie wojną 25%",
+        "WYPOWIEDZ WOJNĘ",
+        "Wojna",
+        "NIEDOSTĘPNA — NIE TRWA WOJNA"
+      ],
+      "sec": 2
+    },
+    {
+      "turn": 7,
+      "digest": "763b10:148",
+      "owners": [
+        {
+          "oid": 40,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 41,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 1,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 4,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 6,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 7,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 8,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 9,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 10,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 11,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 13,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 16,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 18,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 19,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 20,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 21,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 22,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 23,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 24,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 25,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 26,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 27,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 28,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 29,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 30,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 31,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 32,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 33,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 34,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 35,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 36,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 37,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 38,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 39,
+          "cities": 1,
+          "units": 1
+        }
+      ],
+      "cities": {
+        "me": 1,
+        "major0": 1,
+        "major1": 1,
+        "citiesLen": 42
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 7
+          }
+        },
+        {
+          "a": 1,
+          "b": 4,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 7
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "light": [
+        "Wypowiedzenie wojny",
+        "Wspólny wróg / namowa do wojny",
+        "niedostępna — nie trwa wojna",
+        "W stanie wojny z",
+        "Hetyci Chińczycy: Desperacja 29% Hetyci: Zmęczenie wojną 30%",
+        "WYPOWIEDZ WOJNĘ",
+        "Wojna",
+        "NIEDOSTĘPNA — NIE TRWA WOJNA"
+      ],
+      "sec": 1.2
+    },
+    {
+      "turn": 8,
+      "digest": "183a7bd1:148",
+      "owners": [
+        {
+          "oid": 40,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 41,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 1,
+          "cities": 1,
+          "units": 4
+        },
+        {
+          "oid": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 4,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 6,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 7,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 8,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 9,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 10,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 11,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 13,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 16,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 18,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 19,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 20,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 21,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 22,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 23,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 24,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 25,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 26,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 27,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 28,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 29,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 30,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 31,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 32,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 33,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 34,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 35,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 36,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 37,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 38,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 39,
+          "cities": 1,
+          "units": 1
+        }
+      ],
+      "cities": {
+        "me": 1,
+        "major0": 1,
+        "major1": 1,
+        "citiesLen": 42
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 8
+          }
+        },
+        {
+          "a": 1,
+          "b": 4,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 8
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "light": [
+        "Wypowiedzenie wojny",
+        "Wspólny wróg / namowa do wojny",
+        "niedostępna — nie trwa wojna",
+        "W stanie wojny z",
+        "Hetyci Chińczycy: Desperacja 18% Hetyci: Zmęczenie wojną 35%",
+        "WYPOWIEDZ WOJNĘ",
+        "Wojna",
+        "NIEDOSTĘPNA — NIE TRWA WOJNA"
+      ],
+      "sec": 1.2
+    },
+    {
+      "turn": 9,
+      "digest": "f91a499e:148",
+      "owners": [
+        {
+          "oid": 40,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 41,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 1,
+          "cities": 1,
+          "units": 4
+        },
+        {
+          "oid": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 4,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 6,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 7,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 8,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 9,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 10,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 11,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 13,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 16,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 18,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 19,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 20,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 21,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 22,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 23,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 24,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 25,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 26,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 27,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 28,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 29,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 30,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 31,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 32,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 33,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 34,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 35,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 36,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 37,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 38,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 39,
+          "cities": 1,
+          "units": 1
+        }
+      ],
+      "cities": {
+        "me": 1,
+        "major0": 1,
+        "major1": 1,
+        "citiesLen": 42
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 9
+          }
+        },
+        {
+          "a": 1,
+          "b": 4,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 9
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "light": [
+        "Wypowiedzenie wojny",
+        "Wspólny wróg / namowa do wojny",
+        "niedostępna — nie trwa wojna",
+        "W stanie wojny z",
+        "Hetyci Chińczycy: Desperacja 20% Hetyci: Zmęczenie wojną 40%",
+        "WYPOWIEDZ WOJNĘ",
+        "Wojna",
+        "NIEDOSTĘPNA — NIE TRWA WOJNA"
+      ],
+      "sec": 1.8
+    },
+    {
+      "turn": 10,
+      "digest": "c70cec85:149",
+      "owners": [
+        {
+          "oid": 40,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 41,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 1,
+          "cities": 1,
+          "units": 4
+        },
+        {
+          "oid": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 4,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 6,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 7,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 8,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 9,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 10,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 11,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 13,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 16,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 18,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 19,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 20,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 21,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 22,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 23,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 24,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 25,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 26,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 27,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 28,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 29,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 30,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 31,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 32,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 33,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 34,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 35,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 36,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 37,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 38,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 39,
+          "cities": 1,
+          "units": 1
+        }
+      ],
+      "cities": {
+        "me": 1,
+        "major0": 1,
+        "major1": 1,
+        "citiesLen": 42
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 10
+          }
+        },
+        {
+          "a": 1,
+          "b": 4,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 10
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "light": null,
+      "sec": 1.2
+    },
+    {
+      "turn": 11,
+      "digest": "a3eb761b:149",
+      "owners": [
+        {
+          "oid": 40,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 41,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 1,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 2,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 4,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 5,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 6,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 7,
+          "cities": 1,
+          "units": 4
+        },
+        {
+          "oid": 8,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 9,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 10,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 11,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 13,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 16,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 18,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 19,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 20,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 21,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 22,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 23,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 24,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 25,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 26,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 27,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 28,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 29,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 30,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 31,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 32,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 33,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 34,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 35,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 36,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 37,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 38,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 39,
+          "cities": 1,
+          "units": 1
+        }
+      ],
+      "cities": {
+        "me": 1,
+        "major0": 1,
+        "major1": 1,
+        "citiesLen": 42
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 11
+          }
+        },
+        {
+          "a": 1,
+          "b": 4,
+          "st": {
+            "status": "pokoj",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": 51,
+            "turn": 11
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "light": [
+        "Wypowiedzenie wojny",
+        "Wspólny wróg / namowa do wojny",
+        "niedostępna — nie trwa wojna",
+        "W stanie wojny z",
+        "WYPOWIEDZ WOJNĘ",
+        "Wojna",
+        "NIEDOSTĘPNA — NIE TRWA WOJNA"
+      ],
+      "sec": 1.4
+    },
+    {
+      "turn": 12,
+      "digest": "5b75958d:149",
+      "owners": [
+        {
+          "oid": 40,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 41,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 1,
+          "cities": 1,
+          "units": 4
+        },
+        {
+          "oid": 2,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 4,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 5,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 6,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 7,
+          "cities": 1,
+          "units": 4
+        },
+        {
+          "oid": 8,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 9,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 10,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 11,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 13,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 16,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 18,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 19,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 20,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 21,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 22,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 23,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 24,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 25,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 26,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 27,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 28,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 29,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 30,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 31,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 32,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 33,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 34,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 35,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 36,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 37,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 38,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 39,
+          "cities": 1,
+          "units": 1
+        }
+      ],
+      "cities": {
+        "me": 1,
+        "major0": 1,
+        "major1": 1,
+        "citiesLen": 42
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 12
+          }
+        },
+        {
+          "a": 1,
+          "b": 4,
+          "st": {
+            "status": "pokoj",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": 51,
+            "turn": 12
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "light": [
+        "Wypowiedzenie wojny",
+        "Wspólny wróg / namowa do wojny",
+        "niedostępna — nie trwa wojna",
+        "W stanie wojny z",
+        "WYPOWIEDZ WOJNĘ",
+        "Wojna",
+        "NIEDOSTĘPNA — NIE TRWA WOJNA"
+      ],
+      "sec": 1.2
+    },
+    {
+      "turn": 13,
+      "digest": "e03849e5:148",
+      "owners": [
+        {
+          "oid": 40,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 41,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 1,
+          "cities": 1,
+          "units": 4
+        },
+        {
+          "oid": 2,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 4,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 5,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 6,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 7,
+          "cities": 1,
+          "units": 4
+        },
+        {
+          "oid": 8,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 9,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 10,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 11,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 13,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 16,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 18,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 19,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 20,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 21,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 22,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 23,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 24,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 25,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 26,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 27,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 28,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 29,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 30,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 31,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 32,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 33,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 34,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 35,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 36,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 37,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 38,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 39,
+          "cities": 1,
+          "units": 1
+        }
+      ],
+      "cities": {
+        "me": 1,
+        "major0": 1,
+        "major1": 1,
+        "citiesLen": 42
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 13
+          }
+        },
+        {
+          "a": 1,
+          "b": 4,
+          "st": {
+            "status": "pokoj",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": 51,
+            "turn": 13
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "light": [
+        "Wypowiedzenie wojny",
+        "Wspólny wróg / namowa do wojny",
+        "niedostępna — nie trwa wojna",
+        "W stanie wojny z",
+        "WYPOWIEDZ WOJNĘ",
+        "Wojna",
+        "NIEDOSTĘPNA — NIE TRWA WOJNA"
+      ],
+      "sec": 1.2
+    },
+    {
+      "turn": 14,
+      "digest": "87019eaa:149",
+      "owners": [
+        {
+          "oid": 40,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 41,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 1,
+          "cities": 1,
+          "units": 4
+        },
+        {
+          "oid": 2,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 4,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 5,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 6,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 7,
+          "cities": 1,
+          "units": 4
+        },
+        {
+          "oid": 8,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 9,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 10,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 11,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 13,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 16,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 18,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 19,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 20,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 21,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 22,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 23,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 24,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 25,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 26,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 27,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 28,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 29,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 30,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 31,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 32,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 33,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 34,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 35,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 36,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 37,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 38,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 39,
+          "cities": 1,
+          "units": 1
+        }
+      ],
+      "cities": {
+        "me": 1,
+        "major0": 1,
+        "major1": 1,
+        "citiesLen": 42
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 14
+          }
+        },
+        {
+          "a": 1,
+          "b": 4,
+          "st": {
+            "status": "pokoj",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": 51,
+            "turn": 14
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "light": [
+        "Wypowiedzenie wojny",
+        "Wspólny wróg / namowa do wojny",
+        "niedostępna — nie trwa wojna",
+        "W stanie wojny z",
+        "WYPOWIEDZ WOJNĘ",
+        "Wojna",
+        "NIEDOSTĘPNA — NIE TRWA WOJNA"
+      ],
+      "sec": 1.8
+    },
+    {
+      "turn": 15,
+      "digest": "c47be974:149",
+      "owners": [
+        {
+          "oid": 40,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 41,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 1,
+          "cities": 1,
+          "units": 5
+        },
+        {
+          "oid": 2,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 4,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 5,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 6,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 7,
+          "cities": 1,
+          "units": 5
+        },
+        {
+          "oid": 8,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 9,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 10,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 11,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 13,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 16,
+          "cities": 1,
+          "units": 4
+        },
+        {
+          "oid": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 18,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 19,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 20,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 21,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 22,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 23,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 24,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 25,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 26,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 27,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 28,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 29,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 30,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 31,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 32,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 33,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 34,
+          "cities": 1,
+          "units": 4
+        },
+        {
+          "oid": 35,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 36,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 37,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 38,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 39,
+          "cities": 1,
+          "units": 1
+        }
+      ],
+      "cities": {
+        "me": 1,
+        "major0": 1,
+        "major1": 1,
+        "citiesLen": 42
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 15
+          }
+        },
+        {
+          "a": 1,
+          "b": 4,
+          "st": {
+            "status": "pokoj",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": 51,
+            "turn": 15
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "light": [
+        "Wypowiedzenie wojny",
+        "Wspólny wróg / namowa do wojny",
+        "niedostępna — nie trwa wojna",
+        "W stanie wojny z",
+        "WYPOWIEDZ WOJNĘ",
+        "Wojna",
+        "NIEDOSTĘPNA — NIE TRWA WOJNA"
+      ],
+      "sec": 1.5
+    },
+    {
+      "turn": 16,
+      "digest": "cd273cb5:149",
+      "owners": [
+        {
+          "oid": 40,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 41,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 1,
+          "cities": 1,
+          "units": 5
+        },
+        {
+          "oid": 2,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 4,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 6,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 7,
+          "cities": 1,
+          "units": 5
+        },
+        {
+          "oid": 8,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 9,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 10,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 11,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 13,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 16,
+          "cities": 1,
+          "units": 4
+        },
+        {
+          "oid": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 18,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 19,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 20,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 21,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 22,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 23,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 24,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 25,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 26,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 27,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 28,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 29,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 30,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 31,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 32,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 33,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 34,
+          "cities": 1,
+          "units": 4
+        },
+        {
+          "oid": 35,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 36,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 37,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 38,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 39,
+          "cities": 1,
+          "units": 1
+        }
+      ],
+      "cities": {
+        "me": 1,
+        "major0": 1,
+        "major1": 1,
+        "citiesLen": 42
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 16
+          }
+        },
+        {
+          "a": 1,
+          "b": 4,
+          "st": {
+            "status": "pokoj",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": 51,
+            "turn": 16
+          }
+        }
+      ],
+      "entriesBeforeReject": [
+        {
+          "actionId": "umowa_handlowa",
+          "proposerOwnerId": 1,
+          "responderOwnerId": 0,
+          "rodzaj": null,
+          "turns": null
+        },
+        {
+          "actionId": "umowa_handlowa",
+          "proposerOwnerId": 4,
+          "responderOwnerId": 0,
+          "rodzaj": null,
+          "turns": null
+        }
+      ],
+      "light": null,
+      "sec": 1.5
+    },
+    {
+      "turn": 17,
+      "digest": "b45e0d9d:148",
+      "owners": [
+        {
+          "oid": 40,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 41,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 1,
+          "cities": 1,
+          "units": 5
+        },
+        {
+          "oid": 2,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 4,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 6,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 7,
+          "cities": 1,
+          "units": 5
+        },
+        {
+          "oid": 8,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 9,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 10,
+          "cities": 1,
+          "units": 4
+        },
+        {
+          "oid": 11,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 13,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 16,
+          "cities": 1,
+          "units": 4
+        },
+        {
+          "oid": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 18,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 19,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 20,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 21,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 22,
+          "cities": 1,
+          "units": 4
+        },
+        {
+          "oid": 23,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 24,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 25,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 26,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 27,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 28,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 29,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 30,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 31,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 32,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 33,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 34,
+          "cities": 1,
+          "units": 4
+        },
+        {
+          "oid": 35,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 36,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 37,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 38,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 39,
+          "cities": 1,
+          "units": 1
+        }
+      ],
+      "cities": {
+        "me": 1,
+        "major0": 1,
+        "major1": 1,
+        "citiesLen": 42
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 17
+          }
+        },
+        {
+          "a": 1,
+          "b": 4,
+          "st": {
+            "status": "pokoj",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": 51,
+            "turn": 17
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "light": [
+        "Wypowiedzenie wojny",
+        "Wspólny wróg / namowa do wojny",
+        "niedostępna — nie trwa wojna",
+        "W stanie wojny z",
+        "WYPOWIEDZ WOJNĘ",
+        "Wojna",
+        "NIEDOSTĘPNA — NIE TRWA WOJNA"
+      ],
+      "sec": 1.3
+    }
+  ],
+  "probes": [
+    {
+      "turn": 5,
+      "digest": "fc0de849:148",
+      "owners": [
+        {
+          "oid": 40,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 41,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 1,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 4,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 6,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 7,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 9,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 10,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 11,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 13,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 16,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 18,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 19,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 20,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 21,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 22,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 23,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 24,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 25,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 26,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 27,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 28,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 29,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 30,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 31,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 32,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 33,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 34,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 35,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 36,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 37,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 38,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 39,
+          "cities": 1,
+          "units": 1
+        }
+      ],
+      "pairStates": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 5
+          }
+        },
+        {
+          "a": 1,
+          "b": 4,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 5
+          }
+        }
+      ],
+      "cityCounts": {
+        "me": 1,
+        "major0": 1,
+        "major1": 1,
+        "citiesLen": 42
+      },
+      "entries": [],
+      "war": {
+        "battle": {
+          "preBattleOpen": false,
+          "pendingAuto": false,
+          "sceneOpen": false,
+          "summaryOpen": false,
+          "resolving": false
+        }
+      },
+      "overlayWait": {
+        "waitedMs": 4,
+        "stillVisible": false,
+        "states": []
+      },
+      "screenshotNoOverlay": true,
+      "audience_1": {
+        "audienceOpen": true,
+        "audienceLines": [
+          "POKÓJ",
+          "Wypowiedzenie wojny",
+          "Wspólny wróg / namowa do wojny",
+          "zablokowana — wymaga Respektu 70 (masz 50)",
+          "Propozycja pokoju / zawieszenia broni",
+          "niedostępna — nie trwa wojna",
+          "zablokowana — wymaga Respektu 70 (masz 50)",
+          "Stan bieżący: Relacja z perspektywy gracza 75 / 200 · Zaufanie 25 / 100 · Respekt 50 / 100 · nastawienie: Nieufny",
+          "RELACJE Z TOBĄ",
+          "Zaufanie",
+          "Respekt",
+          "(Zaufanie + Respekt)",
+          "RELACJE Z INNYMI",
+          "W stanie wojny z",
+          "Hetyci Chińczycy: Zmęczenie wojną 20% Hetyci: Zmęczenie wojną 20%",
+          "WYPOWIEDZ WOJNĘ",
+          "Wojna",
+          "NIEDOSTĘPNA — NIE TRWA WOJNA",
+          "Pokój",
+          "ZABLOKOWANA — WYMAGA RESPEKTU 70 (MASZ 50)"
+        ],
+        "audienceTextFull": "Audiencja dyplomatyczna\nNASTĘPNE\nWróć\nPOKÓJ\nRzymianie\nKamillus\nWładca · Brąz\nW +20 · Uczciwy\nATRYBUTY\nMoc militarna\n1224\nRekruci\n2 000 / 2 000\nPotencjał sojuszniczy\nNiski\nREPUTACJA\nWiarygodność\n+20 · Uczciwy\nREJESTR WIARYGODNOŚCI\nWartość startowa (trudność)\n+20\nSuma składowych (przed klamrą): +20 · klamra: +20\nSKARBIEC\nPieniądz (¤)\n4\nDochód\n+5 / turę\nDOBRA HANDLOWE\n▸\nSurowce\n(3)\nDrewno ×4\nKamien ×4\nGlina ×44\n▸\nTechnologie\n(12)\nObróbka drewna\nMurarstwo\nRolnictwo\nŁowiectwo\nŁucznictwo\nOswojenie zwierząt\nGarncarstwo\nMistycyzm\nWymiana\nGospodarka wodna\nKoło\nBrązownictwo\n▸\nInne\n—\nZnane frakcje\nStół negocjacji\nMożliwe umowy\n14\nTraktat handlowy\nUmowa wymiany surowców\nUltimatum / groźba\nWypowiedzenie wojny\nPrezent / dar\nPakt o nieagresji\nzablokowana — wymaga Zaufania 30 (masz 24.6) i Relacji 110 (masz 75)\nSojusz (pełny lub defensywny)\nzablokowana — wymaga Zaufania 90 (masz 24.6) i Relacji 130 (masz 75)\nTraktat przemarszu\nzablokowana — wymaga Zaufania 45 (masz 24.6) i Relacji 100 (masz 75)\nWymiana / sprzedaż technologii\nzablokowana — wymaga Zaufania 70 (masz 24.6)\nWspólny wróg / namowa do wojny\nzablokowana — wymaga Zaufania 50 (masz 24.6)\nŻądanie / oferta trybutu\nzablokowana — wymaga Respektu 70 (masz 50)\nPropozycja pokoju / zawieszenia broni\nniedostępna — nie trwa wojna\nWasalizacja\nzablokowana — wymaga Respektu 70 (masz 50)\nWchłonięcie\nzablokowana — tylko miasta-państwa\nMy oferujemy\n0\nBrak naszych ofert.\nOni oferują\n0\nBrak ofert od nich.\nAktywne traktaty\n0\nBrak aktywnych traktatów.\nPUNKTY WYMIANY\nPW\nBrak aktywnej propozycji na stole — wyślij ofertę lub poczekaj na odpowiedź.\nZA CO CIĘ LUBIĄ\nWiarygodność (dryf)\n+0.6 / turę\nZA CO CIĘ NIE LUBIĄ\nRóżna kultura\n-5\nStan bieżący: Relacja z perspektywy gracza 75 / 200 · Zaufanie 25 / 100 · Respekt 50 / 100 · nastawienie: Nieufny\nChińczycy\nCheng Tang\nPrzedstawiciel · Brąz\nW +25 · Uczciwy\nNIEUFNY\nATRYBUTY\nMoc militarna\n1239\nRekruci\n2 000 / 2 000\nPotencjał sojuszniczy\nNiski\nRELACJE Z TOBĄ\nZaufanie\n25 / 100 +0.7 / turę\nRespekt\n50 / 100\nRelacja z perspektywy gracza\n75 / 200 +0.7 / turę\n(Zaufanie + Respekt)\nDOBRA HANDLOWE\n▸\nSurowce\n(3)\nDrewno ×4\nKamien ×14\nGlina ×14\n▸\nTechnologie\n(12)\nObróbka drewna\nMurarstwo\nRolnictwo\nŁowiectwo\nŁucznictwo\nOswojenie zwierząt\nGarncarstwo\nMistycyzm\nWymiana\nGospodarka wodna\nKoło\nBrązownictwo\n▸\nInne\n—\nRELACJE Z INNYMI\nW stanie wojny z\nHetyci Chińczycy: Zmęczenie wojną 20% Hetyci: Zmęczenie wojną 20%\nW sojuszu z\nBrak.\nPakt o nieagresji z\nBrak.\nHandluje z\nLuoyang · Chińczycy · miasto-państwo\nPekin · Chińczycy · miasto-państwo\nAlaca Höyük · Hetyci · miasto-państwo\nKanesz · Hetyci · miasto-państwo\nKultura: Chińska · obca kultura\nHandlowy\nSojuszniczy\nOstrożny\nWYPOWIEDZ WOJNĘ\nWojna\nNIEDOSTĘPNA — NIE TRWA WOJNA\nPokój\nZABLOKOWANA — WYMAGA ZAUFANIA 90 (MASZ 24.6) I RELACJI 130 (MASZ 75)\nSojusz\nZABLOKOWANA — WYMAGA ZAUFANIA 30 (MASZ 24.6) I RELACJI 110 (MASZ 75)\nPakt\nTRAKTAT HANDLOWY\nHandel\nUMOWA WYMIANY\nWymiana\nPRZEKAŻ DAR\nDar\nZABLOKOWANA — WYMAGA RESPEKTU 70 (MASZ 50)\nWasal\nZABLOKOWANA — TYLKO MIASTA-PAŃSTWA\nWchłonięcie\nSZYBKA WYMIANA\nauto-uczciwa oferta",
+        "bodyHits": [
+          "POKÓJ",
+          "Wypowiedzenie wojny",
+          "Wspólny wróg / namowa do wojny",
+          "Propozycja pokoju / zawieszenia broni",
+          "niedostępna — nie trwa wojna",
+          "W stanie wojny z",
+          "Hetyci Chińczycy: Zmęczenie wojną 20% Hetyci: Zmęczenie wojną 20%",
+          "WYPOWIEDZ WOJNĘ",
+          "Wojna",
+          "NIEDOSTĘPNA — NIE TRWA WOJNA",
+          "Pokój"
+        ],
+        "totalBodyLines": 243,
+        "warWear": [
+          {
+            "text": "Chińczycy: Zmęczenie wojną 20%",
+            "title": "Zmęczenie wojną rośnie z każdą turą wojny i z utraconymi miastami; wysoka wartość zwiększa chęć pokoju.",
+            "rowText": "Hetyci Chińczycy: Zmęczenie wojną 20% Hetyci: Zmęczenie wojną 20%"
+          },
+          {
+            "text": "Hetyci: Zmęczenie wojną 20%",
+            "title": "Zmęczenie wojną rośnie z każdą turą wojny i z utraconymi miastami; wysoka wartość zwiększa chęć pokoju.",
+            "rowText": "Hetyci Chińczycy: Zmęczenie wojną 20% Hetyci: Zmęczenie wojną 20%"
+          }
+        ],
+        "warWearCount": 2
+      },
+      "shot_1": "b2-aiwar-seed314159-T5-aud1.png",
+      "proposalsAfterProbe": 0,
+      "notif": {
+        "tabsBefore": [
+          {
+            "tab": "dyplomacja",
+            "text": "Dyplomacja 0",
+            "active": false
+          },
+          {
+            "tab": "wazne",
+            "text": "Ważne 0",
+            "active": false
+          },
+          {
+            "tab": "inne",
+            "text": "Inne 0",
+            "active": true
+          }
+        ],
+        "clicked": true,
+        "dyploEvents": [
+          {
+            "id": "prod-empty-city0",
+            "cls": "sp-event sp-blocking sp-expanded",
+            "visible": true,
+            "text": "WYMAGA DECYZJI Produkcja: Rzym Kolejka pusta — wybierz budynek lub jednostkę OTWÓRZ →"
+          }
+        ],
+        "peaceLike": [],
+        "negOverlayOpen": false,
+        "sidePanelVisible": true,
+        "shot": "b2-aiwar-seed314159-T5-notif.png"
+      }
+    },
+    {
+      "turn": 10,
+      "digest": "c70cec85:149",
+      "owners": [
+        {
+          "oid": 40,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 41,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 1,
+          "cities": 1,
+          "units": 4
+        },
+        {
+          "oid": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 4,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 6,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 7,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 8,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 9,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 10,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 11,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 13,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 16,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 18,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 19,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 20,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 21,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 22,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 23,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 24,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 25,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 26,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 27,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 28,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 29,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 30,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 31,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 32,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 33,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 34,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 35,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 36,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 37,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 38,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 39,
+          "cities": 1,
+          "units": 1
+        }
+      ],
+      "pairStates": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 10
+          }
+        },
+        {
+          "a": 1,
+          "b": 4,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 10
+          }
+        }
+      ],
+      "cityCounts": {
+        "me": 1,
+        "major0": 1,
+        "major1": 1,
+        "citiesLen": 42
+      },
+      "entries": [],
+      "war": {
+        "battle": {
+          "preBattleOpen": false,
+          "pendingAuto": false,
+          "sceneOpen": false,
+          "summaryOpen": false,
+          "resolving": false
+        }
+      },
+      "overlayWait": {
+        "waitedMs": 1,
+        "stillVisible": false,
+        "states": []
+      },
+      "screenshotNoOverlay": true,
+      "audience_1": {
+        "audienceOpen": true,
+        "audienceLines": [
+          "POKÓJ",
+          "Wypowiedzenie wojny",
+          "Wspólny wróg / namowa do wojny",
+          "zablokowana — wymaga Respektu 70 (masz 51)",
+          "Propozycja pokoju / zawieszenia broni",
+          "niedostępna — nie trwa wojna",
+          "zablokowana — wymaga Respektu 70 (masz 51)",
+          "Stan bieżący: Relacja z perspektywy gracza 77 / 200 · Zaufanie 28 / 100 · Respekt 49 / 100 · nastawienie: Nieufny",
+          "RELACJE Z TOBĄ",
+          "Zaufanie",
+          "Respekt",
+          "(Zaufanie + Respekt)",
+          "RELACJE Z INNYMI",
+          "W stanie wojny z",
+          "Hetyci Chińczycy: Desperacja 23% Hetyci: Zmęczenie wojną 45%",
+          "WYPOWIEDZ WOJNĘ",
+          "Wojna",
+          "NIEDOSTĘPNA — NIE TRWA WOJNA",
+          "Pokój",
+          "ZABLOKOWANA — WYMAGA RESPEKTU 70 (MASZ 51)"
+        ],
+        "audienceTextFull": "Audiencja dyplomatyczna\nNASTĘPNE\nWróć\nPOKÓJ\nRzymianie\nKamillus\nWładca · Brąz\nW +20 · Uczciwy\nATRYBUTY\nMoc militarna\n1229\nRekruci\n2 000 / 2 000\nPotencjał sojuszniczy\nNiski\nREPUTACJA\nWiarygodność\n+20 · Uczciwy\nREJESTR WIARYGODNOŚCI\nWartość startowa (trudność)\n+20\nSuma składowych (przed klamrą): +20 · klamra: +20\nSKARBIEC\nPieniądz (¤)\n9\nDochód\n+5 / turę\nDOBRA HANDLOWE\n▸\nSurowce\n(3)\nDrewno ×9\nKamien ×9\nGlina ×99\n▸\nTechnologie\n(12)\nObróbka drewna\nMurarstwo\nRolnictwo\nŁowiectwo\nŁucznictwo\nOswojenie zwierząt\nGarncarstwo\nMistycyzm\nWymiana\nGospodarka wodna\nKoło\nBrązownictwo\n▸\nInne\n—\nZnane frakcje\nStół negocjacji\nMożliwe umowy\n14\nTraktat handlowy\nUmowa wymiany surowców\nUltimatum / groźba\nWypowiedzenie wojny\nPrezent / dar\nPakt o nieagresji\nzablokowana — wymaga Zaufania 30 (masz 27.9) i Relacji 110 (masz 77)\nSojusz (pełny lub defensywny)\nzablokowana — wymaga Zaufania 90 (masz 27.9) i Relacji 130 (masz 77)\nTraktat przemarszu\nzablokowana — wymaga Zaufania 45 (masz 27.9) i Relacji 100 (masz 77)\nWymiana / sprzedaż technologii\nzablokowana — wymaga Zaufania 70 (masz 27.9)\nWspólny wróg / namowa do wojny\nzablokowana — wymaga Zaufania 50 (masz 27.9)\nŻądanie / oferta trybutu\nzablokowana — wymaga Respektu 70 (masz 51)\nPropozycja pokoju / zawieszenia broni\nniedostępna — nie trwa wojna\nWasalizacja\nzablokowana — wymaga Respektu 70 (masz 51)\nWchłonięcie\nzablokowana — tylko miasta-państwa\nMy oferujemy\n0\nBrak naszych ofert.\nOni oferują\n0\nBrak ofert od nich.\nAktywne traktaty\n0\nBrak aktywnych traktatów.\nPUNKTY WYMIANY\nPW\nBrak aktywnej propozycji na stole — wyślij ofertę lub poczekaj na odpowiedź.\nZA CO CIĘ LUBIĄ\nWiarygodność (dryf)\n+0.6 / turę\nZA CO CIĘ NIE LUBIĄ\nRóżna kultura\n-5\nStan bieżący: Relacja z perspektywy gracza 77 / 200 · Zaufanie 28 / 100 · Respekt 49 / 100 · nastawienie: Nieufny\nChińczycy\nCheng Tang\nPrzedstawiciel · Brąz\nW +52 · Wzór cnoty\nNIEUFNY\nATRYBUTY\nMoc militarna\n1296\nRekruci\n120 / 2 000\nPotencjał sojuszniczy\nNiski\nRELACJE Z TOBĄ\nZaufanie\n28 / 100 +0.7 / turę\nRespekt\n49 / 100\nRelacja z perspektywy gracza\n77 / 200 +0.7 / turę\n(Zaufanie + Respekt)\nDOBRA HANDLOWE\n▸\nSurowce\n(3)\nDrewno ×30\nKamien ×49\nGlina ×154\n▸\nTechnologie\n(12)\nObróbka drewna\nMurarstwo\nRolnictwo\nŁowiectwo\nŁucznictwo\nOswojenie zwierząt\nGarncarstwo\nMistycyzm\nWymiana\nGospodarka wodna\nKoło\nBrązownictwo\n▸\nInne\n—\nRELACJE Z INNYMI\nW stanie wojny z\nHetyci Chińczycy: Desperacja 23% Hetyci: Zmęczenie wojną 45%\nW sojuszu z\nBrak.\nPakt o nieagresji z\nBrak.\nHandluje z\nLuoyang · Chińczycy · miasto-państwo\nPekin · Chińczycy · miasto-państwo\nAlaca Höyük · Hetyci · miasto-państwo\nKanesz · Hetyci · miasto-państwo\nEgipt\nTeby · Egipt · miasto-państwo\nHeliopolis · Egipt · miasto-państwo\nHarappa\nMohenjo-daro · Harappa · miasto-państwo\nKultura: Chińska · obca kultura\nHandlowy\nSojuszniczy\nOstrożny\nWYPOWIEDZ WOJNĘ\nWojna\nNIEDOSTĘPNA — NIE TRWA WOJNA\nPokój\nZABLOKOWANA — WYMAGA ZAUFANIA 90 (MASZ 27.9) I RELACJI 130 (MASZ 77)\nSojusz\nZABLOKOWANA — WYMAGA ZAUFANIA 30 (MASZ 27.9) I RELACJI 110 (MASZ 77)\nPakt\nTRAKTAT HANDLOWY\nHandel\nUMOWA WYMIANY\nWymiana\nPRZEKAŻ DAR\nDar\nZABLOKOWANA — WYMAGA RESPEKTU 70 (MASZ 51)\nWasal\nZABLOKOWANA — TYLKO MIASTA-PAŃSTWA\nWchłonięcie\nSZYBKA WYMIANA\nauto-uczciwa oferta",
+        "bodyHits": [
+          "POKÓJ",
+          "Wypowiedzenie wojny",
+          "Wspólny wróg / namowa do wojny",
+          "Propozycja pokoju / zawieszenia broni",
+          "niedostępna — nie trwa wojna",
+          "W stanie wojny z",
+          "Hetyci Chińczycy: Desperacja 23% Hetyci: Zmęczenie wojną 45%",
+          "WYPOWIEDZ WOJNĘ",
+          "Wojna",
+          "NIEDOSTĘPNA — NIE TRWA WOJNA",
+          "Pokój"
+        ],
+        "totalBodyLines": 248,
+        "warWear": [
+          {
+            "text": "Chińczycy: Desperacja 23%",
+            "title": "Desperacja przegrywającego rośnie ze zmęczeniem wojną, słabością militarną i utratą miast; wysoka oznacza gotowość oddania miast za pokój.",
+            "rowText": "Hetyci Chińczycy: Desperacja 23% Hetyci: Zmęczenie wojną 45%"
+          },
+          {
+            "text": "Hetyci: Zmęczenie wojną 45%",
+            "title": "Zmęczenie wojną rośnie z każdą turą wojny i z utraconymi miastami; wysoka wartość zwiększa chęć pokoju.",
+            "rowText": "Hetyci Chińczycy: Desperacja 23% Hetyci: Zmęczenie wojną 45%"
+          }
+        ],
+        "warWearCount": 2
+      },
+      "shot_1": "b2-aiwar-seed314159-T10-aud1.png",
+      "proposalsAfterProbe": 0,
+      "notif": {
+        "tabsBefore": [
+          {
+            "tab": "dyplomacja",
+            "text": "Dyplomacja 0",
+            "active": true
+          },
+          {
+            "tab": "wazne",
+            "text": "Ważne 0",
+            "active": false
+          },
+          {
+            "tab": "inne",
+            "text": "Inne 0",
+            "active": false
+          }
+        ],
+        "clicked": true,
+        "dyploEvents": [
+          {
+            "id": "prod-empty-city0",
+            "cls": "sp-event sp-blocking sp-expanded",
+            "visible": true,
+            "text": "WYMAGA DECYZJI Produkcja: Rzym Kolejka pusta — wybierz budynek lub jednostkę OTWÓRZ →"
+          }
+        ],
+        "peaceLike": [],
+        "negOverlayOpen": false,
+        "sidePanelVisible": true,
+        "shot": "b2-aiwar-seed314159-T10-notif.png"
+      }
+    },
+    {
+      "turn": 16,
+      "digest": "cd273cb5:149",
+      "owners": [
+        {
+          "oid": 40,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 41,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 1,
+          "cities": 1,
+          "units": 5
+        },
+        {
+          "oid": 2,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 4,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 6,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 7,
+          "cities": 1,
+          "units": 5
+        },
+        {
+          "oid": 8,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 9,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 10,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 11,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 13,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 16,
+          "cities": 1,
+          "units": 4
+        },
+        {
+          "oid": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 18,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 19,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 20,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 21,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 22,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 23,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 24,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 25,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 26,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 27,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 28,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 29,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 30,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 31,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "oid": 32,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "oid": 33,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 34,
+          "cities": 1,
+          "units": 4
+        },
+        {
+          "oid": 35,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 36,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 37,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "oid": 38,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "oid": 39,
+          "cities": 1,
+          "units": 1
+        }
+      ],
+      "pairStates": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "neutralni",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 16
+          }
+        },
+        {
+          "a": 1,
+          "b": 4,
+          "st": {
+            "status": "pokoj",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": 51,
+            "turn": 16
+          }
+        }
+      ],
+      "cityCounts": {
+        "me": 1,
+        "major0": 1,
+        "major1": 1,
+        "citiesLen": 42
+      },
+      "entries": [
+        {
+          "actionId": "umowa_handlowa",
+          "proposerOwnerId": 1,
+          "responderOwnerId": 0,
+          "rodzaj": null,
+          "turns": null
+        },
+        {
+          "actionId": "umowa_handlowa",
+          "proposerOwnerId": 4,
+          "responderOwnerId": 0,
+          "rodzaj": null,
+          "turns": null
+        }
+      ],
+      "war": {
+        "battle": {
+          "preBattleOpen": false,
+          "pendingAuto": false,
+          "sceneOpen": false,
+          "summaryOpen": false,
+          "resolving": false
+        }
+      },
+      "overlayWait": {
+        "waitedMs": 2,
+        "stillVisible": false,
+        "states": []
+      },
+      "screenshotNoOverlay": true,
+      "audience_1": {
+        "audienceOpen": true,
+        "audienceLines": [
+          "POKÓJ",
+          "Wypowiedzenie wojny",
+          "Wspólny wróg / namowa do wojny",
+          "zablokowana — wymaga Respektu 70 (masz 52)",
+          "Propozycja pokoju / zawieszenia broni",
+          "niedostępna — nie trwa wojna",
+          "zablokowana — wymaga Respektu 70 (masz 52)",
+          "Stan bieżący: Relacja z perspektywy gracza 80 / 200 · Zaufanie 32 / 100 · Respekt 48 / 100 · nastawienie: Życzliwy",
+          "RELACJE Z TOBĄ",
+          "Zaufanie",
+          "Respekt",
+          "(Zaufanie + Respekt)",
+          "RELACJE Z INNYMI",
+          "W stanie wojny z",
+          "WYPOWIEDZ WOJNĘ",
+          "Wojna",
+          "NIEDOSTĘPNA — NIE TRWA WOJNA",
+          "Pokój",
+          "ZABLOKOWANA — WYMAGA RESPEKTU 70 (MASZ 52)"
+        ],
+        "audienceTextFull": "Audiencja dyplomatyczna\nNASTĘPNE\nWróć\nPOKÓJ\nRzymianie\nKamillus\nWładca · Brąz\nW +20 · Uczciwy\nATRYBUTY\nMoc militarna\n1259\nRekruci\n4 000 / 4 000\nPotencjał sojuszniczy\nŚredni\nREPUTACJA\nWiarygodność\n+20 · Uczciwy\nREJESTR WIARYGODNOŚCI\nWartość startowa (trudność)\n+20\nSuma składowych (przed klamrą): +20 · klamra: +20\nSKARBIEC\nPieniądz (¤)\n27\nDochód\n+8 / turę\nDOBRA HANDLOWE\n▸\nSurowce\n(3)\nDrewno ×7\nKamien ×7\nGlina ×185\n▸\nTechnologie\n(12)\nObróbka drewna\nMurarstwo\nRolnictwo\nŁowiectwo\nŁucznictwo\nOswojenie zwierząt\nGarncarstwo\nMistycyzm\nWymiana\nGospodarka wodna\nKoło\nBrązownictwo\n▸\nInne\n—\nZnane frakcje\nStół negocjacji\nMożliwe umowy\n14\nTraktat handlowy\nUmowa wymiany surowców\nUltimatum / groźba\nWypowiedzenie wojny\nPrezent / dar\nPakt o nieagresji\nzablokowana — wymaga Relacji 110 (masz 80)\nSojusz (pełny lub defensywny)\nzablokowana — wymaga Zaufania 90 (masz 31.9) i Relacji 130 (masz 80)\nTraktat przemarszu\nzablokowana — wymaga Zaufania 45 (masz 31.9) i Relacji 100 (masz 80)\nWymiana / sprzedaż technologii\nzablokowana — wymaga Zaufania 70 (masz 31.9)\nWspólny wróg / namowa do wojny\nzablokowana — wymaga Zaufania 50 (masz 31.9)\nŻądanie / oferta trybutu\nzablokowana — wymaga Respektu 70 (masz 52)\nPropozycja pokoju / zawieszenia broni\nniedostępna — nie trwa wojna\nWasalizacja\nzablokowana — wymaga Respektu 70 (masz 52)\nWchłonięcie\nzablokowana — tylko miasta-państwa\nMy oferujemy\n0\nBrak naszych ofert.\nOni oferują\n1\nPREZENT OD NICH\nDar / prezent\nOFERUJĄ\n5 ¤\njednorazowo\nwygasa za 5 tur\nUsuń\nAktywne traktaty\n0\nBrak aktywnych traktatów.\nPUNKTY WYMIANY\nPW\nTraktat handlowy\nMY ODDAJEMY\n67 PW\n(baza 80, Relacja −16,1% siła)\nBILANS (ONI)\n-18\nBrakuje 18 PW\nONI ODDAJĄ\n85 PW\nWPŁYW RELACJI NA DEAL\n−16,1%\nRelacja z perspektywy AI 83,9 · Twoja strona słabsza (−16,1% PW); oni: baza (punkt balansu: 100)\nTraktat: Ty: baza 80 → 67 PW · Oni: 80 PW (baza) @ Rel 83,9\nSpełnia warunki — możesz przyjąć (Przyjmij aktywne)\nDecyzja dla całego pakietu (1)\nPrzyjmij\nOdrzuć\nJeden bilans PW — jedno Przyjmij/Odrzuć; niechcianą pozycję najpierw Usuń\nZA CO CIĘ LUBIĄ\nWiarygodność (dryf)\n+0.6 / turę\nZA CO CIĘ NIE LUBIĄ\nRóżna kultura\n-5\nStan bieżący: Relacja z perspektywy gracza 80 / 200 · Zaufanie 32 / 100 · Respekt 48 / 100 · nastawienie: Życzliwy\nChińczycy\nCheng Tang\nPrzedstawiciel · Brąz\nW +100 · Wzór cnoty\nŻYCZLIWY\nATRYBUTY\nMoc militarna\n1369\nRekruci\n280 / 4 000\nPotencjał sojuszniczy\nŚredni\nRELACJE Z TOBĄ\nZaufanie\n32 / 100 +0.7 / turę\nRespekt\n48 / 100\nRelacja z perspektywy gracza\n80 / 200 +0.7 / turę\n(Zaufanie + Respekt)\nDOBRA HANDLOWE\n▸\nSurowce\n(3)\nDrewno ×11\nKamien ×205\nGlina ×166\n▸\nTechnologie\n(12)\nObróbka drewna\nMurarstwo\nRolnictwo\nŁowiectwo\nŁucznictwo\nOswojenie zwierząt\nGarncarstwo\nMistycyzm\nWymiana\nGospodarka wodna\nKoło\nBrązownictwo\n▸\nInne\n—\nRELACJE Z INNYMI\nW stanie wojny z\nBrak.\nW sojuszu z\nBrak.\nPakt o nieagresji z\nBrak.\nHandluje z\nLuoyang · Chińczycy · miasto-państwo\nPekin · Chińczycy · miasto-państwo\nAlaca Höyük · Hetyci · miasto-państwo\nKanesz · Hetyci · miasto-państwo\nEgipt\nTeby · Egipt · miasto-państwo\nHeliopolis · Egipt · miasto-państwo\nHarappa\nMohenjo-daro · Harappa · miasto-państwo\nDholavira · Harappa · miasto-państwo\nHetyci\nFenicjanie\nSydon · Fenicjanie · miasto-państwo\nTyr · Fenicjanie · miasto-państwo\nSumerowie\nKultura: Chińska · obca kultura\nHandlowy\nSojuszniczy\nOstrożny\nWYPOWIEDZ WOJNĘ\nWojna\nNIEDOSTĘPNA — NIE TRWA WOJNA\nPokój\nZABLOKOWANA — WYMAGA ZAUFANIA 90 (MASZ 31.9) I RELACJI 130 (MASZ 80)\nSojusz\nZABLOKOWANA — WYMAGA RELACJI 110 (MASZ 80)\nPakt\nTRAKTAT HANDLOWY\nHandel\nUMOWA WYMIANY\nWymiana\nPRZEKAŻ DAR\nDar\nZABLOKOWANA — WYMAGA RESPEKTU 70 (MASZ 52)\nWasal\nZABLOKOWANA — TYLKO MIASTA-PAŃSTWA\nWchłonięcie\nSZYBKA WYMIANA\nauto-uczciwa oferta",
+        "bodyHits": [
+          "POKÓJ",
+          "Wypowiedzenie wojny",
+          "Wspólny wróg / namowa do wojny",
+          "Propozycja pokoju / zawieszenia broni",
+          "niedostępna — nie trwa wojna",
+          "W stanie wojny z",
+          "WYPOWIEDZ WOJNĘ",
+          "Wojna",
+          "NIEDOSTĘPNA — NIE TRWA WOJNA",
+          "Pokój"
+        ],
+        "totalBodyLines": 282,
+        "warWear": [],
+        "warWearCount": 0
+      },
+      "shot_1": "b2-aiwar-seed314159-T16-aud1.png",
+      "proposalsAfterProbe": 2,
+      "notif": {
+        "tabsBefore": [
+          {
+            "tab": "dyplomacja",
+            "text": "Dyplomacja 0",
+            "active": true
+          },
+          {
+            "tab": "wazne",
+            "text": "Ważne 0",
+            "active": false
+          },
+          {
+            "tab": "inne",
+            "text": "Inne 0",
+            "active": false
+          }
+        ],
+        "clicked": true,
+        "dyploEvents": [
+          {
+            "id": "prod-empty-city0",
+            "cls": "sp-event sp-blocking sp-expanded",
+            "visible": true,
+            "text": "WYMAGA DECYZJI 1 z 3 Produkcja: Rzym Kolejka pusta — wybierz budynek lub jednostkę OTWÓRZ →"
+          },
+          {
+            "id": "negot-umowa_handlowa-0-1-t16-3",
+            "cls": "sp-event sp-blocking sp-collapsed",
+            "visible": true,
+            "text": "Dyplomacja: Chińczycy Rozpatrz →"
+          },
+          {
+            "id": "negot-umowa_handlowa-0-4-t16-4",
+            "cls": "sp-event sp-blocking sp-collapsed",
+            "visible": true,
+            "text": "Dyplomacja: Hetyci Rozpatrz →"
+          }
+        ],
+        "peaceLike": [],
+        "negOverlayOpen": false,
+        "sidePanelVisible": true,
+        "shot": "b2-aiwar-seed314159-T16-notif.png"
+      }
+    }
+  ],
+  "stoppedBy": "koniec zakresu",
+  "pageErrors": [],
+  "overlayLog": [
+    {
+      "m": "appendChild",
+      "turn": 1,
+      "t": 3404,
+      "stack": [
+        "at P6 (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/aiai-bundle/index.html?civTest=1&civSeed=314159:4300:27)",
+        "at tB (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/aiai-bundle/index.html?civTest=1&civSeed=314159:33253:307536)",
+        "at Object.startGame (file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/aiai-bundle/index.html?civTest=1&civSeed=314159:33253:202058)",
+        "at eval (eval at evaluate (:303:30), <anonymous>:1:31)",
+        "at UtilityScript.evaluate (<anonymous>:305:16)"
+      ]
+    }
+  ],
+  "startMs": 151221,
+  "consoleHits": [
+    {
+      "turn": 10,
+      "t": "[Dyplomacja] R-WEB-WEARINESS: pokój AI4↔AI1 za cenę (stopień 1, oferta #1, zmęczenie 0.50); zloto=0 surowce=0 miasto=0 (0/0 PW)"
+    }
+  ],
+  "genPolls": [
+    {
+      "sec": 5,
+      "w": true,
+      "aw": true,
+      "vis": true
+    },
+    {
+      "sec": 20,
+      "w": true,
+      "aw": true,
+      "vis": true
+    },
+    {
+      "sec": 35,
+      "w": true,
+      "aw": true,
+      "vis": true
+    },
+    {
+      "sec": 50,
+      "w": true,
+      "aw": true,
+      "vis": true
+    },
+    {
+      "sec": 65,
+      "w": true,
+      "aw": true,
+      "vis": true
+    },
+    {
+      "sec": 80,
+      "w": true,
+      "aw": true,
+      "vis": true
+    },
+    {
+      "sec": 95,
+      "w": true,
+      "aw": true,
+      "vis": true
+    },
+    {
+      "sec": 110,
+      "w": true,
+      "aw": true,
+      "vis": true
+    },
+    {
+      "sec": 125,
+      "w": true,
+      "aw": true,
+      "vis": true
+    },
+    {
+      "sec": 140,
+      "w": true,
+      "aw": true,
+      "vis": true
+    }
+  ],
+  "overlayTimeline": [
+    {
+      "sec": 0,
+      "states": []
+    }
+  ],
+  "overlayAfterFound": [],
+  "aiOwnersAll": [
+    40,
+    41,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39
+  ],
+  "majors": [
+    1,
+    4,
+    7,
+    10,
+    13,
+    16,
+    19,
+    22,
+    25,
+    28,
+    31,
+    34,
+    37
+  ],
+  "me": 0,
+  "prepared": [
+    {
+      "ai": 1,
+      "res": {
+        "techMe": true,
+        "techAi": true,
+        "contact": true,
+        "discovered": true,
+        "status": "neutralni"
+      }
+    },
+    {
+      "ai": 4,
+      "res": {
+        "techMe": true,
+        "techAi": true,
+        "contact": true,
+        "discovered": true,
+        "status": "neutralni"
+      }
+    }
+  ],
+  "observedAis": [
+    1
+  ],
+  "preTurn": {
+    "turn": 1,
+    "digest": "f0a19af0:148",
+    "owners": [
+      {
+        "oid": 40,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 41,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 1,
+        "cities": 1,
+        "units": 2
+      },
+      {
+        "oid": 2,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 3,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 4,
+        "cities": 1,
+        "units": 2
+      },
+      {
+        "oid": 5,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 6,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 7,
+        "cities": 1,
+        "units": 2
+      },
+      {
+        "oid": 8,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 9,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 10,
+        "cities": 1,
+        "units": 2
+      },
+      {
+        "oid": 11,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 12,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 13,
+        "cities": 1,
+        "units": 2
+      },
+      {
+        "oid": 14,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 15,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 16,
+        "cities": 1,
+        "units": 2
+      },
+      {
+        "oid": 17,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 18,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 19,
+        "cities": 1,
+        "units": 2
+      },
+      {
+        "oid": 20,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 21,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 22,
+        "cities": 1,
+        "units": 2
+      },
+      {
+        "oid": 23,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 24,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 25,
+        "cities": 1,
+        "units": 2
+      },
+      {
+        "oid": 26,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 27,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 28,
+        "cities": 1,
+        "units": 2
+      },
+      {
+        "oid": 29,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 30,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 31,
+        "cities": 1,
+        "units": 2
+      },
+      {
+        "oid": 32,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 33,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 34,
+        "cities": 1,
+        "units": 2
+      },
+      {
+        "oid": 35,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 36,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 37,
+        "cities": 1,
+        "units": 2
+      },
+      {
+        "oid": 38,
+        "cities": 1,
+        "units": 1
+      },
+      {
+        "oid": 39,
+        "cities": 1,
+        "units": 1
+      }
+    ],
+    "pairStates": [
+      {
+        "a": 1,
+        "b": 0,
+        "st": {
+          "status": "neutralni",
+          "truceUntilTurn": null,
+          "peaceUntilTurn": null,
+          "turn": 1
+        }
+      },
+      {
+        "a": 1,
+        "b": 4,
+        "st": {
+          "status": "wojna",
+          "truceUntilTurn": null,
+          "peaceUntilTurn": null,
+          "turn": 1
+        }
+      }
+    ],
+    "cityCounts": {
+      "me": 1,
+      "major0": 1,
+      "major1": 1,
+      "citiesLen": 42
+    },
+    "entries": [],
+    "war": {
+      "battle": {
+        "preBattleOpen": false,
+        "pendingAuto": false,
+        "sceneOpen": false,
+        "summaryOpen": false,
+        "resolving": false
+      }
+    },
+    "audLight": [
+      "Wypowiedzenie wojny",
+      "Wspólny wróg / namowa do wojny",
+      "niedostępna — nie trwa wojna",
+      "W stanie wojny z",
+      "Hetyci Chińczycy: Zmęczenie wojną 0% Hetyci: Zmęczenie wojną 0%",
+      "WYPOWIEDZ WOJNĘ",
+      "Wojna",
+      "NIEDOSTĘPNA — NIE TRWA WOJNA"
+    ]
+  },
+  "lastTurn": 17,
+  "turnTiming": [
+    {
+      "turn": 2,
+      "sec": 2.2,
+      "fast": true
+    },
+    {
+      "turn": 3,
+      "sec": 2,
+      "fast": true
+    },
+    {
+      "turn": 4,
+      "sec": 1.4,
+      "fast": true
+    },
+    {
+      "turn": 5,
+      "sec": 1.4,
+      "fast": true
+    },
+    {
+      "turn": 6,
+      "sec": 2,
+      "fast": true
+    },
+    {
+      "turn": 7,
+      "sec": 1.2,
+      "fast": true
+    },
+    {
+      "turn": 8,
+      "sec": 1.2,
+      "fast": true
+    },
+    {
+      "turn": 9,
+      "sec": 1.8,
+      "fast": true
+    },
+    {
+      "turn": 10,
+      "sec": 1.2,
+      "fast": true
+    },
+    {
+      "turn": 11,
+      "sec": 1.4,
+      "fast": true
+    },
+    {
+      "turn": 12,
+      "sec": 1.2,
+      "fast": true
+    },
+    {
+      "turn": 13,
+      "sec": 1.2,
+      "fast": true
+    },
+    {
+      "turn": 14,
+      "sec": 1.8,
+      "fast": true
+    },
+    {
+      "turn": 15,
+      "sec": 1.5,
+      "fast": true
+    },
+    {
+      "turn": 16,
+      "sec": 1.5,
+      "fast": true
+    },
+    {
+      "turn": 17,
+      "sec": 1.3,
+      "fast": true
+    }
+  ],
+  "rejectedByScript": [
+    {
+      "turn": 6,
+      "actionId": "umowa_handlowa",
+      "proposerOwnerId": 1,
+      "responderOwnerId": 0,
+      "rodzaj": null,
+      "turns": null
+    },
+    {
+      "turn": 6,
+      "actionId": "umowa_handlowa",
+      "proposerOwnerId": 4,
+      "responderOwnerId": 0,
+      "rodzaj": null,
+      "turns": null
+    },
+    {
+      "turn": 16,
+      "actionId": "umowa_handlowa",
+      "proposerOwnerId": 1,
+      "responderOwnerId": 0,
+      "rodzaj": null,
+      "turns": null
+    },
+    {
+      "turn": 16,
+      "actionId": "umowa_handlowa",
+      "proposerOwnerId": 4,
+      "responderOwnerId": 0,
+      "rodzaj": null,
+      "turns": null
+    }
+  ],
+  "elapsedSec": 194
+}
