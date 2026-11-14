@@ -251,3 +251,33 @@ fn nan_era_yields_no_unit() {
     assert!(strongest_ranged_unit_for_era(&units, f64::NAN, None).is_none());
     assert!(era_name(f64::NAN).is_none());
 }
+
+/// Odporność na skrajne wejścia (poza pinem: JS nie ma i64). Test nie porównuje z pinem; wymaga tylko,
+/// że funkcja kończy się bez paniki i bez zapętlenia przy przepełnieniu zakresu i64.
+#[test]
+fn tower_rows_extreme_inputs_terminate_without_panic() {
+    let near_max = TowerSlotInput {
+        row_lo: i64::MAX - 3,
+        row_hi: i64::MAX,
+        gate_row_lo: 0,
+        gate_row_hi: 0,
+        spacing: Some(4),
+    };
+    assert_eq!(tower_rows(&near_max), vec![i64::MAX - 1]);
+    let near_min = TowerSlotInput {
+        row_lo: i64::MIN,
+        row_hi: i64::MIN + 1,
+        gate_row_lo: 0,
+        gate_row_hi: 0,
+        spacing: None,
+    };
+    assert_eq!(tower_rows(&near_min), vec![i64::MIN + 1]);
+    let full_span = TowerSlotInput {
+        row_lo: i64::MIN,
+        row_hi: i64::MAX,
+        gate_row_lo: 0,
+        gate_row_hi: 0,
+        spacing: Some(i64::MAX),
+    };
+    assert!(!tower_rows(&full_span).is_empty());
+}

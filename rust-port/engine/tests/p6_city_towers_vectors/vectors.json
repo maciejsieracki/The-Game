@@ -19,18 +19,19 @@
    "national_excluded": 296,
    "atak_fallback": 383,
    "epoka_fallback": 326,
-   "era_round": 236,
+   "era_round": 241,
    "era_direct": 263,
    "tie_power": 30,
    "none": 182,
-   "national_hit": 30,
+   "national_hit": 29,
    "era_clamp": 39,
-   "above_min": 68,
-   "fractional": 23,
-   "below_min": 20,
-   "no_unit": 32
+   "below_min": 25,
+   "fractional": 50,
+   "above_min": 63,
+   "no_unit": 32,
+   "negative_half": 5
   },
-  "total": 1045,
+  "total": 1053,
   "note": "Wiersze jednostek syntetyczne; wektory z wykonania tekstu pinu w node (transpilacja TS)."
  },
  "cases": {
@@ -6422,11 +6423,11 @@
       "Dostępna w epokach": "Żelazo"
      }
     ],
-    "era": 0.4,
+    "era": 3.6,
     "civ": "zulu",
     "expectIndex": 1,
     "tags": [
-     "era_direct",
+     "era_fallback",
      "national_excluded",
      "atak_fallback",
      "epoka_fallback",
@@ -6826,7 +6827,7 @@
       "Nacja": "Asyria"
      }
     ],
-    "era": -1,
+    "era": -0.5,
     "civ": null,
     "expectIndex": 0,
     "tags": [
@@ -6834,6 +6835,7 @@
      "national_excluded",
      "atak_fallback",
      "epoka_fallback",
+     "era_round",
      "era_clamp"
     ]
    },
@@ -8416,7 +8418,7 @@
       "Nacja": "Asyria"
      }
     ],
-    "era": -1,
+    "era": -1.5,
     "civ": "sumer",
     "expectIndex": 0,
     "tags": [
@@ -8425,6 +8427,7 @@
      "tie_power",
      "atak_fallback",
      "epoka_fallback",
+     "era_round",
      "era_clamp"
     ]
    },
@@ -8906,7 +8909,7 @@
       "Epoka": "Kamień;Brąz"
      }
     ],
-    "era": 4,
+    "era": -0.5,
     "civ": "asyria",
     "expectIndex": 10,
     "tags": [
@@ -8914,6 +8917,7 @@
      "national_excluded",
      "atak_fallback",
      "epoka_fallback",
+     "era_round",
      "era_clamp"
     ]
    },
@@ -13592,9 +13596,9 @@
       "Nacja": "Egipt"
      }
     ],
-    "era": 4,
+    "era": -1,
     "civ": "sumer",
-    "expectIndex": 0,
+    "expectIndex": 10,
     "tags": [
      "era_direct",
      "national_excluded",
@@ -14380,13 +14384,14 @@
       "Epoka": "Kamień;Brąz;Żelazo"
      }
     ],
-    "era": -1,
+    "era": -1.5,
     "civ": "zulu",
     "expectIndex": 12,
     "tags": [
      "era_direct",
      "atak_fallback",
      "epoka_fallback",
+     "era_round",
      "era_clamp"
     ]
    },
@@ -17258,11 +17263,11 @@
       "Dostępna w epokach": "Kamień;Brąz;Żelazo"
      }
     ],
-    "era": 4,
+    "era": -1,
     "civ": "brak",
-    "expectIndex": 0,
+    "expectIndex": 5,
     "tags": [
-     "era_fallback",
+     "era_direct",
      "national_excluded",
      "atak_fallback",
      "epoka_fallback",
@@ -19820,12 +19825,13 @@
       "Nacja": "Sumer"
      }
     ],
-    "era": 0.4,
+    "era": 3.6,
     "civ": "zulu",
     "expectIndex": 3,
     "tags": [
      "era_direct",
      "national_excluded",
+     "tie_power",
      "atak_fallback",
      "epoka_fallback",
      "era_round",
@@ -21393,7 +21399,7 @@
       "Nacja": "Inkowie"
      }
     ],
-    "era": 3.6,
+    "era": 4,
     "civ": "brak",
     "expectIndex": 8,
     "tags": [
@@ -21401,7 +21407,6 @@
      "national_excluded",
      "atak_fallback",
      "epoka_fallback",
-     "era_round",
      "era_clamp"
     ]
    },
@@ -21442,12 +21447,13 @@
       "Nacja": ""
      }
     ],
-    "era": 0,
+    "era": 0.4,
     "civ": "sumer",
     "expectIndex": null,
     "tags": [
      "none",
      "atak_fallback",
+     "era_round",
      "era_clamp"
     ]
    },
@@ -22508,12 +22514,11 @@
       "Dostępna w epokach": "Kamień"
      }
     ],
-    "era": 0.4,
+    "era": 3.6,
     "civ": "inka",
     "expectIndex": 0,
     "tags": [
-     "era_direct",
-     "tie_power",
+     "era_fallback",
      "epoka_fallback",
      "era_round",
      "era_clamp"
@@ -23653,7 +23658,7 @@
       "Nacja": "—"
      }
     ],
-    "era": 4,
+    "era": -1,
     "civ": "zulu",
     "expectIndex": null,
     "tags": [
@@ -24081,14 +24086,14 @@
       "Nacja": ""
      }
     ],
-    "era": 1000000000,
+    "era": -1.5,
     "civ": "zulu",
-    "expectIndex": 6,
+    "expectIndex": 7,
     "tags": [
      "era_direct",
-     "national_hit",
      "atak_fallback",
      "epoka_fallback",
+     "era_round",
      "era_clamp"
     ]
    },
@@ -24426,7 +24431,7 @@
       "Dostępna w epokach": "Kamień;Brąz;Żelazo"
      }
     ],
-    "era": 3.6,
+    "era": 4,
     "civ": "sumer",
     "expectIndex": 12,
     "tags": [
@@ -24434,7 +24439,6 @@
      "national_excluded",
      "atak_fallback",
      "epoka_fallback",
-     "era_round",
      "era_clamp"
     ]
    },
@@ -26153,14 +26157,15 @@
       "Dostępna w epokach": "Kamień;Brąz"
      }
     ],
-    "era": 1000000000,
+    "era": -1.5,
     "civ": "asyria",
-    "expectIndex": 9,
+    "expectIndex": 11,
     "tags": [
      "era_direct",
      "national_excluded",
      "atak_fallback",
      "epoka_fallback",
+     "era_round",
      "era_clamp"
     ]
    },
@@ -29050,14 +29055,13 @@
       "Dostępna w epokach": "Żelazo"
      }
     ],
-    "era": 3.6,
+    "era": 4,
     "civ": "rzym",
     "expectIndex": 6,
     "tags": [
      "era_direct",
      "atak_fallback",
      "epoka_fallback",
-     "era_round",
      "era_clamp"
     ]
    },
@@ -29678,7 +29682,7 @@
       "Nacja": "Asyria"
      }
     ],
-    "era": 0.4,
+    "era": 3.6,
     "civ": "asyria",
     "expectIndex": 7,
     "tags": [
@@ -30283,7 +30287,7 @@
       "Nacja": "Rzym"
      }
     ],
-    "era": 4,
+    "era": -1,
     "civ": "egipt",
     "expectIndex": 5,
     "tags": [
@@ -35558,7 +35562,7 @@
       "Nacja": "Zulu"
      }
     ],
-    "era": 0.4,
+    "era": 3.6,
     "civ": "brak",
     "expectIndex": null,
     "tags": [
@@ -36775,13 +36779,14 @@
       "Nacja": "Egipt"
      }
     ],
-    "era": 1000000000,
+    "era": -1.5,
     "civ": "inka",
     "expectIndex": 1,
     "tags": [
-     "era_fallback",
+     "era_direct",
      "atak_fallback",
      "epoka_fallback",
+     "era_round",
      "era_clamp"
     ]
    },
@@ -39626,12 +39631,12 @@
    {
     "id": "TF-0",
     "unit": {
-     "Zasięg ataku (hex)": 1.5
+     "Zasięg ataku (hex)": -2.5
     },
     "minRange": null,
     "expected": 2,
     "tags": [
-     "above_min",
+     "below_min",
      "fractional"
     ]
    },
@@ -39649,10 +39654,10 @@
    {
     "id": "TF-2",
     "unit": {
-     "Zasięg ataku (hex)": 3
+     "Zasięg ataku (hex)": 4
     },
-    "minRange": 2,
-    "expected": 3,
+    "minRange": 3,
+    "expected": 4,
     "tags": [
      "above_min"
     ]
@@ -39660,7 +39665,7 @@
    {
     "id": "TF-3",
     "unit": {
-     "Zasięg ataku (hex)": 0
+     "Zasięg ataku (hex)": 1
     },
     "minRange": null,
     "expected": 2,
@@ -39671,7 +39676,7 @@
    {
     "id": "TF-4",
     "unit": {
-     "Zasięg ataku (hex)": 0
+     "Zasięg ataku (hex)": 1
     },
     "minRange": null,
     "expected": 2,
@@ -39682,10 +39687,10 @@
    {
     "id": "TF-5",
     "unit": {
-     "Zasięg ataku (hex)": 3
+     "Zasięg ataku (hex)": 4
     },
     "minRange": null,
-    "expected": 3,
+    "expected": 4,
     "tags": [
      "above_min"
     ]
@@ -39693,23 +39698,24 @@
    {
     "id": "TF-6",
     "unit": {
-     "Zasięg ataku (hex)": 5
-    },
-    "minRange": null,
-    "expected": 5,
-    "tags": [
-     "above_min"
-    ]
-   },
-   {
-    "id": "TF-7",
-    "unit": {
      "Zasięg ataku (hex)": 1.5
     },
     "minRange": null,
     "expected": 2,
     "tags": [
      "above_min",
+     "fractional"
+    ]
+   },
+   {
+    "id": "TF-7",
+    "unit": {
+     "Zasięg ataku (hex)": -2.5
+    },
+    "minRange": null,
+    "expected": 2,
+    "tags": [
+     "below_min",
      "fractional"
     ]
    },
@@ -39734,31 +39740,9 @@
    {
     "id": "TF-10",
     "unit": {
-     "Zasięg ataku (hex)": 4
-    },
-    "minRange": 2,
-    "expected": 4,
-    "tags": [
-     "above_min"
-    ]
-   },
-   {
-    "id": "TF-11",
-    "unit": {
-     "Zasięg ataku (hex)": 5
-    },
-    "minRange": 3,
-    "expected": 5,
-    "tags": [
-     "above_min"
-    ]
-   },
-   {
-    "id": "TF-12",
-    "unit": {
      "Zasięg ataku (hex)": 2.5
     },
-    "minRange": null,
+    "minRange": 3,
     "expected": 3,
     "tags": [
      "above_min",
@@ -39766,25 +39750,50 @@
     ]
    },
    {
-    "id": "TF-13",
+    "id": "TF-11",
     "unit": {
-     "Zasięg ataku (hex)": 5
+     "Zasięg ataku (hex)": 1.5
+    },
+    "minRange": -2,
+    "expected": 2,
+    "tags": [
+     "above_min",
+     "fractional"
+    ]
+   },
+   {
+    "id": "TF-12",
+    "unit": {
+     "Zasięg ataku (hex)": -1.5
     },
     "minRange": null,
-    "expected": 5,
+    "expected": 2,
     "tags": [
-     "above_min"
+     "below_min",
+     "fractional"
+    ]
+   },
+   {
+    "id": "TF-13",
+    "unit": {
+     "Zasięg ataku (hex)": 1.5
+    },
+    "minRange": null,
+    "expected": 2,
+    "tags": [
+     "above_min",
+     "fractional"
     ]
    },
    {
     "id": "TF-14",
     "unit": {
-     "Zasięg ataku (hex)": 2.5
+     "Zasięg ataku (hex)": -0.5
     },
     "minRange": null,
-    "expected": 3,
+    "expected": 2,
     "tags": [
-     "above_min",
+     "below_min",
      "fractional"
     ]
    },
@@ -39802,10 +39811,10 @@
    {
     "id": "TF-16",
     "unit": {
-     "Zasięg ataku (hex)": 3
+     "Zasięg ataku (hex)": 4
     },
-    "minRange": 0,
-    "expected": 3,
+    "minRange": 1,
+    "expected": 4,
     "tags": [
      "above_min"
     ]
@@ -39813,10 +39822,10 @@
    {
     "id": "TF-17",
     "unit": {
-     "Zasięg ataku (hex)": 3
+     "Zasięg ataku (hex)": 4
     },
     "minRange": null,
-    "expected": 3,
+    "expected": 4,
     "tags": [
      "above_min"
     ]
@@ -39835,12 +39844,13 @@
    {
     "id": "TF-19",
     "unit": {
-     "Zasięg ataku (hex)": 5
+     "Zasięg ataku (hex)": 1.5
     },
     "minRange": null,
-    "expected": 5,
+    "expected": 2,
     "tags": [
-     "above_min"
+     "above_min",
+     "fractional"
     ]
    },
    {
@@ -39866,10 +39876,10 @@
    {
     "id": "TF-22",
     "unit": {
-     "Zasięg ataku (hex)": 3
+     "Zasięg ataku (hex)": 5
     },
-    "minRange": 2,
-    "expected": 3,
+    "minRange": 3,
+    "expected": 5,
     "tags": [
      "above_min"
     ]
@@ -39877,8 +39887,8 @@
    {
     "id": "TF-23",
     "unit": null,
-    "minRange": 3,
-    "expected": 3,
+    "minRange": -2,
+    "expected": 0,
     "tags": [
      "no_unit"
     ]
@@ -39886,8 +39896,8 @@
    {
     "id": "TF-24",
     "unit": null,
-    "minRange": 2,
-    "expected": 2,
+    "minRange": 3,
+    "expected": 3,
     "tags": [
      "no_unit"
     ]
@@ -39906,32 +39916,34 @@
    {
     "id": "TF-26",
     "unit": {
-     "Zasięg ataku (hex)": 4
+     "Zasięg ataku (hex)": 2.5
     },
-    "minRange": 1,
-    "expected": 4,
+    "minRange": 2,
+    "expected": 3,
     "tags": [
-     "above_min"
+     "above_min",
+     "fractional"
     ]
    },
    {
     "id": "TF-27",
     "unit": {
-     "Zasięg ataku (hex)": 5
+     "Zasięg ataku (hex)": 1.5
     },
     "minRange": null,
-    "expected": 5,
+    "expected": 2,
     "tags": [
-     "above_min"
+     "above_min",
+     "fractional"
     ]
    },
    {
     "id": "TF-28",
     "unit": {
-     "Zasięg ataku (hex)": 3
+     "Zasięg ataku (hex)": 4
     },
     "minRange": null,
-    "expected": 3,
+    "expected": 4,
     "tags": [
      "above_min"
     ]
@@ -39939,10 +39951,10 @@
    {
     "id": "TF-29",
     "unit": {
-     "Zasięg ataku (hex)": 3
+     "Zasięg ataku (hex)": 5
     },
     "minRange": 0,
-    "expected": 3,
+    "expected": 5,
     "tags": [
      "above_min"
     ]
@@ -39950,12 +39962,12 @@
    {
     "id": "TF-30",
     "unit": {
-     "Zasięg ataku (hex)": 2.5
+     "Zasięg ataku (hex)": -1.5
     },
     "minRange": null,
-    "expected": 3,
+    "expected": 2,
     "tags": [
-     "above_min",
+     "below_min",
      "fractional"
     ]
    },
@@ -39971,12 +39983,12 @@
    {
     "id": "TF-32",
     "unit": {
-     "Zasięg ataku (hex)": 1
+     "Zasięg ataku (hex)": 2
     },
     "minRange": null,
     "expected": 2,
     "tags": [
-     "below_min"
+     "above_min"
     ]
    },
    {
@@ -40000,33 +40012,33 @@
    {
     "id": "TF-35",
     "unit": {
-     "Zasięg ataku (hex)": 2.5
+     "Zasięg ataku (hex)": -0.5
     },
     "minRange": null,
-    "expected": 3,
+    "expected": 2,
     "tags": [
-     "above_min",
+     "below_min",
      "fractional"
     ]
    },
    {
     "id": "TF-36",
     "unit": {
-     "Zasięg ataku (hex)": 0
+     "Zasięg ataku (hex)": 1
     },
-    "minRange": 3,
-    "expected": 3,
+    "minRange": -2,
+    "expected": 1,
     "tags": [
-     "below_min"
+     "above_min"
     ]
    },
    {
     "id": "TF-37",
     "unit": {
-     "Zasięg ataku (hex)": 1
+     "Zasięg ataku (hex)": 2
     },
     "minRange": 0,
-    "expected": 1,
+    "expected": 2,
     "tags": [
      "above_min"
     ]
@@ -40034,10 +40046,10 @@
    {
     "id": "TF-38",
     "unit": {
-     "Zasięg ataku (hex)": 1.5
+     "Zasięg ataku (hex)": -2.5
     },
-    "minRange": 2,
-    "expected": 2,
+    "minRange": -10,
+    "expected": -2,
     "tags": [
      "above_min",
      "fractional"
@@ -40046,12 +40058,13 @@
    {
     "id": "TF-39",
     "unit": {
-     "Zasięg ataku (hex)": 5
+     "Zasięg ataku (hex)": 1.5
     },
     "minRange": null,
-    "expected": 5,
+    "expected": 2,
     "tags": [
-     "above_min"
+     "above_min",
+     "fractional"
     ]
    },
    {
@@ -40066,6 +40079,30 @@
    {
     "id": "TF-41",
     "unit": {
+     "Zasięg ataku (hex)": 2.5
+    },
+    "minRange": 1,
+    "expected": 3,
+    "tags": [
+     "above_min",
+     "fractional"
+    ]
+   },
+   {
+    "id": "TF-42",
+    "unit": {
+     "Zasięg ataku (hex)": -0.5
+    },
+    "minRange": -10,
+    "expected": 0,
+    "tags": [
+     "above_min",
+     "fractional"
+    ]
+   },
+   {
+    "id": "TF-43",
+    "unit": {
      "Zasięg ataku (hex)": 4
     },
     "minRange": 1,
@@ -40075,37 +40112,14 @@
     ]
    },
    {
-    "id": "TF-42",
-    "unit": {
-     "Zasięg ataku (hex)": 2.5
-    },
-    "minRange": 3,
-    "expected": 3,
-    "tags": [
-     "above_min",
-     "fractional"
-    ]
-   },
-   {
-    "id": "TF-43",
-    "unit": {
-     "Zasięg ataku (hex)": 3
-    },
-    "minRange": 0,
-    "expected": 3,
-    "tags": [
-     "above_min"
-    ]
-   },
-   {
     "id": "TF-44",
     "unit": {
-     "Zasięg ataku (hex)": 1.5
+     "Zasięg ataku (hex)": -2.5
     },
-    "minRange": 3,
-    "expected": 3,
+    "minRange": -10,
+    "expected": -2,
     "tags": [
-     "below_min",
+     "above_min",
      "fractional"
     ]
    },
@@ -40121,10 +40135,10 @@
    {
     "id": "TF-46",
     "unit": {
-     "Zasięg ataku (hex)": 2
+     "Zasięg ataku (hex)": 3
     },
     "minRange": null,
-    "expected": 2,
+    "expected": 3,
     "tags": [
      "above_min"
     ]
@@ -40141,8 +40155,8 @@
    {
     "id": "TF-48",
     "unit": null,
-    "minRange": 0,
-    "expected": 0,
+    "minRange": 1,
+    "expected": 1,
     "tags": [
      "no_unit"
     ]
@@ -40150,8 +40164,8 @@
    {
     "id": "TF-49",
     "unit": null,
-    "minRange": 3,
-    "expected": 3,
+    "minRange": -2,
+    "expected": 0,
     "tags": [
      "no_unit"
     ]
@@ -40159,12 +40173,13 @@
    {
     "id": "TF-50",
     "unit": {
-     "Zasięg ataku (hex)": 4
+     "Zasięg ataku (hex)": 2.5
     },
     "minRange": null,
-    "expected": 4,
+    "expected": 3,
     "tags": [
-     "above_min"
+     "above_min",
+     "fractional"
     ]
    },
    {
@@ -40179,33 +40194,34 @@
    {
     "id": "TF-52",
     "unit": {
-     "Zasięg ataku (hex)": 4
+     "Zasięg ataku (hex)": 2.5
     },
     "minRange": null,
-    "expected": 4,
-    "tags": [
-     "above_min"
-    ]
-   },
-   {
-    "id": "TF-53",
-    "unit": {
-     "Zasięg ataku (hex)": 1.5
-    },
-    "minRange": null,
-    "expected": 2,
+    "expected": 3,
     "tags": [
      "above_min",
      "fractional"
     ]
    },
    {
+    "id": "TF-53",
+    "unit": {
+     "Zasięg ataku (hex)": -2.5
+    },
+    "minRange": null,
+    "expected": 2,
+    "tags": [
+     "below_min",
+     "fractional"
+    ]
+   },
+   {
     "id": "TF-54",
     "unit": {
-     "Zasięg ataku (hex)": 2.5
+     "Zasięg ataku (hex)": -1.5
     },
-    "minRange": 2,
-    "expected": 3,
+    "minRange": -10,
+    "expected": -1,
     "tags": [
      "above_min",
      "fractional"
@@ -40214,10 +40230,10 @@
    {
     "id": "TF-55",
     "unit": {
-     "Zasięg ataku (hex)": 2
+     "Zasięg ataku (hex)": 3
     },
-    "minRange": 0,
-    "expected": 2,
+    "minRange": 1,
+    "expected": 3,
     "tags": [
      "above_min"
     ]
@@ -40225,12 +40241,12 @@
    {
     "id": "TF-56",
     "unit": {
-     "Zasięg ataku (hex)": 1.5
+     "Zasięg ataku (hex)": -2.5
     },
     "minRange": null,
     "expected": 2,
     "tags": [
-     "above_min",
+     "below_min",
      "fractional"
     ]
    },
@@ -40248,10 +40264,10 @@
    {
     "id": "TF-58",
     "unit": {
-     "Zasięg ataku (hex)": 2.5
+     "Zasięg ataku (hex)": -0.5
     },
-    "minRange": 3,
-    "expected": 3,
+    "minRange": -2,
+    "expected": 0,
     "tags": [
      "above_min",
      "fractional"
@@ -40260,10 +40276,10 @@
    {
     "id": "TF-59",
     "unit": {
-     "Zasięg ataku (hex)": 4
+     "Zasięg ataku (hex)": 5
     },
-    "minRange": 3,
-    "expected": 4,
+    "minRange": -10,
+    "expected": 5,
     "tags": [
      "above_min"
     ]
@@ -40280,49 +40296,28 @@
    {
     "id": "TF-61",
     "unit": {
-     "Zasięg ataku (hex)": 1
+     "Zasięg ataku (hex)": 2
     },
     "minRange": null,
     "expected": 2,
     "tags": [
-     "below_min"
+     "above_min"
     ]
    },
    {
     "id": "TF-62",
     "unit": {
-     "Zasięg ataku (hex)": 4
+     "Zasięg ataku (hex)": 2.5
     },
-    "minRange": 0,
-    "expected": 4,
+    "minRange": 1,
+    "expected": 3,
     "tags": [
-     "above_min"
+     "above_min",
+     "fractional"
     ]
    },
    {
     "id": "TF-63",
-    "unit": {
-     "Zasięg ataku (hex)": 5
-    },
-    "minRange": null,
-    "expected": 5,
-    "tags": [
-     "above_min"
-    ]
-   },
-   {
-    "id": "TF-64",
-    "unit": {
-     "Zasięg ataku (hex)": 3
-    },
-    "minRange": null,
-    "expected": 3,
-    "tags": [
-     "above_min"
-    ]
-   },
-   {
-    "id": "TF-65",
     "unit": {
      "Zasięg ataku (hex)": 1.5
     },
@@ -40334,26 +40329,50 @@
     ]
    },
    {
-    "id": "TF-66",
+    "id": "TF-64",
     "unit": {
-     "Zasięg ataku (hex)": 2.5
+     "Zasięg ataku (hex)": 4
     },
     "minRange": null,
-    "expected": 3,
+    "expected": 4,
     "tags": [
-     "above_min",
+     "above_min"
+    ]
+   },
+   {
+    "id": "TF-65",
+    "unit": {
+     "Zasięg ataku (hex)": -2.5
+    },
+    "minRange": null,
+    "expected": 2,
+    "tags": [
+     "below_min",
+     "fractional"
+    ]
+   },
+   {
+    "id": "TF-66",
+    "unit": {
+     "Zasięg ataku (hex)": -0.5
+    },
+    "minRange": null,
+    "expected": 2,
+    "tags": [
+     "below_min",
      "fractional"
     ]
    },
    {
     "id": "TF-67",
     "unit": {
-     "Zasięg ataku (hex)": 5
+     "Zasięg ataku (hex)": 2.5
     },
     "minRange": 0,
-    "expected": 5,
+    "expected": 3,
     "tags": [
-     "above_min"
+     "above_min",
+     "fractional"
     ]
    },
    {
@@ -40368,6 +40387,18 @@
    {
     "id": "TF-69",
     "unit": {
+     "Zasięg ataku (hex)": 1.5
+    },
+    "minRange": -2,
+    "expected": 2,
+    "tags": [
+     "above_min",
+     "fractional"
+    ]
+   },
+   {
+    "id": "TF-70",
+    "unit": {
      "Zasięg ataku (hex)": 5
     },
     "minRange": 3,
@@ -40377,23 +40408,12 @@
     ]
    },
    {
-    "id": "TF-70",
-    "unit": {
-     "Zasięg ataku (hex)": 4
-    },
-    "minRange": 2,
-    "expected": 4,
-    "tags": [
-     "above_min"
-    ]
-   },
-   {
     "id": "TF-71",
     "unit": {
-     "Zasięg ataku (hex)": 2
+     "Zasięg ataku (hex)": 3
     },
     "minRange": null,
-    "expected": 2,
+    "expected": 3,
     "tags": [
      "above_min"
     ]
@@ -40410,30 +40430,31 @@
    {
     "id": "TF-73",
     "unit": {
-     "Zasięg ataku (hex)": 4
+     "Zasięg ataku (hex)": 2.5
     },
     "minRange": null,
-    "expected": 4,
+    "expected": 3,
     "tags": [
-     "above_min"
+     "above_min",
+     "fractional"
     ]
    },
    {
     "id": "TF-74",
     "unit": {
-     "Zasięg ataku (hex)": 1
+     "Zasięg ataku (hex)": 2
     },
     "minRange": null,
     "expected": 2,
     "tags": [
-     "below_min"
+     "above_min"
     ]
    },
    {
     "id": "TF-75",
     "unit": null,
-    "minRange": 3,
-    "expected": 3,
+    "minRange": -10,
+    "expected": 0,
     "tags": [
      "no_unit"
     ]
@@ -40441,12 +40462,12 @@
    {
     "id": "TF-76",
     "unit": {
-     "Zasięg ataku (hex)": 1.5
+     "Zasięg ataku (hex)": -1.5
     },
     "minRange": null,
     "expected": 2,
     "tags": [
-     "above_min",
+     "below_min",
      "fractional"
     ]
    },
@@ -40462,10 +40483,10 @@
    {
     "id": "TF-78",
     "unit": {
-     "Zasięg ataku (hex)": 4
+     "Zasięg ataku (hex)": 5
     },
     "minRange": null,
-    "expected": 4,
+    "expected": 5,
     "tags": [
      "above_min"
     ]
@@ -40482,44 +40503,44 @@
    {
     "id": "TF-80",
     "unit": {
-     "Zasięg ataku (hex)": 1.5
+     "Zasięg ataku (hex)": -1.5
     },
     "minRange": null,
     "expected": 2,
     "tags": [
-     "above_min",
+     "below_min",
      "fractional"
     ]
    },
    {
     "id": "TF-81",
     "unit": {
-     "Zasięg ataku (hex)": 2.5
+     "Zasięg ataku (hex)": -0.5
     },
-    "minRange": 1,
-    "expected": 3,
+    "minRange": 2,
+    "expected": 2,
     "tags": [
-     "above_min",
+     "below_min",
      "fractional"
     ]
    },
    {
     "id": "TF-82",
     "unit": {
-     "Zasięg ataku (hex)": 2.5
+     "Zasięg ataku (hex)": -1.5
     },
-    "minRange": 0,
-    "expected": 3,
+    "minRange": 1,
+    "expected": 1,
     "tags": [
-     "above_min",
+     "below_min",
      "fractional"
     ]
    },
    {
     "id": "TF-83",
     "unit": null,
-    "minRange": 0,
-    "expected": 0,
+    "minRange": 1,
+    "expected": 1,
     "tags": [
      "no_unit"
     ]
@@ -40527,56 +40548,57 @@
    {
     "id": "TF-84",
     "unit": {
-     "Zasięg ataku (hex)": 1.5
+     "Zasięg ataku (hex)": -2.5
     },
-    "minRange": 3,
-    "expected": 3,
-    "tags": [
-     "below_min",
-     "fractional"
-    ]
-   },
-   {
-    "id": "TF-85",
-    "unit": {
-     "Zasięg ataku (hex)": 1
-    },
-    "minRange": null,
-    "expected": 2,
-    "tags": [
-     "below_min"
-    ]
-   },
-   {
-    "id": "TF-86",
-    "unit": {
-     "Zasięg ataku (hex)": 4
-    },
-    "minRange": null,
-    "expected": 4,
-    "tags": [
-     "above_min"
-    ]
-   },
-   {
-    "id": "TF-87",
-    "unit": {
-     "Zasięg ataku (hex)": 1.5
-    },
-    "minRange": null,
-    "expected": 2,
+    "minRange": -2,
+    "expected": -2,
     "tags": [
      "above_min",
      "fractional"
     ]
    },
    {
+    "id": "TF-85",
+    "unit": {
+     "Zasięg ataku (hex)": 2
+    },
+    "minRange": null,
+    "expected": 2,
+    "tags": [
+     "above_min"
+    ]
+   },
+   {
+    "id": "TF-86",
+    "unit": {
+     "Zasięg ataku (hex)": 2.5
+    },
+    "minRange": null,
+    "expected": 3,
+    "tags": [
+     "above_min",
+     "fractional"
+    ]
+   },
+   {
+    "id": "TF-87",
+    "unit": {
+     "Zasięg ataku (hex)": -1.5
+    },
+    "minRange": null,
+    "expected": 2,
+    "tags": [
+     "below_min",
+     "fractional"
+    ]
+   },
+   {
     "id": "TF-88",
     "unit": {
-     "Zasięg ataku (hex)": 3
+     "Zasięg ataku (hex)": 4
     },
-    "minRange": 2,
-    "expected": 3,
+    "minRange": 3,
+    "expected": 4,
     "tags": [
      "above_min"
     ]
@@ -40584,10 +40606,10 @@
    {
     "id": "TF-89",
     "unit": {
-     "Zasięg ataku (hex)": 3
+     "Zasięg ataku (hex)": 4
     },
-    "minRange": 2,
-    "expected": 3,
+    "minRange": 3,
+    "expected": 4,
     "tags": [
      "above_min"
     ]
@@ -40595,10 +40617,10 @@
    {
     "id": "TF-90",
     "unit": {
-     "Zasięg ataku (hex)": 4
+     "Zasięg ataku (hex)": 5
     },
     "minRange": null,
-    "expected": 4,
+    "expected": 5,
     "tags": [
      "above_min"
     ]
@@ -40606,18 +40628,18 @@
    {
     "id": "TF-91",
     "unit": {
-     "Zasięg ataku (hex)": 1
+     "Zasięg ataku (hex)": 2
     },
     "minRange": null,
     "expected": 2,
     "tags": [
-     "below_min"
+     "above_min"
     ]
    },
    {
     "id": "TF-92",
     "unit": {
-     "Zasięg ataku (hex)": 0
+     "Zasięg ataku (hex)": 1
     },
     "minRange": null,
     "expected": 2,
@@ -40628,17 +40650,6 @@
    {
     "id": "TF-93",
     "unit": {
-     "Zasięg ataku (hex)": 4
-    },
-    "minRange": null,
-    "expected": 4,
-    "tags": [
-     "above_min"
-    ]
-   },
-   {
-    "id": "TF-94",
-    "unit": {
      "Zasięg ataku (hex)": 2.5
     },
     "minRange": null,
@@ -40649,12 +40660,24 @@
     ]
    },
    {
-    "id": "TF-95",
+    "id": "TF-94",
     "unit": {
-     "Zasięg ataku (hex)": 2
+     "Zasięg ataku (hex)": -1.5
     },
     "minRange": null,
     "expected": 2,
+    "tags": [
+     "below_min",
+     "fractional"
+    ]
+   },
+   {
+    "id": "TF-95",
+    "unit": {
+     "Zasięg ataku (hex)": 3
+    },
+    "minRange": null,
+    "expected": 3,
     "tags": [
      "above_min"
     ]
@@ -40671,8 +40694,8 @@
    {
     "id": "TF-97",
     "unit": null,
-    "minRange": 1,
-    "expected": 1,
+    "minRange": 2,
+    "expected": 2,
     "tags": [
      "no_unit"
     ]
@@ -40689,21 +40712,22 @@
    {
     "id": "TF-99",
     "unit": {
-     "Zasięg ataku (hex)": 4
+     "Zasięg ataku (hex)": 2.5
     },
-    "minRange": 2,
-    "expected": 4,
+    "minRange": -10,
+    "expected": 3,
     "tags": [
-     "above_min"
+     "above_min",
+     "fractional"
     ]
    },
    {
     "id": "TF-100",
     "unit": {
-     "Zasięg ataku (hex)": 1
+     "Zasięg ataku (hex)": 2
     },
     "minRange": 0,
-    "expected": 1,
+    "expected": 2,
     "tags": [
      "above_min"
     ]
@@ -40720,8 +40744,8 @@
    {
     "id": "TF-102",
     "unit": null,
-    "minRange": 1,
-    "expected": 1,
+    "minRange": 2,
+    "expected": 2,
     "tags": [
      "no_unit"
     ]
@@ -40729,12 +40753,13 @@
    {
     "id": "TF-103",
     "unit": {
-     "Zasięg ataku (hex)": 5
+     "Zasięg ataku (hex)": 1.5
     },
     "minRange": 0,
-    "expected": 5,
+    "expected": 2,
     "tags": [
-     "above_min"
+     "above_min",
+     "fractional"
     ]
    },
    {
@@ -40751,36 +40776,16 @@
    {
     "id": "TF-105",
     "unit": {
-     "Zasięg ataku (hex)": 1
+     "Zasięg ataku (hex)": 2
     },
     "minRange": 0,
-    "expected": 1,
+    "expected": 2,
     "tags": [
      "above_min"
     ]
    },
    {
     "id": "TF-106",
-    "unit": {
-     "Zasięg ataku (hex)": 3
-    },
-    "minRange": null,
-    "expected": 3,
-    "tags": [
-     "above_min"
-    ]
-   },
-   {
-    "id": "TF-107",
-    "unit": null,
-    "minRange": 1,
-    "expected": 1,
-    "tags": [
-     "no_unit"
-    ]
-   },
-   {
-    "id": "TF-108",
     "unit": {
      "Zasięg ataku (hex)": 4
     },
@@ -40791,14 +40796,35 @@
     ]
    },
    {
-    "id": "TF-109",
+    "id": "TF-107",
+    "unit": null,
+    "minRange": 2,
+    "expected": 2,
+    "tags": [
+     "no_unit"
+    ]
+   },
+   {
+    "id": "TF-108",
     "unit": {
-     "Zasięg ataku (hex)": 1.5
+     "Zasięg ataku (hex)": 2.5
     },
-    "minRange": 3,
+    "minRange": null,
     "expected": 3,
     "tags": [
-     "below_min",
+     "above_min",
+     "fractional"
+    ]
+   },
+   {
+    "id": "TF-109",
+    "unit": {
+     "Zasięg ataku (hex)": -2.5
+    },
+    "minRange": -10,
+    "expected": -2,
+    "tags": [
+     "above_min",
      "fractional"
     ]
    },
@@ -40807,10 +40833,10 @@
     "unit": {
      "Zasięg ataku (hex)": 1
     },
-    "minRange": 3,
-    "expected": 3,
+    "minRange": -2,
+    "expected": 1,
     "tags": [
-     "below_min"
+     "above_min"
     ]
    },
    {
@@ -40838,28 +40864,29 @@
     "unit": {
      "Zasięg ataku (hex)": 1
     },
-    "minRange": 3,
-    "expected": 3,
-    "tags": [
-     "below_min"
-    ]
-   },
-   {
-    "id": "TF-114",
-    "unit": {
-     "Zasięg ataku (hex)": 5
-    },
-    "minRange": 1,
-    "expected": 5,
+    "minRange": -2,
+    "expected": 1,
     "tags": [
      "above_min"
     ]
    },
    {
+    "id": "TF-114",
+    "unit": {
+     "Zasięg ataku (hex)": 1.5
+    },
+    "minRange": 2,
+    "expected": 2,
+    "tags": [
+     "above_min",
+     "fractional"
+    ]
+   },
+   {
     "id": "TF-115",
     "unit": null,
-    "minRange": 0,
-    "expected": 0,
+    "minRange": 1,
+    "expected": 1,
     "tags": [
      "no_unit"
     ]
@@ -40885,10 +40912,10 @@
    {
     "id": "TF-118",
     "unit": {
-     "Zasięg ataku (hex)": 3
+     "Zasięg ataku (hex)": 5
     },
     "minRange": null,
-    "expected": 3,
+    "expected": 5,
     "tags": [
      "above_min"
     ]
@@ -40896,10 +40923,70 @@
    {
     "id": "TF-119",
     "unit": null,
-    "minRange": 2,
-    "expected": 2,
+    "minRange": 3,
+    "expected": 3,
     "tags": [
      "no_unit"
+    ]
+   },
+   {
+    "id": "TF-neg--2.5--10",
+    "unit": {
+     "Zasięg ataku (hex)": -2.5
+    },
+    "minRange": -10,
+    "expected": -2,
+    "tags": [
+     "fractional",
+     "negative_half"
+    ]
+   },
+   {
+    "id": "TF-neg--1.5--10",
+    "unit": {
+     "Zasięg ataku (hex)": -1.5
+    },
+    "minRange": -10,
+    "expected": -1,
+    "tags": [
+     "fractional",
+     "negative_half"
+    ]
+   },
+   {
+    "id": "TF-neg--0.5--10",
+    "unit": {
+     "Zasięg ataku (hex)": -0.5
+    },
+    "minRange": -10,
+    "expected": 0,
+    "tags": [
+     "fractional",
+     "negative_half"
+    ]
+   },
+   {
+    "id": "TF-neg--2.5--2",
+    "unit": {
+     "Zasięg ataku (hex)": -2.5
+    },
+    "minRange": -2,
+    "expected": -2,
+    "tags": [
+     "fractional",
+     "negative_half"
+    ]
+   },
+   {
+    "id": "TF-neg--1.5--1",
+    "unit": {
+     "Zasięg ataku (hex)": -1.5
+    },
+    "minRange": -1,
+    "expected": -1,
+    "tags": [
+     "fractional",
+     "negative_half"
     ]
    }
   ],
@@ -42888,8 +42975,23 @@
     "expected": "Żelazo"
    },
    {
+    "id": "EN--0.5",
+    "era": -0.5,
+    "expected": "Kamień"
+   },
+   {
     "id": "EN--1",
     "era": -1,
+    "expected": "Kamień"
+   },
+   {
+    "id": "EN--1.5",
+    "era": -1.5,
+    "expected": "Kamień"
+   },
+   {
+    "id": "EN--2.5",
+    "era": -2.5,
     "expected": "Kamień"
    },
    {

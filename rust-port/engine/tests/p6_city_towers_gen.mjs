@@ -149,7 +149,7 @@ cases.towerRows.push({ id: 'TR-edge-zero-width', input: { rowLo: 3, rowHi: 3, ga
 for (let i = 0; i < 480; i++) {
   const n = ri(0, 14);
   const units = Array.from({ length: n }, (_, k) => randUnit(k));
-  const era = rnd() < 0.08 ? pick([0, 0.4, 3.6, 4, -1, 1e9]) : pick([1, 2, 3, 1.5, 2.5, 2.4]);
+  const era = rnd() < 0.08 ? pick([0, 0.4, 3.6, 4, -1, -0.5, -1.5, 1e9]) : pick([1, 2, 3, 1.5, 2.5, 2.4]);
   const civ = pick(CIVS);
   const res = P.strongestRangedUnitForEra(units, era, civ);
   const expectIndex = res === null ? null : units.indexOf(res);
@@ -184,8 +184,8 @@ for (const f of fixed) {
 
 // 3. towerRangeFor (jednostka / brak, minRange domyslny i jawny, zaokraglenie).
 for (let i = 0; i < 120; i++) {
-  const unit = rnd() < 0.2 ? null : { 'Zasięg ataku (hex)': pick([0, 1, 2, 3, 4, 5, 2.5, 1.5]) };
-  const minRange = rnd() < 0.5 ? null : pick([0, 1, 2, 3]);
+  const unit = rnd() < 0.2 ? null : { 'Zasięg ataku (hex)': pick([0, 1, 2, 3, 4, 5, 2.5, 1.5, -0.5, -1.5, -2.5]) };
+  const minRange = rnd() < 0.5 ? null : pick([0, 1, 2, 3, -10, -2]);
   const expected = minRange === null ? P.towerRangeFor(unit) : P.towerRangeFor(unit, minRange);
   const tags = [];
   if (unit === null) tags.push('no_unit');
@@ -198,6 +198,13 @@ for (let i = 0; i < 120; i++) {
   cases.towerRangeFor.push({ id: `TF-${i}`, unit, minRange, expected, tags });
 }
 
+// Jawne przypadki: polowki ujemne (Math.round(-2.5) = -2, f64::round(-2.5) = -3). Ujemny minRange
+// nie obcina wyniku, wiec roznica jest widoczna w towerRangeFor.
+for (const [reach, minRange] of [[-2.5, -10], [-1.5, -10], [-0.5, -10], [-2.5, -2], [-1.5, -1]]) {
+  const unit = { 'Zasięg ataku (hex)': reach };
+  cases.towerRangeFor.push({ id: `TF-neg-${reach}-${minRange}`, unit, minRange, expected: P.towerRangeFor(unit, minRange), tags: ['fractional', 'negative_half'] });
+}
+
 // 4. missilePower / unitReach (fallbacki kolumn).
 for (let i = 0; i < 80; i++) {
   const u = randUnit(i);
@@ -206,7 +213,7 @@ for (let i = 0; i < 80; i++) {
 }
 
 // 5. eraName (zaokraglenie i obciecie).
-for (const e of [0, 0.4, 0.5, 1, 1.4, 1.5, 2, 2.5, 3, 3.5, 4, -1, 1e9]) {
+for (const e of [0, 0.4, 0.5, 1, 1.4, 1.5, 2, 2.5, 3, 3.5, 4, -0.5, -1, -1.5, -2.5, 1e9]) {
   cases.eraName.push({ id: `EN-${e}`, era: e, expected: P.eraName(e) });
 }
 

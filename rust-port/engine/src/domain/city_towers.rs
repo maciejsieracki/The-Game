@@ -77,13 +77,21 @@ pub fn tower_material_for(kind: FortificationKind) -> Option<TowerMaterial> {
 pub fn tower_rows(inp: &TowerSlotInput) -> Vec<i64> {
     let spacing = inp.spacing.unwrap_or(DEFAULT_TOWER_SPACING).max(1);
     let mut rows = Vec::new();
-    let first = inp.row_lo + 2_i64.min((inp.row_hi - inp.row_lo).max(0));
+    // Arytmetyka saturujaca / checked: skrajne wejscia (blisko i64::MIN/MAX) nie paniku w debug
+    // i nie zapetlaja petli (przy przepelnieniu kroku konczymy). Dla wejsc z zakresu produkcyjnego wynik
+    // jest identyczny z pinem (patrz wektory).
+    let first = inp
+        .row_lo
+        .saturating_add(2_i64.min(inp.row_hi.saturating_sub(inp.row_lo).max(0)));
     let mut r = first;
     while r <= inp.row_hi {
         if !(r >= inp.gate_row_lo && r <= inp.gate_row_hi) {
             rows.push(r);
         }
-        r += spacing;
+        match r.checked_add(spacing) {
+            Some(next) => r = next,
+            None => break,
+        }
     }
     rows
 }
