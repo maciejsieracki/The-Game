@@ -1,0 +1,160 @@
+{
+ "results": [
+  {
+   "viewport": [
+    1280,
+    800
+   ],
+   "vh": 800,
+   "bar": {
+    "top": 704,
+    "bottom": 780,
+    "left": 1060,
+    "right": 1260
+   },
+   "overlay": null,
+   "foot": {
+    "top": 663,
+    "bottom": 693,
+    "left": 935,
+    "right": 1293
+   },
+   "acts": [
+    {
+     "label": "Oblegaj",
+     "top": 525,
+     "bottom": 653,
+     "left": 955,
+     "right": 1056
+    },
+    {
+     "label": "Szturm",
+     "top": 525,
+     "bottom": 653,
+     "left": 1064,
+     "right": 1164
+    },
+    {
+     "label": "Odwrót",
+     "top": 525,
+     "bottom": 653,
+     "left": 1172,
+     "right": 1273
+    }
+   ],
+   "machines": [
+    "Taran · 7 ¤ + 19 Drewno",
+    "Taran okuty · 18 ¤ + 76 Brąz",
+    "Katapulta · 36 ¤ + 152 Żelazo",
+    "Wieża oblężnicza · 20 ¤ + 76 Brąz"
+   ],
+   "bodyScrollable": true,
+   "checks": [
+    {
+     "name": "pasek HUD obecny i widoczny",
+     "ok": true
+    },
+    {
+     "name": "panel oblezenia otwarty (3 akcje)",
+     "ok": true
+    },
+    {
+     "name": "przycisk \"Oblegaj\" w calosci nad banerem (bottom <= bar.top-4, bez przewijania)",
+     "ok": true
+    },
+    {
+     "name": "przycisk \"Szturm\" w calosci nad banerem (bottom <= bar.top-4, bez przewijania)",
+     "ok": true
+    },
+    {
+     "name": "przycisk \"Odwrót\" w calosci nad banerem (bottom <= bar.top-4, bez przewijania)",
+     "ok": true
+    },
+    {
+     "name": "stopka panelu nad banerem",
+     "ok": true
+    }
+   ],
+   "pass": true
+  },
+  {
+   "viewport": [
+    1024,
+    768
+   ],
+   "vh": 768,
+   "bar": {
+    "top": 672,
+    "bottom": 748,
+    "left": 804,
+    "right": 1004
+   },
+   "overlay": null,
+   "foot": {
+    "top": 631,
+    "bottom": 661,
+    "left": 679,
+    "right": 1037
+   },
+   "acts": [
+    {
+     "label": "Oblegaj",
+     "top": 493,
+     "bottom": 621,
+     "left": 699,
+     "right": 800
+    },
+    {
+     "label": "Szturm",
+     "top": 493,
+     "bottom": 621,
+     "left": 808,
+     "right": 908
+    },
+    {
+     "label": "Odwrót",
+     "top": 493,
+     "bottom": 621,
+     "left": 916,
+     "right": 1017
+    }
+   ],
+   "machines": [
+    "Taran · 7 ¤ + 19 Drewno",
+    "Taran okuty · 18 ¤ + 76 Brąz",
+    "Katapulta · 36 ¤ + 152 Żelazo",
+    "Wieża oblężnicza · 20 ¤ + 76 Brąz"
+   ],
+   "bodyScrollable": true,
+   "checks": [
+    {
+     "name": "pasek HUD obecny i widoczny",
+     "ok": true
+    },
+    {
+     "name": "panel oblezenia otwarty (3 akcje)",
+     "ok": true
+    },
+    {
+     "name": "przycisk \"Oblegaj\" w calosci nad banerem (bottom <= bar.top-4, bez przewijania)",
+     "ok": true
+    },
+    {
+     "name": "przycisk \"Szturm\" w calosci nad banerem (bottom <= bar.top-4, bez przewijania)",
+     "ok": true
+    },
+    {
+     "name": "przycisk \"Odwrót\" w calosci nad banerem (bottom <= bar.top-4, bez przewijania)",
+     "ok": true
+    },
+    {
+     "name": "stopka panelu nad banerem",
+     "ok": true
+    }
+   ],
+   "pass": true
+  }
+ ],
+ "errors": [],
+ "verdict": "PASS"
+}
