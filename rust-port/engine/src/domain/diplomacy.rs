@@ -1655,6 +1655,9 @@ pub struct DiplomacyState {
     pub relations: BTreeMap<CivilizationPair, Relation>,
     pub deals: Vec<ActiveDeal>,
     /// Granty zlozeGrants (web `zlozeGrants`). Dodane swiadomie (dispatch R-RUSTPORT-P6-ZLOZE-GRANTS-STATE-Q1).
+    /// Zapis serializuje sie pod kluczem `zloze_grants` (spojnie z pozostalymi polami tej struktury);
+    /// alias `zlozeGrants` pozwala wczytac zapis webowy 1:1 (zarzut obrony R1: parytet wczytania).
+    #[serde(default, alias = "zlozeGrants")]
     pub zloze_grants: Vec<ZlozeGrant>,
 }
 

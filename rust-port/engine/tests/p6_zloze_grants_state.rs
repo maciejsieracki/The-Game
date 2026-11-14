@@ -224,6 +224,25 @@ fn zloze_grant_round_trip_uses_camel_case_and_omits_missing_deal_id() {
 }
 
 #[test]
+fn state_loads_web_save_key_zloze_grants_camel_case() {
+    // Zapis webowy trzyma granty pod kluczem `zlozeGrants` (pin 07d2fbd72, main.ts:47251).
+    let web = r#"{"deals":[],"zlozeGrants":[{"granterOwnerId":1,"granteeOwnerId":2,"partnerId":2,"zlozeId":"z1","hexKey":"h1","active":true,"dealId":"d1"},{"granterOwnerId":3,"granteeOwnerId":4,"partnerId":4,"zlozeId":"z2","hexKey":"h2","active":false}]}"#;
+    let state: DiplomacyState = serde_json::from_str(web).expect("zapis webowy");
+    assert_eq!(state.zloze_grants.len(), 2);
+    assert_eq!(state.zloze_grants[0].deal_id.as_deref(), Some("d1"));
+    assert_eq!(state.zloze_grants[1].deal_id, None);
+    assert!(state.zloze_grants[0].active);
+    assert!(!state.zloze_grants[1].active);
+
+    // Serializacja pozostaje pod kluczem snake_case `zloze_grants`.
+    let out = serde_json::to_value(&state).expect("to_value");
+    assert!(out.get("zloze_grants").is_some());
+    assert!(out.get("zlozeGrants").is_none());
+}
+
+/// Test samospojnosci (round-trip wlasnego typu): NIE dowodzi parytetu z pinem.
+/// Parytet pokrywaja testy `suspend_..._matches_pin_vectors` i `deactivate_..._matches_pin_vectors`.
+#[test]
 fn vector_grants_round_trip_through_json() {
     let v = vectors();
     for case in v["suspend"].as_array().expect("suspend") {
