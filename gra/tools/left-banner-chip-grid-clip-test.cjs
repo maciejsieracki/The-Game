@@ -1,13 +1,13 @@
 'use strict';
 /**
  * left-banner-chip-grid-clip-test.cjs -- R-WEB-UI-LEFT-BANNER-CHIP-GRID-TOP-CLIP-Q1.
- * Prawdziwe showHud() + fitHudTopbar() (hud.ts) w Chromium przy 1000×700, 800×600 i 640×480.
+ * Prawdziwe showHud() + fitHudTopbar() (hud.ts) w Chromium przy 1000×700, 800×600, 640×480, 800×720, 800×900.
  * Asercje: (a) zaden element lewego banera nie ma top < 0, bottom > wysokosc okna, right > szerokosc okna;
  * (b) zadna etykieta/komorka chipa nie jest przycieta (scrollWidth <= clientWidth); (c) brak poziomego
  * scrolla strony; (d) dol powloki banera <= 104 px (panele boczne); (e) przy 1000×700 powloka ma nadal
  * 56 px (tryb nie zmieniony od >= 1000×700).
  * Uzycie: node tools/left-banner-chip-grid-clip-test.cjs [--mutant]
- * --mutant: wylacza blok @media (max-height:699px) w kopii zrodla i MUSI dac FAIL.
+ * --mutant: przywraca 56 px dla .hud-left-fallback w kopii zrodla i MUSI dac FAIL.
  */
 const fs = require('fs');
 const os = require('os');
@@ -15,7 +15,8 @@ const path = require('path');
 const GRA = path.resolve(__dirname, '..');
 const HUD_TS = path.join(GRA, 'src/ui/hud.ts');
 const MUTANT = process.argv.includes('--mutant');
-const MEDIA_GUARD = '@media (max-height:699px){';
+const MUTANT_FROM = '.civ-hud .civ-hud-banner-left.hud-left-fallback>.civ-hud-banner-shell{height:88px;}';
+const MUTANT_TO = '.civ-hud .civ-hud-banner-left.hud-left-fallback>.civ-hud-banner-shell{height:56px;}';
 const esbuild = require(path.join(GRA, 'node_modules', 'esbuild'));
 const { chromium } = require(path.join(GRA, 'node_modules', 'playwright'));
 const CHROME_CANDIDATES = [process.env.CHROMIUM, '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', '/usr/bin/chromium'];
@@ -37,8 +38,8 @@ const viteCompat = {
       let s = fs.readFileSync(a.path, 'utf8');
       let changed = false;
       if (MUTANT && path.resolve(a.path) === HUD_TS) {
-        if (!s.includes(MEDIA_GUARD)) throw new Error('mutant: brak bloku ' + MEDIA_GUARD + ' w hud.ts');
-        s = s.replace(MEDIA_GUARD, '@media (max-height:0px){'); changed = true;
+        if (!s.includes(MUTANT_FROM)) throw new Error('mutant: brak reguly 88px w hud.ts');
+        s = s.replace(MUTANT_FROM, MUTANT_TO); changed = true;
       }
       if (s.includes('import.meta.glob')) { s = 'const __g=()=>({});\n' + s.replace(/import\.meta\.glob/g, '__g'); changed = true; }
       return changed ? { contents: s, loader: 'ts', resolveDir: path.dirname(a.path) } : null;
@@ -81,7 +82,7 @@ const STATES = {
   duze: { ...BASE, ...left(2345678, 123456, 98765), ...right(123456, 12345, 123456, 12345, 123456, 123456, 12345, 123456, 12345) },
   deficyt: { ...BASE, ...left(20000, 2000, -1500), ...right(2, 5, 3, 1, 12, 12, 1, 0, 0) },
 };
-const WINDOWS = [[1000, 700], [800, 600], [640, 480]];
+const WINDOWS = [[1000, 700], [1000, 900], [800, 600], [640, 480], [800, 720], [800, 900], [640, 800], [700, 700], [1024, 600], [1280, 650]];
 
 const MEASURE = () => {
   const vw = document.documentElement.clientWidth; const vh = window.innerHeight;
