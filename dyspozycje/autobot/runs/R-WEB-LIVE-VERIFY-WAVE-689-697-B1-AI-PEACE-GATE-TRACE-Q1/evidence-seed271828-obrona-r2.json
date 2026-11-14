@@ -1,0 +1,391 @@
+{
+  "seed": 271828,
+  "warTurnsRequested": 22,
+  "ai": 1,
+  "warDeclaredAtTurn": 1,
+  "turns": [
+    {
+      "pair": {
+        "turn": 2,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 50,
+        "turnsAtWar": 1,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 2,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 50,
+          "turnsAtWar": 1,
+          "lostCities": 0,
+          "raw": [],
+          "afterPlayerFacing": [],
+          "afterLayer": [],
+          "afterContact": [],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ]
+    },
+    {
+      "pair": {
+        "turn": 3,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 9,
+        "turnsAtWar": 2,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 3,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 9,
+          "turnsAtWar": 2,
+          "lostCities": 0,
+          "raw": [],
+          "afterPlayerFacing": [],
+          "afterLayer": [],
+          "afterContact": [],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ]
+    },
+    {
+      "pair": {
+        "turn": 4,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 11,
+        "turnsAtWar": 3,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 4,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 11,
+          "turnsAtWar": 3,
+          "lostCities": 0,
+          "raw": [],
+          "afterPlayerFacing": [],
+          "afterLayer": [],
+          "afterContact": [],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ]
+    },
+    {
+      "pair": {
+        "turn": 5,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 13,
+        "turnsAtWar": 4,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 5,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 13,
+          "turnsAtWar": 4,
+          "lostCities": 0,
+          "raw": [],
+          "afterPlayerFacing": [],
+          "afterLayer": [],
+          "afterContact": [],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ]
+    },
+    {
+      "pair": {
+        "turn": 6,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 16,
+        "turnsAtWar": 5,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 6,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 16,
+          "turnsAtWar": 5,
+          "lostCities": 0,
+          "raw": [],
+          "afterPlayerFacing": [],
+          "afterLayer": [],
+          "afterContact": [],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ]
+    },
+    {
+      "pair": {
+        "turn": 7,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 18,
+        "turnsAtWar": 6,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 7,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 18,
+          "turnsAtWar": 6,
+          "lostCities": 0,
+          "raw": [],
+          "afterPlayerFacing": [],
+          "afterLayer": [],
+          "afterContact": [],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ]
+    },
+    {
+      "pair": {
+        "turn": 8,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 18,
+        "turnsAtWar": 7,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 8,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 18,
+          "turnsAtWar": 7,
+          "lostCities": 0,
+          "raw": [],
+          "afterPlayerFacing": [],
+          "afterLayer": [],
+          "afterContact": [],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ]
+    },
+    {
+      "pair": {
+        "turn": 9,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 18,
+        "turnsAtWar": 8,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 9,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 18,
+          "turnsAtWar": 8,
+          "lostCities": 0,
+          "raw": [],
+          "afterPlayerFacing": [],
+          "afterLayer": [],
+          "afterContact": [],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ]
+    },
+    {
+      "pair": {
+        "turn": 10,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 22,
+        "turnsAtWar": 9,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 10,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 22,
+          "turnsAtWar": 9,
+          "lostCities": 0,
+          "raw": [],
+          "afterPlayerFacing": [],
+          "afterLayer": [],
+          "afterContact": [],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ]
+    },
+    {
+      "pair": {
+        "turn": 11,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 27,
+        "turnsAtWar": 10,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 11,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 27,
+          "turnsAtWar": 10,
+          "lostCities": 0,
+          "raw": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "afterPlayerFacing": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "afterLayer": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "afterContact": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ]
+    }
+  ],
+  "stoppedBy": "blad: endTurn w turze 11: page.waitForFunction: Timeout 120000ms exceeded.",
+  "consoleErrors": 0,
+  "pageErrors": [],
+  "endBlocks": [
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)"
+  ],
+  "startTurn": 1,
+  "relAfterDeclare": {
+    "turn": 1,
+    "ai": 1,
+    "status": "wojna",
+    "relTotal": 30,
+    "turnsAtWar": 0,
+    "lostCities": 0,
+    "contactSet": true,
+    "queuedPeace": []
+  },
+  "lastTurn": 11,
+  "rejectedByScript": [
+    {
+      "turn": 11,
+      "actionId": "rozejm",
+      "proposerOwnerId": 1,
+      "responderOwnerId": 0,
+      "rodzaj": null
+    }
+  ],
+  "queuedForEmptyCity": [
+    {
+      "turn": 11,
+      "cityId": "city0",
+      "ids": [
+        "stolarnia",
+        "kamieniarski",
+        "kuznia",
+        "odlewnia_brazu",
+        "odlewnia_zelaza"
+      ]
+    }
+  ],
+  "diagAtHang": {
+    "panelButtons": [
+      "sp-toolbar-dismiss-all | Zamknij wszystkie informacyjne",
+      "sp-tab | Dyplomacja0",
+      "sp-tab sp-tab-active | Ważne1",
+      "sp-tab | Inne0"
+    ],
+    "panelHtml": "<div class=\"sp-scroll\"><div class=\"sp-header\">1 informacyjna</div><div class=\"sp-toolbar\"><button type=\"button\" class=\"sp-toolbar-dismiss-all\" data-sp-dismiss-all=\"\">Zamknij wszystkie informacyjne</button></div><div class=\"sp-tabs\" role=\"tablist\" aria-label=\"Kategorie wydarzeń\"><button type=\"button\" role=\"tab\" class=\"sp-tab\" aria-selected=\"false\" data-sp-tab=\"dyplomacja\"><span class=\"sp-tab-label\">Dyplomacja</span><span class=\"sp-tab-count\">0</span></button><button type=\"button\" role=\"tab\" class=\"sp-tab sp-tab-active\" aria-selected=\"true\" data-sp-tab=\"wazne\"><span class=\"sp-tab-label\">Ważne</span><span class=\"sp-tab-count\">1</span></button><button type=\"button\" role=\"tab\" class=\"sp-tab\" aria-selected=\"false\" data-sp-tab=\"inne\"><span class=\"sp-tab-label\">Inne</span><span class=\"sp-tab-count\">0</span></button></div><div class=\"sp-event sp-no-link\" data-id=\"eot-hint-11-0\"><span class=\"sp-ico\"><span class=\"sp-ico-emoji\">ℹ️</span></span><div><div class=\"sp-title sp-title-generic\">Wydarzenie</div><div class=\"sp-sub\">Głód wojska: −8% max HP u 3 jednostek</div></div><span class=\"sp-close\" data-dismiss=\"eot-hint-11-0\" title=\"Zamknij\" aria-label=\"Zamknij powiadomienie\">✕</span></div></div>",
+    "turnNow": 11,
+    "canEnd": false,
+    "inProgress": false,
+    "battle": {
+      "preBattleOpen": false,
+      "pendingAuto": false,
+      "sceneOpen": false,
+      "summaryOpen": false,
+      "resolving": false
+    },
+    "entries": [],
+    "modals": [
+      "civ-side-panel :: 1 informacyjnaZamknij wszystkie informacyjneDyplomacja0Ważne1Inne0ℹ️WydarzenieGłód wojska: −8% max HP u 3 jednostek✕",
+      "civ-emp-panel :: "
+    ],
+    "vis": 0
+  },
+  "elapsedSec": 195
+}

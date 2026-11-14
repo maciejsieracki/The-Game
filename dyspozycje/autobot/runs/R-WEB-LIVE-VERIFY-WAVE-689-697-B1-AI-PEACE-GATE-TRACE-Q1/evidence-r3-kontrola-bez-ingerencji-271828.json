@@ -1,0 +1,128 @@
+{
+  "seed": 271828,
+  "warTurnsRequested": 22,
+  "ai": 1,
+  "warDeclaredAtTurn": 1,
+  "turns": [
+    {
+      "pair": {
+        "turn": 2,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "ab8c8a82:142"
+    },
+    {
+      "pair": {
+        "turn": 3,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "af45f93d:141"
+    },
+    {
+      "pair": {
+        "turn": 4,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "203e15ad:142"
+    },
+    {
+      "pair": {
+        "turn": 5,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "f74d099e:142"
+    },
+    {
+      "pair": {
+        "turn": 6,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "25dd69d5:142"
+    },
+    {
+      "pair": {
+        "turn": 7,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "a7fcabe3:142"
+    },
+    {
+      "pair": {
+        "turn": 8,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "dc5b4b8f:141"
+    },
+    {
+      "pair": {
+        "turn": 9,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "6e4481ff:142"
+    },
+    {
+      "pair": {
+        "turn": 10,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "e8787705:143"
+    },
+    {
+      "pair": {
+        "turn": 11,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "bc25ea27:143"
+    }
+  ],
+  "stoppedBy": "wariant bez ingerencji: koniec tury zablokowany w turze 11 (bramka gry, bez dosypek)",
+  "consoleErrors": 0,
+  "pageErrors": [],
+  "endBlocks": [
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)"
+  ],
+  "startTurn": 1,
+  "relAfterDeclare": null,
+  "traceOn": false,
+  "lastTurn": 11,
+  "elapsedSec": 72
+}

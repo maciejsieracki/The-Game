@@ -1,0 +1,874 @@
+{
+  "seed": 314159,
+  "warTurnsRequested": 22,
+  "ai": 1,
+  "warDeclaredAtTurn": 1,
+  "turns": [
+    {
+      "pair": {
+        "turn": 2,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 50,
+        "turnsAtWar": 1,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 2,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 50,
+          "turnsAtWar": 1,
+          "lostCities": 0,
+          "raw": [],
+          "afterPlayerFacing": [],
+          "afterLayer": [],
+          "afterContact": [],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ],
+      "digest": "b355268e:143"
+    },
+    {
+      "pair": {
+        "turn": 3,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 9,
+        "turnsAtWar": 2,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 3,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 9,
+          "turnsAtWar": 2,
+          "lostCities": 0,
+          "raw": [],
+          "afterPlayerFacing": [],
+          "afterLayer": [],
+          "afterContact": [],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ],
+      "digest": "74116103:142"
+    },
+    {
+      "pair": {
+        "turn": 4,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 11,
+        "turnsAtWar": 3,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 4,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 11,
+          "turnsAtWar": 3,
+          "lostCities": 0,
+          "raw": [],
+          "afterPlayerFacing": [],
+          "afterLayer": [],
+          "afterContact": [],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ],
+      "digest": "d5805948:141"
+    },
+    {
+      "pair": {
+        "turn": 5,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 13,
+        "turnsAtWar": 4,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 5,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 13,
+          "turnsAtWar": 4,
+          "lostCities": 0,
+          "raw": [],
+          "afterPlayerFacing": [],
+          "afterLayer": [],
+          "afterContact": [],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ],
+      "digest": "b39f54a3:142"
+    },
+    {
+      "pair": {
+        "turn": 6,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 16,
+        "turnsAtWar": 5,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 6,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 16,
+          "turnsAtWar": 5,
+          "lostCities": 0,
+          "raw": [],
+          "afterPlayerFacing": [],
+          "afterLayer": [],
+          "afterContact": [],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ],
+      "digest": "462fa685:142"
+    },
+    {
+      "pair": {
+        "turn": 7,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 18,
+        "turnsAtWar": 6,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 7,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 18,
+          "turnsAtWar": 6,
+          "lostCities": 0,
+          "raw": [],
+          "afterPlayerFacing": [],
+          "afterLayer": [],
+          "afterContact": [],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ],
+      "digest": "c49b8d29:141"
+    },
+    {
+      "pair": {
+        "turn": 8,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 18,
+        "turnsAtWar": 7,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 8,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 18,
+          "turnsAtWar": 7,
+          "lostCities": 0,
+          "raw": [],
+          "afterPlayerFacing": [],
+          "afterLayer": [],
+          "afterContact": [],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ],
+      "digest": "35a2aa5e:142"
+    },
+    {
+      "pair": {
+        "turn": 9,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 18,
+        "turnsAtWar": 8,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 9,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 18,
+          "turnsAtWar": 8,
+          "lostCities": 0,
+          "raw": [],
+          "afterPlayerFacing": [],
+          "afterLayer": [],
+          "afterContact": [],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ],
+      "digest": "30241ab0:142"
+    },
+    {
+      "pair": {
+        "turn": 10,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 21,
+        "turnsAtWar": 9,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 10,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 21,
+          "turnsAtWar": 9,
+          "lostCities": 0,
+          "raw": [],
+          "afterPlayerFacing": [],
+          "afterLayer": [],
+          "afterContact": [],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ],
+      "digest": "85517674:143"
+    },
+    {
+      "pair": {
+        "turn": 11,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 24,
+        "turnsAtWar": 10,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 11,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 24,
+          "turnsAtWar": 10,
+          "lostCities": 0,
+          "raw": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "afterPlayerFacing": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "afterLayer": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "afterContact": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ],
+      "digest": "6d562775:143"
+    },
+    {
+      "pair": {
+        "turn": 12,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 28,
+        "turnsAtWar": 11,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 12,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 28,
+          "turnsAtWar": 11,
+          "lostCities": 0,
+          "raw": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "afterPlayerFacing": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "afterLayer": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "afterContact": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ],
+      "digest": "b9f6a5cc:143"
+    },
+    {
+      "pair": {
+        "turn": 13,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 28,
+        "turnsAtWar": 12,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 13,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 28,
+          "turnsAtWar": 12,
+          "lostCities": 0,
+          "raw": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "afterPlayerFacing": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "afterLayer": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "afterContact": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ],
+      "digest": "b902f35c:143"
+    },
+    {
+      "pair": {
+        "turn": 14,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 28,
+        "turnsAtWar": 13,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 14,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 28,
+          "turnsAtWar": 13,
+          "lostCities": 0,
+          "raw": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "afterPlayerFacing": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "afterLayer": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "afterContact": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ],
+      "digest": "dca59168:144"
+    },
+    {
+      "pair": {
+        "turn": 15,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 31,
+        "turnsAtWar": 14,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 15,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 31,
+          "turnsAtWar": 14,
+          "lostCities": 0,
+          "raw": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "afterPlayerFacing": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "afterLayer": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "afterContact": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ],
+      "digest": "5a571ef5:144"
+    },
+    {
+      "pair": {
+        "turn": 16,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 32,
+        "turnsAtWar": 15,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": []
+      },
+      "rows": [
+        {
+          "turn": 16,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 32,
+          "turnsAtWar": 15,
+          "lostCities": 0,
+          "raw": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "afterPlayerFacing": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "afterLayer": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "afterContact": [
+            "oferuj_miasto_za_pokoj/rozejm"
+          ],
+          "dipLayer": "full",
+          "contactSet": true
+        }
+      ],
+      "digest": "bb526374:144"
+    },
+    {
+      "pair": {
+        "turn": 17,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 32,
+        "turnsAtWar": 16,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": [
+          "pokoj"
+        ]
+      },
+      "rows": [
+        {
+          "turn": 17,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 32,
+          "turnsAtWar": 16,
+          "lostCities": 0,
+          "raw": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "afterPlayerFacing": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "afterLayer": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "afterContact": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "dipLayer": "full",
+          "contactSet": true
+        },
+        {
+          "turn": 17,
+          "owner": 1,
+          "stage": "stol",
+          "step": "wstawiono-na-stol"
+        }
+      ],
+      "digest": "f54b52e0:144"
+    },
+    {
+      "pair": {
+        "turn": 18,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 32,
+        "turnsAtWar": 17,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": [
+          "pokoj"
+        ]
+      },
+      "rows": [
+        {
+          "turn": 18,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 32,
+          "turnsAtWar": 17,
+          "lostCities": 0,
+          "raw": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "afterPlayerFacing": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "afterLayer": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "afterContact": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "dipLayer": "full",
+          "contactSet": true
+        },
+        {
+          "turn": 18,
+          "owner": 1,
+          "stage": "stol",
+          "step": "dedup-oczekuje"
+        }
+      ],
+      "digest": "4108bb7a:144"
+    },
+    {
+      "pair": {
+        "turn": 19,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 36,
+        "turnsAtWar": 18,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": [
+          "pokoj"
+        ]
+      },
+      "rows": [
+        {
+          "turn": 19,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 36,
+          "turnsAtWar": 18,
+          "lostCities": 0,
+          "raw": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "afterPlayerFacing": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "afterLayer": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "afterContact": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "dipLayer": "full",
+          "contactSet": true
+        },
+        {
+          "turn": 19,
+          "owner": 1,
+          "stage": "stol",
+          "step": "dedup-oczekuje"
+        }
+      ],
+      "digest": "56c1b474:144"
+    },
+    {
+      "pair": {
+        "turn": 20,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 36,
+        "turnsAtWar": 19,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": [
+          "pokoj"
+        ]
+      },
+      "rows": [
+        {
+          "turn": 20,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 36,
+          "turnsAtWar": 19,
+          "lostCities": 0,
+          "raw": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "afterPlayerFacing": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "afterLayer": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "afterContact": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "dipLayer": "full",
+          "contactSet": true
+        },
+        {
+          "turn": 20,
+          "owner": 1,
+          "stage": "stol",
+          "step": "dedup-oczekuje"
+        }
+      ],
+      "digest": "8f47de87:143"
+    },
+    {
+      "pair": {
+        "turn": 21,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 37,
+        "turnsAtWar": 20,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": [
+          "pokoj"
+        ]
+      },
+      "rows": [
+        {
+          "turn": 21,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 37,
+          "turnsAtWar": 20,
+          "lostCities": 0,
+          "raw": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "afterPlayerFacing": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "afterLayer": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "afterContact": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "dipLayer": "full",
+          "contactSet": true
+        },
+        {
+          "turn": 21,
+          "owner": 1,
+          "stage": "stol",
+          "step": "dedup-oczekuje"
+        }
+      ],
+      "digest": "84135383:144"
+    },
+    {
+      "pair": {
+        "turn": 22,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 38,
+        "turnsAtWar": 21,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": [
+          "pokoj"
+        ]
+      },
+      "rows": [
+        {
+          "turn": 22,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 38,
+          "turnsAtWar": 21,
+          "lostCities": 0,
+          "raw": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "afterPlayerFacing": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "afterLayer": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "afterContact": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "dipLayer": "full",
+          "contactSet": true
+        },
+        {
+          "turn": 22,
+          "owner": 1,
+          "stage": "stol",
+          "step": "dedup-oczekuje"
+        }
+      ],
+      "digest": "8f1783e:144"
+    },
+    {
+      "pair": {
+        "turn": 23,
+        "ai": 1,
+        "status": "wojna",
+        "relTotal": 41,
+        "turnsAtWar": 22,
+        "lostCities": 0,
+        "contactSet": true,
+        "queuedPeace": [
+          "pokoj"
+        ]
+      },
+      "rows": [
+        {
+          "turn": 23,
+          "owner": 1,
+          "stage": "filtry-warstwy",
+          "relStatus": "wojna",
+          "relTotal": 41,
+          "turnsAtWar": 22,
+          "lostCities": 0,
+          "raw": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "afterPlayerFacing": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "afterLayer": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "afterContact": [
+            "zaproponuj_pokoj/bezw/pokoj"
+          ],
+          "dipLayer": "full",
+          "contactSet": true
+        },
+        {
+          "turn": 23,
+          "owner": 1,
+          "stage": "stol",
+          "step": "wstawiono-na-stol"
+        }
+      ],
+      "digest": "7525e70a:147"
+    }
+  ],
+  "stoppedBy": "koniec zakresu",
+  "consoleErrors": 0,
+  "pageErrors": [],
+  "endBlocks": [
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress"
+  ],
+  "startTurn": 1,
+  "relAfterDeclare": {
+    "turn": 1,
+    "ai": 1,
+    "status": "wojna",
+    "relTotal": 30,
+    "turnsAtWar": 0,
+    "lostCities": 0,
+    "contactSet": true,
+    "queuedPeace": []
+  },
+  "traceOn": true,
+  "lastTurn": 23,
+  "nnsGrants": [
+    {
+      "turn": 11,
+      "goldAfter": 204180,
+      "foodAfter": 100000
+    }
+  ],
+  "elapsedSec": 66
+}
