@@ -126,5 +126,28 @@ console.log('\n--- T5: stary zapis zachowuje swoje wartosci (bez zmiany przy wcz
   eq(M.DEFAULT_POZIOM_RACJI_LEGACY, 4, 'T5f: DEFAULT_POZIOM_RACJI_LEGACY = 4');
 }
 
+console.log('\n--- T6: sciezki seedowania main.ts (regresja tekstowa; main.ts nie jest importowalny) ---');
+{
+  const mainSrc = fs.readFileSync(path.resolve(GRA_ROOT, 'src', 'main.ts'), 'utf8');
+  const norm = mainSrc.replace(/\s+/g, ' ');
+  ok(
+    norm.includes('ownerDefaultPoziomRacji.set(ownerId, freshOwnerDefaultPoziomRacji());'),
+    'T6a: gracze (humanOwnerIds) seedowani freshOwnerDefaultPoziomRacji (=6)',
+  );
+  ok(
+    norm.includes('ownerDefaultPoziomRacji.set(ai.ownerId, freshAiOwnerDefaultPoziomRacji());'),
+    'T6b: AI (aiStartHexes) seedowane freshAiOwnerDefaultPoziomRacji (=4)',
+  );
+  ok(
+    norm.includes('ownerDefaultPoziomRacji.set(c.ownerId, freshAiOwnerDefaultPoziomRacji());'),
+    'T6c: seedCityOwnerDefaults dla nieobecnego ownera = AI (=4), gracze seedowani wczesniej',
+  );
+  ok(
+    !norm.includes('ownerDefaultPoziomRacji.set(c.ownerId, freshOwnerDefaultPoziomRacji());') &&
+    !norm.includes('ownerDefaultPoziomRacji.set(ai.ownerId, freshOwnerDefaultPoziomRacji());'),
+    'T6d: AI nie dostaje wartosci gracza (6) w zadnej sciezce seedu',
+  );
+}
+
 console.log(`\n=== default-food-ration-test: ${passed} passed, ${failed} failed ===`);
 process.exit(failed > 0 ? 1 : 0);
