@@ -936,3 +936,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Plan po wyborze:** #115 najpierw rozbić na tematy (węzeł P9, bramki zdobycia, cesja, druga ścieżka przegranej); CRED-HAK (#120) ma rozpoznanie gotowe, można od razu zapisać dispatch.
 - **Parity:** `a381dd13f`. Worktree: 2 (`/home/user/The-Game`, `/home/user/reg-wt`). Dysk wolny: 11 GB.
 - **Push:** `1bec6756a` na `origin/claude/rust-sivvrn` (poprzedni heartbeat 00:47 wypchnięty po raz pierwszy w tej sesji).
+
+## Przebieg (14.11, heartbeat 02:18): sloty puste, nadal czeka na wybór tematu
+- **Trwających Workflow: 0** z 4 (katalog `subagents/workflows/` pusty). Sloty nie zostały uruchomione.
+- **Powód:** trzeci tick bez odpowiedzi na pytanie o pierwszy temat (ZDOBYCIE-MIASTA-WIRING #115 zalecane albo CRED-HAK-WYPOWIEDZENIE #120). Pytanie przerwały restarty workera, więc nie dało się go zadać w narzędziu AskUserQuestion. Nie zapisuję czterech dispatchów na tematy, których kolejności właściciel nie potwierdził.
+- **Po wyborze:** #115 najpierw rozbić na tematy; CRED-HAK (#120) ma gotowe rozpoznanie.
+- **Parity:** `a381dd13f`. Worktree: 2. Dysk wolny: 11 GB.
