@@ -1,0 +1,140 @@
+{
+  "sizes": {
+    "1000x700": {
+      "innerW": 1000,
+      "innerH": 700,
+      "docScrollW": 1000,
+      "docClientW": 1000,
+      "bodyScrollW": 1000,
+      "hasHorizontalScroll": false,
+      "leftBannerFound": true,
+      "leftBannerRect": {
+        "left": 20,
+        "right": 370,
+        "width": 350,
+        "top": 16,
+        "bottom": 72
+      },
+      "maxRight": 370,
+      "overflowing": [],
+      "fallbackClass": "fallback",
+      "overflowingTop": [],
+      "overflowingBottom": [],
+      "clippedText": []
+    },
+    "800x600": {
+      "innerW": 800,
+      "innerH": 600,
+      "docScrollW": 800,
+      "docClientW": 800,
+      "bodyScrollW": 800,
+      "hasHorizontalScroll": false,
+      "leftBannerFound": true,
+      "leftBannerRect": {
+        "left": 20,
+        "right": 270,
+        "width": 250,
+        "top": 16,
+        "bottom": 72
+      },
+      "maxRight": 270,
+      "overflowing": [],
+      "fallbackClass": "fallback",
+      "overflowingTop": [
+        {
+          "tag": "DIV",
+          "cls": "hud-chip-grid",
+          "top": -6
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip civ-hud-chip-cell civ-hud-chip-click",
+          "top": -6
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip-body",
+          "top": -5
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip-top",
+          "top": -5
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip-lbl",
+          "top": -5
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip civ-hud-chip-cell civ-hud-chip-click",
+          "top": -6
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip-body",
+          "top": -5
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip-top",
+          "top": -5
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip-lbl",
+          "top": -5
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip civ-hud-chip-cell civ-hud-chip-click civ-hud-chip-short",
+          "top": -6
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip-body",
+          "top": -5
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip-top",
+          "top": -5
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip-lbl",
+          "top": -5
+        }
+      ],
+      "overflowingBottom": [],
+      "clippedText": []
+    },
+    "640x480": {
+      "innerW": 640,
+      "innerH": 480,
+      "docScrollW": 640,
+      "docClientW": 640,
+      "bodyScrollW": 640,
+      "hasHorizontalScroll": false,
+      "leftBannerFound": true,
+      "leftBannerRect": {
+        "left": 20,
+        "right": 190,
+        "width": 170,
+        "top": 16,
+        "bottom": 72
+      },
+      "maxRight": 190,
+      "overflowing": [],
+      "fallbackClass": "fallback",
+      "overflowingTop": [],
+      "overflowingBottom": [],
+      "clippedText": []
+    }
+  },
+  "failures": [
+    "800x600: top<0 x13"
+  ],
+  "verdict": "FAIL"
+}
