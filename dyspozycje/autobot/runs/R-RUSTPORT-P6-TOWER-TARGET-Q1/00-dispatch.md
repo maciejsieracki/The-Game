@@ -1,7 +1,7 @@
 # DISPATCH R-RUSTPORT-P6-TOWER-TARGET-Q1 (runda 1)
 
 TEMAT: TOWER-TARGET — podpięcie `pick_tower_target` (rust-port/engine/src/domain/siege_tactics_tower.rs:486) do produkcyjnej pętli oblężenia (zadanie #116). Pierwszy krok łańcucha wież przed #96 (WIEZE, BLOCK w rundzie 1).
-DOMENA: GAME. Baza: 23e33793e (czubek origin/rust-port/parity-v2). Worktree na `wip/R-RUSTPORT-P6-TOWER-TARGET-Q1`.
+DOMENA: GAME. Baza: a381dd13f (czubek origin/rust-port/parity-v2, sprawdzone 14.11). Worktree na `wip/R-RUSTPORT-P6-TOWER-TARGET-Q1`.
 Pin (tylko odczyt): `git show 07d2fbd72:gra/src/battle/battleScene.ts` — `pickTowerTarget` (definicja ok. :4208) i jego wołanie w `_beginTurn` (ok. :5643). UWAGA: `gra/src/main.ts` NIE zawiera tej funkcji.
 
 KROK 0 (obowiązkowy): `git grep` w `rust-port/engine/src` na `pick_tower_target`, `fire_siege_towers`, `siege_tactics_loop`. Potwierdź, że `pick_tower_target` nie ma produkcyjnego wołającego (tylko testy p6_tower_target*). Jeśli wołający już istnieje — zamknij PASS z dowodem.
@@ -22,3 +22,5 @@ KRYTERIA KOŃCA:
 
 NIE WOLNO: pushować do parity, integrować, dotykać `gra/`/`origin/main`, commitować `Cargo.lock`, `git add -A`. Commit bez nazwy modelu; ostatnia linia: `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`.
 Raport: STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY/BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH (NIE WYKONANO).
+
+REBASE 14.11: baza przepisana z 23e33793e na a381dd13f. Cele zweryfikowane na tej bazie (brak produkcyjnego wołającego potwierdzony przez git grep).

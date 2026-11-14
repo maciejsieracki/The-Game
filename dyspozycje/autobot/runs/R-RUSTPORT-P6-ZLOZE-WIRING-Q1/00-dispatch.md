@@ -2,7 +2,7 @@
 
 TEMAT: ZLOZE-WIRING — wpięcie `deactivate_zloze_grants_for_deal` i `sync_relation_status_from_deals` w produkcyjną ścieżkę stanu (zadanie #104).
 DOMENA: GAME (Rust port, bez zmian w `gra/`).
-Baza: 23e33793e (czubek origin/rust-port/parity-v2). Utwórz worktree na gałęzi `wip/R-RUSTPORT-P6-ZLOZE-WIRING-Q1` z tego SHA.
+Baza: a381dd13f (czubek origin/rust-port/parity-v2, sprawdzone 14.11). Utwórz worktree na gałęzi `wip/R-RUSTPORT-P6-ZLOZE-WIRING-Q1` z tego SHA.
 Pin (tylko odczyt): `git show 07d2fbd72:gra/src/...` — znajdź w pinie `deactivateZlozeGrantsForDeal` / `syncRelationStatusFromDeals` i miejsca ich wołania.
 
 GOAL: W produkcyjnej ścieżce (tam, gdzie pin wywołuje te funkcje przy zakończeniu/zmianie umowy) wołaj `deactivate_zloze_grants_for_deal` i `sync_relation_status_from_deals`. Dziś w Rust nie ma żadnego wołającego w `src/` poza ich definicjami w `rust-port/engine/src/domain/diplomacy.rs`.
@@ -22,3 +22,5 @@ KRYTERIA KOŃCA:
 NIE WOLNO: pushować do `rust-port/parity-v2`, integrować, dotykać `gra/` i `origin/main`, commitować `Cargo.lock`, używać `git add -A`. Commit bez nazwy modelu w treści; ostatnia linia: `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`.
 Jeśli wołający już istnieje w produkcji: nie zmieniaj kodu, zamknij temat STATUS: PASS z dowodem (`git grep` z numerami linii).
 Raport: STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY/BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH (DEPLOY/PUSH: NIE WYKONANO).
+
+REBASE 14.11: baza przepisana z 23e33793e na a381dd13f. Cele zweryfikowane na tej bazie (brak produkcyjnego wołającego potwierdzony przez git grep).

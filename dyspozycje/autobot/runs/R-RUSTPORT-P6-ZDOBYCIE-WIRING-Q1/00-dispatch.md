@@ -1,7 +1,7 @@
 # DISPATCH R-RUSTPORT-P6-ZDOBYCIE-WIRING-Q1 (runda 1)
 
 TEMAT: ZDOBYCIE-MIASTA-WIRING — podpięcie `run_capital_capture_plunder` i akumulatorów zdobyczy w produkcyjnej ścieżce zdobycia miasta (zadanie #115).
-DOMENA: GAME. Baza: 23e33793e (czubek origin/rust-port/parity-v2). Worktree na `wip/R-RUSTPORT-P6-ZDOBYCIE-WIRING-Q1`.
+DOMENA: GAME. Baza: a381dd13f (czubek origin/rust-port/parity-v2, sprawdzone 14.11). Worktree na `wip/R-RUSTPORT-P6-ZDOBYCIE-WIRING-Q1`.
 Pin (tylko odczyt): `git show 07d2fbd72:gra/src/...` — `runCapitalCapturePlunder` i miejsce wołania przy zdobyciu stolicy.
 
 GOAL: `run_capital_capture_plunder` (rust-port/engine/src/domain/siege_transfer.rs i moduł plądrowania) ma dziś niepodpiętego wołającego (komentarz w kodzie: „wolajacy niepodpiety - W8”). Wepnij go w produkcyjną ścieżkę zdobycia stolicy w kolejności zgodnej z pinem i dodaj akumulację zdobyczy do stanu zgodnie z pinem.
@@ -21,3 +21,5 @@ KRYTERIA KOŃCA:
 
 NIE WOLNO: pushować do parity, integrować, dotykać `gra/`/`origin/main`, commitować `Cargo.lock`, `git add -A`. Commit bez nazwy modelu; `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`.
 Raport: STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY/BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH (NIE WYKONANO).
+
+REBASE 14.11: baza przepisana z 23e33793e na a381dd13f. Cele zweryfikowane na tej bazie (brak produkcyjnego wołającego potwierdzony przez git grep).
