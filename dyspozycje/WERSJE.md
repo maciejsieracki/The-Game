@@ -1,3 +1,9 @@
+## ROBOCZA bfecf63e -- 2026-11-14 -- FALA 716: FALA 716 - czestsze oferty handlowe AI: parytet wyceny (testowa)
+
+- Oferta handlowa AI do gracza: wycena przy wejsciu na stol liczona jak przy wyborze pary (mnoznik tur i tempo gry); pomiar 0,22 do 0,89 oferty na 100 tur; uczciwosc bez zmian
+- Weryfikacja: tsc 0; logic 213/213; ai-trade-offer-frequency-up 28/0; proposal-branch 10/0; proposal-to-player 25; vite build OK
+- Limity: Cel 3-6 ofert na 100 tur nieosiagniety (0,89); wymagana decyzja wlasciciela A/B/C/D; limit 1 oferty na AI na zywo NIE ZMIERZONO
+
 ## ROBOCZA 31c3b98b -- 2026-11-14 -- FALA 715: FALA 715 - Civpedia: oslabienie przez glod i deficyt, poprawione teksty (testowa)
 
 - Nowe haslo Civpedii o oslabieniu jednostek przez glod wojska i deficyt zlota (gracz i AI, bez barbarzyncow); poprawione nieaktualne teksty niewdrozone; wikiBundle

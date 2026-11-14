@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "31c3b98b89fa8e562ecf68b25e60d3d0",
-  "bundleSha256": "8ff991df5fa0e98d48018a2c1a48bff03cf3bda542d1d6239961609dc9e7647a",
-  "bundleBytes": 14713977,
+  "bundleMd5": "bfecf63e78d19aa414500ab3692cfa39",
+  "bundleSha256": "39b79312cacf3bc9eef8555716ca7741f7b4bd60f0b7d2af4092cf02d256d441",
+  "bundleBytes": 14714284,
   "sourceSnapshot": {
-    "source": "FC dbbda29ee / integracja 4fb07735a",
+    "source": "FC 05e4bee7e / integracja 8eccdbf93",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 715: Nowe haslo Civpedii o oslabieniu jednostek przez glod wojska i deficyt zlota (gracz i AI, bez barbarzyncow); poprawione nieaktualne teksty niewdrozone; wikiBundle"
+    "FALA 716: Oferta handlowa AI do gracza: wycena przy wejsciu na stol liczona jak przy wyborze pary (mnoznik tur i tempo gry); pomiar 0,22 do 0,89 oferty na 100 tur; uczciwosc bez zmian"
   ],
   "verification": [
-    "tsc 0; logic 213/213; ui-text-leftovers zielone; diplo-civpedia-values 129; vite build OK"
+    "tsc 0; logic 213/213; ai-trade-offer-frequency-up 28/0; proposal-branch 10/0; proposal-to-player 25; vite build OK"
   ],
   "limits": [
-    "Tylko tresc Civpedii; zdarzenia Respektu przewaga militarna i slabszy militarnie niepodpiete w kodzie (osobny temat)"
+    "Cel 3-6 ofert na 100 tur nieosiagniety (0,89); wymagana decyzja wlasciciela A/B/C/D; limit 1 oferty na AI na zywo NIE ZMIERZONO"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES DOCS-CIV dbbda29ee/a7b36dd7c. Civpedia: nowe haslo o oslabieniu przez glod wojska i deficyt zlota (mnoznik 0,75; gracz i AI, barbarzyncy wylaczeni; ostrzezenie w oknie przed bitwa), poprawione nieaktualne teksty niewdrozone (respekt, moc-podzial, poradnik dyplomacji), wikiBundle zregenerowany narzedziem. Tylko tresc Civpedii, kod gry bez zmian. UWAGA: zdarzenia Respektu przewaga militarna +15 i slabszy militarnie -10 sa w kodzie niepodpiete (osobny temat)."
+    "notes": "FC PASS-WITH-NOTES TRADE-UP r3 05e4bee7e/de8c78d6e. Parytet wyceny oferty handlowej AI do gracza: wejscie na stol liczy PN jak wybor pary (mnoznik tur i tempo gry), trim po wyborze pominiety dla wymiany cyklicznej, uczciwosc wyceny bez zmian (bramki givePn/receivePn, bilans PW gracza, evaluateProposal). Pomiar 3 ziarna x 150 tur z ekonomia gracza: 0,22 do 0,89 oferty na 100 tur (4x). CEL 3-6/100 NIE osiagniety - decyzja wlasciciela A/B/C/D. cooldown bez zmian (15). NIE ZMIERZONO: limit 1 oferty na AI na zywo, wydajnosc payloadKeepsRealResourcesForPick."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-14T20:19:40",
+  "hubGeneratedAt": "2026-11-14T20:30:57",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "31c3b98b89fa8e562ecf68b25e60d3d0",
-      "sizeBytes": 14713977
+      "md5": "bfecf63e78d19aa414500ab3692cfa39",
+      "sizeBytes": 14714284
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "31c3b98b89fa8e562ecf68b25e60d3d0",
-      "sizeBytes": 14713977
+      "md5": "bfecf63e78d19aa414500ab3692cfa39",
+      "sizeBytes": 14714284
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "31c3b98b89fa8e562ecf68b25e60d3d0",
-      "sizeBytes": 14713977
+      "md5": "bfecf63e78d19aa414500ab3692cfa39",
+      "sizeBytes": 14714284
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "31c3b98b89fa8e562ecf68b25e60d3d0",
-      "sizeBytes": 14713977
+      "md5": "bfecf63e78d19aa414500ab3692cfa39",
+      "sizeBytes": 14714284
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "31c3b98b89fa8e562ecf68b25e60d3d0",
-      "sizeBytes": 14713977
+      "md5": "bfecf63e78d19aa414500ab3692cfa39",
+      "sizeBytes": 14714284
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "31c3b98b89fa8e562ecf68b25e60d3d0",
-      "sizeBytes": 14713977
+      "md5": "bfecf63e78d19aa414500ab3692cfa39",
+      "sizeBytes": 14714284
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "31c3b98b89fa8e562ecf68b25e60d3d0",
-      "sizeBytes": 14713977
+      "md5": "bfecf63e78d19aa414500ab3692cfa39",
+      "sizeBytes": 14714284
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "31c3b98b89fa8e562ecf68b25e60d3d0",
-      "sizeBytes": 14713977
+      "md5": "bfecf63e78d19aa414500ab3692cfa39",
+      "sizeBytes": 14714284
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "31c3b98b89fa8e562ecf68b25e60d3d0",
-      "sizeBytes": 14713977
+      "md5": "bfecf63e78d19aa414500ab3692cfa39",
+      "sizeBytes": 14714284
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "31c3b98b89fa8e562ecf68b25e60d3d0",
-      "sizeBytes": 14713977
+      "md5": "bfecf63e78d19aa414500ab3692cfa39",
+      "sizeBytes": 14714284
     }
   ],
-  "md5": "31c3b98b89fa8e562ecf68b25e60d3d0",
+  "md5": "bfecf63e78d19aa414500ab3692cfa39",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
