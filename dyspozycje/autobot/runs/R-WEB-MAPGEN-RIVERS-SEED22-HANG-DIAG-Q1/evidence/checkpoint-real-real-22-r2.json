@@ -1,0 +1,134 @@
+{
+ "scenario": "real",
+ "tag": "real",
+ "seed": 22,
+ "map": "Standardowy",
+ "civTypes": 15,
+ "cityStates": 2,
+ "startedAt": "2026-11-14T07:34:50.646Z",
+ "overlayEventsAtStart": [],
+ "turns": [],
+ "harness": [],
+ "pageErrors": [],
+ "endBlocks": [
+  "[EndTurn] blocked: awaitingFirstPlayerCity",
+  "[EndTurn] blocked: awaitingFirstPlayerCity",
+  "[EndTurn] blocked: awaitingFirstPlayerCity"
+ ],
+ "stopped": null,
+ "done": false,
+ "overlayProgress": [
+  {
+   "t": 9,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 3/10 · Ląd i ocean Upłynęło: 0:01"
+  },
+  {
+   "t": 32,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:23"
+  },
+  {
+   "t": 55,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:46"
+  },
+  {
+   "t": 77,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 1:08"
+  },
+  {
+   "t": 99,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 1:30"
+  },
+  {
+   "t": 120,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 1:52"
+  },
+  {
+   "t": 142,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 2:14"
+  },
+  {
+   "t": 164,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 2:36"
+  },
+  {
+   "t": 187,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 2:58"
+  },
+  {
+   "t": 207,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 3:19"
+  },
+  {
+   "t": 228,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 3:40"
+  },
+  {
+   "t": 249,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 4:00"
+  },
+  {
+   "t": 270,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 4:21"
+  },
+  {
+   "t": 291,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 4:42"
+  },
+  {
+   "t": 313,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 5:04"
+  },
+  {
+   "t": 334,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 5:25"
+  },
+  {
+   "t": 355,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 5:47"
+  },
+  {
+   "t": 376,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 6:08"
+  },
+  {
+   "t": 397,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 6:29"
+  },
+  {
+   "t": 419,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 6:50"
+  },
+  {
+   "t": 439,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 7:10"
+  },
+  {
+   "t": 459,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 7:30"
+  },
+  {
+   "t": 479,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 7:50"
+  },
+  {
+   "t": 499,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 8:10"
+  },
+  {
+   "t": 519,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 8:31"
+  },
+  {
+   "t": 539,
+   "txt": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 8:51"
+  }
+ ],
+ "lastPoll": {
+  "i": 510,
+  "ov": 1,
+  "vis": true,
+  "w": true,
+  "aw": true,
+  "t": 549
+ }
+}
