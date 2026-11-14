@@ -1,55 +1,41 @@
-# R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1 — obrona Operatora (runda 2, odpowiedź na zarzuty Evaluatora)
-
-STATUS: BLOCK (częściowo: logika, testy jednostkowe i mutacje nowego kodu; pomiary w żywej grze NIE ZMIERZONO)
+STATUS: PASS-WITH-NOTES (obrona r4; werdykt końcowy należy do Evaluatora/Final Control)
 DOMAIN: GAME
 TEMAT: R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1
-GOAL: blokada „Zakończ turę” liczy prognozę PO turze i PO reakcji automatu, od tury 1; brak dźwigni = brak blokady; propozycja podatku krokami; stabilny kształt wyniku dla UI.
-BAZA: d71eda0e703f582ca6f696c658b3db4a91996c76 (kandydat rundy 2; zawiera merge origin/main 4867cd20f). Gałąź lokalna `wf-gate-r2`, worktree wf_7dcbad28-f80-3. Commit obrony: SHA w polu `sha` wyniku.
-ZMIANY-COMMIT (allowlista, 3 pliki; `git diff --check` czysty):
-  - gra/src/game/no-negative-stocks.ts: pole `niewystarczajace` w NnsGateResult; nowe pole wejściowe `NnsEndTurnLevers.prognozaPoPodatku` (prognoza skarbca po turze przy +p pkt, już po automacie); `decideEndTurnGate` używa `propozycjaPodatkuKrokami` gdy callback podany (fallback: estymacja liniowa z szacunek 'liniowy').
-  - gra/src/main.ts: wyłącznie literał zwracany przez `nnsGateForPlayer` przy braku prognozy (dopisane `niewystarczajace: false`, wymagane przez typ). Ścieżka wyboru/wysyłania ofert AI nietknięta.
-  - gra/tools/end-turn-gate-projection-only-test.cjs: +9 asercji (blok „r2”) — krokowa propozycja, najmniejszy krok, prognoza po zastosowaniu ≥ 0, maksimum nie wystarcza → propozycja null + flaga, częściowa dźwignia → brak blokady + flaga, brak dźwigni → flaga false, fallback liniowy.
-  - Brak zmian: dochody/koszty, równoważenie AI, ai-params.json, dźwignia kolejki, mechanika automatu, wikiBundle (nie dotykane w tej rundzie), WERSJE.md.
+GOAL: bramka „Zakończ turę” liczy prognozę po turze (po reakcji automatu żywności), od tury 1; brak ręcznej dźwigni = brak blokady; propozycja podatku krokowa; stabilne API dla UI.
+BAZA/KANDYDAT: kandydat Operatora r3 50565e3f3 (worktree wf_7b73eaa4-0a5-3, gałąź worktree-wf_7b73eaa4-0a5-3); niniejsza obrona = commit na czubku tej gałęzi. Uwaga: 50565e3f3 NIE jest potomkiem aktualnego origin/main (78af786ed); integracja i ewentualny rebase należą do orkiestratora.
+RUNDY: obrona 4 (odpowiedź na zarzuty Evaluatora 49e6d161f, r3)
 
-KSZTAŁT WYNIKU DLA UI (R-WEB-UI-END-TURN-BLOCK-EVENT-Q1, zarzut 8):
-  NnsGateResult = { blokada: boolean; komunikat: string; dzwignie: {id, stock, zysk, opis}[]; zasob: 'skarbiec'|'spichlerz'|null; prognoza: number|null (po automacie); propozycjaPodatku: {punktyProcentowe, szacunek: 'krokowy'|'liniowy', maksPunktow}|null; automatPoprawil: boolean; niewystarczajace: boolean }.
-  Znaczenie `niewystarczajace`: true = prognoza < 0 i (a) dźwignie gracza nie pokrywają braku (bramka NIE blokuje, bo brak softlocku), albo (b) blokada, ale nawet maksymalny podatek nie daje zera skarbca (propozycja null, blokada zostaje).
+## ZMIANY/COMMIT
+- gra/tools/end-turn-gate-live-test.cjs: (a) scenariusz b: asercja `propozycjaPodatku.szacunek === 'krokowy'` i `punktyProcentowe > 0` (łapie wyłączenie wpięcia prognozaPoPodatku w nnsGateForPlayer); (b) scenariusz b: odczyt fingerprint przed/po `gateInfo()` i asercja równości (brak efektów ubocznych); (c) tryb tabeli `--neg 1`: wymuszone prognozy Spichlerza < 0 przed automatem (racja 6, Auto-Żywienie, zapas 0, podatek 30/60/10).
+- Kod gry (no-negative-stocks.ts, main.ts) NIE zmieniony w tej rundzie (main.ts przywrócony po mutacji, git status czysty poza testem).
+- Nowe dowody: dyspozycje/autobot/runs/R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1/r4/ (result-cand-seed11.json, result-mut-wiring-seed11.json, table-neg-seed11/22/33.json).
+- Lokalnie: gra/node_modules zainstalowane przez npm ci (gitignored), build poza repo w scratchpad.
 
-TESTY (surowe wyjścia, node, gra/):
-  - `node tools/end-turn-gate-projection-only-test.cjs` → `41 passed, 0 failed` (przed rundą: 32/0; +9 nowych).
-  - `npx tsc --noEmit` → rc=0 (po `npm ci --ignore-scripts` w worktree; bez tego tsc/esbuild nie startują).
-  - Pozostałe NNS (surowo): no-negative-stocks-ai-from-turn1-test 27/0; -ai-t2-test 11/0; -ai-test 8/0; -c2-test 44/0; -end-turn-gate-levers-test 34/0; -endturn-test 19/0; -projection-test 49/0; -test 25/0. Wszystkie rc=0.
-  - Nie uruchamiane w tej rundzie: 5 bramek referencyjnych spoza NNS (logic, tech-tree, research, unit-replace, combat) — NIE ZMIERZONO.
-  - MUTACJE (dowód czerwieni nowego kodu, po przywróceniu pliku: 41/0):
-    M-A: `if (false && extra.prognozaPoPodatku && …)` → 38 passed, 3 FAIL (krokowy szacunek, krok 10, po zastosowaniu ≥0).
-    M-B: `niewystarczajace = propozycjaPodatku === null;` → `false` → 40 passed, 1 FAIL (maksimum nie wystarcza).
-  - Czerwień na bazie d71eda0e7 nowych asercji: NIE ZMIERZONO w tej rundzie (baza ma już stary kod; r1 raportował 32/0 na swojej bazie).
+## TESTY (surowe wyniki, ta runda)
+- npx tsc --noEmit: exit 0.
+- end-turn-gate-projection-only-test: 49 passed, 0 failed (exit 0).
+- live (kandydat 50565e3f3 + nowe asercje), seed 11: 9/9 PASS, błędy strony 0 (a/b/c/d/d2/e@t1-4, a/b/c@t12). b@t1 i b@t12: sideEffectFree=true, szacunek=krokowy.
+- live MUTANT (wiring: `...(false && _nnsTaxStepDeltas.length > 0`, main.ts l.39801), seed 11: 7/9 — FAIL b@t1 i b@t12 (nowa asercja krokowy/side-effect łapie mutanta). Przywrócono main.ts (git checkout), potwierdzone git status.
+- tabela NEG (wymuszona prognoza Spichlerza < 0 przed automatem), tury 1–15, ziarna 11/22/33: 45 wierszy, rozbieżnych |diff|>0.5: 0. Każdy wiersz: spBase = -4, autoDelta = 4.5 (t1–t13) lub 6 (t14–t15), prognoza po automacie 0.5 lub 2 = realny Spichlerz po endTurn (diff 0). Skarbiec 98/100 = realny (diff 0).
+- Ograniczenie tabeli NEG: reżim jest jeden (spBase stałe −4, ziarno nie zmienia wartości), więc to 3 niezależne próbki jednego punktu, nie pełny zakres. Prognozy Skarbca < 0 nie są porównywalne w tabeli, bo bramka je blokuje (0 wierszy blocked w NEG); zgodność po podatku dla Skarbca mierzy scenariusz c (realny Skarbiec = prognoza ±0.5).
+- NIE URUCHOMIONO w tej rundzie: live-verify-wave-689-697-a-gate-v2/v4, ai-t2-behavior-test, c3-turn-test, mutacje side-effect (np. mutant usuwający fingerprint-pewność). NIE ZMIERZONO.
 
-PUNKTY DODATKU 5 (ZMIERZONO / NIE ZMIERZONO):
-  0. merge origin/main: ZMIERZONO — kandydat d71eda0e7 już zawiera merge 4867cd20f (9da316001); tsc 0 po merge. wikiBundle nie regenerowany w tej rundzie (brak zmian tekstów Civpedii).
-  1. Chromium (a–e), zrzuty shots-*.png: NIE ZMIERZONO. Przeglądarka jest (/usr/bin/chromium), ale build vite poza repo i hooki __civTest nie zostały uruchomione. Brak PNG w runs/.
-  2. Tabela projekcja vs realny endTurn (≥3 ziarna × T1–15): NIE ZMIERZONO. Brak tabeli różnic.
-  3. Podpięcie propozycjaPodatkuKrokami: CZĘŚCIOWO. Funkcja podpięta w `decideEndTurnGate` przez callback `prognozaPoPodatku`, przetestowana (5 asercji + mutacja M-A czerwona). NIE podpięte w `nnsGateForPlayer` (main.ts): wiring callbacku wymaga osobnej projekcji po każdym kroku podatku (poza zakresem tej rundy). Bramka gry nadal używa estymacji liniowej `_nnsPodatekZysk`. OTWARTE.
-  4. Projekcja automatu z clampem Q3 (maxSafe) i brak efektów ubocznych: NIE ZMIERZONO / NIE WYKONANO w tej rundzie (kod main.ts ~22901–22975 nieruszany).
-  5. gra/tools/end-turn-gate-live-test.cjs: NIE WYKONANO (wymaga Chromium; plik nie powstał).
-  6. Stare live-verify (v2 l.7/93–94, v4, wave-703-710): NIE WYKONANO — wymagają Chromium do uruchomienia; nie zaktualizowano. Dług otwarty.
-  7. Semantyka „brak dźwigni”: ODRZUCAM zmianę blokady przy częściowej dźwigni (uzasadnienie: dispatch Dodatek 2 wymaga „brak dźwigni = brak blokady” i „no softlock”; blokada, której gracz nie może usunąć przez żadną dostępną dźwignię, jest martwym punktem). PRZYJMUJĘ dowód: dodano flagę `niewystarczajace` i asercję g3 (dźwignia +10 przy braku −50 → blokada=false, niewystarczajace=true). ZAŁOŻENIE do decyzji FC/właściciela.
-  8. Kontrakt API dla UI: PRZYJMUJĘ — pole `niewystarczajace` dodane; kształt opisany wyżej.
-  9. Status r1 BLOCK i mutacje: wyjaśnienie — mutacje M-A/M-B wykonane dla nowego kodu w tej rundzie (wyżej). Zmiany r1 w test ai-from-turn1 (3 asercje gracza) NIE są cofane w r2; zostały jako rozstrzygnięcie sprzeczności dispatchu (gracz od tury 1 vs „NIE ruszaj”). ZAŁOŻENIE, do decyzji FC.
-  10. Martwe pola `wyjatekTur`/`wyjatekStarego`: ODRZUCAM usunięcie — trzy pliki testowe (no-negative-stocks-test.cjs l.49/78/106, no-negative-stocks-ai-from-turn1-test.cjs l.108, end-turn-gate-projection-only-test.cjs l.109) asertują na nich wartość false; usunięcie wymagałoby zmiany testów poza tym, co r2 zamyka. Nieużywany eksport `NNS_WOLNE_TURY` zostaje (stała wsteczna). Pliki dokumentacji orkiestratora poza allowlistą dziedziczone z gałęzi — nie dotykane przeze mnie w r2.
+## ODPOWIEDZI NA ZARZUTY EVALUATORA
+1. [wiring nie zabezpieczony] PRZYJMUJĘ. Poprawka: asercja `szacunek === 'krokowy'` w live b (commit tej rundy). Dowód: mutant `false &&` daje FAIL b@t1 i b@t12 (r4/result-mut-wiring-seed11.json); kandydat daje PASS (r4/result-cand-seed11.json). Test pure (11a regex) nie był zmieniony; wiązanie pokrywa live.
+2. [brak prognoz ujemnych w tabeli] PRZYJMUJĘ CZĘŚCIOWO. Dodano tryb --neg z reżimem spBase<0 + automat; 3 ziarna x 15 tur: 45 wierszy, 0 rozbieżności (r4/table-neg-seed*.json). Pozostaje: reżim jednopunktowy (spBase −4) i brak porównania prognoz Skarbca < 0 (blokowane przez bramkę, więc nie ma realnego endTurn do porównania) — to ograniczenie zapisuję jawnie, NIE ZMIERZONO dla innych wartości spBase.
+3. [brak asercji efektów ubocznych] PRZYJMUJĘ. Dodano porównanie gateStateFingerprint przed/po gateInfo w scenariuszu b (sideEffectFree=true w t1 i t12, asercja w ok). Hook pokrywa racje miast, podział podatków, skarbiec, zapas Spichlerza (main.ts ~31933). Mutacja side-effect NIE wykonana (NIE ZMIERZONO).
+4. [v2/v4 i ai-t2/c3 nieuruchomione] PRZYJMUJĘ jako NIE ZMIERZONO (brak czasu w tej rundzie; nie udaję wykonania). Zalecenie dla orkiestratora: uruchomić live-verify v2 (check --deficit) i v4 przed FC; to jest dług do domknięcia przed READY_FOR_DEPLOY, bo oczekiwanie „blokada od tury 1” w tych testach nie zostało zmierzone po zmianie.
+5. [zmiana semantyki „częściowa dźwignia ⇒ blokada”] ODRZUCAM jako defekt kodu. Zachowanie wynika wprost z DODATKU 6 (Zasada semantyczna: „gdy istnieje realna niewykorzystana dźwignia ... a jej pełne użycie nadal nie wystarcza — blokada obowiązuje i propozycja niesie flagę niewystarczające”) i z decyzji właściciela (DODATEK 2: blokada tylko przy realnej ręcznej dźwigni). Ryzyko UX (gracz blokowany, gdy maksymalny podatek nie wystarcza, a ma jednostki do rozwiązania) jest świadomie przekazywane orkiestratorowi jako decyzja do potwierdzenia przez właściciela; nie zmieniam tego bez jego zgody.
+6. [tooltip nie widoczny na PNG] ODRZUCAM. Tooltip jest atrybutem `title` przycisku (natywny tooltip przeglądarki, nie element DOM renderowany na zrzucie). Dowód treści: result-cand-seed11.json, scenariusz b, pole buttonTitle = „Nie można zakończyć tury. Skarbiec (złoto): po zakończeniu tury zabraknie 6 …”; asercja `btnB.title` zawiera „po zakończeniu tury” w live (PASS). Zrzut PNG pokazuje wygaszony przycisk, co jest zgodne z canEnd=false.
 
-ZAŁOŻENIA:
-  - Brak dźwigni / częściowa dźwignia = brak blokady (reguła dispatchu), z flagą `niewystarczajace` dla UI.
-  - Propozycja podatku krokowa (10 pkt) działa na callbacku dostarczanym przez wołającego; bez callbacku — estymacja liniowa (szacunek 'liniowy').
-  - NNS_AI_BALANCE_TURN_MIN = 1 (zostawione, zgodnie z dispatchem).
+## BLOKADY
+- Brak ponownego uruchomienia v2/v4 i ai-t2/c3 (zarzut 4) — do domknięcia przed READY_FOR_DEPLOY.
+- Ryzyko UX z zarzutu 5 wymaga decyzji właściciela (nie blokuje testów).
+- Wpięcie w main.ts jest na ścieżce bramki gracza (nnsGateForPlayer); nie dotknięto ścieżki ofert AI.
 
-BLOKADY (dla orkiestratora; temat NIE może dostać READY_FOR_DEPLOY):
-  (a) brak pomiaru w Chromium (punkty 1, 5, 6) i zrzutów a–e;
-  (b) brak wiringu callbacku `prognozaPoPodatku` w main.ts (punkt 3);
-  (c) brak tabeli projekcja vs realność (punkt 2) — jeśli |różnica| > 0, projekcja wymaga naprawy (punkt 4 też);
-  (d) brak testu behawioralnego na ścieżce main.ts (dispatch test 5).
+## UWAGI-DLA-ORKIESTRATORA
+- Baza: 50565e3f3 nie zawiera origin/main 78af786ed; przed integracją trzeba rebase/merge i regeneracja wikiBundle (zgodnie z dispatchem). Nie wykonywano.
+- Nie tworzono żadnych sesji/zadań (zakaz właściciela); nie integrowano, nie pushowano na main.
 
-RUNDY: 2/5 (ta runda). Poprzednia: FC FAIL (664361a77).
-NASTĘPNY KROK: podpiąć `prognozaPoPodatku` w `nnsGateForPlayer` (projekcja na kroku podatku +10/+20…), zmierzyć a–e i tabelę T1–15 w Chromium (build poza repo), uzupełnić live-verify v2/v4, dopisać mutację projekcji.
-UWAGI-DLA-ORKIESTRATORA: (1) worktree ma gra/node_modules (npm ci --ignore-scripts) — do usunięcia przy sprzątaniu; (2) gałąź `wf-gate-r2` lokalna, nie wypchnięta; (3) zapis tego pliku i commit wykonane przez Operatora; integracja i push NIE wykonane.
+RUNDY: 4/5 (obrona). NASTĘPNY KROK: Evaluator r4 — weryfikacja asercji krokowy/side-effect na kandydacie i decyzja o zarzucie 4 (v2/v4).
 DEPLOY/PUSH: NIE WYKONANO

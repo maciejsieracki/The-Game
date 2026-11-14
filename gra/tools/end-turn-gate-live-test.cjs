@@ -35,6 +35,7 @@ const TABLE = arg('table', '0') === '1';
 const SEEDS = arg('seeds', '11,22,33').split(',').map(x => parseInt(x, 10));
 const TURNS = parseInt(arg('turns', '15'), 10);
 const MAP = arg('map', 'Maly');
+const NEG = arg('neg', '0') === '1'; // tabela: wymuszone prognozy Spichlerza < 0 przed automatem (racja 6, Auto-Żywienie, zapas 0)
 const STRESS = arg('stress', '0') === '1'; // tabela: rotacja podatków/racji/Auto-Żywienia i dokładanie jednostek co 4. turę
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
@@ -162,7 +163,10 @@ async function runScenarios(browser, outDir) {
     // ---------- b) prognoza po turze < 0 -> blokada z tooltipem ----------
     await reset();
     await A.setT(-4); await wait(120);
+    const fpB0 = await A.fingerprint();      // stan przed odczytem bramki (ta sama funkcja, co przy endTurn)
     const ib = await A.info();
+    const fpB1 = await A.fingerprint();      // odczyt bramki NIE może zmienić stanu miast/podatków/skarbca/spichlerza
+    const sideEffectFree = fpB0 === fpB1;
     const btnB = await A.withRender(async () => { await wait(300); return A.button(); });
     if (tag === 'p1') await A.shot(shotName('b-prognoza-ujemna-blokada', turn0));
     const tBefore = await A.turn();
@@ -172,10 +176,14 @@ async function runScenarios(browser, outDir) {
       treasury: ib.treasury, forecastPo: ib.forecast.skarbiecPo, canEnd: ib.canEnd, gateZasob: ib.gate.zasob,
       gatePrognoza: ib.gate.prognoza, propozycja: ib.gate.propozycjaPodatku, niewystarczajace: ib.gate.niewystarczajace,
       komunikat: ib.gate.komunikat, buttonTitle: btnB && btnB.title, turnBefore: tBefore, turnAfter: tAfter,
+      sideEffectFree, propozycjaSzacunek: ib.gate.propozycjaPodatku && ib.gate.propozycjaPodatku.szacunek,
     },
       ib.forecast.skarbiecPo < 0 && ib.canEnd === false && /po zakończeniu tury/i.test(ib.gate.komunikat)
-        && btnB && /po zakończeniu tury/i.test(btnB.title) && ib.gate.propozycjaPodatku && tAfter === tBefore,
-      'oczekiwano blokady (canEnd=false), tooltipu „po zakończeniu tury”, propozycji podatku i braku końca tury');
+        && btnB && /po zakończeniu tury/i.test(btnB.title) && ib.gate.propozycjaPodatku && tAfter === tBefore
+        // krokowy (nie liniowy): asercja, która łapie wyłączenie wpięcia prognozaPoPodatku w nnsGateForPlayer
+        && ib.gate.propozycjaPodatku.szacunek === 'krokowy' && ib.gate.propozycjaPodatku.punktyProcentowe > 0
+        && sideEffectFree,
+      'oczekiwano blokady (canEnd=false), tooltipu „po zakończeniu tury”, propozycji podatku krokowej, braku końca tury i braku efektów ubocznych odczytu bramki');
     // ---------- c) zastosowanie proponowanego podatku: blokada znika bez końca tury; po endTurn Skarbiec >= 0 ----------
     const prop = ib.gate.propozycjaPodatku;
     if (prop) {
@@ -311,6 +319,7 @@ async function runTable(browser, outDir) {
       }
       // Skarbiec: stały bufor +100 (pomiar przyrostu netto, bez blokady bramki). Spichlerz: 0, żeby prognoza <0 uruchamiała
       // projekcję automatu (Auto-Żywienie) — to ją porównujemy z rzeczywistością. Real <0 jest „podłogowany” do 0 przez grę.
+      if (NEG) { await A.setSplit(30, 60, 10); await A.setRation(6); await A.setAuto(true); }
       await A.setT(100); await A.setG(0); await wait(120);
       let pre = await A.info();
       // Bramka potrafi zablokować turę (prognoza Spichlerza < 0 po automacie i jest dźwignia) — to poprawne zachowanie;
@@ -339,7 +348,7 @@ async function runTable(browser, outDir) {
     }
     await page.close();
   }
-  fs.writeFileSync(path.join(outDir, `table-${LABEL}${STRESS ? '-stress' : ''}.json`), JSON.stringify({ label: LABEL, rows, errors }, null, 2));
+  fs.writeFileSync(path.join(outDir, `table-${LABEL}${NEG ? '-neg' : ''}${STRESS ? '-stress' : ''}.json`), JSON.stringify({ label: LABEL, rows, errors }, null, 2));
   const bad = rows.filter(r => !r.blocked && !r.notEnded && (Math.abs(r.skDiff) > 0.51 || (Math.abs(r.spDiff) > 0.51 && !r.spFloored)) || r.notEnded);
   console.log(`TABELA ${LABEL}: ${rows.length} wierszy, rozbieżnych (|diff|>0.5): ${bad.length}`);
   return { rows, bad };
