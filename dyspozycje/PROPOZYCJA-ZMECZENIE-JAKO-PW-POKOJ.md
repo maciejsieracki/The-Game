@@ -1,7 +1,7 @@
 # PROPOZYCJA — zmęczenie wojną jako pozycja PW przy pokoju (tylko algorytm, BEZ wdrożenia)
 
 Data: 2026-11-14. Źródło: decyzja właściciela (ABC: „A — zmęczenie jako pozycja PW") + doprecyzowanie z czatu.
-Status: ZATWIERDZONE 2026-11-14 (ABC właściciela: A krzywa kwadratowa; stary rabat 60% usunąć; zmęczenie AI liczy się też przy ofercie gracza). Wdrożenie: R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1.
+Status: ZATWIERDZONE 2026-11-14 (ABC właściciela: A krzywa kwadratowa; stary rabat 60% usunąć). Punkt B (przy ofercie gracza liczy się zmęczenie AI) to ZAŁOŻENIE robocze orkiestratora — właściciel nie odpowiedział na to pytanie wprost, do potwierdzenia. Wdrożenie: R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1.
 
 ## Wymóg właściciela
 
