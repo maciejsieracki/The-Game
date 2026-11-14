@@ -1,3 +1,9 @@
+## ROBOCZA 78c3a278 -- 2026-11-14 -- FALA 702: Panel dyplomacji: obie strony wojny AI-AI (testowa)
+
+- Karta rozmowcy w wojnie AI-AI pokazuje na liscie W stanie wojny z etykiety obu stron (rozmowca i partner): Desperacja albo Zmeczenie wojna z nazwa strony; tylko odczyt, wojny gracz-AI bez zmian (R-WEB-UI-DIPLO-PANEL-AIAI-BOTH-LABELS-Q1)
+- Weryfikacja: tsc 0, logic 213/213, nowy test 17/0 (baza 8/9), diplo-weariness display 52/0 i 20-turns 30/0, 5 bramek zielone
+- Limity: Nie zmierzono w Chromium (zrzut karty rozmowcy w wojnie AI-AI); czesc B testu statyczna
+
 ## ROBOCZA 69982981 -- 2026-11-14 -- FALA 701: Digest stanu testowego niezalezny od Date.now (testowa)
 
 - gra/src/game/det-digest-normalize.ts + blok __detHarness.digest w main.ts: stackGroupId i city.siegeArmyGroupId normalizowane do kanonicznych indeksow (tylko hak testowy ?civTest=1, zero zmian logiki gry)
