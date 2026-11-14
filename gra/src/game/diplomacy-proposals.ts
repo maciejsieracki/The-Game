@@ -193,7 +193,7 @@ export interface ProposalEvalContext {
   respektWzgledny?: number;
   /**
    * R-WEB-PEACE-RULES-Q1 R1/R5: stan wojny pary (tylko gdy stanWojny). `responderRw` = udział
-   * siły RESPONDENTA (AI) 0..1; `lostCitiesResponder` = miasta utracone przez respondenta w tej wojnie.
+   * siły RESPONDENTA (AI) 0..1; `lostCitiesResponder` = NAZWA HISTORYCZNA: licznik zmęczenia = miasta utracone przez OBIE strony w tej wojnie (suma, lostCitiesForWeariness w war-weariness.ts), nie tylko respondenta.
    * Brak pola = brak bramki pokoju R5 (zachowanie sprzed rundy).
    */
   warState?: {

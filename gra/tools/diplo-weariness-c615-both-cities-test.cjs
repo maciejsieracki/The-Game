@@ -93,6 +93,44 @@ for (let t = 10; t <= 16; t++) {
 }
 ok(mutDetected, '(d-mut) licznik miast wplywa na Z (mutacja wykrywalna)');
 
+// (d2) ZACHOWANIE, nie tylko regex: runWarWearinessTick (tick AI<->AI) dla tej samej wojny z zamienionymi stronami
+// daje ten sam poziom i ten sam poziom jak warWearinessLevel(lostCitiesForWeariness(...)) -- czyli liczy OBIE strony.
+// Mutacja tiku na jedna strone (np. lostCitiesTotal: w.lostA) zlamie porownanie lostA/lostB <-> lostB/lostA.
+function tickLevelFor(turnsAtWar, lostA, lostB) {
+  const store = new Map();
+  const key = 'p';
+  const outs = W.runWarWearinessTick({
+    store, turn: 100, pairs: [{ a: 1, b: 2 }], pairKey: () => key,
+    warInfo: () => ({ turnsAtWar, warStart: 0, lostA, lostB, turnsSinceCityChange: 99 }),
+    shareOf: () => 0.5, weakerOf: () => 1, cityCountOf: () => 5,
+    // ścieżki akcji (oferta pokoju) nie są przedmiotem tego testu: stuby neutralne, liczy się poziom szczytu (level).
+    price: () => ({ requiredPn: 0, balanceFor: () => 0, tolerancePn: 0 }),
+    assets: () => [],
+    cityCessionOk: () => false,
+    battlePending: false,
+    pay: () => {},
+    finalize: () => {},
+    log: () => {},
+    params: P,
+  });
+  return outs[0] && outs[0].level;
+}
+let tickSymOk = true;
+let tickMatchesTable = true;
+for (let t = 0; t <= 24; t++) {
+  for (let lostA = 0; lostA <= 3; lostA++) {
+    for (let lostB = 0; lostB <= 3; lostB++) {
+      const l1 = tickLevelFor(t, lostA, lostB);
+      const l2 = tickLevelFor(t, lostB, lostA);
+      if (l1 !== l2) tickSymOk = false;
+      const expect = W.warWearinessLevel({ turnsAtWar: t, lostCitiesTotal: W.lostCitiesForWeariness(lostA, lostB) }, P);
+      if (l1 !== expect) tickMatchesTable = false;
+    }
+  }
+}
+ok(tickSymOk, '(d2) tick AI<->AI: poziom niezalezny od kolejnosci stron (lostA,lostB) vs (lostB,lostA)');
+ok(tickMatchesTable, '(d2) tick AI<->AI = warWearinessLevel(lostCitiesForWeariness) dla tur 0..24 i strat 0..3');
+
 // (e) Z z funkcji dla tur 10..16 bez strat (C=615)
 const expectZ = [0, 17, 68, 154, 273, 427, 615];
 const gotZ = [];

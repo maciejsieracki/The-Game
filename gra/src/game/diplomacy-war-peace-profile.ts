@@ -391,9 +391,9 @@ export interface PeaceAiGateInput {
 }
 
 export interface PeaceAiGateResult {
-  /** 'ok' = pokój rozpatrywany dalej z mnożnikiem ceny; 'too_early' / 'stronger' = odrzucenie. */
+  /** 'ok' = pokój rozpatrywany dalej (mnożnik ceny = 1); 'too_early' / 'stronger' = odrzucenie. */
   verdict: 'ok' | 'too_early' | 'stronger';
-  /** Mnożnik bazowej ceny pokoju (R5c·R5d; po turyBezOgraniczenAi: ≤ 1 z mnożnika cywilizacji, siła = 1). */
+  /** Mnożnik bazowej ceny pokoju: zawsze 1 (cena pokoju stała C=615, R-WEB-DIPLO-WEARINESS-PW-FOLLOWUP-C615-BOTH-CITIES-Q1). */
   priceMultiplier: number;
   reason?: string;
 }
