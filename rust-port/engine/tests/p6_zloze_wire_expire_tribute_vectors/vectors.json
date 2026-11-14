@@ -1,0 +1,82 @@
+{
+  "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+  "sha256": "ee1b1aabffd4fdf906ce260084f80ad5da055c64912b6eda86306ba261d89257",
+  "fixtureGrants": [
+    {
+      "granterOwnerId": 1,
+      "granteeOwnerId": 2,
+      "partnerId": 3,
+      "zlozeId": "z-wygasla",
+      "hexKey": "hex-z-wygasla",
+      "active": true,
+      "dealId": "nap-wygasa"
+    },
+    {
+      "granterOwnerId": 1,
+      "granteeOwnerId": 2,
+      "partnerId": 3,
+      "zlozeId": "z-danina",
+      "hexKey": "hex-z-danina",
+      "active": true,
+      "dealId": "danina"
+    },
+    {
+      "granterOwnerId": 1,
+      "granteeOwnerId": 2,
+      "partnerId": 3,
+      "zlozeId": "z-zywa",
+      "hexKey": "hex-z-zywa",
+      "active": true,
+      "dealId": "pakt-zywy"
+    },
+    {
+      "granterOwnerId": 1,
+      "granteeOwnerId": 2,
+      "partnerId": 3,
+      "zlozeId": "z-bez-umowy",
+      "hexKey": "hex-z-bez-umowy",
+      "active": true
+    },
+    {
+      "granterOwnerId": 1,
+      "granteeOwnerId": 2,
+      "partnerId": 3,
+      "zlozeId": "z-juz-nieaktywna",
+      "hexKey": "hex-z-juz-nieaktywna",
+      "active": false,
+      "dealId": "nap-wygasa"
+    }
+  ],
+  "scenarios": [
+    {
+      "name": "d1-wygasniecie",
+      "expiredIds": [
+        "nap-wygasa"
+      ],
+      "brokenIds": [],
+      "expectedActive": [
+        false,
+        true,
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "name": "d1-i-d6-zerwanie-za-danine",
+      "expiredIds": [
+        "nap-wygasa"
+      ],
+      "brokenIds": [
+        "danina"
+      ],
+      "expectedActive": [
+        false,
+        false,
+        true,
+        true,
+        false
+      ]
+    }
+  ]
+}

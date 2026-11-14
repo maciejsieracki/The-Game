@@ -920,6 +920,8 @@ pub fn run_dipl_steps(
             continue;
         }
         report.expired_deals.push(d.id.clone());
+        // Pin main.ts:24234 `zlozeGrants = deactivateZlozeGrantsForDeal(zlozeGrants, d.id)` (wiring: #104 czesc 2).
+        work.diplomacy.deactivate_zloze_grants_for_deal(&d.id);
         finish_requests(d, turn, &mut report);
     }
 
@@ -959,6 +961,11 @@ pub fn run_dipl_steps(
         work.diplomacy
             .deals
             .retain(|d| !res.broken.iter().any(|id| id == &d.id));
+        // Pin main.ts:24292-24294 `for (const id of broken) { ...; zlozeGrants = deactivateZlozeGrantsForDeal(zlozeGrants, id) }`:
+        // wszystkie zerwane przez daninę id, także bez pary w `tribute_break_pairs`.
+        for id in &res.broken {
+            work.diplomacy.deactivate_zloze_grants_for_deal(id);
+        }
         report.payments = res;
     }
 
