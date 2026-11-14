@@ -16,11 +16,11 @@ Pin: `07d2fbd72` (`gra/src/main.ts`, `gra/src/game/diplomacy-pn-engine.ts`, `gra
 | # | Pin (`main.ts`) | Funkcja pinu (ścieżka) | Ścieżka domenowa | Odpowiednik Rust (plik:linia) | Wołany w produkcji | Co brakuje |
 |---|---|---|---|---|---|---|
 | 1 | 22774 | `breakTreatyVoluntarily` (od 22741) | Zerwanie dobrowolne przez gracza lub AI (initiator, kara N3/N5) | BRAK. `turn_war_dipl_steps.rs:33` deklaruje „BRAK”. Brak `break_treaty*` w `engine/src` (grep `fn break_` = pusty). | nie dotyczy | Port `breakTreatyVoluntarily` (usunięcie traktatu, kary wiarygodności N3/N5, wywołanie deaktywacji grantów). |
-| 2 | 23694 | `breakTreatiesOnWar` (od 23688) | Zerwanie traktatów przez wojnę (wypowiedzenie, casus belli, sojusz, rebelia). Pin: `suspendZlozeOnWar` → `treatiesBrokenByWar` → `removeTreatiesById` → deaktywacja w pętli. | Częściowo: `treaties_broken_by_war` (`alliance_war_obligation.rs:251`) istnieje, ale wołany tylko w teście `p6_dyplomacja_truce_aggressor.rs:504`. Brak `remove` i brak deaktywacji. | NIE. Brak wołającego w `src`. | Port `breakTreatiesOnWar` na jawnym stanie: suspend + treaties_broken + remove + deactivate. Wpięcie w ścieżki wojny (patrz §3, pozycja W-2). |
+| 2 | 23694 | `breakTreatiesOnWar` (od 23688) | Zerwanie traktatów przez wojnę (wypowiedzenie, casus belli, sojusz, rebelia). Pin: `suspendZlozeOnWar` → `treatiesBrokenByWar` → `removeTreatiesById` → deaktywacja w pętli. | Częściowo: `treaties_broken_by_war` (`alliance_war_obligation.rs:251`) istnieje, ale wołany tylko w teście `p6_dyplomacja_truce_aggressor.rs:504`. Brak `remove` i brak deaktywacji. | NIE. Brak wołającego w `src`. | Port `breakTreatiesOnWar` na jawnym stanie: suspend + treaties_broken + remove + deactivate. Wpięcie w ścieżki wojny (patrz §3, pozycje W-3 i W-4). |
 | 3 | 24234 | `runDiplomacyTurnTick` → `expireTreaties` (`main.ts:24229-24231`, pętla po `dealsBeforeExpire`) | Wygaśnięcie naturalne (koniec `wygasaTura`) | `run_dipl_steps` D1: `turn_war_dipl_steps.rs:917` (`expire_deals`, `diplomacy.rs:1742`), zdarzenia finiszu w pętli 918-924. BRAK wywołania deaktywacji. | TAK: `run_dipl_steps` wołany z `turn_war_pipeline.rs:370` (łańcuch do `advance_turn`: NIE_ZMIERZONO). | W pętli `turn_war_dipl_steps.rs:918-924` dodać `work.diplomacy.deactivate_zloze_grants_for_deal(&d.id)` dla każdego wygasłego traktatu. |
 | 4 | 24294 | `runDiplomacyTurnTick` → D6 zerwanie za daninę (`main.ts:24290-24294`, pętla `broken`) | Zerwanie daniny (brak środków w skarbcu) | `turn_war_dipl_steps.rs:959-961` (`retain` po `res.broken`). BRAK deaktywacji. Zdarzenie `TributeRefused` (952-956) jest wpięte. | TAK (jak wyżej, przez `run_dipl_steps`). | Przed `retain` (959-961) wywołać `deactivate_zloze_grants_for_deal` dla każdego `res.broken`. |
 
-Uwaga do pozycji 4: pin dla trybutu wywołuje dwukrotnie (`tributeBreaks` przy `trybut_odmowa`, potem pętla `broken`). Rust ma jedno miejsce (`report.tribute_breaks`). Deaktywacja dotyczy identyfikatorów z `broken`, więc semantyka jest taka sama.
+Uwaga do pozycji 4 (korekta, poprawka po zarzucie Evaluatora): pin wywołuje `deactivateZlozeGrantsForDeal` RAZ, w pętli `for (const id of broken)` (`main.ts:24292-24294`). Pętla `tributeBreaks` (`main.ts:24278-24286`) tylko stosuje zdarzenie `trybut_odmowa` i komunikat, bez deaktywacji. Deaktywacja dotyczy WSZYSTKICH identyfikatorów z `broken`, także tych, które nie mają pary w `tributeBreaks` (komunikat w 24295-24296 rozróżnia to tylko tekstowo). Zakres rodzajów płatności, które trafiają do `broken` (`activeDealsToPaymentDeals`), NIE_ZMIERZONO: nie sprawdzono, czy obejmuje wyłącznie trybuty. Rust (`turn_war_dipl_steps.rs:959-961`) ma jedno miejsce `retain` po `res.broken`, więc T1 musi deaktywować właśnie dla każdego `res.broken`, nie tylko dla par trybutu.
 
 ## 2. Wywołania pomocnicze (`suspendZlozeOnWar`, `syncRelationFromDeals`)
 
@@ -40,9 +40,9 @@ Pin: `syncRelationFromDeals(a,b)` ustawia `sojusz` (jeśli traktat sojuszniczy) 
 | Wywołanie pinu (linia) | Odpowiednik Rust w produkcji |
 |---|---|
 | 24319 (D7 kontakty gracza `ME()↔oid`) | TAK: `turn_war_dipl_steps.rs:1004` (wołane w pętli kontaktów `run_dipl_steps`). |
-| 14652, 21264, 23017, 23447, 23677, 23862, 24563, 41584 | NIE_ZMIERZONO: nie mapowano pojedynczo. Rust nie ma w produkcji wołającego dla tych ścieżek; `sync_relation_from_deals` ma jedno wołanie w `src` (1004). |
+| 14652, 21264, 23017, 23447, 23677, 23862, 24563, 41584, 41609, 47264 (10 wywołań poza 24319) | NIE_ZMIERZONO: nie mapowano pojedynczo. Rust nie ma w produkcji wołającego dla tych ścieżek; `sync_relation_from_deals` ma jedno wołanie w `src` (1004). |
 
-`sync_relation_status_from_deals` (`diplomacy.rs:4276`): brak wołającego w `src` (tylko test `p6_r7k7b_zloze_sync.rs:105`). Obie wersje (`sync_relation_from_deals` i `sync_relation_status_from_deals`) robią to samo. Duplikat do scalenia.
+`sync_relation_status_from_deals` (`diplomacy.rs:4276`): brak wołającego w `src` (tylko test `p6_r7k7b_zloze_sync.rs:105`). To NIE jest dosłowny duplikat: jest czystą funkcją zwracającą `Option<RelationStatus>` (nie mutuje stanu), a `sync_relation_from_deals` (`turn_war_dipl_steps.rs:275`) mutuje `DiplomacyState`. Różnice w sprawdzaniu, które Rust już widać: sojusz w wersji czystej przez `deal_involves_owners` (`diplomacy.rs:4276`), w wersji mutującej przez `d.parties == pair` (`turn_war_dipl_steps.rs:283-285`); NAP przez `has_nap_between` vs `state.has_deal(a, b, Some(Nap))`. Równoważność semantyczna NIE_ZMIERZONO. Test `p6_r7k7b_zloze_sync.rs:90` sprawdza wektory z pinu tylko dla wersji czystej.
 
 ## 3. Lista brakujących elementów (plik:linia)
 
@@ -52,7 +52,7 @@ Pin: `syncRelationFromDeals(a,b)` ustawia `sojusz` (jeśli traktat sojuszniczy) 
 - **W-4** brak wołającego `suspend_zloze_grants_for_war` w produkcji (`diplomacy.rs:1670`). Potrzebny hak w ścieżce wojny (przed usunięciem traktatów, jak w pinie).
 - **W-5** `diplomacy.rs:1675` `deactivate_zloze_grants_for_deal` (metoda) — brak wołającego w produkcji.
 - **W-6** `treaties_broken_by_war` (`alliance_war_obligation.rs:251`) — brak wołającego w produkcji.
-- **W-7** `sync_relation_status_from_deals` (`diplomacy.rs:4276`) — brak wołającego; duplikat `sync_relation_from_deals` (`turn_war_dipl_steps.rs:275`).
+- **W-7** `sync_relation_status_from_deals` (`diplomacy.rs:4276`) — brak wołającego w produkcji; wersja czysta obok mutującej `sync_relation_from_deals` (`turn_war_dipl_steps.rs:275`). Nie duplikat: równoważność NIE_ZMIERZONO (patrz §2b).
 - **W-8** komentarz `turn_war_dipl_steps.rs:32-36` — nieaktualny (patrz §0).
 - **W-9** NIE_ZMIERZONO: wołania `breakTreatiesOnWar` w pinie (`main.ts` 11705, 13169, 13206, 23809, 40442, 41932) — nie sprawdzono, które ścieżki wojny mają odpowiednik w Rust. Część z nich zależy od tematu CRED-HAK-WYPOWIEDZENIE (#120).
 - **W-10** NIE_ZMIERZONO: czy `eliminate_owner` (`diplomacy.rs:1683`, czyści deale) powinien też deaktywować granty eliminowanego właściciela. Pin nie był sprawdzany pod tym kątem.
@@ -75,7 +75,7 @@ Każdy temat jest mały, zakres jest jawny. Kolejność: T1, T3 (niezależne), p
 - Szacowana liczba rund: etap a 2-3, etap b 3-5 (zależy od liczby ścieżek wojny).
 
 ### T3 — ZLOZE-SYNC-MERGE (W-7, W-8)
-- Zakres: scalić `sync_relation_status_from_deals` (`diplomacy.rs:4276`) i `sync_relation_from_deals` (`turn_war_dipl_steps.rs:275`) w jedną funkcję; poprawić komentarz `turn_war_dipl_steps.rs:32-36`; dodać wołanie dla pozostałych wywołań pinu z §2b (po rozpoznaniu każdego z 8 miejsc: osobny krok w T3 albo odnotowanie jako NIE_ZMIERZONO).
+- Zakres: najpierw ustalić równoważność semantyczną obu funkcji (`sync_relation_status_from_deals` `diplomacy.rs:4276` vs `sync_relation_from_deals` `turn_war_dipl_steps.rs:275`, różnice §2b); potem wybrać jedną sygnaturę (czysta lub mutująca) i usunąć drugą; poprawić komentarz `turn_war_dipl_steps.rs:32-36`; rozstrzygnąć wołania z §2b (10 miejsc poza 24319: po rozpoznaniu każde osobno, albo odnotowanie jako NIE_ZMIERZONO).
 - Allowlista: `rust-port/engine/src/domain/diplomacy.rs`, `rust-port/engine/src/domain/turn_war_dipl_steps.rs`, `rust-port/engine/tests/p6_r7k7b_zloze_sync.rs`, `p6_wire_war_dipl_steps.rs`.
 - Zależności: brak (T3 nie zmienia deaktywacji).
 - Szacowana liczba rund: 1-2.
@@ -84,6 +84,7 @@ Każdy temat jest mały, zakres jest jawny. Kolejność: T1, T3 (niezależne), p
 
 - Łańcuch wywołań od `advance_turn` do `run_dipl_steps` (`turn_war_pipeline.rs:370`).
 - Które z pozostałych wywołań `breakTreatiesOnWar` (pin 11705, 13169, 13206, 23809, 40442, 41932) mają odpowiednik w Rust.
-- Pozostałe wywołania `syncRelationFromDeals` (§2b) poza pozycją 1004.
+- Pozostałe wywołania `syncRelationFromDeals` (§2b, 10 miejsc poza 24319) poza pozycją 1004.
+- Równoważność `sync_relation_status_from_deals` i `sync_relation_from_deals` (§2b, W-7).
 - Czy `eliminate_owner` wymaga deaktywacji grantów (W-10).
 - Stan testów: nie uruchamiano `cargo` (rozpoznanie read-only).
