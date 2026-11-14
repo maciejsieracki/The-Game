@@ -129,6 +129,14 @@ function ensureStyles(): void {
   background:rgba(232,216,138,0.1);color:#f0e8b8;border:1px solid rgba(232,216,138,0.28);
 }
 .civ-smp-mach-btn:hover{background:rgba(232,216,138,0.18);border-color:var(--border-hi);}
+/* R-WEB-UI-SIEGE-PANEL-NARROW-MACHINES-BLOCK-Q1: zwarty blok machin (siatka 2 kolumny, mniejsze odstepy). */
+.civ-smp-mach[data-siege-engine-build]{margin-bottom:10px;padding:8px 10px;}
+.civ-smp-mach[data-siege-engine-build] .civ-smp-mach-h{margin-bottom:4px;}
+.civ-smp-mach[data-siege-engine-build] .civ-smp-mach-row{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px;}
+.civ-smp-mach[data-siege-engine-build] .civ-smp-mach-btn{padding:4px 6px;font-size:10px;line-height:1.25;text-align:left;}
+.civ-smp-mach[data-siege-engine-build] .civ-smp-mach-opt{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.civ-smp-mach[data-siege-engine-build] .civ-smp-mach-opt .civ-smp-mach-meta{font-size:10px;line-height:1.3;}
+.civ-smp-mach[data-siege-engine-build] .civ-smp-mach-btn{width:100%;}
 .civ-smp-prompt{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
 .civ-smp-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
 .civ-smp-act{
@@ -347,17 +355,22 @@ function render(): void {
         .map(([key, amount]) => `${amount} ${stockResourceLabel(key)}`)
         .join(' + ');
       const reason = siegeEngineBuildReasonPl(option.reason);
+      const cost = `Koszt: ${option.costMoney} ¤${resources ? ` + ${resources}` : ''}`;
       button.textContent = `${option.unit.Jednostka} · ${option.costMoney} ¤${resources ? ` + ${resources}` : ''}`;
       button.disabled = !option.allowed || !actions.onBuildSiegeEngine;
-      button.title = reason ?? `Koszt: ${option.costMoney} ¤${resources ? ` + ${resources}` : ''}`;
+      button.title = reason ? `${reason} · ${cost}` : cost;
       button.addEventListener('click', () => actions!.onBuildSiegeEngine?.(city.id, option.unit.Jednostka));
-      engineRow.appendChild(button);
+      // Kazda machina to jedna komorka siatki (przycisk + ewent. powod), zeby 2 kolumny nie rozjezdzaly sie przy powodach.
+      const cell = document.createElement('div');
+      cell.className = 'civ-smp-mach-opt';
+      cell.appendChild(button);
       if (reason) {
         const note = document.createElement('span');
         note.className = 'civ-smp-mach-meta';
-        note.textContent = `${option.unit.Jednostka}: ${reason}`;
-        engineRow.appendChild(note);
+        note.textContent = reason;
+        cell.appendChild(note);
       }
+      engineRow.appendChild(cell);
     }
   }
 
