@@ -1,3 +1,9 @@
+## ROBOCZA a0956cb5 -- 2026-11-14 -- FALA 721: Ucieczka w bitwie z 50 procent ruchu (testowa)
+
+- uciekajace jednostki w bitwie poruszaja sie z 50 proc normalnego zasiegu: max(1, floor(zasieg x 0,5)); mnoznik w combat-params.json ucieczka.mnoznik_ruchu; zwykle jednostki bez zmian
+- Weryfikacja: tsc 0; logic 213/213; battle-flee-move-half Chromium 43/0 (czerwony na bazie, mutacja czerwona); pursued-destroyed 30/0; neverrout 58/0; build Vite zielony
+- Limity: NIE ZMIERZONO: tryb AUTO sceniczny, zlamanie w trakcie fali, tryb Pomin (instant); dlug bazowy mgla-sciezka-inwariant 41/1; dlug Rust REPIN
+
 ## ROBOCZA 04833503 -- 2026-11-14 -- FALA 720: Baner statusu w audiencji dyplomatycznej: Stan, nie propozycja (testowa)
 
 - baner formalnego statusu w audiencji ma prefiks Stan: i podpowiedz To nie jest propozycja; tony i podpis bez zmian
