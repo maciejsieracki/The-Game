@@ -56,7 +56,17 @@ async function readRecruit(page) {
     await page.screenshot({ path: path.join(C.EVID, 'w18-po-tech-rekrutacja.png') });
   } catch (e) { out.error = e.stack; }
   await browser.close();
+  // Werdykt (R-WEB-LIVE-VERIFY-W18-W24-MANUAL-LOSSES-Q1, runda 2, zarzut Evaluatora 5): skrypt nie wystawia PASS/FAIL dla
+  // W18, bo panel rekrutacji nie jest powierzchnia machin oblezniczych (budowa = kolejka siegeMachines.ts:29, poza rekrutacja).
+  // Dlatego werdykt to NIE_ZMIERZONO, a nie cichy zapis danych. Blad skryptu daje BLAD.
+  const przed = out.phase.przed, po = out.phase.po;
+  if (out.error) out.verdict = 'BLAD';
+  else if (!przed || !po) out.verdict = 'BLAD';
+  else if (przed.siegeHits.length === 0 && po.siegeHits.length === 0) out.verdict = 'NIE_ZMIERZONO (brak machin w panelu rekrutacji przed i po unlockAllTech; scenariusz oblezenia nie wykonany)';
+  else out.verdict = 'DANE (machiny widoczne w panelu rekrutacji: przed=' + przed.siegeHits.length + ', po=' + po.siegeHits.length + ')';
   fs.mkdirSync(C.EVID, { recursive: true });
   fs.writeFileSync(path.join(C.EVID, 'w18-rekrutacja.json'), JSON.stringify(out, null, 2));
+  console.log('VERDICT', out.verdict);
   console.log(JSON.stringify(out, null, 1));
+  process.exitCode = out.verdict === 'BLAD' ? 1 : 0;
 })();

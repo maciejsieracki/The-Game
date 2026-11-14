@@ -17,7 +17,10 @@
       },
       "maxRight": 370,
       "overflowing": [],
-      "fallbackClass": "fallback"
+      "fallbackClass": "fallback",
+      "overflowingTop": [],
+      "overflowingBottom": [],
+      "clippedText": []
     },
     "800x600": {
       "innerW": 800,
@@ -36,7 +39,76 @@
       },
       "maxRight": 270,
       "overflowing": [],
-      "fallbackClass": "fallback"
+      "fallbackClass": "fallback",
+      "overflowingTop": [
+        {
+          "tag": "DIV",
+          "cls": "hud-chip-grid",
+          "top": -6
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip civ-hud-chip-cell civ-hud-chip-click",
+          "top": -6
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip-body",
+          "top": -5
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip-top",
+          "top": -5
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip-lbl",
+          "top": -5
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip civ-hud-chip-cell civ-hud-chip-click",
+          "top": -6
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip-body",
+          "top": -5
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip-top",
+          "top": -5
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip-lbl",
+          "top": -5
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip civ-hud-chip-cell civ-hud-chip-click civ-hud-chip-short",
+          "top": -6
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip-body",
+          "top": -5
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip-top",
+          "top": -5
+        },
+        {
+          "tag": "SPAN",
+          "cls": "civ-hud-chip-lbl",
+          "top": -5
+        }
+      ],
+      "overflowingBottom": [],
+      "clippedText": []
     },
     "640x480": {
       "innerW": 640,
@@ -55,7 +127,14 @@
       },
       "maxRight": 190,
       "overflowing": [],
-      "fallbackClass": "fallback"
+      "fallbackClass": "fallback",
+      "overflowingTop": [],
+      "overflowingBottom": [],
+      "clippedText": []
     }
-  }
+  },
+  "failures": [
+    "800x600: top<0 x13"
+  ],
+  "verdict": "FAIL"
 }

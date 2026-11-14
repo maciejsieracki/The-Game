@@ -88,5 +88,6 @@
         "Rekrutuj"
       ]
     }
-  }
+  },
+  "verdict": "NIE_ZMIERZONO (brak machin w panelu rekrutacji przed i po unlockAllTech; scenariusz oblezenia nie wykonany)"
 }

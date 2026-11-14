@@ -24,6 +24,7 @@ const measure = (page) => page.evaluate(() => {
     hasHorizontalScroll: doc.scrollWidth > W,
     leftBannerFound: !!root,
     leftBannerRect: null, maxRight: null, overflowing: [], fallbackClass: null,
+    overflowingTop: [], overflowingBottom: [], clippedText: [],
   };
   if (root) {
     const r = root.getBoundingClientRect();
@@ -36,12 +37,22 @@ const measure = (page) => page.evaluate(() => {
       const br = el.getBoundingClientRect();
       if (br.width === 0 && br.height === 0) continue;
       if (br.right > maxR) maxR = br.right;
+      const cls = String(el.className && el.className.baseVal !== undefined ? el.className.baseVal : el.className).slice(0, 70);
       if (br.right > W + 0.5 || br.left < -0.5) {
-        info.overflowing.push({ tag: el.tagName, cls: String(el.className && el.className.baseVal !== undefined ? el.className.baseVal : el.className).slice(0, 70), left: Math.round(br.left), right: Math.round(br.right) });
+        info.overflowing.push({ tag: el.tagName, cls, left: Math.round(br.left), right: Math.round(br.right) });
+      }
+      if (br.top < -0.5) info.overflowingTop.push({ tag: el.tagName, cls, top: Math.round(br.top) });
+      if (br.bottom > H + 0.5) info.overflowingBottom.push({ tag: el.tagName, cls, bottom: Math.round(br.bottom), H });
+      // Przyciecie wewnatrz elementu (tekst/etykieta szersza niz kontener).
+      if (el.scrollWidth > el.clientWidth + 1 && el.clientWidth > 0 && (el.textContent || '').trim()) {
+        info.clippedText.push({ tag: el.tagName, cls, scrollW: el.scrollWidth, clientW: el.clientWidth, text: (el.textContent || '').trim().slice(0, 30) });
       }
     }
     info.maxRight = Math.round(maxR);
     info.overflowing = info.overflowing.slice(0, 15);
+    info.overflowingTop = info.overflowingTop.slice(0, 15);
+    info.overflowingBottom = info.overflowingBottom.slice(0, 15);
+    info.clippedText = info.clippedText.slice(0, 15);
   }
   return info;
 });
@@ -72,6 +83,20 @@ const measure = (page) => page.evaluate(() => {
     }
   } catch (e) { out.error = e.stack; }
   await browser.close();
+  // Asercje (kryteria dispatchu + zarzut Evaluatora): brak poziomego scrolla, right<=W, top>=0, bottom<=H, brak przyciecia tekstu.
+  const failures = [];
+  for (const [key, m] of Object.entries(out.sizes)) {
+    if (m.hasHorizontalScroll) failures.push(key + ': hasHorizontalScroll');
+    if (m.maxRight !== null && m.maxRight > m.innerW) failures.push(key + ': maxRight ' + m.maxRight + ' > W');
+    if (m.overflowingTop.length) failures.push(key + ': top<0 x' + m.overflowingTop.length);
+    if (m.overflowingBottom.length) failures.push(key + ': bottom>H x' + m.overflowingBottom.length);
+    if (m.clippedText.length) failures.push(key + ': clippedText x' + m.clippedText.length);
+  }
+  if (out.error) failures.push('error: ' + out.error.split('\n')[0]);
+  out.failures = failures;
+  out.verdict = failures.length ? 'FAIL' : 'PASS';
   fs.mkdirSync(C.EVID, { recursive: true });
   fs.writeFileSync(path.join(C.EVID, 'w24-lewy-baner.json'), JSON.stringify(out, null, 2));
+  console.log('VERDICT', out.verdict, JSON.stringify(failures));
+  process.exitCode = failures.length ? 1 : 0;
 })();
