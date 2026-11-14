@@ -54,6 +54,7 @@ window.addEventListener('unhandledrejection', (e) => {
 // Imports
 
 import { humanizeId, nazwaCywilizacji, nazwaWyswietlana } from './game/text-names';
+import { normalizeDetDigestStackGroups } from './game/det-digest-normalize';
 import * as THREE from 'three';
 import { loadGameData } from './data/loader';
 import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from './map/generator';
@@ -30890,11 +30891,13 @@ async function boot(): Promise<void> {
         digest: (): string => {
           const rep = (_k: string, v: any) => (v instanceof Map ? [...v.entries()] : v instanceof Set ? [...v] : v);
           const fnvOf = (s: string): string => { let x = 2166136261 >>> 0; for (let i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 16777619) >>> 0; } return x.toString(16); };
+          // R-WEB-DETERMINISM-DIGEST-NORMALIZE-STACKGROUP-Q1: stackGroupId (z Date.now) -> kanoniczny indeks; tylko digest testowy.
+          const norm = normalizeDetDigestStackGroups(units, cities);
           let full = '';
-          try { full = JSON.stringify({ units, cities }, rep); } catch (e) { full = 'ERR:' + String(e); }
+          try { full = JSON.stringify({ units: norm.units, cities: norm.cities }, rep); } catch (e) { full = 'ERR:' + String(e); }
           // noPP: bez pola podzialPracy miasta (restore uzupelnia je domyslna wartoscia, zywy stan bywa bez pola).
           let noPP = '';
-          try { noPP = JSON.stringify({ units, cities }, (k: string, v: any) => (k === 'podzialPracy' ? undefined : v instanceof Map ? [...v.entries()] : v instanceof Set ? [...v] : v)); } catch (e) { noPP = 'ERR'; }
+          try { noPP = JSON.stringify({ units: norm.units, cities: norm.cities }, (k: string, v: any) => (k === 'podzialPracy' ? undefined : v instanceof Map ? [...v.entries()] : v instanceof Set ? [...v] : v)); } catch (e) { noPP = 'ERR'; }
           return JSON.stringify({ turn, detIdSeq: _detIdSeq, abTurn: _autoBattleSeqTurn, abSeq: _autoBattleSeq, dipSeq: _dipUnitSeq, nUnits: units.length, nCities: cities.length, len: full.length, fnv: fnvOf(full), fnvNoPP: fnvOf(noPP), lenNoPP: noPP.length });
         },
       };
