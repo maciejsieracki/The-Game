@@ -1,0 +1,243 @@
+{
+  "seed": 271828,
+  "warTurnsRequested": 22,
+  "ai": 1,
+  "warDeclaredAtTurn": 1,
+  "turns": [
+    {
+      "pair": {
+        "turn": 2,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "ab8c8a82:142"
+    },
+    {
+      "pair": {
+        "turn": 3,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "af45f93d:141"
+    },
+    {
+      "pair": {
+        "turn": 4,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "203e15ad:142"
+    },
+    {
+      "pair": {
+        "turn": 5,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "f74d099e:142"
+    },
+    {
+      "pair": {
+        "turn": 6,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "25dd69d5:142"
+    },
+    {
+      "pair": {
+        "turn": 7,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "a7fcabe3:142"
+    },
+    {
+      "pair": {
+        "turn": 8,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "dc5b4b8f:141"
+    },
+    {
+      "pair": {
+        "turn": 9,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "6e4481ff:142"
+    },
+    {
+      "pair": {
+        "turn": 10,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "e8787705:143"
+    },
+    {
+      "pair": {
+        "turn": 11,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "bc25ea27:143"
+    },
+    {
+      "pair": {
+        "turn": 12,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "77d250c9:143"
+    },
+    {
+      "pair": {
+        "turn": 13,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "c9a48824:143"
+    },
+    {
+      "pair": {
+        "turn": 14,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "c70ca49a:144"
+    },
+    {
+      "pair": {
+        "turn": 15,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "d43b27a:143"
+    },
+    {
+      "pair": {
+        "turn": 16,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "9e0f2d62:144"
+    },
+    {
+      "pair": {
+        "turn": 17,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "a50408ed:144"
+    },
+    {
+      "pair": {
+        "turn": 18,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "e845652:144"
+    },
+    {
+      "pair": {
+        "turn": 19,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "7933da98:144"
+    },
+    {
+      "pair": {
+        "turn": 20,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "835250e3:144"
+    },
+    {
+      "pair": {
+        "turn": 21,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "d493a122:144"
+    },
+    {
+      "pair": {
+        "turn": 22,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "2680f20e:146"
+    },
+    {
+      "pair": {
+        "turn": 23,
+        "ai": 1,
+        "nohook": true
+      },
+      "rows": [],
+      "digest": "db1a14b0:148"
+    }
+  ],
+  "stoppedBy": "koniec zakresu",
+  "consoleErrors": 0,
+  "pageErrors": [],
+  "endBlocks": [
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress"
+  ],
+  "startTurn": 1,
+  "relAfterDeclare": null,
+  "traceOn": false,
+  "lastTurn": 23,
+  "nnsGrants": [
+    {
+      "turn": 11,
+      "goldAfter": 204131,
+      "foodAfter": 100000
+    }
+  ],
+  "elapsedSec": 82
+}

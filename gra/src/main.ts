@@ -165,6 +165,8 @@ import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
 import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
 import { installCivTestHooks, isCivTestEnabled, civTestSeedOverride, civTestRuntime } from './game/civ-test-hooks';
+/** W80B-B1 (R-WEB-LIVE-VERIFY-WAVE-689-697-B1-AI-PEACE-GATE-TRACE-Q1): ślad ścieżki pokoju AI (zapis tylko gdy `on`, ustawia hak ?civTest=1). */
+const peaceTraceState: { on: boolean; rows: Array<Record<string, unknown>> } = { on: false, rows: [] };
 import { gameStreamRng, gameIdSuffix } from './game/game-rng';
 import { computeStartPlacements, computeReachable, computePath, setSiegeEntryBlocker, siegeScopeMemo, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, hexNeighborCoords, categoryOf, terrainMoveCost, isCivilianUnit, buildMoveOccupancy, trimSegmentEndOffPassThrough, type MoveOccupancy } from './units/setup';
 import { enterCityAfterSurrender } from './game/siege-enter-city';
@@ -1626,7 +1628,7 @@ import {
   registerAiPeaceRequest, isAiAiPeaceBalanceAllowed, aiAiPeaceRequiredPn, isForcedPeaceEligiblePair, runAiAiPeaceTick, requesterShare, isClearlyLosing,
   type AiPeaceRequest, type AiPeaceKind, type PeaceAsset,
 } from './game/diplomacy-ai-forced-peace';
-import { runWarWearinessTick, militaryWearinessWiring, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
+import { runWarWearinessTick, militaryWearinessWiring, warWearinessLevel, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
 import { warWearinessPairView, peakForCurrentWar, warWearinessSideView, type WarWearinessPairView, type WarWearinessReference } from './game/war-weariness-view';
 import {
   isPeaceTreatyLocked,
@@ -7723,6 +7725,10 @@ async function boot(): Promise<void> {
       refreshFog();
       refreshSiegeMarkers();
 
+      // R-WEB-DISBAND-UNIT-MARK-DIRTY-Q1: zmiana składu jednostek zmienia utrzymanie -> prognoza
+      // ekonomii (tooltip i bramka „Zakończ turę”, dirty-gated) musi się przeliczyć natychmiast.
+      // EN: unit removal changes upkeep -> the economy forecast (dirty-gated) must recompute now.
+      markCityStateDirty();
       const cityLabel = cityAtUnit(u)?.name ?? cities.find(c => c.ownerId === 0)?.name ?? 'imperium';
       const stockRefundParts = formatDisbandStockRefundHint(stockRefundCredited);
       showHintMessage(
@@ -20797,6 +20803,12 @@ async function boot(): Promise<void> {
      */
     function enqueueNegotiationFromAiCmd(ownerId: number, cmd: AIDiplomacyCommand): void {
       let workingCmd = cmd;
+      // W80B-B1: znacznik kroku ścieżki pokoju (hak read-only; tylko gdy peaceTraceState.on).
+      const ptr = (step: string): void => {
+        if (peaceTraceState.on && cmd.type === 'zaproponuj_pokoj') {
+          peaceTraceState.rows.push({ turn, owner: ownerId, stage: 'stol', step });
+        }
+      };
       const ownerIsCityState = isOwnerClusterCityState(ownerId, ownerCityStateOpts());
       if (ownerIsCityState && (cmd.type === 'zadaj_trybut' || cmd.type === 'oferuj_trybut_za_pokoj')) {
         return;
@@ -20820,8 +20832,8 @@ async function boot(): Promise<void> {
         n.aiCyclicBarter && n.proposerOwnerId === ownerId && n.responderOwnerId === ME())) return;
 
       const converted = aiCommandToPendingProposal(workingCmd, ownerId, ME(), turn);
-      if (!converted) return;
-      if (peaceProposalIsTooEarly(ownerId, ME(), converted.actionId)) return;
+      if (!converted) { ptr('brak-konwersji'); return; }
+      if (peaceProposalIsTooEarly(ownerId, ME(), converted.actionId)) { ptr('za-wczesnie'); return; }
 
       // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (pkt 6): uzasadnienie (reason) dla umowy handlowej z koszyka
       // surowców; wypełniane tylko gdy flaga ON i koszyk zawiera surowiec.
@@ -20924,7 +20936,7 @@ async function boot(): Promise<void> {
       const clampedPayload = peaceBareAllowed
         ? converted.payload
         : clampAiProposalPayloadToRealResources(ownerId, converted.payload);
-      if (!clampedPayload) return;
+      if (!clampedPayload) { ptr('clamp-pusty'); return; }
       const relForBalance = getDiploRelation(ownerId, ME());
       const difficultyForBalance = effectiveGameDifficultyForOwner(ownerId);
       const pnBalanceOpts = {
@@ -20960,6 +20972,7 @@ async function boot(): Promise<void> {
         && !balancedPayload.receiveItems?.length
         && (balancedPayload.goldOnce == null || balancedPayload.goldOnce <= 0)
       ) {
+        ptr('bez-pozycji-nie-bare');
         return;
       }
       // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (filtr 1): AI nie składa oferty handlowej, na której
@@ -20973,11 +20986,13 @@ async function boot(): Promise<void> {
         )
       ) {
         console.log(`[Dyplomacja] AI${ownerId} ${workingCmd.type}: odrzucone (bilans PW gracza < 0)`);
+        ptr('bilans-pw');
         return;
       }
       // R-WEB-AI-TRADE-ONESHOT-OVERPAY-LIMIT-Q1: jednorazowa oferta handlowa AI -> gracz
       // z nadpłatą (givePn > receivePn) nie trafia na stół; te same reguły co cykliczna (A1).
       if (aiOneshotHandelOverpaysPlayer(converted.actionId, workingCmd.type, balancedPayload, pnBalanceOpts)) {
+        ptr('przeplata');
         return;
       }
       if (workingCmd.type === 'zaproponuj_wymiane_cykliczna') {
@@ -21001,11 +21016,11 @@ async function boot(): Promise<void> {
       }
       converted.payload = balancedPayload;
       // Dedup — nie stackuj drugiej propozycji TEGO SAMEGO typu, gdy jedna już czeka.
-      if (hasPendingNegotiationForPair(negotiationTable, ME(), ownerId, converted.actionId)) return;
+      if (hasPendingNegotiationForPair(negotiationTable, ME(), ownerId, converted.actionId)) { ptr('dedup-oczekuje'); return; }
       // D-DYPLO-AI-NO-NAG: gracz odrzucił ten typ — AI nie nęka ponownie do wygaśnięcia cooldownu.
       // R-WEB-DIPLO-CITY-OFFER-REJECT-OWN-COOLDOWN-Q1: oferta miasta ma własny klucz cooldownu.
       const cooldownKey = rejectCooldownKeyFor(workingCmd.type, converted.actionId);
-      if (isOfferRejectedOnCooldown(rejectedOfferCooldowns, ownerId, cooldownKey, turn)) return;
+      if (isOfferRejectedOnCooldown(rejectedOfferCooldowns, ownerId, cooldownKey, turn)) { ptr('cooldown-odrzucenia'); return; }
       negotiationSeq += 1;
       const entry = createNegotiation(
         { actionId: converted.actionId, proposerOwnerId: ownerId, responderOwnerId: ME(), payload: converted.payload },
@@ -21024,6 +21039,7 @@ async function boot(): Promise<void> {
       }
       if (sensibleUmowaReason) entry.reason = sensibleUmowaReason;
       negotiationTable.push(entry);
+      ptr('wstawiono-na-stol');
       // P-DYPLO-KARTA-DUPLIKAT-KOMUNIKAT: BRAK showHintMessage tutaj celowo — ta funkcja biegnie
       // podczas endTurnInProgress (faza AI), więc toast trafiałby do deferredEotHints i po EOT
       // wychodziłby jako DRUGI, generyczny wpis w warEventLog (deferredHintsToSidePanelEvents,
@@ -29896,6 +29912,7 @@ async function boot(): Promise<void> {
       },
       /** Wpisy stołu negocjacyjnego (do weryfikacji payloadu wysłanego z UI). */
       negotiationEntries: (): Array<Record<string, unknown>> => negotiationTable.map(e => ({
+        id: e.id,
         actionId: e.actionId,
         proposerOwnerId: e.proposerOwnerId,
         responderOwnerId: e.responderOwnerId,
@@ -30479,7 +30496,49 @@ async function boot(): Promise<void> {
         },
         /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r3): tryb przyspieszony (bez renderer.render); tylko za ?civTest=1. */
         setFastMode: (on: boolean): boolean => { civTestRuntime.skipRender = !!on; return civTestRuntime.skipRender; },
+        /** W80B-B1: ślad ścieżki pokoju AI (tylko odczyt wierszy; zapis wyłącznie z haka, bez logów). */
+        peaceTraceStart: (): void => { peaceTraceState.on = true; peaceTraceState.rows = []; },
+        peaceTraceStop: (): Array<Record<string, unknown>> => {
+          const rows = peaceTraceState.rows;
+          peaceTraceState.on = false;
+          peaceTraceState.rows = [];
+          return rows;
+        },
+        peaceTraceRows: (): Array<Record<string, unknown>> => peaceTraceState.rows.slice(),
+        /** Odczyt pary AI->gracz (bez zapisu stanu): status, turnsAtWar wg odczytu bez stemplowania, relacja, kontakt. */
+        peaceTracePair: (ai: number): Record<string, unknown> => {
+          // R3 (ślad, czysty odczyt): BEZ getDiploRelation / diplomaticContactEstablishedSet / diploWarStateForRead —
+          // te wstawiają brakujące wpisy do Map i zmieniają skrót stanu (digest). Tylko Map.get + warStateFromRecord.
+          const trRelP = diplomacyRelations.get(ai < ME() ? `${ai}_${ME()}` : `${ME()}_${ai}`) ?? defaultNeutralRelation();
+          const trMetaP = diplomacyPairMeta.get(diploPairKey(ai, ME())) as (DiploPairMeta & WarPairMetaR1) | undefined;
+          const trWrP = trRelP.status !== 'wojna'
+            ? { turnsAtWar: 0, lostCities: 0 }
+            : warStateFromRecord(trMetaP?.wojnaMiasta, trMetaP?.wojnaStartTura ?? turn, String(ai), turn);
+          return {
+            turn, ai, status: trRelP.status,
+            relTotal: relationTotal(trRelP),
+            turnsAtWar: trWrP.turnsAtWar, lostCities: trWrP.lostCities,
+            contactSet: diplomaticContactEstablishedByHuman.get(ME())?.has(ai) ?? false,
+            queuedPeace: negotiationTable.filter(n => n.proposerOwnerId === ai && n.responderOwnerId === ME()
+              && n.actionId === 'pokoj').map(n => n.actionId),
+          };
+        },
         isFastMode: (): boolean => civTestRuntime.skipRender,
+        /** W80B-B1 r2 (tylko ?civTest=1, tylko DODATNIE dosypki): gracz nie blokuje tury bramką NNS w runnerze pomiaru. Bez zmian logiki gry. */
+        grantPlayerGold: (n: number): number => {
+          const ps = playerStateByHuman.get(ME());
+          if (!(n > 0) || !ps) return -1;
+          ps.skarbiec += n;
+          return ps.skarbiec;
+        },
+        /** W80B-B1 r2: odczyt bramki NNS gracza (tylko odczyt). */
+        nnsGateBlocked: (): boolean => nnsGateForPlayer().blokada,
+        grantPlayerFood: (n: number): number => {
+          const st = empireFoodStates.get(ME());
+          if (!(n > 0) || !st) return -1;
+          st.zapasyPanstwa += n;
+          return st.zapasyPanstwa;
+        },
         /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r3): stan okien bitwy blokujacych koniec tury. */
         battleState: () => ({
           preBattleOpen: isPreBattleOpen(), pendingAuto: hasPendingAutoPreBattle(),
@@ -43342,6 +43401,28 @@ async function boot(): Promise<void> {
                 };
                 diploInp.stoneForceWarTargetId = stoneForceWarTargetId;
                 diploInp.ironForceWarTargetId = ironForceWarTargetId;
+                // W80B-B1 r3 (hak read-only, tylko gdy peaceTraceState.on): stan wojny i zmęczenie TAK, jak wchodzą do
+                // decideAIDiplomacy (wpis relacji z diploInp, nie odczyt po endTurn). Zmęczenie = ta sama czysta funkcja
+                // warWearinessLevel na tych samych wejściach co ai.ts (wearyLevel). Bez zapisu do stanu gry.
+                if (peaceTraceState.on) {
+                  const trEntry = diploInp.relacje.find(r => r.partnerId === '0');
+                  const trTaw = trEntry?.stanWojny ? Math.max(0, trEntry.turnsAtWar ?? 0) : 0;
+                  const trFat = trEntry?.stanWojny
+                    ? warWearinessLevel({
+                      turnsAtWar: trTaw,
+                      lostCitiesTotal: Math.max(0, trEntry.lostCitiesInWar ?? 0) + Math.max(0, trEntry.zdobyteMiastaPartnera ?? 0),
+                      turnsSinceCityChange: trEntry.turnsSinceCityChange,
+                    })
+                    : 0;
+                  peaceTraceState.rows.push({
+                    turn, owner: ownerId, stage: 'wejscie-decyzji',
+                    stanWojny: trEntry?.stanWojny ?? null,
+                    turnsAtWarAI: trTaw,
+                    lostCitiesInWar: trEntry?.lostCitiesInWar ?? null,
+                    zdobyteMiastaPartnera: trEntry?.zdobyteMiastaPartnera ?? null,
+                    fatigueAI: Math.round(trFat * 1000) / 1000,
+                  });
+                }
                 const dipCmdsRaw = decideAIDiplomacy(
                   diploInp, undefined, diffParamsDip.agresjaMnoznik, diffParamsDip.dyplomacjaAktywnosc,
                   effectiveGameDifficultyForOwner(ownerId),
@@ -43410,6 +43491,31 @@ async function boot(): Promise<void> {
                   dipCmdsLayered.filter(c => c.type !== 'zaproponuj_audiencje'),
                   diplomaticContactEstablishedSet().has(ownerId),
                 );
+                // W80B-B1 (hak read-only, tylko gdy peaceTraceState.on): ślad komend dla gracza przed/po filtrach.
+                if (peaceTraceState.on) {
+                  const trPlr = (xs: AIDiplomacyCommand[]): string[] => xs
+                    .filter(c => c.targetId === '0')
+                    .map(c => c.type + ((c as { bezwarunkowy?: boolean }).bezwarunkowy ? '/bezw' : '')
+                      + ((c as { rodzaj?: string }).rodzaj ? '/' + (c as { rodzaj?: string }).rodzaj : ''));
+                  // Odczyty BEZ wstawiania (getDiploRelation / diplomaticContactEstablishedSet dopisują brakujący wpis do Map).
+                  const trRel = diplomacyRelations.get(ownerId < ME() ? `${ownerId}_${ME()}` : `${ME()}_${ownerId}`) ?? defaultNeutralRelation();
+                  const trMeta = diplomacyPairMeta.get(diploPairKey(ownerId, ME())) as (DiploPairMeta & WarPairMetaR1) | undefined;
+                  const trWr = trRel.status !== 'wojna'
+                    ? { turnsAtWar: 0, lostCities: 0 }
+                    : warStateFromRecord(trMeta?.wojnaMiasta, trMeta?.wojnaStartTura ?? turn, String(ownerId), turn);
+                  peaceTraceState.rows.push({
+                    turn, owner: ownerId, stage: 'filtry-warstwy',
+                    relStatus: trRel.status,
+                    relTotal: relationTotal(trRel),
+                    turnsAtWar: trWr.turnsAtWar, lostCities: trWr.lostCities,
+                    raw: trPlr(Array.isArray(dipCmdsRaw) ? dipCmdsRaw : []),
+                    afterPlayerFacing: trPlr(dipCmdsPlayerFacing),
+                    afterLayer: trPlr(dipCmdsLayered),
+                    afterContact: trPlr(dipCmds),
+                    dipLayer: String(dipLayer),
+                    contactSet: diplomaticContactEstablishedByHuman.get(ME())?.has(ownerId) ?? false,
+                  });
+                }
                 for (const cmd of dipCmds) {
                   try {
                     const targetId = parseInt(cmd.targetId, 10);
