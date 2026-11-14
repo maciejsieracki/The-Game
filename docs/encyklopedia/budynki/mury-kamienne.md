@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Mury kamienne** — budynek obronny (Obrona), epoka Kamień. Koszt od **35** pracy + **80× drewno, 80× kamień, 80× cegła**, utrzymanie **2** ¤/t. Technologia **Murarstwo**. Maks. **2** poziomy. Daje **+150% Obrony** broniącym się jednostkom (bonus procentowy, nie płaski).
+**Mury kamienne** — budynek obronny (Obrona), epoka Kamień. Koszt od **35** pracy + **80× drewno, 80× kamień** (bez cegły; na karcie po skali epoki 160 + 160), utrzymanie **2** ¤/t. Technologia **Murarstwo**. Maks. **2** poziomy. Daje **+150% Obrony** broniącym się jednostkom (bonus procentowy, nie płaski).
 
 ---
 
@@ -29,7 +29,7 @@ Obrona miasta jest **wyłącznie procentowa** — Mury dają **+150% Obrony** je
 **Cytadela** i **Baszta** to **osobne** budynki obok Murów (nie upgrade tego samego slotu) — mogą dokładać kolejne +100% każda (razem z murami do **+400%**).
 
 ### Koszty
-- **Budowa poz. 1:** 35 pracy + 80× drewno, 80× kamień, 80× cegła
+- **Budowa poz. 1:** 35 pracy + 80× drewno, 80× kamień (bez cegły; cegła wyłącznie w Murach ceglanych)
 - **Poziom 2:** +12 pracy (łącznie 47)
 - **Utrzymanie:** 2 ¤/turę (+1 ¤ na poziom 2)
 - Technologia **Murarstwo**.
