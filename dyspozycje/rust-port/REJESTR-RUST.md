@@ -1019,3 +1019,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 ## Przebieg (14.11, heartbeat 11:48): sloty puste, czeka na wybór tematu
 - **Trwających Workflow: 0** z 4. Sloty nie zostały uruchomione: dwudziesty drugi tick bez odpowiedzi na pytanie o pierwszy temat (#115 zalecane / #120).
 - **Parity:** `a381dd13f` (sprawdzone fetch). Worktree: 2. Dysk wolny: 11 GB.
+
+## Przebieg (14.11, start czterech slotów na prośbę właściciela)
+- **Decyzja właściciela (14.11):** „odpalaj cztery sloty”. Wybrano cztery tematy z kolejki: ZDOBYCIE-WIRING (#115, plądrowanie stolicy), ZLOZE-WIRING (#104), CRED-HAK-WYPOWIEDZENIE (#120), TOWER-TARGET (#116). #96 K5-LOOP-WIEZE nie startuje, bo zależy od #116.
+- **Baza:** `a381dd13f` (sprawdzone 14.11 przez `git grep`: `run_capital_capture_plunder` i `apply_transfer_with_effects` bez produkcyjnego wołającego; `deactivate_zloze_grants_for_deal` / `sync_relation_status_from_deals` tylko w definicjach; `pick_tower_target` bez wołającego w pętli; `declare_forced_wars` / `declare_from_assignments` bez haka P4 w ścieżkach gracza, sojuszu i klastra).
+- **Dispatche:** przepisane z `23e33793e` na `a381dd13f`, wypchnięte commitem `f6aac03b9`.
+- **Workflow (run IDs):** ZDOBYCIE-WIRING `wf_9a1f0958-6c2`; ZLOZE-WIRING `wf_4dca0cce-39a`; CRED-HAK-WYPOWIEDZENIE `wf_5f9d8207-512`; TOWER-TARGET `wf_08046de1-bd4`. Model: Operator i Obrona HAIKU, Evaluator i Final Control SONNET.
+- **Uwaga procesowa:** podczas przygotowania skryptów nadpisałem szablon `topic-…-ZDOBYCIE-WIRING-Q1.js`; przywrócono pełną treść przed startem. Wpływ: brak, skrypty uruchomione po naprawie (37 linii każdy).
+- **Parity:** `a381dd13f`. Worktree: 2 (przed startem). Dysk wolny: 11 GB.
