@@ -929,3 +929,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 ## Przebieg (14.11, heartbeat 00:47): bez zmian
 - **Trwających Workflow: 0** (sloty puste). Brak zatwierdzonego dispatchu — czekam na wybór kolejnego tematu (ZDOBYCIE-MIASTA #115 lub CRED-HAK #120).
 - **Parity:** `a381dd13f`. Worktree: 2.
+
+## Przebieg (14.11, heartbeat 01:47): sloty puste, czeka na wybór tematu
+- **Trwających Workflow: 0** (katalog `subagents/workflows/` pusty). Slotów 0 z 4.
+- **Dlaczego nie uruchomiono 4 slotów:** pytanie o pierwszy temat (ZDOBYCIE-MIASTA-WIRING #115 zalecane albo CRED-HAK-WYPOWIEDZENIE #120) zostało zadane dwukrotnie; obie odpowiedzi przerwał restart workera. Bez wyboru nie zapisuję dispatchów na cztery tematy naraz.
+- **Plan po wyborze:** #115 najpierw rozbić na tematy (węzeł P9, bramki zdobycia, cesja, druga ścieżka przegranej); CRED-HAK (#120) ma rozpoznanie gotowe, można od razu zapisać dispatch.
+- **Parity:** `a381dd13f`. Worktree: 2 (`/home/user/The-Game`, `/home/user/reg-wt`). Dysk wolny: 11 GB.
+- **Push:** `1bec6756a` na `origin/claude/rust-sivvrn` (poprzedni heartbeat 00:47 wypchnięty po raz pierwszy w tej sesji).
