@@ -84,10 +84,19 @@ export function wearinessPeaceItemPw(
   level: number,
   P: WarWearinessParams = WAR_WEARINESS_PARAMS,
 ): number {
+  const x = wearinessPeaceX(level, P);
+  return Math.round(Math.max(0, priceC) * x * x);
+}
+
+/**
+ * R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (runda 2, „jedna prawda"): x = clamp((L − progChetnosci)/(progKoncaZmeczenia
+ * − progChetnosci), 0, 1) — JEDNA funkcja dla tabeli PW (wearinessPeaceItemPw) i dla decyzji AI o pokoju
+ * bezwarunkowym (ai.ts: wearinessPeaceX(L) >= 1 ⇔ R = C − Z = 0).
+ */
+export function wearinessPeaceX(level: number, P: WarWearinessParams = WAR_WEARINESS_PARAMS): number {
   const t = P.zmeczenie.progChetnosci;
   const span = Math.max(1e-9, P.zmeczenie.progKoncaZmeczenia - t);
-  const x = clamp((level - t) / span, 0, 1);
-  return Math.round(Math.max(0, priceC) * x * x);
+  return clamp((level - t) / span, 0, 1);
 }
 
 export function isWarWeary(level: number, P: WarWearinessParams = WAR_WEARINESS_PARAMS): boolean {

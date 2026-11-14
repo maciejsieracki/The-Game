@@ -179,7 +179,7 @@ function behaviour(W) {
 /** Wiazanie ai.ts: jedna galaz pokoju bezwarunkowego (zaproponuj_pokoj bez ceny) z wearinessUnconditionalEndDue. */
 function aiWiringOk(aiSrc) {
   const cnt = (s, t) => s.split(t).length - 1;
-  return cnt(aiSrc, 'wearinessUnconditionalEndDue(wearyLevel)') === 1
+  return cnt(aiSrc, 'wearinessPeaceX(wearyLevel) >= 1') === 1
     && cnt(aiSrc, "koniec zmeczenia wojna (zmeczenie") === 1
     && cnt(aiSrc, 'bezwarunkowy: true') === 1;
 }
@@ -215,8 +215,8 @@ function run() {
   for (const c of base) report(c.ok, `behawior bazowy: ${c.name}`);
   console.log(`baza: ${base.filter((c) => c.ok).length}/${base.length} sprawdzen behawioralnych zielonych`);
 
-  report(aiWiringOk(AI_SRC), 'ai.ts: brak jednej galezi pokoju bezwarunkowego (wearinessUnconditionalEndDue(wearyLevel))');
-  const aiMut = AI_SRC.replace('wearinessUnconditionalEndDue(wearyLevel)', 'false');
+  report(aiWiringOk(AI_SRC), 'ai.ts: brak jednej galezi pokoju bezwarunkowego (wearinessPeaceX(wearyLevel) >= 1)');
+  const aiMut = AI_SRC.replace('wearinessPeaceX(wearyLevel) >= 1', 'false');
   report(!aiWiringOk(aiMut), 'mutant AI-U6 (wiazanie ai.ts) PRZESZEDL - test statyczny go nie wykrywa');
 
   report(mainWiringOk(MAIN_SRC), 'main.ts: brak wiazania flagi bezwarunkowy (enqueueNegotiationFromAiCmd)');

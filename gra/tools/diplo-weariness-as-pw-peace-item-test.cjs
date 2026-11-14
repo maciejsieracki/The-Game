@@ -70,7 +70,7 @@ const propSrc = fs.readFileSync(path.join(SRC, 'game/diplomacy-proposals.ts'), '
 ok(/wearinessPeaceItemPw\(cenaPokojuPn, wearyLevel\)/.test(propSrc), '(e) bramka R5 liczy Z przez wearinessPeaceItemPw');
 ok(/basePn = Math\.max\(0, cenaPokojuPn - wearyPwItem\)/.test(propSrc), '(e) wymagana cena = C - Z (reszta do miasta)');
 const aiSrc = fs.readFileSync(path.join(SRC, 'game/ai.ts'), 'utf8');
-ok(/wearinessUnconditionalEndDue\(wearyLevel\)/.test(aiSrc), '(b) ai.ts: bezwarunkowy pokoj wiazany z ta sama funkcja poziomu');
+ok(/wearinessPeaceX\(wearyLevel\) >= 1/.test(aiSrc), '(b) ai.ts: bezwarunkowy pokoj wiazany z ta sama funkcja x co tabela PW');
 
 console.log(`diplo-weariness-as-pw-peace-item-test: PASS=${pass} FAIL=${fail}`);
 process.exit(fail ? 1 : 0);

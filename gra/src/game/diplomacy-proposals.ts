@@ -312,6 +312,15 @@ export interface ProposalEvalResult {
    * `undefined` poza tą gałęzią (brak zmęczenia w bilansie).
    */
   wearinessPw?: number;
+  /** Dane do podpowiedzi wiersza „Zmęczenie wojną” (tury wojny, utracone miasta, poziom zmęczenia 0..1). */
+  wearinessInfo?: WearinessPwInfo;
+}
+
+/** R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (runda 2): dane tooltipa wiersza Z. */
+export interface WearinessPwInfo {
+  turnsAtWar: number;
+  lostCities: number;
+  level: number;
 }
 
 export interface PendingProposal {
@@ -1362,6 +1371,7 @@ export function evaluateProposal(
       let basePn = basePnCfg;
       // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: Z (PW) zmęczenia wojną w tabeli; undefined poza gałęzią R5.
       let wearyPwItem: number | undefined;
+      let wearyInfo: WearinessPwInfo | undefined;
       if (ctx.warState && r5PlayerAuthors && r5RespondentIsAi && !ctx.responderIsCityState) {
         const r5Profile = resolveWarPeaceProfile(
           typeof ctx.responderPlayer?.typCywilizacji === 'string' ? ctx.responderPlayer.typCywilizacji : undefined,
@@ -1389,6 +1399,11 @@ export function evaluateProposal(
           turnsSinceCityChange: ctx.warState.turnsSinceCityChange,
         });
         wearyPwItem = wearinessPeaceItemPw(cenaPokojuPn, wearyLevel);
+        wearyInfo = {
+          turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
+          lostCities: Math.max(0, ctx.warState.lostCitiesResponder),
+          level: wearyLevel,
+        };
         basePn = Math.max(0, cenaPokojuPn - wearyPwItem);
         // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (zarzut 5 / wymóg 4): złoto i surowce NIE są
         // słodzikiem pokoju ani rozejmu — w każdej pozycji (słabsza i silniejsza AI) oferta z nimi jest
@@ -1415,7 +1430,8 @@ export function evaluateProposal(
           if (!(cityGivePn >= cenaPokojuPn)) {
             return {
               accepted: false,
-              reason: `${r5Gate.reason ?? 'AI odrzuca pokój'} — miasta w ofercie warte ${Math.round(cityGivePn)} PN, wymagane ${cenaPokojuPn} PN`,
+              reason: `${r5Gate.reason ?? 'AI odrzuca pokój'} — Silniejsza AI wymaga miasta o wartości ≥ ${cenaPokojuPn} PW `
+                + `(zmęczenie nie obniża tej ceny); miasta w ofercie warte ${Math.round(cityGivePn)} PN, wymagane ${cenaPokojuPn} PN`,
             };
           }
         }
@@ -1565,11 +1581,15 @@ export function evaluateProposal(
           accepted: false,
           pwBalance: pokojPwBalance,
           wearinessPw: wearyPwItem,
+          wearinessInfo: wearyInfo,
           reason: `Brakuje ${Math.abs(pokojPwBalance)} PW do uczciwej oferty pokoju @ Relacji `
             + `(baza ${basePn} PW) — dopłać, by wysłać`,
         };
       }
-      return { accepted: true, pwBalance: pokojPwBalance, wearinessPw: wearyPwItem, reason: 'Warunki pokoju spełnione', oneShotTrade: true };
+      return {
+        accepted: true, pwBalance: pokojPwBalance, wearinessPw: wearyPwItem, wearinessInfo: wearyInfo,
+        reason: 'Warunki pokoju spełnione', oneShotTrade: true,
+      };
     }
 
     case 'trybut_oferta': {
