@@ -11,8 +11,9 @@
  *  - Blokada gracza („Zakończ turę”) tylko wtedy, gdy prognoza po turze jest < 0 ORAZ GORSZA
  *    niż stan obecny. Stary zapis z ujemnym stanem, którego prognoza nie pogarsza się,
  *    nie blokuje gry na stałe (bezpieczny wyjątek, patrz `wyjatekStarego`).
- *  - Gracz zawsze ma ruch naprawczy (podatki, rozwiązanie jednostki, usunięcie pozycji z
- *    kolejki); `czyRuchNaprawczy` sprawdza, czy dostępne dźwignie pokrywają brak.
+ *  - Gracz zawsze ma ruch naprawczy (podatek, racje, rozwiązanie jednostki); `czyRuchNaprawczy`
+ *    sprawdza, czy dostępne dźwignie pokrywają brak. Kolejka produkcji NIE jest dźwignią gracza
+ *    (R-WEB-NNS-GATE-REMOVE-QUEUE-LEVER-Q1: prognoza gracza jej nie zawiera; AI ma własny plan).
  *  - AI równoważy się PRZED końcem tury: najpierw tańsze środki (podatki, wstrzymanie
  *    zakupów), potem najdroższe jednostki wsparcia. Nigdy nie eliminuje cywilizacji
  *    (dźwignie z `eliminujeCywilizacje` są pomijane).
@@ -101,7 +102,7 @@ export function evaluateEndTurnStocks(p: NnsProjection): NnsVerdict {
     );
     komunikat =
       'Nie można zakończyć tury: ' + linie.join('; ') +
-      '. Zwiększ podatki, rozwiąż jednostkę albo usuń pozycję z kolejki produkcji.';
+      '. Zwiększ podatki, zmniejsz racje albo rozwiąż jednostkę.';
   }
   return {
     blokada,

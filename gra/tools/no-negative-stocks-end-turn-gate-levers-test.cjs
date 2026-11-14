@@ -8,7 +8,11 @@
  *  (c) mutacja: bez dźwigni podatku ten sam przypadek NIE blokuje,
  *  (d) tura 1–10 zwolniona,
  *  (e) komunikat zawiera zasób, wielkość minusu i listę dźwigni z liczbami z projekcji,
- *  (f) wiring: main.ts podaje dźwignie do bramki i tooltip przycisku (bottomBarHud).
+ *  (f) wiring: main.ts podaje dźwignie do bramki i tooltip przycisku (bottomBarHud),
+ *  (i) R-WEB-NNS-GATE-REMOVE-QUEUE-LEVER-Q1: komunikat blokady i tooltip NIE wspominają kolejki
+ *      produkcji (prognoza gracza jej nie zawiera, więc dźwignia kolejki nie ma modelu);
+ *      komunikat wskazuje pozostałe dźwignie (podatek, racje, jednostki),
+ *  (j) wiring: nnsGateForPlayer / nnsEndTurnTooltipText nie czytają kolejki produkcji.
  *
  * Run: node tools/no-negative-stocks-end-turn-gate-levers-test.cjs
  */
@@ -20,7 +24,7 @@ const GRA_ROOT = path.resolve(__dirname, '..');
 const ENTRY = path.resolve(__dirname, '.no-negative-stocks-end-turn-gate-levers-entry.ts');
 const BUNDLE = path.resolve(__dirname, '.no-negative-stocks-end-turn-gate-levers-bundle.cjs');
 
-fs.writeFileSync(ENTRY, "export { decideEndTurnGate } from '../src/game/no-negative-stocks';\n", 'utf8');
+fs.writeFileSync(ENTRY, "export { decideEndTurnGate, evaluateEndTurnStocks } from '../src/game/no-negative-stocks';\n", 'utf8');
 
 esbuild.buildSync({
   entryPoints: [ENTRY], bundle: true, platform: 'node', format: 'cjs',
@@ -108,6 +112,32 @@ function proj(turn, skObecny, skPo, spObecny, spPo) {
   ok(/endTipAttr/.test(barSrc) && /getEndTurnTooltip/.test(barSrc), '(f) bottomBarHud ustawia title przycisku');
   const hudSrc = fs.readFileSync(path.join(GRA_ROOT, 'src', 'ui', 'hud.ts'), 'utf8');
   ok(/legacyEndTipAttr\(\) \+ '>/.test(hudSrc) && /cfg\?\.getEndTurnTooltip/.test(hudSrc), '(f) legacy hud.ts (renderBarLegacy) ustawia title przycisku Zakończ turę');
+}
+
+// (i) R-WEB-NNS-GATE-REMOVE-QUEUE-LEVER-Q1: komunikat bez wzmianki o kolejce produkcji
+{
+  const v = M.evaluateEndTurnStocks(proj(12, 5, -20, 0, 0));
+  ok(v.blokada === true, '(i) minus skarbca -> evaluateEndTurnStocks blokuje');
+  ok(!/kolejk/i.test(v.komunikat), '(i) komunikat evaluateEndTurnStocks NIE zawiera „kolejk” (czerwony na bazie)');
+  ok(/podatk/i.test(v.komunikat) && /racj/i.test(v.komunikat) && /jednost/i.test(v.komunikat),
+    '(i) komunikat wskazuje podatki, racje i jednostki');
+  const g = M.decideEndTurnGate(proj(12, 5, -20, 0, 0), 30, 0, { podatekSkarbiec: 12.6, suwakZywnosc: 4 });
+  ok(g.blokada === true && !/kolejk/i.test(g.komunikat), '(i) komunikat bramki gracza NIE zawiera „kolejk”');
+  ok(g.dzwignie.every(d => !/kolejk/i.test(d.id) && !/kolejk/i.test(d.opis)), '(i) żadna dźwignia gracza nie jest kolejką');
+  // dźwignie podatku/racji/jednostki nadal działają po usunięciu kolejki
+  ok(g.dzwignie.some(d => d.id === 'podatek-skarbiec') && g.dzwignie.some(d => d.id === 'suwak-zywnosc') &&
+    g.dzwignie.some(d => d.id === 'rozwiaz-skarbiec'), '(i) podatek, racje i jednostki nadal dźwigniami gracza');
+  const samaRacja = M.decideEndTurnGate(proj(12, 5, -20, 0, 0), 0, 0, { suwakZywnosc: 25 });
+  ok(samaRacja.blokada === false, '(i) racje nie pokrywają skarbca (suwak żywności nie działa na złoto) -> brak blokady');
+}
+// (j) wiring: funkcje bramki gracza nie czytają kolejki produkcji
+{
+  const mainSrc = fs.readFileSync(path.join(GRA_ROOT, 'src', 'main.ts'), 'utf8');
+  const a = mainSrc.indexOf('function nnsGateForPlayer(');
+  const b = mainSrc.indexOf('function canPlayerInitiateEndTurn(');
+  const blok = a >= 0 && b > a ? mainSrc.slice(a, b) : '';
+  ok(blok.length > 0, '(j) znaleziono nnsGateForPlayer / nnsEndTurnTooltipText w main.ts');
+  ok(!/kolejk|productionQueue|cityProd|\.kolejka/.test(blok), '(j) nnsGateForPlayer / nnsEndTurnTooltipText nie czytają kolejki produkcji');
 }
 
 console.log(`no-negative-stocks-end-turn-gate-levers-test: ${passed} passed, ${failed} failed`);
