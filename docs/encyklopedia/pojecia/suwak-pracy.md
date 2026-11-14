@@ -10,7 +10,7 @@
 
 ## Wiki‑S
 
-Suwak **pracy** dzieli pracę miasta: domyślnie **70% budynki** (kolejka w Produkcji) · **30% teren** (ulepszenia pól w okolicy). Więcej na teren = szybsze farmy; więcej na budynki = szybszy Spichlerz/koszary.
+Suwak **pracy** dzieli pracę miasta: domyślnie **50% budynki** (kolejka w Produkcji) · **50% teren** (ulepszenia pól w okolicy). Nowa gra startuje z 50/50; suwak można przesunąć aż do 50% budynki (dolna granica), a nie niżej. Więcej na teren = szybsze farmy; więcej na budynki = szybszy Spichlerz/koszary.
 
 ---
 

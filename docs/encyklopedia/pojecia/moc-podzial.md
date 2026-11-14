@@ -102,4 +102,4 @@ Uwaga: `skladniki.wygrana_bitwa.pkt` (25) jest nieaktywne; aktywny współczynni
 
 ## Historia / decyzje
 
-Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Zasady niewdrożone: DECYZJA WŁAŚCICIELA 2026-11-13. Podział wojskowy/gospodarczy: `power-params.json` (flaga `wojskowy`), filtr w `power-ranking.ts`.
+Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Zasady z DECYZJI WŁAŚCICIELA 2026-11-13 są wdrożone: siła militarna liczona osobno od Power (`diplomacy-military-strength.ts`). Podział wojskowy/gospodarczy: `power-params.json` (flaga `wojskowy`), filtr w `power-ranking.ts`.

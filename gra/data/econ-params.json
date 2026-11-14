@@ -71,30 +71,30 @@
       "opis": "Zużycie żywności jednostki wojskowej obozującej (bez ruchu)."
     },
     "suwak_handel_nauka_domyslnie": {
-      "easy": 20,
-      "normal": 20,
-      "hard": 20,
-      "jednostka": "% Daniny netto miasta (po Walucie i Mennicy: Podatku netto)",
-      "opis": "Domyślny udział strumienia Nauka (= BADANIA) w podziale Daniny netto nowego miasta. 20% (Maciej 2026-06-25, potwierdzone przy decyzji 74 = A z 2026-07-25 — ten strumień zostaje bez zmian)."
-    },
-    "suwak_handel_pieniadz_domyslnie": {
       "easy": 60,
       "normal": 60,
       "hard": 60,
       "jednostka": "% Daniny netto miasta (po Walucie i Mennicy: Podatku netto)",
-      "opis": "Domyślny udział strumienia Pieniądz (= SKARBIEC) w podziale Daniny netto nowego miasta. Obniżony 70% → 60% decyzją Maciej 2026-07-25 (PYTANIE 74 = A); te 10 punktów procentowych przeszło na Zamożność, żeby nowe miasto nie startowało z ujemnym Szczęściem na trudnym."
+      "opis": "Domyślny udział strumienia Nauka (= BADANIA) w podziale Daniny netto nowego miasta i nowej gry gracza. 60% (decyzja właściciela 2026-11-14, R-WEB-SETTINGS-DEFAULT-TAX-SPLIT-30-60-10-Q1; wcześniej 20%). AI nie korzysta z tej wartości: seed AI ma własny podział (aiSeedPodzialHandlu, game/ai.ts)."
+    },
+    "suwak_handel_pieniadz_domyslnie": {
+      "easy": 30,
+      "normal": 30,
+      "hard": 30,
+      "jednostka": "% Daniny netto miasta (po Walucie i Mennicy: Podatku netto)",
+      "opis": "Domyślny udział strumienia Pieniądz (= SKARB) w podziale Daniny netto nowego miasta i nowej gry gracza. 30% (decyzja właściciela 2026-11-14, R-WEB-SETTINGS-DEFAULT-TAX-SPLIT-30-60-10-Q1; wcześniej 60%)."
     },
     "suwak_handel_luksus_domyslnie": {
-      "easy": 20,
-      "normal": 20,
-      "hard": 20,
+      "easy": 10,
+      "normal": 10,
+      "hard": 10,
       "jednostka": "% Daniny netto miasta (po Walucie i Mennicy: Podatku netto)",
-      "opis": "Domyślny udział strumienia Zamożność (Wealth) w podziale Daniny netto nowego miasta. Podniesiony 10% → 20% decyzją Maciej 2026-07-25 (PYTANIE 74 = A). Powód: 20% to dokładnie próg utrzymania poziomu Zamożności (20% pieniądza miasta przy poziomie 0), więc poziom Zamożności rusza z miejsca bez ręcznej interwencji; w nowej siatce Szczęścia przedział 20-29% daje +1 pkt Szczęścia na normalnym i 0 na trudnym (zamiast 0 / -1 przy dawnych 10%)."
+      "opis": "Domyślny udział strumienia Zamożność (Wealth) w podziale Daniny netto nowego miasta i nowej gry gracza. 10% (decyzja właściciela 2026-11-14, R-WEB-SETTINGS-DEFAULT-TAX-SPLIT-30-60-10-Q1; wcześniej 20%). Przy 10% przedział Szczęścia 20-29% nie obowiązuje (efekt Szczęścia Zamożności przy 10% wymaga pomiaru na żywo — NIE_ZMIERZONO). Seed AI nadal używa Zamożności 20% z LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14 (game/cities.ts)."
     },
     "suwak_praca_budynki_domyslnie": {
-      "easy": 70,
-      "normal": 70,
-      "hard": 70,
+      "easy": 50,
+      "normal": 50,
+      "hard": 50,
       "jednostka": "%",
       "opis": "Domyślny udział strumienia Praca→Budynki w podziale Pracy netto. [PT]"
     },

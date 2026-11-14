@@ -97,9 +97,11 @@ function assert(name, cond, detail) {
   else { failed++; console.log(`FAIL: ${name}${detail ? ' -- ' + detail : ''}`); }
 }
 
-assert('fixture: DEFAULT_PODZIAL_PRACY.procentBudynki === 70 (default GRACZA)', DEFAULT_PODZIAL_PRACY.procentBudynki === 70);
+// R-WEB-SETTINGS-DEFAULT-LABOR-SPLIT-50-50-Q1: default gracza = 50 (dawniej 70). Stary seed 70
+// zostaje w teście WYŁĄCZNIE jako jawny fixture regresu (patrz sekcja A), nie jako default.
+assert('fixture: DEFAULT_PODZIAL_PRACY.procentBudynki === 50 (default GRACZA, R-WEB-SETTINGS-DEFAULT-LABOR-SPLIT-50-50-Q1)', DEFAULT_PODZIAL_PRACY.procentBudynki === 50);
 assert('fixture: AI_FIXED_PROCENT_BUDYNKI === 50', AI_FIXED_PROCENT_BUDYNKI === 50);
-assert('fixture: freshOwnerDefaultPodzialPracy() zwraca 70 (to właśnie było błędnie seedowane AI)', freshOwnerDefaultPodzialPracy().procentBudynki === 70);
+assert('fixture: freshOwnerDefaultPodzialPracy() zwraca 50 (default gracza)', freshOwnerDefaultPodzialPracy().procentBudynki === 50);
 
 const data  = loadGameData();
 const map   = generateMap(DEFAULT_WIDTH, DEFAULT_HEIGHT, 9191);
@@ -181,7 +183,8 @@ function advanceArgs(ownerDefaultPodzialPracyByOwner_) {
 //    freshOwnerDefaultPodzialPracy() dla KAŻDEGO ownera, w tym AI) -- tura 1
 //    dawała >50% budynków, nie 50%. To DOKŁADNIE Zarzut 1 Evaluatora.
 // ---------------------------------------------------------------------------
-const seedPrzedNaprawa = new Map([[1, freshOwnerDefaultPodzialPracy()]]); // {procentBudynki:70}
+// Jawny legacy seed 70 (dawny default gracza, sprzed R-WEB-SETTINGS-DEFAULT-LABOR-SPLIT-50-50-Q1).
+const seedPrzedNaprawa = new Map([[1, { procentBudynki: 70 }]]);
 {
   const prev = previewCityEconomy(...previewArgs(seedPrzedNaprawa));
   const tk = prev.perCity.find(t => t.cityId === city.id);

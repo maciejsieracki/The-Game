@@ -3,7 +3,7 @@
  * no-negative-stocks-c3-turn-test.cjs — R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1 (C3, test turowy na REALNYM wywołaniu).
  *
  * Realna gra (bundle vite, headless Chromium, ?civTest=1, realne „Zakończ turę” -> nnsAiPreTickBalance z main.ts).
- * Scenariusz (tura >= 11): AI dostaje 40 dodatkowych jednostek (utrzymanie >> dochód) i skarbiec 0 — bez równoważenia
+ * Scenariusz (AI równoważy od tury 1): AI dostaje 40 dodatkowych jednostek (utrzymanie >> dochód) i skarbiec 0 — bez równoważenia
  * skarbiec po turze < 0 (i licznik kar deficytu rośnie); z równoważeniem skarbiec po turze >= 0 i kary deficytu
  * NIE wchodzą. Mutacja: ta sama sytuacja z flagą równoważenia WYŁĄCZONĄ -> test musi to wykryć (minus + licznik kary).
  *
@@ -67,7 +67,7 @@ async function main() {
     await page.waitForFunction(() => window.__nnsMeasureDebug.playerCities() > 0 && !window.__nnsMeasureDebug.awaitingFirstCity(), undefined, { timeout: 60000 });
     await wait(2000);
     await page.evaluate(() => { const h = window.__nnsMeasureDebug; h.setFast(true); try { window.__rebelProtectionTestDebug.disableVictoryCheckForTest(); } catch (_) {} });
-    // dojdź do tury 12 (tura >= 11 = równoważenie aktywne)
+    // dojdź do tury 12 (równoważenie AI jest aktywne od tury 1; test startuje dopiero od tury 12)
     for (let guard = 0; guard < 30; guard++) {
       const t = await page.evaluate(() => window.__nnsMeasureDebug.snapshot().turn);
       if (t >= 12) break;

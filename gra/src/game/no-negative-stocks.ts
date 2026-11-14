@@ -7,7 +7,8 @@
  * Zasady:
  *  - Próg liczony na stanie PO ticku tury (dochód − utrzymanie, zakupy, rekrutacja z kolejki),
  *    nie na chwilowym saldzie.
- *  - Tury 1–10 (włącznie) są zwolnione: brak blokady, brak równoważenia AI.
+ *  - Tury 1–10 (włącznie): gracz nie ma blokady „Zakończ turę” (wyjątek gracza). AI równoważy
+ *    od tury 1 (R-WEB-NNS-AI-BALANCE-FROM-TURN1-Q1, decyzja właściciela 2026-11-14).
  *  - Blokada gracza („Zakończ turę”) tylko wtedy, gdy prognoza po turze jest < 0 ORAZ GORSZA
  *    niż stan obecny. Stary zapis z ujemnym stanem, którego prognoza nie pogarsza się,
  *    nie blokuje gry na stałe (bezpieczny wyjątek, patrz `wyjatekStarego`).
@@ -345,8 +346,8 @@ export function projectNnsAfterTick(
 // R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1 (etap C2) — równoważenie AI po ticku.
 // ---------------------------------------------------------------------------
 
-/** Pierwsza tura, od której równoważenie AI jest aktywne (tury 1–10 wolne). */
-export const NNS_AI_BALANCE_TURN_MIN = NNS_WOLNE_TURY + 1;
+/** Pierwsza tura, od której równoważenie AI jest aktywne (od tury 1; wyjątek 1–10 dotyczy wyłącznie gracza). */
+export const NNS_AI_BALANCE_TURN_MIN = 1;
 
 /**
  * Flaga równoważenia AI (jedno miejsce). Domyślnie włączona. Wyłączenie jest używane

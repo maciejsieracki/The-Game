@@ -132,9 +132,9 @@ console.log('\n=== (2) SCENARIUSZ: Palisada -> Mury kamienne -> Mury ceglane PRZ
   assert(s2.bonus === 100 && s4.bonus === 150 && s6.bonus === 200, 'S5b bonus obrony 100 -> 150 -> 200 (bez zmian)');
   assert(idsOf(built, queue).length === 0, 'S5c gdy stoja mury ceglane, nic z lancucha nie jest oferowane');
   assert(p1.drewno === 120 && p1.kamien === 0 && p1.cegla === 0, 'F1 palisada: realnie pobrano drewno 120');
-  assert(p2.drewno === 160 && p2.kamien === 160 && p2.cegla === 160, 'F2 awans palisada->kamienne: PELNY koszt nowego 160/160/160 (bez odliczenia, bez zwrotu)');
+  assert(p2.drewno === 160 && p2.kamien === 160 && p2.cegla === 0, 'F2 awans palisada->kamienne: PELNY koszt nowego 160/160 BEZ cegly (Mury kamienne nie wymagaja cegly; bez odliczenia, bez zwrotu)');
   assert(p3.drewno === 320 && p3.kamien === 320 && p3.cegla === 320, 'F3 awans kamienne->ceglane: PELNY koszt nowego 320/320/320');
-  assert(sumOf(cs, 'drewno') === 2000 - 600 && sumOf(cs, 'kamien') === 2000 - 480 && sumOf(cs, 'cegla') === 2000 - 480, 'F4 magazyny po 3 etapach: -600/-480/-480 (stan faktyczny, nie arytmetyka cen)');
+  assert(sumOf(cs, 'drewno') === 2000 - 600 && sumOf(cs, 'kamien') === 2000 - 480 && sumOf(cs, 'cegla') === 2000 - 320, 'F4 magazyny po 3 etapach: -600/-480/-320 (cegla tylko na Murach ceglanych; stan faktyczny, nie arytmetyka cen)');
   console.log('  TABELA tura -> (budynki fortyfikacyjne, utrzymanie zl, bonus obrony):');
   for (const r of rows) console.log(`    ${r.turn}: [${r.built.join(',') || '-'}] utrzymanie=${r.gold} bonus=+${r.bonus}%`);
   assert(rows.every(r => r.built.length <= 1), 'S6 w zadnej turze wiecej niz jedna fortyfikacja w miescie');

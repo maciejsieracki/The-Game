@@ -195,7 +195,7 @@ Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarb
 
 **Mury kamienne** odblokowują się po **Murarstwie** w epoce Kamienia i dają **+150% Obrony**. **Mury ceglane** odblokowują się po **Budownictwie** w epoce Brązu i dają **+200% Obrony**. Ceglane Mury zachowują dawny identyfikator `mury`, więc istniejące zapisy zachowują ten sam poziom obrony. Każdy etap zastępuje słabszą fortyfikację; bonusy się nie sumują. Cytadela i Baszta nadal dodają swoje niezależne bonusy.
 
-Oba warianty używają dotychczasowego kosztu i utrzymania Murów: **35** pracy + **80** drewna, **80** kamienia i **80** cegły; **maks. 2 poziomy**, +12 pracy i +1 ¤/t na poziom.
+Koszt budowy: **Mury kamienne** — **35** pracy + **80** drewna i **80** kamienia (bez cegły); **Mury ceglane** — **35** pracy + **80** drewna, **80** kamienia i **80** cegły. Utrzymanie pieniężne obu: **2** ¤/t; **maks. 2 poziomy**, +12 pracy i +1 ¤/t na poziom.
 
 ### Przykład liczbowy
 

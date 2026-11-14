@@ -1,0 +1,12 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1
+GOAL: 3-6 ofert AI->gracz / 100 tur bez spamu. NIE OSIAGNIETY (0,22/100 tur); wymaga decyzji wlasciciela O1/O3.
+ZMIANY/COMMIT: kandydat c1748a0b7 (db887a9c1, 9ecf93179, c1748a0b7). Brak zmian w gra/src i gra/data (cooldown cofniety 5->15; ai-params.json identyczny jak przed runda). Netto: gra/tools/ai-trade-offer-frequency-up-test.cjs (nowy), measure-ai-trade-offer-frequency.cjs (MEAS_ECON, lejek), raporty 10/30, evidence. Kandydat NIE jest potomkiem bazy 4fb4f79a7 (powstal na 359d2df9c; main przesunal sie o 4 commity). git merge-tree 4fb4f79a7 + c1748a0b7 = czyste (drzewo 8fd352392). Integracja: merge (nie FF).
+TESTY (surowe, na c1748a0b7): npx tsc --noEmit exit 0; nowy test 17 pass/0 fail; ai-trade-proposal-branch-test 10/0; ai-trade-proposal-to-player-test 25 assertions; logic-test 213/213; tech-tree-test 20/0; research-test ALL GREEN; unit-replace-test 21/21; combat-test OK. Nowy test uruchomiony na drzewie bazy 4fb4f79a7: 17 pass/0 fail. ai-trade-oneshot-overpay-limit-test: FAIL (regex wywolania w main.ts) - identycznie na bazie 4fb4f79a7, dlug bazowy poza zakresem. Mutacji cooldownu 15->5 (4 FAIL wg obrony) nie powtarzano. Pelnych 5 bramek baza-vs-kandydat nie powtarzano poza wypisanymi: kandydat nie zmienia gra/src ani gra/data (git diff 359d2df9c..c1748a0b7 -- gra/src gra/data pusty).
+ZARZUTY: 1 (cooldown bez efektu) ODDAL - cofniete do 15 przez obrone. 2 (przyczyna = hipoteza bramki PN) DO DECYZJI CZLOWIEKA - O1: wyrownanie wyceny pnBalanceOpts vs pnOpts to zmiana uczciwosci/produktowa; NIE_ZMIERZONE. 3 (test zrodlowy) ODDAL - przepisany zachowaniowo. 4 (etykiety lejka) ODDAL - mapowanie opisane, evidence bazy nieprzeliczone (nota). 5 (zakres pomiaru, relacje 20/50) ODDAL - DODATEK: relacje bez wplywu. Zadnego NAPRAW.
+BLOKADY: decyzja wlasciciela O1 (wyrownanie wycen + pomiar 3x150, runda 3) albo O3 (zostaje 15, zamkniecie z wynikiem 0,22/100 tur). Do decyzji nie integrowac zmiany zachowania gry.
+RUNDY: FC r2 / 5
+NASTEPNY KROK: orkiestrator integruje merge c1748a0b7 (tylko narzedzia/testy/raporty, zero zmiany zachowania gry; deploy ROBOCZA niepotrzebny) i pyta wlasciciela ABC O1/O3.
+UWAGI-DLA-ORKIESTRATORA: dlug testowy oneshot-overpay (main.ts ~21006); main.ts pnBalanceOpts (~20958) bez tempoGry/proposalPnTurnsMultiplier vs pnOpts (~24249) - hipoteza O1. Srodowisko FC: node_modules zainstalowane lokalnie (npm ci) w worktree.
+DEPLOY/PUSH: NIE WYKONANO
