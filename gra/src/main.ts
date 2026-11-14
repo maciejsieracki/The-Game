@@ -770,6 +770,7 @@ import {
   type BattleSummaryWinner,
 } from './game/battle-summary';
 import type { PreBattleInfo, PreBattleUnit, PreBattleModifier } from './ui/preBattle';
+import { buildWeakenedNote, type WeakenedNote } from './game/battle-weakened-note';
 import { showHud, updateHud as refreshD1bHudRaw, hideHud, markMinimapDirty, updateMinimapViewport } from './ui/hud';
 import { createScopeMemo, hudPureScope, scopeObjectId } from './game/frame-memo';
 import {
@@ -34768,6 +34769,26 @@ async function boot(): Promise<void> {
       return leaderNameFromPool(civ, idx, era);
     }
 
+    /**
+     * R-WEB-BATTLE-WEAKENED-HUNGER-DEFICIT-WARNING-Q1: ostrzeżenie w oknie przed bitwą o karze
+     * głodu wojska / deficytu Złota strony (TYLKO WYŚWIETLANIE). Flagi te same co w
+     * runtimeToBattleUnit (isArmyHungry/isGoldDeficit && !cywil); mnożniki z econ-params --
+     * te same wartości, które dostaje silnik (buildEmpireFoodParams / buildGoldDeficitParams).
+     */
+    function preBattleWeakenedForRoster(roster: RuntimeUnit[]): WeakenedNote | undefined {
+      const ownerId = roster[0]?.ownerId ?? 0;
+      const hasFighters = roster.some(u => !isCivilianUnit(u));
+      const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
+      const gdParams = buildGoldDeficitParams(data.econParams, _menuDifficulty);
+      return buildWeakenedNote({
+        hungry: hasFighters && isArmyHungry(ownerId),
+        goldDeficit: hasFighters && isGoldDeficit(ownerId),
+        glodWojskaMult: efParams.glodWojskaStatMult,
+        zlotoDeficytMult: gdParams.zlotoDeficytStatMult,
+        barbarian: isBarbarian(ownerId),
+      });
+    }
+
     function preBattleSideFromRoster(roster: RuntimeUnit[], title: string, civLabel: string): PreBattleInfo['atakujacy'] {
       const ownerId = roster[0]?.ownerId ?? 0;
       return {
@@ -34783,6 +34804,7 @@ async function boot(): Promise<void> {
         // dostawal portret/ikone Grecji zamiast wlasnego sygnetu. Flaga isBarbarian ma
         // pierwszenstwo nad civId w renderze (preBattle.ts / battleScene.ts).
         isBarbarian: isBarbarian(ownerId),
+        oslabienie: preBattleWeakenedForRoster(roster),
         units: roster.map(preBattleUnitFromRuntime),
       };
     }
@@ -38046,6 +38068,7 @@ async function boot(): Promise<void> {
       eraForOwnerId: empireEpochForOwner,
       civIdForOwner: civTypeForOwner,
       isCityStateForOwner: (ownerId: number) => isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
+      oslabienieForRoster: preBattleWeakenedForRoster,
       lookupUnitDef,
       runtimeToBattleUnit,
       fortifyScaledDefFor: combatPowerScaledDefFor,
