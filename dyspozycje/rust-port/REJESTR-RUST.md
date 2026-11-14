@@ -1049,3 +1049,7 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 ## Przebieg (14.11, heartbeat 12:18): sloty puste, czeka na decyzje właściciela
 - **Trwających Workflow: 0** z 4. Nie uruchomiono nowych tematów: kandydaci z kolejki (CRED-HAK #120, ZLOZE #104, TOWER-TARGET #116) czekają na decyzję właściciela (zob. wpis wyżej). ZDOBYCIE-WIRING #115 wymaga rundy 2 (DODATEK r2: wariant B, poszerzona allowlista), a jego start wstrzymano do potwierdzenia.
 - **Parity:** `a381dd13f` (sprawdzone fetch). Dysk wolny: 15 GB.
+
+## Przebieg (14.11, heartbeat 12:48): sloty puste, czeka na decyzje właściciela
+- **Trwających Workflow: 0** z 4. Bez zmian względem 12:18: kandydaci czekają na decyzje właściciela (CRED-HAK A/B/C, ZLOZE a/b, TOWER-TARGET), a start ZDOBYCIE r2 wstrzymany do potwierdzenia.
+- **Parity:** `a381dd13f` (sprawdzone fetch). Dysk wolny: 15 GB.
