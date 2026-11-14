@@ -45,9 +45,28 @@ function summarize(outDir) {
     const rows = c.rows || [];
     const checked = rows.filter(r => r.turn > NNS_FREE_TURNS);
     const viol = checked.filter(r => r.sk < 0 || r.spichRaw < 0 || r.glod);
+    // klasyfikacja: ciągły dług (poprzednia tura tego właściciela też < 0 — w tym dług z tur wolnych 1-10, którego jedna tura
+    // równoważenia nie spłaci) vs nowy minus (poprzednia tura >= 0 — realny błąd równoważenia / rozjazd projekcji)
+    const byOwnerTurn = new Map();
+    for (const r of rows) byOwnerTurn.set(r.oid + ':' + r.turn, r);
+    const bad = r => r.sk < 0 || r.spichRaw < 0 || r.glod;
+    const newOnsets = [];
+    let carried = 0;
+    for (const r of viol) {
+      const prev = byOwnerTurn.get(r.oid + ':' + (r.turn - 1));
+      if (prev && bad(prev)) carried++;
+      else {
+        const ex = (c.exceptions || []).find(e => e.turn === r.turn && e.oid === r.oid);
+        newOnsets.push({ turn: r.turn, oid: r.oid, civ: r.civ, cityState: r.cs, sk: r.sk, spichRaw: r.spichRaw, glod: r.glod, przyczyna: ex ? ex.przyczyna : 'brak wpisu' });
+      }
+    }
+    const chainMax = {};
+    for (const r of viol) { const k = r.oid; (chainMax[k] = chainMax[k] || []).push(r.turn); }
+    const longestChain = Math.max(0, ...Object.values(chainMax).map(ts => { let best = 1, cur = 1; for (let i = 1; i < ts.length; i++) { cur = ts[i] === ts[i - 1] + 1 ? cur + 1 : 1; if (cur > best) best = cur; } return best; }));
     sum.cells.push({
       mode: c.mode, seed: c.seed, done: !!c.done, turnsRun: c.turnsRun, ownersMajor: c.ownersMajor, ownersCityState: c.ownersCityState,
-      rowsChecked: checked.length, violations: viol.length,
+      rowsChecked: checked.length, violations: viol.length, carriedDebtViolations: carried, newOnsetViolations: newOnsets.length, newOnsets, longestChainTurns: longestChain,
+      partial: !!c.partial, stoppedBy: c.stoppedBy || null, playerRefounds: c.playerRefounds || 0,
       violTreasury: checked.filter(r => r.sk < 0).length, violGranary: checked.filter(r => r.spichRaw < 0 || r.glod).length,
       minTreasury: checked.length ? Math.min(...checked.map(r => r.sk)) : null,
       minGranaryRaw: checked.length ? Math.min(...checked.map(r => r.spichRaw)) : null,
@@ -230,7 +249,9 @@ async function runCell(chromium, mode, seed, cellFile, prior) {
       // gracz (bierny, jedno miasto) może zostać podbity: gra czeka wtedy na założenie nowego miasta — zakładamy je ponownie,
       // a gdy się nie da, kończymy komórkę z jawną adnotacją (pomiar AI do tej tury jest nadal ważny)
       if (await page.evaluate(() => window.__nnsMeasureDebug.awaitingFirstCity())) {
-        const refound = await page.evaluate(() => window.__nnsMeasureDebug.foundFirstCity());
+        let refound = await page.evaluate(() => window.__nnsMeasureDebug.foundFirstCity());
+        // start gracza zajęty przez AI -> przenieś punkt startu na pierwszy wolny hex (hak pomiarowy, tylko ?civTest=1)
+        if (!refound) { const rf = await page.evaluate(() => window.__nnsMeasureDebug.refoundPlayerAnywhere()); refound = rf.ok; if (!rf.ok) res.refoundDiag = rf; }
         await wait(500);
         const still = await page.evaluate(() => window.__nnsMeasureDebug.awaitingFirstCity());
         res.playerRefounds = (res.playerRefounds || 0) + 1;
@@ -242,7 +263,9 @@ async function runCell(chromium, mode, seed, cellFile, prior) {
         await clearBlockers(page);
         r = await endTurnOnce(page);
         if (r.turn1 > r.turn0) break;
-        if (retry >= 6) throw new Error('tura nie przechodzi: ' + JSON.stringify(r) + ' blokady=' + JSON.stringify(endBlocks));
+        if (retry >= 12) throw new Error('tura nie przechodzi: ' + JSON.stringify(r) + ' blokady=' + JSON.stringify(endBlocks));
+        // bramka gracza (NNS, podtemat B): bierny gracz z prognoza < 0 nie moze zakonczyc tury -> wykonaj ruch naprawczy (rozwiaz partie jednostek gracza)
+        if (endBlocks.some(t => /NNS/.test(t))) { res.playerGateDisbands = (res.playerGateDisbands || 0) + 3; await page.evaluate(() => window.__nnsMeasureDebug.disbandPlayerUnits(3)); endBlocks.length = 0; }
         await page.keyboard.press('Escape').catch(() => {});
         await page.evaluate(() => {
           const re = /^(OK|Zamknij|Wróć|Rozumiem|Kontynuuj|Pomiń|Zamknij kartę|Wróć na mapę)$/i;
@@ -277,7 +300,7 @@ async function runCell(chromium, mode, seed, cellFile, prior) {
       for (const [oid, c] of [...alive.entries()]) {
         if (!nowIds.has(oid) && c > 0) {
           const recent = res.rows.filter(x => x.oid === oid && x.turn >= ended - 10).length;
-          res.eliminated.push({ oid, civ: (res.civs.find(x => x.oid === oid) || {}).civ, turn: ended, lastCities: c, rowsLast10: recent });
+          res.eliminated.push({ oid, civ: (res.civs.find(x => x.oid === oid) || {}).civ, cityState: !!(res.civs.find(x => x.oid === oid) || {}).cityState, turn: ended, lastCities: c, rowsLast10: recent });
           alive.delete(oid);
         }
       }

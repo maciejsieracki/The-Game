@@ -31437,6 +31437,51 @@ async function boot(): Promise<void> {
           return playerStartHex ? tryFoundPlayerCityAt(playerStartHex.q, playerStartHex.r) : false;
         },
         awaitingFirstCity: (): boolean => isAwaitingFirstPlayerCity(),
+        /**
+         * Runner: bierny gracz (jedno miasto) bywa podbity przed 150. turą. Przenosi punkt startu gracza na pierwszy
+         * wolny hex, na którym wolno założyć miasto, i zakłada tam miasto (pomiar AI trwa dalej). Tylko ?civTest=1.
+         */
+        refoundPlayerAnywhere: (): { ok: boolean; tried: number; reasons: Record<string, number> } => {
+          if (!isAwaitingFirstPlayerCity()) return { ok: true, tried: 0, reasons: {} };
+          const keys = Object.keys(map.hexes);
+          const reasons: Record<string, number> = {};
+          let tried = 0;
+          for (let i = 0; i < keys.length; i++) {
+            const kp = keys[i]!.split(',');
+            const hq = Number(kp[0]); const hr = Number(kp[1]);
+            if (kp.length !== 2 || !Number.isFinite(hq) || !Number.isFinite(hr)) continue;
+            const h = { q: hq, r: hr };
+            const base = canFoundCity(h.q, h.r, cities, map, {
+              ...foundingTerritoryOpts(ME()), ownerId: ME(), ownerEra: player.era ?? 1,
+              gameConfig: { cityLimitBase: _menuCityLimitBase },
+            });
+            if (!base.ok) { reasons[base.reason] = (reasons[base.reason] ?? 0) + 1; continue; }
+            tried++;
+            playerStartHexByOwner.set(ME(), { q: h.q, r: h.r });
+            if (tryFoundPlayerCityAt(h.q, h.r)) return { ok: true, tried, reasons };
+            if (tried >= 40) break;
+          }
+          return { ok: false, tried, reasons };
+        },
+        /**
+         * Runner: bramka „Zakończ turę” gracza (podtemat B) zatrzymuje turę, gdy prognoza gracza < 0 i istnieje ruch
+         * naprawczy. Pomiar dotyczy AI, a gracz jest bierny — runner rozwiązuje jego jednostki partiami (ruch naprawczy).
+         */
+        disbandPlayerUnits: (n: number): number => {
+          let removed = 0;
+          for (let i = units.length - 1; i >= 0 && removed < n; i--) {
+            if (units[i]!.ownerId !== ME()) continue;
+            units.splice(i, 1); removed++;
+          }
+          markCityStateDirty(); // cache prognozy bramki gracza (dirty-gated) musi przeliczyć się po zmianie jednostek
+          return units.filter(u => u.ownerId === ME()).length;
+        },
+        /** Test hooka: usuwa miasta i jednostki gracza (symulacja podboju biernego gracza). */
+        debugKillPlayer: (forgetOwnership?: boolean): void => {
+          if (forgetOwnership) playerEverOwnedCityByOwner.clear(); // jak po wczytaniu zapisu (zbiór nie jest w zapisie)
+          for (let i = cities.length - 1; i >= 0; i--) if (cities[i]!.ownerId === ME()) cities.splice(i, 1);
+          for (let i = units.length - 1; i >= 0; i--) if (units[i]!.ownerId === ME()) units.splice(i, 1);
+        },
         playerCities: (): number => cities.filter(c => c.ownerId === ME()).length,
         worldReady: (): boolean => playerStartHex !== null,
         quickSave: async (slot: string): Promise<boolean> => (await persistSaveToSlot(slot, 'nns-headless-measure')).ok,
