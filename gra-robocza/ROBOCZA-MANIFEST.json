@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "ab171a4c72cff6d39c871bb4709eaee3",
-  "bundleSha256": "2da231dcbd6e31caa6e751118d50bedc97afa33e9a796a436f047e300f4280ec",
-  "bundleBytes": 14688203,
+  "bundleMd5": "7ef7779dfc2d6a367a3f67e74a20d0b1",
+  "bundleSha256": "1b110f539c574a9efdfac74a436523e8b2b3b133a21c1f21410055d5765081cd",
+  "bundleBytes": 14688482,
   "sourceSnapshot": {
-    "source": "RIVERS-PERF FC 43f11d042 + SIEGE-NARROW FC 1ea7f8bb7",
+    "source": "R-WEB-UI-UNIT-CARD-STATS-ENGINE-CANON-Q1 FC 68d1d1836",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 707: Generacja swiata: pamiec srodka ladu w etapie Rzeki-uzupelnianie (BFS ziarna 22 Maly 4745 -> 1, ta sama suma kontrolna; mapy Maly 1-10 i Standardowy 22 bez zmian) oraz panel oblezenia: zwarty blok machin w 2 kolumnach (R-WEB-MAPGEN-RIVERS-FILL-CENTROID-PERF-Q1, R-WEB-UI-SIEGE-PANEL-NARROW-MACHINES-BLOCK-Q1)"
+    "FALA 708: Karty jednostek (miasto, panel jednostki, karta w wiadomosci) pokazuja atak/obrone/zdrowie/pancerz/obrazenia tak jak liczy je silnik walki; wspolny modul unitEngineStats"
   ],
   "verification": [
-    "tsc 0, logic 213/213, mapgen-rivers-fill-centroid-cache PASS (4745x), siege-panel-machines-block-fit PASS 6/6 w FC, 5 bramek zielone"
+    "tsc 0, logic-test 213/213, unit-card-stats-engine-canon-test PASS, unit-detail-card-entitycard-migration 40/0, vite build"
   ],
   "limits": [
-    "Nie zmierzono: Standardowy 1-10, czysty pomiar czasu generacji, siege-storm w Chromium; panel nadal wymaga przewiniecia (decyzja A)"
+    "NIE ZMIERZONO: zrzut Chromium karty Wojownika, wikiBundle/Civpedia, Bonus szarzy. Dla 67/75 jednostek zmieniaja sie widoczne liczby."
   ],
   "finalControl": {
-    "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES RIVERS 43f11d042 + SIEGE-NARROW 1ea7f8bb7. RIVERS: pamiec srodka ladu w etapie Rzeki-uzupelnianie (generacja swiata); ziarno 22 Maly: BFS 4745 -> 1, ta sama suma kontrolna 9f0c2884; Maly 1-10 i Standardowy 22 bez zmiany ukladu (11/11). SIEGE: blok machin w panelu oblezenia zwarty (siatka 2 kolumny; 106/119/186 px dla 1/2/4 typow, wczesniej 112/166/274), widoczny w calosci po przewinieciu panelu, 1280x800 i 1366x768; decyzja wlasciciela A: zostawic. NIE ZMIERZONO: Standardowy 1-10, czysty pomiar czasu, siege-storm w Chromium."
+    "status": "PASS",
+    "notes": "FC PASS CARD-STATS 68d1d1836. Karty jednostek (miasto, wiadomosc, panel jednostki) pokazuja statystyki z silnika walki (combatUnitFromDef): atak, obrona, zdrowie, pancerz, obrazenia; wspolny modul unitEngineStats.ts; 67/75 jednostek zmienia widoczne wartosci. NIE ZMIERZONO: zrzut Chromium karty Wojownika, wikiBundle/Civpedia, Bonus szarzy."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-14T14:03:51",
+  "hubGeneratedAt": "2026-11-14T14:06:55",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
-      "sizeBytes": 14688203
+      "md5": "7ef7779dfc2d6a367a3f67e74a20d0b1",
+      "sizeBytes": 14688482
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
-      "sizeBytes": 14688203
+      "md5": "7ef7779dfc2d6a367a3f67e74a20d0b1",
+      "sizeBytes": 14688482
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
-      "sizeBytes": 14688203
+      "md5": "7ef7779dfc2d6a367a3f67e74a20d0b1",
+      "sizeBytes": 14688482
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
-      "sizeBytes": 14688203
+      "md5": "7ef7779dfc2d6a367a3f67e74a20d0b1",
+      "sizeBytes": 14688482
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
-      "sizeBytes": 14688203
+      "md5": "7ef7779dfc2d6a367a3f67e74a20d0b1",
+      "sizeBytes": 14688482
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
-      "sizeBytes": 14688203
+      "md5": "7ef7779dfc2d6a367a3f67e74a20d0b1",
+      "sizeBytes": 14688482
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
-      "sizeBytes": 14688203
+      "md5": "7ef7779dfc2d6a367a3f67e74a20d0b1",
+      "sizeBytes": 14688482
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
-      "sizeBytes": 14688203
+      "md5": "7ef7779dfc2d6a367a3f67e74a20d0b1",
+      "sizeBytes": 14688482
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
-      "sizeBytes": 14688203
+      "md5": "7ef7779dfc2d6a367a3f67e74a20d0b1",
+      "sizeBytes": 14688482
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
-      "sizeBytes": 14688203
+      "md5": "7ef7779dfc2d6a367a3f67e74a20d0b1",
+      "sizeBytes": 14688482
     }
   ],
-  "md5": "ab171a4c72cff6d39c871bb4709eaee3",
+  "md5": "7ef7779dfc2d6a367a3f67e74a20d0b1",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

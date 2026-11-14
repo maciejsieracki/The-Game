@@ -1,3 +1,9 @@
+## ROBOCZA 7ef7779d -- 2026-11-14 -- FALA 708: Karty jednostek ze statystykami z silnika walki (testowa)
+
+- Karty jednostek (miasto, panel jednostki, karta w wiadomosci) pokazuja atak/obrone/zdrowie/pancerz/obrazenia tak jak liczy je silnik walki; wspolny modul unitEngineStats
+- Weryfikacja: tsc 0, logic-test 213/213, unit-card-stats-engine-canon-test PASS, unit-detail-card-entitycard-migration 40/0, vite build
+- Limity: NIE ZMIERZONO: zrzut Chromium karty Wojownika, wikiBundle/Civpedia, Bonus szarzy. Dla 67/75 jednostek zmieniaja sie widoczne liczby.
+
 ## ROBOCZA ab171a4c -- 2026-11-14 -- FALA 707: Rzeki szybciej + panel oblezenia zwezony (testowa)
 
 - Generacja swiata: pamiec srodka ladu w etapie Rzeki-uzupelnianie (BFS ziarna 22 Maly 4745 -> 1, ta sama suma kontrolna; mapy Maly 1-10 i Standardowy 22 bez zmian) oraz panel oblezenia: zwarty blok machin w 2 kolumnach (R-WEB-MAPGEN-RIVERS-FILL-CENTROID-PERF-Q1, R-WEB-UI-SIEGE-PANEL-NARROW-MACHINES-BLOCK-Q1)
