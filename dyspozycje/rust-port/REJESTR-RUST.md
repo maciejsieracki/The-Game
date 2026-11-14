@@ -1199,3 +1199,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **T3 ZLOZE-SYNC-MERGE:** rebase `3860f5bea` na `d22e75ed6` bez konfliktów → `533d46dd3`. Bramki w tle (`bi26zx6s0`). Po wyniku FF `parity-v2`. Do dopisania przy integracji: `NIEPODPIETE-MODULY.md:274` (usunięta funkcja).
 - **Parity:** `d22e75ed6` (po FF T1). **Dysk:** sprawdzić po bramkach T3.
 - **Następne kandydaty:** wpięcie R7K7C (#106) — podłoga Pracy w Ledger, zapis `city_stock`, wpięcie w D3; T2 (zerwanie i wojna, etap a) po T3; WIEZE 2B.
+
+## Przebieg (14.11, po 23:18): T3 zintegrowany na parity-v2
+- **T3 ZLOZE-SYNC-MERGE** zintegrowany: FC PASS-WITH-NOTES (`3860f5bea` przed rebase, po rebase `533d46dd3` na `d22e75ed6`). Bramki na `533d46dd3`: fmt 0, clippy 0, pełny `cargo test` 0 (3350 passed, 0 failed). FF `parity-v2`: `d22e75ed6` → `533d46dd3`. Refs: `refs/keep/ZLOZE-SYNC-MERGE-Q1-integ`, `rust-port-wip/ZLOZE-SYNC-MERGE-Q1`. Worktree `integ-t3` i `target` usunięte.
+- **Do zrobienia (dokumentacja, osobny FF):** `dyspozycje/rust-port/NIEPODPIETE-MODULY.md:274` wymienia usuniętą funkcję `sync_relation_status_from_deals`.
+- **Parity:** `533d46dd3`.
+- **Następne kandydaty:** wpięcie #106 (podłoga Pracy w Ledger, `city_stock`, D3); T2 (zerwanie i wojna, etap a); WIEZE 2B.
