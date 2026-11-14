@@ -1,0 +1,83 @@
+{
+  "seed": 271828,
+  "lastTurnRequested": 20,
+  "probeTurns": [
+    5,
+    10,
+    16,
+    20
+  ],
+  "ai": 1,
+  "warDeclaredAtTurn": 1,
+  "probes": [
+    {
+      "turn": 5,
+      "screenshot": "<WT>/dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-WAVE-689-697-B2-PANEL-AIAI-CITYCHANGE-Q1/b2-T5-seed271828.png",
+      "dom": {
+        "lines": [],
+        "totalLines": 68
+      }
+    },
+    {
+      "turn": 10,
+      "screenshot": "<WT>/dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-WAVE-689-697-B2-PANEL-AIAI-CITYCHANGE-Q1/b2-T10-seed271828.png",
+      "dom": {
+        "lines": [],
+        "totalLines": 68
+      }
+    },
+    {
+      "turn": 16,
+      "screenshot": "<WT>/dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-WAVE-689-697-B2-PANEL-AIAI-CITYCHANGE-Q1/b2-T16-seed271828.png",
+      "dom": {
+        "lines": [],
+        "totalLines": 68
+      }
+    },
+    {
+      "turn": 20,
+      "screenshot": "<WT>/dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-WAVE-689-697-B2-PANEL-AIAI-CITYCHANGE-Q1/b2-T20-seed271828.png",
+      "dom": {
+        "lines": [],
+        "totalLines": 68
+      }
+    }
+  ],
+  "turns": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21
+  ],
+  "stoppedBy": "koniec zakresu",
+  "pageErrors": [],
+  "lastState": {
+    "w": true,
+    "aw": true
+  },
+  "stateLog": [
+    {
+      "i": 0,
+      "w": true,
+      "aw": true
+    }
+  ],
+  "lastTurn": 21,
+  "elapsedSec": 19
+}

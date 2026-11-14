@@ -1,0 +1,1799 @@
+{
+  "scen": "speed",
+  "seed": 271828,
+  "tag": "-T22",
+  "lastTurnRequested": 22,
+  "probeTurns": [
+    5,
+    10,
+    16,
+    17,
+    18,
+    20
+  ],
+  "ai": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "warDeclaredAtTurn": 1,
+  "turns": [
+    {
+      "turn": 2,
+      "digest": "40c5e76e:143",
+      "owners": [],
+      "cities": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 2
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "sec": 0.8
+    },
+    {
+      "turn": 3,
+      "digest": "cbac58b:143",
+      "owners": [],
+      "cities": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 3
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "sec": 0.7
+    },
+    {
+      "turn": 4,
+      "digest": "ea7519a8:143",
+      "owners": [],
+      "cities": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 4
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "sec": 0.7
+    },
+    {
+      "turn": 5,
+      "digest": "b54a0f8b:143",
+      "owners": [],
+      "cities": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 5
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "sec": 0.7
+    },
+    {
+      "turn": 6,
+      "digest": "e0e31ad8:143",
+      "owners": [],
+      "cities": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 6
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "sec": 0.7
+    },
+    {
+      "turn": 7,
+      "digest": "232e3d7b:143",
+      "owners": [],
+      "cities": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 7
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "sec": 0.5
+    },
+    {
+      "turn": 8,
+      "digest": "52e58c83:142",
+      "owners": [],
+      "cities": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 8
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "sec": 0.5
+    },
+    {
+      "turn": 9,
+      "digest": "921cd214:142",
+      "owners": [],
+      "cities": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 9
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "sec": 0.5
+    },
+    {
+      "turn": 10,
+      "digest": "c8670f58:143",
+      "owners": [],
+      "cities": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 10
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "sec": 0.5
+    },
+    {
+      "turn": 11,
+      "digest": "f27cd8df:141",
+      "owners": [],
+      "cities": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 11
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "sec": 0.4
+    },
+    {
+      "turn": 12,
+      "digest": "bdd899d6:143",
+      "owners": [],
+      "cities": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 12
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "sec": 0.7
+    },
+    {
+      "turn": 13,
+      "digest": "c78dbbdb:143",
+      "owners": [],
+      "cities": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 13
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "sec": 0.5
+    },
+    {
+      "turn": 14,
+      "digest": "4100cc5c:143",
+      "owners": [],
+      "cities": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 14
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "sec": 0.5
+    },
+    {
+      "turn": 15,
+      "digest": "bbb01c61:143",
+      "owners": [],
+      "cities": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 15
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "sec": 0.3
+    },
+    {
+      "turn": 16,
+      "digest": "fcf53692:143",
+      "owners": [],
+      "cities": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 16
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "sec": 0.7
+    },
+    {
+      "turn": 17,
+      "digest": "97d95b13:143",
+      "owners": [],
+      "cities": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 17
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "sec": 0.4
+    },
+    {
+      "turn": 18,
+      "digest": "555b8006:143",
+      "owners": [],
+      "cities": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 18
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "sec": 0.6
+    },
+    {
+      "turn": 19,
+      "digest": "cc54ca05:143",
+      "owners": [],
+      "cities": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 19
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "sec": 0.4
+    },
+    {
+      "turn": 20,
+      "digest": "f7080305:143",
+      "owners": [],
+      "cities": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 20
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "sec": 0.4
+    },
+    {
+      "turn": 21,
+      "digest": "45b8b2ba:143",
+      "owners": [],
+      "cities": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 21
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "sec": 0.5
+    },
+    {
+      "turn": 22,
+      "digest": "12e7eb3f:143",
+      "owners": [],
+      "cities": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 22
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "sec": 0.3
+    },
+    {
+      "turn": 23,
+      "digest": "1b5e20ee:143",
+      "owners": [],
+      "cities": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "pair": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 23
+          }
+        }
+      ],
+      "entriesBeforeReject": [],
+      "sec": 0.7
+    }
+  ],
+  "probes": [
+    {
+      "turn": 5,
+      "digest": "b54a0f8b:143",
+      "owners": [],
+      "pairStates": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 5
+          }
+        }
+      ],
+      "cityCounts": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "entries": [],
+      "war": {
+        "battle": {
+          "preBattleOpen": false,
+          "pendingAuto": false,
+          "sceneOpen": false,
+          "summaryOpen": false,
+          "resolving": false
+        }
+      },
+      "overlayWait": {
+        "waitedMs": 10213,
+        "stillVisible": true,
+        "states": [
+          {
+            "visible": true,
+            "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 1:21"
+          }
+        ]
+      },
+      "screenshotNoOverlay": false,
+      "audience_1": {
+        "audienceOpen": true,
+        "audienceLines": [
+          "WOJNA",
+          "Propozycja pokoju / zawieszenia broni",
+          "zablokowany — trwa wojna",
+          "zablokowany — trwa wojna",
+          "zablokowane — trwa wojna",
+          "handel niedostępny w wojnie",
+          "handel niedostępny w wojnie",
+          "Wspólny wróg / namowa do wojny",
+          "zablokowane — wymaga pokoju (trwa wojna)",
+          "Wypowiedzenie wojny",
+          "już w stanie wojny",
+          "zablokowana — trwa wojna",
+          "zablokowana — trwa wojna",
+          "dar niedostępny w wojnie",
+          "Wypowiedzenie wojny",
+          "Stan bieżący: Relacja z perspektywy gracza 94 / 200 · Zaufanie 0 / 100 · Respekt 94 / 100 · nastawienie: Wrogi",
+          "RELACJE Z TOBĄ",
+          "Zaufanie",
+          "Respekt",
+          "(Zaufanie + Respekt)",
+          "Zmęczenie wojną 20%",
+          "Desperacja 0%",
+          "RELACJE Z INNYMI",
+          "W stanie wojny z",
+          "JUŻ W STANIE WOJNY",
+          "Wojna",
+          "ZAPROPONUJ POKÓJ",
+          "Pokój",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "DAR NIEDOSTĘPNY W WOJNIE",
+          "ZABLOKOWANA — TRWA WOJNA",
+          "ZABLOKOWANA — TRWA WOJNA"
+        ],
+        "audienceTextFull": "Audiencja dyplomatyczna\nNASTĘPNE\nWróć\nWOJNA\nRzymianie\nKamillus\nWładca · Brąz\nW +20 · Uczciwy\nATRYBUTY\nMoc militarna\n1224\nRekruci\n2 000 / 2 000\nPotencjał sojuszniczy\nNiski\nREPUTACJA\nWiarygodność\n+20 · Uczciwy\nREJESTR WIARYGODNOŚCI\nWartość startowa (trudność)\n+20\nSuma składowych (przed klamrą): +20 · klamra: +20\nSKARBIEC\nPieniądz (¤)\n4\nDochód\n+5 / turę\nDOBRA HANDLOWE\n▸\nSurowce\n(3)\nDrewno ×4\nKamien ×4\nGlina ×44\n▸\nTechnologie\n(12)\nObróbka drewna\nMurarstwo\nRolnictwo\nŁowiectwo\nŁucznictwo\nOswojenie zwierząt\nGarncarstwo\nMistycyzm\nWymiana\nGospodarka wodna\nKoło\nBrązownictwo\n▸\nInne\n—\nZnane frakcje\nStół negocjacji\nMożliwe umowy\n14\nŻądanie / oferta trybutu\nPropozycja pokoju / zawieszenia broni\nPakt o nieagresji\nzablokowany — trwa wojna\nSojusz (pełny lub defensywny)\nzablokowany — trwa wojna\nTraktat przemarszu\nzablokowane — trwa wojna\nTraktat handlowy\nhandel niedostępny w wojnie\nUmowa wymiany surowców\nhandel niedostępny w wojnie\nWymiana / sprzedaż technologii\nzablokowana — wymaga Zaufania 70 (masz 0)\nWspólny wróg / namowa do wojny\nzablokowana — wymaga Zaufania 50 (masz 0)\nUltimatum / groźba\nzablokowane — wymaga pokoju (trwa wojna)\nWypowiedzenie wojny\njuż w stanie wojny\nWasalizacja\nzablokowana — trwa wojna\nWchłonięcie\nzablokowana — trwa wojna\nPrezent / dar\ndar niedostępny w wojnie\nMy oferujemy\n0\nBrak naszych ofert.\nOni oferują\n0\nBrak ofert od nich.\nAktywne traktaty\n0\nBrak aktywnych traktatów.\nPUNKTY WYMIANY\nPW\nBrak aktywnej propozycji na stole — wyślij ofertę lub poczekaj na odpowiedź.\nZA CO CIĘ LUBIĄ\nBrak czynników.\nZA CO CIĘ NIE LUBIĄ\nRóżna kultura\n-5\nWypowiedzenie wojny\n-22\nStan bieżący: Relacja z perspektywy gracza 94 / 200 · Zaufanie 0 / 100 · Respekt 94 / 100 · nastawienie: Wrogi\nAsyria\nSzamszi-Adad I\nPrzedstawiciel · Brąz\nW +20 · Uczciwy\nWROGI\nATRYBUTY\nMoc militarna\n80\nRekruci\n0 / 0\nPotencjał sojuszniczy\nNiski\nRELACJE Z TOBĄ\nZaufanie\n0 / 100\nRespekt\n94 / 100\nRelacja z perspektywy gracza\n94 / 200\n(Zaufanie + Respekt)\nTy\nZmęczenie wojną 20%\nAsyria\nDesperacja 0%\nDOBRA HANDLOWE\n▸\nSurowce\n—\n▸\nTechnologie\n(1)\nWymiana\n▸\nInne\n—\nRELACJE Z INNYMI\nW stanie wojny z\nTy\nW sojuszu z\nBrak.\nPakt o nieagresji z\nBrak.\nHandluje z\nBrak.\nKultura: Asyryjska · obca kultura\nWojowniczy\nSamotny wilk\nIzolacjonista\nJUŻ W STANIE WOJNY\nWojna\nZAPROPONUJ POKÓJ\nPokój\nZABLOKOWANY — TRWA WOJNA\nSojusz\nZABLOKOWANY — TRWA WOJNA\nPakt\nHANDEL NIEDOSTĘPNY W WOJNIE\nHandel\nHANDEL NIEDOSTĘPNY W WOJNIE\nWymiana\nDAR NIEDOSTĘPNY W WOJNIE\nDar\nZABLOKOWANA — TRWA WOJNA\nWasal\nZABLOKOWANA — TRWA WOJNA\nWchłonięcie\nSZYBKA WYMIANA\nauto-uczciwa oferta",
+        "bodyHits": [
+          "WOJNA",
+          "Propozycja pokoju / zawieszenia broni",
+          "zablokowany — trwa wojna",
+          "zablokowany — trwa wojna",
+          "zablokowane — trwa wojna",
+          "handel niedostępny w wojnie",
+          "handel niedostępny w wojnie",
+          "Wspólny wróg / namowa do wojny",
+          "zablokowane — wymaga pokoju (trwa wojna)",
+          "Wypowiedzenie wojny",
+          "już w stanie wojny",
+          "zablokowana — trwa wojna",
+          "zablokowana — trwa wojna",
+          "dar niedostępny w wojnie",
+          "Wypowiedzenie wojny",
+          "Zmęczenie wojną 20%",
+          "Desperacja 0%",
+          "W stanie wojny z",
+          "JUŻ W STANIE WOJNY",
+          "Wojna",
+          "ZAPROPONUJ POKÓJ",
+          "Pokój",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "DAR NIEDOSTĘPNY W WOJNIE",
+          "ZABLOKOWANA — TRWA WOJNA",
+          "ZABLOKOWANA — TRWA WOJNA"
+        ],
+        "totalBodyLines": 239
+      },
+      "shot_1": "b2-speed-seed271828-T22-T5-aud1.png",
+      "proposalsAfterProbe": 0
+    },
+    {
+      "turn": 10,
+      "digest": "c8670f58:143",
+      "owners": [],
+      "pairStates": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 10
+          }
+        }
+      ],
+      "cityCounts": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "entries": [],
+      "war": {
+        "battle": {
+          "preBattleOpen": false,
+          "pendingAuto": false,
+          "sceneOpen": false,
+          "summaryOpen": false,
+          "resolving": false
+        }
+      },
+      "overlayWait": {
+        "waitedMs": 10074,
+        "stillVisible": true,
+        "states": [
+          {
+            "visible": true,
+            "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 1:35"
+          }
+        ]
+      },
+      "screenshotNoOverlay": false,
+      "audience_1": {
+        "audienceOpen": true,
+        "audienceLines": [
+          "WOJNA",
+          "Propozycja pokoju / zawieszenia broni",
+          "zablokowany — trwa wojna",
+          "zablokowany — trwa wojna",
+          "zablokowane — trwa wojna",
+          "handel niedostępny w wojnie",
+          "handel niedostępny w wojnie",
+          "Wspólny wróg / namowa do wojny",
+          "zablokowane — wymaga pokoju (trwa wojna)",
+          "Wypowiedzenie wojny",
+          "już w stanie wojny",
+          "zablokowana — trwa wojna",
+          "zablokowana — trwa wojna",
+          "dar niedostępny w wojnie",
+          "Wypowiedzenie wojny",
+          "Stan bieżący: Relacja z perspektywy gracza 93 / 200 · Zaufanie 0 / 100 · Respekt 93 / 100 · nastawienie: Wrogi",
+          "RELACJE Z TOBĄ",
+          "Zaufanie",
+          "Respekt",
+          "(Zaufanie + Respekt)",
+          "Zmęczenie wojną 45%",
+          "Desperacja 0%",
+          "RELACJE Z INNYMI",
+          "W stanie wojny z",
+          "JUŻ W STANIE WOJNY",
+          "Wojna",
+          "ZAPROPONUJ POKÓJ",
+          "Pokój",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "DAR NIEDOSTĘPNY W WOJNIE",
+          "ZABLOKOWANA — TRWA WOJNA",
+          "ZABLOKOWANA — TRWA WOJNA"
+        ],
+        "audienceTextFull": "Audiencja dyplomatyczna\nNASTĘPNE\nWróć\nWOJNA\nRzymianie\nKamillus\nWładca · Brąz\nW +20 · Uczciwy\nATRYBUTY\nMoc militarna\n1141\nRekruci\n2 000 / 2 000\nPotencjał sojuszniczy\nNiski\nREPUTACJA\nWiarygodność\n+20 · Uczciwy\nREJESTR WIARYGODNOŚCI\nWartość startowa (trudność)\n+20\nSuma składowych (przed klamrą): +20 · klamra: +20\nSKARBIEC\nPieniądz (¤)\n16\nDochód\n+4 / turę\nDOBRA HANDLOWE\n▸\nSurowce\n(3)\nDrewno ×15\nKamien ×9\nGlina ×99\n▸\nTechnologie\n(12)\nObróbka drewna\nMurarstwo\nRolnictwo\nŁowiectwo\nŁucznictwo\nOswojenie zwierząt\nGarncarstwo\nMistycyzm\nWymiana\nGospodarka wodna\nKoło\nBrązownictwo\n▸\nInne\n—\nZnane frakcje\nStół negocjacji\nMożliwe umowy\n14\nŻądanie / oferta trybutu\nPropozycja pokoju / zawieszenia broni\nPakt o nieagresji\nzablokowany — trwa wojna\nSojusz (pełny lub defensywny)\nzablokowany — trwa wojna\nTraktat przemarszu\nzablokowane — trwa wojna\nTraktat handlowy\nhandel niedostępny w wojnie\nUmowa wymiany surowców\nhandel niedostępny w wojnie\nWymiana / sprzedaż technologii\nzablokowana — wymaga Zaufania 70 (masz 0)\nWspólny wróg / namowa do wojny\nzablokowana — wymaga Zaufania 50 (masz 0)\nUltimatum / groźba\nzablokowane — wymaga pokoju (trwa wojna)\nWypowiedzenie wojny\njuż w stanie wojny\nWasalizacja\nzablokowana — trwa wojna\nWchłonięcie\nzablokowana — trwa wojna\nPrezent / dar\ndar niedostępny w wojnie\nMy oferujemy\n0\nBrak naszych ofert.\nOni oferują\n0\nBrak ofert od nich.\nAktywne traktaty\n0\nBrak aktywnych traktatów.\nPUNKTY WYMIANY\nPW\nBrak aktywnej propozycji na stole — wyślij ofertę lub poczekaj na odpowiedź.\nZA CO CIĘ LUBIĄ\nBrak czynników.\nZA CO CIĘ NIE LUBIĄ\nRóżna kultura\n-5\nWypowiedzenie wojny\n-22\nStan bieżący: Relacja z perspektywy gracza 93 / 200 · Zaufanie 0 / 100 · Respekt 93 / 100 · nastawienie: Wrogi\nAsyria\nSzamszi-Adad I\nPrzedstawiciel · Brąz\nW +20 · Uczciwy\nWROGI\nATRYBUTY\nMoc militarna\n80\nRekruci\n0 / 0\nPotencjał sojuszniczy\nNiski\nRELACJE Z TOBĄ\nZaufanie\n0 / 100\nRespekt\n93 / 100\nRelacja z perspektywy gracza\n93 / 200\n(Zaufanie + Respekt)\nTy\nZmęczenie wojną 45%\nAsyria\nDesperacja 0%\nDOBRA HANDLOWE\n▸\nSurowce\n—\n▸\nTechnologie\n(1)\nWymiana\n▸\nInne\n—\nRELACJE Z INNYMI\nW stanie wojny z\nTy\nW sojuszu z\nBrak.\nPakt o nieagresji z\nBrak.\nHandluje z\nBrak.\nKultura: Asyryjska · obca kultura\nWojowniczy\nSamotny wilk\nIzolacjonista\nJUŻ W STANIE WOJNY\nWojna\nZAPROPONUJ POKÓJ\nPokój\nZABLOKOWANY — TRWA WOJNA\nSojusz\nZABLOKOWANY — TRWA WOJNA\nPakt\nHANDEL NIEDOSTĘPNY W WOJNIE\nHandel\nHANDEL NIEDOSTĘPNY W WOJNIE\nWymiana\nDAR NIEDOSTĘPNY W WOJNIE\nDar\nZABLOKOWANA — TRWA WOJNA\nWasal\nZABLOKOWANA — TRWA WOJNA\nWchłonięcie\nSZYBKA WYMIANA\nauto-uczciwa oferta",
+        "bodyHits": [
+          "WOJNA",
+          "Propozycja pokoju / zawieszenia broni",
+          "zablokowany — trwa wojna",
+          "zablokowany — trwa wojna",
+          "zablokowane — trwa wojna",
+          "handel niedostępny w wojnie",
+          "handel niedostępny w wojnie",
+          "Wspólny wróg / namowa do wojny",
+          "zablokowane — wymaga pokoju (trwa wojna)",
+          "Wypowiedzenie wojny",
+          "już w stanie wojny",
+          "zablokowana — trwa wojna",
+          "zablokowana — trwa wojna",
+          "dar niedostępny w wojnie",
+          "Wypowiedzenie wojny",
+          "Zmęczenie wojną 45%",
+          "Desperacja 0%",
+          "W stanie wojny z",
+          "JUŻ W STANIE WOJNY",
+          "Wojna",
+          "ZAPROPONUJ POKÓJ",
+          "Pokój",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "DAR NIEDOSTĘPNY W WOJNIE",
+          "ZABLOKOWANA — TRWA WOJNA",
+          "ZABLOKOWANA — TRWA WOJNA"
+        ],
+        "totalBodyLines": 239
+      },
+      "shot_1": "b2-speed-seed271828-T22-T10-aud1.png",
+      "proposalsAfterProbe": 0
+    },
+    {
+      "turn": 16,
+      "digest": "fcf53692:143",
+      "owners": [],
+      "pairStates": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 16
+          }
+        }
+      ],
+      "cityCounts": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "entries": [],
+      "war": {
+        "battle": {
+          "preBattleOpen": false,
+          "pendingAuto": false,
+          "sceneOpen": false,
+          "summaryOpen": false,
+          "resolving": false
+        }
+      },
+      "overlayWait": {
+        "waitedMs": 10078,
+        "stillVisible": true,
+        "states": [
+          {
+            "visible": true,
+            "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 1:49"
+          }
+        ]
+      },
+      "screenshotNoOverlay": false,
+      "audience_1": {
+        "audienceOpen": true,
+        "audienceLines": [
+          "WOJNA",
+          "Propozycja pokoju / zawieszenia broni",
+          "zablokowany — trwa wojna",
+          "zablokowany — trwa wojna",
+          "zablokowane — trwa wojna",
+          "handel niedostępny w wojnie",
+          "handel niedostępny w wojnie",
+          "Wspólny wróg / namowa do wojny",
+          "zablokowane — wymaga pokoju (trwa wojna)",
+          "Wypowiedzenie wojny",
+          "już w stanie wojny",
+          "zablokowana — trwa wojna",
+          "zablokowana — trwa wojna",
+          "dar niedostępny w wojnie",
+          "Wypowiedzenie wojny",
+          "Stan bieżący: Relacja z perspektywy gracza 94 / 200 · Zaufanie 0 / 100 · Respekt 94 / 100 · nastawienie: Wrogi",
+          "RELACJE Z TOBĄ",
+          "Zaufanie",
+          "Respekt",
+          "(Zaufanie + Respekt)",
+          "Zmęczenie wojną 75%",
+          "Desperacja 88%",
+          "RELACJE Z INNYMI",
+          "W stanie wojny z",
+          "JUŻ W STANIE WOJNY",
+          "Wojna",
+          "ZAPROPONUJ POKÓJ",
+          "Pokój",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "DAR NIEDOSTĘPNY W WOJNIE",
+          "ZABLOKOWANA — TRWA WOJNA",
+          "ZABLOKOWANA — TRWA WOJNA"
+        ],
+        "audienceTextFull": "Audiencja dyplomatyczna\nNASTĘPNE\nWróć\nWOJNA\nRzymianie\nKamillus\nWładca · Brąz\nW +20 · Uczciwy\nATRYBUTY\nMoc militarna\n1156\nRekruci\n4 000 / 4 000\nPotencjał sojuszniczy\nNiski\nREPUTACJA\nWiarygodność\n+20 · Uczciwy\nREJESTR WIARYGODNOŚCI\nWartość startowa (trudność)\n+20\nSuma składowych (przed klamrą): +20 · klamra: +20\nSKARBIEC\nPieniądz (¤)\n48\nDochód\n+6 / turę\nDOBRA HANDLOWE\n▸\nSurowce\n(3)\nDrewno ×31\nKamien ×7\nGlina ×185\n▸\nTechnologie\n(12)\nObróbka drewna\nMurarstwo\nRolnictwo\nŁowiectwo\nŁucznictwo\nOswojenie zwierząt\nGarncarstwo\nMistycyzm\nWymiana\nGospodarka wodna\nKoło\nBrązownictwo\n▸\nInne\n—\nZnane frakcje\nStół negocjacji\nMożliwe umowy\n14\nŻądanie / oferta trybutu\nPropozycja pokoju / zawieszenia broni\nPakt o nieagresji\nzablokowany — trwa wojna\nSojusz (pełny lub defensywny)\nzablokowany — trwa wojna\nTraktat przemarszu\nzablokowane — trwa wojna\nTraktat handlowy\nhandel niedostępny w wojnie\nUmowa wymiany surowców\nhandel niedostępny w wojnie\nWymiana / sprzedaż technologii\nzablokowana — wymaga Zaufania 70 (masz 0)\nWspólny wróg / namowa do wojny\nzablokowana — wymaga Zaufania 50 (masz 0)\nUltimatum / groźba\nzablokowane — wymaga pokoju (trwa wojna)\nWypowiedzenie wojny\njuż w stanie wojny\nWasalizacja\nzablokowana — trwa wojna\nWchłonięcie\nzablokowana — trwa wojna\nPrezent / dar\ndar niedostępny w wojnie\nMy oferujemy\n0\nBrak naszych ofert.\nOni oferują\n0\nBrak ofert od nich.\nAktywne traktaty\n0\nBrak aktywnych traktatów.\nPUNKTY WYMIANY\nPW\nBrak aktywnej propozycji na stole — wyślij ofertę lub poczekaj na odpowiedź.\nZA CO CIĘ LUBIĄ\nBrak czynników.\nZA CO CIĘ NIE LUBIĄ\nRóżna kultura\n-5\nWypowiedzenie wojny\n-22\nStan bieżący: Relacja z perspektywy gracza 94 / 200 · Zaufanie 0 / 100 · Respekt 94 / 100 · nastawienie: Wrogi\nAsyria\nSzamszi-Adad I\nPrzedstawiciel · Brąz\nW +20 · Uczciwy\nWROGI\nATRYBUTY\nMoc militarna\n80\nRekruci\n0 / 0\nPotencjał sojuszniczy\nNiski\nRELACJE Z TOBĄ\nZaufanie\n0 / 100\nRespekt\n94 / 100\nRelacja z perspektywy gracza\n94 / 200\n(Zaufanie + Respekt)\nTy\nZmęczenie wojną 75%\nAsyria\nDesperacja 88%\nDOBRA HANDLOWE\n▸\nSurowce\n—\n▸\nTechnologie\n(1)\nWymiana\n▸\nInne\n—\nRELACJE Z INNYMI\nW stanie wojny z\nTy\nW sojuszu z\nBrak.\nPakt o nieagresji z\nBrak.\nHandluje z\nBrak.\nKultura: Asyryjska · obca kultura\nWojowniczy\nSamotny wilk\nIzolacjonista\nJUŻ W STANIE WOJNY\nWojna\nZAPROPONUJ POKÓJ\nPokój\nZABLOKOWANY — TRWA WOJNA\nSojusz\nZABLOKOWANY — TRWA WOJNA\nPakt\nHANDEL NIEDOSTĘPNY W WOJNIE\nHandel\nHANDEL NIEDOSTĘPNY W WOJNIE\nWymiana\nDAR NIEDOSTĘPNY W WOJNIE\nDar\nZABLOKOWANA — TRWA WOJNA\nWasal\nZABLOKOWANA — TRWA WOJNA\nWchłonięcie\nSZYBKA WYMIANA\nauto-uczciwa oferta",
+        "bodyHits": [
+          "WOJNA",
+          "Propozycja pokoju / zawieszenia broni",
+          "zablokowany — trwa wojna",
+          "zablokowany — trwa wojna",
+          "zablokowane — trwa wojna",
+          "handel niedostępny w wojnie",
+          "handel niedostępny w wojnie",
+          "Wspólny wróg / namowa do wojny",
+          "zablokowane — wymaga pokoju (trwa wojna)",
+          "Wypowiedzenie wojny",
+          "już w stanie wojny",
+          "zablokowana — trwa wojna",
+          "zablokowana — trwa wojna",
+          "dar niedostępny w wojnie",
+          "Wypowiedzenie wojny",
+          "Zmęczenie wojną 75%",
+          "Desperacja 88%",
+          "W stanie wojny z",
+          "JUŻ W STANIE WOJNY",
+          "Wojna",
+          "ZAPROPONUJ POKÓJ",
+          "Pokój",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "DAR NIEDOSTĘPNY W WOJNIE",
+          "ZABLOKOWANA — TRWA WOJNA",
+          "ZABLOKOWANA — TRWA WOJNA"
+        ],
+        "totalBodyLines": 239
+      },
+      "shot_1": "b2-speed-seed271828-T22-T16-aud1.png",
+      "proposalsAfterProbe": 0
+    },
+    {
+      "turn": 17,
+      "digest": "97d95b13:143",
+      "owners": [],
+      "pairStates": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 17
+          }
+        }
+      ],
+      "cityCounts": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "entries": [],
+      "war": {
+        "battle": {
+          "preBattleOpen": false,
+          "pendingAuto": false,
+          "sceneOpen": false,
+          "summaryOpen": false,
+          "resolving": false
+        }
+      },
+      "overlayWait": {
+        "waitedMs": 10063,
+        "stillVisible": true,
+        "states": [
+          {
+            "visible": true,
+            "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 2:01"
+          }
+        ]
+      },
+      "screenshotNoOverlay": false,
+      "audience_1": {
+        "audienceOpen": true,
+        "audienceLines": [
+          "WOJNA",
+          "Propozycja pokoju / zawieszenia broni",
+          "zablokowany — trwa wojna",
+          "zablokowany — trwa wojna",
+          "zablokowane — trwa wojna",
+          "handel niedostępny w wojnie",
+          "handel niedostępny w wojnie",
+          "Wspólny wróg / namowa do wojny",
+          "zablokowane — wymaga pokoju (trwa wojna)",
+          "Wypowiedzenie wojny",
+          "już w stanie wojny",
+          "zablokowana — trwa wojna",
+          "zablokowana — trwa wojna",
+          "dar niedostępny w wojnie",
+          "Wypowiedzenie wojny",
+          "Stan bieżący: Relacja z perspektywy gracza 94 / 200 · Zaufanie 0 / 100 · Respekt 94 / 100 · nastawienie: Wrogi",
+          "RELACJE Z TOBĄ",
+          "Zaufanie",
+          "Respekt",
+          "(Zaufanie + Respekt)",
+          "Zmęczenie wojną 80%",
+          "Desperacja 90%",
+          "RELACJE Z INNYMI",
+          "W stanie wojny z",
+          "JUŻ W STANIE WOJNY",
+          "Wojna",
+          "ZAPROPONUJ POKÓJ",
+          "Pokój",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "DAR NIEDOSTĘPNY W WOJNIE",
+          "ZABLOKOWANA — TRWA WOJNA",
+          "ZABLOKOWANA — TRWA WOJNA"
+        ],
+        "audienceTextFull": "Audiencja dyplomatyczna\nNASTĘPNE\nWróć\nWOJNA\nRzymianie\nKamillus\nWładca · Brąz\nW +20 · Uczciwy\nATRYBUTY\nMoc militarna\n1156\nRekruci\n4 000 / 4 000\nPotencjał sojuszniczy\nNiski\nREPUTACJA\nWiarygodność\n+20 · Uczciwy\nREJESTR WIARYGODNOŚCI\nWartość startowa (trudność)\n+20\nSuma składowych (przed klamrą): +20 · klamra: +20\nSKARBIEC\nPieniądz (¤)\n54\nDochód\n+6 / turę\nDOBRA HANDLOWE\n▸\nSurowce\n(3)\nDrewno ×33\nKamien ×6\nGlina ×201\n▸\nTechnologie\n(12)\nObróbka drewna\nMurarstwo\nRolnictwo\nŁowiectwo\nŁucznictwo\nOswojenie zwierząt\nGarncarstwo\nMistycyzm\nWymiana\nGospodarka wodna\nKoło\nBrązownictwo\n▸\nInne\n—\nZnane frakcje\nStół negocjacji\nMożliwe umowy\n14\nŻądanie / oferta trybutu\nPropozycja pokoju / zawieszenia broni\nPakt o nieagresji\nzablokowany — trwa wojna\nSojusz (pełny lub defensywny)\nzablokowany — trwa wojna\nTraktat przemarszu\nzablokowane — trwa wojna\nTraktat handlowy\nhandel niedostępny w wojnie\nUmowa wymiany surowców\nhandel niedostępny w wojnie\nWymiana / sprzedaż technologii\nzablokowana — wymaga Zaufania 70 (masz 0)\nWspólny wróg / namowa do wojny\nzablokowana — wymaga Zaufania 50 (masz 0)\nUltimatum / groźba\nzablokowane — wymaga pokoju (trwa wojna)\nWypowiedzenie wojny\njuż w stanie wojny\nWasalizacja\nzablokowana — trwa wojna\nWchłonięcie\nzablokowana — trwa wojna\nPrezent / dar\ndar niedostępny w wojnie\nMy oferujemy\n0\nBrak naszych ofert.\nOni oferują\n0\nBrak ofert od nich.\nAktywne traktaty\n0\nBrak aktywnych traktatów.\nPUNKTY WYMIANY\nPW\nBrak aktywnej propozycji na stole — wyślij ofertę lub poczekaj na odpowiedź.\nZA CO CIĘ LUBIĄ\nBrak czynników.\nZA CO CIĘ NIE LUBIĄ\nRóżna kultura\n-5\nWypowiedzenie wojny\n-22\nStan bieżący: Relacja z perspektywy gracza 94 / 200 · Zaufanie 0 / 100 · Respekt 94 / 100 · nastawienie: Wrogi\nAsyria\nSzamszi-Adad I\nPrzedstawiciel · Brąz\nW +20 · Uczciwy\nWROGI\nATRYBUTY\nMoc militarna\n80\nRekruci\n0 / 0\nPotencjał sojuszniczy\nNiski\nRELACJE Z TOBĄ\nZaufanie\n0 / 100\nRespekt\n94 / 100\nRelacja z perspektywy gracza\n94 / 200\n(Zaufanie + Respekt)\nTy\nZmęczenie wojną 80%\nAsyria\nDesperacja 90%\nDOBRA HANDLOWE\n▸\nSurowce\n—\n▸\nTechnologie\n(1)\nWymiana\n▸\nInne\n—\nRELACJE Z INNYMI\nW stanie wojny z\nTy\nW sojuszu z\nBrak.\nPakt o nieagresji z\nBrak.\nHandluje z\nBrak.\nKultura: Asyryjska · obca kultura\nWojowniczy\nSamotny wilk\nIzolacjonista\nJUŻ W STANIE WOJNY\nWojna\nZAPROPONUJ POKÓJ\nPokój\nZABLOKOWANY — TRWA WOJNA\nSojusz\nZABLOKOWANY — TRWA WOJNA\nPakt\nHANDEL NIEDOSTĘPNY W WOJNIE\nHandel\nHANDEL NIEDOSTĘPNY W WOJNIE\nWymiana\nDAR NIEDOSTĘPNY W WOJNIE\nDar\nZABLOKOWANA — TRWA WOJNA\nWasal\nZABLOKOWANA — TRWA WOJNA\nWchłonięcie\nSZYBKA WYMIANA\nauto-uczciwa oferta",
+        "bodyHits": [
+          "WOJNA",
+          "Propozycja pokoju / zawieszenia broni",
+          "zablokowany — trwa wojna",
+          "zablokowany — trwa wojna",
+          "zablokowane — trwa wojna",
+          "handel niedostępny w wojnie",
+          "handel niedostępny w wojnie",
+          "Wspólny wróg / namowa do wojny",
+          "zablokowane — wymaga pokoju (trwa wojna)",
+          "Wypowiedzenie wojny",
+          "już w stanie wojny",
+          "zablokowana — trwa wojna",
+          "zablokowana — trwa wojna",
+          "dar niedostępny w wojnie",
+          "Wypowiedzenie wojny",
+          "Zmęczenie wojną 80%",
+          "Desperacja 90%",
+          "W stanie wojny z",
+          "JUŻ W STANIE WOJNY",
+          "Wojna",
+          "ZAPROPONUJ POKÓJ",
+          "Pokój",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "DAR NIEDOSTĘPNY W WOJNIE",
+          "ZABLOKOWANA — TRWA WOJNA",
+          "ZABLOKOWANA — TRWA WOJNA"
+        ],
+        "totalBodyLines": 239
+      },
+      "shot_1": "b2-speed-seed271828-T22-T17-aud1.png",
+      "proposalsAfterProbe": 0
+    },
+    {
+      "turn": 18,
+      "digest": "555b8006:143",
+      "owners": [],
+      "pairStates": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 18
+          }
+        }
+      ],
+      "cityCounts": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "entries": [],
+      "war": {
+        "battle": {
+          "preBattleOpen": false,
+          "pendingAuto": false,
+          "sceneOpen": false,
+          "summaryOpen": false,
+          "resolving": false
+        }
+      },
+      "overlayWait": {
+        "waitedMs": 10080,
+        "stillVisible": true,
+        "states": [
+          {
+            "visible": true,
+            "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 2:12"
+          }
+        ]
+      },
+      "screenshotNoOverlay": false,
+      "audience_1": {
+        "audienceOpen": true,
+        "audienceLines": [
+          "WOJNA",
+          "Propozycja pokoju / zawieszenia broni",
+          "zablokowany — trwa wojna",
+          "zablokowany — trwa wojna",
+          "zablokowane — trwa wojna",
+          "handel niedostępny w wojnie",
+          "handel niedostępny w wojnie",
+          "Wspólny wróg / namowa do wojny",
+          "zablokowane — wymaga pokoju (trwa wojna)",
+          "Wypowiedzenie wojny",
+          "już w stanie wojny",
+          "zablokowana — trwa wojna",
+          "zablokowana — trwa wojna",
+          "dar niedostępny w wojnie",
+          "Wypowiedzenie wojny",
+          "Stan bieżący: Relacja z perspektywy gracza 94 / 200 · Zaufanie 0 / 100 · Respekt 94 / 100 · nastawienie: Wrogi",
+          "RELACJE Z TOBĄ",
+          "Zaufanie",
+          "Respekt",
+          "(Zaufanie + Respekt)",
+          "Zmęczenie wojną 85%",
+          "Desperacja 93%",
+          "RELACJE Z INNYMI",
+          "W stanie wojny z",
+          "JUŻ W STANIE WOJNY",
+          "Wojna",
+          "ZAPROPONUJ POKÓJ",
+          "Pokój",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "DAR NIEDOSTĘPNY W WOJNIE",
+          "ZABLOKOWANA — TRWA WOJNA",
+          "ZABLOKOWANA — TRWA WOJNA"
+        ],
+        "audienceTextFull": "Audiencja dyplomatyczna\nNASTĘPNE\nWróć\nWOJNA\nRzymianie\nKamillus\nWładca · Brąz\nW +20 · Uczciwy\nATRYBUTY\nMoc militarna\n1156\nRekruci\n4 000 / 4 000\nPotencjał sojuszniczy\nNiski\nREPUTACJA\nWiarygodność\n+20 · Uczciwy\nREJESTR WIARYGODNOŚCI\nWartość startowa (trudność)\n+20\nSuma składowych (przed klamrą): +20 · klamra: +20\nSKARBIEC\nPieniądz (¤)\n60\nDochód\n+6 / turę\nDOBRA HANDLOWE\n▸\nSurowce\n(3)\nDrewno ×35\nKamien ×5\nGlina ×217\n▸\nTechnologie\n(12)\nObróbka drewna\nMurarstwo\nRolnictwo\nŁowiectwo\nŁucznictwo\nOswojenie zwierząt\nGarncarstwo\nMistycyzm\nWymiana\nGospodarka wodna\nKoło\nBrązownictwo\n▸\nInne\n—\nZnane frakcje\nStół negocjacji\nMożliwe umowy\n14\nŻądanie / oferta trybutu\nPropozycja pokoju / zawieszenia broni\nPakt o nieagresji\nzablokowany — trwa wojna\nSojusz (pełny lub defensywny)\nzablokowany — trwa wojna\nTraktat przemarszu\nzablokowane — trwa wojna\nTraktat handlowy\nhandel niedostępny w wojnie\nUmowa wymiany surowców\nhandel niedostępny w wojnie\nWymiana / sprzedaż technologii\nzablokowana — wymaga Zaufania 70 (masz 0)\nWspólny wróg / namowa do wojny\nzablokowana — wymaga Zaufania 50 (masz 0)\nUltimatum / groźba\nzablokowane — wymaga pokoju (trwa wojna)\nWypowiedzenie wojny\njuż w stanie wojny\nWasalizacja\nzablokowana — trwa wojna\nWchłonięcie\nzablokowana — trwa wojna\nPrezent / dar\ndar niedostępny w wojnie\nMy oferujemy\n0\nBrak naszych ofert.\nOni oferują\n0\nBrak ofert od nich.\nAktywne traktaty\n0\nBrak aktywnych traktatów.\nPUNKTY WYMIANY\nPW\nBrak aktywnej propozycji na stole — wyślij ofertę lub poczekaj na odpowiedź.\nZA CO CIĘ LUBIĄ\nBrak czynników.\nZA CO CIĘ NIE LUBIĄ\nRóżna kultura\n-5\nWypowiedzenie wojny\n-22\nStan bieżący: Relacja z perspektywy gracza 94 / 200 · Zaufanie 0 / 100 · Respekt 94 / 100 · nastawienie: Wrogi\nAsyria\nSzamszi-Adad I\nPrzedstawiciel · Brąz\nW +20 · Uczciwy\nWROGI\nATRYBUTY\nMoc militarna\n80\nRekruci\n0 / 0\nPotencjał sojuszniczy\nNiski\nRELACJE Z TOBĄ\nZaufanie\n0 / 100\nRespekt\n94 / 100\nRelacja z perspektywy gracza\n94 / 200\n(Zaufanie + Respekt)\nTy\nZmęczenie wojną 85%\nAsyria\nDesperacja 93%\nDOBRA HANDLOWE\n▸\nSurowce\n—\n▸\nTechnologie\n(1)\nWymiana\n▸\nInne\n—\nRELACJE Z INNYMI\nW stanie wojny z\nTy\nW sojuszu z\nBrak.\nPakt o nieagresji z\nBrak.\nHandluje z\nBrak.\nKultura: Asyryjska · obca kultura\nWojowniczy\nSamotny wilk\nIzolacjonista\nJUŻ W STANIE WOJNY\nWojna\nZAPROPONUJ POKÓJ\nPokój\nZABLOKOWANY — TRWA WOJNA\nSojusz\nZABLOKOWANY — TRWA WOJNA\nPakt\nHANDEL NIEDOSTĘPNY W WOJNIE\nHandel\nHANDEL NIEDOSTĘPNY W WOJNIE\nWymiana\nDAR NIEDOSTĘPNY W WOJNIE\nDar\nZABLOKOWANA — TRWA WOJNA\nWasal\nZABLOKOWANA — TRWA WOJNA\nWchłonięcie\nSZYBKA WYMIANA\nauto-uczciwa oferta",
+        "bodyHits": [
+          "WOJNA",
+          "Propozycja pokoju / zawieszenia broni",
+          "zablokowany — trwa wojna",
+          "zablokowany — trwa wojna",
+          "zablokowane — trwa wojna",
+          "handel niedostępny w wojnie",
+          "handel niedostępny w wojnie",
+          "Wspólny wróg / namowa do wojny",
+          "zablokowane — wymaga pokoju (trwa wojna)",
+          "Wypowiedzenie wojny",
+          "już w stanie wojny",
+          "zablokowana — trwa wojna",
+          "zablokowana — trwa wojna",
+          "dar niedostępny w wojnie",
+          "Wypowiedzenie wojny",
+          "Zmęczenie wojną 85%",
+          "Desperacja 93%",
+          "W stanie wojny z",
+          "JUŻ W STANIE WOJNY",
+          "Wojna",
+          "ZAPROPONUJ POKÓJ",
+          "Pokój",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "DAR NIEDOSTĘPNY W WOJNIE",
+          "ZABLOKOWANA — TRWA WOJNA",
+          "ZABLOKOWANA — TRWA WOJNA"
+        ],
+        "totalBodyLines": 239
+      },
+      "shot_1": "b2-speed-seed271828-T22-T18-aud1.png",
+      "proposalsAfterProbe": 0
+    },
+    {
+      "turn": 20,
+      "digest": "f7080305:143",
+      "owners": [],
+      "pairStates": [
+        {
+          "a": 1,
+          "b": 0,
+          "st": {
+            "status": "wojna",
+            "truceUntilTurn": null,
+            "peaceUntilTurn": null,
+            "turn": 20
+          }
+        }
+      ],
+      "cityCounts": {
+        "me": 1,
+        "ai0": 0,
+        "citiesLen": 1,
+        "aiOwners": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "entries": [],
+      "war": {
+        "battle": {
+          "preBattleOpen": false,
+          "pendingAuto": false,
+          "sceneOpen": false,
+          "summaryOpen": false,
+          "resolving": false
+        }
+      },
+      "overlayWait": {
+        "waitedMs": 10101,
+        "stillVisible": true,
+        "states": [
+          {
+            "visible": true,
+            "text": "Tworzenie świata Standardowy · Kontynenty 7/10 · Rzeki — uzupełnianie Upłynęło: 2:24"
+          }
+        ]
+      },
+      "screenshotNoOverlay": false,
+      "audience_1": {
+        "audienceOpen": true,
+        "audienceLines": [
+          "WOJNA",
+          "Propozycja pokoju / zawieszenia broni",
+          "zablokowany — trwa wojna",
+          "zablokowany — trwa wojna",
+          "zablokowane — trwa wojna",
+          "handel niedostępny w wojnie",
+          "handel niedostępny w wojnie",
+          "Wspólny wróg / namowa do wojny",
+          "zablokowane — wymaga pokoju (trwa wojna)",
+          "Wypowiedzenie wojny",
+          "już w stanie wojny",
+          "zablokowana — trwa wojna",
+          "zablokowana — trwa wojna",
+          "dar niedostępny w wojnie",
+          "Wypowiedzenie wojny",
+          "Stan bieżący: Relacja z perspektywy gracza 94 / 200 · Zaufanie 0 / 100 · Respekt 94 / 100 · nastawienie: Wrogi",
+          "RELACJE Z TOBĄ",
+          "Zaufanie",
+          "Respekt",
+          "(Zaufanie + Respekt)",
+          "Zmęczenie wojną 95%",
+          "Desperacja 98%",
+          "RELACJE Z INNYMI",
+          "W stanie wojny z",
+          "JUŻ W STANIE WOJNY",
+          "Wojna",
+          "ZAPROPONUJ POKÓJ",
+          "Pokój",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "DAR NIEDOSTĘPNY W WOJNIE",
+          "ZABLOKOWANA — TRWA WOJNA",
+          "ZABLOKOWANA — TRWA WOJNA"
+        ],
+        "audienceTextFull": "Audiencja dyplomatyczna\nNASTĘPNE\nWróć\nWOJNA\nRzymianie\nKamillus\nWładca · Brąz\nW +20 · Uczciwy\nATRYBUTY\nMoc militarna\n1171\nRekruci\n6 000 / 6 000\nPotencjał sojuszniczy\nNiski\nREPUTACJA\nWiarygodność\n+20 · Uczciwy\nREJESTR WIARYGODNOŚCI\nWartość startowa (trudność)\n+20\nSuma składowych (przed klamrą): +20 · klamra: +20\nSKARBIEC\nPieniądz (¤)\n72\nDochód\n+9 / turę\nDOBRA HANDLOWE\n▸\nSurowce\n(3)\nDrewno ×39\nKamien ×3\nGlina ×249\n▸\nTechnologie\n(12)\nObróbka drewna\nMurarstwo\nRolnictwo\nŁowiectwo\nŁucznictwo\nOswojenie zwierząt\nGarncarstwo\nMistycyzm\nWymiana\nGospodarka wodna\nKoło\nBrązownictwo\n▸\nInne\n—\nZnane frakcje\nStół negocjacji\nMożliwe umowy\n14\nŻądanie / oferta trybutu\nPropozycja pokoju / zawieszenia broni\nPakt o nieagresji\nzablokowany — trwa wojna\nSojusz (pełny lub defensywny)\nzablokowany — trwa wojna\nTraktat przemarszu\nzablokowane — trwa wojna\nTraktat handlowy\nhandel niedostępny w wojnie\nUmowa wymiany surowców\nhandel niedostępny w wojnie\nWymiana / sprzedaż technologii\nzablokowana — wymaga Zaufania 70 (masz 0)\nWspólny wróg / namowa do wojny\nzablokowana — wymaga Zaufania 50 (masz 0)\nUltimatum / groźba\nzablokowane — wymaga pokoju (trwa wojna)\nWypowiedzenie wojny\njuż w stanie wojny\nWasalizacja\nzablokowana — trwa wojna\nWchłonięcie\nzablokowana — trwa wojna\nPrezent / dar\ndar niedostępny w wojnie\nMy oferujemy\n0\nBrak naszych ofert.\nOni oferują\n0\nBrak ofert od nich.\nAktywne traktaty\n0\nBrak aktywnych traktatów.\nPUNKTY WYMIANY\nPW\nBrak aktywnej propozycji na stole — wyślij ofertę lub poczekaj na odpowiedź.\nZA CO CIĘ LUBIĄ\nBrak czynników.\nZA CO CIĘ NIE LUBIĄ\nRóżna kultura\n-5\nWypowiedzenie wojny\n-22\nStan bieżący: Relacja z perspektywy gracza 94 / 200 · Zaufanie 0 / 100 · Respekt 94 / 100 · nastawienie: Wrogi\nAsyria\nSzamszi-Adad I\nPrzedstawiciel · Brąz\nW +20 · Uczciwy\nWROGI\nATRYBUTY\nMoc militarna\n80\nRekruci\n0 / 0\nPotencjał sojuszniczy\nNiski\nRELACJE Z TOBĄ\nZaufanie\n0 / 100\nRespekt\n94 / 100\nRelacja z perspektywy gracza\n94 / 200\n(Zaufanie + Respekt)\nTy\nZmęczenie wojną 95%\nAsyria\nDesperacja 98%\nDOBRA HANDLOWE\n▸\nSurowce\n—\n▸\nTechnologie\n(1)\nWymiana\n▸\nInne\n—\nRELACJE Z INNYMI\nW stanie wojny z\nTy\nW sojuszu z\nBrak.\nPakt o nieagresji z\nBrak.\nHandluje z\nBrak.\nKultura: Asyryjska · obca kultura\nWojowniczy\nSamotny wilk\nIzolacjonista\nJUŻ W STANIE WOJNY\nWojna\nZAPROPONUJ POKÓJ\nPokój\nZABLOKOWANY — TRWA WOJNA\nSojusz\nZABLOKOWANY — TRWA WOJNA\nPakt\nHANDEL NIEDOSTĘPNY W WOJNIE\nHandel\nHANDEL NIEDOSTĘPNY W WOJNIE\nWymiana\nDAR NIEDOSTĘPNY W WOJNIE\nDar\nZABLOKOWANA — TRWA WOJNA\nWasal\nZABLOKOWANA — TRWA WOJNA\nWchłonięcie\nSZYBKA WYMIANA\nauto-uczciwa oferta",
+        "bodyHits": [
+          "WOJNA",
+          "Propozycja pokoju / zawieszenia broni",
+          "zablokowany — trwa wojna",
+          "zablokowany — trwa wojna",
+          "zablokowane — trwa wojna",
+          "handel niedostępny w wojnie",
+          "handel niedostępny w wojnie",
+          "Wspólny wróg / namowa do wojny",
+          "zablokowane — wymaga pokoju (trwa wojna)",
+          "Wypowiedzenie wojny",
+          "już w stanie wojny",
+          "zablokowana — trwa wojna",
+          "zablokowana — trwa wojna",
+          "dar niedostępny w wojnie",
+          "Wypowiedzenie wojny",
+          "Zmęczenie wojną 95%",
+          "Desperacja 98%",
+          "W stanie wojny z",
+          "JUŻ W STANIE WOJNY",
+          "Wojna",
+          "ZAPROPONUJ POKÓJ",
+          "Pokój",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "ZABLOKOWANY — TRWA WOJNA",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "HANDEL NIEDOSTĘPNY W WOJNIE",
+          "DAR NIEDOSTĘPNY W WOJNIE",
+          "ZABLOKOWANA — TRWA WOJNA",
+          "ZABLOKOWANA — TRWA WOJNA"
+        ],
+        "totalBodyLines": 239
+      },
+      "shot_1": "b2-speed-seed271828-T22-T20-aud1.png",
+      "proposalsAfterProbe": 0
+    }
+  ],
+  "stoppedBy": "koniec zakresu",
+  "pageErrors": [],
+  "overlayLog": [
+    {
+      "m": "appendChild",
+      "turn": 1,
+      "t": 4349,
+      "stack": [
+        "at P6 (<BUNDLE>/index.html?civTest=1&civSeed=271828:4300:27)",
+        "at tB (<BUNDLE>/index.html?civTest=1&civSeed=271828:33253:307500)",
+        "at Object.startGame (<BUNDLE>/index.html?civTest=1&civSeed=271828:33253:202022)",
+        "at eval (eval at evaluate (:303:30), <anonymous>:1:31)",
+        "at UtilityScript.evaluate (<anonymous>:305:16)"
+      ]
+    }
+  ],
+  "startMs": 6091,
+  "overlayTimeline": [
+    {
+      "sec": 0,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 4/10 · Relief (góry i wzgórza) Upłynęło: 0:03"
+        }
+      ]
+    },
+    {
+      "sec": 5,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:08"
+        }
+      ]
+    },
+    {
+      "sec": 10,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:13"
+        }
+      ]
+    },
+    {
+      "sec": 15,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:18"
+        }
+      ]
+    },
+    {
+      "sec": 20,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:23"
+        }
+      ]
+    },
+    {
+      "sec": 25,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:28"
+        }
+      ]
+    },
+    {
+      "sec": 30,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:33"
+        }
+      ]
+    },
+    {
+      "sec": 35,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:38"
+        }
+      ]
+    },
+    {
+      "sec": 40,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:43"
+        }
+      ]
+    },
+    {
+      "sec": 45,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:48"
+        }
+      ]
+    },
+    {
+      "sec": 50,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:53"
+        }
+      ]
+    },
+    {
+      "sec": 55,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 0:58"
+        }
+      ]
+    },
+    {
+      "sec": 60,
+      "states": [
+        {
+          "visible": true,
+          "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 1:03"
+        }
+      ]
+    }
+  ],
+  "overlayAfterFound": [
+    {
+      "visible": true,
+      "text": "Tworzenie świata Standardowy · Kontynenty 6/10 · Rzeki — główne Upłynęło: 1:03"
+    }
+  ],
+  "me": 0,
+  "prepared": [
+    {
+      "ai": 1,
+      "res": {
+        "techMe": true,
+        "techAi": true,
+        "contact": true,
+        "discovered": true,
+        "status": "neutralni"
+      }
+    }
+  ],
+  "observedAis": [
+    1
+  ],
+  "preTurn": {
+    "turn": 1,
+    "digest": "9b797e43:141",
+    "owners": [],
+    "pairStates": [
+      {
+        "a": 1,
+        "b": 0,
+        "st": {
+          "status": "wojna",
+          "truceUntilTurn": null,
+          "peaceUntilTurn": null,
+          "turn": 1
+        }
+      }
+    ],
+    "cityCounts": {
+      "me": 1,
+      "ai0": 0,
+      "citiesLen": 1,
+      "aiOwners": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    "entries": [],
+    "war": {
+      "battle": {
+        "preBattleOpen": false,
+        "pendingAuto": false,
+        "sceneOpen": false,
+        "summaryOpen": false,
+        "resolving": false
+      }
+    }
+  },
+  "lastTurn": 23,
+  "turnTiming": [
+    {
+      "turn": 2,
+      "sec": 0.8,
+      "fast": false
+    },
+    {
+      "turn": 3,
+      "sec": 0.7,
+      "fast": false
+    },
+    {
+      "turn": 4,
+      "sec": 0.7,
+      "fast": false
+    },
+    {
+      "turn": 5,
+      "sec": 0.7,
+      "fast": false
+    },
+    {
+      "turn": 6,
+      "sec": 0.7,
+      "fast": false
+    },
+    {
+      "turn": 7,
+      "sec": 0.5,
+      "fast": false
+    },
+    {
+      "turn": 8,
+      "sec": 0.5,
+      "fast": false
+    },
+    {
+      "turn": 9,
+      "sec": 0.5,
+      "fast": false
+    },
+    {
+      "turn": 10,
+      "sec": 0.5,
+      "fast": false
+    },
+    {
+      "turn": 11,
+      "sec": 0.4,
+      "fast": false
+    },
+    {
+      "turn": 12,
+      "sec": 0.7,
+      "fast": false
+    },
+    {
+      "turn": 13,
+      "sec": 0.5,
+      "fast": false
+    },
+    {
+      "turn": 14,
+      "sec": 0.5,
+      "fast": false
+    },
+    {
+      "turn": 15,
+      "sec": 0.3,
+      "fast": false
+    },
+    {
+      "turn": 16,
+      "sec": 0.7,
+      "fast": false
+    },
+    {
+      "turn": 17,
+      "sec": 0.4,
+      "fast": false
+    },
+    {
+      "turn": 18,
+      "sec": 0.6,
+      "fast": false
+    },
+    {
+      "turn": 19,
+      "sec": 0.4,
+      "fast": false
+    },
+    {
+      "turn": 20,
+      "sec": 0.4,
+      "fast": false
+    },
+    {
+      "turn": 21,
+      "sec": 0.5,
+      "fast": false
+    },
+    {
+      "turn": 22,
+      "sec": 0.3,
+      "fast": false
+    },
+    {
+      "turn": 23,
+      "sec": 0.7,
+      "fast": false
+    }
+  ],
+  "elapsedSec": 152
+}
