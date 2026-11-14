@@ -1,3 +1,9 @@
+## ROBOCZA ebc457ed -- 2026-11-14 -- FALA 719: Wyzszy mur zastepuje nizszy na liscie budowy (testowa)
+
+- nowa budowa palisady znika po odblokowaniu Murow kamiennych, Mury kamienne znikaja po odblokowaniu Murow ceglanych; ulepszenie stojacego muru zostaje; Cytadela i baszta bez zmian
+- Weryfikacja: tsc 0; logic 213/213; fortifications-superseded-build 38/0; stack-repro 49/0; upgrade-chain-ai 13/0; upgrade-chain-ui Chromium 17/0; build Vite zielony
+- Limity: NIE ZMIERZONO: test sciezki administratora; palisada juz w kolejce zostaje po odblokowaniu Murarstwa (do decyzji); dlug Rust REPIN reguly muru
+
 ## ROBOCZA c84bae63 -- 2026-11-14 -- FALA 718: Mury kamienne bez kosztu cegly (testowa)
 
 - Mury kamienne (mury_kamienne): koszt 80 drewna + 80 kamienia bez cegly (karta 160/160), Mury ceglane zachowuja cegle; hasla Civpedii i katalog budynkow poprawione

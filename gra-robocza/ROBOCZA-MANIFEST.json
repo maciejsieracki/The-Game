@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "c84bae63f1950bb0f31c542b0aeb92d1",
-  "bundleSha256": "2579c12eb24734a96572f53162923a431c7c0c5e205f0199336ffd758c14ed70",
-  "bundleBytes": 14715162,
+  "bundleMd5": "ebc457edd6c9d7901adb1240b585adbb",
+  "bundleSha256": "9c27f3164dfd9fe25c514477ec6f60d532833245419b4bee18939a835ad463d3",
+  "bundleBytes": 14716568,
   "sourceSnapshot": {
-    "source": "main 2125ee040 (merge FC MURY b1d5bd9ee)",
+    "source": "main 24264d18d (merge FC WALLS-SUPERSEDE 301cb1917)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 718: Mury kamienne (mury_kamienne): koszt 80 drewna + 80 kamienia bez cegly (karta 160/160), Mury ceglane zachowuja cegle; hasla Civpedii i katalog budynkow poprawione"
+    "FALA 719: nowa budowa palisady znika po odblokowaniu Murow kamiennych, Mury kamienne znikaja po odblokowaniu Murow ceglanych; ulepszenie stojacego muru zostaje; Cytadela i baszta bez zmian"
   ],
   "verification": [
-    "tsc 0; logic 213/213; stone-walls-no-brick-cost 11/0; fortifications-stack-repro 49/0; koszty-surowcowe 161/0; Chromium: karta kosztu obu Murow"
+    "tsc 0; logic 213/213; fortifications-superseded-build 38/0; stack-repro 49/0; upgrade-chain-ai 13/0; upgrade-chain-ui Chromium 17/0; build Vite zielony"
   ],
   "limits": [
-    "NIE ZMIERZONO: pelna budowa przy 0 cegly w grze; entity-card-contract-test (brak WebGL); utrzymanie surowcowe Murow kamiennych bez cegly (skutek jednego zrodla kosztu); dlug Rust REPIN danych"
+    "NIE ZMIERZONO: test sciezki administratora; palisada juz w kolejce zostaje po odblokowaniu Murarstwa (do decyzji); dlug Rust REPIN reguly muru"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES STONE-WALLS r1 b1d5bd9ee / kod 8f5e61dad. Mury kamienne bez kosztu cegly (80 drewna, 80 kamienia; karta 160/160), Mury ceglane zachowuja cegle. Skutek: utrzymanie surowcowe Murow kamiennych bez cegly. Testy stone-walls-no-brick-cost 11/0, fortifications-stack-repro 49/0, koszty-surowcowe 161/0, tsc 0, logic 213/213. NIE ZMIERZONO: pelna budowa w grze przy 0 cegly; entity-card-contract-test nie dobiegl (brak canvas/WebGL)."
+    "notes": "FC PASS-WITH-NOTES WALLS-SUPERSEDE r1 301cb1917 / kod d27471925. Nowa budowa palisady znika po odblokowaniu Murow kamiennych, Mury kamienne znikaja po odblokowaniu ceglanych; ulepszenie stojacego muru zostaje; Cytadela i baszta bez zmian. Testy fortifications-superseded-build 38/0, stack-repro 49/0, upgrade-chain-ai 13/0, queue-cleanup 10/0, upgrade-chain-ui Chromium 17/0, tsc 0, logic 213/213. NIE ZMIERZONO: osobny test sciezki administratora; palisada juz w kolejce zostaje; dlug Rust REPIN."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-14T21:40:04",
+  "hubGeneratedAt": "2026-11-14T21:59:35",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "c84bae63f1950bb0f31c542b0aeb92d1",
-      "sizeBytes": 14715162
+      "md5": "ebc457edd6c9d7901adb1240b585adbb",
+      "sizeBytes": 14716568
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "c84bae63f1950bb0f31c542b0aeb92d1",
-      "sizeBytes": 14715162
+      "md5": "ebc457edd6c9d7901adb1240b585adbb",
+      "sizeBytes": 14716568
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "c84bae63f1950bb0f31c542b0aeb92d1",
-      "sizeBytes": 14715162
+      "md5": "ebc457edd6c9d7901adb1240b585adbb",
+      "sizeBytes": 14716568
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "c84bae63f1950bb0f31c542b0aeb92d1",
-      "sizeBytes": 14715162
+      "md5": "ebc457edd6c9d7901adb1240b585adbb",
+      "sizeBytes": 14716568
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "c84bae63f1950bb0f31c542b0aeb92d1",
-      "sizeBytes": 14715162
+      "md5": "ebc457edd6c9d7901adb1240b585adbb",
+      "sizeBytes": 14716568
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "c84bae63f1950bb0f31c542b0aeb92d1",
-      "sizeBytes": 14715162
+      "md5": "ebc457edd6c9d7901adb1240b585adbb",
+      "sizeBytes": 14716568
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "c84bae63f1950bb0f31c542b0aeb92d1",
-      "sizeBytes": 14715162
+      "md5": "ebc457edd6c9d7901adb1240b585adbb",
+      "sizeBytes": 14716568
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "c84bae63f1950bb0f31c542b0aeb92d1",
-      "sizeBytes": 14715162
+      "md5": "ebc457edd6c9d7901adb1240b585adbb",
+      "sizeBytes": 14716568
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "c84bae63f1950bb0f31c542b0aeb92d1",
-      "sizeBytes": 14715162
+      "md5": "ebc457edd6c9d7901adb1240b585adbb",
+      "sizeBytes": 14716568
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "c84bae63f1950bb0f31c542b0aeb92d1",
-      "sizeBytes": 14715162
+      "md5": "ebc457edd6c9d7901adb1240b585adbb",
+      "sizeBytes": 14716568
     }
   ],
-  "md5": "c84bae63f1950bb0f31c542b0aeb92d1",
+  "md5": "ebc457edd6c9d7901adb1240b585adbb",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
