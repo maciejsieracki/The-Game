@@ -18,14 +18,14 @@ Scenariusz: MEAS_ARM=prepared MEAS_ECON=1 MEAS_REL=80 MEAS_TURNS=150, ziarna 111
 
 Cel 3–6/100 NIE osiągnięty (0,89). Rozkład: 1/0,67/0,67/1,33 na 100 tur per ziarno; nie wszystkie 3 relacje (relacja przypięta na 80, jedna wartość; nie mnożona, zgodnie z dispatchem).
 
-Lejek po poprawce (r3-fix3, tury z 150): 
-| ziarno | pod cooldownem | pary (cd) | brak pary | brak nadwyżki AI | para null po obu stronach | ofert |
-|---|---|---|---|---|---|---|
-| 1111 | 15 | 2 | 135 | 6 | 129 | 1 |
-| 2222 | 15 | 5 | 135 | 7 | 128 | 1 |
-| 3333 | 30 | 3 | 120 | 6 | 114 | 2 |
+Lejek po poprawce (r3-fix3, 150 tur na ziarno; wartości z pola `funnel` w evidence/r3-fix3/cell-*-r80.json):
+| ziarno | tury pod cooldownem (cdTurns) | z parą w cooldownie (cdWithPair) | poza cooldownem z parą (noCdPair) | poza cooldownem bez pary (noCdNoPair) | w tym: brak nadwyżki AI (noCdNoAiSurplus) | w tym: para null po obu stronach (noCdPairNullBothSides) | ofert |
+|---|---|---|---|---|---|---|---|
+| 1111 | 15 | 2 | 0 | 135 | 6 | 129 | 1 |
+| 2222 | 15 | 5 | 0 | 135 | 7 | 128 | 1 |
+| 3333 | 30 | 3 | 0 | 120 | 6 | 114 | 2 |
 
-Uwaga: „pod cooldownem” = tury z aktywnym cooldownem propozycji (pole cdTurns w JSON); „pary” = tury z parą surowców, które przypadły w cooldownie (cdWithPair). Kolumny „brak pary”/„brak nadwyżki”/„para null” pochodzą z funnelLog-agregatu (noCdPair, noCdNoPair, noCdNoAiSurplus, noCdPairNullBothSides) i liczone są poza cooldownem; nie sumują się do 150, bo kategorie się nakładają. Przed poprawką (baza, r3-diag) pary były znajdowane w 121–137 turach, ale ofert było 0–1.
+Uwaga (poprawiona w obronie r3, zarzuty Evaluatora 6): kategorie sumują się dokładnie do 150 tur na ziarno: cdTurns + noCdPair + noCdNoPair = 150 (np. s1111: 15 + 0 + 135). noCdNoPair = noCdNoAiSurplus + noCdPairNullBothSides (np. s1111: 6 + 129 = 135). „pod cooldownem” = tury z aktywnym cooldownem propozycji (cdTurns); cdWithPair to podzbiór tur w cooldownie, w których para istniała. Przed poprawką (baza, r3-diag) pary były znajdowane w 121–137 turach, ale ofert było 0–1. Przyczyna spadku liczby tur z parą po poprawce: patrz 30-obrona-claude.md, odp. na zarzut 4.
 
 ## DIAGNOZA (dane, nie domysły; evidence/r3-diag/ — instrumentacja tylko logująca, cofnięta)
 
@@ -49,9 +49,9 @@ Wniosek o ryzyku spamu (dla przyszłej decyzji): po poprawce max 2 oferty/AI/150
 
 - `npx tsc --noEmit` → exit 0.
 - Bramki referencyjne (node tools/…): logic-test „LOGIC OK (213/213)”; tech-tree-test „20 pass, 0 fail”; research-test „PASSED: 33 / FAILED: 0”; unit-replace-test exit 0 (wszystkie [OK]); combat-test „All sanity checks passed.”; ai-trade-proposal-branch-test „10 passed, 0 failed”; ai-trade-proposal-to-player-test „25 assertions passed”.
-- Nowy test `gra/tools/ai-trade-offer-frequency-up-test.cjs`: „WYNIK: 12 OK, 0 FAIL” (exit 0). Części: A) zachowanie silnika (mnożnik per_turn); B) strażnik źródła parytetu w main.ts (pnCyclicOpts, brak trimu dla cyklicznej, bramka na pnCyclicOpts, evaluateExactPayload z payloadKeepsRealResourcesForPick); C) cooldown propozycji = 15 (bez zmian).
-  - Czerwony na bazie 6612d15: „WYNIK: 4 OK, 7 FAIL” (exit 1).
-  - Dowód mutacyjny (przywrócona stara bramka na pnBalanceOpts): „WYNIK: 9 OK, 2 FAIL” (exit 1). Plik main.ts przywrócono (cmp OK).
+- Test `gra/tools/ai-trade-offer-frequency-up-test.cjs` (po obronie r3: scalony z testem r2, jeden plik, zarzut 1 Evaluatora): „=== ai-trade-offer-frequency-up-test: 28 pass, 0 fail ===” (exit 0). Części: [R2-1..R2-4] (cooldown=15, odstęp, bramki decideAIDiplomacy, limit/zapis cooldownu — źródłowo); [R3-A] zachowanie silnika (mnożnik per_turn); [R3-B] strażnik źródła parytetu w main.ts (pnCyclicOpts, brak trimu dla cyklicznej, bramka na pnCyclicOpts, evaluateExactPayload z payloadKeepsRealResourcesForPick).
+  - Czerwony na bazie 6612d15 (main.ts z 6612d15 podmieniony na chwilę, potem przywrócony): „=== … 20 pass, 8 fail ===” (exit 1); wszystkie 8 FAIL to asercje [R3-B].
+  - Dowód mutacyjny (w main.ts linia 21030 `resolveProposalPn(balancedPayload, pnCyclicOpts)` zamieniona na `pnBalanceOpts`): „=== … 26 pass, 2 fail ===” (exit 1; FAIL: „bramka wejścia na stół … używa pnCyclicOpts”, „brak starej bramki na pnBalanceOpts…”). Plik main.ts przywrócony (git diff 86f4dc316 -- gra/src/main.ts puste).
 - `gra/tools/ai-trade-oneshot-overpay-limit-test.cjs`: exit 1 — znany dług z bazy (asercja tekstowa „main.ts enqueue filter calls aiOneshotHandelOverpaysPlayer(...)”); linia wywołania NIE zmieniona (sprawdzone grep: 1 trafienie w bazie i w poprawce). Nie naprawiano (dispatch r3 pkt 5).
 - `git diff --check`: czysto.
 - NIE_ZMIERZONO: zachowanie limitu „1 aktywna oferta/AI” i odstępu 15 tur na żywo (test r3 sprawdza tylko wartość cooldownu i strażnika parytetu; dedup/limit to istniejący kod). Nie dodano testu behawioralnego limitu/odstępu.
