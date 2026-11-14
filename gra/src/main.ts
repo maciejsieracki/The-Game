@@ -1166,7 +1166,7 @@ import {
   type SidePanelEventLink,
 } from './game/side-panel-event-link';
 import { isProductionBuildingEnabled, operationalBuiltIds, operationalBuiltByCity, setProductionBuildingEnabled, isToggleableProductionBuilding, buildEmpireProducersSnap } from './game/building-toggle';
-import { decideEndTurnGate, projectEmpireFoodAfterTick, NNS_WOLNE_TURY, type NnsEndTurnLevers, type NnsGateResult, type NnsProjection } from './game/no-negative-stocks';
+import { decideEndTurnGate, projectEmpireFoodAfterTick, type NnsEndTurnLevers, type NnsGateResult, type NnsProjection } from './game/no-negative-stocks';
 import { unitUpkeep, unitFoodPerTurn, loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, addResourceCosts, readBuildingResourceUpkeepRatio, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex, computeLostToNearerSiblingByCity } from './game/okolica';
@@ -22738,6 +22738,9 @@ async function boot(): Promise<void> {
     // R-WEB-ECON-NO-NEGATIVE-STOCKS-END-TURN-GATE-LEVERS-Q1: dźwignie podatku i racji gracza (0 = niedostępne).
     let _nnsPodatekZysk = 0;
     let _nnsRacjeZysk = 0;
+    // R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1: ile punktów % udziału podatku gracz może
+    // dodać (pełny podział na podatek minus obecny); 0 = brak danych. Zasila propozycję podatku do zera.
+    let _nnsPodatekPunkty = 0;
     function refreshLiveEmpireRates(): void {
       if (!empireEconDirty) return;   // D10: przelicz tylko po zmianie (trigger), nie co odświeżenie
       empireEconDirty = false;
@@ -22889,7 +22892,9 @@ async function boot(): Promise<void> {
       // z przełożonym podziałem / racjami, bez trwałej zmiany stanu (podział i racje przywracane w finally).
       _nnsPodatekZysk = 0;
       _nnsRacjeZysk = 0;
-      if (_nnsHumanForecast !== null && turn > NNS_WOLNE_TURY
+      _nnsPodatekPunkty = 0;
+      // R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1: dźwignie liczone od tury 1 (bez wyjątku 1–10).
+      if (_nnsHumanForecast !== null
         && (_nnsHumanForecast.skarbiecPo < 0 || _nnsHumanForecast.spichlerzPo < 0)) {
         try {
           const previewWithSplit = (splitMap: typeof ownerDefaultPodzialHandlu) => previewCityEconomy(
@@ -22907,6 +22912,7 @@ async function boot(): Promise<void> {
           if (altSplit.procentNauka !== meSplit.procentNauka || altSplit.procentPieniadz !== meSplit.procentPieniadz) {
             const pAlt = previewWithSplit(new Map(ownerDefaultPodzialHandlu).set(ME(), altSplit));
             _nnsPodatekZysk = Math.max(0, sumEconomyForPlayerCities(pAlt, cities).pieniadz - playerEcon.pieniadz);
+            _nnsPodatekPunkty = Math.max(0, altSplit.procentPieniadz - meSplit.procentPieniadz);
           }
           if (_nnsHumanForecast.spichlerzPo < 0 && playerCities.some(c => c.poziomRacji !== 0 || c.procentRozwoj !== 0)) {
             const savedRacje = playerCities.map(c => ({ c, poziom: c.poziomRacji, procent: c.procentRozwoj }));
@@ -22933,6 +22939,7 @@ async function boot(): Promise<void> {
           // Brak dźwigni = bramka liczy tylko jednostki (bezpieczny kierunek: brak zakleszczenia).
           _nnsPodatekZysk = 0;
           _nnsRacjeZysk = 0;
+          _nnsPodatekPunkty = 0;
           console.error('[NNS] dźwignie podatku/racji gracza nie powiodły się — bramka bez tych dźwigni:', errLev);
         }
       }
@@ -39523,7 +39530,7 @@ async function boot(): Promise<void> {
     function nnsGateForPlayer(): NnsGateResult {
       refreshLiveEmpireRates(); // dirty-gated: przelicza tylko po zmianie stanu ekonomii
       const f = _nnsHumanForecast;
-      if (!f) return { blokada: false, komunikat: '', dzwignie: [] };
+      if (!f) return { blokada: false, komunikat: '', dzwignie: [], zasob: null, prognoza: null, propozycjaPodatku: null, automatPoprawil: false };
       // Zarzut 4 (Evaluator): obecne salda czytane NA ŻYWO (cache dirty-gated mógłby mieć stare
       // saldo po grantGold/transferze złota bez markCityStateDirty). Z cache zostaje tylko DELTA
       // prognozy (netto tury), która zależy wyłącznie od ekonomii.
@@ -39536,7 +39543,11 @@ async function boot(): Promise<void> {
         spichlerzObecny: spLive,
         spichlerzPo: spLive + (f.spichlerzPo - f.spichlerzObecny),
       };
-      const levers: NnsEndTurnLevers = { podatekSkarbiec: _nnsPodatekZysk, suwakZywnosc: _nnsRacjeZysk };
+      const levers: NnsEndTurnLevers = {
+        podatekSkarbiec: _nnsPodatekZysk,
+        suwakZywnosc: _nnsRacjeZysk,
+        podatekPunkty: _nnsPodatekPunkty,
+      };
       return decideEndTurnGate(live, _nnsZyskSkarbiec, _nnsZyskSpichlerz, levers);
     }
 
