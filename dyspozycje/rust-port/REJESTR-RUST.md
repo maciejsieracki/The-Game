@@ -1093,3 +1093,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 ## Przebieg (14.11, heartbeat 17:48): sloty puste, czeka na decyzje właściciela
 - **Trwających Workflow: 0** z 4. Bez zmian względem 17:18: kandydaci czekają na decyzje właściciela (CRED-HAK A/B/C, ZLOZE a/b, TOWER-TARGET), start ZDOBYCIE r2 wstrzymany do potwierdzenia.
 - **Parity:** `a381dd13f` (sprawdzone fetch). Dysk wolny: 15 GB.
+
+## Przebieg (14.11, decyzje właściciela z pytań ABC → starty)
+- **Decyzje właściciela:** ZDOBYCIE r2 — uruchom (wariant B, baza `a381dd13f`, poszerzona allowlista); TOWER-TARGET — scalić z #96 (temat `R-RUSTPORT-P6-WIEZE-MERGE-Q1`); CRED-HAK — opcja A (`R-RUSTPORT-P6-WYPOWIEDZENIE-GRACZA-PORT-Q1`: port wypowiedzenia gracza, potem hak P4; sojusz i klaster poza zakresem); ZLOZE — opcja a (osobny temat `zloze_grants`, jeszcze NIE uruchomiony).
+- **Uruchomione (Workflow w tej sesji):** ZDOBYCIE-WIRING r2 `wf_e7cbec64-7dd`; WIEZE-MERGE `wf_8d676f92-b14`; WYPOWIEDZENIE-GRACZA-PORT `wf_fb93f982-e91`.
+- **Ryzyko bazy:** operator WIEZE-MERGE (`wf_8d676f92-b14-1`) stoi na `501f78c08`, a nie na `a381dd13f` — tak jak poprzedni TOWER-TARGET. Dispatch wymaga `merge-base` przed pracą; sprawdzić w raporcie r1.
+- **Wstrzymane:** ZLOZE (opcja a) do czasu zwolnienia miejsca na dysku (próg startu 8 GB). Dispatch do napisania po starcie.
+- **Zasada 10 w CLAUDE.md** (pytania ABC: opis przedmiotu na początku, zalety/wady każdej opcji, zawsze rekomendacja z uzasadnieniem) — zapisana i wypchnięta.
+- **Parity:** `a381dd13f`. Dysk: patrz linia wyżej w tym wpisie (sprawdzone przed startem trzeciego tematu).
