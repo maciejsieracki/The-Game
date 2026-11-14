@@ -141,7 +141,8 @@ function effectRows(m: AdministratorPanelModel): string {
  * Okno potwierdzenia jest wewnątrz panelu (bez window.confirm — patrz R-WEB-ADMIN-NATIVE-DIALOG-AND-TEXT-SPLIT-Q1).
  */
 export function administratorDismissConfirmText(m: AdministratorPanelModel): string {
-  const what = m.kind === 'city' ? 'miasta' : 'ulepszeń';
+  // Ten sam rzeczownik co nagłówek panelu (titleFor): „Administrator miasta” / „Administrator państwa”.
+  const what = m.kind === 'city' ? 'miasta' : 'państwa';
   return 'Zwolnić administratora ' + what + ' w mieście ' + m.cityName + '? Koszt zatrudnienia nie podlega zwrotowi.';
 }
 
