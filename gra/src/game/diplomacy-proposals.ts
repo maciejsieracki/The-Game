@@ -314,6 +314,8 @@ export interface ProposalEvalResult {
   wearinessPw?: number;
   /** Dane do podpowiedzi wiersza „Zmęczenie wojną” (tury wojny, utracone miasta, poziom zmęczenia 0..1). */
   wearinessInfo?: WearinessPwInfo;
+  /** R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 r3 (zarzut 1): strona, której wiersz Z trafia do tabeli: 'ai' = oferta gracz->AI (kolumna AI), 'player' = oferta AI->gracz (kolumna gracza). */
+  wearinessSide?: 'ai' | 'player';
 }
 
 /** R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (runda 2): dane tooltipa wiersza Z. */
@@ -1372,6 +1374,25 @@ export function evaluateProposal(
       // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: Z (PW) zmęczenia wojną w tabeli; undefined poza gałęzią R5.
       let wearyPwItem: number | undefined;
       let wearyInfo: WearinessPwInfo | undefined;
+      let wearySide: 'ai' | 'player' = 'ai';
+      // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 r3 (zarzut 1 Evaluatora, DODATEK pkt 3): kierunek AI -> gracz.
+      // Gdy AI jest autorem pokoju, a respondentem jest gracz, wiersz Z (ta sama funkcja wearinessPeaceItemPw,
+      // C = basePnCfg bez mnoznika cywilizacji — ZALOZENIE: bramka R5 nie dziala dla autora AI) trafia do
+      // kolumny GRACZA. Informacyjnie: basePn / pokojPwBalance / accepted NIE zmieniaja sie w tej galezi.
+      if (ctx.warState && !r5PlayerAuthors && !r5RespondentIsAi && !ctx.responderIsCityState) {
+        const aiToPlayerLevel = warWearinessLevel({
+          turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
+          lostCitiesTotal: Math.max(0, ctx.warState.lostCitiesResponder),
+          turnsSinceCityChange: ctx.warState.turnsSinceCityChange,
+        });
+        wearyPwItem = wearinessPeaceItemPw(basePnCfg, aiToPlayerLevel);
+        wearyInfo = {
+          turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
+          lostCities: Math.max(0, ctx.warState.lostCitiesResponder),
+          level: aiToPlayerLevel,
+        };
+        wearySide = 'player';
+      }
       if (ctx.warState && r5PlayerAuthors && r5RespondentIsAi && !ctx.responderIsCityState) {
         const r5Profile = resolveWarPeaceProfile(
           typeof ctx.responderPlayer?.typCywilizacji === 'string' ? ctx.responderPlayer.typCywilizacji : undefined,
@@ -1580,14 +1601,14 @@ export function evaluateProposal(
         return {
           accepted: false,
           pwBalance: pokojPwBalance,
-          wearinessPw: wearyPwItem,
+          wearinessPw: wearyPwItem, wearinessSide: wearySide,
           wearinessInfo: wearyInfo,
           reason: `Brakuje ${Math.abs(pokojPwBalance)} PW do uczciwej oferty pokoju @ Relacji `
             + `(baza ${basePn} PW) — dopłać, by wysłać`,
         };
       }
       return {
-        accepted: true, pwBalance: pokojPwBalance, wearinessPw: wearyPwItem, wearinessInfo: wearyInfo,
+        accepted: true, pwBalance: pokojPwBalance, wearinessPw: wearyPwItem, wearinessSide: wearySide, wearinessInfo: wearyInfo,
         reason: 'Warunki pokoju spełnione', oneShotTrade: true,
       };
     }

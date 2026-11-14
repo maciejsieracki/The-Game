@@ -121,5 +121,35 @@ for (const mnoznik of [0.7, 1.0, 1.5]) {
 PRICE.mnoznikCywMin = savedMin;
 PRICE.mnoznikCywMax = savedMax;
 
+// (f) kierunek AI -> gracz (R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 r3, zarzut 1): AI proponuje pokoj graczowi.
+// Wiersz Z trafia do kolumny gracza (wearinessSide = player). Galaz AI->gracz nie zmienia basePn, wiec accepted /
+// pwBalance nie zaleza od Z: porownanie z ta sama oferta przy zerowym Z (L=0, bez wojny w warState) — prawdziwa evaluateProposal.
+function aiToPlayerPeace({ t }) {
+  const entry = M.createNegotiation({ actionId: 'pokoj', proposerOwnerId: 1, responderOwnerId: 0, payload: {} }, 80, 'ai', 1);
+  const base = {
+    relation: WOJNA, stanWojny: true, turn: 80, proposerRespekt: 60, responderRespekt: 60, militaryRatio: 1,
+    respektWzgledny: 0.5, karaWspolnaGranica: false, difficulty: 'normal',
+    responderPlayer: { ownerId: 0, typCywilizacji: 'rzymianie' }, proposerPlayer: { ownerId: 1, typCywilizacji: 'grecy' },
+    authorOwnerId: 1,
+  };
+  const prop = M.negotiationAsProposal(entry);
+  const withWar = M.evaluateProposal(prop, Object.assign({}, base, {
+    warState: { turnsAtWar: t, lostCitiesResponder: 0, turnsSinceCityChange: t, responderRw: 0.5, responderPozycjaMilitarna: 'slabsza' },
+  }));
+  // Ten sam wynik bez warState (brak wiersza Z): ocena pokoju bez wojny jest niedostepna (guard stanWojny), wiec
+  // porownujemy z ta sama oferta przy warState o zerowym zmęczeniu (turnsAtWar=0 -> L=0, Z=0).
+  const zeroWar = M.evaluateProposal(prop, Object.assign({}, base, {
+    warState: { turnsAtWar: 0, lostCitiesResponder: 0, turnsSinceCityChange: 0, responderRw: 0.5, responderPozycjaMilitarna: 'slabsza' },
+  }));
+  return { withWar, zeroWar };
+}
+for (const t of [10, 15, 20]) {
+  const { withWar, zeroWar } = aiToPlayerPeace({ t });
+  const zExpected = t === 10 ? 0 : null; // tura 10: L=0,5 => x=0 => Z=0; tury 15/20: Z>0
+  check(`(f) AI->gracz tura ${t}: wiersz Z po stronie gracza (wearinessSide=player)`,
+    withWar.wearinessSide === 'player' && withWar.wearinessInfo && withWar.wearinessInfo.turnsAtWar === t
+    && (zExpected === 0 ? withWar.wearinessPw === 0 : withWar.wearinessPw > 0),
+    { side: withWar.wearinessSide, z: withWar.wearinessPw, info: withWar.wearinessInfo });
+}
 console.log(`diplo-weariness-pw-behavior-test: ${pass} pass / ${fail} fail`);
 process.exit(fail === 0 ? 0 : 1);

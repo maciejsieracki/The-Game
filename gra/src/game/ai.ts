@@ -6196,7 +6196,7 @@ import type { GameDifficulty } from './difficulty-cost';
 import { TypCywilizacji } from '../types/player';
 import {
   WAR_WEARINESS_PARAMS, warWearinessLevel, isWarWeary, loserDespair, despairStage, offerMultiplier,
-  wearyMilitaryShare, wearinessPeaceX,
+  wearyMilitaryShare, wearinessUnconditionalEndDue,
 } from './war-weariness';
 import {
   AI_TRADE_GOLD_MAX,
@@ -7051,7 +7051,7 @@ export function decideAIDiplomacy(
       && rel.partnerId === '0'
       && aiPeaceTimeOk
       // Ta sama funkcja x co w tabeli PW (war-weariness.ts: wearinessPeaceItemPw): x = 1 ⇔ Z = C ⇔ R = 0.
-      && wearinessPeaceX(wearyLevel) >= 1
+      && wearinessUnconditionalEndDue(wearyLevel)
     ) {
       komendy.push({
         type:     'zaproponuj_pokoj',

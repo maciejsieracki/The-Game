@@ -251,8 +251,13 @@ export interface WearinessTickOutcome {
  * kończy się pokojem BEZWARUNKOWYM (bez miasta, bez płatności). Dotyczy AI↔AI (tick) i AI→gracz (ai.ts, gracz decyduje).
  * Czysta funkcja; minimalny czas wojny (PEACE_PROPOSAL_MIN_WAR_TURNS) sprawdza wołający.
  */
+/**
+ * Koniec zmeczenia (pokoj bezwarunkowy). R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 r3 (zarzut 4 Evaluatora, jedna prawda):
+ * JEDNA funkcja z tabela PW: wearinessPeaceX(L) >= 1 (x = 1 <=> L >= progKoncaZmeczenia, Z = C, R = 0).
+ * Tick AI<->AI i ai.ts (galaz bezwarunkowa) wolaja TE SAMA funkcje co wearinessPeaceItemPw.
+ */
 export function wearinessUnconditionalEndDue(level: number, P: WarWearinessParams = WAR_WEARINESS_PARAMS): boolean {
-  return level >= P.zmeczenie.progKoncaZmeczenia;
+  return wearinessPeaceX(level, P) >= 1;
 }
 
 export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[] {
