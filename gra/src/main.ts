@@ -7519,6 +7519,7 @@ async function boot(): Promise<void> {
 
     function nnsAiPreTickBalance(ctx: NnsPreCtx): void {
       aiNnsHoldOwners.clear();
+      aiNnsUncoveredOwners.clear();
       if (turn < NNS_AI_BALANCE_TURN_MIN) return;
       const tTurn0 = performance.now();
       if (nnsUnitUpkeepTblCache === null) {
@@ -7659,6 +7660,7 @@ async function boot(): Promise<void> {
               if (cur.skPo >= 0 && cur.spPo >= 0) break;
             }
             pokryte = cur.skPo >= 0 && cur.spPo >= 0;
+            if (cur.skPo < 0) aiNnsUncoveredOwners.add(oid);
             if (!pokryte) {
               wyjatek = 'brak dostępnych dźwigni: pozostało skarbiec=' + Math.round(cur.skPo) + ' spichlerz=' + Math.round(cur.spPo)
                 + ' (obecny skarbiec=' + Math.round(first.sk0) + ' spichlerz=' + Math.round(first.sp0)
@@ -10743,6 +10745,8 @@ async function boot(): Promise<void> {
     const aiSkarbiecByOwner = new Map<number, number>();
     // C2/C3 (R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1): AI wstrzymane w tej turze (wypełniane w nnsAiPreTickBalance).
     const aiNnsHoldOwners = new Set<number>();
+    // R-WEB-NNS-AI-TURN2-NEGATIVE-TREASURY-Q1: AI, których skarbiec po równoważeniu nadal < 0 (dźwignie wyczerpane).
+    const aiNnsUncoveredOwners = new Set<number>();
     /** R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1: przychód BRUTTO złota AI z ostatniego ticku
      *  (aiEcon.pieniadz z bloku bankowania AI) -- baza prognozy dochodu netto w
      *  aiPurchaseReserveInputs. Brak wpisu (tura 1, po wczytaniu zapisu) = reguła rezerwy
@@ -40590,6 +40594,10 @@ async function boot(): Promise<void> {
               // (nnsAiPreTickBalance, wywołane przed advanceCityEconomy). Tu tylko rejestr pomiarowy:
               // skarbiec po bankowaniu i surowy spichlerz (przed klamrą do 0) tej tury.
               nnsRecordPostBank(oid, aiSkarb);
+              // R-WEB-NNS-AI-TURN2-NEGATIVE-TREASURY-Q1: dług AI, którego nie da się pokryć dźwigniami (np. 1 miasto,
+              // utrzymanie > dochód przy podatku 100% i bez jednostek poza obrońcą), nie narasta z tury na turę:
+              // skarbiec AI zamknięty w 0 (tylko owner z `aiNnsUncoveredOwners`; reszta bankowania bez zmian).
+              if (aiNnsUncoveredOwners.has(oid) && aiSkarb < 0) aiSkarb = 0;
               aiSkarbiecByOwner.set(oid, aiSkarb);
 
               // Pula Nauki AI — symetryczna z graczem (totalNauka z ekonomii miast) + bonus trudności.
