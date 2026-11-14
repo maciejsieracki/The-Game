@@ -30,7 +30,7 @@ import { collectAtkRosterNearCity } from '../units/battleRoster';
 import type { BattleEventLog } from '../units/battleRoster';
 import { battleReserveNotice } from '../game/post-battle-map';
 import type { PreBattleInfo, PreBattleCallbacks, PreBattleOptions } from '../ui/preBattle';
-import type { WeakenedNote } from '../game/battle-weakened-note';
+import type { WeakenedNote } from '../ui/battle-weakened-note';
 import type { BattleOpts, BattleResult, BattleUnit } from './battleScene';
 import type { CivBonusEntry } from '../game/civ-bonuses';
 import { setMood } from '../audio/muzyka-antyczna';

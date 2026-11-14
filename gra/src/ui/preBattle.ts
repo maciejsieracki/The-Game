@@ -12,7 +12,7 @@
 
 import type { CivBonusLite } from '../game/production';
 import { civCombatUnitShapeFromCategory, effectiveCombatBonusChipTexts } from '../game/civ-bonuses';
-import { weakenedNoteText, type WeakenedNote } from '../game/battle-weakened-note';
+import { weakenedNoteText, type WeakenedNote } from './battle-weakened-note';
 import { terrainIconSvg, civIconSvg, brandIconSvg } from './icons/brandAssets';
 import { PB_SVG } from '../battle/battleHudTheme';
 import { leaderPortraitUrl, leaderName } from './leaderPortraits';

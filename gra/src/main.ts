@@ -770,7 +770,7 @@ import {
   type BattleSummaryWinner,
 } from './game/battle-summary';
 import type { PreBattleInfo, PreBattleUnit, PreBattleModifier } from './ui/preBattle';
-import { buildWeakenedNote, type WeakenedNote } from './game/battle-weakened-note';
+import { buildWeakenedNote, type WeakenedNote } from './ui/battle-weakened-note';
 import { showHud, updateHud as refreshD1bHudRaw, hideHud, markMinimapDirty, updateMinimapViewport } from './ui/hud';
 import { createScopeMemo, hudPureScope, scopeObjectId } from './game/frame-memo';
 import {
