@@ -22,6 +22,7 @@ const HITS = (process.env.HITS || 'losowe,pewne').split(',');
 const FORTS = (process.env.FORTS || '0,1').split(',').map((x) => x === '1');
 const EXTRA = JSON.parse(process.env.EXTRA || '{}');
 const TMO = Number(process.env.TMO || 25000);
+const SEED0 = Number(process.env.SEED0 || 1000);
 const OUT = process.env.OUT || '';
 (async () => {
   const server = await createServer({ root, configFile: path.join(root, 'vite.config.ts'), logLevel: 'error', server: { host: '127.0.0.1', port: 0 } });
@@ -45,7 +46,7 @@ const OUT = process.env.OUT || '';
       for (;;) {
         const i = next++;
         if (i >= reps) return;
-        results[i] = await p.evaluate((c) => window.__probe.run(c), { unit: UNIT, atkOwner, hit, fortDef, path: pth, seed: 1000 + i, ...EXTRA });
+        results[i] = await p.evaluate((c) => window.__probe.run(c), { unit: UNIT, atkOwner, hit, fortDef, path: pth, seed: SEED0 + i, ...EXTRA });
       }
     }));
     let atkWins = 0, barbWins = 0, playerWins = 0, undecided = 0, inferred = 0, sumAtkLoss = 0, sumDefLoss = 0, bAtk = 0, bDef = 0, defFirst = 0;
