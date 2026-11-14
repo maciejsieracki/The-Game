@@ -77,10 +77,10 @@ for (const item of accepted.deal.handelSurowiecCykliczny) {
   cities = delivery.cities;
 }
 ok(cities[0].surowce.zelazo === candidate.receiveQty && cities[1].surowce.drewno === candidate.giveQty, 'accepted deal delivers each resource on the following cyclic tick');
-ok(AI_TRADE_BARTER_COOLDOWN_TURNS === 5, 'uses owner configured 5-turn AI barter cooldown (R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1)');
-ok(!canAiProposeResourceTrade(14, 10, AI_TRADE_BARTER_COOLDOWN_TURNS), 'barter cooldown blocks turn 14 (4 turns after offer)');
-ok(canAiProposeResourceTrade(15, 10, AI_TRADE_BARTER_COOLDOWN_TURNS), 'barter cooldown opens on turn 15');
-ok(canAiProposeResourceTrade(16, 10, AI_TRADE_BARTER_COOLDOWN_TURNS), 'barter cooldown stays open after turn 15');
+ok(AI_TRADE_BARTER_COOLDOWN_TURNS === 15, 'uses owner configured 15-turn AI barter cooldown');
+ok(!canAiProposeResourceTrade(24, 10, AI_TRADE_BARTER_COOLDOWN_TURNS), 'barter cooldown blocks turn 14');
+ok(canAiProposeResourceTrade(25, 10, AI_TRADE_BARTER_COOLDOWN_TURNS), 'barter cooldown opens on turn 15');
+ok(canAiProposeResourceTrade(26, 10, AI_TRADE_BARTER_COOLDOWN_TURNS), 'barter cooldown stays open after turn 15');
 const rejectKey = rejectCooldownKeyFor('zaproponuj_wymiane_cykliczna', 'handel');
 const rejected = recordRejectedOffer([], 2, rejectKey, 20);
 ok(rejectKey === 'wymiana_cykliczna' && isOfferRejectedOnCooldown(rejected, 2, rejectKey, 21), 'rejection records a separate cyclic barter key');
