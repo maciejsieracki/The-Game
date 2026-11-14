@@ -1272,7 +1272,7 @@ export function showBreakTreatyConfirmModal(
 }
 
 /** FAZA 2 pkt 2 — baner statusu formalnego (odrębny od nastawienia). */
-function formalBannerHtml(st: DiplomacyAudienceState): string {
+export function formalBannerHtml(st: DiplomacyAudienceState): string {
   if (!st.formalStatus) return '';
   const iconByKind: Record<FormalDiplomaticKind, string> = {
     wojna: 'dip-war', sojusz: 'dip-alliance', pakt: 'dip-pact', handel: 'cp-trade', pokoj: 'dip-peace', brak: 'dip-peace',
@@ -1291,8 +1291,8 @@ function formalBannerHtml(st: DiplomacyAudienceState): string {
     : '';
   return (
     '<div class="da-banner da-tone-' + st.formalStatus.kind + '"' +
-    ' title="Formalny stan umów — odrębny od nastawienia (Zaufanie/Respekt)">' +
-    icon + '<span class="da-b-lbl">' + esc(st.formalStatus.label.toUpperCase()) + '</span>' + sub +
+    ' title="Aktualny formalny stan umów między wami. To nie jest propozycja.">' +
+    icon + '<span class="da-b-lbl">' + esc('Stan: ' + st.formalStatus.label.toUpperCase()) + '</span>' + sub +
     '</div>'
   );
 }
