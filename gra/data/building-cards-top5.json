@@ -3,7 +3,7 @@
     "temat": "R-WEB-BUILDING-CARDS-TOP5-IMPLEMENT-Q1",
     "generator": "gra/tools/gen-building-cards-top5.cjs (+ gen-building-cards-top5.korekty.json)",
     "zrodloCsv": "budynki-top5.csv (FC c828a978f, docs 1c5009f71)",
-    "csvSha256": "74adc1a89a7a15355bc422baff32a062dbc5e8a84332c5e441e86514771177ac",
+    "csvSha256": "d3a79d928f41761227afa8c3d753cfe4d96c08c0bf06a743ee62f2396635cc3d",
     "pola": "top5:[{tytul, liczba?, zdanie, rodzaj:'efekt'|'warunek'|'rozbudowa', dowod?}] · cmz:[{czynnosc, korzysc}] · ukryty?:true · opisKarty?"
   },
   "stolarnia": {
@@ -290,7 +290,7 @@
       {
         "tytul": "Limit ludności miasta 5 → 8",
         "liczba": "5 → 8",
-        "zdanie": "Bez Spichlerza (i Akweduktu) miasto nie urośnie ponad 5 mieszkańców.",
+        "zdanie": "Bez Spichlerza (i Akweduktu) miasto nie urośnie ponad 5 mieszkańców. Spichlerz zużywa 10 ceramiki na turę.",
         "rodzaj": "efekt",
         "dowod": "gra/data/econ-params.json:24-37; gra/src/game/economy.ts:1053"
       },
