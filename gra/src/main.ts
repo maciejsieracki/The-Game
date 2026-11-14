@@ -30639,6 +30639,47 @@ async function boot(): Promise<void> {
           return true;
         },
         badgeTexts: (): string[] => siegeHtmlLabelBadgeEls.map(e => e.textContent ?? ''),
+        // R-WEB-LIVE-VERIFY-W18-W24-MANUAL-LOSSES-Q1 (r3), W18: MINIMALNY hak pomiarowy (tylko ?civTest=1).
+        // Uzasadnienie: oblezenie GRACZA (panel budowy machin) startuje wylacznie z gestu (klik miasta -> Oblezaj ->
+        // startMapSiege w domknieciu main.ts); preset ?playtest=oblezenie-duze to arena taktyczna, a skan AI oblega
+        // tylko miasta gracza. Hak NIE zawiera logiki gry: deleguje do REALNYCH classifyCityAttack + startMapSiege
+        // (ta sama sciezka co przycisk "Oblezaj") i do REALNEGO siegeEngineOptions / visibleSiegeEngineOptions.
+        startPlayerSiege: (cityId: string): { ok: boolean; why?: string; q?: number; r?: number } => {
+          const c = cities.find(x => x.id === cityId);
+          if (!c) return { ok: false, why: 'brak miasta' };
+          const anchor = units.find(u => u.ownerId === 0 && hexDistance(u.q, u.r, c.q, c.r) === 1);
+          if (!anchor) return { ok: false, why: 'brak jednostki gracza przy miescie' };
+          const ctx = classifyCityAttack(anchor, c, units);
+          startMapSiege(ctx);
+          return { ok: c.oblegane === true && c.oblegajacyOwnerId === 0, why: 'tryb=' + ctx.tryb, q: anchor.q, r: anchor.r };
+        },
+        /** Zastepuje zbior zbadanych technologii gracza podanym zestawem (izolacja jednej technologii). */
+        setResearchedTechs: (names: string[]): string[] => {
+          const s = ownerResearchedTechs(0) as Set<string>;
+          s.clear();
+          for (const n of names) s.add(n);
+          return Array.from(s);
+        },
+        /** Odczyt (tylko do pomiaru): zbior technologii gracza w stanie biezacym (np. stan startowy presetu). */
+        researchedTechs: (): string[] => Array.from(ownerResearchedTechs(0) as Set<string>),
+        /** Opcje budowy machin z bramki (siegeEngineOptions) + widocznosc z visibleSiegeEngineOptions. */
+        siegeOptions: (cityId: string): Array<{ unit: string; tech: string; visible: boolean; allowed: boolean; reason: string | null }> | null => {
+          const c = cities.find(x => x.id === cityId);
+          if (!c) return null;
+          const all = siegeEngineOptions(c);
+          const vis = new Set(visibleSiegeEngineOptions(all, new Set(unlockedTechsForOwner(0))).map(o => o.unit.Jednostka));
+          return all.map(o => ({ unit: o.unit.Jednostka, tech: String(o.unit.Tech ?? ''), visible: vis.has(o.unit.Jednostka), allowed: o.allowed, reason: o.reason ?? null }));
+        },
+        /** Skarbiec gracza + zapas surowcow miast gracza (stan wejsciowy; budowa idzie realnym buildSiegeEngine). */
+        fundPlayer: (gold: number): void => {
+          setOwnerTreasury(0, gold);
+          for (const c of cities) {
+            if (c.ownerId !== 0) continue;
+            const stock: Record<string, number> = { ...(c.surowce ?? {}) };
+            for (const u of data.units) for (const k of Object.keys(unitStockCost(u))) stock[k] = 100000;
+            c.surowce = stock;
+          }
+        },
       };
     }
 
