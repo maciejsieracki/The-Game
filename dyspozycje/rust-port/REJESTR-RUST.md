@@ -1101,3 +1101,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Wstrzymane:** ZLOZE (opcja a) do czasu zwolnienia miejsca na dysku (próg startu 8 GB). Dispatch do napisania po starcie.
 - **Zasada 10 w CLAUDE.md** (pytania ABC: opis przedmiotu na początku, zalety/wady każdej opcji, zawsze rekomendacja z uzasadnieniem) — zapisana i wypchnięta.
 - **Parity:** `a381dd13f`. Dysk: patrz linia wyżej w tym wpisie (sprawdzone przed startem trzeciego tematu).
+
+## Przebieg (14.11, heartbeat 19:17): sloty puste, dwa pytania ABC czekają na decyzję właściciela
+- **Trwających Workflow: 0** z 4. Zakończone przed restartem kontenera: ZDOBYCIE r2 (BLOCK, brak produkcyjnej ścieżki przejęcia), WIEZE-MERGE (BLOCK, zakres za duży dla jednej rundy; FC FAIL), WYPOWIEDZENIE-GRACZA-PORT (BLOCK, brak wejścia gracza w `EngineCommand`; FC PASS-WITH-NOTES). Wyniki: `/tmp/claude-0/.../tasks/wfvo3bdu6.output`, `whixrqmxs.output`; commity na gałęziach `wip/*`.
+- **Oczekuje na decyzję (ABC w czacie):** #115 (A1/A2/A3) i #120 (A: wariant w EngineCommand / B: wywołanie wewnątrz silnika).
+- **Decyzja techniczna (zasada 9):** źródło statystyk strzelca wieży (`towerShooterRow`) — stałe z pina `battleScene.ts`, nie wiersz tabeli jednostek.
+- **Dysk:** po sprzątaniu 17 GB wolnego; usunięte 14 czystych worktree zakończonych uruchomień (commity zostają na `wip/*`) i cache cargo w scratchpadzie.
+- **Parity:** `a381dd13f`.
