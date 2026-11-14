@@ -13,7 +13,7 @@ const plugin = {
     b.onLoad({ filter: /gen-helpers\.ts$/ }, (a) => {
       let s = fs.readFileSync(a.path, 'utf8');
       if (instr) {
-        const names = ['growRiverInlandBeforeDrainage', 'estimateLandCentroidFromSeed', 'aStarRiverToTarget', 'aStarRiverToSea'];
+        const names = ['growRiverInlandBeforeDrainage', 'estimateLandCentroidFromSeed', 'estimateLandCentroidFromSeedUncached', 'aStarRiverToTarget', 'aStarRiverToSea'];
         for (const n of names) {
           // Początek ciała: pierwszy wiersz zaczynający się od ")" i kończący na "{" po sygnaturze
           // (jednowierszowe sygnatury: "function n(...): T {" w jednym wierszu).

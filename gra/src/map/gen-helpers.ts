@@ -6136,6 +6136,26 @@ function estimateLandCentroidFromSeed(
   allowReliefTraversal: boolean,
   visitCap = 6000,
 ): { q: number; r: number } | null {
+  const memo = landCentroidMemo;
+  const memoKey = `${mq},${mr},${allowReliefTraversal ? 1 : 0},${visitCap}`;
+  if (memo && memo.hexes === hexes) {
+    const hit = memo.map.get(memoKey);
+    if (hit !== undefined) return hit ? { q: hit.q, r: hit.r } : null;
+  }
+  const result = estimateLandCentroidFromSeedUncached(hexes, mq, mr, allowReliefTraversal, visitCap);
+  if (memo && memo.hexes === hexes) {
+    memo.map.set(memoKey, result ? { q: result.q, r: result.r } : null);
+  }
+  return result;
+}
+
+function estimateLandCentroidFromSeedUncached(
+  hexes: Record<string, Hex>,
+  mq: number,
+  mr: number,
+  allowReliefTraversal: boolean,
+  visitCap: number,
+): { q: number; r: number } | null {
   const mouthKey = hexKey(mq, mr);
   let sumQ = 0;
   let sumR = 0;
@@ -6968,8 +6988,43 @@ export function traceRiver(
   return _rpDone(path);
 }
 
+/**
+ * Pamięć podręczna środka lądu (R-WEB-MAPGEN-RIVERS-FILL-CENTROID-PERF-Q1).
+ * Inwariant: wpis żyje WYŁĄCZNIE w obrębie jednego wywołania traceRiverForGridFill, a w tym
+ * zakresie żadna ścieżka nie zapisuje terenBazowy (traceRiver/growRiver/aStar/greedy/extend/finish
+ * tylko czytają hexes), więc wynik estimateLandCentroidFromSeed dla danego klucza nie może się
+ * zmienić. Klucz = (start, allowReliefTraversal, visitCap) + tożsamość obiektu hexes; inny obiekt
+ * hexes omija pamięć (brak trafienia). Poza zakresem traceRiverForGridFill pamięci nie ma.
+ */
+let landCentroidMemo: {
+  hexes: Record<string, Hex>;
+  map: Map<string, { q: number; r: number } | null>;
+} | null = null;
+
 /** Trasowanie siatki: cel = tier minLen (długa rzeka), akceptacja od acceptLen w górę. */
 function traceRiverForGridFill(
+  hexes: Record<string, Hex>,
+  sq: number,
+  sr: number,
+  maxLen: number,
+  catalogMinLen: number,
+  acceptLen: number,
+  traceOpts: TraceRiverOpts,
+  relaxSeaBuffer = false,
+  fastMode = false,
+): RiverCoord[] {
+  const prevMemo = landCentroidMemo;
+  landCentroidMemo = { hexes, map: new Map() };
+  try {
+    return traceRiverForGridFillBody(
+      hexes, sq, sr, maxLen, catalogMinLen, acceptLen, traceOpts, relaxSeaBuffer, fastMode,
+    );
+  } finally {
+    landCentroidMemo = prevMemo;
+  }
+}
+
+function traceRiverForGridFillBody(
   hexes: Record<string, Hex>,
   sq: number,
   sr: number,
