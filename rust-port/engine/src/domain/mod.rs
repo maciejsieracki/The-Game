@@ -24,6 +24,7 @@ pub mod brake_power_rest;
 pub mod building_costs;
 pub mod city_growth;
 pub mod city_names;
+pub mod city_towers;
 pub mod civ_bonuses;
 pub mod civ_matrix;
 pub mod civ_names;
