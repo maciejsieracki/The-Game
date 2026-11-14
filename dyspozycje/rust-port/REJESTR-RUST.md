@@ -1147,3 +1147,13 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sprzątanie:** usunięte worktree tematu (`integ-zloze`, `wf_4c2b7e55-cfa-1..4`) i `target` w scratchpadzie. Worktree WIEZE r2 (`wf_38834851-4ff-1`) zostaje, bo trwa.
 - **Dalej:** #104 część 2 (wiring do produkcji) jeszcze nie zrobiona; czeka na decyzję kolejności. Uwaga z FC: zapis pod kluczem snake_case; rename tylko jeśli część 2 tego wymaga.
 - **Parity:** `d6d197099`.
+
+## Przebieg (14.11, heartbeat 22:18–22:41): WIEZE etap 1 zintegrowany; start WIEZE-CITYTOWERS (2A)
+- **Integracja WIEZE-MERGE r2 etap 1:** FC PASS-WITH-NOTES `c9473f4c9`. Rebase na `d6d197099` (ZLOZE) bez konfliktów → `7193f5de2`. Bramki na `7193f5de2`: fmt EXIT 0; clippy `-D warnings` EXIT 0; pełny `cargo test` EXIT 0 (3338 passed, 0 failed). FF `parity-v2`: `d6d197099` → `7193f5de2`. Refs: `refs/keep/WIEZE-MERGE-Q1-r2-integ`, `rust-port-wip/WIEZE-MERGE-Q1-r2`, evaluator `rust-port-wip/WIEZE-MERGE-Q1-r2-eval` (`9ae467057`).
+- **Uwaga (dla ostatecznego stanu wież):** wiring `pick_tower_target` jest w produkcji (`siege_tactics_loop.rs:176`), ale nie jest osiągalny produkcyjnie: nic nie tworzy `SiegeLoop`/`ProdBody` poza testami (K5LOOP-WIRING, #113).
+- **Etap 2 podzielony:** 2A = port helperów wieżyczek z `city-towers.ts` (`strongestRangedUnitForEra`, `towerRangeFor`, `towerRows`) — brak tego w Rust (potwierdzone: `git grep` na `7193f5de2`). 2B = odroczenie strzału 180 ms, strzał `_singleBlow`, usunięcie placeholdera `dead = true` — po 2A.
+- **Start (1 z 4):** `R-RUSTPORT-P6-WIEZE-CITYTOWERS-Q1` (`wf_65f0e389-546`), dispatch `5aa24a7dd`, baza `7193f5de2`. Operator HAIKU, Evaluator/FC SONNET, Obrona HAIKU.
+- **Trwających Workflow: 1** z 4. Wolne sloty: brak realnej pracy bez decyzji — ZLOZE część 2 (#104) wymaga najpierw rozpoznania wywołań w `main.ts` (ok. 22774, 23694, 24234, 24294) i zapisu dispatchu; zrobię w następnym ticku.
+- **Pytania ABC #115 i #120:** nadal bez odpowiedzi właściciela, nie startowane.
+- **Sprzątanie:** usunięte worktree WIEZE r2 (`wf_38834851-4ff-1,3,4`) po sprawdzeniu, że ich commity są w `parity-v2`; worktree integracyjny `integ-wieze` usunięty; katalogi `target` w scratchpadzie usunięte.
+- **Dysk:** 14 GB wolnego. **Parity:** `7193f5de2`.
