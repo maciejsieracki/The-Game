@@ -1108,3 +1108,7 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Decyzja techniczna (zasada 9):** źródło statystyk strzelca wieży (`towerShooterRow`) — stałe z pina `battleScene.ts`, nie wiersz tabeli jednostek.
 - **Dysk:** po sprzątaniu 17 GB wolnego; usunięte 14 czystych worktree zakończonych uruchomień (commity zostają na `wip/*`) i cache cargo w scratchpadzie.
 - **Parity:** `a381dd13f`.
+
+## Przebieg (14.11, heartbeat 19:48): sloty puste, czekają na decyzje właściciela
+- **Trwających Workflow: 0** z 4. Bez zmian względem 19:17: decyzje #115 (A1/A2/A3) i #120 (A/B) nadal czekają na odpowiedź właściciela; bez nich nie startuję kolejnych operatorów.
+- **Parity:** `a381dd13f` (sprawdzone fetch). Dysk wolny: patrz wpis 19:17.
