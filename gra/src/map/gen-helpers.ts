@@ -6137,25 +6137,43 @@ function estimateLandCentroidFromSeed(
   visitCap = 6000,
 ): { q: number; r: number } | null {
   const memo = landCentroidMemo;
-  const memoKey = `${mq},${mr},${allowReliefTraversal ? 1 : 0},${visitCap}`;
-  if (memo && memo.hexes === hexes) {
+  const sameMap = memo !== null && memo.hexes === hexes;
+  const flag = allowReliefTraversal ? 1 : 0;
+  const memoKey = `${mq},${mr},${flag},${visitCap}`;
+  const startKey = hexKey(mq, mr);
+  if (memo && sameMap) {
     const hit = memo.map.get(memoKey);
     if (hit !== undefined) return hit ? { q: hit.q, r: hit.r } : null;
+    // Pełny obszar (BFS nieucięty) jest wspólny dla wszystkich startów tej samej składowej.
+    const comp = memo.comp.get(`${flag}|${startKey}`);
+    if (comp !== undefined && visitCap > comp.size) {
+      return comp.res ? { q: comp.res.q, r: comp.res.r } : null;
+    }
   }
-  const result = estimateLandCentroidFromSeedUncached(hexes, mq, mr, allowReliefTraversal, visitCap);
-  if (memo && memo.hexes === hexes) {
+  const bfs = estimateLandCentroidFromSeedUncached(hexes, mq, mr, allowReliefTraversal, visitCap);
+  const result = bfs.res;
+  if (memo && sameMap) {
     memo.map.set(memoKey, result ? { q: result.q, r: result.r } : null);
+    if (bfs.comp !== null) {
+      const entry = { res: result ? { q: result.q, r: result.r } : null, size: bfs.comp.length };
+      for (const k of bfs.comp) memo.comp.set(`${flag}|${k}`, entry);
+    }
   }
   return result;
 }
 
+/**
+ * BFS środka lądu. comp != null tylko gdy BFS zakończył się bez ucięcia visitCap ORAZ start jest
+ * przechodni (nie Morze; przy !allowRelief nie relief): wtedy zbiór seen jest pełną składową, a
+ * wynik jest identyczny dla każdego startu z tej składowej (zob. landCentroidMemo).
+ */
 function estimateLandCentroidFromSeedUncached(
   hexes: Record<string, Hex>,
   mq: number,
   mr: number,
   allowReliefTraversal: boolean,
   visitCap: number,
-): { q: number; r: number } | null {
+): { res: { q: number; r: number } | null; comp: string[] | null } {
   const mouthKey = hexKey(mq, mr);
   let sumQ = 0;
   let sumR = 0;
@@ -6180,8 +6198,13 @@ function estimateLandCentroidFromSeedUncached(
       queue.push(nk);
     }
   }
-  if (count === 0) return null;
-  return { q: sumQ / count, r: sumR / count };
+  const completed = queueHead >= queue.length;
+  const mouthHex = hexes[mouthKey];
+  const mouthPassable = !!mouthHex && mouthHex.terenBazowy !== TerenBazowy.Morze
+    && (allowReliefTraversal || !isReliefTerrain(mouthHex.terenBazowy));
+  const comp = completed && mouthPassable ? queue : null;
+  if (count === 0) return { res: null, comp };
+  return { res: { q: sumQ / count, r: sumR / count }, comp };
 }
 
 function estimateLandCentroidFromMouth(
@@ -6999,6 +7022,7 @@ export function traceRiver(
 let landCentroidMemo: {
   hexes: Record<string, Hex>;
   map: Map<string, { q: number; r: number } | null>;
+  comp: Map<string, { res: { q: number; r: number } | null; size: number }>;
 } | null = null;
 
 /** Trasowanie siatki: cel = tier minLen (długa rzeka), akceptacja od acceptLen w górę. */
@@ -7014,7 +7038,9 @@ function traceRiverForGridFill(
   fastMode = false,
 ): RiverCoord[] {
   const prevMemo = landCentroidMemo;
-  landCentroidMemo = { hexes, map: new Map() };
+  if (!(prevMemo !== null && prevMemo.hexes === hexes)) {
+    landCentroidMemo = { hexes, map: new Map(), comp: new Map() };
+  }
   try {
     return traceRiverForGridFillBody(
       hexes, sq, sr, maxLen, catalogMinLen, acceptLen, traceOpts, relaxSeaBuffer, fastMode,
@@ -11987,7 +12013,37 @@ export function generateRivers(
 /**
  * Domyka twardy fill startów siatki po finalnym terenie (Maciej 2026-07-31).
  */
+/**
+ * Zakres pamięci środka lądu także dla topUpRiverGridCoverage (R-WEB-MAPGEN-RIVERS-FILL-CENTROID-PERF-Q1,
+ * r3): etap uzupełnienia rzek trasuje najwięcej (tryForce/tryDrain/buildGridRoute/mediumTributary) i
+ * leży poza generateRivers. Wewnątrz tego etapu nie ma zapisów terenBazowy (w gen-helpers brak zapisów
+ * terenu po linii ~5370), więc wpis pamięci pozostaje ważny przez cały etap.
+ */
 export function topUpRiverGridCoverage(
+  hexes: Record<string, Hex>,
+  width: number,
+  height: number,
+  riverPaths: RiverCoord[][],
+  riverKinds: RiverPathKind[],
+  rand: () => number,
+  riversTier: DensityTier = 'medium',
+  minLen = 4,
+  maxLen = 40,
+  riverParams?: RiverMapParams,
+  onProgress?: (localPct: number) => void,
+): number {
+  const prevMemo = landCentroidMemo;
+  landCentroidMemo = { hexes, map: new Map(), comp: new Map() };
+  try {
+    return topUpRiverGridCoverageBody(
+      hexes, width, height, riverPaths, riverKinds, rand, riversTier, minLen, maxLen, riverParams, onProgress,
+    );
+  } finally {
+    landCentroidMemo = prevMemo;
+  }
+}
+
+function topUpRiverGridCoverageBody(
   hexes: Record<string, Hex>,
   width: number,
   height: number,

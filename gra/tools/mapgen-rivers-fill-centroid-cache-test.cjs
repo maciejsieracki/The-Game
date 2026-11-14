@@ -4,7 +4,8 @@
  *
  * Test regresji pamięci podręcznej estimateLandCentroidFromSeed (gen-helpers.ts):
  *   1) suma kontrolna generacji ziarna 22 / Mały = wartość bazowa (cache nie zmienia wyniku),
- *   2) licznik BFS (estimateLandCentroidFromSeedUncached) spada ≥3× względem bazy (4745).
+ *   2) licznik BFS (estimateLandCentroidFromSeedUncached) spada ≥3× względem bazy (4745),
+ *   3) dwa przebiegi tego samego ziarna dają tę samą sumę kontrolną (determinizm).
  * Buduje wrapper esbuild z instrumentacją (diag-build) do katalogu tymczasowego i uruchamia go w Node.
  * Użycie (z gra/): node tools/mapgen-rivers-fill-centroid-cache-test.cjs
  * Czas: ~1 min na hoście referencyjnym. Wynik: exit 0 = PASS, 1 = FAIL.
@@ -30,24 +31,32 @@ if (build.status !== 0 || !fs.existsSync(wrap)) {
   process.exit(1);
 }
 
-const run = spawnSync(process.execPath, [wrap, '22', 'maly', 'Maly', '15', '2'], {
-  cwd: GRA, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, timeout: 580000,
+// Dwa przebiegi tego samego ziarna (determinizm): oba muszą dać bazową sumę kontrolną i licznik BFS.
+const runs = [0, 1].map(() => spawnSync(process.execPath, [wrap, '22', 'maly', 'Maly', '15', '2'], {
+  cwd: GRA, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, timeout: 280000,
+}));
+const parsed = runs.map((run) => {
+  const out = (run.stdout || '') + (run.stderr || '');
+  const checksum = (out.match(/CHECKSUM ([0-9a-f]+)/) || [])[1];
+  const countersLine = (out.match(/^COUNTERS (.+)$/m) || [])[1];
+  let counters = null;
+  try { counters = countersLine ? JSON.parse(countersLine) : null; } catch (_) { counters = null; }
+  return { status: run.status, checksum, bfs: counters ? counters.estimateLandCentroidFromSeedUncached : undefined };
 });
-const out = (run.stdout || '') + (run.stderr || '');
-const checksum = (out.match(/CHECKSUM ([0-9a-f]+)/) || [])[1];
-const countersLine = (out.match(/^COUNTERS (.+)$/m) || [])[1];
-let counters = null;
-try { counters = countersLine ? JSON.parse(countersLine) : null; } catch (_) { counters = null; }
-
-const bfs = counters ? counters.estimateLandCentroidFromSeedUncached : undefined;
+const [a, b] = parsed;
 const failures = [];
-if (run.status !== 0) failures.push(`generacja zakończona kodem ${run.status}`);
-if (!checksum) failures.push('brak linii CHECKSUM');
-else if (checksum !== BASE_CHECKSUM) failures.push(`suma kontrolna ${checksum} != bazowa ${BASE_CHECKSUM}`);
-if (typeof bfs !== 'number') failures.push('brak licznika estimateLandCentroidFromSeedUncached');
-else if (bfs * MIN_RATIO > BASE_BFS) failures.push(`BFS ${bfs} — spadek ${(BASE_BFS / bfs).toFixed(2)}× < ${MIN_RATIO}×`);
+parsed.forEach((p, i) => {
+  if (p.status !== 0) failures.push(`przebieg ${i + 1}: generacja zakończona kodem ${p.status}`);
+  if (!p.checksum) failures.push(`przebieg ${i + 1}: brak linii CHECKSUM`);
+  else if (p.checksum !== BASE_CHECKSUM) failures.push(`przebieg ${i + 1}: suma kontrolna ${p.checksum} != bazowa ${BASE_CHECKSUM}`);
+  if (typeof p.bfs !== 'number') failures.push(`przebieg ${i + 1}: brak licznika estimateLandCentroidFromSeedUncached`);
+  else if (p.bfs * MIN_RATIO > BASE_BFS) failures.push(`przebieg ${i + 1}: BFS ${p.bfs} — spadek ${(BASE_BFS / p.bfs).toFixed(2)}× < ${MIN_RATIO}×`);
+});
+if (a.checksum !== b.checksum) failures.push(`niedeterminizm: ${a.checksum} != ${b.checksum}`);
 
-console.log(`checksum=${checksum} bfs=${bfs} bazowe_bfs=${BASE_BFS} spadek=${typeof bfs === 'number' ? (BASE_BFS / bfs).toFixed(2) : 'n/a'}x`);
+const bfs = a.bfs;
+const checksum = a.checksum;
+console.log(`checksum=${checksum} run2=${b.checksum} bfs=${a.bfs}/${b.bfs} bazowe_bfs=${BASE_BFS} spadek=${typeof bfs === 'number' ? (BASE_BFS / bfs).toFixed(2) : 'n/a'}x`);
 if (failures.length) {
   console.log('FAIL');
   for (const f of failures) console.log(' - ' + f);
