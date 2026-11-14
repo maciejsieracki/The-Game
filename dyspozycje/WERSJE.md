@@ -1,3 +1,9 @@
+## ROBOCZA a02ef8a8 -- 2026-11-13 -- FALA 697: Bramka Zakoncz ture: dzwignie podatku i racji + tooltip; wznowienie z zapisu deterministyczne (testowa)
+
+- bramka Zakoncz ture gracza przy prognozie <0 uwzglednia dzwignie: zmiana podatku zlota, racje zywnosci, rozwiazanie jednostek; staly komunikat na przycisku (zasob, minus, lista dzwigni z liczbami); wznowienie gry z zapisu: zapisywane i odtwarzane liczniki detIdSeq i autoBattleSeq — ten sam przebieg co gra nieprzerwana (10/10 tur, ziarna 2222/4242/3131)
+- Weryfikacja: tsc 0; logic 213/213; gate-levers 25/0; endturn 19/0; no-negative-stocks 25/0; determinism-save-load-resume PASS; live Chromium 10/10 EQ; ai-test 297/0; diplomacy-test 149/0
+- Limity: NIE ZMIERZONO: tooltip w przegladarce, Chromium dla W77; dzwignia kolejki nie wdrozona (decyzja); stary zapis bez nowych pol 7/10; walka taktyczna a determinizm
+
 ## ROBOCZA 07b2016f -- 2026-11-13 -- FALA 696: Rownowazenie AI przed koncem tury + AI nie proponuje pokoju przed 10. tura (testowa)
 
 - AI rownowazy skarbiec i spichlerz przed tickiem (podatek, racje zywnosci, rozwiazanie jednostek) od tury 11 — pomiar 3 ziarna x 150 tur: od T31 zero minusow; AI nie proponuje pokoju przed 10. pelna tura wojny (max(minTurWojny, PEACE_PROPOSAL_MIN_WAR_TURNS)) dla wszystkich cywilizacji

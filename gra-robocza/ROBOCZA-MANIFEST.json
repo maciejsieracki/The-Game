@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "07b2016fea3dd40430fae1c513ec49ac",
-  "bundleSha256": "d9946f2e5c457b19fa299730c9ce9e5fc7865b6087843c64a272aa6cea311d44",
-  "bundleBytes": 14673166,
+  "bundleMd5": "a02ef8a895263df8f0c79c991dbf39b6",
+  "bundleSha256": "31edaee01a99c01b16ce9fcce94268e8eade556ac7513d34fddc1ef6b2267420",
+  "bundleBytes": 14677373,
   "sourceSnapshot": {
-    "source": "main 1c5a28e04 (FC cad44581a + 68c7a5eac)",
+    "source": "main fdee4d469 (FC 242d51289 + 54301d815)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 696: AI rownowazy skarbiec i spichlerz przed tickiem (podatek, racje zywnosci, rozwiazanie jednostek) od tury 11 — pomiar 3 ziarna x 150 tur: od T31 zero minusow; AI nie proponuje pokoju przed 10. pelna tura wojny (max(minTurWojny, PEACE_PROPOSAL_MIN_WAR_TURNS)) dla wszystkich cywilizacji"
+    "FALA 697: bramka Zakoncz ture gracza przy prognozie <0 uwzglednia dzwignie: zmiana podatku zlota, racje zywnosci, rozwiazanie jednostek; staly komunikat na przycisku (zasob, minus, lista dzwigni z liczbami); wznowienie gry z zapisu: zapisywane i odtwarzane liczniki detIdSeq i autoBattleSeq — ten sam przebieg co gra nieprzerwana (10/10 tur, ziarna 2222/4242/3131)"
   ],
   "verification": [
-    "tsc 0; logic 213/213; ai-test 297/0; diplomacy-test 149/0; diplo-war-peace-sim 25/0; no-negative-stocks ai 8/0, c2 43/0, projection 49/0, c3-turn-test Chromium 16/0; mutacja usuniecia nnsAiPreTickBalance czerwieni test"
+    "tsc 0; logic 213/213; gate-levers 25/0; endturn 19/0; no-negative-stocks 25/0; determinism-save-load-resume PASS; live Chromium 10/10 EQ; ai-test 297/0; diplomacy-test 149/0"
   ],
   "limits": [
-    "NIE ZMIERZONO: ziarno 22, pelne 15 civ x 3 x 150; 445 minusow z dlugu tur 1-10; dlug testowy bazowy weaker-seeks 29/3, main-guard 34/1"
+    "NIE ZMIERZONO: tooltip w przegladarce, Chromium dla W77; dzwignia kolejki nie wdrozona (decyzja); stary zapis bez nowych pol 7/10; walka taktyczna a determinizm"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES: W70 r3 cad44581a (rownowazenie AI przed tickiem; 3 ziarna x 150 tur: od T31 zero naruszen, 445 z 450 minusow to dlug z tur 1-10, 5 = brak dzwigni) oraz W74 r3 68c7a5eac (AI nie proponuje pokoju przed 10. tura wojny). NIE ZMIERZONO: pelna gra w Chromium dla bramki gracza, ziarno 22, 15 civ x 3 x 150 w calosci. Decyzja wlasciciela otwarta: czy AI rownowazy sie od tury 1."
+    "notes": "FC PASS-WITH-NOTES: W77 242d51289 (bramka Zakoncz ture: dzwignie podatku i racji zywnosci + staly komunikat/tooltip; dzwignia kolejki NIE wdrozona - prognoza gracza nie zawiera kolejki, decyzja wlasciciela) oraz W78 54301d815 (wznowienie z zapisu: zapis i odtworzenie detIdSeq/autoBattleSeq; pomiar live ziarna 2222/4242/3131: 10/10 tur identyczne; stary zapis 7/10). NIE ZMIERZONO: tooltip w przegladarce, c3-turn-test Chromium dla W77, walka taktyczna a determinizm."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-14T02:49:04",
+  "hubGeneratedAt": "2026-11-14T03:51:31",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "07b2016fea3dd40430fae1c513ec49ac",
-      "sizeBytes": 14673166
+      "md5": "a02ef8a895263df8f0c79c991dbf39b6",
+      "sizeBytes": 14677373
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "07b2016fea3dd40430fae1c513ec49ac",
-      "sizeBytes": 14673166
+      "md5": "a02ef8a895263df8f0c79c991dbf39b6",
+      "sizeBytes": 14677373
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "07b2016fea3dd40430fae1c513ec49ac",
-      "sizeBytes": 14673166
+      "md5": "a02ef8a895263df8f0c79c991dbf39b6",
+      "sizeBytes": 14677373
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "07b2016fea3dd40430fae1c513ec49ac",
-      "sizeBytes": 14673166
+      "md5": "a02ef8a895263df8f0c79c991dbf39b6",
+      "sizeBytes": 14677373
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "07b2016fea3dd40430fae1c513ec49ac",
-      "sizeBytes": 14673166
+      "md5": "a02ef8a895263df8f0c79c991dbf39b6",
+      "sizeBytes": 14677373
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "07b2016fea3dd40430fae1c513ec49ac",
-      "sizeBytes": 14673166
+      "md5": "a02ef8a895263df8f0c79c991dbf39b6",
+      "sizeBytes": 14677373
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "07b2016fea3dd40430fae1c513ec49ac",
-      "sizeBytes": 14673166
+      "md5": "a02ef8a895263df8f0c79c991dbf39b6",
+      "sizeBytes": 14677373
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "07b2016fea3dd40430fae1c513ec49ac",
-      "sizeBytes": 14673166
+      "md5": "a02ef8a895263df8f0c79c991dbf39b6",
+      "sizeBytes": 14677373
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "07b2016fea3dd40430fae1c513ec49ac",
-      "sizeBytes": 14673166
+      "md5": "a02ef8a895263df8f0c79c991dbf39b6",
+      "sizeBytes": 14677373
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "07b2016fea3dd40430fae1c513ec49ac",
-      "sizeBytes": 14673166
+      "md5": "a02ef8a895263df8f0c79c991dbf39b6",
+      "sizeBytes": 14677373
     }
   ],
-  "md5": "07b2016fea3dd40430fae1c513ec49ac",
+  "md5": "a02ef8a895263df8f0c79c991dbf39b6",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
