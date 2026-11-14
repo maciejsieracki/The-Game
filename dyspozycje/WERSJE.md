@@ -1,3 +1,9 @@
+## ROBOCZA 7c4eb83b -- 2026-11-14 -- FALA 710: AI rownowazy skarbiec i spichlerz od tury 1 (testowa)
+
+- AI od pierwszej tury pilnuje, by skarbiec i spichlerz nie spadaly ponizej zera (dotad od tury 11); gracz ma nadal wyjatek tur 1-10
+- Weryfikacja: tsc 0, logic-test 213/213, nowy test 27/0 (czerwony na bazie), c2 44/0, ai 8/0; pomiar seed 11 T1-30: naruszenia AI T1-10 70 -> 0, miasta i jednostki AI T30 bez zmian
+- Limity: NIE ZMIERZONO: ziarna 22 i 33, live Chromium 10 tur, test integracji main.ts T1-10. Dlug Rust: REPIN progu rownowazenia AI.
+
 ## ROBOCZA f166f88b -- 2026-11-14 -- FALA 709: Zaufanie w wojnie: martwe pole usuniete, opis w Civpedii (testowa)
 
 - Usuniete martwe pole kryzysTurDoWojny=5 z danych dyplomacji (licznik tur do wojny zalezy od profilu pary 3-7); Civpedia opisuje zaufanie 0 w wojnie i brak stalej N=6

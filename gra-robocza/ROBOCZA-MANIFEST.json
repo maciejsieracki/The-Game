@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "f166f88b2a1d7b4a51291f12fd5cbd2c",
-  "bundleSha256": "4499b1351d81c73c7914c2d7fbf18597cae91e9b023efc6be1acb0136bdc811d",
-  "bundleBytes": 14703358,
+  "bundleMd5": "7c4eb83b28977b3b8ed685adefa80f57",
+  "bundleSha256": "4fa3e463d190343f662949f21df54a60863920161c21cc82f6dfa1c39f871f92",
+  "bundleBytes": 14703354,
   "sourceSnapshot": {
-    "source": "R-WEB-DIPLO-TRUST-WAR-N6-CLEANUP-Q1 FC 31a2da7d2",
+    "source": "R-WEB-NNS-AI-BALANCE-FROM-TURN1-Q1 FC 94b439061",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 709: Usuniete martwe pole kryzysTurDoWojny=5 z danych dyplomacji (licznik tur do wojny zalezy od profilu pary 3-7); Civpedia opisuje zaufanie 0 w wojnie i brak stalej N=6"
+    "FALA 710: AI od pierwszej tury pilnuje, by skarbiec i spichlerz nie spadaly ponizej zera (dotad od tury 11); gracz ma nadal wyjatek tur 1-10"
   ],
   "verification": [
-    "tsc 0, logic-test 213/213, nowy test 17/0, json-descriptions-sync 19/0, war-brake-unit 69/0, regeneracja wikiBundle bez roznic"
+    "tsc 0, logic-test 213/213, nowy test 27/0 (czerwony na bazie), c2 44/0, ai 8/0; pomiar seed 11 T1-30: naruszenia AI T1-10 70 -> 0, miasta i jednostki AI T30 bez zmian"
   ],
   "limits": [
-    "NIE ZMIERZONO: weryfikacja w przegladarce. Zachowanie gry bez zmian."
+    "NIE ZMIERZONO: ziarna 22 i 33, live Chromium 10 tur, test integracji main.ts T1-10. Dlug Rust: REPIN progu rownowazenia AI."
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES N6-CLEANUP 36716102/31a2da7d2. Usuniete martwe pole p6.kryzysTurDoWojny (=5) z diplomacy-tick-params.json; N hamulca wojny pochodzi wylacznie z profilu wojny pary (3-7, bez profilu 6) - gra bez zmian; Civpedia (wypowiedzenie-wojny): w wojnie Zaufanie tkwi na zerze, licznik kryzysu nie liczy, N zalezy od pary, bez stalego 6. NIE ZMIERZONO: weryfikacja w przegladarce."
+    "notes": "FC PASS-WITH-NOTES AI-T1 4c37994f1/94b439061. AI rownowazy skarbiec i spichlerz od tury 1 (NNS_AI_BALANCE_TURN_MIN = 1, wczesniej od tury 11); sciezka gracza bez zmian. Pomiar (seed 11, T1-30, przed/po): naruszenia major T1-10 70 -> 0, T11-30 48 -> 5; min skarbiec T10 -155 -> 0; mediana miast AI T30 8 vs 8; jednostki T30 60 vs 60; eliminacje 26 vs 26 (brak spowolnienia AI). NIE ZMIERZONO: ziarna 22 i 33, live Chromium 10 tur, test integracji main.ts T1-10."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-14T14:23:49",
+  "hubGeneratedAt": "2026-11-14T14:43:13",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "f166f88b2a1d7b4a51291f12fd5cbd2c",
-      "sizeBytes": 14703358
+      "md5": "7c4eb83b28977b3b8ed685adefa80f57",
+      "sizeBytes": 14703354
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "f166f88b2a1d7b4a51291f12fd5cbd2c",
-      "sizeBytes": 14703358
+      "md5": "7c4eb83b28977b3b8ed685adefa80f57",
+      "sizeBytes": 14703354
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "f166f88b2a1d7b4a51291f12fd5cbd2c",
-      "sizeBytes": 14703358
+      "md5": "7c4eb83b28977b3b8ed685adefa80f57",
+      "sizeBytes": 14703354
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "f166f88b2a1d7b4a51291f12fd5cbd2c",
-      "sizeBytes": 14703358
+      "md5": "7c4eb83b28977b3b8ed685adefa80f57",
+      "sizeBytes": 14703354
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "f166f88b2a1d7b4a51291f12fd5cbd2c",
-      "sizeBytes": 14703358
+      "md5": "7c4eb83b28977b3b8ed685adefa80f57",
+      "sizeBytes": 14703354
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "f166f88b2a1d7b4a51291f12fd5cbd2c",
-      "sizeBytes": 14703358
+      "md5": "7c4eb83b28977b3b8ed685adefa80f57",
+      "sizeBytes": 14703354
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "f166f88b2a1d7b4a51291f12fd5cbd2c",
-      "sizeBytes": 14703358
+      "md5": "7c4eb83b28977b3b8ed685adefa80f57",
+      "sizeBytes": 14703354
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "f166f88b2a1d7b4a51291f12fd5cbd2c",
-      "sizeBytes": 14703358
+      "md5": "7c4eb83b28977b3b8ed685adefa80f57",
+      "sizeBytes": 14703354
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "f166f88b2a1d7b4a51291f12fd5cbd2c",
-      "sizeBytes": 14703358
+      "md5": "7c4eb83b28977b3b8ed685adefa80f57",
+      "sizeBytes": 14703354
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "f166f88b2a1d7b4a51291f12fd5cbd2c",
-      "sizeBytes": 14703358
+      "md5": "7c4eb83b28977b3b8ed685adefa80f57",
+      "sizeBytes": 14703354
     }
   ],
-  "md5": "f166f88b2a1d7b4a51291f12fd5cbd2c",
+  "md5": "7c4eb83b28977b3b8ed685adefa80f57",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
