@@ -1,8 +1,8 @@
 'use strict';
 /**
  * mp-spawn-ration-test.cjs — P-MP-SPAWN-WYZYWIENIE
- * Nowe miasta (foundCity/foundCityAt) startują z Wyżywieniem 4 (DEFAULT_POZIOM_RACJI),
- * nie z legacy migrate(procentRozwoj:100)→6.
+ * Nowe miasta gracza (owner 0) startują z Wyżywieniem DEFAULT_POZIOM_RACJI (6, decyzja 2026-11-14),
+ * miasta AI (owner ≠ 0) z DEFAULT_POZIOM_RACJI_AI (4, bez zmian), nie z legacy migrate(procentRozwoj:100)→6.
  * Run: node tools/mp-spawn-ration-test.cjs
  */
 const fs = require('fs');
@@ -17,6 +17,7 @@ fs.writeFileSync(ENTRY, `
 export { foundCityAt, canFoundCity, DEFAULT_PROCENT_ROZWOJ } from '../src/game/cities';
 export {
   DEFAULT_POZIOM_RACJI,
+  DEFAULT_POZIOM_RACJI_AI,
   getCityRationLevel,
   migrateProcentRozwojToPoziomRacji,
 } from '../src/game/population-growth-v85';
@@ -65,14 +66,14 @@ function findWaterHex() {
   throw new Error('no water hex for negative control');
 }
 
-console.log('--- T1: foundCityAt MP (foundingCityState=true) → Wyżywienie 4 ---');
+console.log('--- T1: foundCityAt MP (foundingCityState=true, owner AI 3) → Wyżywienie 4 (AI) ---');
 {
   const pos = findLegalLandHex(true);
   const city = M.foundCityAt(pos.q, pos.r, 3, cities, map, 'Sparta', true);
   ok(city !== null, 'T1a: foundCityAt zwraca miasto');
   if (city) {
     cities.push(city);
-    eq(city.poziomRacji, M.DEFAULT_POZIOM_RACJI, 'T1b: jawne poziomRacji=4');
+    eq(city.poziomRacji, M.DEFAULT_POZIOM_RACJI_AI, 'T1b: jawne poziomRacji=4 (AI)');
     eq(M.getCityRationLevel(city), 4, 'T1c: getCityRationLevel=4');
     ok(city.startCityState === true, 'T1d: startCityState');
   }
@@ -90,14 +91,14 @@ console.log('\n--- T2: foundCityAt major AI (bez CS) → Wyżywienie 4 ---');
   }
 }
 
-console.log('\n--- T3: foundCityAt gracz → Wyżywienie 4 ---');
+console.log('\n--- T3: foundCityAt gracz → Wyżywienie 6 (DEFAULT_POZIOM_RACJI) ---');
 {
   const pos = findLegalLandHex(false);
   const city = M.foundCityAt(pos.q, pos.r, 0, cities, map, 'Memfis');
   ok(city !== null, 'T3a: foundCityAt gracz zwraca miasto');
   if (city) {
-    eq(city.poziomRacji, 4, 'T3b: poziomRacji=4');
-    eq(M.getCityRationLevel(city), 4, 'T3c: getCityRationLevel=4');
+    eq(city.poziomRacji, 6, 'T3b: poziomRacji=6');
+    eq(M.getCityRationLevel(city), 6, 'T3c: getCityRationLevel=6');
   }
 }
 

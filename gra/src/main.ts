@@ -281,6 +281,7 @@ import {
   type CityBudowaProfil,
   migratePoziomRacjiOnLoad,
   freshOwnerDefaultPoziomRacji,
+  freshAiOwnerDefaultPoziomRacji,
   broadcastPoziomRacjiToOwnerCities,
   broadcastAutoWyzywienieToOwnerCities,
   resolveCityPoziomRacji,
@@ -6375,7 +6376,7 @@ async function boot(): Promise<void> {
           );
         }
         if (!ownerDefaultPoziomRacji.has(ai.ownerId)) {
-          ownerDefaultPoziomRacji.set(ai.ownerId, freshOwnerDefaultPoziomRacji());
+          ownerDefaultPoziomRacji.set(ai.ownerId, freshAiOwnerDefaultPoziomRacji());
         }
       }
     }
@@ -6449,7 +6450,8 @@ async function boot(): Promise<void> {
         );
       }
       if (!ownerDefaultPoziomRacji.has(c.ownerId)) {
-        ownerDefaultPoziomRacji.set(c.ownerId, freshOwnerDefaultPoziomRacji());
+        // Właściciel nieobecny w mapie = nie-gracz (gracze są zasiani wcześniej z humanOwnerIds).
+        ownerDefaultPoziomRacji.set(c.ownerId, freshAiOwnerDefaultPoziomRacji());
       }
       c.okolicaFocusOverride = false;
       c.okolicaFocus = ownerDefaultOkolicaFocus.get(c.ownerId)!;

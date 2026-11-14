@@ -14,8 +14,9 @@ import { freshWealthState, type WealthState } from './wealth';
 import { readCityFoodBuffer } from './economy-upkeep';
 import { sanitizeDisabledBuildings } from './building-toggle';
 import {
-  DEFAULT_POZIOM_RACJI,
+  DEFAULT_POZIOM_RACJI_LEGACY,
   ensureCityRationDefaults,
+  startowyPoziomRacjiDlaWlasciciela,
   WYZYWIENIE_MAX,
 } from './population-growth-v85';
 import type { SiegeMachinesState } from './siegeMachines';
@@ -548,7 +549,7 @@ export const DEFAULT_PROCENT_ROZWOJ = 100;
 
 /** Legacy procentRozwoj odpowiadający domyślnemu Wyżywieniu (poziomRacji ma pierwszeństwo w getCityRationLevel). */
 export const DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE = Math.round(
-  (DEFAULT_POZIOM_RACJI / WYZYWIENIE_MAX) * 100,
+  (DEFAULT_POZIOM_RACJI_LEGACY / WYZYWIENIE_MAX) * 100,
 );
 
 /** Suwak podziału handlu — tylko wielokrotności 10 (0, 10, …, 100). */
@@ -1375,7 +1376,7 @@ export function foundCity(
     okolicaFocusOverride: false,
     budowaFocusOverride: false,
     procentRozwoj: DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE,
-    poziomRacji: DEFAULT_POZIOM_RACJI,
+    poziomRacji: startowyPoziomRacjiDlaWlasciciela(settler.ownerId),
     poziomRacjiOverride: false,
     foundedByOwner: true,
     foundedBy: settler.ownerId,
@@ -1413,7 +1414,7 @@ export function foundCityAt(
     okolicaFocusOverride: false,
     budowaFocusOverride: false,
     procentRozwoj: DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE,
-    poziomRacji: DEFAULT_POZIOM_RACJI,
+    poziomRacji: startowyPoziomRacjiDlaWlasciciela(ownerId),
     poziomRacjiOverride: false,
     autoWyzywienie: true, // Włączone automatyczne wyżywienie dla nowo założonych miast / EN: enable auto-feeding for newly founded cities
     budowaTryb: 'zrownowazone', // Domyślna zrównoważona budowa dla nowych miast / EN: default balanced build mode for new cities

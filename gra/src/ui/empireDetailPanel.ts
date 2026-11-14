@@ -46,6 +46,7 @@ import {
 } from '../game/cities';
 import {
   WYZYWIENIE_MIN, WYZYWIENIE_MAX, WYZYWIENIE_STEP, formatWyzwienieLabel,
+  DEFAULT_POZIOM_RACJI,
   type PoziomRacji,
 } from '../game/population-growth-v85';
 import { formatCivBrandLine } from './civBrandDisplay';
@@ -219,7 +220,7 @@ function renderDefaultPoziomRacjiSection(): string {
   if (!getDef || !onChange) return '';
   // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: patrz komentarz w renderDefaultHandelSplitSection.
   const ownerId = empireGlobalDefaultsUi.getActiveOwnerId?.() ?? 0;
-  const poziom = getDef(ownerId) ?? 4;
+  const poziom = getDef(ownerId) ?? DEFAULT_POZIOM_RACJI;
   const id = 'emp-zywnosc-racje';
   const steps = poziom / WYZYWIENIE_STEP;
   const minSteps = WYZYWIENIE_MIN / WYZYWIENIE_STEP;
