@@ -1,3 +1,9 @@
+## ROBOCZA e40ee34e -- 2026-11-14 -- FALA 706: Bramka Zakoncz ture bez dzwigni kolejki (testowa)
+
+- Komunikat bramki Zakoncz ture nie wymienia dzwigni kolejki produkcji; pozostaja podatki, racje i rozwiazanie jednostki (R-WEB-NNS-GATE-REMOVE-QUEUE-LEVER-Q1, decyzja wlasciciela nr 4); zachowanie gracza bez zmian (komunikat evaluateEndTurnStocks byl martwy)
+- Weryfikacja: tsc 0, levers 34/0, no-negative-stocks 25/0, projection 49/0, c3-turn 16/0, live Chromium tooltip bez kolejki
+- Limity: Zmiana kosmetyczno-dokumentacyjna; nie zmierzono dzwigni rac na zywo
+
 ## ROBOCZA 2ee91302 -- 2026-11-14 -- FALA 705: Powiadomienia: licznik zakladki Dyplomacja z blokujacymi propozycjami (testowa)
 
 - Licznik zakladki Dyplomacja wlicza blokujace propozycje diplo (np. propozycja pokoju od AI) i lista zakladki pokazuje ich kopie (bez ikony zamkniecia) obok oryginalu nad zakladkami; pozostale liczniki bez zmian (R-WEB-UI-NOTIF-DIPLO-TAB-COUNT-BLOCKING-Q1, decyzja wlasciciela B)
