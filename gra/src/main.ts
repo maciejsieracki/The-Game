@@ -165,6 +165,8 @@ import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
 import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
 import { installCivTestHooks, isCivTestEnabled, civTestSeedOverride, civTestRuntime } from './game/civ-test-hooks';
+/** W80B-B1 (R-WEB-LIVE-VERIFY-WAVE-689-697-B1-AI-PEACE-GATE-TRACE-Q1): ślad ścieżki pokoju AI (zapis tylko gdy `on`, ustawia hak ?civTest=1). */
+const peaceTraceState: { on: boolean; rows: Array<Record<string, unknown>> } = { on: false, rows: [] };
 import { gameStreamRng, gameIdSuffix } from './game/game-rng';
 import { computeStartPlacements, computeReachable, computePath, setSiegeEntryBlocker, siegeScopeMemo, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, hexNeighborCoords, categoryOf, terrainMoveCost, isCivilianUnit, buildMoveOccupancy, trimSegmentEndOffPassThrough, type MoveOccupancy } from './units/setup';
 import { enterCityAfterSurrender } from './game/siege-enter-city';
@@ -20797,6 +20799,12 @@ async function boot(): Promise<void> {
      */
     function enqueueNegotiationFromAiCmd(ownerId: number, cmd: AIDiplomacyCommand): void {
       let workingCmd = cmd;
+      // W80B-B1: znacznik kroku ścieżki pokoju (hak read-only; tylko gdy peaceTraceState.on).
+      const ptr = (step: string): void => {
+        if (peaceTraceState.on && cmd.type === 'zaproponuj_pokoj') {
+          peaceTraceState.rows.push({ turn, owner: ownerId, stage: 'stol', step });
+        }
+      };
       const ownerIsCityState = isOwnerClusterCityState(ownerId, ownerCityStateOpts());
       if (ownerIsCityState && (cmd.type === 'zadaj_trybut' || cmd.type === 'oferuj_trybut_za_pokoj')) {
         return;
@@ -20820,8 +20828,8 @@ async function boot(): Promise<void> {
         n.aiCyclicBarter && n.proposerOwnerId === ownerId && n.responderOwnerId === ME())) return;
 
       const converted = aiCommandToPendingProposal(workingCmd, ownerId, ME(), turn);
-      if (!converted) return;
-      if (peaceProposalIsTooEarly(ownerId, ME(), converted.actionId)) return;
+      if (!converted) { ptr('brak-konwersji'); return; }
+      if (peaceProposalIsTooEarly(ownerId, ME(), converted.actionId)) { ptr('za-wczesnie'); return; }
 
       // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (pkt 6): uzasadnienie (reason) dla umowy handlowej z koszyka
       // surowców; wypełniane tylko gdy flaga ON i koszyk zawiera surowiec.
@@ -20924,7 +20932,7 @@ async function boot(): Promise<void> {
       const clampedPayload = peaceBareAllowed
         ? converted.payload
         : clampAiProposalPayloadToRealResources(ownerId, converted.payload);
-      if (!clampedPayload) return;
+      if (!clampedPayload) { ptr('clamp-pusty'); return; }
       const relForBalance = getDiploRelation(ownerId, ME());
       const difficultyForBalance = effectiveGameDifficultyForOwner(ownerId);
       const pnBalanceOpts = {
@@ -20960,6 +20968,7 @@ async function boot(): Promise<void> {
         && !balancedPayload.receiveItems?.length
         && (balancedPayload.goldOnce == null || balancedPayload.goldOnce <= 0)
       ) {
+        ptr('bez-pozycji-nie-bare');
         return;
       }
       // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (filtr 1): AI nie składa oferty handlowej, na której
@@ -20973,11 +20982,13 @@ async function boot(): Promise<void> {
         )
       ) {
         console.log(`[Dyplomacja] AI${ownerId} ${workingCmd.type}: odrzucone (bilans PW gracza < 0)`);
+        ptr('bilans-pw');
         return;
       }
       // R-WEB-AI-TRADE-ONESHOT-OVERPAY-LIMIT-Q1: jednorazowa oferta handlowa AI -> gracz
       // z nadpłatą (givePn > receivePn) nie trafia na stół; te same reguły co cykliczna (A1).
       if (aiOneshotHandelOverpaysPlayer(converted.actionId, workingCmd.type, balancedPayload, pnBalanceOpts)) {
+        ptr('przeplata');
         return;
       }
       if (workingCmd.type === 'zaproponuj_wymiane_cykliczna') {
@@ -21001,11 +21012,11 @@ async function boot(): Promise<void> {
       }
       converted.payload = balancedPayload;
       // Dedup — nie stackuj drugiej propozycji TEGO SAMEGO typu, gdy jedna już czeka.
-      if (hasPendingNegotiationForPair(negotiationTable, ME(), ownerId, converted.actionId)) return;
+      if (hasPendingNegotiationForPair(negotiationTable, ME(), ownerId, converted.actionId)) { ptr('dedup-oczekuje'); return; }
       // D-DYPLO-AI-NO-NAG: gracz odrzucił ten typ — AI nie nęka ponownie do wygaśnięcia cooldownu.
       // R-WEB-DIPLO-CITY-OFFER-REJECT-OWN-COOLDOWN-Q1: oferta miasta ma własny klucz cooldownu.
       const cooldownKey = rejectCooldownKeyFor(workingCmd.type, converted.actionId);
-      if (isOfferRejectedOnCooldown(rejectedOfferCooldowns, ownerId, cooldownKey, turn)) return;
+      if (isOfferRejectedOnCooldown(rejectedOfferCooldowns, ownerId, cooldownKey, turn)) { ptr('cooldown-odrzucenia'); return; }
       negotiationSeq += 1;
       const entry = createNegotiation(
         { actionId: converted.actionId, proposerOwnerId: ownerId, responderOwnerId: ME(), payload: converted.payload },
@@ -21024,6 +21035,7 @@ async function boot(): Promise<void> {
       }
       if (sensibleUmowaReason) entry.reason = sensibleUmowaReason;
       negotiationTable.push(entry);
+      ptr('wstawiono-na-stol');
       // P-DYPLO-KARTA-DUPLIKAT-KOMUNIKAT: BRAK showHintMessage tutaj celowo — ta funkcja biegnie
       // podczas endTurnInProgress (faza AI), więc toast trafiałby do deferredEotHints i po EOT
       // wychodziłby jako DRUGI, generyczny wpis w warEventLog (deferredHintsToSidePanelEvents,
@@ -29896,6 +29908,7 @@ async function boot(): Promise<void> {
       },
       /** Wpisy stołu negocjacyjnego (do weryfikacji payloadu wysłanego z UI). */
       negotiationEntries: (): Array<Record<string, unknown>> => negotiationTable.map(e => ({
+        id: e.id,
         actionId: e.actionId,
         proposerOwnerId: e.proposerOwnerId,
         responderOwnerId: e.responderOwnerId,
@@ -30479,6 +30492,27 @@ async function boot(): Promise<void> {
         },
         /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r3): tryb przyspieszony (bez renderer.render); tylko za ?civTest=1. */
         setFastMode: (on: boolean): boolean => { civTestRuntime.skipRender = !!on; return civTestRuntime.skipRender; },
+        /** W80B-B1: ślad ścieżki pokoju AI (tylko odczyt wierszy; zapis wyłącznie z haka, bez logów). */
+        peaceTraceStart: (): void => { peaceTraceState.on = true; peaceTraceState.rows = []; },
+        peaceTraceStop: (): Array<Record<string, unknown>> => {
+          const rows = peaceTraceState.rows;
+          peaceTraceState.on = false;
+          peaceTraceState.rows = [];
+          return rows;
+        },
+        peaceTraceRows: (): Array<Record<string, unknown>> => peaceTraceState.rows.slice(),
+        /** Odczyt pary AI->gracz (bez zapisu stanu): status, turnsAtWar wg odczytu bez stemplowania, relacja, kontakt. */
+        peaceTracePair: (ai: number): Record<string, unknown> => {
+          const wr = diploWarStateForRead(ai, ME());
+          return {
+            turn, ai, status: getDiploRelation(ai, ME()).status,
+            relTotal: relationTotal(getDiploRelation(ai, ME())),
+            turnsAtWar: wr.turnsAtWar, lostCities: wr.lostCities,
+            contactSet: diplomaticContactEstablishedSet().has(ai),
+            queuedPeace: negotiationTable.filter(n => n.proposerOwnerId === ai && n.responderOwnerId === ME()
+              && n.actionId === 'pokoj').map(n => n.actionId),
+          };
+        },
         isFastMode: (): boolean => civTestRuntime.skipRender,
         /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r3): stan okien bitwy blokujacych koniec tury. */
         battleState: () => ({
@@ -43410,6 +43444,26 @@ async function boot(): Promise<void> {
                   dipCmdsLayered.filter(c => c.type !== 'zaproponuj_audiencje'),
                   diplomaticContactEstablishedSet().has(ownerId),
                 );
+                // W80B-B1 (hak read-only, tylko gdy peaceTraceState.on): ślad komend dla gracza przed/po filtrach.
+                if (peaceTraceState.on) {
+                  const trPlr = (xs: AIDiplomacyCommand[]): string[] => xs
+                    .filter(c => c.targetId === '0')
+                    .map(c => c.type + ((c as { bezwarunkowy?: boolean }).bezwarunkowy ? '/bezw' : '')
+                      + ((c as { rodzaj?: string }).rodzaj ? '/' + (c as { rodzaj?: string }).rodzaj : ''));
+                  const trWr = diploWarStateForRead(ownerId, ME());
+                  peaceTraceState.rows.push({
+                    turn, owner: ownerId, stage: 'filtry-warstwy',
+                    relStatus: getDiploRelation(ownerId, ME()).status,
+                    relTotal: relationTotal(getDiploRelation(ownerId, ME())),
+                    turnsAtWar: trWr.turnsAtWar, lostCities: trWr.lostCities,
+                    raw: trPlr(Array.isArray(dipCmdsRaw) ? dipCmdsRaw : []),
+                    afterPlayerFacing: trPlr(dipCmdsPlayerFacing),
+                    afterLayer: trPlr(dipCmdsLayered),
+                    afterContact: trPlr(dipCmds),
+                    dipLayer: String(dipLayer),
+                    contactSet: diplomaticContactEstablishedSet().has(ownerId),
+                  });
+                }
                 for (const cmd of dipCmds) {
                   try {
                     const targetId = parseInt(cmd.targetId, 10);
