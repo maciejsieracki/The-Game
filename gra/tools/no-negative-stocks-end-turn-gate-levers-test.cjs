@@ -70,10 +70,10 @@ function proj(turn, skObecny, skPo, spObecny, spPo) {
   const g = M.decideEndTurnGate(proj(12, 5, -20, 0, 0), 0, 0);
   ok(g.blokada === false, '(c) mutacja: bez podatku przypadek (a1) nie blokuje (czerwony test)');
 }
-// (d) tury 1-10 zwolnione
+// (d) R-WEB-...-FROM-TURN1-Q1: tura 10 NIE jest zwolniona — dźwignia podatku, prognoza < 0 -> blokada
 {
   const g = M.decideEndTurnGate(proj(10, 5, -20, 0, 0), 0, 0, { podatekSkarbiec: 50 });
-  ok(g.blokada === false, '(d) tura 10 zwolniona nawet przy dźwigni podatku');
+  ok(g.blokada === true, '(d) tura 10 blokowana przy prognozie < 0 (brak wyjatku 1-10)');
 }
 // (e) komunikat: zasób, minus, dźwignie z liczbami
 {

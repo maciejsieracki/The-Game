@@ -1167,7 +1167,7 @@ import {
   type SidePanelEventLink,
 } from './game/side-panel-event-link';
 import { isProductionBuildingEnabled, operationalBuiltIds, operationalBuiltByCity, setProductionBuildingEnabled, isToggleableProductionBuilding, buildEmpireProducersSnap } from './game/building-toggle';
-import { decideEndTurnGate, projectEmpireFoodAfterTick, NNS_WOLNE_TURY, type NnsEndTurnLevers, type NnsGateResult, type NnsProjection } from './game/no-negative-stocks';
+import { decideEndTurnGate, projectEmpireFoodAfterTick, type NnsEndTurnLevers, type NnsGateResult, type NnsProjection } from './game/no-negative-stocks';
 import { unitUpkeep, unitFoodPerTurn, loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, addResourceCosts, readBuildingResourceUpkeepRatio, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex, computeLostToNearerSiblingByCity } from './game/okolica';
@@ -22762,6 +22762,14 @@ async function boot(): Promise<void> {
     // R-WEB-ECON-NO-NEGATIVE-STOCKS-END-TURN-GATE-LEVERS-Q1: dźwignie podatku i racji gracza (0 = niedostępne).
     let _nnsPodatekZysk = 0;
     let _nnsRacjeZysk = 0;
+    // R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1 (Dodatek 2, martwy punkt Spichlerza): zmiana
+    // prognozy Spichlerza po reakcji automatu (auto-korekta racji miast z Auto-Żywieniem, ten sam
+    // autoBalanceRationsToSolvency co tick końca tury) względem `_nnsHumanForecast.spichlerzPo`.
+    // undefined = automat nie zmienia prognozy (brak Auto-Żywienia albo brak korekty).
+    let _nnsAutoSpichlerzDelta: number | undefined = undefined;
+    // R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1: ile punktów % udziału podatku gracz może
+    // dodać (pełny podział na podatek minus obecny); 0 = brak danych. Zasila propozycję podatku do zera.
+    let _nnsPodatekPunkty = 0;
     function refreshLiveEmpireRates(): void {
       if (!empireEconDirty) return;   // D10: przelicz tylko po zmianie (trigger), nie co odświeżenie
       empireEconDirty = false;
@@ -22913,7 +22921,89 @@ async function boot(): Promise<void> {
       // z przełożonym podziałem / racjami, bez trwałej zmiany stanu (podział i racje przywracane w finally).
       _nnsPodatekZysk = 0;
       _nnsRacjeZysk = 0;
-      if (_nnsHumanForecast !== null && turn > NNS_WOLNE_TURY
+      _nnsPodatekPunkty = 0;
+      // R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1 (Dodatek 2): prognoza PO REAKCJI automatu
+      // na koniec tury. Tick (blok „SPICH-AUTO-Q1” przy rozliczeniu Spichlerza) najpierw obniża racje miast
+      // z Auto-Żywieniem (autoBalanceRationsToSolvency), dopiero potem liczy advanceEmpireFood. Tu ta sama
+      // kolejność na świeżym podglądzie ekonomii; racje miast są przywracane w finally (stan nietknięty).
+      _nnsAutoSpichlerzDelta = undefined;
+      if (_nnsHumanForecast !== null && _nnsHumanForecast.spichlerzPo < 0
+        && playerCities.some(c => isCityAutoWyzywienieEnabled(c))) {
+        const savedAutoRacje = playerCities.map(c => ({ c, poziom: c.poziomRacji, procent: c.procentRozwoj }));
+        try {
+          const previewDomyslny = () => previewCityEconomy(
+            playerCities, map, data, _menuDifficulty, cityBuilt, player.era, player.zbadane, ownerCivMap,
+            orderMultMap, empireEpochForOwner, unlockedTechSetForOwner, tradeRouteBuildingBonusByCity,
+            routeIncomePreview.totalByCity, buildAllTerritoryNodes(), undefined,
+            buildWonderCityYieldsByOwnerMap([0]), makeOwnerZlotoAccessResolver(),
+            makeOwnerRuntimeActiveLabelsResolver(), makeOwnerEmpireStockResolver(),
+            ownerDefaultPodzialHandlu, ownerDefaultPodzialPracy, maritimeTradeIncomeByCityPreview, manualWorkTaxPreviewByCity,
+          );
+          const econPrzed = previewDomyslny();
+          const spichlerzByCityProj = new Map<string, import('./game/building-resource-gate').SpichlerzCityBonusState>();
+          for (const c of playerCities) {
+            const tick = econPrzed.perCity.find(t => t.cityId === c.id);
+            spichlerzByCityProj.set(c.id, {
+              ceramikaActive: tick?.spichlerzCeramika ?? false,
+              solActive: tick?.spichlerzSol ?? false,
+              maSpichlerzPop: tick?.maSpichlerz ?? false,
+              maSpichlerzIIPop: tick?.maSpichlerzII ?? false,
+            });
+          }
+          // Limit ludności per miasto — ta sama formuła co popCapByCityId w ticku (rozliczenie Spichlerza).
+          const econParamsProj = buildEconParams(data, _menuDifficulty);
+          const popCapProj = new Map<string, number>();
+          for (const c of playerCities) {
+            const builtIds = cityBuilt.get(c.id) ?? [];
+            popCapProj.set(c.id, cityPopulationCap(
+              builtIds.includes('akwedukt'), cityHasSpichlerzBuilding(builtIds), econParamsProj,
+              resolvePopulationCapMatrixDelta(ownerCivMap.get(ME()) ?? null),
+              builtIds.includes('spichlerz_ii'),
+            ));
+          }
+          const nnsEfParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
+          const nnsUpkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
+          const kosztArmiiProj = militaryFoodConsumptionWithSpichlerz(
+            playerEconUnitsForUpkeep, ME(), nnsUpkeepParams, unitFoodTbl,
+          );
+          const autoRes = autoBalanceRationsToSolvency({
+            ownerId: ME(),
+            cities: playerCities,
+            econ: econPrzed as unknown as Parameters<typeof autoBalanceRationsToSolvency>[0]['econ'],
+            zapasyPrzed: empireFoodStates.get(ME())?.zapasyPanstwa ?? 0,
+            rationParams: nnsEfParams.rationParams,
+            spichlerzByCity: spichlerzByCityProj,
+            onlyAutoManaged: true,
+            requireFlowBalance: true,
+            kosztArmii: kosztArmiiProj,
+            popCapByCityId: popCapProj,
+          });
+          if (autoRes.adjusted) {
+            // Ponowny podgląd ekonomii PO korekcie racji (racje miast już obniżone przez automat).
+            const econPo = previewDomyslny();
+            const fAuto = projectEmpireFoodAfterTick({
+              ownerId: ME(),
+              states: empireFoodStates,
+              econ: econPo as unknown as Parameters<typeof projectEmpireFoodAfterTick>[0]['econ'],
+              units: playerEconUnitsForUpkeep,
+              upkeep: nnsUpkeepParams,
+              params: nnsEfParams,
+              foodTable: unitFoodTbl,
+              builtByCity: cityBuilt,
+              resolveOwnerEra: empireEpochForOwner,
+            });
+            _nnsAutoSpichlerzDelta = fAuto.spichlerzPo - _nnsHumanForecast.spichlerzPo;
+          }
+        } catch (errAuto) {
+          // Brak korekty automatu w prognozie = bramka liczy prognozę bez automatu (bezpieczny kierunek).
+          _nnsAutoSpichlerzDelta = undefined;
+          console.error('[NNS] projekcja reakcji automatu (Auto-Żywienie) nie powiodła się — bramka bez korekty automatu:', errAuto);
+        } finally {
+          for (const sv of savedAutoRacje) { sv.c.poziomRacji = sv.poziom; sv.c.procentRozwoj = sv.procent; }
+        }
+      }
+      // R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1: dźwignie liczone od tury 1 (bez wyjątku 1–10).
+      if (_nnsHumanForecast !== null
         && (_nnsHumanForecast.skarbiecPo < 0 || _nnsHumanForecast.spichlerzPo < 0)) {
         try {
           const previewWithSplit = (splitMap: typeof ownerDefaultPodzialHandlu) => previewCityEconomy(
@@ -22931,6 +23021,7 @@ async function boot(): Promise<void> {
           if (altSplit.procentNauka !== meSplit.procentNauka || altSplit.procentPieniadz !== meSplit.procentPieniadz) {
             const pAlt = previewWithSplit(new Map(ownerDefaultPodzialHandlu).set(ME(), altSplit));
             _nnsPodatekZysk = Math.max(0, sumEconomyForPlayerCities(pAlt, cities).pieniadz - playerEcon.pieniadz);
+            _nnsPodatekPunkty = Math.max(0, altSplit.procentPieniadz - meSplit.procentPieniadz);
           }
           if (_nnsHumanForecast.spichlerzPo < 0 && playerCities.some(c => c.poziomRacji !== 0 || c.procentRozwoj !== 0)) {
             const savedRacje = playerCities.map(c => ({ c, poziom: c.poziomRacji, procent: c.procentRozwoj }));
@@ -22957,6 +23048,7 @@ async function boot(): Promise<void> {
           // Brak dźwigni = bramka liczy tylko jednostki (bezpieczny kierunek: brak zakleszczenia).
           _nnsPodatekZysk = 0;
           _nnsRacjeZysk = 0;
+          _nnsPodatekPunkty = 0;
           console.error('[NNS] dźwignie podatku/racji gracza nie powiodły się — bramka bez tych dźwigni:', errLev);
         }
       }
@@ -39582,7 +39674,7 @@ async function boot(): Promise<void> {
     function nnsGateForPlayer(): NnsGateResult {
       refreshLiveEmpireRates(); // dirty-gated: przelicza tylko po zmianie stanu ekonomii
       const f = _nnsHumanForecast;
-      if (!f) return { blokada: false, komunikat: '', dzwignie: [] };
+      if (!f) return { blokada: false, komunikat: '', dzwignie: [], zasob: null, prognoza: null, propozycjaPodatku: null, automatPoprawil: false, niewystarczajace: false };
       // Zarzut 4 (Evaluator): obecne salda czytane NA ŻYWO (cache dirty-gated mógłby mieć stare
       // saldo po grantGold/transferze złota bez markCityStateDirty). Z cache zostaje tylko DELTA
       // prognozy (netto tury), która zależy wyłącznie od ekonomii.
@@ -39595,7 +39687,15 @@ async function boot(): Promise<void> {
         spichlerzObecny: spLive,
         spichlerzPo: spLive + (f.spichlerzPo - f.spichlerzObecny),
       };
-      const levers: NnsEndTurnLevers = { podatekSkarbiec: _nnsPodatekZysk, suwakZywnosc: _nnsRacjeZysk };
+      const levers: NnsEndTurnLevers = {
+        podatekSkarbiec: _nnsPodatekZysk,
+        suwakZywnosc: _nnsRacjeZysk,
+        podatekPunkty: _nnsPodatekPunkty,
+        // Dodatek 2: reakcja automatu (Auto-Żywienie) liczona na żywym stanie spichlerza, tak jak `live`.
+        ...(_nnsAutoSpichlerzDelta !== undefined
+          ? { automat: { spichlerzPo: spLive + _nnsAutoSpichlerzDelta } }
+          : {}),
+      };
       return decideEndTurnGate(live, _nnsZyskSkarbiec, _nnsZyskSpichlerz, levers);
     }
 

@@ -7,11 +7,11 @@
  * Zasady:
  *  - Próg liczony na stanie PO ticku tury (dochód − utrzymanie, zakupy, rekrutacja z kolejki),
  *    nie na chwilowym saldzie.
- *  - Tury 1–10 (włącznie): gracz nie ma blokady „Zakończ turę” (wyjątek gracza). AI równoważy
- *    od tury 1 (R-WEB-NNS-AI-BALANCE-FROM-TURN1-Q1, decyzja właściciela 2026-11-14).
- *  - Blokada gracza („Zakończ turę”) tylko wtedy, gdy prognoza po turze jest < 0 ORAZ GORSZA
- *    niż stan obecny. Stary zapis z ujemnym stanem, którego prognoza nie pogarsza się,
- *    nie blokuje gry na stałe (bezpieczny wyjątek, patrz `wyjatekStarego`).
+ *  - R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1 (2026-11-14): dla GRACZA liczy się
+ *    WYŁĄCZNIE prognoza po turze, od tury 1 (bez wyjątku 1–10, bez porównania z stanem obecnym).
+ *    Prognoza < 0 po reakcji automatu zarządzania → blokada, o ile istnieje ręczna dźwignia.
+ *    Brak dźwigni = brak blokady (bez softlocku). AI równoważy od tury 1
+ *    (`NNS_AI_BALANCE_TURN_MIN = 1`, decyzja 2026-11-14).
  *  - Gracz zawsze ma ruch naprawczy (podatek, racje, rozwiązanie jednostki); `czyRuchNaprawczy`
  *    sprawdza, czy dostępne dźwignie pokrywają brak. Kolejka produkcji NIE jest dźwignią gracza
  *    (R-WEB-NNS-GATE-REMOVE-QUEUE-LEVER-Q1: prognoza gracza jej nie zawiera; AI ma własny plan).
@@ -79,27 +79,26 @@ function fmt(n: number): string {
  * Ocena końca tury dla gracza. Czysta funkcja.
  */
 export function evaluateEndTurnStocks(p: NnsProjection): NnsVerdict {
-  const wyjatekTur = p.turn <= NNS_WOLNE_TURY;
+  // R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1 (decyzja właściciela 2026-11-14):
+  // liczy się WYŁĄCZNIE prognoza po zakończeniu tury, od tury 1. Stan obecny nie ma znaczenia,
+  // brak wyjątku tur 1–10 dla gracza. `wyjatekTur` / `wyjatekStarego` zostają w typie wyłącznie
+  // dla zgodności wstecznej i są zawsze false.
+  const wyjatekTur = false;
+  const wyjatekStarego = false;
   const brakuje: NnsBrak[] = [];
-  let wyjatekStarego = false;
 
-  const sprawdz = (stock: NnsStock, obecny: number, po: number): void => {
+  const sprawdz = (stock: NnsStock, po: number): void => {
     if (!Number.isFinite(po) || po >= 0) return;
-    if (po < obecny) {
-      brakuje.push({ stock, ile: -po });
-    } else {
-      // stan ujemny już istnieje, prognoza nie gorsza — nie blokujemy
-      wyjatekStarego = true;
-    }
+    brakuje.push({ stock, ile: -po });
   };
-  sprawdz('skarbiec', p.skarbiecObecny, p.skarbiecPo);
-  sprawdz('spichlerz', p.spichlerzObecny, p.spichlerzPo);
+  sprawdz('skarbiec', p.skarbiecPo);
+  sprawdz('spichlerz', p.spichlerzPo);
 
-  const blokada = !wyjatekTur && brakuje.length > 0;
+  const blokada = brakuje.length > 0;
   let komunikat = '';
   if (blokada) {
     const linie = brakuje.map(b =>
-      `${NAZWA[b.stock]}: po turze zabraknie ${fmt(b.ile)}`,
+      `${NAZWA[b.stock]}: po zakończeniu tury zabraknie ${fmt(b.ile)}`,
     );
     komunikat =
       'Nie można zakończyć tury: ' + linie.join('; ') +
@@ -400,12 +399,26 @@ export function decideAiOwnerBalance(
 // ---------------------------------------------------------------------------
 
 export interface NnsGateResult {
-  /** true = „Zakończ turę” zablokowane (prognoza < 0 ORAZ istnieje ruch naprawczy). */
+  /** true = „Zakończ turę” zablokowane (prognoza po turze < 0 PO reakcji automatu ORAZ istnieje ruch naprawczy). */
   blokada: boolean;
-  /** Komunikat po polsku (pusty gdy brak blokady): co na minusie, o ile, które dźwignie pomogą. */
+  /** Komunikat po polsku (pusty gdy brak blokady): co na minusie po turze, o ile, które dźwignie pomogą. */
   komunikat: string;
   /** Dźwignie uwzględnione przy ocenie „ruchu naprawczego” (tylko dodatnie zyski; pusta tablica bez blokady). */
   dzwignie: NnsGateLever[];
+  /** Zasób, którego dotyczy blokada (pierwszy na minusie); null bez blokady. Stabilne API dla okna zdarzenia. */
+  zasob: NnsStock | null;
+  /** Prognozowany stan tego zasobu po turze (po reakcji automatu); null bez blokady. */
+  prognoza: number | null;
+  /** Propozycja podatku do zera (tylko gdy skarbiec na minusie i da się to pokryć podatkiem); inaczej null. */
+  propozycjaPodatku: NnsPropozycjaPodatku | null;
+  /** true = reakcja automatu zmieniła prognozę (`extra.automat` użyte). */
+  automatPoprawil: boolean;
+  /**
+   * R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1 r2 (zarzut 7/8): true = prognoza po turze
+   * jest < 0, a dostępne dźwignie gracza NIE pokrywają braku (albo nawet maksymalny podatek nie wystarcza).
+   * Bramka wtedy NIE blokuje (założenie: brak softlocku, Dodatek 2), ale UI dostaje jawny sygnał.
+   */
+  niewystarczajace: boolean;
 }
 
 /** Dźwignia pokazana graczowi w komunikacie bramki (zysk = poprawa salda po turze, dodatni). */
@@ -423,6 +436,16 @@ export interface NnsEndTurnLevers {
   podatekSkarbiec?: number;
   /** Racje: dodatkowy zysk spichlerza po obniżeniu racji/suwaka wzrostu do 0 (0 = niedostępne). */
   suwakZywnosc?: number;
+  /** Ile punktów % udziału podatku (pieniądz) gracz może dodać (0 = brak danych; do propozycji podatku). */
+  podatekPunkty?: number;
+  /** Prognoza PO reakcji automatu zarządzania (Dodatek 3: najpierw automat, potem gracz). undefined = brak. */
+  automat?: { skarbiecPo?: number; spichlerzPo?: number };
+  /**
+   * r2 (zarzut 3): prognoza skarbca PO TURZE przy podniesieniu podatku o `pkt` punktów % (wartość bezwzględna,
+   * z tej samej projekcji co bramka, już po reakcji automatu). Gdy podana, propozycja podatku idzie krokami
+   * (propozycjaPodatkuKrokami); gdy brak — estymacja liniowa (szacunek 'liniowy').
+   */
+  prognozaPoPodatku?: (punktyProcentowe: number) => number;
 }
 
 function zyskNieujemny(z: number | undefined): number {
@@ -441,19 +464,114 @@ export function decideEndTurnGate(
   zyskSpichlerz: number,
   extra: NnsEndTurnLevers = {},
 ): NnsGateResult {
-  const v = evaluateEndTurnStocks(p);
-  if (!v.blokada) return { blokada: false, komunikat: '', dzwignie: [] };
+  // Kolejność reakcji (Dodatek 3, 2026-11-14): NAJPIERW automat zarządzania przetwarza turę i
+  // poprawia prognozę; DOPIERO wynik po automacie jest oceniany. `extra.automat` = prognoza po
+  // reakcji automatu (undefined = automat nie zadziałał / brak danych → prognoza bez zmian).
+  const pPoAutomacie: NnsProjection = {
+    ...p,
+    skarbiecPo: extra.automat?.skarbiecPo ?? p.skarbiecPo,
+    spichlerzPo: extra.automat?.spichlerzPo ?? p.spichlerzPo,
+  };
+  const automatPoprawil =
+    (extra.automat?.skarbiecPo !== undefined && extra.automat.skarbiecPo !== p.skarbiecPo) ||
+    (extra.automat?.spichlerzPo !== undefined && extra.automat.spichlerzPo !== p.spichlerzPo);
+  const v = evaluateEndTurnStocks(pPoAutomacie);
+  if (!v.blokada) {
+    return { blokada: false, komunikat: '', dzwignie: [], zasob: null, prognoza: null, propozycjaPodatku: null, automatPoprawil, niewystarczajace: false };
+  }
   const levers: NnsLever[] = [
     { id: 'podatek-skarbiec', rodzaj: 'podatek', stock: 'skarbiec', zysk: zyskNieujemny(extra.podatekSkarbiec), koszt: 0, eliminujeCywilizacje: false },
     { id: 'suwak-zywnosc', rodzaj: 'podatek', stock: 'spichlerz', zysk: zyskNieujemny(extra.suwakZywnosc), koszt: 0, eliminujeCywilizacje: false },
     { id: 'rozwiaz-skarbiec', rodzaj: 'rozwiazanie', stock: 'skarbiec', zysk: zyskNieujemny(zyskSkarbiec), koszt: 0, eliminujeCywilizacje: false },
     { id: 'rozwiaz-spichlerz', rodzaj: 'rozwiazanie', stock: 'spichlerz', zysk: zyskNieujemny(zyskSpichlerz), koszt: 0, eliminujeCywilizacje: false },
   ];
-  if (!czyRuchNaprawczy(v.brakuje, levers)) return { blokada: false, komunikat: '', dzwignie: [] };
+  if (!czyRuchNaprawczy(v.brakuje, levers)) {
+    // Brak ręcznej dźwigni, która pokryje brak = brak blokady (bez martwego punktu / softlocku).
+    // r2: jeśli jakakolwiek dźwignia istnieje (częściowo pokrywa), flaga „niewystarczające” idzie do UI.
+    return {
+      blokada: false, komunikat: '', dzwignie: [], zasob: null, prognoza: null, propozycjaPodatku: null,
+      automatPoprawil, niewystarczajace: levers.some(l => l.zysk > 0),
+    };
+  }
   const dzwignie: NnsGateLever[] = levers
     .filter(l => l.zysk > 0)
     .map(l => ({ id: l.id, stock: l.stock, zysk: l.zysk, opis: opisDzwigni(l) }));
-  return { blokada: true, komunikat: komunikatBramki(v.brakuje, dzwignie), dzwignie };
+  // Pierwszy zasób na minusie (po automacie): skarbiec ma pierwszeństwo w komunikacie.
+  const pierwszy = v.brakuje[0]!;
+  let propozycjaPodatku: NnsPropozycjaPodatku | null = null;
+  let niewystarczajace = false;
+  if (v.brakuje.some(b => b.stock === 'skarbiec')) {
+    const punkty = extra.podatekPunkty ?? 0;
+    if (extra.prognozaPoPodatku && punkty > 0) {
+      // r2 (zarzut 3): wyszukiwanie po krokach na tej samej projekcji co bramka.
+      propozycjaPodatku = propozycjaPodatkuKrokami(extra.prognozaPoPodatku, punkty, 10);
+    } else {
+      propozycjaPodatku = propozycjaPodatkuDoZera(-pPoAutomacie.skarbiecPo, punkty, extra.podatekSkarbiec ?? 0);
+    }
+    // r2 (zarzut 7/8): nawet maksymalny podatek nie wystarcza do zera skarbca.
+    niewystarczajace = propozycjaPodatku === null;
+  }
+  return {
+    blokada: true,
+    komunikat: komunikatBramki(v.brakuje, dzwignie),
+    dzwignie,
+    zasob: pierwszy.stock,
+    prognoza: pPoAutomacie[pierwszy.stock === 'skarbiec' ? 'skarbiecPo' : 'spichlerzPo'],
+    propozycjaPodatku,
+    automatPoprawil,
+    niewystarczajace,
+  };
+}
+
+/** Propozycja podniesienia podatku, żeby prognoza skarbca po turze była ≥ 0 („chociażby na zero”). */
+export interface NnsPropozycjaPodatku {
+  /** Ile punktów procentowych podatku dodać (dodatnia liczba całkowita). */
+  punktyProcentowe: number;
+  /** Szacunek LINIOWY z pełnej dźwigni podatku (nie z osobnej projekcji): patrz `propozycjaPodatkuDoZera`. */
+  szacunek: 'liniowy' | 'krokowy';
+  /** Brak w pełni pokrytego zera nawet przy maksymalnym podatku — wtedy `null`. */
+  maksPunktow: number;
+}
+
+/**
+ * Minimalne podniesienie podatku do zera (czysta funkcja). `brak` = ile brakuje skarbcowi po turze
+ * (dodatnie), `punktyDostepne` = o ile punktów % podatek może wzrosnąć, `zyskPelny` = dodatkowy
+ * przychód skarbca przy podniesieniu o wszystkie `punktyDostepne` (z `NnsEndTurnLevers`).
+ * Zakłada liniowość przychodu od udziału podatku (ESTYMACJA; wołający weryfikuje po ticku).
+ * Zwraca `null`, gdy nawet pełny podatek nie wystarcza lub brak danych.
+ */
+export function propozycjaPodatkuDoZera(
+  brak: number,
+  punktyDostepne: number,
+  zyskPelny: number,
+): NnsPropozycjaPodatku | null {
+  if (!(brak > 0) || !(punktyDostepne > 0) || !(zyskPelny > 0)) return null;
+  const zyskNaPunkt = zyskPelny / punktyDostepne;
+  const potrzeba = Math.ceil(brak / zyskNaPunkt);
+  if (potrzeba > punktyDostepne) return null;
+  return { punktyProcentowe: Math.max(1, potrzeba), szacunek: 'liniowy', maksPunktow: punktyDostepne };
+}
+
+/**
+ * Wyszukiwanie po krokach suwaka podatku (kroki po 10 pkt %, R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1
+ * runda 2, punkt 3). `prognozaPoPodatku(pkt)` = skarbiec po turze przy podniesieniu podatku o `pkt` pkt %
+ * (ta sama funkcja projekcji co bramka). Zwraca NAJMNIEJSZY krok (10, 20, ... , maksimum), dla którego
+ * prognoza ≥ 0, albo `null` (flaga „niewystarczające” po stronie wołającego: nawet maksimum nie wystarcza).
+ * Czysta funkcja: nie modyfikuje stanu gry — callback musi być bezskutkowy.
+ */
+export function propozycjaPodatkuKrokami(
+  prognozaPoPodatku: (punktyProcentowe: number) => number,
+  punktyDostepne: number,
+  krok = 10,
+): NnsPropozycjaPodatku | null {
+  if (!(punktyDostepne > 0) || !(krok > 0)) return null;
+  for (let pkt = krok; ; pkt += krok) {
+    const p = Math.min(pkt, punktyDostepne);
+    if (prognozaPoPodatku(p) >= 0) {
+      return { punktyProcentowe: p, szacunek: 'krokowy', maksPunktow: punktyDostepne };
+    }
+    if (p >= punktyDostepne) return null;
+  }
 }
 
 const OPIS_DZWIGNI_ID: Record<string, string> = {
@@ -470,9 +588,9 @@ function opisDzwigni(l: NnsLever): string {
 
 /** Stały komunikat bramki: co na minusie (zasób i kwota), które dźwignie pomogą (liczby z projekcji). */
 export function komunikatBramki(brakuje: readonly NnsBrak[], dzwignie: readonly NnsGateLever[]): string {
-  const linie = brakuje.map(b => `${NAZWA[b.stock]}: po turze zabraknie ${fmt(b.ile)}`);
+  const linie = brakuje.map(b => `${NAZWA[b.stock]}: po zakończeniu tury zabraknie ${fmt(b.ile)}`);
   const pomoga = dzwignie.length > 0 ? dzwignie.map(d => d.opis).join('; ') : 'brak';
-  return 'Nie można zakończyć tury: ' + linie.join('; ') + '. Pomogą: ' + pomoga + '.';
+  return 'Nie można zakończyć tury. ' + linie.join('; ') + '. Pomogą: ' + pomoga + '.';
 }
 
 // ---------------------------------------------------------------------------

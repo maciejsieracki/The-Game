@@ -50,10 +50,10 @@ function proj(turn, skObecny, skPo, spObecny, spPo) {
   ok(g.blokada === true, '(a) tura 11, prognoza < 0, ruch naprawczy -> blokada');
   ok(/Skarbiec/.test(g.komunikat) && /20/.test(g.komunikat), '(a) komunikat zawiera zasob i kwote (20)');
 }
-// (a2) tura <= 10 -> brak blokady
+// (a2) R-WEB-...-FROM-TURN1-Q1: tura 10 nie jest wolna — prognoza < 0 z dźwignią blokuje
 {
   const g = M.decideEndTurnGate(proj(10, 5, -20, 0, 0), 30, 0);
-  ok(g.blokada === false, '(a2) tura 10 (wolna) -> brak blokady');
+  ok(g.blokada === true, '(a2) tura 10 -> blokada (brak wyjatku tur 1-10)');
 }
 // (b) po ruchu naprawczym blokada znika
 {
@@ -75,10 +75,10 @@ function proj(turn, skObecny, skPo, spObecny, spPo) {
   const g2 = M.decideEndTurnGate(proj(11, 0, 0, 3, -7), 0, 5);
   ok(g2.blokada === false, '(c-spich) dzwignia spichlerza za mala -> brak blokady');
 }
-// (d) stary zapis: stan ujemny, prognoza nie gorsza
+// (d) R-WEB-...-FROM-TURN1-Q1: stan ujemny, prognoza nadal < 0 -> blokada (prognoza nadrzedna)
 {
   const g = M.decideEndTurnGate(proj(15, -5, -3, 0, 0), 30, 0);
-  ok(g.blokada === false, '(d) stary zapis ujemny, prognoza nie gorsza -> brak blokady');
+  ok(g.blokada === true, '(d) stary zapis ujemny, prognoza < 0 -> blokada');
 }
 // (e) dryf arytmetyki: projekcja skarbca == blok banku == obecny + netto HUD
 {
