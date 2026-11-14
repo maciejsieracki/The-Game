@@ -29,6 +29,24 @@ export function relevantInfoEvents(
   return infoEvents.filter(ev => !isHiddenAiAiEvent(ev, activeTab));
 }
 
+/**
+ * Zdarzenia zasilające LICZNIKI i LISTĘ zakładek (R-WEB-UI-NOTIF-DIPLO-TAB-COUNT-BLOCKING-Q1):
+ * wszystkie wpisy informacyjne oraz blokujące propozycje dyplomacji (`kind:'diplo'`, np. propozycja
+ * pokoju od AI). Blokująca karta dyplomacji jest KOPIĄ oznaczoną `blocking:false`, więc zakładka
+ * „Dyplomacja” pokazuje ją jako zwykłą kartę, a licznik zgadza się z listą po kliknięciu. Oryginał
+ * nadal renderuje się nad zakładkami jako „wymaga decyzji” (decyzja gracza nie jest ukrywana).
+ * Pozostałe blokujące wpisy (np. kind enemy) pomijane — zostają wyłącznie w „wymaga decyzji”.
+ * Kolejność wejściowa zachowana.
+ */
+export function tabSourceEventsOf(events: readonly SidePanelEvent[]): SidePanelEvent[] {
+  const out: SidePanelEvent[] = [];
+  for (const ev of events) {
+    if (ev.blocking !== true) out.push(ev);
+    else if (ev.kind === 'diplo') out.push({ ...ev, blocking: false });
+  }
+  return out;
+}
+
 /** Liczniki zakładek. `includeAiAi:false` pomija handel AI↔AI (do wyboru zakładki domyślnej). */
 export function tabCountsOf(
   infoEvents: readonly SidePanelEvent[],

@@ -25,7 +25,7 @@ import {
 } from './minimapLayout';
 import { SIDE_PANEL_LEFT, SIDE_PANEL_LEFT_PX } from './sidePanelLayout';
 import { isDiploObscuringUnitDock } from './unitCtxDockDiploGate';
-import { filterSidePanelEventsByTab, relevantInfoEvents, tabCountsOf } from './sidePanelEventFilter';
+import { filterSidePanelEventsByTab, relevantInfoEvents, tabCountsOf, tabSourceEventsOf } from './sidePanelEventFilter';
 import {
   defaultSidePanelTab,
   SIDE_PANEL_TAB_LABELS,
@@ -760,10 +760,13 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
     const blockingEvents = events.filter(ev => ev.blocking === true);
     const allInfoEvents = events.filter(ev => ev.blocking !== true);
     // Liczniki na zakładkach = to, co gracz zobaczy po kliknięciu (z handlem AI↔AI w Dyplomacji).
-    const tabCounts = tabCountsOf(allInfoEvents, true);
+    // R-WEB-UI-NOTIF-DIPLO-TAB-COUNT-BLOCKING-Q1: licznik i lista zakładek zasilane wpisami
+    // informacyjnymi + blokującymi propozycjami dyplomacji (kopia jako informacyjna), patrz tabSourceEventsOf.
+    const tabSourceEvents = tabSourceEventsOf(events);
+    const tabCounts = tabCountsOf(tabSourceEvents, true);
     // Zakładka domyślna nie liczy ukrytego handlu AI↔AI — sam nie przełącza panelu na Dyplomację.
     if (!activeTabPicked) activeTab = defaultSidePanelTab(tabCountsOf(allInfoEvents, false));
-    const infoEvents = filterSidePanelEventsByTab(allInfoEvents, activeTab);
+    const infoEvents = filterSidePanelEventsByTab(tabSourceEvents, activeTab);
     // Nagłówek i „Zamknij wszystkie informacyjne”: zakres sprzed zakładek — bez ukrytych AI↔AI.
     const relevantInfo = relevantInfoEvents(allInfoEvents, activeTab);
     const orderedEvents = [...blockingEvents, ...infoEvents];
