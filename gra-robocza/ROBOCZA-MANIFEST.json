@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "5e0a88f40ef9f70894631f9da3775af6",
-  "bundleSha256": "84ddf85cfadf136e1b442689cf27b58d77a37370d0d9f905737540246c3ab936",
-  "bundleBytes": 14658523,
+  "bundleMd5": "07b2016fea3dd40430fae1c513ec49ac",
+  "bundleSha256": "d9946f2e5c457b19fa299730c9ce9e5fc7865b6087843c64a272aa6cea311d44",
+  "bundleBytes": 14673166,
   "sourceSnapshot": {
-    "source": "main 28c949e46 (FC 785d0f3e0)",
+    "source": "main 1c5a28e04 (FC cad44581a + 68c7a5eac)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 695: bramka AI 'proponuje pokoj' (priorytet 2 i wybor rodzaju) liczy slabosc pozycja militarna (peacePosMil) zamiast respektu wzglednego rw; progi bez zmian; AI-AI wniosek o pokoj tez wg sily militarnej"
+    "FALA 696: AI rownowazy skarbiec i spichlerz przed tickiem (podatek, racje zywnosci, rozwiazanie jednostek) od tury 11 — pomiar 3 ziarna x 150 tur: od T31 zero minusow; AI nie proponuje pokoju przed 10. pelna tura wojny (max(minTurWojny, PEACE_PROPOSAL_MIN_WAR_TURNS)) dla wszystkich cywilizacji"
   ],
   "verification": [
-    "tsc 0; logic 213/213; ai-test 297/0; diplomacy-test 149/0; peace-gate-military-strength 14/0; ai-war-weariness-peace 99/0; mutacja bramki na rw czerwieni test"
+    "tsc 0; logic 213/213; ai-test 297/0; diplomacy-test 149/0; diplo-war-peace-sim 25/0; no-negative-stocks ai 8/0, c2 43/0, projection 49/0, c3-turn-test Chromium 16/0; mutacja usuniecia nnsAiPreTickBalance czerwieni test"
   ],
   "limits": [
-    "NIE ZMIERZONO: balans pasma rownej sily w pelnej grze; dlug bazowy weaker-seeks 29/3, main-guard 34/1, sim 19/3"
+    "NIE ZMIERZONO: ziarno 22, pelne 15 civ x 3 x 150; 445 minusow z dlugu tur 1-10; dlug testowy bazowy weaker-seeks 29/3, main-guard 34/1"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES 785d0f3e0 (raport f53aab86b): bramka pokoju AI liczy słabość siłą militarną, nie respektem względnym; progi bez zmian. NIE ZMIERZONO: balans pasma równej siły w pełnej grze. Dług bazowy bez zmian: weaker-seeks 29/3, main-guard 34/1, sim 19/3."
+    "notes": "FC PASS-WITH-NOTES: W70 r3 cad44581a (rownowazenie AI przed tickiem; 3 ziarna x 150 tur: od T31 zero naruszen, 445 z 450 minusow to dlug z tur 1-10, 5 = brak dzwigni) oraz W74 r3 68c7a5eac (AI nie proponuje pokoju przed 10. tura wojny). NIE ZMIERZONO: pelna gra w Chromium dla bramki gracza, ziarno 22, 15 civ x 3 x 150 w calosci. Decyzja wlasciciela otwarta: czy AI rownowazy sie od tury 1."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-13T21:41:16",
+  "hubGeneratedAt": "2026-11-14T02:49:04",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "5e0a88f40ef9f70894631f9da3775af6",
-      "sizeBytes": 14658523
+      "md5": "07b2016fea3dd40430fae1c513ec49ac",
+      "sizeBytes": 14673166
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "5e0a88f40ef9f70894631f9da3775af6",
-      "sizeBytes": 14658523
+      "md5": "07b2016fea3dd40430fae1c513ec49ac",
+      "sizeBytes": 14673166
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "5e0a88f40ef9f70894631f9da3775af6",
-      "sizeBytes": 14658523
+      "md5": "07b2016fea3dd40430fae1c513ec49ac",
+      "sizeBytes": 14673166
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "5e0a88f40ef9f70894631f9da3775af6",
-      "sizeBytes": 14658523
+      "md5": "07b2016fea3dd40430fae1c513ec49ac",
+      "sizeBytes": 14673166
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "5e0a88f40ef9f70894631f9da3775af6",
-      "sizeBytes": 14658523
+      "md5": "07b2016fea3dd40430fae1c513ec49ac",
+      "sizeBytes": 14673166
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "5e0a88f40ef9f70894631f9da3775af6",
-      "sizeBytes": 14658523
+      "md5": "07b2016fea3dd40430fae1c513ec49ac",
+      "sizeBytes": 14673166
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "5e0a88f40ef9f70894631f9da3775af6",
-      "sizeBytes": 14658523
+      "md5": "07b2016fea3dd40430fae1c513ec49ac",
+      "sizeBytes": 14673166
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "5e0a88f40ef9f70894631f9da3775af6",
-      "sizeBytes": 14658523
+      "md5": "07b2016fea3dd40430fae1c513ec49ac",
+      "sizeBytes": 14673166
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "5e0a88f40ef9f70894631f9da3775af6",
-      "sizeBytes": 14658523
+      "md5": "07b2016fea3dd40430fae1c513ec49ac",
+      "sizeBytes": 14673166
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "5e0a88f40ef9f70894631f9da3775af6",
-      "sizeBytes": 14658523
+      "md5": "07b2016fea3dd40430fae1c513ec49ac",
+      "sizeBytes": 14673166
     }
   ],
-  "md5": "5e0a88f40ef9f70894631f9da3775af6",
+  "md5": "07b2016fea3dd40430fae1c513ec49ac",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

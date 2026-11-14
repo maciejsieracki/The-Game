@@ -1,3 +1,9 @@
+## ROBOCZA 07b2016f -- 2026-11-13 -- FALA 696: Rownowazenie AI przed koncem tury + AI nie proponuje pokoju przed 10. tura (testowa)
+
+- AI rownowazy skarbiec i spichlerz przed tickiem (podatek, racje zywnosci, rozwiazanie jednostek) od tury 11 — pomiar 3 ziarna x 150 tur: od T31 zero minusow; AI nie proponuje pokoju przed 10. pelna tura wojny (max(minTurWojny, PEACE_PROPOSAL_MIN_WAR_TURNS)) dla wszystkich cywilizacji
+- Weryfikacja: tsc 0; logic 213/213; ai-test 297/0; diplomacy-test 149/0; diplo-war-peace-sim 25/0; no-negative-stocks ai 8/0, c2 43/0, projection 49/0, c3-turn-test Chromium 16/0; mutacja usuniecia nnsAiPreTickBalance czerwieni test
+- Limity: NIE ZMIERZONO: ziarno 22, pelne 15 civ x 3 x 150; 445 minusow z dlugu tur 1-10; dlug testowy bazowy weaker-seeks 29/3, main-guard 34/1
+
 ## ROBOCZA 5e0a88f4 -- 2026-11-13 -- FALA 695: Bramka pokoju AI wg sily militarnej (testowa)
 
 - bramka AI 'proponuje pokoj' (priorytet 2 i wybor rodzaju) liczy slabosc pozycja militarna (peacePosMil) zamiast respektu wzglednego rw; progi bez zmian; AI-AI wniosek o pokoj tez wg sily militarnej
