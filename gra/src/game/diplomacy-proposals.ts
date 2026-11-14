@@ -31,7 +31,7 @@ import { czyAgresorAktywny, deltaRelacjiSojusz } from './diplomacy';
 import { resolveWarPeaceProfile, evaluatePeaceAiGate } from './diplomacy-war-peace-profile';
 import type { PeaceMilitaryPosition } from './diplomacy-military-strength';
 import { peaceProposalBlocked, PEACE_PROPOSAL_MIN_WAR_TURNS } from './diplomacy-peace-proposal-timing';
-import { warWearinessLevel, wearinessPeacePriceFactor } from './war-weariness';
+import { warWearinessLevel, wearinessPeaceItemPw } from './war-weariness';
 import type { Player } from '../types/player';
 import { TypCywilizacji } from '../types/player';
 import {
@@ -306,6 +306,12 @@ export interface ProposalEvalResult {
    * disagree again.
    */
   pwBalance?: number;
+  /**
+   * R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: Z = pozycja PW „Zmęczenie wojną” (round(C×x²)) w tabeli
+   * oceniającego AI przy pokoju od gracza. `pwBalance` = givePn − (C − Z), więc tabela (Z + oddawane) − C = pwBalance.
+   * `undefined` poza tą gałęzią (brak zmęczenia w bilansie).
+   */
+  wearinessPw?: number;
 }
 
 export interface PendingProposal {
@@ -1354,6 +1360,8 @@ export function evaluateProposal(
       const r5PlayerAuthors = r5AuthorOwnerId === (pnOpts.playerOwnerId ?? 0);
       const r5RespondentIsAi = responderOwnerId !== (pnOpts.playerOwnerId ?? 0);
       let basePn = basePnCfg;
+      // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: Z (PW) zmęczenia wojną w tabeli; undefined poza gałęzią R5.
+      let wearyPwItem: number | undefined;
       if (ctx.warState && r5PlayerAuthors && r5RespondentIsAi && !ctx.responderIsCityState) {
         const r5Profile = resolveWarPeaceProfile(
           typeof ctx.responderPlayer?.typCywilizacji === 'string' ? ctx.responderPlayer.typCywilizacji : undefined,
@@ -1371,13 +1379,17 @@ export function evaluateProposal(
         if (r5Gate.verdict === 'too_early') {
           return { accepted: false, reason: r5Gate.reason ?? 'AI odrzuca pokój' };
         }
-        // R-WEB-AI-WAR-WEARINESS-PEACE-Q1: zmęczenie wojną obniża cenę pokoju zadaną od gracza (do rabatCenyPokojuMax).
-        const wearyFactor = wearinessPeacePriceFactor(warWearinessLevel({
+        // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (ABC 2026-11-14: krzywa kwadratowa, rabat 60% usunięty):
+        // zmęczenie wojną to POZYCJA PW Z = round(C × x²), a NIE rabat ceny. Z pojawia się w tabeli po stronie
+        // oceniającego AI („Zmęczenie wojną (AI)”); wymagana reszta R = C − Z pokrywana wyłącznie miastem.
+        const cenaPokojuPn = Math.round(basePnCfg * r5Gate.priceMultiplier);
+        const wearyLevel = warWearinessLevel({
           turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
           lostCitiesTotal: Math.max(0, ctx.warState.lostCitiesResponder),
           turnsSinceCityChange: ctx.warState.turnsSinceCityChange,
-        }));
-        basePn = Math.round(basePnCfg * r5Gate.priceMultiplier * wearyFactor);
+        });
+        wearyPwItem = wearinessPeaceItemPw(cenaPokojuPn, wearyLevel);
+        basePn = Math.max(0, cenaPokojuPn - wearyPwItem);
         // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (zarzut 5 / wymóg 4): złoto i surowce NIE są
         // słodzikiem pokoju ani rozejmu — w każdej pozycji (słabsza i silniejsza AI) oferta z nimi jest
         // odrzucana. Słodzikiem jest wyłącznie miasto (poniżej, dla 'stronger').
@@ -1396,10 +1408,13 @@ export function evaluateProposal(
           const cityGivePn = cityItems.length > 0
             ? resolveProposalPn({ giveItems: cityItems, actionId }, pnOpts).givePn
             : 0;
-          if (!(cityGivePn >= basePn)) {
+          // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: silna AI nadal wymaga miasta o wartości PEŁNEJ ceny C
+          // (regula siły bez wygasania, R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1). Z zmęczenia obniża tylko
+          // wymaganą dopłatę R dla pozostałych przypadków; nie znosi bramki militarnej. DECISION_REQUIRED (raport).
+          if (!(cityGivePn >= cenaPokojuPn)) {
             return {
               accepted: false,
-              reason: `${r5Gate.reason ?? 'AI odrzuca pokój'} — miasta w ofercie warte ${Math.round(cityGivePn)} PN, wymagane ${basePn} PN`,
+              reason: `${r5Gate.reason ?? 'AI odrzuca pokój'} — miasta w ofercie warte ${Math.round(cityGivePn)} PN, wymagane ${cenaPokojuPn} PN`,
             };
           }
         }
@@ -1548,11 +1563,12 @@ export function evaluateProposal(
         return {
           accepted: false,
           pwBalance: pokojPwBalance,
+          wearinessPw: wearyPwItem,
           reason: `Brakuje ${Math.abs(pokojPwBalance)} PW do uczciwej oferty pokoju @ Relacji `
             + `(baza ${basePn} PW) — dopłać, by wysłać`,
         };
       }
-      return { accepted: true, pwBalance: pokojPwBalance, reason: 'Warunki pokoju spełnione', oneShotTrade: true };
+      return { accepted: true, pwBalance: pokojPwBalance, wearinessPw: wearyPwItem, reason: 'Warunki pokoju spełnione', oneShotTrade: true };
     }
 
     case 'trybut_oferta': {

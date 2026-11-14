@@ -38,7 +38,6 @@
     "_opis": "AI przegrywajace z graczem: oferuj_miasto_za_pokoj - prog rw rosnie o rwProgBonusMax*desperacja, min. miast AI spada do minMiastAi (gracz decyduje o przyjeciu).",
     "rwProgBonusMax": 0.25,
     "minMiastAi": 2,
-    "_rabat": "Zarzut 3: cena pokoju zadana od gracza przez AI maleje z zmeczeniem: czynnik = 1 - rabatCenyPokojuMax*clamp((poziom-progChetnosci)/(1-progChetnosci),0,1).",
-    "rabatCenyPokojuMax": 0.6
+    "_pozycjaPW": "R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: zmeczenie wojna przy pokoju zadanym przez AI to POZYCJA PW (nie rabat): x=clamp((L-progChetnosci)/(progKoncaZmeczenia-progChetnosci),0,1), Z=round(C*x^2) (krzywa kwadratowa, ABC 2026-11-14). Stary rabat 60% (rabatCenyPokojuMax) USUNIETY. Kod: war-weariness.ts wearinessPeaceItemPw."
   }
 }

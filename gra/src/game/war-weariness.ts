@@ -43,7 +43,7 @@ export interface WarWearinessParams {
     /** LIVE-AUDIT-Q1 r2: karencja DOW (tury) po pokoju CHRONIONEGO przegrywajacego (<= ochronaMaxMiast miast / >= ochronaUtratyWojny utrat) — zapobiega serii wojen do eliminacji. */
     karencjaChronionegoTur: number;
   };
-  czlowiek: { rwProgBonusMax: number; minMiastAi: number; rabatCenyPokojuMax: number };
+  czlowiek: { rwProgBonusMax: number; minMiastAi: number };
 }
 
 export const WAR_WEARINESS_PARAMS = paramsRaw as unknown as WarWearinessParams;
@@ -71,11 +71,23 @@ export function warWearinessLevel(inp: WarWearinessInput, P: WarWearinessParams 
   return clamp(turns / Z.pelneTur + Z.wagaStratMiasta * Math.max(0, inp.lostCitiesTotal), 0, 1);
 }
 
-/** Czynnik (0..1] ceny pokoju zadanej przez AI od gracza: maleje z zmęczeniem powyżej progu chęci. */
-export function wearinessPeacePriceFactor(level: number, P: WarWearinessParams = WAR_WEARINESS_PARAMS): number {
+/**
+ * R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (ABC właściciela 2026-11-14: krzywa KWADRATOWA, stary rabat 60% usunięty).
+ * Zmęczenie wojną jako POZYCJA PW przy pokoju zadanym przez AI (nie rabat ceny):
+ *   x = clamp((L − progChetnosci) / (progKoncaZmeczenia − progChetnosci), 0, 1),  Z = round(C × x²).
+ * C = cena pokoju (PN, po mnożniku cywilizacji), L = poziom zmęczenia 0..1. Z trafia do tabeli PW po stronie
+ * niebędącej proponującym; reszta do pokrycia R = C − Z (miasto). Przy L ≥ progKoncaZmeczenia: Z = C, R = 0.
+ * Czysta funkcja; bez `rabatCenyPokojuMax` (usunięty z JSON).
+ */
+export function wearinessPeaceItemPw(
+  priceC: number,
+  level: number,
+  P: WarWearinessParams = WAR_WEARINESS_PARAMS,
+): number {
   const t = P.zmeczenie.progChetnosci;
-  const x = clamp((level - t) / Math.max(1e-9, 1 - t), 0, 1);
-  return 1 - P.czlowiek.rabatCenyPokojuMax * x;
+  const span = Math.max(1e-9, P.zmeczenie.progKoncaZmeczenia - t);
+  const x = clamp((level - t) / span, 0, 1);
+  return Math.round(Math.max(0, priceC) * x * x);
 }
 
 export function isWarWeary(level: number, P: WarWearinessParams = WAR_WEARINESS_PARAMS): boolean {

@@ -26,7 +26,7 @@ export interface NegotiationBalanceSource {
    * SAMEJ bramki, która policzyła `accepted` — patrz ProposalEvalResult w
    * diplomacy-proposals.ts. `undefined` gdy akcja nie ma numerycznej bramki PW.
    */
-  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number };
+  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number };
   isGift?: boolean;
   awaitingAiResponse?: boolean;
   canCounter?: boolean;
@@ -49,7 +49,7 @@ export interface PnBalancePanelData {
    * SAMEJ bramki, która policzyła `accepted` — patrz ProposalEvalResult w
    * diplomacy-proposals.ts. `undefined` gdy akcja nie ma numerycznej bramki PW.
    */
-  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number };
+  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number };
   canCounter?: boolean;
   uiActionId?: string;
 }
@@ -577,6 +577,16 @@ function treatyMetaHtml(
 }
 
 /** Główny panel PW — widoczny między kolumnami My / Oni na stole. */
+/**
+ * R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: pozycja „Zmęczenie wojną +N PW" po stronie AI (kolumna „Oni oddają").
+ * Z = round(C × x²) z wearinessPeaceItemPw; wiersz tylko dla Z > 0. Tooltip: tury wojny, utracone miasta, zmęczenie.
+ */
+export function wearinessPwRowHtml(z: number | undefined): string {
+  if (z == null || !(z > 0)) return '';
+  return '<div class="da-pn-bal-meta weariness" title="Zmęczenie wojną: pozycja PW po stronie AI — rośnie z turami wojny i utraconymi miastami">'
+    + esc('Zmęczenie wojną +' + Math.round(z) + ' PW') + '</div>';
+}
+
 export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): string {
   if (!data) {
     return (
@@ -690,6 +700,7 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
     + '<div class="da-pn-bal-cell they">'
     + '<span class="da-pn-bal-lbl">Oni oddają</span>'
     + pwAmountHtml(data.theirOfferPn)
+    + wearinessPwRowHtml(data.responderPreview?.wearinessPw)
     + '</div>'
     + '</div>'
     + relModRow
