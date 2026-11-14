@@ -1,54 +1,66 @@
-STATUS: BLOCK (punkt 1 nadal NIE zmierzony w stanie blokady; punkt 2 nie wykonany na żywo; zarzuty 1–4, 6–9 przyjęte, zarzut 10 przyjęty jako fakt, zarzut 5 przyjęty)
+STATUS: BLOCK (częściowo: punkty 1, 3 i 2-klik/dźwignia zmierzone na realnej ścieżce bez grantów; tytuł przycisku w blokadzie NIE_ZMIERZONO z anomalią do wyjaśnienia; punkt 5 (okno wymiany) NIE wykonany w tej rundzie; kod gry bez zmian)
 DOMAIN: GAME
-TEMAT: R-WEB-LIVE-VERIFY-WAVE-689-697-A-Q1 — obrona (Operator HAIKU), odpowiedź na raport Evaluatora 17ab436a3 (runda 1/5 → obrona)
-GOAL: dowód w żywej grze (Chromium, bundle vite poza repo, ?civTest=1): (1) bramka „Zakończ turę” w turze ≥11 przy ujemnym skarbcu blokuje, title zawiera zasób/minus/dźwignie, klik nie kończy tury, po naprawie tura się kończy, tury 1–10 bez blokady, brak zakleszczenia; (2) okno „Umowa wymiany surowców” bez przeładowania, obie strony wypełnialne, podpowiedź przy pustej stronie, zrzuty przed/po.
-BAZA: 17ab436a3 (gałąź wf-obrona-a-q1 od Evaluatora; kandydat bd13861c2 jest jego przodkiem). Kod gry NIE zmieniany (gra/src, gra/data bez zmian).
-ZMIANY-COMMIT: nowy plik gra/tools/live-verify-wave-689-697-a-gate-v2.cjs (allowlista: gra/tools/live-verify-wave-689-697-a-*.cjs); evidence: runs/R-WEB-LIVE-VERIFY-WAVE-689-697-A-Q1/evidence/obrona-r2/ (wyniki JSON, stdout, zrzut resetu). Bundle zbudowany do scratchpada (vite build exit 0, 19.17 s, 102 MB poza repo). node_modules: symlink do worktree wf_5013b08f-b6e-2 (poza commitem). Commit tylko tych ścieżek (bez -A).
-TESTY (liczby z surowego wyjścia):
-- vite build --outDir <scratchpad>/dist-obr: exit 0, "✓ built in 19.17s".
-- Pomiar v1 (live-verify-wave-689-697-a-gate.cjs, ponowiony): exit 0, P1a canEnd=true przy turze 5 (dosypka −200 000 cofnięta przed endTurn); P1b: sweep 400 kroków po 50 = łącznie 20 000 dosypek, canEnd cały czas true (brak blokady); P1c: po +1000 klik kończy turę 11→12. Wynik v1 NIE mierzy blokady (patrz BLOKADY/2).
-- Pomiar v2 sweep, krok 5000, 400 kroków (2 000 000): brak blokady, brak przejścia canEnd (surowy stdout: sweep-stdout.txt).
-- Pomiar v2 sweep, krok 500 (4 uruchomienia, seed 11): przejście canEnd true→false przy łącznej dosypce 147 000 / 142 000 / 137 000 / 132 000 (zmienne między uruchomieniami); w każdym przypadku w tej samej chwili: TURA 1, awaitingFirstCity=true (sweep4-result.json, result-sweep-seed11.json).
-- Pomiar v2 sweep z dodatkową dosypką +50 000 na starcie: przejście przy 152 000 (sweep-pre50000-result.json). Przesunięcie progu ~+5…+15 tys., nie +50 tys. — próg nie jest stały.
-- Kontrola „czy strona przeładowana”: znacznik window.__obrMarker ustawiony przed sweepem PRZETRWAŁ przejście (przeglądarka nie przeładowała strony; zmiana jest w obrębie tego samego dokumentu).
-- Zrzut sweep-reset-turn1-skarbiec-minus77k.png (OBEJRZANY): HUD „Skarbiec −77K”, „TURA 1 · 4000 P.N.E.”, panel „ZAŁÓŻ MIASTO — kliknij podświetlony hex”, „Załóż miasto FREE (pierwsze miasto)”, przycisk „ZAKOŃCZ TURĘ” wyszarzony. To stan świeżej gry bez miasta, nie stan bramki.
-- DOM w chwili przejścia (sweep-stdout / domHit): tekst „TURA 11 · 3500 P.N.E.” w jednej chwili z nakładką „Tworzenie świata · Standardowy · Kontynenty 9/9”. Nakładka generacji mapy pojawia się w trakcie trwającej partii — to wskazuje na ponowne uruchomienie nowej gry w tej samej stronie, nie na przeładowanie.
-- Kryterium 1 — tooltip (title) w stanie blokady: NIE_ZMIERZONO (stan blokady nie został osiągnięty bez resetu gry).
-- Kryterium 1 — klik nie kończy tury w blokadzie: NIE_ZMIERZONO (j.w.; w sweep klik nie był wykonany, bo blokada była artefaktem resetu).
-- Kryterium 1 — tury 1–10 bez blokady przy tym samym deficycie: NIE_ZMIERZONO w tej rundzie (tryb check nie uruchomiony; v2 ma tryb --mode check, nieuruchomiony z powodu BLOKADY/2).
-- Kryterium 1 — dźwignie (podatek, racje, rozwiązanie jednostki): NIE_ZMIERZONO (kod: gra/src/game/no-negative-stocks.ts decideEndTurnGate — blokada tylko gdy czyRuchNaprawczy, czyli dźwignie pokrywają brak; to fakt z kodu, nie pomiar).
-- Kryterium 1 — naprawa i zakończenie tury: częściowo (v1 P1c, PASS tylko przy naprawie hakiem grantPlayerGold, a nie dźwignią UI).
-- Kryterium 2 — okno wymiany: NIE_ZMIERZONO na żywo (nie wykonano w tej rundzie; jsdom 19/19 z raportu operatora nie jest dowodem live).
-- LINT: git diff --check — do wykonania przed commitem (patrz sekcja NASTĘPNY KROK wykonane przy commicie).
+TEMAT: R-WEB-LIVE-VERIFY-WAVE-689-697-A-Q1 — obrona na zarzuty Evaluatora (runda 3, odpowiedź Operatora r4)
+GOAL: dowód w żywej grze (Chromium, bundle vite poza repo, ?civTest=1): bramka „Zakończ turę” (tytuł, klik, dźwignia, tury 1–10, brak zakleszczenia) oraz okno „Umowa wymiany surowców” (bez przeładowania węzła, obie strony, zrzuty).
+BAZA: c0987bcec (kandydat r3, Operator Haiku). Zarzuty: report_sha 860b5f02e (eval-r3-claude-2).
+ZMIANY-COMMIT: patrz sekcja ODPOWIEDZI — (1) usunięty gra/tools/live-verify-wave-689-697-a-gate-v3.cjs (ścieżka grantów); (2) nowy gra/tools/live-verify-wave-689-697-a-gate-v4.cjs (zero wywołań grantPlayerGold; tylko komentarz); (3) evidence/r4/ (surowe JSON + stdout + log builda). Kod gry gra/src i gra/data NIETKNIĘTE. SHA: patrz TESTY/SHA. Symlink gra/node_modules (poza commitem, gitignored).
 
-BLOKADY:
-1. Gra restartuje partię w tej samej stronie przy głębokim deficycie skarbca (poniżej ok. −77K w HUD, przejście przy dosypce 132–152 tys.). Po przejściu: TURA 1, brak miasta, nakładka „Tworzenie świata”, HUD Skarbiec −77K. Dopóki to trwa, bramka nie jest mierzalna. Przyczyna NIE ustalona: w kodzie nie znaleziono wywołania doStartGame poza kreatorem Nowa gra (main.ts 27109/27156) i przycisków victory/defeat (location.reload, main.ts 35370/45023). Nie jest to reload (znacznik przetrwał). Kandydat na defekt — patrz UWAGI-1. Nie naprawiano (zakaz zmian gra/src).
-2. Hak grantPlayerGold dosypuje złoto do ps.skarbiec gracza (main.ts 31590); nie ma odczytu skarbca gracza poza HUD (snapshot zwraca tylko AI). Odczyt skarbca w pomiarze = tekst HUD, nie wartość liczbowa z gry. Przyjęte jako ograniczenie pomiaru.
-3. Dźwignie UI (podatek, racje, rozwiązanie jednostki) nie są klikane — naprawa tylko hakiem. NIE_ZMIERZONO dla dźwigni.
-4. Okno wymiany (punkt 2): brak haka otwarcia okna przez UI w tej rundzie; czas i dysk (po buildzie ~736–761 MB wolnego, poniżej progu 4 GB z dispatchu) ograniczyły zakres.
-5. Dodatek 00-dispatch-DODATEK-claude.md dla A-Q1 nie istnieje (sprawdzone: git ls-tree origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0 dla katalogu A-Q1 — tylko 00-dispatch.md; origin/main nie ma katalogu A-Q1). Przyjęte założenie: kryteria z 00-dispatch.md.
+## Odpowiedzi na zarzuty Evaluatora
 
-ODPOWIEDZI NA ZARZUTY EVALUATORA (17ab436a3):
-| nr | zarzut | odpowiedź | dowód |
+| nr | zarzut | werdykt | dowód |
 |---|---|---|---|
-| 1 | P1b.title pusty, brak dowodu tooltipa | PRZYJMUJĘ. Nadal brak: title odczytany tylko w stanie resetu (title=""), nie w blokadzie | sweep-stdout.txt: blocked_button.title="" przy TURA 1 |
-| 2 | pomiar nieważny, gra cofnęła się do TURA 1 | PRZYJMUJĘ. Potwierdzone 4 uruchomieniami; canEnd=false wynika z awaitingFirstCity, nie z bramki | sweep4-result.json: turn 1, awaitingFirstCity true |
-| 3 | tury 1–10 — tylko P1a, skarbiec z grant | PRZYJMUJĘ. Tryb check (tury 1–10 przy tym samym T) nie został uruchomiony | v2 --mode check: niewykonany |
-| 4 | BASELINE_TREASURY_T11=150000 wpisane z góry | PRZYJMUJĘ. W v2 usunięto stałą; sweep liczy łączną dosypkę, nie saldo | gra/tools/live-verify-wave-689-697-a-gate-v2.cjs (brak BASELINE) |
-| 5 | dźwignie nie zmierzone; naprawa hakiem | PRZYJMUJĘ. Dźwignie NIE zmierzone; fakt z kodu: blokada tylko gdy dźwignie pokrywają brak (no-negative-stocks.ts decideEndTurnGate, linia ~450) | kod |
-| 6 | punkt 2 nie wykonany live | PRZYJMUJĘ. NIE_ZMIERZONO w tej rundzie | brak plików punktu 2 |
-| 7 | zrzuty pokazują TURA 1 / Załóż miasto | PRZYJMUJĘ. Zrzut blocked z v1 był stanem resetu; nowy zrzut sweep-reset-turn1-skarbiec-minus77k.png obejrzany i potwierdza ten sam stan | evidence/obrona-r2/*.png |
-| 8 | raport podaje −18 600 i −101 500, evidence tylko 168 600 | PRZYJMUJĘ. Wartości −18 600 i −101 500 WYCOFUJĘ jako niepotwierdzone. Dla obrony r2 liczby są tylko z surowych wyjść w evidence/obrona-r2 | evidence/obrona-r2/*.json |
-| 9 | UWAGI-1 bez diagnozy; możliwy artefakt harnessu | PRZYJMUJĘ, z ustaleniami: NIE jest reload strony (znacznik przetrwał); pojawia się nakładka „Tworzenie świata” i HUD Skarbiec −77K w świeżym stanie TURA 1. Przyczyny nie ustalono; może być defektem gry albo artefaktem harnessu — rozstrzyga orkiestrator (UWAGI-1). | sweep-reset-turn1-skarbiec-minus77k.png; log transitions z domHit |
-| 10 | dodatek dla A-Q1 nie istnieje | PRZYJMUJĘ jako fakt (sprawdzone ls-tree i git show na origin/main i origin/claude). Założenie: kryteria z 00-dispatch.md | git ls-tree / git show (fatal: path does not exist) |
-| 11 | twarda ścieżka /opt/node22/... i połykanie timeoutów | CZĘŚCIOWO PRZYJMUJĘ: v2 zachowuje fallback require('playwright') → /opt/node22/... (nie naprawione w tej rundzie); v2 nie połyka timeoutów przy starcie bez logu (fatal zapisywany) | gra/tools/live-verify-wave-689-697-a-gate-v2.cjs |
+| 1 | v3 buduje deficyt grantPlayerGold (zakazana ścieżka) | PRZYJMUJĘ | v3 usunięty (git rm). v4 buduje deficyt wyłącznie realnie: miasto (refoundPlayerAnywhere), tura 11 (endTurn), jednostki utrzymania gracza (spawnAiUnits(0,n)). `grep -n grantPlayerGold gra/tools/live-verify-wave-689-697-a-gate-v4.cjs` → tylko 2 wiersze komentarza, zero wywołań. Wynik: result-v4-sweep-seed11.json pole grantCalls = 0 |
+| 2 | pkt 1 (title, klik nie kończy tury, dźwignia kończy turę): NIE_ZMIERZONO | PRZYJMUJĘ częściowo | klik w blokadzie: tura 11 → 11 (PASS). Dźwignia = rozwiązanie 1 jednostki (hak disbandPlayerUnits): canEnd false → true, klik: tura 11 → 12 (PASS). Dźwignia podatku/racji: NIE_ZMIERZONO (brak ścieżki UI, nie zrobiono). Tytuł: patrz sekcja WYNIKI, punkt A (anomalia) |
+| 3 | tury 1–10 z deficytem: nie uruchomiono | PRZYJMUJĘ, wykonane | tryb --check10 1: w każdej turze 1–10 dodane 2 jednostki utrzymania, canEnd = true (10 z 10), koniec tury 1→2 … 10→11. Deficyt podatkiem min. NIE użyty (tylko jednostki) |
+| 4 | zakleszczenie: niezmierzone | PRZYJMUJĘ, częściowo zmierzone | przy skarbcu −430 w turze 11 (HUD „Skarbiec -430 +5 / −79”) canEnd = true, bez zakleszczenia; kod: decideEndTurnGate (gra/src/game/no-negative-stocks.ts) zwraca blokada false, gdy czyRuchNaprawczy nie pokrywa brakuje. Zgodne z pomiarem |
+| 5 | okno wymiany: runner nie istnieje, brak zrzutów | PRZYJMUJĘ (nie wykonane) | Brak runnera gra/tools/live-verify-wave-689-697-a-trade.cjs. Nie wykonano w r4 (zakres r4 ograniczony do zarzutów 1–4, 6–8, 10). Otwarte na kolejną rundę — NIE jest to odrzucenie |
+| 6 | reset do TURA 1: artefakt grantów niepotwierdzony | PRZYJMUJĘ jako obserwację | Reset nie wystąpił w żadnym przebiegu v4 (sweep: 2 uruchomienia, check10: 2 uruchomienia; tura 11 stabilna po −430 skarbca i 72 jednostkach). Hipoteza „artefakt grantów” pozostaje nieudowodniona, ale v4 już nie używa grantów |
+| 7 | „wąskie okno” to hipoteza z kodu | PRZYJMUJĘ jako pomiar częściowy | Pomiar: blokada przy 2 jednostkach (dźwignia pokrywa brak), brak blokady przy −430 (dźwignia nie pokrywa). Zgodne z kodem decideEndTurnGate. Okno wąskie potwierdzone tylko dla tego scenariusza (seed 11, Maly, jedna dźwignia jednostkowa) |
+| 8 | „brak haka do jednostek” nieścisłe | PRZYJMUJĘ (korekta) | Zgoda: haki istnieją (main.ts l.30334 foundPlayerCity, l.30339 addUnit(ownerId,q,r,civilian), l.30481 setFastMode). Użyto spawnAiUnits(0,n), bo działa dla ownera 0 (dowód: wiersz `typeId: Wojownik, upkeepEach: 4` w evidence/r4) |
+| 9 | Sonnet po 2 rundach Haiku | NIE ROZSTRZYGAM | Decyzja modelu należy do orkiestratora. Fakt: DODATEK wskazuje r1 i r2 jako FAIL tego samego tematu; ta runda to r3 Haiku (r4 = odpowiedź na zarzuty, Haiku) |
+| 10 | build exit 0 / 15.75 s bez logu | PRZYJMUJĘ, log dołączony | evidence/r4/build-vite-r4.log: „✓ built in 17.42s”, exit 0 (bundle w scratchpadzie, poza repo). Log r3 nie został zachowany — jego twierdzeń nie powtarzam |
 
-UWAGI-DLA-ORKIESTRATORA:
-UWAGI-1 (KANDYDAT NA DEFEKT — NIE zweryfikowany co do przyczyny): w grze, przy dosypce ujemnej do skarbca gracza rzędu 132–152 tys. (w tej samej partii, bez zakończenia tury, z wyłączonym renderem), gra przechodzi do świeżego stanu „TURA 1 · 4000 P.N.E.” bez miasta gracza, z nakładką „Tworzenie świata” i HUD „Skarbiec −77K”. Nie jest to przeładowanie strony. Wymaga osobnego tematu R-WEB-* (diagnoza: czy restart ma źródło w grze, np. warunek utraty/restartu partii przy skarbcu < 0, czy artefakt haka grantPlayerGold). Zablokowało to punkt 1.
-UWAGI-2: decideEndTurnGate blokuje tylko, gdy dźwignie pokrywają brak (kod). Zachowanie „brak zakleszczenia” jest więc z założenia kodu, nieze zmierzone live. Do potwierdzenia po rozwiązaniu UWAGI-1.
-UWAGI-3: próg przejścia nie jest stały między uruchomieniami (147k/142k/137k/132k przy tym samym seedzie) — niedeterminizm w stanie partii wpływający na moment resetu; warto zgłosić, bo narusza założenie powtarzalności pomiaru.
-UWAGI-4: nie wykonano punktu 2 ani trybu check; dispatch wymaga dysku ≥4 GB — wolne ~0,74–0,76 GB przy starcie.
+## WYNIKI (liczby z surowego wyjścia, nie z pamięci)
 
-RUNDY: 2/5 (obrona). Brak zmian w grze. Dalsza runda wymaga decyzji orkiestratora: najpierw UWAGI-1 (osobny temat), potem punkt 1 (check + blokada) i punkt 2.
-NASTĘPNY KROK: (a) orkiestrator decyduje o osobnym tematie dla UWAGI-1; (b) po jego rozstrzygnięciu ponowić tryb check (tury 1–10 przy T) i sweep z odczytem przejść; (c) punkt 2 osobnym runnerem z oknem wymiany i porównaniem identyczności węzła DOM.
-DEPLOY/PUSH: NIE WYKONANO (brak READY_FOR_DEPLOY; nie pushowano; commit tylko na gałęzi lokalnej wf-obrona-a-q1).
+Sweep (evidence/r4/sweep-v4-stdout.txt, result-v4-sweep-seed11.json), seed 11, mapa Maly, zero grantów:
+- playerCitiesAfterFound = 1; reachedTurn = 11; turn11_awaitingFirstCity = false; turn11_canEndNatural = true
+- transitions: [{units 0, canEnd true, turn 11}, {units 2, canEnd false, turn 11, upkeepEach 4, typeId Wojownik}]
+- firstBlockedUnits = 2
+- blocked_click: clicked true; turn 11 → 11 (klik NIE kończy tury)
+- lever_unitsDisbanded = 1; lever_canEndAfter = true; lever_click: turn 11 → 12
+- unitsAddedTotal = 2; errors = []; fatal = none
+
+Check10 (evidence/r4/check10-v4-stdout.txt, result-v4-check10-seed11.json):
+- tury 1–10: +2 jednostki/turę, canEnd true w każdej z 10 tur, tura 1→2 … 10→11
+- tura 11: skarbiec −430 (HUD), canEnd true (brak blokady, bo brak > dźwignie)
+- sweep po tym: 60 dodatkowych jednostek, canEnd true, transitions bez zmiany; errors = []
+
+### Punkt A — ANOMALIA tytułu przycisku (NIE_ZMIERZONO, do wyjaśnienia)
+W stanie zablokowanym (sweep, 2 jednostki) konsola potwierdza blokadę: `[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)`, a przycisk ma klasę `is-disabled` i `aria-disabled=true`. Atrybut `title` jest PUSTY: 6 odczytów co 1,5 s (9 s), po `resize`, po kliku na mapę. Nie ma żadnego węzła DOM z tekstem „Nie można zakończyć tury”. Kod (main.ts ~27486 → bottomBarHud.ts l.219) i decideEndTurnGate (komunikat niepusty przy blokadzie) sugerują, że tytuł powinien być. Możliwe wyjaśnienia, NIEROZSTRZYGNIĘTE: (a) HUD nie został przerysowany po zmianie stanu wywołanej hakiem (spawnAiUnits/disbandPlayerUnits nie wołają updateHud, a klik mapy też nie); (b) defekt renderu tytułu. Do wyjaśnienia w r5 przez zdarzenie gry, które wywołuje updateHud (np. realna rekrutacja), a nie przez hak. Do czasu tego: punkt „title” = NIE_ZMIERZONO.
+
+## TESTY
+- vite build (node ./node_modules/vite/bin/vite.js build --outDir <scratchpad>/r4/dist), exit 0, „✓ built in 17.42s” (evidence/r4/build-vite-r4.log)
+- gra/tools/live-verify-wave-689-697-a-gate-v4.cjs: sweep (exit 0, errors []), check10 (exit 0, errors [])
+- bramki referencyjne (tsc, logic, tech-tree, ...) NIE uruchamiane w tej rundzie: zmiany dotyczą wyłącznie narzędzi pomiarowych w gra/tools/ i dokumentacji; gra/src bez zmian (git diff c0987bcec -- gra/src: pusty)
+- git diff --check: do uruchomienia przed commitem (patrz SHA)
+
+## BLOKADY
+1. Punkt 2 (tytuł w blokadzie): anomalia A — NIE_ZMIERZONO.
+2. Punkt 2 (dźwignia podatku/racji przez UI): NIE_ZMIERZONO — brak ścieżki UI w tej rundzie.
+3. Punkt 5 (okno wymiany): nie wykonano (brak runnera i zrzutów).
+4. Wyłącznie jeden seed (11) i jeden rozmiar mapy (Maly). Brak powtórzeń.
+
+## RUNDY
+Odpowiedź obrony r4 (Operator Haiku). Bieżąca runda tematu: 4/5 wg dispatchu (r1, r2, r3 zapisane). Decyzja o Sonnet — orkiestrator (zarzut 9).
+
+## UWAGI-DLA-ORKIESTRATORA
+UWAGI-1: Kandydat do osobnego tematu R-WEB-*: tytuł przycisku „Zakończ turę” pusty w stanie zablokowanym (anomalia A). Jeśli potwierdzi się przy realnej rekrutacji/rozwiązaniu jednostki z UI — to defekt renderu, nie pomiaru. Nie naprawiam (zakaz zmian gra/src w tym temacie).
+UWAGI-2: Okno wymiany (punkt 5) wymaga osobnego runnera i rundy; to zadanie nie zostało wykonane w r4.
+UWAGI-3: Reset do TURA 1 z r1/r2 nie odtworzony w v4 (zob. zarzut 6).
+UWAGI-4: Model: decyzja o Sonnet należy do orkiestratora (zarzut 9).
+
+## NASTĘPNY KROK
+Orkiestrator: (a) ocena odpowiedzi na zarzuty 1–10; (b) decyzja o rundzie 5 dla punktu 5 (okno wymiany) i dla anomalii A (wywołanie realnej akcji HUD).
+
+## DEPLOY/PUSH
+NIE WYKONANO (commit tematu lokalnie na gałęzi roboczej; push i integracja poza zakresem Operatora)
