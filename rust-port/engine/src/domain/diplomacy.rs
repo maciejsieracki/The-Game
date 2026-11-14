@@ -1,4 +1,5 @@
 use super::PlayerId;
+use crate::domain::alliance_war_obligation::treaties_broken_by_war;
 use serde::{Deserialize, Serialize};
 
 use crate::data::derived::{diplomacy_multiplier_by_key, diplomacy_multiplier_value};
@@ -1674,6 +1675,49 @@ impl DiplomacyState {
     /// Web `deactivateZlozeGrantsForDeal` na polu `zloze_grants` (wiring produkcyjny: #104 część 2).
     pub fn deactivate_zloze_grants_for_deal(&mut self, deal_id: &str) {
         self.zloze_grants = deactivate_zloze_grants_for_deal(&self.zloze_grants, deal_id);
+    }
+
+    /// Web `breakTreatiesOnWar` (pin 07d2fbd72 `gra/src/main.ts:23686`), CZYSTA część domenowa.
+    ///
+    /// Kolejność jak w pinie: `suspend_zloze_grants_for_war` dla pary, potem `treaties_broken_by_war`
+    /// (id umów pary zrywanych wojną, kolejność `deals`), `removeTreatiesById`, a na końcu
+    /// `deactivate_zloze_grants_for_deal` dla każdego id.
+    ///
+    /// Zwraca zerwane id (pusta lista = nic nie zrywano i brak zmian w umowach).
+    ///
+    /// Poza zakresem (etap a): kara wiarygodności / zdarzenie `zlamana_obietnica`, `bezKary`.
+    /// Wywołujący w produkcji: brak (etap b).
+    pub fn break_treaties_on_war(&mut self, a: PlayerId, b: PlayerId) -> Vec<String> {
+        self.suspend_zloze_grants_for_war(a, b);
+        let broken = treaties_broken_by_war(&self.deals, a, b);
+        if broken.is_empty() {
+            return broken;
+        }
+        self.deals.retain(|d| !broken.contains(&d.id));
+        for id in &broken {
+            self.deactivate_zloze_grants_for_deal(id);
+        }
+        broken
+    }
+
+    /// Web `breakTreatyVoluntarily` (pin 07d2fbd72 `gra/src/main.ts:22741`), CZYSTA część domenowa:
+    /// plan `voluntaryTreatyBreakPlan` z `turn`; potem `removeTreatiesById` i `deactivateZlozeGrantsForDeal`.
+    /// `None` gdy umowa o tym id nie istnieje (pin: `if (!deal) return;`, bez zmian stanu).
+    /// Poza zakresem (etap a): zapis okna N3 (`setDiploPairMeta`), `appendWiarygodnoscEvent` (N5),
+    /// zdarzenia relacji i karencja WspolnaWalkaBarbarzyncy (`recordBarbarianCooperationGrace`).
+    pub fn break_treaty_voluntarily(
+        &mut self,
+        deal_id: &str,
+        turn: u32,
+    ) -> Option<VoluntaryTreatyBreak> {
+        let deal = self.deals.iter().find(|d| d.id == deal_id)?;
+        let plan = voluntary_treaty_break_plan(deal, turn);
+        self.deals.retain(|d| d.id != deal_id);
+        self.deactivate_zloze_grants_for_deal(deal_id);
+        Some(VoluntaryTreatyBreak {
+            deal_id: deal_id.to_string(),
+            plan,
+        })
     }
 
     /// Web `activeDeals = activeDeals.filter(d => !d.strony.includes(ownerId))` (pin 07d2fbd72, main.ts:35482):
@@ -4256,4 +4300,44 @@ pub fn deactivate_zloze_grants_for_deal(grants: &[ZlozeGrant], deal_id: &str) ->
             next
         })
         .collect()
+}
+
+/// Web `TRADE_TREATY_BREAK_PENALTY_FREE_AGE_TURNS` (pin 07d2fbd72 `diplomacy-penalty-preview.ts:152`).
+pub const TRADE_TREATY_BREAK_PENALTY_FREE_AGE_TURNS: u32 = 10;
+
+/// Plan skutkow DOBROWOLNEGO zerwania umowy (web `voluntaryTreatyBreakPlan`, pin
+/// `diplomacy-penalty-preview.ts:192`). `open_n3_window` — bezterminowa, z kara;
+/// `n5_charged` — czasowa, z kara; przy `penalty_free` oba `false`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct VoluntaryTreatyBreakPlan {
+    pub penalty_free: bool,
+    pub open_n3_window: bool,
+    pub n5_charged: bool,
+}
+
+/// Wynik `DiplomacyState::break_treaty_voluntarily`: zerwane id i plan skutkow.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct VoluntaryTreatyBreak {
+    pub deal_id: String,
+    pub plan: VoluntaryTreatyBreakPlan,
+}
+
+/// Web `tradeTreatyBreakPenaltyFree` (pin `diplomacy-penalty-preview.ts:167`): tylko umowy handlowe
+/// (szlaki/wymiana) zawarte >= 10 tur temu. Wiek = max(0, tura - zawarta) (pin `treatyAgeTurns`).
+/// Rozbieznosc: w Rust `formed_turn` jest zawsze obecne, wiec pin-owe „wiek nieznany" (brak
+/// `zawartaTura` w starym zapisie) nie ma tu odpowiednika.
+pub fn trade_treaty_break_penalty_free(deal: &ActiveDeal, turn: u32) -> bool {
+    let is_trade = matches!(deal.kind, TreatyKind::TradeRoute | TreatyKind::Exchange);
+    let age = turn.saturating_sub(deal.formed_turn);
+    is_trade && age >= TRADE_TREATY_BREAK_PENALTY_FREE_AGE_TURNS
+}
+
+/// Web `voluntaryTreatyBreakPlan` (pin `diplomacy-penalty-preview.ts:192`).
+pub fn voluntary_treaty_break_plan(deal: &ActiveDeal, turn: u32) -> VoluntaryTreatyBreakPlan {
+    let penalty_free = trade_treaty_break_penalty_free(deal, turn);
+    VoluntaryTreatyBreakPlan {
+        penalty_free,
+        open_n3_window: !penalty_free && deal.expires_turn.is_none(),
+        n5_charged: !penalty_free && deal.expires_turn.is_some(),
+    }
 }
