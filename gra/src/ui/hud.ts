@@ -729,6 +729,13 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
   .civ-hud .civ-hud-chip-figs{gap:0;}
   .civ-hud .civ-hud-chip-fsep{display:none;}
   .civ-hud .civ-hud-chip-figs{flex-direction:column;align-items:flex-start;gap:0;height:auto;}}
+/* R-WEB-UI-LEFT-BANNER-CHIP-GRID-TOP-CLIP-Q1: tryb 2×3 (fallback) ma ~87–99 px wysokosci siatki, a powloka
+   banera ma stale 56 px — flex wysrodkowuje siatke, wiec przy oknie 800×600 gorna krawedz siatki wychodzila
+   6 px nad okno (top −6). Tylko okno niższe niż 700 px (1000×700 i wieksze bez zmian): powloka 88 px
+   (stala, nie zalezna od liczb — pozycje komorek zostaja identyczne dla malych i duzych liczb), dol powloki
+   = 104 px = gorna krawedz paneli bocznych, a siatka miesci sie w oknie (top ≥ 0). */
+@media (max-height:699px){
+  .civ-hud .civ-hud-banner-left.hud-left-fallback>.civ-hud-banner-shell{height:88px;}}
 /* Wysoki lewy baner (fallback 2x3 ma ~95–140 px) nie moze wchodzic na pasek narzedzi mapy: fitHudTopbar()
    ustawia --civ-hud-toolbar-top = dol banera + 8 px, gdy baner siega glebiej niz domyslne TOOLBAR_TOP_PX. */
 html .civ-map-toolbar{top:var(--civ-hud-toolbar-top,${TOOLBAR_TOP_PX}px);}
