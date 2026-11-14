@@ -1,0 +1,17 @@
+CNT t=140s {"growRiverInlandBeforeDrainage":1}
+CNT t=150s {"growRiverInlandBeforeDrainage":371,"estimateLandCentroidFromSeed":371,"aStarRiverToSea":371,"aStarRiverToTarget":525}
+CNT t=160s {"growRiverInlandBeforeDrainage":827,"estimateLandCentroidFromSeed":827,"aStarRiverToSea":827,"aStarRiverToTarget":904}
+CNT t=170s {"growRiverInlandBeforeDrainage":1341,"estimateLandCentroidFromSeed":1341,"aStarRiverToSea":1341,"aStarRiverToTarget":1339}
+CNT t=180s {"growRiverInlandBeforeDrainage":1793,"estimateLandCentroidFromSeed":1793,"aStarRiverToSea":1793,"aStarRiverToTarget":1776}
+CNT t=190s {"growRiverInlandBeforeDrainage":2216,"estimateLandCentroidFromSeed":2215,"aStarRiverToSea":2215,"aStarRiverToTarget":2063}
+CNT t=200s {"growRiverInlandBeforeDrainage":2620,"estimateLandCentroidFromSeed":2620,"aStarRiverToSea":2620,"aStarRiverToTarget":2598}
+CNT t=210s {"growRiverInlandBeforeDrainage":3049,"estimateLandCentroidFromSeed":3049,"aStarRiverToSea":3049,"aStarRiverToTarget":2835}
+CNT t=220s {"growRiverInlandBeforeDrainage":3350,"estimateLandCentroidFromSeed":3350,"aStarRiverToSea":3350,"aStarRiverToTarget":3156}
+CNT t=230s {"growRiverInlandBeforeDrainage":3708,"estimateLandCentroidFromSeed":3708,"aStarRiverToSea":3708,"aStarRiverToTarget":3533}
+CNT t=240s {"growRiverInlandBeforeDrainage":4162,"estimateLandCentroidFromSeed":4162,"aStarRiverToSea":4162,"aStarRiverToTarget":3876}
+CNT t=250s {"growRiverInlandBeforeDrainage":5073,"estimateLandCentroidFromSeed":5073,"aStarRiverToSea":5073,"aStarRiverToTarget":4921}
+CNT t=260s {"growRiverInlandBeforeDrainage":5516,"estimateLandCentroidFromSeed":5515,"aStarRiverToSea":5515,"aStarRiverToTarget":5316}
+CNT t=270s {"growRiverInlandBeforeDrainage":5933,"estimateLandCentroidFromSeed":5933,"aStarRiverToSea":5933,"aStarRiverToTarget":5703}
+CNT t=280s {"growRiverInlandBeforeDrainage":6431,"estimateLandCentroidFromSeed":6431,"aStarRiverToSea":6431,"aStarRiverToTarget":5944}
+
+# ADNOTACJA (runda 4): plik urwany (strumien CNT przerwany przed DONE/CHECKSUM/COUNTERS). Pelny log: std11.log.txt

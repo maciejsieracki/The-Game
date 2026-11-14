@@ -1,0 +1,11 @@
+CNT t=17s {"growRiverInlandBeforeDrainage":1}
+CNT t=27s {"growRiverInlandBeforeDrainage":593,"estimateLandCentroidFromSeed":593,"aStarRiverToSea":593,"aStarRiverToTarget":1139}
+CNT t=37s {"growRiverInlandBeforeDrainage":1118,"estimateLandCentroidFromSeed":1118,"aStarRiverToSea":1118,"aStarRiverToTarget":2177}
+CNT t=47s {"growRiverInlandBeforeDrainage":1708,"estimateLandCentroidFromSeed":1708,"aStarRiverToSea":1708,"aStarRiverToTarget":3407}
+CNT t=57s {"growRiverInlandBeforeDrainage":2332,"estimateLandCentroidFromSeed":2332,"aStarRiverToSea":2332,"aStarRiverToTarget":4587}
+CNT t=67s {"growRiverInlandBeforeDrainage":2881,"estimateLandCentroidFromSeed":2881,"aStarRiverToSea":2881,"aStarRiverToTarget":5390}
+CNT t=77s {"growRiverInlandBeforeDrainage":3460,"estimateLandCentroidFromSeed":3460,"aStarRiverToSea":3460,"aStarRiverToTarget":5867}
+CNT t=87s {"growRiverInlandBeforeDrainage":4049,"estimateLandCentroidFromSeed":4049,"aStarRiverToSea":4049,"aStarRiverToTarget":6559}
+CNT t=97s {"growRiverInlandBeforeDrainage":4657,"estimateLandCentroidFromSeed":4657,"aStarRiverToSea":4657,"aStarRiverToTarget":7259}
+
+# ADNOTACJA (runda 4): plik .err jest urwany (strumien CNT z runnera, przerwany przed DONE/CHECKSUM/COUNTERS). Pelny log z tego samego przebiegu: instr22.log.txt

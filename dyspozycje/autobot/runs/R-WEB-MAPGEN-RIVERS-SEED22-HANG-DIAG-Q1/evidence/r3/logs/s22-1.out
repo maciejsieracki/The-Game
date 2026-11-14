@@ -1,0 +1,17 @@
+DIMS standardowy [168,120] cpuCount-load per uptime
+PHASE t=0.0s 1 Przygotowanie siatki 0
+PHASE t=0.1s 2 Klimat i teren bazowy 10
+PHASE t=0.5s 3 Ląd i ocean 21
+PHASE t=5.6s 4 Relief (góry i wzgórza) 31
+PHASE t=13.0s 5 Płytkie morze 42
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+PHASE t=14.1s 6 Rzeki — główne 50
+PHASE t=172.7s 7 Rzeki — uzupełnianie 60
+PHASE t=705.3s 8 Las i roślinność 71
+PHASE t=705.4s 9 Złoża mineralne 82
+PHASE t=705.5s 10 Pozycje startowe 91
+[civ] mapGen ms | prep=75 terrain=417 landSea=5067 relief=7453 coast=1066 riversMain=158613 riversFill=532576 forest=92 deposits=180 starts=1180 total=706718
+PHASE t=706.7s 10 Gotowe 100
+DONE seed=22 standardowy t=706.72s hexes=20160
+CHECKSUM 3248f5b4
+COUNTERS {"growRiverInlandBeforeDrainage":18590,"estimateLandCentroidFromSeed":18590,"aStarRiverToSea":18590,"aStarRiverToTarget":37735}
