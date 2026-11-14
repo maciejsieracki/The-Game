@@ -1,0 +1,46 @@
+{
+  "seed": 11,
+  "steps": {
+    "start": 1,
+    "P1a": {
+      "turn": 5,
+      "canEndWithDeficit": true,
+      "title": "",
+      "text": "Zakończ turę",
+      "endTurnAdvanced": true
+    },
+    "turnAtGate": 11,
+    "P1b": {
+      "turn": 11,
+      "sweepSteps": 400,
+      "firstBlockedCumulativeDeficit": null,
+      "firstBlockedTreasuryApprox": null
+    },
+    "P1c": {
+      "canEndAfterFix": true,
+      "clicked": true,
+      "turnBefore": 11,
+      "turnAfter": 12,
+      "turnAdvanced": true
+    }
+  },
+  "errors": [],
+  "sweepTail": [
+    {
+      "cumulativeDeficit": 169850,
+      "canEnd": true
+    },
+    {
+      "cumulativeDeficit": 169900,
+      "canEnd": true
+    },
+    {
+      "cumulativeDeficit": 169950,
+      "canEnd": true
+    },
+    {
+      "cumulativeDeficit": 170000,
+      "canEnd": true
+    }
+  ]
+}
