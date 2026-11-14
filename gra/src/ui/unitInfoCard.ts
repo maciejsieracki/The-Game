@@ -31,6 +31,7 @@ import type { EntityCardData } from './entityCards/types';
 import { categoryOf } from '../units/setup';
 import { unitInfographicLabel, unitInfographicMedallionHtml } from './unitInfographic';
 import { defaultOwnerColor, mountUnitMiniPreview } from './unitMiniPreview';
+import { unitEngineStats } from './unitEngineStats';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
 
 export const UNIT_3D_RENDER_HOOK = 'buildUnitModel';
@@ -288,14 +289,16 @@ function _legacyBuildUnitInfoCard(
   );
 
   const combat = appendSection('Statystyki bojowe');
-  appendRow(combat, 'Atak', unit.Atak);
-  appendRow(combat, 'Obrona', unit.Obrona);
-  appendRow(combat, 'HP', unit.Health);
+  // Statystyki bojowe = wartości silnika (ABC nr 8 = A, 2026-11-14), nie kolumny PL.
+  const es = unitEngineStats(unit as unknown as Record<string, unknown>);
+  appendRow(combat, 'Atak', es.atak);
+  appendRow(combat, 'Obrona', es.obrona);
+  appendRow(combat, 'HP', es.hp);
   appendRow(combat, 'Ruch', unit.Ruch != null ? `${unit.Ruch} hex` : null);
   appendRow(combat, 'Zasięg', unit['Zasięg ataku (hex)'], true);
-  appendRow(combat, 'Atak dystansowy', unit['Atak dystansowy'], true);
-  appendRow(combat, 'Pancerz', unit.Pancerz);
-  appendRow(combat, 'Przebicie', unit.Przebicie);
+  appendRow(combat, 'Atak dystansowy', es.atakDystansowy > 0 ? es.atakDystansowy : null, true);
+  appendRow(combat, 'Pancerz', es.pancerz);
+  appendRow(combat, 'Przebicie', es.przebicie);
   commitSection(card, combat);
 
   const economy = appendSection('Koszty i utrzymanie');

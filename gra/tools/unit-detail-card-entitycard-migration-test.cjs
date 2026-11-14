@@ -130,9 +130,11 @@ async function main() {
     && bySectionKey['combat-advanced'].openDefault === false);
   const combatRows = bySectionKey.combat ? bySectionKey.combat.rows : [];
   const advRows = bySectionKey['combat-advanced'] ? bySectionKey['combat-advanced'].rows : [];
-  check('Atak (T4, bez zmian) === u.Atak', rowByLabel(combatRows, 'Atak')?.value === String(unit.Atak));
-  check('Obrona (T4, bez zmian) === u.Obrona', rowByLabel(combatRows, 'Obrona')?.value === String(unit.Obrona));
-  check('Obrażenia broni (T6, NOWE, dziś w combat-advanced) === u.Uderzenie', rowByLabel(advRows, 'Obrażenia broni')?.value === String(unit.Uderzenie));
+  // R-WEB-UI-UNIT-CARD-STATS-ENGINE-CANON-Q1 (ABC nr 8 = A): karta pokazuje statystyki SILNIKA
+  // (meleeAttack/meleeDefence/weaponDamage), nie kolumny PL (Atak/Obrona/Uderzenie).
+  check('Atak (T4, silnik meleeAttack) === unit.meleeAttack', rowByLabel(combatRows, 'Atak')?.value === String(unit.meleeAttack));
+  check('Obrona (T4, silnik meleeDefence) === unit.meleeDefence', rowByLabel(combatRows, 'Obrona')?.value === String(unit.meleeDefence));
+  check('Obrażenia broni (T6, silnik weaponDamage) === unit.weaponDamage', rowByLabel(advRows, 'Obrażenia broni')?.value === String(unit.weaponDamage));
   check('Ruch (bitwa) (T6, NOWE, dziś w combat-advanced) === "4 hex"', rowByLabel(advRows, 'Ruch (bitwa)')?.value === '4 hex',
     rowByLabel(advRows, 'Ruch (bitwa)')?.value);
   check('Widok pola (T6, NOWE, dziś w combat-advanced) === "2 hex"', rowByLabel(advRows, 'Widok pola')?.value === '2 hex',
