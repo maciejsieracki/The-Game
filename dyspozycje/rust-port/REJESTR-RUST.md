@@ -1193,3 +1193,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Dokumentacja:** dwie kopie raportu (`01-operator-r1.md` i `p6/…Q1.md`) — poprawki w obu.
 - **Sprzątanie dysku:** dysk spadł do 2,1 GB przy starcie rozpoznania. Usunięto osiem worktree zakończonych tematów T1/T3 po zabezpieczeniu HEAD w `refs/keep/wf_*` i na remote (`rust-port-wip/wf_*`); raport FC T1 zapisany na `rust-port-wip/ZLOZE-EXPIRE-TRIBUTE-Q1-fc-report`. Dysk: 7,6 GB wolnego (po zakończeniu bramek T1 sprawdzić ponownie).
 - **Parity:** `6acb1d81b`. **Bramki T1** (`d22e75ed6`) w toku: fmt 0, clippy 0, test trwa.
+
+## Przebieg (14.11, po 23:18): T1 zintegrowany na parity-v2; T3 rebase i bramki w toku
+- **T1 ZLOZE-WIRE-EXPIRE-TRIBUTE** zintegrowany: FC PASS-WITH-NOTES `d22e75ed6`. Bramki na `d22e75ed6`: fmt 0, clippy 0, pełny `cargo test` 0 (3349 passed, 0 failed). FF `parity-v2`: `6acb1d81b` → `d22e75ed6`. Refs: `refs/keep/ZLOZE-WIRE-EXPIRE-TRIBUTE-Q1-integ`, `rust-port-wip/ZLOZE-WIRE-EXPIRE-TRIBUTE-Q1`, raport FC `rust-port-wip/ZLOZE-EXPIRE-TRIBUTE-Q1-fc-report`. Worktree `integ-t1` i `target` usunięte.
+- **T3 ZLOZE-SYNC-MERGE:** rebase `3860f5bea` na `d22e75ed6` bez konfliktów → `533d46dd3`. Bramki w tle (`bi26zx6s0`). Po wyniku FF `parity-v2`. Do dopisania przy integracji: `NIEPODPIETE-MODULY.md:274` (usunięta funkcja).
+- **Parity:** `d22e75ed6` (po FF T1). **Dysk:** sprawdzić po bramkach T3.
+- **Następne kandydaty:** wpięcie R7K7C (#106) — podłoga Pracy w Ledger, zapis `city_stock`, wpięcie w D3; T2 (zerwanie i wojna, etap a) po T3; WIEZE 2B.
