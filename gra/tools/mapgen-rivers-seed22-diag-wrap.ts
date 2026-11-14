@@ -28,4 +28,15 @@ const map = generujSwiat(seed, rozmiar, 'kontynenty', {
   if (faza !== lastFaza) { lastFaza = faza; console.log(`PHASE t=${((Date.now()-t0)/1000).toFixed(1)}s ${n} ${faza} ${pct}`); }
 });
 console.log(`DONE seed=${seed} ${rozmiar} t=${((Date.now()-t0)/1000).toFixed(2)}s hexes=${Object.keys((map as any).hexes ?? {}).length}`);
+{
+  // Suma kontrolna wyniku (teren+rzeki) — dowód determinizmu między uruchomieniami.
+  let h = 2166136261 >>> 0;
+  const hx: any = (map as any).hexes ?? {};
+  for (const k of Object.keys(hx).sort()) {
+    const x = hx[k];
+    const s = k + '|' + String(x.terenBazowy) + '|' + String(x.nakladka) + '|' + (x.rzeka?.obecna ? (x.rzeka.krawedzie ?? []).join(',') : '-');
+    for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+  }
+  console.log('CHECKSUM ' + h.toString(16));
+}
 console.log('COUNTERS ' + JSON.stringify(g.__diag));

@@ -1,0 +1,8 @@
+20.5% estimateLandCentroidFromSeed:4842 < growRiverInlandBeforeDrainage:4782 < traceRiver:5357 < traceRiverForGridFill:5473 < tryForceRiverThroughDryPatch:7956 < fillDryLowlandPatches:8006
+20.4% estimateLandCentroidFromSeed:4842 < growRiverInlandBeforeDrainage:4782 < traceRiver:5357 < traceRiverForGridFill:5473 < buildGridRouteCandidates:6895 < tryPlaceGridSource:7381
+13.2% estimateLandCentroidFromSeed:4842 < growRiverInlandBeforeDrainage:4782 < traceRiver:5357 < traceRiverForGridFill:5473 < tryDrainDryPatchFromRelief:7876 < fillDryLowlandPatches:8006
+4.7% collectRiverHexKeys:6494 < buildOceanReachableRiverHexKeys:6513 < buildMediumRouteTargetKeys:6168 < buildGridRouteCandidates:6895 < tryPlaceGridSource:7381 < tryForceRiverThroughDryPatch:7956
+4.4% growRiverInlandBeforeDrainage:4782 < traceRiver:5357 < traceRiverForGridFill:5473 < buildGridRouteCandidates:6895 < tryPlaceGridSource:7381 < tryForceRiverThroughDryPatch:7956
+4.4% growRiverInlandBeforeDrainage:4782 < traceRiver:5357 < traceRiverForGridFill:5473 < tryForceRiverThroughDryPatch:7956 < fillDryLowlandPatches:8006 < enforceMaxDryLowlandPatches:8061
+3.3% (garbage collector):0 < (root):0
+3.0% buildOceanReachableRiverHexKeys:6513 < buildMediumRouteTargetKeys:6168 < buildGridRouteCandidates:6895 < tryPlaceGridSource:7381 < tryForceRiverThroughDryPatch:7956 < fillDryLowlandPatches:8006

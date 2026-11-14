@@ -19,7 +19,9 @@ const getJson = (u) => new Promise((res, rej) => http.get(u, (r) => { let d = ''
   let id = 0; const pend = new Map();
   sock.onmessage = (m) => { const d = JSON.parse(m.data); if (d.id && pend.has(d.id)) { pend.get(d.id)(d); pend.delete(d.id); } };
   const call = (method, params = {}) => new Promise((r) => { const i = ++id; pend.set(i, r); sock.send(JSON.stringify({ id: i, method, params })); });
-  await call('Profiler.enable'); await call('Profiler.start');
+  await call('Profiler.enable');
+  await sleep(parseFloat(process.env.PROF_DELAY || '0') * 1000); // opóźnienie startu profilu (np. pominięcie fazy "główne")
+  await call('Profiler.start');
   await sleep(parseFloat(secs) * 1000);
   const res = await call('Profiler.stop');
   fs.writeFileSync(outFile, JSON.stringify(res.result.profile));
