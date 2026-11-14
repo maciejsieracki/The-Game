@@ -1,0 +1,52 @@
+{
+  "seed": 11,
+  "steps": {
+    "start": 1,
+    "P1a": {
+      "turn": 5,
+      "canEndWithDeficit": true,
+      "title": "",
+      "text": "Zakończ turę",
+      "endTurnAdvanced": true
+    },
+    "turnAtGate": 11,
+    "P1b": {
+      "turn": 11,
+      "sweepSteps": 372,
+      "firstBlockedCumulativeDeficit": 168600,
+      "firstBlockedTreasuryApprox": -18600,
+      "title": "",
+      "text": "Zakończ turę",
+      "clicked": true,
+      "turnBeforeClick": 1,
+      "turnAfterClick": 1,
+      "clickDidNotEnd": true
+    },
+    "P1c": {
+      "canEndAfterFix": false,
+      "clicked": true,
+      "turnBefore": 1,
+      "turnAfter": 1,
+      "turnAdvanced": false
+    }
+  },
+  "errors": [],
+  "sweepTail": [
+    {
+      "cumulativeDeficit": 168450,
+      "canEnd": true
+    },
+    {
+      "cumulativeDeficit": 168500,
+      "canEnd": true
+    },
+    {
+      "cumulativeDeficit": 168550,
+      "canEnd": true
+    },
+    {
+      "cumulativeDeficit": 168600,
+      "canEnd": false
+    }
+  ]
+}
