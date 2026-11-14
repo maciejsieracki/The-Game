@@ -30776,6 +30776,29 @@ async function boot(): Promise<void> {
       };
     }
 
+    // R-WEB-DETERMINISM-SAVE-LOAD-RESUME-Q1: hak pomiaru live (tylko ?civTest=1; zero wplywu bez parametru).
+    // Zapis/odczyt przez REALNE buildSaveGameSnapshot/restoreGameFromSave; digest = skrot stanu jednostek i miast
+    // + liczniki ID/walk. Uzywa go tools/determinism-save-load-resume-live.cjs.
+    if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
+      (window as any).__detHarness = {
+        snapshotJson: (): string => JSON.stringify(buildSaveGameSnapshot('det-harness')),
+        restoreJson: (s: string): void => { restoreGameFromSave(JSON.parse(s)); },
+        dropMetaKeys: (s: string, keys: string[]): string => { const o = JSON.parse(s); for (const k of keys) delete (o.meta as any)[k]; return JSON.stringify(o); },
+        counters: () => ({ turn, detIdSeq: _detIdSeq, abTurn: _autoBattleSeqTurn, abSeq: _autoBattleSeq, dipSeq: _dipUnitSeq }),
+        /** Pelny zrzut jednostek i miast (do diagnozy roznic). */
+        full: (): string => JSON.stringify({ units, cities }, (_k: string, v: any) => (v instanceof Map ? [...v.entries()] : v instanceof Set ? [...v] : v)),
+        digest: (): string => {
+          const rep = (_k: string, v: any) => (v instanceof Map ? [...v.entries()] : v instanceof Set ? [...v] : v);
+          const fnvOf = (s: string): string => { let x = 2166136261 >>> 0; for (let i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 16777619) >>> 0; } return x.toString(16); };
+          let full = '';
+          try { full = JSON.stringify({ units, cities }, rep); } catch (e) { full = 'ERR:' + String(e); }
+          // noPP: bez pola podzialPracy miasta (restore uzupelnia je domyslna wartoscia, zywy stan bywa bez pola).
+          let noPP = '';
+          try { noPP = JSON.stringify({ units, cities }, (k: string, v: any) => (k === 'podzialPracy' ? undefined : v instanceof Map ? [...v.entries()] : v instanceof Set ? [...v] : v)); } catch (e) { noPP = 'ERR'; }
+          return JSON.stringify({ turn, detIdSeq: _detIdSeq, abTurn: _autoBattleSeqTurn, abSeq: _autoBattleSeq, dipSeq: _dipUnitSeq, nUnits: units.length, nCities: cities.length, len: full.length, fnv: fnvOf(full), fnvNoPP: fnvOf(noPP), lenNoPP: noPP.length });
+        },
+      };
+    }
     // R-WEB-SAVELOAD-PRACA-POOL-Q1 — hak testowy WYLACZNIE dla tools/saveload-praca-pool-live-test.cjs.
     // Zero reimplementacji: REALNE buildSaveGameSnapshot -> restoreGameFromSave.
     (window as any).__pracaPoolSaveLoadTestDebug = {
@@ -38627,6 +38650,12 @@ async function boot(): Promise<void> {
           savedAt,
           saveOrigin: _saveOrigin,
           battleModeSettingVersion: _battleModeSettingVersion,
+          // R-WEB-DETERMINISM-SAVE-LOAD-RESUME-Q1: liczniki sufiksow ID i strumieni walk automatycznych
+          // (closure, poza zapisem). Bez nich wznowienie daje inne ID -> inne salty RNG -> inny przebieg.
+          // Stary zapis bez tych pol = 0 (dotychczasowe zachowanie).
+          detIdSeq: _detIdSeq,
+          autoBattleSeqTurn: _autoBattleSeqTurn,
+          autoBattleSeq: _autoBattleSeq,
           newGameParams: _lastNewGameParams
             ? { ..._lastNewGameParams, seed: _gameSeed }
             : undefined,
@@ -47751,6 +47780,13 @@ async function boot(): Promise<void> {
         _gameSeed = saved.seed;
       }
       turn = saved.tura;
+      // R-WEB-DETERMINISM-SAVE-LOAD-RESUME-Q1: przywrocenie licznikow z meta (brak pola = 0, jak dotad).
+      {
+        const m = saved.meta as { detIdSeq?: unknown; autoBattleSeqTurn?: unknown; autoBattleSeq?: unknown } | undefined;
+        _detIdSeq = typeof m?.detIdSeq === 'number' && Number.isFinite(m.detIdSeq) ? m.detIdSeq : 0;
+        _autoBattleSeqTurn = typeof m?.autoBattleSeqTurn === 'number' && Number.isFinite(m.autoBattleSeqTurn) ? m.autoBattleSeqTurn : -1;
+        _autoBattleSeq = typeof m?.autoBattleSeq === 'number' && Number.isFinite(m.autoBattleSeq) ? m.autoBattleSeq : 0;
+      }
       // Backlog "cityOrderState nieczyszczone w restoreGameFromSave" (Evaluator rundy 4
       // R-ZUZYCIE-SUROWCOW-OBYWATELE N1, PYTANIA-OTWARTE.md): bez tego czyszczenia panel
       // miasta (cityPanel.ts, resolveOrderState) po wczytaniu zapisu mógł pokazać OrderState
