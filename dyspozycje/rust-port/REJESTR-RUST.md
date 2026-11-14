@@ -1157,3 +1157,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Pytania ABC #115 i #120:** nadal bez odpowiedzi właściciela, nie startowane.
 - **Sprzątanie:** usunięte worktree WIEZE r2 (`wf_38834851-4ff-1,3,4`) po sprawdzeniu, że ich commity są w `parity-v2`; worktree integracyjny `integ-wieze` usunięty; katalogi `target` w scratchpadzie usunięte.
 - **Dysk:** 14 GB wolnego. **Parity:** `7193f5de2`.
+
+## Przebieg (14.11, heartbeat 22:47): 2 z 4 slotów w toku (CITYTOWERS integracja, ZLOZE rozpoznanie)
+- **CITYTOWERS 2A** (`R-RUSTPORT-P6-WIEZE-CITYTOWERS-Q1`): Operator PASS, Evaluator PASS-WITH-NOTES, Obrona PASS-WITH-NOTES, FC PASS-WITH-NOTES `04d50ad0d` (baza `7193f5de2` = czubek `parity-v2`, ancestry OK, diff w allowliście, 9 plików). Bramki na `04d50ad0d`: fmt EXIT 0, clippy EXIT 0, pełny `cargo test` w toku (1018 zaliczonych, 0 błędów). FF po zakończeniu testu.
+- **ZLOZE część 2 — ROZPOZNANIE** (`R-RUSTPORT-P6-ZLOZE-WIRING-ROZPOZNANIE-Q2`, `wf_dbf5c124-570`): read-only, dispatch `89c7e7e45`, Operator HAIKU. Wynik: tabela wywołań pina i propozycja podziału na tematy wykonawcze; decyzja o wiringu po przeczytaniu raportu.
+- **Dlaczego nie start wiringu bez rozpoznania:** cztery wywołania `deactivateZlozeGrantsForDeal` w pinie są w funkcjach produkcyjnych (zerwanie traktatu, wojna, wygaśnięcie, trybut). Odpowiedniki w Rust są częściowo nieobecne (poza `deals.retain`).
+- **Następny krok:** po FF CITYTOWERS dispatch 2B (strzał wieży, odroczenie 180 ms, usunięcie placeholdera) od nowego czubka `parity-v2`.
+- **Pytania ABC #115 i #120:** nadal bez odpowiedzi właściciela, nie startowane.
+- **Parity:** `7193f5de2` (przed FF CITYTOWERS). **Dysk:** sprawdzić przy następnym starcie.
