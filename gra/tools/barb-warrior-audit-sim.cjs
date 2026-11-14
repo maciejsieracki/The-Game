@@ -91,6 +91,9 @@ const CONFIGS = [
   { epoka: 'Brąz', barb: 'Wojownik Sherden', gracz: ['Włócznik', 'Wojownik z mieczem i tarczą'] },
   { epoka: 'Brąz', barb: 'Wojownik szekelesz', gracz: ['Włócznik', 'Wojownik z mieczem i tarczą'] },
   { epoka: 'Żelazo', barb: 'Wojownik', gracz: ['Falanga', 'Miecznik galijski'] },
+  // Uzupelnienie macierzy (zarzut Evaluatora r1 nr 2): zwykly barbarzynski Wojownik w Brazie, Lucznik gracza w Brazie/Zelazie.
+  { epoka: 'Brąz', barb: 'Wojownik', gracz: ['Włócznik', 'Łucznik', 'Wojownik z mieczem i tarczą'] },
+  { epoka: 'Żelazo', barb: 'Wojownik', gracz: ['Łucznik'] },
 ];
 
 // ---------------------------------------------------------------------------
@@ -243,3 +246,40 @@ for (const cfg of CONFIGS) {
     console.log(`${pl} vs ${cfg.barb} | ${fmt((100 * wL) / N)}% | ${fmt((100 * wP) / N)}%`);
   }
 }
+
+// ---------------------------------------------------------------------------
+// 7. Os liczebnosci (zarzut Evaluatora r1 nr 1): AUTO liczy z sumy M, wiec przewaga liczebna
+//    przesuwa ratio. Reczne: sekwencyjne 1v1 (przyblizenie jak w sekcji 4).
+// ---------------------------------------------------------------------------
+console.log('\n== Os liczebnosci: Wojownik barbarzynski (A) vs Lucznik (D), Kamien ==');
+console.log('A vs D | RECZNE losowe wygrana% (strata zw.%) | RECZNE pewne wygrana% (strata zw.%) | AUTO wygrana% (strata zw.%) | M_A / M_D');
+const numFlag = [];
+for (const [a, d] of [[1, 1], [2, 1], [3, 1], [2, 2], [3, 2], [6, 2], [3, 3]]) {
+  const barbs = Array(a).fill('Wojownik');
+  const plrs = Array(d).fill('Łucznik');
+  const rowsL = [];
+  const rowsP = [];
+  const rowsA = [];
+  let mA = 0;
+  let mD = 0;
+  for (let k = 0; k < N; k++) {
+    const seed = 1000 + k * 7919;
+    const m1 = manual3v3(barbs, plrs, seed, false);
+    rowsL.push({ winner: m1.winner, aLossPct: m1.aLossPct });
+    const m2 = manual3v3(barbs, plrs, seed, true);
+    rowsP.push({ winner: m2.winner, aLossPct: m2.aLossPct });
+    const au = autoRoster(barbs, plrs, seed);
+    mA = au.mA;
+    mD = au.mD;
+    rowsA.push(au);
+  }
+  const sL = summarize(rowsL, 'manual');
+  const sP = summarize(rowsP, 'manual');
+  const sA = summarize(rowsA, 'auto');
+  const f = (s) => `${fmt(s.winPct)}% (${fmt(s.avgWinnerLossPct)}%)`;
+  console.log(`${a}v${d} | ${f(sL)} | ${f(sP)} | ${f(sA)} | ${fmt(mA)} / ${fmt(mD)}`);
+  if (sA.winPct > 90 && sA.avgWinnerLossPct < 10) numFlag.push(`AUTO ${a}v${d}`);
+  if (sL.winPct > 90 && sL.avgWinnerLossPct < 10) numFlag.push(`RECZNE losowe ${a}v${d}`);
+}
+console.log('== Os liczebnosci: konfiguracje >90% przy stracie <10% ==');
+console.log(numFlag.length ? numFlag.join('; ') : '(brak)');
