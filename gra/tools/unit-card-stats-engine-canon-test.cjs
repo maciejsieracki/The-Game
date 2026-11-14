@@ -25,7 +25,14 @@ const UI_FILES = [
 ];
 
 // Odczyty kolumn PL (etykiet legacy) jako źródła wartości bojowych na karcie — zakazane.
-const PL_COMBAT_READ = /\b(?:unit|u)\.(?:Atak|Obrona|Health|Pancerz|Przebicie|Uderzenie)\b|\b(?:unit|u)\[['"](?:Atak dystansowy)['"]\]/;
+// Szeroki wzorzec (dowolna nazwa obiektu, zapis z kropką, z nawiasami i destrukturyzacja),
+// bo wąski wzorzec `unit.`/`u.` przepuszczał np. `const { Atak } = unit`.
+const PL_COMBAT_KEY = '(?:Atak|Obrona|Health|Pancerz|Przebicie|Uderzenie|Atak dystansowy)';
+const PL_COMBAT_READ = new RegExp([
+  `\\.${PL_COMBAT_KEY}(?![\\w])`,
+  `\\[['"]${PL_COMBAT_KEY}['"]\\]`,
+  `\\{[^}]*\\b${PL_COMBAT_KEY}\\b[^}]*\\}\\s*=`,
+].join('|'));
 
 async function main() {
   await esbuild.build({
