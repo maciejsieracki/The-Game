@@ -1208,3 +1208,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Start (1 z 4):** `R-RUSTPORT-P6-ZLOZE-WIRE-WAR-BREAK-A-Q1` (T2 etap a: zerwanie traktatu przy wojnie i dobrowolne, czysta domena, bez wpinania), dispatch `87c79e5ca`, baza `533d46dd3`, Workflow `wf_43e15938-a5a`. Operator HAIKU, Evaluator/FC SONNET, Obrona HAIKU.
 - **Otwarte, do podjęcia:** wpięcie #106 (podłoga Pracy w Ledger, zapis `city_stock`, wpięcie w D3); etap b T2 (po #120 i po T2 a); WIEZE 2B.
 - **Pytania ABC #115, #120** i konwencja `Co-Authored-By`: bez odpowiedzi właściciela.
+
+## Przebieg (14.11, heartbeat 23:48): 2 z 4 slotów zajęte
+- **T2 ZLOZE-WIRE-WAR-BREAK-A** (`wf_43e15938-a5a`): etap Operator, HAIKU; dispatch `87c79e5ca`, baza `533d46dd3`.
+- **PRACA-FLOOR-LEDGER** (#106, parytet podłogi Pracy): dispatch `157425945` (+ doprecyzowanie reprodukcji), baza `533d46dd3`, Workflow `wf_03ce4582-c3e`, etap Operator, HAIKU. Reprodukcja: pula 5, delty −10/+10 → pin 10, Rust 5.
+- **Dysk:** 11 GB wolnego. **Parity:** `533d46dd3`.
+- **Otwarte:** wpięcie #106 w D3 i `city_stock` (po PRACA-FLOOR), etap b T2 (po #120), WIEZE 2B, dokumentacja `NIEPODPIETE-MODULY.md:274`.
+- **Pytania ABC #115, #120** i konwencja `Co-Authored-By`: bez odpowiedzi właściciela.
