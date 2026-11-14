@@ -1,3 +1,9 @@
+## ROBOCZA dea19d1e -- 2026-11-14 -- FALA 700: Rozwiazanie jednostki odswieza prognoze ekonomii (testowa)
+
+- gra/src/main.ts: disbandPlayerUnit wola markCityStateDirty() przed refreshD1bHud() - tooltip i bramka Zakoncz ture od razu pokazuja nowy stan po rozwiazaniu jednostki (panel armii pojedynczo i masowo deleguje do tej funkcji); hak read-only ?civTest=1 peaceTrace (W80B1) bez logiki gry
+- Weryfikacja: tsc 0; logic 213/213; disband-unit-mark-dirty-test 6/0 (mutacja FAIL 3/3); tech-tree 20/0, research 33/0, unit-replace 21/21, combat 6/6 (FC)
+- Limity: Realny klik Rozwiaz w UI w Chromium nie zmierzony (brak haka selekcji jednostki); sciezki debugKillPlayer i removeUnit (hooki testowe) bez dirty - poza realna sciezka
+
 ## ROBOCZA c84369bc -- 2026-11-14 -- FALA 699: Panel oblezenia nie przyciety u dolu + hak testowy W18 (testowa)
 
 - gra/src/ui/siegeMapPanel.ts: przyciski Oblegaj/Szturm/Odwrot w nieprzewijanym doku, nakladka nad dolnym banerem HUD (fitOverlayAboveBottomBar, resize); hak ?civTest=1 (startPlayerSiege, setResearchedTechs, siegeOptions, fundPlayer) bez logiki gry
