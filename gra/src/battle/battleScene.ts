@@ -584,6 +584,12 @@ export interface BattleOpts {
   defenderDifficultyCombatMult?: number;
   /** When set, manual battle control is available only while the player's commander survives. */
   manualControlAllowed?: boolean;
+  /**
+   * R-WEB-BATTLE-MANUAL-RNG-DETERMINISM-Q1: strumien losowy walki (ta sama fabryka
+   * co walki AUTO, main.ts battleCombatRng). Brak = Math.random (stare wywolania).
+   * Uzywany przez rzut trafienia (_singleBlow) i przez "Pomin" (resolveCombat).
+   */
+  combatRng?: () => number;
 }
 
 export interface BattleResult {
@@ -2295,6 +2301,8 @@ export class BattleScene {
   /** Ground-click mode armed by the Atakuj-marszem control. */
   private _attackMoveMode = false;
   private _manualCommanderGate = false;
+  /** R-WEB-BATTLE-MANUAL-RNG-DETERMINISM-Q1: strumien losowy walki (domyslnie Math.random). */
+  private _combatRng: () => number = Math.random;
   /** Po Start walki: faza planowania (Spacja = rozpocznij turę). */
   private _battleAwaitingOrders = false;
   /**
@@ -2737,6 +2745,7 @@ export class BattleScene {
   // -------------------------------------------------------------------------
   constructor(opts: BattleOpts) {
     this._manualCommanderGate = opts.manualControlAllowed !== undefined;
+    if (typeof opts.combatRng === 'function') this._combatRng = opts.combatRng;
     this.onCancelCb  = opts.onCancel ?? null;
     this.terrain     = opts.teren;
     const d: any     = opts.data ?? {};
@@ -3760,6 +3769,7 @@ export class BattleScene {
       this.defenderOwnTerritory,
       this.shallowSea,
       this.siegeWallCol,
+      this._combatRng,
     );
     this.lastInstantDefBonus = result.defBonus;
     for (const line of result.log) this.log.push(line);
@@ -9127,7 +9137,7 @@ export class BattleScene {
     // R-WEB-BATTLE-HIT-MODE-SETTING-Q1: tryb 'pewne' = uderzenie zawsze trafia (bez rzutu).
     const certainHit = isCertainHitMode();
     const hitPct = certainHit ? 100 : hitChanceTw(ranged ? atkShootAcc : atkMelee, defFinalObrona, chargeHitBonus);
-    const roll   = certainHit ? 0 : Math.random() * 100;
+    const roll   = certainHit ? 0 : this._combatRng() * 100;
     if (roll >= hitPct) {
       this.log.push(attacker.bu.nazwa + ' chybia w ' + defender.bu.nazwa + ' (' + roll.toFixed(0) + '>=' + hitPct + '%).');
       return 0;
@@ -20719,6 +20729,8 @@ function computeInstantResult(
   // R-WEB-WALL-DEFENDERS-BONUS-RANGE-Q1: kolumna muru (BattleScene.siegeWallCol,
   // -1 = brak) -- obronca ZA murem dostaje bonus obwarowania tak jak na koronie.
   siegeWallCol: number = -1,
+  // R-WEB-BATTLE-MANUAL-RNG-DETERMINISM-Q1: strumien losowy walki (resolveCombat rng).
+  combatRng: () => number = Math.random,
 ): {
   winner: 'atakujacy' | 'obronca'; survivors: BattleUnit[]; log: string[];
   defBonus: { q: number; r: number; onWall: boolean; pct: number }[];
@@ -20836,6 +20848,8 @@ function computeInstantResult(
       // the ATTACKER's own tile instead, which is the precise per-blow rule.
 
       const res = resolveCombat(cu_a, cu_d, {
+        // R-WEB-BATTLE-MANUAL-RNG-DETERMINISM-Q1: ten sam strumien co rzut trafienia (_singleBlow).
+        rng:              combatRng,
         maxRounds:        30,
         defenderTerrain:  defTerrain,
         terrainData,
