@@ -273,6 +273,11 @@ export interface AudienceRelationPartner {
    * (desperacja, gdy przegrywa; zmęczenie, gdy wygrywa lub remis). Brak = bez wiersza procentu.
    */
   warWeariness?: AudienceWarWearinessView;
+  /**
+   * R-WEB-UI-DIPLO-PANEL-AIAI-BOTH-LABELS-Q1: wojny AI↔AI — strona PARTNERA (trzeciej cywilizacji) w tej wojnie,
+   * obok `warWeariness` (strona rozmówcy). Brak = partner bez danych; wtedy widoczna jest tylko etykieta rozmówcy.
+   */
+  warWearinessPartner?: AudienceWarWearinessView;
 }
 
 /**
@@ -1527,7 +1532,7 @@ export function otherCardHtml(st: DiplomacyAudienceState): string {
         '<div class="da-sec-title">Dobra handlowe</div>' +
         goodsCategoriesHtml(st.otherGoodsCats, 'other') +
       '</div>' +
-      otherRelationsSectionHtml(st.otherRelations) +
+      otherRelationsSectionHtml(st.otherRelations, st.otherCivName) +
       cultureLineHtml(st) +
       personalityTagsHtml(st.personalityTags) +
     '</div>'
@@ -1541,20 +1546,20 @@ export function otherCardHtml(st: DiplomacyAudienceState): string {
  * dane w `st.otherRelations`, patrz komentarz przy tym polu). Brak danych = pomiń
  * sekcję całkowicie (rozmówca poza aktywną dyplomacją) — puste podlisty = "Brak.".
  */
-function otherRelationsSectionHtml(rel: AudienceOtherRelations | undefined): string {
+function otherRelationsSectionHtml(rel: AudienceOtherRelations | undefined, otherCivName: string): string {
   if (!rel) return '';
   return (
     '<div>' +
       '<div class="da-sec-title">Relacje z innymi</div>' +
-      relationPartnerListHtml('W stanie wojny z', rel.wars) +
-      relationPartnerListHtml('W sojuszu z', rel.alliances) +
-      relationPartnerListHtml('Pakt o nieagresji z', rel.naps) +
-      relationPartnerListHtml('Handluje z', rel.deals) +
+      relationPartnerListHtml('W stanie wojny z', rel.wars, otherCivName) +
+      relationPartnerListHtml('W sojuszu z', rel.alliances, otherCivName) +
+      relationPartnerListHtml('Pakt o nieagresji z', rel.naps, otherCivName) +
+      relationPartnerListHtml('Handluje z', rel.deals, otherCivName) +
     '</div>'
   );
 }
 
-function relationPartnerListHtml(title: string, partners: readonly AudienceRelationPartner[]): string {
+function relationPartnerListHtml(title: string, partners: readonly AudienceRelationPartner[], ownName: string): string {
   let html = '<div class="da-rel-partner-group">' +
     '<div class="da-rel-partner-title">' + esc(title) + '</div>';
   if (partners.length === 0) {
@@ -1562,7 +1567,7 @@ function relationPartnerListHtml(title: string, partners: readonly AudienceRelat
   } else {
     for (const p of partners) {
       html += '<div class="da-rel-partner-row">' + esc(p.isPlayer ? 'Ty' : p.name)
-        + warWearinessPartnerSuffixHtml(p.warWeariness) + '</div>';
+        + warWearinessPartnerSuffixHtml(ownName, p.warWeariness, p.isPlayer ? 'Ty' : p.name, p.warWearinessPartner) + '</div>';
     }
   }
   html += '</div>';
@@ -1588,11 +1593,24 @@ function warWearinessRowsHtml(pair: AudienceWarWearinessPair | undefined, otherN
   return warWearinessRowHtml('Ty', pair.player) + warWearinessRowHtml(otherName, pair.other);
 }
 
-/** Procent przy wojnie AI↔AI na liście „W stanie wojny z" — jedna wartość dla rozmówcy w tej wojnie. */
-function warWearinessPartnerSuffixHtml(view: AudienceWarWearinessView | undefined): string {
+/**
+ * Procenty przy wojnie AI↔AI na liście „W stanie wojny z": osobny znacznik dla strony rozmówcy (ownName)
+ * i dla strony partnera (partnerName). Każdy znacznik tylko gdy jego widok ma dane.
+ */
+function warWearinessPartnerSuffixHtml(
+  ownName: string,
+  ownView: AudienceWarWearinessView | undefined,
+  partnerName: string,
+  partnerView: AudienceWarWearinessView | undefined,
+): string {
+  return warWearinessMarkHtml(ownName, ownView) + warWearinessMarkHtml(partnerName, partnerView);
+}
+
+function warWearinessMarkHtml(who: string, view: AudienceWarWearinessView | undefined): string {
   const info = view ? warWearinessLabelPl(view) : null;
   if (!info) return '';
-  return ' <span class="da-rel-war-wear" title="' + esc(info.tooltip) + '">' + esc(info.label) + '</span>';
+  return ' <span class="da-rel-war-wear" title="' + esc(info.tooltip) + '">'
+    + esc(who) + ': ' + esc(info.label) + '</span>';
 }
 
 /** Suma Zaufanie + Respekt (0–200) — widoczna w panelu relacji audiencji. */

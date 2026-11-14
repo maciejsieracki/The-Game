@@ -8803,10 +8803,12 @@ async function boot(): Promise<void> {
       });
       const naps = dealPartnerIdsForOwner(activeDeals, otherOwnerId, 'nap').map(toPartner);
       // R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1: wojny AI↔AI — jedna wartość dla rozmówcy (strona otherOwnerId).
-      const wars = base.wars.map(w => (w.ownerId === 0 ? w : {
-        ...w,
-        warWeariness: warWearinessSideView(diploWarWearinessPairView(otherOwnerId, w.ownerId, 'tick'), String(otherOwnerId)).own,
-      }));
+      // R-WEB-UI-DIPLO-PANEL-AIAI-BOTH-LABELS-Q1: obie strony wojny AI↔AI (rozmówca = own, partner = rival); tylko odczyt.
+      const wars = base.wars.map(w => {
+        if (w.ownerId === 0) return w;
+        const side = warWearinessSideView(diploWarWearinessPairView(otherOwnerId, w.ownerId, 'tick'), String(otherOwnerId));
+        return { ...w, warWeariness: side.own, warWearinessPartner: side.rival };
+      });
       return {
         wars,
         alliances: base.alliances,
