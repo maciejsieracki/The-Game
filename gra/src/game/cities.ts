@@ -718,7 +718,7 @@ export function ensureCityPodzialDefaults(city: City): void {
   if (city.podzialHandluOverride && city.podzialHandlu) {
     city.podzialHandlu = normalizePodzialHandlu(city.podzialHandlu);
   } else if (city.podzialHandluOverride && !city.podzialHandlu) {
-    city.podzialHandlu = { ...DEFAULT_PODZIAL_HANDLU };
+    city.podzialHandlu = { ...LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14 };
   }
   if (!city.podzialPracy) {
     city.podzialPracy = { ...DEFAULT_PODZIAL_PRACY };

@@ -73,7 +73,9 @@ export function migrateHandelSplitOnLoad(
 
   for (const city of cities) {
     if (!ownerDefaults.has(city.ownerId)) {
-      ownerDefaults.set(city.ownerId, { ...DEFAULT_PODZIAL_HANDLU });
+      // Zapis wczytany ze starszej wersji: właściciel bez zapisanego podziału dostaje dawny
+      // podział (20/60/20), nie nowy domyślny gracza, żeby wczytanie nie zmieniało zachowania.
+      ownerDefaults.set(city.ownerId, { ...LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14 });
     }
     if (city.podzialHandluOverride && city.podzialHandlu) {
       city.podzialHandlu = normalizePodzialHandlu(city.podzialHandlu);

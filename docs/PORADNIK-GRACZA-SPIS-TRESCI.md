@@ -1411,7 +1411,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 
 **51.1.** Wspólna pula imperium — jak działa nauka
 - Wszystkie miasta **składają** punkty badań do jednej puli państwa
-- Suwak Daniny w każdym mieście — część produkcji idzie na naukę (domyślnie 20%)
+- Suwak Daniny w każdym mieście — część produkcji idzie na naukę (domyślnie 60%)
 - Budynki (biblioteka, akademia…) — stały bonus + na turę
 - Tempo widzisz na pasku: **+X badań** i pasek % do aktualnej technologii
 
@@ -3190,7 +3190,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 - W — panel miasta · ¤ — skarbiec imperium
 
 **C.3.4.** Przykład
-- 30/60/10 suwak (domyślny) → W rośnie wolniej niż przy 40/20/40 (zdanie sprzed 2026-11-14, nie przeliczone)
+- 30/60/10 suwak (domyślny, od 2026-11-14) → tempo wzrostu W nie zostało zmierzone po zmianie domyślnego podziału (NIE_ZMIERZONO); poprzednie porównanie z 40/20/40 dotyczyło starego podziału.
 
 ---
 

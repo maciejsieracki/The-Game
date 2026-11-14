@@ -589,7 +589,7 @@ Postaw **pierwszy Spichlerz** przed masową rekrutacją — jeden budynek w impe
 |-----------|-----------|---------------|
 | **7,2 → 7** ¤ | **14,4 → 14** badań | **2,4 → 2** luksusu |
 
-Przesunięcie na **50/30/20** przy tej samej Daninie **24**: **12** ¤ · **7** badań · **5** luksusu (bonus szczęścia od zamożności bez zmian, bo udział zamożności rośnie z **10%** do **20%** — patrz §35.2a).
+Przesunięcie na **50/30/20** przy tej samej Daninie **24**: **12** ¤ · **7** badań · **5** luksusu (udział zamożności rośnie z **10%** do **20%**, więc bonus szczęścia od zamożności też rośnie — patrz §35.2a).
 
 **Praca netto = 20/t**:
 

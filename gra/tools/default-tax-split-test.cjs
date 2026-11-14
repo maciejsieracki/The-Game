@@ -26,12 +26,12 @@ const panelSrc = fs.readFileSync(path.resolve(ROOT, 'src/ui/empireDetailPanel.ts
 const ENTRY_FILE = path.resolve(__dirname, '.default-tax-split-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.default-tax-split-bundle.cjs');
 const ENTRY_TS = `
-import { DEFAULT_PODZIAL_HANDLU, LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14, AI_FIXED_PROCENT_NAUKA, normalizePodzialHandlu } from '../src/game/cities';
+import { DEFAULT_PODZIAL_HANDLU, LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14, AI_FIXED_PROCENT_NAUKA, normalizePodzialHandlu, ensureCityPodzialDefaults } from '../src/game/cities';
 import { aiSeedPodzialHandlu } from '../src/game/ai';
 import { freshOwnerDefaultPodzialHandlu, resolveCityPodzialHandlu, migrateHandelSplitOnLoad } from '../src/game/empire-handel-split';
 export {
   DEFAULT_PODZIAL_HANDLU, LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14, AI_FIXED_PROCENT_NAUKA, normalizePodzialHandlu,
-  aiSeedPodzialHandlu, freshOwnerDefaultPodzialHandlu, resolveCityPodzialHandlu, migrateHandelSplitOnLoad,
+  aiSeedPodzialHandlu, freshOwnerDefaultPodzialHandlu, resolveCityPodzialHandlu, migrateHandelSplitOnLoad, ensureCityPodzialDefaults,
 };
 `;
 
@@ -120,6 +120,43 @@ assert('empireDetailPanel: brak starego literału 60/20/20 w fallbacku panelu',
   !/procentPieniadz: 60, procentNauka: 20, procentLuksus: 20/.test(panelSrc));
 assert('empireDetailPanel: fallback panelu = 30/60/10',
   /procentPieniadz: 30, procentNauka: 60, procentLuksus: 10/.test(panelSrc));
+
+// 9. Panel miasta (cityPanel.ts): ostateczny fallback = nowy domyślny 30/60/10, bez starego literału.
+{
+  const cityPanelSrc = fs.readFileSync(path.resolve(ROOT, 'src/ui/cityPanel.ts'), 'utf8');
+  assert('cityPanel: brak starego fallbacku 60/20/20 (procentPieniadz 60, procentNauka 20, procentLuksus 20)',
+    !/procentPieniadz:\s*60,\s*procentNauka:\s*20,\s*procentLuksus:\s*20/.test(cityPanelSrc));
+  assert('cityPanel: fallback DEFAULT_PODZIAL_HANDLU = 30/60/10',
+    /DEFAULT_PODZIAL_HANDLU: PodzialHandluSplit = \{\s*procentPieniadz: 30,\s*procentNauka: 60,\s*procentLuksus: 10,?\s*\}/.test(cityPanelSrc));
+}
+
+// 10. Stary zapis z zapisanym podziałem tylko dla gracza (0), AI (1) bez wpisu: dostaje dawny 20/60/20,
+// nie nowy domyślny gracza (wcześniej DEFAULT = 20/60/20, więc zachowanie AI musi zostać).
+{
+  const map = new Map();
+  const cities = [{ ownerId: 0, podzialHandlu: { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 }, podzialHandluOverride: false },
+                  { ownerId: 1 }];
+  B.migrateHandelSplitOnLoad(cities, map, [[0, { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 }]]);
+  assert('stary zapis: AI bez wpisu w savedDefaults dostaje dawny 60/20/20 (nie 30/60/10)',
+    map.has(1) && triple(map.get(1)) === '60/20/20', `got ${map.has(1) ? triple(map.get(1)) : 'brak'}`);
+}
+
+// 11. ensureCityPodzialDefaults (wczytanie starszego zapisu): override bez podziału dostaje dawny 20/60/20.
+{
+  const city = { ownerId: 0, podzialHandluOverride: true };
+  B.ensureCityPodzialDefaults(city);
+  assert('ensureCityPodzialDefaults: override bez podziału -> dawny 60/20/20 (nie nowy 30/60/10)',
+    city.podzialHandlu !== undefined && triple(city.podzialHandlu) === '60/20/20',
+    `got ${city.podzialHandlu ? triple(city.podzialHandlu) : 'brak'}`);
+}
+
+// 12. Fallback Zamożności w society-breakdown (miasto bez podziału) = dawne 20%, nie nowy domyślny 10%.
+{
+  const sbSrc = fs.readFileSync(path.resolve(ROOT, 'src/game/society-breakdown.ts'), 'utf8');
+  assert('society-breakdown: podzialLuksus fallback = LEGACY (nie DEFAULT_PODZIAL_HANDLU)',
+    /const p = city \?\? LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14;/.test(sbSrc)
+    && !/import[^;]*\bDEFAULT_PODZIAL_HANDLU\b/.test(sbSrc));
+}
 
 console.log(`\n=== default-tax-split-test: ${passed} pass, ${failed} fail ===`);
 try { fs.unlinkSync(BUNDLE_FILE); } catch { /* ignore */ }
