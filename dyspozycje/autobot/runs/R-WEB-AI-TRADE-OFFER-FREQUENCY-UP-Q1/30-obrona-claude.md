@@ -1,80 +1,76 @@
-# R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 — Obrona (Operator, HAIKU), runda 2/5
+# R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 — Obrona Operatora, runda 3/5 (odpowiedź na zarzuty Evaluatora)
 
-STATUS: DECISION_REQUIRED
-DOMAIN: GAME
+STATUS: DECISION_REQUIRED (bez zmiany wyniku pomiaru; zarzuty obsłużone: 5 PRZYJĘTE i wykonane, 2 PRZYJĘTE częściowo, 1 ODRZUCONE z dowodem; pkt 4 PRZYJĘTY jako otwarty, NIE_ZMIERZONO)
+DOMAIN: GAME (oferty handlowe AI->gracz; kod gry bez zmian w tej obronie; zmiany: test regresji + poprawka raportu)
 TEMAT: R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1
-GOAL: oferty AI->gracz z ~0,89 do 3–6/100 tur bez spamu, bez obniżania uczciwości wyceny. NIE OSIĄGNIĘTY: zmierzone 0,22/100 tur. Do decyzji właściciela O1/O2/O3 (patrz 10-operator-claude.md, sekcja BLOKADY).
-BAZA KODU: db887a9c1 (kandydat Operatora r2; kod gry = 359d2df9c). Ta obrona startuje od db887a9c1.
-ZMIANY-COMMIT: 9ecf93179 (kod + testy; obrona), ten raport w osobnym commicie po nim.
-- `gra/data/ai-params.json`: `propozycja_wymiany_surowcow_cooldown_tur` **5 → 15** (cofnięcie zmiany Operatora, wartość bazowa właściciela; przed 5, po 15).
-- `gra/tools/ai-trade-proposal-branch-test.cjs`, `gra/tools/ai-trade-proposal-to-player-test.cjs`: asercje cooldownu przywrócone do 15 (identyczne z 359d2df9c).
-- `gra/tools/ai-trade-offer-frequency-up-test.cjs`: przepisany (patrz zarzut 3).
-- Nie zmieniano `gra/src/` (zero zmian w grze względem 359d2df9c).
-- Narzędzia pomiarowe i evidence z rundy 2 zostają bez zmian (opis niżej, zarzut 4).
+GOAL: bez zmiany celu z r3 (3–6 ofert/100 tur, bez spamu). Ta obrona NIE zmienia zachowania gry; domyka zarzuty do kodu testu i raportu oraz wyjaśnia przyczynę spadku liczby tur z parą.
+BAZA: kandydat 86f4dc316 (operator r3); zarzuty dotyczą cffe589ab (raport Evaluatora).
+ZMIANY-COMMIT: `gra/tools/ai-trade-offer-frequency-up-test.cjs` (scalenie testów r2+r3), `runs/R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1/10-operator-claude.md` (poprawka liczb, lejka, białych znaków), `runs/R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1/30-obrona-claude.md` (ten raport). Kod gry (`gra/src/main.ts`) NIE zmieniony względem 86f4dc316 (sprawdzone: `git diff 86f4dc316 -- gra/src/main.ts` puste). `gra/data/ai-params.json` NIE zmieniony. Commit: SHA w polu sha wyniku StructuredOutput.
 
-## ODPOWIEDZI NA ZARZUTY EVALUATORA
+## ODPOWIEDZI NA ZARZUTY
 
-**Zarzut 1 (istotny, cooldown bez efektu): PRZYJMUJĘ.**
-Poprawka: `ai-params.json` wraca do 15 (commit 9ecf93179). Dowód: `git diff 359d2df9c -- gra/data/ai-params.json` = pusty; `grep -A1 propozycja_wymiany_surowcow_cooldown_tur gra/data/ai-params.json` pokazuje `"wartosc": 15`. Powód: pomiar Evaluatora i Operatora (evidence/base-econ-cd15 vs evidence/cd5) daje identyczne 0/0/1 ofert; w ziarnach 1111 i 2222 `funnel.cdTurns=0` w obu wariantach, więc cooldown nie ogranicza. Zmiana tylko podnosiła sufit (20 zamiast ~6,7 ofert/100 tur/AI) bez korzyści. Zmiana wartości wymaga decyzji właściciela (O1/O2/O3).
+### Zarzut 1 — konflikt integracyjny testów: PRZYJMUJĘ (poprawka wykonana)
+- Próbowano `git merge d64cd5d46` (main z r2). Merge pociągnąłby całą różnicę main względem 6612d1596 (m.in. `dyspozycje/WERSJE.md`, `docs/encyklopedia/...`, runy innych tematów) — to poza allowlistą, więc merge przerwany (`git merge --abort`, bez commita).
+- Zamiast tego scalono treść testów ręcznie: jeden plik `gra/tools/ai-trade-offer-frequency-up-test.cjs` zawiera [R2-1..R2-4] (cooldown=15, odstęp, bramki decideAIDiplomacy, limit/zapis cooldownu) z testu r2 oraz [R3-A], [R3-B] z r3. Jeden bundle esbuild (`ai.ts`, `diplomacy-economy.ts`, `diplomacy-pn-engine.ts`).
+- Wynik na 86f4dc316: `=== ai-trade-offer-frequency-up-test: 28 pass, 0 fail ===` (exit 0).
+- Konflikt add/add w `10-operator-claude.md` (r2 vs r3, ta sama nazwa pliku) NIE został rozstrzygnięty w tym commicie — rozstrzyga integrator (zalecane: dopisać treść r2 jako osobną sekcję tego samego pliku). Test i kod nie mają konfliktu (`git merge-tree` dotyczył tylko dwóch plików: test i 10-operator).
 
-**Zarzut 2 (istotny, przyczyna jest hipotezą): PRZYJMUJĘ jako zarzut o statusie dowodu; NIE wdrażam poprawki.**
-- Przyjmuję: w 10-operator-claude.md przyczyna „pary nie trafiają na stół przez rozjazd wycen” jest NIE_ZMIERZONA. Nie przedstawiam jej jako ustalonej.
-- Sprawdzenie kodu (ta obrona, `gra/src/main.ts` na db887a9c1): `pnBalanceOpts` (l. 20958) nie ma `tempoGry` ani `...proposalPnTurnsMultiplier(...)`; `pnOpts` wyboru pary (l. 24249–24256) je ma. Ponadto `pnBalanceOpts` używa `actionId: converted.actionId`, a `pnOpts` ma `actionId: 'handel'`. Ta druga różnica nie była wymieniona w raporcie Operatora i wymaga osobnego pomiaru.
-- Nie wdrażam O1 (wyrównanie wycen): zmienia zachowanie bramki wejścia na stół w grze, a dispatch i 10-operator-claude.md wymagają na to zgody właściciela. Bez zgody i bez zmierzonego efektu nie ruszam kodu gry.
-- Dług: rozkład odrzuceń po ziarnach (givePn > receivePn) nie został zmierzony; to zadanie dla rundy 3 po decyzji właściciela.
+### Zarzut 2 — brak behawioralnego testu parytetu, limitu 1 oferty i odstępu: PRZYJMUJĘ CZĘŚCIOWO, ODRZUCAM reszta
+- PRZYJĘTE: odstęp 15 tur jest teraz testowany behawioralnie ([R2-2]: `canAiProposeResourceTrade` dla tur +14 / +15) i bramki zachowania ([R2-3]: `decideAIDiplomacy` — kontakt, wojna, brak oferty, partner AI, 14 vs 15 tur). Parytet silnika wyceny: [R3-A] (ten sam payload per_turn daje PN x turnsMultiplier; opcje z mnożnikiem = opcje wyboru pary).
+- ODRZUCONE: behawioralny test limitu „1 aktywna oferta” i parytetu „ta sama para → ta sama decyzja wyboru i enqueue”. Powód (dowód): enqueue i `hasPendingBarter` żyją w funkcji `boot()` w `gra/src/main.ts` (wywołanie `previewIncomingPlayerAccept` ok. linii 21037 i `enqueue` ok. 20958–21040 są wewnątrz zakresu `boot`), która NIE jest eksportowana — test węzłowy nie ma jak jej wywołać bez pełnej gry w przeglądarce (hooki `?civTest=1`). Zrobienie tego wymagałoby refaktoru `main.ts` poza zakresem r3. Dlatego: limit i parytet enqueue zostają źródłowe ([R2-4], [R3-B]) i NIE_ZMIERZONO na żywo; zachowanie w rozgrywce mierzy narzędzie pomiarowe.
 
-**Zarzut 3 (średni, test nie testuje zachowania): PRZYJMUJĘ — poprawka częściowa.**
-Nowy `gra/tools/ai-trade-offer-frequency-up-test.cjs`:
-- [1] strażnik wartości 15 (ai-params i ai.ts) — tylko jako ochrona przed nieplanowaną zmianą;
-- [2] **zachowanie**: `canAiProposeResourceTrade` — tura +14 zablokowana, +15 dozwolona, brak poprzedniej propozycji dozwolona;
-- [3] **zachowanie** przez `decideAIDiplomacy` (ai.ts): brak kontaktu, wojna, brak kandydata wymiany, partner AI-AI → brak komendy; tura 24 (14 tur po) zablokowana, tura 25 (15 tur po) dozwolona; pełne warunki → jedna komenda;
-- [4] źródłowo (main.ts): bramka `!hasPendingBarter`, zapis cooldownu dopiero przy wstawieniu oferty na stół.
-Nadal NIE_ZMIERZONO: zachowanie limitu „1 aktywna oferta” w pełnej grze (wymaga uruchomienia enqueue w main.ts). Test pkt [4] pozostaje źródłowy i jest to zaznaczone w nagłówku pliku.
+### Zarzut 3 — pominięcie `trimProposalForZeroBalance` dla cyklicznej: PRZYJMUJĘ (bez zmiany kodu; ocena pozostaje decyzją właściciela)
+Uczciwość po zmianie nadal chroniona przez (aktualne linie w `gra/src/main.ts`):
+- 20992: `balancedPayload = clampedPayload` (tylko dla `zaproponuj_wymiane_cykliczna`; trim dla innych typów bez zmian);
+- 21015–21016: filtr bilansu PW gracza (`aiProposalPlayerBenefitSurplus` z `pnCyclicOpts`);
+- 21030–21032: `resolveProposalPn(balancedPayload, pnCyclicOpts)` + `handelFairnessGate(givePn, receivePn, …)` — bramka uczciwości;
+- 21037: `previewIncomingPlayerAccept` — gracz nadal widzi podgląd „Przyjmij”;
+- 24291: `fairnessGate` w `pickAiPlayerCyclicBarter` (wybór pary).
+`aiOneshotHandelOverpaysPlayer` (`gra/src/game/diplomacy-proposals.ts`) NIE jest zmieniony w r3 (diff r3 dotyczy wyłącznie `main.ts`). Zgadzam się z oceną Evaluatora „ryzyko niskie”; nie zmieniam kodu.
 
-**Zarzut 4 (niski, porównywalność i etykiety): PRZYJMUJĘ jako fakt; nie przeliczam evidence.**
-- Potwierdzam: w `evidence/base-econ-cd15/cell-s1111-r80.json` bucket to `noCdNoMeDeficit`, w `evidence/cd5/cell-s1111-r80.json` to `noCdPairNullBothSides`. Liczby dla tych samych tur są zgodne (14 = 14), ale etykiety są różne. Mapowanie: `noCdNoMeDeficit` (stara etykieta, bez `resourceDeficitKeysForOwner`) = `noCdPairNullBothSides` (nowa).
-- Poprawka: nie przeliczam ponownie evidence bazy (NIE_ZMIERZONO), tylko zapisuję mapowanie tutaj.
-- Agregat `cdBlockedPairOrProbe` z dispatchu nie istnieje w repo (potwierdzone wcześniej: grep 0 trafień).
-- Obsługa bramki NNS (dosypania 27/23/28) nadal oznacza, że wynik 0,22 nie jest porównywalny z 0,89 z r4. Zapisane w 10-operator-claude.md.
+### Zarzut 4 — spadek tur z parą (121–137 → 2–5 na 150): PRZYJMUJĘ jako otwarty problem; przyczyna wskazana kodowo, NIE_ZMIERZONO eksperymentem
+- Fakt (dane z `evidence/r3-diag` i `evidence/r3-fix3`, pole `funnel`): baza 126/137/121 tur z parą poza cooldownem; po poprawce `noCdPair` = 0 na każdym ziarnie, `cdWithPair` = 2/5/3.
+- Przyczyna (rozumowanie z kodu, nie zmierzone): wyszukiwanie pary (`pickAiPlayerCyclicBarter`) odbywa się PRZED wejściem na stół i PRZED `pnCyclicOpts`/bez-trimu. Jedyna zmiana r3 działająca na etapie wyszukiwania to dodatkowy warunek `payloadKeepsRealResourcesForPick` (`gra/src/main.ts` ok. 24297–24305, dołożony do `evaluateExactPayload`): para przechodzi tylko, gdy `clampNegotiationPayloadToRealResources` (z `turnsMult`=10) NIE zmienia koszyka. W scenariuszu ECON (zapasy gracza 400/0) ten clamp obcina stronę gracza, więc para odpada. Zmiany (a) i (b) nie mogą zmniejszyć liczby znalezionych par, bo działają po wyborze.
+- NIE_ZMIERZONO: eksperyment „r3 bez warunku `payloadKeepsRealResourcesForPick`” NIE został wykonany w tej rundzie (wymagałby pomiaru >400 s); dlatego przyczynowość jest wnioskiem z kodu, nie z pomiaru. Dlaczego clamp obcina gracza w ECON, też NIE_ZMIERZONO.
+- Konsekwencja dla decyzji (bez dostrajania): wybór pary sprawdza teraz wykonalność na cały czas wymiany — to uczciwe, ale ogranicza liczbę ofert. Opcje dla właściciela (jak w 10-operator-claude.md „DECYZJA”): C (mniejsza paczka zamiast odrzucania pary, nowy mechanizm, nie zmierzony) albo B (sprawdzać zasoby na 1 turę — zmiana reguły wykonalności, wymaga ABC).
 
-**Zarzut 5 (niski, zakres pomiaru): PRZYJMUJĘ zakres niedoskonały; ODRZUCAM wymóg pomiaru relacji 20 i 50.**
-- Przyjmuję: symulowana ekonomia (zapasy 400/0 przez `setStock`, bez produkcji i wielu miast) jest przybliżeniem realnej gospodarki. Zapisane jako NIE_ZMIERZONO.
-- Odrzucam: dispatch (00-dispatch-DODATEK-claude.md, DODATEK 1, pkt 1) mówi wprost „relacje nie mają wpływu — nie mnóż”. Pomiar na jednej relacji (80) jest zgodny z dispatchem. Zmiana pomiaru w tym miejscu nie jest uprawniona.
+### Zarzut 5 — liczby testu w raporcie są nieaktualne: PRZYJMUJĘ (poprawione)
+Stare liczby (12 asercji, 4 OK/7 FAIL, 9 OK/2 FAIL) dotyczyły testu sprzed scalenia. Aktualne, z surowego wyjścia:
+- kandydat 86f4dc316 (po scaleniu): `28 pass, 0 fail`, exit 0;
+- baza 6612d1596 (`gra/src/main.ts` podmieniony na chwilę `git show 6612d1596:gra/src/main.ts`, potem `git checkout -- gra/src/main.ts`): `20 pass, 8 fail`, exit 1; wszystkie 8 FAIL to asercje [R3-B];
+- mutacja (linia `resolveProposalPn(balancedPayload, pnCyclicOpts)` → `pnBalanceOpts`, potem przywrócenie): `26 pass, 2 fail`, exit 1 (FAIL: „bramka wejścia na stół … używa pnCyclicOpts”, „brak starej bramki na pnBalanceOpts”).
+Poprawiono w `10-operator-claude.md`.
 
-## TESTY (surowe wyniki, ta obrona, na 9ecf93179)
+### Zarzut 6 — opis lejka nieścisły: PRZYJMUJĘ (poprawione)
+Lejek sumuje się dokładnie do 150 tur na ziarno: cdTurns + noCdPair + noCdNoPair = 150 (s1111: 15 + 0 + 135; s2222: 15 + 0 + 135; s3333: 30 + 0 + 120). noCdNoPair = noCdNoAiSurplus + noCdPairNullBothSides (s1111: 6 + 129; s2222: 7 + 128; s3333: 6 + 114). Zdanie „kategorie się nakładają” było błędne i zostało usunięte z `10-operator-claude.md`. Tabela w raporcie przepisana z pól JSON `funnel`.
 
-- `node tools/ai-trade-offer-frequency-up-test.cjs` (w gra/): `=== ai-trade-offer-frequency-up-test: 17 pass, 0 fail ===`, exit 0.
-- Mutacja (ai-params cooldown 15 → 5, `sed` na pierwszej wartości 15, potem przywrócone do 15): `=== ai-trade-offer-frequency-up-test: 13 pass, 4 fail ===`, exit 1 (FAIL: wartość 15 vs 5, AI_TRADE_BARTER_COOLDOWN_TURNS=5, FAIL „14. tura po propozycji zablokowana” i „tura 24 (14 tur po) zablokowane”). Dowód mutacyjny działa.
-- `node tools/ai-trade-proposal-branch-test.cjs`: `10 passed, 0 failed`, exit 0.
-- `node tools/ai-trade-proposal-to-player-test.cjs`: `25 assertions passed`, exit 0.
-- Pięć bramek referencyjnych (exit kody z tej obrony): `logic-test` exit 0; `tech-tree-test` exit 0; `research-test` exit 0; `unit-replace-test` exit 0; `combat-test` exit 0.
-- `npx tsc --noEmit` (gra/): exit 0.
-- `git diff --check --cached` przed commitem: czysto.
-- Znany dług (nie z tej rundy, nie naprawiany): `ai-trade-oneshot-overpay-limit-test` FAIL na bazie 359d2df9c (zgodnie z Evaluatorem).
-- Pomiar w grze (10-operator, evidence) NIE powtarzany w tej obronie — NIE_ZMIERZONO.
+### Zarzut 7 — białe znaki w `10-operator-claude.md:21`: PRZYJMUJĘ (naprawione)
+Usunięto końcową spację w linii „Lejek po poprawce …”. `git diff --check 6612d1596 86f4dc316` wykazywało tylko tę linię; po poprawce sprawdzenie na zakończonym commicie ma być puste (wynik w sekcji TESTY).
 
-## BLOKADY / DECYZJA WŁAŚCICIELA
+### Zarzut 8 — wydajność `payloadKeepsRealResourcesForPick` nie zmierzona: PRZYJMUJĘ jako NIE_ZMIERZONO
+Nie mierzono kosztu (clamp + `JSON.stringify` na kandydata) per tura per AI. Zostaje jako NIE_ZMIERZONO; nie ma dowodu regresji wydajności ani jego braku.
 
-GOAL (3–6/100 tur) nie osiągnięty; zmierzone 0,22/100 tur. Opcje z 10-operator-claude.md, z uwagami tej obrony:
-- **O1** (wyrównanie wyceny wejścia na stół z wyborem pary: `tempoGry` + `proposalPnTurnsMultiplier` w `pnBalanceOpts`, ewentualnie `actionId`): wymaga zgody właściciela (zmienia bramkę w grze), potem runda 3 z pomiarem 3×150 tur i testem parytetu wyceny.
-- **O2** (cooldown 5 bez O1): odrzucone w tej obronie — brak efektu, podnosi sufit spamu.
-- **O3** (cooldown 15, zostaje): wdrożone w tym commicie jako stan obecny.
-Wniosek o ryzyku spamu: limit 1 aktywnej oferty na AI zachowany w kodzie (źródłowo); odstęp = cooldown 15 tur; teoretyczny sufit ~6,7 ofert/100 tur/AI przy cooldownie 15; zmierzone 0,22.
+## TESTY (surowe wyniki w tej obronie)
+- `./node_modules/.bin/tsc --noEmit` w `gra/` → exit 0, 0 linii wyjścia. (`npm ci` w worktree tylko do zainstalowania zależności do testów; nie uruchamiano `npm run build/dev`.)
+- `node tools/ai-trade-offer-frequency-up-test.cjs` na 86f4dc316 → `28 pass, 0 fail`, exit 0.
+- Baza i mutacja: patrz zarzut 5 (wartości z surowego wyjścia konsoli).
+- `git diff --check` po commicie: patrz sekcja poniżej (uzupełnione przed commitem).
+- Bramki referencyjne (logic, tech-tree, research, unit-replace, combat, ai-trade-proposal-branch, ai-trade-proposal-to-player) NIE powtórzone w tej obronie — kod gry nie zmieniał się względem 86f4dc316, a ich wyniki są w 10-operator-claude.md (z r3).
+- Dług bazowy `ai-trade-oneshot-overpay-limit-test` (czerwony na bazie) — nie naprawiany (dispatch r3 pkt 5), tylko odnotowany.
 
-## RUNDY
-
-Runda 2/5 (obrona w obrębie tej rundy). Kolejna runda (3/5) dopiero po decyzji O1/O3.
-
-## NASTĘPNY KROK
-
-Orkiestrator (właściciel): decyzja O1 albo zamknięcie tematu z wynikiem 0,22/100 tur (O3). Evaluator/FC ponownie po zmianach w tej obronie. Integracja dopiero po decyzji.
+## BLOKADY
+- Konflikt add/add `10-operator-claude.md` (r2 vs r3) — do rozstrzygnięcia przez integratora.
+- Decyzja właściciela A/B/C/D (DECISION_REQUIRED) — bez zmiany w tej obronie.
+- NIE_ZMIERZONO: eksperyment bez warunku `payloadKeepsRealResourcesForPick`; przyczyna zaniku clampu w ECON; koszt wydajności; zachowanie limitu 1 oferty i odstępu na żywo.
 
 ## UWAGI-DLA-ORKIESTRATORA
+- Merge `d64cd5d46` (main) do gałęzi przerwany — nie wykonany; integrator powinien zrobić merge z pełnym przeglądem diffu (`git merge-base --is-ancestor 86f4dc316 <SHA>`, zgodnie z zasadą 5 w CLAUDE.md).
+- Dług `ai-trade-oneshot-overpay-limit-test` (czerwony) — osobny temat (zgłoszony także w KOLEJKA jako #379).
 
-- Wrażliwy dług: `ai-trade-oneshot-overpay-limit-test` czerwony na bazie (osobny temat testowy).
-- Drobna różnica `actionId` (`converted.actionId` vs `'handel'`) między `pnBalanceOpts` a `pnOpts` (main.ts l. 20958 vs 24249) — do sprawdzenia w rundzie 3, jeśli zostanie wybrane O1.
-- Dług Rust: REPIN ai-params (cooldown) dopiero, jeśli wartość zmieni się w integracji (obecnie bez zmiany względem bazy).
+## RUNDY
+3/5 (ta obrona nie otwiera nowej rundy Operatora).
 
-NIE_ZMIERZONO: efekt O1; rozkład odrzuceń po ziarnach; limit „1 aktywna oferta” w pełnej grze; relacje 20 i 50 (poza zakresem wg DODATEK 1); realizm ekonomii (symulowany).
+## NASTĘPNY KROK
+Evaluator: ponowna ocena 2 commitów (kod bez zmian + test scalony + poprawka raportu). Orkiestrator: decyzja właściciela A/B/C/D; ewentualnie osobny pomiar wariantu bez `payloadKeepsRealResourcesForPick` (NIE_ZMIERZONO), by potwierdzić przyczynę z zarzutu 4.
 
-DEPLOY/PUSH: NIE WYKONANO
+## DEPLOY/PUSH: NIE WYKONANO

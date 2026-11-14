@@ -1,95 +1,82 @@
-# R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 — Operator, runda 2/5 (raport)
+# R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 — Operator, runda 3/5 (O1: parytet wyceny)
 
 STATUS: DECISION_REQUIRED
-DOMAIN: GAME (oferty handlowe AI→gracz; pomiar w pełnej grze)
+DOMAIN: GAME (oferty handlowe AI->gracz, pomiar w pełnej grze)
 TEMAT: R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1
-GOAL: w scenariuszu „prepared” z ekonomią gracza (3 ziarna × 150 tur) oferty AI→gracz 3–6 na 100 tur, bez spamu.
-BAZA: origin/main 359d2df9c (FALA 713). Pierwsza runda (63cb4e12b) zakończyła się decyzją o rozszerzeniu pomiaru; ta runda wykonuje OPCJĘ A (scenariusz z ekonomią) i OPCJĘ D (cooldown 15→5).
+GOAL: w scenariuszu „prepared” z ekonomią gracza (3 ziarna × 150 tur) oferty AI->gracz 3–6 na 100 tur, bez spamu.
+BAZA: 6612d1596 (origin/main, dispatch r3). Kod poprawki: ten commit (czubek).
+ZMIANY-COMMIT: gra/src/main.ts, gra/tools/measure-ai-trade-offer-frequency.cjs (MEAS_ECON + lejek, przeniesione z db887a9c1), gra/tools/ai-trade-offer-frequency-up-test.cjs (nowy), runs/R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1/** (raport + evidence). gra/data/ai-params.json NIE zmieniono (cooldown propozycji 15, bez zmiany).
 
-## WYNIK (liczby z surowych JSON, nie z pamięci)
+## WYNIK (liczby z surowych JSON, evidence/)
 
-Scenariusz: `MEAS_ARM=prepared MEAS_ECON=1 MEAS_REL=80 MEAS_TURNS=150`, ziarna 1111/2222/3333, tryb przyspieszony, realny endTurn.
-ECON = zapasy surowców gracza ustawione hakiem `setStock` (parzyste klucze 400 = nadwyżka, nieparzyste 0), to symulacja STANU, nie produkcji. Relacja przypięta na 80 (jedna wartość; wg dispatchu relacja nie mnożona).
+Scenariusz: MEAS_ARM=prepared MEAS_ECON=1 MEAS_REL=80 MEAS_TURNS=150, ziarna 1111/2222/3333, tryb przyspieszony, realny endTurn.
 
-| wariant | ziarno 1111 | ziarno 2222 | ziarno 3333 | razem | ofert /100 tur |
+| wariant | s1111 | s2222 | s3333 | razem | ofert /100 tur |
 |---|---|---|---|---|---|
-| baza (cooldown 15) | 0 | 0 | 1 (tura 21, sol→glina, „Przyjmij” aktywne) | 1 / 450 tur | **0,22** |
-| cooldown 5 (D) | 0 | 0 | 1 (ta sama tura 21) | 1 / 450 tur | **0,22** |
+| baza (6612d15), r3-diag | 0 | 0 | 1 | 1 / 450 | 0,22 |
+| po parytecie (r3-fix3) | 1 (sol->glina) | 1 (sol->glina) | 2 (sol->glina, drewno->glina) | 4 / 450 | **0,89** |
 
-Cel 3–6 /100 tur NIE osiągnięty. Cooldown 15→5 nie zmienił wyniku (w 3333 jedyna oferta była przed pierwszym cooldownem).
-Dla porównania r4 (scenariusz bez ekonomii, bez obsługi bramki NNS) dawał 0,89; wynik sprzed obsługi NNS nie jest porównywalny (patrz „Narzędzie”).
+Cel 3–6/100 NIE osiągnięty (0,89). Rozkład: 1/0,67/0,67/1,33 na 100 tur per ziarno; nie wszystkie 3 relacje (relacja przypięta na 80, jedna wartość; nie mnożona, zgodnie z dispatchem).
 
-Surowe pliki: `evidence/base-econ-cd15/cell-s<ziarno>-r80.json`, `evidence/cd5/cell-s<ziarno>-r80.json`, podsumowania `summary.md` w obu katalogach. Każdy JSON zawiera `perTurn`, `offerLog`, `funnel`, `funnelLog`.
+Lejek po poprawce (r3-fix3, 150 tur na ziarno; wartości z pola `funnel` w evidence/r3-fix3/cell-*-r80.json):
+| ziarno | tury pod cooldownem (cdTurns) | z parą w cooldownie (cdWithPair) | poza cooldownem z parą (noCdPair) | poza cooldownem bez pary (noCdNoPair) | w tym: brak nadwyżki AI (noCdNoAiSurplus) | w tym: para null po obu stronach (noCdPairNullBothSides) | ofert |
+|---|---|---|---|---|---|---|---|
+| 1111 | 15 | 2 | 0 | 135 | 6 | 129 | 1 |
+| 2222 | 15 | 5 | 0 | 135 | 7 | 128 | 1 |
+| 3333 | 30 | 3 | 0 | 120 | 6 | 114 | 2 |
 
-## DIAGNOZA — który warunek odcina (dane z lejka, per tura)
+Uwaga (poprawiona w obronie r3, zarzuty Evaluatora 6): kategorie sumują się dokładnie do 150 tur na ziarno: cdTurns + noCdPair + noCdNoPair = 150 (np. s1111: 15 + 0 + 135). noCdNoPair = noCdNoAiSurplus + noCdPairNullBothSides (np. s1111: 6 + 129 = 135). „pod cooldownem” = tury z aktywnym cooldownem propozycji (cdTurns); cdWithPair to podzbiór tur w cooldownie, w których para istniała. Przed poprawką (baza, r3-diag) pary były znajdowane w 121–137 turach, ale ofert było 0–1. Przyczyna spadku liczby tur z parą po poprawce: patrz 30-obrona-claude.md, odp. na zarzut 4.
 
-Lejek (`funnel` w JSON; zlicza tury BEZ aktywnego cooldownu propozycji):
+## DIAGNOZA (dane, nie domysły; evidence/r3-diag/ — instrumentacja tylko logująca, cofnięta)
 
-| ziarno | tury z cooldownem | tury: sonda znalazła parę (`probeBarter`) | tury: brak pary, brak nadwyżki AI | tury: brak pary mimo obu stron | ofert |
-|---|---|---|---|---|---|
-| 1111 | 0 | 129 | 7 | 14 | 0 |
-| 2222 | 0 | 139 | 8 | 3 | 0 |
-| 3333 | 15 (baza) / 5 (D) | 119 / 129 | 6 | 10 | 1 |
+Warunek odcinający w bazie: wybrana para NIE docierała na stół, bo wycena na wejściu różniła się od wyceny wyboru pary:
+1. Mnożnik tur: pick liczył PN z `proposalPnTurnsMultiplier` (×10), wejście na stół (`pnBalanceOpts`) nie. Dane: enqGive=10 vs pickGive=100 (s1111, s3333), 15 vs 150 (s2222) — dokładnie ×turns w każdym wierszu. Pick i wejście liczyły ten sam payload różnymi skalami.
+2. Trim po wyborze pary (`trimProposalForZeroBalance`) zmieniał wybrany koszyk: receive 10 -> 0 (po trimie zostawało „AI daje za darmo”), bramka givePn > receivePn odcinała ofertę.
+3. Clamp do realnych zasobów wejścia (`clampNegotiationPayloadToRealResources`, turnsMult = 10) usuwał stronę gracza, gdy gracz nie miał zasobu na cały czas wymiany. Wybór pary sprawdzał tylko nadwyżkę na turę, więc wybierał pary nieosiągalne.
+Cooldown NIE był ogranicznikiem (zgodnie z r2).
 
-Wniosek 1. Cooldown NIE jest głównym ogranicznikiem: w 1111 i 2222 cooldown nigdy nie działał, a pary istnieją w 119–139 turach na 150.
-Wniosek 2. Brak nadwyżki AI (7–8 tur) i brak uczciwej pary (3–14 tur) to wąskie gardło tylko w ~10% tur.
-Wniosek 3 (główny): **pary znalezione przez sondę NIE trafiają na stół**. Instrumentowany przebieg (tymczasowe logi w `main.ts`, cofnięte; dane w `evidence/diag-gt-drop-s1111-cd15.json`): w buforze z ostatnich 30 prób propozycji (tury ~121–150, ziarno 1111, cooldown 15) każda próba doszła do wejścia na stół i została odrzucona przez bramkę `givePn > receivePn` (main.ts, blok `zaproponuj_wymiane_cykliczna`). Przykład: AI daje cegla×20, dostaje ruda_zelaza×10; wycena przy wejściu na stół `givePn=10`, `receivePn=0`.
-Przyczyna prawdopodobna (NIE potwierdzona dalszym pomiarem): wycena w ścieżce wejścia na stół (`pnBalanceOpts`, main.ts ~l. 20958) nie dostaje `...proposalPnTurnsMultiplier(payload)` ani `tempoGry`, które są w `pnOpts` wyboru pary (`pickAiPlayerCyclicBarter`, main.ts ~l. 24249). Wybór pary i bramka wejścia liczą więc tę samą ofertę różnymi wycenami. Dowód pośredni: jedna oferta (sol→glina, tura 21) przeszła, więc odcięcie zależy od pozycji.
+## POPRAWKA (parytet, bez obniżania wymogu uczciwości)
 
-Lejek ma błąd etykiet w wersji bazowej: bucket „brak deficytu gracza” nie uwzględniał `resourceDeficitKeysForOwner` (używanego przez wybór pary). Naprawione w narzędziu przed serią D (bucket przemianowany na `noCdPairNullBothSides`; w bazie wartości te same tury). Agregat `cdBlockedPairOrProbe` wskazany w dispatchu NIE istnieje w repozytorium (grep: 0 trafień) — NIE_ZMIERZONO jako osobny byt, zastąpiony powyższym lejkiem.
+- `gra/src/main.ts`, ścieżka AI->gracz (`zaproponuj_wymiane_cykliczna`):
+  a) `pnCyclicOpts` = `pnBalanceOpts` + `tempoGry` + `proposalPnTurnsMultiplier(clampedPayload)` — używane w filtrze bilansu PW i bramce givePn/receivePn (dla innych typów: bez zmian, to ten sam obiekt).
+  b) Dla wymiany cyklicznej trim po wyborze jest POMIJANY (`balancedPayload = clampedPayload`). Uzasadnienie: wybór pary już sprawdza te same PN, bramkę uczciwości i podgląd gracza („Przyjmij”); trim zmieniał wybrany koszyk. Filtr bilansu PW i podgląd gracza nadal działają. **Decyzja do oceny Evaluatora** (zmiana zachowania trimu dla wymiany cyklicznej).
+  c) `pickAiPlayerCyclicBarter` → `evaluateExactPayload` dodatkowo wymaga `payloadKeepsRealResourcesForPick` (clamp nie zmienia koszyka). Wybierane są tylko pary wykonalne przez cały czas wymiany.
+- Brak zmian w ai-params.json, cooldownach, bramkach NNS i wojny/kontaktu/technologii.
 
-## ZMIANY (commit)
-
-1. `gra/data/ai-params.json` — `propozycja_wymiany_surowcow_cooldown_tur`: **15 → 5** (jedyna zmiana danych; zgodnie z opcją D). Przed: 15. Po: 5. Uwaga: przy cooldownie 5 i limicie 1 aktywnej oferty teoretyczny sufit wynosi 20 ofert /100 tur na AI (przy 15: ~6,7). Zmierzony wynik to 0,22, więc sufit nie jest osiągany — ale decyzję o wartości podejmuje właściciel (łatwe cofnięcie do 15).
-2. `gra/tools/measure-ai-trade-offer-frequency.cjs` — narzędzie pomiarowe (nie gra):
-   - `MEAS_ECON=1` — zapasy surowców gracza (`setStock`).
-   - Lejek per tura (`funnel`, `funnelLog`) — sonda `probeBarter` + `diag` przed endTurn.
-   - Obsługa bramki NNS „Zakończ turę” (od tury 11, `NNS_WOLNE_TURY=10`): skrypt dosypuje dodatnie zasoby hakami `grantPlayerGold`/`grantPlayerFood` (licznik `nnsGrants`: 27/23/28). Bez tego każdy przebieg zatrzymywał się w turze 11 (`[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)`), co wcześniej wyglądało jak wolny endTurn. Ta zmiana wpływa na porównywalność z r4.
-   - `MEAS_CD_TURNS` — cooldown używany przez lejek.
-3. `gra/tools/ai-trade-offer-frequency-up-test.cjs` (nowy) — 10 asercji: cooldown=5 (ai-params i ai.ts), odstęp 5 tur (`canAiProposeResourceTrade`), limit 1 aktywnej oferty i bramki wojny/kontaktu (źródłowo w main.ts/ai.ts — to sprawdzenie obecności kodu, NIE zachowania w grze).
-4. `gra/tools/ai-trade-proposal-branch-test.cjs` — asercje E0–E2 zaktualizowane do cooldownu 5 (dawniej twarde 15; bez tej zmiany test był czerwony po D).
-5. `gra/tools/ai-trade-proposal-to-player-test.cjs` — asercja cooldownu zaktualizowana do 5 (j.w.).
-6. `evidence/` — surowe JSON-y pomiarów, podsumowania i diagnostyka `diag-gt-drop-s1111-cd15.json`.
-
-NIE zmieniano `gra/src/main.ts` (instrumentacja cofnięta, `git diff` pokazuje brak zmian w grze poza ai-params.json).
+Wniosek o ryzyku spamu (dla przyszłej decyzji): po poprawce max 2 oferty/AI/150 tur w pomiarze (1,33/100 tur). Teoretyczny sufit przy cooldownie propozycji 15 tur i limicie 1 aktywnej oferty na parę: ~6,7 ofert/100 tur/AI. Pomiar go nie osiąga (głównie brak wykonalnej pary).
 
 ## TESTY (surowe wyniki)
 
 - `npx tsc --noEmit` → exit 0.
-- Bramki referencyjne: `logic-test` 213/213; `tech-tree-test` 20 pass 0 fail; `research-test` 33/0; `unit-replace-test` 21/21; `combat-test` 6/6; `unit-power-test` 6 pass 0 fail.
-- `ai-trade-offer-frequency-up-test.cjs`: 10 pass, 0 fail na zmianie. **Dowód mutacyjny**: z cooldownem 15 (stan bazy) → 3 FAIL (`wartosc = 15`, `AI_TRADE_BARTER_COOLDOWN_TURNS = 15`, „tura 5 po propozycji dozwolona”) → test czerwony na bazie.
-- `ai-trade-proposal-branch-test.cjs`: 10 passed, 0 failed (po aktualizacji asercji E0–E2).
-- `ai-trade-proposal-to-player-test.cjs`: exit 0 (po aktualizacji asercji).
-- `ai-trade-oneshot-overpay-limit-test.cjs`: FAIL — `main.ts enqueue filter calls aiOneshotHandelOverpaysPlayer(converted.actionId, workingCmd.type, balancedPayload, pnBalanceOpts) -> return` (asercja tekstowa). `main.ts` nie zmieniono względem bazy, więc porażka istnieje także na 359d2df9c (NIE spowodowana tą rundą). Nieusuwane w tej rundzie.
-- `git diff --check` na zmienionych plikach śledzonych: czysto.
-- Pomiar: 6 przebiegów × 150 tur (3 ziarna × 2 warianty), wszystkie `koniec przebiegu`, bez blokad technicznych.
+- Bramki referencyjne (node tools/…): logic-test „LOGIC OK (213/213)”; tech-tree-test „20 pass, 0 fail”; research-test „PASSED: 33 / FAILED: 0”; unit-replace-test exit 0 (wszystkie [OK]); combat-test „All sanity checks passed.”; ai-trade-proposal-branch-test „10 passed, 0 failed”; ai-trade-proposal-to-player-test „25 assertions passed”.
+- Test `gra/tools/ai-trade-offer-frequency-up-test.cjs` (po obronie r3: scalony z testem r2, jeden plik, zarzut 1 Evaluatora): „=== ai-trade-offer-frequency-up-test: 28 pass, 0 fail ===” (exit 0). Części: [R2-1..R2-4] (cooldown=15, odstęp, bramki decideAIDiplomacy, limit/zapis cooldownu — źródłowo); [R3-A] zachowanie silnika (mnożnik per_turn); [R3-B] strażnik źródła parytetu w main.ts (pnCyclicOpts, brak trimu dla cyklicznej, bramka na pnCyclicOpts, evaluateExactPayload z payloadKeepsRealResourcesForPick).
+  - Czerwony na bazie 6612d15 (main.ts z 6612d15 podmieniony na chwilę, potem przywrócony): „=== … 20 pass, 8 fail ===” (exit 1); wszystkie 8 FAIL to asercje [R3-B].
+  - Dowód mutacyjny (w main.ts linia 21030 `resolveProposalPn(balancedPayload, pnCyclicOpts)` zamieniona na `pnBalanceOpts`): „=== … 26 pass, 2 fail ===” (exit 1; FAIL: „bramka wejścia na stół … używa pnCyclicOpts”, „brak starej bramki na pnBalanceOpts…”). Plik main.ts przywrócony (git diff 86f4dc316 -- gra/src/main.ts puste).
+- `gra/tools/ai-trade-oneshot-overpay-limit-test.cjs`: exit 1 — znany dług z bazy (asercja tekstowa „main.ts enqueue filter calls aiOneshotHandelOverpaysPlayer(...)”); linia wywołania NIE zmieniona (sprawdzone grep: 1 trafienie w bazie i w poprawce). Nie naprawiano (dispatch r3 pkt 5).
+- `git diff --check`: czysto.
+- NIE_ZMIERZONO: zachowanie limitu „1 aktywna oferta/AI” i odstępu 15 tur na żywo (test r3 sprawdza tylko wartość cooldownu i strażnika parytetu; dedup/limit to istniejący kod). Nie dodano testu behawioralnego limitu/odstępu.
 
-## BLOKADY / DECYZJA WŁAŚCICIELA
+## DECYZJA WŁAŚCICIELA (wymagana)
 
-GOAL nieosiągnięty bez zmiany wyceny w ścieżce wejścia na stół (dyspozycja: „jeśli nie da się bez zmiany uczciwości — DECISION_REQUIRED”). Opcje:
+Parytet usunął błąd (0,22 -> 0,89/100 tur; 4 oferty zamiast 1), ale cel 3–6 wymaga zmiany reguły. Opcje:
+- A. Przyjąć 0,89/100 tur jako wynik parytetu i zamknąć temat (cel nieosiągnięty, udokumentowany).
+- B. Sprawdzać zasoby gracza przy wyborze pary tylko na 1 turę zamiast na cały czas wymiany (10 tur). Więcej par, ale oferty, których gracz nie udźwignie przez czas wymiany. Zmiana reguły wykonalności (wymaga ABC).
+- C. Dobierać mniejszą paczkę (giveQty/receiveQty) do realnych zasobów zamiast odrzucać parę. Najmniej zmienia zasady gry (oferta zostaje w pełni wykonalna), ale to nowy mechanizm — nie zmierzono.
+- D. Zmienić scenariusz pomiaru (realna produkcja zamiast stanu ECON). To zmiana pomiaru, nie gry.
+Rekomendacja orkiestratora: C (nowy temat + pomiar); NIE_ZMIERZONO, czy C osiągnie 3–6.
 
-- **O1 (rekomendowana, wymaga zgody):** wyrównać wycenę wejścia na stół z wyborem pary — dodać do `pnBalanceOpts` (main.ts ~l. 20958) `...proposalPnTurnsMultiplier(balancedPayload)` i `tempoGry` (jak w `pnOpts` ~l. 24249). Bramka `givePn <= receivePn` i uczciwość zostają bez zmian (oferta nadal „na plus”, liczona tą samą wyceną co już przepuszczona przez wybór). Skutek liczbowy NIE zmierzony — wymaga rundy 3 tym samym narzędziem (3 ziarna × 150 tur). Zmienia zachowanie istniejącej bramki, więc wymaga potwierdzenia właściciela.
-- **O2:** zostawić cooldown 5 bez O1 — wynik 0,22/100 tur, cel nieosiągnięty; ryzyko spamu praktycznie zerowe, ale bez korzyści.
-- **O3:** cofnąć cooldown do 15 (jedna linia w ai-params.json; testy wymagają wtedy powrotu asercji w 3 plikach testów).
-- Odrzucone: obniżenie wymagań uczciwości (sprzeczne z decyzją „oferta na plus”).
+## EVIDENCE
 
-Ryzyko spamu (wniosek): limit 1 aktywnej oferty na AI jest zachowany; odstęp = cooldown. Maks. teoretyczne 20/100 tur przy cd 5 (6,7 przy cd 15). Zmierzone 0,22/100 tur; przy O1 wynik trzeba zmierzyć przed wdrożeniem.
+- runs/R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1/evidence/r3-base/ — baza (ECON), s1111, pełny JSON + log.
+- runs/R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1/evidence/r3-diag/ — baza + instrumentacja [R3PN] (enq vs pick PN), s1111/s2222/s3333 (cofnięta po pomiarze).
+- runs/R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1/evidence/r3-fix3/ — poprawka (finalna), s1111/s2222/s3333.
+- Pośrednie kroki (poprawka bez trimu / bez clampu pick) są opisane powyżej; ich surowe pliki usunięto z worktree, bo nie są wynikiem finalnym.
 
-Dług (do REPIN Rust): `ai-params.json` (cooldown 5) oraz ewentualna zmiana wyceny z O1.
+## TEMATY POZA ZAKRESEM (UWAGI-DLA-ORKIESTRATORA)
 
-## RUNDY
+- ai-trade-oneshot-overpay-limit-test: czerwony na bazie (dług, osobny temat).
+- Dispatch r2 wskazywał `cdBlockedPairOrProbe` (agregat nieistniejący w repo) — pominięty, zastąpiony lejkiem.
 
-Runda 2/5 (ta). Kolejna runda (3/5) dopiero po decyzji O1/O2/O3.
-
-## NASTĘPNY KROK
-
-Właściciel wybiera O1/O2/O3. Przy O1: runda 3 — zmiana wyceny w main.ts (allowlista), test parytetu wyceny (wejście na stół = wybór pary dla tego samego payloadu), pomiar 3×150 tur tym samym narzędziem, aktualizacja funnelu. Przy O2/O3: zamknięcie tematu z wynikiem 0,22/100 tur.
-
-## NIE_ZMIERZONO
-
-- Efekt O1 (liczba ofert po zmianie wyceny) — nie zmierzono.
-- Przyczyna rozbieżności wycen: wskazana na podstawie jednego instrumentowanego przebiegu (ziarno 1111, ostatnie 30 prób) i porównania wycen z kodu; pełnego rozkładu odrzuceń po ziarnach nie zmierzono.
-- Zachowanie gry w scenariuszu bez ECON (r4) po obsłudze NNS — nie powtórzono.
-- Bramki „brak technologii handlu / brak kontaktu / wojna / NNS gracza” są sprawdzone tylko źródłowo.
-
-DEPLOY/PUSH: NIE WYKONANO
+NASTĘPNY KROK: decyzja właściciela A/B/C/D (po niej ewentualnie r4 Operator lub zamknięcie); Evaluator: ocena zmiany trimu dla wymiany cyklicznej (pkt b).
+RUNDY: 3/5.
+DEPLOY/PUSH: NIE WYKONANO.

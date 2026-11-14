@@ -1,20 +1,22 @@
 'use strict';
 /**
- * ai-trade-offer-frequency-up-test.cjs — R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 (obrona r2).
+ * ai-trade-offer-frequency-up-test.cjs — R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1.
  *
- * Strażnik odstępu i limitu propozycji cyklicznej wymiany AI -> gracz.
- * Runda 2 cofnęła zmianę cooldownu 15 -> 5 (zarzut 1 Evaluatora: brak zmierzonego efektu,
- * cooldown nie był ogranicznikiem). Wartość 15 jest wartością właściciela; każda zmiana
- * wymaga decyzji właściciela (O1/O2/O3 w 10-operator-claude.md / 30-obrona-claude.md).
+ * Jeden test regresji dla tematu (scalony w obronie r3 z testem r2, zarzut 1 Evaluatora).
  *
- *   [1] cooldown = 15 (ai-params.json i ai.ts) — strażnik przed nieplanowaną zmianą (dowód mutacyjny: 5 -> FAIL).
- *   [2] odstęp (zachowanie): canAiProposeResourceTrade blokuje tury 1..14 po propozycji, dozwala od 15.
- *   [3] bramki (zachowanie, decideAIDiplomacy z ai.ts): brak kontaktu, wojna, brak oferty,
- *       cooldown (14 tur blokuje, 15 dozwala), partner inny niż gracz -> brak komendy.
- *   [4] limit 1 aktywnej oferty i zapis cooldownu (źródłowo, main.ts): hasPendingBarter w bramce,
- *       zapis aiResourceBarterLastProposalTurn dopiero przy wstawieniu oferty na stół.
- *       Uwaga: pkt 4 sprawdza obecność kodu, nie zachowanie w rozgrywce; zachowanie w pełnej grze
- *       mierzy gra/tools/measure-ai-trade-offer-frequency*.cjs (NIE_ZMIERZONO tutaj).
+ *  [R2-1] cooldown propozycji = 15 (ai-params.json i ai.ts) — strażnik wartości właściciela.
+ *  [R2-2] odstęp (zachowanie): canAiProposeResourceTrade blokuje tury 1..14 po propozycji, dozwala od 15.
+ *  [R2-3] bramki (zachowanie, decideAIDiplomacy z ai.ts): brak kontaktu, wojna, brak oferty,
+ *         cooldown (14 tur blokuje, 15 dozwala), partner inny niż gracz -> brak komendy.
+ *  [R2-4] limit 1 aktywnej oferty i zapis cooldownu (ŹRÓDŁOWO, main.ts): hasPendingBarter w bramce,
+ *         zapis aiResourceBarterLastProposalTurn dopiero przy wstawieniu oferty na stół.
+ *         Uwaga: [R2-4] sprawdza obecność kodu, nie zachowanie w rozgrywce (enqueue żyje w closure boot();
+ *         NIE_ZMIERZONO tutaj — zachowanie mierzy gra/tools/measure-ai-trade-offer-frequency*.cjs).
+ *  [R3-A] zachowanie silnika: ten sam payload per_turn daje PN x turnsMultiplier (parytet wyceny),
+ *         opcje z mnożnikiem = opcje wyboru pary.
+ *  [R3-B] strażnik źródła parytetu w main.ts: wymiana cykliczna wyceniana pnCyclicOpts
+ *         (mnożnik tur + tempoGry) w filtrze bilansu i bramce givePn/receivePn; bez trimu po wyborze;
+ *         wybór pary wymaga payloadKeepsRealResourcesForPick.
  *
  * Uruchom z katalogu gra/:  node tools/ai-trade-offer-frequency-up-test.cjs
  */
@@ -28,12 +30,16 @@ const entry = path.resolve(__dirname, '.ai-trade-offer-frequency-up-entry.ts');
 fs.writeFileSync(entry, `
 export { AI_TRADE_BARTER_COOLDOWN_TURNS, decideAIDiplomacy } from '../src/game/ai.ts';
 export { canAiProposeResourceTrade } from '../src/game/diplomacy-economy.ts';
+export { resolveProposalPn, proposalPnTurnsMultiplier } from '../src/game/diplomacy-pn-engine.ts';
 `);
 esbuild.buildSync({
   entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', outfile: bundle,
   absWorkingDir: GRA, logLevel: 'silent',
 });
-const { AI_TRADE_BARTER_COOLDOWN_TURNS, decideAIDiplomacy, canAiProposeResourceTrade } = require(bundle);
+const {
+  AI_TRADE_BARTER_COOLDOWN_TURNS, decideAIDiplomacy, canAiProposeResourceTrade,
+  resolveProposalPn, proposalPnTurnsMultiplier,
+} = require(bundle);
 
 let pass = 0;
 let fail = 0;
@@ -71,13 +77,13 @@ function run(relOver, turn, lastProposalTurn) {
 }
 const barterCmds = (cmds) => cmds.filter(c => c.type === 'zaproponuj_wymiane_cykliczna');
 
-console.log('[1] cooldown propozycji cyklicznej (strażnik wartości właściciela)');
+console.log('[R2-1] cooldown propozycji cyklicznej (strażnik wartości właściciela)');
 check(paramsRaw.propozycja_wymiany_surowcow_cooldown_tur.wartosc === 15,
   `ai-params.json propozycja_wymiany_surowcow_cooldown_tur = 15 (jest ${paramsRaw.propozycja_wymiany_surowcow_cooldown_tur.wartosc})`);
 check(AI_TRADE_BARTER_COOLDOWN_TURNS === 15,
   `AI_TRADE_BARTER_COOLDOWN_TURNS (ai.ts) = 15 (jest ${AI_TRADE_BARTER_COOLDOWN_TURNS})`);
 
-console.log('[2] odstęp między propozycjami tej samej AI (zachowanie)');
+console.log('[R2-2] odstęp między propozycjami tej samej AI (zachowanie)');
 const last = 40;
 check(canAiProposeResourceTrade(last + 14, last, AI_TRADE_BARTER_COOLDOWN_TURNS) === false,
   'w 14. turze po propozycji (przed upływem cooldownu 15) propozycja zablokowana');
@@ -86,7 +92,7 @@ check(canAiProposeResourceTrade(last + 15, last, AI_TRADE_BARTER_COOLDOWN_TURNS)
 check(canAiProposeResourceTrade(last + 1, undefined, AI_TRADE_BARTER_COOLDOWN_TURNS) === true,
   'AI bez poprzedniej propozycji może zaproponować');
 
-console.log('[3] bramki decyzji AI (zachowanie, decideAIDiplomacy)');
+console.log('[R2-3] bramki decyzji AI (zachowanie, decideAIDiplomacy)');
 check(barterCmds(run({})).length === 1, 'pełne warunki -> dokładnie jedna komenda zaproponuj_wymiane_cykliczna');
 check(barterCmds(run({ contactEstablished: false })).length === 0, 'brak kontaktu -> brak oferty');
 check(barterCmds(run({ stanWojny: true })).length === 0, 'wojna -> brak oferty');
@@ -95,7 +101,7 @@ check(barterCmds(run({ partnerId: '3' })).length === 0, 'partner inny niż gracz
 check(barterCmds(run({}, 24, 10)).length === 0, 'tura 24, ostatnia propozycja 10 (14 tur po) -> zablokowane');
 check(barterCmds(run({}, 25, 10)).length === 1, 'tura 25, ostatnia propozycja 10 (15 tur po) -> dozwolone');
 
-console.log('[4] limit 1 aktywnej oferty i zapis cooldownu (źródłowo, main.ts)');
+console.log('[R2-4] limit 1 aktywnej oferty i zapis cooldownu (ŹRÓDŁOWO, main.ts; NIE_ZMIERZONO na żywo)');
 const gateRe = /const resourceBarterOffer = relStatus !== 'wojna'[\s\S]*?&& !hasPendingBarter[\s\S]*?canAiProposeResourceTrade\(\s*turn, aiResourceBarterLastProposalTurn\.get\(ownerId\), AI_TRADE_BARTER_COOLDOWN_TURNS,/;
 check(gateRe.test(mainSrc), 'resourceBarterOffer: wojna wyklucza, brak oferty w toku (!hasPendingBarter), cooldown AI_TRADE_BARTER_COOLDOWN_TURNS');
 check(/n\.aiCyclicBarter && n\.proposerOwnerId === ownerId && n\.responderOwnerId === ME\(\)/.test(mainSrc),
@@ -106,6 +112,40 @@ check(/!rel\.stanWojny && rel\.partnerId === '0' && rel\.contactEstablished === 
   'ai.ts: propozycja cykliczna wymaga braku wojny, kontaktu i cooldownu (AI_TRADE_BARTER_COOLDOWN_TURNS)');
 check(/diplomaticContactEstablishedSet\(\)\.has\(ownerId\)/.test(mainSrc),
   'main.ts: propozycja wymaga ustanowionego kontaktu dyplomatycznego');
+
+console.log('[R3-A] parytet wyceny: zachowanie silnika (per_turn x turnsMultiplier = opcje wyboru pary)');
+const turns = 10;
+const payload = {
+  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 20 }],
+  receiveItems: [{ typ: 'surowiec_ilosc', id: 'zelazo', ilosc: 5 }],
+  resourceTradeMode: 'per_turn',
+  turns,
+  exchangeDurationTurns: turns,
+};
+const baseOpts = { difficulty: 'normal', proposerOwnerId: 1, playerOwnerId: 0, actionId: 'handel', tempoGry: 'standardowa' };
+const withoutMult = resolveProposalPn(payload, baseOpts);
+const withMult = resolveProposalPn(payload, { ...baseOpts, ...proposalPnTurnsMultiplier(payload) });
+check(proposalPnTurnsMultiplier(payload).turnsMultiplier === turns, 'mnożnik tur dla per_turn = turns');
+check(withMult.givePn > withoutMult.givePn, `z mnożnikiem give PN rośnie (${withoutMult.givePn} -> ${withMult.givePn})`);
+check(withMult.givePn > 0 && Math.abs(withMult.givePn - withoutMult.givePn * turns) <= turns,
+  'give PN z mnożnikiem ~ turns x bez mnożnika (wycena liniowa w turach)');
+
+console.log('[R3-B] strażnik źródła parytetu w main.ts (wymiana cykliczna)');
+const defM = /const pnCyclicOpts = workingCmd\.type === 'zaproponuj_wymiane_cykliczna'([\s\S]*?): pnBalanceOpts;/.exec(mainSrc);
+check(!!defM, 'main.ts definiuje pnCyclicOpts dla zaproponuj_wymiane_cykliczna');
+const defBody = defM ? defM[1] : '';
+check(/proposalPnTurnsMultiplier\(clampedPayload\)/.test(defBody), 'pnCyclicOpts zawiera mnożnik tur (proposalPnTurnsMultiplier)');
+check(/tempoGry:\s*player\.tempoGry/.test(defBody), 'pnCyclicOpts zawiera tempoGry gracza');
+check(/const balancedPayload = workingCmd\.type === 'zaproponuj_wymiane_cykliczna'\s*\?\s*clampedPayload/.test(mainSrc),
+  'wymiana cykliczna nie przechodzi trimu po wyborze pary (payload = wybrany)');
+check(/aiProposalPlayerBenefitSurplus\(balancedPayload, relationTotal\(relForBalance\), pnCyclicOpts\)/.test(mainSrc),
+  'filtr bilansu PW używa pnCyclicOpts');
+check(/resolveProposalPn\(balancedPayload, pnCyclicOpts\)/.test(mainSrc),
+  'bramka wejścia na stół (givePn/receivePn) używa pnCyclicOpts');
+check(!/const \{ givePn, receivePn \} = resolveProposalPn\(balancedPayload, pnBalanceOpts\);/.test(mainSrc),
+  'brak starej bramki na pnBalanceOpts dla wymiany cyklicznej');
+check(/payloadKeepsRealResourcesForPick\(ownerId, payload\)/.test(mainSrc),
+  'wybór pary (evaluateExactPayload) wymaga, by clamp do realnych zasobów nie zmieniał koszyka');
 
 console.log(`\n=== ai-trade-offer-frequency-up-test: ${pass} pass, ${fail} fail ===`);
 try { fs.unlinkSync(entry); fs.unlinkSync(bundle); } catch (_) { /* sprzątanie best-effort */ }
