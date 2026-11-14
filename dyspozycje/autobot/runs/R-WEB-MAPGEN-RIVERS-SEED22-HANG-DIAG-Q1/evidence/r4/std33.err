@@ -1,0 +1,14 @@
+CNT t=96s {"growRiverInlandBeforeDrainage":1}
+CNT t=106s {"growRiverInlandBeforeDrainage":1050,"estimateLandCentroidFromSeed":1050,"aStarRiverToSea":1050,"aStarRiverToTarget":1127}
+CNT t=116s {"growRiverInlandBeforeDrainage":2212,"estimateLandCentroidFromSeed":2212,"aStarRiverToSea":2212,"aStarRiverToTarget":1877}
+CNT t=126s {"growRiverInlandBeforeDrainage":2801,"estimateLandCentroidFromSeed":2801,"aStarRiverToSea":2801,"aStarRiverToTarget":2290}
+CNT t=136s {"growRiverInlandBeforeDrainage":3235,"estimateLandCentroidFromSeed":3235,"aStarRiverToSea":3235,"aStarRiverToTarget":2549}
+CNT t=146s {"growRiverInlandBeforeDrainage":3699,"estimateLandCentroidFromSeed":3699,"aStarRiverToSea":3699,"aStarRiverToTarget":2874}
+CNT t=156s {"growRiverInlandBeforeDrainage":4101,"estimateLandCentroidFromSeed":4101,"aStarRiverToSea":4101,"aStarRiverToTarget":3129}
+CNT t=166s {"growRiverInlandBeforeDrainage":4714,"estimateLandCentroidFromSeed":4714,"aStarRiverToSea":4714,"aStarRiverToTarget":3703}
+CNT t=176s {"growRiverInlandBeforeDrainage":5550,"estimateLandCentroidFromSeed":5549,"aStarRiverToSea":5549,"aStarRiverToTarget":4248}
+CNT t=186s {"growRiverInlandBeforeDrainage":6092,"estimateLandCentroidFromSeed":6092,"aStarRiverToSea":6092,"aStarRiverToTarget":4500}
+CNT t=196s {"growRiverInlandBeforeDrainage":6843,"estimateLandCentroidFromSeed":6843,"aStarRiverToSea":6843,"aStarRiverToTarget":4870}
+CNT t=206s {"growRiverInlandBeforeDrainage":7498,"estimateLandCentroidFromSeed":7498,"aStarRiverToSea":7498,"aStarRiverToTarget":5173}
+
+# ADNOTACJA (runda 4): plik urwany (strumien CNT przerwany przed DONE/CHECKSUM/COUNTERS). Pelny log: std33.log.txt
