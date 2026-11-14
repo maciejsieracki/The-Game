@@ -22770,6 +22770,10 @@ async function boot(): Promise<void> {
     // R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1: ile punktów % udziału podatku gracz może
     // dodać (pełny podział na podatek minus obecny); 0 = brak danych. Zasila propozycję podatku do zera.
     let _nnsPodatekPunkty = 0;
+    // r3 (C): przyrost skarbca PO TURZE (delta względem prognozy bazowej) dla kolejnych kroków suwaka podatku
+    // (+10, +20, ... pkt % kosztem Nauki), liczony TĄ SAMĄ projekcją (previewCityEconomy) co prognoza bramki.
+    // Zasila propozycjaPodatkuKrokami przez `prognozaPoPodatku`. Pusta tablica = brak danych / brak potrzeby.
+    let _nnsTaxStepDeltas: Array<{ pkt: number; delta: number }> = [];
     function refreshLiveEmpireRates(): void {
       if (!empireEconDirty) return;   // D10: przelicz tylko po zmianie (trigger), nie co odświeżenie
       empireEconDirty = false;
@@ -22922,13 +22926,16 @@ async function boot(): Promise<void> {
       _nnsPodatekZysk = 0;
       _nnsRacjeZysk = 0;
       _nnsPodatekPunkty = 0;
+      _nnsTaxStepDeltas = [];
       // R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1 (Dodatek 2): prognoza PO REAKCJI automatu
       // na koniec tury. Tick (blok „SPICH-AUTO-Q1” przy rozliczeniu Spichlerza) najpierw obniża racje miast
       // z Auto-Żywieniem (autoBalanceRationsToSolvency), dopiero potem liczy advanceEmpireFood. Tu ta sama
       // kolejność na świeżym podglądzie ekonomii; racje miast są przywracane w finally (stan nietknięty).
       _nnsAutoSpichlerzDelta = undefined;
-      if (_nnsHumanForecast !== null && _nnsHumanForecast.spichlerzPo < 0
-        && playerCities.some(c => isCityAutoWyzywienieEnabled(c))) {
+      // r3 (D5 pkt 2 i 4): projekcja odtwarza PEŁNĄ ścieżkę ticku racji — autoBalanceRationsToSolvency (tylko miasta z
+      // Auto-Żywieniem), autoRaiseRationsForGrowth (parytet z tickiem: gracz, requireProductionSurplus) i clamp Q3
+      // (maxSafePoziomRacjiForCity dla WSZYSTKICH miast gracza, także z Auto wyłączonym) — i zawsze przywraca stan miast.
+      if (_nnsHumanForecast !== null) {
         const savedAutoRacje = playerCities.map(c => ({ c, poziom: c.poziomRacji, procent: c.procentRozwoj }));
         try {
           const previewDomyslny = () => previewCityEconomy(
@@ -22978,8 +22985,40 @@ async function boot(): Promise<void> {
             kosztArmii: kosztArmiiProj,
             popCapByCityId: popCapProj,
           });
-          if (autoRes.adjusted) {
-            // Ponowny podgląd ekonomii PO korekcie racji (racje miast już obniżone przez automat).
+          // r3: raise (gracz) + Q3 clamp — ta sama kolejność co w triggerPlayerEndTurn.
+          const raiseRes = autoRaiseRationsForGrowth({
+            ownerId: ME(),
+            cities: playerCities,
+            econ: econPrzed as unknown as Parameters<typeof autoRaiseRationsForGrowth>[0]['econ'],
+            zapasyPrzed: empireFoodStates.get(ME())?.zapasyPanstwa ?? 0,
+            rationParams: nnsEfParams.rationParams,
+            spichlerzByCity: spichlerzByCityProj,
+            requireProductionSurplus: true,
+            onlyAutoManaged: true,
+            kosztArmii: kosztArmiiProj,
+            popCapByCityId: popCapProj,
+          });
+          if (autoRes.adjusted || raiseRes.adjusted) {
+            recomputeCityFoodBalancesInEcon(
+              econPrzed.perCity as unknown as Parameters<typeof recomputeCityFoodBalancesInEcon>[0], playerCities,
+              nnsEfParams.rationParams, spichlerzByCityProj,
+            );
+            refreshEconomyFoodTotals(econPrzed as unknown as Parameters<typeof refreshEconomyFoodTotals>[0]);
+          }
+          let clampedProj = false;
+          for (const c of playerCities) {
+            const maxSafeProj = maxSafePoziomRacjiForCity({
+              cityId: c.id, ownerId: ME(), cities: playerCities,
+              econ: econPrzed as unknown as Parameters<typeof maxSafePoziomRacjiForCity>[0]['econ'],
+              zapasyPrzed: empireFoodStates.get(ME())?.zapasyPanstwa ?? 0,
+              rationParams: nnsEfParams.rationParams,
+              spichlerzByCity: spichlerzByCityProj,
+              popCapByCityId: popCapProj,
+            });
+            if (getCityRationLevel(c) > maxSafeProj) { c.poziomRacji = maxSafeProj; clampedProj = true; }
+          }
+          if (autoRes.adjusted || raiseRes.adjusted || clampedProj) {
+            // Ponowny podgląd ekonomii PO korekcie racji (racje miast już zmienione przez automat / clamp).
             const econPo = previewDomyslny();
             const fAuto = projectEmpireFoodAfterTick({
               ownerId: ME(),
@@ -23022,6 +23061,20 @@ async function boot(): Promise<void> {
             const pAlt = previewWithSplit(new Map(ownerDefaultPodzialHandlu).set(ME(), altSplit));
             _nnsPodatekZysk = Math.max(0, sumEconomyForPlayerCities(pAlt, cities).pieniadz - playerEcon.pieniadz);
             _nnsPodatekPunkty = Math.max(0, altSplit.procentPieniadz - meSplit.procentPieniadz);
+            // r3 (C): kroki suwaka po 10 pkt % (ta sama projekcja); stop na pierwszym kroku dającym prognozę ≥ 0.
+            if (_nnsHumanForecast.skarbiecPo < 0) {
+              for (let pkt = 10; pkt <= _nnsPodatekPunkty + 9; pkt += 10) {
+                const krok = Math.min(pkt, _nnsPodatekPunkty);
+                const stepSplit = normalizePodzialHandlu({
+                  procentNauka: meSplit.procentNauka - krok, procentLuksus: meSplit.procentLuksus,
+                  procentPieniadz: meSplit.procentPieniadz + krok,
+                });
+                const pStep = previewWithSplit(new Map(ownerDefaultPodzialHandlu).set(ME(), stepSplit));
+                const dStep = sumEconomyForPlayerCities(pStep, cities).pieniadz - playerEcon.pieniadz;
+                _nnsTaxStepDeltas.push({ pkt: krok, delta: dStep });
+                if (_nnsHumanForecast.skarbiecPo + dStep >= 0 || krok >= _nnsPodatekPunkty) break;
+              }
+            }
           }
           if (_nnsHumanForecast.spichlerzPo < 0 && playerCities.some(c => c.poziomRacji !== 0 || c.procentRozwoj !== 0)) {
             const savedRacje = playerCities.map(c => ({ c, poziom: c.poziomRacji, procent: c.procentRozwoj }));
@@ -23049,6 +23102,7 @@ async function boot(): Promise<void> {
           _nnsPodatekZysk = 0;
           _nnsRacjeZysk = 0;
           _nnsPodatekPunkty = 0;
+          _nnsTaxStepDeltas = [];
           console.error('[NNS] dźwignie podatku/racji gracza nie powiodły się — bramka bez tych dźwigni:', errLev);
         }
       }
@@ -31831,6 +31885,58 @@ async function boot(): Promise<void> {
         unitCount: (oid: number): number => units.filter(u => u.ownerId === oid).length,
         /** Dosypuje złota graczowi (runner nie gra — bramka „Zakończ turę” gracza nie może zatrzymać pomiaru AI). */
         grantPlayerGold: (n: number): void => { const ps = playerStateByHuman.get(ME()); if (ps) ps.skarbiec += n; },
+        // R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1 (r3): hooki pomiarowe bramki gracza (TYLKO ?civTest=1).
+        // Surowy odczyt + ustawienie STANU wyjściowego scenariusza (saldo, podział podatków, racje); logikę bramki liczy gra.
+        gateInfo: () => {
+          const g = nnsGateForPlayer();
+          const f = _nnsHumanForecast;
+          return {
+            gate: g,
+            canEnd: canPlayerInitiateEndTurn(),
+            turn,
+            forecast: f ? { ...f } : null,
+            treasury: playerStateByHuman.get(ME())?.skarbiec ?? 0,
+            granary: empireFoodStates.get(ME())?.zapasyPanstwa ?? 0,
+            podatekPunkty: _nnsPodatekPunkty,
+            podatekZysk: _nnsPodatekZysk,
+            racjeZysk: _nnsRacjeZysk,
+            autoSpichlerzDelta: _nnsAutoSpichlerzDelta ?? null,
+            taxSteps: _nnsTaxStepDeltas.slice(),
+          };
+        },
+        setPlayerTreasury: (v: number): void => { const ps = playerStateByHuman.get(ME()); if (ps) ps.skarbiec = v; markCityStateDirty(); updateHud(); },
+        setPlayerGranary: (v: number): void => { const st = empireFoodStates.get(ME()); if (st) st.zapasyPanstwa = v; markCityStateDirty(); updateHud(); },
+        getTaxSplit: () => ({ ...(ownerDefaultPodzialHandlu.get(ME()) ?? DEFAULT_PODZIAL_HANDLU) }),
+        setTaxSplit: (p: number, n: number, l: number): { procentPieniadz: number; procentNauka: number; procentLuksus: number } => {
+          const s = normalizePodzialHandlu({ procentPieniadz: p, procentNauka: n, procentLuksus: l });
+          ownerDefaultPodzialHandlu.set(ME(), s);
+          markCityStateDirty();
+          updateHud();
+          return s;
+        },
+        setAutoWyz: (on: boolean): number => {
+          let k = 0;
+          for (const c of cities) if (isMe(c.ownerId)) { c.autoWyzywienie = on; k++; }
+          markCityStateDirty();
+          updateHud();
+          return k;
+        },
+        setRationAll: (level: number): number => {
+          let k = 0;
+          for (const c of cities) if (isMe(c.ownerId)) { c.poziomRacji = level; k++; }
+          markCityStateDirty();
+          updateHud();
+          return k;
+        },
+        cityRations: () => cities.filter(c => isMe(c.ownerId)).map(c => ({ id: c.id, poziomRacji: c.poziomRacji ?? null, auto: c.autoWyzywienie === true })),
+        /** Stan miast gracza (racje) i podziału — do testu braku efektów ubocznych projekcji. */
+        gateStateFingerprint: (): string => JSON.stringify({
+          r: cities.filter(c => isMe(c.ownerId)).map(c => [c.id, c.poziomRacji ?? null, c.procentRozwoj ?? null]),
+          s: ownerDefaultPodzialHandlu.get(ME()) ?? null,
+          t: playerStateByHuman.get(ME())?.skarbiec ?? 0,
+          g: empireFoodStates.get(ME())?.zapasyPanstwa ?? 0,
+        }),
+        forceGateRecompute: (): void => { markCityStateDirty(); updateHud(); },
       };
     }
 
@@ -39691,9 +39797,19 @@ async function boot(): Promise<void> {
         podatekSkarbiec: _nnsPodatekZysk,
         suwakZywnosc: _nnsRacjeZysk,
         podatekPunkty: _nnsPodatekPunkty,
+        // r3 (C): propozycja podatku krokami 10% z projekcji (skarbiec po turze = żywy skarbiec + delta prognozy + delta kroku).
+        ...(_nnsTaxStepDeltas.length > 0
+          ? {
+            prognozaPoPodatku: (pkt: number): number => {
+              let d = _nnsTaxStepDeltas[_nnsTaxStepDeltas.length - 1]!;
+              for (const st of _nnsTaxStepDeltas) { if (st.pkt >= pkt) { d = st; break; } }
+              return live.skarbiecPo + d.delta;
+            },
+          }
+          : {}),
         // Dodatek 2: reakcja automatu (Auto-Żywienie) liczona na żywym stanie spichlerza, tak jak `live`.
         ...(_nnsAutoSpichlerzDelta !== undefined
-          ? { automat: { spichlerzPo: spLive + _nnsAutoSpichlerzDelta } }
+          ? { automat: { spichlerzPo: live.spichlerzPo + _nnsAutoSpichlerzDelta } }
           : {}),
       };
       return decideEndTurnGate(live, _nnsZyskSkarbiec, _nnsZyskSpichlerz, levers);

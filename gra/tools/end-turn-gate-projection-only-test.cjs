@@ -133,8 +133,34 @@ for (const t of [1, 20]) {
     '(10a) main.ts: delta spichlerza po automacie liczona z projekcji po autoBalanceRationsToSolvency');
   ok(/autoBalanceRationsToSolvency\(\{[\s\S]*?onlyAutoManaged: true,[\s\S]*?\}\);/.test(mainSrc),
     '(10b) main.ts: projekcja wywołuje autoBalanceRationsToSolvency z onlyAutoManaged: true');
-  ok(/automat: \{ spichlerzPo: spLive \+ _nnsAutoSpichlerzDelta \}/.test(mainSrc),
+  ok(/automat: \{ spichlerzPo: live\.spichlerzPo \+ _nnsAutoSpichlerzDelta \}/.test(mainSrc),
     '(10c) main.ts: nnsGateForPlayer przekazuje automat (spichlerzPo na żywym stanie) do decideEndTurnGate');
+}
+
+// (11) r3: wiring main.ts (strukturalny; main.ts nie jest importowalny) — mutacja: usunięcie wpięcia -> FAIL.
+{
+  const mainSrc = fs.readFileSync(path.resolve(GRA_ROOT, 'src', 'main.ts'), 'utf8');
+  ok(/prognozaPoPodatku: \(pkt: number\): number =>/.test(mainSrc) && /_nnsTaxStepDeltas\.push\(/.test(mainSrc),
+    '(11a) main.ts: nnsGateForPlayer przekazuje prognozaPoPodatku (kroki 10% z projekcji previewCityEconomy) do decideEndTurnGate');
+  ok(/autoRaiseRationsForGrowth\(\{[\s\S]*?requireProductionSurplus: true,[\s\S]*?onlyAutoManaged: true,/.test(mainSrc),
+    '(11b) main.ts: projekcja odtwarza autoRaiseRationsForGrowth (parytet z tickiem, gracz)');
+  ok(/maxSafePoziomRacjiForCity\(\{\s*cityId: c\.id, ownerId: ME\(\), cities: playerCities,/.test(mainSrc),
+    '(11c) main.ts: projekcja odtwarza clamp Q3 (maxSafePoziomRacjiForCity dla wszystkich miast gracza)');
+  ok(/for \(const sv of savedAutoRacje\) \{ sv\.c\.poziomRacji = sv\.poziom; sv\.c\.procentRozwoj = sv\.procent; \}/.test(mainSrc),
+    '(11d) main.ts: projekcja przywraca racje miast w finally (brak efektów ubocznych)');
+  ok(!/NNS_WOLNE_TURY/.test(mainSrc), '(11e) main.ts: brak odwołań do NNS_WOLNE_TURY (wyjątek tur 1–10 dla gracza usunięty)');
+}
+
+// (12) r3: kształt wyniku dla R-WEB-UI-END-TURN-BLOCK-EVENT-Q1 (stabilne API): pola i typy.
+{
+  const g = M.decideEndTurnGate(proj(20, 5, -12, 0, 0), 0, 0, { podatekSkarbiec: 20, podatekPunkty: 60, prognozaPoPodatku: (pkt) => -12 + pkt / 5 });
+  const keys = Object.keys(g).sort().join(',');
+  ok(keys === 'automatPoprawil,blokada,dzwignie,komunikat,niewystarczajace,prognoza,propozycjaPodatku,zasob',
+    '(12a) NnsGateResult ma stabilny zestaw pól: ' + keys);
+  ok(g.zasob === 'skarbiec' && g.prognoza === -12 && g.propozycjaPodatku && g.propozycjaPodatku.punktyProcentowe === 60,
+    '(12b) skarbiec -12: zasob, prognoza po turze, propozycja podatku (krok 60 = minimalny dający >= 0)');
+  ok(/po zakończeniu tury zabraknie 12/.test(g.komunikat) && /Podnieś podatek o 60 pkt/.test(g.komunikat),
+    '(12c) komunikat: „po zakończeniu tury” + prognozowana kwota + propozycja podatku');
 }
 
 fs.rmSync(ENTRY, { force: true });
@@ -174,7 +200,7 @@ fs.rmSync(BUNDLE, { force: true });
 
   // Częściowa dźwignia (zysk < brak) -> brak blokady, ale flaga niewystarczające dla UI.
   const g3 = M.decideEndTurnGate(proj(20, 5, -50, 0, 0), 0, 0, { podatekSkarbiec: 10, podatekPunkty: 10 });
-  ok(g3.blokada === false && g3.niewystarczajace === true, 'r2: dźwignia częściowa -> bez blokady, flaga niewystarczające = true');
+  ok(g3.blokada === true && g3.niewystarczajace === true, 'r3 (DODATEK 6): dźwignia częściowa istnieje -> blokada, flaga niewystarczające = true');
 
   // Brak jakiejkolwiek dźwigni -> brak blokady, flaga false (nic do zgłoszenia).
   const g4 = M.decideEndTurnGate(proj(20, 5, -50, 0, 0), 0, 0, {});

@@ -64,7 +64,7 @@ function proj(turn, skObecny, skPo, spObecny, spPo) {
 // (c) brak ruchu naprawczego -> brak blokady stalej
 {
   const g = M.decideEndTurnGate(proj(11, 5, -20, 0, 0), 10, 0);
-  ok(g.blokada === false, '(c) zysk dzwigni < brak -> brak blokady (brak zakleszczenia)');
+  ok(g.blokada === true && g.niewystarczajace === true, '(c) r3: zysk dzwigni < brak, ale dzwignia istnieje -> blokada + niewystarczajace (uzyta dzwignia ma zysk 0, wiec brak zakleszczenia)');
   const g0 = M.decideEndTurnGate(proj(11, 5, -20, 0, 0), 0, 0);
   ok(g0.blokada === false, '(c) brak jakichkolwiek dzwigni -> brak blokady');
 }
@@ -73,7 +73,7 @@ function proj(turn, skObecny, skPo, spObecny, spPo) {
   const g = M.decideEndTurnGate(proj(11, 0, 0, 3, -7), 0, 10);
   ok(g.blokada === true && /Spichlerz/.test(g.komunikat), '(a-spich) spichlerz < 0 z dzwignia -> blokada, nazwa zasobu');
   const g2 = M.decideEndTurnGate(proj(11, 0, 0, 3, -7), 0, 5);
-  ok(g2.blokada === false, '(c-spich) dzwignia spichlerza za mala -> brak blokady');
+  ok(g2.blokada === true && g2.niewystarczajace === true, '(c-spich) r3: dzwignia spichlerza za mala, ale istnieje -> blokada + niewystarczajace');
 }
 // (d) R-WEB-...-FROM-TURN1-Q1: stan ujemny, prognoza nadal < 0 -> blokada (prognoza nadrzedna)
 {

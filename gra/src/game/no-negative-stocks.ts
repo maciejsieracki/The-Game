@@ -485,19 +485,23 @@ export function decideEndTurnGate(
     { id: 'rozwiaz-skarbiec', rodzaj: 'rozwiazanie', stock: 'skarbiec', zysk: zyskNieujemny(zyskSkarbiec), koszt: 0, eliminujeCywilizacje: false },
     { id: 'rozwiaz-spichlerz', rodzaj: 'rozwiazanie', stock: 'spichlerz', zysk: zyskNieujemny(zyskSpichlerz), koszt: 0, eliminujeCywilizacje: false },
   ];
-  if (!czyRuchNaprawczy(v.brakuje, levers)) {
-    // Brak ręcznej dźwigni, która pokryje brak = brak blokady (bez martwego punktu / softlocku).
-    // r2: jeśli jakakolwiek dźwignia istnieje (częściowo pokrywa), flaga „niewystarczające” idzie do UI.
+  // r3 (DODATEK 6): „brak ręcznej dźwigni = brak blokady” (bez martwego punktu), ale gdy dla JAKIEGOKOLWIEK zasobu na
+  // minusie istnieje realna, niewykorzystana dźwignia (zysk > 0: podatek / racja / rozwiązanie jednostek),
+  // blokada obowiązuje — także gdy jej pełne użycie nie pokrywa braku (flaga `niewystarczajace`).
+  // Brak softlocku: użyta dźwignia ma zysk 0, więc po jej wyczerpaniu blokada znika.
+  const brakujeZDzwignia = v.brakuje.filter(b => levers.some(l => l.stock === b.stock && l.zysk > 0 && !l.eliminujeCywilizacje));
+  if (brakujeZDzwignia.length === 0) {
     return {
       blokada: false, komunikat: '', dzwignie: [], zasob: null, prognoza: null, propozycjaPodatku: null,
-      automatPoprawil, niewystarczajace: levers.some(l => l.zysk > 0),
+      automatPoprawil, niewystarczajace: false,
     };
   }
+  const pokryte = czyRuchNaprawczy(brakujeZDzwignia, levers) && brakujeZDzwignia.length === v.brakuje.length;
   const dzwignie: NnsGateLever[] = levers
     .filter(l => l.zysk > 0)
     .map(l => ({ id: l.id, stock: l.stock, zysk: l.zysk, opis: opisDzwigni(l) }));
   // Pierwszy zasób na minusie (po automacie): skarbiec ma pierwszeństwo w komunikacie.
-  const pierwszy = v.brakuje[0]!;
+  const pierwszy = brakujeZDzwignia[0]!;
   let propozycjaPodatku: NnsPropozycjaPodatku | null = null;
   let niewystarczajace = false;
   if (v.brakuje.some(b => b.stock === 'skarbiec')) {
@@ -511,9 +515,11 @@ export function decideEndTurnGate(
     // r2 (zarzut 7/8): nawet maksymalny podatek nie wystarcza do zera skarbca.
     niewystarczajace = propozycjaPodatku === null;
   }
+  // r3: suma dźwigni danego zasobu nie pokrywa braku (np. spichlerz: racje + jednostki < brak).
+  if (!pokryte) niewystarczajace = true;
   return {
     blokada: true,
-    komunikat: komunikatBramki(v.brakuje, dzwignie),
+    komunikat: komunikatBramki(v.brakuje, dzwignie) + komunikatPodatku(propozycjaPodatku, niewystarczajace),
     dzwignie,
     zasob: pierwszy.stock,
     prognoza: pPoAutomacie[pierwszy.stock === 'skarbiec' ? 'skarbiecPo' : 'spichlerzPo'],
@@ -521,6 +527,13 @@ export function decideEndTurnGate(
     automatPoprawil,
     niewystarczajace,
   };
+}
+
+/** Dopisek do komunikatu bramki: propozycja podatku („chociażby na zero”) albo informacja, że maksymalny podatek nie wystarcza. */
+function komunikatPodatku(p: NnsPropozycjaPodatku | null, niewystarczajace: boolean): string {
+  if (p) return ` Podnieś podatek o ${p.punktyProcentowe} pkt % (kosztem Nauki), aby skarbiec po zakończeniu tury wyszedł co najmniej na zero.`;
+  if (niewystarczajace) return ' Nawet maksymalny podatek nie wystarczy — zmniejsz wydatki (rozwiąż jednostki).';
+  return '';
 }
 
 /** Propozycja podniesienia podatku, żeby prognoza skarbca po turze była ≥ 0 („chociażby na zero”). */
