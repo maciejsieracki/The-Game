@@ -445,7 +445,10 @@ export function balancePanelDataFromRows(
     myBalance,
     canAccept,
     extraOnTable: 0,
-    responderPreview: canAccept ? base.responderPreview : { accepted: false, reason: blockReason },
+    // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (zarzut 6): wiersz Z zostaje widoczny także przy zablokowanym wierszu.
+    responderPreview: canAccept
+      ? base.responderPreview
+      : { accepted: false, reason: blockReason, wearinessPw: base.responderPreview?.wearinessPw },
   };
 }
 

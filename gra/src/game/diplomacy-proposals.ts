@@ -1409,8 +1409,9 @@ export function evaluateProposal(
             ? resolveProposalPn({ giveItems: cityItems, actionId }, pnOpts).givePn
             : 0;
           // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: silna AI nadal wymaga miasta o wartości PEŁNEJ ceny C
-          // (regula siły bez wygasania, R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1). Z zmęczenia obniża tylko
-          // wymaganą dopłatę R dla pozostałych przypadków; nie znosi bramki militarnej. DECISION_REQUIRED (raport).
+          // (regula siły bez wygasania, R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1; testy C1/C2 diplo-peace-balance-accept
+          // i S3b/S3c diplo-war-peace-sim czerwieniały przy wymaganiu R = C − Z). Rozjazd z tabelą przy Z = C
+          // = DECISION_REQUIRED (raport, sekcja BLOKADY).
           if (!(cityGivePn >= cenaPokojuPn)) {
             return {
               accepted: false,
