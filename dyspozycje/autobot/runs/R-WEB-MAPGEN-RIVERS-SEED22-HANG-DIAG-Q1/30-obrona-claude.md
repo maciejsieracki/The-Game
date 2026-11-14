@@ -61,3 +61,25 @@ DEPLOY/PUSH: NIE WYKONANO
 1. Główny wniosek nie zmienił się: seed 22 kończy się (478–718 s, zależnie od hosta), liczniki `estimateLandCentroidFromSeed` są stałe i większe niż dla 11/33 (1,5–3×), przyczyną jest BFS bez cache w `growRiverInlandBeforeDrainage` przy braku `landCentroid`. Defekt to wydajność/UX, nie nieskończona pętla.
 2. Decyzja ABC przed tematem naprawczym: zmiana centroidu zmienia wynik generacji (CHECKSUM b329b72a dla 11, 9f0c2884 dla Mały 22, 36b49da9 dla 33 mogą się zmienić).
 3. Allowlista: pliki `.ts`/`.sh` wymagają świadomej akceptacji orkiestratora (zarzut 6).
+
+## RUNDA 5 — odpowiedź na zarzuty Evaluatora (kandydat 0b6e687f7, baza cacc8b1d4)
+
+Każdy zarzut: PRZYJMUJĘ (poprawka + dowód) albo ODRZUCAM (dowód). Poprawki w `10-operator-claude.md` (ERRATA 7–9 i zmienione wiersze/werdykt).
+
+**Zarzut 1 ((c) PRZYCZYNA zamiast NIE_ZMIERZONO) — PRZYJMUJĘ.** Wiersz (c) zmieniony na NIE_ZMIERZONO (obserwacja korelacyjna). Czysta para na tym samym hoście: `evidence/r4/plain22.log.txt` `DONE seed=22 maly t=96.16s`, `evidence/r4/instr22.log.txt` `DONE seed=22 maly t=99.15s` — narzut instrumentacji ≈3%, nie obciążenie.
+
+**Zarzut 2 (rozrzut „zależnie od obciążenia hosta”) — PRZYJMUJĘ.** Werdykt i UWAGA 1 przepisane na zmierzony zakres (Standardowy seed 22: 478–718 s); przyczyna rozrzutu NIE_ZMIERZONO. Dodatkowo sprawdzone: przebieg „503 s” nie ma pliku w repo (wartość tylko z notatki Operatora); `evidence/r3/logs/s22-*.out` nie zawierają odczytu load; jedyny zapisany load to `evidence/r3/sweep-standardowy-plain-22-11-33.tsv` (478,0 s, load=2.33). Oznaczone NIE_ZMIERZONO (ERRATA 7).
+
+**Zarzut 3 (Node ↔ Worker/Chromium) — PRZYJMUJĘ.** Dodany jawny blok ZAŁOŻENIE (NIE_ZMIERZONO) pod werdyktem (ERRATA 8). Potwierdzone: w `evidence/` nie ma sumy CHECKSUM z Chromium dla seed 22 (`grep -il checksum evidence/*.json` — brak trafień).
+
+**Zarzut 4 (powtarzalność; CHECKSUM w 2 z 3) — PRZYJMUJĘ z korektą.** Liczba była błędna: Standardowy seed 22 ma **2** zmierzone przebiegi z licznikami — `evidence/r3/logs/s22-1.out` (706,72 s) i `s22-2.out` (718,14 s), oba `CHECKSUM 3248f5b4`, `COUNTERS` 18590/18590/18590/37735. Przebieg `instr22` (`evidence/r4/instr22.log.txt`, 99,15 s) to seed 22 **Mały**, nie Standardowy. Mały seed 22 ×3 (`evidence/r3/logs/m22-1..3.out`, 253,63/248,44/250,93 s): każdy `CHECKSUM 9f0c2884`, `COUNTERS` 4745/4745/4745/7317 — to jest prawdziwe „×3”. Przebieg Standardowy 478 s (sweep) nie ma liczników ani sumy. Wiersz „Powtarzalność” przepisany (ERRATA 9).
+
+**Weryfikacja liczb (z surowych logów przez grep `DONE|CHECKSUM|COUNTERS`):** s22-1 706,72 s / 3248f5b4; s22-2 718,14 s / 3248f5b4; m22-1..3 253,63 / 248,44 / 250,93 s / 9f0c2884; r4 instr22 99,15 s / 9f0c2884; r4 plain22 96,16 s / 9f0c2884; r4 std11 295,13 s / b329b72a; r4 std33 215,79 s / 36b49da9.
+
+**Wynik rundy:** zarzuty 1–4 PRZYJĘTE i poprawione; żaden nie ODRZUCONY. Zakres diffu względem cacc8b1d4: wyłącznie `dyspozycje/autobot/runs/R-WEB-MAPGEN-RIVERS-SEED22-HANG-DIAG-Q1/` (`git diff --stat cacc8b1d4 HEAD -- gra/` puste). Bramek kodowych (tsc, testy referencyjne) nie uruchamiano: zmiana to dokumentacja i evidence bez kodu.
+
+**Zarzut 6 (allowlista .ts/.sh)** — bez zmian, decyzja orkiestratora (ERRATA 6).
+
+STATUS: PASS-WITH-NOTES (oczekiwany wynik FC)
+RUNDY: 5 (obrona rundy 5 tego tematu; wniosek po FC → osobny temat naprawczy po decyzji ABC o sumach kontrolnych)
+DEPLOY/PUSH: NIE WYKONANO
