@@ -1654,11 +1654,23 @@ pub struct DiplomacyState {
     #[serde(with = "pair_relation_map")]
     pub relations: BTreeMap<CivilizationPair, Relation>,
     pub deals: Vec<ActiveDeal>,
+    /// Granty zlozeGrants (web `zlozeGrants`). Dodane swiadomie (dispatch R-RUSTPORT-P6-ZLOZE-GRANTS-STATE-Q1).
+    pub zloze_grants: Vec<ZlozeGrant>,
 }
 
 impl DiplomacyState {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// Web `suspendZlozeGrantsForWar` na polu `zloze_grants` (wiring produkcyjny: #104 część 2).
+    pub fn suspend_zloze_grants_for_war(&mut self, owner_a: PlayerId, owner_b: PlayerId) {
+        self.zloze_grants = suspend_zloze_grants_for_war(&self.zloze_grants, owner_a, owner_b);
+    }
+
+    /// Web `deactivateZlozeGrantsForDeal` na polu `zloze_grants` (wiring produkcyjny: #104 część 2).
+    pub fn deactivate_zloze_grants_for_deal(&mut self, deal_id: &str) {
+        self.zloze_grants = deactivate_zloze_grants_for_deal(&self.zloze_grants, deal_id);
     }
 
     /// Web `activeDeals = activeDeals.filter(d => !d.strony.includes(ownerId))` (pin 07d2fbd72, main.ts:35482):
@@ -4187,11 +4199,15 @@ pub fn apply_accepted_proposal(
 // - `syncRelationFromDeals` (`gra/src/main.ts:22832`) z helperami `dealInvolvesOwners`
 //   (`gra/src/game/diplomacy-penalty-preview.ts:72`), `isAllianceDealKind` (`main.ts:22653`),
 //   `hasTreaty` (`gra/src/game/diplomacy-treaties.ts:300`).
-// Stan jest JAWNY (wejscie/wyjscie). Bez migracji: zadnych nowych pol w stanie gry.
+// Stan jest JAWNY (wejscie/wyjscie). Pole `DiplomacyState::zloze_grants` dodane swiadomie
+// (decyzja wlasciciela, wariant a, dispatch R-RUSTPORT-P6-ZLOZE-GRANTS-STATE-Q1); stare zapisy bez
+// pola wczytuja sie jako pusta lista (`#[serde(default)]` na kontenerze).
 // ---------------------------------------------------------------------------------------------
 
 /// Grant zlozeGrant (web `ZlozeGrant`, `diplomacy-pn-engine.ts:115`).
-#[derive(Debug, Clone, PartialEq, Eq)]
+/// Klucze JSON camelCase jak na pinie (`granterOwnerId`, `dealId`, ...); `dealId` pomijany przy `None`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ZlozeGrant {
     pub granter_owner_id: PlayerId,
     pub grantee_owner_id: PlayerId,
@@ -4200,7 +4216,29 @@ pub struct ZlozeGrant {
     pub hex_key: String,
     pub active: bool,
     /// Powiazanie z `ActiveDeal` (web `dealId?`); `None` = brak powiazania (`undefined` na pinie).
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub deal_id: Option<String>,
+}
+
+/// Web `suspendZlozeGrantsForWar` (`diplomacy-pn-engine.ts:331`): wygasza tylko AKTYWNE granty
+/// miedzy para wlascicieli (w obu kierunkach); reszta bez zmian.
+pub fn suspend_zloze_grants_for_war(
+    grants: &[ZlozeGrant],
+    owner_a: PlayerId,
+    owner_b: PlayerId,
+) -> Vec<ZlozeGrant> {
+    grants
+        .iter()
+        .map(|grant| {
+            let involves = (grant.granter_owner_id == owner_a && grant.grantee_owner_id == owner_b)
+                || (grant.granter_owner_id == owner_b && grant.grantee_owner_id == owner_a);
+            let mut next = grant.clone();
+            if involves && next.active {
+                next.active = false;
+            }
+            next
+        })
+        .collect()
 }
 
 /// Web `deactivateZlozeGrantsForDeal`: wygasza aktywne granty powiazane z `deal_id`; reszta bez zmian.
