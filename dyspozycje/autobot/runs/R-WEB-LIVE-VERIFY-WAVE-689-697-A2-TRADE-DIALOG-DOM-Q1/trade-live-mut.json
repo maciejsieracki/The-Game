@@ -1,0 +1,308 @@
+{
+ "tag": "mut",
+ "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-trade-mut",
+ "points": {
+  "P1": {
+   "status": "PASS"
+  },
+  "P2": {
+   "status": "FAIL"
+  },
+  "P3": {
+   "status": "PASS"
+  },
+  "P4": {
+   "status": "PASS"
+  },
+  "P5": {
+   "status": "PASS",
+   "detail": "zrzuty 01–04 zapisane w /home/user/The-Game/.claude/worktrees/wf_2b4d2b25-215-1/dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-WAVE-689-697-A2-TRADE-DIALOG-DOM-Q1/shots-mut (obejrzane w sesji)"
+  }
+ },
+ "checks": [
+  {
+   "id": "P1",
+   "label": "okno „Umowa wymiany surowców” otwarte (overlay koszyka)",
+   "status": "PASS",
+   "detail": {
+    "opened": 1
+   }
+  },
+  {
+   "id": "P2a",
+   "label": "po dodaniu po stronie „oferujemy” węzły box/.cdb-body-scroll/.cdb-col(B) to TE SAME węzły (===)",
+   "status": "FAIL",
+   "detail": {
+    "before": {
+     "box": true,
+     "scroll": true,
+     "colB": true,
+     "expando": true
+    },
+    "after": {
+     "box": true,
+     "scroll": false,
+     "colB": false,
+     "expando": false
+    },
+    "giveRows": 1,
+    "giveResId": {
+     "resId": "drewno",
+     "resLabel": "Drewno"
+    }
+   }
+  },
+  {
+   "id": "P2a-rows",
+   "label": "po stronie „oferujemy” jest 1 wiersz pozycji",
+   "status": "PASS",
+   "detail": {
+    "giveRows": 1
+   }
+  },
+  {
+   "id": "P4",
+   "label": "przy pustej stronie „oferują” widoczna neutralna podpowiedź (tekst odczytany, bez ostrzeżenia)",
+   "status": "PASS",
+   "detail": {
+    "hint": "Dodaj, co chcesz dostać w zamian — albo wyślij jako dar"
+   }
+  },
+  {
+   "id": "P2b",
+   "label": "po dodaniu po stronie „oferują” węzły box/.cdb-body-scroll/.cdb-col(B) to TE SAME węzły (===)",
+   "status": "FAIL",
+   "detail": {
+    "before": {
+     "box": true,
+     "scroll": false,
+     "colB": false,
+     "expando": false
+    },
+    "after": {
+     "box": true,
+     "scroll": false,
+     "colB": false,
+     "expando": false
+    },
+    "recvRows": 1,
+    "recvResId": {
+     "resId": "drewno",
+     "resLabel": "Drewno"
+    }
+   }
+  },
+  {
+   "id": "P2b-rows",
+   "label": "obie strony zachowały swoje pozycje po dodaniu drugiej (give=1, receive=1)",
+   "status": "PASS",
+   "detail": {
+    "recvRows": 1,
+    "giveRowsAfterRecv": 1
+   }
+  },
+  {
+   "id": "P3a",
+   "label": "obie strony niepuste -> przycisk „Zaproponuj” aktywny",
+   "status": "PASS",
+   "detail": {
+    "submitDisabled": false
+   }
+  },
+  {
+   "id": "P3b",
+   "label": "jeden klik „Zaproponuj” = JEDNA propozycja na stole (tableLen +1; 2 wiersze własne = po jednym na stronę)",
+   "status": "PASS",
+   "detail": {
+    "tableBefore": 0,
+    "tableAfter": 1,
+    "ownRemove": 2,
+    "overlayAfter": 0,
+    "toast": {
+     "display": "block",
+     "html": "Propozycja na stole — użyj Przyjmij w Punkty wymiany",
+     "zIndex": "320"
+    }
+   }
+  },
+  {
+   "id": "P3c",
+   "label": "wpis propozycji w oknie audiencji zawiera obie strony (etykiety oferowanego i żądanego surowca)",
+   "status": "PASS",
+   "detail": {
+    "give": "Drewno",
+    "recv": "Drewno",
+    "found": [
+     true,
+     true
+    ]
+   }
+  }
+ ],
+ "pageErrors": [],
+ "notes": [
+  "shot 01-okno-otwarte-puste.png",
+  "zrzut 01: okno otwarte, obie strony puste (przed dodaniem pozycji)",
+  "shot 02-po-dodaniu-oferujemy.png",
+  "zrzut 02: po dodaniu pozycji po stronie „oferujemy”",
+  "shot 03-po-dodaniu-oferuja-przed-zaproponuj.png",
+  "zrzut 03: po dodaniu pozycji po stronie „oferują”, przed „Zaproponuj”",
+  "shot 04-po-zaproponuj.png",
+  "zrzut 04: po kliknięciu „Zaproponuj” (okno audiencji z wpisami)"
+ ],
+ "info": {
+  "ai": 1,
+  "aiCities": 1,
+  "myCities": 1,
+  "foundFirstCity": true,
+  "pricedKeys": 15
+ },
+ "prep": {
+  "techMe": true,
+  "techAi": true,
+  "contact": true,
+  "discovered": true,
+  "status": "pokoj"
+ },
+ "audienceButtons": [
+  {
+   "aid": "5",
+   "text": "Traktat handlowy",
+   "disabled": false
+  },
+  {
+   "aid": "14",
+   "text": "Umowa wymiany surowców",
+   "disabled": false
+  },
+  {
+   "aid": "9",
+   "text": "Ultimatum / groźba",
+   "disabled": false
+  },
+  {
+   "aid": "11",
+   "text": "Wypowiedzenie wojny",
+   "disabled": false
+  },
+  {
+   "aid": "13",
+   "text": "Prezent / dar",
+   "disabled": false
+  },
+  {
+   "aid": "2",
+   "text": "Pakt o nieagresjizablokowana — wymaga Za",
+   "disabled": true
+  },
+  {
+   "aid": "3",
+   "text": "Sojusz (pełny lub defensywny)zablokowana",
+   "disabled": true
+  },
+  {
+   "aid": "4",
+   "text": "Traktat przemarszuzablokowana — wymaga Z",
+   "disabled": true
+  },
+  {
+   "aid": "6",
+   "text": "Wymiana / sprzedaż technologiizablokowan",
+   "disabled": true
+  },
+  {
+   "aid": "7",
+   "text": "Wspólny wróg / namowa do wojnyzablokowan",
+   "disabled": true
+  },
+  {
+   "aid": "8",
+   "text": "Żądanie / oferta trybutuzablokowana — wy",
+   "disabled": true
+  },
+  {
+   "aid": "10",
+   "text": "Propozycja pokoju / zawieszenia broninie",
+   "disabled": true
+  },
+  {
+   "aid": "12",
+   "text": "Wasalizacjazablokowana — wymaga Respektu",
+   "disabled": true
+  },
+  {
+   "aid": "15",
+   "text": "Wchłonięciezablokowana — tylko miasta-pa",
+   "disabled": true
+  },
+  {
+   "aid": "11",
+   "text": "",
+   "disabled": false
+  },
+  {
+   "aid": "10",
+   "text": "",
+   "disabled": true
+  },
+  {
+   "aid": "3",
+   "text": "",
+   "disabled": true
+  },
+  {
+   "aid": "2",
+   "text": "",
+   "disabled": true
+  },
+  {
+   "aid": "5",
+   "text": "",
+   "disabled": false
+  },
+  {
+   "aid": "14",
+   "text": "",
+   "disabled": false
+  },
+  {
+   "aid": "13",
+   "text": "",
+   "disabled": false
+  },
+  {
+   "aid": "12",
+   "text": "",
+   "disabled": true
+  },
+  {
+   "aid": "15",
+   "text": "",
+   "disabled": true
+  }
+ ],
+ "hintAfterGive": "Dodaj, co chcesz dostać w zamian — albo wyślij jako dar",
+ "giveLabel": "Drewno",
+ "submitDisabledWhenOnlyGive": false,
+ "tableBefore": 0,
+ "submitDisabled": false,
+ "tableAfter": 1,
+ "toast": {
+  "display": "block",
+  "html": "Propozycja na stole — użyj Przyjmij w Punkty wymiany",
+  "zIndex": "320"
+ },
+ "ownRemove": 2,
+ "ownRowText": [
+  "EdytujUsuń",
+  "EdytujUsuń"
+ ],
+ "audLabels": {
+  "give": "Drewno",
+  "recv": "Drewno",
+  "found": [
+   true,
+   true
+  ]
+ }
+}
