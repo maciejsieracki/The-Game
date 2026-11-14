@@ -7,7 +7,7 @@
     "rozwojPctZaBrakujacy": -1
   },
   "epoki": [
-    { "epoka": 1, "nazwa": "Kamień", "surowce": ["drewno", "glina"] },
+    { "epoka": 1, "nazwa": "Kamień", "surowce": ["drewno", "glina", "ceramika"] },
     { "epoka": 2, "nazwa": "Brąz", "surowce": ["drewno", "glina", "kamien", "ceramika"] },
     { "epoka": 3, "nazwa": "Żelazo", "surowce": ["drewno", "glina", "kamien", "ceramika", "cegla"] }
   ]
