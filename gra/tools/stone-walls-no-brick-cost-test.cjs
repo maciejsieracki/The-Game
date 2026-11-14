@@ -77,10 +77,9 @@ try {
   const po = M.deductBuildingStockCost({ drewno: 500, kamien: 500, cegla: 50 }, kReal);
   check(po.cegla === 50 && po.drewno === 340 && po.kamien === 340, 'P1 pobór Murów kamiennych: cegla bez zmian, drewno/kamień -160', po);
 
-  // (6) Mutacja: przywrócenie cegły w danych ma dawać czerwony wynik (ten test to wykrywa).
-  const mutated = { ...kamienne, koszt_surowce: { drewno: 80, kamien: 80, cegla: 80 } };
-  const kMut = M.buildingStockCost(mutated);
-  check(M.canAffordBuildingStock(pulaBezCegly, kMut) === false, 'M1 mutacja (cegla w Murach kamiennych) blokuje budowę -- test wykrywa regresję');
+  // (6) Regresja danych: dowód czerwieni na bazie robi się na prawdziwym buildings.json z
+  // bazy 1b8ce0d39 (podmiana pliku w worktree, patrz raport 30-obrona-claude.md), a nie
+  // przez obiekt zbudowany w teście (taka asercja byłaby tautologią).
 } finally {
   for (const f of [entry, bundle]) {
     try { fs.unlinkSync(f); } catch (_) { /* brak pliku */ }
