@@ -12,6 +12,7 @@ import { siegeEngineBuildReasonPl } from '../game/siege-engine-build';
 import { brandIconSvg } from './icons/brandAssets';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { stockResourceLabel } from '../game/building-stock-cost';
+import { HUD_GAP_PX } from './hudLayout';
 
 export interface SiegeMapPanelActions {
   /** Zatwierdź oblężenie — wojsko zostaje, panel się zamyka. */
@@ -148,6 +149,8 @@ function ensureStyles(): void {
 .civ-smp-act.storm .civ-smp-act-label{color:#a8c8ff;}
 .civ-smp-act.retreat:hover{border-color:rgba(255,255,255,0.22);background:rgba(255,255,255,0.05);}
 .civ-smp-act.retreat .civ-smp-act-label{color:var(--sub);}
+/* R-WEB-UI-SIEGE-MAP-PANEL-BOTTOM-CLIP-1280X800-Q1: przyciski akcji nie przewijaja sie z trescia (dock poza .civ-smp-body). */
+.civ-smp-dock{flex-shrink:0;padding:4px 20px 10px;}
 .civ-smp-foot{
   padding:0 20px 16px;text-align:center;
   font-size:10px;color:var(--muted);line-height:1.45;
@@ -299,6 +302,8 @@ function render(): void {
         '<div class="civ-smp-mach-meta" data-siege-engine-quota></div>' +
         '<div class="civ-smp-mach-row" data-siege-engine-row></div>' +
       '</div>' +
+    '</div>' +
+    '<div class="civ-smp-dock">' +
       '<div class="civ-smp-prompt">Potwierdź działanie</div>' +
       '<div class="civ-smp-actions">' +
         '<button type="button" class="civ-smp-act besiege" data-act="besiege">' +
@@ -364,7 +369,35 @@ function render(): void {
   box.addEventListener('click', (e) => e.stopPropagation());
 
   root.appendChild(box);
+  fitOverlayAboveBottomBar();
   attachKeyboard(city.id);
+}
+
+/**
+ * R-WEB-UI-SIEGE-MAP-PANEL-BOTTOM-CLIP-1280X800-Q1: nakladka konczy sie nad dolnym banerem HUD
+ * (stala CSS bottom:72px zostawiala pod banerem dolne ~24 px panelu, stopke i czesc przyciskow).
+ * Na telefonie zostaje regula CSS (@media).
+ */
+function fitOverlayAboveBottomBar(): void {
+  if (!root) return;
+  const phone = typeof window.matchMedia === 'function' && window.matchMedia('(max-width:480px)').matches;
+  const bar = document.querySelector<HTMLElement>('.civ-bottom-bar');
+  const rect = bar && !phone ? bar.getBoundingClientRect() : null;
+  if (!rect || rect.height <= 0 || rect.top <= 0) {
+    root.style.bottom = '';
+    return;
+  }
+  root.style.bottom = Math.max(0, Math.round(window.innerHeight - rect.top + HUD_GAP_PX)) + 'px';
+}
+
+let resizeHooked = false;
+
+function ensureResizeHook(): void {
+  if (resizeHooked) return;
+  resizeHooked = true;
+  window.addEventListener('resize', () => {
+    if (isSiegeMapPanelOpen()) fitOverlayAboveBottomBar();
+  });
 }
 
 let starveFracProvider: (() => number) | null = null;
@@ -403,6 +436,7 @@ export function showSiegeMapPanel(ctx: MapSiegeContext, panelActions: SiegeMapPa
   activeCtx = ctx;
   actions = panelActions;
   siegeTurn = turnNum;
+  ensureResizeHook();
   root.style.display = 'flex';
   render();
   pushOverlay('siege-map', handleSiegeMapEscape);

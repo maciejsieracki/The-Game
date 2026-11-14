@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "094e9a29f11fa6326da4389ec53d0430",
-  "bundleSha256": "2f5926fa7c144eb75f1f79f9981e10a989624a7c45c22f7ec41be990e705b39c",
-  "bundleBytes": 14678287,
+  "bundleMd5": "c84369bc410b2341dffff87bd7e329e1",
+  "bundleSha256": "5e9a07b079353542e070455fa4586db4b8506e8edd0e411e9ea5db19a3b9ea58",
+  "bundleBytes": 14679843,
   "sourceSnapshot": {
-    "source": "main a3c117a98 (FC 6206ba1f2)",
+    "source": "origin/main 75e238e52 + merge FC 726ce5d48",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 698: w trybie fallback lewego banera (okno <1000 px szerokosci) powloka ma 88 px zamiast 56 px, wiec siatka chipow 2x3 nie wystaje 6 px nad gorna krawedz okna (800x600, 800x720, 800x900); uklad od 1000 px bez zmian"
+    "FALA 699: gra/src/ui/siegeMapPanel.ts: przyciski Oblegaj/Szturm/Odwrot w nieprzewijanym doku, nakladka nad dolnym banerem HUD (fitOverlayAboveBottomBar, resize); hak ?civTest=1 (startPlayerSiege, setResearchedTechs, siegeOptions, fundPlayer) bez logiki gry"
   ],
   "verification": [
-    "tsc 0; logic 213/213; left-banner-chip-grid-clip 204/0 (mutant czerwieni, 13 FAIL); overflow-narrow 74/0; panels-below-banner 130/0; topbar-layout-a 144/0"
+    "tsc 0; logic 213/213; test panelu oblezenia na buildzie wdrozeniowym PASS (1280x800: przyciski 525-653 przy limicie 700; 1024x768: 493-621 przy limicie 668), ten sam test na bazie FAIL; tech-tree 20/0, research 33/0, unit-replace 21/21, combat 6/6 (FC)"
   ],
   "limits": [
-    "NIE ZMIERZONO: pelna gra na zywo; przyciecie etykiety Spichlerz przy 640x480; dol siatki zachodzi ok. 5,6 px na panele boczne przy 800 px (swiadomie poza zakresem)"
+    "Telefon, klikalnosc, inne przegladarki niz Chromium, okna nizsze niz ~700 px nie zmierzone; machiny wymagaja przewiniecia panelu"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES 6206ba1f2 (W83): lewy baner HUD w trybie fallback 2x3 (szerokosc <1000 px) nie wystaje nad gorna krawedz okna (siatka top -6 px @800x600/800x720/800x900); uklad >=1000 px bez zmian. NIE ZMIERZONO: pelna gra na zywo, przyciecie etykiety Spichlerz @640x480 (w harnessie nieodtworzone). Znane: dol siatki wchodzi ok. 5,6 px w panele boczne przy 800 px (swiadoma decyzja poza zakresem)."
+    "notes": "FC PASS-WITH-NOTES 770f5c96d (SIEGEPANEL): panel oblezenia mapowego nie jest przyciety u dolu przy 1280x800 i 1024x768 (przyciski akcji w nieprzewijanym doku nad dolnym banerem; test czerwienieje na bazie 75e238e52). NIE ZMIERZONO: telefon (<=480 px), klikalnosc, inne przegladarki niz Chromium, okna nizsze niz ~700 px. Do decyzji wlasciciela: machiny oblezenicze osiagalne tylko przewinieciem - wskazowka przewijania czy zwezenie bloku. Dodatkowo hak ?civTest=1 z W82 (W18) w main.ts bez logiki gry."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-14T05:51:41",
+  "hubGeneratedAt": "2026-11-14T07:01:04",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "094e9a29f11fa6326da4389ec53d0430",
-      "sizeBytes": 14678287
+      "md5": "c84369bc410b2341dffff87bd7e329e1",
+      "sizeBytes": 14679843
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "094e9a29f11fa6326da4389ec53d0430",
-      "sizeBytes": 14678287
+      "md5": "c84369bc410b2341dffff87bd7e329e1",
+      "sizeBytes": 14679843
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "094e9a29f11fa6326da4389ec53d0430",
-      "sizeBytes": 14678287
+      "md5": "c84369bc410b2341dffff87bd7e329e1",
+      "sizeBytes": 14679843
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "094e9a29f11fa6326da4389ec53d0430",
-      "sizeBytes": 14678287
+      "md5": "c84369bc410b2341dffff87bd7e329e1",
+      "sizeBytes": 14679843
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "094e9a29f11fa6326da4389ec53d0430",
-      "sizeBytes": 14678287
+      "md5": "c84369bc410b2341dffff87bd7e329e1",
+      "sizeBytes": 14679843
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "094e9a29f11fa6326da4389ec53d0430",
-      "sizeBytes": 14678287
+      "md5": "c84369bc410b2341dffff87bd7e329e1",
+      "sizeBytes": 14679843
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "094e9a29f11fa6326da4389ec53d0430",
-      "sizeBytes": 14678287
+      "md5": "c84369bc410b2341dffff87bd7e329e1",
+      "sizeBytes": 14679843
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "094e9a29f11fa6326da4389ec53d0430",
-      "sizeBytes": 14678287
+      "md5": "c84369bc410b2341dffff87bd7e329e1",
+      "sizeBytes": 14679843
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "094e9a29f11fa6326da4389ec53d0430",
-      "sizeBytes": 14678287
+      "md5": "c84369bc410b2341dffff87bd7e329e1",
+      "sizeBytes": 14679843
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "094e9a29f11fa6326da4389ec53d0430",
-      "sizeBytes": 14678287
+      "md5": "c84369bc410b2341dffff87bd7e329e1",
+      "sizeBytes": 14679843
     }
   ],
-  "md5": "094e9a29f11fa6326da4389ec53d0430",
+  "md5": "c84369bc410b2341dffff87bd7e329e1",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
