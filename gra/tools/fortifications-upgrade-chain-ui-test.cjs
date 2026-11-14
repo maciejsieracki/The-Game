@@ -147,16 +147,17 @@ async function main() {
   console.log('\n-- palisada stoi --');
   const r1 = await render(['palisada'], []);
   console.log('  buduj(lancuch):', JSON.stringify(inBuduj(r1)), ' ulepsz:', JSON.stringify(upNames(r1)));
-  check('U1: sekcja "Ulepsz" zawiera "Ulepsz → Mury kamienne"', upNames(r1).includes('Ulepsz → Mury kamienne'), upNames(r1));
+  // R-WEB-UI-FORTIFICATIONS-HIDE-SUPERSEDED-WALL-BUILD-OPTIONS-Q1: Budownictwo odblokowane -> awans idzie wprost na Mury ceglane.
+  check('U1: sekcja "Ulepsz" NIE zawiera "Ulepsz → Mury kamienne" (znika po Budownictwie)', !upNames(r1).includes('Ulepsz → Mury kamienne'), upNames(r1));
   check('U2: sekcja "Ulepsz" zawiera przeskok "Ulepsz → Mury ceglane"', upNames(r1).includes('Ulepsz → Mury ceglane'), upNames(r1));
   check('U3: w sekcji "Buduj" brak etapow lancucha (ani palisady)', inBuduj(r1).length === 0, inBuduj(r1));
-  const upRow = r1.ulepsz.find(x => x.name === 'Ulepsz → Mury kamienne');
+  const upRow = r1.ulepsz.find(x => x.name === 'Ulepsz → Mury ceglane');
   check('U4: przycisk wiersza awansu to "Ulepsz"', !!upRow && /Ulepsz/.test(upRow.btn), upRow);
   await page.screenshot({ path: path.join(SHOTS, '01-palisada-stoi-sekcja-ulepsz.png') });
 
   const hov = await page.evaluate(async () => {
     const rows = [...document.querySelectorAll('.bld-compact-row')];
-    const row = rows.find(r => (r.querySelector('.bld-compact-name')?.textContent || '') === 'Ulepsz → Mury kamienne');
+    const row = rows.find(r => (r.querySelector('.bld-compact-name')?.textContent || '') === 'Ulepsz → Mury ceglane');
     if (!row) return { found: false };
     row.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
     row.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
@@ -167,9 +168,10 @@ async function main() {
   console.log('  karta awansu:', JSON.stringify(hov));
   check('U5: hover na awansie otwiera karte szczegolow', hov.found === true && hov.hasCard === true, hov);
   if (hov.hasCard) {
-    check('U6: karta pokazuje poprzednika (Palisada)', /Palisad/.test(hov.text), hov.text);
+    // R-WEB-UI-FORTIFICATIONS-HIDE-SUPERSEDED-WALL-BUILD-OPTIONS-Q1: awans z palisady idzie na Mury ceglane (przeskok) -- karta opisuje ten etap.
+    check('U6: karta opisuje awans na Mury ceglane', /Mury ceglane/.test(hov.text), hov.text);
     check('U7: karta bez surowych id (mury_kamienne / palisada)', !/mury_kamienne|\bpalisada\b/.test(hov.text), hov.text);
-    check('U8: koszt jako liczby (160)', /160/.test(hov.text), hov.text);
+    check('U8: koszt jako liczby (320 drewna dla Murow ceglanych)', /320/.test(hov.text), hov.text);
   }
   await page.screenshot({ path: path.join(SHOTS, '02-awans-karta-kosztu.png') });
 
@@ -185,7 +187,8 @@ async function main() {
   console.log('\n-- nic z lancucha nie stoi --');
   const r3 = await render([], []);
   console.log('  buduj(lancuch):', JSON.stringify(inBuduj(r3)), ' ulepsz:', JSON.stringify(upNames(r3)));
-  check('U11: od zera wszystkie trzy w "Buduj" (przeskok)', CHAIN_NAMES.every(n => inBuduj(r3).includes(n)), inBuduj(r3));
+  // R-WEB-UI-FORTIFICATIONS-HIDE-SUPERSEDED-WALL-BUILD-OPTIONS-Q1: od zera (wszystkie techy) w "Buduj" tylko najwyzszy etap.
+  check('U11: od zera w "Buduj" tylko Mury ceglane (palisada i mury kamienne znikaja)', JSON.stringify(inBuduj(r3)) === JSON.stringify(['Mury ceglane']), inBuduj(r3));
   check('U12: od zera brak wierszy awansu lancucha w "Ulepsz"', !upNames(r3).some(n => /^Ulepsz → /.test(n)), upNames(r3));
   await page.screenshot({ path: path.join(SHOTS, '04-od-zera-buduj.png') });
 

@@ -85,7 +85,8 @@ console.log('\n=== A1: palisada stoi, kopia obronna pod zagrozeniem ===');
   const r = aiCandidates(['palisada'], []);
   console.log('  kandydaci:', r.all.join(', '), '| lancuch:', r.chain.join(', ') || '-');
   assert(!r.chain.includes('palisada'), 'A1a AI nie proponuje palisady, gdy juz stoi');
-  assert(r.chain.includes('mury_kamienne'), 'A1b AI proponuje awans na Mury kamienne');
+  // R-WEB-UI-FORTIFICATIONS-HIDE-SUPERSEDED-WALL-BUILD-OPTIONS-Q1: Budownictwo odblokowane -> Mury kamienne znikaja, awans z palisady idzie na Mury ceglane.
+  assert(r.chain.includes('mury') && !r.chain.includes('mury_kamienne'), 'A1b AI proponuje awans na Mury ceglane (Mury kamienne znikaja po Budownictwie)');
 }
 
 console.log('\n=== A2: mury kamienne stoja ===');

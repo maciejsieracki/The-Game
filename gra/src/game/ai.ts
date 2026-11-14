@@ -2024,7 +2024,10 @@ export function chooseCityProduction(
       if (!built.includes('mury') && wallScore !== null) {
         // Awans zamiast dokładania: kamienne stoją -> kolejny etap to Mury ceglane; inaczej Mury kamienne
         // (z Palisady to awans). Silnik (applyCompletedBuildingIds) usuwa niższy etap po ukończeniu.
-        candidates.push({ id: built.includes('mury_kamienne') ? 'mury' : 'mury_kamienne', score: wallScore });
+        // R-WEB-UI-FORTIFICATIONS-HIDE-SUPERSEDED-WALL-BUILD-OPTIONS-Q1: bramka silnika (isProductionAllowed)
+        // odrzuca etap, którego następca jest odblokowany -- AI nie wybiera przestarzałego muru.
+        const wallId = built.includes('mury_kamienne') ? 'mury' : 'mury_kamienne';
+        if (opts.isProductionAllowed?.(cityId, wallId) !== false) candidates.push({ id: wallId, score: wallScore });
       }
       candidates.push({ id: 'Wojownik', score: 280 + militaryScore });
     } else if (isMajorAiOwner(opts)) {
@@ -2066,7 +2069,7 @@ export function chooseCityProduction(
     if (!csGarrisonMet && !built.includes('mury') && !built.includes('mury_kamienne')) {
       // Tu garnizon jest priorytetem: pierwsze Mury kamienne (z Palisady = awans); dalszy awans do
       // Murów ceglanych idzie zwykłą ścieżką katalogu (collectAvailableBuildingCandidates).
-      candidates.push({ id: 'mury_kamienne', score: 320 + defenseScore });
+      if (opts.isProductionAllowed?.(cityId, 'mury_kamienne') !== false) candidates.push({ id: 'mury_kamienne', score: 320 + defenseScore });
     }
     // Spichlerz USUNIĘTY stąd (był flat 250, redundantny) -- teraz pochodzi
     // z collectAvailableBuildingCandidates niżej (grupa Żywność), tak jak dla
@@ -2267,7 +2270,7 @@ export function chooseCityProduction(
     // collectAvailableBuildingCandidates, grupa Wojsko i obrona), tylko bez
     // sztucznego forsowania ponad ekonomię.
     if (!garrisonMet && !built.includes('palisada') && !built.includes('mury') && !built.includes('mury_kamienne')) {
-      candidates.push({ id: 'palisada', score: 340 + defenseScore });
+      if (opts.isProductionAllowed?.(cityId, 'palisada') !== false) candidates.push({ id: 'palisada', score: 340 + defenseScore });
     }
     // R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1: dawny `infraOrder` (7 zaszytych
     // id: studnia/garncarnia/stolarnia/spichlerz/targowisko/adminBuilding/

@@ -82,6 +82,7 @@ import {
   skipChainLowerIds,
   skipChainHigherIds,
   skipChainUpgradeSource,
+  isFortificationSupersededForBuild,
   type BuildingUpgradeLite,
   type UpgradeChainNode,
 } from './building-upgrades';
@@ -865,8 +866,12 @@ function isWallTierBlockedByStrongerWall(
   buildingId: string,
   builtIds: readonly string[],
   queue: readonly ProductionItem[],
-  buildings: readonly UpgradeChainNode[],
+  buildings: readonly (UpgradeChainNode & { techUnlock?: string })[],
+  unlockedTechs: ReadonlySet<string>,
 ): boolean {
+  // R-WEB-UI-FORTIFICATIONS-HIDE-SUPERSEDED-WALL-BUILD-OPTIONS-Q1: nowa budowa niższego etapu znika,
+  // gdy tech wyższego etapu jest odblokowany (ulepszenie już zbudowanego niższego zostaje — awans).
+  if (isFortificationSupersededForBuild(buildingId, unlockedTechs, buildings)) return true;
   const existsOrQueued = (id: string) => builtIds.includes(id) || buildingTypeQueued(id, queue);
   const higher = skipChainHigherIds(buildingId, buildings);
   if (higher.length > 0) {
@@ -1105,7 +1110,7 @@ export function availableProduction(
 
     // Block weaker tiers when a stronger wall/Citadel already exists. The same
     // availability function feeds player production and AI city building.
-    if (isWallTierBlockedByStrongerWall(b.id, builtList, queue, data.buildings)) continue;
+    if (isWallTierBlockedByStrongerWall(b.id, builtList, queue, data.buildings, techs)) continue;
 
     const upgradeFrom = (b.upgradeFrom ?? '').trim();
     if (upgradeFrom.length > 0) {
@@ -2662,7 +2667,7 @@ export function eraBuildingCatalog(
   for (const b of data.buildings) {
     if (b.epokaWejscia !== epoch) continue;
     if (isBuildingSuppressedFromProduction(b)) continue;
-    if (isWallTierBlockedByStrongerWall(b.id, builtList, queue, data.buildings)) continue;
+    if (isWallTierBlockedByStrongerWall(b.id, builtList, queue, data.buildings, techs)) continue;
 
     const koszt = buildingWorkCost(
       itemCost('budynek', b.id, data, level),
