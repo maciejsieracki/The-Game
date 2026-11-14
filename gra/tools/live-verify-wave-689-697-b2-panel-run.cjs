@@ -30,7 +30,14 @@ const RUN_DIR = process.env.RUN_DIR;
 const LAST_TURN = parseInt(process.env.LAST_TURN || (SCEN === 'speed' ? '4' : '22'), 10);
 const PROBE = (process.env.PROBE_TURNS || (SCEN === 'aiwar' ? '5,10,16,20,22' : '5,10,16,17,18,20'))
   .split(',').map(s => parseInt(s, 10));
-const MAX_MS = parseInt(process.env.MAX_SEC || '480', 10) * 1000;
+const MAX_MS = parseInt(process.env.MAX_SEC || '1200', 10) * 1000;   // limit CZASU TUR (liczony od konca generacji swiata)
+const GEN_MS = parseInt(process.env.GEN_SEC || '900', 10) * 1000;    // limit generacji swiata (15 min)
+const CAPTURE_TURN = parseInt(process.env.CAPTURE_TURN || '0', 10);   // P3: tura zdobycia miasta (0 = brak)
+const REDECLARE = process.env.REDECLARE === '1';                       // P2: ponowne wypowiadanie wojny AI<->AI po pokoju
+const DECLARE_TURN = parseInt(process.env.DECLARE_TURN || '0', 10);  // P3: opozniony start wojny (swiezy licznik zmeczenia; AI maja >=2 miasta dopiero ok. T20)
+const CAPTURE_DELAY = parseInt(process.env.CAPTURE_DELAY || '3', 10);
+let DECLARED = true;
+let TT = Date.now();                                                    // start liczenia czasu tur
 const OVERLAY_WAIT_MS = 10000;
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -174,6 +181,27 @@ async function readAudience(page, ownerId) {
   });
 }
 
+// Odczyt panelu powiadomien (.sp-tab[data-sp-tab=dyplomacja], .sp-event) + otwartej tablicy negocjacji; zrzut po kliknieciu zakladki.
+async function readNotifications(page, shotPath) {
+  const out = {};
+  out.tabsBefore = await page.evaluate(() => [...document.querySelectorAll('.sp-tab')].map(b => ({
+    tab: b.getAttribute('data-sp-tab'), text: (b.innerText || '').replace(/\s+/g, ' ').trim(), active: b.classList.contains('sp-tab-active') })));
+  out.clicked = await page.evaluate(() => {
+    const b = document.querySelector('.sp-tab[data-sp-tab="dyplomacja"]');
+    if (!b) return false; b.click(); return true;
+  });
+  await wait(400);
+  out.dyploEvents = await page.evaluate(() => [...document.querySelectorAll('.civ-side-panel .sp-event')].map(e => ({
+    id: e.getAttribute('data-id'), cls: e.className, visible: e.getBoundingClientRect().width > 0,
+    text: (e.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 240) })).slice(0, 25));
+  out.peaceLike = out.dyploEvents.filter(e => /pok[oó]j|rozejm|propon/i.test(e.text));
+  out.negOverlayOpen = await page.evaluate(() => !!document.querySelector('.civ-diplo-neg-overlay'));
+  out.sidePanelVisible = await page.evaluate(() => { const p = document.querySelector('.civ-side-panel'); if (!p) return null; const r = p.getBoundingClientRect(); return r.width > 0 && r.height > 0; });
+  await page.screenshot({ path: shotPath });
+  out.shot = path.basename(shotPath);
+  return out;
+}
+
 async function observe(page, rep, turn, ais, isProbe) {
   const rec = { turn };
   rec.digest = await page.evaluate(() => {
@@ -182,13 +210,21 @@ async function observe(page, rep, turn, ais, isProbe) {
     return (h >>> 0).toString(16) + ':' + s.length;
   });
   rec.owners = await page.evaluate(() => window.__nnsMeasureDebug.snapshot().owners.map(o => ({ oid: o.oid, cities: o.cities, units: o.units })));
-  rec.pairStates = await page.evaluate(ids => ids.map(([a, b]) => ({ a, b, st: window.__truceTestDebug.pairState(a, b) })), [[ais[0], ME_ID], ...(SCEN === 'aiwar' ? [[ais[0], AI1_ID]] : [])]);
-  rec.cityCounts = await page.evaluate(() => { const i = window.__aiTradeWiringTestDebug.info(); return { me: i.myCities, ai0: i.aiCities, citiesLen: window.__eraTestDebug.getWorldState().citiesLen, aiOwners: i.aiOwners }; });
+  rec.pairStates = await page.evaluate(ids => ids.map(([a, b]) => ({ a, b, st: window.__truceTestDebug.pairState(a, b) })), [[ais[0], ME_ID], ...(SCEN === 'aiwar' && AI1_ID != null ? [[ais[0], AI1_ID]] : [])]);
+  rec.cityCounts = await page.evaluate(([a, b]) => { const i = window.__aiTradeWiringTestDebug.info(); const own = id => window.__peaceRulesTestDebug.listOwnerCityIdsForTest(id).length; return { me: i.myCities, major0: own(a), major1: b == null ? null : own(b), citiesLen: window.__eraTestDebug.getWorldState().citiesLen }; }, [ais[0], AI1_ID]);
   rec.entries = await page.evaluate(() => window.__truceTestDebug.negotiationEntries().map(e => ({
     actionId: e.actionId, proposerOwnerId: e.proposerOwnerId, responderOwnerId: e.responderOwnerId, rodzaj: e.rodzaj, turns: e.turns,
   })));
   rec.war = await page.evaluate(() => ({ battle: window.__aiTradeWiringTestDebug.battleState() }));
-  if (!isProbe) return rec;
+  if (!isProbe) {
+    // Lekki odczyt DOM karty AI w KAZDEJ turze (bez zrzutu) — os czasu zmeczenia/desperacji (P2: kiedy i przy jakim % konczy sie wojna).
+    if (turn >= 1 && SCEN !== 'speed' && DECLARED) {
+      const a = await readAudience(page, ais[0]);
+      rec.audLight = a.audienceLines.filter(s => /zmęcz|zmecz|desper|wojn/i.test(s)).slice(0, 8);
+      await page.evaluate(() => window.__truceTestDebug.closeAudience());
+    }
+    return rec;
+  }
   const ov = await waitOverlayGone(page);
   rec.overlayWait = { waitedMs: ov.waitedMs, stillVisible: ov.stillVisible, states: ov.states };
   rec.screenshotNoOverlay = !ov.stillVisible;
@@ -202,7 +238,32 @@ async function observe(page, rep, turn, ais, isProbe) {
     await wait(150);
   }
   rec.proposalsAfterProbe = await page.evaluate(() => window.__truceTestDebug.negotiationEntries().length);
+  // P1: zakladka powiadomien „Dyplomacja” + tablica negocjacji (widocznosc propozycji pokoju od AI dla gracza).
+  rec.notif = await readNotifications(page, SHOT(turn, 'notif'));
   return rec;
+}
+
+// P3: war — gracz (owner 0) zdobywa miasto AI; aiwar — AI A zdobywa miasto AI B. Tylko gdy przegrywajacy ma >= 2 miasta (bez eliminacji).
+async function doCapture(page, turn, ais) {
+  const out = { turn };
+  const attacker = SCEN === 'aiwar' ? ais[0] : ME_ID;
+  const victim = SCEN === 'aiwar' ? AI1_ID : ais[0];
+  out.attacker = attacker; out.victim = victim;
+  out.victimCityIds = await page.evaluate(v => window.__peaceRulesTestDebug.listOwnerCityIdsForTest(v), victim);
+  out.pairBefore = await page.evaluate(([a, b]) => window.__truceTestDebug.pairState(a, b), [attacker, victim]);
+  if (out.victimCityIds.length < 2) { out.skipped = 'ofiara ma < 2 miasta (' + out.victimCityIds.length + ') — brak zdobycia, by nie eliminowac cywilizacji'; return out; }
+  if (out.pairBefore.status !== 'wojna') { out.skipped = 'para nie jest w stanie wojny: ' + out.pairBefore.status; return out; }
+  out.before = await readAudience(page, ais[0]);
+  await page.screenshot({ path: SHOT(turn, 'capture-before') });
+  await page.evaluate(() => window.__truceTestDebug.closeAudience());
+  out.ok = await page.evaluate(([c, o]) => window.__peaceRulesTestDebug.captureCityForTest(c, o), [out.victimCityIds[0], attacker]);
+  await wait(300);
+  out.victimCityIdsAfter = await page.evaluate(v => window.__peaceRulesTestDebug.listOwnerCityIdsForTest(v), victim);
+  out.after = await readAudience(page, ais[0]);
+  await page.screenshot({ path: SHOT(turn, 'capture-after') });
+  await page.evaluate(() => window.__truceTestDebug.closeAudience());
+  out.pairAfter = await page.evaluate(([a, b]) => window.__truceTestDebug.pairState(a, b), [attacker, victim]);
+  return out;
 }
 
 async function main() {
@@ -218,22 +279,34 @@ async function main() {
     await page.addInitScript(INIT);
     page.on('pageerror', e => { if (rep.pageErrors.length < 10) rep.pageErrors.push(String(e).slice(0, 200)); });
     page.on('dialog', d => d.dismiss().catch(() => {}));
+    rep.consoleHits = [];
+    page.on('console', m => { const t = m.text(); if (/WEARINESS|R-WEB-.*(pok|wojn)|pokój AI|oddaje miast|rozejm/i.test(t) && rep.consoleHits.length < 120) rep.consoleHits.push({ turn: rep.lastTurn ?? 0, t: t.slice(0, 260) }); });
     const url = 'file://' + path.join(BUNDLE, 'index.html') + '?civTest=1&civSeed=' + SEED;
     await page.goto(url, { waitUntil: 'load', timeout: 180000 });
     await page.waitForFunction(() => !!window.__nnsMeasureDebug && !!window.__aiTradeWiringTestDebug, undefined, { timeout: 180000 });
     await page.waitForSelector('.civ-menu', { timeout: 180000 });
     await page.evaluate(o => window.__nnsMeasureDebug.startGame(o), { seed: SEED, mapSize: 'Standardowy', civTypes: 15, cityStates: 2 });
     let ready = false;
-    for (let i = 0; i < 400 && !ready && Date.now() - T0 < MAX_MS; i++) {
+    // WZORZEC POPRAWNY (r3, jak world-overlay-midgame-diag-run.cjs): czekamy na !overlayVisible && worldReady && awaitingFirstCity.
+    rep.genPolls = [];
+    for (let i = 0; i < 2000 && !ready && Date.now() - T0 < GEN_MS; i++) {
       await wait(1000);
-      const st = await page.evaluate(() => { const h = window.__nnsMeasureDebug; return { w: h.worldReady(), aw: h.awaitingFirstCity() }; })
-        .catch(e => ({ err: String(e).slice(0, 120) }));
-      ready = !!st.w && !!st.aw;
+      const st = await page.evaluate(() => {
+        const h = window.__nnsMeasureDebug;
+        const vis = Array.from(document.querySelectorAll('.civ-map-load-overlay')).some(el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; });
+        return { w: h.worldReady(), aw: h.awaitingFirstCity(), vis };
+      }).catch(e => ({ err: String(e).slice(0, 120) }));
+      ready = !st.vis && !!st.w && !!st.aw;
+      if (i % 15 === 0) rep.genPolls.push({ sec: Math.round((Date.now() - T0) / 1000), ...st });
     }
-    if (!ready) { rep.stoppedBy = 'swiat nie wygenerowany w limicie'; return; }
+    if (!ready) { rep.stoppedBy = 'swiat nie wygenerowany w limicie ' + (GEN_MS / 1000) + ' s'; return; }
     rep.startMs = Date.now() - T0;
     if (!(await page.evaluate(() => window.__nnsMeasureDebug.foundFirstCity()))) { rep.stoppedBy = 'foundFirstCity()=false'; return; }
+    try {
+      await page.waitForFunction(() => window.__nnsMeasureDebug.playerCities() > 0 && !window.__nnsMeasureDebug.awaitingFirstCity(), undefined, { timeout: 60000 });
+    } catch (e) { rep.stoppedBy = 'brak miasta gracza po foundFirstCity'; return; }
     await wait(1500);
+    TT = Date.now();
     // Os czasu nakladki „Tworzenie swiata” po starcie (bez ingerencji): co 5 s, do OVERLAY_START_SEC (domyslnie 60 s).
     rep.overlayTimeline = [];
     const OV_START_SEC = parseInt(process.env.OVERLAY_START_SEC || '60', 10);
@@ -246,7 +319,11 @@ async function main() {
     rep.overlayAfterFound = rep.overlayTimeline[rep.overlayTimeline.length - 1].states;
     await page.evaluate(fast => window.__aiTradeWiringTestDebug.setFastMode(fast), SCEN !== 'speed');
     const info = await page.evaluate(() => window.__aiTradeWiringTestDebug.info());
-    rep.ai = info.aiOwners;
+    rep.aiOwnersAll = info.aiOwners;
+    // WAZNE (r3): aiOwners[0..1] to MIASTA-PANSTWA (40,41). Wojny P1-P3 prowadzimy z cywilizacjami GLOWNYMI (ownerIds: bez miast-panstw i barbarzyncow).
+    const MAJORS = await page.evaluate(() => window.__borderEraPenaltyRuntimeTestDebug.ownerIds());
+    rep.majors = MAJORS; rep.ai = MAJORS;
+    info.aiOwners = MAJORS;
     rep.me = info.me;
     ME_ID = info.me;
     // SETUP odkrycia AI (jak W4 r1/r2 tematu W35): karta AI bez odkrycia na mapie pokazuje „Brak danych audiencji”.
@@ -254,24 +331,53 @@ async function main() {
     // wiec musi byc wywolany przed declareWar). Skutki uboczne: tech Wymiany obu stron, skarbiec AI >= 300,
     // wyciszone cooldowny handlu AI (zob. r2 raport, sekcja ZALOZENIA).
     rep.prepared = [];
-    const prepIds = SCEN === 'aiwar' ? [info.aiOwners[0], info.aiOwners[1]] : [info.aiOwners[0]];
+    const prepIds = DECLARE_TURN ? [] : SCEN === 'aiwar' ? [info.aiOwners[0], info.aiOwners[1]] : [info.aiOwners[0]];
     for (const a of prepIds) {
       rep.prepared.push({ ai: a, res: await page.evaluate(x => { const r = window.__aiTradeWiringTestDebug.prepare(x); return r; }, a) });
     }
-    if (SCEN === 'aiwar') {
+    if (DECLARE_TURN) {
+      DECLARED = false; // wojna zostanie wypowiedziana w turze >= DECLARE_TURN miedzy cywilizacjami z >=2 miastami
+    } else if (SCEN === 'aiwar') {
       if (info.aiOwners.length < 2) { rep.stoppedBy = 'mniej niz 2 AI'; return; }
       AI1_ID = info.aiOwners[1];
       await page.evaluate(([a, b]) => window.__truceTestDebug.declareWar(a, b), [info.aiOwners[0], info.aiOwners[1]]);
     } else {
       await page.evaluate(a => window.__truceTestDebug.declareWar(a.ai, a.me), { ai: info.aiOwners[0], me: info.me });
     }
-    rep.warDeclaredAtTurn = await page.evaluate(() => window.__aiTradeWiringTestDebug.state().turn);
-    const ais = SCEN === 'aiwar' ? [info.aiOwners[0]] : [info.aiOwners[0]];
+    rep.warDeclaredAtTurn = DECLARE_TURN ? null : await page.evaluate(() => window.__aiTradeWiringTestDebug.state().turn);
+    let ais = [info.aiOwners[0]];
     rep.observedAis = ais;
     // Pierwsza obserwacja przed jakakolwiek ingerencja (stan po deklaracji).
-    rep.preTurn = await observe(page, rep, rep.warDeclaredAtTurn, ais, false);
+    if (!DECLARE_TURN) rep.preTurn = await observe(page, rep, rep.warDeclaredAtTurn, ais, false);
     for (let t = 1; t <= LAST_TURN; t++) {
-      if (Date.now() - T0 > MAX_MS) { rep.stoppedBy = 'limit czasu po turze ' + (t - 1); break; }
+      if (Date.now() - TT > MAX_MS) { rep.stoppedBy = 'limit czasu po turze ' + (t - 1); break; }
+      if (DECLARE_TURN && !DECLARED) {
+        const turnNow = await page.evaluate(() => window.__aiTradeWiringTestDebug.state().turn);
+        if (turnNow >= DECLARE_TURN) {
+          const counts = await page.evaluate(ms => ms.map(m => [m, window.__peaceRulesTestDebug.listOwnerCityIdsForTest(m).length]), info.aiOwners);
+          counts.sort((a, b) => b[1] - a[1] || a[0] - b[0]);
+          (rep.declareChecks = rep.declareChecks || []).push({ turn: turnNow, top: counts.slice(0, 5) });
+          const need = SCEN === 'aiwar' ? 2 : 1;
+          if (counts.length >= need && counts[0][1] >= 2) {
+            const victim = counts[0][0];
+            const attacker = counts[1] ? counts[1][0] : null;
+            const prep = SCEN === 'aiwar' ? [victim, attacker] : [victim];
+            rep.prepared = [];
+            for (const a of prep) rep.prepared.push({ ai: a, res: await page.evaluate(x => window.__aiTradeWiringTestDebug.prepare(x), a) });
+            if (SCEN === 'aiwar') {
+              AI1_ID = victim; ais = [attacker];
+              await page.evaluate(([a, b]) => window.__truceTestDebug.declareWar(a, b), [attacker, victim]);
+            } else {
+              ais = [victim];
+              await page.evaluate(([a, me]) => window.__truceTestDebug.declareWar(a, me), [victim, ME_ID]);
+            }
+            rep.observedAis = ais;
+            DECLARED = true;
+            rep.warDeclaredAtTurn = turnNow;
+            rep.victimCitiesAtDeclare = counts[0][1];
+          }
+        }
+      }
       await clearBattles(page);
       const tStart = Date.now();
       try { await endTurnWait(page); } catch (e) { rep.stoppedBy = 'blad endTurn: ' + String(e.message || e).slice(0, 160); break; }
@@ -285,6 +391,22 @@ async function main() {
       const obs = await observe(page, rep, turn, ais, isProbe);
       rep.turns[rep.turns.length - 1] = { turn, digest: obs.digest, owners: obs.owners, cities: obs.cityCounts, pair: obs.pairStates, entriesBeforeReject: obs.entries, sec: turnSec };
       if (isProbe) rep.probes.push(obs);
+      // P3: zdobycie miasta REALNA funkcja gry (__peaceRulesTestDebug.captureCityForTest -> applyCityCaptureToMap), odczyt zmeczenia przed/po.
+      if (CAPTURE_TURN && DECLARED && turn >= (DECLARE_TURN ? (rep.warDeclaredAtTurn || 0) + CAPTURE_DELAY : CAPTURE_TURN) && !(rep.capture && rep.capture.ok !== undefined)) {
+        const cap = await doCapture(page, turn, ais);
+        (rep.captureTries = rep.captureTries || []).push({ turn, skipped: cap.skipped || null });
+        if (!cap.skipped) rep.capture = cap;
+
+      }
+      // P2: ponowne wypowiadanie wojny AI<->AI po pokoju (REDECLARE=1) — zapis tury/stanu pary.
+      if (REDECLARE && SCEN === 'aiwar' && DECLARED) {
+        const st = await page.evaluate(([a, b]) => window.__truceTestDebug.pairState(a, b), [ais[0], AI1_ID]);
+        if (st.status !== 'wojna') {
+          await page.evaluate(([a, b]) => window.__truceTestDebug.declareWar(a, b), [ais[0], AI1_ID]);
+          const st2 = await page.evaluate(([a, b]) => window.__truceTestDebug.pairState(a, b), [ais[0], AI1_ID]);
+          (rep.redeclares = rep.redeclares || []).push({ turn, before: st, after: st2 });
+        }
+      }
       // Dopiero teraz odrzucenie blokujacych ofert (zalozenie pomiaru, jak w B1).
       await clearOffers(page, rep);
       rep.overlayLog = await page.evaluate(() => window.__ovLog.slice(-20));
