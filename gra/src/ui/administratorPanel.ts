@@ -136,8 +136,18 @@ function effectRows(m: AdministratorPanelModel): string {
     + '<li data-adm-effect="where">Zwolnisz go w tym samym panelu (przycisk administratora).</li>';
 }
 
-/** Czysty HTML wnętrza panelu (bez kontenera/backdropu) — testowalny bez DOM. */
-export function administratorPanelInnerHtml(m: AdministratorPanelModel): string {
+/**
+ * R-WEB-UI-ADMIN-DISMISS-CONFIRM-Q1: czysty tekst pytania przed zwolnieniem (koszt nie wraca).
+ * Okno potwierdzenia jest wewnątrz panelu (bez window.confirm — patrz R-WEB-ADMIN-NATIVE-DIALOG-AND-TEXT-SPLIT-Q1).
+ */
+export function administratorDismissConfirmText(m: AdministratorPanelModel): string {
+  const what = m.kind === 'city' ? 'miasta' : 'ulepszeń';
+  return 'Zwolnić administratora ' + what + ' w mieście ' + m.cityName + '? Koszt zatrudnienia nie podlega zwrotowi.';
+}
+
+/** Czysty HTML wnętrza panelu (bez kontenera/backdropu) — testowalny bez DOM.
+ *  `confirmDismiss`: true = pokaż krok potwierdzenia zwolnienia („Zwolnij” / „Anuluj”) zamiast zwykłej stopki. */
+export function administratorPanelInnerHtml(m: AdministratorPanelModel, confirmDismiss = false): string {
   const title = titleFor(m);
   const icon = administratorIconHtml({
     size: 28,
@@ -177,9 +187,15 @@ export function administratorPanelInnerHtml(m: AdministratorPanelModel): string 
   } else if (!m.hired && shortfall > 0) {
     html += `<div class="civ-adm-panel-warn" role="alert" data-adm-shortfall>Brakuje ${resourceAmountChipHtml('pieniadz', String(shortfall))} do zatrudnienia.</div>`;
   }
+  if (m.hired && confirmDismiss) {
+    html += `<div class="civ-adm-panel-warn" role="alert" data-adm-dismiss-confirm>${escapeHtmlText(administratorDismissConfirmText(m))}</div>`;
+  }
   html += '</div>';
   html += '<div class="civ-adm-panel-foot">';
-  if (m.hired) {
+  if (m.hired && confirmDismiss) {
+    html += '<button type="button" class="civ-adm-panel-btn civ-adm-panel-btn--danger" data-adm-dismiss-yes>Zwolnij</button>'
+      + '<button type="button" class="civ-adm-panel-btn" data-adm-dismiss-no>Anuluj</button>';
+  } else if (m.hired) {
     html += '<button type="button" class="civ-adm-panel-btn civ-adm-panel-btn--danger" data-adm-panel-dismiss>Zwolnij</button>'
       + '<button type="button" class="civ-adm-panel-btn" data-adm-panel-cancel>Zamknij</button>';
   } else {
@@ -265,6 +281,8 @@ export function openAdministratorPanel(hooks: AdministratorPanelHooks): Administ
   document.body.appendChild(host);
 
   let closed = false;
+  /** Krok potwierdzenia zwolnienia (per otwarcie panelu). */
+  let dismissAsk = false;
   const close = (): void => {
     if (closed) return;
     closed = true;
@@ -280,7 +298,7 @@ export function openAdministratorPanel(hooks: AdministratorPanelHooks): Administ
     if (!m) { close(); return; }
     dlg.setAttribute('data-adm-kind', m.kind);
     dlg.setAttribute('data-adm-hired', m.hired ? '1' : '0');
-    dlg.innerHTML = administratorPanelInnerHtml(m);
+    dlg.innerHTML = administratorPanelInnerHtml(m, dismissAsk && m.hired);
     dlg.querySelectorAll('[data-adm-panel-cancel]').forEach(b => b.addEventListener('click', close));
     dlg.querySelector('[data-adm-panel-confirm]')?.addEventListener('click', () => {
       const cur = hooks.getModel();
@@ -290,10 +308,23 @@ export function openAdministratorPanel(hooks: AdministratorPanelHooks): Administ
       hooks.onHire();
       render('[data-adm-panel-dismiss]');
     });
+    // R-WEB-UI-ADMIN-DISMISS-CONFIRM-Q1: pierwszy klik „Zwolnij” tylko otwiera krok potwierdzenia (bez zwolnienia).
     dlg.querySelector('[data-adm-panel-dismiss]')?.addEventListener('click', () => {
       const cur = hooks.getModel();
-      if (!cur) return;
-      // Zwolnienie: wyłącznie przycisk „Zwolnij” — w treści panelu jest jawne „koszt zatrudnienia nie wraca”.
+      if (!cur || !cur.hired) return;
+      dismissAsk = true;
+      render('[data-adm-dismiss-yes]');
+    });
+    // Anuluj w kroku potwierdzenia: wraca do zwykłej stopki, stan bez zmian.
+    dlg.querySelector('[data-adm-dismiss-no]')?.addEventListener('click', () => {
+      dismissAsk = false;
+      render('[data-adm-panel-dismiss]');
+    });
+    // Zwolnienie następuje dopiero po potwierdzeniu „Zwolnij” w oknie.
+    dlg.querySelector('[data-adm-dismiss-yes]')?.addEventListener('click', () => {
+      const cur = hooks.getModel();
+      if (!cur || !cur.hired) return;
+      dismissAsk = false;
       hooks.onDismiss();
       render('[data-adm-panel-confirm]');
     });

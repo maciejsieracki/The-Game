@@ -1,3 +1,9 @@
+## ROBOCZA a6e17f38 -- 2026-11-14 -- FALA 703: Potwierdzenie przy zwolnieniu administratora (testowa)
+
+- Zwolnienie administratora miasta/ulepszen wymaga potwierdzenia Zwolnij/Anuluj w panelu administratora (Anuluj i Esc nie zwalniaja), bez okna natywnego (R-WEB-UI-ADMIN-DISMISS-CONFIRM-Q1)
+- Weryfikacja: tsc 0, logic 213/213, admin-dismiss-confirm zielony (baza 7 FAIL), administrator-panel-real-render Chromium 55/0, city-administrator 119/0, 5 bramek zielone
+- Limity: Nie zmierzono na zywo w pelnej grze (zrzut okna); live-verify-administrator-panel.cjs nieaktualny
+
 ## ROBOCZA 78c3a278 -- 2026-11-14 -- FALA 702: Panel dyplomacji: obie strony wojny AI-AI (testowa)
 
 - Karta rozmowcy w wojnie AI-AI pokazuje na liscie W stanie wojny z etykiety obu stron (rozmowca i partner): Desperacja albo Zmeczenie wojna z nazwa strony; tylko odczyt, wojny gracz-AI bez zmian (R-WEB-UI-DIPLO-PANEL-AIAI-BOTH-LABELS-Q1)
