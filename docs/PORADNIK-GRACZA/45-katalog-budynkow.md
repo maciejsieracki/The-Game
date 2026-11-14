@@ -132,7 +132,7 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 
 ### Spichlerz
 
-**Spichlerz** (Zywnosc) odblokowuje się w epoce **Kamień** po technologii **Garncarstwo**. Pierwsze wzniesienie kosztuje **20** pracy; każdy kolejny poziom +**8**. Utrzymanie: **1** ¤ na turę (rosnie o **0** per poziom).
+**Spichlerz** (Zywnosc) odblokowuje się w epoce **Kamień** po technologii **Garncarstwo**. Pierwsze wzniesienie kosztuje **20** pracy; każdy kolejny poziom +**8**. Utrzymanie: **1** ¤ na turę (rosnie o **0** per poziom). Zużycie ceramiki ze skarbca państwa: **10** na turę (Spichlerz Królewski: **20**); brak ceramiki → brak bonusu ludności.
 
 Na poziomie 1 daje: **+2 żywność**. Każdy kolejny poziom dodaje: **+1 żywność**.
 **Wymagania:** brak.

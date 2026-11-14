@@ -550,7 +550,6 @@
       { "tytul": "Wyższy limit populacji i armii", "tekst": "Podnosi górny pułap wielkości miasta i utrzymywanej armii ponad to, co daje zwykły Spichlerz." }
     ],
     "techUnlock": "Pismo",
-    "utrzymanie_surowce": { "ceramika": 2 },
     "koszt_surowce": {
       "drewno": 50,
       "kamien": 50,

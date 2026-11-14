@@ -2,21 +2,23 @@
  * building-upkeep-ceramics-test.cjs
  * R-WEB-BUILDING-UPKEEP-CERAMICS-IMPL-Q1 (decyzja wlasciciela: wariant C z audytu)
  *
- * Ceramika jako surowiec UTRZYMANIA czterech budynkow: Spichlerz Krolewski (spichlerz_ii),
- * Akwedukt, Laznia publiczna, Port (port) -- 2 szt. ceramiki/ture na budynek, lacznie 8/ture.
+ * Ceramika jako surowiec UTRZYMANIA trzech budynkow: Akwedukt, Laznia publiczna, Port (port)
+ * -- 2 szt. ceramiki/ture na budynek, lacznie 6/ture. R-WEB-DATA-SPICHLERZ-II-REMOVE-CERAMICS-UPKEEP-Q1
+ * (2026-11-14): Spichlerz Krolewski (spichlerz_ii) USUNIETY z tej listy; jego ceramika to zuzycie
+ * (drain) z econ-params.json, nie utrzymanie.
  * Pole danych: buildings.json `utrzymanie_surowce: { ceramika: 2 }` (stala ilosc per budynek,
  * nie per typ i nie na poziom; NIE jest kosztem budowy). Mechanizm: economy-upkeep.ts
  * `buildingResourceUpkeep` (ta sama sciezka co utrzymanie proporcjonalne: turn-economy,
  * podglad, panel surowcow). Deficyt ceramiki dla utrzymania: ai-resource-needs.ts
  * `upkeepDemand` -> AI_BUILDING_FOR_DEFICIT (ceramika -> garncarnia).
  *
- *   A. dane: dokladnie 4 budynki z polem, kazdy od epoki Braz (epokaWejscia >= 2), wartosc 2
+ *   A. dane: dokladnie 3 budynki z polem, kazdy od epoki Braz (epokaWejscia >= 2), wartosc 2
  *   B. wyliczenie per budynek: ceramika = 2 (ratio 1), 1 (ratio 0.5), 0 (ratio 0); Stela/Spichlerz I bez
- *   C. suma 4 budynkow = 8/ture; drewno/kamien/cegla dalej z koszt_surowce (bez zmian)
+ *   C. suma 3 budynkow = 6/ture; drewno/kamien/cegla dalej z koszt_surowce (bez zmian)
  *   D. deficyt: upkeepDemand ceramika > zapas => klucz w deficitKeys; zapas >= popyt => brak
  *   E. brak ujemnego zapasu przy poborze (deduct clamp)
  *   F. lancuch deficytu: AI_BUILDING_FOR_DEFICIT ceramika -> garncarnia
- *   G. agregat 4 miast = 8/t
+ *   G. agregat 3 miast = 6/t
  *   H. symulacja 200 tur (MODEL: realne funkcje, produkcja i budowa AI zalozone; NIE pelna gra)
  *
  * Uruchomienie: node tools/building-upkeep-ceramics-test.cjs (z gra/, po npm install)
@@ -56,12 +58,15 @@ const bRaw = readJson('data/buildings.json');
 const BUILDINGS = Array.isArray(bRaw) ? bRaw : (bRaw.buildings || bRaw);
 const byId = (id) => BUILDINGS.find(b => b.id === id);
 const ECON = readJson('data/econ-params.json');
-const CERAM_IDS = ['spichlerz_ii', 'akwedukt', 'laznia_publiczna', 'port'];
+const CERAM_IDS = ['akwedukt', 'laznia_publiczna', 'port'];
+const SPICH_II = 'spichlerz_ii';
 
 // ---------- A. dane ----------
 console.log('A. dane');
 const withField = BUILDINGS.filter(b => b.utrzymanie_surowce).map(b => b.id).sort();
-eq(withField, [...CERAM_IDS].sort(), 'dokladnie 4 budynki z utrzymanie_surowce');
+eq(withField, [...CERAM_IDS].sort(), 'dokladnie 3 budynki z utrzymanie_surowce');
+assert(!byId(SPICH_II).utrzymanie_surowce, 'spichlerz_ii bez pola utrzymanie_surowce (R-WEB-DATA-SPICHLERZ-II-REMOVE-CERAMICS-UPKEEP-Q1)');
+eq(M.buildingResourceUpkeep(byId(SPICH_II), 1, 1).ceramika, undefined, 'spichlerz_ii: brak ceramiki w utrzymaniu');
 for (const id of CERAM_IDS) {
   const b = byId(id);
   eq(b.utrzymanie_surowce, { ceramika: 2 }, `${id}: utrzymanie_surowce = {ceramika:2}`);
@@ -88,14 +93,14 @@ assert(portRes.drewno > 0 && portRes.kamien > 0, 'Port: drewno i kamien z koszt_
 eq(portRes.cegla, undefined, 'Port: brak cegly (nie ma jej w koszt_surowce)');
 
 // ---------- C. suma ----------
-console.log('C. suma 4 budynkow');
+console.log('C. suma 3 budynkow');
 const owned = CERAM_IDS.map(id => ({ record: byId(id), level: 1 }));
 const total = M.totalBuildingResourceUpkeep(owned, 1);
-eq(total.ceramika, 8, 'suma ceramiki dla 4 budynkow = 8/ture');
+eq(total.ceramika, 6, 'suma ceramiki dla 3 budynkow = 6/ture');
 const allTotal = M.totalBuildingResourceUpkeep(
   BUILDINGS.map(b => ({ record: b, level: 1 })), 1);
-// Liczba budynkow z ceramika w calym katalogu = 4, wiec suma ceramiki w katalogu == 8 (nie 4*5 jak stala 5/typ).
-eq(allTotal.ceramika, 8, 'suma ceramiki po calym katalogu = 8 (nie 40)');
+// Liczba budynkow z ceramika w calym katalogu = 3, wiec suma ceramiki w katalogu == 6 (nie 3*5 jak stala 5/typ).
+eq(allTotal.ceramika, 6, 'suma ceramiki po calym katalogu = 6 (nie 30)');
 
 // ---------- D. deficyt AI ----------
 console.log('D. deficyt utrzymania (AI)');
@@ -156,19 +161,19 @@ console.log('G. agregat miast');
     const r = M.totalBuildingResourceUpkeep(c.buildings.map(b => ({ record: b, level: 1 })), 1);
     sum.ceramika = (sum.ceramika || 0) + (r.ceramika || 0);
   }
-  eq(sum.ceramika, 8, 'agregat 4 miast z 1 budynkiem kazde = 8/ture');
+  eq(sum.ceramika, 6, 'agregat 3 miast z 1 budynkiem kazde = 6/ture');
 }
 
 // ---------- H. symulacja N tur (model: prawdziwe funkcje podatku/deficytu, produkcja i AI-budowa z reguly) ----------
 console.log('H. symulacja tur (MODEL, nie pelna gra)');
 const TURNS = 200;
-const DEMAND = 8;
+const DEMAND = 6;
 const PRODUCTION_PER_TURN = 50; // converters.ts garncarnia throughputFallback 50 (zakladane: wejscia glina+drewno dostepne)
 const econRaw = ECON;
 const RATIO = M.readBuildingResourceUpkeepRatio(econRaw, 'normal');
 eq(RATIO, 1, 'wspolczynnik utrzymania surowcowego (normal) = 1');
 const upkeepCeram = M.totalBuildingResourceUpkeep(CERAM_IDS.map(id => ({ record: byId(id), level: 1 })), RATIO).ceramika;
-eq(upkeepCeram, DEMAND, 'popyt ceramiki w symulacji = 8');
+eq(upkeepCeram, DEMAND, 'popyt ceramiki w symulacji = 6');
 function simulate(name, { startStock, producerTurn }) {
   let stock = startStock, deficitTurns = 0, minBal = Infinity, maxBal = -Infinity, producerBuiltAt = null;
   for (let t = 0; t < TURNS; t++) {
