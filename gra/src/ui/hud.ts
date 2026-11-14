@@ -337,6 +337,8 @@ export interface HudConfig {
   /** A1-Q9: WYKONAJ (przypomnienia) + koniec tury zawsze dostępny (D1B dolny pasek). */
   onExecutePending?: () => void;
   canEndTurn?: () => boolean;
+  /** R-WEB-ECON-NO-NEGATIVE-STOCKS-END-TURN-GATE-LEVERS-Q1: stały tooltip przycisku przy blokadzie bramki. */
+  getEndTurnTooltip?: () => string;
   getBlockingCount?: () => number;
   getYearLabel?: () => string;
   /** Playtest walki: ukryj koniec tury. */
@@ -1631,6 +1633,13 @@ function renderUtilDock(show: boolean, fsBtn: string): void {
   utilDockEl.innerHTML = workerBtn + depositBtn + renderZoomControls() + fsBtn;
 }
 
+/** R-WEB-ECON-NO-NEGATIVE-STOCKS-END-TURN-GATE-LEVERS-Q1: stały tooltip także w starszym pasku (jak bottomBarHud). */
+function legacyEndTipAttr(): string {
+  const tip = cfg?.getEndTurnTooltip?.() ?? '';
+  if (!tip) return '';
+  return ' title="' + tip.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '"';
+}
+
 function renderBarLegacy(s: HudState): string {
   let html = '';
   html += '<div class="grp">' + res('\u{1FA99}', String(s.zloto), 'Złoto', signed(s.zlotoRate))
@@ -1646,7 +1655,7 @@ function renderBarLegacy(s: HudState): string {
     + '<button class="b" data-act="science">Nauka</button>'
     + '<button class="b" data-act="diplo">\u{1F91D} Dyplomacja</button>'
     + '<button class="b" data-act="menu">\u2630</button>'
-    + '<button class="end" data-act="end">Zakończ turę \u25B6</button></div>';
+    + '<button class="end" data-act="end"' + legacyEndTipAttr() + '>Zakończ turę \u25B6</button></div>';
   return html;
 }
 
@@ -2073,6 +2082,7 @@ function mountBottomBar(): void {
     onExecutePending: cfg.onExecutePending,
     onEndTurn: cfg.onEndTurn,
     canEndTurn: cfg.canEndTurn,
+    getEndTurnTooltip: cfg.getEndTurnTooltip,
     getBlockingCount: cfg.getBlockingCount,
     hideEndTurn: cfg.hideEndTurn,
   });

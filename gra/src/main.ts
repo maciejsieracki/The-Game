@@ -1163,7 +1163,7 @@ import {
   type SidePanelEventLink,
 } from './game/side-panel-event-link';
 import { isProductionBuildingEnabled, operationalBuiltIds, operationalBuiltByCity, setProductionBuildingEnabled, isToggleableProductionBuilding, buildEmpireProducersSnap } from './game/building-toggle';
-import { decideEndTurnGate, projectEmpireFoodAfterTick, type NnsGateResult, type NnsProjection } from './game/no-negative-stocks';
+import { decideEndTurnGate, projectEmpireFoodAfterTick, NNS_WOLNE_TURY, type NnsEndTurnLevers, type NnsGateResult, type NnsProjection } from './game/no-negative-stocks';
 import { unitUpkeep, unitFoodPerTurn, loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, addResourceCosts, readBuildingResourceUpkeepRatio, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex, computeLostToNearerSiblingByCity } from './game/okolica';
@@ -22707,6 +22707,9 @@ async function boot(): Promise<void> {
     let _nnsHumanForecast: NnsProjection | null = null;
     let _nnsZyskSkarbiec = 0;
     let _nnsZyskSpichlerz = 0;
+    // R-WEB-ECON-NO-NEGATIVE-STOCKS-END-TURN-GATE-LEVERS-Q1: dźwignie podatku i racji gracza (0 = niedostępne).
+    let _nnsPodatekZysk = 0;
+    let _nnsRacjeZysk = 0;
     function refreshLiveEmpireRates(): void {
       if (!empireEconDirty) return;   // D10: przelicz tylko po zmianie (trigger), nie co odświeżenie
       empireEconDirty = false;
@@ -22852,6 +22855,58 @@ async function boot(): Promise<void> {
         // Brak prognozy = brak blokady (bezpieczny kierunek: nigdy nie zakleszcza tury).
         _nnsHumanForecast = null;
         console.error('[NNS] prognoza po turze nie powiodła się — brak blokady „Zakończ turę”:', errNns);
+      }
+      // R-WEB-ECON-NO-NEGATIVE-STOCKS-END-TURN-GATE-LEVERS-Q1: dźwignie podatku (podział na podatek) i racji
+      // (racje 0) dla fotela gracza — ta sama projekcja co AI (nnsAiPreTickBalance): realne previewCityEconomy
+      // z przełożonym podziałem / racjami, bez trwałej zmiany stanu (podział i racje przywracane w finally).
+      _nnsPodatekZysk = 0;
+      _nnsRacjeZysk = 0;
+      if (_nnsHumanForecast !== null && turn > NNS_WOLNE_TURY
+        && (_nnsHumanForecast.skarbiecPo < 0 || _nnsHumanForecast.spichlerzPo < 0)) {
+        try {
+          const previewWithSplit = (splitMap: typeof ownerDefaultPodzialHandlu) => previewCityEconomy(
+            playerCities, map, data, _menuDifficulty, cityBuilt, player.era, player.zbadane, ownerCivMap,
+            orderMultMap, empireEpochForOwner, unlockedTechSetForOwner, tradeRouteBuildingBonusByCity,
+            routeIncomePreview.totalByCity, buildAllTerritoryNodes(), undefined,
+            buildWonderCityYieldsByOwnerMap([0]), makeOwnerZlotoAccessResolver(),
+            makeOwnerRuntimeActiveLabelsResolver(), makeOwnerEmpireStockResolver(),
+            splitMap, ownerDefaultPodzialPracy, maritimeTradeIncomeByCityPreview, manualWorkTaxPreviewByCity,
+          );
+          const meSplit = ownerDefaultPodzialHandlu.get(ME()) ?? DEFAULT_PODZIAL_HANDLU;
+          const altSplit = normalizePodzialHandlu({
+            procentNauka: 0, procentLuksus: meSplit.procentLuksus, procentPieniadz: 100 - meSplit.procentLuksus,
+          });
+          if (altSplit.procentNauka !== meSplit.procentNauka || altSplit.procentPieniadz !== meSplit.procentPieniadz) {
+            const pAlt = previewWithSplit(new Map(ownerDefaultPodzialHandlu).set(ME(), altSplit));
+            _nnsPodatekZysk = Math.max(0, sumEconomyForPlayerCities(pAlt, cities).pieniadz - playerEcon.pieniadz);
+          }
+          if (_nnsHumanForecast.spichlerzPo < 0 && playerCities.some(c => c.poziomRacji !== 0 || c.procentRozwoj !== 0)) {
+            const savedRacje = playerCities.map(c => ({ c, poziom: c.poziomRacji, procent: c.procentRozwoj }));
+            for (const c of playerCities) { c.poziomRacji = 0; c.procentRozwoj = 0; }
+            try {
+              const pZero = previewWithSplit(ownerDefaultPodzialHandlu);
+              const fZero = projectEmpireFoodAfterTick({
+                ownerId: ME(),
+                states: empireFoodStates,
+                econ: pZero as unknown as Parameters<typeof projectEmpireFoodAfterTick>[0]['econ'],
+                units: playerEconUnitsForUpkeep,
+                upkeep: loadUpkeepParams(data.econParams, _menuDifficulty),
+                params: buildEmpireFoodParams(data.econParams, _menuDifficulty),
+                foodTable: unitFoodTbl,
+                builtByCity: cityBuilt,
+                resolveOwnerEra: empireEpochForOwner,
+              });
+              _nnsRacjeZysk = Math.max(0, fZero.spichlerzPo - _nnsHumanForecast.spichlerzPo);
+            } finally {
+              for (const sv of savedRacje) { sv.c.poziomRacji = sv.poziom; sv.c.procentRozwoj = sv.procent; }
+            }
+          }
+        } catch (errLev) {
+          // Brak dźwigni = bramka liczy tylko jednostki (bezpieczny kierunek: brak zakleszczenia).
+          _nnsPodatekZysk = 0;
+          _nnsRacjeZysk = 0;
+          console.error('[NNS] dźwignie podatku/racji gracza nie powiodły się — bramka bez tych dźwigni:', errLev);
+        }
       }
       // NAPRAWA HUD-PRACA (ten sam wzorzec, ta sama zgloszenie): "+N" przy Pracy
       // liczylo tylko doPuli (wplyw brutto do puli imperium), pomijajac utrzymanie
@@ -27428,6 +27483,7 @@ async function boot(): Promise<void> {
         getYearLabel: () => Math.max(0, 4000 - (turn - 1) * 50) + ' p.n.e.',
         onExecutePending: () => executeFirstBlockingEvent(),
         canEndTurn: () => canPlayerInitiateEndTurn(),
+        getEndTurnTooltip: () => nnsEndTurnTooltipText(),
         hideEndTurn: () => playtestWalkaActive,
         getBlockingCount: () => countBlockingEvents(),
         onEndTurn: () => advanceSeat(),
@@ -39316,7 +39372,7 @@ async function boot(): Promise<void> {
     function nnsGateForPlayer(): NnsGateResult {
       refreshLiveEmpireRates(); // dirty-gated: przelicza tylko po zmianie stanu ekonomii
       const f = _nnsHumanForecast;
-      if (!f) return { blokada: false, komunikat: '' };
+      if (!f) return { blokada: false, komunikat: '', dzwignie: [] };
       // Zarzut 4 (Evaluator): obecne salda czytane NA ŻYWO (cache dirty-gated mógłby mieć stare
       // saldo po grantGold/transferze złota bez markCityStateDirty). Z cache zostaje tylko DELTA
       // prognozy (netto tury), która zależy wyłącznie od ekonomii.
@@ -39329,7 +39385,14 @@ async function boot(): Promise<void> {
         spichlerzObecny: spLive,
         spichlerzPo: spLive + (f.spichlerzPo - f.spichlerzObecny),
       };
-      return decideEndTurnGate(live, _nnsZyskSkarbiec, _nnsZyskSpichlerz);
+      const levers: NnsEndTurnLevers = { podatekSkarbiec: _nnsPodatekZysk, suwakZywnosc: _nnsRacjeZysk };
+      return decideEndTurnGate(live, _nnsZyskSkarbiec, _nnsZyskSpichlerz, levers);
+    }
+
+    /** Stały tooltip przycisku „Zakończ turę” przy aktywnej bramce NNS (pusty gdy brak blokady). */
+    function nnsEndTurnTooltipText(): string {
+      const g = nnsGateForPlayer();
+      return g.blokada ? g.komunikat : '';
     }
 
     function canPlayerInitiateEndTurn(): boolean {

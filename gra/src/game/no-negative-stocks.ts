@@ -400,31 +400,78 @@ export function decideAiOwnerBalance(
 export interface NnsGateResult {
   /** true = „Zakończ turę” zablokowane (prognoza < 0 ORAZ istnieje ruch naprawczy). */
   blokada: boolean;
-  /** Komunikat po polsku (pusty gdy brak blokady). */
+  /** Komunikat po polsku (pusty gdy brak blokady): co na minusie, o ile, które dźwignie pomogą. */
   komunikat: string;
+  /** Dźwignie uwzględnione przy ocenie „ruchu naprawczego” (tylko dodatnie zyski; pusta tablica bez blokady). */
+  dzwignie: NnsGateLever[];
+}
+
+/** Dźwignia pokazana graczowi w komunikacie bramki (zysk = poprawa salda po turze, dodatni). */
+export interface NnsGateLever {
+  id: string;
+  stock: NnsStock;
+  zysk: number;
+  /** Opis po polsku, z liczbą z projekcji. */
+  opis: string;
+}
+
+/** Zyski dźwigni gracza liczone przez wołającego (main.ts) z projekcji; 0/brak = dźwignia niedostępna. */
+export interface NnsEndTurnLevers {
+  /** Podatek: dodatkowy przychód skarbca po przesunięciu podziału na podatek (0 = niedostępne). */
+  podatekSkarbiec?: number;
+  /** Racje: dodatkowy zysk spichlerza po obniżeniu racji/suwaka wzrostu do 0 (0 = niedostępne). */
+  suwakZywnosc?: number;
+}
+
+function zyskNieujemny(z: number | undefined): number {
+  return z !== undefined && Number.isFinite(z) && z > 0 ? z : 0;
 }
 
 /**
  * Decyzja bramki gracza. `zyskSkarbiec` / `zyskSpichlerz` = łączna poprawa salda po ZDJĘCIU
- * wszystkich jednostek (rozwiązanie = odzyskany utrzymanie / koszt armii). Podatki nie są tu
- * liczone (brak wiarygodnej projekcji) — ich pominięcie to strona BEZPIECZNA: brak dźwigni →
- * brak blokady, czyli żadnego zakleszczenia tury.
+ * wszystkich jednostek (rozwiązanie = odzyskany utrzymanie / koszt armii). `extra` = dźwignie
+ * podatku i racji (zob. NnsEndTurnLevers). Blokada tylko gdy sumy dźwigni pokrywają brak
+ * (brak zakleszczenia: gdy nic nie wystarcza, tura nie jest blokowana).
  */
 export function decideEndTurnGate(
   p: NnsProjection,
   zyskSkarbiec: number,
   zyskSpichlerz: number,
+  extra: NnsEndTurnLevers = {},
 ): NnsGateResult {
   const v = evaluateEndTurnStocks(p);
-  if (!v.blokada) return { blokada: false, komunikat: '' };
+  if (!v.blokada) return { blokada: false, komunikat: '', dzwignie: [] };
   const levers: NnsLever[] = [
-    { id: 'rozwiaz-skarbiec', rodzaj: 'rozwiazanie', stock: 'skarbiec', zysk: Math.max(0, zyskSkarbiec), koszt: 0, eliminujeCywilizacje: false },
-    { id: 'rozwiaz-spichlerz', rodzaj: 'rozwiazanie', stock: 'spichlerz', zysk: Math.max(0, zyskSpichlerz), koszt: 0, eliminujeCywilizacje: false },
+    { id: 'podatek-skarbiec', rodzaj: 'podatek', stock: 'skarbiec', zysk: zyskNieujemny(extra.podatekSkarbiec), koszt: 0, eliminujeCywilizacje: false },
+    { id: 'suwak-zywnosc', rodzaj: 'podatek', stock: 'spichlerz', zysk: zyskNieujemny(extra.suwakZywnosc), koszt: 0, eliminujeCywilizacje: false },
+    { id: 'rozwiaz-skarbiec', rodzaj: 'rozwiazanie', stock: 'skarbiec', zysk: zyskNieujemny(zyskSkarbiec), koszt: 0, eliminujeCywilizacje: false },
+    { id: 'rozwiaz-spichlerz', rodzaj: 'rozwiazanie', stock: 'spichlerz', zysk: zyskNieujemny(zyskSpichlerz), koszt: 0, eliminujeCywilizacje: false },
   ];
-  if (!czyRuchNaprawczy(v.brakuje, levers)) return { blokada: false, komunikat: '' };
-  return { blokada: true, komunikat: v.komunikat };
+  if (!czyRuchNaprawczy(v.brakuje, levers)) return { blokada: false, komunikat: '', dzwignie: [] };
+  const dzwignie: NnsGateLever[] = levers
+    .filter(l => l.zysk > 0)
+    .map(l => ({ id: l.id, stock: l.stock, zysk: l.zysk, opis: opisDzwigni(l) }));
+  return { blokada: true, komunikat: komunikatBramki(v.brakuje, dzwignie), dzwignie };
 }
 
+const OPIS_DZWIGNI_ID: Record<string, string> = {
+  'podatek-skarbiec': 'podatek złota',
+  'suwak-zywnosc': 'obniżka racji żywności',
+  'rozwiaz-skarbiec': 'rozwiązanie jednostek (złoto)',
+  'rozwiaz-spichlerz': 'rozwiązanie jednostek (żywność)',
+};
+
+function opisDzwigni(l: NnsLever): string {
+  const jednostka = l.stock === 'skarbiec' ? 'złota' : 'żywności';
+  return `${OPIS_DZWIGNI_ID[l.id] ?? l.id}: +${fmt(l.zysk)} ${jednostka}/turę`;
+}
+
+/** Stały komunikat bramki: co na minusie (zasób i kwota), które dźwignie pomogą (liczby z projekcji). */
+export function komunikatBramki(brakuje: readonly NnsBrak[], dzwignie: readonly NnsGateLever[]): string {
+  const linie = brakuje.map(b => `${NAZWA[b.stock]}: po turze zabraknie ${fmt(b.ile)}`);
+  const pomoga = dzwignie.length > 0 ? dzwignie.map(d => d.opis).join('; ') : 'brak';
+  return 'Nie można zakończyć tury: ' + linie.join('; ') + '. Pomogą: ' + pomoga + '.';
+}
 
 // ---------------------------------------------------------------------------
 // R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1 (C3) — jednostki jako dźwignie (per jednostka, nie średnia).
