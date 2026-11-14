@@ -53,8 +53,7 @@ function ensureStyles(): void {
 #${HOST_ID}{position:fixed;inset:0;z-index:930;display:flex;align-items:center;justify-content:center;
   padding:20px;pointer-events:none;}
 #${HOST_ID} .cen-backdrop{position:fixed;inset:0;background:rgba(2,3,6,.68);pointer-events:auto;}
-#${HOST_ID} .cen-card{position:relative;width:min(460px,94vw);border-radius:14px;
-  max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;
+#${HOST_ID} .cen-card{position:relative;width:min(460px,94vw);border-radius:14px;overflow:hidden;
   pointer-events:auto;font:14px 'Segoe UI',Tahoma,sans-serif;color:#e8e0c8;
   border:2px solid #e8a8a8;background:linear-gradient(180deg,rgba(40,18,18,.98),rgba(14,6,6,.99));
   box-shadow:0 0 48px rgba(232,138,138,.28),0 22px 60px rgba(0,0,0,.8);}

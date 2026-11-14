@@ -30,7 +30,8 @@ try {
   process.exit(1);
 }
 
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+// Ścieżkę przeglądarki można podać przez env ELIM_CHROME (nie zakładamy stałej lokalizacji).
+const FALLBACK_CHROME = process.env.ELIM_CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const SYSTEM_CHROME = '/usr/bin/chromium';
 const TMPDIR = fs.mkdtempSync(path.join(os.tmpdir(), 'elim-window-scroll-'));
 const OUT = process.env.ELIM_SCROLL_OUT || TMPDIR;
@@ -50,7 +51,7 @@ function ok(cond, msg) {
 async function buildBundle() {
   fs.writeFileSync(ENTRY,
     "export * from '" + path.join(GRA, 'src/ui/eliminationSpectacle.ts') + "';\n"
-    + "export { showCityCaptureNotice, hideCityCaptureNotice } from '"
+    + "export { showCityCaptureNotice, showCaptureReportNotice, hideCityCaptureNotice } from '"
     + path.join(GRA, 'src/ui/cityCaptureNotice.ts') + "';\n", 'utf8');
   const stub = {
     name: 'stub-brand',
@@ -102,7 +103,7 @@ const measure = () => {
     return { top: b.top, bottom: b.bottom, h: b.height };
   };
   const box = document.querySelector('.civ-ccn');
-  const btn = document.querySelector('[data-stay]');
+  const btn = document.querySelector('[data-stay],[data-close]');
   const ttl = document.querySelector('.elsp-ttl');
   return {
     ih: window.innerHeight,
@@ -121,7 +122,7 @@ async function runCase(browser, bundle, label, w, h, opts) {
   await page.setContent('<!doctype html><html><head><meta name="viewport" content="width=device-width"></head>'
     + '<body style="background:#345"></body></html>');
   await page.addScriptTag({ content: bundle });
-  await page.evaluate(({ spectacle, rows }) => {
+  await page.evaluate(({ spectacle, rows, mode }) => {
     const M = window.M;
     const d = spectacle ? M.buildEliminationSpectacle({
       civLabel: 'Egipt',
@@ -130,10 +131,18 @@ async function runCase(browser, bundle, label, w, h, opts) {
       chronicles: new Map(), currentCities: 3, currentPopulation: 40, wonders: 1, techs: 20,
       elimPower: 50, captorPower: 80, captorMaxCities: 9, rulerName: 'Ramzes', capitalName: 'Memfis',
     }) : undefined;
-    M.showCityCaptureNotice('Elefantyna', {
-      eliminatedCivLabel: 'Egipt', reportRows: rows, spectacle: d,
-    });
-  }, { spectacle: opts.spectacle, rows: reportRows(opts.long) });
+    if (mode === 'report') {
+      // Trwały raport zdobycia z panelu Wydarzenia (ta sama klasa .civ-ccn, inny przycisk).
+      M.showCaptureReportNotice({
+        title: 'Miasto zdobyte', cityName: 'Elefantyna', rowsTitle: 'Bilans zdobycia',
+        rows, spectacle: d,
+      });
+    } else {
+      M.showCityCaptureNotice('Elefantyna', {
+        eliminatedCivLabel: 'Egipt', reportRows: rows, spectacle: d,
+      });
+    }
+  }, { spectacle: opts.spectacle, rows: reportRows(opts.long), mode: opts.mode || 'city' });
   // Animacje wejścia (opacity/transform) mają się skończyć przed pomiarem.
   await page.waitForTimeout(800);
   if (opts.openMore) {
@@ -155,7 +164,7 @@ async function runCase(browser, bundle, label, w, h, opts) {
   await page.evaluate(() => { const b = document.querySelector('.civ-ccn'); if (b) b.scrollTop = b.scrollHeight; });
   const end = await page.evaluate(measure);
   ok(end.btn && end.btn.bottom <= end.ih + 0.5 && end.btn.top >= 0,
-    tag + ': po przewinięciu do końca przycisk „Wróć na mapę” w widoku');
+    tag + ': po przewinięciu do końca przycisk zamknięcia (Wróć na mapę / Zamknij) w widoku');
   if (opts.screenshot) {
     await page.evaluate(() => { const b = document.querySelector('.civ-ccn'); if (b) b.scrollTop = 0; });
     await page.screenshot({ path: path.join(OUT, opts.screenshot + '-' + w + 'x' + h + '.png') });
@@ -177,6 +186,13 @@ async function main() {
     for (const [w, h] of SIZES) {
       await runCase(browser, bundle, 'nospec', w, h,
         { spectacle: false, long: true, openMore: true, screenshot: 'after-nospec-long' });
+    }
+    console.log('\n[3] trwały raport zdobycia (showCaptureReportNotice, panel Wydarzenia): wariant widowiskowy i bez spectacle');
+    for (const [w, h] of SIZES) {
+      await runCase(browser, bundle, 'report-spectacle', w, h,
+        { spectacle: true, long: true, openMore: true, mode: 'report', screenshot: 'after-report-spectacle-long' });
+      await runCase(browser, bundle, 'report-nospec', w, h,
+        { spectacle: false, long: true, openMore: true, mode: 'report' });
     }
   } finally {
     await browser.close();
