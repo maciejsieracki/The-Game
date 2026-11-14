@@ -25,7 +25,7 @@ import {
 } from './minimapLayout';
 import { SIDE_PANEL_LEFT, SIDE_PANEL_LEFT_PX } from './sidePanelLayout';
 import { isDiploObscuringUnitDock } from './unitCtxDockDiploGate';
-import { filterSidePanelEventsByTab, relevantInfoEvents, tabCountsOf, tabSourceEventsOf } from './sidePanelEventFilter';
+import { sidePanelTabModelOf } from './sidePanelEventFilter';
 import {
   defaultSidePanelTab,
   SIDE_PANEL_TAB_LABELS,
@@ -62,6 +62,9 @@ export interface SidePanelEvent {
   subtitle?: string;
   kind: SidePanelEventKind;
   blocking?: boolean;
+  /** R-WEB-UI-NOTIF-DIPLO-TAB-COUNT-BLOCKING-Q1: kopia blokującej propozycji diplo w liście zakładki
+   * (blocking:false). Bez „✕” i bez Escape — zamknięcie zostaje na karcie blokującej nad zakładkami. */
+  tabMirror?: boolean;
   /** SPICH-AUTO-Q1: wymusza czerwony styl (jak wydarzenia negatywne). */
   negative?: boolean;
   /** R-WYDARZENIA-FILTR-KATEGORII: wpis „nie-nasz" (dziś wyłącznie handel AI↔AI) —
@@ -654,7 +657,7 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
     const ke = e as KeyboardEvent;
     if (ke.key !== "Escape") return;
     const origin = ke.target as HTMLElement | null;
-    const card = origin?.closest(".sp-event:not(.sp-blocking)[data-id]");
+    const card = origin?.closest(".sp-event:not(.sp-blocking):not(.sp-mirror)[data-id]");
     if (!card) return;
     const id = card.getAttribute("data-id");
     if (id !== null) {
@@ -757,19 +760,12 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
     // (kolejność zwrócona przez getEvents() / filterSidePanelEventsByTab).
     // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: karty blokujące są zawsze widoczne (niezależnie
     // od zakładki); zakładki filtrują WYŁĄCZNIE wpisy informacyjne.
-    const blockingEvents = events.filter(ev => ev.blocking === true);
-    const allInfoEvents = events.filter(ev => ev.blocking !== true);
-    // Liczniki na zakładkach = to, co gracz zobaczy po kliknięciu (z handlem AI↔AI w Dyplomacji).
-    // R-WEB-UI-NOTIF-DIPLO-TAB-COUNT-BLOCKING-Q1: licznik i lista zakładek zasilane wpisami
-    // informacyjnymi + blokującymi propozycjami dyplomacji (kopia jako informacyjna), patrz tabSourceEventsOf.
-    const tabSourceEvents = tabSourceEventsOf(events);
-    const tabCounts = tabCountsOf(tabSourceEvents, true);
-    // Zakładka domyślna nie liczy ukrytego handlu AI↔AI — sam nie przełącza panelu na Dyplomację.
-    if (!activeTabPicked) activeTab = defaultSidePanelTab(tabCountsOf(allInfoEvents, false));
-    const infoEvents = filterSidePanelEventsByTab(tabSourceEvents, activeTab);
-    // Nagłówek i „Zamknij wszystkie informacyjne”: zakres sprzed zakładek — bez ukrytych AI↔AI.
-    const relevantInfo = relevantInfoEvents(allInfoEvents, activeTab);
-    const orderedEvents = [...blockingEvents, ...infoEvents];
+    // R-WEB-UI-NOTIF-DIPLO-TAB-COUNT-BLOCKING-Q1: cały rachunek zakładek w sidePanelTabModelOf
+    // (sidePanelEventFilter.ts) — licznik i lista zakładki zasilane wpisami informacyjnymi oraz
+    // kopiami blokujących propozycji dyplomacji; blokujące karty nad zakładkami bez zmian.
+    const tabModel = sidePanelTabModelOf(events, { activeTab, activeTabPicked });
+    const { blockingEvents, tabCounts, infoEvents, relevantInfo, orderedEvents } = tabModel;
+    activeTab = tabModel.activeTab;
 
     if (isPlaceholder) {
       html += '<div class="sp-header">Wydarzenia</div>';
@@ -913,7 +909,8 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
         const linkAttrs = link === null
           ? ''
           : ' role="button" tabindex="0" aria-label="' + ev.title + ' — ' + link.label + '"';
-        html += '<div class="sp-event' + adverseCls + linkCls + '" data-id="' + ev.id + '"' + linkAttrs + '>'
+        const mirrorCls = ev.tabMirror === true ? ' sp-mirror' : '';
+        html += '<div class="sp-event' + adverseCls + linkCls + mirrorCls + '" data-id="' + ev.id + '"' + linkAttrs + '>'
           + '<span class="sp-ico">' + icoContent + '</span>'
           + '<div>'
           + (hasOwnTitle
@@ -924,7 +921,7 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
         if (link !== null) {
           html += '<span class="sp-goto-cta" data-sp-goto="' + ev.id + '">' + link.label + ' →</span>';
         }
-        if (!isPlaceholder && config.onEventDismiss !== undefined) {
+        if (!isPlaceholder && config.onEventDismiss !== undefined && ev.tabMirror !== true) {
           html += '<span class="sp-close" data-dismiss="' + ev.id + '" title="Zamknij" aria-label="Zamknij powiadomienie">✕</span>';
         }
         html += '</div>';

@@ -35,7 +35,7 @@ function check(cond, msg, extra) {
 fs.writeFileSync(
   ENTRY,
   "export { eventTabOf, defaultSidePanelTab } from '../src/ui/sidePanelEventTabs';\n"
-    + "export { filterSidePanelEventsByTab, tabCountsOf, tabSourceEventsOf } from '../src/ui/sidePanelEventFilter';\n",
+    + "export { filterSidePanelEventsByTab, tabCountsOf, tabSourceEventsOf, sidePanelTabModelOf } from '../src/ui/sidePanelEventFilter';\n",
 );
 
 try {
@@ -55,11 +55,11 @@ try {
 }
 
 const mod = require(BUNDLE);
-const { defaultSidePanelTab, filterSidePanelEventsByTab, tabCountsOf, tabSourceEventsOf } = mod;
+const { defaultSidePanelTab, filterSidePanelEventsByTab, tabCountsOf, tabSourceEventsOf, sidePanelTabModelOf } = mod;
 
 console.log('notif-diplo-tab-count-blocking-test (R-WEB-UI-NOTIF-DIPLO-TAB-COUNT-BLOCKING-Q1)\n');
 
-if (typeof tabSourceEventsOf !== 'function') {
+if (typeof tabSourceEventsOf !== 'function' || typeof sidePanelTabModelOf !== 'function') {
   console.error('  [FAIL] tabSourceEventsOf nie jest wyeksportowane z sidePanelEventFilter (baza bez zmiany)');
   console.log(`\nWynik: ${pass} OK, ${fail} FAIL`);
   process.exit(1);
@@ -142,6 +142,45 @@ const aiAi = {
   const withImportant = [diploBlocking, infoImportant].filter(ev => ev.blocking !== true);
   check(defaultSidePanelTab(tabCountsOf(withImportant, false)) === 'wazne',
     '(6) przy wpisach Ważne zakładka domyślna nadal Ważne');
+}
+
+// (7) okablowanie HUD: model zakładek użyty przez render() (sidePanelTabModelOf) ---
+{
+  const events = [diploBlocking, enemyBlocking, infoDiplo, infoImportant, aiAi];
+  const m = sidePanelTabModelOf(events, { activeTab: 'dyplomacja', activeTabPicked: true });
+  check(m.tabCounts.dyplomacja === 3 && m.tabCounts.wazne === 1 && m.tabCounts.inne === 0,
+    '(7) HUD model: licznik Dyplomacja = info diplo + AI↔AI + blokująca diplo (3), Ważne 1', m.tabCounts);
+  check(m.infoEvents.map(e => e.id).join(',') === 'diplo-peace-ai-1,info-diplo-1,aiai-1',
+    '(7) HUD model: lista zakładki Dyplomacja zawiera blokującą kartę diplo (kopia)', m.infoEvents.map(e => e.id));
+  check(m.infoEvents.length === m.tabCounts.dyplomacja,
+    '(7) HUD model: liczba kart na liście = licznik zakładki', { list: m.infoEvents.length, counts: m.tabCounts });
+  check(m.blockingEvents.length === 2 && m.blockingEvents[0].id === diploBlocking.id && m.blockingEvents[0].blocking === true,
+    '(7) HUD model: oryginał blokującej karty diplo zostaje w blockingEvents (nad zakładkami)', m.blockingEvents.map(e => e.id));
+  check(m.relevantInfo.every(e => e.id !== diploBlocking.id),
+    '(7) HUD model: nagłówek „informacyjne” i „Zamknij wszystkie” nie zawierają kopii blokującej decyzji', m.relevantInfo.map(e => e.id));
+  check(m.orderedEvents.map(e => e.id)[0] === diploBlocking.id && m.orderedEvents[1].id === enemyBlocking.id,
+    '(7) HUD model: kolejka renderu = blokujące najpierw (kolejność zachowana)', m.orderedEvents.map(e => e.id));
+  // Wyłącznie blokująca propozycja diplo, zakładka niewybrana przez gracza -> domyślna Inne (nie Dyplomacja)
+  const onlyDiplo = sidePanelTabModelOf([diploBlocking], { activeTab: 'wazne', activeTabPicked: false });
+  check(onlyDiplo.activeTab === 'inne',
+    '(7) HUD model: sama blokująca diplo nie przełącza domyślnej zakładki na Dyplomację', onlyDiplo.activeTab);
+  check(onlyDiplo.tabCounts.dyplomacja === 1 && onlyDiplo.infoEvents.length === 0,
+    '(7) HUD model: przy zakładce Inne lista pusta, licznik Dyplomacja nadal 1', { c: onlyDiplo.tabCounts, n: onlyDiplo.infoEvents.length });
+  // Zakładka wybrana przez gracza nie jest nadpisywana
+  const picked = sidePanelTabModelOf([infoImportant], { activeTab: 'inne', activeTabPicked: true });
+  check(picked.activeTab === 'inne', '(7) HUD model: wybrana przez gracza zakładka zostaje');
+}
+
+// (8) kopia blokującej diplo oznaczona tabMirror (bez ✕ / Escape w renderze) ---
+{
+  const src = tabSourceEventsOf([diploBlocking, enemyBlocking, infoDiplo]);
+  const mirror = src.find(e => e.id === diploBlocking.id);
+  check(mirror && mirror.tabMirror === true && mirror.blocking === false,
+    '(8) kopia blokującej diplo ma tabMirror:true i blocking:false', mirror);
+  check(src.filter(e => e.id !== diploBlocking.id).every(e => e.tabMirror === undefined),
+    '(8) zwykłe wpisy informacyjne nie dostają tabMirror', src.map(e => [e.id, e.tabMirror]));
+  check(diploBlocking.tabMirror === undefined && diploBlocking.blocking === true,
+    '(8) oryginał blokującej karty nie dostaje tabMirror (zostaje z ✕ i Escape-wykluczeniem)');
 }
 
 console.log(`\nWynik: ${pass} OK, ${fail} FAIL`);
