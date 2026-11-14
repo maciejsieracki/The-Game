@@ -947,3 +947,7 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Trwających Workflow: 0** z 4 (katalog `subagents/workflows/` pusty). Sloty nie zostały uruchomione.
 - **Powód:** czwarty tick bez odpowiedzi na pytanie o pierwszy temat (ZDOBYCIE-MIASTA-WIRING #115 zalecane albo CRED-HAK-WYPOWIEDZENIE #120). Nie zapisuję czterech dispatchów bez potwierdzenia kolejności.
 - **Parity:** `a381dd13f`. Worktree: 2. Dysk wolny: 11 GB.
+
+## Przebieg (14.11, heartbeat 03:17): sloty puste, czeka na wybór tematu
+- **Trwających Workflow: 0** z 4. Sloty nie zostały uruchomione: piąty tick bez odpowiedzi na pytanie o pierwszy temat (#115 zalecane / #120).
+- **Parity:** `a381dd13f`. Worktree: 2. Dysk wolny: 11 GB.
