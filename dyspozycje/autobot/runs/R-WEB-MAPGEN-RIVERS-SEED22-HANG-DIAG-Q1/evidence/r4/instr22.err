@@ -7,3 +7,5 @@ CNT t=67s {"growRiverInlandBeforeDrainage":2881,"estimateLandCentroidFromSeed":2
 CNT t=77s {"growRiverInlandBeforeDrainage":3460,"estimateLandCentroidFromSeed":3460,"aStarRiverToSea":3460,"aStarRiverToTarget":5867}
 CNT t=87s {"growRiverInlandBeforeDrainage":4049,"estimateLandCentroidFromSeed":4049,"aStarRiverToSea":4049,"aStarRiverToTarget":6559}
 CNT t=97s {"growRiverInlandBeforeDrainage":4657,"estimateLandCentroidFromSeed":4657,"aStarRiverToSea":4657,"aStarRiverToTarget":7259}
+
+# ADNOTACJA (runda 4): plik .err jest urwany (strumien CNT z runnera, przerwany przed DONE/CHECKSUM/COUNTERS). Pelny log z tego samego przebiegu: instr22.log.txt

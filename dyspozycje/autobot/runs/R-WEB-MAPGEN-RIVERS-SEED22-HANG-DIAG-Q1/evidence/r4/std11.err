@@ -13,3 +13,5 @@ CNT t=250s {"growRiverInlandBeforeDrainage":5073,"estimateLandCentroidFromSeed":
 CNT t=260s {"growRiverInlandBeforeDrainage":5516,"estimateLandCentroidFromSeed":5515,"aStarRiverToSea":5515,"aStarRiverToTarget":5316}
 CNT t=270s {"growRiverInlandBeforeDrainage":5933,"estimateLandCentroidFromSeed":5933,"aStarRiverToSea":5933,"aStarRiverToTarget":5703}
 CNT t=280s {"growRiverInlandBeforeDrainage":6431,"estimateLandCentroidFromSeed":6431,"aStarRiverToSea":6431,"aStarRiverToTarget":5944}
+
+# ADNOTACJA (runda 4): plik urwany (strumien CNT przerwany przed DONE/CHECKSUM/COUNTERS). Pelny log: std11.log.txt
