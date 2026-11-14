@@ -45,3 +45,16 @@ OBOWIĄZKOWE (kolejność; wynik MUSI być zmierzony, nie wywnioskowany z kodu; 
  7. Rozbieżność z raportu r1: „NNS_AI_BALANCE_TURN_MIN = 11” — to stan bazy edaba111f (gałąź claude), na origin/main wartość = 1 (FALA 710/713); po merge sprawdź i NIE zmieniaj (AI bilansuje od tury 1).
  8. Komunikat bramki ma nowy prefiks „Nie można zakończyć tury. …” — dla R-WEB-UI-END-TURN-BLOCK-EVENT-Q1 wystaw jawnie stabilną strukturę (powód, zasób, prognoza, dźwignie, propozycja podatku, flaga „niewystarczające”) i opisz jej kształt w raporcie.
 Pisząc raport: każdy z punktów 1–8 oznacz ZMIERZONO (z liczbami/ścieżką do zrzutu) albo NIE ZMIERZONO z powodem; NIE oznaczaj tematu jako gotowego bez punktów 1–3.
+
+## DODATEK 6 orkiestratora — RUNDA 3/5 (2026-11-14, PILNE: gra zablokowana u właściciela) — baza: kandydat e7331c4de (r2, refs/keep/R-WEB-GATE-r2-fc-report → 0f6c27dac) + MERGE z origin/main; raport FC r2: 0f6c27dac565710523b2400ace5a680c12736cea (FAIL)
+OPERATOR = SONNET 5.5 (uzasadnienie wg CLAUDE.md zasada 2): dwie kolejne rundy HAIKU tego samego tematu (r1, r2) zakończyły się FC FAIL — za każdym razem pominięte obowiązkowe pomiary w Chromium i niewpięta funkcja w main.ts; temat KRYTYCZNY (blokuje grę właściciela).
+FC r2 — braki (wszystkie wiążące, każdy to osobny punkt raportu ZMIERZONO/NIE ZMIERZONO):
+ A. BRAK pomiaru w żywej grze (Chromium) przypadków a–e z DODATKU 5 pkt 1 i zrzutów shots-*.png — ZACZNIJ OD TEGO (build poza repo, hooki ?civTest=1), zanim ruszysz kod; najpierw odtwórz błąd na bazie, potem pokaż poprawkę.
+ B. BRAK tabeli zgodności projekcja vs realny endTurn (≥3 ziarna × tury 1–15, Skarbiec i Spichlerz).
+ C. `prognozaPoPodatku` / `propozycjaPodatkuKrokami` zdefiniowane w no-negative-stocks.ts, ale NIEUŻYTE w main.ts — wepnij w `nnsGateForPlayer` (main.ts ~l.39523), tak by propozycja podatku (kroki 10%) działała na ścieżce gry; test na poziomie main.ts, nie tylko funkcji czystych.
+ D. BRAK clampa Q3 (maxSafePoziomRacjiForCity) w projekcji automatu i testu braku efektów ubocznych (stan przed/po projekcji identyczny).
+ E. BRAK gra/tools/end-turn-gate-live-test.cjs (zachowanie przycisku/tooltipu a–e, czerwony na bazie).
+ F. Stare live-verify-wave-689-697-a-gate-v2/v4 (zakładają brak blokady w turach 1–10) — zaktualizuj i wypisz.
+Zasada semantyczna (potwierdź w kodzie i teście): „brak ręcznej dźwigni = brak blokady”, ale gdy istnieje realna niewykorzystana dźwignia (podatek / racja), a jej pełne użycie nadal nie wystarcza — blokada obowiązuje i propozycja niesie flagę `niewystarczające`.
+Rozróżnienie żywności i pieniędzy bez zmian (Dodatki 3–4): automat tylko dla żywności; dla skarbca wyłącznie informacja + propozycja podatku.
+Raport: punkty A–F oznacz ZMIERZONO (liczby/ścieżka do zrzutu) albo NIE ZMIERZONO z powodem; brak A, B i C = FAIL.
