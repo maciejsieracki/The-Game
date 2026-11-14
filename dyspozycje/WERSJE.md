@@ -1,3 +1,9 @@
+## ROBOCZA 094e9a29 -- 2026-11-13 -- FALA 698: Lewy baner HUD w waskim oknie nie wystaje nad gorna krawedz (testowa)
+
+- w trybie fallback lewego banera (okno <1000 px szerokosci) powloka ma 88 px zamiast 56 px, wiec siatka chipow 2x3 nie wystaje 6 px nad gorna krawedz okna (800x600, 800x720, 800x900); uklad od 1000 px bez zmian
+- Weryfikacja: tsc 0; logic 213/213; left-banner-chip-grid-clip 204/0 (mutant czerwieni, 13 FAIL); overflow-narrow 74/0; panels-below-banner 130/0; topbar-layout-a 144/0
+- Limity: NIE ZMIERZONO: pelna gra na zywo; przyciecie etykiety Spichlerz przy 640x480; dol siatki zachodzi ok. 5,6 px na panele boczne przy 800 px (swiadomie poza zakresem)
+
 ## ROBOCZA a02ef8a8 -- 2026-11-13 -- FALA 697: Bramka Zakoncz ture: dzwignie podatku i racji + tooltip; wznowienie z zapisu deterministyczne (testowa)
 
 - bramka Zakoncz ture gracza przy prognozie <0 uwzglednia dzwignie: zmiana podatku zlota, racje zywnosci, rozwiazanie jednostek; staly komunikat na przycisku (zasob, minus, lista dzwigni z liczbami); wznowienie gry z zapisu: zapisywane i odtwarzane liczniki detIdSeq i autoBattleSeq — ten sam przebieg co gra nieprzerwana (10/10 tur, ziarna 2222/4242/3131)
