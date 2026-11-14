@@ -108,6 +108,34 @@ for (const t of [1, 20]) {
   ok(v.blokada === true && v.wyjatekStarego === false, '(8) stary zapis z prognoza < 0 -> blokada');
 }
 
+// (9) Dodatek 2 (martwy punkt Spichlerza) — kolejność: automat PRZED oceną, brak dźwigni = brak blokady.
+{
+  // (9a) spichlerz -10, automat naprawia do +2 (dźwignia racji 12 dostępna): bez automatu blokada, z automatem brak blokady.
+  const a = M.decideEndTurnGate(proj(1, 50, 50, 0, -10), 0, 0, { suwakZywnosc: 12, automat: { spichlerzPo: 2 } });
+  ok(a.blokada === false && a.automatPoprawil === true, '(9a) automat naprawia spichlerz -> tura się kończy (mimo dostępnej racji)');
+  // (9b) spichlerz -10, automat nie wystarcza (-4), dźwignia racji 12 -> blokada z prognozą PO automacie.
+  const b = M.decideEndTurnGate(proj(1, 50, 50, 0, -10), 0, 0, { suwakZywnosc: 12, automat: { spichlerzPo: -4 } });
+  ok(b.blokada === true && b.prognoza === -4 && b.zasob === 'spichlerz', '(9b) automat za mało + racja -> blokada, prognoza po automacie');
+  // (9c) spichlerz -10, brak automatu, brak dźwigni -> brak blokady (no softlock).
+  const c = M.decideEndTurnGate(proj(1, 50, 50, 0, -10), 0, 0, {});
+  ok(c.blokada === false, '(9c) brak automatu i brak dźwigni -> brak blokady');
+  // (9d) mutacja: bez uwzględnienia automatu (ten sam przypadek co 9a bez pola automat) musi blokować, gdy jest dźwignia.
+  const d = M.decideEndTurnGate(proj(1, 50, 50, 0, -10), 0, 0, { suwakZywnosc: 12 });
+  ok(d.blokada === true, '(9d) bez automatu, z dźwignią racji -> blokada (automat jest jedyną różnicą względem 9a)');
+}
+
+// (10) Wiązanie main.ts: projekcja automatu (Auto-Żywienie) liczona przed bramką i przekazywana do decideEndTurnGate.
+// Test strukturalny (main.ts nie jest importowalny); mutacja: usunięcie przekazania `automat` -> FAIL.
+{
+  const mainSrc = fs.readFileSync(path.resolve(GRA_ROOT, 'src', 'main.ts'), 'utf8');
+  ok(/_nnsAutoSpichlerzDelta = fAuto\.spichlerzPo - _nnsHumanForecast\.spichlerzPo;/.test(mainSrc),
+    '(10a) main.ts: delta spichlerza po automacie liczona z projekcji po autoBalanceRationsToSolvency');
+  ok(/autoBalanceRationsToSolvency\(\{[\s\S]*?onlyAutoManaged: true,[\s\S]*?\}\);/.test(mainSrc),
+    '(10b) main.ts: projekcja wywołuje autoBalanceRationsToSolvency z onlyAutoManaged: true');
+  ok(/automat: \{ spichlerzPo: spLive \+ _nnsAutoSpichlerzDelta \}/.test(mainSrc),
+    '(10c) main.ts: nnsGateForPlayer przekazuje automat (spichlerzPo na żywym stanie) do decideEndTurnGate');
+}
+
 fs.rmSync(ENTRY, { force: true });
 fs.rmSync(BUNDLE, { force: true });
 console.log(`end-turn-gate-projection-only-test: ${passed} passed, ${failed} failed`);

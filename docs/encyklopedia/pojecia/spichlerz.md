@@ -30,12 +30,12 @@
 - Pojemność: **100 × N** Spichlerzy (normal).  
 - Wojsko przy zapasach **&lt;0**: **−8%** max HP/t (głód).
 
-### Nie poniżej zera po turze (od tury 11)
+### Nie poniżej zera po turze (od tury 1)
 
 Skarbiec i spichlerz państwa (zapasy żywności) nie mogą zakończyć tury poniżej zera (decyzja właściciela 2026-11-13, wariant A):
 - **Od tury 1**: blokada „Zakończ turę” liczy się z prognozy po zakończeniu tury (nie ze stanu obecnego). Brak wyjątku tur 1–10 dla gracza (R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1). Równoważenie AI nie zostało zmienione w tym temacie.
-- **Gracz**: gdy prognoza stanu po ticku tury jest poniżej zera i gorsza niż stan obecny, przycisk „Zakończ turę” jest zablokowany, jeśli gracz ma ruch naprawczy (podatki, rozwiązanie jednostki, usunięcie pozycji z kolejki). Stary zapis z ujemnym stanem, którego prognoza nie pogarsza, nie blokuje gry.
-- **AI**: plan równoważenia (najpierw tańsze środki, bez eliminacji cywilizacji) istnieje w `no-negative-stocks.ts` (`planAiBalance`), ale **nie jest jeszcze wywoływany w pętli tury** (`main.ts`). Stan faktyczny: AI nie równoważy się automatycznie przed końcem tury.
+- **Gracz**: blokada „Zakończ turę” zależy wyłącznie od prognozy stanu PO reakcji automatu zarządzania (Auto-Żywienie obniża racje miast przed rozliczeniem tury). Gdy prognoza jest poniżej zera i gracz ma ruch naprawczy (racja, podatek, rozwiązanie jednostki), przycisk jest zablokowany, a tooltip podaje prognozę po turze i dźwignie. Gdy ruchu naprawczego nie ma, tura nie jest blokowana (brak zakleszczenia). Stan obecny ujemny przy prognozie ≥ 0 nie blokuje tury.
+- **AI**: plan równoważenia (najpierw tańsze środki, bez eliminacji cywilizacji, `planAiBalance` w `no-negative-stocks.ts`) jest wywoływany przed końcem tury przez `decideAiOwnerBalance` (`main.ts`, `nnsAiPreTickBalance`). Zasady AI od tury 11 (`NNS_AI_BALANCE_TURN_MIN`) nie zostały zmienione w tym temacie.
 
 Kod: `gra/src/game/no-negative-stocks.ts`, `main.ts` (`nnsGateForPlayer`, `decideEndTurnGate`).
 
