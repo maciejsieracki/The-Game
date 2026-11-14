@@ -1,0 +1,65 @@
+{
+  "mode": "sweep",
+  "seed": 11,
+  "deficit": 0,
+  "log": [
+    {
+      "k": "startTurn",
+      "v": 1
+    },
+    {
+      "k": "sweepTurn",
+      "v": 11
+    },
+    {
+      "k": "sweepStartHud",
+      "v": [
+        "Skarbiec"
+      ]
+    },
+    {
+      "k": "transitions",
+      "v": [
+        {
+          "total": 0,
+          "canEnd": true,
+          "turn": 11
+        },
+        {
+          "total": 132000,
+          "canEnd": false,
+          "turn": 1,
+          "awaitingFirstCity": true,
+          "domHit": "ostkę OTWÓRZ → WYKONAJ 1 ZAKOŃCZ TURĘ TURA 11 · 3500 P.N.E. Tworzenie świata Standardowy · Kontynenty 9/9 · Po scenie — nakładki zasobów",
+          "marker": "set-1794636443673"
+        }
+      ]
+    },
+    {
+      "k": "firstBlockedDeficit",
+      "v": 132000
+    },
+    {
+      "k": "blocked_turn_before_render",
+      "v": 1
+    },
+    {
+      "k": "blocked_turn_after_render",
+      "v": 1
+    },
+    {
+      "k": "blocked_button",
+      "v": {
+        "title": "",
+        "text": "Zakończ turę"
+      }
+    },
+    {
+      "k": "blocked_hud",
+      "v": [
+        "Skarbiec"
+      ]
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,69 @@
+{
+  "mode": "sweep",
+  "seed": 11,
+  "deficit": 0,
+  "step": 250,
+  "log": [
+    {
+      "k": "startTurn",
+      "v": 1
+    },
+    {
+      "k": "startHud",
+      "v": [
+        "Skarbiec"
+      ]
+    },
+    {
+      "k": "reachedTurn",
+      "v": 11
+    },
+    {
+      "k": "turn11_awaitingFirstCity",
+      "v": false
+    },
+    {
+      "k": "turn11_hud_natural",
+      "v": [
+        "Skarbiec"
+      ]
+    },
+    {
+      "k": "sweepTurn",
+      "v": 11
+    },
+    {
+      "k": "sweepStartHud",
+      "v": [
+        "Skarbiec"
+      ]
+    },
+    {
+      "k": "sweepStartCanEnd",
+      "v": true
+    },
+    {
+      "k": "preGrantNegative",
+      "v": -140000
+    },
+    {
+      "k": "preCanEnd",
+      "v": true
+    },
+    {
+      "k": "transitions",
+      "v": [
+        {
+          "total": 0,
+          "canEnd": true,
+          "turn": 11
+        }
+      ]
+    },
+    {
+      "k": "firstBlockedDeficit",
+      "v": null
+    }
+  ],
+  "errors": []
+}

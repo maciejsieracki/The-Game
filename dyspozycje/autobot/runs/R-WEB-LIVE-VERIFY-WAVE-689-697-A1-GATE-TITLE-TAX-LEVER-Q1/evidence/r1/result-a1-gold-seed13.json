@@ -1,0 +1,140 @@
+{
+  "seed": 13,
+  "log": [
+    {
+      "k": "turn",
+      "v": 11
+    },
+    {
+      "k": "split_start",
+      "v": {
+        "procentPieniadz": "60",
+        "procentNauka": "20",
+        "procentLuksus": "20"
+      }
+    },
+    {
+      "k": "title_noBlock",
+      "v": {
+        "title": "",
+        "cls": "end-turn et-signal",
+        "disabled": false,
+        "text": "Zakończ turę"
+      }
+    },
+    {
+      "k": "racjeSection",
+      "v": "spichlerz"
+    },
+    {
+      "k": "racje_before",
+      "v": {
+        "min": "0",
+        "max": "12",
+        "value": "8"
+      }
+    },
+    {
+      "k": "racje_after",
+      "v": "0"
+    },
+    {
+      "k": "tried",
+      "v": [
+        {
+          "step": "goldDeficitViaSlider",
+          "split": {
+            "procentPieniadz": "0",
+            "procentNauka": "60",
+            "procentLuksus": "40"
+          },
+          "canEnd": false,
+          "btn": {
+            "title": "Nie można zakończyć tury: Skarbiec (złoto): po turze zabraknie 2. Pomogą: podatek złota: +5 złota/turę; rozwiązanie jednostek (złoto): +12 złota/turę; rozwiązanie jednostek (żywność): +12 żywności/turę.",
+            "cls": "end-turn is-disabled",
+            "disabled": false,
+            "text": "Zakończ turę"
+          }
+        },
+        {
+          "step": "afterRacjeMin",
+          "canEnd": false,
+          "title": "Nie można zakończyć tury: Skarbiec (złoto): po turze zabraknie 2. Pomogą: podatek złota: +5 złota/turę; rozwiązanie jednostek (złoto): +12 złota/turę; rozwiązanie jednostek (żywność): +12 żywności/turę."
+        }
+      ]
+    },
+    {
+      "k": "goldOnlyBlock",
+      "v": 2
+    },
+    {
+      "k": "split_afterBackToSkarbiec",
+      "v": {
+        "procentPieniadz": "0",
+        "procentNauka": "60",
+        "procentLuksus": "40"
+      }
+    },
+    {
+      "k": "turnAtBlock",
+      "v": 11
+    },
+    {
+      "k": "title_goldBlock_afterUiSlider",
+      "v": {
+        "title": "Nie można zakończyć tury: Skarbiec (złoto): po turze zabraknie 2. Pomogą: podatek złota: +5 złota/turę; rozwiązanie jednostek (złoto): +12 złota/turę; rozwiązanie jednostek (żywność): +12 żywności/turę.",
+        "cls": "end-turn is-disabled",
+        "disabled": false,
+        "text": "Zakończ turę"
+      }
+    },
+    {
+      "k": "blockedClick_turn",
+      "v": {
+        "before": 11,
+        "after": 11
+      }
+    },
+    {
+      "k": "lever_split",
+      "v": {
+        "before": {
+          "procentPieniadz": "0",
+          "procentNauka": "60",
+          "procentLuksus": "40"
+        },
+        "after": {
+          "procentPieniadz": "50",
+          "procentNauka": "0",
+          "procentLuksus": "50"
+        }
+      }
+    },
+    {
+      "k": "lever_canEndAfter",
+      "v": true
+    },
+    {
+      "k": "lever_button",
+      "v": {
+        "title": "",
+        "cls": "end-turn et-signal",
+        "disabled": false,
+        "text": "Zakończ turę"
+      }
+    },
+    {
+      "k": "lever_hudSk",
+      "v": "Skarbiec 10 +4 / −8 Praca 70 +7 / +7 Sp"
+    },
+    {
+      "k": "lever_click_turn",
+      "v": {
+        "before": 11,
+        "after": 12
+      }
+    }
+  ],
+  "errors": [],
+  "grantCalls": 0
+}

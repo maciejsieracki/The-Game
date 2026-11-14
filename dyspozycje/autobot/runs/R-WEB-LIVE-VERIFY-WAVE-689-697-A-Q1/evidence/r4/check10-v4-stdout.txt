@@ -1,0 +1,193 @@
+[
+ {
+  "k": "playerCitiesAfterFound",
+  "v": 1
+ },
+ {
+  "k": "turn1_deficitUnitsAdded",
+  "v": 2
+ },
+ {
+  "k": "turn1_canEndAtDeficit",
+  "v": true
+ },
+ {
+  "k": "turn1_endedTo",
+  "v": 2
+ },
+ {
+  "k": "turn2_deficitUnitsAdded",
+  "v": 2
+ },
+ {
+  "k": "turn2_canEndAtDeficit",
+  "v": true
+ },
+ {
+  "k": "turn2_endedTo",
+  "v": 3
+ },
+ {
+  "k": "turn3_deficitUnitsAdded",
+  "v": 2
+ },
+ {
+  "k": "turn3_canEndAtDeficit",
+  "v": true
+ },
+ {
+  "k": "turn3_endedTo",
+  "v": 4
+ },
+ {
+  "k": "turn4_deficitUnitsAdded",
+  "v": 2
+ },
+ {
+  "k": "turn4_canEndAtDeficit",
+  "v": true
+ },
+ {
+  "k": "turn4_endedTo",
+  "v": 5
+ },
+ {
+  "k": "turn5_deficitUnitsAdded",
+  "v": 2
+ },
+ {
+  "k": "turn5_canEndAtDeficit",
+  "v": true
+ },
+ {
+  "k": "turn5_endedTo",
+  "v": 6
+ },
+ {
+  "k": "turn6_deficitUnitsAdded",
+  "v": 2
+ },
+ {
+  "k": "turn6_canEndAtDeficit",
+  "v": true
+ },
+ {
+  "k": "turn6_endedTo",
+  "v": 7
+ },
+ {
+  "k": "turn7_deficitUnitsAdded",
+  "v": 2
+ },
+ {
+  "k": "turn7_canEndAtDeficit",
+  "v": true
+ },
+ {
+  "k": "turn7_endedTo",
+  "v": 8
+ },
+ {
+  "k": "turn8_deficitUnitsAdded",
+  "v": 2
+ },
+ {
+  "k": "turn8_canEndAtDeficit",
+  "v": true
+ },
+ {
+  "k": "turn8_endedTo",
+  "v": 9
+ },
+ {
+  "k": "turn9_deficitUnitsAdded",
+  "v": 2
+ },
+ {
+  "k": "turn9_canEndAtDeficit",
+  "v": true
+ },
+ {
+  "k": "turn9_endedTo",
+  "v": 10
+ },
+ {
+  "k": "turn10_deficitUnitsAdded",
+  "v": 2
+ },
+ {
+  "k": "turn10_canEndAtDeficit",
+  "v": true
+ },
+ {
+  "k": "turn10_endedTo",
+  "v": 11
+ },
+ {
+  "k": "reachedTurn",
+  "v": 11
+ },
+ {
+  "k": "turn11_awaitingFirstCity",
+  "v": false
+ },
+ {
+  "k": "turn11_canEndNatural",
+  "v": true
+ },
+ {
+  "k": "probe_units1",
+  "v": {
+   "canEnd": true,
+   "turn": 11,
+   "unitCount0": 23,
+   "hud": "Skarbiec -430 +5 / −79 Praca 69 +"
+  }
+ },
+ {
+  "k": "probe_units2",
+  "v": {
+   "canEnd": true,
+   "turn": 11,
+   "unitCount0": 24,
+   "hud": "Skarbiec -430 +5 / −79 Praca 69 +"
+  }
+ },
+ {
+  "k": "probe_units3",
+  "v": {
+   "canEnd": true,
+   "turn": 11,
+   "unitCount0": 25,
+   "hud": "Skarbiec -430 +5 / −79 Praca 69 +"
+  }
+ },
+ {
+  "k": "probe_units50",
+  "v": {
+   "canEnd": true,
+   "turn": 11,
+   "unitCount0": 72,
+   "hud": "Skarbiec -430 +5 / −79 Praca 69 +"
+  }
+ },
+ {
+  "k": "transitions",
+  "v": [
+   {
+    "units": 0,
+    "canEnd": true,
+    "turn": 11
+   }
+  ]
+ },
+ {
+  "k": "firstBlockedUnits",
+  "v": null
+ },
+ {
+  "k": "unitsAddedTotal",
+  "v": 60
+ }
+]
+errors [] fatal -

@@ -1,0 +1,4 @@
+[]
+errors [] fatal page.evaluate: Target page, context or browser has been closed
+    at Object.turn (/home/user/The-Game/.claude/worktrees/wf_2d35508d-cb3-1/gra/tools/live-verify-wave-689-697-a1-title-tax.cjs:30:22)
+    at main (/home/user/The-Game/.claude/worktrees/wf_2d35508d-cb3-1/gra/tools/live-verify-wave-689-697-a1-title-tax.cjs:57:21)
