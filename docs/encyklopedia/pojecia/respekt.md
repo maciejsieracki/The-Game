@@ -44,7 +44,7 @@ Respekt jest **osobny dla każdej pary** cywilizacji. Składa się z Zaufaniem (
 | Trybut zapłacony | +10 | (wywoływane przez grę) |
 | Wspólny wróg zaakceptowany | +10 | zdefiniowane w kodzie; w grze nie jest jeszcze wywoływane |
 
-Zdarzenia „Przewaga militarna” (+15) i „Słabszy militarnie” (−10) są zapisane w kodzie (`diplomacy.ts`), ale gra ich nigdzie nie wywołuje: nie działają jako źródło Respektu i nie są podane w tabeli jako obowiązujące. Ta zmiana jest zgodna z decyzją właściciela o przepisaniu przewagi militarnej (wdrożenie w toku).
+Zdarzenia „Przewaga militarna” (+15) i „Słabszy militarnie” (−10) są zapisane w kodzie (`diplomacy.ts`), ale gra ich nigdzie nie wywołuje: nie działają jako źródło Respektu i nie są podane w tabeli jako obowiązujące. Decyzja właściciela z 2026-11-13 przepisała przewagę militarną (+15 przy 50% przewagi, tylko siła wojskowa), ale to wywołanie nie zostało jeszcze dopięte w `main.ts`. Stan do potwierdzenia: nie działa w grze.
 
 Siła, z której liczony jest Respekt, to **Moc** (patrz hasło **Moc — podział na wojskowy i gospodarczy**). Respekt pary to udział mocy jednej nacji w sumie mocy obu.
 
@@ -98,4 +98,4 @@ Uwaga: limit składnika Respektu to 0–100 (`diplomacy.ts`, funkcja zdarzeń). 
 
 ## Historia / decyzje
 
-Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Runda 2 (obrona, zarzut 4): źródła „Przewaga militarna” i „Słabszy militarnie” usunięte z obowiązujących (brak wywołań w `main.ts`; grep: tylko definicja i `case` w `diplomacy.ts`). Zasady niewdrożone: DECYZJA WŁAŚCICIELA 2026-11-13.
+Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Runda 2 (obrona, zarzut 4): źródła „Przewaga militarna” i „Słabszy militarnie” usunięte z obowiązujących (brak wywołań w `main.ts`; grep: tylko definicja i `case` w `diplomacy.ts`). Zasady z DECYZJI WŁAŚCICIELA 2026-11-13 są wdrożone (Respekt = udział mocy w sumie, bez wpływu wojny, `computeRespekt` w `diplomacy.ts`), z wyjątkiem zdarzeń „Przewaga militarna” i „Słabszy militarnie” opisanych wyżej — ich wywołanie nie jest jeszcze w grze.
