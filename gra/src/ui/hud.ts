@@ -337,6 +337,8 @@ export interface HudConfig {
   /** A1-Q9: WYKONAJ (przypomnienia) + koniec tury zawsze dostępny (D1B dolny pasek). */
   onExecutePending?: () => void;
   canEndTurn?: () => boolean;
+  /** R-WEB-ECON-NO-NEGATIVE-STOCKS-END-TURN-GATE-LEVERS-Q1: stały tooltip przycisku przy blokadzie bramki. */
+  getEndTurnTooltip?: () => string;
   getBlockingCount?: () => number;
   getYearLabel?: () => string;
   /** Playtest walki: ukryj koniec tury. */
@@ -2073,6 +2075,7 @@ function mountBottomBar(): void {
     onExecutePending: cfg.onExecutePending,
     onEndTurn: cfg.onEndTurn,
     canEndTurn: cfg.canEndTurn,
+    getEndTurnTooltip: cfg.getEndTurnTooltip,
     getBlockingCount: cfg.getBlockingCount,
     hideEndTurn: cfg.hideEndTurn,
   });
