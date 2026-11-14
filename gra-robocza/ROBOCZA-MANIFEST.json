@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "dea19d1efc87beef288df9f6a823eae1",
-  "bundleSha256": "266696d28a2f0d71d0e773758da9314216bad4f3d54d6138cdd31ddb752e779b",
-  "bundleBytes": 14682317,
+  "bundleMd5": "69982981d0c9faf7f87e11b1720b8d0c",
+  "bundleSha256": "b08fbfbf28af2b74dac6f25251823d9199885bc08000cc38e54d58d59f8925c2",
+  "bundleBytes": 14683054,
   "sourceSnapshot": {
-    "source": "origin/main 6e72c3c17 + merge FC 1698a9213 + hak 3cc205e4a",
+    "source": "origin/main 0ff8dfd41 + merge FC 0dafacd81",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 700: gra/src/main.ts: disbandPlayerUnit wola markCityStateDirty() przed refreshD1bHud() - tooltip i bramka Zakoncz ture od razu pokazuja nowy stan po rozwiazaniu jednostki (panel armii pojedynczo i masowo deleguje do tej funkcji); hak read-only ?civTest=1 peaceTrace (W80B1) bez logiki gry"
+    "FALA 701: gra/src/game/det-digest-normalize.ts + blok __detHarness.digest w main.ts: stackGroupId i city.siegeArmyGroupId normalizowane do kanonicznych indeksow (tylko hak testowy ?civTest=1, zero zmian logiki gry)"
   ],
   "verification": [
-    "tsc 0; logic 213/213; disband-unit-mark-dirty-test 6/0 (mutacja FAIL 3/3); tech-tree 20/0, research 33/0, unit-replace 21/21, combat 6/6 (FC)"
+    "tsc 0; logic 213/213; determinism-digest-stackgroup-test 5/5 (mutacje FAIL); tech-tree 20/0, research 33/0, unit-replace 21/21, combat 6/6 (FC/Operator); live Chromium 2x22 tury identyczne digesty (Evaluator)"
   ],
   "limits": [
-    "Realny klik Rozwiaz w UI w Chromium nie zmierzony (brak haka selekcji jednostki); sciezki debugKillPlayer i removeUnit (hooki testowe) bez dirty - poza realna sciezka"
+    "Wiecej ziaren, przebiegi powyzej 22 tur i stare zapisy nie zmierzone; sam freshStackGroupId nadal uzywa Date.now (decyzja o formacie ID poza zakresem)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES 1976a32c7 (DISBAND-DIRTY): disbandPlayerUnit oznacza stan ekonomii jako zmieniony (markCityStateDirty) przed odswiezeniem HUD - tooltip i bramka Zakoncz ture pokazuja nowy deficyt po realnym rozwiazaniu jednostki; test disband-unit-mark-dirty 6/0, mutacja usuniecia i zakomentowania daje FAIL 3/3. NIE ZMIERZONO: realny klik Rozwiaz w UI w Chromium (brak haka selekcji jednostki). Dodatkowo hak read-only ?civTest=1 peaceTrace z W80B1 (FC PASS-WITH-NOTES e04637a43), bez logiki gry."
+    "notes": "FC PASS-WITH-NOTES cb17a63ef (DIGEST-NORM): digest stanu __detHarness (hak testowy ?civTest=1) normalizuje stackGroupId i city.siegeArmyGroupId (Date.now w armyMerge.ts:75) do kanonicznych indeksow - dwa przebiegi tego samego ziarna maja identyczne digesty bez zamrazania zegara (Evaluator live: 22/22 na ziarnach 271828 i 314159; baza rozjezdza sie w T18-22); test 5/5, mutacje FAIL. Zero zmian logiki gry. NIE ZMIERZONO: wiecej ziaren, przebiegi >22 tury, stare zapisy."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-14T08:02:57",
+  "hubGeneratedAt": "2026-11-14T09:04:55",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "dea19d1efc87beef288df9f6a823eae1",
-      "sizeBytes": 14682317
+      "md5": "69982981d0c9faf7f87e11b1720b8d0c",
+      "sizeBytes": 14683054
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "dea19d1efc87beef288df9f6a823eae1",
-      "sizeBytes": 14682317
+      "md5": "69982981d0c9faf7f87e11b1720b8d0c",
+      "sizeBytes": 14683054
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "dea19d1efc87beef288df9f6a823eae1",
-      "sizeBytes": 14682317
+      "md5": "69982981d0c9faf7f87e11b1720b8d0c",
+      "sizeBytes": 14683054
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "dea19d1efc87beef288df9f6a823eae1",
-      "sizeBytes": 14682317
+      "md5": "69982981d0c9faf7f87e11b1720b8d0c",
+      "sizeBytes": 14683054
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "dea19d1efc87beef288df9f6a823eae1",
-      "sizeBytes": 14682317
+      "md5": "69982981d0c9faf7f87e11b1720b8d0c",
+      "sizeBytes": 14683054
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "dea19d1efc87beef288df9f6a823eae1",
-      "sizeBytes": 14682317
+      "md5": "69982981d0c9faf7f87e11b1720b8d0c",
+      "sizeBytes": 14683054
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "dea19d1efc87beef288df9f6a823eae1",
-      "sizeBytes": 14682317
+      "md5": "69982981d0c9faf7f87e11b1720b8d0c",
+      "sizeBytes": 14683054
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "dea19d1efc87beef288df9f6a823eae1",
-      "sizeBytes": 14682317
+      "md5": "69982981d0c9faf7f87e11b1720b8d0c",
+      "sizeBytes": 14683054
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "dea19d1efc87beef288df9f6a823eae1",
-      "sizeBytes": 14682317
+      "md5": "69982981d0c9faf7f87e11b1720b8d0c",
+      "sizeBytes": 14683054
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "dea19d1efc87beef288df9f6a823eae1",
-      "sizeBytes": 14682317
+      "md5": "69982981d0c9faf7f87e11b1720b8d0c",
+      "sizeBytes": 14683054
     }
   ],
-  "md5": "dea19d1efc87beef288df9f6a823eae1",
+  "md5": "69982981d0c9faf7f87e11b1720b8d0c",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
