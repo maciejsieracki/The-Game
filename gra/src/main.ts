@@ -440,7 +440,7 @@ import {
   REBEL_FACTION_OWNER_ID,
 } from './game/society-breakdown';
 import { computeCitizenResourceDrain } from './game/citizen-resource-upkeep';
-import { citizenLedgerParts, recordTakenToLedger, upkeepLedgerParts, pendingLedgerSink, drainPendingLedgerInto, recordStockDeltaToPending, resetPendingLedger, recordLedgerFlow, ledgerTurnForOwner, peekPendingLedger, setLedgerRecordingEnabled, isLedgerRecordingEnabled, type ResourceLedgerTurn, commitLedgerHistoryTick, readLedgerHistoryTurns, resetLedgerHistory } from './game/resource-ledger';
+import { citizenLedgerParts, recordTakenToLedger, upkeepLedgerParts, pendingLedgerSink, drainPendingLedgerInto, recordStockDeltaToPending, resetPendingLedger, recordLedgerFlow, ledgerTurnForOwner, peekPendingLedger, setLedgerRecordingEnabled, isLedgerRecordingEnabled, type ResourceLedgerTurn, commitLedgerHistoryTick, readLedgerHistoryTurns, resetLedgerHistory, ledgerHistoryToSave, restoreLedgerHistoryFromSave } from './game/resource-ledger';
 import { BATTLE_MODE_SETTING_VERSION, isAutomaticOnlyBattleMode } from './game/battle-mode';
 import { normalizeHitMode, setActiveHitMode } from './game/hit-mode';
 import { resourceUsageBreakdownFor, resourceUsageHasAny } from './game/resource-usage-breakdown';
@@ -39227,6 +39227,7 @@ async function boot(): Promise<void> {
         wersja: SAVE_VERSION,
         tura: turn,
         seed: _gameSeed,
+        resourceLedgerHistory: ledgerHistoryToSave(), // R-WEB-UI-...-UI-AND-REST-Q1 (partia 3b): dziennik N tur
         units: units.slice(),
         cities: cities.slice(),
         exploredByHuman: exploredByHumanSave,
@@ -48527,6 +48528,8 @@ async function boot(): Promise<void> {
         _gameSeed = saved.seed;
       }
       turn = saved.tura;
+      // R-WEB-UI-...-UI-AND-REST-Q1 (partia 3b): dziennik N tur z zapisu; brak pola = pusty dziennik.
+      restoreLedgerHistoryFromSave(saved.resourceLedgerHistory, readLedgerHistoryTurns(data.econParams, _menuDifficulty));
       // R-WEB-DETERMINISM-SAVE-LOAD-RESUME-Q1: przywrocenie licznikow z meta (brak pola = 0, jak dotad).
       {
         const m = saved.meta as { detIdSeq?: unknown; autoBattleSeqTurn?: unknown; autoBattleSeq?: unknown } | undefined;

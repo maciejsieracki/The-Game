@@ -388,3 +388,71 @@ export function ledgerSourceLinesForResource(
   });
   return lines;
 }
+
+/**
+ * R-WEB-UI-RESOURCE-SOURCE-LEDGER-UI-AND-REST-Q1 (partia 3b, kryterium b): zapis pamięci N tur w zapisie gry.
+ * Format: tablica ticków (od najstarszego), każdy tick = { ownerId (string) -> rekord tury }.
+ * Pole w SaveGame jest OPCJONALNE: stary zapis bez pola = pusty dziennik (bez błędu).
+ * Okno `pending` (pobory poza tickiem między tickami) NIE jest zapisywane: po wczytaniu jest
+ * opróżniane (resetPendingLedger), jak dotąd — jawne opróżnienie z uzasadnieniem w raporcie.
+ */
+export type LedgerHistorySave = Array<Record<string, ResourceLedgerTurn>>;
+
+function cloneLedgerTurn(turn: ResourceLedgerTurn): ResourceLedgerTurn {
+  const byResource: Record<string, Record<string, LedgerFlow>> = {};
+  for (const [resourceKey, bySource] of Object.entries(turn.byResource)) {
+    const copy: Record<string, LedgerFlow> = {};
+    for (const [sourceKey, flow] of Object.entries(bySource)) {
+      copy[sourceKey] = { kind: flow.kind, label: flow.label, amount: flow.amount };
+    }
+    byResource[resourceKey] = copy;
+  }
+  return { byResource };
+}
+
+/** Kopia pamięci N tur do zapisu (niezależna od późniejszych mutacji map). */
+export function ledgerHistoryToSave(): LedgerHistorySave {
+  return ledgerTickHistory.map(m => {
+    const out: Record<string, ResourceLedgerTurn> = {};
+    for (const [ownerId, turn] of m) out[String(ownerId)] = cloneLedgerTurn(turn);
+    return out;
+  });
+}
+
+function isLedgerFlowShape(v: unknown): v is LedgerFlow {
+  const f = v as LedgerFlow | null | undefined;
+  return !!f && typeof f === 'object' && typeof f.kind === 'string' && typeof f.label === 'string'
+    && typeof f.amount === 'number' && Number.isFinite(f.amount);
+}
+
+/**
+ * Odtwarza pamięć N tur z zapisu. Brak / zły kształt = pusty dziennik (nigdy wyjątek).
+ * Przycina do ostatnich `maxTurns` ticków; pozycje o złym kształcie są pomijane.
+ */
+export function restoreLedgerHistoryFromSave(raw: unknown, maxTurns: number): void {
+  resetLedgerHistory();
+  if (!Array.isArray(raw)) return;
+  const keep = Math.max(0, Math.floor(maxTurns));
+  const ticks = raw.slice(Math.max(0, raw.length - keep));
+  for (const tick of ticks) {
+    if (!tick || typeof tick !== 'object') continue;
+    const m = new Map<number, ResourceLedgerTurn>();
+    for (const [key, value] of Object.entries(tick as Record<string, unknown>)) {
+      const ownerId = Number(key);
+      const byResource = (value as { byResource?: unknown } | null | undefined)?.byResource;
+      if (!Number.isFinite(ownerId) || !byResource || typeof byResource !== 'object') continue;
+      const turn = createLedgerTurn();
+      for (const [resourceKey, bySource] of Object.entries(byResource as Record<string, unknown>)) {
+        if (!bySource || typeof bySource !== 'object') continue;
+        for (const [sourceKey, flow] of Object.entries(bySource as Record<string, unknown>)) {
+          if (!isLedgerFlowShape(flow)) continue;
+          const bucket = turn.byResource[resourceKey] ?? {};
+          bucket[sourceKey] = { kind: flow.kind, label: flow.label, amount: flow.amount };
+          turn.byResource[resourceKey] = bucket;
+        }
+      }
+      m.set(ownerId, turn);
+    }
+    ledgerTickHistory.push(m);
+  }
+}
