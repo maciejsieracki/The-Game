@@ -12,7 +12,7 @@
 
 ## Wiki‑S
 
-W koszyku negocjacji dyplomacji możesz wymieniać surowce **ilościowe** (drewno, kamień, glina, cegła, ceramika, ruda) w **pakietach po 10 sztuk**. Każdy surowiec ma cenę jednostkową w Punktach Negocjacji (PN) — wartość pozycji koszyka = liczba pakietów × 10 × cena jednostkowa.
+W koszyku negocjacji dyplomacji możesz wymieniać surowce **ilościowe** (drewno, kamień, glina, cegła, ceramika, ruda i pozostałe surowce przetworzone). Liczba Punktów Negocjacji (PN) za blok surowca **nie zmienia się** między epokami — rośnie **ilość surowca**, którą trzeba dać za ten sam PN: w **Kamieniu** 10 sztuk = 1 PN, w **Brązie** 50 sztuk = 1 PN, w **Żelazie** 100 sztuk = 1 PN. Złoto i węgiel są wyceniane za sztukę (w Brązie złoto 10 PN, w Żelazie 5 PN; węgiel odpowiednio 4 i 2 PN).
 
 ---
 
@@ -20,7 +20,7 @@ W koszyku negocjacji dyplomacji możesz wymieniać surowce **ilościowe** (drewn
 
 ### Jak działa koszyk
 
-Panel negocjacji (`diplomacyTradeBasket.ts`) pozwala dodać pozycję „surowiec (ilość)" — wybierasz surowiec i liczbę **pakietów**; każdy pakiet to **10 sztuk** (domyślnie 10, wartość strojona w parametrach gry). Gra pokazuje etykietę w stylu „Drewno ×10 (pakiet) × 3 = 30 szt.".
+Panel negocjacji (`diplomacyTradeBasket.ts`) pozwala dodać pozycję „surowiec (ilość)" — wybierasz surowiec i liczbę **sztuk**; ilość zaokrągla się w dół do pełnego bloku epoki (Kamień 10, Brąz 50, Żelazo 100 szt.; wartości w `econ-params.json`, klucze `krok_blok_*`).
 
 ### Cennik jednostkowy (normal, placeholder do strojenia)
 

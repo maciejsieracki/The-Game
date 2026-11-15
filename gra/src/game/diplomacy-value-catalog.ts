@@ -305,21 +305,61 @@ function readHandelSurowceParam(rowKey: string, fallback: number): number {
 // Węgiel NIE są tu dotknięte (nie były częścią ×5 rebalansu, zostają przy kroku 1, jak dotąd).
 // ---------------------------------------------------------------------------
 
-/** Surowce ilościowe dotknięte ×5 rebalansem produkcji — krok handlu 10 szt. (patrz wyżej). */
-const HANDEL_SUROWCE_KROK10: ReadonlySet<string> = new Set([
+/** Surowce ilościowe „blokowe” (krok handlu = blok zależny od epoki) — cena PN za blok bez zmian. */
+const HANDEL_SUROWCE_BLOK: ReadonlySet<string> = new Set([
   'drewno', 'glina', 'kamien', 'ruda', 'ruda_zelaza', 'ruda_cyny', 'cegla', 'sol', 'kon',
   'ceramika', 'braz', 'zelazo', 'stal',
 ]);
 
 /**
- * Minimalny krok/wielokrotność wymiany handlowej (szt.) dla danego surowca ilościowego.
- * 10 dla surowców fizycznych dotkniętych ×5 rebalansem produkcji (patrz `HANDEL_SUROWCE_KROK10`
- * — krok podniesiony z 5 na 10 przez R-DYPLO-CENNIK-KROK10-Q1), 1 dla Złota/Węgla (świadomie
- * wyłączone z ×5) i dla wszystkiego spoza katalogu (bezpieczny fallback — brak krotności =
- * brak ograniczenia).
+ * R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 (korekta właściciela 2026-11-15, „totalnie na odwrót"):
+ * LICZBA PUNKTÓW NEGOCJACJI za blok zostaje, rośnie ILOŚĆ SUROWCA na ten sam PN.
+ * Kamień: 10 szt. = 1 PN; Brąz: 50 szt. = 1 PN; Żelazo: 100 szt. = 1 PN (econ-params
+ * krok_blok_*). Złoto/węgiel: krok 1 szt., cena za szt. dzielona przez mnożnik epoki (×5, ×10).
+ * Epoka handlu: bieżąca ustawiona przez `setDiplomacyTradeEra` (domyślnie 1 = Kamień).
  */
-export function diplomacyHandelSurowiecKrok(surowiecKey: string): number {
-  return HANDEL_SUROWCE_KROK10.has(surowiecKey.trim().toLowerCase()) ? 10 : 1;
+let _diplomacyTradeEra = 1;
+
+function normalizeTradeEra(era: number | null | undefined): 1 | 2 | 3 {
+  const e = Math.floor(Number(era));
+  if (!Number.isFinite(e) || e <= 1) return 1;
+  if (e === 2) return 2;
+  return 3;
+}
+
+/** Ustawia epokę handlu używaną, gdy wywołanie nie podaje `era` (wołane przy zmianie epoki gracza). */
+export function setDiplomacyTradeEra(era: number): void {
+  _diplomacyTradeEra = normalizeTradeEra(era);
+}
+
+/** Aktualna epoka handlu (1 Kamień, 2 Brąz, 3 Żelazo). */
+export function diplomacyTradeEra(): number {
+  return _diplomacyTradeEra;
+}
+
+const KROK_BLOK_ROW_BY_ERA: Readonly<Record<1 | 2 | 3, string>> = {
+  1: 'krok_blok_kamien',
+  2: 'krok_blok_braz',
+  3: 'krok_blok_zelazo',
+};
+const KROK_BLOK_FALLBACK_BY_ERA: Readonly<Record<1 | 2 | 3, number>> = { 1: 10, 2: 50, 3: 100 };
+
+/** Krok handlu (sztuk na 1 blok = 1 PN) dla epoki: Kamień 10, Brąz 50, Żelazo 100. */
+export function diplomacyHandelKrokBlokEpoki(era?: number): number {
+  const e = normalizeTradeEra(era ?? _diplomacyTradeEra);
+  return readHandelSurowceParam(KROK_BLOK_ROW_BY_ERA[e], KROK_BLOK_FALLBACK_BY_ERA[e]);
+}
+
+/**
+ * Minimalny krok/wielokrotność wymiany handlowej (szt.) dla danego surowca ilościowego.
+ * Surowce blokowe (`HANDEL_SUROWCE_BLOK`): blok epoki (Kamień 10, Brąz 50, Żelazo 100 szt.,
+ * R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1); 1 dla Złota/Węgla i dla wszystkiego spoza katalogu
+ * (bezpieczny fallback — brak krotności = brak ograniczenia).
+ */
+export function diplomacyHandelSurowiecKrok(surowiecKey: string, era?: number): number {
+  return HANDEL_SUROWCE_BLOK.has(surowiecKey.trim().toLowerCase())
+    ? diplomacyHandelKrokBlokEpoki(era)
+    : 1;
 }
 
 /**
@@ -345,11 +385,12 @@ export function diplomacyNormalizeSurowiecIlosc(
   surowiecKey: string,
   rawQty: number,
   max?: number,
+  era?: number,
 ): number {
   if (!Number.isFinite(rawQty)) return 0;
   const capped = max != null && Number.isFinite(max) ? Math.min(rawQty, max) : rawQty;
   if (!(capped > 0)) return 0;
-  const krok = diplomacyHandelSurowiecKrok(surowiecKey);
+  const krok = diplomacyHandelSurowiecKrok(surowiecKey, era);
   if (krok <= 1) return Math.floor(capped);
   return Math.floor(capped / krok) * krok;
 }
@@ -377,11 +418,17 @@ export function diplomacyHandelSurowcePakietWielkosc(): number {
  * price, but it was always a per-block price (krok units) — that misleading name was the direct
  * cause of the ×5 incident. Pure rename, no logic/value change.
  */
-export function diplomacyHandelSurowiecCenaZaBlok(surowiecKey: string): number | null {
-  const rowKey = HANDEL_SUROWCE_CENA_ROW[surowiecKey.trim().toLowerCase()];
+export function diplomacyHandelSurowiecCenaZaBlok(surowiecKey: string, era?: number): number | null {
+  const key = surowiecKey.trim().toLowerCase();
+  const rowKey = HANDEL_SUROWCE_CENA_ROW[key];
   if (!rowKey) return null;
   const v = readHandelSurowceParam(rowKey, NaN);
-  return Number.isFinite(v) && v >= 0 ? v : null;
+  if (!(Number.isFinite(v) && v >= 0)) return null;
+  if (HANDEL_SUROWCE_BLOK.has(key)) return v;
+  // Złoto/węgiel (krok 1 szt.): ta sama ilość surowca na 1 PN rośnie ×5 (Brąz) i ×10 (Żelazo),
+  // więc cena za sztukę maleje o ten sam mnożnik (50 → 10 → 5; 20 → 4 → 2).
+  const mnoznik = diplomacyHandelKrokBlokEpoki(era) / diplomacyHandelKrokBlokEpoki(1);
+  return v / mnoznik;
 }
 
 /**
@@ -411,12 +458,16 @@ export function diplomacyHandelSurowiecCenaZaBlok(surowiecKey: string): number |
  * silently re-applying the pre-rescale price to the post-×5 quantities. Now divides by
  * `krok` first to get the block count (exact, since `sztuki` is already a multiple of it).
  */
-export function diplomacyPnSurowiecIlosc(surowiecKey: string, iloscSztuk: number): number | null {
-  const cena = diplomacyHandelSurowiecCenaZaBlok(surowiecKey);
+export function diplomacyPnSurowiecIlosc(
+  surowiecKey: string,
+  iloscSztuk: number,
+  era?: number,
+): number | null {
+  const cena = diplomacyHandelSurowiecCenaZaBlok(surowiecKey, era);
   if (cena == null) return null;
-  const sztuki = diplomacyNormalizeSurowiecIlosc(surowiecKey, iloscSztuk);
+  const sztuki = diplomacyNormalizeSurowiecIlosc(surowiecKey, iloscSztuk, undefined, era);
   if (sztuki <= 0) return 0;
-  const krok = diplomacyHandelSurowiecKrok(surowiecKey);
+  const krok = diplomacyHandelSurowiecKrok(surowiecKey, era);
   const bloki = krok <= 1 ? sztuki : sztuki / krok;
   return Math.max(0, Math.round(bloki * cena));
 }

@@ -1721,6 +1721,7 @@ import {
   diplomacyHandelSurowceCatalog,
   diplomacyPnSurowiecIlosc,
   diplomacyNormalizeSurowiecIlosc,
+  setDiplomacyTradeEra,
   diplomacySumPn,
   planCityCession,
   diplomacyPnMiasto,
@@ -2614,6 +2615,8 @@ async function boot(): Promise<void> {
         completedWorldWonders,
       );
       player.era = next;
+      // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1: epoka handlu surowcami (Kamień 10 / Brąz 50 / Żelazo 100 szt. na PN).
+      setDiplomacyTradeEra(next);
       // R-WEB-ERA-WAR-PLAYER-POOL-DESPITE-STONE-WAR-Q1: tura wejścia GRACZA w Brąz/Żelazo (owner 0 w
       // tych samych mapach co AI) — podstawa progu `eraForcedWarStartTurnsFromEra` dla puli celów.
       if (prev < 2 && next >= 2) bronzeEraEnterTurnByOwner.set(0, turn);
