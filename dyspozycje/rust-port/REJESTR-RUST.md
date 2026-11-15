@@ -1250,3 +1250,8 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sprzątanie:** worktree rozpoznania RECON2 usunięte po zabezpieczeniu refs; worktree integracji T2 usunięty. Dysk: 12 GB.
 - **Parity:** `7b52c3842`. **Sloty:** 0 z 4.
 - **Otwarte:** WIRING-A (#106) wymaga (a) decyzji ABC o brakującym wpisie, (b) migawki ekonomii w rollbacku, (c) dispatchu z wartościami z pina (≥150 wektorów), nie ręcznymi.
+
+## Przebieg (15.11, heartbeat 00:18): 1 z 4 slotów zajęte
+- **WIEZE-2B1** (`R-RUSTPORT-P6-WIEZE-2B1-Q1`, planowanie wystrzałów wież z odroczeniem 180 ms i usunięcie placeholdera `dead = true`; strzał `_singleBlow` = 2B2, nie w tym temacie): dispatch `1149e01f0`, baza `7b52c3842`, Workflow `wf_578f4944-497`, etap Operator, HAIKU.
+- **Dlaczego tylko 1 slot:** pozostałe kandydaci wymagają decyzji właściciela (#106 pkt 4 — ABC w czacie; #115, #120 — ABC) albo nie mają zweryfikowanego zakresu (#97–#98, #107, #109, #112–#113 blokowane allowlistą K5). Nie startuję tematów bez zweryfikowanego zakresu.
+- **Dysk:** 17 GB. **Parity:** `7b52c3842`.
