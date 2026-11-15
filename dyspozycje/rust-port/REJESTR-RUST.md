@@ -1842,3 +1842,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **KROK 4:** brak decyzji gameplay do zostawienia w czacie.
 - **Dysk:** 12 GB wolne (72%).
 - **Następny krok:** FF #226, integracja Q1 (`88d0dff1a`) na nowym parity z pełnym `cargo test`; potem Q2 po FC; Q3 (#211) po obu.
+
+## Przebieg (15.11, 19:0x UTC — integracja #226 na parity; P4-1B Q1 i Q2 zintegrowane jedną rundą)
+
+- **#226 K5LOOP-OUTCOME (runda 5, FC PASS-WITH-NOTES `5f7cd0003`):** integracja `c3e3617b2` na parity `83f5fd654` — `TEST_EXIT=0`, **3478 passed, 0 failed**. FF: parity = `c3e3617b2`. `refs/keep/K5LOOP-OUTCOME-integ`. Zamknięte jako zrealizowane (zakres: efekty po ciosie w `ProdBody::strike`; NIE_ZMIERZONO: ripple #123, dowódca, `occByKey`, tower_blow).
+- **P4-1B Q1 roadMask (FC `88d0dff1a`) i Q2 trim rzek (FC `c523ea440`) — integracja jedną rundą:** merge Q1 → `ca6c97472`, merge Q2 → `2f9a12786` na parity `c3e3617b2` (worktree `integ-p4-1b`). Merge-tree bez konfliktów dla obu. Bramki w tle: `FMT_EXIT=0`; clippy i pełny `cargo test` w toku. **FF po `TEST_EXIT=0`.**
+- **Sprzątanie:** worktree Q2 usunięte; refs `refs/keep/cleanup-wf_3095763c-84a-*`, `refs/keep/P4-1B-Q2-RIVER-TRIM-fc`.
+- **Otwarte:** Q3 MAP-VIEW-PRODUCER (#211) po obu — wymaga decyzji technicznej o modelu mapy (domyślnie `&SnapshotMap`) i wołających `compute_road_mask` i `trim_medium_*`. NIE_ZMIERZONO: wołający produkcyjny obu funkcji (Q3; M07C także użyje `trim_medium_tail_along_main`).
