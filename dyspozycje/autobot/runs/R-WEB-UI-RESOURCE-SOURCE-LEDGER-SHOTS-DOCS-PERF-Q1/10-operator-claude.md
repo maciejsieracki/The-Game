@@ -90,3 +90,83 @@ Brak blokad technicznych. Luki: 5 par sekwencyjnych z przeładowaniem (patrz GOA
 ## NASTĘPNY KROK
 
 Evaluator: sprawdzić zrzuty `evidence/shots-live`, test haka (6/0, mutacja), tabelę GOAL 4 oraz ocenić lukę 5 par sekwencyjnych; ewentualnie zażądać ich w r4 na mniej obciążonej maszynie.
+
+---
+
+# RUNDA 4/5 (Operator HAIKU 5.5, DODATEK 4) — zebranie wynikow, GOAL 3 i wyjasnienie identycznych zrzutow
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1
+GOAL: zamknac dwa zarzuty NAPRAW z FC r3: (1) mediana z 5 sekwencyjnych par ON/OFF (GOAL 3); (2) wyjasnic, czemu zrzuty soli i ceramiki sa bajt w bajt identyczne w 1280 i 1920 px. Kod gry bez zmian; GOAL 1, 2, 4, 5 zachowane bez zmian (zgodnie z DODATEK 4).
+BAZA: DODATEK 4 wskazuje kandydata Obrony r3 `204324caf` (ref `refs/keep/R-WEB-LEDGER-B-r3-obrona`). Naglowek zadania wskazuje `bd239cf4f` (origin/main w chwili dispatchu). Przyjeto DODATEK 4 jako nowszy i wiazacy dla rundy 4. Kandydat `204324caf` nie jest przodkiem origin/main (`9cbadc54a`, FALA 745); zrobiono `git merge origin/main`.
+
+## ZMIANY / COMMIT
+- `337922c7d` — evidence/perf-seq: 5 par (on-1..5, off-1..5): `seed4242.jsonl`, `seed4242.DONE`, `cmp.py` (z evidence/perf-toggle), `driver.sh`, `driver.log`. Pliki `*.cpuprofile` (ok. 16 MB) NIE w repo; zostaja w scratchpad.
+- `6944e7de0` — merge origin/main `9cbadc54a`:
+  - konflikt `docs/encyklopedia/indeks.md` (NIE przewidziany w DODATEK 4; przewidziany byl tylko wikiBundle): rozwiazany przez zachowanie obu wpisow (`Skad zapasy` z HEAD oraz `ruch i cios w bitwie` z origin/main) w jednej linii folderu `pojecia/`.
+  - `gra/src/data/wikiBundle.json`: konflikt, rozwiazany przez `node gra/tools/bundle-wiki-for-game.cjs` (22 rozdz. + 184 hasla, ~1309 KB), NIE recznie.
+  - reszta zmian `gra/src/*` pochodzi z origin/main (auto-merge), nie z tej rundy.
+- Brak zmian w `gra/src` wykonanych przez ta runde poza merge i regeneracja wikiBundle.
+- Ten raport (commit po tym wpisie).
+
+## TESTY (surowe wyniki, po `npm --prefix gra ci` w worktree: added 71 packages)
+- `npm --prefix gra run typecheck` (tsc --noEmit): rc=0
+- logic-test: `LOGIC OK (213/213)` rc=0
+- tech-tree-test: `20 pass, 0 fail` rc=0
+- research-test: `ALL GREEN` rc=0
+- unit-replace-test: `WSZYSTKIE TESTY ZIELONE (21/21)` rc=0
+- combat-test: `All sanity checks passed.` rc=0
+- resource-ledger-test: `1030 passed, 0 failed` rc=0
+- resource-ledger-skad-ui-test: `18 passed, 0 failed` rc=0
+- resource-ledger-skad-dom-test (Chromium): `13 passed, 0 failed` rc=0
+- resource-ledger-hook-gate-test: `6 passed, 0 failed` rc=0
+- `git diff --check origin/main HEAD`: brak bledow (pusty wynik)
+
+## GOAL 3 — mediana z 5 par sekwencyjnych ON/OFF (100 tur, seed 4242, kolejnosc naprzemienna)
+Tura 1 nie ma zdarzenia `turn` w jsonl; porownanie na 99 wspolnych turach (2..100). Liczby z `cmp.py` / skryptu porownania na surowych plikach.
+
+| para | ON srednia ms | OFF srednia ms | Δ srednia % | ON mediana ms | OFF mediana ms | Δ mediana % |
+|---|---|---|---|---|---|---|
+| 1 | 7446 | 6948 | +7,16 | 7976 | 6008 | +32,76 |
+| 2 | 6593 | 6891 | −4,33 | 6379 | 6400 | −0,33 |
+| 3 | 6527 | 7011 | −6,90 | 5945 | 6049 | −1,72 |
+| 4 | 7084 | 7239 | −2,15 | 6058 | 6212 | −2,48 |
+| 5 | 6414 | 6333 | +1,27 | 6138 | 5474 | +12,13 |
+
+- Mediana Δ średniej po parach: **−2,15 %** (ON nie wolniej). Mediana Δ mediany po parach: **−0,33 %**.
+- Mediana ON średnich: 6593 ms; mediana OFF średnich: 6948 ms.
+- Próg z dispatchu: mediana narzutu >10 % ⇒ optymalizacja `ownerResourceStockAll`. **Próg nieprzekroczony; optymalizacja NIE jest potrzebna; GOAL 3 zamknięty.**
+- Rozrzut pojedynczych par (od −6,9 % do +7,2 % dla średnich; pary 1 i 5 mają duży szum w medianach) oznacza, że 5 par rozstrzyga narzut powyżej ok. 10 % z dużym zapasem, ale nie rozstrzyga narzutu rzędu kilku procent. Nie twierdzę "zero narzutu" — twierdzę "brak mierzalnego narzutu >10 %".
+- Uwaga metodologiczna: driver uzywa `--gate-fix taxsplit` (obejscie bramki NNS przez podzial podatkow 60/30/10, patrz §GOAL 4 w poprzednich rundach). Pomiar ON vs OFF jest w tej samej konfiguracji, ale NIE w konfiguracji domyslnej gry.
+
+## GOAL 1 — zrzuty soli i ceramiki: dlaczego 1280 i 1920 sa identyczne
+Dowod: `evidence/shots-live/shots.json` (getBoundingClientRect z prawdziwej gry, `resource-ledger-shots-live.cjs`):
+
+| viewport | panel `.civ-emp-body` (w×h) | karta sol: w×h, left, top | karta ceramika: w×h, left, top |
+|---|---|---|---|
+| 1280 | 403×735 | 182×416, 893, 632 | 182×416, 1083, 384 |
+| 1920 | 403×1015 | 182×416, 1533, 632 | 182×416, 1723, 632 |
+
+- Karta ma STALA szerokosc 182 px w CSS, a panel 403 px w obu rozmiarach. Zrzut elementu (`card.screenshot`) przycina ten sam prostokat o tej samej zawartosci, wiec PNG sa identyczne: `sol-card-1280.png` = `sol-card-1920.png` (md5 30e66b6e44bae6a6c21fb810d31f2b27), `ceramika-card-1280.png` = `ceramika-card-1920.png` (md5 3d4256cbb9e8c8ce2969fc6f0f7fe08c).
+- To jest opcja (a) z DODATEK 4: identyczny PNG karty jest oczekiwany i opisany. Okna calego panelu roznia sie (`panel-1280.png` md5 6eada6d1…, `panel-1920.png` md5 90881dca…; wysokosc panelu 735 vs 1015 px, karty w innych pozycjach). Zrzut calego panelu (opcja b) takze istnieje i sie rozni.
+- Opis tresci kart (z realnego stanu ksiegi, nie makiety, z shots.json): sol ma linie „+12 Warzelnia (Rzym)”, „+30 Umowa wymiany z Ostia” (wg scenariusza), „−20 Obywatele”; `details open` = true. Ceramika ma 4 wiersze (Garncarnia itd.), `open` = true. Kolory przyrostu/ubytku sa w `valueColor` w shots.json.
+
+## GOAL 4, 2, 5 — bez zmian w tej rundzie
+- GOAL 4: korekta wniosku z DODATEK 4 zachowana: bramka NNS w turze 1 przy domyslnych podatkach 30/60/10 = dlug harnessu; przyczyna timeoutu t57 NIEROZSTRZYGNIETA (nie pisze "nie ksiega"). Ta runda nie dodala nowych danych do GOAL 4.
+- GOAL 2 (dokumentacja, wikiBundle): zachowana; wikiBundle zregenerowany po merge (patrz wyzej).
+- GOAL 5 (stan `<details>`, D6/D7): zachowany; test D6/D7 zielony (13/0).
+
+## NASTEPNY KROK
+Evaluator i Final Control: (1) zweryfikowac medianę z `evidence/perf-seq` (pary sa w repo, cmp mozna powtorzyc `python3 -I evidence/perf-seq/cmp.py on-i/seed4242.jsonl off-i/seed4242.jsonl`); (2) ocenic, czy identyczne PNG karty w 1280/1920 sa wystarczajaco wyjasnione przez shots.json (opcja a).
+
+## UWAGI-DLA-ORKIESTRATORA
+1. Naglowek zadania (bd239cf4f) i DODATEK 4 (204324caf) roznia sie bazą. Wybrano DODATEK 4. Potwierdzic, ze to zamierzone.
+2. Merge z origin/main dal konflikt w `docs/encyklopedia/indeks.md`, ktorego dispatch nie przewidywal. Rozwiazany sumą wpisow; warto, by FC to obejrzal.
+3. Pomiar wydajnosci wykonano z `--gate-fix taxsplit` (obejscie bramki NNS). Jesli wymagany jest pomiar w konfiguracji domyslnej, trzeba osobnego tematu (zalezy od #417 / diagnozy bramki).
+4. Tura 1 nie wystepuje w zdarzeniach `turn`; kazda para ma 99 tur porownywalnych.
+5. Pliki `*.cpuprofile` (ok. 16 MB) pozostaja poza repo w scratchpad (`/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/perf-seq/`).
+6. Nie wykonano push (zgodnie z regula Operatora). Nie integrowano na main.
+
+DEPLOY/PUSH: NIE WYKONANO
+RUNDY: 4/5 (Operator HAIKU 5.5)
