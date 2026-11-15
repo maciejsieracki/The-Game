@@ -6,7 +6,8 @@
 //! - enumy: `TerenBazowy` :12-24, `Nakladka` :30-39, `Ulepszenie` :45-54, `Widocznosc` :60-64;
 //! - struktury: `HexCoords` :71-74, `Wioska` :81-86, `RzekaInfo` :93-101, `Hex` (tu `MapHex`) :107-140.
 //!
-//! Decyzje (zapisane w `dyspozycje/rust-port/REJESTR-RUST.md`):
+//! Decyzje i ich dowody: `dyspozycje/autobot/runs/R-RUSTPORT-P6-M01-MAPHEX-Q1/02a-obrona.md`
+//! (wpis do `dyspozycje/rust-port/REJESTR-RUST.md` robi orkiestrator, rejestr jest poza allowlista):
 //! - JSON enumow = wartosci z webu (snake_case, np. `plytkie_morze`), jawne `#[serde(rename)]`
 //!   na kazdym wariancie; nazwy wariantow w kodzie sa Rustowe (`PlytkieMorze`).
 //! - `HexCoords` = istniejacy `domain::hex::HexCoord` (ten sam ksztalt `{q, r}`, `s = -q-r` liczone).
@@ -112,11 +113,30 @@ pub struct Wioska {
 }
 
 /// Rzeka na krawedziach heksa (hex.ts:93-101). `krawedzie` to indeksy 0-5 (flat-top); puste gdy `obecna = false`.
+/// Zakres 0-5 i puste-gdy-brak NIE sa egzekwowane przy deserializacji (web tez nie waliduje, to komentarze;
+/// decyzja Z3b w 02a-obrona.md). Typ `u8` odrzuca wartosci powyzej 255.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct RzekaInfo {
     pub obecna: bool,
     pub krawedzie: Vec<u8>,
+}
+
+/// Postac JSON web `HexCoords` (hex.ts:71-74): dokladnie pola `q` i `r`. Nieznane pole (np. `s`) jest bledem.
+/// Osobna struktura, bo wspolny `domain::hex::HexCoord` nie ma `deny_unknown_fields` (poza allowlista).
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct HexCoordsWire {
+    q: i32,
+    r: i32,
+}
+
+fn strict_coords<'de, D>(deserializer: D) -> Result<HexCoords, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let wire = HexCoordsWire::deserialize(deserializer)?;
+    Ok(HexCoord::new(wire.q, wire.r))
 }
 
 /// Pole, ktore w JSON MUSI byc obecne, ale moze miec wartosc `null` (web: `string | null`).
@@ -134,6 +154,7 @@ where
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct MapHex {
     /// Pozycja na mapie (hex.ts:109).
+    #[serde(deserialize_with = "strict_coords")]
     pub coords: HexCoords,
     /// Typ terenu bazowego (hex.ts:112).
     pub teren_bazowy: TerenBazowy,

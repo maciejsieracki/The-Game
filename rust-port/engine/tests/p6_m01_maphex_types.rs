@@ -1,52 +1,121 @@
 //! P6.M01-R2 — model heksa `MapHex` (port `gra/src/types/hex.ts`, pin `07d2fbd72`).
 //!
+//! Zrodlo prawdy dla nazw i wartosci: migawka pinu `p6_m01_maphex_pin_snapshot.rs`
+//! (tresc `hex.ts` bajt w bajt, 4141 B, SHA-256 07eb0ee9...). Testy NIE maja przepisanych z reki list:
+//! wartosci enumow i nazwy pol interfejsow sa parsowane z tej migawki.
+//!
 //! Testy:
-//! - `web_values_*`: wartosci JSON enumow porownane z lista z pinu (hex.ts:12-64).
-//! - `shape_*`: liczba wariantow 8/8/8/3 (przez wyczerpujace `match`, bez `_ =>`) i pola `MapHex`.
+//! - `web_values_*`: nazwy wariantow i wartosci JSON enumow == lista z pinu (hex.ts:12-64).
+//! - `shape_*`: liczba wariantow 8/8/8/3 z pinu i pola struktur == pola interfejsow z pinu.
 //! - `round_trip_*`: serde w obie strony dla kazdego typu.
-//! - `visibility_*`: brak klucza = `Nieodkryty`.
-//! - `reject_*`: brak wymaganego pola, nieznane pole i zla wartosc enuma sa bledami.
+//! - `visibility_*`: brak klucza = `Nieodkryty`; kolejnosc kluczy w JSON.
+//! - `reject_*`: brak wymaganego pola, nieznane pole (na kazdym poziomie), zla wartosc enuma sa bledami.
+//! - `web_parity_*`: swiadomie nie walidowane zakresy (parytet z webem, decyzja Z3b).
 #![forbid(unsafe_code)]
+
+#[path = "p6_m01_maphex_pin_snapshot.rs"]
+mod pin_snapshot;
+
+use std::collections::BTreeMap;
+use std::fmt::Debug;
 
 use civ_engine::domain::mapgen::types::{
     MapHex, Nakladka, RzekaInfo, TerenBazowy, Ulepszenie, Widocznosc, Wioska,
 };
 use civ_engine::domain::{hex::HexCoord, PlayerId};
+use pin_snapshot::HEX_TS_PIN_07D2FBD72 as PIN;
 use serde::{de::DeserializeOwned, Serialize};
 use serde_json::{json, Value};
 
-/// Wartosci JSON z pinu (`gra/src/types/hex.ts`, wariant -> string), kolejnosc jak w pliku.
-const WEB_TEREN: [&str; 8] = [
-    "laka",
-    "rownina",
-    "wzgorza",
-    "gory",
-    "plytkie_morze", // hex.ts:19
-    "morze",
-    "pustynia",
-    "polarny", // hex.ts:23
-];
-const WEB_NAKLADKA: [&str; 8] = [
-    "brak",
-    "las",
-    "zloze_gliny",
-    "zloze_rudy",
-    "zloze_konia",
-    "zloze_owiec",
-    "zloze_bydla",
-    "zloze_lamy", // hex.ts:38
-];
-const WEB_ULEPSZENIE: [&str; 8] = [
-    "brak",
-    "farma",
-    "irygacja",
-    "kopalnia",
-    "droga",
-    "droga_brukowana", // hex.ts:51
-    "pastwisko",
-    "tartak", // hex.ts:53
-];
-const WEB_WIDOCZNOSC: [&str; 3] = ["nieodkryty", "odkryty", "widoczny"]; // hex.ts:61-63
+/// Wpisy `(Nazwa, wartosc)` enuma `name` z pinu, w kolejnosci deklaracji. Linie postaci `Nazwa = 'wartosc',`.
+fn pin_enum_entries(name: &str) -> Vec<(String, String)> {
+    let header = format!("export enum {name} {{");
+    let start = PIN
+        .find(&header)
+        .unwrap_or_else(|| panic!("brak `{header}` w pinie"))
+        + header.len();
+    let body = &PIN[start..];
+    let body = &body[..body.find('}').expect("koniec enuma")];
+    let entries: Vec<(String, String)> = body
+        .lines()
+        .filter_map(|line| {
+            let (lhs, rhs) = line.trim().split_once('=')?;
+            let lhs = lhs.trim();
+            if lhs.is_empty() || !lhs.chars().all(|c| c.is_ascii_alphanumeric()) {
+                return None;
+            }
+            let rhs = rhs.trim().strip_prefix('\'')?;
+            let value = rhs.split('\'').next()?;
+            Some((lhs.to_string(), value.to_string()))
+        })
+        .collect();
+    assert!(!entries.is_empty(), "enum {name} z pinu bez wariantow");
+    entries
+}
+
+/// Nazwy pol interfejsu `name` z pinu. Linie postaci `pole: Typ;` (opcjonalnie `readonly`).
+fn pin_interface_fields(name: &str) -> Vec<String> {
+    let header = format!("export interface {name} {{");
+    let start = PIN
+        .find(&header)
+        .unwrap_or_else(|| panic!("brak `{header}` w pinie"))
+        + header.len();
+    let body = &PIN[start..];
+    let body = &body[..body.find('}').expect("koniec interfejsu")];
+    let fields: Vec<String> = body
+        .lines()
+        .filter_map(|line| {
+            let line = line.trim();
+            let line = line.strip_prefix("readonly ").unwrap_or(line);
+            let (lhs, _) = line.split_once(':')?;
+            let lhs = lhs.trim();
+            if lhs.is_empty() || !lhs.chars().all(|c| c.is_ascii_alphanumeric()) {
+                return None;
+            }
+            Some(lhs.to_string())
+        })
+        .collect();
+    assert!(!fields.is_empty(), "interfejs {name} z pinu bez pol");
+    fields
+}
+
+fn sorted(mut v: Vec<String>) -> Vec<String> {
+    v.sort();
+    v
+}
+
+fn json_keys(value: &Value) -> Vec<String> {
+    let mut keys: Vec<String> = value
+        .as_object()
+        .expect("obiekt JSON")
+        .keys()
+        .cloned()
+        .collect();
+    keys.sort();
+    keys
+}
+
+fn to_json_string<T: Serialize>(value: &T) -> String {
+    match serde_json::to_value(value).expect("serialize") {
+        Value::String(s) => s,
+        other => panic!("oczekiwano stringa JSON, jest {other:?}"),
+    }
+}
+
+/// Porownanie enuma z pinem: (nazwa wariantu w Rust == nazwa TS, wartosc JSON == wartosc TS), ta sama kolejnosc.
+fn check_enum<T: Serialize + Debug>(name: &str, all: &[T]) {
+    let got: Vec<(String, String)> = all
+        .iter()
+        .map(|v| (format!("{v:?}"), to_json_string(v)))
+        .collect();
+    assert_eq!(got, pin_enum_entries(name), "enum {name} rozni sie od pinu");
+}
+
+fn round_trip<T: Serialize + DeserializeOwned + PartialEq + Debug>(value: &T) {
+    let text = serde_json::to_string(value).expect("serialize");
+    let back: T = serde_json::from_str(&text).expect("deserialize");
+    assert_eq!(&back, value, "round-trip zmienil wartosc: {text}");
+}
 
 fn teren_all() -> [TerenBazowy; 8] {
     [
@@ -143,21 +212,8 @@ fn widocznosc_index(w: Widocznosc) -> usize {
     }
 }
 
-fn to_json_string<T: Serialize>(value: &T) -> String {
-    match serde_json::to_value(value).expect("serialize") {
-        Value::String(s) => s,
-        other => panic!("oczekiwano stringa JSON, jest {other:?}"),
-    }
-}
-
-fn round_trip<T: Serialize + DeserializeOwned + PartialEq + std::fmt::Debug>(value: &T) {
-    let text = serde_json::to_string(value).expect("serialize");
-    let back: T = serde_json::from_str(&text).expect("deserialize");
-    assert_eq!(&back, value, "round-trip zmienil wartosc: {text}");
-}
-
 fn sample_hex() -> MapHex {
-    let mut widocznosc = std::collections::BTreeMap::new();
+    let mut widocznosc = BTreeMap::new();
     widocznosc.insert(PlayerId::new(1), Widocznosc::Widoczny);
     widocznosc.insert(PlayerId::new(2), Widocznosc::Odkryty);
     MapHex {
@@ -192,50 +248,40 @@ fn sample_hex_json() -> Value {
 }
 
 // ---------------------------------------------------------------------------
-// web_values_*: wartosci JSON zgodne z pinem
+// web_values_*: nazwy i wartosci enumow == pin (hex.ts:12-64)
 // ---------------------------------------------------------------------------
 
 #[test]
 fn web_values_terenbazowy_match_pin() {
-    let got: Vec<String> = teren_all().iter().map(|&t| to_json_string(&t)).collect();
-    assert_eq!(got, WEB_TEREN.to_vec());
+    check_enum("TerenBazowy", &teren_all());
 }
 
 #[test]
 fn web_values_nakladka_match_pin() {
-    let got: Vec<String> = nakladka_all().iter().map(|&n| to_json_string(&n)).collect();
-    assert_eq!(got, WEB_NAKLADKA.to_vec());
+    check_enum("Nakladka", &nakladka_all());
 }
 
 #[test]
 fn web_values_ulepszenie_match_pin() {
-    let got: Vec<String> = ulepszenie_all()
-        .iter()
-        .map(|&u| to_json_string(&u))
-        .collect();
-    assert_eq!(got, WEB_ULEPSZENIE.to_vec());
+    check_enum("Ulepszenie", &ulepszenie_all());
 }
 
 #[test]
 fn web_values_widocznosc_match_pin() {
-    let got: Vec<String> = widocznosc_all()
-        .iter()
-        .map(|&w| to_json_string(&w))
-        .collect();
-    assert_eq!(got, WEB_WIDOCZNOSC.to_vec());
+    check_enum("Widocznosc", &widocznosc_all());
 }
 
 // ---------------------------------------------------------------------------
-// shape_*: liczby wariantow i pola
+// shape_*: liczby wariantow i pola wzgledem pinu
 // ---------------------------------------------------------------------------
 
 #[test]
 fn shape_variant_counts_are_8_8_8_3() {
-    assert_eq!(teren_all().len(), 8);
-    assert_eq!(nakladka_all().len(), 8);
-    assert_eq!(ulepszenie_all().len(), 8);
-    assert_eq!(widocznosc_all().len(), 3);
-    // Indeksy musza byc gesto 0..n-1, bez duplikatow (kazdy wariant w tablicy dokladnie raz).
+    assert_eq!(pin_enum_entries("TerenBazowy").len(), 8);
+    assert_eq!(pin_enum_entries("Nakladka").len(), 8);
+    assert_eq!(pin_enum_entries("Ulepszenie").len(), 8);
+    assert_eq!(pin_enum_entries("Widocznosc").len(), 3);
+    // Tablice `*_all()` (dlugosc wymuszona typem) musza byc permutacja wariantow: pozycja i == indeks i.
     for (i, t) in teren_all().into_iter().enumerate() {
         assert_eq!(teren_index(t), i);
     }
@@ -251,27 +297,21 @@ fn shape_variant_counts_are_8_8_8_3() {
 }
 
 #[test]
-fn shape_map_hex_has_exactly_web_fields() {
-    let value = serde_json::to_value(sample_hex()).expect("serialize");
-    let object = value.as_object().expect("obiekt");
-    let mut keys: Vec<&str> = object.keys().map(String::as_str).collect();
-    keys.sort_unstable();
+fn shape_fields_match_pin_interfaces() {
+    let hex = serde_json::to_value(sample_hex()).expect("serialize");
+    assert_eq!(json_keys(&hex), sorted(pin_interface_fields("Hex")));
     assert_eq!(
-        keys,
-        vec![
-            "coords",
-            "nakladka",
-            "rzeka",
-            "terenBazowy",
-            "ulepszenie",
-            "widocznosc",
-            "wioska",
-            "wlasciciel",
-        ]
+        json_keys(&hex["wioska"]),
+        sorted(pin_interface_fields("Wioska"))
     );
-    assert_eq!(object["wioska"].as_object().unwrap().len(), 2);
-    assert_eq!(object["rzeka"].as_object().unwrap().len(), 2);
-    assert_eq!(object["coords"].as_object().unwrap().len(), 2);
+    assert_eq!(
+        json_keys(&hex["rzeka"]),
+        sorted(pin_interface_fields("RzekaInfo"))
+    );
+    assert_eq!(
+        json_keys(&hex["coords"]),
+        sorted(pin_interface_fields("HexCoords"))
+    );
 }
 
 #[test]
@@ -350,17 +390,17 @@ fn visibility_empty_map_is_nieodkryty_for_everyone() {
     }
 }
 
+/// Surowy JSON mapy (nie `serde_json::Value`, ktory sortuje klucze leksykograficznie).
+/// Wstawiamy 10 przed 2: numeryczny porzadek BTreeMap<PlayerId,_> daje "2" przed "10".
 #[test]
-fn visibility_map_keys_are_player_ids_in_order() {
-    let hex = sample_hex();
-    let value = serde_json::to_value(&hex).expect("serialize");
-    let keys: Vec<&str> = value["widocznosc"]
-        .as_object()
-        .unwrap()
-        .keys()
-        .map(String::as_str)
-        .collect();
-    assert_eq!(keys, vec!["1", "2"]);
+fn visibility_map_keys_serialize_in_numeric_player_order() {
+    let mut widocznosc = BTreeMap::new();
+    widocznosc.insert(PlayerId::new(10), Widocznosc::Odkryty);
+    widocznosc.insert(PlayerId::new(2), Widocznosc::Widoczny);
+    assert_eq!(
+        serde_json::to_string(&widocznosc).expect("serialize"),
+        r#"{"2":"widoczny","10":"odkryty"}"#
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -382,6 +422,34 @@ fn reject_unknown_field() {
 }
 
 #[test]
+fn reject_unknown_field_in_wioska() {
+    let mut value = sample_hex_json();
+    value["wioska"]["dodatkowe"] = json!(1);
+    assert!(serde_json::from_value::<MapHex>(value).is_err());
+}
+
+#[test]
+fn reject_unknown_field_in_rzeka() {
+    let mut value = sample_hex_json();
+    value["rzeka"]["dodatkowe"] = json!(1);
+    assert!(serde_json::from_value::<MapHex>(value).is_err());
+}
+
+#[test]
+fn reject_unknown_field_in_coords() {
+    let mut value = sample_hex_json();
+    value["coords"]["s"] = json!(2);
+    assert!(serde_json::from_value::<MapHex>(value).is_err());
+}
+
+#[test]
+fn reject_missing_coords_field() {
+    let mut value = sample_hex_json();
+    value["coords"].as_object_mut().unwrap().remove("r");
+    assert!(serde_json::from_value::<MapHex>(value).is_err());
+}
+
+#[test]
 fn reject_pascal_case_enum_value() {
     let mut value = sample_hex_json();
     value["terenBazowy"] = json!("PlytkieMorze");
@@ -399,4 +467,56 @@ fn reject_missing_wioska_field() {
     let mut value = sample_hex_json();
     value["wioska"] = json!({ "istnieje": true });
     assert!(serde_json::from_value::<MapHex>(value).is_err());
+}
+
+#[test]
+fn reject_negative_ludnosc() {
+    let mut value = sample_hex_json();
+    value["wioska"]["ludnosc"] = json!(-1);
+    assert!(serde_json::from_value::<MapHex>(value).is_err());
+}
+
+#[test]
+fn reject_missing_rzeka_krawedzie() {
+    let mut value = sample_hex_json();
+    value["rzeka"] = json!({ "obecna": true });
+    assert!(serde_json::from_value::<MapHex>(value).is_err());
+}
+
+#[test]
+fn reject_krawedzie_above_u8() {
+    let mut value = sample_hex_json();
+    value["rzeka"]["krawedzie"] = json!([256]);
+    assert!(serde_json::from_value::<MapHex>(value).is_err());
+}
+
+#[test]
+fn reject_string_owner_like_web_player_id() {
+    let mut value = sample_hex_json();
+    value["wlasciciel"] = json!("player_0");
+    assert!(serde_json::from_value::<MapHex>(value).is_err());
+}
+
+#[test]
+fn reject_string_visibility_key_like_web_player_id() {
+    let mut value = sample_hex_json();
+    value["widocznosc"] = json!({ "player_0": "widoczny" });
+    assert!(serde_json::from_value::<MapHex>(value).is_err());
+}
+
+// ---------------------------------------------------------------------------
+// web_parity_*: zakresy nie sa walidowane, jak w webie (decyzja Z3b, 02a-obrona.md).
+// Web: hex.ts:84 ("0 gdy brak"), hex.ts:97-99 ("indeksy 0-5", "pusta gdy obecna = false") to komentarze,
+// nie kod walidujacy. Ten test dokumentuje, ze typ przyjmuje te wartosci; nie jest to rekomendacja danych.
+// ---------------------------------------------------------------------------
+
+#[test]
+fn web_parity_does_not_validate_ranges() {
+    let mut value = sample_hex_json();
+    value["wioska"] = json!({ "istnieje": false, "ludnosc": 7 });
+    value["rzeka"] = json!({ "obecna": false, "krawedzie": [9, 7] });
+    let hex: MapHex =
+        serde_json::from_value(value).expect("parytet z webem: bez walidacji zakresu");
+    assert_eq!(hex.wioska.ludnosc, 7);
+    assert_eq!(hex.rzeka.krawedzie, vec![9, 7]);
 }
