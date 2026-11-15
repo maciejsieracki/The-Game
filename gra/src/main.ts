@@ -747,7 +747,7 @@ import { machinesByCampHex, campOwnerByHex, readyMachinesForCity } from './rende
 import { TerenBazowy, Nakladka, Ulepszenie } from './types/hex';
 import type { Hex } from './types/hex';
 import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen, cityGrowthLive, mountCityRecruitmentCardsForArmy, mountGeneralRecruitmentCardForArmy, recruitPanelPurchasableUnits, resetArmyRecruitDraftsSession, buildingCanBuildNow } from './ui/cityPanel';
-import { toggleEmpireRecruitPanel, refreshEmpireRecruitPanel, resetEmpireRecruitPanelSession, type EmpireRecruitUnitRow } from './ui/empireRecruitPanel';
+import { configureEmpireRecruitPanel, mountEmpireRecruitSection, refreshEmpireRecruitPanel, resetEmpireRecruitPanelSession, type EmpireRecruitPanelCfg, type EmpireRecruitUnitRow } from './ui/empireRecruitPanel';
 import { executeEmpireRecruitment, maxAffordableEmpireRecruits, type RecruitCityInput } from './game/empire-recruit-plan';
 import { livingGeneralsOf, resolveRecruitGeneral, recruitRallyStamp, pickRallyGeneral } from './game/recruit-general';
 import { syncCityOkolicaOverlay, disposeCityOkolicaOverlayGroup } from './render/cityOkolicaOverlay';
@@ -825,6 +825,7 @@ import {
   hideEmpireDetailPanel,
   refreshEmpireDetailPanel,
   isEmpireDetailPanelOpen,
+  toggleEmpireDetailPanel,
   configureEmpireHandelSplit,
   configureEmpireMassRecruitment,
   configureEmpireGlobalDefaults,
@@ -5146,8 +5147,9 @@ async function boot(): Promise<void> {
       return it ? it.koszt : fallback;
     }
 
-    function toggleEmpireRecruitFromHud(): void {
-      toggleEmpireRecruitPanel({
+    /** R-WEB-UI-EMPIRE-RECRUIT-PANEL-MOVE-TO-ARMY-PANEL-Q1: cfg sekcji rekrutacji cywilizacji w panelu armii. */
+    function empireRecruitPanelCfg(): EmpireRecruitPanelCfg {
+      return {
         getRows: empireRecruitRows,
         getBudget: () => {
           const ownerId = ME();
@@ -5161,7 +5163,9 @@ async function boot(): Promise<void> {
         },
         onOrder: orderEmpireRecruitment,
         getGenerals: () => {
-          validateRecruitGeneral();
+          // Panel armii jest przebudowywany także przy zamkniętym panelu (sekcja w DOM); walidację śmierci robi
+          // tura (endTurn) — tu tylko gdy panel otwarty, jak dawny modal (inaczej powiadomienie ginie poza turą).
+          if (isEmpireDetailPanelOpen()) validateRecruitGeneral();
           return livingGeneralsOf(units, ME()).map(g => ({ id: g.id, label: recruitGeneralLabel(g) }));
         },
         getSelectedGeneralId: () => recruitGeneralId,
@@ -5169,7 +5173,7 @@ async function boot(): Promise<void> {
           recruitGeneralId = id && resolveRecruitGeneral(id, units, ME()).status === 'ok' ? id : null;
           markCityStateDirty();
         },
-      });
+      };
     }
 
     /** Anulowanie opłaconej rekrutacji — zwrot złota i Manpower do puli imperium. */
@@ -27835,7 +27839,6 @@ async function boot(): Promise<void> {
         },
         onOpenScience: () => toggleScienceHubFromToolbar(),
         onOpenEmpireDetail: (section) => openEmpireDetailFromHud(section),
-        onOpenEmpireRecruit: () => toggleEmpireRecruitFromHud(),
         onOpenWiki: () => toggleWikiFromToolbar(),
         isWikiActive: () => isWikiHubHudOpen(),
         mapToolbar: {
@@ -28303,7 +28306,9 @@ async function boot(): Promise<void> {
         },
         getRecruitFollowGeneralDefault: () => recruitFollowGeneralDefault,
         onRecruitFollowGeneralDefaultChange: enabled => { recruitFollowGeneralDefault = enabled; },
+        mountEmpireRecruit: host => mountEmpireRecruitSection(host),
       });
+      configureEmpireRecruitPanel(empireRecruitPanelCfg());
       configureEmpireHandelSplit({
         getOwnerDefault: (ownerId) => ownerDefaultPodzialHandlu.get(ownerId) ?? null,
         onOwnerDefaultChange: (ownerId, split) => {
@@ -28576,7 +28581,8 @@ async function boot(): Promise<void> {
         }
         return ids;
       },
-      toggleViaHud: () => toggleEmpireRecruitFromHud(),
+      openArmyRecruitSection: () => { if (!isEmpireDetailPanelOpen()) toggleEmpireDetailPanel('armia'); },
+      closeArmyRecruitSection: () => hideEmpireDetailPanel(),
       // R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: stan wyboru generała rekrutującego (tylko test).
       selectedGeneral: () => recruitGeneralId,
       generals: () => livingGeneralsOf(units, ME()).map(g => g.id),

@@ -35,7 +35,7 @@ const PANELS = [
   { name: 'budowa', open: "document.querySelector('.civ-map-toolbar [data-act=build]')?.click()", root: '.civ-build-panel' },
   { name: 'civpedia', open: "document.querySelector('.civ-hud [data-act=wiki]')?.click()", root: '.civ-wiki-hub' },
   { name: 'imperium', open: "document.querySelector('.civ-hud [data-act=power]')?.click()", root: '.civ-emp-panel, .civ-emp-ov, .civ-pow-ov' },
-  { name: 'rekrutacja-imperium', open: "document.querySelector('.civ-hud [data-act=empire-recruit]')?.click()", root: '#civ-empire-recruit-panel' },
+  { name: 'rekrutacja-imperium', open: "window.__empireRecruitTestDebug?.openArmyRecruitSection()", root: '#civ-empire-recruit-panel' },
 ];
 
 async function launch(chromium) {

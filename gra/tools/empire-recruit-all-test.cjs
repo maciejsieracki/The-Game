@@ -29,9 +29,10 @@ function check(name, ok, detail) {
 
 async function main() {
   fs.writeFileSync(ENTRY, [
-    "import { toggleEmpireRecruitPanel, refreshEmpireRecruitPanel, getEmpireRecruitDraft, resetEmpireRecruitPanelSession } from '../src/ui/empireRecruitPanel.ts';",
+    "import { mountEmpireRecruitSection, configureEmpireRecruitPanel, refreshEmpireRecruitPanel, getEmpireRecruitDraft, resetEmpireRecruitPanelSession } from '../src/ui/empireRecruitPanel.ts';",
     "import { executeEmpireRecruitment, maxAffordableEmpireRecruits } from '../src/game/empire-recruit-plan.ts';",
-    'window.__api = { resetEmpireRecruitPanelSession, toggleEmpireRecruitPanel, refreshEmpireRecruitPanel, getEmpireRecruitDraft, executeEmpireRecruitment, maxAffordableEmpireRecruits };',
+    'window.__openErp = function (cfg) { var h = document.getElementById("civ-empire-recruit-panel"); if (!h) { h = document.createElement("div"); h.id = "civ-empire-recruit-panel"; h.setAttribute("data-erp-root", ""); document.body.appendChild(h); } configureEmpireRecruitPanel(cfg); mountEmpireRecruitSection(h); };',
+    'window.__api = { resetEmpireRecruitPanelSession, refreshEmpireRecruitPanel, getEmpireRecruitDraft, executeEmpireRecruitment, maxAffordableEmpireRecruits };',
     '',
   ].join('\n'), 'utf8');
   await esbuild.build({
@@ -67,7 +68,7 @@ async function main() {
           queuedOfType: c.q.filter(x => x === id).length, queueLength: c.q.length,
         }));
       };
-      window.__api.toggleEmpireRecruitPanel({
+      window.__openErp({
         getRows: () => st.types.map(t => {
           const inp = inputs(t.id);
           return { id: t.id, label: t.label, koszt: t.koszt, capableCities: inp.filter(i => i.canRecruit).length,
@@ -102,7 +103,7 @@ async function main() {
     // ---- domyślnie 0 ----
     check('domyślnie licznik 0 dla każdego typu', await qty('Wojownik') === 0 && await qty('Taran') === 0 && await qty('Procarz') === 0);
     check('jest jeden górny przycisk „Rekrutuj wszystkie”', await allBtns.count() === 1
-      && await allBtns.first().evaluate(button => button.closest('.erp-stick') !== null));
+      && await allBtns.first().evaluate(button => button.closest('.erp-all') !== null)); // R-WEB-UI-EMPIRE-RECRUIT-PANEL-MOVE-TO-ARMY-PANEL-Q1: bez .erp-stick (sekcja osadzona)
     check('przy sumie 0 górne „Rekrutuj wszystkie” jest nieaktywne', await allBtns.first().isDisabled());
     check('pojedyncze „Rekrutuj” nieaktywne przy liczniku 0', await row('Wojownik').locator('[data-erp="go"]').isDisabled());
     check('„−” nieaktywne przy liczniku 0', await row('Wojownik').locator('[data-erp="dec"]').isDisabled());

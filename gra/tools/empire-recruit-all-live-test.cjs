@@ -87,7 +87,7 @@ const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
 
     // --- Panel: licznik domyślny 0, "Rekrutuj wszystkie" nieaktywny ---
     await dropVictory();
-    await page.locator('[data-act="empire-recruit"]').click();
+    await page.evaluate(() => window.__empireRecruitTestDebug.openArmyRecruitSection());
     await page.waitForSelector(`${panel} [data-unit]`, { timeout: 10000 });
     const allQty0 = await page.locator(`${panel} [data-erp="qty"]`).evaluateAll(els => els.map(e => e.value));
     ok(allQty0.length > 0 && allQty0.every(v => v === '0'), 'L4 wszystkie liczniki domyślnie 0 w żywej grze', allQty0);
@@ -163,10 +163,10 @@ const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
     ok(!!A2, 'L24a po turze panel nadal ma typ dostępny do zamówienia', rows2.map(r => r.id));
     await D('setResources', 3 * A2.koszt, 1000000);
     await dropVictory();
-    if (await page.locator(`${panel} [data-unit]`).count() === 0) {
-      if (await page.locator(panel).count() > 0) await page.evaluate(() => window.__empireRecruitTestDebug.toggleViaHud()); // zamknij nieświeży panel
-      await page.locator('[data-act="empire-recruit"]').click(); await page.waitForSelector(`${panel} [data-unit]`);
-    }
+    // R-WEB-UI-EMPIRE-RECRUIT-PANEL-MOVE-TO-ARMY-PANEL-Q1: tura zamyka panel armii (hideEmpireDetailPanel), ale wiersze
+    // zostają w DOM poza ekranem — stąd warunek „brak [data-unit]” nie wykrywał zamknięcia. Otwarcie jest idempotentne.
+    await page.evaluate(() => window.__empireRecruitTestDebug.openArmyRecruitSection());
+    await page.waitForSelector(`${panel} [data-unit]`, { state: 'visible' });
     await D('selectGeneral', chosen.id);
     await inc(A2.id, 5);
     await page.locator(`${panel} [data-erp="go-all"]`).click();

@@ -71,12 +71,12 @@ const ok = (c, n, d) => { if (c) { pass++; console.log('PASS: ' + n); } else { f
     await D('setResources', 1000000, 1000000);
     // Mapa playtestowa bez przeciwników: ekran zwycięstwa (dominacja) zasłania HUD — zamykamy go (tylko test).
     await page.evaluate(() => { const v = document.getElementById('__victory_screen__'); if (v) v.remove(); });
-    await page.locator('[data-act="empire-recruit"]').click();
+    await page.evaluate(() => window.__empireRecruitTestDebug.openArmyRecruitSection());
     await page.waitForSelector('#civ-empire-recruit-panel [data-unit]', { timeout: 10000 });
     const panelTxt = await page.locator('#civ-empire-recruit-panel').innerText();
     ok(/rekrutuje/i.test(panelTxt), 'L10 realny panel oznacza wybranego generała znacznikiem "rekrutuje"', panelTxt.slice(0, 300));
     if (process.argv.includes('--shot')) await page.screenshot({ path: path.join(SHOT_DIR, 'panel-rekrutacja-live-z-generalem.png') });
-    await page.locator('[data-erp="close"]').click();
+    await page.evaluate(() => window.__empireRecruitTestDebug.closeArmyRecruitSection());
 
     // Zapis / wczytanie w realnej grze.
     const saved = await page.evaluate(() => window.__empireRecruitTestDebug.quickSave('arg-live-slot'));
@@ -87,7 +87,9 @@ const ok = (c, n, d) => { if (c) { pass++; console.log('PASS: ' + n); } else { f
     ok((await D('selectedGeneral')) === chosen.id, 'L12 po wczytaniu zapisu wybrany generał przywrócony', await D('selectedGeneral'));
 
     // Śmierć generała przy ZAMKNIĘTYM panelu: powiadomienie na granicy tury, wybór wyczyszczony.
-    ok(await page.locator('#civ-empire-recruit-panel').count() === 0, 'L13 panel zamknięty');
+    // R-WEB-UI-EMPIRE-RECRUIT-PANEL-MOVE-TO-ARMY-PANEL-Q1: sekcja rekrutacji siedzi w DOM panelu armii, więc
+    // zamknięcie sprawdzamy po klasie „open” panelu (dawniej: brak osobnego okna w DOM).
+    ok(await page.evaluate(() => !document.querySelector('.civ-emp-panel')?.classList.contains('open')), 'L13 panel zamknięty');
     await D('killGeneral', chosen.id);
     await turn();
     for (let i = 0; i < 40 && (await D('selectedGeneral')) !== null; i++) await page.waitForTimeout(500);
