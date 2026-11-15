@@ -1933,3 +1933,16 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Start wstrzymany:** czwarty slot zostaje wolny, bo dysk spadł do **8,5 GB (78%)** przy 13 procesach cargo. Reguła projektu: nie startować tematu z kodem Rust poniżej 8 GB. Próg 4 GB heartbeatu nie jest przekroczony, ale reguła 8 GB obowiązuje.
 - **Do zrobienia po zwolnieniu dysku:** wybrać kolejny temat (bez zależności od niezintegrowanego kodu) i wstawić go do slotu.
 - **Dirty worktree do zgłoszenia (nie ruszam):** `wf_5a965001-591-4`, `wf_f3b76b65-261-3` — z poprzednich ticków.
+
+## Przebieg (15.11, 21:5x UTC — P4-1G Q1 ADAPTER-CORE zintegrowany na parity)
+
+- **P4-1G Q1 ADAPTER-CORE (#216, Opus) — FC PASS-WITH-NOTES `601ff304c`:** operator `9cdb62ba7` (kod `aa66e8384`), evaluator `44a4819d1` PASS-WITH-NOTES, obrona `652bf1c1f` (przyjęto usunięcie `Default` z `FogSets`, odrzucono 5 zarzutów z dowodem), FC `601ff304c`.
+- **Integracja:** parity `be49ff3c3` jest przodkiem FC (FC zawiera parity), merge-tree czysty. Bramki w `rust-port/renderer` na commicie FC: `FMT_EXIT=0`, `CLIPPY_EXIT=0`, `TEST_EXIT=0`, **502 passed, 0 failed, 0 ignored**. FF: parity = `601ff304c`.
+- **Refy:** `refs/keep/P4-1G-Q1-ADAPTER-FC` (`601ff304c`), `refs/keep/P4-1G-Q1-OP` (`9cdb62ba7`), `refs/keep/P4-1G-Q1-OBRONA` (`652bf1c1f`), `refs/keep/cleanup-P4-1G-integ-q1`.
+- **Sprzątanie:** worktrees `wf_3a5d7bc8-8e5-1/-2/-3/-4` i `integ-p4-1g-q1` usunięte; cache `target-integ-p4-1g-q1` usunięty.
+- **Otwarte (z FC, do zamknięcia przed wpięciem mgły do scen):**
+  - luka L1/L2: DTO nie niesie `revealAllLand` ani `riverRevealKeys` (pin: `useFogRender = fogOn || revealAllLand`, `main.ts:13487`); wymaga zmian w `rust-port/view-model`, poza allowlistą Q1;
+  - `view::*` i `FogSets` nie mają wołającego w produkcji — wpięcie w Q2+;
+  - zakres realnych id graczy: NIE_ZMIERZONO (przepełnienie `OwnerRef` zwraca błąd).
+- **Stan P4-1G:** Q1 zamknięte; Q2–Q6 do dispatchu (`P4-1G-ADAPTER-ROZPOZNANIE.md` §7).
+- **Dysk:** 13 GB wolne (69%).
