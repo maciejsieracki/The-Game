@@ -1,3 +1,9 @@
+## ROBOCZA dc001e95 -- 2026-11-14 -- FALA 755: pomiar luk pelnego ruchu (narzedzie) (testowa)
+
+- Narzedzie pomiarowe battle-full-move-gaps-measure.cjs: luki pelnego ruchu (strzelcy 47,4% niewykorzystanego ruchu, 11,9% niewyjasnione; Obrona/Ostrzal/ucieczka 0 po ciosie). Bez zmian gra/src.
+- Weryfikacja: FC PASS-WITH-NOTES df37617c5; logic 213/213, build vite OK, MD5 Raw
+- Limity: rozkaz reczny i mur oblezniczy NIE ZMIERZONO; prog niewyjasnionego ruchu = ABC wlasciciela
+
 ## ROBOCZA 70828a6b -- 2026-11-14 -- FALA 754: Harness pomiarowy ekonomii AI: hak civTest, runner wznawialny, skrypt ON/OFF bramki utrzymania armii AI (testowa)
 
 - Blok __aiEconomyMeasure w main.ts za civTest (bez wplywu na gre), runner ai-economy-measure-run.cjs wznawialny z AI z miastami (41), obejscie bramki NNS gracza, test haka 10/10, skrypt ai-economy-measure-upkeep-onoff.cjs; kod gry w trybie normalnym bez zmian
