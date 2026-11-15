@@ -9,7 +9,7 @@ KOD RUNDY: gra/src/game/resource-ledger.ts, gra/src/game/building-stock-cost.ts,
 ZMIANY/COMMIT:
 - resource-ledger.ts: nowe rodzaje źródeł utrzymanie_budynkow, utrzymanie_jednostek, obywatele; LedgerCostPart; allocateTakenToLedgerParts (alokacja faktycznie pobranej ilości na części, suma = pobrane); upkeepLedgerParts; citizenLedgerParts; recordTakenToLedger (no-op bez rekordu tury).
 - building-stock-cost.ts: deductBuildingStockCostAcrossCities(cities, ownerId, cost, ledger?) — zwraca FAKTYCZNIE pobrane ilości (wcześniej void); opcjonalny zapis do księgi. Logika odjęcia bez zmian.
-- main.ts (wiring, bez zmiany wyniku gry): 
+- main.ts (wiring, bez zmiany wyniku gry):
   (a) utrzymanie gracza — po odjęciu `hResUpkeep` zapis do econ.resourceLedgerByOwner (budynki/jednostki z econ.resourceUpkeepBuildingsByOwner / resourceUpkeepUnitsByOwner);
   (b) utrzymanie AI — analogicznie dla `aiResUpkeep`;
   (c) zużycie obywateli w resolverze citizenUpkeepDrainForOwner — zapis `v.deductions` do księgi właściciela (ta sama tura, econ w zasięgu, tsc OK).
