@@ -1261,3 +1261,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Runda 2 (DODATEK r2, baza `f78736d36`, dispatch `8d43a7eb2`):** allowlista rozszerzona tylko o pliki zepsute przez r1 (`p6_tower_target_wiring.rs`, `p6_siege_tactics_loop_gen.mjs` + wektory). Wymóg: PEŁNY `cargo test` EXIT 0, nie tylko `p6_siege*`. Workflow `wf_7faf2bb4-2cd`, Operator HAIKU.
 - **Nadal NIE_ZROBIONE (2B2):** strzał `_singleBlow` wieży, guard `towerShooterRow`, stan `destroyed`.
 - **Parity:** `7b52c3842`. **Sloty:** 1 z 4. **Pytania ABC:** #106 pkt 4, #115, #120 i konwencja `Co-Authored-By` — bez odpowiedzi.
+
+## Przebieg (15.11, heartbeat 00:47): 1 z 4 slotów zajęte
+- **Trwających Workflow: 1** z 4: WIEZE-2B1 runda 2 (`wf_7faf2bb4-2cd`, Operator HAIKU; dispatch `8d43a7eb2`, baza `f78736d36`). Bez wyniku.
+- **Wolne sloty:** brak zweryfikowanego zakresu bez decyzji właściciela (#106 pkt 4; #115, #120 — ABC). Tematy K5 zablokowane allowlistą. Nie startuję na ślepo.
+- **Dysk:** 16 GB. **Parity:** `7b52c3842`.
+- **Pytania ABC:** #106 pkt 4 (rekomendacja B), #115, #120 oraz konwencja `Co-Authored-By` (rekomendacja B) — bez odpowiedzi właściciela.
