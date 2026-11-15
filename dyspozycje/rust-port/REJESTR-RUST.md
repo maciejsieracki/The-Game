@@ -1922,3 +1922,14 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
   3. P4-1G Q1 ADAPTER-CORE (#216), `wf_3a5d7bc8-8e5` — dispatch `7379e1dbab21`, baza `be49ff3c3`.
 - **Integracja P4-1B Q3 (#211)** zamknięta w poprzednim wpisie (`be49ff3c3`).
 - **Dysk:** 20 GB wolne.
+
+## Przebieg (15.11, 21:17 UTC — heartbeat „twardy bit”: sloty 3/4, start wstrzymany przez dysk)
+
+- **Stan workflow:**
+  1. P4-1H Q2 `cancel_planned_march` (#217), `wf_c5970398-de4` — operator PASS (`d8f85f7d9`, gałąź `rust-port-wip/R-RUSTPORT-P4-1H-CANCEL-Q2-op-r1`), etap Evaluator.
+  2. P4-1H Q3 RJ-REPIN (#217), `wf_28c84406-989` — etap operator, bez wyniku.
+  3. P4-1G Q1 ADAPTER-CORE (#216), `wf_3a5d7bc8-8e5` — operator, obrona i evaluator zakończone, etap FC w toku.
+- **Brak FC PASS do integracji** w tym ticku.
+- **Start wstrzymany:** czwarty slot zostaje wolny, bo dysk spadł do **8,5 GB (78%)** przy 13 procesach cargo. Reguła projektu: nie startować tematu z kodem Rust poniżej 8 GB. Próg 4 GB heartbeatu nie jest przekroczony, ale reguła 8 GB obowiązuje.
+- **Do zrobienia po zwolnieniu dysku:** wybrać kolejny temat (bez zależności od niezintegrowanego kodu) i wstawić go do slotu.
+- **Dirty worktree do zgłoszenia (nie ruszam):** `wf_5a965001-591-4`, `wf_f3b76b65-261-3` — z poprzednich ticków.
