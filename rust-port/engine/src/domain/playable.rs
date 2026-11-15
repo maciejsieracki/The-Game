@@ -551,8 +551,8 @@ pub struct PlayableState {
 
 /// P4-1J: jeden plan marszu, web `PlannedMarchDest` (`planned-march.ts:16-23`) z kluczem mapy
 /// `plannedMarches` jako `unit_id`. Wspolrzedne jak `PlayableFort` (`q` = `position.x`, `r` =
-/// `position.y`). `generalTargetId` (web `planned-march.ts:22`) jest poza zakresem P4-1J (kontrakt
-/// `P4-1-RENDER-DTO-CONTRACT.md` §8 go nie wymienia); odczyt zapisu raportuje jego pominiecie.
+/// `position.y`). `general_target_id` (web `generalTargetId`, `planned-march.ts:22`) zapisuje i
+/// odczytuje ten sam pin; kontrakt `P4-1-RENDER-DTO-CONTRACT.md` §8 go nie wymienia (DTO widoku).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlayablePlannedMarch {
@@ -562,6 +562,11 @@ pub struct PlayablePlannedMarch {
     /// Web `attackUnitId`: marsz, a po dotarciu atak na te jednostke (`main.ts:29572`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub attack_unit_id: Option<UnitId>,
+    /// Web `generalTargetId` (`planned-march.ts:22`): id zywego generala, za ktorym podaza marsz.
+    /// `None` = brak pola; pusty napis nie wchodzi tu (filtrowany przy odczycie, jak w webie).
+    /// Przeliczanie celu na pozycje generala (`syncGeneralMarchTargets`) nie nalezy do tej warstwy.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub general_target_id: Option<String>,
 }
 
 /// P4-1J: web `MarchStopReason` (`planned-march.ts:35`); forma serde = napisy weba.

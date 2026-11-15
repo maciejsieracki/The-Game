@@ -112,6 +112,14 @@ fn wire_snapshot_json(web_save_json: &str) -> String {
     format!("{head},{body}}}")
 }
 
+/// Web `generalTargetId` po odczycie: niepusty napis, pusty/brak/`null` = `None` (`planned-march.ts:471-472`).
+fn general_of(dest: &Value) -> Option<String> {
+    dest.get("generalTargetId")
+        .and_then(Value::as_str)
+        .filter(|id| !id.is_empty())
+        .map(str::to_owned)
+}
+
 /// Kanoniczny zapis dziesietny `UnitId` (wyrocznia testu; web trzyma id jako napis).
 fn canonical_id(text: &str) -> Option<UnitId> {
     let value = text.parse::<u64>().ok()?;
@@ -168,6 +176,7 @@ fn state_of(case: &Value) -> PlayableState {
             dest_q: int_of(&dest["destQ"]).expect("destQ stanu"),
             dest_r: int_of(&dest["destR"]).expect("destR stanu"),
             attack_unit_id: dest.get("attackUnitId").map(id_of),
+            general_target_id: general_of(dest),
         });
     }
     for pair in pairs(&case["marchStopNotified"]) {
@@ -204,9 +213,6 @@ fn expected_after_load(
     for pair in pairs(&loaded["plannedMarches"]) {
         let uid = pair[0].as_str().expect("uid").to_owned();
         let dest = &pair[1];
-        if dest.get("generalTargetId").is_some() {
-            report.general_target_dropped.push(uid.clone());
-        }
         let attack = match dest.get("attackUnitId") {
             None => Some(None),
             Some(text) => canonical_id(text.as_str().expect("attackUnitId napisem")).map(Some),
@@ -223,6 +229,7 @@ fn expected_after_load(
                     dest_q,
                     dest_r,
                     attack_unit_id,
+                    general_target_id: general_of(dest),
                 });
                 representable.push(uid);
             }
@@ -326,7 +333,7 @@ fn state_cases_save_and_load_like_web() {
 #[test]
 fn raw_cases_load_like_web_with_explicit_report() {
     let v = vectors();
-    let (mut loaded_any, mut unrepresentable, mut general_dropped, mut attacks) = (0, 0, 0, 0);
+    let (mut loaded_any, mut unrepresentable, mut general_kept, mut attacks) = (0, 0, 0, 0);
     for case in pairs(&v["raw_cases"]) {
         let name = case["name"].as_str().expect("name");
         let raw = case["rawSave"].as_str().expect("rawSave");
@@ -338,6 +345,7 @@ fn raw_cases_load_like_web_with_explicit_report() {
             dest_q: 9,
             dest_r: 9,
             attack_unit_id: None,
+            general_target_id: None,
         });
         before
             .march_stop_notified
@@ -360,11 +368,15 @@ fn raw_cases_load_like_web_with_explicit_report() {
             loaded_any += 1;
         }
         unrepresentable += report.unrepresentable.len();
-        general_dropped += report.general_target_dropped.len();
+        general_kept += loaded
+            .planned_marches
+            .iter()
+            .filter(|march| march.general_target_id.is_some())
+            .count();
         attacks += loaded.march_attack_targets.len();
     }
     eprintln!(
-        "raw: wczytane={loaded_any} niewyrazalne={unrepresentable} general={general_dropped} ataki={attacks}"
+        "raw: wczytane={loaded_any} niewyrazalne={unrepresentable} general={general_kept} ataki={attacks}"
     );
     assert!(
         loaded_any >= 30,
@@ -375,8 +387,8 @@ fn raw_cases_load_like_web_with_explicit_report() {
         "wpisy niewyrazalne: {unrepresentable}"
     );
     assert!(
-        general_dropped >= 5,
-        "pominiete generalTargetId: {general_dropped}"
+        general_kept >= 5,
+        "zachowane generalTargetId po odczycie: {general_kept}"
     );
     assert!(attacks >= 5, "cele ataku: {attacks}");
 }
@@ -396,7 +408,11 @@ fn raw_deviation_case_is_reported_by_name() {
     state.units = units_of(case);
     let report = decoded.restore_planned_marches(&mut state, PLAYER);
     assert_eq!(report.unrepresentable, vec!["2", "3", "7"]);
-    assert!(report.general_target_dropped.is_empty());
+    let web_general = pairs(&case["loaded"]["plannedMarches"])
+        .iter()
+        .find(|pair| pair[0].as_str() == Some("12"))
+        .map(|pair| general_of(&pair[1]))
+        .expect("wpis 12 w wyniku weba");
     assert_eq!(
         state.planned_marches,
         vec![PlayablePlannedMarch {
@@ -404,6 +420,7 @@ fn raw_deviation_case_is_reported_by_name() {
             dest_q: 1,
             dest_r: 1,
             attack_unit_id: None,
+            general_target_id: web_general,
         }]
     );
     assert_eq!(state.march_attack_targets, BTreeMap::new());

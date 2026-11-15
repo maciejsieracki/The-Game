@@ -51,6 +51,7 @@ fn march(unit: u64, q: i32, r: i32, attack: Option<u64>) -> PlayablePlannedMarch
         dest_q: q,
         dest_r: r,
         attack_unit_id: attack.map(UnitId::new),
+        general_target_id: None,
     }
 }
 
@@ -316,7 +317,7 @@ fn restore_keeps_one_entry_per_unit_and_uses_owner_parameter() {
 }
 
 #[test]
-fn restore_reports_general_target_and_unrepresentable_entries() {
+fn restore_keeps_general_target_and_reports_unrepresentable_entries() {
     let mut state = PlayableState::empty();
     state.units = vec![unit(1, 1, 0, 0), unit(2, 1, 1, 1), unit(3, 1, 2, 2)];
     state
@@ -349,10 +350,15 @@ fn restore_reports_general_target_and_unrepresentable_entries() {
     let encoded = serde_json::to_string(&snapshot).expect("serialize");
     let decoded = decode_snapshot_str(&encoded).expect("decode");
     let report = decoded.restore_planned_marches(&mut state, PlayerId::new(1));
-    assert_eq!(report.general_target_dropped, vec!["1"]);
     assert_eq!(report.unrepresentable, vec!["2", "3"]);
-    // Wpis generala na pozycji jednostki zostaje (web planned-march.ts:465), bez `generalTargetId`.
-    assert_eq!(state.planned_marches, vec![march(1, 0, 0, None)]);
+    // Wpis generala na pozycji jednostki zostaje (web planned-march.ts:466) razem z `generalTargetId`.
+    assert_eq!(
+        state.planned_marches,
+        vec![PlayablePlannedMarch {
+            general_target_id: Some("g1".to_owned()),
+            ..march(1, 0, 0, None)
+        }]
+    );
     assert!(
         state.march_stop_detail.is_empty(),
         "odczyt czysci marchStopDetail"
