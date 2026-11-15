@@ -1632,3 +1632,13 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **KROK 2 (FC PASS bez integracji):** brak nowych. CRED-HAK zintegrowany na parity (`d5a52a980`, test 3415/0 failed). M01-R2 czeka na ponowne scalenie na `d5a52a980` i test (wcześniejszy test dotyczył `62ff9de35`).
 - **KROK 3 (sprzątanie):** wcześniej usunięto worktree rozpoznania wież i CRED-HAK. Dysk: 6,0 GB wolne (poniżej progu 8 GB dla nowych tematów z kodem Rust; rozpoznania są tylko do odczytu).
 - **NASTĘPNY KROK:** odebrać wynik testu M01 (`integ-m01.log`), ponowne scalenie M01 na `d5a52a980`, test i FF; odebrać FC P4-1E i wyniki rozpoznań.
+
+## Przebieg (15.11, 16:08 UTC — rozpoznanie zdobycia miasta #175 zintegrowane jako dokumenty)
+
+- **#175 ZDOBYCIE-MIASTA-ROZPOZNANIE:** FC PASS-WITH-NOTES `d2daa6f0b`; dokumenty runu na `claude/rust-sivvrn` (`23cceded8`). Wynik: żadne z 20 kroków ścieżki zdobycia miasta nie ma wołającego w produkcji Rust (`apply_transfer_with_effects`, `run_capital_capture_plunder`, `eliminate_owner`, `power_record_city_capture`, `resolve_surrender_path`, `surrender_tick_action`, `combat::resolve`). Zależności: W8, #113, #114, Q7, Q8/Q9, scalenie akumulatorów Power.
+- **Decyzje orkiestratora z FC (do zapisu):**
+  - (a) Nazwa `applyCaptureTransfer` z dispatchu #115 NIE istnieje w pinie `07d2fbd72`. Właściwa: `applyCityCaptureAfterBattle` (`post-battle-map.ts:493`) i blok kapitulacji `main.ts:17698-17848`. Zadanie #115 poprawione.
+  - (b) Dwa akumulatory zdobyczy Power: `PlunderState` (`siege_capital_plunder.rs:458`, zapis do własnej mapy `:611-615`) i `WarTurnState::zdobycze_power_by_owner` (`war_turn_state.rs:145`), którego produkcja nie dostaje wpisu. Web ma jedną mapę (`main.ts:2264`). Decyzja techniczna: źródłem prawdy jest jedna mapa zgodna z webem; wdrożenie w #115.
+  - (c) Status #114 ELIMINACJA-GRACZA („completed") nie zgadza się z kodem: `eliminate_owner` (`eliminacja.rs:48`) nie ma wołającego w produkcji. Wracam do „w toku" do czasu podpięcia.
+  - (d) Zakres #115 nie obejmuje jeszcze aneksji (`main.ts:35272-35287`), cesji (`:36478-36484`), buntu (`:39563-39568`) i fortu (`:16116-16124`). Osobne rozpoznanie przed #115.
+- **R7K7C — rozpoznanie #176:** start nieudany (`WorktreeIsolationError` przy zapełnionym dysku). Do ponowienia po zwolnieniu miejsca.
