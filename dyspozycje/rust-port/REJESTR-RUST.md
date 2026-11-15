@@ -1546,3 +1546,16 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Odstępstwa zgłoszone:** P4-1J na OPUS (nazwa skryptu) — zasada: tematy silnika na HAIKU, zostawiam bieżący etap, kolejne silnikowe na HAIKU. Luka parytetu `generalTargetId` (web) pominięta w Rust → #221. Decyzja techniczna z P4-1J do zapisania: pola identyfikatorów `UnitId`, cel `i32`, wpisy niereprezentowalne pomijane z raportem `unrepresentable` (do potwierdzenia po FC).
 - **Uwaga do M01-R2:** w rendererze istnieje już `struct MapHex` (`rust-port/renderer/src/pick/terrain.rs:246`, podzbiór pól pod picking). Model z `hex.ts` w silniku nadal nie istnieje.
 - **NASTĘPNY KROK:** odebrać wyniki etapu pomiarów P4-1J i kolejnych etapów; po FC PASS — ancestry, FF, sprzątanie worktree i tagów `tgt*`.
+
+## Przebieg (15.11, 13:18 UTC — heartbeat „twardy bit”, sloty Rust)
+
+- **KROK 1 (sloty):** 4 aktywne Workflow, brak nowych startów (warunek < 4 niespełniony):
+  - M01-R2 MapHex (`wf_0e33af85-341`, #210): etap 2/4 pomiary, HAIKU; Operator PASS-WITH-NOTES `0bb8a6f22`, zabezpieczony na `wip/R-RUSTPORT-P6-M01-MAPHEX-Q1` i `refs/keep/M01-R2-operator-impl`.
+  - P4-1J stan planów marszu (`wf_fa7a2e6d-ba0`, #209): etap 2/4 pomiary, OPUS (skrypt); Operator PASS-WITH-NOTES `2169bd17d`; luka `generalTargetId` (#221).
+  - P4-1E CITY-VIEW (`wf_cd64d6c2-9fe`, #214): etap 1/4 Operator, OPUS; agent aktywny.
+  - CRED-HAK wdrożenie, wycinek 1 (`wf_527c2223-a63`, #171): etap 2/4 Evaluator, SONNET; Operator PARTIAL, WIP `ff6392336` na `wip/R-RUSTPORT-P6-CRED-HAK-WYPOWIEDZENIE-IMPL-Q1`, `refs/keep/CRED-HAK-IMPL-r1-wip`.
+- **KROK 2 (FC PASS bez integracji):** brak. CRED-HAK rozpoznanie (`wf_be7eeab7-37f`, FC PASS-WITH-NOTES `769d0aac3`) zintegrowane dokumentami (`cc4ca5309`); `refs/keep/CRED-HAK-ROZP-fc`.
+- **KROK 3 (sprzątanie):** usunięte 4 worktree rozpoznania CRED-HAK oraz 5 katalogów cache w `/tmp/claude-0` nieużywanych od ponad godziny. Dysk: 6,7 GB wolne. Worktree i cache działających agentów zostawione.
+- **Poprawka skryptu:** `topic-CRED-HAK-IMPL.js` — PARTIAL/BLOCK z Operatora nie idzie do Evaluatora; uruchamia rundę dokończenia z tym samym ID. Modele bez zmian (Operator/Obrona HAIKU, Evaluator/FC SONNET). Działające workflow nie są zmienione.
+- **Odstępstwa zgłoszone:** P4-1J i P4-1E na OPUS. Zasada heartbeatu mówi HAIKU dla Operatora, a zasada użytkownika dla tematów renderera/DTO mówi OPUS; P4-1J jest tematem silnika — zostawiam bieżący etap, kolejne silnikowe na HAIKU.
+- **NASTĘPNY KROK:** odebrać FC M01-R2 i P4-1J oraz wynik Evaluatora CRED-HAK; po FC PASS — refs/keep, ancestry, rozmiar diffu, integracja na parity, sprzątanie worktree.
