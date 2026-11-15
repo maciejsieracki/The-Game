@@ -127,6 +127,9 @@ function propose(mod, actionId, payload) {
 const WAR_EARLY = { turnsAtWar: 3, lostCitiesResponder: 0, responderRw: 0.5 };
 const WAR_STRONGER = { turnsAtWar: 9, lostCitiesResponder: 0, responderRw: 0.6 };
 const WAR_LONG = { turnsAtWar: 20, lostCitiesResponder: 0, responderRw: 0.9 };
+// R-TEST-DEBT-BASE-RED-MAIN-Q2 (klasa A): zmęczenie ≥0,8 = pokój BEZWARUNKOWY (#361, progKoncaZmeczenia), więc bramka PW
+// rozejmu/pokoju działa tylko poniżej 0,8. Scenariusze bramki PW używają WAR_MID (12 tur, poziom 0,6).
+const WAR_MID = { turnsAtWar: 12, lostCitiesResponder: 0, responderRw: 0.6 };
 // Pozycja militarna AI (siła) — bramka „stronger” czyta ją z warState (diplomacy-proposals.ts, r5Gate), nie z rw.
 const WAR_STRONGER12 = { turnsAtWar: 12, lostCitiesResponder: 0, responderRw: 0.6, responderPozycjaMilitarna: 'silniejsza' };
 const GATE_REASON = /za wcześnie|czuje się silniejsze/;
@@ -148,6 +151,8 @@ function run(mod) {
     rozejm5: ev('rozejm', { turns: 5 }, ctxFor({ warState: WAR_LONG })),
     rozejm15: ev('rozejm', { turns: 15 }, ctxFor({ warState: WAR_LONG })),
     rozejm0: ev('rozejm', { turns: 0 }, ctxFor({ warState: WAR_LONG })),
+    rozejmMid: ev('rozejm', { turns: 10 }, ctxFor({ warState: WAR_MID })),
+    pokojMid: ev('pokoj', { turns: 10 }, ctxFor({ warState: WAR_MID })),
   };
 }
 
@@ -229,8 +234,9 @@ async function main() {
       && ok.rozejmStronger.reason === ok.pokojStronger.reason, ok.rozejmStronger);
     check('P2b: rozejm silniejsze AI (12 tur, pozycja militarna „silniejsza”) = odrzucenie bramką profilu, jak pokój',
       ok.rozejmStronger12.accepted === false && /militarnie silniejsza/.test(ok.rozejmStronger12.reason || '')
-      // Parytet komunikatu bramki (bez kwoty PN — baza rozejmu ≠ baza pokoju, M2).
-      && ok.rozejmStronger12.reason.split(' — miasta')[0] === ok.pokojStronger12.reason.split(' — miasta')[0],
+      // Parytet komunikatu bramki BEZ kwot (baza rozejmu ≠ baza pokoju, M2): liczby zastąpione znacznikiem.
+      // Klasa A: dawny podział po ' — miasta' nie odpowiada obecnemu tekstowi („; miasta w ofercie…”).
+      && ok.rozejmStronger12.reason.replace(/\d+/g, '#') === ok.pokojStronger12.reason.replace(/\d+/g, '#'),
       ok.rozejmStronger12);
     check('P3: rozejm po 20 turach nie podlega bramce czasu/siły',
       !GATE_REASON.test(ok.rozejmLong.reason || ''), ok.rozejmLong);
@@ -242,10 +248,11 @@ async function main() {
     check('P6: długości 5 i 15 przechodzą walidację czasu',
       !/5, 10 lub 15/.test(ok.rozejm5.reason || '') && !/5, 10 lub 15/.test(ok.rozejm15.reason || ''),
       { r5: ok.rozejm5, r15: ok.rozejm15 });
-    check('P7: baza PW rozejmu (200) niższa niż pokoju (500): pwBalance rozejmu > pokoju (ta sama sytuacja)',
-      typeof ok.rozejmLong.pwBalance === 'number' && typeof ok.pokojLong.pwBalance === 'number'
-      && ok.rozejmLong.pwBalance > ok.pokojLong.pwBalance,
-      { rozejm: ok.rozejmLong.pwBalance, pokoj: ok.pokojLong.pwBalance });
+    // Klasa A: pwBalance niesie tylko odrzucenie (zaakceptowany wynik ma wearinessPw); bramka PW działa poniżej 0,8 (WAR_MID).
+    check('P7: baza PW rozejmu niższa niż pokoju: pwBalance rozejmu > pokoju (ta sama sytuacja, WAR_MID)',
+      typeof ok.rozejmMid.pwBalance === 'number' && typeof ok.pokojMid.pwBalance === 'number'
+      && ok.rozejmMid.pwBalance > ok.pokojMid.pwBalance,
+      { rozejm: ok.rozejmMid.pwBalance, pokoj: ok.pokojMid.pwBalance });
 
     const mod = require(BUNDLE_OK);
     // R-WEB-TRUCE-Q1 r3 (N2): P8 testuje WALUTĘ wojenną (złoto), nie żywność — żywność nie jest walutą
@@ -264,8 +271,8 @@ async function main() {
     check('P9: eksport resolvePlayerAcceptsAiPending dostępny (ścieżka akceptacji gracza)', typeof resolved === 'function');
     // P10: bramka PW rozejmu = bramka PW pokoju (ta sama gałąź treatyPnGate, ten sam komunikat)
     const pnShort = { givePn: 0, receivePn: 1000 };
-    const rzPn = mod.evaluateProposal(propose(mod, 'rozejm', pnShort), ctxFor({ warState: WAR_LONG }));
-    const pkPn = mod.evaluateProposal(propose(mod, 'pokoj', pnShort), ctxFor({ warState: WAR_LONG }));
+    const rzPn = mod.evaluateProposal(propose(mod, 'rozejm', pnShort), ctxFor({ warState: WAR_MID }));
+    const pkPn = mod.evaluateProposal(propose(mod, 'pokoj', pnShort), ctxFor({ warState: WAR_MID }));
     const PN_GATE_REASON = /uczciwej oferty pokoju|Oferta za niska na pokój/;
     check('P10: rozejm z za niską ofertą PW odrzucony bramką PW pokoju (jak pokój, ujemny pwBalance)',
       rzPn.accepted === false && pkPn.accepted === false
@@ -281,10 +288,12 @@ async function main() {
     const m1r = run(require(BUNDLE_M1));
     check('M1 (brak walidacji długości): 7 tur przechodzi — mutacja wykrywalna',
       m1r.rozejm7.accepted !== false || !/5, 10 lub 15/.test(m1r.rozejm7.reason || ''), m1r.rozejm7);
-    const m2r = run(require(BUNDLE_M2));
+    const m2mod = require(BUNDLE_M2);
+    const m2rz = m2mod.evaluateProposal(propose(m2mod, 'rozejm', { turns: 10 }), ctxFor({ warState: WAR_MID }));
+    const m2pk = m2mod.evaluateProposal(propose(m2mod, 'pokoj', { turns: 10 }), ctxFor({ warState: WAR_MID }));
     check('M2 (baza rozejmu = baza pokoju): pwBalance równy pokojowi — mutacja wykrywalna',
-      !(typeof m2r.rozejmLong.pwBalance === 'number' && m2r.rozejmLong.pwBalance > m2r.pokojLong.pwBalance),
-      { rozejm: m2r.rozejmLong.pwBalance, pokoj: m2r.pokojLong.pwBalance });
+      !(typeof m2rz.pwBalance === 'number' && m2rz.pwBalance > m2pk.pwBalance),
+      { rozejm: m2rz.pwBalance, pokoj: m2pk.pwBalance });
     // M3: bramka PW pokoju NIE obejmuje rozejmu → P10 wykrywa (komunikat różni się od pokoju)
     const m3mod = require(BUNDLE_M3);
     const m3rz = m3mod.evaluateProposal(propose(m3mod, 'rozejm', pnShort), ctxFor({ warState: WAR_LONG }));

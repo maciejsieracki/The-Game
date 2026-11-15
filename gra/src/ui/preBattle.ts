@@ -14,6 +14,8 @@ import type { CivBonusLite } from '../game/production';
 import { civCombatUnitShapeFromCategory, effectiveCombatBonusChipTexts } from '../game/civ-bonuses';
 import { weakenedNoteText, type WeakenedNote } from './battle-weakened-note';
 import { terrainIconSvg, civIconSvg, brandIconSvg } from './icons/brandAssets';
+import { TEREN_LABEL_PL } from '../map/terrain-names';
+import { nazwaWyswietlana } from '../game/text-names';
 import { PB_SVG } from '../battle/battleHudTheme';
 import { leaderPortraitUrl, leaderName } from './leaderPortraits';
 import { startPreBattleMusic, stopPreBattleMusic } from '../audio/muzyka-antyczna';
@@ -673,6 +675,11 @@ const PB_ICON_NO_RETREAT =
 const PB_ICON_DOT =
   '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="4"/></svg>';
 
+/** Etykieta terenu dla gracza (R-WEB-UI-PREBATTLE-RAW-IDS-AND-ROSTER-OVERLAP-Q1): id z info.teren -> polska nazwa, nigdy surowe id. */
+function terenLabelPl(teren: string): string {
+  return (TEREN_LABEL_PL as Readonly<Record<string, string>>)[teren] ?? nazwaWyswietlana(teren);
+}
+
 function unitRowHtml(unit: PreBattleUnit): string {
   const kind = unitKind(unit.kategoria);
   const qty = unit.ilosc ?? 1;
@@ -824,7 +831,7 @@ function metaHtml(info: PreBattleInfo): string {
   // segment "Region: X" z makiety pominiety (brak zrodla danych). Teren jest OBOWIAZKOWY.
   const parts: string[] = [];
   parts.push(
-    '<span class="pb-ter">' + terrainIconSvg(info.teren, 13) + 'Teren: ' + esc(info.teren) + '</span>',
+    '<span class="pb-ter">' + terrainIconSvg(info.teren, 13) + 'Teren: ' + esc(terenLabelPl(info.teren)) + '</span>',
   );
   if (info.tura !== undefined) {
     parts.push('<span>Tura <b>' + String(info.tura) + '</b></span>');
@@ -848,7 +855,7 @@ function buildDeployPanel(
   // still render, greyed out (disabled), not disappear like the garrison lock does.
   // Separate state from showRetreat (which drives the active button).
   const retreatExhausted = !showRetreat && info.retreatExhaustedThisTurn === true;
-  const place = info.miejsce ?? info.lokacja ?? info.teren;
+  const place = info.miejsce ?? info.lokacja ?? terenLabelPl(info.teren);
   const kicker = canRetreat ? 'ROZSTAWIENIE BITWY' : 'WRÓG ATAKUJE';
   const title = (canRetreat ? 'Atakujesz: ' : 'Broni się: ') + esc(place);
 

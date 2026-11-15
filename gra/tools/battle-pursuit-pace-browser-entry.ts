@@ -43,13 +43,60 @@ type Row = {
   attacks: number; leftover: number; dbg?: any;
 };
 let leftoverPrev = new Map<string, number>();
-const api: any = { ready: true, done: false, result: null as any, rows: [] as Row[], rounds: [] as any[] };
+const api: any = { seq: 0, ready: true, done: false, result: null as any, rows: [] as Row[], rounds: [] as any[] };
 (window as any).__e2e = api;
 (window as any).__scene = scene;
 
 const fmt = (v: number) => (Number.isFinite(v) ? v : null);
 let curRows = new Map<string, Row>();
 let curRound = -1;
+
+// R-WEB-BATTLE-FULL-MOVE-THEN-STRIKE-AT-END-Q1 (runda 4): sonda KONCA aktywacji. W chwili, gdy silnik oznacza jednostke jako
+// "acted" (koniec jej aktywacji w tej rundzie), zapisuje STAN SCENY: niewykorzystany ruch, liczba wolnych pol przyleglych,
+// czy istnieje sciezka do pozycji ciosu i czy jednostka stoi w zasiegu ciosu. Podstawa twardego testu autentycznosci blokady (T3).
+api.ends = [] as any[];
+function instrumentActed(ru: any, round: number): void {
+  let val = !!ru.acted;
+  Object.defineProperty(ru, 'acted', {
+    configurable: true, enumerable: true,
+    get() { return val; },
+    set(v: boolean) {
+      if (v && !val && !scene._autoBatchPlanning && scene.roundNo === round) {
+        let freeNb = 0; const freeCells: string[] = [];
+        for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nc = ru.q + dc; const nr = ru.r + dr;
+          if (nc < 0 || nr < 0) continue;
+          if (scene.occByKey.has(`${nc},${nr}`)) continue;
+          if (!scene._passableForUnit(ru, nc, nr)) continue;
+          freeNb++; freeCells.push(`${nc},${nr}`);
+        }
+        let pathStep: string | null = null;
+        try { pathStep = scene._firstStepAlongPathToAttack(ru); } catch { pathStep = null; }
+        api.ends.push({
+          round, id: ru.bu.id, mounted: !!ru.mounted, side: ru.side, routed: !!ru.routed,
+          moveLeft: Math.round(ru.moveLeft * 100) / 100, freeNb, freeCells, pathExists: pathStep !== null,
+          // canStrike = w zasiegu ciosu WOLNEGO wroga (bez wroga uderzonego juz w tej aktywacji): po ciosie stanie przy
+          // uderzonym wrogu NIE zamyka aktywacji jako 'arrived' (R-WEB-...-Q1 r4 zarzut 5 Evaluatora).
+          canStrike: (() => { const hit = new Set((api.attackLog || []).filter((a: any) => a.round === round && a.id === ru.bu.id).map((a: any) => a.target)); return scene._enemiesOf(ru).some((e: any) => !e.dead && !e.removed && !hit.has(e.bu.id) && scene._canStrikeTargetFrom(ru, ru.q, ru.r, e)); })(),
+          struckRound: ru.struckRound === round,
+          postStrikeBlocked: !!ru.postStrikeBlocked, q: ru.q, r: ru.r,
+          enemiesAlive: scene._enemiesOf(ru).filter((e: any) => !e.dead && !e.removed && e.bu.id !== undefined && !(api.attackLog || []).some((a: any) => a.round === round && a.id === ru.bu.id && a.target === e.bu.id)).length,
+          // r6 (zarzut 2 FC): stan zatrzasku wzwarcia w chwili konca aktywacji (regula pelnego ruchu dziala tylko PO zderzeniu wrecz)
+          latched: !!scene._meleeLatched,
+          // r6: wyjatki od reguly pelnego ruchu (DODATEK 6, decyzja ABC A): doktryny Obrona/Ostrzal i jednostka uciekajaca -- poza miara.
+          doctrineExempt: ['defensive', 'skirmish'].includes(scene._getEffectiveDoctrine(ru)) || !!ru.routed,
+          // r6: czy istnieje sciezka do wroga omijajaca pola juz odwiedzone w tej aktywacji (slad ruchu + pola wejscia), czyli
+          // czy "wolna droga" z classifyEnd jest realna dla reguly bez ping-ponga (DODATEK 1 pkt 5).
+          pathFreeVisited: (() => {
+            const trail = new Set<string>([`${ru.q},${ru.r}`, ...((ru.moveTrailRound === round && ru.moveTrail) ? [...ru.moveTrail] : [])]);
+            try { return scene._firstStepAlongPathToAttack(ru, (q: number, r: number) => !trail.has(`${q},${r}`)) !== null; } catch { return false; }
+          })(),
+        });
+      }
+      val = v;
+    },
+  });
+}
 
 function snapshot(): void {
   const r = scene.roundNo;
@@ -78,6 +125,7 @@ function snapshot(): void {
       };
       curRows.set(ru.bu.id, row);
       api.rows.push(row);
+      instrumentActed(ru, r);
     }
   }
   api.rounds.push({ round: r, contact0, enemiesRouted, nUnits: curRows.size });
@@ -98,7 +146,7 @@ function snapshot(): void {
     if (rec) { if (scene._autoBatchPlanning) rec.stepsPlan++; else rec.steps++; rec.q1 = col; }
     if (!scene._autoBatchPlanning) {
       const fr = (new Error().stack ?? '').split('\n').slice(2, 7).map(l => (/at (?:\w+\.)?(\w+)/.exec(l) ?? [])[1] ?? '?');
-      (api.callers ??= []).push({ round: scene.roundNo, id: ru.bu.id, mounted: !!ru.mounted, col, row, via: fr.join('<') });
+      (api.callers ??= []).push({ round: scene.roundNo, id: ru.bu.id, mounted: !!ru.mounted, col, row, seq: ++api.seq, via: fr.join('<') });
     }
     return origMove(ru, col, row, done);
   };
@@ -107,7 +155,7 @@ function snapshot(): void {
     scene[fn] = (attacker: any, defender: any, done: any) => {
       const rec = curRows.get(attacker.bu.id);
       if (rec && !scene._autoBatchPlanning) rec.attacks++;
-      if (!scene._autoBatchPlanning) (api.attackLog ??= []).push({ round: scene.roundNo, id: attacker.bu.id });
+      if (!scene._autoBatchPlanning) (api.attackLog ??= []).push({ round: scene.roundNo, id: attacker.bu.id, seq: ++api.seq, nazwa: attacker.bu.nazwa, mounted: !!attacker.mounted, ranged: fn === '_doRangedAttack', target: defender.bu.id });
       return orig(attacker, defender, done);
     };
   }

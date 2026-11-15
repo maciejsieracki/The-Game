@@ -13,7 +13,7 @@
  *   4. Zero pageerror / console.error w trakcie tur.
  *
  * Usage (z gra/):  BUNDLE_DIR=<abs> node tools/trade-route-remove-stock-flow-live-test.cjs
- *   BUNDLE_DIR -- katalog zbudowanego bundle (vite build --outDir <poza repo>).
+ *   BUNDLE_DIR -- katalog zbudowanego bundle (vite build --outDir <poza repo>); brak = test buduje go sam.
  *   TRSF_TURNS=<n> -- liczba tur (domyslnie 3). TRSF_RESULT=<abs file> -- zapis JSON z liczbami.
  *
  * Zmiana gry: tylko haki ?civTest=1 (odczyt + wymuszenie trasy testowej); logika tury nietknieta.
@@ -21,10 +21,24 @@
 const fs = require('fs');
 const path = require('path');
 
-const BUNDLE = process.env.BUNDLE_DIR;
+// R-TEST-DEBT-BASE-RED-MAIN-Q2 (klasa D): test sam buduje bundle vite POZA repo, gdy BUNDLE_DIR nie wskazuje
+// gotowego index.html (wcześniej exit 2 = brak kroku przygotowania, nie defekt gry).
+const { execSync } = require('child_process');
+const os = require('os');
+const GRA_DIR = path.resolve(__dirname, '..');
+let BUNDLE = process.env.BUNDLE_DIR;
 if (!BUNDLE || !fs.existsSync(path.join(BUNDLE, 'index.html'))) {
-  console.error('[trsf-live] brak BUNDLE_DIR z index.html (zbuduj vite --outDir poza repo).');
-  process.exit(2);
+  BUNDLE = path.join(os.tmpdir(), 'civ-trsf-bundle-' + process.pid);
+  console.log('[trsf-live] brak BUNDLE_DIR — vite build do katalogu tymczasowego poza repo:', BUNDLE);
+  // R-TEST-DEBT-BASE-RED-MAIN-Q2 (obrona r1, zarzut 3): bundle utworzony przez ten test jest sprzątany przy każdym wyjściu
+  // (sukces, FAIL, blad), bo katalog w os.tmpdir() nie znika sam i zostawiał civ-trsf-bundle-<pid> po przebiegu.
+  process.on('exit', () => { try { fs.rmSync(BUNDLE, { recursive: true, force: true }); } catch (_) { /* sprzątanie best-effort */ } });
+  execSync(`node ./node_modules/vite/bin/vite.js build --outDir ${JSON.stringify(BUNDLE)} --emptyOutDir`,
+    { cwd: GRA_DIR, stdio: 'pipe' });
+  if (!fs.existsSync(path.join(BUNDLE, 'index.html'))) {
+    console.error('[trsf-live] build bez index.html');
+    process.exit(2);
+  }
 }
 const TURNS = Number(process.env.TRSF_TURNS || 3);
 const RESULT_FILE = process.env.TRSF_RESULT || '';

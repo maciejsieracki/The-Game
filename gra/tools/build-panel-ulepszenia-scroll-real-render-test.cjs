@@ -207,9 +207,13 @@ function hudLayoutConsts() {
   const gapMd = num('HUD_GAP_MD_PX');
   const powerTop = num('HUD_POWER_TOP_PX');
   const cityEdge = num('CITY_EDGE_PX');
+  // R-WEB-TEST-DEBT-BASE-RED-FALA741-Q1 (klasa A): hud.ts dołożył do CSS placeholdery TOOLBAR_TOP_PX (pasek narzędzi mapy)
+  // i Z_MAP_CONTROLS (z-index dok sterowania); brak ich w MAP interpolacji dawał G2b „nieznana wstawka”.
+  const toolbarTopPx = num('TOOLBAR_TOP_PX');
+  const zMapControls = num('Z_MAP_CONTROLS');
   return {
     edge, gap, zoomEdge, wyk, end, lbl, above,
-    topPx, chipRow, actionRow, railGap, gapMd, powerTop, cityEdge,
+    topPx, chipRow, actionRow, railGap, gapMd, powerTop, cityEdge, toolbarTopPx, zMapControls,
     rightRailBottom: topPx + Math.max(chipRow, actionRow),
     turnStack: edge + wyk + gap + end + lbl,
     turnStackZoom: zoomEdge + wyk + gap + end + lbl,
@@ -261,6 +265,8 @@ function interpolateHudCss(raw, HL) {
     HUD_POWER_TOP_PX: String(HL.powerTop),
     HUD_RIGHT_RAIL_ROW_GAP_PX: String(HL.railGap),
     CITY_EDGE_PX: String(HL.cityEdge),
+    TOOLBAR_TOP_PX: String(HL.toolbarTopPx),
+    Z_MAP_CONTROLS: String(HL.zMapControls),
     // Poza prawym klastrem — patrz komentarz wyżej.
     CIV_BRAND_SCOPE_VARS: '',
     MINI_W: '240',

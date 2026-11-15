@@ -1995,6 +1995,15 @@ interface RuntimeBattleUnit {
   /** R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1 (r3): pola, ktore konnica juz odwiedzila w TEJ aktywacji
    *  (manewr `_cavManeuverStep` nie wraca na nie -- koniec ping-pongu A-B-A-B, ktory spalal cala pule ruchu bez postepu). */
   cavTrail?: Set<string>;
+  /** R-WEB-BATTLE-FULL-MOVE-THEN-STRIKE-AT-END-Q1: numer rundy, w ktorej jednostka zadala juz swoj jedyny cios (po wzwarciu: jeden cios na jednostke na ture). */
+  struckRound?: number;
+  /** Id wroga uderzonego w rundzie `struckRound` (kontynuacja ruchu nie zatrzymuje sie przy nim ponownie). */
+  struckTargetId?: string;
+  /** Diagnostyka (T3): po ciosie nie bylo dokad isc (brak sciezki do nastepnego wroga) -- reszta ruchu przepadla zgodnie z regula. */
+  postStrikeBlocked?: boolean;
+  /** Pola odwiedzone przez jednostke w tej rundzie (zywy ruch) -- kontynuacja po ciosie nie wraca na nie (brak ping-ponga). */
+  moveTrail?: Set<string>;
+  moveTrailRound?: number;
   side:         'atk' | 'def';
   dead:         boolean;
   fadingOut:    boolean;
@@ -6012,11 +6021,62 @@ export class BattleScene {
     if (!target || target.dead || target.fadingOut || target.removed
       || !this._enemiesOf(attacker).includes(target)
       || !this._canStrikeTargetFrom(attacker, attacker.q, attacker.r, target)) {
+      // R-WEB-BATTLE-FULL-MOVE-THEN-STRIKE-AT-END-Q1: zamrozony cel zginal/odszedl w trakcie tej samej fali (np. dobity przez
+      // sasiada) -- po zderzeniu wrecz jednostka nie traci reszty ruchu, tylko kontynuuje zywa aktywacje (cios/ruch).
+      if (this._fullMoveRuleActive(attacker) && attacker.struckRound !== this.roundNo && !attacker.dead && !attacker.fadingOut) {
+        this._resumeFullMoveLive(attacker, done);
+        return;
+      }
       done();
       return;
     }
     this._applyTerrainRange(attacker);
     this._doAttack(attacker, target, done);
+  }
+
+  /** Zywa kontynuacja aktywacji (po zatrzasku wzwarcia), gdy zamrozony plan stracil cel: cios jesli ktos jest w zasiegu, inaczej ruch dalej. */
+  private _resumeFullMoveLive(ru: RuntimeBattleUnit, done: () => void): void {
+    this._applyTerrainRange(ru);
+    if (canShoot(ru) && ru.shootingEnabled !== false) {
+      const shot = this._rangedTargetInRange(ru);
+      if (shot) { this._doAttack(ru, shot, done); return; }
+      if (ru.moveLeft > 0) { this._rangedAction(ru, done); return; }
+      done();
+      return;
+    }
+    const adj = this._pickAdjacentTargetByPriority(ru);
+    if (adj) { this._doAttack(ru, adj, done); return; }
+    if (ru.moveLeft <= 0) { done(); return; }
+    if (ru.mounted) this._cavalryAction(ru, done);
+    else this._advanceStep(ru, done);
+  }
+
+  /**
+   * R-WEB-BATTLE-FULL-MOVE-THEN-STRIKE-AT-END-Q1 r5 (zarzut 6 FC): zamrozony plan skonczyl sie / zablokowal przed wyczerpaniem puli MP.
+   * Po zatrzasku wzwarcia aktywacja trwa zywo: cios, jesli wrog w zasiegu i jednostka jeszcze nie bila w tej turze; w przeciwnym razie
+   * ruch ku najblizszemu wrogowi (bez drugiego ciosu, bez cofania na pola z tej aktywacji). Brak dokad isc = reszta ruchu przepada (DODATEK 5b).
+   * Doktryny Obrona/Ostrzal oraz reczne rozkazy (wylaczone w _fullMoveRuleActive) zostaja bez zmian.
+   */
+  private _resumeFullMoveAfterPlan(ru: RuntimeBattleUnit, done: () => void): void {
+    /*RESUME_AFTER_PLAN*/ // marker mutacji testu (battle-pursuit-move-behavior-test.cjs): zastapiony `done(); return;` = stary blad (done() po planie)
+    if (this.finished || this._autoBattleSuspended
+      || ru.dead || ru.fadingOut || ru.removed || !this._fullMoveRuleActive(ru)) { done(); return; }
+    const doctrine = this._effectiveMetaForUnit(ru).doctrine;
+    if (doctrine === 'defensive' || doctrine === 'skirmish') { done(); return; }
+    if (ru.struckRound === this.roundNo) {
+      if (ru.moveLeft <= 0) { done(); return; }
+      const struck = ru.struckTargetId ? this._findUnitById(ru.struckTargetId) ?? null : null;
+      this._continueAfterStrike(ru, struck, done);
+      return;
+    }
+    // Piechota: nie wracaj na pole, z ktorego jednostka wlasnie wyszla (ostatni krok zamrozonego planu).
+    if (ru.moveTrailRound === this.roundNo && ru.moveTrail && ru.moveTrail.size >= 2) {
+      const arr = [...ru.moveTrail];
+      const prev = arr[arr.length - 2]!;
+      const comma = prev.indexOf(',');
+      ru.lastAutoMoveFrom = { q: parseInt(prev.slice(0, comma), 10), r: parseInt(prev.slice(comma + 1), 10) };
+    }
+    this._resumeFullMoveLive(ru, done);
   }
 
   /** Resolve one frozen path; different units remain animated concurrently. */
@@ -6055,13 +6115,15 @@ export class BattleScene {
         this._resolveAutoBatchAttack(ru, resolution.targetId, done);
         return;
       }
-      done();
+      // Plan krotszy niz pula ruchu: po zatrzasku wzwarcia aktywacja trwa zywo (cios w zasiegu / ruch ku najblizszemu wrogowi).
+      this._resumeFullMoveAfterPlan(ru, done);
       return;
     }
     const step = resolution.steps[stepIdx]!;
     const occupant = this.occByKey.get(cellKey(step.col, step.row));
     if ((occupant && occupant !== ru) || !this._passableForUnit(ru, step.col, step.row)) {
-      done();
+      // Krok zamrozonego planu zajety (np. przez jednostke, ktora ruszyla sie wczesniej w tej fali): zywa kontynuacja zamiast utraty ruchu.
+      this._resumeFullMoveAfterPlan(ru, done);
       return;
     }
     this._doMove(ru, step.col, step.row, () => {
@@ -6487,7 +6549,10 @@ export class BattleScene {
   private _cavalryAction(ru: RuntimeBattleUnit, done: () => void): void {
     if (this.finished) { done(); return; }
     if (ru.dead || ru.fadingOut) { done(); return; }
-    ru.cavTrail = new Set<string>(); // nowa aktywacja = czysty slad (klon planowania ma wlasna kopie pola)
+    // nowa aktywacja = czysty slad (klon planowania ma wlasna kopie pola); wznowiona po zamrozonym planie (r5) dziedziczy pola
+    // juz przebyte w tej rundzie (moveTrail), zeby nie wracac na nie (ping-pong).
+    ru.cavTrail = new Set<string>(ru.moveTrailRound === this.roundNo && ru.moveTrail ? ru.moveTrail : []);
+    ru.cavTrail.delete(cellKey(ru.q, ru.r));
 
     // 1) A worthy (non-spear) enemy is adjacent -> strike it now.
     const adjGood = this._cavAdjacentNonSpear(ru);
@@ -6521,7 +6586,12 @@ export class BattleScene {
       const comma = stepKey.indexOf(',');
       const nc = parseInt(stepKey.slice(0, comma), 10);
       const nr = parseInt(stepKey.slice(comma + 1), 10);
-      this._doMove(ru, nc, nr, done);
+      // R-WEB-BATTLE-FULL-MOVE-THEN-STRIKE-AT-END-Q1 r5: po zatrzasku wzwarcia ostatni krok szarzy nie konczy aktywacji --
+      // jesli zostal ruch, aktywacja trwa zywo (cios / kolejny krok), az pula zostanie zuzyta albo zabraknie drogi.
+      this._doMove(ru, nc, nr, () => {
+        if (!this.finished && ru.moveLeft > 0 && this._fullMoveRuleActive(ru)) this._resumeFullMoveAfterPlan(ru, done);
+        else done();
+      });
       return;
     }
     done();
@@ -6551,7 +6621,10 @@ export class BattleScene {
     const nr = parseInt(stepKey.slice(comma + 1), 10);
     this._doMove(ru, nc, nr, () => {
       if (this.finished) { done(); return; }
-      if (this._cavAdjacentNonSpear(ru)) { done(); return; }
+      if (this._cavAdjacentNonSpear(ru)) {
+        if (this._strikeOnArrival(ru, () => this._cavAdjacentNonSpear(ru), done)) return;
+        done(); return;
+      }
       if (ru.moveLeft > 0) {
         const t2 = this._cavalryTarget(ru) ?? tgt;
         if (this._cavDirectedManeuverStep(ru, done, t2, desired)) return;
@@ -6608,7 +6681,10 @@ export class BattleScene {
       if (this.finished) { done(); return; }
       // After the step: if now adjacent to a worthy target, stop (strike next
       // turn); else keep maneuvering while movement remains.
-      if (this._cavAdjacentNonSpear(ru)) { done(); return; }
+      if (this._cavAdjacentNonSpear(ru)) {
+        if (this._strikeOnArrival(ru, () => this._cavAdjacentNonSpear(ru), done)) return;
+        done(); return;
+      }
       if (ru.moveLeft > 0) {
         const t2 = this._cavalryTarget(ru);
         if (t2 && this._cavManeuverStep(ru, done, t2)) return;
@@ -8480,7 +8556,10 @@ export class BattleScene {
           const dnr = parseInt(dirStepKey.slice(comma + 1), 10);
           this._doMove(ru, dnc, dnr, () => {
             if (this.finished) { done(); return; }
-            if (this._canAttackFrom(ru, ru.q, ru.r)) { done(); return; }
+            if (this._canAttackFrom(ru, ru.q, ru.r)) {
+              if (this._strikeOnArrival(ru, () => this._pickAdjacentTargetByPriority(ru), done)) return;
+              done(); return;
+            }
             if (ru.moveLeft > 0) {
               this._schedule(STEP_GAP_MS, () => this._advanceStep(ru, done));
             } else {
@@ -8536,8 +8615,12 @@ export class BattleScene {
     this._doMove(ru, nc, nr, () => {
       if (previousPosition) ru.lastAutoMoveFrom = previousPosition;
       if (this.finished) { done(); return; }
-      // Reached an attack position? Stop -- the blow happens on a later turn.
-      if (this._canAttackFrom(ru, ru.q, ru.r)) { done(); return; }
+      // Reached an attack position? Przed pierwszym zderzeniem wrecz: stop -- cios pada w nastepnej turze.
+      // Po zatrzasku wzwarcia: cios na dojsciu (_strikeOnArrival), potem ruch dalej (_continueAfterStrike).
+      if (this._canAttackFrom(ru, ru.q, ru.r)) {
+        if (this._strikeOnArrival(ru, () => this._pickAdjacentTargetByPriority(ru), done)) return;
+        done(); return;
+      }
       // Otherwise keep advancing while movement remains this turn.
       if (ru.moveLeft > 0) {
         this._schedule(STEP_GAP_MS, () => this._advanceStep(ru, done));
@@ -8999,6 +9082,8 @@ export class BattleScene {
     this.busy = true;
     const oldKey = cellKey(ru.q, ru.r);
     const newKey = cellKey(col, row);
+    if (ru.moveTrailRound !== this.roundNo || !ru.moveTrail) { ru.moveTrail = new Set<string>([oldKey]); ru.moveTrailRound = this.roundNo; }
+    ru.moveTrail.add(newKey);
     this.occByKey.delete(oldKey);
     this.occByKey.set(newKey, ru);
 
@@ -9076,8 +9161,76 @@ export class BattleScene {
       done();
       return;
     }
+    // R-WEB-BATTLE-FULL-MOVE-THEN-STRIKE-AT-END-Q1 (decyzja wlasciciela 2026-11-15): po pierwszym zderzeniu wrecz
+    // (zatrzask _meleeLatched) jednostka zadaje CO NAJWYZEJ JEDEN cios na ture, a po ciosie, jesli zostal jej ruch,
+    // idzie dalej ku NASTEPNEJ jednostce wroga (_continueAfterStrike). Przed zderzeniem obowiazuje dotychczasowy rowny tryb wejscia.
+    if (this._fullMoveRuleActive(attacker)) {
+      // Drugi cios w tej samej turze jest zabroniony (marker mutacji testu: ONE_STRIKE).
+      if (attacker.struckRound === this.roundNo) { done(); return; } // /*ONE_STRIKE*/
+      attacker.struckRound = this.roundNo;
+      attacker.struckTargetId = defender.bu.id;
+      attacker.postStrikeBlocked = false;
+      const afterStrike = done;
+      done = () => this._continueAfterStrike(attacker, defender, afterStrike);
+    }
     if (canShoot(attacker)) this._doRangedAttack(attacker, defender, done);
     else                    this._doMeleeAttack(attacker, defender, done);
+  }
+
+  /** Czy dla tej jednostki obowiazuje regula "pelny ruch, cios, ruch dalej" (po pierwszym zderzeniu wrecz; nie w oblezeniu z murem). */
+  private _fullMoveRuleActive(ru: RuntimeBattleUnit): boolean {
+    if (!this._meleeLatched /*FULLMOVE_LATCH*/ || this.siegeWallCol >= 0 || ru.routed) return false;
+    // Reczne dowodzenie graczem (rozkaz klikiem) zostaje bez zmian: tylko jednostki sterowane przez AUTO/doktryne.
+    if (this._manualMode && this._isPlayerSide(ru.side) && !this._isUnitDoctrineAuto(ru)) return false;
+    return true;
+  }
+
+  /** Cios na dojsciu: po zatrzasku wzwarcia jednostka, ktora doszla do pozycji ciosu, uderza od razu (zamiast czekac do nastepnej tury). */
+  private _strikeOnArrival(ru: RuntimeBattleUnit, pick: () => RuntimeBattleUnit | null, done: () => void): boolean {
+    if (!this._fullMoveRuleActive(ru) || ru.struckRound === this.roundNo) return false;
+    const target = pick();
+    if (!target) return false;
+    this._doAttack(ru, target, done);
+    return true;
+  }
+
+  /**
+   * Po ciosie: reszta puli ruchu (jesli jest) prowadzi ku NASTEPNEJ jednostce wroga -- bez drugiego ciosu w tej turze.
+   * Brak dokad isc (okrazona/zablokowana) = reszta ruchu przepada (decyzja wlasciciela 2026-11-15, "I tyle!").
+   * Dystansowi: dojscie tylko do pozycji, z ktorej nastepny cel jest w zasiegu (DO POTWIERDZENIA).
+   */
+  private _continueAfterStrike(ru: RuntimeBattleUnit, struck: RuntimeBattleUnit | null, done: () => void): void {
+    /*CONT_MOVE*/ // marker mutacji testu (battle-full-move-strike-test.cjs): zastapiony `done(); return;` = brak ruchu po ciosie
+    // Doktryny pozycyjne (Obrona) i kitujace (Ostrzal) nie maszeruja po ciosie: ich cel to pozycja/dystans, nie pogon.
+    const doctrine = this._effectiveMetaForUnit(ru).doctrine;
+    if (doctrine === 'defensive' || doctrine === 'skirmish') { done(); return; }
+    const visited = new Set<string>([cellKey(ru.q, ru.r), ...(ru.moveTrailRound === this.roundNo && ru.moveTrail ? ru.moveTrail : [])]);
+    const stepOn = (): void => {
+      if (this.finished || this._autoBattleSuspended || ru.dead || ru.fadingOut || ru.removed || ru.routed) { done(); return; }
+      if (ru.moveLeft <= 0) { done(); return; }
+      // Nastepny cel: najblizszy wrog (poza juz uderzonym), do ktorego istnieje wolna sciezka (kolejnosc: dystans, potem kolejnosc rosteru = deterministyczna).
+      const candidates = this._enemiesOf(ru).filter(e => e !== struck)
+        .map((e, i) => ({ e, i, d: manhattan(ru.q, ru.r, e.q, e.r) }))
+        .sort((a, b) => a.d - b.d || a.i - b.i);
+      if (candidates.length === 0) { ru.postStrikeBlocked = true; done(); return; } // nie ma juz zadnego wroga: brak dokad isc, reszta ruchu przepada (DODATEK 5b)
+      let key: string | null = null;
+      for (const c of candidates) {
+        if (this._canStrikeTargetFrom(ru, ru.q, ru.r, c.e)) { /*CONT_REATTACK*/ done(); return; } // juz przy nastepnym wrogu: drugiego ciosu nie ma
+        key = this._firstStepAlongPathToAttack(ru, (q, r) => !visited.has(cellKey(q, r)), c.e);
+        if (key) break;
+      }
+      if (!key) { ru.postStrikeBlocked = true; done(); return; } // brak dokad isc: reszta ruchu przepada
+      const comma = key.indexOf(',');
+      const nc = parseInt(key.slice(0, comma), 10);
+      const nr = parseInt(key.slice(comma + 1), 10);
+      this._doMove(ru, nc, nr, () => {
+        visited.add(cellKey(ru.q, ru.r));
+        if (ru.moveLeft > 0 && !this.finished) this._schedule(STEP_GAP_MS, stepOn);
+        else done();
+      });
+    };
+    ru.postStrikeBlocked = false;
+    stepOn();
   }
 
   /**

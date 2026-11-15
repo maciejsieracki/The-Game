@@ -147,6 +147,11 @@ if (warCur && dipCur) {
     // R-WEB-DIPLO-TRUST-WAR-N6-CLEANUP-Q1: martwe pole p6.kryzysTurDoWojny usunięte celowo (N z profilu wojny).
     // Jedyny dozwolony ubytek wobec wersji bazowej; reszta wartości musi być identyczna.
     if (rel === DIP_JSON && base && base.p6 && 'kryzysTurDoWojny' in base.p6) delete base.p6.kryzysTurDoWojny;
+    // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (ABC 2026-11-14): rabat ceny pokoju (rabatCenyPokojuMax, _rabat) USUNIĘTY
+    // celowo — zmęczenie wojną jest pozycją PW (wearinessPeaceItemPw). Jedyny dozwolony ubytek w war-weariness-params.json.
+    if (rel === WAR_JSON && base && base.czlowiek && 'rabatCenyPokojuMax' in base.czlowiek) {
+      delete base.czlowiek.rabatCenyPokojuMax;
+    }
     check('a1: ' + rel + ' — wartości bez prefiksu _ równe wersji bazowej ' + BASE,
       sameJson(stripUnderscore(cur), stripUnderscore(base)));
   }
@@ -185,8 +190,10 @@ const brakeSrc = readRepoText('gra/src/game/diplomacy-tick-war-brake.ts');
 const mainSrc = readRepoText('gra/src/main.ts');
 const srcDir = path.join(REPO, 'gra', 'src');
 
-check('c1: progKoncaZmeczenia czytane przez wearinessUnconditionalEndDue (war-weariness.ts)',
-  wwSrc.includes('return level >= P.zmeczenie.progKoncaZmeczenia;'));
+// R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: jedna funkcja konca zmeczenia — progKoncaZmeczenia czyta wearinessPeaceX,
+// a wearinessUnconditionalEndDue = wearinessPeaceX(...) >= 1 (dawna forma `level >= P.zmeczenie.progKoncaZmeczenia` nieaktualna).
+check('c1: progKoncaZmeczenia czytane przez wearinessPeaceX, a wearinessUnconditionalEndDue = wearinessPeaceX >= 1 (war-weariness.ts)',
+  wwSrc.includes('P.zmeczenie.progKoncaZmeczenia') && wwSrc.includes('return wearinessPeaceX(level, P) >= 1;'));
 check('c2: progWzajemnyPokoj czytane w warunku wyjścia awaryjnego (war-weariness.ts)',
   wwSrc.includes('lvl >= P.zmeczenie.progWzajemnyPokoj'));
 check('c3: wyjście awaryjne wymaga odrzuceniaDoKapitulacji (war-weariness.ts)',
