@@ -31573,6 +31573,48 @@ async function boot(): Promise<void> {
     // `tools/no-negative-stocks-headless-measure.cjs` (TYLKO ?civTest=1; w produkcji brak powierzchni).
     // Czysty odczyt stanu + start nowej gry realnym doStartGame + przełącznik flagi równoważenia (mutacja pomiarowa).
     if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
+      // R-WEB-AI-ECONOMY-MEASURE-HARNESS-Q1: metryki ekonomii AI per owner per tura — TYLKO ODCZYT
+      // (tylko ?civTest=1; bez tego hak nie istnieje). Zero zapisu do stanu gry.
+      (window as any).__aiEconomyMeasure = {
+        schemaVersion: 1,
+        /** Metryki wszystkich nie-barbarzyńskich właścicieli (gracz + AI + państwa-miasta) na bieżącą turę. */
+        metrics: () => {
+          const r2 = (x: number): number => Math.round(x * 100) / 100;
+          const owners = [...new Set<number>([ME(), ...aiStartHexes.map(h => h.ownerId), ...cities.map(c => c.ownerId), ...units.map(u => u.ownerId)])]
+            .filter(o => o != null && !isBarbarian(o))
+            .sort((a, b) => a - b);
+          const per = owners.map(o => {
+            const ownerUnits = units.filter(u => u.ownerId === o);
+            const ownerCities = cities.filter(c => c.ownerId === o);
+            const epoka = empireEpochForOwner(o);
+            const pobor = empirePoborTotals(cities, o, epoka);
+            const wojskowe = ownerUnits.filter(u => !isCivilianUnit(u)).length;
+            return {
+              owner: o,
+              skarbiec: r2(ownerTreasury(o)),
+              spichlerz: empireFoodStates.get(o)?.zapasyPanstwa ?? null,
+              jednostkiWojskowe: wojskowe,
+              jednostkiCywilne: ownerUnits.length - wojskowe,
+              rekruci: pobor.rekruci,
+              sumaLudkow: pobor.sumaLudkow,
+              glodWojska: isArmyHungry(o),
+              glodWojskaAtrycja: isArmyStarving(o),
+              deficytZlota: isGoldDeficit(o),
+              miasta: ownerCities.length,
+              obywatele: ownerCities.reduce((s, c) => s + (Number(c.population) || 0), 0),
+              utrzymanieBudynkowPieniadz: r2(ownerCities.reduce((s, c) => s + (buildingUpkeepForCityId(c.id, o) || 0), 0)),
+              utrzymanieBudynkowSurowce: buildingResourceUpkeepDemandForOwner(o),
+              utrzymanieGarnizonuPieniadz: r2(ownerCities.reduce((s, c) => s + (garrisonUpkeepForCity(c) || 0), 0)),
+            };
+          });
+          return {
+            turn,
+            owners: per,
+            /** Pola, których nie ma jednoznacznego, zweryfikowanego źródła w grze (NIE ZMIERZONO w tym haku). */
+            niezmierzone: ['przychodNaTure', 'utratyNaTure'],
+          };
+        },
+      };
       (window as any).__nnsMeasureDebug = {
         startGame: (o: { seed: number; mapSize?: string; civTypes?: number; cityStates?: number; typSwiata?: string }): void => {
           const mqTier = mapQualityTierFromQuery('high');

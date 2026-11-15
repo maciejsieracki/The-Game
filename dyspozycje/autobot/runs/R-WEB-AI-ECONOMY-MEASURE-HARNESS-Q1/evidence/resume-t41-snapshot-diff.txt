@@ -1,0 +1,6 @@
+diffs 4
+/cities[0]/podzialPracy (missing one side)
+/cities[0]/wealthState/pula : 1.8209999999999997 | 1.2599999999999993
+/gracze[0][1]/nauka : 112 | 112.5
+/gracze[0][1]/skarbiec : 251 | 254
+cont vs cut equal: True 39
