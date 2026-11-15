@@ -28384,6 +28384,62 @@ async function boot(): Promise<void> {
     // w trakcie sceny playtestu (playtest nie przechodzi przez kreator; applyMenuParams ustawia
     // 'losowe' przy starcie). Produkcja: window.__civSetHitMode === undefined.
     if (isCivTestEnabled(window.location.search)) (window as any).__civSetHitMode = setActiveHitMode;
+    // R-WEB-DIPLO-RESPECT-MILITARY-EVENTS-WIRING-Q1 (runda 2, punkt 1): hak live-testu (tylko ?civTest=1).
+    // Odczyt siły militarnej (ta sama funkcja co tick: diploMilitarySideOf), stanu przewagi, offsetu,
+    // Respektu i rejestru zdarzeń pary; zapis tylko stanu meta (round-trip JSON jak w zapisie gry)
+    // oraz usunięcie pól stanu (stary zapis). Wszystkie zmiany siły idą REALNYMI jednostkami (__civTest.addUnit).
+    if (isCivTestEnabled(window.location.search)) (window as any).__respektMilTest = {
+      owners: (): number[] => allPowerOwnerIds().filter(o => !isMe(o) && !isBarbarian(o) && !isCityStateOwner(o) && !eliminatedOwners.has(o)),
+      progRespektProc: (): number => loadMilitaryStrengthParams().progRespektProc,
+      sila: (a: number, o: number) => {
+        // Hak testowy: po dodaniu jednostek (civTest.addUnit) cache Mocy trzeba przeliczyć, inaczej odczyt jest sprzed zmiany.
+        powerDirty = true;
+        refreshObjectivePowerCache();
+        const s = diploMilitarySideOf(a, o, true);
+        return { sila: s.sila, armiaPkt: s.armiaPkt };
+      },
+      stan: (a: number, o: number) => {
+        const m = getDiploPairMeta(a, o);
+        const rel = getDiploRelation(a, o);
+        return {
+          respektPrzewagaStan: m.respektPrzewagaStan ?? null,
+          respektMilOffset: m.respektMilOffset ?? 0,
+          respekt: rel.respekt,
+          status: rel.status,
+        };
+      },
+      log: (a: number, o: number) => (diplomacyFactorLog.get(diploPairKey(a, o)) ?? []).map(x => ({ ...x })),
+      /** Round-trip meta pary przez JSON (ta sama serializacja co save: pairMeta). */
+      metaRoundTrip: (a: number, o: number) => {
+        const j = JSON.parse(JSON.stringify(getDiploPairMeta(a, o)));
+        setDiploPairMeta(a, o, j);
+        return { respektPrzewagaStan: j.respektPrzewagaStan ?? null, respektMilOffset: j.respektMilOffset ?? null };
+      },
+      /** Stary zapis: kasuje pola stanu przewagi (brak pola = inicjalizacja bez zdarzenia). */
+      stripStan: (a: number, o: number) => {
+        const { respektPrzewagaStan: _s, respektMilOffset: _o, ...rest } = getDiploPairMeta(a, o) as DiploPairMeta & Record<string, unknown>;
+        setDiploPairMeta(a, o, rest as DiploPairMeta);
+      },
+      /** Scenariusz testu: zapas spichlerza państwa (bramka NNS przed zakończeniem tury; jednostki testowe jedzą racje). */
+      setZapasy: (o: number, v: number) => {
+        const st = empireFoodStates.get(o);
+        if (st) st.zapasyPanstwa = v;
+        return st?.zapasyPanstwa ?? null;
+      },
+      /** Scenariusz testu: kontakt + pokój z partnerem (jak `__aiTradeWiringTestDebug.prepare`); bez tego startowa wojna daje bitwy blokujące turę. */
+      setPokoj: (o: number) => {
+        getDiplomaticContacts().add(o);
+        diplomaticContactEstablishedSet().add(o);
+        diplomaticallyDiscoveredOwnersSet().add(o);
+        const rel = getDiploRelation(o, ME());
+        if (rel.status === 'wojna') setDiploRelation(o, ME(), { ...rel, status: 'pokoj' });
+        return getDiploRelation(o, ME()).status;
+      },
+      /** Ustawia stan przewagi bez zdarzenia (tylko do scenariusza testu: czysty start stanu 'brak'). */
+      setStan: (a: number, o: number, s: 'A' | 'B' | 'brak') => {
+        setDiploPairMeta(a, o, { ...getDiploPairMeta(a, o), respektPrzewagaStan: s });
+      },
+    };
     if (isCivTestEnabled(window.location.search)) (window as any).__siegeBlockTestDebug = {
       tryPurchase: (cityId: string): { ok: boolean; queued: number; item: string | null } => {
         const c = cities.find(x => x.id === cityId);
