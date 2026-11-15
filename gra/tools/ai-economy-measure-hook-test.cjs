@@ -1,16 +1,22 @@
 'use strict';
 /**
- * ai-economy-measure-hook-test.cjs -- R-WEB-AI-ECONOMY-MEASURE-HARNESS-Q1 (kryterium a): test haka metryk.
+ * ai-economy-measure-hook-test.cjs -- R-WEB-AI-ECONOMY-MEASURE-HARNESS-Q1 (r3): test haka metryk i obejscia bramki.
  *
- * 1) ksztalt: z ?civTest=1 `window.__aiEconomyMeasure.metrics()` zwraca {turn, owners[], niezmierzone[]},
- *    a kazdy wlasciciel ma komplet pol (LICZBY/BOOLE/null zgodnie z opisem w gra/src/main.ts).
- * 2) kontrola negatywna: BEZ ?civTest=1 hak nie istnieje (`__aiEconomyMeasure === undefined`).
- * 3) mutacja: sprawdzenie wymagajacego nieistniejacego pola MUSI oblac (czerwone); bez tego test bylby slepy.
+ * Start: prawdziwa nowa gra `__nnsMeasureDebug.startGame` (jak runner, --start newgame). Na tej sciezce
+ * tura 1 jest zablokowana bramka NNS gracza (canEnd=false); dosypka grantPlayerGold/Food ja odblokowuje.
+ *
+ * Asercje:
+ *  1) ksztalt: kazdy wlasciciel ma komplet pol i typow (w tym kara glodu %, utrzymanie jednostek).
+ *  2) kontrola negatywna: BEZ ?civTest=1 hak nie istnieje (`__aiEconomyMeasure === undefined`).
+ *  3) obejscie bramki: warunek wstepny (tura 1: nnsGateBlocked=true); dosypka 0/0 NIE odblokowuje (negatywna
+ *     kontrola mechanizmu); dosypka 200/200 odblokowuje i tura przechodzi 1->2 (realny endTurn).
+ *  4) wartosc AI: po dosypkach w kazdej turze do 12 tur -- kazdy AI owner ma >=1 miasto i >=1 jednostke.
+ *     NA TEJ SCIEZCE NIE SPELNIONE w r2 (AI=0 po 15 turach, zob. raport) -- asercja jest czerwona celowo.
+ *  5) mutacja ksztaltu: zepsuty bundle (--mutant-dist) MUSI oblac ksztalt (jesli podano).
  *
  * Uzycie (z gra/, bundle zbudowany): node tools/ai-economy-measure-hook-test.cjs --dist <abs-dist>
- * Wyjscie: 0 = wszystkie asercje zielone (w tym czerwona mutacja); 1 = blad.
+ * Wyjscie: 0 = wszystkie asercje zielone (w tym czerwone mutacje); 1 = blad (w tym czerwona asercja 4).
  */
-const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
@@ -21,12 +27,14 @@ function arg(name, def) {
 const GRA_DIR = path.resolve(__dirname, '..');
 const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), 'ai-economy-dist')));
 const PW_DIR = path.resolve(arg('pw', GRA_DIR));
-/** Opcjonalny bundle ZEPSUTY (np. bez pola `skarbiec` w haku): test MUSI na nim oblac ksztalt. */
 const MUTANT_DIST = arg('mutant-dist', '') ? path.resolve(arg('mutant-dist', '')) : null;
 const CHROME = process.env.CHROME_PATH || '/usr/bin/chromium';
+const SEED = 4242;
+const MAX_TURNS_VALUE = 12;
 const OWNER_KEYS = ['owner', 'skarbiec', 'spichlerz', 'jednostkiWojskowe', 'jednostkiCywilne', 'rekruci', 'sumaLudkow',
-  'glodWojska', 'glodWojskaAtrycja', 'deficytZlota', 'miasta', 'obywatele', 'utrzymanieBudynkowPieniadz',
-  'utrzymanieBudynkowSurowce', 'utrzymanieGarnizonuPieniadz'];
+  'glodWojska', 'glodWojskaAtrycja', 'glodKaraStatProc', 'glodAtrycjaHpProc', 'deficytZlota', 'miasta', 'obywatele',
+  'utrzymanieBudynkowPieniadz', 'utrzymanieBudynkowSurowce', 'utrzymanieGarnizonuPieniadz',
+  'utrzymanieJednostekPieniadz', 'utrzymanieJednostekSurowce'];
 
 const results = [];
 function check(name, ok, detail) { results.push({ name, ok: !!ok, detail: detail || '' }); console.log((ok ? 'ZIELONE ' : 'CZERWONE ') + name + (detail ? ' :: ' + detail : '')); }
@@ -37,14 +45,27 @@ function shapeProblems(metrics, requiredKeys) {
   if (!metrics || !Array.isArray(metrics.owners) || metrics.owners.length === 0) problems.push('brak owners');
   for (const o of (metrics && metrics.owners) || []) {
     for (const k of requiredKeys) if (!(k in o)) problems.push('owner ' + o.owner + ' bez ' + k);
-    for (const k of ['jednostkiWojskowe', 'jednostkiCywilne', 'miasta', 'obywatele']) {
+    for (const k of ['jednostkiWojskowe', 'jednostkiCywilne', 'miasta', 'obywatele', 'glodKaraStatProc', 'glodAtrycjaHpProc', 'utrzymanieJednostekPieniadz']) {
       if (typeof o[k] !== 'number' || !(o[k] >= 0)) problems.push('owner ' + o.owner + ' ' + k + ' nie jest liczba >=0');
     }
     for (const k of ['glodWojska', 'glodWojskaAtrycja', 'deficytZlota']) {
       if (typeof o[k] !== 'boolean') problems.push('owner ' + o.owner + ' ' + k + ' nie jest boolem');
     }
+    if (!o.utrzymanieJednostekSurowce || typeof o.utrzymanieJednostekSurowce !== 'object') problems.push('owner ' + o.owner + ' utrzymanieJednostekSurowce nie jest obiektem');
   }
   return problems;
+}
+
+async function openNewGame(browser, distDir) {
+  const page = await browser.newPage();
+  await page.goto('file://' + path.join(distDir, 'index.html') + '?civTest=1&civSeed=' + SEED, { waitUntil: 'load', timeout: 180000 });
+  await page.waitForFunction(() => !!window.__aiEconomyMeasure && !!window.__nnsMeasureDebug && !!window.__aiTradeWiringTestDebug, null, { timeout: 180000 });
+  await page.evaluate(() => window.__nnsMeasureDebug.startGame({ seed: 4242 }));
+  await page.waitForFunction(() => { try { return window.__aiTradeWiringTestDebug.state().turn >= 1; } catch (_) { return false; } }, null, { timeout: 180000 });
+  // Jak runner (fresh): bramka NNS "Zakoncz ture" blokuje dopiero po zalozeniu miasta gracza.
+  const found = await page.evaluate(() => window.__aiTradeWiringTestDebug.foundFirstCity());
+  if (!found) throw new Error('foundFirstCity=false po startGame');
+  return page;
 }
 
 async function main() {
@@ -52,40 +73,62 @@ async function main() {
   const args = ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--disable-dev-shm-usage'];
   const browser = await chromium.launch({ headless: true, executablePath: CHROME, args });
   try {
-    // 1) hak z ?civTest=1: start nowej gry (prawdziwa sciezka), ksztalt metryk.
-    const page = await browser.newPage();
-    await page.goto('file://' + path.join(DIST, 'index.html') + '?civTest=1&civSeed=4242', { waitUntil: 'load', timeout: 180000 });
-    await page.waitForFunction(() => !!window.__aiEconomyMeasure && !!window.__nnsMeasureDebug && !!window.__aiTradeWiringTestDebug, null, { timeout: 180000 });
-    await page.evaluate(() => window.__nnsMeasureDebug.startGame({ seed: 4242 }));
-    await page.waitForFunction(() => { try { return window.__aiTradeWiringTestDebug.state().turn >= 1; } catch (_) { return false; } }, null, { timeout: 180000 });
+    // 1) ksztalt metryk (tura 1, nowa gra).
+    const page = await openNewGame(browser, DIST);
     const metrics = await page.evaluate(() => window.__aiEconomyMeasure.metrics());
     const probs = shapeProblems(metrics, OWNER_KEYS);
-    check('ksztalt metryk: kazdy wlasciciel ma komplet pol i typy', probs.length === 0, probs.slice(0, 5).join('; ') || (metrics.owners.length + ' wlascicieli'));
+    check('ksztalt metryk: kazdy wlasciciel ma komplet pol i typy (w tym glod %, utrzymanie jednostek)', probs.length === 0, probs.slice(0, 5).join('; ') || (metrics.owners.length + ' wlascicieli'));
     check('niezmierzone wymienia przychod/utrate (nie udajemy pomiaru)', Array.isArray(metrics.niezmierzone) && metrics.niezmierzone.includes('przychodNaTure'));
+
+    // 3) obejscie bramki NNS gracza (tura 1).
+    const blockedDefault = await page.evaluate(() => window.__aiTradeWiringTestDebug.nnsGateBlocked());
+    check('warunek wstepny: tura 1 bramka NNS gracza BLOKUJE', blockedDefault === true, 'nnsGateBlocked=' + blockedDefault);
+    await page.evaluate(() => window.__aiTradeWiringTestDebug.grantPlayerGold(0));
+    await page.evaluate(() => window.__aiTradeWiringTestDebug.grantPlayerFood(0));
+    const stillBlockedZero = await page.evaluate(() => window.__aiTradeWiringTestDebug.nnsGateBlocked());
+    check('kontrola negatywna obejscia: dosypka 0/0 NIE odblokowuje bramki (mutacja: bypass bez skutku -> czerwone)', stillBlockedZero === true, 'po dosypce 0/0 nnsGateBlocked=' + stillBlockedZero);
+    const t1 = await page.evaluate(() => window.__aiTradeWiringTestDebug.state().turn);
+    await page.evaluate(() => window.__aiTradeWiringTestDebug.grantPlayerGold(200));
+    await page.evaluate(() => window.__aiTradeWiringTestDebug.grantPlayerFood(200));
+    const unblocked = await page.evaluate(() => window.__aiTradeWiringTestDebug.nnsGateBlocked());
+    check('obejscie: dosypka 200/200 ODBLOKOWUJE bramke NNS gracza', unblocked === false, 'po dosypce 200/200 nnsGateBlocked=' + unblocked);
+    await page.evaluate(() => window.__aiTradeWiringTestDebug.endTurn());
+    await page.waitForFunction(t => window.__aiTradeWiringTestDebug.state().turn > t && !window.__aiTradeWiringTestDebug.isEndTurnInProgress(), t1, { timeout: 300000, polling: 250 });
+    const t2 = await page.evaluate(() => window.__aiTradeWiringTestDebug.state().turn);
+    check('obejscie: realny endTurn po dosypce przechodzi ture ' + t1 + ' -> ' + t2, t2 > t1, 'tura ' + t1 + ' -> ' + t2);
+
+    // 4) wartosc AI: kolejne tury z dosypkami gdy bramka blokuje (jak runner), do MAX_TURNS_VALUE.
+    let ok = false; let lastDiag = null; let lastAi = null; let turnsUsed = 0;
+    for (let k = 0; k < MAX_TURNS_VALUE && !ok; k++) {
+      const before = await page.evaluate(() => window.__aiTradeWiringTestDebug.state().turn);
+      if (await page.evaluate(() => window.__aiTradeWiringTestDebug.nnsGateBlocked())) {
+        await page.evaluate(() => window.__aiTradeWiringTestDebug.grantPlayerGold(200));
+        await page.evaluate(() => window.__aiTradeWiringTestDebug.grantPlayerFood(200));
+      }
+      await page.evaluate(() => window.__aiTradeWiringTestDebug.endTurn());
+      await page.waitForFunction(t => window.__aiTradeWiringTestDebug.state().turn !== t && !window.__aiTradeWiringTestDebug.isEndTurnInProgress(), before, { timeout: 300000, polling: 250 });
+      turnsUsed++;
+      const m = await page.evaluate(() => window.__aiEconomyMeasure.metrics());
+      lastDiag = m.diag;
+      const ai = m.owners.filter(o => o.owner >= 1);
+      lastAi = ai.map(o => [o.owner, o.miasta, o.jednostkiWojskowe + o.jednostkiCywilne]);
+      ok = ai.length > 0 && ai.every(o => o.miasta >= 1 && (o.jednostkiWojskowe + o.jednostkiCywilne) >= 1);
+    }
+    check('wartosc: kazdy AI owner ma >=1 miasto i >=1 jednostke (po ' + turnsUsed + ' turach, max ' + MAX_TURNS_VALUE + ')', ok,
+      'AI [owner,miasta,jednostki]=' + JSON.stringify(lastAi) + '; diag=' + JSON.stringify(lastDiag));
+    await page.close();
 
     // 2) kontrola negatywna: bez ?civTest=1 hak nie istnieje.
     const plain = await browser.newPage();
-    await plain.goto('file://' + path.join(DIST, 'index.html') + '?civSeed=4242', { waitUntil: 'load', timeout: 180000 });
+    await plain.goto('file://' + path.join(DIST, 'index.html') + '?civSeed=' + SEED, { waitUntil: 'load', timeout: 180000 });
     await plain.waitForTimeout(3000);
     const hasHook = await plain.evaluate(() => typeof window.__aiEconomyMeasure !== 'undefined');
     check('kontrola negatywna: bez ?civTest=1 brak haka __aiEconomyMeasure', hasHook === false);
+    await plain.close();
 
-    // 3) zarzut 4/1 (R-WEB-AI-ECONOMY-MEASURE-HARNESS-Q1 r2): test wartosci, nie tylko typow. Po zalozeniu miasta gracza
-    //    kazdy AI owner z aiStartHexes powinien miec >=1 miasto. Stan obecny: NIE SPELNIONE (CZERWONE) -- patrz raport.
-    await page.evaluate(() => window.__aiTradeWiringTestDebug.foundFirstCity());
-    const after = await page.evaluate(() => window.__aiEconomyMeasure.metrics());
-    const aiCities = after.owners.filter(o => o.owner >= 1).reduce((s, o) => s + o.miasta, 0);
-    const aiHexes = after.diag ? after.diag.aiStartHexes : -1;
-    check('wartosc: AI ma >=1 miasto po zalozeniu miasta gracza (aiStartHexes=' + aiHexes + ')', aiCities >= 1,
-      'miasta AI=' + aiCities + '; diag=' + JSON.stringify(after.diag || null));
-
-    // 4) mutacja realna: osobny, zepsuty bundle (--mutant-dist) MUSI oblac ksztalt. Bez tego test byl slepy.
+    // 5) mutacja realna: osobny, zepsuty bundle (--mutant-dist) MUSI oblac ksztalt.
     if (MUTANT_DIST) {
-      const mpage = await browser.newPage();
-      await mpage.goto('file://' + path.join(MUTANT_DIST, 'index.html') + '?civTest=1&civSeed=4242', { waitUntil: 'load', timeout: 180000 });
-      await mpage.waitForFunction(() => !!window.__aiEconomyMeasure && !!window.__nnsMeasureDebug && !!window.__aiTradeWiringTestDebug, null, { timeout: 180000 });
-      await mpage.evaluate(() => window.__nnsMeasureDebug.startGame({ seed: 4242 }));
-      await mpage.waitForFunction(() => { try { return window.__aiTradeWiringTestDebug.state().turn >= 1; } catch (_) { return false; } }, null, { timeout: 180000 });
+      const mpage = await openNewGame(browser, MUTANT_DIST);
       const mm = await mpage.evaluate(() => window.__aiEconomyMeasure.metrics());
       const mutantProbs = shapeProblems(mm, OWNER_KEYS);
       check('mutacja realna (zepsuty hak w bundle) jest CZERWONA', mutantProbs.length > 0, mutantProbs.slice(0, 3).join('; ') || 'brak problemow -- test slepy');
@@ -94,10 +137,11 @@ async function main() {
   } finally {
     await browser.close();
   }
-  const failed = results.filter(r => !r.ok && !r.name.includes('mutacja'));
-  const mutantBlind = results.some(r => r.name.includes('mutacja') && !r.ok); // mutacja MUSI dac czerwone
+  const failed = results.filter(r => !r.ok && !r.name.includes('mutacja') && !r.name.includes('kontrola negatywna obejscia'));
+  const mutantBlind = results.some(r => r.name.includes('mutacja realna') && !r.ok);
+  const negBypassBlind = results.some(r => r.name.includes('kontrola negatywna obejscia') && !r.ok);
   console.log('PODSUMOWANIE ' + results.filter(r => r.ok).length + '/' + results.length + ' zielone');
-  process.exit(failed.length === 0 && !mutantBlind ? 0 : 1);
+  process.exit(failed.length === 0 && !mutantBlind && !negBypassBlind ? 0 : 1);
 }
 
 main().catch(e => { console.error('BLAD ' + (e && e.stack || e)); process.exit(1); });
