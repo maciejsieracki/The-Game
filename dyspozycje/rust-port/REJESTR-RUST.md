@@ -1805,3 +1805,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **KROK 3 (sprzątanie):** bez zmian. Dysk: 14 GB wolne (66%).
 - **KROK 4:** nie dotyczy (brak decyzji gameplay).
 - **Ustalenia zamykające listę:** #214 (P4-1E) i #222 (integracja P4-1E na parity) oznaczone jako zakończone; P4-1E jest na parity od `f7baa3848`.
+
+## Przebieg (15.11, 18:3x UTC — integracja #231 js_round na parity)
+
+- **Integracja js_round (#231):** commit testu `16b901466` (FC PASS `66e8656ee`) zmergowany `--no-ff` na parity `1b8b67173` → `83f5fd654` (worktree `integ-jsround`). Bramki: `FMT_EXIT=0`, `CLIPPY_EXIT=0`, `TEST_EXIT=0` — **3470 passed, 0 failed**.
+- **FF:** `origin/rust-port/parity-v2` = `83f5fd654` (przodek `1b8b67173` sprawdzony). `refs/keep/JSROUND-MINUSZERO-integ` = `83f5fd654`.
+- **Sprzątanie:** worktree `integ-jsround` i `target-integ-jsround` (3 GB) usunięte.
+- **Następny krok:** integracja `4183d0aab` (serde float_roundtrip, #170) na nowym parity `83f5fd654` z pełnym `cargo test`. Wymaga osobnej rundy integracyjnej (zmiana `Cargo.toml` + testu wektorowego).
+- **Dysk:** 5,7 GB wolne przed sprzątaniem; po usunięciu integracji ~8,7 GB. Próg 8 GB dla nowych startów z kodem Rust.
