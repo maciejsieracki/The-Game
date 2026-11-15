@@ -1658,3 +1658,16 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **KROK 3 (sprzątanie):** usunięto 9 zakończonych worktree (city-capture recon ×4, P4-1E ×3, R7K7C recon ×2). Każdy czysty, bez blokady, HEAD zabezpieczony w `refs/keep/cleanup-<ID>`. Dysk: 12 GB wolne (71%).
 - **Rozbieżność do wyjaśnienia:** `KOLEJKA-RUST.md` podaje parity `f2bb11970`, a zdalny parity to `10a2fc4af`. Kolejka wymaga aktualizacji (#154).
 - **NASTĘPNY KROK:** wynik `wf_8ddee49c-415` (#176); integracja P4-1E (#222) po `TEST_EXIT=0` w `integ-p41e.log`; wyłom #98 po Evaluatorze.
+
+## Przebieg (15.11, 17:xx UTC — wynik R7K7C-STATUS #176)
+
+- **Wynik rozpoznania (wf_8ddee49c-415):** Operator PASS, Evaluator PASS-WITH-NOTES (6 zarzutów), Obrona przyjęła 5 i odrzuciła 1 (cargo poza zakresem dokumentacyjnej rundy), FC PASS-WITH-NOTES (`0a053631d`).
+- **Ustalenia na parity `10a2fc4af`:**
+  1. `apply_dipl_deltas_to_state` NIE jest wołane w `advance_turn` (wołający tylko w testach `p6_r7k7c_owner_pools.rs`). Wiring = #106, nadal pending.
+  2. Rozbieżność „brak wpisu”: web dla gracza ludzkiego rzuca wyjątek (`playerStateByHuman.get(id)!`, `main.ts:22640`), dla AI daje 0 (`?? 0`, `main.ts:22642`, `:34877`). Rust zwraca błąd. Rozbieżność dotyczy gałęzi AI; gałąź człowieka w Rust ma wyjątek jak web.
+  3. Brak wektorów pinu ≥150 dla `apply` i D3 `tickCyclicResourceTradeDeals` (`turn_war_dipl_steps.rs:456`).
+  4. Settery skarbca i puli Pracy (`playable.rs:960-979`) nie mają produkcyjnego wołającego. Zależność od #106.
+- **Decyzja wiążąca #106:** web jest rozstrzygający (zasada 11). Dla AI przyjmujemy `0` jak w pinie; dla człowieka wyjątek jak w pinie. Pytanie ABC o „brak wpisu” z wcześniejszego przebiegu jest tym samym pytaniem; nie startuję #106, dopóki właściciel nie potwierdzi.
+- **Brak w tym przebiegu:** `02-evaluator.md` nie został zacommitowany przez workflow; werdykt Evaluatora jest zapisany w wyniku workflow, nie w pliku. `cargo` nie był uruchamiany (rozpoznanie statyczne).
+- **Zacommitowane:** `dyspozycje/autobot/runs/R-RUSTPORT-P6-R7K7C-STATUS-ROZPOZNANIE-Q1/` (01, 02a, 03), commit `b52b89559`, push na `claude/rust-sivvrn`. Commity roboczych worktree (`e3dccec52`, `f9c069020`, `0a053631d`) nie są ancestorami parity i nie zostały zintegrowane w całości.
+- **#176 → completed; #224 → completed.** #106 pozostaje pending.
