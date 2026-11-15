@@ -77,6 +77,13 @@ export interface DiploPairMeta {
    * Brak pola = 'brak'.
    */
   respektPrzewagaStan?: 'A' | 'B' | 'brak';
+  /**
+   * Skumulowana korekta Respektu pary z jednorazowych zdarzeń militarnych (+15 / −10). Główny tick AI
+   * (main.ts, pętla relacji gracz–AI) przelicza Respekt z Mocy (computeRespekt) co turę i bez tej
+   * korekty nadpisałby zdarzenie. Efektywny Respekt = clamp(computeRespekt + respektMilOffset).
+   * Brak pola = 0.
+   */
+  respektMilOffset?: number;
   /** N1 — czy kara za "atak bez ostrzeżenia" była już naliczona dla BIEŻĄCEJ wojny w tej parze (nalicza się raz na wojnę, nie raz na bitwę). */
   n1Zastosowany?: boolean;
   /**

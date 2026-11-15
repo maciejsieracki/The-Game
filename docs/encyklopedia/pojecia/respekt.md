@@ -90,7 +90,7 @@ Moc A = 600, Moc B = 400. Respekt A wobec B = round(100 × 600 / 1000) = **60**.
 | 5 | `diplomacy.json:params.wygraBitwa_respekt` |
 | 100 | `kod:respekt-wzor` (wzór Respektu: `Math.round(100 * potegaSelf / sum)`, skala 0–100, `diplomacy.ts`) |
 
-Uwaga: wartości `przewagaMilitarna_respekt` (+15) i `slabszyMilitarnie_respekt` (−10) są wywoływane w grze raz na turę dla pary gracz–partner (`applyMilitaryRespektEdgeTick`, `main.ts`); próg 50% siły wojskowej jest w `data/diplomacy-military-strength-params.json` (`progRespektProc`).
+Uwaga: wartości `przewagaMilitarna_respekt` (+15) i `slabszyMilitarnie_respekt` (−10) są wywoływane w grze raz na turę dla pary gracz–partner (`applyMilitaryRespektEdgeTick`, `main.ts`), tylko na przejściu progu; próg 50% siły wojskowej jest w `data/diplomacy-military-strength-params.json` (`progRespektProc`). Skumulowana korekta trafia do `DiploPairMeta.respektMilOffset` i jest dodawana do Respektu przeliczanego z Mocy w pętli AI (`respektZKorektaMilitarna`), inaczej tick by ją nadpisał. Decyzje AI i stan relacji używają Mocy plus tę korektę. Panel dyplomacji pokazuje nadal Respekt z Mocy (`formatPowerRelationLine`) bez korekty militarnej: liczba w panelu NIE odzwierciedla +15/−10, zdarzenie widać w rejestrze Respektu (zob. NIE ZMIERZONO w raporcie obrony).
 
 Uwaga: limit składnika Respektu to 0–100 (`diplomacy.ts`, funkcja zdarzeń). Wojna nie zmienia Respektu.
 

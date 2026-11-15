@@ -337,3 +337,14 @@ export function respektMilitaryCrossing(
   const zdarzenieDla = stan !== 'brak' && stan !== prev ? stan : null;
   return { stan, zdarzenieDla };
 }
+
+/**
+ * Efektywny Respekt pary = bazowy (computeRespekt z Mocy) + skumulowana korekta zdarzeń militarnych
+ * (DiploPairMeta.respektMilOffset), obcięty do [0, 100]. Używany w głównym ticku AI, żeby korekta
+ * przeżyła przeliczenie Respektu co turę.
+ *
+ * / EN: effective pair Respekt = power-based base + cumulative military-event offset, clamped to [0, 100].
+ */
+export function respektZKorektaMilitarna(bazowy: number, offsetMil: number | undefined): number {
+  return Math.max(0, Math.min(100, Math.round(bazowy + (offsetMil ?? 0))));
+}

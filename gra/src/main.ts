@@ -1622,7 +1622,7 @@ import {
 import {
   addWarBattlePoints, resetWarBattlePoints, grantTributeBonus, loadMilitaryStrengthParams,
   computeMilitaryStrength, readWarBattlePoints, isTributeBonusActive, militaryBrakeOutcome, peaceStanceOf,
-  respektMilitaryCrossing,
+  respektMilitaryCrossing, respektZKorektaMilitarna,
 } from './game/diplomacy-military-strength';
 import { resolveWarPeaceProfile, brakeRelationThreshold, recordWarCityLoss, warStateFromRecord, evaluatePeaceAiGate, PEACE_STRENGTH_GAP_PROC, type WarPeaceProfile } from './game/diplomacy-war-peace-profile';
 import { buildWarCityTargets } from './game/ai-war-target-select';
@@ -12753,12 +12753,25 @@ async function boot(): Promise<void> {
           meta.respektPrzewagaStan,
           params,
         );
-        if (r.stan !== meta.respektPrzewagaStan) {
-          setDiploPairMeta(gracz, o, { ...meta, respektPrzewagaStan: r.stan });
+        // Brak pola stanu (nowa para przed pierwszą oceną albo stary zapis) = inicjalizacja bez zdarzenia.
+        const zdarzenie = meta.respektPrzewagaStan === undefined ? null : r.zdarzenieDla;
+        if (zdarzenie === null) {
+          if (r.stan !== meta.respektPrzewagaStan) {
+            setDiploPairMeta(gracz, o, { ...meta, respektPrzewagaStan: r.stan });
+          }
+          continue;
         }
-        if (r.zdarzenieDla === null) continue;
-        const ev: DiplomaticEvent = r.zdarzenieDla === 'A' ? 'przewaga_militarna' : 'slabszy_militarnie';
-        setDiploRelation(gracz, o, applyDiploEventTracked(gracz, o, getDiploRelation(gracz, o), ev));
+        const ev: DiplomaticEvent = zdarzenie === 'A' ? 'przewaga_militarna' : 'slabszy_militarnie';
+        const cur = getDiploRelation(gracz, o);
+        const next = applyDiploEventTracked(gracz, o, cur, ev);
+        // Korekta = faktyczna zmiana Respektu z tego zdarzenia (z uwzględnieniem skali trudności i clampu).
+        const dR = next.respekt - cur.respekt;
+        setDiploPairMeta(gracz, o, {
+          ...meta,
+          respektPrzewagaStan: r.stan,
+          respektMilOffset: (meta.respektMilOffset ?? 0) + dR,
+        });
+        setDiploRelation(gracz, o, next);
       }
     }
 
@@ -42976,7 +42989,11 @@ async function boot(): Promise<void> {
                 void aiDiplomacyStance(aiStub, humanStub, rel, dipCtx);
 
                 const potPlr = objectivePowerByOwner.get(ME())?.power ?? 0;
-                const respektAI = computeRespekt(potAI, potPlr);
+                // Korekta zdarzeń militarnych (+15/−10) jest dodawana po przeliczeniu z Mocy, inaczej tick ją nadpisuje.
+                const respektAI = respektZKorektaMilitarna(
+                  computeRespekt(potAI, potPlr),
+                  getDiploPairMeta(ME(), ownerId).respektMilOffset,
+                );
                 const relWithRespekt = { ...rel, respekt: respektAI };
                 setDiploRelation(ME(), ownerId, relWithRespekt);
 

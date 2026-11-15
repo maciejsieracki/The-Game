@@ -128,7 +128,11 @@ async function main() {
   const tickEnd = tickIdx > 0 ? mainSrc.indexOf('\n    function ', tickIdx + 10) : -1;
   const tickBody = tickIdx > 0 && tickEnd > 0 ? mainSrc.slice(tickIdx, tickEnd) : '';
   ok(tickBody.includes('applyMilitaryRespektEdgeTick();'), 'runDiplomacyTurnTick wywołuje applyMilitaryRespektEdgeTick');
-  ok(mainSrc.includes("applyDiploEventTracked(gracz, o, getDiploRelation(gracz, o), ev)"), 'zdarzenie idzie przez applyDiploEventTracked (zaufanie tempo + factors)');
+  ok(mainSrc.includes('applyDiploEventTracked(gracz, o, cur, ev)'), 'zdarzenie idzie przez applyDiploEventTracked (zaufanie tempo + factors)');
+  ok(edgeBody.includes('respektMilOffset'), 'helper: korekta militarna zapisana w DiploPairMeta.respektMilOffset (obrona r1, zarzut 3)');
+  const aiIdx = mainSrc.indexOf('const respektAI = respektZKorektaMilitarna(');
+  const aiBody = aiIdx > 0 ? mainSrc.slice(aiIdx, aiIdx + 200) : '';
+  ok(aiBody.includes('computeRespekt(potAI, potPlr)') && aiBody.includes('respektMilOffset'), 'pętla AI: Respekt = computeRespekt + respektMilOffset (korekta przeżywa przeliczenie z Mocy)');
 
   console.log(`\nWynik: ${pass} OK, ${fail} FAIL`);
   try { fs.unlinkSync(BUNDLE); fs.unlinkSync(entryFile); } catch { /* ignore */ }
