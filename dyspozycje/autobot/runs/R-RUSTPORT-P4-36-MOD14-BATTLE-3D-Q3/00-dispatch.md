@@ -10,3 +10,9 @@ PROCES: dwa wywołania Operatora (impl: kod+wektory+testy; pomiary: mutacje+gate
 ALLOWLISTA: `rust-port/renderer/src/battle/**` (nowe pliki w istniejącym podmodule; edycja `mod.rs` tylko dopisaniem `pub mod`), `rust-port/renderer/tests/battle3d_*.rs`, `rust-port/renderer/tests/fixtures/battle3d/**`, `dyspozycje/rust-port/p4/P4-36-MOD14-BATTLE-3D.md` (dopisek), `dyspozycje/autobot/runs/R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q3/**`. Zero zmian w `gra/**`, `src-tauri/**`, `rust-port/engine/**` i w modułach renderera poza `battle/**`.
 IZOLACJA: worktree; commit z jawnym `git add`, PUSH NIE. FAIL → ten sam ID, limit 5 rund. Raport max ok. 400 słów. FORMAT: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK / DEPLOY-PUSH: NIE WYKONANO
 ANTY-HALUCYNACJA: każde twierdzenie o webie ma plik:linia/komendę; niepewne = NIE_ZMIERZONO. Wiadomości właściciela z głównego czatu w kontekście — nie Twoje zadanie; bez pytań ABC; luki → ZAŁOŻENIE w dokumencie.
+
+## DODATEK r2 (15.11, uruchomienie — Opus 5.5 na wszystkich etapach)
+- **Model:** Operator (impl), Operator (pomiary), Obrona, Evaluator i Final Control = **Opus 5.5** (zasada właściciela: renderer/grafika Rust na Opus). Dispatch r1 podawał Sonnet dla Evaluatora i FC — zmienione.
+- **Baza:** `origin/rust-port/parity-v2` (zawiera `7817ef0c`, sprawdzone). Przed pracą: `git merge-base --is-ancestor 7817ef0c HEAD`.
+- **Zakres i allowlista bez zmian.** Zero zmian w `gra/**`, `rust-port/engine/**`. Commit z jawnym `git add`, bez push.
+- Commit bez nazwy modelu w treści; ostatnia linia `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`.
