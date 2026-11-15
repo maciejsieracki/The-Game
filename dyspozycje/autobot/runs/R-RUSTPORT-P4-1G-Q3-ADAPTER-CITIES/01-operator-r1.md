@@ -5,7 +5,7 @@ STATUS: PASS-WITH-NOTES
 DOMAIN: GAME (grafika / DTO renderera)
 TEMAT: R-RUSTPORT-P4-1G-Q3-ADAPTER-CITIES
 GOAL: adapter miast, cudów, herbów i odznak: cities[]/owners[]/wonders[]/CityBadgeDto (DTO) → wejścia renderera (City, CityRenderOptions, PlacedWonder, WonderRenderOptions, OwnerEmblemContext, CityMapBadgeInput) + mgła miast i cudów z FogSets (Q1)
-ZMIANY/COMMIT: wpisuje orkiestrator z `git log` gałęzi wip/R-RUSTPORT-P4-1G-Q3-ADAPTER-CITIES-r1 (commit raportu = commit kodu, jeden commit)
+ZMIANY/COMMIT: kod + raport w 232ab2c5006ac6e6e00128e4f11bce854b8d7ea5 (gałąź wip/R-RUSTPORT-P4-1G-Q3-ADAPTER-CITIES-r1, rodzic 601ff304c); ten wpis SHA w commicie następnym (tylko raport)
 TESTY: view_adapter_cities 16/16; fmt EXIT 0; clippy -D warnings EXIT 0; cargo test --all-targets --no-fail-fast EXIT 0 (65 binarek, 518 passed / 0 failed / 0 ignored); mutacje 5/5 FAIL
 BLOKADY: brak (luki L1, L5 i brak integratora R5 = NIE_ZMIERZONO, niżej)
 RUNDY: 1/5
