@@ -1913,3 +1913,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Refy:** `refs/keep/P4-1B-Q3-MAP-VIEW-integ` (`be49ff3c3`), `refs/keep/P4-1B-Q3-FC` (`c21da1bbd`).
 - **Sprzątanie:** worktrees `integ-p4-1b-q3` (z nieśledzonym `Cargo.lock` z bramek, regenerowalnym, nie commitowanym) i `wf_c431c5de-ee5-1/-2/-3/-4` (`-4` zablokowany, odblokowany) usunięte; cache `target-integ-p4-1b-q3` usunięty.
 - **Stan slotów:** aktywny P4-1H Q2 (`wf_c5970398-de4`, worktree `-1` z commitem operatora `d8f85f7d9` na gałęzi `rust-port-wip/R-RUSTPORT-P4-1H-CANCEL-Q2-op-r1`). Dysk: 20 GB wolne (49%).
+
+## Przebieg (15.11, 20:5x UTC — heartbeat „twardy bit”: sloty 3/4)
+
+- **Sloty:** aktywne 3 z 4 (Opus we wszystkich rolach, zgodnie z regułą właściciela dla serii P4-1; heartbeat podawał Haiku/Sonnet — rozbieżność zgłoszona w czacie):
+  1. P4-1H Q2 `cancel_planned_march` (#217), `wf_c5970398-de4` — operator `d8f85f7d9`, baza `2799cdd4b`.
+  2. P4-1H Q3 RJ-REPIN (#217), `wf_28c84406-989` — dispatch `2a06923b6811`, baza `be49ff3c3`.
+  3. P4-1G Q1 ADAPTER-CORE (#216), `wf_3a5d7bc8-8e5` — dispatch `7379e1dbab21`, baza `be49ff3c3`.
+- **Integracja P4-1B Q3 (#211)** zamknięta w poprzednim wpisie (`be49ff3c3`).
+- **Dysk:** 20 GB wolne.
