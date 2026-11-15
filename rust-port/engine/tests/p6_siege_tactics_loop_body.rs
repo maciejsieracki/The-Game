@@ -242,11 +242,19 @@ fn cios_w_zwarciu_skladanie_z_single_blow_full_okablowanie() {
         expected.blow.outcome == Outcome::Kill,
         "zabicie tylko przy Outcome::Kill"
     );
-    if expected.blow.outcome != Outcome::None {
+    // Efekty `_resolveBlowOutcome` (K5LOOP-OUTCOME) są stosowane na stanie: brak wpisu `resolveBlowOutcome-efekty`.
+    assert!(
+        !body
+            .unported
+            .iter()
+            .any(|(_, tag)| *tag == "resolveBlowOutcome-efekty"),
+        "efekty po ciosie sa portowane: {:?}",
+        body.unported
+    );
+    if expected.blow.outcome == Outcome::Kill {
         assert!(
-            body.unported
-                .contains(&(atk0(), "resolveBlowOutcome-efekty")),
-            "efekty _resolveBlowOutcome sa zapisane jako nieportowane"
+            st.def[0].c.removed && !st.def[0].c.fading_out,
+            "zabity obronca znika z pola (_removeUnitFromScene)"
         );
     }
 }

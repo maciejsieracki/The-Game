@@ -24,8 +24,14 @@
 //   ruch/doktryna/wieze: _fleeStep, _advanceStep, _cavalryAction, _phalanxAction, _fallBackStep, _rangedAction,
 //     _trySiegeTowerClimb, _siegeInfantryToTowerStep, _executeGroupDoctrineStep, _siegeRamTowerStep (slad + false).
 //   wybor celu: _targetInRange = wskazany przez wektor wrog, o ile `_enemiesOf` (zywy, nie znikajacy, nie uciekajacy) go zawiera.
-//   _resolveBlowOutcome: zapisuje (dmg, extraMorale) i stosuje TYLKO zabicie (hp <= 0 -> dead); morale/rout po ciosie
-//     poza zakresem ProdBody (NIE_ZMIERZONO, osobny temat).
+//   EFEKTY PO CIOSIE (K5LOOP-OUTCOME, r5): WYKONYWANE z tekstu pinu `_resolveBlowOutcome` (9019-9068), `_applyMoraleDamage`
+//     (9722), `_gainMorale` (9695), `_boostEnemiesOnBreak` (9707), `_checkMeleeScreenLost` (9761), `_startRout` (9799),
+//     `_startFade` (9927), `_removeUnitFromScene` (9910, bez renderu: tylko flagi), `_armyMoraleRatio` (9988) oraz
+//     `armyMoraleRatioWithoutCommander` (army-leadership.ts:39). Strazniki: stale 1129/1141/1144-1145 i SHA outcomeSha256.
+//     Instrumentacja (nie logika): wrappery licza wywolania (gain/boost/collapse/rout/fade) do OUT.
+//     ZASTUBOWANE (jawnie NIEPORTOWANE w Rust, NIE_ZMIERZONO): `_shakeAlliesOnLoss` (ripple, wymaga K5LOOP-RUCH #123;
+//     stub liczy wywolania), efekty dowodcy (isArmyCommander = false, stuby rzucaja), `occByKey`/`routedUnits` (brak konsumenta),
+//     render/dzwiek/log (`_pushClash`, `_sfxRout`, `_sfxDeath`).
 //   dane sceny: counterMultiplier, bracesAgainstCharge, isFordTile, isShoreAdjacentToFord,
 //     terrainMap.combatTerrainName, terrainDefenseMultiplier (tabela po nazwie kafla), terrainRiverAttackMultiplier,
 //     cityGatedTerrainMultiplier, _wallBonusProcFor, civ* (mnozniki), battleUnitDifficultyCombatMult, canShoot/isSiege*.
@@ -47,6 +53,7 @@ const CIV = 'gra/src/game/civ-bonuses.ts';
 const VETERAN = 'gra/src/game/veteran.ts';
 const HUNGER = 'gra/src/game/army-starvation.ts';
 const GOLD = 'gra/src/game/gold-deficit.ts';
+const ARMY = 'gra/src/game/army-leadership.ts';
 const PARAMS = 'gra/data/combat-params.json';
 const UNITS = 'gra/data/units.json';
 const ACTIVATE_SHA256 = '3be85ac2fba725bf618b61c817c891c1d994d2b7df3615d01552c6c2774ddb00';
@@ -56,13 +63,14 @@ const UNITS_SHA256 = '7b509817d1c613a526ea0e8066a62f340f46a29fedd6f79f0c64719572
 const DOATTACK_SHA256 = '592a6cbc279655a09b13fe9cd5ccbad24b325fa093610d685d5d9461729b41c1';
 const FACING_SHA256 = '6d4858eded6e566c91a2874b30a5eabff0080b477bbf29c02a1a67f69493eae3';
 const COUNTER_SHA256 = '3913ba4050eaa30429418fade9b1a2b2adc374f1abe1a65f9291c96568e83ce7';
+const OUTCOME_SHA256 = '6cc2b1e08bcee451d42d8d022c446c6ef42f8e4d045087dff5a653d7a09f737c';
 const N_SEQ = 320;
 const SEED = 2301;
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, '..', '..', '..');
 const gitShow = (path) => execFileSync('git', ['show', `${PIN}:${path}`], { cwd: repoRoot, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
-const lines = Object.fromEntries([SCENE, COMBAT, CITY, UNIT_POWER, CIV].map((p) => [p, gitShow(p).split('\n')]));
+const lines = Object.fromEntries([SCENE, COMBAT, CITY, UNIT_POWER, CIV, ARMY].map((p) => [p, gitShow(p).split('\n')]));
 const params = JSON.parse(gitShow(PARAMS));
 const L = (file, a, b) => lines[file].slice(a - 1, b).join('\n');
 const expectLine = (file, n, needle) => {
@@ -190,6 +198,38 @@ if (budgetStart < 1 || countersLine < 1) throw new Error('pin combat.ts: brak De
 const budgetText = `${L(COMBAT, countersLine, countersLine)}\n${L(COMBAT, budgetStart, fnRange(COMBAT, budgetStart)[1])}`;
 const counterDigest = createHash('sha256').update([counterDefText, counterBlockText, budgetText].join('\n---\n')).digest('hex');
 if (counterDigest !== COUNTER_SHA256) throw new Error(`SHA fragmentow kontrataku zmieniony: ${counterDigest}`);
+
+// ---- EFEKTY PO CIOSIE (K5LOOP-OUTCOME): tekst pinu 07d2fbd72 wykonywany w Harness (bez zadnych wstawek w logice).
+expectLine(SCENE, 1129, 'const MORALE_DEATH_RADIUS');
+expectLine(SCENE, 1141, 'const MORALE_ENEMY_BREAK_GAIN');
+expectLine(SCENE, 1144, 'const MORALE_ARMY_COLLAPSE_RATIO');
+expectLine(SCENE, 1145, 'const MORALE_ARMY_COLLAPSE_MULT');
+expectLine(SCENE, 9019, 'private _resolveBlowOutcome(attacker: RuntimeBattleUnit');
+expectLine(SCENE, 9695, 'private _gainMorale(ru: RuntimeBattleUnit');
+expectLine(SCENE, 9707, 'private _boostEnemiesOnBreak(fallen: RuntimeBattleUnit)');
+expectLine(SCENE, 9722, 'private _applyMoraleDamage(victim: RuntimeBattleUnit');
+expectLine(SCENE, 9761, 'private _checkMeleeScreenLost(side:');
+expectLine(SCENE, 9799, 'private _startRout(ru: RuntimeBattleUnit)');
+expectLine(SCENE, 9910, 'private _removeUnitFromScene(ru: RuntimeBattleUnit)');
+expectLine(SCENE, 9927, 'private _startFade(ru: RuntimeBattleUnit)');
+expectLine(SCENE, 9988, "private _armyMoraleRatio(side: 'atk' | 'def')");
+const armyStart = lines[ARMY].findIndex((l) => l.startsWith('export function armyMoraleRatioWithoutCommander(')) + 1;
+if (armyStart < 1) throw new Error('pin army-leadership.ts: brak armyMoraleRatioWithoutCommander');
+const outcomeParts = {
+  consts: [L(SCENE, 1129, 1129), L(SCENE, 1141, 1141), L(SCENE, 1144, 1145)].join('\n'),
+  resolve: L(SCENE, 9019, sceneEnd(9019)),
+  gain: L(SCENE, 9695, sceneEnd(9695)),
+  boost: L(SCENE, 9707, sceneEnd(9707)),
+  applyMorale: L(SCENE, 9722, sceneEnd(9722)),
+  screenLost: L(SCENE, 9761, sceneEnd(9761)),
+  startRout: L(SCENE, 9799, sceneEnd(9799)),
+  removeFromScene: L(SCENE, 9910, sceneEnd(9910)),
+  startFade: L(SCENE, 9927, sceneEnd(9927)),
+  armyRatio: L(SCENE, 9988, sceneEnd(9988)),
+  armyFn: L(ARMY, armyStart, fnRange(ARMY, armyStart)[1]),
+};
+const outcomeDigest = createHash('sha256').update(Object.keys(outcomeParts).map((n) => `${n}\n${outcomeParts[n]}`).join('\n---\n')).digest('hex');
+if (outcomeDigest !== OUTCOME_SHA256) throw new Error(`SHA fragmentow efektow po ciosie zmieniony: ${outcomeDigest}`);
 
 // ---- fragmenty ciosu: identyczne skladanie jak w p6_siege_tactics_blow_full_gen.mjs ----
 const consts = { MORALE_HIT_LOSS_SCALE: 100, MORALE_FLANK_HIT: 8, MORALE_REAR_HIT: 15, MORALE_CHARGE_HIT: 15, MORALE_KILL_GAIN: 6 };
@@ -333,6 +373,7 @@ const stubs = {
   BROD_BONUS_BRZEG: BROD.bonusObronaBrzegu,
   ...consts,
   Math: MathStub,
+  cellKey: (q, r) => `${q},${r}`,
   canShoot: () => false,
   isSiegeUnit: () => false,
   isSiegeTower: () => false,
@@ -341,6 +382,8 @@ const stubNames = Object.keys(stubs);
 
 const classSrc = [
   L(SCENE, 1142, 1143), L(SCENE, 1161, 1161), L(SCENE, 1917, 1919),
+  outcomeParts.consts,
+  outcomeParts.armyFn.replace(/^export /gm, ''),
   DIR_JS,
   L(SCENE, 347, fnRange(SCENE, 347)[1]).replace(/^export /gm, ''),
   L(SCENE, 359, fnRange(SCENE, 359)[1]).replace(/^export /gm, ''),
@@ -360,7 +403,7 @@ const classSrc = [
   '    this.armyHungerStatMult = getS().hunger; this.goldDeficitStatMult = getS().gold; this.isCityDefenseBattle = getS().isCity;',
   '    this.wallDefenseTotalProc = getS().wallTotal; this.attackerCivBonusy = []; this.defenderCivBonusy = []; this.attackerOwnTerritory = false;',
   '    this.defenderOwnTerritory = false; this.shallowSea = false; this.attackerDifficultyCombatMult = 1; this.defenderDifficultyCombatMult = 1;',
-  '    this.counters = []; this.terrain = "Plaskie (rownina/laka)"; }',
+  '    this.counters = []; this.terrain = "Plaskie (rownina/laka)"; this.occByKey = new Map(); this.routedUnits = []; this.scene = { remove() {} }; this._autoBatchPlanning = null; }',
   '  _fleeStep(ru, done) { this.__trace.push("flee"); }',
   '  _applyTerrainRange(ru) { this.__trace.push("terrainRange"); }',
   '  _performPlayerOrder(ru, done) { this.__trace.push("playerOrder"); return false; }',
@@ -368,8 +411,22 @@ const classSrc = [
   '  _isUnitDoctrineAuto(ru) { return false; }',
   '  _effectiveMetaForUnit(ru) { return { doctrine: "steady" }; }',
   '  _executeGroupDoctrineStep(ru, meta, done) { this.__trace.push("doctrineStep"); return false; }',
-  '  _updateMoraleBar(ru) { this.__trace.push("moraleBar"); }',
-  '  _startRout(ru) { if (ru.routed || ru.dead || ru.fadingOut) return; ru.routed = true; this.__trace.push("startRout"); }',
+  // Slad `moraleBar` dotyczy tylko aktywacji (okrazenie); odswiezenia paska w efektach po ciosie / `_startRout` sa render-only.
+  '  _updateMoraleBar(ru) { if (!this.__fxDepth) this.__trace.push("moraleBar"); }',
+  // Wrapper instrumentacji: slad `startRout` tylko z aktywacji (nie z efektow po ciosie) + wywolanie TEKSTU pinu `_startRout`.
+  '  _startRout(ru) { if (!(ru.routed || ru.dead || ru.fadingOut)) { if (!this.__fxDepth) this.__trace.push("startRout"); getFx().routs += 1; } this.__fxDepth = (this.__fxDepth || 0) + 1; try { return this._startRoutPin(ru); } finally { this.__fxDepth -= 1; } }',
+  '  _sfxRout() {}',
+  '  _sfxDeath() {}',
+  '  _pushClash(a, d, dmg, tag) { getFx().clash += 1; }',
+  '  _shakeAlliesOnLoss(fallen) { getFx().shakes += 1; }',
+  '  _removeCommanderMoraleBonus(side) { throw new Error("efekty dowodcy poza zakresem (isArmyCommander = false)"); }',
+  '  _disableManualIfCommanderLost(side) { throw new Error("efekty dowodcy poza zakresem (isArmyCommander = false)"); }',
+  '  _updateArmyMoraleBars() {}',
+  // Wrappery instrumentacji (licznik wywolan / zmian), tekst pinu pod nazwami *Pin.
+  '  _gainMorale(ru, amount) { const m0 = ru.morale; this._gainMoralePin(ru, amount); if (ru.morale !== m0) getFx().gains += 1; }',
+  '  _boostEnemiesOnBreak(f) { getFx().boosts += 1; return this._boostEnemiesOnBreakPin(f); }',
+  '  _armyMoraleRatio(side) { const r = this._armyMoraleRatioPin(side); if (r < MORALE_ARMY_COLLAPSE_RATIO) getFx().collapse += 1; return r; }',
+  '  _startFade(ru) { if (!(ru.fadingOut || ru.dead || ru.removed)) getFx().fades += 1; return this._startFadePin(ru); }',
   // Znacznik sladu 'facing' (jak dotad) + PRAWDZIWE cialo pinu _updateFacing (ponizej jako _updateFacingPin).
   '  _updateFacing(ru) { this.__trace.push("facing"); return this._updateFacingPin(ru); }',
   '  _trySiegeTowerClimb(ru, done) { this.__trace.push("towerClimb"); return false; }',
@@ -397,7 +454,16 @@ const classSrc = [
   '  _sfxMelee() {}',
   '  _updateHpBar(u) {}',
   '  _wallBonusProcFor(d) { return d.bu.wallBonus; }',
-  '  _resolveBlowOutcome(a, d, dmg, extra) { getOut().outcome = { dmg, extra }; if (!d.dead && !d.fadingOut && !d.removed && d.bu.hp <= 0) d.dead = true; return dmg; }',
+  '  _resolveBlowOutcome(a, d, dmg, extra) { getOut().outcome = { dmg, extra }; this.__fxDepth = (this.__fxDepth || 0) + 1; try { return this._resolveBlowOutcomePin(a, d, dmg, extra); } finally { this.__fxDepth -= 1; } }',
+  `  ${outcomeParts.resolve.replace('private _resolveBlowOutcome', '_resolveBlowOutcomePin')}`,
+  `  ${outcomeParts.gain.replace('private _gainMorale', '_gainMoralePin')}`,
+  `  ${outcomeParts.boost.replace('private _boostEnemiesOnBreak', '_boostEnemiesOnBreakPin')}`,
+  `  ${outcomeParts.applyMorale.replace('private _applyMoraleDamage', '_applyMoraleDamage')}`,
+  `  ${outcomeParts.screenLost.replace('private _checkMeleeScreenLost', '_checkMeleeScreenLost')}`,
+  `  ${outcomeParts.startRout.replace('private _startRout', '_startRoutPin')}`,
+  `  ${outcomeParts.removeFromScene.replace('private _removeUnitFromScene', '_removeUnitFromScene')}`,
+  `  ${outcomeParts.startFade.replace('private _startFade', '_startFadePin')}`,
+  `  ${outcomeParts.armyRatio.replace('private _armyMoraleRatio', '_armyMoraleRatioPin')}`,
   `  ${L(SCENE, 6048, 6299).replace('private _activateUnit', '_activateUnit')}`,
   `  ${L(SCENE, 9783, sceneEnd(9783)).replace('private _checkRout', '_checkRout')}`,
   `  ${L(SCENE, 8291, 8294).replace('private _enemiesOf', '_enemiesOf')}`,
@@ -410,8 +476,10 @@ const classSrc = [
 ].join('\n');
 const freshOut = () => ({ u: null, hitRet: null, outcome: null, bracesCalled: false, arc: null });
 // Obserwacje jednego ciosu: zwraca OUT ciosu i otwiera czysty zapis dla kolejnego (kontratak liczy sie osobno).
+const freshFx = () => ({ routs: 0, shakes: 0, gains: 0, boosts: 0, collapse: 0, fades: 0, clash: 0 });
+let FX = freshFx();
 const takeOut = () => { const o = OUT; OUT = freshOut(); return o; };
-const Harness = new Function(...stubNames, 'tileName', 'getS', 'getOut', 'takeOut', `${stripTypeScriptTypes(classSrc, { mode: 'strip' }).replace(/export const __r = 1;/, '')}\nreturn Harness;`)(...stubNames.map((n) => stubs[n]), tileName, () => S, () => OUT, takeOut);
+const Harness = new Function(...stubNames, 'tileName', 'getS', 'getOut', 'takeOut', 'getFx', `${stripTypeScriptTypes(classSrc, { mode: 'strip' }).replace(/export const __r = 1;/, '')}\nreturn Harness;`)(...stubNames.map((n) => stubs[n]), tileName, () => S, () => OUT, takeOut, () => FX);
 
 // ---- PRNG ----
 function mulberry32(seed) {
@@ -449,6 +517,7 @@ function genUnit(side, idx, q, r) {
     neverRout: chance(0.12),
     surroundApplied: chance(0.15),
     morale: int(0, 100),
+    moraleMaxExtra: pick([0, 0, 5, 20, 60, 120]),
     fleeMorale: int(5, 40),
     moveLeft: chance(0.7) ? int(1, 5) : 0,
     onWall: side === 'def' && chance(0.15),
@@ -575,10 +644,12 @@ function runSeq(seq) {
   const h = new Harness();
   const mk = (u) => ({
     side: u.side, q: u.q, r: u.r, facing: u.facing, dead: u.dead, fadingOut: u.fadingOut, removed: false, routed: u.routed,
+    moraleMax: u.morale + u.moraleMaxExtra, isArmyCommander: false, acted: false, screenLostApplied: false,
+    hpBarGroup: { visible: true }, mats: [], perTokenGeos: [],
     neverRout: u.neverRout, surroundApplied: u.surroundApplied, morale: u.morale, fleeMorale: u.fleeMorale,
     range: 1, onWallWalkway: u.onWall, primaryRanged: false, mounted: u.mounted, phalanx: u.phalanx, shootingEnabled: true,
     dryCol: -1, heldAfterFallback: false, playerOrder: { type: 'none' }, moveLeft: u.moveLeft,
-    bu: { ...u.bu }, __target: u.target, __i: u.idx, group: { rotation: { y: 0 } },
+    bu: { ...u.bu }, __target: u.target, __i: u.idx, group: { rotation: { y: 0 }, visible: true },
   });
   h.atk = seq.atk.map(mk);
   h.def = seq.def.map(mk);
@@ -589,6 +660,7 @@ function runSeq(seq) {
     h.__trace = [];
     h.finished = a.finished;
     OUT = freshOut();
+    FX = freshFx();
     h.__firstObs = undefined;
     h.__counterObs = undefined;
     const rollsBefore = S.rollIdx;
@@ -630,10 +702,11 @@ function runSeq(seq) {
     const rollsUsed = S.rollIdx - rollsBefore;
     if (rollsUsed !== (blow ? 1 : 0) + (counter ? 1 : 0)) throw new Error(`zuzyte rzuty ${rollsUsed} != cios+kontratak`);
     const state = (r) => ({
-      hp: n2s(r.bu.hp), dead: r.dead, fadingOut: r.fadingOut, routed: r.routed, morale: n2s(r.morale),
+      hp: n2s(r.bu.hp), dead: r.dead, fadingOut: r.fadingOut, removed: r.removed, routed: r.routed, acted: r.acted, morale: n2s(r.morale),
       surroundApplied: r.surroundApplied, moveLeft: n2s(r.moveLeft), facing: n2s(r.facing),
     });
     expect.push({
+      fx: { ...FX },
       trace: h.__trace.slice(),
       blow,
       counter,
@@ -645,7 +718,8 @@ function runSeq(seq) {
 }
 
 const encUnit = (u) => ({
-  side: u.side, idx: u.idx, q: u.q, r: u.r, hp: n2s(u.hp), maxHp: n2s(u.maxHp), morale: n2s(u.morale), fleeMorale: n2s(u.fleeMorale),
+  side: u.side, idx: u.idx, q: u.q, r: u.r, hp: n2s(u.hp), maxHp: n2s(u.maxHp), morale: n2s(u.morale), moraleMax: n2s(u.morale + u.moraleMaxExtra),
+  fleeMorale: n2s(u.fleeMorale),
   neverRout: u.neverRout, dead: u.dead, fadingOut: u.fadingOut, routed: u.routed, surroundApplied: u.surroundApplied,
   moveLeft: n2s(u.moveLeft), facing: n2s(u.facing), onWall: u.onWall, mounted: u.mounted, phalanx: u.phalanx,
   tdmOwn: n2s(tdmOf(tileName(u.q, u.r))), target: u.target, blow: u.blow, counters: u.counterBlows,
@@ -683,6 +757,20 @@ const cov = {
   advanceStep: sumActs((e) => e.trace.includes('advanceStep')),
   cavalry: sumActs((e) => e.trace.includes('cavalry')),
   phalanx: sumActs((e) => e.trace.includes('phalanx')),
+  fxFades: sumActs((e) => e.fx.fades > 0),
+  fxShakes: sumActs((e) => e.fx.shakes > 0),
+  fxGains: sumActs((e) => e.fx.gains > 0),
+  fxBoosts: sumActs((e) => e.fx.boosts > 0),
+  fxCollapse: sumActs((e) => e.fx.collapse > 0),
+  fxRouts: sumActs((e) => e.fx.routs > 0),
+  moraleOnlyHits: sumActs((e) => e.blow && !e.blow.missed && e.fx.fades === 0 && e.fx.routs === 0),
+  moraleDropHits: sumActs((e, q, k) => e.blow && !e.blow.missed && e.fx.fades === 0
+    && Number(e.units[q.nAtk * (q.acts[k].side === 'atk' ? 1 : 0) + e.blow.target].morale)
+      < Number((k === 0 ? q.units[q.nAtk * (q.acts[k].side === 'atk' ? 1 : 0) + e.blow.target] : q.expect[k - 1].units[q.nAtk * (q.acts[k].side === 'atk' ? 1 : 0) + e.blow.target]).morale)),
+  routedByBlow: sumActs((e, q, k) => e.blow && !e.blow.missed && e.fx.fades === 0 && e.fx.routs > 0
+    && !(k === 0 ? q.units : q.expect[k - 1].units)[q.nAtk * (q.acts[k].side === 'atk' ? 1 : 0) + e.blow.target].routed
+    && e.units[q.nAtk * (q.acts[k].side === 'atk' ? 1 : 0) + e.blow.target].routed),
+  removedAfterKill: sumActs((e) => e.units.some((u) => u.removed)),
   doneOnly: sumActs((e) => e.trace.length === 1 && e.trace[0] === 'done'),
   repeatBlow: sumActs((e, q, k) => e.blow && q.expect.slice(0, k).some((p) => p.blow && q.acts[k].side === q.acts[q.expect.indexOf(p)].side
     && q.acts[k].idx === q.acts[q.expect.indexOf(p)].idx)),
@@ -707,6 +795,6 @@ const outDir = join(here, 'p6_siege_tactics_loop_body_vectors');
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, 'vectors.json'), `${JSON.stringify({
   pin: PIN, activateSha256: activateDigest, blowSha256: blowDigest, unitFragmentSha256: uDigest, unitsSha256: unitsDigest,
-  doAttackSha256: doAttackDigest, facingSha256: facingDigest, counterSha256: counterDigest, seed: SEED, coverage: cov, sequences,
+  doAttackSha256: doAttackDigest, facingSha256: facingDigest, counterSha256: counterDigest, outcomeSha256: outcomeDigest, seed: SEED, coverage: cov, sequences,
 })}\n`);
 console.error(JSON.stringify(cov));
