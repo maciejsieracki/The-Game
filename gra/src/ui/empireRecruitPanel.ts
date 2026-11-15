@@ -260,6 +260,16 @@ function render(root: HTMLElement, force = true): void {
   syncAffordability(root);
 }
 
+/**
+ * Host, który jest aktualnie w DOM. `onOrder`/`onSelectGeneral` wywołują `markCityStateDirty`, co
+ * SYNCHRONICZNIE przebudowuje panel armii — węzeł `root` z chwili kliknięcia jest wtedy odłączony
+ * i render na nim nie byłby widoczny (gubił komunikat i licznik „Rekrutuj wszystkie”).
+ */
+function liveHost(root: HTMLElement): HTMLElement | null {
+  if (root.isConnected) return root;
+  return document.querySelector<HTMLElement>(HOST_SELECTOR);
+}
+
 function onClick(ev: Event): void {
   const root = ev.currentTarget as HTMLElement | null;
   const t = (ev.target as HTMLElement | null)?.closest('[data-erp]') as HTMLElement | null;
@@ -271,7 +281,8 @@ function onClick(ev: Event): void {
     const cur = panelCfg.getSelectedGeneralId?.() ?? null;
     panelCfg.onSelectGeneral?.(gid && gid !== cur ? gid : null); // ponowny klik w wybranego = odznacz
     lastMessage = '';
-    render(root);
+    const host = liveHost(root);
+    if (host) render(host);
     return;
   }
   const rowEl = t.closest('[data-unit]') as HTMLElement | null;
@@ -291,7 +302,8 @@ function onClick(ev: Event): void {
   } else if (act === 'go') {
     const res = panelCfg.onOrder(id, getEmpireRecruitDraft(id));
     lastMessage = res.message;
-    render(root); // licznik zostaje (draft nie jest ruszany)
+    const host = liveHost(root);
+    if (host) render(host); // licznik zostaje (draft nie jest ruszany)
   }
 }
 
@@ -321,7 +333,8 @@ function orderAll(root: HTMLElement): void {
   }
   const head = `Rekrutacja wszystkich: przyjęto ${okTypes} z ${todo.length} pozycji.`;
   lastMessage = failed.length > 0 ? `${head} Nie przeszło — ${failed.join(' ')}` : head;
-  render(root);
+  const host = liveHost(root);
+  if (host) render(host);
 }
 
 /**
@@ -388,7 +401,7 @@ function onChange(ev: Event): void {
   syncAffordability(root);
 }
 
-/** Konfiguracja wiringu z main.ts (getRows/onOrder/generałowie). Wołane przy każdym montażu wiersza armii. */
+/** Konfiguracja wiringu z main.ts (getRows/onOrder/generałowie). Wołane raz w boot(); przeżywa wczytanie/nową grę. */
 export function configureEmpireRecruitPanel(cfg: EmpireRecruitPanelCfg): void {
   panelCfg = cfg;
 }
@@ -402,7 +415,8 @@ export function resetEmpireRecruitDrafts(): void {
 /** Nowa gra / wczytanie: czyści stan UI (liczniki, komunikat, domknięcie getRows/onOrder). */
 export function resetEmpireRecruitPanelSession(): void {
   drafts.clear();
-  panelCfg = null;
+  // panelCfg NIE jest czyszczony: to domknięcia nad żywym stanem gry (getRows/onOrder czytają bieżące
+  // globalne), wiązane raz w boot(). Wyzerowanie gubiło sekcję po wczytaniu zapisu / nowej grze.
   lastMessage = '';
   document.querySelectorAll<HTMLElement>(HOST_SELECTOR).forEach(host => { host.innerHTML = ''; });
 }

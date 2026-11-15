@@ -163,10 +163,10 @@ const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
     ok(!!A2, 'L24a po turze panel nadal ma typ dostępny do zamówienia', rows2.map(r => r.id));
     await D('setResources', 3 * A2.koszt, 1000000);
     await dropVictory();
-    if (await page.locator(`${panel} [data-unit]`).count() === 0) {
-      await page.evaluate(() => window.__empireRecruitTestDebug.closeArmyRecruitSection()); // zamknij nieświeży panel armii
-      await page.evaluate(() => window.__empireRecruitTestDebug.openArmyRecruitSection()); await page.waitForSelector(`${panel} [data-unit]`);
-    }
+    // R-WEB-UI-EMPIRE-RECRUIT-PANEL-MOVE-TO-ARMY-PANEL-Q1: tura zamyka panel armii (hideEmpireDetailPanel), ale wiersze
+    // zostają w DOM poza ekranem — stąd warunek „brak [data-unit]” nie wykrywał zamknięcia. Otwarcie jest idempotentne.
+    await page.evaluate(() => window.__empireRecruitTestDebug.openArmyRecruitSection());
+    await page.waitForSelector(`${panel} [data-unit]`, { state: 'visible' });
     await D('selectGeneral', chosen.id);
     await inc(A2.id, 5);
     await page.locator(`${panel} [data-erp="go-all"]`).click();
