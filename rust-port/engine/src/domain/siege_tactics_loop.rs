@@ -23,14 +23,15 @@
 //! Nie wpina się w `PlayableState`. Nie zawiera czasu ściennego: budżet przewijania to jawny `max_steps`.
 
 use crate::domain::army_leadership::{army_morale_ratio_without_commander, ArmyLeaderCombatant};
+use crate::domain::city_towers::{strongest_ranged_unit_for_era, tower_range_for, UnitRow};
 use crate::domain::siege_no_breach::RoundCapVerdict;
 use crate::domain::siege_tactics_activate::{
     activate_unit, ActivateEvent, ActivateOps, ActivateScene, ActivateUnit, EnemyRef,
 };
 use crate::domain::siege_tactics_blow::{DefenderState, HitArc, Outcome, RollSource};
 use crate::domain::siege_tactics_blow_full::{
-    single_blow_full, AtkMods, AttackerCu, BlowEnv, DefMods, DefenderCu, FullBlowInput,
-    FullBlowOutput,
+    attacker_from_cu, single_blow_full, AtkMods, AttackerCu, BlowEnv, DefMods, DefenderCu,
+    FullBlowInput, FullBlowOutput,
 };
 use crate::domain::siege_tactics_clock::{ScheduleOutcome, VirtualClock};
 use crate::domain::siege_tactics_end::BattleSide;
@@ -39,6 +40,9 @@ use crate::domain::siege_tactics_fastforward::{
     round_cap_verdict_step, run_fast_forward, FfEvent, FfHost, FfLoopState, FfStop,
 };
 use crate::domain::siege_tactics_inputs_pos::{facing_toward, relative_hit, JsVal};
+use crate::domain::siege_tactics_inputs_unit::{
+    to_combat_unit, BattleUnitIn, StatRow, ToCombatUnitOpts, UVal,
+};
 use crate::domain::siege_tactics_roundcap::RoundCapState;
 use crate::domain::siege_tactics_tower::{pick_tower_target, TowerTarget};
 use crate::domain::siege_tactics_turnseq::{
@@ -160,6 +164,70 @@ pub fn neutral_tower_shot_template() -> FullBlowInput {
         },
         routed_after_morale: false,
     }
+}
+
+/// Wiersz `city_towers` ([`UnitRow`], wartości JSON) -> wiersz statystyk [`StatRow`] czytany przez `to_combat_unit`.
+/// `null` -> `Null`, liczba -> `Num`, tekst -> `Str`, bool -> `Bool`; tablice i obiekty -> `Undef` (pin nie czyta ich
+/// jako liczb statystyk).
+fn stat_row_of_unit(row: &UnitRow) -> StatRow {
+    row.iter()
+        .map(|(k, v)| {
+            let u = match v {
+                serde_json::Value::Null => UVal::Null,
+                serde_json::Value::Bool(b) => UVal::Bool(*b),
+                serde_json::Value::Number(n) => n.as_f64().map_or(UVal::Undef, UVal::Num),
+                serde_json::Value::String(s) => UVal::Str(s.clone()),
+                _ => UVal::Undef,
+            };
+            (k.clone(), u)
+        })
+        .collect()
+}
+
+/// Web `towerShooterRow` + `towerRange` (`battleScene.ts:4167-4168`): strzelec wieży to najmocniejsza jednostka
+/// dystansowa epoki i nacji obrońcy ([`strongest_ranged_unit_for_era`]); zasięg z [`tower_range_for`] (min `min_range`).
+/// Szablon ciosu = [`neutral_tower_shot_template`] z atakującym z `to_combat_unit(wiersz)` (pin `_singleBlow` liczy
+/// `toCombatUnit(shooter.bu)` z `stats: shooterRow`, `kategoria = Typ ?? 'Distance'`, `hp = Health ?? health ?? 1 || 1`).
+/// Brak wiersza -> `None` (web: brak strzelca = brak planowania), zasięg wtedy z `tower_range_for(None, min_range)`.
+pub fn tower_setup_from_units(
+    units: &[UnitRow],
+    era: f64,
+    civ: Option<&str>,
+    min_range: f64,
+) -> (Option<FullBlowInput>, f64) {
+    let row = strongest_ranged_unit_for_era(units, era, civ);
+    let range = tower_range_for(row, min_range);
+    let shot = row.map(|r| {
+        let kategoria = match r.get("Typ") {
+            None | Some(serde_json::Value::Null) => "Distance".to_string(),
+            Some(serde_json::Value::String(s)) => s.clone(),
+            Some(other) => other.to_string(),
+        };
+        let hp = match r
+            .get("Health")
+            .filter(|v| !v.is_null())
+            .or_else(|| r.get("health").filter(|v| !v.is_null()))
+            .and_then(serde_json::Value::as_f64)
+        {
+            Some(x) if x.is_finite() && x != 0.0 => x,
+            _ => 1.0,
+        };
+        let cu = to_combat_unit(
+            &BattleUnitIn {
+                stats: Some(stat_row_of_unit(r)),
+                kategoria,
+                hp: Some(hp),
+                veteran_bonus_frac: None,
+                army_hungry: false,
+                gold_deficit: false,
+            },
+            &ToCombatUnitOpts::default(),
+        );
+        let mut tmpl = neutral_tower_shot_template();
+        tmpl.attacker = attacker_from_cu(&cu);
+        tmpl
+    });
+    (shot, range)
 }
 
 /// Wspólna ścieżka trafienia wieży (web `_singleBlow(shooter, target, true)`): składa stan celu z `st`, liczy cios
