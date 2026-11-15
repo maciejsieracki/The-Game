@@ -1903,3 +1903,13 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Uwaga do konfliktu reguł modeli:** stored prompt heartbeatu podaje Haiku/Sonnet, a bieżąca reguła właściciela dla serii P4-1 to Opus. Stosuję Opus dla P4-1, do rozstrzygnięcia przez właściciela.
 - **Stan remote:** `claude/rust-sivvrn` = `84d8bc2af`, `rust-port/parity-v2` = `2799cdd4b`.
 - **Dysk:** 16 GB wolne (59%).
+
+## Przebieg (15.11, 21:xx UTC — P4-1B Q3 MAP-VIEW-PRODUCER zintegrowany na parity)
+
+- **P4-1B Q3 (#211, Opus) — FC PASS-WITH-NOTES `c21da1bbd`:** operator `6b1b5c8ed` (kod, bez zmian w FC), raport `81befe806`, obrona `2eeca6fc9` + poprawka testu `b82c98983` (asercja bajt-w-bajt z wektorami pinu). Evaluator `c187edb44`, odrzucone 4 mutacje z dodatkowego przeglądu — bez zmian w kodzie. Wszystkie 8 zarzutów FC: ODDAL.
+- **Integracja:** ancestry — parity `2799cdd4b` jest przodkiem merge'a `be49ff3c3`; merge-tree czysty; merge `--no-ff` FC `c21da1bbd` w worktree `integ-p4-1b-q3`. Bramki na merge'u (engine i view-model): `FMT_EXIT=0`, `CLIPPY_EXIT=0`, `TEST_EXIT=0` w obu crate'ach; **3585 passed, 0 failed, 1 ignored** (ignored w bazie). FF: parity = `be49ff3c3`.
+- **Odstępstwo Z-Q3-2 (do przyjęcia przez P4-1G):** `build_map_view` i `build_hex_dyn` zwracają `Result<_, MapViewError>` zamiast gołego DTO, bo pola tekstowe `SnapshotMap` spoza enumów webu nie mają reprezentacji w typowanym DTO. P4-1G musi obsłużyć błąd jawnie.
+- **Otwarte (NIE_ZMIERZONO):** wołający producenta w rendererze (P4-1G, jawna zależność), `placedImprovements` jako źródło tarasów, zmiana terenu w trakcie gry (playtest).
+- **Refy:** `refs/keep/P4-1B-Q3-MAP-VIEW-integ` (`be49ff3c3`), `refs/keep/P4-1B-Q3-FC` (`c21da1bbd`).
+- **Sprzątanie:** worktrees `integ-p4-1b-q3` (z nieśledzonym `Cargo.lock` z bramek, regenerowalnym, nie commitowanym) i `wf_c431c5de-ee5-1/-2/-3/-4` (`-4` zablokowany, odblokowany) usunięte; cache `target-integ-p4-1b-q3` usunięty.
+- **Stan slotów:** aktywny P4-1H Q2 (`wf_c5970398-de4`, worktree `-1` z commitem operatora `d8f85f7d9` na gałęzi `rust-port-wip/R-RUSTPORT-P4-1H-CANCEL-Q2-op-r1`). Dysk: 20 GB wolne (49%).
