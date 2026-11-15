@@ -83,3 +83,57 @@ BAZA: 3c428164d7795a35123d53dcc32dc0f9f87857b8 (kandydat evaluatora), gałąź r
 Evaluator r2 (SONNET): weryfikacja commitu d5a908f5f i tego raportu; zrzut Chromium (zarzut 6) jako osobny krok przed FC; decyzja właściciela w sprawie DECISION_REQUIRED (pkt 5) przed deployem.
 
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+
+## RUNDA 3 — odpowiedzi na zarzuty Evaluatora (report_sha 39d81d64, kandydat fc6c5d943)
+
+BAZA: fc6c5d94380a5146646a24f671badfdf7cce9db7 (kandydat r2). Zmiany tylko w allowliście (gra/tools/*citizen*, runs/<ID>/**).
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (dane + narzędzie pomiarowe)
+TEMAT: R-WEB-DATA-CITIZEN-CERAMICS-STONE-AGE-Q1
+GOAL: bez zmian (ceramika jako utrzymanie obywateli w Kamieniu, 1 na obywatela na turę, kara −2 Szczęścia / −1% Rozwoju bez ceramiki).
+
+### Zarzut 1 — zrzuty przy sztucznym magazynie 5000 i z oknem dyplomacji w tle — PRZYJMUJĘ jako notatkę, bez nowego pomiaru
+- Zrzuty `evidence/panel-kamien-*-seed7.png` i `panel-kamien-seed7.json` nadal pochodzą z fixture `creditOwnerResourceStock(..., 5000)` (citizen-ceramics-panel-shot.cjs:120). Tego nie zmieniam w tej rundzie.
+- Dowód, że kara jest w UI: w JSON `withoutCeramika.texts` zawiera „Ceramika" + „Obywatele: NIEDOBÓR", a `withCeramika.texts` „Obywatele: POKRYTE" (czytane z DOM, nie z OCR).
+- NIE_ZMIERZONO: zrzut w czystym HUD, z realnym magazynem wczesnej gry i bez okna dyplomacji oraz rozpiska Szczęścia z karą −2. Kara jest pokryta testami logiki (krok r1/r2), nie zrzutem UI. Rekomendacja: osobny drobny temat pomiarowy po decyzji ABC (A/B/C), nie blokuje tego kandydata.
+
+### Zarzut 2 — ścieżki worktree w evidence/panel-kamien-seed7.json — PRZYJMUJĘ (poprawka + dowód)
+- Commit tej rundy. Narzędzie `gra/tools/citizen-ceramics-panel-shot.cjs` zwraca od teraz `file: path.basename(file)` (linia `grab`), a plik JSON został oczyszczony z absolutnych ścieżek.
+- Dowód: `grep -c "/home/user" .../panel-kamien-seed7.json` → 0; wpisy `"file"` = `panel-kamien-z-ceramika-seed7.png` i `panel-kamien-bez-ceramiki-seed7.png`; `JSON.parse` przechodzi; `node --check gra/tools/citizen-ceramics-panel-shot.cjs` → SYNTAX_OK.
+- Uwaga: JSON oczyszczono `sed`-em (wygenerowany jeszcze starą wersją narzędzia). Ponowne uruchomienie narzędzia z nową wersją da ten sam format bez ścieżek; nie uruchamiałem go ponownie (wymaga budowy vite + Chromium).
+
+### Zarzut 3 — nie zmierzony konflikt z origin/main (e956b5015) — PRZYJMUJĘ, ZMIERZONO
+- Pomiar: `git merge --no-commit --no-ff origin/main` w worktree (potem `git merge --abort`, worktree czysty poza dwiema zmianami z runda 3).
+- Wynik: automatyczne scalenie wszystkich plików poza jednym. Jedyny konflikt: `gra/src/data/wikiBundle.json` (`git diff --name-only --diff-filter=U` → 1 plik). Plik generowany, rozwiązanie = regeneracja narzędziem wikiBundle po merge (zgodnie z dispatchem), nie ręczny merge.
+- Nie wykonałem regeneracji ani commita merge — to etap integracji orkiestratora.
+
+### Zarzut 4 — dług bazowy 2 czerwone asercje w citizen-resource-upkeep-test.cjs — ODRZUCAM jako regresję kandydata (dowód)
+- `git diff e0be467a8 fc6c5d943 -- gra/src | wc -l` → 0 (kod gry identyczny z bazą; kandydat nie zmienia gra/src).
+- Kotwica `ORD_ANCHOR = 'const ordPctRaw = evaluateOrderFromBreakdown('` (citizen-resource-upkeep-test.cjs:746) nie występuje w gra/src/main.ts; występuje tam `const ordPctRaw = happinessCivKey` (main.ts:41112). Test czerwony niezależnie od tego kandydata.
+- Zgadzam się, że wymaga osobnego tematu naprawy testu (kotwica w teście), nie wchodzi do tego tematu. Nie zmieniam testu.
+- Mutacja z r1/r2 (usunięcie ceramiki z epoki 1) pozostaje czerwona zgodnie z oczekiwaniem (wynik Evaluatora 103/21, era-mult 658/5).
+
+### Zmiany tej rundy (commit)
+- gra/tools/citizen-ceramics-panel-shot.cjs — `file` jako nazwa pliku (zarzut 2).
+- dyspozycje/autobot/runs/R-WEB-DATA-CITIZEN-CERAMICS-STONE-AGE-Q1/evidence/panel-kamien-seed7.json — bez ścieżek (zarzut 2).
+- dyspozycje/autobot/runs/R-WEB-DATA-CITIZEN-CERAMICS-STONE-AGE-Q1/30-obrona-claude.md — ta sekcja.
+
+### TESTY (runda 3)
+- `node --check` narzędzia: SYNTAX_OK.
+- `JSON.parse` evidence: OK; `grep /home/user` w JSON: 0.
+- Merge-test z origin/main: 1 konflikt (wikiBundle.json), NIE_ZMIERZONO-> ZMIERZONO (patrz zarzut 3).
+- Bramek gry (tsc, logic 213/213, tech-tree, research, unit-replace, combat) NIE uruchamiałem w tej rundzie: zmian w gra/src brak, a wyniki r2 dla tego samego kodu wskazuje Evaluator (z identycznym gra/src).
+
+### BLOKADY
+- Brak blokad technicznych. Decyzja ABC właściciela (A/B/C kara w Kamieniu) otwarta — nie wdrażam.
+
+### RUNDY
+3/5 (obrona). Ostatni werdykt Evaluatora: PASS-WITH-NOTES (report_sha 39d81d64).
+
+### NASTĘPNY KROK
+Evaluator potwierdza zarzuty 2–4 po tym commicie; orkiestrator: merge origin/main + regeneracja wikiBundle przy integracji; osobne tematy: test kotwicy ordPctRaw, zrzut UI w czystym HUD z realnym magazynem.
+
+DEPLOY/PUSH: NIE WYKONANO

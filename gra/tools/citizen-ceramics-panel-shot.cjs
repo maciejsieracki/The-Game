@@ -127,7 +127,7 @@ async function main(scratch, evidence, seed) {
       await wait(300);
       const file = path.join(evidence, `panel-kamien-${label}-seed${seed}.png`);
       await page.screenshot({ path: file, fullPage: false });
-      return { file, texts, obywatelCount: cnt };
+      return { file: path.basename(file), texts, obywatelCount: cnt };
     };
     const withC = await grab('z-ceramika');
     const removed = await page.evaluate(() => window.__ccPanel.zeroCeramika());
