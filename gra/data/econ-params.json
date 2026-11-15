@@ -14,6 +14,13 @@
       "jednostka": "%",
       "opis": "Ze Spichlerzem w mieście: ułamek bufora wzrostu zachowany po awansie populacji (+1). Bez Spichlerza bufor zeruje się. Maciej 2026-07-06: normal=50%."
     },
+    "ksiega_zasobow_tury": {
+      "easy": 10,
+      "normal": 10,
+      "hard": 10,
+      "jednostka": "tury",
+      "opis": "R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1: ile ostatnich tur ekonomii trzyma dziennik źródeł surowców („Skąd zapasy”). Brak wpisu w zapisie gry = pusty dziennik. Wartość finalna (N=10)."
+    },
     "handel_surowiec_min_stock": {
       "easy": 2,
       "normal": 2,
