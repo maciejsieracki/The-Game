@@ -1889,3 +1889,8 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **NIE_ZMIERZONO / ograniczenia:** `pick_auto_improvements` i pozostałe testy długie nie były osobno raportowane poza sumą. Brak producenta produkcyjnego `compute_stack_display` do czasu P4-1D-Q4 (ewaluator zaznaczył jako zależność, nie zarzut).
 - **Stan sloty:** pozostaje aktywny P4-1B Q3 (`wf_c431c5de-ee5`, procesy cargo w `wf_c431c5de-ee5-3`, nie ruszane). P4-1F i P4-1I bez śladu worktree — stan NIE_ZMIERZONO.
 - **Dysk:** 19 GB wolne (52%).
+
+## Przebieg (15.11, 20:09 UTC — tick autonomiczny: start P4-1H Q2)
+
+- **R-RUSTPORT-P4-1H-CANCEL-Q2 (#217, Opus) — START:** dispatch `dyspozycje/autobot/runs/R-RUSTPORT-P4-1H-CANCEL-Q2/00-dispatch.md` (commit `49eb08038`), baza `origin/rust-port/parity-v2` = `2799cdd4b`. Workflow `wf_c5970398-de4`. Zakres: `cancel_planned_march` 1:1 z `clearPlannedMarch` gałąź `unitId` + `EngineCommand::CancelPlannedMarch` w `bridge.rs`. Decyzja techniczna nieznanej jednostki (Err) zapisana wcześniej w tym rejestrze.
+- **Sloty:** aktywne 2 workflow (P4-1B Q3 `wf_c431c5de-ee5`, obrona w toku; P4-1H Q2 `wf_c5970398-de4`). Pozostają 2 wolne. Brak dispatchu bez decyzji właściciela dla kolejnych tematów (Q3 RJ-REPIN wymaga Q2? nie — niezależne, ale dispatch do napisania).
