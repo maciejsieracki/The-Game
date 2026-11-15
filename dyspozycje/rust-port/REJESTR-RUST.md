@@ -1312,3 +1312,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Trwających Workflow: 1** z 4 (`wf_36dbda52-96d`). Operator r2 `220b022cd` PASS-WITH-NOTES; Evaluator r2 PASS-WITH-NOTES. Otwarte uwagi Evaluatora: wejście do `single_blow_full` nie jest porównywane z argumentami z generatora pina (`expectStats`, `expectKategoria`, `expectRanged` zapisane, nieużyte w teście Rust).
 - **Dysk:** 7,1 GB (poniżej 8 GB progu startu, powyżej 4 GB). Nic nie startuję.
 - **Parity:** `14d5e50b9`. **Pytania ABC:** #106 pkt 4, #115, #120; konwencja `Co-Authored-By` (rekomendacja B) — bez odpowiedzi.
+
+## Przebieg (15.11, 04:24): WIEZE-2B2 r2 — FC PASS-WITH-NOTES; integracja: pełny test w toku
+- **Wynik r2:** Operator PASS-WITH-NOTES (`220b022cd`), Evaluator PASS-WITH-NOTES, Obrona (`6aa9b154e`), **FC PASS-WITH-NOTES** (`f2bb11970`). Baza `ef8eeedc9`. Generator `p6_wieze_2b2_gen.mjs` wykonuje `_fireOneTower` i `pickTowerTarget` z pina (240 przypadków: 105 strzałów, 135 bez strzału; SHA-256 fragmentów zgodny). Strzelec z `city_towers` (486 przypadków wzorcowych).
+- **Zakres 2B2 (zrobione):** strzelec z `city_towers::strongest_ranged_unit_for_era` (`tower_setup_from_units`), strzał wieży przez `single_blow_full` (kategoria, hp, ranged), zniszczona wieża nie strzela, opóźnienie trafienia 380 ms z wektora.
+- **Długi jawne (NIE_ZROBIONE):** (a) wynik liczbowy ciosu wieży z pina niezweryfikowany (test to okablowanie); (b) `hit_arc` stałe Front i `first_blow_of_pair` stałe true (dług K5LOOP-FACING #107/#178); (c) efekty `_resolveBlowOutcome` po trafieniu wieży (#109/#147); (d) mody właściciela (mnożniki 1.0); (e) `Health` jako napis: JS `Number("10")=10`, Rust daje 1; (f) wiring produkcyjny `tower_setup_from_units` (#113); (g) `destroyed` jako proxy `wall_tile_rows` (przyjęte przez FC r1).
+- **Znalezisko zgodne z pinem:** strzelec wybierany przez `missilePower` (fallback „Atak dystansowy”); cios czyta `missileAttack` z fallbackiem 0 (`combat.ts:223`) — wiersz z `missileAttack` null strzela mocą 0.
+- **Integracja:** ancestry od `14d5e50b9` OK; diff 12 plików (w allowliście). Pełny `cargo test --no-fail-fast` w tle (`integ-2b2`, log `i2b2-test.log`). Po zielonym wyniku FF `parity-v2` `14d5e50b9` → `f2bb11970`.
+- **Sprzątanie:** usunięto `scratchpad/target-2b2r2` (2,9 GB) i worktree rundy 2 po zabezpieczeniu refs (`rust-port-wip/wf_36dbda52-96d-1..4`). Dysk: 17 GB.
+- **Pytania ABC:** #106 pkt 4, #115, #120; konwencja `Co-Authored-By` (rekomendacja B) — bez odpowiedzi właściciela.
