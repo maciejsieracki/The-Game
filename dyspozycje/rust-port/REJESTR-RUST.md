@@ -1289,3 +1289,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Obrona r1** zakończona; **FC** w toku. Po werdykcie: FAIL → runda 2 tego samego ID z DODATKIEM (wektory z pinu, prawdziwe dane strzelca, test niezależny od funkcji produkcyjnej).
 - **Sloty: 1 z 4.** **Parity:** `14d5e50b9`. **Dysk:** 11 GB.
 - **Pytania ABC:** #106 pkt 4 (rekomendacja B), #115, #120; konwencja `Co-Authored-By` (rekomendacja B) — bez odpowiedzi właściciela.
+
+## Przebieg (15.11, po 02:17): WIEZE-2B2 r1 — FC FAIL; runda 2 w toku
+- **Wynik r1:** Operator PASS-WITH-NOTES (`af7a0be6a`, pełny `cargo test` EXIT 0, 3373 passed); Evaluator FAIL; Obrona (`64ddbd19d`) przyjęła część zarzutów i dodała testy dead/fading; **FC FAIL** (`ef8eeedc9`). Otwarte: brak wektorów z pina dla strzału, strzelec nie z `city_towers`, brak czerwonego przebiegu.
+- **Runda 2** (DODATEK r2, baza `ef8eeedc9`, dispatch `b975183da`): strzelec z `city_towers::strongest_ranged_unit_for_era` z wektorami pina; generator wejścia strzału (`_fireOneTower`, mock `_singleBlow` zapisujący argumenty) albo NIE_ZROBIONE z cytatami; czerwony przed zmianą. `destroyed` jako proxy `wall_tile_rows` zostaje (udokumentowane dowodem z pina). Workflow `wf_36dbda52-96d`.
+- **Zabezpieczenie:** worktree rundy 1 (`wf_3d64ca03-97e-*`) — refs `keep/*` i `rust-port-wip/*`, usunięte, jeśli czyste.
+- **Sloty: 1 z 4.** **Parity:** `14d5e50b9`. **Pytania ABC:** #106 pkt 4, #115, #120; konwencja `Co-Authored-By` (rekomendacja B) — bez odpowiedzi właściciela.
