@@ -10029,3 +10029,6 @@ FALA 735 (main b97287c88, ROBOCZA MD5 763744a1, Raw MD5 zgodne): R-WEB-DIPLO-RES
 
 ## 2026-11-15 — Decyzje właściciela (ABC): utrzymanie armii AI, mgła AI W2, plakietka „+X”, wpis unicestwienia
 (1) AI-ARMY-UPKEEP = A: nowy dispatch na świeżej bazie → R-WEB-AI-ARMY-UPKEEP-Q2 (dispatch zapisany, start gdy slot). (2) ai-fog W2 = A: FAIL celowy zaakceptowany, temat zamknięty bez zmian w kodzie. (3) Plakietka „+X” = A: usunąć → R-WEB-UI-RESOURCE-CARD-REMOVE-PLUS-X-BADGE-Q1 (po tematach ledger, ten sam plik). (4) Unicestwienie = A: osobna linia w podsumowaniu bitwy → R-WEB-BATTLE-SUMMARY-ANNIHILATION-LINE-Q1 (dispatch zapisany, start gdy slot).
+
+## 2026-11-15 — Priorytet właściciela: #410, #411, #412 w pierwszej kolejności; decyzje ABC
+Kolejność od właściciela: 1) #410 arbitraż kolizji, 2) #411 plakietka „+X”, 3) #412 żetony widoku miasta, potem reszta (#406, #415, #413). Decyzje: #410 = A (piechota ma pierwszeństwo, łucznik ustępuje; ten sam typ → mniejsze ID) → R-WEB-BATTLE-COLLISION-ARBITRATION-INFANTRY-FIRST-Q1; #412 = A (min. 12 px i zawijanie do 2 linii przy wąskim oknie) → R-WEB-UI-CITY-VIEW-CHIPS-READABLE-MIN-12PX-Q1. Ograniczenia plików: #410 po FULL-MOVE (battleScene.ts), #411 po ledger (empireDetailPanel.ts), #412 bez konfliktu.
