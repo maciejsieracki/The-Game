@@ -111,6 +111,12 @@ Workflow uruchamiaj z czytelną nazwą: `scripts/mkwf.sh <ID> "<opis po polsku>"
    albo nie działa, z numerami plików/linii i pinu oraz co dokładnie zmieni każda odpowiedź (nie zakładaj,
    że właściciel zna kontekst); (b) **przy każdej opcji** zalety i wady; (c) **zawsze** oznaczoną
    rekomendację z uzasadnieniem (opcja z `(Recommended)` i dlaczego).
+11. **Web najpierw, Rust potem (właściciel, 2026-11-15; wiążące, na stałe).** Gra jest przepisywana
+   z kodu webowego na Rust, więc zasady gry są identyczne — różni się tylko kodowanie. Przed każdą
+   decyzją gameplay i przed każdym dispatchem struktury danych NAJPIERW czytasz kod webowy
+   (pin `07d2fbd72`, `gra/src/**`, `git show`/`git grep`), dopiero potem przygotowujesz odpowiednik
+   w Rust. Pytasz właściciela (pytanie ABC wg zasady 10) WYŁĄCZNIE, gdy web nie rozstrzyga sprawy
+   gameplay. Zasady, których nie ma w webie, nie wymyślasz.
 
 ## Bariery krytyczne
 
