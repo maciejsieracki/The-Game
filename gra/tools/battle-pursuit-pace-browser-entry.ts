@@ -34,6 +34,18 @@ const scene: any = new BattleScene({
   data: { units, counters, terrainCombat, cywilizacje: [] },
   attackerCivLabel: 'Rzym', defenderCivLabel: 'Grecja',
 } as any);
+// R-WEB-BATTLE-COLLISION-ARBITRATION-INFANTRY-FIRST-Q1: osobny strumien losowy walki. Globalne Math.random jest tez zuzywane przez dzwiek
+// (liczba wywolan zalezy od performance.now), wiec wspoldzielenie zrodlo niedeterminizmu sondy -- ten sam seed dawal dwa rozne przebiegi.
+{
+  let c = ((Number(q.get('seed') ?? '1') >>> 0) ^ 0x9E3779B9) >>> 0 || 1;
+  scene._combatRng = () => {
+    c = (c + 0x6D2B79F5) >>> 0;
+    let t = c;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 scene.renderer.setPixelRatio(Number(q.get('pr') ?? '0.1'));
 
 type Row = {
@@ -250,11 +262,48 @@ api.arb = arb;
   scene._beginAutoBatchPhase = (side: any, units: any) => {
     lastIntents = null; occ0 = null;
     const round = scene.roundNo;
+    // R-WEB-BATTLE-COLLISION-ARBITRATION-INFANTRY-FIRST-Q1: pozycje wszystkich zywych jednostek na starcie fazy (swap / ping-pong).
+    {
+      const snap: Record<string, string> = {};
+      for (const u of [...scene.atk, ...scene.def]) if (!u.dead && !u.fadingOut && !u.removed) snap[u.bu.id] = `${u.q},${u.r}`;
+      (api.pos ??= []).push({ round, side, snap });
+    }
     const intents = (): any[] => lastIntents ?? [];
     const res = origBegin(side, units);
     if (lastIntents && occ0) {
       const resolutions: any[] = scene._autoBatchResolutions ?? [];
+      // R-WEB-BATTLE-COLLISION-ARBITRATION-INFANTRY-FIRST-Q1: wlasciciel pola = DOWOLNA jednostka z zaakceptowana sciezka przez to pole
+      // (kolejnosc wyniku to kolejnosc rosteru, a arbitraz idzie wg pierwszenstwa piechota -> lucznik -> ID).
+      // KONTEST o pole: kilka jednostek tej fali planuje wejsc na TO SAMO pole, a kazda z nich zaakceptowala dotychczasowy prefiks sciezki.
+      // Zwyciezca = jednostka, ktorej ZAAKCEPTOWANA sciezka zawiera pole; przegrany = pozostale (plan uciety wlasnie tam).
+      {
+        const byCell = new Map<string, { id: string; idx: number; acc: number }[]>();
+        for (const it of intents()) {
+          if (it.side !== side) continue;
+          const rr = resolutions.find((x: any) => x.unitId === it.unitId);
+          if (!rr) continue;
+          it.steps.forEach((st: any, idx: number) => {
+            const k = `${st.col},${st.row}`;
+            if (!byCell.has(k)) byCell.set(k, []);
+            byCell.get(k)!.push({ id: it.unitId, idx, acc: rr.steps.length });
+          });
+        }
+        for (const [cell, list] of byCell) {
+          if (occ0!.has(cell)) continue; // pole zajete na starcie fazy = twarda bariera, nie kontest
+          const contenders = list.filter(c => c.acc >= c.idx && !scene._findUnitById(c.id)?.routed); // doszla do pola z zaakceptowanym prefiksem; uciekajacy poza reguly
+          if (contenders.length < 2) continue;
+          const win = contenders.find(c => c.acc > c.idx);
+          if (!win) continue;
+          for (const c of contenders) {
+            if (c.id === win.id) continue;
+            const wu = scene._findUnitById(win.id); const lu = scene._findUnitById(c.id);
+            if (!wu || !lu) continue;
+            (api.contest ??= []).push({ round, side, cell, winner: win.id, winnerCls: scene._arbitrationClassOf(wu), loser: c.id, loserCls: scene._arbitrationClassOf(lu), loserMounted: !!lu.mounted });
+          }
+        }
+      }
       const seen = new Map<string, string>();
+      for (const rr of resolutions) for (const st of rr.steps) { const k = `${st.col},${st.row}`; if (!seen.has(k)) seen.set(k, rr.unitId); }
       for (const rr of resolutions) {
         const it = intents().find((i: any) => i.unitId === rr.unitId);
         if (it && rr.blocked) { // r3: ostateczny wynik arbitrazu (po ewentualnym przeplanowaniu ucietych planow konnicy)
@@ -265,9 +314,10 @@ api.arb = arb;
           if (o && !o.startsWith(rr.unitId + '/')) { kind = 'snapshot'; who = o; }
           else if (seen.has(key)) { kind = 'path'; who = seen.get(key)!; }
           const u = scene._findUnitById(rr.unitId);
-          arb.push({ round, side, id: rr.unitId, mounted: !!u?.mounted, planned: it.steps.length, accepted: rr.steps.length, cell: key, kind, who, finalBlocked: !!rr.blocked });
+          const whoId = who.split('/')[0];
+          arb.push({ round, side, id: rr.unitId, mounted: !!u?.mounted, planned: it.steps.length, accepted: rr.steps.length, cell: key, kind, who, finalBlocked: !!rr.blocked,
+            cls: scene._arbitrationClassOf(u), whoCls: whoId ? (scene._findUnitById(whoId) ? scene._arbitrationClassOf(scene._findUnitById(whoId)) : null) : null });
         }
-        for (const st of rr.steps) seen.set(`${st.col},${st.row}`, rr.unitId);
       }
     }
     return res;
