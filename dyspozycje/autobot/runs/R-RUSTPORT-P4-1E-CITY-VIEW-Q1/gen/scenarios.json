@@ -1,0 +1,204 @@
+[
+  {
+    "name": "start_jedno_miasto_bez_kolejki",
+    "epochId": "kamien",
+    "viewer": 0,
+    "fogActive": true,
+    "visibleHexes": [],
+    "players": [
+      { "id": 0, "civilization": "rzymianie", "isHuman": true }
+    ],
+    "cities": [
+      {
+        "id": 1, "ownerId": 0, "name": "Roma", "q": 1, "r": 1, "isCapital": true, "population": 1,
+        "built": [], "surowce": null, "production": null,
+        "orderBunt": false, "orderRevoltWarning": false, "oblegane": false, "growth": null
+      }
+    ],
+    "units": [],
+    "relations": [],
+    "deals": [],
+    "simplifiedOwners": [],
+    "typCopyOwners": [],
+    "clusterCapitalOwnerIds": [],
+    "itemStockCost": {}
+  },
+  {
+    "name": "wielu_wlascicieli_mgla",
+    "epochId": "kamien",
+    "viewer": 0,
+    "fogActive": true,
+    "visibleHexes": [[6, 2], [9, 4], [3, 7], [12, 9]],
+    "players": [
+      { "id": 0, "civilization": "rzymianie", "isHuman": true },
+      { "id": 1, "civilization": "grecy", "isHuman": false },
+      { "id": 2, "civilization": "egipt", "isHuman": false },
+      { "id": 3, "civilization": "celtowie", "isHuman": false },
+      { "id": 4, "civilization": "player-4", "isHuman": false },
+      { "id": 5, "civilization": "germanie", "isHuman": false },
+      { "id": 9, "civilization": "slowianie", "isHuman": false },
+      { "id": 7, "civilization": "hetyci", "isHuman": false }
+    ],
+    "cities": [
+      {
+        "id": 1, "ownerId": 0, "name": "Roma", "q": 1, "r": 1, "isCapital": true, "population": 5,
+        "built": ["palisada", "koszary"], "surowce": { "drewno": 2, "kamien": 1 },
+        "production": { "kolejka": [ { "kind": "budynek", "id": "spichlerz", "nazwa": "Spichlerz", "koszt": 40 } ], "postep": 3 },
+        "orderBunt": false, "orderRevoltWarning": false, "oblegane": true,
+        "growth": { "procentNaTure": 12.5, "nakarmione": true }
+      },
+      {
+        "id": 3, "ownerId": 0, "name": "Antium", "q": 2, "r": 3, "isCapital": false, "population": 12,
+        "built": ["mury"], "surowce": { "drewno": 2 },
+        "production": { "kolejka": [ { "kind": "jednostka", "id": "Wojownik", "nazwa": "Wojownik", "koszt": 20 } ], "postep": 0, "wstrzymana": true },
+        "orderBunt": false, "orderRevoltWarning": false, "oblegane": false,
+        "growth": { "procentNaTure": -3, "nakarmione": false }
+      },
+      {
+        "id": 2, "ownerId": 1, "name": "Ateny", "q": 6, "r": 2, "isCapital": true, "population": 3,
+        "built": ["fort"], "surowce": { "miedz": 4 },
+        "production": { "kolejka": [], "postep": 0, "wstrzymana": true },
+        "orderBunt": true, "orderRevoltWarning": false, "oblegane": false,
+        "growth": { "procentNaTure": 7, "nakarmione": true }
+      },
+      {
+        "id": 7, "ownerId": 2, "name": "Teby", "q": 9, "r": 4, "isCapital": false, "population": 4,
+        "built": ["mury_kamienne", "palisada"], "surowce": { "miedz": 3 },
+        "production": { "kolejka": [ { "kind": "jednostka", "id": "Lucznik", "nazwa": "Łucznik", "koszt": 30 }, { "kind": "budynek", "id": "koszary", "nazwa": "Koszary", "koszt": 50 } ], "postep": 5 },
+        "orderBunt": false, "orderRevoltWarning": true, "oblegane": false, "growth": null
+      },
+      {
+        "id": 5, "ownerId": 2, "name": "Memfis", "q": 10, "r": 6, "isCapital": false, "population": 2,
+        "built": [], "surowce": null,
+        "production": { "kolejka": [ { "kind": "budynek", "id": "spichlerz", "nazwa": "Spichlerz", "koszt": 40 } ], "postep": 0 },
+        "orderBunt": false, "orderRevoltWarning": false, "oblegane": false, "growth": null
+      },
+      {
+        "id": 8, "ownerId": 3, "name": "Alezja", "q": 3, "r": 7, "isCapital": true, "population": 2,
+        "built": [], "surowce": null, "production": null,
+        "orderBunt": false, "orderRevoltWarning": false, "oblegane": false, "growth": null
+      },
+      {
+        "id": 11, "ownerId": 4, "name": "Nowe Miasto", "q": 12, "r": 9, "isCapital": true, "population": 0,
+        "built": [], "surowce": null, "production": null,
+        "orderBunt": false, "orderRevoltWarning": false, "oblegane": false, "growth": null
+      },
+      {
+        "id": 12, "ownerId": 5, "name": "Sparta", "q": 14, "r": 1, "isCapital": true, "population": 2,
+        "built": [], "surowce": null, "production": null,
+        "orderBunt": false, "orderRevoltWarning": false, "oblegane": false, "growth": null,
+        "startCityState": true
+      },
+      {
+        "id": 13, "ownerId": 9, "name": "Kijow", "q": 15, "r": 5, "isCapital": true, "population": 3,
+        "built": [], "surowce": null, "production": null,
+        "orderBunt": false, "orderRevoltWarning": false, "oblegane": false, "growth": null,
+        "startCityState": false
+      },
+      {
+        "id": 16, "ownerId": 7, "name": "Hattusa", "q": 16, "r": 8, "isCapital": true, "population": 2,
+        "built": [], "surowce": null, "production": null,
+        "orderBunt": false, "orderRevoltWarning": false, "oblegane": false, "growth": null
+      }
+    ],
+    "units": [
+      { "ownerId": 0, "q": 2, "r": 3 },
+      { "ownerId": 0, "q": 2, "r": 3 },
+      { "ownerId": 1, "q": 6, "r": 2 },
+      { "ownerId": 0, "q": 4, "r": 4 }
+    ],
+    "relations": [
+      { "a": 0, "b": 1, "status": "wojna" },
+      { "a": 2, "b": 0, "status": "pokoj" },
+      { "a": 0, "b": 4, "status": "sojusz" },
+      { "a": 0, "b": 9, "status": "pokoj" }
+    ],
+    "deals": [
+      { "rodzaj": "sojusz_defensywny", "strony": [3, 0] },
+      { "rodzaj": "pakt_nieagresji", "strony": [0, 5] },
+      { "rodzaj": "sojusz_wojskowy", "strony": [9, 0] }
+    ],
+    "simplifiedOwners": [7],
+    "typCopyOwners": [],
+    "clusterCapitalOwnerIds": [],
+    "itemStockCost": {
+      "budynek:spichlerz": { "drewno": 5 },
+      "jednostka:Lucznik": { "miedz": 2 },
+      "jednostka:Wojownik": {}
+    }
+  },
+  {
+    "name": "hotseat_drugi_fotel_bez_mgly_braz",
+    "epochId": "braz",
+    "viewer": 1,
+    "fogActive": false,
+    "visibleHexes": [],
+    "players": [
+      { "id": 0, "civilization": "rzymianie", "isHuman": true },
+      { "id": 1, "civilization": "grecy", "isHuman": true },
+      { "id": 2, "civilization": "grecy", "isHuman": false },
+      { "id": 3, "civilization": "grecy", "isHuman": false },
+      { "id": 6, "civilization": "zulusi", "isHuman": false }
+    ],
+    "cities": [
+      {
+        "id": 1, "ownerId": 0, "name": "Roma", "q": 1, "r": 1, "isCapital": true, "population": 6,
+        "built": ["palisada"], "surowce": { "zelazo": 1 },
+        "production": { "kolejka": [ { "kind": "budynek", "id": "koszary", "nazwa": "Koszary", "koszt": 50 } ], "postep": 1 },
+        "orderBunt": false, "orderRevoltWarning": false, "oblegane": false,
+        "growth": { "procentNaTure": 4, "nakarmione": true }
+      },
+      {
+        "id": 15, "ownerId": 0, "name": "Neapol", "q": 2, "r": 2, "isCapital": false, "population": 2,
+        "built": [], "surowce": null, "production": null,
+        "orderBunt": false, "orderRevoltWarning": false, "oblegane": false, "growth": null,
+        "startCityState": true
+      },
+      {
+        "id": 4, "ownerId": 1, "name": "Ateny", "q": 5, "r": 5, "isCapital": true, "population": 7,
+        "built": ["palisada", "fort"], "surowce": { "zelazo": 1 },
+        "production": { "kolejka": [ { "kind": "budynek", "id": "koszary", "nazwa": "Koszary", "koszt": 50 } ], "postep": 0 },
+        "orderBunt": false, "orderRevoltWarning": false, "oblegane": true,
+        "growth": { "procentNaTure": 0, "nakarmione": true }
+      },
+      {
+        "id": 6, "ownerId": 1, "name": "Korynt", "q": 7, "r": 5, "isCapital": false, "population": 1,
+        "built": [], "surowce": { "zelazo": 2 },
+        "production": { "kolejka": [ { "kind": "budynek", "id": "koszary", "nazwa": "Koszary", "koszt": 50 } ], "postep": 0 },
+        "orderBunt": false, "orderRevoltWarning": false, "oblegane": false,
+        "growth": null
+      },
+      {
+        "id": 9, "ownerId": 2, "name": "Teby", "q": 9, "r": 9, "isCapital": true, "population": 2,
+        "built": [], "surowce": null, "production": null,
+        "orderBunt": false, "orderRevoltWarning": false, "oblegane": false, "growth": null
+      },
+      {
+        "id": 10, "ownerId": 3, "name": "Argos", "q": 11, "r": 9, "isCapital": true, "population": 2,
+        "built": [], "surowce": null, "production": null,
+        "orderBunt": false, "orderRevoltWarning": false, "oblegane": false, "growth": null
+      },
+      {
+        "id": 14, "ownerId": 6, "name": "Ulundi", "q": 13, "r": 2, "isCapital": true, "population": 3,
+        "built": [], "surowce": null, "production": null,
+        "orderBunt": false, "orderRevoltWarning": false, "oblegane": false, "growth": null
+      }
+    ],
+    "units": [
+      { "ownerId": 1, "q": 5, "r": 5 }
+    ],
+    "relations": [
+      { "a": 1, "b": 0, "status": "sojusz" },
+      { "a": 1, "b": 6, "status": "wojna" }
+    ],
+    "deals": [
+      { "rodzaj": "sojusz_pelny", "strony": [1, 2] }
+    ],
+    "simplifiedOwners": [],
+    "typCopyOwners": [6],
+    "clusterCapitalOwnerIds": [3],
+    "itemStockCost": {
+      "budynek:koszary": { "zelazo": 3 }
+    }
+  }
+]
