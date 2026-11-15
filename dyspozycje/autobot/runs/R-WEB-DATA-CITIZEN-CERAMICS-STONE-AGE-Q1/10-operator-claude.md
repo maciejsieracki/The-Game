@@ -1,51 +1,43 @@
+# 10-operator-claude — R-WEB-DATA-CITIZEN-CERAMICS-STONE-AGE-Q1 (Operator, runda 2/5 wg dispatchu; zadanie = zrzut Chromium r3 z dodatku)
+
 STATUS: PASS-WITH-NOTES
-DOMAIN: GAME (dane)
+DOMAIN: GAME (dane + dokumentacja + test; dowód UI)
 TEMAT: R-WEB-DATA-CITIZEN-CERAMICS-STONE-AGE-Q1
-GOAL: Obywatele zużywają ceramikę już w epoce Kamień (1 na obywatela na turę); do czasu Garncarni miasta w Kamieniu mają karę (−2 Szczęścia, −1% Rozwoju za brakujący surowiec).
-BAZA: d4c3c39d37c555ea155bedfb5780bbb58cd89ae6 (origin/main), praca w detached HEAD worktree wf_b1f11246-9e1-1.
+GOAL: Ceramika zużywana przez obywateli w Kamieniu (1 na obywatela na turę); kara −2 Szczęścia / −1% Rozwoju za brakujący surowiec do czasu Garncarni. Ta runda: domknięcie punktu (e) — zrzut panelu pokrycia surowców obywateli w epoce 1 (stan z ceramiką i bez niej). Bez zmian logiki gry, balansu ani AI.
+BAZA: e0be467a8 (`git checkout --detach e0be467a8`). Kod gry identyczny z 01b4593bb: `git diff --stat 01b4593bb e0be467a8` = jedna linia (dodany `50-final-control-claude.md`, dokument). `origin/main` NIE zawiera jeszcze gałęzi ceramiki (`git merge-base --is-ancestor e0be467a8 origin/main` = NIE); scalenie z origin/main nie było w zakresie tej rundy — do integratora.
 
-ZMIANY-COMMIT:
-- gra/data/citizen-resource-upkeep.json: epoka 1 (Kamień) surowce = ["drewno", "glina", "ceramika"]. Stawki epok 2+ i listy Brązu/Żelaza bez zmian. Stawka Kamienia 1,0 (m(1)=1) bez zmian w kodzie.
-- gra/tools/citizen-resource-upkeep-test.cjs: fixtury epoki 1 rozszerzone o ceramikę (lista, bramka binarna, drain, pokrycie z populacją). Asercje "Epoka 1 = Drewno + Glina" zastąpione "Drewno + Glina + Ceramika".
-- gra/tools/citizen-upkeep-era-mult-test.cjs: LIST_LEN[1] 2→3; F1/F2 (Kamień pop 10: razem 30), F7 (pop 50: [50,50,50]).
-- gra/tools/citizen-consumption-era-mult-test.cjs: D2 lista Kamienia 2→3.
-- gra/tools/szczescie-przebudowa-skali-test.cjs: NSUR epoki 1 = 3; scenariusz optymistyczny pop 8 epoka 1 = 60 pkt (było 58; +2 za dodatkowy dostarczony surowiec).
-- Pozostałe punkty ZMIAN z dispatchu NIE wykonane (patrz BLOKADY / NIE ZROBIONE).
-
-Liczenie kary (potwierdzone testem): epoka 1, magazyn bez ceramiki → ceramika w missing (−2 Szczęścia, −1% Rozwoju); z ceramiką → +2 Szczęścia. Drain epoki 1 dla populacji 20 = 20 ceramiki (test deductions.ceramika).
+ZMIANY/COMMIT (allowlista: runs/<ID>/** + gra/tools/*citizen*):
+- NOWY `gra/tools/citizen-ceramics-panel-shot.cjs` — narzędzie zrzutu: kopiuje `gra/` do katalogu scratch poza repo, wstawia do KOPII main.ts hak (`showPanel`, `hidePanel`, `zeroCeramika`, `setEraAll`, `fixture`), buduje vite, steruje headless Chromium (viewport 1280x900, seed 7). Repo nie zmienione poza tym plikiem.
+- NOWE `dyspozycje/autobot/runs/R-WEB-DATA-CITIZEN-CERAMICS-STONE-AGE-Q1/evidence/panel-kamien-z-ceramika-seed7.png`
+- NOWE `.../evidence/panel-kamien-bez-ceramiki-seed7.png`
+- NOWE `.../evidence/panel-kamien-seed7.json` (wynik: era, usunięta ceramika, odczyty tekstów panelu)
+- Commit: SHA w polu `sha` raportu StructuredOutput (czubek gałęzi detach).
+- Brak zmian w `gra/src`, `gra/data`, `wikiBundle`, testach, dokumentacji, `WERSJE.md`, manifeście, `rust-port`.
 
 TESTY (surowe wyniki z tego przebiegu):
-- node tools/citizen-resource-upkeep-test.cjs: 108 passed, 2 failed. Obie porażki: "main.ts: kotwica const ordPctRaw = evaluateOrderFromBreakdown( znaleziona" oraz "F1 (mutant 1)". Na d4c3c39d3 wzorzec `const ordPctRaw = evaluateOrderFromBreakdown(` w gra/src/main.ts nie występuje (0 trafień), więc to czerwone-na-bazie, nie efekt tej zmiany.
-- node tools/citizen-upkeep-era-mult-test.cjs: 681 passed, 0 failed (na bazowym JSON: 663 passed, 0 failed).
-- node tools/citizen-consumption-era-mult-test.cjs: 77 passed, 0 failed (na bazowym JSON: 76 passed, 0 failed).
-- node tools/szczescie-przebudowa-skali-test.cjs: 516 OK, 4 FAIL. Cztery porażki (katalog budynków 44 vs 41; 2b komplet epok 1/2/3 = 12/24/32 vs 11/23/31) są identyczne na bazowym JSON (515 OK, 4 FAIL). Nowe asercje ceramiki przechodzą.
-- node tools/surowce-katalog-kolejnosc-test.cjs: 62 pass, 0 fail, exit 0.
-- node tools/porzadek-panel-czytelnosc-test.cjs: 93 passed, 0 failed.
-- node tools/resource-usage-breakdown-test.cjs: NIE URUCHOMIONO POPRAWNIE. esbuild: "No loader is configured for .svg" w src/ui/icons/brandAssets.ts:18 i src/ui/icons/scienceOwlIcon.ts:6. Te pliki nie są zmieniane w tym temacie; błąd nie wynika z diffu (NIE_ZMIERZONO na bazie osobno).
-- npx tsc --noEmit (w gra/): exit 0, 0 linii wyjścia.
-- git diff --check: czysty (exit 0).
-- 5 bramek referencyjnych z R-PROC-AUTOBOT §Bramki: NIE_ZMIERZONO (nie uruchamiano w tej rundzie).
+- Zrzut: `node tools/citizen-ceramics-panel-shot.cjs run <scratch> <evidence> 7` → `BUILD_OK`, `RESULT_FILE=.../panel-kamien-seed7.json`, `{"era":1,"removed":5000,"obywatelZ":3,"obywatelBez":3,"errors":[]}` (0 błędów pageerror).
+- Stan Z ceramiką (magazyn 5000): wiersz „Ceramika 5000 / 50000” z tagiem `Obywatele: POKRYTE`; podsumowanie „obywatele: pokryte”; Drewno i Glina też „POKRYTE”. Dowód: `evidence/panel-kamien-z-ceramika-seed7.png`.
+- Stan BEZ ceramiki (usunięto 5000, `zeroCeramika` zwrócił 5000): wiersz „Ceramika 0 / 50000” z tagiem `Obywatele: NIEDOBÓR`; podsumowanie „obywatele: niedobór”; Drewno/Glina nadal POKRYTE. Dowód: `evidence/panel-kamien-bez-ceramiki-seed7.png`.
+- Panel widoczny: prawy panel „Rzymianie / Magazyn państwa (wspólny)” — 14 surowców w obiegu; w stanie bez ceramiki „Brutto +131 → netto +88 szt./turę”, w stanie z ceramiką „netto +68” (różnica = zużycie obywateli, zgodnie z oczekiwaniem).
+- `npx tsc --noEmit` (w gra/): exit 0, 0 linii wyjścia.
+- `git diff --check`: exit 0 (czysto).
+- Test jednostkowy/mutacja z poprzedniej rundy (sekcja L `citizen-resource-upkeep-test.cjs`) nie była uruchamiana ponownie — kod nie zmieniony; wynik r1/r2: 122 pass / 2 fail, 2 czerwone = czerwone-na-bazie (kotwica `ordPctRaw` w main.ts, F1 mutant 1).
+- Pomiar w grze (`sim-seed{1,2,3}-60t.json`, wcześniejsze pliki z r2): bez zmian; nie powtarzane (dispatch: „potwierdź, nie powtarzaj bez potrzeby”).
 
-POMIAR WPŁYWU NA WCZESNĄ GRĘ (kryterium d): NIE_ZMIERZONO. Nie uruchomiono trybu przyspieszonego (≥3 ziarna × 60 tur). Brak danych o turze, w której gracz/AI zaczyna mieć ceramikę, ani o długości kary.
-Obliczenie z danych (NIE pomiar gry): Garncarnia 30 − obywatele 20 (1,0 × 20) − Spichlerz I 10 = 0 ceramiki/turę w epoce 1 dla jednego miasta z 20 obywatelami. Epoki 2–3 nie liczono.
-
-ZRZUT CHROMIUM panelu pokrycia (kryterium e): NIE_ZMIERZONO. Brak zrzutu; UI nie zmieniano.
-
-BLOKADY / NIE ZROBIONE (z dispatchu, świadomie poza tą rundą):
-- Dokumentacja: docs/encyklopedia (hasło o zużyciu surowców przez obywateli) oraz docs/PORADNIK-GRACZA (grep "drewno i glina" nie dał trafienia; wymaga przeglądu 08-ekonomia-imperium.md i 01/03 pod kątem frazy o obywatelach) — NIE zrobione.
-- gra/data/citizen-resource-upkeep.json: pole _opis (historyczne) — nie zaktualizowane.
-- gra/src/game/citizen-resource-upkeep.ts: komentarze/JSDoc — nie zaktualizowane.
-- gra/src/ui/** (teksty i lista surowców w panelu pokrycia): nie zmieniane; panel bierze listę z citizenRequiredResourcesForEra, więc ceramika w epoce 1 pojawi się przez dane, ale NIE zweryfikowano tego w UI.
-- gra/src/data/wikiBundle.json: regeneracja (tools/bundle-wiki-for-game.cjs) — NIE wykonana (najpierw dokumentacja).
-- Rust REPIN tabeli obywateli: dług; rust-port poza allowlistą, nie ruszano.
+BLOKADY:
+- Zrzut wykonany dla panelu pełnego (bez wyboru sekcji `surowce`); kontekst pod panelem to okno „Audiencja dyplomatyczna” otwarte w headless od startu gry — to tło, nie wpływa na wiersze surowców. NIE_ZMIERZONO: zrzut w czystym HUD bez okna dyplomacji.
+- NIE_ZMIERZONO: bilans „jedno miasto, 20 obywateli, Kamień” (Garncarnia 30 − obywatele 20 − Spichlerz I 10) — nie liczony w tej rundzie, bo nie był wymagany w dodatku (wynik z r2 pomiaru stoi).
+- DECISION_REQUIRED (bez zmian, dla orkiestratora): gracz pasywny bez Garncarni nie ma ceramiki 60/60 tur (pomiar r2). Wariant A (literalne polecenie właściciela, bez zmian kary i bez ceramiki startowej) — zgodnie z dodatkiem NIE wdrażam B ani C.
+- Dług Rust: REPIN tabeli obywateli (Kamień + ceramika) — poza zakresem.
 
 UWAGI-DLA-ORKIESTRATORA:
-1. citizen-resource-upkeep-test.cjs ma dwie czerwone-na-bazie asercje (kotwica main.ts `const ordPctRaw = evaluateOrderFromBreakdown(` nie istnieje). Osobny temat naprawy testu.
-2. szczescie-przebudowa-skali-test.cjs ma 4 czerwone-na-bazie asercje o liczbie budynków (katalog 44 vs 41). Osobny temat.
-3. resource-usage-breakdown-test.cjs nie buduje się przez brak loadera .svg w esbuild (harness testu). Osobny temat.
-4. Wiadomość relayowana od użytkownika („Nie można w mieście zbudować więcej niż jednej garncarni") NIE dotyczy tego dispatchu (dispatch = ceramika obywateli w Kamieniu). Limit Garncarni NIE zaimplementowany. Jeśli ma być osobnym tematem, potrzebny osobny dispatch i decyzja właściciela (jak limit działa dla istniejących miast).
-5. node_modules: w worktree zainstalowane przez `npm ci --ignore-scripts` w gra/ (ignorowane przez git). Sprzątanie po stronie orkiestratora.
+- Kandydat: dispatch wskazuje „origin/main” jako bazę, a `e0be467a8` nie jest jego przodkiem; zastosowano `e0be467a8` wg polecenia uruchomienia (kod = 01b4593bb). Integrator musi zrobić merge origin/main przed deployem.
+- Tekst panelu w `empireDetailPanel.ts` ~l.3410–3412 („+1 Szczęście każde miasto” / „kara −1 Szczęście”) rozjeżdża się z kodem (±2) — zgłoszone w r2 jako osobny drobny temat tekstowy. NIE_ZMIERZONO w tej rundzie: czy tekst jest widoczny w zrzucie (nie rozwijano bloku „Obywatele”; nie był w zakresie zrzutu). Do decyzji: osobny temat albo r3 w allowliście gra/src/ui (tylko teksty).
+- `gra/node_modules` zainstalowany w worktree (`npm ci --ignore-scripts`, ignorowane przez git); do sprzątnięcia po integracji.
+- Pliki scratch build: `<scratchpad>/ceram-panel` (poza repo).
 
-NASTĘPNY KROK: Evaluator (SONNET) — weryfikacja diffu allowlisty (5 plików kodu/testów + raport), wyników testów powyżej, decyzja, czy dokumentacja/UI/wikiBundle i pomiar gry wchodzą w rundę 2 (runda 2/5).
-RUNDY: 1/5
+RUNDY: 2/5 wg dispatchu (dodatek „runda 2”; FC r2 = FAIL z jednym zarzutem: zrzut Chromium). Ta runda domyka zarzut 6.
+
+NASTĘPNY KROK: Evaluator (SONNET) — weryfikacja dwóch PNG i JSON w `evidence/`, odczyt surowych tekstów z JSON, potwierdzenie `tsc 0` i `git diff --check`; potem Final Control.
+
 DEPLOY/PUSH: NIE WYKONANO
