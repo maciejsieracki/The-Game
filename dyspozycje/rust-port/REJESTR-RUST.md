@@ -1458,3 +1458,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Uwaga:** `git diff --check` zgłasza białe znaki w logu dowodowym `dowody/18-obrona-r3-parity-atlas-diff.log` (wklejony `git log`), nie w kodzie. Dowodu nie zmieniam.
 - **Zabezpieczenie:** refs/keep `P4-31-r3-{d850b6b86,b7aecd8b6,afea15d17}`, `P4-31-integ`; gałęzie `rust-port-wip/…-obrona-r3-code`, `…-obrona-r3-docs`, `…-integ`.
 - **Otwarte (poza zakresem):** LRU w `assets/cache.rs` wyrzuca widoczne tekstury (osobny temat); GPU/ANGLE u właściciela NIE_ZMIERZONO.
+
+## Przebieg (15.11, 10:18 UTC — heartbeat, RUST renderer, Opus 5.5)
+- **KROK 1 (sloty):** aktywny tylko P4-36 Q3 (`wf_102d919b-3d8`). Dysk 11 GB (≥ 8 GB). Uruchomiono P4-1A.
+- **Decyzje techniczne orkiestratora (zasada 9):** z rekomendacji P4-1 przyjęto **D-DTO-1 = A** (osobny crate `rust-port/view-model`), **D-DTO-2 = B** (newtypy na granicy, adapter w P4-1G), **D-DTO-3 = B** (statyka + warstwy, pomiar w P4-1A). Nie są to decyzje gameplay; nie pytam właściciela.
+- **R-RUSTPORT-P4-1A-VIEW-TYPES-Q1:** dispatch `62c74a118` (baza parity `525a2ef7b`), Workflow `wf_5cdb4080-e0a` na Opus 5.5 we wszystkich etapach: Operator (impl + pomiary) → Evaluator → Obrona → FC. Allowlista: `rust-port/view-model/**`, wpis workspace, katalog runu.
+- **KROK 2:** brak nowych FC PASS bez integracji poza P4-36 Q3 w toku.
+- **KROK 3:** brak worktrees do sprzątania.
+- **Parity:** `525a2ef7b`. Rust: `ef1a9d04b` przed tym wpisem.
