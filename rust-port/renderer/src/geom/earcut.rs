@@ -7,6 +7,8 @@
 //! JavaScript semantics where a removed node still points at its old
 //! neighbours.
 
+use super::js_num::to_int32;
+
 const NIL: usize = usize::MAX;
 
 #[derive(Debug, Clone)]
@@ -786,18 +788,6 @@ fn signed_area(data: &[f64], start: usize, end: usize, dim: usize) -> f64 {
         i += dim;
     }
     sum
-}
-
-/// JavaScript `ToInt32` of a finite or non-finite double (`x | 0`).
-#[allow(clippy::cast_possible_truncation)]
-fn to_int32(x: f64) -> i32 {
-    if !x.is_finite() {
-        return 0;
-    }
-    let t = x.trunc();
-    let m = t.rem_euclid(4_294_967_296.0);
-    let u = m as u64 as u32;
-    u as i32
 }
 
 fn z_order(x: f64, y: f64, min_x: f64, min_y: f64, inv_size: f64) -> i32 {

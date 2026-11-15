@@ -50,8 +50,17 @@ rustybuzz = { version = "=0.20.1", default-features = false, features = ["std"] 
 # 1.87.0 (P4-30 §2).
 resvg = { version = "=0.48.1", default-features = false }
 zune-jpeg = { version = "=0.5.15", default-features = false, features = ["std"] }
+# View model (DTO) produced by civ-engine (B-DEP, owner decision D-DTO-1 = A,
+# P4-1-RENDER-DTO-CONTRACT.md §7): the adapter `view` translates it into the
+# renderer inputs (R-RUSTPORT-P4-1G-Q1-ADAPTER-CORE). That crate depends only
+# on `serde`; it depends on neither the engine nor the renderer.
+civ-view-model = { path = "../view-model" }
 
 [dev-dependencies]
 # Blocks on wgpu's async adapter request in tests/gpu_probe.rs (no async
 # runtime, no dependencies of its own). Only used by the GPU probe test.
 pollster = "0.4"
+# tests/view_adapter_core.rs only: an unknown enum string in DTO JSON must be
+# a parse error, not a default variant. Same line and feature as the
+# dev-dependency of rust-port/view-model.
+serde_json = { version = "1.0", features = ["float_roundtrip"] }

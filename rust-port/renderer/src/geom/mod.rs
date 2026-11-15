@@ -30,6 +30,7 @@
 
 pub mod curve;
 pub mod earcut;
+pub(crate) mod js_num;
 pub mod math;
 pub mod ops;
 pub mod polyhedron;
