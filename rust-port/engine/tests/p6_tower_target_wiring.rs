@@ -230,6 +230,7 @@ fn env(
         tower_rows,
         pending_tower_shots: Vec::new(),
         tower_range,
+        tower_shot: Some(civ_engine::domain::siege_tactics_loop::neutral_tower_shot_template()),
         wall_tile_rows,
         wall_ever_breached: false,
         no_breach_cap: 0,

@@ -13,7 +13,8 @@
 //!   `_activateUnit` (K5h/K5i), tu jawny port wstrzykiwany (domyślna implementacja `single_blow_full` nie jest
 //!   jeszcze podpięta, patrz raport K5-LOOP),
 //! * wieżyczki muru (`_fireSiegeTowers`, R4): planowanie wystrzałów z odroczeniem 180 ms ([`SiegeEnv::pending_tower_shots`]),
-//!   cel wybierany w chwili wystrzału; sam strzał `_singleBlow` wieży jest w etapie 2B2 (nie zrobiony tutaj).
+//!   cel wybierany w chwili wystrzału, trafienie `_singleBlow` (ranged) po locie [`TOWER_FLY_MS`] (WIEZE-2B2,
+//!   [`tower_blow_on_target`]); strzał wymaga szablonu strzelca [`SiegeEnv::tower_shot`] (brak wiersza = brak strzału).
 //!
 //! Zakres: oblężenie (`siege_wall_col >= 0`) w trybie AUTO sekwencyjnym. Sciezka `_beginAutoBatchPhase` (K5g0, bez
 //! oblezenia) nie jest składana w tym module: zdarzenie [`SeqEvent::BeginAutoBatchPhase`] zatrzymuje sterownik panika,
@@ -27,7 +28,10 @@ use crate::domain::siege_tactics_activate::{
     activate_unit, ActivateEvent, ActivateOps, ActivateScene, ActivateUnit, EnemyRef,
 };
 use crate::domain::siege_tactics_blow::{DefenderState, HitArc, Outcome, RollSource};
-use crate::domain::siege_tactics_blow_full::{single_blow_full, FullBlowInput};
+use crate::domain::siege_tactics_blow_full::{
+    single_blow_full, AtkMods, AttackerCu, BlowEnv, DefMods, DefenderCu, FullBlowInput,
+    FullBlowOutput,
+};
 use crate::domain::siege_tactics_clock::{ScheduleOutcome, VirtualClock};
 use crate::domain::siege_tactics_end::BattleSide;
 use crate::domain::siege_tactics_endcheck::EndCheckOutcome;
@@ -54,7 +58,13 @@ pub trait LoopBody {
     fn unit_cell(&self, _unit: UnitRef) -> Option<(i64, i64)> {
         None
     }
+    /// Trafienie wieży (web `_singleBlow(shooter, target, true)` w `_fireOneTower`, `battleScene.ts:4262`): cios z
+    /// szablonu `tmpl` na atakującego `target` (indeks w `st.atk`), skutki HP/zabicia w `st`. Domyślnie bez efektu.
+    fn tower_blow(&mut self, _tmpl: &FullBlowInput, _target: usize, _st: &mut TurnSeqState) {}
 }
+
+/// Czas lotu pocisku wieży (web `RANGED_FLY_MS = 380`, `battleScene.ts:1012`): odstęp od wystrzału do trafienia.
+pub const TOWER_FLY_MS: f64 = 380.0;
 
 /// Klocek zegara: krok sekwencji (`_schedule(ms, () => _beginTurn())` / `_activateNext`) albo koniec ciała jednostki.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -63,6 +73,8 @@ pub enum LoopTimer {
     BodyDone(UnitRef),
     /// Wystrzał wieży o indeksie `i` w `tower_rows` (web `_fireOneTower`, zaplanowany `_schedule(delay, ...)`).
     TowerShot(usize),
+    /// Trafienie pocisku wieży w atakującego o indeksie `target` w `st.atk` (web callback `_schedule(RANGED_FLY_MS)`).
+    TowerHit(usize),
 }
 
 /// Web `stagger += 180` (`battleScene.ts:4216`): odstęp między wystrzałami kolejnych wież.
@@ -77,6 +89,112 @@ pub struct PlannedTowerShot {
     pub tower: usize,
     /// Web `_autoBatchPlanning != null` w chwili planowania (wtedy callback wykonywany od razu).
     pub planning: bool,
+}
+
+/// Szablon ciosu strzału wieży (web `_singleBlow(shooter, target, true)`, `shooter` = syntetyczny strzelec z
+/// `towerShooterRow`). Wejścia strzelca i otoczenia podaje adapter (jak `ProdUnit::blow`); cel i jego stan
+/// (`hp`, `morale`, flagi) są nadpisywane z [`TurnSeqState`] przy każdym trafieniu, `ranged` jest wymuszane na `true`.
+/// Neutralny szablon: [`neutral_tower_shot_template`].
+pub fn neutral_tower_shot_template() -> FullBlowInput {
+    FullBlowInput {
+        ranged: true,
+        hit_arc: HitArc::Front,
+        attacker: AttackerCu {
+            weapon_damage: 10.0,
+            piercing: 0.0,
+            melee_attack: 10.0,
+            missile_attack: Some(10.0),
+            charge_bonus: 0.0,
+            counter_typ: String::new(),
+            typ_nazwa: String::new(),
+        },
+        atk_mods: AtkMods {
+            atk: 1.0,
+            ranged_atk: 1.0,
+            uderzenie: 1.0,
+        },
+        atk_diff_mult: 1.0,
+        atk_mounted: false,
+        defender: DefenderCu {
+            melee_defence: 0.0,
+            armor: 0.0,
+            kara_flanka: None,
+            kara_tyl: None,
+        },
+        def_mods: DefMods {
+            obrona: 1.0,
+            pancerz: 1.0,
+        },
+        def_diff_mult: 1.0,
+        def_on_wall: false,
+        def_fortified_in_field: false,
+        def_wall_civ_mult: 1.0,
+        def_braces_against_charge: false,
+        first_blow_of_pair: true,
+        counter_mult: 1.0,
+        env: BlowEnv {
+            is_city_defense_battle: false,
+            wall_bonus_proc: 0.0,
+            gated_terrain_multiplier: 1.0,
+            field_terrain_multiplier: 1.0,
+            atk_tile_is_river: false,
+            river_row_exists: false,
+            river_attack_mult: 1.0,
+            atk_on_ford: false,
+            def_on_ford_raw: false,
+            shore_adjacent: false,
+            brod_kara_obrona: 0.0,
+            brod_bonus_brzegu: 0.0,
+            fortify_obrona_proc: 0.0,
+        },
+        defender_state: DefenderState {
+            hp: 10.0,
+            max_hp: 10.0,
+            morale: 100.0,
+            flee_morale: 0.0,
+            dead: false,
+            fading_out: false,
+            routed: false,
+            never_rout: false,
+            removed: false,
+        },
+        routed_after_morale: false,
+    }
+}
+
+/// Wspólna ścieżka trafienia wieży (web `_singleBlow(shooter, target, true)`): składa stan celu z `st`, liczy cios
+/// [`single_blow_full`] z `rolls`, zapisuje HP i zabicie celu. Wykorzystywane przez produkcyjne ciało i testy.
+pub fn tower_blow_on_target(
+    tmpl: &FullBlowInput,
+    st: &mut TurnSeqState,
+    target: usize,
+    rolls: &mut dyn RollSource,
+) -> FullBlowOutput {
+    let tref = UnitRef {
+        side: BattleSide::Attacker,
+        idx: target,
+    };
+    let tc = st.unit(tref).c;
+    let mut input = tmpl.clone();
+    input.ranged = true;
+    input.defender_state = DefenderState {
+        hp: tc.hp,
+        max_hp: input.defender_state.max_hp,
+        morale: tc.morale,
+        flee_morale: tc.flee_morale,
+        dead: tc.dead,
+        fading_out: tc.fading_out,
+        routed: tc.routed,
+        never_rout: tc.never_rout,
+        removed: tc.removed,
+    };
+    let out = single_blow_full(&input, rolls);
+    let dc = unit_cu_mut(st, tref);
+    dc.hp = out.blow.def_hp_after;
+    if out.blow.outcome == Outcome::Kill {
+        dc.dead = true;
+    }
+    out
 }
 
 /// Zwycięzca bitwy w nomenklaturze pinu (`'atk'`, `'def'`, `'remis'`).
@@ -109,6 +227,9 @@ pub struct SiegeEnv<B: LoopBody> {
     pub pending_tower_shots: Vec<PlannedTowerShot>,
     /// Web `towerRange` (`towerRangeFor`, `battleScene.ts:4168`).
     pub tower_range: f64,
+    /// Szablon ciosu strzelca wieży (web `towerShooterRow`, `strongestRangedUnitForEra`). `None` = brak wiersza =
+    /// brak planowania wystrzałów (web guard `!this.towerShooterRow` → `return`, `battleScene.ts:4209`).
+    pub tower_shot: Option<FullBlowInput>,
     /// Web `wallTileHp.has(row)` (etap 1): wiersze, na których kafel muru jeszcze stoi.
     pub wall_tile_rows: Vec<i64>,
     /// Web `wallEverBreached`.
@@ -234,8 +355,8 @@ impl<B: LoopBody> TurnSeqEnv for SiegeEnv<B> {
     }
 
     fn fire_siege_towers(&mut self, st: &mut TurnSeqState) {
-        // Web `siegeTowers.length === 0` → `return`: brak wież, brak planowania.
-        if self.tower_rows.is_empty() {
+        // Web `siegeTowers.length === 0 || !towerShooterRow` → `return`: brak wież lub strzelca, brak planowania.
+        if self.tower_rows.is_empty() || self.tower_shot.is_none() {
             return;
         }
         self.plan_tower_shots(st);
@@ -397,21 +518,51 @@ impl<B: LoopBody> SiegeLoop<B> {
                 activation_done(&mut self.st, &mut self.env, u, &mut out);
             }
             LoopTimer::TowerShot(i) => {
-                self.tower_shoot(i);
+                self.tower_shoot(clock, i);
+            }
+            LoopTimer::TowerHit(target) => {
+                self.tower_hit(target);
             }
         }
         self.apply(clock, out);
     }
 
-    /// Web `_fireOneTower` (`battleScene.ts:4223`): wystrzał zaplanowanej wieży. Pomijany po `finished`. Cel wybierany
-    /// w chwili wystrzału. Strzał `_singleBlow` wieży (2B2) NIE jest jeszcze zaimplementowany: brak efektu na stanie.
-    fn tower_shoot(&mut self, i: usize) {
+    /// Web `_fireOneTower` (`battleScene.ts:4223-4262`): wystrzał zaplanowanej wieży. Pomijany po `finished`.
+    /// Zniszczona wieża (web `t.destroyed`, kafel muru zburzony przez `_destroyTowerAtRow`) nie strzela. Cel wybierany
+    /// W CHWILI wystrzału (`pickTowerTarget`); brak celu = `return`. Trafienie `_singleBlow` po locie
+    /// [`TOWER_FLY_MS`] (`_schedule(RANGED_FLY_MS, ...)`, pin `:4262`).
+    fn tower_shoot(&mut self, clock: &mut VirtualClock<LoopTimer>, i: usize) {
         if self.st.finished {
             return;
         }
         let row = self.env.tower_rows[i];
-        let _target = self.env.pick_tower_for_row(&self.st, row);
-        // 2B2: strzał _singleBlow wieży (web `_fireOneTower`, dalsza część po `pickTowerTarget`) — NIE zrobione.
+        if !self.env.wall_tile_rows.contains(&row) {
+            return;
+        }
+        let Some(target) = self.env.pick_tower_for_row(&self.st, row) else {
+            return;
+        };
+        let planning = self.st.auto_batch_planning;
+        match clock.schedule(TOWER_FLY_MS, LoopTimer::TowerHit(target), planning) {
+            ScheduleOutcome::Queued | ScheduleOutcome::Dropped => {}
+            ScheduleOutcome::RunNow(t) => self.fire(clock, t),
+        }
+    }
+
+    /// Web callback `_schedule(RANGED_FLY_MS, ...)` w `_fireOneTower` (`battleScene.ts:4263-4269`): trafienie
+    /// pomijane po `finished`, gdy cel martwy lub znika. Inaczej `_singleBlow` wieży przez [`LoopBody::tower_blow`].
+    fn tower_hit(&mut self, target: usize) {
+        if self.st.finished {
+            return;
+        }
+        let tc = self.st.atk[target].c;
+        if tc.dead || tc.fading_out {
+            return;
+        }
+        let Some(tmpl) = self.env.tower_shot.clone() else {
+            return;
+        };
+        self.env.body.tower_blow(&tmpl, target, &mut self.st);
     }
 }
 
@@ -728,6 +879,17 @@ impl<R: RollSource> ProdBody<R> {
 }
 
 impl<R: RollSource> LoopBody for ProdBody<R> {
+    fn tower_blow(&mut self, tmpl: &FullBlowInput, target: usize, st: &mut TurnSeqState) {
+        let tref = UnitRef {
+            side: BattleSide::Attacker,
+            idx: target,
+        };
+        let out = tower_blow_on_target(tmpl, st, target, &mut self.rolls);
+        if out.blow.outcome != Outcome::None {
+            self.unported
+                .push((tref, "wieza-resolveBlowOutcome-efekty"));
+        }
+    }
     fn unit_cell(&self, unit: UnitRef) -> Option<(i64, i64)> {
         let pu = self.units[side_ix(unit.side)].get(unit.idx)?;
         Some((pu.activate.q, pu.activate.r))
@@ -1056,6 +1218,7 @@ mod tower_target_tests {
             tower_rows: vec![3],
             pending_tower_shots: Vec::new(),
             tower_range: 2.0,
+            tower_shot: Some(neutral_tower_shot_template()),
             wall_tile_rows: vec![3],
             wall_ever_breached: false,
             no_breach_cap: 0,

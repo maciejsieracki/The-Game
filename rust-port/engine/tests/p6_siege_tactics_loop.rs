@@ -157,6 +157,7 @@ fn build(spec: &Value) -> Built {
             .collect(),
         pending_tower_shots: Vec::new(),
         tower_range: 2.0,
+        tower_shot: Some(civ_engine::domain::siege_tactics_loop::neutral_tower_shot_template()),
         wall_tile_rows: spec["wallRows"]
             .as_array()
             .expect("wallRows")
