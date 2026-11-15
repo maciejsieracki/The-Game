@@ -312,6 +312,10 @@ fn march_vectors_cover_dispatch_categories() {
         ("dest_own_unit_merge", 20),
         ("siege_dest", 20),
         ("siege_mid", 20),
+        // Predykat oblezenia zalezny od jednostki: oblezenie wlasciciela ruszajacego sie -> false
+        // (pin nie blokuje), a ten sam zestaw heksow z obcym wlascicielem daje inna trase.
+        ("siege_predicate_false_for_mover", 40),
+        ("siege_predicate_changes_path", 40),
         ("plain_set", 20),
     ] {
         let got = counts.get(cat).copied().unwrap_or(0);
@@ -521,6 +525,22 @@ fn vectors_pin_guard_and_constants() {
     assert_eq!(root["pin"].as_str(), Some("07d2fbd72"));
     let excerpts = list(&root, "excerpts");
     assert!(excerpts.len() >= 20, "fragmenty: {}", excerpts.len());
+    // Limit stosu czytany z pinu (lancuch main.ts armyStackLimit() -> BATTLE_MAX_PER_SIDE ->
+    // MAX_PER_SIDE) i objety straznikiem SHA, nie wpisany w generatorze.
+    for name in ["armyStackLimit", "MAX_PER_SIDE", "BATTLE_MAX_PER_SIDE"] {
+        assert!(
+            excerpts.iter().any(|ex| ex["name"].as_str() == Some(name)),
+            "brak fragmentu limitu stosu {name}"
+        );
+    }
+    assert!(
+        GENERATOR.contains("/^const MAX_PER_SIDE = (\\d+);$/"),
+        "generator nie czyta MAX_PER_SIDE z pinu"
+    );
+    assert!(
+        !GENERATOR.contains("const ARMY_STACK_LIMIT = 500;"),
+        "limit stosu wpisany na sztywno w generatorze"
+    );
     for ex in excerpts {
         let sha = ex["sha256"].as_str().expect("sha256");
         assert_eq!(sha.len(), 64);

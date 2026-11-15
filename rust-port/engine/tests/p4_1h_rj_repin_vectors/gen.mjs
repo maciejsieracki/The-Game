@@ -75,6 +75,10 @@ const FRAGMENTS = [
   ['gra/src/game/army-stack-limit.ts', 'ownUnitCountAt'],
   ['gra/src/game/army-stack-limit.ts', 'canJoinStackAt'],
   ['gra/src/game/army-stack-limit.ts', 'trimPathToStackRoom'],
+  // Limit stosu: jedno zrodlo prawdy weba (main.ts armyStackLimit() -> BATTLE_MAX_PER_SIDE -> MAX_PER_SIDE).
+  ['gra/src/main.ts', 'armyStackLimit'],
+  ['gra/src/battle/battleScene.ts', 'MAX_PER_SIDE'],
+  ['gra/src/battle/battleScene.ts', 'BATTLE_MAX_PER_SIDE'],
 ];
 const EXPECTED_SHA = {
   'gra/src/units/setup.ts#siegeBlocksEntry': '86bcfd243864a1aaf4e681a6b948559bb45a19e8e6427debacdacd7869282d5e',
@@ -98,12 +102,20 @@ const EXPECTED_SHA = {
   'gra/src/game/army-stack-limit.ts#ownUnitCountAt': 'eca15143c2e125987b5a8cc9300ac496c42e0f1bc976f3de65466b2ebc2d500a',
   'gra/src/game/army-stack-limit.ts#canJoinStackAt': 'c57b43e335d8352a77ba4ab8f99c553155df09f7e009eeedbbe4ebc78ad4e2d2',
   'gra/src/game/army-stack-limit.ts#trimPathToStackRoom': '9ed3f96ea130d2b6b9c049d7a84ca0ec2cecc499b4cebf158f578af8d147c55a',
+  'gra/src/main.ts#armyStackLimit': 'bd0fdc4579ae29795c18bf3d80f9ca5f732ac8011da5ce75dac2a917074eae00',
+  'gra/src/battle/battleScene.ts#MAX_PER_SIDE': '16c5204ed7f6ff9f9430ed98ce0731ee3a33320145348f2a17e3f48a5319b6bb',
+  'gra/src/battle/battleScene.ts#BATTLE_MAX_PER_SIDE': 'eca47889d7d6612f3412bf59922644f42d583c2078fb096c08642d11684481cc',
 };
 
 const sha256 = (text) => createHash('sha256').update(text).digest('hex');
 
 function extract(source, name) {
   const lines = source.split('\n');
+  // Stala jednolinijkowa (`const NAME = ...;` / `export const NAME = ...;`): fragment = ta linia.
+  const constRe = new RegExp(`^(export )?const ${name} = [^;]*;$`);
+  const constHits = lines.map((l, i) => (constRe.test(l) ? i : -1)).filter((i) => i >= 0);
+  if (constHits.length === 1) return { from: constHits[0] + 1, to: constHits[0] + 1, text: lines[constHits[0]] };
+  if (constHits.length > 1) throw new Error(`stala ${name}: oczekiwano 1 deklaracji, jest ${constHits.length}`);
   const re = new RegExp(`^(\\s*)(export )?(function ${name}\\b|function ${name}<|class ${name}\\b)`);
   const hits = lines.map((l, i) => (re.test(l) ? i : -1)).filter((i) => i >= 0);
   if (hits.length !== 1) throw new Error(`fragment ${name}: oczekiwano 1 deklaracji, jest ${hits.length}`);
@@ -123,6 +135,7 @@ let pm;
 let asl;
 let terrainMovement;
 const excerpts = [];
+const excerptText = {};
 try {
   const top = execFileSync('git', ['rev-parse', '--show-toplevel'], { cwd: HERE, encoding: 'utf8' }).trim();
   const tar = execFileSync('git', ['archive', PIN, 'gra/src', 'gra/data'], { cwd: top, maxBuffer: 1 << 30 });
@@ -134,6 +147,7 @@ try {
     const hash = sha256(ex.text);
     const want = EXPECTED_SHA[`${file}#${name}`];
     excerpts.push({ file, name, from: ex.from, to: ex.to, sha256: hash });
+    excerptText[name] = ex.text;
     if (hash !== want) {
       console.error(`STRAZNIK SHA: ${file}#${name} ${ex.from}-${ex.to} = ${hash}, oczekiwano ${want}`);
       bad = true;
@@ -313,6 +327,15 @@ function runMarchCase(spec) {
     if (!plainSet && pass.has(key(dest[0], dest[1])) && plan.fullPath.length > 0) cats.push('dest_own_unit_merge');
     if (siege.some(([q, r]) => q === dest[0] && r === dest[1])) cats.push('siege_dest');
     if (siege.some(([q, r]) => !(q === dest[0] && r === dest[1]))) cats.push('siege_mid');
+    // Predykat zalezny od jednostki: oblezenie nalezy do wlasciciela ruszajacego sie -> pin zwraca false.
+    if (siege.length > 0 && siegeOwner === mover.ownerId) {
+      cats.push('siege_predicate_false_for_mover');
+      // Wynik pinu rozni sie od tego samego oblezenia z obcym wlascicielem (predykat realnie decyduje).
+      setup.setSiegeEntryBlocker((u, q, r) => siegeSet.has(key(q, r)) && u.ownerId !== mover.ownerId + 3);
+      const foreignPath = setup.computePath(mover, m, dest[0], dest[1], occ, fn);
+      setup.setSiegeEntryBlocker((u, q, r) => siegeSet.has(key(q, r)) && u.ownerId !== siegeOwner);
+      if (JSON.stringify(pts(foreignPath)) !== JSON.stringify(pts(path))) cats.push('siege_predicate_changes_path');
+    }
     if (cats.length === 0) cats.push('other');
     for (const c of cats) bump(`march:${c}`);
     marchCases.push(enc({
@@ -339,7 +362,7 @@ function freePath(mi, mover, dest, fn) {
 }
 
 let uid = 0;
-function genScenario(kind) {
+function genScenario(kind, siegeOwnerArg = 3) {
   for (let attempt = 0; attempt < 200; attempt++) {
     const mi = rint(0, maps.length - 1);
     const costSpec = chance(0.15) ? 'embark' : null;
@@ -386,10 +409,10 @@ function genScenario(kind) {
       for (const h of inner) if (chance(0.25)) add(pick([1, 2]), h.q, h.r);
       for (const h of inner) if (chance(0.25)) add(0, h.q, h.r);
       if (chance(0.3)) add(1, dest[0], dest[1]);
-    } else if (kind === 'siege_dest') {
+    } else if (kind === 'siege_dest' || kind === 'siege_own_dest') {
       siege.push(dest);
       if (chance(0.3)) add(0, dest[0], dest[1]);
-    } else if (kind === 'siege_mid') {
+    } else if (kind === 'siege_mid' || kind === 'siege_own_mid') {
       for (const h of inner) if (chance(0.35)) siege.push([h.q, h.r]);
       if (siege.length === 0 && inner.length > 0) siege.push([inner[0].q, inner[0].r]);
       for (const h of inner) if (chance(0.2)) add(0, h.q, h.r);
@@ -403,7 +426,7 @@ function genScenario(kind) {
     }
     // mover jest w units (wykluczony przez excludeIds jak w webie)
     units.push({ id: mover.id, ownerId: 0, q: sq, r: sr });
-    const siegeOwner = 3;
+    const siegeOwner = siegeOwnerArg;
     runMarchCase({
       mi, mover, dest, units, siege, siegeOwner, blockedCities, perTurn, budget, costSpec,
       plainSet: kind === 'plain',
@@ -457,7 +480,15 @@ for (let i = 0; i < 60; i++) {
 // limit stosu: canJoinStackAt / trimPathToStackRoom (limit jako parametr; gra: armyStackLimit() = 500)
 // Stosy kodowane zwiezle: [q, r, owner, count, prefix] -> id `${prefix}${i}`.
 // ---------------------------------------------------------------------------
-const ARMY_STACK_LIMIT = 500;
+// Wartosc CZYTANA z pinu (battleScene.ts `const MAX_PER_SIDE = N;`), nie wpisana recznie; lancuch
+// main.ts armyStackLimit() -> BATTLE_MAX_PER_SIDE -> MAX_PER_SIDE pilnowany straznikiem SHA wyzej.
+const ARMY_STACK_LIMIT = (() => {
+  const m = /^const MAX_PER_SIDE = (\d+);$/.exec(excerptText.MAX_PER_SIDE ?? '');
+  if (!m) throw new Error('MAX_PER_SIDE: brak literalu liczbowego w pinie');
+  if (excerptText.BATTLE_MAX_PER_SIDE !== 'export const BATTLE_MAX_PER_SIDE = MAX_PER_SIDE;') throw new Error('BATTLE_MAX_PER_SIDE != MAX_PER_SIDE');
+  if (!/\breturn BATTLE_MAX_PER_SIDE;/.test(excerptText.armyStackLimit ?? '')) throw new Error('armyStackLimit() != BATTLE_MAX_PER_SIDE');
+  return Number(m[1]);
+})();
 const expandStacks = (stacks) => {
   const out = [];
   for (const [q, r, owner, count, prefix] of stacks) for (let i = 0; i < count; i++) out.push({ id: `${prefix}${i}`, ownerId: owner, q, r });
@@ -537,6 +568,12 @@ for (let s = 0; s < 25; s++) {
   notify.sequences.push(ops);
   bump('notify:registerClearSequence');
 }
+
+// ---------------------------------------------------------------------------
+// obrona r1 (zarzut 4 Evaluatora): oblezenie, w ktorym predykat zalezy od jednostki i zwraca false
+// (siegeOwner = owner ruszajacego sie). Dopisane NA KONCU, zeby nie przesuwac ziarna wczesniejszych sekcji.
+// ---------------------------------------------------------------------------
+for (const [kind, n] of [['siege_own_dest', 25], ['siege_own_mid', 25]]) for (let i = 0; i < n; i++) genScenario(kind, 0);
 
 const out = {
   pin: PIN,
