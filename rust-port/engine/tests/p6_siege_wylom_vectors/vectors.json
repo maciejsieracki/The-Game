@@ -1,0 +1,263 @@
+{
+  "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+  "sources": {
+    "battleScene": {
+      "path": "gra/src/battle/battleScene.ts",
+      "sha256": "d784735e185c63f03d95c12a5de33855106b79432001dcc382c5ef335989d21d"
+    },
+    "cityTowers": {
+      "path": "gra/src/game/city-towers.ts",
+      "sha256": "cc715ed61f65cb0b11fe38efe80e6c6a1742feefec2c0bb5e6ce142a4da8cbd4"
+    }
+  },
+  "scenarios": [
+    {
+      "id": "wylom-po-planowaniu-przed-strzalem",
+      "wallCol": 5,
+      "towers": [
+        2,
+        4
+      ],
+      "wallRows": [
+        2,
+        4
+      ],
+      "range": 2,
+      "atk": [
+        {
+          "q": 6,
+          "r": 2,
+          "hp": 40
+        },
+        {
+          "q": 6,
+          "r": 4,
+          "hp": 50
+        }
+      ],
+      "steps": [
+        {
+          "op": "fire",
+          "planned": [
+            0,
+            180
+          ],
+          "blows": [],
+          "snapshot": {
+            "wallRows": [
+              2,
+              4
+            ],
+            "destroyed": [
+              false,
+              false
+            ],
+            "wallEverBreached": false
+          }
+        },
+        {
+          "op": "breach",
+          "row": 2,
+          "blows": [],
+          "snapshot": {
+            "wallRows": [
+              4
+            ],
+            "destroyed": [
+              true,
+              false
+            ],
+            "wallEverBreached": true
+          }
+        },
+        {
+          "op": "drain",
+          "blows": [
+            1
+          ],
+          "snapshot": {
+            "wallRows": [
+              4
+            ],
+            "destroyed": [
+              true,
+              false
+            ],
+            "wallEverBreached": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "brak-kafla-przy-planowaniu",
+      "wallCol": 5,
+      "towers": [
+        1,
+        4
+      ],
+      "wallRows": [
+        4
+      ],
+      "range": 2,
+      "atk": [
+        {
+          "q": 6,
+          "r": 2,
+          "hp": 40
+        },
+        {
+          "q": 6,
+          "r": 4,
+          "hp": 50
+        }
+      ],
+      "steps": [
+        {
+          "op": "fire",
+          "planned": [
+            0
+          ],
+          "blows": [],
+          "snapshot": {
+            "wallRows": [
+              4
+            ],
+            "destroyed": [
+              true,
+              false
+            ],
+            "wallEverBreached": false
+          }
+        },
+        {
+          "op": "drain",
+          "blows": [
+            1
+          ],
+          "snapshot": {
+            "wallRows": [
+              4
+            ],
+            "destroyed": [
+              true,
+              false
+            ],
+            "wallEverBreached": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "wylom-przed-kolejna-salwa",
+      "wallCol": 5,
+      "towers": [
+        2,
+        4
+      ],
+      "wallRows": [
+        2,
+        4
+      ],
+      "range": 2,
+      "atk": [
+        {
+          "q": 6,
+          "r": 2,
+          "hp": 40
+        },
+        {
+          "q": 6,
+          "r": 4,
+          "hp": 50
+        }
+      ],
+      "steps": [
+        {
+          "op": "fire",
+          "planned": [
+            0,
+            180
+          ],
+          "blows": [],
+          "snapshot": {
+            "wallRows": [
+              2,
+              4
+            ],
+            "destroyed": [
+              false,
+              false
+            ],
+            "wallEverBreached": false
+          }
+        },
+        {
+          "op": "drain",
+          "blows": [
+            0,
+            1
+          ],
+          "snapshot": {
+            "wallRows": [
+              2,
+              4
+            ],
+            "destroyed": [
+              false,
+              false
+            ],
+            "wallEverBreached": false
+          }
+        },
+        {
+          "op": "breach",
+          "row": 2,
+          "blows": [],
+          "snapshot": {
+            "wallRows": [
+              4
+            ],
+            "destroyed": [
+              true,
+              false
+            ],
+            "wallEverBreached": true
+          }
+        },
+        {
+          "op": "fire",
+          "planned": [
+            0
+          ],
+          "blows": [],
+          "snapshot": {
+            "wallRows": [
+              4
+            ],
+            "destroyed": [
+              true,
+              false
+            ],
+            "wallEverBreached": true
+          }
+        },
+        {
+          "op": "drain",
+          "blows": [
+            1
+          ],
+          "snapshot": {
+            "wallRows": [
+              4
+            ],
+            "destroyed": [
+              true,
+              false
+            ],
+            "wallEverBreached": true
+          }
+        }
+      ]
+    }
+  ]
+}

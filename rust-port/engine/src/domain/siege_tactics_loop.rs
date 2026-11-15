@@ -358,10 +358,10 @@ impl<B: LoopBody> SiegeEnv<B> {
         army_morale_ratio_without_commander(&army)
     }
 
-    /// Web `_fireSiegeTowers` (`battleScene.ts:4208-4219`), etap 2A: PLANOWANIE wystrzałów. Wieża bez kafla muru
-    /// (`wall_tile_rows`) jest pomijana (web `_destroyTowerAtRow`; kafel nie wraca, więc wejście nie wymaga stanu
-    /// `destroyed`). Pozostałe dostają odroczenie `stagger` (0, 180, 360 … ms) w kolejności `tower_rows`; `stagger`
-    /// rośnie tylko dla wież planujących wystrzał (jak w pinie). Nic nie ustawia `dead` ani HP w chwili planowania.
+    /// Web `_fireSiegeTowers` (`battleScene.ts:4208-4219`), etap 2A: PLANOWANIE wystrzałów. Wieża zburzona (brak
+    /// kafla muru na `wall_tile_rows`, web `_destroyTowerAtRow`) jest pomijana; pozostałe dostają odroczenie
+    /// `stagger` 0, 180, 360 … ms, w kolejności `tower_rows`; `stagger` rośnie tylko dla wież planujących wystrzał
+    /// (pin `:4214-4218`). Nic nie ustawia `dead` ani HP w chwili planowania.
     fn plan_tower_shots(&mut self, st: &TurnSeqState) {
         let mut stagger = 0.0_f64;
         for (i, &row) in self.tower_rows.iter().enumerate() {
@@ -607,7 +607,8 @@ impl<B: LoopBody> SiegeLoop<B> {
     }
 
     /// Web `_fireOneTower` (`battleScene.ts:4223-4262`): wystrzał zaplanowanej wieży. Pomijany po `finished`.
-    /// Zniszczona wieża (web `t.destroyed`, kafel muru zburzony przez `_destroyTowerAtRow`) nie strzela. Cel wybierany
+    /// Zniszczona wieża (web `t.destroyed`; tu: brak kafla muru na `wall_tile_rows`, czyli stan po `breach_wall_tile`)
+    /// nie strzela, także gdy wyłom nastąpił po zaplanowaniu salwy (pin `:4227`). Cel wybierany
     /// W CHWILI wystrzału (`pickTowerTarget`); brak celu = `return`. Trafienie `_singleBlow` po locie
     /// [`TOWER_FLY_MS`] (`_schedule(RANGED_FLY_MS, ...)`, pin `:4262`).
     fn tower_shoot(&mut self, clock: &mut VirtualClock<LoopTimer>, i: usize) {
