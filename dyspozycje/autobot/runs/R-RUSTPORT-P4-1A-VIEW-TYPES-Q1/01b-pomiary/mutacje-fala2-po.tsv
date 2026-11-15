@@ -1,0 +1,11 @@
+id	desc	verdict	detail
+E1	no colour check badge.ownerColor	KILLED	1 failed: every_colour_is_bounded
+E2	HexCoord.q optional on input	KILLED	1 failed: every_required_key_is_required
+E3	BattleSetupDto.deploy: None omitted	KILLED	1 failed: none_is_explicit_null_everywhere
+E4	CityBadgeDto.growthPercent: None omitted	KILLED	1 failed: none_is_explicit_null_everywhere
+E5	BattleFortDto.towerMaterial: None omitted	KILLED	1 failed: none_is_explicit_null_everywhere
+E6	ViewerDto.fogActive optional on input	KILLED	1 failed: every_required_key_is_required
+E7	BattleGridDto: no deny_unknown_fields	KILLED	2 failed: unknown_keys_are_rejected,every_object_rejects_an_unknown_key
+E8	TileYieldDto.zywnosc: None omitted	KILLED	1 failed: none_is_explicit_null_everywhere
+E9	SiegeViewDto.readyMachines optional on input	KILLED	1 failed: every_required_key_is_required
+E10	BattleUnitSpawnDto: no deny_unknown_fields	KILLED	1 failed: every_object_rejects_an_unknown_key

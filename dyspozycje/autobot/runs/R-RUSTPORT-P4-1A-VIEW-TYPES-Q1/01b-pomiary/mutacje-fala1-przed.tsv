@@ -1,0 +1,73 @@
+id	desc	verdict	detail
+I1	try_new: <= MAX_SAFE_ID -> < (boundary)	KILLED	6 failed: display_is_decimal_for_the_adapter,ids_survive_snapshot_round_trip,ids_serialize_as_plain_numbers_and_keep_value,owner_ref_json_values,try_new_accepts_up_to_bound_and_rejects_above,ids_and_coords
+I2	MAX_SAFE_ID = 2^53 (off by one)	KILLED	5 failed: ids_above_bound_or_not_unsigned_integers_are_rejected,bound_is_js_max_safe_integer,snapshot_with_unsafe_id_is_rejected,owner_ref_rejects_other_values,try_new_accepts_up_to_bound_and_rejects_above
+I3	id deserialize skips 2^53-1 check	KILLED	2 failed: ids_above_bound_or_not_unsigned_integers_are_rejected,snapshot_with_unsafe_id_is_rejected
+I4	barbarian JSON -1 -> -2	KILLED	4 failed: owner_ref_rejects_other_values,snapshot_with_unsafe_id_is_rejected,ids_survive_snapshot_round_trip,owner_ref_json_values
+I5	rebel JSON -99 -> -98	KILLED	3 failed: ids_survive_snapshot_round_trip,owner_ref_json_values,owner_ref_rejects_other_values
+I6	OwnerRef variant order Rebel<->Barbarian (Ord)	KILLED	1 failed: owner_ref_order_matches_legacy_numbers
+I7	id Display decimal -> hex	KILLED	1 failed: display_is_decimal_for_the_adapter
+I8	HexCoord: no deny_unknown_fields	SURVIVED	-
+I9	OwnerRef player JSON = id+1 (asymmetric)	KILLED	9 failed: owner_ref_json_values,ids_survive_snapshot_round_trip,ids_and_coords,overlay_types,root_split_join_is_lossless,owner_and_city_structs,root_full_and_minimal,unit_structs,synthetic_snapshots_round_trip
+I10	from_legacy_i64 accepts any negative as barbarian	KILLED	2 failed: owner_ref_rejects_other_values,snapshot_with_unsafe_id_is_rejected
+P1	FogState codes 1<->2 swapped consistently (ser+de)	KILLED	2 failed: fog_keys,fog_codes_follow_widocznosc_order
+P2	FogState from_code 0 -> Explored (asymmetric)	KILLED	6 failed: map_structs,map_enums_all_variants,root_full_and_minimal,root_split_join_is_lossless,synthetic_snapshots_round_trip,fog_codes_follow_widocznosc_order
+P3	Terrain snake_case -> lowercase (plytkie_morze)	KILLED	1 failed: teren_bazowy
+P4	Nakladka snake_case -> lowercase (zloze_gliny)	KILLED	1 failed: nakladka
+P5	Ulepszenie DrogaBrukowana renamed	KILLED	1 failed: ulepszenie
+P6	RiverKind lowercase -> UPPERCASE	KILLED	1 failed: river_kind
+P7	HexDynDto.zloze: None omitted (skip_serializing_if)	SURVIVED	-
+P8	HexDynDto: no deny_unknown_fields	KILLED	1 failed: unknown_keys_are_rejected
+P9	HexDynDto.roadMask optional on input (serde default)	SURVIVED	-
+P10	MapViewDto.riverRenderPaths renamed riverPaths	KILLED	1 failed: map_keys
+P11	HexStaticDto.terenBazowy renamed teren	KILLED	1 failed: map_keys
+O1	RelationToViewer pokoj -> pokój	KILLED	1 failed: relation_to_viewer
+O2	WallKind Stone -> 'mur'	KILLED	1 failed: wall_kind
+O3	OwnerViewDto.ringHex: None omitted	SURVIVED	-
+O4	CityBadgeDto.prodPaused renamed prodPause	KILLED	2 failed: owner_and_city_keys,web_interface_keys
+O5	MapOutlineKind ally -> sojusz	KILLED	1 failed: map_outline_kind
+O6	ProductionKind jednostka -> unit	KILLED	1 failed: production_kind
+O7	OwnerViewDto: no deny_unknown_fields	SURVIVED	-
+O8	CityViewDto.unitCountOnHex optional on input	SURVIVED	-
+U1	StackVitalsDto.hasCommander renamed commander	KILLED	2 failed: unit_stack_siege_wonder_keys,web_interface_keys
+U2	UnitViewDto.inGarnizon renamed inGarrison	KILLED	2 failed: unit_stack_siege_wonder_keys,web_interface_keys
+U3	UnitViewDto.hpMax: None omitted	SURVIVED	-
+U4	StackViewDto.goldDeficitRepIds optional on input	SURVIVED	-
+V1	BuildHighlightKind camelCase -> lowercase (foundcity)	KILLED	1 failed: build_highlight_kind
+V2	TradeMedium lad -> ląd	KILLED	1 failed: trade_medium
+V3	PlacedWonderDto.ruin optional on input	SURVIVED	-
+V4	SiegeMachineKind wieza -> wieża	KILLED	1 failed: siege_machine_kind
+V5	OkolicaViewDto.showYields: None omitted	SURVIVED	-
+V6	OverlaysViewDto.pathRoute renamed path	KILLED	1 failed: territory_and_overlay_keys
+B1	BattleSide atk -> attack	KILLED	1 failed: battle_enums
+B2	FortKind mur -> stone	KILLED	1 failed: battle_enums
+B3	TowerMaterial kamien -> kamień	KILLED	1 failed: battle_enums
+B4	BattleUnitSpawnDto.ammoLeft: None omitted	SURVIVED	-
+B5	BattleSetupDto.deploy renamed deployPlayerSide	KILLED	1 failed: battle_keys
+X1	MAX_ROAD_MASK 0x3F -> 0x7F	KILLED	1 failed: small_integer_ranges
+X2	MAX_EDGE_INDEX 5 -> 6	KILLED	1 failed: small_integer_ranges
+X3	MAX_BADGE_LEVEL 3 -> 4	KILLED	1 failed: small_integer_ranges
+X4	MAX_DEFENSE_TIER 2 -> 3	KILLED	1 failed: small_integer_ranges
+X5	MAX_COLOR 0xFFFFFF -> 0x1FFFFFF	KILLED	1 failed: small_integer_ranges
+X6	no fog.state length check	KILLED	1 failed: parallel_lengths
+X7	no hexState length check	KILLED	1 failed: parallel_lengths
+X8	ringHex accepts uppercase hex digits	KILLED	1 failed: ring_hex_shape
+X9	ringHex length == 7 -> >= 7	KILLED	1 failed: ring_hex_shape
+X10	no finite check units[i].hp	KILLED	2 failed: error_messages_name_the_field,non_finite_float_breaks_json_round_trip
+X11	no battle grid tiles length check	KILLED	1 failed: battle_grid_length
+X12	contractVersion != -> > (accepts older)	SURVIVED	-
+X13	finite_opt is a no-op	KILLED	1 failed: floats_everywhere
+X14	RenderLayersDto::validate skips validate_map	SURVIVED	-
+X15	veteranLevel min 1 -> 0	KILLED	1 failed: small_integer_ranges
+X16	range inclusive -> exclusive upper	KILLED	11 failed: synthetic_snapshots_round_trip,ring_hex_shape,battle_grid_length,error_messages_name_the_field,contract_version,parallel_lengths,floats_everywhere,samples_are_valid,small_integer_ranges,unlimited_ammo_is_none,non_finite_float_breaks_json_round_trip
+X17	finite = !is_nan (infinity accepted)	KILLED	1 failed: floats_everywhere
+X18	no finite check owners[i].era	KILLED	1 failed: floats_everywhere
+X19	no colour check battle ownerColor	SURVIVED	-
+X20	no finite check okolica.range	SURVIVED	-
+X21	ringHex check disabled	KILLED	1 failed: ring_hex_shape
+X22	no finite check map.seed	KILLED	1 failed: floats_everywhere
+X23	no roadMask range check	KILLED	1 failed: small_integer_ranges
+R1	CONTRACT_VERSION 1 -> 2	SURVIVED	-
+R2	join(): turn + 1	KILLED	1 failed: root_split_join_is_lossless
+R3	RenderLayersDto: no deny_unknown_fields	SURVIVED	-
+R4	RenderViewDto.battle: None omitted	KILLED	1 failed: none_is_null_and_key_present
+R5	RenderViewDto.stacks renamed stack	KILLED	5 failed: snapshot_with_unsafe_id_is_rejected,root_keys,unit_stack_siege_wonder_keys,unknown_keys_are_rejected,layers_json_is_view_json_without_map

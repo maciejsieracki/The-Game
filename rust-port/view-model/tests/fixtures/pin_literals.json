@@ -1,0 +1,457 @@
+{
+  "generator": "dyspozycje/autobot/runs/R-RUSTPORT-P4-1A-VIEW-TYPES-Q1/02a-obrona/gen_pin_literals.py",
+  "items": {
+    "BTerrain": {
+      "file": "gra/src/battle/battle-terrain.ts",
+      "kind": "enum",
+      "lines": [
+        37,
+        46
+      ],
+      "names": [
+        "Plains",
+        "Forest",
+        "Hills",
+        "River",
+        "Ford",
+        "Rocks",
+        "Wall",
+        "Gate"
+      ],
+      "values": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    "CityFortificationKind": {
+      "file": "gra/src/game/city-fortification.ts",
+      "kind": "union",
+      "lines": [
+        26,
+        26
+      ],
+      "values": [
+        "none",
+        "palisada",
+        "mur"
+      ]
+    },
+    "CityMapBadgeInput": {
+      "file": "gra/src/render/cityMapStatChip.ts",
+      "keys": [
+        "cityName",
+        "population",
+        "defenseTier",
+        "civIconId",
+        "ownerColor",
+        "prodActive",
+        "prodKind",
+        "prodId",
+        "growthPercent",
+        "growthStarving",
+        "resourceWarning",
+        "hoverExpanded",
+        "prodCategoryLabel",
+        "prodItemName",
+        "prodPaused",
+        "isCityState",
+        "era",
+        "isCapital",
+        "lodLevel"
+      ],
+      "kind": "interface",
+      "lines": [
+        17,
+        78
+      ]
+    },
+    "CityMapDefenseTier": {
+      "file": "gra/src/render/cityMapStatChip.ts",
+      "kind": "union",
+      "lines": [
+        12,
+        12
+      ],
+      "values": [
+        0,
+        1,
+        2
+      ]
+    },
+    "CityMapOutlineKind": {
+      "file": "gra/src/render/cityMapOutline.ts",
+      "kind": "union",
+      "lines": [
+        10,
+        10
+      ],
+      "values": [
+        "player",
+        "war",
+        "neutral",
+        "ally"
+      ]
+    },
+    "CityMapWallKind": {
+      "file": "gra/src/render/cityMapStatChip.ts",
+      "kind": "union",
+      "lines": [
+        15,
+        15
+      ],
+      "values": [
+        "none",
+        "palisada",
+        "stone"
+      ]
+    },
+    "CityWallKind": {
+      "file": "gra/src/render/cities.ts",
+      "kind": "union",
+      "lines": [
+        306,
+        306
+      ],
+      "values": [
+        "none",
+        "stone",
+        "palisada"
+      ]
+    },
+    "DeployPlayerSide": {
+      "file": "gra/src/battle/battleScene.ts",
+      "kind": "union",
+      "lines": [
+        522,
+        522
+      ],
+      "values": [
+        "atk",
+        "def"
+      ]
+    },
+    "Dir": {
+      "file": "gra/src/battle/battleScene.ts",
+      "kind": "enum",
+      "lines": [
+        315,
+        320
+      ],
+      "names": [
+        "N",
+        "E",
+        "S",
+        "W"
+      ],
+      "values": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "HexCoords": {
+      "file": "gra/src/types/hex.ts",
+      "keys": [
+        "q",
+        "r"
+      ],
+      "kind": "interface",
+      "lines": [
+        71,
+        74
+      ]
+    },
+    "Nakladka": {
+      "file": "gra/src/types/hex.ts",
+      "kind": "enum",
+      "lines": [
+        30,
+        39
+      ],
+      "names": [
+        "Brak",
+        "Las",
+        "ZlozeGliny",
+        "ZlozeRudy",
+        "ZlozeKonia",
+        "ZlozeOwiec",
+        "ZlozeBydla",
+        "ZlozeLamy"
+      ],
+      "values": [
+        "brak",
+        "las",
+        "zloze_gliny",
+        "zloze_rudy",
+        "zloze_konia",
+        "zloze_owiec",
+        "zloze_bydla",
+        "zloze_lamy"
+      ]
+    },
+    "ProductionKind": {
+      "file": "gra/src/game/production.ts",
+      "kind": "union",
+      "lines": [
+        95,
+        95
+      ],
+      "values": [
+        "budynek",
+        "jednostka"
+      ]
+    },
+    "RelationBorderStatus": {
+      "file": "gra/src/game/civ-visual.ts",
+      "kind": "union",
+      "lines": [
+        89,
+        89
+      ],
+      "values": [
+        "wojna",
+        "pokoj",
+        "sojusz",
+        "neutralni"
+      ]
+    },
+    "RuntimeUnit": {
+      "file": "gra/src/units/setup.ts",
+      "keys": [
+        "id",
+        "ownerId",
+        "typeId",
+        "isGeneral",
+        "category",
+        "q",
+        "r",
+        "ruch",
+        "ruchLeft",
+        "inGarnizon",
+        "fortifyRuchSnapshot",
+        "hp",
+        "hpMax",
+        "defLossesThisTurn",
+        "oblegaCityId",
+        "replaceUsedThisTurn",
+        "embarked",
+        "seaRaider",
+        "sentry",
+        "autoExplore",
+        "followGeneral",
+        "rallyGeneralId",
+        "ufortyfikowanyWPolu",
+        "pancerzBonusProc",
+        "parametryBonusProc",
+        "battlesSurvived",
+        "stackGroupId",
+        "retreatedThisTurn"
+      ],
+      "kind": "interface",
+      "lines": [
+        41,
+        194
+      ]
+    },
+    "SiegeMachineKind": {
+      "file": "gra/src/game/siegeMachines.ts",
+      "kind": "union",
+      "lines": [
+        6,
+        6
+      ],
+      "values": [
+        "taran",
+        "wieza"
+      ]
+    },
+    "StackDisplayInfo": {
+      "file": "gra/src/game/armyMerge.ts",
+      "keys": [
+        "visibleIds",
+        "badgeByRepId",
+        "starvingRepIds",
+        "goldDeficitRepIds",
+        "vitalsByRepId"
+      ],
+      "kind": "interface",
+      "lines": [
+        21,
+        43
+      ]
+    },
+    "StackVitals": {
+      "file": "gra/src/game/armyMerge.ts",
+      "keys": [
+        "ruchLeft",
+        "ruchMax",
+        "hp",
+        "hpMax",
+        "fieldPowerM",
+        "count",
+        "armorBadgeLevel",
+        "softBadgeLevel",
+        "veteranLevel",
+        "veteranStars",
+        "hasCommander"
+      ],
+      "kind": "interface",
+      "lines": [
+        1103,
+        1126
+      ]
+    },
+    "TerenBazowy": {
+      "file": "gra/src/types/hex.ts",
+      "kind": "enum",
+      "lines": [
+        12,
+        24
+      ],
+      "names": [
+        "Laka",
+        "Rownina",
+        "Wzgorza",
+        "Gory",
+        "PlytkieMorze",
+        "Morze",
+        "Pustynia",
+        "Polarny"
+      ],
+      "values": [
+        "laka",
+        "rownina",
+        "wzgorza",
+        "gory",
+        "plytkie_morze",
+        "morze",
+        "pustynia",
+        "polarny"
+      ]
+    },
+    "TileYield": {
+      "file": "gra/src/game/okolica.ts",
+      "keys": [
+        "zywnosc",
+        "praca",
+        "handel"
+      ],
+      "kind": "interface",
+      "lines": [
+        206,
+        206
+      ]
+    },
+    "TradeRouteMedium": {
+      "file": "gra/src/render/tradeRoutesOverlay.ts",
+      "kind": "union",
+      "lines": [
+        23,
+        23
+      ],
+      "values": [
+        "lad",
+        "morze"
+      ]
+    },
+    "Ulepszenie": {
+      "file": "gra/src/types/hex.ts",
+      "kind": "enum",
+      "lines": [
+        45,
+        54
+      ],
+      "names": [
+        "Brak",
+        "Farma",
+        "Irygacja",
+        "Kopalnia",
+        "Droga",
+        "DrogaBrukowana",
+        "Pastwisko",
+        "Tartak"
+      ],
+      "values": [
+        "brak",
+        "farma",
+        "irygacja",
+        "kopalnia",
+        "droga",
+        "droga_brukowana",
+        "pastwisko",
+        "tartak"
+      ]
+    },
+    "WallTowerMaterial": {
+      "file": "gra/src/battle/siegeWall.ts",
+      "kind": "union",
+      "lines": [
+        1105,
+        1105
+      ],
+      "values": [
+        "drewno",
+        "kamien"
+      ]
+    },
+    "Widocznosc": {
+      "file": "gra/src/types/hex.ts",
+      "kind": "enum",
+      "lines": [
+        60,
+        64
+      ],
+      "names": [
+        "Nieodkryty",
+        "Odkryty",
+        "Widoczny"
+      ],
+      "values": [
+        "nieodkryty",
+        "odkryty",
+        "widoczny"
+      ]
+    },
+    "riverPathKinds": {
+      "file": "gra/src/types/map.ts",
+      "kind": "union",
+      "lines": [
+        49,
+        49
+      ],
+      "values": [
+        "main",
+        "medium",
+        "short",
+        "tributary"
+      ]
+    }
+  },
+  "pin": "07d2fbd72",
+  "pinCommit": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+  "sources": {
+    "gra/src/battle/battle-terrain.ts": "a17735ed3ef7b20277cfba3aee9e9aa478c5a0e71481f747dc04cd365fb8f00d",
+    "gra/src/battle/battleScene.ts": "d784735e185c63f03d95c12a5de33855106b79432001dcc382c5ef335989d21d",
+    "gra/src/battle/siegeWall.ts": "428652a73e28c28b553e78eb6e1b88825a6daedb5ec345af2a4e604162ad1f6e",
+    "gra/src/game/armyMerge.ts": "93ba5cba1091373aefa71638f4b06e97963902e38170c09da1e9b7d88e523076",
+    "gra/src/game/city-fortification.ts": "52fd18e913d1e59fdfed5874e9b56323d25058a39a55cbae2f0abfd2f6af4610",
+    "gra/src/game/civ-visual.ts": "882e6c318efa68a5e2b0837b514fe40c83f92a24275332a04a141c9baef6a808",
+    "gra/src/game/okolica.ts": "6cb21115ecb6cd39e0a000acae4e610b753803b70801a159a816404a8a3cfb62",
+    "gra/src/game/production.ts": "084efc4cabe8fb0e272b909b6a803a4bcd2fbcfd861f668faaf91e4dfbf1eb94",
+    "gra/src/game/siegeMachines.ts": "d4e561d1b6b8faf62823c82135761deabb07db04aaed3e218a651b3505af35e1",
+    "gra/src/render/cities.ts": "9ea31d8e83286acd40b2c6bc540af3ea6cd21a05e2fc6db15ecbf47137a633c4",
+    "gra/src/render/cityMapOutline.ts": "ade8c790010e95dbd10812228474757c686edb7cc8e10ea9c1be9fa2eb079afa",
+    "gra/src/render/cityMapStatChip.ts": "1ec229376843125763bda690a6dda56910657d4345c8c59c6347deca77a7f8ed",
+    "gra/src/render/tradeRoutesOverlay.ts": "d7d80ceaf7b627990794677aec842dbe98763727124dc48f14bbe810a3c329de",
+    "gra/src/types/hex.ts": "07eb0ee905c2aac56c1f99127f36fd2a058a9d2822bbc4c92d753d9056867df1",
+    "gra/src/types/map.ts": "8cf82bc448102a2c42bab30f6e60b163333aabdfac1386f81f417741c1a4d23e",
+    "gra/src/units/setup.ts": "6358fba902f33896e6362f8c54ff484fa8ad7ed7c8dc90d77b745aa6f011a112"
+  }
+}

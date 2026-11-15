@@ -1,0 +1,72 @@
+killed L188 drop finite(|| "map.seed".into(), map.seed)?;
+killed L191 drop multi len( "map.hexes",
+killed L211 drop multi range( || format!("map.hexes[{i}].rzekaKrawedzie[{j}]"),
+killed L242 drop len("hexState", hex_count, self.hex_state.len())?;
+killed L243 drop len("fog.state", hex_count, self.fog.state.len())?;
+killed L245 drop multi range( || format!("hexState[{i}].roadMask"),
+killed L261 drop color(|| format!("owners[{i}].color"), o.color)?;
+killed L262 drop finite(|| format!("owners[{i}].era"), o.era)?;
+killed L276 drop finite(|| format!("cities[{i}].population"), c.population)?;
+killed L277 drop finite(|| format!("cities[{i}].level"), c.level)?;
+killed L279 drop finite(|| format!("cities[{i}].badge.population"), b.population)?;
+killed L280 drop multi range( || format!("cities[{i}].badge.defenseTier"),
+killed L286 drop color(|| format!("cities[{i}].badge.ownerColor"), b.owner_color)?;
+killed L287 drop multi finite_opt( || format!("cities[{i}].badge.growthPercent"),
+killed L291 drop finite(|| format!("cities[{i}].badge.era"), b.era)?;
+killed L298 drop finite(|| format!("units[{i}].ruchMax"), u.ruch_max)?;
+killed L299 drop finite(|| format!("units[{i}].ruchLeft"), u.ruch_left)?;
+killed L300 drop finite(|| format!("units[{i}].hp"), u.hp)?;
+killed L301 drop finite_opt(|| format!("units[{i}].hpMax"), u.hp_max)?;
+killed L302 drop badge(|| format!("units[{i}].veteranStars"), u.veteran_stars)?;
+killed L303 drop multi badge( || format!("units[{i}].armorBadgeLevel"),
+killed L307 drop badge(|| format!("units[{i}].softBadgeLevel"), u.soft_badge_level)?;
+killed L311 drop finite(|| p("ruchLeft"), v.ruch_left)?;
+killed L312 drop finite(|| p("ruchMax"), v.ruch_max)?;
+killed L313 drop finite(|| p("hp"), v.hp)?;
+killed L314 drop finite(|| p("hpMax"), v.hp_max)?;
+killed L315 drop finite(|| p("fieldPowerM"), v.field_power_m)?;
+killed L316 drop badge(|| p("armorBadgeLevel"), v.armor_badge_level)?;
+killed L317 drop badge(|| p("softBadgeLevel"), v.soft_badge_level)?;
+killed L318 drop multi range( || p("veteranLevel"),
+killed L324 drop badge(|| p("veteranStars"), v.veteran_stars)?;
+killed L331 drop finite(|| "overlays.okolica.range".into(), ok.range)?;
+killed L334 drop finite_opt(|| p("zywnosc"), y.zywnosc)?;
+killed L335 drop finite_opt(|| p("praca"), y.praca)?;
+killed L336 drop finite_opt(|| p("handel"), y.handel)?;
+killed L347 drop multi range( || "battle.setup.grid.cols".into(),
+killed L353 drop multi range( || "battle.setup.grid.rows".into(),
+killed L362 drop len("battle.setup.grid.tiles", cells, g.tiles.len())?;
+killed L364 drop multi range( || format!("battle.setup.grid.tiles[{i}]"),
+killed L373 drop color(|| p("ownerColor"), u.owner_color)?;
+killed L374 drop multi range( || p("facing"),
+killed L380 drop finite(|| p("hp"), u.hp)?;
+killed L381 drop finite(|| p("maxHp"), u.max_hp)?;
+killed L382 drop finite(|| p("morale"), u.morale)?;
+killed L383 drop finite(|| p("moraleMax"), u.morale_max)?;
+killed L384 drop finite_opt(|| p("ammoLeft"), u.ammo_left)?;
+killed L385 drop finite_opt(|| p("ammoMax"), u.ammo_max)?;
+killed L20 MAX_COLOR +1
+killed L20 MAX_COLOR -1
+killed L22 MAX_ROAD_MASK +1
+killed L22 MAX_ROAD_MASK -1
+killed L24 MAX_EDGE_INDEX +1
+killed L24 MAX_EDGE_INDEX -1
+killed L26 MAX_BADGE_LEVEL +1
+killed L26 MAX_BADGE_LEVEL -1
+killed L28 MAX_DEFENSE_TIER +1
+killed L28 MAX_DEFENSE_TIER -1
+killed L32 MAX_FACING +1
+killed L32 MAX_FACING -1
+killed L36 MAX_BATTLE_TILE +1
+killed L36 MAX_BATTLE_TILE -1
+killed hexorder disabled
+killed ringhex len 7->8
+killed ringhex a..=f -> a..=g
+SURVIVED ringhex no #
+killed veteranLevel min 1->0
+killed contract version disabled
+killed q/r swap
+killed ringhex uppercase allowed
+killed ringhex ok on none-check
+killed battle tiles min 0->1
+TOTAL 71 SURVIVED 1 compile-error 0

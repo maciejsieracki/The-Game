@@ -1,0 +1,94 @@
+id	wave	result	description
+V1	V	KILLED	line 188: remove finite(|| "map.seed".into(), map.seed)?;
+V2	V	KILLED	line 191: remove len( "map.hexes", usize::try_from(cells).unwrap_or(usize::MAX), map.hexes.len(), )?;
+V3	V	KILLED	line 211: remove range( || format!("map.hexes[{i}].rzekaKrawedzie[{j}]"), i64::from(edge), 0, i64::from(MAX_EDGE_INDEX), )?;
+V4	V	KILLED	line 242: remove len("hexState", hex_count, self.hex_state.len())?;
+V5	V	KILLED	line 243: remove len("fog.state", hex_count, self.fog.state.len())?;
+V6	V	KILLED	line 245: remove range( || format!("hexState[{i}].roadMask"), i64::from(h.road_mask), 0, i64::from(MAX_ROAD_MASK), )?;
+V7	V	KILLED	line 261: remove color(|| format!("owners[{i}].color"), o.color)?;
+V8	V	KILLED	line 262: remove finite(|| format!("owners[{i}].era"), o.era)?;
+V9	V	KILLED	line 276: remove finite(|| format!("cities[{i}].population"), c.population)?;
+V10	V	KILLED	line 277: remove finite(|| format!("cities[{i}].level"), c.level)?;
+V11	V	KILLED	line 279: remove finite(|| format!("cities[{i}].badge.population"), b.population)?;
+V12	V	KILLED	line 280: remove range( || format!("cities[{i}].badge.defenseTier"), i64::from(b.defense_tier), 0, i64::from(MAX_DEFENSE_TIER),
+V13	V	KILLED	line 286: remove color(|| format!("cities[{i}].badge.ownerColor"), b.owner_color)?;
+V14	V	KILLED	line 287: remove finite_opt( || format!("cities[{i}].badge.growthPercent"), b.growth_percent, )?;
+V15	V	KILLED	line 291: remove finite(|| format!("cities[{i}].badge.era"), b.era)?;
+V16	V	KILLED	line 298: remove finite(|| format!("units[{i}].ruchMax"), u.ruch_max)?;
+V17	V	KILLED	line 299: remove finite(|| format!("units[{i}].ruchLeft"), u.ruch_left)?;
+V18	V	KILLED	line 300: remove finite(|| format!("units[{i}].hp"), u.hp)?;
+V19	V	KILLED	line 301: remove finite_opt(|| format!("units[{i}].hpMax"), u.hp_max)?;
+V20	V	KILLED	line 302: remove badge(|| format!("units[{i}].veteranStars"), u.veteran_stars)?;
+V21	V	KILLED	line 303: remove badge( || format!("units[{i}].armorBadgeLevel"), u.armor_badge_level, )?;
+V22	V	KILLED	line 307: remove badge(|| format!("units[{i}].softBadgeLevel"), u.soft_badge_level)?;
+V23	V	KILLED	line 311: remove finite(|| p("ruchLeft"), v.ruch_left)?;
+V24	V	KILLED	line 312: remove finite(|| p("ruchMax"), v.ruch_max)?;
+V25	V	KILLED	line 313: remove finite(|| p("hp"), v.hp)?;
+V26	V	KILLED	line 314: remove finite(|| p("hpMax"), v.hp_max)?;
+V27	V	KILLED	line 315: remove finite(|| p("fieldPowerM"), v.field_power_m)?;
+V28	V	KILLED	line 316: remove badge(|| p("armorBadgeLevel"), v.armor_badge_level)?;
+V29	V	KILLED	line 317: remove badge(|| p("softBadgeLevel"), v.soft_badge_level)?;
+V30	V	KILLED	line 318: remove range( || p("veteranLevel"), i64::from(v.veteran_level), 1, i64::from(MAX_BADGE_LEVEL), )?;
+V31	V	KILLED	line 324: remove badge(|| p("veteranStars"), v.veteran_stars)?;
+V32	V	KILLED	line 331: remove finite(|| "overlays.okolica.range".into(), ok.range)?;
+V33	V	KILLED	line 334: remove finite_opt(|| p("zywnosc"), y.zywnosc)?;
+V34	V	KILLED	line 335: remove finite_opt(|| p("praca"), y.praca)?;
+V35	V	KILLED	line 336: remove finite_opt(|| p("handel"), y.handel)?;
+V36	V	KILLED	line 347: remove range( || "battle.setup.grid.cols".into(), i64::from(g.cols), 0, i64::from(i32::MAX), )?;
+V37	V	KILLED	line 353: remove range( || "battle.setup.grid.rows".into(), i64::from(g.rows), 0, i64::from(i32::MAX), )?;
+V38	V	KILLED	line 362: remove len("battle.setup.grid.tiles", cells, g.tiles.len())?;
+V39	V	KILLED	line 364: remove range( || format!("battle.setup.grid.tiles[{i}]"), i64::from(tile), 0, i64::from(MAX_BATTLE_TILE), )?;
+V40	V	KILLED	line 373: remove color(|| p("ownerColor"), u.owner_color)?;
+V41	V	KILLED	line 374: remove range( || p("facing"), i64::from(u.facing), 0, i64::from(MAX_FACING), )?;
+V42	V	KILLED	line 380: remove finite(|| p("hp"), u.hp)?;
+V43	V	KILLED	line 381: remove finite(|| p("maxHp"), u.max_hp)?;
+V44	V	KILLED	line 382: remove finite(|| p("morale"), u.morale)?;
+V45	V	KILLED	line 383: remove finite(|| p("moraleMax"), u.morale_max)?;
+V46	V	KILLED	line 384: remove finite_opt(|| p("ammoLeft"), u.ammo_left)?;
+V47	V	KILLED	line 385: remove finite_opt(|| p("ammoMax"), u.ammo_max)?;
+G48	G	KILLED	hex order guard off
+G49	G	KILLED	contract version guard off
+G50	G	KILLED	ringHex guard off
+G51	G	KILLED	hex order: q/r swapped
+G52	G	KILLED	hex order: width ignored (width = 1)
+B53	B	KILLED	MAX_COLOR 16777215 -> 16777216
+B54	B	KILLED	MAX_COLOR 16777215 -> 16777214
+B55	B	KILLED	MAX_ROAD_MASK 63 -> 64
+B56	B	KILLED	MAX_ROAD_MASK 63 -> 62
+B57	B	KILLED	MAX_EDGE_INDEX 5 -> 6
+B58	B	KILLED	MAX_EDGE_INDEX 5 -> 4
+B59	B	KILLED	MAX_BADGE_LEVEL 3 -> 4
+B60	B	KILLED	MAX_BADGE_LEVEL 3 -> 2
+B61	B	KILLED	MAX_DEFENSE_TIER 2 -> 3
+B62	B	KILLED	MAX_DEFENSE_TIER 2 -> 1
+B63	B	KILLED	MAX_FACING 3 -> 4
+B64	B	KILLED	MAX_FACING 3 -> 2
+B65	B	KILLED	MAX_BATTLE_TILE 7 -> 8
+B66	B	KILLED	MAX_BATTLE_TILE 7 -> 6
+B67	B	KILLED	veteranLevel min 1 -> 0
+B68	B	KILLED	veteranLevel min 1 -> 2
+F69	F	KILLED	BTerrain.values[0] 0 -> 1 (sha updated)
+F70	F	KILLED	CityFortificationKind.values[0] 'none' -> 'nonex' (sha updated)
+F71	F	KILLED	CityMapBadgeInput.keys[0] 'cityName' -> 'cityNamex' (sha updated)
+F72	F	KILLED	CityMapDefenseTier.values[0] 0 -> 1 (sha updated)
+F73	F	KILLED	CityMapOutlineKind.values[0] 'player' -> 'playerx' (sha updated)
+F74	F	KILLED	CityMapWallKind.values[0] 'none' -> 'nonex' (sha updated)
+F75	F	KILLED	CityWallKind.values[0] 'none' -> 'nonex' (sha updated)
+F76	F	KILLED	DeployPlayerSide.values[0] 'atk' -> 'atkx' (sha updated)
+F77	F	KILLED	Dir.values[0] 0 -> 1 (sha updated)
+F78	F	KILLED	HexCoords.keys[0] 'q' -> 'qx' (sha updated)
+F79	F	KILLED	Nakladka.values[0] 'brak' -> 'brakx' (sha updated)
+F80	F	KILLED	ProductionKind.values[0] 'budynek' -> 'budynekx' (sha updated)
+F81	F	KILLED	RelationBorderStatus.values[0] 'wojna' -> 'wojnax' (sha updated)
+F82	F	KILLED	RuntimeUnit.keys[0] 'id' -> 'idx' (sha updated)
+F83	F	KILLED	SiegeMachineKind.values[0] 'taran' -> 'taranx' (sha updated)
+F84	F	KILLED	StackDisplayInfo.keys[0] 'visibleIds' -> 'visibleIdsx' (sha updated)
+F85	F	KILLED	StackVitals.keys[0] 'ruchLeft' -> 'ruchLeftx' (sha updated)
+F86	F	KILLED	TerenBazowy.values[0] 'laka' -> 'lakax' (sha updated)
+F87	F	KILLED	TileYield.keys[0] 'zywnosc' -> 'zywnoscx' (sha updated)
+F88	F	KILLED	TradeRouteMedium.values[0] 'lad' -> 'ladx' (sha updated)
+F89	F	KILLED	Ulepszenie.values[0] 'brak' -> 'brakx' (sha updated)
+F90	F	KILLED	WallTowerMaterial.values[0] 'drewno' -> 'drewnox' (sha updated)
+F91	F	KILLED	Widocznosc.values[0] 'nieodkryty' -> 'nieodkrytyx' (sha updated)
+F92	F	KILLED	riverPathKinds.values[0] 'main' -> 'mainx' (sha updated)
+F93	F	KILLED	fixture byte changed, sha NOT updated

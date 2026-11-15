@@ -1,0 +1,22 @@
+[package]
+name = "civ-view-model"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.87"
+description = "Render view model (DTO) between civ-engine (producer) and civ-renderer / webview UI (consumers); types only (R-RUSTPORT-P4-1A-VIEW-TYPES-Q1)"
+publish = false
+
+# Standalone crate (like rust-port/engine and rust-port/renderer): no workspace.
+#
+# Decision D-DTO-1 = A (P4-1-RENDER-DTO-CONTRACT.md §7): the view types live in
+# this small crate that depends only on `serde`. The engine (producer) and the
+# renderer (consumer) depend on it; it depends on neither of them.
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+
+[dev-dependencies]
+# Tests and the size-measurement example only. `float_roundtrip` makes the
+# parser exact for every finite f64 (the JS side, `JSON.parse`, is exact too),
+# so a round-trip test can compare floats with `==`.
+serde_json = { version = "1.0", features = ["float_roundtrip"] }

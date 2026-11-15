@@ -1,0 +1,26 @@
+--- a/dyspozycje/rust-port/p4/P4-1-RENDER-DTO-CONTRACT.md	2026-11-15 11:24:54.856153637 +0000
++++ b/dyspozycje/rust-port/p4/P4-1-RENDER-DTO-CONTRACT.md	2026-11-15 11:25:08.423676116 +0000
+@@ -345,7 +345,22 @@
+ Szacunek (arytmetyka z §3.2, nie pomiar): `HexStaticDto` ≈ 8 B współrzędne + 1 B teren + ≤ 6 B krawędzi rzeki; `HexDynDto` stała część ≈ 1+1+1+1+1+9 B (enumy, flagi, maska, wioska) + rzadkie stringi; mgła 1 B. Dla 8 000 heksów: ~0,1–0,2 MB w pamięci bez stringów. W JSON (klucze camelCase) — rząd 50–100 B/heks, czyli ~0,4–0,8 MB na pełny snapshot. **Pomiar = NIE_ZMIERZONO** (kandydat P4-1A).
+
++**POMIAR (P4-1A, `R-RUSTPORT-P4-1A-VIEW-TYPES-Q1`; `rust-port/view-model/examples/snapshot_size.rs`, syntetyk z ziarnem; liczby miast i jednostek to założenia pomiaru — 8 właścicieli, 1 miasto / 60 heksów, 1 jednostka / 12 heksów — web NIE_ZMIERZONO; odtworzone bajt w bajt przez Operatora pomiarów, Evaluatora r1 i Obronę r1):**
++
++| scenariusz | pełny JSON [B] | mapa statyczna [B] | warstwy [B] | B/heks (pełny) | `hexState`+`fog` [B/heks] |
++|---|---|---|---|---|---|
++| 3000 heksów, bez miast i jednostek | 754 285 | 222 170 | 532 108 | 251,4 | 177,2 |
++| 3000 heksów, późna gra (założenie) | 910 987 | 222 170 | 688 810 | 303,7 | 177,2 |
++| 8000 heksów, bez miast i jednostek | 2 011 660 | 593 927 | 1 417 726 | 251,5 | 177,2 |
++| 8000 heksów, późna gra (założenie) | 2 427 740 | 593 927 | 1 833 806 | 303,5 | 177,2 |
++
++- Szacunek ARYTMETYKA wyżej (50–100 B/heks, 0,4–0,8 MB) jest **zaniżony 3–4 razy**: pomiar daje 251–304 B/heks, 2,0–2,4 MB pełnego JSON przy 8000 heksów.
++- Wariant B (D-DTO-3): mapa statyczna raz 0,22 / 0,59 MB; warstwy dynamiczne przy każdej zmianie 0,53–0,69 / 1,42–1,83 MB (3000 / 8000 heksów). Serializacja warstw 0,4–0,9 / 1,6–1,9 ms, deserializacja pełnego snapshotu 1,1–1,6 / 3,3–3,9 ms (4 vCPU 2,1 GHz; zależne od maszyny).
++- Główny koszt to `hexState`: 175 B/heks, z czego ok. 68% to nazwy kluczy camelCase; kodowanie pozycyjne dałoby ok. 52 B/heks (szacunek alternatywy, nie decyzja — wpływa na rewizję D-DTO-3).
++- Nadal NIE_ZMIERZONO: rozmiar w pamięci (arytmetyka 0,1–0,2 MB), koszt IPC Tauri do webview i parsowania w JS, liczba jednostek i miast na prawdziwej późnej mapie webu.
++- Źródło: `dyspozycje/autobot/runs/R-RUSTPORT-P4-1A-VIEW-TYPES-Q1/01b-operator-pomiary.md` §3.
++
+ | Wariant | Opis | Koszt | Ryzyko |
+ |---|---|---|---|
+-| **A** pełny snapshot na każdą zmianę | jak dziś `engine_state_changed` z całym `PlayableState` (`bridge.rs:101-108`) | najprostszy; renderer (w procesie) nie serializuje, ale przebudowuje wszystkie warstwy; UI dostaje ~0,4–0,8 MB JSON na zmianę (szacunek) | koszt przy ruchu każdej jednostki AI w turze — NIE_ZMIERZONO |
++| **A** pełny snapshot na każdą zmianę | jak dziś `engine_state_changed` z całym `PlayableState` (`bridge.rs:101-108`) | najprostszy; renderer (w procesie) nie serializuje, ale przebudowuje wszystkie warstwy; UI dostaje ~0,4–0,8 MB JSON na zmianę (szacunek; pomiar P4-1A wyżej: 0,75–0,91 MB przy 3000 i 2,0–2,4 MB przy 8000 heksów) | koszt przy ruchu każdej jednostki AI w turze — NIE_ZMIERZONO |
+ | **B** statyczna mapa raz + pełne warstwy dynamiczne | `MapViewDto` przy starcie/wczytaniu; potem `hexState`, `fog`, `cities`, `units`, … pełne, ale małe | średni; podział na „statyczne/dynamiczne” wymaga listy pól niezmiennych (§3.2 — `terenBazowy` NIE_ZMIERZONO) | niski |
+ | **C** delty per encja z wersją | zdarzenia `UnitMoved`, `HexChanged`, … z numerem wersji | najwyższy (kolejność, odtwarzanie po utracie, testy) | wysokie; zysk tylko przy bardzo dużych mapach |
