@@ -1,13 +1,13 @@
 # P4.1 — Kontrakt modelu widoku (DTO): silnik Rust `civ-engine` → renderer Rust `civ-renderer`, oraz komendy zwrotne z mapy
 
-**Temat:** `R-RUSTPORT-P4-1-RENDER-DTO-CONTRACT-Q1` · **Domena:** GAME · **Rola:** Operator (runda 1/5, wznowienie wg DODATKU r2 dispatchu)
+**Temat:** `R-RUSTPORT-P4-1-RENDER-DTO-CONTRACT-Q1` · **Domena:** GAME · **Rola:** Operator (runda 1/5, wznowienie wg DODATKU r2 dispatchu) + poprawki Obrony po zarzutach Evaluatora r1 (`dyspozycje/autobot/runs/R-RUSTPORT-P4-1-RENDER-DTO-CONTRACT-Q1/02a-obrona.md`)
 **Charakter:** temat projektowy. Zero kodu Rust/TS, zero `cargo`, zero buildu. Zero zmian w `gra/**`, `rust-port/**`, `src-tauri/**`.
 **Piny (wyłącznie odczyt):**
 - Rust: `origin/rust-port/parity-v2` = `f2bb1197` (`git archive` do scratchpadu, potem `grep`/`sed`; ścieżki bez prefiksu `rust-port/` poniżej: `engine/src/…` = `rust-port/engine/src/…`, `renderer/src/…` = `rust-port/renderer/src/…`);
-- web (tylko jako źródło „jakie pola czyta renderer”): `edb8fb56` (`git archive`/`git show`; ścieżki `render/…`, `main.ts` itd. = `gra/src/…`);
+- web (tylko jako źródło „jakie pola czyta renderer”; ścieżki `render/…`, `main.ts` itd. = `gra/src/…`): **pin danych parytetu = `07d2fbd72`** (CLAUDE.md zasada 9; `main.ts` 47 448 linii). Dispatch r1 wskazał `edb8fb56` (`main.ts` 39 350 linii) — z niego przeniesiono `civ-renderer` (`grep -rhoiE "pin[a-z ]{0,10}\`?[0-9a-f]{8,9}\`?" renderer/src` na `f2bb1197` → 31 × `edb8fb56`, 0 × `07d2fbd72`). Piny nie mają wspólnego przodka (`git merge-base edb8fb56 07d2fbd72` → exit 1). Konwencja: każde `main.ts` ma jawny pin `main.ts@07:N` (z odpowiednikiem `@edb:M`); `render/*.ts:N` bez znacznika = `@edb` (te linie cytują komentarze renderera Rust), a ich przesunięcia i **wszystkie różnice pól** `edb8fb56 → 07d2fbd72` są w §1.5;
 - baza dokumentu: `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0` = `8f2f43a8`; wejście P4-0 z `origin/claude/rust-sivvrn` (`28d7e18f`; plik identyczny z bazą — `diff` pusty).
 
-**Legenda:** `plik:linia` = odczyt z pinu; **NIE_ZMIERZONO** = nie sprawdzono, nie wnioskuję; **BRAK** = sprawdzono `grep`, w Rust nie ma; **D-DTO-n** = punkt decyzji (§7).
+**Legenda:** `plik:linia` = odczyt z pinu; **NIE_ZMIERZONO** = nie sprawdzono, nie wnioskuję; **BRAK** = sprawdzono `grep`, w Rust nie ma; **D-DTO-n** = punkt decyzji (§7); `@07` = `07d2fbd72`, `@edb` = `edb8fb56`.
 
 ---
 
@@ -35,7 +35,7 @@
 
 ### 1.2 `PlayableState` — co silnik oddaje dziś
 
-`engine/src/domain/playable.rs:490-528` (`PlayableState`): `map`, `players`, `cities`, `units`, `selected_unit_id: Option<u64>`, `turn`, `phase`, `war`, `stores`, `economy`, `forts`. Dla renderera to **za mało**:
+`engine/src/domain/playable.rs:493-531` (`PlayableState`; komentarz typu `:490`): `map`, `players`, `cities`, `units`, `selected_unit_id: Option<u64>` (`:501`), `turn`, `phase`, `war`, `stores`, `economy`, `forts`. **Brak planów marszu w stanie gry:** `grep -rln planned_march engine/src` → wyłącznie `domain/save_load.rs` (`:130` `planned_marches: Vec<SavedPlannedMarch>` — format zapisu), `domain/pathfinding.rs`, `domain/general_quick_follow.rs` (funkcje); `march_attack` występuje tylko w funkcji pomocniczej `pathfinding.rs:1976-2034`. Dla renderera to **za mało**:
 
 | Pole | Stan | Dowód | Skutek dla renderera |
 |---|---|---|---|
@@ -43,7 +43,7 @@
 | Heks | `position`, `terrain`, `passable` | `playable.rs:260-266` | brak `nakladka`, `wioska`, `rzeka`, `zloze`, `widocznosc` |
 | Ulepszenia | `improvements: Vec<{position, ulepszenie?, ulepszenia?}>` | `playable.rs:270-291` | jest (P6-STAN-ULEPSZENIA) |
 | Miasto | `id: CityId`, `owner_id: PlayerId`, `name`, `position`, `is_capital`, `population`, `culture` | `playable.rs:352-369` | brak mur/epoka/produkcja/bunt/oblężenie |
-| Jednostka | `id: UnitId`, `owner_id`, `kind` (tylko `Warrior`), `position`, `movement`, `movement_max`, `selected` | `playable.rs:378-393` | brak `typeId`, `category`, `hp`, weterana, stosu, `embarked` |
+| Jednostka | `id: UnitId`, `owner_id`, `kind` (tylko `Warrior`), `position`, `movement`, `movement_max`, `selected` | `playable.rs:378-393` | brak `typeId`, `category`, `hp`, weterana, stosu, `embarked` i flagi wodza (`isGeneral` jest tylko w formacie zapisu `UnitDto.is_general`, `domain/types.rs:418-422`) |
 | Właściciel | `PlayerId` (u64); barbarzyńcy/rebelianci przez `OwnerRef` tylko w innych modułach | `domain/ids.rs:36-62` | renderer czyta właściciela jako liczbę (`-1`, `-99`) — zgodne z `OwnerRef` JSON (`ids.rs:105-121`) |
 
 **Silnik ma jednak równoległe, pełniejsze modele i funkcje czyste** (nie podpięte do `PlayableState`):
@@ -59,6 +59,8 @@
 | gwiazdki weterana | `veteran_star_count(battles_survived)` | `unit_health.rs:171` |
 | poziomy odznak ulepszeń | `armor_path_badge_level`, `soft_path_badge_level` | `combat.rs:778`, `:783` |
 | stosy armii (`StackDisplayInfo`, `StackVitals`) | `compute_stack_display` (id jako `String`, kolejność zachowana) | `recruitment.rs:727-738`, `:763-771`, `:774` |
+| wódz / dowódca stosu (`@07`) | flaga `UnitDto.is_general` + moduły `generals.rs`, `army_leadership.rs`; **BRAK** `has_commander` w `StackVitals` (pola `ruch_left`…`veteran_stars`) | `types.rs:418-422`; `grep -rln "is_general\|has_commander" engine/src/domain` → 10 plików (m.in. `generals.rs`, `army_leadership.rs`, `general_quick_follow.rs`); `recruitment.rs:726-738` |
+| rodzaj obwarowania miasta (`wallKind`, `@07`) | `city_fortification_kind(built)` | `siege_city_fortification.rs:35` |
 | warstwy ulepszeń heksa / ulepszenie kryjące | `improvement_keys_for_hex`, `hex_has_covering_terrain_improvement` | `improvements.rs:1021`, `:1049` |
 | etykieta miasta na mapie | `format_city_map_label` | `state.rs:1306` |
 | front kolejki produkcji | `front_item` | `production_queue.rs:28` |
@@ -102,17 +104,46 @@ Renderer ma już typy wejściowe odwzorowujące kształt danych webu. Kontrakt D
 
 **Wynik:** `PositionDto(x, y) ≡ HexCoord(q = x, r = y)`. Kolejność `tiles` (`y`-major) = kolejność `Object.values(map.hexes)` webu (wstawianie `r`-major; klucze `"q,r"` nie są indeksami tablicy, więc JS zachowuje kolejność wstawiania). Zastrzeżenie: `PositionDto` ma `u16` (`domain/types.rs:118-122`), `HexCoord` `i32` (`domain/hex.rs:8-12`) — ujemne `q`/`r` nie występują w mapie webu (pętla od 0). Test w czasie działania: kandydat P4-1B (§8).
 
+### 1.5 Pin danych webu: różnice `edb8fb56` → `07d2fbd72` w tym, co czyta renderer
+
+**Pomiar zakresu.** `git diff --stat edb8fb56 07d2fbd72 -- gra/src/render` → 26 plików, +1812/−105 (nowe: `generalHexRing.ts`, `buildHighlight.ts`, `geometryContentPool.ts`, `materialContentPool.ts`, `smallPartLod.ts`, `transientObjectResources.ts`, `unitStaticMerge.ts`, `memDebug.ts`). Dla 8 plików spoza `render/**` (§2.2) zmieniły się 4: `battle/battleScene.ts`, `battle/manualBattle.ts` (+1 import tekstów HUD), `battle/siegeWall.ts`, `main.ts`; `input/picker.ts`, `ui/perfTestPanel.ts`, `ui/unitMiniPreview.ts`, `wonderpreview/main.ts` — bez zmian. Importy logiki w `render/**` (§2.1): na obu pinach 31 linii / 17 plików i ten sam zestaw symboli (`diff` list `grep -n -E "from ['\"]\.\./(game|map|units)/" render/*.ts` po usunięciu numerów linii — pusty); osiem nowych plików importuje wyłącznie `three` i moduły `render/` (`grep -E "^import"`).
+
+#### 1.5.1 Różnice pól (tylko to, co renderer czyta)
+
+| # | Zmiana na `@07` | Dowód (`@07`) | Skutek dla kontraktu |
+|---|---|---|---|
+| Δ1 | `RuntimeUnit.isGeneral?: boolean` (wódz) | `units/setup.ts:45-46`; na `@edb` brak (`grep -rn "isGeneral\|hasCommander\|CommanderStar" render/ units/setup.ts` → 0) | `UnitViewDto.isGeneral` (§3.5) |
+| Δ2 | `StackVitals.hasCommander: boolean` = `stack.some(u => u.isGeneral === true)` | `game/armyMerge.ts:1124-1125`, `:1153` | `StackVitalsDto.hasCommander` (§3.5); w Rust **BRAK** (`recruitment.rs:726-738`) |
+| Δ3 | gwiazda dowódcy: `hasCmd = vitals ? vitals.hasCommander : unit.isGeneral === true` → `applyUnitCommanderStar(tokenObj, hasCmd)` | `render/units.ts:6208-6210`; `render/unitVeteranBadges.ts:275-301` | zamyka §9 pkt 3 (źródło = Δ1/Δ2); renderer Rust ma `build_commander_star`, `commander_star_update` (`units/overlay/veteran_badges.rs:169`, `:215`) |
+| Δ4 | obwódka 7 heksów wokół wodza: `_syncGeneralRing(unit, hasCmd)` — heks = `unit.q/r`, kolor = `_ringColorForOwner(unit.ownerId)` = `_resolveOwnerColor`, wysokość z terenu 7 heksów (`topYAt` po `GENERAL_RING_HEX_OFFSETS`), widoczność = widoczność żetonu; szerokość z kamery (`applyGeneralRingLod`) | `render/units.ts:6210`, `:6915-6931`, `:6260-6262`, `:5906-5907`, `:5787-5791`; `render/generalHexRing.ts:19`, `:138`, `:204`, `:221` | **bez osobnego pola DTO**: wszystkie wejścia są już w `units[]` (`hex`, `ownerId`, `isGeneral`), `stacks` (`hasCommander`), `owners[].color`, `map` → geometria w rendererze (R-czysta). W `civ-renderer` **BRAK** (`grep -rn "general_ring\|GeneralHexRing" renderer/src` → 0) → kandydat P4-1D/RR-T13 |
+| Δ5 | `wallKind`: `cityFortificationKind(built)` (`'mur'` → `'stone'`) zamiast `includes('mury')…`; `wallKindFromBuilt` uznaje też `mury_kamienne` | `main.ts@07:2961-2965`; `render/cityMapStatChip.ts:373` | `CityViewDto.wallKind` ← silnik `city_fortification_kind` (`siege_city_fortification.rs:35`) |
+| Δ6 | emblemat: `ringHex` = `'#' + civColorFn(ownerId)` (6 cyfr hex), `null` dla barbarzyńców i miast-państw | `main.ts@07:10373-10384`, `:4080-4082`; `render/unitOwnerEmblem.ts:106` (`ringHex?: string \| null`) | `OwnerViewDto.ringHex` (§3.4) — źródło zamknięte; pole jest już w rendererze Rust (`units/overlay/emblem.rs:37-41`, REPIN-3D B2) |
+| Δ7 | podświetlenie budowy: heksy filtrowane `filterBuildHighlightHexes(key, hexes, pendingUndoKeys)`; krycie `IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY`; kopalnie złóż jako osobna warstwa zamiast ogólnego krążka | `render/buildHighlight.ts:1-28`; `main.ts@07:16374-16395` | `overlays.buildHighlight` z polem `kind` (`generic`/`mine`) i heksami już przefiltrowanymi przez producenta (§3.7) |
+| Δ8 | bitwa: `BattleUnit.isArmyCommander`, `armyLeaderMoraleBonusFrac`, `BattleOpts.manualControlAllowed`; nowe importy logiki (`game/army-leadership`, `game/city-fortification`, `game/city-towers`, `./formationRules`, `./battle-unit-context`, `rangedDamageMultFor`) | `battle/battleScene.ts@07:414-417`, `:584-585`, `:3571`, `:9803-9806` | logika → silnik (§2.2 #18, D-DTO-7); wieże murów są już w rendererze bitwy (`renderer/src/battle/mod.rs:15`, REPIN-3D A2) |
+| Δ9 | granice: ten sam filtr mgły, liczony raz na odświeżenie, plus podpis zawartości (bez przebudowy przy braku zmian) | `main.ts@07:15582-15616` | §3.6 |
+| Δ10 | `clearPlannedMarch` kasuje dodatkowo `marchStopNotified`, `marchStopDetail` | `main.ts@07:31050-31074` (na `@edb:25155-25173` tylko `plannedMarches`, `marchAttackTargets`) | §5.2 |
+| Δ11 | wyłącznie zasoby GPU/LOD i skale modeli (`RESOURCE_MODEL_SCALE`, `FORT_OUTPOST_MODEL_SCALE`, `PLATE_OWNER_ICON_SIZE`, pule geometrii/materiałów, `SmallPartLod`, scalanie statyczne) | `render/resources.ts:18`, `render/improvements.ts:398-399`, `render/unitStatPlate.ts:154`; nowe pliki z importem tylko `three` | poza DTO (stałe/geometria renderera) |
+
+#### 1.5.2 Przesunięcia numerów linii `render/*.ts` cytowanych w §2–§3 (`@edb` → `@07`)
+
+- `render/cities.ts`: `:24-26` → `:27-29`; `:39-43` → `:42-46`; callbacki `:282-362` → `:313-393` (+31); `:459` → `:502`; `:561` → `:644`; `:635` → `:718`; `:657` → `:740`; `:784-852` → `:867-935` (+83; m.in. `:804` → `:887`, `:813` → `:896`, `:821` → `:904`, `:826` → `:909`).
+- `render/units.ts`: `:29` → `:31`; `:36-37` → `:42-43`; `:5799` → `:5851`; `:6038-6041` → `:6095-6098`; `:6052-6056` → `:6109-6113`; `:6113` → `:6177`; `:6143` → `:6208`; `:6162-6167` → `:6230-6235`; `:6188` → `:6266`; `:6233` → `:6319`; `:6465` → `:6571`.
+- `render/unitVeteranBadges.ts:280` → `:316`; `render/improvements.ts:471` → `:477`; `render/mapRenderStyle.ts:773` → `:777`; `render/rangeOverlay.ts:578-758` → `:579-759`, `:810-816` → `:811-817`; `render/scene.ts:335-350` → `:336-351`, `:1313-1317` → `:1314-1318`, `:2465` → `:2469`, `:3585` → `:3589`, `:3608` → `:3612`; `units/setup.ts:41-71` → `:42-74`; `game/armyMerge.ts:902-922` → `:1103-1125` (`StackDisplayInfo` `:20` → `:21`, treść bez zmian).
+- Bez zmian (pliki poza `git diff --stat` albo zmiany bez przesunięcia cytowanych linii): `cityMapStatChip.ts:7-641`, `improvements.ts:14`, `:346-347`, `mapRenderStyle.ts:8`, `:50`, `:52`, `scene.ts:74-122`, `cityOkolicaOverlay.ts`, `countSceneOverlayCandidates.ts`, `droga-6-ramion.ts`, `fogDim.ts`, `robloxImprovements.ts`, `siegeCamp*.ts`, `siegeMarker.ts`, `unitUpgradeBadges.ts`, `wonderRenderer.ts`, `workerFieldOverlay.ts`, `tradeRoutesOverlay.ts`, `types/hex.ts`, `types/map.ts`, `input/picker.ts`.
+
+Metoda mapowania: skrypt w scratchpadzie porównuje treść linii `@edb:N` z liniami `@07` i wybiera kandydata o największej zgodności kontekstu ±3 linie; każdy wynik z niejednoznacznym kandydatem sprawdzony ręcznie `sed -n`.
+
 ---
 
 ## 2. Tabela: 17 plików `render/**` importujących logikę + 8 plików Three.js poza `render/`
 
 Kolumna „Zastąpienie w Rust”: **DTO** = pole modelu widoku (§3) liczone przez silnik; **R-czysta** = funkcja czysta (geometria/stała), która żyje w rendererze — z informacją, czy już jest w `civ-renderer`; **silnik** = zapytanie do `civ-engine`.
 
-### 2.1 Pliki `render/**` (lista z `P4-0-RENDERER-ARCHITECTURE.md` §3.3; komenda `grep -n -E "from ['\"]\.\./(game|map|units)/" render/*.ts` → 31 linii w 17 plikach)
+### 2.1 Pliki `render/**` (lista z `P4-0-RENDERER-ARCHITECTURE.md` §3.3; komenda `grep -n -E "from ['\"]\.\./(game|map|units)/" render/*.ts` → 31 linii w 17 plikach; na `@07` ten sam zestaw — §1.5; numery linii w tabeli = `@edb`, odpowiedniki `@07` w §1.5.2)
 
 | # | Plik web | Import (linia) → użycie (linia) | Charakter | Zastąpienie w Rust (dowód) |
 |---|---|---|---|---|
-| 1 | `render/cities.ts` | `type City` (`:24`) → `sync`/`syncStatChips`/`syncMapOutlines` (`:459`, `:561`, `:635`); `HUMAN_OWNER_PRIMARY` (`:25`) → `:657`, `:785`, `:806`; `formatCityMapLabel` (`:26`) → `:784`; `type CityProduction, ProductionItem` (`:39`) → `:333`, `:339`; `frontItem` (`:40`) → `:802`; `canAffordBuildingStock` (`:41-43`) → `:813` | typ; stała fotela; **reguła** (etykieta: stolica obcego → nazwa cywilizacji); **reguła** (front kolejki); **reguła** (stan zasobów vs koszt) | DTO `CityViewDto` (§3.4); `viewer.ownerId`; `badge.cityName` ← silnik `format_city_map_label` (`state.rs:1306`); `badge.prodKind/prodId/prodItemName/prodActive/prodPaused/prodCategoryLabel` ← silnik `front_item` (`production_queue.rs:28`); `badge.resourceWarning` ← silnik `can_afford_building_stock` (`building_costs.rs:582`). Odbiorcy w Rust już są: `City` (`models/cities/renderer.rs:116-129`), `CityMapBadgeInput` (`raster/atlas/keys.rs:132-175`) |
+| 1 | `render/cities.ts` | `type City` (`:24`) → `sync`/`syncStatChips`/`syncMapOutlines` (`:459`, `:561`, `:635`); `HUMAN_OWNER_PRIMARY` (`:25`) → `:657`, `:785`, `:804`; `formatCityMapLabel` (`:26`) → `:784`; `type CityProduction, ProductionItem` (`:39`) → `:333`, `:339`; `frontItem` (`:40`) → `:802`; `canAffordBuildingStock` (`:41-43`) → `:813` | typ; stała fotela; **reguła** (etykieta: stolica obcego → nazwa cywilizacji); **reguła** (front kolejki); **reguła** (stan zasobów vs koszt) | DTO `CityViewDto` (§3.4); `viewer.ownerId`; `badge.cityName` ← silnik `format_city_map_label` (`state.rs:1306`); `badge.prodKind/prodId/prodItemName/prodActive/prodPaused/prodCategoryLabel` ← silnik `front_item` (`production_queue.rs:28`); `badge.resourceWarning` ← silnik `can_afford_building_stock` (`building_costs.rs:582`). Odbiorcy w Rust już są: `City` (`models/cities/renderer.rs:116-129`), `CityMapBadgeInput` (`raster/atlas/keys.rs:132-175`) |
 | 2 | `render/cityMapStatChip.ts` | `type ProductionKind` (`:7`) → `:27`, `:311`, `:353`, `:631`, `:641` | typ (`'budynek'` / `'jednostka'`) | DTO `badge.prodKind` (enum serializowany jako `"budynek"`/`"jednostka"`); w Rust `CityMapBadgeInput.prod_kind: Option<String>` (`keys.rs:145-146`) |
 | 3 | `render/cityOkolicaOverlay.ts` | `hexKeysWithinRadius`, `type TileYield` (`:13`) → `:241`, `:53`, `:70`; `hexHasCoveringTerrainImprovement` (`:14`) → `:292`; `HUMAN_OWNER_PRIMARY` (`:15`) → `:299`; `hexDistance` (`:16`) → `:246` | geometria (promień, odległość); **reguła** (ulepszenie kryjące); **reguła** (plon heksa przez callback `yieldOf`) | R-czysta: `hex_keys_within_radius`, `hex_distance` **już w rendererze** (`cities/overlay/okolica.rs:379-404`); DTO: `okolica.yields` (plon liczy silnik — `TileYieldDto` istnieje w UI `frontend-v2/src/viewmodel/types.ts:345-355`), `map.hexes[].coveringImprovement` ← silnik `hex_has_covering_terrain_improvement` (`improvements.rs:1049`); w Rust wejście `OkolicaMap.covering_improvement` (`okolica.rs:354-359`) |
 | 4 | `render/countSceneOverlayCandidates.ts` | `improvementKeysForHex` (`:8`) → `:101`; `isWaterTerrain` (`:9`) → `:88` | narzędzie deweloperskie (P4-4: „tylko narzędzia”, `LEDGER.md:127`) | poza kontraktem gry; w `civ-renderer` brak portu (`grep -rln` dla `count_scene_overlay` i `countSceneOverlay` w `renderer/src` → 0). Jeśli kiedyś potrzebne: czyta `MapViewDto` |
@@ -124,11 +155,11 @@ Kolumna „Zastąpienie w Rust”: **DTO** = pole modelu widoku (§3) liczone pr
 | 10 | `render/robloxImprovements.ts` | `ROAD_MASK_FULL` (`:25`) → `:393-394` | stała | jak #7 |
 | 11 | `render/scene.ts` | `improvementKeysForHex` (`:74`) → `:2465`; `FOG_EXPLORED_BRIGHTNESS` (`:75`) → `:3585`, `:3608`; `landRiverRenderPath`, `mediumRiverRenderPath`, `trimMediumRenderPathAtMain` (`:118-122`) → `:1313-1317` | **reguła** (warstwy ulepszeń → `tarasy` blokuje bryłę wzgórza); stała; przekształcenia tras rzek po terenie | DTO `hexes[].terraces` (w Rust wejście `TerrainHex.terraces`, `terrain/mod.rs:193-200`) ← silnik `improvement_keys_for_hex` (`improvements.rs:1021`); trasy rzek: w rendererze **BRAK** (`grep -rn "render_path" renderer/src` → 0), w silniku `land_`/`medium_river_render_path` są (`rivers_a.rs:397`, `:436`), `trimMediumRenderPathAtMain` **BRAK** w obu (`grep` → 0) → D-DTO-4 |
 | 12 | `render/siegeCampModels.ts` | `type SiegeMachineKind` (`:6`) | typ (`'taran'` / `'wieza'`, `game/siegeMachines.ts:6`) | w rendererze enum `SiegeMachineKind` (`models/misc/siege.rs:18-26`); w silniku listy gotowych maszyn **BRAK**: `grep -rn` dla `SiegeMachine`, `machines_by_camp`, `camp_hexes` w `engine/src` → 4 trafienia, wszystkie w komentarzach (`siege_turn.rs:8`, `turn_economy_attrition.rs:12`, `:21`, `:126`); jedyny stan to flaga `SiegeCityState.has_siege_machines: bool` (`turn_economy_attrition.rs:118-130`), bez rodzajów maszyn; `tickSiegeMachinesForCity` nieprzeniesione (`turn_economy_attrition.rs:12`) |
-| 13 | `render/siegeCampSync.ts` | `type SiegeMachineKind` (`:4`); plik sam definiuje `readyMachinesForCity` (`:7-11`), `machinesByCampHex` (`:14-27`), `campOwnerByHex` (`:30-47`) | typ + rozdział maszyn round-robin (prezentacja) + właściciel obozu (pierwsza obca jednostka) | R-czysta **już w rendererze** (`siege.rs:277`, `:285`, `:377`); wejścia: DTO `sieges[]` (§3.5). Uwaga: **obozy** (`campHexesByCity`) web liczy w `main.ts:14512-14530` — „obca jednostka w odległości 1 od oblężonego miasta” to reguła → silnik |
+| 13 | `render/siegeCampSync.ts` | `type SiegeMachineKind` (`:4`); plik sam definiuje `readyMachinesForCity` (`:7-11`), `machinesByCampHex` (`:14-27`), `campOwnerByHex` (`:30-47`) | typ + rozdział maszyn round-robin (prezentacja) + właściciel obozu (pierwsza obca jednostka) | R-czysta **już w rendererze** (`siege.rs:277`, `:285`, `:377`); wejścia: DTO `sieges[]` (§3.5). Uwaga: **obozy** (`campHexesByCity`) web liczy w `main.ts@07:17492-17511` (`@edb:14512-14530`) — „obca jednostka w odległości 1 od oblężonego miasta” to reguła → silnik |
 | 14 | `render/siegeMarker.ts` | `type SiegeMachineKind` (`:8`) | typ | `SiegeMarkerRenderer::sync` (`siege.rs:543`), opcje `SiegeMarkerSyncOptions` (`:424-435`); DTO `sieges[]` |
 | 15 | `render/unitUpgradeBadges.ts` | `armorPathBadgeLevel`, `softPathBadgeLevel`, `type UnitBuildingProgress, UnitPathBadgeLevel` (`:90-95`) → `:445`; `veteranStarCount`, `type VeteranProgress` (`:96`) → `:444` | **reguła** (progi pp → poziom 0–3; liczba wygranych → gwiazdki) | DTO `units[].armorBadgeLevel`, `softBadgeLevel`, `veteranStars` ← silnik `combat.rs:778`, `:783`, `unit_health.rs:171`; renderer przyjmuje gotowe liczby (`upgrade_badges.rs:109`, `veteran_badges.rs:129`) |
 | 16 | `render/unitVeteranBadges.ts` | `veteranStarCount`, `type VeteranProgress` (`:104`) → `:280` | **reguła** | jak #15 (`veteranStars`) |
-| 17 | `render/units.ts` | `HUMAN_OWNER_PRIMARY` (`:29`) → `:5799` (pierścień `own`/`hostile`), `:6465` (domyślny właściciel podświetlenia); `type RuntimeUnit` (`:36`) → `sync` `:6039`; `type StackDisplayInfo` (`:37`) → `:6040`, `:6143-6167`, `:6188`, `:6233` | typy + stała fotela; wartości stosu (suma ruchu/HP/mocy, odznaki) liczone w `armyMerge` | DTO `units[]` + `stacks` (§3.5) ← silnik `compute_stack_display` (`recruitment.rs:774`, kolejność zachowana `:761`); `viewer.ownerId` zamiast stałej. W rendererze klasa `UnitRenderer.sync` **nie jest jeszcze przeniesiona** (`renderer/src/units/mod.rs:1-4` — tylko `overlay`) |
+| 17 | `render/units.ts` | `HUMAN_OWNER_PRIMARY` (`:29`) → `:5799` (pierścień `own`/`hostile`), `:6465` (domyślny właściciel podświetlenia); `type RuntimeUnit` (`:36`) → `sync` `:6039`; `type StackDisplayInfo` (`:37`) → `:6040`, `:6143-6167`, `:6188`, `:6233` | typy + stała fotela; wartości stosu (suma ruchu/HP/mocy, odznaki) liczone w `armyMerge` | DTO `units[]` + `stacks` (§3.5) ← silnik `compute_stack_display` (`recruitment.rs:774`, kolejność zachowana `:761`); `viewer.ownerId` zamiast stałej. W rendererze klasa `UnitRenderer.sync` **nie jest jeszcze przeniesiona** (`renderer/src/units/mod.rs:1-4` — tylko `overlay`). Na `@07` `sync` czyta dodatkowo `unit.isGeneral` i `vitals.hasCommander` (gwiazda dowódcy, obwódka wodza — §1.5.1 Δ1–Δ4), bez nowego importu logiki |
 
 **Dodatkowo (poza listą P4-0, ale to główne źródło danych):** 13 plików `render/**` importuje typy mapy `types/map` (`GameMap`) i `types/hex` (`Hex`, `TerenBazowy`, `Nakladka`) — komenda `grep -n "from '\.\./types" render/*.ts` → m.in. `cities.ts:27-29`, `scene.ts:33-34`, `units.ts:30-32`, `wonderRenderer.ts:5-7`, `workerFieldOverlay.ts:6-7`, `tradeRoutesOverlay.ts:12-13`, `rangeOverlay.ts:5-6`, `cityOkolicaOverlay.ts:8-9`, `siegeMarker.ts:7`, `mapRenderStyle.ts:6-7`, `resources.ts:7`, `styleResources.ts:6`, `countSceneOverlayCandidates.ts:5-6`. To są **typy danych**, nie reguły — pokrywa je `MapViewDto` (§3.2).
 
@@ -140,7 +171,7 @@ Kolumna „Zastąpienie w Rust”: **DTO** = pole modelu widoku (§3) liczone pr
 | 19 | `battle/manualBattle.ts` | `game/combat`, `game/veteran`, `game/army-starvation`, `game/gold-deficit`, `game/civ-bonuses` (`:28-34`), `render/hexutil`, `render/units` (`:35-36`) | martwy kod (0 importerów: `LEDGER.md:127`, `P4-5B` F6) | brak kontraktu |
 | 20 | `battle/siegeWall.ts` | `type BronzeCiv` (`:17`) | typ (klucz cywilizacji muru) | przeniesione: `battle/siege_wall.rs`; wejście: klucz cywilizacji (`siege_wall_civ`, `battle/units.rs:749-753`) + `FortDto` (`:726-733`) → DTO `battle.setup.wallCiv`, `fort` |
 | 21 | `input/picker.ts` | `type RuntimeUnit` (`:21`) → `unitAt` (`:271-278`: pierwsza jednostka na heksie w kolejności tablicy) | wyszukanie po kolejności | picking w Rust (D-RR-3; `renderer/src/pick/**`); wymaga **kolejności** `units[]` jak w webie (D-DTO-5). `unit_at` w rendererze: `grep -rn "fn unit_at" renderer/src` → 0 (do RR-T13) |
-| 22 | `main.ts` (39 350 linii) | integrator: buduje wszystkie callbacki renderera — `_cityRenderOpts` (`:2585-2649`, 22 pola wg `P4-5B` §8), `refreshSiegeMarkers` (`:14512-14545`), `unitRenderer.sync` (`:11915`), `setHighlight` (`:6202`, `:6337`, `:12142`, `:13429`, `:13435`, `:13457`, `:14903`), `setSelectionHex` (`:6196`, `:6339`, `:12139`), `setPathRoute` (`:25274`), `computeRoadMask` (`:13005`, `:14118`) | składanie widoku ze stanu + reguły rozproszone | to jest **producent modelu widoku** w webie; w Rust jego rolę przejmuje producent DTO w silniku (§3) + adapter w rendererze (§6) |
+| 22 | `main.ts` (`@07`: 47 448 linii; `@edb`: 39 350) | integrator: buduje wszystkie callbacki renderera — `_cityRenderOpts` (`main.ts@07:2939-3005` / `@edb:2585-2649`; 22 pola wg `P4-5B` §8), `refreshSiegeMarkers` (`@07:17492-17526` / `@edb:14512-14545`), `unitRenderer.sync` (`@07:14553` / `@edb:11915`), `setHighlight` (`@07:7125`, `:7260`, `:14857`, `:16360`, `:16366`, `:16392`, `:17960` / `@edb:6202`, `:6337`, `:12142`, `:13429`, `:13435`, `:13457`, `:14903`), `setSelectionHex` (`@07:7119`, `:7262`, `:14854` / `@edb:6196`, `:6339`, `:12139`), `setPathRoute` (`@07:31175` / `@edb:25274`), `computeRoadMask` (`@07:15836`, `:17083` / `@edb:13005`, `:14118`) | składanie widoku ze stanu + reguły rozproszone | to jest **producent modelu widoku** w webie; w Rust jego rolę przejmuje producent DTO w silniku (§3) + adapter w rendererze (§6) |
 | 23 | `ui/perfTestPanel.ts` | `map/mapGenAsync` (`:21`), `perf/hardwareProfile` (`:22-34`) | sonda WebGL + profil sprzętu, bez stanu gry | sonda GPU po stronie Rust (D-RR-5; `renderer/Cargo.toml` — test `gpu_probe` za cechą `gpu`); poza DTO gry |
 | 24 | `ui/unitMiniPreview.ts` | `categoryOf` (`:6`) → `:87` (z rekordu `units.json`: nazwa, `Rola (linia)`, `Super-jednostka`, `Typ`); `buildUnitModel` (`:5`) | **reguła** routingu kategorii | kategoria ← silnik `category_of` (`unit_replace_defs.rs:42`) w katalogu statycznym (`UnitDefDto`, `frontend-v2/src/viewmodel/types.ts:177`); obraz miniatury renderuje Rust (D-UI-3, `LEDGER.md:158`) |
 | 25 | `wonderpreview/main.ts` | `render/hexutil` (`:9`), `render/wonderModels` (`:10`) | strona deweloperska, bez stanu gry | modele cudów w `renderer/src/models/wonders/**`; DTO gry: tylko `wonders[]` na mapie (`PlacedWonder`, `render/wonderRenderer.ts:12-19`) |
@@ -156,7 +187,7 @@ Zasady nazewnictwa: struktury Rust z `#[serde(rename_all = "camelCase")]` (jak `
 | Pole | Typ | Źródło web (co renderer czyta) | Producent Rust |
 |---|---|---|---|
 | `contractVersion` | `u16` | — (wzór: `bridge.rs:12-13`) | stała |
-| `viewer` | `{ ownerId: OwnerRef, fogActive: bool }` | `HUMAN_OWNER_PRIMARY` w 3 plikach (§2.1 #1, #3, #17), `playerOwnerId` (`main.ts`, `P4-5B` §8 klasa b), `fogOn` (`cities.ts:657`) | sesja (fotel aktywny, hot-seat) |
+| `viewer` | `{ ownerId: OwnerRef, fogActive: bool }` | `HUMAN_OWNER_PRIMARY` w 3 plikach (§2.1 #1, #3, #17), `playerOwnerId` (`main.ts`, `P4-5B` §8 klasa b), `fogOn` (`cities.ts:657`; filtr granic `main.ts@07:15597`) | sesja (fotel aktywny, hot-seat) |
 | `turn` | `u32` | — | `PlayableState.turn` |
 | `map` | `MapViewDto` (§3.2) — **statyczna część** | `GameMap` | D-DTO-6 |
 | `hexState` | `Vec<HexDynDto>` (§3.2) | pola zmienne heksa | silnik |
@@ -164,7 +195,7 @@ Zasady nazewnictwa: struktury Rust z `#[serde(rename_all = "camelCase")]` (jak `
 | `owners` | `Vec<OwnerViewDto>` (§3.4) | callbacki `getEra/getCiv/ownerColorFn/getCivIconId/isCityStateOwner/getCivDisplayName/getMapOutlineKind/getCapitalCityId` (`cities.ts:282-362`), `OwnerEmblemContext` | silnik |
 | `cities` | `Vec<CityViewDto>` (§3.4) | `City` + `CityRenderOptions` | silnik |
 | `units` | `Vec<UnitViewDto>` (§3.5) | `RuntimeUnit` + `StackDisplayInfo` | silnik |
-| `sieges` | `Vec<SiegeViewDto>` (§3.5) | `refreshSiegeMarkers` (`main.ts:14512-14545`) | silnik |
+| `sieges` | `Vec<SiegeViewDto>` (§3.5) | `refreshSiegeMarkers` (`main.ts@07:17492-17526` / `@edb:14512-14545`) | silnik |
 | `wonders` | `Vec<PlacedWonderDto>` | `PlacedWonder{wonderId, q, r, ownerId, ruin?}` (`wonderRenderer.ts:12-19`) | silnik |
 | `territory` | `TerritoryViewDto` (§3.6) | `buildTerritoryBorderGroup(map, hexKeysByOwner, …)` (`rangeOverlay.ts:810-816`) | `domain/territory.rs` |
 | `overlays` | `OverlaysViewDto` (§3.7) | zasięgi, szlaki, okolica, pola robotników, podświetlenia, trasa | silnik + stan UI (`P4-5B` `UiState`) |
@@ -194,21 +225,20 @@ Zasady nazewnictwa: struktury Rust z `#[serde(rename_all = "camelCase")]` (jak `
 | `ulepszenia` | `Option<Vec<String>>` | `HexExt.ulepszenia` | istnieje w `PlayableHexImprovement` (`playable.rs:283-291`) |
 | `improvementKey` | `Option<String>` | `HexExt.improvementKey` | `SnapshotHex.improvement_key` (`map_snapshot.rs:162`) |
 | `zloze` | `Option<String>` | `HexExt.zloze` | `SnapshotHex.zloze` (`:159`) |
-| `wioska` | `{ istnieje: bool, ludnosc: f64 }` | `types/hex.ts:81-86` | |
-| `wlasciciel` | `Option<String>` | `Hex.wlasciciel: string / null` (`types/hex.ts:127`) | znaczenie wartości (id cywilizacji czy gracza) — **NIE_ZMIERZONO** |
+| `villagePresent` | `bool` | jedyny odczyt wioski przez warstwę renderu: `hex.wioska.istnieje` (`main.ts@07:3353`, `:3366` / `@edb:2978`, `:2991`); heks z miastem nie rysuje wioski (`main.ts@07:3368`) | producent: `wioska.istnieje && brak miasta na heksie` (reguła „miasto zastępuje wioskę” w silniku, §4 pkt 1) |
 | `terraces` | `bool` | `improvementKeysForHex(hex)` zawiera `tarasy` (`scene.ts:2465`) | silnik `improvement_keys_for_hex` |
 | `coveringImprovement` | `bool` | `hexHasCoveringTerrainImprovement` (`cityOkolicaOverlay.ts:292`) | silnik `improvements.rs:1049` |
-| `roadMask` | `u8` (6 bitów) | `computeRoadMask(q, r, hexHasRoadAt)` (`main.ts:13005`, `:14118`; def. `map/road-network.ts:75`) | D-DTO-4 |
+| `roadMask` | `u8` (6 bitów) | `computeRoadMask(q, r, hexHasRoadAt)` (`main.ts@07:15836`, `:17083` / `@edb:13005`, `:14118`; def. `map/road-network.ts:75`) | D-DTO-4 |
 
-`widocznosc` z heksa webu (`Record<ownerId, Widocznosc>`, `types/hex.ts:136`) **nie** wchodzi do heksa — renderer dostaje ją już przeliczoną dla `viewer` (§3.3).
+`widocznosc` z heksa webu (`Record<ownerId, Widocznosc>`, `types/hex.ts:136`) **nie** wchodzi do heksa — renderer dostaje ją już przeliczoną dla `viewer` (§3.3). Pól `Hex.wlasciciel` i `wioska.ludnosc` **nie ma** w DTO: renderer ani integrator ich nie czytają (`grep -n "\.wlasciciel\b" render/*.ts` → 0 i `grep -c "\.wlasciciel\b" main.ts` → 0 na obu pinach; `grep -rn "wioska\??\.ludnosc" render/ main.ts` → 0); terytorium idzie przez `collectTerritoryHexKeysByOwner` (§3.6).
 
 ### 3.3 Mgła: `FogViewDto`
 
 | Pole | Typ | Web | Odbiorca w Rust |
 |---|---|---|---|
-| `state` | `Vec<u8>` równoległy do `map.hexes` (`0` nieodkryty, `1` odkryty, `2` widoczny — wartości `Widocznosc`, `types/hex.ts:60-64`) | `visible`/`explored: Set<"q,r">` (`scene.ts:335-350`) | adapter buduje `HashSet<HexCoord>` dla `TerrainScene::set_fog` (`terrain/mod.rs:704-707`) i `HashSet<String>` `"q,r"` dla `CityRenderer::apply_fog_visibility` (`models/cities/renderer.rs:592-597`) |
+| `state` | `Vec<u8>` równoległy do `map.hexes`; kodowanie **nowe, ustalane przez kontrakt** (D-DTO-10): `0` nieodkryty, `1` odkryty, `2` widoczny — odpowiada tekstowemu enumowi webu `Widocznosc = 'nieodkryty' \| 'odkryty' \| 'widoczny'` (`types/hex.ts:60-64`), który liczb nie ma | `visible`/`explored: Set<"q,r">` (`scene.ts:335-350`) | adapter buduje `HashSet<HexCoord>` dla `TerrainScene::set_fog` (`terrain/mod.rs:704-707`) i `HashSet<String>` `"q,r"` dla `CityRenderer::apply_fog_visibility` (`models/cities/renderer.rs:592-597`) |
 
-Kolumna zamiast dwóch zbiorów: rozmiar stały (1 B/heks), deterministyczny, bez sortowania. Alternatywa (dwie listy `HexCoord`) w D-DTO-3.
+Kolumna zamiast dwóch zbiorów: rozmiar stały (1 B/heks), deterministyczny, bez sortowania. Alternatywy (dwie listy `HexCoord`; enum tekstowy jak web) — D-DTO-10.
 
 ### 3.4 Właściciele i miasta
 
@@ -217,16 +247,16 @@ Kolumna zamiast dwóch zbiorów: rozmiar stały (1 B/heks), deterministyczny, be
 | Pole | Typ | Web (dowód) |
 |---|---|---|
 | `ownerId` | `OwnerRef` | — |
-| `color` | `u32` (0xRRGGBB) | `ownerColorFn` (`cities.ts:324`), `civColorFn` (`main.ts:14518`) |
+| `color` | `u32` (0xRRGGBB) | `ownerColorFn` (`cities.ts:324`), `civColorFn` (`main.ts@07:17498` / `@edb:14518`); też kolor obwódki wodza (`render/units.ts@07:5906-5907`) |
 | `civIconId` | `String` | `getCivIconId` (`cities.ts:330`), `OwnerEmblemContext.civ_id` (`emblem.rs:29-30`) |
-| `bronzeCiv` | `String` (klucz modelu miasta) | `getCiv` → `ikonaIdToBronzeCiv(civTypeForOwner)` (`main.ts:2599`) |
+| `bronzeCiv` | `String` (klucz modelu miasta) | `getCiv` → `ikonaIdToBronzeCiv(civTypeForOwner)` (`main.ts@07:2955` / `@edb:2599`) |
 | `era` | `f64` (1 kamień, 2 brąz, 3 żelazo) | `getEra` (`cities.ts:282`), `emblem.rs:31-32` |
 | `isCityState`, `isBarbarian` | `bool` | `isCityStateOwner` (`cities.ts:348`), `emblem.rs:33-36` |
-| `ringHex` | `Option<String>` | `emblem.rs:37-41` |
+| `ringHex` | `Option<String>` | `emblem.rs:37-41`; źródło `main.ts@07:10381-10383`: `'#' + civColorFn(ownerId)` (`civRingHexFn`, `:4080-4082`), `null` dla barbarzyńców i miast-państw (§1.5.1 Δ6) |
 | `displayName` | `Option<String>` | `getCivDisplayName` (`cities.ts:362`) |
 | `mapOutlineKind` | `Option<enum>` | `getMapOutlineKind` (`cities.ts:318`) |
 | `capitalCityId` | `Option<CityId>` | `getCapitalCityId` (`cities.ts:356`) |
-| `relationToViewer` | `Option<enum>` | `relationColorFn` (`rangeOverlay.ts:816`) — wartości relacji **NIE_ZMIERZONO** |
+| `relationToViewer` | `enum { self, wojna, pokoj, sojusz, neutralni }` | `relationColorFn` (`rangeOverlay.ts:816`; def. `main.ts@07:4065-4068` / `@edb:3632-3635`): własny właściciel (`isMe`) → `civColorFn(ME())`, inaczej `relationBorderColor(getDiploRelation(ME(), ownerId).status)`; statusy `RelationBorderStatus = 'wojna' \| 'pokoj' \| 'sojusz' \| 'neutralni'` (`game/civ-visual.ts:89`), kolory `wojna` 0xff5252, `sojusz` 0x4fc3f7, reszta 0xffd700 (`:84-86`, `:100-104`). Producent: silnik (`getDiploRelation`, `main.ts@07:10312`); mapowanie status → kolor = stała prezentacji w adapterze (w `civ-renderer` **BRAK**: `grep -rn RELATION_BORDER renderer/src` → 0; renderer przyjmuje `relation_color_fn: Option<&dyn Fn(i64) -> u32>`, `range.rs:730`) |
 
 `CityViewDto` (kolejność: kolejność tablicy `cities` w silniku — D-DTO-5):
 
@@ -237,9 +267,9 @@ Kolumna zamiast dwóch zbiorów: rozmiar stały (1 B/heks), deterministyczny, be
 | `hex` | `HexCoord` | `City.q/r` |
 | `population` | `f64` | `City.population` (`cities.ts:826`: `city.population ?? 1`) |
 | `level` | `f64` | `getLevel` (`cities.ts:294`; domyślnie `max(1, min(10, population))` — `models/cities/renderer.rs:140-141`) |
-| `wallKind` | enum `none/palisada/stone` | `getWallKind` (`cities.ts:306`), `wallKindFromBuilt` (`:799-800`) |
+| `wallKind` | enum `none/palisada/stone` | `getWallKind` (`cities.ts:306`), `wallKindFromBuilt` (`:799-800`); na `@07` `cityFortificationKind(built)` (`main.ts@07:2961-2965`) → silnik `city_fortification_kind` (`siege_city_fortification.rs:35`), §1.5.1 Δ5 |
 | `revolt` | `bool` | `getRevolt` (`cities.ts:309`) |
-| `besieged` | `bool` | `c.oblegane` (`main.ts:14513`); etykieta R5 (`P4-5B` §7) |
+| `besieged` | `bool` | `c.oblegane` (`main.ts@07:17493` / `@edb:14513`); etykieta R5 (`P4-5B` §7) |
 | `fogVisible` | `bool` | część mgłowa `isVisible` (`P4-5B` §8, wiersz mieszany); filtr panelu miasta przychodzi z `UiState` |
 | `unitCountOnHex` | `u32` | `getUnitCountOnHex` (`cities.ts:315`) |
 | `badge` | `CityBadgeDto` = `CityMapBadgeInput` **bez** pól stanu UI/renderera (`hoverExpanded` ← `UiState`/hover Rust; `lodLevel` ← renderer) | `cities.ts:796-852`; Rust `keys.rs:132-175` |
@@ -261,31 +291,37 @@ Kolumna zamiast dwóch zbiorów: rozmiar stały (1 B/heks), deterministyczny, be
 | `hp`, `hpMax` | `f64`, `Option<f64>` | `:58-60` | |
 | `embarked` | `bool` | `:71`; `units.ts:6056` | |
 | `inGarnizon` | `bool` | `:51` | |
+| `isGeneral` | `bool` | `RuntimeUnit.isGeneral` (`units/setup.ts@07:45-46`); czyta `render/units.ts@07:6209` (gdy brak wpisu `vitals`) | stan jednostki (w Rust dziś tylko zapis `UnitDto.is_general`, `types.rs:418-422`) |
 | `veteranStars` | `u8` (0–3) | `unitVeteranBadges.ts:280` | `unit_health.rs:171` |
 | `armorBadgeLevel`, `softBadgeLevel` | `u8` (0–3) | `unitUpgradeBadges.ts:445` | `combat.rs:778`, `:783` |
-| `commanderStar` | `bool` | renderer ma `build_commander_star` (`veteran_badges.rs:169`) | **pole źródłowe w webie NIE_ZMIERZONO** |
-| `dimmed` | `bool` | `dimmedUnitIds` / `deferredPlayerUnitRevealIds` (`main.ts:11915`, `units.ts:6113`) | silnik (odroczone odsłonięcie) |
+| `dimmed` | `bool` | `dimmedUnitIds` / `deferredPlayerUnitRevealIds` (`main.ts@07:14553` / `@edb:11915`, `units.ts:6113`) | silnik (odroczone odsłonięcie) |
 
-`StackViewDto` (lustro `StackDisplayInfo`, `game/armyMerge.ts:20-42`; w Rust `recruitment.rs:763-771`): `visibleIds: Vec<UnitId>`, `badgeByRepId: Vec<(UnitId, u32)>`, `starvingRepIds: Vec<UnitId>`, `goldDeficitRepIds: Vec<UnitId>`, `vitalsByRepId: Vec<(UnitId, StackVitalsDto)>`; `StackVitalsDto` = `ruchLeft, ruchMax, hp, hpMax, fieldPowerM, armorBadgeLevel, softBadgeLevel, veteranStars` (`recruitment.rs:727-738`; użycie `units.ts:6143-6167`). Kolejność wpisów = kolejność `Map`/`Set` webu (zachowana w `compute_stack_display`, `recruitment.rs:761`).
+Gwiazda dowódcy i obwódka wodza nie mają osobnego pola: renderer liczy `hasCmd = vitals ? vitals.hasCommander : unit.isGeneral` (`render/units.ts@07:6209`) i z tego rysuje gwiazdę oraz obwódkę 7 heksów w kolorze `owners[ownerId].color` na heksie `hex` (§1.5.1 Δ3–Δ4). To geometria z pól już obecnych w DTO, więc zostaje w rendererze (R-czysta, w `civ-renderer` BRAK).
 
-`SiegeViewDto` (jeden wpis na oblężone miasto, kolejność jak `cities`): `cityId`, `cityHex`, `campHexes: Vec<HexCoord>` (reguła z `main.ts:14519-14529` — w silniku), `readyMachines: Vec<SiegeMachineKind>` (`city.siegeMachines.ready`, `siegeCampSync.ts:7-11`; w silniku tylko flaga `has_siege_machines`, rodzajów **BRAK** — §2.1 #12). Rozdział maszyn na obozy i właściciel obozu liczy renderer (§2.1 #13). Kolory obozów z `owners[].color`.
+`StackViewDto` (lustro `StackDisplayInfo`, `game/armyMerge.ts:20-42`; w Rust `recruitment.rs:763-771`): `visibleIds: Vec<UnitId>`, `badgeByRepId: Vec<(UnitId, u32)>`, `starvingRepIds: Vec<UnitId>`, `goldDeficitRepIds: Vec<UnitId>`, `vitalsByRepId: Vec<(UnitId, StackVitalsDto)>`; `StackVitalsDto` = `ruchLeft, ruchMax, hp, hpMax, fieldPowerM, count, armorBadgeLevel, softBadgeLevel, veteranLevel, veteranStars, hasCommander` (web `game/armyMerge.ts@07:1103-1125`; Rust `recruitment.rs:726-738` — bez `has_commander`, do dopisania w P4-1D; użycie `units.ts:6143-6167` / `@07:6208-6235`). Kolejność wpisów = kolejność `Map`/`Set` webu (zachowana w `compute_stack_display`, `recruitment.rs:761`).
+
+`SiegeViewDto` (jeden wpis na oblężone miasto, kolejność jak `cities`): `cityId`, `cityHex`, `campHexes: Vec<HexCoord>` (reguła z `main.ts@07:17499-17510` / `@edb:14519-14529` — w silniku), `readyMachines: Vec<SiegeMachineKind>` (`city.siegeMachines.ready`, `siegeCampSync.ts:7-11`; w silniku tylko flaga `has_siege_machines`, rodzajów **BRAK** — §2.1 #12). Rozdział maszyn na obozy i właściciel obozu liczy renderer (§2.1 #13). Kolory obozów z `owners[].color`.
 
 ### 3.6 Terytorium i zasięgi
 
-`TerritoryViewDto`: `byOwner: Vec<{ ownerId: OwnerRef, hexes: Vec<HexCoord> }>` w kolejności wstawiania `Map` webu (odbiorca `build_territory_border_group(by_owner: &[(i64, HexKeySet)])`, `range.rs:722-730`); `visible: bool` (przełącznik użytkownika — stan UI, `main.ts:6229-6231` komentarz „Granice państw … trwały wybór użytkownika”).
+`TerritoryViewDto`: `byOwner: Vec<{ ownerId: OwnerRef, hexes: Vec<HexCoord> }>` w kolejności wstawiania `Map` webu (odbiorca `build_territory_border_group(by_owner: &[(i64, HexKeySet)])`, `range.rs:722-730`).
+
+**Reguła mgły — obowiązek producenta** (`refreshTerritoryBorderOverlay`, `main.ts@07:15582-15616` / `@edb:12757-12778`): heks właściciela trafia do `byOwner`, gdy `isMe(ownerId)` **albo** `!fogOn` **albo** heks należy do `currentVisible()` lub `fogExploredForRender()` dla `viewer` (`main.ts@07:15595-15601` / `@edb:12761-12767`). Silnik filtruje przed wysłaniem; renderer nie dostaje heksów obcych granic ukrytych we mgle. Pusty wynik → brak warstwy (`@07:15602`).
+
+**Warunek pokazania** to stan UI, nie pole DTO: `territoryBorderVisible || isCityPanelOpen()` (`main.ts@07:15583` / `@edb:12759`). `territoryBorderVisible` to trwały wybór użytkownika (`main.ts@07:7152-7154` komentarz / `@edb:6229-6231`), `isCityPanelOpen()` — stan panelu. Oba przychodzą z `UiState` (`P4-5B`), więc kontroler decyduje, czy renderer rysuje `territory`. Kolor: `civColorFn` → `owners[].color`, kolor relacji → `owners[].relationToViewer` (§3.4).
 
 ### 3.7 Nakładki: `OverlaysViewDto`
 
 | Pole | Typ | Web | Kto liczy | Odbiorca Rust |
 |---|---|---|---|---|
-| `cultureRange`, `religionRange` | `Option<Vec<{ownerId, hexes}>>` | `refreshRangeOverlays` (`main.ts:6235-6238`) | silnik (gdy `UiState` je włącza) | `build_range_overlay_group(_game)` (`range.rs:783`, `:794`) |
+| `cultureRange`, `religionRange` | `Option<Vec<{ownerId, hexes}>>` | `refreshRangeOverlays` (`main.ts@07:7157-7160` / `@edb:6235-6238`) | silnik (gdy `UiState` je włącza) | `build_range_overlay_group(_game)` (`range.rs:783`, `:794`) |
 | `tradeRoutes` | `Vec<{from: HexCoord, to: HexCoord, medium: "lad" / "morze"}>` | `TradeRouteOverlayInput` (`tradeRoutesOverlay.ts:18-24`) | silnik | `trade.rs:20-32`, `:102` |
 | `okolica` | `Option<{cityId, cityHex, range: f64, workedHexes: Vec<HexCoord>, yields: Vec<(HexCoord, TileYieldDto)>, showYields: Option<bool>, ownerId}>` | `CityOkolicaOverlayParams` (`cityOkolicaOverlay.ts:47-60`) | silnik (plon, robotnicy) | `okolica.rs:361-377` (`yield_of` z tablicy) |
 | `workerFields` | `Vec<{hex, ownerId}>` (kolejność `Map`) | `buildWorkerFieldOverlayGroup(map, workedByOwner, playerOwnerId)` (`workerFieldOverlay.ts:130-138`) | silnik | `build_worker_field_overlay` (`cities/overlay/worker_field.rs:169`) |
-| `reachable` | `Vec<HexCoord>` | `setHighlight(reachable)` (`main.ts:6202`, `:6337`) | silnik (pathfinding) | renderer jednostek (RR-T13) |
-| `buildHighlight` | `Vec<HexCoord>` + rodzaj | `setHighlight(qual)` (`main.ts:13429-13457`) | silnik (legalność budowy) | `build_highlight.rs:21-28` |
-| `selection` | `Option<{hex, ownerId}>` | `setSelectionHex` (`main.ts:6196`) | silnik (`selected_unit_id`, `playable.rs:500`) | RR-T13 |
-| `pathRoute` | `Option<Vec<HexCoord>>` | `setPathRoute` (`main.ts:25274`) | silnik (plan marszu / podgląd trasy) | RR-T13 |
+| `reachable` | `Vec<HexCoord>` | `setHighlight(reachable)` (`main.ts@07:7125`, `:7260` / `@edb:6202`, `:6337`) | silnik (pathfinding) | renderer jednostek (RR-T13) |
+| `buildHighlight` | `{ kind: generic \| mine \| foundCity, hexes: Vec<HexCoord> }` | `setHighlight(qual)` (`main.ts@07:16360-16395` / `@edb:13429-13457`); na `@07` heksy przefiltrowane `filterBuildHighlightHexes(key, hexes, pendingUndoKeys)` (`@07:16374-16377`), kopalnie złóż jako osobna warstwa (`@07:16385-16389`) | silnik (legalność budowy + odjęcie heksów z cofaniem w tej turze) | `build_highlight.rs:21-28` |
+| `selection` | `Option<{hex, ownerId}>` | `setSelectionHex` (`main.ts@07:7119` / `@edb:6196`) | **stan UI** (`UiState.selectedUnitId`, D-CMD-12 rozstrzygnięte w `P2-5-COMMANDS.md:661`: zaznaczenie = efemeryczny stan UI); producent DTO dokłada tylko `hex`/`ownerId` zaznaczonej jednostki z `units[]`. `PlayableState.selected_unit_id` (`playable.rs:501`) renderer nie czyta | RR-T13 |
+| `pathRoute` | `Option<Vec<HexCoord>>` | `setPathRoute` (`main.ts@07:31175` / `@edb:25274`) | silnik (plan marszu zaznaczonej jednostki — wymaga stanu planów, §5.2) / zapytanie `preview_path` (hover) | RR-T13 |
 
 ### 3.8 Bitwa: `BattleViewDto`
 
@@ -323,28 +359,35 @@ Szacunek (arytmetyka z §3.2, nie pomiar): `HexStaticDto` ≈ 8 B współrzędne
 | Zdarzenie mapy (`P4-5B`) | Zachowanie webu (dowód) | Komenda silnika (wiersz `P2-5-COMMANDS.md`) | Stan w `bridge.rs` |
 |---|---|---|---|
 | `MapClick` LPM na własną jednostkę | zaznaczenie (`handleSelectedUnitHudAction` i klik, `P2-5:159` U1) | `select_unit { unit_id }` (U1) | **jest** `SelectUnit{unit_id: u64}` (`bridge.rs:35`) |
-| `MapClick` LPM na heks przy zaznaczeniu | `beginMoveSelectedUnitTo(destQ, destR)` (`main.ts:26036`; U2) — marsz wieloheksowy z planem | `move_unit { unit_id, destination }` (U2) | **częściowo**: `MoveUnit` akceptuje tylko heks sąsiedni (`playable.rs:874-884`: `distance != 1` → błąd) |
+| `MapClick` LPM na heks przy zaznaczeniu | `beginMoveSelectedUnitTo(destQ, destR)` (`main.ts@07:32037` / `@edb:26036`; U2) — marsz wieloheksowy z planem | `move_unit { unit_id, destination }` (U2) | **częściowo**: `MoveUnit` akceptuje tylko heks sąsiedni (`playable.rs:874-884`: `distance != 1` → błąd) |
 | `MapClick` na wrogą jednostkę/miasto | atak / oblężenie / wybór ataku (W1, W9 — `P2-5:176`, `:182`) | `siege_besiege`, `battle_*` (W1–W9) | **BRAK** |
 | klawisz B nad ostatnim heksem (`HoverChanged.last_b_hex`) | `tryFoundPlayerCityAt` (B11, `P2-5:104`) | `found_city` (B11 → B6) | **BRAK** |
-| `MapDoubleClick { hex }` | `showHexContextPanel(q, r)` (`main.ts:26714-26725`) — wyłącznie UI | brak komendy (UI czyta `HexTooltipViewDto`, `types.ts:1232`) | — |
-| **`MapContextMenu` / `MapRightUp` (PPM)** | patrz §5.2 | `deselect_unit` (nowa) + akcje UI | **BRAK** komendy odznaczenia (`P2-5:159`, luka D-CMD-12) |
-| hover heksu przy zaznaczonej jednostce | podgląd trasy, „jedno liczenie ścieżki na przejście heksu” (`main.ts:26224-26229`), `setPathRoute` (`:25274`) | zapytanie tylko do odczytu `preview_path { unit_id, dest } → Option<Vec<HexCoord>>` (bez eventu) | **BRAK**; przy D-RR-10 to wywołanie w procesie (renderer/kontroler Rust → silnik), bez IPC |
+| `MapDoubleClick { hex }` | `showHexContextPanel(q, r)` (`main.ts@07:32721-32732` / `@edb:26714-26725`) — wyłącznie UI | brak komendy (UI czyta `HexTooltipViewDto`, `types.ts:1232`) | — |
+| **`MapContextMenu` / `MapRightUp` (PPM)** | patrz §5.2 | odznaczenie = `UiState` (D-CMD-12, `P2-5-COMMANDS.md:661`); do silnika tylko **`cancel_planned_march { unit_id, force: false }`** (nowa) | **BRAK** (`grep -rn -i "cancel_planned\|clear_planned\|deselect" engine/src` → 0); warunek wstępny: stan planów marszu w `PlayableState` (§5.2) |
+| hover heksu przy zaznaczonej jednostce | podgląd trasy, „jedno liczenie ścieżki na przejście heksu” (`main.ts@07:32233-32238` / `@edb:26224-26229`), `setPathRoute` (`@07:31175` / `@edb:25274`) | zapytanie tylko do odczytu `preview_path { unit_id, dest } → Option<Vec<HexCoord>>` (bez eventu) | **BRAK**; przy D-RR-10 to wywołanie w procesie (renderer/kontroler Rust → silnik), bez IPC |
 | bitwa: klik heksu = ruch/atak, pomiń, wycofaj | `battleScene.ts:3947-3948`, `:3250` (W10, `P2-5:183`) | `battle_manual_action` (W10) | **BRAK** |
 
 ### 5.2 Prawy klik — `NIE_ZMIERZONO` z `P4-0` §3.2 zamknięte
 
-Web ma **dwa** słuchacze PPM na canvasie:
+Web ma **dwa** słuchacze PPM na canvasie (logika ta sama na obu pinach; różnica w `clearPlannedMarch` — §1.5.1 Δ10):
 
-1. `contextmenu` (`main.ts:26209-26221`): `preventDefault`; wyjście, gdy `galleryOn || isAnimating || isPostBattleSummaryOpen()` (`:26211`) albo kursor nad ramką panelu miasta (`:26212`); jeśli tryb budowy — `exitBuildMode()` i koniec (`:26214-26217`); inaczej `dismissPlayerUnitSelectionIfAny()` (`:26218`) i `hideHexContextPanel()` (`:26220`).
-2. `mouseup` z `button === 2` (`main.ts:26337-26343`): jeśli tryb budowy — `exitBuildMode()`; inaczej `dismissPlayerUnitSelectionIfAny()`.
+1. `contextmenu` (`main.ts@07:32218-32230` / `@edb:26209-26221`): `preventDefault`; wyjście, gdy `galleryOn || isAnimating || isPostBattleSummaryOpen()` (`@07:32220`) albo kursor nad ramką panelu miasta (`@07:32221`); jeśli tryb budowy — `exitBuildMode()` i koniec (`@07:32223-32226`); inaczej `dismissPlayerUnitSelectionIfAny()` (`@07:32227`) i `hideHexContextPanel()` (`@07:32229`).
+2. `mouseup` z `button === 2` (`main.ts@07:32352-32358` / `@edb:26337-26343`): jeśli tryb budowy — `exitBuildMode()`; inaczej `dismissPlayerUnitSelectionIfAny()`.
 
 Skutki:
 
-- `exitBuildMode()` (`main.ts:13588-13603`) — stan UI (tryb budowy, `activeImprovementKey`, `activeWonderId`), z wyjątkiem: nie działa, dopóki gracz nie ma pierwszego miasta (`isAwaitingFirstPlayerCity`, `:13593`);
-- `hideHexContextPanel()` (`main.ts:11107-11113`) — stan UI;
-- **`dismissPlayerUnitSelectionIfAny()` zmienia stan gry:** `:6215-6219` → `clearPlayerUnitSelection(force = false)` (`:6167-6170`) → `clearPlannedMarch(selectedId, false)` (`:25155-25173`), który **usuwa zaplanowany marsz zaznaczonej jednostki, o ile nie jest to marsz ataku** (`:25157` — `if (!force && plannedMarches.get(unitId)?.attackUnitId) return;`). `plannedMarches` jest zapisywany (`main.ts:30428` `plannedMarchesToSave`; w Rust `save_load.rs:130` `planned_marches`, `:320-326` `SavedPlannedMarch`).
+- `exitBuildMode()` (`main.ts@07:16526-16541` / `@edb:13588-13603`) — stan UI (tryb budowy, `activeImprovementKey`, `activeWonderId`), z wyjątkiem: nie działa, dopóki gracz nie ma pierwszego miasta (`isAwaitingFirstPlayerCity`, `@07:16532` / `@edb:13594`);
+- `hideHexContextPanel()` (`main.ts@07:13700-13706` / `@edb:11107-11113`) — stan UI;
+- `dismissPlayerUnitSelectionIfAny()` (`main.ts@07:7138-7143` / `@edb:6215-6220`) ma **bramkę** `if (selectedId === null || !isWorldMapUnitMode()) return false;` (`@07:7139` / `@edb:6216`). `isWorldMapUnitMode()` (`main.ts@07:6733-6750` / `@edb:5833-5850`, treść identyczna — `diff` pusty) zwraca `false`, gdy otwarty jest panel miasta, okno pre-bitwy, scena bitwy, podsumowanie bitwy, panel łączenia armii, wybór łączenia, panel podziału armii, panel oblężenia albo wybór jednostki w mieście — wszystko to stany UI. Gdy bramka przepuszcza: `clearPlayerUnitSelection(force = false)` (`@07:7090-7093` / `@edb:6167-6170`) → `clearPlannedMarch(selectedId, false)`, potem `clearPlayerUnitSelectionStateOnly()` (samo zaznaczenie) i `refreshD1bHud()`;
+- **`clearPlannedMarch(unitId, force = false)` zmienia stan gry** (`main.ts@07:31050-31074` / `@edb:25155-25173`): jeśli plan jednostki ma `attackUnitId`, nic nie robi (`@07:31052` / `@edb:25157`); inaczej usuwa wpis jednostki z `plannedMarches` (zapisywane: `plannedMarchesToSave(plannedMarches)`, `@07:37184` / `@edb:30428`; w Rust format zapisu `save_load.rs:130`, `:320-326`), z `marchAttackTargets` (`@07:31054` / `@edb:25159`; mapa `@07:31016`, czytana w turze `@07:25782`, `:25795`), a na `@07` także z `marchStopNotified` i `marchStopDetail` (`@07:31055-31056`; mapy `:31007`, `:31009`). Na koniec, gdy dotyczy zaznaczonej jednostki, `unitRenderer.clearPathRoute()` (`@07:31071-31073`) — stan widoku.
 
-**Wniosek:** PPM nie jest czysto UI. Kontrakt: `MapContextMenu`/`MapRightUp` → kontroler (P5) robi część UI (tryb budowy, panel heksu) i — gdy jest zaznaczona jednostka — wysyła do silnika **`deselect_unit { unit_id }`** o semantyce 1:1: wyczyść `selected_unit_id` i usuń marsz tej jednostki, chyba że ma cel ataku. Ta sama komenda obsłuży Esc (`main.ts:36108-36135`, `P2-5:159`). Kolejność `mouseup`/`contextmenu` zależy od platformy — obsługa jak `P4-5B` Z15; ponieważ drugie wywołanie trafia na `selectedId === null` (`:6216`), skutek dla silnika jest ten sam (idempotencja), co trzeba utrzymać w Rust (D-DTO-8).
+**Kontrakt (poprawiony po zarzutach 2 i 3 Evaluatora r1):**
+
+1. **Zaznaczenie zostaje stanem UI** — zgodnie z rozstrzygniętym D-CMD-12 (`P2-5-COMMANDS.md:661`). Silnik nie dostaje komendy odznaczenia; `overlays.selection` pochodzi z `UiState` (§3.7).
+2. **Skutek dla gry = osobna komenda** `cancel_planned_march { unit_id: UnitId, force: bool }`, semantyka 1:1 z gałęzią `unitId !== undefined` funkcji `clearPlannedMarch` (`main.ts@07:31051-31056`): przy `force = false` i planie z `attackUnitId` — brak zmian (wynik bez zmian, nie błąd); inaczej usuń wpisy jednostki z `plannedMarches`, `marchAttackTargets`, `marchStopNotified`, `marchStopDetail`. PPM i Esc wysyłają `force: false`; `force: true` ma inny wywołujący (rozwiązanie jednostki — `disbandPlayerUnit`, komentarz `@07:7084`, `:7088`).
+3. **Kontroler (P5) wykonuje kolejno:** (a) bramki `contextmenu` (`galleryOn`, animacja, podsumowanie bitwy, ramka panelu miasta) i tryb budowy; (b) bramkę `selectedId !== null && isWorldMapUnitMode()` — oba warunki z `UiState`; (c) gdy przepuszcza: `cancel_planned_march { unit_id: selectedId, force: false }` do silnika, potem czyszczenie zaznaczenia w `UiState` i trasy w rendererze; (d) w `contextmenu` — `hideHexContextPanel()`. Esc (`main.ts@07:43910-43937` / `@edb:36108-36135`) woła tę samą `dismissPlayerUnitSelectionIfAny()` (`@07:43925`), więc tę samą ścieżkę.
+4. **Idempotencja:** `mouseup` i `contextmenu` uruchamiają ścieżkę dwa razy; drugie wywołanie trafia na `selectedId === null` i kończy się w bramce (`@07:7139`), więc do silnika idzie najwyżej jedna komenda. `cancel_planned_march` dla jednostki bez planu też nic nie zmienia — wymagany test w P4-1H. Kolejność zdarzeń na platformach — `P4-5B` Z15, §9 pkt 7.
+5. **Warunek wstępny w silniku:** `PlayableState` nie przechowuje planów marszu ani `marchAttackTargets`/`marchStopNotified`/`marchStopDetail` (§1.2). Komenda wymaga najpierw tego stanu → kandydat `R-RUSTPORT-P4-1J-PLANNED-MARCH-STATE` (§8), zależność P4-1H. Do tego czasu „semantyka 1:1” nie jest wykonalna.
 
 ### 5.3 Zdarzenia silnik → renderer/UI
 
@@ -380,8 +423,9 @@ Klasyfikacja wg CLAUDE.md zasada 9: **żaden** z poniższych punktów nie jest o
 - **D-DTO-5 — Kolejność kolekcji.** A: DTO w kolejności wstawiania webu (silnik utrzymuje kolejność tam, gdzie web ją ujawnia: heksy, jednostki, miasta, terytorium, obozy, stosy). B: wszędzie kolejność po id + osobne testy zgodności obrazu. C: renderer sortuje sam. **Rekomendacja: A** — renderer już zależy od kolejności (§4 pkt 3), a `compute_stack_display` już ją zachowuje (`recruitment.rs:761`).
 - **D-DTO-6 — Producent pełnej mapy.** `PlayableMap` ma 4 tereny (`playable.rs:246-252`), model `MapHex` jest pustym szkieletem (`mapgen/types.rs:1-3`), pełne pola ma tylko `SnapshotHex` (`map_snapshot.rs:148-163`). A: rozszerzyć `PlayableMap`/`PlayableTile` do pól §3.2. B: dokończyć model `MapHex` (temat M01) i trzymać go w stanie gry; producent widoku czyta `MapHex`. C: producent widoku czyta `SnapshotHex`. **Rekomendacja: B** (jeden właściciel modelu heksa; C wiąże widok z formatem zapisu). Zależność dla P4-1B.
 - **D-DTO-7 — Bitwa: zdarzenia czy stan na krok.** A: silnik emituje `BattleEvent` (ruch, cios, strzał, taran, kamień, wyłom, ucieczka, śmierć, zwrot) z czasem wirtualnym; renderer odtwarza je funkcjami `dynamics.rs`. B: renderer dostaje stan po każdym kroku i sam wylicza różnice. C: renderer steruje zegarem i woła krok silnika. **Rekomendacja: A** — API animacji renderera już jest pocięte per akcja (`dynamics.rs:9-27`), D-RR-10 daje pętlę klatek Rustowi, a B wymagałby odtwarzania „co się stało” z różnic stanu (reguła w rendererze).
-- **D-DTO-8 — Komendy mapy brakujące w `bridge.rs`.** `deselect_unit` z semantyką §5.2, `move_unit` wieloheksowy (plan marszu), `preview_path` (zapytanie), `found_city`, akcje wojny. A: dopisać do `EngineCommand` w kolejności potrzeb renderera (najpierw `deselect_unit`, `preview_path`, `move_unit` wieloheksowy). B: czekać na pełny katalog P2-5. **Rekomendacja: A** (blokują pierwszą grywalną mapę).
+- **D-DTO-8 — Komendy mapy brakujące w `bridge.rs`.** `cancel_planned_march` z semantyką §5.2 (zaznaczenie zostaje w `UiState` wg D-CMD-12, `P2-5-COMMANDS.md:661` — bez rewizji tej decyzji), `move_unit` wieloheksowy (plan marszu), `preview_path` (zapytanie), `found_city`, akcje wojny. A: dopisać do `EngineCommand` w kolejności potrzeb renderera (najpierw stan planów marszu — P4-1J, potem `cancel_planned_march`, `preview_path`, `move_unit` wieloheksowy). B: czekać na pełny katalog P2-5. **Rekomendacja: A** (blokują pierwszą grywalną mapę). Uwaga dla rejestru: uzasadnienie D-CMD-12 („nic nie wymaga roundtrip”) nie obejmuje skutku ubocznego odznaczenia — skasowania planu marszu (§5.2). Wniosek nie zmienia decyzji (zaznaczenie = UI), ale dokłada komendę gry; do odnotowania przy U1 w `P2-5`.
 - **D-DTO-9 — Wspólny snapshot dla UI.** Czy `RenderViewDto` (lub jego część) jest tym samym obiektem JSON, który dostaje webview (`P4-5B` Z12), czy UI ma osobne DTO z P5-0 (`frontend-v2/src/viewmodel/types.ts`, 1918 linii). A: jeden snapshot, UI czyta pola wspólne. B: dwa DTO, wspólny producent pól wspólnych w silniku. **Rekomendacja: B** — UI ma już 92+ typów DTO z harnessami (`LEDGER.md:146`); wspólny ma być **producent** (jedna funkcja w silniku), nie obiekt.
+- **D-DTO-10 — Kodowanie mgły w DTO.** Web nie ma liczb: `Widocznosc` to enum tekstowy `'nieodkryty' | 'odkryty' | 'widoczny'` (`types/hex.ts:60-64`), a renderer dostaje dwa zbiory kluczy (`scene.ts:335-350`). A: `Vec<u8>` równoległy do `map.hexes` z kodowaniem `0`/`1`/`2` (nowe, ustalone tym kontraktem). B: dwie listy `HexCoord` (`visible`, `explored`) jak wejście webu. C: `Vec<enum>` serializowany tekstem jak web. Za A: 1 B/heks, stały rozmiar, brak sortowania; przeciw A: nowe kodowanie, trzeba je przetestować. Za B: najbliżej webu; przeciw B: rozmiar zależny od odkrycia mapy i obowiązek ustalenia kolejności list. Za C: czytelny JSON; przeciw C: ok. 8–10 B/heks w JSON. **Rekomendacja: A** (adapter i tak buduje oba `HashSet`, §6).
 
 ---
 
@@ -392,23 +436,24 @@ Klasyfikacja wg CLAUDE.md zasada 9: **żaden** z poniższych punktów nie jest o
 | `R-RUSTPORT-P4-1A-VIEW-TYPES` | typy §3 (serde camelCase), testy JSON (round-trip, nazwy kluczy, niezmiennik ID), pomiar rozmiaru snapshotu dla map 3000/8000 heksów | wg D-DTO-1 (A: `rust-port/view-model/**`; B: `rust-port/renderer/src/view.rs` + `tests/view_*.rs`) | D-DTO-1, -2, -3 |
 | `R-RUSTPORT-P4-1B-MAP-VIEW-PRODUCER` | `MapViewDto` + `HexDynDto` z modelu mapy; test `PositionDto ≡ (q,r)` i kolejności `r`-major (§1.4); `terraces`, `coveringImprovement`, `roadMask`, trasy rzek z `trimMediumRenderPathAtMain` | `rust-port/engine/src/domain/<moduł widoku mapy>.rs`, `rust-port/engine/tests/view_map_*.rs` | D-DTO-4, -6; temat M01 (model `MapHex`) |
 | `R-RUSTPORT-P4-1C-FOG-VIEW` | `FogViewDto` z `compute_player_visibility` dla `viewer` (hot-seat) | moduł widoku mgły w silniku + testy | P4-1A, P4-1B |
-| `R-RUSTPORT-P4-1D-UNIT-VIEW` | `UnitViewDto` + `StackViewDto` (`compute_stack_display`, gwiazdki, odznaki, `category_of`) | moduł widoku jednostek w silniku + testy | P4-1A; rozszerzenie `PlayableUnit` poza `Warrior` (`playable.rs:378-381`) |
+| `R-RUSTPORT-P4-1D-UNIT-VIEW` | `UnitViewDto` + `StackViewDto` (`compute_stack_display`, gwiazdki, odznaki, `category_of`, `isGeneral`, `StackVitals.hasCommander`) | moduł widoku jednostek w silniku + testy | P4-1A; rozszerzenie `PlayableUnit` poza `Warrior` (`playable.rs:378-393`) i o flagę wodza (`UnitDto.is_general`, `types.rs:418-422`); `has_commander` w `StackVitals` (`recruitment.rs:726-738`). Gwiazda dowódcy i obwódka wodza po stronie renderera — RR-T13 (§1.5.1 Δ3–Δ4) |
 | `R-RUSTPORT-P4-1E-CITY-VIEW` | `OwnerViewDto`, `CityViewDto`, `CityBadgeDto` (`format_city_map_label`, `front_item`, `can_afford_building_stock`, `growthPercent`) | moduł widoku miast w silniku + testy | P4-1A; produkcja i wzrost w stanie gry |
 | `R-RUSTPORT-P4-1F-OVERLAYS-VIEW` | terytorium, zasięgi, szlaki, okolica, pola robotników, oblężenia (obozy, gotowe maszyny), cuda, podświetlenia, zaznaczenie, trasa | moduły widoku nakładek w silniku + testy | P4-1A; stan maszyn oblężniczych w silniku (BRAK, §2.1 #12) |
 | `R-RUSTPORT-P4-1G-VIEW-ADAPTER` | `renderer/src/view.rs`: DTO → wejścia renderera (§6), w tym `grep` zależności od postaci tekstowej id | `rust-port/renderer/src/view.rs`, `rust-port/renderer/tests/view_adapter_*.rs` | P4-1A; RR-T13 |
-| `R-RUSTPORT-P4-1H-MAP-COMMANDS` | `deselect_unit` (§5.2, z testem idempotencji i marszem ataku), `preview_path`, `move_unit` wieloheksowy | `rust-port/engine/src/bridge.rs`, `rust-port/engine/src/domain/playable.rs`, testy | D-DTO-8; P2-5 U1, U2, U11 |
+| `R-RUSTPORT-P4-1J-PLANNED-MARCH-STATE` | stan planów marszu w `PlayableState`: `plannedMarches` (z `attackUnitId`), `marchAttackTargets`, `marchStopNotified`, `marchStopDetail`; zapis/odczyt przez istniejący `SavedPlannedMarch` (`save_load.rs:130`, `:320-326`) | `rust-port/engine/src/domain/playable.rs`, `rust-port/engine/src/domain/save_load.rs`, testy | wzorzec pól z `#[serde(default, skip_serializing_if)]` (`playable.rs:507-518`); zgodność golden zapisu |
+| `R-RUSTPORT-P4-1H-MAP-COMMANDS` | `cancel_planned_march { unit_id, force }` (§5.2: test planu z `attackUnitId` przy `force=false`, test braku planu = bez zmian, test podwójnego wywołania), `preview_path`, `move_unit` wieloheksowy. Bez komendy odznaczenia (D-CMD-12) | `rust-port/engine/src/bridge.rs`, `rust-port/engine/src/domain/playable.rs`, testy | D-DTO-8; **P4-1J**; P2-5 U1, U2, U11 |
 | `R-RUSTPORT-P4-1I-BATTLE-EVENTS` | `BattleEvent` z `SiegeLoop`/`ProdBody` + producent `BattleUnitsOpts`; konsument w `renderer/src/battle/**` | `rust-port/engine/src/domain/siege_tactics_*.rs` (nowy moduł zdarzeń), `rust-port/renderer/src/battle/**` (konsument) | D-DTO-7; pętla K5 (`LEDGER`) |
 
-Kolejność: P4-1A → (P4-1B ∥ P4-1H) → (P4-1C ∥ P4-1D ∥ P4-1E) → P4-1F → P4-1G; P4-1I równolegle po D-DTO-7.
+Kolejność: P4-1A → (P4-1B ∥ P4-1J → P4-1H) → (P4-1C ∥ P4-1D ∥ P4-1E) → P4-1F → P4-1G; P4-1I równolegle po D-DTO-7.
 
 ---
 
 ## 9. `NIE_ZMIERZONO`
 
 1. Czy `terenBazowy` heksa zmienia się w trakcie gry (podział statyka/dynamika, §3.2).
-2. Znaczenie wartości `Hex.wlasciciel` (`types/hex.ts:127`).
-3. Pole źródłowe gwiazdy dowódcy (`build_commander_star`, `veteran_badges.rs:169`) w webie.
-4. Wartości relacji dla `relationColorFn` (`rangeOverlay.ts:816`).
+2. ~~Znaczenie `Hex.wlasciciel`~~ — usunięte: pole nie jest czytane przez renderer (§3.2).
+3. ~~Pole źródłowe gwiazdy dowódcy~~ — zamknięte: `vitals.hasCommander` / `unit.isGeneral` na `@07` (§1.5.1 Δ1–Δ3).
+4. ~~Wartości relacji dla `relationColorFn`~~ — zamknięte: `getDiploRelation(ME(), ownerId).status` (§3.4).
 5. Rozmiar i czas budowy snapshotu (szacunek w §4.1 to arytmetyka, nie pomiar); liczba jednostek/miast na późnej mapie.
 6. Czy którykolwiek moduł renderera zależy od postaci tekstowej id webu (§6).
 7. Kolejność `mouseup`/`contextmenu` na platformach docelowych (obsługa `P4-5B` Z15; skutek dla silnika idempotentny — §5.2).
@@ -424,4 +469,5 @@ Kolejność: P4-1A → (P4-1B ∥ P4-1H) → (P4-1C ∥ P4-1D ∥ P4-1E) → P4-
 - Obecność funkcji w Rust: pętla `grep -rln "\b<nazwa>\b" renderer/src` i `engine/src` dla 26 symboli (wynik w §1.2, §2.1).
 - Prawy klik: `sed -n 26195,26240p main.ts`, `grep -n "function dismissPlayerUnitSelectionIfAny\|function clearPlayerUnitSelection\|function clearPlannedMarch\|function exitBuildMode\|function hideHexContextPanel" main.ts`, `grep -n plannedMarches main.ts`, `sed -n 26336,26346p main.ts`.
 - `PositionDto ↔ (q,r)`: `git show edb8fb56:gra/src/map/generator.ts | sed -n 212,226p`; `grep -n "fn axial_distance" -A12 engine/src/domain/playable.rs`.
+- Obrona r1 (pin `@07`): `git archive 07d2fbd72 gra/src` i `git archive edb8fb56 gra/src` do scratchpadu; `git diff --stat edb8fb56 07d2fbd72 -- gra/src/render` (26 plików, +1812/−105) i `-- <8 plików §2.2>` (4 zmienione); `git diff edb8fb56 07d2fbd72 -- gra/src/render/<plik>` dla każdego zmienionego pliku czytanego przez renderer; `grep -n "hasCommander\|isGeneral\|_syncGeneralRing" render/units.ts game/armyMerge.ts units/setup.ts`; `sed -n 15582,15616p main.ts` (granice), `sed -n 31046,31076p main.ts` (`clearPlannedMarch`), `sed -n '/function isWorldMapUnitMode/,/^    }/p'` na obu pinach + `diff`; mapowanie linii `@edb → @07` skryptem porównującym treść i kontekst ±3 linie (§1.5.2), wątpliwe trafienia sprawdzone `sed -n`.
 - Zero `cargo`, zero `npm`, zero buildu.
