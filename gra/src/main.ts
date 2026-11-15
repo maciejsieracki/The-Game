@@ -2480,7 +2480,10 @@ async function boot(): Promise<void> {
     }
 
     /** Epoka startowa gry z kreatora — nie bieżąca epoka gracza po awansie tech. */
+    /** R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r4): nadpisanie epoki startowej TYLKO dla testu live (fixture epoki). */
+    let testEraFloorOverride: number | null = null;
     function gameStartEra(): number {
+      if (testEraFloorOverride != null) return testEraFloorOverride;
       return eraNumberFromEpochId(_menuEpochId || 'kamien');
     }
 
@@ -30153,6 +30156,35 @@ async function boot(): Promise<void> {
       suppressVictoryForTest: (): void => { truceTestSuppressVictory = true; },
     };
 
+    /**
+     * R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r4, zarzut 1 FC r3): fixture epoki WYŁĄCZNIE dla testu live.
+     * Samo ustawienie `ownerEraByOwner` / `player.era` jest cofane przez produkcyjny sync badań
+     * (`syncOwnerEraFromResearch` / `reconcilePlayerEraFromResearch`) przy każdym EOT, więc tu ustawiamy BADANIA
+     * (AI: aiResearchDone + cuda; gracz: player.zbadane), a epoka wynika z nich. / EN: test-only era fixture
+     * that seeds research so the production era sync does not revert it.
+     */
+    function applyOwnerEraFixtureForTest(ownerId: number, era: number): number {
+      const bounded = Math.max(1, Math.min(10, Math.trunc(era)));
+      // Epoka startu gry (podloga awansu) bywa wyzsza niz zadana (playtest startuje w Brazu = 2): dla testu
+      // obnizamy podloge do zadanej epoki, inaczej Kamien nie daje sie ustawic (zmierzone: gameStart=2, ERA=1 -> 2).
+      testEraFloorOverride = bounded;
+      if (isHuman(ownerId)) {
+        const researchedPlayer = new Set<string>();
+        for (const tech of data.tech) {
+          const e = epochNumber(tech.Epoka);
+          if (e != null && e < bounded) researchedPlayer.add(tech.Technologia);
+        }
+        player.zbadane = researchedPlayer;
+        reconcilePlayerEraFromResearch();
+        return empireEpochForOwner(ownerId);
+      }
+      // Start AI = zadana epoka (jak nowy AI tej epoki): podloga = bounded, badania epoki startowej puste.
+      ownerStartEraByOwner.set(ownerId, bounded);
+      aiResearchDone.set(ownerId, new Set<string>());
+      ownerEraByOwner.set(ownerId, bounded);
+      return empireEpochForOwner(ownerId);
+    }
+
     // R-WEB-BORDER-RELATIONS-ERA-PENALTY-Q1 — WYŁĄCZNIE live-test hook.
     // Setup dodaje kopie istniejących rekordów City do aktywnego świata i wybiera
     // koordynaty wyłącznie wtedy, gdy REALNE ownersShareLandBorderLive potwierdzi
@@ -30669,6 +30701,20 @@ async function boot(): Promise<void> {
             pack: diplomacyHandelSurowcePakietWielkosc(),
           };
         },
+        /** R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r2): diagnostyka bramki NNS gracza (prognoza skarbca/spichlerza) — tylko test. */
+        nnsDiag: () => ({
+          forecast: _nnsHumanForecast,
+          gate: nnsGateForPlayer().blokada,
+          komunikat: nnsGateForPlayer().komunikat,
+          treasury: ownerTreasury(ME()),
+          spichlerz: empireFoodStates.get(ME())?.zapasyPanstwa ?? null,
+        }),
+        /** R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r2): ustawia zapas spichlerza panstwa wlasciciela (bufor bramki NNS w tescie). */
+        setSpichlerzPanstwa: (ownerId: number, value: number): number => {
+          const st = empireFoodStates.get(ownerId);
+          if (st) st.zapasyPanstwa = Math.max(0, Math.round(value));
+          return empireFoodStates.get(ownerId)?.zapasyPanstwa ?? 0;
+        },
         /** Zaklada pierwsze miasto gracza (bramka awaitingFirstPlayerCity). */
         foundFirstCity: (): boolean => {
           if (!isAwaitingFirstPlayerCity()) return true;
@@ -30697,6 +30743,21 @@ async function boot(): Promise<void> {
             status: getDiploRelation(ai, ME()).status,
           };
         },
+        /** R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r3): ustawia liczbe obywateli pierwszego miasta wlasciciela (scenariusz 20 obywateli). Tylko test. */
+        setCityPopulation: (ownerId: number, n: number): number => {
+          const c = cities.find(x => x.ownerId === ownerId);
+          if (!c) return -1;
+          c.population = Math.max(1, Math.round(n));
+          return c.population;
+        },
+        /** R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r3): ustawia epoke wlasciciela (1=Kamien, 2=Braz) -- scenariusz „20 obywateli w Brazie”. Tylko test. */
+        setOwnerEra: (ownerId: number, era: number): number => applyOwnerEraFixtureForTest(ownerId, era),
+        /** R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r4): epoka wlasciciela w danej chwili (odczyt do asercji w chwili oferty). Tylko test. */
+        ownerEra: (ownerId: number): number => empireEpochForOwner(ownerId),
+        /** R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r4): diagnostyka podlogi epoki (start gry / start wlasciciela). Tylko test. */
+        eraFloorForTest: (ownerId: number): Record<string, number> => ({
+          gameStart: gameStartEra(), ownerStart: ownerStartEraByOwner.get(ownerId) ?? -1, now: empireEpochForOwner(ownerId),
+        }),
         /** SETUP zapasu: ustawia absolutny zapas surowca wlasciciela (zerowanie + kredyt w jednym miescie). */
         setStock: (ownerId: number, key: string, amount: number): number => {
           for (const c of cities) if (c.ownerId === ownerId && c.surowce) c.surowce[key] = 0;
