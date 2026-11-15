@@ -2057,3 +2057,13 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
   - Q4: **erratum dispatchu** — „`FortDto` None → INFINITY” jest błędne (INFINITY dotyczy wyłącznie amunicji jednostek, `battleScene.ts:1444-1446`); brak `tower_material` = `null` (`battleScene.ts:4160-4161`). Poprawić w Q5, Q6 i P4-1I. Brak producenta `BattleSetupDto` w silniku i brak integratora sceny bitwy (zależności do rejestru).
 - **P4-1I1 BATTLE-OUTCOME (#244):** operator zakończony, ewaluator w toku.
 - **Dysk:** 5,4 GB (87%) podczas bramek silnika.
+
+## Przebieg (23:2x — F1 OVERLAY-TYPES i Q4 ADAPTER-BATTLE zintegrowane na parity)
+
+- **Parity:** `02a1560e3` → `1bacc7621` (fast-forward). Merge F1 `1ed1a7bd8` (FC `8ecf01c2c`), merge Q4 `1bacc7621` (FC `8666aa5ae`).
+- **Bramki na merge'u:** view-model: `fmt 0`, `clippy 0`, `test 0` (85 passed). renderer: `fmt 0`, `clippy 0`, `test 0` (550 passed). silnik: `test 0` (**3538 passed, 0 failed, 1 ignored**).
+- **Refy:** `refs/keep/P4-1F1-FC`, `refs/keep/P4-1G-Q4-BATTLE-FC`, `refs/keep/cleanup-P4-1F1-Q4-integ`.
+- **Sprzątanie:** worktree `integ-p4-1fq4` i cache `target-integ-f1q4` usunięte.
+- **Erratum dispatchu P4-1G Q4 (§ZAKRES pkt 2):** `FortDto` None → INFINITY jest błędne. INFINITY dotyczy amunicji jednostek; brak wieży = `null`. Poprawić w Q5, Q6 i P4-1I.
+- **Otwarte z FC F1:** typy nie są reeksportowane w `lib.rs` (poza allowlistą); `P4-1-RENDER-DTO-CONTRACT.md` §3.5/§3.7 do aktualizacji; reguła scalania właścicieli obozów do dispatchu Q5.
+- **Otwarte z FC Q4:** brak producenta `BattleSetupDto` w silniku i brak integratora sceny bitwy.
