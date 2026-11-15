@@ -1,0 +1,52 @@
+{
+ "info": {
+  "me": 0,
+  "ai": 1,
+  "turn": 1,
+  "myCities": 1,
+  "aiCities": 1,
+  "aiOwners": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "pricedKeys": [
+   "drewno",
+   "glina",
+   "kamien",
+   "ruda",
+   "ruda_zelaza",
+   "ruda_cyny",
+   "cegla",
+   "sol",
+   "kon",
+   "ceramika",
+   "braz",
+   "zelazo",
+   "stal",
+   "zloto",
+   "wegiel"
+  ],
+  "pack": 10
+ },
+ "stocksSetup": {
+  "aiGive": 1000000,
+  "aiRecv": 0,
+  "plGive": 0,
+  "plRecv": 1000000
+ },
+ "probe": {
+  "giveKey": "cegla",
+  "giveQty": 200,
+  "receiveKey": "zelazo",
+  "receiveQty": 50
+ },
+ "probeMs": 44172,
+ "popSetup": 0,
+ "eraSetup": 0,
+ "probeOnly": true,
+ "big": 1000000
+}
