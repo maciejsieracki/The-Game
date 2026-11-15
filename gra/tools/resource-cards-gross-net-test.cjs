@@ -116,12 +116,15 @@ function clean(s) { return String(s).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' 
   const cardHtml = P.resCardHtml(cardBase);
   const gnLine = P.resGrossNetLineHtml(cardBase);
   ok(gnLine.includes('civ-emp-res-gn'), 'B1 karta z produkcją i zużyciem ma wiersz brutto/netto');
-  ok(clean(gnLine).includes('Brutto +457') && clean(gnLine).includes('netto +422'), 'B2 wiersz pokazuje „Brutto +457 · netto +422 / turę”', clean(gnLine));
+  // R-WEB-UI-RESOURCE-CARD-NUMBERS-ONLY-DETAILS-COLLAPSED-Q1: wiersz = same liczby „+X · +Y”, bez słów
+  ok(clean(gnLine) === '+457 · +422', 'B2 wiersz pokazuje same liczby „+457 · +422” (bez „Brutto”, „netto”, „/ turę”)', clean(gnLine));
+  ok(!/Brutto|netto|turę/i.test(clean(gnLine)), 'B2b widoczny tekst wiersza bez słów brutto/netto/turę', clean(gnLine));
+  ok(/title="[^"]*Brutto[^"]*Netto[^"]*"/.test(gnLine), 'B2c wyjaśnienie brutto/netto niesie tooltip (title) wiersza', gnLine);
   ok(cardHtml.includes(gnLine), 'B3 wiersz jest w kartcie (resCardHtml zawiera resGrossNetLineHtml)');
   const cardNeg = { ...cardBase, id: 'glina', label: 'Glina', stock: 10, cap: 1000, ratePerTurn: 0, rateProductionPerTurn: 0, usage: { buildings: 0, citizens: 12, units: 0 } };
   const negLine = P.resGrossNetLineHtml(cardNeg);
   ok(negLine.includes('civ-emp-res-gn bad'), 'B4 netto ujemne → klasa „bad” (czerwone)', negLine);
-  ok(clean(negLine).includes('Brutto 0') && clean(negLine).includes('netto −12'), 'B5 brutto 0 i netto −12 widoczne', clean(negLine));
+  ok(clean(negLine) === '0 · −12', 'B5 brutto 0 i netto −12 widoczne jako „0 · −12”', clean(negLine));
   const cardEmpty = { ...cardBase, id: 'cegla', label: 'Cegła', stock: 0, cap: 1000, ratePerTurn: 0, rateProductionPerTurn: 0, usage: undefined };
   ok(P.resGrossNetLineHtml(cardEmpty) === '', 'B6 bez produkcji i bez zużycia — brak wiersza (jak dziś „—”)');
   const placeholder = { ...cardBase, placeholder: true, cap: 0 };
@@ -140,8 +143,8 @@ function clean(s) { return String(s).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' 
   ok(sums.brutto === 157, 'C1 suma brutto po kartach = 157 (ręcznie: 100+50+0+7)', sums);
   ok(sums.netto === 59, 'C2 suma netto po kartach = 59 (ręcznie: 90−35+0+4)', sums);
   const cardSumLines = fixture.map((r, i) => P.resGrossNetLineHtml({ id: 'x' + i, icon: '', label: 'x' + i, stock: 0, cap: 1, typ: 'surowy', dostep: true, ...r }));
-  const shown = cardSumLines.join('').match(/Brutto <b>[^<]*<\/b>/g) || [];
-  ok(shown.length === 3, 'C3 karty bez produkcji i zużycia pominięte; 3 karty pokazują brutto', shown);
+  const shown = cardSumLines.join('').match(/civ-emp-res-gn/g) || [];
+  ok(shown.length === 3, 'C3 karty bez produkcji i zużycia pominięte; 3 karty pokazują wiersz liczb', shown);
 
   // ---- D. statyczne: nagłówek używa tego samego modułu ----
   console.log('-- D. main.ts nagłówek = ten sam moduł');
