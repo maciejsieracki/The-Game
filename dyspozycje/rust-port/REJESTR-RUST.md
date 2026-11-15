@@ -1282,3 +1282,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Zakres 2B1 w parity:** planowanie wystrzałów z odroczeniem 180 ms, usunięcie placeholdera `dead = true`, zniszczenie wieży bez kafla. NIE w parity (2B2, osobny temat): strzał `_singleBlow` wieży, guard `towerShooterRow`, stan `destroyed`.
 - **Parity:** `14d5e50b9`. **Dysk:** 14 GB. **Sloty:** 0 z 4.
 - **Otwarte:** 2B2 (strzał wieży, guard, stan `destroyed`) — do dispatchu; ABC #106 pkt 4, #115, #120; konwencja `Co-Authored-By`.
+
+## Przebieg (15.11, heartbeat 02:17): WIEZE-2B2 r1 — Evaluator FAIL, Obrona zakończona, FC w toku
+- **Operator r1** PASS-WITH-NOTES (`af7a0be6a`): `p6_wieze_2b2` 5/5, pełny `cargo test` bez filtra EXIT 0 (3373 passed, 0 failed).
+- **Evaluator r1: FAIL.** Brak wektorów z pinu (kryterium 4: brak `p6_wieze_2b2_gen.mjs` i `p6_wieze_2b2_vectors/`); test strzału liczy oczekiwanie tą samą funkcją `single_blow_full` (tautologia), bez wartości z pina; szablon strzelca `neutral_tower_shot_template()` zamiast danych z `towerShooterRow`.
+- **Obrona r1** zakończona; **FC** w toku. Po werdykcie: FAIL → runda 2 tego samego ID z DODATKIEM (wektory z pinu, prawdziwe dane strzelca, test niezależny od funkcji produkcyjnej).
+- **Sloty: 1 z 4.** **Parity:** `14d5e50b9`. **Dysk:** 11 GB.
+- **Pytania ABC:** #106 pkt 4 (rekomendacja B), #115, #120; konwencja `Co-Authored-By` (rekomendacja B) — bez odpowiedzi właściciela.
