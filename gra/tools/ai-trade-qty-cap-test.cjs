@@ -82,6 +82,33 @@ console.log('--- F: sufit ogranicza liczbe wywolan bramki przy ogromnym zapasie 
   assert(r !== null && r.receiveQty <= 5, 'F3: maly uczciwy odbior nadal znajdowany przy duzym zapotrzebowaniu (' + (r && r.receiveQty) + ')');
 }
 
+console.log('--- G: estymata oddania (probe ceny) znajduje wabna uczciwa oferte poza stala lista ---');
+// Cena liniowa z kursem 600 : 1 (givePn = ilosc oddania, receivePn = 600 x ilosc odbioru).
+// Uczciwa oferta: |givePn - receivePn| <= 5. Stala lista oddania (1..31 oraz rzadkie wartosci
+// gorne przy zakresie 1e9) nie zawiera ~600..18000, wiec bez okna estymaty pętla nie znajdzie nic.
+{
+  const r = mod.selectAiTradeBarter({
+    aiResources: [
+      { key: 'drewno', stock: 1e9, netRate: 0, deficit: false, surplus: true, reserve: 0 },
+      { key: 'wegiel', stock: 0, netRate: -10, deficit: true, surplus: false, reserve: 0 },
+    ],
+    playerResources: [
+      { key: 'drewno', stock: 0, netRate: -1, deficit: true, surplus: false, reserve: 0 },
+      { key: 'wegiel', stock: 1000, netRate: 0, deficit: false, surplus: true, reserve: 0 },
+    ],
+    turns: 1,
+    fairnessGate: (g, rq) => Math.abs(g - rq) <= 5,
+    resolvePayloadPn: p => ({
+      givePn: p.giveItems[0].ilosc,
+      receivePn: 600 * p.receiveItems[0].ilosc,
+    }),
+    evaluateExactPayload: () => true,
+  });
+  assert(r !== null, 'G0: oferta znaleziona mimo wabnej uczciwej wartosci poza stala lista');
+  assert(r && Math.abs(r.giveQty - 600 * r.receiveQty) <= 5, 'G1: oferta uczciwa (|oddanie - 600 x odbior| <= 5), giveQty=' + (r && r.giveQty) + ' receiveQty=' + (r && r.receiveQty));
+  assert(r && r.receiveQty === 30, 'G2: odbior = sufit 3x potrzeby (30)');
+}
+
 fs.rmSync(BUNDLE, { force: true });
 fs.rmSync(entry, { force: true });
 console.log('ai-trade-qty-cap-test: ' + pass + ' passed, ' + fail + ' failed');
