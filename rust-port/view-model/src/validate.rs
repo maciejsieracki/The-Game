@@ -347,6 +347,24 @@ impl Layers<'_> {
                 finite_opt(|| p("handel"), y.handel)?;
             }
         }
+        if let Some(route) = &self.overlays.path_route {
+            // `turn` counts from 1 and grows strictly along `turnStops`
+            // (`game/planned-march.ts:116-141`, `:242-268` @ `07d2fbd72`:
+            // `turnNum = 1`, a stop is pushed with `turnNum`, then
+            // `turnNum++`; the closing stop is pushed only when it differs
+            // from the last one).
+            let mut min = 1_i64;
+            for (i, stop) in route.turn_stops.iter().enumerate() {
+                let turn = i64::from(stop.turn);
+                range(
+                    || format!("overlays.pathRoute.turnStops[{i}].turn"),
+                    turn,
+                    min,
+                    i64::from(u32::MAX),
+                )?;
+                min = turn + 1;
+            }
+        }
         Ok(())
     }
 

@@ -15,6 +15,7 @@
 //!   `#[path]`).
 #![allow(dead_code)]
 
+use civ_view_model::overlays::{PathRouteDto, PathTurnStopDto, SiegeCampDto};
 use civ_view_model::*;
 
 pub fn h(q: i32, r: i32) -> HexCoord {
@@ -272,7 +273,20 @@ pub fn sample_siege() -> SiegeViewDto {
     SiegeViewDto {
         city_id: cid(7),
         city_hex: h(0, 0),
-        camp_hexes: vec![h(1, 0), h(0, 1)],
+        camp_hexes: vec![
+            SiegeCampDto {
+                hex: h(1, 0),
+                owner_id: player(1),
+            },
+            SiegeCampDto {
+                hex: h(1, 0),
+                owner_id: player(1),
+            },
+            SiegeCampDto {
+                hex: h(0, 1),
+                owner_id: OwnerRef::Barbarian,
+            },
+        ],
         ready_machines: vec![SiegeMachineKind::Taran, SiegeMachineKind::Wieza],
     }
 }
@@ -345,8 +359,8 @@ pub fn sample_okolica() -> OkolicaViewDto {
 
 pub fn sample_overlays_full() -> OverlaysViewDto {
     OverlaysViewDto {
-        culture_range: Some(vec![sample_owner_hexes()]),
-        religion_range: Some(vec![]),
+        culture_range: Some(vec![h(1, 0), h(0, 0)]),
+        religion_range: Some(vec![h(0, 1)]),
         trade_routes: vec![sample_trade_route()],
         okolica: Some(sample_okolica()),
         worker_fields: vec![WorkerFieldDto {
@@ -362,7 +376,24 @@ pub fn sample_overlays_full() -> OverlaysViewDto {
             hex: h(1, 0),
             owner_id: player(0),
         }),
-        path_route: Some(vec![h(1, 0), h(1, 1)]),
+        path_route: Some(sample_path_route()),
+    }
+}
+
+/// Route `[unit hex, ...fullPath]` with two turn stops (P4-1F1 a).
+pub fn sample_path_route() -> PathRouteDto {
+    PathRouteDto {
+        hexes: vec![h(1, 0), h(1, 1), h(0, 1)],
+        turn_stops: vec![
+            PathTurnStopDto {
+                hex: h(1, 1),
+                turn: 1,
+            },
+            PathTurnStopDto {
+                hex: h(0, 1),
+                turn: 2,
+            },
+        ],
     }
 }
 
@@ -375,7 +406,7 @@ pub fn sample_overlays_none() -> OverlaysViewDto {
         worker_fields: vec![],
         reachable: vec![],
         build_highlight: BuildHighlightDto {
-            kind: BuildHighlightKind::Generic,
+            kind: BuildHighlightKind::Improvement,
             hexes: vec![],
         },
         selection: None,
@@ -834,7 +865,7 @@ pub fn synthetic_view(s: &Scenario) -> RenderViewDto {
             worker_fields: vec![],
             reachable: vec![],
             build_highlight: BuildHighlightDto {
-                kind: BuildHighlightKind::Generic,
+                kind: BuildHighlightKind::Improvement,
                 hexes: vec![],
             },
             selection: None,

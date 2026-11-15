@@ -228,6 +228,12 @@ fn unit_stack_siege_wonder_keys() {
         &["cityId", "cityHex", "campHexes", "readyMachines"],
         "SiegeViewDto",
     );
+    // P4-1F1 d: each camp entry carries its owner.
+    expect(
+        &v["sieges"][0]["campHexes"][0],
+        &["hex", "ownerId"],
+        "SiegeCampDto",
+    );
     expect(
         &v["wonders"][0],
         &["wonderId", "hex", "ownerId", "ruin"],
@@ -261,11 +267,9 @@ fn territory_and_overlay_keys() {
         ],
         "OverlaysViewDto",
     );
-    expect(
-        &o["cultureRange"][0],
-        &["ownerId", "hexes"],
-        "cultureRange[]",
-    );
+    // P4-1F1 c: one hex set (owner `0` in the web), not `{ownerId, hexes}[]`.
+    expect(&o["cultureRange"][0], &["q", "r"], "cultureRange[]");
+    expect(&o["religionRange"][0], &["q", "r"], "religionRange[]");
     expect(
         &o["tradeRoutes"][0],
         &["from", "to", "medium"],
@@ -292,6 +296,13 @@ fn territory_and_overlay_keys() {
     expect(&o["workerFields"][0], &["hex", "ownerId"], "workerFields[]");
     expect(&o["buildHighlight"], &["kind", "hexes"], "buildHighlight");
     expect(&o["selection"], &["hex", "ownerId"], "selection");
+    // P4-1F1 a: `setPathRoute(hexes, { turnStops })` (`main.ts:31175-31178`).
+    expect(&o["pathRoute"], &["hexes", "turnStops"], "PathRouteDto");
+    expect(
+        &o["pathRoute"]["turnStops"][0],
+        &["hex", "turn"],
+        "PathTurnStopDto",
+    );
 }
 
 /// §3.8 battle start (mirror of the renderer `BattleUnitsOpts`).
