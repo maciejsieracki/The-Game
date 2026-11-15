@@ -76,6 +76,7 @@ pub mod order_effects_culture;
 pub mod order_effects_lane;
 pub mod pathfinding;
 pub mod playable;
+pub mod playable_movement;
 pub mod player;
 pub mod production_queue;
 pub mod production_units;

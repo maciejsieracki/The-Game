@@ -885,7 +885,8 @@ fn canonical_unit_id(text: &str) -> Option<UnitId> {
 /// P4-1J: odczyt planow marszu z zapisu do stanu gry, web `main.ts:46272-46287`:
 ///
 /// 1. czysci `plannedMarches`, `marchStopNotified`, `marchStopDetail`, `marchAttackTargets`
-///    (`main.ts:46272-46274`, `:46279`); trzech ostatnich map web nie zapisuje;
+///    (`main.ts:46272-46274`, `:46279`); trzech ostatnich map web nie zapisuje; czysci tez
+///    `moved_by_player_this_turn` (web `movedByPlayerThisTurn.clear()`, `main.ts:46280`, niezapisywane);
 /// 2. filtruje wpisy jak web `plannedMarchesFromSave(saved.autoMarch, saved.plannedMarches, units, 0)`
 ///    (`main.ts:46283`, `planned-march.ts:451-482`) przez port `ruch_jednostek::planned_marches_from_save`:
 ///    jednostka musi istniec w `state.units` (id = kanoniczny zapis `UnitId`) i nalezec do
@@ -912,6 +913,8 @@ pub fn restore_playable_planned_marches(
     state.march_stop_notified.clear();
     state.march_stop_detail.clear();
     state.march_attack_targets.clear();
+    // P4-1H Q4: web czysci `movedByPlayerThisTurn` w tym samym miejscu wczytania (`main.ts:46280`).
+    state.moved_by_player_this_turn.clear();
 
     let units: Vec<RuchJednostka> = state
         .units
