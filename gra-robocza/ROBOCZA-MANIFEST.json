@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "46c6683bd440a2a2235988e616f93698",
-  "bundleSha256": "60c5be03b3e7f324f172417a8792d1943da7a5413d906e846bd6e203567639c6",
-  "bundleBytes": 14749793,
+  "bundleMd5": "61b50b8916c075e29fe4d0f67da30652",
+  "bundleSha256": "caf4aaf2647dd86153faa1be25043f0ea46461bb90dc980531f107cb81789057",
+  "bundleBytes": 14752270,
   "sourceSnapshot": {
-    "source": "merge FC LEDGER r4 b9559d6a7 + a35cee7b1 na main d1a2ad5c3",
+    "source": "R-WEB-UI-END-TURN-BLOCK-EVENT-Q1 r2 FC 68c69746b kod f8c186431",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 733: Ksiega zrodel i zuzycia surowcow panstwa (teren, Warzelnia, wycinka lasu, konwersje, utrzymanie, obywatele, budowa, rekrutacja, Umowa wymiany z civ, Mennica, limit magazynu); zmiana magazynu rowna sumie ksiegi dla 9 surowcow w zywej grze; bez widoku UI (partia 4)"
+    "FALA 734: Blokada Zakoncz ture pokazywana jako karta Nie mozna zakonczyc tury w zakladce Wazne z pelnym komunikatem bramki i przyciskami Zwieksz podatek do X, Zmienie sam, Otworz racje; karta znika po ustapieniu blokady"
   ],
   "verification": [
-    "tsc 0; logic 213/213; ledger 1030/0; consume 30/0; engine 20/0; trade 27/0; zywy Chromium 2 ziarna x 30 tur roznica 0 hash 30/30; FC PASS-WITH-NOTES"
+    "tsc 0; logic 213/213; end-turn-block-event 35/0; end-turn-gate-projection-only 49/0; Chromium 25/0 pageerrors 0; mutacje czerwone"
   ],
   "limits": [
-    "NIE ZMIERZONO: seed 99991, E3c z aktywnymi trasami, czas tury (+9,5% w jednym pomiarze); ABC: szlak E3c vs decyzja 311; brak UI i zrodel lup/zwroty/zdobycie/dary (osobny temat); dlug Rust REPIN"
+    "Klik w suwaki podatku i racji w DOM nie mierzony; hud.ts poza allowlista (3 linie, zaakceptowane)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES LEDGER r4 (partia 2 z 4) a35cee7b1 / kod b9559d6a7: dziennik zrodel zapasow (backend, bez UI): ksiega magazynu panstwa z zrodlami teren i plony, Warzelnia (miasto), Wycinka lasu, konwersje, wejscia, drain Spichlerza, zuzycie (utrzymanie budynkow i jednostek, obywatele, budowa, rekrutacja), Umowa wymiany z civ (jednorazowa i cykliczna), Mennica i limit magazynu; hak testowy ledgerTestDebug tylko za civTest; reset okna pending przy wczytaniu i nowej grze. Testy: ledger 1030/0, consume 30/0, engine 20/0 (mutacja czerwona), trade 27/0, tsc 0, logic 213/213; zywy Chromium seedy 7 i 2024 x 30 tur: roznica 0, hash z ksiega i bez 30/30. NIE ZMIERZONO: seed 99991, E3c z aktywnymi trasami, czas tury (+9,5% w jednym pomiarze). Do decyzji wlasciciela (ABC): szlak E3c (main.ts ~40160) przesuwa braz/zelazo/ceglę/konie/zloto/sol poza ksiega, sprzecznie z decyzja 311. Zostaje: partia 3 (lup, zwroty, zdobycie miasta, dary, zapis historii) i partia 4 (UI Skad zapasy, zrzut, perf) jako osobny temat."
+    "notes": "FC PASS-WITH-NOTES BLOCK-EVT r2 (68c69746b / kod f8c186431): blokada Zakoncz ture jako karta Nie mozna zakonczyc tury w zakladce Wazne z przyciskami Zwieksz podatek do X, Zmienie sam i Otworz racje; testy 35/0, Chromium 25/0, mutacje czerwone; hud.ts zaakceptowane odchylenie od allowlisty"
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-15T06:41:07",
+  "hubGeneratedAt": "2026-11-15T06:49:12",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "46c6683bd440a2a2235988e616f93698",
-      "sizeBytes": 14749793
+      "md5": "61b50b8916c075e29fe4d0f67da30652",
+      "sizeBytes": 14752270
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "46c6683bd440a2a2235988e616f93698",
-      "sizeBytes": 14749793
+      "md5": "61b50b8916c075e29fe4d0f67da30652",
+      "sizeBytes": 14752270
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "46c6683bd440a2a2235988e616f93698",
-      "sizeBytes": 14749793
+      "md5": "61b50b8916c075e29fe4d0f67da30652",
+      "sizeBytes": 14752270
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "46c6683bd440a2a2235988e616f93698",
-      "sizeBytes": 14749793
+      "md5": "61b50b8916c075e29fe4d0f67da30652",
+      "sizeBytes": 14752270
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "46c6683bd440a2a2235988e616f93698",
-      "sizeBytes": 14749793
+      "md5": "61b50b8916c075e29fe4d0f67da30652",
+      "sizeBytes": 14752270
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "46c6683bd440a2a2235988e616f93698",
-      "sizeBytes": 14749793
+      "md5": "61b50b8916c075e29fe4d0f67da30652",
+      "sizeBytes": 14752270
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "46c6683bd440a2a2235988e616f93698",
-      "sizeBytes": 14749793
+      "md5": "61b50b8916c075e29fe4d0f67da30652",
+      "sizeBytes": 14752270
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "46c6683bd440a2a2235988e616f93698",
-      "sizeBytes": 14749793
+      "md5": "61b50b8916c075e29fe4d0f67da30652",
+      "sizeBytes": 14752270
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "46c6683bd440a2a2235988e616f93698",
-      "sizeBytes": 14749793
+      "md5": "61b50b8916c075e29fe4d0f67da30652",
+      "sizeBytes": 14752270
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "46c6683bd440a2a2235988e616f93698",
-      "sizeBytes": 14749793
+      "md5": "61b50b8916c075e29fe4d0f67da30652",
+      "sizeBytes": 14752270
     }
   ],
-  "md5": "46c6683bd440a2a2235988e616f93698",
+  "md5": "61b50b8916c075e29fe4d0f67da30652",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

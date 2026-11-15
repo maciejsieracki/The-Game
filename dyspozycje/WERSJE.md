@@ -1,3 +1,9 @@
+## ROBOCZA 61b50b89 -- 2026-11-14 -- FALA 734: Blokada Zakoncz ture jako wydarzenie w panelu Wazne (testowa)
+
+- Blokada Zakoncz ture pokazywana jako karta Nie mozna zakonczyc tury w zakladce Wazne z pelnym komunikatem bramki i przyciskami Zwieksz podatek do X, Zmienie sam, Otworz racje; karta znika po ustapieniu blokady
+- Weryfikacja: tsc 0; logic 213/213; end-turn-block-event 35/0; end-turn-gate-projection-only 49/0; Chromium 25/0 pageerrors 0; mutacje czerwone
+- Limity: Klik w suwaki podatku i racji w DOM nie mierzony; hud.ts poza allowlista (3 linie, zaakceptowane)
+
 ## ROBOCZA 46c6683b -- 2026-11-14 -- FALA 733: Skad zapasy: ksiega zrodel zapasow (backend, partia 2) (testowa)
 
 - Ksiega zrodel i zuzycia surowcow panstwa (teren, Warzelnia, wycinka lasu, konwersje, utrzymanie, obywatele, budowa, rekrutacja, Umowa wymiany z civ, Mennica, limit magazynu); zmiana magazynu rowna sumie ksiegi dla 9 surowcow w zywej grze; bez widoku UI (partia 4)
