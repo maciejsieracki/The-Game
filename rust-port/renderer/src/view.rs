@@ -15,11 +15,16 @@
 //!   `dyspozycje/rust-port/p4/P4-1G-ADAPTER-ROZPOZNANIE.md` §2, §3.3;
 //! - Q2–Q6: terrain, cities, battle, overlays, units (same document, §7).
 
+pub mod battle;
 pub mod cities;
 pub mod convert;
 pub mod fog;
 pub mod terrain;
 
+pub use battle::{
+    ammo, battle_fort, battle_inputs, battle_view_inputs, deploy_side, terrain_grid, unit_spawn,
+    BattleAdapterError, BattleInputs,
+};
 pub use cities::{
     apply_city_fog, apply_wonder_fog, atlas_owner_emblem_context, city_badge_input, city_renderer,
     owner_emblem_context, placed_wonder, production_kind, wonder_renderer, CityAdapterError,
