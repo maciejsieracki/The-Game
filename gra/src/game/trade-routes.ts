@@ -1839,12 +1839,12 @@ export function diffTradeRoutes(
  * Cegielnia zbudowana w KTÓRYMKOLWIEK mieście tego właściciela.
  *
  * 'zloto' (PYTANIE-84-R4=A, U-3=A, U-13): Złoto w magazynie państwa; szlaki
- * dostarczają sztuki/turę (TRADE_ROUTE_STOCK_FLOW_KEYS) — wysoka wartość wymiany.
+ * dają dochód i dostęp; NIE przesuwają zapasów (przepływ ilościowy usunięty, #311) — wysoka wartość wymiany.
  * Boolean-grant nadal odblokowuje natywny dostęp (empireHasKopalniaZlota), gdy
  * partner ma kopalnię, a odbiorca nie.
  *
  * 'sol' (PYTANIE-84-R4=A, U-3=A): Sól w magazynie państwa — przepływ ilościowy
- * przez TRADE_ROUTE_STOCK_FLOW_KEYS (boolean-grant: dopięcie w main.ts osobno).
+ * (boolean-grant: dopięcie w main.ts osobno; bez przepływu ilościowego, #311).
  */
 export type TradeRouteResourceKey = 'braz' | 'zelazo' | 'kon' | 'cegla' | 'zloto';
 
