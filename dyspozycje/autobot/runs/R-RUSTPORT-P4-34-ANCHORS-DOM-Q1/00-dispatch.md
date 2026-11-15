@@ -25,3 +25,9 @@ IZOLACJA: `isolation: worktree`. Commit w worktree (jawne `git add`, NIGDY `-A`)
 PROCEDURA NAPRAWCZA PRZY FAIL: ten sam ID; po 5 rundach LIMIT-5-EXCEEDED. Raport max ok. 400 słów (dokument może być dłuższy).
 FORMAT ODPOWIEDZI: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK
 DEPLOY/PUSH: NIE WYKONANO
+
+## DODATEK r3 (15.11, domknięcie — Opus 5.5 na wszystkich etapach)
+- **Stan:** wynik poprzedniej rundy w katalogu runu (Operator, Obrona i ewentualny Evaluator). Nie uruchamiać nowego Operatora.
+- **Baza:** kod na `origin/rust-port/parity-v2` (sprawdzić ancestry commitu z raportu względem parity przed oceną).
+- **Model:** Evaluator, Obrona, Final Control = Opus 5.5 (renderer Rust).
+- **Zero zmian** poza allowlistą; zero zmian w `gra/**`, `rust-port/engine/**`. Commit bez nazwy modelu w treści; ostatnia linia `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`.
