@@ -1,76 +1,75 @@
-# R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1 — obrona Operatora, runda 3 (odpowiedź na zarzuty Evaluatora r3, fbb96099b)
+# R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1 — obrona Operatora, runda 4 (odpowiedź na zarzuty Evaluatora r4, kandydat 7287d25f8)
 
-STATUS: BLOCK (częściowy: zarzuty 2 i 3 PRZYJĘTE i wykonane; zarzut 1 PRZYJĘTY, pomiar 5 par sekwencyjnych W TOKU — nieukończony w tej rundzie)
+STATUS: PASS-WITH-NOTES (obrona: zarzuty 3 i 4 przyjęte; zarzut 3 naprawiony w dokumencie; zarzut 1 przyjęty jako NIESPEŁNIONE kryterium, zarzut 2 przyjęty jako uwaga; zarzut 4 odrzucony z dowodem; zarzut 5 informacyjny)
 DOMAIN: GAME
 TEMAT: R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1
-GOAL: obrona zarzutów 1–3 Evaluatora r3 (wydajność ON/OFF, wniosek o przyczynie t57, dowód OFF i duplikat evidence).
-BAZA: kandydat 7fab781a1 (ta sama baza co Evaluator r3). Zmiany tej rundy: patrz ZMIANY/COMMIT.
-ZMIANY/COMMIT: (1) `gra/tools/endturn-gate-diag-measure.cjs` — nowa flaga `--ledger-off` (wariant OFF jako osobny, sekwencyjny przebieg); (2) `evidence/perf-toggle/cmp.py` — usunięta zakodowana ścieżka do scratchpada, porównanie z jawnych argumentów; (3) `evidence/endturn-gate-diag/nofix-on-seed4242.jsonl` — USUNIĘTY (bajt w bajt = `def-on-seed4242.jsonl`); (4) `evidence/perf-seq/driver.sh` + `driver-START.log` — skrypt 5 par sekwencyjnych; (5) ten raport. Kod gry (`gra/src`) NIETKNIĘTY.
-DEPLOY/PUSH: NIE WYKONANO
+GOAL: obrona zarzutów Evaluatora r4 (zrzuty bez linii z dispatchu, pomiar w konfiguracji `--gate-fix taxsplit`, sprzeczne sformułowania w raporcie r3, test haka statyczny, nierozstrzygnięty t57).
+BAZA: kandydat Evaluatora 7287d25f8 (potomek origin/main 9cbadc54a).
 
-## Środowisko
+ZMIANY/COMMIT:
+- `dyspozycje/autobot/runs/R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1/10-operator-claude.md` — dopisana KOREKTA pod wierszem z wnioskiem o t57 (wycofuje „księga nie jest sprawcą” i „wyścig harnessu”).
+- `dyspozycje/autobot/runs/R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1/30-obrona-claude.md` — ten raport.
+- Kod gry (`gra/`) NIE zmieniony w tej rundzie. Bramki `gra/` NIE powtarzane w tej rundzie (brak zmiany kodu); wyniki bramek pozostają z rundy Evaluatora r4 (wg Evaluatora: tsc 0, logic 213/213, tech-tree 20/0, research 33/0, unit-replace 21/21, combat 6/6, resource-ledger 1030/0, skad-ui 18/0, skad-dom 13/0, hook-gate 6/0) — NIE_ZMIERZONE przeze mnie w tej rundzie.
 
-- `npm ci` w worktree (gra/), kopia gry do pomiaru poza repo (`scratchpad/kopia`, `--prepare` z `ai-city-live-measure`), build vite poza repo (30 s, `scratchpad/dist`). Dysk po buildzie: 7,8 GB wolne.
-- Maszyna: 4 rdzenie, load współdzielony z innymi sesjami (nie kontrolowany przez tę rundę).
+## Zarzut 1 — zrzuty bez linii z dispatchu — PRZYJĘTY (kryterium NIESPEŁNIONE)
 
-## Zarzut 1 — brak 5 sekwencyjnych par ON/OFF (mediana) — PRZYJĘTY, POMIAR W TOKU
+Zgadzam się z Evaluatorem. Dispatch (DODATEK 2, pkt 3; DODATEK 3, pkt 2) wymaga linii „+12 Warzelnia (Rzym)”, „+30 Umowa wymiany z <civ>”, „−20 Obywatele” w zrzutach. Dowód z `evidence/shots-live/shots.json`:
+- 1920: sól `+225 Warzelnia (Rzym)`, `+190 Umowa wymiany z Ostia · Rzymianie · miasto-państwo`; ceramika `+278 Umowa wymiany…`, `+150 Garncarnia (Rzym)`, `−30 Spichlerz (zużycie zapasów)`, `−3 Obywatele`.
+- Linie ujemne (`−30`, `−3`) pojawiają się tylko w ceramice. Linii `+12`, `+30`, `−20` NIE MA w żadnym zrzucie.
+Scenariusz był zbudowany hakiem testowym `?civTest=1` (budynki, zrodzone miasto-państwo, umowa), co Operator r3 ujawnił. Dlatego kryterium GOAL 1 w tym brzmieniu jest NIESPEŁNIONE. Nie naprawiam tego w tej rundzie: DODATEK 4 nakazuje zachować GOAL 1 bez zmian, a poprawka wymaga nowego przebiegu `resource-ledger-shots-live.cjs` z innym scenariuszem (nowy build vite poza repo). Wniosek dla orkiestratora: GOAL 1 zaliczać jako zrzuty z prawdziwej gry o realnych wartościach (+225/+190/+278/+150/−30/−3), NIE jako zrzuty z liniami z dispatchu. Zrzuty `+12/+30/−20` wymagają osobnego tematu, jeśli właściciel ich chce.
 
-Przyznaję: r2 `evidence/perf100/` (5 par ON/OFF) to przebiegi RÓWNOLEGŁE (oba start 10:01:53/10:01:45 z tej samej maszyny) — nie spełniają DODATKU 3 pkt 3. Dlatego nie zaliczam ich jako dowodu sekwencyjnego.
+## Zarzut 2 — pomiar w konfiguracji `--gate-fix taxsplit` — PRZYJĘTY (uwaga)
 
-Poprawka (dowód = surowe pliki, nie wnioski):
-- Dodano `--ledger-off` do `endturn-gate-diag-measure.cjs`: `setRecording(false)` od tury 1 w OSOBNYM przebiegu (osobne przeładowanie strony). Wariant ON = identyczne wywołanie bez flagi. Jedyna różnica między przebiegami to flaga; zdarzenie `ledger-mode` zapisuje wariant. To rozwiązuje zarzut 3 (OFF odtwarzalny).
-- Uruchomiono `evidence/perf-seq/driver.sh`: 10 przebiegów SEKWENCYJNIE (jeden naraz), seed 4242, 100 tur, `--gate-fix taxsplit`, pary ON,OFF / OFF,ON naprzemiennie (kolejność znosi dryf). Start: `driver-START.log` (on-1 13:29:01). Wyniki: `scratchpad/perf-seq/{on,off}-k/seed4242.jsonl`, kopiowane do `evidence/perf-seq/` po zakończeniu.
-- STATUS na moment tego raportu: pierwszy przebieg (on-1) w toku; reszta w kolejce. Szacowany czas całości ≈2 h (100 tur ≈ 10–13 min na przebieg + ładowanie). NIE_ZMIERZONO: mediana z 5 par sekwencyjnych — w tej rundzie NIEUKOŃCZONE. Nie podaję żadnej liczby jako wyniku sekwencyjnego.
+Potwierdzone: `evidence/perf-seq/driver.sh` wywołuje `endturn-gate-diag-measure.cjs ... --gate-fix taxsplit`. Powód: w domyślnej konfiguracji bramka NNS blokuje turę 1 (`evidence/endturn-gate-diag/def-on-seed4242.jsonl`: `noadvance` tylko w t1, 7×, prognoza −2, `blokada:true`), więc 100-turowy przebieg bez obejścia nie jest możliwy. Pomiar ON vs OFF używa tej samej konfiguracji, więc różnica ON/OFF jest porównywalna, ale NIE jest czasem tury w domyślnej grze.
 
-Wniosek o wydajności pozostaje ograniczony do danych przeliczonych z plików (patrz niżej) i nie jest potwierdzony sekwencyjnie.
+Sprawdzenie wyników (surowe jsonl, `perf-toggle/cmp.py`, uruchomione przeze mnie, linia `pct mean` / `pct median`):
 
-## Zarzut 2 — wniosek o przyczynie t57 wykracza poza dowody — PRZYJĘTY (korekta wniosku)
+| para | ON średnia ms | OFF średnia ms | Δ średniej % | Δ mediany % |
+|---|---|---|---|---|
+| 1 | 7446 | 6948 | +7,16 | +32,76 |
+| 2 | 6593 | 6891 | −4,33 | −0,33 |
+| 3 | 6527 | 7011 | −6,90 | −1,72 |
+| 4 | 7084 | 7239 | −2,15 | −2,48 |
+| 5 | 6414 | 6333 | +1,27 | +12,13 |
 
-Zgadzam się z Evaluatorem. Dowody: `def-on-seed4242.jsonl` — `noadvance` wyłącznie w t1 (7×, prognoza −2, `blokada:true`, `timeout:false`); fix-on/fix-off — 99 tur, t57 = 11 006 ms (ON) / 17 050 ms (OFF), brak timeoutu. Timeout z r3 w turze 57 NIE został odtworzony w żadnej konfiguracji.
+Mediana Δ średniej = **−2,15%**; mediana Δ mediany = **−0,33%**. Próg 10% nie jest przekroczony. Rozrzut par jest duży (pary 1 i 5 mają wysoką Δ mediany), więc wniosek to: narzut księgi w tej konfiguracji nie przekracza 10%; nie jest to pomiar z dokładnością rzędu kilku procent. Pochodzenie buildu `dist` w driverze: NIE_ZMIERZONE w tej rundzie (poza repo).
 
-Korekta (zastępuje wniosek z r3 `10-operator-claude.md` i `30-obrona-claude.md` r2 w tej części):
-- **Potwierdzone:** bramka „Zakończ turę” (NNS) blokuje turę 1 przy domyślnym podziale podatków 30/60/10 (seed 4242: prognoza skarbca −2; seed 777: −3). To dług harnessu, nie księgi (ON i OFF identyczne w t1).
-- **NIE potwierdzone:** przyczyna timeoutu w turze 57. Oryginalna konfiguracja tego przebiegu jest nieznana. NIE wnioskuję „nie księga”. Wniosek o księdze w t57 jest NIEROZSTRZYGNIĘTY.
-- **Hipoteza bez dowodu (usunięta z wniosków):** „wyścig endTurnInProgress”. Nie ma w surowych danych zdarzenia, które by ją potwierdzało; traktuję ją wyłącznie jako hipotezę do sprawdzenia przy harnessie #417.
-- Rekomendacja dla #415/#417 bez zmian: nie odblokowywać na podstawie „braku odtworzenia”.
+## Zarzut 3 — sprzeczne sformułowania w `10-operator-claude.md` — PRZYJĘTY (naprawione)
 
-## Zarzut 3 — dowód OFF niereprodukowalny, duplikat, zakodowana ścieżka — PRZYJĘTY (naprawiony)
+Potwierdzone: `10-operator-claude.md` wiersz 25 zawierał „księga nie jest sprawcą” i „wyścig harnessu”. Dopisano bezpośrednio pod tym wierszem blok KOREKTA, który wycofuje oba sformułowania i wskazuje obowiązujący wniosek (bramka NNS w turze 1 = dług harnessu; przyczyna t57 NIEROZSTRZYGNIĘTA). Wiersz oryginalny pozostaje jako zapis historyczny. Sprawdzenie: `grep -n "KOREKTA" 10-operator-claude.md`.
 
-- Dowód OFF: wcześniejsze `fix-off-seed4242.jsonl` powstały bez flagi wyłączającej księgę (narzędzie r3 miało tylko `--toggle-recording`). Ich metoda NIE jest odtwarzalna z repo i oznaczam je jako takie. Nowa metoda OFF: `--ledger-off` (zob. zarzut 1).
-- Duplikat: `cmp def-on-seed4242.jsonl nofix-on-seed4242.jsonl` → IDENTICAL (19 836 B). Usunięto `nofix-on-seed4242.jsonl` (`git rm`); zostaje `def-on-seed4242.jsonl`.
-- `cmp.py`: usunięto zakodowaną ścieżkę do scratchpada; skrypt przyjmuje dwa pliki jako argumenty. Uruchomienie z repo:
-  `python3 -I dyspozycje/autobot/runs/R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1/evidence/perf-toggle/cmp.py <ON.jsonl> <OFF.jsonl>`
-  Wynik na `evidence/endturn-gate-diag/fix-on-seed4242.jsonl` / `fix-off-seed4242.jsonl` (surowe dane r3, przeliczone z repo): `99 mean on 10611 off 10478, median on 9882 off 9565, pct mean 1.28, pct median 3.31` (zgodne z raportem Evaluatora). Ten przebieg był parą RÓWNOLEGŁĄ — nie jest dowodem sekwencyjnym.
+## Zarzut 4 — test haka `resource-ledger-hook-gate-test` jest statyczny — ODRZUCAM (jako wada)
 
-## Pozostałe pomiary (przeliczone z surowych plików, nie zmienione w tej rundzie)
+Fakt: `gra/tools/resource-ledger-hook-gate-test.cjs` czyta tekst `gra/src/main.ts` (`fs.readFileSync(...'main.ts')`) i sprawdza H1–H5, w tym mutację H5 na kopii tekstu. To jest test jednostkowy w sensie dispatchu („test jednostkowy, że bez flagi hak nie istnieje”).
+Dowód runtime, który Evaluator wskazał jako brakujący, istnieje w narzędziu zrzutów: `gra/tools/resource-ledger-shots-live.cjs` linia 46 odczytuje `typeof window.__ledgerTestDebug` i `typeof window.__nnsMeasureDebug` na stronie bez `?civTest=1`, a linia 48 przerywa przebieg, jeśli wartość nie jest `'undefined'`. Wynik w `evidence/shots-live/shots.json`: `"negativeControl": {"ledgerTestDebug": "undefined", "nnsMeasureDebug": "undefined"}` oraz `"hookPresentWithFlag": "function"`.
+Nazwa testu w zestawie bramek jest zgodna z jego treścią (statyczna); nie twierdzę, że zestaw bramek zawiera runtime'owy test. Wniosek: nie ma luki w dowodzie, jest tylko doprecyzowanie, że w zestawie bramek jest test statyczny, a runtime'owy dowód leży w przebiegu zrzutów.
 
-- ABBA w jednej sesji (`--toggle-recording`, seed 4242: ON 29 tur / mediana 3538 ms, OFF 30 / 3483,5 ms, +1,56%; seed 777: +1,97%). Dowód wtórny, nie sekwencyjny.
-- Mikropomiar `resource-ledger-perf-micro.cjs` (Evaluator odtworzył: 12/25/50 miast +0,307/+0,085/+0,610 ms; `ownerResourceStockAll` 0,004–0,011 ms). Mierzy tylko ścieżkę księgi, nie cały zapis w turze.
+## Zarzut 5 — przyczyna timeoutu t57 nierozstrzygnięta — PRZYJĘTY jako informacja (bez zmiany kodu)
 
-## Bramki (ta runda, worktree na 7fab781a1 + zmiany tej rundy)
+Zgadzam się: timeout z r3 w turze 57 NIE został odtworzony w żadnej konfiguracji (ON/OFF, seed 4242 i 777; 99 tur bez timeoutu w `evidence/endturn-gate-diag/` i `evidence/perf-seq/`). Przyczyna pozostaje NIEROZSTRZYGNIĘTA i tak jest opisana w korekcie. Dla #415/#417 obowiązuje WYŁĄCZNIE wniosek: bramka NNS w turze 1 przy domyślnych podatkach 30/60/10 to dług harnessu. Nie wnioskuję „nie księga”.
 
-- `npm ci` w gra/: `added 71 packages`.
-- Pełna lista bramek i tsc: NIE_ZMIERZONO w tej rundzie (zmiany dotyczą tylko `gra/tools/endturn-gate-diag-measure.cjs`, nie `gra/src`; kod gry bez zmian; bramki powtórzył Evaluator r3 na tym samym kodzie: tsc rc=0, 213/213, 20/0, 33/33, 21/21, 6/0, 1030/0, 18/0, 13/0, 6/0).
-- `git diff --check`: do wykonania przed commitem (patrz niżej).
+## Wpływ na GOAL 4 / GOAL 5
+
+- GOAL 4: wniosek skorygowany (zob. zarzut 3). Diagnoza bramki NNS z dowodem (`def-on-seed4242.jsonl`) — zaakceptowana w r4 Evaluatora.
+- GOAL 5 (stan `<details>`): bez zmian w tej rundzie, D6/D7 wg Evaluatora 12 passed, 1 failed po mutacji usunięcia `restoreSkadDetailsOpen` z `render()` (mutacja wykryta, czyli test działa).
+- Zrzuty soli/ceramiki 1280 vs 1920 (pkt 2 DODATKU 3 r4): wybrano opcję (a) z dispatchu. Dowód: `sol-card-1280.png` i `sol-card-1920.png` mają ten sam md5 (`30e66b6e…`), a ceramika też ten sam md5 (`3d4256cb…`). Geometria z `shots.json`: karta 182 × 416 px w obu rozmiarach; panel `panelBody.w` = 403 px w obu; pozycje różnią się (`cardLeft` sol: 893 px przy 1280, 1533 px przy 1920; ceramika: 1083 px przy 1280, 1723 px przy 1920), czyli układ okna się różni, a sama karta jest elementem o stałej szerokości. Identyczne PNG karty są więc oczekiwane. Panele `panel-1280.png` i `panel-1920.png` różnią się wysokością (`panelBody.h` 735 vs 1015).
 
 ## Blokady
 
-- Zarzut 1: 5 par sekwencyjnych nieukończonych (≈2 h przebiegów; w toku).
-- Mediana wydajności bez sekwencyjnego dowodu — nie może być zamknięta w tej rundzie.
-
-## Uwagi dla orkiestratora
-
-- Integracja (z Evaluatora): kandydat nie jest potomkiem main; konflikt tylko `gra/src/data/wikiBundle.json` (regeneracja, nie ręczne scalanie).
-- Wynik sekwencyjnych par będzie w `evidence/perf-seq/` po zakończeniu; do tego czasu raport jest częściowy (BLOCK).
-- Driver działa w tle w scratchpadzie; jego zakończenie sygnalizuje wpis `ALLDONE` w `evidence/perf-seq/driver.sh` (skrypt); log startu w scratchpadzie lub w `scratchpad/perf-seq/driver.log`.
+- Kryterium linii `+12 Warzelnia`, `+30 Umowa wymiany`, `−20 Obywatele` w zrzutach NIESPEŁNIONE (zarzut 1). Wymaga osobnego przebiegu zrzutów z innym scenariuszem.
+- Pomiar wydajności w `--gate-fix taxsplit`, nie w domyślnej konfiguracji (zarzut 2).
+- Przyczyna timeoutu t57 nierozstrzygnięta (zarzut 5).
+- Pochodzenie buildu `dist` w driverze: NIE_ZMIERZONE.
 
 ## RUNDY
 
-3/5 (ten sam ID; obrona r3). Ostatni werdykt Evaluatora r3: PASS-WITH-NOTES (fbb96099b).
+4/5 (ten sam ID; obrona r4). Ostatni werdykt Evaluatora r4: PASS-WITH-NOTES (kandydat 7287d25f8, raport `20-evaluator-claude.md`).
 
 ## NASTĘPNY KROK
 
-Dokończyć 10 przebiegów sekwencyjnych (`driver.sh`), skopiować `on-k/off-k` do `evidence/perf-seq/`, policzyć medianę 5 par (przez `cmp.py` per para), dopisać wynik do tego raportu. Następnie Evaluator.
+Evaluator r4 ponownie (weryfikacja korekty w `10-operator-claude.md` i tego raportu), potem Final Control. Osobne tematy do rozważenia przez orkiestratora: (a) zrzuty z liniami `+12/+30/−20` (nowy scenariusz); (b) pomiar wydajności w domyślnej konfiguracji (wymaga obejścia bramki NNS w harnessie, #417).
 
-SHA końcowy: patrz pole `sha` w wyniku.
+## SHA / DEPLOY
+
+Kod gry nie zmieniony. Commit tylko plików runs/<ID>/ (dwa pliki wymienione w ZMIANY/COMMIT). SHA końcowy: pole `sha` w wyniku.
 DEPLOY/PUSH: NIE WYKONANO

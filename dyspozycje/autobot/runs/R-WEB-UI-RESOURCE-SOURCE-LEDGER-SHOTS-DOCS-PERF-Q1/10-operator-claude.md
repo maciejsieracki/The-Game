@@ -23,6 +23,7 @@ Narzędzie: `gra/tools/endturn-gate-diag-measure.cjs` (+ `endturn-gate-diag-summ
 | seed 777, domyślna | ON | blokada t1: prognoza −3; preset 60/30/10 daje −1 (nadal blokada) — potrzebne `--gate-fix grant` (grantPlayerGold + spichlerz) |
 
 Wniosek: **przyczyną zatrzymania „tura nie przechodzi” jest bramka „Zakończ turę” (NNS) w turze 1** przy domyślnym podziale podatków — deterministyczna, niezależna od księgi (ON i OFF identyczne w t1). Po jej obejściu timeout t57 **nie występuje** ani z księgą, ani bez, w 2 ziarnach (4242 i 777, grant). Druga przyczyna harnessu: wyścig — numer tury zmienia się przed zdjęciem `endTurnInProgress`, więc zbyt wczesny endTurn jest odrzucany (naprawione oczekiwaniem na flagę w narzędziach). Kategoria: **bramka (harness) + wyścig harnessu; księga nie jest sprawcą**. Konfiguracja pierwotnego timeoutu t57 z r3 nadal nieznana (nie odtworzono) — nie twierdzę, że jest wyjaśniony, tylko że w pełnej konfiguracji domyślnej + obejściu bramki nie występuje.
+> **KOREKTA (obrona Operatora r4, zarzut 3 Evaluatora; wiąże zamiast powyższego zdania):** sformułowania „księga nie jest sprawcą” i „wyścig harnessu” są WYCOFANE. Obowiązuje wyłącznie: bramka NNS w turze 1 przy domyślnych podatkach 30/60/10 to dług harnessu; przyczyna timeoutu t57 jest NIEROZSTRZYGNIĘTA (nie odtworzona w żadnej konfiguracji, w tym bez księgi nie została sprawdzona w tej samej konfiguracji r3). Szczegóły: `30-obrona-claude.md`.
 
 ## GOAL 1 — zrzuty z prawdziwej gry
 
