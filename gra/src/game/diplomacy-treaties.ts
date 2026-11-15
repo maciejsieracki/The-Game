@@ -30,6 +30,13 @@ export interface HandelSurowiecCyklicznyItem {
    * nie krotność diplomacyHandelSurowcePakietWielkosc().
    */
   pakietyPerTura: number;
+  /**
+   * R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r4 (obrona, zarzut Evaluatora 1): epoka UMOWY zamrożona
+   * przy zawarciu (wyższa z epok stron, jak w buildHandelSurowiecCykliczny). Późniejszy awans
+   * gracza/AI NIE zmienia bloku tej umowy (inaczej 10 szt. z Kamienia byłyby po awansie
+   * trwale obcinane do 0). Brak pola = zapis sprzed r4: epoka liczona z pary właścicieli.
+   */
+  epokaUmowy?: 1 | 2 | 3;
   /** Dawca surowca (traci zapas z magazynu miast). */
   sellerOwnerId: number;
   /** Biorca surowca (zyskuje zapas), płaci zaplataPerTura sprzedawcy. */
