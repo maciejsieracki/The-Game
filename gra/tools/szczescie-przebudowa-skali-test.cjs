@@ -361,7 +361,7 @@ eq(zaopatrzenieLinia(-4), -4, '2f: 2 surowce brakujace (delta -4) -> linia -4');
 
 // Koniec-do-konca przez PRAWDZIWY `resolveCitizenResourceCoverage`: liczba surowcow epoki
 // (NSUR = 2 / 4 / 5) razy +-2. To jest ta sama sciezka, ktora wola silnik tury.
-const NSUR_2F = { 1: 2, 2: 4, 3: 5 };
+const NSUR_2F = { 1: 3, 2: 4, 3: 5 };
 const PELNY_MAGAZYN = { drewno: 999, glina: 999, kamien: 999, ceramika: 999, cegla: 999 };
 for (const era of [1, 2, 3]) {
   const wszystkie = M.resolveCitizenResourceCoverage(era, PELNY_MAGAZYN);
@@ -451,15 +451,15 @@ for (const era of [1, 2, 3]) {
 }
 
 // ===========================================================================
-// 2h. SCENARIUSZ OPTYMISTYCZNY pop 8 = 58 / 85 / 118 pkt; szPct = 120% (normal)
+// 2h. SCENARIUSZ OPTYMISTYCZNY pop 8 = 60 / 85 / 118 pkt (Kamień +1 surowiec = ceramika, R-WEB-DATA-CITIZEN-CERAMICS-STONE-AGE-Q1); szPct = 120% (normal)
 // ===========================================================================
-section('2h. scenariusz optymistyczny pop 8 = 58 / 85 / 118, szPct = 120%');
-const NSUR = { 1: 2, 2: 4, 3: 5 };
+section('2h. scenariusz optymistyczny pop 8 = 60 / 85 / 118, szPct = 120%');
+const NSUR = { 1: 3, 2: 4, 3: 5 };
 for (const era of [1, 2, 3]) {
   eq(upkeep.epoki.find(e => e.epoka === era).surowce.length, NSUR[era],
     '2h: NSUR(epoka ' + era + ') = ' + NSUR[era]);
 }
-const OPTYMISTYCZNY = { 1: 58, 2: 85, 3: 118 };
+const OPTYMISTYCZNY = { 1: 60, 2: 85, 3: 118 };
 for (const era of [1, 2, 3]) {
   const sz = M.computeHappinessBreakdown({
     difficulty: 'normal',

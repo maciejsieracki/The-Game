@@ -1,0 +1,113 @@
+elimination-window-scroll-test (R-WEB-UI-ELIMINATION-WINDOW-FIXED-HEIGHT-SCROLL-Q1)
+
+[1] wariant widowiskowy (spectacle), treść długa, rozwinięty „Pokaż wszystkie surowce”
+[spectacle 1280x720] {"ih":720,"box":{"top":15,"bottom":705,"h":690},"btn":{"top":2690.25,"bottom":2727.25,"h":37},"ttl":{"top":143.1875,"bottom":173.078125,"h":29.890625},"scrollH":2733,"clientH":688,"scrollTop":0,"overflowY":"auto"}
+  PASS: spectacle 1280x720: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  PASS: spectacle 1280x720: dolna krawędź modala <= innerHeight
+  PASS: spectacle 1280x720: wysokość modala <= wysokości widoku
+  PASS: spectacle 1280x720: nagłówek ELIMINACJA! w pełni widoczny
+  PASS: spectacle 1280x720: treść dłuższa niż okno -> przewijanie włączone (overflow-y auto)
+  PASS: spectacle 1280x720: po przewinięciu do końca przycisk zamknięcia (Wróć na mapę / Zamknij) w widoku
+[spectacle 1366x768] {"ih":768,"box":{"top":15,"bottom":753,"h":738},"btn":{"top":2690.25,"bottom":2727.25,"h":37},"ttl":{"top":143.1875,"bottom":173.078125,"h":29.890625},"scrollH":2733,"clientH":736,"scrollTop":0,"overflowY":"auto"}
+  PASS: spectacle 1366x768: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  PASS: spectacle 1366x768: dolna krawędź modala <= innerHeight
+  PASS: spectacle 1366x768: wysokość modala <= wysokości widoku
+  PASS: spectacle 1366x768: nagłówek ELIMINACJA! w pełni widoczny
+  PASS: spectacle 1366x768: treść dłuższa niż okno -> przewijanie włączone (overflow-y auto)
+  PASS: spectacle 1366x768: po przewinięciu do końca przycisk zamknięcia (Wróć na mapę / Zamknij) w widoku
+[spectacle 1920x1080] {"ih":1080,"box":{"top":15,"bottom":1065,"h":1050},"btn":{"top":2690.25,"bottom":2727.25,"h":37},"ttl":{"top":143.1875,"bottom":173.078125,"h":29.890625},"scrollH":2733,"clientH":1048,"scrollTop":0,"overflowY":"auto"}
+  PASS: spectacle 1920x1080: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  PASS: spectacle 1920x1080: dolna krawędź modala <= innerHeight
+  PASS: spectacle 1920x1080: wysokość modala <= wysokości widoku
+  PASS: spectacle 1920x1080: nagłówek ELIMINACJA! w pełni widoczny
+  PASS: spectacle 1920x1080: treść dłuższa niż okno -> przewijanie włączone (overflow-y auto)
+  PASS: spectacle 1920x1080: po przewinięciu do końca przycisk zamknięcia (Wróć na mapę / Zamknij) w widoku
+[spectacle 1000x560] {"ih":560,"box":{"top":15,"bottom":545,"h":530},"btn":{"top":2690.25,"bottom":2727.25,"h":37},"ttl":{"top":143.1875,"bottom":173.078125,"h":29.890625},"scrollH":2733,"clientH":528,"scrollTop":0,"overflowY":"auto"}
+  PASS: spectacle 1000x560: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  PASS: spectacle 1000x560: dolna krawędź modala <= innerHeight
+  PASS: spectacle 1000x560: wysokość modala <= wysokości widoku
+  PASS: spectacle 1000x560: nagłówek ELIMINACJA! w pełni widoczny
+  PASS: spectacle 1000x560: treść dłuższa niż okno -> przewijanie włączone (overflow-y auto)
+  PASS: spectacle 1000x560: po przewinięciu do końca przycisk zamknięcia (Wróć na mapę / Zamknij) w widoku
+
+[2] wariant bez spectacle (bilans zdobycia z wierszami), treść długa
+[nospec 1280x720] {"ih":720,"box":{"top":15,"bottom":705,"h":690},"btn":{"top":2399.59375,"bottom":2436.59375,"h":37},"ttl":null,"scrollH":2443,"clientH":688,"scrollTop":0,"overflowY":"auto"}
+  PASS: nospec 1280x720: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  PASS: nospec 1280x720: dolna krawędź modala <= innerHeight
+  PASS: nospec 1280x720: wysokość modala <= wysokości widoku
+  PASS: nospec 1280x720: treść dłuższa niż okno -> przewijanie włączone (overflow-y auto)
+  PASS: nospec 1280x720: po przewinięciu do końca przycisk zamknięcia (Wróć na mapę / Zamknij) w widoku
+[nospec 1366x768] {"ih":768,"box":{"top":15,"bottom":753,"h":738},"btn":{"top":2399.59375,"bottom":2436.59375,"h":37},"ttl":null,"scrollH":2443,"clientH":736,"scrollTop":0,"overflowY":"auto"}
+  PASS: nospec 1366x768: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  PASS: nospec 1366x768: dolna krawędź modala <= innerHeight
+  PASS: nospec 1366x768: wysokość modala <= wysokości widoku
+  PASS: nospec 1366x768: treść dłuższa niż okno -> przewijanie włączone (overflow-y auto)
+  PASS: nospec 1366x768: po przewinięciu do końca przycisk zamknięcia (Wróć na mapę / Zamknij) w widoku
+[nospec 1920x1080] {"ih":1080,"box":{"top":15,"bottom":1065,"h":1050},"btn":{"top":2399.59375,"bottom":2436.59375,"h":37},"ttl":null,"scrollH":2443,"clientH":1048,"scrollTop":0,"overflowY":"auto"}
+  PASS: nospec 1920x1080: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  PASS: nospec 1920x1080: dolna krawędź modala <= innerHeight
+  PASS: nospec 1920x1080: wysokość modala <= wysokości widoku
+  PASS: nospec 1920x1080: treść dłuższa niż okno -> przewijanie włączone (overflow-y auto)
+  PASS: nospec 1920x1080: po przewinięciu do końca przycisk zamknięcia (Wróć na mapę / Zamknij) w widoku
+[nospec 1000x560] {"ih":560,"box":{"top":15,"bottom":545,"h":530},"btn":{"top":2399.59375,"bottom":2436.59375,"h":37},"ttl":null,"scrollH":2443,"clientH":528,"scrollTop":0,"overflowY":"auto"}
+  PASS: nospec 1000x560: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  PASS: nospec 1000x560: dolna krawędź modala <= innerHeight
+  PASS: nospec 1000x560: wysokość modala <= wysokości widoku
+  PASS: nospec 1000x560: treść dłuższa niż okno -> przewijanie włączone (overflow-y auto)
+  PASS: nospec 1000x560: po przewinięciu do końca przycisk zamknięcia (Wróć na mapę / Zamknij) w widoku
+
+[3] trwały raport zdobycia (showCaptureReportNotice, panel Wydarzenia): wariant widowiskowy i bez spectacle
+[report-spectacle 1280x720] {"ih":720,"box":{"top":15,"bottom":705,"h":690},"btn":{"top":2620.453125,"bottom":2657.453125,"h":37},"ttl":{"top":143.1875,"bottom":173.078125,"h":29.890625},"scrollH":2663,"clientH":688,"scrollTop":0,"overflowY":"auto"}
+  PASS: report-spectacle 1280x720: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  PASS: report-spectacle 1280x720: dolna krawędź modala <= innerHeight
+  PASS: report-spectacle 1280x720: wysokość modala <= wysokości widoku
+  PASS: report-spectacle 1280x720: nagłówek ELIMINACJA! w pełni widoczny
+  PASS: report-spectacle 1280x720: treść dłuższa niż okno -> przewijanie włączone (overflow-y auto)
+  PASS: report-spectacle 1280x720: po przewinięciu do końca przycisk zamknięcia (Wróć na mapę / Zamknij) w widoku
+[report-nospec 1280x720] {"ih":720,"box":{"top":15,"bottom":705,"h":690},"btn":{"top":2329.796875,"bottom":2366.796875,"h":37},"ttl":null,"scrollH":2373,"clientH":688,"scrollTop":0,"overflowY":"auto"}
+  PASS: report-nospec 1280x720: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  PASS: report-nospec 1280x720: dolna krawędź modala <= innerHeight
+  PASS: report-nospec 1280x720: wysokość modala <= wysokości widoku
+  PASS: report-nospec 1280x720: treść dłuższa niż okno -> przewijanie włączone (overflow-y auto)
+  PASS: report-nospec 1280x720: po przewinięciu do końca przycisk zamknięcia (Wróć na mapę / Zamknij) w widoku
+[report-spectacle 1366x768] {"ih":768,"box":{"top":15,"bottom":753,"h":738},"btn":{"top":2620.453125,"bottom":2657.453125,"h":37},"ttl":{"top":143.1875,"bottom":173.078125,"h":29.890625},"scrollH":2663,"clientH":736,"scrollTop":0,"overflowY":"auto"}
+  PASS: report-spectacle 1366x768: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  PASS: report-spectacle 1366x768: dolna krawędź modala <= innerHeight
+  PASS: report-spectacle 1366x768: wysokość modala <= wysokości widoku
+  PASS: report-spectacle 1366x768: nagłówek ELIMINACJA! w pełni widoczny
+  PASS: report-spectacle 1366x768: treść dłuższa niż okno -> przewijanie włączone (overflow-y auto)
+  PASS: report-spectacle 1366x768: po przewinięciu do końca przycisk zamknięcia (Wróć na mapę / Zamknij) w widoku
+[report-nospec 1366x768] {"ih":768,"box":{"top":15,"bottom":753,"h":738},"btn":{"top":2329.796875,"bottom":2366.796875,"h":37},"ttl":null,"scrollH":2373,"clientH":736,"scrollTop":0,"overflowY":"auto"}
+  PASS: report-nospec 1366x768: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  PASS: report-nospec 1366x768: dolna krawędź modala <= innerHeight
+  PASS: report-nospec 1366x768: wysokość modala <= wysokości widoku
+  PASS: report-nospec 1366x768: treść dłuższa niż okno -> przewijanie włączone (overflow-y auto)
+  PASS: report-nospec 1366x768: po przewinięciu do końca przycisk zamknięcia (Wróć na mapę / Zamknij) w widoku
+[report-spectacle 1920x1080] {"ih":1080,"box":{"top":15,"bottom":1065,"h":1050},"btn":{"top":2620.453125,"bottom":2657.453125,"h":37},"ttl":{"top":143.1875,"bottom":173.078125,"h":29.890625},"scrollH":2663,"clientH":1048,"scrollTop":0,"overflowY":"auto"}
+  PASS: report-spectacle 1920x1080: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  PASS: report-spectacle 1920x1080: dolna krawędź modala <= innerHeight
+  PASS: report-spectacle 1920x1080: wysokość modala <= wysokości widoku
+  PASS: report-spectacle 1920x1080: nagłówek ELIMINACJA! w pełni widoczny
+  PASS: report-spectacle 1920x1080: treść dłuższa niż okno -> przewijanie włączone (overflow-y auto)
+  PASS: report-spectacle 1920x1080: po przewinięciu do końca przycisk zamknięcia (Wróć na mapę / Zamknij) w widoku
+[report-nospec 1920x1080] {"ih":1080,"box":{"top":15,"bottom":1065,"h":1050},"btn":{"top":2329.796875,"bottom":2366.796875,"h":37},"ttl":null,"scrollH":2373,"clientH":1048,"scrollTop":0,"overflowY":"auto"}
+  PASS: report-nospec 1920x1080: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  PASS: report-nospec 1920x1080: dolna krawędź modala <= innerHeight
+  PASS: report-nospec 1920x1080: wysokość modala <= wysokości widoku
+  PASS: report-nospec 1920x1080: treść dłuższa niż okno -> przewijanie włączone (overflow-y auto)
+  PASS: report-nospec 1920x1080: po przewinięciu do końca przycisk zamknięcia (Wróć na mapę / Zamknij) w widoku
+[report-spectacle 1000x560] {"ih":560,"box":{"top":15,"bottom":545,"h":530},"btn":{"top":2620.453125,"bottom":2657.453125,"h":37},"ttl":{"top":143.1875,"bottom":173.078125,"h":29.890625},"scrollH":2663,"clientH":528,"scrollTop":0,"overflowY":"auto"}
+  PASS: report-spectacle 1000x560: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  PASS: report-spectacle 1000x560: dolna krawędź modala <= innerHeight
+  PASS: report-spectacle 1000x560: wysokość modala <= wysokości widoku
+  PASS: report-spectacle 1000x560: nagłówek ELIMINACJA! w pełni widoczny
+  PASS: report-spectacle 1000x560: treść dłuższa niż okno -> przewijanie włączone (overflow-y auto)
+  PASS: report-spectacle 1000x560: po przewinięciu do końca przycisk zamknięcia (Wróć na mapę / Zamknij) w widoku
+[report-nospec 1000x560] {"ih":560,"box":{"top":15,"bottom":545,"h":530},"btn":{"top":2329.796875,"bottom":2366.796875,"h":37},"ttl":null,"scrollH":2373,"clientH":528,"scrollTop":0,"overflowY":"auto"}
+  PASS: report-nospec 1000x560: górna krawędź modala >= 0 (nagłówek nie przycięty)
+  PASS: report-nospec 1000x560: dolna krawędź modala <= innerHeight
+  PASS: report-nospec 1000x560: wysokość modala <= wysokości widoku
+  PASS: report-nospec 1000x560: treść dłuższa niż okno -> przewijanie włączone (overflow-y auto)
+  PASS: report-nospec 1000x560: po przewinięciu do końca przycisk zamknięcia (Wróć na mapę / Zamknij) w widoku
+
+88 PASS / 0 FAIL

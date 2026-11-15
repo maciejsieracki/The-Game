@@ -76,8 +76,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.zloto-szlak-bundle.cjs');
 fs.writeFileSync(ENTRY_FILE, `
 export {
   refreshTradeRoutes, computeTradeRouteResourceGrants, hasTradeRouteResourceAccess,
-  computeTradeRouteResourceFlow, DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS,
-  TRADE_ROUTE_RESOURCE_KEYS, TRADE_ROUTE_STOCK_FLOW_KEYS,
+  TRADE_ROUTE_RESOURCE_KEYS,
 } from '../src/game/trade-routes';
 export {
   empireHasKopalniaZlota, KOPALNIA_ZLOTA_KEY, ownerHasZlotoStock,
@@ -195,11 +194,11 @@ console.log('-- 2. brak złoża, brak szlaku, brak zapasu -> Mennica NIEBUDOWALN
 }
 
 // ===========================================================================
-// 3. Brak złoża, AKTYWNY szlak DOSTARCZAJĄCY złoto do magazynu -> Mennica DOSTĘPNA.
-//    SERCE TEMATU migracji -- realny mechanizm stanu (empireStock), nie syntetyczny
-//    klucz augmentacji placedImprovements (przedmigracyjny model, PYTANIE 77=A).
+// 3. Brak złoża, AKTYWNY szlak (boolean-grant) -- po R-WEB-TRADE-ROUTE-REMOVE-STOCK-FLOW-E3C-Q1
+//    (decyzja ABC 2026-11-15, wariant A) szlak NIE dowozi złota do magazynu państwa.
+//    Zostaje wyłącznie boolean-grant dostępu (RUNTIME gate); BUILD gate patrzy na magazyn.
 // ===========================================================================
-console.log('-- 3. brak złoża + aktywny szlak dostarczający złoto do magazynu -> Mennica DOSTĘPNA --');
+console.log('-- 3. brak złoża + aktywny szlak (grant) -- szlak NIE zasila magazynu; Mennica NIEBUDOWALNA --');
 const p1 = city('p1', 0, 0);   // gracz (owner 0) -- BEZ złoża
 const f1 = city('f1', 1, 5);   // partner (owner 1) -- MA złoto (natywnie)
 const built = new Map([['p1', ['targowisko']], ['f1', ['targowisko']]]);
@@ -212,107 +211,62 @@ function nativeAccess_partnerZlotoOnly(ownerId, key) {
 const grants3 = M.computeTradeRouteResourceGrants(routes3, nativeAccess_partnerZlotoOnly);
 eq(grants3.length, 1, '3: dokładnie jeden grant (zloto)');
 eq(grants3[0].resourceKey, 'zloto', '3: surowiec grantu = zloto');
-ok(M.hasTradeRouteResourceAccess(grants3, 0, 'zloto') === true, '3: gracz (owner 0) ma boolean-grant "z trasy" do złota (RUNTIME gate -- patrz niżej)');
+ok(M.hasTradeRouteResourceAccess(grants3, 0, 'zloto') === true, '3: gracz (owner 0) ma boolean-grant "z trasy" do złota');
 ok(M.hasTradeRouteResourceAccess(grants3, 1, 'zloto') === false, '3: partner NIE dostaje grantu na własny surowiec');
 
-// REALNY MECHANIZM (PYTANIE-84-U3=A, post-migracja): drugi, NIEZALEŻNY kanał -- przepływ
-// ILOŚCIOWY przez TRADE_ROUTE_STOCK_FLOW_KEYS (zawiera 'zloto', patrz sekcja 4) -- to WŁAŚNIE
-// ten kanał zasila magazyn państwa i otwiera bramkę BUDOWY Mennicy (nie boolean-grant sam).
-ok(M.TRADE_ROUTE_STOCK_FLOW_KEYS.includes('zloto'),
-  "3: (setup) 'zloto' jest w TRADE_ROUTE_STOCK_FLOW_KEYS -- szlak fizycznie dowozi złoto do magazynu (sekcja 4)");
-const stockLedger3 = { 0: { zloto: 0 }, 1: { zloto: 10 } }; // partner ma nadwyżkę z własnej kopalni
-const ownerStockFn3 = (ownerId, key) => stockLedger3[ownerId]?.[key] ?? 0;
-const flows3 = M.computeTradeRouteResourceFlow(routes3, ownerStockFn3, M.DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS);
-const zlotoFlow3 = flows3.find(f => f.resourceKey === 'zloto');
-ok(!!zlotoFlow3 && zlotoFlow3.toOwnerId === 0, '3: transfer złota realnie policzony DO gracza (owner 0) z nadwyżki partnera');
-for (const f of flows3) { stockLedger3[f.fromOwnerId][f.resourceKey] -= f.amount; stockLedger3[f.toOwnerId][f.resourceKey] += f.amount; }
-const empireStockAfterFlow = { zloto: stockLedger3[0].zloto };
-ok(empireStockAfterFlow.zloto > 0, `3: magazyn gracza ma Złoto > 0 po turze wymiany (${empireStockAfterFlow.zloto})`);
+// Szlak nie przenosi zapasów: przepływ ilościowy został usunięty z eksportów.
+ok(typeof M.computeTradeRouteResourceFlow === 'undefined',
+  '3: computeTradeRouteResourceFlow NIE jest eksportowana (przepływ ilościowy usunięty)');
+ok(typeof M.TRADE_ROUTE_STOCK_FLOW_KEYS === 'undefined',
+  '3: TRADE_ROUTE_STOCK_FLOW_KEYS NIE jest eksportowana (brak kluczy przepływu)');
 
-// Dostęp działa przez REALNE funkcje silnika (nie syntetyczny klucz placedImprovements):
-ok(M.ownerHasZlotoStock(empireStockAfterFlow) === true, '3: ownerHasZlotoStock -- magazyn zasilony przez szlak daje dostęp');
-const labels3 = activeLabelsFor(0, new Map(), empireStockAfterFlow);
-ok(labels3.includes('Złoto'), '3: etykieta "Złoto" aktywna dzięki dostarczonemu przez szlak zapasowi (NIE dzięki syntetycznemu wpisowi w placedImprovements)');
-ok(mennicaBuildable(0, empireStockAfterFlow) === true, '3: Mennica BUDOWALNA dzięki magazynowi zasilonemu przez szlak');
+// Magazyn gracza pozostaje 0 (szlak nie jest źródłem zapasów).
+const empireStock3 = { zloto: 0 };
+ok(M.ownerHasZlotoStock(empireStock3) === false, '3: ownerHasZlotoStock -- pusty magazyn NIE daje dostępu z samego szlaku');
+const labels3 = activeLabelsFor(0, new Map(), empireStock3);
+ok(!labels3.includes('Złoto'), '3: etykieta "Złoto" NIE jest aktywna z samego szlaku (magazyn pusty)');
+ok(mennicaBuildable(0, empireStock3) === false, '3: Mennica NIEBUDOWALNA -- szlak nie dowozi złota do magazynu');
 
-// RUNTIME gate (mennicaRuntimeGateMet, przez eksportowaną buildingRuntimeGateMet) -- dwie
-// ścieżki, dokładnie jak main.ts:
-// (a) fallback bez resolvera -- czysty stock (jak wyżej, ownerCanFeedMennica).
-ok(M.buildingRuntimeGateMet({ id: 'mennica', epokaWejscia: 2 }, undefined, [], empireStockAfterFlow) === true,
-  '3: buildingRuntimeGateMet (fallback ownerCanFeedMennica) -- aktywny dzięki stockowi z trasy');
-// (b) main.ts realnie wpina resolveOwnerZlotoAccess = ownerHasZlotoAccessNow (main.ts:3396-3400,
-//     OR: stock LUB natywna kopalnia LUB boolean-grant z trasy) -- symulujemy TEN SAM wzorzec
-//     wprost boolean-grantem, BEZ żadnego stocku, żeby dowieść, że RUNTIME gate (w przeciwieństwie
-//     do BUILD gate) reaguje też na sam boolean-grant, nie tylko na fizyczny zapas.
+// RUNTIME gate (main.ts ownerHasZlotoAccessNow: stock LUB natywna kopalnia LUB boolean-grant z trasy).
 const hasGrant3 = M.hasTradeRouteResourceAccess(grants3, 0, 'zloto');
+ok(M.buildingRuntimeGateMet({ id: 'mennica', epokaWejscia: 2 }, undefined, [], empireStock3) === false,
+  '3: buildingRuntimeGateMet (fallback, czysty stock 0) -- nieaktywny');
 ok(M.buildingRuntimeGateMet(
   { id: 'mennica', epokaWejscia: 2 }, undefined, [], undefined,
   { ownerId: 0, resolveOwnerZlotoAccess: oid => oid === 0 && hasGrant3 },
-) === true, '3: buildingRuntimeGateMet z resolverem (odpowiednik main.ts ownerHasZlotoAccessNow) -- aktywny dzięki SAMEMU boolean-grantowi, bez żadnego stocku w magazynie');
+) === true, '3: buildingRuntimeGateMet z resolverem -- aktywny dzięki SAMEMU boolean-grantowi (dostęp zachowany)');
 
-// KONTROLA -- asymetria build vs runtime: BUILD gate (buildingResourceGateMet, production.ts)
-// NIE zna resolvera/boolean-grantu -- patrzy WYŁĄCZNIE na empireResourceStock. Sam boolean-grant
-// (bez realnego przepływu ilościowego z sekcji wyżej) NIE odblokowuje budowy NOWEJ Mennicy.
+// BUILD gate nie zna resolvera/grantu -- sam grant NIE odblokowuje budowy NOWEJ Mennicy.
 ok(mennicaBuildable(0, undefined) === false,
-  '3: (kontrola) sam boolean-grant "z trasy" (bez realnego przepływu do magazynu) NIE wystarcza do budowy NOWEJ Mennicy -- BUILD gate patrzy wyłącznie na magazyn, nie na dostęp/grant');
+  '3: (kontrola) sam boolean-grant "z trasy" NIE wystarcza do budowy NOWEJ Mennicy -- BUILD gate patrzy wyłącznie na magazyn');
 
-// Deprecated no-op -- placedImprovementsWithZlotoTradeGrant NIE bierze już udziału w żadnej
-// z powyższych ścieżek (main.ts wywołuje ją nadal z powodów kompatybilności sygnatury, ale
-// wynik jest zawsze identyczny wejściu -- patrz sekcja G, pełny dowód kompozycji).
-const playerPlacedNoGold = new Map(); // gracz -- BRAK jakiejkolwiek Kopalni złota na mapie
+// Deprecated no-op -- placedImprovementsWithZlotoTradeGrant zwraca ten sam obiekt.
+const playerPlacedNoGold = new Map();
 const noAugment3 = M.placedImprovementsWithZlotoTradeGrant(playerPlacedNoGold, hasGrant3);
 ok(noAugment3 === playerPlacedNoGold,
-  '3: placedImprovementsWithZlotoTradeGrant -- no-op, zwraca DOKŁADNIE ten sam obiekt niezależnie od hasTradeGrant=true (deprecated, PYTANIE-84-U3)');
+  '3: placedImprovementsWithZlotoTradeGrant -- no-op, zwraca DOKŁADNIE ten sam obiekt');
 
 // ===========================================================================
-// 4. Weryfikacja mechanizmu przepływu ILOŚCIOWEGO złota przez szlak (PYTANIE-84-U3=A).
-//    UWAGA: przedmigracyjna wersja tego pliku asercjonowała, że TRADE_ROUTE_STOCK_FLOW_KEYS
-//    NIE zawiera 'zloto' (model PYTANIE-77=A, 2026-07-25: złoto = dostęp-only jak Koń w owym
-//    czasie). To był PIERWOTNY model -- ŚWIADOMIE ZASTĄPIONY przez PYTANIE-84-U3=A (Maciej,
-//    2026-07-27, docs/decyzje/PYTANIE-84.md wiersz U3): "szlaki dostarczają sztuki do magazynu
-//    państwa co turę, nie tylko flagę dostępu". Zweryfikowane bezpośrednio w źródle:
-//    trade-routes.ts (linie ~928-931, ~1049-1057) opisuje to jako ZAMIERZONĄ, udokumentowaną
-//    zmianę -- NIE bug. Ta sekcja testuje więc DZISIEJSZE, zamierzone zachowanie (flow > 0),
-//    nie stary (przedmigracyjny) brak przepływu.
+// 4. Szlak NIE przenosi zapasów (R-WEB-TRADE-ROUTE-REMOVE-STOCK-FLOW-E3C-Q1).
+//    Zapas złota obu stron po "turze" z aktywnym szlakiem jest IDENTYCZNY jak przed nią.
 // ===========================================================================
-console.log('-- 4. złoto PŁYNIE ilościowo przez szlak (PYTANIE-84-U3=A) -- weryfikacja mechanizmu --');
+console.log('-- 4. szlak nie przenosi zapasów: zapas obu stron bez zmian --');
 {
-  ok(M.TRADE_ROUTE_RESOURCE_KEYS.includes('zloto'), '4: TRADE_ROUTE_RESOURCE_KEYS zawiera "zloto" (boolean-grant dostępu, patrz sekcja 3)');
-  ok(M.TRADE_ROUTE_STOCK_FLOW_KEYS.includes('zloto'),
-    "4: TRADE_ROUTE_STOCK_FLOW_KEYS ZAWIERA 'zloto' -- PYTANIE-84-U3=A: przepływ ilościowy jest ZAMIERZONY (nie bug), zastąpił pierwotny model dostęp-only z PYTANIE-77=A (patrz nagłówek pliku)");
-
+  ok(M.TRADE_ROUTE_RESOURCE_KEYS.includes('zloto'), '4: TRADE_ROUTE_RESOURCE_KEYS zawiera "zloto" (boolean-grant dostępu, sekcja 3)');
   const stockBefore = { 0: { braz: 2, zelazo: 2, cegla: 2, zloto: 0 }, 1: { braz: 10, zelazo: 2, cegla: 2, zloto: 10 } };
   const stockAfter = JSON.parse(JSON.stringify(stockBefore));
-  const ownerStock = (ownerId, key) => stockAfter[ownerId][key] ?? 0;
-
-  const flows = M.computeTradeRouteResourceFlow(routes3, ownerStock, M.DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS);
-  const zlotoFlows = flows.filter(f => f.resourceKey === 'zloto');
-  ok(zlotoFlows.length === 1, `4: dokładnie jeden transfer złota policzony na trasie p1<->f1 (ma: ${zlotoFlows.length})`);
-  ok(!!zlotoFlows[0] && zlotoFlows[0].fromOwnerId === 1 && zlotoFlows[0].toOwnerId === 0,
-    '4: złoto płynie OD partnera (większa nadwyżka: 10) DO gracza (mniejszy zapas: 0)');
-  const minReserve = M.DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS.minStockReserve;
-  eq(zlotoFlows[0] && zlotoFlows[0].amount, stockBefore[1].zloto - minReserve,
-    `4: ilość transferu = nadwyżka partnera ponad rezerwę (${stockBefore[1].zloto} - ${minReserve} = ${stockBefore[1].zloto - minReserve})`);
-
-  for (const f of flows) {
-    stockAfter[f.fromOwnerId][f.resourceKey] -= f.amount;
-    stockAfter[f.toOwnerId][f.resourceKey] += f.amount;
-  }
-  ok(stockAfter[0].zloto > stockBefore[0].zloto,
-    `4: zapas złota gracza PO turze > PRZED (${stockAfter[0].zloto} > ${stockBefore[0].zloto}) -- realny przypływ, nie tylko dostęp`);
-  ok(M.ownerHasZlotoStock(stockAfter[0]) === true,
-    '4: magazyn gracza po turze wymiany spełnia ownerHasZlotoStock -- ten sam mechanizm co bramka budowy Mennicy (sekcja 3)');
+  ok(JSON.stringify(stockAfter) === JSON.stringify(stockBefore), '4: zapasy obu stron po turze == przed turą');
+  ok(stockAfter[0].zloto === 0 && stockAfter[1].zloto === 10,
+    `4: gracz zloto=${stockAfter[0].zloto} (oczekiwano 0), partner zloto=${stockAfter[1].zloto} (oczekiwano 10)`);
+  ok(M.ownerHasZlotoStock(stockAfter[0]) === false, '4: magazyn gracza po turze NIE spełnia ownerHasZlotoStock');
 }
 
 // ===========================================================================
-// 5. Parytet AI -- ta sama reguła dla właściciela AI (ownerId != 0).
+// 5. Parytet AI -- ta sama reguła dla ownerId != 0 (szlak bez przepływu zapasów).
 // ===========================================================================
 console.log('-- 5. parytet AI -- ta sama reguła dla ownerId != 0 --');
 {
   const OWNER_AI = 5, OWNER_AI_PARTNER = 6;
-  // computeTradeRouteResourceGrants/computeTradeRouteResourceFlow są ownerId-agnostyczne
-  // (patrz sekcja 3) -- odtwarzamy trasę p1<->f1 z parą ownerId przesuniętą na (5,6), zamiast
-  // wołać refreshTradeRoutes (która łączy WYŁĄCZNIE gracz(0)<->obca cywilizacja).
   const routeShifted = { ...routes3[0], id: 'p9-f9-shift', ownerId: OWNER_AI, toOwnerId: OWNER_AI_PARTNER, fromCityId: 'p9', toCityId: 'f9' };
   function nativeAccess_shifted(ownerId, key) { return ownerId === OWNER_AI_PARTNER && key === 'zloto'; }
   const grants5 = M.computeTradeRouteResourceGrants([routeShifted], nativeAccess_shifted);
@@ -320,33 +274,20 @@ console.log('-- 5. parytet AI -- ta sama reguła dla ownerId != 0 --');
   eq(grants5[0].ownerId, OWNER_AI, '5: parytet -- odbiorca poprawnie = owner 5 (nie hardkodowane 0)');
   ok(M.hasTradeRouteResourceAccess(grants5, OWNER_AI, 'zloto') === true, '5: AI (owner 5) ma boolean-grant "z trasy" do złota');
 
-  const stockLedger5 = { [OWNER_AI]: { zloto: 0 }, [OWNER_AI_PARTNER]: { zloto: 10 } };
-  const ownerStockFn5 = (ownerId, key) => stockLedger5[ownerId]?.[key] ?? 0;
-  const flows5 = M.computeTradeRouteResourceFlow([routeShifted], ownerStockFn5, M.DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS);
-  for (const f of flows5) { stockLedger5[f.fromOwnerId][f.resourceKey] -= f.amount; stockLedger5[f.toOwnerId][f.resourceKey] += f.amount; }
-  const empireStockAi = { zloto: stockLedger5[OWNER_AI].zloto };
-  ok(empireStockAi.zloto > 0, `5: magazyn AI ma Złoto > 0 po turze wymiany (${empireStockAi.zloto})`);
-  ok(M.ownerHasZlotoStock(empireStockAi) === true, '5: AI -- ownerHasZlotoStock działa identycznie jak dla gracza (sekcja 3)');
-
-  const labels5 = activeLabelsFor(OWNER_AI, new Map(), empireStockAi);
-  ok(labels5.includes('Złoto'), '5: etykieta "Złoto" aktywna dla AI dzięki magazynowi -- identycznie jak dla gracza (sekcja 3)');
-  ok(mennicaBuildable(OWNER_AI, empireStockAi) === true,
-    '5: Mennica BUDOWALNA dla AI dzięki magazynowi zasilonemu przez szlak -- identycznie jak dla gracza (sekcja 3)');
-
+  const empireStockAi = { zloto: 0 };
+  ok(!activeLabelsFor(OWNER_AI, new Map(), empireStockAi).includes('Złoto'), '5: AI -- etykieta "Złoto" nieaktywna z samego szlaku');
+  ok(mennicaBuildable(OWNER_AI, empireStockAi) === false, '5: AI -- Mennica NIEBUDOWALNA (szlak nie zasila magazynu)');
   ok(M.buildingRuntimeGateMet(
     { id: 'mennica', epokaWejscia: 2 }, undefined, [], undefined,
     { ownerId: OWNER_AI, resolveOwnerZlotoAccess: oid => oid === OWNER_AI && M.hasTradeRouteResourceAccess(grants5, OWNER_AI, 'zloto') },
-  ) === true, '5: AI -- RUNTIME gate aktywny przez resolver (boolean-grant), parytet z gracza (sekcja 3)');
+  ) === true, '5: AI -- RUNTIME gate aktywny przez resolver (boolean-grant), parytet z gracza');
 
-  // Porównanie wprost: identyczna lista budowalnych pozycji dla gracza i AI przy identycznym magazynie.
   const CITY0 = { id: 'cP', q: 0, r: 0, ownerId: 0, population: 5 };
   const CITY5 = { id: 'cA', q: 0, r: 0, ownerId: OWNER_AI, population: 5 };
   const idsPlayer = M.buildableProduction(CITY0, DATA, ['Waluta'], ctxFor(0, empireStockAi)).map(it => it.id).sort();
   const idsAi = M.buildableProduction(CITY5, DATA, ['Waluta'], ctxFor(OWNER_AI, empireStockAi)).map(it => it.id).sort();
   eq(JSON.stringify(idsPlayer), JSON.stringify(idsAi),
     '5: parytet AI -- lista budynków identyczna dla gracza i AI przy identycznym magazynie');
-
-  // Kontrola -- bez żadnego zapasu, ani gracz, ani AI nie mogą zbudować Mennicy.
   ok(mennicaBuildable(0, undefined) === false, '5: (kontrola) gracz bez zapasu -- Mennica NIEBUDOWALNA');
   ok(mennicaBuildable(OWNER_AI_PARTNER, undefined) === false, '5: (kontrola) AI bez zapasu -- identycznie NIEBUDOWALNA');
 }
@@ -365,10 +306,10 @@ console.log('-- F. zerwanie szlaku: magazyn przetrwał zerwanie (bramka budowy =
   ok(!activeLabelsFor(0, new Map(), undefined).includes('Złoto'),
     'F: (kontrola) bez żadnego wcześniej zgromadzonego zapasu -- po zerwaniu szlaku brak etykiety "Złoto"');
 
-  // Magazyn zgromadzony PRZED zerwaniem (sekcja 3, empireStockAfterFlow) jest stanem NIEZALEŻNYM
+  // Magazyn zgromadzony PRZED zerwaniem (fixture: zapas z własnej kopalni, NIE z szlaku -- szlak nie zasila magazynu) jest stanem NIEZALEŻNYM
   // od żywej trasy -- bramka budowy patrzy WYŁĄCZNIE na bieżący magazyn, nie sprawdza, czy trasa
   // wciąż istnieje. Dowód rozdzielenia dwóch niezależnych mechanizmów (boolean-grant vs magazyn).
-  ok(mennicaBuildable(0, empireStockAfterFlow) === true,
+  ok(mennicaBuildable(0, { zloto: 3 }) === true,
     'F: po zerwaniu szlaku -- Mennica nadal BUDOWALNA dzięki JUŻ ZGROMADZONEMU zapasowi Złota (magazyn przetrwał zerwanie trasy, boolean-grant nie)');
   ok(mennicaBuildable(0, undefined) === false,
     'F: (kontrola) bez wcześniej zgromadzonego zapasu -- po zerwaniu szlaku Mennica NIEBUDOWALNA (brak jakiegokolwiek źródła)');

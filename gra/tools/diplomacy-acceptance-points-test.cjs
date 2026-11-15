@@ -74,7 +74,8 @@ function ok(cond, msg) {
 }
 
 ok(mod.treatyBaseAcceptancePn('sojusz_pelny') === 500, 'sojusz_pelny = 500 PN');
-ok(mod.treatyBaseAcceptancePn('pokoj') === 500, 'pokoj = 500 PN');
+const POKOJ_C = 615; // R-WEB-DIPLO-WEARINESS-PW-FOLLOWUP-C615 (ABC 2026-11-14): stała cena pokoju C
+ok(mod.treatyBaseAcceptancePn('pokoj') === POKOJ_C, 'pokoj = 615 PN (C, stała)');
 ok(mod.treatyBaseAcceptancePn('nap') === 200, 'nap = 200 PN');
 ok(mod.treatyBaseAcceptancePn('umowa_szlakow') === 80, 'traktat handlowy = 80 PN');
 ok(mod.treatyBaseAcceptancePn('handel') === 0, 'wymiana = 0 PN bazy');
@@ -225,18 +226,18 @@ ok(mod.computePlayerAcceptanceSides('trybut_zadanie', {}, 100, false).my.treatyB
 // Kryterium 5: pokój (brak selektora czasu w UI) i pozostałe traktaty bez selektora
 // (sojusz/granice/wasal — patrz komentarz przy TREATY_DURATION_MULTIPLIER_ACTIONS) mają bazę
 // NIEZMIENIONĄ niezależnie od payload.turns — mnożnik czasu się do nich nie stosuje.
-ok(mod.treatyBasePnFromConfig('pokoj') === 500, 'pokój: baza bez payload = 500 (kontrola — zachowanie sprzed naprawy)');
-ok(mod.treatyBasePnFromConfig('pokoj', { turns: 10 }) === 500, 'pokój @ turns=10: baza NIEZMIENIONA (brak selektora czasu w UI, poza zakresem)');
-ok(mod.treatyBasePnFromConfig('pokoj', { turns: 20 }) === 500, 'pokój @ turns=20: baza NIEZMIENIONA');
-ok(mod.treatyBasePnFromConfig('pokoj', { turns: 0 }) === 500, 'pokój @ turns=0 (bezterminowy): baza NIEZMIENIONA');
-ok(mod.treatyBaseAcceptancePn('pokoj', { turns: 15 }) === 500, 'UI: pokój @ turns=15: baza NIEZMIENIONA (brak selektora)');
+ok(mod.treatyBasePnFromConfig('pokoj') === POKOJ_C, 'pokój: baza bez payload = 500 (kontrola — zachowanie sprzed naprawy)');
+ok(mod.treatyBasePnFromConfig('pokoj', { turns: 10 }) === POKOJ_C, 'pokój @ turns=10: baza NIEZMIENIONA (brak selektora czasu w UI, poza zakresem)');
+ok(mod.treatyBasePnFromConfig('pokoj', { turns: 20 }) === POKOJ_C, 'pokój @ turns=20: baza NIEZMIENIONA');
+ok(mod.treatyBasePnFromConfig('pokoj', { turns: 0 }) === POKOJ_C, 'pokój @ turns=0 (bezterminowy): baza NIEZMIENIONA');
+ok(mod.treatyBaseAcceptancePn('pokoj', { turns: 15 }) === POKOJ_C, 'UI: pokój @ turns=15: baza NIEZMIENIONA (brak selektora)');
 ok(mod.treatyBasePnFromConfig('sojusz_pelny', { turns: 20 }) === 500, 'sojusz_pelny @ turns=20: NIEZMIENIONY (formularz ma tylko wybór typu, bez czasu — diplomacyNegotiationModal.ts case 3)');
 ok(mod.treatyBasePnFromConfig('granice', { turns: 0 }) === 60, 'granice (przemarsz) @ turns=0: NIEZMIENIONY (formularz ma tylko checkbox prawa wojskowego, bez czasu — case 4)');
 ok(mod.treatyBasePnFromConfig('wasal', { turns: 20 }) === 350, 'wasal @ turns=20: NIEZMIENIONY (formularz ma tylko trybut ¤/turę, bez czasu — case 12)');
 
 // Wszystkie traktaty z bazą PW > 0 — wspólna ścieżka bilateralTreatyDisplayPw / sideDisplayOfferPw
 const TREATY_PW_BASE = [
-  ['pokoj', 500],
+  ['pokoj', POKOJ_C],
   ['sojusz_pelny', 500],
   ['sojusz_defensywny', 420],
   ['nap', 200],
@@ -401,13 +402,13 @@ const woodTradePn = mod.resolveProposalPn({
 ok(woodTradePn.givePn === 1, 'resolveProposalPn: 10 szt. drewno (krok 10) = 1 blok × 1 PN/blok = 1 PN');
 
 // Pokój @ rel 77 — asymetria: gracz 385 PW, partner 500 PW (baza)
-ok(mod.effectiveTreatyPnRequired(500, 77) === 385, 'pokój @ rel 77: traktat gracz 385 PW');
-ok(mod.partnerTreatyPnRequired(500) === 500, 'pokój @ rel 77: partner 500 PW (baza)');
+ok(mod.effectiveTreatyPnRequired(POKOJ_C, 77) === 474, 'pokój @ rel 77: traktat gracz 474 PW (615×0,77)');
+ok(mod.partnerTreatyPnRequired(POKOJ_C) === POKOJ_C, 'pokój @ rel 77: partner 615 PW (baza)');
 const peacePure77 = mod.computePlayerAcceptanceSides('pokoj', {}, 77, false);
 ok(!peacePure77.their.accepted, 'pokój czysty @ rel 77: nie accepted (bilans −115 PW)');
-ok(peacePure77.my.balancePn === -115, 'pokój czysty @ rel 77: asymetria −115 PW (385−500)');
-ok(peacePure77.my.treatyEffectivePn === 385, 'pokój @ rel 77: gracz 385 PW');
-ok(peacePure77.their.treatyEffectivePn === 500, 'pokój @ rel 77: partner 500 PW');
+ok(peacePure77.my.balancePn === -141, 'pokój czysty @ rel 77: asymetria −115 PW (385−500)');
+ok(peacePure77.my.treatyEffectivePn === 474, 'pokój @ rel 77: gracz 474 PW');
+ok(peacePure77.their.treatyEffectivePn === POKOJ_C, 'pokój @ rel 77: partner 615 PW');
 ok(mod.diplomacyFairGivePn(385, 77) === 500, 'kontrola: fair-min handlu 385→500 (nie dotyczy pokoju)');
 const peaceSym77 = mod.computePlayerAcceptanceSides(
   'pokoj',
@@ -419,16 +420,16 @@ const peaceSym77 = mod.computePlayerAcceptanceSides(
   false,
 );
 ok(!peaceSym77.their.accepted, 'pokój symetryczny 10¤ @ rel 77: nie accepted (gracz słabsza @ rel 77)');
-ok(peaceSym77.my.balancePn === -115, 'pokój symetryczny: asymetria strukturalna −115 (nie fair-min)');
-ok(peaceSym77.my.balancePn !== -184, 'pokój: bez fałszywego fair-min na traktacie');
+ok(peaceSym77.my.balancePn === -141, 'pokój symetryczny: asymetria strukturalna −141 (nie fair-min)');
+ok(peaceSym77.my.balancePn !== -210, 'pokój: bez fałszywego fair-min na traktacie');
 const peaceSweet77 = mod.computePlayerAcceptanceSides(
   'pokoj',
   { giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 50 }] },
   77,
   false,
 );
-ok(!peaceSweet77.their.accepted, 'pokój + dar 50¤: nie accepted (brakuje 65 PW)');
-ok(peaceSweet77.my.balancePn === -65, 'pokój + dar 50¤: asymetria 385+50−500 = −65 PW');
+ok(!peaceSweet77.their.accepted, 'pokój + dar 50¤: nie accepted (brakuje 91 PW)');
+ok(peaceSweet77.my.balancePn === -91, 'pokój + dar 50¤: asymetria 474+50−615 = −91 PW');
 
 // NAP @ rel 52 — panel traktatowy NIE fair-min (Maciej 2026-08-02, BUG-DYPLO-NAP-FAIRMIN-FALSE)
 ok(mod.effectiveTreatyPnRequired(200, 52) === 104, 'NAP @ rel 52: effective 104 PW');
@@ -445,11 +446,11 @@ ok(!napPanel40.includes('fair min'), 'NAP panel @ rel 40: bez fair-min handlu');
 ok(napPanel40.includes('da-pn-balance-bar no'), 'NAP panel @ rel 40: tone no');
 
 // Pokój — panel traktatowy asymetryczny
-const peacePanel77 = mod.renderPnBalancePanelForPeace(385, 0, 0, 77, 'Propozycja pokoju', 500);
-ok(peacePanel77.includes('Ty: baza 500 → 385'), 'pokój panel: meta gracz');
-ok(peacePanel77.includes('Oni: 500 PW (baza)'), 'pokój panel: meta partner');
+const peacePanel77 = mod.renderPnBalancePanelForPeace(474, 0, 0, 77, 'Propozycja pokoju', POKOJ_C);
+ok(peacePanel77.includes('Ty: baza 615 → 474'), 'pokój panel: meta gracz');
+ok(peacePanel77.includes('Oni: 615 PW (baza)'), 'pokój panel: meta partner');
 ok(!peacePanel77.includes('fair min'), 'pokój panel: bez fair min');
-ok(peacePanel77.includes('Brakuje 115'), 'pokój panel: Brakuje 115 PW (gracz słabsza)');
+ok(peacePanel77.includes('Brakuje 141'), 'pokój panel: Brakuje 115 PW (gracz słabsza)');
 ok(peacePanel77.includes('da-pn-balance-bar no'), 'pokój panel: tone no @ rel 77');
 
 // Traktat handlowy incoming: gracz oddaje więcej — net +120, bez „Brakuje" / fair-min (Maciej 2026-08-02)

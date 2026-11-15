@@ -395,8 +395,8 @@ const econParams = buildEconParams(data, 'normal');
 assert('buildEconParams returns finite progWzrostuWspolczynnik',
   Number.isFinite(econParams.progWzrostuWspolczynnik) && econParams.progWzrostuWspolczynnik > 0,
   `value=${econParams.progWzrostuWspolczynnik}`);
-assert('buildEconParams trade-science slider default === 20',
-  econParams.suwaakHandelNaukaDefault === 20, // Maciej 2026-06-25: decyzja 70/20/10 (skarbiec/badania/luksus)
+assert('buildEconParams trade-science slider default === 60',
+  econParams.suwaakHandelNaukaDefault === 60, // R-WEB-SETTINGS-DEFAULT-TAX-SPLIT-30-60-10-Q1 (2026-11-14): 60/30/10 (nauka/skarb/zamożność); wcześniej 20
   `value=${econParams.suwaakHandelNaukaDefault}`);
 
 // Found a fresh city on the player start hex for an isolated economy test.

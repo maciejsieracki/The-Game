@@ -4,7 +4,7 @@
  * para w wojnie, neutralna i w pokoju; po 1, 3 i 6 turach. Wypisuje tabelę.
  * Obrona r1: dodane (i) wojna z W>0 i W<0 (izolacja guardu `!atWar` w computeTickZaufanieDelta),
  * (ii) licznik kryzysu zaufania = 0 (advanceCrisisCounter) w tej samej kolejnosci co main.ts
- * (tick, potem krok licznika), dla N=6 (profil hamulca) i N=5 (p6.kryzysTurDoWojny w JSON).
+ * (tick, potem krok licznika), dla N=6 (profil hamulca) i N=5 (dawne p6.kryzysTurDoWojny z JSON, usuniete).
  */
 const fs = require('fs');
 const path = require('path');

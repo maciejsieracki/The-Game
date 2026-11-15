@@ -1,0 +1,93 @@
+{
+ "uwaga": "Pomiar r2 na bazie 3cfda16ac (merge origin/main). Kategorie wg moveLeft w chwili zatrzymania PLANU AUTO (planowanie na klonach), jednostki atk14-atk17 (Horseman), tury 9-16. occupied=0 we wszystkich biegach.",
+ "runs": [
+  {
+   "mode": "skip",
+   "seed": 1,
+   "scen": "mieszana (Hastati 8, Lucznik 6, Konnica 4) vs Hastati 14",
+   "pula_konnicy_r9_16": 217,
+   "zatrzymania_n_i_mp_pozostale": {
+    "kontakt_tylko_routed": [
+     16,
+     96
+    ],
+    "pula_zuzyta": [
+     1,
+     0
+    ],
+    "brak_kroku_can_false": [
+     14,
+     84
+    ]
+   },
+   "wynik": "atakujacy",
+   "runda_konca": 30
+  },
+  {
+   "mode": "watch",
+   "seed": 1,
+   "scen": "mieszana (Hastati 8, Lucznik 6, Konnica 4) vs Hastati 14",
+   "pula_konnicy_r9_16": 196,
+   "zatrzymania_n_i_mp_pozostale": {
+    "kontakt_tylko_routed": [
+     10,
+     59
+    ],
+    "brak_kroku_can_false": [
+     17,
+     98
+    ],
+    "pula_zuzyta": [
+     1,
+     0
+    ]
+   },
+   "wynik": "atakujacy",
+   "runda_konca": 29
+  },
+  {
+   "mode": "skip",
+   "seed": 2,
+   "scen": "mieszana (Hastati 8, Lucznik 6, Konnica 4) vs Hastati 14",
+   "pula_konnicy_r9_16": 203,
+   "zatrzymania_n_i_mp_pozostale": {
+    "kontakt_tylko_routed": [
+     12,
+     71
+    ],
+    "brak_kroku_can_false": [
+     16,
+     81
+    ],
+    "pula_zuzyta": [
+     1,
+     0
+    ]
+   },
+   "wynik": "atakujacy",
+   "runda_konca": 30
+  },
+  {
+   "mode": "watch",
+   "seed": 2,
+   "scen": "mieszana (Hastati 8, Lucznik 6, Konnica 4) vs Hastati 14",
+   "pula_konnicy_r9_16": 203,
+   "zatrzymania_n_i_mp_pozostale": {
+    "kontakt_tylko_routed": [
+     12,
+     71
+    ],
+    "brak_kroku_can_false": [
+     16,
+     81
+    ],
+    "pula_zuzyta": [
+     1,
+     0
+    ]
+   },
+   "wynik": "atakujacy",
+   "runda_konca": 30
+  }
+ ]
+}

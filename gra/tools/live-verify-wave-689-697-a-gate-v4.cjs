@@ -27,7 +27,7 @@ const SEED = parseInt(arg('seed', '11'), 10);
 const MAP = arg('map', 'Maly');
 const STEP = parseInt(arg('step', '1'), 10);
 const MAX_STEPS = parseInt(arg('maxsteps', '400'), 10);
-const CHECK10 = arg('check10', '0') === '1'; // pkt 3: tury 1–10 z deficytem (jednostki utrzymania w każdej turze)
+const CHECK10 = arg('check10', '0') === '1'; // pkt 3: tury 1–10 z deficytem (jednostki utrzymania w każdej turze); r3 (GATE-PROJECTION-ONLY-FROM-TURN1): bramka blokuje od tury 1, gdy prognoza po turze < 0 (nie ma już wyjątku 1–10)
 const CHECK10_UNITS = parseInt(arg('check10units', '2'), 10);
 const ME = 0; // HUMAN_OWNER_PRIMARY (main.ts: ME() === 0)
 const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -95,7 +95,12 @@ async function main() {
         await page.evaluate(() => window.__nnsMeasureDebug.disbandPlayerUnits(0));
         await wait(60);
         log('turn' + tt + '_deficitUnitsAdded', sp && sp.added);
-        log('turn' + tt + '_canEndAtDeficit', await S.canEnd());
+        const canAtDeficit = await S.canEnd();
+        log('turn' + tt + '_canEndAtDeficit', canAtDeficit);
+        log('turn' + tt + '_gateBlocksFromTurn1', canAtDeficit === false); // r3: oczekiwane true, gdy deficyt daje prognozę < 0
+        // Tura nie kończy się przy blokadzie — zwolnij jednostki testowe (dźwignia) i zakończ.
+        await page.evaluate(() => window.__nnsMeasureDebug.disbandPlayerUnits(1000));
+        await wait(60);
         await S.endTurnOnce();
         log('turn' + tt + '_endedTo', await S.turn());
         continue;

@@ -156,7 +156,7 @@ if (fnNaprawiona) {
   // BRAK REGRESJI — trojka juz dzialajaca przed naprawa (recipe.id === buildingId).
   const podstawowe = wywolajDlaOwnera(fnNaprawiona, 3);
   ok(podstawowe.cegla === 100, `Cegielnia: Cegla (produkcja, jednostek/ture, era 1, normal) = 100 (R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1, bylo 50) (got ${podstawowe.cegla})`);
-  ok(podstawowe.ceramika === 50, `Garncarnia: Ceramika (produkcja, jednostek/ture, era 1, normal) = 50 (got ${podstawowe.ceramika})`);
+  ok(podstawowe.ceramika === 30, `Garncarnia: Ceramika (produkcja, jednostek/ture, era 1, normal) = 30 (R-WEB-DATA-GARNCARNIA-THROUGHPUT-30-PLUS-20-PER-ERA-Q1; got ${podstawowe.ceramika})`);
   ok(podstawowe.braz === 50, `Odlewnia brazu: Braz (produkcja, jednostek/ture, era 1, normal) = 50 from the first explicit data row (got ${podstawowe.braz})`);
 
   // Brzeg: wlasciciel bez zadnego konwertera -> pusty obiekt, nie undefined/wyjatek.
@@ -198,7 +198,7 @@ if (fnNaprawiona) {
     // dzialac nawet ze starym kodem -- jesli mutacja jednoczesnie psuje i ja, mutacja jest
     // zle przygotowana (za szeroka), a nie dowodzi punktowo tego jednego bledu.
     const podstawoweStara = wywolajDlaOwnera(fnStara, 3);
-    ok(podstawoweStara.cegla === 100 && podstawoweStara.ceramika === 50 && podstawoweStara.braz === 50,
+    ok(podstawoweStara.cegla === 100 && podstawoweStara.ceramika === 30 && podstawoweStara.braz === 50,
       `(kontrola mutacji) stare dopasowanie NIE psulo trojki juz-dzialajacej (got ${JSON.stringify(podstawoweStara)})`);
   } else {
     fail++; console.error('FAIL: nie udalo sie zbudowac zmutowanej funkcji do testu regresyjnego');

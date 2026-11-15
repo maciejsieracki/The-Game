@@ -13,7 +13,8 @@ import { applyPostCaptureLawOnCapture } from './post-capture-law';
 import type { RuntimeUnit } from '../units/setup';
 import type { BattleEventLog } from '../units/battleRoster';
 import { hexNeighborCoords, isCivilianUnit } from '../units/setup';
-import { syncStackRuchLeft } from './armyMerge';
+import { syncStackRuchLeft, allDefendersFortifiedInGarnizon } from './armyMerge';
+import { recordRetreatOnRoster } from './battle-retreat-limit';
 import { applyLossPctToRoster, isFieldBattleUnit } from './auto-battle-power';
 import type { UnitPowerInput } from './unit-power';
 import { registerBattleWon } from './veteran';
@@ -43,6 +44,20 @@ export interface PostBattleMapInput {
   winner: MapBattleWinner;
   lossAtkPct?: number;
   lossDefPct?: number;
+  /**
+   * R-WEB-BATTLE-RETREAT-LIMIT-3-PER-TURN-THEN-DESTROYED-Q1: licznik odwrotów obrony
+   * wyczerpany (main.ts: retreatBudgetExhausted(defRoster)). Gdy atakujący wygrywa w
+   * polu, a obrona już wykonała limit odwrotów w tej turze -> ocalali giną (unicestwienie
+   * armii) zamiast odwrotu. W mieście nie dotyczy (przegrani giną jak dotąd).
+   */
+  defRetreatBudgetExhausted?: boolean;
+  /**
+   * R-WEB-BATTLE-RETREAT-LIMIT-3-PER-TURN-THEN-DESTROYED-Q1 (lustrzane do obrony): licznik
+   * odwrotów ATAKUJĄCEGO rosteru wyczerpany w tej turze (main.ts: retreatBudgetExhausted(atkRoster)).
+   * Gdy obrona wygrywa w polu, a atakujący przegrywa -> ocalali atakującego giną (unicestwienie
+   * armii) zamiast odwrotu o 2 heksy. W mieście nie dotyczy.
+   */
+  atkRetreatBudgetExhausted?: boolean;
   /** Unit identity emitted by the battle/event log for this resolution. */
   battleEventLog?: BattleEventLog;
   manualSurvivors?: ManualSurvivor[];
@@ -87,6 +102,10 @@ export interface PostBattleMapResult {
    */
   retreatedTwoHexIds: string[];
   retreatNoTwoHexRouteIds: string[];
+  /** R-WEB-BATTLE-RETREAT-LIMIT-3-PER-TURN-THEN-DESTROYED-Q1: true = ocalali obrony zginęli (wyczerpany limit odwrotów). */
+  defenderAnnihilatedByRetreatLimit: boolean;
+  /** R-WEB-BATTLE-RETREAT-LIMIT-3-PER-TURN-THEN-DESTROYED-Q1: true = ocalali atakującego zginęli (wyczerpany limit). */
+  attackerAnnihilatedByRetreatLimit: boolean;
 }
 
 function removeUnitById(units: RuntimeUnit[], id: string | number): void {
@@ -551,6 +570,8 @@ function registerVeteranProgressAfterBattle(input: PostBattleMapInput): void {
 export function applyPostBattleMap(input: PostBattleMapInput): PostBattleMapResult {
   const removedIds: string[] = [];
   const twoHex = { retreated: [] as string[], noRoute: [] as string[] };
+  let defenderAnnihilated = false;
+  let attackerAnnihilated = false;
 
   // DECYZJA WLASCICIELA 2026-11-11: odwrot ocalalych przegranej dotyczy TYLKO walki w polu.
   // W MIESCIE (heks bitwy = miasto: szturm, obrona miasta, oblezenie) przegrani gina jak dotad.
@@ -576,10 +597,49 @@ export function applyPostBattleMap(input: PostBattleMapInput): PostBattleMapResu
     // R1: mur/palisada stoi -- atakujacy zostaja pod murami, miasto nie pada.
   } else if (input.winner === 'atakujacy') {
     if (input.cityOnBattleHex) wipeDefenderOnCityCenter(input);
-    retreatDefendersAfterAtkWin(input, fieldTwoHex);
+    if (!input.cityOnBattleHex && input.defRetreatBudgetExhausted === true) {
+      // R-WEB-BATTLE-RETREAT-LIMIT-3-PER-TURN-THEN-DESTROYED-Q1: limit odwrotów wyczerpany
+      // w tej turze -> przegrana = unicestwienie armii (żaden ocalały nie wycofuje się).
+      for (const ref of input.defRoster) {
+        const u = liveUnit(input.units, ref.id);
+        if (!u) continue;
+        removeUnitById(input.units, u.id);
+        removedIds.push(String(u.id));
+      }
+      defenderAnnihilated = true;
+    } else {
+      retreatDefendersAfterAtkWin(input, fieldTwoHex);
+      // Każdy odwrót ocalałych liczy się do limitu tury (wspólny licznik rosteru);
+      // przy garnizonie nie ma odwrotu, więc nic nie liczymy (bez zmian).
+      const survivorsLeft = input.defRoster
+        .map(r => liveUnit(input.units, r.id))
+        .filter((u): u is RuntimeUnit => !!u);
+      if (survivorsLeft.length > 0 && !allDefendersFortifiedInGarnizon(survivorsLeft)) {
+        recordRetreatOnRoster(survivorsLeft);
+      }
+    }
     moveAtkRosterOntoBattleHex(input);
   } else if (input.winner === 'obronca') {
-    retreatAtkRosterToStart(input, fieldTwoHex);
+    if (!cityBattle && input.atkRetreatBudgetExhausted === true) {
+      // R-WEB-BATTLE-RETREAT-LIMIT-3-PER-TURN-THEN-DESTROYED-Q1: przegrana atakującego po
+      // wyczerpaniu limitu odwrotów w tej turze = unicestwienie armii (żaden ocalały nie cofa się).
+      for (const ref of input.atkRoster) {
+        const u = liveUnit(input.units, ref.id);
+        if (!u) continue;
+        removeUnitById(input.units, u.id);
+        removedIds.push(String(u.id));
+      }
+      attackerAnnihilated = true;
+    } else {
+      retreatAtkRosterToStart(input, fieldTwoHex);
+      // Odwrót ocalałych atakującego (pole) liczy się do limitu tury; w mieście nie ma odwrotu.
+      if (!cityBattle) {
+        const survivorsLeft = input.atkRoster
+          .map(r => liveUnit(input.units, r.id))
+          .filter((u): u is RuntimeUnit => !!u);
+        if (survivorsLeft.length > 0) recordRetreatOnRoster(survivorsLeft);
+      }
+    }
     for (const ref of input.defRoster) {
       const u = liveUnit(input.units, ref.id);
       if (u) u.defLossesThisTurn = (u.defLossesThisTurn ?? 0) + 1;
@@ -595,7 +655,13 @@ export function applyPostBattleMap(input: PostBattleMapInput): PostBattleMapResu
   }
 
   spendAttackMpOnLive(input.units, input.atkRoster, input.atkAnchor.id);
-  return { removedIds, retreatedTwoHexIds: twoHex.retreated, retreatNoTwoHexRouteIds: twoHex.noRoute };
+  return {
+    removedIds,
+    retreatedTwoHexIds: twoHex.retreated,
+    retreatNoTwoHexRouteIds: twoHex.noRoute,
+    defenderAnnihilatedByRetreatLimit: defenderAnnihilated,
+    attackerAnnihilatedByRetreatLimit: attackerAnnihilated,
+  };
 }
 
 export function snapshotRosterPositions(roster: RuntimeUnit[]): Map<string | number, BattleStartPos> {

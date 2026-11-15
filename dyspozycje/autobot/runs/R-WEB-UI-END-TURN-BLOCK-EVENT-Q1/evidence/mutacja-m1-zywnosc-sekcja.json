@@ -1,0 +1,388 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "label": "bramka blokuje przy skarbcu po turze < 0",
+      "data": {
+        "canEnd": false,
+        "blokada": true
+      }
+    },
+    {
+      "ok": true,
+      "label": "bramka podaje propozycję podatku",
+      "data": {
+        "punktyProcentowe": 60,
+        "szacunek": "krokowy",
+        "maksPunktow": 60
+      }
+    },
+    {
+      "ok": true,
+      "label": "przed próbą zakończenia tury brak karty blokady",
+      "data": {
+        "count": 0,
+        "ids": [],
+        "buttons": [],
+        "subtitle": ""
+      }
+    },
+    {
+      "ok": true,
+      "label": "zablokowana tura się nie kończy",
+      "data": {
+        "t0": 1,
+        "t1": 1
+      }
+    },
+    {
+      "ok": true,
+      "label": "po próbie: dokładnie jedna karta blokady (bez duplikatu przy ponownej próbie)",
+      "data": {
+        "count": 1,
+        "ids": [
+          "end-turn-block-1"
+        ],
+        "buttons": [
+          {
+            "text": "Zwiększ podatek do 90%",
+            "act": "tax-raise"
+          },
+          {
+            "text": "Zmienię sam",
+            "act": "open-tax"
+          }
+        ],
+        "subtitle": "Nie można zakończyć tury. Skarbiec (złoto): po zakończeniu tury zabraknie 6. Pomogą: podatek złota: +6 złota/turę; obniżka racji żywności: +12 żywności/turę; rozwiązanie jednostek (złoto): +4 złota/turę; rozwiązanie jednostek (żywność): +4 żywności/turę. Podnieś podatek o 60 pkt % (kosztem Nauki), aby skarbiec po zakończeniu tury wyszedł co najmniej na zero."
+      }
+    },
+    {
+      "ok": true,
+      "label": "karta ma przycisk „Zwiększ podatek do 90%”",
+      "data": [
+        {
+          "text": "Zwiększ podatek do 90%",
+          "act": "tax-raise"
+        },
+        {
+          "text": "Zmienię sam",
+          "act": "open-tax"
+        }
+      ]
+    },
+    {
+      "ok": true,
+      "label": "karta ma przycisk „Zmienię sam”",
+      "data": [
+        {
+          "text": "Zwiększ podatek do 90%",
+          "act": "tax-raise"
+        },
+        {
+          "text": "Zmienię sam",
+          "act": "open-tax"
+        }
+      ]
+    },
+    {
+      "ok": true,
+      "label": "karta niesie pełny komunikat bramki",
+      "data": "Nie można zakończyć tury. Skarbiec (złoto): po zakończeniu tury zabraknie 6. Pomogą: podatek złota: +6 złota/turę; obniżka racji żywności: +12 żywności/turę; ro"
+    },
+    {
+      "ok": true,
+      "label": "przyciski karty blokady są widoczne i klikalne (nie przycięte)",
+      "data": [
+        {
+          "text": "Zwiększ podatek do 90%",
+          "inViewport": true,
+          "hitsOwn": true,
+          "clipped": false,
+          "clipBy": [],
+          "visible": true
+        },
+        {
+          "text": "Zmienię sam",
+          "inViewport": true,
+          "hitsOwn": true,
+          "clipped": false,
+          "clipBy": [],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "ok": true,
+      "label": "klik przycisku „Zwiększ podatek” wykonany",
+      "data": null
+    },
+    {
+      "ok": true,
+      "label": "po kliku podatek = proponowana wartość (Pieniądz +pkt)",
+      "data": {
+        "before": {
+          "procentPieniadz": 30,
+          "procentNauka": 60,
+          "procentLuksus": 10
+        },
+        "after": {
+          "procentPieniadz": 90,
+          "procentNauka": 0,
+          "procentLuksus": 10
+        },
+        "pkt": 60
+      }
+    },
+    {
+      "ok": true,
+      "label": "po kliku bramka puszcza turę (canEnd = true)",
+      "data": {
+        "canEnd": true,
+        "prognoza": 0
+      }
+    },
+    {
+      "ok": true,
+      "label": "po zniesieniu blokady karta znika",
+      "data": {
+        "count": 0,
+        "ids": [],
+        "buttons": [],
+        "subtitle": ""
+      }
+    },
+    {
+      "ok": true,
+      "label": "tura może zostać zakończona po akcji",
+      "data": {
+        "t2": 1,
+        "t3": 2
+      }
+    },
+    {
+      "ok": true,
+      "label": "druga tura: skarbiec znów blokuje",
+      "data": {
+        "blokada": true
+      }
+    },
+    {
+      "ok": true,
+      "label": "druga tura: zablokowane zakończenie",
+      "data": {
+        "t4": 2,
+        "t5": 2
+      }
+    },
+    {
+      "ok": true,
+      "label": "druga tura: karta blokady po próbie",
+      "data": {
+        "count": 1,
+        "ids": [
+          "end-turn-block-2"
+        ],
+        "buttons": [
+          {
+            "text": "Zwiększ podatek do 90%",
+            "act": "tax-raise"
+          },
+          {
+            "text": "Zmienię sam",
+            "act": "open-tax"
+          }
+        ],
+        "subtitle": "Nie można zakończyć tury. Skarbiec (złoto): po zakończeniu tury zabraknie 6. Pomogą: podatek złota: +6 złota/turę; rozwiązanie jednostek (złoto): +4 złota/turę; rozwiązanie jednostek (żywność): +4 żywności/turę. Podnieś podatek o 60 pkt % (kosztem Nauki), aby skarbiec po zakończeniu tury wyszedł co najmniej na zero."
+      }
+    },
+    {
+      "ok": true,
+      "label": "ręczna zmiana podatku (suwak) zdejmuje kartę blokady",
+      "data": {
+        "count": 0,
+        "ids": [],
+        "buttons": [],
+        "subtitle": ""
+      }
+    },
+    {
+      "ok": true,
+      "label": "po ręcznej zmianie podatku bramka puszcza turę",
+      "data": {
+        "canEnd": true
+      }
+    },
+    {
+      "ok": true,
+      "label": "tura kończy się po ręcznej zmianie podatku",
+      "data": {
+        "t5": 2,
+        "t6": 3
+      }
+    },
+    {
+      "ok": true,
+      "label": "żywność: bramka blokuje na spichlerzu",
+      "data": {
+        "blokada": true,
+        "zasob": "spichlerz",
+        "canEnd": false
+      }
+    },
+    {
+      "ok": true,
+      "label": "żywność: karta blokady z przyciskiem „Otwórz racje”",
+      "data": {
+        "count": 1,
+        "ids": [
+          "end-turn-block-3"
+        ],
+        "buttons": [
+          {
+            "text": "Otwórz racje",
+            "act": "open-food"
+          }
+        ],
+        "subtitle": "Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 1. Pomogą: obniżka racji żywności: +8 żywności/turę; rozwiązanie jednostek (złoto): +4 złota/turę; rozwiązanie jednostek (żywność): +4 żywności/turę.",
+        "diag": {
+          "hintsF": [
+            "Nie można zakończyć tury",
+            "Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 1. Po",
+            "Zakończ turę"
+          ],
+          "tF0": 3,
+          "tF1": 3,
+          "blokada": true,
+          "canEnd": false,
+          "zasob": "spichlerz",
+          "komunikat": "Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 1. Pomogą: obniżka racji żywności: "
+        }
+      }
+    },
+    {
+      "ok": true,
+      "label": "żywność: przycisk „Otwórz racje” widoczny i klikalny",
+      "data": [
+        {
+          "text": "Otwórz racje",
+          "inViewport": true,
+          "hitsOwn": true,
+          "clipped": false,
+          "clipBy": [],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "ok": false,
+      "label": "żywność: „Otwórz racje” otwiera blok spichlerza (SPICHLERZ CENTRALNY)",
+      "data": {
+        "opened": true,
+        "spichOpen": false
+      }
+    },
+    {
+      "ok": true,
+      "label": "bez blokady brak karty (kontrola)",
+      "data": {
+        "count": 0,
+        "ids": [],
+        "buttons": [],
+        "subtitle": ""
+      }
+    }
+  ],
+  "fails": [
+    "żywność: „Otwórz racje” otwiera blok spichlerza (SPICHLERZ CENTRALNY)"
+  ],
+  "errors": [],
+  "endTurnLog": [
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] triggerPlayerEndTurn: START tura 1",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 2",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] triggerPlayerEndTurn: START tura 2",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 3",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)"
+  ]
+}

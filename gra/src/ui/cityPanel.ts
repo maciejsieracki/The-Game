@@ -31,6 +31,7 @@
  * Mini-podgląd jednostek: unitMiniPreview.ts (Three.js — buildUnitModel).
  */
 
+import { pendingLedgerSink } from '../game/resource-ledger';
 import { isCityUnderSiege, CITY_SIEGE_RECRUIT_BLOCK_PL } from '../game/city-siege-state';
 import {
   attachHoverDetail,
@@ -173,6 +174,7 @@ import { daninaLabel, daninaLabelGenitive, daninaLabelAccusative, type DaninaLab
 import type { CityManpowerSnapshot } from '../game/manpower';
 import { civManpowerMaxMult, cityLudnoscAbsolutna, formatManpowerCompact, formatObywateleLabel, unitManpowerCost, unitManpowerCostForType } from '../game/manpower';
 import { defaultOwnerColor, mountUnitMiniPreview } from './unitMiniPreview';
+import { unitEngineStats } from './unitEngineStats';
 import {
   unitInfographicMedallionHtml,
   unitInfographicSvg,
@@ -1089,17 +1091,17 @@ function setShowEraBuildingPreview(on: boolean): void {
 /**
  * Domyslny podzial Daniny netto nowego miasta — MUSI byc zgodny z
  * DEFAULT_PODZIAL_HANDLU w game/cities.ts oraz z econ-params.json.
- * 20% Nauka / 60% Skarbiec / 20% Zamoznosc (decyzja Maciej 2026-07-25, PYTANIE 74 = A;
- * dawniej 20/70/10).
+ * 60% Nauka / 30% Skarbiec / 10% Zamoznosc (decyzja wlasciciela 2026-11-14,
+ * R-WEB-SETTINGS-DEFAULT-TAX-SPLIT-30-60-10-Q1; poprzednio 20/60/20).
  */
 const DEFAULT_PODZIAL_HANDLU: PodzialHandluSplit = {
-  procentPieniadz: 60,
-  procentNauka: 20,
-  procentLuksus: 20,
+  procentPieniadz: 30,
+  procentNauka: 60,
+  procentLuksus: 10,
 };
 
-/** Domyslny podzial Pracy (70% budynki). */
-const DEFAULT_PODZIAL_PRACY: PodzialPracySplit = { procentBudynki: 70 };
+/** Domyslny podzial Pracy (50% budynki / 50% pula) — lustro DEFAULT_PODZIAL_PRACY z game/cities.ts. */
+const DEFAULT_PODZIAL_PRACY: PodzialPracySplit = { procentBudynki: 50 };
 
 /** Etykieta suwaka handlu karmiącego pulę zamożności (UI — bez „Społ.” / „Wealth”). */
 const HANDEL_ZAMOZNOSC_LABEL = 'Zamożność';
@@ -2632,7 +2634,7 @@ ${resourceColorClassCss('.civ-cs')}
   padding:0;background:transparent;border:none;height:auto;min-height:0;width:fit-content;max-width:100%;min-width:0;margin:0 auto;box-sizing:border-box;}
 .civ-v-top-stack{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:fit-content;max-width:min(98vw,1480px);gap:0.22rem;padding:0;box-sizing:border-box;margin:0 auto;}
 .civ-v-top-flank-row{display:flex;align-items:flex-start;justify-content:center;gap:0.5rem 0.65rem;flex-wrap:nowrap;width:100%;max-width:100%;min-width:0;overflow:visible;}
-.civ-v-w3-chips-flank{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0.32rem 0.48rem;
+.civ-v-w3-chips-flank{display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:0.32rem 0.48rem;
   padding:0.38rem 0.82rem;border-radius:12px;
   background:linear-gradient(180deg,rgba(22,28,40,0.94),rgba(8,10,16,0.95));border:1px solid rgba(232,216,138,0.32);
   /* R-WEB-UI-LEFT-BANNER-OVERFLOW-NARROW-WINDOW-Q1: baner kurczy sie i zawija zetony (bez wychodzenia poza okno). */
@@ -2649,7 +2651,9 @@ ${resourceColorClassCss('.civ-cs')}
   flex-shrink:0;min-width:0;max-width:100%;width:fit-content;}
 .civ-v-w3-city-badge{display:inline-flex;align-items:center;gap:0.55rem;padding:0.45rem 1.05rem 0.45rem 0.75rem;
   border-radius:24px;background:linear-gradient(180deg,#151b26,#0a0d14);border:1.5px solid #e8d88a;
-  box-shadow:0 5px 16px rgba(0,0,0,0.6);flex-shrink:0;max-width:100%;}
+  box-shadow:0 5px 16px rgba(0,0,0,0.6);flex-shrink:0;max-width:100%;
+  /* R-WEB-UI-CITY-VIEW-TOPBAR-ONE-LINE-AND-SIDE-PANELS-UP-Q1: plakietka miasta kurczy sie (zoom) dopiero gdy zetony nie mieszcza sie nawet w najmniejszej skali. */
+  zoom:var(--civ-top-city-scale,1);}
 .civ-v-w3-city-nav{display:inline-flex;align-items:center;justify-content:center;min-width:1.75em;min-height:1.75em;
   padding:0 0.22em;border:none;border-radius:7px;background:rgba(232,216,138,0.08);color:#e8d88a;
   font-size:1.15em;font-weight:700;line-height:1;cursor:pointer;opacity:0.92;font-family:inherit;
@@ -2686,7 +2690,7 @@ ${ADMINISTRATOR_ICON_CSS}
   flex-wrap:wrap;row-gap:0.08rem;}
 .civ-v-w3-chips-stacked.civ-v-w3-chips-city{width:100%;}
 .civ-v-w3-chip{display:inline-flex;align-items:center;gap:0.48rem;white-space:nowrap;flex-shrink:0;
-  font-size:1.56em;line-height:1.2;border:none;background:transparent;padding:0.14em 0.2em;margin:0;
+  font-size:calc(1.56em * var(--civ-top-chip-scale,1));line-height:1.2;border:none;background:transparent;padding:0.14em 0.2em;margin:0;
   cursor:pointer;border-radius:4px;font-family:inherit;color:inherit;}
 .civ-v-w3-chip:hover{background:rgba(212,175,90,0.1);}
 .civ-v-w3-chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
@@ -6521,7 +6525,7 @@ function addItem(city: City, item: ProductionItem, opts?: { upgrade?: boolean })
     if (Object.keys(cost).length > 0) {
       if (!canAffordBuildingStock(ownerSurowcePoolFor(city), cost)) return; // blokada: pula panstwa nie starcza
       // pobór RAZ, przy starcie budowy — rozłożony po miastach ownera (pula PAŃSTWA).
-      deductBuildingStockCostAcrossCities(cfg.getCities?.() ?? [city], city.ownerId, cost);
+      deductBuildingStockCostAcrossCities(cfg.getCities?.() ?? [city], city.ownerId, cost, pendingLedgerSink(city.ownerId, 'budowa', 'Budowa budynku'));
     }
   } else if (item.kind === 'jednostka') {
     // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: jednostki nie są
@@ -8205,14 +8209,16 @@ function _legacyBuildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivElement 
     if (val == null || isEmptyDataVal(val)) return;
     gridDetailRow(gFight, label, fmt && typeof val === 'number' ? fmt(val) : String(val));
   };
-  fight('Atak w zwarciu', u.Atak);
-  fight('Obrona', u.Obrona);
-  fight('Obrażenia broni', u.Uderzenie);
-  fight('Pancerz', u.Pancerz);
-  fight('Przebicie', u.Przebicie);
+  // Wartości bojowe = silnik walki (ABC nr 8 = A, 2026-11-14), nie kolumny PL.
+  const es = unitEngineStats(u as unknown as Record<string, unknown>);
+  fight('Atak w zwarciu', es.atak);
+  fight('Obrona', es.obrona);
+  fight('Obrażenia broni', es.obrazeniaBroni);
+  fight('Pancerz', es.pancerz);
+  fight('Przebicie', es.przebicie);
   fight('Bonus szarży', unitExtraField(u, 'Bonus szarży'));
-  fight('Atak dystansowy', u['Atak dystansowy']);
-  fight('HP', u.Health);
+  fight('Atak dystansowy', es.atakDystansowy > 0 ? es.atakDystansowy : null);
+  fight('HP', es.hp);
   fight('Ruch (mapa)', u.Ruch, n => `${n} hex`);
   fight('Ruch (bitwa)', u['Ruch w bitwie (heksy)'], n => `${n} hex`);
   fight('Zasięg', u['Zasięg ataku (hex)']);
@@ -11609,7 +11615,7 @@ function buildHandelDetailCard(
     const mennicaWarn = el('div', 'dc-note');
     mennicaWarn.style.cssText = 'font-style:normal;border-left:2px solid #e08a8a;padding-left:0.45em;margin-top:0.35em;color:#f0c8c8;';
     mennicaWarn.textContent =
-      'Mennica nieaktywna: brak Złota w magazynie państwa (Kopalnia złota, szlak handlowy lub zapas). ' +
+      'Mennica nieaktywna: brak Złota w magazynie państwa (Kopalnia złota lub zapas). ' +
       'Uzupełnij magazyn Złotem, żeby mnożnik znów zadziałał — budynek nie jest burzony, tylko czeka.';
     card.appendChild(mennicaWarn);
   }

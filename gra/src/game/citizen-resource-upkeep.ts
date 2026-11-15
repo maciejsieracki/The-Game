@@ -6,7 +6,8 @@
  * surowcowej ×5 eliminuje problem zaokrąglenia do zera przy stawce 0,2 u źródła, patrz
  * `dyspozycje/PYTANIA-OTWARTE.md` sekcja `R-EKONOMIA-SUROWCE-SKALA-5X-Q1`).
  *
- * Obywatele miast zużywają surowce budowlane per epoka (tabela: `data/citizen-resource-upkeep.json`),
+ * Obywatele miast zużywają surowce budowlane per epoka (tabela: `data/citizen-resource-upkeep.json`;
+ * Kamień = drewno + glina + ceramika, Brąz = + kamień, Żelazo = + cegła — R-WEB-CITIZEN-CERAMICS-STONE-AGE-Q1),
  * ściągane z magazynu CENTRALNEGO imperium (suma City.surowce po wszystkich miastach ownera —
  * `ownerResourceStockAll`, `building-stock-cost.ts`), NIE z lokalnej produkcji/dostępności TEGO
  * miasta (ECHO Q1, `dyspozycje/PYTANIA-OTWARTE.md` 2026-08-10: „Wszystkie potrzebne surowce dla
@@ -45,8 +46,7 @@
  * silnika: `City.surowce` jest wszędzie indziej magazynowane i mutowane w SZTUKACH
  * CAŁKOWITYCH — `creditOwnerResourceStock(cities, ownerId, key, Math.floor(raw *
  * mult), cap)` w `turn-economy.ts` (kredytowanie magazynu z ułamkowego mnożnika terenu/bonusu) i
- * `computeTradeRouteResourceFlow()` w `trade-routes.ts` (jawny komentarz: „Math.floor — surowiec
- * liczy się w sztukach całkowitych, zgodnie z resztą City.surowce"). Dla SPÓJNOŚCI z tym wzorcem
+ * dawny przepływ ilościowy szlaku (`computeTradeRouteResourceFlow`, usunięty #311 — szlak nie przesuwa zapasów). Dla SPÓJNOŚCI z tym wzorcem
  * `computeCitizenResourceDrain()` też floruje `required` w dół (`Math.floor`, NIE `Math.round`
  * ani `Math.ceil`) — ten sam kierunek zaokrąglenia co przy kredytowaniu magazynu, więc obywatele
  * nigdy nie są obciążani WIĘCEJ niż wynika z czystej stawki. PRZY DZISIEJSZEJ STAWCE 1,0 problem
@@ -59,8 +59,7 @@
  * / EN: `required` is rounded DOWN to whole units (Math.floor, not round/ceil) — kept consistent
  * with the rest of the engine, which stores/mutates `City.surowce` exclusively in whole units
  * (see the same Math.floor pattern crediting territory yield in `turn-economy.ts` and the
- * explicit "whole units, consistent with the rest of City.surowce" comment in
- * `computeTradeRouteResourceFlow()`, `trade-routes.ts`). AT TODAY'S RATE OF 1.0 the
+ * removed trade-route stock flow (`computeTradeRouteResourceFlow`, #311 -- no longer present). AT TODAY'S RATE OF 1.0 the
  * zero-rounding problem is GONE: `floor(population × 1.0)` never floors to zero for
  * population ≥ 1. HISTORICALLY, at the now-superseded rate of 0.2 (e.g. pop=1 →
  * 1×0.2=0.2), this floored to need=0 — the same floor mechanism, just at lower rate
@@ -309,9 +308,9 @@ export function computeCitizenResourceDrain(
   for (const key of required) {
     // Math.floor: sztuki całkowite, SPÓJNIE z resztą City.surowce (patrz JSDoc modułu i funkcji
     // powyżej -- precedens creditOwnerResourceStock(..., Math.floor(raw*mult), ...) w
-    // turn-economy.ts oraz computeTradeRouteResourceFlow() w trade-routes.ts).
+    // turn-economy.ts).
     // / EN: Math.floor -- whole units, consistent with the rest of City.surowce (see module and
-    // function JSDoc above; same precedent as turn-economy.ts / trade-routes.ts).
+    // function JSDoc above; same precedent as turn-economy.ts).
     // Stawka ZALEŻY OD EPOKI (R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1) — ta sama dla podglądu i drenażu.
     const need = Math.floor(pop * ratePerCitizen);
     const haveRaw = stock[key];

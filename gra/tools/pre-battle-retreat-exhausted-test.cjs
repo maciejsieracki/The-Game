@@ -62,8 +62,8 @@ const fnEnd = fnEndMarkerIdx > fnStart ? fnEndMarkerIdx : -1;
 const fnBody = (fnStart >= 0 && fnEnd > fnStart) ? mainSrc.slice(fnStart, fnEnd) : '';
 
 // A1) retreatExhaustedThisTurn policzone z defRosterRef PRZED budową pbInfo.
-ok(/const retreatExhaustedThisTurn = defRosterRef\.some\(u => u\.retreatedThisTurn === true\);/.test(fnBody),
-  '[A1] retreatExhaustedThisTurn = defRosterRef.some(u => u.retreatedThisTurn === true) — sprawdza CAŁY roster obrony, nie tylko lidera');
+ok(/const retreatExhaustedThisTurn = retreatBudgetExhausted\(defRosterRef\);/.test(fnBody),
+  '[A1] retreatExhaustedThisTurn = retreatBudgetExhausted(defRosterRef) — licznik odwrotów rosteru (limit 3), nie tylko lidera');
 
 // A2) defenderCanRetreat gasi się, gdy retreatExhaustedThisTurn===true (obok istniejącego warunku garnizonu).
 ok(/defenderCanRetreat: playerDefends && !defenderLockedByGarnizon && !retreatExhaustedThisTurn,/.test(fnBody),
@@ -80,9 +80,9 @@ ok(/if \(playerDefends && !defenderLockedByGarnizon && !retreatExhaustedThisTurn
 // A5) po wycofaniu, CAŁY roster obrony dostaje retreatedThisTurn = true (nie tylko lider).
 {
   const applyIdx = fnBody.indexOf('applyDefenderPreBattleRetreat({');
-  const markIdx = fnBody.indexOf('for (const u of defRosterRef) u.retreatedThisTurn = true;');
+  const markIdx = fnBody.indexOf('recordRetreatOnRoster(defRosterRef);');
   ok(applyIdx >= 0 && markIdx > applyIdx,
-    '[A5] "for (const u of defRosterRef) u.retreatedThisTurn = true;" obecne i wykonywane PO applyDefenderPreBattleRetreat(...) (jednostki faktycznie się przesunęły, zanim je oznaczymy)');
+    '[A5] "recordRetreatOnRoster(defRosterRef);" obecne i wykonywane PO applyDefenderPreBattleRetreat(...) (jednostki faktycznie się przesunęły, zanim zapisujemy odwrót)');
 }
 
 // A6) exploit-guard: formuła NIE degeneruje się do samego playerDefends && !defenderLockedByGarnizon
@@ -103,16 +103,16 @@ const eotBody = (eotLoopStart >= 0 && eotLoopEnd > eotLoopStart) ? mainSrc.slice
 
 ok(/u\.ruchLeft = u\.ruch;/.test(eotBody),
   '[A7] pętla EOT zawiera reset u.ruchLeft = u.ruch (punkt zaczepienia — istniejący wzorzec resetu na turę)');
-ok(/if \(u\.retreatedThisTurn\) u\.retreatedThisTurn = false;/.test(eotBody),
-  '[A7] pętla EOT resetuje retreatedThisTurn = false — na nową turę obrońca znów może się wycofać raz');
+ok(/resetRetreatCountOfUnit\(u\);/.test(eotBody),
+  '[A7] pętla EOT zeruje licznik odwrotów (resetRetreatCountOfUnit) — na nową turę armia ma znów 3 odwroty');
 
 // ---------------------------------------------------------------------------
 // A8) PIN RuntimeUnit.retreatedThisTurn (setup.ts) i PreBattleInfo.retreatExhaustedThisTurn (preBattle.ts).
 // ---------------------------------------------------------------------------
 const SETUP_TS = path.join(__dirname, '..', 'src', 'units', 'setup.ts');
 const setupSrc = fs.readFileSync(SETUP_TS, 'utf8');
-ok(/retreatedThisTurn\?: boolean;/.test(setupSrc),
-  '[A8] RuntimeUnit (units/setup.ts) ma pole retreatedThisTurn?: boolean');
+ok(/odwrotyWTurze\?: number;/.test(setupSrc),
+  '[A8] RuntimeUnit (units/setup.ts) ma pole odwrotyWTurze?: number (licznik, nie boolean)');
 
 const PREBATTLE_TS = path.join(__dirname, '..', 'src', 'ui', 'preBattle.ts');
 const preBattleSrc = fs.readFileSync(PREBATTLE_TS, 'utf8');
@@ -234,8 +234,8 @@ async function runUiPart() {
   ok(!!retreatBtn1 && retreatBtn1.hasAttribute('disabled'),
     '[B1] przycisk Wycofaj ma atrybut disabled gdy retreatExhaustedThisTurn=true');
   const noRetreat1 = overlay1.querySelector('.pb-noretreat');
-  ok(!!noRetreat1 && /wycofała się już w tej turze/.test(noRetreat1.textContent || ''),
-    '[B1] komunikat blokady zawiera "wycofała się już w tej turze" (osobny od garnizonowego)');
+  ok(!!noRetreat1 && /wyczerpano trzy odwroty w tej turze/.test(noRetreat1.textContent || ''),
+    '[B1] komunikat blokady zawiera "wyczerpano trzy odwroty w tej turze" (osobny od garnizonowego)');
   ok(!!noRetreat1 && !/to wróg wybrał bitwę/.test(noRetreat1.textContent || ''),
     '[B1] komunikat blokady NIE jest komunikatem garnizonowym ("to wróg wybrał bitwę") — dwa różne teksty');
   if (retreatBtn1) retreatBtn1.click();
@@ -286,63 +286,67 @@ async function runUiPart() {
 //    blokada -> reset EOT -> znowu może się wycofać.
 // ---------------------------------------------------------------------------
 function runLogicSimulation() {
+  // R-WEB-BATTLE-RETREAT-LIMIT-3-PER-TURN-THEN-DESTROYED-Q1: mirror formuł main.ts (A1-A7)
+  // na LICZNIKU odwrotów (limit 3 na turę), nie na fladze boolowskiej.
+  const MAX = 3;
+  const countOf = u => (typeof u.odwrotyWTurze === 'number' ? u.odwrotyWTurze : (u.retreatedThisTurn === true ? 1 : 0));
+  const rosterCount = roster => roster.reduce((m, u) => Math.max(m, countOf(u)), 0);
   // Mirror main.ts: budowa pbInfo dla scenariusza "AI/barbarzyńca atakuje gracza".
   function buildDefenderPreBattleFields(defRoster, playerDefends, defenderLockedByGarnizon) {
-    const retreatExhaustedThisTurn = defRoster.some(u => u.retreatedThisTurn === true);
+    const retreatExhaustedThisTurn = rosterCount(defRoster) >= MAX;
     return {
       defenderCanRetreat: playerDefends && !defenderLockedByGarnizon && !retreatExhaustedThisTurn,
       retreatExhaustedThisTurn: playerDefends && !defenderLockedByGarnizon && retreatExhaustedThisTurn,
     };
   }
-  // Mirror main.ts: onCancel handler.
+  // Mirror main.ts: onCancel handler (recordRetreatOnRoster).
   function onCancelRetreat(defRoster, playerDefends, defenderLockedByGarnizon, retreatExhaustedThisTurn) {
     if (playerDefends && !defenderLockedByGarnizon && !retreatExhaustedThisTurn) {
-      for (const u of defRoster) u.retreatedThisTurn = true;
+      const next = rosterCount(defRoster) + 1;
+      for (const u of defRoster) { u.odwrotyWTurze = next; u.retreatedThisTurn = undefined; }
       return true; // wycofanie wykonane
     }
     return false; // zablokowane
   }
-  // Mirror main.ts: reset EOT.
+  // Mirror main.ts: reset EOT (resetRetreatCountOfUnit).
   function resetTurnFlags(units) {
-    for (const u of units) {
-      if (u.retreatedThisTurn) u.retreatedThisTurn = false;
-    }
+    for (const u of units) { u.odwrotyWTurze = 0; u.retreatedThisTurn = undefined; }
   }
 
-  const defender = { id: 'def1', ownerId: 0, retreatedThisTurn: undefined };
+  const defender = { id: 'def1', ownerId: 0 };
   const defRoster = [defender];
 
-  // Tura N, ATAK #1 (AI atakuje) -> gracz klika Wycofaj.
-  let f1 = buildDefenderPreBattleFields(defRoster, true, false);
-  ok(f1.defenderCanRetreat === true && f1.retreatExhaustedThisTurn === false,
-    '[C1] ATAK #1 tej tury: defenderCanRetreat=true, retreatExhaustedThisTurn=false (jednostka jeszcze się nie wycofywała)');
-  const retreated1 = onCancelRetreat(defRoster, true, false, f1.retreatExhaustedThisTurn);
-  ok(retreated1 === true && defender.retreatedThisTurn === true,
-    '[C1] wycofanie #1 wykonane, defender.retreatedThisTurn ustawione na true');
+  // Odwrot #1, #2, #3 w TEJ SAMEJ turze (rózne ataki) -> każdy wykonany.
+  for (let k = 1; k <= MAX; k++) {
+    const f = buildDefenderPreBattleFields(defRoster, true, false);
+    ok(f.defenderCanRetreat === true, '[C' + k + '] atak #' + k + ' tej tury: odwrot dozwolony (licznik ' + rosterCount(defRoster) + ' < ' + MAX + ')');
+    const done = onCancelRetreat(defRoster, true, false, f.retreatExhaustedThisTurn);
+    ok(done === true && defender.odwrotyWTurze === k, '[C' + k + '] odwrot #' + k + ' wykonany, licznik = ' + k);
+  }
 
-  // ATAK #2 W TEJ SAMEJ TURZE (INNA jednostka wroga, ta sama defRoster) -> blokada.
-  let f2 = buildDefenderPreBattleFields(defRoster, true, false);
-  ok(f2.defenderCanRetreat === false,
-    '[C2] ATAK #2 tej samej tury (nawet inny atakujący): defenderCanRetreat=false — nie może się wycofać drugi raz');
-  ok(f2.retreatExhaustedThisTurn === true,
-    '[C2] ATAK #2: retreatExhaustedThisTurn=true — UI dostaje sygnał odróżnialny od garnizonu');
-  const retreated2 = onCancelRetreat(defRoster, true, false, f2.retreatExhaustedThisTurn);
-  ok(retreated2 === false,
-    '[C2] obrona-w-głąb: nawet gdyby onCancel odpalił mimo wyszarzonego przycisku, wycofanie NIE wykonuje się drugi raz');
+  // Atak #4 W TEJ SAMEJ TURZE -> wyczerpany: przycisk wyszarzony, onCancel nie cofa.
+  const f4 = buildDefenderPreBattleFields(defRoster, true, false);
+  ok(f4.defenderCanRetreat === false && f4.retreatExhaustedThisTurn === true,
+    '[C4] po 3 odwrotach: defenderCanRetreat=false, retreatExhaustedThisTurn=true (wyszarzony z powodem)');
+  ok(onCancelRetreat(defRoster, true, false, f4.retreatExhaustedThisTurn) === false && defender.odwrotyWTurze === MAX,
+    '[C4] obrona-w-głąb: wycofanie po wyczerpaniu NIE wykonuje się, licznik nadal 3');
 
-  // Reset EOT (nowa tura) -> znowu może się wycofać.
+  // Reset EOT (nowa tura) -> licznik 0, znowu 3 odwroty.
   resetTurnFlags([defender]);
-  ok(defender.retreatedThisTurn === false,
-    '[C3] po resecie EOT (nowa tura): defender.retreatedThisTurn wraca na false');
-  let f3 = buildDefenderPreBattleFields(defRoster, true, false);
-  ok(f3.defenderCanRetreat === true,
-    '[C3] w NOWEJ turze: defenderCanRetreat=true — flaga jest per-tura, nie trwała');
+  ok(defender.odwrotyWTurze === 0, '[C5] po resecie EOT: licznik = 0');
+  const f5 = buildDefenderPreBattleFields(defRoster, true, false);
+  ok(f5.defenderCanRetreat === true, '[C5] w NOWEJ turze: odwrot znów dozwolony (licznik per-tura)');
 
-  // Kontrola: garnizon nadal blokuje niezależnie od retreatedThisTurn (dwa niezależne powody).
-  const garrisoned = { id: 'def2', ownerId: 0, retreatedThisTurn: false };
-  let fg = buildDefenderPreBattleFields([garrisoned], true, true);
+  // Stary zapis (boolean true, bez licznika) liczony jako 1 odwrot.
+  const legacy = [{ id: 'old', retreatedThisTurn: true }];
+  ok(buildDefenderPreBattleFields(legacy, true, false).defenderCanRetreat === true,
+    '[C6] stary zapis boolean true = 1 odwrot: nadal może się wycofać (migracja 1/0)');
+
+  // Kontrola: garnizon nadal blokuje niezależnie od licznika (dwa niezależne powody).
+  const garrisoned = { id: 'def2', ownerId: 0, odwrotyWTurze: 0 };
+  const fg = buildDefenderPreBattleFields([garrisoned], true, true);
   ok(fg.defenderCanRetreat === false && fg.retreatExhaustedThisTurn === false,
-    '[C4 kontrola] garnizon: defenderCanRetreat=false ALE retreatExhaustedThisTurn=false — dwa NIEZALEŻNE, odróżnialne powody blokady');
+    '[C7 kontrola] garnizon: defenderCanRetreat=false ALE retreatExhaustedThisTurn=false — dwa NIEZALEŻNE, odróżnialne powody blokady');
 }
 
 // ---------------------------------------------------------------------------

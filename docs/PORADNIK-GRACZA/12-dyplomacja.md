@@ -5,7 +5,7 @@
 
 Dyplomacja to relacje z **odkrytymi** nacjami: zaufanie, szacunek i wynikowa **relacja** decydują, czy możesz handlować, podpisać pakt czy wypowiedzieć wojnę. Handel używa **punktów wartości (PN)**. Ten rozdział opisuje model relacji, audiencję króla, progi akcji i przemarsz — minimum v1.0 plus roadmap v1.1.
 
-**Hasła encyklopedii (Civpedia) z pełnymi parametrami i plusami/minusami** (stan 2026-11-13): [Zaufanie](../encyklopedia/pojecia/zaufanie.md) · [Respekt](../encyklopedia/pojecia/respekt.md) · [Relacja](../encyklopedia/pojecia/relacja.md) · [Moc — wojskowy i gospodarczy](../encyklopedia/pojecia/moc-podzial.md) · [Wypowiadanie wojny](../encyklopedia/pojecia/wypowiedzenie-wojny.md) · [Rozejm i pokój](../encyklopedia/pojecia/rozejm-pokoj.md) · [Zmęczenie wojną](../encyklopedia/pojecia/zmeczenie-wojna.md) · [Wiarygodność](../encyklopedia/pojecia/wiarygodnosc.md). Sekcje oznaczone „DECYZJA WŁAŚCICIELA 2026-11-13, wdrożenie w toku” opisują zasady jeszcze niewdrożone — nie obecny stan gry.
+**Hasła encyklopedii (Civpedia) z pełnymi parametrami i plusami/minusami** (stan 2026-11-13): [Zaufanie](../encyklopedia/pojecia/zaufanie.md) · [Respekt](../encyklopedia/pojecia/respekt.md) · [Relacja](../encyklopedia/pojecia/relacja.md) · [Moc — wojskowy i gospodarczy](../encyklopedia/pojecia/moc-podzial.md) · [Wypowiadanie wojny](../encyklopedia/pojecia/wypowiedzenie-wojny.md) · [Rozejm i pokój](../encyklopedia/pojecia/rozejm-pokoj.md) · [Zmęczenie wojną](../encyklopedia/pojecia/zmeczenie-wojna.md) · [Wiarygodność](../encyklopedia/pojecia/wiarygodnosc.md). Sekcje oznaczone „DECYZJA WŁAŚCICIELA 2026-11-13” opisują zasady wdrożone w kodzie (stan zweryfikowany 2026-11-14). Jedyny wyjątek: zdarzenia Respektu „Przewaga militarna” (+15) i „Słabszy militarnie” (−10) są w kodzie, ale gra ich nie wywołuje — do potwierdzenia przez właściciela, patrz hasło [Respekt](../encyklopedia/pojecia/respekt.md).
 
 ---
 
@@ -107,7 +107,7 @@ Wysyłaj **prezenty** przed prośbą o pakt — relacja **+20** taniej niż wojn
 
 ### 76.1. Panel audiencji — layout dwustronny
 
-Ekran rozmowy jest dziś **dwustronny**, nie jedna kolumna: **karta gracza** (twój medalion + imię władcy, Moc, potencjał sojuszniczy, Skarbiec, twoje dobra) naprzeciw **karty rozmówcy** (relacje — Zaufanie/Szacunek/Relacja pokazane **tylko po jego stronie** — i nastawienie). Poniżej **baner statusu formalnego**, jeśli obowiązuje traktat (nazwa traktatu + „od X tur" + informacja o karze zerwania), oraz **stół negocjacji w 3 kolumnach**: Możliwe / Aktywne / Żądania-Oferty.
+Ekran rozmowy jest dziś **dwustronny**, nie jedna kolumna: **karta gracza** (twój medalion + imię władcy, Moc, potencjał sojuszniczy, Skarbiec, twoje dobra) naprzeciw **karty rozmówcy** (relacje — Zaufanie/Szacunek/Relacja pokazane **tylko po jego stronie** — i nastawienie). Poniżej **baner statusu formalnego** z etykietą **„Stan: POKÓJ / WOJNA / …”** (pod nią: „obowiązuje od X tur”, przy rozejmie „Rozejm do tury N”, a przy traktacie informacja „zerwanie: …”; podpowiedź banera mówi wprost: „To nie jest propozycja”), oraz **stół negocjacji w 3 kolumnach**: Możliwe / Aktywne / Żądania-Oferty.
 
 ### 76.2. Portrety i imiona władców
 
