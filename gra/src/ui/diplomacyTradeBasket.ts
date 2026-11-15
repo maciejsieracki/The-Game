@@ -3180,7 +3180,13 @@ export function showTradeBasketModal(
         payload.exchangeDurationTurns = exchangeDurationTurns === null ? null : dealTurns;
       }
       closeModal();
-      onSubmit(payload);
+      // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r2 (FC r2 zarzut 1): closeModal przywraca epokę gracza,
+      // a onSubmit (ocena propozycji, resolveProposalPn, walidacja) MUSI liczyć w epoce UMOWY (ctx.tradeEra).
+      if (ctx.tradeEra != null) {
+        withDiplomacyTradeEra(ctx.tradeEra, () => onSubmit(payload));
+      } else {
+        onSubmit(payload);
+      }
     });
   };
 

@@ -2510,6 +2510,14 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r2 (FC r2 zarzut 2): epoka UMOWY dla pary właścicieli =
+     * wyższa z epok obu stron (diplomacyDealTradeEra). Używana przez opakowania ocen propozycji.
+     */
+    function dealTradeEraForOwners(ownerA: number, ownerB: number): 1 | 2 | 3 {
+      return diplomacyDealTradeEra(empireEpochForOwner(ownerA), empireEpochForOwner(ownerB));
+    }
+
+    /**
      * R-WEB-ERA-WAR-PLAYER-POOL-DESPITE-STONE-WAR-Q1: epoka, pod którą wojna epoki `tag` liczy się w
      * liczniku (cywilizacja, epoka). Tylko GRACZ (wojna Kamienia w Brązie = slot Kamienia); AI — bieżąca epoka.
      */
@@ -20938,7 +20946,12 @@ async function boot(): Promise<void> {
      * konwerter aiCommandToPendingProposal (diplomacy-proposals.ts) — bierzemy z niego
      * tylko treść (actionId/payload), id/expiresTurn/source dokłada createNegotiation.
      */
-    function enqueueNegotiationFromAiCmd(ownerId: number, cmd: AIDiplomacyCommand): void {
+    function enqueueNegotiationFromAiCmd(...args: Parameters<typeof enqueueNegotiationFromAiCmdImpl>): ReturnType<typeof enqueueNegotiationFromAiCmdImpl> {
+      // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r2 (FC r2 zarzut 2): propozycja AI do gracza w epoce UMOWY.
+      return withDiplomacyTradeEra(dealTradeEraForOwners(args[0], ME()), () => enqueueNegotiationFromAiCmdImpl(...args));
+    }
+
+    function enqueueNegotiationFromAiCmdImpl(ownerId: number, cmd: AIDiplomacyCommand): void {
       let workingCmd = cmd;
       // W80B-B1: znacznik kroku ścieżki pokoju (hak read-only; tylko gdy peaceTraceState.on).
       const ptr = (step: string): void => {
@@ -21285,7 +21298,12 @@ async function boot(): Promise<void> {
      * 'negot-handel-…' < 'negot-umowa_szlakow-…') zdejmowałaby sąsiada ze stołu PRZED oceną
      * traktatu i zgubiłaby kredyt pakietu (patrz handleNegotiationAcceptPackage niżej).
      */
-    function packageSiblingPn(
+    function packageSiblingPn(...args: Parameters<typeof packageSiblingPnImpl>): ReturnType<typeof packageSiblingPnImpl> {
+      // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r2 (FC r2 zarzut 2): ocena w epoce UMOWY (wyższa z epok stron).
+      return withDiplomacyTradeEra(dealTradeEraForOwners(args[0], args[1]), () => packageSiblingPnImpl(...args));
+    }
+
+    function packageSiblingPnImpl(
       proposerId: number,
       responderId: number,
       excludeId: string,
@@ -21830,6 +21848,14 @@ async function boot(): Promise<void> {
      * Przyjmij poza pakietem (nic jeszcze nie zniknęło ze stołu).
      */
     function previewNegotiationEntry(
+      entry: PendingNegotiation,
+      siblingOverride?: { givePn: number; receivePn: number },
+    ): ReturnType<typeof previewNegotiationEntryImpl> {
+      // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r2 (FC r2 zarzut 2): podgląd w epoce UMOWY (wyższa z epok stron).
+      return withDiplomacyTradeEra(dealTradeEraForOwners(entry.proposerOwnerId, entry.responderOwnerId), () => previewNegotiationEntryImpl(entry, siblingOverride));
+    }
+
+    function previewNegotiationEntryImpl(
       entry: PendingNegotiation,
       siblingOverride?: { givePn: number; receivePn: number },
     ): { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: { turnsAtWar: number; lostCities: number; level: number } } {
@@ -25689,7 +25715,12 @@ async function boot(): Promise<void> {
       }
     }
 
-    function applyProposalOutcome(
+    function applyProposalOutcome(...args: Parameters<typeof applyProposalOutcomeImpl>): ReturnType<typeof applyProposalOutcomeImpl> {
+      // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r2 (FC r2 zarzut 2): ocena w epoce UMOWY (wyższa z epok stron).
+      return withDiplomacyTradeEra(dealTradeEraForOwners(args[0], args[1]), () => applyProposalOutcomeImpl(...args));
+    }
+
+    function applyProposalOutcomeImpl(
       proposerId: number,
       responderId: number,
       result: ReturnType<typeof evaluateProposal>,
@@ -26199,7 +26230,12 @@ async function boot(): Promise<void> {
      * Woła evaluateProposal (czysta funkcja, patrz diplomacy-proposals.ts:297) BEZ
      * applyProposalOutcome — zero mutacji stanu gry, zero efektów ubocznych (banner/relacja).
      */
-    function previewNegotiatedProposal(
+    function previewNegotiatedProposal(...args: Parameters<typeof previewNegotiatedProposalImpl>): ReturnType<typeof previewNegotiatedProposalImpl> {
+      // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r2 (FC r2 zarzut 2): podgląd w epoce UMOWY (gracz vs partner).
+      return withDiplomacyTradeEra(dealTradeEraForOwners(0, args[0]), () => previewNegotiatedProposalImpl(...args));
+    }
+
+    function previewNegotiatedProposalImpl(
       ownerId: number,
       payload: NegotiationPayload,
     ): { accepted: boolean; reason?: string } {
@@ -28718,6 +28754,7 @@ async function boot(): Promise<void> {
         );
         player.nauka = scaledCost + 5;
         player.era = 1;
+        setDiplomacyTradeEra(1);
         return { remaining: remaining.Technologia as string, era1Count: era1.length };
       },
       getPlayerState: () => ({ era: player.era, zbadaneSize: player.zbadane.size, nauka: player.nauka, badana: player.badana }),
@@ -29519,7 +29556,7 @@ async function boot(): Promise<void> {
       },
       setPlayerPracaPool: (n: number): void => { playerPracaPool = n; },
       /** R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1: ustawia epokę gracza (bramka stadniny poza złożem od epoki 3). */
-      setPlayerEra: (era: number): void => { player.era = era; },
+      setPlayerEra: (era: number): void => { player.era = era; setDiplomacyTradeEra(era); },
       getPlacedLayers: (q: number, r: number): string[] => placedImprovements.get(`${q},${r}`) ?? [],
       applyBuildRequest: (req: ImprovementBuildRequest): void => applyBuildRequest(req),
       getToast: () => {
@@ -29932,7 +29969,7 @@ async function boot(): Promise<void> {
       getTurn: (): number => turn,
       /** Test izolujący regułę przegranej: playtest startuje w ostatniej epoce, gdzie samotny gracz
        *  wygrywa DOMINACJĄ już w 1. turze (wyprzedza przegraną w checkVictory) — zbijamy epokę. */
-      setPlayerEraForTest: (era: number): void => { player.zbadane = new Set(); player.badana = null; player.era = era; },
+      setPlayerEraForTest: (era: number): void => { player.zbadane = new Set(); player.badana = null; player.era = era; setDiplomacyTradeEra(era); },
       getPlayerEra: (): number => player.era,
       ownerCityIds: (owner: number): string[] => cities.filter(c => c.ownerId === owner).map(c => c.id),
       /** Dodaje osadnika właściciela (klon jednostki wojskowej tego właściciela, typ/kategoria `osadnik`) na hexie jego miasta. */
