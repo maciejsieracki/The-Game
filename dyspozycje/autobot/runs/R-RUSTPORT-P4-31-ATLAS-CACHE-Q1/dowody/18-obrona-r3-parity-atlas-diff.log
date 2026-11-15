@@ -1,0 +1,31 @@
+== origin/rust-port/parity-v2 = 95930b4469212d7a1b8b222193af7c09774226c0
+== first-parent parity zawiera commity P4.31 (nr linii = odleglosc od czubka):
+748:5259741ab fix(rust-port): P4.31 runda 2 - COPY_SRC dla testu odczytu GPU, liczby w doc-komentarzach z testow, wektor
+749:1429ba434 feat(rust-port): P4.31 RR-T8d atlas/cache tekstur - klucze treści (cityMapBadgeKey i pokrewne, 7993/7993 
+== commity po 5259741ab w sciezkach atlasu (parity):
+8f5aa88d7 feat(rust-port): REPIN-3D B4 - registerOwnedMeshResources (userData.mats/perCityGeos) w build_settlement_model
+a827fac07 feat(rust-port): REPIN-3D B2+B3 - obwodka medalionu ringHex (normalizeRingHex, ringColorFor, klucz civ:<civ>:<
+ecbec7471 test(rust-port): P4.35 obrona r1 - gradient a glif kolorowy zmierzony w Chromium 141 i testowany (E5 zabita), 
+c6e02dfb3 feat(rust-port): P4.35 RR-T8f jedna sciezka tekstu - Canvas2dLite fill_text/stroke_text/measure_text same wybi
+== diff --stat 5259741ab..parity (sciezki atlasu):
+ rust-port/renderer/src/raster/atlas/keys.rs        |  31 ++++-
+ rust-port/renderer/src/raster/canvas.rs            |  11 ++
+ rust-port/renderer/src/raster/image/emoji.rs       | 141 +++++++++++++++------
+ rust-port/renderer/src/raster/text/mod.rs          | 116 ++++++++++++++---
+ rust-port/renderer/tests/atlas_keys.rs             |   1 +
+ rust-port/renderer/tests/fixtures/atlas/README.md  |   6 +-
+ rust-port/renderer/tests/fixtures/atlas/SHA256SUMS |   2 +-
+ .../renderer/tests/fixtures/atlas/atlas_keys.json  |   2 +-
+ 8 files changed, 240 insertions(+), 70 deletions(-)
+== diff --stat parity..d850b6b86 (obrona r3):
+ rust-port/renderer/src/raster/atlas/cache.rs      | 64 +++++++++++++++++++++++
+ rust-port/renderer/tests/atlas_nturns.rs          | 52 ++++++++++++++++++
+ rust-port/renderer/tests/fixtures/atlas/README.md | 11 +++-
+ 3 files changed, 125 insertions(+), 2 deletions(-)
+== rodzic d850b6b86:
+95930b446 R-RUSTPORT-P4-15-GPU-SPIKE-PREP-Q1: integracja r2 (FC PASS, ac69ea18) na parity-v2
+== Final Control tematu REPIN-3D-B2 (zrodlo a827fac07):
+0eefb3a00 docs(autobot): Final Control R1 PASS R-RUSTPORT-REPIN-3D-B2-Q1
+== liczba commitow z 02-evaluator-r1.md P4-31 na wszystkich refs:
+0
+DONE

@@ -1,0 +1,37 @@
+HEAD=95930b4469212d7a1b8b222193af7c09774226c0 (parent f2bb11970bfc493c52109322f22548193bf2b123)
+cargo 1.97.0 (c980f4866 2026-06-30)
+rustc 1.97.0 (2d8144b78 2026-07-07)
+== fmt
+EXIT=0
+== clippy cpu
+    Checking civ-renderer v0.1.0 (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/code/rust-port/renderer)
+    Finished `dev` profile [unoptimized] target(s) in 18.60s
+EXIT=0
+== clippy gpu
+    Checking civ-renderer v0.1.0 (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/code/rust-port/renderer)
+    Finished `dev` profile [unoptimized] target(s) in 44.37s
+EXIT=0
+== test all
+EXIT=0
+passed=468 failed=0 ignored=0
+test raster::atlas::cache::tests::end_of_turn_alone_keeps_the_key_index_bounded ... ok
+test lru_eviction_of_a_shown_texture_duplicates_it ... ok
+== test gpu
+test formats_and_blend_states ... ok
+test upload_and_read_back_every_level ... ignored, needs a GPU adapter (none in the container); run on the owner's machine with the P4-15 spike
+test descriptors_follow_the_texture_data ... ok
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+SKIPPED: no GPU adapter (request_adapter error: No suitable graphics adapter found; noop support not compiled in, vulkan drivers/libraries could not be loaded, metal support not compiled in, dx12 support not compiled in, gl drivers/libraries could not be loaded, webgpu support not compiled in)
+test gpu_probe_adapter_or_explicit_skip ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+EXIT=0
+== mutant E12 (end_of_turn bez keys.retain)
+test raster::atlas::cache::tests::end_of_turn_alone_keeps_the_key_index_bounded ... FAILED
+thread 'raster::atlas::cache::tests::end_of_turn_alone_keeps_the_key_index_bounded' (4905) panicked at src/raster/atlas/cache.rs:422:13:
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 107 filtered out; finished in 0.09s
+EXIT=101 (oczekiwane !=0 = KILLED)
+== git diff --check
+EXIT=0
+== Cargo.toml/Cargo.lock
+unchanged EXIT=0
+GATES_DONE

@@ -1,0 +1,12 @@
+HEAD=95930b4469212d7a1b8b222193af7c09774226c0
+cargo 1.87.0 (99624be96 2025-05-06)
+rustc 1.87.0 (17067e9ac 2025-05-09)
+== cargo +1.87.0 test --locked --all-targets
+EXIT=0
+passed=468 failed=0 ignored=0
+test raster::atlas::cache::tests::end_of_turn_alone_keeps_the_key_index_bounded ... ok
+test lru_eviction_of_a_shown_texture_duplicates_it ... ok
+== cargo +1.87.0 check --locked --all-targets --features gpu
+    Finished `dev` profile [unoptimized] target(s) in 40.39s
+EXIT=0
+MSRV_DONE
