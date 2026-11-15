@@ -1879,3 +1879,13 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Otwarte w dokumencie, do rozstrzygnięcia przy dispatchu Q3–Q6:** model Operatora. Dokument §4 wpisuje HAIKU (po poprawce Obrony), a lista zadań i zasada Opus dla serii P4-1 wskazują OPUS. Nie rozstrzygam tego tutaj.
 - **NIE_ZMIERZONO:** `armyStackLimit()` jest w dokumencie jako `BATTLE_MAX_PER_SIDE = 500` (`main.ts:4358-4360`, `battleScene.ts:721,723`); zmierzone odczytem, bez bramki cargo (temat dokumentacyjny).
 - **Stan parity:** `2f9a12786` → `400fd0bd1` (#221). Dysk: 15 GB wolne (63%).
+
+## Przebieg (15.11, 19:5x UTC — P4-1D Q1 STACK-REPIN zintegrowany na parity)
+
+- **P4-1D Q1 STACK-REPIN (#213, Opus) — FC PASS-WITH-NOTES `ebf917613`:** operator `b6645c63d` (kod `04b773b37`), ewaluator `e3b5219b1`, obrona r1 zwróciła BLOCK (INFRA) bez wyniku, więc FC sam rozstrzygnął zarzuty (5× ODDAL) i przeliczył `repinChanged` (34/19/1/0, zgodne).
+- **Integracja:** ancestry `400fd0bd1` (poprzednie parity) w `2799cdd4b` — OK; merge-tree czysty; merge `--no-ff` `ebf917613` w worktree `integ-p4-1d`. Bramki na merge'u: `FMT_EXIT=0`, `CLIPPY_EXIT=0`, `cargo test --all-targets --no-fail-fast`: **3502 passed, 0 failed, 1 ignored** (ignored był w bazie). FF: parity = `2799cdd4b`.
+- **Refy:** `refs/keep/P4-1D-Q1-STACK-REPIN-integ` (`2799cdd4b`), `refs/keep/P4-1D-Q1-FC` (`ebf917613`), `refs/keep/P4-1D-Q1-OP` (`b6645c63d`), `refs/keep/cleanup-P4-1D-integ-p4-1d`.
+- **Sprzątanie:** worktrees `integ-p4-1d` (usunięty z niezcommitowanym `Cargo.lock` — regenerowalny, nie commitowany), `wf_515c8fe6-0a4-1/-2/-4` (`-4` był zablokowany, odblokowany i usunięty); `target-integ-p4-1d` usunięty.
+- **NIE_ZMIERZONO / ograniczenia:** `pick_auto_improvements` i pozostałe testy długie nie były osobno raportowane poza sumą. Brak producenta produkcyjnego `compute_stack_display` do czasu P4-1D-Q4 (ewaluator zaznaczył jako zależność, nie zarzut).
+- **Stan sloty:** pozostaje aktywny P4-1B Q3 (`wf_c431c5de-ee5`, procesy cargo w `wf_c431c5de-ee5-3`, nie ruszane). P4-1F i P4-1I bez śladu worktree — stan NIE_ZMIERZONO.
+- **Dysk:** 19 GB wolne (52%).
