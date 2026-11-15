@@ -95,10 +95,11 @@ function clean(s) { return String(s).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' 
   ok(gA.brutto === 457, 'A1 brutto = produkcja (457)', gA);
   ok(gA.zuzycie === 35, 'A2 zużycie = obywatele+budynki+wojsko (35)', gA);
   ok(gA.netto === 422, 'A3 netto = ratePerTurn − zużycie (422)', gA);
-  const diplo = { ratePerTurn: 6, rateProductionPerTurn: 10, rateDiploOutPerTurn: 4, rateDiploInPerTurn: 3, usage: { buildings: 1, citizens: 0, units: 0 } };
+  // Spójny fixture: ratePerTurn = produkcja(10) − umowy wychodzące(4) + przychodzące(3) = 9.
+  const diplo = { ratePerTurn: 9, rateProductionPerTurn: 10, rateDiploOutPerTurn: 4, rateDiploInPerTurn: 3, usage: { buildings: 1, citizens: 0, units: 0 } };
   const gD = G.resourceGrossNetPerTurn(diplo);
   ok(gD.brutto === 13, 'A4 brutto = produkcja + przychód umów (13), wydatki umów nie w brutto', gD);
-  ok(gD.netto === 5, 'A5 netto = ratePerTurn(6) − zużycie(1) = 5', gD);
+  ok(gD.netto === 8, 'A5 netto = ratePerTurn(9) − zużycie(1) = 8 (wydatki umów już w ratePerTurn)', gD);
   const brak = { ratePerTurn: 0, rateProductionPerTurn: 0, usage: { buildings: 0, citizens: 12, units: 0 } };
   const gB = G.resourceGrossNetPerTurn(brak);
   ok(gB.brutto === 0 && gB.netto === -12, 'A6 produkcja 0 i zużycie 12 (netto = 0 − 12 = −12) → brutto 0, netto ujemne', gB);
