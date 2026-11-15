@@ -46,3 +46,34 @@ Operator (TEN SAM ID, runda 2): (1) znaleźć przyczynę, dla której oferta z k
 - Procesowo: Evaluator/Obrona nie uruchomili wiring-e2e-live; należy go dodać do obowiązkowych bramek tematów AI-trade.
 
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+
+# Final Control — RUNDA 2/5 (kandydat 68d61aa45f5683e0b015df291164ea9fcb969c3a)
+
+STATUS: FAIL
+DOMAIN: GAME
+TEMAT: R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1
+GOAL: ilość odbioru AI wynika z nadwyżki gracza (nie sztywny krok 10); uczciwość wyceny, cooldown 15, limit 1 oferty/AI bez zmian.
+ZMIANY/COMMIT: kandydat 68d61aa45 jest potomkiem 53a13c35b i e956b5015 (merge-base --is-ancestor: tak). Kod gry: ai-trade-proposal.ts (zdjęty sufit needMax, bez zmian w r2), main.ts (+hooki testowe nnsDiag/setSpichlerzPanstwa/setCityPopulation, za bramką civTest), narzędzia testowe. Ten raport = jedyna zmiana FC. Do integracji: NIC (integration_sha pusty).
+TESTY (surowe, uruchomione przez FC):
+- `npx tsc --noEmit` (gra/): exit 0.
+- `node tools/ai-trade-need-from-surplus-test.cjs`: 8 passed, 0 failed (test na atrapach — nie dowodzi uczciwości realnej wyceny).
+- `ai-trade-wiring-e2e-live-test` AITW_POP=20, bundle kandydata (/tmp/claude-0/r2/bundle; zawiera hook setCityPopulation, brak aiNeedPerTurn): **39 pass, 7 fail**, exit 1. Oferta na stole `cegla 70 / drewno 350`, selekcja probe `cegla 200 -> zelazo 50`; realna wycena (diagPayload): givePn 350, receivePn 7000, fairBlock „Oferta nieuczciwa dla partnera … wymagane >= 7000 PW”, accepted false, a podgląd gracza (playerOk true) pokazuje 350=350. Odtworzone niezależnie przez FC (log /tmp/claude-0/fc/pop20-cand.log).
+- Ten sam scenariusz, bundle bazy (sufit przywrócony): 43 pass, 3 fail (nadwyżka gracza = 10 — oczekiwane na bazie, oraz dwa ticki dostaw; ticki dostaw padają w POP=20 także na bazie, więc to nie regresja tematu). Oferta bazy przechodzi bramki uczciwości — różnica w parze/wycenie wynika ze zdjęcia sufitu.
+- 5 bramek referencyjnych, unit-power, `git diff --check`: NIE ZMIERZONO przez FC (wyrok FAIL zapada na defekcie; dysk 147 MB wolnego, 100%); `diff --check` wg raportu obrony: czysty.
+- Bundle: nie przebudowywany (brak miejsca); zgodność bundla z kandydatem potwierdzona pośrednio (grep: hook setCityPopulation obecny, aiNeedPerTurn nieobecny) — NIE jest to dowód bit-w-bit.
+
+ZARZUTY:
+1. Brak pomiaru 20 obywateli — pomiar teraz ISTNIEJE (obrona), ale ujawnia DEFEKT: NAPRAW. Realny endTurn kładzie na stół ofertę, którą bramka uczciwości AI sama odrzuca (7000 PW vs 350 PW), a okno gracza pokazuje „Możesz przyjąć”. Gracz może przyjąć umowę, której silnik wyceny nie uznaje za uczciwą (rozjazd podgląd vs bramka) — to wyciek uczciwości wprost naruszający GOAL („uczciwość wyceny BEZ ZMIAN”).
+2. Test na atrapach — częściowo zaadresowany asercjami e2e (dolna granica > 10, diagPayload), ale właśnie te asercje są czerwone w POP=20 na kandydacie: NAPRAW (test jest bramką i musi być zielony, nie ominięty).
+3. Koszt pętli bez sufitu na realnej wycenie — pomiar jednoscenariuszowy (probeBarter 296/425 ms kandydat vs 505 ms baza); skalowanie 20000/5000/100000 NIE ZMIERZONO, brak limitu wydajnościowego: NAPRAW albo uzasadnienie liczbami (po naprawie pkt 1).
+4. Uwaga o hakach testowych/harness: ODDAL (informacyjnie).
+5. Limit gameplayowy odbioru A/B/C: DO DECYZJI CZŁOWIEKA (orkiestrator -> właściciel). Defekt z pkt 1 jest argumentem za limitem lub korektą wyceny, ale wybór pozostaje decyzją produktową.
+Co najmniej jedno NAPRAW => FAIL.
+
+BLOKADY: defekt wyceny drewna w scenariuszu 20 obywateli (rozjazd pary selekcja vs stół: zelazo 50 vs drewno 350; receivePn drewna 7000 przy 350 sztukach vs 350 w podglądzie). Przyczyna niezbadana — dla Operatora r3: porównać opcje wyceny (`pnCyclicOpts` w enqueue, main.ts ~20977-21000) z `diagPayload`/`previewIncomingPlayerAccept`, sprawdzić czy wycena drewna zależy nieliniowo od ilości (cena skokowa/próg) i dlaczego filtr enqueue przepuszcza parę odrzucaną przez `handelFairnessGate`. Poprawka ma dotyczyć spójności wyceny/wyboru pary, nie progów uczciwości.
+RUNDY: FC r2 po 2 rundach Operatora; limit 5 niewyczerpany (wraca do Operatora r3, to samo ID).
+NASTĘPNY KROK: Operator r3 (naprawa jw., AITW_POP=20 ma dać pełny PASS na kandydacie, 5 bramek referencyjnych, pomiar kosztu pętli), Evaluator r3, FC r3; równolegle ABC właściciela o limicie odbioru (A bez limitu / B <=3x potrzeba AI / C powrót do sufitu).
+UWAGI-DLA-ORKIESTRATORA: dysk / = 100% (147 MB wolnego) — sprzątanie przed kolejnymi rundami; w worktree FC symlink gra/node_modules (niecommitowany).
+DEPLOY/PUSH: NIE WYKONANO
