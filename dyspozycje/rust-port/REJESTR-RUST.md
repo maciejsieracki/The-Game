@@ -1589,3 +1589,14 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **KROK 2 (FC PASS bez integracji):** brak.
 - **KROK 3 (sprzątanie):** od 14:09 usunięto cztery worktree zakończonych etapów (P4-1J Operator i pomiary, M01 Operator, CRED-HAK Operator) oraz cache CRED-HAK Operatora i pięć katalogów scratchpadu. Commity P4-1J zabezpieczone na `wip/` i w `refs/keep`. Dysk: 8,0 GB wolne.
 - **NASTĘPNY KROK:** odebrać FC M01 i P4-1J (Obrona → FC); CRED-HAK po FC — kolejna runda tego samego ID z commitem Operatora; P4-1E po Evaluatorze.
+
+## Przebieg (15.11, 14:47 UTC — heartbeat „twardy bit”, sloty Rust)
+
+- **KROK 1 (sloty):** 4 aktywne Workflow, bez nowych startów (warunek < 4 niespełniony):
+  - M01-R2 MapHex (#210): etap 4/4 Obrona po FAIL Evaluatora, HAIKU, od 12:18.
+  - P4-1J stan planów marszu (#209): etap 4/4 FC, SONNET, od 11:43; Operator, pomiary i Evaluator PASS-WITH-NOTES, Obrona odpowiedziała.
+  - P4-1E CITY-VIEW (#214): etap 2/4 Evaluator, OPUS, od 12:27; Operator PASS-WITH-NOTES na `rust-port-wip/R-RUSTPORT-P4-1E-CITY-VIEW-Q1`.
+  - CRED-HAK wdrożenie, wycinek 1 (#171): etap 4/4 FC, SONNET, od 12:59; Operator PARTIAL, Evaluator FAIL, Obrona odpowiedziała.
+- **KROK 2 (FC PASS bez integracji):** brak. Oczekują FC P4-1J i CRED-HAK.
+- **KROK 3 (sprzątanie):** 14:39 usunięto cztery worktree zakończonych etapów (M01 pomiary i Evaluator, P4-1E Operator, P4-1J Evaluator). Dysk: 6,8 GB wolne.
+- **NASTĘPNY KROK:** odebrać FC P4-1J i CRED-HAK; po FC PASS — refs/keep, ancestry, integracja; po FAIL — kolejna runda tego samego ID.
