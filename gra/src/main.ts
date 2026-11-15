@@ -1722,6 +1722,8 @@ import {
   diplomacyPnSurowiecIlosc,
   diplomacyNormalizeSurowiecIlosc,
   setDiplomacyTradeEra,
+  diplomacyDealTradeEra,
+  withDiplomacyTradeEra,
   diplomacySumPn,
   planCityCession,
   diplomacyPnMiasto,
@@ -24512,7 +24514,13 @@ async function boot(): Promise<void> {
         === JSON.stringify([payload.giveItems ?? [], payload.receiveItems ?? []]);
     }
 
+    /** R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1: epoka umowy = wyższa z epok gracza i partnera AI. */
     function pickAiPlayerCyclicBarter(ownerId: number): ReturnType<typeof selectAiTradeBarter> {
+      const tradeEra = diplomacyDealTradeEra(player.era, empireEpochForOwner(ownerId));
+      return withDiplomacyTradeEra(tradeEra, () => pickAiPlayerCyclicBarterImpl(ownerId, tradeEra));
+    }
+
+    function pickAiPlayerCyclicBarterImpl(ownerId: number, tradeEra: number): ReturnType<typeof selectAiTradeBarter> {
       if (!ownerHasTradeTech(ownerId) || !ownerHasTradeTech(ME())) return null;
       const turns = AI_RESOURCE_TRADE_DEFAULT_TURNS;
       const pack = diplomacyHandelSurowcePakietWielkosc();
@@ -24555,6 +24563,7 @@ async function boot(): Promise<void> {
         aiResources: aiStates,
         playerResources: playerStates,
         turns,
+        tradeEra,
         resolvePayloadPn: payload => resolveProposalPn(payload, {
           ...pnOpts,
           ...proposalPnTurnsMultiplier(payload),
@@ -46860,6 +46869,8 @@ async function boot(): Promise<void> {
       // Epoka startowa z kreatora (Kamień=1, Brąz=2, Żelazo=3)
       const ERA_MAP: Record<string, number> = { kamien: 1, braz: 2, zelazo: 3 };
       player.era = ERA_MAP[params.epochId] ?? 1;
+      // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1: nowa gra startuje z epoką handlu zgodną z kreatorem.
+      setDiplomacyTradeEra(player.era);
 
       // Wepnij tożsamość nacji gracza; efekty są rozwiązywane z macierzy per owner.
       {
@@ -48882,6 +48893,8 @@ async function boot(): Promise<void> {
       // go pisze), ale broniamy się defensywnie zamiast zakładać poprawność JSON-a.
       if (!playerStateByHuman.has(HUMAN_OWNER_PRIMARY)) playerStateByHuman.set(HUMAN_OWNER_PRIMARY, player);
       overlayDepositEra = player.era;
+      // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1: wczytany zapis ustawia epokę handlu od razu (nie dopiero po reconcile).
+      setDiplomacyTradeEra(player.era);
       cityProd.clear();
       if (saved.cityProd) {
         for (const [cid, prod] of Object.entries(saved.cityProd)) {

@@ -22,6 +22,8 @@ W koszyku negocjacji dyplomacji możesz wymieniać surowce **ilościowe** (drewn
 
 Panel negocjacji (`diplomacyTradeBasket.ts`) pozwala dodać pozycję „surowiec (ilość)" — wybierasz surowiec i liczbę **sztuk**; ilość zaokrągla się w dół do pełnego bloku epoki (Kamień 10, Brąz 50, Żelazo 100 szt.; wartości w `econ-params.json`, klucze `krok_blok_*`).
 
+**Epoka umowy** = wyższa z epok dwóch stron (gracza i partnera AI). Oferta AI w Brązie ma więc ilości w wielokrotnościach 50 także wtedy, gdy gracz jest jeszcze w Kamieniu, a gracz w Kamieniu dostaje blok 50, jeśli partner jest w Brązie. Wczytanie zapisu i nowa gra ustawiają epokę handlu od razu. Zakres wdrożenia: oferty AI (wybór pary) i ścieżka wyceny AI; okno „Umowa wymiany surowców" i „Szybka umowa" nadal używają epoki gracza (patrz tematy kolejne w `dyspozycje/autobot/runs/R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1/30-obrona-claude.md`).
+
 ### Cennik jednostkowy (normal, placeholder do strojenia)
 
 | Surowiec | Cena (¤/szt.) |

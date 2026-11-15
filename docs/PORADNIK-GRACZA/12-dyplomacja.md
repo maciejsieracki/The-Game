@@ -376,3 +376,6 @@ Wysyłaj **prezenty** przed prośbą o pakt — relacja **+20** taniej niż wojn
 ---
 
 *Poradnik‑L · Część XII · rev. G · 2026-08-04 (§74: Wiarygodność, bramki NAP W≥−40 / sojusz W≥0, flat +5 Zauf./turę, wchłonięcie MP v1; Wpływ Relacji na deal) · rev. G 2026-07-24 · rev. F 2026-07-23 · pierwotnie rev. E 2026-07-03 · dane: `diplomacy.json`, `diplomacy-credibility.ts`, `diplomacy-proposals.ts`*
+
+
+**Epoka handlu surowcami (blok ilości).** Liczba PN za blok surowca nie zmienia się między epokami, rośnie za to ilość: w Kamieniu 10 sztuk = 1 PN, w Brązie 50 szt. = 1 PN, w Żelazie 100 szt. = 1 PN. Epoka umowy to wyższa z epok dwóch stron, więc oferta AI w Brązie ma ilości w blokach po 50 szt. Szczegóły: encyklopedia, hasło „Handel surowcami".

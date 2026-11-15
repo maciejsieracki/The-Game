@@ -451,7 +451,9 @@ export function computeQuickDealBasket(input: QuickDealInput): QuickDealResult {
     // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): dodatkowo floor do wielokrotności kroku
     // handlu (5 szt. dla surowców dotkniętych ×5) — ilość WIDOCZNA w koszyku „Szybkiej
     // umowy" i ilość FAKTYCZNIE wyceniona muszą się zgadzać.
-    const seedQty = diplomacyNormalizeSurowiecIlosc(pick.id, Math.min(10, pick.maxQty));
+    // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 (zarzut 4): ziarno = jeden blok EPOKI (Kamień 10, Brąz 50,
+    // Żelazo 100), a nie na sztywno 10 — inaczej w Brązie floor daje 0 i oferta spada na złoto.
+    const seedQty = diplomacyNormalizeSurowiecIlosc(pick.id, Math.min(diplomacyHandelSurowiecKrok(pick.id), pick.maxQty));
     if (seedQty > 0) {
       receiveItems.push({ typ: 'surowiec_ilosc', id: pick.id, ilosc: seedQty });
       receivePn = diplomacyPnSurowiecIlosc(pick.id, seedQty) ?? 0;

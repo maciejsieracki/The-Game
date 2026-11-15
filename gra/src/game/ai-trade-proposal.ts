@@ -37,6 +37,8 @@ export function selectAiTradeBarter(input: {
   fairnessGate: (givePn: number, receivePn: number) => boolean;
   resolvePayloadPn: (payload: ProposalPayload) => { givePn: number; receivePn: number };
   evaluateExactPayload: (payload: ProposalPayload) => boolean;
+  /** Epoka umowy (wyższa z dwóch stron) dla kroku/normalizacji ilości; brak = epoka globalna. */
+  tradeEra?: number;
 }): AiTradeBarter | null {
   const turns = Math.max(1, Math.floor(input.turns));
   const aiSurpluses = [...input.aiResources]
@@ -55,20 +57,20 @@ export function selectAiTradeBarter(input: {
   for (const humanNeed of playerDeficits) {
     const give = aiSurpluses.find(r => r.key === humanNeed.key);
     if (!give) continue;
-    const giveStep = diplomacyHandelSurowiecKrok(give.key);
+    const giveStep = diplomacyHandelSurowiecKrok(give.key, input.tradeEra);
     const aiGiveStockAvailable = Math.max(0, (give.stock - Math.max(0, give.reserve)) / turns);
     const aiGiveMax = diplomacyNormalizeSurowiecIlosc(
-      give.key, Math.floor(aiGiveStockAvailable + Math.max(0, give.netRate)),
+      give.key, Math.floor(aiGiveStockAvailable + Math.max(0, give.netRate)), undefined, input.tradeEra,
     );
     if (aiGiveMax <= 0) continue;
     for (const receive of aiDeficits) {
       if (receive.key === give.key) continue;
       const humanSurplus = input.playerResources.find(r => r.key === receive.key && r.surplus);
       if (!humanSurplus) continue;
-      const receiveStep = diplomacyHandelSurowiecKrok(receive.key);
+      const receiveStep = diplomacyHandelSurowiecKrok(receive.key, input.tradeEra);
       const humanStockAvailable = Math.max(0, (humanSurplus.stock - Math.max(0, humanSurplus.reserve)) / turns);
       const receiveMax = diplomacyNormalizeSurowiecIlosc(
-        receive.key, Math.floor(humanStockAvailable + Math.max(0, humanSurplus.netRate)),
+        receive.key, Math.floor(humanStockAvailable + Math.max(0, humanSurplus.netRate)), undefined, input.tradeEra,
       );
       // R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1: ilosc odbioru wyznacza NADWYZKA GRACZA
       // (receiveMax z zapasu ponad rezerwe i netRate), a nie sztywny krok handlu. Deficyt AI

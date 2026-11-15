@@ -21,6 +21,8 @@ export {
   diplomacyPnSurowiecIlosc,
   setDiplomacyTradeEra,
   diplomacyTradeEra,
+  diplomacyDealTradeEra,
+  withDiplomacyTradeEra,
 } from '../src/game/diplomacy-value-catalog';
 `, 'utf8');
 
@@ -87,9 +89,29 @@ D.setDiplomacyTradeEra(1);
 eq(D.diplomacyPnSurowiecIlosc('drewno', 10), 1, 'powrot do epoki 1: 10 szt = 1 PN');
 
 // Mieszane epoki: epoka umowy = WYZSZA z epok dwoch stron (Braz + Kamien => blok Brazu).
-const ERA_UMOWY = (eraA, eraB) => Math.max(eraA, eraB);
-eq(D.diplomacyPnSurowiecIlosc('drewno', 50, ERA_UMOWY(2, 1)), 1, 'mieszane: Braz+Kamien => 50 szt = 1 PN');
-eq(D.diplomacyNormalizeSurowiecIlosc('drewno', 50, undefined, ERA_UMOWY(2, 1)), 50, 'mieszane: Braz+Kamien => krok 50');
+// Zarzut Evaluatora 1: sprawdzamy PRAWDZIWA funkcje z katalogu, nie lokalne Math.max.
+eq(D.diplomacyDealTradeEra(2, 1), 2, 'umowa: Braz(gracz)+Kamien(AI) => epoka 2');
+eq(D.diplomacyDealTradeEra(1, 2), 2, 'umowa: Kamien(gracz)+Braz(AI) => epoka 2');
+eq(D.diplomacyDealTradeEra(3, 2), 3, 'umowa: Zelazo+Braz => epoka 3');
+eq(D.diplomacyDealTradeEra(1, 1), 1, 'umowa: Kamien+Kamien => epoka 1');
+eq(D.diplomacyPnSurowiecIlosc('drewno', 50, D.diplomacyDealTradeEra(2, 1)), 1, 'mieszane: Braz+Kamien => 50 szt = 1 PN');
+eq(D.diplomacyNormalizeSurowiecIlosc('drewno', 50, undefined, D.diplomacyDealTradeEra(2, 1)), 50, 'mieszane: Braz+Kamien => krok 50');
+eq(D.diplomacyDealTradeEra(1, 2), D.diplomacyDealTradeEra(2, 1), 'umowa symetryczna wzgledem strony');
+D.setDiplomacyTradeEra(1);
+const wewnatrz = D.withDiplomacyTradeEra(3, () => D.diplomacyTradeEra());
+eq(wewnatrz, 3, 'withDiplomacyTradeEra: wewnatrz ustawia epoke 3');
+eq(D.diplomacyTradeEra(), 1, 'withDiplomacyTradeEra: po wyjsciu przywraca epoke 1');
+try { D.withDiplomacyTradeEra(2, () => { throw new Error('x'); }); } catch (_) { /* oczekiwane */ }
+eq(D.diplomacyTradeEra(), 1, 'withDiplomacyTradeEra: po wyjatku przywraca epoke 1');
+// Zgodnosc: jawna epoka i epoka globalna daja te sama wycene dla kazdego klucza blokowego.
+for (const e of [2, 3]) {
+  D.setDiplomacyTradeEra(e);
+  for (const key of Object.keys(BASE_BLOCK_PN)) {
+    const blok = D.diplomacyHandelKrokBlokEpoki(e);
+    eq(D.diplomacyPnSurowiecIlosc(key, blok), D.diplomacyPnSurowiecIlosc(key, blok, e), `zgodnosc jawna/globalna ${key} epoka ${e}`);
+  }
+}
+D.setDiplomacyTradeEra(1);
 eq(D.diplomacyPnSurowiecIlosc('drewno', 50, 1), 5, 'kontrola: sama epoka Kamienia liczy 50 szt = 5 PN (rozjazd bez reguly wyzszej epoki)');
 
 // Determinizm: ten sam wejscie = ten sam wynik.

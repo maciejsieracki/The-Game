@@ -337,6 +337,28 @@ export function diplomacyTradeEra(): number {
   return _diplomacyTradeEra;
 }
 
+/**
+ * R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 (zarzut Evaluatora 1): epoka UMOWY = WYŻSZA z epok dwóch
+ * stron (gracz i partner). Czysta funkcja — bez stanu.
+ */
+export function diplomacyDealTradeEra(playerEra: number, partnerEra: number): 1 | 2 | 3 {
+  return normalizeTradeEra(Math.max(normalizeTradeEra(playerEra), normalizeTradeEra(partnerEra)));
+}
+
+/**
+ * Wykonuje `fn` z epoką handlu ustawioną na `era` (dla wszystkich wycen bez jawnej epoki),
+ * po czym przywraca poprzednią wartość — nawet przy wyjątku.
+ */
+export function withDiplomacyTradeEra<T>(era: number, fn: () => T): T {
+  const prev = _diplomacyTradeEra;
+  _diplomacyTradeEra = normalizeTradeEra(era);
+  try {
+    return fn();
+  } finally {
+    _diplomacyTradeEra = prev;
+  }
+}
+
 const KROK_BLOK_ROW_BY_ERA: Readonly<Record<1 | 2 | 3, string>> = {
   1: 'krok_blok_kamien',
   2: 'krok_blok_braz',
