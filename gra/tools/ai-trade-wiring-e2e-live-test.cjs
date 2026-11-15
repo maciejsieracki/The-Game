@@ -247,6 +247,20 @@ async function main() {
       s1.pending.length === 1 && s1.pending[0].proposer === ai && s1.pending[0].responder === 0, s1);
     if (s1.pending.length !== 1) throw new Error('brak propozycji barteru na stole po realnym endTurn -- dalsze fazy nie maja sensu (wiring przerwany)');
     const offer = s1.pending[0];
+    // R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r4, zarzut 1 FC r3): epoka gracza i AI W CHWILI OFERTY (po realnym EOT,
+    // po produkcyjnym syncu badan) musi byc rowna ERA ze scenariusza. Bez tego scenariusze Kamien/Braz nie roznia sie epoka.
+    if (ERA > 0) {
+      const eraFloor = await ev(page, a => ({ p: window.__aiTradeWiringTestDebug.eraFloorForTest(0), ai: window.__aiTradeWiringTestDebug.eraFloorForTest(a) }), ai);
+      console.log(`  [era-diag] podloga/start: ${JSON.stringify(eraFloor)}`);
+      out.eraFloor = eraFloor;
+      const eraAtOffer = await ev(page, a => ({
+        player: window.__aiTradeWiringTestDebug.ownerEra(0),
+        ai: window.__aiTradeWiringTestDebug.ownerEra(a),
+      }), ai);
+      out.eraAtOffer = eraAtOffer;
+      assert(`epoka w chwili oferty = ERA ${ERA} (gracz ${eraAtOffer.player}, AI ${eraAtOffer.ai})`,
+        eraAtOffer.player === ERA && eraAtOffer.ai === ERA, eraAtOffer);
+    }
     const pl = offer.payload;
     // R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r3): w scenariuszu POP>0 produkcja/zuzycie 20 obywateli zmienia stan miedzy
     // probeBarter (przed EOT) a decyzja AI w endTurn, wiec para na stole moze byc INNA niz probe (np. cegla/drewno zamiast cegla/zelazo).
