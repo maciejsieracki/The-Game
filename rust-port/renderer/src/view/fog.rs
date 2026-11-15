@@ -27,7 +27,12 @@ use crate::models::misc::HexKey;
 use crate::pick::hex::HexCoord;
 
 /// The fog of one snapshot in every shape the renderer takes.
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+///
+/// Deliberately has no `Default`: an empty value (`fog_on = false`, empty
+/// sets) matches no pin state. "No fog" in the pin is `ALL_KEYS` with
+/// `fogOn = false`, so the only constructor is [`FogSets::from_dto`]
+/// (with `fog_active = false` for "no fog").
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FogSets {
     /// `fogOn` of `apply_fog_visibility` / `fog_active` of
     /// `sync_worker_field_overlay_fog` (`ViewerDto.fog_active`).
