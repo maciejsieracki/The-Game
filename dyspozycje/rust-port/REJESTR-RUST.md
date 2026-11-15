@@ -1255,3 +1255,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **WIEZE-2B1** (`R-RUSTPORT-P6-WIEZE-2B1-Q1`, planowanie wystrzałów wież z odroczeniem 180 ms i usunięcie placeholdera `dead = true`; strzał `_singleBlow` = 2B2, nie w tym temacie): dispatch `1149e01f0`, baza `7b52c3842`, Workflow `wf_578f4944-497`, etap Operator, HAIKU.
 - **Dlaczego tylko 1 slot:** pozostałe kandydaci wymagają decyzji właściciela (#106 pkt 4 — ABC w czacie; #115, #120 — ABC) albo nie mają zweryfikowanego zakresu (#97–#98, #107, #109, #112–#113 blokowane allowlistą K5). Nie startuję tematów bez zweryfikowanego zakresu.
 - **Dysk:** 17 GB. **Parity:** `7b52c3842`.
+
+## Przebieg (15.11, 00:41): WIEZE-2B1 — FC FAIL r1, runda 2 w toku
+- **Wynik r1:** Operator BLOCK, Evaluator FAIL, FC FAIL (`f78736d36`). Przyczyna: usunięcie `SiegeEnv::tower` zepsuło testy poza allowlistą (`p6_tower_target_wiring.rs` — E0560; wektory `p6_siege_tactics_loop` — 78/360 sekwencji rozjechane). To błąd zakresu, nie decyzja produktowa.
+- **Runda 2 (DODATEK r2, baza `f78736d36`, dispatch `8d43a7eb2`):** allowlista rozszerzona tylko o pliki zepsute przez r1 (`p6_tower_target_wiring.rs`, `p6_siege_tactics_loop_gen.mjs` + wektory). Wymóg: PEŁNY `cargo test` EXIT 0, nie tylko `p6_siege*`. Workflow `wf_7faf2bb4-2cd`, Operator HAIKU.
+- **Nadal NIE_ZROBIONE (2B2):** strzał `_singleBlow` wieży, guard `towerShooterRow`, stan `destroyed`.
+- **Parity:** `7b52c3842`. **Sloty:** 1 z 4. **Pytania ABC:** #106 pkt 4, #115, #120 i konwencja `Co-Authored-By` — bez odpowiedzi.
