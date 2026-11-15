@@ -151,6 +151,8 @@ HUD przeszedł pełne przeprojektowanie na makietę **POLE-BITWY-TW-v5** (3 fazy
 
 Nazewnictwo dokładnych etykiet może się nieznacznie różnić w buildzie — szukaj wg **funkcji z tabeli**, nie dosłownego tekstu.
 
+**Zakres rozkazów w rozstawieniu (Formacja, Konnica, Kierunek natarcia).** Rozkaz działa na **dokładnie zaznaczone** żywe jednostki, także mieszane (piechota + konnica) i z różnych grup. Nic nie zaznaczone = **cała armia**. Dzięki temu można np. zaznaczyć samą konnicę i ustawić **Tył**, a piechota zostanie na **Froncie**. Komunikat po rozkazie mówi, czego dotyczył: „zaznaczenie (N)”, „cała grupa (N)” (wszystkie żywe jednostki jednej grupy) albo „cała armia”. Chip kierunku natarcia pokazuje „Natarcie: różne”, gdy zaznaczone jednostki mają różne kierunki. Kierunek natarcia wpływa na **auto-odgrywanie** bitwy (manewr konnicy na tyły/flankę), a nie na układ jednostek w strefie rozstawienia.
+
 ### 60.2. Sterowanie
 
 - **Mysz** — zaznaczanie, ruch, atak.

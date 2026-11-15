@@ -7,3 +7,11 @@ KRYTERIA BINARNE: (a) test: citizenRequiredResourcesForEra(1) zawiera ceramikę;
 ALLOWLISTA: gra/data/citizen-resource-upkeep.json, gra/src/game/citizen-resource-upkeep.ts (tylko komentarze/opisy, kod tylko jeśli konieczny — uzasadnij), gra/src/ui/** (tylko teksty/lista surowców), docs/encyklopedia/**, docs/PORADNIK-GRACZA/**, gra/src/data/wikiBundle.json (regeneracja), gra/tools/*citizen*|*szczescie*|*upkeep* testy i narzędzie pomiarowe, runs/<ID>/**. NIE: WERSJE.md, manifest, rust-port.
 UWAGA: równolegle toczą się ceramika Spichlerza/Garncarni (econ-params, converters.ts) — scal z origin/main. Rachunek właściciela (jedno miasto, 20 obywateli, epoka 1): Garncarnia 30 − obywatele 20 − Spichlerz I 10 = 0 — zmierz/wylicz w raporcie dla epok 1–3.
 RAPORT: kontrakt STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY/BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH; punkty ZMIERZONO albo NIE ZMIERZONO z powodem.
+
+## DODATEK 2 orkiestratora — RUNDA 2/5 (2026-11-15) — baza: kandydat 01b4593bb (refs/keep/R-WEB-CERAM-KAMIEN-obrona) + merge origin/main; raport FC r1: e0be467a8 (FAIL, wraca do TEGO SAMEGO ID)
+Wynik r1 (przyjęty): dane epoki 1 (ceramika), _opis, poradnik, wikiBundle, testy 108/2 (2 czerwone też na bazie) — zostają. FC FAIL z jednego powodu: zarzut 6.
+OBOWIĄZKOWE w r2:
+ 1. ZRZUT CHROMIUM panelu pokrycia surowców obywateli w epoce 1 (kryterium (e) dispatchu): wywołaj showEmpireDetailPanel (gra/src/ui/empireDetailPanel.ts ~l.4555) przez istniejące narzędzie gra/tools/citizen-consumption-era-live-measure.cjs, build poza repo, ?civTest=1; zrzut do runs/<ID>/evidence/. Pokaż ceramikę w liście surowców Kamienia i stan z brakiem ceramiki (kara).
+ 2. Pomiar „jedno miasto, 20 obywateli, Kamień” (bilans ceramiki: Garncarnia 30 − obywatele 20 − Spichlerz) — wpisz liczby z żywej gry, jeśli zrobione w r1 — potwierdź, nie powtarzaj bez potrzeby.
+DECYZJA PRODUKTOWA robocza (zarzut 5; właściciel jeszcze nie odpowiedział na ABC — wariant A = jego literalne polecenie „dopóki jej nie będzie, będą ludzie mieć gorsze zadowolenie”): BEZ zmian kary i BEZ ceramiki startowej. Opisz w raporcie jako DO POTWIERDZENIA przez właściciela (B: ceramika startowa; C: łagodniejsza kara w Kamieniu). Nie wdrażaj B/C.
+Poza zakresem: limit jednej Garncarni w mieście (osobny temat); teksty UI w empireDetailPanel.ts — tylko jeśli zrzut pokaże błąd.
