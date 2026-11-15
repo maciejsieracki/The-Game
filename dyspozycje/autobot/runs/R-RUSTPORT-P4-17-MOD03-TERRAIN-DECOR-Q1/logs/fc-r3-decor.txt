@@ -1,0 +1,33 @@
+HEAD=5180640982b859e836650fb5a0a5ed4349d43ae6
+    Finished `test` profile [unoptimized] target(s) in 0.05s
+     Running tests/decor_web_parity.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/p417gates/target/debug/deps/decor_web_parity-56537f96dfeba1a8)
+
+running 12 tests
+box_sign: scalars=36 bit_diff=0
+test bounding_box_keeps_web_sign_of_zero ... ok
+test decor_reuses_core_instead_of_copies ... ok
+test decor_uses_jsmath_not_platform_libm ... ok
+test float_guard_scanner_catches_every_spelling ... ok
+hashes: 98010 samples, 54 seeds
+hashes: scalars=98543 bit_diff=0
+test hex_hash_functions_match_web ... ok
+coast: 301 builds, 333 meshes
+coast: scalars=27027 bit_diff=0
+test coast_builders_are_bit_identical_to_web ... ok
+riverlod: scalars=830 bit_diff=0
+test river_lod_matches_web ... ok
+relief: 9197 positive heights
+relief: scalars=29468 bit_diff=0
+test relief_surface_height_matches_web ... ok
+test sha256_matches_fips_180_test_vectors ... ok
+geometries: 34 variants, 3344 triangles
+geometries: scalars=90917 bit_diff=0
+test shared_geometries_are_bit_identical_to_web ... ok
+test fixtures_match_sha256sums ... ok
+builders: [("buildDekorLaka", 9), ("buildDekorPustynia", 9), ("buildDekorRownina", 9), ("buildGalleryBuildingPad", 16), ("buildGalleryFortMount", 3), ("buildGora", 9), ("buildLas", 9), ("buildOaza", 1), ("buildStyleBeachRing", 2), ("buildStyleCoastSandTopCap", 2), ("buildStyleDune", 460), ("buildStyleForestCluster", 270), ("buildStyleHillBump", 310), ("buildStyleMountainPeak", 310), ("buildStyleOasis", 5), ("buildStyleTarasyTerrace", 4), ("buildTarasy", 2), ("buildWzgorze", 9)] meshes=6233
+builders: scalars=324838 bit_diff=0
+test builders_are_bit_identical_to_web ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.80s
+
+EXIT=0
