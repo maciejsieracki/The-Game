@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "744e4039c1f19afaf7fa7349c545181f",
-  "bundleSha256": "38e6ab1b104570f05b22339076334c5e5671ec8070e5e3be8b8e4fa830be8b8f",
-  "bundleBytes": 14765493,
+  "bundleMd5": "64a330047cea13deb5e3a95dd8f6a1ce",
+  "bundleSha256": "814fcc6d1a263dd9e2e1be43ed9306ea7b27b05a54eaf9b23562c90d3b94d1e4",
+  "bundleBytes": 14767253,
   "sourceSnapshot": {
-    "source": "R-WEB-UI-RESOURCE-SOURCE-LEDGER-REALPATH-TESTS-Q1 FC 2ebd3c189 kod 9d55b8871",
+    "source": "R-WEB-AI-TRADE-OFFER-QTY-CAP-3X-NEED-Q1 r2 FC f7cb7f292 kod 901dd8bc5",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 740: Karta surowca w panelu imperium pokazuje liste zrodel przyrostu i zuzycia z ostatnich 10 tur (Warzelnia, umowa wymiany, obywatele, lup z bitwy, zwroty, zdobycie miasta, dary i inne); dziennik zrodel zapisuje sie w zapisie gry (tylko wlasciciele-ludzie)"
+    "FALA 741: Ilosc odbioru AI w ofercie handlowej do gracza wynosi min(nadwyzka gracza, 3 x potrzeba AI) z parametrem w ai-params.json (mnoznik 3 i staly sufit iteracji pętli 64); uczciwosc wyceny, cooldown 15 i limit 1 oferty na AI bez zmian; naprawiony dlug testowy 379"
   ],
   "verification": [
-    "tsc 0; logic 213/213; ledger 1030/0 engine 20/0 consume 30/0 trade 27/0 owner-delta 8/0 save-history 15/0 skad-ui 18/0; gross-net 22/0 plusx 31/0; FC: Chromium realpath sources 45/0 save 8/0 wycinka 5/0, mutacje 17/18, hash ON=OFF zgodny"
+    "tsc 0; logic 213/213; qty-cap 18/0; need-from-surplus 12/0; oneshot-overpay 10 OK; proposal-branch 10/0; proposal-to-player 25 OK; 5 bramek zielone; mutacje czerwone; real wycena 60/60 bez pominiec"
   ],
   "limits": [
-    "Brak pomiaru rozmiaru dziennika po 60 turach i zrzutow Chromium soli i ceramiki (czesc B); endTurn timeout w turze ok. 31 w scenie testowej niezbadany (czesc B); bunt w petli tury bez mutacji (m17); dziennik AI nie przezywa zapisu; martwa sonda ledgerAuditE3c do sprzatniecia; dokumentacja Civpedii czesc B"
+    "Okno estymaty oddania (+-3 kroki) do zmierzenia na wycenie blokowej epok po wdrozeniu 416; e2e live Chromium wiring NIE ZMIERZONO przez FC (operator 46/0); mgla-sciezka-inwariant 41/1 i json-descriptions-sync 17/2 dlug bazowy; brak aktualizacji Civpedii"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES LEDGER-A (2ebd3c189 / kod 9d55b8871): ksiega zrodel zapasow Skad zapasy: karta zrodel w panelu surowca, pamiec N tur w zapisie gry (tylko wlasciciele-ludzie), zrodla czesci 3 (lup, zwroty, zdobycie oddanie cesja przylaczenie bunt, dar, Zastap, machiny, Stadnina); testy realnej sciezki w Chromium 45/0 zapis 8/0 wycinka 5/0; mutacje 17/18 zabitych; rozmiar pola zapisu 16 KB po 30 turach"
+    "notes": "FC PASS-WITH-NOTES QTY-CAP r2 (f7cb7f292 / kod 901dd8bc5): oferta handlowa AI do gracza ma ilosc odbioru = min(nadwyzka gracza, 3 x potrzeba AI) i staly sufit iteracji petli; testy qty-cap 18/0 need-from-surplus 12/0 oneshot-overpay 10 OK (dlug 379 naprawiony) proposal-branch 10/0 to-player 25 OK; mutacje czerwone; real wycena 60/60 scenariuszy bez pominiec, czas petli 0,05-0,12 ms przy zapasach 20000 i 100000"
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-15T09:00:53",
+  "hubGeneratedAt": "2026-11-15T09:10:49",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "744e4039c1f19afaf7fa7349c545181f",
-      "sizeBytes": 14765493
+      "md5": "64a330047cea13deb5e3a95dd8f6a1ce",
+      "sizeBytes": 14767253
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "744e4039c1f19afaf7fa7349c545181f",
-      "sizeBytes": 14765493
+      "md5": "64a330047cea13deb5e3a95dd8f6a1ce",
+      "sizeBytes": 14767253
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "744e4039c1f19afaf7fa7349c545181f",
-      "sizeBytes": 14765493
+      "md5": "64a330047cea13deb5e3a95dd8f6a1ce",
+      "sizeBytes": 14767253
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "744e4039c1f19afaf7fa7349c545181f",
-      "sizeBytes": 14765493
+      "md5": "64a330047cea13deb5e3a95dd8f6a1ce",
+      "sizeBytes": 14767253
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "744e4039c1f19afaf7fa7349c545181f",
-      "sizeBytes": 14765493
+      "md5": "64a330047cea13deb5e3a95dd8f6a1ce",
+      "sizeBytes": 14767253
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "744e4039c1f19afaf7fa7349c545181f",
-      "sizeBytes": 14765493
+      "md5": "64a330047cea13deb5e3a95dd8f6a1ce",
+      "sizeBytes": 14767253
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "744e4039c1f19afaf7fa7349c545181f",
-      "sizeBytes": 14765493
+      "md5": "64a330047cea13deb5e3a95dd8f6a1ce",
+      "sizeBytes": 14767253
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "744e4039c1f19afaf7fa7349c545181f",
-      "sizeBytes": 14765493
+      "md5": "64a330047cea13deb5e3a95dd8f6a1ce",
+      "sizeBytes": 14767253
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "744e4039c1f19afaf7fa7349c545181f",
-      "sizeBytes": 14765493
+      "md5": "64a330047cea13deb5e3a95dd8f6a1ce",
+      "sizeBytes": 14767253
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "744e4039c1f19afaf7fa7349c545181f",
-      "sizeBytes": 14765493
+      "md5": "64a330047cea13deb5e3a95dd8f6a1ce",
+      "sizeBytes": 14767253
     }
   ],
-  "md5": "744e4039c1f19afaf7fa7349c545181f",
+  "md5": "64a330047cea13deb5e3a95dd8f6a1ce",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
