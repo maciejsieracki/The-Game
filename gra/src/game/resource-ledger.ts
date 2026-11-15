@@ -319,3 +319,72 @@ export function ledgerTurnForOwner(map: Map<number, ResourceLedgerTurn>, ownerId
   if (!t) { t = createLedgerTurn(); map.set(ownerId, t); }
   return t;
 }
+
+/**
+ * R-WEB-UI-RESOURCE-SOURCE-LEDGER-UI-AND-REST-Q1 (partia 4, UI „Skąd zapasy”): pamięć ostatnich N tur.
+ * Zamiast kopiować rekordy, trzymamy REFERENCJE do map `resourceLedgerByOwner` z kolejnych ticków
+ * (każdy tick tworzy nową mapę). Późne zapisy tej samej tury (utrzymanie, obywatele, okno pending)
+ * są widoczne bez dodatkowej synchronizacji. Stan NIE jest zapisywany w zapisie gry (po wczytaniu
+ * dziennik pusty — patrz resetLedgerHistory). Zero wpływu na stan gry.
+ */
+const ledgerTickHistory: Array<Map<number, ResourceLedgerTurn>> = [];
+
+/** Dopisuje mapę rekordów bieżącego ticku i przycina do ostatnich `maxTurns` tur. */
+export function commitLedgerHistoryTick(records: Map<number, ResourceLedgerTurn>, maxTurns: number): void {
+  const keep = Math.max(0, Math.floor(maxTurns));
+  ledgerTickHistory.push(records);
+  while (ledgerTickHistory.length > keep) ledgerTickHistory.shift();
+}
+
+/** Czyści pamięć ostatnich tur (nowa gra / wczytanie). */
+export function resetLedgerHistory(): void {
+  ledgerTickHistory.length = 0;
+}
+
+/** Ile tur jest aktualnie w pamięci (diagnostyka i testy). */
+export function ledgerHistoryLength(): number {
+  return ledgerTickHistory.length;
+}
+
+/** Rekordy właściciela z ostatnich tur, od najstarszej do najnowszej (brak rekordu = tura pusta). */
+export function ledgerHistoryForOwner(ownerId: number): ResourceLedgerTurn[] {
+  return ledgerTickHistory.map(m => m.get(ownerId) ?? createLedgerTurn());
+}
+
+export interface LedgerSourceLine {
+  /** true = przyrost (suma > 0), false = ubytek (suma < 0). */
+  gain:   boolean;
+  /** Etykieta po polsku, np. „Warzelnia (Rzym)”. */
+  label:  string;
+  kind:   LedgerSourceKind;
+  /** Suma z okna tur ze znakiem (> 0 przyrost, < 0 ubytek). */
+  amount: number;
+}
+
+/**
+ * Agregacja źródeł jednego surowca z okna tur: jedna linia na (kierunek + etykieta), suma w oknie.
+ * Etykiety z różnymi kluczami źródła, ale tą samą nazwą (np. dwie Warzelnie tego samego miasta)
+ * są scalane. Przyrosty malejąco, potem ubytki malejąco po |suma|. Zera pomijane.
+ */
+export function ledgerSourceLinesForResource(
+  turns: ReadonlyArray<ResourceLedgerTurn>,
+  resourceKey: string,
+): LedgerSourceLine[] {
+  const acc = new Map<string, LedgerSourceLine>();
+  for (const turn of turns) {
+    for (const flow of Object.values(turn.byResource[resourceKey] ?? {})) {
+      if (!Number.isFinite(flow.amount) || flow.amount === 0) continue;
+      const gain = flow.amount > 0;
+      const id = `${gain ? '+' : '-'}|${flow.label}`;
+      const prev = acc.get(id);
+      if (prev) prev.amount += flow.amount;
+      else acc.set(id, { gain, label: flow.label, kind: flow.kind, amount: flow.amount });
+    }
+  }
+  const lines = [...acc.values()].filter(l => l.amount !== 0);
+  lines.sort((a, b) => {
+    if (a.gain !== b.gain) return a.gain ? -1 : 1;
+    return Math.abs(b.amount) - Math.abs(a.amount) || a.label.localeCompare(b.label, 'pl');
+  });
+  return lines;
+}

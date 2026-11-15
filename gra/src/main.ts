@@ -440,7 +440,7 @@ import {
   REBEL_FACTION_OWNER_ID,
 } from './game/society-breakdown';
 import { computeCitizenResourceDrain } from './game/citizen-resource-upkeep';
-import { citizenLedgerParts, recordTakenToLedger, upkeepLedgerParts, pendingLedgerSink, drainPendingLedgerInto, recordStockDeltaToPending, resetPendingLedger, recordLedgerFlow, ledgerTurnForOwner, peekPendingLedger, setLedgerRecordingEnabled, isLedgerRecordingEnabled, type ResourceLedgerTurn } from './game/resource-ledger';
+import { citizenLedgerParts, recordTakenToLedger, upkeepLedgerParts, pendingLedgerSink, drainPendingLedgerInto, recordStockDeltaToPending, resetPendingLedger, recordLedgerFlow, ledgerTurnForOwner, peekPendingLedger, setLedgerRecordingEnabled, isLedgerRecordingEnabled, type ResourceLedgerTurn, commitLedgerHistoryTick, readLedgerHistoryTurns, resetLedgerHistory } from './game/resource-ledger';
 import { BATTLE_MODE_SETTING_VERSION, isAutomaticOnlyBattleMode } from './game/battle-mode';
 import { normalizeHitMode, setActiveHitMode } from './game/hit-mode';
 import { resourceUsageBreakdownFor, resourceUsageHasAny } from './game/resource-usage-breakdown';
@@ -10181,6 +10181,7 @@ async function boot(): Promise<void> {
       resetEmpireMassRecruitmentMessage();
       resetEndTurnBlockers('prepareSessionForLoad');
       resetPendingLedger(); // R-WEB-UI-...-Q1 (FC r3 nr 6): okno poza tickiem nie przechodzi między grami/wczytaniami
+      resetLedgerHistory(); // R-WEB-UI-...-UI-AND-REST-Q1: dziennik N tur nie jest w zapisie gry → pusty po wczytaniu
       playtestWalkaActive = false;
       bitwaDuzaActive = false;
       playtestMiastoActive = false;
@@ -40495,6 +40496,9 @@ async function boot(): Promise<void> {
           // Tylko odczyt dla haka testowego ?civTest=1 (__ledgerTestDebug): referencja do rekordów BIEŻĄCEGO ticku
           // (późniejsze zapisy utrzymania/obywateli trafiają do tej samej Mapy) + licznik ticków. Zero wpływu na stan gry.
           ledgerAuditLastTick = econ.resourceLedgerByOwner; ledgerAuditTickSeq++;
+          // R-WEB-UI-RESOURCE-SOURCE-LEDGER-UI-AND-REST-Q1 (partia 4): pamięć N tur dla karty „Skąd zapasy”
+          // (tylko odczyt po stronie UI; referencja do mapy tego ticku, N z econ-params). Zero wpływu na stan.
+          commitLedgerHistoryTick(econ.resourceLedgerByOwner, readLedgerHistoryTurns(data.econParams, _menuDifficulty));
           pendingManualWorkTaxByOwner.clear();
           powerSnapshotsForTurn = buildPowerSnapshotsForTurn(econ);
           refreshObjectivePowerCache();
@@ -47130,6 +47134,7 @@ async function boot(): Promise<void> {
       playerEpochWarEnabled = params.playerEpochWarEnabled ?? true;
       resetEndTurnBlockers('doStartGame');
       resetPendingLedger(); // R-WEB-UI-...-Q1 (FC r3 nr 6): okno ksiegi poza tickiem nie przechodzi z poprzedniej gry do NOWEJ gry
+      resetLedgerHistory(); // R-WEB-UI-...-UI-AND-REST-Q1: dziennik N tur z poprzedniej gry nie przechodzi do NOWEJ gry
       resetEmpireRecruitPanelSession(); // R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: nowa gra = czysty panel zbiorczy
       recruitGeneralId = null; // R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1
       resetArmyRecruitDraftsSession();

@@ -15,6 +15,8 @@ import { stockResourceLabel } from '../game/building-stock-cost';
 import { CITIZEN_UPKEEP_RATE_PER_CITIZEN } from '../game/citizen-resource-upkeep';
 import { resourceUsageTotal } from '../game/resource-usage-breakdown';
 import { resourceGrossNetPerTurn } from '../game/resource-gross-net';
+import { ledgerHistoryForOwner, ledgerSourceLinesForResource } from '../game/resource-ledger';
+import { resourceSourceLedgerDetailsHtml } from './resourceSourceLedgerHtml';
 import { taxForWorkAmount } from '../game/work-tax';
 import {
   MIASTA_TABLE_COLUMNS,
@@ -581,6 +583,20 @@ ${RESOURCE_CHIP_CSS}
 .civ-emp-res-usage-row{display:flex;justify-content:space-between;gap:8px;font-size:11px;
   font-variant-numeric:tabular-nums;color:#b8c4d8;}
 .civ-emp-res-usage-row .v{color:#e07a7a;font-weight:600;}
+/* — R-WEB-UI-RESOURCE-SOURCE-LEDGER-UI-AND-REST-Q1 (partia 4): „Skąd zapasy” na karcie surowca — */
+.civ-emp-res-skad{margin-top:4px;}
+.civ-emp-res-skad>summary{list-style:none;cursor:pointer;font-size:10.5px;color:#8ec5ff;font-weight:600;user-select:none;}
+.civ-emp-res-skad>summary::-webkit-details-marker{display:none;}
+.civ-emp-res-skad>summary::before{content:'▸ ';}
+.civ-emp-res-skad[open]>summary::before{content:'▾ ';}
+.civ-emp-res-skad-body{margin-top:6px;padding:8px 9px;border-radius:6px;background:rgba(15,20,28,.55);
+  display:flex;flex-direction:column;gap:3px;}
+.civ-emp-res-skad-row{display:flex;justify-content:space-between;gap:8px;font-size:11px;
+  font-variant-numeric:tabular-nums;color:#b8c4d8;}
+.civ-emp-res-skad-row .v{font-weight:600;}
+.civ-emp-res-skad-row.gain .v{color:#8fd694;}
+.civ-emp-res-skad-row.loss .v{color:#e07a7a;}
+.civ-emp-res-skad-note{font-size:10px;color:#8f9bb0;margin-top:2px;}
 .civ-emp-res-usage-row.total{margin-top:2px;padding-top:4px;border-top:1px solid rgba(255,255,255,.1);
   font-weight:700;color:#cfd5de;}
 .civ-emp-res-usage-row.total .v{color:#e07a7a;}
@@ -3581,8 +3597,27 @@ export function resCardHtml(r: EmpireResourceRow): string {
     + (flagNote ? `<div class="civ-emp-res-flag-note ${state}">${esc(flagNote)}</div>` : '')
     + resCitizenBadgeHtml(r)
     + resUsageDetailsHtml(r)
+    + resSkadZapasyHtml(r.id)
     + `</div>`;
 }
+
+/**
+ * R-WEB-UI-RESOURCE-SOURCE-LEDGER-UI-AND-REST-Q1 (partia 4): „Skąd zapasy” na karcie surowca —
+ * lista źródeł przyrostu i ubytku z ostatnich N tur (dziennik `resource-ledger.ts`, gracz = właściciel 0).
+ * Jedna linia na źródło: „+12 Warzelnia (Rzym)”, „−20 Obywatele”. Sól i ceramika otwarte domyślnie
+ * (priorytet właściciela), pozostałe surowce zwinięte. Brak danych w dzienniku → '' (karta jak dziś).
+ * Pure poza odczytem dziennika: liczby z `ledgerSourceLinesForResource`, zero przeliczeń tutaj.
+ * / EN: "Where the stock came from" block on a resource card: one line per source over the last N turns.
+ * Sol and ceramika are open by default; empty ledger → ''.
+ */
+export function resSkadZapasyHtml(resourceKey: string, ownerId = 0): string {
+  const turns = ledgerHistoryForOwner(ownerId);
+  const lines = ledgerSourceLinesForResource(turns, resourceKey);
+  if (lines.length === 0) return '';
+  const open = resourceKey === 'sol' || resourceKey === 'ceramika';
+  return resourceSourceLedgerDetailsHtml(lines, turns.length, open);
+}
+
 
 /** Tooltip nagłówka magazynu państwa — pojemność, formuła, reguła nadmiaru (Maciej UI). */
 function magazynPanstwaTooltip(
