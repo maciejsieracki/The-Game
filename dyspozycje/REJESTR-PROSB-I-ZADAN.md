@@ -10227,3 +10227,6 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 - Dostarczono: narzędzie `battle-full-move-gaps-measure.cjs` (tylko gra/tools, bez zmian gra/src). Pomiar: 4 składy × 5 ziaren, 2514 aktywacji, pula 7542 PR, niewykorzystane 3578 (47,4%), niewyjaśnione 895 (11,9%). Obrona/Ostrzał/ucieczka: ruch po ciosie 0. Anomalia hashu e20cd0b5 nie odtworzona w 41 przebiegach.
 - NIE ZMIERZONO: rozkaz ręczny gracza i mur oblężniczy (częściowo #431); przegląd case-by-case 895 niewyjaśnionych PR.
 - DO ZAPYTANIA RANO (ABC): jaki odsetek niewyjaśnionego ruchu strzelców jest dopuszczalny (próg decyzji o dalszych naprawach); do czasu odpowiedzi bez zmian kodu.
+
+### Start 2026-11-15 ~23:30 UTC — R-WEB-AI-UPKEEP-ONOFF-MEASURE-100T-Q1 (#415, wf_db3c80c4-921, Haiku, cand c50b64e20)
+- Pomiar ON/OFF bramki utrzymania armii AI na 100 turach × 2 ziarna (tylko pomiar, flaga zostaje OFF). Wynik → ABC rano; flagi nie włączam bez właściciela.
