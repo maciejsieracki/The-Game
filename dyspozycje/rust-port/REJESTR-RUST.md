@@ -1236,3 +1236,17 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **T2 ZLOZE-WIRE-WAR-BREAK-A:** bramki na `7b52c3842` w toku (`integ-t2`, fmt 0, clippy 0, test w toku). Po wyniku FF `parity-v2` (`533d46dd3` → `7b52c3842`).
 - **Start (1 z 4):** `R-RUSTPORT-P6-R7K7C-RECON2-Q1` — rozpoznanie WERYFIKACYJNE #106 (read-only, dispatch `51a2604e2`, Workflow `wf_da2acf80-dcd`). Cel: sprawdzić `city_stock`, `barbarian_grace`, wiring D3 i brak wpisu właściciela, zanim cokolwiek trafi do wdrożenia (poprzednie rozpoznanie zawierało obalone twierdzenie o podłodze Pracy).
 - **Pytania ABC #115, #120** i konwencja `Co-Authored-By`: bez odpowiedzi właściciela.
+
+## Przebieg (15.11, 00:32): T2 zintegrowany; rozpoznanie weryfikacyjne #106 zakończone
+- **T2 ZLOZE-WIRE-WAR-BREAK-A zintegrowany:** FC PASS-WITH-NOTES `7b52c3842`. Bramki na `7b52c3842`: fmt 0, clippy 0, pełny `cargo test` 0 (3357 passed, 0 failed). FF `parity-v2`: `533d46dd3` → `7b52c3842`. Refs: `refs/keep/ZLOZE-WIRE-WAR-BREAK-A-Q1-integ`, `rust-port-wip/ZLOZE-WIRE-WAR-BREAK-A-Q1`. Zaległości etapu b (kara wiarygodności, karencja `WspolnaWalkaBarbarzyncy`, bramka rozejmu, `formed_turn` opcjonalny w pinie) zapisane w rejestrze.
+- **R7K7C-RECON2 (weryfikacja #106) zakończone:** FC PASS-WITH-NOTES `e440a71a8`, zmiany tylko w dokumentacji.
+  - `apply_dipl_deltas_to_state` nie ma wołającego w produkcji (tylko testy).
+  - D3 zapisuje stan wojny (`*war = work`), ale **gubi** `treasury_deltas`, `praca_deltas`, `city_resources` (stan połowiczny, nienazwany w raporcie).
+  - `city_stock`: pin zapisuje, Rust raportuje i nie zapisuje.
+  - `barbarian_grace`: Rust nie ma pola stanu ani konsumenta.
+  - **Ryzyko przy wdrożeniu:** rollback w `advance_turn` cofa queue, war, koniec, flagę, ale nie ekonomię. Po zapisie skarbców i pul błąd późniejszej fazy zostawiłby zastosowane delty przy cofniętym stanie wojny (podwójne naliczenie). Wymaga migawki ekonomii w obu ścieżkach błędu.
+  - **Punkt 4 (brak wpisu właściciela) wymaga decyzji właściciela** (ABC); nieosiągalny w produkcji dziś, osiągalność przez wczytanie zapisu NIE_ZMIERZONO.
+- **Obrona operatora (`b38e7552f`) i Evaluator** zgodne z powyższym. Commit operatora `41387eede` zawiera `Co-Authored-By` z nazwą modelu wbrew dispatchowi (do rozstrzygnięcia: konwencja atrybucji).
+- **Sprzątanie:** worktree rozpoznania RECON2 usunięte po zabezpieczeniu refs; worktree integracji T2 usunięty. Dysk: 12 GB.
+- **Parity:** `7b52c3842`. **Sloty:** 0 z 4.
+- **Otwarte:** WIRING-A (#106) wymaga (a) decyzji ABC o brakującym wpisie, (b) migawki ekonomii w rollbacku, (c) dispatchu z wartościami z pina (≥150 wektorów), nie ręcznymi.
