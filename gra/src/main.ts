@@ -440,6 +440,7 @@ import {
   REBEL_FACTION_OWNER_ID,
 } from './game/society-breakdown';
 import { computeCitizenResourceDrain } from './game/citizen-resource-upkeep';
+import { citizenLedgerParts, recordTakenToLedger, upkeepLedgerParts } from './game/resource-ledger';
 import { BATTLE_MODE_SETTING_VERSION, isAutomaticOnlyBattleMode } from './game/battle-mode';
 import { normalizeHitMode, setActiveHitMode } from './game/hit-mode';
 import { resourceUsageBreakdownFor, resourceUsageHasAny } from './game/resource-usage-breakdown';
@@ -40811,7 +40812,11 @@ async function boot(): Promise<void> {
               if (hResUpkeep && Object.keys(hResUpkeep).length > 0) {
                 const poolBefore = ownerResourceStockAll(cities, hOid);
                 const missingRes = missingStockFor(poolBefore, hResUpkeep);
-                deductBuildingStockCostAcrossCities(cities, hOid, hResUpkeep);
+                // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (partia 2): ten sam odjęcie + zapis do księgi tury.
+                const hTakenRes = deductBuildingStockCostAcrossCities(cities, hOid, hResUpkeep);
+                recordTakenToLedger(econ.resourceLedgerByOwner.get(hOid), hTakenRes, upkeepLedgerParts(
+                  hOid, econ.resourceUpkeepBuildingsByOwner.get(hOid), econ.resourceUpkeepUnitsByOwner.get(hOid),
+                ));
                 if (Object.keys(missingRes).length > 0) {
                   console.warn(
                     '[Ekonomia] Brak surowców na utrzymanie budynków: ' +
@@ -40859,7 +40864,10 @@ async function boot(): Promise<void> {
               }
               const aiResUpkeep = econ.resourceUpkeepByOwner.get(oid);
               if (aiResUpkeep && Object.keys(aiResUpkeep).length > 0) {
-                deductBuildingStockCostAcrossCities(cities, oid, aiResUpkeep);
+                const aiTakenRes = deductBuildingStockCostAcrossCities(cities, oid, aiResUpkeep);
+                recordTakenToLedger(econ.resourceLedgerByOwner.get(oid), aiTakenRes, upkeepLedgerParts(
+                  oid, econ.resourceUpkeepBuildingsByOwner.get(oid), econ.resourceUpkeepUnitsByOwner.get(oid),
+                ));
               }
               // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: parytet gracz/AI — publikuj rozbicie dla
               // KAŻDEGO ownera (nie tylko gracz=0), ten sam wzorzec co linia wyżej.
@@ -41147,7 +41155,10 @@ async function boot(): Promise<void> {
                   citizenUpkeepEmpireStock(ownerId),
                 );
                 if (Object.keys(v.deductions).length > 0) {
-                  deductBuildingStockCostAcrossCities(cities, ownerId, v.deductions);
+                  const citTakenRes = deductBuildingStockCostAcrossCities(cities, ownerId, v.deductions);
+                  recordTakenToLedger(
+                    econ.resourceLedgerByOwner.get(ownerId), citTakenRes, citizenLedgerParts(ownerId, v.deductions),
+                  );
                 }
                 citizenUpkeepDrainCache.set(ownerId, v);
                 // N1 runda 4: publikuj RÓWNOLEGLE do mapy kluczowanej OWNEREM (przetrwa

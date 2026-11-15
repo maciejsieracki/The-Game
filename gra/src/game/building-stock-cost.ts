@@ -1,5 +1,10 @@
 import { scaleStockCostRecord } from './r-stawki-strojenie';
 import { nazwaWyswietlana } from './text-names';
+import {
+  allocateTakenToLedgerParts,
+  recordLedgerFlow,
+  type LedgerCostSink,
+} from './resource-ledger';
 
 /**
  * building-stock-cost.ts
@@ -256,11 +261,14 @@ export function deductBuildingStockCostAcrossCities<T extends StockCitySource>(
   cities: ReadonlyArray<T>,
   ownerId: number,
   cost: Record<string, number>,
-): void {
+  ledger?: LedgerCostSink,
+): Record<string, number> {
   const ownerCities = cities.filter(c => c.ownerId === ownerId);
+  const taken: Record<string, number> = {};
   for (const [key, needRaw] of Object.entries(cost)) {
     let need = needRaw;
     if (!(need > 0)) continue;
+    let tookTotal = 0;
 
     const holders = ownerCities
       .filter(c => (c.surowce?.[key] ?? 0) > 0)
@@ -277,8 +285,24 @@ export function deductBuildingStockCostAcrossCities<T extends StockCitySource>(
       if (!c.surowce) c.surowce = {};
       c.surowce[key] = have - take;
       need -= take;
+      tookTotal += take;
+    }
+    if (tookTotal > 0) taken[key] = tookTotal;
+  }
+  // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (partia 2): zapis do dziennika tylko poza
+  // stanem gry -- ta sama mutacja City.surowce co wyżej, bez wpływu na wynik.
+  if (ledger) {
+    for (const entry of allocateTakenToLedgerParts(taken, ledger.parts)) {
+      recordLedgerFlow(
+        ledger.turn,
+        entry.resourceKey,
+        entry.sourceKey,
+        { kind: entry.kind, label: entry.label },
+        -entry.amount,
+      );
     }
   }
+  return taken;
 }
 
 /**

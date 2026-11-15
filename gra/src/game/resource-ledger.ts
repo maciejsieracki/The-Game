@@ -16,11 +16,59 @@
  */
 
 export type LedgerSourceKind =
-  | 'teren'      // plony z mapy / ulepszeń terenu do magazynu państwa
-  | 'stolarnia'  // bonus Stolarni (drewno z mapy)
-  | 'konwersja'  // wyjście receptury (Garncarnia, Cegielnia, odlewnie)
-  | 'wejscie'    // wejście receptury zużyte przez konwerter
-  | 'spichlerz'; // drain Spichlerza (ceramika / sól)
+  | 'teren'                 // plony z mapy / ulepszeń terenu do magazynu państwa
+  | 'stolarnia'             // bonus Stolarni (drewno z mapy)
+  | 'konwersja'             // wyjście receptury (Garncarnia, Cegielnia, odlewnie)
+  | 'wejscie'               // wejście receptury zużyte przez konwerter
+  | 'spichlerz'             // drain Spichlerza (ceramika / sól)
+  | 'utrzymanie_budynkow'   // utrzymanie budynków (surowce, po tiku)
+  | 'utrzymanie_jednostek'  // utrzymanie jednostek (surowce, po tiku)
+  | 'obywatele';            // zużycie przez obywateli (citizen-resource-upkeep)
+
+/**
+ * Miejsce zapisu w dzienniku dla wywołania, które odejmuje surowce z puli państwa.
+ * `parts` rozbija pobrany koszt na źródła (kolejność = priorytet przy alokacji).
+ */
+export interface LedgerCostPart {
+  kind:      LedgerSourceKind;
+  sourceKey: string;
+  label:     string;
+  /** Koszt tego źródła (surowiec -> ilość), do alokacji faktycznie pobranej ilości. */
+  cost:      Readonly<Record<string, number>>;
+}
+
+export interface LedgerCostSink {
+  turn:  ResourceLedgerTurn;
+  parts: ReadonlyArray<LedgerCostPart>;
+}
+
+/**
+ * Rozdziela FAKTYCZNIE pobraną ilość (`taken`, surowiec -> ilość) na części `parts` w ich
+ * kolejności: każda część dostaje min(pozostało, jej koszt); reszta (ponad koszty części)
+ * trafia do OSTATNIEJ części. Suma wyniku po częściach = `taken` dla każdego surowca.
+ * Zwraca listę wpisów { resourceKey, sourceKey, kind, label, amount } (amount > 0).
+ */
+export function allocateTakenToLedgerParts(
+  taken: Readonly<Record<string, number>>,
+  parts: ReadonlyArray<LedgerCostPart>,
+): Array<{ resourceKey: string; sourceKey: string; kind: LedgerSourceKind; label: string; amount: number }> {
+  const out: Array<{ resourceKey: string; sourceKey: string; kind: LedgerSourceKind; label: string; amount: number }> = [];
+  if (parts.length === 0) return out;
+  for (const [resourceKey, total] of Object.entries(taken)) {
+    if (!(total > 0)) continue;
+    let remaining = total;
+    parts.forEach((part, idx) => {
+      const isLast = idx === parts.length - 1;
+      const want = Math.max(0, part.cost[resourceKey] ?? 0);
+      const amount = isLast ? remaining : Math.min(remaining, want);
+      remaining -= amount;
+      if (amount > 0) {
+        out.push({ resourceKey, sourceKey: part.sourceKey, kind: part.kind, label: part.label, amount });
+      }
+    });
+  }
+  return out;
+}
 
 export interface LedgerFlow {
   kind:   LedgerSourceKind;
@@ -108,4 +156,56 @@ export function readLedgerHistoryTurns(
   const row = raw?.ekonomia_miasta?.['ksiega_zasobow_tury'];
   const v = row ? row[difficulty] : undefined;
   return typeof v === 'number' && Number.isFinite(v) && v >= 0 ? Math.floor(v) : LEDGER_DEFAULT_HISTORY_TURNS;
+}
+
+/** Części księgi dla utrzymania właściciela: najpierw budynki, potem jednostki. */
+export function upkeepLedgerParts(
+  ownerId: number,
+  buildingsCost: Readonly<Record<string, number>> | undefined,
+  unitsCost: Readonly<Record<string, number>> | undefined,
+): LedgerCostPart[] {
+  return [
+    {
+      kind: 'utrzymanie_budynkow',
+      sourceKey: `utrzymanie-budynkow|${ownerId}`,
+      label: 'Utrzymanie budynków',
+      cost: buildingsCost ?? {},
+    },
+    {
+      kind: 'utrzymanie_jednostek',
+      sourceKey: `utrzymanie-jednostek|${ownerId}`,
+      label: 'Utrzymanie jednostek',
+      cost: unitsCost ?? {},
+    },
+  ];
+}
+
+/** Części księgi dla zużycia przez obywateli (jedna część). */
+export function citizenLedgerParts(
+  ownerId: number,
+  cost: Readonly<Record<string, number>>,
+): LedgerCostPart[] {
+  return [{ kind: 'obywatele', sourceKey: `obywatele|${ownerId}`, label: 'Obywatele', cost }];
+}
+
+/**
+ * Zapisuje do dziennika ilości FAKTYCZNIE pobrane przez `deductBuildingStockCostAcrossCities`
+ * (zwrócone `taken`), rozdzielone na części. Brak rekordu tury = no-op (bez księgi).
+ * Nie zmienia stanu gry.
+ */
+export function recordTakenToLedger(
+  turn: ResourceLedgerTurn | undefined,
+  taken: Readonly<Record<string, number>>,
+  parts: ReadonlyArray<LedgerCostPart>,
+): void {
+  if (!turn) return;
+  for (const entry of allocateTakenToLedgerParts(taken, parts)) {
+    recordLedgerFlow(
+      turn,
+      entry.resourceKey,
+      entry.sourceKey,
+      { kind: entry.kind, label: entry.label },
+      -entry.amount,
+    );
+  }
 }
