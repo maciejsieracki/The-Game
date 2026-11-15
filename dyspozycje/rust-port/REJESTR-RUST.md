@@ -1831,3 +1831,14 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sprzątanie:** worktree rundy 1 usunięte; refs `refs/keep/cleanup-wf_1a51a6f0-bfd-{1..4}`. Jeden worktree prunable.
 - **Integracja #226 K5LOOP-OUTCOME (`c3e3617b2`, na parity `83f5fd654`):** `FMT_EXIT=0`, `CLIPPY_EXIT=0`; pełny test w toku (625 passed do tej chwili, 0 failed). FF po `TEST_EXIT=0`.
 - **Aktywne workflow:** P4-1B Q1 Opus (`wf_13666f01-79e`), P4-1B Q2 Opus (`wf_3095763c-84a`), #221 r2 Haiku (`wf_c9da2dff-9c8`). Dysk: 9,1 GB wolne (77%).
+
+## Przebieg (15.11, 18:4x–18:5x UTC — heartbeat „twardy bit”, sloty Rust)
+
+- **KROK 1 (sloty):** 4 aktywne Workflow bez FC: P4-1B Q2 trim rzek Opus (#211, `wf_3095763c-84a`), #221 runda 2 Haiku (`wf_c9da2dff-9c8`), rozpoznanie P4-1C mgła Opus (#212, `wf_0af3a66c-f0c`), rozpoznanie P4-1D jednostki Opus (#213, `wf_3b86257d-082`). Sloty pełne.
+- **KROK 2 (FC PASS bez integracji):**
+  - **P4-1B Q1 roadMask (FC PASS-WITH-NOTES `88d0dff1a`):** kod `8b16792ae`, obrona `a389c361c`. Łańcuch zweryfikowany (baza `1b8b67173` w łańcuchu, merge-tree bez konfliktów). **Integracja po FF #226.** Refs: `refs/keep/P4-1B-Q1-ROADMASK-fc`.
+  - **Integracja #226 K5LOOP-OUTCOME (`c3e3617b2` na `83f5fd654`):** pełny test w toku, 1766 passed, 0 failed do tej chwili. FF po `TEST_EXIT=0`.
+- **KROK 3 (sprzątanie):** worktree Q1 usunięte, HEAD w `refs/keep/cleanup-wf_13666f01-79e-*`. Worktree rundy 5 #226 (`wf_f3b76b65-261-3`) pozostaje brudny (Git nie pozwala usunąć bez przeglądu) — zaraportowane.
+- **KROK 4:** brak decyzji gameplay do zostawienia w czacie.
+- **Dysk:** 12 GB wolne (72%).
+- **Następny krok:** FF #226, integracja Q1 (`88d0dff1a`) na nowym parity z pełnym `cargo test`; potem Q2 po FC; Q3 (#211) po obu.
