@@ -1489,3 +1489,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Integracja:** fast-forward `rust-port/parity-v2` z `525a2ef7b` na `fffc5e7c6`. Zakres: testy `labels_anchors.rs`, komentarz w `anchor.rs`, dokumenty i dowody runu. `git diff --check` czysty.
 - **Zabezpieczenie:** refs/keep `P4-34-{6cd6f33aa,ba5dca739,2e00643e1,fffc5e7c6}`, gałąź `rust-port-wip/R-RUSTPORT-P4-34-ANCHORS-DOM-Q1-fc-r3`.
 - **Uwaga dla dyspozycji:** dispatch wskazywał `03-operator-r2.md`, którego nie było; rundy r2 Operatora nie było.
+
+## Przebieg (15.11, 11:18 UTC — heartbeat, RUST renderer)
+- **KROK 1 (sloty):** 2 aktywne Workflow na Opus 5.5: P4-1A typy DTO (`wf_5cdb4080-e0a`), P4-29 domknięcie (`wf_e92860f9-2cc`). Sloty 2/4.
+- **Nie uruchomiono kolejnych:** dysk 7,5 GB, poniżej progu 8 GB dla nowych tematów z kodem Rust (CLAUDE.md, zasada 5 i 7). Ponowny `git gc` nie zwolnił miejsca. Kandydaci bez kodu na parity lub z brakującymi commitami (P4-19, P4-23, P4-32) nie są gotowe.
+- **KROK 2:** zakończone i zintegrowane w tej godzinie: P4-34 (FC r3, parity `fffc5e7c6`), P4-22 (FC r3, raporty `c37ba1da8`).
+- **KROK 3:** worktrees zakończonych tematów usunięte; worktrees działających zostawione.
+- **Parity:** `fffc5e7c6`. Rust: `bfb0b0be6` przed tym wpisem.
