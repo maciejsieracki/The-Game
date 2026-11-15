@@ -308,7 +308,9 @@ Model zmienił się z prostego „masz tech = masz surowiec" na **dwuwarunkowy**
 
 ### 53.1a. Karta surowca: brutto i netto na turę (R-WEB-UI-RESOURCE-CARDS-GROSS-AND-NET-Q1, 2026-11-14)
 
-Każda karta surowca w panelu Surowce pokazuje dwie liczby na turę: **brutto** (cała produkcja surowca: teren, konwertery i przychód z umów handlowych) oraz **netto** (brutto po zużyciu: obywatele, budynki i wojsko). Suma kart jest równa wartościom z nagłówka „Brutto … → netto …”. Na karcie nie ma osobnej plakietki **+X** (produkcja ± dyplomacja jest już wliczona w brutto); szczegóły zużycia są w „Zobacz szczegóły zużycia”. Surowiec bez produkcji i bez zużycia pokazuje „—”; surowiec bez produkcji, ale zużywany, ma brutto 0 i netto ujemne (na czerwono).
+Każda karta surowca w panelu Surowce pokazuje dwie liczby na turę w formie **„+brutto → +netto”** — same liczby, bez słów „Brutto/netto” i bez „/ turę” (jednostka i opis są w tooltipie po najechaniu na wiersz): **brutto** (cała produkcja surowca: teren, konwertery i przychód z umów handlowych) oraz **netto** (brutto po zużyciu: obywatele, budynki i wojsko). Nagłówek panelu Surowce pokazuje tę samą konwencję dla całej puli surowców. Suma kart jest równa wartościom z nagłówka. Na karcie nie ma osobnej plakietki **+X** (produkcja ± dyplomacja jest już wliczona w brutto). „Zobacz szczegóły zużycia” i „Skąd zapasy” są zawsze zwinięte. Surowiec bez produkcji i bez zużycia pokazuje „—”; surowiec bez produkcji, ale zużywany, ma brutto 0 i netto ujemne (na czerwono).
+
+Ta sama konwencja obowiązuje w nagłówkach zakładek **Spichlerz centralny** (Żywność: „+brutto → +netto”, brutto = nadwyżka miast → centrala, netto = po deficytach miast i armii) oraz — w wariancie jednej liczby, bez strzałki, bo brutto = netto — w zakładkach **Nauka** (Nauka nie ma dziś kosztów) i **Handel** (trasy nie mają kosztów, dochód jest już wliczony we wpływy Skarbca). Jednostka (PN, 🍞, złota) i opis każdej liczby są w tooltipie wiersza.
 
 ### 53.2. Magazyn surowców = pula CAŁEGO PAŃSTWA, nie per miasto (aktualizacja 2026-07-24, SUROW-CIV-01)
 
