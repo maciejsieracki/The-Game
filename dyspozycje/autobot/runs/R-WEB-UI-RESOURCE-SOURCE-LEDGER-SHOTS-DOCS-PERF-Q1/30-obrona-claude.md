@@ -1,55 +1,64 @@
-# R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1 — obrona Operatora (runda 2/5)
+# R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1 — obrona Operatora (runda 2/5, odpowiedź na zarzuty Evaluatora r2, 20-evaluator-claude.md, commit c9f475e1f)
 
-STATUS: BLOCK
+STATUS: BLOCK (częściowy: zarzuty 2, 3, 4 i 5 obsłużone; zarzut 1 PRZYJĘTY, GOAL 1 NIEWYKONANY)
 DOMAIN: GAME
 TEMAT: R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1
-GOAL: (1) zrzuty Chromium karty „Skąd zapasy”; (2) dokumentacja + wikiBundle; (3) pomiar wydajności 100 tur (mediana ≥5); (4) diagnoza endTurn timeout tura 57; (5) stan `<details open>`.
-ZMIANY/COMMIT: baza 6168bc2c6 (rodzic 807ecebdd). Commit obrony: docs/encyklopedia/pojecia/skad-zapasy.md (tabela 19 rodzajów źródeł), docs/PORADNIK-GRACZA-SPIS-TRESCI.md (wpis §53a), gra/src/data/wikiBundle.json (regeneracja), runs/<ID>/30-obrona-claude.md. Kod gry nietknięty. SHA commitu: patrz pole sha w odpowiedzi orkiestratorowi.
+GOAL: (1) zrzuty soli i ceramiki z gry, 1280/1920 px — NIEWYKONANE; (2) dokumentacja + wikiBundle — zrobione w r1 (bez zmian w r2); (3) pomiar wydajności — dane z r2 bez zmian, ocena ograniczona; (4) diagnoza endTurn t57 — NIEODTWORZONA, bez rozstrzygnięcia; (5) stan `<details open>` — naprawa z r2 + test regresji dodany w tej rundzie.
+BAZA: kandydat 372b98c33 (worktree wykonany na tym SHA; diff względem origin/main liczony od 807ecebdd).
+ZMIANY/COMMIT: `1ae2778f2` — `gra/tools/resource-ledger-skad-dom-test.cjs` (test D6/D7 dla stanu details); plus ten raport `30-obrona-claude.md` (commit po teście). Kod gry nietknięty (`empireDetailPanel.ts` przywrócony do wersji 372b98c33 po mutacji — `git status` czysto poza testem).
 
-## Odpowiedzi na zarzuty Evaluatora (edb7b1281)
+## Odpowiedzi na zarzuty Evaluatora
 
-1. PRZYJMUJĘ — zrzutów nie wykonano. Wymagają przebiegu gry w headless Chromium (sól, ceramika, 1280 i 1920 px) i obejrzenia ich. Nie zrobiono tego w tej rundzie. Brak katalogu runs/<ID>/evidence/. Status: NIE WYKONANO.
-2. PRZYJMUJĘ — pomiaru 100 tur (mediana ≥5, ON/OFF) nie wykonano. Pojedynczy przebieg nie mieści się w limicie 590 s dla Bash, a przebiegów w tle nie używano (zakaz). Status: NIE WYKONANO.
-3. PRZYJMUJĘ — diagnozy endTurn timeout w turze 57 nie wykonano (brak przebiegu 100 tur). Status: NIE WYKONANO.
-4. PRZYJMUJĘ — pomiaru ani poprawki `<details open>` nie wykonano. Status: NIE WYKONANO.
-5. PRZYJMUJĘ — runda zamknięta jako BLOCK; GOAL 1, 3, 4, 5 niewykonane.
-6. PRZYJMUJĘ — w r1 bramki zostały oznaczone NIE_ZMIERZONO. W r2 zmierzono je ponownie na tym kandydacie (surowe wyjścia poniżej): `npx tsc --noEmit -p tsconfig.json` rc=0; `resource-ledger-test.cjs` 1030 passed, 0 failed; `resource-ledger-skad-ui-test.cjs` 18 passed, 0 failed; `resource-ledger-skad-dom-test.cjs` 9 passed, 0 failed. Pozostałe bramki (logic, tech-tree, research, unit-replace, combat) NIE_ZMIERZONO w tej rundzie.
-7. PRZYJMUJĘ i NAPRAWIONO — skad-zapasy.md ma teraz tabelę wszystkich 19 członów `LedgerSourceKind` (gra/src/game/resource-ledger.ts, linie 18–37): teren, stolarnia, warzelnia, wycinka, konwersja, wejście receptury, spichlerz, utrzymanie budynków, utrzymanie jednostek, obywatele, budowa, rekrutacja, umowa wymiany, mennica, limit magazynu, łup bitwy, zwrot, przejęcie miasta, dar. Każdy wiersz ma opis z komentarza w kodzie. Dowód: `git diff` na docs/encyklopedia/pojecia/skad-zapasy.md (+28 linii).
-8. PRZYJMUJĘ i NAPRAWIONO — dodano wpis **53a** do docs/PORADNIK-GRACZA-SPIS-TRESCI.md po §53.4 (przed „Część IX"), z odsyłaczem do hasła.
-9. ODRZUCAM (dowód kodowy, nie test w przeglądarce) — gra/src/ui/markdownLite.ts: funkcja `esc()` (linia 8) zamienia `<` na `&lt;` i `>` na `&gt;`; `inlineFmt()` (linia 11) wywołuje `esc(s)` jako pierwszy krok, a akapity i komórki tabel idą przez `inlineFmt` (linie 36, 40). Zatem `<cywilizacja>` w haśle renderuje się jako tekst, a nie jako znacznik. Uwaga: nie sprawdzono tego renderowaniem w przeglądarce.
-10. PRZYJMUJĘ (fakty do potwierdzenia przez orkiestratora) — `git cat-file -e 1947a3a33:gra/src/game/resource-ledger.ts` zwraca brak pliku; commit 2ebd3c189 (część A) jest przodkiem 807ecebdd, a NIE jest przodkiem 1947a3a33. Baza tej rundy to więc 6168bc2c6 na 807ecebdd, zgodnie z poleceniem „startuj od 6168bc2c6”. Wymaga potwierdzenia orkiestratora.
+1. **PRZYJMUJĘ — GOAL 1 nie jest wykonany, nie ma zrzutów soli i ceramiki z gry.** Sprawdzone w tej rundzie: w repo nie ma hooka pozwalającego postawić Warzelnię ani Garncarnię w trakcie gry. `__buildRequestTestDebug.applyBuildRequest` dotyczy ulepszeń terenu, `__aiBuildingsTestDebug` nie ma funkcji stawiającej budynki gracza, a `main.ts` (gdzie leżą haki) nie jest w allowliście tego tematu. Dodanie haka wymaga decyzji orkiestratora (zmiana allowlisty) albo osobnego tematu. Makieta DOM nie jest zrzutem z gry i nie jest tu przedstawiana jako zrzut. Status: NIE WYKONANO (powód: brak haka w allowliście).
 
-## Zmiany w tej rundzie (dowody)
+2. **PRZYJMUJĘ i NAPRAWIONO — brak testu regresji dla stanu details.** Commit `1ae2778f2` w `gra/tools/resource-ledger-skad-dom-test.cjs`:
+   - **D6 (Chromium, zachowanie):** funkcje `captureSkadDetailsOpen` / `restoreSkadDetailsOpen` są eksportowane z `empireDetailPanel.ts` i wstrzykiwane do strony przez `toString()` z bundla. Strona: gracz zwija blok „sól” i rozwija blok „ceramika”, następnie `innerHTML` z tym samym markupem, `restore`. Wynik odczytany z DOM: `sol=0;ceramika=1;keys=ceramika,sol`.
+   - **D7 (kolejność w kodzie):** regex na `empireDetailPanel.ts`: `captureSkadDetailsOpen(bodyEl);` → `bodyEl.innerHTML = body;` → `restoreSkadDetailsOpen(bodyEl, skadOpenPrev);`.
+   - **Mutacja (dowód):** w kopii `empireDetailPanel.ts` usunięto linię `restoreSkadDetailsOpen(bodyEl, skadOpenPrev);`. Surowy wynik: `FAIL D7 render(): capture PRZED innerHTML, restore PO innerHTML (kolejnosc w kodzie)` oraz `resource-ledger-skad-dom-test: 12 passed, 1 failed`. Plik przywrócony (`cp` z kopii), `git status` pokazuje tylko test.
+   - **Granica:** D6 sprawdza helpery, nie samo wywołanie w `render()`. Wywołanie w `render()` pilnuje D7 (statyczne). Test live w przeglądarce (`__measureOpenPanel`) nadal nie jest w repo; nie twierdzę, że jest.
+   - Wynik pełnego testu po zmianie: `resource-ledger-skad-dom-test: 13 passed, 0 failed` (D1–D7).
 
-- `git diff --check` (przed commitem): rc=0, czysto.
-- `git diff --stat` względem 6168bc2c6: docs/encyklopedia/pojecia/skad-zapasy.md, docs/PORADNIK-GRACZA-SPIS-TRESCI.md, gra/src/data/wikiBundle.json, runs/<ID>/30-obrona-claude.md. Wszystkie w allowliście.
-- Regeneracja: `node gra/tools/bundle-wiki-for-game.cjs` → `wikiBundle.json: 22 rozdz. + 183 haseł (~1299 KB)`. Powtórzenia regeneracji nie porównywano bajt w bajt w tej rundzie.
-- `npm ci` w gra/ (worktree): added 71 packages.
+3. **PRZYJMUJĘ — wniosek „nie księga” z r2 był niepodparty; korygowany.** Poprawny stan: timeout endTurn przy turze 57 NIE został odtworzony w 100 turach (seed 4242, ON i OFF, 0 zawieszeń; tura 57: ON 8398 ms, OFF 9271 ms), przy konfiguracji r2 (preset podatku 60/30/10, równoległe przebiegi). Konfiguracja, w której wystąpił timeout w r3, nie jest znana. Dlatego:
+   - **Przyczyna: NIEROZSTRZYGNIĘTA.** Nie stwierdzono związku z księgą w odtworzonej konfiguracji i nie wykluczono go dla konfiguracji r3.
+   - Odblokowanie #415/#417 na podstawie „braku odtworzenia” jest ryzykowne. Rekomendacja: traktować #415 jako nadal zablokowany do czasu odtworzenia timeoutu w znanej konfiguracji, albo jako świadomie zaakceptowane ryzyko (decyzja orkiestratora).
+   - Korekta jest tylko w tym raporcie. Raport `10-operator-claude.md` (r2) nie jest nadpisywany, bo to historia rundy.
 
-## TESTY (surowe wyjście, ta runda)
+4. **PRZYJMUJĘ — pomiar nie rozstrzyga progu 10%.** Dane (surowe, `evidence/perf100/`): średnie z 99 tur ON 7735/7780/7116/8103/7350 ms, OFF 7806/7737/7190/7933/7414 ms. Rozstrzał ON 7116–8103 (~14%) jest większy niż próg 10%, więc ten design nie wykrywa regresji poniżej ~14%. Mediana ON 7735 vs OFF 7737 ms (−0,03%) jest zgodna z brakiem regresji, ale nie jest dowodem jej braku na poziomie 10%. Tura startowa jest szumna (2296–3764 ms). Mikropomiar `ownerResourceStockAll` — NIE_ZMIERZONO (brak w tej rundzie). Wniosek: wynik „brak regresji >10%” jest **niewiarygodny ze względu na szum**, nie „potwierdzony”.
 
-- tsc: rc=0
-- resource-ledger-test: `resource-ledger-test: 1030 passed, 0 failed`
-- resource-ledger-skad-ui-test: `18 passed, 0 failed`
-- resource-ledger-skad-dom-test: `9 passed, 0 failed`
+5. **PRZYJMUJĘ — bramki referencyjne uruchomione w tej rundzie (surowe wyjścia, worktree 1ae2778f2 bez zmian kodu gry):**
+   - `node ./node_modules/typescript/bin/tsc --noEmit` → rc=0 (bez wyjścia)
+   - `node tools/logic-test.cjs` → `LOGIC OK (213/213)`
+   - `node tools/tech-tree-test.cjs` → `tech-tree-test: 20 pass, 0 fail`
+   - `node tools/research-test.cjs` → `PASSED: 33 / FAILED: 0 / TOTAL: 33`
+   - `node tools/unit-replace-test.cjs` → `WSZYSTKIE TESTY ZIELONE (21/21)`
+   - `node tools/combat-test.cjs` → `COMBAT TEST: 6/6 pass`
+   - `node tools/resource-ledger-test.cjs` → `resource-ledger-test: 1030 passed, 0 failed`
+   - `node tools/resource-ledger-skad-ui-test.cjs` → `resource-ledger-skad-ui-test: 18 passed, 0 failed`
+   - `node tools/resource-ledger-skad-dom-test.cjs` → `13 passed, 0 failed`
+   - `git diff --check` → rc=0, bez wyjścia
+   - Uwaga: przy testach z `| tail` kod wyjścia pochodzi z `tail`; zielone wyniki są z treści wyjścia (linie podane wyżej), nie z rc.
+
+## Pozostałe uwagi Evaluatora (bez zarzutu, zgodnie z jego ustaleniem)
+
+- **Baza:** dispatch podawał `fc4e8dcb5`, który nie jest przodkiem kandydata; kandydat 372b98c33 jest bazą tej rundy zgodnie z poleceniem „startuj od 372b98c33”. Zgodne z zadaniem.
+- **00-dispatch.md** nie istnieje w origin/main; czytano z gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (DODATEK 2). Zgodnie z r2.
+- **Harness:** blokada bramki podatku w turze 1 (dług harnessu, bez zmian; w kopii pomiarowej obejście `setTaxSplit(60,30,10)`).
 
 ## BLOKADY
 
-- GOAL 1 (zrzuty), GOAL 3 (perf 100 tur, ≥5 powtórzeń), GOAL 4 (diagnoza endTurn t57), GOAL 5 (details) — NIE WYKONANE w tej rundzie. Powód: czas i limit Bash bez tła; brak przebiegu gry w Chromium.
-- Baza: rozbieżność z 1947a3a33 (pkt 10).
-
-## UWAGI-DLA-ORKIESTRATORA
-
-- Diagnoza endTurn (GOAL 4) blokuje temat #415 (AI-UPKEEP-Q2) i #417 (harness ekonomii AI) — zgodnie z dopiskiem w jego rejestrze.
-- Pomiar 100 tur wymaga rozbicia na wiele wywołań (`longrun-100-turns-leak-q1-measure.cjs --prepare` / `--run`, wznawialne), bo jeden przebieg przekracza 590 s.
-- Brak utworzonych sesji, zadań ani harmonogramów w tej rundzie.
+- GOAL 1: zrzuty soli i ceramiki z gry — brak haka stawiania budynków (main.ts poza allowlistą). Wymaga decyzji orkiestratora.
+- GOAL 4: przyczyna timeoutu nierozstrzygnięta (nieodtworzony w znanej konfiguracji).
+- GOAL 3: pomiar z szumem ponad próg 10%; mikropomiar NIE_ZMIERZONO.
+- Test live stanu details w przeglądarce nie jest w repo (wymaga haka `__measureOpenPanel` spoza repo); pokryte testem statycznym i helperami.
 
 ## RUNDY
 
-2/5. Ostatni werdykt Evaluatora: FAIL-ZARZUTY (edb7b1281). Ta runda: BLOCK (4 z 5 celów niewykonane).
+2/5 (ten sam ID; obrona r2). Ostatni werdykt Evaluatora: PASS-WITH-NOTES (c9f475e1f), z zarzutami 1–5 tu obsłużonymi.
 
 ## NASTĘPNY KROK
 
-Runda 3 (ten sam ID): (a) zrzuty Chromium soli i ceramiki, 1280 i 1920 px, w `runs/<ID>/evidence/`; (b) pomiar 100 tur w kawałkach, ON vs OFF, mediana ≥5; (c) diagnoza endTurn t57: porównanie z bazą sprzed księgi; (d) stan `<details open>`. Potwierdzenie bazy przez orkiestratora (pkt 10).
+- Orkiestrator: (a) decyzja, czy dodać hak stawiania Warzelni/Garncarni (zmiana allowlisty `main.ts`) — wtedy osobny temat na zrzuty soli i ceramiki; (b) decyzja w sprawie #415/#417 wobec nierozstrzygniętej diagnozy endTurn; (c) osobny temat na mikropomiar `ownerResourceStockAll` z większą liczbą powtórzeń, jeśli wymagany jest próg 10%.
+
+SHA końcowy testu: 1ae2778f2 (raport: commit po nim, pole sha w odpowiedzi).
 
 DEPLOY/PUSH: NIE WYKONANO
