@@ -1956,3 +1956,30 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 
 - **Start:** `R-RUSTPORT-P4-1G-Q3-ADAPTER-CITIES` (#216, Opus), dispatch `d7d9ba1bb` na `claude/rust-sivvrn`, baza `601ff304c`. Workflow `wf_7221cd0a-cbb`. Zakres: `cities[]`, `owners[]`, `wonders[]` → `City`, `CityRenderOptions`, `PlacedWonder`, `WonderRenderOptions`, `OwnerEmblemContext`, `CityBadgeDto` → `CityMapBadgeInput`. Równolegle z Q2 (teren); pliki rozłączne.
 - **Sloty:** 4 z 4 — P4-1H Q2 (`wf_c5970398-de4`, Evaluator), P4-1H Q3 RJ-REPIN (`wf_28c84406-989`, operator), P4-1G Q2 TERRAIN (`wf_c9f7943e-b13`, operator), P4-1G Q3 CITIES (`wf_7221cd0a-cbb`, operator). Model Opus we wszystkich rolach (reguła właściciela dla serii P4-1; heartbeat podawał Haiku/Sonnet — rozbieżność zgłoszona).
+
+## Kolejka nocna — 20 zadań w liście (#235–#254), 15.11
+
+Źródło: rozpoznania P4-1G, P4-1F, P4-1I, P4-1H (§4), P4-1C. Gotowe do startu od razu: #235, #238, #244, #254. Reszta czeka na zależności lub na decyzję właściciela.
+
+| # | Temat | Blokada |
+|---|---|---|
+| #235 | P4-1G Q4 ADAPTER-BATTLE | — (Q1 zintegrowany) |
+| #236 | P4-1G Q5 ADAPTER-OVERLAYS | #216 (Q2/Q3), #235 |
+| #237 | P4-1G Q6 ADAPTER-UNITS | #238 (+ R1 z rozpoznania §6) |
+| #238 | P4-1F1 OVERLAY-TYPES (kształt DTO wg pinu) | — |
+| #239 | P4-1F2 TERRITORY-RANGES-VIEW | #238 |
+| #240 | P4-1F3 SIEGE-WONDER-VIEW | #238 |
+| #241 | P4-1F4 TRADE-WORKERS-OKOLICA-VIEW | #238 |
+| #242 | P4-1F5 REACH-PATH-VIEW | #238, #217 (passThrough z RJ-REPIN) |
+| #243 | P4-1F6 BUILD-SELECTION-VIEW | #238 |
+| #244 | P4-1I1 BATTLE-OUTCOME | — |
+| #245 | P4-1I1B BATTLE-INSTANT (E4) | #244 |
+| #246 | P4-1I2 BATTLE-FRAME | #244 |
+| #247 | P4-1I3 BATTLE-ACTIONS (ścieżki już portowane) | #246 |
+| #248 | P4-1I4 BATTLE-CONSUMER (renderer) | #247, #235 |
+| #249 | P4-1I5 BATTLE-ACTIONS-SIEGE | #247, K5LOOP #107/#109/#112/#113 |
+| #250 | P4-1H Q4 MOVE-MODEL | #217 (RJ-REPIN Q3) |
+| #251 | P4-1H Q5 PREVIEW | #250 |
+| #252 | P4-1H Q6 MOVE | #250 |
+| #253 | P4-1C FOG-VIEW | **DECYZJA WŁAŚCICIELA** (mgła dla fotela ≠ 0, P4-1C §1.5) |
+| #254 | P4-1 L1/L2 revealAllLand, riverRevealKeys w DTO mapy | — (warunek wpięcia mgły) |
