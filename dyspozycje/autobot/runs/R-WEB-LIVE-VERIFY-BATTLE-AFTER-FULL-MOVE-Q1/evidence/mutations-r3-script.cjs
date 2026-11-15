@@ -1,8 +1,10 @@
 // Mutacje danych (kopie JSONL) -- kazda mutacja MUSI zaczerwienic odpowiednie kryterium (exit 1 + wlasciwy komunikat).
-const fs = require('fs'), cp = require('child_process'), path = require('path');
-const ROOT = '/home/user/The-Game/.claude/worktrees/wf_951a88b2-52e-1';
-const EV = ROOT + '/dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-BATTLE-AFTER-FULL-MOVE-Q1/evidence/';
-const OUT = '/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p/mut/';
+// Sciezki wzgledne do tego pliku (repo/dyspozycje/autobot/runs/<ID>/evidence/): bez zaszytych sciezek worktree.
+// Wyjscie kopii: zmienna MUT_OUT (domyslnie katalog tymczasowy systemu).
+const fs = require('fs'), cp = require('child_process'), path = require('path'), os = require('os');
+const ROOT = path.resolve(__dirname, '..', '..', '..', '..', '..');
+const EV = path.join(__dirname, '/');
+const OUT = (process.env.MUT_OUT || path.join(os.tmpdir(), 'mut-r3')) + path.sep;
 fs.mkdirSync(OUT, { recursive: true });
 const load = f => fs.readFileSync(EV + f, 'utf8').trim().split('\n').map(JSON.parse);
 const save = (name, rows) => { fs.writeFileSync(OUT + name, rows.map(r => JSON.stringify(r)).join('\n') + '\n'); return OUT + name; };
