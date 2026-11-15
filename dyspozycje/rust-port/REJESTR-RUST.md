@@ -1337,3 +1337,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - Sloty: 0/4. Powody: #115 czeka na decyzję właściciela; #106 czeka na decyzję pkt 4; #120 czeka na decyzję A/B; #104/#172 wymagają rozpoznania (ZLOZA-WIRING); #96–#98, #107, #109, #112, #113 zależą od niezintegrowanego ProdBody/OUTCOME (nie startuję z nieprzygotowanym dispatchem); #154 KOLEJKA-RUST.md jest sprzed 23:18 i do odświeżenia.
 - Nie startowano żadnego tematu, bo żaden kandydat nie spełnia reguły „baza = czubek FC, zależności zintegrowane, bez decyzji gameplay” bez dodatkowego rozpoznania.
 - Do zrobienia w następnym heartbeat: odświeżyć KOLEJKA-RUST.md; po odpowiedzi właściciela na #115/#106/#120 uruchomić właściwą rundę.
+
+## Przebieg (15.11, 04:48 UTC — heartbeat, druga połowa godziny)
+- KROK 1: aktywnych Workflow 0 (22 stare journale to porzucone uruchomienia `started`/`failed`, nieruszane od wielu godzin; jedyny świeży #115 zakończony FC FAIL 04:05). Parity `f2bb11970`. Dysk 12 GB.
+- Sloty 0/4. Wszyscy kandydaci z kolejki czekają na decyzję właściciela (#115, #106, #120) albo na rozpoznanie zależności (K5LOOP-OUTCOME/FACING, ZLOZA-WIRING, COMBAT-HARNESS). Bez odpowiedzi właściciela nie startuję tematu, który wymagałby decyzji.
+- KROK 3 (sprzątanie): nic do usunięcia; brak zakończonych worktree wymagających sprzątania.
+- Odświeżono `KOLEJKA-RUST.md` (#154) — dopisana sekcja AKTUALIZACJA 15.11 04:48, stara migawka 23:18 zachowana bez zmian.
+- Pytanie ABC #115 nadal bez odpowiedzi właściciela.

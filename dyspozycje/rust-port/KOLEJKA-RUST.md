@@ -30,3 +30,36 @@ Zasada: każdy start od dispatchu z jedyną obowiązującą BAZĄ; temat zależn
 
 ## REGUŁA MODELI (właściciel, 2026-11-12 ~07:55 UTC; wiążąca, limit schodzi zbyt szybko)
 Operator = HAIKU 5.5 ZAWSZE. SONNET na Operatorze WYŁĄCZNIE po dwóch nieudanych rundach Haiku TEGO SAMEGO tematu (FAIL/BLOCK bez kodu), z pisemnym uzasadnieniem w dispatchu — nie z góry „bo trudny temat”. Skrypt workflow: r-rustport-p6-w6s-wf_89e542b7-6b5.js (Haiku); skrypt Sonnet (r-rustport-p6-w6s-sonnet-op.js) tylko po spełnieniu warunku. Obrona = Haiku; Evaluator i Final Control = Sonnet. Zadania dokumentacyjne/integracyjne = Haiku. Nie startować zbędnych tematów „dla zapełnienia”, jeśli nie ma realnej pracy bez zależności od decyzji gameplay.
+
+## AKTUALIZACJA 15.11 04:48 UTC (heartbeat) — zastępuje migawkę z 23:18 i „Następne (08:0x)”
+Parity: `f2bb11970`. rust-sivvrn: `95b4bf276` (rejestr). Dysk: 12 GB wolne. Aktywnych Workflow: 0 (22 stare journale to porzucone uruchomienia `started`/`failed`, nieruszane od wielu godzin; jedyny świeży to #115 zakończony FC FAIL 04:05).
+
+### W toku
+- brak.
+
+### Zablokowane decyzją właściciela (pytania ABC w czacie) — NIE startować
+- #115 ZDOBYCIE-MIASTA-WIRING: B wstrzymać do W8 (rekomendowane) / A wrapper teraz / C pełne wpięcie teraz. Brak odpowiedzi.
+- #106 R7K7C-WIRING: decyzja pkt 4 „brak wpisu = 0” (A error / B 0 jak w pinie (rekomendowane) / C 0 z ostrzeżeniem).
+- #120 CRED-HAK-WYPOWIEDZENIE: A nowy wariant EngineCommand + CONTRACT_VERSION (rekomendowane) / B wywołanie wewnętrzne.
+- Gameplay (zostają w czacie): SZTURM ODPARTY, W8 r7 Q1–Q4, units.json vs pin, DYSTANS, REPIN-DRYFT 2–6.
+
+### Zablokowane zależnością od niezintegrowanego kodu / rozpoznania — NIE startować bez rozpoznania
+- #109, #147 K5LOOP-OUTCOME (`_resolveBlowOutcome`, `_targetInRange`) — wymaga ProdBody, rozpoznanie #179.
+- #107, #121–#125 K5LOOP-FACING — rozpoznanie #178.
+- #112, #113, #148 doktryna/strzelec i produkcyjna pętla oblężnicza — po OUTCOME i ProdBody.
+- #96, #146 wieże (K5-LOOP-WIEZE / pick_tower_target) — po ustaleniu, czy #116 idzie razem z #96.
+- #97, #98, #118, #149, #150 AUTO/WYLOM — po K5LOOP-OUTCOME.
+- #100, #135, #137, #167–#169 COMBAT-HARNESS — wymaga decyzji DYSTANS (#10 zamknięte, ale wejścia fazy zwarcia wymagają rozpoznania #167).
+- #104, #172 ZLOZA-WIRING — rozpoznanie (wywołania w main.ts 22774, 23694, 24234, 24294).
+- #139, #151, #170 serde float_roundtrip — decyzja techniczna i Cargo.toml.
+- #165 INTEG-MELEE-PORT, #174 INTEG-JS-MAX-VERIFY — weryfikacja przed FF (wymaga osobnej rundy integracyjnej).
+- #9 UNIT-REPLACE L-3 i #11 Siege #217 — wskazane jako „po W8”; W8 zintegrowany (#58), ale zakres pozostały niezweryfikowany.
+- #177 PIN-MOVE-PLAN — decyzja o przesunięciu pinu (poza P6).
+
+### Do zrobienia (bez decyzji właściciela, wymaga rozpoznania przed dispatchem)
+- #176 R7K7C-STATUS: potwierdzić, czy R7K7C-WIRING-Q1/Q2 są w parity (dla #106).
+- #173 PROCES: stałe sprawdzanie dysku ≥ 8 GB przed startem i sprzątanie worktree po temacie.
+- #185 NOCNA-PETLA: heartbeat — ten wpis nim jest.
+
+### Zasada
+Start tylko z dispatchem wypchniętym na claude/rust-sivvrn, bazą = czubek FC albo origin/rust-port/parity-v2, zależnościami już zintegrowanymi i bez decyzji gameplay. Dzisiaj żaden kandydat tego nie spełnia bez dodatkowego rozpoznania, więc sloty pozostają 0/4 do czasu odpowiedzi właściciela albo rozpoznania.
