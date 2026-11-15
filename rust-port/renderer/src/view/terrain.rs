@@ -36,6 +36,21 @@
 //!   (`preservesHillRelief`, `ULEPSZENIA_ZYWNOSCIOWE`,
 //!   `isImprovementBlockedOnForest`), i.e. game rules, which the adapter does
 //!   not hold. Both are NIE_ZMIERZONO and are not derived from `nakladka`.
+//!   Consequence once the scene is integrated: a solid the pin hides after
+//!   such an event (e.g. a hill/mountain solid under an improvement,
+//!   `main.ts:16877-16946`, or a cut forest) is still shown here. Fix
+//!   proposed for a separate topic (contract change, gap next to L5): a
+//!   producer-computed `decor_hidden` flag in `HexDynDto`.
+//!
+//! Precondition: `map` passed [`civ_view_model::validate_map`] (r-major
+//! order, no duplicate or missing coords, contract §1.4). [`overlay_map`]
+//! and [`okolica_map`] key a map by coord, so duplicates would merge
+//! silently; the adapter relies on the validator and does not re-check.
+//!
+//! Consumers: none in `src/` yet (only `tests/view_adapter_terrain.rs`).
+//! The intended consumer is the scene integrator of the renderer (R1/R2 of
+//! `P4-1G-ADAPTER-ROZPOZNANIE.md` §4: unit tokens, terrain decor placement),
+//! which does not exist as a topic yet; it is not the W8 war pipeline.
 
 use std::collections::HashSet;
 

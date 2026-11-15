@@ -102,7 +102,9 @@ fn fixture_map(seed: f64) -> vm::MapViewDto {
             hexes: vec![vm::HexCoord::new(2, 0), vm::HexCoord::new(1, 1)],
             kind: Some(vm::RiverKind::Medium),
         }],
-        river_render_paths: Vec::new(),
+        // One render path per river (`validate_map`, P4-1B-Q3); the terrain
+        // adapter does not read it.
+        river_render_paths: vec![vec![vm::HexCoord::new(2, 0), vm::HexCoord::new(1, 1)]],
     }
 }
 
@@ -223,6 +225,66 @@ fn terrain_data_copies_size_hexes_terraces_and_rivers() {
     assert_eq!(input.hexes, &d.hexes[..]);
     assert_eq!(input.rivers, &d.rivers[..]);
     assert_eq!(input.detail, MapDetailQuality::Medium);
+}
+
+/// Rivers: `kind: None` stays `None`, an empty hex list stays empty, DTO
+/// order kept (`map.riverPaths` + `riverPathKinds`, the kind is optional).
+#[test]
+fn rivers_kind_none_and_empty_hexes() {
+    let mut m = fixture_map(0.0);
+    m.rivers = vec![
+        vm::RiverPathDto {
+            hexes: vec![vm::HexCoord::new(0, 1), vm::HexCoord::new(1, 1)],
+            kind: None,
+        },
+        vm::RiverPathDto {
+            hexes: Vec::new(),
+            kind: Some(vm::RiverKind::Medium),
+        },
+        vm::RiverPathDto {
+            hexes: Vec::new(),
+            kind: None,
+        },
+    ];
+    let d = view::terrain_data(&m, &fixture_state()).unwrap();
+    assert_eq!(
+        d.rivers,
+        vec![
+            RiverPath {
+                hexes: vec![PickHex::new(0, 1), PickHex::new(1, 1)],
+                kind: None,
+            },
+            RiverPath {
+                hexes: Vec::new(),
+                kind: Some(RiverKind::Medium),
+            },
+            RiverPath {
+                hexes: Vec::new(),
+                kind: None,
+            },
+        ]
+    );
+    m.rivers.clear();
+    assert!(view::terrain_data(&m, &fixture_state())
+        .unwrap()
+        .rivers
+        .is_empty());
+}
+
+/// The adapter's precondition: the fixture passes `validate_map`, and a map
+/// with a duplicate coord does not (contract §1.4, `HexOrder`), so the
+/// coord-keyed `OverlayMap.hexes` never sees duplicates in a valid snapshot.
+#[test]
+fn duplicate_coords_are_rejected_by_validate_map() {
+    assert_eq!(vm::validate_map(&fixture_map(0.0)), Ok(()));
+    let mut m = fixture_map(0.0);
+    m.hexes[1].coord = vm::HexCoord::new(0, 0);
+    assert!(matches!(
+        vm::validate_map(&m),
+        Err(vm::ViewError::HexOrder { .. })
+    ));
+    // Without the validator the overlay map would merge the two entries.
+    assert_eq!(view::overlay_map(&m).hexes.len(), 11);
 }
 
 /// Terraces are copied 1:1, true and false both present (the mutation
