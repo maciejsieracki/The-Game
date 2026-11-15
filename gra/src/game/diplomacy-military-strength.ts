@@ -23,6 +23,8 @@ export interface MilitaryStrengthParams {
   trybutBonusProc: number;
   /** Czas trwania bonusu trybutu w turach (licznik po stronie integracji). */
   trybutBonusTur: number;
+  /** Próg zdarzeń Respektu „Przewaga militarna” / „Słabszy militarnie” w procentach (osobny od progu wojny). */
+  progRespektProc: number;
 }
 
 type MilitaryParamsFile = { [K in keyof MilitaryStrengthParams]: { wartosc: number; opis: string } };
@@ -36,6 +38,7 @@ export function loadMilitaryStrengthParams(
     wagaBitew: raw.wagaBitew.wartosc,
     trybutBonusProc: raw.trybutBonusProc.wartosc,
     trybutBonusTur: raw.trybutBonusTur.wartosc,
+    progRespektProc: raw.progRespektProc.wartosc,
   };
 }
 
@@ -296,4 +299,52 @@ export function peaceStanceOf(
     progRozniceProc,
     params,
   );
+}
+
+/** Stan przewagi pary dla zdarzeń Respektu: która strona (A = gracz, B = partner) ma próg przewagi, albo brak. */
+export type RespektPrzewagaStan = 'A' | 'B' | 'brak';
+
+export interface RespektPrzewagaCrossing {
+  /** Stan po tej ocenie (zapisywany w meta pary). */
+  stan: RespektPrzewagaStan;
+  /**
+   * Zdarzenie odpalane TYLKO na przejściu progu (z 'brak' albo z drugiej strony na stronę wskazaną):
+   * 'A' → gracz silniejszy (przewaga_militarna, +15); 'B' → gracz słabszy (slabszy_militarnie, −10);
+   * null → brak przejścia (stan bez zmian, albo spadek do 'brak').
+   */
+  zdarzenieDla: RespektPrzewagaStan | null;
+}
+
+/**
+ * Ocena jednego ticku dla pary gracz (A) – partner (B). Próg z `progRespektProc` (50% = stosunek 1,5).
+ * Ponowne naliczenie dopiero po spadku poniżej progu (stan 'brak') i ponownym przekroczeniu.
+ * Brak poprzedniego stanu traktowany jak 'brak'.
+ *
+ * / EN: One-shot Respekt edge for a player–partner pair. Fires only on crossing into an advantage.
+ */
+export function respektMilitaryCrossing(
+  silaGracza: MilitarySide,
+  silaPartnera: MilitarySide,
+  poprzedni: RespektPrzewagaStan | undefined,
+  params: MilitaryStrengthParams = DEFAULT_MILITARY_STRENGTH_PARAMS,
+): RespektPrzewagaCrossing {
+  const cmp = compareMilitaryStrength(silaGracza, silaPartnera, {
+    ...params,
+    progPrzewagiProc: params.progRespektProc,
+  });
+  const stan: RespektPrzewagaStan = cmp.przewaga;
+  const prev: RespektPrzewagaStan = poprzedni ?? 'brak';
+  const zdarzenieDla = stan !== 'brak' && stan !== prev ? stan : null;
+  return { stan, zdarzenieDla };
+}
+
+/**
+ * Efektywny Respekt pary = bazowy (computeRespekt z Mocy) + skumulowana korekta zdarzeń militarnych
+ * (DiploPairMeta.respektMilOffset), obcięty do [0, 100]. Używany w głównym ticku AI, żeby korekta
+ * przeżyła przeliczenie Respektu co turę.
+ *
+ * / EN: effective pair Respekt = power-based base + cumulative military-event offset, clamped to [0, 100].
+ */
+export function respektZKorektaMilitarna(bazowy: number, offsetMil: number | undefined): number {
+  return Math.max(0, Math.min(100, Math.round(bazowy + (offsetMil ?? 0))));
 }

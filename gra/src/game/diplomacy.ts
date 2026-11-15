@@ -128,7 +128,7 @@ export const DIPLOMACY_PARAMS = {
   roznicaKulturowa_zaufanie:       -5,
 
   // ---- one-shot Respekt deltas (jednorazowo) ----
-  /** "Znaczaca przewaga militarna gracza" (+15 Respekt, jednorazowo; 2x or 5x threshold) */
+  /** "Znaczaca przewaga militarna gracza" (+15 Respekt, jednorazowo; próg 50% siły wojskowej, progRespektProc) */
   przewagaMilitarna_respekt:        15,
   /** "Gracz slabszy militarnie od partnera" (-10 Respekt, jednorazowo) */
   slabszyMilitarnie_respekt:       -10,
@@ -875,8 +875,8 @@ export type DiplomaticEvent =
   | 'pomoc_sojusznikowi'        // helped ally in war (+10 Zaufanie)
   // respect events
   | 'wygrana_bitwa'             // won a battle (+5 Respekt)
-  | 'przewaga_militarna'        // crossed 2x or 5x military threshold (+15 Respekt)
-  | 'slabszy_militarnie'        // player weaker than partner (-10 Respekt)
+  | 'przewaga_militarna'        // gracz przekroczył próg 50% przewagi siły wojskowej (+15 Respekt, jednorazowo)
+  | 'slabszy_militarnie'        // gracz słabszy o próg 50% siły wojskowej od partnera (-10 Respekt, jednorazowo)
   | 'trybut_zaakceptowany'      // tribute demand accepted (+10 Respekt)
   // --- additional spec-faithful events (Dyplomacja-szablon.md section 1) ---
   // These deltas come from the section-1 action tables (NOT the section-3.3 /

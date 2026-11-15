@@ -1217,7 +1217,7 @@ import {
 } from './game/improvement-tech';
 import { PendingImprovementsTurn, type PendingImprovementEntry } from './game/pending-improvements';
 import {
-  aiDiplomacyStance, relationTierDisplay, loadDiplomacyParams, getEffectiveDiplomacyParams,
+  aiDiplomacyStance, relationTierDisplay, loadDiplomacyParams, getEffectiveDiplomacyParams, DIPLOMACY_PARAMS,
   applyDiplomaticEvent, computePotegaNacji, computeRespekt, tickDiplomacy,
   computeTickZaufanieDelta, sharedBorderPenaltyForEpochs,
   ARCHETYPE_AGGRESSION, ARCHETYPE_TRADE, DEFAULT_POTEGA_WAGI,
@@ -1640,6 +1640,7 @@ import {
 import {
   addWarBattlePoints, resetWarBattlePoints, grantTributeBonus, loadMilitaryStrengthParams,
   computeMilitaryStrength, readWarBattlePoints, isTributeBonusActive, militaryBrakeOutcome, peaceStanceOf,
+  respektMilitaryCrossing, respektZKorektaMilitarna,
 } from './game/diplomacy-military-strength';
 import { resolveWarPeaceProfile, brakeRelationThreshold, recordWarCityLoss, warStateFromRecord, evaluatePeaceAiGate, PEACE_STRENGTH_GAP_PROC, type WarPeaceProfile } from './game/diplomacy-war-peace-profile';
 import { buildWarCityTargets } from './game/ai-war-target-select';
@@ -2978,10 +2979,23 @@ async function boot(): Promise<void> {
      * (dostępność akcji, uczciwość koszyka PN), nie tylko wyświetlaną liczbę.
      */
     function objectiveRespektPctTowardEffective(theirOwnerId: number): number {
-      return computeRespekt(
-        objectivePowerForOwnerEffective(0),
-        objectivePowerForOwnerEffective(theirOwnerId),
+      return respektBarWithMilitaryOffset(
+        theirOwnerId,
+        computeRespekt(
+          objectivePowerForOwnerEffective(0),
+          objectivePowerForOwnerEffective(theirOwnerId),
+        ),
       );
+    }
+    /**
+     * R-WEB-DIPLO-RESPECT-MILITARY-EVENTS-WIRING-Q1 (r4): pasek/liczba Respektu gracza w UI = baza z Mocy
+     * + korekta zdarzeń militarnych (+15 „Przewaga militarna”, −10 „Słabszy militarnie”), obcięte do [0, 100].
+     * Semantyka paska („wyżej = jesteś silniejszy”): przewaga podnosi, „słabszy” obniża. Jedno miejsce dla:
+     * listy dyplomacji, paska audiencji i relacjaTotal (audienceRelTotalEffective).
+     * / EN: player-facing Respekt bar = power-based base + military-event offset, clamped to [0, 100].
+     */
+    function respektBarWithMilitaryOffset(theirOwnerId: number, base: number): number {
+      return respektZKorektaMilitarna(base, getDiploPairMeta(ME(), theirOwnerId).respektMilOffset);
     }
     function unitCountOnHex(q: number, r: number): number {
       let n = 0;
@@ -12766,6 +12780,59 @@ async function boot(): Promise<void> {
       showHintMessage(DIPLOMACY_MSG_PREFIX + ' ' + ownerDiploLabel(ownerId) + ' — ' + diploPendingTitle('zaproponuj_pokoj'), 4500);
       refreshD1bHud();
       return id;
+    }
+
+    /**
+     * R-WEB-DIPLO-RESPECT-MILITARY-EVENTS-WIRING-Q1: zdarzenia Respektu „Przewaga militarna” (+15, gracz
+     * silniejszy o ≥50% siły wojskowej) i „Słabszy militarnie” (−10, gracz słabszy) dla pary gracz–AI.
+     * Siła = diploMilitarySideOf (Siła militarna, nie Power). Odpala RAZ na przejście progu; stan w
+     * DiploPairMeta.respektPrzewagaStan. Wołane raz na turę w runDiplomacyTurnTick.
+     * / EN: one-shot Respekt events for player–AI pairs on crossing the military-strength threshold.
+     */
+    function applyMilitaryRespektEdgeTick(): void {
+      const gracz = ME();
+      const params = loadMilitaryStrengthParams();
+      for (const o of allPowerOwnerIds()) {
+        if (isMe(o) || isBarbarian(o) || isCityStateOwner(o) || eliminatedOwners.has(o)) continue;
+        const sg = diploMilitarySideOf(gracz, o);
+        const sp = diploMilitarySideOf(o, gracz);
+        const meta = getDiploPairMeta(gracz, o);
+        const r = respektMilitaryCrossing(
+          { id: String(gracz), sila: sg.sila, armiaPkt: sg.armiaPkt },
+          { id: String(o), sila: sp.sila, armiaPkt: sp.armiaPkt },
+          meta.respektPrzewagaStan,
+          params,
+        );
+        // Brak pola stanu (nowa para przed pierwszą oceną albo stary zapis) = inicjalizacja bez zdarzenia.
+        const zdarzenie = meta.respektPrzewagaStan === undefined ? null : r.zdarzenieDla;
+        if (zdarzenie === null) {
+          if (r.stan !== meta.respektPrzewagaStan) {
+            // Powrót w pasmo neutralne ('brak') zdejmuje korektę; inicjalizacja (stary zapis) zostawia pole bez zmian.
+            const zdejmij = r.stan === 'brak' && meta.respektPrzewagaStan !== undefined;
+            setDiploPairMeta(gracz, o, {
+              ...meta,
+              respektPrzewagaStan: r.stan,
+              ...(zdejmij ? { respektMilOffset: 0 } : {}),
+            });
+          }
+          continue;
+        }
+        const ev: DiplomaticEvent = zdarzenie === 'A' ? 'przewaga_militarna' : 'slabszy_militarnie';
+        const cur = getDiploRelation(gracz, o);
+        const next = applyDiploEventTracked(gracz, o, cur, ev);
+        // Korekta = NOMINAŁ zdarzenia (+15 / −10 z DIPLOMACY_PARAMS, tym samym źródłem co applyDiplomaticEvent),
+        // NIE clampowana zmiana rel.respekt: przy skrajnych wartościach (np. 90 + 15 → 100) pasek ma przesunąć się
+        // dokładnie o nominał, a obcięcie 0–100 działa dopiero przy wyświetlaniu/liczeniu (respektZKorektaMilitarna).
+        // Korekta ZASTĘPUJE poprzednią (nie kumuluje się): +15 / −10 aktualnego stanu progu (DO POTWIERDZENIA).
+        setDiploPairMeta(gracz, o, {
+          ...meta,
+          respektPrzewagaStan: r.stan,
+          respektMilOffset: zdarzenie === 'A'
+            ? DIPLOMACY_PARAMS.przewagaMilitarna_respekt
+            : DIPLOMACY_PARAMS.slabszyMilitarnie_respekt,
+        });
+        setDiploRelation(gracz, o, next);
+      }
     }
 
     function tickTruceExpiries(): void {
@@ -25383,6 +25450,7 @@ async function boot(): Promise<void> {
       updateWiarygodnoscStreamsThisTurn();
       for (const oid of allWiarygodnoscOwnerIds()) tickWiarygodnoscBezWojnyMilestone(oid);
       tickTruceExpiries();
+      applyMilitaryRespektEdgeTick();
       const treasury = buildDiploTreasury();
       const payDeals = activeDealsToPaymentDeals(activeDeals, turn);
       const { broken, messages } = tickDiplomacyPayments(payDeals, treasury, turn);
@@ -26466,7 +26534,7 @@ async function boot(): Promise<void> {
           const playerPower = objectivePowerForOwnerEffective(ME());
           const otherPower = objectivePowerForOwnerEffective(ownerId);
           const powerLine = formatPowerRelationLine(playerPower, otherPower);
-          const respektNorm = powerLine.respekt;
+          const respektNorm = respektBarWithMilitaryOffset(ownerId, powerLine.respekt);
           // Rekruci w audiencji: bieżąca pula + maks. (suma miast) obu stron — ta sama
           // definicja co panel werbu (empirePoborTotals.rekruci, mnożnik civManpowerMults).
           const recruitsPlayer = audienceRecruitsForOwner(ME());
@@ -28388,6 +28456,64 @@ async function boot(): Promise<void> {
     // w trakcie sceny playtestu (playtest nie przechodzi przez kreator; applyMenuParams ustawia
     // 'losowe' przy starcie). Produkcja: window.__civSetHitMode === undefined.
     if (isCivTestEnabled(window.location.search)) (window as any).__civSetHitMode = setActiveHitMode;
+    // R-WEB-DIPLO-RESPECT-MILITARY-EVENTS-WIRING-Q1 (runda 2, punkt 1): hak live-testu (tylko ?civTest=1).
+    // Odczyt siły militarnej (ta sama funkcja co tick: diploMilitarySideOf), stanu przewagi, offsetu,
+    // Respektu i rejestru zdarzeń pary; zapis tylko stanu meta (round-trip JSON jak w zapisie gry)
+    // oraz usunięcie pól stanu (stary zapis). Wszystkie zmiany siły idą REALNYMI jednostkami (__civTest.addUnit).
+    if (isCivTestEnabled(window.location.search)) (window as any).__respektMilTest = {
+      owners: (): number[] => allPowerOwnerIds().filter(o => !isMe(o) && !isBarbarian(o) && !isCityStateOwner(o) && !eliminatedOwners.has(o)),
+      progRespektProc: (): number => loadMilitaryStrengthParams().progRespektProc,
+      /** Baza paska Respektu w audiencji (bez korekty): ta sama formuła co powerLine.respekt w showDiplomacyAudience. */
+      bazaPaskaAudiencji: (o: number): number => formatPowerRelationLine(objectivePowerForOwnerEffective(ME()), objectivePowerForOwnerEffective(o)).respekt,
+      sila: (a: number, o: number) => {
+        // Hak testowy: po dodaniu jednostek (civTest.addUnit) cache Mocy trzeba przeliczyć, inaczej odczyt jest sprzed zmiany.
+        powerDirty = true;
+        refreshObjectivePowerCache();
+        const s = diploMilitarySideOf(a, o, true);
+        return { sila: s.sila, armiaPkt: s.armiaPkt };
+      },
+      stan: (a: number, o: number) => {
+        const m = getDiploPairMeta(a, o);
+        const rel = getDiploRelation(a, o);
+        return {
+          respektPrzewagaStan: m.respektPrzewagaStan ?? null,
+          respektMilOffset: m.respektMilOffset ?? 0,
+          respekt: rel.respekt,
+          status: rel.status,
+        };
+      },
+      log: (a: number, o: number) => (diplomacyFactorLog.get(diploPairKey(a, o)) ?? []).map(x => ({ ...x })),
+      /** Round-trip meta pary przez JSON (ta sama serializacja co save: pairMeta). */
+      metaRoundTrip: (a: number, o: number) => {
+        const j = JSON.parse(JSON.stringify(getDiploPairMeta(a, o)));
+        setDiploPairMeta(a, o, j);
+        return { respektPrzewagaStan: j.respektPrzewagaStan ?? null, respektMilOffset: j.respektMilOffset ?? null };
+      },
+      /** Stary zapis: kasuje pola stanu przewagi (brak pola = inicjalizacja bez zdarzenia). */
+      stripStan: (a: number, o: number) => {
+        const { respektPrzewagaStan: _s, respektMilOffset: _o, ...rest } = getDiploPairMeta(a, o) as DiploPairMeta & Record<string, unknown>;
+        setDiploPairMeta(a, o, rest as DiploPairMeta);
+      },
+      /** Scenariusz testu: zapas spichlerza państwa (bramka NNS przed zakończeniem tury; jednostki testowe jedzą racje). */
+      setZapasy: (o: number, v: number) => {
+        const st = empireFoodStates.get(o);
+        if (st) st.zapasyPanstwa = v;
+        return st?.zapasyPanstwa ?? null;
+      },
+      /** Scenariusz testu: kontakt + pokój z partnerem (jak `__aiTradeWiringTestDebug.prepare`); bez tego startowa wojna daje bitwy blokujące turę. */
+      setPokoj: (o: number) => {
+        getDiplomaticContacts().add(o);
+        diplomaticContactEstablishedSet().add(o);
+        diplomaticallyDiscoveredOwnersSet().add(o);
+        const rel = getDiploRelation(o, ME());
+        if (rel.status === 'wojna') setDiploRelation(o, ME(), { ...rel, status: 'pokoj' });
+        return getDiploRelation(o, ME()).status;
+      },
+      /** Ustawia stan przewagi bez zdarzenia (tylko do scenariusza testu: czysty start stanu 'brak'). */
+      setStan: (a: number, o: number, s: 'A' | 'B' | 'brak') => {
+        setDiploPairMeta(a, o, { ...getDiploPairMeta(a, o), respektPrzewagaStan: s });
+      },
+    };
     if (isCivTestEnabled(window.location.search)) (window as any).__siegeBlockTestDebug = {
       tryPurchase: (cityId: string): { ok: boolean; queued: number; item: string | null } => {
         const c = cities.find(x => x.id === cityId);
@@ -43513,7 +43639,11 @@ async function boot(): Promise<void> {
                 void aiDiplomacyStance(aiStub, humanStub, rel, dipCtx);
 
                 const potPlr = objectivePowerByOwner.get(ME())?.power ?? 0;
-                const respektAI = computeRespekt(potAI, potPlr);
+                // Korekta zdarzeń militarnych (+15/−10) jest dodawana po przeliczeniu z Mocy, inaczej tick ją nadpisuje.
+                const respektAI = respektZKorektaMilitarna(
+                  computeRespekt(potAI, potPlr),
+                  getDiploPairMeta(ME(), ownerId).respektMilOffset,
+                );
                 const relWithRespekt = { ...rel, respekt: respektAI };
                 setDiploRelation(ME(), ownerId, relWithRespekt);
 
