@@ -1,3 +1,9 @@
+## ROBOCZA 64a33004 -- 2026-11-14 -- FALA 741: Oferty handlowe AI do gracza maksymalnie 3x potrzeby AI (testowa)
+
+- Ilosc odbioru AI w ofercie handlowej do gracza wynosi min(nadwyzka gracza, 3 x potrzeba AI) z parametrem w ai-params.json (mnoznik 3 i staly sufit iteracji pętli 64); uczciwosc wyceny, cooldown 15 i limit 1 oferty na AI bez zmian; naprawiony dlug testowy 379
+- Weryfikacja: tsc 0; logic 213/213; qty-cap 18/0; need-from-surplus 12/0; oneshot-overpay 10 OK; proposal-branch 10/0; proposal-to-player 25 OK; 5 bramek zielone; mutacje czerwone; real wycena 60/60 bez pominiec
+- Limity: Okno estymaty oddania (+-3 kroki) do zmierzenia na wycenie blokowej epok po wdrozeniu 416; e2e live Chromium wiring NIE ZMIERZONO przez FC (operator 46/0); mgla-sciezka-inwariant 41/1 i json-descriptions-sync 17/2 dlug bazowy; brak aktualizacji Civpedii
+
 ## ROBOCZA 744e4039 -- 2026-11-14 -- FALA 740: Skad zapasy zrodla zasobow w panelu surowca (testowa)
 
 - Karta surowca w panelu imperium pokazuje liste zrodel przyrostu i zuzycia z ostatnich 10 tur (Warzelnia, umowa wymiany, obywatele, lup z bitwy, zwroty, zdobycie miasta, dary i inne); dziennik zrodel zapisuje sie w zapisie gry (tylko wlasciciele-ludzie)

@@ -66,7 +66,9 @@ const a400 = run(400);
 const a100 = run(100);
 console.log(`  [dane] nadwyzka gracza 1000 -> odbior ${a1000 && a1000.receiveQty}; 400 -> ${a400 && a400.receiveQty}; 100 -> ${a100 && a100.receiveQty}`);
 assert(a1000 && a1000.receiveQty > 10, `A1: nadwyzka 1000 => odbior > krok 10 (bylo ${a1000 && a1000.receiveQty})`);
-assert(a1000 && a400 && a100 && a1000.receiveQty > a400.receiveQty && a400.receiveQty > a100.receiveQty, 'A2: wieksza nadwyzka => wieksza ilosc odbioru (monotonicznie)');
+// R-WEB-AI-TRADE-OFFER-QTY-CAP-3X-NEED-Q1: odbior = min(nadwyzka gracza, 3 x potrzeba) => od progu
+// sufitu (3 x 10 = 30) wartosc sie nie zwieksza; test sprawdza niemalejacosc i sufit 3x potrzeby.
+assert(a1000 && a400 && a100 && a1000.receiveQty >= a400.receiveQty && a400.receiveQty >= a100.receiveQty && a1000.receiveQty <= 30, 'A2: odbior niemalejacy wzgledem nadwyzki gracza i <= 3 x potrzeba (30)');
 assert(a100 && a100.receiveQty >= 10, `A3: nadwyzka 100 => oferta istnieje (odbior ${a100 && a100.receiveQty})`);
 for (const [label, off] of [['1000', a1000], ['400', a400], ['100', a100]]) {
   assert(!!off && realGate(off.givePn, off.receivePn) && realEvaluate(off.payload),
