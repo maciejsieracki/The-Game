@@ -1,0 +1,9026 @@
+{
+ "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+ "sources": {
+  "planned-march.ts": [
+   "validateAutoMarchFromSave:437-448",
+   "plannedMarchesFromSave:451-482",
+   "plannedMarchesToSave:485-501"
+  ]
+ },
+ "fragments": {
+  "validateAutoMarchFromSave": {
+   "sha256": "11c9e255387567fdba34fa0e6e56eff7472341d09441ee82c825becb27f0eebe"
+  },
+  "plannedMarchesFromSave": {
+   "sha256": "127a9238ab3e93d64b94681c41cc695534bb0a573eab642b591971e4132d7daa"
+  },
+  "plannedMarchesToSave": {
+   "sha256": "be01a3822e5b8dba02dd168271f238473741d45d33423e8f882b4d5e0c4ef4d4"
+  }
+ },
+ "roundtrip_cases": [
+  {
+   "name": "pusta mapa: zapis {}, odczyt pusty",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "marches": [],
+   "saveText": "{}",
+   "loaded": []
+  },
+  {
+   "name": "generalTargetId na pozycji innej niz jednostka: zachowany",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "marches": [
+    [
+     "3",
+     {
+      "destQ": 5,
+      "destR": 5,
+      "generalTargetId": "g1"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"3\",\"destQ\":5,\"destR\":5},\"plannedMarches\":{\"3\":{\"destQ\":5,\"destR\":5,\"generalTargetId\":\"g1\"}}}",
+   "loaded": [
+    [
+     "3",
+     {
+      "destQ": 5,
+      "destR": 5,
+      "generalTargetId": "g1"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "generalTargetId na pozycji jednostki: wpis zostaje (planned-march.ts:466)",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "marches": [
+    [
+     "3",
+     {
+      "destQ": 2,
+      "destR": 2,
+      "generalTargetId": "L"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"3\",\"destQ\":2,\"destR\":2},\"plannedMarches\":{\"3\":{\"destQ\":2,\"destR\":2,\"generalTargetId\":\"L\"}}}",
+   "loaded": [
+    [
+     "3",
+     {
+      "destQ": 2,
+      "destR": 2,
+      "generalTargetId": "L"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "pusty generalTargetId na pozycji jednostki: wpis pominiety",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "marches": [
+    [
+     "3",
+     {
+      "destQ": 2,
+      "destR": 2,
+      "generalTargetId": ""
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"3\",\"destQ\":2,\"destR\":2},\"plannedMarches\":{\"3\":{\"destQ\":2,\"destR\":2}}}",
+   "loaded": []
+  },
+  {
+   "name": "pusty generalTargetId na innej pozycji: zapis bez pola",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "marches": [
+    [
+     "3",
+     {
+      "destQ": 4,
+      "destR": 0,
+      "generalTargetId": ""
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"3\",\"destQ\":4,\"destR\":0},\"plannedMarches\":{\"3\":{\"destQ\":4,\"destR\":0}}}",
+   "loaded": [
+    [
+     "3",
+     {
+      "destQ": 4,
+      "destR": 0
+     }
+    ]
+   ]
+  },
+  {
+   "name": "generalTargetId i attackUnitId razem",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "marches": [
+    [
+     "1",
+     {
+      "destQ": 4,
+      "destR": 4,
+      "attackUnitId": "7",
+      "generalTargetId": "L"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"1\",\"destQ\":4,\"destR\":4},\"plannedMarches\":{\"1\":{\"destQ\":4,\"destR\":4,\"attackUnitId\":\"7\",\"generalTargetId\":\"L\"}}}",
+   "loaded": [
+    [
+     "1",
+     {
+      "destQ": 4,
+      "destR": 4,
+      "attackUnitId": "7",
+      "generalTargetId": "L"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "mieszane: generał z niekanonicznym id, zwykly marsz, generał",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "marches": [
+    [
+     "12",
+     {
+      "destQ": 3,
+      "destR": 3,
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": 6,
+      "destR": 6
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 1,
+      "destR": 6,
+      "generalTargetId": "g1"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"12\",\"destQ\":3,\"destR\":3},\"plannedMarches\":{\"3\":{\"destQ\":6,\"destR\":6},\"7\":{\"destQ\":1,\"destR\":6,\"generalTargetId\":\"g1\"},\"12\":{\"destQ\":3,\"destR\":3,\"generalTargetId\":\"07\"}}}",
+   "loaded": [
+    [
+     "3",
+     {
+      "destQ": 6,
+      "destR": 6
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 1,
+      "destR": 6,
+      "generalTargetId": "g1"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 3,
+      "destR": 3,
+      "generalTargetId": "07"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "pierwszy wpis (autoMarch) z generałem: autoMarch bez pola",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "marches": [
+    [
+     "5",
+     {
+      "destQ": 0,
+      "destR": 0,
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": 2,
+      "destR": 0
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"5\",\"destQ\":0,\"destR\":0},\"plannedMarches\":{\"2\":{\"destQ\":2,\"destR\":0},\"5\":{\"destQ\":0,\"destR\":0,\"generalTargetId\":\"G-2\"}}}",
+   "loaded": [
+    [
+     "2",
+     {
+      "destQ": 2,
+      "destR": 0
+     }
+    ]
+   ]
+  },
+  {
+   "name": "kolejnosc kluczy: indeks 12 przed 3 i 4294967295 po nich",
+   "units": [
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "marches": [
+    [
+     "4294967295",
+     {
+      "destQ": 1,
+      "destR": 1,
+      "generalTargetId": "gen-ż1"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 2,
+      "destR": 2,
+      "generalTargetId": "x y"
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": 3,
+      "destR": 3
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"4294967295\",\"destQ\":1,\"destR\":1},\"plannedMarches\":{\"3\":{\"destQ\":3,\"destR\":3},\"12\":{\"destQ\":2,\"destR\":2,\"generalTargetId\":\"x y\"},\"4294967295\":{\"destQ\":1,\"destR\":1,\"generalTargetId\":\"gen-ż1\"}}}",
+   "loaded": [
+    [
+     "3",
+     {
+      "destQ": 3,
+      "destR": 3
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 2,
+      "destR": 2,
+      "generalTargetId": "x y"
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 1,
+      "destR": 1,
+      "generalTargetId": "gen-ż1"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "generalTargetId na jednostce AI: odfiltrowany przy odczycie",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "marches": [
+    [
+     "5",
+     {
+      "destQ": 8,
+      "destR": 8,
+      "generalTargetId": "g1"
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": 9,
+      "destR": 9,
+      "generalTargetId": "L"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"5\",\"destQ\":8,\"destR\":8},\"plannedMarches\":{\"2\":{\"destQ\":9,\"destR\":9,\"generalTargetId\":\"L\"},\"5\":{\"destQ\":8,\"destR\":8,\"generalTargetId\":\"g1\"}}}",
+   "loaded": [
+    [
+     "2",
+     {
+      "destQ": 9,
+      "destR": 9,
+      "generalTargetId": "L"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "generalTargetId z dlugim napisem",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "marches": [
+    [
+     "2",
+     {
+      "destQ": 9,
+      "destR": 0,
+      "generalTargetId": "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"2\",\"destQ\":9,\"destR\":0},\"plannedMarches\":{\"2\":{\"destQ\":9,\"destR\":0,\"generalTargetId\":\"gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg\"}}}",
+   "loaded": [
+    [
+     "2",
+     {
+      "destQ": 9,
+      "destR": 0,
+      "generalTargetId": "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #0",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 6,
+     "r": 1
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 6,
+     "r": 4
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 2,
+     "r": 0
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 3,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 2
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 5,
+     "r": 2
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 6,
+     "r": 1
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 1,
+     "q": 5,
+     "r": 1
+    }
+   ],
+   "marches": [
+    [
+     "5",
+     {
+      "destQ": 4,
+      "destR": 0,
+      "attackUnitId": "1",
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 0,
+      "destR": 2,
+      "attackUnitId": "2"
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": -2,
+      "destR": 5,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 5,
+      "destR": 0
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 4,
+      "destR": 7
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 0,
+      "destR": 5,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 3,
+      "destR": 4
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"5\",\"destQ\":4,\"destR\":0},\"plannedMarches\":{\"3\":{\"destQ\":-2,\"destR\":5,\"generalTargetId\":\"L\"},\"5\":{\"destQ\":4,\"destR\":0,\"attackUnitId\":\"1\",\"generalTargetId\":\"G-2\"},\"7\":{\"destQ\":4,\"destR\":7},\"10\":{\"destQ\":3,\"destR\":4},\"12\":{\"destQ\":0,\"destR\":2,\"attackUnitId\":\"2\"},\"4294967294\":{\"destQ\":0,\"destR\":5,\"generalTargetId\":\"L\"},\"4294967295\":{\"destQ\":5,\"destR\":0}}}",
+   "loaded": [
+    [
+     "7",
+     {
+      "destQ": 4,
+      "destR": 7
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 0,
+      "destR": 5,
+      "generalTargetId": "L"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #1",
+   "units": [
+    {
+     "id": "2",
+     "ownerId": 1,
+     "q": 3,
+     "r": 2
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 1,
+     "r": 5
+    },
+    {
+     "id": "7",
+     "ownerId": 1,
+     "q": 1,
+     "r": 5
+    },
+    {
+     "id": "10",
+     "ownerId": 1,
+     "q": 1,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "100",
+     "ownerId": 1,
+     "q": 4,
+     "r": 6
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 5,
+     "r": 6
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 2,
+     "r": 1
+    }
+   ],
+   "marches": [
+    [
+     "4294967294",
+     {
+      "destQ": 7,
+      "destR": -2,
+      "attackUnitId": "7",
+      "generalTargetId": "g1"
+     }
+    ],
+    [
+     "1",
+     {
+      "destQ": 0,
+      "destR": 2
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 2,
+      "destR": -1
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"4294967294\",\"destQ\":7,\"destR\":-2},\"plannedMarches\":{\"1\":{\"destQ\":0,\"destR\":2},\"12\":{\"destQ\":2,\"destR\":-1},\"4294967294\":{\"destQ\":7,\"destR\":-2,\"attackUnitId\":\"7\",\"generalTargetId\":\"g1\"}}}",
+   "loaded": [
+    [
+     "12",
+     {
+      "destQ": 2,
+      "destR": -1
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 7,
+      "destR": -2,
+      "attackUnitId": "7",
+      "generalTargetId": "g1"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #2",
+   "units": [
+    {
+     "id": "3",
+     "ownerId": 1,
+     "q": 5,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 1,
+     "r": 4
+    },
+    {
+     "id": "10",
+     "ownerId": 1,
+     "q": 2,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 2,
+     "r": 4
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 5,
+     "r": 2
+    }
+   ],
+   "marches": [
+    [
+     "10",
+     {
+      "destQ": 2,
+      "destR": 4,
+      "generalTargetId": "4294967295"
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": 5,
+      "destR": -2,
+      "attackUnitId": "10"
+     }
+    ],
+    [
+     "1",
+     {
+      "destQ": 4,
+      "destR": 2,
+      "attackUnitId": "1",
+      "generalTargetId": "gen-ż1"
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 0,
+      "destR": 4
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 4,
+      "destR": 6,
+      "generalTargetId": "x y"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"10\",\"destQ\":2,\"destR\":4},\"plannedMarches\":{\"1\":{\"destQ\":4,\"destR\":2,\"attackUnitId\":\"1\",\"generalTargetId\":\"gen-ż1\"},\"2\":{\"destQ\":5,\"destR\":-2,\"attackUnitId\":\"10\"},\"7\":{\"destQ\":0,\"destR\":4},\"10\":{\"destQ\":2,\"destR\":4,\"generalTargetId\":\"4294967295\"},\"12\":{\"destQ\":4,\"destR\":6,\"generalTargetId\":\"x y\"}}}",
+   "loaded": [
+    [
+     "12",
+     {
+      "destQ": 4,
+      "destR": 6,
+      "generalTargetId": "x y"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #3",
+   "units": [
+    {
+     "id": "2",
+     "ownerId": 1,
+     "q": 5,
+     "r": 2
+    },
+    {
+     "id": "3",
+     "ownerId": 1,
+     "q": 2,
+     "r": 3
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 4,
+     "r": 0
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 6,
+     "r": 6
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 4,
+     "r": 3
+    }
+   ],
+   "marches": [
+    [
+     "1",
+     {
+      "destQ": 7,
+      "destR": 0,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": 5,
+      "destR": 1,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 3,
+      "destR": 3,
+      "attackUnitId": "1",
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 7,
+      "destR": 4,
+      "generalTargetId": "4294967295"
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": 5,
+      "destR": 2,
+      "attackUnitId": "7",
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 6,
+      "destR": 7,
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 6,
+      "destR": 5,
+      "generalTargetId": "x y"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"1\",\"destQ\":7,\"destR\":0},\"plannedMarches\":{\"1\":{\"destQ\":7,\"destR\":0,\"generalTargetId\":\"L\"},\"2\":{\"destQ\":5,\"destR\":2,\"attackUnitId\":\"7\",\"generalTargetId\":\"G-2\"},\"3\":{\"destQ\":5,\"destR\":1,\"generalTargetId\":\"L\"},\"10\":{\"destQ\":6,\"destR\":7,\"generalTargetId\":\"G-2\"},\"12\":{\"destQ\":3,\"destR\":3,\"attackUnitId\":\"1\",\"generalTargetId\":\"G-2\"},\"4294967294\":{\"destQ\":6,\"destR\":5,\"generalTargetId\":\"x y\"},\"4294967295\":{\"destQ\":7,\"destR\":4,\"generalTargetId\":\"4294967295\"}}}",
+   "loaded": [
+    [
+     "12",
+     {
+      "destQ": 3,
+      "destR": 3,
+      "attackUnitId": "1",
+      "generalTargetId": "G-2"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #4",
+   "units": [
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 5,
+     "r": 1
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 4
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 3,
+     "r": 5
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 6,
+     "r": 4
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 0,
+     "r": 2
+    }
+   ],
+   "marches": [
+    [
+     "2",
+     {
+      "destQ": 2,
+      "destR": -1,
+      "attackUnitId": "4294967295",
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "5",
+     {
+      "destQ": 3,
+      "destR": 4,
+      "generalTargetId": "4294967295"
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 2,
+      "destR": 7,
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": 1,
+      "destR": 4
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"2\",\"destQ\":2,\"destR\":-1},\"plannedMarches\":{\"2\":{\"destQ\":2,\"destR\":-1,\"attackUnitId\":\"4294967295\",\"generalTargetId\":\"L\"},\"3\":{\"destQ\":1,\"destR\":4},\"5\":{\"destQ\":3,\"destR\":4,\"generalTargetId\":\"4294967295\"},\"4294967295\":{\"destQ\":2,\"destR\":7}}}",
+   "loaded": [
+    [
+     "2",
+     {
+      "destQ": 2,
+      "destR": -1,
+      "attackUnitId": "4294967295",
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 2,
+      "destR": 7
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #5",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 1,
+     "r": 6
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 6,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 3,
+     "r": 1
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 5,
+     "r": 1
+    },
+    {
+     "id": "10",
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 5,
+     "r": 2
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 1,
+     "r": 6
+    }
+   ],
+   "marches": [
+    [
+     "1",
+     {
+      "destQ": 1,
+      "destR": 3
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 2,
+      "destR": 7
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 7,
+      "destR": 6,
+      "generalTargetId": "gen-ż1"
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": 3,
+      "destR": -1
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 4,
+      "destR": -1,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 2,
+      "destR": -2,
+      "generalTargetId": "G-2"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"1\",\"destQ\":1,\"destR\":3},\"plannedMarches\":{\"1\":{\"destQ\":1,\"destR\":3},\"2\":{\"destQ\":3,\"destR\":-1},\"10\":{\"destQ\":7,\"destR\":6,\"generalTargetId\":\"gen-ż1\"},\"100\":{\"destQ\":4,\"destR\":-1,\"generalTargetId\":\"L\"},\"4294967294\":{\"destQ\":2,\"destR\":-2,\"generalTargetId\":\"G-2\"},\"4294967295\":{\"destQ\":2,\"destR\":7}}}",
+   "loaded": [
+    [
+     "1",
+     {
+      "destQ": 1,
+      "destR": 3
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 2,
+      "destR": -2,
+      "generalTargetId": "G-2"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #6",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 1,
+     "q": 5,
+     "r": 5
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 5,
+     "r": 2
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 6
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 1,
+     "r": 2
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 2,
+     "r": 0
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 2,
+     "r": 6
+    }
+   ],
+   "marches": [
+    [
+     "2",
+     {
+      "destQ": 0,
+      "destR": 0,
+      "attackUnitId": "7",
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "1",
+     {
+      "destQ": -2,
+      "destR": 5
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": -2,
+      "destR": 7
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 1,
+      "destR": 0
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 3,
+      "destR": 3,
+      "generalTargetId": "x y"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"2\",\"destQ\":0,\"destR\":0},\"plannedMarches\":{\"1\":{\"destQ\":-2,\"destR\":5},\"2\":{\"destQ\":0,\"destR\":0,\"attackUnitId\":\"7\",\"generalTargetId\":\"07\"},\"7\":{\"destQ\":1,\"destR\":0},\"100\":{\"destQ\":3,\"destR\":3,\"generalTargetId\":\"x y\"},\"4294967295\":{\"destQ\":-2,\"destR\":7}}}",
+   "loaded": [
+    [
+     "2",
+     {
+      "destQ": 0,
+      "destR": 0,
+      "attackUnitId": "7",
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 1,
+      "destR": 0
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 3,
+      "destR": 3,
+      "generalTargetId": "x y"
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": -2,
+      "destR": 7
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #7",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 3,
+     "r": 1
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 3,
+     "r": 4
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 3,
+     "r": 1
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 3,
+     "r": 5
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 1,
+     "r": 4
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 6,
+     "r": 4
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 5,
+     "r": 0
+    }
+   ],
+   "marches": [
+    [
+     "10",
+     {
+      "destQ": 5,
+      "destR": -2,
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "1",
+     {
+      "destQ": 3,
+      "destR": 1,
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 2,
+      "destR": -1,
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 6,
+      "destR": 5,
+      "attackUnitId": "10",
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 5,
+      "destR": 0,
+      "generalTargetId": ""
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"10\",\"destQ\":5,\"destR\":-2},\"plannedMarches\":{\"1\":{\"destQ\":3,\"destR\":1,\"generalTargetId\":\"G-2\"},\"10\":{\"destQ\":5,\"destR\":-2,\"generalTargetId\":\"07\"},\"12\":{\"destQ\":2,\"destR\":-1},\"100\":{\"destQ\":6,\"destR\":5,\"attackUnitId\":\"10\",\"generalTargetId\":\"07\"},\"4294967295\":{\"destQ\":5,\"destR\":0}}}",
+   "loaded": [
+    [
+     "1",
+     {
+      "destQ": 3,
+      "destR": 1,
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 5,
+      "destR": -2,
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 6,
+      "destR": 5,
+      "attackUnitId": "10",
+      "generalTargetId": "07"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #8",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 4,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 4,
+     "r": 6
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 0,
+     "r": 6
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 2,
+     "r": 5
+    },
+    {
+     "id": "12",
+     "ownerId": 1,
+     "q": 0,
+     "r": 1
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 0,
+     "r": 6
+    }
+   ],
+   "marches": [
+    [
+     "10",
+     {
+      "destQ": 5,
+      "destR": 3
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 0,
+      "destR": 1
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 1,
+      "destR": 2,
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "5",
+     {
+      "destQ": 1,
+      "destR": 0,
+      "generalTargetId": "gen-ż1"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"10\",\"destQ\":5,\"destR\":3},\"plannedMarches\":{\"5\":{\"destQ\":1,\"destR\":0,\"generalTargetId\":\"gen-ż1\"},\"7\":{\"destQ\":1,\"destR\":2},\"10\":{\"destQ\":5,\"destR\":3},\"12\":{\"destQ\":0,\"destR\":1}}}",
+   "loaded": [
+    [
+     "5",
+     {
+      "destQ": 1,
+      "destR": 0,
+      "generalTargetId": "gen-ż1"
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 1,
+      "destR": 2
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #9",
+   "units": [
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 6,
+     "r": 0
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 6,
+     "r": 1
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 0,
+     "r": 2
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 6,
+     "r": 2
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 4,
+     "r": 5
+    }
+   ],
+   "marches": [
+    [
+     "12",
+     {
+      "destQ": 0,
+      "destR": 4
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 4,
+      "destR": 5,
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 1,
+      "destR": 0,
+      "attackUnitId": "1"
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": -2,
+      "destR": -2,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 1,
+      "destR": -1,
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "1",
+     {
+      "destQ": 4,
+      "destR": 3
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": 1,
+      "destR": 1
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"12\",\"destQ\":0,\"destR\":4},\"plannedMarches\":{\"1\":{\"destQ\":4,\"destR\":3},\"2\":{\"destQ\":1,\"destR\":1},\"3\":{\"destQ\":-2,\"destR\":-2,\"generalTargetId\":\"L\"},\"7\":{\"destQ\":1,\"destR\":0,\"attackUnitId\":\"1\"},\"12\":{\"destQ\":0,\"destR\":4},\"100\":{\"destQ\":1,\"destR\":-1},\"4294967294\":{\"destQ\":4,\"destR\":5,\"generalTargetId\":\"07\"}}}",
+   "loaded": [
+    [
+     "3",
+     {
+      "destQ": -2,
+      "destR": -2,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 1,
+      "destR": 0,
+      "attackUnitId": "1"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 0,
+      "destR": 4
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 1,
+      "destR": -1
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #10",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 1,
+     "q": 0,
+     "r": 5
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 3,
+     "r": 0
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 4,
+     "r": 2
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 5,
+     "r": 2
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 0,
+     "r": 1
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 6,
+     "r": 1
+    }
+   ],
+   "marches": [
+    [
+     "7",
+     {
+      "destQ": 4,
+      "destR": 4,
+      "attackUnitId": "5",
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 4,
+      "destR": 3,
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 3,
+      "destR": 7,
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 3,
+      "destR": 4,
+      "attackUnitId": "2"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"7\",\"destQ\":4,\"destR\":4},\"plannedMarches\":{\"7\":{\"destQ\":4,\"destR\":4,\"attackUnitId\":\"5\",\"generalTargetId\":\"G-2\"},\"10\":{\"destQ\":3,\"destR\":7,\"generalTargetId\":\"G-2\"},\"100\":{\"destQ\":4,\"destR\":3,\"generalTargetId\":\"07\"},\"4294967295\":{\"destQ\":3,\"destR\":4,\"attackUnitId\":\"2\"}}}",
+   "loaded": [
+    [
+     "7",
+     {
+      "destQ": 4,
+      "destR": 4,
+      "attackUnitId": "5",
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 4,
+      "destR": 3,
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 3,
+      "destR": 4,
+      "attackUnitId": "2"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #11",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 5,
+     "r": 5
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 6,
+     "r": 4
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 2,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 6,
+     "r": 2
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 3,
+     "r": 6
+    }
+   ],
+   "marches": [
+    [
+     "2",
+     {
+      "destQ": 6,
+      "destR": 6,
+      "attackUnitId": "100",
+      "generalTargetId": "x y"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 6,
+      "destR": 3,
+      "generalTargetId": "x y"
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 0,
+      "destR": 2,
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 6,
+      "destR": 2,
+      "generalTargetId": "gen-ż1"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"2\",\"destQ\":6,\"destR\":6},\"plannedMarches\":{\"2\":{\"destQ\":6,\"destR\":6,\"attackUnitId\":\"100\",\"generalTargetId\":\"x y\"},\"12\":{\"destQ\":6,\"destR\":2,\"generalTargetId\":\"gen-ż1\"},\"4294967294\":{\"destQ\":6,\"destR\":3,\"generalTargetId\":\"x y\"},\"4294967295\":{\"destQ\":0,\"destR\":2}}}",
+   "loaded": [
+    [
+     "2",
+     {
+      "destQ": 6,
+      "destR": 6,
+      "attackUnitId": "100",
+      "generalTargetId": "x y"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 6,
+      "destR": 2,
+      "generalTargetId": "gen-ż1"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #12",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 3,
+     "r": 1
+    },
+    {
+     "id": "2",
+     "ownerId": 1,
+     "q": 5,
+     "r": 5
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 6,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 4,
+     "r": 1
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 3,
+     "r": 0
+    },
+    {
+     "id": "100",
+     "ownerId": 1,
+     "q": 2,
+     "r": 5
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 5,
+     "r": 0
+    }
+   ],
+   "marches": [
+    [
+     "3",
+     {
+      "destQ": 6,
+      "destR": 2
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 7,
+      "destR": 2,
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 7,
+      "destR": 1
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 6,
+      "destR": 4,
+      "generalTargetId": "G-2"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"3\",\"destQ\":6,\"destR\":2},\"plannedMarches\":{\"3\":{\"destQ\":6,\"destR\":2},\"100\":{\"destQ\":7,\"destR\":2,\"generalTargetId\":\"07\"},\"4294967294\":{\"destQ\":7,\"destR\":1},\"4294967295\":{\"destQ\":6,\"destR\":4,\"generalTargetId\":\"G-2\"}}}",
+   "loaded": [
+    [
+     "4294967295",
+     {
+      "destQ": 6,
+      "destR": 4,
+      "generalTargetId": "G-2"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #13",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 3,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 1,
+     "q": 5,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 1,
+     "r": 2
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 6,
+     "r": 0
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 3,
+     "r": 1
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 6,
+     "r": 6
+    },
+    {
+     "id": "100",
+     "ownerId": 1,
+     "q": 6,
+     "r": 1
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 1,
+     "r": 0
+    }
+   ],
+   "marches": [
+    [
+     "2",
+     {
+      "destQ": 6,
+      "destR": -1
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 1,
+      "destR": -2
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 6,
+      "destR": 0,
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 1,
+      "destR": 1,
+      "attackUnitId": "12"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 4,
+      "destR": 2,
+      "generalTargetId": "g1"
+     }
+    ],
+    [
+     "5",
+     {
+      "destQ": 5,
+      "destR": 1,
+      "attackUnitId": "3",
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": 5,
+      "destR": 2
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"2\",\"destQ\":6,\"destR\":-1},\"plannedMarches\":{\"2\":{\"destQ\":6,\"destR\":-1},\"3\":{\"destQ\":5,\"destR\":2},\"5\":{\"destQ\":5,\"destR\":1,\"attackUnitId\":\"3\",\"generalTargetId\":\"L\"},\"7\":{\"destQ\":6,\"destR\":0,\"generalTargetId\":\"G-2\"},\"10\":{\"destQ\":4,\"destR\":2,\"generalTargetId\":\"g1\"},\"12\":{\"destQ\":1,\"destR\":1,\"attackUnitId\":\"12\"},\"4294967294\":{\"destQ\":1,\"destR\":-2}}}",
+   "loaded": [
+    [
+     "5",
+     {
+      "destQ": 5,
+      "destR": 1,
+      "attackUnitId": "3",
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 6,
+      "destR": 0,
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 4,
+      "destR": 2,
+      "generalTargetId": "g1"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 1,
+      "destR": 1,
+      "attackUnitId": "12"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 1,
+      "destR": -2
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #14",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 1,
+     "r": 5
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 2,
+     "r": 4
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 3,
+     "r": 5
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 6,
+     "r": 4
+    }
+   ],
+   "marches": [
+    [
+     "5",
+     {
+      "destQ": 2,
+      "destR": 4,
+      "generalTargetId": "4294967295"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": -2,
+      "destR": 5
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"5\",\"destQ\":2,\"destR\":4},\"plannedMarches\":{\"5\":{\"destQ\":2,\"destR\":4,\"generalTargetId\":\"4294967295\"},\"10\":{\"destQ\":-2,\"destR\":5}}}",
+   "loaded": []
+  },
+  {
+   "name": "losowy zapis generała #15",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 3,
+     "r": 1
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 3,
+     "r": 1
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 6,
+     "r": 6
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 5,
+     "r": 4
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 1,
+     "r": 0
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 1,
+     "q": 2,
+     "r": 2
+    }
+   ],
+   "marches": [
+    [
+     "2",
+     {
+      "destQ": 0,
+      "destR": 6,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 4,
+      "destR": 6
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": 3,
+      "destR": 1,
+      "attackUnitId": "2",
+      "generalTargetId": "x y"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 1,
+      "destR": 2,
+      "attackUnitId": "5",
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 6,
+      "destR": 0
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"2\",\"destQ\":0,\"destR\":6},\"plannedMarches\":{\"2\":{\"destQ\":0,\"destR\":6,\"generalTargetId\":\"L\"},\"3\":{\"destQ\":3,\"destR\":1,\"attackUnitId\":\"2\",\"generalTargetId\":\"x y\"},\"12\":{\"destQ\":4,\"destR\":6},\"100\":{\"destQ\":6,\"destR\":0},\"4294967294\":{\"destQ\":1,\"destR\":2,\"attackUnitId\":\"5\",\"generalTargetId\":\"07\"}}}",
+   "loaded": [
+    [
+     "2",
+     {
+      "destQ": 0,
+      "destR": 6,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": 3,
+      "destR": 1,
+      "attackUnitId": "2",
+      "generalTargetId": "x y"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 4,
+      "destR": 6
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 1,
+      "destR": 2,
+      "attackUnitId": "5",
+      "generalTargetId": "07"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #16",
+   "units": [
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 3,
+     "r": 1
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 4,
+     "r": 5
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 6,
+     "r": 6
+    }
+   ],
+   "marches": [
+    [
+     "3",
+     {
+      "destQ": -2,
+      "destR": 6,
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "5",
+     {
+      "destQ": 1,
+      "destR": 2,
+      "attackUnitId": "5",
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 6,
+      "destR": 1,
+      "attackUnitId": "5"
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 6,
+      "destR": 0
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"3\",\"destQ\":-2,\"destR\":6},\"plannedMarches\":{\"3\":{\"destQ\":-2,\"destR\":6,\"generalTargetId\":\"G-2\"},\"5\":{\"destQ\":1,\"destR\":2,\"attackUnitId\":\"5\",\"generalTargetId\":\"G-2\"},\"7\":{\"destQ\":6,\"destR\":1,\"attackUnitId\":\"5\"},\"100\":{\"destQ\":6,\"destR\":0}}}",
+   "loaded": [
+    [
+     "5",
+     {
+      "destQ": 1,
+      "destR": 2,
+      "attackUnitId": "5",
+      "generalTargetId": "G-2"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #17",
+   "units": [
+    {
+     "id": "2",
+     "ownerId": 1,
+     "q": 0,
+     "r": 4
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 6,
+     "r": 1
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 4,
+     "r": 5
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 6,
+     "r": 2
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 3,
+     "r": 1
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 3,
+     "r": 6
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 4,
+     "r": 5
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 0,
+     "r": 4
+    }
+   ],
+   "marches": [
+    [
+     "5",
+     {
+      "destQ": 4,
+      "destR": 5,
+      "generalTargetId": "4294967295"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 4,
+      "destR": 5,
+      "attackUnitId": "2"
+     }
+    ],
+    [
+     "1",
+     {
+      "destQ": 3,
+      "destR": 3,
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": 3,
+      "destR": 0,
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 3,
+      "destR": 1,
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 7,
+      "destR": 7,
+      "generalTargetId": "g1"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 1,
+      "destR": 4,
+      "attackUnitId": "4294967294"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"5\",\"destQ\":4,\"destR\":5},\"plannedMarches\":{\"1\":{\"destQ\":3,\"destR\":3,\"generalTargetId\":\"07\"},\"3\":{\"destQ\":3,\"destR\":0,\"generalTargetId\":\"G-2\"},\"5\":{\"destQ\":4,\"destR\":5,\"generalTargetId\":\"4294967295\"},\"10\":{\"destQ\":3,\"destR\":1,\"generalTargetId\":\"07\"},\"12\":{\"destQ\":1,\"destR\":4,\"attackUnitId\":\"4294967294\"},\"4294967294\":{\"destQ\":4,\"destR\":5,\"attackUnitId\":\"2\"},\"4294967295\":{\"destQ\":7,\"destR\":7,\"generalTargetId\":\"g1\"}}}",
+   "loaded": [
+    [
+     "3",
+     {
+      "destQ": 3,
+      "destR": 0,
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "5",
+     {
+      "destQ": 4,
+      "destR": 5,
+      "generalTargetId": "4294967295"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 3,
+      "destR": 1,
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 7,
+      "destR": 7,
+      "generalTargetId": "g1"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #18",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 6,
+     "r": 3
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 3,
+     "r": 4
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 3,
+     "r": 0
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 6,
+     "r": 0
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 2,
+     "r": 6
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 6,
+     "r": 0
+    }
+   ],
+   "marches": [
+    [
+     "5",
+     {
+      "destQ": 6,
+      "destR": -1,
+      "attackUnitId": "3",
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": 6,
+      "destR": 3
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 3,
+      "destR": 0,
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 2,
+      "destR": 2,
+      "generalTargetId": "gen-ż1"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": -1,
+      "destR": 7,
+      "attackUnitId": "4294967295",
+      "generalTargetId": "x y"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"5\",\"destQ\":6,\"destR\":-1},\"plannedMarches\":{\"2\":{\"destQ\":6,\"destR\":3},\"5\":{\"destQ\":6,\"destR\":-1,\"attackUnitId\":\"3\",\"generalTargetId\":\"G-2\"},\"7\":{\"destQ\":3,\"destR\":0},\"10\":{\"destQ\":-1,\"destR\":7,\"attackUnitId\":\"4294967295\",\"generalTargetId\":\"x y\"},\"12\":{\"destQ\":2,\"destR\":2,\"generalTargetId\":\"gen-ż1\"}}}",
+   "loaded": [
+    [
+     "5",
+     {
+      "destQ": 6,
+      "destR": -1,
+      "attackUnitId": "3",
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 2,
+      "destR": 2,
+      "generalTargetId": "gen-ż1"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #19",
+   "units": [
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 5,
+     "r": 3
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 3,
+     "r": 2
+    },
+    {
+     "id": "7",
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "12",
+     "ownerId": 1,
+     "q": 2,
+     "r": 4
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 6,
+     "r": 1
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 3,
+     "r": 4
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 6,
+     "r": 1
+    }
+   ],
+   "marches": [
+    [
+     "5",
+     {
+      "destQ": -1,
+      "destR": -1
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 5,
+      "destR": 0
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": 1,
+      "destR": 2,
+      "attackUnitId": "5",
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 6,
+      "destR": -1
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": 3,
+      "destR": 6,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 3,
+      "destR": 4,
+      "attackUnitId": "7"
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 6,
+      "destR": 1,
+      "attackUnitId": "2"
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 2,
+      "destR": 5,
+      "attackUnitId": "2",
+      "generalTargetId": "L"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"5\",\"destQ\":-1,\"destR\":-1},\"plannedMarches\":{\"2\":{\"destQ\":3,\"destR\":6,\"generalTargetId\":\"L\"},\"3\":{\"destQ\":1,\"destR\":2,\"attackUnitId\":\"5\"},\"5\":{\"destQ\":-1,\"destR\":-1},\"7\":{\"destQ\":5,\"destR\":0},\"10\":{\"destQ\":6,\"destR\":-1},\"100\":{\"destQ\":2,\"destR\":5,\"attackUnitId\":\"2\",\"generalTargetId\":\"L\"},\"4294967294\":{\"destQ\":3,\"destR\":4,\"attackUnitId\":\"7\"},\"4294967295\":{\"destQ\":6,\"destR\":1,\"attackUnitId\":\"2\"}}}",
+   "loaded": [
+    [
+     "2",
+     {
+      "destQ": 3,
+      "destR": 6,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "5",
+     {
+      "destQ": -1,
+      "destR": -1
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 6,
+      "destR": -1
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 2,
+      "destR": 5,
+      "attackUnitId": "2",
+      "generalTargetId": "L"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #20",
+   "units": [
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 5,
+     "r": 6
+    },
+    {
+     "id": "10",
+     "ownerId": 1,
+     "q": 2,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 2,
+     "r": 0
+    },
+    {
+     "id": "100",
+     "ownerId": 1,
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 3,
+     "r": 0
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 2,
+     "r": 6
+    }
+   ],
+   "marches": [
+    [
+     "3",
+     {
+      "destQ": 5,
+      "destR": 6,
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 5,
+      "destR": 0
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": -1,
+      "destR": 7
+     }
+    ],
+    [
+     "5",
+     {
+      "destQ": 3,
+      "destR": 5
+     }
+    ],
+    [
+     "1",
+     {
+      "destQ": 1,
+      "destR": 1,
+      "attackUnitId": "4294967294",
+      "generalTargetId": "g1"
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 1,
+      "destR": 6
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"3\",\"destQ\":5,\"destR\":6},\"plannedMarches\":{\"1\":{\"destQ\":1,\"destR\":1,\"attackUnitId\":\"4294967294\",\"generalTargetId\":\"g1\"},\"3\":{\"destQ\":5,\"destR\":6,\"generalTargetId\":\"G-2\"},\"5\":{\"destQ\":3,\"destR\":5},\"12\":{\"destQ\":5,\"destR\":0},\"100\":{\"destQ\":1,\"destR\":6},\"4294967295\":{\"destQ\":-1,\"destR\":7}}}",
+   "loaded": [
+    [
+     "3",
+     {
+      "destQ": 5,
+      "destR": 6,
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 5,
+      "destR": 0
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": -1,
+      "destR": 7
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #21",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 2,
+     "r": 1
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 5,
+     "r": 5
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 5,
+     "r": 6
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 6,
+     "r": 0
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 3,
+     "r": 6
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 3,
+     "r": 6
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 2,
+     "r": 3
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 1,
+     "q": 1,
+     "r": 3
+    }
+   ],
+   "marches": [
+    [
+     "100",
+     {
+      "destQ": 3,
+      "destR": 6
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 0,
+      "destR": 0
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 4,
+      "destR": 2,
+      "attackUnitId": "7",
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 4,
+      "destR": -1,
+      "attackUnitId": "1",
+      "generalTargetId": "x y"
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": 7,
+      "destR": 7,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 6,
+      "destR": -1,
+      "generalTargetId": "g1"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"100\",\"destQ\":3,\"destR\":6},\"plannedMarches\":{\"3\":{\"destQ\":7,\"destR\":7,\"generalTargetId\":\"L\"},\"7\":{\"destQ\":4,\"destR\":-1,\"attackUnitId\":\"1\",\"generalTargetId\":\"x y\"},\"10\":{\"destQ\":4,\"destR\":2,\"attackUnitId\":\"7\"},\"100\":{\"destQ\":3,\"destR\":6},\"4294967294\":{\"destQ\":6,\"destR\":-1,\"generalTargetId\":\"g1\"},\"4294967295\":{\"destQ\":0,\"destR\":0}}}",
+   "loaded": [
+    [
+     "7",
+     {
+      "destQ": 4,
+      "destR": -1,
+      "attackUnitId": "1",
+      "generalTargetId": "x y"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 4,
+      "destR": 2,
+      "attackUnitId": "7"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 6,
+      "destR": -1,
+      "generalTargetId": "g1"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #22",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 5,
+     "r": 4
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 4,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 4,
+     "r": 5
+    },
+    {
+     "id": "7",
+     "ownerId": 1,
+     "q": 5,
+     "r": 2
+    },
+    {
+     "id": "10",
+     "ownerId": 1,
+     "q": 2,
+     "r": 0
+    },
+    {
+     "id": "100",
+     "ownerId": 1,
+     "q": 5,
+     "r": 6
+    }
+   ],
+   "marches": [
+    [
+     "3",
+     {
+      "destQ": 0,
+      "destR": 5
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 3,
+      "destR": -1,
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "5",
+     {
+      "destQ": 4,
+      "destR": 5,
+      "generalTargetId": "gen-ż1"
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 5,
+      "destR": 2,
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 5,
+      "destR": 1,
+      "generalTargetId": "g1"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"3\",\"destQ\":0,\"destR\":5},\"plannedMarches\":{\"3\":{\"destQ\":0,\"destR\":5},\"5\":{\"destQ\":4,\"destR\":5,\"generalTargetId\":\"gen-ż1\"},\"7\":{\"destQ\":5,\"destR\":2,\"generalTargetId\":\"07\"},\"4294967294\":{\"destQ\":5,\"destR\":1,\"generalTargetId\":\"g1\"},\"4294967295\":{\"destQ\":3,\"destR\":-1}}}",
+   "loaded": [
+    [
+     "5",
+     {
+      "destQ": 4,
+      "destR": 5,
+      "generalTargetId": "gen-ż1"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #23",
+   "units": [
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 1,
+     "r": 3
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 2,
+     "r": 6
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 4,
+     "r": 0
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 6,
+     "r": 0
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 6,
+     "r": 5
+    }
+   ],
+   "marches": [
+    [
+     "10",
+     {
+      "destQ": 2,
+      "destR": 6
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 6,
+      "destR": 2,
+      "generalTargetId": "x y"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"10\",\"destQ\":2,\"destR\":6},\"plannedMarches\":{\"7\":{\"destQ\":6,\"destR\":2,\"generalTargetId\":\"x y\"},\"10\":{\"destQ\":2,\"destR\":6}}}",
+   "loaded": []
+  },
+  {
+   "name": "losowy zapis generała #24",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 1,
+     "q": 6,
+     "r": 0
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 0,
+     "r": 6
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 4
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 4,
+     "r": 1
+    }
+   ],
+   "marches": [
+    [
+     "12",
+     {
+      "destQ": 4,
+      "destR": 7,
+      "attackUnitId": "5",
+      "generalTargetId": "4294967295"
+     }
+    ],
+    [
+     "1",
+     {
+      "destQ": 6,
+      "destR": 0,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": 7,
+      "destR": 1,
+      "generalTargetId": "x y"
+     }
+    ],
+    [
+     "5",
+     {
+      "destQ": 7,
+      "destR": 1
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 1,
+      "destR": 6,
+      "generalTargetId": "L"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"12\",\"destQ\":4,\"destR\":7},\"plannedMarches\":{\"1\":{\"destQ\":6,\"destR\":0,\"generalTargetId\":\"L\"},\"3\":{\"destQ\":7,\"destR\":1,\"generalTargetId\":\"x y\"},\"5\":{\"destQ\":7,\"destR\":1},\"12\":{\"destQ\":4,\"destR\":7,\"attackUnitId\":\"5\",\"generalTargetId\":\"4294967295\"},\"4294967295\":{\"destQ\":1,\"destR\":6,\"generalTargetId\":\"L\"}}}",
+   "loaded": [
+    [
+     "5",
+     {
+      "destQ": 7,
+      "destR": 1
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 4,
+      "destR": 7,
+      "attackUnitId": "5",
+      "generalTargetId": "4294967295"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #25",
+   "units": [
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 0,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 4,
+     "r": 5
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "10",
+     "ownerId": 1,
+     "q": 4,
+     "r": 6
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 2
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 2,
+     "r": 4
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 1,
+     "q": 0,
+     "r": 1
+    }
+   ],
+   "marches": [
+    [
+     "5",
+     {
+      "destQ": 4,
+      "destR": 3,
+      "generalTargetId": "x y"
+     }
+    ],
+    [
+     "1",
+     {
+      "destQ": 6,
+      "destR": 6
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 2,
+      "destR": 4,
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 6,
+      "destR": 4,
+      "generalTargetId": "4294967295"
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": 4,
+      "destR": -2
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"5\",\"destQ\":4,\"destR\":3},\"plannedMarches\":{\"1\":{\"destQ\":6,\"destR\":6},\"3\":{\"destQ\":4,\"destR\":-2},\"5\":{\"destQ\":4,\"destR\":3,\"generalTargetId\":\"x y\"},\"100\":{\"destQ\":2,\"destR\":4},\"4294967294\":{\"destQ\":6,\"destR\":4,\"generalTargetId\":\"4294967295\"}}}",
+   "loaded": [
+    [
+     "3",
+     {
+      "destQ": 4,
+      "destR": -2
+     }
+    ],
+    [
+     "5",
+     {
+      "destQ": 4,
+      "destR": 3,
+      "generalTargetId": "x y"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #26",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 0
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 6
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 2,
+     "r": 4
+    },
+    {
+     "id": "10",
+     "ownerId": 1,
+     "q": 6,
+     "r": 2
+    },
+    {
+     "id": "12",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "marches": [
+    [
+     "1",
+     {
+      "destQ": 1,
+      "destR": 1,
+      "generalTargetId": "4294967295"
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": 4,
+      "destR": 6,
+      "attackUnitId": "100",
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 0,
+      "destR": 5,
+      "attackUnitId": "1"
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 1,
+      "destR": 6
+     }
+    ],
+    [
+     "5",
+     {
+      "destQ": 3,
+      "destR": 6,
+      "generalTargetId": "4294967295"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 5,
+      "destR": 1
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": -1,
+      "destR": 4
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"1\",\"destQ\":1,\"destR\":1},\"plannedMarches\":{\"1\":{\"destQ\":1,\"destR\":1,\"generalTargetId\":\"4294967295\"},\"3\":{\"destQ\":4,\"destR\":6,\"attackUnitId\":\"100\",\"generalTargetId\":\"07\"},\"5\":{\"destQ\":3,\"destR\":6,\"generalTargetId\":\"4294967295\"},\"10\":{\"destQ\":5,\"destR\":1},\"12\":{\"destQ\":-1,\"destR\":4},\"100\":{\"destQ\":1,\"destR\":6},\"4294967294\":{\"destQ\":0,\"destR\":5,\"attackUnitId\":\"1\"}}}",
+   "loaded": [
+    [
+     "1",
+     {
+      "destQ": 1,
+      "destR": 1,
+      "generalTargetId": "4294967295"
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": 4,
+      "destR": 6,
+      "attackUnitId": "100",
+      "generalTargetId": "07"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #27",
+   "units": [
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 0,
+     "r": 3
+    },
+    {
+     "id": "3",
+     "ownerId": 1,
+     "q": 3,
+     "r": 6
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 4,
+     "r": 6
+    },
+    {
+     "id": "100",
+     "ownerId": 1,
+     "q": 6,
+     "r": 5
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 1,
+     "r": 2
+    }
+   ],
+   "marches": [
+    [
+     "100",
+     {
+      "destQ": 6,
+      "destR": 5,
+      "generalTargetId": "x y"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 4,
+      "destR": 6,
+      "generalTargetId": "g1"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 1,
+      "destR": 0,
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "1",
+     {
+      "destQ": 2,
+      "destR": 7,
+      "generalTargetId": "g1"
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 3,
+      "destR": -1,
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": 4,
+      "destR": 7,
+      "attackUnitId": "2",
+      "generalTargetId": "x y"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"100\",\"destQ\":6,\"destR\":5},\"plannedMarches\":{\"1\":{\"destQ\":2,\"destR\":7,\"generalTargetId\":\"g1\"},\"2\":{\"destQ\":4,\"destR\":7,\"attackUnitId\":\"2\",\"generalTargetId\":\"x y\"},\"7\":{\"destQ\":3,\"destR\":-1,\"generalTargetId\":\"07\"},\"10\":{\"destQ\":4,\"destR\":6,\"generalTargetId\":\"g1\"},\"100\":{\"destQ\":6,\"destR\":5,\"generalTargetId\":\"x y\"},\"4294967294\":{\"destQ\":1,\"destR\":0}}}",
+   "loaded": [
+    [
+     "2",
+     {
+      "destQ": 4,
+      "destR": 7,
+      "attackUnitId": "2",
+      "generalTargetId": "x y"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 4,
+      "destR": 6,
+      "generalTargetId": "g1"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #28",
+   "units": [
+    {
+     "id": "2",
+     "ownerId": 1,
+     "q": 3,
+     "r": 0
+    },
+    {
+     "id": "3",
+     "ownerId": 1,
+     "q": 5,
+     "r": 6
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 1,
+     "r": 6
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 4,
+     "r": 1
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "100",
+     "ownerId": 1,
+     "q": 1,
+     "r": 5
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 1,
+     "r": 5
+    }
+   ],
+   "marches": [
+    [
+     "3",
+     {
+      "destQ": 3,
+      "destR": 5,
+      "attackUnitId": "2",
+      "generalTargetId": "g1"
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 7,
+      "destR": 2,
+      "attackUnitId": "12",
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "5",
+     {
+      "destQ": 1,
+      "destR": 6,
+      "attackUnitId": "100"
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": 2,
+      "destR": 2
+     }
+    ],
+    [
+     "1",
+     {
+      "destQ": 7,
+      "destR": 1,
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 3,
+      "destR": 5,
+      "attackUnitId": "2",
+      "generalTargetId": "07"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"3\",\"destQ\":3,\"destR\":5},\"plannedMarches\":{\"1\":{\"destQ\":7,\"destR\":1},\"2\":{\"destQ\":2,\"destR\":2},\"3\":{\"destQ\":3,\"destR\":5,\"attackUnitId\":\"2\",\"generalTargetId\":\"g1\"},\"5\":{\"destQ\":1,\"destR\":6,\"attackUnitId\":\"100\"},\"100\":{\"destQ\":7,\"destR\":2,\"attackUnitId\":\"12\"},\"4294967295\":{\"destQ\":3,\"destR\":5,\"attackUnitId\":\"2\",\"generalTargetId\":\"07\"}}}",
+   "loaded": []
+  },
+  {
+   "name": "losowy zapis generała #29",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 1,
+     "q": 6,
+     "r": 1
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 2,
+     "r": 3
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 5,
+     "r": 5
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 2,
+     "r": 6
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 5,
+     "r": 5
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 5,
+     "r": 4
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 3,
+     "r": 5
+    }
+   ],
+   "marches": [
+    [
+     "2",
+     {
+      "destQ": 4,
+      "destR": 6,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 3,
+      "destR": -1,
+      "generalTargetId": ""
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"2\",\"destQ\":4,\"destR\":6},\"plannedMarches\":{\"2\":{\"destQ\":4,\"destR\":6,\"generalTargetId\":\"L\"},\"10\":{\"destQ\":3,\"destR\":-1}}}",
+   "loaded": [
+    [
+     "2",
+     {
+      "destQ": 4,
+      "destR": 6,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 3,
+      "destR": -1
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #30",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 1,
+     "q": 1,
+     "r": 2
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 6,
+     "r": 2
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 0,
+     "r": 6
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 3,
+     "r": 2
+    },
+    {
+     "id": "7",
+     "ownerId": 1,
+     "q": 2,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "100",
+     "ownerId": 1,
+     "q": 3,
+     "r": 6
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 3,
+     "r": 5
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 1,
+     "q": 2,
+     "r": 0
+    }
+   ],
+   "marches": [
+    [
+     "12",
+     {
+      "destQ": 0,
+      "destR": 0,
+      "attackUnitId": "100"
+     }
+    ],
+    [
+     "1",
+     {
+      "destQ": 7,
+      "destR": 4,
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": 5,
+      "destR": -1,
+      "attackUnitId": "12",
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 3,
+      "destR": 6,
+      "generalTargetId": "g1"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 5,
+      "destR": -1
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"12\",\"destQ\":0,\"destR\":0},\"plannedMarches\":{\"1\":{\"destQ\":7,\"destR\":4},\"2\":{\"destQ\":5,\"destR\":-1,\"attackUnitId\":\"12\",\"generalTargetId\":\"G-2\"},\"10\":{\"destQ\":5,\"destR\":-1},\"12\":{\"destQ\":0,\"destR\":0,\"attackUnitId\":\"100\"},\"100\":{\"destQ\":3,\"destR\":6,\"generalTargetId\":\"g1\"}}}",
+   "loaded": [
+    [
+     "2",
+     {
+      "destQ": 5,
+      "destR": -1,
+      "attackUnitId": "12",
+      "generalTargetId": "G-2"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #31",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 2,
+     "r": 1
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 3,
+     "r": 2
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 5,
+     "r": 4
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 3,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 1,
+     "q": 4,
+     "r": 2
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 5,
+     "r": 3
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 6,
+     "r": 5
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 1,
+     "q": 6,
+     "r": 5
+    }
+   ],
+   "marches": [
+    [
+     "10",
+     {
+      "destQ": -1,
+      "destR": 3,
+      "attackUnitId": "4294967294"
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": 7,
+      "destR": 2,
+      "generalTargetId": "gen-ż1"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 2,
+      "destR": 3,
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 1,
+      "destR": 6,
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 0,
+      "destR": -1,
+      "generalTargetId": "4294967295"
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 6,
+      "destR": 5,
+      "attackUnitId": "10",
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": 0,
+      "destR": 5,
+      "generalTargetId": "4294967295"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 6,
+      "destR": 0,
+      "generalTargetId": "07"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"10\",\"destQ\":-1,\"destR\":3},\"plannedMarches\":{\"2\":{\"destQ\":0,\"destR\":5,\"generalTargetId\":\"4294967295\"},\"3\":{\"destQ\":7,\"destR\":2,\"generalTargetId\":\"gen-ż1\"},\"7\":{\"destQ\":0,\"destR\":-1,\"generalTargetId\":\"4294967295\"},\"10\":{\"destQ\":-1,\"destR\":3,\"attackUnitId\":\"4294967294\"},\"12\":{\"destQ\":6,\"destR\":0,\"generalTargetId\":\"07\"},\"100\":{\"destQ\":1,\"destR\":6,\"generalTargetId\":\"07\"},\"4294967294\":{\"destQ\":2,\"destR\":3},\"4294967295\":{\"destQ\":6,\"destR\":5,\"attackUnitId\":\"10\"}}}",
+   "loaded": [
+    [
+     "2",
+     {
+      "destQ": 0,
+      "destR": 5,
+      "generalTargetId": "4294967295"
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": 7,
+      "destR": 2,
+      "generalTargetId": "gen-ż1"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": -1,
+      "destR": 3,
+      "attackUnitId": "4294967294"
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 1,
+      "destR": 6,
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 2,
+      "destR": 3
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #32",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 4,
+     "r": 5
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 3,
+     "r": 2
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 6,
+     "r": 5
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 1,
+     "r": 3
+    },
+    {
+     "id": "10",
+     "ownerId": 1,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 4,
+     "r": 5
+    }
+   ],
+   "marches": [
+    [
+     "12",
+     {
+      "destQ": 5,
+      "destR": 0
+     }
+    ],
+    [
+     "5",
+     {
+      "destQ": 4,
+      "destR": 2
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": 5,
+      "destR": 5
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"12\",\"destQ\":5,\"destR\":0},\"plannedMarches\":{\"3\":{\"destQ\":5,\"destR\":5},\"5\":{\"destQ\":4,\"destR\":2},\"12\":{\"destQ\":5,\"destR\":0}}}",
+   "loaded": [
+    [
+     "3",
+     {
+      "destQ": 5,
+      "destR": 5
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #33",
+   "units": [
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 4,
+     "r": 0
+    },
+    {
+     "id": "12",
+     "ownerId": 1,
+     "q": 6,
+     "r": 3
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 6,
+     "r": 0
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 1,
+     "q": 1,
+     "r": 1
+    }
+   ],
+   "marches": [
+    [
+     "100",
+     {
+      "destQ": -1,
+      "destR": 6,
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 0,
+      "destR": 5
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 2,
+      "destR": 2,
+      "generalTargetId": "x y"
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": -1,
+      "destR": 6
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"100\",\"destQ\":-1,\"destR\":6},\"plannedMarches\":{\"3\":{\"destQ\":-1,\"destR\":6},\"12\":{\"destQ\":2,\"destR\":2,\"generalTargetId\":\"x y\"},\"100\":{\"destQ\":-1,\"destR\":6},\"4294967295\":{\"destQ\":0,\"destR\":5}}}",
+   "loaded": []
+  },
+  {
+   "name": "losowy zapis generała #34",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 3,
+     "r": 5
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 0,
+     "r": 3
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 3,
+     "r": 6
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 6,
+     "r": 2
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 0,
+     "r": 2
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 6,
+     "r": 5
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 5,
+     "r": 3
+    }
+   ],
+   "marches": [
+    [
+     "3",
+     {
+      "destQ": 4,
+      "destR": 4,
+      "generalTargetId": "g1"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 0,
+      "destR": 7,
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 6,
+      "destR": 2,
+      "attackUnitId": "12"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 1,
+      "destR": 1
+     }
+    ],
+    [
+     "1",
+     {
+      "destQ": 3,
+      "destR": 5
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": 3,
+      "destR": 6,
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 7,
+      "destR": 5,
+      "attackUnitId": "1",
+      "generalTargetId": "4294967295"
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 3,
+      "destR": 7,
+      "generalTargetId": "L"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"3\",\"destQ\":4,\"destR\":4},\"plannedMarches\":{\"1\":{\"destQ\":3,\"destR\":5},\"2\":{\"destQ\":3,\"destR\":6,\"generalTargetId\":\"G-2\"},\"3\":{\"destQ\":4,\"destR\":4,\"generalTargetId\":\"g1\"},\"7\":{\"destQ\":6,\"destR\":2,\"attackUnitId\":\"12\"},\"10\":{\"destQ\":1,\"destR\":1},\"12\":{\"destQ\":0,\"destR\":7},\"4294967294\":{\"destQ\":7,\"destR\":5,\"attackUnitId\":\"1\",\"generalTargetId\":\"4294967295\"},\"4294967295\":{\"destQ\":3,\"destR\":7,\"generalTargetId\":\"L\"}}}",
+   "loaded": [
+    [
+     "2",
+     {
+      "destQ": 3,
+      "destR": 6,
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": 4,
+      "destR": 4,
+      "generalTargetId": "g1"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 7,
+      "destR": 5,
+      "attackUnitId": "1",
+      "generalTargetId": "4294967295"
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 3,
+      "destR": 7,
+      "generalTargetId": "L"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #35",
+   "units": [
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 5,
+     "r": 6
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 6,
+     "r": 5
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 0,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 2,
+     "r": 4
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 3,
+     "r": 1
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 1,
+     "q": 3,
+     "r": 0
+    }
+   ],
+   "marches": [
+    [
+     "1",
+     {
+      "destQ": 1,
+      "destR": 0
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 4,
+      "destR": 3,
+      "attackUnitId": "10",
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "5",
+     {
+      "destQ": 5,
+      "destR": 6
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 1,
+      "destR": 7
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"1\",\"destQ\":1,\"destR\":0},\"plannedMarches\":{\"1\":{\"destQ\":1,\"destR\":0},\"5\":{\"destQ\":5,\"destR\":6},\"7\":{\"destQ\":1,\"destR\":7},\"4294967294\":{\"destQ\":4,\"destR\":3,\"attackUnitId\":\"10\"}}}",
+   "loaded": [
+    [
+     "7",
+     {
+      "destQ": 1,
+      "destR": 7
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #36",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 1,
+     "q": 2,
+     "r": 5
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 1,
+     "r": 5
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 2,
+     "r": 5
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 5,
+     "r": 5
+    },
+    {
+     "id": "100",
+     "ownerId": 1,
+     "q": 5,
+     "r": 2
+    }
+   ],
+   "marches": [
+    [
+     "7",
+     {
+      "destQ": 2,
+      "destR": 5,
+      "generalTargetId": "4294967295"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 2,
+      "destR": 1,
+      "attackUnitId": "5",
+      "generalTargetId": "4294967295"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"7\",\"destQ\":2,\"destR\":5},\"plannedMarches\":{\"7\":{\"destQ\":2,\"destR\":5,\"generalTargetId\":\"4294967295\"},\"10\":{\"destQ\":2,\"destR\":1,\"attackUnitId\":\"5\",\"generalTargetId\":\"4294967295\"}}}",
+   "loaded": [
+    [
+     "7",
+     {
+      "destQ": 2,
+      "destR": 5,
+      "generalTargetId": "4294967295"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 2,
+      "destR": 1,
+      "attackUnitId": "5",
+      "generalTargetId": "4294967295"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #37",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 5,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 6,
+     "r": 1
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 5,
+     "r": 1
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 1,
+     "r": 3
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 2,
+     "r": 3
+    }
+   ],
+   "marches": [
+    [
+     "5",
+     {
+      "destQ": -1,
+      "destR": 3
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": 7,
+      "destR": 1,
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 4,
+      "destR": 6,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 1,
+      "destR": 5,
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "1",
+     {
+      "destQ": 6,
+      "destR": 7,
+      "attackUnitId": "5",
+      "generalTargetId": "gen-ż1"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"5\",\"destQ\":-1,\"destR\":3},\"plannedMarches\":{\"1\":{\"destQ\":6,\"destR\":7,\"attackUnitId\":\"5\",\"generalTargetId\":\"gen-ż1\"},\"2\":{\"destQ\":7,\"destR\":1},\"5\":{\"destQ\":-1,\"destR\":3},\"10\":{\"destQ\":4,\"destR\":6,\"generalTargetId\":\"L\"},\"4294967294\":{\"destQ\":1,\"destR\":5,\"generalTargetId\":\"G-2\"}}}",
+   "loaded": [
+    [
+     "1",
+     {
+      "destQ": 6,
+      "destR": 7,
+      "attackUnitId": "5",
+      "generalTargetId": "gen-ż1"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #38",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 4
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 5,
+     "r": 2
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 2,
+     "r": 0
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 2,
+     "r": 0
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 2,
+     "r": 0
+    },
+    {
+     "id": "100",
+     "ownerId": 1,
+     "q": 0,
+     "r": 4
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 1,
+     "r": 5
+    }
+   ],
+   "marches": [
+    [
+     "100",
+     {
+      "destQ": 6,
+      "destR": 1,
+      "generalTargetId": "g1"
+     }
+    ],
+    [
+     "5",
+     {
+      "destQ": 1,
+      "destR": 0,
+      "generalTargetId": "x y"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 1,
+      "destR": 5,
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": 2,
+      "destR": 2,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 3,
+      "destR": 1,
+      "attackUnitId": "4294967295"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 7,
+      "destR": 7
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 1,
+      "destR": 6,
+      "attackUnitId": "7",
+      "generalTargetId": "gen-ż1"
+     }
+    ],
+    [
+     "1",
+     {
+      "destQ": -1,
+      "destR": 0,
+      "generalTargetId": "L"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"100\",\"destQ\":6,\"destR\":1},\"plannedMarches\":{\"1\":{\"destQ\":-1,\"destR\":0,\"generalTargetId\":\"L\"},\"3\":{\"destQ\":2,\"destR\":2,\"generalTargetId\":\"L\"},\"5\":{\"destQ\":1,\"destR\":0,\"generalTargetId\":\"x y\"},\"7\":{\"destQ\":3,\"destR\":1,\"attackUnitId\":\"4294967295\"},\"10\":{\"destQ\":7,\"destR\":7},\"100\":{\"destQ\":6,\"destR\":1,\"generalTargetId\":\"g1\"},\"4294967294\":{\"destQ\":1,\"destR\":5,\"generalTargetId\":\"07\"},\"4294967295\":{\"destQ\":1,\"destR\":6,\"attackUnitId\":\"7\",\"generalTargetId\":\"gen-ż1\"}}}",
+   "loaded": [
+    [
+     "1",
+     {
+      "destQ": -1,
+      "destR": 0,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": 2,
+      "destR": 2,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 3,
+      "destR": 1,
+      "attackUnitId": "4294967295"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 7,
+      "destR": 7
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 1,
+      "destR": 5,
+      "generalTargetId": "07"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #39",
+   "units": [
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 6,
+     "r": 3
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 1,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 1,
+     "q": 1,
+     "r": 6
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 6,
+     "r": 3
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 2,
+     "r": 3
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 1,
+     "r": 3
+    }
+   ],
+   "marches": [
+    [
+     "4294967295",
+     {
+      "destQ": 1,
+      "destR": 7,
+      "attackUnitId": "1",
+      "generalTargetId": "g1"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 6,
+      "destR": 3,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "5",
+     {
+      "destQ": 7,
+      "destR": 6,
+      "attackUnitId": "7",
+      "generalTargetId": "G-2"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"4294967295\",\"destQ\":1,\"destR\":7},\"plannedMarches\":{\"5\":{\"destQ\":7,\"destR\":6,\"attackUnitId\":\"7\",\"generalTargetId\":\"G-2\"},\"10\":{\"destQ\":6,\"destR\":3,\"generalTargetId\":\"L\"},\"4294967295\":{\"destQ\":1,\"destR\":7,\"attackUnitId\":\"1\",\"generalTargetId\":\"g1\"}}}",
+   "loaded": [
+    [
+     "5",
+     {
+      "destQ": 7,
+      "destR": 6,
+      "attackUnitId": "7",
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 6,
+      "destR": 3,
+      "generalTargetId": "L"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #40",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 4,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 4,
+     "r": 2
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 6,
+     "r": 1
+    },
+    {
+     "id": "12",
+     "ownerId": 1,
+     "q": 6,
+     "r": 4
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 4,
+     "r": 5
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    }
+   ],
+   "marches": [
+    [
+     "5",
+     {
+      "destQ": 6,
+      "destR": 0
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 4,
+      "destR": 5
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 4,
+      "destR": 4,
+      "generalTargetId": "g1"
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": 4,
+      "destR": 2,
+      "attackUnitId": "1"
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": 2,
+      "destR": 3
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 2,
+      "destR": 0,
+      "generalTargetId": "07"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"5\",\"destQ\":6,\"destR\":0},\"plannedMarches\":{\"2\":{\"destQ\":4,\"destR\":2,\"attackUnitId\":\"1\"},\"3\":{\"destQ\":2,\"destR\":3},\"5\":{\"destQ\":6,\"destR\":0},\"100\":{\"destQ\":2,\"destR\":0,\"generalTargetId\":\"07\"},\"4294967294\":{\"destQ\":4,\"destR\":5},\"4294967295\":{\"destQ\":4,\"destR\":4,\"generalTargetId\":\"g1\"}}}",
+   "loaded": [
+    [
+     "4294967295",
+     {
+      "destQ": 4,
+      "destR": 4,
+      "generalTargetId": "g1"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #41",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 3,
+     "r": 5
+    },
+    {
+     "id": "2",
+     "ownerId": 1,
+     "q": 0,
+     "r": 1
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 4,
+     "r": 5
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 4,
+     "r": 6
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 3,
+     "r": 0
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 1,
+     "r": 0
+    }
+   ],
+   "marches": [
+    [
+     "12",
+     {
+      "destQ": 4,
+      "destR": 6,
+      "generalTargetId": "x y"
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": -2,
+      "destR": 3,
+      "attackUnitId": "4294967294",
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 7,
+      "destR": 6,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": 0,
+      "destR": 1
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"12\",\"destQ\":4,\"destR\":6},\"plannedMarches\":{\"2\":{\"destQ\":0,\"destR\":1},\"3\":{\"destQ\":-2,\"destR\":3,\"attackUnitId\":\"4294967294\",\"generalTargetId\":\"07\"},\"12\":{\"destQ\":4,\"destR\":6,\"generalTargetId\":\"x y\"},\"100\":{\"destQ\":7,\"destR\":6,\"generalTargetId\":\"L\"}}}",
+   "loaded": [
+    [
+     "12",
+     {
+      "destQ": 4,
+      "destR": 6,
+      "generalTargetId": "x y"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #42",
+   "units": [
+    {
+     "id": "3",
+     "ownerId": 1,
+     "q": 4,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 5
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 4,
+     "r": 5
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 3,
+     "r": 1
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 6,
+     "r": 2
+    }
+   ],
+   "marches": [
+    [
+     "4294967295",
+     {
+      "destQ": 6,
+      "destR": 2
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 7,
+      "destR": 2
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": -2,
+      "destR": -1,
+      "attackUnitId": "4294967295"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"4294967295\",\"destQ\":6,\"destR\":2},\"plannedMarches\":{\"7\":{\"destQ\":7,\"destR\":2},\"4294967294\":{\"destQ\":-2,\"destR\":-1,\"attackUnitId\":\"4294967295\"},\"4294967295\":{\"destQ\":6,\"destR\":2}}}",
+   "loaded": []
+  },
+  {
+   "name": "losowy zapis generała #43",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 1,
+     "q": 3,
+     "r": 4
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 0,
+     "r": 4
+    },
+    {
+     "id": "3",
+     "ownerId": 1,
+     "q": 5,
+     "r": 6
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 1,
+     "r": 5
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 6
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 4,
+     "r": 5
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 2,
+     "r": 0
+    },
+    {
+     "id": "100",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    }
+   ],
+   "marches": [
+    [
+     "12",
+     {
+      "destQ": 0,
+      "destR": 0,
+      "attackUnitId": "4294967294",
+      "generalTargetId": "x y"
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 6,
+      "destR": 2,
+      "attackUnitId": "100"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 7,
+      "destR": 7
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 3,
+      "destR": 0,
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": 0,
+      "destR": 0,
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "5",
+     {
+      "destQ": 0,
+      "destR": 1,
+      "generalTargetId": "G-2"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"12\",\"destQ\":0,\"destR\":0},\"plannedMarches\":{\"2\":{\"destQ\":0,\"destR\":0,\"generalTargetId\":\"G-2\"},\"5\":{\"destQ\":0,\"destR\":1,\"generalTargetId\":\"G-2\"},\"12\":{\"destQ\":0,\"destR\":0,\"attackUnitId\":\"4294967294\",\"generalTargetId\":\"x y\"},\"100\":{\"destQ\":3,\"destR\":0,\"generalTargetId\":\"G-2\"},\"4294967294\":{\"destQ\":7,\"destR\":7},\"4294967295\":{\"destQ\":6,\"destR\":2,\"attackUnitId\":\"100\"}}}",
+   "loaded": [
+    [
+     "2",
+     {
+      "destQ": 0,
+      "destR": 0,
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "5",
+     {
+      "destQ": 0,
+      "destR": 1,
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 0,
+      "destR": 0,
+      "attackUnitId": "4294967294",
+      "generalTargetId": "x y"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #44",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 1,
+     "r": 3
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 6
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "7",
+     "ownerId": 1,
+     "q": 3,
+     "r": 5
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 3,
+     "r": 0
+    },
+    {
+     "id": "12",
+     "ownerId": 1,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 3,
+     "r": 0
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 5,
+     "r": 1
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 0,
+     "r": 6
+    }
+   ],
+   "marches": [
+    [
+     "4294967295",
+     {
+      "destQ": 1,
+      "destR": 6
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": 1,
+      "destR": 6
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": -2,
+      "destR": 7,
+      "attackUnitId": "4294967295",
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 3,
+      "destR": -1
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": -2,
+      "destR": 6,
+      "generalTargetId": "x y"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"4294967295\",\"destQ\":1,\"destR\":6},\"plannedMarches\":{\"2\":{\"destQ\":1,\"destR\":6},\"3\":{\"destQ\":-2,\"destR\":7,\"attackUnitId\":\"4294967295\"},\"10\":{\"destQ\":3,\"destR\":-1},\"12\":{\"destQ\":-2,\"destR\":6,\"generalTargetId\":\"x y\"},\"4294967295\":{\"destQ\":1,\"destR\":6}}}",
+   "loaded": [
+    [
+     "10",
+     {
+      "destQ": 3,
+      "destR": -1
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 1,
+      "destR": 6
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #45",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 2,
+     "r": 1
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 1,
+     "r": 3
+    },
+    {
+     "id": "10",
+     "ownerId": 1,
+     "q": 4,
+     "r": 1
+    },
+    {
+     "id": "12",
+     "ownerId": 1,
+     "q": 1,
+     "r": 4
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    }
+   ],
+   "marches": [
+    [
+     "1",
+     {
+      "destQ": 2,
+      "destR": 1,
+      "attackUnitId": "1",
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": 2,
+      "destR": -1,
+      "attackUnitId": "100",
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "5",
+     {
+      "destQ": 4,
+      "destR": -2,
+      "attackUnitId": "5"
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 3,
+      "destR": 2
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": -1,
+      "destR": 3,
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 4,
+      "destR": 1,
+      "generalTargetId": "x y"
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 2,
+      "destR": 2,
+      "attackUnitId": "4294967295"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"1\",\"destQ\":2,\"destR\":1},\"plannedMarches\":{\"1\":{\"destQ\":2,\"destR\":1,\"attackUnitId\":\"1\",\"generalTargetId\":\"L\"},\"2\":{\"destQ\":2,\"destR\":-1,\"attackUnitId\":\"100\"},\"3\":{\"destQ\":-1,\"destR\":3},\"5\":{\"destQ\":4,\"destR\":-2,\"attackUnitId\":\"5\"},\"10\":{\"destQ\":4,\"destR\":1,\"generalTargetId\":\"x y\"},\"100\":{\"destQ\":2,\"destR\":2,\"attackUnitId\":\"4294967295\"},\"4294967295\":{\"destQ\":3,\"destR\":2}}}",
+   "loaded": [
+    [
+     "1",
+     {
+      "destQ": 2,
+      "destR": 1,
+      "attackUnitId": "1",
+      "generalTargetId": "L"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #46",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 3,
+     "r": 1
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 0,
+     "r": 3
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 2,
+     "r": 4
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 4,
+     "r": 3
+    }
+   ],
+   "marches": [
+    [
+     "3",
+     {
+      "destQ": 7,
+      "destR": 3
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 2,
+      "destR": 4,
+      "attackUnitId": "4294967294",
+      "generalTargetId": ""
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 0,
+      "destR": 4
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 2,
+      "destR": 7
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": 3,
+      "destR": 3,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": -1,
+      "destR": 1,
+      "generalTargetId": "4294967295"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"3\",\"destQ\":7,\"destR\":3},\"plannedMarches\":{\"2\":{\"destQ\":3,\"destR\":3,\"generalTargetId\":\"L\"},\"3\":{\"destQ\":7,\"destR\":3},\"12\":{\"destQ\":-1,\"destR\":1,\"generalTargetId\":\"4294967295\"},\"100\":{\"destQ\":2,\"destR\":7},\"4294967294\":{\"destQ\":0,\"destR\":4},\"4294967295\":{\"destQ\":2,\"destR\":4,\"attackUnitId\":\"4294967294\"}}}",
+   "loaded": [
+    [
+     "2",
+     {
+      "destQ": 3,
+      "destR": 3,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 0,
+      "destR": 4
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #47",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 3,
+     "r": 4
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 5,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 5,
+     "r": 1
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 2,
+     "r": 4
+    },
+    {
+     "id": "100",
+     "ownerId": 1,
+     "q": 6,
+     "r": 5
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 4,
+     "r": 1
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 3,
+     "r": 5
+    }
+   ],
+   "marches": [
+    [
+     "12",
+     {
+      "destQ": 5,
+      "destR": 5
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 6,
+      "destR": 7,
+      "generalTargetId": "x y"
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": -2,
+      "destR": -1
+     }
+    ],
+    [
+     "5",
+     {
+      "destQ": 5,
+      "destR": 1,
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "3",
+     {
+      "destQ": 1,
+      "destR": 0,
+      "generalTargetId": "gen-ż1"
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": -1,
+      "destR": 0,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 4,
+      "destR": 1,
+      "generalTargetId": "07"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"12\",\"destQ\":5,\"destR\":5},\"plannedMarches\":{\"2\":{\"destQ\":-1,\"destR\":0,\"generalTargetId\":\"L\"},\"3\":{\"destQ\":1,\"destR\":0,\"generalTargetId\":\"gen-ż1\"},\"5\":{\"destQ\":5,\"destR\":1,\"generalTargetId\":\"G-2\"},\"7\":{\"destQ\":-2,\"destR\":-1},\"10\":{\"destQ\":6,\"destR\":7,\"generalTargetId\":\"x y\"},\"12\":{\"destQ\":5,\"destR\":5},\"4294967294\":{\"destQ\":4,\"destR\":1,\"generalTargetId\":\"07\"}}}",
+   "loaded": [
+    [
+     "3",
+     {
+      "destQ": 1,
+      "destR": 0,
+      "generalTargetId": "gen-ż1"
+     }
+    ],
+    [
+     "10",
+     {
+      "destQ": 6,
+      "destR": 7,
+      "generalTargetId": "x y"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 4,
+      "destR": 1,
+      "generalTargetId": "07"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #48",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 1,
+     "q": 0,
+     "r": 6
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 5,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 1,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "10",
+     "ownerId": 1,
+     "q": 6,
+     "r": 3
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 5,
+     "r": 3
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 6,
+     "r": 5
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 3,
+     "r": 4
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 3,
+     "r": 1
+    }
+   ],
+   "marches": [
+    [
+     "100",
+     {
+      "destQ": 6,
+      "destR": 5,
+      "attackUnitId": "12",
+      "generalTargetId": "4294967295"
+     }
+    ],
+    [
+     "1",
+     {
+      "destQ": 5,
+      "destR": -1,
+      "generalTargetId": "g1"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 6,
+      "destR": -1,
+      "generalTargetId": "gen-ż1"
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": 6,
+      "destR": 0,
+      "generalTargetId": "g1"
+     }
+    ],
+    [
+     "5",
+     {
+      "destQ": 4,
+      "destR": 2,
+      "attackUnitId": "100",
+      "generalTargetId": "g1"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"100\",\"destQ\":6,\"destR\":5},\"plannedMarches\":{\"1\":{\"destQ\":5,\"destR\":-1,\"generalTargetId\":\"g1\"},\"2\":{\"destQ\":6,\"destR\":0,\"generalTargetId\":\"g1\"},\"5\":{\"destQ\":4,\"destR\":2,\"attackUnitId\":\"100\",\"generalTargetId\":\"g1\"},\"12\":{\"destQ\":6,\"destR\":-1,\"generalTargetId\":\"gen-ż1\"},\"100\":{\"destQ\":6,\"destR\":5,\"attackUnitId\":\"12\",\"generalTargetId\":\"4294967295\"}}}",
+   "loaded": [
+    [
+     "2",
+     {
+      "destQ": 6,
+      "destR": 0,
+      "generalTargetId": "g1"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 6,
+      "destR": -1,
+      "generalTargetId": "gen-ż1"
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 6,
+      "destR": 5,
+      "attackUnitId": "12",
+      "generalTargetId": "4294967295"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy zapis generała #49",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 6,
+     "r": 6
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 0,
+     "r": 4
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 3,
+     "r": 4
+    },
+    {
+     "id": "10",
+     "ownerId": 1,
+     "q": 4,
+     "r": 6
+    },
+    {
+     "id": "100",
+     "ownerId": 1,
+     "q": 3,
+     "r": 0
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 0,
+     "r": 4
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 1,
+     "q": 1,
+     "r": 3
+    }
+   ],
+   "marches": [
+    [
+     "3",
+     {
+      "destQ": 7,
+      "destR": 1
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 5,
+      "destR": 0,
+      "generalTargetId": "gen-ż1"
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 3,
+      "destR": -2,
+      "attackUnitId": "3",
+      "generalTargetId": "07"
+     }
+    ]
+   ],
+   "saveText": "{\"autoMarch\":{\"leaderId\":\"3\",\"destQ\":7,\"destR\":1},\"plannedMarches\":{\"3\":{\"destQ\":7,\"destR\":1},\"12\":{\"destQ\":5,\"destR\":0,\"generalTargetId\":\"gen-ż1\"},\"4294967295\":{\"destQ\":3,\"destR\":-2,\"attackUnitId\":\"3\",\"generalTargetId\":\"07\"}}}",
+   "loaded": [
+    [
+     "3",
+     {
+      "destQ": 7,
+      "destR": 1
+     }
+    ]
+   ]
+  }
+ ],
+ "raw_cases": [
+  {
+   "name": "brak planu",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "rawSave": "{}",
+   "loaded": []
+  },
+  {
+   "name": "generalTargetId na pozycji jednostki: zostaje",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"2\":{\"destQ\":1,\"destR\":1,\"generalTargetId\":\"L\"}}}",
+   "loaded": [
+    [
+     "2",
+     {
+      "destQ": 1,
+      "destR": 1,
+      "generalTargetId": "L"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "generalTargetId pusty na pozycji jednostki: pominiety",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"2\":{\"destQ\":1,\"destR\":1,\"generalTargetId\":\"\"}}}",
+   "loaded": []
+  },
+  {
+   "name": "generalTargetId null: brak pola",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"3\":{\"destQ\":6,\"destR\":6,\"generalTargetId\":null}}}",
+   "loaded": [
+    [
+     "3",
+     {
+      "destQ": 6,
+      "destR": 6
+     }
+    ]
+   ]
+  },
+  {
+   "name": "generalTargetId liczba (nie napis): odrzucony jak w webie",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"3\":{\"destQ\":6,\"destR\":6,\"generalTargetId\":5}}}",
+   "loaded": [
+    [
+     "3",
+     {
+      "destQ": 6,
+      "destR": 6
+     }
+    ]
+   ]
+  },
+  {
+   "name": "generalTargetId true: odrzucony jak w webie",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"3\":{\"destQ\":6,\"destR\":6,\"generalTargetId\":true}}}",
+   "loaded": [
+    [
+     "3",
+     {
+      "destQ": 6,
+      "destR": 6
+     }
+    ]
+   ]
+  },
+  {
+   "name": "powtorzony klucz: ostatnia wartosc decyduje o generale",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"3\":{\"destQ\":1,\"destR\":1,\"generalTargetId\":\"g1\"},\"7\":{\"destQ\":2,\"destR\":2},\"3\":{\"destQ\":4,\"destR\":0}}}",
+   "loaded": [
+    [
+     "3",
+     {
+      "destQ": 4,
+      "destR": 0
+     }
+    ],
+    [
+     "7",
+     {
+      "destQ": 2,
+      "destR": 2
+     }
+    ]
+   ]
+  },
+  {
+   "name": "generalTargetId z attackUnitId",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"1\":{\"destQ\":4,\"destR\":4,\"attackUnitId\":\"5\",\"generalTargetId\":\"g9\"}}}",
+   "loaded": [
+    [
+     "1",
+     {
+      "destQ": 4,
+      "destR": 4,
+      "attackUnitId": "5",
+      "generalTargetId": "g9"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "generalTargetId na nieznanej jednostce i na jednostce AI: pominiete",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"99\":{\"destQ\":1,\"destR\":1,\"generalTargetId\":\"g1\"},\"5\":{\"destQ\":0,\"destR\":0,\"generalTargetId\":\"g2\"}}}",
+   "loaded": []
+  },
+  {
+   "name": "generalTargetId przy zlym destQ: pominiety wpis",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"2\":{\"destQ\":\"1\",\"destR\":1,\"generalTargetId\":\"g1\"}}}",
+   "loaded": []
+  },
+  {
+   "name": "legacy autoMarch z plannedMarches: generał tylko w plannedMarches",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "rawSave": "{\"autoMarch\":{\"leaderId\":\"12\",\"destQ\":0,\"destR\":0},\"plannedMarches\":{\"3\":{\"destQ\":6,\"destR\":6,\"generalTargetId\":\"L\"}}}",
+   "loaded": [
+    [
+     "3",
+     {
+      "destQ": 6,
+      "destR": 6,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 0,
+      "destR": 0
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy odczyt generała #0",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 1,
+     "q": 4,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 3
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "7",
+     "ownerId": 1,
+     "q": 5,
+     "r": 2
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 3,
+     "r": 4
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 0,
+     "r": 3
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 1,
+     "q": 2,
+     "r": 0
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"2\":{\"destQ\":1,\"destR\":3},\"3\":{\"destQ\":0,\"destR\":2,\"generalTargetId\":\"gen-ż1\",\"attackUnitId\":\"2\"}}}",
+   "loaded": []
+  },
+  {
+   "name": "losowy odczyt generała #1",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 1,
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 1
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 6,
+     "r": 1
+    },
+    {
+     "id": "7",
+     "ownerId": 1,
+     "q": 0,
+     "r": 5
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "12",
+     "ownerId": 1,
+     "q": 5,
+     "r": 1
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 4,
+     "r": 5
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 4,
+     "r": 0
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 4,
+     "r": 1
+    }
+   ],
+   "rawSave": "{\"autoMarch\":{\"leaderId\":\"7\",\"destQ\":3,\"destR\":3},\"plannedMarches\":{\"4294967295\":{\"destQ\":-1,\"destR\":0},\"5\":{\"destQ\":6,\"destR\":1,\"attackUnitId\":\"5\"},\"12\":{\"destQ\":5,\"destR\":1},\"3\":{\"destQ\":1,\"destR\":4,\"generalTargetId\":null},\"100\":{\"destQ\":4,\"destR\":2,\"generalTargetId\":\"07\",\"attackUnitId\":\"10\"}}}",
+   "loaded": [
+    [
+     "3",
+     {
+      "destQ": 1,
+      "destR": 4
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 4,
+      "destR": 2,
+      "attackUnitId": "10",
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": -1,
+      "destR": 0
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy odczyt generała #2",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 3,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 0,
+     "r": 1
+    },
+    {
+     "id": "7",
+     "ownerId": 1,
+     "q": 2,
+     "r": 0
+    },
+    {
+     "id": "10",
+     "ownerId": 1,
+     "q": 3,
+     "r": 6
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 3,
+     "r": 6
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 2,
+     "r": 4
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 6,
+     "r": 5
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 6,
+     "r": 0
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"100\":{\"destQ\":3,\"destR\":-1},\"5\":{\"destQ\":5,\"destR\":3,\"generalTargetId\":\"\"},\"2\":{\"destQ\":-1,\"destR\":3,\"generalTargetId\":\"x y\"},\"3\":{\"destQ\":1,\"destR\":5,\"generalTargetId\":\"gen-ż1\",\"attackUnitId\":\"100\"}}}",
+   "loaded": [
+    [
+     "5",
+     {
+      "destQ": 5,
+      "destR": 3
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 3,
+      "destR": -1
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy odczyt generała #3",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 1,
+     "q": 6,
+     "r": 4
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 3,
+     "r": 4
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 2,
+     "r": 0
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"3\":{\"destQ\":2,\"destR\":2,\"generalTargetId\":\"x y\"},\"5\":{\"destQ\":4,\"destR\":6}}}",
+   "loaded": []
+  },
+  {
+   "name": "losowy odczyt generała #4",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 4,
+     "r": 1
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 2,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 0,
+     "r": 3
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 4,
+     "r": 2
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 0,
+     "r": 3
+    },
+    {
+     "id": "12",
+     "ownerId": 1,
+     "q": 2,
+     "r": 1
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 5,
+     "r": 6
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 5,
+     "r": 6
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"100\":{\"destQ\":4,\"destR\":5},\"4294967294\":{\"destQ\":2,\"destR\":2,\"attackUnitId\":\"10\"},\"4294967294\":{\"destQ\":6,\"destR\":2,\"generalTargetId\":\"4294967295\"},\"10\":{\"destQ\":1,\"destR\":3,\"generalTargetId\":\"G-2\"}}}",
+   "loaded": [
+    [
+     "4294967294",
+     {
+      "destQ": 6,
+      "destR": 2,
+      "generalTargetId": "4294967295"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy odczyt generała #5",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 1,
+     "q": 1,
+     "r": 5
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 6,
+     "r": 0
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 6,
+     "r": 6
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 6,
+     "r": 6
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 5,
+     "r": 3
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"10\":{\"destQ\":-1,\"destR\":1,\"generalTargetId\":\"L\"},\"7\":{\"destQ\":7,\"destR\":7}}}",
+   "loaded": [
+    [
+     "10",
+     {
+      "destQ": -1,
+      "destR": 1,
+      "generalTargetId": "L"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy odczyt generała #6",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 3,
+     "r": 2
+    },
+    {
+     "id": "2",
+     "ownerId": 1,
+     "q": 2,
+     "r": 6
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 1,
+     "r": 0
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 2,
+     "r": 4
+    },
+    {
+     "id": "10",
+     "ownerId": 1,
+     "q": 6,
+     "r": 0
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 5,
+     "r": 6
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 1,
+     "q": 5,
+     "r": 5
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"1\":{\"destQ\":3,\"destR\":2,\"attackUnitId\":\"12\"}}}",
+   "loaded": []
+  },
+  {
+   "name": "losowy odczyt generała #7",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "3",
+     "ownerId": 1,
+     "q": 3,
+     "r": 5
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "7",
+     "ownerId": 1,
+     "q": 5,
+     "r": 2
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 3,
+     "r": 4
+    },
+    {
+     "id": "100",
+     "ownerId": 1,
+     "q": 0,
+     "r": 3
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 5,
+     "r": 4
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"10\":{\"destQ\":6,\"destR\":-1,\"attackUnitId\":\"100\"},\"12\":{\"destQ\":5,\"destR\":-1,\"generalTargetId\":\"g1\"}}}",
+   "loaded": [
+    [
+     "10",
+     {
+      "destQ": 6,
+      "destR": -1,
+      "attackUnitId": "100"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 5,
+      "destR": -1,
+      "generalTargetId": "g1"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy odczyt generała #8",
+   "units": [
+    {
+     "id": "2",
+     "ownerId": 1,
+     "q": 1,
+     "r": 0
+    },
+    {
+     "id": "7",
+     "ownerId": 1,
+     "q": 2,
+     "r": 0
+    },
+    {
+     "id": "10",
+     "ownerId": 1,
+     "q": 6,
+     "r": 0
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 1,
+     "r": 6
+    },
+    {
+     "id": "100",
+     "ownerId": 1,
+     "q": 6,
+     "r": 2
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 6,
+     "r": 2
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 1,
+     "r": 2
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{}}",
+   "loaded": []
+  },
+  {
+   "name": "losowy odczyt generała #9",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 1,
+     "q": 5,
+     "r": 6
+    },
+    {
+     "id": "2",
+     "ownerId": 1,
+     "q": 0,
+     "r": 4
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 3,
+     "r": 6
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 3,
+     "r": 0
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 6,
+     "r": 5
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 1,
+     "r": 3
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 4,
+     "r": 1
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{}}",
+   "loaded": []
+  },
+  {
+   "name": "losowy odczyt generała #10",
+   "units": [
+    {
+     "id": "3",
+     "ownerId": 1,
+     "q": 5,
+     "r": 6
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 0,
+     "r": 2
+    },
+    {
+     "id": "7",
+     "ownerId": 1,
+     "q": 1,
+     "r": 0
+    },
+    {
+     "id": "10",
+     "ownerId": 1,
+     "q": 5,
+     "r": 1
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 0,
+     "r": 3
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 5,
+     "r": 2
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 3,
+     "r": 3
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"7\":{\"destQ\":1,\"destR\":0,\"generalTargetId\":null},\"5\":{\"destQ\":5,\"destR\":6,\"generalTargetId\":null}}}",
+   "loaded": []
+  },
+  {
+   "name": "losowy odczyt generała #11",
+   "units": [
+    {
+     "id": "2",
+     "ownerId": 1,
+     "q": 5,
+     "r": 2
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 5,
+     "r": 1
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 6,
+     "r": 1
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "12",
+     "ownerId": 1,
+     "q": 6,
+     "r": 6
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 3,
+     "r": 4
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 1,
+     "q": 6,
+     "r": 1
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"4294967294\":{\"destQ\":3,\"destR\":4,\"generalTargetId\":\"07\",\"attackUnitId\":\"10\"}}}",
+   "loaded": []
+  },
+  {
+   "name": "losowy odczyt generała #12",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 1,
+     "q": 2,
+     "r": 5
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 6,
+     "r": 4
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 5,
+     "r": 1
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 2,
+     "r": 4
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 3,
+     "r": 5
+    },
+    {
+     "id": "12",
+     "ownerId": 1,
+     "q": 6,
+     "r": 0
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 6,
+     "r": 2
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 0,
+     "r": 4
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 5,
+     "r": 6
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{}}",
+   "loaded": []
+  },
+  {
+   "name": "losowy odczyt generała #13",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 1,
+     "q": 1,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 0,
+     "r": 4
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 0,
+     "r": 6
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 2,
+     "r": 5
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 5,
+     "r": 3
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 1,
+     "r": 6
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 4,
+     "r": 1
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 2,
+     "r": 4
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 6,
+     "r": 2
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"4294967295\":{\"destQ\":6,\"destR\":2,\"generalTargetId\":\"G-2\"},\"3\":{\"destQ\":0,\"destR\":1,\"generalTargetId\":\"07\"},\"12\":{\"destQ\":6,\"destR\":6,\"generalTargetId\":\"L\"}}}",
+   "loaded": [
+    [
+     "3",
+     {
+      "destQ": 0,
+      "destR": 1,
+      "generalTargetId": "07"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 6,
+      "destR": 6,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 6,
+      "destR": 2,
+      "generalTargetId": "G-2"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy odczyt generała #14",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 2,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 1,
+     "q": 2,
+     "r": 3
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 4,
+     "r": 5
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 1,
+     "r": 3
+    },
+    {
+     "id": "12",
+     "ownerId": 1,
+     "q": 0,
+     "r": 3
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 2,
+     "r": 5
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 1,
+     "q": 1,
+     "r": 3
+    }
+   ],
+   "rawSave": "{\"autoMarch\":{\"leaderId\":\"4294967295\",\"destQ\":3,\"destR\":0},\"plannedMarches\":{\"3\":{\"destQ\":4,\"destR\":5},\"4294967295\":{\"destQ\":1,\"destR\":3,\"attackUnitId\":\"2\"}}}",
+   "loaded": []
+  },
+  {
+   "name": "losowy odczyt generała #15",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "2",
+     "ownerId": 1,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 6,
+     "r": 6
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 0,
+     "r": 6
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 1
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "100",
+     "ownerId": 1,
+     "q": 1,
+     "r": 6
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 5,
+     "r": 6
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 1,
+     "q": 6,
+     "r": 1
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{}}",
+   "loaded": []
+  },
+  {
+   "name": "losowy odczyt generała #16",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 4,
+     "r": 2
+    },
+    {
+     "id": "2",
+     "ownerId": 1,
+     "q": 6,
+     "r": 6
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 2,
+     "r": 5
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 4,
+     "r": 2
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 5
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 1,
+     "r": 6
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 6,
+     "r": 5
+    }
+   ],
+   "rawSave": "{\"autoMarch\":{\"leaderId\":\"1\",\"destQ\":4,\"destR\":4},\"plannedMarches\":{\"7\":{\"destQ\":4,\"destR\":6,\"generalTargetId\":\"\"},\"4294967294\":{\"destQ\":1,\"destR\":6,\"generalTargetId\":\"4294967295\"},\"1\":{\"destQ\":3,\"destR\":5},\"7\":{\"destQ\":4,\"destR\":5},\"10\":{\"destQ\":2,\"destR\":5,\"generalTargetId\":\"07\"}}}",
+   "loaded": [
+    [
+     "1",
+     {
+      "destQ": 3,
+      "destR": 5
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy odczyt generała #17",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 5,
+     "r": 4
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 3,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 5,
+     "r": 6
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 0,
+     "r": 2
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 6,
+     "r": 0
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 6,
+     "r": 6
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 0,
+     "r": 6
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"2\":{\"destQ\":0,\"destR\":1,\"attackUnitId\":\"10\"},\"4294967294\":{\"destQ\":-1,\"destR\":3,\"attackUnitId\":\"3\"},\"4294967294\":{\"destQ\":6,\"destR\":7},\"4294967294\":{\"destQ\":2,\"destR\":6,\"generalTargetId\":\"gen-ż1\"},\"2\":{\"destQ\":5,\"destR\":5,\"generalTargetId\":\"G-2\"}}}",
+   "loaded": [
+    [
+     "2",
+     {
+      "destQ": 5,
+      "destR": 5,
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 2,
+      "destR": 6,
+      "generalTargetId": "gen-ż1"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy odczyt generała #18",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 0,
+     "r": 3
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 0,
+     "r": 1
+    },
+    {
+     "id": "7",
+     "ownerId": 1,
+     "q": 6,
+     "r": 0
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 6,
+     "r": 5
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 5,
+     "r": 1
+    }
+   ],
+   "rawSave": "{\"autoMarch\":{\"leaderId\":\"4294967294\",\"destQ\":6,\"destR\":5},\"plannedMarches\":{\"2\":{\"destQ\":0,\"destR\":3,\"generalTargetId\":\"L\"},\"7\":{\"destQ\":6,\"destR\":0,\"generalTargetId\":\"g1\"}}}",
+   "loaded": [
+    [
+     "2",
+     {
+      "destQ": 0,
+      "destR": 3,
+      "generalTargetId": "L"
+     }
+    ],
+    [
+     "4294967294",
+     {
+      "destQ": 6,
+      "destR": 5
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy odczyt generała #19",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 2,
+     "r": 1
+    },
+    {
+     "id": "3",
+     "ownerId": 1,
+     "q": 0,
+     "r": 4
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 3,
+     "r": 2
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 4,
+     "r": 0
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 1,
+     "q": 3,
+     "r": 2
+    }
+   ],
+   "rawSave": "{\"autoMarch\":{\"leaderId\":\"12\",\"destQ\":3,\"destR\":6},\"plannedMarches\":{\"4294967295\":{\"destQ\":1,\"destR\":7,\"generalTargetId\":\"g1\",\"attackUnitId\":\"2\"},\"1\":{\"destQ\":3,\"destR\":2,\"generalTargetId\":\"\"},\"1\":{\"destQ\":7,\"destR\":0,\"generalTargetId\":\"G-2\",\"attackUnitId\":\"5\"},\"4294967295\":{\"destQ\":3,\"destR\":2,\"generalTargetId\":\"\"}}}",
+   "loaded": [
+    [
+     "1",
+     {
+      "destQ": 7,
+      "destR": 0,
+      "attackUnitId": "5",
+      "generalTargetId": "G-2"
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 3,
+      "destR": 6
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy odczyt generała #20",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 1,
+     "r": 0
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 0,
+     "r": 2
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 2,
+     "r": 4
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 0,
+     "r": 1
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 2,
+     "r": 3
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"2\":{\"destQ\":5,\"destR\":3,\"generalTargetId\":null}}}",
+   "loaded": []
+  },
+  {
+   "name": "losowy odczyt generała #21",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 1,
+     "q": 4,
+     "r": 0
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 3,
+     "r": 4
+    },
+    {
+     "id": "3",
+     "ownerId": 1,
+     "q": 1,
+     "r": 4
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 6,
+     "r": 1
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 6,
+     "r": 4
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 4,
+     "r": 2
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 6,
+     "r": 0
+    }
+   ],
+   "rawSave": "{}",
+   "loaded": []
+  },
+  {
+   "name": "losowy odczyt generała #22",
+   "units": [
+    {
+     "id": "3",
+     "ownerId": 1,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 3,
+     "r": 6
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 2,
+     "r": 6
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 6,
+     "r": 6
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"1\":{\"destQ\":3,\"destR\":-1,\"generalTargetId\":\"G-2\",\"attackUnitId\":\"7\"},\"12\":{\"destQ\":6,\"destR\":2},\"100\":{\"destQ\":7,\"destR\":4,\"generalTargetId\":\"G-2\",\"attackUnitId\":\"3\"},\"7\":{\"destQ\":1,\"destR\":-1,\"generalTargetId\":\"x y\"}}}",
+   "loaded": []
+  },
+  {
+   "name": "losowy odczyt generała #23",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 4,
+     "r": 6
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 5,
+     "r": 6
+    },
+    {
+     "id": "7",
+     "ownerId": 1,
+     "q": 1,
+     "r": 4
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 0,
+     "r": 3
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 4,
+     "r": 0
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 5,
+     "r": 1
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 1,
+     "q": 5,
+     "r": 2
+    }
+   ],
+   "rawSave": "{}",
+   "loaded": []
+  },
+  {
+   "name": "losowy odczyt generała #24",
+   "units": [
+    {
+     "id": "2",
+     "ownerId": 1,
+     "q": 5,
+     "r": 2
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 3,
+     "r": 5
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 2,
+     "r": 3
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 4,
+     "r": 0
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 2,
+     "r": 5
+    },
+    {
+     "id": "100",
+     "ownerId": 1,
+     "q": 1,
+     "r": 0
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 5,
+     "r": 1
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 5,
+     "r": 6
+    }
+   ],
+   "rawSave": "{\"autoMarch\":{\"leaderId\":\"5\",\"destQ\":1,\"destR\":0},\"plannedMarches\":{\"5\":{\"destQ\":2,\"destR\":7},\"100\":{\"destQ\":7,\"destR\":-1},\"4294967294\":{\"destQ\":5,\"destR\":0}}}",
+   "loaded": [
+    [
+     "5",
+     {
+      "destQ": 2,
+      "destR": 7
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy odczyt generała #25",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 6,
+     "r": 6
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 2,
+     "r": 6
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 4,
+     "r": 1
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 5,
+     "r": 5
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 3,
+     "r": 6
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 4,
+     "r": 1
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 3,
+     "r": 2
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 5,
+     "r": 0
+    }
+   ],
+   "rawSave": "{}",
+   "loaded": []
+  },
+  {
+   "name": "losowy odczyt generała #26",
+   "units": [
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 3,
+     "r": 5
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 4,
+     "r": 0
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 4,
+     "r": 5
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "12",
+     "ownerId": 1,
+     "q": 5,
+     "r": 2
+    },
+    {
+     "id": "100",
+     "ownerId": 1,
+     "q": 1,
+     "r": 5
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 6,
+     "r": 4
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 1,
+     "q": 3,
+     "r": 4
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"10\":{\"destQ\":7,\"destR\":3,\"generalTargetId\":\"\"},\"4294967295\":{\"destQ\":0,\"destR\":5,\"generalTargetId\":null},\"4294967295\":{\"destQ\":3,\"destR\":4,\"generalTargetId\":\"L\"}}}",
+   "loaded": []
+  },
+  {
+   "name": "losowy odczyt generała #27",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 5,
+     "r": 1
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "id": "3",
+     "ownerId": 1,
+     "q": 4,
+     "r": 6
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 3,
+     "r": 5
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 6,
+     "r": 4
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 4,
+     "r": 6
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 1,
+     "r": 5
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 6,
+     "r": 1
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 0,
+     "r": 1
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 1,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"12\":{\"destQ\":-1,\"destR\":5},\"4294967295\":{\"destQ\":4,\"destR\":2,\"attackUnitId\":\"3\"}}}",
+   "loaded": [
+    [
+     "12",
+     {
+      "destQ": -1,
+      "destR": 5
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy odczyt generała #28",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 1,
+     "r": 5
+    },
+    {
+     "id": "2",
+     "ownerId": 1,
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 5,
+     "r": 2
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 1,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 1,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 5,
+     "r": 4
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 6,
+     "r": 3
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 0,
+     "r": 2
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"12\":{\"destQ\":1,\"destR\":6,\"generalTargetId\":null},\"12\":{\"destQ\":4,\"destR\":1,\"attackUnitId\":\"4294967295\"},\"10\":{\"destQ\":4,\"destR\":1,\"generalTargetId\":\"\"},\"3\":{\"destQ\":4,\"destR\":6,\"generalTargetId\":\"07\"}}}",
+   "loaded": [
+    [
+     "3",
+     {
+      "destQ": 4,
+      "destR": 6,
+      "generalTargetId": "07"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy odczyt generała #29",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 0,
+     "r": 2
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 3,
+     "r": 4
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 4,
+     "r": 1
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 0,
+     "r": 2
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 2,
+     "r": 5
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 4,
+     "r": 5
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 3,
+     "r": 3
+    }
+   ],
+   "rawSave": "{\"autoMarch\":{\"leaderId\":\"2\",\"destQ\":4,\"destR\":5},\"plannedMarches\":{\"10\":{\"destQ\":3,\"destR\":2},\"3\":{\"destQ\":4,\"destR\":1}}}",
+   "loaded": [
+    [
+     "10",
+     {
+      "destQ": 3,
+      "destR": 2
+     }
+    ],
+    [
+     "2",
+     {
+      "destQ": 4,
+      "destR": 5
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy odczyt generała #30",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 1,
+     "q": 6,
+     "r": 4
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 2,
+     "r": 4
+    },
+    {
+     "id": "3",
+     "ownerId": 1,
+     "q": 6,
+     "r": 3
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 3,
+     "r": 2
+    },
+    {
+     "id": "12",
+     "ownerId": 1,
+     "q": 1,
+     "r": 4
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 3,
+     "r": 0
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"4294967295\":{\"destQ\":5,\"destR\":1,\"generalTargetId\":\"\",\"attackUnitId\":\"4294967294\"},\"3\":{\"destQ\":6,\"destR\":3,\"generalTargetId\":\"07\"},\"1\":{\"destQ\":6,\"destR\":4,\"generalTargetId\":\"x y\"}}}",
+   "loaded": [
+    [
+     "4294967295",
+     {
+      "destQ": 5,
+      "destR": 1,
+      "attackUnitId": "4294967294"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy odczyt generała #31",
+   "units": [
+    {
+     "id": "3",
+     "ownerId": 1,
+     "q": 2,
+     "r": 4
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 1,
+     "r": 0
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 5,
+     "r": 2
+    }
+   ],
+   "rawSave": "{\"autoMarch\":{\"leaderId\":\"5\",\"destQ\":6,\"destR\":5},\"plannedMarches\":{\"100\":{\"destQ\":6,\"destR\":5,\"generalTargetId\":\"4294967295\",\"attackUnitId\":\"5\"},\"3\":{\"destQ\":5,\"destR\":6},\"7\":{\"destQ\":3,\"destR\":1,\"attackUnitId\":\"10\"}}}",
+   "loaded": []
+  },
+  {
+   "name": "losowy odczyt generała #32",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 1,
+     "q": 0,
+     "r": 2
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 1,
+     "r": 6
+    },
+    {
+     "id": "3",
+     "ownerId": 1,
+     "q": 0,
+     "r": 5
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 5,
+     "r": 1
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 6,
+     "r": 6
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 2,
+     "r": 5
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 1,
+     "r": 4
+    }
+   ],
+   "rawSave": "{\"autoMarch\":{\"leaderId\":\"100\",\"destQ\":1,\"destR\":3},\"plannedMarches\":{\"2\":{\"destQ\":3,\"destR\":1,\"generalTargetId\":null},\"4294967295\":{\"destQ\":0,\"destR\":0,\"generalTargetId\":\"x y\"}}}",
+   "loaded": [
+    [
+     "2",
+     {
+      "destQ": 3,
+      "destR": 1
+     }
+    ],
+    [
+     "4294967295",
+     {
+      "destQ": 0,
+      "destR": 0,
+      "generalTargetId": "x y"
+     }
+    ],
+    [
+     "100",
+     {
+      "destQ": 1,
+      "destR": 3
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy odczyt generała #33",
+   "units": [
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "10",
+     "ownerId": 1,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 1,
+     "r": 5
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 2,
+     "r": 3
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 1,
+     "q": 5,
+     "r": 5
+    }
+   ],
+   "rawSave": "{}",
+   "loaded": []
+  },
+  {
+   "name": "losowy odczyt generała #34",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 3,
+     "r": 4
+    },
+    {
+     "id": "5",
+     "ownerId": 0,
+     "q": 5,
+     "r": 4
+    },
+    {
+     "id": "7",
+     "ownerId": 1,
+     "q": 1,
+     "r": 0
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 6,
+     "r": 1
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"4294967294\":{\"destQ\":2,\"destR\":4}}}",
+   "loaded": []
+  },
+  {
+   "name": "losowy odczyt generała #35",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 1,
+     "q": 4,
+     "r": 6
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 5,
+     "r": 3
+    },
+    {
+     "id": "7",
+     "ownerId": 1,
+     "q": 6,
+     "r": 4
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 1,
+     "r": 5
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 1,
+     "r": 5
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "rawSave": "{\"autoMarch\":{\"leaderId\":\"4294967294\",\"destQ\":4,\"destR\":3},\"plannedMarches\":{\"12\":{\"destQ\":2,\"destR\":4,\"generalTargetId\":\"\"},\"12\":{\"destQ\":-1,\"destR\":2,\"attackUnitId\":\"100\"}}}",
+   "loaded": [
+    [
+     "12",
+     {
+      "destQ": -1,
+      "destR": 2,
+      "attackUnitId": "100"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy odczyt generała #36",
+   "units": [
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 4,
+     "r": 6
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 6,
+     "r": 2
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 1,
+     "r": 5
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 1,
+     "r": 6
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 3,
+     "r": 1
+    }
+   ],
+   "rawSave": "{\"autoMarch\":{\"leaderId\":\"5\",\"destQ\":1,\"destR\":0},\"plannedMarches\":{\"100\":{\"destQ\":2,\"destR\":-1}}}",
+   "loaded": [
+    [
+     "100",
+     {
+      "destQ": 2,
+      "destR": -1
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy odczyt generała #37",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 6,
+     "r": 2
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 1,
+     "r": 2
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 6,
+     "r": 5
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 2,
+     "r": 0
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 3,
+     "r": 5
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 0,
+     "q": 4,
+     "r": 6
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 0,
+     "q": 0,
+     "r": 5
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"1\":{\"destQ\":4,\"destR\":3,\"generalTargetId\":\"\",\"attackUnitId\":\"1\"},\"3\":{\"destQ\":7,\"destR\":-1,\"generalTargetId\":null}}}",
+   "loaded": [
+    [
+     "3",
+     {
+      "destQ": 7,
+      "destR": -1
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy odczyt generała #38",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 1,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "id": "2",
+     "ownerId": 0,
+     "q": 6,
+     "r": 2
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 3,
+     "r": 5
+    },
+    {
+     "id": "7",
+     "ownerId": 0,
+     "q": 3,
+     "r": 5
+    },
+    {
+     "id": "10",
+     "ownerId": 1,
+     "q": 2,
+     "r": 1
+    },
+    {
+     "id": "12",
+     "ownerId": 0,
+     "q": 2,
+     "r": 3
+    },
+    {
+     "id": "100",
+     "ownerId": 1,
+     "q": 5,
+     "r": 4
+    },
+    {
+     "id": "4294967294",
+     "ownerId": 1,
+     "q": 6,
+     "r": 0
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"7\":{\"destQ\":7,\"destR\":1,\"generalTargetId\":\"L\"},\"12\":{\"destQ\":6,\"destR\":6,\"generalTargetId\":\"g1\"},\"100\":{\"destQ\":0,\"destR\":1,\"generalTargetId\":\"G-2\"},\"7\":{\"destQ\":3,\"destR\":7}}}",
+   "loaded": [
+    [
+     "7",
+     {
+      "destQ": 3,
+      "destR": 7
+     }
+    ],
+    [
+     "12",
+     {
+      "destQ": 6,
+      "destR": 6,
+      "generalTargetId": "g1"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "losowy odczyt generała #39",
+   "units": [
+    {
+     "id": "1",
+     "ownerId": 0,
+     "q": 1,
+     "r": 2
+    },
+    {
+     "id": "2",
+     "ownerId": 1,
+     "q": 1,
+     "r": 6
+    },
+    {
+     "id": "3",
+     "ownerId": 0,
+     "q": 3,
+     "r": 0
+    },
+    {
+     "id": "5",
+     "ownerId": 1,
+     "q": 4,
+     "r": 5
+    },
+    {
+     "id": "7",
+     "ownerId": 1,
+     "q": 2,
+     "r": 4
+    },
+    {
+     "id": "10",
+     "ownerId": 0,
+     "q": 4,
+     "r": 5
+    },
+    {
+     "id": "12",
+     "ownerId": 1,
+     "q": 3,
+     "r": 2
+    },
+    {
+     "id": "100",
+     "ownerId": 0,
+     "q": 1,
+     "r": 5
+    },
+    {
+     "id": "4294967295",
+     "ownerId": 1,
+     "q": 1,
+     "r": 5
+    }
+   ],
+   "rawSave": "{\"plannedMarches\":{\"4294967295\":{\"destQ\":1,\"destR\":5},\"12\":{\"destQ\":4,\"destR\":5},\"10\":{\"destQ\":7,\"destR\":4,\"generalTargetId\":\"L\"}}}",
+   "loaded": [
+    [
+     "10",
+     {
+      "destQ": 7,
+      "destR": 4,
+      "generalTargetId": "L"
+     }
+    ]
+   ]
+  }
+ ]
+}

@@ -810,8 +810,6 @@ pub struct PlannedMarchRestoreReport {
     /// wyrazic: cel nie jest liczba calkowita z zakresu `i32` albo `attackUnitId` nie jest kanonicznym
     /// zapisem `UnitId`. Taki wpis jest pominiety w calosci (odchylenie od weba, ktory go trzyma).
     pub unrepresentable: Vec<String>,
-    /// Id jednostek wczytanych bez `generalTargetId` (pole weba poza zakresem P4-1J).
-    pub general_target_dropped: Vec<String>,
 }
 
 /// P4-1J: web `plannedMarchesToSave` (`planned-march.ts:485-500`) dla planow `PlayableState`.
@@ -834,7 +832,7 @@ pub fn playable_planned_marches_to_save(
                     dest_q: f64::from(march.dest_q),
                     dest_r: f64::from(march.dest_r),
                     attack_unit_id: march.attack_unit_id.map(|id| id.to_string()),
-                    general_target_id: None,
+                    general_target_id: march.general_target_id.clone(),
                 },
             )
         })
@@ -957,9 +955,6 @@ pub fn restore_playable_planned_marches(
     let mut report = PlannedMarchRestoreReport::default();
     let loaded = planned_marches_from_save(legacy.as_ref(), Some(&entries), &units, PLAYER);
     for (unit_id, dest) in loaded {
-        if dest.general_target_id.is_some() {
-            report.general_target_dropped.push(unit_id.clone());
-        }
         let attack_unit_id = match dest.attack_unit_id.as_deref() {
             None => Some(None),
             Some(text) => canonical_unit_id(text).map(Some),
@@ -978,6 +973,7 @@ pub fn restore_playable_planned_marches(
             dest_q,
             dest_r,
             attack_unit_id,
+            general_target_id: dest.general_target_id,
         };
         match state
             .planned_marches

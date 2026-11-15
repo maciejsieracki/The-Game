@@ -38,6 +38,7 @@ fn march(id: u64, q: i32, r: i32) -> PlayablePlannedMarch {
         dest_q: q,
         dest_r: r,
         attack_unit_id: None,
+        general_target_id: None,
     }
 }
 
@@ -69,7 +70,6 @@ fn i32_bounds_roundtrip_and_one_past_is_reported() {
     ];
     let report = restore_playable_planned_marches(&mut state, &list, None, PlayerId::new(1));
     assert_eq!(report.unrepresentable, vec!["5", "6", "7", "8"]);
-    assert!(report.general_target_dropped.is_empty());
     let expected = vec![
         march(1, i32::MAX, 1),
         march(2, i32::MIN, 1),

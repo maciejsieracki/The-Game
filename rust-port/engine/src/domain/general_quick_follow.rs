@@ -11,8 +11,8 @@
 //!
 //! ZALOZENIA (ZALOZENIE):
 //! - Typ `PlannedMarchDest` z `planned-march.ts:14-21` (wariant po `dc8a3adc`: `generalTargetId`) jest tu
-//!   odwzorowany lokalnie jako `TrackedMarchDest`; `pathfinding::PlannedMarchDest` NIE zna pola
-//!   `generalTargetId` (plik poza allowlista tematu) - NASTEPNA-PARTIA (zapis/odczyt save).
+//!   odwzorowany lokalnie jako `TrackedMarchDest`. `pathfinding::PlannedMarchDest` zna pole
+//!   `generalTargetId` (`pathfinding.rs:1718`); zapis/odczyt w `PlayableState` (P4-1J-GENERALTARGET).
 //! - Planner i efekty sa traitami; web wstrzykuje je jako obiekty. `mover` z `movementContext` jest
 //!   przekazywany do `path_plan` bez zmian (web go nie modyfikuje w tym module).
 //! - `MarchMap` naslada semantyke `Map` JS: `set` na istniejacym kluczu zachowuje pozycje.

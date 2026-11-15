@@ -2185,7 +2185,7 @@ pub mod ruch_jednostek {
                 if unit.owner_id != player_owner_id {
                     continue;
                 }
-                // web `planned-march.ts:455`: wpis generała zachowany nawet przy zgodnej pozycji
+                // web `planned-march.ts:466`: wpis generała zachowany nawet przy zgodnej pozycji
                 // (cel = ostatnia znana pozycja lidera; rozwiazywana po wczytaniu).
                 let has_general = dest
                     .general_target_id
