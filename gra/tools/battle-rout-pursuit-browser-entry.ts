@@ -47,12 +47,16 @@ for (const fn of ['_doMeleeAttack', '_doRangedAttack']) {
   };
 }
 
-api.killedWhileRouted = 0; api.collapseRound = -1; api.fledAtEdge = 0; api.fledNotAtEdge = 0;
+api.killedWhileRouted = 0; api.collapseRound = -1; api.fledAtEdge = 0; api.fledNotAtEdge = 0; api.events = { rout: [] as any[], flee: [] as any[] };
 {
   const origFade = scene._startFade.bind(scene);
   scene._startFade = (ru: any) => { if (ru.routed && !ru.removed) api.killedWhileRouted++; return origFade(ru); };
   const origRout = scene._startRout.bind(scene);
   scene._startRout = (ru: any) => {
+    // R-WEB-LIVE-VERIFY-BATTLE-AFTER-FULL-MOVE-Q1 (N3): zdarzenie rozbicia z numerem rundy i flaga neverRout
+    if (!ru.routed && !ru.dead && !ru.fadingOut) {
+      api.events.rout.push({ round: scene.roundNo, side: ru.side, id: String(ru.id), neverRout: !!ru.neverRout });
+    }
     const r = origRout(ru);
     const roster = ru.side === 'atk' ? scene.atk : scene.def;
     if (api.collapseRound < 0 && roster.every((u: any) => u.dead || u.removed || u.routed)) api.collapseRound = scene.roundNo;
@@ -62,6 +66,7 @@ api.killedWhileRouted = 0; api.collapseRound = -1; api.fledAtEdge = 0; api.fledN
   scene._removeUnitFromScene = (ru: any) => {
     // klony planowania AUTO-batch nie maja wlasnych materialow (mats=[]) -- pomijamy je
     if (!ru.removed && ru.routed && ru.bu.hp > 0 && ru.mats.length > 0) {
+      api.events.flee.push({ round: scene.roundNo, side: ru.side, id: String(ru.id) });
       const edge = scene._fleeHomeCol ? scene._fleeHomeCol(ru) : -1;
       if (ru.q === edge) api.fledAtEdge++; else { api.fledNotAtEdge++; (api.notEdge ||= []).push([ru.side, ru.q, ru.r, ru.fleeStuck]); }
     }
@@ -98,6 +103,7 @@ function finish(): void {
     attacksOnRouted: api.attacksOnRouted, killedWhileRouted: api.killedWhileRouted, collapseRound: api.collapseRound,
     fledAtEdge: api.fledAtEdge, fledNotAtEdge: api.fledNotAtEdge, notEdge: (api.notEdge ?? []).slice(0, 8),
     log: (scene.log as string[]).filter(l => /Koniec|zalamane|PAT/.test(l)).slice(-4),
+    events: api.events,
   };
   api.done = true;
 }
