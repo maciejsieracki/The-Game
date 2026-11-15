@@ -43,11 +43,15 @@ pub enum ViewError {
         /// Value found.
         actual: u16,
     },
-    /// A collection that must be parallel to `map.hexes` has another length.
+    /// A collection that must be parallel to `map.hexes` has another length;
+    /// also `map.riverRenderPaths`, which is parallel to `map.rivers`
+    /// (contract §3.2, D-DTO-4: `riverRenderPaths[i]` is the render path of
+    /// `rivers[i]`).
     LengthMismatch {
         /// JSON path.
         field: String,
-        /// `map.hexes.len()` (or `cols * rows` for the battle grid).
+        /// `map.hexes.len()` (or `cols * rows` for the battle grid, or
+        /// `map.rivers.len()` for `map.riverRenderPaths`).
         expected: usize,
         /// Length found.
         actual: usize,
@@ -206,6 +210,13 @@ pub fn validate_map(map: &MapViewDto) -> Check {
             });
         }
     }
+    // `riverRenderPaths[i]` belongs to `rivers[i]` (P4-1B-Q3; web: one render
+    // path per `riverPaths[pi]`, `render/scene.ts:1308-1318` @ `07d2fbd72`).
+    len(
+        "map.riverRenderPaths",
+        map.rivers.len(),
+        map.river_render_paths.len(),
+    )?;
     for (i, hex) in map.hexes.iter().enumerate() {
         for (j, &edge) in hex.rzeka_krawedzie.iter().enumerate() {
             range(

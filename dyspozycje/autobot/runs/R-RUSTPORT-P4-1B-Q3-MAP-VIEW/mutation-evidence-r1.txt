@@ -1,0 +1,8 @@
+WYKRYTA    | M1 brak trimu dla medium | exit=101 | czerwone: mutacja_none_jako_nie_main_daje_fail, map_view_bajt_w_bajt_z_pinem
+WYKRYTA    | M2 None jako nie-main (short) | exit=101 | czerwone: mutacja_none_jako_nie_main_daje_fail, map_view_bajt_w_bajt_z_pinem
+WYKRYTA    | M3 maska z filtrem mgly | exit=101 | czerwone: hex_dyn_bajt_w_bajt_z_pinem, sasiad_spoza_mapy_to_brak_drogi
+WYKRYTA    | M4 bez sortowania heksow | exit=101 | czerwone: map_view_bajt_w_bajt_z_pinem, hex_dyn_bajt_w_bajt_z_pinem, przetasowane_hexes_daja_identyczny_dto, sasiad_spoza_mapy_to_brak_drogi, walidacja_dlugosci_render_paths
+WYKRYTA    | M5 wioska ignoruje miasta | exit=101 | czerwone: hex_dyn_bajt_w_bajt_z_pinem
+WYKRYTA    | M6 medium przez land (bez mediumRiverRenderPath) | exit=101 | czerwone: map_view_bajt_w_bajt_z_pinem, mutacja_none_jako_nie_main_daje_fail
+WYKRYTA    | M7 sasiad spoza mapy = droga | exit=101 | czerwone: hex_dyn_bajt_w_bajt_z_pinem, sasiad_spoza_mapy_to_brak_drogi
+WYKRYTA    | M8 brak reguly riverRenderPaths.len == rivers.len (view-model) | exit=101 | czerwone: river_render_paths_parallel_to_rivers
