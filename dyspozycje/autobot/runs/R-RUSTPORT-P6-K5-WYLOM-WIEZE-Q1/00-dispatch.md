@@ -9,7 +9,7 @@ ZASADA: NAJPIERW WEB. Pin `07d2fbd72`, `gra/src/battle/battleScene.ts`: `_breach
 
 ŹRÓDŁO LUK: `dyspozycje/autobot/runs/R-RUSTPORT-P6-K5-WIEZE-ROZPOZNANIE-Q1/01-rozpoznanie.md` (pkt 4, 7, 21, 24; sekcja ROZBIEŻNE, linia ~73). Te punkty są zweryfikowane przez Evaluatora.
 
-BAZA: `origin/rust-port/parity-v2` = `62ff9de35`. Worktree z tej bazy. Przed pracą: `git merge-base --is-ancestor 62ff9de35 HEAD`.
+BAZA: `origin/rust-port/parity-v2` = `d5a52a980`. Worktree z tej bazy. Przed pracą: `git merge-base --is-ancestor d5a52a980 HEAD`.
 
 ZAKRES (tylko to):
 1. Stan `destroyed` dla wieży w `SiegeEnv`/`ProdBody` (dziś brak: `wall_tile_rows` w `siege_tactics_loop.rs` ~:313 to migawka). Wieża bez kafla przestaje być planowana i nie strzela (pin :4214-4216, :4226).
