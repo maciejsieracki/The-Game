@@ -10068,3 +10068,6 @@ FALA 739 (main 08b7f67b4, ROBOCZA MD5 83dc9914, Raw MD5 zgodne): R-WEB-BATTLE-SU
 
 ## 2026-11-15 — TRADE-ERA r1: FC FAIL → runda 2 (jedna epoka umowy w całym handlu)
 R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r1 (kandydat Obrony 51f996d6e, FC report 4b72baf86): FC FAIL — epoka umowy (wyższa z dwóch stron) działa tylko w pickAiPlayerCyclicBarter; okno umowy, ai-offer-balance, bramka uczciwości UI i Szybka umowa nadal na epoce gracza; brak testu bramki w epokach 2/3, testu DOM (Chromium „download failure” — instrukcja: bez pobierania, executablePath /opt/pw-browsers/chromium), testu ziarna quick-deal, obcinania starych ofert; baza nie jest potomkiem origin/main 08b7f67b4. Runda 2: DODATEK 2. refs/keep/R-WEB-TRADE-ERA-*.
+
+## 2026-11-15 — FULL-MOVE: dwie nieudane rundy Haiku → runda 3 na SONNECIE (uzasadniona)
+R-WEB-BATTLE-FULL-MOVE-THEN-STRIKE-AT-END-Q1: r1 FC FAIL (regresja pościgu T3 0.679), r2 (po zmarnowaniu przez incydent) Operator BLOCK bez kodu, FC r4 FAIL (T3 0.667, brak testów realnej bitwy/mutacji/determinizmu/Chromium/docs). Uzasadnienie dla Sonnet (args haikuFailures=2, sonnetWhy): wymaga diagnozy planera klonów konnicy i zmiany w battleScene.ts bez regresji FALI 731. Baza: origin/main 08b7f67b4; w razie sprzeczności reguły właściciela z miarą T3 → DECISION_REQUIRED (nie zmieniać progu). refs/keep/R-WEB-FULL-MOVE-r2b-*.
