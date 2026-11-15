@@ -1,4 +1,7 @@
-STATUS: PASS-WITH-NOTES (pomiary) / zakres tematu nadal BLOCK wg 01-operator-impl.md (praca już zintegrowana)
+STATUS: BLOCK
+<!-- Korekta w Obronie (02a-obrona.md, zarzut 6): pierwotnie podwójny STATUS „PASS-WITH-NOTES (pomiary) / BLOCK”. Kontrakt wymaga jednej wartości. Stan tematu = BLOCK (zakres już zintegrowany), pomiary niżej są dowodem pomocniczym. -->
+<!-- Korekty liczb w Obronie: zarzut 3 (rozmiar katalogu fixtur), zarzut 4 (dryf battleScene.ts). -->
+
 DOMAIN: GAME
 TEMAT: R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q3
 GOAL: MOD-14 część 3 (jednostki i nakładki) wg §4 P4-36. To wywołanie, Operator "pomiary" (15.11): mutacje i bramki na bieżącej bazie. Część 3 jest już na `parity-v2`: FC PASS `bb74ff9db`, potem REPIN-3D A1/A2/A4.
@@ -18,10 +21,10 @@ TESTY (cargo 1.97.0; `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFIL
 - `cargo test --locked --all-targets`: EXIT=0, 62 przebiegi, **466 passed / 0 failed / 0 ignored**. Pomiar r1 na starej bazie dał 408; wzrost pochodzi z tematów zintegrowanych później.
 - `battle3d_*`: units 9, field 5, picking 8, siege_wall 3, dynamics 5, razem 30/30.
 - Mutacje `python3 -I tests/fixtures/battle3d/mutate_units.py` na `src/battle/units.rs` po REPIN-3D: wszystkie 43 wzorce występują dokładnie raz (sprawdzone przed uruchomieniem), wynik **KILLED 43/43**, EXIT=0. Po przebiegu `git status` jest czysty (źródło przywrócone).
-- Fixtury: `sha256sum -c MANIFEST.sha256` 25/25 OK. Katalog ma 11 983 553 B (≤ 12 MB), największy plik `siege_wall.json` 7 228 812 B (≤ 8 MB).
+- Fixtury: `sha256sum -c MANIFEST.sha256` 25/25 OK. Katalog ma 11 975 966 B (≤ 12 MB; korekta w Obronie, zarzut 3: pierwotnie podano 11 983 553 B, czego nie da się odtworzyć; `find -printf '%s'` z sumą i `du -sb --apparent-size` dają 11 975 966 B, 26 plików), największy plik `siege_wall.json` 7 228 812 B (≤ 8 MB).
 - Dryf weba (`origin/main` `807ecebdd`), tylko odnotowany, bez przepinania:
   - `git diff --shortstat edb8fb56 origin/main -- gra/src/battle gra/src/render`: 38 plików, +4709/−687.
-  - Od bazy wektorów REPIN `86d510c66`: 23 pliki, +3065/−433, w tym `battleScene.ts` +1517 linii zmian.
+  - Od bazy wektorów REPIN `86d510c66`: 23 pliki, +3065/−433, w tym `battleScene.ts` +1290/−227, czyli 1517 zmienionych linii (korekta w Obronie, zarzut 4; `git diff --numstat 86d510c66 origin/main -- gra/src/battle/battleScene.ts`).
   - Wpływ na wektory części 3: NIE_ZMIERZONO.
 
 BLOKADY:

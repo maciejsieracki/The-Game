@@ -1,0 +1,81 @@
+# Obrona 15.11 (R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q3), worktree wf_102d919b-3d8-4, HEAD 6516fdd93 (detached)
+# env: CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0, CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_102d919b-3d8-4-obrona[-msrv] (usuniete po przebiegu)
+
+## python3 -I tests/fixtures/battle3d/mutate_units.py (pelny przebieg, cargo 1.97.0, start 2026-11-15T09:46:17Z)
+KILLED   HPBAR_W (test failed)
+KILLED   HPBAR_Y (test failed)
+KILLED   WALL_WALK_Y (test failed)
+KILLED   dirYaw fallback (test failed)
+KILLED   sideColor own (test failed)
+KILLED   frame width pad (test failed)
+KILLED   frame y (test failed)
+KILLED   fg z offset (test failed)
+KILLED   flag x (test failed)
+KILLED   hp green threshold (test failed)
+KILLED   hp yellow threshold (test failed)
+KILLED   morale red channel (test failed)
+KILLED   ammo fg visibility (test failed)
+KILLED   ammo shown rule (test failed)
+KILLED   js_max NaN (test failed)
+KILLED   js_min NaN (test failed)
+KILLED   fallback head y (test failed)
+KILLED   bars height (test failed)
+KILLED   deploy scale reset (test failed)
+KILLED   wall yaw (test failed)
+KILLED   wall centre row (test failed)
+KILLED   remove hides group (test failed)
+KILLED   deploy move y (test failed)
+KILLED   climb bars height (test failed)
+KILLED   ring outer radius (test failed)
+KILLED   ring y (test failed)
+KILLED   ring group colour (test failed)
+KILLED   visuals scale reset (test failed)
+KILLED   visuals ring recentre (test failed)
+KILLED   arrow min length (test failed)
+KILLED   arrow head length (test failed)
+KILLED   arrow shaft length (test failed)
+KILLED   cone opacity cap (test failed)
+KILLED   formation offset default (test failed)
+KILLED   manual input guard (test failed)
+KILLED   tile occupant side (test failed)
+KILLED   group de-duplication (test failed)
+KILLED   battle ghost colour (test failed)
+KILLED   ghost skips own occupant (test failed)
+KILLED   drag disc opacity (test failed)
+KILLED   drag outline opacity (test failed)
+KILLED   anchor lift (test failed)
+KILLED   hover outline dashed (test failed)
+KILLED 43/43
+EXIT=0
+2026-11-15T10:00:23Z
+# po przebiegu: git status = tylko 01b-operator-pomiary.md (edycja Obrony), src/battle/units.rs przywrocony
+
+## cargo +1.87.0 test --locked --all-targets (cargo 1.87.0 (99624be96 2025-05-06))
+EXIT=0
+runs=62 passed=466 failed=0 ignored=0
+
+## cargo test --locked --all-targets --features gpu (stable 1.97.0)
+EXIT=0
+runs=62 passed=469 failed=0 ignored=1
+test upload_and_read_back_every_level ... ignored, needs a GPU adapter (none in the container); run on the owner's machine with the P4-15 spike
+# (#[ignore] w tests/atlas_gpu.rs:101, modul atlasu P4-31, nie battle3d)
+
+## Odtworzenie units.json wg README fixtur (sekcja REPIN-3D A4)
+# node v22.23.4, npm install --ignore-scripts three@0.169.0 esbuild@0.24.0 (@esbuild/linux-x64),
+# git archive 86d510c66 gra/src gra/data, uklad $S/{ref,websrc,refscript,out}, node_modules = symlink ../ref/node_modules
+battle3d units ctor=11 units=1230 bars=10 arrows=12 preview=11 ghosts=16
+gen_units.mjs sha256=2a35e6f4e07eb312edb323cb604600749a413c01a757efcadea2783e0a7684d8 (2839427 B) = README
+units.json surowy sha256=9d734c746217b602891be32244138ad1f18f255af07b35fa7e5529d0ff0d9d6d ("node":"v22.23.4")
+units.json po sed '"node":"v22.23.4"' -> '"node":"v22.22.0"' sha256=4242bc10c46a4d6a042c59867af24c07c4f16c26b3ddbdcf562f0c1c7af15e54; cmp z plikiem w repo: IDENTICAL
+# kontrola ukladu: te same pliki w $S/alt z node_modules jako katalog (nie symlink do ../ref):
+gen_units.mjs sha256=ff0a4e26cf991ff7cd2d5b21009fd08634107c316b7fdd2fa7e785643591a34d (inny niz README)
+
+## Rozmiar katalogu fixtur rust-port/renderer/tests/fixtures/battle3d
+find . -type f -printf '%s\n' | suma = 11975966, plikow = 26
+du -sb --apparent-size . = 11975966
+najwiekszy: siege_wall.json 7228812
+
+## Dryf battleScene.ts
+git diff --numstat 86d510c66 origin/main -- gra/src/battle/battleScene.ts -> 1290 227 (origin/main = 807ecebdd)
+git diff --shortstat edb8fb56 origin/main -- gra/src/battle gra/src/render -> 38 files changed, 4709 insertions(+), 687 deletions(-)
+git diff --shortstat 86d510c66 origin/main -- gra/src/battle gra/src/render -> 23 files changed, 3065 insertions(+), 433 deletions(-)
