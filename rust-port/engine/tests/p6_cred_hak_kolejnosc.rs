@@ -12,7 +12,7 @@ use civ_engine::domain::diplomacy_player_war::{
     charge_war_declaration_credibility, declare_war_by_player, n2_values,
     register_player_war_declaration, N2Values, PlayerWarOutcome, KEY_OSTATNIE_PRZEWINIENIE,
 };
-use civ_engine::domain::diplomacy_truce::PairMetaWeb;
+use civ_engine::domain::diplomacy_truce::{PairMetaWeb, TruceEndOfferWeb};
 use civ_engine::domain::diplomacy_truce_flow::TruceDiplomacy;
 use civ_engine::domain::types::Difficulty;
 use civ_engine::domain::PlayerId;
@@ -259,6 +259,18 @@ fn odwet_pomija_n2_ale_nie_p4() {
         2,
         "P4 zawsze zeruje licznik obu stron"
     );
+    assert_eq!(
+        s.pair_meta_of(p(HUMAN), p(AI))
+            .extra
+            .get(KEY_OSTATNIE_PRZEWINIENIE),
+        Some(&json!({
+            "turn": 3.0,
+            "typ": "zlamanie_paktu_nap",
+            "byOwnerId": AI as f64,
+            "againstOwnerId": HUMAN as f64,
+        })),
+        "web main.ts:12214: odwet nie nadpisuje ostatniePrzewinienieWobecNas"
+    );
 }
 
 #[test]
@@ -370,6 +382,11 @@ fn kolejnosc_a_c_zmienia_kare_mutacja_musi_dac_roznica() {
         (trust_canonical - expected).abs() < 1e-9,
         "{trust_canonical} != {expected}"
     );
+    // Literal z pinu, liczony recznie: w = 20 - 18 = 2, spadek 0,99, dZ = -40 * 0,99 = -39,6, zaufanie 40 - 39,6 = 0,4.
+    assert!(
+        (trust_canonical - 0.4).abs() < 1e-9,
+        "literal z pinu: {trust_canonical} != 0.4"
+    );
 }
 
 #[test]
@@ -384,4 +401,136 @@ fn bez_karencji_zerwanie_bez_umow_nie_zmienia_relacji_przed_wojna() {
     // charge sam nie zapisuje relacji (krok c dopiero zmienia status).
     charge_war_declaration_credibility(&mut s, &mut cred, p(HUMAN), p(AI), TURN);
     assert_eq!(s.status(p(HUMAN), p(AI)), RelationStatus::Peace);
+}
+
+fn przewinienie_meta(turn: f64, typ: &str, by: f64, against: f64) -> PairMetaWeb {
+    PairMetaWeb {
+        extra: serde_json::Map::from_iter([(
+            KEY_OSTATNIE_PRZEWINIENIE.to_string(),
+            json!({
+                "turn": turn,
+                "typ": typ,
+                "byOwnerId": by,
+                "againstOwnerId": against,
+            }),
+        )]),
+        ..Default::default()
+    }
+}
+
+/// Web `main.ts:12213-12219` + `12196-12201`: NAP i okno rozejmu to DWA osobne zdarzenia -18.
+#[test]
+fn okno_rozejmu_z_nap_daje_dwa_zdarzenia_n2() {
+    let (mut s, mut cred, mut agg) = setup(RelationStatus::Peace);
+    add_deal(&mut s, TreatyKind::Nap);
+    s.set_pair_meta(
+        p(HUMAN),
+        p(AI),
+        PairMetaWeb {
+            truce_until_turn: Some(10.0),
+            truce_initiator_id: Some(AI as f64),
+            ..Default::default()
+        },
+    );
+    let (breach, broken, _) = declared_parts(declare(&mut s, &mut cred, &mut agg, TURN));
+    assert!(breach);
+    assert_eq!(broken.len(), 1);
+    let ev = cred.events_of(HUMAN as i64);
+    assert_eq!(ev.len(), 2, "NAP + okno rozejmu = dwa zdarzenia");
+    assert!(ev
+        .iter()
+        .all(|e| e.typ == CredibilityEvent::ZlamaniePaktuNap && e.original_value == -18.0));
+}
+
+/// Web `credibilityEventOpensOdwet` (`main.ts:12148-12153`): cztery typy otwieraja odwet, ktory pomija N2.
+#[test]
+fn odwet_dla_kazdego_typu_otwierajacego_pomija_n2() {
+    for typ in [
+        "zlamanie_paktu_sojusz",
+        "odmowa_obowiazku_sojuszu",
+        "wypowiedzenie_wojny_bez_ostrzezenia",
+    ] {
+        let (mut s, mut cred, mut agg) = setup(RelationStatus::Peace);
+        add_deal(&mut s, TreatyKind::Nap);
+        s.set_pair_meta(
+            p(HUMAN),
+            p(AI),
+            przewinienie_meta(3.0, typ, AI as f64, HUMAN as f64),
+        );
+        declare(&mut s, &mut cred, &mut agg, TURN);
+        assert!(
+            cred.events_of(HUMAN as i64).is_empty(),
+            "typ {typ}: odwet pomija N2"
+        );
+    }
+}
+
+/// Typ spoza listy odwetu nie pomija N2; niezgodne strony (`byOwnerId`/`againstOwnerId`) tez nie daja odwetu
+/// (web `isCredibilityRetaliation`, `main.ts:12161-12167`).
+#[test]
+fn odwet_wymaga_typu_i_wlasciwych_stron() {
+    let (mut s, mut cred, mut agg) = setup(RelationStatus::Peace);
+    add_deal(&mut s, TreatyKind::Nap);
+    s.set_pair_meta(
+        p(HUMAN),
+        p(AI),
+        przewinienie_meta(3.0, "zlamana_umowa_handlowa", AI as f64, HUMAN as f64),
+    );
+    declare(&mut s, &mut cred, &mut agg, TURN);
+    assert_eq!(
+        cred.events_of(HUMAN as i64).len(),
+        1,
+        "typ spoza listy odwetu: N2 wchodzi"
+    );
+
+    for (by, against) in [
+        (99.0, HUMAN as f64),
+        (AI as f64, 99.0),
+        (HUMAN as f64, AI as f64),
+    ] {
+        let (mut s, mut cred, mut agg) = setup(RelationStatus::Peace);
+        add_deal(&mut s, TreatyKind::Nap);
+        s.set_pair_meta(
+            p(HUMAN),
+            p(AI),
+            przewinienie_meta(3.0, "zlamanie_paktu_nap", by, against),
+        );
+        declare(&mut s, &mut cred, &mut agg, TURN);
+        let ev = cred.events_of(HUMAN as i64);
+        assert_eq!(
+            ev.len(),
+            1,
+            "by={by} against={against}: brak odwetu, N2 wchodzi"
+        );
+        assert_eq!(ev[0].original_value, -18.0);
+    }
+}
+
+/// Web `isTruceWindowBreach` (`main.ts:12176-12225`): oferta pokoju po rozejmie (`truceEndOffer`) to zlamanie
+/// Z8 nawet bez aktywnego rozejmu; oferta jest czyszczona (`clearTruceEndOffer`).
+#[test]
+fn oferta_konca_rozejmu_bez_aktywnego_rozejmu_to_zlamanie() {
+    let (mut s, mut cred, mut agg) = setup(RelationStatus::Peace);
+    s.set_pair_meta(
+        p(HUMAN),
+        p(AI),
+        PairMetaWeb {
+            truce_end_offer: Some(TruceEndOfferWeb {
+                turn: 4.0,
+                from_owner_id: AI as f64,
+                to_owner_id: HUMAN as f64,
+                inbox_id: None,
+            }),
+            ..Default::default()
+        },
+    );
+    let (breach, broken, cause) = declared_parts(declare(&mut s, &mut cred, &mut agg, TURN));
+    assert!(breach, "oferta po rozejmie = zlamanie Z8");
+    assert!(broken.is_empty());
+    assert_eq!(cause, WarCause::BezPowodu);
+    let ev = cred.events_of(HUMAN as i64);
+    assert_eq!(ev.len(), 1);
+    assert_eq!(ev[0].typ, CredibilityEvent::ZlamaniePaktuNap);
+    assert_eq!(ev[0].original_value, -18.0);
+    assert!(s.pair_meta_of(p(HUMAN), p(AI)).truce_end_offer.is_none());
 }
