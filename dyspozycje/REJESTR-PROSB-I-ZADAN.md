@@ -10092,3 +10092,7 @@ Dopisek 2 (2026-11-15, DODATEK 5b): po ciosie, gdy jednostka nie ma dokąd się 
 ### 2026-11-15 — LEDGER-B (Skąd zapasy część B) runda 1: FC FAIL (dokumentacja OK, 4/5 celów niewykonane)
 - Operator Haiku r1: tylko GOAL 2 (hasło, §53a, wikiBundle; 19 rodzajów źródeł po obronie, kandydat `de12837ba`, ref `refs/keep/R-WEB-LEDGER-B-r1-{op,eval,obrona,fc}`). GOAL 1/3/4/5 niewykonane — limit 590 s na polecenie Bash, brak przebiegu w tle. Rozbieżność bazy (1947a3a33 bez części A) wyjaśniona: baza = origin/main + `de12837ba`.
 - DODATEK 2: kolejność 4 (diagnoza endTurn t57 — blokuje #415/#417) → 3 → 1 → 5, przebiegi w tle (`setsid nohup` + krótkie odpytywanie), częściowy wynik dopuszczalny. Runda 2 na Haiku (r1 nie była dwiema nieudanymi rundami).
+
+### 2026-11-15 — TRADE-ERA (#416) runda 2: FC FAIL → runda 3 na SONNET
+- r2 (Haiku): kod okna/Szybkiej umowy/onSubmit w epoce umowy, 14/14 + 185/0; FC FAIL (kandydat `692147055`, refs `refs/keep/R-WEB-TRADE-ERA-r2-{op,eval,obrona,fc}`): brak testu DOM okna w Brązie/Żelazie, brak jawnej epoki w diplomacy-proposals/ai-offer-balance, brak obcinania starych ofert i testu snapshot/restore, hooki `player.era=2` bez `setDiplomacyTradeEra`, wikiBundle po merge; FC bez node_modules (nie zmierzył bramek).
+- DODATEK 3: dwie nieudane rundy Haiku ⇒ Operator SONNET z pisemnym uzasadnieniem; baza = `692147055` + merge origin/main; Evaluator/FC mają zainstalować zależności i mierzyć samodzielnie.
