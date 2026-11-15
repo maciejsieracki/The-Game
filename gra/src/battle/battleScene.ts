@@ -5765,6 +5765,15 @@ export class BattleScene {
     else this._beginAutoBatchPhase('def', def);
   }
 
+  /**
+   * R-WEB-BATTLE-COLLISION-ARBITRATION-INFANTRY-FIRST-Q1: klasa jednostki w arbitrazu kolizji o pole.
+   * Piechota wrecz pierwsza, lucznicy/procarze (pierwszego rzutu) ustepuja; konnica/rydwany/machiny -- regula bez zmian.
+   */
+  private _arbitrationClassOf(ru: RuntimeBattleUnit): 'infantry' | 'ranged' | 'other' {
+    if (ru.mounted || isSiegeUnit(ru.bu)) return 'other';
+    return ru.primaryRanged ? 'ranged' : 'infantry';
+  }
+
   /** Take a phase-start snapshot and resolve all actions as one AUTO wave. */
   private _beginAutoBatchPhase(side: AutoBatchPhase, units: RuntimeBattleUnit[]): void {
     if (this.finished || this._manualMode || this._autoBattleSuspended) return;
@@ -5781,6 +5790,7 @@ export class BattleScene {
       acted: ru.acted,
       hp: ru.bu.hp,
       occupies: this.occByKey.get(cellKey(ru.q, ru.r)) === ru,
+      arbClass: this._arbitrationClassOf(ru),
     }));
     // The phase is frozen before any live action is launched. Planning clones
     // are rebuilt per unit below, so each decision sees exactly this snapshot,
