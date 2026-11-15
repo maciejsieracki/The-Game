@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "ead39d06f6cb2ae65a1021ae14089efe",
-  "bundleSha256": "484c06d1e282ab8156a6e06f96e62cc6f80062a78ce509d85c5c15278ed15130",
+  "bundleMd5": "c97f5ececa9e955fa30a63e316498ab2",
+  "bundleSha256": "7762ef614b81a2bec027dabbcb09c63597bd43fe79852cfeae4607f45c885727",
   "bundleBytes": 14798659,
   "sourceSnapshot": {
-    "source": "main FC db0ef5864",
+    "source": "main FC c63efd49c",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 748: Karta surowca pokazuje +brutto · +netto zamiast Brutto/netto / ture; naglowek zakladki Surowce +brutto → +netto z opisem w tooltipie; Zobacz szczegoly zuzycia i Skad zapasy zawsze zwiniete po kazdym przerysowaniu (zgloszenie wlasciciela 2026-11-15)"
+    "FALA 749: Naprawa routingu serwera testowego w battle-doctrine-live r3 r4 i line-advance (HTML zamiast sidecarow); diplo-truce-live z galezia brak odpowiedzi gracza na oferte pokoju stalego = wojna bez kary; kod gry bez zmian"
   ],
   "verification": [
-    "tsc 0; logic 213/213; resource-card-numbers-only 14/0 (mutanty); gross-net 24/0; plusx-badge 31/0; skad-dom 13/0; zrzut zywego Chromium obejrzany; vite build OK"
+    "tsc 0; logic 213/213; 5 bramek zielone; diplo-truce-live 30/0; r4 5/5; mutacja czerwieni L2h; vite build OK"
   ],
   "limits": [
-    "NIE ZMIERZONO: zwijanie Skad zapasy na zywej grze przy niezerowych zapasach; hud-topbar czesc B z --dist (dlug harnessu endTurn); wiki 53.1a i linie brutto/netto w Nauce Zywnosci Handlu bez zmian"
+    "NIE ZMIERZONO: odmowa AI wobec propozycji gracza; stabilnosc r3 r4 przy wielu przebiegach; scena before w line-advance; etykieta L2b do przeetykietowania"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES UI-RESOURCE-CARD-NUMBERS-ONLY-DETAILS-COLLAPSED-Q1 r1 (kod 8395a3f6d, raport db0ef5864): karta surowca pokazuje same liczby +brutto · +netto, naglowek Surowce +brutto → +netto (opis w tooltipie); Zobacz szczegoly zuzycia i Skad zapasy zawsze zwiniete po kazdym przerysowaniu (usuniete przywracanie rozwiniecia). tsc 0; logic 213/213; testy tematu 14/24/31/13 zielone; mutanty wykryte. Notatki: wiki 53.1a do wiki-sync; grossNetSub w Nauce/Zywnosci/Handlu bez zmian; hud-topbar czesc B z --dist: dlug harnessu endTurn."
+    "notes": "FC PASS-WITH-NOTES TEST-DEBT-SIDECAR-HTML-AND-L2B-Q1 r2 (kod 7e24e966f, raport c63efd49c): tylko gra/tools: naprawa serwera testowego (HTML zamiast sidecarow) w battle-doctrine-live r3/r4 i line-advance-browser; diplo-truce-live z galezia L2f-L2h (brak odpowiedzi gracza na oferte pokoju stalego = wojna bez kary). tsc 0; logic 213/213; 5 bramek zielone; diplo-truce 30/0; r4 5/5; mutacja truceEndToWarCore czerwieni L2h. Notatki: etykieta L2b zgoda AI do przeetykietowania; odmowa AI wobec propozycji gracza NIE POKRYTA (hak w main.ts); stabilnosc r3/r4 niemierzona wielokrotnie."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-15T20:47:53",
+  "hubGeneratedAt": "2026-11-15T22:01:11",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "ead39d06f6cb2ae65a1021ae14089efe",
+      "md5": "c97f5ececa9e955fa30a63e316498ab2",
       "sizeBytes": 14798659
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "ead39d06f6cb2ae65a1021ae14089efe",
+      "md5": "c97f5ececa9e955fa30a63e316498ab2",
       "sizeBytes": 14798659
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "ead39d06f6cb2ae65a1021ae14089efe",
+      "md5": "c97f5ececa9e955fa30a63e316498ab2",
       "sizeBytes": 14798659
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "ead39d06f6cb2ae65a1021ae14089efe",
+      "md5": "c97f5ececa9e955fa30a63e316498ab2",
       "sizeBytes": 14798659
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "ead39d06f6cb2ae65a1021ae14089efe",
+      "md5": "c97f5ececa9e955fa30a63e316498ab2",
       "sizeBytes": 14798659
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "ead39d06f6cb2ae65a1021ae14089efe",
+      "md5": "c97f5ececa9e955fa30a63e316498ab2",
       "sizeBytes": 14798659
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "ead39d06f6cb2ae65a1021ae14089efe",
+      "md5": "c97f5ececa9e955fa30a63e316498ab2",
       "sizeBytes": 14798659
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "ead39d06f6cb2ae65a1021ae14089efe",
+      "md5": "c97f5ececa9e955fa30a63e316498ab2",
       "sizeBytes": 14798659
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "ead39d06f6cb2ae65a1021ae14089efe",
+      "md5": "c97f5ececa9e955fa30a63e316498ab2",
       "sizeBytes": 14798659
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "ead39d06f6cb2ae65a1021ae14089efe",
+      "md5": "c97f5ececa9e955fa30a63e316498ab2",
       "sizeBytes": 14798659
     }
   ],
-  "md5": "ead39d06f6cb2ae65a1021ae14089efe",
+  "md5": "c97f5ececa9e955fa30a63e316498ab2",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

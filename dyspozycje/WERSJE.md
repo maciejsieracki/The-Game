@@ -1,3 +1,9 @@
+## ROBOCZA c97f5ece -- 2026-11-14 -- FALA 749: Testy live bitwy i rozejmu: naprawa serwera sidecarow i galaz L2f-L2h (tylko narzedzia) (testowa)
+
+- Naprawa routingu serwera testowego w battle-doctrine-live r3 r4 i line-advance (HTML zamiast sidecarow); diplo-truce-live z galezia brak odpowiedzi gracza na oferte pokoju stalego = wojna bez kary; kod gry bez zmian
+- Weryfikacja: tsc 0; logic 213/213; 5 bramek zielone; diplo-truce-live 30/0; r4 5/5; mutacja czerwieni L2h; vite build OK
+- Limity: NIE ZMIERZONO: odmowa AI wobec propozycji gracza; stabilnosc r3 r4 przy wielu przebiegach; scena before w line-advance; etykieta L2b do przeetykietowania
+
 ## ROBOCZA ead39d06 -- 2026-11-14 -- FALA 748: Karta surowca: same liczby brutto i netto, szczegoly zawsze zwiniete (testowa)
 
 - Karta surowca pokazuje +brutto · +netto zamiast Brutto/netto / ture; naglowek zakladki Surowce +brutto → +netto z opisem w tooltipie; Zobacz szczegoly zuzycia i Skad zapasy zawsze zwiniete po kazdym przerysowaniu (zgloszenie wlasciciela 2026-11-15)
