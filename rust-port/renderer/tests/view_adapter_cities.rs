@@ -149,6 +149,7 @@ fn city(
     level: f64,
     wall: vm::WallKind,
     fog_visible: bool,
+    badge: vm::CityBadgeDto,
 ) -> vm::CityViewDto {
     vm::CityViewDto {
         id: city_id(id),
@@ -161,14 +162,82 @@ fn city(
         besieged: false,
         fog_visible,
         unit_count_on_hex: 0,
-        badge: badge("Roma"),
+        badge,
     }
 }
 
-/// Own city, foreign city (not visible), barbarian camp-city.
+/// Badge of the foreign player's capital, as `_buildBadgeInput`
+/// (`render/cities.ts:875-929`) fills it for a city that is NOT the
+/// viewer's: `civIconId = getCivIconId(ownerId)` (`:908`) = `owners[2]`
+/// `civ_icon_id`, `ownerColor = civColorFn(ownerId)` (`:886`, `:909`),
+/// `defenseTier(stone) = 2` (`cityMapStatChip.ts:380`), growth asked only for
+/// the viewer's cities (`:903`) so `growthPercent = null`,
+/// `growthStarving = false` (`:913-914`), `era = getEra(ownerId)` (`:921`).
+fn foreign_badge() -> vm::CityBadgeDto {
+    vm::CityBadgeDto {
+        city_name: "Memfis".to_owned(),
+        population: 2.0,
+        defense_tier: 2,
+        civ_icon_id: "egipt".to_owned(),
+        owner_color: 0x0043_a047,
+        prod_active: true,
+        prod_kind: Some(vm::ProductionKind::Budynek),
+        prod_id: Some("spichlerz".to_owned()),
+        prod_item_name: Some("Spichlerz".to_owned()),
+        prod_category_label: Some("Budynek".to_owned()),
+        prod_paused: false,
+        growth_percent: None,
+        growth_starving: false,
+        resource_warning: false,
+        is_city_state: false,
+        era: 3.0,
+        is_capital: true,
+    }
+}
+
+/// Barbarian camp-city badge: `civIconId = civTypeForOwner(-1)` =
+/// `aiOwnerCivMap.get(-1) ?? 'grecy'` (`main.ts:4045`, `:2983`) = `owners[0]`
+/// `civ_icon_id`; `defenseTier(none) = 0` (`cityMapStatChip.ts:382`); no
+/// production (`front = null`: `prodActive = false`, `prodKind`, `prodId`,
+/// `prodItemName`, `prodCategoryLabel` = null, `cities.ts:899-917`); growth
+/// not asked (`:903`); not a capital.
+fn barbarian_badge() -> vm::CityBadgeDto {
+    vm::CityBadgeDto {
+        city_name: "Obóz".to_owned(),
+        population: 1.0,
+        defense_tier: 0,
+        civ_icon_id: "grecy".to_owned(),
+        owner_color: 0x0075_7575,
+        prod_active: false,
+        prod_kind: None,
+        prod_id: None,
+        prod_item_name: None,
+        prod_category_label: None,
+        prod_paused: false,
+        growth_percent: None,
+        growth_starving: false,
+        resource_warning: false,
+        is_city_state: false,
+        era: 1.0,
+        is_capital: false,
+    }
+}
+
+/// Own city, foreign city (not visible), barbarian camp-city. Each city
+/// carries the badge its owner would get (`owners()` civ icon, colour, era).
 fn cities() -> Vec<vm::CityViewDto> {
     vec![
-        city(10, player(ME), 1, 1, 4.0, 3.0, vm::WallKind::Palisada, true),
+        city(
+            10,
+            player(ME),
+            1,
+            1,
+            4.0,
+            3.0,
+            vm::WallKind::Palisada,
+            true,
+            badge("Roma"),
+        ),
         city(
             11,
             player(FOREIGN),
@@ -178,6 +247,7 @@ fn cities() -> Vec<vm::CityViewDto> {
             2.0,
             vm::WallKind::Stone,
             false,
+            foreign_badge(),
         ),
         city(
             12,
@@ -188,6 +258,7 @@ fn cities() -> Vec<vm::CityViewDto> {
             1.0,
             vm::WallKind::None,
             true,
+            barbarian_badge(),
         ),
     ]
 }
@@ -375,6 +446,7 @@ fn own_city_outside_visible_stays_visible() {
         1.0,
         vm::WallKind::None,
         true,
+        badge("Roma"),
     )];
     let inputs = CityInputs::from_dto(&owners(), &cs).unwrap();
     let mut r = view::city_renderer(&map());
@@ -671,7 +743,17 @@ fn city_owner_overflow_is_an_error() {
             value: i64::from(i32::MAX) + 1
         }))
     );
-    let cs = vec![city(30, big, 0, 0, 1.0, 1.0, vm::WallKind::None, true)];
+    let cs = vec![city(
+        30,
+        big,
+        0,
+        0,
+        1.0,
+        1.0,
+        vm::WallKind::None,
+        true,
+        foreign_badge(),
+    )];
     assert!(matches!(
         CityInputs::from_dto(&owners(), &cs),
         Err(CityAdapterError::View(
@@ -728,6 +810,7 @@ fn contract_violations_are_errors() {
         1.0,
         vm::WallKind::None,
         true,
+        barbarian_badge(),
     )];
     assert_eq!(
         CityInputs::from_dto(&owners(), &cs),
@@ -763,4 +846,37 @@ fn renderers_take_the_static_map() {
     assert_ne!(ya, yb);
     let keys: HashSet<&str> = ["10", "11", "12"].into_iter().collect();
     assert!(keys.iter().all(|k| a.city(k).is_some()));
+}
+
+/// Evaluator r1, objection 5: every fixture city's badge carries ITS owner's
+/// values (`_buildBadgeInput`, `render/cities.ts:886`, `:908-909`, `:921`;
+/// `defenseTierFromWallKind`, `cityMapStatChip.ts:379-383`; growth only for
+/// the viewer, `cities.ts:903`), and `city_badge_input` keeps them.
+#[test]
+fn fixture_badges_follow_their_owner() {
+    let os = owners();
+    for c in cities() {
+        let o = os
+            .iter()
+            .find(|o| o.owner_id == c.owner_id)
+            .expect("owner entry");
+        let b = &c.badge;
+        assert_eq!(b.civ_icon_id, o.civ_icon_id, "city {:?}", c.id);
+        assert_eq!(b.owner_color, o.color, "city {:?}", c.id);
+        assert_eq!(b.era.to_bits(), o.era.to_bits(), "city {:?}", c.id);
+        let tier = match c.wall_kind {
+            vm::WallKind::Stone => 2,
+            vm::WallKind::Palisada => 1,
+            vm::WallKind::None => 0,
+        };
+        assert_eq!(b.defense_tier, tier, "city {:?}", c.id);
+        if c.owner_id != player(ME) {
+            assert_eq!(b.growth_percent, None, "city {:?}", c.id);
+            assert!(!b.growth_starving, "city {:?}", c.id);
+        }
+        let got = view::city_badge_input(b, false, None);
+        assert_eq!(got.civ_icon_id, o.civ_icon_id, "city {:?}", c.id);
+        assert_eq!(got.owner_color, Some(o.color), "city {:?}", c.id);
+        assert_eq!(got.era, Some(o.era), "city {:?}", c.id);
+    }
 }
