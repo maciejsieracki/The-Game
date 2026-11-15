@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "33fe74404868f334360073c2484632ce",
-  "bundleSha256": "3d96f70fbdb75e5facf45a41f4a24d7cb8b77d5a8f3d9c735d8c229e71eb4758",
-  "bundleBytes": 14800004,
+  "bundleMd5": "88256d5ad6533d71e184ccdf6401044b",
+  "bundleSha256": "31ce8126c0500d3782ff0f6ce680abd23c966f4234c43c0ccf12b638d50872cb",
+  "bundleBytes": 14800877,
   "sourceSnapshot": {
-    "source": "main FC 6dc093db3",
+    "source": "main FC 83d13e09c + 7975e79a8",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 751: Nowe narzedzia pomiarowe: mieszana armia na zywo, ucieczka poscig neverRout, driver bitwy recznej vs AUTO, checker; kod gry bez zmian"
+    "FALA 752: Nauka i Handel pokazuja jedna liczbe, Zywnosc +brutto → +netto, opis i jednostka w tooltipie, grossNetSub usunieta; wiki 53.1a i wikiBundle przez generator; test resource-usage-breakdown buduje sie i przechodzi 100/0 (tylko narzedzie testowe)"
   ],
   "verification": [
-    "tsc 0; logic 213/213; 5 bramek zielone; mutacje 28/28; mieszana armia 6 bitew 0 naruszen; ucieczka poscig 21 bitew 0 naruszen; FC live ziarno 4: 9 bitew 0 naruszen; vite build OK"
+    "tsc 0; logic 213/213; gross-net-unify 35/0; resource-card-numbers-only 14/0; resource-cards-gross-net 24/0; hud-gross-net-rest 820/0; resource-usage-breakdown 100/0; mutacje czerwone; vite build OK"
   ],
   "limits": [
-    "NIE ZMIERZONO: limit odwrotu armii po bitwie (kampania); zrzuty tylko ilustracja; tryb reczny vs AUTO rozbieznosc 12/12 par - hipoteza niezweryfikowana; powtorzyc N2 po FALI 750"
+    "NIE ZMIERZONO: zrzut pelnego panelu imperium z zywej gry (Nauka Zywnosc Handel); stuby DOM glob w tescie moga maskowac efekty DOM; test kruchy wobec refaktorow tekstu zrodla"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES LIVE-VERIFY-BATTLE-AFTER-FULL-MOVE-Q1 r3 (kod 90b8dd006, raport 6dc093db3): tylko narzedzia pomiarowe bitwy: live-verify-battle-after-full-move-live.cjs (mieszana armia na zywo + ucieczka/poscig/neverRout), manual-driver.cjs (bitwa reczna klik po kliku vs AUTO), rout-check.cjs, rozszerzony battle-rout-pursuit-browser-entry.ts. Wyniki: mieszana armia 6 bitew 0 naruszen (rozrzut frontu max 2 - na granicy, powtorzyc po FALI 750; ciosy max 1; niewykorzystany ruch max 1,8%); ucieczka/poscig/neverRout 21 bitew 0 naruszen; tryb reczny vs AUTO rozbieznosc 12/12 par (slaby dowod; hipoteza: rozkazy reczne bez pelnego ruchu - do reprodukcji na poziomie sceny); mutacje 28/28; tsc 0; 5 bramek zielone."
+    "notes": "FC PASS-WITH-NOTES: (1) UI-GROSS-NET-NUMBERS-ONLY-UNIFY-AND-WIKI-Q1 (kod 59c02f54f, raport 83d13e09c): Nauka i Handel jedna liczba (brutto = netto), Zywnosc +brutto → +netto, opis i jednostka w tooltipie, grossNetSub usunieta, wiki 53.1a + wikiBundle przez generator; test 35/0, mutacje czerwone, hud-gross-net-rest 820/0. (2) TEST-DEBT-RESOURCE-USAGE-BREAKDOWN-BUILD-Q1 (kod 4023d228b, raport 7975e79a8): resource-usage-breakdown-test buduje sie (loadery svg/png, stuby tylko w bundlu testu) 100/0; 7 asercji klasy A; mutacje D8/F/H6 czerwone. Notatki: zrzut pelnego panelu imperium z zywej gry NIE ZMIERZONO; stuby DOM/glob moga maskowac efekty DOM; test kruchy wobec refaktorow tekstu zrodla."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-15T22:16:29",
+  "hubGeneratedAt": "2026-11-15T22:18:37",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "33fe74404868f334360073c2484632ce",
-      "sizeBytes": 14800004
+      "md5": "88256d5ad6533d71e184ccdf6401044b",
+      "sizeBytes": 14800877
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "33fe74404868f334360073c2484632ce",
-      "sizeBytes": 14800004
+      "md5": "88256d5ad6533d71e184ccdf6401044b",
+      "sizeBytes": 14800877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "33fe74404868f334360073c2484632ce",
-      "sizeBytes": 14800004
+      "md5": "88256d5ad6533d71e184ccdf6401044b",
+      "sizeBytes": 14800877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "33fe74404868f334360073c2484632ce",
-      "sizeBytes": 14800004
+      "md5": "88256d5ad6533d71e184ccdf6401044b",
+      "sizeBytes": 14800877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "33fe74404868f334360073c2484632ce",
-      "sizeBytes": 14800004
+      "md5": "88256d5ad6533d71e184ccdf6401044b",
+      "sizeBytes": 14800877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "33fe74404868f334360073c2484632ce",
-      "sizeBytes": 14800004
+      "md5": "88256d5ad6533d71e184ccdf6401044b",
+      "sizeBytes": 14800877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "33fe74404868f334360073c2484632ce",
-      "sizeBytes": 14800004
+      "md5": "88256d5ad6533d71e184ccdf6401044b",
+      "sizeBytes": 14800877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "33fe74404868f334360073c2484632ce",
-      "sizeBytes": 14800004
+      "md5": "88256d5ad6533d71e184ccdf6401044b",
+      "sizeBytes": 14800877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "33fe74404868f334360073c2484632ce",
-      "sizeBytes": 14800004
+      "md5": "88256d5ad6533d71e184ccdf6401044b",
+      "sizeBytes": 14800877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "33fe74404868f334360073c2484632ce",
-      "sizeBytes": 14800004
+      "md5": "88256d5ad6533d71e184ccdf6401044b",
+      "sizeBytes": 14800877
     }
   ],
-  "md5": "33fe74404868f334360073c2484632ce",
+  "md5": "88256d5ad6533d71e184ccdf6401044b",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

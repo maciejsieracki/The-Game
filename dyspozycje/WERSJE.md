@@ -1,3 +1,9 @@
+## ROBOCZA 88256d5a -- 2026-11-14 -- FALA 752: Panele Nauka Zywnosc Handel: same liczby brutto i netto; wiki; test resource-usage-breakdown znow sie buduje (testowa)
+
+- Nauka i Handel pokazuja jedna liczbe, Zywnosc +brutto → +netto, opis i jednostka w tooltipie, grossNetSub usunieta; wiki 53.1a i wikiBundle przez generator; test resource-usage-breakdown buduje sie i przechodzi 100/0 (tylko narzedzie testowe)
+- Weryfikacja: tsc 0; logic 213/213; gross-net-unify 35/0; resource-card-numbers-only 14/0; resource-cards-gross-net 24/0; hud-gross-net-rest 820/0; resource-usage-breakdown 100/0; mutacje czerwone; vite build OK
+- Limity: NIE ZMIERZONO: zrzut pelnego panelu imperium z zywej gry (Nauka Zywnosc Handel); stuby DOM glob w tescie moga maskowac efekty DOM; test kruchy wobec refaktorow tekstu zrodla
+
 ## ROBOCZA 33fe7440 -- 2026-11-14 -- FALA 751: Narzedzia weryfikacji bitwy na zywo po pelnym ruchu (tylko gra/tools) (testowa)
 
 - Nowe narzedzia pomiarowe: mieszana armia na zywo, ucieczka poscig neverRout, driver bitwy recznej vs AUTO, checker; kod gry bez zmian
