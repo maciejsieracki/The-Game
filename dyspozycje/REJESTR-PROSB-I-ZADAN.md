@@ -10017,3 +10017,6 @@ FALA 733 (main da8e865cc, ROBOCZA MD5 46c6683b, Raw MD5 zgodne): R-WEB-UI-RESOUR
 
 ## 2026-11-15 — FALA 734 wdrożona na ROBOCZĄ (blokada „Zakończ turę” jako wydarzenie w Ważne)
 FALA 734 (main 06fcc8526, ROBOCZA MD5 61b50b89, Raw MD5 zgodne): R-WEB-UI-END-TURN-BLOCK-EVENT-Q1 r2 (FC PASS-WITH-NOTES 68c69746b / kod f8c186431): blokada „Zakończ turę” to karta „Nie można zakończyć tury” w zakładce Ważne z pełnym komunikatem bramki i przyciskami „Zwiększ podatek do X%”, „Zmienię sam”, „Otwórz racje” (żywność → Spichlerz); karta znika po ustąpieniu blokady; wspólna funkcja applyPodzialHandluGracza. Testy: end-turn-block-event 35/0, gate-projection-only 49/0, Chromium 25/0, mutacje czerwone. NIE ZMIERZONO: klik w suwaki podatku/racji w DOM. hud.ts poza allowlistą (3 linie, zaakceptowane). refs/keep/R-WEB-BLOCK-EVT-r2-*.
+
+## 2026-11-15 — Decyzje właściciela (ABC): szlak E3c, limit ofert AI, ceramika Kamień, korekta Respektu
+Odpowiedzi: (1) Szlak E3c = A: usunąć przenoszenie zapasów (potwierdza #311) → temat R-WEB-TRADE-ROUTE-REMOVE-STOCK-FLOW-E3C-Q1. (2) Oferty AI = B: ≤3× potrzeby AI + limit pętli → R-WEB-AI-TRADE-OFFER-QTY-CAP-3X-NEED-Q1 (dispatch zapisany, start gdy slot). (3) Ceramika w Kamieniu = A: bez zmian (zamknięte). (4) Korekta Respektu = A: zastępowana przy każdym progu (zgodna z założeniem RESPECT r4; bez zmiany dispatchu).
