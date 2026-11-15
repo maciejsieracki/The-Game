@@ -107,6 +107,12 @@ async function openGame(ctx, { fresh }) {
   if (START === 'newgame') {
     await page.evaluate(([seed]) => window.__nnsMeasureDebug.startGame({ seed }), [SEED]);
     await page.waitForFunction(() => { try { return window.__aiTradeWiringTestDebug.state().turn >= 1; } catch (_) { return false; } }, null, { timeout: 180000 });
+    // r3: doStartGame jest asynchroniczny -- klastry AI/miasta-panstwa powstaja DOPIERO po zniknieciu nakladki
+    // „Tworzenie swiata”. Zalozenie miasta gracza przed tym (r1/r2) dawalo AI = 0 miast. Czekamy jak ai-army-live-measure.cjs.
+    await page.waitForFunction(() => {
+      const ov = Array.from(document.querySelectorAll('*')).some(el => el.textContent && el.textContent.includes('Tworzenie świata') && el.offsetParent !== null);
+      return !ov && window.__nnsMeasureDebug.awaitingFirstCity() === true;
+    }, null, { timeout: 600000, polling: 500 });
   }
   if (fresh) {
     const ok = await page.evaluate(() => window.__aiTradeWiringTestDebug.foundFirstCity());
@@ -127,9 +133,13 @@ async function turnOf(page) {
  */
 async function clearBattles(page) {
   let n = 0;
-  for (let k = 0; k < 12; k++) {
+  // r3: przy ~41 wlascicielach w turze bywa wiele odlozonych bitew (kazda = flush + „Auto” + podsumowanie), a 12 iteracji
+  // konczylo przebieg w t51 (seed 4242, pendingAuto=true). Petla trwa do 400 iteracji (~2 min); stop dopiero gdy czysto 2x z rzedu.
+  let clean = 0;
+  for (let k = 0; k < 400; k++) {
     const bs = await page.evaluate(() => window.__aiTradeWiringTestDebug.battleState());
-    if (!bs.preBattleOpen && !bs.pendingAuto && !bs.sceneOpen && !bs.summaryOpen && !bs.resolving) break;
+    if (!bs.preBattleOpen && !bs.pendingAuto && !bs.sceneOpen && !bs.summaryOpen && !bs.resolving) { if (++clean >= 2) break; await wait(150); continue; }
+    clean = 0;
     const act = await page.evaluate(() => {
       const h = window.__aiTradeWiringTestDebug;
       const b = document.querySelector('.pb-overlay [data-act="auto"]');
@@ -165,7 +175,30 @@ async function playOneTurn(page, ctxState) {
   }
   const battlesAuto = await clearBattles(page);
   ctxState.battlesAuto = (ctxState.battlesAuto || 0) + battlesAuto;
-  const canEnd = await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd());
+  let canEnd = await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd());
+  // r3: odlozona auto-bitwa potrafi zalegac w kolejce (pendingAuto=true, nic nie otwarte; seed 4242 t51). Gra leczy to
+  // dopiero przy PROBIE zakonczenia tury (healStuckDeferredPreBattleQueueOnEndTurnAttempt, prog 8 s) -- tak jak gracz,
+  // ktory klika „Zakoncz ture”. Harness robi to samo (do 3 prob, liczone w stuckQueueHeals) i NIE ukrywa faktu w wyniku.
+  for (let k = 0; !canEnd && k < 3; k++) {
+    const bs = await page.evaluate(() => window.__aiTradeWiringTestDebug.battleState());
+    if (!bs.pendingAuto || bs.preBattleOpen || bs.sceneOpen || bs.summaryOpen) break;
+    await wait(9000);
+    await page.evaluate(() => window.__aiTradeWiringTestDebug.endTurn());
+    await wait(1500);
+    ctxState.stuckQueueHeals = (ctxState.stuckQueueHeals || 0) + 1;
+    ctxState.battlesAuto += await clearBattles(page);
+    canEnd = await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd());
+    if ((await turnOf(page)) > before) canEnd = false;
+  }
+  if ((await turnOf(page)) > before) {
+    // proba zakonczenia tury (leczenie kolejki) od razu zakonczyla ture -- zapisz rekord jak zwykla tura
+    const afterH = await turnOf(page);
+    const mH = await page.evaluate(() => window.__aiEconomyMeasure.metrics());
+    const recH = { seed: SEED, turn: afterH, gateBlockedBeforeEnd: blocked, bypass, battlesAuto, stuckQueueHealEndedTurn: true,
+      owners: mH.owners, diag: mH.diag, niezmierzone: mH.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10 };
+    if (HASH) recH.stateHash = await stateHash(page, null);
+    return { rec: recH };
+  }
   if (!canEnd) {
     const why = await page.evaluate(() => ({ battle: window.__aiTradeWiringTestDebug.battleState(), pending: window.__aiTradeWiringTestDebug.state().pending.length }));
     return { stop: 'cannot-end', tura: before, why };
@@ -206,7 +239,7 @@ async function runSeries(ctx, { resumeFromSlot, stopAt, hashFrom }) {
   const page = await openGame(ctx, { fresh: !resumeFromSlot });
   if (resumeFromSlot) { await page.evaluate(slot => window.__aiTradeWiringTestDebug.loadSlot(slot), SLOT); await suppressVictory(page); }
   const st = readState() || { seed: SEED, gateActiveTurns: 0, bypassApplied: 0, lastTurn: 0 };
-  const ctxState = { gateActiveTurns: st.gateActiveTurns || 0, bypassApplied: st.bypassApplied || 0 };
+  const ctxState = { gateActiveTurns: st.gateActiveTurns || 0, bypassApplied: st.bypassApplied || 0, stuckQueueHeals: st.stuckQueueHeals || 0, battlesAuto: st.battlesAuto || 0 };
   const startTurn = await turnOf(page);
   // Obcina JSONL do tury startowej (wznowienie nie dubluje wierszy).
   const jsonlPath = path.join(OUT, `seed${SEED}.jsonl`);
@@ -227,13 +260,13 @@ async function runSeries(ctx, { resumeFromSlot, stopAt, hashFrom }) {
     rows.push({ turn, gate: r.rec.gateBlockedBeforeEnd, sec: r.rec.sec });
     if (turn % EVERY === 0) {
       const ok = await page.evaluate(slot => window.__aiTradeWiringTestDebug.quickSave(slot), SLOT);
-      writeState({ seed: SEED, lastTurn: turn, slot: SLOT, saved: ok, gateActiveTurns: ctxState.gateActiveTurns, bypassApplied: ctxState.bypassApplied });
+      writeState({ seed: SEED, lastTurn: turn, slot: SLOT, saved: ok, gateActiveTurns: ctxState.gateActiveTurns, bypassApplied: ctxState.bypassApplied, stuckQueueHeals: ctxState.stuckQueueHeals, battlesAuto: ctxState.battlesAuto });
     }
     if (rows.length % 5 === 0) console.log(`[econ] seed=${SEED} tura=${turn} gateAktywna=${ctxState.gateActiveTurns} dosypki=${ctxState.bypassApplied} czas=${Math.round((Date.now() - t0) / 1000)}s`);
   }
   const endTurnNo = turn;
-  writeState({ seed: SEED, lastTurn: endTurnNo, slot: SLOT, gateActiveTurns: ctxState.gateActiveTurns, bypassApplied: ctxState.bypassApplied, stop });
-  return { startTurn, endTurn: endTurnNo, stop, gateActiveTurns: ctxState.gateActiveTurns, bypassApplied: ctxState.bypassApplied, wallSec: Math.round((Date.now() - t0) / 1000), page };
+  writeState({ seed: SEED, lastTurn: endTurnNo, slot: SLOT, gateActiveTurns: ctxState.gateActiveTurns, bypassApplied: ctxState.bypassApplied, stuckQueueHeals: ctxState.stuckQueueHeals, battlesAuto: ctxState.battlesAuto, stop });
+  return { startTurn, endTurn: endTurnNo, stop, gateActiveTurns: ctxState.gateActiveTurns, bypassApplied: ctxState.bypassApplied, stuckQueueHeals: ctxState.stuckQueueHeals, battlesAuto: ctxState.battlesAuto, wallSec: Math.round((Date.now() - t0) / 1000), page };
 }
 
 async function main() {
@@ -273,7 +306,7 @@ async function main() {
   const resume = !!(st && st.lastTurn > 0 && st.saved !== false && st.slot);
   const res = await runSeries(ctx, { resumeFromSlot: resume, stopAt: STOP_AT });
   await ctx.close();
-  const summary = { seed: SEED, startTurn: res.startTurn, endTurn: res.endTurn, stop: res.stop, gateActiveTurns: res.gateActiveTurns, bypassApplied: res.bypassApplied, wallSec: res.wallSec, resumed: resume };
+  const summary = { seed: SEED, startTurn: res.startTurn, endTurn: res.endTurn, stop: res.stop, gateActiveTurns: res.gateActiveTurns, bypassApplied: res.bypassApplied, stuckQueueHeals: res.stuckQueueHeals, battlesAuto: res.battlesAuto, wallSec: res.wallSec, resumed: resume };
   fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
   console.log('[econ] PODSUMOWANIE ' + JSON.stringify(summary));
 }
@@ -288,7 +321,7 @@ async function resumeCheck(ctx, saveAt, turns) {
   if (MUTANT) await page.evaluate(([g]) => window.__aiTradeWiringTestDebug.grantPlayerGold(g), [1]);
   if (SNAP_PREFIX) SNAP_PREFIX = 'res';
   while (turn < turns) {
-    const r = await playOneTurn(page, { gateActiveTurns: 0, bypassApplied: 0 });
+    const r = await playOneTurn(page, { gateActiveTurns: 0, bypassApplied: 0, stuckQueueHeals: 0, battlesAuto: 0 });
     if (r.stop) { out.push({ stop: r.stop, tura: r.tura }); break; }
     turn = r.rec.turn;
     out.push({ turn, hash: await stateHash(page) });

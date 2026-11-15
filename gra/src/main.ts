@@ -32429,7 +32429,7 @@ async function boot(): Promise<void> {
         /** Metryki wszystkich nie-barbarzyńskich właścicieli (gracz + AI + państwa-miasta) na bieżącą turę. */
         metrics: () => {
           const r2 = (x: number): number => Math.round(x * 100) / 100;
-          const owners = [...new Set<number>([ME(), ...aiStartHexes.map(h => h.ownerId), ...cities.map(c => c.ownerId), ...units.map(u => u.ownerId)])]
+          const owners = [...new Set<number>([ME(), ...cities.map(c => c.ownerId), ...units.map(u => u.ownerId)])]
             .filter(o => o != null && !isBarbarian(o))
             .sort((a, b) => a - b);
           const efP = buildEmpireFoodParams(data.econParams, _menuDifficulty);
@@ -32487,6 +32487,8 @@ async function boot(): Promise<void> {
               citiesAll: cities.length,
               ownersOfCities: [...new Set(cities.map(c => c.ownerId))].sort((a, b) => a - b),
               /** Właściciele z wiersza metryk, którzy nie mają ani miasta, ani jednostki (sygnał defektu startu, nie maskowany). */
+              /** Właściciele z aiStartHexes, których NIE MA w wierszach metryk (brak miasta i jednostki): defekt startu, jawnie, bez wierszy zerowych. */
+              aiStartOwnersBezWiersza: aiStartHexes.map(h => h.ownerId).filter(oid => !isBarbarian(oid) && !owners.includes(oid)),
               ownersBezMiastIJednostek: per.filter(o => o.miasta === 0 && o.jednostkiWojskowe + o.jednostkiCywilne === 0).map(o => o.owner),
             },
             /** Pola, których nie ma jednoznacznego, zweryfikowanego źródła w grze (NIE ZMIERZONO w tym haku). */
