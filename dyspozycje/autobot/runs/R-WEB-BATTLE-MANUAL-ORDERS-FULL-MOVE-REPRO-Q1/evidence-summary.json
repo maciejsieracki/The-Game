@@ -1,0 +1,227 @@
+[
+ {
+  "scen": "Hastati 6 vs Hastati 6",
+  "seed": 1,
+  "mode": "auto",
+  "timedOut": false,
+  "errors": [],
+  "result": {
+   "timedOut": false,
+   "capped": true,
+   "roundNo": 9,
+   "finished": false
+  },
+  "summary": {
+   "unitRounds": 60,
+   "hexPerRoundAll": 0.62,
+   "hexPerRoundWhenMoving": 1.48,
+   "strikesPerRoundAll": 0.57,
+   "movingUnitRoundsWithStrike": 5,
+   "leftoverMpAfterMoving": null,
+   "mpPerRound": 3,
+   "meanQDisplacementPerUnit": 5.83
+  },
+  "orders": 0,
+  "strikesLogged": 76
+ },
+ {
+  "scen": "Hastati 6 vs Hastati 6",
+  "seed": 2,
+  "mode": "auto",
+  "timedOut": false,
+  "errors": [],
+  "result": {
+   "timedOut": false,
+   "capped": true,
+   "roundNo": 9,
+   "finished": false
+  },
+  "summary": {
+   "unitRounds": 60,
+   "hexPerRoundAll": 0.47,
+   "hexPerRoundWhenMoving": 1.75,
+   "strikesPerRoundAll": 0.72,
+   "movingUnitRoundsWithStrike": 5,
+   "leftoverMpAfterMoving": null,
+   "mpPerRound": 3,
+   "meanQDisplacementPerUnit": 4.33
+  },
+  "orders": 0,
+  "strikesLogged": 90
+ },
+ {
+  "scen": "Hastati 6 vs Hastati 6",
+  "seed": 3,
+  "mode": "auto",
+  "timedOut": false,
+  "errors": [],
+  "result": {
+   "timedOut": false,
+   "capped": true,
+   "roundNo": 9,
+   "finished": false
+  },
+  "summary": {
+   "unitRounds": 60,
+   "hexPerRoundAll": 0.6,
+   "hexPerRoundWhenMoving": 1.5,
+   "strikesPerRoundAll": 0.58,
+   "movingUnitRoundsWithStrike": 5,
+   "leftoverMpAfterMoving": null,
+   "mpPerRound": 3,
+   "meanQDisplacementPerUnit": 5.67
+  },
+  "orders": 0,
+  "strikesLogged": 78
+ },
+ {
+  "scen": "Hastati 6 vs Hastati 6",
+  "seed": 1,
+  "mode": "move",
+  "timedOut": false,
+  "errors": [],
+  "result": {
+   "timedOut": false,
+   "capped": true,
+   "roundNo": 9,
+   "finished": false
+  },
+  "summary": {
+   "unitRounds": 60,
+   "hexPerRoundAll": 0.25,
+   "hexPerRoundWhenMoving": 1,
+   "strikesPerRoundAll": 0.65,
+   "movingUnitRoundsWithStrike": 0,
+   "leftoverMpAfterMoving": 2.33,
+   "mpPerRound": 3,
+   "meanQDisplacementPerUnit": 2.5
+  },
+  "orders": 6,
+  "strikesLogged": 90
+ },
+ {
+  "scen": "Hastati 6 vs Hastati 6",
+  "seed": 2,
+  "mode": "move",
+  "timedOut": false,
+  "errors": [],
+  "result": {
+   "timedOut": false,
+   "capped": true,
+   "roundNo": 9,
+   "finished": false
+  },
+  "summary": {
+   "unitRounds": 60,
+   "hexPerRoundAll": 0.27,
+   "hexPerRoundWhenMoving": 1,
+   "strikesPerRoundAll": 0.63,
+   "movingUnitRoundsWithStrike": 0,
+   "leftoverMpAfterMoving": 1.8,
+   "mpPerRound": 3,
+   "meanQDisplacementPerUnit": 2.67
+  },
+  "orders": 6,
+  "strikesLogged": 90
+ },
+ {
+  "scen": "Hastati 6 vs Hastati 6",
+  "seed": 3,
+  "mode": "move",
+  "timedOut": false,
+  "errors": [],
+  "result": {
+   "timedOut": false,
+   "capped": true,
+   "roundNo": 9,
+   "finished": false
+  },
+  "summary": {
+   "unitRounds": 60,
+   "hexPerRoundAll": 0.22,
+   "hexPerRoundWhenMoving": 1,
+   "strikesPerRoundAll": 0.68,
+   "movingUnitRoundsWithStrike": 0,
+   "leftoverMpAfterMoving": 2.14,
+   "mpPerRound": 3,
+   "meanQDisplacementPerUnit": 2.17
+  },
+  "orders": 6,
+  "strikesLogged": 93
+ },
+ {
+  "scen": "Hastati 6 vs Hastati 6",
+  "seed": 1,
+  "mode": "attack",
+  "timedOut": false,
+  "errors": [],
+  "result": {
+   "timedOut": false,
+   "capped": true,
+   "roundNo": 9,
+   "finished": false
+  },
+  "summary": {
+   "unitRounds": 60,
+   "hexPerRoundAll": 0.13,
+   "hexPerRoundWhenMoving": 1,
+   "strikesPerRoundAll": 0.77,
+   "movingUnitRoundsWithStrike": 0,
+   "leftoverMpAfterMoving": 2.5,
+   "mpPerRound": 3,
+   "meanQDisplacementPerUnit": 1.33
+  },
+  "orders": 6,
+  "strikesLogged": 89
+ },
+ {
+  "scen": "Hastati 6 vs Hastati 6",
+  "seed": 2,
+  "mode": "attack",
+  "timedOut": false,
+  "errors": [],
+  "result": {
+   "timedOut": false,
+   "capped": true,
+   "roundNo": 9,
+   "finished": false
+  },
+  "summary": {
+   "unitRounds": 60,
+   "hexPerRoundAll": 0.1,
+   "hexPerRoundWhenMoving": 1,
+   "strikesPerRoundAll": 0.8,
+   "movingUnitRoundsWithStrike": 0,
+   "leftoverMpAfterMoving": null,
+   "mpPerRound": 3,
+   "meanQDisplacementPerUnit": 1
+  },
+  "orders": 6,
+  "strikesLogged": 94
+ },
+ {
+  "scen": "Hastati 6 vs Hastati 6",
+  "seed": 3,
+  "mode": "attack",
+  "timedOut": false,
+  "errors": [],
+  "result": {
+   "timedOut": false,
+   "capped": true,
+   "roundNo": 9,
+   "finished": false
+  },
+  "summary": {
+   "unitRounds": 60,
+   "hexPerRoundAll": 0.12,
+   "hexPerRoundWhenMoving": 1,
+   "strikesPerRoundAll": 0.78,
+   "movingUnitRoundsWithStrike": 0,
+   "leftoverMpAfterMoving": 3,
+   "mpPerRound": 3,
+   "meanQDisplacementPerUnit": 1.17
+  },
+  "orders": 6,
+  "strikesLogged": 86
+ }
+]
