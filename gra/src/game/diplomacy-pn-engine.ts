@@ -19,6 +19,8 @@ import {
   diplomacyNormalizeSurowiecIlosc,
   diplomacyHandelSurowiecKrok,
   diplomacyHandelSurowiecCenaZaBlok,
+  withDiplomacyTradeEra,
+  diplomacyTradeEra,
   type DiplomacySumPnOptions,
   type WartoscPozycjaTyp,
   type PnRelacjaParams,
@@ -394,6 +396,8 @@ export interface QuickDealQuantityGoodOption {
 export interface QuickDealInput {
   /** Relacja (Zaufanie+Respekt) pary — ten sam kurs co reszta koszyka PN. */
   relacjaTotal: number;
+  /** Epoka UMOWY (wyższa z epok stron, diplomacyDealTradeEra). Brak = epoka globalna. */
+  tradeEra?: number;
   /** Złoto dostępne u NAS (skarbiec) — górny limit dopełniacza. */
   ourGoldAvailable: number;
   /** Surowce boolean, które MY faktycznie mamy i możemy oddać (już wycenione w katalogu PN). */
@@ -428,7 +432,15 @@ const QUICK_DEAL_MAX_GOLD = 200;
  * osiągnie próg fair @ Relacji — DOKŁADNIE ten sam próg, którym AI ocenia ofertę
  * (diplomacyFairGivePn / pnDealAcceptedByAi w diplomacy-proposals.ts).
  */
+/**
+ * R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 (FC r1 pkt 1): Szybka umowa liczy ziarno ilosci i wycene
+ * w EPOCE UMOWY (`input.tradeEra` = wyzsza z epok stron); bez podania — epoka globalna.
+ */
 export function computeQuickDealBasket(input: QuickDealInput): QuickDealResult {
+  return withDiplomacyTradeEra(input.tradeEra ?? diplomacyTradeEra(), () => computeQuickDealBasketImpl(input));
+}
+
+function computeQuickDealBasketImpl(input: QuickDealInput): QuickDealResult {
   const receiveItems: BasketItem[] = [];
   let receivePn = 0;
 

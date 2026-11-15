@@ -20978,7 +20978,8 @@ async function boot(): Promise<void> {
       if (workingCmd.type === 'zaproponuj_umowe_handlowa') {
         const rel = getDiploRelation(ownerId, ME());
         const treasury = buildDiploTreasury();
-        const quick = computeQuickDealBasket({
+        // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 (FC r1 pkt 1): Szybka umowa w epoce umowy (nie gracza).
+        const quick = withDiplomacyTradeEra(diplomacyDealTradeEra(player.era, empireEpochForOwner(ownerId)), () => computeQuickDealBasket({
           relacjaTotal: relationTotal(rel),
           ourGoldAvailable: treasury.getPieniadze(ownerId),
           ourResourceOptions: priceableTradableGoodOptions(ownerId),
@@ -20986,7 +20987,7 @@ async function boot(): Promise<void> {
           ourQuantityResourceOptions: quantityTradableGoodOptions(ownerId),
           theirQuantityResourceOptions: quantityTradableGoodOptions(ME()),
           difficulty: effectiveGameDifficultyForOwner(ownerId),
-        });
+        }));
         const umowaBuildArgs = [
           quick,
           workingCmd.sweetenerGold,
@@ -26755,6 +26756,8 @@ async function boot(): Promise<void> {
             // C-DYP-SUROWCE-Q1=B (2026-07-23): surowce ILOŚCIOWE per STRONA (magazyn miast).
             giveQuantityResourceOptions: quantityTradableGoodOptions(ME()),
             receiveQuantityResourceOptions: quantityTradableGoodOptions(ownerId),
+            // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 (FC r1 pkt 1): epoka umowy = wyższa z epok stron.
+            tradeEra: diplomacyDealTradeEra(player.era, empireEpochForOwner(ownerId)),
             // Zaległość #1 (SZYBKA UMOWA) — górny limit złota-dopełniacza w propozycji.
             playerSkarbiec: Math.floor(player.skarbiec),
             tempoGry: player.tempoGry ?? 'standardowa',

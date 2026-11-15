@@ -32,6 +32,9 @@ import {
   diplomacyHandelSurowceCatalog,
   diplomacyHandelSurowiecKrok,
   diplomacyNormalizeSurowiecIlosc,
+  setDiplomacyTradeEra,
+  diplomacyTradeEra,
+  withDiplomacyTradeEra,
   type WartoscPozycjaTyp,
 } from '../game/diplomacy-value-catalog';
 import { HANDEL_ZLOZE_CENA_BAZA } from '../game/diplomacy-deposit-trade';
@@ -433,7 +436,14 @@ function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+/** Epoka handlu sprzed otwarcia okna (przywracana przy zamknięciu; null = okno jej nie zmieniło). */
+let savedTradeEraBeforeBasket: number | null = null;
+
 function closeModal(): void {
+  if (savedTradeEraBeforeBasket !== null) {
+    setDiplomacyTradeEra(savedTradeEraBeforeBasket);
+    savedTradeEraBeforeBasket = null;
+  }
   if (overlay !== null) {
     popOverlay('diplo-trade-basket');
     overlay.remove();
@@ -2659,6 +2669,12 @@ export function showTradeBasketModal(
   modalOpts?: TradeBasketModalOptions,
 ): void {
   closeModal();
+  // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 (FC r1 pkt 1): okno liczy wycenę w EPOCE UMOWY (ctx.tradeEra),
+  // a nie w epoce gracza; przywracane w closeModal.
+  if (ctx.tradeEra != null) {
+    savedTradeEraBeforeBasket = diplomacyTradeEra();
+    setDiplomacyTradeEra(ctx.tradeEra);
+  }
   ensureStyles();
   activeOnCancel = onCancel;
   // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): akcja koszyka trafia do ctx → basketPnOpts (bramka 'miasto').
@@ -3196,14 +3212,14 @@ export function openQuickDealBasket(
   onSubmit: (payload: NegotiationPayload) => void,
   onCancel: () => void,
 ): void {
-  const quick = computeQuickDealBasket({
+  const quick = withDiplomacyTradeEra(ctx.tradeEra ?? diplomacyTradeEra(), () => computeQuickDealBasket({
     relacjaTotal: ctx.relacjaTotal ?? 0,
     ourGoldAvailable: ctx.playerSkarbiec ?? 0,
     ourResourceOptions: [],
     theirResourceOptions: [],
     ourQuantityResourceOptions: ctx.giveQuantityResourceOptions ?? defaultQuantityResourceOptions(),
     theirQuantityResourceOptions: ctx.receiveQuantityResourceOptions ?? defaultQuantityResourceOptions(),
-  });
+  }));
   showTradeBasketModal('trade', action, ctx, onSubmit, onCancel, quick);
 }
 
