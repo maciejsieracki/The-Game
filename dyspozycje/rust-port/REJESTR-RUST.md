@@ -1329,3 +1329,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Długi jawne (NIE_ZROBIONE):** wynik liczbowy ciosu wieży z pina niezweryfikowany; `hit_arc` i `first_blow` stałe (#107/#178); efekty `_resolveBlowOutcome` (#109/#147); `Health` jako napis (JS 10, Rust 1); wiring produkcyjny `tower_setup_from_units` (#113); `destroyed` jako proxy `wall_tile_rows` (przyjęte).
 - **Parity:** `f2bb11970`. **Sloty:** 0 z 4. **Dysk:** 13 GB.
 - **Pytania ABC:** #106 pkt 4 (rekomendacja B), #115, #120; konwencja `Co-Authored-By` (rekomendacja B) — bez odpowiedzi właściciela.
+
+## Przebieg (15.11, 04:18 UTC — heartbeat)
+- KROK 1 (sloty): 0 aktywnych Workflow (wszystkie journal kończą się `result`). Parity = `f2bb11970`. Dysk 12 GB wolnego.
+- #115 ZDOBYCIE-MIASTA-WIRING r2 (`R-RUSTPORT-P6-ZDOBYCIE-WIRING-Q1`, wf_aaeae4f9-09c): Operator BLOCK (`7feb59b9f`, raport 01-operator-r2.md), Evaluator FAIL (`56f14998c`), Obrona (`4bb09eeb7`), FC FAIL (`0cfc588d3`). Przyczyna zweryfikowana na `f2bb11970`: `apply_transfer_with_effects` (siege_transfer.rs:340) i `run_capital_capture_plunder` (siege_capital_plunder.rs:504) bez wołającego w produkcji; brak produkcyjnych implementacji OwnerResourceAccess i PlunderLabels. Produkcyjna ścieżka zdobycia należy do W8 (pipeline `run_war_turn`), a rejestr podaje dla W8 sprzeczne statusy. Operator r2 zadał właścicielowi pytanie ABC wbrew C-043 (procesowy błąd, zanotowany).
+- DECYZJA: #115 wstrzymane do odpowiedzi właściciela (A wrapper teraz / B wstrzymać do W8 (rekomendowane) / C pełne wpięcie teraz z rozszerzoną allowlistą). Pytanie ABC nie dotarło do właściciela (przerwane); ponowione w czacie. Bez wyboru nie startuje r3.
+- Sloty: 0/4. Powody: #115 czeka na decyzję właściciela; #106 czeka na decyzję pkt 4; #120 czeka na decyzję A/B; #104/#172 wymagają rozpoznania (ZLOZA-WIRING); #96–#98, #107, #109, #112, #113 zależą od niezintegrowanego ProdBody/OUTCOME (nie startuję z nieprzygotowanym dispatchem); #154 KOLEJKA-RUST.md jest sprzed 23:18 i do odświeżenia.
+- Nie startowano żadnego tematu, bo żaden kandydat nie spełnia reguły „baza = czubek FC, zależności zintegrowane, bez decyzji gameplay” bez dodatkowego rozpoznania.
+- Do zrobienia w następnym heartbeat: odświeżyć KOLEJKA-RUST.md; po odpowiedzi właściciela na #115/#106/#120 uruchomić właściwą rundę.
