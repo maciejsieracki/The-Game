@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "c02e7c504700913b02463b2463c11a1b",
-  "bundleSha256": "1c091e988efc248d8b7301c82ba00d7e6c32cb35a66d96b808683f4cec73490f",
-  "bundleBytes": 14778060,
+  "bundleMd5": "a8c8c83c863bd6efe738d3d0f2612cfc",
+  "bundleSha256": "2522060fbe71846660b24858ed0274bee0ffc211e2803f906bebdc50685ed7d3",
+  "bundleBytes": 14778371,
   "sourceSnapshot": {
-    "source": "main FC 54f897b6b + df4d7ee91",
+    "source": "main FC 6c532e684",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 742: Okno wymiany, ocena propozycji, bramka uczciwosci, oferty AI, Szybka umowa i walidacja liczone w jednej epoce umowy (wyzsza z epok stron); umowy cykliczne zamrazaja epoke; migracja zapisu; dokumentacja i wikiBundle; narzedzie live-verify ostrzezenia przed bitwa (bez zmian gry)"
+    "FALA 743: Podloga bloku liczona z surowej potrzeby: oferta AI przy malej potrzebie = 1 blok (Kamien 10 / Braz 50 / Zelazo 100) zamiast 3; duza potrzeba bez zmian; dokumentacja i wikiBundle"
   ],
   "verification": [
-    "tsc 0; logic 213/213; testy trade-era table 185 ai 14 deal 14 explicit 51; value-catalog 82; acceptance-points 304; ai-offer-balance 29; ai-trade 25/12/10; DOM Chromium 58/0; mutacje czerwone; vite build OK"
+    "tsc 0; logic 213/213; test min-one-block 12/0; qty-cap 18/0; trade-era 185/14/14/51; need-from-surplus 12; oneshot-overpay 10; to-player 25; ai-offer-balance 29; vite build OK; mutacja czerwona 8/4"
   ],
   "limits": [
-    "NIE ZMIERZONO: tick umowy cyklicznej w pelnej grze, saveload-live; dlug Rust: pn_per_szt -> pn_per_blok, REPIN"
+    "NIE ZMIERZONO: zywa gra i czestosc ofert AI po zmianie; dlug Rust REPIN"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES TRADE-ERA r3 (kod 9f56ea8cf, raport 54f897b6b): blok handlu surowcem zalezy od epoki UMOWY (wyzsza z epok stron): Kamien 10 / Braz 50 / Zelazo 100 szt. za ten sam PN; ceny PN za blok bez zmian; jawna epoka umowy w wycenie, ocenie propozycji, bramce uczciwosci, ofertach AI, Szybkiej umowie i walidacji zatwierdzenia; umowy cykliczne trzymaja epoke z chwili zawarcia; stare oferty obcinane do pelnego bloku przy wczytaniu; testy table 185 ai 14 deal 14 explicit 51 DOM Chromium 58 save/load live; mutacje czerwone. Wraz z narzedziem live-verify ostrzezenia przed bitwa (FC PASS-WITH-NOTES df4d7ee91, bez zmian gry)"
+    "notes": "FC PASS-WITH-NOTES AI-TRADE-OFFER-MIN-ONE-BLOCK r1 (kod 29745c0af, raport 6c532e684): oferta handlowa AI przy malej potrzebie = 1 blok epoki (Kamien 10 / Braz 50 / Zelazo 100), nie 3; duza potrzeba bez zmian (200 na ture w Brazie -> 600); test 12/0, mutacja czerwona 8/4; qty-cap 18/0, trade-era 185/14/14/51, need-from-surplus 12, oneshot-overpay 10, to-player 25, ai-offer-balance 29; NIE ZMIERZONO: zywa gra i czestosc ofert po zmianie"
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-15T12:16:20",
+  "hubGeneratedAt": "2026-11-15T12:48:32",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "c02e7c504700913b02463b2463c11a1b",
-      "sizeBytes": 14778060
+      "md5": "a8c8c83c863bd6efe738d3d0f2612cfc",
+      "sizeBytes": 14778371
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "c02e7c504700913b02463b2463c11a1b",
-      "sizeBytes": 14778060
+      "md5": "a8c8c83c863bd6efe738d3d0f2612cfc",
+      "sizeBytes": 14778371
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "c02e7c504700913b02463b2463c11a1b",
-      "sizeBytes": 14778060
+      "md5": "a8c8c83c863bd6efe738d3d0f2612cfc",
+      "sizeBytes": 14778371
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "c02e7c504700913b02463b2463c11a1b",
-      "sizeBytes": 14778060
+      "md5": "a8c8c83c863bd6efe738d3d0f2612cfc",
+      "sizeBytes": 14778371
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "c02e7c504700913b02463b2463c11a1b",
-      "sizeBytes": 14778060
+      "md5": "a8c8c83c863bd6efe738d3d0f2612cfc",
+      "sizeBytes": 14778371
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "c02e7c504700913b02463b2463c11a1b",
-      "sizeBytes": 14778060
+      "md5": "a8c8c83c863bd6efe738d3d0f2612cfc",
+      "sizeBytes": 14778371
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "c02e7c504700913b02463b2463c11a1b",
-      "sizeBytes": 14778060
+      "md5": "a8c8c83c863bd6efe738d3d0f2612cfc",
+      "sizeBytes": 14778371
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "c02e7c504700913b02463b2463c11a1b",
-      "sizeBytes": 14778060
+      "md5": "a8c8c83c863bd6efe738d3d0f2612cfc",
+      "sizeBytes": 14778371
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "c02e7c504700913b02463b2463c11a1b",
-      "sizeBytes": 14778060
+      "md5": "a8c8c83c863bd6efe738d3d0f2612cfc",
+      "sizeBytes": 14778371
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "c02e7c504700913b02463b2463c11a1b",
-      "sizeBytes": 14778060
+      "md5": "a8c8c83c863bd6efe738d3d0f2612cfc",
+      "sizeBytes": 14778371
     }
   ],
-  "md5": "c02e7c504700913b02463b2463c11a1b",
+  "md5": "a8c8c83c863bd6efe738d3d0f2612cfc",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

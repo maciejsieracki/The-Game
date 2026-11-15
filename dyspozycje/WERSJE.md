@@ -1,3 +1,9 @@
+## ROBOCZA a8c8c83c -- 2026-11-14 -- FALA 743: Oferta handlowa AI przy malej potrzebie: najmniej jeden pelny blok epoki (testowa)
+
+- Podloga bloku liczona z surowej potrzeby: oferta AI przy malej potrzebie = 1 blok (Kamien 10 / Braz 50 / Zelazo 100) zamiast 3; duza potrzeba bez zmian; dokumentacja i wikiBundle
+- Weryfikacja: tsc 0; logic 213/213; test min-one-block 12/0; qty-cap 18/0; trade-era 185/14/14/51; need-from-surplus 12; oneshot-overpay 10; to-player 25; ai-offer-balance 29; vite build OK; mutacja czerwona 8/4
+- Limity: NIE ZMIERZONO: zywa gra i czestosc ofert AI po zmianie; dlug Rust REPIN
+
 ## ROBOCZA c02e7c50 -- 2026-11-14 -- FALA 742: Handel surowcami: blok zalezny od epoki umowy (10/50/100 szt. za ten sam PN) + narzedzie weryfikacji ostrzezenia przed bitwa (testowa)
 
 - Okno wymiany, ocena propozycji, bramka uczciwosci, oferty AI, Szybka umowa i walidacja liczone w jednej epoce umowy (wyzsza z epok stron); umowy cykliczne zamrazaja epoke; migracja zapisu; dokumentacja i wikiBundle; narzedzie live-verify ostrzezenia przed bitwa (bez zmian gry)
