@@ -15,10 +15,16 @@
 //!   `dyspozycje/rust-port/p4/P4-1G-ADAPTER-ROZPOZNANIE.md` §2, §3.3;
 //! - Q2–Q6: terrain, cities, battle, overlays, units (same document, §7).
 
+pub mod cities;
 pub mod convert;
 pub mod fog;
 pub mod terrain;
 
+pub use cities::{
+    apply_city_fog, apply_wonder_fog, atlas_owner_emblem_context, city_badge_input, city_renderer,
+    owner_emblem_context, placed_wonder, production_kind, wonder_renderer, CityAdapterError,
+    CityInputs, CityRenderEntry, OwnerRenderEntry, WonderInputs,
+};
 pub use convert::{
     battle_side, city_id_string, city_wall_kind, fort_kind, hex_build_highlight, hex_f64, hex_key,
     hex_key_string, map_outline_kind, owner_f64, owner_i32, owner_i64, pick_hex, river_kind,
