@@ -111,13 +111,49 @@ export {
 const STUB_BRAND_ASSETS_PLUGIN = {
   name: 'stub-brand-assets',
   setup(build) {
-    build.onResolve({ filter: /icons\/brandAssets$/ }, (args) => (
+    build.onResolve({ filter: /brandAssets$/ }, (args) => (
       { path: args.path, namespace: 'stub-brand-assets' }
     ));
+    // leaderPortraits.ts: tak samo `import.meta.glob` na poziomie modułu (Vite-only).
+    build.onResolve({ filter: /leaderPortraits$/ }, (args) => (
+      { path: args.path, namespace: 'stub-leader-portraits' }
+    ));
+    // Ogólnie: każdy inny moduł src/ z `import.meta.glob(` (np. audio/filePlayer.ts) dostaje
+    // to wywołanie podmienione na funkcję zwracającą pusty obiekt — tylko dla bundla testu.
+    build.onLoad({ filter: /\/src\/.*\.ts$/ }, (args) => {
+      const src = fs.readFileSync(args.path, 'utf8');
+      if (!src.includes('import.meta.glob(')) return undefined;
+      return {
+        contents: 'const __viteGlobStub = () => ({});\n'
+          + src.split('import.meta.glob(').join('__viteGlobStub('),
+        loader: 'ts',
+        resolveDir: path.dirname(args.path),
+      };
+    });
+    build.onLoad({ filter: /.*/, namespace: 'stub-leader-portraits' }, () => ({
+      contents: [
+        'export function leaderNameFromPool(...a) { return String(a[0]); }',
+        'export function civDisplayNameFromKey(k) { return k == null ? null : String(k); }',
+        'export function civCardDisplayName(l) { return String(l); }',
+        'export function civIconIdFromCivLabel(l) { return l == null ? null : String(l); }',
+        'export function leaderPortraitUrl() { return null; }',
+        'export function leaderName() { return \'\'; }',
+        '',
+      ].join('\n'),
+      loader: 'js',
+    }));
+    // Eksportuje WSZYSTKIE nazwy z brandAssets.ts (importowane przez ~40 modułów UI); każda
+    // zwraca identyfikator — funkcje testowane nie używają ich wyjścia.
+    const STUB_EXPORTS = [
+      'brandIconSvg', 'improvementIconSvg', 'mapResourceIconSvg', 'terrainIconSvg',
+      'buildingIconSvg', 'unitIconSvg', 'civIconSvg', 'epochIconSvg', 'settingIconSvg',
+      'menuIconSvg', 'brandMenuEmblemSvg', 'newGameIntroEmblemSvg', 'svgThumbHtml',
+    ];
+    const STUB_CSS = ['brandMenuComponentsCss', 'brandMotionCss', 'brandMenuBackgroundCss'];
+    const stubSrc = STUB_EXPORTS.map((n) => `export function ${n}(a) { return String(a); }\n`).join('')
+      + STUB_CSS.map((n) => `export function ${n}() { return ''; }\n`).join('');
     build.onLoad({ filter: /.*/, namespace: 'stub-brand-assets' }, () => ({
-      contents:
-        'export function brandIconSvg(id, size) { return String(id); }\n'
-        + 'export function mapResourceIconSvg(label, size) { return String(label); }\n',
+      contents: stubSrc,
       loader: 'js',
     }));
   },
@@ -135,7 +171,7 @@ async function main() {
       platform: 'node',
       format: 'cjs',
       target: 'node18',
-      loader: { '.ts': 'ts', '.json': 'json' },
+      loader: { '.ts': 'ts', '.json': 'json', '.svg': 'text', '.png': 'dataurl' },
       plugins: [STUB_BRAND_ASSETS_PLUGIN],
       outfile: BUNDLE_FILE,
       absWorkingDir: GRA,
@@ -144,6 +180,20 @@ async function main() {
   } catch (e) {
     console.error('[resource-usage-breakdown-test] esbuild bundling failed:\n', e.message || e);
     process.exit(1);
+  }
+
+  // Minimalny szkielet DOM dla efektów ubocznych na poziomie modułu (np. cityPanel.ts woła
+  // bindTechHintLinkDelegation() przy imporcie). Testowane funkcje są czyste i nie używają DOM.
+  const noopEl = () => ({ addEventListener() {}, removeEventListener() {}, style: {}, classList: { add() {}, remove() {}, contains() { return false; } }, setAttribute() {}, appendChild() {} });
+  if (typeof globalThis.document === 'undefined') {
+    globalThis.document = { addEventListener() {}, removeEventListener() {}, createElement: noopEl, getElementById: () => null, querySelector: () => null, body: noopEl(), documentElement: noopEl() };
+  }
+  if (typeof globalThis.window === 'undefined') {
+    globalThis.window = { addEventListener() {}, removeEventListener() {}, innerWidth: 1024, innerHeight: 768, matchMedia: () => ({ matches: false, addEventListener() {} }) };
+  }
+  if (typeof globalThis.localStorage === 'undefined') {
+    const store = new Map();
+    globalThis.localStorage = { getItem: (k) => (store.has(k) ? store.get(k) : null), setItem: (k, v) => store.set(k, String(v)), removeItem: (k) => store.delete(k) };
   }
 
   delete require.cache[require.resolve(BUNDLE_FILE)];
@@ -327,12 +377,12 @@ async function main() {
 
     // Gracz (ownerId=0): publikacja leży w tym samym bloku co _lastBogactwoUtrzymanieSurowcow.
     assert(
-      mainSrcStripped.includes("buildingResourceUpkeepByOwner.set(0, { ...(econ.resourceUpkeepBuildingsByOwner.get(0) ?? {}) });"),
-      'D3: gracz -- buildingResourceUpkeepByOwner.set(0, ...) czyta WPROST econ.resourceUpkeepBuildingsByOwner.get(0), zero przeliczenia',
+      mainSrcStripped.includes("buildingResourceUpkeepByOwner.set(hOid, { ...(econ.resourceUpkeepBuildingsByOwner.get(hOid) ?? {}) });"),
+      'D3: gracz (pętla for hOid of humanSeats.humanOwnerIds) -- buildingResourceUpkeepByOwner.set(hOid, ...) czyta WPROST econ.resourceUpkeepBuildingsByOwner.get(hOid), zero przeliczenia',
     );
     assert(
-      mainSrcStripped.includes("unitResourceUpkeepByOwner.set(0, { ...(econ.resourceUpkeepUnitsByOwner.get(0) ?? {}) });"),
-      'D4: gracz -- unitResourceUpkeepByOwner.set(0, ...) czyta WPROST econ.resourceUpkeepUnitsByOwner.get(0)',
+      mainSrcStripped.includes("unitResourceUpkeepByOwner.set(hOid, { ...(econ.resourceUpkeepUnitsByOwner.get(hOid) ?? {}) });"),
+      'D4: gracz (pętla hOid) -- unitResourceUpkeepByOwner.set(hOid, ...) czyta WPROST econ.resourceUpkeepUnitsByOwner.get(hOid)',
     );
 
     // AI: publikacja wewnątrz `for (const oid of aiOwnerIds)`, TUŻ PO deductBuildingStockCostAcrossCities(cities, oid, aiResUpkeep).
@@ -341,7 +391,9 @@ async function main() {
     assert(aiLoopIdx > -1, 'D5: kotwica pętli AI "for (const oid of aiOwnerIds) {" znaleziona');
     const aiDeductIdx = aiLoopIdx > -1 ? mainSrcStripped.indexOf('deductBuildingStockCostAcrossCities(cities, oid, aiResUpkeep);', aiLoopIdx) : -1;
     assert(aiDeductIdx > aiLoopIdx, 'D6: deductBuildingStockCostAcrossCities(cities, oid, aiResUpkeep) leży wewnątrz pętli AI');
-    const aiWindow = aiDeductIdx > -1 ? mainSrcStripped.slice(aiDeductIdx, aiDeductIdx + 500) : '';
+    // Okno 1000 zn. (było 500): między deduct a publikacją unit wstawiono blok recordTakenToLedger
+    // (R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1) i długą linię converterProducedLastTurnByOwner.
+    const aiWindow = aiDeductIdx > -1 ? mainSrcStripped.slice(aiDeductIdx, aiDeductIdx + 1000) : '';
     assert(
       aiWindow.includes('buildingResourceUpkeepByOwner.set(oid, { ...(econ.resourceUpkeepBuildingsByOwner.get(oid) ?? {}) });'),
       'D7 (parytet gracz/AI): AI -- buildingResourceUpkeepByOwner.set(oid, ...) czyta WPROST econ.resourceUpkeepBuildingsByOwner.get(oid), tuż po deduct',
@@ -375,7 +427,7 @@ async function main() {
     // budynki/wojsko pokazane jako 0 mimo że przycisk już widoczny dzięki fallbackowi citizens).
     assert(
       fnWindow.includes('const ownerBuildingResUpkeep = buildingResourceUpkeepByOwner.get(ownerId)')
-        && fnWindow.includes('?? previewOwnerBuildingResourceUpkeep(ownerId, cities, data.buildings, cityBuilt, bdef => buildingLevelForOwnerBuilding(bdef, ownerId), readBuildingResourceUpkeepRatio(data.econParams, _menuDifficulty));'),
+        && fnWindow.includes('?? previewOwnerBuildingResourceUpkeep(ownerId, cities, data.buildings, operationalBuiltByCity(cities, cityBuilt), bdef => buildingLevelForOwnerBuilding(bdef, ownerId), readBuildingResourceUpkeepRatio(data.econParams, _menuDifficulty));'),
       'E3: ownerBuildingResUpkeep czyta buildingResourceUpkeepByOwner.get(ownerId) Z FALLBACKIEM na previewOwnerBuildingResourceUpkeep (żywy przelicz gdy mapa jeszcze pusta po save-load)',
     );
     assert(
@@ -386,7 +438,7 @@ async function main() {
     // E3b/E4b: fallback musi czytać STAN ŻYWY (cityBuilt/units), nie jakąś zamrożoną kopię --
     // inaczej "fallback" pokazywałby dalej stare/puste dane.
     assert(
-      /previewOwnerBuildingResourceUpkeep\(ownerId,\s*cities,\s*data\.buildings,\s*cityBuilt,\s*bdef => buildingLevelForOwnerBuilding\(bdef, ownerId\),\s*readBuildingResourceUpkeepRatio\(/.test(fnWindow),
+      /previewOwnerBuildingResourceUpkeep\(ownerId,\s*cities,\s*data\.buildings,\s*operationalBuiltByCity\(cities,\s*cityBuilt\),\s*bdef => buildingLevelForOwnerBuilding\(bdef, ownerId\),\s*readBuildingResourceUpkeepRatio\(/.test(fnWindow),
       'E3b: fallback budynków woła z argumentami (ownerId, cities, data.buildings, cityBuilt) -- cityBuilt to ta sama mapa przywracana wprost z save w restoreGameFromSave, nie kopia sprzed load',
     );
     assert(
@@ -426,7 +478,9 @@ async function main() {
   // ===========================================================================
   console.log('\n-- F. citizenUpkeepByOwner.clear() zawsze w parze z buildingResourceUpkeepByOwner.clear() + unitResourceUpkeepByOwner.clear() --');
   {
-    const CLEAR_TRIO = 'citizenUpkeepByOwner.clear();\n      buildingResourceUpkeepByOwner.clear();\n      unitResourceUpkeepByOwner.clear();';
+    // Układ linii: buildingResourceUpkeepByOwner.clear() dzieli linię z converterProducedLastTurnByOwner.clear()
+    // (dopisanie konwertera do tego samego bloku); inwariant "trójka" zachowany, zmienił się tylko format.
+    const CLEAR_TRIO = 'citizenUpkeepByOwner.clear();\n      buildingResourceUpkeepByOwner.clear(); converterProducedLastTurnByOwner.clear();\n      unitResourceUpkeepByOwner.clear();';
     let count = 0, idx = 0;
     while (true) {
       const found = mainSrcRaw.indexOf(CLEAR_TRIO, idx);
@@ -479,8 +533,8 @@ async function main() {
     assert(fnBody.includes('Zobacz szczegóły'), 'H5: tekst przycisku zawiera "Zobacz szczegóły" (wymóg zgłoszenia)');
 
     assert(
-      empirePanelSrcRaw.includes('resCitizenBadgeHtml(r)\n    + resUsageDetailsHtml(r)\n    + `</div>`;'),
-      'H6: resUsageDetailsHtml(r) wywołane wewnątrz resCardHtml, PO badge Obywateli, PRZED zamknięciem karty',
+      empirePanelSrcRaw.includes('resCitizenBadgeHtml(r)\n    + resUsageDetailsHtml(r)\n    + resSkadZapasyHtml('),
+      'H6: resUsageDetailsHtml(r) wywołane wewnątrz resCardHtml, PO badge Obywateli, PRZED zamknięciem karty (przed resSkadZapasyHtml, dodanym w #425/Skąd zapasy)',
     );
 
     assert(
