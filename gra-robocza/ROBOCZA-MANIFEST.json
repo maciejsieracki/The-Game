@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "a2585e0781c577bef7f305186ec1ae1d",
-  "bundleSha256": "c01b86609f2f2651a811e3e9025574e7fb0f855cf5b2317626e3a6db3bd4c6f0",
-  "bundleBytes": 14735143,
+  "bundleMd5": "9ba327d6e871592875012649e2f838ec",
+  "bundleSha256": "2e0273d1c3d44075ee5a3061efd06d5153128e4e8b17a708a8b560d527fa8bee",
+  "bundleBytes": 14736097,
   "sourceSnapshot": {
-    "source": "merge FC TECH-ORDER ed009922f na main 6c1687274",
+    "source": "merge FC CITY-VIEW 551d909d4 na main 3a6b0e405",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 727: W panelu Mozesz wybrac cztery badania startowe wyswietlaja sie w kolejnosci Obrobka drewna, Rolnictwo, Oswojenie zwierzat, Lowiectwo (tylko kolejnosc listy gracza; AI i drzewko bez zmian)"
+    "FALA 728: W widoku miasta zetony lewego i prawego bannera (Praca, Zywnosc, Skarbiec / Nauka, Kultura, Religia) ukladaja sie w jednej linii bez zawijania, skala dopasowuje sie do szerokosci okna; boczne panele zaczynaja sie tuz pod bannerami"
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-choice-order 9/0; science-hub 7/0; FC PASS-WITH-NOTES"
+    "tsc 0; logic 213/213; city-view-layout 120/0; side-panels-below-topbanners 61/0; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "NIE ZMIERZONO: pelna gra nowa gra -> panel badan; brak REPIN Rust (tylko UI)"
+    "NIE ZMIERZONO: dluga Produkcja/kolejka, realna gra; czytelnosc zetonow ok. 11 px w oknach 1280-1366 px przy 6-7 cyfrach do decyzji wlasciciela; dlug testowy recruitment-panel-compact-row 7 FAIL"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES TECH-ORDER ed009922f / kod e9e532b43: kolejnosc badan w Mozesz wybrac: Obrobka drewna, Rolnictwo, Oswojenie zwierzat, Lowiectwo (jawna tabela HUB_START_TECH_ORDER w scienceHubSnapshotLogic.ts, reszta bez zmian; AI i drzewko nietkniete). Testy: tech-choice-order 9/0 (mutacja 6/3), science-hub 7/0, tsc 0, logic 213/213. NIE ZMIERZONO: pelna gra nowa gra -> panel badan (zrzut z harnessu)."
+    "notes": "FC PASS-WITH-NOTES CITY-VIEW 551d909d4 / kod 46201adff: widok miasta - zetony lewego (Praca, Zywnosc, Skarbiec) i prawego (Nauka, Kultura, Religia) bannera w jednej linii poziomej, skala zetonow dobierana krokowo, boczne panele tuz pod bannerami; cap szerokosci TOP_STACK_MAX_PX 1480->1880. Testy: city-view-layout 120/0 (mutant 88/32), side-panels-below-topbanners 61/0, tsc 0, logic 213/213. NIE ZMIERZONO: dluga Produkcja/kolejka i przewijanie prawego panelu, realna gra. Do decyzji wlasciciela: czytelnosc zetonow ok. 11 px przy 6-7 cyfrach w oknach 1280-1366 px. Dlug testowy bazowy: recruitment-panel-compact-row 7 FAIL."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-15T02:12:29",
+  "hubGeneratedAt": "2026-11-15T02:38:06",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "a2585e0781c577bef7f305186ec1ae1d",
-      "sizeBytes": 14735143
+      "md5": "9ba327d6e871592875012649e2f838ec",
+      "sizeBytes": 14736097
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "a2585e0781c577bef7f305186ec1ae1d",
-      "sizeBytes": 14735143
+      "md5": "9ba327d6e871592875012649e2f838ec",
+      "sizeBytes": 14736097
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "a2585e0781c577bef7f305186ec1ae1d",
-      "sizeBytes": 14735143
+      "md5": "9ba327d6e871592875012649e2f838ec",
+      "sizeBytes": 14736097
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "a2585e0781c577bef7f305186ec1ae1d",
-      "sizeBytes": 14735143
+      "md5": "9ba327d6e871592875012649e2f838ec",
+      "sizeBytes": 14736097
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "a2585e0781c577bef7f305186ec1ae1d",
-      "sizeBytes": 14735143
+      "md5": "9ba327d6e871592875012649e2f838ec",
+      "sizeBytes": 14736097
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "a2585e0781c577bef7f305186ec1ae1d",
-      "sizeBytes": 14735143
+      "md5": "9ba327d6e871592875012649e2f838ec",
+      "sizeBytes": 14736097
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "a2585e0781c577bef7f305186ec1ae1d",
-      "sizeBytes": 14735143
+      "md5": "9ba327d6e871592875012649e2f838ec",
+      "sizeBytes": 14736097
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "a2585e0781c577bef7f305186ec1ae1d",
-      "sizeBytes": 14735143
+      "md5": "9ba327d6e871592875012649e2f838ec",
+      "sizeBytes": 14736097
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "a2585e0781c577bef7f305186ec1ae1d",
-      "sizeBytes": 14735143
+      "md5": "9ba327d6e871592875012649e2f838ec",
+      "sizeBytes": 14736097
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "a2585e0781c577bef7f305186ec1ae1d",
-      "sizeBytes": 14735143
+      "md5": "9ba327d6e871592875012649e2f838ec",
+      "sizeBytes": 14736097
     }
   ],
-  "md5": "a2585e0781c577bef7f305186ec1ae1d",
+  "md5": "9ba327d6e871592875012649e2f838ec",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

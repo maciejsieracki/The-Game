@@ -1,3 +1,9 @@
+## ROBOCZA 9ba327d6 -- 2026-11-14 -- FALA 728: Widok miasta: zetony w jednej linii, boczne panele wyzej (testowa)
+
+- W widoku miasta zetony lewego i prawego bannera (Praca, Zywnosc, Skarbiec / Nauka, Kultura, Religia) ukladaja sie w jednej linii bez zawijania, skala dopasowuje sie do szerokosci okna; boczne panele zaczynaja sie tuz pod bannerami
+- Weryfikacja: tsc 0; logic 213/213; city-view-layout 120/0; side-panels-below-topbanners 61/0; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: dluga Produkcja/kolejka, realna gra; czytelnosc zetonow ok. 11 px w oknach 1280-1366 px przy 6-7 cyfrach do decyzji wlasciciela; dlug testowy recruitment-panel-compact-row 7 FAIL
+
 ## ROBOCZA a2585e07 -- 2026-11-14 -- FALA 727: Kolejnosc badan: Obrobka drewna, Rolnictwo, Oswojenie zwierzat, Lowiectwo (testowa)
 
 - W panelu Mozesz wybrac cztery badania startowe wyswietlaja sie w kolejnosci Obrobka drewna, Rolnictwo, Oswojenie zwierzat, Lowiectwo (tylko kolejnosc listy gracza; AI i drzewko bez zmian)
