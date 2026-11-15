@@ -31204,6 +31204,44 @@ async function boot(): Promise<void> {
           for (const [o, t] of peekPendingLedger()) pending[o] = plain(t);
           return { turn, tickSeq: ledgerAuditTickSeq, owners, stock, tick, pending, e3cLast: ledgerAuditE3cLast, e3cFires: ledgerAuditE3cFires };
         },
+        /**
+         * R-WEB-TRADE-ROUTE-REMOVE-STOCK-FLOW-E3C-Q1 (tylko ?civTest=1, odczyt): aktywne trasy i dochod
+         * Pieniadza ze szlaku per wlasciciel (computeTradeRouteIncomeByCityBreakdown -- ta sama sciezka co tura).
+         */
+        tradeRoutesProbe: () => {
+          const ownerOfCity = new Map(cities.map(c => [c.id, c.ownerId] as const));
+          const br = computeTradeRouteIncomeByCityBreakdown(
+            tradeRoutes,
+            loadTradeRouteIncomeParams(data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0], _menuDifficulty),
+            wonderTradeRouteBonusForOwner,
+            targowiskoTradeRouteBonusForCity,
+          );
+          const incomeByOwner: Record<string, number> = {};
+          for (const [cid, v] of br.totalByCity) {
+            const o = ownerOfCity.get(cid);
+            if (o != null) incomeByOwner[o] = (incomeByOwner[o] ?? 0) + v;
+          }
+          return {
+            count: tradeRoutes.length,
+            routes: tradeRoutes.map(r => ({ ownerId: r.ownerId, toOwnerId: r.toOwnerId, medium: r.medium, dystans: r.dystans, status: r.status })),
+            incomeByOwner,
+          };
+        },
+        /**
+         * Tylko test (?civTest=1): wymusza JEDNA polaczona trase miedzy miastem ownerA a miastem ownerB
+         * (createTradeRoute, ta sama funkcja co refreshTradeRoutes). Trasa trafia do tradeRoutes i od
+         * nastepnego endTurn idzie realna sciezka tury. Zwraca null, gdy zadna para nie jest polaczona.
+         */
+        forceTradeRoute: (ownerA: number, ownerB: number): { routes: number } => {
+          const lo = Math.min(ownerA, ownerB);
+          const hi = Math.max(ownerA, ownerB);
+          const umowa = activeDeals.some(d => normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.UmowaSzlakow && d.strony[0] === lo && d.strony[1] === hi);
+          if (!umowa) {
+            activeDeals = [...activeDeals, { id: `trsf-test-${lo}-${hi}`, rodzaj: RodzajTraktatu.UmowaSzlakow, strony: [lo, hi], wygasaTura: null, zawartaTura: turn }];
+          }
+          recomputeTradeRoutesNow(false);
+          return { routes: tradeRoutes.filter(r => (r.ownerId === lo && r.toOwnerId === hi) || (r.ownerId === hi && r.toOwnerId === lo)).length };
+        },
         setRecording: (on: boolean): boolean => { setLedgerRecordingEnabled(on); return isLedgerRecordingEnabled(); },
         isRecording: (): boolean => isLedgerRecordingEnabled(),
         pendingPeek: () => { const o: Record<string, unknown> = {}; for (const [k, t] of peekPendingLedger()) o[k] = plain(t); return o; },
@@ -40404,8 +40442,8 @@ async function boot(): Promise<void> {
           // Handel E3c USUNIETY (decyzja ABC 2026-11-14/15, #311/#321, wariant A): szlak handlowy
           // NIE przesuwa zapasow zadnej strony. Zostaje: dochod ze szlaku (premia Pieniadza, bonus
           // morski/Targowisko/cud) i boolean-grant dostepu do jednostek (blok wyzej).
-          // Funkcje computeTradeRouteResourceFlow / loadTradeRouteResourceFlowParams w trade-routes.ts
-          // pozostaja wyeksportowane wylacznie dla testow (bez wywolania w grze).
+          // Funkcje computeTradeRouteResourceFlow / loadTradeRouteResourceFlowParams usuniete z trade-routes.ts
+          // (martwy kod po E3c; testy asercjonuja ich nieobecnosc, bez wywolania w grze).
           const tradeIncomeParams = loadTradeRouteIncomeParams(
             data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
             _menuDifficulty,

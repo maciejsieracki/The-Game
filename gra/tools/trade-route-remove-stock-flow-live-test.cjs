@@ -3,17 +3,20 @@
  * trade-route-remove-stock-flow-live-test.cjs -- R-WEB-TRADE-ROUTE-REMOVE-STOCK-FLOW-E3C-Q1 (#311).
  *
  * DOWOD W ZYWEJ GRZE (headless Chromium, zbudowany bundle vite POZA repo, `?playtest=mapa&civTest=1`):
- *   1. Gra startuje, tury 1..N przechodza przez REALNY endTurn bez bledow (pageerror / console.error).
- *   2. Po kazdej turze: zapasy wszystkich wlascicieli (ledger snapshot) -- brak wpisu zrodla „szlak”
- *      w ksiedze ticku oraz licznik odpalen przeplywu E3c (e3cFires) pozostaje 0.
- *   3. Jesli w trakcie scenariusza pojawi sie aktywna trasa (`__aiTradeWiringTestDebug.info` / liczniki
- *      tras), raportowany jest dochod Pieniadza ze szlaku (nie wymuszamy trasy -- NIE ZMIERZONO, gdy brak).
+ *   1. Wymuszona AKTYWNA trasa handlowa gracz<->AI (hak civTest forceTradeRoute = createTradeRoute, ta sama
+ *      funkcja co refreshTradeRoutes); trasa musi przetrwac realne endTurn (probe tradeRoutesProbe).
+ *   2. Zapasy obu stron w kluczach szlakowych (braz, zelazo, cegla, kon, zloto, sol) ustawione PRZED pomiarem
+ *      (setStock). Po KAZDEJ realnej turze: roznica magazynu = suma wpisow ksiegi (ticku + okno pending) --
+ *      ta sama formula co tools/resource-ledger-live-measure.cjs (turnDiffs). Przeplyw szlakowy, ktory zmienia
+ *      zapasy BEZ wpisu w ksiedze, daje roznice != 0 -> test czerwony (mutacja: przywrocenie E3c).
+ *   3. Dochod Pieniadza ze szlaku (computeTradeRouteIncomeByCityBreakdown, probe) > 0 po kazdej turze.
+ *   4. Zero pageerror / console.error w trakcie tur.
  *
  * Usage (z gra/):  BUNDLE_DIR=<abs> node tools/trade-route-remove-stock-flow-live-test.cjs
  *   BUNDLE_DIR -- katalog zbudowanego bundle (vite build --outDir <poza repo>).
  *   TRSF_TURNS=<n> -- liczba tur (domyslnie 3). TRSF_RESULT=<abs file> -- zapis JSON z liczbami.
  *
- * Zero zmian w grze -- test tylko czyta hooki ?civTest=1.
+ * Zmiana gry: tylko haki ?civTest=1 (odczyt + wymuszenie trasy testowej); logika tury nietknieta.
  */
 const fs = require('fs');
 const path = require('path');
@@ -27,6 +30,8 @@ const TURNS = Number(process.env.TRSF_TURNS || 3);
 const RESULT_FILE = process.env.TRSF_RESULT || '';
 const URL_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa&civTest=1';
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const SZLAK_KEYS = ['braz', 'zelazo', 'cegla', 'kon', 'zloto', 'sol'];
+const SETUP_STOCK = 400;
 
 let pass = 0;
 let fail = 0;
@@ -63,6 +68,33 @@ async function endTurnWait(page) {
   return t0;
 }
 
+/** Suma rekordu ksiegi per surowiec (ta sama logika co sumRec w resource-ledger-live-measure.cjs). */
+function sumRec(rec) {
+  const out = {};
+  for (const [rk, srcs] of Object.entries((rec && rec.byResource) || {})) {
+    let s = 0;
+    for (const f of Object.values(srcs)) s += f.amount;
+    out[rk] = s;
+  }
+  return out;
+}
+
+/** Roznice (magazyn_po - magazyn_przed) - (tick + pending_po - pending_przed) per wlasciciel i surowiec. */
+function turnDiffs(before, after) {
+  const rows = [];
+  for (const o of after.owners) {
+    const sB = before.stock[o] || {}, sA = after.stock[o] || {};
+    const L = after.tickSeq > before.tickSeq ? sumRec(after.tick[o]) : {};
+    const PA = sumRec(after.pending[o]), PB = sumRec(before.pending[o]);
+    const keys = new Set([...Object.keys(sB), ...Object.keys(sA), ...Object.keys(L), ...Object.keys(PA), ...Object.keys(PB)]);
+    for (const k of keys) {
+      const d = ((sA[k] || 0) - (sB[k] || 0)) - ((L[k] || 0) + (PA[k] || 0) - (PB[k] || 0));
+      if (d !== 0) rows.push({ owner: o, resource: k, diff: d, stockDelta: (sA[k] || 0) - (sB[k] || 0) });
+    }
+  }
+  return rows;
+}
+
 (async () => {
   const { chromium } = require('playwright');
   const errors = [];
@@ -80,46 +112,64 @@ async function endTurnWait(page) {
   const founded = await page.evaluate(() => window.__aiTradeWiringTestDebug.foundFirstCity());
   assert('sandbox: zalozenie pierwszego miasta gracza', founded === true);
   const aiId = info0.ai;
+  const me = info0.me;
   const prep = await page.evaluate(a => window.__aiTradeWiringTestDebug.prepare(a), aiId);
   assert('setup: kontakt z AI i nie-wojna (prepare)', !!(prep && prep.contact && prep.status !== 'wojna'), prep);
 
-  const result = { turns: [], e3cFiresMax: 0, szlakSourceSeen: false, errorsBefore: errors.length };
-  console.log('\n-- tury z REALNYM endTurn --');
-  for (let i = 0; i < TURNS; i++) {
-    const snap = await page.evaluate(() => {
-      const s = window.__ledgerTestDebug.snapshot();
-      const stock = s.stock;
-      const srcKeys = new Set();
-      for (const o of Object.keys(s.tick || {})) {
-        for (const rk of Object.keys((s.tick[o] && s.tick[o].byResource) || {})) {
-          for (const f of Object.values(s.tick[o].byResource[rk] || {})) {
-            if (f && typeof f.kind === 'string') srcKeys.add(f.kind);
-          }
-        }
-      }
-      return { turn: s.turn, stock, e3cFires: s.e3cFires, e3cLast: s.e3cLast, kinds: [...srcKeys] };
-    });
-    const t = await endTurnWait(page);
-    result.turns.push({ startTurn: t, stockBefore: snap.stock, kinds: snap.kinds, e3cFires: snap.e3cFires });
-    result.e3cFiresMax = Math.max(result.e3cFiresMax, snap.e3cFires || 0);
-    if (snap.kinds.some(k => /szlak|trade_route|trasa/i.test(k))) result.szlakSourceSeen = true;
-    console.log(`  tura ${t}: zapasy wlascicieli=${Object.keys(snap.stock).length}, zrodla=${snap.kinds.length}, e3cFires=${snap.e3cFires}`);
+  // SETUP: miasto AI (realne foundCityAt, pierscien 8..30 od gracza) -- bez niego AI nie ma zapasow ani trasy.
+  const spawned = await page.evaluate(a => window.__ledgerTestDebug.spawnOwnerCity(a), aiId);
+  assert('setup: miasto AI zalozone (spawnOwnerCity)', !!spawned, spawned);
+  // SETUP: zapasy obu stron w kluczach szlakowych (przed pierwszym pomiarem) i AKTYWNA trasa gracz<->AI.
+  for (const k of SZLAK_KEYS) {
+    await page.evaluate(([o, key, v]) => window.__aiTradeWiringTestDebug.setStock(o, key, v), [me, k, SETUP_STOCK]);
+    // AI bez zapasu (0): deficyt po jednej stronie, zeby przeplyw (gdyby istnial) mial powod zadzialac.
+    await page.evaluate(([o, key, v]) => window.__aiTradeWiringTestDebug.setStock(o, key, v), [aiId, k, 0]);
   }
-  const after = await page.evaluate(() => window.__ledgerTestDebug.snapshot());
-  result.finalStock = after.stock;
-  result.finalTurn = after.turn;
+  const forced = await page.evaluate(([a, b]) => window.__ledgerTestDebug.forceTradeRoute(a, b), [me, aiId]);
+  assert('setup: Umowa Szlakow gracz<->AI + przeliczenie tras (realna sciezka refreshTradeRoutes): >=1 trasa', !!(forced && forced.routes > 0), forced);
+  const probe0 = await page.evaluate(() => window.__ledgerTestDebug.tradeRoutesProbe());
+  assert('setup: trasa widoczna w tradeRoutes przed pierwsza tura', probe0.count > 0, probe0);
+
+  const result = { me, ai: aiId, forced, turns: [], errorsBefore: errors.length };
+  console.log('\n-- tury z REALNYM endTurn, aktywna trasa --');
+  for (let i = 0; i < TURNS; i++) {
+    const before = await page.evaluate(() => window.__ledgerTestDebug.snapshot());
+    const probeBefore = await page.evaluate(() => window.__ledgerTestDebug.tradeRoutesProbe());
+    const t = await endTurnWait(page);
+    const after = await page.evaluate(() => window.__ledgerTestDebug.snapshot());
+    const probeAfter = await page.evaluate(() => window.__ledgerTestDebug.tradeRoutesProbe());
+    const diffs = turnDiffs(before, after);
+    const stockPick = o => SZLAK_KEYS.reduce((acc, k) => { acc[k] = { przed: (before.stock[o] || {})[k] || 0, po: (after.stock[o] || {})[k] || 0 }; return acc; }, {});
+    const row = {
+      startTurn: t,
+      routesBefore: probeBefore.count,
+      routesAfter: probeAfter.count,
+      incomeBefore: probeBefore.incomeByOwner,
+      incomeAfter: probeAfter.incomeByOwner,
+      stockMe: stockPick(me),
+      stockAi: stockPick(aiId),
+      unexplainedStockDiffs: diffs,
+    };
+    // Zmiany kluczy szlakowych obu stron (scenariusz bez produkcji/konsumpcji tych kluczy: zapas stale 400).
+    row.szlakDeltas = [me, aiId].flatMap(o => SZLAK_KEYS
+      .map(k => ({ owner: o, key: k, delta: ((after.stock[o] || {})[k] || 0) - ((before.stock[o] || {})[k] || 0), zrodla: Object.keys(((after.tick[o] || {}).byResource || {})[k] || {}) }))
+      .filter(x => x.delta !== 0));
+    result.turns.push(row);
+    console.log(`  tura ${t}: trasy ${probeBefore.count}->${probeAfter.count}; dochod ${JSON.stringify(probeAfter.incomeByOwner)}; nieujete roznice zapasow=${diffs.length}`);
+    console.log(`    zapasy gracz (braz/zelazo/cegla/kon/zloto/sol) przed=${SZLAK_KEYS.map(k => row.stockMe[k].przed).join('/')} po=${SZLAK_KEYS.map(k => row.stockMe[k].po).join('/')}`);
+    console.log(`    zapasy AI    (braz/zelazo/cegla/kon/zloto/sol) przed=${SZLAK_KEYS.map(k => row.stockAi[k].przed).join('/')} po=${SZLAK_KEYS.map(k => row.stockAi[k].po).join('/')}`);
+  }
 
   console.log('\n-- asercje --');
-  assert(`tury: przeszlo ${TURNS} tur realnym endTurn`, after.turn >= info0.turn + TURNS, { from: info0.turn, to: after.turn });
-  assert('przeplyw E3c nie odpalil ani razu (e3cFires == 0)', result.e3cFiresMax === 0, { e3cFiresMax: result.e3cFiresMax });
-  assert('ksiega zrodel nie zawiera zrodla „szlak” / trasa', !result.szlakSourceSeen, { kinds: result.turns.map(t => t.kinds) });
+  assert(`tury: przeszlo ${TURNS} tur realnym endTurn`, result.turns.length === TURNS);
+  assert('szlak aktywny w KAZDEJ turze (trasa przetrwala refreshTradeRoutes)', result.turns.every(r => r.routesBefore > 0 && r.routesAfter > 0), result.turns.map(r => [r.routesBefore, r.routesAfter]));
+  assert('dochod Pieniadza ze szlaku naliczany w KAZDEJ turze (suma > 0)', result.turns.every(r => Object.values(r.incomeAfter).reduce((s, v) => s + v, 0) > 0), result.turns.map(r => r.incomeAfter));
+  const allDiffs = result.turns.flatMap(r => r.unexplainedStockDiffs.map(d => ({ turn: r.startTurn, ...d })));
+  assert('zapasy: zero nieujetych zmian magazynu w turach z aktywnym szlakiem (szlak nie przenosi zapasow)', allDiffs.length === 0, allDiffs.slice(0, 8));
+  const szlakChanges = result.turns.flatMap(r => r.szlakDeltas.map(d => ({ turn: r.startTurn, ...d })));
+  assert('szlak nie zmienia zapasow obu stron (kl. szlakowe stale; brak produkcji w scenariuszu)', szlakChanges.length === 0, szlakChanges.slice(0, 8));
   const errsAfter = errors.slice(result.errorsBefore);
   assert('zero pageerror / console.error w trakcie tur', errsAfter.length === 0, errsAfter.slice(0, 5));
-
-  console.log('\n-- dochod ze szlaku (NIE ZMIERZONO, gdy brak aktywnej trasy w scenariuszu) --');
-  console.log('  NIE ZMIERZONO: scenariusz 3 tur w mapa nie wymusza aktywnej trasy handlowej;');
-  console.log('  przed/po liczby Pieniadza ze szlaku wymagaja hooka ustawiajacego trasy (poza zakresem tego ruchu).');
-  result.szlakIncomeMeasured = false;
 
   if (RESULT_FILE) fs.writeFileSync(RESULT_FILE, JSON.stringify(result, null, 2));
   await browser.close();
