@@ -1721,3 +1721,17 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
   - Dokumenty runu na `3f8940fd3`. Worktree (4) usunięte, HEAD w `refs/keep/cleanup-wf_0fe3a41b-09f-*`.
 - **Start #231 TEST-JS-ROUND-MINUS-ZERO:** dispatch `R-RUSTPORT-P6-JSROUND-MINUSZERO-Q1` na `acf8fd6c3`, baza `f7baa3848`, workflow `wf_0afbf4f1-ffb`. Zmiany tylko w testach (allowlista jednego pliku).
 - **Aktywne (4):** #98 wyłom (`wf_15bb4a09-81f`), #226 OUTCOME r2 (`wf_41d73167-4c8`), #234 AUTO-SCOPE (`wf_23cd3ec9-415`), #231 js_round -0 (`wf_0afbf4f1-ffb`).
+
+## Przebieg (15.11, 18:xx UTC — zakończenie #234 AUTO-SCOPE; start #229 D-DTO-4/10 na Opusie)
+
+- **#234 K5-LOOP-AUTO-SCOPE (FC PASS-WITH-NOTES `c19ac8b17`, odczyt):** dokumenty na `ed4a61199`. Ustalenia po korekcie Obrony:
+  - Niezależne od #112 (doktryna): tylko V5 i V6. V1/V2 zależą od #112, bo pin `battleScene.ts:6091-6097` wywołuje doktrynę „steady” przed resztą `_activateUnit`.
+  - V13 (sufit 400 tur bez oblężenia) POKRYTE: `round_cap_verdict` (`siege_no_breach.rs:69-88`), wektory roundcap 745 przypadków (192 przy roundNo≥400). Zostaje wiring #113.
+  - ProdBody: POKRYTE (ciało, wektory), ale BRAK wiringu (#113); `siege_tactics_loop.rs:700` mówi „NIE WPINAĆ do SiegeLoop”.
+  - Przerwanie AUTO: `BeginAutoBatchPhase` przerywa pętlę (`siege_tactics_loop.rs:541-545`).
+  - **Luka bez tematu:** tryb ręczny (`_toggleManualMode` 17348, `_performPlayerOrder` 18280) nie ma portu ani zadania w kolejce. Wymaga nowego tematu.
+  - Łańcuch: #109 → #112 → {V1/V2, V7, V8}; V8 dodatkowo #148.
+  - Testy Rust nie uruchamiano (NIE_ZMIERZONO); brak wektorów dla `_executeQueuedOrders` (3603) i `_ffEnterAuto` (3709) — do dopisania jako V15/V16.
+- **#229/#219 D-DTO-4/D-DTO-10:** start, dispatch `R-RUSTPORT-P4-DTO-DECYZJE-4-10-Q1` na `aa639a368`, baza `f7baa3848`, workflow `wf_0cf44ff7-e59`, wszystkie role OPUS (temat DTO renderera). Dokument: `dyspozycje/rust-port/p4/D-DTO-4-D-DTO-10-DECYZJE.md`. Zakres: tylko dokument, zero kodu.
+- **Dysk:** 10 GB wolne (75%) po sprzątaniu worktree #234 (HEAD w `refs/keep/cleanup-wf_23cd3ec9-415-*`).
+- **Aktywne (4):** #98 wyłom (`wf_15bb4a09-81f`), #226 OUTCOME r2 (`wf_41d73167-4c8`), #231 js_round -0 (`wf_0afbf4f1-ffb`), #229 D-DTO (`wf_0cf44ff7-e59`).
