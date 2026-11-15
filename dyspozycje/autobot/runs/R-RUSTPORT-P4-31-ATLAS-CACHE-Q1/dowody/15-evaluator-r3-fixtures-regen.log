@@ -1,0 +1,17 @@
+badgeKeys 1761 legacy 546 growth 4074 portrait 288 emblem 1216 canvasSizes 1794 purge 300
+deefe4540f0de95520d01c7496411c89467b507aabbf684733ac3b0ec7121ffb  /tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/p431ev/regen/out/atlas_keys.json
+GEN_EXIT=0
+--- cmp keys (committed vs regen)
+node 'v22.22.0' | 'v22.23.4'
+ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver) 153.0.8010.12 cases 57
+GL_EXIT=0
+fef01ff2f1a163011abdd22d26deeb1754ce7ffdb24c0ba0ffae0bd88d15aeb6  /tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/p431ev/regen-gl/atlas_gl.json
+--- cmp gl (committed vs regen)
+browser '141.0.7390.37' | '153.0.8010.12'
+userAgent 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.37 Safari/537.36' | 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)
+--- sha256sum -c SHA256SUMS @5259741ab
+atlas_keys.json: OK
+atlas_gl.json: OK
+gen.ts: OK
+gen.sh: OK
+gen_gl.mjs: OK

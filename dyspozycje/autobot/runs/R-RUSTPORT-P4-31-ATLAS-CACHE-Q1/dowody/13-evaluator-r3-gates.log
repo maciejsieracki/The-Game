@@ -1,0 +1,37 @@
+cargo 1.97.0 (c980f4866 2026-06-30)
+rustc 1.97.0 (2d8144b78 2026-07-07)
+== fmt
+EXIT=0
+== clippy cpu
+    Checking resvg v0.48.1
+    Checking civ-renderer v0.1.0 (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/wt/rust-port/renderer)
+    Finished `dev` profile [unoptimized] target(s) in 14.35s
+EXIT=0
+== clippy gpu
+    Checking wgpu-core-deps-windows-linux-android v30.0.1
+    Checking civ-renderer v0.1.0 (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/wt/rust-port/renderer)
+    Finished `dev` profile [unoptimized] target(s) in 39.32s
+EXIT=0
+== test all
+EXIT=0
+passed=305 failed=0 ignored=0
+     Running tests/atlas_gpu.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/p431ev/target/debug/deps/atlas_gpu-f45017a21099e866)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/atlas_json.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/p431ev/target/debug/deps/atlas_json-80417938dde3527e)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/atlas_keys.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/p431ev/target/debug/deps/atlas_keys-f2c1cbb18f72b1da)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+     Running tests/atlas_mip.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/p431ev/target/debug/deps/atlas_mip-adb5419506e735d2)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+     Running tests/atlas_nturns.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/p431ev/target/debug/deps/atlas_nturns-3391f29972f81078)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s
+== test gpu
+test upload_and_read_back_every_level ... ignored, needs a GPU adapter (none in the container); run on the owner's machine with the P4-15 spike
+test formats_and_blend_states ... ok
+test descriptors_follow_the_texture_data ... ok
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+SKIPPED: no GPU adapter (request_adapter error: No suitable graphics adapter found; noop support not compiled in, vulkan drivers/libraries could not be loaded, metal support not compiled in, dx12 support not compiled in, gl drivers/libraries could not be loaded, webgpu support not compiled in)
+test gpu_probe_adapter_or_explicit_skip ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+EXIT=0
+GATES_DONE
