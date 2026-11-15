@@ -159,13 +159,17 @@ fn overlay_types() {
         rt(&m);
     }
     for k in [
-        BuildHighlightKind::Generic,
-        BuildHighlightKind::Mine,
         BuildHighlightKind::FoundCity,
+        BuildHighlightKind::Wonder,
+        BuildHighlightKind::Improvement,
+        BuildHighlightKind::Mine,
     ] {
         rt(&k);
     }
     rt(&sample_siege());
+    rt(&sample_siege().camp_hexes[2]);
+    rt(&sample_path_route());
+    rt(&sample_path_route().turn_stops[0]);
     rt(&sample_wonder());
     rt(&sample_owner_hexes());
     rt(&sample_territory());

@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 /// Version of this contract (`contractVersion`), following the pattern of the
 /// bridge version constant (`engine/src/bridge.rs:12-13`). Bump on any change
 /// of a JSON key, type or encoding.
-pub const CONTRACT_VERSION: u16 = 1;
+pub const CONTRACT_VERSION: u16 = 2;
 
 /// Full render snapshot (contract §3.1 `RenderViewDto`): the static map plus
 /// every dynamic layer. Sent at start/load; afterwards the engine sends

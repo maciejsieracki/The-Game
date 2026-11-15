@@ -550,18 +550,23 @@ fn trade_medium() {
     check_enum(&all, &strings("TradeRouteMedium"));
 }
 
-/// Contract §3.7 `kind: generic | mine | foundCity`. There is no web literal
-/// to generate (the web switches layers in `refreshBuildHighlight`,
-/// `main.ts:16350-16395`), so these values are the contract's own.
+/// Contract §3.7 `buildHighlight.kind`, one value per branch of
+/// `refreshBuildHighlight` (`main.ts:16351-16395` @ `07d2fbd72`, P4-1F1 b):
+/// `foundCity` (`:16352-16361`), `wonder` (`:16363-16367`), `improvement`
+/// (`setHighlight(..., IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY)`, `:16391-16395`),
+/// `mine` (`refreshMineEligibleOverlay`, `:16386-16390`). There is no web
+/// literal to generate (the web switches layers), so these values are the
+/// contract's own.
 #[test]
 fn build_highlight_kind() {
     use BuildHighlightKind::*;
-    let all = variants(&[Generic, Mine, FoundCity], |k| match k {
-        Generic => 0,
-        Mine => 1,
-        FoundCity => 2,
+    let all = variants(&[FoundCity, Wonder, Improvement, Mine], |k| match k {
+        FoundCity => 0,
+        Wonder => 1,
+        Improvement => 2,
+        Mine => 3,
     });
-    let contract: Vec<String> = ["generic", "mine", "foundCity"]
+    let contract: Vec<String> = ["foundCity", "wonder", "improvement", "mine"]
         .iter()
         .map(|s| (*s).to_owned())
         .collect();
