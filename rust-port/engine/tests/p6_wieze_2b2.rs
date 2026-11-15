@@ -209,3 +209,81 @@ fn dead_target_is_not_chosen_at_shot_time() {
         "martwy cel nie jest celem wieży"
     );
 }
+
+/// Trafienie pocisku (web callback `_schedule(RANGED_FLY_MS)`, `battleScene.ts:4263-4269`) pomija cel martwy
+/// PO wystrzale, a nie tylko w chwili wyboru. Test steruje zegarem bezposrednio przez `LoopTimer::TowerHit`.
+#[test]
+fn tower_hit_skips_target_dead_before_impact() {
+    // Drugi atakujący żyje, więc bitwa nie kończy się przed trafieniem (inaczej `finished` maskuje guard).
+    let mut st = two_attacker_state();
+    st.atk[0].c.dead = true;
+    let mut sl = SiegeLoop::new(st, two_attacker_env());
+    let mut clock = VirtualClock::<LoopTimer>::new();
+    let _ = clock.schedule(0.0, LoopTimer::TowerHit(0), false);
+    let _ = sl.run(&mut clock, 10_000);
+    assert_eq!(
+        sl.env.body.tower_blows, 0,
+        "cel martwy przed trafieniem nie dostaje ciosu wieży"
+    );
+}
+
+/// Stan z dwoma atakującymi (oba żywe) i żywym obrońcą; cele w (7,3) i (7,4), wieża (5,3).
+fn two_attacker_state() -> TurnSeqState {
+    let mut st = state(&[10.0, 10.0]);
+    st.def = vec![SeqUnit {
+        id: 100,
+        c: cu(10.0),
+    }];
+    st
+}
+
+fn two_attacker_env() -> SiegeEnv<TowerBody> {
+    let mut e = env(vec![Some((7, 3)), Some((7, 4))], vec![3], vec![3], true);
+    e.move_points[0] = vec![3.0, 3.0];
+    e.morale_max[0] = vec![100.0, 100.0];
+    e
+}
+
+#[test]
+fn tower_hit_skips_target_fading_out_before_impact() {
+    let mut st = two_attacker_state();
+    st.atk[0].c.fading_out = true;
+    let mut sl = SiegeLoop::new(st, two_attacker_env());
+    let mut clock = VirtualClock::<LoopTimer>::new();
+    let _ = clock.schedule(0.0, LoopTimer::TowerHit(0), false);
+    let _ = sl.run(&mut clock, 10_000);
+    assert_eq!(
+        sl.env.body.tower_blows, 0,
+        "cel znikający przed trafieniem nie dostaje ciosu wieży"
+    );
+}
+
+/// Kontrola do dwóch testów wyżej: żywy cel w `TowerHit` dostaje cios (guard nie jest tautologią).
+#[test]
+fn tower_hit_on_live_target_blows() {
+    let mut sl = SiegeLoop::new(two_attacker_state(), two_attacker_env());
+    let mut clock = VirtualClock::<LoopTimer>::new();
+    let _ = clock.schedule(0.0, LoopTimer::TowerHit(0), false);
+    let _ = sl.run(&mut clock, 10_000);
+    assert_eq!(sl.env.body.tower_blows, 1, "żywy cel dostaje cios wieży");
+}
+
+/// Opóźnienie lotu: trafienie następuje po `TOWER_FLY_MS` (380 ms, web `RANGED_FLY_MS`) od wystrzału.
+#[test]
+fn tower_hit_lands_after_tower_fly_ms() {
+    use civ_engine::domain::siege_tactics_loop::TOWER_FLY_MS;
+    assert_eq!(TOWER_FLY_MS, 380.0, "stała zgodna z pinem RANGED_FLY_MS");
+    let mut sl = SiegeLoop::new(
+        live_state(10.0),
+        env(vec![Some((7, 3))], vec![3], vec![3], true),
+    );
+    let mut clock = VirtualClock::<LoopTimer>::new();
+    let _ = clock.schedule(0.0, LoopTimer::TowerShot(0), false);
+    let _ = sl.run(&mut clock, 10_000);
+    assert_eq!(sl.env.body.tower_blows, 1, "strzał dociera do trafienia");
+    assert!(
+        clock.now() >= TOWER_FLY_MS,
+        "trafienie nie wcześniej niż po locie: now={}",
+        clock.now()
+    );
+}
