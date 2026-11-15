@@ -38,6 +38,10 @@ pub enum EngineCommand {
         unit_id: u64,
         destination: PositionDto,
     },
+    /// P4-1H: cancel the planned march of one human unit (web `clearPlannedMarch(unitId, force)`,
+    /// `main.ts:31051-31056` @ `07d2fbd72`). `force=false` keeps a march-then-attack plan; no plan is
+    /// `Ok` without changes; an unknown or foreign unit is rejected (`UnitNotFound` / `UnitNotOwned`).
+    CancelPlannedMarch { unit_id: u64, force: bool },
     /// Resolve the current turn through the canonical phase queue.
     AdvanceTurn,
     /// Read the current state without emitting a state-change event.
@@ -286,6 +290,10 @@ impl EnginePort for CivEngineAdapter {
                 .game
                 .move_unit(unit_id, destination)
                 .map_err(|error| BridgeError::engine_rejected(error.to_string()))?,
+            EngineCommand::CancelPlannedMarch { unit_id, force } => self
+                .game
+                .cancel_planned_march(unit_id, force)
+                .map_err(|error| BridgeError::engine_rejected(error.to_string()))?,
             EngineCommand::AdvanceTurn => self
                 .game
                 .advance_turn()
@@ -385,6 +393,14 @@ impl EnginePort for MockEngineAdapter {
                     BridgeError::engine_rejected("create session before moving a unit")
                 })?;
                 game.move_unit(unit_id, destination)
+                    .map_err(|error| BridgeError::engine_rejected(error.to_string()))?;
+                self.state = game.state().clone();
+            }
+            EngineCommand::CancelPlannedMarch { unit_id, force } => {
+                let game = self.game.as_mut().ok_or_else(|| {
+                    BridgeError::engine_rejected("create session before cancelling a march")
+                })?;
+                game.cancel_planned_march(unit_id, force)
                     .map_err(|error| BridgeError::engine_rejected(error.to_string()))?;
                 self.state = game.state().clone();
             }
