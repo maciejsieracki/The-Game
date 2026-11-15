@@ -1,26 +1,50 @@
+# 02 — Evaluator (Sonnet, adwersarialny): ZDOBYCIE-MIASTA-ROZPOZNANIE (#175 / #115), runda 1
+
 STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
 TEMAT: R-RUSTPORT-P6-ZDOBYCIE-MIASTA-ROZPOZNANIE-Q1
-GOAL: Ocena adwersarialna rozpoznania zdobycia miasta (#115/#175): zgodność plik:linia z pinem 07d2fbd72 i z Rust, kompletność, brak zmian poza allowlistą.
-ZMIANY/COMMIT: ocena kodu operatora 1f04a6c06 (baza 0ca58770e). `git diff --stat 0ca58770e 1f04a6c06` = 2 pliki dokumentacyjne (allowlista OK, brak src/tests/gra/Cargo).
-TESTY: bramki cargo (fmt/clippy/test --lib) NIE DOTYCZY — brak zmian w kodzie (diff tylko .md). Brak #[ignore]/osłabionych asercji (brak zmian testów). Weryfikacja ręczna: pin wydobyty `git show 07d2fbd72:gra/src/main.ts` (47448 linii), ~35 numerów linii sprawdzonych; grep po rust-port/ poza tests/ powtórzony dla 12 symboli.
+GOAL: Ocenić rzetelność `01-rozpoznanie.md` (commit `92393c2c1`): 5 wybranych odwołań (web i Rust) potwierdzić lub obalić oraz sprawdzić zakres commitu.
+ZMIANY/COMMIT: tylko ten plik (`02-evaluator.md`). Zero zmian w `gra/` i `rust-port/`. Brak push.
+TESTY: NIE_ZMIERZONO — tryb wyłącznie odczytu (`git show`/`git grep`), bez `cargo`.
 BLOKADY: brak.
 RUNDY: 1/5
+NASTĘPNY KROK: Obrona Operatora (Haiku) poprawia odwołania z zarzutów 1-3 i uzupełnia zakres z zarzutu 4; potem Final Control.
+DEPLOY/PUSH: NIE WYKONANO
 
-## Co potwierdzone
-Numery linii pina (34017–34039, 34431, 34656–34679, 36034, 36221, 36313–36352, 36368/36377, 36449, 36730–36833, 35558, 17648/17662/17828, 38867, 12661, 32536, 28468/28632/28700/28905) zgodne. Linie Rust (siege_transfer.rs:340, siege_capital_plunder.rs:504, victory.rs:261/273/292, siege_surrender.rs:119/143/171, barbarians.rs:551, siege_capture_events.rs:182, siege_transfer_q5.rs:107, playable.rs:554, war_turn_state.rs:654) zgodne. Statusy PORT-NIEPODPIĘTY potwierdzone: brak wołających poza testami/modułem dla apply_transfer_with_effects (jedyny wołający to apply_transfer :323, bez wołającego), run_capital_capture_plunder, check_defeat/check_victory, can_capture_empty_city, record_city_capture_event, record_player_ever_owned_city, power_record_city_capture, siege_surrender::*.
+## Baza
+
+- Web: pin `07d2fbd72`. Rust: `origin/rust-port/parity-v2` = `d5a52a980ecdb9e4ea7b750f2121cad41e191b72` (zgodne z dispatchem).
+- Commit operatora `92393c2c1` (rodzic `9cbadc54a`).
+
+## Zakres commitu (sprawdzone)
+
+`git show --name-status 92393c2c1` → jeden wpis: `A dyspozycje/autobot/runs/R-RUSTPORT-P6-ZDOBYCIE-MIASTA-ROZPOZNANIE-Q1/01-rozpoznanie.md`. Zero zmian w `gra/`, `rust-port/` i poza katalogiem runu. Allowlista spełniona. Trailery `Co-Authored-By: Claude Haiku 5.5` i `Claude-Session` obecne. Nazwa pliku zgodna z dispatchem.
+
+## Sprawdzone odwołania (5 wybranych + kontrole dodatkowe)
+
+| # | Odwołanie z raportu | Wynik |
+|---|---|---|
+| A | WEB: `runCapitalCapturePlunder` def `main.ts:35558`, wołający `main.ts:17828` (kapitulacja głodowa) i `main.ts:36221` (bitwa) | POTWIERDZONE (`git grep -n` na pinie). Dodatkowo: `applyCapturePopulationLoss` def `cities.ts:1235`, wołający `post-battle-map.ts:508` i `main.ts:17700`; `applyCityCaptureAfterBattle` `post-battle-map.ts:493`, wołany `main.ts:36061`; zapis zdobyczy `main.ts:35675`, odczyt `:2779`; `eliminateOwner` def `:35348`, wywołanie `:35769` — wszystko zgodne. |
+| B | RUST: `run_capital_capture_plunder` `siege_capital_plunder.rs:504` bez wołającego w produkcji | POTWIERDZONE. `git grep` po `rust-port/engine/src` (bez `tests/`): zero wołających; jedyne wystąpienia to definicja, komentarze (`:27`, `:580`, `:659`) i opisy w `siege_transfer.rs:188` („wolajacy niepodpiety - W8”) oraz `siege_surrender.rs:39`. Brak wołających także w innych katalogach `rust-port/` (listing `git grep -l` pokazuje tylko `engine/src/domain/*` i `engine/tests/*`). |
+| C | RUST: `apply_transfer_with_effects` `siege_transfer.rs:340`, wołający tylko testy; `apply_capture_population_loss` wołany `:360`; `apply_post_capture_law_on_capture` `:374`; `found_by_owner = Some(false)` `:392` | POTWIERDZONE (linie zgodne co do jednej; `apply_transfer` `:316` też bez wołającego w produkcji). |
+| D | RUST: dwa akumulatory zdobyczy Power — `PlunderState::zdobycze_power_by_owner` (`siege_capital_plunder.rs:458`, zapis `:611-615`) vs `WarTurnState::zdobycze_power_by_owner` (`war_turn_state.rs:145`, zapis tylko przez `record_capture_power_gain` `:654` ← `PlayableState::power_record_city_capture` `playable.rs:631`) | POTWIERDZONE. `git grep` po `record_capture_power_gain|zdobycze_power_by_owner` w `engine/src`: brak mostu między mapami; `power_record_city_capture` bez wołającego (doc `playable.rs:629-630`). Rozbieżność realna. |
+| E | RUST: `eliminate_owner` `eliminacja.rs:48` bez wołającego w produkcji; `power_clear_eliminated_owner` wołany `eliminacja.rs:66` (def `playable.rs:643`) oraz niezgodność ze statusem „completed” #114 | POTWIERDZONE co do kodu: `git grep eliminate_owner` w `engine/src` zwraca tylko definicję i wzmianki w dokumentacji. Jedyny wołający `power_clear_eliminated_owner` to `eliminate_owner`. Uwaga: ocena statusu #114 nie wynika z kodu (możliwe, że „completed” oznaczało zakres domenowy) — raport słusznie zostawia to orkiestratorowi. |
+
+Dodatkowo potwierdzone: `combat::resolve_combat` `combat.rs:321` i `combat::resolve` `:381` — jedyni wołający to `rust-port/engine/tests/combat.rs`; w `src` brak. `handle_siege_capitulation_phase` `siege_surrender.rs:119` woła tylko `surrender_tick_action` (`:149`), a ten tylko testy (blok `#[cfg(test)]` od `:223`). `siege_wonder_watch.rs:61` (`plan_wonder_transfers`) i `:106` (`apply_wonder_transfers`) zgodne. Nazwa `applyCaptureTransfer`: `git grep -i capturetransfer` na pinie (`gra`) → zero trafień; teza raportu (krok 20 NIE_ZMIERZONO / nie istnieje) POTWIERDZONA.
+
+Wniosek główny raportu („0 z 20 kroków zintegrowanych w produkcji”) jest zgodny z kodem.
 
 ## Zarzuty (ponumerowane)
-1. BŁĄD FAKTU (W1 i P6, wiersz tabeli i legenda węzłów): dokument twierdzi, że zdobycie w `applyMapBattleOutcome` następuje „tylko gdy atakujący to barbarzyńca i (allowCityCapture lub siegeContext)”. Pin 34656–34679: warunek `(allowCityCapture===true || siegeContext===true) && mapWinner==='atakujacy' && cityOnHex && owner != atk && areEnemyOwners && !barbCaptureBlockedByRemainingDefenders && !fortifiedCaptureBlocked` dotyczy KAŻDEGO atakującego; komentarz 34651–34658 mówi wprost, że sprawdzenie obrońców dotyczy wyłącznie barbarzyńcy, a gracz/AI capture (siege/allowCityCapture) jest „bez zmian”. Pominięte w opisie: `mapWinner`, `areEnemyOwners`, `isCityCaptureBlockedByDefenders` (barbarians.ts), `fortifiedCaptureBlocked`. Plan Z5 opiera się na błędnym opisie bramki.
-2. POMINIĘTY WĘZEŁ (lista braków i P1): `applyCityCaptureToMap` (36061) deleguje właściwą zmianę właściciela do `applyCityCaptureAfterBattle` (import pin:963, `game/post-battle-map.ts`). Dokument nie wspomina o nim ani razu (0 trafień), a w Rust nie ma odpowiednika (grep after_battle/post_battle pusty). To rdzeń P1 (zmiana właściciela, wejście jednostek, prawo po przejęciu); Z1 „port P1” jest zaniżony/niedookreślony bez tego węzła.
-3. BŁĄD ATRYBUCJI: lista braków przypisuje `applyPostCaptureLawOnCapture` do P1 (main.ts 36034–36220). Pin 36049–36053 wprost: main.ts NIE woła go tu — żyje w post-battle-map.ts (wołane przez applyCityCaptureAfterBattle, gdy atakujący nie jest barbarzyńcą). Dodatkowo `rebel_protection`: snapshot `wasProtectedRebel` czytany PRZED applyCityCaptureAfterBattle (kolejność istotna dla Z1) — pominięte.
-4. BŁĄD FAKTU (W11, lista braków „Producent cesji”): „`grep cession|transfer_city` w rust-port/ poza testami pusty” / „Brak nazwy cession” jest FAŁSZEM. Trafienia: ai_peace_city_offer.rs:234/280, war_turn_ai_ai.rs:79/126/139, diplomacy_war_weariness_tick.rs:194/377, diplomacy_ai_forced_peace.rs:382/644 (`city_cession_ok`, `cs_blocks_cession`). Sam producent `transferCityByTreaty`/`planCityCession` rzeczywiście BRAK, ale dokument nie wskazuje istniejących wejść `city_cession_ok` (kandydatów na bramkę Z7) i nie rozstrzyga ich zależności. Szacunek Z7 niezweryfikowany.
-5. NIEKOMPLETNE W12/W13: pominięty produkcyjny call site `onBarbarianCityBattleResolved` w pinie: main.ts:43406 (faza barbarzyńców, `launchIncomingMapFieldBattle(..., onBarbarianCityBattleResolved, ..., barbAllowCityCapture)`) — to JEDYNE produkcyjne wejście „drugiej ścieżki przegranej” z tematu (dispatch). Dokument podaje tylko definicję 34037/34039 i fałszywie sugeruje, że wołający to wyłącznie hak. Hak testowy 28662–28685 (`__defeatTestDebug`) też nieskatalogowany (W14 go pomija).
-6. NIEKOMPLETNE W14: lista haków testowych pomija `resolveSiegeSurrender` w pinie 28612 (wywołanie w haku) — katalog wywołań „wszystkich miejsc” nie jest pełny (kryterium 1).
-7. POMINIĘTE ISTNIEJĄCE KOMPONENTY RUST: sekcja braków nie wymienia `siege_enter_city::enter_city_after_surrender` (siege_enter_city.rs:132), `eliminacja::eliminate_owner` (eliminacja.rs:48, #114 zakończone), `siege_transfer_effects::apply_post_capture_law_on_capture` (:163) ani `rebel_protection_war_request` (:211) jako stan istniejący po stronie Rust (częściowo wspomniane tylko ogólnie). Utrudnia ocenę zakresu Z1.
-8. NIESPÓJNOŚĆ: legenda deklaruje „NIE_ZMIERZONO” dla wołających poza rust-port/, a W2–W5 jednocześnie orzekają „wołający brak” — dotyczy tylko rust-port/ (src-tauri/ nie sprawdzono). Status „PORT-NIEPODPIĘTY” jest więc ograniczony do rust-port/; dokument mówi o tym tylko w Metodzie, nie w tabeli. Niska waga.
 
-Weryfikacja zarzutów 1–5: sed po pin-main.ts (wydobyty z 07d2fbd72), grep -rn po rust-port/ bez /tests/.
+1. **Błędne odwołanie web, krok 15 (`noteCityCapture`).** Raport podaje „`main.ts:17830+`”. Na pinie `noteCityCapture(...)` jest w `main.ts:17706` (kapitulacja głodowa) i `main.ts:36047` (bitwa). Wskazanie 17830+ nie wskazuje wywołania. Rust: wpis w `TRANSFER_EFFECTS` jest na `siege_transfer.rs:95-100` (nie `:50`; `:50` to początek tablicy), a konkretna funkcja to `siege_transfer_q5::note_city_capture` — raport jej nie nazywa.
+2. **Błędne/rozmyte odwołanie web, krok 16 (wonder watch).** Raport: „`main.ts:17820`, `:17834` okolice”. Realnie `beginWonderTransferWatch()` w kapitulacji = `main.ts:17698`, `settleWonderTransfer` = `:17705` (definicje `:4232`/`:4240`); w bitwie `:36060`/`:36089`. Podane linie 17820/17834 nie zawierają tych wywołań; „okolice” w dokumencie odniesienia jest niedopuszczalne przy wymaganym plik:linia. Wrappery Rust: `siege_wonder_wrappers.rs:45` i `:107` — raport podaje tylko nazwę pliku.
+3. **Niedokładne odwołanie web, krok 13 (`recordCityCaptureEvent`).** „`main.ts:17830+`” — realnie wywołania: `main.ts:17848` (kapitulacja), `:35647` i `:35724` (wewnątrz plundera), `:36249` (bitwa); def `:10650`. Wymagany precyzyjny zapis.
+4. **Luka zakresu web: pominięte inne ścieżki zmiany właściciela miasta.** Raport pokrywa tylko bitwę i kapitulację głodową. Na pinie ten sam wzorzec wonder watch + `clearCityStateFlagOnCapture` występuje przy aneksji (`main.ts:35272-35287`), cesji (`:36478-36484`), buncie/rebelii (`:39563-39568`) i forcie (`:16116-16124`). Raport nie mówi, że nie są objęte ani czy są częścią #115/#175 — brakuje jawnego wpisu o wyłączeniu z zakresu (albo w NIE_ZMIERZONO). Nie podważa wniosku głównego, ale tabela sugeruje kompletność „ścieżki zdobycia miasta”.
+5. **Pominięta niespójność dokumentacji w kodzie.** `siege_surrender.rs:37` w tabeli nadal podaje wonder wrapper jako „BRAK (wrapper)”, mimo że `siege_wonder_wrappers.rs` istnieje (Q9) i jest w `mod.rs:133`; `playable.rs:630` przypisuje brak wołającego `power_record_city_capture` do tego, że „`apply_transfer_with_effects` nie jest wołany”, choć ta funkcja go nie woła (nie ma w jej ciele takiego wywołania — wołający jest osobnym brakującym elementem, a nie skutkiem). Raport powinien wskazać obie rozbieżności jako stale komentarze, żeby temat wpięcia (#115) nie opierał się na nich.
+6. **Kolejność kroków (niedomówienie NIE_ZMIERZONO).** Raport sam przyznaje, że nie porównał linia po linii kolejności `main.ts:17700-17880` z `apply_transfer_with_effects`; mimo to w tabeli kroki 5-6 mają status „ZINTEGROWANE wewnątrz funkcji”. Status „ZINTEGROWANE” bez porównania kolejności i wartości to za mocne sformułowanie; raczej „ISTNIEJE (zgodność NIE_ZMIERZONO)”. Uwaga drobna (nie blokuje).
 
-NASTĘPNY KROK: Final Control; zarzuty 1–5 do poprawki przez Operatora (runda 2, rozpoznanie), przed użyciem planu Z1–Z7 do dispatchu kodu.
-DEPLOY/PUSH: NIE WYKONANO
+Zarzuty 1-3 dotyczą wymaganej dokładności odwołań plik:linia; 4-6 kompletności i terminologii. Żaden nie obala wniosków głównych (0 wołających w produkcji; dwa akumulatory Power; brak `applyCaptureTransfer` w pinie).
+
+## Werdykt
+
+PASS-WITH-NOTES. Wnioski rozpoznania potwierdzone dla 5 wybranych odwołań i kontroli dodatkowych; zakres commitu poprawny (wyłącznie katalog runu). Do poprawy przed FC: odwołania z zarzutów 1-3, jawna adnotacja o zakresie (zarzut 4), uwaga o stale komentarzach (zarzut 5), złagodzenie statusu „ZINTEGROWANE” (zarzut 6).
