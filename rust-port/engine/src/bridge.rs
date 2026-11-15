@@ -42,6 +42,9 @@ pub enum EngineCommand {
     AdvanceTurn,
     /// Read the current state without emitting a state-change event.
     GetState,
+    /// Player `declarer` declares war on `target` (web `playerDeclareWarOnOwner`). Contract-only in this
+    /// topic: the adapters reject it until the diplomacy state is wired into the session.
+    DeclareWar { declarer: u64, target: u64 },
 }
 
 /// JSON request envelope sent by the frontend through Tauri `invoke`.
@@ -288,6 +291,11 @@ impl EnginePort for CivEngineAdapter {
                 .advance_turn()
                 .map_err(|error| BridgeError::engine_rejected(error.to_string()))?,
             EngineCommand::GetState => {}
+            EngineCommand::DeclareWar { .. } => {
+                return Err(BridgeError::engine_rejected(
+                    "declare_war: wiring stanu dyplomacji poza zakresem tematu CRED-HAK-WYPOWIEDZENIE-IMPL-Q1",
+                ));
+            }
         }
 
         Ok(self.game.state().clone())
@@ -392,6 +400,11 @@ impl EnginePort for MockEngineAdapter {
                 if let Some(game) = &self.game {
                     self.state = game.state().clone();
                 }
+            }
+            EngineCommand::DeclareWar { .. } => {
+                return Err(BridgeError::engine_rejected(
+                    "declare_war: wiring stanu dyplomacji poza zakresem tematu CRED-HAK-WYPOWIEDZENIE-IMPL-Q1",
+                ));
             }
         }
 
