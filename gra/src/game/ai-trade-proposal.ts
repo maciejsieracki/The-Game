@@ -123,8 +123,14 @@ export function selectAiTradeBarter(input: {
       );
       // Potrzeba AI na turę (ta sama miara co dotąd: deficyt netto). Odbiór AI = min(nadwyżka
       // gracza, mnożnik x potrzeba), a nie sama potrzeba.
-      const aiNeedPerTurn = Math.max(receiveStep, Math.ceil(-receive.netRate));
-      const needCapMax = diplomacyNormalizeSurowiecIlosc(receive.key, needMultiplier * aiNeedPerTurn, undefined, input.tradeEra);
+      // Najmniejsza oferta AI = jeden blok epoki umowy (decyzja ABC 2026-11-15, wariant B): limit
+      // mnożnika działa powyżej jednego bloku, nigdy poniżej. Podłoga liczona z SUROWEJ potrzeby,
+      // nie z potrzeby już podniesionej do bloku (inaczej 3 × blok = 3 bloki przy małej potrzebie).
+      const rawAiNeedPerTurn = Math.max(0, Math.ceil(-receive.netRate));
+      const needCapMax = Math.max(
+        receiveStep,
+        diplomacyNormalizeSurowiecIlosc(receive.key, needMultiplier * rawAiNeedPerTurn, undefined, input.tradeEra),
+      );
       const feasibleReceiveMax = Math.min(receiveMax, needCapMax);
       if (feasibleReceiveMax <= 0) continue;
       const receiveQtys = boundedQtyCandidates(feasibleReceiveMax, receiveStep, maxCandidates);
