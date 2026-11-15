@@ -1,0 +1,151 @@
+{
+  "label": "mut-no-auto",
+  "seed": 11,
+  "scenarios": [
+    {
+      "id": "a",
+      "turn": 1,
+      "ok": false,
+      "why": "oczekiwano canEnd=true przy Skarbcu<0 i prognozie>=0",
+      "treasury": -4,
+      "forecastPo": 0,
+      "canEnd": false,
+      "button": {
+        "title": "Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 4. Pomogą: obniżka racji żywności: +12 żywności/turę; rozwiązanie jednostek (złoto): +4 złota/turę; rozwiązanie jednostek (żywność): +4 żywności/turę.",
+        "text": "Zakończ turę",
+        "disabled": false,
+        "cls": "end-turn is-disabled"
+      },
+      "netMax": 4
+    },
+    {
+      "id": "b",
+      "turn": 1,
+      "ok": true,
+      "why": "oczekiwano blokady (canEnd=false), tooltipu „po zakończeniu tury”, propozycji podatku i braku końca tury",
+      "treasury": -4,
+      "forecastPo": -6,
+      "canEnd": false,
+      "gateZasob": "skarbiec",
+      "gatePrognoza": -6,
+      "propozycja": {
+        "punktyProcentowe": 60,
+        "szacunek": "krokowy",
+        "maksPunktow": 60
+      },
+      "niewystarczajace": false,
+      "komunikat": "Nie można zakończyć tury. Skarbiec (złoto): po zakończeniu tury zabraknie 6; Spichlerz państwa (żywność): po zakończeniu tury zabraknie 4. Pomogą: podatek złota: +6 złota/turę; obniżka racji żywności: +12 żywności/turę; rozwiązanie jednostek (złoto): +4 złota/turę; rozwiązanie jednostek (żywność): +4 żywności/turę. Podnieś podatek o 60 pkt % (kosztem Nauki), aby skarbiec po zakończeniu tury wyszedł co najmniej na zero.",
+      "buttonTitle": "Nie można zakończyć tury. Skarbiec (złoto): po zakończeniu tury zabraknie 6; Spichlerz państwa (żywność): po zakończeniu tury zabraknie 4. Pomogą: podatek złota: +6 złota/turę; obniżka racji żywności: +12 żywności/turę; rozwiązanie jednostek (złoto): +4 złota/turę; rozwiązanie jednostek (żywność): +4 żywności/turę. Podnieś podatek o 60 pkt % (kosztem Nauki), aby skarbiec po zakończeniu tury wyszedł co najmniej na zero.",
+      "turnBefore": 1,
+      "turnAfter": 1
+    },
+    {
+      "id": "c",
+      "turn": 1,
+      "ok": false,
+      "why": "oczekiwano: blokada znika po podatku, tura kończy się, realny Skarbiec >= 0 i zgodny z prognozą",
+      "proposedPkt": 60,
+      "canEndAfterTax": false,
+      "forecastPoAfterTax": 0,
+      "treasuryBefore": -4,
+      "treasuryAfterEndTurn": 0,
+      "turnBefore": 1,
+      "turnAfter": 2
+    },
+    {
+      "id": "d",
+      "turn": 2,
+      "ok": false,
+      "why": "NIE_ZMIERZONO: automat nie daje dodatniej prognozy w tym scenariuszu",
+      "poAuto0": 0,
+      "base": -4,
+      "autoDelta": null
+    },
+    {
+      "id": "d2",
+      "turn": 2,
+      "ok": true,
+      "why": "oczekiwano blokady przy Auto wyłączonym, prognozie Spichlerza<0 i dostępnej dźwigni racji",
+      "granary": -1,
+      "forecastPo": -2,
+      "racjeZysk": 9,
+      "canEnd": false,
+      "komunikat": "Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 2. Pomogą: obniżka racji żywności: +9 żywności/turę; rozwiązanie jednostek (złoto): +4 złota/turę; rozwiązanie jednostek (żywność): +4 żywności/turę."
+    },
+    {
+      "id": "e",
+      "turn": 3,
+      "ok": true,
+      "why": "oczekiwano: brak dźwigni = brak blokady (tura kończy się, brak martwego punktu)",
+      "treasury": -100,
+      "forecastPoSk": -92,
+      "forecastPoSp": -88,
+      "podatekZysk": 0,
+      "racjeZysk": 0,
+      "canEnd": true,
+      "turnBefore": 3,
+      "turnAfter": 4,
+      "treasuryAfter": -92,
+      "granaryAfter": 0
+    },
+    {
+      "id": "a",
+      "turn": 12,
+      "ok": true,
+      "why": "oczekiwano canEnd=true przy Skarbcu<0 i prognozie>=0",
+      "treasury": -4,
+      "forecastPo": 2,
+      "canEnd": true,
+      "button": {
+        "title": "",
+        "text": "Zakończ turę",
+        "disabled": false,
+        "cls": "end-turn et-signal"
+      },
+      "netMax": 6
+    },
+    {
+      "id": "b",
+      "turn": 12,
+      "ok": true,
+      "why": "oczekiwano blokady (canEnd=false), tooltipu „po zakończeniu tury”, propozycji podatku i braku końca tury",
+      "treasury": -4,
+      "forecastPo": -3,
+      "canEnd": false,
+      "gateZasob": "skarbiec",
+      "gatePrognoza": -3,
+      "propozycja": {
+        "punktyProcentowe": 30,
+        "szacunek": "krokowy",
+        "maksPunktow": 60
+      },
+      "niewystarczajace": false,
+      "komunikat": "Nie można zakończyć tury. Skarbiec (złoto): po zakończeniu tury zabraknie 3. Pomogą: podatek złota: +5 złota/turę. Podnieś podatek o 30 pkt % (kosztem Nauki), aby skarbiec po zakończeniu tury wyszedł co najmniej na zero.",
+      "buttonTitle": "Nie można zakończyć tury. Skarbiec (złoto): po zakończeniu tury zabraknie 3. Pomogą: podatek złota: +5 złota/turę. Podnieś podatek o 30 pkt % (kosztem Nauki), aby skarbiec po zakończeniu tury wyszedł co najmniej na zero.",
+      "turnBefore": 12,
+      "turnAfter": 12
+    },
+    {
+      "id": "c",
+      "turn": 12,
+      "ok": true,
+      "why": "oczekiwano: blokada znika po podatku, tura kończy się, realny Skarbiec >= 0 i zgodny z prognozą",
+      "proposedPkt": 30,
+      "canEndAfterTax": true,
+      "forecastPoAfterTax": 0,
+      "treasuryBefore": -4,
+      "treasuryAfterEndTurn": 0,
+      "turnBefore": 12,
+      "turnAfter": 13
+    }
+  ],
+  "fails": [
+    "a@t1: oczekiwano canEnd=true przy Skarbcu<0 i prognozie>=0",
+    "c@t1: oczekiwano: blokada znika po podatku, tura kończy się, realny Skarbiec >= 0 i zgodny z prognozą",
+    "d@t2: NIE_ZMIERZONO: automat nie daje dodatniej prognozy w tym scenariuszu"
+  ],
+  "errors": [],
+  "phase2Turn": 12,
+  "pass": false,
+  "turn1": 1
+}

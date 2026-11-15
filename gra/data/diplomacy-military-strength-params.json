@@ -9,6 +9,10 @@
     "wartosc": 1,
     "opis": "Mnożnik punktów wygranych bitew z bieżącej wojny tej pary (start od zera przy wybuchu wojny). Domyślnie 1: punkty bitew pochodzą z tego samego modelu co składnik 'wygrane_bitwy' w Power (power-objective.ts, enemy_m_sum), więc 1 punkt bitwy = 1 punkt siły militarnej przed korektą."
   },
+  "progRespektProc": {
+    "wartosc": 50,
+    "opis": "Próg zdarzeń Respektu „Przewaga militarna” (+15, gracz silniejszy) i „Słabszy militarnie” (−10, gracz słabszy): przewaga, gdy siła jednej strony ≥ słabszej × (1 + progRespektProc/100), czyli o co najmniej 50% (stosunek 1,5). Ta sama miara Siły militarnej co próg wojny; zdarzenie odpala RAZ na przejście progu (ponowne dopiero po spadku poniżej progu). Decyzja właściciela 2026-11-14 (ABC: A)."
+  },
   "trybutBonusProc": {
     "wartosc": 10,
     "opis": "Czasowy bonus siły dla strony pobierającej trybut: +10% siły przez czas z trybutBonusTur."

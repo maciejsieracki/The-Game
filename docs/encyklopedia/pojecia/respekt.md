@@ -43,8 +43,8 @@ Respekt jest **osobny dla każdej pary** cywilizacji. Składa się z Zaufaniem (
 | Wygrana bitwa | +5 | za każdą wygraną (wywoływane przez grę) |
 | Trybut zapłacony | +10 | (wywoływane przez grę) |
 | Wspólny wróg zaakceptowany | +10 | zdefiniowane w kodzie; w grze nie jest jeszcze wywoływane |
-
-Zdarzenia „Przewaga militarna” (+15) i „Słabszy militarnie” (−10) są zapisane w kodzie (`diplomacy.ts`), ale gra ich nigdzie nie wywołuje: nie działają jako źródło Respektu i nie są podane w tabeli jako obowiązujące. Ta zmiana jest zgodna z decyzją właściciela o przepisaniu przewagi militarnej (wdrożenie w toku).
+| Przewaga militarna gracza | +15 | jednorazowo, na przejściu progu: siła wojskowa gracza ≥ 1,5× siły partnera (próg 50%, `progRespektProc`); ponownie dopiero po spadku poniżej progu |
+| Gracz słabszy militarnie | −10 | jednorazowo, na przejściu progu: siła wojskowa partnera ≥ 1,5× siły gracza |
 
 Siła, z której liczony jest Respekt, to **Moc** (patrz hasło **Moc — podział na wojskowy i gospodarczy**). Respekt pary to udział mocy jednej nacji w sumie mocy obu.
 
@@ -90,7 +90,7 @@ Moc A = 600, Moc B = 400. Respekt A wobec B = round(100 × 600 / 1000) = **60**.
 | 5 | `diplomacy.json:params.wygraBitwa_respekt` |
 | 100 | `kod:respekt-wzor` (wzór Respektu: `Math.round(100 * potegaSelf / sum)`, skala 0–100, `diplomacy.ts`) |
 
-Uwaga: wartości `przewagaMilitarna_respekt` (+15) i `slabszyMilitarnie_respekt` (−10) są w `diplomacy.ts` i `diplomacy.json`, ale nie są wywoływane w grze, więc nie są tu obowiązującymi parametrami.
+Uwaga: wartości `przewagaMilitarna_respekt` (+15) i `slabszyMilitarnie_respekt` (−10) są wywoływane w grze raz na turę dla pary gracz–partner (`applyMilitaryRespektEdgeTick`, `main.ts`), tylko na przejściu progu; próg 50% siły wojskowej jest w `data/diplomacy-military-strength-params.json` (`progRespektProc`). Korekta trafia do `DiploPairMeta.respektMilOffset` i jest dodawana do Respektu przeliczanego z Mocy w pętli AI (`respektZKorektaMilitarna`), inaczej tick by ją nadpisał. Wartość korekty to nominał zdarzenia (+15 / −10), a nie clampowana zmiana Respektu. Korekta nie kumuluje się: kolejne przejście progu zastępuje poprzednią, a powrót w pasmo neutralne zdejmuje ją do 0 (DO POTWIERDZENIA przez właściciela). Rejestr Respektu jest dziennikiem zdarzeń: wpisy zostają po zdjęciu korekty, pasek pokazuje wyłącznie aktualną korektę. Pasek i liczba Respektu w panelu dyplomacji (lista, audiencja, relacja łączna) uwzględniają tę korektę: przewaga podnosi pasek, „słabszy” obniża (obcięcie do 0–100).
 
 Uwaga: limit składnika Respektu to 0–100 (`diplomacy.ts`, funkcja zdarzeń). Wojna nie zmienia Respektu.
 
@@ -98,4 +98,4 @@ Uwaga: limit składnika Respektu to 0–100 (`diplomacy.ts`, funkcja zdarzeń). 
 
 ## Historia / decyzje
 
-Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Runda 2 (obrona, zarzut 4): źródła „Przewaga militarna” i „Słabszy militarnie” usunięte z obowiązujących (brak wywołań w `main.ts`; grep: tylko definicja i `case` w `diplomacy.ts`). Zasady niewdrożone: DECYZJA WŁAŚCICIELA 2026-11-13.
+Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1), gdy zdarzenia militarne nie były jeszcze wywoływane w grze. Decyzja ABC właściciela 2026-11-14 (R-WEB-DIPLO-RESPECT-MILITARY-EVENTS-WIRING-Q1) podpięła przewagę militarną (+15 / −10, próg 50%) do `applyMilitaryRespektEdgeTick` (`main.ts`) i do paska Respektu. Sposób korekty (zastępowanie, zdejmowanie przy powrocie do pasma neutralnego) jest DO POTWIERDZENIA przez właściciela.

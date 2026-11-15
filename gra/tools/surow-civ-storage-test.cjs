@@ -394,15 +394,16 @@ console.log('\n-- G. main.ts (strażnik tekstowy): wyrąb lasu przekazuje cap do
   // rozpoznanej po tym, że kolejna linia woła refreshPlayerCityEcon).
   const loopStart = mainSrc.indexOf('for (const [hexKey, st] of hexClearingStates)');
   assert(loopStart >= 0, 'main.ts: znaleziono pętlę wyrębu lasu (for hexClearingStates)');
-  const loopEndMarker = 'refreshPlayerCityEcon(econ.perCity);';
+  const loopEndMarker = 'refreshPlayerCityEcon(econ.perCity';
   const loopEndIdx = mainSrc.indexOf(loopEndMarker, loopStart);
   assert(loopEndIdx > loopStart, 'main.ts: znaleziono koniec pętli wyrębu lasu (przed refreshPlayerCityEcon)');
   const loopBody = loopStart >= 0 && loopEndIdx > loopStart ? mainSrc.slice(loopStart, loopEndIdx) : '';
 
   // Wywołanie creditOwnerResourceStock dla 'drewno' MUSI mieć 5. argument (cap) --
   // dokładnie ten fragment, jaki Operator zostawił w kodzie po naprawie.
+  // (2026-11-15 R-WEB-TEST-DEBT: wywołanie jest wieloliniowe po Prettier -- regex tolerancyjny na białe znaki.)
   const drewnoCallMatch = loopBody.match(
-    /creditOwnerResourceStock\(cities, ownerId, 'drewno', drewnoCredit(, \w+)?\)/,
+    /creditOwnerResourceStock\(\s*cities,\s*ownerId,\s*'drewno',\s*drewnoCredit(?:,\s*(\w+))?,?\s*\)/,
   );
   assert(!!drewnoCallMatch,
     "main.ts: znaleziono wywołanie creditOwnerResourceStock(cities, ownerId, 'drewno', drewnoCredit...) w pętli wyrębu");
@@ -457,43 +458,23 @@ console.log('\n-- H. main.ts (strażnik tekstowy): łup z bitwy przekazuje cap d
 }
 
 // ===========================================================================
-console.log('\n-- I. main.ts (strażnik tekstowy): przepływ handlowy przekazuje cap do creditOwnerResourceStock --');
+console.log('\n-- I. main.ts (strażnik tekstowy): szlak handlowy NIE przesuwa zapasów (E3c usunięte, ABC 2026-11-15 wariant A) --');
 {
   const MAIN_TS = path.join(__dirname, '..', 'src', 'main.ts');
   const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
-
-  // Wytnij ciało pętli przepływu ilościowego surowca przez trasy handlowe (od
-  // `const tradeFlows = computeTradeRouteResourceFlow` do komunikatu bledu w
-  // otaczającym catch, ktory zamyka ten blok).
-  const blockStart = mainSrc.indexOf('const tradeFlows = computeTradeRouteResourceFlow(tradeRoutes,');
-  assert(blockStart >= 0, 'main.ts: znaleziono pętlę przepływu handlowego (const tradeFlows = computeTradeRouteResourceFlow)');
-  const blockEndMarker = 'Blad przeplywu ilosciowego surowca przez trase';
-  const blockEndIdx = mainSrc.indexOf(blockEndMarker, blockStart);
-  assert(blockEndIdx > blockStart, 'main.ts: znaleziono koniec pętli przepływu handlowego (przed komunikatem bledu w catch)');
-  const tradeFlowBody = blockStart >= 0 && blockEndIdx > blockStart ? mainSrc.slice(blockStart, blockEndIdx) : '';
-
-  // Wywołanie creditOwnerResourceStock dla przepływu handlowego MUSI mieć 5.
-  // argument (cap) -- bez niego surowiec dopisany odbiorcy rośnie bez
-  // ograniczenia mimo pełnego magazynu, a odjęcie u nadawcy
-  // (deductBuildingStockCostAcrossCities wyżej w pętli) jest BEZWARUNKOWE --
-  // regres tutaj oznacza realne zniszczenie surowca, nie tylko przekroczenie capu.
-  const tradeFlowCallMatch = tradeFlowBody.match(
-    /creditOwnerResourceStock\(cities, flow\.toOwnerId, flow\.resourceKey, flow\.amount(, \w+)?\)/,
-  );
-  assert(!!tradeFlowCallMatch,
-    'main.ts: znaleziono wywołanie creditOwnerResourceStock(cities, flow.toOwnerId, flow.resourceKey, flow.amount...) w pętli przepływu handlowego');
-  assert(!!(tradeFlowCallMatch && tradeFlowCallMatch[1]),
-    'main.ts: wywołanie w pętli przepływu handlowego PRZEKAZUJE 5. argument (cap) do creditOwnerResourceStock -- ' +
-    'bez niego surowiec rośnie bez ograniczenia mimo pełnego magazynu (regresja P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO)');
-
-  // cap MUSI być liczony przez ownerResourceCap z epoką ODBIORCY (flow.toOwnerId) --
-  // P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): bez empireEpochForOwner(flow.toOwnerId)
-  // cap byłby zaniżony od epoki 2 wzwyż i surowiec mógłby zniknąć zamiast dotrzeć
-  // do odbiorcy. Regex tolerancyjny na białe znaki/nowe linie, tak samo jak
-  // strażnik wyrębu (sekcja G).
-  assert(/const tradeFlowCap = ownerResourceCap\(\s*cities,\s*cityBuilt,\s*flow\.toOwnerId,\s*data,\s*_menuDifficulty,\s*empireEpochForOwner\(flow\.toOwnerId\),?\s*\);/.test(tradeFlowBody),
-    'main.ts: tradeFlowCap liczony przez ownerResourceCap(cities, cityBuilt, flow.toOwnerId, data, _menuDifficulty, empireEpochForOwner(flow.toOwnerId)) w pętli przepływu handlowego');
+  // Mutacja-strażnik: przywrócenie przepływu ilościowego przez szlak (E3c) MUSI zaczerwienić test.
+  assert(!/computeTradeRouteResourceFlow\s*\(/.test(mainSrc),
+    'main.ts: NIE wywołuje computeTradeRouteResourceFlow( -- szlak handlowy nie przesuwa zapasów (regresja = przywrócenie E3c)');
+  assert(!/loadTradeRouteResourceFlowParams\s*\(/.test(mainSrc),
+    'main.ts: NIE wywołuje loadTradeRouteResourceFlowParams( -- brak przepływu ilościowego szlaku');
+  assert(!/const tradeFlows\b/.test(mainSrc),
+    'main.ts: brak pętli tradeFlows (przepływ szlaku usunięty)');
+  assert(!/Handel E3c \(PYTANIE 53=B/.test(mainSrc),
+    'main.ts: blok „Handel E3c” usunięty z gry');
+  // Grant dostępu (boolean, E3 / temat #4) zostaje: computeTradeRouteResourceGrants nadal wołany w main.ts
+  // (sprawdzane w trade-grant-test.cjs); tu tylko brak przepływu ilościowego w kodzie gry.
 }
+
 
 // --- summary ---------------------------------------------------------------
 console.log(`\nsurow-civ-storage-test: ${passed} passed, ${failed} failed`);

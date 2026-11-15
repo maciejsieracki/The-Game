@@ -99,10 +99,10 @@ async function main() {
     throw new Error('bundle nie zainicjowal window.__api; bledy strony: ' + JSON.stringify(pageErrors.slice(0, 3)).slice(0, 400));
   }
 
-  const render = async (built, queue) => page.evaluate(({ built, queue }) => {
+  const render = async (built, queue, techArg = ['Obróbka drewna', 'Murarstwo', 'Budownictwo']) => page.evaluate(({ built, queue, techArg }) => {
     const A = window.__api;
     const data = { units: A.units, buildings: A.buildings, civs: [], tech: [] };
-    const techs = ['Obróbka drewna', 'Murarstwo', 'Budownictwo'];
+    const techs = techArg;
     const city = { id: 'm1', name: 'Start', q: 0, r: 0, ownerId: 0, population: 3, surowce: { drewno: 2000, kamien: 2000, cegla: 2000 } };
     A.configureCityPanel({
       data,
@@ -138,7 +138,7 @@ async function main() {
       });
     }
     return out;
-  }, { built, queue });
+  }, { built, queue, techArg });
 
   const CHAIN_NAMES = ['Palisada drewniana', 'Mury kamienne', 'Mury ceglane'];
   const inBuduj = r => r.buduj.map(x => x.name).filter(n => CHAIN_NAMES.includes(n));
@@ -185,7 +185,8 @@ async function main() {
   console.log('\n-- nic z lancucha nie stoi --');
   const r3 = await render([], []);
   console.log('  buduj(lancuch):', JSON.stringify(inBuduj(r3)), ' ulepsz:', JSON.stringify(upNames(r3)));
-  check('U11: od zera wszystkie trzy w "Buduj" (przeskok)', CHAIN_NAMES.every(n => inBuduj(r3).includes(n)), inBuduj(r3));
+  // R-WEB-UI-FORTIFICATIONS-HIDE-SUPERSEDED-WALL-BUILD-OPTIONS-Q1: od zera (Budownictwo odblokowane) w "Buduj" tylko Mury ceglane.
+  check('U11: od zera w "Buduj" tylko Mury ceglane (palisada i mury kamienne znikaja)', JSON.stringify(inBuduj(r3)) === JSON.stringify(['Mury ceglane']), inBuduj(r3));
   check('U12: od zera brak wierszy awansu lancucha w "Ulepsz"', !upNames(r3).some(n => /^Ulepsz → /.test(n)), upNames(r3));
   await page.screenshot({ path: path.join(SHOTS, '04-od-zera-buduj.png') });
 
@@ -193,6 +194,17 @@ async function main() {
   const r4 = await render(['palisada'], [{ kind: 'budynek', id: 'mury_kamienne', nazwa: 'x', koszt: 35 }]);
   console.log('  buduj(lancuch):', JSON.stringify(inBuduj(r4)), ' ulepsz:', JSON.stringify(upNames(r4)));
   check('U13: gdy awans czeka w kolejce, brak kolejnych etapow lancucha', upNames(r4).filter(n => /^Ulepsz → Mury/.test(n)).length === 0 && inBuduj(r4).length === 0, { u: upNames(r4), b: inBuduj(r4) });
+
+  // R-WEB-UI-FORTIFICATIONS-HIDE-SUPERSEDED-WALL-BUILD-OPTIONS-Q1 (f): stany posrednie listy budowy (zrzuty).
+  console.log('\n-- stany posrednie: tylko Obrobka drewna / +Murarstwo --');
+  const rOD = await render([], [], ['Obróbka drewna']);
+  console.log('  OD: buduj(lancuch):', JSON.stringify(inBuduj(rOD)));
+  check('F1: tylko Obróbka drewna -> w "Buduj" palisada (jedyny etap)', JSON.stringify(inBuduj(rOD)) === JSON.stringify(['Palisada drewniana']), inBuduj(rOD));
+  await page.screenshot({ path: path.join(SHOTS, '05-stan-tylko-obrobka-palisada.png') });
+  const rMUR = await render([], [], ['Obróbka drewna', 'Murarstwo']);
+  console.log('  +Murarstwo: buduj(lancuch):', JSON.stringify(inBuduj(rMUR)));
+  check('F2: +Murarstwo -> w "Buduj" tylko Mury kamienne (palisada znika)', JSON.stringify(inBuduj(rMUR)) === JSON.stringify(['Mury kamienne']), inBuduj(rMUR));
+  await page.screenshot({ path: path.join(SHOTS, '06-stan-murarstwo-kamienne.png') });
 
   console.log('\nBledy strony: ' + pageErrors.length);
   pageErrors.slice(0, 5).forEach(e => console.log('  ' + e.slice(0, 200)));

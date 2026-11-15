@@ -40,7 +40,7 @@ ok(over('handel', 'zaproponuj_handel_surowiec', { givePn: 0, receivePn: 0 }) ===
 
 // Strażnik wiringu: filtr enqueue w main.ts MUSI wołać helper w warunku `if (`.
 const mainSrc = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'main.ts'), 'utf8');
-ok(/if \(\s*aiOneshotHandelOverpaysPlayer\(\s*converted\.actionId,\s*workingCmd\.type,\s*balancedPayload,\s*pnBalanceOpts\s*\)\s*\)\s*\{\s*return;/.test(mainSrc),
+ok(/if \(\s*aiOneshotHandelOverpaysPlayer\(\s*converted\.actionId,\s*workingCmd\.type,\s*balancedPayload,\s*pnBalanceOpts\s*\)\s*\)\s*\{\s*(?:ptr\([^)]*\);\s*)?return;/.test(mainSrc),
   'main.ts enqueue filter calls aiOneshotHandelOverpaysPlayer(converted.actionId, workingCmd.type, balancedPayload, pnBalanceOpts) -> return');
 ok(mainSrc.includes('  aiOneshotHandelOverpaysPlayer,'), 'main.ts imports aiOneshotHandelOverpaysPlayer');
 

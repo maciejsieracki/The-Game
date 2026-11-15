@@ -1,0 +1,82 @@
+# r3: MP konnicy/piechoty atakujacej, tury 9-16 (waste.cjs: kroki z faktycznych _doMove / pula; kategorie utraty: attack=cios, blow_stop=plan_end w zasiegu ciosu przy rozbitym wrogu (regula produktowa), other_end=plan_end poza zasiegiem ciosu (blad planera), zero_noattack=0 krokow bez ciosu)
+## before-s1-skip (konnica)
+before-s1-skip.json skip s1 cav act 32 steps/pool 37/224 16.5% {"full":1,"MP_full":0,"blow_stop":16,"MP_blow_stop":96,"zero_noattack":1,"MP_zero_noattack":7,"other_end":14,"MP_other_end":84}
+before-s1-skip.json skip s2 cav act 24 steps/pool 29/168 17.3% {"blow_stop":12,"MP_blow_stop":71,"attack":2,"MP_attack":14,"other_end":9,"MP_other_end":54,"full":1,"MP_full":0}
+before-s1-skip.json skip s3 cav act 32 steps/pool 42/224 18.8% {"attack":2,"MP_attack":14,"blow_stop":16,"MP_blow_stop":90,"zero_noattack":2,"MP_zero_noattack":14,"full":1,"MP_full":0,"other_end":11,"MP_other_end":64}
+## before-s1-skip (piechota)
+before-s1-skip.json skip s1 inf act 104 steps/pool 107/312 34.3% {"attack":31,"MP_attack":74,"blow_stop":43,"MP_blow_stop":86,"zero_noattack":6,"MP_zero_noattack":18,"other_end":14,"MP_other_end":27,"full":10,"MP_full":0}
+before-s1-skip.json skip s2 inf act 104 steps/pool 106/312 34.0% {"attack":35,"MP_attack":82,"blow_stop":40,"MP_blow_stop":79,"zero_noattack":4,"MP_zero_noattack":12,"other_end":18,"MP_other_end":33,"full":7,"MP_full":0}
+before-s1-skip.json skip s3 inf act 96 steps/pool 104/288 36.1% {"attack":31,"MP_attack":64,"blow_stop":39,"MP_blow_stop":78,"zero_noattack":2,"MP_zero_noattack":6,"other_end":18,"MP_other_end":36,"full":6,"MP_full":0}
+## after-s1-skip (konnica)
+after-s1-skip.json skip s1 cav act 32 steps/pool 80/224 35.7% {"full":8,"MP_full":0,"blow_stop":24,"MP_blow_stop":144}
+after-s1-skip.json skip s2 cav act 32 steps/pool 100/224 44.6% {"full":11,"MP_full":0,"blow_stop":20,"MP_blow_stop":117,"attack":1,"MP_attack":7}
+after-s1-skip.json skip s3 cav act 24 steps/pool 29/168 17.3% {"attack":5,"MP_attack":35,"full":1,"MP_full":0,"blow_stop":18,"MP_blow_stop":104}
+## after-s1-skip (piechota)
+after-s1-skip.json skip s1 inf act 104 steps/pool 107/312 34.3% {"attack":31,"MP_attack":74,"blow_stop":43,"MP_blow_stop":86,"zero_noattack":6,"MP_zero_noattack":18,"other_end":14,"MP_other_end":27,"full":10,"MP_full":0}
+after-s1-skip.json skip s2 inf act 112 steps/pool 133/336 39.6% {"blow_stop":49,"MP_blow_stop":96,"full":10,"MP_full":0,"other_end":24,"MP_other_end":46,"attack":26,"MP_attack":52,"zero_noattack":3,"MP_zero_noattack":9}
+after-s1-skip.json skip s3 inf act 53 steps/pool 38/159 23.9% {"blow_stop":19,"MP_blow_stop":36,"attack":26,"MP_attack":75,"full":3,"MP_full":0,"other_end":3,"MP_other_end":4,"zero_noattack":2,"MP_zero_noattack":6}
+## before-s1-watch (konnica)
+before-s1-watch.json watch s1 cav act 32 steps/pool 39/224 17.4% {"attack":1,"MP_attack":7,"blow_stop":10,"MP_blow_stop":59,"zero_noattack":3,"MP_zero_noattack":21,"other_end":17,"MP_other_end":98,"full":1,"MP_full":0}
+## before-s1-watch (piechota)
+before-s1-watch.json watch s1 inf act 104 steps/pool 113/312 36.2% {"attack":35,"MP_attack":83,"blow_stop":49,"MP_blow_stop":98,"other_end":3,"MP_other_end":6,"full":13,"MP_full":0,"zero_noattack":4,"MP_zero_noattack":12}
+## before-s23-watch (konnica)
+before-s23-watch.json watch s2 cav act 24 steps/pool 29/168 17.3% {"blow_stop":12,"MP_blow_stop":71,"attack":2,"MP_attack":14,"other_end":9,"MP_other_end":54,"full":1,"MP_full":0}
+before-s23-watch.json watch s3 cav act 32 steps/pool 42/224 18.8% {"attack":2,"MP_attack":14,"blow_stop":16,"MP_blow_stop":90,"zero_noattack":2,"MP_zero_noattack":14,"full":1,"MP_full":0,"other_end":11,"MP_other_end":64}
+## before-s23-watch (piechota)
+before-s23-watch.json watch s2 inf act 104 steps/pool 106/312 34.0% {"attack":35,"MP_attack":82,"blow_stop":40,"MP_blow_stop":79,"zero_noattack":4,"MP_zero_noattack":12,"other_end":18,"MP_other_end":33,"full":7,"MP_full":0}
+before-s23-watch.json watch s3 inf act 96 steps/pool 104/288 36.1% {"attack":31,"MP_attack":64,"blow_stop":39,"MP_blow_stop":78,"zero_noattack":2,"MP_zero_noattack":6,"other_end":18,"MP_other_end":36,"full":6,"MP_full":0}
+## after-s12-watch (konnica)
+after-s12-watch.json watch s1 cav act 32 steps/pool 60/224 26.8% {"attack":2,"MP_attack":14,"blow_stop":26,"MP_blow_stop":150,"full":4,"MP_full":0}
+after-s12-watch.json watch s2 cav act 32 steps/pool 100/224 44.6% {"full":11,"MP_full":0,"blow_stop":20,"MP_blow_stop":117,"attack":1,"MP_attack":7}
+## after-s12-watch (piechota)
+after-s12-watch.json watch s1 inf act 104 steps/pool 111/312 35.6% {"attack":36,"MP_attack":87,"blow_stop":47,"MP_blow_stop":94,"other_end":6,"MP_other_end":11,"full":12,"MP_full":0,"zero_noattack":3,"MP_zero_noattack":9}
+after-s12-watch.json watch s2 inf act 112 steps/pool 133/336 39.6% {"blow_stop":49,"MP_blow_stop":96,"full":10,"MP_full":0,"other_end":24,"MP_other_end":46,"attack":26,"MP_attack":52,"zero_noattack":3,"MP_zero_noattack":9}
+## after-s3-watch (konnica)
+after-s3-watch.json watch s3 cav act 24 steps/pool 29/168 17.3% {"attack":5,"MP_attack":35,"full":1,"MP_full":0,"blow_stop":18,"MP_blow_stop":104}
+## after-s3-watch (piechota)
+after-s3-watch.json watch s3 inf act 53 steps/pool 38/159 23.9% {"blow_stop":19,"MP_blow_stop":36,"attack":26,"MP_attack":75,"full":3,"MP_full":0,"other_end":3,"MP_other_end":4,"zero_noattack":2,"MP_zero_noattack":6}
+## protoACAV-s1-skip (konnica)
+protoACAV-s1-skip.json skip s1 cav act 28 steps/pool 88/196 44.9% {"attack":15,"MP_attack":73,"full":7,"MP_full":0,"zero_noattack":4,"MP_zero_noattack":28,"other_end":2,"MP_other_end":7}
+protoACAV-s1-skip.json skip s2 cav act 32 steps/pool 61/224 27.2% {"attack":19,"MP_attack":107,"other_end":3,"MP_other_end":14,"full":4,"MP_full":0,"zero_noattack":6,"MP_zero_noattack":42}
+protoACAV-s1-skip.json skip s3 cav act 32 steps/pool 92/224 41.1% {"attack":13,"MP_attack":70,"full":9,"MP_full":0,"zero_noattack":5,"MP_zero_noattack":35,"other_end":5,"MP_other_end":27}
+## protoACAV-s1-skip (piechota)
+protoACAV-s1-skip.json skip s1 inf act 98 steps/pool 137/294 46.6% {"attack":24,"MP_attack":57,"blow_stop":14,"MP_blow_stop":27,"full":30,"MP_full":0,"other_end":13,"MP_other_end":22,"zero_noattack":17,"MP_zero_noattack":51}
+protoACAV-s1-skip.json skip s2 inf act 104 steps/pool 148/312 47.4% {"blow_stop":37,"MP_blow_stop":71,"full":19,"MP_full":0,"zero_noattack":6,"MP_zero_noattack":18,"attack":25,"MP_attack":46,"other_end":17,"MP_other_end":29}
+protoACAV-s1-skip.json skip s3 inf act 112 steps/pool 140/336 41.7% {"blow_stop":28,"MP_blow_stop":53,"full":18,"MP_full":0,"other_end":28,"MP_other_end":46,"attack":20,"MP_attack":43,"zero_noattack":18,"MP_zero_noattack":54}
+## protoAALL-s1-skip (konnica)
+protoAALL-s1-skip.json skip s1 cav act 32 steps/pool 122/224 54.5% {"attack":16,"MP_attack":85,"other_end":4,"MP_other_end":17,"full":12,"MP_full":0}
+protoAALL-s1-skip.json skip s2 cav act 20 steps/pool 72/140 51.4% {"attack":9,"MP_attack":44,"full":5,"MP_full":0,"other_end":5,"MP_other_end":17,"zero_noattack":1,"MP_zero_noattack":7}
+protoAALL-s1-skip.json skip s3 cav act 32 steps/pool 120/224 53.6% {"attack":15,"MP_attack":79,"full":12,"MP_full":0,"zero_noattack":3,"MP_zero_noattack":21,"other_end":2,"MP_other_end":4}
+## protoAALL-s1-skip (piechota)
+protoAALL-s1-skip.json skip s1 inf act 96 steps/pool 136/288 47.2% {"attack":49,"MP_attack":90,"full":19,"MP_full":0,"other_end":14,"MP_other_end":20,"zero_noattack":14,"MP_zero_noattack":42}
+protoAALL-s1-skip.json skip s2 inf act 60 steps/pool 70/180 38.9% {"attack":29,"MP_attack":55,"other_end":8,"MP_other_end":13,"zero_noattack":14,"MP_zero_noattack":42,"full":9,"MP_full":0}
+protoAALL-s1-skip.json skip s3 inf act 104 steps/pool 137/312 43.9% {"attack":45,"MP_attack":87,"zero_noattack":16,"MP_zero_noattack":48,"other_end":22,"MP_other_end":40,"full":21,"MP_full":0}
+## before-s02-skip (scen 0 i 2, piechota)
+before-s02-skip.json skip s1 inf act 160 steps/pool 154/480 32.1% {"blow_stop":60,"MP_blow_stop":116,"attack":38,"MP_attack":109,"zero_noattack":17,"MP_zero_noattack":51,"full":20,"MP_full":0,"other_end":25,"MP_other_end":50}
+before-s02-skip.json skip s2 inf act 160 steps/pool 168/480 35.0% {"attack":28,"MP_attack":76,"zero_noattack":22,"MP_zero_noattack":66,"blow_stop":56,"MP_blow_stop":108,"other_end":32,"MP_other_end":62,"full":22,"MP_full":0}
+before-s02-skip.json skip s1 inf act 5 steps/pool 0/15 0.0% {"attack":5,"MP_attack":15}
+before-s02-skip.json skip s2 inf act 7 steps/pool 0/21 0.0% {"attack":7,"MP_attack":21}
+## after-s02-skip (scen 0 i 2, piechota)
+after-s02-skip.json skip s1 inf act 160 steps/pool 154/480 32.1% {"blow_stop":60,"MP_blow_stop":116,"attack":38,"MP_attack":109,"zero_noattack":17,"MP_zero_noattack":51,"full":20,"MP_full":0,"other_end":25,"MP_other_end":50}
+after-s02-skip.json skip s2 inf act 160 steps/pool 168/480 35.0% {"attack":28,"MP_attack":76,"zero_noattack":22,"MP_zero_noattack":66,"blow_stop":56,"MP_blow_stop":108,"other_end":32,"MP_other_end":62,"full":22,"MP_full":0}
+after-s02-skip.json skip s1 inf act 5 steps/pool 0/15 0.0% {"attack":5,"MP_attack":15}
+after-s02-skip.json skip s2 inf act 7 steps/pool 0/21 0.0% {"attack":7,"MP_attack":21}
+## wyniki bitew (winner/round/atkAlive/defAlive)
+before-s1-skip s1 skip ["atakujacy",30,17,0]
+before-s1-skip s2 skip ["atakujacy",30,16,0]
+before-s1-skip s3 skip ["atakujacy",30,16,0]
+before-s1-watch s1 watch ["atakujacy",29,17,0]
+before-s23-watch s2 watch ["atakujacy",30,16,0]
+before-s23-watch s3 watch ["atakujacy",30,16,0]
+after-s1-skip s1 skip ["atakujacy",29,17,0]
+after-s1-skip s2 skip ["atakujacy",29,18,0]
+after-s1-skip s3 skip ["atakujacy",34,9,0]
+after-s12-watch s1 watch ["atakujacy",30,17,0]
+after-s12-watch s2 watch ["atakujacy",29,18,0]
+after-s3-watch s3 watch ["atakujacy",34,9,0]
+protoACAV-s1-skip s1 skip ["atakujacy",15,18,0]
+protoACAV-s1-skip s2 skip ["atakujacy",27,17,0]
+protoACAV-s1-skip s3 skip ["atakujacy",17,18,0]
+protoAALL-s1-skip s1 skip ["atakujacy",22,16,0]
+protoAALL-s1-skip s2 skip ["atakujacy",13,16,0]
+protoAALL-s1-skip s3 skip ["atakujacy",18,17,0]

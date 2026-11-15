@@ -83,7 +83,7 @@ Wartość mnożnika zależy od **cywilizacji** (parametr „Mnożnik waluty” z
 
 ### 49.3c. Co jeszcze wchodzi do puli Daniny
 
-**Podatek z budynków** (np. Targowisko) oraz **Podatek z zamiany Pracy przez Targowisko** nie trafiają wprost do skarbca — wpadają do **puli Daniny netto miasta** i dzielą się tym samym suwakiem 60/20/20 (Część VI §38.1), zamiast omijać podział.
+**Podatek z budynków** (np. Targowisko) oraz **Podatek z zamiany Pracy przez Targowisko** nie trafiają wprost do skarbca — wpadają do **puli Daniny netto miasta** i dzielą się tym samym suwakiem 30/60/10 (Część VI §38.1), zamiast omijać podział.
 
 ### 49.4. Strategie gracza
 
@@ -143,6 +143,8 @@ Gdy zapasy państwa spadną **poniżej zera**:
 - Głód **nie blokuje rekrutacji** — możesz werbować, ale karmić musisz od razu.
 
 **Remedium:** Spichlerz w imperium, suwak żywności na wojsko, mniej armii w polu, więcej farm.
+
+**Osłabienie w walce (gracz i AI):** jednostka armii, która w danej turze **głoduje** (zapasy państwa poniżej zera) albo gdy **Skarbiec właściciela jest poniżej zera** po zbankowaniu tury, walczy z karą **×0,75** (−25%) do statystyk bojowych — bez pancerza. Obie kary kumulują się (0,75 × 0,75). Barbarzyńcy nie są osłabiani tymi karami. Okno przed bitwą pokazuje, która kara działa. Szczegóły: [Osłabienie w bitwie — głód wojska i deficyt złota](../encyklopedia/pojecia/oslabienie-glod-deficyt.md).
 
 ### 50.4. Priorytety gracza
 
@@ -304,6 +306,10 @@ Model zmienił się z prostego „masz tech = masz surowiec" na **dwuwarunkowy**
 
 **Złoże rezerwuje heks** — nie postawisz farmy na miedzi. **Ukryte złoża** — miedź/ruda od Brązu, żelazo od Żelaza, tylko w **Górach**.
 
+### 53.1a. Karta surowca: brutto i netto na turę (R-WEB-UI-RESOURCE-CARDS-GROSS-AND-NET-Q1, 2026-11-14)
+
+Każda karta surowca w panelu Surowce pokazuje dwie liczby na turę: **brutto** (cała produkcja surowca: teren, konwertery i przychód z umów handlowych) oraz **netto** (brutto po zużyciu: obywatele, budynki i wojsko). Suma kart jest równa wartościom z nagłówka „Brutto … → netto …”. Na karcie nie ma osobnej plakietki **+X** (produkcja ± dyplomacja jest już wliczona w brutto); szczegóły zużycia są w „Zobacz szczegóły zużycia”. Surowiec bez produkcji i bez zużycia pokazuje „—”; surowiec bez produkcji, ale zużywany, ma brutto 0 i netto ujemne (na czerwono).
+
 ### 53.2. Magazyn surowców = pula CAŁEGO PAŃSTWA, nie per miasto (aktualizacja 2026-07-24, SUROW-CIV-01)
 
 Surowce **logistyczne** (drewno, kamień, glina, ruda, ruda żelaza, **cegła**, **ceramika**, brąz, żelazo, stal) **produkują się nadal lokalnie** w każdym mieście (konwertery — **Garncarnia** glina→ceramika, **Cegielnia** glina→cegła, **Odlewnia żelaza**, **Wielka kuźnia** itd. — działają jak wcześniej, per miasto), ale **limit zapasu (cap) liczy się dziś dla całego imperium naraz**, nie per miasto:
@@ -340,7 +346,7 @@ Brak materiału w **puli państwa** **blokuje** wejście do kolejki (karta budyn
 1. **Wzór dystansowy** — baza + dystans × mnożnik, z podłogą (placeholdery `econ-params.json`: baza 8 ¤/turę, +0,4 ¤/heks, podłoga 1 ¤/turę). Obie strony trasy zarabiają pełną kwotę.
 2. **+5% do Daniny za każdą aktywną trasę handlową** — osobny, kumulatywny mnożnik miasta (nie łączony z bonusem Targowiska/Waluty, żeby uniknąć podwójnego liczenia).
 
-**Dostęp do surowca** — aktywna trasa daje też dostęp do **brązu, żelaza lub konia**, których nie masz u siebie (Handel E3b) — czysta pochodna trasy: zerwanie traktatu lub wojna **automatycznie cofa** dostęp. Panel miasta pokazuje adnotację „szlak handlowy z **X**" przy takim surowcu.
+**Dostęp do surowca** — aktywna trasa daje też dostęp do **brązu, żelaza lub konia**, których nie masz u siebie (Handel E3b) — czysta pochodna trasy: zerwanie traktatu lub wojna **automatycznie cofa** dostęp. **Szlak nie przesuwa zapasów** — trasa nie przenosi surowców między miastami ani cywilizacjami; zapasy obu stron zmieniają tylko produkcja, budowa i zużycie (decyzja #311). Panel miasta pokazuje adnotację „szlak handlowy z **X**" przy takim surowcu.
 
 **Limit tras na miasto** = liczba zbudowanych budynków handlowych (Targowisko/Port/Port wielki) — więcej budynków, więcej równoległych tras.
 
@@ -394,6 +400,20 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
+## 53a. Skąd zapasy — źródła zmian magazynu państwa
+
+Na karcie surowca w panelu imperium rozwiń sekcję **„Skąd zapasy (ostatnie 10 tur)”**. Każda linia to jedno źródło zmiany magazynu państwa: przyrost (kolor przyrostu) albo ubytek (kolor ubytku). Przykłady: „+12 Warzelnia (Rzym)”, „+30 Umowa wymiany z <cywilizacja>”, „−20 Obywatele”.
+
+Jak z tego korzystać:
+
+1. Sprawdź sumę na karcie — czy zapas rośnie czy maleje.
+2. Znajdź największy ubytek w rozwiniętej sekcji i zdecyduj, czy to koszt konieczny (utrzymanie, rekrutacja, budowa), czy nadmiar do ograniczenia.
+3. Jeśli przyrost jest mały, sprawdź produkcję (Warzelnie, Stolarnie, wycinkę) i umowy wymiany.
+
+Pełne hasło: `docs/encyklopedia/pojecia/skad-zapasy.md`.
+
+---
+
 ## Ekonomia w jednej tabeli
 
 | Zasób | Gdzie widzisz | Główna dźwignia gracza |
@@ -403,14 +423,14 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 | **Praca** | Pasek | Tartaki, profil Produkcja w okolicy |
 | **Nauka** | Pasek Badania | Biblioteki, % nauki w suwaku |
 | **Siła państwa** | Minimapa / panel | Armia + wygrane bitwy + ludność |
-| **Surowce** | Ikony dostępu + pula **całego imperium** (cap 500+100/Magazyn) | Złoże **+** ulepszenie na heksie; cegła/ceramika z Cegielni/Garncarni; brąz/żelazo/koń przez szlak handlowy (§53); Magazyny podnoszą wspólny cap |
+| **Surowce** | Ikony dostępu + pula **całego imperium** (cap 500+100/Magazyn) | Złoże **+** ulepszenie na heksie; cegła/ceramika z Cegielni/Garncarni; brąz/żelazo/koń — dostęp przez szlak handlowy (§53.3; szlak nie przesuwa zapasów); Magazyny podnoszą wspólny cap |
 
 
 ### Przykład liczbowy
 
 Scenariusz na **Normalnym**: przyrost **+10**/turę z działalności opisanej w tej sekcji.
 Po **5** turach akumulacja **50** jednostek zasobu — wystarcza na **1** kluczową decyzję (budowa, tech lub armia).
-Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 60% skarbiec · 20% nauka · 20% zamożność.
+Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 30% skarbiec · 60% nauka · 10% zamożność.
 
 ### Strategia gracza
 

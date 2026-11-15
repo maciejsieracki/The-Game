@@ -109,7 +109,9 @@ ok(aggregated.myOfferPn === 82, 'aggregated: myOfferPn 82 (72+10)');
 ok(aggregated.theirOfferPn === 82, 'aggregated: theirOfferPn 82 (80+2)');
 ok(aggregated.extraOnTable === 0, 'aggregated: extraOnTable 0 (bez badge)');
 ok(aggregated.actionLabel.includes('Pakiet na stole'), 'aggregated: label pakietu');
-ok(aggregated.actionLabel.includes('2 umów'), 'aggregated: label z liczbą umów');
+// Klasa A (R-WEB-POLISH-LANGUAGE-AUDIT-Q1 r2, 406bfab56): odmiana liczebnika 2 = „umowy” (nie „umów”);
+// zgodnie z formatUmowyCount (formatPl.ts) i polish-language-audit-q1-guard-test.cjs (formatUmowyCount(2)).
+ok(aggregated.actionLabel.includes('2 umowy'), 'aggregated: label z liczbą umów (2 umowy)');
 ok(aggregated.canAccept === true, 'aggregated: canAccept true przy net 0 (responderPreview.accepted=true na obu pozycjach)');
 ok(aggregated.theirBalance.balancePn === 0, 'aggregated: balancePn net 0');
 ok(aggregated.theirBalance.accepted === true, 'aggregated: theirBalance accepted');

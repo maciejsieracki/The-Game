@@ -1,0 +1,350 @@
+{
+  "runs": {
+    "none|1280x800": {
+      "scenario": "none",
+      "vp": {
+        "w": 1280,
+        "h": 800
+      },
+      "spichlerzSet": 9999,
+      "turnAfterEnd": 2,
+      "preOpenBeforeAttack": false,
+      "playerUnits": [
+        "frozen_47_10_0_4"
+      ],
+      "enemy": {
+        "q": 48,
+        "r": 10,
+        "id": "civtest--1-48-10-5"
+      },
+      "selectedByClick": null,
+      "selectionMethod": "hak-select",
+      "selected": "frozen_47_10_0_4",
+      "clickPos": {
+        "pos": {
+          "x": 640,
+          "y": 385.61461449919443
+        },
+        "epos": {
+          "x": 640,
+          "y": 395.12371205278356
+        }
+      },
+      "preBattle": {
+        "open": true,
+        "weakPresent": false,
+        "weakText": null,
+        "box": {
+          "top": 132,
+          "bottom": 614,
+          "left": 1074,
+          "right": 1266,
+          "h": 482,
+          "w": 192,
+          "cls": "pb-roster pb-foe pb-r"
+        },
+        "card": {
+          "maxHeight": "none",
+          "overflowY": "visible",
+          "scrollH": 482,
+          "clientH": 482
+        },
+        "viewport": {
+          "w": 1280,
+          "h": 800
+        },
+        "outsideViewport": false
+      },
+      "pageErrors": []
+    },
+    "none|1024x640": {
+      "scenario": "none",
+      "vp": {
+        "w": 1024,
+        "h": 640
+      },
+      "spichlerzSet": 9999,
+      "turnAfterEnd": 2,
+      "preOpenBeforeAttack": false,
+      "playerUnits": [
+        "frozen_47_10_0_4"
+      ],
+      "enemy": {
+        "q": 48,
+        "r": 10,
+        "id": "civtest--1-48-10-5"
+      },
+      "selectedByClick": null,
+      "selectionMethod": "hak-select",
+      "selected": "frozen_47_10_0_4",
+      "clickPos": {
+        "pos": {
+          "x": 512,
+          "y": 308.49169159935553
+        },
+        "epos": {
+          "x": 512,
+          "y": 316.09896964222685
+        }
+      },
+      "preBattle": {
+        "open": true,
+        "weakPresent": false,
+        "weakText": null,
+        "box": {
+          "top": 132,
+          "bottom": 454,
+          "left": 842,
+          "right": 1010,
+          "h": 322,
+          "w": 168,
+          "cls": "pb-roster pb-foe pb-r"
+        },
+        "card": {
+          "maxHeight": "none",
+          "overflowY": "visible",
+          "scrollH": 322,
+          "clientH": 322
+        },
+        "viewport": {
+          "w": 1024,
+          "h": 640
+        },
+        "outsideViewport": false
+      },
+      "pageErrors": []
+    },
+    "hunger|1280x800": {
+      "scenario": "hunger",
+      "vp": {
+        "w": 1280,
+        "h": 800
+      },
+      "spichlerzSet": 0,
+      "turnAfterEnd": 1,
+      "preOpenBeforeAttack": false,
+      "playerUnits": [
+        "frozen_47_10_0_4"
+      ],
+      "enemy": {
+        "q": 48,
+        "r": 10,
+        "id": "civtest--1-48-10-5"
+      },
+      "selectedByClick": null,
+      "selectionMethod": "hak-select",
+      "selected": "frozen_47_10_0_4",
+      "clickPos": {
+        "pos": {
+          "x": 640,
+          "y": 385.61461449919443
+        },
+        "epos": {
+          "x": 640,
+          "y": 395.12371205278356
+        }
+      },
+      "preBattle": {
+        "open": true,
+        "weakPresent": true,
+        "weakText": "▼ Osłabieni: głód wojska −25% (poza pancerzem)",
+        "box": {
+          "top": 132,
+          "bottom": 614,
+          "left": 1074,
+          "right": 1266,
+          "h": 482,
+          "w": 192,
+          "cls": "pb-roster pb-foe pb-r"
+        },
+        "card": {
+          "maxHeight": "none",
+          "overflowY": "visible",
+          "scrollH": 482,
+          "clientH": 482
+        },
+        "viewport": {
+          "w": 1280,
+          "h": 800
+        },
+        "outsideViewport": false
+      },
+      "pageErrors": []
+    },
+    "hunger|1024x640": {
+      "scenario": "hunger",
+      "vp": {
+        "w": 1024,
+        "h": 640
+      },
+      "spichlerzSet": 0,
+      "turnAfterEnd": 2,
+      "preOpenBeforeAttack": false,
+      "playerUnits": [
+        "frozen_47_10_0_4"
+      ],
+      "enemy": {
+        "q": 48,
+        "r": 10,
+        "id": "civtest--1-48-10-5"
+      },
+      "selectedByClick": null,
+      "selectionMethod": "hak-select",
+      "selected": "frozen_47_10_0_4",
+      "clickPos": {
+        "pos": {
+          "x": 512,
+          "y": 308.49169159935553
+        },
+        "epos": {
+          "x": 512,
+          "y": 316.09896964222685
+        }
+      },
+      "preBattle": {
+        "open": true,
+        "weakPresent": true,
+        "weakText": "▼ Osłabieni: głód wojska −25% (poza pancerzem)",
+        "box": {
+          "top": 132,
+          "bottom": 454,
+          "left": 842,
+          "right": 1010,
+          "h": 322,
+          "w": 168,
+          "cls": "pb-roster pb-foe pb-r"
+        },
+        "card": {
+          "maxHeight": "none",
+          "overflowY": "visible",
+          "scrollH": 322,
+          "clientH": 322
+        },
+        "viewport": {
+          "w": 1024,
+          "h": 640
+        },
+        "outsideViewport": false
+      },
+      "pageErrors": []
+    },
+    "gold|1280x800": {
+      "scenario": "gold",
+      "vp": {
+        "w": 1280,
+        "h": 800
+      },
+      "spichlerzSet": 9999,
+      "turnAfterEnd": 2,
+      "preOpenBeforeAttack": false,
+      "playerUnits": [
+        "frozen_47_10_0_4"
+      ],
+      "enemy": {
+        "q": 48,
+        "r": 10,
+        "id": "civtest--1-48-10-5"
+      },
+      "selectedByClick": null,
+      "selectionMethod": "hak-select",
+      "selected": "frozen_47_10_0_4",
+      "clickPos": {
+        "pos": {
+          "x": 640,
+          "y": 385.61461449919443
+        },
+        "epos": {
+          "x": 640,
+          "y": 395.12371205278356
+        }
+      },
+      "preBattle": {
+        "open": true,
+        "weakPresent": true,
+        "weakText": "▼ Osłabieni: deficyt złota −25% (poza pancerzem)",
+        "box": {
+          "top": 132,
+          "bottom": 614,
+          "left": 1074,
+          "right": 1266,
+          "h": 482,
+          "w": 192,
+          "cls": "pb-roster pb-foe pb-r"
+        },
+        "card": {
+          "maxHeight": "none",
+          "overflowY": "visible",
+          "scrollH": 482,
+          "clientH": 482
+        },
+        "viewport": {
+          "w": 1280,
+          "h": 800
+        },
+        "outsideViewport": false
+      },
+      "pageErrors": []
+    },
+    "gold|1024x640": {
+      "scenario": "gold",
+      "vp": {
+        "w": 1024,
+        "h": 640
+      },
+      "spichlerzSet": 9999,
+      "turnAfterEnd": 2,
+      "preOpenBeforeAttack": false,
+      "playerUnits": [
+        "frozen_47_10_0_4"
+      ],
+      "enemy": {
+        "q": 48,
+        "r": 10,
+        "id": "civtest--1-48-10-5"
+      },
+      "selectedByClick": null,
+      "selectionMethod": "hak-select",
+      "selected": "frozen_47_10_0_4",
+      "clickPos": {
+        "pos": {
+          "x": 512,
+          "y": 308.49169159935553
+        },
+        "epos": {
+          "x": 512,
+          "y": 316.09896964222685
+        }
+      },
+      "preBattle": {
+        "open": true,
+        "weakPresent": true,
+        "weakText": "▼ Osłabieni: deficyt złota −25% (poza pancerzem)",
+        "box": {
+          "top": 132,
+          "bottom": 454,
+          "left": 842,
+          "right": 1010,
+          "h": 322,
+          "w": 168,
+          "cls": "pb-roster pb-foe pb-r"
+        },
+        "card": {
+          "maxHeight": "none",
+          "overflowY": "visible",
+          "scrollH": 322,
+          "clientH": 322
+        },
+        "viewport": {
+          "w": 1024,
+          "h": 640
+        },
+        "outsideViewport": false
+      },
+      "pageErrors": []
+    }
+  },
+  "meta": {
+    "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-pb",
+    "chromium": "/opt/pw-browsers/chromium"
+  }
+}

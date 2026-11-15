@@ -61,7 +61,7 @@ Respekt pary to udział Mocy jednej nacji w sumie Mocy obu nacji (patrz hasło *
 ### Siła militarna
 
 - **Siła militarna** = (armia + rekruci + wagaBitew × wygrane bitwy z bieżącej wojny) × (1 + 10% przy aktywnym bonusie trybutu). Wzór: `diplomacy-military-strength-params.json:_formula` i `diplomacy-military-strength.ts` (`computeMilitaryStrength`). Gospodarka do niej nie wchodzi.
-- Przewaga militarna istnieje, gdy jedna strona ma co najmniej 20% więcej siły (`progPrzewagiProc` = 20 w `diplomacy-military-strength-params.json`). Bonus trybutu: +10% przez 10 tur (`trybutBonusProc`, `trybutBonusTur`).
+- Przewaga militarna istnieje, gdy jedna strona ma co najmniej 20% więcej siły (`progPrzewagiProc` = 20 w `diplomacy-military-strength-params.json`) — ten próg 20% dotyczy wojny i rozejmu. Osobny próg **50%** (`progRespektProc` = 50) wyzwala jednorazowe zdarzenia Respektu „Przewaga militarna” (+15) i „Słabszy militarnie” (−10); patrz hasło Respekt. Bonus trybutu: +10% przez 10 tur (`trybutBonusProc`, `trybutBonusTur`).
 - Moc (ta z tabeli) pozostaje do rankingu i Respektu.
 
 ---
@@ -102,4 +102,4 @@ Uwaga: `skladniki.wygrana_bitwa.pkt` (25) jest nieaktywne; aktywny współczynni
 
 ## Historia / decyzje
 
-Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Zasady niewdrożone: DECYZJA WŁAŚCICIELA 2026-11-13. Podział wojskowy/gospodarczy: `power-params.json` (flaga `wojskowy`), filtr w `power-ranking.ts`.
+Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Zasady z DECYZJI WŁAŚCICIELA 2026-11-13 są wdrożone: siła militarna liczona osobno od Power (`diplomacy-military-strength.ts`). Podział wojskowy/gospodarczy: `power-params.json` (flaga `wojskowy`), filtr w `power-ranking.ts`.

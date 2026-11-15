@@ -1992,12 +1992,26 @@ interface RuntimeBattleUnit {
   r:            number;   // ROW (grid z); kept as `r` to minimise churn
   /** Last tile left by an automatic move; prevents replanning loops into the prior tile. */
   lastAutoMoveFrom?: { q: number; r: number };
+  /** R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1 (r3): pola, ktore konnica juz odwiedzila w TEJ aktywacji
+   *  (manewr `_cavManeuverStep` nie wraca na nie -- koniec ping-pongu A-B-A-B, ktory spalal cala pule ruchu bez postepu). */
+  cavTrail?: Set<string>;
+  /** R-WEB-BATTLE-FULL-MOVE-THEN-STRIKE-AT-END-Q1: numer rundy, w ktorej jednostka zadala juz swoj jedyny cios (po wzwarciu: jeden cios na jednostke na ture). */
+  struckRound?: number;
+  /** Id wroga uderzonego w rundzie `struckRound` (kontynuacja ruchu nie zatrzymuje sie przy nim ponownie). */
+  struckTargetId?: string;
+  /** Diagnostyka (T3): po ciosie nie bylo dokad isc (brak sciezki do nastepnego wroga) -- reszta ruchu przepadla zgodnie z regula. */
+  postStrikeBlocked?: boolean;
+  /** Pola odwiedzone przez jednostke w tej rundzie (zywy ruch) -- kontynuacja po ciosie nie wraca na nie (brak ping-ponga). */
+  moveTrail?: Set<string>;
+  moveTrailRound?: number;
   side:         'atk' | 'def';
   dead:         boolean;
   fadingOut:    boolean;
   fadeStart:    number;
   acted:        boolean;
   moveLeft:     number;
+  /** Tura (roundNo), w ktorej zapas ruchu uciekiniera zostal ograniczony (_fleeStep). */
+  fleeBudgetRound?: number;
   range:        number;   // CURRENT effective attack range in tiles (0 => melee adjacency only);
                           // recomputed every activation from rangeBase + the standing tile's
                           // terrain Delta Zasieg (C-TEREN-Q1 ETAP 2, see _applyTerrainRange),
@@ -2246,6 +2260,8 @@ export class BattleScene {
   private _deployCavalryMode: CavalryDeployMode = 'flanks';
   /** C-FLANK: kierunek natarcia aktywny w toolbarze deploy (osobny od formacji/konnicy). */
   private _deployAttackDirection: AttackDirection = 'front';
+  /** ABC B: zaznaczone jednostki maja rozne kierunki natarcia (chip "Natarcie: rozne"). */
+  private _deployAttackDirMixed = false;
   /** Linie glebokosci piechoty / lucznikow (1–3) — osobno od formacji F1/F2/F3. */
   private _deployMeleeLines: DeployLineCount = 1;
   private _deployArcherLines: DeployLineCount = 1;
@@ -2722,6 +2738,14 @@ export class BattleScene {
   private roundNo = 0;
   /** R-WEB-BATTLE-PACE-EQUAL-LINE-LIVE-BUG-Q1: tempo marszu (pula ruchu) per strona, raz na runde. */
   private _paceCache: { round: number; contact: boolean; bySide: Map<string, number> } | null = null;
+  /**
+   * R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1: zatrzask wzwarcia wrecz na czas bitwy.
+   * Ustawiany RAZ, przy pierwszym kontakcie wrecz (poczatek rundy albo pierwsze zapytanie o sufit tempa);
+   * od tego momentu sufity tempa (_paceCapFor) i natarcia rangi (_lineAdvanceCap) nie obowiazuja do
+   * konca bitwy. Bez niego po zerwaniu kontaktu (wrog rozbity/uciekl) sufit wracal i dlawil pościg.
+   * Zmierzone: konnica (7 MP) ucinana do 3 MP przez piechote po zerwaniu kontaktu (ETAP 1).
+   */
+  private _meleeLatched = false;
   private _lineCapCache: { round: number; info: Map<string, { engaged: Set<string>; minMp: number }> } | null = null;
   /** Per jednostka (po bu.id; planowanie AUTO pracuje na klonach): rekord postepu i rundy bez rekordu. */
   private _lineAdvanceState: Map<string, { best: number; stall: number }> | undefined;
@@ -3588,6 +3612,7 @@ export class BattleScene {
   private _startBattle(): void {
     this.started    = true;
     this.roundNo    = 0;
+    this._meleeLatched = false;
     this.activeSide = 'atk';
     // TW v5 §2: zegar bitwy MM:SS startuje TERAZ — bazowa = zegar wirtualny w
     // chwili START WALKI (patrz _updateArmyMoraleBars / _fmtBattleClock).
@@ -5670,6 +5695,7 @@ export class BattleScene {
     this._updateStallWatch();
     if (this._checkEnd()) return;
     this.roundNo++;
+    this._refreshMeleeLatch();
 
     // R-WALKA-PRZEWAGA-LICZEBNA-Q1-W2 GOAL 1: nowa tura => stan "obronca juz
     // kontratakowal" wraca do zera i kazdy obronca znow moze kontratakowac raz.
@@ -5760,8 +5786,43 @@ export class BattleScene {
     // are rebuilt per unit below, so each decision sees exactly this snapshot,
     // never a previous same-side move.
     const intents = this._snapshotAutoBatchIntents(side, units);
+    let resolutions = resolveAutoBatchPhase(side, snapshots, intents);
+    // R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1 (r3): konnica (7 MP), ktorej plan arbitraz UTNIE na kolizji
+    // sciezek z juz zaakceptowanym planem innej jednostki tej fali, przeplanowuje sie (te same zrodlowe jednostki) z polami
+    // cudzych zaakceptowanych sciezek widzianymi jako zajete -- zamiast tracic reszte puli ruchu na pierwszej kolizji.
+    // Piechota/lucznicy planuja jak dotad (szyk W19), przeplanowanie dotyczy wylacznie ucietych planow konnicy.
+    if (/*PATH_RESERVE*/ true) { // marker mutacji testu behawioralnego (battle-pursuit-move-behavior-test.cjs)
+      const truncated = resolutions.filter(r => {
+        const it = intents.find(i => i.unitId === r.unitId);
+        return it !== undefined && it.steps.length > r.steps.length
+          && this._findUnitById(r.unitId)?.mounted === true;
+      });
+      if (truncated.length > 0) {
+        const reserved = new Map<string, string>();
+        for (const r of resolutions) {
+          for (const st of r.steps) {
+            const key = cellKey(st.col, st.row);
+            if (!reserved.has(key)) reserved.set(key, r.unitId);
+          }
+        }
+        for (const t of truncated) {
+          const unit = this._findUnitById(t.unitId);
+          if (!unit) continue;
+          for (const [key, owner] of [...reserved]) if (owner === t.unitId) reserved.delete(key);
+          const replanned = this._snapshotAutoBatchIntents(side, [unit], reserved)[0];
+          if (!replanned) continue;
+          const at = intents.findIndex(i => i.unitId === t.unitId);
+          if (at >= 0) intents[at] = replanned;
+          for (const st of replanned.steps) {
+            const key = cellKey(st.col, st.row);
+            if (!reserved.has(key)) reserved.set(key, t.unitId);
+          }
+        }
+        resolutions = resolveAutoBatchPhase(side, snapshots, intents);
+      }
+    }
     this._autoBatchPhase = side;
-    this._autoBatchResolutions = resolveAutoBatchPhase(side, snapshots, intents);
+    this._autoBatchResolutions = resolutions;
     this._autoBatchPending = this._autoBatchResolutions.length;
     const token = ++this._autoBatchToken;
     const first = this._autoBatchResolutions[0];
@@ -5785,7 +5846,11 @@ export class BattleScene {
    * important distinction from sequential AUTO: earlier intents cannot move a
    * later unit's target or occupancy while the phase is being planned.
    */
-  private _snapshotAutoBatchIntents(side: AutoBatchPhase, units: RuntimeBattleUnit[]): AutoBatchIntent[] {
+  private _snapshotAutoBatchIntents(
+    side: AutoBatchPhase,
+    units: RuntimeBattleUnit[],
+    reservedLanes?: ReadonlyMap<string, string>,
+  ): AutoBatchIntent[] {
     const originalAtk = this.atk;
     const originalDef = this.def;
     const originalOcc = this.occByKey;
@@ -5793,6 +5858,7 @@ export class BattleScene {
     const originalLogLength = this.log.length;
     const originalRoutedLength = this.routedUnits.length;
     const intents: AutoBatchIntent[] = [];
+    // `reservedLanes` (tylko przeplanowanie ucietych planow konnicy): kafel -> id jednostki, ktorej zaakceptowana sciezka go zajmuje.
 
     try {
       for (const source of units) {
@@ -5813,6 +5879,12 @@ export class BattleScene {
         }
         const clone = cloneById.get(source.bu.id);
         if (!clone) continue;
+        if (reservedLanes) {
+          for (const [key, reserverId] of reservedLanes) {
+            const reserver = cloneById.get(reserverId);
+            if (reserver && !cloneOcc.has(key)) cloneOcc.set(key, reserver);
+          }
+        }
 
         const intent: AutoBatchIntent = {
           unitId: source.bu.id,
@@ -5925,7 +5997,7 @@ export class BattleScene {
       return;
     }
     if ((resolution.kind === 'move' || resolution.kind === 'attack') && resolution.steps.length > 0) {
-      this._resolveAutoBatchMovement(ru, resolution, 0, complete);
+      this._resolveAutoBatchMovement(ru, resolution, 0, complete, true);
       return;
     }
     if (resolution.kind === 'move' || resolution.kind === 'hold') {
@@ -5949,11 +6021,62 @@ export class BattleScene {
     if (!target || target.dead || target.fadingOut || target.removed
       || !this._enemiesOf(attacker).includes(target)
       || !this._canStrikeTargetFrom(attacker, attacker.q, attacker.r, target)) {
+      // R-WEB-BATTLE-FULL-MOVE-THEN-STRIKE-AT-END-Q1: zamrozony cel zginal/odszedl w trakcie tej samej fali (np. dobity przez
+      // sasiada) -- po zderzeniu wrecz jednostka nie traci reszty ruchu, tylko kontynuuje zywa aktywacje (cios/ruch).
+      if (this._fullMoveRuleActive(attacker) && attacker.struckRound !== this.roundNo && !attacker.dead && !attacker.fadingOut) {
+        this._resumeFullMoveLive(attacker, done);
+        return;
+      }
       done();
       return;
     }
     this._applyTerrainRange(attacker);
     this._doAttack(attacker, target, done);
+  }
+
+  /** Zywa kontynuacja aktywacji (po zatrzasku wzwarcia), gdy zamrozony plan stracil cel: cios jesli ktos jest w zasiegu, inaczej ruch dalej. */
+  private _resumeFullMoveLive(ru: RuntimeBattleUnit, done: () => void): void {
+    this._applyTerrainRange(ru);
+    if (canShoot(ru) && ru.shootingEnabled !== false) {
+      const shot = this._rangedTargetInRange(ru);
+      if (shot) { this._doAttack(ru, shot, done); return; }
+      if (ru.moveLeft > 0) { this._rangedAction(ru, done); return; }
+      done();
+      return;
+    }
+    const adj = this._pickAdjacentTargetByPriority(ru);
+    if (adj) { this._doAttack(ru, adj, done); return; }
+    if (ru.moveLeft <= 0) { done(); return; }
+    if (ru.mounted) this._cavalryAction(ru, done);
+    else this._advanceStep(ru, done);
+  }
+
+  /**
+   * R-WEB-BATTLE-FULL-MOVE-THEN-STRIKE-AT-END-Q1 r5 (zarzut 6 FC): zamrozony plan skonczyl sie / zablokowal przed wyczerpaniem puli MP.
+   * Po zatrzasku wzwarcia aktywacja trwa zywo: cios, jesli wrog w zasiegu i jednostka jeszcze nie bila w tej turze; w przeciwnym razie
+   * ruch ku najblizszemu wrogowi (bez drugiego ciosu, bez cofania na pola z tej aktywacji). Brak dokad isc = reszta ruchu przepada (DODATEK 5b).
+   * Doktryny Obrona/Ostrzal oraz reczne rozkazy (wylaczone w _fullMoveRuleActive) zostaja bez zmian.
+   */
+  private _resumeFullMoveAfterPlan(ru: RuntimeBattleUnit, done: () => void): void {
+    /*RESUME_AFTER_PLAN*/ // marker mutacji testu (battle-pursuit-move-behavior-test.cjs): zastapiony `done(); return;` = stary blad (done() po planie)
+    if (this.finished || this._autoBattleSuspended
+      || ru.dead || ru.fadingOut || ru.removed || !this._fullMoveRuleActive(ru)) { done(); return; }
+    const doctrine = this._effectiveMetaForUnit(ru).doctrine;
+    if (doctrine === 'defensive' || doctrine === 'skirmish') { done(); return; }
+    if (ru.struckRound === this.roundNo) {
+      if (ru.moveLeft <= 0) { done(); return; }
+      const struck = ru.struckTargetId ? this._findUnitById(ru.struckTargetId) ?? null : null;
+      this._continueAfterStrike(ru, struck, done);
+      return;
+    }
+    // Piechota: nie wracaj na pole, z ktorego jednostka wlasnie wyszla (ostatni krok zamrozonego planu).
+    if (ru.moveTrailRound === this.roundNo && ru.moveTrail && ru.moveTrail.size >= 2) {
+      const arr = [...ru.moveTrail];
+      const prev = arr[arr.length - 2]!;
+      const comma = prev.indexOf(',');
+      ru.lastAutoMoveFrom = { q: parseInt(prev.slice(0, comma), 10), r: parseInt(prev.slice(comma + 1), 10) };
+    }
+    this._resumeFullMoveLive(ru, done);
   }
 
   /** Resolve one frozen path; different units remain animated concurrently. */
@@ -5962,8 +6085,21 @@ export class BattleScene {
     resolution: AutoBatchResolution,
     stepIdx: number,
     done: () => void,
+    normalPlan = false,
   ): void {
     if (this.finished || this._autoBattleSuspended || this._manualMode) return;
+    // R-WEB-BATTLE-FLEE-MOVE-HALF-Q1 (zarzut Evaluatora 1): jednostka zaplanowana jako ZWYKLY ruch, ktora
+    // zostala zlamana W TRAKCIE zamrozonej fali (np. po smierci sasiada), nie dokonczy zamrozonej sciezki
+    // normalnym tempem: przechodzi na _fleeStep z zapasem tury = mnoznik ucieczki minus to, co juz przeszla.
+    // Jednostki zlamane JUZ przy planowaniu maja sciezke policzona przez _fleeStep (klon planowania) -- ta
+    // galaz ich nie dotyczy (normalPlan = false).
+    if (normalPlan && ru.routed && ru.fleeBudgetRound !== this.roundNo) {
+      const spent = Math.max(0, this._movementPointsFor(ru.bu) - ru.moveLeft);
+      ru.fleeBudgetRound = this.roundNo;
+      ru.moveLeft = Math.max(0, Math.min(ru.moveLeft, this._fleeMovePointsFor(ru.bu) - spent));
+      this._fleeStep(ru, done);
+      return;
+    }
     if (stepIdx >= resolution.steps.length) {
       if (ru.routed) {
         const homeCol = this._fleeHomeCol(ru);
@@ -5979,17 +6115,19 @@ export class BattleScene {
         this._resolveAutoBatchAttack(ru, resolution.targetId, done);
         return;
       }
-      done();
+      // Plan krotszy niz pula ruchu: po zatrzasku wzwarcia aktywacja trwa zywo (cios w zasiegu / ruch ku najblizszemu wrogowi).
+      this._resumeFullMoveAfterPlan(ru, done);
       return;
     }
     const step = resolution.steps[stepIdx]!;
     const occupant = this.occByKey.get(cellKey(step.col, step.row));
     if ((occupant && occupant !== ru) || !this._passableForUnit(ru, step.col, step.row)) {
-      done();
+      // Krok zamrozonego planu zajety (np. przez jednostke, ktora ruszyla sie wczesniej w tej fali): zywa kontynuacja zamiast utraty ruchu.
+      this._resumeFullMoveAfterPlan(ru, done);
       return;
     }
     this._doMove(ru, step.col, step.row, () => {
-      this._resolveAutoBatchMovement(ru, resolution, stepIdx + 1, done);
+      this._resolveAutoBatchMovement(ru, resolution, stepIdx + 1, done, normalPlan);
     });
   }
 
@@ -6411,6 +6549,10 @@ export class BattleScene {
   private _cavalryAction(ru: RuntimeBattleUnit, done: () => void): void {
     if (this.finished) { done(); return; }
     if (ru.dead || ru.fadingOut) { done(); return; }
+    // nowa aktywacja = czysty slad (klon planowania ma wlasna kopie pola); wznowiona po zamrozonym planie (r5) dziedziczy pola
+    // juz przebyte w tej rundzie (moveTrail), zeby nie wracac na nie (ping-pong).
+    ru.cavTrail = new Set<string>(ru.moveTrailRound === this.roundNo && ru.moveTrail ? ru.moveTrail : []);
+    ru.cavTrail.delete(cellKey(ru.q, ru.r));
 
     // 1) A worthy (non-spear) enemy is adjacent -> strike it now.
     const adjGood = this._cavAdjacentNonSpear(ru);
@@ -6444,7 +6586,12 @@ export class BattleScene {
       const comma = stepKey.indexOf(',');
       const nc = parseInt(stepKey.slice(0, comma), 10);
       const nr = parseInt(stepKey.slice(comma + 1), 10);
-      this._doMove(ru, nc, nr, done);
+      // R-WEB-BATTLE-FULL-MOVE-THEN-STRIKE-AT-END-Q1 r5: po zatrzasku wzwarcia ostatni krok szarzy nie konczy aktywacji --
+      // jesli zostal ruch, aktywacja trwa zywo (cios / kolejny krok), az pula zostanie zuzyta albo zabraknie drogi.
+      this._doMove(ru, nc, nr, () => {
+        if (!this.finished && ru.moveLeft > 0 && this._fullMoveRuleActive(ru)) this._resumeFullMoveAfterPlan(ru, done);
+        else done();
+      });
       return;
     }
     done();
@@ -6474,7 +6621,10 @@ export class BattleScene {
     const nr = parseInt(stepKey.slice(comma + 1), 10);
     this._doMove(ru, nc, nr, () => {
       if (this.finished) { done(); return; }
-      if (this._cavAdjacentNonSpear(ru)) { done(); return; }
+      if (this._cavAdjacentNonSpear(ru)) {
+        if (this._strikeOnArrival(ru, () => this._cavAdjacentNonSpear(ru), done)) return;
+        done(); return;
+      }
       if (ru.moveLeft > 0) {
         const t2 = this._cavalryTarget(ru) ?? tgt;
         if (this._cavDirectedManeuverStep(ru, done, t2, desired)) return;
@@ -6506,6 +6656,7 @@ export class BattleScene {
       const nk = cellKey(nc, nr);
       if (this.occByKey.has(nk)) continue;
       if (!this._passableForUnit(ru, nc, nr)) continue;
+      if (/*CAV_TRAIL*/ ru.cavTrail?.has(nk)) continue; // nie wracaj na pole z tej aktywacji (ping-pong)
 
       const dTgt = manhattan(nc, nr, tgt.q, tgt.r);
 
@@ -6525,11 +6676,15 @@ export class BattleScene {
     const parts = best.split(',');
     const nc = Number(parts[0]);
     const nr = Number(parts[1]);
+    (ru.cavTrail ??= new Set<string>()).add(cellKey(ru.q, ru.r));
     this._doMove(ru, nc, nr, () => {
       if (this.finished) { done(); return; }
       // After the step: if now adjacent to a worthy target, stop (strike next
       // turn); else keep maneuvering while movement remains.
-      if (this._cavAdjacentNonSpear(ru)) { done(); return; }
+      if (this._cavAdjacentNonSpear(ru)) {
+        if (this._strikeOnArrival(ru, () => this._cavAdjacentNonSpear(ru), done)) return;
+        done(); return;
+      }
       if (ru.moveLeft > 0) {
         const t2 = this._cavalryTarget(ru);
         if (t2 && this._cavManeuverStep(ru, done, t2)) return;
@@ -6822,18 +6977,26 @@ export class BattleScene {
     // Already in range? Stop -- the caller normally chooses the shoot branch first.
     if (manhattan(ru.q, ru.r, nearest.q, nearest.r) <= ru.range) { done(); return; }
 
-    const stepKey = this._bestForwardStep(ru, nearest);
-    if (!stepKey) { done(); return; } // walled in: hold for this turn
-    const parts = stepKey.split(',');
-    const nc = Number(parts[0]);
-    const nr = Number(parts[1]);
     const meleeLine = (ru.side === 'atk' ? this.atk : this.def)
       .some(u => !u.dead && !u.fadingOut && !u.removed && !u.routed
         && !u.mounted && !u.rangedBase && !isSiegeUnit(u.bu));
-    const lineAllowsRangedStep = meleeLine && this._effectiveMetaForUnit(ru).doctrine === 'steady'
-      ? this._rangedFiringStepStaysBehindMelee(ru, nc)
-      : this._compactAttackAllowsStep(ru, nc);
-    if (!lineAllowsRangedStep) { done(); return; }
+    const stepAllowed = (col: number): boolean => meleeLine && this._effectiveMetaForUnit(ru).doctrine === 'steady'
+      ? this._rangedFiringStepStaysBehindMelee(ru, col)
+      : this._compactAttackAllowsStep(ru, col);
+    let stepKey = this._bestForwardStep(ru, nearest);
+    if (stepKey && !stepAllowed(Number(stepKey.split(',')[0]))) stepKey = null;
+    if (!stepKey && this._fullMoveRuleActive(ru) /*RANGED_BFS_FALLBACK*/) {
+      // R-WEB-BATTLE-FULL-MOVE-RESIDUAL-INFANTRY-Q2: po zderzeniu wrecz strzelec, ktorego "prosty" krok naprzod jest zablokowany
+      // (_bestForwardStep == null albo krok lamie linie formacji), nie traci reszty ruchu przy wolnej drodze: idzie najkrotsza
+      // sciezka (BFS) do pozycji strzalu pierwszym krokiem DOZWOLONYM przez linie, bez wracania na pola z tej aktywacji (zakaz ping-ponga).
+      const trail = new Set<string>([cellKey(ru.q, ru.r), ...(ru.moveTrailRound === this.roundNo && ru.moveTrail ? ru.moveTrail : [])]);
+      stepKey = this._firstStepAlongPathToAttack(ru, (q, r) => !trail.has(cellKey(q, r)) && stepAllowed(q));
+    }
+    if (!stepKey) { done(); return; } // walled in / linia formacji: hold for this turn
+    const parts = stepKey.split(',');
+    const nc = Number(parts[0]);
+    const nr = Number(parts[1]);
+    if (!stepAllowed(nc)) { done(); return; }
 
     this._doMove(ru, nc, nr, () => {
       if (this.finished) { done(); return; }
@@ -7558,6 +7721,17 @@ export class BattleScene {
     return Math.max(1, Math.round(base * civMovementMultiplier(bonuses, civUnitShapeForBattleUnit(bu), this.terrain, this.shallowSea)));
   }
 
+  /**
+   * R-WEB-BATTLE-FLEE-MOVE-HALF-Q1: zapas ruchu UCIEKAJACEJ (zrootowanej) jednostki na jedna ture =
+   * mnoznik_ruchu (data/combat-params.json "ucieczka", jedyne miejsce mnoznika) * normalny zasieg ruchu
+   * tej samej jednostki; zaokraglenie w dol, minimum 1 heks. Nigdy nie przekracza zasiegu nie-uciekajacej.
+   */
+  private _fleeMovePointsFor(bu: BattleUnit): number {
+    const raw = Number(combatParamsData.ucieczka.mnoznik_ruchu);
+    const mult = Number.isFinite(raw) && raw > 0 ? raw : 1;
+    return Math.max(1, Math.floor(this._movementPointsFor(bu) * mult));
+  }
+
   private _attackRangeFor(bu: BattleUnit): number {
     const base = attackRange(bu);
     const bonuses = battleUnitCivBonusy(bu, bu.ownerColor === 0xc84040
@@ -8225,17 +8399,32 @@ export class BattleScene {
     return /*PACE_EXEMPT*/false;
   }
 
+  /** Wzwarcie wrecz w tej chwili (ta sama definicja, co kontakt tempa): dowolna zywa, nierozbita jednostka bez zasiegu strzeleckiego, ktora moze atakowac z obecnego pola. */
+  private _meleeContactNow(): boolean {
+    return [...this.atk, ...this.def].some(u => !u.dead && !u.fadingOut && !u.removed && !u.routed
+      && !u.rangedBase && !isSiegeUnit(u.bu) && this._canAttackFrom(u, u.q, u.r));
+  }
+
+  /**
+   * R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1: zatrzask wzwarcia. Wywolywane na
+   * poczatku rundy (po roundNo++) i przy kazdym wyliczeniu kontaktu tempa; po pierwszym kontakcie
+   * wrecz zostaje ustawiony na czas calej bitwy (reset w _startBattle / _resetBattleRuntimeState).
+   */
+  private _refreshMeleeLatch(): void {
+    if (!this._meleeLatched && this._meleeContactNow()) this._meleeLatched = true;
+  }
+
   private _paceCapFor(ru: RuntimeBattleUnit): number {
     if (this.siegeWallCol >= 0 || ru.routed || this._paceExemptClass(ru)) return Number.POSITIVE_INFINITY;
     if (this._effectiveMetaForUnit(ru).doctrine !== 'steady') return Number.POSITIVE_INFINITY;
     let cache = this._paceCache;
     if (!cache || cache.round !== this.roundNo) {
-      const contact = [...this.atk, ...this.def].some(u => !u.dead && !u.fadingOut && !u.removed && !u.routed
-        && !u.rangedBase && !isSiegeUnit(u.bu) && this._canAttackFrom(u, u.q, u.r));
+      const contact = this._meleeContactNow();
       cache = { round: this.roundNo, contact, bySide: new Map() };
       this._paceCache = cache;
+      if (contact) this._meleeLatched = true;
     }
-    if (cache.contact) return Number.POSITIVE_INFINITY;
+    if (cache.contact || this._meleeLatched /*MELEE_LATCH*/) return Number.POSITIVE_INFINITY;
     let pace = cache.bySide.get(ru.side);
     if (pace === undefined) {
       pace = Number.POSITIVE_INFINITY;
@@ -8268,6 +8457,7 @@ export class BattleScene {
    * biezacych pozycji -- deterministyczny dla AUTO (klony stanu z poczatku fazy) i SKIP.
    */
   private _lineAdvanceCap(ru: RuntimeBattleUnit): number {
+    if (this._meleeLatched /*MELEE_LATCH_LINE*/) return Number.POSITIVE_INFINITY;
     if (this._effectiveMetaForUnit(ru).doctrine !== 'steady' || ru.mounted || ru.rangedBase || isSiegeUnit(ru.bu)) {
       return Number.POSITIVE_INFINITY;
     }
@@ -8374,7 +8564,10 @@ export class BattleScene {
           const dnr = parseInt(dirStepKey.slice(comma + 1), 10);
           this._doMove(ru, dnc, dnr, () => {
             if (this.finished) { done(); return; }
-            if (this._canAttackFrom(ru, ru.q, ru.r)) { done(); return; }
+            if (this._canAttackFrom(ru, ru.q, ru.r)) {
+              if (this._strikeOnArrival(ru, () => this._pickAdjacentTargetByPriority(ru), done)) return;
+              done(); return;
+            }
             if (ru.moveLeft > 0) {
               this._schedule(STEP_GAP_MS, () => this._advanceStep(ru, done));
             } else {
@@ -8430,8 +8623,12 @@ export class BattleScene {
     this._doMove(ru, nc, nr, () => {
       if (previousPosition) ru.lastAutoMoveFrom = previousPosition;
       if (this.finished) { done(); return; }
-      // Reached an attack position? Stop -- the blow happens on a later turn.
-      if (this._canAttackFrom(ru, ru.q, ru.r)) { done(); return; }
+      // Reached an attack position? Przed pierwszym zderzeniem wrecz: stop -- cios pada w nastepnej turze.
+      // Po zatrzasku wzwarcia: cios na dojsciu (_strikeOnArrival), potem ruch dalej (_continueAfterStrike).
+      if (this._canAttackFrom(ru, ru.q, ru.r)) {
+        if (this._strikeOnArrival(ru, () => this._pickAdjacentTargetByPriority(ru), done)) return;
+        done(); return;
+      }
       // Otherwise keep advancing while movement remains this turn.
       if (ru.moveLeft > 0) {
         this._schedule(STEP_GAP_MS, () => this._advanceStep(ru, done));
@@ -8893,6 +9090,8 @@ export class BattleScene {
     this.busy = true;
     const oldKey = cellKey(ru.q, ru.r);
     const newKey = cellKey(col, row);
+    if (ru.moveTrailRound !== this.roundNo || !ru.moveTrail) { ru.moveTrail = new Set<string>([oldKey]); ru.moveTrailRound = this.roundNo; }
+    ru.moveTrail.add(newKey);
     this.occByKey.delete(oldKey);
     this.occByKey.set(newKey, ru);
 
@@ -8970,8 +9169,76 @@ export class BattleScene {
       done();
       return;
     }
+    // R-WEB-BATTLE-FULL-MOVE-THEN-STRIKE-AT-END-Q1 (decyzja wlasciciela 2026-11-15): po pierwszym zderzeniu wrecz
+    // (zatrzask _meleeLatched) jednostka zadaje CO NAJWYZEJ JEDEN cios na ture, a po ciosie, jesli zostal jej ruch,
+    // idzie dalej ku NASTEPNEJ jednostce wroga (_continueAfterStrike). Przed zderzeniem obowiazuje dotychczasowy rowny tryb wejscia.
+    if (this._fullMoveRuleActive(attacker)) {
+      // Drugi cios w tej samej turze jest zabroniony (marker mutacji testu: ONE_STRIKE).
+      if (attacker.struckRound === this.roundNo) { done(); return; } // /*ONE_STRIKE*/
+      attacker.struckRound = this.roundNo;
+      attacker.struckTargetId = defender.bu.id;
+      attacker.postStrikeBlocked = false;
+      const afterStrike = done;
+      done = () => this._continueAfterStrike(attacker, defender, afterStrike);
+    }
     if (canShoot(attacker)) this._doRangedAttack(attacker, defender, done);
     else                    this._doMeleeAttack(attacker, defender, done);
+  }
+
+  /** Czy dla tej jednostki obowiazuje regula "pelny ruch, cios, ruch dalej" (po pierwszym zderzeniu wrecz; nie w oblezeniu z murem). */
+  private _fullMoveRuleActive(ru: RuntimeBattleUnit): boolean {
+    if (!this._meleeLatched /*FULLMOVE_LATCH*/ || this.siegeWallCol >= 0 || ru.routed) return false;
+    // Reczne dowodzenie graczem (rozkaz klikiem) zostaje bez zmian: tylko jednostki sterowane przez AUTO/doktryne.
+    if (this._manualMode && this._isPlayerSide(ru.side) && !this._isUnitDoctrineAuto(ru)) return false;
+    return true;
+  }
+
+  /** Cios na dojsciu: po zatrzasku wzwarcia jednostka, ktora doszla do pozycji ciosu, uderza od razu (zamiast czekac do nastepnej tury). */
+  private _strikeOnArrival(ru: RuntimeBattleUnit, pick: () => RuntimeBattleUnit | null, done: () => void): boolean {
+    if (!this._fullMoveRuleActive(ru) || ru.struckRound === this.roundNo) return false;
+    const target = pick();
+    if (!target) return false;
+    this._doAttack(ru, target, done);
+    return true;
+  }
+
+  /**
+   * Po ciosie: reszta puli ruchu (jesli jest) prowadzi ku NASTEPNEJ jednostce wroga -- bez drugiego ciosu w tej turze.
+   * Brak dokad isc (okrazona/zablokowana) = reszta ruchu przepada (decyzja wlasciciela 2026-11-15, "I tyle!").
+   * Dystansowi: dojscie tylko do pozycji, z ktorej nastepny cel jest w zasiegu (DO POTWIERDZENIA).
+   */
+  private _continueAfterStrike(ru: RuntimeBattleUnit, struck: RuntimeBattleUnit | null, done: () => void): void {
+    /*CONT_MOVE*/ // marker mutacji testu (battle-full-move-strike-test.cjs): zastapiony `done(); return;` = brak ruchu po ciosie
+    // Doktryny pozycyjne (Obrona) i kitujace (Ostrzal) nie maszeruja po ciosie: ich cel to pozycja/dystans, nie pogon.
+    const doctrine = this._effectiveMetaForUnit(ru).doctrine;
+    if (doctrine === 'defensive' || doctrine === 'skirmish') { done(); return; }
+    const visited = new Set<string>([cellKey(ru.q, ru.r), ...(ru.moveTrailRound === this.roundNo && ru.moveTrail ? ru.moveTrail : [])]);
+    const stepOn = (): void => {
+      if (this.finished || this._autoBattleSuspended || ru.dead || ru.fadingOut || ru.removed || ru.routed) { done(); return; }
+      if (ru.moveLeft <= 0) { done(); return; }
+      // Nastepny cel: najblizszy wrog (poza juz uderzonym), do ktorego istnieje wolna sciezka (kolejnosc: dystans, potem kolejnosc rosteru = deterministyczna).
+      const candidates = this._enemiesOf(ru).filter(e => e !== struck)
+        .map((e, i) => ({ e, i, d: manhattan(ru.q, ru.r, e.q, e.r) }))
+        .sort((a, b) => a.d - b.d || a.i - b.i);
+      if (candidates.length === 0) { ru.postStrikeBlocked = true; done(); return; } // nie ma juz zadnego wroga: brak dokad isc, reszta ruchu przepada (DODATEK 5b)
+      let key: string | null = null;
+      for (const c of candidates) {
+        if (this._canStrikeTargetFrom(ru, ru.q, ru.r, c.e)) { /*CONT_REATTACK*/ done(); return; } // juz przy nastepnym wrogu: drugiego ciosu nie ma
+        key = this._firstStepAlongPathToAttack(ru, (q, r) => !visited.has(cellKey(q, r)), c.e);
+        if (key) break;
+      }
+      if (!key) { ru.postStrikeBlocked = true; done(); return; } // brak dokad isc: reszta ruchu przepada
+      const comma = key.indexOf(',');
+      const nc = parseInt(key.slice(0, comma), 10);
+      const nr = parseInt(key.slice(comma + 1), 10);
+      this._doMove(ru, nc, nr, () => {
+        visited.add(cellKey(ru.q, ru.r));
+        if (ru.moveLeft > 0 && !this.finished) this._schedule(STEP_GAP_MS, stepOn);
+        else done();
+      });
+    };
+    ru.postStrikeBlocked = false;
+    stepOn();
   }
 
   /**
@@ -10049,6 +10316,13 @@ export class BattleScene {
   private _fleeStep(ru: RuntimeBattleUnit, done: () => void): void {
     if (this.finished) { done(); return; }
     if (ru.dead || ru.fadingOut || ru.removed) { done(); return; }
+    // R-WEB-BATTLE-FLEE-MOVE-HALF-Q1: zapas ruchu uciekiniera na TURE ograniczony do
+    // _fleeMovePointsFor (50% normalnego zasiegu, combat-params.json "ucieczka"). Ustawiane raz na
+    // ture (kolejne kroki tej samej tury, _schedule, zachowuja pozostaly zapas).
+    if (ru.fleeBudgetRound !== this.roundNo) {
+      ru.fleeBudgetRound = this.roundNo;
+      ru.moveLeft = Math.min(ru.moveLeft, this._fleeMovePointsFor(ru.bu));
+    }
     if (ru.moveLeft <= 0) { done(); return; }
 
     const homeCol = this._fleeHomeCol(ru);
@@ -10846,6 +11120,7 @@ export class BattleScene {
     this.started = false;
     this.busy = false;
     this.roundNo = 0;
+    this._meleeLatched = false;
     this._lineCapCache = null;
     this._paceCache = null;
     this._lineAdvanceState?.clear();
@@ -13334,7 +13609,9 @@ export class BattleScene {
     el.appendChild(mkChip('P: ' + this._deployMeleeLines + ' lin.'));
     el.appendChild(mkChip('D: ' + this._deployArcherLines + ' lin.'));
     el.appendChild(mkChip(this._deployCavalryShortLabel(this._deployCavalryMode)));
-    el.appendChild(mkChip(this._deployAttackDirShortLabel(this._deployAttackDirection)));
+    el.appendChild(mkChip(this._deployAttackDirMixed
+      ? 'Natarcie: różne'
+      : this._deployAttackDirShortLabel(this._deployAttackDirection)));
 
     if (groups.length > 0 && gid) {
       el.insertBefore(mkChip(this._groupDisplayLabel(gid)), el.firstChild);
@@ -14224,19 +14501,24 @@ export class BattleScene {
 
   /** Odtwarza kierunek natarcia (C-FLANK) po powtórce bitwy w fazie deploy. */
   private _restoreDeployAttackDirSnapshot(snapshot: Map<string, AttackDirection>): void {
-    const groupDirs = new Map<string, AttackDirection>();
+    // ABC B: meta grupy tylko gdy wszystkie zywe jednostki grupy maja ten sam kierunek.
+    const groupDirs = new Map<string, AttackDirection | null>();
     for (const ru of this._playerRoster()) {
       if (ru.dead || ru.removed) continue;
       const dir = snapshot.get(ru.bu.id) ?? 'front';
       ru.attackDirection = dir;
-      if (ru.groupId) groupDirs.set(ru.groupId, dir);
+      if (ru.groupId) {
+        const prev = groupDirs.get(ru.groupId);
+        groupDirs.set(ru.groupId, prev === undefined || prev === dir ? dir : null);
+      }
     }
     for (const [gid, dir] of groupDirs) {
-      this._ensureGroupMeta(gid).attackDirection = dir;
+      if (dir != null) this._ensureGroupMeta(gid).attackDirection = dir;
     }
     const live = this._playerRoster().filter(u => !u.dead && !u.removed);
-    const first = live[0];
-    if (first) this._setDeployAttackDirection(first.attackDirection);
+    const liveDirs = new Set(live.map(u => u.attackDirection));
+    if (liveDirs.size > 1) this._setDeployAttackDirection('front', true);
+    else if (live[0]) this._setDeployAttackDirection(live[0].attackDirection);
   }
 
   /** Start deploy: osobne grupy Konnica / Piechota / Łucznicy (playtest POLE-BITWY). */
@@ -15196,11 +15478,14 @@ export class BattleScene {
       const meta = this._groupMeta.get(gid);
       if (meta?.meleeLines != null) this._deployMeleeLines = meta.meleeLines;
       if (meta?.archerLines != null) this._deployArcherLines = meta.archerLines;
-      if (meta?.attackDirection != null) this._setDeployAttackDirection(meta.attackDirection);
       this._syncDeployLinesButtons();
-    } else if (targets.length === 1 && targets[0]!.attackDirection !== 'front') {
-      this._setDeployAttackDirection(targets[0]!.attackDirection);
     }
+    // ABC B: chip kierunku natarcia pokazuje kierunek ZAZNACZONYCH jednostek (rozne => "rozne").
+    // Brak zaznaczenia i grupy = cala armia (ten sam zakres co rozkaz).
+    const dirScope = targets.length > 0 ? targets : this._playerRoster().filter(u => !u.dead && !u.removed);
+    const targetDirs = new Set(dirScope.map(u => u.attackDirection));
+    if (targetDirs.size > 1) this._setDeployAttackDirection('front', true);
+    else if (targetDirs.size === 1) this._setDeployAttackDirection([...targetDirs][0]!);
     this._updateDeployToolbarStatus();
   }
 
@@ -15212,8 +15497,9 @@ export class BattleScene {
   }
 
   /** C-FLANK: ustawia aktywny kierunek natarcia (toolbar) i odswieza przyciski. */
-  private _setDeployAttackDirection(dir: AttackDirection): void {
+  private _setDeployAttackDirection(dir: AttackDirection, mixed: boolean = false): void {
     this._deployAttackDirection = dir;
+    this._deployAttackDirMixed = mixed;
     this._syncDeployAttackDirectionButtons();
     this._updateDeployToolbarStatus();
   }
@@ -15298,7 +15584,7 @@ export class BattleScene {
 
   /** C-FLANK: podswietla aktywna opcje w popupie kierunku natarcia. */
   private _syncDeployAttackDirectionButtons(): void {
-    const active = this._deployAttackDirection;
+    const active = this._deployAttackDirMixed ? null : this._deployAttackDirection;
     document.querySelectorAll('button[data-deploy-dir-option]').forEach(el => {
       paintDeployPopupOption(
         el as HTMLButtonElement,
@@ -17212,19 +17498,17 @@ export class BattleScene {
     const live = this._playerRoster().filter(u => !u.dead && !u.removed);
     if (live.length === 0) return;
 
-    // C-BITWA-FORMACJA=B (Maciej 2026-07-25): szyk stosuje się do AKTUALNIE ZAZNACZONEGO
-    // zakresu — pojedyncza jednostka / grupa / cała armia (gdy nic nie zaznaczone).
-    // „Niezależnie czy wybierzemy jedną jednostkę, formację czy całą armię — zasady
-    // obowiązują zaznaczonych" (Maciej). _resolveDeployFormationTargets zwraca dokładnie
-    // ten zakres (zaznaczenie → grupa → armia), spójnie na każdym poziomie. Komunikat
-    // niżej jasno wskazuje, do czego zastosowano (usuwa dawną dwuznaczność błędu G).
+    // C-BITWA-FORMACJA=B (Maciej 2026-07-25) + ABC B (R-WEB-BATTLE-ATTACK-DIRECTION-PER-SELECTED-UNITS-Q1,
+    // DODATEK 1): szyk stosuje się do DOKŁADNIE zaznaczonych żywych jednostek (także mieszanych
+    // typów i z różnych grup); gdy nic nie zaznaczone — cała armia. _resolveDeployFormationTargets
+    // NIE rozszerza zaznaczenia na grupę. Komunikat niżej jasno wskazuje zakres.
     // Osobny mechanizm „postawa grupy" (_setGroupDoctrine → _applyGroupFormation) nadal
     // ustawia formację per-grupa w auto-grze walki.
     const targets = this._resolveDeployFormationTargets(live);
     if (targets.length === 0) return;
 
-    const groupIds = [...new Set(targets.map(u => u.groupId).filter(Boolean))] as string[];
-    for (const g of groupIds) {
+    // ABC B (DODATEK 1): meta grupy tylko gdy zaznaczone są WSZYSTKIE żywe jednostki grupy.
+    for (const g of this._fullyCoveredGroupIds(targets, live)) {
       this._ensureGroupMeta(g).formation = formation;
     }
 
@@ -17252,9 +17536,9 @@ export class BattleScene {
     const targets = this._resolveDeployFormationTargets(live);
     if (targets.length === 0) return;
 
-    const gid = targets[0]?.groupId;
-    if (gid && targets.every(u => u.groupId === gid)) {
-      this._ensureGroupMeta(gid).cavalryMode = mode;
+    // ABC B: tryb grupy tylko gdy zaznaczone są WSZYSTKIE żywe jednostki grupy.
+    for (const g of this._fullyCoveredGroupIds(targets, live)) {
+      this._ensureGroupMeta(g).cavalryMode = mode;
     }
 
     this._setDeployCavalryMode(mode);
@@ -17271,10 +17555,10 @@ export class BattleScene {
 
   /**
    * C-FLANK (Maciej 2026-07-25): ustawia KIERUNEK NATARCIA (front/bok/tyl) dla
-   * auto-odgrywania bitwy -- stosuje sie do aktualnie zaznaczonego zakresu
-   * (jednostka/grupa/armia), dokladnie jak Formacja/Konnica powyzej
-   * (_resolveDeployFormationTargets zwraca ten sam zakres, spojnie z
-   * C-BITWA-FORMACJA=B). W przeciwienstwie do Formacji/Konnicy NIE przestawia
+   * auto-odgrywania bitwy -- stosuje sie do DOKLADNIE zaznaczonych zywych jednostek
+   * (brak zaznaczenia = cala armia), tak samo jak Formacja/Konnica powyzej
+   * (ABC B, ten sam resolver _resolveDeployFormationTargets). Meta grupy ustawiana
+   * tylko, gdy zaznaczone sa WSZYSTKIE zywe jednostki grupy. W przeciwienstwie do Formacji/Konnicy NIE przestawia
    * fizycznie jednostek w strefie -- to ustawienie ZACHOWANIA w auto-play
    * (manewr na flanke/tyl w _advanceStep / _cavalryAction), nie ukladu
    * poczatkowego deploy.
@@ -17288,8 +17572,8 @@ export class BattleScene {
 
     for (const u of targets) u.attackDirection = dir;
 
-    const groupIds = [...new Set(targets.map(u => u.groupId).filter(Boolean))] as string[];
-    for (const g of groupIds) {
+    // ABC B: meta grupy tylko gdy zaznaczone są WSZYSTKIE żywe jednostki grupy (albo cała armia).
+    for (const g of this._fullyCoveredGroupIds(targets, live)) {
       this._ensureGroupMeta(g).attackDirection = dir;
     }
 
@@ -17297,28 +17581,39 @@ export class BattleScene {
     this._refreshDeploySelectionVisuals();
     this._updateRosterBar();
     const dirLabel = dir === 'bok' ? 'bok' : dir === 'tyl' ? 'ty\u0142' : 'front';
+    // Zakres mowi prawde: cala armia / cala grupa (zaznaczone WSZYSTKIE zywe jednostki jednej grupy) / zaznaczenie (N).
+    const oneGroup = new Set(targets.map(u => u.groupId ?? '')).size === 1 && !!targets[0]?.groupId;
     const scopeLabel = targets.length >= live.length
       ? 'ca\u0142a armia'
-      : 'zaznaczenie (' + targets.length + ')';
+      : oneGroup && this._fullyCoveredGroupIds(targets, live).length === 1
+        ? 'ca\u0142a grupa (' + targets.length + ')'
+        : 'zaznaczenie (' + targets.length + ')';
     this._showOrderFeedback('Kierunek natarcia: ' + dirLabel + ' \u2014 ' + scopeLabel);
   }
 
-  /** Jednostki objete formacja: zaznaczenie / cala grupa / cala armia. */
+  /**
+   * Jednostki objete rozkazem deploy (Formacja / Konnica / Kierunek natarcia).
+   * ABC B (R-WEB-BATTLE-ATTACK-DIRECTION-PER-SELECTED-UNITS-Q1, DODATEK 1): brak zaznaczenia =
+   * cala armia; zaznaczenie = DOKLADNIE zaznaczone zywe jednostki (bez rozszerzania na grupe).
+   */
   private _resolveDeployFormationTargets(live: RuntimeBattleUnit[]): RuntimeBattleUnit[] {
     const selLive = [...this._selectedUnits]
       .map(id => live.find(u => u.bu.id === id))
       .filter((u): u is RuntimeBattleUnit => !!u);
 
     if (selLive.length === 0) return live;
-
-    const gids = [...new Set(selLive.map(u => u.groupId).filter(Boolean))] as string[];
-    if (gids.length === 1) {
-      const members = this._liveGroupMemberIds(gids[0]!)
-        .map(id => live.find(u => u.bu.id === id))
-        .filter((u): u is RuntimeBattleUnit => !!u);
-      if (members.length > 0) return members;
-    }
     return selLive;
+  }
+
+  /**
+   * Grupy, ktorych WSZYSTKIE zywe jednostki sa w `targets` (tylko wtedy wolno ustawic meta grupy,
+   * inaczej rozkaz czesciowy przeciekalby na grupe). Dla calej armii zwraca wszystkie grupy.
+   */
+  private _fullyCoveredGroupIds(targets: RuntimeBattleUnit[], live: RuntimeBattleUnit[]): string[] {
+    const inTargets = new Set(targets.map(u => u.bu.id));
+    const gids = new Set(targets.map(u => u.groupId).filter(Boolean) as string[]);
+    return [...gids].filter(g =>
+      live.filter(u => u.groupId === g).every(u => inTargets.has(u.bu.id)));
   }
 
   /** Zaznacza jednostke w fazie deploy (ring only — bez skali 3D). */

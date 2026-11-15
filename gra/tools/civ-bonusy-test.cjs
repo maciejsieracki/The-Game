@@ -136,7 +136,7 @@ const params = M.loadEconParams({ ekonomia_miasta: {}, budynki: {} }, 'normal');
 const city = {
   id: 'c1', ludnosc: 3,
   podziałHandlu: { procentNauka: 20, procentPieniadz: 70, procentLuksus: 10 },
-  podziałPracy:  { procentBudynki: 70, procentTeren: 30 },
+  podziałPracy:  { procentBudynki: 70 },
   specjalisci: [],
 };
 const workedHandel = Array.from({ length: 10 }, () => ({
@@ -292,7 +292,8 @@ console.log('\nG. isCombatModifierBonus (preBattle filter)');
     [{ typNazwa: 'Legionista', rola: 'Wrecz' }], { side: 'attacker' });
   assert(!romanChips.some(text => text.startsWith('Legion:')),
     'PreBattle omits Roman legacy attack/armor text');
-  assert(romanChips.includes('Matrix:walka_atak_piechota') && romanChips.includes('Matrix:walka_pancerz_piechota'),
+  assert(romanChips.includes('Walka · atak · piechoty') && romanChips.includes('Walka · pancerz · piechoty')
+    && !romanChips.some(text => /Matrix:|walka_/.test(text)),
     'PreBattle shows both effective Roman matrix effects');
 
   const grecyWalka = grecyBonusy.filter(b => M.isCombatModifierBonus(b));
@@ -302,22 +303,23 @@ console.log('\nG. isCombatModifierBonus (preBattle filter)');
     [{ typNazwa: 'Falanga', rola: 'Wrecz' }], { side: 'defender' });
   assert(!greekChips.some(text => text.startsWith('Falanga:')),
     'PreBattle omits Greek legacy defense text');
-  assert(greekChips.includes('Matrix:walka_obrona_piechota'), 'PreBattle shows effective Greek matrix defense');
+  assert(greekChips.includes('Walka · obrona · piechoty') && !greekChips.some(text => /Matrix:|walka_/.test(text)),
+    'PreBattle shows effective Greek matrix defense');
 
   const sumerBonusy = civBonusyForCivKey('sumer', civs);
   const sumerInfantryChips = M.effectiveCombatBonusChipTexts(sumerBonusy,
     [{ typNazwa: 'Włócznik sumeryjski', rola: 'Wrecz' }], { side: 'defender' });
   assert(!sumerInfantryChips.some(text => text.startsWith('Ciężka piechota:')),
     'PreBattle omits Sumer infantry legacy defense/HP/armor entry');
-  assert(sumerInfantryChips.includes('Matrix:walka_obrona_piechota')
-    && sumerInfantryChips.includes('Matrix:walka_hp_piechota'),
+  assert(sumerInfantryChips.includes('Walka · obrona · piechoty')
+    && sumerInfantryChips.includes('Walka · punkty zdrowia · piechoty'),
   'PreBattle shows effective Sumer defense and HP matrix effects');
 
   const sumerChariotChips = M.effectiveCombatBonusChipTexts(sumerBonusy,
     [{ typNazwa: 'Rydwan sumeryjski', rola: 'Wrecz' }], { side: 'defender' });
   assert(!sumerChariotChips.some(text => text.includes('Ciężkie rydwany bojowe:')),
     'PreBattle omits Sumer legacy chariot defense as well as legacy HP');
-  assert(sumerChariotChips.includes('Matrix:walka_hp_rydwany')
+  assert(sumerChariotChips.includes('Walka · punkty zdrowia · rydwanów')
     && !sumerChariotChips.some(text => text.includes('Ciężkie rydwany bojowe:')),
     'PreBattle shows chariot matrix HP without legacy chariot claims');
 
@@ -328,9 +330,9 @@ console.log('\nG. isCombatModifierBonus (preBattle filter)');
   eq(preBattleGaleraShape.rola, 'Morska', 'PreBattle categoryOf galera translates to canonical naval role');
   eq(M.unitCombatCategory(preBattleGaleraShape), 'morska', 'translated PreBattle Galera remains naval');
   const galeraChips = M.effectiveCombatBonusChipTexts(grecyBonusy, [preBattleGaleraShape], { side: 'defender' });
-  assert(!galeraChips.includes('Matrix:walka_obrona_piechota'),
+  assert(!galeraChips.includes('Walka · obrona · piechoty'),
     'Greek infantry defense matrix does not leak onto a Galera roster');
-  assert(galeraChips.includes('Matrix:walka_atak_morska'),
+  assert(galeraChips.includes('Walka · atak · morski') && !galeraChips.some(text => /Matrix:|walka_/.test(text)),
     'applicable Greek naval matrix bonus remains visible on a Galera');
   const otherShip = M.civCombatUnitShapeFromCategory('Okręt patrolowy', 'galera');
   const shipOnlyBonuses = [
@@ -342,7 +344,7 @@ console.log('\nG. isCombatModifierBonus (preBattle filter)');
     { typ: 'bonus_walka', cel: 'morska', wartosc: 0.2, opis: 'Matrix:walka_atak_morska', realizuje: 'walka', matrixParamId: 'walka_atak_morska' },
   ];
   const otherShipChips = M.effectiveCombatBonusChipTexts(shipOnlyBonuses, [otherShip], { side: 'defender' });
-  assert(!otherShipChips.includes('Legacy naval attack') && otherShipChips.includes('Matrix:walka_atak_morska'),
+  assert(!otherShipChips.includes('Legacy naval attack') && otherShipChips.includes('Walka · atak · morski'),
     'other naval role rejects legacy attack and retains applicable sea matrix bonus');
   assert(!otherShipChips.some(text => /walka_(atak_piechota|obrona_piechota|dystans_lukownicy|hp_rydwany)/.test(text)),
     'Galera blocks infantry, archer and chariot G1 bonus leakage');

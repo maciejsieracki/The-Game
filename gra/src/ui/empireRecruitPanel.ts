@@ -9,6 +9,9 @@
  * wracają do 0; typy odrzucone lub przyjęte częściowo zachowują pozostałą liczbę do ponowienia.
  * Rozkład po miastach robi `game/empire-recruit-plan.ts` (wiring w main.ts); ten moduł to tylko UI.
  * Liczniki to stan UI sesji (poza zapisem gry) — zamówienia są zwykłymi wpisami kolejek miast.
+ * R-WEB-UI-EMPIRE-RECRUIT-PANEL-MOVE-TO-ARMY-PANEL-Q1: panel NIE jest już oknem modalnym — to sekcja osadzana
+ * w panelu armii (empireDetailPanel.ts, „Rekrutacja”, nad wodzem). Host: `[data-erp-root]`, montowany przez
+ * `mountEmpireRecruitSection`. Przycisk w górnym pasku usunięty.
  */
 
 import { summarizeEmpireRecruitBasket, type RecruitBasketBudget, type RecruitBasketSummary } from '../game/empire-recruit-plan';
@@ -45,7 +48,7 @@ export interface EmpireRecruitPanelCfg {
   onSelectGeneral?: (id: string | null) => void;
 }
 
-const ROOT_ID = 'civ-empire-recruit-panel';
+const HOST_SELECTOR = '[data-erp-root]';
 const STYLE_ID = 'civ-empire-recruit-panel-css';
 const MAX_QTY = 999;
 const DEFAULT_QTY = 0;
@@ -72,53 +75,52 @@ function ensureStyles(): void {
   const st = document.createElement('style');
   st.id = STYLE_ID;
   st.textContent = `
-#${ROOT_ID}{position:fixed;top:84px;right:16px;z-index:330;width:min(380px,calc(100vw - 32px));max-height:calc(100vh - 140px);
-  display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;background:linear-gradient(180deg,#161c28,#0a0d14);color:#e8e0c8;
-  border:1px solid rgba(232,216,138,.45);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.6);
-  font:13px var(--civ-font-ui,system-ui,sans-serif);pointer-events:auto;}
-#${ROOT_ID} .erp-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;
+${HOST_SELECTOR}{display:flex;flex-direction:column;background:linear-gradient(180deg,#161c28,#0a0d14);color:#e8e0c8;
+  border:1px solid rgba(232,216,138,.45);border-radius:8px;padding:0 0 4px;margin:10px 0;
+  font:13px var(--civ-font-ui,system-ui,sans-serif);min-width:0;max-width:100%;box-sizing:border-box;}
+${HOST_SELECTOR} .erp-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;
   border-bottom:1px solid rgba(232,216,138,.25);}
-#${ROOT_ID} .erp-title{font-weight:700;color:#e8d88a;font-size:14px;}
-#${ROOT_ID} .erp-sub{padding:6px 12px 2px;font-size:11px;color:#9aa4b2;line-height:1.4;}
-#${ROOT_ID} .erp-list{flex:none;padding:4px 8px 8px;}
-#${ROOT_ID} .erp-row{display:flex;align-items:center;gap:8px;padding:6px 4px;border-top:1px solid #242c3a;}
-#${ROOT_ID} .erp-row:first-child{border-top:none;}
-#${ROOT_ID} .erp-info{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px;}
-#${ROOT_ID} .erp-name{font-weight:600;white-space:normal;overflow-wrap:anywhere;}
-#${ROOT_ID} .erp-meta{font-size:11px;color:#9aa4b2;white-space:normal;overflow-wrap:anywhere;line-height:1.3;}
-#${ROOT_ID} .erp-queued{font-size:11px;color:#9aa4b2;white-space:normal;line-height:1.3;}
-#${ROOT_ID} .erp-selected{font-size:11px;color:#b5bfca;white-space:normal;line-height:1.3;}
-#${ROOT_ID} .erp-meta b,#${ROOT_ID} .erp-queued b{color:#e8d88a;font-weight:700;}
-#${ROOT_ID} .erp-selected b{color:#d7e2f0;font-weight:700;}
-#${ROOT_ID} .erp-row.is-blocked .erp-name{opacity:.55;}
-#${ROOT_ID} .erp-summary{padding:7px 12px;border-top:1px solid rgba(232,216,138,.2);font-size:11px;line-height:1.4;color:#b5bfca;}
-#${ROOT_ID} .erp-summary b{color:#e8d88a;}
-#${ROOT_ID} .erp-shortfall{display:block;color:#ff8d84;font-size:11px;line-height:1.3;margin-top:2px;}
-#${ROOT_ID} .erp-shortfall:empty{display:none;}
-#${ROOT_ID} .erp-go.is-shortfall,#${ROOT_ID} .erp-all button.is-shortfall{border-color:#ed6258;color:#ff8d84;box-shadow:0 0 0 1px rgba(237,98,88,.18) inset;}
-#${ROOT_ID} .erp-all.has-shortfall{background:rgba(237,98,88,.06);}
-#${ROOT_ID} .erp-qty{display:inline-flex;align-items:center;gap:2px;flex:none;}
-#${ROOT_ID} button{font:inherit;cursor:pointer;color:#e8e0c8;background:#1a2230;border:1px solid #49566a;border-radius:5px;padding:3px 8px;}
-#${ROOT_ID} button:hover:not(:disabled){background:#263246;}
-#${ROOT_ID} button:disabled{opacity:.4;cursor:not-allowed;}
-#${ROOT_ID} .erp-qty button{width:24px;padding:3px 0;}
-#${ROOT_ID} .erp-qty input{width:42px;text-align:center;font:inherit;color:#e8e0c8;background:#0e131c;border:1px solid #49566a;border-radius:5px;padding:3px 2px;}
-#${ROOT_ID} .erp-go{border-color:rgba(232,216,138,.6);color:#e8d88a;font-weight:600;}
-#${ROOT_ID} .erp-all{padding:6px 12px;border-top:1px solid rgba(232,216,138,.2);}
-#${ROOT_ID} .erp-stick{position:sticky;top:0;z-index:2;background:#161c28;}
-#${ROOT_ID} .erp-all button{width:100%;border-color:rgba(232,216,138,.6);color:#e8d88a;font-weight:700;padding:6px 8px;}
-#${ROOT_ID} .erp-gen{padding:6px 12px;border-top:1px solid rgba(232,216,138,.2);display:flex;flex-direction:column;gap:4px;}
-#${ROOT_ID} .erp-gen-title{font-weight:700;color:#e8d88a;}
-#${ROOT_ID} .erp-gen button{display:flex;align-items:center;gap:6px;text-align:left;width:100%;box-sizing:border-box;}
-#${ROOT_ID} .erp-gen button.is-selected{border-color:rgba(232,216,138,.9);background:rgba(232,216,138,.14);}
-#${ROOT_ID} .erp-gen-badge{margin-left:auto;font-size:11px;color:#e8d88a;white-space:nowrap;}
-#${ROOT_ID} .erp-gen-warn{font-size:12px;color:#e8a08a;}
-#${ROOT_ID} .erp-msg{padding:6px 12px 9px;font-size:12px;color:#e8d88a;min-height:1.2em;border-top:1px solid rgba(232,216,138,.2);}
+${HOST_SELECTOR} .erp-title{font-weight:700;color:#e8d88a;font-size:13px;}
+${HOST_SELECTOR} .erp-sub{padding:6px 12px 2px;font-size:11px;color:#9aa4b2;line-height:1.4;}
+${HOST_SELECTOR} .erp-list{flex:none;padding:4px 8px 8px;}
+${HOST_SELECTOR} .erp-row{display:flex;align-items:center;gap:8px;padding:6px 4px;border-top:1px solid #242c3a;}
+${HOST_SELECTOR} .erp-row:first-child{border-top:none;}
+${HOST_SELECTOR} .erp-info{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px;}
+${HOST_SELECTOR} .erp-name{font-weight:600;white-space:normal;overflow-wrap:anywhere;}
+${HOST_SELECTOR} .erp-meta{font-size:11px;color:#9aa4b2;white-space:normal;overflow-wrap:anywhere;line-height:1.3;}
+${HOST_SELECTOR} .erp-queued{font-size:11px;color:#9aa4b2;white-space:normal;line-height:1.3;}
+${HOST_SELECTOR} .erp-selected{font-size:11px;color:#b5bfca;white-space:normal;line-height:1.3;}
+${HOST_SELECTOR} .erp-meta b,${HOST_SELECTOR} .erp-queued b{color:#e8d88a;font-weight:700;}
+${HOST_SELECTOR} .erp-selected b{color:#d7e2f0;font-weight:700;}
+${HOST_SELECTOR} .erp-row.is-blocked .erp-name{opacity:.55;}
+${HOST_SELECTOR} .erp-summary{padding:7px 12px;border-top:1px solid rgba(232,216,138,.2);font-size:11px;line-height:1.4;color:#b5bfca;}
+${HOST_SELECTOR} .erp-summary b{color:#e8d88a;}
+${HOST_SELECTOR} .erp-shortfall{display:block;color:#ff8d84;font-size:11px;line-height:1.3;margin-top:2px;}
+${HOST_SELECTOR} .erp-shortfall:empty{display:none;}
+${HOST_SELECTOR} .erp-go.is-shortfall,${HOST_SELECTOR} .erp-all button.is-shortfall{border-color:#ed6258;color:#ff8d84;box-shadow:0 0 0 1px rgba(237,98,88,.18) inset;}
+${HOST_SELECTOR} .erp-all.has-shortfall{background:rgba(237,98,88,.06);}
+${HOST_SELECTOR} .erp-qty{display:inline-flex;align-items:center;gap:2px;flex:none;}
+${HOST_SELECTOR} button{font:inherit;cursor:pointer;color:#e8e0c8;background:#1a2230;border:1px solid #49566a;border-radius:5px;padding:3px 8px;}
+${HOST_SELECTOR} button:hover:not(:disabled){background:#263246;}
+${HOST_SELECTOR} button:disabled{opacity:.4;cursor:not-allowed;}
+${HOST_SELECTOR} .erp-qty button{width:24px;padding:3px 0;}
+${HOST_SELECTOR} .erp-qty input{width:42px;text-align:center;font:inherit;color:#e8e0c8;background:#0e131c;border:1px solid #49566a;border-radius:5px;padding:3px 2px;}
+${HOST_SELECTOR} .erp-go{border-color:rgba(232,216,138,.6);color:#e8d88a;font-weight:600;}
+${HOST_SELECTOR} .erp-all{padding:6px 12px;border-top:1px solid rgba(232,216,138,.2);}
+${HOST_SELECTOR} .erp-all button{width:100%;border-color:rgba(232,216,138,.6);color:#e8d88a;font-weight:700;padding:6px 8px;}
+${HOST_SELECTOR} .erp-gen{padding:6px 12px;border-top:1px solid rgba(232,216,138,.2);display:flex;flex-direction:column;gap:4px;}
+${HOST_SELECTOR} .erp-gen-title{font-weight:700;color:#e8d88a;}
+${HOST_SELECTOR} .erp-gen button{display:flex;align-items:center;gap:6px;text-align:left;width:100%;box-sizing:border-box;}
+${HOST_SELECTOR} .erp-gen button.is-selected{border-color:rgba(232,216,138,.9);background:rgba(232,216,138,.14);}
+${HOST_SELECTOR} .erp-gen-badge{margin-left:auto;font-size:11px;color:#e8d88a;white-space:nowrap;}
+${HOST_SELECTOR} .erp-gen-warn{font-size:12px;color:#e8a08a;}
+${HOST_SELECTOR} .erp-msg{padding:6px 12px 9px;font-size:12px;color:#e8d88a;min-height:1.2em;border-top:1px solid rgba(232,216,138,.2);}
 `;
   document.head.appendChild(st);
 }
 
-let lastHtml = '';
+/** Ostatni HTML zbudowany dla danego hosta (pomija zbędną przebudowę DOM przy odświeżaniu). */
+const lastHtmlByHost = new WeakMap<HTMLElement, string>();
 
 function fmtAmount(n: number): string {
   return Number.isInteger(n) ? String(n) : String(Math.ceil(n));
@@ -243,9 +245,8 @@ function render(root: HTMLElement, force = true): void {
       + `<button type="button" class="erp-go" data-erp="go"${blocked || q <= 0 || blockedGen ? ' disabled' : ''}>Rekrutuj</button>`
       + `</div>`;
   }).join('');
-  const html = `<div class="erp-stick"><div class="erp-hd"><span class="erp-title">Rekrutacja — cała cywilizacja</span>`
-    + `<button type="button" data-erp="close" aria-label="Zamknij">Zamknij</button></div>`
-    + `<div class="erp-all">${allBtn}</div></div>`
+  const html = `<div class="erp-hd"><span class="erp-title">Rekrutacja — cała cywilizacja</span></div>`
+    + `<div class="erp-all">${allBtn}</div>`
     + `<div class="erp-sub">Zamówienie rozkłada się równomiernie na miasta, które mogą produkować dany typ. `
     + `Pojedyncze „Rekrutuj” nie zeruje licznika. „Rekrutuj wszystkie” zamawia każdy typ z licznikiem &gt; 0 `
     + `i zeruje przyjęte pozycje.</div>`
@@ -253,27 +254,35 @@ function render(root: HTMLElement, force = true): void {
     + `<div class="erp-summary" data-erp-summary></div>`
     + `<div class="erp-list">${list || '<div class="erp-meta" style="padding:10px 4px">Brak dostępnych jednostek wojskowych.</div>'}</div>`
     + `<div class="erp-msg" data-erp-msg role="status">${esc(lastMessage)}</div>`;
-  if (!force && html === lastHtml) return; // updateHud woła często — bez zbędnej przebudowy DOM
-  lastHtml = html;
-  const outerScroll = root.scrollTop; // jedyne przewijanie to zewnętrzne (cały panel)
-  root.innerHTML = html;
-  root.scrollTop = outerScroll;
+  if (!force && html === lastHtmlByHost.get(root)) return; // updateHud woła często — bez zbędnej przebudowy DOM
+  lastHtmlByHost.set(root, html);
+  root.innerHTML = html; // przewijanie zostaje w panelu armii (jedno zewnętrzne przewijanie)
   syncAffordability(root);
 }
 
+/**
+ * Host, który jest aktualnie w DOM. `onOrder`/`onSelectGeneral` wywołują `markCityStateDirty`, co
+ * SYNCHRONICZNIE przebudowuje panel armii — węzeł `root` z chwili kliknięcia jest wtedy odłączony
+ * i render na nim nie byłby widoczny (gubił komunikat i licznik „Rekrutuj wszystkie”).
+ */
+function liveHost(root: HTMLElement): HTMLElement | null {
+  if (root.isConnected) return root;
+  return document.querySelector<HTMLElement>(HOST_SELECTOR);
+}
+
 function onClick(ev: Event): void {
+  const root = ev.currentTarget as HTMLElement | null;
   const t = (ev.target as HTMLElement | null)?.closest('[data-erp]') as HTMLElement | null;
-  const root = document.getElementById(ROOT_ID);
   if (!t || !root || !panelCfg) return;
   const act = t.getAttribute('data-erp');
-  if (act === 'close') { closeEmpireRecruitPanel(); return; }
   if (act === 'go-all') { orderAll(root); return; }
   if (act === 'gen') {
     const gid = t.getAttribute('data-gen');
     const cur = panelCfg.getSelectedGeneralId?.() ?? null;
     panelCfg.onSelectGeneral?.(gid && gid !== cur ? gid : null); // ponowny klik w wybranego = odznacz
     lastMessage = '';
-    render(root);
+    const host = liveHost(root);
+    if (host) render(host);
     return;
   }
   const rowEl = t.closest('[data-unit]') as HTMLElement | null;
@@ -293,7 +302,8 @@ function onClick(ev: Event): void {
   } else if (act === 'go') {
     const res = panelCfg.onOrder(id, getEmpireRecruitDraft(id));
     lastMessage = res.message;
-    render(root); // licznik zostaje (draft nie jest ruszany)
+    const host = liveHost(root);
+    if (host) render(host); // licznik zostaje (draft nie jest ruszany)
   }
 }
 
@@ -323,7 +333,8 @@ function orderAll(root: HTMLElement): void {
   }
   const head = `Rekrutacja wszystkich: przyjęto ${okTypes} z ${todo.length} pozycji.`;
   lastMessage = failed.length > 0 ? `${head} Nie przeszło — ${failed.join(' ')}` : head;
-  render(root);
+  const host = liveHost(root);
+  if (host) render(host);
 }
 
 /**
@@ -358,7 +369,7 @@ function onInput(ev: Event): void {
   const t = ev.target as HTMLInputElement | null;
   if (!t || t.getAttribute('data-erp') !== 'qty') return;
   const id = (t.closest('[data-unit]') as HTMLElement | null)?.getAttribute('data-unit');
-  const root = document.getElementById(ROOT_ID);
+  const root = ev.currentTarget as HTMLElement | null;
   if (!id || !root) return;
   const currentRow = panelCfg?.getRows().find(row => row.id === id);
   if (!currentRow || currentRow.capableCities <= 0) {
@@ -376,7 +387,7 @@ function onChange(ev: Event): void {
   const t = ev.target as HTMLInputElement | null;
   if (!t || t.getAttribute('data-erp') !== 'qty') return;
   const id = (t.closest('[data-unit]') as HTMLElement | null)?.getAttribute('data-unit');
-  const root = document.getElementById(ROOT_ID);
+  const root = ev.currentTarget as HTMLElement | null;
   if (!id || !root) return;
   const currentRow = panelCfg?.getRows().find(row => row.id === id);
   if (!currentRow || currentRow.capableCities <= 0) {
@@ -390,42 +401,44 @@ function onChange(ev: Event): void {
   syncAffordability(root);
 }
 
-/** Nowa gra / wczytanie: zamyka panel i czyści stan UI (liczniki, komunikat, domknięcie getRows/onOrder). */
-export function resetEmpireRecruitPanelSession(): void {
-  document.getElementById(ROOT_ID)?.remove();
+/** Konfiguracja wiringu z main.ts (getRows/onOrder/generałowie). Wołane raz w boot(); przeżywa wczytanie/nową grę. */
+export function configureEmpireRecruitPanel(cfg: EmpireRecruitPanelCfg): void {
+  panelCfg = cfg;
+}
+
+/** Zeruje liczniki i komunikat (zamknięcie panelu armii, nowa gra / wczytanie). */
+export function resetEmpireRecruitDrafts(): void {
   drafts.clear();
-  panelCfg = null;
   lastMessage = '';
 }
 
-export function isEmpireRecruitPanelOpen(): boolean {
-  return document.getElementById(ROOT_ID) !== null;
+/** Nowa gra / wczytanie: czyści stan UI (liczniki, komunikat, domknięcie getRows/onOrder). */
+export function resetEmpireRecruitPanelSession(): void {
+  drafts.clear();
+  // panelCfg NIE jest czyszczony: to domknięcia nad żywym stanem gry (getRows/onOrder czytają bieżące
+  // globalne), wiązane raz w boot(). Wyzerowanie gubiło sekcję po wczytaniu zapisu / nowej grze.
+  lastMessage = '';
+  document.querySelectorAll<HTMLElement>(HOST_SELECTOR).forEach(host => { host.innerHTML = ''; });
 }
 
-export function closeEmpireRecruitPanel(): void {
-  document.getElementById(ROOT_ID)?.remove();
-  drafts.clear(); // R-WEB-UI-RECRUIT-PANEL-COUNTERS-RESET-ON-CLOSE-Q1: po zamknięciu następne otwarcie = same zera
+/**
+ * Podpina i rysuje sekcję rekrutacji całej cywilizacji w hoście `[data-erp-root]` (panel armii).
+ * Host jest tworzony od nowa przy każdej przebudowie panelu armii, więc zdarzenia wiążą się do świeżego węzła.
+ */
+export function mountEmpireRecruitSection(host: HTMLElement | null): void {
+  if (!host || !panelCfg) return;
+  ensureStyles();
+  host.addEventListener('click', onClick);
+  host.addEventListener('input', onInput);
+  host.addEventListener('change', onChange);
+  render(host, true);
 }
 
-/** Odświeża listę (np. po zmianie kolejek/zasobów) — nie rusza liczników; pole w trakcie edycji zostaje. */
+/** Odświeża sekcję w panelu armii (np. po zmianie kolejek/zasobów) — nie rusza liczników; pole w edycji zostaje. */
 export function refreshEmpireRecruitPanel(): void {
-  const root = document.getElementById(ROOT_ID);
-  if (!root || !panelCfg) return;
+  if (!panelCfg) return;
+  const root = document.querySelector<HTMLElement>(HOST_SELECTOR);
+  if (!root) return;
   if (root.contains(document.activeElement) && (document.activeElement as HTMLElement).tagName === 'INPUT') return;
   render(root, false);
-}
-
-export function toggleEmpireRecruitPanel(cfg: EmpireRecruitPanelCfg): void {
-  if (isEmpireRecruitPanelOpen()) { closeEmpireRecruitPanel(); return; }
-  panelCfg = cfg;
-  ensureStyles();
-  const root = document.createElement('div');
-  root.id = ROOT_ID;
-  root.setAttribute('role', 'dialog');
-  root.setAttribute('aria-label', 'Rekrutacja — cała cywilizacja');
-  root.addEventListener('click', onClick);
-  root.addEventListener('input', onInput);
-  root.addEventListener('change', onChange);
-  document.body.appendChild(root);
-  render(root);
 }

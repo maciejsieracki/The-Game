@@ -524,7 +524,7 @@
       "Zmiana": "+15",
       "Znak (+/−)": "+",
       "Typ (co turę / jednorazowo)": "jednorazowo",
-      "Uwagi": "Skok przy przekroczeniu progu siły (2× lub 5× wartość AI)"
+      "Uwagi": "Skok przy przekroczeniu progu siły wojskowej 50% (stosunek 1,5× względem AI); jednorazowo na przejściu progu"
     },
     {
       "Zdarzenie / Działanie": "Gracz słabszy militarnie od partnera",

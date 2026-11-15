@@ -17,9 +17,10 @@ function check(name, condition, detail) {
 
 async function main() {
   fs.writeFileSync(ENTRY, [
-    "import { toggleEmpireRecruitPanel, getEmpireRecruitDraft, resetEmpireRecruitPanelSession } from '../src/ui/empireRecruitPanel.ts';",
+    "import { mountEmpireRecruitSection, configureEmpireRecruitPanel, getEmpireRecruitDraft, resetEmpireRecruitPanelSession } from '../src/ui/empireRecruitPanel.ts';",
     "import { maxAffordableEmpireRecruits, executeEmpireRecruitment, summarizeEmpireRecruitBasket } from '../src/game/empire-recruit-plan.ts';",
-    'window.__api = { toggleEmpireRecruitPanel, getEmpireRecruitDraft, resetEmpireRecruitPanelSession, maxAffordableEmpireRecruits, executeEmpireRecruitment, summarizeEmpireRecruitBasket };',
+    'window.__openErp = function (cfg) { var h = document.getElementById("civ-empire-recruit-panel"); if (!h) { h = document.createElement("div"); h.id = "civ-empire-recruit-panel"; h.setAttribute("data-erp-root", ""); document.body.appendChild(h); } configureEmpireRecruitPanel(cfg); mountEmpireRecruitSection(h); };',
+    'window.__api = { getEmpireRecruitDraft, resetEmpireRecruitPanelSession, maxAffordableEmpireRecruits, executeEmpireRecruitment, summarizeEmpireRecruitBasket };',
   ].join('\n'), 'utf8');
   const plugins = MUTANT === 'allow-queued-only' ? [{
     name: 'allow-queued-only-mutant',
@@ -75,7 +76,7 @@ async function main() {
         });
         return { message: out.message, changed: out.changed, accepted: out.accepted };
       };
-      window.__api.toggleEmpireRecruitPanel({ getRows: rows, getBudget: () => ({ ...state.budget, stockPool: { ...state.budget.stockPool } }), onOrder: order });
+      window.__openErp({ getRows: rows, getBudget: () => ({ ...state.budget, stockPool: { ...state.budget.stockPool } }), onOrder: order });
     });
     const row = id => page.locator(`#civ-empire-recruit-panel [data-unit="${id}"]`);
     const qty = async id => Number(await row(id).locator('[data-erp="qty"]').inputValue());

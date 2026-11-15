@@ -1,0 +1,47 @@
+== prebattle-weakened-warning-test ==
+
+(a) strona z glodem wojska
+  [OK] notatka istnieje dla strony z glodem
+  [OK] tekst zawiera "głód wojska −25%": Osłabieni: głód wojska −25% (poza pancerzem)
+  [OK] brak wzmianki o deficycie, gdy jest tylko glod
+
+(b) strona z deficytem Zlota
+  [OK] notatka istnieje dla strony z deficytem
+  [OK] tekst zawiera "deficyt złota −25%": Osłabieni: deficyt złota −25% (poza pancerzem)
+  [OK] brak wzmianki o glodzie, gdy jest tylko deficyt
+
+(c) strona bez kary
+  [OK] brak notatki bez kary
+  [OK] pusty tekst bez kary
+  [OK] pusty tekst przy obu flagach false
+
+(d) barbarzyncy nigdy
+  [OK] barbarzyńca bez ostrzeżenia nawet przy flagach true
+  [OK] barbarzyńca: pusty tekst
+
+(e) procent z mnoznika
+  [OK] mnoznik 0,6 -> 40%
+  [OK] tekst z mnoznika 0,6 pokazuje −40%
+
+(f) obie kary naraz
+  [OK] obie pozycje w jednym tekście: Osłabieni: głód wojska −25%, deficyt złota −25% (poza pancerzem)
+
+(g) tekst po polsku, bez surowych ID
+  [OK] brak surowych identyfikatorów parametrów
+  [OK] tekst zaczyna się od "Osłabieni: "
+
+(h-k) render okna preBattle w Chromium (DOM)
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+  (h) glod wojska: pb-weak=1
+  [OK] okno z glodem pokazuje ostrzezenie w DOM
+  (i) deficyt zlota: pb-weak=1
+  [OK] okno z deficytem zlota pokazuje ostrzezenie w DOM
+  (i2) obie kary: pb-weak=1
+  [OK] okno z obiema karami pokazuje jedna linie z obiema pozycjami
+  (j) bez kary: pb-weak=0
+  [OK] okno bez kary nie pokazuje ostrzezenia (brak pb-weak)
+  [OK] kontrola: okno w ogole sie renderuje (jednostka Legion w DOM)
+  (k) barbarzyncy: strona barbarzyncow nie ma pb-weak (oslabienie nie jest ustawiane)
+  [OK] blok barbarzyncow nie zawiera ostrzezenia
+
+== WYNIK: 22 OK, 0 FAIL ==

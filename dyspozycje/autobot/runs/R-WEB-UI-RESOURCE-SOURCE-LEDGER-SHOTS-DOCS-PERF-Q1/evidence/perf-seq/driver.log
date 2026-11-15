@@ -1,0 +1,21 @@
+START on-1 13:29:01
+END on-1 rc=0 13:44:09
+START off-1 13:44:09
+END off-1 rc=0 13:58:19
+START off-2 13:58:19
+END off-2 rc=0 14:12:03
+START on-2 14:12:03
+END on-2 rc=0 14:25:19
+START on-3 14:25:19
+END on-3 rc=0 14:38:09
+START off-3 14:38:09
+END off-3 rc=0 14:52:07
+START off-4 14:52:07
+END off-4 rc=0 15:06:12
+START on-4 15:06:12
+END on-4 rc=0 15:20:17
+START on-5 15:20:17
+END on-5 rc=0 15:33:34
+START off-5 15:33:34
+END off-5 rc=0 15:46:14
+ALLDONE

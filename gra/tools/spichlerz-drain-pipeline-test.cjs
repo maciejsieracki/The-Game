@@ -38,6 +38,8 @@ const DIFFS = ['easy', 'normal', 'hard'];
 const K_I = 'budynek_spichlerz_zuzywa_ceramika';
 const K_II = 'budynek_spichlerz_ii_zuzywa_ceramika';
 const K_SOL = 'budynek_spichlerz_ii_zuzywa_sol';
+// Sekcja A (golden) używa syntetycznych 25/25/25 (logika bez zmian). Wartości realne 10/20/25: sekcja C.
+const ECON25 = (() => { const e = JSON.parse(JSON.stringify(ECON)); for (const k of [K_I, K_II, K_SOL]) for (const d of ['easy', 'normal', 'hard']) e.budynki[k][d] = 25; return e; })();
 
 let pass = 0, fail = 0;
 function ok(c, m) { if (c) { pass++; console.log('  PASS:', m); } else { fail++; console.error('  FAIL:', m); } }
@@ -68,15 +70,15 @@ console.log('[A] golden przez advanceCityEconomy (digest base === head)');
   for (const diff of DIFFS) {
     for (const b of sets) for (const cer of [24, 25, 26]) for (const sol of [24, 25, 26]) {
       const key = `${diff}|1|${b.join('+') || 'none'}|c${cer}|s${sol}`;
-      measured[key] = tick([city('A', cer, sol)], [b], diff)[0];
+      measured[key] = tick([city('A', cer, sol)], [b], diff, ECON25)[0];
     }
     for (const tot of [49, 50, 51]) {
       const cs = [city('A', Math.floor(tot / 2), 0), city('B', tot - Math.floor(tot / 2), 0)];
-      measured[`${diff}|2I|c${tot}`] = tick(cs, [['spichlerz'], ['spichlerz']], diff);
+      measured[`${diff}|2I|c${tot}`] = tick(cs, [['spichlerz'], ['spichlerz']], diff, ECON25);
     }
     for (const tot of [24, 25, 26]) {
       const cs = [city('A', 0, Math.floor(tot / 2)), city('B', 0, tot - Math.floor(tot / 2))];
-      measured[`${diff}|2II|s${tot}`] = tick(cs, [['spichlerz_ii'], ['spichlerz_ii']], diff);
+      measured[`${diff}|2II|s${tot}`] = tick(cs, [['spichlerz_ii'], ['spichlerz_ii']], diff, ECON25);
     }
   }
   const digest = crypto.createHash('sha256').update(JSON.stringify(measured)).digest('hex');
@@ -132,19 +134,32 @@ if (process.env.SPICH_GOLDEN_ONLY === '1') {
       `Spichlerz II (${d}) ceramika ${VAL[d]} z K_II, sól nadal 25 (got ${JSON.stringify(r2)})`);
     // Sól II: sól z K_SOL, ceramika bez zmian (25 domyślnie).
     const r3 = tick([city('A', 100, 100)], [['spichlerz_ii']], d, econWith(K_SOL, d, VAL[d]))[0];
-    ok(r3[1] === 100 - VAL[d] && r3[0] === 75,
+    ok(r3[1] === 100 - VAL[d] && r3[0] === 80,
       `Sól II (${d}) zużywa ${VAL[d]} z K_SOL, ceramika nadal 25 (got ${JSON.stringify(r3)})`);
     // Brak mieszania I↔II: zmiana K_I nie zmienia Spichlerza II i odwrotnie.
     const rSwapA = tick([city('A', 100, 0)], [['spichlerz_ii']], d, econWith(K_I, d, VAL[d]))[0];
-    ok(rSwapA[0] === 75, `zamiana I↔II (${d}): zmiana K_I nie wpływa na Spichlerz II (got ${rSwapA[0]})`);
+    ok(rSwapA[0] === 80, `zamiana I↔II (${d}): zmiana K_I nie wpływa na Spichlerz II (got ${rSwapA[0]})`);
     const rSwapB = tick([city('A', 100, 0)], [['spichlerz']], d, econWith(K_II, d, VAL[d]))[0];
-    ok(rSwapB[0] === 75, `zamiana I↔II (${d}): zmiana K_II nie wpływa na Spichlerz I (got ${rSwapB[0]})`);
+    ok(rSwapB[0] === 90, `zamiana I↔II (${d}): zmiana K_II nie wpływa na Spichlerz I (got ${rSwapB[0]})`);
     // Próg płatności z JSON: magazyn 30 < 40 → brak wypłaty (30 zostaje) dla klucza 40.
     if (VAL[d] > 30) {
       const th = tick([city('A', 30, 0)], [['spichlerz']], d, econWith(K_I, d, VAL[d]))[0];
       ok(th[0] === 30, `próg (${d}): magazyn 30 < ${VAL[d]} → brak wypłaty (got ${th[0]})`);
     }
   }
+}
+
+// ---------------------------------------------------------------------------
+console.log('[C] wartości realne z JSON (R-WEB-DATA-SPICHLERZ-II-REMOVE-CERAMICS-UPKEEP-Q1): I=10, II=20, sól II=25');
+for (const d of DIFFS) {
+  const rI = tick([city('A', 100, 0)], [['spichlerz']], d)[0];
+  ok(rI[0] === 90, `Spichlerz I (${d}) ceramika 100→90 (got ${rI[0]})`);
+  const rII = tick([city('A', 100, 100)], [['spichlerz_ii']], d)[0];
+  ok(rII[0] === 80 && rII[1] === 75, `Spichlerz II (${d}) ceramika 100→80, sól 100→75 (got ${JSON.stringify(rII)})`);
+  const rBoth = tick([city('A', 100, 100)], [['spichlerz', 'spichlerz_ii']], d)[0];
+  ok(rBoth[0] === 80 && rBoth[1] === 75, `miasto z I+II (${d}): jedna wypłata ceramiki 20 (got ${JSON.stringify(rBoth)})`);
+  const rLow = tick([city('A', 19, 0)], [['spichlerz_ii']], d)[0];
+  ok(rLow[0] === 19, `Spichlerz II (${d}) przy 19 ceramiki: brak wypłaty (got ${rLow[0]})`);
 }
 
 console.log(`spichlerz-drain-pipeline-test: ${pass} pass, ${fail} fail`);

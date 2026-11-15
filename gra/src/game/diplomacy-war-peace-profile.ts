@@ -391,9 +391,9 @@ export interface PeaceAiGateInput {
 }
 
 export interface PeaceAiGateResult {
-  /** 'ok' = pokój rozpatrywany dalej z mnożnikiem ceny; 'too_early' / 'stronger' = odrzucenie. */
+  /** 'ok' = pokój rozpatrywany dalej (mnożnik ceny = 1); 'too_early' / 'stronger' = odrzucenie. */
   verdict: 'ok' | 'too_early' | 'stronger';
-  /** Mnożnik bazowej ceny pokoju (R5c·R5d; po turyBezOgraniczenAi: ≤ 1 z mnożnika cywilizacji, siła = 1). */
+  /** Mnożnik bazowej ceny pokoju: zawsze 1 (cena pokoju stała C=615, R-WEB-DIPLO-WEARINESS-PW-FOLLOWUP-C615-BOTH-CITIES-Q1). */
   priceMultiplier: number;
   reason?: string;
 }
@@ -416,7 +416,7 @@ export const PEACE_STRENGTH_GAP_PROC: number = (paramsRaw as unknown as { progRo
  *  (b) siła militarna: AI silniejsza (pozycjaMilitarna='silniejsza') → 'stronger' — odrzuca, chyba że
  *      oferta zawiera miasto o wartości PN ≥ ceny (egzekwuje wywołujący, nie ta funkcja).
  *      Słabsza / pasmo → 'ok'. Brak mnożnika ceny od siły.
- *  (c) mnożnik cywilizacji; po turyBezOgraniczenAi tur ograniczony do ≤ 1.0 (ZAŁOŻENIE: „≤ 1.0 efektywnie").
+ *  (c) cena pokoju stała C (615, bez mnożnika cywilizacji i tury — R-WEB-DIPLO-WEARINESS-PW-FOLLOWUP-C615-BOTH-CITIES-Q1).
  */
 export function evaluatePeaceAiGate(
   input: PeaceAiGateInput,
@@ -437,8 +437,11 @@ export function evaluatePeaceAiGate(
   // decyduje, nie rw. Silniejsza AI odrzuca pokój bez miasta (verdict 'stronger'; wyjątek — oferta
   // miasta o wartości PN ≥ ceny — egzekwuje wywołujący). Słabsza/pasmo: pokój rozpatrywany dalej.
   // Mnożnik siły z ceny usunięty; zostaje mnożnik cywilizacji.
-  const civMult = peaceCivPriceMultiplier(profile, params);
-  const priceMultiplier = turns >= C.turyBezOgraniczenAi ? Math.min(1, civMult) : civMult;
+  // R-WEB-DIPLO-WEARINESS-PW-FOLLOWUP-C615-BOTH-CITIES-Q1 (ABC 2026-11-14, wariant C): cena pokoju C jest STAŁA
+  // (diplomacy-acceptance-points.json pokoj = 615) — bez mnożnika cywilizacji i bez zależności od tury.
+  // `profile` i `turns` zostają w sygnaturze (wstecznie zgodnie), mnożnik ceny = 1.
+  void profile;
+  const priceMultiplier = 1;
   if (input.pozycjaMilitarna === 'silniejsza') {
     return {
       verdict: 'stronger',

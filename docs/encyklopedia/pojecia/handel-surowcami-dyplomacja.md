@@ -12,7 +12,7 @@
 
 ## Wiki‑S
 
-W koszyku negocjacji dyplomacji możesz wymieniać surowce **ilościowe** (drewno, kamień, glina, cegła, ceramika, ruda) w **pakietach po 10 sztuk**. Każdy surowiec ma cenę jednostkową w Punktach Negocjacji (PN) — wartość pozycji koszyka = liczba pakietów × 10 × cena jednostkowa.
+W koszyku negocjacji dyplomacji możesz wymieniać surowce **ilościowe** (drewno, kamień, glina, cegła, ceramika, ruda i pozostałe surowce przetworzone). Liczba Punktów Negocjacji (PN) za blok surowca **nie zmienia się** między epokami — rośnie **ilość surowca**, którą trzeba dać za ten sam PN: w **Kamieniu** 10 sztuk = 1 PN, w **Brązie** 50 sztuk = 1 PN, w **Żelazie** 100 sztuk = 1 PN. Złoto i węgiel są wyceniane za sztukę (w Brązie złoto 10 PN, w Żelazie 5 PN; węgiel odpowiednio 4 i 2 PN).
 
 ---
 
@@ -20,7 +20,24 @@ W koszyku negocjacji dyplomacji możesz wymieniać surowce **ilościowe** (drewn
 
 ### Jak działa koszyk
 
-Panel negocjacji (`diplomacyTradeBasket.ts`) pozwala dodać pozycję „surowiec (ilość)" — wybierasz surowiec i liczbę **pakietów**; każdy pakiet to **10 sztuk** (domyślnie 10, wartość strojona w parametrach gry). Gra pokazuje etykietę w stylu „Drewno ×10 (pakiet) × 3 = 30 szt.".
+Panel negocjacji (`diplomacyTradeBasket.ts`) pozwala dodać pozycję „surowiec (ilość)" — wybierasz surowiec i liczbę **sztuk**; ilość zaokrągla się w dół do pełnego bloku epoki (Kamień 10, Brąz 50, Żelazo 100 szt.; wartości w `econ-params.json`, klucze `krok_blok_*`).
+
+**Epoka umowy** = wyższa z epok dwóch stron (gracza i partnera AI). Oferta AI w Brązie ma więc ilości w wielokrotnościach 50 także wtedy, gdy gracz jest jeszcze w Kamieniu, a gracz w Kamieniu dostaje blok 50, jeśli partner jest w Brązie. Wczytanie zapisu i nowa gra ustawiają epokę handlu od razu. Ta sama epoka umowy obowiązuje wszędzie: w oknie „Umowa wymiany surowców" (krok ilości i przyciski +/−), w „Szybkiej umowie", w ofertach AI, w podglądzie bilansu PW, w bramce uczciwości partnera i przy zatwierdzeniu — podgląd i ocena AI nigdy się nie rozjeżdżają. Stare propozycje i oferty z zapisu sprzed bloków epoki są przy wczytaniu obcinane w dół do pełnego bloku (minimum 1 blok; oferta nie znika). AI oferuje najmniej jeden pełny blok epoki umowy; limit 3× potrzeby obowiązuje powyżej jednego bloku.
+
+### Bloki i ceny za blok
+
+| Surowiec | Cena za blok (PN) | Kamień (blok 10) | Brąz (blok 50) | Żelazo (blok 100) |
+|----------|-------------------|------------------|----------------|-------------------|
+| Drewno | 1 | 10 szt. | 50 szt. | 100 szt. |
+| Glina, sól | 2 | 10 szt. | 50 szt. | 100 szt. |
+| Kamień | 3 | 10 szt. | 50 szt. | 100 szt. |
+| Ruda miedzi, cegła, koń, ceramika | 5 | 10 szt. | 50 szt. | 100 szt. |
+| Ruda żelaza, ruda cyny | 10 | 10 szt. | 50 szt. | 100 szt. |
+| Brąz | 15 | 10 szt. | 50 szt. | 100 szt. |
+| Żelazo | 20 | 10 szt. | 50 szt. | 100 szt. |
+| Stal | 25 | 10 szt. | 50 szt. | 100 szt. |
+
+Złoto i węgiel (krok 1 szt.) mają cenę za sztukę: złoto 50 / 10 / 5 PN, węgiel 20 / 4 / 2 PN w Kamieniu / Brązie / Żelazie.
 
 ### Cennik jednostkowy (normal, placeholder do strojenia)
 

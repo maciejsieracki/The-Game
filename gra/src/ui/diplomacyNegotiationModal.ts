@@ -151,6 +151,11 @@ export interface NegotiationModalContext {
    * R-DYP-PAKIET-USUN (2026-08-08): sztuki wprost, bez pojęcia pakietu.
    */
   giveQuantityResourceOptions?: ReadonlyArray<{ id: string; label: string; maxQty: number }>;
+  /**
+   * R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 (FC r1 pkt 1): epoka UMOWY = wyższa z epok dwóch stron
+   * (diplomacyDealTradeEra). Okno koszyka ustawia ją na czas otwarcia (wycena, podgląd, bramka, Szybka umowa).
+   */
+  tradeEra?: number;
   receiveQuantityResourceOptions?: ReadonlyArray<{ id: string; label: string; maxQty: number }>;
 }
 

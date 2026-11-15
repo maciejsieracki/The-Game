@@ -70,7 +70,7 @@ function makeTestParams(overrides) {
     budynekBibliotekaBonusNauki: 0.5, budynekMennicaMnoznik: 1,
     walutaMnoznik: 2, targowiskoPracaMnoznik: 2,
     suwaakHandelNaukaDefault: 20, suwaakHandelPieniadz: 70,
-    suwaakHandelLuksus: 10, suwaakPracaBudynki: 70, suwaakPracaTeren: 30,
+    suwaakHandelLuksus: 10, suwaakPracaBudynki: 70,
   }, overrides);
 }
 
