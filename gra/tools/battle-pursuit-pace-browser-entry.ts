@@ -96,6 +96,10 @@ function snapshot(): void {
   scene._doMove = (ru: any, col: number, row: number, done: any) => {
     const rec = curRows.get(ru.bu.id);
     if (rec) { if (scene._autoBatchPlanning) rec.stepsPlan++; else rec.steps++; rec.q1 = col; }
+    if (!scene._autoBatchPlanning) {
+      const fr = (new Error().stack ?? '').split('\n').slice(2, 7).map(l => (/at (?:\w+\.)?(\w+)/.exec(l) ?? [])[1] ?? '?');
+      (api.callers ??= []).push({ round: scene.roundNo, id: ru.bu.id, mounted: !!ru.mounted, col, row, via: fr.join('<') });
+    }
     return origMove(ru, col, row, done);
   };
   for (const fn of ['_doMeleeAttack', '_doRangedAttack']) {
@@ -103,6 +107,7 @@ function snapshot(): void {
     scene[fn] = (attacker: any, defender: any, done: any) => {
       const rec = curRows.get(attacker.bu.id);
       if (rec && !scene._autoBatchPlanning) rec.attacks++;
+      if (!scene._autoBatchPlanning) (api.attackLog ??= []).push({ round: scene.roundNo, id: attacker.bu.id });
       return orig(attacker, defender, done);
     };
   }
@@ -111,10 +116,12 @@ function snapshot(): void {
 // R-WEB-...-Q1 r2 (ETAP 1 r2): log powodu przerwania kazdego kroku wykonania AUTO (poza planowaniem).
 // reason: go | occupied (kto zajmuje hex, czy juz zakonczyl swoj ruch) | impassable | plan_end.
 const moveLog: any[] = [];
+const goLog: any[] = [];
 api.moves = moveLog;
+api.goLog = goLog;
 {
   const origRAM = scene._resolveAutoBatchMovement.bind(scene);
-  scene._resolveAutoBatchMovement = (ru: any, res: any, idx: number, done: any) => {
+  scene._resolveAutoBatchMovement = function (ru: any, res: any, idx: number, done: any) {
     if (!scene._autoBatchPlanning) {
       let reason = 'go'; let occ = '';
       if (idx >= res.steps.length) reason = 'plan_end';
@@ -132,6 +139,7 @@ api.moves = moveLog;
         const adj = enemies.filter((e: any) => Math.abs(e.q - ru.q) + Math.abs(e.r - ru.r) <= 2);
         adjInfo = `can=${can};dir=${ru.attackDirection ?? ''};mounted=${!!ru.mounted};near2=${adj.map((e: any) => e.bu.id + (e.routed ? 'R' : '')).join('+')}`;
       }
+      if (reason === 'go') goLog.push({ round: scene.roundNo, id: ru.bu.id, idx, plan: res.steps.length, ml: Math.round(ru.moveLeft * 100) / 100, routed: !!ru.routed, fin: !!scene.finished, susp: !!scene._autoBattleSuspended, man: !!scene._manualMode, normalPlan: !!(arguments as any)[4] });
       if (reason !== 'go') {
         moveLog.push({ round: scene.roundNo, id: ru.bu.id, side: ru.side, routed: !!ru.routed, idx, plan: res.steps.length,
           reason, occ, adjInfo, moveLeft: Math.round(ru.moveLeft * 100) / 100, mp: scene._movementPointsFor(ru.bu),
@@ -139,7 +147,7 @@ api.moves = moveLog;
           nxt: idx < res.steps.length ? `${res.steps[idx].col},${res.steps[idx].row}` : '' });
       }
     }
-    return origRAM(ru, res, idx, done);
+    return origRAM(ru, res, idx, done, arguments[4]);
   };
 }
 
@@ -168,6 +176,96 @@ api.planWhy = planWhy;
     if (scene._autoBatchPlanning && ru.moveLeft <= 0) why(ru, 'advance_mp0');
     if (scene._autoBatchPlanning && scene._canAttackFrom(ru, ru.q, ru.r)) why(ru, 'advance_adjacent');
     return origAdv(ru, done);
+  };
+}
+
+
+// r3: arbitraz fali AUTO (resolveAutoBatchPhase) -- czy plan jednostki zostal UCIETY (accepted < planned) i przez kogo.
+// kind: snapshot (hex zajety na starcie fazy przez jednostke) | path (hex zarezerwowany przez sciezke wczesniejszej jednostki fali) | other.
+const arb: any[] = [];
+api.arb = arb;
+{
+  let lastIntents: any[] | null = null;
+  let occ0: Map<string, string> | null = null;
+  const origSnap = scene._snapshotAutoBatchIntents.bind(scene);
+  scene._snapshotAutoBatchIntents = (side: any, units: any, ...rest: any[]) => {
+    const first = lastIntents === null; // r3: tylko 1. wywolanie fazy = plan poczatkowy (kolejne to przeplanowanie ucietych planow konnicy)
+    const r = origSnap(side, units, ...rest);
+    if (first) {
+      lastIntents = r;
+      occ0 = new Map();
+      for (const [k, u] of scene.occByKey) occ0.set(k, `${u.bu.id}/${u.side}${u.routed ? 'R' : ''}`);
+    }
+    return r;
+  };
+  const origBegin = scene._beginAutoBatchPhase.bind(scene);
+  scene._beginAutoBatchPhase = (side: any, units: any) => {
+    lastIntents = null; occ0 = null;
+    const round = scene.roundNo;
+    const intents = (): any[] => lastIntents ?? [];
+    const res = origBegin(side, units);
+    if (lastIntents && occ0) {
+      const resolutions: any[] = scene._autoBatchResolutions ?? [];
+      const seen = new Map<string, string>();
+      for (const rr of resolutions) {
+        const it = intents().find((i: any) => i.unitId === rr.unitId);
+        if (it && rr.blocked) { // r3: ostateczny wynik arbitrazu (po ewentualnym przeplanowaniu ucietych planow konnicy)
+          const cell = it.steps[rr.steps.length] ?? { col: -1, row: -1 };
+          const key = `${cell.col},${cell.row}`;
+          let kind = 'other'; let who = '';
+          const o = occ0.get(key);
+          if (o && !o.startsWith(rr.unitId + '/')) { kind = 'snapshot'; who = o; }
+          else if (seen.has(key)) { kind = 'path'; who = seen.get(key)!; }
+          const u = scene._findUnitById(rr.unitId);
+          arb.push({ round, side, id: rr.unitId, mounted: !!u?.mounted, planned: it.steps.length, accepted: rr.steps.length, cell: key, kind, who, finalBlocked: !!rr.blocked });
+        }
+        for (const st of rr.steps) seen.set(`${st.col},${st.row}`, rr.unitId);
+      }
+    }
+    return res;
+  };
+}
+
+// r3: trace wyboru kroku w PLANOWANIU AUTO (BFS / greedy / najblizszy wrog) -- diagnostyka ping-pongu konnicy.
+const planTrace: any[] = [];
+api.planTrace = planTrace;
+{
+  const want = (ru: any): boolean => scene._autoBatchPlanning && ru?.mounted && ru.side === 'atk' && scene.roundNo >= 9 && scene.roundNo <= 16;
+  const o1 = scene._firstStepAlongPathToAttack.bind(scene);
+  scene._firstStepAlongPathToAttack = (ru: any, ...a: any[]) => {
+    const r = o1(ru, ...a);
+    if (want(ru)) planTrace.push({ round: scene.roundNo, id: ru.bu.id, fn: 'bfs', at: `${ru.q},${ru.r}`, res: r, ml: Math.round(ru.moveLeft * 100) / 100 });
+    return r;
+  };
+  const o2 = scene._stepToward.bind(scene);
+  scene._stepToward = (ru: any, target: any) => {
+    const r = o2(ru, target);
+    if (want(ru)) planTrace.push({ round: scene.roundNo, id: ru.bu.id, fn: 'greedy', at: `${ru.q},${ru.r}`, tgt: `${target?.bu?.id}@${target?.q},${target?.r}${target?.routed ? 'R' : ''}`, res: r });
+    return r;
+  };
+  const o3 = scene._compactAttackAllowsStep.bind(scene);
+  scene._compactAttackAllowsStep = (ru: any, c: number) => {
+    const r = o3(ru, c);
+    if (want(ru) && !r) planTrace.push({ round: scene.roundNo, id: ru.bu.id, fn: 'compactBlock', at: `${ru.q},${ru.r}`, col: c });
+    return r;
+  };
+}
+
+// r3: kontekst aktywacji konnicy w planowaniu (pozycja, cel, sasiedzi: zajeci/rezerwacja), by wyjasnic aktywacje bez kroku.
+{
+  const o4 = scene._cavalryAction.bind(scene);
+  scene._cavalryAction = (ru: any, done: any) => {
+    if (scene._autoBatchPlanning && ru.side === 'atk' && scene.roundNo >= 9 && scene.roundNo <= 16) {
+      const nb = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dc, dr]) => {
+        const k = `${ru.q + dc},${ru.r + dr}`;
+        const o = scene.occByKey.get(k);
+        return `${k}=${o ? (o.bu.id + (o.routed ? 'R' : '') + (o === ru ? 'self' : '')) : (scene._passableForUnit(ru, ru.q + dc, ru.r + dr) ? '.' : 'X')}`;
+      });
+      const tgt = scene._cavalryTarget(ru);
+      const adj = scene._cavAdjacentNonSpear(ru);
+      planTrace.push({ round: scene.roundNo, id: ru.bu.id, fn: 'cavAction', at: `${ru.q},${ru.r}`, ml: ru.moveLeft, tgt: tgt ? `${tgt.bu.id}@${tgt.q},${tgt.r}${tgt.routed ? 'R' : ''}` : null, adj: adj ? adj.bu.id : null, nb: nb.join(' '), nbFree: nb.filter(x => x.endsWith('=.')).length });
+    }
+    return o4(ru, done);
   };
 }
 

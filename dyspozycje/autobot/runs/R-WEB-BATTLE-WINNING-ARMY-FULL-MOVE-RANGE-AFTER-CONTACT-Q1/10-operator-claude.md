@@ -1,3 +1,84 @@
+# R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1 — raport Operatora (runda 3/5, SONNET wg DODATKU 3)
+
+STATUS: PASS-WITH-NOTES (część NIEPRODUKTOWA naprawiona i zmierzona; część „cios przy rozbitym wrogu” = DECYZJA ABC A/B/C z liczbami, NIE wdrożona)
+DOMAIN: GAME
+TEMAT: R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1
+GOAL: zwycięska armia w AUTO/SKIP ściga rozbitego wroga pełnym zasięgiem ruchu własnej jednostki.
+BAZA: b3417d2a7 (origin/main) + merge kandydata 571e07fb5 (refs/keep/R-WEB-WIN-ARMY-r2-obrona; zawiera zatrzask r1 i narzędzia r2); konflikt tylko w raporcie FC (zostawiono wersję z main). Dispatch wskazywał bazę b3417d2a7, który NIE zawiera kodu r1/r2 (to tylko raport FC), więc merge 571e07fb5 był konieczny.
+
+## ZMIANY/COMMIT
+- `gra/src/battle/battleScene.ts` (+56/-1), dwie poprawki planera AUTO konnicy:
+  1. `_beginAutoBatchPhase` + `_snapshotAutoBatchIntents(…, reservedLanes?)`: gdy arbitraż (`resolveAutoBatchPhase`) UTNIE plan konnicy na kolizji ścieżek z już zaakceptowanym planem innej jednostki tej fali, konnica jest przeplanowana (te same jednostki źródłowe, klon planowania) z polami cudzych zaakceptowanych ścieżek widzianymi jako zajęte, po czym arbitraż liczony jest drugi raz. Piechota i łucznicy planują jak dotąd (szyk W19). Marker mutacji `/*PATH_RESERVE*/ true`.
+  2. `RuntimeBattleUnit.cavTrail` + `_cavalryAction`/`_cavManeuverStep`: w ramach jednej aktywacji konnica nie wraca na pole, które już odwiedziła (koniec ping-pongu A-B-A-B, który spalał całą pulę ruchu bez postępu). Marker mutacji `/*CAV_TRAIL*/`.
+  Reguły przed wzwarciem, predykat wzwarcia `!rangedBase`, reguła ciosu i zatrzask r1: BEZ ZMIAN.
+- `gra/tools/battle-pursuit-move-behavior-test.cjs` (NOWY): test behawioralny na realnej ścieżce AUTO w Chromium, z 2 mutacjami.
+- `gra/tools/battle-pursuit-pace-browser-entry.ts`, `battle-pursuit-pace-measure.cjs`: sondy r3 (arbitraż: planned/accepted/blokujący; wykonane `_doMove` z łańcuchem wywołań; log ciosów; trace aktywacji konnicy; scenariusz 3 „konnica 8 vs wręcz 6”; `PP_MUT=1` = zachowanie sprzed r3; `PP_PROTO=A_CAV|A_ALL` = prototyp reguły ciosu tylko do pomiaru).
+- `evidence/r3-macierz-pomiarow.txt` + `evidence/r3-*.json.gz` (surowe `moves`, `planWhy`, `arb`, `callers`, `attackLog`, `planTrace`).
+
+## ZMIERZONO (pkt 1 DODATKU 3): przyczyny NIEPRODUKTOWE utraty ruchu konnicy
+Metoda: dla każdej aktywacji konnicy atakującej (tury 9–16, jednostka nie rozbita na starcie): kroki = faktyczne `_doMove` poza planowaniem (NIE wiersz rundy: wiersz rundy przypisuje pierwszy krok fali do poprzedniej rundy — artefakt pomiaru z r2), pula = movementPoints (7). Kategorie utraty: `attack` (cios), `blow_stop` (plan kończy się w zasięgu ciosu przy rozbitym wrogu = reguła produktowa), `other_end` (plan kończy się poza zasięgiem ciosu z niewykorzystanym MP), `zero_noattack` (0 kroków, bez ciosu).
+
+Przyczyna 1 (ZMIERZONA; 100% przypadków `other_end` przed poprawką, s3): arbitraż trzyma KAŻDE pole zaplanowane przez wcześniejszą jednostkę fali jako twardą rezerwację (`reserved` w autoBatchPhase.ts), a każda jednostka planuje na migawce startowej, więc konnica jadąca za tym samym uciekinierem co sąsiad miała plan UCIĘTY na pierwszej kolizji (planned 2 → accepted 1). Pomiar s3 przed poprawką: 141 ucięć planów w całej bitwie, z czego 13 konnicy w turach 9–16, wszystkie `kind=path`, blokujący = wcześniej zaplanowana jednostka fali. Zdarzeń „occupied” w wykonaniu 0, więc r2 miał rację co do braku kolizji w wykonaniu; błąd leżał w arbitrażu. Reszta puli przepadała.
+Przyczyna 2 (ZMIERZONA po naprawie 1): ping-pong. `_cavManeuverStep` bierze najlepszy sąsiedni kafel NAWET niepoprawiający dystansu; gdy kafle „do przodu” są zajęte, robi krok w bok i kolejnym krokiem wraca (np. 36,79>37,79>36,79>37,79 … 7 kroków, postęp 0). Baza: 1 aktywacja (s3); po samej naprawie 1: 13 aktywacji (rezerwacje zwiększyły blokady); po naprawie 2: 0.
+Wiersze `stop=none` z r2: artefakt przesunięcia pierwszego kroku fali + zwykłe ciosy (aktywacja z `_doAttack` nie ma kroków); po poprawce pomiaru nie pozostają jako nieznane.
+
+Odrzucony wariant naprawy 1 — sekwencyjna rezerwacja WSZYSTKICH jednostek podczas planowania: dawał konnicy 92 unikalne pola w s3, ale CZERWIENIŁ bramkę `battle-line-advance-uniform-test` (`FAIL wall/atk: max front spread 3 <= 2`; baza i wariant docelowy bez FAIL). Dlatego wdrożone jest przeplanowanie tylko ucięć konnicy.
+
+## TABELA: konnica (7 MP), tury 9–16, scenariusz 1 (Hastati 8, Łucznik 6, Konnica 4 vs Hastati 14), strona atakująca
+Utrata MP wg przyczyny (suma po jednostkach i turach 9–16; „przed” = `PP_MUT=1`, „po” = kod r3):
+| przebieg | MP utracone nieproduktowo (other_end + zero_noattack) przed → po | MP w `blow_stop` (reguła produktowa) przed → po | kroki/pula przed → po |
+|---|---|---|---|
+| skip s1 | 91 → 0 | 96 → 144 | 37/224 (16,5%) → 80/224 (35,7%) |
+| skip s2 | 54 → 0 | 71 → 117 | 29/168 (17,3%) → 100/224 (44,6%) |
+| skip s3 | 78 → 0 | 90 → 104 | 42/224 (18,8%) → 29/168 (17,3%) |
+| watch s1 | 119 → 0 | 59 → 150 | 39/224 (17,4%) → 60/224 (26,8%) |
+| watch s2 | 54 → 0 | 71 → 117 | 29/168 (17,3%) → 100/224 (44,6%) |
+| watch s3 | 78 → 0 | 90 → 104 | 42/224 (18,8%) → 29/168 (17,3%) |
+Uwaga: współczynnik kroki/pula NIE jest porównywalny między „przed” i „po” (trajektorie bitwy się rozchodzą: inna liczba żywych jednostek i ciosów; s3 po: 24 aktywacje zamiast 32), dlatego wiodąca miara to utrata nieproduktowa, która spada do 0 we wszystkich 6 przebiegach (skip i watch, ziarna 1–3). Surowe wiersze: `evidence/r3-macierz-pomiarow.txt`.
+CEL BINARNY „konnica ≥ 80% puli, gdy ma wolną drogę”: ZMIERZONY w teście behawioralnym: aktywacje bez ciosu i bez zakończenia w zasięgu ciosu = 133/133 MP (100%) na s1+s2; mutacja PATH_RESERVE→false: 43/182 (23,6%). Cały współczynnik 35–45% (s1, s2) wynika z `blow_stop`, czyli z reguły ciosu (niżej), nie z błędu planera. Uwaga o definicji: „wolna droga” = aktywacja bez ciosu i bez `blow_stop`; wcześniejsza próba zawężenia o „>= 2 wolne pola sąsiednie” została porzucona jako zbędna.
+Piechota (scen. 0 „20 vs 10”, skip s1–s2; scen. 1 piechota): wartości PRZED i PO identyczne co do MP (np. scen. 0/2 s1 154/480, s2 168/480) — poprawka dotyczy wyłącznie konnicy. W scen. 2 (12 vs 12) atakujący przegrywa, więc to nie „zwycięska armia”; zwycięskiej piechoty dotyczą scen. 0 i piechota w scen. 1.
+Watch vs skip: wyniki bitwy równe w s2 i s3 (round/atkAlive identyczne); s1: watch runda 30, skip 29 — rozjazd obecny też PRZED r3 (watch 29 vs skip 30), nie wprowadzony tu; bramka AUTO=SKIP: 42/0 (niżej).
+
+## TESTY (surowe wyniki)
+- `node ./node_modules/typescript/bin/tsc --noEmit`: exit 0, 0 linii wyjścia.
+- Bramki referencyjne po zmianie: logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; unit-power 6/0.
+- `battle-skip-equals-auto-resolve-test.cjs`: `--- 42 ok, 0 fail; CZESC B: DONE`.
+- `battle-pace-latch-test.cjs`: `5/5 pass, 0 fail; mutacja MELEE_LATCH wykryta (czerwona)`.
+- `battle-line-advance-uniform-test.cjs`: bez FAIL.
+- NOWY `battle-pursuit-move-behavior-test.cjs` (ziarna 1,2, skip, tury 9–16): kod: T1 (arbitraż nie tnie planów konnicy; ucięć kolizyjnych 0) ok, T2 (brak ping-pongu) ok, T3 (wolna droga ≥ 80%: 133/133) ok → 3/3. Mutacje (MUSZĄ być czerwone): PATH_RESERVE→false: ucięć 23, wolna droga 23,6% → wykryta; CAV_TRAIL→false: ping-pong w 24 aktywacjach → wykryta. Czerwone-na-bazie = obie mutacje (zachowanie sprzed r3).
+- `git diff --check`: czysty.
+- Pomiar powtórzony po merge z aktualnym origin/main (b3417d2a7): wszystkie liczby wyżej są z tej bazy.
+
+## PKT 3: REGUŁA CIOSU (wariant A) — PROTOTYP, NIE wdrożona (flaga `PP_PROTO` w narzędziu pomiarowym; kod produkcyjny bez zmian)
+Prototyp A_CAV: konnica kończąca krok w zasięgu ciosu przy `_cavAdjacentNonSpear` uderza od razu (zamiast `done()`); A_ALL: dodatkowo `_advanceStep` (piechota) uderza od razu przez `_pickAdjacentTargetByPriority`. Scen. 1, skip, ziarna 1/2/3, strona atakująca, tury 9–16:
+| wariant | konnica `blow_stop` MP | konnica kroki/pula | bitwa: runda (s1,s2,s3) / żywi atakujący (s1,s2,s3) |
+|---|---|---|---|
+| obecny (po poprawce planera) | 144 / 117 / 104 | 35,7% / 44,6% / 17,3% | 29,29,34 / 17,18,9 |
+| A_CAV | 0 / 0 / 0 | 44,9% / 27,2% / 41,1% | 15,27,17 / 18,17,18 |
+| A_ALL | 0 / 0 / 0 | 54,5% / 51,4% / 53,6% | 22,13,18 / 16,16,17 |
+Wnioski z liczb: A usuwa całe `blow_stop`; konnica zamiast „dziobać” uderza (aktywacje konnicy z ciosem i niewykorzystanym MP w turach 9–16: A_CAV 15/19/13, obecny 0/1/5); bitwa kończy się wcześniej (rundy 13–27 zamiast 29–34); zwycięzca bez zmian (atakujący) we wszystkich 9 przebiegach; straty atakującego bez wyraźnego pogorszenia (16–18 żywych; obecny 9–18). AUTO=SKIP pod prototypem A_ALL (zmiana źródła tymczasowa, przywrócona i zweryfikowana `cmp`): `42 ok, 0 fail`. Łucznicy: NIE ZMIERZONO osobno (narzędzie sumuje konnicę i piechotę; w prototypie `_pickAdjacentTargetByPriority` zwraca tylko sąsiadów, więc strzelec w zasięgu dystansowym nie dostaje w tej ścieżce nowego ciosu; `_canAttackFrom` używa `ru.range`, więc każde wdrożenie oparte na tej funkcji MUSI być osobno zmierzone dla łuczników).
+PYTANIE ABC DLA WŁAŚCICIELA (część `blow_stop`): A) uderz od razu przy pozostałym MP (liczby wyżej; rekomendacja: zgodne z zapisem ABC z W21 „konnica dobija”); B) przejście na sąsiedni hex bez ciosu (NIE zmierzono — brak w ścieżce prototypu); C) bez zmian (zostaje „dziobanie”: 104–144 MP z ~170–224 puli konnicy w turach 9–16 przy rozbitym wrogu w zasięgu). Predykat wzwarcia `!rangedBase` i reguła ciosu NIE zmienione — DO POTWIERDZENIA.
+
+## BLOKADY / UWAGI-DLA-ORKIESTRATORA
+- DYSK: 5,3 GB na starcie, 1,9 GB pod koniec (poniżej wymaganych 6 GB). Spadek pochodzi z innych sesji (/tmp 7,2 GB); ten worktree ~1,1 GB (node_modules 134 MB). Orkiestrator powinien posprzątać przed r4/FC.
+- Narzędzie pomiarowe z r2 miało błąd: wiersz rundy przypisuje pierwszy krok fali do poprzedniej rundy (snapshot po `_beginTurn`). Kroki liczone teraz z `callers`.
+- Resztka nieproduktowa po poprawce: 0 MP w 6 przebiegach scen. 1. W scen. 3 (konnica-only, tury 1–4, s3) pozostało 10 MP `other_end` (2 z 32 aktywacji, 4,5% puli) — przyczyna NIE_ZMIERZONA, bez ping-pongu.
+- Piechota/łucznicy nadal planują z arbitrażem „ucięcie na kolizji” (`other_end` w scen. 0: 25/32 aktywacji, 50/62 MP w s1/s2): NIE zmienione celowo (szyk W19, bramka line-advance); osobny temat, jeśli właściciel zechce.
+- Pomiar: jeden scenariusz mieszany, 3 ziarna; wariancja trajektorii duża (s3: 16 vs 9 żywych bez związku z logiką ruchu).
+- Docs (`docs/encyklopedia`, wikiBundle) NIE zmieniane (brak zmiany reguły produktowej; hasło o zatrzasku z r1 bez zmian).
+
+## DŁUG RUST (pkt 5, REPIN)
+1. (z r1) zatrzask wzwarcia `melee_latched`: sufity `paceCap`/`lineAdvanceCap` nie wracają po pierwszym wzwarciu wręcz.
+2. (r3) planer fali AUTO: po arbitrażu plan konnicy ucięty na kolizji ścieżek jest przeplanowany z polami zaakceptowanych ścieżek innych jednostek jako zajętymi, potem arbitraż drugi raz (tylko `mounted`, tylko ucięte); kolejność = kolejność zasobu.
+3. (r3) `cav_trail`: w jednej aktywacji konnica manewrująca (`_cavManeuverStep`) nie wchodzi na pola już odwiedzone.
+4. (r3, DO DECYZJI) ewentualny wariant A reguły ciosu — dopisać po decyzji właściciela.
+
+RUNDY: 3/5
+NASTĘPNY KROK: Evaluator/Final Control r3; pytanie ABC A/B/C (część `blow_stop`) do właściciela; ewentualna r4 z wdrożeniem wybranego wariantu (kod prototypu: `PP_PROTO` w `battle-pursuit-pace-measure.cjs`).
+DEPLOY/PUSH: NIE WYKONANO
+
+---
+
 # R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1 — raport Operatora (runda 2/5)
 
 STATUS: DECISION_REQUIRED

@@ -1992,6 +1992,9 @@ interface RuntimeBattleUnit {
   r:            number;   // ROW (grid z); kept as `r` to minimise churn
   /** Last tile left by an automatic move; prevents replanning loops into the prior tile. */
   lastAutoMoveFrom?: { q: number; r: number };
+  /** R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1 (r3): pola, ktore konnica juz odwiedzila w TEJ aktywacji
+   *  (manewr `_cavManeuverStep` nie wraca na nie -- koniec ping-pongu A-B-A-B, ktory spalal cala pule ruchu bez postepu). */
+  cavTrail?: Set<string>;
   side:         'atk' | 'def';
   dead:         boolean;
   fadingOut:    boolean;
@@ -5774,8 +5777,43 @@ export class BattleScene {
     // are rebuilt per unit below, so each decision sees exactly this snapshot,
     // never a previous same-side move.
     const intents = this._snapshotAutoBatchIntents(side, units);
+    let resolutions = resolveAutoBatchPhase(side, snapshots, intents);
+    // R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1 (r3): konnica (7 MP), ktorej plan arbitraz UTNIE na kolizji
+    // sciezek z juz zaakceptowanym planem innej jednostki tej fali, przeplanowuje sie (te same zrodlowe jednostki) z polami
+    // cudzych zaakceptowanych sciezek widzianymi jako zajete -- zamiast tracic reszte puli ruchu na pierwszej kolizji.
+    // Piechota/lucznicy planuja jak dotad (szyk W19), przeplanowanie dotyczy wylacznie ucietych planow konnicy.
+    if (/*PATH_RESERVE*/ true) { // marker mutacji testu behawioralnego (battle-pursuit-move-behavior-test.cjs)
+      const truncated = resolutions.filter(r => {
+        const it = intents.find(i => i.unitId === r.unitId);
+        return it !== undefined && it.steps.length > r.steps.length
+          && this._findUnitById(r.unitId)?.mounted === true;
+      });
+      if (truncated.length > 0) {
+        const reserved = new Map<string, string>();
+        for (const r of resolutions) {
+          for (const st of r.steps) {
+            const key = cellKey(st.col, st.row);
+            if (!reserved.has(key)) reserved.set(key, r.unitId);
+          }
+        }
+        for (const t of truncated) {
+          const unit = this._findUnitById(t.unitId);
+          if (!unit) continue;
+          for (const [key, owner] of [...reserved]) if (owner === t.unitId) reserved.delete(key);
+          const replanned = this._snapshotAutoBatchIntents(side, [unit], reserved)[0];
+          if (!replanned) continue;
+          const at = intents.findIndex(i => i.unitId === t.unitId);
+          if (at >= 0) intents[at] = replanned;
+          for (const st of replanned.steps) {
+            const key = cellKey(st.col, st.row);
+            if (!reserved.has(key)) reserved.set(key, t.unitId);
+          }
+        }
+        resolutions = resolveAutoBatchPhase(side, snapshots, intents);
+      }
+    }
     this._autoBatchPhase = side;
-    this._autoBatchResolutions = resolveAutoBatchPhase(side, snapshots, intents);
+    this._autoBatchResolutions = resolutions;
     this._autoBatchPending = this._autoBatchResolutions.length;
     const token = ++this._autoBatchToken;
     const first = this._autoBatchResolutions[0];
@@ -5799,7 +5837,11 @@ export class BattleScene {
    * important distinction from sequential AUTO: earlier intents cannot move a
    * later unit's target or occupancy while the phase is being planned.
    */
-  private _snapshotAutoBatchIntents(side: AutoBatchPhase, units: RuntimeBattleUnit[]): AutoBatchIntent[] {
+  private _snapshotAutoBatchIntents(
+    side: AutoBatchPhase,
+    units: RuntimeBattleUnit[],
+    reservedLanes?: ReadonlyMap<string, string>,
+  ): AutoBatchIntent[] {
     const originalAtk = this.atk;
     const originalDef = this.def;
     const originalOcc = this.occByKey;
@@ -5807,6 +5849,7 @@ export class BattleScene {
     const originalLogLength = this.log.length;
     const originalRoutedLength = this.routedUnits.length;
     const intents: AutoBatchIntent[] = [];
+    // `reservedLanes` (tylko przeplanowanie ucietych planow konnicy): kafel -> id jednostki, ktorej zaakceptowana sciezka go zajmuje.
 
     try {
       for (const source of units) {
@@ -5827,6 +5870,12 @@ export class BattleScene {
         }
         const clone = cloneById.get(source.bu.id);
         if (!clone) continue;
+        if (reservedLanes) {
+          for (const [key, reserverId] of reservedLanes) {
+            const reserver = cloneById.get(reserverId);
+            if (reserver && !cloneOcc.has(key)) cloneOcc.set(key, reserver);
+          }
+        }
 
         const intent: AutoBatchIntent = {
           unitId: source.bu.id,
@@ -6438,6 +6487,7 @@ export class BattleScene {
   private _cavalryAction(ru: RuntimeBattleUnit, done: () => void): void {
     if (this.finished) { done(); return; }
     if (ru.dead || ru.fadingOut) { done(); return; }
+    ru.cavTrail = new Set<string>(); // nowa aktywacja = czysty slad (klon planowania ma wlasna kopie pola)
 
     // 1) A worthy (non-spear) enemy is adjacent -> strike it now.
     const adjGood = this._cavAdjacentNonSpear(ru);
@@ -6533,6 +6583,7 @@ export class BattleScene {
       const nk = cellKey(nc, nr);
       if (this.occByKey.has(nk)) continue;
       if (!this._passableForUnit(ru, nc, nr)) continue;
+      if (/*CAV_TRAIL*/ ru.cavTrail?.has(nk)) continue; // nie wracaj na pole z tej aktywacji (ping-pong)
 
       const dTgt = manhattan(nc, nr, tgt.q, tgt.r);
 
@@ -6552,6 +6603,7 @@ export class BattleScene {
     const parts = best.split(',');
     const nc = Number(parts[0]);
     const nr = Number(parts[1]);
+    (ru.cavTrail ??= new Set<string>()).add(cellKey(ru.q, ru.r));
     this._doMove(ru, nc, nr, () => {
       if (this.finished) { done(); return; }
       // After the step: if now adjacent to a worthy target, stop (strike next
