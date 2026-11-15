@@ -1983,3 +1983,15 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 | #252 | P4-1H Q6 MOVE | #250 |
 | #253 | P4-1C FOG-VIEW | **DECYZJA WŁAŚCICIELA** (mgła dla fotela ≠ 0, P4-1C §1.5) |
 | #254 | P4-1 L1/L2 revealAllLand, riverRevealKeys w DTO mapy | — (warunek wpięcia mgły) |
+
+## Przebieg (heartbeat — P4-1G Q2 ADAPTER-TERRAIN zintegrowany na parity)
+
+- **P4-1G Q2 ADAPTER-TERRAIN (#216, Opus) — FC PASS-WITH-NOTES `a0c81d59e`:** operator `3463c909a`, ewaluator `b1b92e595` (PASS-WITH-NOTES, 5 zarzutów), obrona `157e79c15` (przyjęte 2 zarzuty dokumentacyjne i test rzek, odrzucone duplikaty jako wadę adaptera), FC `a0c81d59e` (dokumenty).
+- **Integracja:** parity `601ff304c` jest przodkiem FC, merge-tree czysty, zakres `rust-port/renderer` i `dyspozycje`. Bramki: `FMT_EXIT=0`, `CLIPPY_EXIT=0`, `TEST_EXIT=0`, **520 passed, 0 failed, 0 ignored** (65 zestawów). FF: parity = `a0c81d59e`.
+- **Rozbieżność liczby testów (NIE_ZMIERZONO):** obrona raportowała 563 passed, a integracja na tym samym kodzie daje 520. Kod jest identyczny, zmieniły się tylko dokumenty. Źródła różnicy nie ustalono.
+- **Otwarte z Evaluatora i FC:**
+  - adapter terenu nie ma wołającego w `src/` (wołają go tylko testy); docelowy konsument to integrator sceny R1/R2 z §4 rozpoznania. Trzeba dopisać zależność do `REJESTR-RUST` / NIEPODPIETE-MODULY;
+  - luka `solid_hidden` dla ukryć wywoływanych zdarzeniami (wycinki lasu `main.ts:16801/17014/42967`, `syncImprovementDecorForHex` `main.ts:16877-16946`). Naprawa to pole `decor_hidden` w `HexDynDto` liczone przez producenta: zmiana kontraktu view-model, osobny temat;
+  - L1 (`revealAllLand`), L2 (`riverRevealKeys`) i L5 (`wonderBuildSites`) pozostają NIE_ZMIERZONO, zgodnie z zadaniami #254 i rozpoznaniem.
+- **Refy:** `refs/keep/P4-1G-Q2-TERRAIN-FC` (`a0c81d59e`), `refs/keep/P4-1G-Q2-TERRAIN-OP` (`3463c909a`), `refs/keep/P4-1G-Q2-TERRAIN-OBRONA` (`157e79c15`), `refs/keep/cleanup-P4-1G-Q2-integ`.
+- **Sprzątanie:** worktrees `wf_c9f7943e-b13-1/-2/-3` i `integ-p4-1g-q2` usunięte; cache `target-integ-p4-1g-q2` usunięty. Dysk: 6,7 GB wolne (83%).
