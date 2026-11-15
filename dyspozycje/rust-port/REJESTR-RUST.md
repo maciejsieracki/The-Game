@@ -1439,3 +1439,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **KROK 3 (sprzątanie):** usunięto worktree zakończonego P4-1 (`wf_c204895c-d41-4`, czysty). Uruchomiono `git gc` w tle. Worktrees trzech działających tematów zostawione.
 - **Model:** renderer/3D Rust na Opus 5.5 we wszystkich etapach (zasada właściciela z tej sesji), zamiast rutynowego Haiku/Sonnet z KROK 4.
 - **Parity:** `95930b446`.
+
+## Przebieg (15.11, 09:55 UTC — P4-17 MOD03 TERRAIN-DECOR, domknięcie r3, Opus 5.5)
+- **Evaluator r3:** PASS-WITH-NOTES, 6 zarzutów: rozjazd bazy w logach (bf59164b vs e1d69078d), przedwczesny wpis PASS, brak SHA-256 fixtur w katalogu, brak asercji liczby rekordów, luka mutacyjna w `Box3`, strażnik tylko tekstowy.
+- **Obrona r3 (`0dadaac3b`, raport `518064098`):** przyjęła wszystkie 6. Pracowała na aktualnym parity (`95930b446`). Dodano `SHA256SUMS`, asercje liczności, usunięto martwy kod `Box3`, test znaku zera, skaner tokenowy.
+- **FC r3 (`32e65f7d2`): PASS-WITH-NOTES, 0 NAPRAW, 0 do decyzji.** Bramki (fmt, clippy, clippy gpu, cargo test --all-targets) EXIT=0, `decor_web_parity` 12/12, 571 659 skalarów, 0 rozbieżności bitowych.
+- **Integracja:** fast-forward `rust-port/parity-v2` z `95930b446` na `32e65f7d2`. Zakres: 25 plików, tylko `decor/`, testy i fixtury decor, dokument i raporty runu. `git diff --check` czysty. Parity = `32e65f7d2`, kod `0dadaac3b` jest w historii.
+- **Korekta:** wpis `f23326304` ("P4.17 PASS") był przedwczesny. Obowiązującym domknięciem jest FC r3 (`32e65f7d2`), a nie ten wpis.
+- **Zabezpieczenie:** refs/keep `P4-17-r3-{0dadaac3b,518064098,32e65f7d2}`, gałąź `rust-port-wip/R-RUSTPORT-P4-17-MOD03-TERRAIN-DECOR-Q1-fc-r3`.
+- **Ograniczenie:** stan `decor` na parity po późniejszych zmianach (P4.27) nie był testowany w tym cyklu; FC ocenił tylko commit `0dadaac3b`.
