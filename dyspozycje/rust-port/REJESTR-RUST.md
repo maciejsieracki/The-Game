@@ -1230,3 +1230,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Rozbieżność do rejestru długu:** `ActiveDeal.formed_turn` w Rust nie jest opcjonalny (`diplomacy.rs:1484–1485`), w pinie `zawartaTura` jest opcjonalna (wiek nieznany → kara). Stary zapis bez pola: Rust zwróci błąd wczytania, nie cichą wolność od kary. Do rozstrzygnięcia w etapie b.
 - **Konflikt atrybucji (ponownie):** commit Operatora bez `Co-Authored-By` z nazwą modelu, zgodnie z dispatchem; nagłówek sesji wymaga innego. Decyzja orkiestratora/właściciela, jak wcześniej.
 - **Sloty: 0 z 4.** Kolejne kandydaty: WIEZE 2B; #106 po ponownym rozpoznaniu; etap b T2 po #120.
+
+## Przebieg (15.11, autonomiczny tick): sprzątanie dysku, rozpoznanie weryfikacyjne #106
+- **Dysk:** spadł do 3,0 GB (poniżej progu 4 GB); nie startowano tematów. Zabezpieczono (refs `keep/*` i `rust-port-wip/wf_*`) i usunięto worktree zakończonych Workflow: T2 (`wf_43e15938-a5a-1..4`) i rozpoznania #106 (`wf_5c19030b-5d7-1..4`). Dysk: 13 GB.
+- **T2 ZLOZE-WIRE-WAR-BREAK-A:** bramki na `7b52c3842` w toku (`integ-t2`, fmt 0, clippy 0, test w toku). Po wyniku FF `parity-v2` (`533d46dd3` → `7b52c3842`).
+- **Start (1 z 4):** `R-RUSTPORT-P6-R7K7C-RECON2-Q1` — rozpoznanie WERYFIKACYJNE #106 (read-only, dispatch `51a2604e2`, Workflow `wf_da2acf80-dcd`). Cel: sprawdzić `city_stock`, `barbarian_grace`, wiring D3 i brak wpisu właściciela, zanim cokolwiek trafi do wdrożenia (poprzednie rozpoznanie zawierało obalone twierdzenie o podłodze Pracy).
+- **Pytania ABC #115, #120** i konwencja `Co-Authored-By`: bez odpowiedzi właściciela.
