@@ -1,3 +1,9 @@
+## ROBOCZA ead39d06 -- 2026-11-14 -- FALA 748: Karta surowca: same liczby brutto i netto, szczegoly zawsze zwiniete (testowa)
+
+- Karta surowca pokazuje +brutto · +netto zamiast Brutto/netto / ture; naglowek zakladki Surowce +brutto → +netto z opisem w tooltipie; Zobacz szczegoly zuzycia i Skad zapasy zawsze zwiniete po kazdym przerysowaniu (zgloszenie wlasciciela 2026-11-15)
+- Weryfikacja: tsc 0; logic 213/213; resource-card-numbers-only 14/0 (mutanty); gross-net 24/0; plusx-badge 31/0; skad-dom 13/0; zrzut zywego Chromium obejrzany; vite build OK
+- Limity: NIE ZMIERZONO: zwijanie Skad zapasy na zywej grze przy niezerowych zapasach; hud-topbar czesc B z --dist (dlug harnessu endTurn); wiki 53.1a i linie brutto/netto w Nauce Zywnosci Handlu bez zmian
+
 ## ROBOCZA 5340ea32 -- 2026-11-14 -- FALA 747: Bitwa: strzelcy po zderzeniu uzywaja pelnego ruchu (reszta reguly pelnego ruchu) (testowa)
 
 - Strzelec po pierwszym zderzeniu wrecz nie konczy aktywacji z niewykorzystanym ruchem gdy istnieje sciezka do pozycji strzalu: filtr reguly linii plus fallback BFS omijajacy slad aktywacji bez ping-ponga; przed zderzeniem bez zmian; test T5 zielony
