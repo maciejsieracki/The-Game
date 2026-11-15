@@ -37,6 +37,15 @@ use super::war_turn_state::{managed_meta_keys, WarTurnState};
 #[cfg(not(test))]
 use super::PlayerId;
 #[cfg(not(test))]
+use super::{
+    pathfinding::ruch_jednostek::{
+        planned_marches_from_save, planned_marches_to_save, AutoMarchSave, PlannedMarchDest,
+        PlannedMarchSaved, RuchJednostka,
+    },
+    playable::{PlayablePlannedMarch, PlayableState},
+    UnitId,
+};
+#[cfg(not(test))]
 use super::{GameStateDto, Rng};
 #[cfg(test)]
 use civ_engine::domain::auto_improvements::auto_build_gate::auto_build_from_save_meta;
@@ -50,6 +59,15 @@ use civ_engine::domain::save_migrations::{migrate_loaded_state, LoadMigrationRep
 use civ_engine::domain::war_turn_state::{managed_meta_keys, WarTurnState};
 #[cfg(test)]
 use civ_engine::PlayerId;
+#[cfg(test)]
+use civ_engine::{
+    domain::pathfinding::ruch_jednostek::{
+        planned_marches_from_save, planned_marches_to_save, AutoMarchSave, PlannedMarchDest,
+        PlannedMarchSaved, RuchJednostka,
+    },
+    domain::playable::{PlayablePlannedMarch, PlayableState},
+    UnitId,
+};
 #[cfg(test)]
 use civ_engine::{GameStateDto, Rng};
 
@@ -722,6 +740,29 @@ impl SaveSnapshot {
         &self.planned_marches
     }
 
+    /// P4-1J: kopia z planami marszu stanu gry w polach `plannedMarches` / `autoMarch`, jak web
+    /// `buildSaveGameSnapshot` (`main.ts:37184`, `:37243-37244`). Zasady: [`playable_planned_marches_to_save`].
+    pub fn with_playable_planned_marches(self, state: &PlayableState) -> Self {
+        let (planned, auto_march) = playable_planned_marches_to_save(&state.planned_marches);
+        self.with_planned_marches(planned)
+            .with_auto_march(auto_march)
+    }
+
+    /// P4-1J: odczyt planow marszu z zapisu do stanu gry, jak web `main.ts:46272-46287`. Zasady:
+    /// [`restore_playable_planned_marches`].
+    pub fn restore_planned_marches(
+        &self,
+        state: &mut PlayableState,
+        player_owner_id: PlayerId,
+    ) -> PlannedMarchRestoreReport {
+        restore_playable_planned_marches(
+            state,
+            &self.planned_marches,
+            self.auto_march.as_ref(),
+            player_owner_id,
+        )
+    }
+
     /// Returns the format version stamped on this snapshot.
     pub const fn version(&self) -> u16 {
         self.version
@@ -760,6 +801,198 @@ impl SaveSnapshot {
     pub fn into_parts(self) -> (GameStateDto, EventQueue<TurnEvent>, Rng) {
         (self.state, self.event_queue, self.rng)
     }
+}
+
+/// P4-1J: pominiecia przy odczycie planow marszu do `PlayableState` (jawne, nie ciche).
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct PlannedMarchRestoreReport {
+    /// Id jednostek, ktorych wpis web `plannedMarchesFromSave` przyjmuje, a `PlayableState` nie umie
+    /// wyrazic: cel nie jest liczba calkowita z zakresu `i32` albo `attackUnitId` nie jest kanonicznym
+    /// zapisem `UnitId`. Taki wpis jest pominiety w calosci (odchylenie od weba, ktory go trzyma).
+    pub unrepresentable: Vec<String>,
+    /// Id jednostek wczytanych bez `generalTargetId` (pole weba poza zakresem P4-1J).
+    pub general_target_dropped: Vec<String>,
+}
+
+/// P4-1J: web `plannedMarchesToSave` (`planned-march.ts:485-500`) dla planow `PlayableState`.
+///
+/// Semantyka `Map` i `autoMarch` (pierwszy wpis mapy) pochodzi z portu
+/// `ruch_jednostek::planned_marches_to_save`. Kolejnosc wynikowej listy = kolejnosc kluczy obiektu
+/// `plannedMarches` w webie: klucze-indeksy tablicy (kanoniczne liczby `0..=2^32-2`) rosnaco, potem
+/// pozostale w kolejnosci wstawienia (ta sama regula co odczyt, [`array_index_key`]). Dlatego zapis
+/// i odczyt daja ten sam porzadek co web po `JSON.stringify` / `JSON.parse`. Pusta lista daje
+/// `(vec![], None)`, wiec zapis bez planow nie ma kluczy `plannedMarches` / `autoMarch` (web `{}`).
+pub fn playable_planned_marches_to_save(
+    marches: &[PlayablePlannedMarch],
+) -> (Vec<SavedPlannedMarch>, Option<SavedAutoMarch>) {
+    let entries: Vec<(String, PlannedMarchDest)> = marches
+        .iter()
+        .map(|march| {
+            (
+                march.unit_id.to_string(),
+                PlannedMarchDest {
+                    dest_q: f64::from(march.dest_q),
+                    dest_r: f64::from(march.dest_r),
+                    attack_unit_id: march.attack_unit_id.map(|id| id.to_string()),
+                    general_target_id: None,
+                },
+            )
+        })
+        .collect();
+    let out = planned_marches_to_save(&entries);
+    let auto_march = out
+        .auto_march
+        .map(|(leader_id, dest_q, dest_r)| SavedAutoMarch {
+            leader_id: Some(leader_id),
+            dest_q: integral_number(dest_q),
+            dest_r: integral_number(dest_r),
+        });
+    let mut planned: Vec<SavedPlannedMarch> = out
+        .planned_marches
+        .unwrap_or_default()
+        .into_iter()
+        .map(|(unit_id, dest)| SavedPlannedMarch {
+            unit_id,
+            dest_q: integral_number(dest.dest_q),
+            dest_r: integral_number(dest.dest_r),
+            attack_unit_id: dest.attack_unit_id,
+            general_target_id: dest.general_target_id,
+        })
+        .collect();
+    planned.sort_by_key(|march| array_index_key(&march.unit_id).map_or((1, 0), |index| (0, index)));
+    (planned, auto_march)
+}
+
+/// Wspolrzedna `i32` zapisana jako liczba calkowita JSON (web `JSON.stringify(3)` = `3`, nie `3.0`).
+fn integral_number(value: f64) -> Option<Number> {
+    js_i32(value).map(Number::from)
+}
+
+/// Liczba JS bedaca calkowita z zakresu `i32` (`-0` daje `0`); inaczej `None`.
+fn js_i32(value: f64) -> Option<i32> {
+    let in_range = value >= f64::from(i32::MIN) && value <= f64::from(i32::MAX);
+    if in_range && value.fract() == 0.0 {
+        Some(value as i32)
+    } else {
+        None
+    }
+}
+
+/// Kanoniczny zapis dziesietny `UnitId` (`"7"`; nie `"07"`, `"+7"`, `"u7"`).
+fn canonical_unit_id(text: &str) -> Option<UnitId> {
+    let value = text.parse::<u64>().ok()?;
+    (value.to_string() == text).then_some(UnitId::new(value))
+}
+
+/// P4-1J: odczyt planow marszu z zapisu do stanu gry, web `main.ts:46272-46287`:
+///
+/// 1. czysci `plannedMarches`, `marchStopNotified`, `marchStopDetail`, `marchAttackTargets`
+///    (`main.ts:46272-46274`, `:46279`); trzech ostatnich map web nie zapisuje;
+/// 2. filtruje wpisy jak web `plannedMarchesFromSave(saved.autoMarch, saved.plannedMarches, units, 0)`
+///    (`main.ts:46283`, `planned-march.ts:451-482`) przez port `ruch_jednostek::planned_marches_from_save`:
+///    jednostka musi istniec w `state.units` (id = kanoniczny zapis `UnitId`) i nalezec do
+///    `player_owner_id` (web `0`; w `PlayableState` czlowiek ma inne id, podaje je wolajacy);
+/// 3. dla kazdego wpisu `plannedMarches.set` + `syncMarchAttackTarget` (`main.ts:46284-46286`,
+///    `:31124-31130`): `attackUnitId` trafia do `march_attack_targets`.
+///
+/// Wpis powtorzony w liscie (forma listowa Rust; obiekt weba po `JSON.parse` nie ma powtorzen)
+/// zachowuje pierwsza pozycje i ostatnia wartosc (semantyka `Map.set`). Pominiecia sa w raporcie.
+pub fn restore_playable_planned_marches(
+    state: &mut PlayableState,
+    planned: &[SavedPlannedMarch],
+    auto_march: Option<&SavedAutoMarch>,
+    player_owner_id: PlayerId,
+) -> PlannedMarchRestoreReport {
+    // Wlasciciel porownywany dokladnie w przestrzeni `PlayerId`: 0 = gracz, 1 = ktos inny.
+    const PLAYER: i64 = 0;
+    const OTHER: i64 = 1;
+
+    state.planned_marches.clear();
+    state.march_stop_notified.clear();
+    state.march_stop_detail.clear();
+    state.march_attack_targets.clear();
+
+    let units: Vec<RuchJednostka> = state
+        .units
+        .iter()
+        .map(|unit| {
+            let owner = if unit.owner_id == player_owner_id {
+                PLAYER
+            } else {
+                OTHER
+            };
+            RuchJednostka::new(
+                &unit.id.to_string(),
+                owner,
+                "",
+                i32::from(unit.position.x()),
+                i32::from(unit.position.y()),
+            )
+        })
+        .collect();
+    let entries: Vec<(String, Option<PlannedMarchSaved>)> = planned
+        .iter()
+        .map(|march| {
+            (
+                march.unit_id.clone(),
+                Some(PlannedMarchSaved {
+                    dest_q: march.dest_q.as_ref().and_then(Number::as_f64),
+                    dest_r: march.dest_r.as_ref().and_then(Number::as_f64),
+                    attack_unit_id: march.attack_unit_id.clone(),
+                    general_target_id: march.general_target_id.clone(),
+                }),
+            )
+        })
+        .collect();
+    let legacy = auto_march.map(|saved| AutoMarchSave {
+        leader_id: saved.leader_id.clone(),
+        dest_q: saved.dest_q.as_ref().and_then(Number::as_f64),
+        dest_r: saved.dest_r.as_ref().and_then(Number::as_f64),
+    });
+
+    let mut report = PlannedMarchRestoreReport::default();
+    let loaded = planned_marches_from_save(legacy.as_ref(), Some(&entries), &units, PLAYER);
+    for (unit_id, dest) in loaded {
+        if dest.general_target_id.is_some() {
+            report.general_target_dropped.push(unit_id.clone());
+        }
+        let attack_unit_id = match dest.attack_unit_id.as_deref() {
+            None => Some(None),
+            Some(text) => canonical_unit_id(text).map(Some),
+        };
+        let (Some(id), Some(dest_q), Some(dest_r), Some(attack_unit_id)) = (
+            canonical_unit_id(&unit_id),
+            js_i32(dest.dest_q),
+            js_i32(dest.dest_r),
+            attack_unit_id,
+        ) else {
+            report.unrepresentable.push(unit_id);
+            continue;
+        };
+        let entry = PlayablePlannedMarch {
+            unit_id: id,
+            dest_q,
+            dest_r,
+            attack_unit_id,
+        };
+        match state
+            .planned_marches
+            .iter_mut()
+            .find(|existing| existing.unit_id == id)
+        {
+            Some(slot) => *slot = entry,
+            None => state.planned_marches.push(entry),
+        }
+        match attack_unit_id {
+            Some(target) => {
+                state.march_attack_targets.insert(id, target);
+            }
+            None => {
+                state.march_attack_targets.remove(&id);
+            }
+        }
+    }
+    report
 }
 
 /// Surowy wczyt snapshotu: wersja, wymagane pola, walidacja. NIE wykonuje migracji P6-ZAPIS-MIGRACJE:

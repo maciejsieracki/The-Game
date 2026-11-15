@@ -528,6 +528,51 @@ pub struct PlayableState {
     /// `gameOver` i resetuje go do `false` przy wczytaniu (main.ts:47333), wiec po wczytaniu gra trwa.
     #[serde(skip)]
     pub koniec_gry: Option<VictoryResult>,
+    /// P4-1J: plany marszu, web `plannedMarches` (`main.ts:31004`, `Map<unitId, PlannedMarchDest>`).
+    /// Kolejnosc wektora = kolejnosc web `Map` (iterowana np. `main.ts:31063`, `:31324`); jeden wpis na
+    /// jednostke. Zapis/odczyt: `save_load` (`SavedPlannedMarch`, web `plannedMarchesToSave` /
+    /// `plannedMarchesFromSave`). Pusty => pole pomijane w DTO i zapisie.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub planned_marches: Vec<PlayablePlannedMarch>,
+    /// P4-1J: web `marchAttackTargets` (`main.ts:31016`, jednostka -> wroga jednostka). Web go NIE
+    /// zapisuje: po wczytaniu odbudowuje z `attackUnitId` planow (`main.ts:46279`, `:46284-46286`).
+    /// Czytany tylko po kluczu (`main.ts:25782`, `:25795`), wiec kolejnosc mapy nie ma znaczenia.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub march_attack_targets: BTreeMap<UnitId, UnitId>,
+    /// P4-1J: web `marchStopNotified` (`main.ts:31007`): ostatni powiadomiony powod zatrzymania
+    /// marszu. Web go NIE zapisuje i czysci przy wczytaniu (`main.ts:46273`).
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub march_stop_notified: BTreeMap<UnitId, PlayableMarchStopReason>,
+    /// P4-1J: web `marchStopDetail` (`main.ts:31009`): etykieta wstrzymania trasy dla panelu
+    /// jednostki (`main.ts:25737`). Web jej NIE zapisuje i czysci przy wczytaniu (`main.ts:46274`).
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub march_stop_detail: BTreeMap<UnitId, String>,
+}
+
+/// P4-1J: jeden plan marszu, web `PlannedMarchDest` (`planned-march.ts:16-23`) z kluczem mapy
+/// `plannedMarches` jako `unit_id`. Wspolrzedne jak `PlayableFort` (`q` = `position.x`, `r` =
+/// `position.y`). `generalTargetId` (web `planned-march.ts:22`) jest poza zakresem P4-1J (kontrakt
+/// `P4-1-RENDER-DTO-CONTRACT.md` §8 go nie wymienia); odczyt zapisu raportuje jego pominiecie.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlayablePlannedMarch {
+    pub unit_id: UnitId,
+    pub dest_q: i32,
+    pub dest_r: i32,
+    /// Web `attackUnitId`: marsz, a po dotarciu atak na te jednostke (`main.ts:29572`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attack_unit_id: Option<UnitId>,
+}
+
+/// P4-1J: web `MarchStopReason` (`planned-march.ts:35`); forma serde = napisy weba.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum PlayableMarchStopReason {
+    Obstacle,
+    NoPath,
+    NoMovement,
+    BlockedCity,
+    Fog,
 }
 
 /// P6-WIRE-WAR-STORES: minimalne magazyny stanu potrzebne producentom `infra` / `tech` / `religia`
@@ -622,6 +667,10 @@ impl PlayableState {
             forts: Vec::new(),
             gracz_kiedys_mial_miasto: false,
             koniec_gry: None,
+            planned_marches: Vec::new(),
+            march_attack_targets: BTreeMap::new(),
+            march_stop_notified: BTreeMap::new(),
+            march_stop_detail: BTreeMap::new(),
         }
     }
 }
@@ -790,6 +839,10 @@ impl PlayableGame {
                 forts: Vec::new(),
                 gracz_kiedys_mial_miasto,
                 koniec_gry: None,
+                planned_marches: Vec::new(),
+                march_attack_targets: BTreeMap::new(),
+                march_stop_notified: BTreeMap::new(),
+                march_stop_detail: BTreeMap::new(),
             },
             phase_queue: EventQueue::new(),
         };
