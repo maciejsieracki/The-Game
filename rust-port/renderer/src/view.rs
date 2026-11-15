@@ -17,6 +17,7 @@
 
 pub mod convert;
 pub mod fog;
+pub mod terrain;
 
 pub use convert::{
     battle_side, city_id_string, city_wall_kind, fort_kind, hex_build_highlight, hex_f64, hex_key,
@@ -24,6 +25,10 @@ pub use convert::{
     seed_i32, siege_machine_kind, terrain, tower_material, trade_medium, unit_id_string,
 };
 pub use fog::FogSets;
+pub use terrain::{
+    apply_terrain_fog, map_hexes, okolica_map, overlay_map, solid_hidden_hexes, terrain_data,
+    terrain_scene_options, tile_yield, TerrainData,
+};
 
 /// A DTO value the renderer input cannot represent. The adapter reports it
 /// instead of clamping, truncating or picking a default.
