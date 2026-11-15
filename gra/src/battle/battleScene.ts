@@ -14243,8 +14243,9 @@ export class BattleScene {
       if (dir != null) this._ensureGroupMeta(gid).attackDirection = dir;
     }
     const live = this._playerRoster().filter(u => !u.dead && !u.removed);
-    const first = live[0];
-    if (first) this._setDeployAttackDirection(first.attackDirection);
+    const liveDirs = new Set(live.map(u => u.attackDirection));
+    if (liveDirs.size > 1) this._setDeployAttackDirection('front', true);
+    else if (live[0]) this._setDeployAttackDirection(live[0].attackDirection);
   }
 
   /** Start deploy: osobne grupy Konnica / Piechota / Łucznicy (playtest POLE-BITWY). */
@@ -15207,7 +15208,9 @@ export class BattleScene {
       this._syncDeployLinesButtons();
     }
     // ABC B: chip kierunku natarcia pokazuje kierunek ZAZNACZONYCH jednostek (rozne => "rozne").
-    const targetDirs = new Set(targets.map(u => u.attackDirection));
+    // Brak zaznaczenia i grupy = cala armia (ten sam zakres co rozkaz).
+    const dirScope = targets.length > 0 ? targets : this._playerRoster().filter(u => !u.dead && !u.removed);
+    const targetDirs = new Set(dirScope.map(u => u.attackDirection));
     if (targetDirs.size > 1) this._setDeployAttackDirection('front', true);
     else if (targetDirs.size === 1) this._setDeployAttackDirection([...targetDirs][0]!);
     this._updateDeployToolbarStatus();
@@ -17222,12 +17225,10 @@ export class BattleScene {
     const live = this._playerRoster().filter(u => !u.dead && !u.removed);
     if (live.length === 0) return;
 
-    // C-BITWA-FORMACJA=B (Maciej 2026-07-25): szyk stosuje się do AKTUALNIE ZAZNACZONEGO
-    // zakresu — pojedyncza jednostka / grupa / cała armia (gdy nic nie zaznaczone).
-    // „Niezależnie czy wybierzemy jedną jednostkę, formację czy całą armię — zasady
-    // obowiązują zaznaczonych" (Maciej). _resolveDeployFormationTargets zwraca dokładnie
-    // ten zakres (zaznaczenie → grupa → armia), spójnie na każdym poziomie. Komunikat
-    // niżej jasno wskazuje, do czego zastosowano (usuwa dawną dwuznaczność błędu G).
+    // C-BITWA-FORMACJA=B (Maciej 2026-07-25) + ABC B (R-WEB-BATTLE-ATTACK-DIRECTION-PER-SELECTED-UNITS-Q1,
+    // DODATEK 1): szyk stosuje się do DOKŁADNIE zaznaczonych żywych jednostek (także mieszanych
+    // typów i z różnych grup); gdy nic nie zaznaczone — cała armia. _resolveDeployFormationTargets
+    // NIE rozszerza zaznaczenia na grupę. Komunikat niżej jasno wskazuje zakres.
     // Osobny mechanizm „postawa grupy" (_setGroupDoctrine → _applyGroupFormation) nadal
     // ustawia formację per-grupa w auto-grze walki.
     const targets = this._resolveDeployFormationTargets(live);
@@ -17281,10 +17282,10 @@ export class BattleScene {
 
   /**
    * C-FLANK (Maciej 2026-07-25): ustawia KIERUNEK NATARCIA (front/bok/tyl) dla
-   * auto-odgrywania bitwy -- stosuje sie do aktualnie zaznaczonego zakresu
-   * (jednostka/grupa/armia), dokladnie jak Formacja/Konnica powyzej
-   * (_resolveDeployFormationTargets zwraca ten sam zakres, spojnie z
-   * C-BITWA-FORMACJA=B). W przeciwienstwie do Formacji/Konnicy NIE przestawia
+   * auto-odgrywania bitwy -- stosuje sie do DOKLADNIE zaznaczonych zywych jednostek
+   * (brak zaznaczenia = cala armia), tak samo jak Formacja/Konnica powyzej
+   * (ABC B, ten sam resolver _resolveDeployFormationTargets). Meta grupy ustawiana
+   * tylko, gdy zaznaczone sa WSZYSTKIE zywe jednostki grupy. W przeciwienstwie do Formacji/Konnicy NIE przestawia
    * fizycznie jednostek w strefie -- to ustawienie ZACHOWANIA w auto-play
    * (manewr na flanke/tyl w _advanceStep / _cavalryAction), nie ukladu
    * poczatkowego deploy.
@@ -17307,9 +17308,13 @@ export class BattleScene {
     this._refreshDeploySelectionVisuals();
     this._updateRosterBar();
     const dirLabel = dir === 'bok' ? 'bok' : dir === 'tyl' ? 'ty\u0142' : 'front';
+    // Zakres mowi prawde: cala armia / cala grupa (zaznaczone WSZYSTKIE zywe jednostki jednej grupy) / zaznaczenie (N).
+    const oneGroup = new Set(targets.map(u => u.groupId ?? '')).size === 1 && !!targets[0]?.groupId;
     const scopeLabel = targets.length >= live.length
       ? 'ca\u0142a armia'
-      : 'zaznaczenie (' + targets.length + ')';
+      : oneGroup && this._fullyCoveredGroupIds(targets, live).length === 1
+        ? 'ca\u0142a grupa (' + targets.length + ')'
+        : 'zaznaczenie (' + targets.length + ')';
     this._showOrderFeedback('Kierunek natarcia: ' + dirLabel + ' \u2014 ' + scopeLabel);
   }
 

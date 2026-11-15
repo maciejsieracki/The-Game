@@ -43,6 +43,7 @@ function makeScene(BS) {
   scene._syncDeployFormationButtons = () => {};
   scene._updateDeployToolbarStatus = () => {};
   scene._showDeployFeedback = () => {};
+  scene._syncDeployLinesButtons = () => {};
   return scene;
 }
 const isMounted = (u) => /^m\d/.test(u.bu.id);
@@ -61,6 +62,16 @@ function mixedArmy(BS) {
   scene._groupMeta = new Map();
   scene._selectedUnits = new Set();
   return scene;
+}
+// Dwie grupy: G "1" = 6 piechoty; G "2" = 4 konnice + wodz (zaznaczenie calej G2 mozliwe)
+function twoGroupArmy(BS) {
+  const s = mixedArmy(BS);
+  for (const u of s.atk) u.groupId = (u.bu.id.startsWith('inf') ? '1' : '2');
+  s._groups = new Map([
+    ['1', new Set(s.atk.filter(u => u.groupId === '1').map(u => u.bu.id))],
+    ['2', new Set(s.atk.filter(u => u.groupId === '2').map(u => u.bu.id))],
+  ]);
+  return s;
 }
 const sel = (scene, pred) => { scene._selectedUnits = new Set(scene.atk.filter(pred).map(u => u.bu.id)); };
 const mounted = (scene) => scene.atk.filter(isMounted);
@@ -119,17 +130,84 @@ const foot = (scene) => scene.atk.filter(u => !isMounted(u));
     assert.equal(new Set(cells).size, cells.length, '(e) no two units share a cell after cavalry order');
     assert.equal(s._ensureGroupMeta('1').cavalryMode, undefined, '(e) partial selection does not set group cavalryMode');
     checks += 3;
+    // (e2) Konnica "z tylu" fizycznie przestawia zaznaczona konnice (nie tylko meta/tryb)
+    const s2 = mixedArmy(BS);
+    const cavBefore = new Map(mounted(s2).map(u => [u.bu.id, u.q + ',' + u.r]));
+    sel(s2, isMounted);
+    apply(s2, '_applyDeployCavalryMode', 'rear');
+    const moved = mounted(s2).filter(u => (u.q + ',' + u.r) !== cavBefore.get(u.bu.id)).length;
+    assert.ok(moved > 0, '(e2) selected cavalry physically repositioned by rear order');
+    checks += 1;
   }
   // (f) Formacja per zaznaczenie: F1 na 2 jednostki piechoty -> konnica stoi, bez kolizji
   {
     const s = mixedArmy(BS);
     const cavBefore = new Map(mounted(s).map(u => [u.bu.id, [u.q, u.r]]));
+    const infBefore = new Map(foot(s).map(u => [u.bu.id, u.q + ',' + u.r]));
     sel(s, u => u.bu.id === 'inf0' || u.bu.id === 'inf1');
     apply(s, '_applyDeployArmyFormation', 'F1');
+    const infMoved = foot(s).filter(u => (u.q + ',' + u.r) !== infBefore.get(u.bu.id)).map(u => u.bu.id);
+    assert.ok(infMoved.length > 0 && infMoved.every(id => id === 'inf0' || id === 'inf1'), '(f0) only selected infantry repositioned by Formacja: ' + infMoved.join(','));
     for (const u of mounted(s)) assert.deepEqual([u.q, u.r], cavBefore.get(u.bu.id), `(f) cavalry ${u.bu.id} not moved`);
     const cells = s.atk.map(u => u.q + ',' + u.r);
     assert.equal(new Set(cells).size, cells.length, '(f) no cell collisions after partial formation');
-    checks += 2;
+    checks += 3;
+  }
+  // (g) dwie grupy: zaznaczone cala G2 (4 konnice + wodz) + 1 piechurz z G1
+  //     -> G2 w pelni objeta (meta tak), G1 czesciowo (meta NIE); reszta piechoty front; feedback "cala grupa (6)"? -> zaznaczenie
+  {
+    const s = twoGroupArmy(BS);
+    sel(s, u => isMounted(u) || u.bu.id === 'leader' || u.bu.id === 'inf0');
+    apply(s, '_applyDeployAttackDirection', 'tyl');
+    for (const u of s.atk.filter(u => isMounted(u) || u.bu.id === 'leader' || u.bu.id === 'inf0')) assert.equal(u.attackDirection, 'tyl', `(g) ${u.bu.id} tyl`);
+    for (const u of s.atk.filter(u => u.bu.id.startsWith('inf') && u.bu.id !== 'inf0')) assert.equal(u.attackDirection, 'front', `(g) ${u.bu.id} front`);
+    assert.equal(s._groupMeta.get('1')?.attackDirection, undefined, '(g) partial G1 does not set meta');
+    assert.equal(s._groupMeta.get('2')?.attackDirection, 'tyl', '(g) fully covered G2 sets meta');
+    assert.match(s.feedback.at(-1), /zaznaczenie \(6\)/, '(g) feedback names selection of 6');
+    checks += 9;
+  }
+  // (g2) cala grupa jednej grupy -> etykieta "cala grupa"
+  {
+    const s = twoGroupArmy(BS);
+    sel(s, u => u.groupId === '2');
+    apply(s, '_applyDeployAttackDirection', 'bok');
+    assert.match(s.feedback.at(-1), /cała grupa \(5\)/, '(g2) whole group labelled as group');
+    checks += 1;
+  }
+  // (h) chip stanu: zaznaczenie mieszane (tyl + front) -> flaga mixed; jednorodne -> bez flagi
+  {
+    const s = mixedArmy(BS);
+    apply(s, '_applyDeployAttackDirection', 'front');
+    sel(s, isMounted);
+    apply(s, '_applyDeployAttackDirection', 'tyl');
+    sel(s, u => isMounted(u) || u.bu.id === 'inf0');
+    apply(s, '_syncDeployToolbarFromSelection');
+    assert.equal(s._deployAttackDirMixed, true, '(h) mixed selection (tyl+front) -> chip "Natarcie: rozne"');
+    sel(s, isMounted);
+    apply(s, '_syncDeployToolbarFromSelection');
+    assert.equal(s._deployAttackDirMixed, false, '(h) uniform selection -> no mixed flag');
+    assert.equal(s._deployAttackDirection, 'tyl', '(h) uniform selection shows its direction');
+    checks += 3;
+  }
+  // (h2) brak zaznaczenia po mieszanej armii -> chip pokazuje "rozne" (zakres = cala armia)
+  {
+    const s = mixedArmy(BS);
+    apply(s, '_applyDeployAttackDirection', 'front');
+    sel(s, isMounted);
+    apply(s, '_applyDeployAttackDirection', 'tyl');
+    sel(s, () => false);
+    s._deployActiveGroupId = null;
+    apply(s, '_syncDeployToolbarFromSelection');
+    assert.equal(s._deployAttackDirMixed, true, '(h2) no selection over mixed army -> mixed chip');
+    checks += 1;
+  }
+  // (i) powtorka bitwy: snapshot mieszany -> flaga mixed (nie pokazuje kierunku pierwszej jednostki)
+  {
+    const s = mixedArmy(BS);
+    const snap = new Map(s.atk.map(u => [u.bu.id, u.bu.id.startsWith('m') ? 'tyl' : 'front']));
+    apply(s, '_restoreDeployAttackDirSnapshot', snap);
+    assert.equal(s._deployAttackDirMixed, true, '(i) restored mixed snapshot -> mixed chip');
+    checks += 1;
   }
   console.log('battle-attack-dir-per-selection-test: OK, checks=' + checks);
 })().catch(e => { console.error('FAIL', e.message); process.exit(1); });
