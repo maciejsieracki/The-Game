@@ -465,12 +465,10 @@ async function build() {
       replaceOnce('          recomputeTradeRoutesNow(true);',
         "          const __profileTradeRoutesStart = performance.now();\n          recomputeTradeRoutesNow(true);\n          __recordLargeEmpireEotPhase(__profileTurnId, 'recomputeTradeRoutesNow', __profileTradeRoutesStart);",
         'trade route recomputation timing');
-      replaceOnce('          try {\n            const tradeFlowParams = loadTradeRouteResourceFlowParams(',
-        '          const __profileTradeStockFlowStart = performance.now();\n          try {\n            const tradeFlowParams = loadTradeRouteResourceFlowParams(',
-        'trade route stock flow timing entry');
-      replaceOnce("          } catch (eTradeFlow) {\n            console.error('[Handel] Blad przeplywu ilosciowego surowca przez trase:', eTradeFlow);\n          }\n          const tradeIncomeParams",
-        "          } catch (eTradeFlow) {\n            console.error('[Handel] Blad przeplywu ilosciowego surowca przez trase:', eTradeFlow);\n          }\n          __recordLargeEmpireEotPhase(__profileTurnId, 'trade_route_stock_flow', __profileTradeStockFlowStart);\n          const __profileTradeIncomeStart = performance.now();\n          const tradeIncomeParams",
-        'trade route stock flow timing exit');
+      // R-WEB-TRADE-ROUTE-REMOVE-STOCK-FLOW-E3C-Q1: faza 'trade_route_stock_flow' usunieta (blok E3c nie istnieje).
+      replaceOnce('          const tradeIncomeParams = loadTradeRouteIncomeParams(',
+        '          const __profileTradeIncomeStart = performance.now();\n          const tradeIncomeParams = loadTradeRouteIncomeParams(',
+        'trade route income timing entry');
       replaceOnce('          const manualWorkTaxByCity = new Map<string, number>();',
         "          __recordLargeEmpireEotPhase(__profileTurnId, 'trade_route_income_aggregation', __profileTradeIncomeStart);\n          const manualWorkTaxByCity = new Map<string, number>();",
         'trade route income aggregation timing exit');

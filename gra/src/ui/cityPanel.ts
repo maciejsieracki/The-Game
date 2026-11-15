@@ -11615,7 +11615,7 @@ function buildHandelDetailCard(
     const mennicaWarn = el('div', 'dc-note');
     mennicaWarn.style.cssText = 'font-style:normal;border-left:2px solid #e08a8a;padding-left:0.45em;margin-top:0.35em;color:#f0c8c8;';
     mennicaWarn.textContent =
-      'Mennica nieaktywna: brak Złota w magazynie państwa (Kopalnia złota, szlak handlowy lub zapas). ' +
+      'Mennica nieaktywna: brak Złota w magazynie państwa (Kopalnia złota lub zapas). ' +
       'Uzupełnij magazyn Złotem, żeby mnożnik znów zadziałał — budynek nie jest burzony, tylko czeka.';
     card.appendChild(mennicaWarn);
   }

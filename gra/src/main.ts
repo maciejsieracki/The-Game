@@ -672,8 +672,6 @@ import {
   tradeRouteIncomeForRoute,
   externalTradeContactOk,
   diagnoseMissingTradeRouteForPartner,
-  computeTradeRouteResourceFlow,
-  loadTradeRouteResourceFlowParams,
   computeSeaTradeRouteCountByCity,
   computeSeaTradeBonusIncomeByCity,
   ownersHaveSharedLandBorder,
@@ -683,7 +681,6 @@ import {
   type TradeRouteIncomeParams,
   type TradeRouteResourceGrant,
   type TradeRouteResourceKey,
-  type TradeRouteStockFlowResourceKey,
 } from './game/trade-routes';
 import {
   empireHasKopalniaMiedzi,
@@ -31339,6 +31336,44 @@ async function boot(): Promise<void> {
           for (const [o, t] of peekPendingLedger()) pending[o] = plain(t);
           return { turn, tickSeq: ledgerAuditTickSeq, owners, stock, tick, pending, e3cLast: ledgerAuditE3cLast, e3cFires: ledgerAuditE3cFires };
         },
+        /**
+         * R-WEB-TRADE-ROUTE-REMOVE-STOCK-FLOW-E3C-Q1 (tylko ?civTest=1, odczyt): aktywne trasy i dochod
+         * Pieniadza ze szlaku per wlasciciel (computeTradeRouteIncomeByCityBreakdown -- ta sama sciezka co tura).
+         */
+        tradeRoutesProbe: () => {
+          const ownerOfCity = new Map(cities.map(c => [c.id, c.ownerId] as const));
+          const br = computeTradeRouteIncomeByCityBreakdown(
+            tradeRoutes,
+            loadTradeRouteIncomeParams(data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0], _menuDifficulty),
+            wonderTradeRouteBonusForOwner,
+            targowiskoTradeRouteBonusForCity,
+          );
+          const incomeByOwner: Record<string, number> = {};
+          for (const [cid, v] of br.totalByCity) {
+            const o = ownerOfCity.get(cid);
+            if (o != null) incomeByOwner[o] = (incomeByOwner[o] ?? 0) + v;
+          }
+          return {
+            count: tradeRoutes.length,
+            routes: tradeRoutes.map(r => ({ ownerId: r.ownerId, toOwnerId: r.toOwnerId, medium: r.medium, dystans: r.dystans, status: r.status })),
+            incomeByOwner,
+          };
+        },
+        /**
+         * Tylko test (?civTest=1): wymusza JEDNA polaczona trase miedzy miastem ownerA a miastem ownerB
+         * (createTradeRoute, ta sama funkcja co refreshTradeRoutes). Trasa trafia do tradeRoutes i od
+         * nastepnego endTurn idzie realna sciezka tury. Zwraca null, gdy zadna para nie jest polaczona.
+         */
+        forceTradeRoute: (ownerA: number, ownerB: number): { routes: number } => {
+          const lo = Math.min(ownerA, ownerB);
+          const hi = Math.max(ownerA, ownerB);
+          const umowa = activeDeals.some(d => normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.UmowaSzlakow && d.strony[0] === lo && d.strony[1] === hi);
+          if (!umowa) {
+            activeDeals = [...activeDeals, { id: `trsf-test-${lo}-${hi}`, rodzaj: RodzajTraktatu.UmowaSzlakow, strony: [lo, hi], wygasaTura: null, zawartaTura: turn }];
+          }
+          recomputeTradeRoutesNow(false);
+          return { routes: tradeRoutes.filter(r => (r.ownerId === lo && r.toOwnerId === hi) || (r.ownerId === hi && r.toOwnerId === lo)).length };
+        },
         setRecording: (on: boolean): boolean => { setLedgerRecordingEnabled(on); return isLedgerRecordingEnabled(); },
         isRecording: (): boolean => isLedgerRecordingEnabled(),
         pendingPeek: () => { const o: Record<string, unknown> = {}; for (const [k, t] of peekPendingLedger()) o[k] = plain(t); return o; },
@@ -40536,45 +40571,11 @@ async function boot(): Promise<void> {
             data.econParams as unknown as Parameters<typeof loadTradeRouteParams>[0],
             _menuDifficulty,
           );
-          // Handel E3c (PYTANIE 53=B, Maciej 2026-07-25): przepływ ILOŚCIOWY surowca
-          // (braz/zelazo/cegla — patrz TRADE_ROUTE_STOCK_FLOW_KEYS) przez aktywne trasy,
-          // NIEZALEŻNY od grantu dostępu wyżej (ten zostaje boolean-bramką jednostek).
-          // Surowiec REALNIE ubywa nadawcy i przybywa odbiorcy w puli PAŃSTWA (ta sama
-          // pula co koszt_surowce budynków, building-stock-cost.ts) — dzięki temu np.
-          // dowieziona Cegła faktycznie zasila budowę, nie tylko "odblokowuje" ją.
-          try {
-            const tradeFlowParams = loadTradeRouteResourceFlowParams(
-              data.econParams as unknown as Parameters<typeof loadTradeRouteResourceFlowParams>[0],
-              _menuDifficulty,
-            );
-            const ownerStockForTradeFlow = (ownerId: number, key: TradeRouteStockFlowResourceKey): number =>
-              ownerResourceStockAll(cities, ownerId)[key] ?? 0;
-            const tradeFlows = computeTradeRouteResourceFlow(tradeRoutes, ownerStockForTradeFlow, tradeFlowParams);
-            // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (runda 4, zarzut 5): TYLKO pomiar dla haka ?civTest=1 (E3c NIE zmieniony,
-            // NIE ksiegowany -- czeka na ABC wlasciciela). Zapamietuje przeplywy E3c ostatniego ticku i licznik odpalen.
-            ledgerAuditE3cLast = tradeFlows.map(f => ({ ...f })); if (tradeFlows.length > 0) ledgerAuditE3cFires++;
-            for (const flow of tradeFlows) {
-              deductBuildingStockCostAcrossCities(cities, flow.fromOwnerId, { [flow.resourceKey]: flow.amount });
-              // P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO (2026-08-09): audyt call-site'ów
-              // creditOwnerResourceStock bez cap — ten leci PRZED advanceCityEconomy/
-              // reconcileOwnerResourceCaps w tej samej turze, więc nadwyżka i tak zostałaby
-              // ścięta na końcu ticku; cap dołożony tu defensywnie (spójnie z resztą), żeby
-              // nie polegać na kolejności wywołań w przyszłych zmianach.
-              // P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): epoka ODBIORCY (flow.toOwnerId
-              // -- ten sam ownerId co creditOwnerResourceStock niżej) -- bez tego cap byłby
-              // zaniżony od epoki 2 wzwyż i surowiec mógłby zniknąć zamiast dotrzeć do odbiorcy.
-              // EN: RECEIVER's (flow.toOwnerId, same ownerId as creditOwnerResourceStock below)
-              // epoch -- otherwise the cap would be too low from epoch 2 onward and the resource
-              // could vanish instead of reaching the recipient.
-              const tradeFlowCap = ownerResourceCap(
-                cities, cityBuilt, flow.toOwnerId, data, _menuDifficulty,
-                empireEpochForOwner(flow.toOwnerId),
-              );
-              creditOwnerResourceStock(cities, flow.toOwnerId, flow.resourceKey, flow.amount, tradeFlowCap);
-            }
-          } catch (eTradeFlow) {
-            console.error('[Handel] Blad przeplywu ilosciowego surowca przez trase:', eTradeFlow);
-          }
+          // Handel E3c USUNIETY (decyzja ABC 2026-11-14/15, #311/#321, wariant A): szlak handlowy
+          // NIE przesuwa zapasow zadnej strony. Zostaje: dochod ze szlaku (premia Pieniadza, bonus
+          // morski/Targowisko/cud) i boolean-grant dostepu do jednostek (blok wyzej).
+          // Funkcje computeTradeRouteResourceFlow / loadTradeRouteResourceFlowParams usuniete z trade-routes.ts
+          // (martwy kod po E3c; testy asercjonuja ich nieobecnosc, bez wywolania w grze).
           const tradeIncomeParams = loadTradeRouteIncomeParams(
             data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
             _menuDifficulty,

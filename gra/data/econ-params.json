@@ -21,13 +21,6 @@
       "jednostka": "tury",
       "opis": "R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1: ile ostatnich tur ekonomii trzyma dziennik źródeł surowców („Skąd zapasy”). Brak wpisu w zapisie gry = pusty dziennik. Wartość finalna (N=10)."
     },
-    "handel_surowiec_min_stock": {
-      "easy": 2,
-      "normal": 2,
-      "hard": 2,
-      "jednostka": "szt.",
-      "opis": "ABC-15 Maciej 2026-07-04: handel surowcem dopiero gdy stock ≥ wartość; 1 szt. zostaje = dostęp (v2 handlu)."
-    },
     "akwedukt_prog_ludnosci": {
       "easy": 6,
       "normal": 5,

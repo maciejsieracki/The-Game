@@ -7,8 +7,9 @@
  *    mnożnik handlu→Pieniądz (U-13). UI: „Złoto (surowiec)" ≠ „Pieniądz (skarbiec)".
  *  - Bramka budowy / runtime (R3=B): wystarczy zapas w puli imperium — kopalnia na mapie
  *    nie jest wymagana, jeśli jest stock.
- *  - Szlaki handlowe (U-3): dostarczają sztuki do magazynu państwa (trade-routes.ts),
- *    NIE syntetyczny wpis „dostępu" w placedImprovements.
+ *  - Szlaki handlowe (U-3, zmienione #311): NIE przesuwają zapasów państwa (przepływ
+ *    ilościowy usunięty); dają dochód i boolean-grant dostępu, NIE syntetyczny wpis
+ *    „dostępu" w placedImprovements.
  *
  * Zastępuje model ACCESS_ONLY (2026-07-25): złoto jest magazynowane w City.surowce.zloto
  * (suma civ-wide — building-stock-cost.ts ownerResourceStockAll).
@@ -129,7 +130,7 @@ export function deductMennicaZlotoDrain(
 // ---------------------------------------------------------------------------
 
 /**
- * @deprecated PYTANIE-84-U3: szlaki dostarczają stock, nie syntetyczny dostęp.
+ * @deprecated PYTANIE-84-U3 (zmienione #311): szlak handlowy NIE dostarcza zapasu państwa; wpis syntetyczny i tak nie jest używany.
  * Zachowane dla kompatybilności sygnatury main.ts — zwraca wejście bez zmian.
  */
 export const TRADE_GRANT_ZLOTO_SYNTHETIC_KEY = '__trasa_zloto__';

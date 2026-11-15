@@ -346,7 +346,7 @@ Brak materiału w **puli państwa** **blokuje** wejście do kolejki (karta budyn
 1. **Wzór dystansowy** — baza + dystans × mnożnik, z podłogą (placeholdery `econ-params.json`: baza 8 ¤/turę, +0,4 ¤/heks, podłoga 1 ¤/turę). Obie strony trasy zarabiają pełną kwotę.
 2. **+5% do Daniny za każdą aktywną trasę handlową** — osobny, kumulatywny mnożnik miasta (nie łączony z bonusem Targowiska/Waluty, żeby uniknąć podwójnego liczenia).
 
-**Dostęp do surowca** — aktywna trasa daje też dostęp do **brązu, żelaza lub konia**, których nie masz u siebie (Handel E3b) — czysta pochodna trasy: zerwanie traktatu lub wojna **automatycznie cofa** dostęp. Panel miasta pokazuje adnotację „szlak handlowy z **X**" przy takim surowcu.
+**Dostęp do surowca** — aktywna trasa daje też dostęp do **brązu, żelaza lub konia**, których nie masz u siebie (Handel E3b) — czysta pochodna trasy: zerwanie traktatu lub wojna **automatycznie cofa** dostęp. **Szlak nie przesuwa zapasów** — trasa nie przenosi surowców między miastami ani cywilizacjami; zapasy obu stron zmieniają tylko produkcja, budowa i zużycie (decyzja #311). Panel miasta pokazuje adnotację „szlak handlowy z **X**" przy takim surowcu.
 
 **Limit tras na miasto** = liczba zbudowanych budynków handlowych (Targowisko/Port/Port wielki) — więcej budynków, więcej równoległych tras.
 
@@ -409,7 +409,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 | **Praca** | Pasek | Tartaki, profil Produkcja w okolicy |
 | **Nauka** | Pasek Badania | Biblioteki, % nauki w suwaku |
 | **Siła państwa** | Minimapa / panel | Armia + wygrane bitwy + ludność |
-| **Surowce** | Ikony dostępu + pula **całego imperium** (cap 500+100/Magazyn) | Złoże **+** ulepszenie na heksie; cegła/ceramika z Cegielni/Garncarni; brąz/żelazo/koń przez szlak handlowy (§53); Magazyny podnoszą wspólny cap |
+| **Surowce** | Ikony dostępu + pula **całego imperium** (cap 500+100/Magazyn) | Złoże **+** ulepszenie na heksie; cegła/ceramika z Cegielni/Garncarni; brąz/żelazo/koń — dostęp przez szlak handlowy (§53.3; szlak nie przesuwa zapasów); Magazyny podnoszą wspólny cap |
 
 
 ### Przykład liczbowy
