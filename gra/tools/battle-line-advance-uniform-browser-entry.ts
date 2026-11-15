@@ -23,8 +23,14 @@ const parse = (s: string) => s.split(',').filter(Boolean).map(p => { const [u, c
 };
 // 'before' = kopia poprzedniej sceny (src/battle/battleScene.orig-before.ts, nie commitowana) -- sciezka dynamiczna,
 // zeby brak pliku nie psul wariantu 'after'.
+// Dozwolone moduly sceny: import.meta.glob zna tylko istniejace pliki. Brakujacy plik daje czytelny
+// blad (NIE ZMIERZONO), a nie dynamiczny import, ktory serwer dev zamienia na index.html
+// ("Unexpected token '<'" zamiast modulu).
+const sceneModules = import.meta.glob(['../src/battle/battleScene.ts', '../src/battle/battleScene.orig-before.ts']);
 const sceneFile = q.get('scene') === 'before' ? 'battleScene.orig-before.ts' : 'battleScene.ts';
-const mod: any = await import(/* @vite-ignore */ `../src/battle/${sceneFile}`);
+const sceneLoader = (sceneModules as Record<string, () => Promise<any>>)[`../src/battle/${sceneFile}`];
+if (!sceneLoader) throw new Error(`NIE ZMIERZONO: brak src/battle/${sceneFile} (scene=${q.get('scene')})`);
+const mod: any = await sceneLoader();
 const armies = buildTestArmies(units, 'maly');
 const scene: any = new mod.BattleScene({
   attacker: armies.attacker, defender: armies.defender, teren: armies.teren,

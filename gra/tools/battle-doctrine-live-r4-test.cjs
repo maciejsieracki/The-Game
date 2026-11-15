@@ -125,6 +125,30 @@ async function waitForMapBoot(page, errors) {
   throw new Error(`Map did not become ready within ${mapBootTimeoutMs}ms; evidence=${evidence.jsonPath}`);
 }
 
+const BUILD_MIME = {
+  '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.mp3': 'audio/mpeg',
+  '.ogg': 'audio/ogg', '.wav': 'audio/wav', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml',
+  '.webp': 'image/webp', '.wasm': 'application/wasm', '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf',
+};
+
+function serveBuildFile(outDir, req, res) {
+  const pathname = decodeURIComponent(new URL(req.url, 'http://127.0.0.1').pathname);
+  // Przegladarka pyta o favicon.ico automatycznie; gra go nie ma. Odpowiedz 204 (bez bledu konsoli).
+  if (pathname === '/favicon.ico') { res.statusCode = 204; res.end(); return; }
+  const rel = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '');
+  const file = path.resolve(outDir, rel);
+  const inside = file.startsWith(path.resolve(outDir) + path.sep);
+  if (!inside || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
+    res.statusCode = 404;
+    res.setHeader('content-type', 'text/plain; charset=utf-8');
+    res.end(`not found: ${pathname}`);
+    return;
+  }
+  res.setHeader('content-type', BUILD_MIME[path.extname(file).toLowerCase()] || 'application/octet-stream');
+  fs.createReadStream(file).pipe(res);
+}
+
 async function build() {
   const { build: viteBuild, mergeConfig } = await import('vite');
   const base = (await import(pathToFileURL(path.join(root, 'vite.config.ts')).href)).default;
@@ -181,10 +205,10 @@ async function main() {
       args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'],
     });
     mark('browser:launched');
-    server = http.createServer((req, res) => {
-      res.setHeader('content-type', 'text/html; charset=utf-8');
-      fs.createReadStream(path.join(out, 'index.html')).pipe(res);
-    });
+    // Serwer statyczny: plik z outDir po sciezce URL (sidecary audio-pack-*.js dostaja wlasciwy MIME).
+    // Tylko '/' trafia do index.html; brakujacy plik = 404, a NIE index.html (dawniej kazdy URL
+    // dostawal HTML, przez co skrypty sidecar konczyly sie bledem "Unexpected token '<'").
+    server = http.createServer((req, res) => serveBuildFile(out, req, res));
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
     const url = `http://127.0.0.1:${server.address().port}/?playtest=mapa`;
     page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
@@ -244,7 +268,9 @@ async function main() {
     if (!rosterDetails.hasRanged || !rosterDetails.hasMounted) throw new Error(`Preset is not mixed ranged+mounted: ${JSON.stringify(rosterDetails)}`);
     const startButton = page.getByText(/^START WALKI$/i).last();
     await startButton.waitFor({ state: 'visible', timeout: 30000 });
-    await startButton.click();
+    // Klik czeka na klatki Chromium (SwiftShader, 28 vs 28): domyslne 30 s nie wystarcza (zmierzone na main:
+    // "waiting for scheduled navigations" po 30 s). Zmienia tylko budzet czasu oczekiwania, nie asercje.
+    await startButton.click({ timeout: 120000 });
     await page.evaluate(() => {
       const s = window.__battleLargeReturnProbe.scene;
       // Use a real ranged actor and real opposing unit from the production preset,
