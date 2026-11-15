@@ -517,8 +517,8 @@ Wiki: [`suwak-handlu.md`](../encyklopedia/pojecia/suwak-handlu.md) — nazwa pli
 
 | Kierunek | Domyślnie | Rola |
 |----------|-----------|------|
-| **Budynki w mieście** | **70%** | Postęp w kolejce produkcji (świątynia, koszary, Spichlerz…) |
-| **Ulepszenia pól w okolicy** | **30%** | Postęp ulepszeń pól (farma, kopalnia…) |
+| **Budynki w mieście** | **50%** | Postęp w kolejce produkcji (świątynia, koszary, Spichlerz…) |
+| **Ulepszenia pól w okolicy** | **50%** | Postęp ulepszeń pól (farma, kopalnia…) |
 
 **Kiedy więcej na teren:** brakuje żywności lub surowców z pól; szybkie ulepszenie kluczowego heksu.
 
@@ -555,7 +555,7 @@ Przełącznik **per miasto** — włącz/wyłącz obok suwaków.
 
 **Czego nie robi:** nie zmienia automatycznie suwaków Daniny przy buncie (v1.0); **nie** buduje cudów; **nie** rekrutuje jednostek za złoto.
 
-Domyślne wartości nowego miasta: Danina **30/60/10** (skarbiec/nauka/zamożność), praca 70/30, żywność imperium 70/30.
+Domyślne wartości nowego miasta: Danina **30/60/10** (skarbiec/nauka/zamożność), praca 50/50, żywność imperium 70/30.
 
 ### 38.5. Strategie gracza — przykłady
 

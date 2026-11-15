@@ -136,7 +136,7 @@ const params = {
   suwaakHandelPieniadz: 30,
   suwaakHandelLuksus: 10,
   suwaakPracaBudynki: 70,
-  suwaakPracaTeren: 30,
+
 };
 
 // With growthMult=1 (default): zywnoscNetto=5 -> magazyn = 5

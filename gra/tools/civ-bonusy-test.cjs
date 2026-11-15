@@ -136,7 +136,7 @@ const params = M.loadEconParams({ ekonomia_miasta: {}, budynki: {} }, 'normal');
 const city = {
   id: 'c1', ludnosc: 3,
   podziałHandlu: { procentNauka: 20, procentPieniadz: 70, procentLuksus: 10 },
-  podziałPracy:  { procentBudynki: 70, procentTeren: 30 },
+  podziałPracy:  { procentBudynki: 70 },
   specjalisci: [],
 };
 const workedHandel = Array.from({ length: 10 }, () => ({

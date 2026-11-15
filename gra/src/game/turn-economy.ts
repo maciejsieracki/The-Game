@@ -341,7 +341,6 @@ export function buildEconParams(data: GameData, difficulty: Difficulty = 'normal
     suwaakHandelPieniadz:           num(em, 'suwak_handel_pieniadz_domyslnie', 30),
     suwaakHandelLuksus:             num(em, 'suwak_handel_luksus_domyslnie', 10),
     suwaakPracaBudynki:             num(em, 'suwak_praca_budynki_domyslnie', 50),
-    suwaakPracaTeren:               num(em, 'suwak_praca_teren_domyslnie', 30),
   };
 }
 

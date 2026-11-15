@@ -39,7 +39,7 @@ Etykieta na jednostce: „**W brodzie: −25% atak/obrona, ruch ×0,5**" (czerwo
 - **Obrońca:** trzymaj linię **na brzegu** naprzeciw brodu — dostajesz premię obrony, a atakujący traci ruch i siłę wchodząc w wodę. Bród to naturalne „wąskie gardło" — broń go jak przeprawy mostowej.
 - Kawaleria/rydwany na tafli brodu tracą przewagę mobilności (ruch ×0,5) — dobry moment na kontratak piechotą.
 
-**Powiązane:** Walka · Teren bitwy · Rzeka
+**Powiązane:** Walka · Teren bitwy · Rzeka · [Osłabienie w bitwie — głód wojska i deficyt złota](oslabienie-glod-deficyt.md)
 
 ---
 

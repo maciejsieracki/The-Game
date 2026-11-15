@@ -144,6 +144,8 @@ Gdy zapasy państwa spadną **poniżej zera**:
 
 **Remedium:** Spichlerz w imperium, suwak żywności na wojsko, mniej armii w polu, więcej farm.
 
+**Osłabienie w walce (gracz i AI):** jednostka armii, która w danej turze **głoduje** (zapasy państwa poniżej zera) albo gdy **Skarbiec właściciela jest poniżej zera** po zbankowaniu tury, walczy z karą **×0,75** (−25%) do statystyk bojowych — bez pancerza. Obie kary kumulują się (0,75 × 0,75). Barbarzyńcy nie są osłabiani tymi karami. Okno przed bitwą pokazuje, która kara działa. Szczegóły: [Osłabienie w bitwie — głód wojska i deficyt złota](../encyklopedia/pojecia/oslabienie-glod-deficyt.md).
+
 ### 50.4. Priorytety gracza
 
 | Sytuacja | Suwak / budowa |

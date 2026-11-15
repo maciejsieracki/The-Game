@@ -107,7 +107,7 @@ Wysyłaj **prezenty** przed prośbą o pakt — relacja **+20** taniej niż wojn
 
 ### 76.1. Panel audiencji — layout dwustronny
 
-Ekran rozmowy jest dziś **dwustronny**, nie jedna kolumna: **karta gracza** (twój medalion + imię władcy, Moc, potencjał sojuszniczy, Skarbiec, twoje dobra) naprzeciw **karty rozmówcy** (relacje — Zaufanie/Szacunek/Relacja pokazane **tylko po jego stronie** — i nastawienie). Poniżej **baner statusu formalnego**, jeśli obowiązuje traktat (nazwa traktatu + „od X tur" + informacja o karze zerwania), oraz **stół negocjacji w 3 kolumnach**: Możliwe / Aktywne / Żądania-Oferty.
+Ekran rozmowy jest dziś **dwustronny**, nie jedna kolumna: **karta gracza** (twój medalion + imię władcy, Moc, potencjał sojuszniczy, Skarbiec, twoje dobra) naprzeciw **karty rozmówcy** (relacje — Zaufanie/Szacunek/Relacja pokazane **tylko po jego stronie** — i nastawienie). Poniżej **baner statusu formalnego** z etykietą **„Stan: POKÓJ / WOJNA / …”** (pod nią: „obowiązuje od X tur”, przy rozejmie „Rozejm do tury N”, a przy traktacie informacja „zerwanie: …”; podpowiedź banera mówi wprost: „To nie jest propozycja”), oraz **stół negocjacji w 3 kolumnach**: Możliwe / Aktywne / Żądania-Oferty.
 
 ### 76.2. Portrety i imiona władców
 
