@@ -1,3 +1,9 @@
+## ROBOCZA c02e7c50 -- 2026-11-14 -- FALA 742: Handel surowcami: blok zalezny od epoki umowy (10/50/100 szt. za ten sam PN) + narzedzie weryfikacji ostrzezenia przed bitwa (testowa)
+
+- Okno wymiany, ocena propozycji, bramka uczciwosci, oferty AI, Szybka umowa i walidacja liczone w jednej epoce umowy (wyzsza z epok stron); umowy cykliczne zamrazaja epoke; migracja zapisu; dokumentacja i wikiBundle; narzedzie live-verify ostrzezenia przed bitwa (bez zmian gry)
+- Weryfikacja: tsc 0; logic 213/213; testy trade-era table 185 ai 14 deal 14 explicit 51; value-catalog 82; acceptance-points 304; ai-offer-balance 29; ai-trade 25/12/10; DOM Chromium 58/0; mutacje czerwone; vite build OK
+- Limity: NIE ZMIERZONO: tick umowy cyklicznej w pelnej grze, saveload-live; dlug Rust: pn_per_szt -> pn_per_blok, REPIN
+
 ## ROBOCZA 64a33004 -- 2026-11-14 -- FALA 741: Oferty handlowe AI do gracza maksymalnie 3x potrzeby AI (testowa)
 
 - Ilosc odbioru AI w ofercie handlowej do gracza wynosi min(nadwyzka gracza, 3 x potrzeba AI) z parametrem w ai-params.json (mnoznik 3 i staly sufit iteracji pętli 64); uczciwosc wyceny, cooldown 15 i limit 1 oferty na AI bez zmian; naprawiony dlug testowy 379
