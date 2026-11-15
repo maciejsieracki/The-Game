@@ -173,3 +173,9 @@ Operator (Opus 5) → Evaluator (Opus 5, zarzuty, lista może być pusta) →
 Operator (Obrona, Opus 5, tylko gdy zarzuty niepuste) → Final Control
 (Sonnet 5, osobne wywołanie Workflow) → orkiestrator integruje
 allowlist-only i cutuje kolejną FALĘ ROBOCZA.
+
+## DODATEK r2 (15.11, wznowienie po przerwaniu)
+- **Powód:** runda 1 zatrzymała się po Operatorze (PASS, commit 2ce99aae + obrona). Commity NIE istnieją ani lokalnie, ani na remote (gałąź autobot/... nie została wypchnięta, worktree wf_kartadio-1 usunięty). Kod trzeba napisać od nowa.
+- **Baza:** `origin/main` = `115422be5` (dispatch r1 podawał 3d9dd86c; jest przodkiem main, ale main poszedł dalej — zaczynaj od aktualnego czubka). Przed pracą: `git merge-base --is-ancestor 115422be5 HEAD`.
+- **Modele (zasada właściciela):** Operator = Haiku 5.5, Evaluator = Sonnet 5.5, Obrona = Haiku 5.5, Final Control = Sonnet 5.5. Opus NIE — Opus obowiązuje wyłącznie dla tematów pamięci/GPU/grafiki RUST, a ten temat jest webowy.
+- **Zakres bez zmian:** allowlista, bramki i kryteria z r1. Commit bez nazwy modelu w treści, ostatnia linia `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`. Bez push na main, bez deployu.
