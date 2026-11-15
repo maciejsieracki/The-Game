@@ -1,39 +1,37 @@
-# 50-final-control-claude — R-WEB-DATA-CITIZEN-CERAMICS-STONE-AGE-Q1 (Final Control, runda 2)
+# 50-final-control-claude — R-WEB-DATA-CITIZEN-CERAMICS-STONE-AGE-Q1 (Final Control, runda 3 obrony)
 
-STATUS: FAIL
-DOMAIN: GAME (dane + dokumentacja + test)
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (dane + dokumentacja + testy + narzędzie pomiarowe)
 TEMAT: R-WEB-DATA-CITIZEN-CERAMICS-STONE-AGE-Q1
-GOAL: Ceramika zużywana przez obywateli w Kamieniu (1/obywatela/tura; kara −2 Szczęścia / −1% Rozwoju za brak do czasu Garncarni).
-ZMIANY/COMMIT: oceniony kandydat 01b4593bb9106ee23ba170fe3920fbf88a81a736 (potomek bazy d4c3c39d3 — `git merge-base --is-ancestor` = TAK). Diff vs baza: 15 plików, wszystkie w allowliście (JSON, komentarz JSDoc w .ts, docs, wikiBundle, testy/narzędzie, runs/**). Kod logiki gry bez zmian. `git diff --check` czysty. Ten raport: jedyny dodany plik.
+GOAL: ceramika zużywana przez obywateli już w Kamieniu (1 na obywatela na turę); bez ceramiki kara −2 Szczęścia / −1% Rozwoju za brakujący surowiec (wariant A, bez zmian kary i bez ceramiki startowej).
+ZMIANY/COMMIT: kandydat df5333720cdd28b477c611408f376c5c39960211 (potomek e0be467a8 — `git merge-base --is-ancestor` = TAK). Zakres kodu/danych vs punkt wyjścia tematu (d4c3c39d3): citizen-resource-upkeep.json (+ceramika w epoce 1, _opis), citizen-resource-upkeep.ts (tylko komentarz), wikiBundle.json (regen), poradnik 06 + szczescie.md, testy/narzędzia citizen*/szczescie*, citizen-ceramics-panel-shot.cjs, runs/<ID>/**. Wszystko w allowliście; brak WERSJE.md/manifestu/rust-port. `git diff --check` czysty.
+INTEGRACJA: integration_sha = df5333720. Kandydat NIE jest potomkiem origin/main (e956b5015); próba `git merge --no-commit --no-ff origin/main` → JEDYNY konflikt: gra/src/data/wikiBundle.json (plik generowany). Orkiestrator: merge + `node tools/bundle-wiki-for-game.cjs`. Dowód spójności: uruchomienie generatora na kandydacie nie zmienia wikiBundle.json (0 różnic).
 
-TESTY (surowe wyniki, kandydat vs baza):
-- tsc --noEmit: exit 0, 0 linii
-- logic-test 213/213; tech-tree-test 20/0; research-test 33/33; unit-replace-test 21/21; combat-test 6/6; unit-power-test 6/0
-- citizen-resource-upkeep-test: kandydat 122 pass / 2 fail; baza 107 pass / 2 fail — te same 2 czerwone (kotwica `const ordPctRaw = evaluateOrderFromBreakdown(` w main.ts i F1 mutant 1) = czerwone-na-bazie
-- szczescie-przebudowa-skali-test: kandydat 516 OK / 4 FAIL; baza 515 OK / 4 FAIL — te same 4 (katalog 44 vs 41, 2b epoki 1–3) = czerwone-na-bazie
-- citizen-upkeep-era-mult-test 681/0; citizen-consumption-era-mult-test PASS
-- Mutacja własna (a): usunięcie "ceramika" z epoki 1 w JSON ⇒ test czerwony (m.in. "Epoka 1 … want [ceramika,drewno,glina]", "deductions.ceramika = 10 … undefined", kary 3× → 2×); JSON przywrócony.
-- Pozostałe bramki z §6 R-PROC-AUTOBOT poza 7 wierszami (mapy, mgła itd.): NIE_ZMIERZONO (nieobjęte zakresem danych/dokumentacji).
+TESTY (surowe wyniki, własny przebieg):
+- tsc --noEmit (gra/): exit 0, 0 linii.
+- citizen-resource-upkeep-test: 122 passed, 2 failed (kotwica `const ordPctRaw = evaluateOrderFromBreakdown(` i F1 mutant 1). TE SAME 2 czerwone na punkcie wyjścia d4c3c39d3 (107 passed, 2 failed) — dług bazowy, nie regresja.
+- szczescie-przebudowa-skali-test: 516 OK / 4 FAIL (liczność katalogu budynków 44 vs 41 itd.); na d4c3c39d3 515 OK / 4 FAIL — te same 4, niezwiązane z tematem.
+- citizen-consumption-era-mult-test: PASS; citizen-upkeep-era-mult-test: 681/0.
+- 6 bramek referencyjnych (§6): logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, unit-power 6/0 — wszystkie exit 0.
+- Mutacja kryterium (a): usunięcie "ceramika" z epoki 1 w JSON → test czerwienieje (m.in. „Epoka 1 … want [ceramika,drewno,glina]”, `deductions.ceramika` undefined, happinessDelta 4≠6); JSON przywrócony, worktree czysty.
+- Sekcja L: drenaż pop 20 = 20 ceramiki, missing/−2/−1, z ceramiką +2, parytet AI (sygnatury bez ownerId) — zielone w ramach 122.
+- Dowód Chromium (kryterium e): ocena dwóch PNG + JSON — panel „Magazyn państwa” pokazuje wiersz Ceramika z „Obywatele: POKRYTE” (5000) i „Obywatele: NIEDOBÓR” (0), podsumowanie „obywatele: pokryte / niedobór”; epoka 1, errors: []; JSON bez ścieżek /home/user (0 trafień).
 
-## Werdykt per zarzut
-1. _opis JSON — ODDAL (naprawione: `_opis` zaczyna się wpisem R-WEB-DATA-CITIZEN-CERAMICS…; JSON parsuje się).
-2. Civpedia/poradnik — ODDAL (brak hasła o zużyciu przez obywateli w ogóle; Operator dopisał wiersze +2/−2 w `docs/PORADNIK-GRACZA/06-miasto-spoleczenstwo.md` §35.2/§35.3 i `docs/encyklopedia/pojecia/szczescie.md`; nowe hasło poza zakresem).
-3. wikiBundle — ODDAL (regenerowany narzędziem; diff w wikiBundle.json obecny).
-4. JSDoc — ODDAL (lista surowców dopisana w nagłówku modułu; linie ze stawkami poprawne, bo stawki się nie zmieniły).
-5. Pomiar (d) — ODDAL w części pomiaru (3 ziarna × 60 tur, evidence/sim-seed{1,2,3}-60t.json: gracz pasywny 60/60 tur bez ceramiki; AI pierwsza ceramika t.13–15, połowa AI t.23–47). Wynik wymaga decyzji produktowej → DO DECYZJI CZŁOWIEKA (DECISION_REQUIRED): kara trwa bez końca dla gracza, który nie buduje Garncarni, i do t.23–47 dla połowy AI; balansu nie zmieniano zgodnie z dispatchem.
-6. Zrzut Chromium (e) — NAPRAW. Kryterium binarne (e) dispatchu "NIE pomijaj" jest niespełnione: Operator sam zapisał NIE_ZMIERZONO. Dowód pośredni z kodu jest prawdziwy co do listy (grep po `src/` nie znajduje zahardkodowanej listy [drewno, glina]; `citizenRequiredResourcesForEra` ← JSON), ale nie zastępuje wymaganego zrzutu. Wykonalne: istniejące narzędzie `gra/tools/citizen-consumption-era-live-measure.cjs` steruje headless Chromium; wystarczy po turze 1 wywołać `showEmpireDetailPanel` (gra/src/ui/empireDetailPanel.ts:4555; linia "Obywatele: …" ok. l.3407) i zrobić screenshot z wierszem ceramiki w epoce 1, zapis do runs/<ID>/evidence/.
-7. Parytet AI / drenaż 20=20 — ODDAL (sekcja L testu: drenaż pop 20 = 20 dla drewna/gliny/ceramiki, kara/premia, sygnatury ownerId-agnostyczne; ścieżka AI w grze pośrednio z pomiaru (d)).
+ZARZUTY:
+1. Zrzuty przy sztucznym magazynie 5000 i z oknem dyplomacji w tle — ODDAL. Kryterium (e) wymagało panelu pokrycia z ceramiką w liście Kamienia i stanu z brakiem — oba widoczne. Kara −2/−1% w UI: pokryta testami logiki; zrzut czystego HUD z realnym magazynem NIE_ZMIERZONO (nieblokujące).
+2. Ścieżki worktree w JSON — ODDAL (naprawione w df5333720, zweryfikowane: 0 trafień).
+3. Brak potomstwa origin/main — ODDAL do integracji (zmierzone: 1 konflikt, wikiBundle, regeneracja generatorem).
+4. Dług bazowy 2 czerwone asercji — ODDAL (czerwone identycznie na d4c3c39d3; kod gra/src kandydata = baza).
+Brak NAPRAW ⇒ nie FAIL.
 
-Wniosek: jeden NAPRAW (zarzut 6) ⇒ FAIL. Poza tym kandydat jest czysty: dane/testy/dokumentacja zgodne z GOAL, bramki bez regresji względem bazy.
+DO DECYZJI CZŁOWIEKA (DECISION_REQUIRED, nieblokujące wdrożenia): pomiar (d) z r2 — gracz pasywny bez Garncarni nie ma ceramiki 60/60 tur (kara trwa bez końca), AI pierwsza ceramika t.13–15, połowa AI t.23–47. Wariant A wdrożony zgodnie z literalnym poleceniem; B (ceramika startowa) / C (łagodniejsza kara w Kamieniu) czekają na odpowiedź właściciela.
 
-BLOKADY: zrzut Chromium (e) brak; decyzja właściciela dot. gracza pasywnego (zarzut 5).
-RUNDY: FC po rundzie 2/5; następna: runda 3 (Operator HAIKU; dopisek do 00-dispatch.md z BAZĄ 01b4593bb; tylko zrzut Chromium + evidence, bez zmian logiki).
-NASTĘPNY KROK: Operator r3 — zrzut panelu surowców obywateli w epoce 1 (stan z ceramiką i z brakiem) → Evaluator → FC. Równolegle orkiestrator zadaje ABC właścicielowi (gracz pasywny: kara bez końca; opcje: bez zmian / ceramika startowa / łagodniejsza kara do Garncarni).
-
+BLOKADY: brak technicznych.
 UWAGI-DLA-ORKIESTRATORA:
-- Prośba użytkownika w workflow ("Nie można w mieście zbudować więcej niż jednej garncarni") NIE jest częścią tego dispatchu i nie została oceniona ani zaimplementowana; wymaga osobnego tematu (limit 1 Garncarni na miasto).
-- Stare teksty UI w empireDetailPanel.ts (ok. l.3410–3412: "+1 Szczęście każde miasto" / "kara −1 Szczęście") rozjeżdżają się z kodem po zmianie na ±2 (R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 G8); sprawa sprzed tego tematu — osobny drobny temat tekstowy lub włączenie do r3 (allowlista: gra/src/ui/** tylko teksty).
+- empireDetailPanel.ts ~l.3413–3414: tooltip „+1 Szczęście każde miasto / kara −1 Szczęście” rozjeżdża się z kodem (±2, G8 z 2026-09-05) — dług sprzed tematu, osobny drobny temat tekstowy.
+- Dług testowy: kotwica ordPctRaw w citizen-resource-upkeep-test.cjs (main.ts używa `const ordPctRaw = happinessCivKey`) — osobny temat.
 - Dług Rust: REPIN tabeli obywateli (Kamień + ceramika).
-- Dysk podczas FC: 2,7 GB wolnego; node_modules podlinkowane z innego worktree i usunięte po bramkach.
-
+- Do integracji: merge origin/main + regeneracja wikiBundle; `gra/node_modules` w tym worktree to symlink (nie śledzony) — usunąć przy sprzątaniu.
+RUNDY: FC po rundzie 3 obrony (łącznie 3/5).
+NASTĘPNY KROK: integracja orkiestratora (merge origin/main, regen wikiBundle, bramki) → READY_FOR_DEPLOY → decyzja właściciela ABC (A/B/C).
 DEPLOY/PUSH: NIE WYKONANO
