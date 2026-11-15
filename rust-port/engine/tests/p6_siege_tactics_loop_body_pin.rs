@@ -36,6 +36,8 @@ const UNIT_FRAGMENT_SHA256: &str =
 const UNITS_SHA256: &str = "7b509817d1c613a526ea0e8066a62f340f46a29fedd6f79f0c647195727bc6d7";
 const DOATTACK_SHA256: &str = "592a6cbc279655a09b13fe9cd5ccbad24b325fa093610d685d5d9461729b41c1";
 const FACING_SHA256: &str = "6d4858eded6e566c91a2874b30a5eabff0080b477bbf29c02a1a67f69493eae3";
+/// Fragmenty efektów po ciosie (`_resolveBlowOutcome`, `_applyMoraleDamage`, `_startRout`, `_startFade`, ...).
+const OUTCOME_SHA256: &str = "6cc2b1e08bcee451d42d8d022c446c6ef42f8e4d045087dff5a653d7a09f737c";
 const BODY_MS: f64 = 800.0;
 
 fn num(v: &Value) -> f64 {
@@ -254,6 +256,11 @@ struct Cover {
     fading_seqs: usize,
     routed_seqs: usize,
     on_wall_seqs: usize,
+    fx_fades: usize,
+    fx_gains: usize,
+    fx_boosts: usize,
+    fx_collapse: usize,
+    fx_routs: usize,
 }
 
 #[test]
@@ -267,6 +274,7 @@ fn zgodnosc_ciala_z_tekstem_pinu_end_to_end() {
     );
     assert_eq!(v["unitsSha256"], UNITS_SHA256, "units.json");
     assert_eq!(v["doAttackSha256"], DOATTACK_SHA256, "_doAttack");
+    assert_eq!(v["outcomeSha256"], OUTCOME_SHA256, "efekty po ciosie");
     assert_eq!(
         v["facingSha256"], FACING_SHA256,
         "facing: _nearestEnemy/_updateFacing/relativeHit/_doMeleeAttack"
@@ -351,6 +359,11 @@ fn zgodnosc_ciala_z_tekstem_pinu_end_to_end() {
             siege_machine_range: 0.0,
         };
         let mut body = ProdBody::new(pus, scene, SequenceRolls::new(rolls));
+        // `moraleMax` jednostek (wejście sceny; `_gainMorale`, `_armyMoraleRatio`); `isArmyCommander` = false (domyślnie).
+        for (k, u) in units.iter().enumerate() {
+            let (ix, i) = if k < n_atk { (0, k) } else { (1, k - n_atk) };
+            body.morale_max[ix][i] = num(&u["moraleMax"]);
+        }
         let _ = n_def;
         arc_hist.clear();
         let mut facing_prev: Vec<f64> = units.iter().map(|u| num(&u["facing"])).collect();
@@ -388,6 +401,11 @@ fn zgodnosc_ciala_z_tekstem_pinu_end_to_end() {
             let trace_before = body.trace.len();
             let blows_before = body.blows.len();
             let counters_before = body.counters.len();
+            let shakes_before = body
+                .unported
+                .iter()
+                .filter(|(_, t)| *t == "shakeAlliesOnLoss")
+                .count();
             let dur = body.start(unit, &st);
             body.complete(unit, &mut st);
             let who = format!("#{id} act{k} {}", tag(unit));
@@ -629,6 +647,8 @@ fn zgodnosc_ciala_z_tekstem_pinu_end_to_end() {
                 for (what, got, want) in [
                     ("dead", ru.dead, b(&wu["dead"])),
                     ("fadingOut", ru.fading_out, b(&wu["fadingOut"])),
+                    ("removed", ru.removed, b(&wu["removed"])),
+                    ("acted", ru.acted, b(&wu["acted"])),
                     ("routed", ru.routed, b(&wu["routed"])),
                     (
                         "surroundApplied",
@@ -659,6 +679,31 @@ fn zgodnosc_ciala_z_tekstem_pinu_end_to_end() {
                     cov.facing_changes += 1;
                 }
                 *prev = now;
+            }
+
+            // --- ripple `_shakeAlliesOnLoss`: nieportowany, ale liczba wywołań z pinu = liczba wpisów `unported` ---
+            let shakes_now = body
+                .unported
+                .iter()
+                .filter(|(_, t)| *t == "shakeAlliesOnLoss")
+                .count()
+                - shakes_before;
+            let want_shakes = e["fx"]["shakes"].as_u64().expect("fx.shakes") as usize;
+            if shakes_now != want_shakes {
+                failures.push(format!(
+                    "{who}: shakeAlliesOnLoss rust={shakes_now} js={want_shakes}"
+                ));
+            }
+            for (name, want) in [
+                ("fades", &mut cov.fx_fades),
+                ("gains", &mut cov.fx_gains),
+                ("boosts", &mut cov.fx_boosts),
+                ("collapse", &mut cov.fx_collapse),
+                ("routs", &mut cov.fx_routs),
+            ] {
+                if e["fx"][name].as_u64().expect("fx") > 0 {
+                    *want += 1;
+                }
             }
 
             // --- zbior engaged ---
@@ -745,6 +790,11 @@ fn zgodnosc_ciala_z_tekstem_pinu_end_to_end() {
         "fadingOut/routed"
     );
     assert!(cov.on_wall_seqs > 0, "obronca na murze");
+    assert!(cov.fx_fades > 0, "efekt zabicia (_startFade)");
+    assert!(cov.fx_gains > 0, "_gainMorale atakujacego/wrogow");
+    assert!(cov.fx_boosts > 0, "_boostEnemiesOnBreak");
+    assert!(cov.fx_collapse > 0, "armia w odwrocie (mnoznik 1.3)");
+    assert!(cov.fx_routs > 0, "_startRout");
     assert!(
         cov.target_dead_filtered > 0,
         "cel martwy/uciekajacy odfiltrowany"

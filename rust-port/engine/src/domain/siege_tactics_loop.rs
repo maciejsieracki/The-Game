@@ -24,11 +24,15 @@
 
 use crate::domain::army_leadership::{army_morale_ratio_without_commander, ArmyLeaderCombatant};
 use crate::domain::city_towers::{strongest_ranged_unit_for_era, tower_range_for, UnitRow};
+use crate::domain::js_math::js_max0;
 use crate::domain::siege_no_breach::RoundCapVerdict;
 use crate::domain::siege_tactics_activate::{
     activate_unit, ActivateEvent, ActivateOps, ActivateScene, ActivateUnit, EnemyRef,
 };
-use crate::domain::siege_tactics_blow::{DefenderState, HitArc, Outcome, RollSource};
+use crate::domain::siege_tactics_blow::{
+    js_max, js_min, DefenderState, HitArc, Outcome, RollSource, SceneEffect, Side,
+    MORALE_HIT_LOSS_SCALE,
+};
 use crate::domain::siege_tactics_blow_full::{
     attacker_from_cu, single_blow_full, AtkMods, AttackerCu, BlowEnv, DefMods, DefenderCu,
     FullBlowInput, FullBlowOutput,
@@ -49,7 +53,9 @@ use crate::domain::siege_tactics_turnseq::{
     activate_next, activation_done, begin_turn, CheckSite, EndCheckSnapshot, SeqEvent, SeqStep,
     TurnSeqEnv, TurnSeqState, UnitRef,
 };
-use crate::domain::siege_tactics_unit::{side_alive_end, CombatUnit};
+use crate::domain::siege_tactics_unit::{
+    effective_flee_threshold, should_rout, side_alive_end, CombatUnit,
+};
 
 /// Wejście ciała jednostki (web `_activateUnit`): czas trwania i zakończenie.
 pub trait LoopBody {
@@ -66,6 +72,12 @@ pub trait LoopBody {
     /// szablonu `tmpl` na atakującego `target` (indeks w `st.atk`), skutki HP/zabicia w `st`. Domyślnie bez efektu.
     fn tower_blow(&mut self, _tmpl: &FullBlowInput, _target: usize, _st: &mut TurnSeqState) {}
 }
+
+/// Stałe morale z pinu (`battleScene.ts:1129, 1141, 1144-1145`).
+pub const MORALE_DEATH_RADIUS: i64 = 3;
+pub const MORALE_ENEMY_BREAK_GAIN: f64 = 5.0;
+pub const MORALE_ARMY_COLLAPSE_RATIO: f64 = 0.40;
+pub const MORALE_ARMY_COLLAPSE_MULT: f64 = 1.3;
 
 /// Czas lotu pocisku wieży (web `RANGED_FLY_MS = 380`, `battleScene.ts:1012`): odstęp od wystrzału do trafienia.
 pub const TOWER_FLY_MS: f64 = 380.0;
@@ -698,10 +710,16 @@ impl<B: LoopBody> FfHost<LoopTimer, ()> for SiegeLoop<B> {
 // K5-LOOP-BODY (r2 + r3 Operatora): produkcyjne ciało jednostki. Zgodność z pinem: wektory `p6_siege_tactics_loop_body_pin`
 // (r3: generator wykonuje tekst pinu `_activateUnit` -> `_doAttack` -> `_singleBlow`, ślad aktywacji + wynik ciosu + stan + `engaged`).
 //
-// NIE WPINAĆ do [`SiegeLoop`] przed osobnymi tematami: skutki `_resolveBlowOutcome` (morale/rout po ciosie) i timing
-// `BLOW_HIT_T` NIE są tu zaimplementowane, więc stan produkcyjny rozjechałby się z pinem. KONTRATAK obrońcy
-// (`_defenderCounters`, K5LOOP-KONTRATAK) JEST zaimplementowany w [`ProdBody::counter_strike`] (budżet tury, rzut RNG,
-// HP/zabicie atakującego, `engaged`, facing).
+// EFEKTY PO CIOSIE (K5LOOP-OUTCOME): [`ProdBody::strike`] stosuje na stanie wynik `_resolveBlowOutcome`
+// (`battleScene.ts:9020-9068`; port rozstrzygnięcia: `siege_tactics_blow::resolve_outcome`) ścieżkami
+// Kill (`_startFade` + `_boostEnemiesOnBreak` + `_gainMorale` atakującego), MoraleOnly i RoutBeforeDeath
+// (`_applyMoraleDamage` -> `_checkRout` -> `_startRout`, `_gainMorale` atakującego, gdy cel się złamał).
+// `_startRout` (`:9799`) obsługuje też rout z aktywacji (okrążenie). KONTRATAK obrońcy (`_defenderCounters`,
+// K5LOOP-KONTRATAK) JEST zaimplementowany w [`ProdBody::counter_strike`].
+// JAWNIE NIEPORTOWANE (NIE_ZMIERZONO, wpis w `unported`): ripple `_shakeAlliesOnLoss` przy zabiciu (tag
+// `shakeAlliesOnLoss`, wymaga K5LOOP-RUCH #123), efekty dowódcy armii (`isArmyCommander`: tagi `dowodca-*`),
+// `occByKey` (brak konsumenta w ProdBody) i `routedUnits` (dane na przyszłość). Timing `BLOW_HIT_T` (150 ms)
+// to wejście adaptera ([`ProdUnit::body_ms`]).
 // FACING (r4, K5LOOP-FACING): ciało trzyma `facing` każdej jednostki. `_updateFacing` (zdarzenie `UpdateFacing` na
 // początku aktywacji, `_nearestEnemy` + `facingToward`) i przypisanie `attacker.facing` w `_doMeleeAttack` (przed ciosem)
 // aktualizują stan; łuk ciosu liczy [`relative_hit`] z AKTUALNEGO facing obrońcy i pozycji (nie z szablonu).
@@ -736,7 +754,8 @@ pub struct ProdUnit {
 #[derive(Debug, Clone, Copy, PartialEq)]
 struct ProdPending {
     morale: f64,
-    routed: bool,
+    /// Zdarzenie `StartRout` z `_activateUnit` (rout z okrążenia): w `complete` wykonuje pełne `_startRout`.
+    start_rout: bool,
     surround_applied: bool,
     attack: Option<usize>,
 }
@@ -855,6 +874,13 @@ pub struct ProdBody<R: RollSource> {
     pending: [Vec<Option<ProdPending>>; 2],
     /// Stan `facing` każdej jednostki (`ru.facing`, liczba 0..3). Zmieniany przez `_updateFacing` i `_doMeleeAttack`.
     facing: [Vec<f64>; 2],
+    /// `ru.moraleMax` każdej jednostki (`_gainMorale`, `_armyMoraleRatio`). Domyślnie morale startowe z `activate.morale`.
+    pub morale_max: [Vec<f64>; 2],
+    /// `ru.isArmyCommander`. Domyślnie `false`; efekty dowódcy są nieportowane (tagi `dowodca-*` w `unported`),
+    /// ale flaga wyłącza jednostkę z `_armyMoraleRatio` (`armyMoraleRatioWithoutCommander`).
+    pub is_army_commander: [Vec<bool>; 2],
+    /// `ru.screenLostApplied` (`_checkMeleeScreenLost`, jednorazowe -50% morale strzelców).
+    screen_lost_applied: [Vec<bool>; 2],
 }
 
 impl<R: RollSource> ProdBody<R> {
@@ -875,6 +901,12 @@ impl<R: RollSource> ProdBody<R> {
             units[0].iter().map(|u| u.facing).collect(),
             units[1].iter().map(|u| u.facing).collect(),
         ];
+        let morale_max = [
+            units[0].iter().map(|u| u.activate.morale).collect(),
+            units[1].iter().map(|u| u.activate.morale).collect(),
+        ];
+        let is_army_commander = [vec![false; units[0].len()], vec![false; units[1].len()]];
+        let screen_lost_applied = [vec![false; units[0].len()], vec![false; units[1].len()]];
         Self {
             units,
             scene,
@@ -888,7 +920,15 @@ impl<R: RollSource> ProdBody<R> {
             surround,
             pending,
             facing,
+            morale_max,
+            is_army_commander,
+            screen_lost_applied,
         }
+    }
+
+    /// `ru.screenLostApplied` jednostki.
+    pub fn screen_lost_applied(&self, unit: UnitRef) -> bool {
+        self.screen_lost_applied[side_ix(unit.side)][unit.idx]
     }
 
     /// Aktualny `facing` jednostki (`ru.facing` w pinie).
@@ -1038,7 +1078,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         // gałąź jest nieportowana: pin stosuje je na początku `_activateUnit`, przed wyborem akcji.
         let mut pend = ProdPending {
             morale: au.morale,
-            routed: au.routed,
+            start_rout: res.events.contains(&ActivateEvent::StartRout),
             surround_applied: au.surround_applied,
             attack: None,
         };
@@ -1094,9 +1134,10 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         {
             let c = unit_cu_mut(st, unit);
             c.morale = pend.morale;
-            if pend.routed {
-                c.routed = true;
-            }
+        }
+        // `_startRout` z aktywacji (okrążenie): ten sam kod co rout po ciosie (boost wrogów, oslona, facing).
+        if pend.start_rout {
+            self.start_rout(st, unit);
         }
         let Some(target) = pend.attack else {
             return;
@@ -1164,17 +1205,13 @@ impl<R: RollSource> ProdBody<R> {
             never_rout: tc.never_rout,
             removed: tc.removed,
         };
+        // `routed_after_morale` (wynik `_applyMoraleDamage`) nie jest znany przed ciosem: lista efektów zawsze zawiera
+        // `GainMorale` atakującego w gałęziach morale, a ProdBody stosuje go dopiero, gdy cel faktycznie się złamał.
+        input.routed_after_morale = true;
+        let max_hp = input.defender_state.max_hp;
         let out = single_blow_full(&input, &mut self.rolls);
-        {
-            let dc = unit_cu_mut(st, target);
-            dc.hp = out.blow.def_hp_after;
-            if out.blow.outcome == Outcome::Kill {
-                dc.dead = true;
-            }
-        }
-        if out.blow.outcome != Outcome::None {
-            self.unported.push((attacker, "resolveBlowOutcome-efekty"));
-        }
+        unit_cu_mut(st, target).hp = out.blow.def_hp_after;
+        self.apply_outcome_effects(st, attacker, target, max_hp, &out.blow.effects);
         if out.blow.engaged_add && !self.engaged.contains(&(attacker, target)) {
             self.engaged.push((attacker, target));
         }
@@ -1189,6 +1226,200 @@ impl<R: RollSource> ProdBody<R> {
             extra_morale: out.blow.extra_morale,
             is_charge: out.blow.is_charge,
             hit_arc: input.hit_arc,
+        }
+    }
+
+    /// Efekty `_resolveBlowOutcome` (`battleScene.ts:9020-9068`) na stanie, w kolejności listy `effects` z
+    /// [`resolve_outcome`](crate::domain::siege_tactics_blow::resolve_outcome). Efekty czysto wizualne i log
+    /// (`UpdateHpBar`, `PushClash`) są pomijane. Zabicie: `_startFade`, ripple `_shakeAlliesOnLoss` (NIEPORTOWANY),
+    /// `_boostEnemiesOnBreak`, `_gainMorale`. Pozostałe ścieżki: `_applyMoraleDamage` i `_gainMorale` atakującego,
+    /// gdy cel po ciosie jest `routed` (`if (defender.routed) this._gainMorale(...)`).
+    fn apply_outcome_effects(
+        &mut self,
+        st: &mut TurnSeqState,
+        attacker: UnitRef,
+        defender: UnitRef,
+        max_hp: f64,
+        effects: &[SceneEffect],
+    ) {
+        for e in effects {
+            match *e {
+                SceneEffect::UpdateHpBar | SceneEffect::PushClash { .. } => {}
+                SceneEffect::ApplyMoraleDamage { dmg, extra_morale } => {
+                    self.apply_morale_damage(st, defender, max_hp, dmg, extra_morale);
+                }
+                SceneEffect::StartFade => self.start_fade(st, defender),
+                SceneEffect::ShakeAllies => self.unported.push((defender, "shakeAlliesOnLoss")),
+                SceneEffect::BoostEnemies => self.boost_enemies_on_break(st, defender),
+                SceneEffect::GainMorale { side, amount } => {
+                    // Zabicie zyskuje bezwarunkowo (cel jest już `dead`); gałęzie morale tylko po złamaniu celu.
+                    let killed = st.unit(defender).c.dead;
+                    if side == Side::Attacker && (killed || st.unit(defender).c.routed) {
+                        self.gain_morale(st, attacker, amount);
+                    }
+                }
+            }
+        }
+    }
+
+    /// `_applyMoraleDamage` (`battleScene.ts:9722-9735`).
+    fn apply_morale_damage(
+        &mut self,
+        st: &mut TurnSeqState,
+        victim: UnitRef,
+        max_hp: f64,
+        dmg: f64,
+        extra_loss: f64,
+    ) {
+        let c = st.unit(victim).c;
+        if c.dead || c.fading_out || c.routed {
+            return;
+        }
+        let mut hp_loss = MORALE_HIT_LOSS_SCALE * (dmg / js_max(1.0, max_hp));
+        // FACTOR 7: armia w odwrocie lamie sie szybciej (tylko strata z HP, nie stale dodatki).
+        if self.army_morale_ratio(st, victim.side) < MORALE_ARMY_COLLAPSE_RATIO {
+            hp_loss *= MORALE_ARMY_COLLAPSE_MULT;
+        }
+        let loss = hp_loss + js_max0(extra_loss);
+        let vc = unit_cu_mut(st, victim);
+        vc.morale = js_max0(vc.morale - loss);
+        self.check_rout(st, victim);
+    }
+
+    /// `_armyMoraleRatio(side)` = `armyMoraleRatioWithoutCommander` na jednostkach strony (`battleScene.ts:9988`).
+    fn army_morale_ratio(&self, st: &TurnSeqState, side: BattleSide) -> f64 {
+        let ix = side_ix(side);
+        let units = match side {
+            BattleSide::Attacker => &st.atk,
+            BattleSide::Defender => &st.def,
+        };
+        let army: Vec<ArmyLeaderCombatant> = units
+            .iter()
+            .enumerate()
+            .map(|(i, u)| ArmyLeaderCombatant {
+                is_army_commander: self.is_army_commander[ix][i],
+                morale: u.c.morale,
+                morale_max: self.morale_max[ix][i],
+                dead: u.c.dead,
+                fading_out: u.c.fading_out,
+                routed: u.c.routed,
+            })
+            .collect();
+        army_morale_ratio_without_commander(&army)
+    }
+
+    /// `_gainMorale` (`battleScene.ts:9695-9700`): martwy / znikający / uciekający lub `amount <= 0` bez zmian.
+    fn gain_morale(&mut self, st: &mut TurnSeqState, unit: UnitRef, amount: f64) {
+        let max = self.morale_max[side_ix(unit.side)][unit.idx];
+        let c = unit_cu_mut(st, unit);
+        // `amount <= 0` jest fałszem dla NaN (jak w JS), stąd negacja `!(amount > 0)` nie jest użyta.
+        if c.dead || c.fading_out || c.routed || amount <= 0.0 {
+            return;
+        }
+        c.morale = js_min(max, c.morale + amount);
+    }
+
+    /// `_boostEnemiesOnBreak(fallen)` (`battleScene.ts:9707-9714`): żywi wrogowie w promieniu
+    /// [`MORALE_DEATH_RADIUS`] (Manhattan) zyskują [`MORALE_ENEMY_BREAK_GAIN`] morale.
+    fn boost_enemies_on_break(&mut self, st: &mut TurnSeqState, fallen: UnitRef) {
+        let (fq, fr) = self.cell_of(fallen);
+        let other = opposite(fallen.side);
+        for idx in 0..self.units[side_ix(other)].len() {
+            let e = UnitRef { side: other, idx };
+            let c = st.unit(e).c;
+            if c.dead || c.fading_out || c.routed {
+                continue;
+            }
+            let (eq, er) = self.cell_of(e);
+            if (eq - fq).abs() + (er - fr).abs() > MORALE_DEATH_RADIUS {
+                continue;
+            }
+            self.gain_morale(st, e, MORALE_ENEMY_BREAK_GAIN);
+        }
+    }
+
+    fn cell_of(&self, unit: UnitRef) -> (i64, i64) {
+        let a = &self.units[side_ix(unit.side)][unit.idx].activate;
+        (a.q, a.r)
+    }
+
+    /// `_checkRout` (`battleScene.ts:9783-9797`): próg ucieczki obniżony na terenie obronnym
+    /// ([`ProdUnit::activate`]`.terrain_defence_mult`, wejście adaptera).
+    fn check_rout(&mut self, st: &mut TurnSeqState, unit: UnitRef) {
+        let c = st.unit(unit).c;
+        let tdm = self.units[side_ix(unit.side)][unit.idx]
+            .activate
+            .terrain_defence_mult;
+        if should_rout(&c, effective_flee_threshold(c.flee_morale, tdm)) {
+            self.start_rout(st, unit);
+        }
+    }
+
+    /// `_startRout` (`battleScene.ts:9799-9825`): flaga `routed`, `acted`, oslona wrecz, boost wrogów, zwrot ku
+    /// własnej krawędzi (atakujący W = 3, obrońca E = 1). Nieportowane: `occByKey`, `routedUnits`, efekty dowódcy.
+    fn start_rout(&mut self, st: &mut TurnSeqState, unit: UnitRef) {
+        let ix = side_ix(unit.side);
+        {
+            let c = unit_cu_mut(st, unit);
+            if c.routed || c.dead || c.fading_out {
+                return;
+            }
+            c.routed = true;
+            c.acted = true;
+        }
+        if self.is_army_commander[ix][unit.idx] {
+            self.unported.push((unit, "dowodca-rout"));
+        }
+        if !self.units[ix][unit.idx].activate.primary_ranged {
+            self.check_melee_screen_lost(st, unit.side);
+        }
+        self.boost_enemies_on_break(st, unit);
+        self.facing[ix][unit.idx] = match unit.side {
+            BattleSide::Attacker => 3.0,
+            BattleSide::Defender => 1.0,
+        };
+    }
+
+    /// `_checkMeleeScreenLost(side)` (`battleScene.ts:9759-9774`): gdy strona nie ma już żywej jednostki wrecz,
+    /// jej strzelcy tracą jednorazowo 50% morale i sprawdzają rout.
+    fn check_melee_screen_lost(&mut self, st: &mut TurnSeqState, side: BattleSide) {
+        let ix = side_ix(side);
+        let n = self.units[ix].len();
+        let has_melee = (0..n).any(|i| {
+            let c = st.unit(UnitRef { side, idx: i }).c;
+            !c.dead && !c.fading_out && !c.routed && !self.units[ix][i].activate.primary_ranged
+        });
+        if has_melee {
+            return;
+        }
+        for idx in 0..n {
+            let u = UnitRef { side, idx };
+            let c = st.unit(u).c;
+            if c.dead || c.fading_out || c.routed || c.never_rout {
+                continue;
+            }
+            if !self.units[ix][idx].activate.primary_ranged || self.screen_lost_applied[ix][idx] {
+                continue;
+            }
+            self.screen_lost_applied[ix][idx] = true;
+            let uc = unit_cu_mut(st, u);
+            uc.morale = js_max0(uc.morale * 0.5);
+            self.check_rout(st, u);
+        }
+    }
+
+    /// `_startFade` -> `_removeUnitFromScene` (`battleScene.ts:9910-9937`): jednostka zabita znika z pola
+    /// (`removed`, `dead`, `fadingOut = false`). Efekty dowódcy są nieportowane (tag `dowodca-fade`).
+    fn start_fade(&mut self, st: &mut TurnSeqState, unit: UnitRef) {
+        let c = unit_cu_mut(st, unit);
+        if c.fading_out || c.dead || c.removed {
+            return;
+        }
+        c.removed = true;
+        c.dead = true;
+        c.fading_out = false;
+        if self.is_army_commander[side_ix(unit.side)][unit.idx] {
+            self.unported.push((unit, "dowodca-fade"));
         }
     }
 
