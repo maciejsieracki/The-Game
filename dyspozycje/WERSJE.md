@@ -1,3 +1,9 @@
+## ROBOCZA 1771231a -- 2026-11-14 -- FALA 730: Oferty handlowe AI: ilosc odbioru z nadwyzki gracza (testowa)
+
+- Ilosc, o ktora prosi AI w ofercie handlowej do gracza, wynika z nadwyzki gracza zamiast sztywnego kroku 10 (jedno miasto, 20 obywateli: 70 cegly za 350 drewna, 350 PW = 350 PW); uczciwosc wyceny, cooldown 15 i limit 1 oferty na AI bez zmian
+- Weryfikacja: tsc 0; logic 213/213; need-from-surplus 12/0; wiring-e2e-live 47/0 (Kamien i Braz); proposal-branch 10/0; proposal-to-player 25 OK; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: czestosc ofert (harness zawiesza sie w turze 10); do decyzji wlasciciela: limit odbioru A/B/C i limit wydajnosciowy petli; dlug bazowy ai-trade-oneshot-overpay-limit-test #379; dlug Rust REPIN
+
 ## ROBOCZA f074e0f1 -- 2026-11-14 -- FALA 729: Brutto i netto na kartach surowcow (testowa)
 
 - Przy kazdym surowcu w panelu surowcow widac Brutto i netto na ture (netto po zuzyciu obywateli, budynkow i wojska); suma kart rowna sie naglowkowi
