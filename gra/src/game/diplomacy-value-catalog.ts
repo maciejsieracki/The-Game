@@ -373,6 +373,29 @@ export function diplomacyHandelKrokBlokEpoki(era?: number): number {
 }
 
 /**
+ * R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3 (migracja zapisów): ilość surowca blokowego sprowadzona do
+ * pełnego bloku epoki umowy — floor do wielokrotności bloku, ale MIN. 1 blok (oferta nie znika).
+ * Surowce niebłokowe (złoto/węgiel) i ilości <= 0 zostają bez zmian.
+ */
+export function diplomacyClampQtyToEraBlock(surowiecKey: string, qty: number, era?: number): number {
+  if (!Number.isFinite(qty) || !(qty > 0)) return qty;
+  const krok = diplomacyHandelSurowiecKrok(surowiecKey, era);
+  if (krok <= 1) return qty;
+  return Math.max(krok, Math.floor(qty / krok) * krok);
+}
+
+/** Jak wyżej, dla tablicy pozycji koszyka (tylko `surowiec_ilosc`); zwraca nową tablicę (lub undefined). */
+export function diplomacyClampBasketItemsToEraBlock<T extends { typ: string; id: string; ilosc?: number }>(
+  items: readonly T[] | undefined,
+  era?: number,
+): T[] | undefined {
+  if (!items) return undefined;
+  return items.map(it => (it.typ === 'surowiec_ilosc' && it.ilosc != null
+    ? { ...it, ilosc: diplomacyClampQtyToEraBlock(it.id, it.ilosc, era) }
+    : it));
+}
+
+/**
  * Minimalny krok/wielokrotność wymiany handlowej (szt.) dla danego surowca ilościowego.
  * Surowce blokowe (`HANDEL_SUROWCE_BLOK`): blok epoki (Kamień 10, Brąz 50, Żelazo 100 szt.,
  * R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1); 1 dla Złota/Węgla i dla wszystkiego spoza katalogu
@@ -524,6 +547,11 @@ export interface DiplomacySumPnOptions {
    * dozwolonej akcji (brak pola lub inna akcja) `diplomacySumPn` zwraca null (fail-safe).
    */
   actionId?: string;
+  /**
+   * R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: JAWNA epoka umowy (wyższa z epok stron,
+   * `diplomacyDealTradeEra`) dla wyceny pozycji `surowiec_ilosc`; brak = globalna epoka handlu.
+   */
+  tradeEra?: number;
 }
 
 function applyBasketSideDifficultyPn(
@@ -595,7 +623,7 @@ export function diplomacySumPn(
         break;
       case 'surowiec_ilosc':
         // diplomacyPnSurowiecIlosc już mnoży przez qty (sztuki) — jak zloto/praca/zywnosc.
-        pn = diplomacyPnSurowiecIlosc(item.id, qty);
+        pn = diplomacyPnSurowiecIlosc(item.id, qty, opts?.tradeEra);
         break;
       case 'miasto': {
         // R-WEB-PEACE-CITY-CESSION-Q1: wartość miasta policzona przez wołającego (dane miasta).

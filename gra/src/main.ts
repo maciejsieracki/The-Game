@@ -1722,7 +1722,10 @@ import {
   diplomacyHandelSurowceCatalog,
   diplomacyPnSurowiecIlosc,
   diplomacyNormalizeSurowiecIlosc,
+  diplomacyClampQtyToEraBlock,
+  diplomacyClampBasketItemsToEraBlock,
   setDiplomacyTradeEra,
+  diplomacyTradeEra,
   diplomacyDealTradeEra,
   withDiplomacyTradeEra,
   diplomacySumPn,
@@ -2518,6 +2521,15 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3 (FC r2 zarzut 2): JEDNO miejsce synchronizujące domyślną
+     * epokę handlu z epoką gracza — wołane wszędzie, gdzie zmienia się `player.era` (awans, nowa gra,
+     * wczytanie zapisu, hooki testowe). Ścieżki dwustronne i tak przekazują epokę umowy jawnie.
+     */
+    function syncDiplomacyTradeEra(): void {
+      setDiplomacyTradeEra(player.era);
+    }
+
+    /**
      * R-WEB-ERA-WAR-PLAYER-POOL-DESPITE-STONE-WAR-Q1: epoka, pod którą wojna epoki `tag` liczy się w
      * liczniku (cywilizacja, epoka). Tylko GRACZ (wojna Kamienia w Brązie = slot Kamienia); AI — bieżąca epoka.
      */
@@ -2627,7 +2639,7 @@ async function boot(): Promise<void> {
       );
       player.era = next;
       // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1: epoka handlu surowcami (Kamień 10 / Brąz 50 / Żelazo 100 szt. na PN).
-      setDiplomacyTradeEra(next);
+      syncDiplomacyTradeEra();
       // R-WEB-ERA-WAR-PLAYER-POOL-DESPITE-STONE-WAR-Q1: tura wejścia GRACZA w Brąz/Żelazo (owner 0 w
       // tych samych mapach co AI) — podstawa progu `eraForcedWarStartTurnsFromEra` dla puli celów.
       if (prev < 2 && next >= 2) bronzeEraEnterTurnByOwner.set(0, turn);
@@ -21086,7 +21098,7 @@ async function boot(): Promise<void> {
           0, 0, relationTotal(relForPeace), basePnPeace, difficultyForPeace,
         );
         if (neededPn > 0) {
-          const requestItems = peaceOfferAiRequestBasket(neededPn, quantityTradableGoodOptions(ME()));
+          const requestItems = peaceOfferAiRequestBasket(neededPn, quantityTradableGoodOptions(ME()), dealTradeEraForOwners(ownerId, ME()));
           if (requestItems.length > 0) {
             converted.payload = { ...converted.payload, receiveItems: requestItems };
           }
@@ -21561,7 +21573,7 @@ async function boot(): Promise<void> {
         negotiationToLegacyPending(entry),
         turn,
         _menuDifficulty,
-        { atWar, hasTradeTech: ownerHasTradeTech }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3
+        { atWar, hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(entry.proposerOwnerId, entry.responderOwnerId) }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3 + TRADE-ERA r3 (epoka umowy jawnie)
       );
       applyProposalOutcome(entry.proposerOwnerId, entry.responderOwnerId, result, entry.payload, entry.actionId);
       refreshD1bHud();
@@ -22266,7 +22278,7 @@ async function boot(): Promise<void> {
           if (pending) {
             const result = resolvePlayerAcceptsAiPending(
               pending, turn, undefined,
-              { hasTradeTech: ownerHasTradeTech }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3 (difficulty: undefined -> default 'normal', zachowanie bez zmian)
+              { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId) }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3 + TRADE-ERA r3 (difficulty: undefined -> default 'normal')
             );
             applyProposalOutcome(p.ownerId, ME(), result, pending.payload, pending.actionId);
             if (result.accepted) showHintMessage('Przyjęto: ' + p.civName, 3500);
@@ -22407,7 +22419,7 @@ async function boot(): Promise<void> {
       if (!pending) return false;
       const result = resolvePlayerAcceptsAiPending(
         pending, turn, undefined,
-        { hasTradeTech: ownerHasTradeTech },
+        { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId) },
       );
       applyProposalOutcome(p.fromOwnerId, p.toOwnerId, result, pending.payload, pending.actionId);
       return true;
@@ -24600,6 +24612,7 @@ async function boot(): Promise<void> {
         playerOwnerId: ME(),
         actionId: 'handel' as const,
         tempoGry: player.tempoGry ?? 'standardowa',
+        tradeEra, // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: jawna epoka umowy (wyższa z epok stron)
         ...proposalPnTurnsMultiplier({ resourceTradeMode: 'per_turn', turns }),
       };
       const evalCtx = buildProposalEvalContext(ownerId, ME());
@@ -24668,7 +24681,7 @@ async function boot(): Promise<void> {
       if (!pending) return;
       const result = resolvePlayerAcceptsAiPending(
         pending, turn, effectiveGameDifficultyForOwner(targetId),
-        { hasTradeTech: ownerHasTradeTech }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3
+        { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId) }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3 + TRADE-ERA r3
       );
       if (!result.accepted || !result.deal) return;
       activeDeals = applyAcceptedProposal(activeDeals, result);
@@ -25659,6 +25672,9 @@ async function boot(): Promise<void> {
         stanWojny: rel.status === 'wojna',
         turn,
         epoka: player.era,
+        // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: epoka UMOWY (wyższa z epok stron) — jedyny punkt budowy
+        // kontekstu oceny, więc pokrywa wszystkie wywołania evaluateProposal/generateCounterOffer.
+        tradeEra: dealTradeEraForOwners(proposerId, responderId),
         proposerRespekt,
         responderRespekt,
         militaryRatio,
@@ -28770,7 +28786,7 @@ async function boot(): Promise<void> {
         );
         player.nauka = scaledCost + 5;
         player.era = 1;
-        setDiplomacyTradeEra(1);
+        syncDiplomacyTradeEra();
         return { remaining: remaining.Technologia as string, era1Count: era1.length };
       },
       getPlayerState: () => ({ era: player.era, zbadaneSize: player.zbadane.size, nauka: player.nauka, badana: player.badana }),
@@ -29572,7 +29588,7 @@ async function boot(): Promise<void> {
       },
       setPlayerPracaPool: (n: number): void => { playerPracaPool = n; },
       /** R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1: ustawia epokę gracza (bramka stadniny poza złożem od epoki 3). */
-      setPlayerEra: (era: number): void => { player.era = era; setDiplomacyTradeEra(era); },
+      setPlayerEra: (era: number): void => { player.era = era; syncDiplomacyTradeEra(); },
       getPlacedLayers: (q: number, r: number): string[] => placedImprovements.get(`${q},${r}`) ?? [],
       applyBuildRequest: (req: ImprovementBuildRequest): void => applyBuildRequest(req),
       getToast: () => {
@@ -29985,7 +30001,7 @@ async function boot(): Promise<void> {
       getTurn: (): number => turn,
       /** Test izolujący regułę przegranej: playtest startuje w ostatniej epoce, gdzie samotny gracz
        *  wygrywa DOMINACJĄ już w 1. turze (wyprzedza przegraną w checkVictory) — zbijamy epokę. */
-      setPlayerEraForTest: (era: number): void => { player.zbadane = new Set(); player.badana = null; player.era = era; setDiplomacyTradeEra(era); },
+      setPlayerEraForTest: (era: number): void => { player.zbadane = new Set(); player.badana = null; player.era = era; syncDiplomacyTradeEra(); },
       getPlayerEra: (): number => player.era,
       ownerCityIds: (owner: number): string[] => cities.filter(c => c.ownerId === owner).map(c => c.id),
       /** Dodaje osadnika właściciela (klon jednostki wojskowej tego właściciela, typ/kategoria `osadnik`) na hexie jego miasta. */
@@ -30319,7 +30335,7 @@ async function boot(): Promise<void> {
         if (!pending) return { converted: false, accepted: false, reason: 'nie skonwertowano' };
         const result = resolvePlayerAcceptsAiPending(
           pending, turn, undefined,
-          { hasTradeTech: ownerHasTradeTech },
+          { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId) },
         );
         applyProposalOutcome(ownerId, ME(), result, pending.payload, pending.actionId);
         return { converted: true, accepted: !!result.accepted, reason: result.reason ?? null };
@@ -30358,7 +30374,7 @@ async function boot(): Promise<void> {
         const pending = aiCommandToPendingProposal(cmd, ownerId, ME(), turn);
         if (!pending) return { accepted: false, reason: 'nie skonwertowano' };
         pending.payload = { ...pending.payload, turns };
-        const result = resolvePlayerAcceptsAiPending(pending, turn, undefined, { hasTradeTech: ownerHasTradeTech });
+        const result = resolvePlayerAcceptsAiPending(pending, turn, undefined, { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId) });
         applyProposalOutcome(ownerId, ME(), result, pending.payload, pending.actionId);
         return { accepted: !!result.accepted, reason: result.reason ?? null };
       },
@@ -30611,6 +30627,75 @@ async function boot(): Promise<void> {
           return [k, rest];
         });
         return (await saveToLocal(dstSlot, { ...s, meta })).ok;
+      },
+    };
+
+    // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: hak WYŁĄCZNIE do tools/diplomacy-trade-era-saveload-live-test.cjs.
+    // Zapis/odczyt idą REALNĄ ścieżką gry (persistSaveToSlot / loadGameFromSlot); `setEraForTest` to SETUP
+    // (badania => epoka, jak applyOwnerEraFixtureForTest), `injectLegacyTradeOffers` wstawia do stołu i skrzynki
+    // oferty o ilościach SPRZED bloków epoki (stary zapis) — to setup, nie testowana logika. Obcinanie ilości
+    // przy wczytaniu wykonuje produkcyjny kod loadGameFromSlot (diplomacyClampBasketItemsToEraBlock).
+    (window as any).__tradeEraSaveLoadTestDebug = {
+      setEraForTest: (ownerId: number, era: number): Record<string, number> => {
+        applyOwnerEraFixtureForTest(ownerId, era);
+        syncDiplomacyTradeEra();
+        return { playerEra: player.era, ownerEra: empireEpochForOwner(ownerId), tradeEra: diplomacyTradeEra() };
+      },
+      /** Setup: wybiera AI i ustawia z nim POKÓJ (handel jest unieważniany w wojnie; mapa playtest startuje w wojnie). */
+      pickPeacefulAiOwner: (): number | null => {
+        const id = allPowerOwnerIds().find(o => o > 0 && !isBarbarian(o) && !isCityStateOwner(o) && !isHuman(o)
+          && aiOwnerCivMap.has(o));
+        if (id == null) return null;
+        const cur = getDiploRelation(ME(), id);
+        if (cur.status === 'wojna') setDiploRelation(ME(), id, { ...cur, status: 'pokoj' });
+        return id;
+      },
+      state: (aiOwnerId: number): Record<string, number> => ({
+        playerEra: player.era, aiEra: empireEpochForOwner(aiOwnerId),
+        tradeEra: diplomacyTradeEra(), dealEra: dealTradeEraForOwners(ME(), aiOwnerId),
+      }),
+      /** Skraca stan do czystego: usuwa propozycje na stole/skrzynce, wstawia po jednej ofercie AI->gracz o podanej ilości. */
+      injectLegacyTradeOffers: (aiOwnerId: number, qty: number, qtyInbox: number): void => {
+        establishDiplomaticContact(aiOwnerId); // setup: kontakt (stół wczytuje wpisy tylko ze znanych stron)
+        negotiationTable.length = 0;
+        pendingDiplomacyInbox.length = 0;
+        negotiationSeq += 1;
+        const proposal = {
+          actionId: 'handel' as const, proposerOwnerId: aiOwnerId, responderOwnerId: ME(),
+          payload: {
+            giveItems: [{ typ: 'surowiec_ilosc' as const, id: 'drewno', ilosc: qty }],
+            receiveItems: [{ typ: 'surowiec_ilosc' as const, id: 'kamien', ilosc: qty }],
+          },
+        };
+        negotiationTable.push(createNegotiation(proposal as any, turn, 'ai', negotiationSeq));
+        pendingDiplomacyInbox.push({
+          id: 'trade-era-legacy-inbox', ownerId: aiOwnerId, civName: ownerDiploLabel(aiOwnerId),
+          cmdType: 'zaproponuj_handel_surowiec', reason: 'trade-era-test',
+          surowiecKey: 'drewno', surowiecLabel: 'Drewno', pakietyPerTura: qtyInbox,
+          zaplataTyp: 'zloto', zaplataPerTura: 5, resTurns: 10,
+        });
+      },
+      dumpTradeOffers: (): Record<string, unknown> => ({
+        tradeEra: diplomacyTradeEra(),
+        negotiation: negotiationTable.map(n => ({
+          id: n.id,
+          give: (n.payload.giveItems ?? []).filter(i => i.typ === 'surowiec_ilosc').map(i => [i.id, i.ilosc]),
+          receive: (n.payload.receiveItems ?? []).filter(i => i.typ === 'surowiec_ilosc').map(i => [i.id, i.ilosc]),
+        })),
+        inbox: pendingDiplomacyInbox.map(p => ({ id: p.id, key: p.surowiecKey, pakiety: p.pakietyPerTura })),
+      }),
+      quickSave: async (slot: string): Promise<boolean> => (await persistSaveToSlot(slot, 'trade-era-saveload-test')).ok,
+      loadSlot: async (slot: string): Promise<void> => { await loadGameFromSlot(slot, false); },
+      /** Epoka handlu po sztucznym rozjechaniu (symulacja: nowa sesja startuje z epoką 1, zapis niesie epokę gracza). */
+      resetTradeEraTo: (era: number): void => { setDiplomacyTradeEra(era); },
+      /** Diagnostyka: co faktycznie siedzi w slocie (stół, kontakty) — odróżnia „nie zapisano” od „odfiltrowano przy wczytaniu”. */
+      peekSlot: async (slot: string): Promise<Record<string, unknown>> => {
+        const sv: any = await loadFromLocal(slot);
+        return {
+          negotiationInSlot: (sv?.meta?.negotiationTable ?? []).length,
+          contactsInSlot: JSON.stringify(sv?.meta?.diplomaticContactEstablished ?? null),
+          contactsLive: Array.from(diplomaticContactEstablishedSet()),
+        };
       },
     };
 
@@ -31166,7 +31251,7 @@ async function boot(): Promise<void> {
           negotiationTable.splice(idx, 1);
           const atWar = getDiploRelation(entry.proposerOwnerId, entry.responderOwnerId).status === 'wojna';
           const result = resolvePlayerAcceptsAiPending(
-            negotiationToLegacyPending(entry), turn, _menuDifficulty, { atWar, hasTradeTech: ownerHasTradeTech },
+            negotiationToLegacyPending(entry), turn, _menuDifficulty, { atWar, hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(entry.proposerOwnerId, entry.responderOwnerId) },
           );
           applyProposalOutcome(entry.proposerOwnerId, entry.responderOwnerId, result, entry.payload, entry.actionId);
           refreshD1bHud();
@@ -47088,7 +47173,7 @@ async function boot(): Promise<void> {
       const ERA_MAP: Record<string, number> = { kamien: 1, braz: 2, zelazo: 3 };
       player.era = ERA_MAP[params.epochId] ?? 1;
       // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1: nowa gra startuje z epoką handlu zgodną z kreatorem.
-      setDiplomacyTradeEra(player.era);
+      syncDiplomacyTradeEra();
 
       // Wepnij tożsamość nacji gracza; efekty są rozwiązywane z macierzy per owner.
       {
@@ -48220,6 +48305,7 @@ async function boot(): Promise<void> {
       player.nauka = 200;
       player.pieniadzMnoznik = 1;
       player.era = 2;
+      syncDiplomacyTradeEra();
 
       const rozmiar = rozmiarFromMenuLabel('Maly');
       // C1/C2: generacja mapy asynchronicznie + panel „Tworzenie świata".
@@ -48442,6 +48528,7 @@ async function boot(): Promise<void> {
       player.nauka = 200;
       player.pieniadzMnoznik = 1;
       player.era = 2;
+      syncDiplomacyTradeEra();
 
       const rozmiar = rozmiarFromMenuLabel('Maly');
       // C1/C2: generacja mapy asynchronicznie + panel „Tworzenie świata".
@@ -49115,7 +49202,7 @@ async function boot(): Promise<void> {
       if (!playerStateByHuman.has(HUMAN_OWNER_PRIMARY)) playerStateByHuman.set(HUMAN_OWNER_PRIMARY, player);
       overlayDepositEra = player.era;
       // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1: wczytany zapis ustawia epokę handlu od razu (nie dopiero po reconcile).
-      setDiplomacyTradeEra(player.era);
+      syncDiplomacyTradeEra();
       cityProd.clear();
       if (saved.cityProd) {
         for (const [cid, prod] of Object.entries(saved.cityProd)) {
@@ -49741,7 +49828,16 @@ async function boot(): Promise<void> {
       pendingDiplomacyInbox.length = 0;
       allianceWarCallHistory.length = 0;
       const savedPending = saved.meta?.pendingDiplomacyInbox as typeof pendingDiplomacyInbox | undefined;
-      if (savedPending?.length) pendingDiplomacyInbox.push(...savedPending);
+      if (savedPending?.length) {
+        // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: stare oferty AI w skrzynce — ilość surowca do pełnego bloku
+        // epoki umowy (floor, min. 1 blok); oferta nie znika.
+        for (const row of savedPending) {
+          if (row.surowiecKey && typeof row.pakietyPerTura === 'number') {
+            row.pakietyPerTura = diplomacyClampQtyToEraBlock(row.surowiecKey, row.pakietyPerTura, dealTradeEraForOwners(row.ownerId, ME()));
+          }
+        }
+        pendingDiplomacyInbox.push(...savedPending);
+      }
       for (let pi = pendingDiplomacyInbox.length - 1; pi >= 0; pi--) {
         if (!diplomaticContactEstablishedSet().has(pendingDiplomacyInbox[pi]!.ownerId)) {
           pendingDiplomacyInbox.splice(pi, 1);
@@ -49834,6 +49930,14 @@ async function boot(): Promise<void> {
           // z zapisu). Behawioralny no-op (dziś ME() === 0 zawsze).
           const otherOwnerId = isMe(entry.proposerOwnerId) ? entry.responderOwnerId : entry.proposerOwnerId;
           if (!diplomaticContactEstablishedSet().has(otherOwnerId)) continue;
+          // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: stare propozycje (ilości sprzed bloków epoki) — ilość surowca
+          // obcięta W DÓŁ do pełnego bloku epoki umowy (min. 1 blok), wpis zostaje na stole.
+          const entryEra = dealTradeEraForOwners(entry.proposerOwnerId, entry.responderOwnerId);
+          const p0 = entry.payload as { giveItems?: BasketItem[]; receiveItems?: BasketItem[] } | undefined;
+          if (p0) {
+            if (p0.giveItems) p0.giveItems = diplomacyClampBasketItemsToEraBlock(p0.giveItems, entryEra);
+            if (p0.receiveItems) p0.receiveItems = diplomacyClampBasketItemsToEraBlock(p0.receiveItems, entryEra);
+          }
           negotiationTable.push(entry);
         }
       }

@@ -379,3 +379,11 @@ Wysyłaj **prezenty** przed prośbą o pakt — relacja **+20** taniej niż wojn
 
 
 **Epoka handlu surowcami (blok ilości).** Liczba PN za blok surowca nie zmienia się między epokami, rośnie za to ilość: w Kamieniu 10 sztuk = 1 PN, w Brązie 50 szt. = 1 PN, w Żelazie 100 szt. = 1 PN. Epoka umowy to wyższa z epok dwóch stron, więc oferta AI w Brązie ma ilości w blokach po 50 szt. Szczegóły: encyklopedia, hasło „Handel surowcami".
+
+| Epoka umowy | Blok (szt. za ten sam PN) | Przykład: drewno (1 PN za blok) | Przykład: kamień (3 PN za blok) |
+|-------------|---------------------------|----------------------------------|----------------------------------|
+| Kamień | 10 | 10 szt. = 1 PN | 10 szt. = 3 PN |
+| Brąz | 50 | 50 szt. = 1 PN | 50 szt. = 3 PN |
+| Żelazo | 100 | 100 szt. = 1 PN | 100 szt. = 3 PN |
+
+Okno wymiany, „Szybka umowa", oferty AI i ocena partnera liczą w tej samej epoce umowy (wyższej z epok obu stron), więc podgląd bilansu zgadza się z decyzją AI. Ilość mniejsza niż jeden blok nie jest wyceniana; stare oferty z zapisu są obcinane w dół do pełnego bloku (minimum jeden).

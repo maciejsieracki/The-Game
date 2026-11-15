@@ -48,6 +48,7 @@ import {
 } from './diplomacy-pn-engine';
 import {
   diplomacyProgDarRelacja, diplomacyFairGivePn, diplomacyNormalizeSurowiecIlosc,
+  withDiplomacyTradeEra, diplomacyTradeEra,
 } from './diplomacy-value-catalog';
 import {
   isCurrencyProposalForbiddenDuringWar,
@@ -183,6 +184,13 @@ export interface ProposalEvalContext {
   stanWojny: boolean;
   turn: number;
   epoka?: number;
+  /**
+   * R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: epoka UMOWY handlowej = WYŻSZA z epok proponenta i
+   * respondenta (diplomacyDealTradeEra). `evaluateProposal`/`generateCounterOffer` wyceniają i
+   * normalizują ilości surowców w tej epoce (okno gracza, bramka uczciwości i walidacja
+   * zatwierdzenia liczą tak samo). Brak = globalna epoka handlu.
+   */
+  tradeEra?: number;
   /** Respekt proponującego (0–100) w oczach respondenta */
   proposerRespekt: number;
   /** Respekt respondenta (0–100) w oczach proponującego */
@@ -610,6 +618,8 @@ export function buildHandelSurowiecCykliczny(
   responderId: number,
   giveItems: readonly BasketItem[] = [],
   receiveItems: readonly BasketItem[] = [],
+  /** R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: jawna epoka umowy (brak = globalna epoka handlu). */
+  tradeEra?: number,
 ): HandelSurowiecCyklicznyItem[] {
   const out: HandelSurowiecCyklicznyItem[] = [];
   const giveRes = giveItems.find(i => i.typ === 'surowiec_ilosc' && (i.ilosc ?? 0) > 0);
@@ -624,7 +634,7 @@ export function buildHandelSurowiecCykliczny(
   if (giveRes) {
     out.push({
       surowiecKey: giveRes.id,
-      pakietyPerTura: diplomacyNormalizeSurowiecIlosc(giveRes.id, giveRes.ilosc ?? 0),
+      pakietyPerTura: diplomacyNormalizeSurowiecIlosc(giveRes.id, giveRes.ilosc ?? 0, undefined, tradeEra),
       sellerOwnerId: proposerId,
       buyerOwnerId: responderId,
       zaplataTyp: recvPayment?.typ as 'zloto' | 'praca' | undefined,
@@ -634,7 +644,7 @@ export function buildHandelSurowiecCykliczny(
   if (recvRes) {
     out.push({
       surowiecKey: recvRes.id,
-      pakietyPerTura: diplomacyNormalizeSurowiecIlosc(recvRes.id, recvRes.ilosc ?? 0),
+      pakietyPerTura: diplomacyNormalizeSurowiecIlosc(recvRes.id, recvRes.ilosc ?? 0, undefined, tradeEra),
       sellerOwnerId: responderId,
       buyerOwnerId: proposerId,
       zaplataTyp: givePayment?.typ as 'zloto' | 'praca' | undefined,
@@ -1128,6 +1138,15 @@ export function evaluateProposal(
   proposal: DiplomaticProposal,
   ctx: ProposalEvalContext,
 ): ProposalEvalResult {
+  // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: ocena w jawnej epoce umowy (ctx.tradeEra), nie w
+  // epoce, którą akurat zostawił globalny stan (domyślna epoka handlu zostaje fallbackiem).
+  return withDiplomacyTradeEra(ctx.tradeEra ?? diplomacyTradeEra(), () => evaluateProposalImpl(proposal, ctx));
+}
+
+function evaluateProposalImpl(
+  proposal: DiplomaticProposal,
+  ctx: ProposalEvalContext,
+): ProposalEvalResult {
   const { actionId, proposerOwnerId, responderOwnerId, payload } = proposal;
   const { relation, stanWojny } = ctx;
   const p = getEffectiveDiplomacyParams(ctx.difficulty ?? 'normal');
@@ -1138,6 +1157,7 @@ export function evaluateProposal(
     // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2 defekt r2): bez actionId pozycja 'miasto' wyceniana
     // jako null (fail-safe) → cesja miasta nie wchodziła do bilansu PW propozycji.
     actionId,
+    tradeEra: ctx.tradeEra,
     ...proposalPnTurnsMultiplier(payload),
   };
   const score = relationScore(relation);
@@ -1697,7 +1717,7 @@ export function evaluateProposal(
         const cyklPwBalance = givePn - handelRequiredPn(receivePn, fairnessRelTotal, handelMultiplier);
         const turns = exchangeValuationTurns(payload);
         const cyklicznyItems = buildHandelSurowiecCykliczny(
-          proposerOwnerId, responderOwnerId, payload.giveItems, payload.receiveItems,
+          proposerOwnerId, responderOwnerId, payload.giveItems, payload.receiveItems, ctx.tradeEra,
         );
         if (!cyklicznyItems.length) {
           return { accepted: false, reason: 'Brak surowca do cyklicznej wymiany' };
@@ -2325,7 +2345,7 @@ export function resolvePlayerAcceptsAiPending(
   difficulty: GameDifficulty = 'normal',
   // R-HANDEL-WYMIANA-TECH-GATE-Q1: `hasTradeTech` opcjonalny — wsteczna zgodność
   // dla wywołujących spoza allowlisty tego tematu (undefined = bramka pominięta).
-  opts?: { atWar?: boolean; hasTradeTech?: (ownerId: number) => boolean },
+  opts?: { atWar?: boolean; hasTradeTech?: (ownerId: number) => boolean; tradeEra?: number },
 ): ProposalEvalResult {
   const { actionId, fromOwnerId, toOwnerId, payload } = pending;
   if (opts?.atWar === true) {
@@ -2459,7 +2479,7 @@ export function resolvePlayerAcceptsAiPending(
       if (payload.resourceTradeMode === 'per_turn' && hasQuantityResourceItems) {
         const turns = exchangeValuationTurns(payload);
         const cyklicznyItems = buildHandelSurowiecCykliczny(
-          fromOwnerId, toOwnerId, payload.giveItems, payload.receiveItems,
+          fromOwnerId, toOwnerId, payload.giveItems, payload.receiveItems, opts?.tradeEra,
         );
         if (!cyklicznyItems.length) {
           return { accepted: false, reason: 'Brak surowca do cyklicznej wymiany' };
@@ -2897,12 +2917,19 @@ export function generateCounterOffer(
   proposal: DiplomaticProposal,
   ctx: ProposalEvalContext,
 ): CounterOfferResult | null {
+  return withDiplomacyTradeEra(ctx.tradeEra ?? diplomacyTradeEra(), () => generateCounterOfferImpl(proposal, ctx));
+}
+
+function generateCounterOfferImpl(
+  proposal: DiplomaticProposal,
+  ctx: ProposalEvalContext,
+): CounterOfferResult | null {
   const { actionId, payload } = proposal;
   if (NEGOTIATION_NO_ENGINE_COUNTER.has(actionId)) return null;
 
   const difficulty = ctx.difficulty ?? 'normal';
   const relTotal = treatyEvalRelationTotal(ctx.relation);
-  const pnOpts: ResolveProposalPnOptions = { difficulty };
+  const pnOpts: ResolveProposalPnOptions = { difficulty, tradeEra: ctx.tradeEra };
 
   // P-DYPLO-BILANS-GATE-NIESPOJNY runda 2 (GOAL 4 — kryterium końca 3): `tryPayload` bramkuje
   // KAŻDĄ kandydacką kontrofertę w tej funkcji (jedno miejsce, wszystkie ścieżki niżej), więc to

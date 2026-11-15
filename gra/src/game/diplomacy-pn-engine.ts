@@ -36,6 +36,8 @@ export interface ResolveProposalPnOptions {
   perTurn?: boolean;
   /** R-WEB-PEACE-CITY-CESSION-Q1 r2: akcja propozycji (bramka pozycji 'miasto'). */
   actionId?: string;
+  /** R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: jawna epoka umowy (wyższa z epok stron); brak = globalna. */
+  tradeEra?: number;
 }
 
 export function buildProposalPnSumOpts(opts?: ResolveProposalPnOptions): DiplomacySumPnOptions {
@@ -47,6 +49,7 @@ export function buildProposalPnSumOpts(opts?: ResolveProposalPnOptions): Diploma
     tempo: opts?.tempoGry,
     turnsMultiplier: opts?.turnsMultiplier,
     perTurn: opts?.perTurn,
+    tradeEra: opts?.tradeEra,
   };
 }
 
@@ -534,6 +537,7 @@ function computeQuickDealBasketImpl(input: QuickDealInput): QuickDealResult {
     receivePn,
     input.relacjaTotal,
     input.difficulty ?? 'normal',
+    input.tradeEra,
   );
 
   return { giveItems: trimmedGive, receiveItems };
