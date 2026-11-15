@@ -1,0 +1,139 @@
+[
+ {
+  "label": "baza live",
+  "exit": 0
+ },
+ {
+  "label": "baza manual",
+  "exit": 0
+ },
+ {
+  "label": "A1 rozrzut frontu (+7 kolumn jednej jednostki piechoty)",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "A1 brak zderzenia wrecz (adj=0 wszedzie) -> NIE_ZMIERZONO",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "A2 2 ciosy jednej jednostki w turze",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "A3 piechota z niewykorzystanym ruchem w kazdej turze",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "B1 neverRout w zdarzeniach rozbicia",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "B1 neverRout uciekl (los=fled)",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "B1 zbior neverRout pusty = NIE_ZMIERZONO (nie PASS)",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "B1 neverRout przezyl bez ciosow po 1. rozbiciu",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "B2 uciekinier wykonuje 5 krokow w turze (limit 2)",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "B2 krok ucieczki w strone wroga",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "B2 fleeMove == pelny ruch (brak 50%)",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "B3 byli rozbici, brak poscigu",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "B3 zwyciezca ma konnice, a konnica nie zadala ciosu uciekinierowi",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "K2 uciekinier usuniety poza krawedzia",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "K3 rozbity zostal na polu",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "K5 bilans jednostek",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "K1 timeout",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "K1 pageerror",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "MAN timeout/niezakonczona",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "MAN driver nie wydal rozkazu z UI",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "MAN scena nie w trybie recznym",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "MAN tryb reczny wylaczony w trakcie",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "MAN bilans jednostek",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "MAN pageerror",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "MAN brak wyniku",
+  "exit": 1,
+  "matched": true
+ },
+ {
+  "label": "MAN --strict-discrepancy",
+  "exit": 1
+ }
+]
