@@ -1,3 +1,9 @@
+## ROBOCZA 5340ea32 -- 2026-11-14 -- FALA 747: Bitwa: strzelcy po zderzeniu uzywaja pelnego ruchu (reszta reguly pelnego ruchu) (testowa)
+
+- Strzelec po pierwszym zderzeniu wrecz nie konczy aktywacji z niewykorzystanym ruchem gdy istnieje sciezka do pozycji strzalu: filtr reguly linii plus fallback BFS omijajacy slad aktywacji bez ping-ponga; przed zderzeniem bez zmian; test T5 zielony
+- Weryfikacja: tsc 0; logic 213/213; battle-full-move-strike 8/8 mutacje 4/4; pace-latch 5/5; line-advance-uniform bez FAIL; pursuit-move 13/13 (FC); pace-equal-line-live 23/0 (FC); vite build OK
+- Limity: NIE ZMIERZONO: strzelcy bez dozwolonego kroku w innych ziarnach, wyjatek doktryn Obrona/Ostrzal osobno; jedna trojka determinizmu w pierwszym przebiegu FC dala inny hash (ponowienie 14/15 i 7/7 identyczne); dlug Rust REPIN ruchu strzelcow
+
 ## ROBOCZA 25a4f1f4 -- 2026-11-14 -- FALA 746: Skad zapasy czesc B: stan details karty, hak civTest, dokumentacja i pomiar wydajnosci ksiegi (testowa)
 
 - Stan details karty Skad zapasy zachowany przy przerysowaniu; hak openEmpirePanel za civTest; dokumentacja hasla i poradnika, wikiBundle; pomiar wydajnosci ksiegi 5 par sekwencyjnych mediana -2,15 proc; zrzuty kart soli i ceramiki; diagnoza endTurn: bramka NNS w turze 1

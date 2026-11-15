@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "25a4f1f4fb3895be5188bc52dd2f53c4",
-  "bundleSha256": "b7ac463931909be72905c463eea0afef879b1b3177459164a85000e304835896",
-  "bundleBytes": 14798398,
+  "bundleMd5": "5340ea3246eb4bf53f3ee7f65691aed4",
+  "bundleSha256": "56964aa2e2ecebfaa7f80a8768e0c515a70c63d14f92ef19025f22c3393bd6d6",
+  "bundleBytes": 14798652,
   "sourceSnapshot": {
-    "source": "main FC c8303d4d2",
+    "source": "main FC 748689d40",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 746: Stan details karty Skad zapasy zachowany przy przerysowaniu; hak openEmpirePanel za civTest; dokumentacja hasla i poradnika, wikiBundle; pomiar wydajnosci ksiegi 5 par sekwencyjnych mediana -2,15 proc; zrzuty kart soli i ceramiki; diagnoza endTurn: bramka NNS w turze 1"
+    "FALA 747: Strzelec po pierwszym zderzeniu wrecz nie konczy aktywacji z niewykorzystanym ruchem gdy istnieje sciezka do pozycji strzalu: filtr reguly linii plus fallback BFS omijajacy slad aktywacji bez ping-ponga; przed zderzeniem bez zmian; test T5 zielony"
   ],
   "verification": [
-    "tsc 0; logic 213/213; resource-ledger 1030/0; skad-ui 18/0; skad-dom 13/0; hook-gate 6/0; vite build OK"
+    "tsc 0; logic 213/213; battle-full-move-strike 8/8 mutacje 4/4; pace-latch 5/5; line-advance-uniform bez FAIL; pursuit-move 13/13 (FC); pace-equal-line-live 23/0 (FC); vite build OK"
   ],
   "limits": [
-    "NIE ZMIERZONO: przyczyna timeoutu endTurn t57; pomiar wydajnosci w konfiguracji domyslnej (po harnessie 417); pochodzenie buildu dist w pomiarze"
+    "NIE ZMIERZONO: strzelcy bez dozwolonego kroku w innych ziarnach, wyjatek doktryn Obrona/Ostrzal osobno; jedna trojka determinizmu w pierwszym przebiegu FC dala inny hash (ponowienie 14/15 i 7/7 identyczne); dlug Rust REPIN ruchu strzelcow"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES LEDGER-B r4 (kod 579d36355, raport c8303d4d2): Skad zapasy czesc B: stan details karty zachowany przy przerysowaniu (D6/D7), hak openEmpirePanel za civTest, dokumentacja i wikiBundle; pomiar wydajnosci ksiegi 5 par sekwencyjnych mediana delta -2,15% (prog 10% nieprzekroczony); zrzuty kart soli i ceramiki z prawdziwej gry; diagnoza endTurn: bramka NNS w turze 1 przy domyslnych podatkach = dlug harnessu, t57 nierozstrzygniete; testy resource-ledger 1030/0, skad-ui 18/0, skad-dom 13/0, hook-gate 6/0"
+    "notes": "FC PASS-WITH-NOTES FULL-MOVE-RESIDUAL-INFANTRY-Q2 r1 (kod 0c74bd52d, raport 748689d40): dokonczenie reguly pelnego ruchu dla strzelcow po zderzeniu: _rangedForwardStep nie konczy aktywacji gdy istnieje sciezka BFS do pozycji strzalu (filtr reguly linii + fallback BFS omijajacy slad aktywacji, bez ping-ponga); przed zderzeniem bez zmian; T5 zielony wastedInf 2->0, pursuit-move 13/13 mutacje A-D, full-move-strike 8/8 mutacje 4/4 determinizm x3, pace-latch 5/5, line-advance-uniform bez FAIL, pace-equal-line-live 23/0; macierz doktryn 0 red; NIE ZMIERZONO: aktywacje strzelcow gdzie regula linii nie dopuszcza kroku w innych ziarnach, wyjatek doktryn Obrona/Ostrzal osobno; dlug Rust REPIN"
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-15T15:59:54",
+  "hubGeneratedAt": "2026-11-15T17:19:18",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "25a4f1f4fb3895be5188bc52dd2f53c4",
-      "sizeBytes": 14798398
+      "md5": "5340ea3246eb4bf53f3ee7f65691aed4",
+      "sizeBytes": 14798652
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "25a4f1f4fb3895be5188bc52dd2f53c4",
-      "sizeBytes": 14798398
+      "md5": "5340ea3246eb4bf53f3ee7f65691aed4",
+      "sizeBytes": 14798652
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "25a4f1f4fb3895be5188bc52dd2f53c4",
-      "sizeBytes": 14798398
+      "md5": "5340ea3246eb4bf53f3ee7f65691aed4",
+      "sizeBytes": 14798652
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "25a4f1f4fb3895be5188bc52dd2f53c4",
-      "sizeBytes": 14798398
+      "md5": "5340ea3246eb4bf53f3ee7f65691aed4",
+      "sizeBytes": 14798652
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "25a4f1f4fb3895be5188bc52dd2f53c4",
-      "sizeBytes": 14798398
+      "md5": "5340ea3246eb4bf53f3ee7f65691aed4",
+      "sizeBytes": 14798652
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "25a4f1f4fb3895be5188bc52dd2f53c4",
-      "sizeBytes": 14798398
+      "md5": "5340ea3246eb4bf53f3ee7f65691aed4",
+      "sizeBytes": 14798652
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "25a4f1f4fb3895be5188bc52dd2f53c4",
-      "sizeBytes": 14798398
+      "md5": "5340ea3246eb4bf53f3ee7f65691aed4",
+      "sizeBytes": 14798652
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "25a4f1f4fb3895be5188bc52dd2f53c4",
-      "sizeBytes": 14798398
+      "md5": "5340ea3246eb4bf53f3ee7f65691aed4",
+      "sizeBytes": 14798652
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "25a4f1f4fb3895be5188bc52dd2f53c4",
-      "sizeBytes": 14798398
+      "md5": "5340ea3246eb4bf53f3ee7f65691aed4",
+      "sizeBytes": 14798652
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "25a4f1f4fb3895be5188bc52dd2f53c4",
-      "sizeBytes": 14798398
+      "md5": "5340ea3246eb4bf53f3ee7f65691aed4",
+      "sizeBytes": 14798652
     }
   ],
-  "md5": "25a4f1f4fb3895be5188bc52dd2f53c4",
+  "md5": "5340ea3246eb4bf53f3ee7f65691aed4",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
