@@ -38,6 +38,9 @@ export {
   upkeepLedgerParts,
   citizenLedgerParts,
   recordTakenToLedger,
+  pendingLedgerSink,
+  drainPendingLedgerInto,
+  peekPendingLedger,
 } from '../src/game/resource-ledger';
 `, 'utf8');
 
@@ -69,6 +72,9 @@ const {
   upkeepLedgerParts,
   citizenLedgerParts,
   recordTakenToLedger,
+  pendingLedgerSink,
+  drainPendingLedgerInto,
+  peekPendingLedger,
 } = M;
 
 let pass = 0;
@@ -217,6 +223,53 @@ function runSim({ withLedger, skipUpkeepRecord, seed }) {
     check(`(4) seed ${seed}: stan miast identyczny z księgą i bez księgi (30 tur)`,
       plain.final === withL.final && plain.history.join('|') === withL.history.join('|'));
   }
+}
+
+// ---------------------------------------------------------------------------
+// (6) okno poza tickiem (budowa, rekrutacja): pobór z sinkiem = zmiana magazynu po drenażu;
+//     bez wpływu na stan miast; drenaż czyści okno.
+// ---------------------------------------------------------------------------
+for (const seed of [7, 2024]) {
+  const rng = makeRng(seed);
+  const withSink = makeCities();
+  const plain = makeCities();
+  let maxDiff = 0;
+  let sameState = true;
+  for (let t = 0; t < 30; t++) {
+    const cost = {};
+    cost.drewno = Math.floor(rng() * 25);
+    cost.sol = Math.floor(rng() * 6);
+    const before = ownerTotals(withSink);
+    const kind = t % 2 === 0 ? 'budowa' : 'rekrutacja';
+    deductBuildingStockCostAcrossCities(withSink, 0, cost, pendingLedgerSink(0, kind, kind));
+    deductBuildingStockCostAcrossCities(plain, 0, cost);
+    const mid = ownerTotals(withSink);
+    const turnT = createLedgerTurn();
+    drainPendingLedgerInto(new Map([[0, turnT]]));
+    for (const k of KEYS) {
+      const diff = Math.abs((mid[k] - before[k]) - ledgerResourceNet(turnT, k).net);
+      if (diff > maxDiff) maxDiff = diff;
+    }
+    if (snapshot(withSink) !== snapshot(plain)) sameState = false;
+  }
+  check(`(6) seed ${seed}: okno pending -> zmiana magazynu = suma wpisów (30 tur)`, maxDiff === 0, maxDiff);
+  check(`(6) seed ${seed}: pobór z sinkiem nie zmienia stanu miast`, sameState);
+  check(`(6) seed ${seed}: drenaż czyści okno`, peekPendingLedger().size === 0);
+}
+
+// ---------------------------------------------------------------------------
+// (7) wiring guard (tekst main.ts / cityPanel.ts, jak pozostałe testy wpięcia): sinki budowy
+//     i rekrutacji oraz drenaż okna przed/po ticku. UWAGA: to strażnik tekstowy, nie dowód
+//     wykonania w pętli gry (zob. raport, NIE ZMIERZONO).
+// ---------------------------------------------------------------------------
+{
+  const mainTxt = fs.readFileSync(path.resolve(GRA, 'src/main.ts'), 'utf8');
+  const cityTxt = fs.readFileSync(path.resolve(GRA, 'src/ui/cityPanel.ts'), 'utf8');
+  const recruitSinks = mainTxt.split("pendingLedgerSink(ownerId, 'rekrutacja'").length - 1;
+  check('(7) main.ts: sinki rekrutacji (2 miejsca)', recruitSinks === 2, recruitSinks);
+  check("(7) main.ts: sink budowy w deductOwnerStockCost", mainTxt.includes("pendingLedgerSink(ownerId, 'budowa'"));
+  check('(7) main.ts: drenaż okna po ticku ekonomii', mainTxt.includes('drainPendingLedgerInto(econ.resourceLedgerByOwner)'));
+  check("(7) cityPanel.ts: sink budowy przy starcie budowy", cityTxt.includes("pendingLedgerSink(city.ownerId, 'budowa'"));
 }
 
 console.log(`resource-ledger-consume-test: ${pass} passed, ${fail} failed`);

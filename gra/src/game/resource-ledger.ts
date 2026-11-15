@@ -23,7 +23,9 @@ export type LedgerSourceKind =
   | 'spichlerz'             // drain Spichlerza (ceramika / sól)
   | 'utrzymanie_budynkow'   // utrzymanie budynków (surowce, po tiku)
   | 'utrzymanie_jednostek'  // utrzymanie jednostek (surowce, po tiku)
-  | 'obywatele';            // zużycie przez obywateli (citizen-resource-upkeep)
+  | 'obywatele'            // zużycie przez obywateli (citizen-resource-upkeep)
+  | 'budowa'                // start budowy budynku (pobór z puli państwa poza tickiem)
+  | 'rekrutacja';           // rekrutacja jednostek (pobór z puli państwa poza tickiem)
 
 /**
  * Miejsce zapisu w dzienniku dla wywołania, które odejmuje surowce z puli państwa.
@@ -208,4 +210,47 @@ export function recordTakenToLedger(
       -entry.amount,
     );
   }
+}
+
+/**
+ * R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (partia 2b, mechanizm „pending”):
+ * pobory z puli państwa wykonywane POZA tickiem (start budowy, rekrutacja) trafiają do
+ * jednego okna per właściciel. Okno jest opróżniane przez `drainPendingLedgerInto` w chwili,
+ * gdy tick ekonomii zapisuje rekord swojej tury, więc pobór z okna trafia do tej samej tury
+ * co zmiana magazynu, którą wywołał. Stan gry NIE zależy od okna (tylko zapis do księgi).
+ * Stan modułu: przeżywa między turami, NIE jest zapisywany w zapisie gry (zob. raport, luka).
+ */
+const pendingLedgerByOwner = new Map<number, ResourceLedgerTurn>();
+
+/** Sink dla deductBuildingStockCostAcrossCities: pobór poza tickiem dla ownera, kind + etykieta. */
+export function pendingLedgerSink(ownerId: number, kind: LedgerSourceKind, label: string): LedgerCostSink {
+  let turn = pendingLedgerByOwner.get(ownerId);
+  if (!turn) {
+    turn = createLedgerTurn();
+    pendingLedgerByOwner.set(ownerId, turn);
+  }
+  return { turn, parts: [{ kind, sourceKey: `${kind}|${ownerId}`, label, cost: {} }] };
+}
+
+/** Przenosi okno poza tickiem do rekordów tury (`target`, get-or-create) i czyści okno. */
+export function drainPendingLedgerInto(target: Map<number, ResourceLedgerTurn> | undefined): void {
+  if (!target) return;
+  for (const [ownerId, pending] of pendingLedgerByOwner) {
+    let turn = target.get(ownerId);
+    if (!turn) {
+      turn = createLedgerTurn();
+      target.set(ownerId, turn);
+    }
+    for (const [resourceKey, bySource] of Object.entries(pending.byResource)) {
+      for (const [sourceKey, flow] of Object.entries(bySource)) {
+        recordLedgerFlow(turn, resourceKey, sourceKey, { kind: flow.kind, label: flow.label }, flow.amount);
+      }
+    }
+  }
+  pendingLedgerByOwner.clear();
+}
+
+/** Test/diagnostyka: podgląd okna bez czyszczenia (kopia). */
+export function peekPendingLedger(): Map<number, ResourceLedgerTurn> {
+  return new Map(pendingLedgerByOwner);
 }

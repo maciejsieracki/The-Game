@@ -31,6 +31,7 @@
  * Mini-podgląd jednostek: unitMiniPreview.ts (Three.js — buildUnitModel).
  */
 
+import { pendingLedgerSink } from '../game/resource-ledger';
 import { isCityUnderSiege, CITY_SIEGE_RECRUIT_BLOCK_PL } from '../game/city-siege-state';
 import {
   attachHoverDetail,
@@ -6524,7 +6525,7 @@ function addItem(city: City, item: ProductionItem, opts?: { upgrade?: boolean })
     if (Object.keys(cost).length > 0) {
       if (!canAffordBuildingStock(ownerSurowcePoolFor(city), cost)) return; // blokada: pula panstwa nie starcza
       // pobór RAZ, przy starcie budowy — rozłożony po miastach ownera (pula PAŃSTWA).
-      deductBuildingStockCostAcrossCities(cfg.getCities?.() ?? [city], city.ownerId, cost);
+      deductBuildingStockCostAcrossCities(cfg.getCities?.() ?? [city], city.ownerId, cost, pendingLedgerSink(city.ownerId, 'budowa', 'Budowa budynku'));
     }
   } else if (item.kind === 'jednostka') {
     // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: jednostki nie są

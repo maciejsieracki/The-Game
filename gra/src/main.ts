@@ -440,7 +440,7 @@ import {
   REBEL_FACTION_OWNER_ID,
 } from './game/society-breakdown';
 import { computeCitizenResourceDrain } from './game/citizen-resource-upkeep';
-import { citizenLedgerParts, recordTakenToLedger, upkeepLedgerParts } from './game/resource-ledger';
+import { citizenLedgerParts, recordTakenToLedger, upkeepLedgerParts, pendingLedgerSink, drainPendingLedgerInto } from './game/resource-ledger';
 import { BATTLE_MODE_SETTING_VERSION, isAutomaticOnlyBattleMode } from './game/battle-mode';
 import { normalizeHitMode, setActiveHitMode } from './game/hit-mode';
 import { resourceUsageBreakdownFor, resourceUsageHasAny } from './game/resource-usage-breakdown';
@@ -4833,7 +4833,7 @@ async function boot(): Promise<void> {
       }
       setOwnerTreasury(ownerId, ownerTreasury(ownerId) - totalGoldCost);
       if (Object.keys(batchStockCost).length > 0) {
-        deductBuildingStockCostAcrossCities(cities, ownerId, batchStockCost);
+        deductBuildingStockCostAcrossCities(cities, ownerId, batchStockCost, pendingLedgerSink(ownerId, 'rekrutacja', 'Rekrutacja jednostek'));
       }
       markCityStateDirty();
       let nextProd = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
@@ -4961,7 +4961,7 @@ async function boot(): Promise<void> {
       if (!deductManpowerFromEmpire(cities, ownerId, ep, totalManpower, mpMults.maxMult)) return false;
       setOwnerTreasury(ownerId, ownerTreasury(ownerId) - totalGold);
       if (Object.keys(totalStockCost).length > 0) {
-        deductBuildingStockCostAcrossCities(cities, ownerId, totalStockCost);
+        deductBuildingStockCostAcrossCities(cities, ownerId, totalStockCost, pendingLedgerSink(ownerId, 'rekrutacja', 'Rekrutacja jednostek'));
       }
       let prod = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
       // R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1: partia z Armii/Rekrutacji dziedziczy globalny przełącznik.
@@ -10274,7 +10274,7 @@ async function boot(): Promise<void> {
     /** Pobiera koszt surowcowy budynku Z PULI PANSTWA (rozproszone po miastach ownera). */
     function deductOwnerStockCost(ownerId: number, cost: Record<string, number>): void {
       if (Object.keys(cost).length === 0) return;
-      deductBuildingStockCostAcrossCities(cities, ownerId, cost);
+      deductBuildingStockCostAcrossCities(cities, ownerId, cost, pendingLedgerSink(ownerId, 'budowa', 'Budowa budynku'));
     }
 
     /** Auto-budowa: dodaj następny budynek gdy kolejka pusta i tryb auto. */
@@ -40288,6 +40288,9 @@ async function boot(): Promise<void> {
             (oid: number) => effectiveGameDifficultyForOwner(oid),
             stateAdmByOwner,
           );
+          // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (partia 2b): pobory poza tickiem (budowa, rekrutacja)
+          // z okna pending wchodzą do rekordu tej tury; okno czyszczone.
+          drainPendingLedgerInto(econ.resourceLedgerByOwner);
           pendingManualWorkTaxByOwner.clear();
           powerSnapshotsForTurn = buildPowerSnapshotsForTurn(econ);
           refreshObjectivePowerCache();
