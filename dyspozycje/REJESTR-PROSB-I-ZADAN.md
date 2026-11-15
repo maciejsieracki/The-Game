@@ -10044,3 +10044,6 @@ FALA 737 (main 392aa14c1, ROBOCZA MD5 d61d8e2a, Raw MD5 zgodne): R-WEB-TRADE-ROU
 
 ## 2026-11-15 — Decyzja właściciela: ceny surowców w handlu rosną z epoką (Brąz ×5, Żelazo ×10)
 Polecenie właściciela: „zwiększ koszt w epoce brązu, czyli jeden punkt negocjacji za 50 sztuk, a w epoce żelaza dziesięciokrotnie, czyli jeden punkt wymiany za 100 sztuk”. ABC (doprecyzowanie): wariant C (sztuka DROŻSZA, cena rośnie, blok bez zmian: Brąz ×5, Żelazo ×10), epoka umowy = wyższa z epok stron, zakres = wszystkie 15 surowców łącznie ze złotem i węglem. Sprzeczność do potwierdzenia: dosłowne „1 PN za 50/100 sztuk” opisuje sztukę tańszą. Temat R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 (dispatch zapisany, Haiku, start po #406 QTY-CAP). Przy okazji: popraw nieaktualny opis pn_per_szt w diplomacy-acceptance-points.json.
+
+## 2026-11-15 — KOREKTA decyzji o cenach handlu (właściciel: „totalnie na odwrót”)
+Poprzedni wpis (wariant C, cena PN ×5/×10) jest ANULOWANY. Właściwie: liczba PN za blok zostaje, rośnie ilość surowca na ten PN (drewno: 10 → 50 w Brązie → 100 w Żelazie szt. za 1 PN; analogicznie reszta, złoto i węgiel: cena za sztukę /5 i /10). Epoka umowy = wyższa z epok stron. Dispatch R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 przepisany; start dopiero po potwierdzeniu tabeli przez właściciela i po #406.
