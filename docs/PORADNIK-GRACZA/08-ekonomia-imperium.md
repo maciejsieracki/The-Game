@@ -306,6 +306,10 @@ Model zmienił się z prostego „masz tech = masz surowiec" na **dwuwarunkowy**
 
 **Złoże rezerwuje heks** — nie postawisz farmy na miedzi. **Ukryte złoża** — miedź/ruda od Brązu, żelazo od Żelaza, tylko w **Górach**.
 
+### 53.1a. Karta surowca: brutto i netto na turę (R-WEB-UI-RESOURCE-CARDS-GROSS-AND-NET-Q1, 2026-11-14)
+
+Każda karta surowca w panelu Surowce pokazuje dwie liczby na turę: **brutto** (cała produkcja surowca: teren, konwertery i przychód z umów handlowych) oraz **netto** (brutto po zużyciu: obywatele, budynki i wojsko). Suma kart jest równa wartościom z nagłówka „Brutto … → netto …”. Plakietka **+X** nad paskiem to nadal produkcja ± dyplomacja **przed** zużyciem; szczegóły zużycia są w „Zobacz szczegóły zużycia”. Surowiec bez produkcji i bez zużycia pokazuje „—”; surowiec bez produkcji, ale zużywany, ma brutto 0 i netto ujemne (na czerwono).
+
 ### 53.2. Magazyn surowców = pula CAŁEGO PAŃSTWA, nie per miasto (aktualizacja 2026-07-24, SUROW-CIV-01)
 
 Surowce **logistyczne** (drewno, kamień, glina, ruda, ruda żelaza, **cegła**, **ceramika**, brąz, żelazo, stal) **produkują się nadal lokalnie** w każdym mieście (konwertery — **Garncarnia** glina→ceramika, **Cegielnia** glina→cegła, **Odlewnia żelaza**, **Wielka kuźnia** itd. — działają jak wcześniej, per miasto), ale **limit zapasu (cap) liczy się dziś dla całego imperium naraz**, nie per miasto:
