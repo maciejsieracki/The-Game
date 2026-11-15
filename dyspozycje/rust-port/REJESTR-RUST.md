@@ -1766,3 +1766,13 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Start:** `wf_f3b76b65-261` (`topic-R-RUSTPORT-P6-K5LOOP-OUTCOME-R5-SONNET.js`, Operator = SONNET, reszta bez zmian).
 - **Sprzątanie:** worktree rundy 4 usunięte; HEAD w `refs/keep/cleanup-wf_1723bc09-ab6-*`. Dysk: 16 GB wolne (60%).
 - **Jeśli runda 5 FAIL:** temat wraca do właściciela jako ABC (podział na KILL/MORALE albo wstrzymanie), bo limit rund zostanie wyczerpany.
+
+## Przebieg (15.11, 18:xx UTC — INTEGRACJA #98 K5-LOOP-WYLOM na parity)
+
+- **Integracja:** FC PASS-WITH-NOTES `5cc66992b` (wyłom wieży, stan zniszczenia z żywych kafli) zmergowany `--no-ff` na parity `f7baa3848` → `1b8b67173` (worktree `integ-wylom`). Merge-tree bez konfliktów.
+- **Bramki na `1b8b67173`:** `FMT_EXIT=0`, `CLIPPY_EXIT=0`, `TEST_EXIT=0` — **3462 passed, 0 failed** (log `integ-wylom-r2.log`).
+- **FF:** `origin/rust-port/parity-v2` = `1b8b67173` (przodek `f7baa3848` sprawdzony). `refs/keep/K5-LOOP-WYLOM-integ` = `1b8b67173`.
+- **Decyzje FC przyjęte:** pliki pomocnicze testu (`p6_siege_wylom_gen.mjs`, wektory) poza literalną allowlistą (precedens `p6_tower_target_wiring`); brak osobnego pola `destroyed` (stan z kafli, mutacja M1 daje FAIL).
+- **NIE_ZMIERZONO / BRAK zapisane do rejestru:** (1) replay pinu nie resetuje `siegeTowers[].destroyed` (`_resetSiegeForReplay` :10518-10531) — przy portowaniu replayu wymagany jawny stan; (2) `wall_ever_breached` nie może być obniżane przy wiringu #113; (3) `_siegeShooterThreats` :7932-7935 jako drugi konsument `destroyed`; (4) czas trafienia wieży 380 ms i kolejność timerów; (5) efekty `_resolveBlowOutcome` od trafienia wieżą (#109/#147).
+- **Sprzątanie:** worktree `integ-wylom` i `target-integ-wylom` (3 GB) usunięte. Worktree #98 (4) usunięte wcześniej, HEAD w `refs/keep/cleanup-wf_15bb4a09-81f-*`. Dysk: 19 GB wolne (52%).
+- **Otwarte po integracji:** T1–T3 trybu ręcznego (#97) i #112 — zależą od OUTCOME (#226). js_round test (#231, commit `16b901466` w `refs/keep/JSROUND-MINUSZERO-test`) — **do integracji w osobnej rundzie** na nowym parity `1b8b67173`.
