@@ -442,6 +442,7 @@ import { computeCitizenResourceDrain } from './game/citizen-resource-upkeep';
 import { BATTLE_MODE_SETTING_VERSION, isAutomaticOnlyBattleMode } from './game/battle-mode';
 import { normalizeHitMode, setActiveHitMode } from './game/hit-mode';
 import { resourceUsageBreakdownFor, resourceUsageHasAny } from './game/resource-usage-breakdown';
+import { resourceGrossNetPerTurn } from './game/resource-gross-net';
 import {
   applyPostCaptureLawOnCapture,
   applyPostCaptureLawOverride,
@@ -23148,10 +23149,11 @@ async function boot(): Promise<void> {
       // Surowców (bez 2. kalkulacji): brutto = produkcja własna + przychód z umów; netto =
       // ratePerTurn (produkcja − umowy wychodzące + przychodzące) − zapotrzebowanie
       // (obywatele+budynki+wojsko, `usage`). Tylko podanie danych do HUD.
+      // R-WEB-UI-RESOURCE-CARDS-GROSS-AND-NET-Q1: jedno źródło liczb (gra/src/game/resource-gross-net.ts),
+      // to samo co karty surowców w panelu — suma kart zawsze równa nagłówkowi.
       const surowceBilans = shortageRows.map(r => {
-        const brutto = Math.max(0, (r.rateProductionPerTurn ?? r.ratePerTurn) + (r.rateDiploInPerTurn ?? 0));
-        const zuzycie = r.usage ? r.usage.buildings + r.usage.citizens + r.usage.units : 0;
-        return { label: r.label, brutto: Math.round(brutto), netto: Math.round(r.ratePerTurn - zuzycie) };
+        const gn = resourceGrossNetPerTurn(r);
+        return { label: r.label, brutto: gn.brutto, netto: gn.netto };
       });
       const surowceBrutto = surowceBilans.reduce((a, r) => a + r.brutto, 0);
       const surowceNetto = surowceBilans.reduce((a, r) => a + r.netto, 0);
