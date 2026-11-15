@@ -2044,3 +2044,16 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Kolejność integracji:** RJ-REPIN Q3 (bramki silnika w toku, `integ-p4-1h-rj`) → FF → F1 i Q4 razem na nowym parity (jeden przebieg bramek renderera i view-model).
 - **Trwające workflow (1):** P4-1I1 BATTLE-OUTCOME (#244, `wf_8948228b-2a5`, operator). Wolne 3 sloty; kandydaci po integracji: #250 (P4-1H Q4 po FF RJ-REPIN), #236 (P4-1G Q5, czeka na Q2/Q3 — zintegrowane — i Q4, który właśnie przeszedł FC).
 - **Dysk:** 6,8 GB (83%) — poniżej progu 8 GB, bez nowych startów do czasu zwolnienia miejsca.
+
+## Przebieg (heartbeat 23:17 — integracja F1 i Q4 razem; RJ-REPIN na parity)
+
+- **RJ-REPIN Q3 na parity:** FF `84ec520a5` → `02a1560e3`. Bramki silnika: `3538 passed, 0 failed, 1 ignored`.
+- **P4-1F1 OVERLAY-TYPES (#238) i P4-1G Q4 ADAPTER-BATTLE (#235):** oba FC PASS-WITH-NOTES, merge-tree czysty na `02a1560e3`, zakres: F1 tylko `view-model`, Q4 tylko `renderer`. Merge w worktree `integ-p4-1fq4`: `1ed1a7bd8` (F1) i `1bacc7621` (Q4).
+  - Bramki view-model: `fmt 0`, `clippy 0`, `test 0` (85 passed).
+  - Bramki renderera: `fmt 0`, `clippy 0`, `test 0` (550 passed).
+  - Bramki silnika: w toku (2000+ testów zaliczonych, bez porażek).
+- **Otwarte z obu FC (do rejestru):**
+  - F1: nowe typy nie są reeksportowane w `lib.rs` (poza allowlistą); `P4-1-RENDER-DTO-CONTRACT.md` §3.5/§3.7 do aktualizacji; reguła scalania właścicieli obozów (`main.ts:17514-17517`, ostatnie miasto wygrywa) do dispatchu P4-1G Q5.
+  - Q4: **erratum dispatchu** — „`FortDto` None → INFINITY” jest błędne (INFINITY dotyczy wyłącznie amunicji jednostek, `battleScene.ts:1444-1446`); brak `tower_material` = `null` (`battleScene.ts:4160-4161`). Poprawić w Q5, Q6 i P4-1I. Brak producenta `BattleSetupDto` w silniku i brak integratora sceny bitwy (zależności do rejestru).
+- **P4-1I1 BATTLE-OUTCOME (#244):** operator zakończony, ewaluator w toku.
+- **Dysk:** 5,4 GB (87%) podczas bramek silnika.
