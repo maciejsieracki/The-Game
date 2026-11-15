@@ -52,14 +52,18 @@ function callsOf(src, name) {
 function checks(src, label) {
   console.log('== ' + label);
   ok(!/function\s+grossNetSub\s*\(/.test(src) && !/\bgrossNetSub\(/.test(src), 'U1 grossNetSub usunięta (brak definicji i wywołań)');
-  const calls = callsOf(src, 'grossNetNumbersSub').filter((c) => !c.startsWith('grossNetNumbersSub(brutto'));
-  ok(calls.length >= 4, 'U2 grossNetNumbersSub: Nauka + Żywność + Handel + Surowce (>=4 wywołań)', calls.length);
-  const naukaOk = calls.some((c) => /grossNetNumbersSub\(rate, rate,/.test(c));
-  const zywOk = calls.some((c) => /economy\.zywnoscRate/.test(c) && /zywnoscWplywMiast/.test(c));
-  const handelOk = calls.some((c) => /t\.totalIncome, t\.totalIncome,/.test(c));
-  ok(naukaOk, 'U2 Nauka wywołuje grossNetNumbersSub(rate, rate, …)');
+  // Definicje (sygnatury) odfiltrowane; wywołania: Surowce + Żywność (grossNetNumbersSub), Nauka + Handel (singleNumberSub).
+  const calls = [
+    ...callsOf(src, 'grossNetNumbersSub').filter((c) => !c.startsWith('grossNetNumbersSub(brutto')),
+    ...callsOf(src, 'singleNumberSub').filter((c) => !c.startsWith('singleNumberSub(value')),
+  ];
+  ok(calls.length >= 4, 'U2 wywołań liczbowych: Nauka + Żywność + Handel + Surowce (>=4)', calls.length);
+  const naukaOk = calls.some((c) => /singleNumberSub\(rate,/.test(c));
+  const zywOk = calls.some((c) => /grossNetNumbersSub\(economy\.zywnoscWplywMiast/.test(c) && /economy\.zywnoscRate/.test(c));
+  const handelOk = calls.some((c) => /singleNumberSub\(t\.totalIncome,/.test(c));
+  ok(naukaOk, 'U2 Nauka wywołuje singleNumberSub(rate, …) (brutto = netto → jedna liczba)');
   ok(zywOk, 'U2 Żywność wywołuje grossNetNumbersSub(zywnoscWplywMiast…, zywnoscRate, …)');
-  ok(handelOk, 'U2 Handel wywołuje grossNetNumbersSub(t.totalIncome, t.totalIncome, …)');
+  ok(handelOk, 'U2 Handel wywołuje singleNumberSub(t.totalIncome, …) (brutto = netto → jedna liczba)');
   ok(calls.some((c) => /Jednostka: PN/.test(c)), 'U3 tooltip Nauki niesie jednostkę PN');
   ok(calls.some((c) => /🍞/.test(c) && /nadwyżka miast/.test(c)), 'U3 tooltip Żywności niesie 🍞 i opis brutto/netto');
   ok(calls.some((c) => /złota na turę/.test(c) && /nie mają kosztów/.test(c)), 'U3 tooltip Handlu niesie jednostkę złota i opis');
@@ -73,34 +77,58 @@ function main() {
   // U4: odtwórz funkcję `grossNetNumbersSub` z kodu źródłowego i sprawdź jej widoczny tekst.
   const m = src.match(/export function grossNetNumbersSub\([\s\S]*?\n\}\n/);
   ok(!!m, 'U4 funkcja grossNetNumbersSub znaleziona w źródle');
-  if (m) {
-    const fnSrc = m[0]
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+  const signedPl = (v) => (v > 0 ? '+' : '') + String(v);
+  const toFn = (text, name) => {
+    const fnSrc = text
       .replace(/export function/, 'function')
       .replace(/: number \| undefined/g, '')
+      .replace(/: number/g, '')
       .replace(/: string/g, '');
-    const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
-    const signedPl = (v) => (v > 0 ? '+' : '') + String(v);
     // eslint-disable-next-line no-new-func
-    const fn = new Function('esc', 'signedPl', fnSrc + '\nreturn grossNetNumbersSub;')(esc, signedPl);
-    const html = fn(1222, 1075, 'Brutto = produkcja przed zużyciem. Netto = po zużyciu. Jednostka: PN na turę.');
-    ok(!WORDS.test(clean(html)), 'U4 widoczny tekst: brak „Brutto”, „netto”, „/ turę”, „szt.”', clean(html));
-    ok(clean(html) === '+1222 → +1075', 'U4 widoczne liczby „+1222 → +1075”', clean(html));
-    ok(/title="[^"]*Jednostka: PN na turę\./.test(html), 'U4 opis i jednostka w title (tooltip)', html);
+    return new Function('esc', 'signedPl', fnSrc + '\nreturn ' + name + ';')(esc, signedPl);
+  };
+  if (m) {
+    const fn = toFn(m[0], 'grossNetNumbersSub');
+    const html = fn(1222, 1075, 'Brutto = produkcja przed zużyciem. Netto = po zużyciu. Jednostka: 🍞 żywność na turę.');
+    ok(!WORDS.test(clean(html)), 'U4 grossNetNumbersSub widoczny tekst: brak „Brutto”, „netto”, „/ turę”, „szt.”', clean(html));
+    ok(clean(html) === '+1222 → +1075', 'U4 grossNetNumbersSub widoczne liczby „+1222 → +1075”', clean(html));
+    ok(/title="[^"]*Jednostka: 🍞 żywność na turę\./.test(html), 'U4 grossNetNumbersSub opis i jednostka w title', html);
     const neg = fn(-3, -5, 'x');
-    ok(/class="neg"/.test(neg), 'U4 netto ujemne: klasa neg', neg);
+    ok(/class="neg"/.test(neg), 'U4 grossNetNumbersSub netto ujemne: klasa neg', neg);
+  }
+  const ms = src.match(/export function singleNumberSub\([\s\S]*?\n\}\n/);
+  ok(!!ms, 'U4 funkcja singleNumberSub znaleziona w źródle');
+  if (ms) {
+    const sfn = toFn(ms[0], 'singleNumberSub');
+    const shtml = sfn(1222, 'Nauka nie ma dziś kosztów. Jednostka: PN na turę.');
+    ok(!WORDS.test(clean(shtml)), 'U4 singleNumberSub widoczny tekst: brak „Brutto”, „netto”, „/ turę”, „szt.”', clean(shtml));
+    ok(clean(shtml) === '+1222', 'U4 singleNumberSub: jedna liczba bez strzałki „+1222”', clean(shtml));
+    ok(!/→/.test(clean(shtml)), 'U4 singleNumberSub: brak „→”', clean(shtml));
+    ok(/title="[^"]*Jednostka: PN na turę\./.test(shtml), 'U4 singleNumberSub opis i jednostka w title', shtml);
+    ok(/class="neg"/.test(sfn(-4, 'x')), 'U4 singleNumberSub wartość ujemna: klasa neg', sfn(-4, 'x'));
   }
 
   if (!NO_MUTANTS) {
-    console.log('== mutant M1 (kopia pliku)');
-    const mutated = src.replace(
-      /grossNetNumbersSub\(rate, rate, /,
-      "grossNetSub(rate, rate, 'PN', ' (Nauka) ');\n  void grossNetNumbersSub(rate, rate, ",
-    );
-    const tmp = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'gn-unify-')), 'mut.ts');
-    fs.writeFileSync(tmp, mutated);
-    const mutCalls = callsOf(mutated, 'grossNetSub').filter((c) => !c.startsWith('grossNetSub(brutto'));
-    const detected = /\bgrossNetSub\(/.test(mutated) && mutCalls.length > 0;
-    ok(detected, 'M1 mutant z przywróconym grossNetSub jest wykrywany przez U1', mutCalls.length);
+    // Mutanty na kopii tekstu pliku (in-memory): każdy MUSI dać >=1 FAIL w checks() (U1..U3).
+    // Liczymy FAIL-e z całego zestawu checks() dla mutanta i przywracamy licznik, by nie zaniżać wyniku.
+    const mutants = [
+      ['M1 przywrócenie grossNetSub w Nauce',
+        src.replace(/singleNumberSub\(rate, /, "grossNetSub(rate, rate, 'PN', ' (Nauka) ');\n  void singleNumberSub(rate, ")],
+      ['M2 usunięcie jednostki „złota na turę” z tooltipu Handlu',
+        src.replace(/Jednostka: złota na turę\.'\)/, "')")],
+    ];
+    for (const [label, mutated] of mutants) {
+      console.log('== mutant ' + label);
+      if (mutated === src) { ok(false, 'M mutant nie zmienił źródła: ' + label); continue; }
+      const before = fails;
+      const savedLog = console.log;
+      console.log = () => {};
+      try { checks(mutated, label); } finally { console.log = savedLog; }
+      const mutFails = fails - before;
+      fails = before;
+      ok(mutFails > 0, 'mutant wykryty przez checks() (FAIL-e: ' + mutFails + ')', label);
+    }
   }
 
   console.log(`\nRESULT: ${passes} ok, ${fails} FAIL (calls=${calls.length})`);

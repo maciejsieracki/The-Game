@@ -1690,6 +1690,18 @@ export function grossNetNumbersSub(brutto: number | undefined, netto: number | u
     + `<b>${signedPl(b)}</b> → <b class="${cls}">${signedPl(n)}</b></div>`;
 }
 
+/**
+ * R-WEB-UI-GROSS-NET-NUMBERS-ONLY-UNIFY-AND-WIKI-Q1 (decyzja A, wariant jednej liczby): gdy brutto = netto
+ * (Nauka, Handel), pokazuje JEDNĄ liczbę bez strzałki „→”. Opis i jednostka idą do `title` tooltipu.
+ */
+export function singleNumberSub(value: number | undefined, tooltip: string): string {
+  if (value === undefined) return '';
+  const v = Math.round(value);
+  const cls = v < 0 ? 'neg' : 'pos';
+  return `<div class="civ-emp-hero-sub civ-emp-grossnet" title="${esc(tooltip)}">`
+    + `<b class="${cls}">${signedPl(v)}</b></div>`;
+}
+
 function renderNaukaSection(
   rows: EmpireDetailSnap['cityEcon'],
   economy: EmpireDetailSnap['economy'],
@@ -1707,7 +1719,7 @@ function renderNaukaSection(
   let h = '<div class="civ-emp-sect" data-section="nauka">'
     + '<div class="civ-emp-eyebrow">NAUKA IMPERIUM</div>'
     + `<div class="civ-emp-hero ${heroCls}">${signedPl(rate)} PN / turę</div>`
-    + grossNetNumbersSub(rate, rate, 'Nauka nie ma dziś kosztów — brutto = netto. Jednostka: PN na turę.');
+    + singleNumberSub(rate, 'Nauka nie ma dziś kosztów — brutto = netto. Jednostka: PN na turę.');
 
   if (rows.length === 0) {
     h += `<div class="civ-emp-hero-sub">Bank badań <b>${bank}</b> PN</div>`
@@ -3787,7 +3799,7 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
     + `<div class="civ-emp-res-hdr-row"><span class="civ-emp-res-hdr-ic" aria-hidden="true">${brandIconSvg('cp-trade', 14)}</span>`
     + `<span class="civ-emp-eyebrow">HANDEL — SZLAKI HANDLOWE</span></div>`
     + `<div class="civ-emp-hero ${heroCls}">${signedPl(t.totalIncome)} złota / turę</div>`
-    + grossNetNumbersSub(t.totalIncome, t.totalIncome, 'Trasy nie mają kosztów; dochód jest już wliczony we wpływy Skarbca. Jednostka: złota na turę.')
+    + singleNumberSub(t.totalIncome, 'Trasy nie mają kosztów; dochód jest już wliczony we wpływy Skarbca. Jednostka: złota na turę.')
     + `<div class="civ-emp-hero-sub"><b>${t.routes.length}</b> ${routeCountWord(t.routes.length)} · `
     + `<b>${t.activeDeals.length}</b> ${dealCountWord(t.activeDeals.length)}</div>`;
 
