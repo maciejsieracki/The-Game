@@ -4,7 +4,7 @@
  *
  * Test wpiecia ksiegi w REALNYM silniku `advanceCityEconomy` (nie w fixture pipeline):
  *  (1) „Warzelnia (<miasto>)": sol z ulepszenia warzelnia_soli ksiegowana jako osobne zrodlo
- *      `warzelnia|<cityId>` (nie jako ogolny teren), suma = zmiana magazynu;
+ *      `warzelnia|<hexKey>` per budynek (nie jako ogolny teren, nie zbiorczo per miasto), suma = zmiana magazynu;
  *  (2) Mennica: drain zlota zapisany jako `mennica|<owner>` (ubytek), suma = zmiana magazynu;
  *  (3) limit magazynu: sciecie nadwyzki zapisane jako `limit-magazynu|<owner>`, suma = zmiana magazynu;
  *  (4) rownosc ksiega == zmiana magazynu w calym ticku (dla wszystkich kluczy) w 3 scenariuszach;
@@ -75,6 +75,14 @@ function scenario(M, kind) {
     nb.ulepszenia = ['warzelnia_soli'];
     nb.ulepszenie = 'warzelnia_soli';
     c0.surowce = { sol: 3 };
+  } else if (kind === 'warzelnia2') {
+    // R-...-Q1 runda 5: DWIE Warzelnie w terytorium tego samego miasta -> osobne wpisy per heks.
+    const nbs = Object.values(map.hexes).filter(h => {
+      const d = (Math.abs(h.coords.q - c0.q) + Math.abs(h.coords.q + h.coords.r - c0.q - c0.r) + Math.abs(h.coords.r - c0.r)) / 2;
+      return d === 1 && h.coords.q !== c0.q;
+    });
+    for (const nb of nbs.slice(0, 2)) { nb.ulepszenia = ['warzelnia_soli']; nb.ulepszenie = 'warzelnia_soli'; }
+    c0.surowce = { sol: 3 };
   } else if (kind === 'mennica') {
     c0.surowce = { zloto: 50 };
     built = new Map([[c0.id, ['mennica']]]);
@@ -103,12 +111,23 @@ function suite(M, mutated) {
   const pre = mutated ? '[MUTACJA] ' : '';
   const w = scenario(M, 'warzelnia');
   const solSrc = w.rec.sol || {};
-  const wKey = `warzelnia|${w.c0.id}`;
-  ok(solSrc[wKey], `${pre}warzelnia: jest zrodlo ${wKey}`);
+  // runda 5: wpis per BUDYNEK (heks Warzelni), nie per miasto -- jeden heks w tym scenariuszu
+  const wKeys = Object.keys(solSrc).filter(k => k.startsWith('warzelnia|'));
+  const wKey = wKeys[0];
+  ok(wKeys.length === 1 && solSrc[wKey], `${pre}warzelnia: jest zrodlo warzelnia|<heks> (keys ${JSON.stringify(wKeys)})`);
   eq(solSrc[wKey] && solSrc[wKey].label, `Warzelnia (${w.c0.name})`, `${pre}warzelnia: etykieta „Warzelnia (<miasto>)"`);
   ok(solSrc[wKey] && solSrc[wKey].amount > 0, `${pre}warzelnia: przyrost > 0 (got ${solSrc[wKey] && solSrc[wKey].amount})`);
   eq(Object.keys(solSrc).some(k => k.startsWith('teren|')), false, `${pre}warzelnia: sol NIE jest ksiegowana jako ogolny teren`);
   eq(w.maxDiff, 0, `${pre}warzelnia: ksiega == zmiana magazynu (diffs ${JSON.stringify(w.diffs)})`);
+
+  const w2 = scenario(M, 'warzelnia2');
+  const sol2 = w2.rec.sol || {};
+  const perBuilding = Object.keys(sol2).filter(k => k.startsWith('warzelnia|'));
+  eq(perBuilding.length, 2, `${pre}warzelnia2: dwie Warzelnie = dwa osobne wpisy (got ${JSON.stringify(perBuilding)})`);
+  eq(perBuilding.some(k => k === `warzelnia|${w2.c0.id}`), false, `${pre}warzelnia2: brak zbiorczego wpisu per miasto`);
+  eq(perBuilding.every(k => /^warzelnia\|-?\d+,-?\d+$/.test(k)), true, `${pre}warzelnia2: wpis per heks (q,r)`);
+  eq(perBuilding.every(k => sol2[k].label === `Warzelnia (${w2.c0.name})`), true, `${pre}warzelnia2: etykieta „Warzelnia (<miasto>)"`);
+  eq(w2.maxDiff, 0, `${pre}warzelnia2: ksiega == zmiana magazynu (diffs ${JSON.stringify(w2.diffs)})`);
 
   const m = scenario(M, 'mennica');
   const mk = 'mennica|0';

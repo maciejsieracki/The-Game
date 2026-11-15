@@ -247,6 +247,17 @@ console.log('[7] Wpięcie w main.ts (sprawdzenie struktury źródła; zachowanie
   check('7e doStartGame (NOWA GRA) wywołuje resetPendingLedger()', /resetPendingLedger\(\)/.test(startBody));
   const tickIdx = mainSrc.indexOf('drainPendingLedgerInto(econ.resourceLedgerByOwner)');
   check('7f drain okna pending w ticku ekonomii istnieje (jedyne miejsce opróżniania)', tickIdx > 0 && mainSrc.indexOf('drainPendingLedgerInto(econ.resourceLedgerByOwner)', tickIdx + 10) < 0);
+  // runda 5 (zarzut 1 Evaluatora): wycinka GRACZA nie jest dotąd testowana mutacją na żywo (headless
+  // nie wycina lasu). Test strukturalny: zapis `wycinka|<owner>` leży w pętli wyrębu gracza
+  // (`hexClearingStates`, guard isHuman) PO creditOwnerResourceStock, z kind 'wycinka'.
+  const clrStart = mainSrc.indexOf('for (const [hexKey, st] of hexClearingStates) {');
+  const clrEnd = clrStart >= 0 ? mainSrc.indexOf('finalizeHexClearing(hexKey)', clrStart) : -1;
+  const clrBody = clrStart >= 0 && clrEnd > clrStart ? mainSrc.slice(clrStart, clrEnd) : '';
+  const iCredit = clrBody.indexOf('creditOwnerResourceStock(');
+  const iLedger = clrBody.indexOf("`wycinka|${ownerId}`");
+  check('7g wycinka gracza: guard isHuman w pętli hexClearingStates', /if \(!isHuman\(st\.ownerId\)\) continue;/.test(clrBody));
+  check('7h wycinka gracza: zapis do księgi `wycinka|${ownerId}` (kind wycinka) PO creditOwnerResourceStock w tej samej pętli', iCredit > 0 && iLedger > iCredit && /kind: 'wycinka'/.test(clrBody), `iCredit=${iCredit} iLedger=${iLedger}`);
+  check('7i wycinka AI: zapis do okna pending (kind wycinka) istnieje', /recordLedgerFlow\(pendingLedgerSink\(ownerId, 'wycinka'/.test(mainSrc));
 }
 
 console.log(`\nRESULT: ${passed} passed, ${failed} failed`);

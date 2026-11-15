@@ -802,6 +802,11 @@ export function computeTerritoryResourceYieldByCity(
   map: GameMap,
   territoryNodes: readonly TerritoryNode[],
   resolveOwnerEra: OwnerEraResolver = () => 1,
+  /**
+   * R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (runda 5): opcjonalnie sól rozbita PER ULEPSZENIE
+   * (heks Warzelni) per miasto -- tylko do dziennika, bez wpływu na stan gry (ta sama suma co `sol`).
+   */
+  solBreakdownOut?: Map<string, Array<{ hexKey: string; amount: number }>>,
 ): TerritoryResourceYieldByCity {
   const out = new Map<string, Partial<Record<TerritoryResourceKey, number>>>();
   if (!cities.length) return out;
@@ -835,6 +840,11 @@ export function computeTerritoryResourceYieldByCity(
       const rec = out.get(cityId) ?? {};
       rec[yieldRow.resourceKey] = (rec[yieldRow.resourceKey] ?? 0) + yieldRow.amount;
       out.set(cityId, rec);
+      if (solBreakdownOut && yieldRow.resourceKey === 'sol') {
+        const parts = solBreakdownOut.get(cityId) ?? [];
+        parts.push({ hexKey: `${q},${r}`, amount: yieldRow.amount });
+        solBreakdownOut.set(cityId, parts);
+      }
     }
   }
 
@@ -1843,6 +1853,8 @@ export function tickEmpireResourcePipeline(
   ledgerOut?: Map<number, ResourceLedgerTurn>,
   /** Etykieta budynku po polsku do dziennika (fallback: identyfikator). */
   buildingLabelOf?: (buildingId: string) => string,
+  /** R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (runda 5): sól per Warzelnia (heks) per miasto -- tylko dziennik. */
+  solBreakdownByCity?: Map<string, Array<{ hexKey: string; amount: number }>>,
 ): Map<string, SpichlerzCityBonusState> {
   const ownerIds = new Set(cities.map(c => c.ownerId));
   const labelOf = (id: string): string => buildingLabelOf?.(id) ?? id;
@@ -1861,13 +1873,32 @@ export function tickEmpireResourcePipeline(
         // Sól pochodzi WYŁĄCZNIE z Warzelni soli (territoryResourceYieldForImprovement) —
         // osobne źródło „Warzelnia (<miasto>)” zamiast ogólnego „Teren i plony z mapy”.
         if (resourceKey === 'sol') {
-          recordLedgerFlow(
-            ledgerTurn,
-            resourceKey,
-            `warzelnia|${city.id}`,
-            { kind: 'warzelnia', label: `Warzelnia (${city.name})` },
-            got,
-          );
+          // Rozbicie PER BUDYNEK (heks Warzelni): `got` (po capie) przydzielane kolejno do
+          // ulepszeń miasta; suma = got, więc księga nadal zgodna z magazynem.
+          const parts = solBreakdownByCity?.get(city.id) ?? [];
+          let remaining = got;
+          for (let i = 0; i < parts.length && remaining > 0; i++) {
+            const part = parts[i];
+            if (!part) break;
+            const take = i === parts.length - 1 ? remaining : Math.min(part.amount, remaining);
+            recordLedgerFlow(
+              ledgerTurn,
+              resourceKey,
+              `warzelnia|${part.hexKey}`,
+              { kind: 'warzelnia', label: `Warzelnia (${city.name})` },
+              take,
+            );
+            remaining -= take;
+          }
+          if (remaining > 0) {
+            recordLedgerFlow(
+              ledgerTurn,
+              resourceKey,
+              `warzelnia|${city.id}`,
+              { kind: 'warzelnia', label: `Warzelnia (${city.name})` },
+              remaining,
+            );
+          }
           return;
         }
         recordLedgerFlow(
@@ -2630,11 +2661,13 @@ export function advanceCityEconomy(
 
   // SUROW-TERYT-01 (Maciej 2026-07-23): surowce logistyczne per ulepszenie w
   // terytorium, niezaleznie od workedTiles -- liczone RAZ dla calej tury (nie per-city).
+  const solBreakdownByCity = new Map<string, Array<{ hexKey: string; amount: number }>>();
   const territoryResourceByCity = computeTerritoryResourceYieldByCity(
     cities,
     map,
     territoryNodes,
     resolveOwnerEra ?? ((ownerId: number) => legacyEraForOwner(ownerId, playerEra)),
+    solBreakdownByCity,
   );
 
   // R-KOSZTY-EPOKOWE-ULEPSZENIA-Q1: upkeep Pracy civ-wide za trwałe ulepszenia terenu
@@ -2859,6 +2892,7 @@ export function advanceCityEconomy(
     options?.utilizationOut,
     ledgerEnabled ? result.resourceLedgerByOwner : undefined,
     (id: string) => buildingNameById.get(id) ?? id,
+    solBreakdownByCity,
   );
   if (options?.productionForecastOnly === true) return result;
 
