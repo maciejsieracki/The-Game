@@ -35,6 +35,8 @@ const FRAME_TS = path.resolve(GRA, 'src/ui/cityUxFrame.ts');
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'city-view-layout-'));
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const MUTANT = process.argv.includes('--mutant');
+/** Drugi mutant: usunięty próg 12 px i zawijanie (żetony kurczą się poniżej czytelnej granicy). Oczekiwane FAIL. */
+const MUTANT_MIN = process.argv.includes('--mutant-min');
 const SHOTS = (process.argv.find((a) => a.startsWith('--shots=')) || '').slice(8) || null;
 const esbuild = require(path.resolve(GRA, 'node_modules/esbuild'));
 const { chromium } = require(path.resolve(GRA, 'node_modules/playwright'));
@@ -75,6 +77,13 @@ function plugin() {
         const abs = path.resolve(a.path);
         if (MUTANT && abs === FRAME_TS) {
           src = patchOrThrow(src, '  top.classList.add(TOP_CHIP_WRAP_CLASS);', '', 'brak zawijania do 2 linii');
+          changed = true;
+        }
+        if (MUTANT_MIN && abs === FRAME_TS) {
+          // Próg 12 px sam w sobie nie jest widoczny w fixture (etap 2 zawija zanim żeton zejdzie poniżej 12 px),
+          // więc mutant wyłącza próg ORAZ zawijanie: stan sprzed poprawki (kurczenie żetonów do ~11 px).
+          src = patchOrThrow(src, 'const TOP_CHIP_MIN_PX = 12;', 'const TOP_CHIP_MIN_PX = 0;', 'brak progu 12 px');
+          src = patchOrThrow(src, 'const TOP_CHIP_MAX_ROWS = 2;', 'const TOP_CHIP_MAX_ROWS = 1;', 'brak zawijania (1 wiersz)');
           changed = true;
         }
         return changed ? { contents: src, loader: 'ts', resolveDir: path.dirname(a.path) } : null;
@@ -156,6 +165,9 @@ window.__configureCityPanel = configureCityPanel; window.__showCityPanel = showC
 
       check(`${tag}: lewy baner (Praca · Żywność · Skarbiec) najwyżej w 2 liniach`, m.L.chips.length === 3 && m.L.rows >= 1 && m.L.rows <= 2, { rows: m.L.rows, n: m.L.chips.length });
       check(`${tag}: prawy baner (Nauka · Kultura · Religia) najwyżej w 2 liniach`, m.R.chips.length === 3 && m.R.rows >= 1 && m.R.rows <= 2, { rows: m.R.rows, n: m.R.chips.length });
+      if (w < 1600 && fx === 'big') {
+        check(`${tag}: wąskie okno, duże liczby — co najmniej jeden baner zawinięty do 2 linii`, m.L.rows === 2 || m.R.rows === 2, { L: m.L.rows, R: m.R.rows });
+      }
       if (w >= 1600) {
         check(`${tag}: szerokie okno — obie strony banera w jednej linii (bez regresji)`, m.L.rows === 1 && m.R.rows === 1, { L: m.L.rows, R: m.R.rows });
       }
@@ -196,7 +208,7 @@ window.__configureCityPanel = configureCityPanel; window.__showCityPanel = showC
   }
   await browser.close();
   fs.rmSync(TMP, { recursive: true, force: true });
-  const label = MUTANT ? 'MUTANT (stan bazy; oczekiwane FAIL)' : 'POPRAWKA (oczekiwane PASS)';
+  const label = (MUTANT || MUTANT_MIN) ? 'MUTANT (oczekiwane FAIL)' : 'POPRAWKA (oczekiwane PASS)';
   console.log(`\nWYNIK ${label}: PASS=${pass} FAIL=${fail}`);
   process.exit(fail > 0 ? 1 : 0);
 }
