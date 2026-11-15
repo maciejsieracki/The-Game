@@ -33,3 +33,31 @@ ZAKAZ: wszystko inne, `gra/**`, `Cargo.toml`, `Cargo.lock` (nie commitować), `g
 
 ## RAPORT I COMMIT
 `01-operator-r1.md`: STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY/BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH: NIE WYKONANO. Commit na `wip/…`, BEZ push. Treść commita bez nazwy modelu; ostatnia linia `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`.
+
+---
+
+## DODATEK r2 (15.11, po FC FAIL r1; baza `ef8eeedc9`)
+
+Powód: r1 — FC FAIL. Otwarte zarzuty: (a) brak wektorów z pina i tautologiczna asercja obrażeń; (b) strzelec to `neutral_tower_shot_template()`, nie `towerShooterRow` z `city_towers::strongest_ranged_unit_for_era`; (c) `destroyed` jako proxy `wall_tile_rows` (Obrona przyjęła dowód z pina `battleScene.ts:4194-4198, 4216, 7646-7648` — zostaje, udokumentowane); (d) brak czerwonego przebiegu z kodem wyjścia.
+
+BAZA r2: `ef8eeedc9` (FC r1; zawiera kod `64ddbd19d`). Gałąź: `wip/R-RUSTPORT-P6-WIEZE-2B2-Q2` z tego SHA. Sprawdź `git merge-base --is-ancestor ef8eeedc9 HEAD`.
+Raport: `01-operator-r2.md`.
+
+### ZAKRES r2 (w tej kolejności; co nie da się zrobić — NIE_ZROBIONE z powodem)
+1. **Strzelec z danych (zarzut b):** podłącz `strongest_ranged_unit_for_era` (`city_towers.rs`) do wejścia strzału wieży (pole w `SiegeEnv` albo argument), tak aby statystyki strzelca pochodziły z wiersza jednostek, nie ze stałego szablonu. Test: dla epoki 1/2/3 i nacji obrońcy wybrany wiersz zgodny z wektorami `p6_city_towers_vectors/vectors.json` (istniejące, z pina).
+2. **Wektory strzału z pina (zarzut a):** generator `p6_wieze_2b2_gen.mjs`: wykonuje tekst pina `_fireOneTower` (`battleScene.ts` ok. 4223–4262) z mockiem `_singleBlow`, który ZAPISUJE argumenty (statystyki strzelca `stats: shooterRow`, cel, `ranged=true`); strażnik SHA-256 wyciętego fragmentu. Test Rust asertuje, że wejście do `single_blow_full` (parametry strzału, nie wynik liczbowy) jest zgodne z wektorami. Jeśli wyciągnięcie metody z klasy TS jest niewykonalne — NIE_ZROBIONE z cytatami linii i jawnym brakiem wektora w raporcie.
+3. **Czerwony przed zmianą (zarzut d):** pokaż kod wyjścia testu strzelca na bazie `ef8eeedc9` przed zmianą (np. brak wiersza → test czerwony).
+4. **NIE zmieniać:** `destroyed` jako proxy `wall_tile_rows` (przyjęte), hit_arc/first_blow (NIE_ZROBIONE — zapisz w raporcie jako dług z liniami pina), efekty `_resolveBlowOutcome` (dług jawny, już w rejestrze).
+5. Test strzału NIE może być tautologią: oczekiwanie = wartość/argument z wektora pina, nie wynik tej samej funkcji produkcyjnej.
+
+### ALLOWLISTA r2
+- jak r1 (`siege_tactics_loop.rs`, `siege_tactics_turnseq.rs`, `city_towers.rs` tylko odczyt, testy `p6_wieze_2b2.rs`, `p6_wieze_2b2_gen.mjs`, `p6_wieze_2b2_vectors/`, testy 2B1 / wiring / loop — tylko dopasowanie do zmiany sygnatury)
+- `dyspozycje/autobot/runs/R-RUSTPORT-P6-WIEZE-2B2-Q1/**`
+ZAKAZ: wszystko inne, `gra/**`, `Cargo.toml`, `Cargo.lock` (nie commitować), `git add -A`, push do `parity-v2`.
+
+### KRYTERIA KOŃCA r2
+1. PEŁNY `cargo test --no-fail-fast` EXIT 0 (log w raporcie); `cargo clippy --all-targets -- -D warnings` EXIT 0; `cargo fmt --check` EXIT 0.
+2. Strzelec z `city_towers` (pkt 1) z wektorami pina; wejście do strzału z generatora (pkt 2) albo NIE_ZROBIONE z cytatami.
+3. Czerwony przed zmianą z kodem wyjścia (pkt 3).
+4. Raport: co zrobione (SHA), co NIE zrobione (hit_arc, first_blow, efekty morale/rout, destroyed-proxy) z liniami pina.
+Commit bez nazwy modelu w treści; ostatnia linia `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`. BEZ push.
