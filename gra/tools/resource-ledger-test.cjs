@@ -94,18 +94,18 @@ function makeFixture() {
   return { cities, builtByCity, territoryResourceByCity };
 }
 
-function runPipeline(fx, ledgerOut) {
+function runPipeline(fx, ledgerOut, opts = {}) {
   return tickEmpireResourcePipeline(
     fx.cities,
     fx.builtByCity,
     fx.territoryResourceByCity,
     new Map(),                       // workedMagazynByCity
-    new Map(),                       // stolarniaCountByOwner
+    opts.stolCount ?? new Map(),     // stolarniaCountByOwner
     new Map(),                       // kamieniarskiCountByOwner
-    0,                               // stolarniaBonusDrewnaCiv
+    opts.stolBonus ?? 0,             // stolarniaBonusDrewnaCiv
     0,                               // kamieniarskiBonusKamieniaCiv
     () => ({}),                      // converterThroughputsForOwner (fallback)
-    () => 500,                       // ownerResourceCapFor
+    () => opts.cap ?? 500,           // ownerResourceCapFor
     undefined,                       // resolveOwnerActiveLabels
     undefined,                       // resolveOwnerZlotoAccess
     { ceramikaI: 1, ceramikaII: 2, solII: 1 }, // spichlerzDrainParams
@@ -157,6 +157,49 @@ const EPS = 1e-9;
   }
   assert(grains.size >= 3, `(a) co najmniej 3 surowce z realnym przepływem, jest ${grains.size}`);
   console.log(`[a] 30 tur, surowce z przepływem: ${[...grains].sort().join(', ')}; maks. różnica ${maxAbsDiff}`);
+}
+
+// (a-var) wariant z ucięciem capem (konwersja i teren ucinane przez magazyn) oraz z bonusem Stolarni:
+// różnica księgi i realnej zmiany magazynu musi wynosić 0 w każdej turze.
+for (const variant of [
+  { name: 'cap-12', opts: { cap: 12 } },
+  { name: 'stolarnia', opts: { stolCount: new Map([[1, 2]]), stolBonus: 0.5 } },
+]) {
+  const fx = makeFixture();
+  let maxAbsDiff = 0;
+  let sawStolarnia = false;
+  let sawClipped = false;
+  for (let t = 1; t <= TURNS; t++) {
+    const before = ownerTotals(fx.cities);
+    const ledgerOut = new Map();
+    runPipeline(fx, ledgerOut, variant.opts);
+    const after = ownerTotals(fx.cities);
+    for (const ownerId of Object.keys({ ...before, ...after })) {
+      const keys = new Set([...Object.keys(before[ownerId] ?? {}), ...Object.keys(after[ownerId] ?? {})]);
+      const turn = ledgerOut.get(Number(ownerId));
+      if (turn) {
+        for (const bySource of Object.values(turn.byResource)) {
+          for (const flow of Object.values(bySource)) {
+            if (flow.kind === 'stolarnia') sawStolarnia = true;
+          }
+        }
+      }
+      for (const key of keys) {
+        const delta = (after[ownerId]?.[key] ?? 0) - (before[ownerId]?.[key] ?? 0);
+        const net = turn ? ledgerResourceNet(turn, key).net : 0;
+        const diff = Math.abs(delta - net);
+        if (diff > maxAbsDiff) maxAbsDiff = diff;
+        if (variant.opts.cap !== undefined && after[ownerId]?.[key] === variant.opts.cap) sawClipped = true;
+        assert(diff <= EPS, `${variant.name} tura ${t} owner ${ownerId} ${key}: zmiana ${delta} vs ksiega ${net}`);
+      }
+    }
+  }
+  if (variant.name === 'stolarnia') {
+    assert(sawStolarnia, '(a-var stolarnia) dziennik musi zawierać źródło „stolarnia”');
+  } else {
+    assert(sawClipped, '(a-var cap-12) magazyn musi dojść do limitu, żeby ucięcie zostało sprawdzone');
+  }
+  console.log(`[a-var] ${variant.name}, 30 tur: maks. różnica ${maxAbsDiff}`);
 }
 
 // (a-mut) mutacja: pominięcie jednego źródła daje rozjazd

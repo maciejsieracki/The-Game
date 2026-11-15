@@ -1888,7 +1888,20 @@ export function tickEmpireResourcePipeline(
     );
     if (drewnoCredit > 0) {
       const got = creditOwnerResourceStock(cities, ownerId, 'drewno', drewnoCredit, cap);
-      recordTerrain('drewno', got);
+      // Część ponad bazę mapy = bonus Stolarni (dziennik: osobne źródło). Przy ucięciu capem
+      // bonus liczony jest pierwszy; reszta to plon terenu. Suma nadal = got (księga zgodna).
+      const stolarniaBonusPart = Math.max(0, drewnoCredit - drewnoMapBase);
+      const stolarniaGot = Math.min(got, stolarniaBonusPart);
+      recordTerrain('drewno', got - stolarniaGot);
+      if (stolarniaGot > 0 && ledgerTurn) {
+        recordLedgerFlow(
+          ledgerTurn,
+          'drewno',
+          `stolarnia|${city.id}`,
+          { kind: 'stolarnia', label: `Stolarnia (${city.name})` },
+          stolarniaGot,
+        );
+      }
       if (inflowOut) {
         const acc = inflowOut.get(ownerId) ?? {};
         acc.drewno = (acc.drewno ?? 0) + got;
