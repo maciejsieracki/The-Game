@@ -24,6 +24,18 @@
 //!    **[`TextureCache::end_of_turn`]** (RR-T6: entries referenced only by
 //!    the cache → out, "at the end of the turn at the latest");
 //! 3. **LRU size policy** ([`CachePolicy`]: entry count and/or bytes).
+//!    It bounds the CACHE, not the memory: the RR-T6 eviction
+//!    (`assets/cache.rs`, `Cache::enforce_limits`) drops the oldest entry
+//!    WITHOUT looking at its reference count, so it also evicts textures a
+//!    scene object still shows. Such a texture stays alive (its holders
+//!    keep their [`Owned`]), but the cache no longer finds it: the next
+//!    [`TextureCache::acquire`] of the same key paints a SECOND texture with
+//!    identical content (duplicate VRAM until the first holders let go).
+//!    With pinned textures a tight LRU therefore does not limit GPU memory
+//!    and may duplicate it; the M2 bound is point 2 (prune / LOD purge),
+//!    with [`CachePolicy::UNBOUNDED`] the default for T14 badges. Shown by
+//!    `tests/atlas_nturns.rs::lru_eviction_of_a_shown_texture_duplicates_it`
+//!    (Evaluator r3 finding 5; changing RR-T6 is outside RR-T8d).
 //!
 //! [`BadgeTextures`] mirrors the per-city sprite bookkeeping of
 //! `CityRenderer._syncStatChip` (`cities.ts:850-878`: same key → reuse,
@@ -368,5 +380,57 @@ impl<R> BadgeTextures<R> {
     pub fn clear(&mut self) {
         self.slots.clear();
         self.cache.clear();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    //! Private-index checks (the public [`TextureCache::keys`] filters by the
+    //! inner cache, so a stale index is invisible through the API).
+    use super::{CachePolicy, TextureCache};
+    use crate::assets::{Assets, FakeGpu, FakeResource, ResourceKind};
+
+    /// Evaluator r3 finding 4 (mutant E12): with only
+    /// [`TextureCache::end_of_turn`] trimming (no prune, no LOD purge) the
+    /// key index must not keep the strings of trimmed entries — otherwise
+    /// it grows without bound (class M2 for strings).
+    #[test]
+    fn end_of_turn_alone_keeps_the_key_index_bounded() {
+        const TURNS: usize = 500;
+        let fake = FakeGpu::new();
+        let assets: Assets<FakeResource> = Assets::new();
+        let mut cache = TextureCache::new(&assets, CachePolicy::UNBOUNDED);
+        let mut held = Vec::new();
+        for turn in 0..TURNS {
+            // Two fresh keys per turn: one shown (held), one painted and let go.
+            for (tag, keep) in [("shown", true), ("tmp", false)] {
+                let key = format!("Miasto{turn}|{tag}|l0");
+                let t = cache
+                    .acquire(&key, || {
+                        (key.clone(), 4, fake.alloc(ResourceKind::Texture, 4))
+                    })
+                    .expect("acquire");
+                if keep {
+                    held.push(t);
+                }
+            }
+            // The previous turn's shown texture leaves the screen.
+            if held.len() > 1 {
+                held.remove(0);
+            }
+            cache.end_of_turn().expect("end of turn");
+            assert_eq!(
+                cache.keys.len(),
+                cache.inner.len(),
+                "turn {turn}: index == entries"
+            );
+            assert_eq!(cache.len(), 1, "turn {turn}: only the shown key is cached");
+        }
+        assert_eq!(cache.keys.len(), 1, "index bounded after {TURNS} turns");
+        drop(held);
+        cache.end_of_turn().expect("final end of turn");
+        assert!(cache.keys.is_empty() && cache.is_empty());
+        assets.flush().expect("flush");
+        assert_eq!(fake.live(ResourceKind::Texture), 0);
     }
 }
