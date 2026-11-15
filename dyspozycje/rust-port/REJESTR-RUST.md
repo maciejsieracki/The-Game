@@ -1796,3 +1796,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Integracja js_round (#231):** w toku, `integ-jsround.log`: fmt i clippy EXIT 0, testy 1643 passed, 0 failed do tej chwili, bez `TEST_EXIT`. FF po zielonym wyniku.
 - **Serde (#170):** implementacja `4183d0aab` gotowa, FC PASS-WITH-NOTES `7920550f1`; integracja po js_round.
 - **Aktywne workflow:** OUTCOME r5 Sonnet (`wf_f3b76b65-261`), P4-1B Q1 Opus (`wf_13666f01-79e`), P4-1B Q2 Opus (`wf_3095763c-84a`). Slot 4 wolny.
+
+## Przebieg (15.11, 18:2x UTC — heartbeat „twardy bit”, sloty Rust)
+
+- **KROK 1 (sloty):** 4 aktywne Workflow bez FC: OUTCOME r5 Sonnet (#226, `wf_f3b76b65-261`), P4-1B Q1 roadMask Opus (#211, `wf_13666f01-79e`), P4-1B Q2 trim rzek Opus (#211, `wf_3095763c-84a`), generalTargetId pole i zapis Haiku (#221, `wf_1a51a6f0-bfd`). Sloty pełne, bez startów.
+- **KROK 2 (FC PASS bez integracji):** brak nowych werdyktów. Oczekują na integrację: serde float_roundtrip (#170, impl `4183d0aab`, FC `7920550f1`) i js_round test (#231, commit `16b901466`).
+- **Integracja js_round (#231):** w tle, `integ-jsround.log`: fmt i clippy EXIT 0, 2703 passed, 0 failed do tej chwili, bez `TEST_EXIT`. FF po zielonym wyniku, potem serde.
+- **KROK 3 (sprzątanie):** bez zmian. Dysk: 14 GB wolne (66%).
+- **KROK 4:** nie dotyczy (brak decyzji gameplay).
+- **Ustalenia zamykające listę:** #214 (P4-1E) i #222 (integracja P4-1E na parity) oznaczone jako zakończone; P4-1E jest na parity od `f7baa3848`.
