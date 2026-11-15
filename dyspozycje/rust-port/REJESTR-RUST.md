@@ -1704,3 +1704,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **KROK 3 (sprzątanie):** bez zmian w tym cyklu (worktree #227 usunięte wcześniej z refs/keep). Dysk: 7,0 GB wolne (82%). Poniżej progu 8 GB dla nowych tematów z kodem Rust — kolejne starty z kodem wstrzymane do sprzątania.
 - **KROK 4:** nie dotyczy.
 - **NASTĘPNY KROK:** wyniki #98, #225, #226 r2, #228 (FC); integracja #225 i #226 sekwencyjnie po wyłomie #98 (wspólny `siege_tactics_loop.rs`).
+
+## Przebieg (15.11, 18:xx UTC — zakończenia #225, #228; incydent dysku; nowe starty)
+
+- **INCYDENT DYSKU:** po FC #228 dysk miał 357 MB wolnego miejsca (99%). Usunięto zakończone worktree (KOLEJKA ×3, R7K7C-STATUS ×4, M01 ×1, FACING ×4) po zabezpieczeniu HEAD w `refs/keep/cleanup-*`. Jeden worktree KOLEJKA (`wf_5a965001-591-4`) zablokowany jako brudny i pominięty. Dysk: 14 GB wolne (64%).
+- **#225 K5LOOP-FACING (FC PASS-WITH-NOTES, bez zmian kodu):** kod facing (`update_facing`, `strike`, `relative_hit`) był już na `f7baa3848` (merge `923540b65`, INTEG-B20; ancestry potwierdzona). Dispatch opisywał stan sprzed integracji. Gate'y na raporcie: fmt, clippy, `cargo test --lib` 118/118, testy pin/body/loop zielone; generator 320 sekwencji, `reverseArcDiff=35`. Zakres poza dispatchem NIE_ZMIERZONO: facing po ruchu (#123), dirYaw (stub). Decyzja: zamknięte jako zrealizowane; #121, #124, #125, #128 zostają pending jako zakres do rozstrzygnięcia.
+- **#228 KOLEJKA-RUST (FC PASS-WITH-NOTES `60ec63a08`):** dokument odświeżony na `f7baa3848`, wpisany na `claude/rust-sivvrn` (`0645ce6f0`). Otwarte rozbieżności do rozstrzygnięcia przez orkiestratora (oznaczone NIE_ZMIERZONO): #114 (tasklista in_progress vs rejestr „zintegrowana INTEG-B21”), #214/#222 (P4-1E zintegrowane, tasklista nieaktualna), #110 (in_progress), #98 (w toku i zablokowane po OUTCOME), #120/#171/#160, #9/#11, numeracja nowych tematów z #227.
+- **Nowe starty (sloty do 4):** #234 K5-LOOP-AUTO-SCOPE (odczyt, `R-RUSTPORT-P6-AUTO-SCOPE-ROZP-Q1`, `wf_23cd3ec9-415`); #230 MAPGEN-M08/M13/M18 jako NIE_ZMIERZONO (dokument w nowym pliku `dyspozycje/rust-port/p6/MAPGEN-M08-M13-M18-NIE_ZMIERZONO.md`, `R-RUSTPORT-MAPGEN-NIE-ZMIERZONO-Q1`, `wf_0fe3a41b-09f`). Dispatche na `ec653789e`.
+- **Aktywne (4):** wyłom wieży #98 (`wf_15bb4a09-81f`, Evaluator); K5LOOP-OUTCOME r2 #226 (`wf_41d73167-4c8`, Operator); #234; #230.
+- **NASTĘPNY KROK:** wynik #226 r2 (ewentualnie FAIL → runda 3 tego samego ID); wynik #98 (integracja z #226 po nim, sekwencyjnie — wspólny `siege_tactics_loop.rs`).
