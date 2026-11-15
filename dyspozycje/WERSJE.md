@@ -1,3 +1,9 @@
+## ROBOCZA 744e4039 -- 2026-11-14 -- FALA 740: Skad zapasy zrodla zasobow w panelu surowca (testowa)
+
+- Karta surowca w panelu imperium pokazuje liste zrodel przyrostu i zuzycia z ostatnich 10 tur (Warzelnia, umowa wymiany, obywatele, lup z bitwy, zwroty, zdobycie miasta, dary i inne); dziennik zrodel zapisuje sie w zapisie gry (tylko wlasciciele-ludzie)
+- Weryfikacja: tsc 0; logic 213/213; ledger 1030/0 engine 20/0 consume 30/0 trade 27/0 owner-delta 8/0 save-history 15/0 skad-ui 18/0; gross-net 22/0 plusx 31/0; FC: Chromium realpath sources 45/0 save 8/0 wycinka 5/0, mutacje 17/18, hash ON=OFF zgodny
+- Limity: Brak pomiaru rozmiaru dziennika po 60 turach i zrzutow Chromium soli i ceramiki (czesc B); endTurn timeout w turze ok. 31 w scenie testowej niezbadany (czesc B); bunt w petli tury bez mutacji (m17); dziennik AI nie przezywa zapisu; martwa sonda ledgerAuditE3c do sprzatniecia; dokumentacja Civpedii czesc B
+
 ## ROBOCZA 83dc9914 -- 2026-11-14 -- FALA 739: Linia Unicestwienie w podsumowaniu bitwy (testowa)
 
 - Gdy czwarty odwrot w turze niszczy armie podsumowanie bitwy pokazuje osobna linie Unicestwienie ze strona, liczba jednostek i powodem po polsku; bez unicestwienia linii nie ma

@@ -30,7 +30,11 @@ export type LedgerSourceKind =
   | 'rekrutacja'            // rekrutacja jednostek (pobór z puli państwa poza tickiem)
   | 'umowa_wymiany'         // przeniesienie surowca w umowie wymiany (cykliczna / jednorazowa)
   | 'mennica'               // drain Złota przez Mennicę (po plonach, w tiku)
-  | 'limit_magazynu';       // ścięcie nadwyżki ponad limit magazynu państwa (w tiku)
+  | 'limit_magazynu'        // ścięcie nadwyżki ponad limit magazynu państwa (w tiku)
+  | 'lup_bitwy'             // łup z wygranej bitwy (credit do puli państwa zwycięzcy)
+  | 'zwrot'                 // zwrot surowców: anulowana rekrutacja, rozwiązana jednostka
+  | 'przejecie_miasta'      // zdobycie / oddanie / utrata miasta (zapasy miasta zmieniają właściciela)
+  | 'dar';                  // dar / prezent surowców od innego właściciela
 
 /**
  * Miejsce zapisu w dzienniku dla wywołania, które odejmuje surowce z puli państwa.
@@ -318,4 +322,179 @@ export function ledgerTurnForOwner(map: Map<number, ResourceLedgerTurn>, ownerId
   let t = map.get(ownerId);
   if (!t) { t = createLedgerTurn(); map.set(ownerId, t); }
   return t;
+}
+
+/**
+ * R-WEB-UI-RESOURCE-SOURCE-LEDGER-UI-AND-REST-Q1 (partia 4, UI „Skąd zapasy”): pamięć ostatnich N tur.
+ * Zamiast kopiować rekordy, trzymamy REFERENCJE do map `resourceLedgerByOwner` z kolejnych ticków
+ * (każdy tick tworzy nową mapę). Późne zapisy tej samej tury (utrzymanie, obywatele, okno pending)
+ * są widoczne bez dodatkowej synchronizacji. Stan NIE jest zapisywany w zapisie gry (po wczytaniu
+ * dziennik pusty — patrz resetLedgerHistory). Zero wpływu na stan gry.
+ */
+const ledgerTickHistory: Array<Map<number, ResourceLedgerTurn>> = [];
+
+/** Dopisuje mapę rekordów bieżącego ticku i przycina do ostatnich `maxTurns` tur. */
+export function commitLedgerHistoryTick(records: Map<number, ResourceLedgerTurn>, maxTurns: number): void {
+  const keep = Math.max(0, Math.floor(maxTurns));
+  ledgerTickHistory.push(records);
+  while (ledgerTickHistory.length > keep) ledgerTickHistory.shift();
+}
+
+/** Czyści pamięć ostatnich tur (nowa gra / wczytanie). */
+export function resetLedgerHistory(): void {
+  ledgerTickHistory.length = 0;
+}
+
+/** Ile tur jest aktualnie w pamięci (diagnostyka i testy). */
+export function ledgerHistoryLength(): number {
+  return ledgerTickHistory.length;
+}
+
+/** Rekordy właściciela z ostatnich tur, od najstarszej do najnowszej (brak rekordu = tura pusta). */
+export function ledgerHistoryForOwner(ownerId: number): ResourceLedgerTurn[] {
+  return ledgerTickHistory.map(m => m.get(ownerId) ?? createLedgerTurn());
+}
+
+export interface LedgerSourceLine {
+  /** true = przyrost (suma > 0), false = ubytek (suma < 0). */
+  gain:   boolean;
+  /** Etykieta po polsku, np. „Warzelnia (Rzym)”. */
+  label:  string;
+  kind:   LedgerSourceKind;
+  /** Suma z okna tur ze znakiem (> 0 przyrost, < 0 ubytek). */
+  amount: number;
+}
+
+/**
+ * Agregacja źródeł jednego surowca z okna tur: jedna linia na (kierunek + etykieta), suma w oknie.
+ * Etykiety z różnymi kluczami źródła, ale tą samą nazwą (np. dwie Warzelnie tego samego miasta)
+ * są scalane. Przyrosty malejąco, potem ubytki malejąco po |suma|. Zera pomijane.
+ */
+export function ledgerSourceLinesForResource(
+  turns: ReadonlyArray<ResourceLedgerTurn>,
+  resourceKey: string,
+): LedgerSourceLine[] {
+  const acc = new Map<string, LedgerSourceLine>();
+  for (const turn of turns) {
+    for (const flow of Object.values(turn.byResource[resourceKey] ?? {})) {
+      if (!Number.isFinite(flow.amount) || flow.amount === 0) continue;
+      const gain = flow.amount > 0;
+      const id = `${gain ? '+' : '-'}|${flow.label}`;
+      const prev = acc.get(id);
+      if (prev) prev.amount += flow.amount;
+      else acc.set(id, { gain, label: flow.label, kind: flow.kind, amount: flow.amount });
+    }
+  }
+  const lines = [...acc.values()].filter(l => l.amount !== 0);
+  lines.sort((a, b) => {
+    if (a.gain !== b.gain) return a.gain ? -1 : 1;
+    return Math.abs(b.amount) - Math.abs(a.amount) || a.label.localeCompare(b.label, 'pl');
+  });
+  return lines;
+}
+
+/**
+ * R-WEB-UI-RESOURCE-SOURCE-LEDGER-UI-AND-REST-Q1 (partia 3b, kryterium b): zapis pamięci N tur w zapisie gry.
+ * Format: tablica ticków (od najstarszego), każdy tick = { ownerId (string) -> rekord tury }.
+ * Pole w SaveGame jest OPCJONALNE: stary zapis bez pola = pusty dziennik (bez błędu).
+ * Okno `pending` (pobory poza tickiem między tickami) NIE jest zapisywane: po wczytaniu jest
+ * opróżniane (resetPendingLedger), jak dotąd — jawne opróżnienie z uzasadnieniem w raporcie.
+ */
+export type LedgerHistorySave = Array<Record<string, ResourceLedgerTurn>>;
+
+function cloneLedgerTurn(turn: ResourceLedgerTurn): ResourceLedgerTurn {
+  const byResource: Record<string, Record<string, LedgerFlow>> = {};
+  for (const [resourceKey, bySource] of Object.entries(turn.byResource)) {
+    const copy: Record<string, LedgerFlow> = {};
+    for (const [sourceKey, flow] of Object.entries(bySource)) {
+      copy[sourceKey] = { kind: flow.kind, label: flow.label, amount: flow.amount };
+    }
+    byResource[resourceKey] = copy;
+  }
+  return { byResource };
+}
+
+/**
+ * Kopia pamięci N tur do zapisu (niezależna od późniejszych mutacji map).
+ * `keepOwner` (opcjonalny) ogranicza zapis do wybranych właścicieli: karta „Skąd zapasy” czyta dziennik tylko
+ * właściciela-człowieka, a dziennik AI przy N=10 (gracz + 5 AI) potrafił przekroczyć 100 KB (pomiar:
+ * REALPATH-TESTS, tura ~30 = 119 KB), więc zapis obejmuje tylko właścicieli-ludzi. Bez argumentu = wszyscy.
+ */
+export function ledgerHistoryToSave(keepOwner?: (ownerId: number) => boolean): LedgerHistorySave {
+  return ledgerTickHistory.map(m => {
+    const out: Record<string, ResourceLedgerTurn> = {};
+    for (const [ownerId, turn] of m) {
+      if (keepOwner && !keepOwner(ownerId)) continue;
+      out[String(ownerId)] = cloneLedgerTurn(turn);
+    }
+    return out;
+  });
+}
+
+function isLedgerFlowShape(v: unknown): v is LedgerFlow {
+  const f = v as LedgerFlow | null | undefined;
+  return !!f && typeof f === 'object' && typeof f.kind === 'string' && typeof f.label === 'string'
+    && typeof f.amount === 'number' && Number.isFinite(f.amount);
+}
+
+/**
+ * Odtwarza pamięć N tur z zapisu. Brak / zły kształt = pusty dziennik (nigdy wyjątek).
+ * Przycina do ostatnich `maxTurns` ticków; pozycje o złym kształcie są pomijane.
+ */
+export function restoreLedgerHistoryFromSave(raw: unknown, maxTurns: number): void {
+  resetLedgerHistory();
+  if (!Array.isArray(raw)) return;
+  const keep = Math.max(0, Math.floor(maxTurns));
+  const ticks = raw.slice(Math.max(0, raw.length - keep));
+  for (const tick of ticks) {
+    if (!tick || typeof tick !== 'object') continue;
+    const m = new Map<number, ResourceLedgerTurn>();
+    for (const [key, value] of Object.entries(tick as Record<string, unknown>)) {
+      const ownerId = Number(key);
+      const byResource = (value as { byResource?: unknown } | null | undefined)?.byResource;
+      if (!Number.isFinite(ownerId) || !byResource || typeof byResource !== 'object') continue;
+      const turn = createLedgerTurn();
+      for (const [resourceKey, bySource] of Object.entries(byResource as Record<string, unknown>)) {
+        if (!bySource || typeof bySource !== 'object') continue;
+        for (const [sourceKey, flow] of Object.entries(bySource as Record<string, unknown>)) {
+          if (!isLedgerFlowShape(flow)) continue;
+          const bucket = turn.byResource[resourceKey] ?? {};
+          bucket[sourceKey] = { kind: flow.kind, label: flow.label, amount: flow.amount };
+          turn.byResource[resourceKey] = bucket;
+        }
+      }
+      m.set(ownerId, turn);
+    }
+    ledgerTickHistory.push(m);
+  }
+}
+
+/**
+ * R-WEB-UI-RESOURCE-SOURCE-LEDGER-UI-AND-REST-Q1 (partia 3c): migawka magazynu wskazanych właścicieli
+ * PRZED zmianą (łup, zwrot, przejęcie miasta). Zwraca mapę ownerId -> kopia zapasów.
+ * Czysta funkcja względem stanu gry: tylko odczyt przekazanej funkcji `stockOf`.
+ */
+export function snapshotOwnersStock(
+  ownerIds: ReadonlyArray<number>,
+  stockOf: (ownerId: number) => Readonly<Record<string, number>>,
+): Map<number, Record<string, number>> {
+  const out = new Map<number, Record<string, number>>();
+  for (const o of ownerIds) if (!out.has(o)) out.set(o, { ...stockOf(o) });
+  return out;
+}
+
+/**
+ * Zapisuje do okna pending różnicę magazynu każdego właściciela z migawki (po − przed).
+ * Trafia do rekordu najbliższego ticku (ta sama tura co zmiana). Zero zmian stanu gry.
+ */
+export function recordOwnersStockDeltaToPending(
+  before: Map<number, Record<string, number>>,
+  stockOf: (ownerId: number) => Readonly<Record<string, number>>,
+  sourceKeyBase: string,
+  flow: { kind: LedgerSourceKind; label: string } | ((ownerId: number) => { kind: LedgerSourceKind; label: string }),
+): void {
+  for (const [ownerId, snap] of before) {
+    const f = typeof flow === 'function' ? flow(ownerId) : flow;
+    recordStockDeltaToPending(ownerId, snap, stockOf(ownerId), `${sourceKeyBase}|${ownerId}`, f);
+  }
 }
