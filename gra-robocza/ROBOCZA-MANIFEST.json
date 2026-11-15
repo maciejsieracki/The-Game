@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "dc001e950cfbfb65d7c9a8bc3a7b50df",
-  "bundleSha256": "2d5cee5534f480c5365d87fb16d6ebcc4bc51029ff0538a1544acd7430d2e055",
+  "bundleMd5": "6550bf16a39f21b08a9f51585e88c66c",
+  "bundleSha256": "475f66ec7f382d3d43fbede11b292883a2a0e5d95bace72083de8b79a1ef8a09",
   "bundleBytes": 14802686,
   "sourceSnapshot": {
-    "source": "main f6b09c76b + df37617c5 (tools-only)",
+    "source": "main c50b64e20 + 6972825ae (tools-only)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 755: Narzedzie pomiarowe battle-full-move-gaps-measure.cjs: luki pelnego ruchu (strzelcy 47,4% niewykorzystanego ruchu, 11,9% niewyjasnione; Obrona/Ostrzal/ucieczka 0 po ciosie). Bez zmian gra/src."
+    "FALA 756: Narzedzie pomiarowe battle-manual-orders-full-move-repro (gra/tools): marsz reczny 1,00 heksa na aktywacje (zgodne z decyzja A); ruch+cios w rundzie AUTO 5/60, reczne 0/60; przepadek ok. 2 MP nierozstrzygniety (ABC). Bez zmian gra/src."
   ],
   "verification": [
-    "FC PASS-WITH-NOTES df37617c5; logic 213/213, build vite OK, MD5 Raw"
+    "FC PASS-WITH-NOTES 6972825ae; logic 213/213, vite OK, MD5 Raw"
   ],
   "limits": [
-    "rozkaz reczny i mur oblezniczy NIE ZMIERZONO; prog niewyjasnionego ruchu = ABC wlasciciela"
+    "tylko Hastati MP 3, jedna scena, sonda omija doktryne obroncy; live NIE ZMIERZONO"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES BATTLE-FULL-MOVE-GAPS-MEASURE-Q1 r1 (kandydat e98ce29e1, raport df37617c5): narzedzie pomiarowe battle-full-move-gaps-measure.cjs (tylko gra/tools, bez zmian gra/src). Pomiar: 4 sklady x 5 ziaren, 2514 aktywacji, pula 7542 PR, niewykorzystane 3578 (47,4%), niewyjasnione 895 (11,9%). Obrona/Ostrzal/ucieczka: ruch po ciosie 0. Anomalia e20cd0b5 nie odtworzona w 41 przebiegach. Noty: rozkaz reczny i mur oblezniczy NIE ZMIERZONO (czesciowo #431); prog odsetka niewyjasnionego ruchu = decyzja ABC wlasciciela."
+    "notes": "FC PASS-WITH-NOTES BATTLE-MANUAL-ORDERS-FULL-MOVE-REPRO-Q1 r1 (kandydat 703cc4ca4, raport 6972825ae): sonda sceny (tylko gra/tools, bez zmian gra/src), Hastati 6 vs 6, ziarna 1-3. Marsz reczny = 1,00 heksa na aktywacje (ZGODNE z decyzja A); ruch+cios w tej samej rundzie AUTO 5/60, reczne 0/60; przepadek ok. 2 MP po kroku = NIE ROZSTRZYGNIETE (ABC wlasciciela A/B/C). Noty: tylko Hastati MP 3, jedna scena, sonda omija doktryne obroncy; zachowanie live NIE ZMIERZONO."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-15T23:23:09",
+  "hubGeneratedAt": "2026-11-15T23:38:14",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "dc001e950cfbfb65d7c9a8bc3a7b50df",
+      "md5": "6550bf16a39f21b08a9f51585e88c66c",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "dc001e950cfbfb65d7c9a8bc3a7b50df",
+      "md5": "6550bf16a39f21b08a9f51585e88c66c",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "dc001e950cfbfb65d7c9a8bc3a7b50df",
+      "md5": "6550bf16a39f21b08a9f51585e88c66c",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "dc001e950cfbfb65d7c9a8bc3a7b50df",
+      "md5": "6550bf16a39f21b08a9f51585e88c66c",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "dc001e950cfbfb65d7c9a8bc3a7b50df",
+      "md5": "6550bf16a39f21b08a9f51585e88c66c",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "dc001e950cfbfb65d7c9a8bc3a7b50df",
+      "md5": "6550bf16a39f21b08a9f51585e88c66c",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "dc001e950cfbfb65d7c9a8bc3a7b50df",
+      "md5": "6550bf16a39f21b08a9f51585e88c66c",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "dc001e950cfbfb65d7c9a8bc3a7b50df",
+      "md5": "6550bf16a39f21b08a9f51585e88c66c",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "dc001e950cfbfb65d7c9a8bc3a7b50df",
+      "md5": "6550bf16a39f21b08a9f51585e88c66c",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "dc001e950cfbfb65d7c9a8bc3a7b50df",
+      "md5": "6550bf16a39f21b08a9f51585e88c66c",
       "sizeBytes": 14802686
     }
   ],
-  "md5": "dc001e950cfbfb65d7c9a8bc3a7b50df",
+  "md5": "6550bf16a39f21b08a9f51585e88c66c",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

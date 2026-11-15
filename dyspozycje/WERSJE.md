@@ -1,3 +1,9 @@
+## ROBOCZA 6550bf16 -- 2026-11-14 -- FALA 756: sonda rozkazow recznych a pelny ruch (narzedzie) (testowa)
+
+- Narzedzie pomiarowe battle-manual-orders-full-move-repro (gra/tools): marsz reczny 1,00 heksa na aktywacje (zgodne z decyzja A); ruch+cios w rundzie AUTO 5/60, reczne 0/60; przepadek ok. 2 MP nierozstrzygniety (ABC). Bez zmian gra/src.
+- Weryfikacja: FC PASS-WITH-NOTES 6972825ae; logic 213/213, vite OK, MD5 Raw
+- Limity: tylko Hastati MP 3, jedna scena, sonda omija doktryne obroncy; live NIE ZMIERZONO
+
 ## ROBOCZA dc001e95 -- 2026-11-14 -- FALA 755: pomiar luk pelnego ruchu (narzedzie) (testowa)
 
 - Narzedzie pomiarowe battle-full-move-gaps-measure.cjs: luki pelnego ruchu (strzelcy 47,4% niewykorzystanego ruchu, 11,9% niewyjasnione; Obrona/Ostrzal/ucieczka 0 po ciosie). Bez zmian gra/src.
