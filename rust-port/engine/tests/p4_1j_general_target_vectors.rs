@@ -329,8 +329,25 @@ fn raw_save_text_loads_general_target_like_web() {
             .filter(|march| march.general_target_id.is_some())
             .count();
     }
-    assert!(
-        general_kept >= 15,
-        "zachowane generalTargetId w odczycie surowym: {general_kept}"
+    // Wartosc zmierzona na wektorach pinu (61 roundtrip, 51 raw); zmiana wektorow wymaga swiadomej zmiany tej liczby.
+    assert_eq!(
+        general_kept, 18,
+        "zachowane generalTargetId w odczycie surowym"
     );
+}
+
+#[test]
+fn empty_general_target_is_not_written_like_web() {
+    // Web planned-march.ts:496: pusty napis generalTargetId nie trafia do zapisu.
+    let mut state = PlayableState::empty();
+    state.planned_marches.push(PlayablePlannedMarch {
+        unit_id: UnitId::new(1),
+        dest_q: 9,
+        dest_r: 9,
+        attack_unit_id: None,
+        general_target_id: Some(String::new()),
+    });
+    let encoded = serde_json::to_string(&snapshot().with_playable_planned_marches(&state))
+        .expect("serializes");
+    assert!(!encoded.contains("generalTargetId"), "{encoded}");
 }
