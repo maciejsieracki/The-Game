@@ -1,26 +1,24 @@
-STATUS: FAIL
+STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
 TEMAT: R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1
-GOAL: dziennik "Skąd zapasy" (źródła przyrostu/zużycia surowców, suma = zmiana stanu, UI w panelu surowców, pamięć N=10 tur)
-ZMIANY/COMMIT: oceniany kandydat 4d2359e82843f52f4d643d7f7fc1b70e53226f80 (151658632 partia 1, 60afb0e45 obrona, 4d2359e82 raport obrony). Diff vs 5f5f1c3ca: resource-ledger.ts (nowy), turn-economy.ts, econ-params.json, resource-ledger-test.cjs, 2 raporty runs/ — w allowliście, brak plików poza nią. Kandydat jest potomkiem 5f5f1c3ca (merge-base --is-ancestor: OK). UWAGA: 5f5f1c3ca NIE jest przodkiem origin/main (3d1670626, 182 commitów przodem); integracja będzie wymagała merge z main (merge-tree nie sprawdzano).
-TESTY (zmierzone przeze mnie na 4d2359e82): tsc --noEmit exit 0; resource-ledger-test 1028 passed / 0 failed (a: różnica 0, cap-12: 0, stolarnia: 0); logic-test 213/213; git diff --check czysty. NIE ZMIERZONO: pozostałe bramki referencyjne (zaufano raportowi obrony: tech-tree 20/0, research GREEN, unit-replace 21/21, combat), perf tick 100 tur, Chromium, hash stanu gry.
-
-WERDYKT PER ZARZUT:
-1 NAPRAW — księga nie pokrywa zużycia obywateli, utrzymania, budowy/rekrutacji, handlu, szlaków, miast, łupów, darów; test (a) tylko na fixture pipeline, brak ≥3 ziaren × 30 tur na ścieżce gry. Realna luka wobec GOAL/kryterium (a).
-2 NAPRAW — brak źródeł "Umowa wymiany z <civ>" i "Warzelnia (<miasto>)" oraz testu (b).
-3 NAPRAW — brak UI "Skąd zapasy" i zrzutu Chromium (kryterium e, NIE pomijać).
-4 NAPRAW — brak pomiaru wydajności (kryterium d).
-5 NAPRAW — pamięć N tur niepodłączona do stanu gry/zapisu; appendLedgerTurn/readLedgerHistoryTurns tylko w teście.
-6 NAPRAW — brak testu determinizmu/hash stanu na poziomie gry (kryterium c).
-7 ODDAL (naprawione w obronie 60afb0e45: wariant cap-12, różnica 0 — potwierdzone uruchomieniem).
-8 ODDAL (naprawione w obronie: stolarnia jako osobne źródło, różnica 0 — potwierdzone).
-9 ODDAL jako uwaga procesowa: DODATEK identyczny z 00-dispatch.md, baza 5f5f1c3ca nieprzodkowa main — do decyzji orkiestratora (nie wada kodu).
-
-Uzasadnienie FAIL: zarzuty 1–6 to niewykonany zakres z dispatchu, nie spór; partia 1/4 jest solidna i zielona, ale temat nie spełnia kryteriów binarnych (a-pełne, b, c, d, e). Zasada: choć jeden NAPRAW => FAIL.
-Rekomendacja: kandydat 4d2359e82 jest bezpieczną podstawą dla partii 2 (handel/umowy/warzelnia + zużycie w turn-economy i building-stock-cost), potem 3 (miasto/bitwa/łup/historia N w zapisie) i 4 (UI + Chromium + perf + determinizm). Kolejne rundy startować z 4d2359e82 po scaleniu z aktualnym main (wikiBundle/rejestry).
-
-BLOKADY: brak technicznych; zakres otwarty (partie 2–4).
-RUNDY: 1/5 (FC r1)
-NASTĘPNY KROK: orkiestrator dopisuje DODATEK z podziałem partii i bazą 4d2359e82 (+merge main), kolejna runda Operatora tego samego ID.
-UWAGI-DLA-ORKIESTRATORA: środowisko FC nie miało node_modules — wykonano npm ci w gra/ w worktree (nieśledzone). Szlak handlowy: decyzja właściciela 2026-11-14 (#311): tylko premia, bez przesuwania zapasów — partia z handlem/szlakiem nie powinna księgować szlaku jako źródła zapasów.
+GOAL: partia 2 z 4 — ksiegowanie zuzycia i handlu w ksiedze zrodel zapasow; zgodnosc ksiegi z magazynem w realnej grze (UI i partie 3-4 poza zakresem).
+ZMIANY/COMMIT: kandydat b9559d6a757f4e2d70646c19465bdfcb854287a1 (potomek bazy f44bddb5c: git merge-base --is-ancestor = OK). Wlasny diff vs merge main 3b5ecd2e1: resource-ledger.ts, turn-economy.ts, main.ts, 3 testy/narzedzia w gra/tools + 30-obrona-claude.md; w allowliscie, bez WERSJE/manifest/rust-port. integration_sha = b9559d6a7 (kod 083c0d18c). Ten raport to osobny commit.
+TESTY (surowe wyniki FC na b9559d6a7):
+- tsc --noEmit: exit 0
+- logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; unit-power 6/0 (bramki referencyjne = wartosci referencyjne, brak czerwonych)
+- resource-ledger-engine-test 20/0 (mutacja cap: FAIL zgodnie z oczekiwaniem); resource-ledger-trade-test 27/0; resource-ledger-test 1030/0; resource-ledger-consume-test 30/0
+- vite build (poza repo) exit 0; live-measure (headless Chromium, realny bundle), seedy 7 i 2024 x 30 tur: maxAbsDiff 0, nonzeroRows 0, hashEqualCount 30/30, pageErrors 0/0, offRecordsEmpty true. Mutacje analityczne (pominiecie rodzaju zrodla) daja rozjazd >0 dla 14 rodzajow, w tym warzelnia 75, umowa_wymiany 100, wycinka 220/165. Sol: osobne wpisy "Warzelnia (<miasto>)" i "Umowa wymiany z <civ>" (+20/-20).
+- czas tury ksiega ON/OFF: seed 7 702/713 ms; seed 2024 863/788 ms (+9,5%, pojedynczy pomiar, szum nieustalony)
+- git diff --check: czysty
+NIE ZMIERZONO: seed 99991 (czas; wg Evaluatora 3x30/30 na kandydacie sprzed obrony r4); E3c z aktywnymi trasami; powtorzenie pomiaru czasu seed 2024.
+ROZSTRZYGNIECIE ZARZUTOW:
+1 ODDAL (do uwag): wycinka gracza ksiegowana ta sama konstrukcja co wycinka AI (AI mierzone live, mutacja czerwona); linia gracza wpieta po creditOwnerResourceStock. UWAGA: moja mutacja wycinkaGot->0 w main.ts nadal daje trade-test 27/0 (testy 7g-7i sa tekstowe i nie pinuja kwoty) — slabosc testu, nie defekt kodu; zalecane doprecyzowanie regexu 7h o `wycinkaGot`.
+2 DO DECYZJI CZLOWIEKA: szlak E3c (main.ts ok. 40337) nadal przesuwa zapasy bez ksiegi; zgodnie z DODATKIEM 2/3 nie zmieniany ani nie ksiegowany do decyzji ABC (usunac / ksiegowac); opisany i zinstrumentowany. Do decyzji gra z aktywnymi trasami moze miec rozjazd ksiegi.
+3 ODDAL: naprawione w 083c0d18c (sol per heks Warzelni, scenariusz warzelnia2 w engine-test). Uwaga kosmetyczna: dwa wpisy tego samego miasta maja te sama etykiete "Warzelnia (<miasto>)" przy roznych kluczach — UI (partia 4) powinien je scalic.
+4 ODDAL: ograniczenie metody (scena zasiana hakiem ?civTest=1); realna mutacja jest w engine-test (6 czerwonych).
+5 ODDAL: informacja; nieksiegowane zrodla (lup, zwrot rekrutacji, zdobycie miasta, dary) i zapis okna pending to partie 3-4.
+BLOKADY: decyzja ABC w sprawie E3c; technicznych brak.
+RUNDY: FC r5/5 (ostatnia); PASS-WITH-NOTES, zadnego zarzutu NAPRAW.
+NASTEPNY KROK: orkiestrator integruje b9559d6a7 (merge z aktualnym main, bramki), ABC E3c, partie 3 i 4 jako nowe dispatche; sprzatanie worktree i /tmp.
+UWAGI-DLA-ORKIESTRATORA: (a) zaostrzyc test 7h na `wycinkaGot`; (b) powtorzyc pomiar czasu tury seed 2024 w partii 4; (c) scalic identyczne etykiety Warzelni w UI; (d) E3c wymaga decyzji przed pelnym zamknieciem kryterium (a).
 DEPLOY/PUSH: NIE WYKONANO
