@@ -158,11 +158,13 @@ assert(TR.canAffordBuildingStock(TR.ownerResourceStockAll(cities, 0), cheapCost)
 // B. Przeplyw nie przekracza limitu na ture (capacityPerRoutePerTurn)
 // ---------------------------------------------------------------------------
 console.log('\n-- B. limit na ture (capacityPerRoutePerTurn) nie jest przekraczany --');
+// PYTANIE-84-U16: brak osobnego limitu trasy (capacityPerRoutePerTurn usuniety) --
+// transfer = cala nadwyzka ponad rezerwe, limit ogranicza tylko produkcja partnera.
 const cap = TR.DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS.capacityPerRoutePerTurn;
-assert(Number.isFinite(cap) && cap > 0, 'B: (kontrola) capacityPerRoutePerTurn jest dodatnia liczba skonczona');
-eq(flowsA[0].amount <= cap, true, 'B: transfer A nie przekracza limitu na ture');
+eq(cap, undefined, 'B: (kontrola) brak capacityPerRoutePerTurn w parametrach (PYTANIE-84-U16)');
+assert(flowsA[0].amount > 0, 'B: transfer A dodatni (bez limitu trasy)');
 
-// Ekstremalna nadwyzka (1000 cegly u partnera) -- transfer wciaz ograniczony limitem.
+// Ekstremalna nadwyzka (1000 cegly u partnera) -- transfer = nadwyzka ponad rezerwe.
 const citiesHuge = stockCities([
   { id: 'p1', ownerId: 0, surowce: { cegla: 0 } },
   { id: 'f1', ownerId: 1, surowce: { cegla: 1000 } },
@@ -170,7 +172,8 @@ const citiesHuge = stockCities([
 const flowsB = TR.computeTradeRouteResourceFlow(routes, ownerStockFor(citiesHuge));
 const ceglaFlowB = flowsB.find(f => f.resourceKey === 'cegla');
 assert(ceglaFlowB !== undefined, 'B: (kontrola) transfer cegly istnieje przy ekstremalnej nadwyzce');
-eq(ceglaFlowB.amount, cap, 'B: przy ogromnej nadwyzce transfer = DOKLADNIE limit na ture, nie wiecej');
+eq(ceglaFlowB.amount, 1000 - TR.DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS.minStockReserve,
+  'B: przy ogromnej nadwyzce transfer = cala nadwyzka ponad rezerwe (brak limitu trasy)');
 
 // ---------------------------------------------------------------------------
 // D. Rezerwa (minStockReserve) -- nadawca nigdy nie eksportuje ponizej progu
@@ -216,9 +219,10 @@ eq(grantsE.length, 3, 'E: trzy grantow boolean (braz/zelazo/kon) -- mechanizm do
 for (const key of ['braz', 'zelazo', 'kon']) {
   eq(TR.hasTradeRouteResourceAccess(grantsE, 0, key), true, `E: gracz ma boolean-grant na ${key} (regresja OK)`);
 }
-eq(TR.TRADE_ROUTE_STOCK_FLOW_KEYS.includes('kon'), false, 'E: kon NIE jest w TRADE_ROUTE_STOCK_FLOW_KEYS (brak magazynu ilosciowego)');
-eq(TR.TRADE_ROUTE_STOCK_FLOW_KEYS.length, 3, 'E: dokladnie trzy klucze przeplywu ilosciowego (braz/zelazo/cegla)');
-for (const key of ['braz', 'zelazo', 'cegla']) {
+// Stan po R-WEB-TRADE-ROUTE-REMOVE-STOCK-FLOW-E3C-Q1: klucze listy przeplywu (dane/diagnostyka)
+// to 6 pozycji; kon jest na liscie, ale nie ma magazynu ilosciowego w ownerStock (patrz nizej).
+eq(TR.TRADE_ROUTE_STOCK_FLOW_KEYS.length, 6, 'E: sześć kluczy listy przepływu (braz/zelazo/kon/cegla/zloto/sol)');
+for (const key of ['braz', 'zelazo', 'kon', 'cegla', 'zloto', 'sol']) {
   assert(TR.TRADE_ROUTE_STOCK_FLOW_KEYS.includes(key), `E: TRADE_ROUTE_STOCK_FLOW_KEYS zawiera ${key}`);
 }
 
