@@ -54,6 +54,7 @@ window.addEventListener('unhandledrejection', (e) => {
 // Imports
 
 import { humanizeId, nazwaCywilizacji, nazwaWyswietlana } from './game/text-names';
+import { TEREN_LABEL_PL } from './map/terrain-names';
 import { normalizeDetDigestStackGroups } from './game/det-digest-normalize';
 import * as THREE from 'three';
 import { loadGameData } from './data/loader';
@@ -11280,17 +11281,12 @@ async function boot(): Promise<void> {
       refreshD1bHud();
     }
 
+    /** Etykieta terenu dla tekstu gracza (małymi literami w zdaniach). R-WEB-UI-PREBATTLE-RAW-IDS-AND-ROSTER-OVERLAP-Q1:
+     * wcześniej mapa miała klucze ze starych identyfikatorów (Rownina, Wybrzeze), więc np. `plytkie_morze` trafiało do okna surowo.
+     * Teraz jedno źródło: TEREN_LABEL_PL (map/terrain-names.ts). */
     function terrainLabelPl(tb: string): string {
-      const m: Record<string, string> = {
-        Rownina: 'równina',
-        Laka: 'łąka',
-        Wzgorza: 'wzgórza',
-        Gory: 'góry',
-        Pustynia: 'pustynia',
-        Morze: 'morze',
-        Wybrzeze: 'wybrzeże',
-      };
-      return m[tb] ?? tb.toLowerCase();
+      const label = (TEREN_LABEL_PL as Readonly<Record<string, string>>)[tb] ?? nazwaWyswietlana(tb);
+      return label.toLocaleLowerCase('pl-PL');
     }
 
     /** Kontekst potyczki — miasto vs pole (czytelne „z kim / gdzie”). */

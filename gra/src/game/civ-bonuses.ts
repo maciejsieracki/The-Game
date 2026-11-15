@@ -5,6 +5,7 @@
  */
 
 import { civMatrixParam, loadCivMatrix } from './civ-matrix';
+import { civBonusOpisPl } from './civ-matrix-semantic';
 
 // ---------------------------------------------------------------------------
 // Shared shapes (unikamy importu loader/combat — brak cykli)
@@ -219,7 +220,7 @@ export function effectiveCombatBonusChipTexts(
   for (const unit of roster) {
     for (const b of civCombatBonusProjection(bonusy, unit, ctx)) {
       if (!isCombatModifierBonus(b)) continue;
-      const text = (b.opis ?? '').trim();
+      const text = civBonusOpisPl((b.opis ?? '').trim());
       if (text) seen.add(text);
     }
   }

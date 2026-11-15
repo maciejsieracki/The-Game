@@ -646,7 +646,10 @@ export function civMatrixParameterLabelPl(parameterId: string): string {
     hp: 'punkty zdrowia', ruch: 'ruch', zasieg: 'zasięg', koszt: 'koszt', szybkosc: 'szybkość',
     piechota: 'piechoty', lukownicy: 'łuczników', kawaleria: 'kawalerii', rydwany: 'rydwanów',
     morska: 'morski', wszystkie: 'wszystkich', oblezenie: 'oblężenia', teren: 'teren', las: 'lasu',
-    terytorium: 'własnym terytorium', murze: 'murze', runda: 'rundzie szarży', plytkie: 'płytkim morzu',
+    terytorium: 'własnym terytorium', murze: 'w murze', runda: 'rundzie szarży', plytkie: 'płytkim morzu',
+    // R-WEB-UI-PREBATTLE-RAW-IDS-AND-ROSTER-OVERLAP-Q1: brakujace slowa z identyfikatorow walki (tekst dla gracza).
+    // Czastki techniczne bez znaczenia ('w', 'wlasne', 'szarzy', 'morze') daja pusty fragment i sa pomijane w etykiecie.
+    obleczenie: 'oskrzydlenia', bitwa: 'bitwy', w: '', wlasne: '', szarzy: '', morze: '',
     proc: '%', skala: 'skala', agresywnosc: 'agresywność', ekspansywnosc: 'ekspansywność',
     priorytet: 'priorytet', ekonomia: 'ekonomia', nauka: 'nauka', tolerancja: 'tolerancja',
     ryzyka: 'ryzyka', sklonnosc: 'skłonność', podboju: 'podboju', profil: 'profil', obronna: 'obronny',
@@ -664,10 +667,22 @@ export function civMatrixParameterLabelPl(parameterId: string): string {
     health: 'zdrowia', pociski: 'pocisków', widok: 'widoku', dezercja: 'dezercji', utrzymanie: 'utrzymania',
     ture: 'na turę', podwoju: 'podboju',
   };
-  return parameterId.split('_').map((part, index) => {
+  return parameterId.split('_').map((part) => {
     const replacement = replacements[part] ?? part.replace(/proc$/, '%');
-    return index === 0 ? replacement : replacement;
-  }).join(' · ');
+    return replacement;
+  }).filter(part => part !== '').join(' · ').replace(' · %', '%');
+}
+
+/**
+ * Opis bonusu cywilizacji dla gracza. Wpisy walki maja w polu `opis` identyfikator
+ * `Matrix:<parametr>` (civ-bonuses.ts / production.ts); tekst pokazywany w UI to etykieta
+ * z civMatrixParameterLabelPl, nigdy surowy identyfikator. Pole `opis` w danych NIE jest
+ * zmieniane (logika dopasowania bonusow czyta je osobno).
+ */
+export function civBonusOpisPl(opis: string): string {
+  const m = /^Matrix:(.+)$/.exec(opis.trim());
+  const id = m?.[1];
+  return id !== undefined ? civMatrixParameterLabelPl(id) : opis;
 }
 
 export function civMatrixFormattedValue(value: number | null, unit: string): string {
