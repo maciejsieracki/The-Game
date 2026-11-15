@@ -1,4 +1,72 @@
-# R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1 — raport Operatora (runda 1/5)
+# R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1 — raport Operatora (runda 2/5)
+
+STATUS: DECISION_REQUIRED
+DOMAIN: GAME
+TEMAT: R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1
+GOAL: zwycięska armia w AUTO/SKIP ściga rozbitego wroga pełnym zasięgiem ruchu własnej jednostki, bez „dziobania”.
+Baza: 3ddd5d2c7 (detached; zawiera zatrzask r1 z 80c31eb96). Zmiany r2 tylko w narzędziach pomiaru; `gra/src/**` bez zmian.
+
+## ZMIANY/COMMIT
+- `gra/tools/battle-pursuit-pace-browser-entry.ts`: probe powodu przerwania kroku AUTO (`moves`: go / occupied / impassable / plan_end, zajmujący hex, `acted`, pula, sufity), probe powodu końca planowania (`planWhy`), probe „czy w zasięgu ciosu po ostatnim kroku” (`adjInfo`: can, dir, mounted, wrogowie w promieniu 2, R = routed).
+- `gra/tools/battle-pursuit-pace-measure.cjs`: zwraca `moves` i `planWhy` w JSON.
+- `dyspozycje/autobot/runs/R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1/evidence/r2-konnica-zatrzymania.json`: tabela konnicy (tury 9–16) dla skip s1, powtórki skip s1, watch s1, skip s2, skip s3.
+- Ten raport (`10-operator-claude.md`: sekcja r2 na górze, r1 niżej bez zmian).
+Brak zmian reguł gry, brak zmian `battleScene.ts`, brak naprawy (patrz DECYZJA).
+
+## ZMIERZONO (ETAP 1 r2, pkt 1 i 3 dispatchu)
+Komenda: `PP_SCEN=1 PP_SEEDS=<s> PP_MODES=<skip|watch> node tools/battle-pursuit-pace-measure.cjs`. Scenariusz 1 = mieszana: Hastati 8, Łucznik 6, Konnica 4 vs Hastati 14. W dispatchu „scenariusz 2” to wariant 12 vs 12 bez konnicy, więc mierzono scen. 1, który zawiera konnicę.
+Konnica (mp 7, paceCap = None w tych turach, wróg routed): zmierzone dla każdej tury 9–16:
+
+| run | wykonane / pula (tury 9–16) | zatrzymania przy wrogu w zasięgu ciosu (can=true, pozostało 4 MP) | zdarzenia „occupied” |
+|---|---|---|---|
+| skip s1 | 76/175 = 43,4% | 18 z 25 tur-konnic | 0 |
+| skip s1 powtórka | 76/175 = 43,4% (wiersze identyczne) | 18 z 25 | 0 |
+| watch s1 | 75/175 = 42,9% | 14 z 25 | 0 |
+| skip s2 | 72/182 = 39,6% | 8 z 26 | 0 |
+| skip s3 | 61/168 = 36,3% | 7 z 24 | 0 |
+
+Przykład skip s1 (tura: plan → wykonane, stop): t11 atk17 plan 7 → 7 hexów, 0 MP; t12 atk16 plan 3 → 3, 4 MP, can=true, wróg R (def2R); t13 atk17 plan 3 → 3, 4 MP, can=true, def3R+def4R+def5R; t14 atk15 plan 3 → 3, 4 MP, can=true, def3R+def4R. Pula 7 = mp; `attacks` = 0 w tych turach.
+
+Wnioski z liczb:
+1. Zajęte pole przez sojusznika (`occupied`) nie jest przyczyną: 0 zdarzeń w 5 przebiegach. Pomiar obala hipotezę kolizji z `_resolveAutoBatchMovement` z FC r1.
+2. Sufit tempa nie jest przyczyną w tych turach (paceCap = None; zatrzask r1 działa).
+3. Główna przyczyna (zmierzona): po wykonaniu kroku konnica staje w zasięgu ciosu przy rozbitym (routed) wrogu i kończy aktywację z 4 MP niewykorzystanymi. Kod: `_advanceStep` po `_doMove` ma `if (this._canAttackFrom(ru, ru.q, ru.r)) { done(); return; }` (komentarz: „the blow happens on a later turn”). Cios nie pada (attacks = 0), a w fazie wroga rozbity wróg ucieka, więc w następnej turze konnica znów idzie 3 kroki i znów staje w zasięgu. Stąd obraz „dziobania”: 3 hexy na turę zamiast 7.
+4. Pozostałe przerwania z MP (np. t9 atk14 plan 4, 2 MP; t10 atk15 plan 1, 6 MP; can=false, brak wroga w promieniu 2): NIE_ZMIERZONO, która gałąź planera je zwraca. Sondy na `_compactAttackAllowsStep`, `_lineAdvanceWithinCap`, BFS/greedy, `_nearestEnemy` i `_advanceStep` nie zarejestrowały ich dla konnicy (rejestrowały tylko piechotę). Zakres: 4 z 25 tur-konnic w skip s1.
+5. Proporcja przy pełnej swobodzie drogi (dispatch: cel ≥80%): NIE_ZMIERZONE w tym scenariuszu, bo w większości tur konnica miała wroga w pobliżu. W turach bez wroga w zasięgu wykonanie = plan (np. t11 atk15: plan 7 → 7).
+
+## DECYZJA (DECISION_REQUIRED, pkt 2 dispatchu: naprawa wymaga zmiany reguły produktowej)
+Przyczyna jest w regule walki (kiedy jednostka może zadać cios), nie w kolizji i nie w sufitach tempa, więc nie zmieniam jej bez zgody właściciela. Warianty z liczbami:
+- A (rekomendacja): konnica w zasięgu ciosu wroga rozbitego, mając pozostałe MP, zadaje cios od razu i kończy aktywację. Zgodne z zapisem ABC z W21 („konnica dobija”), którego obecny kod nie realizuje (0 ciosów konnicy w tych turach). Oczekiwany skutek: ~4 MP wraca do ruchu w turach ze stykiem (skip s1: 18 z 25 tur).
+- B: po dojściu do zasięgu konnica przechodzi na sąsiedni hex przy wrogu (bez ciosu), zużywając MP. Dłuższe chodzenie wokół rozbitego wroga; mniej wiarygodne.
+- C: bez zmiany; „dziobanie” pozostaje, zapis właściciela z 2026-11-14 pozostaje niespełniony.
+Pytanie ABC do właściciela: A / B / C. Do czasu decyzji nie wdrażam.
+
+## TESTY (surowe wyniki)
+- `npx tsc --noEmit` (gra/): EXIT 0.
+- `node tools/battle-pace-latch-test.cjs`: `=== battle-pace-latch-test: 5/5 pass, 0 fail; mutacja MELEE_LATCH wykryta (czerwona) ===`.
+- `node tools/battle-skip-equals-auto-resolve-test.cjs`: `--- 42 ok, 0 fail; CZESC B: DONE`.
+- `git diff --check`: czysty.
+- Bramki referencyjne (logic, tech-tree, research, unit-replace, combat) i testy pace/line-advance: NIE URUCHOMIONO ponownie, bo r2 nie zmienia `gra/src/**` (tylko narzędzia pomiaru); wyniki z r1 pozostają.
+- Test behawioralny ruchu (pkt 4) i mutacja: NIE WYKONANO, bo nie ma poprawki do zabezpieczenia testem (wariant A/B/C czeka na decyzję).
+
+## BLOKADY
+Brak technicznych. Otwarte: decyzja właściciela A/B/C (sekcja DECYZJA) oraz przyczyna części przerwań bez MP (NIE_ZMIERZONO, pkt 4).
+
+## DŁUG RUST (pkt 5)
+Brak nowego długu w tej rundzie (brak zmiany reguły). Dług z r1 (UWAGA-3, zatrzask `melee_latched` do REPIN) pozostaje. Jeśli właściciel wybierze A, dodać REPIN: „cios konnicy w zasięgu wroga rozbitego przy pozostałym MP”.
+
+## UWAGI-DLA-ORKIESTRATORA
+- Dispatch r2 zakładał scalenie z origin/main (FALA 727). Tej rundy nie wykonano: pomiar i zmiany są na 3ddd5d2c7. Przed integracją sprawdzić `git merge-base --is-ancestor` i `git merge-tree` (FC r1 podał czysty merge z 6c1687274).
+- Dysk: na starcie 4,1 GB wolnego (poniżej 6 GB z dispatchu), w trakcie pracy 9,5 GB (zwolnienie poza tym worktree). Pomiar wykonano na node_modules zainstalowanym w worktree (`npm ci` w gra/, 71 pakietów, gitignored).
+- Zgodność z ABC: „pościg bez zmian” z W21 wymaga potwierdzenia, czy wariant A zmienia tę regułę (zmienia moment zadania ciosu).
+
+NASTĘPNY KROK: decyzja właściciela A/B/C; po decyzji Operator r3 (wybrany wariant) z testem behawioralnym (a)–(c) i mutacją.
+
+DEPLOY/PUSH: NIE WYKONANO
+
+---
+
+# RUNDA 1/5 — raport Operatora (archiwum, bez zmian)
 
 STATUS: PASS-WITH-NOTES
 DOMAIN: GAME

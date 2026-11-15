@@ -108,6 +108,69 @@ function snapshot(): void {
   }
 }
 
+// R-WEB-...-Q1 r2 (ETAP 1 r2): log powodu przerwania kazdego kroku wykonania AUTO (poza planowaniem).
+// reason: go | occupied (kto zajmuje hex, czy juz zakonczyl swoj ruch) | impassable | plan_end.
+const moveLog: any[] = [];
+api.moves = moveLog;
+{
+  const origRAM = scene._resolveAutoBatchMovement.bind(scene);
+  scene._resolveAutoBatchMovement = (ru: any, res: any, idx: number, done: any) => {
+    if (!scene._autoBatchPlanning) {
+      let reason = 'go'; let occ = '';
+      if (idx >= res.steps.length) reason = 'plan_end';
+      else {
+        const st = res.steps[idx];
+        const o = scene.occByKey.get(`${st.col},${st.row}`);
+        if (o && o !== ru) { reason = 'occupied'; occ = `${o.bu.id}/${o.side}/routed=${!!o.routed}/acted=${!!o.acted}/q=${o.q},${o.r}`; }
+        else if (!scene._passableForUnit(ru, st.col, st.row)) reason = 'impassable';
+      }
+      // r2: po zakonczeniu planu -- czy jednostka stoi w zasiegu ciosu (zatrzymana przy wrogu) i kto obok.
+      let adjInfo = '';
+      if (reason === 'plan_end' || reason === 'go') {
+        const can = scene._canAttackFrom(ru, ru.q, ru.r);
+        const enemies = scene._enemiesOf(ru).filter((e: any) => !e.dead && !e.removed && !e.fadingOut);
+        const adj = enemies.filter((e: any) => Math.abs(e.q - ru.q) + Math.abs(e.r - ru.r) <= 2);
+        adjInfo = `can=${can};dir=${ru.attackDirection ?? ''};mounted=${!!ru.mounted};near2=${adj.map((e: any) => e.bu.id + (e.routed ? 'R' : '')).join('+')}`;
+      }
+      if (reason !== 'go') {
+        moveLog.push({ round: scene.roundNo, id: ru.bu.id, side: ru.side, routed: !!ru.routed, idx, plan: res.steps.length,
+          reason, occ, adjInfo, moveLeft: Math.round(ru.moveLeft * 100) / 100, mp: scene._movementPointsFor(ru.bu),
+          pace: fmt(scene._paceCapFor(ru)), line: fmt(scene._lineAdvanceCap(ru)), q: ru.q, r: ru.r,
+          nxt: idx < res.steps.length ? `${res.steps[idx].col},${res.steps[idx].row}` : '' });
+      }
+    }
+    return origRAM(ru, res, idx, done);
+  };
+}
+
+// r2: powod konca planowania AUTO (per jednostka) -- ktora galaz _advanceStep zwraca bez kroku.
+const planWhy: any[] = [];
+api.planWhy = planWhy;
+{
+  const why = (ru: any, tag: string, extra?: any) => {
+    if (scene._autoBatchPlanning) planWhy.push({ round: scene.roundNo, id: ru?.bu?.id, side: ru?.side, tag, mpLeft: ru ? Math.round(ru.moveLeft * 100) / 100 : null, ...(extra ?? {}) });
+  };
+  const wrap = (name: string, fn: (ru: any, ...a: any[]) => any, falsy: (r: any) => boolean, tag: string) => {
+    const orig = scene[name].bind(scene);
+    scene[name] = (ru: any, ...a: any[]) => {
+      const r = orig(ru, ...a);
+      if (falsy(r)) why(ru, tag);
+      return r;
+    };
+  };
+  wrap('_lineAdvanceWithinCap', null as any, (r: any) => r === false, 'lineCapBlock');
+  wrap('_compactAttackAllowsStep', null as any, (r: any) => r === false, 'compactBlock');
+  wrap('_firstStepAlongPathToAttack', null as any, (r: any) => r == null, 'bfsNoPath');
+  wrap('_stepToward', null as any, (r: any) => r == null, 'greedyNoStep');
+  wrap('_nearestEnemy', null as any, (r: any) => r == null, 'noEnemy');
+  const origAdv = scene._advanceStep.bind(scene);
+  scene._advanceStep = (ru: any, done: any) => {
+    if (scene._autoBatchPlanning && ru.moveLeft <= 0) why(ru, 'advance_mp0');
+    if (scene._autoBatchPlanning && scene._canAttackFrom(ru, ru.q, ru.r)) why(ru, 'advance_adjacent');
+    return origAdv(ru, done);
+  };
+}
+
 function finish(): void {
   api.result = {
     winner: scene._endWinner, round: scene.roundNo,

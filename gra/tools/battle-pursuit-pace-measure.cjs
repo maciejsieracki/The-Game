@@ -32,7 +32,7 @@ const only = process.env.PP_SCEN ? process.env.PP_SCEN.split(',').map(Number) : 
           await page.waitForFunction(() => window.__e2e?.ready === true, undefined, { timeout: 60000 });
           let timedOut = false;
           try { await page.waitForFunction(() => window.__e2e.done === true, undefined, { timeout: MAX_MS, polling: 500 }); } catch { timedOut = true; }
-          const r = await page.evaluate(() => ({ result: window.__e2e.result, rows: window.__e2e.rows, rounds: window.__e2e.rounds }));
+          const r = await page.evaluate(() => ({ result: window.__e2e.result, rows: window.__e2e.rows, rounds: window.__e2e.rounds, moves: window.__e2e.moves, planWhy: window.__e2e.planWhy }));
           await page.close();
           const row = { scen: sc.name, seed, mode, timedOut, errors, ...r };
           out.push(row);
