@@ -48,7 +48,7 @@ import {
 } from './diplomacy-pn-engine';
 import {
   diplomacyProgDarRelacja, diplomacyFairGivePn, diplomacyNormalizeSurowiecIlosc,
-  withDiplomacyTradeEra, diplomacyTradeEra,
+  withDiplomacyTradeEra, diplomacyTradeEra, diplomacyClampQtyToEraBlock,
 } from './diplomacy-value-catalog';
 import {
   isCurrencyProposalForbiddenDuringWar,
@@ -626,6 +626,9 @@ export function buildHandelSurowiecCykliczny(
   const givePayment = giveItems.find(i => i.typ === 'zloto' || i.typ === 'praca');
   const recvRes = receiveItems.find(i => i.typ === 'surowiec_ilosc' && (i.ilosc ?? 0) > 0);
   const recvPayment = receiveItems.find(i => i.typ === 'zloto' || i.typ === 'praca');
+  // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r4 (zarzut Evaluatora 1): epoka umowy zamrożona przy zawarciu.
+  const epokaRaw = Math.floor(Number(tradeEra ?? diplomacyTradeEra()));
+  const epokaUmowy: 1 | 2 | 3 = epokaRaw >= 3 ? 3 : epokaRaw === 2 ? 2 : 1;
 
   // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): pakietyPerTura zostaje ZAMROŻONE na cały czas
   // trwania dealu cyklicznego (tickCyclicResourceTradeDeals transferuje tę samą wartość co
@@ -634,7 +637,8 @@ export function buildHandelSurowiecCykliczny(
   if (giveRes) {
     out.push({
       surowiecKey: giveRes.id,
-      pakietyPerTura: diplomacyNormalizeSurowiecIlosc(giveRes.id, giveRes.ilosc ?? 0, undefined, tradeEra),
+      pakietyPerTura: diplomacyNormalizeSurowiecIlosc(giveRes.id, giveRes.ilosc ?? 0, undefined, epokaUmowy),
+      epokaUmowy,
       sellerOwnerId: proposerId,
       buyerOwnerId: responderId,
       zaplataTyp: recvPayment?.typ as 'zloto' | 'praca' | undefined,
@@ -644,7 +648,8 @@ export function buildHandelSurowiecCykliczny(
   if (recvRes) {
     out.push({
       surowiecKey: recvRes.id,
-      pakietyPerTura: diplomacyNormalizeSurowiecIlosc(recvRes.id, recvRes.ilosc ?? 0, undefined, tradeEra),
+      pakietyPerTura: diplomacyNormalizeSurowiecIlosc(recvRes.id, recvRes.ilosc ?? 0, undefined, epokaUmowy),
+      epokaUmowy,
       sellerOwnerId: responderId,
       buyerOwnerId: proposerId,
       zaplataTyp: givePayment?.typ as 'zloto' | 'praca' | undefined,
@@ -652,6 +657,29 @@ export function buildHandelSurowiecCykliczny(
     });
   }
   return out;
+}
+
+/**
+ * R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r4 (obrona, zarzut Evaluatora 1): epoka pozycji cyklicznej =
+ * zamrożona `epokaUmowy` (umowy zawarte od r4); brak pola (zapis sprzed r4) → epoka pary właścicieli
+ * `pairEra(seller, buyer)` (wyższa z epok stron). Nigdy globalna epoka gracza.
+ */
+export function cyclicItemTradeEra(
+  item: Pick<HandelSurowiecCyklicznyItem, 'epokaUmowy' | 'sellerOwnerId' | 'buyerOwnerId'>,
+  pairEra: (ownerA: number, ownerB: number) => 1 | 2 | 3,
+): 1 | 2 | 3 {
+  return item.epokaUmowy ?? pairEra(item.sellerOwnerId, item.buyerOwnerId);
+}
+
+/**
+ * Self-heal ilości pozycji cyklicznej (tura): wielokrotność bloku EPOKI UMOWY, min. 1 blok.
+ * Nie zeruje umowy (floor do 0 usuwałby dostawę na stałe); 0 zostaje 0 (pozycja bez ilości).
+ */
+export function cyclicSelfHealPakiety(
+  item: Pick<HandelSurowiecCyklicznyItem, 'epokaUmowy' | 'sellerOwnerId' | 'buyerOwnerId' | 'surowiecKey' | 'pakietyPerTura'>,
+  pairEra: (ownerA: number, ownerB: number) => 1 | 2 | 3,
+): number {
+  return diplomacyClampQtyToEraBlock(item.surowiecKey, item.pakietyPerTura, cyclicItemTradeEra(item, pairEra));
 }
 
 /** Etykieta UI traktatu przemarszu (Maciej 2026-07-29 — zamiast „granice"). */

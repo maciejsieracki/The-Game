@@ -1566,6 +1566,7 @@ import {
   hasPendingNegotiationForPair, findOwnOutgoingNegotiation, allowsMultipleOwnOutgoingNegotiations,
   treatyEvalRelationTotal, treatyBasePnFromConfig,
   NEGOTIATION_MAX_ROUNDS, NEGOTIATION_EXPIRY_TURNS,
+  cyclicItemTradeEra, cyclicSelfHealPakiety,
 } from './game/diplomacy-proposals';
 import { selectAiTradeBarter } from './game/ai-trade-proposal';
 import { peaceProposalBlocked, PEACE_PROPOSAL_MIN_WAR_TURNS } from './game/diplomacy-peace-proposal-timing';
@@ -13412,7 +13413,7 @@ async function boot(): Promise<void> {
             // cykliczny zbudowany przed tą zmianą, ręcznie edytowany save, przyszły refaktor).
             // Ten sam floor stosuje diplomacyPnSurowiecIlosc przy wycenie PN — transfer i
             // zapłata muszą się zgadzać, więc oba miejsca floorują IDENTYCZNIE.
-            const totalUnits = diplomacyNormalizeSurowiecIlosc(item.id, qty);
+            const totalUnits = withDiplomacyTradeEra(dealTradeEraForOwners(fromOwnerId, toOwnerId), () => diplomacyNormalizeSurowiecIlosc(item.id, qty)); // r4: epoka pary, nie gracza
             const capId = capitalCityIdForOwner(toOwnerId);
             const refs = cities.map(c => ({ id: c.id, ownerId: c.ownerId, surowce: c.surowce ?? {} }));
             // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (partia 3a): księga „Umowa wymiany" --
@@ -24405,7 +24406,8 @@ async function boot(): Promise<void> {
       partnerOwnerId: number,
       proposerHandlowosc?: number,
     ): ReturnType<typeof pickResourceTradeRelOfferRaw> {
-      return hudPureScope.run(() => pickResourceTradeRelOfferRaw(proposerOwnerId, partnerOwnerId, proposerHandlowosc));
+      // r4 (zarzut Evaluatora 2): epoka UMOWY pary (wszystkie wyceny oferty w epoce pary).
+      return withDiplomacyTradeEra(dealTradeEraForOwners(proposerOwnerId, partnerOwnerId), () => hudPureScope.run(() => pickResourceTradeRelOfferRaw(proposerOwnerId, partnerOwnerId, proposerHandlowosc)));
     }
     function pickResourceTradeRelOfferRaw(
       proposerOwnerId: number,
@@ -24650,7 +24652,8 @@ async function boot(): Promise<void> {
       buyerOwnerId: number,
     ): { surowiecKey: string; label: string; pakietyPerTura: number; zaplataPerTura: number } | null {
       const pricedKeys = Object.keys(diplomacyHandelSurowceCatalog());
-      const pick = pickResourceSurplusTradePick({
+      // r4 (zarzut Evaluatora 2): epoka UMOWY pary sprzedawca↔kupujący, nie epoka gracza.
+      const pick = withDiplomacyTradeEra(dealTradeEraForOwners(sellerOwnerId, buyerOwnerId), () => pickResourceSurplusTradePick({
         sellerOwnerId,
         buyerOwnerId,
         goodsSeller: tradableGoodsIndexForOwner(sellerOwnerId),
@@ -24660,7 +24663,7 @@ async function boot(): Promise<void> {
         pakietWielkosc: diplomacyHandelSurowcePakietWielkosc(),
         maxPakietyPerTura: AI_RESOURCE_TRADE_MAX_PAKIETY_PER_TURA,
         pricePerPakiet: (key, pakiety) => diplomacyPnSurowiecIlosc(key, pakiety),
-      });
+      }));
       if (!pick) return null;
       return {
         surowiecKey: pick.surowiecKey,
@@ -24835,7 +24838,8 @@ async function boot(): Promise<void> {
           const sellerA = quantityTradableGoodOptions(a);
           const sellerB = quantityTradableGoodOptions(b);
           // P-AI-011: deficyt (kupno) przed nadwyżką (sprzedaż) — także AI↔miasto-państwo.
-          const tradePick = pickResourceDeficitForOwnerPair({
+          // r4 (zarzut Evaluatora 2): wszystkie 4 wyceny pary AI↔AI w epoce UMOWY tej pary.
+          const tradePick = withDiplomacyTradeEra(dealTradeEraForOwners(a, b), () => pickResourceDeficitForOwnerPair({
             ...tradeBase,
             buyerOwnerId: a,
             sellerOwnerId: b,
@@ -24866,7 +24870,7 @@ async function boot(): Promise<void> {
               goodsSeller: goodsB,
               goodsBuyer: goodsA,
               sellerOptions: sellerB,
-            });
+            }));
           const bestOffer = tradePick
             ? {
                 seller: tradePick.sellerOwnerId,
@@ -25343,8 +25347,11 @@ async function boot(): Promise<void> {
         // wielokrotnością kroku). Floor w miejscu, RAZ na turę, PRZED sprawdzeniem zapasów
         // sprzedawcy (sellerOkOf) i faktycznym transferem — oba muszą widzieć TĘ SAMĄ,
         // już poprawną ilość.
+        // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r4 (zarzut Evaluatora 1): epoka UMOWY (zamrożona przy
+        // zawarciu; zapis sprzed r4 → para właścicieli), nie globalna epoka gracza; min. 1 blok, bez zerowania.
         for (const it of items) {
-          const normalized = diplomacyNormalizeSurowiecIlosc(it.surowiecKey, it.pakietyPerTura);
+          if (it.epokaUmowy === undefined) it.epokaUmowy = cyclicItemTradeEra(it, dealTradeEraForOwners);
+          const normalized = cyclicSelfHealPakiety(it, dealTradeEraForOwners);
           if (normalized !== it.pakietyPerTura) it.pakietyPerTura = normalized;
         }
 
@@ -38243,10 +38250,12 @@ async function boot(): Promise<void> {
       const assets: PeaceAsset[] = [];
       const gold = Math.floor(buildDiploTreasury().getPieniadze(loserId));
       if (gold > 0) assets.push({ kind: 'zloto', id: 'zloto', amount: gold, pn: diplomacyPnZloto(gold) });
+      // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r4 (zarzut Evaluatora 2): epoka UMOWY pary, nie gracza.
+      const payEra = dealTradeEraForOwners(loserId, winnerId);
       for (const key of Object.keys(diplomacyHandelSurowceCatalog())) {
-        const qty = diplomacyNormalizeSurowiecIlosc(key, ownerResourceStock(loserId, key));
+        const qty = diplomacyNormalizeSurowiecIlosc(key, ownerResourceStock(loserId, key), undefined, payEra);
         if (qty <= 0) continue;
-        const pn = diplomacyPnSurowiecIlosc(key, qty);
+        const pn = diplomacyPnSurowiecIlosc(key, qty, payEra);
         if (pn != null && pn > 0) assets.push({ kind: 'surowiec_ilosc', id: key, amount: qty, pn });
       }
       for (const w of diploMiastaWycenaDla(loserId)) {

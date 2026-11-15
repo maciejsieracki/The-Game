@@ -16,7 +16,9 @@
  *  F. Migracja zapisów: diplomacyClampQtyToEraBlock / diplomacyClampBasketItemsToEraBlock (floor, min. 1 blok,
  *     surowce niebłokowe i ilości <= 0 bez zmian).
  *  G. Determinizm (dwa przebiegi = ten sam wynik) i odporność na wyjątek (epoka globalna wraca).
- * Mutacje (TRADE_ERA_EXPLICIT_MUTATE=ctx-ignored|clamp-noop) => CZERWONE.
+ *  H. (r4, zarzut Evaluatora 1+2) epoka UMOWY pozycji cyklicznych: zamrożona przy zawarciu, self-heal w min. 1 bloku
+ *     epoki umowy (nie zeruje), legacy => para właścicieli; wiring main.ts (źródło) w epoce pary, nie gracza.
+ * Mutacje (TRADE_ERA_EXPLICIT_MUTATE=ctx-ignored|clamp-noop|cyclic-global|cyclic-nofreeze) => CZERWONE.
  * Uruchomienie (z gra/): node tools/diplomacy-trade-era-explicit-test.cjs
  */
 const fs = require('fs');
@@ -44,7 +46,7 @@ fs.writeFileSync(BRAND_STUB, [
 ].map(f => `export function ${f}() { return ''; }`).join('\n'), 'utf8');
 const G = p => JSON.stringify(path.join(GRA, p));
 fs.writeFileSync(ENTRY, `
-export { evaluateProposal, buildHandelSurowiecCykliczny } from ${G('src/game/diplomacy-proposals.ts')};
+export { evaluateProposal, buildHandelSurowiecCykliczny, cyclicItemTradeEra, cyclicSelfHealPakiety } from ${G('src/game/diplomacy-proposals.ts')};
 export { resolveProposalPn } from ${G('src/game/diplomacy-pn-engine.ts')};
 export { peaceOfferAiRequestBasket, trimResourcePaymentTradeForZeroBalance } from ${G('src/game/diplomacy-ai-offer-balance.ts')};
 export {
@@ -73,6 +75,17 @@ async function main() {
           contents: src.replace(needle, 'return evaluateProposalImpl(proposal, { ...ctx, tradeEra: undefined });')
             .replace('tradeEra: ctx.tradeEra,\n    ...proposalPnTurnsMultiplier(payload),', '...proposalPnTurnsMultiplier(payload),'),
           loader: 'ts', resolveDir: path.join(GRA, 'src/game'),
+        }));
+      }
+      if (MUTATE === 'cyclic-global' || MUTATE === 'cyclic-nofreeze') {
+        // Mutacja r4: cyclicItemTradeEra ignoruje zamrożoną epokę (nofreeze) albo parę (global = epoka globalna gracza).
+        const f = path.join(GRA, 'src/game/diplomacy-proposals.ts');
+        const src = fs.readFileSync(f, 'utf8');
+        const needle = 'return item.epokaUmowy ?? pairEra(item.sellerOwnerId, item.buyerOwnerId);';
+        if (!src.includes(needle)) throw new Error('mutacja cyclic: brak wzorca');
+        const repl = MUTATE === 'cyclic-global' ? 'return item.epokaUmowy ?? diplomacyTradeEra();' : 'return pairEra(item.sellerOwnerId, item.buyerOwnerId);';
+        build.onLoad({ filter: /game[\\/]diplomacy-proposals\.ts$/ }, () => ({
+          contents: src.replace(needle, repl), loader: 'ts', resolveDir: path.join(GRA, 'src/game'),
         }));
       }
       if (MUTATE === 'clamp-noop') {
@@ -203,6 +216,29 @@ async function main() {
   D.setDiplomacyTradeEra(1);
   try { D.withDiplomacyTradeEra(3, () => { throw new Error('boom'); }); } catch (e) { /* oczekiwane */ }
   eq(D.diplomacyTradeEra(), 1, 'G po wyjątku w withDiplomacyTradeEra epoka wraca do poprzedniej');
+
+  // H. Epoka umowy pozycji cyklicznych (r4): zamrożona, self-heal w bloku epoki umowy, para zamiast gracza.
+  D.setDiplomacyTradeEra(1);
+  const cyc = D.buildHandelSurowiecCykliczny(0, 1, [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 10 }],
+    [{ typ: 'zloto', id: 'zloto', ilosc: 5 }], 1);
+  eq(cyc.map(i => [i.surowiecKey, i.pakietyPerTura, i.epokaUmowy]), [['drewno', 10, 1]],
+    'H umowa zawarta w Kamieniu: 10 szt., epoka 1 zamrożona w pozycji');
+  eq(D.cyclicSelfHealPakiety(cyc[0], () => 3), 10,
+    'H zamrożona umowa Kamienia po awansie pary do Żelaza NIE jest obcinana (10 => 10, nie 0 ani 100)');
+  const legacy = { surowiecKey: 'drewno', pakietyPerTura: 10, sellerOwnerId: 0, buyerOwnerId: 1 };
+  eq(D.cyclicSelfHealPakiety(legacy, () => 2), 50, 'H legacy (bez epokaUmowy), para w Brązie => min. 1 blok 50 (nie 0)');
+  eq(D.cyclicSelfHealPakiety(legacy, () => 1), 10, 'H legacy, globalna epoka gracza w Żelazie NIE wpływa (para w Kamieniu => 10)');
+  eq(D.cyclicItemTradeEra(legacy, (a, b) => (a === 0 && b === 1 ? 2 : 1)), 2, 'H legacy: epoka z PARY (seller,buyer)');
+  eq(D.cyclicSelfHealPakiety({ ...legacy, pakietyPerTura: 0 }, () => 2), 0, 'H ilość 0 zostaje 0');
+  const mainSrc = fs.readFileSync(path.join(GRA, 'src/main.ts'), 'utf8');
+  ok(mainSrc.includes('cyclicSelfHealPakiety(it, dealTradeEraForOwners)'), 'H main.ts: self-heal cykliczny w epoce umowy (para)');
+  ok(!mainSrc.includes('diplomacyNormalizeSurowiecIlosc(it.surowiecKey, it.pakietyPerTura)'), 'H main.ts: brak starego self-heal w globalnej epoce gracza');
+  ok(mainSrc.includes('withDiplomacyTradeEra(dealTradeEraForOwners(fromOwnerId, toOwnerId), () => diplomacyNormalizeSurowiecIlosc(item.id, qty))'),
+    'H main.ts: jednorazowy transfer koszyka normalizuje w epoce pary');
+  ok(mainSrc.includes('diplomacyNormalizeSurowiecIlosc(key, ownerResourceStock(loserId, key), undefined, payEra)'),
+    'H main.ts: wypłata za pokój AI w epoce pary (nie gracza)');
+  ok(mainSrc.includes('return withDiplomacyTradeEra(dealTradeEraForOwners(proposerOwnerId, partnerOwnerId), () => hudPureScope.run('),
+    'H main.ts: oferta AI↔gracz (pickResourceTradeRelOffer) w epoce pary');
 
   fs.rmSync(TMP, { recursive: true, force: true });
   console.log(`diplomacy-trade-era-explicit-test${MUTATE ? ' [MUTACJA ' + MUTATE + ']' : ''}: ${pass} pass / ${fail} fail`);
