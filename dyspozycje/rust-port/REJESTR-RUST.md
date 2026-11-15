@@ -2008,3 +2008,15 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Rozbieżność liczby testów w obronie/ewaluatorze:** raporty podawały 518 i 563; integracja daje 537. Na tym samym kodzie różnica nie jest wyjaśniona (NIE_ZMIERZONO).
 - **Refy:** `refs/keep/P4-1G-Q3-CITIES-FC` (`3d0450b77`), `refs/keep/P4-1G-Q3-CITIES-OP` (`232ab2c50`), `refs/keep/P4-1G-Q3-CITIES-OBRONA` (`bb6bd342e`), `refs/keep/cleanup-P4-1G-Q3-integ` (`b90894920`).
 - **Sprzątanie:** worktrees `wf_7221cd0a-cbb-1..4` i `integ-p4-1g-q3` usunięte; cache `target-integ-p4-1g-q3` i `scratchpad/tgt` usunięte (wspólny cache po Operatorze Q3). Dysk: 13 GB wolne (68%).
+
+## Przebieg (heartbeat — P4-1H Q2 CANCEL-PLANNED-MARCH zintegrowany na parity)
+
+- **P4-1H Q2 CANCEL-PLANNED-MARCH (#217, Opus) — FC PASS-WITH-NOTES `adc21f8cd`:** operator `d8f85f7d9` (`cancel_planned_march` 1:1 z `clearPlannedMarch`, gałąź `unitId`), obrona `95613f699` (usunięty test tautologiczny, niezależny stan oczekiwany, wskazówka dla wołających w silniku), FC `adc21f8cd`.
+- **Integracja:** FC zbudowany na `2799cdd4b`, parity `b90894920`. Merge `--no-ff` w `84ec520a5`, merge-tree czysty. Bramki silnika (`rust-port/engine`): `FMT_EXIT=0`, `CLIPPY_EXIT=0`, `TEST_EXIT=0`, **3531 passed, 0 failed, 1 ignored** (ignorowany test z bazy). FF: parity = `84ec520a5`.
+- **Otwarte (z Evaluatora i obrony):**
+  - w silniku nie ma jeszcze wołającego poza `bridge.rs`; kliknięcie PPM/Esc (`force=false`, `main.ts:7091`) i przycisk Stop (`force=true`, `:31729-31736`) to osobne tematy P4-1H;
+  - wołający wewnątrz silnika (`main.ts:25920/25946/26013/26060/26085`) muszą wołać `PlayableState::clear_planned_march_for_unit` przed usunięciem jednostki (wskazówka w doc-komentarzu);
+  - test `attack_branch_is_observable` usunięty; w adapterze brak testu ścieżki `UnitNotOwned` i czyszczenia przez `EngineCommand` (publiczne API nie buduje gry z planami); pokrycie w `cancel_planned_march_game_tests` w `playable.rs`.
+  - Wektory nie z uruchomionej przeglądarki (dozwolone przez dispatch): NIE_ZMIERZONO.
+- **Refy:** `refs/keep/P4-1H-CANCEL-Q2-FC` (`adc21f8cd`), `refs/keep/P4-1H-CANCEL-Q2-OP` (`d8f85f7d9`), `refs/keep/P4-1H-CANCEL-Q2-OBRONA` (`95613f699`), `refs/keep/cleanup-P4-1H-Q2-integ` (`84ec520a5`).
+- **Sprzątanie:** worktrees `wf_c5970398-de4-1..4`, `wf_c9f7943e-b13-4`, `integ-p4-1h-q2` usunięte (nieśledzony `Cargo.lock` w nich — regenerowalny, nie commitowany); cache `target-integ-p4-1h-q2` usunięty. Dysk: 9,5 GB wolne (76%).
