@@ -1995,3 +1995,16 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
   - L1 (`revealAllLand`), L2 (`riverRevealKeys`) i L5 (`wonderBuildSites`) pozostają NIE_ZMIERZONO, zgodnie z zadaniami #254 i rozpoznaniem.
 - **Refy:** `refs/keep/P4-1G-Q2-TERRAIN-FC` (`a0c81d59e`), `refs/keep/P4-1G-Q2-TERRAIN-OP` (`3463c909a`), `refs/keep/P4-1G-Q2-TERRAIN-OBRONA` (`157e79c15`), `refs/keep/cleanup-P4-1G-Q2-integ`.
 - **Sprzątanie:** worktrees `wf_c9f7943e-b13-1/-2/-3` i `integ-p4-1g-q2` usunięte; cache `target-integ-p4-1g-q2` usunięty. Dysk: 6,7 GB wolne (83%).
+
+## Przebieg (heartbeat — P4-1G Q3 ADAPTER-CITIES zintegrowany na parity)
+
+- **P4-1G Q3 ADAPTER-CITIES (#216, Opus) — FC PASS-WITH-NOTES `3d0450b77`:** operator `232ab2c50`, obrona `bb6bd342e` (przyjęte: odznaki per właściciel, dokumentacja; odrzucone: fallbacki pinu przeniesione do producenta), FC `3d0450b77`.
+- **Integracja:** FC zbudowany na `601ff304c`, parity był już `a0c81d59e` (Q2). Merge `--no-ff` w `b90894920` bez konfliktów (`view.rs` scalony automatycznie), merge-tree czysty. Bramki na merge'u (`rust-port/renderer`): `FMT_EXIT=0`, `CLIPPY_EXIT=0`, `TEST_EXIT=0`, **537 passed, 0 failed, 0 ignored** (66 zestawów). FF: parity = `b90894920`. Merge wypchnięty najpierw na `rust-port-wip/R-RUSTPORT-P4-1G-Q3-CITIES-integ-r1`.
+- **Otwarte (do przypisania przez orkiestratora):**
+  - adapter miast nie ma produkcyjnego wołającego (`CityInputs`, `WonderInputs`, `apply_city_fog`, `apply_wonder_fog`, `city_badge_input`, `owner_emblem_context`); wpięcie to integrator R5 (`syncStatChips`) i pętla synchronizacji mapy (`main.ts:3007`, `:4316`, `:14563`). Brak zadania w liście;
+  - adapter jest ściślejszy niż pin: nieznany `bronze_civ` albo brak właściciela w `owners[]` daje błąd (`UnknownBronzeCiv`, `MissingOwner`), a pin ma fallbacki. Decyzja techniczna: fallbacki należą do producenta, nie do adaptera;
+  - parytet bajtowy web → DTO → renderer: NIE_ZMIERZONO (fixture'y ręczne, do testu end-to-end po producencie B-1B);
+  - L1 (`revealAllLand`), L5 (`wonderBuildSites`), `isVisible` (L4), `getRevolt`/`getUnitCountOnHex` (R6): NIE_ZMIERZONO.
+- **Rozbieżność liczby testów w obronie/ewaluatorze:** raporty podawały 518 i 563; integracja daje 537. Na tym samym kodzie różnica nie jest wyjaśniona (NIE_ZMIERZONO).
+- **Refy:** `refs/keep/P4-1G-Q3-CITIES-FC` (`3d0450b77`), `refs/keep/P4-1G-Q3-CITIES-OP` (`232ab2c50`), `refs/keep/P4-1G-Q3-CITIES-OBRONA` (`bb6bd342e`), `refs/keep/cleanup-P4-1G-Q3-integ` (`b90894920`).
+- **Sprzątanie:** worktrees `wf_7221cd0a-cbb-1..4` i `integ-p4-1g-q3` usunięte; cache `target-integ-p4-1g-q3` i `scratchpad/tgt` usunięte (wspólny cache po Operatorze Q3). Dysk: 13 GB wolne (68%).
