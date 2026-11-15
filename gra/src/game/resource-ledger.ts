@@ -18,6 +18,8 @@
 export type LedgerSourceKind =
   | 'teren'                 // plony z mapy / ulepszeń terenu do magazynu państwa
   | 'stolarnia'             // bonus Stolarni (drewno z mapy)
+  | 'warzelnia'             // sól z Warzelni soli (plon ulepszenia terenu, per miasto)
+  | 'wycinka'               // drewno z wycinki lasu (plon wyrębu, poza pipeline'em — gracz w ticku, AI w turze AI)
   | 'konwersja'             // wyjście receptury (Garncarnia, Cegielnia, odlewnie)
   | 'wejscie'               // wejście receptury zużyte przez konwerter
   | 'spichlerz'             // drain Spichlerza (ceramika / sól)
@@ -96,6 +98,14 @@ export interface ResourceLedgerNet {
 
 export const LEDGER_DEFAULT_HISTORY_TURNS = 10;
 
+/**
+ * Przełącznik zapisu do księgi (TYLKO dla testu „stan gry identyczny z księgą i bez księgi”, hak ?civTest=1).
+ * Domyślnie włączony; wyłączony = recordLedgerFlow nic nie zapisuje (rekordy puste), stan gry bez zmian.
+ */
+let ledgerRecordingEnabled = true;
+export function setLedgerRecordingEnabled(on: boolean): void { ledgerRecordingEnabled = on; }
+export function isLedgerRecordingEnabled(): boolean { return ledgerRecordingEnabled; }
+
 export function createLedgerTurn(): ResourceLedgerTurn {
   return { byResource: {} };
 }
@@ -112,7 +122,7 @@ export function recordLedgerFlow(
   flow: { kind: LedgerSourceKind; label: string },
   amount: number,
 ): void {
-  if (!Number.isFinite(amount) || amount === 0) return;
+  if (!ledgerRecordingEnabled || !Number.isFinite(amount) || amount === 0) return;
   const bySource = turn.byResource[resourceKey] ?? {};
   const prev = bySource[sourceKey];
   bySource[sourceKey] = {
@@ -301,4 +311,11 @@ export function recordStockDeltaToPending(
 ): void {
   const sink = pendingLedgerSink(ownerId, flow.kind, flow.label);
   recordStockDeltaToTurn(sink.turn, before, after, sourceKey, flow);
+}
+
+/** Rekord tury księgi dla właściciela w mapie rekordów ticku (get-or-create). */
+export function ledgerTurnForOwner(map: Map<number, ResourceLedgerTurn>, ownerId: number): ResourceLedgerTurn {
+  let t = map.get(ownerId);
+  if (!t) { t = createLedgerTurn(); map.set(ownerId, t); }
+  return t;
 }

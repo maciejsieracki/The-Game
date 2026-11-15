@@ -100,13 +100,13 @@ function ledgerSum(turn, ownerId, key) {
   return M.ledgerResourceNet(turn, key).net;
 }
 
-// ---- (1) + (2): przelew umowy + zapis delta obu stron; mutacja bez biorcy ----
-console.log('[1] Umowa wymiany: przelew silnika + księga (30 iteracji)');
+// ---- (1) + (2): przelew umowy; OSOBNA księga per właściciel (jak w main.ts: okno pending per owner) ----
+console.log('[1] Umowa wymiany: przelew silnika + osobne księgi właścicieli (30 iteracji)');
 {
   const rng = makeRng(20261115);
-  let maxDiff = 0;
-  let mutationDiffSeen = 0;
-  let movedTotal = 0;
+  let maxDiffFrom = 0, maxDiffTo = 0;
+  let mutationDiffSeen = 0, movedTotal = 0, labelOk = true;
+  const CIV = { 1: 'Rzymianie', 2: 'Asyria', 3: 'Hetyci' };
   for (let it = 0; it < 30; it++) {
     const cities = makeCities(rng);
     const fromOwner = OWNERS[it % 3];
@@ -115,6 +115,7 @@ console.log('[1] Umowa wymiany: przelew silnika + księga (30 iteracji)');
     const qty = 1 + Math.floor(rng() * 25);
     const capId = cities.find(c => c.ownerId === toOwner).id;
 
+    M.resetPendingLedger();
     const fromBefore = { ...M.ownerResourceStockAll(cities, fromOwner) };
     const toBefore = { ...M.ownerResourceStockAll(cities, toOwner) };
     const refs = cities.map(c => ({ id: c.id, ownerId: c.ownerId, surowce: c.surowce ?? {} }));
@@ -123,33 +124,43 @@ console.log('[1] Umowa wymiany: przelew silnika + księga (30 iteracji)');
       const after = result.cities[i];
       if (refs[i] && after && after.surowce !== refs[i].surowce) cities[i].surowce = after.surowce;
     }
+    // Dokladnie jak main.ts: kazda strona pisze do WLASNEGO okna pending (etykieta = druga strona).
+    M.recordStockDeltaToPending(fromOwner, fromBefore, M.ownerResourceStockAll(cities, fromOwner),
+      `umowa-wymiany|out|${toOwner}`, { kind: 'umowa_wymiany', label: `Umowa wymiany z ${CIV[toOwner]}` });
+    M.recordStockDeltaToPending(toOwner, toBefore, M.ownerResourceStockAll(cities, toOwner),
+      `umowa-wymiany|in|${fromOwner}`, { kind: 'umowa_wymiany', label: `Umowa wymiany z ${CIV[fromOwner]}` });
+    const books = new Map();
+    M.drainPendingLedgerInto(books);
 
-    const turn = M.createLedgerTurn();
-    M.recordStockDeltaToTurn(turn, fromBefore, M.ownerResourceStockAll(cities, fromOwner),
-      `umowa|out|${toOwner}`, { kind: 'umowa_wymiany', label: 'Umowa wymiany (test)' });
-    M.recordStockDeltaToTurn(turn, toBefore, M.ownerResourceStockAll(cities, toOwner),
-      `umowa|in|${fromOwner}`, { kind: 'umowa_wymiany', label: 'Umowa wymiany (test)' });
-    // Ta sama księga, ale per właściciel: biorcy/nadawcy kolidują tylko gdy jest to ten sam owner;
-    // tu sprawdzamy sumę po obu stronach przelewu, czyli zmianę łączną obu magazynów.
     const deltaFrom = M.ownerResourceStockAll(cities, fromOwner)[key] - (fromBefore[key] ?? 0);
     const deltaTo = M.ownerResourceStockAll(cities, toOwner)[key] - (toBefore[key] ?? 0);
-    const bookedFrom = M.ledgerResourceNet(turn, key).net;
-    // Księga po stronie nadawcy + biorcy: suma = deltaFrom + deltaTo (przelew netto 0 między
-    // magazynami, więc suma delt obu stron = 0 dla samego przelewu, a księga musi to odzwierciedlić).
-    const diff = Math.abs((deltaFrom + deltaTo) - bookedFrom);
-    maxDiff = Math.max(maxDiff, diff);
+    const bookFrom = books.get(fromOwner), bookTo = books.get(toOwner);
+    // Osobne ksiegi: ksiega nadawcy = zmiana magazynu nadawcy, ksiega biorcy = zmiana magazynu biorcy (nie suma obu).
+    maxDiffFrom = Math.max(maxDiffFrom, Math.abs(deltaFrom - (bookFrom ? M.ledgerResourceNet(bookFrom, key).net : 0)));
+    maxDiffTo = Math.max(maxDiffTo, Math.abs(deltaTo - (bookTo ? M.ledgerResourceNet(bookTo, key).net : 0)));
     movedTotal += Math.abs(deltaFrom);
-
-    // Mutacja: pominięcie wpisu biorcy -> rozjazd, gdy coś przeniesiono.
-    const mutTurn = M.createLedgerTurn();
-    M.recordStockDeltaToTurn(mutTurn, fromBefore, M.ownerResourceStockAll(cities, fromOwner),
-      `umowa|out|${toOwner}`, { kind: 'umowa_wymiany', label: 'Umowa wymiany (test)' });
-    const mutDiff = Math.abs((deltaFrom + deltaTo) - M.ledgerResourceNet(mutTurn, key).net);
-    if (Math.abs(deltaFrom) > 0 && mutDiff > 0) mutationDiffSeen++;
+    if (deltaFrom !== 0) {
+      const srcFrom = Object.values(bookFrom.byResource[key] || {})[0];
+      const srcTo = Object.values(bookTo.byResource[key] || {})[0];
+      labelOk = labelOk && srcFrom && srcFrom.label === `Umowa wymiany z ${CIV[toOwner]}` && srcFrom.amount < 0
+        && srcTo && srcTo.label === `Umowa wymiany z ${CIV[fromOwner]}` && srcTo.amount > 0;
+    }
+    // Mutacja: ten sam przelew, ale zapis BIORCY pominiety -> osobna ksiega biorcy pusta -> rozjazd TYLKO biorcy.
+    M.resetPendingLedger();
+    M.recordStockDeltaToPending(fromOwner, fromBefore, M.ownerResourceStockAll(cities, fromOwner),
+      `umowa-wymiany|out|${toOwner}`, { kind: 'umowa_wymiany', label: `Umowa wymiany z ${CIV[toOwner]}` });
+    const mutBooks = new Map();
+    M.drainPendingLedgerInto(mutBooks);
+    const mutTo = mutBooks.get(toOwner);
+    const mutDiffTo = Math.abs(deltaTo - (mutTo ? M.ledgerResourceNet(mutTo, key).net : 0));
+    if (deltaTo !== 0 && mutDiffTo > 0) mutationDiffSeen++;
   }
-  check('suma księgi = zmiana magazynów obu stron (30 iteracji, maks. różnica 0)', maxDiff === 0, `maxDiff=${maxDiff}`);
-  check('mutacja (brak wpisu biorcy) daje rozjazd przy przelewie', movedTotal === 0 || mutationDiffSeen > 0,
-    `movedTotal=${movedTotal} mutationDiffSeen=${mutationDiffSeen}`);
+  check('ksiega nadawcy = zmiana jego magazynu (30 iteracji, maks. roznica 0)', maxDiffFrom === 0, `maxDiffFrom=${maxDiffFrom}`);
+  check('ksiega biorcy = zmiana jego magazynu (30 iteracji, maks. roznica 0)', maxDiffTo === 0, `maxDiffTo=${maxDiffTo}`);
+  check('przeniesiono cos (test nie jest pusty)', movedTotal > 0, `movedTotal=${movedTotal}`);
+  check('etykiety „Umowa wymiany z <civ>” po stronie nadawcy (−) i biorcy (+) wskazuja DRUGA strone', labelOk);
+  check('mutacja: pominiecie zapisu biorcy = pusta ksiega biorcy = rozjazd (przy niezerowym przelewie)', mutationDiffSeen > 0, `seen=${mutationDiffSeen}`);
+  M.resetPendingLedger();
 }
 
 // ---- (3): ścięcie capu ----
@@ -209,14 +220,33 @@ console.log('[6] Reset okna przy wczytaniu / nowej grze (FC r3 nr 6)');
   void cities;
 }
 
-console.log('[7] Wpięcie w main.ts (sprawdzenie źródła, nie zachowania pętli gry)');
+console.log('[7] Wpięcie w main.ts (sprawdzenie struktury źródła; zachowanie w żywej grze: resource-ledger-live-measure.cjs)');
 {
   const mainSrc = fs.readFileSync(path.resolve(GRA, 'src', 'main.ts'), 'utf8');
-  const labelHits = (mainSrc.match(/Umowa wymiany z \$\{ownerDiploLabel\(/g) || []).length;
-  check('7a etykiety „Umowa wymiany z <civ>” w main.ts (oczekiwane 4: 2 przelewy × 2 strony)', labelHits === 4, `hits=${labelHits}`);
+  const fnBody = (name) => {
+    const i = mainSrc.indexOf(`function ${name}(`);
+    if (i < 0) return '';
+    const next = mainSrc.indexOf('\n    function ', i + 20);
+    return mainSrc.slice(i, next > 0 ? next : i + 9000);
+  };
+  for (const [name, call] of [['transferBasketItems', 'transferSurowiecIlosc('], ['applyCyclicDeliveryOutcome', 'transferSurowiecIlosc(']]) {
+    const body = fnBody(name);
+    const iT = body.indexOf(call);
+    const iBefore = body.indexOf('ownerResourceStockAll(cities,');
+    const iRec = body.indexOf('recordStockDeltaToPending(');
+    const nRec = (body.match(/recordStockDeltaToPending\(/g) || []).length;
+    check(`7a ${name}: migawka magazynu PRZED przelewem, zapis do okna PO przelewie`, iBefore >= 0 && iT > iBefore && iRec > iT, `iBefore=${iBefore} iT=${iT} iRec=${iRec}`);
+    check(`7b ${name}: dwa zapisy (nadawca + biorca), kind umowa_wymiany, etykieta „Umowa wymiany z”`, nRec === 2 && (body.match(/kind: 'umowa_wymiany'/g) || []).length === 2 && (body.match(/Umowa wymiany z \$\{ownerDiploLabel\(/g) || []).length === 2, `nRec=${nRec}`);
+  }
+  check('7c exchange: brak ksiegowania szlaku handlowego (decyzja #311) -- brak kind szlak', !/kind: 'szlak/.test(mainSrc));
   const prepIdx = mainSrc.indexOf('function prepareSessionForLoad()');
   const prepBody = prepIdx >= 0 ? mainSrc.slice(prepIdx, prepIdx + 1200) : '';
-  check('7b prepareSessionForLoad wywołuje resetPendingLedger()', /resetPendingLedger\(\)/.test(prepBody));
+  check('7d prepareSessionForLoad wywołuje resetPendingLedger()', /resetPendingLedger\(\)/.test(prepBody));
+  const startIdx = mainSrc.indexOf('async function doStartGame(');
+  const startBody = startIdx >= 0 ? mainSrc.slice(startIdx, startIdx + 2500) : '';
+  check('7e doStartGame (NOWA GRA) wywołuje resetPendingLedger()', /resetPendingLedger\(\)/.test(startBody));
+  const tickIdx = mainSrc.indexOf('drainPendingLedgerInto(econ.resourceLedgerByOwner)');
+  check('7f drain okna pending w ticku ekonomii istnieje (jedyne miejsce opróżniania)', tickIdx > 0 && mainSrc.indexOf('drainPendingLedgerInto(econ.resourceLedgerByOwner)', tickIdx + 10) < 0);
 }
 
 console.log(`\nRESULT: ${passed} passed, ${failed} failed`);

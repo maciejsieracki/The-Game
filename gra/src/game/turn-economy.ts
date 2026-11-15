@@ -1858,6 +1858,18 @@ export function tickEmpireResourcePipeline(
     const ledgerTurn = ledgerTurnFor(ledgerOut, ownerId);
     const recordTerrain = (resourceKey: string, got: number): void => {
       if (ledgerTurn) {
+        // Sól pochodzi WYŁĄCZNIE z Warzelni soli (territoryResourceYieldForImprovement) —
+        // osobne źródło „Warzelnia (<miasto>)” zamiast ogólnego „Teren i plony z mapy”.
+        if (resourceKey === 'sol') {
+          recordLedgerFlow(
+            ledgerTurn,
+            resourceKey,
+            `warzelnia|${city.id}`,
+            { kind: 'warzelnia', label: `Warzelnia (${city.name})` },
+            got,
+          );
+          return;
+        }
         recordLedgerFlow(
           ledgerTurn,
           resourceKey,
