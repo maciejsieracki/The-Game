@@ -2067,3 +2067,8 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Erratum dispatchu P4-1G Q4 (§ZAKRES pkt 2):** `FortDto` None → INFINITY jest błędne. INFINITY dotyczy amunicji jednostek; brak wieży = `null`. Poprawić w Q5, Q6 i P4-1I.
 - **Otwarte z FC F1:** typy nie są reeksportowane w `lib.rs` (poza allowlistą); `P4-1-RENDER-DTO-CONTRACT.md` §3.5/§3.7 do aktualizacji; reguła scalania właścicieli obozów do dispatchu Q5.
 - **Otwarte z FC Q4:** brak producenta `BattleSetupDto` w silniku i brak integratora sceny bitwy.
+
+- **Start (23:2x):** `R-RUSTPORT-P4-1H-MOVE-MODEL-Q4` (#250, Opus), dispatch `3f10be82c` na `claude/rust-sivvrn`, baza `1bacc7621`. Workflow `wf_312e0180-927`. Zależność RJ-REPIN Q3 zintegrowana. Decyzja techniczna `u8` vs `f64` do zapisu przez operatora w raporcie.
+- **#236 (P4-1G Q5 ADAPTER-OVERLAYS) — nie startuje:** wiersz rozpoznania wymaga producentów nakładek B-1F (P4-1F2–F6, #239–#243), jeszcze niezrobionych.
+- **Sloty:** 2 z 4 — P4-1I1 (`wf_8948228b-2a5`, ewaluator) i P4-1H Q4 (`wf_312e0180-927`, operator).
+- **Dysk:** 10 GB (75%) po sprzątaniu integracji F1/Q4.
