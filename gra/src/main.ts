@@ -30692,6 +30692,13 @@ async function boot(): Promise<void> {
             status: getDiploRelation(ai, ME()).status,
           };
         },
+        /** R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r3): ustawia liczbe obywateli pierwszego miasta wlasciciela (scenariusz 20 obywateli). Tylko test. */
+        setCityPopulation: (ownerId: number, n: number): number => {
+          const c = cities.find(x => x.ownerId === ownerId);
+          if (!c) return -1;
+          c.population = Math.max(1, Math.round(n));
+          return c.population;
+        },
         /** SETUP zapasu: ustawia absolutny zapas surowca wlasciciela (zerowanie + kredyt w jednym miescie). */
         setStock: (ownerId: number, key: string, amount: number): number => {
           for (const c of cities) if (c.ownerId === ownerId && c.surowce) c.surowce[key] = 0;

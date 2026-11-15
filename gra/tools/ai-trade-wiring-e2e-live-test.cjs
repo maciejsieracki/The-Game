@@ -50,6 +50,8 @@ const H = 'window.__aiTradeWiringTestDebug';
 const GIVE = 'cegla'; // r3 (A1): AI daje cegle (nadwyzka zapasu, Cegielnia = stawka > 0); graczowi brakuje
 const RECV = 'zelazo'; // r3 (A1): AI bierze zelazo (brak), gracz ma nadwyzke (Odlewnia). Para 4:1 (cegla 5 PW / zelazo 20 PW): 10 zelaza = 40 cegly = 200 PW
 const BIG = 400;
+// R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r3): AITW_POP=<n> ustawia n obywateli w pierwszym miescie gracza i AI (scenariusz „jedno miasto, 20 obywateli”).
+const POP = Number(process.env.AITW_POP || 0);
 
 let pass = 0;
 let fail = 0;
@@ -157,7 +159,7 @@ async function setupScenario(page, info) {
     window.__civTest.adminSetup(aiCity.id, [...new Set([...aiBuilt, 'cegielnia'])], null, null, null);
     window.__civTest.adminSetup(myCity.id, [...new Set([...myBuilt, 'odlewnia_zelaza'])], null, null, null);
   }, [info.ai]);
-  await ev(page, ([ai, keys, give, recv, big]) => {
+  await ev(page, ([ai, keys, give, recv, big, POP]) => {
     const h = window.__aiTradeWiringTestDebug;
     h.prepare(ai);
     for (const k of keys) { h.setStock(ai, k, 0); h.setStock(0, k, 0); }
@@ -167,7 +169,8 @@ async function setupScenario(page, info) {
     // koniec tury, gdy spichlerz panstwa gracza po turze < 0 (zerowany powyzej zapas zywnosci, zero produkcji
     // w scenariuszu). Bufor zywnosci NIE zmienia pary handlowej (zywnosc nie jest w GIVE/RECV), tylko odblokowuje EOT.
     h.setSpichlerzPanstwa(0, 100000);
-  }, [info.ai, info.pricedKeys, GIVE, RECV, BIG]);
+    if (POP > 0) { h.setCityPopulation(0, POP); h.setCityPopulation(ai, POP); }
+  }, [info.ai, info.pricedKeys, GIVE, RECV, BIG, POP]);
 }
 
 async function main() {
@@ -212,8 +215,11 @@ async function main() {
       stocksSetup.aiGive >= BIG && stocksSetup.aiRecv === 0 && stocksSetup.plRecv >= BIG && stocksSetup.plGive === 0, stocksSetup);
     const probeT0 = Date.now();
     const probe = await ev(page, a => window.__aiTradeWiringTestDebug.probeBarter(a), ai);
-    console.log(`  [czas-selekcji] probeBarter: ${Date.now() - probeT0} ms`);
+    const probeMs = Date.now() - probeT0;
+    console.log(`  [czas-selekcji] probeBarter: ${probeMs} ms`);
     out.probe = probe;
+    out.probeMs = probeMs;
+    out.popSetup = POP;
     assert('selekcja (ta sama funkcja co wiring): AI daje zelazo, bierze cegle',
       !!probe && probe.giveKey === GIVE && probe.receiveKey === RECV && probe.giveQty > 0 && probe.receiveQty > 0, probe);
 
@@ -235,6 +241,14 @@ async function main() {
     out.offer = { give: offGive, recv: offRecv, probeGive: probe.giveQty, probeRecv: probe.receiveQty };
     assert('oferta na stole: te same pozycje co selekcja, ilosci <= selekcji (clamp per_turn)',
       offGive > 0 && offGive <= probe.giveQty && offRecv > 0 && offRecv <= probe.receiveQty, { pl, probe });
+    // R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r3): dolna granica — ilosc odbioru zalezy od nadwyzki gracza, nie od sztywnego kroku 10
+    // (mutacja przywracajaca sufit needMax daje receiveQty 10 i ten test MUSI wtedy czerwienic).
+    assert('nadwyzka gracza: AI prosi o ilosc > krok handlu (10) na realnej selekcji', probe.receiveQty > 10 && offRecv > 10, { probeRecv: probe.receiveQty, offRecv });
+    // Realna wycena (te same funkcje co wiring: resolveProposalPn, handelFairnessGate, evaluateProposal) dla ZAPROPONOWANEJ pary.
+    const dp = await ev(page, ([a, g, gq, r, rq]) => window.__aiTradeWiringTestDebug.diagPayload(a, g, gq, r, rq), [ai, GIVE, offGive, RECV, offRecv]);
+    out.diagOffer = dp;
+    assert('realna wycena oferty: bramka uczciwosci przepuszcza, givePn <= receivePn, gracz akceptuje (evaluateProposal)',
+      dp.fairBlock === null && dp.givePn <= dp.receivePn && dp.playerOk === true && dp.accepted === true, dp);
     const cd1 = s1.barterCooldown.find(([o]) => o === ai);
     assert('cooldown barteru AI ustawiony dopiero po wystawieniu oferty', !!cd1 && cd1[1] === s1.turn - 1 || !!cd1, s1.barterCooldown);
     await shot(page, '01-propozycja-na-stole.png');
