@@ -38,3 +38,9 @@ IZOLACJA: `isolation: worktree`. Commit w worktree (jawne `git add`), PUSH NIE.
 PROCEDURA NAPRAWCZA PRZY FAIL: ten sam ID; po 5 rundach LIMIT-5-EXCEEDED. Raport max ok. 400 słów (dokument może być dłuższy).
 FORMAT ODPOWIEDZI: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK
 DEPLOY/PUSH: NIE WYKONANO
+
+## DODATEK r2 (15.11, wznowienie — tylko RUST)
+- **Zakres:** temat renderera Rust (grafika/3D mapy, jednostek, bitwy). Zgodnie z zasadą właściciela dla Rust GPU/grafiki: Operator, Evaluator, Obrona i Final Control = **Opus 5.5** (wszystkie etapy). Dispatch r1 podawał Haiku/Sonnet — zmienione.
+- **Baza:** bez zmian (`claude/sprawdzenie-funkcjonalnosci-ek4ra0` = `8f2f43a8`, istnieje). Kod Rust do odczytu: `origin/rust-port/parity-v2`. Wejście: `dyspozycje/rust-port/p4/P4-0-RENDERER-ARCHITECTURE.md` na `origin/claude/rust-sivvrn`.
+- **Zero buildu, zero cargo** (temat dokumentacyjny). Bramki: `git diff --check`, allowlista, każde twierdzenie z dowodem plik:linia.
+- Commit bez nazwy modelu w treści; ostatnia linia `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`. Bez push na parity, bez deployu.
