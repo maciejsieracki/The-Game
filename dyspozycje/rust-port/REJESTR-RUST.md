@@ -1321,3 +1321,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Integracja:** ancestry od `14d5e50b9` OK; diff 12 plików (w allowliście). Pełny `cargo test --no-fail-fast` w tle (`integ-2b2`, log `i2b2-test.log`). Po zielonym wyniku FF `parity-v2` `14d5e50b9` → `f2bb11970`.
 - **Sprzątanie:** usunięto `scratchpad/target-2b2r2` (2,9 GB) i worktree rundy 2 po zabezpieczeniu refs (`rust-port-wip/wf_36dbda52-96d-1..4`). Dysk: 17 GB.
 - **Pytania ABC:** #106 pkt 4, #115, #120; konwencja `Co-Authored-By` (rekomendacja B) — bez odpowiedzi właściciela.
+
+## Przebieg (15.11, 04:08): WIEZE-2B2 r2 zintegrowany na parity-v2
+- **Integracja:** FC PASS-WITH-NOTES `f2bb11970` (kod `6aa9b154e`, baza `14d5e50b9`). Pełny `cargo test --no-fail-fast` bez filtra: EXIT 0, 3380 passed, 0 failed. fmt 0, clippy `-D warnings` 0. FF `parity-v2`: `14d5e50b9` → `f2bb11970`.
+- **Refs:** `refs/keep/WIEZE-2B2-Q1-r2-integ`, `rust-port-wip/WIEZE-2B2-Q2`. Worktree `integ-2b2` usunięty.
+- **W parity:** strzał wieży (`tower_shoot`), strzelec z `city_towers` (`tower_setup_from_units`), wektory pinu (240 przypadków, `_fireOneTower`), zniszczona wieża nie strzela, opóźnienie 380 ms.
+- **Długi jawne (NIE_ZROBIONE):** wynik liczbowy ciosu wieży z pina niezweryfikowany; `hit_arc` i `first_blow` stałe (#107/#178); efekty `_resolveBlowOutcome` (#109/#147); `Health` jako napis (JS 10, Rust 1); wiring produkcyjny `tower_setup_from_units` (#113); `destroyed` jako proxy `wall_tile_rows` (przyjęte).
+- **Parity:** `f2bb11970`. **Sloty:** 0 z 4. **Dysk:** 13 GB.
+- **Pytania ABC:** #106 pkt 4 (rekomendacja B), #115, #120; konwencja `Co-Authored-By` (rekomendacja B) — bez odpowiedzi właściciela.
