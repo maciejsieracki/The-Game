@@ -1,0 +1,1642 @@
+{
+  "runs": {
+    "none|1280x800": {
+      "scenario": "none",
+      "vp": {
+        "w": 1280,
+        "h": 800
+      },
+      "suppressVictory": true,
+      "spichlerzSet": 9999,
+      "turnAfterEnd": 2,
+      "preOpenBeforeAttack": false,
+      "playerUnits": [
+        "frozen_47_10_0_4"
+      ],
+      "enemy": {
+        "q": 48,
+        "r": 10,
+        "id": "civtest--1-48-10-5"
+      },
+      "selectedByClick": "frozen_47_10_0_4",
+      "selectionMethod": "klik",
+      "selected": "frozen_47_10_0_4",
+      "clickPos": {
+        "pos": {
+          "x": 640,
+          "y": 385.61461449919443
+        },
+        "epos": {
+          "x": 640,
+          "y": 395.12371205278356
+        }
+      },
+      "victoryOverlayRemoved": [],
+      "preBattleStillOpenForShot": true,
+      "preBattle": {
+        "open": true,
+        "weakCount": 0,
+        "weakPresent": false,
+        "weakText": null,
+        "weakSide": null,
+        "foeHasWeak": false,
+        "weakCardBox": null,
+        "cmds": [
+          {
+            "side": "player",
+            "hasWeak": false,
+            "rect": {
+              "top": 14,
+              "bottom": 136,
+              "left": 14,
+              "right": 394,
+              "h": 122,
+              "w": 380
+            }
+          },
+          {
+            "side": "foe",
+            "hasWeak": false,
+            "rect": {
+              "top": 14,
+              "bottom": 90,
+              "left": 1023,
+              "right": 1266,
+              "h": 76,
+              "w": 243
+            }
+          }
+        ],
+        "rosters": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "rect": {
+              "top": 132,
+              "bottom": 614,
+              "left": 14,
+              "right": 206,
+              "h": 482,
+              "w": 192
+            },
+            "shown": 1,
+            "more": null
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "rect": {
+              "top": 132,
+              "bottom": 614,
+              "left": 1074,
+              "right": 1266,
+              "h": 482,
+              "w": 192
+            },
+            "shown": 1,
+            "more": null
+          }
+        ],
+        "offscreenOverlayElements": 0,
+        "docScroll": {
+          "scrollH": 800,
+          "clientH": 800,
+          "scrollW": 1280,
+          "clientW": 1280
+        },
+        "viewport": {
+          "w": 1280,
+          "h": 800
+        },
+        "cardOutsideViewport": null
+      },
+      "pageErrors": []
+    },
+    "none|1024x640": {
+      "scenario": "none",
+      "vp": {
+        "w": 1024,
+        "h": 640
+      },
+      "suppressVictory": true,
+      "spichlerzSet": 9999,
+      "turnAfterEnd": 2,
+      "preOpenBeforeAttack": false,
+      "playerUnits": [
+        "frozen_47_10_0_4"
+      ],
+      "enemy": {
+        "q": 48,
+        "r": 10,
+        "id": "civtest--1-48-10-5"
+      },
+      "selectedByClick": "frozen_47_10_0_4",
+      "selectionMethod": "klik",
+      "selected": "frozen_47_10_0_4",
+      "clickPos": {
+        "pos": {
+          "x": 512,
+          "y": 308.49169159935553
+        },
+        "epos": {
+          "x": 512,
+          "y": 316.09896964222685
+        }
+      },
+      "victoryOverlayRemoved": [],
+      "preBattleStillOpenForShot": true,
+      "preBattle": {
+        "open": true,
+        "weakCount": 0,
+        "weakPresent": false,
+        "weakText": null,
+        "weakSide": null,
+        "foeHasWeak": false,
+        "weakCardBox": null,
+        "cmds": [
+          {
+            "side": "player",
+            "hasWeak": false,
+            "rect": {
+              "top": 14,
+              "bottom": 136,
+              "left": 14,
+              "right": 342,
+              "h": 122,
+              "w": 328
+            }
+          },
+          {
+            "side": "foe",
+            "hasWeak": false,
+            "rect": {
+              "top": 14,
+              "bottom": 90,
+              "left": 767,
+              "right": 1010,
+              "h": 76,
+              "w": 243
+            }
+          }
+        ],
+        "rosters": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "rect": {
+              "top": 132,
+              "bottom": 454,
+              "left": 14,
+              "right": 182,
+              "h": 322,
+              "w": 168
+            },
+            "shown": 1,
+            "more": null
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "rect": {
+              "top": 132,
+              "bottom": 454,
+              "left": 842,
+              "right": 1010,
+              "h": 322,
+              "w": 168
+            },
+            "shown": 1,
+            "more": null
+          }
+        ],
+        "offscreenOverlayElements": 0,
+        "docScroll": {
+          "scrollH": 640,
+          "clientH": 640,
+          "scrollW": 1024,
+          "clientW": 1024
+        },
+        "viewport": {
+          "w": 1024,
+          "h": 640
+        },
+        "cardOutsideViewport": null
+      },
+      "pageErrors": []
+    },
+    "hunger|1280x800": {
+      "scenario": "hunger",
+      "vp": {
+        "w": 1280,
+        "h": 800
+      },
+      "suppressVictory": true,
+      "spichlerzSet": 0,
+      "turnAfterEnd": 2,
+      "preOpenBeforeAttack": false,
+      "playerUnits": [
+        "frozen_47_10_0_4"
+      ],
+      "enemy": {
+        "q": 48,
+        "r": 10,
+        "id": "civtest--1-48-10-5"
+      },
+      "selectedByClick": "frozen_47_10_0_4",
+      "selectionMethod": "klik",
+      "selected": "frozen_47_10_0_4",
+      "clickPos": {
+        "pos": {
+          "x": 640,
+          "y": 385.61461449919443
+        },
+        "epos": {
+          "x": 640,
+          "y": 395.12371205278356
+        }
+      },
+      "victoryOverlayRemoved": [],
+      "preBattleStillOpenForShot": true,
+      "preBattle": {
+        "open": true,
+        "weakCount": 1,
+        "weakPresent": true,
+        "weakText": "▼ Osłabieni: głód wojska −25% (poza pancerzem)",
+        "weakSide": "player",
+        "foeHasWeak": false,
+        "weakCardBox": {
+          "top": 14,
+          "bottom": 153,
+          "left": 14,
+          "right": 394,
+          "h": 139,
+          "w": 380,
+          "side": "player",
+          "maxHeight": "none",
+          "overflowY": "visible",
+          "scrollH": 137,
+          "clientH": 137
+        },
+        "cmds": [
+          {
+            "side": "player",
+            "hasWeak": true,
+            "rect": {
+              "top": 14,
+              "bottom": 153,
+              "left": 14,
+              "right": 394,
+              "h": 139,
+              "w": 380
+            }
+          },
+          {
+            "side": "foe",
+            "hasWeak": false,
+            "rect": {
+              "top": 14,
+              "bottom": 90,
+              "left": 1023,
+              "right": 1266,
+              "h": 76,
+              "w": 243
+            }
+          }
+        ],
+        "rosters": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "rect": {
+              "top": 132,
+              "bottom": 614,
+              "left": 14,
+              "right": 206,
+              "h": 482,
+              "w": 192
+            },
+            "shown": 1,
+            "more": null
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "rect": {
+              "top": 132,
+              "bottom": 614,
+              "left": 1074,
+              "right": 1266,
+              "h": 482,
+              "w": 192
+            },
+            "shown": 1,
+            "more": null
+          }
+        ],
+        "offscreenOverlayElements": 0,
+        "docScroll": {
+          "scrollH": 800,
+          "clientH": 800,
+          "scrollW": 1280,
+          "clientW": 1280
+        },
+        "viewport": {
+          "w": 1280,
+          "h": 800
+        },
+        "cardOutsideViewport": false
+      },
+      "pageErrors": []
+    },
+    "hunger|1024x640": {
+      "scenario": "hunger",
+      "vp": {
+        "w": 1024,
+        "h": 640
+      },
+      "suppressVictory": true,
+      "spichlerzSet": 0,
+      "turnAfterEnd": 2,
+      "preOpenBeforeAttack": false,
+      "playerUnits": [
+        "frozen_47_10_0_4"
+      ],
+      "enemy": {
+        "q": 48,
+        "r": 10,
+        "id": "civtest--1-48-10-5"
+      },
+      "selectedByClick": "frozen_47_10_0_4",
+      "selectionMethod": "klik",
+      "selected": "frozen_47_10_0_4",
+      "clickPos": {
+        "pos": {
+          "x": 512,
+          "y": 308.49169159935553
+        },
+        "epos": {
+          "x": 512,
+          "y": 316.09896964222685
+        }
+      },
+      "victoryOverlayRemoved": [],
+      "preBattleStillOpenForShot": true,
+      "preBattle": {
+        "open": true,
+        "weakCount": 1,
+        "weakPresent": true,
+        "weakText": "▼ Osłabieni: głód wojska −25% (poza pancerzem)",
+        "weakSide": "player",
+        "foeHasWeak": false,
+        "weakCardBox": {
+          "top": 14,
+          "bottom": 166,
+          "left": 14,
+          "right": 342,
+          "h": 152,
+          "w": 328,
+          "side": "player",
+          "maxHeight": "none",
+          "overflowY": "visible",
+          "scrollH": 150,
+          "clientH": 150
+        },
+        "cmds": [
+          {
+            "side": "player",
+            "hasWeak": true,
+            "rect": {
+              "top": 14,
+              "bottom": 166,
+              "left": 14,
+              "right": 342,
+              "h": 152,
+              "w": 328
+            }
+          },
+          {
+            "side": "foe",
+            "hasWeak": false,
+            "rect": {
+              "top": 14,
+              "bottom": 90,
+              "left": 767,
+              "right": 1010,
+              "h": 76,
+              "w": 243
+            }
+          }
+        ],
+        "rosters": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "rect": {
+              "top": 132,
+              "bottom": 454,
+              "left": 14,
+              "right": 182,
+              "h": 322,
+              "w": 168
+            },
+            "shown": 1,
+            "more": null
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "rect": {
+              "top": 132,
+              "bottom": 454,
+              "left": 842,
+              "right": 1010,
+              "h": 322,
+              "w": 168
+            },
+            "shown": 1,
+            "more": null
+          }
+        ],
+        "offscreenOverlayElements": 0,
+        "docScroll": {
+          "scrollH": 640,
+          "clientH": 640,
+          "scrollW": 1024,
+          "clientW": 1024
+        },
+        "viewport": {
+          "w": 1024,
+          "h": 640
+        },
+        "cardOutsideViewport": false
+      },
+      "pageErrors": []
+    },
+    "gold|1280x800": {
+      "scenario": "gold",
+      "vp": {
+        "w": 1280,
+        "h": 800
+      },
+      "suppressVictory": true,
+      "spichlerzSet": 9999,
+      "turnAfterEnd": 2,
+      "preOpenBeforeAttack": false,
+      "playerUnits": [
+        "frozen_47_10_0_4"
+      ],
+      "enemy": {
+        "q": 48,
+        "r": 10,
+        "id": "civtest--1-48-10-5"
+      },
+      "selectedByClick": "frozen_47_10_0_4",
+      "selectionMethod": "klik",
+      "selected": "frozen_47_10_0_4",
+      "clickPos": {
+        "pos": {
+          "x": 640,
+          "y": 385.61461449919443
+        },
+        "epos": {
+          "x": 640,
+          "y": 395.12371205278356
+        }
+      },
+      "victoryOverlayRemoved": [],
+      "preBattleStillOpenForShot": true,
+      "preBattle": {
+        "open": true,
+        "weakCount": 1,
+        "weakPresent": true,
+        "weakText": "▼ Osłabieni: deficyt złota −25% (poza pancerzem)",
+        "weakSide": "player",
+        "foeHasWeak": false,
+        "weakCardBox": {
+          "top": 14,
+          "bottom": 153,
+          "left": 14,
+          "right": 394,
+          "h": 139,
+          "w": 380,
+          "side": "player",
+          "maxHeight": "none",
+          "overflowY": "visible",
+          "scrollH": 137,
+          "clientH": 137
+        },
+        "cmds": [
+          {
+            "side": "player",
+            "hasWeak": true,
+            "rect": {
+              "top": 14,
+              "bottom": 153,
+              "left": 14,
+              "right": 394,
+              "h": 139,
+              "w": 380
+            }
+          },
+          {
+            "side": "foe",
+            "hasWeak": false,
+            "rect": {
+              "top": 14,
+              "bottom": 90,
+              "left": 1023,
+              "right": 1266,
+              "h": 76,
+              "w": 243
+            }
+          }
+        ],
+        "rosters": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "rect": {
+              "top": 132,
+              "bottom": 614,
+              "left": 14,
+              "right": 206,
+              "h": 482,
+              "w": 192
+            },
+            "shown": 1,
+            "more": null
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "rect": {
+              "top": 132,
+              "bottom": 614,
+              "left": 1074,
+              "right": 1266,
+              "h": 482,
+              "w": 192
+            },
+            "shown": 1,
+            "more": null
+          }
+        ],
+        "offscreenOverlayElements": 0,
+        "docScroll": {
+          "scrollH": 800,
+          "clientH": 800,
+          "scrollW": 1280,
+          "clientW": 1280
+        },
+        "viewport": {
+          "w": 1280,
+          "h": 800
+        },
+        "cardOutsideViewport": false
+      },
+      "pageErrors": []
+    },
+    "gold|1024x640": {
+      "scenario": "gold",
+      "vp": {
+        "w": 1024,
+        "h": 640
+      },
+      "suppressVictory": true,
+      "spichlerzSet": 9999,
+      "turnAfterEnd": 2,
+      "preOpenBeforeAttack": true,
+      "playerUnits": [
+        "frozen_47_10_0_4"
+      ],
+      "enemy": {
+        "q": 48,
+        "r": 10,
+        "id": "civtest--1-48-10-5"
+      },
+      "selectedByClick": "frozen_47_10_0_4",
+      "selectionMethod": "klik",
+      "selected": "frozen_47_10_0_4",
+      "clickPos": {
+        "pos": {
+          "x": 512,
+          "y": 308.49169159935553
+        },
+        "epos": {
+          "x": 512,
+          "y": 316.09896964222685
+        }
+      },
+      "victoryOverlayRemoved": [],
+      "preBattleStillOpenForShot": true,
+      "preBattle": {
+        "open": true,
+        "weakCount": 1,
+        "weakPresent": true,
+        "weakText": "▼ Osłabieni: deficyt złota −25% (poza pancerzem)",
+        "weakSide": "player",
+        "foeHasWeak": false,
+        "weakCardBox": {
+          "top": 14,
+          "bottom": 166,
+          "left": 14,
+          "right": 342,
+          "h": 152,
+          "w": 328,
+          "side": "player",
+          "maxHeight": "none",
+          "overflowY": "visible",
+          "scrollH": 150,
+          "clientH": 150
+        },
+        "cmds": [
+          {
+            "side": "player",
+            "hasWeak": true,
+            "rect": {
+              "top": 14,
+              "bottom": 166,
+              "left": 14,
+              "right": 342,
+              "h": 152,
+              "w": 328
+            }
+          },
+          {
+            "side": "foe",
+            "hasWeak": false,
+            "rect": {
+              "top": 14,
+              "bottom": 90,
+              "left": 767,
+              "right": 1010,
+              "h": 76,
+              "w": 243
+            }
+          }
+        ],
+        "rosters": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "rect": {
+              "top": 132,
+              "bottom": 454,
+              "left": 14,
+              "right": 182,
+              "h": 322,
+              "w": 168
+            },
+            "shown": 1,
+            "more": null
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "rect": {
+              "top": 132,
+              "bottom": 454,
+              "left": 842,
+              "right": 1010,
+              "h": 322,
+              "w": 168
+            },
+            "shown": 1,
+            "more": null
+          }
+        ],
+        "offscreenOverlayElements": 0,
+        "docScroll": {
+          "scrollH": 640,
+          "clientH": 640,
+          "scrollW": 1024,
+          "clientW": 1024
+        },
+        "viewport": {
+          "w": 1024,
+          "h": 640
+        },
+        "cardOutsideViewport": false
+      },
+      "pageErrors": []
+    },
+    "hunger-stack|1280x800": {
+      "scenario": "hunger-stack",
+      "vp": {
+        "w": 1280,
+        "h": 800
+      },
+      "suppressVictory": true,
+      "spichlerzSet": 0,
+      "turnAfterEnd": 2,
+      "preOpenBeforeAttack": false,
+      "playerUnits": [
+        "frozen_47_10_0_4",
+        "frozen_47_10_1_5",
+        "frozen_47_10_2_6",
+        "frozen_47_10_3_7",
+        "frozen_47_10_4_8",
+        "frozen_47_10_5_9",
+        "frozen_47_10_6_10",
+        "frozen_47_10_7_11",
+        "frozen_47_10_8_12",
+        "frozen_47_10_9_13",
+        "frozen_47_10_10_14",
+        "frozen_47_10_11_15"
+      ],
+      "enemy": {
+        "q": 48,
+        "r": 10,
+        "id": "civtest--1-48-10-16"
+      },
+      "selectedByClick": "frozen_47_10_0_4",
+      "selectionMethod": "klik",
+      "selected": "frozen_47_10_0_4",
+      "clickPos": {
+        "pos": {
+          "x": 640,
+          "y": 385.61461449919443
+        },
+        "epos": {
+          "x": 640,
+          "y": 395.12371205278356
+        }
+      },
+      "victoryOverlayRemoved": [],
+      "preBattleStillOpenForShot": true,
+      "preBattle": {
+        "open": true,
+        "weakCount": 1,
+        "weakPresent": true,
+        "weakText": "▼ Osłabieni: głód wojska −25% (poza pancerzem)",
+        "weakSide": "player",
+        "foeHasWeak": false,
+        "weakCardBox": {
+          "top": 14,
+          "bottom": 153,
+          "left": 14,
+          "right": 394,
+          "h": 139,
+          "w": 380,
+          "side": "player",
+          "maxHeight": "none",
+          "overflowY": "visible",
+          "scrollH": 137,
+          "clientH": 137
+        },
+        "cmds": [
+          {
+            "side": "player",
+            "hasWeak": true,
+            "rect": {
+              "top": 14,
+              "bottom": 153,
+              "left": 14,
+              "right": 394,
+              "h": 139,
+              "w": 380
+            }
+          },
+          {
+            "side": "foe",
+            "hasWeak": false,
+            "rect": {
+              "top": 14,
+              "bottom": 90,
+              "left": 1023,
+              "right": 1266,
+              "h": 76,
+              "w": 243
+            }
+          }
+        ],
+        "rosters": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "rect": {
+              "top": 132,
+              "bottom": 614,
+              "left": 14,
+              "right": 206,
+              "h": 482,
+              "w": 192
+            },
+            "shown": 8,
+            "more": "+4 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "rect": {
+              "top": 132,
+              "bottom": 614,
+              "left": 1074,
+              "right": 1266,
+              "h": 482,
+              "w": 192
+            },
+            "shown": 1,
+            "more": null
+          }
+        ],
+        "offscreenOverlayElements": 0,
+        "docScroll": {
+          "scrollH": 800,
+          "clientH": 800,
+          "scrollW": 1280,
+          "clientW": 1280
+        },
+        "viewport": {
+          "w": 1280,
+          "h": 800
+        },
+        "cardOutsideViewport": false
+      },
+      "pageErrors": []
+    },
+    "hunger-stack|1024x640": {
+      "scenario": "hunger-stack",
+      "vp": {
+        "w": 1024,
+        "h": 640
+      },
+      "suppressVictory": true,
+      "spichlerzSet": 0,
+      "turnAfterEnd": 2,
+      "preOpenBeforeAttack": false,
+      "playerUnits": [
+        "frozen_47_10_0_4",
+        "frozen_47_10_1_5",
+        "frozen_47_10_2_6",
+        "frozen_47_10_3_7",
+        "frozen_47_10_4_8",
+        "frozen_47_10_5_9",
+        "frozen_47_10_6_10",
+        "frozen_47_10_7_11",
+        "frozen_47_10_8_12",
+        "frozen_47_10_9_13",
+        "frozen_47_10_10_14",
+        "frozen_47_10_11_15"
+      ],
+      "enemy": {
+        "q": 48,
+        "r": 10,
+        "id": "civtest--1-48-10-16"
+      },
+      "selectedByClick": "frozen_47_10_0_4",
+      "selectionMethod": "klik",
+      "selected": "frozen_47_10_0_4",
+      "clickPos": {
+        "pos": {
+          "x": 512,
+          "y": 308.49169159935553
+        },
+        "epos": {
+          "x": 512,
+          "y": 316.09896964222685
+        }
+      },
+      "victoryOverlayRemoved": [],
+      "preBattleStillOpenForShot": true,
+      "preBattle": {
+        "open": true,
+        "weakCount": 1,
+        "weakPresent": true,
+        "weakText": "▼ Osłabieni: głód wojska −25% (poza pancerzem)",
+        "weakSide": "player",
+        "foeHasWeak": false,
+        "weakCardBox": {
+          "top": 14,
+          "bottom": 166,
+          "left": 14,
+          "right": 342,
+          "h": 152,
+          "w": 328,
+          "side": "player",
+          "maxHeight": "none",
+          "overflowY": "visible",
+          "scrollH": 150,
+          "clientH": 150
+        },
+        "cmds": [
+          {
+            "side": "player",
+            "hasWeak": true,
+            "rect": {
+              "top": 14,
+              "bottom": 166,
+              "left": 14,
+              "right": 342,
+              "h": 152,
+              "w": 328
+            }
+          },
+          {
+            "side": "foe",
+            "hasWeak": false,
+            "rect": {
+              "top": 14,
+              "bottom": 90,
+              "left": 767,
+              "right": 1010,
+              "h": 76,
+              "w": 243
+            }
+          }
+        ],
+        "rosters": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "rect": {
+              "top": 132,
+              "bottom": 454,
+              "left": 14,
+              "right": 182,
+              "h": 322,
+              "w": 168
+            },
+            "shown": 8,
+            "more": "+4 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "rect": {
+              "top": 132,
+              "bottom": 454,
+              "left": 842,
+              "right": 1010,
+              "h": 322,
+              "w": 168
+            },
+            "shown": 1,
+            "more": null
+          }
+        ],
+        "offscreenOverlayElements": 0,
+        "docScroll": {
+          "scrollH": 640,
+          "clientH": 640,
+          "scrollW": 1024,
+          "clientW": 1024
+        },
+        "viewport": {
+          "w": 1024,
+          "h": 640
+        },
+        "cardOutsideViewport": false
+      },
+      "pageErrors": []
+    }
+  },
+  "assertions": [
+    {
+      "name": "none|1280x800: okno przed bitwa otwarte",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "none|1280x800: brak bledow strony",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "none|1280x800: tura przeszla na 2 po endTurn",
+      "ok": true,
+      "detail": 2
+    },
+    {
+      "name": "none|1280x800: zaznaczenie jednostki gracza (metoda klik)",
+      "ok": true,
+      "detail": "frozen_47_10_0_4"
+    },
+    {
+      "name": "none|1280x800: bez kary brak .pb-weak",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "none|1280x800: brak poziomego przewijania strony",
+      "ok": true,
+      "detail": {
+        "scrollH": 800,
+        "clientH": 800,
+        "scrollW": 1280,
+        "clientW": 1280
+      }
+    },
+    {
+      "name": "none|1280x800: brak pionowego przewijania strony",
+      "ok": true,
+      "detail": {
+        "scrollH": 800,
+        "clientH": 800,
+        "scrollW": 1280,
+        "clientW": 1280
+      }
+    },
+    {
+      "name": "none|1280x800: zadne elementy okna poza viewport",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "none|1024x640: okno przed bitwa otwarte",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "none|1024x640: brak bledow strony",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "none|1024x640: tura przeszla na 2 po endTurn",
+      "ok": true,
+      "detail": 2
+    },
+    {
+      "name": "none|1024x640: zaznaczenie jednostki gracza (metoda klik)",
+      "ok": true,
+      "detail": "frozen_47_10_0_4"
+    },
+    {
+      "name": "none|1024x640: bez kary brak .pb-weak",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "none|1024x640: brak poziomego przewijania strony",
+      "ok": true,
+      "detail": {
+        "scrollH": 640,
+        "clientH": 640,
+        "scrollW": 1024,
+        "clientW": 1024
+      }
+    },
+    {
+      "name": "none|1024x640: brak pionowego przewijania strony",
+      "ok": true,
+      "detail": {
+        "scrollH": 640,
+        "clientH": 640,
+        "scrollW": 1024,
+        "clientW": 1024
+      }
+    },
+    {
+      "name": "none|1024x640: zadne elementy okna poza viewport",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "hunger|1280x800: okno przed bitwa otwarte",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "hunger|1280x800: brak bledow strony",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "hunger|1280x800: tura przeszla na 2 po endTurn",
+      "ok": true,
+      "detail": 2
+    },
+    {
+      "name": "hunger|1280x800: zaznaczenie jednostki gracza (metoda klik)",
+      "ok": true,
+      "detail": "frozen_47_10_0_4"
+    },
+    {
+      "name": "hunger|1280x800: .pb-weak obecny (dokladnie 1)",
+      "ok": true,
+      "detail": 1
+    },
+    {
+      "name": "hunger|1280x800: .pb-weak po stronie gracza (pb-you)",
+      "ok": true,
+      "detail": "player"
+    },
+    {
+      "name": "hunger|1280x800: strona barbarzyncow (pb-foe) bez ostrzezenia",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "hunger|1280x800: tekst glodu wojska -25%",
+      "ok": true,
+      "detail": "▼ Osłabieni: głód wojska −25% (poza pancerzem)"
+    },
+    {
+      "name": "hunger|1280x800: karta ostrzezenia miesci sie w viewport",
+      "ok": true,
+      "detail": {
+        "top": 14,
+        "bottom": 153,
+        "left": 14,
+        "right": 394,
+        "h": 139,
+        "w": 380,
+        "side": "player",
+        "maxHeight": "none",
+        "overflowY": "visible",
+        "scrollH": 137,
+        "clientH": 137
+      }
+    },
+    {
+      "name": "hunger|1280x800: brak poziomego przewijania strony",
+      "ok": true,
+      "detail": {
+        "scrollH": 800,
+        "clientH": 800,
+        "scrollW": 1280,
+        "clientW": 1280
+      }
+    },
+    {
+      "name": "hunger|1280x800: brak pionowego przewijania strony",
+      "ok": true,
+      "detail": {
+        "scrollH": 800,
+        "clientH": 800,
+        "scrollW": 1280,
+        "clientW": 1280
+      }
+    },
+    {
+      "name": "hunger|1280x800: zadne elementy okna poza viewport",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "hunger|1024x640: okno przed bitwa otwarte",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "hunger|1024x640: brak bledow strony",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "hunger|1024x640: tura przeszla na 2 po endTurn",
+      "ok": true,
+      "detail": 2
+    },
+    {
+      "name": "hunger|1024x640: zaznaczenie jednostki gracza (metoda klik)",
+      "ok": true,
+      "detail": "frozen_47_10_0_4"
+    },
+    {
+      "name": "hunger|1024x640: .pb-weak obecny (dokladnie 1)",
+      "ok": true,
+      "detail": 1
+    },
+    {
+      "name": "hunger|1024x640: .pb-weak po stronie gracza (pb-you)",
+      "ok": true,
+      "detail": "player"
+    },
+    {
+      "name": "hunger|1024x640: strona barbarzyncow (pb-foe) bez ostrzezenia",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "hunger|1024x640: tekst glodu wojska -25%",
+      "ok": true,
+      "detail": "▼ Osłabieni: głód wojska −25% (poza pancerzem)"
+    },
+    {
+      "name": "hunger|1024x640: karta ostrzezenia miesci sie w viewport",
+      "ok": true,
+      "detail": {
+        "top": 14,
+        "bottom": 166,
+        "left": 14,
+        "right": 342,
+        "h": 152,
+        "w": 328,
+        "side": "player",
+        "maxHeight": "none",
+        "overflowY": "visible",
+        "scrollH": 150,
+        "clientH": 150
+      }
+    },
+    {
+      "name": "hunger|1024x640: brak poziomego przewijania strony",
+      "ok": true,
+      "detail": {
+        "scrollH": 640,
+        "clientH": 640,
+        "scrollW": 1024,
+        "clientW": 1024
+      }
+    },
+    {
+      "name": "hunger|1024x640: brak pionowego przewijania strony",
+      "ok": true,
+      "detail": {
+        "scrollH": 640,
+        "clientH": 640,
+        "scrollW": 1024,
+        "clientW": 1024
+      }
+    },
+    {
+      "name": "hunger|1024x640: zadne elementy okna poza viewport",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "gold|1280x800: okno przed bitwa otwarte",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "gold|1280x800: brak bledow strony",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "gold|1280x800: tura przeszla na 2 po endTurn",
+      "ok": true,
+      "detail": 2
+    },
+    {
+      "name": "gold|1280x800: zaznaczenie jednostki gracza (metoda klik)",
+      "ok": true,
+      "detail": "frozen_47_10_0_4"
+    },
+    {
+      "name": "gold|1280x800: .pb-weak obecny (dokladnie 1)",
+      "ok": true,
+      "detail": 1
+    },
+    {
+      "name": "gold|1280x800: .pb-weak po stronie gracza (pb-you)",
+      "ok": true,
+      "detail": "player"
+    },
+    {
+      "name": "gold|1280x800: strona barbarzyncow (pb-foe) bez ostrzezenia",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "gold|1280x800: tekst deficytu zlota -25%",
+      "ok": true,
+      "detail": "▼ Osłabieni: deficyt złota −25% (poza pancerzem)"
+    },
+    {
+      "name": "gold|1280x800: karta ostrzezenia miesci sie w viewport",
+      "ok": true,
+      "detail": {
+        "top": 14,
+        "bottom": 153,
+        "left": 14,
+        "right": 394,
+        "h": 139,
+        "w": 380,
+        "side": "player",
+        "maxHeight": "none",
+        "overflowY": "visible",
+        "scrollH": 137,
+        "clientH": 137
+      }
+    },
+    {
+      "name": "gold|1280x800: brak poziomego przewijania strony",
+      "ok": true,
+      "detail": {
+        "scrollH": 800,
+        "clientH": 800,
+        "scrollW": 1280,
+        "clientW": 1280
+      }
+    },
+    {
+      "name": "gold|1280x800: brak pionowego przewijania strony",
+      "ok": true,
+      "detail": {
+        "scrollH": 800,
+        "clientH": 800,
+        "scrollW": 1280,
+        "clientW": 1280
+      }
+    },
+    {
+      "name": "gold|1280x800: zadne elementy okna poza viewport",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "gold|1024x640: okno przed bitwa otwarte",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "gold|1024x640: brak bledow strony",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "gold|1024x640: tura przeszla na 2 po endTurn",
+      "ok": true,
+      "detail": 2
+    },
+    {
+      "name": "gold|1024x640: zaznaczenie jednostki gracza (metoda klik)",
+      "ok": true,
+      "detail": "frozen_47_10_0_4"
+    },
+    {
+      "name": "gold|1024x640: .pb-weak obecny (dokladnie 1)",
+      "ok": true,
+      "detail": 1
+    },
+    {
+      "name": "gold|1024x640: .pb-weak po stronie gracza (pb-you)",
+      "ok": true,
+      "detail": "player"
+    },
+    {
+      "name": "gold|1024x640: strona barbarzyncow (pb-foe) bez ostrzezenia",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "gold|1024x640: tekst deficytu zlota -25%",
+      "ok": true,
+      "detail": "▼ Osłabieni: deficyt złota −25% (poza pancerzem)"
+    },
+    {
+      "name": "gold|1024x640: karta ostrzezenia miesci sie w viewport",
+      "ok": true,
+      "detail": {
+        "top": 14,
+        "bottom": 166,
+        "left": 14,
+        "right": 342,
+        "h": 152,
+        "w": 328,
+        "side": "player",
+        "maxHeight": "none",
+        "overflowY": "visible",
+        "scrollH": 150,
+        "clientH": 150
+      }
+    },
+    {
+      "name": "gold|1024x640: brak poziomego przewijania strony",
+      "ok": true,
+      "detail": {
+        "scrollH": 640,
+        "clientH": 640,
+        "scrollW": 1024,
+        "clientW": 1024
+      }
+    },
+    {
+      "name": "gold|1024x640: brak pionowego przewijania strony",
+      "ok": true,
+      "detail": {
+        "scrollH": 640,
+        "clientH": 640,
+        "scrollW": 1024,
+        "clientW": 1024
+      }
+    },
+    {
+      "name": "gold|1024x640: zadne elementy okna poza viewport",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "hunger-stack|1280x800: okno przed bitwa otwarte",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "hunger-stack|1280x800: brak bledow strony",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "hunger-stack|1280x800: tura przeszla na 2 po endTurn",
+      "ok": true,
+      "detail": 2
+    },
+    {
+      "name": "hunger-stack|1280x800: zaznaczenie jednostki gracza (metoda klik)",
+      "ok": true,
+      "detail": "frozen_47_10_0_4"
+    },
+    {
+      "name": "hunger-stack|1280x800: .pb-weak obecny (dokladnie 1)",
+      "ok": true,
+      "detail": 1
+    },
+    {
+      "name": "hunger-stack|1280x800: .pb-weak po stronie gracza (pb-you)",
+      "ok": true,
+      "detail": "player"
+    },
+    {
+      "name": "hunger-stack|1280x800: strona barbarzyncow (pb-foe) bez ostrzezenia",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "hunger-stack|1280x800: tekst glodu wojska -25%",
+      "ok": true,
+      "detail": "▼ Osłabieni: głód wojska −25% (poza pancerzem)"
+    },
+    {
+      "name": "hunger-stack|1280x800: karta ostrzezenia miesci sie w viewport",
+      "ok": true,
+      "detail": {
+        "top": 14,
+        "bottom": 153,
+        "left": 14,
+        "right": 394,
+        "h": 139,
+        "w": 380,
+        "side": "player",
+        "maxHeight": "none",
+        "overflowY": "visible",
+        "scrollH": 137,
+        "clientH": 137
+      }
+    },
+    {
+      "name": "hunger-stack|1280x800: brak poziomego przewijania strony",
+      "ok": true,
+      "detail": {
+        "scrollH": 800,
+        "clientH": 800,
+        "scrollW": 1280,
+        "clientW": 1280
+      }
+    },
+    {
+      "name": "hunger-stack|1280x800: brak pionowego przewijania strony",
+      "ok": true,
+      "detail": {
+        "scrollH": 800,
+        "clientH": 800,
+        "scrollW": 1280,
+        "clientW": 1280
+      }
+    },
+    {
+      "name": "hunger-stack|1280x800: zadne elementy okna poza viewport",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "hunger-stack|1280x800: lista wojsk gracza pokazuje 8 i \"+N więcej\"",
+      "ok": true,
+      "detail": {
+        "cls": "pb-roster pb-you pb-l",
+        "rect": {
+          "top": 132,
+          "bottom": 614,
+          "left": 14,
+          "right": 206,
+          "h": 482,
+          "w": 192
+        },
+        "shown": 8,
+        "more": "+4 więcej…"
+      }
+    },
+    {
+      "name": "hunger-stack|1280x800: lista wojsk gracza miesci sie w viewport",
+      "ok": true,
+      "detail": {
+        "top": 132,
+        "bottom": 614,
+        "left": 14,
+        "right": 206,
+        "h": 482,
+        "w": 192
+      }
+    },
+    {
+      "name": "hunger-stack|1024x640: okno przed bitwa otwarte",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "hunger-stack|1024x640: brak bledow strony",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "hunger-stack|1024x640: tura przeszla na 2 po endTurn",
+      "ok": true,
+      "detail": 2
+    },
+    {
+      "name": "hunger-stack|1024x640: zaznaczenie jednostki gracza (metoda klik)",
+      "ok": true,
+      "detail": "frozen_47_10_0_4"
+    },
+    {
+      "name": "hunger-stack|1024x640: .pb-weak obecny (dokladnie 1)",
+      "ok": true,
+      "detail": 1
+    },
+    {
+      "name": "hunger-stack|1024x640: .pb-weak po stronie gracza (pb-you)",
+      "ok": true,
+      "detail": "player"
+    },
+    {
+      "name": "hunger-stack|1024x640: strona barbarzyncow (pb-foe) bez ostrzezenia",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "hunger-stack|1024x640: tekst glodu wojska -25%",
+      "ok": true,
+      "detail": "▼ Osłabieni: głód wojska −25% (poza pancerzem)"
+    },
+    {
+      "name": "hunger-stack|1024x640: karta ostrzezenia miesci sie w viewport",
+      "ok": true,
+      "detail": {
+        "top": 14,
+        "bottom": 166,
+        "left": 14,
+        "right": 342,
+        "h": 152,
+        "w": 328,
+        "side": "player",
+        "maxHeight": "none",
+        "overflowY": "visible",
+        "scrollH": 150,
+        "clientH": 150
+      }
+    },
+    {
+      "name": "hunger-stack|1024x640: brak poziomego przewijania strony",
+      "ok": true,
+      "detail": {
+        "scrollH": 640,
+        "clientH": 640,
+        "scrollW": 1024,
+        "clientW": 1024
+      }
+    },
+    {
+      "name": "hunger-stack|1024x640: brak pionowego przewijania strony",
+      "ok": true,
+      "detail": {
+        "scrollH": 640,
+        "clientH": 640,
+        "scrollW": 1024,
+        "clientW": 1024
+      }
+    },
+    {
+      "name": "hunger-stack|1024x640: zadne elementy okna poza viewport",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "hunger-stack|1024x640: lista wojsk gracza pokazuje 8 i \"+N więcej\"",
+      "ok": true,
+      "detail": {
+        "cls": "pb-roster pb-you pb-l",
+        "rect": {
+          "top": 132,
+          "bottom": 454,
+          "left": 14,
+          "right": 182,
+          "h": 322,
+          "w": 168
+        },
+        "shown": 8,
+        "more": "+4 więcej…"
+      }
+    },
+    {
+      "name": "hunger-stack|1024x640: lista wojsk gracza miesci sie w viewport",
+      "ok": true,
+      "detail": {
+        "top": 132,
+        "bottom": 454,
+        "left": 14,
+        "right": 182,
+        "h": 322,
+        "w": 168
+      }
+    }
+  ],
+  "meta": {
+    "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-pb",
+    "chromium": "/opt/pw-browsers/chromium",
+    "glodMult": 0.75,
+    "deficytMult": 0.75,
+    "expectedGlodPct": 25,
+    "expectedDeficytPct": 25
+  },
+  "summary": {
+    "total": 92,
+    "failed": 0
+  }
+}
