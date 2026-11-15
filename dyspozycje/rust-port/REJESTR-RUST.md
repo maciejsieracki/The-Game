@@ -1621,3 +1621,14 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **KROK 2 (FC PASS bez integracji):** brak.
 - **KROK 3 (sprzątanie):** brak zakończonych tematów do usunięcia w tym ticku. Dysk: 7,3 GB wolne.
 - **NASTĘPNY KROK:** odebrać FC M01 i FC CRED-HAK; po FC PASS — refs/keep, ancestry, integracja; po FAIL — kolejna runda tego samego ID.
+
+## Przebieg (15.11, 15:47 UTC — heartbeat „twardy bit”, sloty Rust)
+
+- **KROK 1 (sloty):** wolne 2 sloty na starcie; uzupełnione. Aktywne 4:
+  - P4-1E CITY-VIEW (#214): FC, OPUS, od 12:27.
+  - Wyłom wieży (#98, `R-RUSTPORT-P6-K5-WYLOM-WIEZE-Q1`): Operator, HAIKU, od 15:45; baza `d5a52a980`.
+  - Zdobycie miasta — rozpoznanie (#175, `R-RUSTPORT-P6-ZDOBYCIE-MIASTA-ROZPOZNANIE-Q1`): Operator, HAIKU, od 15:50; tylko odczyt.
+  - R7K7C — status (#176, `R-RUSTPORT-P6-R7K7C-STATUS-ROZPOZNANIE-Q1`): Operator, HAIKU, od 15:50; tylko odczyt.
+- **KROK 2 (FC PASS bez integracji):** brak nowych. CRED-HAK zintegrowany na parity (`d5a52a980`, test 3415/0 failed). M01-R2 czeka na ponowne scalenie na `d5a52a980` i test (wcześniejszy test dotyczył `62ff9de35`).
+- **KROK 3 (sprzątanie):** wcześniej usunięto worktree rozpoznania wież i CRED-HAK. Dysk: 6,0 GB wolne (poniżej progu 8 GB dla nowych tematów z kodem Rust; rozpoznania są tylko do odczytu).
+- **NASTĘPNY KROK:** odebrać wynik testu M01 (`integ-m01.log`), ponowne scalenie M01 na `d5a52a980`, test i FF; odebrać FC P4-1E i wyniki rozpoznań.
