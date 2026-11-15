@@ -23,3 +23,28 @@ BLOKADY: allowlista (decyzja orkiestratora, nie czlowieka): rozszerzyc o 3 pliki
 RUNDY: 1/5 zuzyta, wraca do Operatora tego samego ID (runda 2, baza 5e8b673d3).
 NASTEPNY KROK: runda 2 Operatora z rozszerzona allowlista.
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+
+# FINAL CONTROL r2 (WIEZE-2B1)
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P6-WIEZE-2B1-Q1
+GOAL: planowanie wystrzalow wiez (stagger 180 ms, zniszczenie wiezy bez kafla muru), bez placeholdera `dead = true`; strzal `_singleBlow` = 2B2.
+ZMIANY/COMMIT: oceniany SHA koncowy 14d5e50b972cf3a20a2e38fe7b5b16cb99a4e124 (wip/R-RUSTPORT-P6-WIEZE-2B1-Q2-ob; kod/testy c0d383e71 + poprawki testow 0f33f249c + obrona 14d5e50b9). Ancestry: `git merge-base --is-ancestor f78736d36 14d5e50b9` = prawda. Diff wzgledem bazy tylko na allowliscie r2 (11 plikow), `git diff --check` czysty, brak `#[ignore]` w p6_wieze_2b1.rs.
+TESTY (samodzielnie, CARGO_INCREMENTAL=0, target poza repo, usuniety): cargo fmt --check EXIT 0; cargo clippy --all-targets -- -D warnings EXIT 0; cargo test --lib 118 passed; p6_wieze_2b1 7 passed; p6_tower_target_wiring 6 passed; p6_siege_tactics_loop 4 passed; p6_siege_tactics_loop_resume 3 passed; cargo test --test 'p6_siege*' wszystkie ok. Pelny `cargo test` bez filtra: NIE_ZMIERZONO jednym przebiegiem (Operator: 464/465 binarek EXIT 0, p6_8i_pick EXIT 0 osobno wg obrony: 5 passed, 293 s).
+
+ROZSTRZYGNIECIE ZARZUTOW:
+1. Pelny cargo test jednym przebiegiem: ODDAL. Dowod skladany (464 binarek + p6_8i_pick osobno + --no-run), plik p6_8i_pick poza zakresem zmian.
+2. Tautologia skipped==want_destroyed: ODDAL. Naprawione w 0f33f249c (skipped z pending_tower_shots; mutacja lamie test).
+3. Petla nieczula na wieze: ODDAL (nota; parytet niosa p6_wieze_2b1 i p6_tower_target_wiring).
+4. tower_shoot odrzuca _target: ODDAL. Zgodne z dispatchem (strzal = 2B2).
+5. Brak guardu towerShooterRow / stanu destroyed: DO DECYZJI CZLOWIEKA (orkiestrator): konflikt FC r1 pkt 4-5 z dodatkiem r2 pkt 5; rekomendacja: osobny temat 2B2 (guard, stan destroyed, strzal _singleBlow).
+6. Zdublowany separator: ODDAL (usuniety).
+
+Zadnego NAPRAW.
+BLOKADY: brak techniczny. NIE_ZROBIONE (2B2): strzal _singleBlow, guard towerShooterRow, stan destroyed.
+RUNDY: 2/5
+NASTEPNY KROK: integracja orkiestratora (sprawdz `git merge-base --is-ancestor` kodu operatora c0d383e71 i diff --stat); zalozyc temat 2B2.
+DEPLOY/PUSH: NIE WYKONANO
