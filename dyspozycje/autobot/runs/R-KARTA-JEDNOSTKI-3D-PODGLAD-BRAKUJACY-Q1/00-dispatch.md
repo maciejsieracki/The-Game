@@ -136,10 +136,3 @@ dla żywego testu w przeglądarce). Zakaz `git add -A`.
 Operator → Evaluator (zarzuty, lista może być pusta) → Operator (Obrona,
 tylko gdy zarzuty niepuste) → Final Control (osobne wywołanie Workflow) →
 orkiestrator integruje allowlist-only i cutuje kolejną FALĘ ROBOCZA.
-
-## DODATEK r2 (15.11, uruchomienie z zawieszenia)
-- **Status:** recon wykonany w r1 (nie powtarzać). Temat nigdy nie miał Operatora — dispatch leżał nieuruchomiony.
-- **Baza:** `origin/main` = `115422be5`. Przed pracą: `git merge-base --is-ancestor 115422be5 HEAD`.
-- **Modele (zasada właściciela):** Operator = Haiku 5.5 (dispatch r1 podawał Sonnet — zmienione), Evaluator = Sonnet 5.5, Obrona = Haiku 5.5, Final Control = Sonnet 5.5. Opus NIE (temat webowy).
-- **Zakres bez zmian:** podgląd 3D jednostki na karcie encji tylko w jednym call-site (`unitInfoCard.ts`). Cel: sprawdzić i podpiąć grafikę 3D jednostek tam, gdzie karta ma na nią miejsce, zgodnie z recon. Bez zmian w danych `gra/data/**`.
-- **Commit:** bez nazwy modelu w treści, ostatnia linia `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`. Bez push na main, bez deployu.
