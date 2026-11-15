@@ -1,3 +1,9 @@
+## ROBOCZA 8204f171 -- 2026-11-14 -- FALA 753: Test rozejmu: przeetykietowanie L2b i asercje wariantu oferty w skrzynce (tylko narzedzie) (testowa)
+
+- diplo-truce-live-test: L2b opisuje mechanizm oferty w skrzynce gracza, nowe asercje L2b2 i L2g2 wykrywaja wariant AI akceptuje od razu, sekcja POKRYCIE; kod gry bez zmian
+- Weryfikacja: tsc 0; logic 213/213; 5 bramek zielone; live truce 32/0; mutacja czerwieni L2b2 i L2h; vite build OK
+- Limity: NIE ZMIERZONO: odmowa AI wobec propozycji gracza (wymaga haka w main.ts); osobna mutacja wariantu AI odrzuca od razu
+
 ## ROBOCZA 88256d5a -- 2026-11-14 -- FALA 752: Panele Nauka Zywnosc Handel: same liczby brutto i netto; wiki; test resource-usage-breakdown znow sie buduje (testowa)
 
 - Nauka i Handel pokazuja jedna liczbe, Zywnosc +brutto → +netto, opis i jednostka w tooltipie, grossNetSub usunieta; wiki 53.1a i wikiBundle przez generator; test resource-usage-breakdown buduje sie i przechodzi 100/0 (tylko narzedzie testowe)
