@@ -23,3 +23,8 @@ KRYTERIA KOŃCA:
 
 NIE WOLNO: pushować do parity, integrować, dotykać `gra/`/`origin/main`, commitować `Cargo.lock`, `git add -A`. Commit bez nazwy modelu; ostatnia linia: `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`.
 Raport: STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY/BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH (NIE WYKONANO).
+
+## KOREKTA BAZY (orkiestrator, 15.11 UTC) — OBOWIĄZUJE ZAMIAST BAZY I POLECEŃ FETCH/CHECKOUT Z GÓRY
+- Baza: `f7baa3848` (aktualny `origin/rust-port/parity-v2`, zawiera P4-1E). Wszystkie wcześniej podane bazy są jego przodkami.
+- Worktree: `git worktree add --detach <ścieżka> f7baa3848`. Polecenia `git fetch origin rust-port-wip/...` z góry są nieaktualne i pomijane.
+- Zakres, allowlista, bramki i tryb (kod/odczyt) bez zmian.
