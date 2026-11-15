@@ -63,7 +63,7 @@ Testy (`tests/atlas_nturns.rs`, backend `FakeGpu` liczący alokacje):
 |---|---|
 | N=200 tur, ziarno `0x5eed0031`, 12→40 miast | po każdej turze: tekstury = różne żywe klucze = wpisy cache ≤ miasta; t10 14/14, t50 24/24, t200 40/40; utworzono 5353 tekstury; wzrost t10→t200 tekstur (26) ≤ wzrost miast (26); po zniszczeniu renderera 0 żywych |
 | model pinu (bez prune, tylko czyszczenie LOD) | maks. **668** wpisów (> 10 × 40) — wzrost M2 odtworzony, więc test N tur rozróżnia |
-| LRU 8 wpisów przy 40 żywych kluczach | cache ≤ 8, a tekstury pokazywane żyją (licznik odwołań): żywe = klucze na ekranie |
+| LRU 8 wpisów przy 40 żywych kluczach | cache ≤ 8, a tekstury pokazywane żyją (licznik odwołań): żywe = klucze na ekranie (klucze unikalne per miasto; o duplikatach przy kluczu współdzielonym — §13 pkt 5) |
 | determinizm | ten sam ziarno → ten sam ślad (FNV-1a), inne ziarno → inny |
 | klucz współdzielony | 1 tekstura, `ref_count` 3 (cache + 2 sloty) → 2 → zwolniona po `finish_sync` |
 | przebudowa w miejscu 1000 cykli (pop 1→10→1, produkcja) | liczniki wracają dokładnie; każda zastąpiona tekstura zwolniona (`frees + 1 = allocations`) |
@@ -190,3 +190,16 @@ Filtr `generateMipmap` i niepremultiplikacja na ANGLE → D3D11 (Windows właśc
 Nowe mutacje rundy 2: A28–A31 (§8; 31/31). Skrypt mutacji uruchamia teraz także `cargo test --features gpu --test atlas_gpu`. Bramki rundy 2: `dowody/11-gates-r2.log` (ten sam skrypt `01-gates.sh`, `CARGO_INCREMENTAL=0`, własny `CARGO_TARGET_DIR`).
 
 Uwaga do ZAŁOŻENIA E-31-1 Evaluatora: przyjmuję jego mapowanie (ocena według `00-dispatch.md`).
+
+## 13. Runda 3 — Obrona wobec zarzutów Evaluatora r3 (`04-evaluator-r3.md`)
+
+Kod obrony: `d850b6b86` (rodzic `95930b446` = `origin/rust-port/parity-v2`, bo kod tematu jest już na parity; bez push). Pełne odpowiedzi: `dyspozycje/autobot/runs/R-RUSTPORT-P4-31-ATLAS-CACHE-Q1/05-obrona-r3.md`.
+
+| # | Zarzut | Odpowiedź | Dowód |
+|---|---|---|---|
+| 1 | integracja na parity przed Evaluatorem/FC; `a827fac07` zmienił atlas po integracji | **PRZYJMUJĘ fakt** (błąd procesu po stronie integracji, nie kodu). Różnica `5259741ab..parity` w ścieżkach atlasu: tylko `ring_hex`/`normalize_ring_hex` w `keys.rs` + test, fixtura, `SHA256SUMS`, README (REPIN-3D-B2 `a827fac07`, własny FC `0eefb3a00` PASS) oraz README (REPIN-3D-B4 `8f5aa88d7`); `cache.rs`, `mip.rs`, `scale.rs`, `upload.rs`, `gpu.rs` bez zmian. Bramki obrony uruchomione na drzewie parity + obrona — stan na parity zmierzony | `dowody/18-obrona-r3-parity-atlas-diff.log`, `dowody/16-obrona-r3-gates.log` |
+| 2 | brak `02-evaluator-r1.md` | **PRZYJMUJĘ fakt** (0 commitów z tym plikiem na wszystkich refs). Pliku nie odtwarzam (byłby fałszywym śladem); jawnie oznaczona rekonstrukcja zarzutów r1 z `03-operator-r2.md` i §12 — w `05-obrona-r3.md` | `dowody/18-…log` (ostatnia linia: 0) |
+| 3 | log repro z r1, „bajt w bajt” bez zastrzeżenia | **PRZYJMUJĘ.** README fixtur: identyczność bajtowa tylko przy tych samych wersjach node/Chromium; pola `node` / `browser` / `userAgent` zmieniają SHA; repro r2 = `dowody/15-evaluator-r3-fixtures-regen.log` (dane identyczne) | `tests/fixtures/atlas/README.md` w `d850b6b86` |
+| 4 | mutant E12 przeżywa (indeks `keys` po `end_of_turn`) | **PRZYJMUJĘ.** Test w module `cache.rs` `end_of_turn_alone_keeps_the_key_index_bounded` (500 tur, wyłącznie `end_of_turn`: indeks == wpisy == 1 po każdej turze). E12 zabity | `dowody/16-obrona-r3-gates.log` (mutant E12: FAILED, EXIT=101) |
+| 5 | LRU RR-T6 bez `ref_count` → duplikat VRAM | **PRZYJMUJĘ (dokumentacja + test charakteryzujący).** Doc `raster/atlas/cache.rs` pkt 3: LRU ogranicza cache, nie pamięć; ogranicznikiem M2 jest prune/purge, domyślnie `UNBOUNDED` dla T14. Test `lru_eviction_of_a_shown_texture_duplicates_it`: `max_entries(1)`, 2 klucze na ekranie → 3 tekstury. Zmiana `assets/cache.rs` poza allowlistą — nie ruszam | `tests/atlas_nturns.rs` |
+| 6 | NIE_ZMIERZONO: MSRV, GPU, D3D11 | **PRZYJMUJĘ, częściowo domykam:** MSRV 1.87 zmierzone (`cargo +1.87.0 test --all-targets` 468/0, `check --features gpu` EXIT=0). GPU (`#[ignore]`) i ANGLE → D3D11 nadal **NIE_ZMIERZONO** (brak adaptera w kontenerze) | `dowody/17-obrona-r3-msrv.log` |
