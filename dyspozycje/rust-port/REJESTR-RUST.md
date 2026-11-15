@@ -1423,3 +1423,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Integracja:** `dyspozycje/rust-port/p4/P4-0-RENDERER-ARCHITECTURE.md` oraz raporty `02-evaluator-r3.md`, `03-obrona-r3.md`, `04-final-control-r3.md` na `claude/rust-sivvrn` (`c5c798122`). Rejestru z gałęzi obrony nie brałem: jej baza jest starsza i cofałaby wpisy.
 - **Zabezpieczenie:** refs/keep `P4-0-r3-{509ee851e,80a261998,d850c1f5c}`, gałąź `rust-port-wip/R-RUSTPORT-P4-0-RENDERER-ARCHITECTURE-Q1-r3-fc`.
 - **P4-1 (DTO):** zależy od gotowego P4-0; odbiór w toku.
+
+## Przebieg (15.11, P4-1 RENDER-DTO-CONTRACT — kontrakt DTO renderera, Opus 5.5)
+- **Operator r1 (`0d6d70cff`): PASS-WITH-NOTES.** Kontrakt modelu widoku z silnika Rust (civ-engine) do renderera Rust (civ-renderer). Zakres tylko Rust, zgodnie z LEDGER.
+- **Evaluator r1 (`4a3df2453`): FAIL, 7 zarzutów.** Główne: dane webu z pinu edb8fb56 zamiast 07d2fbd72 (w render/** 27 zmienionych plików, nowe pole isGeneral i pierścień wodza); `deselect_unit` sprzeczne z D-CMD-12 (zaznaczenie to stan UI); pominięty warunek planów marszu w PlayableState; zmyślone pole `wlasciciel`; mgła terenu niepełna.
+- **Obrona (`3f8fb53d3`):** przyjęła 6 z 7 zarzutów, jeden odrzuciła z uzasadnieniem (pierścień wodza to geometria renderera, nie osobne pole DTO).
+- **FC (`787cb60d2`): PASS-WITH-NOTES, decyzje dla właściciela: brak.**
+- **Integracja:** `dyspozycje/rust-port/p4/P4-1-RENDER-DTO-CONTRACT.md` i raporty runu (01-operator, 02-evaluator, 02a-obrona, 03-final-control) na `claude/rust-sivvrn` (`9227a67bc`). Gałąź FC wychodzi z innej bazy (starej gałęzi dokumentacyjnej), więc wzięte zostały tylko pliki P4-1.
+- **Zabezpieczenie:** refs/keep `P4-1-r1-{0d6d70cff,4a3df2453,3f8fb53d3,787cb60d2}`, gałąź `rust-port-wip/R-RUSTPORT-P4-1-RENDER-DTO-CONTRACT-Q1-fc`.
+- **Otwarte (wnioski z dokumentu, nie blokują zamknięcia):** cancel_planned_march jako nowa komenda silnika; planned-march state w PlayableState (kandydat P4-1J); model MapHex w silniku to szkielet (M01).
