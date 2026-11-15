@@ -240,6 +240,7 @@ Pełna mechanika: [`szczescie.md`](../encyklopedia/pojecia/szczescie.md).
 | **Nasza religia dominuje** | +2 pkt przy ≥50% wyznawców twojej wiary |
 | **Nasza kultura dominuje** | +1 pkt przy ≥80% własnej kultury w mieście |
 | **Bonus małego miasta (Osiedle)** | +1 do +3 pkt malejąco przy populacji 1–4 |
+| **Surowce utrzymania obywateli** | **+2 pkt za każdy** surowiec wymagany w epoce, którego magazyn imperium pokrył w pełni (Kamień: drewno, glina, **ceramika**; Brąz dodaje kamień; Żelazo dodaje cegłę) |
 | **Inne budynki** | Suma bonusów z kolumny „zadowolenie” w danych budynków (np. łaźnia, ogrody) |
 
 **Wskazówka:** Najtańszy szybki boost — przesuń suwak Daniny na **zamożność** (§38.1). Najtrwalszy — świątynia + teatr + utrzymywana własna kultura.
@@ -269,6 +270,7 @@ Przy domyślnym podziale **10%** zamożności (§38.1) na normalnej trudności m
 |---------|---------------------|
 | **Zagęszczenie** | −1 pkt × (ludność − próg); próg zwykle **4** — piąty mieszkaniec zaczyna karę |
 | **Wojna** | −3 pkt, gdy państwo jest w stanie wojny (zmęczenie wojenne) |
+| **Brak surowca utrzymania obywateli** | **−2 pkt za każdy** wymagany surowiec epoki, którego magazyn nie pokrył w pełni (także **ceramika w epoce Kamień**, do czasu Garncarni w mieście; dodatkowo −1% Rozwoju za każdy taki surowiec) |
 | **Obca kultura dominuje** | −1 pkt przy **<50%** własnej kultury |
 | **Obra religia dominuje** | −2 pkt |
 | **Wysokie podatki** | Ta sama tabela §35.2a, po prostu przy niskim udziale zamożności (0–19% na normal) wartość jest ujemna |

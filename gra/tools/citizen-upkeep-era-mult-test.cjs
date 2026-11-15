@@ -79,7 +79,7 @@ function assert(cond, msg) { if (cond) { passed++; } else { failed++; console.er
 function eq(a, b, msg) { assert(a === b, `${msg} (got ${JSON.stringify(a)}, want ${JSON.stringify(b)})`); }
 
 const RATE = { 1: 1, 2: 1.5, 3: 2 };
-const LIST_LEN = { 1: 2, 2: 4, 3: 5 };
+const LIST_LEN = { 1: 3, 2: 4, 3: 5 }; // Kamień: drewno+glina+ceramika (R-WEB-DATA-CITIZEN-CERAMICS-STONE-AGE-Q1)
 const ERA_KEYS = { 1: 'drewno', 2: 'drewno', 3: 'drewno' };
 const POPS = [0, 1, 7, 50, 100];
 
@@ -194,15 +194,15 @@ function totalDrain(era, pop) {
 }
 {
   const kam = totalDrain(1, 10);
-  eq(JSON.stringify(kam.per), JSON.stringify([10, 10]), 'F1: Kamień pop 10 -> 10 każdego z 2 (razem 20)');
-  eq(kam.total, 20, 'F2: Kamień pop 10 -> razem 20');
+  eq(JSON.stringify(kam.per), JSON.stringify([10, 10, 10]), 'F1: Kamień pop 10 -> 10 każdego z 3 (razem 30)');
+  eq(kam.total, 30, 'F2: Kamień pop 10 -> razem 30');
   const brz = totalDrain(2, 10);
   eq(JSON.stringify(brz.per), JSON.stringify([15, 15, 15, 15]), 'F3: Brąz pop 10 -> 15 każdego z 4 (razem 60)');
   eq(brz.total, 60, 'F4: Brąz pop 10 -> razem 60');
   const zel = totalDrain(3, 10);
   eq(JSON.stringify(zel.per), JSON.stringify([20, 20, 20, 20, 20]), 'F5: Żelazo pop 10 -> 20 każdego z 5 (razem 100)');
   eq(zel.total, 100, 'F6: Żelazo pop 10 -> razem 100');
-  eq(JSON.stringify(totalDrain(1, 50).per), JSON.stringify([50, 50]), 'F7: Kamień pop 50 -> 50/surowiec');
+  eq(JSON.stringify(totalDrain(1, 50).per), JSON.stringify([50, 50, 50]), 'F7: Kamień pop 50 -> 50/surowiec');
   eq(JSON.stringify(totalDrain(2, 50).per), JSON.stringify([75, 75, 75, 75]), 'F8: Brąz pop 50 -> 75/surowiec');
   eq(JSON.stringify(totalDrain(3, 50).per), JSON.stringify([100, 100, 100, 100, 100]), 'F9: Żelazo pop 50 -> 100/surowiec');
   eq(JSON.stringify(totalDrain(2, 100).per), JSON.stringify([150, 150, 150, 150]), 'F10: Brąz pop 100 -> 150/surowiec');

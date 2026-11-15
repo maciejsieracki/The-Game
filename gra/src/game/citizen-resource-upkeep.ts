@@ -6,7 +6,8 @@
  * surowcowej ×5 eliminuje problem zaokrąglenia do zera przy stawce 0,2 u źródła, patrz
  * `dyspozycje/PYTANIA-OTWARTE.md` sekcja `R-EKONOMIA-SUROWCE-SKALA-5X-Q1`).
  *
- * Obywatele miast zużywają surowce budowlane per epoka (tabela: `data/citizen-resource-upkeep.json`),
+ * Obywatele miast zużywają surowce budowlane per epoka (tabela: `data/citizen-resource-upkeep.json`;
+ * Kamień = drewno + glina + ceramika, Brąz = + kamień, Żelazo = + cegła — R-WEB-CITIZEN-CERAMICS-STONE-AGE-Q1),
  * ściągane z magazynu CENTRALNEGO imperium (suma City.surowce po wszystkich miastach ownera —
  * `ownerResourceStockAll`, `building-stock-cost.ts`), NIE z lokalnej produkcji/dostępności TEGO
  * miasta (ECHO Q1, `dyspozycje/PYTANIA-OTWARTE.md` 2026-08-10: „Wszystkie potrzebne surowce dla
