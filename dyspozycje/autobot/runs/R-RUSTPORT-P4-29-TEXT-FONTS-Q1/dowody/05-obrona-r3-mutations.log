@@ -1,0 +1,14 @@
+HEAD b7bda00165a49f53e1a77fa3775c9db770292266
+R3-E4a prepare: \n nie zamieniany	KILLED	ascii_whitespace_shapes_as_space;whitespace_and_lone_surrogate_widths_match_chromium
+R3-E4b prepare: \r nie zamieniany	KILLED	ascii_whitespace_shapes_as_space;whitespace_and_lone_surrogate_widths_match_chromium
+R3-E4c prepare: \f nie zamieniany	KILLED	ascii_whitespace_shapes_as_space;whitespace_and_lone_surrogate_widths_match_chromium
+R3-E6 y_offset: odwrocony znak	KILLED	combining_marks_follow_gpos_offsets_like_chromium
+R3-E6b y_offset: pominiety	KILLED	combining_marks_follow_gpos_offsets_like_chromium
+R3-E9 x_offset: pominiety	KILLED	combining_marks_follow_gpos_offsets_like_chromium
+R3-E9b x_offset: odwrocony znak	KILLED	combining_marks_follow_gpos_offsets_like_chromium
+R3-E7 draw_text: brak straznika is_finite	SURVIVED
+R3-E11a utf16_lossy: samotny surogat usuniety	KILLED	truncation_through_a_surrogate_pair_matches_chromium
+R3-E11b utf16_lossy: samotny surogat -> ?	KILLED	truncation_through_a_surrogate_pair_matches_chromium
+R3-M20 kwantyzacja poczatku glifu takze przy obrocie	KILLED	rotated_text_origin_is_not_quantised
+KILLED 10/11
+EXIT=0

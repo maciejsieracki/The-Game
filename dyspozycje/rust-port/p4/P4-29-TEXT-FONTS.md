@@ -277,6 +277,8 @@ Chromium: w kontenerze obrony r3 jest tylko Chromium **153.0.8010.12** (playwrig
 
 Mutacje obrony r3: `dowody/05-obrona-r3-mutations.py`, log `…-mutations.log` — **10/11 KILLED** wyłącznie nowymi testami (bez złotego hasha). Przeżywa R3-E7 (równoważny, wiersz 4).
 
+Bramy obrony r3 (`dowody/05-obrona-r3-gates.{sh,log}`, HEAD `b7bda0016`): `fmt`, `clippy`, `clippy --features gpu`: EXIT=0. `cargo test --locked --all-targets` na rustc 1.97.0 i na 1.87.0: po **478 passed / 0 failed**, EXIT=0 (cały crate, w tym tematy zintegrowane po r1). `git diff --check`: EXIT=0.
+
 ## 9. ZAŁOŻENIA (zbiorczo) i NIE_ZMIERZONO
 - Z-29-0 … Z-29-6: §1. Progi metryki: Z-28-6 (D-TXT-4 = A).
 - Z-29-7: emoji i znaki spoza wszystkich trzech rodzin → `.notdef` twarzy podstawowej (Chromium sięgnąłby po font systemowy); to zakres RR-T8c/D-TXT-3. W scenach i tabelach takich znaków nie ma.
