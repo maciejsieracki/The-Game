@@ -31,7 +31,8 @@
 //! `siege_wall_civ` are the producer's; the adapter neither recomputes nor
 //! checks them. A DTO the renderer input cannot represent (a grid whose
 //! `tiles` length is not `cols * rows`, which [`TerrainGrid::new`] would
-//! panic on; a siege without a wall civ) is reported as
+//! panic on; a siege without a wall civ; a deploy side other than the
+//! player side) is reported as
 //! [`BattleAdapterError`], never replaced by a default.
 
 use civ_view_model as vm;
@@ -58,6 +59,17 @@ pub enum BattleAdapterError {
     /// wall civ with the `'rzym'` fallback (`battleScene.ts:3480`), so an
     /// empty key is a missing value, not a fallback case.
     MissingSiegeCiv,
+    /// `deploy == Some(side)` with `player_side != side`. In the web both
+    /// come from one field: `_deployPlayerSideOpt = opts.deployPlayerSide
+    /// ?? 'atk'` (`battleScene.ts:3485`) is the deploy side and
+    /// `_playerControlSide()` (`:12396-12397`), so the web cannot produce
+    /// this pair.
+    DeploySideMismatch {
+        /// `deploy` side.
+        deploy: vm::BattleSide,
+        /// `player_side`.
+        player_side: vm::BattleSide,
+    },
 }
 
 impl std::fmt::Display for BattleAdapterError {
@@ -67,6 +79,13 @@ impl std::fmt::Display for BattleAdapterError {
                 write!(f, "battle grid {cols}x{rows} with {tiles} tiles")
             }
             Self::MissingSiegeCiv => write!(f, "siege battle without a wall civ"),
+            Self::DeploySideMismatch {
+                deploy,
+                player_side,
+            } => write!(
+                f,
+                "deploy side {deploy:?} differs from player side {player_side:?}"
+            ),
         }
     }
 }
@@ -164,11 +183,19 @@ pub fn battle_fort(f: &vm::BattleFortDto) -> FortDto {
 ///
 /// # Errors
 ///
-/// [`BattleAdapterError`] for a grid of the wrong size or a siege without
-/// a wall civ.
+/// [`BattleAdapterError`] for a grid of the wrong size, a siege without
+/// a wall civ, or a deploy side that is not the player side.
 pub fn battle_inputs(s: &vm::BattleSetupDto) -> Result<BattleInputs, BattleAdapterError> {
     if s.siege && s.siege_civ.is_empty() {
         return Err(BattleAdapterError::MissingSiegeCiv);
+    }
+    if let Some(d) = s.deploy {
+        if d != s.player_side {
+            return Err(BattleAdapterError::DeploySideMismatch {
+                deploy: d,
+                player_side: s.player_side,
+            });
+        }
     }
     let opts = BattleUnitsOpts {
         field: BattleSceneOpts {

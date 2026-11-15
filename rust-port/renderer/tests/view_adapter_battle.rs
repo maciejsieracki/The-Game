@@ -1,11 +1,18 @@
 //! `R-RUSTPORT-P4-1G-Q4-ADAPTER-BATTLE`: battle start, DTO → renderer input
 //! (`renderer/src/view/battle.rs`).
 //!
-//! Fixtures are hand-built DTOs (no engine producer). Every expected value
-//! names the pin `07d2fbd72` line (`gra/src/battle/battleScene.ts`, `BS`)
-//! that defines it; the expected renderer input is the one the existing
+//! Fixtures are hand-built DTOs (no engine producer exists yet). Every
+//! expected value names the pin `07d2fbd72` line (`gra/src/battle/battleScene.ts`,
+//! `BS`) that defines it; the expected renderer input is the one the existing
 //! parity tests build "as the web" (`tests/repin3d_a5.rs:102-142`,
 //! `tests/battle3d_units.rs:948-962`).
+//!
+//! Values the pin computes are taken from a run of the pin: [`TOWER_ROWS`] is
+//! the output of the literal `towerRows` text (`gra/src/game/city-towers.ts:47-57`)
+//! run in Node for the siege call `BS:4169-4173`. Values the pin only
+//! carries (spawn `col`/`row`/`hp`/`morale`, which the producer reads from the
+//! army) have no pin-defined number; the adapter copies them 1:1, and the
+//! fixture uses distinct values so a field swap is visible.
 
 use civ_renderer::battle::field::{BattleSceneOpts, DeploySide, TerrainGrid, BF_COLS, BF_ROWS};
 use civ_renderer::battle::units::{
@@ -16,6 +23,18 @@ use civ_renderer::view::{self, BattleAdapterError, BattleInputs};
 use civ_view_model as vm;
 
 // ------------------------------------------------------------ fixture
+
+/// `towerRows({ rowLo: 0, rowHi: BF_ROWS - 1, gateRowLo: siegeGateRow - 1,
+/// gateRowHi: siegeGateRow, spacing })` (`BS:4169-4173`) with
+/// `rLo = 0`, `rHi = BF_ROWS - 1 = 155`, `siegeGateRow = PLAY_MID_ROW = 77`
+/// (`BS:4036-4046`, `BS:661-672`) and `spacing = 4`
+/// (`BS:4162`, `gra/data/miasto-params.json:104-105`). Output of the pin text
+/// `city-towers.ts:47-57` run with `node --experimental-strip-types`:
+/// first row `rowLo + 2`, every 4th row, gate rows 76-77 skipped.
+const TOWER_ROWS: [i32; 39] = [
+    2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50, 54, 58, 62, 66, 70, 74, 78, 82, 86, 90, 94,
+    98, 102, 106, 110, 114, 118, 122, 126, 130, 134, 138, 142, 146, 150, 154,
+];
 
 fn uid(id: u64) -> vm::UnitId {
     vm::UnitId::try_new(id).unwrap()
@@ -106,7 +125,7 @@ fn setup_dto() -> vm::BattleSetupDto {
         fort: vm::BattleFortDto {
             kind: vm::FortKind::Palisada,
             tower_material: Some(vm::TowerMaterial::Drewno),
-            tower_rows: vec![66, 70, 80, 84],
+            tower_rows: TOWER_ROWS.to_vec(),
         },
     }
 }
@@ -185,8 +204,8 @@ fn expected() -> BattleInputs {
             kind: FortKind::Palisada,
             // `towerMaterialFor(this.fortKind)` (BS:4160).
             tower_material: Some(TowerMaterial::Drewno),
-            // `towerRows({...})` (BS:4169-4173).
-            tower_rows: vec![66, 70, 80, 84],
+            // `towerRows({...})` (BS:4169-4173), pin output [`TOWER_ROWS`].
+            tower_rows: TOWER_ROWS.to_vec(),
         },
     }
 }
@@ -311,6 +330,43 @@ fn spawn_order_is_kept() {
     assert_eq!(ids, ["11", "12", "40"]);
 }
 
+/// A field battle (no siege, no fort, no deploy), attacker side for the
+/// player: the non-siege vector, full equality with the web-built input.
+#[test]
+fn field_battle_maps_to_web_inputs() {
+    let mut s = setup_dto();
+    // `opts.siege` absent → `siege: false` (BS:3479); the wall civ is never
+    // read (BS:3480), the producer still sends its resolved key.
+    s.siege = false;
+    s.siege_civ = "rzym".to_owned();
+    // `opts.deploy` absent → `_deployMode = false` (BS:3484);
+    // `deployPlayerSide ?? 'atk'` (BS:3485) is still the player side.
+    s.deploy = None;
+    s.player_side = vm::BattleSide::Atk;
+    s.desert_palette = false;
+    // `fortKind = 'none'`, `towerMaterialFor('none') === null` (BS:4160-4161).
+    s.fort = vm::BattleFortDto {
+        kind: vm::FortKind::None,
+        tower_material: None,
+        tower_rows: Vec::new(),
+    };
+
+    let mut want = expected();
+    want.opts.field.siege = false;
+    want.opts.field.deploy = None;
+    want.opts.field.desert_palette = false;
+    want.opts.siege_civ = "rzym".to_owned();
+    want.opts.player_side = BattleSide::Atk;
+    want.fort = FortDto::none();
+
+    let got = view::battle_inputs(&s).expect("valid field battle");
+    assert_eq!(got, want);
+    assert!(!got.opts.field.siege);
+
+    let a = build_battle_scene_with_units_fort(got.opts, &got.fort);
+    assert!(a.wall.is_none(), "no siege → no wall");
+}
+
 // ------------------------------------------------------------ errors
 
 #[test]
@@ -353,6 +409,36 @@ fn siege_without_civ_is_an_error() {
     );
     // Without a siege the web never reads the wall civ (BS:3479-3480).
     s.siege = false;
+    let got = view::battle_inputs(&s).expect("no siege, no wall civ needed");
+    assert!(!got.opts.field.siege);
+    assert_eq!(got.opts.siege_civ, "");
+}
+
+#[test]
+fn deploy_side_other_than_player_side_is_an_error() {
+    // `_deployPlayerSideOpt` is both the deploy side (BS:3485) and
+    // `_playerControlSide()` (BS:12396-12397): the web cannot split them.
+    let mut s = setup_dto();
+    s.deploy = Some(vm::BattleSide::Atk);
+    s.player_side = vm::BattleSide::Def;
+    assert_eq!(
+        view::battle_inputs(&s),
+        Err(BattleAdapterError::DeploySideMismatch {
+            deploy: vm::BattleSide::Atk,
+            player_side: vm::BattleSide::Def,
+        })
+    );
+    s.deploy = Some(vm::BattleSide::Def);
+    s.player_side = vm::BattleSide::Atk;
+    assert_eq!(
+        view::battle_inputs(&s),
+        Err(BattleAdapterError::DeploySideMismatch {
+            deploy: vm::BattleSide::Def,
+            player_side: vm::BattleSide::Atk,
+        })
+    );
+    // No deploy: any player side is valid (`deployPlayerSide ?? 'atk'`).
+    s.deploy = None;
     assert!(view::battle_inputs(&s).is_ok());
 }
 
@@ -369,6 +455,10 @@ fn scene_from_adapter_equals_scene_from_web_inputs() {
     assert_eq!(a.player_side, BattleSide::Def);
     let wall = a.wall.as_ref().expect("siege wall");
     assert_eq!(wall.fort_kind, FortKind::Palisada);
-    assert_eq!(wall.towers.len(), 4, "one tower per towerRows entry");
+    assert_eq!(
+        wall.towers.len(),
+        TOWER_ROWS.len(),
+        "one tower per towerRows entry"
+    );
     assert!(a == b, "adapter scene differs from the web-input scene");
 }
