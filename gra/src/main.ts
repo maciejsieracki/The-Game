@@ -1622,6 +1622,7 @@ import {
 import {
   addWarBattlePoints, resetWarBattlePoints, grantTributeBonus, loadMilitaryStrengthParams,
   computeMilitaryStrength, readWarBattlePoints, isTributeBonusActive, militaryBrakeOutcome, peaceStanceOf,
+  respektMilitaryCrossing,
 } from './game/diplomacy-military-strength';
 import { resolveWarPeaceProfile, brakeRelationThreshold, recordWarCityLoss, warStateFromRecord, evaluatePeaceAiGate, PEACE_STRENGTH_GAP_PROC, type WarPeaceProfile } from './game/diplomacy-war-peace-profile';
 import { buildWarCityTargets } from './game/ai-war-target-select';
@@ -12729,6 +12730,36 @@ async function boot(): Promise<void> {
       showHintMessage(DIPLOMACY_MSG_PREFIX + ' ' + ownerDiploLabel(ownerId) + ' — ' + diploPendingTitle('zaproponuj_pokoj'), 4500);
       refreshD1bHud();
       return id;
+    }
+
+    /**
+     * R-WEB-DIPLO-RESPECT-MILITARY-EVENTS-WIRING-Q1: zdarzenia Respektu „Przewaga militarna” (+15, gracz
+     * silniejszy o ≥50% siły wojskowej) i „Słabszy militarnie” (−10, gracz słabszy) dla pary gracz–AI.
+     * Siła = diploMilitarySideOf (Siła militarna, nie Power). Odpala RAZ na przejście progu; stan w
+     * DiploPairMeta.respektPrzewagaStan. Wołane raz na turę w runDiplomacyTurnTick.
+     * / EN: one-shot Respekt events for player–AI pairs on crossing the military-strength threshold.
+     */
+    function applyMilitaryRespektEdgeTick(): void {
+      const gracz = ME();
+      const params = loadMilitaryStrengthParams();
+      for (const o of allPowerOwnerIds()) {
+        if (isMe(o) || isBarbarian(o) || isCityStateOwner(o) || eliminatedOwners.has(o)) continue;
+        const sg = diploMilitarySideOf(gracz, o);
+        const sp = diploMilitarySideOf(o, gracz);
+        const meta = getDiploPairMeta(gracz, o);
+        const r = respektMilitaryCrossing(
+          { id: String(gracz), sila: sg.sila, armiaPkt: sg.armiaPkt },
+          { id: String(o), sila: sp.sila, armiaPkt: sp.armiaPkt },
+          meta.respektPrzewagaStan,
+          params,
+        );
+        if (r.stan !== meta.respektPrzewagaStan) {
+          setDiploPairMeta(gracz, o, { ...meta, respektPrzewagaStan: r.stan });
+        }
+        if (r.zdarzenieDla === null) continue;
+        const ev: DiplomaticEvent = r.zdarzenieDla === 'A' ? 'przewaga_militarna' : 'slabszy_militarnie';
+        setDiploRelation(gracz, o, applyDiploEventTracked(gracz, o, getDiploRelation(gracz, o), ev));
+      }
     }
 
     function tickTruceExpiries(): void {
@@ -25142,6 +25173,7 @@ async function boot(): Promise<void> {
       updateWiarygodnoscStreamsThisTurn();
       for (const oid of allWiarygodnoscOwnerIds()) tickWiarygodnoscBezWojnyMilestone(oid);
       tickTruceExpiries();
+      applyMilitaryRespektEdgeTick();
       const treasury = buildDiploTreasury();
       const payDeals = activeDealsToPaymentDeals(activeDeals, turn);
       const { broken, messages } = tickDiplomacyPayments(payDeals, treasury, turn);

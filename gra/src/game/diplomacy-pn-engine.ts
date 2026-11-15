@@ -71,6 +71,12 @@ export interface DiploPairMeta {
   dobraWolaRemainingTur: number;
   /** N1 — tura, w której OSTATNIO wypowiedziano wojnę w tej parze (karencja 1 tury: atak w TEJ SAMEJ turze = kara). */
   wojnaOdTury?: number;
+  /**
+   * Stan przewagi militarnej gracza z partnerem dla zdarzeń Respektu (próg 50%): 'A' gracz ma przewagę,
+   * 'B' partner ma przewagę, 'brak' poniżej progu. Zdarzenie odpala tylko na przejściu progu.
+   * Brak pola = 'brak'.
+   */
+  respektPrzewagaStan?: 'A' | 'B' | 'brak';
   /** N1 — czy kara za "atak bez ostrzeżenia" była już naliczona dla BIEŻĄCEJ wojny w tej parze (nalicza się raz na wojnę, nie raz na bitwę). */
   n1Zastosowany?: boolean;
   /**
