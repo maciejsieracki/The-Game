@@ -1,57 +1,53 @@
-STATUS: INTEGRATION_PENDING
+STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
-TEMAT: R-RUSTPORT-P6-WIEZE-2B1-Q1
-GOAL: Obrona Operatora na zarzuty Evaluatora/FC (runda 1 -> 2): odpowiedź na każdy z 7 zarzutów: PRZYJMUJĘ (z dowodem) albo ODRZUCAM (z dowodem).
-BAZA: kod operatora dc0e8367c (gałąź wip/R-RUSTPORT-P6-WIEZE-2B1-Q1 w worktree wf_578f4944-497-1; w tej obronie NIE przestawiano gałęzi, pracowano na detached HEAD dc0e8367c).
-ZMIANY/COMMIT: brak zmian w kodzie (rust-port/**, tests/**) w tej rundzie. Zmiana tylko tego pliku raportu. Commit SHA: patrz sekcja SHA na końcu.
+TEMAT: R-RUSTPORT-P6-WIEZE-2B1-Q1 — obrona Operatora r2 (na zarzuty Evaluatora r2, `02-evaluator.md` z 90777566e; oceniany commit c0d383e71)
+GOAL: odpowiedź na każdy zarzut: PRZYJMUJĘ (poprawka + dowód + commit) albo ODRZUCAM (dowód).
+ZMIANY/COMMIT: 0f33f249c0b593f36cc463dba4b58442fc22c029 (gałąź `wip/R-RUSTPORT-P6-WIEZE-2B1-Q2-ob`, z c0d383e71, lokalnie, BEZ push). Zmieniono: `rust-port/engine/tests/p6_wieze_2b1.rs`, `rust-port/engine/tests/p6_tower_target_wiring.rs`. Kod produkcyjny (`src/`) NIE zmieniony. Ten plik (commit następny po 0f33f249c). Cargo.lock: untracked, nie commitowany.
+TESTY: (po poprawkach, CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0, CARGO_TARGET_DIR poza repo)
+- cargo fmt --check: EXIT 0
+- cargo clippy --all-targets -- -D warnings: EXIT 0
+- cargo test --test p6_wieze_2b1: 7 passed, EXIT 0
+- cargo test --test p6_tower_target_wiring: 6 passed, EXIT 0
+- mutacja (`if false && !wall_tile_rows.contains`, czyli plan wież bez kafla): p6_wieze_2b1 FAILED 2 testy (tower_without_wall_tile_is_skipped..., planning_matches_pin... na anchor-003: left [(0,3),(180,4),(360,5)] vs right [(0,3),(180,5)]). Kod przywrócony (sprawdzone: 0 trafień `if false &&`).
+- pełny cargo test bez filtra (zarzut 1): patrz pkt 1 niżej (sumarycznie: 464/465 EXIT 0 w sesji Operatora r2 + p6_8i_pick EXIT 0 w ponownym runie, log `scratchpad/8ipick.log`: "test result: ok. 5 passed; 0 failed", "finished in 293.66s", "EXIT 0").
+BLOKADY: patrz pkt 2 (zakres asercji), pkt 3 (test pętli nie łapie wież — zaakceptowane jako nota), pkt 4-5 (NIE_ZROBIONE 2B2 wg dispatchu r2 pkt 5).
+RUNDY: 2/5 (obrona r2 po Evaluatorze r2)
+NASTĘPNY KROK: Final Control r2 — rozstrzygnięcie pkt 4 i 5 (zakres 2B2 vs FC r1 pkt 4-5) należy do orkiestratora.
+DEPLOY/PUSH: NIE WYKONANO (lokalnie, bez push).
 
-ODPOWIEDZI NA ZARZUTY
+---
 
-1. Regresja poza allowlistą: tests/p6_tower_target_wiring.rs nie kompiluje się (E0560).
-   WERDYKT: PRZYJMUJĘ.
-   DOWÓD: `cargo test --test p6_tower_target_wiring --no-run` -> `error[E0560]: struct SiegeEnv<CellBody> has no field named tower`; `error: could not compile civ-engine (test "p6_tower_target_wiring")`. Plik tests/p6_tower_target_wiring.rs (linia 227, konstrukcja SiegeEnv z polem tower) NIE jest na allowliście rundy 1, więc nie został zmieniony.
-   STAN: NIE_ZROBIONE w tej rundzie. Naprawa wymaga edycji pliku spoza allowlisty (przepisanie 4 testów asertujących natychmiastowe `dead` po fire_siege_towers na pending_tower_shots / zegar). DECYZJA WYMAGANA: rozszerzyć allowlistę o tests/p6_tower_target_wiring.rs.
+## Zarzuty i odpowiedzi
 
-2. Regresja: p6_siege_tactics_loop_matches_pin_text_on_all_vectors czerwony (tests/p6_siege_tactics_loop.rs:258).
-   WERDYKT: PRZYJMUJĘ.
-   DOWÓD: `cargo test --test 'p6_siege*' --no-fail-fast` -> `test p6_siege_tactics_loop_matches_pin_text_on_all_vectors ... FAILED`, `panicked at tests/p6_siege_tactics_loop.rs:258:5`. Pozostałe p6_siege* (wszystkie inne binarki) i p6_wieze_2b1 (6/6) zielone.
-   STAN: NIE_ZROBIONE w tej rundzie. Wektory tests/p6_siege_tactics_loop_vectors/vectors.json i generator tests/p6_siege_tactics_loop_gen.mjs (ok. linie 156, 166 — model `__tower` z placeholderem dead) są poza allowlistą. Naprawa = regeneracja wektorów. DECYZJA WYMAGANA: allowlista dla p6_siege_tactics_loop_gen.mjs i p6_siege_tactics_loop_vectors/vectors.json.
+### 1. Pełny `cargo test` bez filtra nie wykazany z EXIT 0 — PRZYJMUJĘ (dowód złożony, bez pełnego jednego przebiegu)
+- Operator r2 (c0d383e71): 464 z 465 binarek EXIT 0 (sekwencyjnie 245 + p6_m12_compute 12 passed + 218 równolegle EXIT 0).
+- Brakująca binarka `p6_8i_pick` (base, poza zakresem zmian): w ponownym runie w tle zakończona sukcesem. Dowód: `scratchpad/8ipick.log` — `test result: ok. 5 passed; 0 failed; 0 ignored`, `finished in 293.66s`, `EXIT 0`.
+- Nie wykonano jednego przebiegu `cargo test` bez filtra w tym samym czasie (koszt >1 h w debug). Kryterium "jeden przebieg EXIT 0" pozostaje formalnie niedomknięte; wynik sumaryczny 465/465 EXIT 0. Decyzja o akceptacji sposobu domknięcia należy do FC/orkiestratora.
 
-3. Brak testów behawioralnych na wektorach pinu: p6_wieze_2b1_gen.mjs i vectors.json nie powstały.
-   WERDYKT: PRZYJMUJĘ.
-   DOWÓD: w dispatchu rundy 1 oba pliki są na allowliście (NOWE). Nie istnieją w dc0e8367c (`git show --stat` pokazuje tylko 4 pliki: siege_tactics_loop.rs, p6_siege_tactics_loop.rs, p6_siege_tactics_loop_resume.rs, p6_wieze_2b1.rs). Test p6_wieze_2b1.rs zawiera jedno odniesienie do pinu (linia 1: `battleScene.ts:4208-4219`) i wartości 0/180/360 wpisane ręcznie, bez wykonania pinu.
-   STAN: NIE_ZROBIONE w tej rundzie. Powód: wykonanie metody `_fireSiegeTowers` z pinu wymaga wycięcia metody z klasy TypeScript i uruchomienia jej z mockiem `_schedule`/`_destroyTowerAtRow` (przekształcenie typów TS); nie zrobiono tego w tej rundzie. Fallback z dispatchu (wartości pina z cytatem linii) jest częściowo spełniony: stagger 0/180/360 i pominięcie wieży bez kafla mają cytat `battleScene.ts:4208-4219`, bez cytatów linii per asercja i bez strażnika SHA-256.
-   Zadanie na kolejną rundę: dopisać strażnik SHA-256 wyciętego fragmentu i asercje z cytatem linii (pliki na allowliście).
+### 2. Asercja `skipped == want_destroyed` tautologiczna — PRZYJMUJĘ (poprawka, commit 0f33f249c)
+- Zarzut trafny: `skipped` było liczone z wejść testu (`towers` filtrowane przez `walls`), więc porównanie sprawdzało tylko spójność wektora z samym sobą.
+- Poprawka: `skipped` = wieże, których indeksu NIE ma w `e.pending_tower_shots` (wyjście Rust), porównane z `destroyed` z pinu. Asercja mówi teraz: "wieże pominięte przez planowanie Rust == destroyed z pinu".
+- Dowód: testy zielone (7/7) i mutacja planu wież bez kafla łamie test na asercji planowania (kod wyjścia != 0, patrz TESTY). Zastrzeżenie: sam efekt `_destroyTowerAtRow` (stan `destroyed`) NIE jest portowany w 2B1 (w `SiegeEnv` nie ma pola stanu wieży) i nie jest asertowany; to część 2B2 (dispatch r2 pkt 5). W komentarzu w teście zapisano to wprost.
 
-4. Brak guardu !towerShooterRow z pinu (_fireSiegeTowers, :4209).
-   WERDYKT: PRZYJMUJĘ.
-   DOWÓD: pin `battleScene.ts:4209`: `if (this.finished || this.siegeTowers.length === 0 || !this.towerShooterRow) return;`. W rust-port/engine/src/domain/siege_tactics_loop.rs (dc0e8367c, `fn fire_siege_towers`) jest tylko `if self.tower_rows.is_empty() { return; }`. Brak `finished` i brak pojęcia towerShooterRow w SiegeEnv. Guard `finished` jest częściowo w `tower_shoot` (`if self.st.finished`), ale nie w planowaniu.
-   STAN: NIE_ZROBIONE. Dodanie guardu wymaga nowego pola w SiegeEnv (wiersz strzelca), czyli zmiany publicznego API (patrz p. 7) i konstrukcji w testach, w tym w pliku spoza allowlisty (p. 1). DECYZJA WYMAGANA. Uwaga: guard `finished` w planowaniu nie zmienia wyniku, bo planowanie odbywa się w tej samej turze (`finished` nie zmienia się między planowaniem a `tower_shoot`, który już go sprawdza).
+### 3. `p6_siege_tactics_loop` nieczuły na planowanie wież — PRZYJMUJĘ jako notę (bez zmiany kodu)
+- Zarzut prawdziwy: callback wystrzału jest no-op po obu stronach (pin-stub i Rust), więc wektory pętli nie niosą parytetu wież. Potwierdzam: parytet wież niosą `p6_wieze_2b1` (planowanie, 245 przypadków z pinu) i `p6_tower_target_wiring`.
+- Nie zmieniam: zmiana wymagałaby efektu wystrzału (2B2). Wektory pętli pozostają dowodem braku regresji, co jest ich rolą w r2 (pkt 2 dodatku).
 
-5. Brak stanu destroyed i sprawdzenia t.destroyed w tower_shoot (pin pomija wieżę zburzoną między planowaniem a wystrzałem).
-   WERDYKT: PRZYJMUJĘ.
-   DOWÓD: pin `battleScene.ts:4224`: `if (this.finished || t.destroyed) return;`. Rust: `fn tower_shoot` sprawdza tylko `finished`; `tower_rows: Vec<i64>` nie ma stanu destroyed. Pin ustawia `destroyed` także przy wyłomie (`battleScene.ts:7648`, `_destroyTowerAtRow(wallRow)`), czego port jeszcze nie ma.
-   STAN: NIE_ZROBIONE. Brak stanu wież w SiegeEnv; dodanie wymaga pola (zmiana API jak p. 4). Test nie został dodany. Bez efektu dziś (callback pusty), ale staje się błędem parytetu przy 2B2 i przy portowaniu wyłomu. Zgłoszone jako dług do 2B2.
+### 4. `tower_shoot` liczy `pick_tower_for_row` i odrzuca wynik — ODRZUCAM (zgodne z dispatchem)
+- Dowód: `rust-port/engine/src/domain/siege_tactics_loop.rs`, `fn tower_shoot` (ok. linia 408–415): `let _target = self.env.pick_tower_for_row(&self.st, row);` z komentarzem `// 2B2: ... NIE zrobione`.
+- Dispatch r1 GOAL pkt 3 wymaga, by wybór celu wykonywał się w chwili wystrzału (callback), a dispatch r1 pkt 4 oraz dodatek r2 pkt 5 wprost wyłączają strzał `_singleBlow` (2B2). Wybór celu w callbacku jest więc zrealizowany, a jego zużycie należy do 2B2. Wybór celu sprawdzają testy `tower_target_tests` (wołanie `pick_tower_for_row` na stanie z chwili wystrzału) oraz `p6_tower_target_wiring::vectors_match_pin_pick_tower_target`.
 
-6. Ścieżka planning=true (pin _schedule, :9595) testowana tylko jako flaga w PlannedTowerShot.
-   WERDYKT: PRZYJMUJĘ (ograniczenie testu).
-   DOWÓD: src/domain/siege_tactics_clock.rs:108-111: `schedule(ms, payload, planning)` zwraca `RunNow(payload)` gdy `planning`. Sterownik SiegeLoop (siege_tactics_loop.rs, `SeqEvent::FireSiegeTowers`) przekazuje `p.planning` do `clock.schedule` i przy `RunNow` wywołuje `self.fire`, co woła `tower_shoot`.
-   STAN: NIE_ZROBIONE jako test na SiegeLoop: `tower_shoot` nie ma jeszcze obserwowalnego efektu (strzał 2B2 niezrobiony), więc test nie odróżni RunNow od kolejkowania. Test zostanie dopisany wraz z 2B2 (efekt na HP/dead). Wcześniej: brak testu SiegeLoop dla planning=true.
+### 5. Brak guardu `!this.towerShooterRow` (battleScene.ts:4209) — ODRZUCAM jako błąd 2B1 (NIE_ZROBIONE 2B2 wg dispatchu)
+- Dowód: dodatek r2 pkt 5 (`dyspozycje/autobot/runs/R-RUSTPORT-P6-WIEZE-2B1-Q1/00-dispatch.md`) wprost: "NIE_ZROBIONE: strzał `_singleBlow` (2B2), guard `towerShooterRow` (wymaga pola w `SiegeEnv`), stan `destroyed` i sprawdzenie w strzale (2B2)". Dodanie pola `towerShooterRow` do `SiegeEnv` jest poza allowlistą r2 (`siege_tactics_loop.rs` tylko w zakresie planowania).
+- Zgadzam się z oceną Evaluatora, że `finished` jest odcięte w `begin_turn`, a założenie "tower_rows puste = brak strzelca" działa dla generatora. Rozstrzygnięcie konfliktu FC r1 pkt 4-5 z dodatkiem r2 pkt 5 należy do orkiestratora (proponuję: osobny temat 2B2, zgodnie z notą Evaluatora).
 
-7. Zmiana publicznego API (usunięte SiegeEnv::tower, dodane pending_tower_shots i LoopTimer::TowerShot) uderza w konsumentów poza allowlistą.
-   WERDYKT: PRZYJMUJĘ.
-   DOWÓD: `git show --stat dc0e8367c` i `grep -rn "SiegeEnv {"`: konstrukcje SiegeEnv w tests/p6_siege_tactics_loop.rs:148, tests/p6_siege_tactics_loop_resume.rs:149, tests/p6_tower_target_wiring.rs:227 (poza allowlistą), tests/p6_wieze_2b1.rs:76. `LoopTimer` jest publiczny (`pub enum LoopTimer`), dopisanie wariantu `TowerShot` zmienia wyczerpanie `match` u konsumentów.
-   STAN: CZĘŚCIOWO. Konsumenci w allowliście zostały dostosowane przez operatora (p6_siege_tactics_loop.rs, p6_siege_tactics_loop_resume.rs). Konsument poza allowlistą (p6_tower_target_wiring.rs) NIE. DECYZJA WYMAGANA: rozszerzyć allowlistę o tests/p6_tower_target_wiring.rs, tests/p6_siege_tactics_loop_gen.mjs i tests/p6_siege_tactics_loop_vectors/vectors.json (jak w zarzucie 7 i raporcie operatora).
+### 6. Zdublowana linia separatora w `p6_tower_target_wiring.rs` — PRZYJMUJĘ (poprawka, commit 0f33f249c)
+- Usunięto jedną z dwóch linii `// ----...` przed komentarzem "Wiring produkcyjnej pętli". Plik po zmianie: fmt czysty, 6/6 testów zielone.
 
-PODSUMOWANIE
-- PRZYJMUJĘ: 1, 2, 3, 4, 5, 6 (ograniczenie testu), 7. ODRZUCAM: brak.
-- Kod w tej rundzie: NIE zmieniony (wszystkie poprawki wymagają plików spoza allowlisty rundy 1 lub nowego pola w SiegeEnv, co jest decyzją orkiestratora).
-- Bramki (wykonane na dc0e8367c, CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0, CARGO_TARGET_DIR poza repo):
-  - `cargo test --test p6_wieze_2b1`: 6 passed, exit 0.
-  - `cargo test --test 'p6_siege*' --no-fail-fast`: 1 FAILED (p6_siege_tactics_loop_matches_pin_text_on_all_vectors, linia 258), pozostałe binarki p6_siege* zielone.
-  - `cargo test --test p6_tower_target_wiring --no-run`: error E0560, exit 101.
-- Cargo.lock: wygenerowany przez build, NIE commitowany, usunięty po bramkach.
-- DECYZJE WYMAGANE od orkiestratora: (a) rozszerzyć allowlistę o tests/p6_tower_target_wiring.rs, tests/p6_siege_tactics_loop_gen.mjs i tests/p6_siege_tactics_loop_vectors/vectors.json; (b) zgoda na nowe pole w SiegeEnv (wiersz strzelca `towerShooterRow` i stan `destroyed` wież), albo odłożenie do 2B2 z jawnym wpisem w rejestrze.
-- NASTĘPNY KROK: runda 2 Operatora po decyzji (a) i (b); bez decyzji (a) bramki `cargo clippy --all-targets` i `cargo test --test 'p6_siege*'` nie przejdą.
-- DEPLOY/PUSH: NIE WYKONANO. Nie pushowano do rust-port/parity-v2, nie integrowano, nie dotykano gra/ ani origin/main.
-RUNDY: 1/5 (obrona rundy 1, odpowiedź na zarzuty Evaluatora/FC).
+---
+
+## Pliki w commicie 0f33f249c
+- `rust-port/engine/tests/p6_wieze_2b1.rs` (asercja pominiętych wież z wyjścia Rust; sformatowane przez `cargo fmt`)
+- `rust-port/engine/tests/p6_tower_target_wiring.rs` (usunięty duplikat separatora)
+
+Uwaga o zastąpieniu: ten plik nadpisuje `02a-obrona.md` z obrony r1 (5e8b673d3); wersja r1 zachowana w historii gita.
