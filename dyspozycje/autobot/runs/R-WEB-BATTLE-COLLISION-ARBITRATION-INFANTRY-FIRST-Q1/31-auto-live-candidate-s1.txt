@@ -1,0 +1,10 @@
+== Czesc L: prawdziwa bitwa AUTO/SKIP (Chromium) ==
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+  seed 1 {"path":73,"infVsRng":0,"rngVsInf":8,"same":65,"sameBad":0,"swaps":0,"pingpong":0,"pingpongAll":3,"yielders":8,"digest":"361a1e0c1b68ec4c1b172dd286e518bb","rounds":39,"winner":"obronca","snaps":60,"ppDetail":["atk10@r5def 34,76->35,76->34,76","atk11@r8def 34,77->35,77->34,77","atk12@r12def 34,78->35,78->34,78"]}
+  ok   seed 1: piechota nigdy nie ustepuje lucznikowi o pole (naruszen 0)
+  info seed 1: kolizje lucznik->piechota ZMIERZONO 8, ten sam typ 65
+  ok   seed 1: ten sam typ => mniejsze ID wygrywa (naruszen 0)
+  ok   seed 1: brak zamiany miejscami (swapow 0)
+  ok   scenariusz generuje realne kolizje lucznik->piechota (ZMIERZONO lacznie 8 > 0 na ziarnach 1)
+
+WYNIK: 4 ok, 0 FAIL

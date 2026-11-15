@@ -23,6 +23,7 @@ const MAX_MS = Number(process.env.BCA_MAX_MS || 400000);
 const ATK = process.env.BCA_ATK || 'Lucznik:8,Hastati:6';
 const DEF = process.env.BCA_DEF || 'Hastati:6,Lucznik:6';
 const PART = process.env.BCA_PART || 'all';
+const MODE = process.env.BCA_MODE || 'watch'; // AUTO (ffEnterAuto); 'skip' = tryb Pomin (nie dowod AUTO)
 const MARK = "const ca = a.arbClass === 'infantry' ? 0 : 1; // /*ARB_PRIORITY*/";
 const MARK_B = "const cb = b.arbClass === 'infantry' ? 0 : 1;";
 const BASE = [['const ARB_ENABLED = true;', 'const ARB_ENABLED = false;']];
@@ -108,7 +109,7 @@ async function liveRun(seed, mutate, pairs) {
   try {
     const page = await browser.newPage({ viewport: { width: 800, height: 600 } });
     const errors = []; page.on('pageerror', e => errors.push(e.message));
-    await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/tools/battle-pursuit-pace-browser-entry.html?mode=skip&seed=${seed}&atk=${ATK}&def=${DEF}`, { waitUntil: 'load', timeout: 60000 });
+    await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/tools/battle-pursuit-pace-browser-entry.html?mode=${MODE}&seed=${seed}&atk=${ATK}&def=${DEF}`, { waitUntil: 'load', timeout: 60000 });
     await page.waitForFunction(() => window.__e2e?.ready === true, undefined, { timeout: 60000 });
     await page.waitForFunction(() => window.__e2e.done === true, undefined, { timeout: MAX_MS, polling: 500 });
     const r = await page.evaluate(() => ({ result: window.__e2e.result, arb: window.__e2e.arb || [], pos: window.__e2e.pos || [], contest: window.__e2e.contest || [] }));
@@ -166,6 +167,7 @@ function liveMetrics(r) {
       check(m.sameBad === 0, `seed ${seed}: ten sam typ => mniejsze ID wygrywa (naruszen ${m.sameBad})`);
       check(m.swaps === 0, `seed ${seed}: brak zamiany miejscami (swapow ${m.swaps})`);
       // Ping-pong A->B->A: arbitraz NIE moze go zwiekszyc wzgledem bazy (ta sama bitwa bez arbitrazu). Zjawisko jostle linii styku istnieje na bazie (ZMIERZONO).
+      if (process.env.BCA_NOBASE) { totalRngVsInf += 0; continue; }
       const mb = liveMetrics(await liveRun(seed, true, BASE));
       console.log(`  info seed ${seed}: BASE (bez arbitrazu) pingpong jednostek ustepujacych ${mb.pingpong}, wszystkich ${mb.pingpongAll}; z arbitrazem ${m.pingpong}/${m.pingpongAll}`);
       check(m.pingpong <= mb.pingpong && m.pingpongAll <= mb.pingpongAll, `seed ${seed}: arbitraz nie zwieksza ping-ponga A->B->A w 30 rundach (z arbitrazem ${m.pingpong}/${m.pingpongAll} <= baza ${mb.pingpong}/${mb.pingpongAll})`);
