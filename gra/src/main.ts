@@ -31994,13 +31994,8 @@ async function boot(): Promise<void> {
         setPlayerTreasury: (v: number): void => { const ps = playerStateByHuman.get(ME()); if (ps) ps.skarbiec = v; markCityStateDirty(); updateHud(); },
         setPlayerGranary: (v: number): void => { const st = empireFoodStates.get(ME()); if (st) st.zapasyPanstwa = v; markCityStateDirty(); updateHud(); },
         getTaxSplit: () => ({ ...(ownerDefaultPodzialHandlu.get(ME()) ?? DEFAULT_PODZIAL_HANDLU) }),
-        setTaxSplit: (p: number, n: number, l: number): { procentPieniadz: number; procentNauka: number; procentLuksus: number } => {
-          const s = normalizePodzialHandlu({ procentPieniadz: p, procentNauka: n, procentLuksus: l });
-          ownerDefaultPodzialHandlu.set(ME(), s);
-          markCityStateDirty();
-          updateHud();
-          return s;
-        },
+        setTaxSplit: (p: number, n: number, l: number): { procentPieniadz: number; procentNauka: number; procentLuksus: number } =>
+          applyPodzialHandluGracza(p, n, l),
         setAutoWyz: (on: boolean): number => {
           let k = 0;
           for (const c of cities) if (isMe(c.ownerId)) { c.autoWyzywienie = on; k++; }
@@ -39891,19 +39886,23 @@ async function boot(): Promise<void> {
      * podatek na proponowaną wartość (ta sama podstawa podziału co suwak), bramka sama się odświeża. */
     function handleEndTurnBlockButton(act: string): void {
       if (act === END_TURN_BLOCK_ACT_OPEN_TAX) { openEmpireDetailFromHud('econ-skarbiec'); return; }
-      if (act === END_TURN_BLOCK_ACT_OPEN_FOOD) { openEmpireDetailFromHud('zywnosc'); return; }
+      // Sekcja 'spichlerz' = blok racji (empirePanelSectionMap: 'zywnosc' nie jest sekcją panelu).
+      if (act === END_TURN_BLOCK_ACT_OPEN_FOOD) { openEmpireDetailFromHud('spichlerz'); return; }
       if (act !== END_TURN_BLOCK_ACT_TAX_RAISE) return;
       const p = nnsGateForPlayer().propozycjaPodatku;
       if (!p) return;
       const cur = ownerDefaultPodzialHandlu.get(ME()) ?? DEFAULT_PODZIAL_HANDLU;
-      ownerDefaultPodzialHandlu.set(ME(), normalizePodzialHandlu({
-        procentPieniadz: cur.procentPieniadz + p.punktyProcentowe,
-        procentNauka: cur.procentNauka - p.punktyProcentowe,
-        procentLuksus: cur.procentLuksus,
-      }));
+      applyPodzialHandluGracza(cur.procentPieniadz + p.punktyProcentowe, cur.procentNauka - p.punktyProcentowe, cur.procentLuksus);
+      refreshD1bHud();
+    }
+
+    /** Jedyna ścieżka zapisu podziału podatków gracza (suwak/hook testowy i przycisk karty blokady). */
+    function applyPodzialHandluGracza(p: number, n: number, l: number): { procentPieniadz: number; procentNauka: number; procentLuksus: number } {
+      const s = normalizePodzialHandlu({ procentPieniadz: p, procentNauka: n, procentLuksus: l });
+      ownerDefaultPodzialHandlu.set(ME(), s);
       markCityStateDirty();
       updateHud();
-      refreshD1bHud();
+      return s;
     }
 
     /** R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1: bramka skarbca/spichlerza dla fotela gracza (tury ≥ 11). */

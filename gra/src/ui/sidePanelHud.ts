@@ -931,10 +931,12 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
           + (hasOwnTitle
             ? '<span class="sp-kicker">Wydarzenie</span><div class="sp-title">' + ev.title + '</div>'
             : '<div class="sp-title sp-title-generic">Wydarzenie</div>')
-          + (ev.subtitle !== undefined ? '<div class="sp-sub">' + ev.subtitle + '</div>' : '')
+          // Przyciski akcji PRZED długim podtytułem: w przewijanej liście panelu zawsze widoczne
+          // od razu pod tytułem karty (długi komunikat bramki nie spycha ich poza okno).
           + (ev.buttons !== undefined && ev.buttons.length > 0
             ? '<div class="sp-act-row">' + ev.buttons.map(b => '<button type="button" class="sp-act-btn" data-sp-act="' + ev.id + '" data-sp-act-key="' + b.act + '">' + b.label + '</button>').join('') + '</div>'
             : '')
+          + (ev.subtitle !== undefined ? '<div class="sp-sub">' + ev.subtitle + '</div>' : '')
           + '</div>';
         if (link !== null) {
           html += '<span class="sp-goto-cta" data-sp-goto="' + ev.id + '">' + link.label + ' →</span>';

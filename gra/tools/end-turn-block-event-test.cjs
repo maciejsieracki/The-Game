@@ -170,13 +170,15 @@ function eventsAfter(attempts, input) {
   const fnIdx = src.indexOf('function handleEndTurnBlockButton(act: string)');
   const body = fnIdx > 0 ? src.slice(fnIdx, src.indexOf('/** R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1', fnIdx)) : '';
   ok(fnIdx > 0, '(m) handleEndTurnBlockButton istnieje');
-  ok(/procentPieniadz: cur\.procentPieniadz \+ p\.punktyProcentowe/.test(body)
-    && /procentNauka: cur\.procentNauka - p\.punktyProcentowe/.test(body),
-    '(m) „Zwiększ podatek” przesuwa punkty z Nauki na Pieniądz o propozycję bramki');
+  ok(/applyPodzialHandluGracza\(cur\.procentPieniadz \+ p\.punktyProcentowe, cur\.procentNauka - p\.punktyProcentowe, cur\.procentLuksus\)/.test(body),
+    '(m) „Zwiększ podatek” przesuwa punkty z Nauki na Pieniądz o propozycję bramki (przez wspólną funkcję zapisu)');
+  ok(/function applyPodzialHandluGracza\(p: number, n: number, l: number\)[\s\S]{0,260}ownerDefaultPodzialHandlu\.set\(ME\(\), s\)/.test(src)
+    && /setTaxSplit: \(p: number, n: number, l: number\)[\s\S]{0,260}?applyPodzialHandluGracza\(p, n, l\)/.test(src),
+    '(m) suwak/hook testowy i przycisk karty używają tej samej funkcji zapisu podziału (bez duplikatu)');
   ok(/if \(!p\) return;/.test(body), '(m) bez propozycji akcja podatku nic nie zmienia');
   ok(/onEventButton: \(_id, act\) => handleEndTurnBlockButton\(act\)/.test(src), '(m) konfiguracja HUD podpina onEventButton');
   ok(/if \(act === END_TURN_BLOCK_ACT_OPEN_TAX\) \{ openEmpireDetailFromHud\('econ-skarbiec'\)/.test(body)
-    && /openEmpireDetailFromHud\('zywnosc'\)/.test(body), '(m) „Zmienię sam” -> sekcja skarbca, racja -> sekcja żywności');
+    && /openEmpireDetailFromHud\('spichlerz'\)/.test(body), '(m) „Zmienię sam” -> sekcja skarbca, racja -> sekcja spichlerza (nie „zywnosc”: brak takiej sekcji panelu)');
   ok(/nnsEndTurnBlockAttemptTurn = turn;[\s\S]{0,40}refreshD1bHud\(\);/.test(src), '(m) zapis próby odświeża panel');
 }
 
