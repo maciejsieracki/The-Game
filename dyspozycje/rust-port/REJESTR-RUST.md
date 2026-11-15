@@ -1525,3 +1525,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **KROK 2:** brak nowych FC PASS bez integracji (P4-1A zintegrowany w `a01363d5f`).
 - **KROK 3:** brak worktrees do sprzątania poza działającym P4-1J.
 - **Parity:** `a01363d5f`. Rust: `3b025a272` przed tym wpisem.
+
+## Przebieg (15.11, blokery tematów Opus — zasada 11: najpierw web)
+- **Zasada zapisana na stałe:** CLAUDE.md zasada 11 (`b0218a5f9`): najpierw kod webowy (pin `07d2fbd72`), potem Rust; pytania do właściciela tylko, gdy web nie rozstrzyga gameplayu.
+- **P4-1B — blokada D-DTO-6 (ustalenie):** LEDGER (wpis M01) podaje „RUNDA-2: MapHex w types.rs”, ale definicja `pub struct MapHex` NIE występuje w żadnym commicie repo (`6fb1e57bc` to jedyna historia pliku `types.rs`, szkielet). `7fe46f7f4` (rdzeń generatora) jest na parity; `91b6b2ac3` („M01 zintegrowane”) nie jest. Wpis LEDGER jest więc nieprawdziwy w tym punkcie.
+- **Decyzja (web):** model heksa odwzorowuje `gra/src/types/hex.ts` (pin): `TerenBazowy`, `Nakladka`, `Ulepszenie`, `Widocznosc`, `HexCoords`, `Wioska`, `RzekaInfo`, `Hex`. Wartości JSON enumów = wartości z webu (snake_case, np. `plytkie_morze`). Rozstrzyga otwartą kwestię „serde Terrain PascalCase vs snake_case” z LEDGER na korzyść webu.
+- **Uruchomiono:** M01-R2 MapHex (`wf_0e33af85-341`, dispatch `bc151167a`), baza parity `a01363d5f`. Operator i Obrona HAIKU, Evaluator i FC SONNET (silnik, nie grafika). Pierwsza próba padła na brakującej stałej `H` w skrypcie (naprawione, bez wpływu na kod).
+- **P4-1I — D-DTO-7 (web):** web NIE ma strumienia zdarzeń bitwy. `buildBattleEventLog` (`units/battleRoster`) buduje log z rosteru i trafia do sceny jako wartość przy starcie (`battleScene.ts:597`, `:10724`). Wniosek: producent w Rust ma dostarczyć log jako snapshot z rosteru, a nie emitować zdarzenia z pętli. P4-1I wymaga przepisania zakresu wg tego wniosku przed startem.
+- **P4-1C–H:** zależą od B (blokada M01) lub J (w toku).
