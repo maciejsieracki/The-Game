@@ -31610,6 +31610,14 @@ async function boot(): Promise<void> {
           return {
             turn,
             owners: per,
+            /** Diagnostyka (tylko odczyt): kolejki spawnu miast AI/rywali oraz liczba aiStartHexes. */
+            diag: {
+              pendingForeignSpawnCities: pendingForeignSpawnCities.length,
+              pendingSameTypeRivalHexes: pendingSameTypeRivalHexes.length,
+              aiStartHexes: aiStartHexes.length,
+              citiesAll: cities.length,
+              ownersOfCities: [...new Set(cities.map(c => c.ownerId))].sort((a, b) => a - b),
+            },
             /** Pola, których nie ma jednoznacznego, zweryfikowanego źródła w grze (NIE ZMIERZONO w tym haku). */
             niezmierzone: ['przychodNaTure', 'utratyNaTure'],
           };

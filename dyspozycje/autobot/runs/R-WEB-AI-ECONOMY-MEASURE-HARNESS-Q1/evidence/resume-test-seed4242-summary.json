@@ -6,7 +6,7 @@
     "stop": null,
     "gateActiveTurns": 0,
     "bypassApplied": 0,
-    "wallSec": 33
+    "wallSec": 24
   },
   "cut": {
     "endTurn": 40,

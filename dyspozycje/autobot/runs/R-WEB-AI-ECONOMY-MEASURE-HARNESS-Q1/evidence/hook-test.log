@@ -1,0 +1,6 @@
+ZIELONE ksztalt metryk: kazdy wlasciciel ma komplet pol i typy :: 7 wlascicieli
+ZIELONE niezmierzone wymienia przychod/utrate (nie udajemy pomiaru)
+ZIELONE kontrola negatywna: bez ?civTest=1 brak haka __aiEconomyMeasure
+CZERWONE wartosc: AI ma >=1 miasto po zalozeniu miasta gracza (aiStartHexes=6) :: miasta AI=0; diag={"pendingForeignSpawnCities":0,"pendingSameTypeRivalHexes":0,"aiStartHexes":6,"citiesAll":1,"ownersOfCities":[0]}
+ZIELONE mutacja realna (zepsuty hak w bundle) jest CZERWONA :: owner 0 bez skarbiec; owner 1 bez skarbiec; owner 2 bez skarbiec
+PODSUMOWANIE 4/5 zielone

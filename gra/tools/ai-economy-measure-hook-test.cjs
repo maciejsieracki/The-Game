@@ -21,6 +21,8 @@ function arg(name, def) {
 const GRA_DIR = path.resolve(__dirname, '..');
 const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), 'ai-economy-dist')));
 const PW_DIR = path.resolve(arg('pw', GRA_DIR));
+/** Opcjonalny bundle ZEPSUTY (np. bez pola `skarbiec` w haku): test MUSI na nim oblac ksztalt. */
+const MUTANT_DIST = arg('mutant-dist', '') ? path.resolve(arg('mutant-dist', '')) : null;
 const CHROME = process.env.CHROME_PATH || '/usr/bin/chromium';
 const OWNER_KEYS = ['owner', 'skarbiec', 'spichlerz', 'jednostkiWojskowe', 'jednostkiCywilne', 'rekruci', 'sumaLudkow',
   'glodWojska', 'glodWojskaAtrycja', 'deficytZlota', 'miasta', 'obywatele', 'utrzymanieBudynkowPieniadz',
@@ -68,9 +70,27 @@ async function main() {
     const hasHook = await plain.evaluate(() => typeof window.__aiEconomyMeasure !== 'undefined');
     check('kontrola negatywna: bez ?civTest=1 brak haka __aiEconomyMeasure', hasHook === false);
 
-    // 3) mutacja: wymaganie nieistniejacego pola musi oblac (test nie jest slepy).
-    const mutantProbs = shapeProblems(metrics, OWNER_KEYS.concat(['poleNieistniejace']));
-    check('mutacja (wymagane pole nieistniejace) jest CZERWONA', mutantProbs.length > 0, mutantProbs.length + ' problemow');
+    // 3) zarzut 4/1 (R-WEB-AI-ECONOMY-MEASURE-HARNESS-Q1 r2): test wartosci, nie tylko typow. Po zalozeniu miasta gracza
+    //    kazdy AI owner z aiStartHexes powinien miec >=1 miasto. Stan obecny: NIE SPELNIONE (CZERWONE) -- patrz raport.
+    await page.evaluate(() => window.__aiTradeWiringTestDebug.foundFirstCity());
+    const after = await page.evaluate(() => window.__aiEconomyMeasure.metrics());
+    const aiCities = after.owners.filter(o => o.owner >= 1).reduce((s, o) => s + o.miasta, 0);
+    const aiHexes = after.diag ? after.diag.aiStartHexes : -1;
+    check('wartosc: AI ma >=1 miasto po zalozeniu miasta gracza (aiStartHexes=' + aiHexes + ')', aiCities >= 1,
+      'miasta AI=' + aiCities + '; diag=' + JSON.stringify(after.diag || null));
+
+    // 4) mutacja realna: osobny, zepsuty bundle (--mutant-dist) MUSI oblac ksztalt. Bez tego test byl slepy.
+    if (MUTANT_DIST) {
+      const mpage = await browser.newPage();
+      await mpage.goto('file://' + path.join(MUTANT_DIST, 'index.html') + '?civTest=1&civSeed=4242', { waitUntil: 'load', timeout: 180000 });
+      await mpage.waitForFunction(() => !!window.__aiEconomyMeasure && !!window.__nnsMeasureDebug && !!window.__aiTradeWiringTestDebug, null, { timeout: 180000 });
+      await mpage.evaluate(() => window.__nnsMeasureDebug.startGame({ seed: 4242 }));
+      await mpage.waitForFunction(() => { try { return window.__aiTradeWiringTestDebug.state().turn >= 1; } catch (_) { return false; } }, null, { timeout: 180000 });
+      const mm = await mpage.evaluate(() => window.__aiEconomyMeasure.metrics());
+      const mutantProbs = shapeProblems(mm, OWNER_KEYS);
+      check('mutacja realna (zepsuty hak w bundle) jest CZERWONA', mutantProbs.length > 0, mutantProbs.slice(0, 3).join('; ') || 'brak problemow -- test slepy');
+      await mpage.close();
+    }
   } finally {
     await browser.close();
   }

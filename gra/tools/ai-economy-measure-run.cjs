@@ -183,7 +183,7 @@ async function playOneTurn(page, ctxState) {
   const m = await page.evaluate(() => window.__aiEconomyMeasure.metrics());
   const rec = {
     seed: SEED, turn: after, gateBlockedBeforeEnd: blocked, bypass, battlesAuto,
-    owners: m.owners, niezmierzone: m.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10,
+    owners: m.owners, diag: m.diag, niezmierzone: m.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10,
   };
   if (HASH) rec.stateHash = await stateHash(page, SNAP_PREFIX ? path.join(OUT, `${SNAP_PREFIX}-t${after}.json`) : null);
   return { rec };
