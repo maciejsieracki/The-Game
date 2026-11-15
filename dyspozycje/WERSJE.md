@@ -1,3 +1,9 @@
+## ROBOCZA 763744a1 -- 2026-11-14 -- FALA 735: Respekt: zdarzenia przewagi militarnej w pasku (testowa)
+
+- Zdarzenia Respektu Przewaga militarna +15 i Slabszy militarnie -10 wpiete w pasek Respektu w trzech miejscach, korekta zastepowana przy kazdym progu, teksty Civpedii i poradnika
+- Weryfikacja: tsc 0; logic 213/213; offset 12/0 events 30/0 edge 12/0; Chromium 40/0; mutacja czerwona; dlug bazowy city-cession-r3 stol-pw-sum diplo-truce-live
+- Limity: Pelny zapis slotu IndexedDB z polami respektu NIE ZMIERZONO; clamp przy bazie >=86 NIE ZMIERZONO; Z1 Z2 Z4 DO POTWIERDZENIA
+
 ## ROBOCZA 61b50b89 -- 2026-11-14 -- FALA 734: Blokada Zakoncz ture jako wydarzenie w panelu Wazne (testowa)
 
 - Blokada Zakoncz ture pokazywana jako karta Nie mozna zakonczyc tury w zakladce Wazne z pelnym komunikatem bramki i przyciskami Zwieksz podatek do X, Zmienie sam, Otworz racje; karta znika po ustapieniu blokady
