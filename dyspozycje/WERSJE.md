@@ -1,3 +1,9 @@
+## ROBOCZA 152543dc -- 2026-11-14 -- FALA 736: Panel rekrutacji w panelu armii i usuniecie plakietki plus X (testowa)
+
+- Panel Rekrutacja cala cywilizacja jest sekcja panelu armii na samej gorze nad wodzem, przycisk REKRUTACJA usuniety z gornego paska; na kartach surowcow usunieta plakietka plus X obok Brutto netto
+- Weryfikacja: tsc 0; logic 213/213; recruit testy 13/0 29/0 17/0 31/0 18/0 11/0; plusx 31/0 (DOM Chromium); gross-net 22/0; live recruit 29/0 17/0
+- Limity: map-controls-behind-panels wiersz rekrutacja-imperium N/A po przeniesieniu; Civpedia/poradnik recruit niesprawdzone; zrzut plus X z zywej gry NIE ZMIERZONO; martwy wiersz w map-controls do usuniecia
+
 ## ROBOCZA 763744a1 -- 2026-11-14 -- FALA 735: Respekt: zdarzenia przewagi militarnej w pasku (testowa)
 
 - Zdarzenia Respektu Przewaga militarna +15 i Slabszy militarnie -10 wpiete w pasek Respektu w trzech miejscach, korekta zastepowana przy kazdym progu, teksty Civpedii i poradnika

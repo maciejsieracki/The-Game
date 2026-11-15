@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "763744a1a0ee7716b841137fd2d21a1b",
-  "bundleSha256": "84b9539a78c274f7ef1f95d9d2652a9589a77c47c638857cca10296710e979ef",
-  "bundleBytes": 14756678,
+  "bundleMd5": "152543dc513f1c8d05939038a494a562",
+  "bundleSha256": "9c021b8acfa3ec696daeaf7badeda8f4b8b0e04a73d32e7482fe08b8ca84f869",
+  "bundleBytes": 14754291,
   "sourceSnapshot": {
-    "source": "R-WEB-DIPLO-RESPECT-MILITARY-EVENTS-WIRING-Q1 r4 FC bb3bd1ba8 kod 27c5cf58e",
+    "source": "R-WEB-UI-EMPIRE-RECRUIT-PANEL-MOVE-TO-ARMY-PANEL-Q1 FC 0bf3eb27f kod 05f649925 oraz R-WEB-UI-RESOURCE-CARD-REMOVE-PLUS-X-BADGE-Q1 FC a5e329282 kod f99397d6f",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 735: Zdarzenia Respektu Przewaga militarna +15 i Slabszy militarnie -10 wpiete w pasek Respektu w trzech miejscach, korekta zastepowana przy kazdym progu, teksty Civpedii i poradnika"
+    "FALA 736: Panel Rekrutacja cala cywilizacja jest sekcja panelu armii na samej gorze nad wodzem, przycisk REKRUTACJA usuniety z gornego paska; na kartach surowcow usunieta plakietka plus X obok Brutto netto"
   ],
   "verification": [
-    "tsc 0; logic 213/213; offset 12/0 events 30/0 edge 12/0; Chromium 40/0; mutacja czerwona; dlug bazowy city-cession-r3 stol-pw-sum diplo-truce-live"
+    "tsc 0; logic 213/213; recruit testy 13/0 29/0 17/0 31/0 18/0 11/0; plusx 31/0 (DOM Chromium); gross-net 22/0; live recruit 29/0 17/0"
   ],
   "limits": [
-    "Pelny zapis slotu IndexedDB z polami respektu NIE ZMIERZONO; clamp przy bazie >=86 NIE ZMIERZONO; Z1 Z2 Z4 DO POTWIERDZENIA"
+    "map-controls-behind-panels wiersz rekrutacja-imperium N/A po przeniesieniu; Civpedia/poradnik recruit niesprawdzone; zrzut plus X z zywej gry NIE ZMIERZONO; martwy wiersz w map-controls do usuniecia"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES RESPECT r4 (27c5cf58e): zdarzenia Respektu Przewaga militarna +15 i Slabszy militarnie -10 wpiete w pasek Respektu (lista dyplomacji, pasek audiencji, relacjaTotal), korekta zastepowana przy kazdym progu; testy 12/0 30/0 12/0 Chromium 40/0 mutacje czerwone; dluga bazowe city-cession-r3 stol-pw-sum diplo-truce-live"
+    "notes": "FALA 736: FC PASS-WITH-NOTES RECRUIT-MOVE (0bf3eb27f / kod 05f649925): panel Rekrutacja cala cywilizacja przeniesiony do panelu armii nad wodzem, przycisk REKRUTACJA usuniety z gornego paska, testy 13/0 29/0 17/0 31/0 18/0 11/0 live 29/0 17/0; FC PASS-WITH-NOTES PLUS-X (a5e329282 / kod f99397d6f): usunieta plakietka +X przy Brutto netto, test 31/0 w tym DOM Chromium, gross-net 22/0"
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-15T07:10:44",
+  "hubGeneratedAt": "2026-11-15T07:48:02",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "763744a1a0ee7716b841137fd2d21a1b",
-      "sizeBytes": 14756678
+      "md5": "152543dc513f1c8d05939038a494a562",
+      "sizeBytes": 14754291
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "763744a1a0ee7716b841137fd2d21a1b",
-      "sizeBytes": 14756678
+      "md5": "152543dc513f1c8d05939038a494a562",
+      "sizeBytes": 14754291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "763744a1a0ee7716b841137fd2d21a1b",
-      "sizeBytes": 14756678
+      "md5": "152543dc513f1c8d05939038a494a562",
+      "sizeBytes": 14754291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "763744a1a0ee7716b841137fd2d21a1b",
-      "sizeBytes": 14756678
+      "md5": "152543dc513f1c8d05939038a494a562",
+      "sizeBytes": 14754291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "763744a1a0ee7716b841137fd2d21a1b",
-      "sizeBytes": 14756678
+      "md5": "152543dc513f1c8d05939038a494a562",
+      "sizeBytes": 14754291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "763744a1a0ee7716b841137fd2d21a1b",
-      "sizeBytes": 14756678
+      "md5": "152543dc513f1c8d05939038a494a562",
+      "sizeBytes": 14754291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "763744a1a0ee7716b841137fd2d21a1b",
-      "sizeBytes": 14756678
+      "md5": "152543dc513f1c8d05939038a494a562",
+      "sizeBytes": 14754291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "763744a1a0ee7716b841137fd2d21a1b",
-      "sizeBytes": 14756678
+      "md5": "152543dc513f1c8d05939038a494a562",
+      "sizeBytes": 14754291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "763744a1a0ee7716b841137fd2d21a1b",
-      "sizeBytes": 14756678
+      "md5": "152543dc513f1c8d05939038a494a562",
+      "sizeBytes": 14754291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "763744a1a0ee7716b841137fd2d21a1b",
-      "sizeBytes": 14756678
+      "md5": "152543dc513f1c8d05939038a494a562",
+      "sizeBytes": 14754291
     }
   ],
-  "md5": "763744a1a0ee7716b841137fd2d21a1b",
+  "md5": "152543dc513f1c8d05939038a494a562",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
