@@ -400,6 +400,20 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
+## 53a. Skąd zapasy — źródła zmian magazynu państwa
+
+Na karcie surowca w panelu imperium rozwiń sekcję **„Skąd zapasy (ostatnie 10 tur)”**. Każda linia to jedno źródło zmiany magazynu państwa: przyrost (kolor przyrostu) albo ubytek (kolor ubytku). Przykłady: „+12 Warzelnia (Rzym)”, „+30 Umowa wymiany z <cywilizacja>”, „−20 Obywatele”.
+
+Jak z tego korzystać:
+
+1. Sprawdź sumę na karcie — czy zapas rośnie czy maleje.
+2. Znajdź największy ubytek w rozwiniętej sekcji i zdecyduj, czy to koszt konieczny (utrzymanie, rekrutacja, budowa), czy nadmiar do ograniczenia.
+3. Jeśli przyrost jest mały, sprawdź produkcję (Warzelnie, Stolarnie, wycinkę) i umowy wymiany.
+
+Pełne hasło: `docs/encyklopedia/pojecia/skad-zapasy.md`.
+
+---
+
 ## Ekonomia w jednej tabeli
 
 | Zasób | Gdzie widzisz | Główna dźwignia gracza |
