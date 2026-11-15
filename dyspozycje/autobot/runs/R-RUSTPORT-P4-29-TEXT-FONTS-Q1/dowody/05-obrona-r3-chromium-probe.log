@@ -1,0 +1,107 @@
+chromium 153.0.8010.12 (playwright 1.63.0, node v22.23.4)
+# measureText widths: font | text | width
+W	700 22px Georgia, "Times New Roman", serif	a b	28.7353515625
+W	700 22px Georgia, "Times New Roman", serif	a\u{9}b	28.7353515625
+W	700 22px Georgia, "Times New Roman", serif	a\u{a}b	28.7353515625
+W	700 22px Georgia, "Times New Roman", serif	a\u{c}b	28.7353515625
+W	700 22px Georgia, "Times New Roman", serif	a\u{d}b	28.7353515625
+W	700 22px Georgia, "Times New Roman", serif	A V	37.275390625
+W	700 22px Georgia, "Times New Roman", serif	A\u{a}V	37.275390625
+W	700 22px Georgia, "Times New Roman", serif	A\u{d}V	37.275390625
+W	700 22px Georgia, "Times New Roman", serif	A\u{c}V	37.275390625
+W	700 22px Georgia, "Times New Roman", serif	A\u{9}V	37.275390625
+W	700 22px Georgia, "Times New Roman", serif	AV	28.939453125
+W	700 22px Georgia, "Times New Roman", serif	\u{a}	5.5
+W	700 22px Georgia, "Times New Roman", serif	\u{d}\u{a}	11
+W	700 22px Georgia, "Times New Roman", serif	A\u{d835}	40.3798828125
+W	700 22px Georgia, "Times New Roman", serif	A\u{fffd}	40.3798828125
+W	700 22px Georgia, "Times New Roman", serif	A\u{dc00}	40.3798828125
+W	700 22px Georgia, "Times New Roman", serif	\u{d835}	24.4921875
+W	700 22px Georgia, "Times New Roman", serif	\u{fffd}	24.4921875
+W	700 22px Georgia, "Times New Roman", serif	AB\u{d835}…	77.0537109375
+W	700 22px Georgia, "Times New Roman", serif	AB\u{fffd}…	77.0537109375
+W	700 22px Georgia, "Times New Roman", serif	AB…	52.5615234375
+W	700 22px Georgia, "Times New Roman", serif	AB\u{d83c}\u{dc31}	60.564453125
+W	700 22px Georgia, "Times New Roman", serif	AB\u{d83c}\u{dc31}…	82.564453125
+W	700 22px Georgia, "Times New Roman", serif	AB\u{d83c}…	77.0537109375
+W	700 22px Georgia, "Times New Roman", serif	AB\u{d83c}\u{dc31}\u{d83c}\u{dc31}	90.5673828125
+W	700 22px Georgia, "Times New Roman", serif	AB\u{d83c}\u{dc31}\u{d83c}…	107.056640625
+W	700 22px Georgia, "Times New Roman", serif	Jednostka · \u{d83c}\u{dc31}\u{d83c}\u{dc31}	173.701171875
+W	700 22px Georgia, "Times New Roman", serif	Jednostka · \u{d83c}\u{dc31}\u{d83c}…	190.1904296875
+W	700 22px Georgia, "Times New Roman", serif	Jednostka · \u{d83c}…	160.1875
+W	600 11px Arial, Helvetica, sans-serif	a b	15.89306640625
+W	600 11px Arial, Helvetica, sans-serif	a\u{9}b	15.89306640625
+W	600 11px Arial, Helvetica, sans-serif	a\u{a}b	15.89306640625
+W	600 11px Arial, Helvetica, sans-serif	a\u{c}b	15.89306640625
+W	600 11px Arial, Helvetica, sans-serif	a\u{d}b	15.89306640625
+W	600 11px Arial, Helvetica, sans-serif	A V	18.3369140625
+W	600 11px Arial, Helvetica, sans-serif	A\u{a}V	18.3369140625
+W	600 11px Arial, Helvetica, sans-serif	A\u{d}V	18.3369140625
+W	600 11px Arial, Helvetica, sans-serif	A\u{c}V	18.3369140625
+W	600 11px Arial, Helvetica, sans-serif	A\u{9}V	18.3369140625
+W	600 11px Arial, Helvetica, sans-serif	AV	14.46435546875
+W	600 11px Arial, Helvetica, sans-serif	\u{a}	3.05615234375
+W	600 11px Arial, Helvetica, sans-serif	\u{d}\u{a}	6.1123046875
+W	600 11px Arial, Helvetica, sans-serif	A\u{d835}	20.18994140625
+W	600 11px Arial, Helvetica, sans-serif	A\u{fffd}	20.18994140625
+W	600 11px Arial, Helvetica, sans-serif	A\u{dc00}	20.18994140625
+W	600 11px Arial, Helvetica, sans-serif	\u{d835}	12.24609375
+W	600 11px Arial, Helvetica, sans-serif	\u{fffd}	12.24609375
+W	600 11px Arial, Helvetica, sans-serif	AB\u{d835}…	39.1337890625
+W	600 11px Arial, Helvetica, sans-serif	AB\u{fffd}…	39.1337890625
+W	600 11px Arial, Helvetica, sans-serif	AB…	26.8876953125
+W	600 11px Arial, Helvetica, sans-serif	AB\u{d83c}\u{dc31}	30.88916015625
+W	600 11px Arial, Helvetica, sans-serif	AB\u{d83c}\u{dc31}…	41.88916015625
+W	600 11px Arial, Helvetica, sans-serif	AB\u{d83c}…	39.1337890625
+W	600 11px Arial, Helvetica, sans-serif	AB\u{d83c}\u{dc31}\u{d83c}\u{dc31}	45.890625
+W	600 11px Arial, Helvetica, sans-serif	AB\u{d83c}\u{dc31}\u{d83c}…	54.13525390625
+W	600 11px Arial, Helvetica, sans-serif	Jednostka · \u{d83c}\u{dc31}\u{d83c}\u{dc31}	94.1875
+W	600 11px Arial, Helvetica, sans-serif	Jednostka · \u{d83c}\u{dc31}\u{d83c}…	102.43212890625
+W	600 11px Arial, Helvetica, sans-serif	Jednostka · \u{d83c}…	87.4306640625
+W	16px sans-serif	a b	22.2421875
+W	16px sans-serif	a\u{9}b	22.2421875
+W	16px sans-serif	a\u{a}b	22.2421875
+W	16px sans-serif	a\u{c}b	22.2421875
+W	16px sans-serif	a\u{d}b	22.2421875
+W	16px sans-serif	A V	25.7890625
+W	16px sans-serif	A\u{a}V	25.7890625
+W	16px sans-serif	A\u{d}V	25.7890625
+W	16px sans-serif	A\u{c}V	25.7890625
+W	16px sans-serif	A\u{9}V	25.7890625
+W	16px sans-serif	AV	20.15625
+W	16px sans-serif	\u{a}	4.4453125
+W	16px sans-serif	\u{d}\u{a}	8.890625
+W	16px sans-serif	A\u{d835}	27.078125
+W	16px sans-serif	A\u{fffd}	27.078125
+W	16px sans-serif	A\u{dc00}	27.078125
+W	16px sans-serif	\u{d835}	16.40625
+W	16px sans-serif	\u{fffd}	16.40625
+W	16px sans-serif	AB\u{d835}…	53.75
+W	16px sans-serif	AB\u{fffd}…	53.75
+W	16px sans-serif	AB…	37.34375
+W	16px sans-serif	AB\u{d83c}\u{dc31}	43.1640625
+W	16px sans-serif	AB\u{d83c}\u{dc31}…	59.1640625
+W	16px sans-serif	AB\u{d83c}…	53.75
+W	16px sans-serif	AB\u{d83c}\u{dc31}\u{d83c}\u{dc31}	64.984375
+W	16px sans-serif	AB\u{d83c}\u{dc31}\u{d83c}…	75.5703125
+W	16px sans-serif	Jednostka · \u{d83c}\u{dc31}\u{d83c}\u{dc31}	130.796875
+W	16px sans-serif	Jednostka · \u{d83c}\u{dc31}\u{d83c}…	141.3828125
+W	16px sans-serif	Jednostka · \u{d83c}…	119.5625
+# fillText pixels identical (lone surrogate vs U+FFFD): a | b | identical | any ink
+P	AB\u{d835}…	AB\u{fffd}…	true	true
+P	A\u{dc00}	A\u{fffd}	true	true
+P	\u{d835}	\u{fffd}	true	true
+# truncation (web loops verbatim): kind | font | maxW | input | result | result UTF-16 units
+T	name	700 22px Georgia, "Times New Roman", serif	58	AB\u{d83c}\u{dc31}	AB…	41 42 2026
+T	name	700 22px Georgia, "Times New Roman", serif	80	AB\u{d83c}\u{dc31}\u{d83c}\u{dc31}	AB\u{d83c}…	41 42 d83c 2026
+T	name	700 22px Georgia, "Times New Roman", serif	110	AB\u{d83c}\u{dc31}\u{d83c}\u{dc31}	AB\u{d83c}\u{dc31}\u{d83c}\u{dc31}	41 42 d83c dc31 d83c dc31
+T	hover	600 11px Arial, Helvetica, sans-serif	70	Jednostka · \u{d83c}\u{dc31}\u{d83c}\u{dc31}	Jednostka …	4a 65 64 6e 6f 73 74 6b 61 20 2026
+T	hover	600 11px Arial, Helvetica, sans-serif	76	Jednostka · \u{d83c}\u{dc31}\u{d83c}\u{dc31}	Jednostka · …	4a 65 64 6e 6f 73 74 6b 61 20 b7 20 2026
+T	hover	600 11px Arial, Helvetica, sans-serif	88	Jednostka · \u{d83c}\u{dc31}\u{d83c}\u{dc31}	Jednostka · \u{d83c}…	4a 65 64 6e 6f 73 74 6b 61 20 b7 20 d83c 2026
+# marks of x\u0301\u0323 at pen (20,120): [x0,y0,x1,y1] inclusive pixel boxes, alpha > 0
+M	100px serif	base 20,74,68,119	above 44,51,64,65	below 38,126,48,136
+M	bold 100px serif	base 20,74,69,119	above 44,55,66,69	below 37,124,52,139
+# system fallback (zarzut 9): font name | text | width | width * 2048 / 22 (integer = on the font grid)
+S	700 22px Georgia, "Times New Roman", serif	AB	30.5615234375	2845
+S	700 22px Georgia, "Times New Roman", serif	AB\u{d835}\u{dc00}	45.89556884765625	4272.460227272727
+EXIT=0

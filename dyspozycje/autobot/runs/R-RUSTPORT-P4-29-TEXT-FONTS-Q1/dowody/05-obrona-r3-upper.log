@@ -1,0 +1,17 @@
+node v22.23.4 unicode 17.0
+== rustc 1.97.0, tabela fixture
+checked 1680 code points strictly; 28 differences in all scalar values: ["A7CF", "A7D3", "A7D5", "16EBB", "16EBC", "16EBD", "16EBE", "16EBF", "16EC0", "16EC1", "16EC2", "16EC3", "16EC4", "16EC5", "16EC6", "16EC7", "16EC8", "16EC9", "16ECA", "16ECB", "16ECC", "16ECD", "16ECE", "16ECF", "16ED0", "16ED1", "16ED2", "16ED3"]
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.39s
+EXIT=0
+== rustc 1.97.0, tabela node22234
+checked 1680 code points strictly; 0 differences in all scalar values: []
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.44s
+EXIT=0
+== rustc 1.87.0, tabela fixture
+checked 1680 code points strictly; 0 differences in all scalar values: []
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.50s
+EXIT=0
+== rustc 1.87.0, tabela node22234
+checked 1680 code points strictly; 28 differences in all scalar values: ["A7CF", "A7D3", "A7D5", "16EBB", "16EBC", "16EBD", "16EBE", "16EBF", "16EC0", "16EC1", "16EC2", "16EC3", "16EC4", "16EC5", "16EC6", "16EC7", "16EC8", "16EC9", "16ECA", "16ECB", "16ECC", "16ECD", "16ECE", "16ECF", "16ED0", "16ED1", "16ED2", "16ED3"]
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.38s
+EXIT=0
