@@ -1,3 +1,9 @@
+## ROBOCZA 38fa0673 -- 2026-11-14 -- FALA 750: Bitwa: arbitraz kolizji o pole - piechota przed lucznikiem (AUTO i SKIP) (testowa)
+
+- Gdy lucznik i piechota walcza o to samo pole, piechota je dostaje a lucznik zatrzymuje sie pole wczesniej i faza liczy sie od nowa; ten sam typ - wygrywa mniejsze ID; konnica rydwany i machiny bez zmian; tryb reczny pomija arbitraz
+- Weryfikacja: tsc 0; logic 213/213; arbitraz test 30/0 (zywa bitwa 17 kolizji bez ustapienia piechoty); full-move-strike 8/8 mutacje 4/4; pace-latch 5/5; pursuit-move 13/13; pace-equal-line 23/0; vite build OK
+- Limity: NIE ZMIERZONO: zrzut okna UI w AUTO; doctrine-live r4 po FALI 749; large-mixed-doctrine-matrix; arbitraz w bitwie recznej (pytanie do wlasciciela); dlug Rust REPIN logiki bitewnej
+
 ## ROBOCZA c97f5ece -- 2026-11-14 -- FALA 749: Testy live bitwy i rozejmu: naprawa serwera sidecarow i galaz L2f-L2h (tylko narzedzia) (testowa)
 
 - Naprawa routingu serwera testowego w battle-doctrine-live r3 r4 i line-advance (HTML zamiast sidecarow); diplo-truce-live z galezia brak odpowiedzi gracza na oferte pokoju stalego = wojna bez kary; kod gry bez zmian

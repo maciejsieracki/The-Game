@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "c97f5ececa9e955fa30a63e316498ab2",
-  "bundleSha256": "7762ef614b81a2bec027dabbcb09c63597bd43fe79852cfeae4607f45c885727",
-  "bundleBytes": 14798659,
+  "bundleMd5": "38fa0673429fcf73cbcb9fefe4960f3b",
+  "bundleSha256": "eb42c22e6bb75d711d3e62b2dd49c71f67320f67ee9914d686348b84690e2de3",
+  "bundleBytes": 14800004,
   "sourceSnapshot": {
-    "source": "main FC c63efd49c",
+    "source": "main FC 5b94bdef4",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 749: Naprawa routingu serwera testowego w battle-doctrine-live r3 r4 i line-advance (HTML zamiast sidecarow); diplo-truce-live z galezia brak odpowiedzi gracza na oferte pokoju stalego = wojna bez kary; kod gry bez zmian"
+    "FALA 750: Gdy lucznik i piechota walcza o to samo pole, piechota je dostaje a lucznik zatrzymuje sie pole wczesniej i faza liczy sie od nowa; ten sam typ - wygrywa mniejsze ID; konnica rydwany i machiny bez zmian; tryb reczny pomija arbitraz"
   ],
   "verification": [
-    "tsc 0; logic 213/213; 5 bramek zielone; diplo-truce-live 30/0; r4 5/5; mutacja czerwieni L2h; vite build OK"
+    "tsc 0; logic 213/213; arbitraz test 30/0 (zywa bitwa 17 kolizji bez ustapienia piechoty); full-move-strike 8/8 mutacje 4/4; pace-latch 5/5; pursuit-move 13/13; pace-equal-line 23/0; vite build OK"
   ],
   "limits": [
-    "NIE ZMIERZONO: odmowa AI wobec propozycji gracza; stabilnosc r3 r4 przy wielu przebiegach; scena before w line-advance; etykieta L2b do przeetykietowania"
+    "NIE ZMIERZONO: zrzut okna UI w AUTO; doctrine-live r4 po FALI 749; large-mixed-doctrine-matrix; arbitraz w bitwie recznej (pytanie do wlasciciela); dlug Rust REPIN logiki bitewnej"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES TEST-DEBT-SIDECAR-HTML-AND-L2B-Q1 r2 (kod 7e24e966f, raport c63efd49c): tylko gra/tools: naprawa serwera testowego (HTML zamiast sidecarow) w battle-doctrine-live r3/r4 i line-advance-browser; diplo-truce-live z galezia L2f-L2h (brak odpowiedzi gracza na oferte pokoju stalego = wojna bez kary). tsc 0; logic 213/213; 5 bramek zielone; diplo-truce 30/0; r4 5/5; mutacja truceEndToWarCore czerwieni L2h. Notatki: etykieta L2b zgoda AI do przeetykietowania; odmowa AI wobec propozycji gracza NIE POKRYTA (hak w main.ts); stabilnosc r3/r4 niemierzona wielokrotnie."
+    "notes": "FC PASS-WITH-NOTES BATTLE-COLLISION-ARBITRATION-INFANTRY-FIRST-Q1 r1 (kod 1d2f4e6a2, raport 5b94bdef4): arbitraz kolizji o pole w AUTO/SKIP - piechota wygrywa z lucznikiem, ten sam typ wygrywa mniejsze ID, konnica/rydwany/machiny bez zmian; ustepujacy zatrzymuje sie pole wczesniej. Test nowy 30/0; zywa bitwa 17 kolizji lucznik->piechota bez ustapienia piechoty i bez swapow; determinizm x3; mutacje czerwone; regresje full-move 8/8, pursuit-move 13/13, pace-latch 5/5, line-advance, pace-equal-line 23/0; tsc 0. Tryb reczny pomija arbitraz (pytanie do wlasciciela). Ping-pong nie wiekszy niz na bazie."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-15T22:01:11",
+  "hubGeneratedAt": "2026-11-15T22:07:46",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "c97f5ececa9e955fa30a63e316498ab2",
-      "sizeBytes": 14798659
+      "md5": "38fa0673429fcf73cbcb9fefe4960f3b",
+      "sizeBytes": 14800004
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "c97f5ececa9e955fa30a63e316498ab2",
-      "sizeBytes": 14798659
+      "md5": "38fa0673429fcf73cbcb9fefe4960f3b",
+      "sizeBytes": 14800004
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "c97f5ececa9e955fa30a63e316498ab2",
-      "sizeBytes": 14798659
+      "md5": "38fa0673429fcf73cbcb9fefe4960f3b",
+      "sizeBytes": 14800004
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "c97f5ececa9e955fa30a63e316498ab2",
-      "sizeBytes": 14798659
+      "md5": "38fa0673429fcf73cbcb9fefe4960f3b",
+      "sizeBytes": 14800004
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "c97f5ececa9e955fa30a63e316498ab2",
-      "sizeBytes": 14798659
+      "md5": "38fa0673429fcf73cbcb9fefe4960f3b",
+      "sizeBytes": 14800004
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "c97f5ececa9e955fa30a63e316498ab2",
-      "sizeBytes": 14798659
+      "md5": "38fa0673429fcf73cbcb9fefe4960f3b",
+      "sizeBytes": 14800004
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "c97f5ececa9e955fa30a63e316498ab2",
-      "sizeBytes": 14798659
+      "md5": "38fa0673429fcf73cbcb9fefe4960f3b",
+      "sizeBytes": 14800004
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "c97f5ececa9e955fa30a63e316498ab2",
-      "sizeBytes": 14798659
+      "md5": "38fa0673429fcf73cbcb9fefe4960f3b",
+      "sizeBytes": 14800004
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "c97f5ececa9e955fa30a63e316498ab2",
-      "sizeBytes": 14798659
+      "md5": "38fa0673429fcf73cbcb9fefe4960f3b",
+      "sizeBytes": 14800004
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "c97f5ececa9e955fa30a63e316498ab2",
-      "sizeBytes": 14798659
+      "md5": "38fa0673429fcf73cbcb9fefe4960f3b",
+      "sizeBytes": 14800004
     }
   ],
-  "md5": "c97f5ececa9e955fa30a63e316498ab2",
+  "md5": "38fa0673429fcf73cbcb9fefe4960f3b",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
