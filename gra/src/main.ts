@@ -1146,6 +1146,13 @@ import {
 // od drainu tej tury -- patrz komentarz przy cityHasSpichlerzBuilding w building-resource-gate.ts.
 import { cityHasSpichlerzBuilding } from './game/building-resource-gate';
 import { buildAutoRationSidePanelEvent } from './game/spich-auto-ration-notify';
+// R-WEB-UI-END-TURN-BLOCK-EVENT-Q1: wydarzenie-blokada „Nie można zakończyć tury” (zakładka Ważne).
+import {
+  endTurnBlockEventOf,
+  END_TURN_BLOCK_ACT_OPEN_FOOD,
+  END_TURN_BLOCK_ACT_OPEN_TAX,
+  END_TURN_BLOCK_ACT_TAX_RAISE,
+} from './ui/sidePanelEventFilter';
 import { applyFarmAssignHints } from './game/farm-assign-hint';
 import { SIDE_PANEL_ACTION_LABEL, sidePanelEventActionOf } from './game/side-panel-event-action';
 import {
@@ -19099,6 +19106,10 @@ async function boot(): Promise<void> {
 
     /** Wpisy WYDARZEŃ ukryte krzyżykiem do końca tury (propozycja dyplomatyczna wraca w następnej, jeśli nadal aktualna). */
     const dismissedSidePanelEventIds = new Set<string>();
+    /** R-WEB-UI-END-TURN-BLOCK-EVENT-Q1: tura, w której gracz PRÓBOWAŁ zakończyć turę przy blokadzie NNS
+     * (null = nie próbował). Deklaracja MUSI być przed pierwszym wywołaniem collectTurnEventsUncached
+     * (inaczej TDZ przy starcie gry). */
+    let nnsEndTurnBlockAttemptTurn: number | null = null;
 
     function productionAvailabilityCtxForCity(city: City): AvailabilityContext {
       const ownImprovements = placedImprovementsForOwner(city.ownerId);
@@ -19588,6 +19599,8 @@ async function boot(): Promise<void> {
           blocking: true,
         });
       }
+      const nnsBlockEvent = nnsEndTurnBlockEvent();
+      if (nnsBlockEvent) events.push(nnsBlockEvent);
       return events.filter(e => !dismissedSidePanelEventIds.has(e.id));
     }
 
@@ -28126,6 +28139,7 @@ async function boot(): Promise<void> {
         getEventLink: (ev) => ev.blocking === true ? null
           : (sidePanelEventLinkFor(ev.id) ?? techDoneEventLinkFor(ev.id) ?? cityCaptureEventLinkFor(ev.id)
             ?? (ev.action !== undefined ? { label: SIDE_PANEL_ACTION_LABEL } : null)),
+        onEventButton: (_id, act) => handleEndTurnBlockButton(act),
         onEventClick: (id) => {
           // R-WEB-UI-FARM-ASSIGN-HINT-CAMERA-IMPORTANT-Q1: akcja `centerCamera` karty (np. nowe pole
           // z podpowiedzi „Przydziel obywatela?") centruje kamerę na heksie. Sprawdzane pierwsze.
@@ -39849,6 +39863,49 @@ async function boot(): Promise<void> {
       }
     }
 
+    /** R-WEB-UI-END-TURN-BLOCK-EVENT-Q1: wydarzenie-blokada dla bieżącej tury albo null.
+     * Bez próby gracza wczesny null (bramka nie jest liczona w każdym zbieraniu wydarzeń). */
+    function nnsEndTurnBlockEvent(): SidePanelEvent | null {
+      if (nnsEndTurnBlockAttemptTurn === null) return null;
+      const g = nnsGateForPlayer();
+      if (!g.blokada) nnsEndTurnBlockAttemptTurn = null;
+      const podatekTeraz = (ownerDefaultPodzialHandlu.get(ME()) ?? DEFAULT_PODZIAL_HANDLU).procentPieniadz;
+      return endTurnBlockEventOf({
+        blokada: g.blokada,
+        komunikat: g.komunikat,
+        turn,
+        attemptTurn: nnsEndTurnBlockAttemptTurn,
+        zasob: g.zasob,
+        propozycjaPunkty: g.propozycjaPodatku ? g.propozycjaPodatku.punktyProcentowe : null,
+        podatekTeraz,
+      });
+    }
+
+    /** R-WEB-UI-END-TURN-BLOCK-EVENT-Q1: zapisuje próbę zakończenia tury zablokowaną przez NNS i odświeża panel. */
+    function noteEndTurnBlockedByNns(): void {
+      nnsEndTurnBlockAttemptTurn = turn;
+      refreshD1bHud();
+    }
+
+    /** R-WEB-UI-END-TURN-BLOCK-EVENT-Q1: akcja przycisku karty blokady. „Zwiększ podatek” ustawia
+     * podatek na proponowaną wartość (ta sama podstawa podziału co suwak), bramka sama się odświeża. */
+    function handleEndTurnBlockButton(act: string): void {
+      if (act === END_TURN_BLOCK_ACT_OPEN_TAX) { openEmpireDetailFromHud('econ-skarbiec'); return; }
+      if (act === END_TURN_BLOCK_ACT_OPEN_FOOD) { openEmpireDetailFromHud('zywnosc'); return; }
+      if (act !== END_TURN_BLOCK_ACT_TAX_RAISE) return;
+      const p = nnsGateForPlayer().propozycjaPodatku;
+      if (!p) return;
+      const cur = ownerDefaultPodzialHandlu.get(ME()) ?? DEFAULT_PODZIAL_HANDLU;
+      ownerDefaultPodzialHandlu.set(ME(), normalizePodzialHandlu({
+        procentPieniadz: cur.procentPieniadz + p.punktyProcentowe,
+        procentNauka: cur.procentNauka - p.punktyProcentowe,
+        procentLuksus: cur.procentLuksus,
+      }));
+      markCityStateDirty();
+      updateHud();
+      refreshD1bHud();
+    }
+
     /** R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1: bramka skarbca/spichlerza dla fotela gracza (tury ≥ 11). */
     function nnsGateForPlayer(): NnsGateResult {
       refreshLiveEmpireRates(); // dirty-gated: przelicza tylko po zmianie stanu ekonomii
@@ -39987,6 +40044,7 @@ async function boot(): Promise<void> {
       // R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1: komunikat co zmienić (kwota i zasób).
       const nnsHint = nnsGateForPlayer();
       if (nnsHint.blokada) {
+        noteEndTurnBlockedByNns();
         showHintMessage(nnsHint.komunikat, 6000);
         return;
       }

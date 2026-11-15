@@ -47,6 +47,12 @@ export type SidePanelEventAction = {
   cityId?: string;
 };
 
+/** R-WEB-UI-END-TURN-BLOCK-EVENT-Q1: przycisk akcji karty (renderowany w karcie; klik -> onEventButton). */
+export interface SidePanelEventButton {
+  label: string;
+  act: string;
+}
+
 export interface SidePanelEvent {
   id: string;
   icon: string;
@@ -84,6 +90,8 @@ export interface SidePanelEvent {
   turnCreated?: number;
   /** R-WEB-UI-FARM-ASSIGN-HINT-CAMERA-IMPORTANT-Q1: ogólna akcja karty (skrót „Pokaż" → kamera). */
   action?: SidePanelEventAction;
+  /** R-WEB-UI-END-TURN-BLOCK-EVENT-Q1: przyciski akcji karty (np. „Zwiększ podatek do X%”). */
+  buttons?: readonly SidePanelEventButton[];
   /** R-WEB-UI-FARM-ASSIGN-HINT-CAMERA-IMPORTANT-Q1: `true` wymusza zakładkę „Ważne" (nadrzędne
    * wobec reguł tekstowych w `sidePanelEventTabs.ts`). Karty blokujące i tak trafiają do „Ważne". */
   important?: true;
@@ -118,6 +126,8 @@ export interface SidePanelHudConfig {
   /** Czy jest >1 armia gracza do cyklowania (steruje disabled strzałek). */
   canContextCycleUnit?: () => boolean;
   onEventClick?: (id: string) => void;
+  /** R-WEB-UI-END-TURN-BLOCK-EVENT-Q1: klik przycisku akcji karty (id karty, kod akcji). */
+  onEventButton?: (id: string, act: string) => void;
   /** P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: skrót karty NIE-blokującej do istniejącego miejsca
    * w grze — `{ label }` rysuje widoczną afordancję („Pokaż na mapie →"), `null` zostawia
    * kartę czysto informacyjną (bez skrótu, bez `cursor:pointer`). Silnik (main.ts) zwraca
@@ -422,6 +432,11 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
   border:1px solid rgba(232,216,138,.3);border-radius:999px;padding:2px 8px;
   transition:border-color .15s,color .15s;}
 .civ-side-panel .sp-event:not(.sp-blocking):hover .sp-goto-cta{border-color:rgba(232,216,138,.65);}
+/* R-WEB-UI-END-TURN-BLOCK-EVENT-Q1: przyciski akcji w karcie wydarzenia (np. „Zwiększ podatek do X%”). */
+.civ-side-panel .sp-act-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;}
+.civ-side-panel .sp-act-btn{padding:4px 9px;font-size:11px;border:1px solid rgba(232,216,138,.55);border-radius:4px;background:rgba(232,216,138,.12);color:#f3e7b8;cursor:pointer;}
+.civ-side-panel .sp-act-btn:hover{background:rgba(232,216,138,.25);}
+.civ-side-panel .sp-act-btn:focus-visible{outline:2px solid var(--tg-focus-ring,var(--tg-gold-primary));outline-offset:2px;}
 /* Karta bez miejsca docelowego (kategoria „czysto informacyjna" z audytu): kursor przestaje
    kłamać, że coś się stanie po kliknięciu. Klik i tak jest dziś no-opem — zmienia się sam
    sygnał. Karty blokujące i te ze skrótem zachowują cursor:pointer z reguły bazowej.
@@ -917,6 +932,9 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
             ? '<span class="sp-kicker">Wydarzenie</span><div class="sp-title">' + ev.title + '</div>'
             : '<div class="sp-title sp-title-generic">Wydarzenie</div>')
           + (ev.subtitle !== undefined ? '<div class="sp-sub">' + ev.subtitle + '</div>' : '')
+          + (ev.buttons !== undefined && ev.buttons.length > 0
+            ? '<div class="sp-act-row">' + ev.buttons.map(b => '<button type="button" class="sp-act-btn" data-sp-act="' + ev.id + '" data-sp-act-key="' + b.act + '">' + b.label + '</button>').join('') + '</div>'
+            : '')
           + '</div>';
         if (link !== null) {
           html += '<span class="sp-goto-cta" data-sp-goto="' + ev.id + '">' + link.label + ' →</span>';
@@ -953,6 +971,16 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
       // Zakres = relevantInfo (dotychczasowy: bez ukrytych wpisów AI↔AI), nie wszystkie zakładki.
       for (const ev of relevantInfo) config.onEventDismiss?.(ev.id);
       render();
+    });
+
+    // R-WEB-UI-END-TURN-BLOCK-EVENT-Q1: przycisk akcji karty nie uruchamia kliku całej karty.
+    el.querySelectorAll('.sp-act-btn[data-sp-act]').forEach(btn => {
+      btn.addEventListener('click', (e: Event) => {
+        e.stopPropagation();
+        const id = (btn as HTMLElement).getAttribute('data-sp-act');
+        const act = (btn as HTMLElement).getAttribute('data-sp-act-key');
+        if (id !== null && act !== null) config.onEventButton?.(id, act);
+      });
     });
 
     // Klikalna cała karta: informacyjne (zawsze) i zwinięte blokujące w kolejce („Rozpatrz →").
