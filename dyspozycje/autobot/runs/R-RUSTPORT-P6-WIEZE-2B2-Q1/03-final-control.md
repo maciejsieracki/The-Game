@@ -21,3 +21,37 @@ DEPLOY/PUSH: NIE WYKONANO
 9. Bramki -- potwierdzone wyzej, nie jest zarzutem.
 
 Werdykt: FAIL (NAPRAW: 1, 2, 8).
+
+---
+
+# FINAL CONTROL r2 (WIEZE-2B2)
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P6-WIEZE-2B2-Q1
+GOAL: strzał wieży oblężniczej (`_fireOneTower`) z danych strzelca `city_towers`, wektory z pinu, bez tautologii
+ZMIANY/COMMIT: SHA oceniany `6aa9b154e713cf6b4d26511b3644d86e296cb023`; ancestry względem bazy `ef8eeedc9`: baza JEST przodkiem (merge-base = ef8eeedc9). Allowlista zachowana (diff: siege_tactics_loop.rs, p6_wieze_2b2.rs, p6_wieze_2b2_gen.mjs, p6_wieze_2b2_vectors/vectors.json, raporty w runs/R-RUSTPORT-P6-WIEZE-2B2-Q1). `gra/`, Cargo.toml nietknięte; Cargo.lock nieskomitowany. Brak `#[ignore]` w zmienionych plikach.
+TESTY (zmierzone samodzielnie przez FC na 6aa9b154e): pełny `cargo test --no-fail-fast` EXIT=0, passed=3380 failed=0 ignored=1 (ignorowany nie z tego tematu); `cargo clippy --all-targets -- -D warnings` EXIT=0; `cargo fmt --check` EXIT=0; generator `p6_wieze_2b2_gen.mjs` odtwarza `vectors.json` bez zmian w drzewie (strażnik SHA-256 przechodzi; 240 przypadków, 105 strzałów).
+BLOKADY: brak
+RUNDY: 2/5
+NASTĘPNY KROK: integracja orkiestratora (merge-tree, ancestry, pełny test), wpisy w REJESTR-RUST
+DEPLOY/PUSH: NIE WYKONANO
+
+## Rozstrzygnięcie zarzutów Evaluatora r2
+
+| # | Zarzut | Decyzja | Uzasadnienie |
+|---|---|---|---|
+| 1 | wejście do single_blow_full nie asertowane vs pin | ODDAL (naprawione w Obronie) | test asertuje kategoria, hp, Jednostka, ranged, cel, opóźnienie z wektorów; 4 kształty wiersza |
+| 2 | 380 ms tautologia | ODDAL (naprawione) | opóźnienie mierzone `due - now` w kolejce zegara, porównane z `expectDelayMs` z pinu |
+| 3 | tower_setup_from_units bez wołającego | ODDAL | dług wiringu #113/#116/#146, poza zakresem tematu (dispatch r2 pkt 1 wymaga wejścia z danych, nie wpięcia w produkcję); orkiestrator wpisuje do REJESTR-RUST |
+| 4 | Typ/hp nie testowane vs pin | ODDAL | pokryte wektorami (kategoria, hp) i formułami pina na 486 przypadkach city_towers; Health jako napis: w `units.json` brak napisowych Health (zmierzone grepem), ryzyko niskie, dług jawny |
+| 5 | czerwień kompilacyjna | ODDAL | dispatch pkt 3 spełniony kodem wyjścia 101; dowód behawioralny przez mutacje M1-M3 (Obrona) |
+| 6 | NIE_ZMIERZONO pełny test | ODDAL (zmierzone) | FC zmierzył: 3380/0/1, EXIT 0 |
+| 7 | długi hit_arc/first_blow/_resolveBlowOutcome/destroyed-proxy | ODDAL | jawne długi zgodne z dispatchem r2 pkt 4 |
+
+Brak NAPRAW. Brak DO DECYZJI CZŁOWIEKA.
+
+## Notatki (długi do rejestru, nie blokują)
+- wiring produkcyjny `tower_setup_from_units` (#113/#116/#146)
+- `Health` jako napis (JS `Number("10")`=10, Rust hp=1): brak takich wierszy w `units.json`
+- wynik liczbowy ciosu wieży z pina niezweryfikowany (test okablowania, nie parytetu matematyki); hit_arc/first_blow stałe (#107/#178); `_resolveBlowOutcome` (#109/#147); moment zastosowania trafienia w klatce nieasertowany
