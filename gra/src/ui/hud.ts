@@ -321,6 +321,8 @@ export interface HudConfig {
   /** Panel boczny (D1=C): wydarzenia z tury od silnika. */
   getEvents?: () => SidePanelEvent[];
   onEventClick?: (id: string) => void;
+  /** R-WEB-UI-END-TURN-BLOCK-EVENT-Q1: klik przycisku akcji karty (przekazywany do sidePanelHud). */
+  onEventButton?: (id: string, act: string) => void;
   /** P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: przelot do panelu bocznego — skrót karty
    * NIE-blokującej do istniejącego miejsca w grze (patrz `getEventLink` w sidePanelHud.ts). */
   getEventLink?: (ev: SidePanelEvent) => { label: string } | null;
@@ -2070,6 +2072,7 @@ function mountSidePanel(): void {
     onContextCycleUnit: cfg.onContextCycleUnit,
     canContextCycleUnit: cfg.canContextCycleUnit,
     onEventClick: cfg.onEventClick,
+    onEventButton: cfg.onEventButton,
     getEventLink: cfg.getEventLink,
     onEventDismiss: cfg.onEventDismiss,
     onDismissAll: cfg.onDismissAll,
