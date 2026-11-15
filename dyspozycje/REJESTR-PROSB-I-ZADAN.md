@@ -10211,3 +10211,7 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 - main affc50fa4 (merge FC 83d13e09c + 7975e79a8), ROBOCZA MD5 88256d5a (Raw = manifest). Bramki dep3: tsc 0, logic 213/213, gross-net-unify 35/0, resource-card-numbers-only 14/0, resource-cards-gross-net 24/0, resource-usage-breakdown 100/0, vite OK.
 - Dostarczono: Nauka i Handel — jedna liczba (brutto = netto), Żywność „+brutto → +netto”, opis i jednostka w tooltipie, `grossNetSub` usunięta; wiki §53.1a + wikiBundle (generator); test `resource-usage-breakdown` buduje się (tylko narzędzie).
 - NIE ZMIERZONO: zrzut pełnego panelu imperium z żywej gry (Nauka/Żywność/Handel). Do potwierdzenia wyglądu przez właściciela rano.
+
+### 2026-11-15 — FALA 753 WDROŻONA (#429 przeetykietowanie L2b w teście rozejmu; tylko narzędzie)
+- main b14ac3c61 (merge FC adde46879 → e8965fcfd), ROBOCZA MD5 8204f171 (Raw = manifest). Bramki dep3: tsc 0, logic 213/213, vite OK; FC: live truce 32/0, 5 bramek zielone, mutacja czerwona (L2b2, L2h). Refs `refs/keep/R-WEB-L2B-RELABEL-r1-*`.
+- NIE ZMIERZONO: odmowa AI wobec propozycji gracza (wymaga haka w `gra/src/main.ts`; propozycja haka w nagłówku testu); osobna mutacja wariantu „AI odrzuca od razu”.
