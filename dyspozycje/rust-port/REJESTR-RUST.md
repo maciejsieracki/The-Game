@@ -1713,3 +1713,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Nowe starty (sloty do 4):** #234 K5-LOOP-AUTO-SCOPE (odczyt, `R-RUSTPORT-P6-AUTO-SCOPE-ROZP-Q1`, `wf_23cd3ec9-415`); #230 MAPGEN-M08/M13/M18 jako NIE_ZMIERZONO (dokument w nowym pliku `dyspozycje/rust-port/p6/MAPGEN-M08-M13-M18-NIE_ZMIERZONO.md`, `R-RUSTPORT-MAPGEN-NIE-ZMIERZONO-Q1`, `wf_0fe3a41b-09f`). Dispatche na `ec653789e`.
 - **Aktywne (4):** wyłom wieży #98 (`wf_15bb4a09-81f`, Evaluator); K5LOOP-OUTCOME r2 #226 (`wf_41d73167-4c8`, Operator); #234; #230.
 - **NASTĘPNY KROK:** wynik #226 r2 (ewentualnie FAIL → runda 3 tego samego ID); wynik #98 (integracja z #226 po nim, sekwencyjnie — wspólny `siege_tactics_loop.rs`).
+
+## Przebieg (15.11, 18:xx UTC — zakończenie #230/#183; start #231)
+
+- **#230/#183 MAPGEN-M08/M13/M18 (FC PASS-WITH-NOTES `9f14e0a41`):** dokument `dyspozycje/rust-port/p6/MAPGEN-M08-M13-M18-NIE_ZMIERZONO.md` (`3a1180688`). Wpisy: M08 BRAK (placeDeposits, ensureDepositGridCoverage, funkcje lasu), M13 podzielony na M13a wioski BRAK, M13b punktacja startu POKRYTE wg M10 (`cluster_mass.rs`, `tests/p6_m10_start_scoring.rs`; test NIE uruchamiany ponownie), M13c `computeStartPositions` NIE_ZMIERZONO. Rust `domain/map_generator.rs:326` (`generate_map`) — zgodność z pinem NIE_ZMIERZONO.
+  - Otwarte decyzje orkiestratora: przypisanie ensureDepositGridCoverage i funkcji lasu do M08 czy M13; topUpRiverGridCoverage (gen-helpers.ts:11935) w zakresie M08 (funkcja rzeczna, do M07E2?); ścieżka runu `R-RUSTPORT-MAPGEN-NIE-ZMIERZONO-Q1` (zlecenie miało prefiks P6-).
+  - Dokumenty runu na `3f8940fd3`. Worktree (4) usunięte, HEAD w `refs/keep/cleanup-wf_0fe3a41b-09f-*`.
+- **Start #231 TEST-JS-ROUND-MINUS-ZERO:** dispatch `R-RUSTPORT-P6-JSROUND-MINUSZERO-Q1` na `acf8fd6c3`, baza `f7baa3848`, workflow `wf_0afbf4f1-ffb`. Zmiany tylko w testach (allowlista jednego pliku).
+- **Aktywne (4):** #98 wyłom (`wf_15bb4a09-81f`), #226 OUTCOME r2 (`wf_41d73167-4c8`), #234 AUTO-SCOPE (`wf_23cd3ec9-415`), #231 js_round -0 (`wf_0afbf4f1-ffb`).
