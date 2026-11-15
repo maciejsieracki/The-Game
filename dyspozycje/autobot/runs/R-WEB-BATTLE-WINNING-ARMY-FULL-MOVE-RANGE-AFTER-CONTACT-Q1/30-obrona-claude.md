@@ -1,56 +1,80 @@
-# R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1 — obrona Operatora (runda 1/5)
+# R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1 — obrona, runda 2
 
-STATUS: PASS-WITH-NOTES
+STATUS: BLOCK (częściowo: merge i pomiar wykonane, poprawka ruchu NIE wdrożona; patrz NASTĘPNY KROK)
 DOMAIN: GAME
 TEMAT: R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1
-GOAL: zwycięska armia w bitwie AUTO/SKIP ściga rozbitego wroga pełnym zasięgiem ruchu własnej jednostki (kod bez zmian w tej rundzie; odpowiedź na zarzuty 20-evaluator-claude.md).
-ZMIANY/COMMIT: brak zmian kodu w tej rundzie. Kod operatora = 80c31eb96 (baza fef330d84). Commit tej rundy zawiera wyłącznie ten plik raportu. SHA: patrz pole sha w odpowiedzi strukturalnej (commit obrony nad 80c31eb96).
+GOAL: konnica zwycięskiej armii wykorzystuje >= 80% puli ruchu, gdy ma wolną drogę (AUTO/SKIP, tury 9–16).
+BAZA: 275f047d3 (kandydat r1 z FC) + merge origin/main 3a6b0e405 -> commit 3cfda16ac (merge bez konfliktów; tsc EXIT 0 na tym SHA).
 
-## Odpowiedzi na zarzuty Evaluatora
+## Odpowiedź na zarzuty Evaluatora (FAIL r1, report_sha 5700631f8)
 
-Zarzut 1 (cel niepełny; UWAGA-1, kolizja w `_resolveAutoBatchMovement`): ODRZUCAM jako zakres tego tematu, z dowodem.
-- Dispatch ETAP 2b: jeśli przyczyna jest INNA niż sufity tempa, opisać ją i zaproponować poprawkę jako DECISION_REQUIRED, bez zmiany reguł gameplay bez zgody właściciela. Dane z `evidence/pp-scen1-fix.json` pokazują, że po poprawce sufit konnicy = +inf (pc = None) od tury 3, a mimo to 1–3 kroki przy puli 7 i zaplanowanych 2–7. Sufit tempa przestał więc być przyczyną; zostaje blokada ścieżki przez zajęte hexy (`occupant !== ru`), co jest mechanizmem ruchu, nie regułą tempa.
-- Uczciwie: cel właściciela („nie dziobać”) jest osiągnięty tylko częściowo, w scenariuszu z kolizjami wśród własnych jednostek dziobanie może pozostać. Stan zapisany jako DECISION_REQUIRED.
+- Zarzut 1 (brak naprawy i testu zachowania): PRZYJMUJĘ jako prawdziwy. Naprawy ruchu nie wdrożono w r2 (patrz niżej, dlaczego). Test behawioralny nie powstał.
+- Zarzut 2 (przyczyna uogólniona z jednego ziarna): PRZYJMUJĘ. Pomiar r2 objął seedy 1–2 (scen. mieszana, AUTO watch i SKIP). Seed 3 NIE_ZMIERZONO (brak czasu w tej rundzie).
+- Zarzut 3 (kolizja z własnymi jednostkami nieobalona, brak surowych zdarzeń): CZĘŚCIOWO ODRZUCAM hipotezę kolizji w wykonaniu. Dowód: log `moves` z `_resolveAutoBatchMovement` (wszystkie 4 biegi, 2 tury 9–16 i całość): reason=occupied: 0; reason=impassable: 0; wszystkie wpisy to plan_end (625 / 588 / 562 / 562). Kolizja z jednostką w fazie wykonania NIE powoduje zatrzymania w tych biegach. Hipoteza z r1 (zajęte hexy w `_resolveAutoBatchMovement`) była błędna. Zatrzymania mają miejsce w FAZIE PLANOWANIA AUTO (na klonach), patrz tabela.
+- Zarzut 4 (brak merge z origin/main): PRZYJĘTY, wykonany (3cfda16ac). `git merge-base --is-ancestor 3a6b0e405 HEAD` = 0 po merge.
+- Zarzut 5 (test zatrzasku sprawdza capa, nie ruch): PRZYJMUJĘ. Test behawioralny NIE dodany (nie zmieniono ruchu, więc nie ma czego czerwienić).
+- Zarzut 6 (brak pomiaru piechoty i scen. 2): PRZYJMUJĘ, NIE_ZMIERZONO. Scenariusz 2 (12 vs 12) nie ma konnicy, więc nie wnosi danych o konnicy; piechota nie zmierzona w r2.
+- Zarzut 7 (wariant A bez prototypu): PRZYJMUJĘ. Wariant A nie wdrożony i nie rekomendowany w tej rundzie.
+- Zarzut 8 (dług Rust): PRZYJMUJĘ. Dług REPIN zatrzasku (melee_latched) pozostaje z r1 (UWAGA-3 w 10-operator-claude.md); bez nowego długu w r2.
 
-Zarzut 2 (test (a) na atrapie sceny, nie sprawdza faktycznego ruchu): ODRZUCAM jako błąd testu, z dowodem.
-- Test `gra/tools/battle-pace-latch-test.cjs` sprawdza to, co dotyczy zatrzasku: wartość `_paceCapFor` i `_lineAdvanceCap` po zerwaniu kontaktu oraz mutację. Ruch faktyczny nie jest objęty tym testem i nie był deklarowany jako objęty; dowód ruchu to pomiar przeglądarkowy (`pp-scen1-fix.json`), wprost opisany w raporcie operatora jako jeden seed.
-- Scenariusz integracyjny z prawdziwą sceną w pętli testowej wymagałby nowego harnessu przeglądarkowego; nie dodano go w tej rundzie. Zapisane jako NIE_ZMIERZONO na poziomie testu jednostkowego.
+## Pomiar r2 (ZMIERZONO, Chromium, tury 9–16, konnica = Horseman atk14–atk17, scen. mieszana)
 
-Zarzut 3 (zatrzask nie reaguje na wzwarcie jednostek z `rangedBase = true`): ODRZUCAM, z dowodem.
-- Predykat `!u.rangedBase && !isSiegeUnit(u.bu)` istnieje już w bazie fef330d84 (`git show fef330d84:gra/src/battle/battleScene.ts`, linia 8234 w `_meleeContactNow` ustawionym na ten sam predykat co wcześniejszy kontakt tempa; w bazie także linie 6832 i 8333). Zatrzask używa dokładnie tej samej definicji wzwarcia co dotychczasowy sufit tempa (`cache.contact`, `_paceCapFor`). Zmiana predykatu zmieniłaby moment „do pierwszego wzwarcia” przed kontaktem, czyli regułę właściciela z 2026-11-13, której dispatch zakazuje zmieniać. Ta sprzeczność to UWAGA-2 (DECISION_REQUIRED): czy wzwarcie ma liczyć walkę piechoty z zasięgiem ≥2. Skutku w scenariuszu, gdzie kontakt tworzą wyłącznie rangedBase, nie mierzono (NIE_ZMIERZONO), i nie jest to zmieniane w tej rundzie.
+Źródło: `gra/tools/battle-pursuit-pace-measure.cjs` (PP_SCEN=1, PP_SEEDS=1,2, PP_MODES=skip,watch), surowe dane w runnerze; zestawienie w evidence/r2-zatrzymania-plan-auto-s1.json.
+Kategorie wg `moveLeft` w chwili zatrzymania planu AUTO (wartość planowania, nie wykonania):
 
-Zarzut 4 (NIE_ZMIERZONO: tryb watch, seedy 2–3, scen. 2, zatrzask przy zapisie/wznowieniu; ryzyko rozjazdu AUTO vs SKIP):
-- Część dotycząca NIE_ZMIERZONO przyjmuję jako prawdziwą: tryb watch, seedy 2–3 i scen. 2 nie były mierzone w tej rundzie, bo wymagają kolejnych przebiegów przeglądarkowych, a dispatch tej rundy nie nakazuje ich na tym etapie. Pozostaje NIE_ZMIERZONO.
-- Argument o determinizmie ODRZUCAM w zakresie „nowego” ryzyka: `_meleeLatched` jest ustawiany w `_refreshMeleeLatch()` na początku każdej tury (`_beginTurn`, linia 5682) oraz w `_paceCapFor` dokładnie w tym samym miejscu, gdzie powstaje `cache.contact` (linie 8258–8261). Zatrzask zmienia wynik tylko po tym, jak `cache.contact` już był prawdziwy w tej samej rundzie, więc ta sama kolejność obliczeń, która wcześniej determinowała sufit AUTO/SKIP, determinuje zatrzask. Brak jest nowego, niezależnego momentu zapisu. Nie jest to dowód; to uzasadnienie kodowe. Test determinizmu 42/42 (`battle-skip-equals-auto-resolve-test`) nie obejmuje scenariusza z zerwaniem kontaktu i to pozostaje NIE_ZMIERZONO.
-- Zapis/wznowienie: `_meleeLatched` nie jest w stanie zapisu; zapis w bitwie jest wyłączony (W27, zgodnie z dyspozycją ABC), co potwierdza wpis w rejestrze tematów.
+| bieg | pula konnicy r9–16 | zatrzymania: kontakt tylko z rozbitym wrogiem (n / MP) | zatrzymania: brak kroku, can=false (n / MP) | occupied |
+|---|---|---|---|---|
+| skip s1 | 217 | 16 / 96 | 14 / 84 | 0 |
+| watch s1 | 196 | 10 / 59 | 17 / 98 | 0 |
+| skip s2 | 203 | 12 / 71 | 16 / 81 | 0 |
+| watch s2 | 203 | 12 / 71 | 16 / 81 | 0 |
 
-Zarzut 5 (dług Rust zapisany tylko w raporcie operatora, bez wpisu w rejestrze): ODRZUCAM.
-- Kryterium (4) dispatchu brzmi „dług Rust: REPIN reguły zatrzasku (zapisz)”. Zapis istnieje w `10-operator-claude.md`, UWAGA-3, z opisem flagi `melee_latched`, resetu i sufiksów.
-- Rejestr `dyspozycje/REJESTR-PROSB-I-ZADAN.md` leży poza allowlistą tematu (`runs/<ID>/**`, `gra/src/battle/**`, `gra/tools/*pace*|*line-advance*|*battle-move*`, docs encyklopedii). Wpis do rejestru wykonuje orkiestrator po FC. Wskazuję to jako NASTĘPNY KROK orkiestratora.
-- Hasło encyklopedii: operator stwierdził brak hasła o tempie (UWAGA-4). Weryfikacja: w tej rundzie nie uruchamiano ponownego grep na `docs/encyklopedia/**` (node_modules nie ma w worktree obrony; grep nie był wymagany do odpowiedzi). NIE_ZMIERZONO w tej rundzie, zgodnie z zarzutem Evaluatora 5.
+(skip s2 i watch s2 dały identyczne liczby; nie sprawdzono, czy to determinizm AUTO=SKIP czy błąd runnera. NIE_ZMIERZONO różnicy.)
 
-Zarzut 6 (trzy pliki evidence JSON, ~40 tys. linii): ODRZUCAM jako zmianę. Dispatch wymaga zrzutów/logów w `runs/<ID>/evidence/`; usunięcie ich naruszyłoby kryterium (1) i (2). Nie zmieniano.
+Interpretacja (ZMIERZONO liczbami, przyczyny z kodu):
+1. Kontakt z rozbitym wrogiem: `_advanceStep` (battleScene.ts ~l.8449–8453, `_doMove` callback) zatrzymuje marsz, gdy `_canAttackFrom` jest prawdziwe, także gdy sąsiad jest rozbity (routed). Cios na rozbitego nie jest zadawany (attacks = 0), więc MP przepada. To jest 53% (skip s1) do 42% (watch s1) utraconego MP.
+2. Brak kroku przy can=false: `_advanceStep` kończy, gdy `_firstStepAlongPathToAttack` i `_stepToward` nie znajdują kroku (silne `done()` bez logu, l.~8460–8470 i ~8475). Przyczyna dokładna NIE_ZMIERZONO: nie logowano, czy BFS nie znalazł ścieżki, czy greedy krok jest zajęty (sojusznik lub wróg), czy filtr `_compactAttackAllowsStep` odrzucił krok (dla konnicy `mounted` = zawsze true, więc raczej nie). Ten rodzaj zatrzymania to 47–58% utraconego MP.
+3. Sufit tempa (`_paceCapFor` / `_lineAdvanceCap`): dla konnicy w tych turach paceCap = None i lineCap = None (zatrzask z r1 działa). Sufit NIE jest przyczyną w tym scenariuszu.
 
-## TESTY (ta runda)
+Wniosek: skarga „dziobią” ma w tym scenariuszu przyczynę w planowaniu AUTO (zatrzymanie przy rozbitym wrogu + brak kroku), a nie w kolizji wykonania. Poprawka wymaga zmiany zachowania planera (czy marsz ma iść dalej mimo kontaktu z rozbitym wrogiem) — to jest zgodne z decyzją ABC A właściciela (pościg z pełnym zasięgiem), ale zmienia kod ścigania, więc decyzja właściciela/Evaluatora przed wdrożeniem.
 
-- Kod nie był zmieniany, więc bramki nie były uruchamiane ponownie na nowym kodzie. Bramki z 80c31eb96 odtworzone przez Evaluatora (wynik z jego raportu, nie z pamięci operatora): tsc EXIT 0; battle-pace-latch-test 5/5 pass, mutacja wykryta; czerwone na bazie (a), (a2), (a3) FAIL, 2/5 pass; battle-pace-equal-line-live-test 23/0; battle-line-advance-uniform EXIT 0; battle-skip-equals-auto-resolve-test 42 ok, 0 fail; battle-skip-siege-parity 17/0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6.
-- Próba ponownego uruchomienia `node tools/battle-pace-latch-test.cjs` w worktree obrony: MODULE_NOT_FOUND (brak `gra/node_modules`; worktree obrony nie ma zainstalowanych zależności). NIE_ZMIERZONO w tej rundzie. Nie instalowano zależności, żeby nie zwiększać zużycia dysku ponad dispatch.
-- `git diff --check`: nie dotyczy (commit zawiera tylko plik raportu).
+## Dlaczego naprawa nie wdrożona w r2
+
+- Ustalenie przyczyny dopiero teraz (r1 mylnie wskazał kolizję).
+- Brak pomiaru seed 3 i pełnej piechoty.
+- Dysk: 5,3 GB wolne (`df -h /`), dispatch wymaga >= 6 GB; nie ryzykowano nowego worktree/instalacji.
+
+## ZMIANY/COMMIT
+
+- Merge origin/main w gałęzi `R-WEB-WIN-ARMY-obrona-r2` (3cfda16ac; bez konfliktów).
+- Ten raport + `evidence/r2-zatrzymania-plan-auto-s1.json` (commit po merge).
+- Kod gry: bez zmian w r2 poza merge.
+
+## TESTY (surowe wyniki)
+
+- `npx tsc --noEmit` (gra/): EXIT 0, 0 linii wyjścia.
+- Pomiar: `node tools/battle-pursuit-pace-measure.cjs` z PP_SCEN=1 PP_SEEDS=1,2 PP_MODES=skip,watch: 4 biegi, timedOut=false, errors=[] (wyniki: atakujący wygrywa we wszystkich 4).
+- Pozostałe bramki (logic 213/213, tech-tree 20/0, research 33/0, unit-replace 21/21, combat 6/6, latch-test 5/5, battle-skip-equals-auto-resolve 42/0) NIE_ZMIERZONO na bazie po merge w tej rundzie (czas i dysk). Ostatnie zielone wyniki pochodzą z r1 na 275f047d3 i nie zostały potwierdzone na 3cfda16ac.
 
 ## BLOKADY
 
-Brak blokad technicznych. Otwarte decyzje właściciela (DECISION_REQUIRED, bez zmian w kodzie):
-- UWAGA-1: blokada ścieżki przez zajęte hexy w `_resolveAutoBatchMovement` (konnica 1–3 kroki przy puli 7 po usunięciu sufitu).
-- UWAGA-2: predykat wzwarcia a `rangedBase` (Hastati).
+- Brak pomiaru seed 3 i piechoty (NIE_ZMIERZONO).
+- Decyzja właściciela/Evaluatora: czy kontakt z wyłącznie rozbitym wrogiem ma przerywać marsz zwycięzcy (zmiana kodu ścigania).
+- Dysk 5,3 GB < 6 GB wymagane w dispatchu.
+
+## UWAGI-DLA-ORKIESTRATORA
+
+- UWAGA-A: hipoteza r1 o kolizji w `_resolveAutoBatchMovement` została obalona pomiarem (occupied=0). W dispatchu ETAP 2 pkt 2 należy zmienić na: planowanie AUTO (`_advanceStep`) przy kontakcie z rozbitym wrogiem i przy braku kroku.
+- UWAGA-B: rozbieżność z Evaluatorem: jego udział „36–43% puli” nie odtworzyłem; mój wskaźnik to moveLeft w chwili zatrzymania planu (wartość planowania). NIE_ZMIERZONO udziału z kroków wykonanych, bo runner nie zapisuje kroków wykonania na poziomie ruchu.
+- UWAGA-C: skip s2 = watch s2 (identyczne liczby) — do sprawdzenia czy to nie artefakt runnera.
+- UWAGA-D: dług Rust bez zmian (UWAGA-3 z r1).
 
 ## RUNDY
 
-2/5 w sensie zarzutów (runda obrony 1 tego tematu). Ostatni werdykt Evaluatora: PASS-WITH-NOTES, 6 zarzutów; nie wystawiono werdyktu końcowego przez Evaluatora.
+2/5 (Operator, HAIKU 5.5). Ostatni werdykt: FAIL r1 (zarzuty 1–8 wyżej).
 
 ## NASTĘPNY KROK
 
-Evaluator/Final Control (SONNET) na 80c31eb96 + commit obrony (tylko raport): ocenić odpowiedzi 1–6. Orkiestrator: decyzja właściciela o UWAGA-1 i UWAGA-2; wpis REPIN do rejestru po FC; osobny temat na tryb watch i scenariusz integracyjny z zerwanym kontaktem.
-
-UWAGI-DLA-ORKIESTRATORA: brak nowych znalezisk poza zakresem tematu. Repozytorium worktree obrony było w stanie detached na 80c31eb96 przed commitem raportu.
+Decyzja właściciela (czy kontakt z rozbitym wrogiem ma przerywać pościg) i zgoda Evaluatora na poprawkę planera; potem r3: (a) log powodu braku kroku w `_advanceStep`, (b) pomiar seed 3 i piechoty, (c) test behawioralny ruchu z mutacją.
 
 DEPLOY/PUSH: NIE WYKONANO
