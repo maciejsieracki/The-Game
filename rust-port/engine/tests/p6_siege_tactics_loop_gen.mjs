@@ -11,7 +11,11 @@
 // Stuby (efekty zewnetrzne, nie logika petli):
 //   _activateUnit: ciało jednostki = timer o zadanym czasie trwania (animacja) + zadany efekt (nop / kill / hurt), po
 //     ktorym wywolywany jest callback z pinu. Efekty sa jawnym wejsciem sekwencji, nie logika boju (RNG/cios: K5I).
-//   _fireSiegeTowers: wiezyczka zabija jedna zadana jednostke (efekt R4, jawny w sekwencji).
+//   _fireSiegeTowers, _destroyTowerAtRow: WYCINANE Z PINU (WIEZE-2B1). Planowanie wystrzalow z odroczeniem _schedule.
+//   _fireOneTower: STUB no-op (strzal _singleBlow wiezy = 2B2, poza zakresem). Brak efektu na stanie jednostek.
+//   Stan wiez: siegeTowers / wallTileHp z przypadku; towerShooterRow zawsze ustawiony gdy sa wieze (brak guardu
+//   !towerShooterRow w Rust: pole SiegeEnv, 2B2). Zniszczenie wiezy (destroyed) nie wplywa na sekwencje przy
+//   statycznym wallTileHp (kafel nie wraca), wiec nie jest modelowane w trace.
 //   _armyMoraleRatio: WYCINANE Z PINU (metoda wola armyMoraleRatioWithoutCommander z game/army-leadership.ts, to
 //     tez wycinane z pinu po SHA) — bez stubu formuly.
 //   _startRout / commandersToWithdrawAfterArmyBreak: pusta lista dowodcow (wycofanie dowodcow poza zakresem).
@@ -33,7 +37,7 @@ const PIN = '07d2fbd72f758705f8e1d59cc4968027ffbafe75';
 const PIN_PATH = 'gra/src/battle/battleScene.ts';
 const SEED = 2217;
 const SEQUENCE_COUNT = 360;
-const LOOP_FRAGMENT_SHA256 = 'b48108ea742e51fd647ad14e7542f9db83854a42255c5aa68761fb248a3de88c';
+const LOOP_FRAGMENT_SHA256 = '129c7e8e1c9d2865d14aa7a8c3eedad66ff83f7d632f40853285f07f03857e1d';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, '..', '..', '..');
@@ -85,6 +89,8 @@ const ranges = {
   drainTimers: methodRange(/^  private _drainTimers\(\): void \{$/),
   checkEnd: methodRange(/^  private _checkEnd\(\): boolean \{$/),
   armyMorale: methodRange(/^  private _armyMoraleRatio\(side: 'atk' \| 'def'\): number \{$/),
+  fireTowers: methodRange(/^  private _fireSiegeTowers\(\): void \{$/),
+  destroyTower: methodRange(/^  private _destroyTowerAtRow\(wallRow: number\): void \{$/),
 };
 console.error('zakresy pinu', JSON.stringify(ranges));
 
@@ -129,6 +135,8 @@ const pinMethods = [
   textOf(ranges.drainTimers),
   checkEndText,
   textOf(ranges.armyMorale),
+  textOf(ranges.destroyTower),
+  textOf(ranges.fireTowers).replace('private _fireSiegeTowers(): void {', '_fireSiegeTowersPin() {'),
 ]
   .join('\n')
   .replaceAll('BattleScene.', 'Harness.');
@@ -153,7 +161,10 @@ const classSrc = [
   '    this._endWinner = null; this._endSurvivors = null; this.turnOrder = []; this.turnIdx = 0;',
   '    this.busy = false; this._battleAwaitingOrders = false; this._autoBattleSuspended = false;',
   '    this._manualMode = false; this._autoBatchPlanning = false; this._queuedOrderUnitIds = new Set();',
-  '    this.__trace = []; this.__draw = null; this.__shown = null; this.__tower = spec.tower;',
+  '    this.__trace = []; this.__draw = null; this.__shown = null;',
+  '    this.siegeTowers = (spec.towers || []).map((row) => ({ row, mesh: null, destroyed: false }));',
+  '    this.wallTileHp = new Set(spec.wallRows || []);',
+  '    this.towerShooterRow = (spec.towers || []).length ? { Jednostka: "Strzelec", Typ: "Distance", Health: 1 } : null;',
   '    this._counterBudget = { beginTurn() {} };',
   '    this.hint = { textContent: "" };',
   '    this.__self = self;',
@@ -163,9 +174,9 @@ const classSrc = [
   '  _showEndScreen(w) { this.__shown = w; }',
   '  _fireSiegeTowers() {',
   '    this.__trace.push("turn:" + this.roundNo);',
-  '    const t = this.__tower;',
-  '    if (t) { const u = (t.side === "atk" ? this.atk : this.def)[t.idx]; if (u && !u.dead) u.dead = true; }',
+  '    this._fireSiegeTowersPin();',
   '  }',
+  '  _fireOneTower() { /* 2B2: strzal _singleBlow wiezy poza zakresem K5-LOOP; brak efektu */ }',
   '  _movementPointsFor(bu) { return bu.mp; }',
   '  _updateBattlePhaseBanner() {}',
   '  _refreshQueuedOrderVisuals() {}',
@@ -287,9 +298,12 @@ function genSpec(k) {
   const atk = Array.from({ length: nA }, (_, i) => genUnit(i, 'atk'));
   const def = Array.from({ length: nD }, (_, i) => genUnit(i, 'def'));
   const wallBreached = rnd() < 0.35;
-  const tower = rnd() < 0.3
-    ? (rnd() < 0.5 ? { side: 'atk', idx: randInt(0, nA - 1) } : { side: 'def', idx: randInt(0, nD - 1) })
-    : null;
+  // Wieze (WIEZE-2B1): wiersze rozlaczne 2..7 (kolejnosc listy = kolejnosc pinu). Kafel muru jest na czesci wierszy;
+  // wieza bez kafla jest pomijana przy planowaniu (web `_destroyTowerAtRow`), bez stagger.
+  const towerCount = rnd() < 0.5 ? 0 : randInt(1, 3);
+  const towers = Array.from({ length: towerCount }, (_, i) => 2 + i * 2 + randInt(0, 1));
+  const wallRows = [...towers.filter(() => rnd() < 0.7)];
+  for (let r = 2; r <= 7; r++) if (!towers.includes(r) && rnd() < 0.3) wallRows.push(r);
   return {
     id: `loop-${String(k).padStart(3, '0')}`,
     atk,
@@ -298,7 +312,8 @@ function genSpec(k) {
     wallBreached,
     noBreachCap: pick(NO_BREACH_POOL),
     speed: pick(SPEED_POOL),
-    tower,
+    towers,
+    wallRows: wallRows.sort((a, b) => a - b),
   };
 }
 
@@ -312,7 +327,8 @@ for (let k = 0; k < SEQUENCE_COUNT; k++) {
 const stats = {
   count: sequences.length,
   withBreach: sequences.filter((s) => s.spec.wallBreached).length,
-  withTower: sequences.filter((s) => s.spec.tower).length,
+  withTower: sequences.filter((s) => s.spec.towers.length > 0).length,
+  withUnwalledTower: sequences.filter((s) => s.spec.towers.some((r) => !s.spec.wallRows.includes(r))).length,
   capDraw: sequences.filter((s) => s.expect.winner === 'remis').length,
   capRounds400: sequences.filter((s) => s.expect.roundNo >= 400).length,
   winnersAtk: sequences.filter((s) => s.expect.winner === 'atk').length,

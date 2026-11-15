@@ -9,6 +9,7 @@ use civ_engine::domain::siege_tactics_loop::{
 };
 use civ_engine::domain::siege_tactics_turnseq::{SeqUnit, TurnSeqEnv, TurnSeqState, UnitRef};
 use civ_engine::domain::siege_tactics_unit::CombatUnit;
+use serde_json::Value;
 
 struct CellBody {
     atk_cells: Vec<Option<(i64, i64)>>,
@@ -190,4 +191,93 @@ fn loop_schedules_tower_shots_on_clock_at_planned_delays() {
         sl.st.atk.iter().all(|u| !u.c.dead),
         "planowanie nie zabija celu"
     );
+}
+
+// Wektory pinu (`p6_wieze_2b1_gen.mjs`): planowanie `_fireSiegeTowers` (odroczenia i wiersze) oraz pominięte wieże
+// (web `_destroyTowerAtRow`, wieża bez kafla muru) w kolejności listy wież.
+#[test]
+fn planning_matches_pin_fire_siege_towers_on_all_vectors() {
+    let v: Value = serde_json::from_str(include_str!("p6_wieze_2b1_vectors/vectors.json"))
+        .expect("vectors.json");
+    assert_eq!(
+        v["source"]["pin"].as_str(),
+        Some("07d2fbd72f758705f8e1d59cc4968027ffbafe75")
+    );
+    assert_eq!(
+        v["source"]["fragmentSha256"].as_str(),
+        Some("c7522e637a4739b31bf95c94d3d8906f8726bc1ac87afbe015ac9db4794d4f8a"),
+        "skrot wycietych fragmentow _fireSiegeTowers/_destroyTowerAtRow"
+    );
+    let cases = v["cases"].as_array().expect("cases");
+    assert!(
+        cases.len() >= 200,
+        "wymagane >= 200 przypadkow, jest {}",
+        cases.len()
+    );
+
+    let mut skipped_total = 0usize;
+    let mut planned_total = 0usize;
+    for case in cases {
+        let id = case["id"].as_str().expect("id");
+        let towers: Vec<i64> = case["towers"]
+            .as_array()
+            .expect("towers")
+            .iter()
+            .map(|r| r.as_i64().expect("tower row"))
+            .collect();
+        let walls: Vec<i64> = case["wallRows"]
+            .as_array()
+            .expect("wallRows")
+            .iter()
+            .map(|r| r.as_i64().expect("wall row"))
+            .collect();
+        let want: Vec<(f64, i64)> = case["planned"]
+            .as_array()
+            .expect("planned")
+            .iter()
+            .map(|p| (p[0].as_f64().expect("ms"), p[1].as_i64().expect("row")))
+            .collect();
+        let want_destroyed: Vec<i64> = case["destroyed"]
+            .as_array()
+            .expect("destroyed")
+            .iter()
+            .map(|r| r.as_i64().expect("destroyed row"))
+            .collect();
+
+        let mut st = state(&[10.0]);
+        let mut e = env(vec![Some((7, 3))], towers.clone(), walls.clone());
+        e.fire_siege_towers(&mut st);
+
+        let got: Vec<(f64, i64)> = e
+            .pending_tower_shots
+            .iter()
+            .map(|p| (p.ms, towers[p.tower]))
+            .collect();
+        assert_eq!(got, want, "{id}: planowanie");
+        assert_eq!(
+            atk_dead_flags(&st),
+            vec![false],
+            "{id}: planowanie nie zabija"
+        );
+
+        // Wieże bez kafla muru (web `_destroyTowerAtRow`) to dokładnie te, których pin nie planuje.
+        let skipped: Vec<i64> = towers
+            .iter()
+            .filter(|r| !walls.contains(r))
+            .copied()
+            .collect();
+        assert_eq!(skipped, want_destroyed, "{id}: wieże bez kafla");
+
+        skipped_total += skipped.len();
+        planned_total += got.len();
+    }
+    assert!(skipped_total > 0, "brak wież bez kafla w wektorach");
+    assert!(
+        planned_total > 0,
+        "brak zaplanowanych wystrzałów w wektorach"
+    );
+}
+
+fn atk_dead_flags(st: &TurnSeqState) -> Vec<bool> {
+    st.atk.iter().map(|u| u.c.dead).collect()
 }

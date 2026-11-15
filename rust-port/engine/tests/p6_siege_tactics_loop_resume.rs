@@ -150,10 +150,20 @@ fn build(spec: &Value) -> Built {
         body: ScriptedBody {
             specs: [atk_spec, def_spec],
         },
-        tower_rows: Vec::new(),
+        tower_rows: spec["towers"]
+            .as_array()
+            .expect("towers")
+            .iter()
+            .map(|r| r.as_i64().expect("tower row"))
+            .collect(),
         pending_tower_shots: Vec::new(),
-        tower_range: 0.0,
-        wall_tile_rows: Vec::new(),
+        tower_range: 2.0,
+        wall_tile_rows: spec["wallRows"]
+            .as_array()
+            .expect("wallRows")
+            .iter()
+            .map(|r| r.as_i64().expect("wall row"))
+            .collect(),
         wall_ever_breached: spec["wallBreached"].as_bool().expect("wallBreached"),
         no_breach_cap: spec["noBreachCap"].as_i64().expect("noBreachCap"),
         move_points: [atk_mp, def_mp],
@@ -262,7 +272,12 @@ fn p6_siege_tactics_loop_resume_budget_one_on_tower_or_breach_sequence_matches_r
     let seqs = v["sequences"].as_array().expect("sequences");
     let seq = seqs
         .iter()
-        .find(|s| !s["spec"]["tower"].is_null() || s["spec"]["wallBreached"] == Value::Bool(true))
+        .find(|s| {
+            s["spec"]["towers"]
+                .as_array()
+                .is_some_and(|a| !a.is_empty())
+                || s["spec"]["wallBreached"] == Value::Bool(true)
+        })
         .expect("sekwencja z wieza lub wylomem");
 
     let mut one = build(&seq["spec"]);

@@ -5,8 +5,8 @@
 //!   fragmentu. Test sprawdza te skróty i porównuje `pick_tower_target` z wykonaniem pinu na każdym przypadku.
 //! - Liczniki niepustości: test wylicza je sam z wejść wektorów i porównuje z zapisanymi w pliku; każdy kluczowy licznik
 //!   musi być > 0 (remis HP, martwy wróg, wróg poza zasięgiem, wróg na własnym kafelku, zasięg NaN i Infinity).
-//! - Wiring: `SiegeEnv::fire_siege_towers` (produkcyjne wywołanie z `begin_turn`) wybiera cel przez `pick_tower_target`.
-//!   Odroczenie 180 ms i strzał `_singleBlow` NIE są w tym etapie (etap 2).
+//! - Wiring: `SiegeEnv::fire_siege_towers` (produkcyjne wywołanie z `begin_turn`) PLANUJE wystrzały (WIEZE-2B1).
+//!   Strzał `_singleBlow` wieży NIE jest w tym etapie (2B2).
 
 use std::collections::BTreeSet;
 
@@ -155,7 +155,10 @@ fn vectors_match_pin_pick_tower_target() {
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------
 // Wiring produkcyjnej pętli: `SiegeEnv::fire_siege_towers` (wywoływane przez `begin_turn`).
+// WIEZE-2B1: fire_siege_towers tylko PLANUJE wystrzały (odroczenie 0/180/360 ms). Cel jest wybierany w chwili
+// wystrzału (`pick_tower_for_row`, testy jednostkowe w `siege_tactics_loop.rs`). Nic nie ustawia `dead` przy planowaniu.
 
 struct CellBody {
     atk_cells: Vec<Option<(i64, i64)>>,
@@ -219,15 +222,14 @@ fn state(atk: &[f64], def: &[f64], wall_col: i64) -> TurnSeqState {
 
 fn env(
     atk_cells: Vec<Option<(i64, i64)>>,
-    tower: Option<UnitRef>,
     tower_rows: Vec<i64>,
     wall_tile_rows: Vec<i64>,
     tower_range: f64,
 ) -> SiegeEnv<CellBody> {
     SiegeEnv {
         body: CellBody { atk_cells },
-        tower,
         tower_rows,
+        pending_tower_shots: Vec::new(),
         tower_range,
         wall_tile_rows,
         wall_ever_breached: false,
@@ -241,65 +243,73 @@ fn atk_dead(st: &TurnSeqState) -> Vec<bool> {
     st.atk.iter().map(|u| u.c.dead).collect()
 }
 
+fn planned(e: &SiegeEnv<CellBody>) -> Vec<(f64, usize)> {
+    e.pending_tower_shots
+        .iter()
+        .map(|p| (p.ms, p.tower))
+        .collect()
+}
+
 #[test]
-fn tower_fires_at_nearest_in_range_attacker_with_hp_tie_break() {
-    // Wieza (5,3), zasieg 2. A0 (7,3) d=2 hp 10; A1 (6,4) d=2 hp 4 (remis, mniejsze HP); A2 (9,9) poza zasiegiem.
+fn tower_plans_one_shot_at_zero_delay_and_kills_nobody_while_planning() {
+    // Wieża (5,3), zasięg 2, A0 (7,3) w zasięgu. Planowanie: jeden wystrzał z odroczeniem 0; cel NIE ginie.
     let mut st = state(&[10.0, 4.0, 3.0], &[], 5);
     let mut e = env(
         vec![Some((7, 3)), Some((6, 4)), Some((9, 9))],
-        None,
         vec![3],
         vec![3],
         2.0,
     );
     e.fire_siege_towers(&mut st);
-    assert_eq!(atk_dead(&st), vec![false, true, false]);
+    assert_eq!(planned(&e), vec![(0.0, 0)]);
+    assert_eq!(atk_dead(&st), vec![false, false, false]);
 }
 
 #[test]
-fn tower_without_wall_tile_does_not_fire() {
-    // Brak kafla muru na wierszu wieży: web `_destroyTowerAtRow` (etap 2), tu brak strzału.
+fn tower_without_wall_tile_plans_nothing_and_kills_nobody() {
+    // Brak kafla muru na wierszu wieży: web `_destroyTowerAtRow`. Etap 2A: brak planowania, brak zmiany stanu.
     let mut st = state(&[10.0], &[], 5);
-    let mut e = env(vec![Some((7, 3))], None, vec![3], Vec::new(), 2.0);
+    let mut e = env(vec![Some((7, 3))], vec![3], Vec::new(), 2.0);
     e.fire_siege_towers(&mut st);
+    assert!(e.pending_tower_shots.is_empty());
     assert_eq!(atk_dead(&st), vec![false]);
 }
 
 #[test]
-fn unit_without_cell_is_not_targeted() {
-    // A0 najbliżej (6,3), ale bez pozycji: wieża musi wybrać A1 (7,3).
+fn unit_without_cell_is_not_targeted_even_when_nearest() {
+    // A0 najbliżej (6,3), ale bez pozycji. Planowanie zostawia obie jednostki żywe; wybór celu z pominięciem A0
+    // jest sprawdzany w chwili wystrzału w teście jednostkowym `siege_tactics_loop.rs`.
     let mut st = state(&[1.0, 10.0], &[], 5);
-    let mut e = env(vec![None, Some((7, 3))], None, vec![3], vec![3], 2.0);
+    let mut e = env(vec![None, Some((7, 3))], vec![3], vec![3], 2.0);
     e.fire_siege_towers(&mut st);
-    assert_eq!(atk_dead(&st), vec![false, true]);
+    assert_eq!(planned(&e), vec![(0.0, 0)]);
+    assert_eq!(atk_dead(&st), vec![false, false]);
 }
 
 #[test]
-fn picks_are_taken_before_placeholder_hits_land() {
-    // Wieże na wierszach 3 i 4 (kolumna 5), zasieg 2. A0 (6,4): d=2 od wieży 3, d=1 od wieży 4 -> obie wieże
-    // wybierają A0 (wybory przed trafieniami, jak w pinie: trafienie przychodzi po `_schedule`). A1 (5,6) przeżywa.
+fn two_towers_in_same_turn_plan_with_stagger_and_do_not_kill_before_callbacks() {
+    // Wieże na wierszach 3 i 4 (kolumna 5), zasięg 2. Planowanie obu wież nie zabija żadnej jednostki: trafienia
+    // przychodzą dopiero w callbackach zegara (strzał `_singleBlow` = 2B2, nie w tym etapie).
     let mut st = state(&[10.0, 5.0], &[], 5);
     let mut e = env(
         vec![Some((6, 4)), Some((5, 6))],
-        None,
         vec![3, 4],
         vec![3, 4],
         2.0,
     );
     e.fire_siege_towers(&mut st);
-    assert_eq!(atk_dead(&st), vec![true, false]);
+    assert_eq!(planned(&e), vec![(0.0, 0), (180.0, 1)]);
+    assert_eq!(atk_dead(&st), vec![false, false]);
 }
 
 #[test]
-fn placeholder_still_used_when_no_tower_rows() {
-    // Etap 1: bez `tower_rows` działa stary placeholder na wskazanej jednostce obrońcy.
+fn no_tower_rows_means_no_planning_and_no_placeholder_kill() {
+    // Bez wież (web `siegeTowers.length === 0` → `return`): brak planowania i brak martwych jednostek. Placeholder
+    // `dead = true` na obrońcy został usunięty (WIEZE-2B1), więc nawet obrońca przy pustej liście wież żyje.
     let mut st = state(&[10.0], &[5.0], 5);
-    let tower = Some(UnitRef {
-        side: BattleSide::Defender,
-        idx: 0,
-    });
-    let mut e = env(vec![Some((7, 3))], tower, Vec::new(), Vec::new(), 2.0);
+    let mut e = env(vec![Some((7, 3))], Vec::new(), Vec::new(), 2.0);
     e.fire_siege_towers(&mut st);
-    assert!(st.def[0].c.dead);
+    assert!(e.pending_tower_shots.is_empty());
     assert_eq!(atk_dead(&st), vec![false]);
+    assert!(!st.def[0].c.dead);
 }

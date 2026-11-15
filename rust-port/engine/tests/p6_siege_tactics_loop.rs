@@ -149,10 +149,20 @@ fn build(spec: &Value) -> Built {
         body: ScriptedBody {
             specs: [atk_spec, def_spec],
         },
-        tower_rows: Vec::new(),
+        tower_rows: spec["towers"]
+            .as_array()
+            .expect("towers")
+            .iter()
+            .map(|r| r.as_i64().expect("tower row"))
+            .collect(),
         pending_tower_shots: Vec::new(),
-        tower_range: 0.0,
-        wall_tile_rows: Vec::new(),
+        tower_range: 2.0,
+        wall_tile_rows: spec["wallRows"]
+            .as_array()
+            .expect("wallRows")
+            .iter()
+            .map(|r| r.as_i64().expect("wall row"))
+            .collect(),
         wall_ever_breached: spec["wallBreached"].as_bool().expect("wallBreached"),
         no_breach_cap: spec["noBreachCap"].as_i64().expect("noBreachCap"),
         move_points: [atk_mp, def_mp],
@@ -282,7 +292,22 @@ fn p6_siege_tactics_loop_vectors_cover_breach_towers_and_cap() {
         count(&|s| s["spec"]["wallBreached"] == Value::Bool(false)) > 0,
         "brak muru bez wylomu"
     );
-    assert!(count(&|s| !s["spec"]["tower"].is_null()) > 0, "brak wiezy");
+    assert!(
+        count(&|s| s["spec"]["towers"]
+            .as_array()
+            .is_some_and(|a| !a.is_empty()))
+            > 0,
+        "brak wiezy"
+    );
+    assert!(
+        count(&|s| s["spec"]["towers"].as_array().is_some_and(|a| a
+            .iter()
+            .any(|r| !s["spec"]["wallRows"]
+                .as_array()
+                .is_some_and(|w| w.contains(r)))))
+            > 0,
+        "brak wiezy bez kafla muru"
+    );
     assert!(
         count(&|s| s["expect"]["winner"] == Value::String("remis".into())) > 0,
         "brak remisu sufitu"

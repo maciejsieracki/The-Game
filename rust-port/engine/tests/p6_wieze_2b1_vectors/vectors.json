@@ -1,0 +1,5718 @@
+{
+ "source": {
+  "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+  "path": "gra/src/battle/battleScene.ts",
+  "fragmentSha256": "c7522e637a4739b31bf95c94d3d8906f8726bc1ac87afbe015ac9db4794d4f8a",
+  "lines": {
+   "destroy": [
+    4194,
+    4200
+   ],
+   "fire": [
+    4208,
+    4221
+   ]
+  }
+ },
+ "generator": "p6_wieze_2b1_gen.mjs",
+ "seed": 2231,
+ "stats": {
+  "count": 245,
+  "withTowers": 214,
+  "withUnwalled": 152,
+  "withStagger2": 60,
+  "withBothOutcomes": 126,
+  "maxPlanned": 5
+ },
+ "cases": [
+  {
+   "id": "anchor-000",
+   "towers": [],
+   "wallRows": [],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "anchor-001",
+   "towers": [
+    3
+   ],
+   "wallRows": [
+    3
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "anchor-002",
+   "towers": [
+    3,
+    4,
+    5
+   ],
+   "wallRows": [
+    3,
+    4,
+    5
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ],
+    [
+     180,
+     4
+    ],
+    [
+     360,
+     5
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "anchor-003",
+   "towers": [
+    3,
+    4,
+    5
+   ],
+   "wallRows": [
+    3,
+    5
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ],
+    [
+     180,
+     5
+    ]
+   ],
+   "destroyed": [
+    4
+   ]
+  },
+  {
+   "id": "anchor-004",
+   "towers": [
+    3,
+    4
+   ],
+   "wallRows": [],
+   "planned": [],
+   "destroyed": [
+    3,
+    4
+   ]
+  },
+  {
+   "id": "plan-000",
+   "towers": [
+    6,
+    7,
+    8,
+    2,
+    4
+   ],
+   "wallRows": [
+    1,
+    2,
+    3,
+    6,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ],
+    [
+     180,
+     8
+    ],
+    [
+     360,
+     2
+    ]
+   ],
+   "destroyed": [
+    7,
+    4
+   ]
+  },
+  {
+   "id": "plan-001",
+   "towers": [],
+   "wallRows": [],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-002",
+   "towers": [
+    7,
+    8
+   ],
+   "wallRows": [
+    3,
+    5,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ]
+   ],
+   "destroyed": [
+    7
+   ]
+  },
+  {
+   "id": "plan-003",
+   "towers": [
+    7,
+    3
+   ],
+   "wallRows": [
+    7
+   ],
+   "planned": [
+    [
+     0,
+     7
+    ]
+   ],
+   "destroyed": [
+    3
+   ]
+  },
+  {
+   "id": "plan-004",
+   "towers": [
+    7,
+    4,
+    3
+   ],
+   "wallRows": [
+    1,
+    3
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ]
+   ],
+   "destroyed": [
+    7,
+    4
+   ]
+  },
+  {
+   "id": "plan-005",
+   "towers": [
+    4
+   ],
+   "wallRows": [
+    2,
+    4,
+    5
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-006",
+   "towers": [
+    3,
+    5,
+    7,
+    6
+   ],
+   "wallRows": [
+    2,
+    3,
+    5,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ],
+    [
+     180,
+     5
+    ],
+    [
+     360,
+     7
+    ]
+   ],
+   "destroyed": [
+    6
+   ]
+  },
+  {
+   "id": "plan-007",
+   "towers": [
+    7,
+    3,
+    6,
+    5,
+    2
+   ],
+   "wallRows": [
+    2,
+    3,
+    6,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     7
+    ],
+    [
+     180,
+     3
+    ],
+    [
+     360,
+     6
+    ],
+    [
+     540,
+     2
+    ]
+   ],
+   "destroyed": [
+    5
+   ]
+  },
+  {
+   "id": "plan-008",
+   "towers": [
+    8,
+    6,
+    1
+   ],
+   "wallRows": [
+    6
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ]
+   ],
+   "destroyed": [
+    8,
+    1
+   ]
+  },
+  {
+   "id": "plan-009",
+   "towers": [
+    3,
+    6
+   ],
+   "wallRows": [
+    1,
+    2,
+    7
+   ],
+   "planned": [],
+   "destroyed": [
+    3,
+    6
+   ]
+  },
+  {
+   "id": "plan-010",
+   "towers": [
+    2
+   ],
+   "wallRows": [
+    2,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-011",
+   "towers": [
+    8,
+    5
+   ],
+   "wallRows": [
+    5,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ],
+    [
+     180,
+     5
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-012",
+   "towers": [
+    6,
+    8,
+    2,
+    4
+   ],
+   "wallRows": [
+    3,
+    6,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ],
+    [
+     180,
+     8
+    ]
+   ],
+   "destroyed": [
+    2,
+    4
+   ]
+  },
+  {
+   "id": "plan-013",
+   "towers": [
+    7,
+    4,
+    5,
+    3,
+    8
+   ],
+   "wallRows": [
+    1,
+    2,
+    5,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     7
+    ],
+    [
+     180,
+     5
+    ]
+   ],
+   "destroyed": [
+    4,
+    3,
+    8
+   ]
+  },
+  {
+   "id": "plan-014",
+   "towers": [
+    6,
+    7,
+    2,
+    3,
+    4
+   ],
+   "wallRows": [
+    2,
+    5
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ]
+   ],
+   "destroyed": [
+    6,
+    7,
+    3,
+    4
+   ]
+  },
+  {
+   "id": "plan-015",
+   "towers": [
+    4,
+    2
+   ],
+   "wallRows": [
+    2,
+    3
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ]
+   ],
+   "destroyed": [
+    4
+   ]
+  },
+  {
+   "id": "plan-016",
+   "towers": [
+    4,
+    3,
+    5,
+    7
+   ],
+   "wallRows": [
+    4,
+    5
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ],
+    [
+     180,
+     5
+    ]
+   ],
+   "destroyed": [
+    3,
+    7
+   ]
+  },
+  {
+   "id": "plan-017",
+   "towers": [
+    3,
+    7,
+    5,
+    2
+   ],
+   "wallRows": [
+    2,
+    3,
+    5,
+    6,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ],
+    [
+     180,
+     7
+    ],
+    [
+     360,
+     5
+    ],
+    [
+     540,
+     2
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-018",
+   "towers": [
+    8,
+    1
+   ],
+   "wallRows": [
+    1,
+    3,
+    4,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ],
+    [
+     180,
+     1
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-019",
+   "towers": [
+    4,
+    2,
+    8,
+    1,
+    3
+   ],
+   "wallRows": [
+    1,
+    2,
+    4,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ],
+    [
+     180,
+     2
+    ],
+    [
+     360,
+     8
+    ],
+    [
+     540,
+     1
+    ]
+   ],
+   "destroyed": [
+    3
+   ]
+  },
+  {
+   "id": "plan-020",
+   "towers": [
+    8,
+    5,
+    3,
+    4,
+    2
+   ],
+   "wallRows": [
+    3,
+    4,
+    5
+   ],
+   "planned": [
+    [
+     0,
+     5
+    ],
+    [
+     180,
+     3
+    ],
+    [
+     360,
+     4
+    ]
+   ],
+   "destroyed": [
+    8,
+    2
+   ]
+  },
+  {
+   "id": "plan-021",
+   "towers": [
+    2
+   ],
+   "wallRows": [
+    2
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-022",
+   "towers": [
+    5,
+    7,
+    1,
+    3,
+    2
+   ],
+   "wallRows": [
+    2,
+    3,
+    4
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ],
+    [
+     180,
+     2
+    ]
+   ],
+   "destroyed": [
+    5,
+    7,
+    1
+   ]
+  },
+  {
+   "id": "plan-023",
+   "towers": [
+    1,
+    3,
+    2,
+    5,
+    4
+   ],
+   "wallRows": [
+    1,
+    2,
+    3,
+    5,
+    6,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     1
+    ],
+    [
+     180,
+     3
+    ],
+    [
+     360,
+     2
+    ],
+    [
+     540,
+     5
+    ]
+   ],
+   "destroyed": [
+    4
+   ]
+  },
+  {
+   "id": "plan-024",
+   "towers": [
+    7
+   ],
+   "wallRows": [
+    2,
+    3,
+    4
+   ],
+   "planned": [],
+   "destroyed": [
+    7
+   ]
+  },
+  {
+   "id": "plan-025",
+   "towers": [
+    2,
+    6,
+    8,
+    4,
+    5
+   ],
+   "wallRows": [
+    1,
+    3,
+    4,
+    5
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ],
+    [
+     180,
+     5
+    ]
+   ],
+   "destroyed": [
+    2,
+    6,
+    8
+   ]
+  },
+  {
+   "id": "plan-026",
+   "towers": [
+    4,
+    3,
+    8,
+    5,
+    2
+   ],
+   "wallRows": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ],
+    [
+     180,
+     3
+    ],
+    [
+     360,
+     8
+    ],
+    [
+     540,
+     5
+    ],
+    [
+     720,
+     2
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-027",
+   "towers": [
+    5,
+    8,
+    7
+   ],
+   "wallRows": [
+    1,
+    4,
+    5,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     5
+    ],
+    [
+     180,
+     8
+    ]
+   ],
+   "destroyed": [
+    7
+   ]
+  },
+  {
+   "id": "plan-028",
+   "towers": [],
+   "wallRows": [
+    2,
+    4
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-029",
+   "towers": [
+    4,
+    2,
+    5
+   ],
+   "wallRows": [
+    1,
+    2,
+    5,
+    6,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ],
+    [
+     180,
+     5
+    ]
+   ],
+   "destroyed": [
+    4
+   ]
+  },
+  {
+   "id": "plan-030",
+   "towers": [
+    5,
+    2,
+    7
+   ],
+   "wallRows": [
+    2,
+    5,
+    6,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     5
+    ],
+    [
+     180,
+     2
+    ]
+   ],
+   "destroyed": [
+    7
+   ]
+  },
+  {
+   "id": "plan-031",
+   "towers": [
+    3,
+    4,
+    5,
+    2,
+    7
+   ],
+   "wallRows": [
+    3,
+    4,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ],
+    [
+     180,
+     4
+    ],
+    [
+     360,
+     7
+    ]
+   ],
+   "destroyed": [
+    5,
+    2
+   ]
+  },
+  {
+   "id": "plan-032",
+   "towers": [
+    8,
+    2
+   ],
+   "wallRows": [
+    1,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ]
+   ],
+   "destroyed": [
+    2
+   ]
+  },
+  {
+   "id": "plan-033",
+   "towers": [
+    6,
+    4
+   ],
+   "wallRows": [
+    6
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ]
+   ],
+   "destroyed": [
+    4
+   ]
+  },
+  {
+   "id": "plan-034",
+   "towers": [],
+   "wallRows": [
+    2,
+    4,
+    7
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-035",
+   "towers": [
+    5
+   ],
+   "wallRows": [
+    2,
+    3,
+    6
+   ],
+   "planned": [],
+   "destroyed": [
+    5
+   ]
+  },
+  {
+   "id": "plan-036",
+   "towers": [
+    2
+   ],
+   "wallRows": [
+    2,
+    3,
+    5
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-037",
+   "towers": [
+    5
+   ],
+   "wallRows": [],
+   "planned": [],
+   "destroyed": [
+    5
+   ]
+  },
+  {
+   "id": "plan-038",
+   "towers": [
+    7,
+    3,
+    4,
+    6
+   ],
+   "wallRows": [
+    1,
+    3,
+    4,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ],
+    [
+     180,
+     4
+    ],
+    [
+     360,
+     6
+    ]
+   ],
+   "destroyed": [
+    7
+   ]
+  },
+  {
+   "id": "plan-039",
+   "towers": [
+    3,
+    7
+   ],
+   "wallRows": [
+    3,
+    5,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ]
+   ],
+   "destroyed": [
+    7
+   ]
+  },
+  {
+   "id": "plan-040",
+   "towers": [],
+   "wallRows": [
+    1,
+    4,
+    6,
+    8
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-041",
+   "towers": [],
+   "wallRows": [
+    7,
+    8
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-042",
+   "towers": [
+    3
+   ],
+   "wallRows": [
+    3
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-043",
+   "towers": [
+    6,
+    2
+   ],
+   "wallRows": [
+    4,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ]
+   ],
+   "destroyed": [
+    2
+   ]
+  },
+  {
+   "id": "plan-044",
+   "towers": [
+    7,
+    3
+   ],
+   "wallRows": [
+    3,
+    4
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ]
+   ],
+   "destroyed": [
+    7
+   ]
+  },
+  {
+   "id": "plan-045",
+   "towers": [
+    2,
+    4,
+    8
+   ],
+   "wallRows": [
+    2,
+    4,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ],
+    [
+     180,
+     4
+    ],
+    [
+     360,
+     8
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-046",
+   "towers": [],
+   "wallRows": [
+    5,
+    7
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-047",
+   "towers": [
+    4,
+    5,
+    2
+   ],
+   "wallRows": [
+    1,
+    3,
+    4,
+    5
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ],
+    [
+     180,
+     5
+    ]
+   ],
+   "destroyed": [
+    2
+   ]
+  },
+  {
+   "id": "plan-048",
+   "towers": [
+    5
+   ],
+   "wallRows": [
+    3,
+    5,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     5
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-049",
+   "towers": [],
+   "wallRows": [
+    5
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-050",
+   "towers": [],
+   "wallRows": [
+    1,
+    3,
+    7,
+    8
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-051",
+   "towers": [],
+   "wallRows": [
+    1,
+    3
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-052",
+   "towers": [
+    5,
+    2
+   ],
+   "wallRows": [
+    2,
+    5
+   ],
+   "planned": [
+    [
+     0,
+     5
+    ],
+    [
+     180,
+     2
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-053",
+   "towers": [],
+   "wallRows": [
+    4,
+    6,
+    8
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-054",
+   "towers": [
+    1,
+    4,
+    6,
+    3
+   ],
+   "wallRows": [
+    1,
+    4
+   ],
+   "planned": [
+    [
+     0,
+     1
+    ],
+    [
+     180,
+     4
+    ]
+   ],
+   "destroyed": [
+    6,
+    3
+   ]
+  },
+  {
+   "id": "plan-055",
+   "towers": [
+    7,
+    6
+   ],
+   "wallRows": [
+    1,
+    4,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     7
+    ]
+   ],
+   "destroyed": [
+    6
+   ]
+  },
+  {
+   "id": "plan-056",
+   "towers": [
+    4,
+    8,
+    3,
+    1
+   ],
+   "wallRows": [
+    1,
+    4,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ],
+    [
+     180,
+     8
+    ],
+    [
+     360,
+     1
+    ]
+   ],
+   "destroyed": [
+    3
+   ]
+  },
+  {
+   "id": "plan-057",
+   "towers": [
+    8,
+    7,
+    6,
+    5
+   ],
+   "wallRows": [
+    3,
+    6,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ],
+    [
+     180,
+     6
+    ]
+   ],
+   "destroyed": [
+    7,
+    5
+   ]
+  },
+  {
+   "id": "plan-058",
+   "towers": [],
+   "wallRows": [
+    1,
+    3,
+    8
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-059",
+   "towers": [
+    5,
+    7,
+    4,
+    1,
+    2
+   ],
+   "wallRows": [
+    2,
+    4,
+    5,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     5
+    ],
+    [
+     180,
+     7
+    ],
+    [
+     360,
+     4
+    ],
+    [
+     540,
+     2
+    ]
+   ],
+   "destroyed": [
+    1
+   ]
+  },
+  {
+   "id": "plan-060",
+   "towers": [],
+   "wallRows": [
+    2,
+    5,
+    7
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-061",
+   "towers": [
+    5,
+    3
+   ],
+   "wallRows": [
+    2,
+    4,
+    5,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     5
+    ]
+   ],
+   "destroyed": [
+    3
+   ]
+  },
+  {
+   "id": "plan-062",
+   "towers": [
+    1
+   ],
+   "wallRows": [
+    1,
+    2,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     1
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-063",
+   "towers": [
+    4,
+    5
+   ],
+   "wallRows": [
+    3,
+    4,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ]
+   ],
+   "destroyed": [
+    5
+   ]
+  },
+  {
+   "id": "plan-064",
+   "towers": [
+    2,
+    3,
+    6,
+    1
+   ],
+   "wallRows": [
+    1,
+    2,
+    3,
+    5
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ],
+    [
+     180,
+     3
+    ],
+    [
+     360,
+     1
+    ]
+   ],
+   "destroyed": [
+    6
+   ]
+  },
+  {
+   "id": "plan-065",
+   "towers": [
+    8,
+    7,
+    5,
+    2,
+    4
+   ],
+   "wallRows": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ],
+    [
+     180,
+     5
+    ],
+    [
+     360,
+     2
+    ],
+    [
+     540,
+     4
+    ]
+   ],
+   "destroyed": [
+    7
+   ]
+  },
+  {
+   "id": "plan-066",
+   "towers": [
+    8,
+    7,
+    5,
+    1,
+    3
+   ],
+   "wallRows": [
+    3
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ]
+   ],
+   "destroyed": [
+    8,
+    7,
+    5,
+    1
+   ]
+  },
+  {
+   "id": "plan-067",
+   "towers": [
+    1
+   ],
+   "wallRows": [
+    1,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     1
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-068",
+   "towers": [
+    3,
+    7,
+    1,
+    5
+   ],
+   "wallRows": [
+    1,
+    2,
+    3
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ],
+    [
+     180,
+     1
+    ]
+   ],
+   "destroyed": [
+    7,
+    5
+   ]
+  },
+  {
+   "id": "plan-069",
+   "towers": [
+    5,
+    7
+   ],
+   "wallRows": [
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     5
+    ]
+   ],
+   "destroyed": [
+    7
+   ]
+  },
+  {
+   "id": "plan-070",
+   "towers": [
+    3,
+    8
+   ],
+   "wallRows": [
+    2,
+    3,
+    6,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ],
+    [
+     180,
+     8
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-071",
+   "towers": [
+    8,
+    3,
+    4,
+    5
+   ],
+   "wallRows": [
+    1,
+    3,
+    4,
+    5,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ],
+    [
+     180,
+     3
+    ],
+    [
+     360,
+     4
+    ],
+    [
+     540,
+     5
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-072",
+   "towers": [
+    2,
+    3,
+    1,
+    7,
+    4
+   ],
+   "wallRows": [
+    1,
+    2,
+    3,
+    5,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ],
+    [
+     180,
+     3
+    ],
+    [
+     360,
+     1
+    ],
+    [
+     540,
+     7
+    ]
+   ],
+   "destroyed": [
+    4
+   ]
+  },
+  {
+   "id": "plan-073",
+   "towers": [],
+   "wallRows": [
+    3,
+    5,
+    7
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-074",
+   "towers": [
+    1,
+    5
+   ],
+   "wallRows": [
+    1,
+    5,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     1
+    ],
+    [
+     180,
+     5
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-075",
+   "towers": [],
+   "wallRows": [
+    1
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-076",
+   "towers": [
+    5,
+    4,
+    2,
+    8
+   ],
+   "wallRows": [
+    2,
+    5,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     5
+    ],
+    [
+     180,
+     2
+    ],
+    [
+     360,
+     8
+    ]
+   ],
+   "destroyed": [
+    4
+   ]
+  },
+  {
+   "id": "plan-077",
+   "towers": [
+    3,
+    4
+   ],
+   "wallRows": [
+    1,
+    2,
+    3,
+    4,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ],
+    [
+     180,
+     4
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-078",
+   "towers": [
+    1,
+    2,
+    6
+   ],
+   "wallRows": [
+    1,
+    2,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     1
+    ],
+    [
+     180,
+     2
+    ],
+    [
+     360,
+     6
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-079",
+   "towers": [
+    4,
+    7,
+    3,
+    1,
+    6
+   ],
+   "wallRows": [
+    2,
+    4,
+    5,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ],
+    [
+     180,
+     7
+    ]
+   ],
+   "destroyed": [
+    3,
+    1,
+    6
+   ]
+  },
+  {
+   "id": "plan-080",
+   "towers": [
+    3,
+    2,
+    1,
+    8,
+    7
+   ],
+   "wallRows": [
+    3,
+    4,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ]
+   ],
+   "destroyed": [
+    2,
+    1,
+    8,
+    7
+   ]
+  },
+  {
+   "id": "plan-081",
+   "towers": [
+    5,
+    4,
+    6,
+    3
+   ],
+   "wallRows": [
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     5
+    ],
+    [
+     180,
+     4
+    ],
+    [
+     360,
+     6
+    ],
+    [
+     540,
+     3
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-082",
+   "towers": [
+    2
+   ],
+   "wallRows": [
+    2,
+    4,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-083",
+   "towers": [
+    1,
+    8
+   ],
+   "wallRows": [
+    7
+   ],
+   "planned": [],
+   "destroyed": [
+    1,
+    8
+   ]
+  },
+  {
+   "id": "plan-084",
+   "towers": [
+    1
+   ],
+   "wallRows": [
+    1,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     1
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-085",
+   "towers": [
+    5
+   ],
+   "wallRows": [
+    1,
+    3
+   ],
+   "planned": [],
+   "destroyed": [
+    5
+   ]
+  },
+  {
+   "id": "plan-086",
+   "towers": [
+    1,
+    3,
+    4,
+    8
+   ],
+   "wallRows": [
+    4,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ]
+   ],
+   "destroyed": [
+    1,
+    3,
+    8
+   ]
+  },
+  {
+   "id": "plan-087",
+   "towers": [
+    7,
+    6,
+    4
+   ],
+   "wallRows": [
+    2,
+    3,
+    4,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ],
+    [
+     180,
+     4
+    ]
+   ],
+   "destroyed": [
+    7
+   ]
+  },
+  {
+   "id": "plan-088",
+   "towers": [],
+   "wallRows": [
+    1,
+    3,
+    5,
+    7
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-089",
+   "towers": [
+    5
+   ],
+   "wallRows": [
+    1,
+    2,
+    6
+   ],
+   "planned": [],
+   "destroyed": [
+    5
+   ]
+  },
+  {
+   "id": "plan-090",
+   "towers": [
+    7,
+    3,
+    8
+   ],
+   "wallRows": [
+    3
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ]
+   ],
+   "destroyed": [
+    7,
+    8
+   ]
+  },
+  {
+   "id": "plan-091",
+   "towers": [],
+   "wallRows": [
+    4
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-092",
+   "towers": [
+    2,
+    3
+   ],
+   "wallRows": [
+    3,
+    4,
+    6,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ]
+   ],
+   "destroyed": [
+    2
+   ]
+  },
+  {
+   "id": "plan-093",
+   "towers": [
+    6,
+    8,
+    5,
+    2
+   ],
+   "wallRows": [
+    1,
+    2,
+    3
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ]
+   ],
+   "destroyed": [
+    6,
+    8,
+    5
+   ]
+  },
+  {
+   "id": "plan-094",
+   "towers": [
+    1,
+    2,
+    4,
+    3
+   ],
+   "wallRows": [
+    2,
+    3,
+    4
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ],
+    [
+     180,
+     4
+    ],
+    [
+     360,
+     3
+    ]
+   ],
+   "destroyed": [
+    1
+   ]
+  },
+  {
+   "id": "plan-095",
+   "towers": [
+    5,
+    8,
+    4,
+    6
+   ],
+   "wallRows": [
+    1,
+    6,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ],
+    [
+     180,
+     6
+    ]
+   ],
+   "destroyed": [
+    5,
+    4
+   ]
+  },
+  {
+   "id": "plan-096",
+   "towers": [
+    2,
+    6,
+    4
+   ],
+   "wallRows": [
+    2,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ],
+    [
+     180,
+     6
+    ]
+   ],
+   "destroyed": [
+    4
+   ]
+  },
+  {
+   "id": "plan-097",
+   "towers": [],
+   "wallRows": [
+    1,
+    5
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-098",
+   "towers": [
+    4
+   ],
+   "wallRows": [
+    1,
+    5
+   ],
+   "planned": [],
+   "destroyed": [
+    4
+   ]
+  },
+  {
+   "id": "plan-099",
+   "towers": [
+    1,
+    7,
+    4
+   ],
+   "wallRows": [
+    4,
+    6,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     7
+    ],
+    [
+     180,
+     4
+    ]
+   ],
+   "destroyed": [
+    1
+   ]
+  },
+  {
+   "id": "plan-100",
+   "towers": [],
+   "wallRows": [
+    6,
+    7
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-101",
+   "towers": [
+    7,
+    5,
+    6,
+    1
+   ],
+   "wallRows": [
+    1,
+    2,
+    5,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     7
+    ],
+    [
+     180,
+     5
+    ],
+    [
+     360,
+     1
+    ]
+   ],
+   "destroyed": [
+    6
+   ]
+  },
+  {
+   "id": "plan-102",
+   "towers": [
+    7,
+    5,
+    8
+   ],
+   "wallRows": [
+    1,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ]
+   ],
+   "destroyed": [
+    7,
+    5
+   ]
+  },
+  {
+   "id": "plan-103",
+   "towers": [],
+   "wallRows": [
+    2,
+    3,
+    4
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-104",
+   "towers": [
+    8,
+    2,
+    3,
+    1,
+    5
+   ],
+   "wallRows": [
+    1,
+    5,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ],
+    [
+     180,
+     1
+    ],
+    [
+     360,
+     5
+    ]
+   ],
+   "destroyed": [
+    2,
+    3
+   ]
+  },
+  {
+   "id": "plan-105",
+   "towers": [
+    8,
+    6,
+    1,
+    4
+   ],
+   "wallRows": [
+    1,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ],
+    [
+     180,
+     1
+    ]
+   ],
+   "destroyed": [
+    8,
+    4
+   ]
+  },
+  {
+   "id": "plan-106",
+   "towers": [
+    7,
+    3,
+    5,
+    6
+   ],
+   "wallRows": [
+    3,
+    5,
+    6,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     7
+    ],
+    [
+     180,
+     3
+    ],
+    [
+     360,
+     5
+    ],
+    [
+     540,
+     6
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-107",
+   "towers": [
+    3,
+    5
+   ],
+   "wallRows": [
+    2,
+    3,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ]
+   ],
+   "destroyed": [
+    5
+   ]
+  },
+  {
+   "id": "plan-108",
+   "towers": [
+    5,
+    8,
+    1,
+    4
+   ],
+   "wallRows": [
+    1,
+    2,
+    3,
+    4,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ],
+    [
+     180,
+     1
+    ],
+    [
+     360,
+     4
+    ]
+   ],
+   "destroyed": [
+    5
+   ]
+  },
+  {
+   "id": "plan-109",
+   "towers": [
+    4,
+    6
+   ],
+   "wallRows": [
+    2,
+    3,
+    4,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ],
+    [
+     180,
+     6
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-110",
+   "towers": [
+    6,
+    2,
+    1
+   ],
+   "wallRows": [
+    6
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ]
+   ],
+   "destroyed": [
+    2,
+    1
+   ]
+  },
+  {
+   "id": "plan-111",
+   "towers": [
+    3,
+    1,
+    8,
+    6,
+    4
+   ],
+   "wallRows": [
+    1,
+    3,
+    5,
+    6,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ],
+    [
+     180,
+     1
+    ],
+    [
+     360,
+     8
+    ],
+    [
+     540,
+     6
+    ]
+   ],
+   "destroyed": [
+    4
+   ]
+  },
+  {
+   "id": "plan-112",
+   "towers": [
+    7,
+    4
+   ],
+   "wallRows": [
+    2,
+    3,
+    4,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     7
+    ],
+    [
+     180,
+     4
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-113",
+   "towers": [
+    6,
+    4,
+    7,
+    2,
+    3
+   ],
+   "wallRows": [
+    2,
+    4,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ],
+    [
+     180,
+     4
+    ],
+    [
+     360,
+     2
+    ]
+   ],
+   "destroyed": [
+    7,
+    3
+   ]
+  },
+  {
+   "id": "plan-114",
+   "towers": [
+    5,
+    6,
+    4
+   ],
+   "wallRows": [
+    2,
+    4,
+    5,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     5
+    ],
+    [
+     180,
+     6
+    ],
+    [
+     360,
+     4
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-115",
+   "towers": [
+    7,
+    5
+   ],
+   "wallRows": [
+    5,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     7
+    ],
+    [
+     180,
+     5
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-116",
+   "towers": [
+    8,
+    5,
+    6,
+    7
+   ],
+   "wallRows": [
+    4,
+    6,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ],
+    [
+     180,
+     7
+    ]
+   ],
+   "destroyed": [
+    8,
+    5
+   ]
+  },
+  {
+   "id": "plan-117",
+   "towers": [],
+   "wallRows": [
+    2
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-118",
+   "towers": [
+    4,
+    3
+   ],
+   "wallRows": [
+    3,
+    6,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ]
+   ],
+   "destroyed": [
+    4
+   ]
+  },
+  {
+   "id": "plan-119",
+   "towers": [
+    1,
+    8,
+    7
+   ],
+   "wallRows": [
+    2,
+    3,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ]
+   ],
+   "destroyed": [
+    1,
+    7
+   ]
+  },
+  {
+   "id": "plan-120",
+   "towers": [
+    3,
+    2,
+    4
+   ],
+   "wallRows": [
+    5,
+    6,
+    7,
+    8
+   ],
+   "planned": [],
+   "destroyed": [
+    3,
+    2,
+    4
+   ]
+  },
+  {
+   "id": "plan-121",
+   "towers": [
+    2,
+    6,
+    5,
+    7
+   ],
+   "wallRows": [
+    1,
+    3,
+    4,
+    6,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ],
+    [
+     180,
+     7
+    ]
+   ],
+   "destroyed": [
+    2,
+    5
+   ]
+  },
+  {
+   "id": "plan-122",
+   "towers": [],
+   "wallRows": [
+    2
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-123",
+   "towers": [],
+   "wallRows": [
+    5,
+    8
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-124",
+   "towers": [
+    6,
+    5,
+    1
+   ],
+   "wallRows": [
+    1,
+    4,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ],
+    [
+     180,
+     1
+    ]
+   ],
+   "destroyed": [
+    5
+   ]
+  },
+  {
+   "id": "plan-125",
+   "towers": [
+    6,
+    8,
+    2,
+    4,
+    3
+   ],
+   "wallRows": [
+    1,
+    4,
+    5,
+    6,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ],
+    [
+     180,
+     8
+    ],
+    [
+     360,
+     4
+    ]
+   ],
+   "destroyed": [
+    2,
+    3
+   ]
+  },
+  {
+   "id": "plan-126",
+   "towers": [
+    2,
+    8,
+    6
+   ],
+   "wallRows": [
+    2,
+    3,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ],
+    [
+     180,
+     8
+    ]
+   ],
+   "destroyed": [
+    6
+   ]
+  },
+  {
+   "id": "plan-127",
+   "towers": [
+    4,
+    6,
+    5,
+    3,
+    8
+   ],
+   "wallRows": [
+    2,
+    3,
+    6,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ],
+    [
+     180,
+     3
+    ],
+    [
+     360,
+     8
+    ]
+   ],
+   "destroyed": [
+    4,
+    5
+   ]
+  },
+  {
+   "id": "plan-128",
+   "towers": [
+    7,
+    8,
+    5,
+    6
+   ],
+   "wallRows": [
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     7
+    ],
+    [
+     180,
+     8
+    ],
+    [
+     360,
+     5
+    ],
+    [
+     540,
+     6
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-129",
+   "towers": [
+    4,
+    7,
+    3,
+    1,
+    5
+   ],
+   "wallRows": [
+    6
+   ],
+   "planned": [],
+   "destroyed": [
+    4,
+    7,
+    3,
+    1,
+    5
+   ]
+  },
+  {
+   "id": "plan-130",
+   "towers": [
+    3
+   ],
+   "wallRows": [
+    1,
+    4,
+    5,
+    7
+   ],
+   "planned": [],
+   "destroyed": [
+    3
+   ]
+  },
+  {
+   "id": "plan-131",
+   "towers": [
+    6,
+    8,
+    7,
+    3
+   ],
+   "wallRows": [
+    3,
+    6,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ],
+    [
+     180,
+     8
+    ],
+    [
+     360,
+     7
+    ],
+    [
+     540,
+     3
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-132",
+   "towers": [
+    3,
+    6,
+    2,
+    8
+   ],
+   "wallRows": [
+    2,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ],
+    [
+     180,
+     8
+    ]
+   ],
+   "destroyed": [
+    3,
+    6
+   ]
+  },
+  {
+   "id": "plan-133",
+   "towers": [
+    4
+   ],
+   "wallRows": [
+    6
+   ],
+   "planned": [],
+   "destroyed": [
+    4
+   ]
+  },
+  {
+   "id": "plan-134",
+   "towers": [
+    4,
+    2,
+    7,
+    3,
+    1
+   ],
+   "wallRows": [
+    1,
+    2,
+    6,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ],
+    [
+     180,
+     7
+    ],
+    [
+     360,
+     1
+    ]
+   ],
+   "destroyed": [
+    4,
+    3
+   ]
+  },
+  {
+   "id": "plan-135",
+   "towers": [],
+   "wallRows": [
+    8
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-136",
+   "towers": [
+    4,
+    2,
+    7
+   ],
+   "wallRows": [
+    4,
+    5,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ],
+    [
+     180,
+     7
+    ]
+   ],
+   "destroyed": [
+    2
+   ]
+  },
+  {
+   "id": "plan-137",
+   "towers": [],
+   "wallRows": [
+    4,
+    5,
+    6,
+    7
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-138",
+   "towers": [
+    5
+   ],
+   "wallRows": [
+    2,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     5
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-139",
+   "towers": [
+    4,
+    5,
+    3
+   ],
+   "wallRows": [
+    3,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ]
+   ],
+   "destroyed": [
+    4,
+    5
+   ]
+  },
+  {
+   "id": "plan-140",
+   "towers": [
+    1,
+    4,
+    7,
+    2
+   ],
+   "wallRows": [
+    1,
+    2,
+    3,
+    5
+   ],
+   "planned": [
+    [
+     0,
+     1
+    ],
+    [
+     180,
+     2
+    ]
+   ],
+   "destroyed": [
+    4,
+    7
+   ]
+  },
+  {
+   "id": "plan-141",
+   "towers": [
+    4,
+    3,
+    1
+   ],
+   "wallRows": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ],
+    [
+     180,
+     3
+    ],
+    [
+     360,
+     1
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-142",
+   "towers": [
+    8
+   ],
+   "wallRows": [
+    2,
+    4,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-143",
+   "towers": [
+    8,
+    2,
+    5,
+    6,
+    1
+   ],
+   "wallRows": [
+    1,
+    2,
+    5,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ],
+    [
+     180,
+     5
+    ],
+    [
+     360,
+     6
+    ],
+    [
+     540,
+     1
+    ]
+   ],
+   "destroyed": [
+    8
+   ]
+  },
+  {
+   "id": "plan-144",
+   "towers": [
+    4,
+    7,
+    5,
+    8
+   ],
+   "wallRows": [
+    2,
+    4,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ],
+    [
+     180,
+     7
+    ]
+   ],
+   "destroyed": [
+    5,
+    8
+   ]
+  },
+  {
+   "id": "plan-145",
+   "towers": [
+    3,
+    4,
+    8
+   ],
+   "wallRows": [
+    4,
+    5
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ]
+   ],
+   "destroyed": [
+    3,
+    8
+   ]
+  },
+  {
+   "id": "plan-146",
+   "towers": [
+    5,
+    7,
+    1,
+    2,
+    6
+   ],
+   "wallRows": [
+    2,
+    5,
+    6,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     5
+    ],
+    [
+     180,
+     7
+    ],
+    [
+     360,
+     2
+    ],
+    [
+     540,
+     6
+    ]
+   ],
+   "destroyed": [
+    1
+   ]
+  },
+  {
+   "id": "plan-147",
+   "towers": [
+    3,
+    7
+   ],
+   "wallRows": [
+    3,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ],
+    [
+     180,
+     7
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-148",
+   "towers": [
+    2
+   ],
+   "wallRows": [
+    1
+   ],
+   "planned": [],
+   "destroyed": [
+    2
+   ]
+  },
+  {
+   "id": "plan-149",
+   "towers": [
+    3
+   ],
+   "wallRows": [
+    1,
+    4,
+    8
+   ],
+   "planned": [],
+   "destroyed": [
+    3
+   ]
+  },
+  {
+   "id": "plan-150",
+   "towers": [
+    6,
+    4,
+    1,
+    5,
+    3
+   ],
+   "wallRows": [
+    1,
+    3,
+    5,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ],
+    [
+     180,
+     1
+    ],
+    [
+     360,
+     5
+    ],
+    [
+     540,
+     3
+    ]
+   ],
+   "destroyed": [
+    4
+   ]
+  },
+  {
+   "id": "plan-151",
+   "towers": [
+    4,
+    1,
+    7,
+    6,
+    8
+   ],
+   "wallRows": [
+    4,
+    5,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ],
+    [
+     180,
+     7
+    ],
+    [
+     360,
+     8
+    ]
+   ],
+   "destroyed": [
+    1,
+    6
+   ]
+  },
+  {
+   "id": "plan-152",
+   "towers": [
+    1
+   ],
+   "wallRows": [
+    1,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     1
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-153",
+   "towers": [
+    6,
+    8,
+    1
+   ],
+   "wallRows": [
+    3,
+    7
+   ],
+   "planned": [],
+   "destroyed": [
+    6,
+    8,
+    1
+   ]
+  },
+  {
+   "id": "plan-154",
+   "towers": [
+    4,
+    5
+   ],
+   "wallRows": [
+    4,
+    5,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ],
+    [
+     180,
+     5
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-155",
+   "towers": [
+    7,
+    8,
+    1,
+    3,
+    4
+   ],
+   "wallRows": [
+    1,
+    3,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     7
+    ],
+    [
+     180,
+     8
+    ],
+    [
+     360,
+     1
+    ],
+    [
+     540,
+     3
+    ]
+   ],
+   "destroyed": [
+    4
+   ]
+  },
+  {
+   "id": "plan-156",
+   "towers": [
+    2,
+    8,
+    4,
+    7
+   ],
+   "wallRows": [
+    2,
+    6,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ],
+    [
+     180,
+     7
+    ]
+   ],
+   "destroyed": [
+    8,
+    4
+   ]
+  },
+  {
+   "id": "plan-157",
+   "towers": [
+    3,
+    1,
+    2
+   ],
+   "wallRows": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ],
+    [
+     180,
+     1
+    ],
+    [
+     360,
+     2
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-158",
+   "towers": [
+    2
+   ],
+   "wallRows": [
+    3
+   ],
+   "planned": [],
+   "destroyed": [
+    2
+   ]
+  },
+  {
+   "id": "plan-159",
+   "towers": [
+    4
+   ],
+   "wallRows": [
+    4,
+    5
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-160",
+   "towers": [
+    3,
+    1,
+    4
+   ],
+   "wallRows": [
+    3,
+    5
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ]
+   ],
+   "destroyed": [
+    1,
+    4
+   ]
+  },
+  {
+   "id": "plan-161",
+   "towers": [
+    1,
+    2,
+    7,
+    6
+   ],
+   "wallRows": [
+    2,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ],
+    [
+     180,
+     6
+    ]
+   ],
+   "destroyed": [
+    1,
+    7
+   ]
+  },
+  {
+   "id": "plan-162",
+   "towers": [
+    4
+   ],
+   "wallRows": [
+    1,
+    2,
+    4,
+    6,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-163",
+   "towers": [
+    6,
+    1,
+    2,
+    4
+   ],
+   "wallRows": [
+    1,
+    2,
+    6,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ],
+    [
+     180,
+     1
+    ],
+    [
+     360,
+     2
+    ]
+   ],
+   "destroyed": [
+    4
+   ]
+  },
+  {
+   "id": "plan-164",
+   "towers": [
+    6,
+    2,
+    1
+   ],
+   "wallRows": [
+    1,
+    2,
+    4,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ],
+    [
+     180,
+     2
+    ],
+    [
+     360,
+     1
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-165",
+   "towers": [
+    2,
+    4
+   ],
+   "wallRows": [
+    1,
+    5,
+    6
+   ],
+   "planned": [],
+   "destroyed": [
+    2,
+    4
+   ]
+  },
+  {
+   "id": "plan-166",
+   "towers": [
+    6,
+    3,
+    2,
+    8,
+    5
+   ],
+   "wallRows": [
+    3,
+    5,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ],
+    [
+     180,
+     8
+    ],
+    [
+     360,
+     5
+    ]
+   ],
+   "destroyed": [
+    6,
+    2
+   ]
+  },
+  {
+   "id": "plan-167",
+   "towers": [
+    8,
+    4,
+    6,
+    5
+   ],
+   "wallRows": [
+    1,
+    4,
+    5,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ],
+    [
+     180,
+     4
+    ],
+    [
+     360,
+     5
+    ]
+   ],
+   "destroyed": [
+    6
+   ]
+  },
+  {
+   "id": "plan-168",
+   "towers": [],
+   "wallRows": [
+    2,
+    6
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-169",
+   "towers": [
+    7,
+    6
+   ],
+   "wallRows": [
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     7
+    ]
+   ],
+   "destroyed": [
+    6
+   ]
+  },
+  {
+   "id": "plan-170",
+   "towers": [
+    3,
+    2
+   ],
+   "wallRows": [
+    3,
+    6,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ]
+   ],
+   "destroyed": [
+    2
+   ]
+  },
+  {
+   "id": "plan-171",
+   "towers": [
+    3
+   ],
+   "wallRows": [
+    5
+   ],
+   "planned": [],
+   "destroyed": [
+    3
+   ]
+  },
+  {
+   "id": "plan-172",
+   "towers": [
+    4,
+    8,
+    7,
+    2
+   ],
+   "wallRows": [
+    1,
+    2,
+    4,
+    6,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ],
+    [
+     180,
+     7
+    ],
+    [
+     360,
+     2
+    ]
+   ],
+   "destroyed": [
+    8
+   ]
+  },
+  {
+   "id": "plan-173",
+   "towers": [
+    8
+   ],
+   "wallRows": [
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-174",
+   "towers": [
+    2,
+    6,
+    8
+   ],
+   "wallRows": [
+    3
+   ],
+   "planned": [],
+   "destroyed": [
+    2,
+    6,
+    8
+   ]
+  },
+  {
+   "id": "plan-175",
+   "towers": [
+    3,
+    5,
+    4,
+    6
+   ],
+   "wallRows": [
+    4,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ],
+    [
+     180,
+     6
+    ]
+   ],
+   "destroyed": [
+    3,
+    5
+   ]
+  },
+  {
+   "id": "plan-176",
+   "towers": [
+    8,
+    4,
+    2,
+    5,
+    7
+   ],
+   "wallRows": [
+    5,
+    6,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ],
+    [
+     180,
+     5
+    ],
+    [
+     360,
+     7
+    ]
+   ],
+   "destroyed": [
+    4,
+    2
+   ]
+  },
+  {
+   "id": "plan-177",
+   "towers": [],
+   "wallRows": [
+    6,
+    7
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-178",
+   "towers": [
+    4,
+    8
+   ],
+   "wallRows": [
+    1,
+    4,
+    5,
+    6,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ],
+    [
+     180,
+     8
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-179",
+   "towers": [
+    8,
+    1,
+    6,
+    2
+   ],
+   "wallRows": [
+    1,
+    6,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ],
+    [
+     180,
+     1
+    ],
+    [
+     360,
+     6
+    ]
+   ],
+   "destroyed": [
+    2
+   ]
+  },
+  {
+   "id": "plan-180",
+   "towers": [
+    5,
+    3,
+    8
+   ],
+   "wallRows": [
+    3,
+    5
+   ],
+   "planned": [
+    [
+     0,
+     5
+    ],
+    [
+     180,
+     3
+    ]
+   ],
+   "destroyed": [
+    8
+   ]
+  },
+  {
+   "id": "plan-181",
+   "towers": [
+    5,
+    4
+   ],
+   "wallRows": [
+    1,
+    2,
+    4,
+    5,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     5
+    ],
+    [
+     180,
+     4
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-182",
+   "towers": [
+    2,
+    3
+   ],
+   "wallRows": [
+    2,
+    3,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ],
+    [
+     180,
+     3
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-183",
+   "towers": [
+    4
+   ],
+   "wallRows": [
+    1,
+    4,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-184",
+   "towers": [
+    2,
+    3,
+    6
+   ],
+   "wallRows": [
+    1,
+    3,
+    4,
+    5
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ]
+   ],
+   "destroyed": [
+    2,
+    6
+   ]
+  },
+  {
+   "id": "plan-185",
+   "towers": [
+    4,
+    2,
+    5,
+    8
+   ],
+   "wallRows": [
+    4,
+    5,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ],
+    [
+     180,
+     5
+    ]
+   ],
+   "destroyed": [
+    2,
+    8
+   ]
+  },
+  {
+   "id": "plan-186",
+   "towers": [
+    7
+   ],
+   "wallRows": [
+    1,
+    3,
+    4,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     7
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-187",
+   "towers": [
+    8,
+    2,
+    4
+   ],
+   "wallRows": [
+    4,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ],
+    [
+     180,
+     4
+    ]
+   ],
+   "destroyed": [
+    2
+   ]
+  },
+  {
+   "id": "plan-188",
+   "towers": [
+    7,
+    2,
+    5,
+    1,
+    6
+   ],
+   "wallRows": [
+    1,
+    5,
+    6,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     7
+    ],
+    [
+     180,
+     5
+    ],
+    [
+     360,
+     1
+    ],
+    [
+     540,
+     6
+    ]
+   ],
+   "destroyed": [
+    2
+   ]
+  },
+  {
+   "id": "plan-189",
+   "towers": [],
+   "wallRows": [
+    3,
+    6
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-190",
+   "towers": [
+    8
+   ],
+   "wallRows": [
+    2,
+    3,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-191",
+   "towers": [
+    1,
+    3,
+    4
+   ],
+   "wallRows": [
+    1,
+    2,
+    3,
+    4,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     1
+    ],
+    [
+     180,
+     3
+    ],
+    [
+     360,
+     4
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-192",
+   "towers": [
+    1
+   ],
+   "wallRows": [
+    1,
+    3,
+    5
+   ],
+   "planned": [
+    [
+     0,
+     1
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-193",
+   "towers": [
+    3,
+    1,
+    8,
+    4,
+    6
+   ],
+   "wallRows": [
+    1,
+    2,
+    3,
+    4,
+    6,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ],
+    [
+     180,
+     1
+    ],
+    [
+     360,
+     8
+    ],
+    [
+     540,
+     4
+    ],
+    [
+     720,
+     6
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-194",
+   "towers": [
+    3,
+    5,
+    4,
+    2,
+    8
+   ],
+   "wallRows": [
+    2,
+    3,
+    5,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ],
+    [
+     180,
+     5
+    ],
+    [
+     360,
+     2
+    ],
+    [
+     540,
+     8
+    ]
+   ],
+   "destroyed": [
+    4
+   ]
+  },
+  {
+   "id": "plan-195",
+   "towers": [
+    7,
+    6
+   ],
+   "wallRows": [
+    1,
+    2,
+    4,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ]
+   ],
+   "destroyed": [
+    7
+   ]
+  },
+  {
+   "id": "plan-196",
+   "towers": [
+    8,
+    5,
+    1,
+    7,
+    3
+   ],
+   "wallRows": [
+    1,
+    4,
+    5,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     5
+    ],
+    [
+     180,
+     1
+    ],
+    [
+     360,
+     7
+    ]
+   ],
+   "destroyed": [
+    8,
+    3
+   ]
+  },
+  {
+   "id": "plan-197",
+   "towers": [
+    3
+   ],
+   "wallRows": [
+    3,
+    4
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-198",
+   "towers": [
+    1,
+    6
+   ],
+   "wallRows": [
+    2,
+    7
+   ],
+   "planned": [],
+   "destroyed": [
+    1,
+    6
+   ]
+  },
+  {
+   "id": "plan-199",
+   "towers": [
+    1,
+    2,
+    6,
+    4,
+    7
+   ],
+   "wallRows": [
+    1,
+    3,
+    4,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     1
+    ],
+    [
+     180,
+     6
+    ],
+    [
+     360,
+     4
+    ]
+   ],
+   "destroyed": [
+    2,
+    7
+   ]
+  },
+  {
+   "id": "plan-200",
+   "towers": [
+    5
+   ],
+   "wallRows": [
+    2,
+    4,
+    5,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     5
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-201",
+   "towers": [
+    2,
+    8
+   ],
+   "wallRows": [
+    1,
+    4,
+    5
+   ],
+   "planned": [],
+   "destroyed": [
+    2,
+    8
+   ]
+  },
+  {
+   "id": "plan-202",
+   "towers": [
+    7,
+    1
+   ],
+   "wallRows": [
+    2
+   ],
+   "planned": [],
+   "destroyed": [
+    7,
+    1
+   ]
+  },
+  {
+   "id": "plan-203",
+   "towers": [],
+   "wallRows": [
+    6
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-204",
+   "towers": [
+    2
+   ],
+   "wallRows": [
+    2,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-205",
+   "towers": [],
+   "wallRows": [
+    4,
+    5
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-206",
+   "towers": [
+    3,
+    2
+   ],
+   "wallRows": [
+    1,
+    3,
+    5,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ]
+   ],
+   "destroyed": [
+    2
+   ]
+  },
+  {
+   "id": "plan-207",
+   "towers": [
+    8,
+    4,
+    3,
+    1,
+    2
+   ],
+   "wallRows": [
+    1,
+    6,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ],
+    [
+     180,
+     1
+    ]
+   ],
+   "destroyed": [
+    4,
+    3,
+    2
+   ]
+  },
+  {
+   "id": "plan-208",
+   "towers": [
+    2,
+    6,
+    4,
+    8
+   ],
+   "wallRows": [
+    1,
+    2,
+    3,
+    6,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ],
+    [
+     180,
+     6
+    ],
+    [
+     360,
+     8
+    ]
+   ],
+   "destroyed": [
+    4
+   ]
+  },
+  {
+   "id": "plan-209",
+   "towers": [
+    5,
+    1
+   ],
+   "wallRows": [
+    1,
+    2,
+    4,
+    5,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     5
+    ],
+    [
+     180,
+     1
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-210",
+   "towers": [
+    2,
+    4
+   ],
+   "wallRows": [],
+   "planned": [],
+   "destroyed": [
+    2,
+    4
+   ]
+  },
+  {
+   "id": "plan-211",
+   "towers": [
+    2,
+    7
+   ],
+   "wallRows": [
+    1,
+    2,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ]
+   ],
+   "destroyed": [
+    7
+   ]
+  },
+  {
+   "id": "plan-212",
+   "towers": [
+    5
+   ],
+   "wallRows": [
+    7,
+    8
+   ],
+   "planned": [],
+   "destroyed": [
+    5
+   ]
+  },
+  {
+   "id": "plan-213",
+   "towers": [
+    6,
+    5,
+    8
+   ],
+   "wallRows": [
+    1,
+    3,
+    5,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     5
+    ],
+    [
+     180,
+     8
+    ]
+   ],
+   "destroyed": [
+    6
+   ]
+  },
+  {
+   "id": "plan-214",
+   "towers": [],
+   "wallRows": [
+    7
+   ],
+   "planned": [],
+   "destroyed": []
+  },
+  {
+   "id": "plan-215",
+   "towers": [
+    2,
+    5,
+    1
+   ],
+   "wallRows": [
+    1,
+    2,
+    3,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ],
+    [
+     180,
+     1
+    ]
+   ],
+   "destroyed": [
+    5
+   ]
+  },
+  {
+   "id": "plan-216",
+   "towers": [
+    2,
+    4,
+    3
+   ],
+   "wallRows": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ],
+    [
+     180,
+     4
+    ],
+    [
+     360,
+     3
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-217",
+   "towers": [
+    4
+   ],
+   "wallRows": [
+    4,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-218",
+   "towers": [
+    8,
+    6
+   ],
+   "wallRows": [
+    2,
+    3,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ]
+   ],
+   "destroyed": [
+    6
+   ]
+  },
+  {
+   "id": "plan-219",
+   "towers": [
+    2,
+    6,
+    5,
+    7
+   ],
+   "wallRows": [
+    1,
+    2,
+    4,
+    5,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     2
+    ],
+    [
+     180,
+     5
+    ],
+    [
+     360,
+     7
+    ]
+   ],
+   "destroyed": [
+    6
+   ]
+  },
+  {
+   "id": "plan-220",
+   "towers": [
+    3
+   ],
+   "wallRows": [
+    1,
+    3,
+    4,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-221",
+   "towers": [
+    4,
+    5,
+    1,
+    8
+   ],
+   "wallRows": [
+    1,
+    4,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ],
+    [
+     180,
+     1
+    ],
+    [
+     360,
+     8
+    ]
+   ],
+   "destroyed": [
+    5
+   ]
+  },
+  {
+   "id": "plan-222",
+   "towers": [
+    2,
+    8
+   ],
+   "wallRows": [
+    3,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ]
+   ],
+   "destroyed": [
+    2
+   ]
+  },
+  {
+   "id": "plan-223",
+   "towers": [
+    7,
+    5,
+    8,
+    2
+   ],
+   "wallRows": [
+    2,
+    6,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ],
+    [
+     180,
+     2
+    ]
+   ],
+   "destroyed": [
+    7,
+    5
+   ]
+  },
+  {
+   "id": "plan-224",
+   "towers": [
+    7,
+    1
+   ],
+   "wallRows": [
+    1,
+    2,
+    3,
+    4,
+    6,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     7
+    ],
+    [
+     180,
+     1
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-225",
+   "towers": [
+    5,
+    7,
+    6,
+    8
+   ],
+   "wallRows": [
+    4,
+    6,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     7
+    ],
+    [
+     180,
+     6
+    ]
+   ],
+   "destroyed": [
+    5,
+    8
+   ]
+  },
+  {
+   "id": "plan-226",
+   "towers": [
+    6,
+    3
+   ],
+   "wallRows": [
+    3,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     3
+    ]
+   ],
+   "destroyed": [
+    6
+   ]
+  },
+  {
+   "id": "plan-227",
+   "towers": [
+    2,
+    6,
+    1,
+    8,
+    5
+   ],
+   "wallRows": [
+    1,
+    6,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ],
+    [
+     180,
+     1
+    ],
+    [
+     360,
+     8
+    ]
+   ],
+   "destroyed": [
+    2,
+    5
+   ]
+  },
+  {
+   "id": "plan-228",
+   "towers": [
+    7
+   ],
+   "wallRows": [
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     7
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-229",
+   "towers": [
+    4,
+    3,
+    5,
+    7,
+    2
+   ],
+   "wallRows": [
+    4,
+    5
+   ],
+   "planned": [
+    [
+     0,
+     4
+    ],
+    [
+     180,
+     5
+    ]
+   ],
+   "destroyed": [
+    3,
+    7,
+    2
+   ]
+  },
+  {
+   "id": "plan-230",
+   "towers": [
+    7
+   ],
+   "wallRows": [
+    1
+   ],
+   "planned": [],
+   "destroyed": [
+    7
+   ]
+  },
+  {
+   "id": "plan-231",
+   "towers": [
+    6,
+    4,
+    1,
+    8,
+    5
+   ],
+   "wallRows": [
+    1,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     1
+    ],
+    [
+     180,
+     8
+    ]
+   ],
+   "destroyed": [
+    6,
+    4,
+    5
+   ]
+  },
+  {
+   "id": "plan-232",
+   "towers": [
+    6
+   ],
+   "wallRows": [
+    6
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-233",
+   "towers": [
+    8,
+    1
+   ],
+   "wallRows": [
+    3,
+    5,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ]
+   ],
+   "destroyed": [
+    1
+   ]
+  },
+  {
+   "id": "plan-234",
+   "towers": [
+    6,
+    7,
+    4,
+    8
+   ],
+   "wallRows": [
+    2,
+    3,
+    4,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ],
+    [
+     180,
+     4
+    ]
+   ],
+   "destroyed": [
+    7,
+    8
+   ]
+  },
+  {
+   "id": "plan-235",
+   "towers": [
+    1
+   ],
+   "wallRows": [
+    1,
+    3,
+    4
+   ],
+   "planned": [
+    [
+     0,
+     1
+    ]
+   ],
+   "destroyed": []
+  },
+  {
+   "id": "plan-236",
+   "towers": [
+    8,
+    4,
+    3,
+    5,
+    7
+   ],
+   "wallRows": [
+    2,
+    4,
+    6,
+    7,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     8
+    ],
+    [
+     180,
+     4
+    ],
+    [
+     360,
+     7
+    ]
+   ],
+   "destroyed": [
+    3,
+    5
+   ]
+  },
+  {
+   "id": "plan-237",
+   "towers": [
+    2,
+    6,
+    4
+   ],
+   "wallRows": [
+    4,
+    6
+   ],
+   "planned": [
+    [
+     0,
+     6
+    ],
+    [
+     180,
+     4
+    ]
+   ],
+   "destroyed": [
+    2
+   ]
+  },
+  {
+   "id": "plan-238",
+   "towers": [
+    6,
+    5,
+    8,
+    7,
+    1
+   ],
+   "wallRows": [
+    5,
+    7
+   ],
+   "planned": [
+    [
+     0,
+     5
+    ],
+    [
+     180,
+     7
+    ]
+   ],
+   "destroyed": [
+    6,
+    8,
+    1
+   ]
+  },
+  {
+   "id": "plan-239",
+   "towers": [
+    5,
+    1
+   ],
+   "wallRows": [
+    1,
+    3,
+    8
+   ],
+   "planned": [
+    [
+     0,
+     1
+    ]
+   ],
+   "destroyed": [
+    5
+   ]
+  }
+ ]
+}

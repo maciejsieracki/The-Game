@@ -985,3 +985,117 @@ impl<R: RollSource> ProdBody<R> {
         self.counters.push(rec);
     }
 }
+
+#[cfg(test)]
+mod tower_target_tests {
+    //! WIEZE-2B1: wybór celu wieży odbywa się W CHWILI WYSTRZAŁU (web `_fireOneTower` → `pickTowerTarget`), a nie przy
+    //! planowaniu. Testy sprawdzają `pick_tower_for_row` na stanie z chwili wystrzału.
+    use super::*;
+    use crate::domain::siege_tactics_turnseq::SeqUnit;
+    use std::collections::BTreeSet;
+
+    struct Cells(Vec<Option<(i64, i64)>>);
+
+    impl LoopBody for Cells {
+        fn start(&mut self, _unit: UnitRef, _st: &TurnSeqState) -> f64 {
+            0.0
+        }
+        fn complete(&mut self, _unit: UnitRef, _st: &mut TurnSeqState) {}
+        fn unit_cell(&self, unit: UnitRef) -> Option<(i64, i64)> {
+            match unit.side {
+                BattleSide::Attacker => self.0.get(unit.idx).copied().flatten(),
+                BattleSide::Defender => None,
+            }
+        }
+    }
+
+    fn cu(hp: f64) -> CombatUnit {
+        CombatUnit {
+            hp,
+            morale: 100.0,
+            flee_morale: 0.0,
+            move_left: 0.0,
+            never_rout: false,
+            dead: false,
+            fading_out: false,
+            routed: false,
+            removed: false,
+            acted: false,
+        }
+    }
+
+    fn state(hps: &[f64]) -> TurnSeqState {
+        TurnSeqState {
+            atk: hps
+                .iter()
+                .enumerate()
+                .map(|(i, &hp)| SeqUnit {
+                    id: i as u64,
+                    c: cu(hp),
+                })
+                .collect(),
+            def: Vec::new(),
+            turn_order: Vec::new(),
+            turn_idx: 0,
+            round_no: 0,
+            siege_wall_col: 5,
+            manual_mode: false,
+            player_side: BattleSide::Attacker,
+            finished: false,
+            awaiting_orders: false,
+            auto_battle_suspended: false,
+            busy: false,
+            auto_batch_planning: false,
+            queued_order_ids: BTreeSet::new(),
+        }
+    }
+
+    fn env(cells: Vec<Option<(i64, i64)>>) -> SiegeEnv<Cells> {
+        SiegeEnv {
+            body: Cells(cells),
+            tower_rows: vec![3],
+            pending_tower_shots: Vec::new(),
+            tower_range: 2.0,
+            wall_tile_rows: vec![3],
+            wall_ever_breached: false,
+            no_breach_cap: 0,
+            move_points: [Vec::new(), Vec::new()],
+            morale_max: [Vec::new(), Vec::new()],
+        }
+    }
+
+    #[test]
+    fn nearest_in_range_wins_with_hp_tie_break() {
+        // Wieża (5,3), zasięg 2. A0 (7,3) d=2 hp 10; A1 (6,4) d=2 hp 4 (remis, mniejsze HP wygrywa); A2 poza zasięgiem.
+        let st = state(&[10.0, 4.0, 3.0]);
+        let e = env(vec![Some((7, 3)), Some((6, 4)), Some((9, 9))]);
+        assert_eq!(e.pick_tower_for_row(&st, 3), Some(1));
+    }
+
+    #[test]
+    fn unit_without_cell_is_skipped() {
+        // A0 najbliżej (6,3), ale bez pozycji: cel to A1 (7,3).
+        let st = state(&[1.0, 10.0]);
+        let e = env(vec![None, Some((7, 3))]);
+        assert_eq!(e.pick_tower_for_row(&st, 3), Some(1));
+    }
+
+    #[test]
+    fn target_is_chosen_at_shot_time_not_at_planning() {
+        // Planowanie nie wybiera celu: stan zmieniony PO planowaniu (A1 pada) wpływa na wybór w chwili wystrzału.
+        let mut st = state(&[10.0, 4.0]);
+        let mut e = env(vec![Some((7, 3)), Some((6, 4))]);
+        e.fire_siege_towers(&mut st);
+        assert_eq!(e.pending_tower_shots.len(), 1);
+        assert_eq!(e.pick_tower_for_row(&st, 3), Some(1));
+        st.atk[1].c.dead = true;
+        assert_eq!(e.pick_tower_for_row(&st, 3), Some(0));
+    }
+
+    #[test]
+    fn no_target_in_range_returns_none() {
+        let st = state(&[10.0]);
+        let e = env(vec![Some((9, 9))]);
+        assert_eq!(e.pick_tower_for_row(&st, 3), None);
+    }
+}
