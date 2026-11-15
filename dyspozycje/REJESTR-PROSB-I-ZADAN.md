@@ -10230,3 +10230,9 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 
 ### Start 2026-11-15 ~23:30 UTC — R-WEB-AI-UPKEEP-ONOFF-MEASURE-100T-Q1 (#415, wf_db3c80c4-921, Haiku, cand c50b64e20)
 - Pomiar ON/OFF bramki utrzymania armii AI na 100 turach × 2 ziarna (tylko pomiar, flaga zostaje OFF). Wynik → ABC rano; flagi nie włączam bez właściciela.
+
+### FALA 756 — R-WEB-BATTLE-MANUAL-ORDERS-FULL-MOVE-REPRO-Q1 (#431) — WDROŻONE NA ROBOCZĄ (2026-11-15)
+- main 1afc302bc, ROBOCZA MD5 6550bf16 (Raw = manifest; sidecary zgodne). FC PASS-WITH-NOTES (kandydat 703cc4ca4, raport 6972825ae; runda 1/5, Haiku; Operator BLOCK bez kodu, pracę wykonała Obrona). Refs `refs/keep/R-WEB-MANUAL-ORD-REPRO-r1-{eval,obrona,fc}`. Bramki: logic 213/213, vite OK; FC: 5 bramek, tsc 0.
+- Dostarczono: sonda sceny `battle-manual-orders-full-move-repro-*` (tylko gra/tools). Wyniki (Hastati 6 vs 6, ziarna 1–3): marsz ręczny 1,00 heksa/aktywację (ZGODNE z decyzją A); ruch+cios w tej samej rundzie: AUTO 5/60, ręczne 0/60; przepadek ok. 2 MP po kroku — NIE ROZSTRZYGNIĘTE.
+- DO ZAPYTANIA RANO (ABC): ruch ręczny po kroku — A (obecne) / B (pełny ruch jak AUTO) / C (pełny ruch w marszu, cios na końcu ruchu; rekomendacja).
+- NIE ZMIERZONO: Wojownik (MP 4), armia mieszana, powtórzenia ziaren, zachowanie live; w produkcyjnym `_activateUnit` (battleScene.ts ~6276) gałąź doktryny AI pomijana przy `_manualMode=true` — wymaga weryfikacji na żywo.
