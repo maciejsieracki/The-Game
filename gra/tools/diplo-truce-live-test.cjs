@@ -11,7 +11,8 @@
  *  L1. Akceptacja rozejmu (REALNA ścieżka applyProposalOutcome): status pary 'pokoj',
  *      truceUntilTurn = tura + 5, peaceUntilTurn = null (rozejm nie zakłada blokady DOW).
  *  L2. Okno rozejmu: w turach przed wygaśnięciem status nadal 'pokoj'; w turze wygaśnięcia
- *      status wraca do 'wojna', truceUntilTurn czyszczony, BEZ flagi agresora i BEZ kary
+ *      (R-WEB-TEST-DEBT-BASE-RED-FALA741-Q1, decyzja #169) AI-adresat od razu rozstrzyga: zgoda = pokój stały
+ *      (status 'pokoj'), truceUntilTurn czyszczony, BEZ flagi agresora i BEZ kary
  *      (brak 'zlamanie_paktu_nap' w zdarzeniach Wiarygodności gracza).
  *  L3. Złamanie: rozejm 5 tur, wypowiedzenie wojny w oknie (REALNE ownerDeclareWarOn) →
  *      kara 'zlamanie_paktu_nap' w Wiarygodności gracza + flaga agresora dla pary,
@@ -192,9 +193,9 @@ async function main() {
     // R-WEB-TEST-DEBT-BASE-RED-FALA741-Q1 (klasa A, dowód: diplomacy-peace-lock.ts truceEndTickPair + truceEndAiAccepts,
     // decyzja #169 DIPLO-TRUCE-IMPL): po końcu rozejmu NIE ma już natychmiastowej wojny. AI-adresat rozstrzyga od razu:
     // zgoda (proponujący ≥20% słabszy militarnie) = pokój stały (status zostaje 'pokoj'), brak zgody = wojna.
-    // Test akceptuje obie gałęzie, ale każda musi być bez kary i bez flagi agresora (L2c-L2e).
-    // Scenariusz zasiany (playtest): gracz ma >=20% mniej armii niż AI, więc truceEndAiAccepts = zgoda -> pokój stały.
-    // Mutacja „natychmiast wojna przy wygaśnięciu” (dawne zachowanie) daje status 'wojna' i czerwieni ten test.
+    // Ten test pokrywa WYŁĄCZNIE gałąź zgody (pokój stały): asercja wymaga 'pokoj'. Gałąź odmowy (wojna po
+    // wygaśnięciu) NIE jest tu testowana. Scenariusz zasiany (playtest): gracz ma >=20% mniej armii niż AI,
+    // więc truceEndAiAccepts = zgoda -> pokój stały. Mutacja „natychmiast wojna przy wygaśnięciu” NIE_ZMIERZONO.
     assert('L2b w turze wygaśnięcia rozejm się kończy: zgoda AI -> pokój stały (status pokoj, bez wojny)', sExp.turn === t0 + 5 && sExp.status === 'pokoj', sExp);
     assert('L2c truceUntilTurn wyczyszczony', sExp.truceUntilTurn === null, sExp);
     const flags = await page.evaluate(() => window.__truceTestDebug.aggressorFlags());
