@@ -1504,3 +1504,17 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Integracja:** merge `4a686b902` (parity `fffc5e7c6` + FC `0e1430961`), zmiany tylko w ścieżkach P4-29 (testy `text_*`, dokument, dowody); P4-34 nietknięte. Pełne testy na zmergowanym drzewie: `cargo test --all-targets` EXIT=0, 478 passed, 0 failed. FF `rust-port/parity-v2` → `4a686b902`.
 - **Zabezpieczenie:** refs/keep `P4-29-integ`, gałąź `rust-port-wip/R-RUSTPORT-P4-29-TEXT-FONTS-Q1-integ`. Worktrees usunięte.
 - **Proces (P-1):** kod P4-29 (`51839a356`, `6cee8e46c`, `283f8634c`) trafił na parity przed Evaluatorem i FC, jak P4-31 i P4-34.
+
+## Przebieg (15.11, P4-1A VIEW-TYPES — crate view-model, Opus 5.5)
+- **Operator impl (`86032cd28`) i pomiary (`011de8664`): PASS-WITH-NOTES.** Typy §3 w crate `rust-port/view-model`, serde camelCase, 63 testy. Zmierzony rozmiar snapshotu: 3000 heksów ≈ 0,75–0,91 MB, 8000 heksów ≈ 2,0–2,4 MB (251–304 B/heks). Arytmetyka z kontraktu §4.1 (50–100 B/heks) była zaniżona 3–4 razy; liczby wpisano do P4-1 §4.1.
+- **Evaluator r1 (`b54dffb9a`): FAIL, Z1.** 21 mutantów walidatora przeżywało (kontrole per pole f64/u8 i Option), test `floats_everywhere` obejmował 9 z 23 pól.
+- **Obrona r1 (`fb3d1b95b`): PASS.** Dodano tabelaryczne testy NaN/Inf dla wszystkich 23 pól f64 i Option<f64>, testy granic u8, fikstury pinu z przeliczonym SHA. Mutanty: 93/93 zabite, 0 przeżyło.
+- **FC r1 (`f3dab5fda`): PASS-WITH-NOTES, 0 decyzji dla właściciela.**
+- **Integracja:** fast-forward `rust-port/parity-v2` z `4a686b902` na `a01363d5f` (zakres: `rust-port/view-model/**` i katalog runu). Testy crate'u na zintegrowanym drzewie: `cargo test --all-targets --offline` EXIT=0, 68 passed, 0 failed, 0 ignored.
+- **Decyzje techniczne orkiestratora (zasada 9):**
+  - **Z3:** łatka §4.1 (liczby pomiarowe) zastosowana w `P4-1-RENDER-DTO-CONTRACT.md` na tej gałęzi.
+  - **Z6 = D-VM-OPT-IN:** klucz `Option` nieobecny na wejściu wczytuje się jako `None` (domyślne zachowanie serde); producent zawsze zapisuje jawny `null` (sprawdza `json_strict`). Zmiana na wymuszenie obecności wymagałaby zmiany w `src/`.
+  - **Z5:** adapter P4-1G ustawia `civ_id = None` dla barbarzyńców (wartość w webie NIE_ZMIERZONO).
+- **Otwarte z raportu Operatora (do adaptera P4-1G / P4-1B):** `stacks` w korzeniu snapshotu (dodane, §1.5.1 Δ4); brak wariantu „wonder” w `buildHighlight` (web ma inne krycie, `main.ts@07:16366` vs `:16392`); `ammo None` oznacza Infinity w webie; newtypy ID odrzucają wartości > 2^53−1.
+- **Proces (P-1):** kod P4-1A wszedł na parity przed FC w jednym kroku z poprawkami obrony; ślady w `refs/keep/P4-1A-*`. Dispatch nie miał DODATKU r2 (dodany dopiero w tej rundzie w gałęzi roboczej).
+- **Zabezpieczenie:** refs/keep `P4-1A-{fb3d1b95b,f3dab5fda,011de8664,86032cd28,integ}`, gałąź `rust-port-wip/R-RUSTPORT-P4-1A-VIEW-TYPES-Q1-integ`.
