@@ -1,3 +1,9 @@
+## ROBOCZA 25a4f1f4 -- 2026-11-14 -- FALA 746: Skad zapasy czesc B: stan details karty, hak civTest, dokumentacja i pomiar wydajnosci ksiegi (testowa)
+
+- Stan details karty Skad zapasy zachowany przy przerysowaniu; hak openEmpirePanel za civTest; dokumentacja hasla i poradnika, wikiBundle; pomiar wydajnosci ksiegi 5 par sekwencyjnych mediana -2,15 proc; zrzuty kart soli i ceramiki; diagnoza endTurn: bramka NNS w turze 1
+- Weryfikacja: tsc 0; logic 213/213; resource-ledger 1030/0; skad-ui 18/0; skad-dom 13/0; hook-gate 6/0; vite build OK
+- Limity: NIE ZMIERZONO: przyczyna timeoutu endTurn t57; pomiar wydajnosci w konfiguracji domyslnej (po harnessie 417); pochodzenie buildu dist w pomiarze
+
 ## ROBOCZA 4e90b36a -- 2026-11-14 -- FALA 745: Bitwa: pelny ruch, cios przy dojsciu, ruch dalej (jeden cios na ture) + narzedzia testowe dlugu bazowego (testowa)
 
 - Od pierwszego zderzenia wrecz jednostka uzywa pelnego ruchu, uderza przy dojsciu, rusza ku nastepnemu wrogowi, jeden cios na ture, reszta ruchu przepada gdy brak dokad isc; rowne wejscie szeregu do pierwszego zderzenia bez zmian; wyjatki doktryny Obrona/Ostrzal, reczny rozkaz, uciekajacy, oblezenie muru; dokumentacja i wikiBundle; narzedzia: city-cession-r3, json-descriptions, truce-r1/live, stol-pw-sum, trade-route-live
