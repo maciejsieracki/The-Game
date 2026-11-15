@@ -1415,3 +1415,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Dysk:** 5,2 GB przed sprzątaniem, po nim 9,5 GB (próg 8 GB osiągnięty). Usunięto worktrees zakończonego ZDOBYCIE-WIRING r2 (FC FAIL): `wf_aaeae4f9-09c-1..4`. Commity zabezpieczone: refs/keep `R-RUSTPORT-P6-ZDOBYCIE-WIRING-Q1-r2-w1..w4` i gałęzie `rust-port-wip/…-r2-w1..w4` na remote. Worktrees uruchomionych tematów zostawione (zablokowane).
 - **KROK 2:** brak Workflow z FC PASS bez integracji (oczekują: P4-0, P4-1, P4-36 Q3, P4-17).
 - **Parity:** `95930b446`. Rejestr: `ad14b7fbd` przed tym wpisem.
+
+## Przebieg (15.11, P4-0 RENDERER-ARCHITECTURE — domknięcie r3, Opus 5.5)
+- **Evaluator r3 (`509ee851e`): FAIL, 16 zarzutów.** Główne: dokument nie miał nagłówka SUPERSEDED (decyzje D-REND-1..8 rozstrzygnięte w LEDGER, a dokument rekomendował C), błędy w liczbach i liniach, pominięty picking jednostek i frontend-v2.
+- **Obrona r3 (`80a261998`): PASS-WITH-NOTES.** Przyjęła wszystkie 16 zarzutów, dodała sekcję §S z tabelą rozstrzygnięć D-REND-1..8 i oznaczyła §4–§6 jako historyczne.
+- **FC r3 (`d850c1f5c`): PASS-WITH-NOTES, 0 NAPRAW, 16 ODDAL.** Zarzut proceduralny (P-1, do orkiestratora): LEDGER.md:111 zapisuje Evaluator FAIL → Obrona `25a49386` → FC PASS-WITH-NOTES jako zintegrowane, ale tych SHA nie ma w repo, a w katalogu runu nie było artefaktów r1. Wpis LEDGER dla r3 do uzupełnienia; nie zmieniam decyzji poza tym.
+- **Integracja:** `dyspozycje/rust-port/p4/P4-0-RENDERER-ARCHITECTURE.md` oraz raporty `02-evaluator-r3.md`, `03-obrona-r3.md`, `04-final-control-r3.md` na `claude/rust-sivvrn` (`c5c798122`). Rejestru z gałęzi obrony nie brałem: jej baza jest starsza i cofałaby wpisy.
+- **Zabezpieczenie:** refs/keep `P4-0-r3-{509ee851e,80a261998,d850c1f5c}`, gałąź `rust-port-wip/R-RUSTPORT-P4-0-RENDERER-ARCHITECTURE-Q1-r3-fc`.
+- **P4-1 (DTO):** zależy od gotowego P4-0; odbiór w toku.
