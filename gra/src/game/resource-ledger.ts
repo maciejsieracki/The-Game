@@ -253,6 +253,15 @@ export function drainPendingLedgerInto(target: Map<number, ResourceLedgerTurn> |
   pendingLedgerByOwner.clear();
 }
 
+/**
+ * Czyści okno poza tickiem (R-WEB-UI-...-Q1, poprawka zarzutu FC r3 nr 6): okno jest stanem
+ * modułu i nie jest zapisywane w zapisie gry, więc przy wczytaniu / nowej grze musi być puste,
+ * żeby wpisy z poprzedniej gry nie trafiły do pierwszej tury nowej.
+ */
+export function resetPendingLedger(): void {
+  pendingLedgerByOwner.clear();
+}
+
 /** Test/diagnostyka: podgląd okna bez czyszczenia (kopia). */
 export function peekPendingLedger(): Map<number, ResourceLedgerTurn> {
   return new Map(pendingLedgerByOwner);

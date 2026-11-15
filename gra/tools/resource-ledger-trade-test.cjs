@@ -37,6 +37,7 @@ export {
   recordStockDeltaToPending,
   drainPendingLedgerInto,
   peekPendingLedger,
+  resetPendingLedger,
 } from '../src/game/resource-ledger';
 `, 'utf8');
 
@@ -192,6 +193,30 @@ console.log('[5] Brak zmiany magazynu = brak wpisów');
   check('zerowa delta nie tworzy wpisu', Object.keys(turn.byResource).length === 0);
   M.recordStockDeltaToTurn(null, { sol: 5 }, { sol: 1 }, 'brak', { kind: 'mennica', label: 'x' });
   check('brak rekordu tury = no-op (bez wyjątku)', true);
+}
+
+console.log('[6] Reset okna przy wczytaniu / nowej grze (FC r3 nr 6)');
+{
+  const rng = makeRng(77);
+  const cities = makeCities(rng);
+  M.recordStockDeltaToPending(1, { sol: 10 }, { sol: 4 }, 'test|x', { kind: 'umowa_wymiany', label: 'Test' });
+  check('6a okno niepuste przed resetem', M.peekPendingLedger().size > 0);
+  M.resetPendingLedger();
+  check('6b reset czyści okno', M.peekPendingLedger().size === 0);
+  const tgt = new Map();
+  M.drainPendingLedgerInto(tgt);
+  check('6c po resecie drain nie wnosi wpisów', tgt.size === 0);
+  void cities;
+}
+
+console.log('[7] Wpięcie w main.ts (sprawdzenie źródła, nie zachowania pętli gry)');
+{
+  const mainSrc = fs.readFileSync(path.resolve(GRA, 'src', 'main.ts'), 'utf8');
+  const labelHits = (mainSrc.match(/Umowa wymiany z \$\{ownerDiploLabel\(/g) || []).length;
+  check('7a etykiety „Umowa wymiany z <civ>” w main.ts (oczekiwane 4: 2 przelewy × 2 strony)', labelHits === 4, `hits=${labelHits}`);
+  const prepIdx = mainSrc.indexOf('function prepareSessionForLoad()');
+  const prepBody = prepIdx >= 0 ? mainSrc.slice(prepIdx, prepIdx + 1200) : '';
+  check('7b prepareSessionForLoad wywołuje resetPendingLedger()', /resetPendingLedger\(\)/.test(prepBody));
 }
 
 console.log(`\nRESULT: ${passed} passed, ${failed} failed`);

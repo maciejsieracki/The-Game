@@ -101,3 +101,53 @@ GOAL: odpowiedzieć na 8 zarzutów Evaluatora do kandydata 051d691b6 (partia 2 c
 RUNDY: 2/5 (obrona r2, partia 2 — częściowa; kolejna runda wymagana)
 NASTĘPNY KROK: runda 3 tego samego ID (partia 2b) po decyzji ABC w sprawie szlaku; po niej partia 3 i 4.
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+
+## OBRONA r3 (odpowiedź na zarzuty Evaluatora z 65ad2d927, start ea5814367) — 2026-11-15
+
+STATUS: BLOCK (partia 2 nadal niedomknięta; poprawki dla zarzutów 3, 6 i 9a/9c wykonane z dowodem; reszta PRZYJĘTA jako otwarta albo ODRZUCONA z dowodem)
+DOMAIN: GAME
+TEMAT: R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1
+GOAL: odpowiedź na KAŻDY zarzut Evaluatora (9 pozycji) — PRZYJMUJĘ (poprawka + dowód) albo ODRZUCAM (dowód)
+ZMIANY/COMMIT: commit obrony r3 na gałęzi `r-ledger-obrona-r3` (SHA w polu sha poniżej); pliki: gra/src/game/resource-ledger.ts (nowa funkcja resetPendingLedger), gra/src/main.ts (import + 1 linia w prepareSessionForLoad), gra/tools/resource-ledger-trade-test.cjs (sekcje [6] i [7]), dyspozycje/.../30-obrona-claude.md. Zero zmian w E3c, zero zmian w turn-economy.ts, zero zmian etykiet.
+TESTY (surowe wyniki, worktree po zmianach obrony):
+- `npx tsc --noEmit` (gra/): exit 0
+- `node tools/resource-ledger-trade-test.cjs`: RESULT: 15 passed, 0 failed (poprzednio 10/0; dodano [6] reset 3/3 i [7] wiring 2/2)
+- `node tools/resource-ledger-test.cjs`: 1030 passed, 0 failed
+- `node tools/resource-ledger-consume-test.cjs`: 30 passed, 0 failed
+- `logic-test`: LOGIC OK (213/213); `tech-tree-test`: 20 pass, 0 fail; `research-test`: ALL GREEN; `unit-replace-test`: 21/21; `combat-test`: All sanity checks passed
+- `git diff --check`: exit 0
+- Czerwone bazowe bez zmian (nie dotykane w tej rundzie): building-upkeep-resources-test 47/1, citizen-resource-upkeep-test 122/2 (dług bazowy, opisany w r3 Operatora)
+- node_modules: `npm ci` w gra/ (71 pakietów, 3 s) — do sprzątania po tym temacie
+
+ODPOWIEDZI NA ZARZUTY (nr zgodny z 65ad2d927):
+1. Warzelnia (sól) — PRZYJMUJĘ. Brak źródła „Warzelnia (<miasto>)” potwierdzam (grep: 0 trafień). NIE ZROBIONE w tej rundzie: plon soli jest sumą terytorium na miasto (`territoryResourceByCity`) i wymaga rozbicia per budynek w zbieraniu plonów tury — zmiana w pipeline ekonomii poza zakresem tej odpowiedzi. Kryterium (b) pozostaje OTWARTE.
+2. Test w realnej ścieżce gry (≥3 ziarna × 30 tur, hash z/bez księgi) — PRZYJMUJĘ. NIE ZROBIONE: brak harnessu headless dla main.ts. Potrzebny osobny temat tooling (DEBT).
+3. Tautologia testu [1] — PRZYJMUJĘ częściowo. ZROBIONE: dodano [7a] (sprawdzenie, że w main.ts są 4 miejsca etykiety „Umowa wymiany z <civ>”, czyli 2 przelewy × 2 strony) i [7b] (wpięcie resetu). NIE ZROBIONE: test [1] nadal używa jednego magazynu dla obu właścicieli w fixture; słaba mutacja „movedTotal===0 ||” nie została usunięta.
+4. Mennica i cap bez testu wpięcia — PRZYJMUJĘ. NIE ZROBIONE: brak przypadku testowego dla recordStockDeltaToTurn w turn-economy.ts (mutacja obu wpięć nadal zielona). Test [3] obejmuje tylko reconcileOwnerResourceCaps w izolacji.
+5. Szlak E3c (main.ts ~40152–40197) przesuwa brąz/żelazo/cegłę bez księgi — PRZYJMUJĘ jako fakt kodu (potwierdzam: E3c nie został zmieniony w r3 i nie jest księgowany). Decyzja ABC o usunięciu lub zostawieniu E3c pozostaje otwarta; zgodnie z DODATKIEM 2 nie zmieniano E3c w tej rundzie. Pytanie ABC do właściciela: patrz UWAGI.
+6. Okno pendingLedgerByOwner nie czyszczone przy nowej grze / wczytaniu — PRZYJMUJĘ i NAPRAWIONO CZĘŚCIOWO:
+   - dodano `resetPendingLedger()` w resource-ledger.ts (czyści okno),
+   - wywołanie w `prepareSessionForLoad()` (main.ts:10167), czyli w ścieżce wczytania (loadGameFromSlot wywołuje tę funkcję jako pierwszą, main.ts:48031),
+   - test [6] (6a okno niepuste przed resetem, 6b reset czyści, 6c drain po resecie nie wnosi wpisów): 3/3 PASS.
+   - NIE ZWERYFIKOWANO: ścieżka „nowa gra” — nie ustaliłem w tej rundzie, czy przechodzi przez prepareSessionForLoad; jeśli nie, okno nadal może przeciec między grami. Wymaga wskazania punktu startu nowej gry i dopisania resetu.
+   - NIE ZMIERZONO: test wczytania zapisu w żywej grze.
+7. Kolejność: przelew umowy w turze gracza → pending → rekord następnej tury — PRZYJMUJĘ jako ryzyko. NIE ZMIERZONO w żywej grze. Kod: runDiplomacyTurnTick (main.ts ~40111) → advanceCityEconomy (~40266) → drainPendingLedgerInto (40308); ZAŁOŻENIE tej odpowiedzi: przelew wykonany przed tickiem tej samej tury trafia do tej samej tury (nie zweryfikowane w grze).
+8. Brak pomiaru czasu tury (kryterium d) — PRZYJMUJĘ. NIE ZMIERZONO. Nie wykonywałem pomiaru w tej rundzie.
+9. Drobne:
+   (a) etykiety out/in „Umowa wymiany z X” — ODRZUCAM. Dowód: wpisy mają różne sourceKey (`umowa-wymiany|out|<id>` vs `umowa-wymiany|in|<id>`, main.ts:13299–13302 i 25088–25091), więc nie sumują się; kierunek jest czytelny ze znaku kwoty (+ przyrost / − ubytek) w panelu. Zmiana etykiety złamałaby kryterium (b) z dispatchu („Umowa wymiany z <civ>”).
+   (b) zapłata praca/złoto w umowie cyklicznej nie księgowana — PRZYJMUJĘ. NIE ZROBIONE w tej rundzie (zakres: wymiana surowców; zapłata to osobny przepływ).
+   (c) DODATEK nieuaktualniony do bazy tej rundy — PRZYJMUJĘ jako dług procesowy (orkiestrator aktualizuje DODATEK; wskazuję, że bazą r3 był ea5814367 po commicie raportu Operatora).
+
+ZMIERZONO vs NIE ZMIERZONO:
+- ZMIERZONO: testy gry i bramki z surowego wyjścia (powyżej); reset okna (test [6]); wiring etykiet i resetu w main.ts (test [7], czytanie źródła).
+- NIE ZMIERZONO: ścieżka realnej gry (zarzut 2), czas tury (8), zapis/wczytanie w grze (6), kolejność tur w grze (7), Warzelnia (1, brak kodu), Mennica/cap wpięcie (4).
+
+UWAGI-DLA-ORKIESTRATORA:
+- Pytanie ABC do właściciela (bez mojego rozstrzygania): E3c szlak handlowy — (A) usunąć przesuw zapasów szlakiem zgodnie z decyzją #311, osobny temat; albo (B) zostawić i księgować przepływ szlaku (zmienia zakres). Do czasu decyzji partia 2 jest niedomknięta.
+- Do zlecenia w kolejnej rundzie: (i) reset okna w ścieżce „nowa gra” (punkt startu do ustalenia), (ii) Warzelnia — rozbicie plonu soli per budynek, (iii) harness headless dla main.ts (zarzut 2) jako osobny temat tooling, (iv) zapłata cykliczna w księdze.
+
+RUNDY: 4/5 (partia 2, runda 4 — częściowa: zarzuty 3, 6, 9a/9c obsłużone; 1, 2, 4, 5, 7, 8, 9b otwarte z powodów wyżej).
+NASTĘPNY KROK: decyzja ABC E3c → runda 5 tego samego ID (ostatnia) albo rozbicie na osobne tematy po stronie orkiestratora: Warzelnia, harness main.ts, reset nowej gry.
+DEPLOY/PUSH: NIE WYKONANO

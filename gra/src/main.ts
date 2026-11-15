@@ -440,7 +440,7 @@ import {
   REBEL_FACTION_OWNER_ID,
 } from './game/society-breakdown';
 import { computeCitizenResourceDrain } from './game/citizen-resource-upkeep';
-import { citizenLedgerParts, recordTakenToLedger, upkeepLedgerParts, pendingLedgerSink, drainPendingLedgerInto, recordStockDeltaToPending } from './game/resource-ledger';
+import { citizenLedgerParts, recordTakenToLedger, upkeepLedgerParts, pendingLedgerSink, drainPendingLedgerInto, recordStockDeltaToPending, resetPendingLedger } from './game/resource-ledger';
 import { BATTLE_MODE_SETTING_VERSION, isAutomaticOnlyBattleMode } from './game/battle-mode';
 import { normalizeHitMode, setActiveHitMode } from './game/hit-mode';
 import { resourceUsageBreakdownFor, resourceUsageHasAny } from './game/resource-usage-breakdown';
@@ -10164,6 +10164,7 @@ async function boot(): Promise<void> {
       resetArmyRecruitDraftsSession();
       resetEmpireMassRecruitmentMessage();
       resetEndTurnBlockers('prepareSessionForLoad');
+      resetPendingLedger(); // R-WEB-UI-...-Q1 (FC r3 nr 6): okno poza tickiem nie przechodzi między grami/wczytaniami
       playtestWalkaActive = false;
       bitwaDuzaActive = false;
       playtestMiastoActive = false;
