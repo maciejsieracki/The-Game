@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "f2b31b1682d3b0103d5e7e77970d6a97",
-  "bundleSha256": "ce93caca945575ade53d05dea660d483709c18943281e9c4e871a11547b3d144",
-  "bundleBytes": 14734882,
+  "bundleMd5": "a2585e0781c577bef7f305186ec1ae1d",
+  "bundleSha256": "c01b86609f2f2651a811e3e9025574e7fb0f855cf5b2317626e3a6db3bd4c6f0",
+  "bundleBytes": 14735143,
   "sourceSnapshot": {
-    "source": "fast-forward FC DEBT-HOT 99cc047be na main 7c2074e00",
+    "source": "merge FC TECH-ORDER ed009922f na main 6c1687274",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 726: Test hotseat zielony; usuniete martwe pole suwak_praca_teren_domyslnie (bez zmiany zachowania); rada 50% zamiast 70% w poradniku i encyklopedii; poradnik: kara x0,75 za glod i deficyt, opis banera Stan; nowy test pilnujacy hasla oslabienie-glod-deficyt"
+    "FALA 727: W panelu Mozesz wybrac cztery badania startowe wyswietlaja sie w kolejnosci Obrobka drewna, Rolnictwo, Oswojenie zwierzat, Lowiectwo (tylko kolejnosc listy gracza; AI i drzewko bez zmian)"
   ],
   "verification": [
-    "tsc 0; logic 213/213; hotseat 16/0; guard 7/0; growthmult 24/0; FC PASS-WITH-NOTES"
+    "tsc 0; logic 213/213; tech-choice-order 9/0; science-hub 7/0; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "Dlug bazowy budynki-koszt-pracy-50-test 141/42; NIE ZMIERZONO determinism-save-load-resume; dlug Rust REPIN"
+    "NIE ZMIERZONO: pelna gra nowa gra -> panel badan; brak REPIN Rust (tylko UI)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES DEBT-HOT 99cc047be / kod de68b0328: test hotseat zielony (16/0), usuniete martwe pole suwak_praca_teren_domyslnie, rada 50% w poradniku i encyklopedii, poradnik 08 par.50.3 (x0,75 kara glod/deficyt) i 12 (baner Stan), nowy test-straznik hasla oslabienie-glod-deficyt 7/0. Testy: tsc 0, logic 213/213, hotseat 16/0, growthmult 24/0. NIE ZMIERZONO: determinism-save-load-resume. Dlug bazowy: budynki-koszt-pracy-50-test 141/42. Dlug Rust REPIN: usuniecie klucza suwak_praca_teren_domyslnie."
+    "notes": "FC PASS-WITH-NOTES TECH-ORDER ed009922f / kod e9e532b43: kolejnosc badan w Mozesz wybrac: Obrobka drewna, Rolnictwo, Oswojenie zwierzat, Lowiectwo (jawna tabela HUB_START_TECH_ORDER w scienceHubSnapshotLogic.ts, reszta bez zmian; AI i drzewko nietkniete). Testy: tech-choice-order 9/0 (mutacja 6/3), science-hub 7/0, tsc 0, logic 213/213. NIE ZMIERZONO: pelna gra nowa gra -> panel badan (zrzut z harnessu)."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-15T02:02:35",
+  "hubGeneratedAt": "2026-11-15T02:12:29",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "f2b31b1682d3b0103d5e7e77970d6a97",
-      "sizeBytes": 14734882
+      "md5": "a2585e0781c577bef7f305186ec1ae1d",
+      "sizeBytes": 14735143
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "f2b31b1682d3b0103d5e7e77970d6a97",
-      "sizeBytes": 14734882
+      "md5": "a2585e0781c577bef7f305186ec1ae1d",
+      "sizeBytes": 14735143
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "f2b31b1682d3b0103d5e7e77970d6a97",
-      "sizeBytes": 14734882
+      "md5": "a2585e0781c577bef7f305186ec1ae1d",
+      "sizeBytes": 14735143
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "f2b31b1682d3b0103d5e7e77970d6a97",
-      "sizeBytes": 14734882
+      "md5": "a2585e0781c577bef7f305186ec1ae1d",
+      "sizeBytes": 14735143
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "f2b31b1682d3b0103d5e7e77970d6a97",
-      "sizeBytes": 14734882
+      "md5": "a2585e0781c577bef7f305186ec1ae1d",
+      "sizeBytes": 14735143
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "f2b31b1682d3b0103d5e7e77970d6a97",
-      "sizeBytes": 14734882
+      "md5": "a2585e0781c577bef7f305186ec1ae1d",
+      "sizeBytes": 14735143
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "f2b31b1682d3b0103d5e7e77970d6a97",
-      "sizeBytes": 14734882
+      "md5": "a2585e0781c577bef7f305186ec1ae1d",
+      "sizeBytes": 14735143
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "f2b31b1682d3b0103d5e7e77970d6a97",
-      "sizeBytes": 14734882
+      "md5": "a2585e0781c577bef7f305186ec1ae1d",
+      "sizeBytes": 14735143
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "f2b31b1682d3b0103d5e7e77970d6a97",
-      "sizeBytes": 14734882
+      "md5": "a2585e0781c577bef7f305186ec1ae1d",
+      "sizeBytes": 14735143
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "f2b31b1682d3b0103d5e7e77970d6a97",
-      "sizeBytes": 14734882
+      "md5": "a2585e0781c577bef7f305186ec1ae1d",
+      "sizeBytes": 14735143
     }
   ],
-  "md5": "f2b31b1682d3b0103d5e7e77970d6a97",
+  "md5": "a2585e0781c577bef7f305186ec1ae1d",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

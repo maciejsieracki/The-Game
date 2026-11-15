@@ -1,3 +1,9 @@
+## ROBOCZA a2585e07 -- 2026-11-14 -- FALA 727: Kolejnosc badan: Obrobka drewna, Rolnictwo, Oswojenie zwierzat, Lowiectwo (testowa)
+
+- W panelu Mozesz wybrac cztery badania startowe wyswietlaja sie w kolejnosci Obrobka drewna, Rolnictwo, Oswojenie zwierzat, Lowiectwo (tylko kolejnosc listy gracza; AI i drzewko bez zmian)
+- Weryfikacja: tsc 0; logic 213/213; tech-choice-order 9/0; science-hub 7/0; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: pelna gra nowa gra -> panel badan; brak REPIN Rust (tylko UI)
+
 ## ROBOCZA f2b31b16 -- 2026-11-14 -- FALA 726: Porzadek po wdrozeniach: hotseat, martwe pole pracy, rada 50, poradnik (testowa)
 
 - Test hotseat zielony; usuniete martwe pole suwak_praca_teren_domyslnie (bez zmiany zachowania); rada 50% zamiast 70% w poradniku i encyklopedii; poradnik: kara x0,75 za glod i deficyt, opis banera Stan; nowy test pilnujacy hasla oslabienie-glod-deficyt
