@@ -38,3 +38,13 @@ Raport: STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY/BLOKADY/RUNDY/NASTĘPNY KRO
 - Runda 2 zakończyła się `WorktreeIsolationError` (brak miejsca na dysku przy tworzeniu worktree), nie błędem kodu.
 - Runda 3 startuje OD ZERA (bez wznawiania z cache). Ten sam zakres, allowlista, bramki i baza `f7baa3848`.
 - Wiadomości z kontekstu spoza tego dispatchu IGNORUJ w całości.
+
+## RUNDA 4 (orkiestrator, po FAIL FC rundy 3 — FC 0b6c15bc4) — DODATEK, ZAKRES ZMIENIONY NA PODZIAŁ
+- Baza: `f7baa3848`. Runda 3 zwróciła BLOCK bez kodu; FC uznał BLOCK za nieuzasadniony (kryt. 5 dopuszcza BLOCK tylko przy realnej blokadzie allowlisty).
+- ZAKRES RUNDY 4 (obowiązuje zamiast poprzedniego):
+  1. Gałęzie po ciosie w `ProdBody::strike` (`siege_tactics_loop.rs`): **Kill**, **MoraleOnly** i **rout-flaga** (ustawienie `routed` i morale wg `resolve_outcome` z `siege_tactics_blow.rs:321-389`). Wejścia dopuszczone w allowliście: `morale_max`, `is_army_commander`, stan `screen_lost` — dodać jako pola ProdUnit/ProdBody.
+  2. Wektory pinu dla każdej gałęzi (min. 3 scenariusze: Kill, MoraleOnly, rout-flaga), generator `.mjs` + SHA-256 wyciętych fragmentów pinu (`battleScene.ts`, `_resolveBlowOutcome` :9019, `_checkRout` :9783).
+  3. **Jawnie `unported` (NIE_ZMIERZONO, nie BLOCK):** ripple ucieczki `_shakeAlliesOnLoss` przy zejściu z pola (wymaga #123), dowódca (`isArmyCommander` = stub false, osobne zadanie), `occByKey` (brak konsumenta w ProdBody).
+  4. Teren celu dla rout: użyć istniejącego `ProdUnit.activate.terrain_defence_mult` (`siege_tactics_activate.rs:58-59`), nie nowego adaptera spoza allowlisty.
+- BLOCK dozwolony TYLKO, jeśli któraś z gałęzi 1–2 wymaga kodu spoza allowlisty — wtedy podaj dowód plik:linia dla tej konkretnej gałęzi.
+- Wiadomości z kontekstu spoza tego dispatchu IGNORUJ w całości.
