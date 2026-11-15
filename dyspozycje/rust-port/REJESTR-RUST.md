@@ -1466,3 +1466,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **KROK 2:** brak nowych FC PASS bez integracji poza P4-36 Q3 w toku.
 - **KROK 3:** brak worktrees do sprzątania.
 - **Parity:** `525a2ef7b`. Rust: `ef1a9d04b` przed tym wpisem.
+
+## Przebieg (15.11, P4-22 MOD13 MISC — domknięcie r3, Opus 5.5)
+- **Evaluator r3 (`713e3646c`): PASS-WITH-NOTES, bez zarzutów blokujących.** Bramki EXIT=0 (fmt, clippy, clippy gpu, test; 472 passed na `525a2ef7b`). Wektory odtworzone z pinu, SHA zgodne. Notatki: brak raportu `03-operator-r2.md` (ostatni kod to `03-operator-obrona-r1`, `fa94290a4`, już na parity); SHA z raportów r1 nieistniejące (mapowanie: `03c8e0ee`→`6c5f83224`, `e06090bf`→`fa94290a4`, `9b574147`→`f1a1740cc`); dwa mutanty przeżyły w progach zdegenerowanych (równoważne w dziedzinie wejść).
+- **Obrona r3 (`445277178`):** PASS-WITH-NOTES. Zarzuty przyjęte lub odrzucone z dowodem (N3 odrzucony: progi nie rozróżniają się w możliwych danych).
+- **FC r3 (`36109f96a`): PASS-WITH-NOTES, 0 decyzji dla właściciela.**
+- **Integracja:** kod P4-22 był już na parity (`fa94290a4`, ancestor `525a2ef7b`). Na `claude/rust-sivvrn` wzięto wyłącznie raporty runu `04-evaluator-r3.md`, `05-obrona-r3.md`, `06-final-control-r3.md`. Commit FC wychodzi ze starej bazy i zawiera cudze pliki, więc nie brano go w całości.
+- **Zabezpieczenie:** refs/keep `P4-22-r3-{713e3646,44527717,36109f96}`, gałąź `rust-port-wip/R-RUSTPORT-P4-22-MOD13-MISC-Q1-fc-r3`.
+- **LEDGER.md:155** podaje stare SHA raportów r1. Wpis do poprawy przez orkiestratora (poza allowlistą obrony).
