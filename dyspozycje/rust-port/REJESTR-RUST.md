@@ -1480,3 +1480,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **KROK 2:** zakończone w ostatniej godzinie i zintegrowane: P4-36 Q3 (BLOCK, temat zamknięty, bo część 3 była już na parity), P4-17 (FC r3), P4-31 (FC r3 i integracja `525a2ef7b`), P4-22 (FC r3, raporty `c37ba1da8`).
 - **KROK 3 (sprzątanie):** usunięto worktrees P4-22 i P4-36 Q3 (czyste, commity w `refs/keep`). Próba usunięcia katalogu scratch została zablokowana przez zabezpieczenie systemu i nie została powtórzona; katalog `p431ob-target` już nie istnieje, `p417gates` ma 84 KB.
 - **Parity:** `525a2ef7b`. Rust: `c37ba1da8` przed tym wpisem.
+
+## Przebieg (15.11, P4-34 ANCHORS-DOM — domknięcie r3, Opus 5.5)
+- **Proces (P-1):** kod P4-34 (`ba5dca739`, obrona r1; Operator r1 `6cd6f33aa`) trafił na parity-v2 przez rebase P4.35 (`c4fa31a2f`) **przed** Evaluatorem i FC. Odnotowuję to, nie zmieniam historii.
+- **Evaluator r3 (`e43274091`): PASS-WITH-NOTES, 4 niskie zarzuty:** brak testów brzegowych dla `height <= 0` i granicy `z > 1` (mutanty E6, E7 przeżywały); test `js_round` sugerował sprawdzanie znaku `-0`; SHA `27090d91` nieistniejące w repo; odnotowanie integracji przed FC.
+- **Obrona r3 (`2e00643e1`): PASS.** Dodano przypadki brzegowe (height=0 → None; far-plane z=1.0 → Some, następny double → None), test `js_round` porównuje `to_bits` (+0 dla -0.5 i -0.2, -0 dla -0.0, 0.49999999999999994), O3 i O4 zabite. Korekta SHA w dokumentacji. Testy na świeżym target: fmt, clippy (z i bez gpu), `cargo test --all-targets`: EXIT=0; labels_anchors 8/8, labels_layout 7/7, labels_scenes 4/4; mutanty 4/4 zabite.
+- **FC r3 (`fffc5e7c6`): PASS-WITH-NOTES, 0 decyzji dla właściciela.**
+- **Integracja:** fast-forward `rust-port/parity-v2` z `525a2ef7b` na `fffc5e7c6`. Zakres: testy `labels_anchors.rs`, komentarz w `anchor.rs`, dokumenty i dowody runu. `git diff --check` czysty.
+- **Zabezpieczenie:** refs/keep `P4-34-{6cd6f33aa,ba5dca739,2e00643e1,fffc5e7c6}`, gałąź `rust-port-wip/R-RUSTPORT-P4-34-ANCHORS-DOM-Q1-fc-r3`.
+- **Uwaga dla dyspozycji:** dispatch wskazywał `03-operator-r2.md`, którego nie było; rundy r2 Operatora nie było.
