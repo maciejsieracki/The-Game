@@ -245,6 +245,65 @@ fn map_shape_and_order() {
     );
 }
 
+/// P4-1B-Q3: `map.riverRenderPaths[i]` is the render path of `map.rivers[i]`
+/// (contract §3.2, D-DTO-4), so both lists have the same length. An empty or
+/// one-hex render path is allowed (the renderer skips `< 2`).
+#[test]
+fn river_render_paths_parallel_to_rivers() {
+    // The sample: 2 rivers, 2 render paths (one empty) — valid.
+    let view = sample_view();
+    assert_eq!(view.map.rivers.len(), 2);
+    assert_eq!(view.map.river_render_paths.len(), 2);
+    validate_map(&view.map).unwrap();
+    // One render path missing.
+    let mut view = sample_view();
+    view.map.river_render_paths.pop();
+    assert_eq!(
+        err_both(&view),
+        ViewError::LengthMismatch {
+            field: "map.riverRenderPaths".into(),
+            expected: 2,
+            actual: 1
+        }
+    );
+    // One render path too many.
+    let mut view = sample_view();
+    view.map.river_render_paths.push(vec![h(0, 0), h(1, 0)]);
+    assert_eq!(
+        err_both(&view),
+        ViewError::LengthMismatch {
+            field: "map.riverRenderPaths".into(),
+            expected: 2,
+            actual: 3
+        }
+    );
+    // Render paths without rivers.
+    let mut view = sample_view();
+    view.map.rivers.clear();
+    assert_eq!(
+        validate_map(&view.map),
+        Err(ViewError::LengthMismatch {
+            field: "map.riverRenderPaths".into(),
+            expected: 0,
+            actual: 2
+        })
+    );
+    // No rivers and no render paths.
+    let mut view = sample_view();
+    view.map.rivers.clear();
+    view.map.river_render_paths.clear();
+    validate_map(&view.map).unwrap();
+    assert_eq!(
+        ViewError::LengthMismatch {
+            field: "map.riverRenderPaths".into(),
+            expected: 2,
+            actual: 1
+        }
+        .to_string(),
+        "map.riverRenderPaths: length 1, expected 2"
+    );
+}
+
 /// Sets one float field of the sample.
 type FloatSetter = Box<dyn Fn(&mut RenderViewDto, f64)>;
 

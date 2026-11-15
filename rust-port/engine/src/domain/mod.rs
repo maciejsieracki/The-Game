@@ -69,6 +69,7 @@ pub mod improvements;
 pub mod js_math;
 pub mod map_generator;
 pub mod map_snapshot;
+pub mod map_view;
 pub mod mapgen;
 pub mod okolica;
 pub mod order_effects_culture;
