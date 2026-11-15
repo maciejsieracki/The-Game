@@ -40,3 +40,9 @@ IZOLACJA: `isolation: worktree`. Commit w worktree (jawne `git add`), PUSH NIE.
 PROCEDURA NAPRAWCZA PRZY FAIL: ten sam ID; po 5 rundach LIMIT-5-EXCEEDED. Raport max ok. 400 słów (dokument może być dłuższy).
 FORMAT ODPOWIEDZI: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK
 DEPLOY/PUSH: NIE WYKONANO
+
+## DODATEK r3 (15.11, domknięcie — Opus 5.5 na wszystkich etapach)
+- **Stan:** Operator r1/r2 i Obrona = PASS-WITH-NOTES; brak Evaluatora i Final Control. Nie uruchamiać nowego Operatora.
+- **Zakres:** Evaluator (Opus) sprawdza każde twierdzenie dokumentu `dyspozycje/rust-port/p4/P4-0-RENDERER-ARCHITECTURE.md` pod kątem dowodu plik:linia; Final Control (Opus) orzeka.
+- **Baza:** dokument na `origin/claude/rust-sivvrn`. Zero buildu, zero cargo, zero zmian w gra/ i rust-port/engine.
+- Commit bez nazwy modelu w treści; ostatnia linia `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`.
