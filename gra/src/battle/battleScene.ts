@@ -1997,6 +1997,8 @@ interface RuntimeBattleUnit {
   cavTrail?: Set<string>;
   /** R-WEB-BATTLE-FULL-MOVE-THEN-STRIKE-AT-END-Q1: numer rundy, w ktorej jednostka zadala juz swoj jedyny cios (po wzwarciu: jeden cios na jednostke na ture). */
   struckRound?: number;
+  /** Id wroga uderzonego w rundzie `struckRound` (kontynuacja ruchu nie zatrzymuje sie przy nim ponownie). */
+  struckTargetId?: string;
   /** Diagnostyka (T3): po ciosie nie bylo dokad isc (brak sciezki do nastepnego wroga) -- reszta ruchu przepadla zgodnie z regula. */
   postStrikeBlocked?: boolean;
   /** Pola odwiedzone przez jednostke w tej rundzie (zywy ruch) -- kontynuacja po ciosie nie wraca na nie (brak ping-ponga). */
@@ -6049,6 +6051,34 @@ export class BattleScene {
     else this._advanceStep(ru, done);
   }
 
+  /**
+   * R-WEB-BATTLE-FULL-MOVE-THEN-STRIKE-AT-END-Q1 r5 (zarzut 6 FC): zamrozony plan skonczyl sie / zablokowal przed wyczerpaniem puli MP.
+   * Po zatrzasku wzwarcia aktywacja trwa zywo: cios, jesli wrog w zasiegu i jednostka jeszcze nie bila w tej turze; w przeciwnym razie
+   * ruch ku najblizszemu wrogowi (bez drugiego ciosu, bez cofania na pola z tej aktywacji). Brak dokad isc = reszta ruchu przepada (DODATEK 5b).
+   * Doktryny Obrona/Ostrzal oraz reczne rozkazy (wylaczone w _fullMoveRuleActive) zostaja bez zmian.
+   */
+  private _resumeFullMoveAfterPlan(ru: RuntimeBattleUnit, done: () => void): void {
+    /*RESUME_AFTER_PLAN*/ // marker mutacji testu (battle-pursuit-move-behavior-test.cjs): zastapiony `done(); return;` = stary blad (done() po planie)
+    if (this.finished || this._autoBattleSuspended
+      || ru.dead || ru.fadingOut || ru.removed || !this._fullMoveRuleActive(ru)) { done(); return; }
+    const doctrine = this._effectiveMetaForUnit(ru).doctrine;
+    if (doctrine === 'defensive' || doctrine === 'skirmish') { done(); return; }
+    if (ru.struckRound === this.roundNo) {
+      if (ru.moveLeft <= 0) { done(); return; }
+      const struck = ru.struckTargetId ? this._findUnitById(ru.struckTargetId) ?? null : null;
+      this._continueAfterStrike(ru, struck, done);
+      return;
+    }
+    // Piechota: nie wracaj na pole, z ktorego jednostka wlasnie wyszla (ostatni krok zamrozonego planu).
+    if (ru.moveTrailRound === this.roundNo && ru.moveTrail && ru.moveTrail.size >= 2) {
+      const arr = [...ru.moveTrail];
+      const prev = arr[arr.length - 2]!;
+      const comma = prev.indexOf(',');
+      ru.lastAutoMoveFrom = { q: parseInt(prev.slice(0, comma), 10), r: parseInt(prev.slice(comma + 1), 10) };
+    }
+    this._resumeFullMoveLive(ru, done);
+  }
+
   /** Resolve one frozen path; different units remain animated concurrently. */
   private _resolveAutoBatchMovement(
     ru: RuntimeBattleUnit,
@@ -6085,13 +6115,15 @@ export class BattleScene {
         this._resolveAutoBatchAttack(ru, resolution.targetId, done);
         return;
       }
-      done();
+      // Plan krotszy niz pula ruchu: po zatrzasku wzwarcia aktywacja trwa zywo (cios w zasiegu / ruch ku najblizszemu wrogowi).
+      this._resumeFullMoveAfterPlan(ru, done);
       return;
     }
     const step = resolution.steps[stepIdx]!;
     const occupant = this.occByKey.get(cellKey(step.col, step.row));
     if ((occupant && occupant !== ru) || !this._passableForUnit(ru, step.col, step.row)) {
-      done();
+      // Krok zamrozonego planu zajety (np. przez jednostke, ktora ruszyla sie wczesniej w tej fali): zywa kontynuacja zamiast utraty ruchu.
+      this._resumeFullMoveAfterPlan(ru, done);
       return;
     }
     this._doMove(ru, step.col, step.row, () => {
@@ -6517,7 +6549,10 @@ export class BattleScene {
   private _cavalryAction(ru: RuntimeBattleUnit, done: () => void): void {
     if (this.finished) { done(); return; }
     if (ru.dead || ru.fadingOut) { done(); return; }
-    ru.cavTrail = new Set<string>(); // nowa aktywacja = czysty slad (klon planowania ma wlasna kopie pola)
+    // nowa aktywacja = czysty slad (klon planowania ma wlasna kopie pola); wznowiona po zamrozonym planie (r5) dziedziczy pola
+    // juz przebyte w tej rundzie (moveTrail), zeby nie wracac na nie (ping-pong).
+    ru.cavTrail = new Set<string>(ru.moveTrailRound === this.roundNo && ru.moveTrail ? ru.moveTrail : []);
+    ru.cavTrail.delete(cellKey(ru.q, ru.r));
 
     // 1) A worthy (non-spear) enemy is adjacent -> strike it now.
     const adjGood = this._cavAdjacentNonSpear(ru);
@@ -6551,7 +6586,12 @@ export class BattleScene {
       const comma = stepKey.indexOf(',');
       const nc = parseInt(stepKey.slice(0, comma), 10);
       const nr = parseInt(stepKey.slice(comma + 1), 10);
-      this._doMove(ru, nc, nr, done);
+      // R-WEB-BATTLE-FULL-MOVE-THEN-STRIKE-AT-END-Q1 r5: po zatrzasku wzwarcia ostatni krok szarzy nie konczy aktywacji --
+      // jesli zostal ruch, aktywacja trwa zywo (cios / kolejny krok), az pula zostanie zuzyta albo zabraknie drogi.
+      this._doMove(ru, nc, nr, () => {
+        if (!this.finished && ru.moveLeft > 0 && this._fullMoveRuleActive(ru)) this._resumeFullMoveAfterPlan(ru, done);
+        else done();
+      });
       return;
     }
     done();
@@ -9128,6 +9168,7 @@ export class BattleScene {
       // Drugi cios w tej samej turze jest zabroniony (marker mutacji testu: ONE_STRIKE).
       if (attacker.struckRound === this.roundNo) { done(); return; } // /*ONE_STRIKE*/
       attacker.struckRound = this.roundNo;
+      attacker.struckTargetId = defender.bu.id;
       attacker.postStrikeBlocked = false;
       const afterStrike = done;
       done = () => this._continueAfterStrike(attacker, defender, afterStrike);
@@ -9158,7 +9199,7 @@ export class BattleScene {
    * Brak dokad isc (okrazona/zablokowana) = reszta ruchu przepada (decyzja wlasciciela 2026-11-15, "I tyle!").
    * Dystansowi: dojscie tylko do pozycji, z ktorej nastepny cel jest w zasiegu (DO POTWIERDZENIA).
    */
-  private _continueAfterStrike(ru: RuntimeBattleUnit, struck: RuntimeBattleUnit, done: () => void): void {
+  private _continueAfterStrike(ru: RuntimeBattleUnit, struck: RuntimeBattleUnit | null, done: () => void): void {
     /*CONT_MOVE*/ // marker mutacji testu (battle-full-move-strike-test.cjs): zastapiony `done(); return;` = brak ruchu po ciosie
     // Doktryny pozycyjne (Obrona) i kitujace (Ostrzal) nie maszeruja po ciosie: ich cel to pozycja/dystans, nie pogon.
     const doctrine = this._effectiveMetaForUnit(ru).doctrine;

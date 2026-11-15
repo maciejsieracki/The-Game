@@ -27,20 +27,20 @@ const MAX_MS = Number(process.env.BPM_MAX_MS || 400000);
 const ATK = 'Hastati:8,Lucznik:6,Konnica:4';
 const DEF = 'Hastati:14';
 
-function mutPlugin(from) {
+function mutPlugin(from, to = 'false') {
   return { name: 'bpm-mut', enforce: 'pre', transform(code, id) {
-    return id.includes('battleScene.ts') ? { code: code.replace(from, 'false'), map: null } : null;
+    return id.includes('battleScene.ts') ? { code: code.replace(from, to), map: null } : null;
   } };
 }
 
 async function run(mutation, seed) {
-  const plugins = mutation ? [mutPlugin(mutation)] : [];
+  const plugins = mutation ? [mutPlugin(mutation, mutation === '/*RESUME_AFTER_PLAN*/' ? 'done(); return;' : 'false')] : [];
   const server = await createServer({ root, plugins, configFile: path.join(root, 'vite.config.ts'), logLevel: 'error', server: { host: '127.0.0.1', port: 0, strictPort: false } });
   await server.listen();
   const browser = await chromium.launch({ headless: true, executablePath: exe, args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
   try {
     const page = await browser.newPage({ viewport: { width: 800, height: 600 } });
-    const errors = []; page.on('pageerror', e => errors.push(e.message));
+    const errors = []; page.on('pageerror', e => errors.push(e.message)); if (process.env.BPM_DEBUG) page.on('console', m => { const t = m.text(); if (t.startsWith('FMDBG')) console.log(t); });
     await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/tools/battle-pursuit-pace-browser-entry.html?mode=skip&seed=${seed}&atk=${ATK}&def=${DEF}`, { waitUntil: 'load', timeout: 60000 });
     await page.waitForFunction(() => window.__e2e?.ready === true, undefined, { timeout: 60000 });
     await page.waitForFunction(() => window.__e2e.done === true, undefined, { timeout: MAX_MS, polling: 500 });
@@ -106,7 +106,7 @@ function metrics(r) {
     if (cls === 'blocked') { blockedActs++; continue; }
     if (cls === 'arrived') continue;
     freeSteps += used; freePool += row.mp;
-    if (cls === 'wasted') wastedActs++;
+    if (cls === 'wasted') { wastedActs++; if (process.env.BPM_DEBUG) console.log('WASTED', JSON.stringify({ k, mp: row.mp, end, start: [row.q0, row.r0], cells: [...(cellsByAct.get(k) || [])] })); }
   }
   return { arbPathCav, pingpong, uniqueCells, freeSteps, freePool, freeRatio: freePool ? freeSteps / freePool : 1, allSteps, allPool, blockedActs, wastedActs, mutSensitive, winner: r.result && r.result.winner };
 }
@@ -129,12 +129,12 @@ function authenticityChecks() {
 }
 
 (async () => {
-  const parts = process.env.BPM_PART ? [process.env.BPM_PART] : ['code', 'mutA', 'mutB'];
+  const parts = process.env.BPM_PART ? [process.env.BPM_PART] : ['code', 'mutA', 'mutB', 'mutC'];
   const out = {};
   for (const p of parts) {
     const agg = { arbPathCav: 0, pingpong: 0, uniqueCells: 0, freeSteps: 0, freePool: 0, allSteps: 0, allPool: 0, blockedActs: 0, wastedActs: 0, mutSensitive: 0 };
     for (const seed of SEEDS) {
-      const m = metrics(await run(p === 'mutA' ? '/*PATH_RESERVE*/ true' : p === 'mutB' ? '/*CAV_TRAIL*/ ru.cavTrail?.has(nk)' : null, seed));
+      const m = metrics(await run(p === 'mutA' ? '/*PATH_RESERVE*/ true' : p === 'mutB' ? '/*CAV_TRAIL*/ ru.cavTrail?.has(nk)' : p === 'mutC' ? '/*RESUME_AFTER_PLAN*/' : null, seed));
       console.log(p, 'seed', seed, JSON.stringify(m));
       for (const k of Object.keys(agg)) agg[k] += m[k];
     }
@@ -150,12 +150,14 @@ function authenticityChecks() {
     check('T1 arbitraz nie tnie planow konnicy (kolizja sciezek) w turach 9-16', () => assert.equal(c.arbPathCav, 0));
     check('T2 brak ping-pongu konnicy (unikalne pola == kroki w kazdej aktywacji)', () => assert.equal(c.pingpong, 0));
     check('T3 wolna droga: konnica wykonuje >= 80% puli', () => assert.ok(c.freePool > 0 && c.freeRatio >= 0.8, `freeRatio=${c.freeRatio.toFixed(3)} (${c.freeSteps}/${c.freePool})`));
+    check('T4 (r5, zarzut 6 FC) zadna aktywacja konnicy z wolna droga nie konczy sie z niewykorzystana pula (wastedActs == 0 w 3 ziarnach, w tym ziarno 1 runda 12)', () => assert.equal(c.wastedActs, 0, 'wastedActs=' + c.wastedActs));
     check('A6 autentycznosc na DANYCH REALNEJ sceny: mutacja miary zmienia werdykt >= 1 aktywacji', () => assert.ok(c.mutSensitive > 0, 'mutSensitive=' + c.mutSensitive));
   }
   const mutResults = [];
   if (authMut) mutResults.push(['MUTACJA miary T3 (kazda niewykorzystana = zablokowana) wykryta przez A4', authMut[1]]);
   if (out.mutA) mutResults.push(['MUTACJA PATH_RESERVE->false wykryta (T1 czerwony)', out.mutA.arbPathCav > 0]);
   if (out.mutB) mutResults.push(['MUTACJA CAV_TRAIL->false wykryta (T2 czerwony)', out.mutB.pingpong > 0]);
+  if (out.mutC) mutResults.push(['MUTACJA RESUME_AFTER_PLAN->done() (stary blad r4) wykryta (T4 czerwony)', out.mutC.wastedActs > 0]);
   for (const [name, ok, msg] of results) console.log(`${ok ? 'ok  ' : 'FAIL'} ${name}${ok ? '' : ' -- ' + msg}`);
   for (const [name, ok] of mutResults) console.log(`${ok ? 'ok  ' : 'FAIL'} ${name}`);
   const fail = results.filter(r => !r[1]).length + mutResults.filter(r => !r[1]).length;
