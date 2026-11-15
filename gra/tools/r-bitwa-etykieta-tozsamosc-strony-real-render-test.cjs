@@ -191,6 +191,17 @@ async function buildDist() {
   await page.goto('file://' + distIndex, { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() => !!(window).__postBattleSummaryTestDebug, { timeout: 20000 });
   console.log('Hook __postBattleSummaryTestDebug obecny w produkcyjnym bundlu (vite build).');
+  // R-WEB-TEST-DEBT-BASE-RED-FALA741-Q1 (klasa D, niestabilność czasowa): po załadowaniu hooka gra jeszcze się
+  // składa (menu główne wstawiane do <body>, potem stabilizacja DOM). Podanie podsumowania w trakcie tego składania
+  // kończy się tym, że overlay nie jest widoczny w DOM. Czekamy na stan (menu obecne + liczba dzieci <body> stabilna
+  // przez 3 kolejne próbki), zamiast na stały timeout.
+  await page.waitForFunction(() => !!document.querySelector('.civ-menu'), null, { timeout: 60000 });
+  for (let i = 0, prev = -1, same = 0; i < 60 && same < 3; i++) {
+    await page.waitForTimeout(500);
+    const n = await page.evaluate(() => document.body.children.length);
+    same = n === prev ? same + 1 : 0;
+    prev = n;
+  }
 
   // ---------------------------------------------------------------------
   // SCENARIUSZ A: gracz (Grecy) atakuje miasto-panstwo Korynt, 1 jednostka

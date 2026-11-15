@@ -189,7 +189,13 @@ async function main() {
     assert('L2a w oknie (tura < until) status nadal pokoj', sWin.turn < t0 + 5 && sWin.status === 'pokoj' && sWin.truceUntilTurn === t0 + 5, sWin);
     await endUntilTurn(page, t0 + 5);
     const sExp = await pairState(page);
-    assert('L2b w turze wygaśnięcia wojna wraca', sExp.turn === t0 + 5 && sExp.status === 'wojna', sExp);
+    // R-WEB-TEST-DEBT-BASE-RED-FALA741-Q1 (klasa A, dowód: diplomacy-peace-lock.ts truceEndTickPair + truceEndAiAccepts,
+    // decyzja #169 DIPLO-TRUCE-IMPL): po końcu rozejmu NIE ma już natychmiastowej wojny. AI-adresat rozstrzyga od razu:
+    // zgoda (proponujący ≥20% słabszy militarnie) = pokój stały (status zostaje 'pokoj'), brak zgody = wojna.
+    // Test akceptuje obie gałęzie, ale każda musi być bez kary i bez flagi agresora (L2c-L2e).
+    // Scenariusz zasiany (playtest): gracz ma >=20% mniej armii niż AI, więc truceEndAiAccepts = zgoda -> pokój stały.
+    // Mutacja „natychmiast wojna przy wygaśnięciu” (dawne zachowanie) daje status 'wojna' i czerwieni ten test.
+    assert('L2b w turze wygaśnięcia rozejm się kończy: zgoda AI -> pokój stały (status pokoj, bez wojny)', sExp.turn === t0 + 5 && sExp.status === 'pokoj', sExp);
     assert('L2c truceUntilTurn wyczyszczony', sExp.truceUntilTurn === null, sExp);
     const flags = await page.evaluate(() => window.__truceTestDebug.aggressorFlags());
     assert('L2d brak flagi agresora po wygaśnięciu', Object.keys(flags).length === 0, flags);

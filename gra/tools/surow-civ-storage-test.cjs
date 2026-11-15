@@ -394,15 +394,16 @@ console.log('\n-- G. main.ts (strażnik tekstowy): wyrąb lasu przekazuje cap do
   // rozpoznanej po tym, że kolejna linia woła refreshPlayerCityEcon).
   const loopStart = mainSrc.indexOf('for (const [hexKey, st] of hexClearingStates)');
   assert(loopStart >= 0, 'main.ts: znaleziono pętlę wyrębu lasu (for hexClearingStates)');
-  const loopEndMarker = 'refreshPlayerCityEcon(econ.perCity);';
+  const loopEndMarker = 'refreshPlayerCityEcon(econ.perCity';
   const loopEndIdx = mainSrc.indexOf(loopEndMarker, loopStart);
   assert(loopEndIdx > loopStart, 'main.ts: znaleziono koniec pętli wyrębu lasu (przed refreshPlayerCityEcon)');
   const loopBody = loopStart >= 0 && loopEndIdx > loopStart ? mainSrc.slice(loopStart, loopEndIdx) : '';
 
   // Wywołanie creditOwnerResourceStock dla 'drewno' MUSI mieć 5. argument (cap) --
   // dokładnie ten fragment, jaki Operator zostawił w kodzie po naprawie.
+  // (2026-11-15 R-WEB-TEST-DEBT: wywołanie jest wieloliniowe po Prettier -- regex tolerancyjny na białe znaki.)
   const drewnoCallMatch = loopBody.match(
-    /creditOwnerResourceStock\(cities, ownerId, 'drewno', drewnoCredit(, \w+)?\)/,
+    /creditOwnerResourceStock\(\s*cities,\s*ownerId,\s*'drewno',\s*drewnoCredit(?:,\s*(\w+))?,?\s*\)/,
   );
   assert(!!drewnoCallMatch,
     "main.ts: znaleziono wywołanie creditOwnerResourceStock(cities, ownerId, 'drewno', drewnoCredit...) w pętli wyrębu");
