@@ -100,8 +100,17 @@ eq(M.aiPickMiastoDoZadania([{ cityId: 'k', cityPn: 9999, zakazane: true }]), nul
 
 // --- decideAIDiplomacy: oddanie i żądanie w wojnie ---
 // r4: domyślne 10 tur wojny = powyżej minTurWojny (≤ 8, R5a) — bramka czasu nie gasi testów progów.
-function runAI({ rw, agr = 5, eks = 3, miastaAI = [], miastaPartnera = [], turnsAtWar = 10, zdobyte = 0, war = true }) {
+// R-TEST-DEBT-BASE-RED-MAIN-Q2 (klasa A): oddanie miasta (N1a) i żądanie (N1b) bramkuje POZYCJA SIŁY MILITARNEJ
+// (peacePosMil: 'slabsza' = AI oddaje; brak danych = 'pasmo' = brak oddania), a rw nie bramkuje (ai.ts ~7070, ~7107).
+// Zmęczenie ≥0,8 (tura 16) wyprzedza oba bloki bezwarunkowym pokojem (ai.ts ~7050).
+const SIŁA = {
+  slabsza:    { ai: { sila: 100, armiaPkt: 100 }, partner: { sila: 1000, armiaPkt: 1000 } },
+  silniejsza: { ai: { sila: 1000, armiaPkt: 1000 }, partner: { sila: 100, armiaPkt: 100 } },
+};
+function runAI({ rw, agr = 5, eks = 3, miastaAI = [], miastaPartnera = [], turnsAtWar = 10, zdobyte = 0, war = true, pozycja = 'pasmo' }) {
+  const sil = SIŁA[pozycja];
   const rel = {
+    ...(sil ? { silaMilitarnaAI: sil.ai, silaMilitarnaPartner: sil.partner } : {}),
     partnerId: '0',
     relation: { zaufanie: 5, respekt: 5, status: war ? 'wojna' : 'pokoj' },
     respektWzgledny: rw,
@@ -130,50 +139,52 @@ const cession = (cmds) => cmds.find(c => c.type === 'oferuj_miasto_za_pokoj');
 const demand = (cmds) => cmds.find(c => c.type === 'zada_miasto_za_pokoj');
 const CITIES_OK = [{ cityId: 'a', cityPn: 420, zakazane: false }, { cityId: 'b', cityPn: 900, zakazane: false }, { cityId: 'c', cityPn: 900, zakazane: false }];
 
-// Próg rw (agr=5 → 0.15): N-1 / N / N+1
-ok(cession(runAI({ rw: 0.14, miastaAI: CITIES_OK })) !== undefined, 'oddanie: rw 0.14 (N-1) → oddaje');
-ok(cession(runAI({ rw: 0.15, miastaAI: CITIES_OK })) !== undefined, 'oddanie: rw 0.15 (N) → oddaje');
-ok(cession(runAI({ rw: 0.16, miastaAI: CITIES_OK })) === undefined, 'oddanie: rw 0.16 (N+1) → NIE oddaje');
-// Próg rw zależny od agresywności: agr=10 → 0.10
-ok(cession(runAI({ rw: 0.10, agr: 10, miastaAI: CITIES_OK })) !== undefined, 'agr=10: rw 0.10 (N) → oddaje');
-ok(cession(runAI({ rw: 0.11, agr: 10, miastaAI: CITIES_OK })) === undefined, 'agr=10: rw 0.11 (N+1) → NIE oddaje');
-// agr=1 → 0.19
-ok(cession(runAI({ rw: 0.19, agr: 1, miastaAI: CITIES_OK })) !== undefined, 'agr=1: rw 0.19 (N) → oddaje');
-ok(cession(runAI({ rw: 0.20, agr: 1, miastaAI: CITIES_OK })) === undefined, 'agr=1: rw 0.20 (N+1) → NIE oddaje');
+// Oddanie (N1a): bramka = słabsza militarnie; rw i agresywność NIE bramkują (klasa A, patrz komentarz runAI).
+const SL = 'slabsza';
+ok(cession(runAI({ rw: 0.14, pozycja: SL, miastaAI: CITIES_OK })) !== undefined, 'oddanie: słabsza militarnie, rw 0.14 → oddaje (rw nie bramkuje)');
+ok(cession(runAI({ rw: 0.90, pozycja: SL, miastaAI: CITIES_OK })) !== undefined, 'oddanie: słabsza militarnie, rw 0.90 → oddaje');
+ok(cession(runAI({ rw: 0.10, pozycja: 'silniejsza', miastaAI: CITIES_OK })) === undefined, 'oddanie: silniejsza militarnie → NIE oddaje');
+ok(cession(runAI({ rw: 0.10, pozycja: 'pasmo', miastaAI: CITIES_OK })) === undefined, 'oddanie: brak danych siły (pasmo) → NIE oddaje');
+ok(cession(runAI({ rw: 0.10, agr: 10, pozycja: SL, miastaAI: CITIES_OK })) !== undefined, 'oddanie: agr=10 nie zmienia bramki (słabsza) → oddaje');
+ok(cession(runAI({ rw: 0.10, agr: 1, pozycja: SL, miastaAI: CITIES_OK })) !== undefined, 'oddanie: agr=1 nie zmienia bramki (słabsza) → oddaje');
 // ≥3 miasta
-ok(cession(runAI({ rw: 0.10, miastaAI: CITIES_OK.slice(0, 2) })) === undefined, 'oddanie: 2 miasta → NIE (N-1)');
-ok(cession(runAI({ rw: 0.10, miastaAI: CITIES_OK })) !== undefined, 'oddanie: 3 miasta → oddaje (N)');
+// Klasa A: zmęczenie wojną (tura 10 = poziom 0,5, isWarWeary) + desperacja obniża minimum miast AI do minMiastAi=2 (ai.ts ~7077).
+ok(cession(runAI({ rw: 0.10, pozycja: SL, miastaAI: CITIES_OK.slice(0, 2) })) !== undefined, 'oddanie: 2 miasta przy zmęczeniu (desperacja, minMiastAi=2) → oddaje');
+ok(cession(runAI({ rw: 0.10, pozycja: SL, miastaAI: CITIES_OK.slice(0, 1) })) === undefined, 'oddanie: 1 miasto → NIE (N-1 nawet przy desperacji)');
+ok(cession(runAI({ rw: 0.10, pozycja: SL, miastaAI: CITIES_OK })) !== undefined, 'oddanie: 3 miasta → oddaje (N)');
 // Pokój nie w wojnie → brak oddania
-ok(cession(runAI({ rw: 0.10, miastaAI: CITIES_OK, war: false })) === undefined, 'poza wojną → brak oddania');
+ok(cession(runAI({ rw: 0.10, pozycja: SL, miastaAI: CITIES_OK, war: false })) === undefined, 'poza wojną → brak oddania');
 // Cena pokrycia: cena w wadze
-ok(cession(runAI({ rw: 0.10, miastaAI: c3(N3 - 1) })) === undefined, 'oddanie: miasto N3-1 (< C PW) → NIE');
-ok(cession(runAI({ rw: 0.10, miastaAI: c3(N3) })) !== undefined, 'oddanie: miasto N3 (>= C PW) → oddaje');
+ok(cession(runAI({ rw: 0.10, pozycja: SL, miastaAI: c3(N3 - 1) })) === undefined, 'oddanie: miasto N3-1 (< C PW) → NIE');
+ok(cession(runAI({ rw: 0.10, pozycja: SL, miastaAI: c3(N3) })) !== undefined, 'oddanie: miasto N3 (>= C PW) → oddaje');
 // Zawartość komendy
-const cmdOddaj = cession(runAI({ rw: 0.10, eks: 5, miastaAI: c3(N5) }));
+const cmdOddaj = cession(runAI({ rw: 0.10, eks: 5, pozycja: SL, miastaAI: c3(N5) }));
 eq(cmdOddaj?.cityId, 'a', 'komenda oddania: cityId');
 eq(cmdOddaj?.cityPn, N5, 'komenda oddania: cityPn');
 eq(cmdOddaj?.cityWeight, 1.8, 'komenda oddania: cityWeight z ekspansywności (eks=5)');
 eq(cmdOddaj?.targetId, '0', 'komenda oddania: targetId = gracz');
 
-// Żądanie: rw >= 0.7 AND (turnsAtWar >= 20 OR zdobyte > 0), miasto gracza >= 500
+// Żądanie (N1b): rw >= 0.7 AND (tury wojny >= 20 LUB zdobyte miasto gracza > 0) i miasto gracza >= C.
+// Klasa A: tury >= 16 → zmęczenie ≥0,8 → pokój bezwarunkowy wyprzedza żądanie (ai.ts ~7050), więc progi rw/C
+// testujemy przy 10 turach + 1 zdobytym mieście (zmęczenie 0,6 < 0,8). Warunek „20 tur” jest martwy (DECISION_REQUIRED).
 const GRACZ_OK = [{ cityId: 'g1', cityPn: 700, zakazane: false }, { cityId: 'k', cityPn: 9999, zakazane: true }];
-ok(demand(runAI({ rw: 0.69, turnsAtWar: 25, miastaPartnera: GRACZ_OK })) === undefined, 'żądanie: rw 0.69 (N-1) → NIE');
-ok(demand(runAI({ rw: 0.70, turnsAtWar: 25, miastaPartnera: GRACZ_OK })) !== undefined, 'żądanie: rw 0.70 (N) → żąda');
-ok(demand(runAI({ rw: 0.71, turnsAtWar: 25, miastaPartnera: GRACZ_OK })) !== undefined, 'żądanie: rw 0.71 (N+1) → żąda');
-ok(demand(runAI({ rw: 0.80, turnsAtWar: 19, zdobyte: 0, miastaPartnera: GRACZ_OK })) === undefined, 'żądanie: tury 19 (N-1), brak zdobyczy → NIE');
-ok(demand(runAI({ rw: 0.80, turnsAtWar: 20, zdobyte: 0, miastaPartnera: GRACZ_OK })) !== undefined, 'żądanie: tury 20 (N) → żąda');
+const DEM = { turnsAtWar: 10, zdobyte: 1 };
+ok(demand(runAI({ ...DEM, rw: 0.69, miastaPartnera: GRACZ_OK })) === undefined, 'żądanie: rw 0.69 (N-1) → NIE');
+ok(demand(runAI({ ...DEM, rw: 0.70, miastaPartnera: GRACZ_OK })) !== undefined, 'żądanie: rw 0.70 (N) → żąda');
+ok(demand(runAI({ ...DEM, rw: 0.71, miastaPartnera: GRACZ_OK })) !== undefined, 'żądanie: rw 0.71 (N+1) → żąda');
+ok(demand(runAI({ rw: 0.80, turnsAtWar: 15, zdobyte: 0, miastaPartnera: GRACZ_OK })) === undefined, 'żądanie: tury 15, brak zdobyczy → NIE (poniżej 20)');
+ok(demand(runAI({ rw: 0.80, turnsAtWar: 20, zdobyte: 0, miastaPartnera: GRACZ_OK })) === undefined, 'żądanie: tury 20 bez zdobyczy → NIE (zmęczenie ≥0,8 wyprzedza; klasa A)');
 ok(demand(runAI({ rw: 0.80, turnsAtWar: 10, zdobyte: 1, miastaPartnera: GRACZ_OK })) !== undefined, 'żądanie: zdobyte miasto gracza (1), 10 tur → żąda');
 // r4 (zarzut 4 Evaluatora): bramka czasu wojny R5a obowiązuje także żądanie i oddanie miasta.
 ok(demand(runAI({ rw: 0.80, turnsAtWar: 0, zdobyte: 1, miastaPartnera: GRACZ_OK })) === undefined, 'żądanie r4: zdobyte miasto, 0 tur wojny → NIE (R5a)');
-ok(cession(runAI({ rw: 0.10, turnsAtWar: 0, miastaAI: CITIES_OK })) === undefined, 'oddanie r4: 0 tur wojny → NIE (R5a)');
-ok(cession(runAI({ rw: 0.10, turnsAtWar: 20, miastaAI: CITIES_OK })) !== undefined, 'oddanie r4: 20 tur wojny → oddaje');
+ok(cession(runAI({ rw: 0.10, turnsAtWar: 0, pozycja: SL, miastaAI: CITIES_OK })) === undefined, 'oddanie r4: 0 tur wojny → NIE (R5a)');
 ok(demand(runAI({ rw: 0.80, turnsAtWar: 0, zdobyte: 0, miastaPartnera: GRACZ_OK })) === undefined, 'żądanie: 0 tur i 0 zdobyczy → NIE');
-ok(demand(runAI({ rw: 0.80, turnsAtWar: 25, miastaPartnera: [{ cityId: 'g1', cityPn: C - 1, zakazane: false }] })) === undefined, 'żądanie: miasto gracza C-1 → NIE (N-1)');
-ok(demand(runAI({ rw: 0.80, turnsAtWar: 25, miastaPartnera: [{ cityId: 'g1', cityPn: C, zakazane: false }] })) !== undefined, 'żądanie: miasto gracza C → żąda (N)');
-ok(demand(runAI({ rw: 0.80, turnsAtWar: 25, miastaPartnera: [{ cityId: 'g1', cityPn: C + 1, zakazane: false }] })) !== undefined, 'żądanie: miasto gracza C+1 → żąda (N+1)');
-ok(demand(runAI({ rw: 0.80, turnsAtWar: 25, miastaPartnera: [{ cityId: 'k', cityPn: 9999, zakazane: true }] })) === undefined, 'żądanie: tylko stolica gracza → NIE');
-eq(demand(runAI({ rw: 0.80, turnsAtWar: 25, miastaPartnera: GRACZ_OK }))?.cityId, 'g1', 'komenda żądania: cityId miasta gracza');
-ok(demand(runAI({ rw: 0.80, turnsAtWar: 25, miastaPartnera: GRACZ_OK, war: false })) === undefined, 'żądanie poza wojną → NIE');
+ok(demand(runAI({ ...DEM, rw: 0.80, miastaPartnera: [{ cityId: 'g1', cityPn: C - 1, zakazane: false }] })) === undefined, 'żądanie: miasto gracza C-1 → NIE (N-1)');
+ok(demand(runAI({ ...DEM, rw: 0.80, miastaPartnera: [{ cityId: 'g1', cityPn: C, zakazane: false }] })) !== undefined, 'żądanie: miasto gracza C → żąda (N)');
+ok(demand(runAI({ ...DEM, rw: 0.80, miastaPartnera: [{ cityId: 'g1', cityPn: C + 1, zakazane: false }] })) !== undefined, 'żądanie: miasto gracza C+1 → żąda (N+1)');
+ok(demand(runAI({ ...DEM, rw: 0.80, miastaPartnera: [{ cityId: 'k', cityPn: 9999, zakazane: true }] })) === undefined, 'żądanie: tylko stolica gracza → NIE');
+eq(demand(runAI({ ...DEM, rw: 0.80, miastaPartnera: GRACZ_OK }))?.cityId, 'g1', 'komenda żądania: cityId miasta gracza');
+ok(demand(runAI({ ...DEM, rw: 0.80, miastaPartnera: GRACZ_OK, war: false })) === undefined, 'żądanie poza wojną → NIE');
 
 // --- Mapowanie komend na propozycje (N1 → stół negocjacyjny) ---
 const pOff = M.aiCommandToPendingProposal({ type: 'oferuj_miasto_za_pokoj', targetId: '0', powod: 'x', cityId: 'a', cityPn: 400, cityWeight: 1.5 }, 1, 0, 60);

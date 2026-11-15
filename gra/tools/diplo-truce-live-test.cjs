@@ -93,7 +93,7 @@ async function gotoPlaytestMapa(page) {
 
 /** Kończy tury (nie miejsca): endTurn przesuwa miejsce, pełna tura wymaga kilku wywołań. */
 async function endUntilTurn(page, target) {
-  for (let i = 0; i < 400; i++) {
+  for (let i = 0; i < 40; i++) {
     const cur = await page.evaluate(() => window.__truceTestDebug.turn());
     if (cur >= target) return cur;
     if (process.env.TRUCE_DEBUG === '1') {
@@ -102,16 +102,31 @@ async function endUntilTurn(page, target) {
     }
     await endOneTurn(page);
   }
-  throw new Error('endUntilTurn: nie osiągnięto tury ' + target);
+  // Diagnostyka stanu przy przerwaniu (klasyfikacja: tura nie rusza = blokada endTurn, a nie limit czasu).
+  const st = await page.evaluate(() => ({
+    turn: window.__truceTestDebug.turn(),
+    inProgress: window.__eraTestDebug.isEndTurnInProgress(),
+    overlays: document.querySelectorAll('.civ-diplo-basket-overlay, .civ-diplo-audience, [role=dialog]').length,
+    gateText: (document.body.innerText.match(/Zakończ turę[^\n]{0,120}/) || [''])[0],
+  })).catch((e) => ({ err: String(e) }));
+  throw new Error('endUntilTurn: nie osiągnięto tury ' + target + ' stan=' + JSON.stringify(st));
 }
 
 async function pairState(page) {
   return page.evaluate(([a, b]) => window.__truceTestDebug.pairState(a, b), [PLAYER, AI]);
 }
 
+// R-TEST-DEBT-BASE-RED-MAIN-Q2 (klasa D, niestabilność czasowa): endTurn jest asynchroniczny (przetwarzanie tury AI).
+// Wywołanie w trakcie przetwarzania jest ignorowane, a stałe 150 ms + limit 400 prób nie nadążały. Czekamy więc na
+// stan gry (isEndTurnInProgress) zamiast na czas. Hak __eraTestDebug.isEndTurnInProgress już istnieje (main.ts).
+async function waitEndTurnIdle(page) {
+  await page.waitForFunction(() => !window.__eraTestDebug.isEndTurnInProgress(), undefined, { timeout: 180000 });
+}
 async function endOneTurn(page) {
+  await waitEndTurnIdle(page);
   await page.evaluate(() => window.__eraTestDebug.endTurn());
-  await wait(150);
+  await waitEndTurnIdle(page);
+  await wait(100);
 }
 
 async function main() {
@@ -159,7 +174,11 @@ async function main() {
     const submitDisabled = await page.locator('.cdb-submit').first().isDisabled().catch(() => true);
     assert('U1f przycisk wyślij aktywny', !submitDisabled);
     if (!submitDisabled) {
-      await page.locator('.cdb-submit').first().click({ timeout: 10000 });
+      // R-TEST-DEBT-BASE-RED-MAIN-Q2 (klasa D): Playwright click czekał 10 s na stabilność przycisku, który po re-renderze
+      // modala bywa odtwarzany (sonda: przycisk widoczny, włączony, nieprzykryty). Klik DOM po potwierdzeniu stanu
+      // (U1f: aktywny) wywołuje tę samą obsługę zdarzenia.
+      await page.waitForFunction(() => { const b = document.querySelector('.cdb-submit'); return !!b && !b.disabled; }, undefined, { timeout: 10000 });
+      await page.evaluate(() => document.querySelector('.cdb-submit').click());
       await wait(300);
       const entries = await page.evaluate(() => window.__truceTestDebug.negotiationEntries());
       const truceEntry = entries.find(e => e.actionId === 'rozejm' && e.turns === 5);
@@ -185,6 +204,11 @@ async function main() {
     // --- L2: okno i wygaśnięcie bez kary ---
     console.log('L2 okno rozejmu i wygaśnięcie');
     const credBefore = await page.evaluate(([p]) => window.__truceTestDebug.credibilityEvents(p).length, [PLAYER]);
+    // R-TEST-DEBT-BASE-RED-MAIN-Q2 (klasa D, harness): po L1 zostaje otwarte okno audiencji/koszyka (overlay), a otwarty
+    // modal blokuje endTurn (bramka z U1h). Sonda: tura 2 zamiast 5, bez przetwarzania, 1 overlay. Zamykamy audiencję
+    // przed pętlą tur i czekamy na brak overlay (stan, nie czas).
+    await page.evaluate(() => window.__truceTestDebug.closeAudience());
+    await page.waitForFunction(() => document.querySelectorAll('.civ-diplo-basket-overlay, .civ-diplo-audience, [role=dialog]').length === 0, undefined, { timeout: 15000 }).catch(() => {});
     await endUntilTurn(page, t0 + 4);
     const sWin = await pairState(page);
     assert('L2a w oknie (tura < until) status nadal pokoj', sWin.turn < t0 + 5 && sWin.status === 'pokoj' && sWin.truceUntilTurn === t0 + 5, sWin);
@@ -205,6 +229,9 @@ async function main() {
     // Kara za złamanie rozejmu to WYŁĄCZNIE 'zlamanie_paktu_nap'. Inne zdarzenia (np. przemarsz
     // jednostek na terytorium AI, nalicza się też przy pokoju) nie są karą za rozejm.
     assert('L2e brak kary zlamanie_paktu_nap po wygaśnięciu', !credTyp.includes('zlamanie_paktu_nap'), { credBefore, credAfter, credTyp: credTyp.slice(0, 400) });
+    // L2b (odmowa) — JAWNIE NIE_ZMIERZONO w tym teście: gałąź odmowy (AI wypowiada wojnę po wygaśnięciu) wymaga zasiewu
+    // armii gracza ≥20% silniejszej od AI albo słabszej, czego ten scenariusz nie ustawia. Pokrycie: osobny temat.
+    console.log('L2b-odmowa: NIE_ZMIERZONO w tym scenariuszu (brak zasiewu armii dla gałęzi „AI odmawia” — osobny temat)');
 
     // --- L3: złamanie w oknie ---
     console.log('L3 złamanie rozejmu');
