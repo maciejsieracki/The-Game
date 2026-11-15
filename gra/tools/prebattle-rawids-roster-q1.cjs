@@ -72,6 +72,7 @@ async function readOverlay(page) {
       youMore: more ? more.textContent.trim() : null,
       rosterRect, moreRect, cardsRect: rect(cards),
       deployRect, btnRects,
+      cardsScrollable: !!cards && cards.scrollHeight > cards.clientHeight + 1,
       rosterOverlapsDeploy: inter(rosterRect, deployRect),
       moreOverlapsDeploy: inter(moreRect, deployRect),
       moreInViewport: !!moreRect && moreRect.bottom <= vh && moreRect.top >= 0,
@@ -79,6 +80,29 @@ async function readOverlay(page) {
       docScroll: { scrollH: document.documentElement.scrollHeight, clientH: document.documentElement.clientHeight, scrollW: document.documentElement.scrollWidth, clientW: document.documentElement.clientWidth },
     };
   }, RAW_SRC);
+}
+
+/** Asercje (dispatch kryteria b/c/d): zwraca liste naruszen; pusta = PASS. */
+function checkRun(key, r) {
+  const f = [];
+  if (r.error) return ['blad uruchomienia: ' + r.error];
+  const o = r.overlay || {};
+  if (!o.open) return ['okno rozstawienia nie otwarte'];
+  if (o.rawMatches.length) f.push('surowe ID w tekscie okna: ' + JSON.stringify(o.rawMatches));
+  if (o.youShown !== 8) f.push('liczba kart listy ' + o.youShown + ' (oczekiwano 8 przy 12 jednostkach)');
+  if (o.youMore !== '+4 więcej…') f.push('linia „+N” ' + JSON.stringify(o.youMore) + ' (oczekiwano „+4 więcej…”)');
+  if (o.rosterOverlapsDeploy) f.push('lista wojsk nachodzi na panel rozstawienia');
+  if (o.moreOverlapsDeploy) f.push('linia „+N” nachodzi na panel rozstawienia');
+  if (!o.moreInViewport) f.push('linia „+N” poza viewportem: ' + JSON.stringify(o.moreRect));
+  if (!o.btnsInViewport) f.push('przyciski akcji poza viewportem: ' + JSON.stringify(o.btnRects));
+  if (!o.lastCardAfterScroll) f.push('brak ostatniej karty do pomiaru');
+  else {
+    if (!o.lastCardAfterScroll.inCards) f.push('ostatnia karta poza kontenerem listy po przewinieciu');
+    if (!o.lastCardAfterScroll.inViewport) f.push('ostatnia karta poza viewportem po przewinieciu: ' + JSON.stringify(o.lastCardAfterScroll));
+  }
+  if (o.docScroll && o.docScroll.scrollW > o.docScroll.clientW) f.push('poziomy scroll strony');
+  if ((r.pageErrors || []).length) f.push('bledy strony: ' + JSON.stringify(r.pageErrors));
+  return f;
 }
 
 async function runOne(browser, base, vp, shotsDir) {
@@ -128,11 +152,28 @@ async function runOne(browser, base, vp, shotsDir) {
     await page.addStyleTag({ content: '.pb-deploy{width:100vw !important;left:0 !important;transform:none !important}' });
     await page.waitForTimeout(300);
   }
+  if (process.env.PB_MUTATE === 'more-offscreen') {
+    // MUTACJA (tylko pomiar): linia „+N więcej…” wypchnieta poza viewport; test (c) musi to zglosic.
+    await page.addStyleTag({ content: '.pb-roster.pb-you .pb-more{position:fixed !important;top:' + (vp.h + 40) + 'px !important}' });
+    await page.waitForTimeout(300);
+  }
   const ov = await readOverlay(page);
   if (shotsDir && ov.open) {
     fs.mkdirSync(shotsDir, { recursive: true });
     await page.screenshot({ path: path.join(shotsDir, `${LABEL}-${vp.w}x${vp.h}.png`) });
   }
+  // Ostatnia karta listy po przewinieciu wewnetrznego kontenera do konca (kryterium (c), dispatch).
+  ov.lastCardAfterScroll = await page.evaluate(() => {
+    const ov2 = document.querySelector('.pb-overlay');
+    const cards = ov2 && ov2.querySelector('.pb-roster.pb-you .pb-rcards');
+    if (!cards) return null;
+    cards.scrollTop = cards.scrollHeight;
+    const all = cards.querySelectorAll('.pb-uc');
+    const last = all[all.length - 1];
+    if (!last) return null;
+    const r = last.getBoundingClientRect(); const c = cards.getBoundingClientRect();
+    return { top: Math.round(r.top), bottom: Math.round(r.bottom), inViewport: r.bottom <= window.innerHeight && r.top >= 0, inCards: r.top >= c.top - 1 && r.bottom <= c.bottom + 1, count: all.length };
+  });
   await page.close();
   return { ...step, overlay: ov, pageErrors: errors };
 }
@@ -142,6 +183,7 @@ async function runOne(browser, base, vp, shotsDir) {
   const base = 'http://127.0.0.1:' + srv.address().port;
   const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium', args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
   const out = { label: LABEL, n: N, runs: {} };
+  const allFails = [];
   try {
     for (const vp of VIEWPORTS) {
       const key = vp.w + 'x' + vp.h;
@@ -149,11 +191,17 @@ async function runOne(browser, base, vp, shotsDir) {
       try { r = await runOne(browser, base, vp, SHOTS); } catch (e) { r = { error: String(e && e.message || e) }; }
       out.runs[key] = r;
       const o = r.overlay || {};
-      console.log('RUN', LABEL, key, JSON.stringify({ err: r.error || null, open: o.open, raw: o.rawMatches, youShown: o.youShown, youMore: o.youMore, overlapRoster: o.rosterOverlapsDeploy, overlapMore: o.moreOverlapsDeploy, moreIn: o.moreInViewport, btnsIn: o.btnsInViewport, rosterRect: o.rosterRect, deployRect: o.deployRect, docScroll: o.docScroll, pageErrors: (r.pageErrors || []).length }));
+      const fails = checkRun(key, r);
+      allFails.push(...fails.map(f => key + ': ' + f));
+      console.log('RUN', LABEL, key, JSON.stringify({ err: r.error || null, open: o.open, raw: o.rawMatches, youShown: o.youShown, youMore: o.youMore, overlapRoster: o.rosterOverlapsDeploy, overlapMore: o.moreOverlapsDeploy, moreIn: o.moreInViewport, btnsIn: o.btnsInViewport, cardsScrollable: o.cardsScrollable, lastCard: o.lastCardAfterScroll, rosterRect: o.rosterRect, deployRect: o.deployRect, docScroll: o.docScroll, pageErrors: (r.pageErrors || []).length, fails }));
       fs.writeFileSync(OUT, JSON.stringify(out, null, 2));
     }
   } finally {
     await browser.close();
     srv.close();
   }
+  out.failures = allFails;
+  fs.writeFileSync(OUT, JSON.stringify(out, null, 2));
+  console.log('ASSERT', LABEL, allFails.length === 0 ? 'OK' : 'FAIL ' + allFails.length, JSON.stringify(allFails));
+  process.exitCode = allFails.length === 0 ? 0 : 1;
 })().catch(e => { console.error('FATAL', e); process.exit(1); });

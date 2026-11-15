@@ -647,9 +647,11 @@ export function civMatrixParameterLabelPl(parameterId: string): string {
     piechota: 'piechoty', lukownicy: 'łuczników', kawaleria: 'kawalerii', rydwany: 'rydwanów',
     morska: 'morski', wszystkie: 'wszystkich', oblezenie: 'oblężenia', teren: 'teren', las: 'lasu',
     terytorium: 'własnym terytorium', murze: 'w murze', runda: 'rundzie szarży', plytkie: 'płytkim morzu',
-    // R-WEB-UI-PREBATTLE-RAW-IDS-AND-ROSTER-OVERLAP-Q1: brakujace slowa z identyfikatorow walki (tekst dla gracza).
-    // Czastki techniczne bez znaczenia ('w', 'wlasne', 'szarzy', 'morze') daja pusty fragment i sa pomijane w etykiecie.
-    obleczenie: 'oskrzydlenia', bitwa: 'bitwy', w: '', wlasne: '', szarzy: '', morze: '',
+    // R-WEB-UI-PREBATTLE-RAW-IDS-AND-ROSTER-OVERLAP-Q1: slowa z identyfikatorow walki, ktore wczesniej trafialy
+    // do tekstu dla gracza surowo. `obleczenie` = kategoria jednostek oblezniczych (civ-bonuses.ts:75).
+    // Czastki bez znaczenia ('w', 'wlasne', 'szarzy', 'morze' - pozostalosci identyfikatora) daja pusty fragment
+    // i sa pomijane w etykiecie (filter nizej). Pozostale etykiety i zlaczenie ' · ' bez zmian wzgledem main.
+    obleczenie: 'oblężniczych', bitwa: 'bitwy', w: '', wlasne: '', szarzy: '', morze: '',
     proc: '%', skala: 'skala', agresywnosc: 'agresywność', ekspansywnosc: 'ekspansywność',
     priorytet: 'priorytet', ekonomia: 'ekonomia', nauka: 'nauka', tolerancja: 'tolerancja',
     ryzyka: 'ryzyka', sklonnosc: 'skłonność', podboju: 'podboju', profil: 'profil', obronna: 'obronny',
@@ -667,10 +669,8 @@ export function civMatrixParameterLabelPl(parameterId: string): string {
     health: 'zdrowia', pociski: 'pocisków', widok: 'widoku', dezercja: 'dezercji', utrzymanie: 'utrzymania',
     ture: 'na turę', podwoju: 'podboju',
   };
-  return parameterId.split('_').map((part) => {
-    const replacement = replacements[part] ?? part.replace(/proc$/, '%');
-    return replacement;
-  }).filter(part => part !== '').join(' · ').replace(' · %', '%');
+  return parameterId.split('_').map(part => replacements[part] ?? part.replace(/proc$/, '%'))
+    .filter(part => part !== '').join(' · ');
 }
 
 /**
