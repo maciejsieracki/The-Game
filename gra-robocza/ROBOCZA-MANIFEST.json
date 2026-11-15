@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "07c5147b74bd344df80c5e8cb8f96e06",
-  "bundleSha256": "3892fcdaf0da06318460cf572aca728fd8996625bb6e0ab4e187667bb2a5e77b",
-  "bundleBytes": 14741748,
+  "bundleMd5": "46c6683bd440a2a2235988e616f93698",
+  "bundleSha256": "60c5be03b3e7f324f172417a8792d1943da7a5413d906e846bd6e203567639c6",
+  "bundleBytes": 14749793,
   "sourceSnapshot": {
-    "source": "merge FC RETREAT-LIM 338c99009 + 62999145b na main 42a93543a",
+    "source": "merge FC LEDGER r4 b9559d6a7 + a35cee7b1 na main d1a2ad5c3",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 732: Armia moze sie wycofac do trzech razy na ture; po wyczerpaniu limitu kolejna przegrana w polu oznacza unicestwienie ocalalych (obrona i atak, gracz i AI); licznik zeruje sie w nastepnej turze; przycisk Wycofaj wyszarzony i komunikat Armia unicestwiona"
+    "FALA 733: Ksiega zrodel i zuzycia surowcow panstwa (teren, Warzelnia, wycinka lasu, konwersje, utrzymanie, obywatele, budowa, rekrutacja, Umowa wymiany z civ, Mennica, limit magazynu); zmiana magazynu rowna sumie ksiegi dla 9 surowcow w zywej grze; bez widoku UI (partia 4)"
   ],
   "verification": [
-    "tsc 0; logic 213/213; retreat-limit 43/0; pre-battle-retreat-exhausted 37/0; Chromium PASS; FC PASS-WITH-NOTES"
+    "tsc 0; logic 213/213; ledger 1030/0; consume 30/0; engine 20/0; trade 27/0; zywy Chromium 2 ziarna x 30 tur roznica 0 hash 30/30; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "NIE ZMIERZONO: toast i zrzut pelnej gry; brak wpisu w podsumowaniu bitwy; dlug Rust REPIN licznika odwrotow"
+    "NIE ZMIERZONO: seed 99991, E3c z aktywnymi trasami, czas tury (+9,5% w jednym pomiarze); ABC: szlak E3c vs decyzja 311; brak UI i zrodel lup/zwroty/zdobycie/dary (osobny temat); dlug Rust REPIN"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES RETREAT-LIM 62999145b / kod 338c99009: armia ma do trzech odwrotow na ture (odwrot.max_na_ture=3 w combat-params.json), po wyczerpaniu przegrana w polu = unicestwienie ocalalych (obrona i atakujacy, gracz i AI), licznik zeruje sie przy Zakoncz ture; przycisk Wycofaj wyszarzony z nowym tekstem; komunikat Armia unicestwiona. Testy: battle-retreat-limit 43/0, pre-battle-retreat-exhausted 37/0, two-hex 44/0, garnizon 27/0, Chromium retreat-limit PASS, tsc 0, logic 213/213, mutacja M4 czerwona. NIE ZMIERZONO: toast i zrzut pelnej gry. Uwagi: brak wpisu unicestwienia w podsumowaniu bitwy (osobny temat); reset licznika w tym samym miejscu co stary reset (odwroty z fazy AI trafiaja do nastepnej tury gracza). Dlug Rust REPIN: licznik odwrotow, odwrot.max_na_ture."
+    "notes": "FC PASS-WITH-NOTES LEDGER r4 (partia 2 z 4) a35cee7b1 / kod b9559d6a7: dziennik zrodel zapasow (backend, bez UI): ksiega magazynu panstwa z zrodlami teren i plony, Warzelnia (miasto), Wycinka lasu, konwersje, wejscia, drain Spichlerza, zuzycie (utrzymanie budynkow i jednostek, obywatele, budowa, rekrutacja), Umowa wymiany z civ (jednorazowa i cykliczna), Mennica i limit magazynu; hak testowy ledgerTestDebug tylko za civTest; reset okna pending przy wczytaniu i nowej grze. Testy: ledger 1030/0, consume 30/0, engine 20/0 (mutacja czerwona), trade 27/0, tsc 0, logic 213/213; zywy Chromium seedy 7 i 2024 x 30 tur: roznica 0, hash z ksiega i bez 30/30. NIE ZMIERZONO: seed 99991, E3c z aktywnymi trasami, czas tury (+9,5% w jednym pomiarze). Do decyzji wlasciciela (ABC): szlak E3c (main.ts ~40160) przesuwa braz/zelazo/ceglę/konie/zloto/sol poza ksiega, sprzecznie z decyzja 311. Zostaje: partia 3 (lup, zwroty, zdobycie miasta, dary, zapis historii) i partia 4 (UI Skad zapasy, zrzut, perf) jako osobny temat."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-15T06:08:32",
+  "hubGeneratedAt": "2026-11-15T06:41:07",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "07c5147b74bd344df80c5e8cb8f96e06",
-      "sizeBytes": 14741748
+      "md5": "46c6683bd440a2a2235988e616f93698",
+      "sizeBytes": 14749793
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "07c5147b74bd344df80c5e8cb8f96e06",
-      "sizeBytes": 14741748
+      "md5": "46c6683bd440a2a2235988e616f93698",
+      "sizeBytes": 14749793
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "07c5147b74bd344df80c5e8cb8f96e06",
-      "sizeBytes": 14741748
+      "md5": "46c6683bd440a2a2235988e616f93698",
+      "sizeBytes": 14749793
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "07c5147b74bd344df80c5e8cb8f96e06",
-      "sizeBytes": 14741748
+      "md5": "46c6683bd440a2a2235988e616f93698",
+      "sizeBytes": 14749793
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "07c5147b74bd344df80c5e8cb8f96e06",
-      "sizeBytes": 14741748
+      "md5": "46c6683bd440a2a2235988e616f93698",
+      "sizeBytes": 14749793
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "07c5147b74bd344df80c5e8cb8f96e06",
-      "sizeBytes": 14741748
+      "md5": "46c6683bd440a2a2235988e616f93698",
+      "sizeBytes": 14749793
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "07c5147b74bd344df80c5e8cb8f96e06",
-      "sizeBytes": 14741748
+      "md5": "46c6683bd440a2a2235988e616f93698",
+      "sizeBytes": 14749793
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "07c5147b74bd344df80c5e8cb8f96e06",
-      "sizeBytes": 14741748
+      "md5": "46c6683bd440a2a2235988e616f93698",
+      "sizeBytes": 14749793
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "07c5147b74bd344df80c5e8cb8f96e06",
-      "sizeBytes": 14741748
+      "md5": "46c6683bd440a2a2235988e616f93698",
+      "sizeBytes": 14749793
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "07c5147b74bd344df80c5e8cb8f96e06",
-      "sizeBytes": 14741748
+      "md5": "46c6683bd440a2a2235988e616f93698",
+      "sizeBytes": 14749793
     }
   ],
-  "md5": "07c5147b74bd344df80c5e8cb8f96e06",
+  "md5": "46c6683bd440a2a2235988e616f93698",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

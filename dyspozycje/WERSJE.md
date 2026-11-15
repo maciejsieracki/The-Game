@@ -1,3 +1,9 @@
+## ROBOCZA 46c6683b -- 2026-11-14 -- FALA 733: Skad zapasy: ksiega zrodel zapasow (backend, partia 2) (testowa)
+
+- Ksiega zrodel i zuzycia surowcow panstwa (teren, Warzelnia, wycinka lasu, konwersje, utrzymanie, obywatele, budowa, rekrutacja, Umowa wymiany z civ, Mennica, limit magazynu); zmiana magazynu rowna sumie ksiegi dla 9 surowcow w zywej grze; bez widoku UI (partia 4)
+- Weryfikacja: tsc 0; logic 213/213; ledger 1030/0; consume 30/0; engine 20/0; trade 27/0; zywy Chromium 2 ziarna x 30 tur roznica 0 hash 30/30; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: seed 99991, E3c z aktywnymi trasami, czas tury (+9,5% w jednym pomiarze); ABC: szlak E3c vs decyzja 311; brak UI i zrodel lup/zwroty/zdobycie/dary (osobny temat); dlug Rust REPIN
+
 ## ROBOCZA 07c5147b -- 2026-11-14 -- FALA 732: Odwroty: do 3 na ture, czwarty unicestwia armie (testowa)
 
 - Armia moze sie wycofac do trzech razy na ture; po wyczerpaniu limitu kolejna przegrana w polu oznacza unicestwienie ocalalych (obrona i atak, gracz i AI); licznik zeruje sie w nastepnej turze; przycisk Wycofaj wyszarzony i komunikat Armia unicestwiona
