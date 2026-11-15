@@ -1735,3 +1735,14 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **#229/#219 D-DTO-4/D-DTO-10:** start, dispatch `R-RUSTPORT-P4-DTO-DECYZJE-4-10-Q1` na `aa639a368`, baza `f7baa3848`, workflow `wf_0cf44ff7-e59`, wszystkie role OPUS (temat DTO renderera). Dokument: `dyspozycje/rust-port/p4/D-DTO-4-D-DTO-10-DECYZJE.md`. Zakres: tylko dokument, zero kodu.
 - **Dysk:** 10 GB wolne (75%) po sprzątaniu worktree #234 (HEAD w `refs/keep/cleanup-wf_23cd3ec9-415-*`).
 - **Aktywne (4):** #98 wyłom (`wf_15bb4a09-81f`), #226 OUTCOME r2 (`wf_41d73167-4c8`), #231 js_round -0 (`wf_0afbf4f1-ffb`), #229 D-DTO (`wf_0cf44ff7-e59`).
+
+## Przebieg (15.11, 17:4x–17:5x UTC — heartbeat „twardy bit”, sloty Rust)
+
+- **KROK 1 (sloty):** 4 aktywne Workflow bez FC: K5LOOP-OUTCOME runda 3 (#226, `wf_b79fac7a-026`, po INFRA rundy 2); js_round -0 (#231, `wf_0afbf4f1-ffb`); decyzja serde float_roundtrip (#232, `wf_f1110a1e-541`); odczyt luki generalTargetId (#233, `wf_137b6ea1-2de`). Sloty pełne, bez startów.
+- **KROK 2 (FC PASS bez integracji):**
+  - **AUTO-RECZNY (#97 rozpoznanie):** FC PASS-WITH-NOTES `f84e48a73`, dokumenty na `87b211370`. Decyzja orkiestratora: tryb ręczny dzielony na T1/T2/T3 pod #97. T2 i T3 zależą od #112 (rekurencja doktryny w pinie).
+  - **D-DTO-4/10 (#229):** FC PASS, dokumenty na `a3673c32f` (wcześniej).
+  - **Wyłom #98 (K5-LOOP-WYLOM, FC PASS-WITH-NOTES `5cc66992b`):** integracja na `f7baa3848` w worktree `integ-wylom` (merge `1b8b67173`), merge-tree bez konfliktów. Pierwszy pełny test przerwany brakiem miejsca na dysku (exit 101, log urwany w linii). Ponowny pełny test w toku (`integ-wylom-r2.log`): 1126 passed, 0 failed do tej chwili, bez `TEST_EXIT`. **FF na parity dopiero po `TEST_EXIT=0`.**
+- **KROK 3 (sprzątanie):** usunięto worktree #98 (4), #226 r2 (3), D-DTO (4), AUTO-RECZNY (4) po zabezpieczeniu HEAD w `refs/keep/cleanup-*`. Pozostawiono worktree KOLEJKA `wf_5a965001-591-4` (zniszczony checkout po INFRA; ponad 13 tys. zmian; do decyzji — nie usuwać bez przeglądu). Dysk: 13 GB wolne (69%).
+- **KROK 4:** nie dotyczy (bez decyzji gameplay).
+- **NASTĘPNY KROK:** `TEST_EXIT` integracji #98 → FF `rust-port/parity-v2` + `refs/keep/K5-LOOP-WYLOM-integ`; wyniki #226 r3, #231, #232, #233 (FC); T1–T3 (#97) po integracji #98 i rozstrzygnięciu #112.
