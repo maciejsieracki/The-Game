@@ -1567,3 +1567,14 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **KROK 3 (sprzątanie):** dysk spadł do 1,7 GB (poniżej progu 2 GB). Usunięto: `scratchpad/target-p429` (P4-29, zakończony), cztery katalogi sprzed nocy (`ev`, `w07`, `wedb`, `rp`). Dysk: 2,4 GB. Nie usuwano cache aktywnych: `scratchpad/target` (5,8 GB), `target-m01`, `target-cred-hak`, `tgt`, worktree trwających tematów.
 - **Zabezpieczenie systemu:** `rm -rf` z podstawioną zmienną zostało zablokowane; powtórzono usunięcie przez pełne ścieżki.
 - **NASTĘPNY KROK:** po FC któregokolwiek z czterech — integracja lub poprawka, sprzątanie cache tego tematu, uzupełnienie slotu. Przy dysku < 2 GB nie startować nowych tematów.
+
+## Przebieg (15.11, 13:48 UTC — heartbeat „twardy bit”, sloty Rust)
+
+- **KROK 1 (sloty):** 4 aktywne Workflow, bez nowych startów (warunek < 4 niespełniony):
+  - M01-R2 MapHex (#210): etap 2/4 pomiary, HAIKU, od 12:18; agent aktywny (13:44).
+  - P4-1J stan planów marszu (#209): etap 3/4 Evaluator, OPUS; pomiary PASS-WITH-NOTES `25da353f8` (nowy test granic `p4_1j_planned_march_bounds.rs`; 2 mutanty przeżyły i zostały zabite). Agenty aktywne (13:47).
+  - P4-1E CITY-VIEW (#214): etap 1/4 Operator, OPUS, od 12:27; agent aktywny (13:48).
+  - CRED-HAK wdrożenie, wycinek 1 (#171): etap 2/4 Evaluator, SONNET, od 12:59; Operator PARTIAL, WIP `ff6392336`; agent aktywny (13:48).
+- **KROK 2 (FC PASS bez integracji):** brak.
+- **KROK 3 (sprzątanie):** brak zakończonych tematów. Dysk: 8,9 GB wolne.
+- **NASTĘPNY KROK:** odebrać FC P4-1J i CRED-HAK (Evaluator); po FC PASS — refs/keep, ancestry, integracja, sprzątanie cache.
