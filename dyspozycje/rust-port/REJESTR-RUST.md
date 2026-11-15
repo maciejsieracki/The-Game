@@ -1849,3 +1849,13 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **P4-1B Q1 roadMask (FC `88d0dff1a`) i Q2 trim rzek (FC `c523ea440`) — integracja jedną rundą:** merge Q1 → `ca6c97472`, merge Q2 → `2f9a12786` na parity `c3e3617b2` (worktree `integ-p4-1b`). Merge-tree bez konfliktów dla obu. Bramki w tle: `FMT_EXIT=0`; clippy i pełny `cargo test` w toku. **FF po `TEST_EXIT=0`.**
 - **Sprzątanie:** worktree Q2 usunięte; refs `refs/keep/cleanup-wf_3095763c-84a-*`, `refs/keep/P4-1B-Q2-RIVER-TRIM-fc`.
 - **Otwarte:** Q3 MAP-VIEW-PRODUCER (#211) po obu — wymaga decyzji technicznej o modelu mapy (domyślnie `&SnapshotMap`) i wołających `compute_road_mask` i `trim_medium_*`. NIE_ZMIERZONO: wołający produkcyjny obu funkcji (Q3; M07C także użyje `trim_medium_tail_along_main`).
+
+## Przebieg (15.11, 19:xx UTC — rozpoznania DTO: P4-1C (mgła) zamknięte z pytaniem ABC; P4-1D Q1, P4-1F, P4-1I w toku)
+
+- **P4-1C rozpoznanie mgły (#212, FC PASS-WITH-NOTES `963712d72`):** dokumenty `c4791e20b`. **Otwarte pytanie ABC do właściciela (zasada 10):** mgła dla fotela ≠ 0 (hot-seat). W pinie render czyta globalny `explored` (alias fotela 0, `main.ts:12799`, `:13759`, `:12864-12866`), a `refreshFog` pisze do `exploredByHuman.get(ME())` (`:13483`). Opcje: **A** osobno dla każdego fotela (świadome odstępstwo od pinu), **B** 1:1 z pinem, **C** producent tylko dla fotela 0. **Rekomendacja: C.** Blokuje W2/W3 (zapisy odkrycia i producent).
+  - Ustalenia po Obronie: brak migracji zapisu v2→v3 w pinie (`save.ts:109-116`, `:695-706`) — odrzucanie v2, nie migracja. Hook `updateDiplomaticDiscovery(vis)` (`main.ts:13479`, def. `:22528-22533`) w zakresie W2.
+- **P4-1D Q1 STACK-REPIN (START, Opus):** `wf_515c8fe6-0a4` (dispatch `4417383b4`, baza `c3e3617b2`). Reguła `pickStackLeader` i `has_commander` z pinu `@07`.
+- **P4-1F rozpoznanie nakładek (START, Opus):** `wf_4c7d8400-1cd`.
+- **P4-1I rozpoznanie zdarzeń bitwy (START, Opus):** `wf_e6d580b9-55a` (dispatch `db47ed5a5`).
+- **Integracja P4-1B Q1+Q2 (`ca6c97472` → `2f9a12786`):** w toku, `integ-p4-1b.log`: fmt i clippy zielone, pełny test 1139 passed, 0 failed do tej chwili (długi test `pick_auto_improvements_matches_pinned_web_vectors` w toku). FF po `TEST_EXIT=0`.
+- **Aktywne workflow:** #221 r2 Haiku (`wf_c9da2dff-9c8`), P4-1D Q1 Opus (`wf_515c8fe6-0a4`), P4-1F Opus (`wf_4c7d8400-1cd`), P4-1I Opus (`wf_e6d580b9-55a`). Dysk: 12 GB wolne (71%).
