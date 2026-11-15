@@ -970,6 +970,7 @@ import {
 } from './game/auto-battle-power';
 import {
   applyPostBattleMap,
+  type PostBattleMapResult,
   applyDefenderPreBattleRetreat,
   snapshotRosterPositions,
   battleReserveNotice,
@@ -35791,8 +35792,16 @@ async function boot(): Promise<void> {
       const playerWon =
         (winner === 'atakujacy' && atkRoster[0]?.ownerId === 0)
         || (winner === 'obronca' && defRoster[0]?.ownerId === 0);
-      const loot = applyMapBattleOutcome(atkRoster, defRoster, winner, survivors, opts);
+      // LINIA-UNICESTWIENIE: wynik applyPostBattleMap (liczniki) przechwycony dla podsumowania.
+      const pbHolder: { res?: PostBattleMapResult } = {};
+      const loot = applyMapBattleOutcome(atkRoster, defRoster, winner, survivors, {
+        ...opts,
+        onPostBattleResult: r => { pbHolder.res = r; },
+      });
+      const pbRes = pbHolder.res;
       const summaryData = buildPostBattleSummary({
+        annihilatedAtkUnits: pbRes?.attackerAnnihilatedUnitCount,
+        annihilatedDefUnits: pbRes?.defenderAnnihilatedUnitCount,
         winner: winner as BattleSummaryWinner,
         // R-BITWA-ETYKIETA-TOZSAMOSC-STRONY-Q1 (runda 3, obrona -- zarzut Evaluatora 3):
         // TO JEST WIDOK ZE ZGLOSZENIA WLASCICIELA ("w wyniku bitwy jest informacja
@@ -36521,6 +36530,8 @@ async function boot(): Promise<void> {
         lossDefPct?: number;
         /** Event-log identity for the radius-1 rosters resolved this round. */
         battleEventLog?: BattleEventLog;
+        /** LINIA-UNICESTWIENIE: wynik applyPostBattleMap (liczniki unicestwienia) dla podsumowania. */
+        onPostBattleResult?: (res: PostBattleMapResult) => void;
         battleQ?: number;
         battleR?: number;
         atkStart?: Map<string | number, { q: number; r: number }>;
@@ -36642,6 +36653,7 @@ async function boot(): Promise<void> {
         cityOnBattleHex: cityOnHex,
         holdPositionAfterWin: fortifiedCaptureBlocked,
       });
+      opts?.onPostBattleResult?.(postBattleRes);
       // Komunikat dla gracza: swoja armia (obrona lub atak) -> ARMIA_UNICESTWIONA; wroga -> wariant AI.
       if (postBattleRes.defenderAnnihilatedByRetreatLimit || postBattleRes.attackerAnnihilatedByRetreatLimit) {
         const playerArmyDestroyed = postBattleRes.defenderAnnihilatedByRetreatLimit
