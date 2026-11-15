@@ -36,6 +36,11 @@ const MUTATIONS = [
   { id: 'm07', name: 'pominiecie przylaczenia miasta-panstwa', ...skip('recordOwnersStockDeltaToPending(ledgerAnnexBefore,'), part: 'sources', only: 'przylaczenie' },
   { id: 'm08', name: 'pominiecie buntu miasta', ...skip('recordOwnersStockDeltaToPending(ledgerRebelBefore,'), part: 'sources', only: 'bunt' },
   { id: 'm09', name: 'pominiecie daru/umowy (strona nadawcy)', ...skip('recordStockDeltaToPending(fromOwnerId, ledgerFromBeforeB,'), part: 'sources', only: 'dar' },
+  // m09b: strona ODBIORCY daru (zarzut Evaluatora r1 (3)); m09 tnie tylko strone nadawcy.
+  { id: 'm09b', name: 'pominiecie daru/umowy (strona odbiorcy)', ...skip('recordStockDeltaToPending(toOwnerId, ledgerToBeforeB,'), part: 'sources', only: 'dar' },
+  // m17: bunt w petli tury (main.ts, markCityRebellionStarted) zamiast funkcji ksiegi -- gola zmiana wlasciciela.
+  // Oczekiwanie: PRZEZYLA (test nie wywoluje petli tury); luka opisana w raporcie obrony.
+  { id: 'm17', name: 'bunt w petli tury: gola zmiana wlasciciela bez ksiegi', file: MAIN, find: 'transferCityToRebelFactionWithLedger(city);', replace: 'city.ownerId = REBEL_FACTION_OWNER_ID;', part: 'sources', only: 'bunt' },
   { id: 'm10', name: 'Zastap bez sinku ksiegi', file: MAIN, find: ", pendingLedgerSink(ownerId, 'rekrutacja', 'Zastąp jednostkę')", replace: '', part: 'sources', only: 'zastap' },
   { id: 'm11', name: 'machina oblezmicza bez sinku ksiegi', file: MAIN, find: ", pendingLedgerSink(besiegerOwnerId, 'budowa', 'Machina oblężnicza')", replace: '', part: 'sources', only: 'machina' },
   { id: 'm12', name: 'Stadnina bez sinku ksiegi', file: MAIN, find: ", pendingLedgerSink(0, 'wejscie', 'Stadnina (koń)')", replace: '', part: 'sources', only: 'stadnina' },
