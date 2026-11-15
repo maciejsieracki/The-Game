@@ -1518,3 +1518,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Otwarte z raportu Operatora (do adaptera P4-1G / P4-1B):** `stacks` w korzeniu snapshotu (dodane, §1.5.1 Δ4); brak wariantu „wonder” w `buildHighlight` (web ma inne krycie, `main.ts@07:16366` vs `:16392`); `ammo None` oznacza Infinity w webie; newtypy ID odrzucają wartości > 2^53−1.
 - **Proces (P-1):** kod P4-1A wszedł na parity przed FC w jednym kroku z poprawkami obrony; ślady w `refs/keep/P4-1A-*`. Dispatch nie miał DODATKU r2 (dodany dopiero w tej rundzie w gałęzi roboczej).
 - **Zabezpieczenie:** refs/keep `P4-1A-{fb3d1b95b,f3dab5fda,011de8664,86032cd28,integ}`, gałąź `rust-port-wip/R-RUSTPORT-P4-1A-VIEW-TYPES-Q1-integ`.
+
+## Przebieg (15.11, 11:47 UTC — heartbeat, RUST renderer, Opus 5.5)
+- **KROK 1 (sloty):** 1 aktywny Workflow na Opus 5.5: P4-1J plany marszu (`wf_fa7a2e6d-ba0`). Sloty 1/4.
+- **Nie uruchomiono kolejnych:** kandydaty odblokowane przez P4-1A to P4-1B (blokada D-DTO-6 i tematu M01: model `MapHex` jest pustym szkieletem) i P4-1I (decyzja D-DTO-7). Pozycje #96–#119 z listy zadań to decyzje gameplay albo zależności, więc ich nie startuję. Dysk 13 GB.
+- **KROK 2:** brak nowych FC PASS bez integracji (P4-1A zintegrowany w `a01363d5f`).
+- **KROK 3:** brak worktrees do sprzątania poza działającym P4-1J.
+- **Parity:** `a01363d5f`. Rust: `3b025a272` przed tym wpisem.
