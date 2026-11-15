@@ -306,6 +306,7 @@ async function main() {
     await endUntilTurn(page, tD0 + 5);
     const sOffer = await pairState(page);
     assert('L2g w turze wygaśnięcia oferta dla gracza: status nadal pokoj, bez natychmiastowej wojny', sOffer.turn === tD0 + 5 && sOffer.status === 'pokoj' && sOffer.truceUntilTurn === null, sOffer);
+    assert('L2g2 oferta dla gracza: pokój stały NIE zawarty w turze wygaśnięcia (peaceUntilTurn null)', sOffer.peaceUntilTurn === null, sOffer);
     await endUntilTurn(page, tD0 + 6);
     const sRefuse = await pairState(page);
     assert('L2h brak odpowiedzi na ofertę do kolejnej tury = wojna po wygaśnięciu oferty', sRefuse.turn === tD0 + 6 && sRefuse.status === 'wojna' && sRefuse.truceUntilTurn === null, sRefuse);
