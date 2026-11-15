@@ -35,15 +35,19 @@ const FRAME_TS = path.resolve(GRA, 'src/ui/cityUxFrame.ts');
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'city-view-layout-'));
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const MUTANT = process.argv.includes('--mutant');
+/** Drugi mutant: usunięty próg 12 px i zawijanie (żetony kurczą się poniżej czytelnej granicy). Oczekiwane FAIL. */
+const MUTANT_MIN = process.argv.includes('--mutant-min');
 const SHOTS = (process.argv.find((a) => a.startsWith('--shots=')) || '').slice(8) || null;
 const esbuild = require(path.resolve(GRA, 'node_modules/esbuild'));
 const { chromium } = require(path.resolve(GRA, 'node_modules/playwright'));
 
-const SIZES = [[1920, 1080], [2000, 831], [1366, 768], [1280, 720]];
+const SIZES = [[1920, 1080], [2000, 831], [1600, 900], [1366, 768], [1280, 720]];
 const FIXTURES = ['normal', 'big'];
 const SIDE_GAP_MAX_PX = 16;
 /** Jedna linia żetonów kończy się ok. 59 px; panele boczne mają startować najwyżej ok. 8 px pod nią (limit z zapasem). */
 const SIDE_TOP_MAX_PX = 72;
+/** Przy zawijaniu żetonów do dwóch linii (wąskie okno, R-WEB-UI-CITY-VIEW-CHIPS-READABLE-MIN-12PX-Q1) dolna krawędź banera jest niżej; limit z zapasem. */
+const SIDE_TOP_MAX_2ROW_PX = 92;
 
 let pass = 0; let fail = 0;
 function check(name, ok, detail) {
@@ -51,7 +55,7 @@ function check(name, ok, detail) {
   else { fail++; console.log('FAIL: ' + name + (detail === undefined ? '' : ' — ' + JSON.stringify(detail))); }
 }
 
-/** Mutant = stan bazy dla górnego paska i paneli: żetony zawijane, brak skali, cap 1480 px. */
+/** Mutant = bez zawijania do 2 linii: żetony kurczą się poniżej 12 px zamiast zawijać (stan sprzed poprawki). */
 function patchOrThrow(src, from, to, label) {
   if (!src.includes(from)) throw new Error('mutant: nie znaleziono fragmentu (' + label + ')');
   return src.replace(from, to);
@@ -72,12 +76,14 @@ function plugin() {
         }
         const abs = path.resolve(a.path);
         if (MUTANT && abs === FRAME_TS) {
-          src = patchOrThrow(src, '  fitCityTopChipScale();\n', '', 'wywołanie skali');
-          src = patchOrThrow(src, 'const TOP_STACK_MAX_PX = 1880;', 'const TOP_STACK_MAX_PX = 1480;', 'cap szerokości');
+          src = patchOrThrow(src, '  top.classList.add(TOP_CHIP_WRAP_CLASS);', '', 'brak zawijania do 2 linii');
           changed = true;
         }
-        if (MUTANT && abs === CITY_TS) {
-          src = patchOrThrow(src, 'justify-content:center;flex-wrap:nowrap;gap:0.32rem 0.48rem;', 'justify-content:center;flex-wrap:wrap;gap:0.32rem 0.48rem;', 'zawijanie żetonów');
+        if (MUTANT_MIN && abs === FRAME_TS) {
+          // Próg 12 px sam w sobie nie jest widoczny w fixture (etap 2 zawija zanim żeton zejdzie poniżej 12 px),
+          // więc mutant wyłącza próg ORAZ zawijanie: stan sprzed poprawki (kurczenie żetonów do ~11 px).
+          src = patchOrThrow(src, 'const TOP_CHIP_MIN_PX = 12;', 'const TOP_CHIP_MIN_PX = 0;', 'brak progu 12 px');
+          src = patchOrThrow(src, 'const TOP_CHIP_MAX_ROWS = 2;', 'const TOP_CHIP_MAX_ROWS = 1;', 'brak zawijania (1 wiersz)');
           changed = true;
         }
         return changed ? { contents: src, loader: 'ts', resolveDir: path.dirname(a.path) } : null;
@@ -157,8 +163,15 @@ window.__configureCityPanel = configureCityPanel; window.__showCityPanel = showC
       await page.waitForTimeout(200);
       const m = await page.evaluate(MEASURE);
 
-      check(`${tag}: lewy baner (Praca · Żywność · Skarbiec) w jednej linii`, m.L.chips.length === 3 && m.L.rows === 1, { rows: m.L.rows, n: m.L.chips.length });
-      check(`${tag}: prawy baner (Nauka · Kultura · Religia) w jednej linii`, m.R.chips.length === 3 && m.R.rows === 1, { rows: m.R.rows, n: m.R.chips.length });
+      check(`${tag}: lewy baner (Praca · Żywność · Skarbiec) najwyżej w 2 liniach`, m.L.chips.length === 3 && m.L.rows >= 1 && m.L.rows <= 2, { rows: m.L.rows, n: m.L.chips.length });
+      check(`${tag}: prawy baner (Nauka · Kultura · Religia) najwyżej w 2 liniach`, m.R.chips.length === 3 && m.R.rows >= 1 && m.R.rows <= 2, { rows: m.R.rows, n: m.R.chips.length });
+      if (w < 1600 && fx === 'big') {
+        check(`${tag}: wąskie okno, duże liczby — co najmniej jeden baner zawinięty do 2 linii`, m.L.rows === 2 || m.R.rows === 2, { L: m.L.rows, R: m.R.rows });
+      }
+      if (w >= 1600) {
+        check(`${tag}: szerokie okno — obie strony banera w jednej linii (bez regresji)`, m.L.rows === 1 && m.R.rows === 1, { L: m.L.rows, R: m.R.rows });
+      }
+      check(`${tag}: żetony nie mniejsze niż 12 px (czytelność)`, m.chipFontPx !== null && m.chipFontPx >= 12 - 0.05, { px: m.chipFontPx });
       const inside = (c, f) => c.l >= f.l - 0.5 && c.r <= f.r + 0.5;
       const winOk = (c) => c.l >= -0.5 && c.r <= m.vw + 0.5;
       check(`${tag}: żetony mieszczą się w swoim banerze i w oknie`,
@@ -175,7 +188,8 @@ window.__configureCityPanel = configureCityPanel; window.__showCityPanel = showC
         if (!p) { check(`${tag}: ${pk} widoczny`, false); continue; }
         check(`${tag}: ${pk} zaczyna się tuż pod górnymi blokami (${p.t.toFixed(1)} vs dół ${topBottom.toFixed(1)})`,
           p.t >= topBottom - 0.5 && p.t <= topBottom + SIDE_GAP_MAX_PX, { top: p.t, topBottom });
-        check(`${tag}: ${pk} tak wysoko jak się da (top ${p.t.toFixed(1)} <= ${SIDE_TOP_MAX_PX} px)`, p.t <= SIDE_TOP_MAX_PX, { top: p.t });
+        const sideLimit = (m.L.rows === 2 || m.R.rows === 2) ? SIDE_TOP_MAX_2ROW_PX : SIDE_TOP_MAX_PX;
+        check(`${tag}: ${pk} tak wysoko jak się da (top ${p.t.toFixed(1)} <= ${sideLimit} px)`, p.t <= sideLimit, { top: p.t });
         const hits = [m.L.flank, m.R.flank, m.city].filter(Boolean).some((b) => p.l < b.r && p.r > b.l && p.t < b.b && p.b > b.t);
         check(`${tag}: ${pk} nie nachodzi na górne bloki`, !hits, { panel: p });
         check(`${tag}: ${pk} nie wychodzi poza dół okna`, p.b <= m.vh + 0.5, { bottom: p.b, vh: m.vh });
@@ -185,16 +199,16 @@ window.__configureCityPanel = configureCityPanel; window.__showCityPanel = showC
       check(`${tag}: brak poziomego przewijania strony`, m.docSW <= m.vw + 0.5, { docSW: m.docSW, vw: m.vw });
       console.log(`INFO ${tag}: zeton ${m.chipFontPx !== null ? m.chipFontPx.toFixed(1) : 'brak'} px, skala zetonow ${m.chipScale || '1'}, skala plakietki ${m.cityScale || '1'}, lewy top ${m.leftPanel ? m.leftPanel.t.toFixed(1) : '-'}, prawy top ${m.rightPanel ? m.rightPanel.t.toFixed(1) : '-'}`);
       check(`${tag}: brak błędów strony`, errs.length === 0, errs);
-      if (SHOTS && fx === 'normal') {
+      if (SHOTS) {
         fs.mkdirSync(SHOTS, { recursive: true });
-        await page.screenshot({ path: path.join(SHOTS, `city-view-${MUTANT ? 'base' : 'after'}-${w}x${h}.png`) });
+        await page.screenshot({ path: path.join(SHOTS, `city-view-${MUTANT ? 'base' : 'after'}-${fx}-${w}x${h}.png`) });
       }
       await page.close();
     }
   }
   await browser.close();
   fs.rmSync(TMP, { recursive: true, force: true });
-  const label = MUTANT ? 'MUTANT (stan bazy; oczekiwane FAIL)' : 'POPRAWKA (oczekiwane PASS)';
+  const label = (MUTANT || MUTANT_MIN) ? 'MUTANT (oczekiwane FAIL)' : 'POPRAWKA (oczekiwane PASS)';
   console.log(`\nWYNIK ${label}: PASS=${pass} FAIL=${fail}`);
   process.exit(fail > 0 ? 1 : 0);
 }
