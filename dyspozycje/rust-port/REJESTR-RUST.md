@@ -1600,3 +1600,13 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **KROK 2 (FC PASS bez integracji):** brak. Oczekują FC P4-1J i CRED-HAK.
 - **KROK 3 (sprzątanie):** 14:39 usunięto cztery worktree zakończonych etapów (M01 pomiary i Evaluator, P4-1E Operator, P4-1J Evaluator). Dysk: 6,8 GB wolne.
 - **NASTĘPNY KROK:** odebrać FC P4-1J i CRED-HAK; po FC PASS — refs/keep, ancestry, integracja; po FAIL — kolejna runda tego samego ID.
+
+## Przebieg (15.11, 15:08 UTC — integracja P4-1J, slot #96)
+
+- **INTEGRACJA P4-1J (#209): FF `parity-v2` → `62ff9de35`.** FC PASS-WITH-NOTES `62ff9de35` (łańcuch: Operator `2169bd17d`, pomiary `25da353f8`, Evaluator PASS-WITH-NOTES, Obrona `1506833dd`, FC). Ancestry: `a01363d5f` jest przodkiem `62ff9de35`. Allowlista OK (13 plików: `playable.rs`, `save_load.rs`, `mod.rs`, testy P4-1J, dokumenty runu); `gra/` nietknięte. Pełny `cargo test --all-targets`: 470 zestawów, 3395 passed, 0 failed (zapis FC; jeden zestaw SIGTERM z zewnątrz, przeliczony EXIT 0). Z1 (deduplikacja wpisów planów przed filtrem) — naprawiona w Obronie, potwierdzona przez FC. `refs/keep/P4-1J-fc`.
+- **Decyzje orkiestratora (do zapisu, z raportu Operatora):** (a) id w polach planów to `UnitId`, cel to `i32`; wpisy niewyrazalne są pomijane i raportowane w `unrepresentable` zamiast cichej straty danych (web je trzyma). (b) `generalTargetId` NIE jest obsługiwane (zgodnie z dispatchem) — NIE_ZMIERZONO, zadanie #221. (c) Odchylenie od polityki modeli: temat silnika na OPUS we wszystkich etapach (skrypt `topic-P4-1J-OPUS.js`) — nie powtarzać.
+- **Sprostowanie raportów P4-1J:** Operator i Obrona pisali, że `7817ef0c` nie jest w `parity-v2`. Sprawdzone: `git merge-base --is-ancestor 7817ef0c a01363d5f` = TAK. Baza była poprawna; sprostowanie w raporcie 03-final-control.
+- **Uwaga do atrybutu:** w `civ-engine` nie ma `#![forbid(unsafe_code)]` (ani na bazie, ani na gałęzi) — kryterium z dispatchu jest puste; nowy kod nie używa `unsafe`.
+- **Sprzątanie:** usunięte worktree P4-1J (`-4`, `-5`) i wcześniej cztery zakończone etapy. Dysk: 8,2 GB wolne.
+- **Slot #96:** rozpoznanie wież (K5-LOOP-WIEZE, `R-RUSTPORT-P6-K5-WIEZE-ROZPOZNANIE-Q1`, dispatch `fd9215ee8`, baza `62ff9de35`, tylko odczyt). Ustalenie: `fire_siege_towers` (siege_tactics_loop.rs ok. :436) i `pick_tower_target` (siege_tactics_tower.rs :486) są już wpięte; brak do sprawdzenia przy harmonogramie 180 ms.
+- **NASTĘPNY KROK:** odebrać rozpoznanie wież i zdecydować, czy #96 wdrażać; odebrać FC M01 (#210 — sprawdzić duplikację z P4.10: `MapHex` w renderze) i FC CRED-HAK (#171).
