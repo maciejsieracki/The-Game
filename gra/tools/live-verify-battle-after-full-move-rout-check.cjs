@@ -12,8 +12,13 @@
  *  K3 zadna jednostka rozbita nie zostaje na polu po zakonczeniu bitwy (routedLeft === 0 po obu stronach);
  *  K4 gdy ktos uciekl, pogon byla: attacksOnRouted > 0 (konnica/atakujacy dobijaja uciekajacych);
  *  K5 bilans jednostek: killed + fled + survived === total po obu stronach (brak zgubionych jednostek).
- * Czego ten skrypt NIE sprawdza (NIE_ZMIERZONO w raporcie): limit 3 odwrotow na ture, liczba ciosow na jednostke
- * na ture, zachowanie "walczy do smierci" per jednostka -- tych danych runner nie eksportuje.
+ *  K7 flaga neverRout: zadna jednostka neverRout nie zostaje rozbita. Gdy w pliku NIE MA ANI JEDNEGO zdarzenia
+ *     neverRout (zbior pusty), K7 jest NIE_ZMIERZONO i liczy sie jako niespelnione kryterium (exit 1), nie PASS.
+ * K6 (odwrot <=3 na ture) NIE jest kryterium tego skryptu: limit odwrotow z FALI 732 dotyczy odwrotu ARMII
+ *     po bitwie (src/game/battle-retreat-limit.ts, MAX_ODWROTOW_NA_TURE), a nie zalamania morale jednostek
+ *     wewnatrz bitwy. Maksimum rozbic w turze/stronie jest tylko raportowane (INFO).
+ * Czego ten skrypt NIE sprawdza (NIE_ZMIERZONO w raporcie): cios na jednostke na ture, kto dobija uciekinierow
+ * (konnica), ruch uciekinierow 50% z kolumna pozycji, pozycje przed zderzeniem, zrzuty ekranu.
  */
 const fs = require('node:fs');
 
@@ -28,6 +33,7 @@ let checked = 0;
 let pursuitRows = 0;
 let k6Max = 0;
 let k6Missing = 0;
+let neverRoutEvents = 0;
 const instantRows = []; // tryb 'instant' (rozstrzygniecie bez bitwy): NIE oceniany kryteriami K1-K5, tylko raportowany
 const lines = [];
 for (const f of files) {
@@ -52,16 +58,13 @@ for (const f of files) {
       const sum = s.killed + s.fled + s.survived;
       if (sum !== s.total) bad.push(`K5 ${side} killed+fled+survived=${sum} != total=${s.total}`);
     }
-    // K6/K7 (N3, runner eksportuje r.events): odwrot <=3 na ture i strony; flaga neverRout nigdy nie ucieka
+    // K7 (flaga neverRout, runner eksportuje r.events) i INFO K6 (rozbicia na ture/strone; K6 NIE jest kryterium)
     if (r.events) {
       const perRoundSide = new Map();
       for (const ev of r.events.rout) {
-        if (ev.neverRout) { bad.push(`K7 neverRout rozbity id=${ev.id} tura=${ev.round}`); continue; }
+        if (ev.neverRout) { neverRoutEvents++; bad.push(`K7 neverRout rozbity id=${ev.id} tura=${ev.round}`); continue; }
         const k = `${ev.round}|${ev.side}`;
         perRoundSide.set(k, (perRoundSide.get(k) || 0) + 1);
-      }
-      for (const [k, n] of perRoundSide) {
-        if (n > 3) bad.push(`K6 odwrot ${n}>3 w turze/stronie ${k} (tura|strona)`);
       }
       k6Max = Math.max(k6Max, ...perRoundSide.values(), 0);
     } else {
@@ -75,7 +78,13 @@ for (const l of lines) console.log(l);
 const instantFled = instantRows.reduce((a, x) => a + x.r.def.fled + x.r.atk.fled, 0);
 console.log(`INFO tryb instant (NIE oceniany K1-K5; bitwa nie jest rozgrywana): ${instantRows.length} wierszy, fled=${instantFled}`);
 console.log('NIE_ZMIERZONO (runner nie eksportuje): cios na jednostke/ture; kto dobija uciekinierow (konnica); ruch uciekinierow 50%.');
-console.log(`INFO K6 max odwrotow w turze/stronie=${k6Max}; wierszy bez events (K6/K7 pominiete)=${k6Missing}`);
-console.log(`=== rout-check: ${checked} wierszy skip, ${pursuitRows} z ucieczka+pogonia, ${fails} FAIL ===`);
+console.log(`INFO K6 (nie kryterium; limit odwrotu armii dotyczy kampanii, patrz naglowek): max rozbic w turze/stronie=${k6Max}`);
+console.log(`INFO wierszy bez events (K7 pominiete)=${k6Missing}; zdarzen neverRout w pliku=${neverRoutEvents}`);
+let k7Unmeasured = 0;
+if (neverRoutEvents === 0) {
+  k7Unmeasured = 1;
+  console.log('NIE_ZMIERZONO K7: 0 zdarzen rozbicia jednostki neverRout w pliku -> K7 nie dowodzi braku regresji NEVERROUT-HOLD-FIGHT (kryterium niespelnione)');
+}
+console.log(`=== rout-check: ${checked} wierszy skip, ${pursuitRows} z ucieczka+pogonia, ${fails} FAIL, K7 NIE_ZMIERZONO=${k7Unmeasured} ===`);
 if (checked === 0) { console.error('brak wierszy skip'); process.exit(1); }
-process.exit(fails === 0 ? 0 : 1);
+process.exit(fails === 0 && k7Unmeasured === 0 ? 0 : 1);
