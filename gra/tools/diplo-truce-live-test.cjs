@@ -31,9 +31,16 @@ const { execSync } = require('child_process');
 const GRA_DIR = path.resolve(__dirname, '..');
 const REPO_ROOT = path.resolve(GRA_DIR, '..');
 const SCRATCH = process.argv[2] || path.join(os.tmpdir(), 'civ-truce-live-' + process.pid);
+// R-TEST-DEBT-BASE-RED-MAIN-Q2 (obrona r1, zarzut 3): domyślny katalog bundle (os.tmpdir) jest sprzątany po teście;
+// podany ręcznie przez argv[2] zostaje (użytkownik może go ponownie użyć z SKIP_BUILD=1).
+if (!process.argv[2]) process.on('exit', () => { try { fs.rmSync(SCRATCH, { recursive: true, force: true }); } catch (_) { /* best-effort */ } });
 const EVIDENCE = process.argv[3]
   || path.join(REPO_ROOT, 'dyspozycje', 'autobot', 'runs', 'R-WEB-TRUCE-Q1', 'evidence');
-const OUT_HTML = 'file://' + path.join(SCRATCH, 'index.html') + '?playtest=mapa';
+// R-TEST-DEBT-BASE-RED-MAIN-Q2 (klasa A, dowód z przebiegu: log „[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)”
+// i tekst gry „Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 46”): bramka NNS
+// (R-WEB-ECON-NO-NEGATIVE-STOCKS, decyzje #365/#368) blokuje endTurn od tury 2, bo scenariusz nie ma bufora żywności.
+// Hak bufora (__nnsMeasureDebug.setPlayerGranary) jest tylko przy ?civTest=1, więc URL dopina civTest=1 (bez zmiany logiki gry).
+const OUT_HTML = 'file://' + path.join(SCRATCH, 'index.html') + '?playtest=mapa&civTest=1';
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 
 const PLAYER = 0;
@@ -108,6 +115,8 @@ async function endUntilTurn(page, target) {
     inProgress: window.__eraTestDebug.isEndTurnInProgress(),
     overlays: document.querySelectorAll('.civ-diplo-basket-overlay, .civ-diplo-audience, [role=dialog]').length,
     gateText: (document.body.innerText.match(/Zakończ turę[^\n]{0,120}/) || [''])[0],
+    overlayHtml: Array.from(document.querySelectorAll('.civ-diplo-basket-overlay, .civ-diplo-audience, [role=dialog]')).map(n => n.className + ' :: ' + (n.innerText || '').slice(0, 160)),
+    nnsText: (document.body.innerText.match(/[^\n]{0,80}(skarb|spichlerz|Spichlerz|Skarb)[^\n]{0,120}/g) || []).slice(0, 4),
   })).catch((e) => ({ err: String(e) }));
   throw new Error('endUntilTurn: nie osiągnięto tury ' + target + ' stan=' + JSON.stringify(st));
 }
@@ -150,6 +159,9 @@ async function main() {
     await gotoPlaytestMapa(page);
     await page.evaluate(([ai]) => window.__truceTestDebug.setWarAge(ai, 30), [AI]);
     await page.evaluate(() => window.__truceTestDebug.suppressVictoryForTest());
+    // SETUP (nie tematu testu): bufor spichlerza gracza, by bramka NNS nie blokowała endTurn w pętli tur (patrz OUT_HTML).
+    // setPlayerGranary zwraca void; skuteczność potwierdza przejście pętli tur w L2 (endUntilTurn bez wyjątku).
+    await page.evaluate(() => window.__nnsMeasureDebug.setPlayerGranary(999));
 
     // --- U1: UI modal rozejmu ---
     console.log('U1 UI: modal pokoj/rozejm');
@@ -208,7 +220,9 @@ async function main() {
     // modal blokuje endTurn (bramka z U1h). Sonda: tura 2 zamiast 5, bez przetwarzania, 1 overlay. Zamykamy audiencję
     // przed pętlą tur i czekamy na brak overlay (stan, nie czas).
     await page.evaluate(() => window.__truceTestDebug.closeAudience());
-    await page.waitForFunction(() => document.querySelectorAll('.civ-diplo-basket-overlay, .civ-diplo-audience, [role=dialog]').length === 0, undefined, { timeout: 15000 }).catch(() => {});
+    // Bez połykania błędu: jeśli okno koszyka/audiencji zostaje, test pada z jawnym powodem (nie maskuje przyczyny).
+    const overlayClosed = await page.waitForFunction(() => document.querySelectorAll('.civ-diplo-basket-overlay, .civ-diplo-audience').length === 0, undefined, { timeout: 15000 }).then(() => true, () => false);
+    assert('L2-pre okno koszyka/audiencji zamknięte przed pętlą tur', overlayClosed);
     await endUntilTurn(page, t0 + 4);
     const sWin = await pairState(page);
     assert('L2a w oknie (tura < until) status nadal pokoj', sWin.turn < t0 + 5 && sWin.status === 'pokoj' && sWin.truceUntilTurn === t0 + 5, sWin);

@@ -30,6 +30,9 @@ let BUNDLE = process.env.BUNDLE_DIR;
 if (!BUNDLE || !fs.existsSync(path.join(BUNDLE, 'index.html'))) {
   BUNDLE = path.join(os.tmpdir(), 'civ-trsf-bundle-' + process.pid);
   console.log('[trsf-live] brak BUNDLE_DIR — vite build do katalogu tymczasowego poza repo:', BUNDLE);
+  // R-TEST-DEBT-BASE-RED-MAIN-Q2 (obrona r1, zarzut 3): bundle utworzony przez ten test jest sprzątany przy każdym wyjściu
+  // (sukces, FAIL, blad), bo katalog w os.tmpdir() nie znika sam i zostawiał civ-trsf-bundle-<pid> po przebiegu.
+  process.on('exit', () => { try { fs.rmSync(BUNDLE, { recursive: true, force: true }); } catch (_) { /* sprzątanie best-effort */ } });
   execSync(`node ./node_modules/vite/bin/vite.js build --outDir ${JSON.stringify(BUNDLE)} --emptyOutDir`,
     { cwd: GRA_DIR, stdio: 'pipe' });
   if (!fs.existsSync(path.join(BUNDLE, 'index.html'))) {
