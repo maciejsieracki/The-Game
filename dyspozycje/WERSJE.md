@@ -1,3 +1,9 @@
+## ROBOCZA 9e372ec7 -- 2026-11-14 -- FALA 738: Zetony widoku miasta czytelne min 12 px (testowa)
+
+- Zetony w gornej linii widoku miasta maja min 12 px: jedna linia w skali co najmniej 12 px, a gdy to nie wystarcza zawijanie do 2 linii przy waskim oknie; szerokie okna bez zmian
+- Weryfikacja: tsc 0; logic 213/213; city-view-layout 168/0 (mutanty czerwone); city-side-panels 61/0; left-banner-overflow 74/0; zrzut 1366x768 duze liczby obejrzany
+- Limity: Przy zwyklych wartosciach w oknach 1280 i 1366 zetony zostaja w jednej linii 15,0 i 16,2 px (decyzja wlasciciela otwarta: zawijac takze wtedy); weryfikacja w fixture esbuild nie w pelnej grze; build-panel-ulepszenia-scroll G2b 1 FAIL dlug bazowy
+
 ## ROBOCZA d61d8e2a -- 2026-11-14 -- FALA 737: Szlak handlowy tylko premia bez przenoszenia zapasow (testowa)
 
 - Aktywny szlak handlowy nie przenosi juz zapasow miedzy cywilizacjami (usuniety blok Handel E3c i martwy kod przeplywu), zostaje dochod Pieniadza ze szlaku, bonusy i grant dostepu do jednostek; teksty gracza i dokumentacja poprawione

@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "d61d8e2a26689599e91bfa6fb0500f36",
-  "bundleSha256": "86e9c293ac6894061c4298b2fe39cc0a2170fa583b959eecb744fe2ad1e2adc0",
-  "bundleBytes": 14754371,
+  "bundleMd5": "9e372ec72dc02d00e06a27f8984bfe1e",
+  "bundleSha256": "af144fb710ee8cf1db057bdec8c3390c6338edb80a7a546e28984288f4af66c7",
+  "bundleBytes": 14754773,
   "sourceSnapshot": {
-    "source": "R-WEB-TRADE-ROUTE-REMOVE-STOCK-FLOW-E3C-Q1 r2 FC 2701af6cc kod ff7fac543",
+    "source": "R-WEB-UI-CITY-VIEW-CHIPS-READABLE-MIN-12PX-Q1 FC f7869a4ca kod bc8b7fafe",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 737: Aktywny szlak handlowy nie przenosi juz zapasow miedzy cywilizacjami (usuniety blok Handel E3c i martwy kod przeplywu), zostaje dochod Pieniadza ze szlaku, bonusy i grant dostepu do jednostek; teksty gracza i dokumentacja poprawione"
+    "FALA 738: Zetony w gornej linii widoku miasta maja min 12 px: jedna linia w skali co najmniej 12 px, a gdy to nie wystarcza zawijanie do 2 linii przy waskim oknie; szerokie okna bez zmian"
   ],
   "verification": [
-    "tsc 0; logic 213/213; trade-ilosc 23/0 zloto-szlak 48/0 trade-grant 62/0 routes 96/0 income 134/0 limit 76/0 ownership 18/0 contact-only 36/0 ledger-trade 27/0; live Chromium 12/0 (6 tur, zapasy bez zmian, dochod 6/tura); mutacja czerwona"
+    "tsc 0; logic 213/213; city-view-layout 168/0 (mutanty czerwone); city-side-panels 61/0; left-banner-overflow 74/0; zrzut 1366x768 duze liczby obejrzany"
   ],
   "limits": [
-    "Sonda ledgerAuditE3c w main.ts zostaje (martwa, do sprzatniecia); grant dostepu w realnej turze NIE ZMIERZONO (pokryty trade-grant-test); surow-civ-storage sekcja G 4 FAIL i zloto-test 7 FAIL to dlug bazowy; hooki civTest poza litera allowlisty"
+    "Przy zwyklych wartosciach w oknach 1280 i 1366 zetony zostaja w jednej linii 15,0 i 16,2 px (decyzja wlasciciela otwarta: zawijac takze wtedy); weryfikacja w fixture esbuild nie w pelnej grze; build-panel-ulepszenia-scroll G2b 1 FAIL dlug bazowy"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES E3C-REMOVE r2 (2701af6cc / kod ff7fac543 na 63db5c610): szlak handlowy tylko premia, usuniety blok Handel E3c i martwy kod przeplywu, testy szlaku zielone, live Chromium 6 tur z aktywnym szlakiem 12/0 zapasy 6 kluczy bez zmian dochod Pieniadza naliczany, mutacja czerwona"
+    "notes": "FC PASS-WITH-NOTES CITY-CHIPS (f7869a4ca / kod bc8b7fafe): zetony widoku miasta min 12 px (13,7-25 px we wszystkich oknach), przy waskim oknie z duzymi liczbami zawijanie do 2 linii; test city-view-layout 168/0, mutacje czerwone, left-banner-overflow 74/0"
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-15T07:51:16",
+  "hubGeneratedAt": "2026-11-15T08:15:23",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "d61d8e2a26689599e91bfa6fb0500f36",
-      "sizeBytes": 14754371
+      "md5": "9e372ec72dc02d00e06a27f8984bfe1e",
+      "sizeBytes": 14754773
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "d61d8e2a26689599e91bfa6fb0500f36",
-      "sizeBytes": 14754371
+      "md5": "9e372ec72dc02d00e06a27f8984bfe1e",
+      "sizeBytes": 14754773
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "d61d8e2a26689599e91bfa6fb0500f36",
-      "sizeBytes": 14754371
+      "md5": "9e372ec72dc02d00e06a27f8984bfe1e",
+      "sizeBytes": 14754773
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "d61d8e2a26689599e91bfa6fb0500f36",
-      "sizeBytes": 14754371
+      "md5": "9e372ec72dc02d00e06a27f8984bfe1e",
+      "sizeBytes": 14754773
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "d61d8e2a26689599e91bfa6fb0500f36",
-      "sizeBytes": 14754371
+      "md5": "9e372ec72dc02d00e06a27f8984bfe1e",
+      "sizeBytes": 14754773
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "d61d8e2a26689599e91bfa6fb0500f36",
-      "sizeBytes": 14754371
+      "md5": "9e372ec72dc02d00e06a27f8984bfe1e",
+      "sizeBytes": 14754773
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "d61d8e2a26689599e91bfa6fb0500f36",
-      "sizeBytes": 14754371
+      "md5": "9e372ec72dc02d00e06a27f8984bfe1e",
+      "sizeBytes": 14754773
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "d61d8e2a26689599e91bfa6fb0500f36",
-      "sizeBytes": 14754371
+      "md5": "9e372ec72dc02d00e06a27f8984bfe1e",
+      "sizeBytes": 14754773
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "d61d8e2a26689599e91bfa6fb0500f36",
-      "sizeBytes": 14754371
+      "md5": "9e372ec72dc02d00e06a27f8984bfe1e",
+      "sizeBytes": 14754773
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "d61d8e2a26689599e91bfa6fb0500f36",
-      "sizeBytes": 14754371
+      "md5": "9e372ec72dc02d00e06a27f8984bfe1e",
+      "sizeBytes": 14754773
     }
   ],
-  "md5": "d61d8e2a26689599e91bfa6fb0500f36",
+  "md5": "9e372ec72dc02d00e06a27f8984bfe1e",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
