@@ -123,3 +123,33 @@ fn melee_round_positive_one_and_half_rounds_to_two() {
         "finalDmg dla x=1.5 musi byc +2"
     );
 }
+
+#[test]
+fn melee_round_positive_fraction_below_half_gives_plus_zero() {
+    // Math.round(0.4) === +0: galaz dodatnia, wynik zero bez znaku ujemnego.
+    assert_eq!(
+        attacker_first_hit_damage_bits(1.0, 0.4),
+        0.0f64.to_bits(),
+        "finalDmg dla x=0.4 musi byc +0 (jak Math.round w pinie)"
+    );
+}
+
+#[test]
+fn melee_round_negative_fraction_below_minus_half_rounds_to_minus_one() {
+    // Math.round(-0.6) === -1: wynik niezerowy ujemny (nie -0).
+    assert_eq!(
+        attacker_first_hit_damage_bits(1.0, -0.6),
+        (-1.0f64).to_bits(),
+        "finalDmg dla x=-0.6 musi byc -1 (jak Math.round w pinie)"
+    );
+}
+
+#[test]
+fn melee_round_negative_one_and_half_rounds_to_minus_one() {
+    // Math.round(-1.5) === -1: wynik niezerowy ujemny (nie -0).
+    assert_eq!(
+        attacker_first_hit_damage_bits(1.0, -1.5),
+        (-1.0f64).to_bits(),
+        "finalDmg dla x=-1.5 musi byc -1 (jak Math.round w pinie)"
+    );
+}
