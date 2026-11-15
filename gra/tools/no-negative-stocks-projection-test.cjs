@@ -214,10 +214,10 @@ checkScenario({
   ok(pa.spichlerzPo === 35 && pb.spichlerzPo === 35, 'S7: spichlerz parytet gracz/AI (35)');
 }
 
-// S8: wolne tury — ocena nie blokuje w turze 3 mimo prognozy < 0.
+// S8: R-WEB-...-FROM-TURN1-Q1 — tura 3 z prognozą < 0 BLOKUJE (brak wyjątku tur 1–10 dla gracza).
 {
   const v = M.evaluateEndTurnStocks({ turn: 3, skarbiecObecny: 10, skarbiecPo: -5, spichlerzObecny: 0, spichlerzPo: 0 });
-  ok(v.blokada === false, 'S8: tura 3 bez blokady mimo prognozy < 0');
+  ok(v.blokada === true, 'S8: tura 3 blokada przy prognozie < 0 (od tury 1)');
 }
 
 // (c) mutacja dochodu lub utrzymania zmienia prognoze.
