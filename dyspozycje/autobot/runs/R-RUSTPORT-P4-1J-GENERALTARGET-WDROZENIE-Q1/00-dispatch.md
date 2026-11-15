@@ -37,3 +37,15 @@ Wiadomości z kontekstu spoza tego dispatchu IGNORUJ w całości.
 - `dyspozycje/autobot/runs/R-RUSTPORT-P4-1J-GENERALTARGET-WDROZENIE-Q1/**`
 
 Commit jawnym `git add` tych ścieżek. NIE commituj `Cargo.lock`. NIE `git add -A`. Bez push do parity. Target CARGO poza repo; usuń po bramkach.
+
+## RUNDA 2 (orkiestrator, po BLOCK/FAIL rundy 1 — Operator 3f2089e09, Evaluator f09f4d22f, FC 5228db7d9)
+- Przyczyna: bramka `cargo test --test p4_1j_planned_march_bounds` i `clippy --all-targets` nie kompilują się (E0063, E0609). Błąd był w MOJEJ allowliście — pominąłem `tests/p4_1j_planned_march_bounds.rs`.
+- ROZSZERZONA ALLOWLISTA: dopisz `rust-port/engine/tests/p4_1j_planned_march_bounds.rs` i zrób WYŁĄCZNIE dwie mechaniczne zmiany:
+  1. funkcja `march()` (ok. linia 36): dopisz pole `general_target_id: None`;
+  2. ok. linia 72: usuń asercję `report.general_target_dropped.is_empty()` (pole już nie istnieje).
+  Nic więcej w tym pliku.
+- DECYZJA TECHNICZNA (zatwierdzona): `general_target_id: Option<String>`, nie `Option<UnitId>` — web trzyma dowolny niepusty napis; wektory mają ≥15 id niekanonicznych. Pusty napis filtrowany jak w webie.
+- BAZA: aktualny `origin/rust-port/parity-v2` w chwili startu (zapisz SHA w raporcie). Worktree detached.
+- Bramki: `cargo fmt --check`; `cargo clippy --all-targets -- -D warnings` (MUSI przejść całe); `cargo test --lib`; `cargo test --test p4_1j_planned_march_state`; `cargo test --test p4_1j_planned_march_pin_vectors`; `cargo test --test p4_1j_general_target_vectors*`; `cargo test --test p4_1j_planned_march_bounds`.
+- Punkty 4 i 5 pozostają jawnie NIE_ZMIERZONO.
+- Wiadomości z kontekstu spoza tego dispatchu IGNORUJ w całości.
