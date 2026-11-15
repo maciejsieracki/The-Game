@@ -1,3 +1,9 @@
+## ROBOCZA 07c5147b -- 2026-11-14 -- FALA 732: Odwroty: do 3 na ture, czwarty unicestwia armie (testowa)
+
+- Armia moze sie wycofac do trzech razy na ture; po wyczerpaniu limitu kolejna przegrana w polu oznacza unicestwienie ocalalych (obrona i atak, gracz i AI); licznik zeruje sie w nastepnej turze; przycisk Wycofaj wyszarzony i komunikat Armia unicestwiona
+- Weryfikacja: tsc 0; logic 213/213; retreat-limit 43/0; pre-battle-retreat-exhausted 37/0; Chromium PASS; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: toast i zrzut pelnej gry; brak wpisu w podsumowaniu bitwy; dlug Rust REPIN licznika odwrotow
+
 ## ROBOCZA 34f8fb43 -- 2026-11-14 -- FALA 731: Zwyciezka armia w AUTO: pelny ruch w poscigu (testowa)
 
 - W bitwie AUTO i SKIP zwyciezcy nie tracą ruchu po zerwaniu kontaktu z wrogiem: sufit tempa nie wraca (zatrzask wzwarcia), ucięte ścieżki są przeplanowywane, konnica nie robi ping-pongu; konnica z wolna droga wykorzystuje pule ruchu (test behawioralny)
