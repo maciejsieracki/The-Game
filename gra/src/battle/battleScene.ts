@@ -2246,6 +2246,8 @@ export class BattleScene {
   private _deployCavalryMode: CavalryDeployMode = 'flanks';
   /** C-FLANK: kierunek natarcia aktywny w toolbarze deploy (osobny od formacji/konnicy). */
   private _deployAttackDirection: AttackDirection = 'front';
+  /** ABC B: zaznaczone jednostki maja rozne kierunki natarcia (chip "Natarcie: rozne"). */
+  private _deployAttackDirMixed = false;
   /** Linie glebokosci piechoty / lucznikow (1–3) — osobno od formacji F1/F2/F3. */
   private _deployMeleeLines: DeployLineCount = 1;
   private _deployArcherLines: DeployLineCount = 1;
@@ -13334,7 +13336,9 @@ export class BattleScene {
     el.appendChild(mkChip('P: ' + this._deployMeleeLines + ' lin.'));
     el.appendChild(mkChip('D: ' + this._deployArcherLines + ' lin.'));
     el.appendChild(mkChip(this._deployCavalryShortLabel(this._deployCavalryMode)));
-    el.appendChild(mkChip(this._deployAttackDirShortLabel(this._deployAttackDirection)));
+    el.appendChild(mkChip(this._deployAttackDirMixed
+      ? 'Natarcie: różne'
+      : this._deployAttackDirShortLabel(this._deployAttackDirection)));
 
     if (groups.length > 0 && gid) {
       el.insertBefore(mkChip(this._groupDisplayLabel(gid)), el.firstChild);
@@ -14224,15 +14228,19 @@ export class BattleScene {
 
   /** Odtwarza kierunek natarcia (C-FLANK) po powtórce bitwy w fazie deploy. */
   private _restoreDeployAttackDirSnapshot(snapshot: Map<string, AttackDirection>): void {
-    const groupDirs = new Map<string, AttackDirection>();
+    // ABC B: meta grupy tylko gdy wszystkie zywe jednostki grupy maja ten sam kierunek.
+    const groupDirs = new Map<string, AttackDirection | null>();
     for (const ru of this._playerRoster()) {
       if (ru.dead || ru.removed) continue;
       const dir = snapshot.get(ru.bu.id) ?? 'front';
       ru.attackDirection = dir;
-      if (ru.groupId) groupDirs.set(ru.groupId, dir);
+      if (ru.groupId) {
+        const prev = groupDirs.get(ru.groupId);
+        groupDirs.set(ru.groupId, prev === undefined || prev === dir ? dir : null);
+      }
     }
     for (const [gid, dir] of groupDirs) {
-      this._ensureGroupMeta(gid).attackDirection = dir;
+      if (dir != null) this._ensureGroupMeta(gid).attackDirection = dir;
     }
     const live = this._playerRoster().filter(u => !u.dead && !u.removed);
     const first = live[0];
@@ -15196,11 +15204,12 @@ export class BattleScene {
       const meta = this._groupMeta.get(gid);
       if (meta?.meleeLines != null) this._deployMeleeLines = meta.meleeLines;
       if (meta?.archerLines != null) this._deployArcherLines = meta.archerLines;
-      if (meta?.attackDirection != null) this._setDeployAttackDirection(meta.attackDirection);
       this._syncDeployLinesButtons();
-    } else if (targets.length === 1 && targets[0]!.attackDirection !== 'front') {
-      this._setDeployAttackDirection(targets[0]!.attackDirection);
     }
+    // ABC B: chip kierunku natarcia pokazuje kierunek ZAZNACZONYCH jednostek (rozne => "rozne").
+    const targetDirs = new Set(targets.map(u => u.attackDirection));
+    if (targetDirs.size > 1) this._setDeployAttackDirection('front', true);
+    else if (targetDirs.size === 1) this._setDeployAttackDirection([...targetDirs][0]!);
     this._updateDeployToolbarStatus();
   }
 
@@ -15212,8 +15221,9 @@ export class BattleScene {
   }
 
   /** C-FLANK: ustawia aktywny kierunek natarcia (toolbar) i odswieza przyciski. */
-  private _setDeployAttackDirection(dir: AttackDirection): void {
+  private _setDeployAttackDirection(dir: AttackDirection, mixed: boolean = false): void {
     this._deployAttackDirection = dir;
+    this._deployAttackDirMixed = mixed;
     this._syncDeployAttackDirectionButtons();
     this._updateDeployToolbarStatus();
   }
@@ -15298,7 +15308,7 @@ export class BattleScene {
 
   /** C-FLANK: podswietla aktywna opcje w popupie kierunku natarcia. */
   private _syncDeployAttackDirectionButtons(): void {
-    const active = this._deployAttackDirection;
+    const active = this._deployAttackDirMixed ? null : this._deployAttackDirection;
     document.querySelectorAll('button[data-deploy-dir-option]').forEach(el => {
       paintDeployPopupOption(
         el as HTMLButtonElement,
@@ -17223,8 +17233,8 @@ export class BattleScene {
     const targets = this._resolveDeployFormationTargets(live);
     if (targets.length === 0) return;
 
-    const groupIds = [...new Set(targets.map(u => u.groupId).filter(Boolean))] as string[];
-    for (const g of groupIds) {
+    // ABC B (DODATEK 1): meta grupy tylko gdy zaznaczone są WSZYSTKIE żywe jednostki grupy.
+    for (const g of this._fullyCoveredGroupIds(targets, live)) {
       this._ensureGroupMeta(g).formation = formation;
     }
 
@@ -17252,9 +17262,9 @@ export class BattleScene {
     const targets = this._resolveDeployFormationTargets(live);
     if (targets.length === 0) return;
 
-    const gid = targets[0]?.groupId;
-    if (gid && targets.every(u => u.groupId === gid)) {
-      this._ensureGroupMeta(gid).cavalryMode = mode;
+    // ABC B: tryb grupy tylko gdy zaznaczone są WSZYSTKIE żywe jednostki grupy.
+    for (const g of this._fullyCoveredGroupIds(targets, live)) {
+      this._ensureGroupMeta(g).cavalryMode = mode;
     }
 
     this._setDeployCavalryMode(mode);
@@ -17288,8 +17298,8 @@ export class BattleScene {
 
     for (const u of targets) u.attackDirection = dir;
 
-    const groupIds = [...new Set(targets.map(u => u.groupId).filter(Boolean))] as string[];
-    for (const g of groupIds) {
+    // ABC B: meta grupy tylko gdy zaznaczone są WSZYSTKIE żywe jednostki grupy (albo cała armia).
+    for (const g of this._fullyCoveredGroupIds(targets, live)) {
       this._ensureGroupMeta(g).attackDirection = dir;
     }
 
@@ -17303,22 +17313,29 @@ export class BattleScene {
     this._showOrderFeedback('Kierunek natarcia: ' + dirLabel + ' \u2014 ' + scopeLabel);
   }
 
-  /** Jednostki objete formacja: zaznaczenie / cala grupa / cala armia. */
+  /**
+   * Jednostki objete rozkazem deploy (Formacja / Konnica / Kierunek natarcia).
+   * ABC B (R-WEB-BATTLE-ATTACK-DIRECTION-PER-SELECTED-UNITS-Q1, DODATEK 1): brak zaznaczenia =
+   * cala armia; zaznaczenie = DOKLADNIE zaznaczone zywe jednostki (bez rozszerzania na grupe).
+   */
   private _resolveDeployFormationTargets(live: RuntimeBattleUnit[]): RuntimeBattleUnit[] {
     const selLive = [...this._selectedUnits]
       .map(id => live.find(u => u.bu.id === id))
       .filter((u): u is RuntimeBattleUnit => !!u);
 
     if (selLive.length === 0) return live;
-
-    const gids = [...new Set(selLive.map(u => u.groupId).filter(Boolean))] as string[];
-    if (gids.length === 1) {
-      const members = this._liveGroupMemberIds(gids[0]!)
-        .map(id => live.find(u => u.bu.id === id))
-        .filter((u): u is RuntimeBattleUnit => !!u);
-      if (members.length > 0) return members;
-    }
     return selLive;
+  }
+
+  /**
+   * Grupy, ktorych WSZYSTKIE zywe jednostki sa w `targets` (tylko wtedy wolno ustawic meta grupy,
+   * inaczej rozkaz czesciowy przeciekalby na grupe). Dla calej armii zwraca wszystkie grupy.
+   */
+  private _fullyCoveredGroupIds(targets: RuntimeBattleUnit[], live: RuntimeBattleUnit[]): string[] {
+    const inTargets = new Set(targets.map(u => u.bu.id));
+    const gids = new Set(targets.map(u => u.groupId).filter(Boolean) as string[]);
+    return [...gids].filter(g =>
+      live.filter(u => u.groupId === g).every(u => inTargets.has(u.bu.id)));
   }
 
   /** Zaznacza jednostke w fazie deploy (ring only — bez skali 3D). */
