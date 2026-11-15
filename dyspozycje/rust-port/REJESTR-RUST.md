@@ -2042,5 +2042,5 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
   - Brak producenta `BattleSetupDto` w silniku i brak integratora sceny bitwy (do rejestru jako zależności).
   - Fixture'y ręczne z wartościami z pinu tam, gdzie pin je wylicza (`TOWER_ROWS` z `towerRows`); pozostałe wartości to 1:1 kopie pól armii (NIE_ZMIERZONO brak wartości z pinu).
 - **Kolejność integracji:** RJ-REPIN Q3 (bramki silnika w toku, `integ-p4-1h-rj`) → FF → F1 i Q4 razem na nowym parity (jeden przebieg bramek renderera i view-model).
-- **Trwające workflow (2):** P4-1I1 BATTLE-OUTCOME (#244, `wf_8948228b-2a5`, operator). Wolne 2 sloty; kandydaci po integracji: #250 (P4-1H Q4 po FF RJ-REPIN), #236 (P4-1G Q5, czeka na Q2/Q3 — zintegrowane — i Q4, który właśnie przeszedł FC).
+- **Trwające workflow (1):** P4-1I1 BATTLE-OUTCOME (#244, `wf_8948228b-2a5`, operator). Wolne 3 sloty; kandydaci po integracji: #250 (P4-1H Q4 po FF RJ-REPIN), #236 (P4-1G Q5, czeka na Q2/Q3 — zintegrowane — i Q4, który właśnie przeszedł FC).
 - **Dysk:** 6,8 GB (83%) — poniżej progu 8 GB, bez nowych startów do czasu zwolnienia miejsca.
