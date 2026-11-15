@@ -1,3 +1,9 @@
+## ROBOCZA f2b31b16 -- 2026-11-14 -- FALA 726: Porzadek po wdrozeniach: hotseat, martwe pole pracy, rada 50, poradnik (testowa)
+
+- Test hotseat zielony; usuniete martwe pole suwak_praca_teren_domyslnie (bez zmiany zachowania); rada 50% zamiast 70% w poradniku i encyklopedii; poradnik: kara x0,75 za glod i deficyt, opis banera Stan; nowy test pilnujacy hasla oslabienie-glod-deficyt
+- Weryfikacja: tsc 0; logic 213/213; hotseat 16/0; guard 7/0; growthmult 24/0; FC PASS-WITH-NOTES
+- Limity: Dlug bazowy budynki-koszt-pracy-50-test 141/42; NIE ZMIERZONO determinism-save-load-resume; dlug Rust REPIN
+
 ## ROBOCZA 4f75c30b -- 2026-11-14 -- FALA 725: Ceramika obywateli w Kamieniu, kierunek natarcia dla zaznaczonych jednostek (testowa)
 
 - Obywatele zuzywaja 1 ceramiki na obywatela na ture juz w epoce Kamienia (kara -2 Szczescia / -1% rozwoju do czasu Garncarni); w rozstawieniu bitwy Kierunek natarcia, Formacja i Konnica dzialaja tylko na zaznaczone jednostki (bez zaznaczenia cala armia)

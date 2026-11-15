@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "4f75c30b346583e4adee73db4372e533",
-  "bundleSha256": "8ffd577a3f96419ab9677efead8d8eba9491e01f807dd0ebdf9fd313811c1918",
-  "bundleBytes": 14734037,
+  "bundleMd5": "f2b31b1682d3b0103d5e7e77970d6a97",
+  "bundleSha256": "ce93caca945575ade53d05dea660d483709c18943281e9c4e871a11547b3d144",
+  "bundleBytes": 14734882,
   "sourceSnapshot": {
-    "source": "merge FC CERAM-KAMIEN r2 7f9cd4fa5 + ATTACK-DIR 931b1c92d na main e956b5015",
+    "source": "fast-forward FC DEBT-HOT 99cc047be na main 7c2074e00",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 725: Obywatele zuzywaja 1 ceramiki na obywatela na ture juz w epoce Kamienia (kara -2 Szczescia / -1% rozwoju do czasu Garncarni); w rozstawieniu bitwy Kierunek natarcia, Formacja i Konnica dzialaja tylko na zaznaczone jednostki (bez zaznaczenia cala armia)"
+    "FALA 726: Test hotseat zielony; usuniete martwe pole suwak_praca_teren_domyslnie (bez zmiany zachowania); rada 50% zamiast 70% w poradniku i encyklopedii; poradnik: kara x0,75 za glod i deficyt, opis banera Stan; nowy test pilnujacy hasla oslabienie-glod-deficyt"
   ],
   "verification": [
-    "tsc 0; logic 213/213; citizen-upkeep-era-mult 681/0; attack-dir 32 OK; FC PASS-WITH-NOTES x2"
+    "tsc 0; logic 213/213; hotseat 16/0; guard 7/0; growthmult 24/0; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "NIE ZMIERZONO: reczny pomiar kierunku natarcia w Chromium; dlug bazowy citizen-resource-upkeep 2 czerwone; dlug Rust REPIN"
+    "Dlug bazowy budynki-koszt-pracy-50-test 141/42; NIE ZMIERZONO determinism-save-load-resume; dlug Rust REPIN"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES: CERAM-KAMIEN r2 7f9cd4fa5 / kod df5333720 (ceramika w utrzymaniu obywateli od epoki Kamienia, 1 na obywatela na ture; kara -2 Szczescia/-1% rozwoju bez ceramiki; zrzut Chromium panelu pokrycia surowcow); ATTACK-DIR 931b1c92d / kod 0721e8d80 (Kierunek natarcia, Formacja i Konnica w rozstawieniu tylko dla zaznaczonych jednostek; brak zaznaczenia = cala armia). Testy: citizen-upkeep-era-mult 681/0, attack-dir 32 OK, tsc 0, logic 213/213; citizen-resource-upkeep 122/2 (2 czerwone bazowe). NIE ZMIERZONO: pomiar kierunku natarcia w Chromium (reczna weryfikacja). Dlug Rust REPIN: citizen-resource-upkeep epoka 1."
+    "notes": "FC PASS-WITH-NOTES DEBT-HOT 99cc047be / kod de68b0328: test hotseat zielony (16/0), usuniete martwe pole suwak_praca_teren_domyslnie, rada 50% w poradniku i encyklopedii, poradnik 08 par.50.3 (x0,75 kara glod/deficyt) i 12 (baner Stan), nowy test-straznik hasla oslabienie-glod-deficyt 7/0. Testy: tsc 0, logic 213/213, hotseat 16/0, growthmult 24/0. NIE ZMIERZONO: determinism-save-load-resume. Dlug bazowy: budynki-koszt-pracy-50-test 141/42. Dlug Rust REPIN: usuniecie klucza suwak_praca_teren_domyslnie."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-15T01:21:14",
+  "hubGeneratedAt": "2026-11-15T02:02:35",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "4f75c30b346583e4adee73db4372e533",
-      "sizeBytes": 14734037
+      "md5": "f2b31b1682d3b0103d5e7e77970d6a97",
+      "sizeBytes": 14734882
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "4f75c30b346583e4adee73db4372e533",
-      "sizeBytes": 14734037
+      "md5": "f2b31b1682d3b0103d5e7e77970d6a97",
+      "sizeBytes": 14734882
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "4f75c30b346583e4adee73db4372e533",
-      "sizeBytes": 14734037
+      "md5": "f2b31b1682d3b0103d5e7e77970d6a97",
+      "sizeBytes": 14734882
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "4f75c30b346583e4adee73db4372e533",
-      "sizeBytes": 14734037
+      "md5": "f2b31b1682d3b0103d5e7e77970d6a97",
+      "sizeBytes": 14734882
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "4f75c30b346583e4adee73db4372e533",
-      "sizeBytes": 14734037
+      "md5": "f2b31b1682d3b0103d5e7e77970d6a97",
+      "sizeBytes": 14734882
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "4f75c30b346583e4adee73db4372e533",
-      "sizeBytes": 14734037
+      "md5": "f2b31b1682d3b0103d5e7e77970d6a97",
+      "sizeBytes": 14734882
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "4f75c30b346583e4adee73db4372e533",
-      "sizeBytes": 14734037
+      "md5": "f2b31b1682d3b0103d5e7e77970d6a97",
+      "sizeBytes": 14734882
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "4f75c30b346583e4adee73db4372e533",
-      "sizeBytes": 14734037
+      "md5": "f2b31b1682d3b0103d5e7e77970d6a97",
+      "sizeBytes": 14734882
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "4f75c30b346583e4adee73db4372e533",
-      "sizeBytes": 14734037
+      "md5": "f2b31b1682d3b0103d5e7e77970d6a97",
+      "sizeBytes": 14734882
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "4f75c30b346583e4adee73db4372e533",
-      "sizeBytes": 14734037
+      "md5": "f2b31b1682d3b0103d5e7e77970d6a97",
+      "sizeBytes": 14734882
     }
   ],
-  "md5": "4f75c30b346583e4adee73db4372e533",
+  "md5": "f2b31b1682d3b0103d5e7e77970d6a97",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
