@@ -1,6 +1,6 @@
 # R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1 — Operator (runda 2/5, HAIKU 5.5)
 
-STATUS: PASS-WITH-NOTES (etap 1 zrobiony; etapy 2–4 w toku — patrz sekcja "Etapy", wpis końcowy niżej)
+STATUS: BLOCK (częściowy: etapy 1–3 wykonane i zacommitowane; etap 4 — zrzuty soli i ceramiki w grze NIE_WYKONANO, patrz sekcja "Etap 4")
 DOMAIN: GAME
 TEMAT: R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1
 GOAL: (1) zrzuty Chromium „Skąd zapasy” (sól, ceramika, 1280/1920 px); (2) dokumentacja + wikiBundle (zrobione w r1/r2 obrony); (3) pomiar wydajności 100 tur, mediana z ≥5; (4) diagnoza endTurn timeout przy turze 57; (5) stan `<details open>`.
@@ -57,3 +57,43 @@ GOAL: (1) zrzuty Chromium „Skąd zapasy” (sól, ceramika, 1280/1920 px); (2)
 - Tura startowa (tura 2) jest szumna (rozstrzał 2296–3764 ms w obu wersjach); mediana ON niższa o ok. 0,6 s, ale rozstrzał jest większy niż różnica — NIE_ZMIERZONO jako istotne; nie przypisuję różnicy księdze.
 - Dowody: `runs/<ID>/evidence/perf100/on-N.jsonl`, `off-N.jsonl`, skrypt `perfsum.cjs`.
 
+## Etap 3 — GOAL 5: stan `<details open>` „Skąd zapasy” przy przerysowaniu (naprawiony)
+
+- Przyczyna (kod, de12837ba): `empireDetailPanel.ts` podmienia `bodyEl.innerHTML` przy każdym przerysowaniu; przeglądarka resetuje `open` do wartości z markupu (`resourceSourceLedgerHtml.ts`: `open` tylko dla „sól” i „ceramika”). Rozwinięte przez gracza źródło innego surowca zwijało się przy każdym przerysowaniu.
+- Pomiar PRZED poprawką (kopia `gra-shot`, bundle z kodu bazowego; surowe linie `evidence/ledger-ui-details/details-before-fix.jsonl`): stan początkowy `[false]` → klik w summary → `[true]` → przerysowanie `[false]` → drugie przerysowanie `[false]`. **Stan gubiony** (mutant).
+- Poprawka (repo): `resourceSourceLedgerDetailsHtml(..., key)` dodaje `data-skad-key="<surowiec>"`; w `empireDetailPanel.ts` `captureSkadDetailsOpen` przed `innerHTML` i `restoreSkadDetailsOpen` po nim (wg klucza). Domyślne `open` dla sól/ceramika zachowane.
+- Pomiar PO poprawce (bundle z poprawką; `evidence/ledger-ui-details/details-after-fix.jsonl`): `[false]` → `[true]` → `[true]` → `[true]`. **Stan zachowany.** Dowód mutacyjny = para przed/po na identycznym scenariuszu.
+- Test w repo: `gra/tools/resource-ledger-skad-dom-test.cjs` — regex `OPEN_DETAILS` rozszerzony o opcjonalny `data-skad-key` (po zmianie markupu 2 FAIL: D1, D2 — naprawione, 9/9 PASS). Test live (przerysowanie w Chromium) NIE dodany do repo: wymaga hooka `__measureOpenPanel`, który istnieje tylko w kopii pomiarowej — skrypt zostaje w `evidence/ledger-ui-details/details-run-probe.cjs`.
+
+## Etap 4 — GOAL 1: zrzuty Chromium „Skąd zapasy” (CZĘŚCIOWO)
+
+- Zrobione: zrzuty karty surowca z gry (kopia pomiarowa, 12 tur, seed 4242, Chromium, ledger ON), pliki w `evidence/ledger-ui-details/`: `glina-card-1280.png`, `glina-card-1920.png`, `panel-1280.png`. Obejrzane (Read): karta „Glina” (143 / 100000, Brutto +14 · netto +13 / turę) z rozwiniętym „Skąd zapasy (ostatnie 10 tur)”: `+140 Teren i plony z mapy (Rzym)` (zielony), `−10 Obywatele` (czerwony). Zrzut 1280 px ma ten sam układ co 1920 px (karta ma stałą szerokość).
+- NIE zrobione: **sól i ceramika w realnej grze** — w 12 turach nie było Warzelni ani Garncarni (przychód soli i ceramiki = 0, karta bez „Skąd zapasy”; `panel-1280.png` pokazuje Sól 0/100000 i Ceramikę 0/100000 bez bloku). Brak w kodzie hooka do stawiania budynków w teście; stawianie przez UI wymaga sterowania grą poza zakresem tego etapu. Wiersze „+12 Warzelnia (Rzym)”, „+30 Umowa wymiany z Asyria”, „−20 Obywatele” są widoczne tylko w **makiecie DOM** z testu `resource-ledger-skad-dom-test.cjs` (fixture, nie gra) — NIE traktuję tego jako zrzutu z gry.
+- Status GOAL 1: **CZĘŚCIOWO** (glina z gry: tak; sól i ceramika w grze: NIE_WYKONANO).
+
+## Bramki (surowe wyjścia, ta runda)
+
+- `npx tsc --noEmit -p tsconfig.json` → rc=0 (po wszystkich zmianach kodu).
+- `resource-ledger-test.cjs` → `1030 passed, 0 failed`.
+- `resource-ledger-skad-ui-test.cjs` → `18 passed, 0 failed`.
+- `resource-ledger-skad-dom-test.cjs` → przed poprawką regexu `7 passed, 2 failed` (D1, D2 — skutek zmiany markupu); po poprawce `9 passed, 0 failed`.
+- Kontrola białych znaków dla zmian w repo → czysto (bez wyjścia).
+- Piąta bramka z listy dispatchu: NIE_ZMIERZONO (nazwy nie podano w dispatchu; nie zgadywałem).
+
+## BLOKADY / UWAGI-DLA-ORKIESTRATORA
+
+1. Baza: dispatch kazał startować z `fc4e8dcb5` — to commit dispatchu na starej bazie (nie zawiera origin/main ani de12837ba). Użyto `de12837ba` zgodnie z DODATKIEM 2. Do potwierdzenia.
+2. Ścieżka `00-dispatch.md` nie istnieje w origin/main; czytano z gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (DODATEK 2).
+3. Harness pomiarowy (`longrun-100-turns-leak-q1-measure.cjs`) na de12837ba nie przechodzi tury 1: bramka „Zakończ turę” (FALA 697/724) blokuje z powodu skarbca (−2 złota). Obejście tylko w kopii pomiarowej: `setTaxSplit(60,30,10)` po `world-ready`. **Dług harnessu do osobnego tematu** (#415 i #417 zależą od tego).
+4. Timeout endTurn przy turze 57 nieodtworzony (etap 1) — konfiguracja źródłowa z r3 nieznana.
+5. Pomiar wydajności: różnice w granicach szumu; brak regresji >10% (warunek optymalizacji `ownerResourceStockAll` niespełniony).
+
+## RUNDY
+
+2/5 (ten sam ID). Wynik tej rundy: etapy 1, 2, 3 wykonane i zacommitowane; etap 4 częściowo.
+
+## NASTĘPNY KROK
+
+- Orkiestrator: (a) zaakceptować poprawkę GOAL 5 i test DOM (commit tego tematu); (b) zlecić osobny temat na dług harnessu (bramka skarbca w turze 1) oraz na sól i ceramikę w grze (zrzuty wymagają budynków Warzelnia/Garncarnia: hook stawiania budynku w kopii testowej albo sesja ręczna); (c) potwierdzić bazę (pkt 1).
+
+DEPLOY/PUSH: NIE WYKONANO

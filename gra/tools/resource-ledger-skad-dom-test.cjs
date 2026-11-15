@@ -132,7 +132,8 @@ console.log('resource-ledger-skad-dom-test (Chromium DOM)');
 const dom = {};
 for (const k of Object.keys(cards)) dom[k] = dumpDom(k, page(cards[k], 360));
 const bodyOf = (h) => h.slice(h.indexOf("<body"));
-const OPEN_DETAILS = /<details class="civ-emp-res-skad" open(=""|>)/;
+// R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1 (GOAL 5): markup niesie `data-skad-key` (klucz stanu open) przed `open`.
+const OPEN_DETAILS = /<details class="civ-emp-res-skad"(?: data-skad-key="[^"]*")? open(=""|>)/;
 
 check('D1 sol: blok "Skad zapasy" otwarty domyslnie', OPEN_DETAILS.test(bodyOf(dom.solOwner0)));
 check('D1 sol: "+12 Warzelnia (Rzym)" jako wartosc przed etykieta',
