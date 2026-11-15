@@ -31533,6 +31533,12 @@ async function boot(): Promise<void> {
         },
         setRecording: (on: boolean): boolean => { setLedgerRecordingEnabled(on); return isLedgerRecordingEnabled(); },
         isRecording: (): boolean => isLedgerRecordingEnabled(),
+        /**
+         * R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1 (zrzuty z prawdziwej gry; JEDYNY hak dodany w tym temacie):
+         * otwiera REALNY panel imperium (ten sam `openEmpireDetailFromHud`, co klik w HUD) na wskazanej sekcji,
+         * np. 'surowce'. Tylko ?civTest=1 (ten sam blok co reszta `__ledgerTestDebug`); bez flagi obiekt nie istnieje.
+         */
+        openEmpirePanel: (section?: string): void => { openEmpireDetailFromHud(section); },
         pendingPeek: () => { const o: Record<string, unknown> = {}; for (const [k, t] of peekPendingLedger()) o[k] = plain(t); return o; },
         /**
          * SETUP sceny dla pomiaru (poza oknem pomiaru): budynki Cegielnia/Garncarnia/Mennica/Stolarnia/Spichlerz w pierwszym

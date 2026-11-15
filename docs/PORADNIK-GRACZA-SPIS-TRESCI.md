@@ -1493,6 +1493,9 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 - Złoża na mapie — planuj miasta i posterunki pod dostęp
 - Pełna produkcja surowców — roadmap v2.0 (Apendyks E.1)
 
+**53a.** Skąd zapasy — źródła zmian magazynu państwa (karta surowca, rozwijana sekcja „Skąd zapasy”, ostatnie 10 tur)
+- Pełny opis i tabela rodzajów źródeł: `docs/encyklopedia/pojecia/skad-zapasy.md`
+
 ---
 
 ## Część IX — Nauka i epoki
