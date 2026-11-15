@@ -1,78 +1,76 @@
-# R-WEB-TRADE-ROUTE-REMOVE-STOCK-FLOW-E3C-Q1 — obrona Operatora (runda 2, odpowiedzi na zarzuty Evaluatora r1)
+# R-WEB-TRADE-ROUTE-REMOVE-STOCK-FLOW-E3C-Q1 — obrona Operatora, runda 2 (odpowiedzi na zarzuty Evaluatora r2)
 
-STATUS: PASS-WITH-NOTES (zarzuty 2 i 4 naprawione; zarzuty 1, 6 i 3 nadal otwarte i jawnie nieobrobione w tej rundzie; zarzut 5 zgłoszony orkiestratorowi)
+STATUS: PASS-WITH-NOTES (zarzuty 1, 2, 3 przyjęte i wykonane z dowodem; zarzut 4 odrzucony w tym temacie z uzasadnieniem i zgłoszony orkiestratorowi)
 DOMAIN: GAME
 TEMAT: R-WEB-TRADE-ROUTE-REMOVE-STOCK-FLOW-E3C-Q1
-GOAL: aktywny szlak handlowy nie zmienia zapasów żadnej strony; zostaje dochód, boolean-grant dostępu, limity i kontakt szlaku.
-BAZA: eac3326a2 (kandydat Operatora r1). Kod w tej rundzie: 1f39c940d, 325f8ede3.
-ODNOŚNIK DISPATCHU: dispatch i DODATEK pobrane z gałęzi claude/sprawdzenie-funkcjonalnosci-ek4ra0 (w origin/main ich nie ma).
+GOAL: aktywny szlak handlowy NIE zmienia zapasów żadnej strony; zostaje dochód Pieniądza ze szlaku, boolean-grant dostępu, limity i kontakt.
+BAZA KODU: d37eb7b35 (kandydat r2, zgodnie z poleceniem „startuj od d37eb7b35”). Dispatch podaje bbd0536 jako origin/main — to błąd: origin/main = b97287c88, a kandydat nie jest jego potomkiem (merge-base 06fcc8526). Integracja z b97287c88 wymaga osobnego merge (nie wykonywany przeze mnie).
+ZMIANY/COMMIT: 63db5c610 (kod + test: gra/src/main.ts, gra/tools/trade-route-remove-stock-flow-live-test.cjs). Ten raport: osobny commit (SHA w polu sha wyniku).
+ALLOWLISTA: poza allowlistą dispatchu dodano w gra/src/main.ts wyłącznie hooki civTest (__ledgerTestDebug.tradeRoutesProbe, forceTradeRoute) i poprawiono komentarz przy bloku E3c. Zachowanie gry bez ?civTest=1 nie zmienione. Wymaga akceptacji orkiestratora (patrz UWAGI).
 
-## ODPOWIEDZI NA ZARZUTY
+## ODPOWIEDZI NA ZARZUTY EVALUATORA r2
 
-1. **PRZYJMUJĘ — NIE WYKONANO w tej rundzie.** Kryterium (a) (test w realnej turze, dwie cywilizacje, pomiar zapasów i dochodu Pieniądza przed/po) nie zostało wykonane. Brak uruchomienia przeglądarki w tej rundzie. Nie podaję żadnego pomiaru z pamięci. NIE ZMIERZONO.
+1. **PRZYJMUJĘ — WYKONANE (63db5c610).** Kryterium (a): test w realnej turze z aktywnym szlakiem.
+   - Setup: miasto AI (spawnOwnerCity), stan Umowy Szlaków gracz<->AI (realna struktura ActiveDeal, RodzajTraktatu.UmowaSzlakow), przeliczenie tras przez recomputeTradeRoutesNow (ta sama ścieżka co tura). Zapasy w 6 kluczach szlakowych: gracz 400, AI 0.
+   - Przebieg: 6 tur realnym endTurn; trasa przetrwała refreshTradeRoutes w każdej turze (routes 1->1).
+   - Dochód Pieniądza ze szlaku (computeTradeRouteIncomeByCityBreakdown, per owner): gracz 6–8, AI 6–8 na turę (w przebiegu z 6 turami: 6/6; w przebiegu z 3 turami: 8/8). NIE ZMIERZONO: saldo skarbca przed/po — dochód mierzony przez tę samą funkcję co tura, nie przez skarbiec.
+   - Zapasy przed/po każdej tury: gracz 400→400, AI 0→0 dla wszystkich 6 kluczy (brak produkcji tych kluczy w scenariuszu). Zero nieujętych zmian magazynu (formuła reconcyliacji z resource-ledger-live-measure.cjs).
+   - Wynik: `trade-route-remove-stock-flow-live-test: 12 passed, 0 failed` (6 tur, bundle kandydata).
 
-2. **PRZYJMUJĘ — CZĘŚCIOWO WYKONANE (1f39c940d).** `gra/tools/trade-ilosc-test.cjs` miał czerwone asercje przed tym tematem (B: `capacityPerRoutePerTurn` usunięty w PYTANIE-84-U16; E: lista kluczy ma 6 pozycji, w tym `kon`, zgodnie z GOAL dispatchu). Zmieniono B (brak limitu trasy, transfer = nadwyżka ponad rezerwę: 998 przy 1000 − 2) i E (6 kluczy). Wynik: `trade-ilosc-test: 42 passed, 0 failed` (było 35/5).
-   Nadal otwarte: `zloto-szlak-test` (54/0) w sekcji 4 nadal asercjonuje działanie `computeTradeRouteResourceFlow`. Przejdzie dalej, bo funkcja jest wciąż wyeksportowana. Zmiana tej sekcji wchodzi razem z zarzutem 3.
+2. **PRZYJMUJĘ — WYKONANE.** Asercja e3cFires==0 usunięta jako tautologiczna. Zastąpiona dwiema asercjami behawioralnymi: (i) zero nieujętych zmian magazynu w turach z aktywnym szlakiem (reconcyliacja), (ii) zero zmian kluczy szlakowych obu stron.
+   - Mutacja w realnej turze (wykonana): w kopii roboczej przywrócono blok E3c z 06fcc8526 (trade-routes.ts i econ-params.json z bazy, importy i blok w main.ts), bundle zbudowany, test uruchomiony:
+     `trade-route-remove-stock-flow-live-test: 10 passed, 2 failed` — FAIL: „zapasy: zero nieujętych zmian” (diff −398 gracz / +398 AI na każdy z 6 kluczy, tura 1) i „szlak nie zmienia zapasów” (te same klucze). Przywrócenie przepływu daje czerwień. Po mutacji przywrócono kod kandydata (cp z kopii, git checkout trade-routes.ts/econ-params.json z d37eb7b35); bundle kandydata ponownie zielony (12/0).
+   - Wcześniejsza próba mutacji (AI z zapasem 400) dała zieleń: przepływ nie miał powodu zadziałać. Dlatego scenariusz ustawia AI na 0. To jest wynik pomiaru, nie założenie.
+   - trade-ilosc-test (strukturalny) pozostaje jak był; behawioralny dowód „szlak nie zmienia zapasów” jest w live teście, nie w trade-ilosc-test.
 
-3. **PRZYJMUJĘ zasadę — NIE WYKONANO w tej rundzie.** Odczytanie dispatchu: usunąć martwy kod, jeśli „nic poza testami go nie używa”. Warunek jest spełniony: poza testami nie importuje tych symboli żaden plik (`main.ts:39864` i `citizen-resource-upkeep.ts:48,63,312` mają tylko komentarze). Mojej poprzedniej interpretacji („zostawiam, bo używają testy”) nie podtrzymuję. Usunięcie `computeTradeRouteResourceFlow`, `loadTradeRouteResourceFlowParams`, `TRADE_ROUTE_STOCK_FLOW_KEYS`, `DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS` wymaga przepisania `trade-ilosc-test.cjs` (wszystkie sekcje B–H używają przepływu), sekcji 4 `zloto-szlak-test.cjs` i `perf-large-empire-stress-live-test.cjs` (poza allowlistą, patrz zarzut 5). To jest zakres następnej rundy — do decyzji orkiestratora.
+3. **PRZYJMUJĘ — WYKONANE.** Komentarz w main.ts (przy usuniętym bloku E3c) poprawiony: funkcje computeTradeRouteResourceFlow / loadTradeRouteResourceFlowParams są USUNIĘTE z trade-routes.ts (nie „wyeksportowane dla testów"). Zweryfikowane: grep po src/ i tools/ — w kodzie gry brak wywołań i definicji; testy asercjonują ich nieobecność.
 
-4. **PRZYJMUJĘ — CZĘŚCIOWO WYKONANE (1f39c940d, 325f8ede3).**
-   - `docs/encyklopedia/pojecia/szlaki-handlowe.md`: dopisane zdanie „Szlak nie przesuwa zapasów” w sekcji dostępu do surowców.
-   - `docs/PORADNIK-GRACZA/08-ekonomia-imperium.md`: dopisane to samo w §53.3 („Dostęp do surowca”); wiersz tabeli „Surowce” (linia ~406) doprecyzowany z „przez szlak handlowy” na „dostęp przez szlak handlowy (§53.3; szlak nie przesuwa zapasów)”.
-   - `gra/src/data/wikiBundle.json`: zregenerowany `node gra/tools/bundle-wiki-for-game.cjs` → „22 rozdz. + 181 haseł”, diff 2 linie.
-   - `gra/src/game/trade-routes.ts` (allowlista): komentarze w bloku „zloto”/„sol” (ok. l. 1842 i 1847) zmienione z „dostarczają sztuki/turę” na „dają dochód i dostęp; NIE przesuwają zapasów”.
-   - ODRZUCAM część „krok (4) resource-ledger.ts”: plik `gra/src/game/resource-ledger.ts` nie istnieje w bazie eac3326a2 (`git cat-file` i listing; księga jest w innej gałęzi). Nic do usunięcia.
-   - NIE WYKONANO (poza allowlistą): `gra/src/ui/cityPanel.ts:~11612` (ostrzeżenie Mennicy wskazuje szlak jako źródło Złota), nagłówek `zloto-access.ts`, `citizen-resource-upkeep.ts` (komentarze l. 48, 63, 312). Do decyzji orkiestratora.
+4. **ODRZUCAM w tym temacie (z dowodem), zgłaszam orkiestratorowi.** Sonda `ledgerAuditE3cLast` / `ledgerAuditE3cFires` (gra/src/main.ts ok. l. 10177–10178 i 31205) jest poza blokiem E3c, a jedynym konsumentem jest gra/tools/resource-ledger-live-measure.cjs:175 (`res.e3c`). Oba pliki są poza allowlistą dispatchu („main.ts tylko blok E3c"; resource-ledger-live-measure.cjs nie figuruje). Usunięcie sondy bez zmiany konsumenta zepsuje narzędzie pomiarowe; zmiana konsumenta wymaga rozszerzenia allowlisty. Propozycja: osobny temat „sonda E3c — usunięcie i konsument”, albo decyzja orkiestratora o rozszerzeniu allowlisty o resource-ledger-live-measure.cjs i wskazane linie main.ts. Nie wykonuję bez decyzji.
+   - Dokument docs/decyzje/R-MENNICA-BRAZ-ZLOTO-ASYMETRIA-Q1.md (opis TRADE_ROUTE_STOCK_FLOW_KEYS jako stanu bieżącego): poza allowlistą, dokument historyczny — zgłoszony orkiestratorowi.
 
-5. **PRZYJMUJĘ — NIE WYKONANO (poza allowlistą).** `gra/tools/perf-large-empire-stress-live-test.cjs` (linie ~468–472) robi `replaceOnce` na tekście usuniętego bloku E3c (`const tradeFlowParams = loadTradeRouteResourceFlowParams(`, `trade_route_stock_flow`). Po eac3326a2 skrypt nie znajdzie tekstu. Nie edytowałem go, bo plik jest poza allowlistą. Wymaga zgody orkiestratora na rozszerzenie allowlisty albo osobnego tematu.
+## TESTY (surowe wyniki z tej rundy, kod 63db5c610)
 
-6. **PRZYJMUJĘ — NIE WYKONANO (jak zarzut 1).** Grant dostępu (boolean) jest pokryty przez `trade-grant-test.cjs` (62/0) i `trade-routes-test.cjs` (96/0). Brakuje testu w realnej turze, że grant działa równolegle z brakiem przepływu. NIE ZMIERZONO.
+- `npx tsc --noEmit` (gra/): exit 0 (po ostatniej zmianie main.ts; plik przywrócony z kopii identycznej z tym stanem).
+- Live (bundle vite poza repo, katalog w scratchpad): kandydat 12 passed / 0 failed (6 tur); mutacja (blok E3c przywrócony) 10 passed / 2 failed.
+- Pięć bramek referencyjnych:
+  - logic-test: LOGIC OK (213/213), exit 0
+  - tech-tree-test: 20 pass, 0 fail
+  - research-test: PASSED 33 / FAILED 0 / TOTAL 33, exit 0
+  - unit-replace-test: WSZYSTKIE TESTY ZIELONE (21/21), exit 0
+  - combat-test: COMBAT TEST: 6/6 pass, exit 0
+- Testy szlaku: trade-grant-test 62/0; trade-routes-test 96/0; trade-routes-income-test 134/0; trade-routes-limit-test 76/0; trade-routes-ownership-income-test 18/0; trade-sea-bonus-requires-port-test 30/0; trade-routes-contact-only-test 36/0; trade-ilosc-test 23/0; zloto-szlak-test 48/0; resource-ledger-trade-test 27/0.
+- Dług bazowy (zgodnie z pomiarem Evaluatora na 06fcc8526; NIE ZMIERZONO przeze mnie na bazie): surow-civ-storage-test 63 passed / 4 failed (sekcja G); zloto-test 38 pass / 7 fail. Oba wyniki w tej rundzie odtworzone na kandydacie identycznie.
+- `git diff --check` (commit 63db5c610): czysty.
+- Dysk: df / 7,4 GB wolne po pracy (node_modules gra/ zainstalowany npm ci na potrzeby bramek; do usunięcia po zakończeniu).
 
-7. **PRZYJMUJĘ.**
-   - Dysk: w trakcie obrony `df -h /` pokazało 3,6 GB (poniżej progu 4 GB dla web). Po usunięciu `gra/node_modules` (134 MB, usunięte po bramkach) i sprzątaniu tymczasowych plików: **6,5 GB wolne** na końcu tej rundy.
-   - Dług Rust (REPIN) — zapisany jawnie: usunięto ilościowy przepływ szlaku w logice weba (blok E3c w `main.ts`). Dane i logika przepływu w `trade-routes.ts` (`TRADE_ROUTE_STOCK_FLOW_KEYS`, `computeTradeRouteResourceFlow`, `loadTradeRouteResourceFlowParams`, `DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS`) nadal istnieją w kodzie. Port Rust musi zrobić to samo: szlak nie przenosi zapasów. Klucz `ekonomia_miasta.handel_surowiec_min_stock` w `econ-params.json` nie został zmieniony, ale nadal jest czytany tylko przez usunięty przepływ. Do REPIN.
+## KRYTERIA BINARNE (stan)
 
-## TESTY (surowe wyniki z tej rundy, po commitach)
-
-Środowisko: `gra/node_modules` zainstalowane przez `npm ci --ignore-scripts` (71 pakietów), po bramkach usunięte.
-
-- `npx tsc --noEmit` (gra/): exit 0 (po 325f8ede3).
-- trade-ilosc-test.cjs: 42 passed, 0 failed (przed: 35 passed, 5 failed).
-- trade-grant-test.cjs: 62 passed, 0 failed.
-- zloto-szlak-test.cjs: 54 passed, 0 failed.
-- trade-routes-test.cjs: 96 passed, 0 failed.
-- trade-routes-income-test.cjs: 134 passed, 0 failed.
-- trade-routes-contact-only-test.cjs: 36 passed, 0 failed.
-- trade-routes-limit-test.cjs: 76 passed, 0 failed.
-- trade-routes-ownership-income-test.cjs: 18 passed, 0 failed.
-- trade-routes-hud-filter-test.cjs: passed=58 failed=0.
-- surow-civ-storage-test.cjs: 63 passed, 4 failed. Wszystkie 4 FAIL to sekcja G (`main.ts: znaleziono koniec pętli wyrębu lasu`, `creditOwnerResourceStock(... 'drewno' ...)`, `drewnoCap`, `ownerResourceCap`). Dług bazowy (opisany w eac3326a2 i potwierdzony w evaluatorze na main.ts z bazy). Sekcja I (nowa, strażnik odwrotny) — PASS.
-- `git diff --check`: czysty.
-- NIE ZMIERZONO: 5 bramek referencyjnych z PROC (nie uruchamiane w tej rundzie), test w realnej turze (kryterium a), mutacja w realnej turze.
+- (a) test w realnej turze z aktywnym szlakiem, zapasy bez zmian, dochód Pieniądza naliczany — SPEŁNIONE (liczby w zarzucie 1; dochód mierzony funkcją tury, nie skarbcem).
+- (b) mutacja ⇒ test czerwony — SPEŁNIONE (10/2, zarzut 2).
+- (c) grant dostępu boolean bez zmian — POKRYTE testem węzłowym (trade-grant-test 62/0, trade-routes-test 96/0). W realnej turze NIE ZMIERZONO (grant nie był częścią scenariusza live; brak zmiany w bloku „grant dostępu").
+- (d) tsc 0, 5 bramek zielone, testy szlaku zielone, diff --check czysty — SPEŁNIONE.
 
 ## BLOKADY
 
-1. Kryterium (a) i (c) w realnej turze — brak przeglądarki w tej rundzie (zarzuty 1 i 6).
-2. Usunięcie martwego kodu (zarzut 3) — wymaga przepisania `trade-ilosc-test.cjs`, sekcji 4 `zloto-szlak-test.cjs`; decyzja orkiestratora, czy w tym temacie, czy osobno.
-3. `gra/tools/perf-large-empire-stress-live-test.cjs` poza allowlistą (zarzut 5).
-4. Komentarze poza allowlistą: `cityPanel.ts:~11612`, `zloto-access.ts`, `citizen-resource-upkeep.ts` (zarzut 4).
-5. Czerwone bazowe: surow-civ-storage sekcja G (4 FAIL), nie z tego tematu.
-6. REPIN Rust — dług zapisany powyżej.
+1. Integracja: kandydat d37eb7b35 / 63db5c610 nie zawiera origin/main b97287c88 (FALA 735). Wymagany merge przed integracją; konflikty możliwe w main.ts, wikiBundle.json, econ-params.json, cityPanel.ts.
+2. Sonda ledgerAuditE3c (zarzut 4) — decyzja orkiestratora (allowlista).
+3. Dokument historyczny docs/decyzje/R-MENNICA-BRAZ-ZLOTO-ASYMETRIA-Q1.md — poza allowlistą.
+4. Grant dostępu w realnej turze — NIE ZMIERZONO (pokryte węzłowo).
+5. REPIN Rust: dane i logika przepływu usunięte z weba; w trade-routes.ts usunięte w d37eb7b35 (TRADE_ROUTE_STOCK_FLOW_KEYS, computeTradeRouteResourceFlow, loadTradeRouteResourceFlowParams, DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS). Port Rust: szlak nie przenosi zapasów; klucz ekonomia_miasta.handel_surowiec_min_stock w econ-params.json usunięty w d37eb7b35 — do sprawdzenia w REPIN.
 
 ## RUNDY
 
-2/5 — odpowiedź na zarzuty Evaluatora r1.
+2/5 — odpowiedź na zarzuty Evaluatora r2 (kandydat d37eb7b35). Zarzut 4 wymaga decyzji orkiestratora.
 
 ## NASTĘPNY KROK
 
-Evaluator r2: sprawdzić commity 1f39c940d i 325f8ede3 (zarzuty 2 i 4 naprawione, dowody w tym raporcie). Zarzuty 1, 3, 5, 6 wymagają decyzji orkiestratora (zakres allowlisty i kolejność). Pomiar w realnej turze (kryterium a) — osobny etap z przeglądarką.
+Evaluator r3 (sprawdzić 63db5c610: live test 12/0, mutacja 10/2, komentarz main.ts). Orkiestrator: (a) akceptacja hooków civTest poza allowlistą; (b) decyzja w sprawie sondy ledgerAuditE3c i konsumenta; (c) merge z origin/main b97287c88 przed integracją.
 
 ## UWAGI-DLA-ORKIESTRATORA
 
-- Dispatch nie istnieje w origin/main pod ścieżką tematu; czytany z gałęzi claude/sprawdzenie-funkcjonalnosci-ek4ra0.
-- Baza w dispatchu raz jako 06fcc8526 (origin/main), raz jako 005cd9ab0; obrona startuje od eac3326a2 zgodnie z poleceniem.
-- Zalecenie: rozszerzyć allowlistę o `gra/tools/perf-large-empire-stress-live-test.cjs` albo wydzielić temat na ten skrypt.
-- Zalecenie: osobny temat na sekcję 4 `zloto-szlak-test.cjs` i przepisanie `trade-ilosc-test.cjs` (jeśli usuwamy martwy kod).
-- Wykonane operacje git: tylko `git checkout --detach eac3326a2`, dwa commity kodu, ten plik (commit poniżej). Nic nie wypchnięto na main, nic nie zintegrowano, nie utworzono sesji ani zadań.
+- Zmiana poza allowlistą: gra/src/main.ts — hooki __ledgerTestDebug.tradeRoutesProbe i forceTradeRoute (tylko ?civTest=1, odczyt i wymuszenie testowej Umowy Szlaków) oraz usunięty import createTradeRoute (nie dodany). Bez tych hooków kryterium (a) nie da się zmierzyć w realnej turze — to jedyne rozszerzenie zakresu.
+- Dispatch: origin/main = b97287c88, nie bbd0536 (bbd0536 = raport FC r1 na gałęzi dispatchów).
+- Test live używa wbudowanej ścieżki refreshTradeRoutes; trasa powstaje przez Umowę Szlaków (wymóg external route w refreshTradeRoutes), a nie przez createTradeRoute.
+- Wykonane operacje git: checkout --detach d37eb7b35, commit kodu 63db5c610, commit tego raportu. Nic nie wypchnięto na main, nic nie zintegrowano, nie utworzono sesji, zadań ani harmonogramów.
 
 DEPLOY/PUSH: NIE WYKONANO
