@@ -1496,3 +1496,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **KROK 2:** zakończone i zintegrowane w tej godzinie: P4-34 (FC r3, parity `fffc5e7c6`), P4-22 (FC r3, raporty `c37ba1da8`).
 - **KROK 3:** worktrees zakończonych tematów usunięte; worktrees działających zostawione.
 - **Parity:** `fffc5e7c6`. Rust: `bfb0b0be6` przed tym wpisem.
+
+## Przebieg (15.11, P4-29 TEXT-FONTS — domknięcie r3, Opus 5.5)
+- **Evaluator r3:** PASS-WITH-NOTES, 9 zarzutów, wszystkie niskie: brak testów GPOS (E6, E9), `\n \r \f` (E4), samotna połówka pary zastępczej (E11), zabezpieczenie NaN (E7), kwantyzacja przy obrocie (M20), `toUpperCase` zależne od wersji Unicode, liczby w dokumencie niezgodne, brak raportu Evaluatora r1, mapFamily powiela map_family (decyzja D-TXT-5).
+- **Obrona r3 (`69eae2e85`): PASS.** Dodano `tests/text_edge_cases.rs` (5 testów), rozszerzono `text_scenes.rs` i `text_upper.rs` (oba kierunki), poprawiono liczby w §4.1, §4.2, §6. E7 odrzucony jako mutant równoważny (ścieżka z nieskończonością kończy się w `tiny-skia` i `svg.rs`). Mutanty zabite: 10 z 11.
+- **FC r3 (`0e1430961`): PASS-WITH-NOTES, 0 decyzji dla właściciela.** Przypadki brzegowe zmierzone w Chromium 153 (w kontenerze nie ma 141); NIE_ZMIERZONO: Chromium 141 dla tych przypadków, clippy na rustc 1.87, Windows, GPU, gamma masek.
+- **Integracja:** merge `4a686b902` (parity `fffc5e7c6` + FC `0e1430961`), zmiany tylko w ścieżkach P4-29 (testy `text_*`, dokument, dowody); P4-34 nietknięte. Pełne testy na zmergowanym drzewie: `cargo test --all-targets` EXIT=0, 478 passed, 0 failed. FF `rust-port/parity-v2` → `4a686b902`.
+- **Zabezpieczenie:** refs/keep `P4-29-integ`, gałąź `rust-port-wip/R-RUSTPORT-P4-29-TEXT-FONTS-Q1-integ`. Worktrees usunięte.
+- **Proces (P-1):** kod P4-29 (`51839a356`, `6cee8e46c`, `283f8634c`) trafił na parity przed Evaluatorem i FC, jak P4-31 i P4-34.
