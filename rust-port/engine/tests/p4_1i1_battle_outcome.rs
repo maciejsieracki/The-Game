@@ -486,3 +486,46 @@ fn outcome_unit_from_seq_unit() {
         }
     );
 }
+
+/// Zarzut 2 (Evaluator r1): źródło `maxHp` dla adaptera `SiegeLoop` = `BattleUnitSpawnDto::max_hp` (po id).
+#[test]
+fn outcome_unit_from_seq_with_setup_takes_max_hp_by_id() {
+    use civ_view_model::battle::{BattleSide as ViewSide, BattleUnitSpawnDto};
+    use civ_view_model::ids::UnitId;
+    let spawn = |id: u64, max_hp: f64| BattleUnitSpawnDto {
+        id: UnitId::try_new(id).unwrap(),
+        side: ViewSide::Atk,
+        category: String::new(),
+        model_name: String::new(),
+        owner_color: 0,
+        col: 0,
+        row: 0,
+        facing: 0,
+        on_wall_walkway: false,
+        // Spawn `hp` differs from `max_hp`: the helper must read `max_hp`.
+        hp: max_hp - 1.0,
+        max_hp,
+        morale: 0.0,
+        morale_max: 0.0,
+        ammo_left: None,
+        ammo_max: None,
+    };
+    let setup = [spawn(5, 30.0), spawn(77, 40.0), spawn(9, 50.0)];
+    let c = CombatUnit {
+        hp: 12.0,
+        morale: 0.0,
+        flee_morale: 0.0,
+        move_left: 0.0,
+        never_rout: false,
+        dead: false,
+        fading_out: false,
+        routed: false,
+        removed: false,
+        acted: false,
+    };
+    let u = OutcomeUnit::from_seq_with_setup(&SeqUnit { id: 77, c }, &setup).unwrap();
+    assert_eq!(u.max_hp, 40.0);
+    assert_eq!(u.hp, 12.0);
+    assert_eq!(u.id, 77);
+    assert!(OutcomeUnit::from_seq_with_setup(&SeqUnit { id: 78, c }, &setup).is_none());
+}

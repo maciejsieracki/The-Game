@@ -238,7 +238,8 @@ pub struct BattleOutcomeDto {
 
 impl BattleOutcomeDto {
     /// Checks the invariants the types do not enforce: every float finite
-    /// (JSON has no `NaN`/`Infinity`), `lost + remaining == total` on each
+    /// (JSON has no `NaN`/`Infinity`), every survivor `hp > 0`,
+    /// `lost + remaining == total` on each
     /// side (`_sideEndStats` counts every roster unit exactly once) and no
     /// duplicate id within one event-log side (`uniqueUnitIds`,
     /// `units/battleRoster.ts:26-28`).
@@ -251,6 +252,21 @@ impl BattleOutcomeDto {
             if !s.hp.is_finite() {
                 return Err(ViewError::NonFinite {
                     field: format!("survivors[{i}].hp"),
+                });
+            }
+            // Every web survivor has `hp > 0`: filter `u.bu.hp > 0` on E1–E3
+            // (`_battleUnitsForMapExport`, `:10248`) and `u.hp > 0` on E4
+            // (`computeInstantResult`, `:20574-20575`). For a finite `hp`,
+            // `hp > 0` <=> `ceil(hp) >= 1`, so `OutOfRange` with `min = 1`
+            // states the bound exactly (`value` = `ceil(hp)`).
+            if s.hp <= 0.0 {
+                #[allow(clippy::cast_possible_truncation)]
+                let value = s.hp.ceil() as i64;
+                return Err(ViewError::OutOfRange {
+                    field: format!("survivors[{i}].hp"),
+                    value,
+                    min: 1,
+                    max: i64::MAX,
                 });
             }
         }

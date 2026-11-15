@@ -26,9 +26,23 @@
 //! Statystyki końca `_sideEndStats` (`:10257-10269`) liczone są w `_showEndScreen` (`:10677-10678`). Producent
 //! liczy je z tej samej migawki rosterów co resztę wyniku (po zakończeniu bitwy pętla nie zmienia już `hp`,
 //! `dead` ani `routed` jednostek).
+//!
+//! ## Wpięcie (stan na `R-RUSTPORT-P4-1I1-BATTLE-OUTCOME`)
+//!
+//! [`build_battle_outcome`] nie ma jeszcze wołającego w produkcji (moduł niepodpięty). Wpięcie należy do
+//! tematu #113 `K5LOOP-WIRING` (produkcyjna pętla `SiegeLoop`/`ProdBody`, wywołanie w miejscu web `onFinish`);
+//! ramka bitwy P4-1I2 (#246) i konsument P4-1I4 (#248) czytają gotowy DTO. Adapter `SiegeLoop` → wejście:
+//! - `atk`/`def`: [`OutcomeUnit::from_seq_with_setup`] dla każdej `SeqUnit` rosteru; `maxHp` z
+//!   [`BattleUnitSpawnDto::max_hp`] (`bu.maxHp` przy spawnie). Web nigdy nie przypisuje `bu.maxHp` w trakcie
+//!   bitwy (pin: w `battle/battleScene.ts` tylko odczyty, `:9724`, `:10264`, `:10407`), więc wartość
+//!   ze spawnu = wartość w chwili `onFinish`;
+//! - `wall_ever_breached`: `SiegeEnv.wall_ever_breached` (`siege_tactics_loop.rs`) po ostatnim kroku pętli; `siege_wall_col`: kolumna muru setupu (`-1` = brak oblężenia);
+//! - `wallBreached: None` serializuje się jako jawne `null` (konwencja crate'a `view-model`, test
+//!   `json_keys.rs`); konsument traktuje `null` jak brak klucza w webie (brak oblężenia).
 
 use civ_view_model::battle::{
-    BattleEndStatsDto, BattleOutcomeDto, BattleSideEndStatsDto, BattleSurvivorDto, BattleWinner,
+    BattleEndStatsDto, BattleOutcomeDto, BattleSideEndStatsDto, BattleSurvivorDto,
+    BattleUnitSpawnDto, BattleWinner,
 };
 use civ_view_model::ids::{IdOutOfRange, UnitId};
 
@@ -64,6 +78,15 @@ impl OutcomeUnit {
             dead: u.c.dead,
             routed: u.c.routed,
         }
+    }
+
+    /// Z jednostki sekwencji tury, z `max_hp` = `bu.maxHp` ze spawnu tej samej jednostki (dopasowanie po id).
+    /// `None`, gdy jednostki nie ma w setupie (adapter musi to zgłosić; web nie ma takiego stanu).
+    pub fn from_seq_with_setup(u: &SeqUnit, setup_units: &[BattleUnitSpawnDto]) -> Option<Self> {
+        setup_units
+            .iter()
+            .find(|s| s.id.get() == u.id)
+            .map(|s| Self::from_seq(u, s.max_hp))
     }
 }
 

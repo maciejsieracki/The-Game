@@ -75,7 +75,8 @@ Test `p4_1i1_battle_outcome`: 18/18 ok.
 ## 4. Bramki i mutacje
 
 Środowisko: `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` w scratchpadzie
-(poza repo, osobny dla każdego crate'a), usunięty po bramkach.
+(poza repo, osobny dla każdego crate'a). KOREKTA (obrona r1, `02a-obrona.md` zarzut 1): katalog silnika
+`tgt-en` (3,1 GB) NIE został usunięty przez Operatora; usunął go Evaluator.
 
 | Crate | `cargo fmt --check` | `cargo clippy --all-targets -- -D warnings` | `cargo test --all-targets --no-fail-fast` |
 |---|---|---|---|
@@ -118,4 +119,4 @@ Mutacje (`mut-p4-1i1.sh` + `mut-p4-1i1.py`, każda na czystej kopii `siege_tacti
 
 ## 6. Commit
 
-SHA: COMMIT_SHA (gałąź `worktree-wf_8948228b-2a5-1`, rodzic `84ec520a5`). Commit jawnym `git add` listy plików z §1.
+SHA: `475b795a5583582dd93e9c94c1d281105bfb47a0` (korekta placeholdera `COMMIT_SHA` w obronie r1; gałąź `worktree-wf_8948228b-2a5-1`, rodzic `84ec520a5`). Commit jawnym `git add` listy plików z §1.

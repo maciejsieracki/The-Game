@@ -139,6 +139,29 @@ fn every_float_rejects_non_finite() {
     }
 }
 
+/// Every web survivor has `hp > 0` (E1–E3 `:10248`, E4 `:20574-20575`).
+#[test]
+fn survivor_hp_must_be_positive() {
+    for (bad, ceil) in [(0.0, 0), (-0.0, 0), (-0.5, 0), (-3.0, -3)] {
+        let mut o = sample_outcome();
+        o.survivors[1].hp = bad;
+        assert_eq!(
+            o.validate(),
+            Err(ViewError::OutOfRange {
+                field: "survivors[1].hp".into(),
+                value: ceil,
+                min: 1,
+                max: i64::MAX,
+            }),
+            "hp = {bad}"
+        );
+    }
+    // Fractional hp in (0, 1) is a live unit.
+    let mut o = sample_outcome();
+    o.survivors[1].hp = 0.25;
+    o.validate().unwrap();
+}
+
 #[test]
 fn lost_plus_remaining_must_equal_total() {
     let mut o = sample_outcome();
