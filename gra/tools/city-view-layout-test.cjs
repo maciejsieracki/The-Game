@@ -24,7 +24,7 @@
  *   node tools/city-view-layout-test.cjs --mutant        — cofa poprawkę do stanu bazy
  *                                                          (zawijanie żetonów, brak skali, cap 1480 px);
  *                                                          oczekiwane FAIL (kod wyjścia 1 = dowód mutacyjny),
- *   --shots=<katalog>                                    — zrzuty 2000x831 i 1366x768 (normal).
+ *   --shots=<katalog>                                    — zrzuty 4 rozmiarow (normal).
  */
 const fs = require('fs');
 const os = require('os');
@@ -94,7 +94,9 @@ function fixtureScript(big) {
   const cityA = { id: 'city-a', ownerId: 0, q: 0, r: 0, name: 'Olimpia', population: 6 };
   const map = { szerokoscQ: 8, wysokoscR: 8, seed: 42, riverPaths: [], hexes: { '0,0': { coords: { q: 0, r: 0 }, terenBazowy: 'rownina', nakladka: 'brak' } } };
   window.__configureCityPanel({ getCities: () => [cityA], getUnitsAt: () => [], getBuiltBuildingIds: () => [], getWorkedTiles: () => [],
-    getProduction: () => ({ kolejka: [], postep: 0 }), getEpoch: () => 1, getTurn: () => 1, onSwitchCity: () => {}, ${emp} });
+    getProduction: () => ({ kolejka: [], postep: 0 }), getEpoch: () => 1, getTurn: () => 1, onSwitchCity: () => {}, ${emp}
+    getCapitalCityId: () => 'city-stolica-inna', onSetCapital: () => {}, isMe: (o) => o === 0,
+    getCityAdministratorState: () => ({ hired: false, working: false, hireCost: 25, upkeep: 2, blockReasonText: null, options: [] }), onHireAdministrator: () => {} });
   window.__openCity = () => window.__showCityPanel(cityA, map, () => {});
 })();`;
 }
@@ -119,6 +121,12 @@ const MEASURE = () => {
   const rp = document.querySelector('.civ-ux-right');
   out.leftPanel = vis(lp) ? r(lp) : null;
   out.rightPanel = vis(rp) ? r(rp) : null;
+  const topEl = document.querySelector('.civ-ux-top');
+  const firstChip = document.querySelector('.civ-ux-top .civ-v-w3-chip');
+  out.chipFontPx = firstChip ? parseFloat(getComputedStyle(firstChip).fontSize) : null;
+  out.chipScale = topEl ? topEl.style.getPropertyValue('--civ-top-chip-scale') : '';
+  out.cityScale = topEl ? topEl.style.getPropertyValue('--civ-top-city-scale') : '';
+  out.leftOverflowY = lp ? getComputedStyle(lp).overflowY : null;
   out.docSW = document.documentElement.scrollWidth;
   out.vw = document.documentElement.clientWidth;
   out.vh = window.innerHeight;
@@ -155,7 +163,7 @@ window.__configureCityPanel = configureCityPanel; window.__showCityPanel = showC
       const winOk = (c) => c.l >= -0.5 && c.r <= m.vw + 0.5;
       check(`${tag}: żetony mieszczą się w swoim banerze i w oknie`,
         !!m.L.flank && !!m.R.flank && m.L.chips.every((c) => inside(c, m.L.flank) && winOk(c)) && m.R.chips.every((c) => inside(c, m.R.flank) && winOk(c)),
-        { L: m.L.flank, R: m.R.flank });
+        { L: m.L.flank, R: m.R.flank, Lchips: m.L.chips.map((c) => [Math.round(c.l), Math.round(c.r)]), Rchips: m.R.chips.map((c) => [Math.round(c.l), Math.round(c.r)]), city: m.city });
       if (m.city && m.L.flank && m.R.flank) {
         check(`${tag}: banery nie nachodzą na plakietkę miasta`, m.L.flank.r <= m.city.l + 0.5 && m.R.flank.l >= m.city.r - 0.5, { L: m.L.flank.r, R: m.R.flank.l, city: [m.city.l, m.city.r] });
       } else {
@@ -172,9 +180,12 @@ window.__configureCityPanel = configureCityPanel; window.__showCityPanel = showC
         check(`${tag}: ${pk} nie nachodzi na górne bloki`, !hits, { panel: p });
         check(`${tag}: ${pk} nie wychodzi poza dół okna`, p.b <= m.vh + 0.5, { bottom: p.b, vh: m.vh });
       }
+      check(`${tag}: panel lewy ma przewijanie wewnętrzne (computed overflow-y auto)`,
+        m.leftOverflowY === 'auto' || m.leftOverflowY === 'scroll') ;
       check(`${tag}: brak poziomego przewijania strony`, m.docSW <= m.vw + 0.5, { docSW: m.docSW, vw: m.vw });
+      console.log(`INFO ${tag}: zeton ${m.chipFontPx !== null ? m.chipFontPx.toFixed(1) : 'brak'} px, skala zetonow ${m.chipScale || '1'}, skala plakietki ${m.cityScale || '1'}, lewy top ${m.leftPanel ? m.leftPanel.t.toFixed(1) : '-'}, prawy top ${m.rightPanel ? m.rightPanel.t.toFixed(1) : '-'}`);
       check(`${tag}: brak błędów strony`, errs.length === 0, errs);
-      if (SHOTS && fx === 'normal' && (w === 2000 || w === 1366)) {
+      if (SHOTS && fx === 'normal') {
         fs.mkdirSync(SHOTS, { recursive: true });
         await page.screenshot({ path: path.join(SHOTS, `city-view-${MUTANT ? 'base' : 'after'}-${w}x${h}.png`) });
       }

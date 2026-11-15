@@ -2649,7 +2649,9 @@ ${resourceColorClassCss('.civ-cs')}
   flex-shrink:0;min-width:0;max-width:100%;width:fit-content;}
 .civ-v-w3-city-badge{display:inline-flex;align-items:center;gap:0.55rem;padding:0.45rem 1.05rem 0.45rem 0.75rem;
   border-radius:24px;background:linear-gradient(180deg,#151b26,#0a0d14);border:1.5px solid #e8d88a;
-  box-shadow:0 5px 16px rgba(0,0,0,0.6);flex-shrink:0;max-width:100%;}
+  box-shadow:0 5px 16px rgba(0,0,0,0.6);flex-shrink:0;max-width:100%;
+  /* R-WEB-UI-CITY-VIEW-TOPBAR-ONE-LINE-AND-SIDE-PANELS-UP-Q1: plakietka miasta kurczy sie (zoom) dopiero gdy zetony nie mieszcza sie nawet w najmniejszej skali. */
+  zoom:var(--civ-top-city-scale,1);}
 .civ-v-w3-city-nav{display:inline-flex;align-items:center;justify-content:center;min-width:1.75em;min-height:1.75em;
   padding:0 0.22em;border:none;border-radius:7px;background:rgba(232,216,138,0.08);color:#e8d88a;
   font-size:1.15em;font-weight:700;line-height:1;cursor:pointer;opacity:0.92;font-family:inherit;

@@ -31,6 +31,9 @@ const TOP_STACK_MAX_PX = 1880;
 /** Skala żetonów górnego paska (`--civ-top-chip-scale` na `.civ-ux-top`): kolejne kroki, aż wszystkie żetony mieszczą się w jednej linii swojego banera. */
 const TOP_CHIP_SCALE_VAR = '--civ-top-chip-scale';
 const TOP_CHIP_SCALE_STEPS = [1, 0.94, 0.88, 0.82, 0.76, 0.7, 0.65, 0.6, 0.55, 0.5, 0.46, 0.44];
+/** Skala plakietki miasta (`--civ-top-city-scale`, zoom): używana dopiero, gdy żetony nie mieszczą się przy najmniejszej skali żetonów. */
+const TOP_CITY_SCALE_VAR = '--civ-top-city-scale';
+const TOP_CITY_SCALE_STEPS = [1, 0.9, 0.8, 0.7];
 const ICON_BAR_H = 0;
 const LEFT_W = CITY_LEFT_PANEL_W_PX;
 /** Lewy panel danych (produkcja) + rail produkcji po jego prawej krawędzi. */
@@ -199,9 +202,12 @@ function fitCityTopChipScale(): void {
       return cr.left >= fr.left - 0.5 && cr.right <= fr.right + 0.5;
     });
   });
-  for (const s of TOP_CHIP_SCALE_STEPS) {
-    top.style.setProperty(TOP_CHIP_SCALE_VAR, String(s));
-    if (fits()) return;
+  for (const c of TOP_CITY_SCALE_STEPS) {
+    top.style.setProperty(TOP_CITY_SCALE_VAR, String(c));
+    for (const s of TOP_CHIP_SCALE_STEPS) {
+      top.style.setProperty(TOP_CHIP_SCALE_VAR, String(s));
+      if (fits()) return;
+    }
   }
 }
 
