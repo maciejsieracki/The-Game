@@ -82,6 +82,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -130,19 +131,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -154,16 +156,16 @@
    "destroyed": true,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -185,16 +187,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -216,6 +220,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -264,19 +269,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 2,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -288,16 +294,16 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -309,16 +315,18 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -371,6 +379,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -410,19 +419,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 1,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -471,16 +481,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -492,16 +502,18 @@
    "destroyed": true,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -545,6 +557,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -593,19 +606,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 3,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -636,16 +650,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -676,16 +690,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -707,6 +723,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -755,19 +772,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 2,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -789,16 +807,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -810,16 +828,18 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -878,6 +898,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -926,19 +947,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 1,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -950,16 +972,16 @@
    "destroyed": true,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -999,16 +1021,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -1058,6 +1082,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -1079,19 +1104,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -1149,19 +1175,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": 2,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Kusznik"
    },
    "expectKategoria": "Distance",
+   "expectHp": 1,
    "expectRanged": true
   },
   {
@@ -1219,19 +1244,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -1290,6 +1317,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -1347,19 +1375,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 1,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -1371,16 +1400,16 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -1429,19 +1458,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 1,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -1500,6 +1531,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -1530,16 +1562,17 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -1570,16 +1603,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -1601,16 +1634,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -1663,6 +1698,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -1711,16 +1747,17 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -1742,16 +1779,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -1782,19 +1819,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -1826,6 +1865,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -1856,19 +1896,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 1,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -1899,16 +1940,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -1920,16 +1961,18 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -1970,6 +2013,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -2018,16 +2062,17 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -2085,19 +2130,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": 2,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Kusznik"
    },
    "expectKategoria": "Distance",
+   "expectHp": 1,
    "expectRanged": true
   },
   {
@@ -2146,16 +2190,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -2187,6 +2233,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -2198,16 +2245,17 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -2229,16 +2277,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -2287,16 +2335,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -2364,6 +2414,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -2375,16 +2426,17 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -2396,16 +2448,16 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -2427,16 +2479,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -2486,6 +2540,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -2507,16 +2562,17 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -2547,19 +2603,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": 1,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Kusznik"
    },
    "expectKategoria": "Distance",
+   "expectHp": 1,
    "expectRanged": true
   },
   {
@@ -2599,19 +2654,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 1,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -2682,6 +2739,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -2721,19 +2779,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -2782,16 +2841,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -2831,16 +2890,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -2911,6 +2972,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -2922,16 +2984,17 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -2943,16 +3006,16 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -3001,19 +3064,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 3,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -3045,6 +3110,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -3066,16 +3132,17 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -3087,16 +3154,16 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -3154,19 +3221,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -3228,6 +3297,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -3249,16 +3319,17 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -3280,16 +3351,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -3347,19 +3418,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -3409,6 +3482,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -3430,16 +3504,17 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -3479,19 +3554,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": 1,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Kusznik"
    },
    "expectKategoria": "Distance",
+   "expectHp": 1,
    "expectRanged": true
   },
   {
@@ -3503,16 +3577,18 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -3571,6 +3647,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -3619,19 +3696,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 2,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -3689,16 +3767,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -3720,16 +3798,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -3773,6 +3853,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -3812,16 +3893,17 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -3861,16 +3943,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -3901,16 +3983,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -3978,6 +4062,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -4026,16 +4111,17 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -4066,19 +4152,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Kusznik"
    },
    "expectKategoria": "Distance",
+   "expectHp": 1,
    "expectRanged": true
   },
   {
@@ -4136,19 +4221,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 3,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -4198,6 +4285,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -4255,19 +4343,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 4,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -4279,16 +4368,16 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -4346,19 +4435,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 2,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -4380,6 +4471,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -4428,19 +4520,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 3,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -4480,19 +4573,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Kusznik"
    },
    "expectKategoria": "Distance",
+   "expectHp": 1,
    "expectRanged": true
   },
   {
@@ -4523,16 +4615,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -4603,6 +4697,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -4642,16 +4737,17 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -4663,16 +4759,16 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -4712,19 +4808,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 1,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -4792,6 +4890,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -4831,19 +4930,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 2,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -4901,16 +5001,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -4932,19 +5032,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -4988,6 +5090,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -5027,19 +5130,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 1,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -5097,16 +5201,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -5128,19 +5232,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -5190,6 +5296,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -5229,19 +5336,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 2,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -5290,19 +5398,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": 2,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Kusznik"
    },
    "expectKategoria": "Distance",
+   "expectHp": 1,
    "expectRanged": true
   },
   {
@@ -5351,16 +5458,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -5422,6 +5531,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -5452,16 +5562,17 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -5510,19 +5621,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": 3,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Kusznik"
    },
    "expectKategoria": "Distance",
+   "expectHp": 1,
    "expectRanged": true
   },
   {
@@ -5544,16 +5654,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -5624,6 +5736,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -5645,16 +5758,17 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -5685,19 +5799,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Kusznik"
    },
    "expectKategoria": "Distance",
+   "expectHp": 1,
    "expectRanged": true
   },
   {
@@ -5755,19 +5868,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 4,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -5799,6 +5914,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -5829,16 +5945,17 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -5850,16 +5967,16 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -5881,16 +5998,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -5961,6 +6080,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -5982,16 +6102,17 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -6003,16 +6124,16 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -6043,16 +6164,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -6105,6 +6228,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -6162,19 +6286,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 1,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -6205,16 +6330,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -6236,19 +6361,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -6298,6 +6425,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -6337,16 +6465,17 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -6404,16 +6533,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -6444,19 +6573,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 1,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -6478,6 +6609,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -6526,19 +6658,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 2,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -6596,19 +6729,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": 3,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Kusznik"
    },
    "expectKategoria": "Distance",
+   "expectHp": 1,
    "expectRanged": true
   },
   {
@@ -6639,16 +6771,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -6719,6 +6853,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -6730,16 +6865,17 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -6788,16 +6924,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -6828,19 +6964,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -6872,6 +7010,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -6920,16 +7059,17 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -6987,16 +7127,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -7054,19 +7194,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 4,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -7098,6 +7240,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -7155,19 +7298,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 4,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -7189,16 +7333,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -7229,16 +7373,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -7300,6 +7446,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -7357,19 +7504,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -7418,16 +7566,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -7458,19 +7606,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 1,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -7502,6 +7652,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -7559,19 +7710,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 2,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -7593,16 +7745,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -7660,19 +7812,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -7694,6 +7848,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -7715,19 +7870,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -7749,16 +7905,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -7807,19 +7963,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 1,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -7872,6 +8030,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -7911,19 +8070,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -7963,19 +8123,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Kusznik"
    },
    "expectKategoria": "Distance",
+   "expectHp": 1,
    "expectRanged": true
   },
   {
@@ -8015,19 +8174,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 1,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -8080,6 +8241,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -8119,19 +8281,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 2,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -8180,16 +8343,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -8201,16 +8364,18 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -8263,6 +8428,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -8302,19 +8468,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -8372,19 +8539,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": 2,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Kusznik"
    },
    "expectKategoria": "Distance",
+   "expectHp": 1,
    "expectRanged": true
   },
   {
@@ -8433,19 +8599,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 3,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -8489,6 +8657,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -8519,16 +8688,17 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -8550,19 +8720,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Kusznik"
    },
    "expectKategoria": "Distance",
+   "expectHp": 1,
    "expectRanged": true
   },
   {
@@ -8593,16 +8762,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -8673,6 +8844,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -8721,19 +8893,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -8755,16 +8928,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -8776,16 +8949,18 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -8856,6 +9031,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -8867,16 +9043,17 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -8888,16 +9065,16 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -8946,19 +9123,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 3,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -9017,6 +9196,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -9038,16 +9218,17 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -9087,16 +9268,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -9108,16 +9289,18 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -9188,6 +9371,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -9218,16 +9402,17 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -9276,19 +9461,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": 3,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Kusznik"
    },
    "expectKategoria": "Distance",
+   "expectHp": 1,
    "expectRanged": true
   },
   {
@@ -9346,16 +9530,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -9387,6 +9573,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -9444,19 +9631,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 3,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -9468,16 +9656,16 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -9535,16 +9723,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -9588,6 +9778,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -9636,16 +9827,17 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -9667,16 +9859,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -9707,19 +9899,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -9790,6 +9984,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -9847,19 +10042,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 4,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -9890,16 +10086,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -9921,16 +10117,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -9974,6 +10172,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -10013,19 +10212,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 1,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -10065,16 +10265,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -10114,19 +10314,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 1,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -10194,6 +10396,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -10251,19 +10454,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 4,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -10275,16 +10479,16 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -10306,16 +10510,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -10368,6 +10574,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -10416,19 +10623,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 3,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -10468,16 +10676,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -10535,19 +10743,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 2,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -10591,6 +10801,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -10621,16 +10832,17 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -10670,16 +10882,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -10719,19 +10931,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 1,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   },
   {
@@ -10775,6 +10989,7 @@
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 10,
    "expectRanged": true
   },
   {
@@ -10786,16 +11001,17 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -10817,16 +11033,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -10838,16 +11054,18 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -10879,6 +11097,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -10918,19 +11137,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -10970,19 +11190,18 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": 0,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Kusznik"
    },
    "expectKategoria": "Distance",
+   "expectHp": 1,
    "expectRanged": true
   },
   {
@@ -10994,16 +11213,18 @@
    "destroyed": false,
    "atk": [],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -11035,6 +11256,7 @@
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -11074,19 +11296,20 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "health": 4,
+    "missileAttack": 2
    },
    "expectTarget": 2,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
+    "Jednostka": "Procarz",
     "Typ": "Distance"
    },
    "expectKategoria": "Distance",
+   "expectHp": 4,
    "expectRanged": true
   },
   {
@@ -11117,16 +11340,16 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Kusznik",
+    "Health": 0,
+    "missileAttack": 5
    },
    "expectTarget": -1,
    "expectShot": 0,
    "expectDelayMs": null,
    "expectStats": null,
    "expectKategoria": null,
+   "expectHp": null,
    "expectRanged": null
   },
   {
@@ -11184,19 +11407,21 @@
     }
    ],
    "shooterRow": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance",
-    "Health": 10,
-    "missileAttack": 3
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie",
+    "Health": null,
+    "health": 7,
+    "missileAttack": 4
    },
    "expectTarget": 1,
    "expectShot": 1,
    "expectDelayMs": 380,
    "expectStats": {
-    "Jednostka": "Lucznik",
-    "Typ": "Distance"
+    "Jednostka": "Oblezacz",
+    "Typ": "Oblezanie"
    },
-   "expectKategoria": "Distance",
+   "expectKategoria": "Oblezanie",
+   "expectHp": 7,
    "expectRanged": true
   }
  ]

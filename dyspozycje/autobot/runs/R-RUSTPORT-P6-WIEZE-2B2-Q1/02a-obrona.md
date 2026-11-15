@@ -1,54 +1,50 @@
 STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
 TEMAT: R-RUSTPORT-P6-WIEZE-2B2-Q1
-GOAL: Obrona Operatora (runda 1) na zarzuty Evaluatora z 02-evaluator.md (baza wejściowa: af7a0be6a, gałąź wip/R-RUSTPORT-P6-WIEZE-2B2-Q1).
-ZMIANY/COMMIT: tylko rust-port/engine/tests/p6_wieze_2b2.rs (allowlista). Commit: patrz SHA w raporcie orkiestratora (commit obrony na wip, bez push). Cargo.lock nie commitowany. Kod produkcyjny (siege_tactics_loop.rs) nietknięty w tej rundzie.
-TESTY: cargo test --test p6_wieze_2b2: 9/9 ok. Mutacja guardu w tower_hit (siege_tactics_loop.rs, `if tc.dead || tc.fading_out` -> `if false`): FAIL w tower_hit_skips_target_dead_before_impact i tower_hit_skips_target_fading_out_before_impact (po przywróceniu pliku: 9/9 ok). cargo clippy --test p6_wieze_2b2 -- -D warnings: EXIT 0. cargo fmt --check: EXIT 0. Pełny cargo test po tej zmianie NIE_ZMIERZONO w tej rundzie (zmiana dotyczy wyłącznie jednego pliku testowego; pełna bramka z af7a0be6a zgłoszona w 01 i w ocenie Evaluatora).
+GOAL: Obrona Operatora (runda r2) na zarzuty Evaluatora r2 (02-evaluator-r2.md, commit e100c5794). Baza: ef8eeedc9; kod r2: 220b022cd; gałąź obrony: wip/R-RUSTPORT-P6-WIEZE-2B2-Q2-obrona (bez push).
+ZMIANY/COMMIT: rust-port/engine/src/domain/siege_tactics_loop.rs (refaktor pomocników strzału wieży, zachowanie bez zmian), rust-port/engine/tests/p6_wieze_2b2.rs, rust-port/engine/tests/p6_wieze_2b2_gen.mjs, rust-port/engine/tests/p6_wieze_2b2_vectors/vectors.json (regeneracja), dyspozycje/autobot/runs/R-RUSTPORT-P6-WIEZE-2B2-Q1/02a-obrona.md. Cargo.lock NIE commitowany (untracked). gra/ nietknięte. SHA: patrz pole sha w odpowiedzi.
+TESTY:
+- cargo test --test p6_wieze_2b2: 12/12 ok (EXIT 0).
+- Pełny cargo test --no-fail-fast (bez filtra): EXIT 0, suma passed=3380 failed=0 ignored=1 (log: scratchpad/fulltest-r2-obrona.log). Uwaga: pełny run wystartował przed korektą formatowania (rustfmt tests/p6_wieze_2b2.rs, tylko białe znaki).
+- cargo clippy --all-targets -- -D warnings: EXIT 0.
+- cargo fmt --check: EXIT 0 (po rustfmt na tests/p6_wieze_2b2.rs).
+- Mutacje czerwone (EXIT 101 każda, kod produkcyjny przywracany po każdej):
+  M1 szablon neutralny zamiast wiersza city_towers (tower_shot_from_row -> neutral): FAIL tower_shot_uses_shooter_row_from_city_towers, tower_setup_shooter_comes_from_city_towers_row.
+  M2 opóźnienie trafienia 0 zamiast TOWER_FLY_MS: FAIL tower_hit_lands_after_tower_fly_ms, tower_fire_matches_pin_vectors.
+  M3 zniszczona wieża strzela (usunięty guard wall_tile_rows): FAIL destroyed_tower_does_not_shoot, tower_fire_matches_pin_vectors.
+- Generator odtwarza wektory: 240 przypadków, 105 strzałów (counts bez zmian), SHA-256 fragmentów pina beeb83309... zgodny.
 
 ## Odpowiedzi na zarzuty
 
-1. Brak wektorów z pina / tautologia oczekiwania (kryterium 4) -- PRZYJMUJĘ (zarzut prawdziwy, NIE naprawiono w tej rundzie).
-   Dowód: test tower_shot_damages_target_through_single_blow_full nadal liczy `expected` przez `single_blow_full` na tym samym szablonie. Brak p6_wieze_2b2_gen.mjs i p6_wieze_2b2_vectors/. Wykonanie pina `_fireOneTower` z mockiem wymaga osobnego tematu (generator + strażnik SHA-256). Do czasu tego tematu wartość obrażeń NIE jest zweryfikowana względem pina.
+1. Wejście do single_blow_full nie asertowane względem wektorów pina (expectStats, expectKategoria, expectRanged) -- PRZYJMUJĘ (naprawiono).
+   Poprawka: (a) generator losuje jeden z 4 kształtów wiersza strzelca (cyklicznie, różne Typ/Health/health/brak Typu); (b) test pina buduje szablon ciosu z WIERSZA każdego przypadku (tower_shot_from_row), a nie ze stałego szablonu; (c) asercje na każdym strzale z wektora: tower_shooter_kategoria == expectKategoria, tower_shooter_hp == expectHp, tmpl.attacker.typ_nazwa == expectStats.Jednostka, tmpl.ranged == expectRanged (tmpl = szablon wchodzący do tower_blow_on_target, przed wymuszeniem ranged=true w tej funkcji).
+   Przy okazji: generator dotąd używał stałej hp=10 w wywołaniu _fireOneTower. Pin liczy hp w _fireSiegeTowers (battleScene.ts:4212-4213): Number(Health ?? health ?? 1) || 1. Generator liczy teraz to samo wyrażenie. Stare expectHp (brak w pliku) byłoby fałszywe, więc to poprawka mojej poprzedniej rundy.
 
-2. Szablon strzelca = neutral_tower_shot_template(), nie towerShooterRow z strongest_ranged_unit_for_era -- PRZYJMUJĘ (fakt, NIE naprawiono).
-   Dowód: `strongest_ranged_unit_for_era` istnieje w rust-port/engine/src/domain/city_towers.rs:186, ale nie jest wołana z pętli ani nie zasila SiegeEnv::tower_shot (w testach i w produkcji `Some(neutral_tower_shot_template())`). Brak mapowania wiersza jednostki na FullBlowInput. To jest niezrealizowana część założenia dispatchu; wymaga osobnego tematu (K5-LOOP-WIEZE-R2 / adapter ProdUnit -> FullBlowInput).
+2. Asercja opóźnienia 380 ms jest tautologią (stała generatora vs stała Rust) -- PRZYJMUJĘ (naprawiono).
+   Poprawka: opóźnienie mierzone w kolejce zegara, nie porównaniem stałych. Po pierwszym kroku przewijania (resume(.., 1)) wystrzał jest wykonany i TowerHit siedzi w clock.timers; asercja: due - now == opóźnienie. Test pina porównuje to z expectDelayMs z wektora. Mutacja M2 (delay 0) to wyłapuje.
+   Fakt zmierzony przy okazji (nie ukryty): pierwszy krok przewijania przesuwa zegar do 16 ms i wystrzał następuje w tej klatce, więc due = 396 (16 + 380). Porównujemy więc opóźnienie od wystrzału, a nie od t=0. Trafienie stosowane przez pętlę po przewinięciu wypadło w klatce 400 ms (pomiar sondą): kwantyzacja klatek przewijania, nie błąd opóźnienia. Testy tego czasu nie asertują (NIE_ZMIERZONO jako kryterium czasu stosowania).
 
-3. Stan destroyed zastąpiony proxy `!wall_tile_rows.contains(row)` -- ODRZUCAM (zarzut o błędzie logicznym), z zastrzeżeniem o pokryciu testu.
-   Dowód z pina 07d2fbd72 (gra/src/battle/battleScene.ts):
-   - jedyny zapis `t.destroyed = true` to `_destroyTowerAtRow` (4194-4198);
-   - `_destroyTowerAtRow` jest wołany tylko z `_fireSiegeTowers` gdy `!this.wallTileHp.has(t.row)` (4216) oraz z wyłomu zaraz po `this.wallTileHp.delete(wallRow)` (7646-7648);
-   - `wallTileHp.set` występuje tylko przy inicjalizacji po `clear()` (4053, 10529) i przy uszkodzeniu istniejącego wpisu (7558); nie ma odtwarzania kafla w trakcie bitwy.
-   Wniosek: dla wieży `destroyed` ⇔ `!wallTileHp.has(row)`, więc Rust `wall_tile_rows.contains(row)` jest równoważne.
-   Kolejność staggera też zgodna: pin pomija zniszczoną wieżę przed `stagger += 180` (4217-4218); Rust `plan_tower_shots` pomija przed `push` i przed przyrostem staggera (siege_tactics_loop.rs:289-297).
-   Zastrzeżenie (PRZYJMUJĘ jako ograniczenie testu): test destroyed_tower_does_not_shoot symuluje wyłom czyszczeniem `wall_tile_rows`, a nie wywołaniem ścieżki wyłomu. Brak funkcji wyłomu w domenie Rust w tym zakresie. Zapisane jako NIE_ZMIERZONO (realna ścieżka wyłomu).
+3. tower_setup_from_units nie ma wołającego w produkcji -- PRZYJMUJĘ (dług, NIE naprawiono w tej rundzie).
+   Dowód: `grep` po src/ i tests/ pokazuje wołania wyłącznie w testach. Pin: `_fireSiegeTowers` ustawia towerShooterRow i towerRange (battleScene.ts:4167-4168) i tylko stąd startuje strzelanie wież. Podpięcie = temat K5-LOOP-WIRING (#113) i TOWER-TARGET/K5-LOOP-WIEZE-R2 (#116, #146).
+   Wpis do rejestru musi dodać orkiestrator (REJESTR poza allowlistą Operatora). Proponowany wpis: `wieza-setup-wiring` -- tower_setup_from_units/tower_shot_from_row wpiąć w produkcyjne składanie SiegeEnv (pin battleScene.ts:4167-4168, 4212-4213); zależy od #113. Status: NIE zrobione.
 
-4. Brak kroku "czerwony przed zmianą" z kodem wyjścia (kryterium 1) -- PRZYJMUJĘ (NIE_ZMIERZONO, NIE naprawiono w tej rundzie).
-   Powód: bazowy 14d5e50b9 nie ma API SiegeEnv::tower_shot ani LoopTimer::TowerHit; test by nie kompilował (czerwony przez brak symboli, nie przez zachowanie). Pomiar wymaga osobnego checkoutu bazy i nie został wykonany.
+4. Mapowanie Typ -> kategoria oraz hp = Health/health/1 nie są testowane względem pina -- PRZYJMUJĘ CZĘŚCIOWO.
+   Zrobione: kategoria i HP z wektorów pina (4 kształty wierszy, 105 strzałów), również w tower_setup_shooter_comes_from_city_towers_row (pin_kategoria/pin_hp na 304 wierszach city_towers, pin_kategoria = String(Typ ?? 'Distance'), pin_hp = Number(Health ?? health ?? 1) || 1).
+   NIE zrobione (dług, zmierzony rozjazd): Health jako napis. Pin: Number("10") = 10; Rust tower_shooter_hp: as_f64() na napisie = None -> 1. Różnica tylko dla napisowego Health/health; w wektorach pina nie występuje, w arkuszach jednostek nie zweryfikowano. Poprawka (r3): obsłużyć napisy jak JS Number (trim, pusty = 0, nie-liczba = NaN -> 1) w tower_shooter_hp i pin_hp, plus wektor z napisem. Status: NIE zrobione.
 
-5. hit_arc (stałe Front) i first_blow_of_pair (stałe true) zakodowane na sztywno -- PRZYJMUJĘ (fakt, NIE naprawiono).
-   Dowód: neutral_tower_shot_template (siege_tactics_loop.rs) ustawia `hit_arc: HitArc::Front` i `first_blow_of_pair: true`. Pin liczy łuk z geometrii wieża -> cel (facing), a nie z szablonu. Brak testu zgodności z pinem. Wymaga portu _nearestEnemy/_updateFacing (temat K5LOOP-FACING).
+5. Czerwony przed zmianą to EXIT 101 z braku symbolu (czerwień kompilacyjna) -- PRZYJMUJĘ, z częściowym dowodem behawioralnym.
+   Baza ef8eeedc9 nie ma tower_setup_from_units ani LoopTimer::TowerHit, więc prawdziwy czerwony przed zmianą byłby kompilacyjny. Dla czerwieni behawioralnej wykonano mutacje M1-M3 na kodzie r2 (tabela w TESTY). M1 odtwarza stan sprzed zmiany (strzelec z szablonu neutralnego). Pełnego czerwonego na bazie z tymczasowym stubem nie zrobiono (NIE_ZMIERZONO).
 
-6. tower_blow tylko dopisuje do unported "wieza-resolveBlowOutcome-efekty"; brak wpisu w rejestrze zadań -- PRZYJMUJĘ w części o rejestrze, ODRZUCAM w części "nieujawniony dług".
-   Dowód jawności: ciąg "wieza-resolveBlowOutcome-efekty" jest w siege_tactics_loop.rs (doc LoopBody::tower_blow / komentarz trafienia) i w 01-operator-r1.md, sekcja BLOKADY pkt 5.
-   Przyjęte: brak wpisu w rejestrze zadań. Plik REJESTR-PROSB-I-ZADAN / rejestr tematów nie jest na allowliście tego tematu, więc wpis dodaje orkiestrator. Proponowany wpis:
-   `wieza-resolveBlowOutcome-efekty` -- po trafieniu wieży: efekty morale/rout/engaged z pina `_resolveBlowOutcome` (battleScene.ts, po `_singleBlow`), etykieta obrażeń; zależy od K5LOOP-OUTCOME (#109/#147). Status: NIE zrobione.
+6. Pełny cargo test przerwany timeoutem 585 s -- PRZYJMUJĘ (naprawiono w zakresie weryfikacji).
+   Pełny run z --no-fail-fast, bez filtra, w tle: EXIT 0, passed=3380 failed=0 ignored=1. Pozostałe bramki: clippy -D warnings EXIT 0, fmt --check EXIT 0. Zgodnie z dispatchem: CARGO_TARGET_DIR poza repo (scratchpad/tgt), usunięty po bramkach.
 
-7. Gałąź tower_hit "cel martwy/fading_out między wystrzałem a trafieniem" bez testu behawioralnego; mutacja przejdzie testy -- PRZYJMUJĘ i NAPRAWIONO.
-   Poprawka (commit wyżej): trzy testy na zegarze przez publiczne LoopTimer::TowerHit(0):
-   - tower_hit_skips_target_dead_before_impact,
-   - tower_hit_skips_target_fading_out_before_impact,
-   - tower_hit_on_live_target_blows (kontrola: ta sama konfiguracja, żywy cel dostaje cios).
-   Dowód mutacji: po zamianie guardu w tower_hit na `if false` testy dead/fading dają FAIL; kontrola daje ok. Uczciwie: pierwsza wersja tych testów była pusta (jedyny atakujący martwy => bitwa kończy się przed trafieniem, `finished` maskował guard) i mutacja przeszłaby. Dodano drugiego żywego atakującego (two_attacker_state / two_attacker_env) i ustawiono move_points/morale_max dla dwóch jednostek. Mutacja zweryfikowana po poprawce.
+7. Pozycje z Evaluatora: destroyed proxy, hit_arc, first_blow, _resolveBlowOutcome, Cargo.lock -- ZAPIS, bez zarzutu do odpowiedzi: pozycja 7 Evaluatora to potwierdzenie zgodności (allowlista zachowana, brak #[ignore], brak osłabionych asercji). Bez zmian.
 
-8. Brak testu opóźnienia lotu TOWER_FLY_MS = 380 ms -- PRZYJMUJĘ i NAPRAWIONO (częściowo).
-   Poprawka: tower_hit_lands_after_tower_fly_ms: stała == 380.0 (zgodność z RANGED_FLY_MS, pin battleScene.ts:1012), wystrzał TowerShot(0) daje dokładnie jedno trafienie, `clock.now() >= 380` po wyczerpaniu zegara.
-   Ograniczenie (NIE_ZMIERZONO): asercja `>=` wykrywa skrócenie opóźnienia poniżej 380 ms, ale nie wykrywa wydłużenia. Dokładne `==` nie zostało wymuszone bez sprawdzenia wartości zegara po przebiegu.
+## Zmiana kodu produkcyjnego (jedyna, bez zmiany zachowania)
+siege_tactics_loop.rs: tower_setup_from_units wyodrębnia pomocniki pub tower_shooter_kategoria, tower_shooter_hp, tower_shot_from_row (ten sam kod, ta sama wartość). Powód: bez tego kategoria/HP nie są obserwowalne przez publiczne API (zarzut 1, 4).
 
-## Podsumowanie dla orkiestratora
-- Naprawione (commit obrony, tylko tests/p6_wieze_2b2.rs): zarzuty 7 i 8 (z ograniczeniem w 8).
-- Odrzucone z dowodem: zarzut 3 (destroyed, równoważność z pinem).
-- Przyjęte jako otwarte, poza zakresem tej poprawki (wymagają osobnych tematów): 1 (wektory/generator z pina), 2 (wiring city_towers -> tower_shot), 4 (czerwony przed zmianą), 5 (łuk i first-blow z geometrii), 6 (wpis w rejestrze dla wieza-resolveBlowOutcome-efekty).
-- Kryterium 2 i 4 z dispatchu NIE jest spełnione w pełni; rekomendacja: FAIL-ready do decyzji FC lub podział na tematy K5-LOOP-WIEZE-R2 (#146) i wektory pinu.
+## Blokady (bez zmian względem r2, plus korekty)
+(a) wynik liczbowy ciosu wieży z pina nie zweryfikowany (tylko parametry wejścia do single_blow_full); (b) hit_arc stałe Front (dług K5LOOP-FACING #107/#178); (c) first_blow_of_pair stałe true (ten sam dług); (d) efekty _resolveBlowOutcome nie portowane (#109/#147); (e) mody atakującego nie portowane; (f) Health jako napis: rozjazd zmierzony, NIE zrobione (pkt 4); (g) moment stosowania trafienia w klatce przewijania (400 ms w sondzie) nie asertowany; (h) destroyed jako proxy wall_tile_rows (dowód z pina w r1, przyjęte); (i) guard finished w planowaniu vs w tower_shoot (obserwowalnie równoważne); (j) wiring produkcyjny tower_setup (pkt 3).
 
-NASTĘPNY KROK: Evaluator r2 na zmienionym teście (zarzuty 7-8) oraz decyzja Final Control, czy pozostałe otwarte pozycje (1, 2, 4, 5, 6) wystarczą do PASS-WITH-NOTES.
-DEPLOY/PUSH: NIE WYKONANO (brak push, brak integracji, gra/ nietknięte).
+NASTĘPNY KROK: Evaluator r3 na commicie obrony (pkt 1, 2, 4 częściowo, 5, 6). Orkiestrator: dopisać do REJESTR-RUST wpisy z pkt 3 i pkt 4(f).
+DEPLOY/PUSH: NIE WYKONANO (commit lokalny na wip/R-RUSTPORT-P6-WIEZE-2B2-Q2-obrona, bez push; gałąź rust-port/parity-v2 nietknięta).

@@ -156,18 +156,28 @@ function runCase(c) {
   });
   const shooterRow = c.shooterRow;
   const t = { row: c.towerRow, mesh: null, destroyed: c.destroyed };
-  h._fireOneTower(t, shooterRow, shooterRow.Jednostka, 10);
+  // hp jak w pinie `_fireSiegeTowers` (battleScene.ts:4212): Number(Health ?? health ?? 1) || 1.
+  const hp = Number(shooterRow['Health'] ?? shooterRow['health'] ?? 1) || 1;
+  h._fireOneTower(t, shooterRow, shooterRow.Jednostka, hp);
   const delays = queue.map((x) => x.ms);
   queue.sort((a, b) => a.ms - b.ms).forEach((x) => x.cb());
   return { blows, delays };
 }
 
-const shooterRow = { Jednostka: 'Lucznik', Typ: 'Distance', Health: 10, missileAttack: 3 };
+// Cztery kształty wiersza strzelca (cyklicznie po przypadkach): Typ/Health/health obecne lub brakujące,
+// Typ nie-Distance. Dzięki temu asercje kategorii/HP/Jednostka w Rust nie są stałą.
+const shooterRows = [
+  { Jednostka: 'Lucznik', Typ: 'Distance', Health: 10, missileAttack: 3 },
+  { Jednostka: 'Procarz', Typ: 'Distance', health: 4, missileAttack: 2 },
+  { Jednostka: 'Kusznik', Health: 0, missileAttack: 5 },
+  { Jednostka: 'Oblezacz', Typ: 'Oblezanie', Health: null, health: 7, missileAttack: 4 },
+];
 const cases = [];
 for (let i = 0; i < CASE_COUNT; i++) {
   const wallCol = rint(0, 9);
   const towerRow = rint(0, 8);
   const n = rint(0, 5);
+  const shooterRow = shooterRows[i % shooterRows.length];
   const atk = [];
   for (let k = 0; k < n; k++) {
     atk.push({
@@ -199,6 +209,7 @@ for (let i = 0; i < CASE_COUNT; i++) {
   c.expectDelayMs = delays.length === 1 ? delays[0] : null;
   c.expectStats = blows.length === 1 ? { Jednostka: blows[0].stats.Jednostka, Typ: blows[0].stats.Typ } : null;
   c.expectKategoria = blows.length === 1 ? blows[0].kategoria : null;
+  c.expectHp = blows.length === 1 ? blows[0].hp : null;
   c.expectRanged = blows.length === 1 ? blows[0].ranged : null;
   cases.push(c);
 }

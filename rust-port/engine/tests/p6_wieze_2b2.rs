@@ -7,12 +7,13 @@ use std::collections::BTreeSet;
 
 use civ_engine::domain::city_towers::{tower_range_for, UnitRow, DEFAULT_TOWER_MIN_RANGE};
 use civ_engine::domain::siege_tactics_blow::SequenceRolls;
-use civ_engine::domain::siege_tactics_blow_full::single_blow_full;
+use civ_engine::domain::siege_tactics_blow_full::{single_blow_full, FullBlowInput};
 use civ_engine::domain::siege_tactics_clock::VirtualClock;
 use civ_engine::domain::siege_tactics_end::BattleSide;
 use civ_engine::domain::siege_tactics_loop::{
-    neutral_tower_shot_template, tower_blow_on_target, tower_setup_from_units, LoopBody, LoopTimer,
-    SiegeEnv, SiegeLoop, TOWER_FLY_MS,
+    neutral_tower_shot_template, tower_blow_on_target, tower_setup_from_units, tower_shooter_hp,
+    tower_shooter_kategoria, tower_shot_from_row, LoopBody, LoopTimer, SiegeEnv, SiegeLoop,
+    TOWER_FLY_MS,
 };
 use civ_engine::domain::siege_tactics_turnseq::{SeqUnit, TurnSeqEnv, TurnSeqState, UnitRef};
 use civ_engine::domain::siege_tactics_unit::CombatUnit;
@@ -26,6 +27,8 @@ struct TowerBody {
     shooter_missile: Option<f64>,
     /// Indeksy celów (`st.atk`) kolejnych trafień wieży, w kolejności wystąpienia.
     targets: Vec<usize>,
+    /// Szablony ciosu przekazane do `tower_blow` (wejście `single_blow_full` przed wymuszeniem `ranged`).
+    tmpls: Vec<FullBlowInput>,
 }
 
 impl LoopBody for TowerBody {
@@ -48,6 +51,7 @@ impl LoopBody for TowerBody {
         self.tower_blows += 1;
         self.shooter_missile = tmpl.attacker.missile_attack;
         self.targets.push(target);
+        self.tmpls.push(tmpl.clone());
         let _ = tower_blow_on_target(tmpl, st, target, &mut self.rolls);
     }
 }
@@ -106,6 +110,7 @@ fn env(
             tower_blows: 0,
             shooter_missile: None,
             targets: Vec::new(),
+            tmpls: Vec::new(),
         },
         tower_rows,
         pending_tower_shots: Vec::new(),
@@ -278,7 +283,24 @@ fn tower_hit_on_live_target_blows() {
     assert_eq!(sl.env.body.tower_blows, 1, "żywy cel dostaje cios wieży");
 }
 
-/// Opóźnienie lotu: trafienie następuje po `TOWER_FLY_MS` (380 ms, web `RANGED_FLY_MS`) od wystrzału.
+/// Opóźnienie zaplanowanego trafienia wieży: `due - now` w chwili, gdy `TowerHit` trafił do kolejki zegara.
+/// Pierwszy krok `resume(.., 1)` wykonuje wystrzał (`TowerShot`) i odkłada trafienie, zanim zegar ruszy dalej,
+/// więc `now` w tym miejscu to chwila wystrzału. `None`, gdy trafienia nie zaplanowano.
+fn tower_hit_delay_after_first_step(
+    sl: &mut SiegeLoop<TowerBody>,
+    clock: &mut VirtualClock<LoopTimer>,
+) -> Option<f64> {
+    let _ = sl.resume(clock, 1);
+    let now = clock.now();
+    clock
+        .timers
+        .iter()
+        .find(|t| matches!(t.payload, LoopTimer::TowerHit(_)))
+        .map(|t| t.due - now)
+}
+
+/// Trafienie wieży następuje dokładnie po `TOWER_FLY_MS` (380 ms, web `RANGED_FLY_MS`) od wystrzału: czas zegara
+/// w chwili ciosu mierzony na przewijaniu, nie z porównania dwóch stałych.
 #[test]
 fn tower_hit_lands_after_tower_fly_ms() {
     assert_eq!(TOWER_FLY_MS, 380.0, "stała zgodna z pinem RANGED_FLY_MS");
@@ -288,13 +310,13 @@ fn tower_hit_lands_after_tower_fly_ms() {
     );
     let mut clock = VirtualClock::<LoopTimer>::new();
     let _ = clock.schedule(0.0, LoopTimer::TowerShot(0), false);
-    let _ = sl.run(&mut clock, 10_000);
-    assert_eq!(sl.env.body.tower_blows, 1, "strzał dociera do trafienia");
-    assert!(
-        clock.now() >= TOWER_FLY_MS,
-        "trafienie nie wcześniej niż po locie: now={}",
-        clock.now()
+    assert_eq!(
+        tower_hit_delay_after_first_step(&mut sl, &mut clock),
+        Some(TOWER_FLY_MS),
+        "trafienie zaplanowane na wystrzał + TOWER_FLY_MS"
     );
+    let _ = sl.resume(&mut clock, 10_000);
+    assert_eq!(sl.env.body.tower_blows, 1, "strzał dociera do trafienia");
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -359,6 +381,20 @@ fn tower_setup_shooter_comes_from_city_towers_row() {
                     "zasieg wiezy z wiersza ({})",
                     c["id"]
                 );
+                // Pin `_fireSiegeTowers` (battleScene.ts:4212-4213): kategoria = `String(Typ ?? 'Distance')`,
+                // hp = `Number(Health ?? health ?? 1) || 1`.
+                assert_eq!(
+                    tower_shooter_kategoria(row),
+                    pin_kategoria(row),
+                    "kategoria strzelca z pinu ({})",
+                    c["id"]
+                );
+                assert_eq!(
+                    tower_shooter_hp(row),
+                    pin_hp(row),
+                    "hp strzelca z pinu ({})",
+                    c["id"]
+                );
             }
         }
     }
@@ -403,6 +439,31 @@ fn tower_shot_uses_shooter_row_from_city_towers() {
 // strażnik SHA-256 fragmentów pinu w `meta.fragmentSha256`). Oczekiwania = cel z pinu (indeks w `this.atk`),
 // brak celu (martwy/znikający/zniszczona wieża/koniec bitwy) i opóźnienie trafienia 380 ms.
 // ---------------------------------------------------------------------------------------------------------------
+
+/// Pin: `String(Typ ?? 'Distance')` (battleScene.ts:4240, kategoria strzelca wieży).
+fn pin_kategoria(row: &UnitRow) -> String {
+    match row.get("Typ") {
+        None | Some(serde_json::Value::Null) => "Distance".to_string(),
+        Some(serde_json::Value::String(s)) => s.clone(),
+        Some(serde_json::Value::Number(n)) => n.to_string(),
+        Some(other) => other.to_string(),
+    }
+}
+
+/// Pin: `Number(Health ?? health ?? 1) || 1` (battleScene.ts:4212). Dla liczb i braku wartości; napisy liczbowe
+/// (JS `Number('10')`) nie występują w wektorach strzelców pinu.
+fn pin_hp(row: &UnitRow) -> f64 {
+    let raw = row
+        .get("Health")
+        .filter(|v| !v.is_null())
+        .or_else(|| row.get("health").filter(|v| !v.is_null()));
+    let x = raw.and_then(serde_json::Value::as_f64).unwrap_or(1.0);
+    if x.is_finite() && x != 0.0 {
+        x
+    } else {
+        1.0
+    }
+}
 
 const PIN_VECTORS: &str = include_str!("p6_wieze_2b2_vectors/vectors.json");
 
@@ -468,21 +529,42 @@ fn tower_fire_matches_pin_vectors() {
         } else {
             vec![tower_row]
         };
-        let mut e = env(cells, vec![tower_row], wall_rows, true);
+        let mut e = env(cells, vec![tower_row], wall_rows, false);
+        // Strzelec z WIERSZA wektora (`shooterRow` z pinu), szablon ciosu jak w produkcyjnym składaniu.
+        let shooter_row = unit_row_of(&c["shooterRow"]);
+        e.tower_shot = Some(tower_shot_from_row(&shooter_row));
         e.body.rolls = SequenceRolls::new(vec![0.0; 4]);
         e.tower_range = tower_range;
         e.move_points = [vec![3.0; n], vec![3.0]];
         e.morale_max = [vec![100.0; n], vec![100.0]];
+        let want = c["expectTarget"].as_i64().expect("expectTarget");
+        if want >= 0 {
+            // Kategoria i HP strzelca z pinu (wejście składania ciosu w `_fireSiegeTowers`).
+            assert_eq!(
+                Some(tower_shooter_kategoria(&shooter_row)),
+                c["expectKategoria"].as_str().map(String::from),
+                "{id}: kategoria strzelca z pinu"
+            );
+            assert_eq!(
+                Some(tower_shooter_hp(&shooter_row)),
+                c["expectHp"].as_f64(),
+                "{id}: hp strzelca z pinu"
+            );
+        }
         let mut sl = SiegeLoop::new(st, e);
         let mut clock = VirtualClock::<LoopTimer>::new();
         // Jeden wystrzał wieży na zegarze (bez `start`, który sam planowałby wystrzał i dublował go).
         let _ = clock.schedule(0.0, LoopTimer::TowerShot(0), false);
+        let delay = tower_hit_delay_after_first_step(&mut sl, &mut clock);
         let _ = sl.resume(&mut clock, 10_000);
-        let want = c["expectTarget"].as_i64().expect("expectTarget");
         if want < 0 {
             assert!(
                 sl.env.body.targets.is_empty(),
                 "{id}: pin nie strzela, a cios zaszedl"
+            );
+            assert!(
+                delay.is_none(),
+                "{id}: pin nie strzela, a trafienie zaplanowano po {delay:?}"
             );
             skips += 1;
         } else {
@@ -491,12 +573,23 @@ fn tower_fire_matches_pin_vectors() {
                 vec![want as usize],
                 "{id}: cel wystrzalu z pinu"
             );
-            // Opóźnienie z pinu (`_schedule(RANGED_FLY_MS, ...)`) = stała Rust. Dokładny czas trafienia po stronie
-            // Rust NIE jest obserwowalny publicznym API (fast-forward dalej przewija tury), więc sprawdzamy wektor.
+            // Opóźnienie trafienia w kolejce zegara = `_schedule(RANGED_FLY_MS, ...)` z pinu.
             assert_eq!(
+                delay,
                 c["expectDelayMs"].as_f64(),
-                Some(TOWER_FLY_MS),
-                "{id}: opóźnienie trafienia z pinu"
+                "{id}: opóźnienie trafienia wieży z pinu"
+            );
+            // Wejście `single_blow_full`: `stats` strzelca (Jednostka) i flaga `ranged` z pinu.
+            let tmpl = &sl.env.body.tmpls[0];
+            assert_eq!(
+                Some(tmpl.attacker.typ_nazwa.clone()),
+                c["expectStats"]["Jednostka"].as_str().map(String::from),
+                "{id}: stats strzelca (Jednostka) w ciosie"
+            );
+            assert_eq!(
+                Some(tmpl.ranged),
+                c["expectRanged"].as_bool(),
+                "{id}: flaga ranged w ciosie"
             );
             hits += 1;
         }

@@ -197,37 +197,48 @@ pub fn tower_setup_from_units(
 ) -> (Option<FullBlowInput>, f64) {
     let row = strongest_ranged_unit_for_era(units, era, civ);
     let range = tower_range_for(row, min_range);
-    let shot = row.map(|r| {
-        let kategoria = match r.get("Typ") {
-            None | Some(serde_json::Value::Null) => "Distance".to_string(),
-            Some(serde_json::Value::String(s)) => s.clone(),
-            Some(other) => other.to_string(),
-        };
-        let hp = match r
-            .get("Health")
-            .filter(|v| !v.is_null())
-            .or_else(|| r.get("health").filter(|v| !v.is_null()))
-            .and_then(serde_json::Value::as_f64)
-        {
-            Some(x) if x.is_finite() && x != 0.0 => x,
-            _ => 1.0,
-        };
-        let cu = to_combat_unit(
-            &BattleUnitIn {
-                stats: Some(stat_row_of_unit(r)),
-                kategoria,
-                hp: Some(hp),
-                veteran_bonus_frac: None,
-                army_hungry: false,
-                gold_deficit: false,
-            },
-            &ToCombatUnitOpts::default(),
-        );
-        let mut tmpl = neutral_tower_shot_template();
-        tmpl.attacker = attacker_from_cu(&cu);
-        tmpl
-    });
-    (shot, range)
+    (row.map(tower_shot_from_row), range)
+}
+
+/// Kategoria strzelca wieży (web `shooter.bu.kategoria`, pin `battleScene.ts:4167`): `Typ ?? 'Distance'`.
+pub fn tower_shooter_kategoria(r: &UnitRow) -> String {
+    match r.get("Typ") {
+        None | Some(serde_json::Value::Null) => "Distance".to_string(),
+        Some(serde_json::Value::String(s)) => s.clone(),
+        Some(other) => other.to_string(),
+    }
+}
+
+/// HP strzelca wieży (web `shooter.bu.hp`): `Health ?? health ?? 1`, zero/NaN/Inf -> 1 (`|| 1`).
+pub fn tower_shooter_hp(r: &UnitRow) -> f64 {
+    match r
+        .get("Health")
+        .filter(|v| !v.is_null())
+        .or_else(|| r.get("health").filter(|v| !v.is_null()))
+        .and_then(serde_json::Value::as_f64)
+    {
+        Some(x) if x.is_finite() && x != 0.0 => x,
+        _ => 1.0,
+    }
+}
+
+/// Szablon ciosu wieży dla wiersza strzelca (`to_combat_unit(wiersz)` z kategorią i HP jak w pinie).
+/// Wspólna ścieżka dla [`tower_setup_from_units`] i testów pinu (wiersz z wektora generatora).
+pub fn tower_shot_from_row(r: &UnitRow) -> FullBlowInput {
+    let cu = to_combat_unit(
+        &BattleUnitIn {
+            stats: Some(stat_row_of_unit(r)),
+            kategoria: tower_shooter_kategoria(r),
+            hp: Some(tower_shooter_hp(r)),
+            veteran_bonus_frac: None,
+            army_hungry: false,
+            gold_deficit: false,
+        },
+        &ToCombatUnitOpts::default(),
+    );
+    let mut tmpl = neutral_tower_shot_template();
+    tmpl.attacker = attacker_from_cu(&cu);
+    tmpl
 }
 
 /// Wspólna ścieżka trafienia wieży (web `_singleBlow(shooter, target, true)`): składa stan celu z `st`, liczy cios
