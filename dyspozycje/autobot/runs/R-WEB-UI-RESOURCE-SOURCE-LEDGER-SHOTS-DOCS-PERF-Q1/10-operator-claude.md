@@ -150,7 +150,10 @@ Dowod: `evidence/shots-live/shots.json` (getBoundingClientRect z prawdziwej gry,
 
 - Karta ma STALA szerokosc 182 px w CSS, a panel 403 px w obu rozmiarach. Zrzut elementu (`card.screenshot`) przycina ten sam prostokat o tej samej zawartosci, wiec PNG sa identyczne: `sol-card-1280.png` = `sol-card-1920.png` (md5 30e66b6e44bae6a6c21fb810d31f2b27), `ceramika-card-1280.png` = `ceramika-card-1920.png` (md5 3d4256cbb9e8c8ce2969fc6f0f7fe08c).
 - To jest opcja (a) z DODATEK 4: identyczny PNG karty jest oczekiwany i opisany. Okna calego panelu roznia sie (`panel-1280.png` md5 6eada6d1…, `panel-1920.png` md5 90881dca…; wysokosc panelu 735 vs 1015 px, karty w innych pozycjach). Zrzut calego panelu (opcja b) takze istnieje i sie rozni.
-- Opis tresci kart (z realnego stanu ksiegi, nie makiety, z shots.json): sol ma linie „+12 Warzelnia (Rzym)”, „+30 Umowa wymiany z Ostia” (wg scenariusza), „−20 Obywatele”; `details open` = true. Ceramika ma 4 wiersze (Garncarnia itd.), `open` = true. Kolory przyrostu/ubytku sa w `valueColor` w shots.json.
+- Tresc kart (z realnego stanu ksiegi, z shots.json, identyczna w obu viewportach; NIE makieta):
+  - sol (`details open` = true, 2 wiersze): `+225 Warzelnia (Rzym)` (zielony rgb(143,214,148)), `+190 Umowa wymiany z Ostia · Rzymianie · miasto-państwo` (zielony).
+  - ceramika (`details open` = true, 4 wiersze): `+278 Umowa wymiany z Ostia…` (zielony), `+150 Garncarnia (Rzym)` (zielony), `−30 Spichlerz (zużycie zapasów)` (czerwony rgb(224,122,122)), `−3 Obywatele` (czerwony).
+- ROZBIEZNOSC Z DISPATCHEM: dispatch oczekiwal „+12 Warzelnia (Rzym)”, „+30 Umowa wymiany”, „−20 Obywatele” w karcie soli. Realne wartosci w tym przebiegu to inne liczby, a linii „−20 Obywatele” NIE MA w karcie soli (jest tylko w ceramice, −3). Nie poprawiam danych zrzutu; zrzut pokazuje to, co zwrocila gra. Dla zgodnosci z dispatchem potrzebny bylby osobny przebieg z innym scenariuszem (decyzja orkiestratora).
 
 ## GOAL 4, 2, 5 — bez zmian w tej rundzie
 - GOAL 4: korekta wniosku z DODATEK 4 zachowana: bramka NNS w turze 1 przy domyslnych podatkach 30/60/10 = dlug harnessu; przyczyna timeoutu t57 NIEROZSTRZYGNIETA (nie pisze "nie ksiega"). Ta runda nie dodala nowych danych do GOAL 4.
