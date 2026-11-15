@@ -51,3 +51,51 @@ UWAGI-DLA-ORKIESTRATORA:
 RUNDY: 2/5 (partia 2 z 4 — częściowa). Poprzednia: FC r1 FAIL (060e0be6b).
 NASTĘPNY KROK: runda 3 tego samego ID — dokończyć partię 2 (pkt 1–5 BLOKAD: mechanizm pending + budowa/rekrutacja + handel bez szlaku + Umowa wymiany/Warzelnia + test (a) w ścieżce gry jeśli możliwy przez harness), następnie partia 3 (miasto/bitwa/łup/prezent + zapis historii N) i partia 4 (UI + Chromium + perf + hash).
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+
+## RUNDA 3/5 (dokończenie partii 2, Operator HAIKU 5.5) — 2026-11-15
+
+STATUS: BLOCK (partia 2 nie domknięta; kod wykonany dla części zakresu, reszta opisana poniżej)
+DOMAIN: GAME
+TEMAT: R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1
+GOAL: partia 2 (zużycie + handel w księdze) — zarzuty FC r2 pkt 1–4
+BAZA: 6ae20dbb3 (detach), commit kodu 2d28a8b10 (ten raport w commicie następnym)
+ZMIANY/COMMIT:
+- gra/src/game/resource-ledger.ts — rodzaje źródeł `umowa_wymiany`, `mennica`, `limit_magazynu`; helpery `recordStockDeltaToTurn`, `recordStockDeltaToPending`.
+- gra/src/game/turn-economy.ts (advanceCityEconomy) — migawki magazynu wokół `applyMennicaZlotoDrainForOwners` i `reconcileOwnerResourceCaps`; delta zapisywana do `result.resourceLedgerByOwner` (tylko gdy `ledgerEnabled`).
+- gra/src/main.ts — (a) import `recordStockDeltaToPending`; (b) `transferBasketItems` (case umowy jednorazowej, transfer `transferSurowiecIlosc`) — delta obu stron do okna pending jako „Umowa wymiany z <civ>”; (c) `applyCyclicDeliveryOutcome` (dostawa cykliczna) — jak wyżej, „Umowa wymiany z <civ>”. Żadnych zmian w E3c (szlak).
+- gra/tools/resource-ledger-trade-test.cjs (nowy) — 10/0.
+ALLOWLISTA: wszystkie zmienione pliki w allowliście tematu (resource-ledger, turn-economy, main.ts wpięcie, testy `*ledger*`). Testów grep (building-upkeep-resources, citizen-resource-upkeep) NIE edytowano.
+
+TESTY (surowe wyniki, worktree po commicie 2d28a8b10):
+- `npx tsc --noEmit` (gra/): exit 0, 0 błędów (po npm ci w gra/).
+- `node tools/resource-ledger-trade-test.cjs`: 10 passed, 0 failed, EXIT 0 (nowy).
+- `node tools/resource-ledger-test.cjs`: 1030 passed, 0 failed.
+- `node tools/resource-ledger-consume-test.cjs`: 30 passed, 0 failed.
+- `logic-test`: LOGIC OK (213/213). `tech-tree-test`: 20 pass, 0 fail. `research-test`: 33/33 ALL GREEN. `unit-replace-test`: 21/21. `combat-test`: 6/6.
+- Czerwone bazowe (bez regresji, te same liczby co FC r2): `building-upkeep-resources-test` 47 passed / 1 failed; `citizen-resource-upkeep-test` 122 passed / 2 failed.
+- `git diff --check`: czysty (exit 0).
+
+BLOKADY (jawna lista; zarzuty FC r2):
+1. ZROBIONE CZĘŚCIOWO — zarzut 1 (handel): „Umowa wymiany z <civ>” wpięta w dwa przelewy (jednorazowy i cykliczny). „Warzelnia (<miasto>)” dla soli — NIE ZROBIONE: plon soli z warzelni jest sumą terytorium na miasto (`territoryResourceByCity`), brak rozbicia na budynek; wymaga osobnej zmiany w zbieraniu plonów (poza tym rundą).
+2. ZROBIONE — zarzut 2 (reconcile caps i Mennica): zapis delta w turn-economy. Zweryfikowane testem (cap 140→100 = księga −40).
+3. NIE ZROBIONE — zarzut 3 (test w realnej ścieżce gry ≥3 ziarna × 30 tur + hash z/bez księgi): główna pętla gry to main.ts (49 548 linii, przeglądarkowa); nie ma harnessu headless w node. NIE ZMIERZONO.
+4. NIE ZROBIONE — szlak E3c (main.ts ~40152–40183): nadal przesuwa brąz/żelazo/cegłę (`deductBuildingStockCostAcrossCities` nadawca, `creditOwnerResourceStock` odbiorca) BEZ księgi. Decyzja #311 (tylko premia) i DODATEK (szlak nie jest źródłem) pozostają SPRZECZNE z kodem. Zgodnie z poleceniem NIE zmieniano E3c i NIE księgowano szlaku. Bez decyzji ABC kryterium (a) „różnica 0 dla 9 surowców” jest w realnej grze CZERWONE na szlakach z aktywnym przepływem.
+5. NIE ZROBIONE poza zakresem partii 2: łup z bitwy, prezent/dar, zdobycie/oddanie miasta (partia 3); zapis okna pending w zapisie gry (luka znana, partia 3); reszta odjęć z puli (`building-resource-gate.ts`, `unit-replace-cost.ts`) — NIE ZWERYFIKOWANE.
+6. Hash stanu gry z księgą i bez, pomiar czasu tury, Chromium — NIE ZMIERZONO (partia 4).
+
+ZMIERZONO vs NIE ZMIERZONO:
+- ZMIERZONO: przelew silnika `transferSurowiecIlosc` (prawdziwy moduł) + delta obu stron — suma księgi = zmiana magazynów (30 iteracji, 3 właścicieli, 2 surowce, różnica 0); mutacja bez wpisu biorcy → rozjazd; cap; okno pending → drain; testy referencyjne jw.
+- NIE ZMIERZONO: sama ścieżka main.ts (pętla gry), szlak, warzelnia, hash, perf, Chromium.
+- ZAŁOŻENIE: kolejność w tickach — `runDiplomacyTurnTick` (main ~40096) wykonuje się przed `advanceCityEconomy` (~40251) w tej samej turze, więc wpisy okna pending z przelewów trafiają do rekordu tej samej tury. Nie zweryfikowano w żywej grze.
+
+UWAGI-DLA-ORKIESTRATORA:
+- Decyzja ABC potrzebna (pytanie do właściciela, bez mojego rozstrzygania): E3c szlak — (A) usunąć przesuw zapasów szlakiem zgodnie z #311 (zmiana reguł, osobny temat), albo (B) księgować przepływ szlaku wbrew DODATKOWI (zmienia źródła w zakresie partii). Do czasu decyzji partia 2 nie jest domknięta.
+- Test realnej ścieżki (zarzut 3) wymaga harnessu headless dla main.ts — osobny temat tooling; proponuję zgłosić jako dług.
+- `gra/node_modules` (npm ci, 71 pakietów) zainstalowany w worktree — do sprzątania po tym temacie.
+- Zmiany w main.ts są w trzech miejscach (import + 2 przelewy); żadna linia E3c nie została dotknięta.
+
+RUNDY: 3/5 (partia 2, runda 3 — częściowa: handel jednorazowy i cykliczny + Mennica + cap w księdze; brak warzelni, brak testu realnej ścieżki, szlak zablokowany decyzją).
+NASTĘPNY KROK: decyzja ABC szlak E3c → runda 4 tego samego ID: warzelnia (rozbicie plonu soli per budynek), test realnej ścieżki lub jego harness, potem partia 3 (łup/prezent/miasto) i partia 4.
+DEPLOY/PUSH: NIE WYKONANO
