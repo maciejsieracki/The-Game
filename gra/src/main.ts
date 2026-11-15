@@ -32422,6 +32422,80 @@ async function boot(): Promise<void> {
     // `tools/no-negative-stocks-headless-measure.cjs` (TYLKO ?civTest=1; w produkcji brak powierzchni).
     // Czysty odczyt stanu + start nowej gry realnym doStartGame + przełącznik flagi równoważenia (mutacja pomiarowa).
     if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
+      // R-WEB-AI-ECONOMY-MEASURE-HARNESS-Q1: metryki ekonomii AI per owner per tura — TYLKO ODCZYT
+      // (tylko ?civTest=1; bez tego hak nie istnieje). Zero zapisu do stanu gry.
+      (window as any).__aiEconomyMeasure = {
+        schemaVersion: 1,
+        /** Metryki wszystkich nie-barbarzyńskich właścicieli (gracz + AI + państwa-miasta) na bieżącą turę. */
+        metrics: () => {
+          const r2 = (x: number): number => Math.round(x * 100) / 100;
+          const owners = [...new Set<number>([ME(), ...cities.map(c => c.ownerId), ...units.map(u => u.ownerId)])]
+            .filter(o => o != null && !isBarbarian(o))
+            .sort((a, b) => a - b);
+          const efP = buildEmpireFoodParams(data.econParams, _menuDifficulty);
+          const upkP = loadUpkeepParams(data.econParams, _menuDifficulty);
+          const unitUpkTbl = buildUnitUpkeepTable(data.units as unknown as Parameters<typeof buildUnitUpkeepTable>[0]);
+          const per = owners.map(o => {
+            const ownerUnits = units.filter(u => u.ownerId === o);
+            const ownerCities = cities.filter(c => c.ownerId === o);
+            const epoka = empireEpochForOwner(o);
+            const pobor = empirePoborTotals(cities, o, epoka);
+            const wojskoweJedn = ownerUnits.filter(u => !isCivilianUnit(u));
+            const wojskowe = wojskoweJedn.length;
+            const hungry = isArmyHungry(o);
+            const starving = isArmyStarving(o);
+            const jednPieniadz = totalUnitUpkeep(
+              wojskoweJedn.map(u => ({ typeId: u.typeId, category: u.category ?? String(lookupUnitDef(u.typeId)?.Kategoria ?? 'domyslny') })),
+              unitUpkTbl, upkP.jednostkaUtrzymanieStd);
+            return {
+              owner: o,
+              skarbiec: r2(ownerTreasury(o)),
+              spichlerz: empireFoodStates.get(o)?.zapasyPanstwa ?? null,
+              jednostkiWojskowe: wojskowe,
+              jednostkiCywilne: ownerUnits.length - wojskowe,
+              rekruci: pobor.rekruci,
+              sumaLudkow: pobor.sumaLudkow,
+              glodWojska: hungry,
+              glodWojskaAtrycja: starving,
+              /** Kara głodu wojska w % statystyk bojowych (1 − glodWojskaStatMult), 0 gdy brak głodu. */
+              glodKaraStatProc: hungry ? Math.round((1 - efP.glodWojskaStatMult) * 100) : 0,
+              /** Atrycja HP wojska w % maxHP na turę (glodWojskaHpFrac), 0 gdy brak aktywnej atrycji. */
+              glodAtrycjaHpProc: starving ? Math.round(efP.glodWojskaHpFrac * 100) : 0,
+              deficytZlota: isGoldDeficit(o),
+              miasta: ownerCities.length,
+              obywatele: ownerCities.reduce((s, c) => s + (Number(c.population) || 0), 0),
+              utrzymanieBudynkowPieniadz: r2(ownerCities.reduce((s, c) => s + (buildingUpkeepForCityId(c.id, o) || 0), 0)),
+              utrzymanieBudynkowSurowce: buildingResourceUpkeepDemandForOwner(o),
+              utrzymanieGarnizonuPieniadz: r2(ownerCities.reduce((s, c) => s + (garrisonUpkeepForCity(c) || 0), 0)),
+              /** Utrzymanie JEDNOSTEK wojskowych (Pieniądz/turę) — economy-upkeep totalUnitUpkeep. */
+              utrzymanieJednostekPieniadz: r2(jednPieniadz),
+              /** Utrzymanie JEDNOSTEK wojskowych (surowce/turę) — economy-upkeep totalUnitResourceUpkeep. */
+              utrzymanieJednostekSurowce: totalUnitResourceUpkeep(
+                wojskoweJedn.map(u => ({ typeId: u.typeId })),
+                typeId => data.units.find(x => x.Jednostka === typeId),
+              ),
+            };
+          });
+          return {
+            turn,
+            owners: per,
+            /** Diagnostyka (tylko odczyt): kolejki spawnu miast AI/rywali oraz liczba aiStartHexes. */
+            diag: {
+              pendingForeignSpawnCities: pendingForeignSpawnCities.length,
+              pendingSameTypeRivalHexes: pendingSameTypeRivalHexes.length,
+              aiStartHexes: aiStartHexes.length,
+              citiesAll: cities.length,
+              ownersOfCities: [...new Set(cities.map(c => c.ownerId))].sort((a, b) => a - b),
+              /** Właściciele z wiersza metryk, którzy nie mają ani miasta, ani jednostki (sygnał defektu startu, nie maskowany). */
+              /** Właściciele z aiStartHexes, których NIE MA w wierszach metryk (brak miasta i jednostki): defekt startu, jawnie, bez wierszy zerowych. */
+              aiStartOwnersBezWiersza: aiStartHexes.map(h => h.ownerId).filter(oid => !isBarbarian(oid) && !owners.includes(oid)),
+              ownersBezMiastIJednostek: per.filter(o => o.miasta === 0 && o.jednostkiWojskowe + o.jednostkiCywilne === 0).map(o => o.owner),
+            },
+            /** Pola, których nie ma jednoznacznego, zweryfikowanego źródła w grze (NIE ZMIERZONO w tym haku). */
+            niezmierzone: ['przychodNaTure', 'utratyNaTure'],
+          };
+        },
+      };
       (window as any).__nnsMeasureDebug = {
         startGame: (o: { seed: number; mapSize?: string; civTypes?: number; cityStates?: number; typSwiata?: string }): void => {
           const mqTier = mapQualityTierFromQuery('high');

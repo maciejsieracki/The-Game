@@ -1,0 +1,10 @@
+{
+  "seed": 777,
+  "startTurn": 1,
+  "endTurn": 100,
+  "stop": null,
+  "gateActiveTurns": 1,
+  "bypassApplied": 1,
+  "wallSec": 73,
+  "resumed": false
+}

@@ -1,0 +1,23 @@
+[econ] seed=777 tura=6 gateAktywna=1 dosypki=1 czas=15s
+[econ] seed=777 tura=11 gateAktywna=1 dosypki=1 czas=30s
+[econ] seed=777 tura=16 gateAktywna=1 dosypki=1 czas=48s
+[econ] seed=777 tura=21 gateAktywna=1 dosypki=1 czas=64s
+[econ] seed=777 tura=26 gateAktywna=1 dosypki=1 czas=80s
+[econ] seed=777 tura=31 gateAktywna=1 dosypki=1 czas=99s
+[econ] seed=777 tura=36 gateAktywna=1 dosypki=1 czas=130s
+[econ] seed=777 tura=41 gateAktywna=1 dosypki=1 czas=177s
+[econ] seed=777 tura=46 gateAktywna=1 dosypki=1 czas=241s
+[econ] seed=777 tura=51 gateAktywna=1 dosypki=1 czas=320s
+[econ] seed=777 tura=56 gateAktywna=1 dosypki=1 czas=403s
+[econ] seed=777 tura=61 gateAktywna=1 dosypki=1 czas=503s
+[econ] seed=777 tura=66 gateAktywna=1 dosypki=1 czas=644s
+[econ] seed=777 tura=71 gateAktywna=1 dosypki=1 czas=822s
+[econ] seed=777 tura=76 gateAktywna=1 dosypki=1 czas=1037s
+[econ] seed=777 tura=81 gateAktywna=1 dosypki=1 czas=1292s
+[econ] seed=777 tura=86 gateAktywna=1 dosypki=1 czas=1607s
+[econ] PODSUMOWANIE {"seed":777,"startTurn":1,"endTurn":89,"stop":{"reason":"cannot-end","tura":89,"why":{"battle":{"preBattleOpen":false,"pendingAuto":true,"sceneOpen":false,"summaryOpen":false,"resolving":false},"pending":0}},"gateActiveTurns":1,"bypassApplied":1,"wallSec":1835,"resumed":false}
+[econ] seed=777 tura=85 gateAktywna=1 dosypki=1 czas=253s
+[econ] seed=777 tura=90 gateAktywna=1 dosypki=1 czas=548s
+[econ] seed=777 tura=95 gateAktywna=1 dosypki=1 czas=790s
+[econ] seed=777 tura=100 gateAktywna=1 dosypki=1 czas=1058s
+[econ] PODSUMOWANIE {"seed":777,"startTurn":80,"endTurn":100,"stop":null,"gateActiveTurns":1,"bypassApplied":1,"stuckQueueHeals":0,"battlesAuto":0,"wallSec":1058,"resumed":true}

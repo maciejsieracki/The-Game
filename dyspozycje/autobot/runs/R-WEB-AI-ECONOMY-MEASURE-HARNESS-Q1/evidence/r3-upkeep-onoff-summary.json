@@ -1,0 +1,65 @@
+{
+  "seed": "4242",
+  "turns": "20",
+  "candidate": "refs/keep/R-WEB-AI-UPKEEP-Q2-r2-fc",
+  "rows": [
+    {
+      "flaga": "off",
+      "tura": 10,
+      "ownersAI": 41,
+      "skarbiec": 44.95,
+      "spichlerz": 4.33,
+      "wojsko": 1.05,
+      "utrzJednPieniadz": 4.49,
+      "glodKaraProc": 0,
+      "ownerzyGlodWojska": 0,
+      "deficytZlota": 0
+    },
+    {
+      "flaga": "off",
+      "tura": 50,
+      "uwaga": "brak wiersza (przebieg krotszy)"
+    },
+    {
+      "flaga": "off",
+      "tura": 20,
+      "ownersAI": 41,
+      "skarbiec": 43.44,
+      "spichlerz": 10.62,
+      "wojsko": 1.24,
+      "utrzJednPieniadz": 6.34,
+      "glodKaraProc": 0,
+      "ownerzyGlodWojska": 0,
+      "deficytZlota": 0
+    },
+    {
+      "flaga": "on",
+      "tura": 10,
+      "ownersAI": 41,
+      "skarbiec": 45.05,
+      "spichlerz": 4.33,
+      "wojsko": 1.05,
+      "utrzJednPieniadz": 4.49,
+      "glodKaraProc": 0,
+      "ownerzyGlodWojska": 0,
+      "deficytZlota": 0
+    },
+    {
+      "flaga": "on",
+      "tura": 50,
+      "uwaga": "brak wiersza (przebieg krotszy)"
+    },
+    {
+      "flaga": "on",
+      "tura": 20,
+      "ownersAI": 41,
+      "skarbiec": 41.02,
+      "spichlerz": 10.34,
+      "wojsko": 1.17,
+      "utrzJednPieniadz": 6.05,
+      "glodKaraProc": 0,
+      "ownerzyGlodWojska": 0,
+      "deficytZlota": 0
+    }
+  ]
+}

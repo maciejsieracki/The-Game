@@ -1,0 +1,23 @@
+[onoff] build off -> /tmp/upkeep-onoff/dist-off
+[onoff] przebieg off: seed=4242 turns=20
+[econ] seed=4242 tura=6 gateAktywna=1 dosypki=1 czas=13s
+[econ] seed=4242 tura=11 gateAktywna=1 dosypki=1 czas=24s
+[econ] seed=4242 tura=16 gateAktywna=1 dosypki=1 czas=36s
+[econ] PODSUMOWANIE {"seed":4242,"startTurn":1,"endTurn":20,"stop":null,"gateActiveTurns":1,"bypassApplied":1,"stuckQueueHeals":0,"battlesAuto":0,"wallSec":45,"resumed":false}
+[onoff] build on -> /tmp/upkeep-onoff/dist-on
+[onoff] przebieg on: seed=4242 turns=20
+[econ] seed=4242 tura=6 gateAktywna=1 dosypki=1 czas=11s
+[econ] seed=4242 tura=11 gateAktywna=1 dosypki=1 czas=20s
+[econ] seed=4242 tura=16 gateAktywna=1 dosypki=1 czas=30s
+[econ] PODSUMOWANIE {"seed":4242,"startTurn":1,"endTurn":20,"stop":null,"gateActiveTurns":1,"bypassApplied":1,"stuckQueueHeals":0,"battlesAuto":0,"wallSec":38,"resumed":false}
+┌─────────┬───────┬──────┬──────────┬──────────┬───────────┬────────┬──────────────────┬──────────────┬───────────────────┬──────────────┬───────────────────────────────────┐
+│ (index) │ flaga │ tura │ ownersAI │ skarbiec │ spichlerz │ wojsko │ utrzJednPieniadz │ glodKaraProc │ ownerzyGlodWojska │ deficytZlota │ uwaga                             │
+├─────────┼───────┼──────┼──────────┼──────────┼───────────┼────────┼──────────────────┼──────────────┼───────────────────┼──────────────┼───────────────────────────────────┤
+│ 0       │ 'off' │ 10   │ 41       │ 44.95    │ 4.33      │ 1.05   │ 4.49             │ 0            │ 0                 │ 0            │                                   │
+│ 1       │ 'off' │ 50   │          │          │           │        │                  │              │                   │              │ 'brak wiersza (przebieg krotszy)' │
+│ 2       │ 'off' │ 20   │ 41       │ 43.44    │ 10.62     │ 1.24   │ 6.34             │ 0            │ 0                 │ 0            │                                   │
+│ 3       │ 'on'  │ 10   │ 41       │ 45.05    │ 4.33      │ 1.05   │ 4.49             │ 0            │ 0                 │ 0            │                                   │
+│ 4       │ 'on'  │ 50   │          │          │           │        │                  │              │                   │              │ 'brak wiersza (przebieg krotszy)' │
+│ 5       │ 'on'  │ 20   │ 41       │ 41.02    │ 10.34     │ 1.17   │ 6.05             │ 0            │ 0                 │ 0            │                                   │
+└─────────┴───────┴──────┴──────────┴──────────┴───────────┴────────┴──────────────────┴──────────────┴───────────────────┴──────────────┴───────────────────────────────────┘
+[onoff] zapisano /tmp/upkeep-onoff/onoff-summary.json
