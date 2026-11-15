@@ -7,3 +7,5 @@ KRYTERIA BINARNE: (a) test w realnej bitwie AUTO: jednostka z pełnym ruchem N p
 ALLOWLISTA: pliki bitwy wskazane grepem (wypisz w raporcie), gra/data/combat-params.json, gra/tools/battle-*, docs/encyklopedia/**, docs/PORADNIK-GRACZA/**, wikiBundle, runs/R-WEB-BATTLE-FULL-MOVE-THEN-STRIKE-AT-END-Q1/**. NIE: WERSJE.md, manifest, rust-port.
 OSOBNY TEMAT (nie ruszaj tutaj): arbitraż kolizji piechoty i łuczników.
 RAPORT: kontrakt STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY/BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH; ZMIERZONO albo NIE ZMIERZONO; lista założeń DO POTWIERDZENIA.
+
+AKTUALIZACJA BAZY (orkiestrator): pracuj na aktualnym origin/main b97287c88 (FALA 735). Gałąź dispatchów claude/... NIE jest bazą kodu (inna linia historii) — zrób worktree/gałąź z origin/main, dispatch czytaj przez git show. Chromium jest dostępny: require("playwright"), chromium.launch() bez opcji; build vite poza repo.
