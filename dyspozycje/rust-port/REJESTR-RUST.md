@@ -1392,3 +1392,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - Sloty 0/4. Bez zmian: #115 czeka na odpowiedź właściciela (B/A/C), #106 i #120 na decyzje A/B, pozostałe kandydaty wymagają rozpoznania lub decyzji technicznej. Nie startuję dispatchu wymagającego decyzji.
 - KROK 2: brak Workflow z FC PASS bez integracji. KROK 3: nic do sprzątania.
 - Pytanie ABC #115 nadal bez odpowiedzi właściciela.
+
+## Przebieg (15.11, 09:xx UTC — RUST 3D / renderer, Opus 5.5)
+- **P4-15 GPU-SPIKE-PREP (R-RUSTPORT-P4-15-GPU-SPIKE-PREP-Q1): zintegrowany na parity-v2.** FC r2 = PASS (`ac69ea18`, 04-final-control-r2.md). Merge `95930b446` (pierwszy rodzic = parity `f2bb11970`), FF `rust-port/parity-v2`. Zakres: wyłącznie `rust-port/spike-gpu-embed/**` i dokumenty `dyspozycje/rust-port/p4/P4-15*` oraz `dyspozycje/autobot/runs/R-RUSTPORT-P4-15*`; `rust-port/engine` bez zmian (sprawdzone diff). `git diff --check` czysty. Backup: `refs/keep/R-RUSTPORT-P4-15-GPU-SPIKE-PREP-Q1-integ`, gałąź `rust-port-wip/R-RUSTPORT-P4-15-GPU-SPIKE-PREP-Q1-integ`.
+- **NIE_ZMIERZONO w tej sesji:** `cargo` dla `spike-gpu-embed` nie uruchomiony tutaj (crate wymaga GPU/GTK; wyniki bramek pochodzą z FC r2 i z Operatora r2). Do potwierdzenia na maszynie z GPU zgodnie z instrukcją spike'a.
+- **P4-1 RENDER-DTO-CONTRACT:** Workflow `wf_c204895c-d41` na Opus 5.5 (Operator/Evaluator/Obrona/FC). Dispatch DODATEK r2 `28d7e18f9`. W toku.
+- **P4-0 RENDERER-ARCHITECTURE:** domknięcie Evaluator + FC na Opus 5.5 (DODATEK r3 `e7777bb5b`, Workflow `wf_6aff558f-660`). W toku.
+- **Web:** wycofane. Mój DODATEK do dispatchów kart jednostek 3D cofnięty (revert `3fb78e6b5`); tematy webowe nie są prowadzone w tej sesji.
