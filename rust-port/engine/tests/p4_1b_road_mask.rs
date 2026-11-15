@@ -11,7 +11,9 @@
 //!   brak drogi (web `hexHasRoadAt`, `main.ts:3144-3147`).
 //! * zgodnosc `ROAD_DIRS` silnika WYLACZNIE z `mapgen::prims::HEX_DIRECTIONS` (silnik nie zalezy
 //!   od renderera).
-//! * mutacja: zamiana dwoch kierunkow musi dac rozbieznosc na wektorach.
+//! * czulosc WEKTOROW: mutant zdefiniowany w tescie (zamiana dwoch kierunkow) musi dac rozbieznosc.
+//!   To NIE jest mutacja kodu produkcyjnego — czulosc samej implementacji potwierdzaja reczne
+//!   mutacje `road_network.rs` opisane w raportach rundy (Operator r1: 2, Evaluator r1: 1).
 
 use std::collections::{BTreeSet, HashSet};
 
@@ -228,12 +230,49 @@ fn compute_road_mask_matches_pin_vectors() {
         assert_eq!(got, c.mask, "maska ({},{}) bounds={:?}", c.q, c.r, c.bounds);
         assert!(got <= 0x3F);
     }
-    // Przypadki brzegowe map musza miec obciete bity (sasiad poza mapa = brak drogi).
+    // Kombinacje bez granic: pelna gwiazda (0x3F) musi wystapic, wiec wszystkie 6 bitow da sie
+    // ustawic naraz.
     let full_star_on_unbounded = cases
         .iter()
         .filter(|c| c.bounds.is_none() && c.mask == 0x3F)
         .count();
     assert!(full_star_on_unbounded > 0);
+}
+
+#[test]
+fn map_edge_masks_have_out_of_map_bits_cleared() {
+    // Jawnie (nie tylko przez rownosc masek): na heksach brzegowych map z pinu bit kierunku,
+    // ktorego sasiad lezy poza mapa, jest WYZEROWANY (sasiad poza mapa = brak drogi,
+    // `main.ts:3144-3147`). Liczymy tez, ze takie bity faktycznie wystepuja w wektorach.
+    let v = vectors();
+    let mut out_of_map_bits = 0usize;
+    let mut edge_hexes_with_road_neighbours_inside = 0usize;
+    for c in all_cases(&v) {
+        let Some((w, h)) = c.bounds else { continue };
+        let mut on_edge = false;
+        for (i, (dq, dr)) in ROAD_DIRS.iter().enumerate() {
+            let (nq, nr) = (c.q + dq, c.r + dr);
+            if nq < 0 || nq >= w || nr < 0 || nr >= h {
+                on_edge = true;
+                out_of_map_bits += 1;
+                assert_eq!(
+                    c.mask & (1 << i),
+                    0,
+                    "({},{}) kierunek {i}: sasiad ({nq},{nr}) poza mapa {w}x{h}, a bit ustawiony",
+                    c.q,
+                    c.r
+                );
+            }
+        }
+        if on_edge && c.mask != 0 {
+            edge_hexes_with_road_neighbours_inside += 1;
+        }
+    }
+    assert!(out_of_map_bits > 0, "brak kierunkow poza mapa w wektorach");
+    assert!(
+        edge_hexes_with_road_neighbours_inside > 0,
+        "brak heksow brzegowych z niezerowa maska (obciecie niewidoczne)"
+    );
 }
 
 #[test]
@@ -257,7 +296,8 @@ fn refresh_vectors_agree_with_mask_bit_order() {
 }
 
 #[test]
-fn mutation_swapped_directions_is_detected() {
+fn vectors_detect_swapped_direction_order_mutant() {
+    // Dowodzi czulosci wektorow (mutant lokalny w tescie), nie kodu produkcyjnego.
     let v = vectors();
     let cases = all_cases(&v);
     let mut swapped = ROAD_DIRS;
@@ -273,7 +313,7 @@ fn mutation_swapped_directions_is_detected() {
     };
     assert!(
         mismatches(&cases, mutant) > 0,
-        "mutacja kolejnosci kierunkow niewykryta"
+        "wektory nie wykrywaja mutanta kolejnosci kierunkow"
     );
     let original = |q: i32, r: i32, has: &dyn Fn(i32, i32) -> bool| compute_road_mask(q, r, has);
     assert_eq!(mismatches(&cases, original), 0);

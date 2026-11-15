@@ -2,8 +2,12 @@
 //
 // Wykonuje URUCHOMIONY kod pinu `07d2fbd72`: `gra/src/map/road-network.ts`
 // (`ROAD_DIRS` :32-34, `computeRoadMask` :75-86, `roadHexesToRefresh` :170-182).
-// Modul pinu jest czysty (zero importow, :19-22), wiec laduje sie go bezposrednio w Node 22
-// (usuwanie typow TS). Plik bierzemy z `git show`, nie z drzewa roboczego.
+// Modul pinu jest czysty (zero importow, :19-22), wiec laduje sie go bezposrednio w Node
+// (domyslne usuwanie typow TS). Plik bierzemy z `git show`, nie z drzewa roboczego.
+//
+// WYMAGANY Node >= 22.18.0 (linia 22) albo >= 23.6.0: dopiero od tych wersji import pliku `.ts`
+// dziala bez flagi (`--experimental-strip-types`). Starszy Node -> generator konczy sie EXIT 2
+// z komunikatem (sprawdzenie ponizej), zamiast mylacego bledu importu. Sprawdzone na v22.23.4.
 //
 // Uzycie (z dowolnego katalogu w repo):
 //   node rust-port/engine/tests/p4_1b_road_mask_vectors/gen.mjs          -> zapisuje vectors.json
@@ -18,6 +22,16 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+
+// Minimalna wersja Node (domyslne usuwanie typow TS przy imporcie `.ts`).
+{
+  const [maj, min] = process.versions.node.split('.').map(Number);
+  const ok = maj > 23 || (maj === 23 && min >= 6) || (maj === 22 && min >= 18);
+  if (!ok) {
+    console.error(`Node ${process.versions.node} za stary: wymagany >= 22.18.0 (22.x) albo >= 23.6.0`);
+    process.exit(2);
+  }
+}
 
 const PIN = '07d2fbd72';
 const PIN_PATH = 'gra/src/map/road-network.ts';
