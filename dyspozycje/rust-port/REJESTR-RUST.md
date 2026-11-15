@@ -1696,3 +1696,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Incydent:** wiadomość „dopisz do pamięci” z kontekstu orkiestratora trafiła do Operatora K5LOOP-OUTCOME (runda 1 → NIE_WYKONANO, FAIL). Runda 2 z zakazem wiadomości spoza dispatchu (`11b818690`). Dispatch R7K7C-WIRING nie miał takiej linii; Operator też wspomniał o pamięci (bez skutku).
 - **#106** pozostaje pending (decyzja „brak wpisu = 0” zgodna z pinem; implementacja wymaga R7K7C-PRODUCER).
 - **#227 → completed.** #225, #226 w toku.
+
+## Przebieg (15.11, 17:2x UTC — heartbeat „twardy bit”, sloty Rust)
+
+- **KROK 1 (sloty):** 4 aktywne Workflow, bez FC: wyłom wieży #98 (Evaluator, test), K5LOOP-FACING #225 (Operator, testy pinu), K5LOOP-OUTCOME #226 runda 2 (Operator, testy), KOLEJKA-ODSWIEZ #228 (Operator, dokument). Brak startów: sloty pełne.
+- **KROK 2 (FC PASS bez integracji):** brak. R7K7C-WIRING-ROZPOZNANIE (#227) zintegrowany jako dokumenty (`a71645fc7`), wpis `b1906354b`.
+- **KROK 3 (sprzątanie):** bez zmian w tym cyklu (worktree #227 usunięte wcześniej z refs/keep). Dysk: 7,0 GB wolne (82%). Poniżej progu 8 GB dla nowych tematów z kodem Rust — kolejne starty z kodem wstrzymane do sprzątania.
+- **KROK 4:** nie dotyczy.
+- **NASTĘPNY KROK:** wyniki #98, #225, #226 r2, #228 (FC); integracja #225 i #226 sekwencyjnie po wyłomie #98 (wspólny `siege_tactics_loop.rs`).
