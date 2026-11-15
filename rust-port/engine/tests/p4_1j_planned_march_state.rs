@@ -358,3 +358,65 @@ fn restore_reports_general_target_and_unrepresentable_entries() {
         "odczyt czysci marchStopDetail"
     );
 }
+
+/// Obrona r1 (Z1 Evaluatora): powtorzony `unitId` w formie listowej jest scalany PRZED filtrem
+/// `plannedMarchesFromSave` (web filtruje obiekt po `JSON.parse`: pierwsza pozycja, ostatnia
+/// wartosc). Odrzucona albo niewyrazalna ostatnia wartosc nie moze zostawic planu z wczesniejszego
+/// wpisu, a raport musi zgadzac sie ze stanem.
+#[test]
+fn restore_merges_duplicates_before_filter() {
+    let saved = |q: Number, attack: Option<&str>| SavedPlannedMarch {
+        unit_id: "1".to_owned(),
+        dest_q: Some(q),
+        dest_r: Some(Number::from(0)),
+        attack_unit_id: attack.map(str::to_owned),
+        general_target_id: None,
+    };
+    let fresh = || {
+        let mut state = PlayableState::empty();
+        state.units = vec![unit(1, 1, 0, 0)];
+        state
+    };
+
+    // (A) ostatnia wartosc = pozycja jednostki: web `planned-march.ts:466` ja odrzuca, wiec brak planu.
+    let mut state = fresh();
+    let list = [
+        saved(Number::from(5), Some("9")),
+        saved(Number::from(0), None),
+    ];
+    let report = restore_playable_planned_marches(&mut state, &list, None, PlayerId::new(1));
+    assert_eq!(report, Default::default());
+    assert!(
+        state.planned_marches.is_empty(),
+        "A: brak planu jak w webie"
+    );
+    assert!(state.march_attack_targets.is_empty(), "A: brak celu ataku");
+
+    // (B) ostatnia wartosc niewyrazalna (2.5): web ja trzyma, Rust pomija z raportem; brak planu (5,0).
+    let mut state = fresh();
+    let list = [
+        saved(Number::from(5), Some("9")),
+        saved(Number::from_f64(2.5).expect("finite"), None),
+    ];
+    let report = restore_playable_planned_marches(&mut state, &list, None, PlayerId::new(1));
+    assert_eq!(report.unrepresentable, vec!["1"]);
+    assert!(
+        state.planned_marches.is_empty(),
+        "B: raport unrepresentable zgodny ze stanem"
+    );
+    assert!(state.march_attack_targets.is_empty(), "B: brak celu ataku");
+
+    // Kontrola: poprawna ostatnia wartosc wygrywa nad odrzucana pierwsza.
+    let mut state = fresh();
+    let list = [
+        saved(Number::from(0), None),
+        saved(Number::from(5), Some("9")),
+    ];
+    let report = restore_playable_planned_marches(&mut state, &list, None, PlayerId::new(1));
+    assert_eq!(report, Default::default());
+    assert_eq!(state.planned_marches, vec![march(1, 5, 0, Some(9))]);
+    assert_eq!(
+        state.march_attack_targets.get(&UnitId::new(1)),
+        Some(&UnitId::new(9))
+    );
+}

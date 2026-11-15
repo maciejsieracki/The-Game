@@ -28,6 +28,11 @@ DEPLOY/PUSH: NIE WYKONANO
   `7817ef0cb` (P4.36 Q2 Evaluator r1) **nie jest potomkiem** `a01363d5f` i nie jest w `parity-v2`
   (`git merge-base --is-ancestor a01363d5f 7817ef0c` -> nie). Pracowalem wg dispatchu: baza `a01363d5f`,
   `git merge-base --is-ancestor a01363d5f HEAD` = tak. Do wyjasnienia przez orkiestratora.
+- **SPROSTOWANIE (Obrona r1, Z2 Evaluatora):** zdanie o `7817ef0c` wyzej jest bledne — argumenty
+  `is-ancestor` byly odwrocone. `git merge-base --is-ancestor 7817ef0c a01363d5f` = EXIT 0 (tak), czyli
+  `parity-v2 = a01363d5f` ZAWIERA `7817ef0c`. Rozbieznosci bazy nie ma; praca na `a01363d5f` jest zgodna z
+  poleceniem. Brak „DODATKU r2” w dispatchu pozostaje faktem (dispatch na `origin/claude/rust-sivvrn` nadal
+  runda 1). Szczegoly: `02a-obrona.md` §Z2.
 
 ## 1. Co zrobiono (allowlista)
 

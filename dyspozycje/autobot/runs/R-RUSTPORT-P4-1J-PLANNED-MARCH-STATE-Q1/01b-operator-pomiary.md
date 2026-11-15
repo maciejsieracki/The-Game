@@ -25,6 +25,9 @@ DEPLOY/PUSH: NIE WYKONANO
   `git show origin/claude/rust-sivvrn:dyspozycje/autobot/runs/R-RUSTPORT-P4-1J-PLANNED-MARCH-STATE-Q1/00-dispatch.md`
   to nadal wersja **runda 1** bez dodatku (ostatni commit w katalogu runu na `claude/rust-sivvrn`: `3b025a272`).
   `origin/rust-port/parity-v2` = `a01363d5f`. Pracowalem wg dispatchu rundy 1 (rola Operator-pomiary).
+- **SPROSTOWANIE (Obrona r1, Z2 Evaluatora):** `7817ef0c` JEST w `parity-v2`
+  (`git merge-base --is-ancestor 7817ef0c a01363d5f` = EXIT 0). Pkt 1 w §5 („rozbieznosc nierozstrzygnieta”)
+  jest nieaktualny w czesci o `7817ef0c`. Szczegoly: `02a-obrona.md` §Z2.
 - Baza pomiarow: `2169bd17d` (Operator r1); `git merge-base --is-ancestor a01363d5f 2169bd17d` = tak.
 - Gałąź Operatora r1 jest zajeta w innym worktree, wiec pomiary ida na nowej galezi
   `R-RUSTPORT-P4-1J-PLANNED-MARCH-STATE-Q1-wip/operator-pomiary` (rodzic `2169bd17d`).

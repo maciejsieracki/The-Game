@@ -896,7 +896,10 @@ fn canonical_unit_id(text: &str) -> Option<UnitId> {
 ///    `:31124-31130`): `attackUnitId` trafia do `march_attack_targets`.
 ///
 /// Wpis powtorzony w liscie (forma listowa Rust; obiekt weba po `JSON.parse` nie ma powtorzen)
-/// zachowuje pierwsza pozycje i ostatnia wartosc (semantyka `Map.set`). Pominiecia sa w raporcie.
+/// jest scalany PRZED filtrem: pierwsza pozycja, ostatnia wartosc (jak `JSON.parse` dla
+/// powtorzonego klucza obiektu, ta sama regula co `visit_map`). Filtr i raport widza wiec tylko
+/// ostatnia wartosc: odrzucona albo niewyrazalna ostatnia wartosc nie zostawia planu z wczesniejszego
+/// wpisu. Pominiecia sa w raporcie.
 pub fn restore_playable_planned_marches(
     state: &mut PlayableState,
     planned: &[SavedPlannedMarch],
@@ -930,20 +933,21 @@ pub fn restore_playable_planned_marches(
             )
         })
         .collect();
-    let entries: Vec<(String, Option<PlannedMarchSaved>)> = planned
-        .iter()
-        .map(|march| {
-            (
-                march.unit_id.clone(),
-                Some(PlannedMarchSaved {
-                    dest_q: march.dest_q.as_ref().and_then(Number::as_f64),
-                    dest_r: march.dest_r.as_ref().and_then(Number::as_f64),
-                    attack_unit_id: march.attack_unit_id.clone(),
-                    general_target_id: march.general_target_id.clone(),
-                }),
-            )
-        })
-        .collect();
+    // Scalanie powtorzen przed filtrem `plannedMarchesFromSave`: web filtruje wpisy obiektu juz po
+    // `JSON.parse`, ktory dla powtorzonego klucza trzyma pierwsza pozycje i ostatnia wartosc.
+    let mut entries: Vec<(String, Option<PlannedMarchSaved>)> = Vec::with_capacity(planned.len());
+    for march in planned {
+        let value = Some(PlannedMarchSaved {
+            dest_q: march.dest_q.as_ref().and_then(Number::as_f64),
+            dest_r: march.dest_r.as_ref().and_then(Number::as_f64),
+            attack_unit_id: march.attack_unit_id.clone(),
+            general_target_id: march.general_target_id.clone(),
+        });
+        match entries.iter_mut().find(|(key, _)| *key == march.unit_id) {
+            Some(slot) => slot.1 = value,
+            None => entries.push((march.unit_id.clone(), value)),
+        }
+    }
     let legacy = auto_march.map(|saved| AutoMarchSave {
         leader_id: saved.leader_id.clone(),
         dest_q: saved.dest_q.as_ref().and_then(Number::as_f64),
