@@ -410,7 +410,11 @@ async function liveEndTurn(chromium) {
       await page.evaluate((lbl) => { const c = [...document.querySelectorAll('.civ-hud-banner-left .civ-hud-chip-cell')].find((x) => (x.querySelector('.civ-hud-chip-lbl') || {}).textContent === lbl); if (c) c.click(); }, k);
       await wait(1500);
       const txt = await page.evaluate(() => { const e = document.querySelector('.civ-emp-grossnet'); return e ? e.textContent : null; });
-      const m = txt ? /Brutto([+\-]?[\d,.kM]+)\u2192netto([+\-]?[\d,.kM]+)/.exec(normTxt(txt)) : null;
+      // Surowce (R-WEB-UI-RESOURCE-CARD-NUMBERS-ONLY-DETAILS-COLLAPSED-Q1): naglowek to same liczby "+brutto \u2192 +netto" bez slow;
+      // opis brutto/netto siedzi w title. Pozostale zakladki zachowuja wspolna linie "Brutto \u2026 \u2192 netto \u2026".
+      const reNums = /([+\-]?[\d,.kM]+)\u2192([+\-]?[\d,.kM]+)/;
+      const reWords = /Brutto([+\-]?[\d,.kM]+)\u2192netto([+\-]?[\d,.kM]+)/;
+      const m = txt ? (k === 'Surowce' ? reNums.exec(normTxt(txt)) : reWords.exec(normTxt(txt))) : null;
       ok(!!m, `panel imperium (${k}): linia "Brutto -> netto" obecna`, txt);
       if (m) {
         const hb = normTxt(hudVals[k].b).replace('+', ''), hn = normTxt(hudVals[k].n).replace('+', '');

@@ -1685,6 +1685,22 @@ function grossNetSub(brutto: number | undefined, netto: number | undefined, unit
   return `<div class="civ-emp-hero-sub civ-emp-grossnet">Brutto <b>${signedPl(b)}</b> → netto <b class="${cls}">${signedPl(n)}</b> ${unit} / turę${note}</div>`;
 }
 
+/**
+ * R-WEB-UI-RESOURCE-CARD-NUMBERS-ONLY-DETAILS-COLLAPSED-Q1 (Maciej 2026-11-15): nagłówek Surowce
+ * pokazuje SAME liczby „+brutto → +netto” (bez słów i bez „szt. / turę”). Opis (brutto = produkcja
+ * przed zużyciem, netto = po zużyciu obywateli, budynków i wojska) idzie do `title` tooltipu.
+ * Wspólna `grossNetSub` zostaje bez zmian dla pozostałych sekcji.
+ * / EN: header line with numbers only; the explanation lives in the tooltip.
+ */
+export function grossNetNumbersSub(brutto: number | undefined, netto: number | undefined, tooltip: string): string {
+  if (brutto === undefined || netto === undefined) return '';
+  const b = Math.round(brutto);
+  const n = Math.round(netto);
+  const cls = n < 0 ? 'neg' : 'pos';
+  return `<div class="civ-emp-hero-sub civ-emp-grossnet" title="${esc(tooltip)}">`
+    + `<b>${signedPl(b)}</b> → <b class="${cls}">${signedPl(n)}</b></div>`;
+}
+
 function renderNaukaSection(
   rows: EmpireDetailSnap['cityEcon'],
   economy: EmpireDetailSnap['economy'],
@@ -3536,8 +3552,9 @@ export function resGrossNetLineHtml(r: EmpireResourceRow): string {
   if (gn.brutto === 0 && gn.zuzycie === 0) return '';
   const netState = gn.netto < 0 ? 'bad' : (gn.netto === 0 ? 'warn' : 'good');
   const fmt = (n: number): string => (n === 0 ? '0' : signedPl(n));
-  return `<div class="civ-emp-res-gn ${netState}">`
-    + `Brutto <b>${esc(fmt(gn.brutto))}</b> · netto <b class="net">${esc(fmt(gn.netto))}</b> / turę`
+  const tip = 'Brutto = produkcja przed zużyciem, na turę. Netto = po zużyciu obywateli, budynków i wojska, na turę.';
+  return `<div class="civ-emp-res-gn ${netState}" title="${esc(tip)}">`
+    + `<b>${esc(fmt(gn.brutto))}</b> · <b class="net">${esc(fmt(gn.netto))}</b>`
     + `</div>`;
 }
 
@@ -3586,33 +3603,9 @@ export function resSkadZapasyHtml(resourceKey: string, ownerId = 0): string {
   const turns = ledgerHistoryForOwner(ownerId);
   const lines = ledgerSourceLinesForResource(turns, resourceKey);
   if (lines.length === 0) return '';
-  const open = resourceKey === 'sol' || resourceKey === 'ceramika';
-  return resourceSourceLedgerDetailsHtml(lines, turns.length, open, resourceKey);
+  // R-WEB-UI-RESOURCE-CARD-NUMBERS-ONLY-DETAILS-COLLAPSED-Q1: zawsze zwinięte (także sól/ceramika).
+  return resourceSourceLedgerDetailsHtml(lines, turns.length, false, resourceKey);
 }
-
-/**
- * R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1 (GOAL 5): `innerHTML` podmienia całą treść
- * panelu, a przeglądarka resetuje `open` każdego `<details>` do wartości z markupu. Zapamiętujemy
- * stan „Skąd zapasy” (wg `data-skad-key`) PRZED podmianą i przywracamy PO niej — gracz rozwinięte
- * źródła nie zwijają się przy przerysowaniu (np. po tyknięciu tury lub zmianie bloku).
- * / EN: remember open state of the ledger <details> before innerHTML swap, restore it after.
- */
-export function captureSkadDetailsOpen(root: ParentNode): Map<string, boolean> {
-  const out = new Map<string, boolean>();
-  root.querySelectorAll<HTMLDetailsElement>('details.civ-emp-res-skad[data-skad-key]').forEach((d) => {
-    out.set(d.getAttribute('data-skad-key') ?? '', d.open);
-  });
-  return out;
-}
-
-export function restoreSkadDetailsOpen(root: ParentNode, prev: ReadonlyMap<string, boolean>): void {
-  if (prev.size === 0) return;
-  root.querySelectorAll<HTMLDetailsElement>('details.civ-emp-res-skad[data-skad-key]').forEach((d) => {
-    const k = d.getAttribute('data-skad-key') ?? '';
-    if (prev.has(k)) d.open = prev.get(k) === true;
-  });
-}
-
 
 /** Tooltip nagłówka magazynu państwa — pojemność, formuła, reguła nadmiaru (Maciej UI). */
 function magazynPanstwaTooltip(
@@ -3740,7 +3733,8 @@ function renderSurowceSection(rows: EmpireResourceRow[], economy?: EmpireDetailS
   }
   sur += `<div class="civ-emp-hero-sub civ-emp-res-sub">${subParts.join(' · ')}</div>`;
   if (economy) {
-    sur += grossNetSub(economy.surowceBrutto, economy.surowceNetto, 'szt.', ' (suma po surowcach; netto po zużyciu obywateli, budynków i wojska)');
+    sur += grossNetNumbersSub(economy.surowceBrutto, economy.surowceNetto,
+      'Brutto = produkcja surowców przed zużyciem (suma po surowcach), na turę. Netto = po zużyciu obywateli, budynków i wojska, na turę.');
   }
 
   if (stored.length > 0) {
@@ -4500,9 +4494,7 @@ function render(): void {
   // (wireMocViewButtons) or a column filter (wireMiastaColFilter) doesn't scroll the panel back
   // to the very top.
   const prevScrollTop = bodyEl.scrollTop;
-  const skadOpenPrev = captureSkadDetailsOpen(bodyEl);
   bodyEl.innerHTML = body;
-  restoreSkadDetailsOpen(bodyEl, skadOpenPrev);
   mountMassRecruitmentControls(bodyEl, snap);
   wireMocViewButtons();
   // N1 (Evaluator, notatka na 89c16ec1): JEDNO wywołanie na render() (przeniesione z wnętrza

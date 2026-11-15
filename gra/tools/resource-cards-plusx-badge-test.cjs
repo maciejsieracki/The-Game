@@ -93,7 +93,7 @@ function checkCard(P, card, expectText, expectClass, label) {
   const html = P.resCardHtml(card);
   ok(!html.includes('civ-emp-res-rate'), label + ' A: karta bez plakietki „+X” (brak civ-emp-res-rate)', html.slice(0, 300));
   const line = P.resGrossNetLineHtml(card);
-  ok(clean(line) === expectText, label + ' B: tekst „Brutto · netto” bez zmian', clean(line));
+  ok(clean(line) === expectText, label + ' B: tekst liczb „+brutto · +netto” (bez słów)', clean(line));
   ok(line.includes(expectClass), label + ' B: klasa koloru netto „' + expectClass + '”', line);
   ok(html.includes(line), label + ' B: wiersz brutto/netto nadal w karcie');
 }
@@ -127,7 +127,7 @@ async function domCheckCard(browser, P, card, expectText, expectClass, label) {
   ok(d !== null, label + ' E: karta istnieje w DOM');
   if (!d) return;
   ok(d.badgeNodes === 0, label + ' E: w prawdziwym DOM brak węzłów civ-emp-res-rate* (plakietka +X)', d.badgeNodes);
-  ok(d.gnText === expectText, label + ' E: w DOM tekst „Brutto · netto” bez zmian', d.gnText);
+  ok(d.gnText === expectText, label + ' E: w DOM tekst liczb „+brutto · +netto” (bez słów)', d.gnText);
   const want = expectClass.split(' ').slice(-1)[0];
   ok(d.gnClass !== null && d.gnClass.split(/\s+/).includes(want), label + ' E: w DOM klasa koloru „' + want + '”', d.gnClass);
 }
@@ -143,9 +143,9 @@ async function domCheckCard(browser, P, card, expectText, expectClass, label) {
   });
 
   console.log('-- A/B. karta surowca (resCardHtml, prawdziwy kod panelu)');
-  checkCard(P, cardDrewno, 'Brutto +457 · netto +422 / turę', 'civ-emp-res-gn good', 'drewno');
-  checkCard(P, cardDiplo, 'Brutto +13 · netto +8 / turę', 'civ-emp-res-gn good', 'złoto (dyplomacja)');
-  checkCard(P, cardGlina, 'Brutto 0 · netto −12 / turę', 'civ-emp-res-gn bad', 'glina (netto ujemne)');
+  checkCard(P, cardDrewno, '+457 · +422', 'civ-emp-res-gn good', 'drewno');
+  checkCard(P, cardDiplo, '+13 · +8', 'civ-emp-res-gn good', 'złoto (dyplomacja)');
+  checkCard(P, cardGlina, '0 · −12', 'civ-emp-res-gn bad', 'glina (netto ujemne)');
 
   console.log('-- C. karta bez produkcji i zużycia');
   const bare = { ...cardDrewno, id: 'cegla', label: 'Cegła', stock: 0, ratePerTurn: 0, rateProductionPerTurn: 0, usage: undefined };
@@ -158,9 +158,9 @@ async function domCheckCard(browser, P, card, expectText, expectClass, label) {
   ok(!/\.civ-emp-res-rate[{.\-]/.test(panelSrc), 'D2 brak reguł CSS civ-emp-res-rate* w empireDetailPanel.ts');
 
   console.log('-- E. prawdziwy DOM (Chromium)');
-  await domCheckCard(browser, P, cardDrewno, 'Brutto +457 · netto +422 / turę', 'civ-emp-res-gn good', 'drewno');
-  await domCheckCard(browser, P, cardDiplo, 'Brutto +13 · netto +8 / turę', 'civ-emp-res-gn good', 'złoto (dyplomacja)');
-  await domCheckCard(browser, P, cardGlina, 'Brutto 0 · netto −12 / turę', 'civ-emp-res-gn bad', 'glina (netto ujemne)');
+  await domCheckCard(browser, P, cardDrewno, '+457 · +422', 'civ-emp-res-gn good', 'drewno');
+  await domCheckCard(browser, P, cardDiplo, '+13 · +8', 'civ-emp-res-gn good', 'złoto (dyplomacja)');
+  await domCheckCard(browser, P, cardGlina, '0 · −12', 'civ-emp-res-gn bad', 'glina (netto ujemne)');
   {
     const dBare = await domProbe(browser, P.resCardHtml(bare));
     ok(dBare !== null && dBare.badgeNodes === 0 && dBare.gnText === null, 'E C: karta bez produkcji i zużycia — w DOM brak plakietki i brak wiersza brutto/netto', dBare);
