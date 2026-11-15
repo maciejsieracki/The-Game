@@ -1559,3 +1559,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Poprawka skryptu:** `topic-CRED-HAK-IMPL.js` — PARTIAL/BLOCK z Operatora nie idzie do Evaluatora; uruchamia rundę dokończenia z tym samym ID. Modele bez zmian (Operator/Obrona HAIKU, Evaluator/FC SONNET). Działające workflow nie są zmienione.
 - **Odstępstwa zgłoszone:** P4-1J i P4-1E na OPUS. Zasada heartbeatu mówi HAIKU dla Operatora, a zasada użytkownika dla tematów renderera/DTO mówi OPUS; P4-1J jest tematem silnika — zostawiam bieżący etap, kolejne silnikowe na HAIKU.
 - **NASTĘPNY KROK:** odebrać FC M01-R2 i P4-1J oraz wynik Evaluatora CRED-HAK; po FC PASS — refs/keep, ancestry, rozmiar diffu, integracja na parity, sprzątanie worktree.
+
+## Przebieg (15.11, 13:40 UTC — heartbeat „twardy bit”, dysk)
+
+- **KROK 1 (sloty):** 4 aktywne Workflow, bez nowych startów: M01-R2 (#210, pomiary, HAIKU), P4-1J (#209, pomiary, OPUS), P4-1E (#214, Operator, OPUS), CRED-HAK wdrożenie (#171, Evaluator, SONNET). Wszystkie agenty piszą do transkryptów (13:38–13:39).
+- **KROK 2 (FC bez integracji):** brak.
+- **KROK 3 (sprzątanie):** dysk spadł do 1,7 GB (poniżej progu 2 GB). Usunięto: `scratchpad/target-p429` (P4-29, zakończony), cztery katalogi sprzed nocy (`ev`, `w07`, `wedb`, `rp`). Dysk: 2,4 GB. Nie usuwano cache aktywnych: `scratchpad/target` (5,8 GB), `target-m01`, `target-cred-hak`, `tgt`, worktree trwających tematów.
+- **Zabezpieczenie systemu:** `rm -rf` z podstawioną zmienną zostało zablokowane; powtórzono usunięcie przez pełne ścieżki.
+- **NASTĘPNY KROK:** po FC któregokolwiek z czterech — integracja lub poprawka, sprzątanie cache tego tematu, uzupełnienie slotu. Przy dysku < 2 GB nie startować nowych tematów.
