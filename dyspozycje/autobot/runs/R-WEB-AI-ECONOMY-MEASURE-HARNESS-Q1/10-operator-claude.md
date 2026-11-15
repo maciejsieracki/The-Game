@@ -1,35 +1,63 @@
-STATUS: BLOCK (runda 2/5, Operator HAIKU 5.5 — bez zmian kodu; przyczyna zerowych miast AI leży w starcie gry poza allowlistą, wymaga decyzji orkiestratora)
-DOMAIN: GAME (narzędzia pomiarowe + hak civTest)
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (narzędzia pomiarowe + hak civTest; bez zmian logiki gry)
 TEMAT: R-WEB-AI-ECONOMY-MEASURE-HARNESS-Q1
-GOAL: (1) metryki AI per owner/tura w haku civTest; (2) runner wznawialny 100+ tur; (3) obejście bramki NNS gracza z licznikiem; (4) dowód 100 tur x2 + test wznowienia; (5) instrukcja #415. Runda 2: naprawić zarzuty FC r1 (AI=0 miast, galaz obejscia NNS, metryki %głodu/utrzymania jednostek, README #415).
-BAZA: kandydat r1 3ba13a5ce + `git merge origin/main` (7ac79dafb, FALA 747) → commit 0b321dfdf (merge bez konfliktów; `git merge-base --is-ancestor 7ac79dafb HEAD` = OK). Kod operatora r2: brak nowego commita z kodem (patrz ZMIANY-COMMIT).
-ZMIANY-COMMIT: tylko ten raport (dyspozycje/autobot/runs/R-WEB-AI-ECONOMY-MEASURE-HARNESS-Q1/10-operator-claude.md) + merge 0b321dfdf (lokalny, nie wypchnięty). Zero zmian w gra/src ani gra/tools w tej rundzie. node_modules w gra/ zainstalowane przez `npm ci` (71 pakietów), do usunięcia po raporcie.
-TESTY (ZMIERZONE przeze mnie, surowe wyniki):
-- `npx tsc --noEmit` w gra/: EXIT 0.
-- `npx vite build --outDir /tmp/ai-economy-dist --emptyOutDir`: EXIT 0 (built in 33.88s).
-- `node tools/ai-economy-measure-hook-test.cjs`: EXIT 1; wynik: ZIELONE ksztalt metryk (7 wlascicieli); ZIELONE niezmierzone wymienia przychod/utrate; ZIELONE kontrola negatywna (bez ?civTest=1 brak haka); CZERWONE wartosc: AI ma >=1 miasto po zalozeniu miasta gracza — `miasta AI=0; diag={"pendingForeignSpawnCities":0,"pendingSameTypeRivalHexes":0,"aiStartHexes":6,"citiesAll":1,"ownersOfCities":[0]}`. PODSUMOWANIE 3/4 zielone.
-- Sonda startu (scratchpad, bez zmian w repo): `__nnsMeasureDebug.startGame` z {seed:4242, mapSize:"Maly", civTypes:4, cityStates:2} ORAZ {seed:4242, mapSize:"Standardowy", civTypes:4, cityStates:6} → w obu przypadkach po foundFirstCity: `AI miasta 0`, diag identyczny: pendingForeignSpawnCities 0, aiStartHexes 6, citiesAll 1, ownersOfCities [0].
-- NIE ZMIERZONO w tej rundzie: 5 bramek referencyjnych (logic-test, tech-tree-test, research-test, unit-replace-test, combat-test), resource-ledger-hook-gate-test, `git diff --check`, test wznowienia --resume-test, przebieg 100 tur x2, mutacja wznowienia, test galezi obejscia NNS (bypassApplied), metryki % kary glodu i utrzymania jednostek wojskowych.
+GOAL: harness pomiarowy ekonomii AI (metryki w haku civTest, runner wznawialny, obejście bramki NNS gracza, dowód 100 tur ×2 ziarna, test wznowienia, instrukcja pomiaru #415 ON/OFF)
+ZMIANY/COMMIT: baza 6d25244ea (r2) -> kod r3 `ba327c946`; raport/dowody/README w commicie raportu (czubek pracy, SHA w polu `sha`).
+  Pliki: `gra/src/main.ts` (wyłącznie blok `__aiEconomyMeasure` za `?civTest=1`: usunięcie fantomowych ownerów z `aiStartHexes`, nowe `diag.aiStartOwnersBezWiersza`),
+  `gra/tools/ai-economy-measure-run.cjs`, `ai-economy-measure-hook-test.cjs`, nowy `ai-economy-measure-upkeep-onoff.cjs`, `ai-economy-measure-README.md`, `runs/R-WEB-AI-ECONOMY-MEASURE-HARNESS-Q1/{10-operator-claude.md,evidence/r3-*}`.
+  Nie ruszono: logiki gry, gra/data, WERSJE.md, manifest, rust-port, gra-robocza.
+TESTY: (surowe wyjścia w `evidence/r3-*`)
+  - tsc --noEmit: 0 błędów (ZMIERZONE).
+  - logic-test 213/213; tech-tree-test 20 pass 0 fail; research-test 33/33; unit-replace-test 21/21; combat-test 6/6; resource-ledger-hook-gate-test 6 passed 0 failed (wszystkie ZMIERZONE po `npm ci`, na kodzie r3).
+  - Test haka (`r3-hook-test.log`): 11/11 ZIELONE, w tym: kształt (42 właścicieli, komplet pól), brak fantomowych ownerów, AI z miastami (42 właścicieli z miastem), bramka NNS blokuje w t1, dosypka 0/0 NIE odblokowuje, dosypka 200/200 odblokowuje i endTurn 1->2 (`bypassApplied` ścieżka WYKONANA), wartość AI (każdy AI >=1 miasto; bez jednostek [23] = 1 z 41 <= 10%), kontrola negatywna bez `?civTest=1`, mutacja realna (bundle z przemianowanym `utrzymanieJednostekPieniadz`) CZERWONA zgodnie z oczekiwaniem.
+  - Mutacja obejścia w runnerze (`--gold 0 --food 0`): stop `gate-blocked-after-bypass` w t1 (`r3-bypass-mutation.json`) = CZERWONE jak trzeba.
+  - 100 tur x 2 ziarna: PRZEBIEG (b), patrz tabela niżej. ZMIERZONE.
+  - Wznowienie 41-50 (c): CZERWONE 0/10 (ZMIERZONE na kodzie r3); przyczyna i dowód niżej. Mutacja wznowienia: NIE ZMIERZONO (dispatch: dopiero przy zielonej bazie).
+  - Skrypt ON/OFF #415: zweryfikowany na 20 turach (oba bundle zbudowane, oba przebiegi do t20, OFF != ON).
+  - `git diff --check`: czysto (sprawdzone przed commitem).
 
-DIAGNOZA ZAREZERWOWANA (AI=0 miast, zarzut 1 FC r1) — ustalenia z kodu i sondy:
-1. `aiStartHexes` w ścieżce haku wynosi 6 już po starcie, a `pendingForeignSpawnCities` = 0 — czyli miasta AI NIE trafiły do kolejki spawnu ani nie zostały założone; wartość 6 pochodzi z początkowego `computeStartPlacements` (main.ts:2319/3156), a nie z `applyClusterStartPlan` (main.ts:11466 resetuje `aiStartHexes = []`).
-2. Spawn miast obcych ownerów odbywa się WYŁĄCZNIE w `spawnPendingForeignClusters()` (main.ts:11871), wywoływanym z `tryFoundPlayerCityAt` (main.ts:17295) po założeniu stolicy gracza. Gdyby `plan.spawnCities` było niepuste, `pendingForeignSpawnCities` nie byłoby 0 po założeniu stolicy — a jest 0 w obu konfiguracjach startu.
-3. Wniosek: w ścieżce `doStartGame` z haku (i z runnera, który używa tego samego startu) `applyClusterStartPlan` nie produkuje żadnych spawnów obcych miast. Zmiana parametrów (civTypes 4/15, cityStates 2/6, mapSize Maly/Standardowy) tego NIE zmienia. Przyczyna leży w `buildClusterStartPlan` / `applyClusterStartPlan` albo w warunkach wejścia do tej gałęzi startu — to jest kod gry POZA allowlistą tego tematu (`gra/src/game/cluster-start.ts`, main.ts `applyClusterStartPlan`). Nie naprawiałem tego (zakaz: logika startu w trybie normalnym poza allowlistą). Hipoteza do potwierdzenia przez orkiestratora: `doStartGame` w trybie civTest nie wywołuje `applyClusterStartPlan` z pełnym planem, albo plan zwraca pusty `spawnCities` — wymaga osobnego tematu (kandydat: R-WEB-CLUSTER-START-NO-AI-CITIES-IN-HARNESS-Q1, do zarejestrowania przez orkiestratora; NIE zakładam go sam).
-4. Pokrewne (zgodnie z UWAGI FC r1): ten sam defekt może tłumaczyć tematy #415/#418 (zależne od pomiaru AI). Hipoteza, NIE potwierdzona.
+## Diagnoza N1 — dlaczego AI miały 0 miast (ODWOŁANIE tezy z r2 „defekt startu gry”)
+Ustalone przez porównanie ze ścieżką `ai-army-live-measure.cjs` i sondę (p.cjs): `__nnsMeasureDebug.startGame` wywołuje asynchroniczne `doStartGame`; klastry AI i miasta-państwa powstają dopiero po zniknięciu nakładki „Tworzenie świata” (u mnie ~120 s przy 41 właścicielach). Runner/test haka (r1/r2) zakładały miasto gracza od razu po `turn >= 1`, czyli przed końcem generacji. Naprawa: czekanie na koniec nakładki + `awaitingFirstCity===true`, dopiero potem `foundFirstCity`. Defekt jest w HARNESSIE, nie w grze. Dowód: sonda po naprawie: 42 właścicieli z miastem w t1 (`diag`: citiesAll=42, aiStartOwnersBezWiersza=[]).
+Dodatkowo (zarzut 6 Evaluatora r2): hak nie dodaje już właścicieli z `aiStartHexes` bez miasta/jednostki; zamiast wierszy zerowych jest `diag.aiStartOwnersBezWiersza` (jawny sygnał).
+
+## (b) 100 tur x 2 ziarna — ZMIERZONE
+| Ziarno | Tura końcowa | Tury z aktywną bramką NNS gracza | Dosypki | Czas | Uwagi |
+|---|---|---|---|---|---|
+| 4242 | 100 | 1 (t1) | 1 | ≈ 6 min (t1-51) + 35 min (t50-100 po wznowieniu) | przebieg ciągły zatrzymał się w t51 (kolejka bitew, niżej); wznowienie ze slotu t50 |
+| 777 | 100 | 1 (t1) | 1 | ≈ 31 min (t1-89) + 18 min (t80-100) | zatrzymanie w t89 tą samą przyczyną; wznowienie ze slotu t80 |
+JSONL: 99 wierszy na ziarno (t2..t100), `evidence/r3-seed4242-100t.jsonl`, `r3-seed777-100t.jsonl`.
+
+Kryterium „AI mają miasta>0 i jednostki>0 w t2/t50/t100” (z JSONL):
+| Ziarno | t2 | t50 | t100 |
+|---|---|---|---|
+| 4242 | 41/41 AI z miastem i jednostką | 16 AI, 16 z miastem, 15 z jednostką | 14 AI, 14/14 |
+| 777 | 41/41 | 14 AI, 14/14 | 14 AI, 14/14 |
+Wyjątek jawny: seed 4242 t50 — 1 AI z miastem, ale 0 jednostek (utrata garnizonu; zachowanie gry). Z 41 AI na starcie zostaje 14-16 do t50 (pozostali znikają z wierszy — wyeliminowani/wchłonięci; przyczyna NIE zbadana). Gracz (owner 0) w t100 nie ma miast ani jednostek (`ownersBezMiastIJednostek=[0]`) — bierny gracz podbity.
+Dane dla #415 (t100): suma wojska AI 895 (4242) / 883 (777), śr. skarbiec AI 18 315 / 29 374, max utrzymanie jednostek jednego AI 3416 / 6272 Pieniądza/turę; `glodWojska` sporadycznie (t10 seed 777: 1), `deficytZlota` = 0 w próbkach t2/t10/t50/t100.
+
+## N2 — obejście bramki NNS
+Na ścieżce newgame bramka gracza blokuje wyłącznie w t1 (`gateActiveTurns=1`, `bypassApplied=1` w obu ziarnach). Ścieżka dosypek WYKONANA i zmierzona (test haka: warunek wstępny blokuje, 0/0 nie odblokowuje, 200/200 odblokowuje, endTurn przechodzi), mutacja runnera czerwona. Harness dosypuje wyłącznie graczowi; blokady AI nie ukrywa.
+
+## N4 — skok licznika tury 2->1 w `?playtest=mapa&civTest=1`
+ZMIERZONE (sonda p2, seed 4242, 8 prób endTurn): w jednej próbie licznik pokazał 2 -> 3 -> 1; potem 1 -> 2; od 4. próby bramka NNS blokuje i tura stoi na 2. Przyczyna skoku NIE ZMIERZONA (kodu scenariusza playtest nie badano). Wniosek: scenariusz playtest nie nadaje się do pomiaru; runner używa `--start newgame`.
+
+## N5 — wznowienie (c): CZERWONE, przyczyna po stronie gry
+Polecenie: `--turns 50 --save-at 40 --resume-test 1` seed 4242 (kod r3): `allEqual=false, compared=10`, zgodnych 0/10 (`evidence/r3-resume-test-seed4242-summary.json`). #424 (R-WEB-SAVE-LOAD-CITY-WORK-SPLIT-ROUNDTRIP-Q1) NIE jest na `origin/main` (sprawdzone `git log origin/main --grep=ROUNDTRIP`, main = bd647523b). Dowód przyczyny (diff migawek t41, ciągła vs wznowiona, `r3-resume-t41-snapshot-diff.txt`, 443 różnic): po wczytaniu zapisu WSZYSTKIE 41 miast dostają pola domyślne, których w stanie ciągłym nie ma (`magazynZywnosci` null->0, `budowaPriorytetTypow`, `budowaLista`, `postepBudynkowUsuniete`), ponadto 88 różnic `wealthState.pula`, 78 `units[].stackGroupId`. To klasa SAVE-LOAD (uzupełnianie domyślnych pól miasta przy wczytaniu), poza allowlistą. Zakres tabeli SAVE-LOAD w #424 jest więc SZERSZY niż sam `podzialPracy` — do uwzględnienia przy tym temacie. Asercji nie osłabiono. Po naprawie #424 powtórzyć polecenie i dodać `--mutant 1`.
+
+## N3 — README / #415
+README przepisane (stan r3, tabela przebiegów, test haka, usunięta błędna diagnoza „zapis nie zawiera podzialPracy” i „defekt startu”). #415: nowy `gra/tools/ai-economy-measure-upkeep-onoff.cjs` — jedno polecenie `cd gra && node tools/ai-economy-measure-upkeep-onoff.cjs --work /tmp/upkeep-onoff --seed 4242 --turns 100`; nakłada diff z `refs/keep/R-WEB-AI-UPKEEP-Q2-r2-fc` (3 pliki; flaga `AI_UPKEEP_RUNWAY_GATE.wlaczone` w `gra/data/ai-upkeep-params.json`) na tymczasowy worktree z HEAD, buduje dwa bundle poza repo, uruchamia runner ON/OFF i drukuje tabelę. Do main flagi NIE wprowadzono. Weryfikacja 20 tur: OFF vs ON różnią się (t20 śr. skarbiec AI 43,44 vs 41,02), więc flaga realnie działa; to próba narzędzia, nie wynik #415. Właściwy pomiar 100 tur ON/OFF = ok. 2 x 40 min w tle — NIE wykonano w tej rundzie (poza zakresem „narzędzie + dowód działania”).
 
 BLOKADY:
-- Zarzut 1 (AI=0): BLOCK — przyczyna w grze poza allowlistą; decyzja orkiestratora (osobny temat gry albo zmiana kryterium).
-- Zarzut 2 (kryterium c, wznowienie): NIE RUSZANE tu — przyczyna `ensureCityPodzialDefaults`/SAVE-LOAD (#424, R-WEB-SAVE-LOAD-CITY-WORK-SPLIT-ROUNDTRIP-Q1); nie naprawiam zgodnie z dispatchem.
-- Zarzut 3 (galaz obejscia NNS bez testu i mutacji): NIE ZROBIONE w tej rundzie (brak czasu/limitu tury Operatora po diagnozie zarzutu 1; do zrobienia w r3 po decyzji o starcie AI).
-- Zarzut 5 (mutacja wznowienia): NIE ZROBIONE — dispatch: dopiero gdy baza zielona; baza NIE jest zielona (hook-test 3/4).
-- Zarzut 6 (% kary glodu, utrzymanie JEDNOSTEK wojskowych Pieniądz+surowce, przychod/utrata): NIE ZROBIONE. Hak już zwraca glodWojska/glodWojskaAtrycja (flagi) i utrzymanieBudynkow*/utrzymanieGarnizonu*; brak % kary i utrzymania jednostek — do dopisania w r3 (wymaga zweryfikowania źródła funkcji w grze, nie zgaduję).
-- Zarzut 8 (instrukcja #415 w README): NIE ZROBIONE w tej rundzie.
-- Cel 4 (100 tur x2 + wznowienie): NIE ZMIERZONE (nie uruchamiano — baza nie przechodzi testu wartości AI, a przebieg 100 tur bez AI nie daje wiarygodnych metryk).
+  - (c) wznowienie czerwone z powodu SAVE-LOAD (#424), poza allowlistą; mutacja wznowienia NIE ZMIERZONO.
+  - Pomiar #415 ON/OFF na 100 turach NIE wykonany (tylko weryfikacja narzędzia na 20 turach).
+  - Skuteczność leczenia zalegającej kolejki bitew w runnerze (`stuckQueueHeals`) NIE ZMIERZONA w żywym przebiegu (po wznowieniu zjawisko się nie powtórzyło: licznik 0).
+RUNDY: 3/5 (Sonnet na Operatorze po dwóch nieudanych rundach Haiku: r1 FAIL, r2 BLOCK — zgodnie z dispatchem).
+NASTĘPNY KROK: Evaluator -> Final Control; po naprawie #424 powtórzyć `--resume-test` i mutację wznowienia; osobno pomiar #415 ON/OFF (skrypt gotowy).
+DEPLOY/PUSH: NIE WYKONANO
 
-RUNDY: runda 2/5 (Operator HAIKU 5.5). Pierwsza runda Haiku dla tego tematu zakończyła się FC FAIL (r1, `refs/keep/R-WEB-AI-ECON-HARNESS-r1-fc`). Ta runda: diagnoza zarzutu 1 + pomiary bramek; bez zmian w kodzie.
-NASTĘPNY KROK: orkiestrator decyduje: (a) osobny temat GAME na start AI w trybie civTest (kandydat jw.) i dopiero potem runda 3 tego tematu; albo (b) zmiana kryterium (a) na pomiar bez AI — wtedy runda 3 domyka zarzuty 3, 5, 6, 8.
-UWAGI-DLA-ORKIESTRATORA:
-- Sonda startu (dwie konfiguracje) jest w scratchpad: /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/probe.cjs (plik pomocniczy, nie w repo).
-- Nie tworzyłem żadnych sesji, zadań ani harmonogramów (zakaz z dispatchu).
-- Bundle vite zbudowany w /tmp/ai-economy-dist (wymagany przez hook-test); do usunięcia po sprzątaniu.
-DEPLOY-PUSH: NIE WYKONANO
+UWAGI-DLA-ORKIESTRATORA (znaleziska poza zakresem, bez zakładania zadań):
+  1. Możliwy defekt gry: zalegająca kolejka odłożonych bitew (`pendingAuto=true`, nic nie otwarte, `canEnd=false`) blokuje „Zakończ turę” do momentu PRÓBY zakończenia tury (+8 s leczenia). Wystąpiła w przebiegu ciągłym obu ziaren (seed 4242 t51, seed 777 t89) przy ~15-41 AI. Kandydat R-WEB-* (t57 z #418 może mieć ten sam mechanizm — hipoteza NIEZWERYFIKOWANA).
+  2. #424 obejmuje więcej pól niż `podzialPracy` (zob. N5); warto rozszerzyć dispatch SAVE-LOAD o `magazynZywnosci`, `budowaPriorytetTypow`, `budowaLista`, `postepBudynkowUsuniete`, `wealthState.pula`, `units[].stackGroupId`.
+  3. Z 41 AI zostaje 14-16 do t50 (eliminacje/wchłonięcia) i bierny gracz traci wszystko do t100 — wpływa na interpretację pomiarów ekonomii AI (liczba owners w wierszach maleje).
+  4. Skarbce AI rosną do dziesiątek tysięcy Pieniądza (brak sinka) — dane wejściowe dla #415.
+  5. Czas 100 tur z 41 AI: ok. 40-50 min na ziarno (35-50 s/turę po t60) — kolejny pomiar planować w tle z wznawianiem.

@@ -1,0 +1,22 @@
+[econ] seed=4242 tura=6 gateAktywna=1 dosypki=1 czas=15s
+[econ] seed=4242 tura=11 gateAktywna=1 dosypki=1 czas=31s
+[econ] seed=4242 tura=16 gateAktywna=1 dosypki=1 czas=46s
+[econ] seed=4242 tura=21 gateAktywna=1 dosypki=1 czas=63s
+[econ] seed=4242 tura=26 gateAktywna=1 dosypki=1 czas=85s
+[econ] seed=4242 tura=31 gateAktywna=1 dosypki=1 czas=104s
+[econ] seed=4242 tura=36 gateAktywna=1 dosypki=1 czas=137s
+[econ] seed=4242 tura=41 gateAktywna=1 dosypki=1 czas=175s
+[econ] seed=4242 tura=46 gateAktywna=1 dosypki=1 czas=230s
+[econ] seed=4242 tura=51 gateAktywna=1 dosypki=1 czas=316s
+[econ] PODSUMOWANIE {"seed":4242,"startTurn":1,"endTurn":51,"stop":{"reason":"cannot-end","tura":51,"why":{"battle":{"preBattleOpen":false,"pendingAuto":true,"sceneOpen":false,"summaryOpen":false,"resolving":false},"pending":0}},"gateActiveTurns":1,"bypassApplied":1,"wallSec":384,"resumed":false}
+[econ] seed=4242 tura=55 gateAktywna=1 dosypki=1 czas=86s
+[econ] seed=4242 tura=60 gateAktywna=1 dosypki=1 czas=199s
+[econ] seed=4242 tura=65 gateAktywna=1 dosypki=1 czas=321s
+[econ] seed=4242 tura=70 gateAktywna=1 dosypki=1 czas=463s
+[econ] seed=4242 tura=75 gateAktywna=1 dosypki=1 czas=687s
+[econ] seed=4242 tura=80 gateAktywna=1 dosypki=1 czas=888s
+[econ] seed=4242 tura=85 gateAktywna=1 dosypki=1 czas=1140s
+[econ] seed=4242 tura=90 gateAktywna=1 dosypki=1 czas=1449s
+[econ] seed=4242 tura=95 gateAktywna=1 dosypki=1 czas=1750s
+[econ] seed=4242 tura=100 gateAktywna=1 dosypki=1 czas=2118s
+[econ] PODSUMOWANIE {"seed":4242,"startTurn":50,"endTurn":100,"stop":null,"gateActiveTurns":1,"bypassApplied":1,"stuckQueueHeals":0,"battlesAuto":0,"wallSec":2118,"resumed":true}

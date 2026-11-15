@@ -1,0 +1,84 @@
+{
+  "seed": 4242,
+  "mode": "resume-test",
+  "ref": {
+    "endTurn": 50,
+    "stop": null,
+    "gateActiveTurns": 1,
+    "bypassApplied": 1,
+    "wallSec": 259
+  },
+  "cut": {
+    "endTurn": 40,
+    "stop": null
+  },
+  "resumeTest": {
+    "saveAt": 40,
+    "turns": 50,
+    "compared": 10,
+    "allEqual": false,
+    "mutant": false,
+    "pairs": [
+      {
+        "turn": 41,
+        "cont": "0c795fb3942148fa",
+        "resumed": "80531d4f7b276f7b",
+        "same": false
+      },
+      {
+        "turn": 42,
+        "cont": "03ed97ab79dc3bb3",
+        "resumed": "e6b2751e23ebd7c5",
+        "same": false
+      },
+      {
+        "turn": 43,
+        "cont": "4f2cb6c9304334a7",
+        "resumed": "416c447e5de6bf93",
+        "same": false
+      },
+      {
+        "turn": 44,
+        "cont": "d63a9eefef0ae112",
+        "resumed": "987846b75f5e2f00",
+        "same": false
+      },
+      {
+        "turn": 45,
+        "cont": "04cfc83c6e638911",
+        "resumed": "d72fbcb83799dd64",
+        "same": false
+      },
+      {
+        "turn": 46,
+        "cont": "0c92b55863a0cd07",
+        "resumed": "ee107dd934317de2",
+        "same": false
+      },
+      {
+        "turn": 47,
+        "cont": "6c281f683bdaf397",
+        "resumed": "cbabe3c7e26580cf",
+        "same": false
+      },
+      {
+        "turn": 48,
+        "cont": "c289ec59fa29be47",
+        "resumed": "beeb67ba9e00ffec",
+        "same": false
+      },
+      {
+        "turn": 49,
+        "cont": "2c23bc087ebdbcfd",
+        "resumed": "c39e06b9c1dd8582",
+        "same": false
+      },
+      {
+        "turn": 50,
+        "cont": "d04ef24f299c48e0",
+        "resumed": "432ac1309527eeb6",
+        "same": false
+      }
+    ]
+  }
+}

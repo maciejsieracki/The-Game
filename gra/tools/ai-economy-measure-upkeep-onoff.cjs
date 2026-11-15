@@ -61,7 +61,7 @@ function main() {
     const rows = [];
     for (const tag of ['off', 'on']) {
       const lines = fs.readFileSync(path.join(results[tag], `seed${SEED}.jsonl`), 'utf8').split('\n').filter(Boolean).map(l => JSON.parse(l));
-      for (const t of [10, 50, Number(TURNS)]) {
+      for (const t of [...new Set([10, 50, Number(TURNS)])].filter(x => x <= Number(TURNS))) {
         const rec = lines.find(l => l.turn === t);
         if (!rec) { rows.push({ flaga: tag, tura: t, uwaga: 'brak wiersza (przebieg krotszy)' }); continue; }
         const ai = rec.owners.filter(o => o.owner >= 1);
