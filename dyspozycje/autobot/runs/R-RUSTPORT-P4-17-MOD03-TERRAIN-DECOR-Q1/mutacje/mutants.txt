@@ -35,3 +35,20 @@ M33-copy-const-back|src/decor/relief.rs|s/^pub const WZGORZE_FOOTPRINT_R: f64 = 
 M34-hash-guard-one-seed|tests/decor_web_parity.rs|s/per_value.entry(web).or_default().insert(s);/per_value.entry(web).or_default().insert(0);/
 M35-builder-guard-one-seed|tests/decor_web_parity.rs|s/^            .insert(seed);/            .insert(0);/
 M36-sampler-guard-one-seed|tests/decor_web_parity.rs|s/\.insert(s.get("seed").i32());/.insert(0);/
+# round 3 (obrona r3, Evaluator r3 objections 3-6), base 95930b446 (parity-v2 HEAD, incl. P4.27) + r3 fixes.
+# M37/M38 mutate the LIVE bbox loop of P4.27 (src/scene/graph.rs, outside the topic allowlist): the file is
+# restored by run.sh's trap, nothing there is committed. E02 of Evaluator r3 hit decor::js::Box3::expand,
+# which has no caller since P4.27 and was removed in r3 (E09 / Box3::is_empty likewise).
+M37-bbox-min-platform|src/scene/graph.rs|s/b\[\([012]\)\] = js_min(b\[\1\], p\.\([xyz]\));/b[\1] = b[\1].min(p.\2);/
+M38-bbox-max-platform|src/scene/graph.rs|s/b\[\([345]\)\] = js_max(b\[\1\], p\.\([xyz]\));/b[\1] = b[\1].max(p.\2);/
+M39-builders-skip-last|tests/decor_web_parity.rs|s/for (i, rec) in d.get("builders").arr().iter().enumerate() {/for (i, rec) in d.get("builders").arr().iter().take(938).enumerate() {/
+M40-relief-builders-skip|tests/decor_web_parity.rs|s/for (i, rec) in rb.get("builders").arr().iter().enumerate() {/for (i, rec) in rb.get("builders").arr().iter().take(450).enumerate() {/
+M41-coast-skip-last|tests/decor_web_parity.rs|s/for (i, rec) in d.get("coast").arr().iter().enumerate() {/for (i, rec) in d.get("coast").arr().iter().take(300).enumerate() {/
+M42-hash-fns-skip-last|tests/decor_web_parity.rs|s/for (name, f) in d.get("fns").obj_items() {/for (name, f) in d.get("fns").obj_items().into_iter().take(14) {/
+M43-rlcases-skip-last|tests/decor_web_parity.rs|s/for (ci, cs) in d.get("cases").arr().iter().enumerate() {/for (ci, cs) in d.get("cases").arr().iter().take(59).enumerate() {/
+M44-fixture-byte-flip|tests/fixtures/decor/box_sign.json|s/"name":"onlyPlus"/"name":"onlyPlvs"/
+M45-sha256-sigma0|tests/decor_web_parity.rs|s/let s0 = w\[t - 15\].rotate_right(7)/let s0 = w[t - 15].rotate_right(8)/
+M46-guard-mul-add|src/decor/js.rs|s/^pub const PI: f64 = std::f64::consts::PI;/pub const PI: f64 = std::f64::consts::PI;\n#[must_use]\npub fn fma3(a: f64) -> f64 {\n    a.mul_add(a, a)\n}/
+M47-guard-alias-path|src/decor/js.rs|s/^pub const PI: f64 = std::f64::consts::PI;/pub const PI: f64 = std::f64::consts::PI;\ntype F = f64;\n#[must_use]\npub fn sin_alias(a: f64) -> f64 {\n    F::sin(a)\n}/
+M48-guard-fn-pointer|src/decor/js.rs|s/^pub const PI: f64 = std::f64::consts::PI;/pub const PI: f64 = std::f64::consts::PI;\n#[must_use]\npub fn cos_all(v: \&[f64]) -> Vec<f64> {\n    v.iter().copied().map(f64::cos).collect()\n}/
+M49-guard-fma-path|src/decor/js.rs|s/^pub const PI: f64 = std::f64::consts::PI;/pub const PI: f64 = std::f64::consts::PI;\n#[must_use]\npub fn fma_path(a: f64) -> f64 {\n    f64::mul_add(a, a, a)\n}/

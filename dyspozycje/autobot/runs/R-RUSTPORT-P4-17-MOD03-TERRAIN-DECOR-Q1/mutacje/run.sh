@@ -20,6 +20,6 @@ rc=$?
 if [ "$rc" -eq 0 ]; then
   echo "$1 SURVIVED"
 else
-  res=$(printf '%s\n' "$out" | grep -E 'bit_diff=[1-9]|error\[|^test .* FAILED|outcome .* only|only [0-9]+ distinct|platform maths|copies of core' | head -6 | tr '\n' ' ' | cut -c1-320)
+  res=$(printf '%s\n' "$out" | grep -E 'bit_diff=[1-9]|error\[|^test .* FAILED|outcome .* only|only [0-9]+ distinct|platform maths|copies of core|records compared|digests differ|left: "|box_sign' | head -6 | tr '\n' ' ' | cut -c1-320)
   echo "$1 KILLED :: $res"
 fi

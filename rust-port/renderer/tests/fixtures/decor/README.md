@@ -46,5 +46,15 @@ bits). `Float32` attributes are stored as their `u32` bit patterns.
 | `relief_builders.json` | round 2: `buildStyleMountainPeak` / `buildStyleHillBump` (roblox, lite = false), 250 each, exactly 50 DISTINCT seeds per silhouette variant (same selection rule); separate file so `builders.json` stays below 4 MB. |
 | `riverlod.json` | `flushRiverBucket` on 6 bucket scenarios (empty, single, 3 merged, 2 merged, attribute mismatch → `null`), `mergeRiverBuckets`, `riversVisibleAtLod` grid, 60 fog cases (`computeRiverFogSig`, ribbon full / fog index, `needsRiverRibbonIndexUpdate`, merged full / fog index / sig, `mergedRiverVisibleInFog` with `null` / empty / non-empty reveal, `applyRiverVisibility`, `applyRiverLodVisibility`). |
 | `gen.ts` | the generator above |
+| `box_sign.mjs`, `box_sign.json` | round 3: `Box3.setFromObject(mesh, true)` of three r169 on a parentless Mesh at (-0, -0, -0) with ±0 vertices (6 cases); pins the sign of zero of `Math.min` / `Math.max` in the bbox loop, which the decor fixtures never reach. Regenerate with `node box_sign.mjs > box_sign.json` (three@0.169.0 resolvable, as above). |
 
-SHA-256 at creation: see `dyspozycje/rust-port/p4/P4-17-MOD03-TERRAIN-DECOR.md` §6.
+## Integrity
+
+`SHA256SUMS` lists every file of this directory (`sha256sum -c SHA256SUMS`
+from here). `fixtures_match_sha256sums` in `tests/decor_web_parity.rs`
+recomputes the digests (own SHA-256, checked on the FIPS 180 vectors) and
+fails on a changed, missing or unlisted file. `.gitattributes` keeps LF line
+endings so the bytes are the same on every platform. The record counts of
+every section are asserted as well (`N_*` constants in the test).
+Regeneration of all six web fixtures in round 3 (three 0.169.0, esbuild
+0.24.0, node v22.23.4) reproduced them byte for byte.

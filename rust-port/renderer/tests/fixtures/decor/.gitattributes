@@ -1,0 +1,3 @@
+# Fixtures are hashed byte for byte (SHA256SUMS, tests/decor_web_parity.rs):
+# keep LF line endings on every platform (no core.autocrlf rewrite).
+* text eol=lf

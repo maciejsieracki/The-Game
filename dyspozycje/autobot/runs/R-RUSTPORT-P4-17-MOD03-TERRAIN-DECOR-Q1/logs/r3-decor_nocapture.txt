@@ -1,0 +1,34 @@
+# tree: 95930b4469212d7a1b8b222193af7c09774226c0 + r3 working tree changes; rustc 1.97.0 (2d8144b78 2026-07-07); cargo 1.97.0 (c980f4866 2026-06-30)
+$ cargo test --locked --test decor_web_parity -- --nocapture --test-threads=1
+    Finished `test` profile [unoptimized] target(s) in 0.06s
+     Running tests/decor_web_parity.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/target-p417-gates/debug/deps/decor_web_parity-56537f96dfeba1a8)
+
+running 12 tests
+test bounding_box_keeps_web_sign_of_zero ... box_sign: scalars=36 bit_diff=0
+ok
+test builders_are_bit_identical_to_web ... builders: [("buildDekorLaka", 9), ("buildDekorPustynia", 9), ("buildDekorRownina", 9), ("buildGalleryBuildingPad", 16), ("buildGalleryFortMount", 3), ("buildGora", 9), ("buildLas", 9), ("buildOaza", 1), ("buildStyleBeachRing", 2), ("buildStyleCoastSandTopCap", 2), ("buildStyleDune", 460), ("buildStyleForestCluster", 270), ("buildStyleHillBump", 310), ("buildStyleMountainPeak", 310), ("buildStyleOasis", 5), ("buildStyleTarasyTerrace", 4), ("buildTarasy", 2), ("buildWzgorze", 9)] meshes=6233
+builders: scalars=324838 bit_diff=0
+ok
+test coast_builders_are_bit_identical_to_web ... coast: 301 builds, 333 meshes
+coast: scalars=27027 bit_diff=0
+ok
+test decor_reuses_core_instead_of_copies ... ok
+test decor_uses_jsmath_not_platform_libm ... ok
+test fixtures_match_sha256sums ... ok
+test float_guard_scanner_catches_every_spelling ... ok
+test hex_hash_functions_match_web ... hashes: 98010 samples, 54 seeds
+hashes: scalars=98543 bit_diff=0
+ok
+test relief_surface_height_matches_web ... relief: 9197 positive heights
+relief: scalars=29468 bit_diff=0
+ok
+test river_lod_matches_web ... riverlod: scalars=830 bit_diff=0
+ok
+test sha256_matches_fips_180_test_vectors ... ok
+test shared_geometries_are_bit_identical_to_web ... geometries: 34 variants, 3344 triangles
+geometries: scalars=90917 bit_diff=0
+ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.28s
+
+EXIT=0

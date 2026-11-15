@@ -1,0 +1,15 @@
+# r3 regeneration (README.md procedure; scratch outside repo), 2026-11-15T09:31:37Z
+node v22.23.4; three 0.169.0; esbuild 0.24.0
+web sources: git archive edb8fb56 gra/src gra/data; generator: tests/fixtures/decor/gen.ts (esbuild bundle)
+$ node decor_gen.mjs ../out/decor
+decor geometries=34 builders=939 reliefBuilders=500 coast=301 relief=112 samplersSeeds=500 hashfns=15 rlcases=60
+cmp builders.json: IDENTICAL
+cmp geometries.json: IDENTICAL
+cmp hashes.json: IDENTICAL
+cmp relief.json: IDENTICAL
+cmp relief_builders.json: IDENTICAL
+cmp riverlod.json: IDENTICAL
+$ node box_sign.mjs | cmp - box_sign.json
+cmp box_sign.json: IDENTICAL
+box_sign.mjs run = committed script
+EXIT=0

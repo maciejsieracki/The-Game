@@ -302,6 +302,41 @@ fn load(name: &str) -> Json {
 }
 
 // ---------------------------------------------------------------------------
+// Record counts of the fixtures (round 3, Evaluator r3 objection 4): the
+// numbers printed by `gen.ts` (`decor geometries=34 builders=939
+// reliefBuilders=500 coast=301 relief=112 samplersSeeds=500 hashfns=15
+// rlcases=60`, README.md) plus the remaining section sizes, so a truncated
+// fixture fails instead of passing silently. Every loop below also asserts
+// how many records it actually compared.
+
+const N_GEOMETRIES: usize = 34;
+const N_BUILDERS: usize = 939;
+const N_RELIEF_BUILDERS: usize = 500;
+const N_COAST: usize = 301;
+const N_COAST_HEXES: usize = 127;
+const N_HASH_FNS: usize = 15;
+const N_HASH_SEEDS: usize = 54;
+const N_HASH_COORDS: usize = 121;
+const N_CLIMATE: usize = 7;
+const N_RELIEF_SAMPLES: usize = 112;
+const N_SAMPLERS: usize = 24;
+const N_SAMPLERS_SEEDS: usize = 500;
+const N_RL_FLUSHES: usize = 6;
+const N_RL_MERGE_ALL: usize = 4;
+const N_RL_LOD: usize = 28;
+const N_RL_LOD_DEFAULT: usize = 5;
+const N_RL_CASES: usize = 60;
+const N_RL_FULL_IDX_SMALL: usize = 4;
+
+/// `assert_eq!` on a record count, with the fixture section in the message.
+fn assert_count(section: &str, got: usize, want: usize) {
+    assert_eq!(
+        got, want,
+        "{section}: {got} records compared, expected {want}"
+    );
+}
+
+// ---------------------------------------------------------------------------
 // Comparison bookkeeping.
 
 #[derive(Default)]
@@ -615,7 +650,11 @@ fn shared_geometries_are_bit_identical_to_web() {
         c.eq(&format!("{name}.idx"), geo.mesh.indices.is_none(), true);
         tri_total += geo.mesh.triangle_count();
     }
-    c.eq("geometry count", d.get("geometries").arr().len(), 34);
+    c.eq(
+        "geometry count",
+        d.get("geometries").arr().len(),
+        N_GEOMETRIES,
+    );
 
     // variant wrap ((w | 0) % n + n) % n: same shared instance
     let wrap = d.get("wrap");
@@ -914,7 +953,9 @@ fn hex_hash_functions_match_web() {
         .collect();
     let mut c = Cmp::default();
     let mut samples = 0;
+    let mut n_fns = 0;
     for (name, f) in d.get("fns").obj_items() {
+        n_fns += 1;
         let table = f.get("table").f64s();
         let idx: Vec<i64> = f.get("idx").arr().iter().map(Json::i64).collect();
         let mut k = 0;
@@ -954,6 +995,15 @@ fn hex_hash_functions_match_web() {
             );
         }
     }
+    assert_count("hashes.fns", n_fns, N_HASH_FNS);
+    assert_count("hashes.seeds", seeds.len(), N_HASH_SEEDS);
+    assert_count("hashes.coords", coords.len(), N_HASH_COORDS);
+    assert_count(
+        "hashes.samples",
+        samples,
+        N_HASH_FNS * N_HASH_SEEDS * N_HASH_COORDS,
+    );
+    assert_count("hashes.climate", d.get("climate").arr().len(), N_CLIMATE);
     for cl in d.get("climate").arr() {
         let h = cl.get("h").num();
         let r0 = cl.get("r0").i32();
@@ -1083,7 +1133,9 @@ fn builders_are_bit_identical_to_web() {
     let mut c = Cmp::default();
     let mut ids: HashMap<String, usize> = HashMap::new();
     let mut meshes = 0;
+    let mut n_builders = 0;
     for (i, rec) in d.get("builders").arr().iter().enumerate() {
+        n_builders += 1;
         let id = rec.get("id").str();
         *ids.entry(id.to_owned()).or_default() += 1;
         let (obj, sy) = build(id, rec.get("args").arr(), rec);
@@ -1103,7 +1155,9 @@ fn builders_are_bit_identical_to_web() {
     // DISTINCT seeds per silhouette variant (`relief_builders.json`).
     let rb = load("relief_builders.json");
     let mut per_variant: HashMap<(String, usize), HashSet<i32>> = HashMap::new();
+    let mut n_relief = 0;
     for (i, rec) in rb.get("builders").arr().iter().enumerate() {
+        n_relief += 1;
         let id = rec.get("id").str();
         *ids.entry(id.to_owned()).or_default() += 1;
         let a = rec.get("args").arr();
@@ -1132,6 +1186,8 @@ fn builders_are_bit_identical_to_web() {
             );
         }
     }
+    assert_count("builders.json builders", n_builders, N_BUILDERS);
+    assert_count("relief_builders.json builders", n_relief, N_RELIEF_BUILDERS);
     let mut keys: Vec<_> = ids.into_iter().collect();
     keys.sort();
     println!("builders: {keys:?} meshes={meshes}");
@@ -1176,7 +1232,9 @@ fn coast_builders_are_bit_identical_to_web() {
     c.eq("deltaKeys", delta_keys, d.get("deltaKeys").strs());
     let world = |q: i32, r: i32| civ_renderer::pick::hex::axial_to_world(HexCoord::new(q, r), 1.0);
     let mut n = 0;
+    let mut n_coast = 0;
     for (i, rec) in d.get("coast").arr().iter().enumerate() {
+        n_coast += 1;
         let (q, r) = (rec.get("q").i32(), rec.get("r").i32());
         let lite = rec.get("lite").bool();
         let (x, z) = world(q, r);
@@ -1250,7 +1308,9 @@ fn coast_builders_are_bit_identical_to_web() {
             rec.get("obj"),
         );
     }
-    println!("coast: {} builds, {n} meshes", d.get("coast").arr().len());
+    assert_count("builders.json coastMap.hexes", map.len(), N_COAST_HEXES);
+    assert_count("builders.json coast", n_coast, N_COAST);
+    println!("coast: {n_coast} builds, {n} meshes");
     c.finish("coast");
 }
 
@@ -1263,7 +1323,9 @@ fn relief_surface_height_matches_web() {
     let mut c = Cmp::default();
     let pts: Vec<f64> = (-4..=4).map(|i| f64::from(i) * 0.25).collect();
     let mut hits = 0;
+    let mut n_samples = 0;
     for s in d.get("reliefSamples").arr() {
+        n_samples += 1;
         let kind = match s.get("typ").str() {
             "gora" => ReliefKind::Gora,
             _ => ReliefKind::Wzgorze,
@@ -1316,12 +1378,20 @@ fn relief_surface_height_matches_web() {
             );
         }
     }
+    assert_count("relief.json reliefSamples", n_samples, N_RELIEF_SAMPLES);
+    assert_count(
+        "relief.json samplers",
+        d.get("samplers").arr().len(),
+        N_SAMPLERS,
+    );
     let all = d
         .get("samplers")
         .arr()
         .iter()
         .chain(d.get("samplersSeeds").arr());
+    let mut n_samplers = 0;
     for s in all {
+        n_samplers += 1;
         let t = terrain(s.get("teren").str());
         let (q, r, seed, rr) = (
             s.get("q").i32(),
@@ -1347,6 +1417,11 @@ fn relief_surface_height_matches_web() {
             }
         }
     }
+    assert_count(
+        "relief.json samplers + samplersSeeds",
+        n_samplers,
+        N_SAMPLERS + N_SAMPLERS_SEEDS,
+    );
     println!("relief: {hits} positive heights");
     c.finish("relief");
 }
@@ -1384,6 +1459,20 @@ fn rl_geo(kind: &str) -> Arc<Geometry> {
 fn river_lod_matches_web() {
     let d = load("riverlod.json");
     let mut c = Cmp::default();
+    for (section, want) in [
+        ("flushes", N_RL_FLUSHES),
+        ("mergeAll", N_RL_MERGE_ALL),
+        ("lod", N_RL_LOD),
+        ("lodDefault", N_RL_LOD_DEFAULT),
+        ("cases", N_RL_CASES),
+        ("fullIdxSmall", N_RL_FULL_IDX_SMALL),
+    ] {
+        assert_count(
+            &format!("riverlod.json {section}"),
+            d.get(section).arr().len(),
+            want,
+        );
+    }
     let mat = lambert(0x6a_adbe, false);
     for (si, f) in d.get("flushes").arr().iter().enumerate() {
         let kinds = f.get("kinds").strs();
@@ -1509,7 +1598,9 @@ fn river_lod_matches_web() {
             merged: true,
         }
     };
+    let mut n_cases = 0;
     for (ci, cs) in d.get("cases").arr().iter().enumerate() {
+        n_cases += 1;
         let segs_owned: Vec<Vec<String>> =
             cs.get("segments").arr().iter().map(Json::strs).collect();
         let segs: Vec<Vec<&str>> = segs_owned
@@ -1601,6 +1692,7 @@ fn river_lod_matches_web() {
         let wv2: Vec<bool> = cs.get("visLod").arr().iter().map(Json::bool).collect();
         c.eq(&format!("{k}.visLod"), vis2, wv2);
     }
+    assert_count("riverlod.json cases", n_cases, N_RL_CASES);
     c.finish("riverlod");
 }
 
@@ -1631,40 +1723,116 @@ fn code_of(line: &str) -> &str {
     line.find("//").map_or(line, |i| &line[..i])
 }
 
-/// `decor/**` calls no platform transcendental (`f64::sin` & co.): every web
-/// `Math.*` goes through `crate::jsmath` (P4.16). `.sqrt()` is allowed (IEEE
-/// 754 correctly rounded, identical in V8 and every libm).
+/// Identifiers that must not reach a platform float routine from `decor/**`:
+/// libm transcendentals (V8 has its own `fdlibm` port, `crate::jsmath`),
+/// `powf` / `powi` (not `Math.pow`). `.sqrt()` is allowed (IEEE 754
+/// correctly rounded, identical in V8 and every libm).
+const PLATFORM_FLOAT_FNS: [&str; 26] = [
+    "sin", "cos", "tan", "sin_cos", "asin", "acos", "atan", "atan2", "sinh", "cosh", "tanh",
+    "asinh", "acosh", "atanh", "exp", "exp2", "exp_m1", "ln", "ln_1p", "log", "log10", "log2",
+    "hypot", "cbrt", "powf", "powi",
+];
+
+/// Whole identifiers forbidden anywhere in `decor/**` code, whatever the
+/// call form: `mul_add` (fused multiply-add rounds once, JS `a * b + c`
+/// rounds twice), a `libm` crate path, compiler intrinsics.
+const FORBIDDEN_IDENTS: [&str; 3] = ["mul_add", "libm", "intrinsics"];
+
+/// Former primitive helpers replaced by `jsmath` / `core` (round 2).
+const FORBIDDEN_CALLS: [&str; 2] = ["from_euler_xyz(", "hex_prism_no_bottom("];
+
+/// Code part of a line: `//` comments dropped and the contents of string
+/// literals blanked, so a word inside a message or a comment is not code.
+fn code_tokens(line: &str) -> String {
+    let mut out = String::with_capacity(line.len());
+    let mut chars = line.chars().peekable();
+    let mut in_str = false;
+    while let Some(ch) = chars.next() {
+        if in_str {
+            match ch {
+                '\\' => {
+                    chars.next();
+                    out.push(' ');
+                }
+                '"' => {
+                    in_str = false;
+                    out.push('"');
+                }
+                _ => out.push(' '),
+            }
+            continue;
+        }
+        match ch {
+            '"' => {
+                in_str = true;
+                out.push('"');
+            }
+            '/' if chars.peek() == Some(&'/') => break,
+            _ => out.push(ch),
+        }
+    }
+    out
+}
+
+/// Every forbidden use on one line of `decor/**` code (empty = clean).
+///
+/// Token based (round 3, Evaluator r3 objection 6), so it does not depend on
+/// the call spelling. A forbidden name as a whole identifier is a hit when
+/// it is a method (`x.sin()`), a path segment after ANY type or alias
+/// (`f64::sin`, `F::sin` after `type F = f64` or `use … as F`,
+/// `<f64>::sin`), a function pointer (`.map(f64::sin)`), a bare call of an
+/// imported name (`sin(x)`) or an item of a `use` list. `js_sin`,
+/// `js_hypot`, `PI` and `std::f64::consts::*` are other identifiers.
+fn forbidden_float_uses(line: &str) -> Vec<String> {
+    let code = code_tokens(line);
+    let b = code.as_bytes();
+    let is_id = |c: u8| c.is_ascii_alphanumeric() || c == b'_';
+    let is_use = code.trim_start().starts_with("use ") || code.contains(" use ");
+    let mut hits = Vec::new();
+    let mut i = 0;
+    while i < b.len() {
+        if !is_id(b[i]) || (i > 0 && is_id(b[i - 1])) {
+            i += 1;
+            continue;
+        }
+        let start = i;
+        while i < b.len() && is_id(b[i]) {
+            i += 1;
+        }
+        let word = &code[start..i];
+        let before = code[..start].trim_end();
+        let after = code[i..].trim_start();
+        if FORBIDDEN_IDENTS.contains(&word) {
+            hits.push(word.to_owned());
+        } else if PLATFORM_FLOAT_FNS.contains(&word) {
+            let method = before.ends_with('.');
+            let path = before.ends_with("::");
+            let bare_call = after.starts_with('(') && !before.ends_with("fn");
+            let use_item = is_use
+                && (before.ends_with('{') || before.ends_with(',') || after.starts_with('}'));
+            if method || path || bare_call || use_item {
+                hits.push(word.to_owned());
+            }
+        }
+    }
+    for f in FORBIDDEN_CALLS {
+        if code.contains(f) {
+            hits.push(f.to_owned());
+        }
+    }
+    hits
+}
+
+/// `decor/**` calls no platform float routine (libm transcendentals,
+/// `powf` / `powi`, `mul_add`): every web `Math.*` goes through
+/// `crate::jsmath` (P4.16). The scanner itself is checked by
+/// `float_guard_scanner_catches_every_spelling`.
 #[test]
 fn decor_uses_jsmath_not_platform_libm() {
-    const FORBIDDEN: [&str; 17] = [
-        "sin", "cos", "tan", "sin_cos", "asin", "acos", "atan", "atan2", "sinh", "cosh", "tanh",
-        "exp", "exp_m1", "ln", "log10", "log2", "hypot",
-    ];
     let mut hits = Vec::new();
     for (p, src) in decor_sources() {
         for (i, line) in src.lines().enumerate() {
-            let code = code_of(line);
-            let mut bad: Vec<String> = Vec::new();
-            for f in FORBIDDEN {
-                if code.contains(&format!(".{f}(")) {
-                    bad.push(format!(".{f}("));
-                }
-                for ty in ["f64::", "f32::"] {
-                    if code.contains(&format!("{ty}{f}(")) {
-                        bad.push(format!("{ty}{f}("));
-                    }
-                }
-            }
-            for f in [
-                ".powf(",
-                ".powi(",
-                "from_euler_xyz(",
-                "hex_prism_no_bottom(",
-            ] {
-                if code.contains(f) {
-                    bad.push(f.to_string());
-                }
-            }
+            let bad = forbidden_float_uses(line);
             if !bad.is_empty() {
                 hits.push(format!("{}:{}: {bad:?}", p.display(), i + 1));
             }
@@ -1675,6 +1843,56 @@ fn decor_uses_jsmath_not_platform_libm() {
         "platform maths in decor:\n{}",
         hits.join("\n")
     );
+}
+
+/// Positive / negative examples of the float guard (round 3, objection 6).
+#[test]
+fn float_guard_scanner_catches_every_spelling() {
+    let bad = [
+        "let y = x.sin();",
+        "let y = x . cos ();",
+        "let y = f64::sin(x);",
+        "let y = f32::atan2(a, b);",
+        "let v: Vec<f64> = xs.iter().copied().map(f64::cos).collect();",
+        "type F = f64; let y = F::exp(x);",
+        "let y = <f64>::ln(x);",
+        "let y = core::primitive::f64::hypot(a, b);",
+        "use some_crate::{sin, cos};",
+        "use some_crate::tan;",
+        "let y = sin(x);",
+        "let y = a.mul_add(b, c);",
+        "let y = f64::mul_add(a, b, c);",
+        "let f = f64::mul_add;",
+        "let y = libm::sin(x);",
+        "let y = t.powf(1.4);",
+        "let y = t.powi(2);",
+        "let y = std::intrinsics::fmaf64(a, b, c);",
+        "let y = x.log(2.0);",
+        "let y = x.cbrt();",
+        "let q = from_euler_xyz(r);",
+    ];
+    for l in bad {
+        assert!(!forbidden_float_uses(l).is_empty(), "not caught: {l}");
+    }
+    let good = [
+        "let y = js_sin(x) * js_cos(x);",
+        "let y = js_hypot(wx, wz);",
+        "let y = js_atan2(nx, nz);",
+        "let y = js_pow(t, 1.4);",
+        "pub use crate::jsmath::{js_atan2, js_cos, js_hypot, js_pow, js_sin};",
+        "pub const PI: f64 = std::f64::consts::PI;",
+        "let r = (x * x + z * z).sqrt();",
+        "let y = a * b + c;",
+        "// x.sin() in a comment",
+        "let s = \"x.sin() mul_add in a string\";",
+        "let s = \"escaped \\\" x.sin()\";",
+        "let cos_a = js_cos(a); let sin_a = js_sin(a);",
+        "fn tan_ratio(a: f64) -> f64 { a }",
+    ];
+    for l in good {
+        let hits = forbidden_float_uses(l);
+        assert!(hits.is_empty(), "false positive: {l}: {hits:?}");
+    }
 }
 
 /// `decor/**` does not redefine constants / functions that already exist in
@@ -1708,4 +1926,249 @@ fn decor_reuses_core_instead_of_copies() {
         "copies of core items in decor:\n{}",
         hits.join("\n")
     );
+}
+
+// ---------------------------------------------------------------------------
+// 7. Fixture integrity (round 3, Evaluator r3 objection 3): every file of
+// `tests/fixtures/decor/` is listed in `SHA256SUMS` (`sha256sum -c`
+// format) and its bytes hash to the listed value. No new dependency: a
+// plain FIPS 180-4 SHA-256, itself checked on the standard test vectors.
+
+const SHA256_K: [u32; 64] = [
+    0x428a_2f98,
+    0x7137_4491,
+    0xb5c0_fbcf,
+    0xe9b5_dba5,
+    0x3956_c25b,
+    0x59f1_11f1,
+    0x923f_82a4,
+    0xab1c_5ed5,
+    0xd807_aa98,
+    0x1283_5b01,
+    0x2431_85be,
+    0x550c_7dc3,
+    0x72be_5d74,
+    0x80de_b1fe,
+    0x9bdc_06a7,
+    0xc19b_f174,
+    0xe49b_69c1,
+    0xefbe_4786,
+    0x0fc1_9dc6,
+    0x240c_a1cc,
+    0x2de9_2c6f,
+    0x4a74_84aa,
+    0x5cb0_a9dc,
+    0x76f9_88da,
+    0x983e_5152,
+    0xa831_c66d,
+    0xb003_27c8,
+    0xbf59_7fc7,
+    0xc6e0_0bf3,
+    0xd5a7_9147,
+    0x06ca_6351,
+    0x1429_2967,
+    0x27b7_0a85,
+    0x2e1b_2138,
+    0x4d2c_6dfc,
+    0x5338_0d13,
+    0x650a_7354,
+    0x766a_0abb,
+    0x81c2_c92e,
+    0x9272_2c85,
+    0xa2bf_e8a1,
+    0xa81a_664b,
+    0xc24b_8b70,
+    0xc76c_51a3,
+    0xd192_e819,
+    0xd699_0624,
+    0xf40e_3585,
+    0x106a_a070,
+    0x19a4_c116,
+    0x1e37_6c08,
+    0x2748_774c,
+    0x34b0_bcb5,
+    0x391c_0cb3,
+    0x4ed8_aa4a,
+    0x5b9c_ca4f,
+    0x682e_6ff3,
+    0x748f_82ee,
+    0x78a5_636f,
+    0x84c8_7814,
+    0x8cc7_0208,
+    0x90be_fffa,
+    0xa450_6ceb,
+    0xbef9_a3f7,
+    0xc671_78f2,
+];
+
+/// SHA-256 of `data` as lower-case hex.
+fn sha256_hex(data: &[u8]) -> String {
+    let mut h: [u32; 8] = [
+        0x6a09_e667,
+        0xbb67_ae85,
+        0x3c6e_f372,
+        0xa54f_f53a,
+        0x510e_527f,
+        0x9b05_688c,
+        0x1f83_d9ab,
+        0x5be0_cd19,
+    ];
+    let mut msg = data.to_vec();
+    let bit_len = u64::try_from(data.len()).expect("len") * 8;
+    msg.push(0x80);
+    while msg.len() % 64 != 56 {
+        msg.push(0);
+    }
+    msg.extend_from_slice(&bit_len.to_be_bytes());
+    for block in msg.chunks_exact(64) {
+        let mut w = [0u32; 64];
+        for (t, word) in block.chunks_exact(4).enumerate() {
+            w[t] = u32::from_be_bytes([word[0], word[1], word[2], word[3]]);
+        }
+        for t in 16..64 {
+            let s0 = w[t - 15].rotate_right(7) ^ w[t - 15].rotate_right(18) ^ (w[t - 15] >> 3);
+            let s1 = w[t - 2].rotate_right(17) ^ w[t - 2].rotate_right(19) ^ (w[t - 2] >> 10);
+            w[t] = w[t - 16]
+                .wrapping_add(s0)
+                .wrapping_add(w[t - 7])
+                .wrapping_add(s1);
+        }
+        let [mut a, mut b, mut c, mut d, mut e, mut f, mut g, mut hh] = h;
+        for t in 0..64 {
+            let s1 = e.rotate_right(6) ^ e.rotate_right(11) ^ e.rotate_right(25);
+            let ch = (e & f) ^ (!e & g);
+            let t1 = hh
+                .wrapping_add(s1)
+                .wrapping_add(ch)
+                .wrapping_add(SHA256_K[t])
+                .wrapping_add(w[t]);
+            let s0 = a.rotate_right(2) ^ a.rotate_right(13) ^ a.rotate_right(22);
+            let maj = (a & b) ^ (a & c) ^ (b & c);
+            let t2 = s0.wrapping_add(maj);
+            hh = g;
+            g = f;
+            f = e;
+            e = d.wrapping_add(t1);
+            d = c;
+            c = b;
+            b = a;
+            a = t1.wrapping_add(t2);
+        }
+        for (x, y) in h.iter_mut().zip([a, b, c, d, e, f, g, hh]) {
+            *x = x.wrapping_add(y);
+        }
+    }
+    h.iter().map(|x| format!("{x:08x}")).collect()
+}
+
+#[test]
+fn sha256_matches_fips_180_test_vectors() {
+    assert_eq!(
+        sha256_hex(b""),
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    );
+    assert_eq!(
+        sha256_hex(b"abc"),
+        "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+    );
+    assert_eq!(
+        sha256_hex(b"abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"),
+        "248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1"
+    );
+    // 1 000 000 x 'a' (multi-block, length > 2^16 bits)
+    assert_eq!(
+        sha256_hex(&vec![b'a'; 1_000_000]),
+        "cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0"
+    );
+}
+
+#[test]
+fn fixtures_match_sha256sums() {
+    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/decor");
+    let sums = std::fs::read_to_string(dir.join("SHA256SUMS")).expect("read SHA256SUMS");
+    let mut listed: Vec<String> = Vec::new();
+    let mut bad = Vec::new();
+    for line in sums.lines().filter(|l| !l.trim().is_empty()) {
+        let (want, name) = line
+            .split_once("  ")
+            .unwrap_or_else(|| panic!("SHA256SUMS line without two spaces: {line}"));
+        assert_eq!(want.len(), 64, "SHA256SUMS digest length: {line}");
+        let bytes =
+            std::fs::read(dir.join(name)).unwrap_or_else(|e| panic!("read fixture {name}: {e}"));
+        let got = sha256_hex(&bytes);
+        if got != want {
+            bad.push(format!("{name}: {got} != {want}"));
+        }
+        listed.push(name.to_owned());
+    }
+    assert!(
+        bad.is_empty(),
+        "fixture digests differ:\n{}",
+        bad.join("\n")
+    );
+    let mut on_disk: Vec<String> = std::fs::read_dir(&dir)
+        .expect("fixture dir")
+        .map(|e| e.expect("entry").file_name().to_string_lossy().into_owned())
+        .filter(|n| n != "SHA256SUMS")
+        .collect();
+    on_disk.sort();
+    listed.sort();
+    assert_eq!(
+        listed, on_disk,
+        "every decor fixture is listed once in SHA256SUMS"
+    );
+    for required in [
+        "builders.json",
+        "geometries.json",
+        "hashes.json",
+        "relief.json",
+        "relief_builders.json",
+        "riverlod.json",
+        "gen.ts",
+        "box_sign.json",
+        "box_sign.mjs",
+    ] {
+        assert!(
+            listed.iter().any(|n| n == required),
+            "{required} not hashed"
+        );
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 8. Sign of zero in `Box3.setFromObject` (round 3, Evaluator r3 objection 5).
+//
+// `box_sign.json` comes from running three r169 (`box_sign.mjs`): a parentless
+// Mesh at (-0, -0, -0), so world = vertex + (-0) keeps the vertex's sign of
+// zero, and `Math.min(+0, -0) === -0`, `Math.max(-0, +0) === +0` in either
+// order. The decor fixtures never reach this tie (every decor root with a
+// translation sits under a parent, and `multiplyMatrices` turns -0 into +0),
+// so a platform `f64::min` / `f64::max` in the live bbox loop
+// (`Scene::mesh_bounding_box`) would otherwise survive.
+
+#[test]
+fn bounding_box_keeps_web_sign_of_zero() {
+    let d = load("box_sign.json");
+    assert_eq!(d.get("three").str(), "169");
+    let mut c = Cmp::default();
+    let cases = d.get("cases").arr();
+    assert_count("box_sign.json cases", cases.len(), 6);
+    for cs in cases {
+        let name = cs.get("name").str();
+        #[allow(clippy::cast_possible_truncation)]
+        let pos: Vec<f32> = cs.get("pos").f64s().iter().map(|&v| v as f32).collect();
+        let node = cs.get("node").f64s();
+        let geometry = Geometry::from(civ_renderer::geom::Mesh {
+            positions: pos,
+            ..civ_renderer::geom::Mesh::default()
+        });
+        let mut obj: DecorObject = Scene::mesh_root(Arc::new(geometry), lambert(0xff_ffff, false));
+        obj.root_mut().position = civ_renderer::geom::Vec3::new(node[0], node[1], node[2]);
+        let b = bounding_box(&obj);
+        let got = [b.min.x, b.min.y, b.min.z, b.max.x, b.max.y, b.max.z];
+        for (j, (g, w)) in got.iter().zip(cs.get("box").f64s()).enumerate() {
+            c.f(&format!("{name}.box[{j}]"), *g, w);
+        }
+    }
+    c.finish("box_sign");
 }

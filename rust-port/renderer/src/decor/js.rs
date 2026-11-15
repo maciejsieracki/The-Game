@@ -53,44 +53,20 @@ pub fn world_matrix(root: &Scene) -> Mat4 {
     root.nodes[ROOT].local_matrix()
 }
 
-/// Axis-aligned box (`THREE.Box3`).
+/// Axis-aligned box (`THREE.Box3`), the result of [`bounding_box`].
+///
+/// Only a value: since P4.27 r2 the `expandByPoint` loop (`Math.min` /
+/// `Math.max` with the sign of zero, `pick::three::{js_min, js_max}`) lives
+/// in `Scene::mesh_bounding_box`. The former `empty` / `expand` / `is_empty`
+/// methods had no caller left and were removed in P4.17 r3 (Evaluator r3
+/// objection 5: surviving mutants E02 / E09 in dead code); the sign of zero
+/// of the live loop is pinned by `bounding_box_keeps_web_sign_of_zero`.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Box3 {
     /// `min`.
     pub min: Vec3,
     /// `max`.
     pub max: Vec3,
-}
-
-impl Box3 {
-    /// `new Box3()` (empty: `+∞` / `−∞`).
-    #[must_use]
-    pub fn empty() -> Self {
-        Self {
-            min: Vec3::new(f64::INFINITY, f64::INFINITY, f64::INFINITY),
-            max: Vec3::new(f64::NEG_INFINITY, f64::NEG_INFINITY, f64::NEG_INFINITY),
-        }
-    }
-
-    /// `expandByPoint(p)` (`min.min(p)`, `max.max(p)` = `Math.min/max`).
-    pub fn expand(&mut self, p: Vec3) {
-        self.min = Vec3::new(
-            crate::pick::three::js_min(self.min.x, p.x),
-            crate::pick::three::js_min(self.min.y, p.y),
-            crate::pick::three::js_min(self.min.z, p.z),
-        );
-        self.max = Vec3::new(
-            js_max(self.max.x, p.x),
-            js_max(self.max.y, p.y),
-            js_max(self.max.z, p.z),
-        );
-    }
-
-    /// `isEmpty()`.
-    #[must_use]
-    pub fn is_empty(&self) -> bool {
-        self.max.x < self.min.x || self.max.y < self.min.y || self.max.z < self.min.z
-    }
 }
 
 /// `new Box3().setFromObject(root, true)` (precise: every vertex of every

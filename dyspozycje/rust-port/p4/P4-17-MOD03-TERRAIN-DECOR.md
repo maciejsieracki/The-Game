@@ -1,6 +1,8 @@
 # P4.17 — MOD-03: dekoracje terenu w Rust 1:1 z webem (R-RUSTPORT-P4-17-MOD03-TERRAIN-DECOR-Q1)
 
-STATUS dokumentu: Operator (obrona), runda 2/5. Baza kodu: `rust-port/parity-v2` @ `bf59164b` (zawiera P4.16 `jsmath`; runda 1 stała na `d925acb3`). Pin weba: `edb8fb56`. Odpowiedzi na zarzuty Evaluatora r1: §10.
+STATUS dokumentu: Operator (obrona), runda 3/5. Pin weba: `edb8fb56`. Odpowiedzi na zarzuty Evaluatora r1: §10, Evaluatora r3: §11.
+
+**Baza kodu (korekta r3, zarzut 1 Evaluatora r3).** Runda 2 była zbudowana i zmierzona na drzewie `bf59164b` + poprawki r2; z tego drzewa pochodzą logi r2 (`logs/*.txt`, m.in. `jsmath_wiring` 4/4). Na `rust-port/parity-v2` trafiły jednak commity **przepisane** na `e1d69078d` (zawiera P4.15 i P4.18, `jsmath_wiring` 6/6): `a12886af6` (r1) i `b338830eb` (r2), committer date 2026-10-22 12:50. Po nich P4.27 (`d5810fe3c`, `b36e3532d`) zmienił `src/decor/**` i test (13 plików, +239/−252, fixtury bez zmian). **Runda 3 stoi na `95930b446` (HEAD `parity-v2`, zawiera b338830eb i P4.27)**; logi r3 są w `logs/r3-*.txt`. Sekcje §0–§10 opisują stan r2 i jego liczby; aktualne liczby r3: §11.
 
 ## 0. Skrót
 
@@ -113,6 +115,8 @@ a1433275bbfc69dabf88097cb54e86008880c912383556e751408d58697a0efd  riverlod.json
 
 Generator (r2) wypisuje: `decor geometries=34 builders=939 reliefBuilders=500 coast=301 relief=112 samplersSeeds=500 hashfns=15 rlcases=60`. Środowisko: node v22.22.0, three 0.169.0, esbuild 0.24.0, rustc 1.97.0, cargo 1.97.0. Scratch usunięty po pracy.
 
+**R3 (zarzut 3):** sumy leżą teraz w repo obok fixtur — `tests/fixtures/decor/SHA256SUMS` (format `sha256sum -c`, wszystkie 11 plików katalogu, w tym nowe `box_sign.{mjs,json}`, `README.md`, `.gitattributes`) — i są **weryfikowane testem** `fixtures_match_sha256sums` (własna SHA-256 bez nowych zależności, sprawdzona na wektorach FIPS 180 w `sha256_matches_fips_180_test_vectors`). Test pada przy zmienionym, brakującym albo niewymienionym pliku. `.gitattributes` (`* text eol=lf`) w katalogu fixtur chroni bajty przed `core.autocrlf`. Sumy 7 plików z listy wyżej są niezmienione; w r3 regeneracja wszystkich 6 JSON-ów z `edb8fb56` (three 0.169.0, esbuild 0.24.0, node v22.23.4) dała pliki bajtowo identyczne (`cmp`, log `logs/r3-regen.txt`).
+
 ## 7. NIE_ZMIERZONO i lista do oceny wzrokiem po RR-T5
 
 NIE_ZMIERZONO:
@@ -217,3 +221,23 @@ Stan r2 odtworzono tak: commit Operatora r1 `0e48c7e4` przeniesiono przez `cherr
 - Wynik: 36 mutantów, 33 zabite, 3 równoważne (M05, M12, M18).
 
 ZAŁOŻENIE r2-Z8: nowy plik fixtur `relief_builders.json` mieści się w allowliście `tests/fixtures/decor/**`. Rozdzielenie plików trzyma `builders.json` poniżej 4 MB. Łącznie fixtury mają 6,3 MB, poniżej limitu 8 MB z dispatchu.
+
+## 11. Runda 3 (obrona): odpowiedzi na zarzuty Evaluatora r3
+
+**Baza r3: `95930b446` = HEAD `origin/rust-port/parity-v2`** (zawiera `b338830eb` — `git merge-base --is-ancestor` = prawda — oraz P4.27). Poprawki r3 są jednym commitem nad nią; nie budowałem na `b338830eb`, bo kod decor z r2 już nie istnieje w tej postaci na `parity-v2` (P4.27 przepisał 13 plików), a poprawka na starym drzewie wymagałaby ponownego scalenia z P4.27.
+
+**Z1 (logi/dokument opisują inne drzewo): PRZYJMUJĘ.** Fakt potwierdzony: `git show bf59164bf:…/jsmath_wiring.rs` ma 4 testy, `e1d69078d` i `95930b446` mają 6; `b338830eb` ma committer date 2026-10-22 12:50:22 przy author date 12:44:00 (przepisanie przy integracji). Poprawka: nagłówek dokumentu (STATUS) opisuje teraz obie bazy i wskazuje, że §0–§10 to stan r2; nowe surowe logi r3 (`logs/r3-*.txt`) mają w nagłówku `git rev-parse HEAD` drzewa, na którym je zrobiono. Logów r2 nie edytuję (są dowodem stanu r2).
+
+**Z2 (proces: kod na `parity-v2` przed E/FC, przedwczesny wpis „P4.17 PASS” `f23326304`): PRZYJMUJĘ fakt; korekta wpisu nie jest w mojej allowliście.** Wpis w rejestrze i integracja to czynności orkiestratora — rekomenduję mu oznaczyć `f23326304` jako przedwczesny (P4.17 = r2 bez E/FC). W mojej części zamykam NIE_ZMIERZONO: stan decor na HEAD `95930b446` zmierzony przed zmianami r3 na czystym eksporcie (`git archive 95930b446 rust-port/renderer`, osobny target): `decor_web_parity` 8/8, 571 623 skalary, 0 rozbieżności bitowych (`logs/r3-head-95930b446-decor_nocapture.txt`). Fixtury `b338830eb..95930b446`: brak zmian (`git diff --stat` pusty). Wszystkie bramki i mutacje r3 liczone na `95930b446` + r3.
+
+**Z3 (SHA-256 nie leży przy fixturach i nie jest weryfikowane): PRZYJMUJĘ.** `tests/fixtures/decor/SHA256SUMS` (11 plików, format `sha256sum -c`) + test `fixtures_match_sha256sums` (pada na zmieniony / brakujący / niewymieniony plik) + `sha256_matches_fips_180_test_vectors` (pusty, `abc`, 448-bitowy, 1 000 000 × `a`) + `.gitattributes` `* text eol=lf`. Regeneracja r3 wszystkich 6 JSON-ów i `box_sign.json`: bajtowo identyczne (`logs/r3-regen.txt`). Mutanty: M44 (podmiana bajtu fixtury) i M45 (błąd w SHA-256) zabite.
+
+**Z4 (brak asercji liczby rekordów): PRZYJMUJĘ.** Stałe `N_*` w teście (34 geometrie, 939 builderów, 500 relief builderów, 301 coast, 127 heksów mapy wybrzeża, 15 funkcji × 54 ziarna × 121 heksów = 98 010 próbek, 7 klimatów, 112 próbek reliefu, 24 + 500 samplerów, riverlod: 6 flushy, 4 mergeAll, 28 lod, 5 lodDefault, 60 przypadków, 4 fullIdxSmall) i `assert_count` liczący rekordy, które pętla FAKTYCZNIE porównała. Mutanty pomijające ostatni rekord: M39 (builders 938/939), M41 (coast 300/301), M42 (fns 14/15), M43 (rlcases 59/60) zabite komunikatem `records compared`; M40 (relief builders 450/500) zabity strażnikiem ≥ 50 ziaren.
+
+**Z5 (luka mutacyjna `Box3`): PRZYJMUJĘ.** Na HEAD `decor::js::Box3::{empty, expand, is_empty}` nie mają żadnego wołającego w crate (`grep` po `rust-port`; od P4.27 r2 pętla `Box3.setFromObject` jest w `Scene::mesh_bounding_box`, `src/scene/graph.rs:558-590`, poza allowlistą) — usunięte, `Box3` zostaje tylko jako wynik `bounding_box`. E09 przestaje istnieć. Żywą pętlę (odpowiednik E02) przypina nowy test `bounding_box_keeps_web_sign_of_zero` z wektorami **z uruchomionego three r169** (`box_sign.mjs` → `box_sign.json`, 6 przypadków, 36 skalarów): Mesh bez rodzica w (−0, −0, −0), wierzchołki ±0 w obu kolejnościach → web daje `min = −0`, `max = +0`. Dlaczego fixtury decor tego nie łapały: każdy węzeł z translacją ma rodzica, a `multiplyMatrices` zamienia −0 na +0 (`1·−0 + 0·−0 + … + 0 = +0`). Mutanty M37 (`js_min` → `f64::min` w pętli bbox) i M38 (`js_max` → `f64::max`) zabite (3 różnice bitowe każdy). NaN: `pick::three::js_min/js_max` są zdefiniowane „dla nie-NaN” (`src/pick/three.rs:17-33`, poza allowlistą), a żadna geometria decor nie zawiera NaN — NaN w bbox pozostaje poza zakresem tego tematu (NIE_ZMIERZONO, właściciel `pick::three`).
+
+**Z6 (strażnik tylko tekstowy): PRZYJMUJĘ.** Strażnik `decor_uses_jsmath_not_platform_libm` jest teraz tokenowy (`forbidden_float_uses`): komentarze i literały napisów wycięte; zakazana nazwa (26 funkcji: trygonometria, hiperboliczne, `exp*`, `ln*`, `log*`, `hypot`, `cbrt`, `powf`, `powi`) jako metoda, segment ścieżki po DOWOLNYM typie/aliasie (`f64::`, `F::` po `type F = f64`, `<f64>::`, `core::primitive::f64::`), wskaźnik funkcji (`.map(f64::cos)`), goły wywołany import i element listy `use`; `mul_add`, `libm`, `intrinsics` zakazane jako identyfikatory w każdej formie. Test `float_guard_scanner_catches_every_spelling`: 21 przykładów pozytywnych i 13 negatywnych (`js_sin`, `std::f64::consts::PI`, `.sqrt()`, komentarz, napis, `fn tan_ratio`). Mutanty wstawiające do `decor/js.rs` `a.mul_add(..)` (M46), alias `type F = f64; F::sin` (M47), `.map(f64::cos)` (M48), `f64::mul_add(..)` (M49) zabite. Ograniczenie: komentarze blokowe `/* */` nie są wycinane (dają co najwyżej fałszywy alarm, nie przepuszczenie).
+
+**Mutacje r3** (`mutacje/final-r3.txt`, `run_all.sh`, 49 mutantów na `95930b446` + r3): 45 zabitych, 3 przeżyły (M05, M12, M18 — równoważne, §5), 1 NOCHANGE (M13: kod, który mutował, zastąpił P4.27 `Scene::world_matrices`; kolejność mnożenia nadal sprawdzają porównania `matrixWorld` każdego węzła).
+
+**Bramki r3** (czysty `CARGO_TARGET_DIR` poza repo, surowe logi `logs/r3-*.txt`, każdy kończy się `EXIT=`): `cargo fmt --all -- --check` EXIT=0; `cargo clippy --locked --all-targets -- -D warnings` EXIT=0; to samo z `--features gpu` EXIT=0; `cargo test --locked --all-targets` EXIT=0 (62 × `test result: ok`, w tym `decor_web_parity` 12/12, `jsmath_v8_parity` 14/14, `jsmath_wiring` 6/6). `decor_web_parity --nocapture`: 571 659 skalarów (571 623 z r2 + 36 `box_sign`), 0 rozbieżności bitowych.
