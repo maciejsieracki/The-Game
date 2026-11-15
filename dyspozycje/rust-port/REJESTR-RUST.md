@@ -1399,3 +1399,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **P4-1 RENDER-DTO-CONTRACT:** Workflow `wf_c204895c-d41` na Opus 5.5 (Operator/Evaluator/Obrona/FC). Dispatch DODATEK r2 `28d7e18f9`. W toku.
 - **P4-0 RENDERER-ARCHITECTURE:** domknięcie Evaluator + FC na Opus 5.5 (DODATEK r3 `e7777bb5b`, Workflow `wf_6aff558f-660`). W toku.
 - **Web:** wycofane. Mój DODATEK do dispatchów kart jednostek 3D cofnięty (revert `3fb78e6b5`); tematy webowe nie są prowadzone w tej sesji.
+
+## Przebieg (15.11, RUST renderer/3D, Opus 5.5 — 4 sloty)
+- **Aktywne Workflow (4), wszystkie na Opus 5.5:**
+  - P4-1 DTO renderera (`wf_c204895c-d41`, dispatch `28d7e18f9`): Operator → Evaluator → Obrona → FC.
+  - P4-0 domknięcie renderera (`wf_6aff558f-660`, dispatch `e7777bb5b`): Evaluator → Obrona → FC.
+  - P4-36 Q3 mapa bitwy, jednostki i nakładki (`wf_102d919b-3d8`, dispatch `336af8cd9`): Operator impl + pomiary → Evaluator → Obrona → FC. Baza `origin/rust-port/parity-v2` (zawiera `7817ef0c`).
+  - P4-17 MOD03 dekoracje terenu (`wf_be79e3c5-9d0`, dispatch `4735c6dbe`): Evaluator → Obrona → FC. Operator r2 PASS-WITH-NOTES, brak Evaluatora i FC.
+- **Parity:** `95930b446` (po integracji P4-15). Dysk: 10 GB.
+- **Integracja** każdego tematu po FC PASS: orkiestrator (ancestry względem parity, diff vs allowlista, `git diff --check`, FF).
