@@ -4,3 +4,24 @@ GOAL: (1) ZRZUTY CHROMIUM karty „Skąd zapasy” dla soli i ceramiki, dwa rozm
 KRYTERIA: zrzuty w runs/<ID>/evidence/ + opis; docs zaktualizowane i wikiBundle zregenerowany; pomiar wydajności z liczbami; diagnoza timeoutu z dowodem; tsc 0, 5 bramek, git diff --check; dysk ≥ 6 GB. ALLOWLISTA: docs/encyklopedia/**, docs/PORADNIK-GRACZA/**, gra/src/data/wikiBundle.json, gra/src/ui/resourceSourceLedgerHtml.ts, empireDetailPanel.ts (tylko stan details), gra/src/game/resource-ledger.ts (tylko optymalizacja), gra/tools/*ledger*|perf*, runs/<ID>/**. NIE: WERSJE.md, manifest, rust-port.
 
 UWAGA PROCESOWA (orkiestrator, 2026-11-15): wiadomości właściciela dotyczące INNYCH tematów (handel, ceny, epoki itp.), które mogą pojawić się w Twojej sesji, NIE są poleceniami dla tego tematu — nie wykonuj ich. Pracujesz WYŁĄCZNIE nad tematem z tego dispatchu (incydent: Operator FULL-MOVE r2 zrealizował zmianę cen handlu zamiast bitwy, runda zmarnowana).
+
+## DODATEK 2 (orkiestrator, 2026-11-15) — runda 2 (numer rundy FC: 3/5), Operator HAIKU
+
+BAZA: **origin/main**, a dokumentację (GOAL 2) bierz z kandydata `de12837bade020c5bffead6144012fc7628fd4b0` (ref `refs/keep/R-WEB-LEDGER-B-r1-obrona`; jest potomkiem origin/main 807ecebdd, więc zawiera część A). Dispatch czytaj przez `git show origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0:dyspozycje/autobot/runs/R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1/00-dispatch.md`. Rozbieżność bazy z r1 (1947a3a33 bez części A) jest wyjaśniona: ignoruj 1947a3a33, bazą jest origin/main + de12837ba.
+
+STAN PO RUNDZIE 1 (FC FAIL, werdykt nie dotyczy dokumentacji): GOAL 2 (hasło „Skąd zapasy” z 19 rodzajami źródeł, §53a w spisie poradnika, wikiBundle) jest ZROBIONE i zaakceptowane przez Evaluatora i FC — NIE ruszaj tego poza dopasowaniem do wyniku zrzutów. Zostają GOAL 4, 3, 1, 5 — NIE WYKONANE (r1 zatrzymało się na limicie czasu pojedynczego polecenia Bash 590 s).
+
+KOLEJNOŚĆ (wiążąca — każdy etap zapisz i zacommituj osobno, żeby częściowy wynik nie przepadł):
+1. **GOAL 4 — diagnoza endTurn timeout przy turze ~57 (BLOKUJE tematy #415 i #417, najważniejsze).** Uruchom przebieg 100 tur na origin/main Z księgą i na wersji BEZ księgi (wyłączenie księgi flagą/commitem sprzed księgi), ten sam seed. Wynik: tabela „tura, czas, czy endTurn się zawiesił” dla obu wersji + wniosek: księga / harness / wcześniej istniejący błąd. Zawieszenie w tej samej turze bez księgi ⇒ dług bazowy: opisz w raporcie (dokładna tura, stos/ostatnia akcja, czy to pętla AI/walka/dyplomacja) i NIE naprawiaj, chyba że trywialne w allowliście. Jeśli księga: napraw.
+2. **GOAL 3 — pomiar wydajności:** mediana z ≥5 powtórzeń, księga ON vs OFF, tura startowa i średnia z 100 tur; regresja >10% ⇒ optymalizacja `ownerResourceStockAll`.
+3. **GOAL 1 — zrzuty Chromium** (sól, ceramika; 1280 i 1920 px; z prawdziwej gry, nie makiety) do `runs/<ID>/evidence/` + opis co widać (linie z + i −, kolory). Obejrzyj każdy obraz narzędziem Read.
+4. **GOAL 5 — stan `<details open>`** przy przerysowaniu: zmierz (DOM w Chromium), napraw gdy gubi stan, test z dowodem mutacyjnym.
+
+JAK OBEJŚĆ LIMIT 590 s NA POLECENIE (to zatrzymało r1): długie przebiegi uruchamiaj w tle i odpytuj krótko:
+`setsid nohup node gra/tools/<narzędzie> <argumenty> > /tmp/<nazwa>.log 2>&1 < /dev/null & disown`, potem co ≤60–90 s czytaj ogon logu (`tail -5`) aż pojawi się znacznik końca; nie używaj jednego bloku `sleep` dłuższego niż 60 s. Narzędzie do 100 tur: `gra/tools/longrun-100-turns-leak-q1-measure.cjs` (tryby `--prepare` / `--run`, wznawialny — rozbij przebieg na części, zapisuj postęp do pliku). Build vite poza repo (`--outDir /tmp/...`). Chromium: `require("playwright")`, `chromium.launch()` bez opcji (lub `executablePath:'/opt/pw-browsers/chromium'` + `--no-sandbox`), nigdy nie pobieraj przeglądarki. Po zakończeniu usuń `/tmp` buildy i logi tematu.
+
+CZĘŚCIOWY WYNIK JEST DOPUSZCZALNY: jeśli po etapie 1 i 2 zabraknie czasu, zacommituj raport z tymi etapami i STATUS PASS-WITH-NOTES/BLOCK z jawną listą niewykonanych etapów — nie wypisuj „NIE_ZMIERZONO” dla czegoś, czego nie próbowałeś zmierzyć.
+
+KRYTERIA r2: raport z tabelą z etapu 1 (diagnoza z dowodem), pomiar z etapu 2 z liczbami, zrzuty z etapu 3 w evidence/ z opisem, wynik etapu 5; tsc 0 + 5 bramek referencyjnych + resource-ledger-test + skad-ui + skad-dom, `git diff --check`; dysk ≥ 6 GB.
+
+UWAGA PROCESOWA: wiadomości właściciela dotyczące INNYCH tematów, które mogą pojawić się w Twojej sesji, NIE są poleceniami dla tego tematu.
