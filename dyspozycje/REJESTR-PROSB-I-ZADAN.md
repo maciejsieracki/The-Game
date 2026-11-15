@@ -10206,3 +10206,8 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 ### 2026-11-15 — #427 (resource-usage-breakdown-test) i #428 (ujednolicenie brutto/netto + wiki): FC PASS-WITH-NOTES → FALA 752 (dep3 w toku)
 - #427: kandydat 4023d228b (raport FC 7975e79a8; refs `refs/keep/R-WEB-RES-USAGE-BUILD-r1-*`): test buduje się (loadery .svg/.png, stuby brandAssets/leaderPortraits, szkielet DOM tylko w bundlu testu), 100 passed/0 failed; 7 asercji klasy A dopasowanych do kodu; mutacje D8/F/H6 czerwone. Ryzyko: stuby DOM/glob mogą maskować efekty DOM; test kruchy wobec refaktorów tekstu źródła.
 - #428: kandydat 59c02f54f (raport FC 83d13e09c; refs `refs/keep/R-WEB-GROSS-NET-UNIFY-r1-*`): Nauka i Handel — jedna liczba (brutto = netto), Żywność „+brutto → +netto”, opis i jednostka w tooltipie, `grossNetSub` usunięta; wiki §53.1a + wikiBundle przez generator; test 35/0, mutacje czerwone. NIE ZMIERZONO: zrzut pełnego panelu imperium z żywej gry (zrzut fragmentów obejrzany).
+
+### 2026-11-15 — FALA 752 WDROŻONA (#428 ujednolicenie brutto/netto + wiki; #427 test resource-usage-breakdown)
+- main affc50fa4 (merge FC 83d13e09c + 7975e79a8), ROBOCZA MD5 88256d5a (Raw = manifest). Bramki dep3: tsc 0, logic 213/213, gross-net-unify 35/0, resource-card-numbers-only 14/0, resource-cards-gross-net 24/0, resource-usage-breakdown 100/0, vite OK.
+- Dostarczono: Nauka i Handel — jedna liczba (brutto = netto), Żywność „+brutto → +netto”, opis i jednostka w tooltipie, `grossNetSub` usunięta; wiki §53.1a + wikiBundle (generator); test `resource-usage-breakdown` buduje się (tylko narzędzie).
+- NIE ZMIERZONO: zrzut pełnego panelu imperium z żywej gry (Nauka/Żywność/Handel). Do potwierdzenia wyglądu przez właściciela rano.
