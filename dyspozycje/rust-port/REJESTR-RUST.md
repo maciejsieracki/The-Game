@@ -2033,3 +2033,14 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Trwające workflow (3):** P4-1G Q4 ADAPTER-BATTLE (#235, `wf_304cdf8e-350`, obrona następna), P4-1F1 OVERLAY-TYPES (#238, `wf_e0bf527e-c00`, FC następny), P4-1I1 BATTLE-OUTCOME (#244, `wf_8948228b-2a5`, operator).
 - **Wolny slot — nie uruchomiono:** #254 kolidowałby z P4-1F1 w `view-model/src/root.rs` (bump `CONTRACT_VERSION`). #250 (P4-1H Q4 MOVE-MODEL) czeka na FF RJ-REPIN Q3; zostanie uruchomiony z bazą po FF.
 - **Dysk:** 11 GB wolne (74%).
+
+## Przebieg (heartbeat 23:0x — kolejka integracji: RJ-REPIN Q3, F1, Q4)
+
+- **P4-1F1 OVERLAY-TYPES (#238, Opus) — FC PASS-WITH-NOTES `8ecf01c2c`** (kod `ea84a130b`, obrona `7fe36b059`, eval `ac4e518fe`). Typy DTO nakładek: `PathRouteDto{hexes, turnStops}`, `SiegeCampDto`, `BuildHighlightKind` bez `generic`, `cultureRange`/`religionRange` jako `Option<Vec>`, `CONTRACT_VERSION` 1→2. Merge-tree na parity `84ec520a5` czysty. Otwarte: nowe typy nie są reeksportowane w `lib.rs` (plik poza allowlistą); `P4-1-RENDER-DTO-CONTRACT.md` §3.5/§3.7 do aktualizacji; scalanie właścicieli obozów (`main.ts:17514-17517`) do reguły w dispatchu P4-1G Q5; producenci do P4-1F2/F3/F5/F6.
+- **P4-1G Q4 ADAPTER-BATTLE (#235, Opus) — FC PASS-WITH-NOTES `8666aa5ae`** (kod `04283b653`, obrona `d6cc03b58`, eval `ac27e79d8`). Adapter `view/battle.rs`: `battle_inputs`, `battle_view_inputs`, `unit_spawn`, `terrain_grid`, `deploy_side`, `ammo`; błędy `GridSize`, `MissingSiegeCiv`, `DeploySideMismatch`. Merge-tree czysty.
+  - **Erratum do dispatchu (§ZAKRES pkt 2):** „`FortDto` None → INFINITY” jest błędne. INFINITY dotyczy wyłącznie `ammo_left`/`ammo_max` (`battleScene.ts:1444-1446`, `view-model/src/battle.rs:76-80`). Dla fortu brak `tower_material` = `null` (`battleScene.ts:4160-4161`). Implementacja poszła za pinem. Poprawić w dispatchach Q5, Q6 i P4-1I.
+  - Brak producenta `BattleSetupDto` w silniku i brak integratora sceny bitwy (do rejestru jako zależności).
+  - Fixture'y ręczne z wartościami z pinu tam, gdzie pin je wylicza (`TOWER_ROWS` z `towerRows`); pozostałe wartości to 1:1 kopie pól armii (NIE_ZMIERZONO brak wartości z pinu).
+- **Kolejność integracji:** RJ-REPIN Q3 (bramki silnika w toku, `integ-p4-1h-rj`) → FF → F1 i Q4 razem na nowym parity (jeden przebieg bramek renderera i view-model).
+- **Trwające workflow (2):** P4-1I1 BATTLE-OUTCOME (#244, `wf_8948228b-2a5`, operator). Wolne 2 sloty; kandydaci po integracji: #250 (P4-1H Q4 po FF RJ-REPIN), #236 (P4-1G Q5, czeka na Q2/Q3 — zintegrowane — i Q4, który właśnie przeszedł FC).
+- **Dysk:** 6,8 GB (83%) — poniżej progu 8 GB, bez nowych startów do czasu zwolnienia miejsca.
