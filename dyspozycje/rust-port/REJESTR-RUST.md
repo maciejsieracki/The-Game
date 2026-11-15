@@ -1649,3 +1649,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **KROK 2 (FC PASS bez integracji):** M01-R2 — merge `10a2fc4af` na `d5a52a980` (czysty); pełny test w toku (log `integ-m01-3.log`). Poprzedni przebieg zniknął bez kodu wyjścia i został powtórzony. Po zielonym wyniku: FF parity i `refs/keep`.
 - **KROK 3 (sprzątanie):** usunięto worktree CRED-HAK i M01 zakończonych etapów oraz cache `target-integ`. Dysk: ok. 4,3 GB wolne.
 - **NASTĘPNY KROK:** wynik testu M01 → integracja; odebrać FC #98, #175, #176.
+
+## Przebieg (15.11, 16:5x UTC — heartbeat „twardy bit”, sloty Rust)
+
+- **KROK 1 (sloty):** żywe Workflow: 1 (wyłom wieży #98, Evaluator, test `full.log`). Uzupełnienie do 4 nie jest uczciwe: pozostałe pozycje kolejki są zablokowane decyzją właściciela (#115, #106, #120, DYSTANS, REPIN-DRYFT 2–6) albo zależą od niezintegrowanego kodu (#109/#147, #107, #112, #113, #97/#98/#118/#149/#150, #100/#135/#137/#167–#169) lub od #222. Startuję tylko odblokowany temat: R7K7C-STATUS (#176/#224), workflow `wf_8ddee49c-415`, rozpoznanie tylko do odczytu, Operator Haiku, Obrona Haiku, Evaluator Sonnet, FC Sonnet.
+- **KROK 1a (korekta bazy):** dispatch `R-RUSTPORT-P6-R7K7C-STATUS-ROZPOZNANIE-Q1` wskazywał `d5a52a980`; zdalny `rust-port/parity-v2` = `10a2fc4af` (`d5a52a980` jest jego przodkiem). Dopisano KOREKTĘ BAZY do `00-dispatch.md`, commit `5ebc39b69`, push na `claude/rust-sivvrn`. Rozpoznanie robi się na `10a2fc4af`.
+- **KROK 2 (FC PASS bez integracji):** brak — żadnego zakończonego FC bez integracji nie znaleziono.
+- **KROK 3 (sprzątanie):** usunięto 9 zakończonych worktree (city-capture recon ×4, P4-1E ×3, R7K7C recon ×2). Każdy czysty, bez blokady, HEAD zabezpieczony w `refs/keep/cleanup-<ID>`. Dysk: 12 GB wolne (71%).
+- **Rozbieżność do wyjaśnienia:** `KOLEJKA-RUST.md` podaje parity `f2bb11970`, a zdalny parity to `10a2fc4af`. Kolejka wymaga aktualizacji (#154).
+- **NASTĘPNY KROK:** wynik `wf_8ddee49c-415` (#176); integracja P4-1E (#222) po `TEST_EXIT=0` w `integ-p41e.log`; wyłom #98 po Evaluatorze.
