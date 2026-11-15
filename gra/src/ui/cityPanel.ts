@@ -2632,7 +2632,7 @@ ${resourceColorClassCss('.civ-cs')}
   padding:0;background:transparent;border:none;height:auto;min-height:0;width:fit-content;max-width:100%;min-width:0;margin:0 auto;box-sizing:border-box;}
 .civ-v-top-stack{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:fit-content;max-width:min(98vw,1480px);gap:0.22rem;padding:0;box-sizing:border-box;margin:0 auto;}
 .civ-v-top-flank-row{display:flex;align-items:flex-start;justify-content:center;gap:0.5rem 0.65rem;flex-wrap:nowrap;width:100%;max-width:100%;min-width:0;overflow:visible;}
-.civ-v-w3-chips-flank{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0.32rem 0.48rem;
+.civ-v-w3-chips-flank{display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:0.32rem 0.48rem;
   padding:0.38rem 0.82rem;border-radius:12px;
   background:linear-gradient(180deg,rgba(22,28,40,0.94),rgba(8,10,16,0.95));border:1px solid rgba(232,216,138,0.32);
   /* R-WEB-UI-LEFT-BANNER-OVERFLOW-NARROW-WINDOW-Q1: baner kurczy sie i zawija zetony (bez wychodzenia poza okno). */
@@ -2686,7 +2686,7 @@ ${ADMINISTRATOR_ICON_CSS}
   flex-wrap:wrap;row-gap:0.08rem;}
 .civ-v-w3-chips-stacked.civ-v-w3-chips-city{width:100%;}
 .civ-v-w3-chip{display:inline-flex;align-items:center;gap:0.48rem;white-space:nowrap;flex-shrink:0;
-  font-size:1.56em;line-height:1.2;border:none;background:transparent;padding:0.14em 0.2em;margin:0;
+  font-size:calc(1.56em * var(--civ-top-chip-scale,1));line-height:1.2;border:none;background:transparent;padding:0.14em 0.2em;margin:0;
   cursor:pointer;border-radius:4px;font-family:inherit;color:inherit;}
 .civ-v-w3-chip:hover{background:rgba(212,175,90,0.1);}
 .civ-v-w3-chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}

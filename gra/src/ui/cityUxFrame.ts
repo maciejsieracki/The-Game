@@ -26,6 +26,11 @@ let frameRoot: HTMLDivElement | null = null;
 let mounts: CityPanelUxMounts | null = null;
 
 const TOP_H = 96;
+/** Szerokość całego górnego paska miasta (lewy baner + nazwa + prawy baner). Wcześniej 1480 px — ucinało wolne miejsce na żetony. */
+const TOP_STACK_MAX_PX = 1880;
+/** Skala żetonów górnego paska (`--civ-top-chip-scale` na `.civ-ux-top`): kolejne kroki, aż wszystkie żetony mieszczą się w jednej linii swojego banera. */
+const TOP_CHIP_SCALE_VAR = '--civ-top-chip-scale';
+const TOP_CHIP_SCALE_STEPS = [1, 0.94, 0.88, 0.82, 0.76, 0.7, 0.65, 0.6, 0.55, 0.5, 0.46, 0.44];
 const ICON_BAR_H = 0;
 const LEFT_W = CITY_LEFT_PANEL_W_PX;
 /** Lewy panel danych (produkcja) + rail produkcji po jego prawej krawędzi. */
@@ -70,7 +75,7 @@ function ensureFrameStyles(): void {
 .civ-ux-top{position:fixed;top:0;left:0;right:0;height:auto;min-height:${TOP_H}px;z-index:403;pointer-events:none;overflow:visible;
   display:flex;align-items:flex-start;justify-content:center;padding:5px 12px 4px 12px;}
 .civ-ux-top .civ-ux-panel-scope{height:auto;width:100%;display:flex;flex-direction:column;align-items:center;pointer-events:none;}
-.civ-ux-top .civ-ux-panel-scope .civ-v-top-stack{width:fit-content;max-width:min(98vw,1480px);box-sizing:border-box;pointer-events:none;}
+.civ-ux-top .civ-ux-panel-scope .civ-v-top-stack{width:fit-content;max-width:min(98vw,${TOP_STACK_MAX_PX}px);box-sizing:border-box;pointer-events:none;}
 .civ-ux-top .civ-ux-panel-scope .civ-v-top-stack .civ-v-w3-chips-flank{pointer-events:none;}
 .civ-ux-top .civ-ux-panel-scope .civ-v-top-stack button,
 .civ-ux-top .civ-ux-panel-scope .civ-v-top-stack .hover-detail-anchor,
@@ -176,8 +181,33 @@ function queueSideTopFit(): void {
 }
 
 /** Mierzy dolną krawędź banerów górnych (lewy/prawy żeton + plakietka miasta) i ustawia `--civ-city-side-top`. */
+/**
+ * Żetony lewego i prawego banera zawsze w JEDNEJ linii poziomej: gdy się nie mieszczą (duże liczby, wąskie okno),
+ * zmniejsza skalę czcionki żetonów (krok po kroku) zamiast zawijać je w kwadraty. Nie ma minimum poniżej ostatniego kroku.
+ */
+function fitCityTopChipScale(): void {
+  if (frameRoot === null) return;
+  const top = frameRoot.querySelector<HTMLElement>('.civ-ux-top');
+  if (!top) return;
+  const fits = (): boolean => Array.from(top.querySelectorAll<HTMLElement>('.civ-v-w3-chips-flank')).every((flank) => {
+    const fr = flank.getBoundingClientRect();
+    const chips = Array.from(flank.querySelectorAll<HTMLElement>('.civ-v-w3-chip'));
+    if (chips.length === 0 || fr.width === 0) return true;
+    const oneRow = new Set(chips.map((c) => Math.round(c.getBoundingClientRect().top))).size === 1;
+    return oneRow && chips.every((c) => {
+      const cr = c.getBoundingClientRect();
+      return cr.left >= fr.left - 0.5 && cr.right <= fr.right + 0.5;
+    });
+  });
+  for (const s of TOP_CHIP_SCALE_STEPS) {
+    top.style.setProperty(TOP_CHIP_SCALE_VAR, String(s));
+    if (fits()) return;
+  }
+}
+
 export function fitCitySideTop(): void {
   if (frameRoot === null) return;
+  fitCityTopChipScale();
   const els = Array.from(frameRoot.querySelectorAll<HTMLElement>(
     '.civ-ux-top .civ-v-w3-chips-flank, .civ-ux-top .civ-v-w3-city-badge',
   ));
