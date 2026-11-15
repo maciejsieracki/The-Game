@@ -23,3 +23,13 @@ Wynik r2 (przyjęty): księgowanie zużycia (resource-ledger-consume-test 30/0),
 DO DOMKNIĘCIA (zarzuty 1–4): (1) HANDEL w księdze: źródła „Umowa wymiany z <civ>” (cykliczna i jednorazowa) i „Warzelnia (<miasto>)” (sól) jako osobne wpisy; (2) reconcileOwnerResourceCaps i Mennica — zapis do księgi (dziś poza księgą); (3) test zgodności w REALNEJ ścieżce gry: ≥ 3 ziarna × 30 tur, maksymalna różnica (zmiana magazynu − suma księgi) = 0 dla 9 surowców, mutacja usunięcia źródła = rozjazd; hash stanu gry z księgą i bez księgi identyczny; (4) 5 bramek referencyjnych, dysk ≥ 6 GB.
 SZLAK HANDLOWY: decyzja #311 (właściciel 2026-11-14) = szlak TYLKO premia, bez przesuwania zapasów. FC znalazł w main.ts ~40152 (E3c) kod, który przesuwa brąz/żelazo/cegłę szlakiem — SPRZECZNOŚĆ z #311. NIE wprowadzaj ani nie usuwaj E3c w tej rundzie; NIE księguj szlaku jako źródła zapasów; opisz E3c w raporcie (co dokładnie robi, kiedy się odpala) — pytanie ABC do właściciela (usunąć / zostawić).
 POZA ZAKRESEM: UI i partie 3–4.
+
+## DODATEK 3 orkiestratora — RUNDA 4/5 = dokończenie PARTII 2 (2026-11-15) — Operator SONNET (uzasadnienie: dwie nieudane rundy Haiku tego samego tematu, r2 FAIL i r3 FAIL; brakujące elementy wymagają projektu harnessu headless dla main.ts i rozbicia plonu soli per budynek) — baza: kandydat 2ad05c2c5 (refs/keep/R-WEB-LEDGER-r3-obrona) + merge aktualnego origin/main (FALA 731); raport FC r3: f44bddb5c (FAIL)
+Wynik r3 (przyjęty): przelewy umowy (4 etykiety „Umowa wymiany z <civ>”), reset okna pending przy wczytaniu, testy 15/0 + 1030/0 + 30/0 — zostają.
+DO DOMKNIĘCIA (zarzuty 1, 2, 3, 4, 6, 7):
+ 1. „Warzelnia (<miasto>)”: rozbij plon soli per budynek w zbieraniu plonów i księguj jako osobne źródło; test.
+ 2. TEST ZGODNOŚCI W REALNEJ ŚCIEŻCE GRY: zbuduj harness w przeglądarce (?civTest=1, hak testowy w main.ts dozwolony za isCivTestEnabled) i zmierz ≥ 3 ziarna × 30 tur: różnica (zmiana magazynu − suma księgi) = 0 dla 9 surowców; hash stanu gry z księgą i bez księgi identyczny. Nie wystarczy fixture.
+ 3. Test wpięcia Mennicy i limitu magazynu w turn-economy.ts (przypadek z realnym wpisem; mutacja no-op ma dać CZERWONE); popraw test handlu (osobne księgi właścicieli, etykieta i wpięcie jednorazowej i cyklicznej ścieżki w main.ts).
+ 4. Reset okna pending także przy NOWEJ GRZE (znajdź punkt startu); semantyka pending vs tick zmierzona w żywej grze (do którego rekordu tury trafia przelew umowy wykonany w trakcie tury).
+ 5. Szlak E3c (main.ts ~40160–40215) — NIE zmieniaj; zinstrumentuj/opisz w raporcie dokładnie, co przesuwa i kiedy się odpala (ABC do właściciela: usunąć / zostawić jako księgowane źródło). Nie księguj szlaku, dopóki nie ma decyzji.
+ 6. 5 bramek referencyjnych; dysk ≥ 6 GB; git diff --check czysty.
