@@ -33,3 +33,36 @@ ZAKAZ: `gra/**`, `Cargo.toml`, `Cargo.lock` (nie commitować), `git add -A`, pus
 
 ## RAPORT I COMMIT
 `01-operator-r1.md`: STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY (kody wyjścia, czerwony przed zmianą)/BLOKADY (w tym: co NIE zrobione — 2B2 strzał, _destroyTowerAtRow pełny efekt jeśli dotyczy)/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH: NIE WYKONANO. Commit na `wip/…`, BEZ push. Treść commita bez nazwy modelu; ostatnia linia `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`.
+
+---
+
+## DODATEK r2 (15.11, po FC FAIL r1; baza `f78736d36`)
+
+Powód: r1 — FAIL. Usunięcie `SiegeEnv::tower` zepsuło testy poza allowlistą: `tests/p6_tower_target_wiring.rs` nie kompiluje się (E0560), a `p6_siege_tactics_loop_matches_pin_text_on_all_vectors` pada (78/360 sekwencji, wektory i generator modelują stary placeholder). Dodatkowe: brak wektorów 2B1 z pinu.
+
+BAZA r2: `f78736d36` (FC r1; zawiera kod `dc0e8367c`). Gałąź robocza: `wip/R-RUSTPORT-P6-WIEZE-2B1-Q2` z tego SHA. Sprawdź `git merge-base --is-ancestor f78736d36 HEAD`.
+Raport: `01-operator-r2.md`.
+
+### ZAKRES r2 (co dokładnie naprawić)
+1. `tests/p6_tower_target_wiring.rs`: przepisz 4 testy, które asertują natychmiastowe `dead` po `fire_siege_towers`, na semantykę planowania (wybrany cel zapisany do zaplanowanych wystrzałów; `dead` NIE ustawiane przy planowaniu). Bez osłabiania asercji: zamień, nie usuwaj.
+2. `tests/p6_siege_tactics_loop_gen.mjs` + `tests/p6_siege_tactics_loop_vectors/vectors.json`: zregeneruj wektory wież zgodnie z pinem (`_fireSiegeTowers` przy pustej liście wież = `return`; planowanie bez natychmiastowego `dead`). Strażnik SHA-256 zostaje.
+3. `tests/p6_siege_tactics_loop.rs` i `p6_siege_tactics_loop_resume.rs`: tylko dopasowanie do nowej sygnatury (literały), bez osłabiania.
+4. Test 2B1 z wartościami z pina: jeśli wyciągnięcie `_fireSiegeTowers` z TS jest wykonalne — `p6_wieze_2b1_gen.mjs` + wektory (preferowane); jeśli nie — testy z wartościami pina z cytatem linii i jawnym `NIE w pełni z pinu` w raporcie.
+5. NIE_ZROBIONE (wpisz w raporcie, nie implementuj): strzał `_singleBlow` (2B2), guard `towerShooterRow` (wymaga pola w `SiegeEnv`), stan `destroyed` i sprawdzenie w strzale (2B2).
+
+### ALLOWLISTA r2 (rozszerzona o pliki zepsute przez r1; nic więcej)
+- `rust-port/engine/src/domain/siege_tactics_loop.rs`, `siege_tactics_turnseq.rs` (jak r1)
+- `rust-port/engine/tests/p6_tower_target_wiring.rs` (przepisanie, pkt 1)
+- `rust-port/engine/tests/p6_siege_tactics_loop_gen.mjs`, `rust-port/engine/tests/p6_siege_tactics_loop_vectors/vectors.json` (regeneracja, pkt 2)
+- `rust-port/engine/tests/p6_siege_tactics_loop.rs`, `p6_siege_tactics_loop_resume.rs` (pkt 3)
+- `rust-port/engine/tests/p6_wieze_2b1.rs`, `p6_wieze_2b1_gen.mjs`, `p6_wieze_2b1_vectors/` (pkt 4)
+- `dyspozycje/autobot/runs/R-RUSTPORT-P6-WIEZE-2B1-Q1/**`
+ZAKAZ: wszystko inne, `gra/**`, `Cargo.toml`, `Cargo.lock` (nie commitować), `git add -A`, push do `parity-v2`.
+
+### KRYTERIA KOŃCA r2
+1. `cargo test` (PEŁNY, bez filtra) — EXIT 0 (nie tylko `p6_siege*`). Jeśli trwa > 590 s — uruchom w tle z logiem i czekaj; napisz w raporcie czas.
+2. `cargo clippy --all-targets -- -D warnings` EXIT 0; `cargo fmt --check` EXIT 0.
+3. Czerwony test 2B1 przed zmianą (kod wyjścia) zapisany w raporcie.
+4. Brak `#[ignore]`, brak osłabionych asercji, brak zmian w plikach spoza allowlisty r2.
+5. Raport: co zrobione (SHA), co NIE zrobione (pkt 5), czy wektory z pinu czy z cytatów.
+Commit bez nazwy modelu; ostatnia linia `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`. BEZ push.
