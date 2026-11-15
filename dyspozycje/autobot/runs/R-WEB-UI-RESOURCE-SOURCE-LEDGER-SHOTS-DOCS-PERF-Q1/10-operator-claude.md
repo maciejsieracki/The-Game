@@ -1,63 +1,40 @@
-# R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1 — raport Operatora (runda 1/5)
+# R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1 — Operator (runda 2/5, HAIKU 5.5)
 
-STATUS: BLOCK
+STATUS: PASS-WITH-NOTES (etap 1 zrobiony; etapy 2–4 w toku — patrz sekcja "Etapy", wpis końcowy niżej)
 DOMAIN: GAME
 TEMAT: R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1
-GOAL: (1) zrzuty Chromium karty „Skąd zapasy” (sól, ceramika; 1280 i 1920 px) w trakcie gry; (2) dokumentacja (hasło encyklopedii, PORADNIK, regeneracja wikiBundle); (3) pomiar wydajności tury 100 tur (mediana ≥5, przed/po księdze); (4) diagnoza endTurn timeout przy turze 57; (5) pomiar zachowania `<details open>` przy przerysowaniu karty.
+GOAL: (1) zrzuty Chromium „Skąd zapasy” (sól, ceramika, 1280/1920 px); (2) dokumentacja + wikiBundle (zrobione w r1/r2 obrony); (3) pomiar wydajności 100 tur, mediana z ≥5; (4) diagnoza endTurn timeout przy turze 57; (5) stan `<details open>`.
 
-## Założenia (ZAŁOŻENIE Operatora, do potwierdzenia przez orkiestratora)
+## Baza
 
-- Dispatch podaje bazę `1947a3a33` (origin/main), ale ta baza NIE zawiera części A: brak `gra/src/game/resource-ledger.ts` i `gra/src/ui/resourceSourceLedgerHtml.ts`. Część A (FC `2ebd3c189`) jest ancestorem `origin/main` (807ecebdd), więc dispatch („baza = origin/main po wdrożeniu części A”) wskazuje na bazę zawierającą część A.
-- Przyjęto bazę **origin/main = 807ecebdd** (detached HEAD). Pracę wykonano na niej.
-- Dispatch i DODATEK znajdują się na gałęzi `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0` w `dyspozycje/autobot/runs/R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1/` (nie na origin/main).
+- Dispatch wskazywał kandydat `fc4e8dcb5` (commit dispatchu). NIE jest to baza kodu: fc4e8dcb5 nie zawiera origin/main (807ecebdd) ani de12837ba; diff względem origin/main to ok. 610 plików i 227 938 usunięć. Wybrano bazę wg DODATKU 2 (orkiestrator): **de12837ba** (= origin/main + commity r1/r2 dokumentacji). Pracę wykonano w worktree `wf_f1258023-142-1` na detached HEAD de12837ba.
+- `npm ci` w `gra/` (71 pakietów, rc=0).
 
-## Wykonane (DOCS, GOAL 2)
+## Etap 1 — GOAL 4: diagnoza endTurn timeout (tura 57)
 
-- Nowe hasło: `docs/encyklopedia/pojecia/skad-zapasy.md` (metadane, Wiki-S, Wiki-M, sekcja „Jak czytać”, ograniczenia, historia).
-- Wpis w `docs/encyklopedia/indeks.md` (sekcja Pojęcia).
-- Nowa sekcja `## 53a. Skąd zapasy` w `docs/PORADNIK-GRACZA/08-ekonomia-imperium.md` (przed „Ekonomia w jednej tabeli”).
-- Regeneracja: `node gra/tools/bundle-wiki-for-game.cjs` → `wikiBundle.json: 22 rozdz. + 183 haseł (~1295 KB)`; diff `gra/src/data/wikiBundle.json` to 1 linia (JSON w jednej linii).
-- Wartość `ksiega_zasobow_tury` = 10 (odczytana z `gra/data/econ-params.json`, poziomy easy/normal/hard).
+### Harness i zmiany pomiarowe (tylko w kopiach poza repo)
 
-## Bramki (liczby z surowego wyjścia)
+- Kopie `gra-on` (ledger ON, kod de12837ba) i `gra-off` (w `gra/src/game/turn-economy.ts:2871` `ledgerEnabled = false && ...` — wyłączenie księgi w kopii pomiarowej; repo nietknięte).
+- Bundle vite: `dist-on` (rc=0, 27,6 s) i `dist-off` (rc=0, 20,7 s).
+- Narzędzie: `gra/tools/longrun-100-turns-leak-q1-measure.cjs` (`--prepare` + `--run`, seed 4242, typ kontynenty, Standardowy).
+- Dwie zmiany w kopii `measure-patched.cjs` (kopia narzędzia, nie repo):
+  1. Po `world-ready` ustawiony podatek `window.__nnsMeasureDebug.setTaxSplit(60, 30, 10)`. Powód: bez tego bramka „Zakończ turę” (FALA 697/724, `no-negative-stocks.ts`) blokuje turę 1 komunikatem „Nie można zakończyć tury. Skarbiec (złoto): po zakończeniu tury zabraknie 2” — zaobserwowane w zrzucie DOM (`stuck-dump`, tura 1, 2 próby) w ON. To jest zachowanie gry, nie księgi; harness z r3 nie miał tej bramki.
+  2. Zrzut widocznych elementów przy zatkanej turze (`stuck-dump`) — diagnostyka.
+- Oba przebiegi uruchomione **równolegle** (2 Chromium na 4 rdzeniach). To dotyczy diagnozy (zawieszenia), NIE pomiaru czasu (etap 2 osobno, sekwencyjnie).
 
-- `npm ci` w `gra/`: `added 71 packages`.
-- Build poza repo (`vite.js build --outDir <scratchpad>/civ-dist`): `✓ built in 19.97s`, rc=0.
-- `tsc --noEmit -p gra/tsconfig.json`: rc=0 (bez wyjścia).
-- `node gra/tools/resource-ledger-skad-ui-test.cjs`: `18 passed, 0 failed`.
-- `node gra/tools/resource-ledger-test.cjs`: `1030 passed, 0 failed`.
-- `git diff --check` i `git diff --cached --check`: rc=0.
-- Pełny zestaw „5 bramek” z dispatchu: NIE_ZMIERZONO (uruchomiono tylko powyższe).
+### Wynik
 
-## NIE wykonane / NIE_ZMIERZONO
+| Wersja | Tur zapisanych | Zawieszenia endTurn (ms=-1 lub „tura nie przechodzi”) | Max ms / tura | Błędy strony (`pageerror`) |
+|---|---|---|---|---|
+| ON (księga, de12837ba) | 100 (99 linii + start) | **0** | 21 069 ms / tura 80 | 0 |
+| OFF (księga wyłączona w kopii) | 100 (99 linii + start) | **0** | 18 069 ms / tura 96 | 0 |
 
-- GOAL 1 (zrzuty Chromium): NIE wykonano. Wymaga przejścia do karty surowca w realnej grze (sól, ceramika) i dwóch rozmiarów okna; bez tego nie ma dowodu w `evidence/`. Punkt wyjścia do następnej rundy: `gra/tools/resource-ledger-live-measure.cjs` (headless Chromium, `?civTest=1`), ale jego zakres to zgodność księgi, nie zrzuty karty.
-- GOAL 3 (pomiar wydajności 100 tur, mediana ≥5 przed/po księdze): NIE wykonano. Narzędzie: `gra/tools/longrun-100-turns-leak-q1-measure.cjs` (`--prepare`, build, `--run`, zapis JSONL per tura). Jeden przebieg 100 tur nie mieści się w jednym wywołaniu Bash (limit 590 s, bez background). Brak też wariantu „przed księgą” (wymaga osobnego builda z bazy sprzed części A).
-- GOAL 4 (diagnoza endTurn timeout, tura 57): NIE wykonano. Brak przebiegu 100 tur, więc nie ma dowodu, czy przyczyna to księga, harness czy baza.
-- GOAL 5 (`<details open>` przy przerysowaniu): NIE_ZMIERZONO (wymaga przerysowania karty w realnym DOM).
+- Dowody surowe: `runs/<ID>/evidence/endturn100/seed4242-ON.jsonl`, `seed4242-OFF.jsonl` (zdarzenia `done`, brak `error`, brak `stuck-dump` po odblokowaniu tury 1).
+- Tura 57 w obu wersjach: ON 8 398 ms, OFF 9 271 ms (liczba jednostek 290 i miast 81 w obu — przebiegi są deterministyczne i identyczne co do stanu świata).
 
-## Zmiany (commit)
+### Wniosek (etap 1)
 
-- `docs/encyklopedia/pojecia/skad-zapasy.md` (nowy)
-- `docs/encyklopedia/indeks.md`
-- `docs/PORADNIK-GRACZA/08-ekonomia-imperium.md`
-- `gra/src/data/wikiBundle.json`
-- `dyspozycje/autobot/runs/R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1/10-operator-claude.md` (ten raport)
+- **Timeout przy turze 57 NIE został odtworzony** — ani z księgą, ani bez niej, na bazie de12837ba, w 100 turach, seed 4242, z tą samą konfiguracją harnessu (plus preset podatku). Nie ma więc podstaw, by przypisać go księdze.
+- Nie da się rozstrzygnąć, czy to harness, czy warunki r3: konfiguracja przebiegu r3 (seed, typ, podatek, równoległość, baza) nie jest w raporcie r3 zapisana. Zgłaszam jako dług do ustalenia: „endTurn timeout t57 — nieodtwarzalny przy de12837ba; konfiguracja źródłowa nieznana”.
+- Zalecenie dla orkiestratora: temat #415 (AI-UPKEEP-Q2) i #417 blokowane diagnozą mogą ruszyć — bramka endTurn zachowuje się poprawnie; blokadą harnessu jest bramka podatku w turze 1 (do zgłoszenia jako osobny dług harnessu, nie naprawiany tutaj).
 
-Allowlista: wszystkie pliki mieszczą się w allowliście dispatchu (`docs/encyklopedia/**`, `docs/PORADNIK-GRACZA/**`, `gra/src/data/wikiBundle.json`, `runs/<ID>/**`). Nie zmieniono `gra/src/game/resource-ledger.ts`, `resourceSourceLedgerHtml.ts`, `empireDetailPanel.ts`, `gra/tools/*`, WERSJE.md, manifestu ani rust-port.
-
-## BLOKADY
-
-- Zakres rundy 1 nie obejmuje GOAL 1, 3, 4, 5. Wykonano GOAL 2 (dokumentacja).
-- Pomiary 100 tur wymagają ponad 10 min łącznego czasu przebiegu, który trzeba rozbić na kilka wywołań albo uruchomić poza Bash (zakaz run_in_background). Wymaga decyzji orkiestratora o trybie uruchomienia.
-- Rozbieżność bazy (dispatch 1947a3a33 vs część A) wymaga potwierdzenia.
-
-## RUNDY
-
-1/5. Ostatni werdykt: brak (Operator). Decyzja wymagana: potwierdzić bazę (origin/main 807ecebdd) i sposób uruchomienia pomiarów 100 tur.
-
-## NASTĘPNY KROK
-
-Runda 2 (Operator, ten sam ID): (a) zrzuty Chromium soli i ceramiki w `runs/<ID>/evidence/` (1280 i 1920 px); (b) pomiar `longrun-100-turns-leak-q1-measure.cjs` w kawałkach lub poza Bash, mediana ≥5 ON vs OFF (`setRecording(false)`); (c) diagnoza endTurn tura 57 z porównaniem bazy sprzed księgi; (d) test `<details open>`. Ponowna regeneracja wikiBundle nie jest potrzebna, jeśli treść poradnika/encyklopedii się nie zmieni.
-
-DEPLOY/PUSH: NIE WYKONANO
