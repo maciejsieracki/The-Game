@@ -1,3 +1,9 @@
+## ROBOCZA 33fe7440 -- 2026-11-14 -- FALA 751: Narzedzia weryfikacji bitwy na zywo po pelnym ruchu (tylko gra/tools) (testowa)
+
+- Nowe narzedzia pomiarowe: mieszana armia na zywo, ucieczka poscig neverRout, driver bitwy recznej vs AUTO, checker; kod gry bez zmian
+- Weryfikacja: tsc 0; logic 213/213; 5 bramek zielone; mutacje 28/28; mieszana armia 6 bitew 0 naruszen; ucieczka poscig 21 bitew 0 naruszen; FC live ziarno 4: 9 bitew 0 naruszen; vite build OK
+- Limity: NIE ZMIERZONO: limit odwrotu armii po bitwie (kampania); zrzuty tylko ilustracja; tryb reczny vs AUTO rozbieznosc 12/12 par - hipoteza niezweryfikowana; powtorzyc N2 po FALI 750
+
 ## ROBOCZA 38fa0673 -- 2026-11-14 -- FALA 750: Bitwa: arbitraz kolizji o pole - piechota przed lucznikiem (AUTO i SKIP) (testowa)
 
 - Gdy lucznik i piechota walcza o to samo pole, piechota je dostaje a lucznik zatrzymuje sie pole wczesniej i faza liczy sie od nowa; ten sam typ - wygrywa mniejsze ID; konnica rydwany i machiny bez zmian; tryb reczny pomija arbitraz
