@@ -1,0 +1,39 @@
+steady     lines=1 prio=0 engaged  | ranged shots/moves/idle javelin:30/0/0 archer:40/0/0 slinger:20/0/0 | mounted moves/melee/idle cavalry:10/30/0 chariot:24/3/0
+steady     lines=1 prio=0 corridor | ranged shots/moves/idle javelin:0/13/0 archer:0/37/0 slinger:0/24/0 | mounted moves/melee/idle cavalry:64/2/0 chariot:30/0/0
+steady     lines=1 prio=1 engaged  | ranged shots/moves/idle javelin:30/0/0 archer:40/0/0 slinger:20/0/0 | mounted moves/melee/idle cavalry:2/34/0 chariot:18/6/0
+steady     lines=1 prio=1 corridor | ranged shots/moves/idle javelin:0/29/0 archer:1/58/0 slinger:0/34/0 | mounted moves/melee/idle cavalry:66/2/0 chariot:29/0/0
+steady     lines=2 prio=0 engaged  | ranged shots/moves/idle javelin:30/0/0 archer:37/14/0 slinger:18/10/0 | mounted moves/melee/idle cavalry:10/30/0 chariot:24/3/0
+steady     lines=2 prio=0 corridor | ranged shots/moves/idle javelin:0/13/0 archer:0/44/0 slinger:0/31/0 | mounted moves/melee/idle cavalry:64/2/0 chariot:30/0/0
+steady     lines=2 prio=1 engaged  | ranged shots/moves/idle javelin:30/0/0 archer:37/14/0 slinger:18/10/0 | mounted moves/melee/idle cavalry:2/34/0 chariot:17/6/0
+steady     lines=2 prio=1 corridor | ranged shots/moves/idle javelin:0/25/0 archer:0/44/0 slinger:0/37/0 | mounted moves/melee/idle cavalry:66/2/0 chariot:29/0/0
+steady     lines=3 prio=0 engaged  | ranged shots/moves/idle javelin:30/0/0 archer:35/20/0 slinger:16/12/0 | mounted moves/melee/idle cavalry:10/30/0 chariot:24/3/0
+steady     lines=3 prio=0 corridor | ranged shots/moves/idle javelin:0/13/0 archer:0/49/0 slinger:0/32/0 | mounted moves/melee/idle cavalry:64/2/0 chariot:30/0/0
+steady     lines=3 prio=1 engaged  | ranged shots/moves/idle javelin:30/0/0 archer:35/20/0 slinger:16/12/0 | mounted moves/melee/idle cavalry:2/34/0 chariot:17/6/0
+steady     lines=3 prio=1 corridor | ranged shots/moves/idle javelin:0/25/0 archer:0/61/0 slinger:0/32/0 | mounted moves/melee/idle cavalry:66/2/0 chariot:29/0/0
+defensive  lines=1 prio=0 engaged  | ranged shots/moves/idle javelin:30/0/0 archer:40/0/0 slinger:20/0/0 | mounted moves/melee/idle cavalry:0/30/1 chariot:0/0/3
+defensive  lines=1 prio=0 corridor | ranged shots/moves/idle javelin:0/0/6 archer:0/0/8 slinger:0/0/4 | mounted moves/melee/idle cavalry:0/0/7 chariot:0/0/3
+defensive  lines=1 prio=1 engaged  | ranged shots/moves/idle javelin:30/0/0 archer:40/0/0 slinger:20/0/0 | mounted moves/melee/idle cavalry:0/30/1 chariot:0/0/3
+defensive  lines=1 prio=1 corridor | ranged shots/moves/idle javelin:0/0/6 archer:0/0/8 slinger:0/0/4 | mounted moves/melee/idle cavalry:0/0/7 chariot:0/0/3
+defensive  lines=2 prio=0 engaged  | ranged shots/moves/idle javelin:30/0/0 archer:20/0/4 slinger:0/0/4 | mounted moves/melee/idle cavalry:0/30/1 chariot:0/0/3
+defensive  lines=2 prio=0 corridor | ranged shots/moves/idle javelin:0/0/6 archer:0/0/8 slinger:0/0/4 | mounted moves/melee/idle cavalry:0/0/7 chariot:0/0/3
+defensive  lines=2 prio=1 engaged  | ranged shots/moves/idle javelin:30/0/0 archer:20/0/4 slinger:0/0/4 | mounted moves/melee/idle cavalry:0/30/1 chariot:0/0/3
+defensive  lines=2 prio=1 corridor | ranged shots/moves/idle javelin:0/0/6 archer:0/0/8 slinger:0/0/4 | mounted moves/melee/idle cavalry:0/0/7 chariot:0/0/3
+defensive  lines=3 prio=0 engaged  | ranged shots/moves/idle javelin:30/0/0 archer:15/0/5 slinger:0/0/4 | mounted moves/melee/idle cavalry:0/30/1 chariot:0/0/3
+defensive  lines=3 prio=0 corridor | ranged shots/moves/idle javelin:0/0/6 archer:0/0/8 slinger:0/0/4 | mounted moves/melee/idle cavalry:0/0/7 chariot:0/0/3
+defensive  lines=3 prio=1 engaged  | ranged shots/moves/idle javelin:30/0/0 archer:15/0/5 slinger:0/0/4 | mounted moves/melee/idle cavalry:0/30/1 chariot:0/0/3
+defensive  lines=3 prio=1 corridor | ranged shots/moves/idle javelin:0/0/6 archer:0/0/8 slinger:0/0/4 | mounted moves/melee/idle cavalry:0/0/7 chariot:0/0/3
+aggressive lines=1 prio=0 engaged  | ranged shots/moves/idle javelin:30/0/0 archer:40/0/0 slinger:20/0/0 | mounted moves/melee/idle cavalry:10/30/0 chariot:24/3/0
+aggressive lines=1 prio=0 corridor | ranged shots/moves/idle javelin:0/57/0 archer:0/78/0 slinger:0/40/0 | mounted moves/melee/idle cavalry:62/2/0 chariot:30/0/0
+aggressive lines=1 prio=1 engaged  | ranged shots/moves/idle javelin:30/0/0 archer:40/0/0 slinger:20/0/0 | mounted moves/melee/idle cavalry:10/30/0 chariot:24/3/0
+aggressive lines=1 prio=1 corridor | ranged shots/moves/idle javelin:0/58/0 archer:0/78/0 slinger:0/40/0 | mounted moves/melee/idle cavalry:66/2/0 chariot:29/0/0
+aggressive lines=2 prio=0 engaged  | ranged shots/moves/idle javelin:30/0/0 archer:33/14/0 slinger:13/10/0 | mounted moves/melee/idle cavalry:10/30/0 chariot:24/3/0
+aggressive lines=2 prio=0 corridor | ranged shots/moves/idle javelin:0/60/0 archer:0/80/0 slinger:0/40/0 | mounted moves/melee/idle cavalry:64/2/0 chariot:30/0/0
+aggressive lines=2 prio=1 engaged  | ranged shots/moves/idle javelin:30/0/0 archer:27/23/0 slinger:9/18/0 | mounted moves/melee/idle cavalry:10/30/0 chariot:24/3/0
+aggressive lines=2 prio=1 corridor | ranged shots/moves/idle javelin:0/60/0 archer:0/78/0 slinger:0/40/0 | mounted moves/melee/idle cavalry:66/2/0 chariot:29/0/0
+aggressive lines=3 prio=0 engaged  | ranged shots/moves/idle javelin:30/0/0 archer:30/18/0 slinger:13/13/0 | mounted moves/melee/idle cavalry:10/30/0 chariot:24/3/0
+aggressive lines=3 prio=0 corridor | ranged shots/moves/idle javelin:0/60/0 archer:0/80/0 slinger:0/40/0 | mounted moves/melee/idle cavalry:64/2/0 chariot:30/0/0
+aggressive lines=3 prio=1 engaged  | ranged shots/moves/idle javelin:30/0/0 archer:23/33/0 slinger:3/30/0 | mounted moves/melee/idle cavalry:10/30/0 chariot:24/3/0
+aggressive lines=3 prio=1 corridor | ranged shots/moves/idle javelin:0/60/0 archer:0/80/0 slinger:0/40/0 | mounted moves/melee/idle cavalry:66/2/0 chariot:29/0/0
+
+Matrix: 36 scenarios, 42 active units each, 5 activations, 0 red conditions
+Evidence written: /home/user/The-Game/.claude/worktrees/wf_951a88b2-52e-1/dyspozycje/autobot/runs/R-BITWA-BTF-MIXED-ARMY-DOCTRINES-Q1/01-matrix.json
