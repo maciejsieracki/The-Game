@@ -1,3 +1,9 @@
+## ROBOCZA f074e0f1 -- 2026-11-14 -- FALA 729: Brutto i netto na kartach surowcow (testowa)
+
+- Przy kazdym surowcu w panelu surowcow widac Brutto i netto na ture (netto po zuzyciu obywateli, budynkow i wojska); suma kart rowna sie naglowkowi
+- Weryfikacja: tsc 0; logic 213/213; resource-cards-gross-net 22/0; hud-gross-net-rest 820/0; zywy Chromium brutto 52 / netto -13; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: hotseat; plakietka +X obok Brutto/netto redundantna - do decyzji wlasciciela; 4 testy czerwone bazowe; dlug Rust REPIN nie dotyczy (UI)
+
 ## ROBOCZA 9ba327d6 -- 2026-11-14 -- FALA 728: Widok miasta: zetony w jednej linii, boczne panele wyzej (testowa)
 
 - W widoku miasta zetony lewego i prawego bannera (Praca, Zywnosc, Skarbiec / Nauka, Kultura, Religia) ukladaja sie w jednej linii bez zawijania, skala dopasowuje sie do szerokosci okna; boczne panele zaczynaja sie tuz pod bannerami

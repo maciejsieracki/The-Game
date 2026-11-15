@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "9ba327d6e871592875012649e2f838ec",
-  "bundleSha256": "2e0273d1c3d44075ee5a3061efd06d5153128e4e8b17a708a8b560d527fa8bee",
-  "bundleBytes": 14736097,
+  "bundleMd5": "f074e0f1f67df010823d183bceb296e2",
+  "bundleSha256": "33633b8734f33d225bb0e803f13bb77b6bb1d84f483060be107305ac905c85ec",
+  "bundleBytes": 14738021,
   "sourceSnapshot": {
-    "source": "merge FC CITY-VIEW 551d909d4 na main 3a6b0e405",
+    "source": "merge FC GROSS-NET 1c4a81e77 na main b4d12de7d",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 728: W widoku miasta zetony lewego i prawego bannera (Praca, Zywnosc, Skarbiec / Nauka, Kultura, Religia) ukladaja sie w jednej linii bez zawijania, skala dopasowuje sie do szerokosci okna; boczne panele zaczynaja sie tuz pod bannerami"
+    "FALA 729: Przy kazdym surowcu w panelu surowcow widac Brutto i netto na ture (netto po zuzyciu obywateli, budynkow i wojska); suma kart rowna sie naglowkowi"
   ],
   "verification": [
-    "tsc 0; logic 213/213; city-view-layout 120/0; side-panels-below-topbanners 61/0; FC PASS-WITH-NOTES"
+    "tsc 0; logic 213/213; resource-cards-gross-net 22/0; hud-gross-net-rest 820/0; zywy Chromium brutto 52 / netto -13; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "NIE ZMIERZONO: dluga Produkcja/kolejka, realna gra; czytelnosc zetonow ok. 11 px w oknach 1280-1366 px przy 6-7 cyfrach do decyzji wlasciciela; dlug testowy recruitment-panel-compact-row 7 FAIL"
+    "NIE ZMIERZONO: hotseat; plakietka +X obok Brutto/netto redundantna - do decyzji wlasciciela; 4 testy czerwone bazowe; dlug Rust REPIN nie dotyczy (UI)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES CITY-VIEW 551d909d4 / kod 46201adff: widok miasta - zetony lewego (Praca, Zywnosc, Skarbiec) i prawego (Nauka, Kultura, Religia) bannera w jednej linii poziomej, skala zetonow dobierana krokowo, boczne panele tuz pod bannerami; cap szerokosci TOP_STACK_MAX_PX 1480->1880. Testy: city-view-layout 120/0 (mutant 88/32), side-panels-below-topbanners 61/0, tsc 0, logic 213/213. NIE ZMIERZONO: dluga Produkcja/kolejka i przewijanie prawego panelu, realna gra. Do decyzji wlasciciela: czytelnosc zetonow ok. 11 px przy 6-7 cyfrach w oknach 1280-1366 px. Dlug testowy bazowy: recruitment-panel-compact-row 7 FAIL."
+    "notes": "FC PASS-WITH-NOTES GROSS-NET 1c4a81e77 / kod 14f242b7e: kazda karta surowca w panelu pokazuje Brutto i netto na ture (netto po zuzyciu obywateli, budynkow, wojska); suma kart = naglowek (modul resource-gross-net.ts); FC potwierdzil w zywym Chromium: brutto 52 / netto -13 zgodne z kartami. Testy: resource-cards-gross-net 22/0, hud-gross-net-rest 820/0, tsc 0, logic 213/213. NIE ZMIERZONO: hotseat. Do decyzji wlasciciela (nieblokujace): plakietka +X obok Brutto/netto jest redundantna. Dlug testowy bazowy: 4 testy czerwone na bazie."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-15T02:38:06",
+  "hubGeneratedAt": "2026-11-15T03:03:03",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "9ba327d6e871592875012649e2f838ec",
-      "sizeBytes": 14736097
+      "md5": "f074e0f1f67df010823d183bceb296e2",
+      "sizeBytes": 14738021
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "9ba327d6e871592875012649e2f838ec",
-      "sizeBytes": 14736097
+      "md5": "f074e0f1f67df010823d183bceb296e2",
+      "sizeBytes": 14738021
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "9ba327d6e871592875012649e2f838ec",
-      "sizeBytes": 14736097
+      "md5": "f074e0f1f67df010823d183bceb296e2",
+      "sizeBytes": 14738021
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "9ba327d6e871592875012649e2f838ec",
-      "sizeBytes": 14736097
+      "md5": "f074e0f1f67df010823d183bceb296e2",
+      "sizeBytes": 14738021
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "9ba327d6e871592875012649e2f838ec",
-      "sizeBytes": 14736097
+      "md5": "f074e0f1f67df010823d183bceb296e2",
+      "sizeBytes": 14738021
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "9ba327d6e871592875012649e2f838ec",
-      "sizeBytes": 14736097
+      "md5": "f074e0f1f67df010823d183bceb296e2",
+      "sizeBytes": 14738021
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "9ba327d6e871592875012649e2f838ec",
-      "sizeBytes": 14736097
+      "md5": "f074e0f1f67df010823d183bceb296e2",
+      "sizeBytes": 14738021
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "9ba327d6e871592875012649e2f838ec",
-      "sizeBytes": 14736097
+      "md5": "f074e0f1f67df010823d183bceb296e2",
+      "sizeBytes": 14738021
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "9ba327d6e871592875012649e2f838ec",
-      "sizeBytes": 14736097
+      "md5": "f074e0f1f67df010823d183bceb296e2",
+      "sizeBytes": 14738021
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "9ba327d6e871592875012649e2f838ec",
-      "sizeBytes": 14736097
+      "md5": "f074e0f1f67df010823d183bceb296e2",
+      "sizeBytes": 14738021
     }
   ],
-  "md5": "9ba327d6e871592875012649e2f838ec",
+  "md5": "f074e0f1f67df010823d183bceb296e2",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
