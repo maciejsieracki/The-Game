@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "942060c974b3148cdae6d4475ad224d2",
-  "bundleSha256": "b944454d2368a73de54ace58b81e9ec25aa1f954a4a207d5250d22625cf0d21e",
-  "bundleBytes": 14722010,
+  "bundleMd5": "9a88937d57fb7ec65d764c849aa84214",
+  "bundleSha256": "2b504adc7593c033e080a6b1711f3a9493b561c8b40d7c1237af14b79929518b",
+  "bundleBytes": 14731802,
   "sourceSnapshot": {
-    "source": "main 4f89a2071 (merge FC SPICHLERZ-CERAM f3300daf3)",
+    "source": "merge FC GARNC 582c5fceb + WEARY-FU 45e8c0ecf + GATE-r3 63f9ff0ee na main 78af786ed",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 723: zuzycie ceramiki Spichlerza I 25->10, Spichlerza Krolewskiego 25->20 na miasto na ture; sol II 25 bez zmian; usuniete utrzymanie surowcowe 2 ceramiki ze Spichlerza II; karty, Civpedia, poradnik zaktualizowane"
+    "FALA 724: Garncarnia produkuje 30/50/70/90/110 ceramiki na ture w epokach 1-5 (gracz i AI); cena pokoju stale 615 PW i licznik zmeczenia z miast obu stron; bramka Zakoncz ture liczy prognoze po turze od tury 1 (bez blokady przy braku recznych dzwigni)"
   ],
   "verification": [
-    "tsc 0; logic 213/213; building-upkeep-ceramics 645/0; spichlerz-drain-keys 56/0; spichlerz-drain-pipeline 33/0; mutacja czerwona; build Vite zielony"
+    "tsc 0; logic 213/213; garncarnia 28/0; c615 11/0; end-turn-gate-projection 49/0; drain-keys 56/0; FC PASS-WITH-NOTES x3"
   ],
   "limits": [
-    "NIE ZMIERZONO: zrzut Chromium karty Spichlerza I/II; dlug bazowy building-upkeep-resources D10 i card-resource-purpose B/W; dlug Rust REPIN parametrow drain"
+    "NIE ZMIERZONO: zrzut Chromium karty Garncarni; dlug testowy bazowy bez zmian; dlug Rust REPIN"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES SPICHLERZ-CERAM r1 f3300daf3 / kod 03f3fe6d5. Zuzycie ceramiki Spichlerza I 25->10, Spichlerza Krolewskiego 25->20 na miasto na ture (jedna wyplata na miasto); sol II 25 bez zmian; usuniete utrzymanie surowcowe 2 ceramiki ze Spichlerza II. Karty, Civpedia, poradnik i testy zaktualizowane. Testy ceramics-upkeep 645/0, drain-keys 56/0, drain-pipeline 33/0, tsc 0, logic 213/213; mutacja czerwona. NIE ZMIERZONO: zrzut Chromium karty Spichlerza I/II. Dlug bazowy: building-upkeep-resources D10, card-resource-purpose B/W. Dlug Rust REPIN parametrow drain."
+    "notes": "FC PASS-WITH-NOTES: GARNC 582c5fceb / kod 387a14d3a (Garncarnia 30/50/70/90/110 ceramiki/ture epoki 1-5); WEARY-FU 45e8c0ecf / kod b1fb6ac1e (cena pokoju 615 jedna prawda, licznik zmeczenia = miasta obu stron); GATE-r3 63f9ff0ee / kod b2b8c6ad5 (blokada Zakoncz ture liczy prognoze po turze od tury 1). Testy: garncarnia 28/0, c615 11/0, gate-projection 49/0, drain-keys 56/0, tsc 0, logic 213/213. NIE ZMIERZONO: zrzut Chromium karty miasta Garncarni, mennica-magazyn-test; wikiBundle regenerowany po merge. Dlug Rust REPIN: garncarnia przepustowosc, cena pokoju 615, bramka Zakoncz ture."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-14T22:33:00",
+  "hubGeneratedAt": "2026-11-15T00:19:37",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "942060c974b3148cdae6d4475ad224d2",
-      "sizeBytes": 14722010
+      "md5": "9a88937d57fb7ec65d764c849aa84214",
+      "sizeBytes": 14731802
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "942060c974b3148cdae6d4475ad224d2",
-      "sizeBytes": 14722010
+      "md5": "9a88937d57fb7ec65d764c849aa84214",
+      "sizeBytes": 14731802
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "942060c974b3148cdae6d4475ad224d2",
-      "sizeBytes": 14722010
+      "md5": "9a88937d57fb7ec65d764c849aa84214",
+      "sizeBytes": 14731802
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "942060c974b3148cdae6d4475ad224d2",
-      "sizeBytes": 14722010
+      "md5": "9a88937d57fb7ec65d764c849aa84214",
+      "sizeBytes": 14731802
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "942060c974b3148cdae6d4475ad224d2",
-      "sizeBytes": 14722010
+      "md5": "9a88937d57fb7ec65d764c849aa84214",
+      "sizeBytes": 14731802
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "942060c974b3148cdae6d4475ad224d2",
-      "sizeBytes": 14722010
+      "md5": "9a88937d57fb7ec65d764c849aa84214",
+      "sizeBytes": 14731802
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "942060c974b3148cdae6d4475ad224d2",
-      "sizeBytes": 14722010
+      "md5": "9a88937d57fb7ec65d764c849aa84214",
+      "sizeBytes": 14731802
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "942060c974b3148cdae6d4475ad224d2",
-      "sizeBytes": 14722010
+      "md5": "9a88937d57fb7ec65d764c849aa84214",
+      "sizeBytes": 14731802
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "942060c974b3148cdae6d4475ad224d2",
-      "sizeBytes": 14722010
+      "md5": "9a88937d57fb7ec65d764c849aa84214",
+      "sizeBytes": 14731802
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "942060c974b3148cdae6d4475ad224d2",
-      "sizeBytes": 14722010
+      "md5": "9a88937d57fb7ec65d764c849aa84214",
+      "sizeBytes": 14731802
     }
   ],
-  "md5": "942060c974b3148cdae6d4475ad224d2",
+  "md5": "9a88937d57fb7ec65d764c849aa84214",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

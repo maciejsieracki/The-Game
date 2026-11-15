@@ -1,3 +1,9 @@
+## ROBOCZA 9a88937d -- 2026-11-14 -- FALA 724: Garncarnia 30-110, zmeczenie PW C=615 (obie strony), bramka Zakoncz ture (testowa)
+
+- Garncarnia produkuje 30/50/70/90/110 ceramiki na ture w epokach 1-5 (gracz i AI); cena pokoju stale 615 PW i licznik zmeczenia z miast obu stron; bramka Zakoncz ture liczy prognoze po turze od tury 1 (bez blokady przy braku recznych dzwigni)
+- Weryfikacja: tsc 0; logic 213/213; garncarnia 28/0; c615 11/0; end-turn-gate-projection 49/0; drain-keys 56/0; FC PASS-WITH-NOTES x3
+- Limity: NIE ZMIERZONO: zrzut Chromium karty Garncarni; dlug testowy bazowy bez zmian; dlug Rust REPIN
+
 ## ROBOCZA 942060c9 -- 2026-11-14 -- FALA 723: Ceramika Spichlerza: Spichlerz I 10, Spichlerz Krolewski 20, bez utrzymania 2 ceramiki (testowa)
 
 - zuzycie ceramiki Spichlerza I 25->10, Spichlerza Krolewskiego 25->20 na miasto na ture; sol II 25 bez zmian; usuniete utrzymanie surowcowe 2 ceramiki ze Spichlerza II; karty, Civpedia, poradnik zaktualizowane
