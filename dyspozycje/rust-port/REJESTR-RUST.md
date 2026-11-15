@@ -1533,3 +1533,16 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Uruchomiono:** M01-R2 MapHex (`wf_0e33af85-341`, dispatch `bc151167a`), baza parity `a01363d5f`. Operator i Obrona HAIKU, Evaluator i FC SONNET (silnik, nie grafika). Pierwsza próba padła na brakującej stałej `H` w skrypcie (naprawione, bez wpływu na kod).
 - **P4-1I — D-DTO-7 (web):** web NIE ma strumienia zdarzeń bitwy. `buildBattleEventLog` (`units/battleRoster`) buduje log z rosteru i trafia do sceny jako wartość przy starcie (`battleScene.ts:597`, `:10724`). Wniosek: producent w Rust ma dostarczyć log jako snapshot z rosteru, a nie emitować zdarzenia z pętli. P4-1I wymaga przepisania zakresu wg tego wniosku przed startem.
 - **P4-1C–H:** zależą od B (blokada M01) lub J (w toku).
+
+## Przebieg (15.11, 12:48 UTC — heartbeat „twardy bit”, sloty Rust)
+
+- **KROK 1 (sloty):** 4 aktywne Workflow, brak nowych startów (warunek < 4 niespełniony):
+  - M01-R2 MapHex (`wf_0e33af85-341`, #210): Operator, etap 1/4, HAIKU, od 12:18; agent aktywny (transkrypt 12:47).
+  - P4-1J stan planów marszu (`wf_fa7a2e6d-ba0`, #209): etap 2/4 (pomiary), OPUS, od 11:43; etap impl PASS-WITH-NOTES, kod `78f5db10f`, raport `2169bd17d`.
+  - P4-1E CITY-VIEW (`wf_cd64d6c2-9fe`, #214): etap 1/4, OPUS, od 12:28.
+  - CRED-HAK wdrożenie, wycinek 1 (`wf_527c2223-a63`, #171): etap 1/4, HAIKU, od 12:50; dispatch `4b0b00257`.
+- **KROK 2 (FC PASS bez integracji):** brak. CRED-HAK rozpoznanie (`wf_be7eeab7-37f`) — FC PASS-WITH-NOTES `769d0aac3`; dokumenty runu przeniesione na gałąź roboczą (`cc4ca5309`).
+- **KROK 3 (sprzątanie):** brak zakończonych tematów do sprzątania w tym przebiegu. Dysk ok. 7,4 GB wolne.
+- **Odstępstwa zgłoszone:** P4-1J na OPUS (nazwa skryptu) — zasada: tematy silnika na HAIKU, zostawiam bieżący etap, kolejne silnikowe na HAIKU. Luka parytetu `generalTargetId` (web) pominięta w Rust → #221. Decyzja techniczna z P4-1J do zapisania: pola identyfikatorów `UnitId`, cel `i32`, wpisy niereprezentowalne pomijane z raportem `unrepresentable` (do potwierdzenia po FC).
+- **Uwaga do M01-R2:** w rendererze istnieje już `struct MapHex` (`rust-port/renderer/src/pick/terrain.rs:246`, podzbiór pól pod picking). Model z `hex.ts` w silniku nadal nie istnieje.
+- **NASTĘPNY KROK:** odebrać wyniki etapu pomiarów P4-1J i kolejnych etapów; po FC PASS — ancestry, FF, sprzątanie worktree i tagów `tgt*`.
