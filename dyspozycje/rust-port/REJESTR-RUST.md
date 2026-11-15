@@ -1784,3 +1784,15 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **#231 js_round — integracja w toku:** commit testu `16b901466` zmergowany na `1b8b67173` w worktree `integ-jsround` (`83f5fd654`). Bramki: `FMT_EXIT=0`, `CLIPPY_EXIT=0`, testy w toku (`integ-jsround.log`, 1126 passed do tej chwili, 0 failed). FF po `TEST_EXIT=0`.
 - **Następny krok:** po FF js_round — integracja `4183d0aab` (serde) na nowym parity z pełnym `cargo test`.
 - **Aktywne workflow:** OUTCOME r5 Sonnet (`wf_f3b76b65-261`), P4-1B Opus (`wf_3a9a9656-9bd`), R7K7C producer (`wf_84abd92e-70d`). Slot 4 wolny (zaplanowany następny).
+
+## Przebieg (15.11, 18:xx UTC — P4-1B rozpoznanie zamknięte, start Q1/Q2; R7K7C producent rozpoznany)
+
+- **P4-1B rozpoznanie (FC PASS `e7ca2eb90`, Opus):** dokumenty na `c2c5c6aa9`. Ustalenia: `compute_road_mask`, `trim_medium_*` i `river_render_paths` nie istnieją w Rust; `PlayableMap` nie ma riverPaths, rzek ani wiosek (tylko `SnapshotMap` ma komplet pól). `SnapshotMap.hexes` ma kolejność wstawienia, nie r-major → producent sortuje po `(r,q)`.
+- **P4-1B-Q1 ROADMASK (START, Opus):** `R-RUSTPORT-P4-1B-Q1-ROADMASK`, dispatch `6671d53de`, baza `1b8b67173`, `wf_13666f01-79e`. Allowlista: `road_network.rs`, `domain/mod.rs` (1 linia), testy i wektory.
+- **P4-1B-Q2 RIVER-TRIM (START, Opus):** `R-RUSTPORT-P4-1B-Q2-RIVER-TRIM`, ta sama baza, `wf_3095763c-84a`. Allowlista rozłączna: `rivers_a/render_trim.rs`, `rivers_a.rs` (1 linia).
+- **Q3 MAP-VIEW-PRODUCER (#211):** zależy od Q1+Q2 i decyzji technicznej o modelu mapy. Domyślnie `&SnapshotMap` (jedyny model z kompletem pól) — zostanie zapisane jako decyzja techniczna przy starcie Q3.
+- **R7K7C producent wpisów AI (FC PASS-WITH-NOTES `3d9e07254`):** dokumenty `d85bf93bf`. Decyzja techniczna dla #106: **parytet 1:1 z pinem** (`?? 0` dla AI, `main.ts:34865`, `:34877`, `:22642`), **bez pytania do właściciela** (web rozstrzyga). Opcja „seed 0” odrzucona — pin nie seeduje, a `eliminateOwner` kasuje wpisy (`main.ts:35380-35381`).
+  - Nowe ustalenia: `eliminacja.rs` NIE czyści `ai_treasury_by_owner`/`praca_pool_by_owner` (ROZBIEŻNE z pinem); `siege_capital_plunder.rs` ma już regułę puli Pracy (eliminacja, przejęcie stolicy), brakuje tylko adaptera do PlayableState (#115); cytaty `main.ts:36146/36180` były błędne (refund kolejki, nie reguła przejęcia).
+- **Integracja js_round (#231):** w toku, `integ-jsround.log`: fmt i clippy EXIT 0, testy 1643 passed, 0 failed do tej chwili, bez `TEST_EXIT`. FF po zielonym wyniku.
+- **Serde (#170):** implementacja `4183d0aab` gotowa, FC PASS-WITH-NOTES `7920550f1`; integracja po js_round.
+- **Aktywne workflow:** OUTCOME r5 Sonnet (`wf_f3b76b65-261`), P4-1B Q1 Opus (`wf_13666f01-79e`), P4-1B Q2 Opus (`wf_3095763c-84a`). Slot 4 wolny.
