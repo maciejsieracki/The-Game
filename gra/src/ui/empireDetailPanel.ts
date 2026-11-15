@@ -591,9 +591,9 @@ ${RESOURCE_CHIP_CSS}
 .civ-emp-res-skad[open]>summary::before{content:'▾ ';}
 .civ-emp-res-skad-body{margin-top:6px;padding:8px 9px;border-radius:6px;background:rgba(15,20,28,.55);
   display:flex;flex-direction:column;gap:3px;}
-.civ-emp-res-skad-row{display:flex;justify-content:space-between;gap:8px;font-size:11px;
+.civ-emp-res-skad-row{display:flex;justify-content:flex-start;gap:8px;font-size:11px;
   font-variant-numeric:tabular-nums;color:#b8c4d8;}
-.civ-emp-res-skad-row .v{font-weight:600;}
+.civ-emp-res-skad-row .v{font-weight:600;min-width:44px;text-align:right;}
 .civ-emp-res-skad-row.gain .v{color:#8fd694;}
 .civ-emp-res-skad-row.loss .v{color:#e07a7a;}
 .civ-emp-res-skad-note{font-size:10px;color:#8f9bb0;margin-top:2px;}
@@ -3597,7 +3597,7 @@ export function resCardHtml(r: EmpireResourceRow): string {
     + (flagNote ? `<div class="civ-emp-res-flag-note ${state}">${esc(flagNote)}</div>` : '')
     + resCitizenBadgeHtml(r)
     + resUsageDetailsHtml(r)
-    + resSkadZapasyHtml(r.id)
+    + resSkadZapasyHtml(r.id, r.ownerId ?? 0)
     + `</div>`;
 }
 

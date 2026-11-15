@@ -4060,7 +4060,7 @@ async function boot(): Promise<void> {
           c.id, citizenUpkeep.deductions, ownerBuildingResUpkeep, ownerUnitResUpkeep,
         );
         rows.push({
-          id: c.id, label: c.label, icon: c.icon, stock, ratePerTurn, typ: c.typ, dostep,
+          id: c.id, label: c.label, icon: c.icon, stock, ratePerTurn, typ: c.typ, dostep, ownerId,
           rateProductionPerTurn: production,
           ...(diploOut > 0 ? { rateDiploOutPerTurn: diploOut } : {}),
           ...(diploIn > 0 ? { rateDiploInPerTurn: diploIn } : {}),

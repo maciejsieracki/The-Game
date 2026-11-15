@@ -34,8 +34,8 @@ export function resourceSourceLedgerDetailsHtml(
   const rows = lines.map(l => {
     const sign = l.amount > 0 ? '+' : '−';
     const cls = l.gain ? 'gain' : 'loss';
-    return `<div class="civ-emp-res-skad-row ${cls}"><span class="k">${escHtml(l.label)}</span>`
-      + `<span class="v">${sign}${escHtml(String(Math.abs(l.amount)))}</span></div>`;
+    return `<div class="civ-emp-res-skad-row ${cls}"><span class="v">${sign}${escHtml(String(Math.abs(l.amount)))}</span>`
+      + `<span class="k">${escHtml(l.label)}</span></div>`;
   }).join('');
   return `<details class="civ-emp-res-skad"${open ? ' open' : ''}>`
     + `<summary>Skąd zapasy (ostatnie ${escHtml(String(turnCount))} tur)</summary>`

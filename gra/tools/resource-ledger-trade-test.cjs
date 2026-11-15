@@ -258,6 +258,16 @@ console.log('[7] Wpięcie w main.ts (sprawdzenie struktury źródła; zachowanie
   check('7g wycinka gracza: guard isHuman w pętli hexClearingStates', /if \(!isHuman\(st\.ownerId\)\) continue;/.test(clrBody));
   check('7h wycinka gracza: zapis do księgi `wycinka|${ownerId}` (kind wycinka) PO creditOwnerResourceStock w tej samej pętli', iCredit > 0 && iLedger > iCredit && /kind: 'wycinka'/.test(clrBody), `iCredit=${iCredit} iLedger=${iLedger}`);
   check('7i wycinka AI: zapis do okna pending (kind wycinka) istnieje', /recordLedgerFlow\(pendingLedgerSink\(ownerId, 'wycinka'/.test(mainSrc));
+  // R-WEB-UI-RESOURCE-SOURCE-LEDGER-UI-AND-REST-Q1 (partia 4, zarzut 7 Evaluatora): kwota zapisu do księgi
+  // MUSI być wartością zwróconą przez creditOwnerResourceStock (`wycinkaGot`), a nie stałą ani inną zmienną.
+  // Wzorzec: przypisanie `wycinkaGot = creditOwnerResourceStock(` w pętli + argument `wycinkaGot` w zapisie.
+  const ledgerWriteRe = /recordLedgerFlow\(ledgerTurnForOwner\(econ\.resourceLedgerByOwner, ownerId\), 'drewno', `wycinka\|\$\{ownerId\}`,\s*\{ kind: 'wycinka', label: 'Wycinka lasu' \}, wycinkaGot\)/;
+  const gotAssignRe = /const wycinkaGot = creditOwnerResourceStock\(/;
+  const ok7j = ledgerWriteRe.test(clrBody) && gotAssignRe.test(clrBody);
+  check('7j wycinka gracza: kwota zapisu księgi = wycinkaGot (wynik creditOwnerResourceStock)', ok7j);
+  // Mutacja (samokontrola asercji 7j): kwota zapisu zastąpiona stałą 0 MUSI czerwienić 7j.
+  const clrMut = clrBody.replace(/, wycinkaGot\);/, ', 0);');
+  check('7k mutacja wycinki gracza (kwota 0 w księdze) MUSI czerwienić 7j', clrMut !== clrBody && !ledgerWriteRe.test(clrMut));
 }
 
 console.log(`\nRESULT: ${passed} passed, ${failed} failed`);
