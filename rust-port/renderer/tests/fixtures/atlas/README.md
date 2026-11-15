@@ -11,8 +11,15 @@ Two fixture files, both produced by **running** reference code; nothing is hand-
 | `gen_gl.mjs` | `d39710012325ce749dc0ef8dc4ad2cb269016c073fbeb4ab58b70d1d9e4d2556` | — | generator of `atlas_gl.json` |
 
 `SHA256SUMS` holds the same sums (`sha256sum -c SHA256SUMS`). Both generators are deterministic
-(fixed xorshift seeds); a second run gives byte-identical files
-(`dyspozycje/autobot/runs/R-RUSTPORT-P4-31-ATLAS-CACHE-Q1/dowody/06-fixtures-repro.log`).
+(fixed xorshift seeds); a second run gives byte-identical files **only with the same tool
+versions** (`dyspozycje/autobot/runs/R-RUSTPORT-P4-31-ATLAS-CACHE-Q1/dowody/06-fixtures-repro.log`,
+round 1 files `64bba615…` / `6ff44618…`). Each file records its tools in metadata fields —
+`atlas_keys.json`: `node`; `atlas_gl.json`: `browser`, `userAgent` — so another node or Chromium
+build changes those fields and therefore the file SHA-256, while every data section stays
+identical. Measured on the round 2 files (Evaluator r3, `dowody/15-evaluator-r3-fixtures-regen.log`):
+node v22.23.4 instead of v22.22.0 and Chromium 153.0.8010.12 instead of 141.0.7390.37 gave identical
+data (`badgeKeys` … `purge`; `cases`, `up`) and differed only in those three fields. Compare data
+sections, not file hashes, when regenerating with other versions.
 
 ## `atlas_keys.json` — web key / scale functions
 

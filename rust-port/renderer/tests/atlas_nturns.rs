@@ -326,6 +326,58 @@ fn lru_bound_keeps_shown_textures_alive() {
 }
 
 #[test]
+fn lru_eviction_of_a_shown_texture_duplicates_it() {
+    // Evaluator r3 finding 5 (documented in `raster/atlas/cache.rs`): the
+    // RR-T6 LRU evicts by age only, without looking at the reference count.
+    // Two cities show the SAME key; a third key evicts it while it is shown;
+    // the second city then gets a second texture with the same content.
+    let fake = FakeGpu::new();
+    let assets: Assets<FakeResource> = Assets::new();
+    let mut badges = BadgeTextures::new(&assets, CachePolicy::max_entries(1));
+    let input = |name: &str| CityMapBadgeInput {
+        city_name: name.into(),
+        population: 3.0,
+        civ_icon_id: "grecy".into(),
+        ..CityMapBadgeInput::default()
+    };
+    let (a, b) = (input("Ateny"), input("Sparta"));
+    let (ka, kb) = (city_map_badge_key(&a), city_map_badge_key(&b));
+    badges
+        .sync("c1", &ka, || paint(&fake, &ka, &a))
+        .expect("c1");
+    badges
+        .sync("c2", &kb, || paint(&fake, &kb, &b))
+        .expect("c2 evicts the shown Ateny texture from the cache");
+    assert!(!badges.cache().contains_key(&ka), "evicted while shown");
+    assert_eq!(badges.cache().cache_stats().evicted_lru, 1);
+    assert_eq!(
+        fake.live(ResourceKind::Texture),
+        2,
+        "shown texture kept alive"
+    );
+    badges
+        .sync("c3", &ka, || paint(&fake, &ka, &a))
+        .expect("c3 repaints the same key");
+    assert_eq!(badges.key("c1"), badges.key("c3"));
+    assert_ne!(
+        badges.texture("c1").expect("c1").handle(),
+        badges.texture("c3").expect("c3").handle(),
+        "same key, two textures"
+    );
+    assert_eq!(
+        fake.live(ResourceKind::Texture),
+        3,
+        "duplicate VRAM: 2 keys on screen, 3 textures"
+    );
+    assert_eq!(badges.live_key_count(), 2);
+    // The duplicate goes once its holders let go; with UNBOUNDED (the T14
+    // default) the second sync would have hit the cache instead.
+    badges.remove("c1");
+    assets.flush().expect("flush");
+    assert_eq!(fake.live(ResourceKind::Texture), 2);
+}
+
+#[test]
 fn nturns_is_deterministic() {
     let (_, a) = run(0x5eed_0031, CachePolicy::UNBOUNDED);
     let (_, b) = run(0x5eed_0031, CachePolicy::UNBOUNDED);
