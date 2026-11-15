@@ -1758,3 +1758,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **#98 integracja (wyłom):** test `integ-wylom-r2.log` nadal w toku: 1940 passed, 0 failed do tej chwili, bez TEST_EXIT. FF po zielonym wyniku.
 - **Dysk:** 16 GB wolne (60%) po sprzątaniu worktree #231 i #233.
 - **Aktywne (4):** #226 r4 (`wf_1723bc09-ab6`), #170 (`wf_09292c69-b87`), P4-1B (`wf_3a9a9656-9bd`), plus test integracji #98 (nie workflow). Czwarty slot — po integracji #98.
+
+## Przebieg (15.11, 18:xx UTC — #226 K5LOOP-OUTCOME: runda 4 FAIL, runda 5 na Sonnecie)
+
+- **Runda 4 (`wf_1723bc09-ab6`):** Operator DECISION_REQUIRED bez kodu (`282e8bc9a`), Evaluator FAIL (`1a0c388eb`), Obrona PASS-WITH-NOTES (`72042494a`), **FC FAIL** (`dc9abfc0b`). Zakres rundy 4 (Kill, MoraleOnly, rout-flaga) nie został dostarczony. Dwa Operatory Haiku (rundy 3 i 4) nie dały kodu.
+- **Decyzja orkiestratora (zgodnie z regułą modeli):** runda 5 jako OSTATNIA w limicie 5/5 na **Sonnecie** na Operatorze, z pisemnym uzasadnieniem w dispatchu (`d772efc6d`). Warunek „dwóch nieudanych rund Haiku tego samego tematu” spełniony. Zakres bez zmian: Kill, MoraleOnly i rout-flaga; ripple ucieczki (#123) i dowódca jawnie `unported`. BLOCK dozwolony tylko z dowodem plik:linia.
+- **Start:** `wf_f3b76b65-261` (`topic-R-RUSTPORT-P6-K5LOOP-OUTCOME-R5-SONNET.js`, Operator = SONNET, reszta bez zmian).
+- **Sprzątanie:** worktree rundy 4 usunięte; HEAD w `refs/keep/cleanup-wf_1723bc09-ab6-*`. Dysk: 16 GB wolne (60%).
+- **Jeśli runda 5 FAIL:** temat wraca do właściciela jako ABC (podział na KILL/MORALE albo wstrzymanie), bo limit rund zostanie wyczerpany.
