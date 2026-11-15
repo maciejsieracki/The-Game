@@ -1,0 +1,201 @@
+{
+ "part": "det",
+ "startedAt": "2026-11-15T22:34:03.309Z",
+ "runs": [
+  {
+   "i": 0,
+   "seed": 1,
+   "comp": 0,
+   "sec": 25,
+   "hash": "14f9e9bbefc63f74ba042df02e716f88",
+   "winner": "atakujacy",
+   "rounds": 11
+  },
+  {
+   "i": 1,
+   "seed": 1,
+   "comp": 0,
+   "sec": 23,
+   "hash": "14f9e9bbefc63f74ba042df02e716f88",
+   "winner": "atakujacy",
+   "rounds": 11
+  },
+  {
+   "i": 2,
+   "seed": 1,
+   "comp": 0,
+   "sec": 25,
+   "hash": "14f9e9bbefc63f74ba042df02e716f88",
+   "winner": "atakujacy",
+   "rounds": 11
+  },
+  {
+   "i": 3,
+   "seed": 1,
+   "comp": 0,
+   "sec": 23,
+   "hash": "14f9e9bbefc63f74ba042df02e716f88",
+   "winner": "atakujacy",
+   "rounds": 11
+  },
+  {
+   "i": 4,
+   "seed": 1,
+   "comp": 0,
+   "sec": 23,
+   "hash": "14f9e9bbefc63f74ba042df02e716f88",
+   "winner": "atakujacy",
+   "rounds": 11
+  },
+  {
+   "i": 5,
+   "seed": 1,
+   "comp": 0,
+   "sec": 26,
+   "hash": "14f9e9bbefc63f74ba042df02e716f88",
+   "winner": "atakujacy",
+   "rounds": 11
+  },
+  {
+   "i": 6,
+   "seed": 1,
+   "comp": 0,
+   "sec": 25,
+   "hash": "14f9e9bbefc63f74ba042df02e716f88",
+   "winner": "atakujacy",
+   "rounds": 11
+  },
+  {
+   "i": 7,
+   "seed": 1,
+   "comp": 0,
+   "sec": 26,
+   "hash": "14f9e9bbefc63f74ba042df02e716f88",
+   "winner": "atakujacy",
+   "rounds": 11
+  },
+  {
+   "i": 8,
+   "seed": 1,
+   "comp": 0,
+   "sec": 27,
+   "hash": "14f9e9bbefc63f74ba042df02e716f88",
+   "winner": "atakujacy",
+   "rounds": 11
+  },
+  {
+   "i": 9,
+   "seed": 1,
+   "comp": 0,
+   "sec": 25,
+   "hash": "14f9e9bbefc63f74ba042df02e716f88",
+   "winner": "atakujacy",
+   "rounds": 11
+  },
+  {
+   "i": 10,
+   "seed": 1,
+   "comp": 0,
+   "sec": 25,
+   "hash": "14f9e9bbefc63f74ba042df02e716f88",
+   "winner": "atakujacy",
+   "rounds": 11
+  },
+  {
+   "i": 11,
+   "seed": 1,
+   "comp": 0,
+   "sec": 28,
+   "hash": "14f9e9bbefc63f74ba042df02e716f88",
+   "winner": "atakujacy",
+   "rounds": 11
+  },
+  {
+   "i": 12,
+   "seed": 1,
+   "comp": 0,
+   "sec": 30,
+   "hash": "14f9e9bbefc63f74ba042df02e716f88",
+   "winner": "atakujacy",
+   "rounds": 11
+  },
+  {
+   "i": 13,
+   "seed": 1,
+   "comp": 0,
+   "sec": 27,
+   "hash": "14f9e9bbefc63f74ba042df02e716f88",
+   "winner": "atakujacy",
+   "rounds": 11
+  },
+  {
+   "i": 14,
+   "seed": 1,
+   "comp": 0,
+   "sec": 28,
+   "hash": "14f9e9bbefc63f74ba042df02e716f88",
+   "winner": "atakujacy",
+   "rounds": 11
+  },
+  {
+   "i": 15,
+   "seed": 1,
+   "comp": 0,
+   "sec": 26,
+   "hash": "14f9e9bbefc63f74ba042df02e716f88",
+   "winner": "atakujacy",
+   "rounds": 11
+  },
+  {
+   "i": 16,
+   "seed": 1,
+   "comp": 0,
+   "sec": 32,
+   "hash": "14f9e9bbefc63f74ba042df02e716f88",
+   "winner": "atakujacy",
+   "rounds": 11
+  },
+  {
+   "i": 17,
+   "seed": 1,
+   "comp": 0,
+   "sec": 32,
+   "hash": "14f9e9bbefc63f74ba042df02e716f88",
+   "winner": "atakujacy",
+   "rounds": 11
+  },
+  {
+   "i": 18,
+   "seed": 1,
+   "comp": 0,
+   "sec": 29,
+   "hash": "14f9e9bbefc63f74ba042df02e716f88",
+   "winner": "atakujacy",
+   "rounds": 11
+  },
+  {
+   "i": 19,
+   "seed": 1,
+   "comp": 0,
+   "sec": 31,
+   "hash": "14f9e9bbefc63f74ba042df02e716f88",
+   "winner": "atakujacy",
+   "rounds": 11
+  }
+ ],
+ "checks": [
+  {
+   "name": "(c) determinizm: ten sam seed -> ten sam skrot zdarzen",
+   "ok": true,
+   "msg": ""
+  }
+ ],
+ "totals": {
+  "n": 20,
+  "distinct": 1,
+  "counts": {
+   "14f9e9bbefc63f74ba042df02e716f88": 20
+  }
+ },
+ "finishedAt": "2026-11-15T22:42:58.798Z"
+}
