@@ -1,0 +1,87 @@
+//! TYMCZASOWY pomiar P4-1J (NIE commitowany): wszystkie pliki *.json w tests/** czytane jako
+//! `PlayableState` i jako zapis `SaveSnapshot`; ponowna serializacja (compact, pretty, pretty z Value)
+//! do jednego strumienia; SHA-256 liczone na zewnatrz (`sha256sum`). Ten sam plik uruchamiany na bazie
+//! a01363d5f i na galezi.
+
+#[path = "../src/domain/events.rs"]
+#[allow(dead_code)]
+mod events;
+
+#[path = "../src/domain/save_load.rs"]
+#[allow(dead_code)]
+mod save_load;
+
+#[path = "common/snapshot.rs"]
+#[allow(dead_code)]
+mod snapshot;
+
+use civ_engine::{PlayableGame, PlayableState, StartGameParams};
+use std::fmt::Write as _;
+use std::path::{Path, PathBuf};
+
+fn walk(dir: &Path, out: &mut Vec<PathBuf>) {
+    let mut entries: Vec<_> = std::fs::read_dir(dir)
+        .expect("dir")
+        .map(|e| e.expect("entry").path())
+        .collect();
+    entries.sort();
+    for path in entries {
+        if path.is_dir() {
+            walk(&path, out);
+        } else if path.extension().is_some_and(|ext| ext == "json") {
+            out.push(path);
+        }
+    }
+}
+
+#[test]
+fn zz_measure() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests");
+    let mut files = Vec::new();
+    walk(&root, &mut files);
+    let mut stream = String::new();
+    let (mut n_state, mut n_snap, mut n_state_identical, mut n_snap_identical) = (0, 0, 0, 0);
+    for path in &files {
+        let rel = path.strip_prefix(&root).expect("rel").display().to_string();
+        let text = std::fs::read_to_string(path).expect("read");
+        let trimmed = text.trim_end_matches('\n');
+        if let Ok(state) = serde_json::from_str::<PlayableState>(&text) {
+            n_state += 1;
+            let compact = serde_json::to_string(&state).expect("c");
+            let pretty = serde_json::to_string_pretty(&state).expect("p");
+            let value =
+                serde_json::to_string_pretty(&serde_json::to_value(&state).expect("v")).expect("pv");
+            if compact == trimmed || pretty == trimmed || value == trimmed {
+                n_state_identical += 1;
+            }
+            let _ = writeln!(stream, "STATE {rel}\n{compact}\n{pretty}\n{value}");
+        }
+        if let Ok(snap) = snapshot::decode_snapshot_str(&text) {
+            n_snap += 1;
+            let compact = serde_json::to_string(&snap).expect("c");
+            let value =
+                serde_json::to_string_pretty(&serde_json::to_value(&snap).expect("v")).expect("pv");
+            if compact == trimmed || value == trimmed {
+                n_snap_identical += 1;
+            }
+            let _ = writeln!(stream, "SNAP {rel}\n{compact}\n{value}");
+        }
+    }
+    let empty = serde_json::to_string(&PlayableState::empty()).expect("e");
+    let mut game = PlayableGame::new(StartGameParams::default()).expect("g");
+    let fresh = serde_json::to_string(game.state()).expect("f");
+    game.advance_turn();
+    let after = serde_json::to_string(game.state()).expect("a");
+    let _ = writeln!(stream, "EMPTY\n{empty}\nNEW\n{fresh}\nAFTER\n{after}");
+    let out = std::env::var("ZZ_OUT").expect("ZZ_OUT");
+    std::fs::write(&out, &stream).expect("write");
+    println!(
+        "ZZ files={} state={} state_identical={} snap={} snap_identical={} bytes={}",
+        files.len(),
+        n_state,
+        n_state_identical,
+        n_snap,
+        n_snap_identical,
+        stream.len()
+    );
+}
