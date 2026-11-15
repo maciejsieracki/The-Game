@@ -1642,3 +1642,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
   - (c) Status #114 ELIMINACJA-GRACZA („completed") nie zgadza się z kodem: `eliminate_owner` (`eliminacja.rs:48`) nie ma wołającego w produkcji. Wracam do „w toku" do czasu podpięcia.
   - (d) Zakres #115 nie obejmuje jeszcze aneksji (`main.ts:35272-35287`), cesji (`:36478-36484`), buntu (`:39563-39568`) i fortu (`:16116-16124`). Osobne rozpoznanie przed #115.
 - **R7K7C — rozpoznanie #176:** start nieudany (`WorktreeIsolationError` przy zapełnionym dysku). Do ponowienia po zwolnieniu miejsca.
+
+## Przebieg (15.11, 16:18 UTC — heartbeat „twardy bit”, sloty Rust)
+
+- **KROK 1 (sloty):** 4 aktywne Workflow: P4-1E CITY-VIEW (#214) w FC, HAIKU/OPUS wg etapu; wyłom wieży (#98) w Operatorze, HAIKU, baza `d5a52a980`; zdobycie miasta — rozpoznanie (#175) w FC, tylko odczyt; R7K7C — status (#176) w Evaluatorze, tylko odczyt. M01-R2 (#210) — FC zakończony (PASS-WITH-NOTES `ff3897d98`), integracja czeka na test.
+- **KROK 2 (FC PASS bez integracji):** M01-R2 — merge `10a2fc4af` na `d5a52a980` (czysty); pełny test w toku (log `integ-m01-3.log`). Poprzedni przebieg zniknął bez kodu wyjścia i został powtórzony. Po zielonym wyniku: FF parity i `refs/keep`.
+- **KROK 3 (sprzątanie):** usunięto worktree CRED-HAK i M01 zakończonych etapów oraz cache `target-integ`. Dysk: ok. 4,3 GB wolne.
+- **NASTĘPNY KROK:** wynik testu M01 → integracja; odebrać FC #98, #175, #176.
