@@ -1671,3 +1671,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Brak w tym przebiegu:** `02-evaluator.md` nie został zacommitowany przez workflow; werdykt Evaluatora jest zapisany w wyniku workflow, nie w pliku. `cargo` nie był uruchamiany (rozpoznanie statyczne).
 - **Zacommitowane:** `dyspozycje/autobot/runs/R-RUSTPORT-P6-R7K7C-STATUS-ROZPOZNANIE-Q1/` (01, 02a, 03), commit `b52b89559`, push na `claude/rust-sivvrn`. Commity roboczych worktree (`e3dccec52`, `f9c069020`, `0a053631d`) nie są ancestorami parity i nie zostały zintegrowane w całości.
 - **#176 → completed; #224 → completed.** #106 pozostaje pending.
+
+## Przebieg (15.11, 17:xx UTC — integracja P4-1E CITY-VIEW #222)
+
+- **Warunki:** FC PASS-WITH-NOTES `185e3c0f3`; integracja `f7baa3848` na parity `10a2fc4af`. Bramki na `f7baa3848`: `FMT_EXIT=0`, `CLIPPY_EXIT=0`, `TEST_EXIT=0` (3456 passed, 0 failed) w `integ-p41e.log`.
+- **Ancestry:** `185e3c0f3` jest przodkiem `f7baa3848` (kod operatora w integracji); `10a2fc4af` jest przodkiem `f7baa3848` (FF).
+- **Push:** `origin/rust-port/parity-v2` = `f7baa3848` (fast-forward z `10a2fc4af`). `refs/keep/P4-1E-CITY-VIEW-integ` = `f7baa3848`.
+- **Sprzątanie:** usunięto worktree `integ-p41e` (z nieśledzonym `rust-port/engine/Cargo.lock`, niecommitowanym) i cache `target-integ-m01`. Dysk: 14 GB wolne (64%).
+- **Odblokowane:** #211–#218 (P4-1B…I, Opus) zależą od tego, co już jest na parity; ich kolejność i start wymagają osobnego dispatchu. #222 → completed.
+- **NIE_ZMIERZONO:** wynik workflow #98 (wyłom wieży) nadal w toku; nie dotyczy tej integracji.
