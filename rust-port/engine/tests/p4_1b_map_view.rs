@@ -486,10 +486,27 @@ fn mutacja_bez_sortowania_daje_fail() {
         let expected: Vec<HexCoord> = c.expected_view.hexes.iter().map(|h| h.coord).collect();
         if unsorted != expected {
             diverged += 1;
+            // Mutant: pelne heksy DTO w kolejnosci wejscia (bez sortowania po `(r, q)`).
             let mut v = view(c);
-            for (dst, (_, h)) in v.hexes.iter_mut().zip(&c.map.hexes) {
-                dst.coord = HexCoord::new(h.coords.q, h.coords.r);
-            }
+            let sorted = v.hexes.clone();
+            v.hexes = unsorted
+                .iter()
+                .map(|k| {
+                    sorted
+                        .iter()
+                        .find(|h| h.coord == *k)
+                        .expect("heks mutanta")
+                        .clone()
+                })
+                .collect();
+            // (a) rozjazd bajt w bajt z wektorami pinu;
+            assert_ne!(
+                ser(&v),
+                ser(&c.expected_view),
+                "{}: mutant bez sortowania zgodny z pinem",
+                c.name
+            );
+            // (b) walidacja odrzuca kolejnosc.
             assert!(
                 matches!(validate_map(&v), Err(ViewError::HexOrder { .. })),
                 "{}",
