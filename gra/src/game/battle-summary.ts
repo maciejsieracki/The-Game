@@ -124,16 +124,21 @@ export function buildAnnihilationNote(
 
 /** Tekst linii unicestwienia (po polsku), używany w UI i w testach. */
 export function formatAnnihilationLine(a: BattleSummaryAnnihilation): string {
-  return 'Unicestwienie: ' + a.label + ' \u2014 ' + a.units + ' ' + unitsWordPl(a.units)
-    + ' zniszczonych; powód: ' + a.reason + '.';
+  return 'Unicestwienie: ' + a.label + ' \u2014 ' + a.units + ' ' + unitsPhrasePl(a.units)
+    + '; pow\u00f3d: ' + a.reason + '.';
 }
 
-function unitsWordPl(n: number): string {
-  if (n === 1) return 'jednostka';
+/**
+ * Rzeczownik + imiesłów zgodnie z polską odmianą (jednostka = rodzaj żeński):
+ * 1, 21, 31 → „jednostka zniszczona”; 2–4, 22–24 (nie 12–14) → „jednostki zniszczone”;
+ * reszta (0, 5–21, 25–30) → „jednostek zniszczonych”. Liczbę dopisuje wywołujący.
+ */
+function unitsPhrasePl(n: number): string {
   const last = n % 10;
   const last2 = n % 100;
-  if (last >= 2 && last <= 4 && (last2 < 12 || last2 > 14)) return 'jednostki';
-  return 'jednostek';
+  if (last === 1 && last2 !== 11) return 'jednostka zniszczona';
+  if (last >= 2 && last <= 4 && (last2 < 12 || last2 > 14)) return 'jednostki zniszczone';
+  return 'jednostek zniszczonych';
 }
 
 function pct(hp: number, maxHp: number): number {

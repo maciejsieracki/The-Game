@@ -110,7 +110,7 @@ async function main() {
   assert(sumDef.annihilation && sumDef.annihilation.side === 'obronca', 'c1: linia dla obrony');
   assert(sumDef.annihilation.units === 2 && sumDef.annihilation.label === 'Grecy', 'c1: liczba jednostek 2 i etykieta strony');
   const lineDef = S.formatAnnihilationLine(sumDef.annihilation);
-  assert(/^Unicestwienie: Grecy — 2 jednostki zniszczonych; powód: wyczerpany limit odwrotów \(trzy odwroty w tej turze\)\.$/.test(lineDef),
+  assert(/^Unicestwienie: Grecy — 2 jednostki zniszczone; powód: wyczerpany limit odwrotów \(trzy odwroty w tej turze\)\.$/.test(lineDef),
     'c1: tekst linii po polsku: ' + lineDef);
 
   // c2) parytet: atakujacy unicestwiony (obrona wygrywa) -> linia po stronie atakujacego.
@@ -127,16 +127,20 @@ async function main() {
 
   // c3) odmiana: 1 -> jednostka, 5 -> jednostek, 22 -> jednostki, 12 -> jednostek.
   const word = n => S.formatAnnihilationLine({ side: 'obronca', label: 'X', units: n, reason: 'r' });
-  assert(word(1).includes(' 1 jednostka '), 'c3: 1 jednostka');
-  assert(word(5).includes(' 5 jednostek '), 'c3: 5 jednostek');
-  assert(word(22).includes(' 22 jednostki '), 'c3: 22 jednostki');
-  assert(word(12).includes(' 12 jednostek '), 'c3: 12 jednostek');
+  assert(word(1).includes(' 1 jednostka zniszczona;'), 'c3: 1 jednostka zniszczona');
+  assert(word(21).includes(' 21 jednostka zniszczona;'), 'c3: 21 jednostka zniszczona');
+  assert(word(2).includes(' 2 jednostki zniszczone;'), 'c3: 2 jednostki zniszczone');
+  assert(word(22).includes(' 22 jednostki zniszczone;'), 'c3: 22 jednostki zniszczone');
+  assert(word(5).includes(' 5 jednostek zniszczonych;'), 'c3: 5 jednostek zniszczonych');
+  assert(word(11).includes(' 11 jednostek zniszczonych;'), 'c3: 11 jednostek zniszczonych');
+  assert(word(12).includes(' 12 jednostek zniszczonych;'), 'c3: 12 jednostek zniszczonych');
+  assert(word(14).includes(' 14 jednostek zniszczonych;'), 'c3: 14 jednostek zniszczonych');
 
   // d) wiazanie UI i main.ts (pin tekstowy).
   const ui = fs.readFileSync(path.join(ROOT, 'src', 'ui', 'postBattleSummary.ts'), 'utf8');
   const main = fs.readFileSync(path.join(ROOT, 'src', 'main.ts'), 'utf8');
-  assert(/if \(data\.annihilation\) \{[\s\S]*?formatAnnihilationLine\(data\.annihilation\)/.test(ui),
-    'd1: postBattleSummary.ts renderuje osobna linie unicestwienia');
+  assert(/if \(data\.annihilation\) \{[\s\S]*?formatAnnihilationLine\(data\.annihilation\)[\s\S]*?^\s*body\.appendChild\(annLine\);/m.test(ui),
+    'd1: postBattleSummary.ts dolacza linie unicestwienia do DOM (body.appendChild(annLine) w bloku if)');
   assert(/onPostBattleResult: r => \{ pbHolder\.res = r; \}/.test(main)
     && /annihilatedDefUnits: pbRes\?\.defenderAnnihilatedUnitCount/.test(main),
     'd2: main.ts przechwytuje licznik i przekazuje do podsumowania');
