@@ -30,12 +30,12 @@
 - Pojemność: **100 × N** Spichlerzy (normal).  
 - Wojsko przy zapasach **&lt;0**: **−8%** max HP/t (głód).
 
-### Nie poniżej zera po turze (od tury 11)
+### Nie poniżej zera po turze (od tury 1)
 
 Skarbiec i spichlerz państwa (zapasy żywności) nie mogą zakończyć tury poniżej zera (decyzja właściciela 2026-11-13, wariant A):
-- **Tury 1–10**: brak blokady i brak równoważenia AI.
-- **Gracz**: gdy prognoza stanu po ticku tury jest poniżej zera i gorsza niż stan obecny, przycisk „Zakończ turę” jest zablokowany, jeśli gracz ma ruch naprawczy (podatki, rozwiązanie jednostki, usunięcie pozycji z kolejki). Stary zapis z ujemnym stanem, którego prognoza nie pogarsza, nie blokuje gry.
-- **AI**: plan równoważenia (najpierw tańsze środki, bez eliminacji cywilizacji) istnieje w `no-negative-stocks.ts` (`planAiBalance`), ale **nie jest jeszcze wywoływany w pętli tury** (`main.ts`). Stan faktyczny: AI nie równoważy się automatycznie przed końcem tury.
+- **Od tury 1**: blokada „Zakończ turę” liczy się z prognozy po zakończeniu tury (nie ze stanu obecnego). Brak wyjątku tur 1–10 dla gracza (R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1). Równoważenie AI nie zostało zmienione w tym temacie.
+- **Gracz**: blokada „Zakończ turę” zależy wyłącznie od prognozy stanu PO reakcji automatu zarządzania (dotyczy tylko żywności: Auto-Żywienie obniża racje miast, a na końcu tury działa też podniesienie racji dla wzrostu i ograniczenie racji do bezpiecznego poziomu — bramka liczy tę samą ścieżkę co koniec tury). Gdy prognoza jest poniżej zera i gracz ma realną niewykorzystaną dźwignię (racja, podatek, rozwiązanie jednostki), przycisk jest zablokowany, a tooltip podaje prognozę „po zakończeniu tury” i dźwignie — także wtedy, gdy samo użycie dźwigni nie wystarczy (wynik niesie wtedy flagę „niewystarczające”). Dla skarbca tooltip podaje też najmniejsze podniesienie podatku (kroki 10 pkt %, kosztem Nauki), przy którym skarbiec po turze wyjdzie co najmniej na zero; dla pieniędzy nie ma żadnego automatu. Gdy żadnej dźwigni nie ma, tura nie jest blokowana (brak zakleszczenia). Stan obecny ujemny przy prognozie ≥ 0 nie blokuje tury.
+- **AI**: plan równoważenia (najpierw tańsze środki, bez eliminacji cywilizacji, `planAiBalance` w `no-negative-stocks.ts`) jest wywoływany przed końcem tury przez `decideAiOwnerBalance` (`main.ts`, `nnsAiPreTickBalance`) od tury 1 (`NNS_AI_BALANCE_TURN_MIN = 1`).
 
 Kod: `gra/src/game/no-negative-stocks.ts`, `main.ts` (`nnsGateForPlayer`, `decideEndTurnGate`).
 
@@ -72,3 +72,7 @@ Kod: `gra/src/game/no-negative-stocks.ts`, `main.ts` (`nnsGateForPlayer`, `decid
 ## Poradnik‑L
 
 → `docs/PORADNIK-GRACZA/06-miasto-spoleczenstwo.md` §39 · karta budynku: `encyklopedia/budynki/spichlerz.md`
+
+---
+
+Zobacz też: [Osłabienie w bitwie — głód wojska i deficyt złota](oslabienie-glod-deficyt.md).

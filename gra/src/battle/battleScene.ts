@@ -1998,6 +1998,8 @@ interface RuntimeBattleUnit {
   fadeStart:    number;
   acted:        boolean;
   moveLeft:     number;
+  /** Tura (roundNo), w ktorej zapas ruchu uciekiniera zostal ograniczony (_fleeStep). */
+  fleeBudgetRound?: number;
   range:        number;   // CURRENT effective attack range in tiles (0 => melee adjacency only);
                           // recomputed every activation from rangeBase + the standing tile's
                           // terrain Delta Zasieg (C-TEREN-Q1 ETAP 2, see _applyTerrainRange),
@@ -5925,7 +5927,7 @@ export class BattleScene {
       return;
     }
     if ((resolution.kind === 'move' || resolution.kind === 'attack') && resolution.steps.length > 0) {
-      this._resolveAutoBatchMovement(ru, resolution, 0, complete);
+      this._resolveAutoBatchMovement(ru, resolution, 0, complete, true);
       return;
     }
     if (resolution.kind === 'move' || resolution.kind === 'hold') {
@@ -5962,8 +5964,21 @@ export class BattleScene {
     resolution: AutoBatchResolution,
     stepIdx: number,
     done: () => void,
+    normalPlan = false,
   ): void {
     if (this.finished || this._autoBattleSuspended || this._manualMode) return;
+    // R-WEB-BATTLE-FLEE-MOVE-HALF-Q1 (zarzut Evaluatora 1): jednostka zaplanowana jako ZWYKLY ruch, ktora
+    // zostala zlamana W TRAKCIE zamrozonej fali (np. po smierci sasiada), nie dokonczy zamrozonej sciezki
+    // normalnym tempem: przechodzi na _fleeStep z zapasem tury = mnoznik ucieczki minus to, co juz przeszla.
+    // Jednostki zlamane JUZ przy planowaniu maja sciezke policzona przez _fleeStep (klon planowania) -- ta
+    // galaz ich nie dotyczy (normalPlan = false).
+    if (normalPlan && ru.routed && ru.fleeBudgetRound !== this.roundNo) {
+      const spent = Math.max(0, this._movementPointsFor(ru.bu) - ru.moveLeft);
+      ru.fleeBudgetRound = this.roundNo;
+      ru.moveLeft = Math.max(0, Math.min(ru.moveLeft, this._fleeMovePointsFor(ru.bu) - spent));
+      this._fleeStep(ru, done);
+      return;
+    }
     if (stepIdx >= resolution.steps.length) {
       if (ru.routed) {
         const homeCol = this._fleeHomeCol(ru);
@@ -5989,7 +6004,7 @@ export class BattleScene {
       return;
     }
     this._doMove(ru, step.col, step.row, () => {
-      this._resolveAutoBatchMovement(ru, resolution, stepIdx + 1, done);
+      this._resolveAutoBatchMovement(ru, resolution, stepIdx + 1, done, normalPlan);
     });
   }
 
@@ -7556,6 +7571,17 @@ export class BattleScene {
     const bonuses = battleUnitCivBonusy(bu, bu.ownerColor === 0xc84040
       ? this.defenderCivBonusy : this.attackerCivBonusy);
     return Math.max(1, Math.round(base * civMovementMultiplier(bonuses, civUnitShapeForBattleUnit(bu), this.terrain, this.shallowSea)));
+  }
+
+  /**
+   * R-WEB-BATTLE-FLEE-MOVE-HALF-Q1: zapas ruchu UCIEKAJACEJ (zrootowanej) jednostki na jedna ture =
+   * mnoznik_ruchu (data/combat-params.json "ucieczka", jedyne miejsce mnoznika) * normalny zasieg ruchu
+   * tej samej jednostki; zaokraglenie w dol, minimum 1 heks. Nigdy nie przekracza zasiegu nie-uciekajacej.
+   */
+  private _fleeMovePointsFor(bu: BattleUnit): number {
+    const raw = Number(combatParamsData.ucieczka.mnoznik_ruchu);
+    const mult = Number.isFinite(raw) && raw > 0 ? raw : 1;
+    return Math.max(1, Math.floor(this._movementPointsFor(bu) * mult));
   }
 
   private _attackRangeFor(bu: BattleUnit): number {
@@ -10049,6 +10075,13 @@ export class BattleScene {
   private _fleeStep(ru: RuntimeBattleUnit, done: () => void): void {
     if (this.finished) { done(); return; }
     if (ru.dead || ru.fadingOut || ru.removed) { done(); return; }
+    // R-WEB-BATTLE-FLEE-MOVE-HALF-Q1: zapas ruchu uciekiniera na TURE ograniczony do
+    // _fleeMovePointsFor (50% normalnego zasiegu, combat-params.json "ucieczka"). Ustawiane raz na
+    // ture (kolejne kroki tej samej tury, _schedule, zachowuja pozostaly zapas).
+    if (ru.fleeBudgetRound !== this.roundNo) {
+      ru.fleeBudgetRound = this.roundNo;
+      ru.moveLeft = Math.min(ru.moveLeft, this._fleeMovePointsFor(ru.bu));
+    }
     if (ru.moveLeft <= 0) { done(); return; }
 
     const homeCol = this._fleeHomeCol(ru);

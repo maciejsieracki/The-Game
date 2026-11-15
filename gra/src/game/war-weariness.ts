@@ -43,7 +43,7 @@ export interface WarWearinessParams {
     /** LIVE-AUDIT-Q1 r2: karencja DOW (tury) po pokoju CHRONIONEGO przegrywajacego (<= ochronaMaxMiast miast / >= ochronaUtratyWojny utrat) — zapobiega serii wojen do eliminacji. */
     karencjaChronionegoTur: number;
   };
-  czlowiek: { rwProgBonusMax: number; minMiastAi: number; rabatCenyPokojuMax: number };
+  czlowiek: { rwProgBonusMax: number; minMiastAi: number };
 }
 
 export const WAR_WEARINESS_PARAMS = paramsRaw as unknown as WarWearinessParams;
@@ -62,6 +62,15 @@ export interface WarWearinessInput {
 }
 
 /**
+ * R-WEB-DIPLO-WEARINESS-PW-FOLLOWUP-C615-BOTH-CITIES-Q1 (ABC właściciela 2026-11-14, wariant A): JEDNA liczba miast dla
+ * zmęczenia wojną pary = miasta utracone przez OBIE strony w tej wojnie (suma). Używana przez tabelę PW
+ * (diplomacy-proposals.ts, przez main.ts) i przez tick AI↔AI (runWarWearinessTick) — ta sama dana wojny ⇒ ta sama liczba.
+ */
+export function lostCitiesForWeariness(lostA: number, lostB: number): number {
+  return Math.max(0, lostA) + Math.max(0, lostB);
+}
+
+/**
  * Poziom zmęczenia 0..1 (bez pamięci szczytu — szczyt trzyma stan pary). Jeden licznik:
  * turyWojny/pelneTur + wagaStratMiasta * miastaZmienioneWlasciciela, min(1, …).
  */
@@ -71,11 +80,32 @@ export function warWearinessLevel(inp: WarWearinessInput, P: WarWearinessParams 
   return clamp(turns / Z.pelneTur + Z.wagaStratMiasta * Math.max(0, inp.lostCitiesTotal), 0, 1);
 }
 
-/** Czynnik (0..1] ceny pokoju zadanej przez AI od gracza: maleje z zmęczeniem powyżej progu chęci. */
-export function wearinessPeacePriceFactor(level: number, P: WarWearinessParams = WAR_WEARINESS_PARAMS): number {
+/**
+ * R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (ABC właściciela 2026-11-14: krzywa KWADRATOWA, stary rabat 60% usunięty).
+ * Zmęczenie wojną jako POZYCJA PW przy pokoju zadanym przez AI (nie rabat ceny):
+ *   x = clamp((L − progChetnosci) / (progKoncaZmeczenia − progChetnosci), 0, 1),  Z = round(C × x²).
+ * C = cena pokoju (PN; stała z diplomacy-acceptance-points.json, bez mnożnika cywilizacji), L = poziom zmęczenia 0..1. Z trafia do tabeli PW po stronie
+ * niebędącej proponującym; reszta do pokrycia R = C − Z (miasto). Przy L ≥ progKoncaZmeczenia: Z = C, R = 0.
+ * Czysta funkcja; bez `rabatCenyPokojuMax` (usunięty z JSON).
+ */
+export function wearinessPeaceItemPw(
+  priceC: number,
+  level: number,
+  P: WarWearinessParams = WAR_WEARINESS_PARAMS,
+): number {
+  const x = wearinessPeaceX(level, P);
+  return Math.round(Math.max(0, priceC) * x * x);
+}
+
+/**
+ * R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (runda 2, „jedna prawda"): x = clamp((L − progChetnosci)/(progKoncaZmeczenia
+ * − progChetnosci), 0, 1) — JEDNA funkcja dla tabeli PW (wearinessPeaceItemPw) i dla decyzji AI o pokoju
+ * bezwarunkowym (ai.ts: wearinessPeaceX(L) >= 1 ⇔ R = C − Z = 0).
+ */
+export function wearinessPeaceX(level: number, P: WarWearinessParams = WAR_WEARINESS_PARAMS): number {
   const t = P.zmeczenie.progChetnosci;
-  const x = clamp((level - t) / Math.max(1e-9, 1 - t), 0, 1);
-  return 1 - P.czlowiek.rabatCenyPokojuMax * x;
+  const span = Math.max(1e-9, P.zmeczenie.progKoncaZmeczenia - t);
+  return clamp((level - t) / span, 0, 1);
 }
 
 export function isWarWeary(level: number, P: WarWearinessParams = WAR_WEARINESS_PARAMS): boolean {
@@ -230,8 +260,13 @@ export interface WearinessTickOutcome {
  * kończy się pokojem BEZWARUNKOWYM (bez miasta, bez płatności). Dotyczy AI↔AI (tick) i AI→gracz (ai.ts, gracz decyduje).
  * Czysta funkcja; minimalny czas wojny (PEACE_PROPOSAL_MIN_WAR_TURNS) sprawdza wołający.
  */
+/**
+ * Koniec zmeczenia (pokoj bezwarunkowy). R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 r3 (zarzut 4 Evaluatora, jedna prawda):
+ * JEDNA funkcja z tabela PW: wearinessPeaceX(L) >= 1 (x = 1 <=> L >= progKoncaZmeczenia, Z = C, R = 0).
+ * Tick AI<->AI i ai.ts (galaz bezwarunkowa) wolaja TE SAMA funkcje co wearinessPeaceItemPw.
+ */
 export function wearinessUnconditionalEndDue(level: number, P: WarWearinessParams = WAR_WEARINESS_PARAMS): boolean {
-  return level >= P.zmeczenie.progKoncaZmeczenia;
+  return wearinessPeaceX(level, P) >= 1;
 }
 
 export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[] {
@@ -243,7 +278,7 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
     live.add(key);
     const w = d.warInfo(pr.a, pr.b);
     const level = warWearinessLevel(
-      { turnsAtWar: w.turnsAtWar, lostCitiesTotal: w.lostA + w.lostB, turnsSinceCityChange: w.turnsSinceCityChange }, P);
+      { turnsAtWar: w.turnsAtWar, lostCitiesTotal: lostCitiesForWeariness(w.lostA, w.lostB), turnsSinceCityChange: w.turnsSinceCityChange }, P);
     const st = stepPairState(d.store, key, w.warStart, level);
     const lvl = st.peak;
     const none = (): void => { out.push({ pairKey: key, action: 'none', level: lvl, stage: st.stage }); };

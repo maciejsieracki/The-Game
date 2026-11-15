@@ -43,7 +43,7 @@ Ekonomia państwa i miast: Praca, Handel, Pieniądz, Nauka, utrzymanie, okolica,
 | Praca | Pola okolicy + budynki (Młyn +Praca) | Budynki + prace w terenie (suwak) |
 | Handel | Pola + Targowisko | Suwak → Nauka / Skarbiec |
 | Pieniądz | Handel×mnożnik + podatki + Mennica | Jednostki, budynki, utrzymanie |
-| Nauka | % Handlu (domyślnie 20%) | Kupno tech z puli |
+| Nauka | % Handlu (domyślnie 60%) | Kupno tech z puli |
 | Ludność | Wzrost z żywności+zdrowia | −1 per jednostka |
 
 **Decyzje Macieja (zamknięte):**

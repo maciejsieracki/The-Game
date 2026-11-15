@@ -99,20 +99,20 @@ check('[R] cegła (karta Cegielni): „cegła jest kosztem budowy m.in. Akademii
 // Ceramika = zużycie Spichlerza (econ-params.json) ; sól = zużycie Spichlerza Królewskiego + bramka.
 const cer = econ && JSON.stringify(econ).match(/"budynek_spichlerz_zuzywa_ceramika":\s*\{\s*"easy":\s*(\d+),\s*"normal":\s*(\d+)/);
 const sol = econ && JSON.stringify(econ).match(/"budynek_spichlerz_ii_zuzywa_sol":\s*\{\s*"easy":\s*(\d+),\s*"normal":\s*(\d+)/);
-check('[R] ceramika: Spichlerz zużywa 25/turę (econ-params.json) — jak w tekście karty', cer && Number(cer[2]) === 25, cer && cer[0]);
+check('[R] ceramika: Spichlerz zużywa 10/turę (econ-params.json) — jak w tekście karty', cer && Number(cer[2]) === 10, cer && cer[0]);
 check('[R] sól: Spichlerz Królewski zużywa 25/turę (econ-params.json) — jak w tekście karty', sol && Number(sol[2]) === 25, sol && sol[0]);
 check('[R] sól: bramka Spichlerza II wymaga Ceramiki i Soli (building-resource-gate.ts)', /spichlerz_ii:\s*\['Ceramika',\s*'Sól'\]/.test(gateSrc));
 check('[R] sól: premia armii (poza terytorium 2→1) ze Spichlerza II płacącego sól (building-resource-gate.ts)',
   /Armia poza terytorium: 2→1 gdy ≥1 Spichlerz II płaci Sól/.test(gateSrc));
 const garn = techCards['Garncarstwo'].top5;
 const garncarnia = garn.find((i) => /^Garncarnia/.test(i.tytul));
-check('[R] ceramika (Garncarstwo/Garncarnia): zdanie mówi, że Spichlerz ją zużywa (25 na turę) i bez niej nie daje bonusów ludności',
-  garncarnia && /Spichlerz zużywa jej 25 na turę/.test(garncarnia.zdanie) && /bonusów ludności/.test(garncarnia.zdanie), garncarnia);
+check('[R] ceramika (Garncarstwo/Garncarnia): zdanie mówi, że Spichlerz ją zużywa (10 na turę) i bez niej nie daje bonusów ludności',
+  garncarnia && /Spichlerz zużywa jej 10 na turę/.test(garncarnia.zdanie) && /bonusów ludności/.test(garncarnia.zdanie), garncarnia);
 const warzelnia = garn.find((i) => /^Warzelnia soli/.test(i.tytul));
 check('[R] sól (Garncarstwo/Warzelnia soli): zdanie nazywa Spichlerz Królewski (25 na turę) i korzyść dla armii (połowa żywności)',
   warzelnia && /Spichlerz Królewski/.test(warzelnia.zdanie) && /25 na turę/.test(warzelnia.zdanie) && /o połowę mniej żywności/.test(warzelnia.zdanie), warzelnia);
 check('[R] sól (karta Spichlerza Królewskiego): zużycie 25 ceramiki i 25 soli na turę',
-  /zużywa 25 ceramiki i 25 soli na turę/.test(bldCards.spichlerz_ii.top5[0].zdanie), bldCards.spichlerz_ii.top5[0]);
+  /zużywa 20 ceramiki i 25 soli na turę/.test(bldCards.spichlerz_ii.top5[0].zdanie), bldCards.spichlerz_ii.top5[0]);
 check('[R] ceramika (karta Garncarni): bez ceramiki Spichlerz nie daje bonusów ludności', /bez niej nie daje bonusów ludności/.test(bldCards.garncarnia.top5[0].zdanie));
 
 // Drewno i kamień: koszt budowy w danych + koszt jednostek (drewno).

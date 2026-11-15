@@ -115,14 +115,12 @@ const panelInfo = (page) => page.evaluate(() => {
     out.p1 = await panelInfo(page);
     await page.screenshot({ path: C.EVID + '/03-panel-administratora-ulepszen-przed-zatrudnieniem.png' });
     ok(out.p1 && out.p1.confirmDisabled === false, 'z 500 w skarbcu Zatrudnij aktywne', out.p1);
-    // okno potwierdzenia zatrudnienia: Anuluj = bez zmian; potem Potwierdź (poniżej) zatrudnia
-    dialogMode = 'dismiss'; const seen0 = dialogSeen;
-    await page.evaluate(() => document.querySelector('[data-adm-panel-confirm]').click()); await wait(600);
-    const stCancel = await page.evaluate((i) => window.__civTest.impAdminState(i), cap.id);
-    ok(dialogSeen === seen0 + 1 && /40/.test(lastDialog) && /Bonusy/.test(lastDialog) && !stCancel.hired && stCancel.treasury === t0, 'Zatrudnij -> okno z kosztem i bonusami; Anuluj nic nie zmienia (niezatrudniony, skarbiec bez zmian)', { lastDialog, stCancel, t0 });
-    dialogMode = 'accept';
+    // FALA 658/W25 (R-WEB-UI-ADMIN-HIRE-CONFIRM-Q1): zatrudnienie bez natywnego okna przeglądarki;
+    // koszt i bonusy są opisane w samym panelu przed klikiem „Zatrudnij” (sprawdzone wyżej w panelInfo).
+    const seen0 = dialogSeen;
     await page.evaluate(() => document.querySelector('[data-adm-panel-confirm]').click()); await wait(800);
     const st = await page.evaluate((i) => window.__civTest.impAdminState(i), cap.id);
+    ok(dialogSeen === seen0 && st.hired && st.treasury === t0 - 40, 'Zatrudnij: bez natywnego okna, od razu zatrudnia (skarbiec −40)', { seen0, dialogSeen, t0, st });
     out.p2 = await panelInfo(page);
     await page.screenshot({ path: C.EVID + '/04-panel-administratora-ulepszen-po-zatrudnieniu.png' });
     ok(st.hired && st.working && st.treasury === t0 - 40, 'Zatrudnij: stan jak dotąd (zatrudniony, pracuje, skarbiec −40)', { t0, st });
@@ -140,16 +138,27 @@ const panelInfo = (page) => page.evaluate(() => {
 
     // zwolnienie z panelu
     await page.evaluate(() => document.querySelector('[data-imp-admin-open]').click()); await wait(400);
-    // odmowa dialogu potwierdzenia: administrator zostaje
-    dialogMode = 'dismiss';
-    await page.evaluate(() => document.querySelector('[data-adm-panel-dismiss]').click()); await wait(600);
-    const stKeep = await page.evaluate((i) => window.__civTest.impAdminState(i), cap.id);
-    ok(dialogSeen >= 1 && stKeep.hired, 'Zwolnij: odmowa w dialogu potwierdzenia — administrator zostaje', { dialogSeen, stKeep });
-    if (!(await page.evaluate(() => !!document.querySelector('[data-adm-panel-dismiss]')))) { await page.evaluate(() => document.querySelector('[data-imp-admin-open]').click()); await wait(400); }
-    dialogMode = 'accept';
-    await page.evaluate(() => document.querySelector('[data-adm-panel-dismiss]').click()); await wait(600);
+    // FALA 703 (R-WEB-UI-ADMIN-DISMISS-CONFIRM-Q1): Zwolnij (krok 1) -> okno potwierdzenia „Zwolnij / Anuluj” -> dopiero „Zwolnij” zwalnia
+    const seenD = dialogSeen;
+    await page.evaluate(() => document.querySelector('[data-adm-panel-dismiss]').click()); await wait(400);
+    const askShown = await page.evaluate(() => { const d = document.querySelector('.civ-adm-panel'); return { ask: !!(d && d.querySelector('[data-adm-dismiss-confirm]')), yes: !!(d && d.querySelector('[data-adm-dismiss-yes]')), no: !!(d && d.querySelector('[data-adm-dismiss-no]')) }; });
+    await page.screenshot({ path: C.EVID + '/07-potwierdzenie-zwolnienia-zwolnij-anuluj.png' });
+    const stAsk = await page.evaluate((i) => window.__civTest.impAdminState(i), cap.id);
+    ok(askShown.ask && askShown.yes && askShown.no && stAsk.hired && dialogSeen === seenD, 'Zwolnij (krok 1): potwierdzenie „Zwolnij/Anuluj” w panelu, administrator nadal zatrudniony', { askShown, stAsk, dialogSeen, seenD });
+    await page.evaluate(() => document.querySelector('[data-adm-dismiss-no]').click()); await wait(300);
+    const stNo = await page.evaluate((i) => window.__civTest.impAdminState(i), cap.id);
+    const backNo = await page.evaluate(() => !!document.querySelector('[data-adm-panel-dismiss]') && !document.querySelector('[data-adm-dismiss-confirm]'));
+    ok(backNo && stNo.hired, 'Anuluj w potwierdzeniu: wraca do zwykłej stopki, administrator zostaje', { backNo, stNo });
+    await page.evaluate(() => document.querySelector('[data-adm-panel-dismiss]').click()); await wait(300);
+    await page.keyboard.press('Escape'); await wait(300);
+    const stEsc = await page.evaluate((i) => window.__civTest.impAdminState(i), cap.id);
+    const hostGone = !(await page.evaluate(() => !!document.querySelector('.civ-adm-panel-host')));
+    ok(hostGone && stEsc.hired, 'Esc w oknie potwierdzenia zamyka panel bez zwolnienia', { hostGone, stEsc });
+    await page.evaluate(() => document.querySelector('[data-imp-admin-open]').click()); await wait(400);
+    await page.evaluate(() => document.querySelector('[data-adm-panel-dismiss]').click()); await wait(300);
+    await page.evaluate(() => document.querySelector('[data-adm-dismiss-yes]').click()); await wait(600);
     const st3 = await page.evaluate((i) => window.__civTest.impAdminState(i), cap.id);
-    ok(!st3.hired, 'Zwolnij w panelu zwalnia administratora (dotychczasowa logika)', st3);
+    ok(!st3.hired, 'Zwolnij -> „Zwolnij” w oknie potwierdzenia zwalnia administratora', st3);
     await page.keyboard.press('Escape'); await wait(300);
     const pol3 = await policy(page);
     ok(pol3.focus === 'surowce', 'zapisane ustawienia profilu NIE są kasowane po zwolnieniu', pol3);
@@ -162,11 +171,12 @@ const panelInfo = (page) => page.evaluate(() => {
     await page.screenshot({ path: C.EVID + '/06-panel-administratora-miasta.png' });
     ok(out.city0 && out.city0.kind === 'city' && /%/.test(out.city0.bonuses) && /40/.test(out.city0.cost), 'administrator miasta: panel z bonusami % (z silnika) i kosztem', out.city0);
     const tc0 = (await page.evaluate((i) => window.__civTest.adminState(i), cap.id)).treasury;
-    dialogMode = 'dismiss';
-    await page.evaluate(() => document.querySelector('[data-adm-panel-confirm]').click()); await wait(600);
+    // FALA 658/703: bez natywnego okna; „Anuluj” w panelu nic nie zmienia, potem „Zatrudnij” zatrudnia od razu
+    const seenC = dialogSeen;
+    await page.evaluate(() => document.querySelector('[data-adm-panel-cancel]').click()); await wait(400);
     const acCancel = await page.evaluate((i) => window.__civTest.adminState(i), cap.id);
-    ok(!acCancel.hired && /korupcja/.test(lastDialog) && /40/.test(lastDialog), 'administrator miasta: okno z kosztem i bonusami; Anuluj nic nie zmienia', { lastDialog, acCancel });
-    dialogMode = 'accept';
+    ok(!acCancel.hired && dialogSeen === seenC, 'administrator miasta: Anuluj w panelu nic nie zmienia (bez okna natywnego)', { seenC, dialogSeen, acCancel });
+    await page.evaluate(() => document.querySelector('#civ-v-administrator').click()); await wait(600);
     await page.evaluate(() => document.querySelector('[data-adm-panel-confirm]').click()); await wait(800);
     const ac = await page.evaluate((i) => window.__civTest.adminState(i), cap.id);
     ok(ac.hired && ac.working && ac.treasury === tc0 - 40, 'administrator miasta: Zatrudnij działa jak dotąd (−40)', { tc0, ac });

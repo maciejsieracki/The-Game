@@ -143,8 +143,8 @@ async function runSuite(bundle, label, expectFailures) {
     !!results.pPokoj && results.pPokoj.actionId === 'pokoj', results.pPokoj && results.pPokoj.actionId);
   check(`[${label}] brak rodzaju → actionId 'pokoj' (dawne zachowanie)`,
     !!results.pBrak && results.pBrak.actionId === 'pokoj', results.pBrak && results.pBrak.actionId);
-  check(`[${label}] baza PW rozejmu = 200 (≠ pokój 500)`,
-    results.baseRozejm === 200 && results.basePokoj === 500,
+  check(`[${label}] baza PW rozejmu = 200 (≠ pokój 615, stała C)`,
+    results.baseRozejm === 200 && results.basePokoj === 615,
     { rozejm: results.baseRozejm, pokoj: results.basePokoj });
   return results;
 }
@@ -191,7 +191,7 @@ async function main() {
   // tools/diplo-truce-ai-table-live-test.cjs (pomiar AI na stole).
   {
     const mainSrc = fs.readFileSync(path.resolve(GRA, 'src', 'main.ts'), 'utf8');
-    check('main.ts: baza PW AI rozejmu wiązana ternarą rodzaj===rozejm (200 vs 500)',
+    check('main.ts: baza PW AI rozejmu wiązana ternarą rodzaj===rozejm (200 vs 615)',
       /workingCmd\.rodzaj === 'rozejm' \? 'rozejm' : 'pokoj'/.test(mainSrc));
     check('main.ts: TREATY_GATED_NEGOTIATION_ACTIONS zawiera rozejm (własna bramka PW, nie sumowana z innymi)',
       /TREATY_GATED_NEGOTIATION_ACTIONS: ReadonlySet<string> = new Set\(\[\s*'pokoj', 'rozejm'/.test(mainSrc));
