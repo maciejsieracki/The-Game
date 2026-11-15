@@ -1946,3 +1946,8 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
   - zakres realnych id graczy: NIE_ZMIERZONO (przepełnienie `OwnerRef` zwraca błąd).
 - **Stan P4-1G:** Q1 zamknięte; Q2–Q6 do dispatchu (`P4-1G-ADAPTER-ROZPOZNANIE.md` §7).
 - **Dysk:** 13 GB wolne (69%).
+
+## Przebieg (15.11, 22:xx UTC — heartbeat: start P4-1G Q2 ADAPTER-TERRAIN)
+
+- **Start:** `R-RUSTPORT-P4-1G-Q2-ADAPTER-TERRAIN` (#216, Opus), dispatch `448d2d25c` na `claude/rust-sivvrn`, baza `601ff304c` (P4-1G Q1 zintegrowany). Workflow `wf_c9f7943e-b13`. Zakres: adapter terenu `MapViewDto` → `TerrainInput`/`MapHex`/`OverlayMap`/`OkolicaMap`. Luki L5 (`wonderBuildSites`) i L1/L2 (`revealAllLand`, `riverRevealKeys`) pozostają NIE_ZMIERZONO.
+- **Sloty:** aktywne 3 z 4 — P4-1H Q2 (`wf_c5970398-de4`, etap Evaluator), P4-1H Q3 RJ-REPIN (`wf_28c84406-989`, operator), P4-1G Q2 (`wf_c9f7943e-b13`, operator). Czwarty slot: kolejny kandydat (P4-1G Q3/Q4 po Q2 albo P4-1I) wymaga dispatchu.
