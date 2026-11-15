@@ -258,6 +258,10 @@ console.log('[7] Wpięcie w main.ts (sprawdzenie struktury źródła; zachowanie
   check('7g wycinka gracza: guard isHuman w pętli hexClearingStates', /if \(!isHuman\(st\.ownerId\)\) continue;/.test(clrBody));
   check('7h wycinka gracza: zapis do księgi `wycinka|${ownerId}` (kind wycinka) PO creditOwnerResourceStock w tej samej pętli', iCredit > 0 && iLedger > iCredit && /kind: 'wycinka'/.test(clrBody), `iCredit=${iCredit} iLedger=${iLedger}`);
   check('7i wycinka AI: zapis do okna pending (kind wycinka) istnieje', /recordLedgerFlow\(pendingLedgerSink\(ownerId, 'wycinka'/.test(mainSrc));
+  // 7j/7k (dawniej asercja TEKSTOWA + mutacja tekstu `wycinkaGot` -> 0) ZASTAPIONE testem REALNEJ sciezki:
+  // tools/resource-ledger-realpath-live-test.cjs --part wycinka (realny tick tury w Chromium, wpis `wycinka|0` w
+  // ksiedze, roznica 0 wzgledem magazynu) + mutacja na realnym buildzie m13 w
+  // tools/resource-ledger-realpath-mutation-test.cjs (kwota wpisu 0 => czerwono). 7g-7i zostaja jako kontrola strukturalna.
 }
 
 console.log(`\nRESULT: ${passed} passed, ${failed} failed`);

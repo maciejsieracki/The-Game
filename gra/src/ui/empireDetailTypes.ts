@@ -65,6 +65,8 @@ export interface EmpireGlobalParams {
 
 export interface EmpireResourceRow {
   id: string;
+  /** Właściciel, dla którego zbudowano wiersz (aktywny fotel). Dziennik „Skąd zapasy” czyta ten właściciel; brak = 0. */
+  ownerId?: number;
   icon: string;
   label: string;
   stock: number;
