@@ -1,4 +1,5 @@
-//! Wspolne pomocniki testow P6.5A (wektory z URUCHOMIONEGO weba, pin edb8fb56).
+//! Wspolne pomocniki testow P6.5A (wektory z URUCHOMIONEGO weba, pin edb8fb56; P4-1D-Q1:
+//! `vectors.json` z pinu 07d2fbd72, generator `gen.mjs`).
 //!
 //! Kodowanie wektorow (generator `gen-p65a-vectors.mjs`): liczby specjalne jako
 //! `{"$n": "NaN" | "Infinity" | "-Infinity" | "-0"}`, niecalkowite jako `{"$f": "<String(x)>"}`
@@ -118,6 +119,10 @@ pub fn unit(value: &Value) -> StosJednostka {
     unit.auto_explore = value.get("autoExplore").and_then(Value::as_bool);
     unit.ufortyfikowany_w_polu = value.get("ufortyfikowanyWPolu").and_then(Value::as_bool);
     unit.stack_group_id = opt_string(value.get("stackGroupId"));
+    // P4-1D-Q1: web `category: string` (wektory edb8fb56 i @07 zawsze go niosa; brak = pusty
+    // napis) i `isGeneral?: boolean` (brak klucza = `None`).
+    unit.category = opt_string(value.get("category")).unwrap_or_default();
+    unit.is_general = value.get("isGeneral").and_then(Value::as_bool);
     unit
 }
 
@@ -184,6 +189,8 @@ pub fn assert_unit(label: &str, got: &StosJednostka, want: &StosJednostka) {
         got.stack_group_id, want.stack_group_id,
         "{label} stack_group_id"
     );
+    assert_eq!(got.category, want.category, "{label} category");
+    assert_eq!(got.is_general, want.is_general, "{label} is_general");
 }
 
 pub fn assert_units(label: &str, got: &[StosJednostka], want: &[StosJednostka]) {

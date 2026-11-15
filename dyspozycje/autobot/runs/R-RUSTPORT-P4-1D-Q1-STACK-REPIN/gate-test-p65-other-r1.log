@@ -1,0 +1,63 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_515c8fe6-0a4-1/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 1.20s
+     Running tests/p6_5a_cost.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/target/debug/deps/p6_5a_cost-a9b6d47ac4391284)
+
+running 4 tests
+test js_round_matches_half_up_semantics ... ok
+test table_constants_equal_the_running_web_object ... ok
+test replace_context_keeps_every_field_and_the_required_stock ... ok
+test unit_cost_pace_matches_web_bitwise ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p6_5a_ruch.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/target/debug/deps/p6_5a_ruch-60bce7ad2ed1d7ba)
+
+running 8 tests
+test adjacent_empty_and_split_destinations_match_web ... ok
+test bounce_from_origin_and_separate_return_hex_match_web ... ok
+test bounce_hex_assignment_matches_web_including_duplicates_and_blocking ... ok
+test hud_actions_match_web ... ok
+test ruch_pools_match_web_bitwise ... ok
+test separate_return_matches_web_bitwise ... ok
+test sync_and_deduct_match_web ... ok
+test unit_with_pooled_ruch_matches_web ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+
+     Running tests/p6_5a_stack.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/target/debug/deps/p6_5a_stack-64d40a0f93306cd5)
+
+running 10 tests
+test all_defenders_and_wake_stack_match_web ... ok
+test adjacent_army_hexes_and_active_stack_match_web ... ok
+test garrison_and_field_fortify_transitions_match_web ... ok
+test fresh_and_shared_stack_group_ids_match_web_sequence ... ok
+test same_stack_group_and_stack_key_match_web ... ok
+test law_garrison_counts_match_web ... ok
+test transition_chains_match_web_including_both_fortifications_at_once ... ok
+test stack_group_id_agrees_with_p64_port_on_the_same_unit ... ok
+test stack_group_id_and_render_key_match_web ... ok
+test visible_colocated_and_garrison_queries_match_web ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.53s
+
+     Running tests/p6_5a_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/target/debug/deps/p6_5a_tables-fb4ce2ea9090433f)
+
+running 2 tests
+test tempo_table_parses_and_has_distinct_keys_with_positive_multipliers ... ok
+test army_params_parse_and_have_sane_shape ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p6_5b_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/target/debug/deps/p6_5b_tables-aed1c09d85f98ea3)
+
+running 6 tests
+test civilian_set_is_resolved_from_the_table ... ok
+test era_table_rows_are_contiguous_and_cover_the_clamp_range ... ok
+test tables_are_loaded_from_the_embedded_json_files ... ok
+test tables_parse_and_have_the_expected_shape ... ok
+test table_constants_equal_the_running_web ... ok
+test p65a_badge_closures_are_closed_by_the_real_path_badge_port ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+EXIT=0

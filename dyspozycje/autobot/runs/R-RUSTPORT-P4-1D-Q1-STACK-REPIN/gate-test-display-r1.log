@@ -1,0 +1,21 @@
+    Finished `test` profile [unoptimized] target(s) in 0.02s
+     Running tests/p6_5a_display.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/target/debug/deps/p6_5a_display-6135fbc727788714)
+
+running 13 tests
+test badge_and_veteran_maxima_match_web ... ok
+test civilian_table_matches_pin_is_civilian_unit ... ok
+test compute_stack_display_matches_web_07_repin_and_new_cases ... ok
+test field_power_passes_roster_in_web_order_and_returns_sum ... ok
+test compute_stack_display_matches_web_order_and_vitals ... ok
+test hp_pool_matches_web_including_nonfinite_and_overfull_hp ... ok
+test representative_matches_web_07_repin_and_new_cases ... ok
+test stack_vitals_has_commander_matches_web_07 ... ok
+test unit_at_representative_matches_web_07_repin_and_new_cases ... ok
+test representative_matches_web_including_utf16_id_order_and_nan_attack ... ok
+test unit_at_representative_matches_web ... ok
+test stack_vitals_matches_web ... ok
+test vectors_07_meta_and_pin_guards ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+
+EXIT=0
