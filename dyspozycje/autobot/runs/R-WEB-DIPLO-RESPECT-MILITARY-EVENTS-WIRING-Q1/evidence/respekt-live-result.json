@@ -1,5 +1,5 @@
 {
-  "pass": 32,
+  "pass": 36,
   "fail": 0,
   "turns": [
     {
@@ -369,11 +369,25 @@
   ],
   "ai": 1,
   "progRespektProc": 50,
+  "panelT2": {
+    "panelOpened": true,
+    "via": "pasek",
+    "rowClicked": true,
+    "bar": 85,
+    "base": 85,
+    "offset": 15,
+    "expect": 85,
+    "relacjaAIBazowa": 15,
+    "relacjaAI": 30,
+    "hasNaszRespekt": false,
+    "hasPrzewaga": true,
+    "hasSlabszy": false
+  },
   "panelOpened": true,
-  "panelHasNaszRespekt": false,
   "panelRowClicked": true,
+  "panelHasNaszRespekt": false,
   "panelHasPrzewaga": true,
-  "panelHasSlabszy": true,
+  "panelHasSlabszy": false,
   "finalTurn": 31,
   "consoleErrors": 0
 }

@@ -28391,6 +28391,8 @@ async function boot(): Promise<void> {
     if (isCivTestEnabled(window.location.search)) (window as any).__respektMilTest = {
       owners: (): number[] => allPowerOwnerIds().filter(o => !isMe(o) && !isBarbarian(o) && !isCityStateOwner(o) && !eliminatedOwners.has(o)),
       progRespektProc: (): number => loadMilitaryStrengthParams().progRespektProc,
+      /** Baza paska Respektu w audiencji (bez korekty): ta sama formuła co powerLine.respekt w showDiplomacyAudience. */
+      bazaPaskaAudiencji: (o: number): number => formatPowerRelationLine(objectivePowerForOwnerEffective(ME()), objectivePowerForOwnerEffective(o)).respekt,
       sila: (a: number, o: number) => {
         // Hak testowy: po dodaniu jednostek (civTest.addUnit) cache Mocy trzeba przeliczyć, inaczej odczyt jest sprzed zmiany.
         powerDirty = true;

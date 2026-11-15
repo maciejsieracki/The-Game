@@ -142,6 +142,45 @@ async function pushUntil(page, ai, owner, target, mode) {
   return { ok: false, adds: 400, ...(await readRatio(page, ai)) };
 }
 
+/** Okno audiencji z realnego UI (lewy pasek / karta HUD -> wiersz cywilizacji) + odczyt paska Respektu i rejestru. */
+async function panelRespektBar(page, ai, shotName) {
+  const audience = await ev(page, () => {
+    const cands = Array.from(document.querySelectorAll('button, [role="button"], [data-tip], [title], [aria-label]'));
+    const hit = cands.find(x => /yplomac/i.test((x.getAttribute('title') || '') + ' ' + (x.getAttribute('aria-label') || '') + ' ' + (x.getAttribute('data-tip') || '')));
+    if (hit) { hit.click(); return { clicked: true, via: 'pasek' }; }
+    const e = Array.from(document.querySelectorAll('.sp-event[data-id]')).find(x => /Dyplomacja/.test(x.textContent || ''));
+    if (e) { e.click(); return { clicked: true, via: 'karta HUD' }; }
+    return { clicked: false };
+  });
+  await wait(1500);
+  const rowClicked = await ev(page, () => {
+    const card = Array.from(document.querySelectorAll('*')).find(x => x.children.length > 0 && /Nasz respekt/.test(x.textContent || '') && (x.textContent || '').length < 400);
+    if (!card) return false;
+    const name = Array.from(card.querySelectorAll('*')).find(x => x.children.length === 0 && (x.textContent || '').trim().length >= 3 && (x.textContent || '').trim().length <= 20 && !/respekt|Zaufanie|Relacja|Wojny|Sojusze|Handel|Obywatele|Armia|Rekruci/i.test(x.textContent || ''));
+    (name || card).click();
+    return true;
+  });
+  await wait(1500);
+  const panel = await ev(page, () => {
+    const el = document.querySelector('.da-rel-row.respect .v');
+    const m = el ? /^\s*(-?\d+)/.exec(el.textContent || '') : null;
+    return { bar: m ? parseInt(m[1], 10) : null, text: document.body.innerText || '' };
+  });
+  const base = await ev(page, a => window.__respektMilTest.bazaPaskaAudiencji(a), ai);
+  const st = await pairState(page, ai);
+  const expect = base;
+  // Relacja AI→gracz po korekcie (st.respekt) minus korekta = wartość bazowa tej strony (computeRespekt(AI, gracz)).
+  const relacjaAIBazowa = (st.respekt ?? 0) - (st.offset ?? 0);
+  await shot(page, shotName);
+  return {
+    panelOpened: audience.clicked, via: audience.via || null, rowClicked,
+    bar: panel.bar, base, offset: st.offset ?? 0, expect, relacjaAIBazowa, relacjaAI: st.respekt ?? null,
+    hasNaszRespekt: /Nasz respekt/i.test(panel.text),
+    hasPrzewaga: /Przewaga militarna/.test(panel.text),
+    hasSlabszy: /Słabszy militarnie/.test(panel.text),
+  };
+}
+
 /** Stan pary po ticku: stan przewagi, offset, rejestr zdarzen militarnych (delta). */
 async function pairState(page, ai) {
   return ev(page, ([me, a]) => {
@@ -212,6 +251,23 @@ async function main() {
     assert('T2: przejscie progu -> stan A', s2.stan === 'A', s2);
     assert('T2: +15 Respektu z rejestru (raz)', s2.przewagaN === 1 && s2.przewagaSum === 15, s2);
     assert('T2: korekta offsetu = +15', (s2.offset ?? 0) === 15, s2);
+
+    // Panel dyplomacji (T2, offset +15): REALNE okno audiencji; pasek Respektu = baza Mocy + korekta (ta sama korekta co w pętli AI).
+    const pb = await panelRespektBar(page, ai, 'respekt-live-t2.png');
+    out.panelT2 = pb;
+    out.panelOpened = pb.panelOpened;
+    out.panelRowClicked = pb.rowClicked;
+    out.panelHasNaszRespekt = pb.hasNaszRespekt;
+    out.panelHasPrzewaga = pb.hasPrzewaga;
+    out.panelHasSlabszy = pb.hasSlabszy;
+    assert('T2 panel: okno audiencji otwarte i wiersz cywilizacji kliknięty', pb.panelOpened && pb.rowClicked, pb);
+    assert('T2 panel: rejestr pokazuje „Przewaga militarna”', pb.hasPrzewaga, pb);
+    // Pasek w audiencji = udział GRACZA (computeRespekt(gracz, AI), bez korekty); korekta siedzi w relacji AI→gracz.
+    // Pomiar: bar == baza (bez korekty) oraz bar + (relacja AI po korekcie − offset) ≈ 100 (dopełnienie udziałów).
+    assert('T2 panel: pasek Respektu = baza Mocy gracza (stan obecny, bez korekty militarnej; DO POTWIERDZENIA perspektywa)',
+      pb.bar !== null && pb.bar === pb.base, pb);
+    assert('T2 panel: dopełnienie udziałów: bar + relacjaAI_bazowa ≈ 100 (tolerancja 3 pkt: zaokrąglenie, Moc efektywna vs nominalna)',
+      pb.bar !== null && Math.abs(pb.bar + pb.relacjaAIBazowa - 100) <= 3, pb);
 
     // T3–T6: utrzymanie przewagi -> bez ponownego naliczenia
     for (let t = 3; t <= 6; t++) {
@@ -291,35 +347,6 @@ async function main() {
     assert('T15: brak pola offsetu w starym zapisie = 0 (zgodnie z kontraktem)', (s15.offset ?? 0) === 0, s15);
     assert('T15: po inicjalizacji stan zapisany (A przy ratio >=1,6)', s15.stan === 'A', s15);
 
-    // Panel dyplomacji: REALNE okno audiencji z karty HUD „Dyplomacja” (jak gracz); zrzut + obecnosc pozycji rejestru.
-    // Przycisk panelu dyplomacji w lewym pasku (ikona/tytul zawierajacy „yplomac”), a gdy brak — karta HUD.
-    const audience = await ev(page, () => {
-      const cands = Array.from(document.querySelectorAll('button, [role="button"], [data-tip], [title], [aria-label]'));
-      const hit = cands.find(x => /yplomac/i.test((x.getAttribute('title') || '') + ' ' + (x.getAttribute('aria-label') || '') + ' ' + (x.getAttribute('data-tip') || '')));
-      if (hit) { hit.click(); return { clicked: true, via: 'pasek', label: (hit.getAttribute('title') || hit.getAttribute('aria-label') || hit.getAttribute('data-tip') || '').slice(0, 60) }; }
-      const e = Array.from(document.querySelectorAll('.sp-event[data-id]')).find(x => /Dyplomacja/.test(x.textContent || ''));
-      if (e) { e.click(); return { clicked: true, via: 'karta HUD' }; }
-      return { clicked: false };
-    });
-    await wait(1500);
-    out.panelOpened = audience.clicked;
-    // Wiersz cywilizacji partnera w panelu (tekst „Nasz respekt”) -> REALNA audiencja z rejestrem czynnikow.
-    const rowClicked = await ev(page, () => {
-      // Nazwa cywilizacji w karcie (lisc DOM) — klik w karte otwiera audiencje (wskazowka panelu: „Kliknij cywilizacje”).
-      const card = Array.from(document.querySelectorAll('*')).find(x => x.children.length > 0 && /Nasz respekt/.test(x.textContent || '') && (x.textContent || '').length < 400);
-      if (!card) return false;
-      const name = Array.from(card.querySelectorAll('*')).find(x => x.children.length === 0 && (x.textContent || '').trim().length >= 3 && (x.textContent || '').trim().length <= 20 && !/respekt|Zaufanie|Relacja|Wojny|Sojusze|Handel|Obywatele|Armia|Rekruci/i.test(x.textContent || ''));
-      (name || card).click();
-      return true;
-    });
-    await wait(1500);
-    const panelText = await ev(page, () => document.body.innerText || '');
-    out.panelHasNaszRespekt = /Nasz respekt/i.test(panelText);
-    out.panelRowClicked = rowClicked;
-    out.panelHasPrzewaga = /Przewaga militarna/.test(panelText);
-    out.panelHasSlabszy = /Słabszy militarnie/.test(panelText);
-    await shot(page, 'respekt-live-t15.png');
-    console.log(`  [panel] panel: ${audience.clicked} (${audience.via || '-'}); wiersz cywilizacji: ${rowClicked}; „Przewaga militarna” w tekscie: ${out.panelHasPrzewaga}`);
 
     // T16–T30: balans -> bez nowych zdarzen
     let lastCount = s15.przewagaN + s15.slabszyN;
