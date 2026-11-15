@@ -1,27 +1,39 @@
-# DISPATCH R-RUSTPORT-P6-CRED-HAK-WYPOWIEDZENIE-ROZPOZNANIE-Q1 (runda 1) — rozpoznanie (BEZ zmian kodu)
+# DISPATCH R-RUSTPORT-P6-CRED-HAK-WYPOWIEDZENIE-ROZPOZNANIE-Q1 (runda 1) — ROZPOZNANIE, tylko odczyt
 
-TEMAT: CRED-HAK-WYPOWIEDZENIE (#120): hak P4 dla wypowiedzenia gracza, sojuszu i klastra — rozpoznanie
-DOMENA: GAME (rozpoznanie). BAZA: `fc2ed160f` (czubek `origin/rust-port/parity-v2`). Worktree na `wip/R-RUSTPORT-P6-CRED-HAK-WYPOWIEDZENIE-ROZPOZNANIE-Q1`.
-Pin (tylko odczyt): `git show 07d2fbd72:gra/src/main.ts`.
+STATUS: DISPATCHED
+DOMAIN: GAME
+TEMAT: wypowiedzenie wojny przez gracza i zerwanie traktatu — rozpoznanie parytetu web ↔ Rust (CRED-HAK, zadanie #120/#171).
+MODEL: Operator HAIKU 5.5; Obrona HAIKU 5.5; Evaluator SONNET 5.5; Final Control SONNET 5.5.
 
-## GOAL
-Ustalić, jak pin wywołuje chargeWarDeclarationCredibility przy wypowiedzeniu gracza (main.ts ok. 13168/13205), obowiązku sojuszniczym (ok. 23806) i klastrze (ok. 40441), oraz czy Rust ma odpowiedniki komend/ścieżek gracza. Wskazać, czego brakuje.
+## ZASADA (CLAUDE.md zasada 11): NAJPIERW WEB
+Wzorzec: pin `07d2fbd72`. Odczyt: `git show 07d2fbd72:gra/src/...`, `git grep -n ... 07d2fbd72 -- gra/src`.
+Pytań do właściciela NIE zadajesz, o ile web rozstrzyga sprawę. Brak rozstrzygnięcia w webie = NIE_ZMIERZONO w raporcie.
 
-## ZAKRES
-- Tylko czytanie kodu i raport. Zero zmian w `rust-port/**`, `gra/**`, testach.
-- Każde twierdzenie: plik:linia (Rust i pin). Niepewne = NIE_ZMIERZONO.
-- Zaproponuj minimalny plan implementacji (pliki, testy, ryzyka) i rozmiar (ile rund).
+## CEL
+Mapa 1:1 ścieżki gracza z webu do Rust dla:
+- `playerDeclareWarOnOwner` (web main.ts:13152–13185) — wypowiedzenie wojny przez gracza;
+- `breakTreatyVoluntarily` (main.ts:22741) — dobrowolne zerwanie traktatu;
+- `breakTreatiesOnWar` (main.ts:23688).
 
-## ALLOWLISTA
-- `dyspozycje/rust-port/p6/R-RUSTPORT-P6-CRED-HAK-WYPOWIEDZENIE-ROZPOZNANIE-Q1-ROZPOZNANIE.md` (NOWY)
-- `dyspozycje/autobot/runs/R-RUSTPORT-P6-CRED-HAK-WYPOWIEDZENIE-ROZPOZNANIE-Q1/**`
-ZAKAZ: `src/**`, `tests/**`, `gra/**`, `Cargo.toml`, push do parity.
+Dla każdego kroku funkcji webowej wskaż odpowiednik w Rust (plik:linia) LUB oznacz BRAK.
+Znane z wcześniejszego rozpoznania (zweryfikować): w Rust BRAK (0 trafień w `rust-port/engine/src`):
+`diplomacyLayerForOwner`, `playerDiplomacyActionAllowed`, `chargeWarDeclarationCredibility`, `applyAllianceObligationsOnWar`,
+`pruneTributeNegotiationsBetween`, `recordWarDeclarationEvent`, `pruneInvalidNegotiations`, `applyDiploEventTracked`.
+Obecne w Rust: `break_treaties_on_war` (diplomacy.rs:1690), `break_treaty_voluntarily` (diplomacy.rs:1708, część domenowa),
+`voluntary_treaty_break_plan` (diplomacy.rs:4336), `zarejestruj_wypowiedzenie`, `przyczyna_wypowiedzenia`, `ma_casus_belli_aktywne`.
 
-## KRYTERIA KOŃCA
-1. Tabela: każde miejsce wywołania w pinie → odpowiednik w Rust (istnieje / brak / gdzie), z dowodem.
-2. Lista brakujących elementów (komendy, stan, hooki) z plik:linia.
-3. Propozycja podziału na tematy wykonawcze z zależnościami.
+## BAZA
+`origin/rust-port/parity-v2` = `a01363d5f`. Przed pracą: `git merge-base --is-ancestor a01363d5f HEAD`.
 
-## RAPORT
-`01-operator-r1.md`: STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT (tylko dokument)/TESTY (NIE DOTYCZY)/BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH (NIE WYKONANO).
-Commit BEZ linii `Co-Authored-By` z nazwą modelu. `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`. RUNDY: 1/5.
+## ALLOWLISTA (tylko odczyt + raport)
+- `dyspozycje/autobot/runs/R-RUSTPORT-P6-CRED-HAK-WYPOWIEDZENIE-ROZPOZNANIE-Q1/**` (raport i dowody)
+ZERO ZMIAN kodu, ZERO buildu. Nie commitować nic poza katalogiem runu.
+
+## WYNIK (raport 01-rozpoznanie.md)
+1. Tabela: krok webu (funkcja, plik:linia) → odpowiednik Rust (plik:linia) | BRAK | różnica.
+2. Lista BRAKÓW z rekomendowanym zakresem dispatchu wdrożeniowego (nazwa, co dodać, pliki w allowliście silnika).
+3. Lista punktów NIE_ZMIERZONO (co web robi, czego nie da się sprawdzić statycznie).
+4. Wskazanie, które punkty web rozstrzyga jednoznacznie (bez pytania do właściciela) i które wymagają pytania ABC — z uzasadnieniem.
+
+## PROCES
+Operator → Evaluator → Final Control. Commit z jawnym `git add`. Commit bez nazwy modelu w treści; ostatnia linia `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`. Bez push na parity.
