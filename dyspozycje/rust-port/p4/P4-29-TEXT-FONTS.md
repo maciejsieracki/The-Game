@@ -17,9 +17,9 @@ Konwencja: `plik:linia` bez prefiksu = `gra/src/` w pinie `edb8fb56`. `[zewn.]` 
 4. **`measureText().width`: 5 121/5 121 szerokości bit w bit jak Chromium 141** (test porównuje `to_bits` — obrona r1) (max |Δ| = 0; wszystkie 1 543 unikalne nazwy miast po `toUpperCase` + z „…”, etykiety WZROST% −25…25 co 0,25, liczby, `×N`, cyfry T9, wiersze hover z `buildings.json`/`units.json`, 22+25 liter, interpunkcja, pary kerningowe, symbole z fallbackiem). **Decyzje przycięcia „…”: 12 714/12 714 identyczne** (2 578 przycięte przez web; w tym przypadki brzegowe `maxW == measureText` i wejścia 1–2 jednostek UTF-16 — obrona r1).
 5. Linie bazowe (`textBaseline` ×6) — 216/216 wartości `TextMetrics.alphabeticBaseline` zgodne (3 rodziny × 2 grubości × 12 rozmiarów × 6). Parser skrótu `font`: 43/43 sondy (z `bolder` — obrona r1) zgodnych z Chromium co do akceptacji, rozmiaru i grubości.
 6. **Sceny: 36** (T5 ×3, T6 ×3, **T9 ×10 cyfr**, T15 ×4, T10 glif ×2, T13 cyfry z cieniem ×2, T14 tekst ×4 skale + wiersz hover, 7 scen semantycznych) — **wszystkie w progach RR-T8a**: SSIM min **0,9933**, mean_abs max **1,34**, px>16 max **4,35 %** (§5).
-7. `toUpperCase`: 1 665/1 665 nazw miast i 1 680 punktów kodowych (Latin/Greek/Cyrillic/Armenian + Latin Ext. Additional) identycznie jak V8 (node v22); w całej tablicy V8 (1 552 zmieniających się znaków) **0 różnic**.
+7. `toUpperCase`: 1 665/1 665 nazw miast i 1 680 punktów kodowych (Latin/Greek/Cyrillic/Armenian + Latin Ext. Additional) identycznie jak V8 (node v22.22.0). Poza blokami europejskimi wynik zależy od wersji Unicode toolchainu (obrona r3, §4.4): wobec tablicy fixtury (node v22.22.0) rustc 1.87.0 daje 0 różnic, a rustc 1.97.0 daje 28 różnic (znaki Unicode 17, których V8 z node v22.22.0 jeszcze nie zmienia); żaden z nich nie występuje w danych pinu.
 8. Determinizm: złote hashe 36 scen identyczne na rustc **1.87.0 i 1.97.0, debug i release, ×2** (§6). Referencje Chromium wygenerowane drugi raz — `MANIFEST.sha256` **identyczny**.
-9. Mutacje: **23/23 zabite** (§8) + obrona r1: **9/9** (§8a, w tym E03/E05/E09 Evaluatora). Bramy: fmt / clippy / clippy `gpu` / test stable / test 1.87.0 — EXIT=0 (§7).
+9. Mutacje: **23/23 zabite** (§8) + obrona r1: **9/9** (§8a, w tym E03/E05/E09 Evaluatora) + obrona r3: **10/11** (§8b; przeżywa tylko mutant równoważny E7). Bramy: fmt / clippy / clippy `gpu` / test stable / test 1.87.0 — EXIT=0 (§7).
 
 ---
 
@@ -52,7 +52,7 @@ Konwencja: `plik:linia` bez prefiksu = `gra/src/` w pinie `edb8fb56`. `[zewn.]` 
 - **Z-29-3 (grubość):** dostępne 400 i 700, więc reguła dopasowania CSS Fonts 4 §5.2 daje: waga > 500 → Bold (600, 700, 900 → 700), w przeciwnym razie Regular (500 → 400). **T9 `900`** rysowany Bold 700 (P4-25 §3.5: brak odmiany Black w D-TXT-1 = A). Chromium z tymi samymi plikami robi to samo (szerokości cyfr T9 bit w bit, brak syntetycznego pogrubienia — SSIM T9 ≥ 0,993).
 - **Z-29-4 (kursywa/small-caps/stretch):** parsowane (wartość nie jest odrzucana), ale **nie renderowane** — web ich nie używa (P4-25 §3.2), fontów kursywnych nie dołączono. Chromium zsyntetyzowałby skos; różnica nieobserwowalna dla obecnego kodu.
 - **Z-29-5 (jednostki rozmiaru):** `px pt pc in cm mm q` oraz `em`/`%` względem domyślnych 10 px (zmierzone: `12em` → 120 px, `12%` → 1,2 px); `rem`, `ex`, `ch`, jednostki viewportu i słowa kluczowe (`medium`) — odrzucane (web używa tylko `px`).
-- **Z-29-6 (hinting referencji):** referencje z `--font-render-hinting=none` (P4-25 Z-4: bez hintingu). Zmierzone (§5.3): z `full` Chromium **zaokrągla advance do całych px** (4 980/5 105 szerokości inne, 131 decyzji przycięcia innych) — to nie jest zachowanie, które zmierzył web (`cityMapStatChip.ts:113-114`: 44,453 px, ułamek). Sonda bez flagi (`p1` w scratchpadzie): `UMGUNGUNDLOVU` 213,876953125, `−99,9%` 44,45263671875 — jak `none`.
+- **Z-29-6 (hinting referencji):** referencje z `--font-render-hinting=none` (P4-25 Z-4: bez hintingu). Zmierzone (§5.3): z `full` Chromium **zaokrągla advance do całych px** (4 980/5 105 szerokości inne, 131 decyzji przycięcia innych — pomiar r1 na zestawie r1, przed dodaniem 16 szerokości i 94 przypadków w obronie r1; nie powtarzany) — to nie jest zachowanie, które zmierzył web (`cityMapStatChip.ts:113-114`: 44,453 px, ułamek). Sonda bez flagi (`p1` w scratchpadzie): `UMGUNGUNDLOVU` 213,876953125, `−99,9%` 44,45263671875 — jak `none`.
 
 ---
 
@@ -92,7 +92,7 @@ Konwencja: `plik:linia` bez prefiksu = `gra/src/` w pinie `edb8fb56`. `[zewn.]` 
 Gramatyka CSS Fonts 4: `[style || variant || weight || stretch]? size[/line-height]? family#`. Wagi `normal|bold|bolder|lighter|1–1000` (`bolder`/`lighter` względem domyślnej 400 → 700/100), rodziny w cudzysłowach lub ciągi identyfikatorów łączone spacją, generyczne `serif`/`sans-serif` (`"sans-serif"` w cudzysłowie = nazwa rodziny). Niepoprawna wartość → `set_font` zwraca `false` i **zostawia poprzednią** (jak Canvas). Domyślnie `10px sans-serif`. Nierozwiązany cudzysłów kończy się z końcem wejścia (zmierzone: Chromium akceptuje `12px 'unterminated`). Porównanie: `fontparse.tsv` (39 sond: wszystkie fonty weba + przypadki brzegowe) — akceptacja, rozmiar i waga zgodne we wszystkich (`text_metrics::font_shorthand_parsing_matches_chromium`).
 
 ### 3.2 Wybór fontu i kształtowanie (`shape_text`)
-1. Tekst: U+0009/000A/000C/000D → spacja (HTML „replace all ASCII whitespace with spaces”).
+1. Tekst: U+0009/000A/000C/000D → spacja (HTML „replace all ASCII whitespace with spaces”). Wszystkie cztery znaki sprawdzone w obronie r3 (§8b): szerokości jak w Chromium 153, ten sam wynik kształtowania co spacja.
 2. Dla każdego znaku pierwsza twarz z łańcucha, która ma glif (cmap ≠ 0) — **fallback per glif** (D-TXT-2 = A).
 3. Segmenty: maksymalne ciągi tej samej twarzy, **przy czym każda spacja U+0020 to osobny segment**. Zmierzone: Blink kształtuje słowo po słowie (`CachingWordShaper` `[zewn.]`) — bez tego 197 szerokości różniło się (np. `GEBEL BARKAL` 174,217 vs 175,431 px, kerning `L␠`/`␠B`), a 12 decyzji przycięcia było innych; z segmentacją: 0.
 4. Każdy segment: `rustybuzz::shape` (LTR, skrypt zgadywany, domyślne cechy: `kern`/GPOS, `liga`, …). Pozycje w jednostkach fontu × **`size / unitsPerEm`** (nie `ab_glyph::PxScale`, które jest wysokością ascent−descent; P4-25 §4.2 — test `px_scale_is_not_the_css_em`: `−99,9%` 700 13 px = **44,45263671875**, dokładnie wartość Chromium i podstawa `ceil` = 45 w `cityMapStatChip.ts:113-114`).
@@ -126,16 +126,25 @@ Dispatch dopuszcza „minimalne udostępnienie API `Canvas2dLite` potrzebne do r
 
 Generator `tests/fixtures/text/gen.mjs` (node v22.22.0, playwright 1.56.1, **Chromium 141.0.7390.37** headless, `--disable-gpu --force-color-profile=srgb --font-render-hinting=none`). Fonty ładowane jako `FontFace` pod prywatnymi nazwami (`CivLiberationSans`, …) z **tych samych plików** co `assets/fonts/`; stosy weba tłumaczone `mapFont()` (druga, niezależna implementacja Z-29-1) + zawsze `CivDejaVuSans` na końcu, więc Chromium nie sięga do fontów systemowych. Dane weba z pinu przez `git show edb8fb56:gra/data/{city-names-pools,buildings,units}.json`.
 
-### 4.1 Szerokości (`widths.tsv`, 5 105 wierszy) — `text_metrics::measure_text_widths_match_chromium`
+### 4.1 Szerokości (`widths.tsv`, 5 121 wierszy; r1: 5 105, obrona r1: +16 `bolder`/`lighter`) — `text_metrics::measure_text_widths_match_chromium`
 **max |Δ| = 0**; od obrony r1 test porównuje **bitowo** (`to_bits`, ±0 równe) zamiast tolerancji 1e-9 — mutacja „+1 ulp” (O7) jest zabijana. Zawartość: 1 543 unikalne nazwy miast (z 1 665 wartości) po `trim().toUpperCase()` fontem nazwy, te same + „…”, 201 etykiet `formatCityGrowthPercentLabel` (kopia `cityMapStatChip.ts:741-747`) + „—”, liczby populacji/tur/grup/plonów, `×2…×99`, cyfry 0–9 `900 118px`, 42+75 wierszy hover, oraz dla każdego z 16 fontów weba: każdy z 22+25 znaków i interpunkcji osobno, ciągi znaków, „ZAŻÓŁĆ GĘŚLĄ JAŹŃ”, pary kerningowe `AV To LT Wa Yo Te P. F, VA «»`; ☠ ◆ ⚔ `A☠B` `◆1` w 6 stosach (fallback).
 
 ### 4.2 Przycinanie (`truncate.tsv`, 12 714 przypadków; obrona r1: +94 brzegowe, §8a) — `truncation_decisions_match_the_web`
-Web: pętle **dosłownie** z `cityMapStatChip.ts:767-779` (`truncateName`) i `:711-716` (wiersz hover) wykonane w Chromium. Rust: `truncate_name` / `truncate_hover_line` — pętla po **jednostkach UTF-16** (`Vec<u16>`, `pop()` = `slice(0,-1)`, `len()` = `length`; połówka pary zastępczej → U+FFFD przy pomiarze). Budżety nazw 305, 285, 266, 240, 213,8, 180, 120, 60 px (z `CITY_NAME_BUDGET_BASE` 305 `:138` minus sloty `:87-88`, `:199`). **0 różnic**, 2 532 przypadki przycięte.
+Web: pętle **dosłownie** z `cityMapStatChip.ts:767-779` (`truncateName`) i `:711-716` (wiersz hover) wykonane w Chromium. Rust: `truncate_name` / `truncate_hover_line` — pętla po **jednostkach UTF-16** (`Vec<u16>`, `pop()` = `slice(0,-1)`, `len()` = `length`; połówka pary zastępczej → U+FFFD przy pomiarze i w wyniku). Zachowanie połówki pary **zmierzono w obronie r3 w Chromium 153.0.8010.12, nie w 141** (§8b): szerokości `A\uD835`, `A\uDC00`, `AB\uD83C…` = szerokości z U+FFFD (bit w bit), piksele `fillText` identyczne, 6 przypadków przycięcia przez parę U+1F031 identyczne. **Chromium 141: NIE_ZMIERZONO.** Dane pinu nie zawierają znaków spoza BMP. Budżety nazw 305, 285, 266, 240, 213,8, 180, 120, 60 px (z `CITY_NAME_BUDGET_BASE` 305 `:138` minus sloty `:87-88`, `:199`). **0 różnic**, 2 578 przypadków przyciętych (r1: 2 532 z 12 620; obrona r1: +94 przypadki brzegowe).
 
 ### 4.3 Linie bazowe i parser — §3.1, §3.3.
 
 ### 4.4 `toUpperCase` (`text_upper.rs`)
-`upper.tsv`: wszystkie punkty kodowe, dla których `toUpperCase` w V8 (node v22.22.0) zmienia znak (1 552). Rust `str::to_uppercase`: 22 litery §3.3 → identycznie; `ßı` → `SSI` jak JS; 1 665/1 665 nazw miast; 1 680 punktów kodowych bloków europejskich ściśle; w całej tablicy 0 różnic (różnica wersji Unicode V8/Rust możliwa w przyszłości — test ścisły tylko dla bloków europejskich).
+`upper.tsv`: wszystkie punkty kodowe, dla których `toUpperCase` w V8 (**node v22.22.0**) zmienia znak (1 552). Rust `str::to_uppercase`: 22 litery §3.3 → identycznie; `ßı` → `SSI` jak JS; 1 665/1 665 nazw miast; 1 680 punktów kodowych bloków europejskich (U+0000–U+058F, U+1E00–U+1EFF) ściśle.
+
+Poza tymi blokami wynik zależy od wersji Unicode toolchainu i przeglądarki. Do obrony r3 test porównywał tylko punkty kodowe **z tablicy** (kierunek JS→Rust), więc nie widział znaków, które Rust zmienia, a V8 nie. Zdanie „w całej tablicy 0 różnic” było prawdziwe tylko w tym kierunku. Od obrony r3 `whole_unicode_table_agrees_on_european_scripts` sprawdza wszystkie wartości skalarne U+0000–U+10FFFF w obu kierunkach. Zmierzone (`dowody/05-obrona-r3-upper.log`):
+
+| rustc | tablica node v22.22.0 (fixtura) | tablica node v22.23.4 (Unicode 17.0) |
+|---|---|---|
+| 1.97.0 | **28** różnic | 0 |
+| 1.87.0 | 0 | **28** różnic |
+
+Te 28 znaków to nowe mapowania Unicode 17: U+A7CF, U+A7D3, U+A7D5 (Latin Extended-D) oraz U+16EBB–U+16ED3. Ścisły zakres testu ich nie obejmuje, a w danych pinu (`city_names.txt`) nie występują. Ta sama zależność dotyczy weba: wynik `toUpperCase` w przeglądarce zależy od jej wersji ICU. Dlatego tablica fixtury jest pomiarem jednej wersji V8, a nie stałą prawdą.
 
 ---
 
@@ -157,12 +166,12 @@ Metryka i progi **jak RR-T8a** (`raster::metric`; ZAŁOŻENIE Z-28-6 / D-TXT-4 =
 | x_text_align / baselines / rotated_gradient / charset_sans / charset_serif / save_restore_font / path_untouched | 41–66 | 0,13–0,30 | 0,80–2,23 | 0,9983–0,9996 |
 
 ### 5.2 Skąd różnice i co zmierzono
-- **Pozycjonowanie glifów** (największy efekt, zmierzone wariantami): bez kwantyzacji 25/36 scen poza progami (T9 SSIM 0,950, centroid alfy T9 przesunięty o +0,5 px w pionie); `y` do całego px → w progach poza trzema (T5: px>16 5,15–5,37 %); `y` całe + `x` 1/4 px → **36/36**; `x` do całego px — gorzej (T15 SSIM 0,946). Dla obróconej sceny kwantyzacja pogarsza (mean 0,25 → 0,43), więc wyłączona przy obrocie.
+- **Pozycjonowanie glifów** (największy efekt, zmierzone wariantami): bez kwantyzacji 25/36 scen poza progami (T9 SSIM 0,950, centroid alfy T9 przesunięty o +0,5 px w pionie); `y` do całego px → w progach poza trzema (T5: px>16 5,15–5,37 %); `y` całe + `x` 1/4 px → **36/36**; `x` do całego px — gorzej (T15 SSIM 0,946). Dla obróconej sceny kwantyzacja pogarsza (mean 0,25 → 0,43), więc wyłączona przy obrocie. Od obrony r3 rozróżnia to test `text_scenes::rotated_text_origin_is_not_quantised` (ZAŁOŻENIE: próg mean_abs ≤ 0,34 = środek przedziału; zmierzone 0,2525 bez kwantyzacji i 0,4306 z kwantyzacją). Do r3 chronił to wyłącznie złoty hash.
 - **Pokrycie AA glifów:** Chromium rysuje ciemny tekst wyraźnie „cieniej” — masa alfa `x_text_charset_sans` (tekst `#101010`) w Chromium 542 844 vs nasze 692 878 (−22 %), a jasny glif `t10_glyph_civ` (`#f4ead2`) tylko −1,3 %. Pasuje do korekcji gamma/kontrastu masek glifów Skii zależnej od jasności koloru `[zewn., niezweryfikowane]`; **nie odtwarzano** (wymagałoby tablic Skii, poza D-TXT-6). To dominuje w `max_abs` i px>16 scen z małym ciemnym tekstem (T5, T14 x1).
 - Kwantyzacja AA tiny-skia (krok 1/4 pokrycia, P4-28 §5.3) — jak w kształtach.
 
 ### 5.3 Wpływ hintingu Chromium (pomiar Z-29-6)
-Ten sam generator z `--font-render-hinting=full` (wynik w scratchpadzie, nie w repo): 4 980/5 105 szerokości inne (całe px, np. `GRECY` 80 vs 79,449), 131/12 620 decyzji przycięcia innych, sceny: SSIM do 0,826, max_abs 255. Wniosek: referencje i implementacja bez hintingu (Z-4); zachowanie web-u na Windows (DirectWrite) — **NIE_ZMIERZONO**.
+Ten sam generator z `--font-render-hinting=full` (wynik w scratchpadzie, nie w repo): 4 980/5 105 szerokości inne (całe px, np. `GRECY` 80 vs 79,449), 131/12 620 decyzji przycięcia innych (pomiar r1 na zestawie r1; po obronie r1 zestaw liczy 5 121 / 12 714, pomiaru `full` nie powtarzano), sceny: SSIM do 0,826, max_abs 255. Wniosek: referencje i implementacja bez hintingu (Z-4); zachowanie web-u na Windows (DirectWrite) — **NIE_ZMIERZONO**.
 
 ### 5.4 Co ocenić wzrokiem (po RR-T5, wymaga GPU — NIE_ZMIERZONO)
 Ocena 1:1 na ekranie gry, porównanie z webem na maszynie właściciela (D-RR-2, D-TXT-4 = A): cyfry T9 po mipmapach (obrys 28 px przy oddalonej kamerze), `×N` T5 i numery tur T6 (mały ciemny/jasny tekst — różnica gęstości AA §5.2), nazwa miasta T14 przy LOD 1–4 (Liberation Serif zamiast Georgii — inny kształt, ta sama metryka co Times New Roman), wiersz hover 11 px, symbole ☠/◆ z DejaVu (D-TXT-3), cyfry T13 z cieniem.
@@ -171,7 +180,7 @@ Ocena 1:1 na ekranie gry, porównanie z webem na maszynie właściciela (D-RR-2,
 
 ## 6. Determinizm (`dowody/05-determinism.log`)
 `text_scenes::scenes_match_golden_hashes` (FNV-1a 64 bufora premultiplied, `tests/fixtures/text/golden.tsv`, 36 scen) — 8 przebiegów: rustc **1.87.0** i **1.97.0** × debug/release × 2: wszystkie EXIT=0, sha256 wydrukowanych hashy identyczny. Platforma x86_64 Linux; inne architektury NIE_ZMIERZONO. Przebłogosławienie: `TEXT_BLESS=1 cargo test --test text_scenes scenes_match_golden_hashes` (tylko po świadomej zmianie). Zrzuty: `TEXT_DUMP=<katalog>`.
-Referencje Chromium wygenerowane drugi raz: `MANIFEST.sha256` (51 wpisów, w tym `gen.mjs` i 6 fontów) **identyczny** (`dowody/06-chromium-refs-repro.log`). Rozmiar `tests/fixtures/text/`: 3 858 973 B (< 8 MB) — nic nie pominięto.
+Referencje Chromium wygenerowane drugi raz: `MANIFEST.sha256` (51 wpisów, w tym `gen.mjs` i 6 fontów) **identyczny** (`dowody/06-chromium-refs-repro.log`). Rozmiar `tests/fixtures/text/`: 3 858 973 B w r1; po obronie r1 **3 869 084 B** (`du -sb`, bez zmian w obronie r3; < 8 MB) — nic nie pominięto.
 
 ---
 
@@ -181,9 +190,10 @@ Referencje Chromium wygenerowane drugi raz: `MANIFEST.sha256` (51 wpisów, w tym
 |---|---|---|
 | `src/raster/text/*` (unit) | 10 | parser (formy weba, prefiksy, błędne wartości, cudzysłów), mapowanie stosów, PxScale ≠ em, fallback per glif, białe znaki, `round_64` |
 | `tests/text_metrics.rs` | 6 | §4.1–4.3, niepoprawny font zostaje, domyślny `10px sans-serif` |
-| `tests/text_scenes.rs` | 4 | §5, złote hashe, dwukrotny render, kompletność manifestu |
+| `tests/text_scenes.rs` | 5 | §5, złote hashe, dwukrotny render, kompletność manifestu, brak kwantyzacji przy obrocie (obrona r3) |
 | `tests/text_fonts.rs` | 6 | sha256 (wektory NIST), sha256 fixtur `tests/fixtures/text/MANIFEST.sha256` (obrona r1), manifest + rozmiar ≤ 6 MB + bajty w binarce, brak `.notdef` (22+25+ASCII+`×…−—·%,!→`), fallback ☠◆⚔ → DejaVu, emoji → `.notdef` (RR-T8c) |
-| `tests/text_upper.rs` | 3 | §4.4 |
+| `tests/text_upper.rs` | 3 | §4.4 (od obrony r3 obustronnie po wszystkich wartościach skalarnych) |
+| `tests/text_edge_cases.rs` | 5 | obrona r3 (§8b): `\t \n \f \r` i połówka pary zastępczej vs Chromium 153 (87 szerokości), przycinanie przez parę U+1F031, przesunięcia GPOS znaków łączących, `fillText`/`strokeText` z NaN/±Inf |
 | `tests/text_api_closed.rs` | 3 | 6 członków tekstowych, brak nieużywanych, `canvas.rs` bez nowych `pub fn` |
 
 Bramy — `dowody/01-gates.log` (surowe logi z `EXIT=`):
@@ -247,11 +257,31 @@ Zmiany wyłącznie w `tests/fixtures/text/{gen.mjs,widths.tsv,truncate.tsv,fontp
 
 Mutacje obrony: `dowody/02-obrona-mutations.py`, log `dowody/02-obrona-mutations.log` — **9/9 KILLED** (O1–O9).
 
+## 8b. Obrona r3 (zarzuty Evaluatora r3)
+
+Zmiany: nowy `tests/text_edge_cases.rs` (5 testów), `tests/text_scenes.rs` (+1 test), `tests/text_upper.rs` (sprawdzenie obustronne), ten dokument, `dowody/05-obrona-r3-*`. **`src/**` i `tests/fixtures/text/**` bez zmian** (sha256 fixtur nietknięte).
+
+Chromium: w kontenerze obrony r3 jest tylko Chromium **153.0.8010.12** (playwright 1.63, `/opt/pw-browsers/chromium-1243`). Chromium 141.0.7390.37 z `versions.txt` jest niedostępny. Nowe referencje pochodzą z sondy `dowody/05-obrona-r3-chromium-probe.mjs` (log `…-probe.log`): te same pliki fontów i flagi (`--font-render-hinting=none`). Są stałymi w teście, **nie** fixturami 141. Wiersze, które dotąd mierzono w 141 (np. U+FFFD i spacja), w 153 dają te same wartości bit w bit.
+
+| # | zarzut | odpowiedź | dowód |
+|---|---|---|---|
+| 1 | GPOS `x_offset`/`y_offset` nietestowane (E6, E9) | **PRZYJMUJĘ.** `combining_marks_follow_gpos_offsets_like_chromium`: `x` + U+0301 + U+0323 w Liberation Serif Regular i Bold. Nie ma glifu złożonego, więc oba znaki łączące ustawia GPOS. Test najpierw sprawdza, że przesunięcia są niezerowe w obu osiach. Potem porównuje ramki atramentu `x` oraz znaków nad i pod nim z Chromium 153 z tolerancją ±1 px (zmierzone: 2 współrzędne różnią się o 1 px, pozostałe 22 są równe). | R3-E6, R3-E6b, R3-E9, R3-E9b KILLED |
+| 2 | `\n \r \f` nietestowane (E4) | **PRZYJMUJĘ.** `whitespace_and_lone_surrogate_widths_match_chromium` (`a␣b`, `A␣V` dla każdego z 4 znaków, `\n`, `\r\n`; 3 fonty weba; bit w bit z Chromium 153) oraz `ascii_whitespace_shapes_as_space` (ten sam wynik kształtowania co spacja, para kerningowa `AV`). | R3-E4a/b/c KILLED |
+| 3 | U+FFFD po `slice(0,-1)` niezmierzone (E11); §4.2 jako fakt | **PRZYJMUJĘ.** Zmierzone w Chromium **153**, nie 141. Szerokości samotnych połówek (`A\uD835`, `A\uDC00`, `\uD835`, `AB\uD83C…`) są równe szerokościom z U+FFFD, a piksele `fillText` są identyczne (linie `P`). `truncation_through_a_surrogate_pair_matches_chromium`: U+1F031 (DejaVu, nie emoji, szerszy od U+FFFD i od „…”). 6 przypadków nazwy i wiersza hover, w tym 2, w których web zwraca łańcuch z samotną połówką (`AB\uD83C…`, `Jednostka · \uD83C…`); Rust zwraca w tym miejscu U+FFFD. §4.2 poprawiony: Chromium 141 = NIE_ZMIERZONO. | R3-E11a (połówka usunięta), R3-E11b (→ `?`) KILLED |
+| 4 | strażnik NaN/±Inf w `draw_text` bez testu (E7) | **PRZYJMUJĘ test, ODRZUCAM wymóg zabicia E7.** `non_finite_position_draws_nothing`: `fillText` i `strokeText` z NaN/±Inf w `x`, `y` lub obu, tekst konturowy, emoji i mieszany: brak pikseli i brak paniki. E7 jest **mutantem równoważnym**. Bez strażnika ścieżka konturów ma punkty nieskończone, a `PathBuilder::finish` zwraca `None` (`tiny-skia-path-0.12.0/src/path_builder.rs:421` → `Rect::from_points` → `rect.rs:235-239` `FiniteF32::new(..)?`). Ścieżka emoji kończy się na strażnikach `drawImage` (`raster/canvas.rs:584`, `raster/image/svg.rs:224`). Strażnik zostaje, bo odpowiada regule HTML „infinite or NaN → return” i nie polega na szczegółach tiny-skia. | R3-E7 SURVIVED (równoważny) |
+| 5 | brak kwantyzacji przy obrocie chroni tylko złoty hash (M20) | **PRZYJMUJĘ.** `rotated_text_origin_is_not_quantised`: `x_text_rotated_gradient` mean_abs ≤ 0,34 (ZAŁOŻENIE: środek przedziału 0,2525 bez kwantyzacji / 0,4306 z kwantyzacją). Pomiar, dotąd wykonany poza testem, jest teraz w teście. | R3-M20 KILLED przez nowy test (złoty hash poza kryterium) |
+| 6 | `toUpperCase` zależy od wersji Unicode; „0 różnic” prawdziwe tylko dla node v22.22.0 | **PRZYJMUJĘ.** Test sprawdzał tylko kierunek JS→Rust (klucze tablicy). Teraz porównuje wszystkie wartości skalarne obustronnie i wypisuje różnice; `TEXT_UPPER_TSV` pozwala porównać z inną tablicą. Ujawniło to, że rustc 1.97 ma 28 różnic **wobec fixtury**, a nie tylko wobec Unicode 17 (tabela w §4.4). §0 i §4.4 poprawione. | `dowody/05-obrona-r3-upper.{sh,log}` |
+| 7 | niespójne liczby w dokumencie | **PRZYJMUJĘ.** §4.1 → 5 121; §4.2 → 2 578 / 12 714; §6 → 3 869 084 B. §5.3 i Z-29-6 (12 620 / 5 105) zostają, bo to pomiar `full` z r1 na zestawie r1, ale teraz są tak opisane. | ten dokument |
+| 8 | brak raportu Evaluatora r1; `03-operator-r2.md` nie istnieje | **PRZYJMUJĘ jako fakt procesu, bez zmian w kodzie.** Raport Evaluatora r1 nie trafił do katalogu runu. Jego 5 zarzutów jest zacytowanych w `02-operator-obrona-r1.md`, więc nie odtwarzam go z pamięci. Operatora r2 nie było. Kod do oceny to `51839a356` + `6cee8e46c` (dokumentacja) + `283f8634c` (obrona r1). Wszystkie trzy są przodkami `origin/rust-port/parity-v2` (`git merge-base --is-ancestor`, obrona r3). | `05-obrona-r3.md` |
+| 9 | referencja nie weryfikuje niezależnie `map_family` (informacyjnie) | **ODRZUCAM jako wadę:** to świadoma decyzja D-TXT-5 = A (Chromium + te same pliki), zapisana w dispatchu. Uwaga przy okazji: sonda pokazała, że dla znaku spoza trzech rodzin (U+1D400) Chromium sięga po font systemowy (szerokość spoza siatki `size/2048`). Zgadza się to z Z-29-7, ale zdanie w nagłówku `gen.mjs` („Chromium never reaches system fonts”) dotyczy tylko znaków pokrytych przez dołączone fonty. | log sondy, linie `S`: `AB` 30,5615234375 (= 2845/2048 em), `AB`+U+1D400 45,89556884765625 (4272,46/2048 em — poza siatką) |
+
+Mutacje obrony r3: `dowody/05-obrona-r3-mutations.py`, log `…-mutations.log` — **10/11 KILLED** wyłącznie nowymi testami (bez złotego hasha). Przeżywa R3-E7 (równoważny, wiersz 4).
+
 ## 9. ZAŁOŻENIA (zbiorczo) i NIE_ZMIERZONO
 - Z-29-0 … Z-29-6: §1. Progi metryki: Z-28-6 (D-TXT-4 = A).
 - Z-29-7: emoji i znaki spoza wszystkich trzech rodzin → `.notdef` twarzy podstawowej (Chromium sięgnąłby po font systemowy); to zakres RR-T8c/D-TXT-3. W scenach i tabelach takich znaków nie ma.
 - Z-29-8: kontury ab_glyph są rozpoznawane po nieciągłości; kontur zaczynający się dokładnie w punkcie końca poprzedniego zostałby sklejony — dla fill (non-zero) bez znaczenia, dla stroke możliwe dodatkowe złącze. W fontach Liberation/DejaVu nieobserwowane w scenach (T9 `strokeText` w progach).
 - Z-29-9: `fillText` składa wszystkie glify w jedną ścieżkę non-zero; Skia rysuje maski glifów osobno — różnica tylko przy nakładających się glifach z półprzezroczystym kolorem (w tekstach weba nie występuje).
-- NIE_ZMIERZONO: zachowanie Chromium na Windows/DirectWrite i z GPU (referencje = raster programowy Linux); korekcja gamma/kontrastu masek glifów Skii (§5.2); determinizm poza x86_64; `clippy` na 1.87.0 (niezainstalowany w kontenerze, jak w P4-28); wygląd po mipmapach/GPU (§5.4); emoji/obrazy (RR-T8c); atlas/upload (RR-T8d).
+- NIE_ZMIERZONO: przypadki brzegowe §8b w Chromium 141 (zmierzone w Chromium 153.0.8010.12); zachowanie Chromium na Windows/DirectWrite i z GPU (referencje = raster programowy Linux); korekcja gamma/kontrastu masek glifów Skii (§5.2); determinizm poza x86_64; `clippy` na 1.87.0 (niezainstalowany w kontenerze, jak w P4-28); wygląd po mipmapach/GPU (§5.4); emoji/obrazy (RR-T8c); atlas/upload (RR-T8d).
 
 DEPLOY/PUSH: NIE WYKONANO

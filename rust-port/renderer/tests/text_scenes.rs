@@ -212,6 +212,36 @@ fn scenes_match_golden_hashes() {
     );
 }
 
+/// Obrona r3, zarzut 5 (M20): the glyph origin is NOT quantised under a
+/// rotated CTM (`raster::text::build_path`, `snap = ctm.is_axis_aligned()`).
+/// Measured on `x_text_rotated_gradient` vs Chromium 141: unsnapped
+/// mean_abs 0.2525 (px>16 1.775 %), snapped as under an axis-aligned CTM
+/// 0.4306 (2.708 %) — both inside the scene limits, so the generic test does
+/// not tell them apart. ZAŁOŻENIE: the per-scene limit is the midpoint 0.34.
+#[test]
+fn rotated_text_origin_is_not_quantised() {
+    const ROTATED_MAX_MEAN_ABS: f64 = 0.34;
+    let all = render_all();
+    let (sc, c) = all
+        .iter()
+        .find(|(s, _)| s.name == "x_text_rotated_gradient")
+        .expect("x_text_rotated_gradient scene");
+    let d = diff_vs_chromium(sc, c);
+    println!(
+        "{}: mean_abs {:.4} px>16 {:.3} % ssim {:.5}",
+        sc.name,
+        d.mean_abs,
+        d.frac_px_over_16 * 100.0,
+        d.ssim
+    );
+    assert!(
+        d.mean_abs <= ROTATED_MAX_MEAN_ABS,
+        "{}: mean_abs {} > {ROTATED_MAX_MEAN_ABS} (origin snapped under rotation?)",
+        sc.name,
+        d.mean_abs
+    );
+}
+
 #[test]
 fn rendering_twice_is_identical() {
     let a = render_all();
