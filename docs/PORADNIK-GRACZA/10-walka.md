@@ -165,6 +165,10 @@ Nazewnictwo dokładnych etykiet może się nieznacznie różnić w buildzie — 
 
 Scena 3D ma dziś: **plansze wg terenu hexa** (§63.0), tonację ACES + światło + mgła, kępy trawy i dekor z bliska, banery stron nad oddziałami, mur oblężniczy z wieżyczkami. Odróżnienie łuku i miecza, **linie rozkazów**, uproszczone trafienia (bez pełnej fizyki).
 
+### 60.5. Ruch i cios w bitwie
+
+Jednostka wykorzystuje **cały ruch**. Do **pierwszego zderzenia wręcz** szereg wchodzi równo (strzały dystansowe tego nie zmieniają). Od zderzenia: jednostka dochodzi do wroga, **uderza**, a jeśli zostały jej punkty ruchu, **idzie dalej ku następnemu wrogowi**. W jednej turze jednostka uderza **tylko raz** — po ciosie może jedynie dojść do kolejnego wroga. Gdy po ciosie nie ma dokąd się ruszyć (okrążenie, blokada), **reszta ruchu przepada**. Hasło: [Ruch i cios w bitwie](../encyklopedia/pojecia/ruch-i-cios-w-bitwie.md).
+
 ### 60.4. Wynik strategiczny — ekrany Koniec bitwy i Szczegóły
 
 Po starciu: **ekran Koniec bitwy** (karta Zwycięstwo złota/laur lub Porażka czerwona/złamane miecze, 3 kafle strat, CTA „Powrót na mapę" + „Rozegraj ponownie" + „Szczegóły bitwy"). **Szczegóły bitwy** — dwie kolumny ATK/OBR, rozbicie Zniszczone/Rozbite/Ocalałe, licznik ludzi przed→po (np. „1240→862 ludzi po bitwie"). Zwycięstwo — wróg znika lub ucieka; Porażka — straty na mapie.
