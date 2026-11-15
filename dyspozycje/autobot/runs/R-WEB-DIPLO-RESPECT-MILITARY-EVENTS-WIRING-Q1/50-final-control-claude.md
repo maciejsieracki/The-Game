@@ -1,25 +1,37 @@
-STATUS: FAIL
+STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
 TEMAT: R-WEB-DIPLO-RESPECT-MILITARY-EVENTS-WIRING-Q1
-GOAL: zdarzenia Respektu „Przewaga militarna” (+15) i „Słabszy militarnie” (−10) wpięte w tick, próg 50%, jednorazowo na przejście progu; widoczne w rejestrze I w panelu dyplomacji (DODATEK pkt 3: poprawnie przesunięty pasek Respektu).
-ZMIANY-COMMIT: oceniany kandydat 404a345627bf54d6b3b9d24731c9d7ba1ff07ded (potomek 7c2074e00; merge-base z origin/main = 7c2074e00; NIE jest potomkiem 2fe362553 — to raport FC r1, nie baza kodu). Ten raport: jeden plik, osobny commit.
-TESTY (surowe, mój worktree, npm ci --ignore-scripts w gra/):
-  - npx tsc --noEmit: exit 0
-  - diplo-respect-military-edge-test 12 OK/0; events-test 30 OK/0; offset-test 12 OK/0; MUTATE_NO_OFFSET=1 offset-test 11 OK/1 FAIL (mutacja czerwona); diplo-military-strength-test 27/0; unit-power-test 6/0; logic-test 213/213
-  - git diff --check 7c2074e00..404a345627: czysty
-  - evidence/respekt-live-result.json: fail 0; panelT2: bar 85, base 85, offset 15, relacjaAI 30 (bar NIE przesunięty o korektę)
-  - git merge-tree origin/main(ff090714d) + kandydat: konflikt TYLKO gra/src/data/wikiBundle.json (regeneracja narzędziem); main.ts i poradnik scalają się automatycznie
-  - NIE ZMIERZONO przeze mnie: test żywy Chromium (dysk 1,9 GB wolnego, wymagane >=4-6 GB; opieram się na JSON z r3), M4 na nowo, 4 bramki czerwone na bazie (city-cession-r3, stol-pw-sum, direct-negotiation-live, L2b diplo-truce-live) — zgodnie z obroną czerwone identycznie na bazie 7c2074e00 (pomiar r2), nie ponowiłem.
-ROZSTRZYGNIĘCIE ZARZUTÓW:
-  Z1 NAPRAW. Kryterium 3 DODATKU („zrzut z poprawnie przesuniętym paskiem Respektu”; wariant A: pasek/liczba uwzględnia korektę +15/−10) NIE spełnione: pomiar T2 bar 85 = base 85 przy offset 15. W panelu wpis „Przewaga militarna +15” w rejestrze nie zmienia paska — sprzeczność widoczna dla gracza. Obrona odrzuciła naprawę argumentem „kierunek przeciwny do relacji AI”, ale pasek ma własną semantykę zapisaną w tooltipie (main.ts:606: „Respekt = jak duża jest wasza Moc w porównaniu z tą nacją… Wyżej = jesteś silniejszy”): to udział gracza. W tej semantyce „Przewaga militarna” (gracz silniejszy) podnosi pasek, „Słabszy militarnie” obniża — kierunek jednoznaczny, nie wymaga decyzji; dopełnieniowość z relacją AI (AI-share) jest odrębnym, wcześniej istniejącym rozjazdem perspektyw (por. W33/#275) i nie blokuje. Test T2 nie rozróżniał, bo clamp(85+15)=100 — zmienić scenariusz tak, by baza+offset < 100 (stosunek bliski progu 1,5–2, baza ~60–70), albo asercja na pasek = respektZKorektaMilitarna(base, offset) z baza<85.
-    Wymagana naprawa (r4, ten sam ID): (1) main.ts powerLine.respekt w audiencji (~26426) → respektZKorektaMilitarna(computeRespekt(gracz,AI), getDiploPairMeta(ME(),ownerId).respektMilOffset); (2) to samo w liście dyplomacji (objectiveRespektPctTowardEffective, ~8712) i audienceRelTotalEffective (relacjaTotal) — te trzy miejsca naraz, spójnie; (3) test żywy: asercja paska po zdarzeniu = clamp(base+offset), przy baza+offset<100, oraz −10 przy słabszym (T-weaker); zrzut Chromium z przesuniętym paskiem do evidence; (4) merge origin/main + regeneracja wikiBundle; (5) pozostałe bramki jak wyżej.
-  Z2 ODDAL (niskie ryzyko): meta serializowane w całości (pairMeta), round-trip JSON zmierzony, border-era-live (IndexedDB) PASS; realny zapis slotu NIE ZMIERZONO — dopisać do testu r4 jeśli tanie, nie blokuje.
-  Z3 DO DECYZJI CZŁOWIEKA: korekta trwała i kumulatywna (15→30→20), bez wygasania; realna decyzja produktowa (wygasanie vs trwałość). Założenie robocze zostaje.
-  Z4 ODDAL: test żywy 36/0 + mutacje; zmiana sekcji D to uprawniona zmiana kontraktu.
-  Z5 ODDAL (informacja): integracja z ff090714d wymaga merge + regeneracji wikiBundle (konflikt tylko tam).
-  Z6 ODDAL: bramki czerwone-na-bazie odnotowane jako dług; nie zmierzone ponownie przeze mnie.
-BLOKADY: Z1 (pasek/lista/relacjaTotal bez korekty). Dysk 1,9 GB.
-RUNDY: FC r3 po obronie r3 (łącznie runda 4/5 po tym FAIL)
-NASTĘPNY KROK: Operator r4 (Haiku) — naprawa Z1 wg powyższego; potem Evaluator, Obrona, FC.
-UWAGI-DLA-ORKIESTRATORA: pre-existing zdarzenia +5/+10/+10 nadpisywane pętlą AI (osobny temat); rozjazd perspektyw bar vs relacja AI (osobna decyzja, nie blokuje); ABC właściciela: wygasanie korekty (Z3).
+GOAL: zdarzenia Respektu "Przewaga militarna" (+15) i "Slabszy militarnie" (-10) na progu 50% sily wojskowej, jednorazowo na przejsciu progu, widoczne w rejestrze Respektu i na pasku Respektu panelu dyplomacji.
+ZMIANY/COMMIT: kandydat 27c5cf58e (potomek 72f06535d i 42a93543a: `git merge-base --is-ancestor` OK dla obu). integration_sha = 27c5cf58e. Zakres diffu vs main 42a93543a: gra/src/main.ts, diplomacy.ts, diplomacy-military-strength.ts, diplomacy-pn-engine.ts, data/diplomacy*.json (prog + opis), wikiBundle.json (regeneracja), docs (respekt.md, moc-podzial.md, 12-dyplomacja.md), testy diplo-respect-military-*, runs/<ID>/**. Odchylenie allowlisty (main.ts, pn-engine) zatwierdzone w DODATKU 1. Brak zmian w WERSJE.md/manifest/rust-port.
+
+TESTY (liczby z surowego wyjscia tej rundy FC, kandydat 27c5cf58e):
+- npx tsc --noEmit: exit 0.
+- git diff --check 72f06535d 27c5cf58e: czysto.
+- diplo-respect-military-offset-test: 12 OK / 0 FAIL. events-test: 30 / 0. edge-test: 12 / 0.
+- diplo-respect-military-live-test (Chromium, build vite poza repo, tury 1-30, realny endTurn i tick): 40 OK / 0 FAIL, exit 0. result.json: T2 bar 100 (baza 85 + 15, clamp), T8 bar 99 (baza 84 + 15 < 100, dowod przesuniecia), T9 bar 72 (baza 82 - 10), rejestr zawiera "Slabszy militarnie"; round-trip JSON zachowuje stan B i offset -10; stary zapis = inicjalizacja bez zdarzenia; consoleErrors 0.
+- MUTACJA M4 NA REALNYM KODZIE (main.ts: zamiana 'A'->'B' w przypisaniu respektMilOffset, rebuild vite): live test exit 1, 26 OK / 14 FAIL (T2 offset -10 zamiast +15, pasek 75 zamiast 85...). Mutacja cofnieta (git checkout), drzewo czyste.
+- Zrzut Chromium (swiezy, z mojego przebiegu): audiencja dyplomatyczna, rejestr "ZA CO CIE LUBIA" zawiera 2x "Przewaga militarna +15", pasek Respekt 99/100. Zrzuty t2/t8/t9 + t15 sa w runs/<ID>/evidence/.
+- Bramki referencyjne (kandydat): logic 213/213, tech-tree 20/0, research 33/0, unit-replace 21/21, combat 6/6, unit-power 6/0 (wszystkie exit 0).
+- Czerwone, IDENTYCZNE NA BAZIE 42a93543a (zmierzone osobno): diplomacy-city-cession-r3 56 pass / 17 fail (kandydat i baza tak samo); diplomacy-stol-pw-sum 167 / 1 (kandydat i baza tak samo); diplo-truce-live 13 pass / 1 fail "endUntilTurn: nie osiagnieto tury 5" (kandydat i baza tak samo, pelny przebieg 560 s); diplomacy-direct-negotiation-live exit 1 "__audienceRelTestDebug.setupListRelationsFixture is not a function" (kandydat i baza tak samo; brak hooka w kodzie). Zielone: diplomacy-border-era-penalty-live (exit 0 na obu). Brak regresji wzgledem bazy.
+
+ROZSTRZYGNIECIE ZARZUTOW:
+1. Korekta +15 do paska gracza i do rel.respekt AI (suma 100->130): ODDAL. Pasek gracza (udzial gracza + offset) i rel.respekt AI (udzial AI + offset) to dwie rozne wielkosci, nigdzie nie sumowane; semantyka wynika wprost z dispatchu ("+15 Respektu u AI wobec gracza") i DODATKU 1/2 (pasek ma uwzgledniac korekte, przewaga podnosi pasek). Realne pytanie produktowe (czy znak korekty po stronie bazy AI ma byc odwrocony) zostaje DO POTWIERDZENIA, nie blokuje - patrz UWAGI.
+2. Rejestr = dziennik zdarzen, pasek = biezaca korekta: ODDAL. Zachowanie zgodne z decyzja wariantu A (korekta zastepuje sie, zdejmowana w pasmie neutralnym); opisane w respekt.md i poradniku. Zmiana rejestru na wartosc stanu to decyzja produktowa, nie defekt.
+3. Testy offset/events/edge to repliki/asercje tekstowe: ODDAL jako blokujacy. Dowod na realnym kodzie istnieje i go potwierdzilem (live 40/0 oraz M4 -> exit 1). Uwaga: live test nie nalezy do zadnego zestawu bramek - patrz UWAGI.
+4. Poradnik 12-dyplomacja.md bez opisu zaniku korekty: ODDAL (naprawione w 2dcc7dcd0; zweryfikowane w diffie: "korekta ... trwa, dopoki utrzymuje sie stan progu; po powrocie w pasmo neutralne pasek wraca ...").
+5. Sprzeczne zdania w respekt.md: ODDAL (naprawione; grep na kandydacie nie znajduje "niewdrozone"/"usuniete z obowiazujacych" w akapicie Historia; jedyne "nie jest jeszcze wywolywane" dotyczy innego zdarzenia, "Wspolny wrog").
+6. Offset = clampowane dR: ODDAL (naprawione: nominal DIPLOMACY_PARAMS +15/-10, clamp 0-100 tylko przy wyswietlaniu w respektZKorektaMilitarna). Kod zweryfikowany w main.ts ~12808. Brzeg (baza >= 86) nie jest w tescie zywym (T2 = dokladnie 100); funkcja clamp jest trywialna (Math.max/min/round) - NIE ZMIERZONO osobnym scenariuszem.
+Zarzuty NAPRAW: brak => nie ma podstaw do FAIL.
+
+BLOKADY: brak technicznych.
+RUNDY: 4/5 (Operator r4 Sonnet, obrona r4, Final Control); werdykt PASS-WITH-NOTES.
+NASTEPNY KROK: integracja orkiestratora kandydata 27c5cf58e na aktualny main (merge origin/main; konflikt spodziewany tylko w gra/src/data/wikiBundle.json - regeneracja narzedziem bundle-wiki-for-game.cjs), potem bramki, READY_FOR_DEPLOY.
 DEPLOY/PUSH: NIE WYKONANO
+
+UWAGI-DLA-ORKIESTRATORA:
+- DO POTWIERDZENIA przez wlasciciela: (a) znak korekty po stronie bazy AI (rel.respekt AI = udzial AI + 15 przy przewadze gracza), (b) rejestr jako dziennik vs stan, (c) korekta zastepowana/zdejmowana w pasmie neutralnym (wariant A; zapis ABC 2026-11-15 w rejestrze zadan sugeruje juz zatwierdzenie).
+- Dlug: diplo-respect-military-live-test.cjs nie jest w zadnym zestawie bramek (wymaga vite + Chromium, ~2-3 min); rozwazyc dopisanie do R-PROC-AUTOBOT.md §Bramki osobnym tematem.
+- Dlug pre-existing (identyczne na bazie): city-cession-r3 (17 fail), stol-pw-sum (1 fail), diplo-truce-live (1 fail, tura 5), direct-negotiation-live (brak setupListRelationsFixture).
+- Dlug pre-existing (z dispatchu DODATEK 1): zdarzenia +5/+10 (wygrana bitwa, wspolny wrog, trybut) nadpisywane petla AI - osobny temat. Dlug Rust: REPIN.
+- Sprzatanie: w worktree wf_1465bf01-f91-4 symlink gra/node_modules (nieśledzony) do usuniecia; /tmp/fc-evid, /tmp/fc-*.out. Dysk wolny 4,8 GB po moich testach.
+- Test truce-live nadpisuje sledzony plik dyspozycje/autobot/runs/R-WEB-TRUCE-Q1/evidence/truce-01-modal-rozejm-5.png - cofnalem (git checkout), nie jest czescia commita.
