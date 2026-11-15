@@ -38,3 +38,22 @@ GOAL: (1) zrzuty Chromium „Skąd zapasy” (sól, ceramika, 1280/1920 px); (2)
 - Nie da się rozstrzygnąć, czy to harness, czy warunki r3: konfiguracja przebiegu r3 (seed, typ, podatek, równoległość, baza) nie jest w raporcie r3 zapisana. Zgłaszam jako dług do ustalenia: „endTurn timeout t57 — nieodtwarzalny przy de12837ba; konfiguracja źródłowa nieznana”.
 - Zalecenie dla orkiestratora: temat #415 (AI-UPKEEP-Q2) i #417 blokowane diagnozą mogą ruszyć — bramka endTurn zachowuje się poprawnie; blokadą harnessu jest bramka podatku w turze 1 (do zgłoszenia jako osobny dług harnessu, nie naprawiany tutaj).
 
+## Etap 2 — GOAL 3: pomiar wydajności 100 tur (ON vs OFF, 5 powtórzeń)
+
+- Ten sam harness, seed 4242, 100 tur, wersje ON i OFF jak w etapie 1 (`gra-on`, `gra-off`, `dist-on`, `dist-off`).
+- Projekt: 5 par; w każdej parze ON i OFF uruchomione **jednocześnie** (ten sam poziom obciążenia dla obu; przy 2 Chromium na 4 rdzeniach i load ~8 czas tury jest zależny od obciążenia maszyny). Pierwsze próby sekwencyjne (solo) przerwano — zbyt długie (~14 min na przebieg), decyzja: pary równoległe.
+- Metryki z surowych linii `turn` (`ms` = czas `endTurn` w ms): tura startowa = tura 2 (pierwsza tura po świecie gotowym); średnia z tur 2..100 (99 pomiarów; tura 1 to stan startowy, nie jest mierzona).
+
+| Powt. | ON średnia ms | OFF średnia ms | ON tura 2 ms | OFF tura 2 ms | ON suma s | OFF suma s |
+|---|---|---|---|---|---|---|
+| 1 | 7735 | 7806 | 2563 | 2296 | 766 | 773 |
+| 2 | 7780 | 7737 | 2456 | 2442 | 770 | 766 |
+| 3 | 7116 | 7190 | 3073 | 3764 | 704 | 712 |
+| 4 | 8103 | 7933 | 3505 | 3204 | 802 | 785 |
+| 5 | 7350 | 7414 | 2622 | 3317 | 728 | 734 |
+| **mediana** | **7735** | **7737** | **2622** | **3204** | **766** | **766** |
+
+- Różnica mediany średnich ON−OFF: −2 ms (−0,03%). Regresja >10%: **nie wystąpiła** ⇒ optymalizacja `ownerResourceStockAll` NIE jest wymagana (warunek z dispatchu niespełniony).
+- Tura startowa (tura 2) jest szumna (rozstrzał 2296–3764 ms w obu wersjach); mediana ON niższa o ok. 0,6 s, ale rozstrzał jest większy niż różnica — NIE_ZMIERZONO jako istotne; nie przypisuję różnicy księdze.
+- Dowody: `runs/<ID>/evidence/perf100/on-N.jsonl`, `off-N.jsonl`, skrypt `perfsum.cjs`.
+
