@@ -526,22 +526,6 @@ ${RESOURCE_CHIP_CSS}
 .civ-emp-res-ic svg{width:100%;height:100%;display:block;}
 .civ-emp-res-nm{flex:1;min-width:0;}
 .civ-emp-res-nm .nm{font-size:12.5px;font-weight:600;color:#e2e6ec;}
-.civ-emp-res-rate{font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums;
-  padding:2px 6px;border-radius:999px;white-space:nowrap;flex:none;}
-.civ-emp-res-rate-stack{display:flex;flex-direction:column;align-items:flex-end;gap:1px;
-  padding:3px 6px;border-radius:8px;background:rgba(15,20,28,.55);flex:none;}
-.civ-emp-res-rate-line{font-size:9.5px;font-weight:700;font-variant-numeric:tabular-nums;
-  line-height:1.2;white-space:nowrap;}
-.civ-emp-res-rate-line.prod{color:#78c95a;}
-.civ-emp-res-rate-line.diplo-out{color:#e07a7a;}
-.civ-emp-res-rate-line.diplo-in{color:#8ec5ff;}
-.civ-emp-res-rate-line.net{margin-top:1px;padding-top:2px;border-top:1px solid rgba(255,255,255,.1);}
-.civ-emp-res-rate-line.net.good{color:#78c95a;}
-.civ-emp-res-rate-line.net.warn{color:#d9a441;}
-.civ-emp-res-rate-line.net.bad{color:#e07a7a;}
-.civ-emp-res-rate.good{color:#78c95a;background:rgba(120,201,90,.14);}
-.civ-emp-res-rate.warn{color:#d9a441;background:rgba(217,164,65,.14);}
-.civ-emp-res-rate.bad{color:#e07a7a;background:rgba(224,122,122,.14);}
 .civ-emp-res-amt{display:flex;align-items:baseline;gap:5px;font-variant-numeric:tabular-nums;}
 .civ-emp-res-amt .cur{font-size:15px;font-weight:700;color:#e8ebf0;}
 .civ-emp-res-amt .cap{font-size:11px;color:#7d8798;}
@@ -3431,27 +3415,6 @@ function resTooltipHtml(r: EmpireResourceRow): string {
   return esc(parts.join(' · '));
 }
 
-/** Pill lub stos: produkcja ± dyplomacja = netto (gdy aktywny handel cykliczny). */
-function resRateHtml(r: EmpireResourceRow, state: 'bad' | 'warn' | 'good'): string {
-  const prod = r.rateProductionPerTurn ?? r.ratePerTurn;
-  const diploOut = r.rateDiploOutPerTurn ?? 0;
-  const diploIn = r.rateDiploInPerTurn ?? 0;
-  const hasDiplo = diploOut > 0 || diploIn > 0;
-  if (!hasDiplo) {
-    const rateTxt = prod === 0 ? '—' : signedTxt(prod);
-    return `<span class="civ-emp-res-rate ${state}">${esc(rateTxt)}</span>`;
-  }
-  const net = r.ratePerTurn;
-  const netState = net < 0 ? 'bad' : (net === 0 ? 'warn' : 'good');
-  let html = `<div class="civ-emp-res-rate-stack">`;
-  html += `<span class="civ-emp-res-rate-line prod">${esc(signedTxt(prod))}</span>`;
-  if (diploOut > 0) html += `<span class="civ-emp-res-rate-line diplo-out">−${diploOut} dypl.</span>`;
-  if (diploIn > 0) html += `<span class="civ-emp-res-rate-line diplo-in">+${diploIn} dypl.</span>`;
-  html += `<span class="civ-emp-res-rate-line net ${netState}">=${esc(signedTxt(net))}</span>`;
-  html += `</div>`;
-  return html;
-}
-
 /**
  * Badge „Obywatele" (R-ZUZYCIE-SUROWCOW-OBYWATELE N2, Maciej 2026-08-11) — tylko dla surowców
  * wymaganych w bieżącej epoce (`r.citizenRequired`); pokrycie = magazyn centralny ZASPOKAJA
@@ -3538,7 +3501,7 @@ function resPlaceholderCardHtml(r: EmpireResourceRow): string {
  * R-WEB-UI-RESOURCE-CARDS-GROSS-AND-NET-Q1 (Maciej 2026-11-14): wiersz „Brutto +X · netto +Y / turę"
  * na karcie surowca. Liczby z `resourceGrossNetPerTurn` (gra/src/game/resource-gross-net.ts) — te
  * same co nagłówek „Brutto … → netto …”, więc suma kart = nagłówek. Netto = po zużyciu obywateli,
- * budynków i wojska (plakietka „+X" nad paskiem to nadal produkcja ± dyplomacja, PRZED zużyciem).
+ * budynków i wojska. Osobnej plakietki produkcji na karcie nie ma (produkcja ± dyplomacja jest w brutto).
  * Brak produkcji i brak zużycia → '' (karta jak dziś, „—").
  * / EN: per-card gross/net line; same numbers as the header (single source in game/resource-gross-net).
  */
@@ -3572,7 +3535,7 @@ export function resCardHtml(r: EmpireResourceRow): string {
   return `<div class="civ-emp-res-card ${state}" data-section="econ-surowiec-${esc(r.id)}" title="${resTooltipHtml(r)}">`
     + `<div class="civ-emp-res-top"><span class="civ-emp-res-ic">${resIconHtml(r.label)}</span>`
     + `<div class="civ-emp-res-nm"><div class="nm">${esc(r.label)}</div></div>`
-    + resRateHtml(r, state) + `</div>`
+    + `</div>`
     + `<div class="civ-emp-res-amt"><span class="cur">${r.stock}</span><span class="cap">/ ${cap}</span>`
     + (flagPill ? `<span class="civ-emp-res-flag-pill ${state}">${esc(flagPill)}</span>` : '')
     + `</div>`
