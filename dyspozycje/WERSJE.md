@@ -1,3 +1,9 @@
+## ROBOCZA 83dc9914 -- 2026-11-14 -- FALA 739: Linia Unicestwienie w podsumowaniu bitwy (testowa)
+
+- Gdy czwarty odwrot w turze niszczy armie podsumowanie bitwy pokazuje osobna linie Unicestwienie ze strona, liczba jednostek i powodem po polsku; bez unicestwienia linii nie ma
+- Weryfikacja: tsc 0; logic 213/213; annihilation 20/0 (mutacje M1-M5 czerwone); retreat-limit 43/0; post-battle-map 32/0; Chromium: linia dla obrony i atakujacego, brak bez unicestwienia
+- Limity: Linia tylko w podsumowaniu mapowym po bitwie (nie na ekranie konca bitwy recznej w scenie); licznik = jednostki zywe w chwili unicestwienia (podzbior strat); nie testowano pelnego boot gry z prawdziwa bitwa; main.ts i battle-summary.ts poza litera allowlisty
+
 ## ROBOCZA 9e372ec7 -- 2026-11-14 -- FALA 738: Zetony widoku miasta czytelne min 12 px (testowa)
 
 - Zetony w gornej linii widoku miasta maja min 12 px: jedna linia w skali co najmniej 12 px, a gdy to nie wystarcza zawijanie do 2 linii przy waskim oknie; szerokie okna bez zmian
