@@ -17,3 +17,9 @@ ZAKRES PARTII 2 (każdy punkt ZMIERZONO albo NIE ZMIERZONO z powodem):
  3. TEST zgodności: ≥ 3 ziarna × 30 tur w realnej ścieżce gry (nie tylko fixture pipeline): maksymalna różnica (zmiana magazynu − suma księgi) = 0 dla każdego surowca; mutacja usunięcia źródła ma dać rozjazd; stan gry identyczny z księgą i bez księgi (hash).
  4. main.ts dozwolony wyłącznie na wpięcie helpera księgi (minimalne zmiany; opisz każdą linię); 5 bramek referencyjnych; git diff --check czysty; dysk ≥ 6 GB.
 POZA ZAKRESEM partii 2: UI, zapis historii, miasto/bitwa/łup, pomiar perf (partie 3–4).
+
+## DODATEK 2 orkiestratora — RUNDA 3/5 = dokończenie PARTII 2 (2026-11-15) — baza: kandydat a8aa4c3fc (refs/keep/R-WEB-LEDGER-r2-obrona) + merge origin/main (ff090714d); raport FC r2: 6ae20dbb3 (FAIL — partia 2 niedomknięta)
+Wynik r2 (przyjęty): księgowanie zużycia (resource-ledger-consume-test 30/0), resource-ledger-test 1030/0 — zostają.
+DO DOMKNIĘCIA (zarzuty 1–4): (1) HANDEL w księdze: źródła „Umowa wymiany z <civ>” (cykliczna i jednorazowa) i „Warzelnia (<miasto>)” (sól) jako osobne wpisy; (2) reconcileOwnerResourceCaps i Mennica — zapis do księgi (dziś poza księgą); (3) test zgodności w REALNEJ ścieżce gry: ≥ 3 ziarna × 30 tur, maksymalna różnica (zmiana magazynu − suma księgi) = 0 dla 9 surowców, mutacja usunięcia źródła = rozjazd; hash stanu gry z księgą i bez księgi identyczny; (4) 5 bramek referencyjnych, dysk ≥ 6 GB.
+SZLAK HANDLOWY: decyzja #311 (właściciel 2026-11-14) = szlak TYLKO premia, bez przesuwania zapasów. FC znalazł w main.ts ~40152 (E3c) kod, który przesuwa brąz/żelazo/cegłę szlakiem — SPRZECZNOŚĆ z #311. NIE wprowadzaj ani nie usuwaj E3c w tej rundzie; NIE księguj szlaku jako źródła zapasów; opisz E3c w raporcie (co dokładnie robi, kiedy się odpala) — pytanie ABC do właściciela (usunąć / zostawić).
+POZA ZAKRESEM: UI i partie 3–4.
