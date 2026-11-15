@@ -1408,3 +1408,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
   - P4-17 MOD03 dekoracje terenu (`wf_be79e3c5-9d0`, dispatch `4735c6dbe`): Evaluator → Obrona → FC. Operator r2 PASS-WITH-NOTES, brak Evaluatora i FC.
 - **Parity:** `95930b446` (po integracji P4-15). Dysk: 10 GB.
 - **Integracja** każdego tematu po FC PASS: orkiestrator (ancestry względem parity, diff vs allowlista, `git diff --check`, FF).
+
+## Przebieg (15.11, 09:17 UTC — heartbeat, RUST renderer, Opus 5.5)
+- **KROK 1 (sloty):** 4 aktywne Workflow, wszystkie na Opus 5.5: P4-1 (`wf_c204895c-d41`), P4-0 domknięcie (`wf_6aff558f-660`), P4-36 Q3 (`wf_102d919b-3d8`), P4-17 domknięcie (`wf_be79e3c5-9d0`). Sloty 4/4, nic nowego nie startuję.
+- **Model:** rejestr-rutyna z KROK 4 podaje Haiku/Sonnet. Zostaję przy zasadzie właściciela z tej sesji: renderer/3D Rust na Opus 5.5 we wszystkich etapach.
+- **Dysk:** 5,2 GB przed sprzątaniem, po nim 9,5 GB (próg 8 GB osiągnięty). Usunięto worktrees zakończonego ZDOBYCIE-WIRING r2 (FC FAIL): `wf_aaeae4f9-09c-1..4`. Commity zabezpieczone: refs/keep `R-RUSTPORT-P6-ZDOBYCIE-WIRING-Q1-r2-w1..w4` i gałęzie `rust-port-wip/…-r2-w1..w4` na remote. Worktrees uruchomionych tematów zostawione (zablokowane).
+- **KROK 2:** brak Workflow z FC PASS bez integracji (oczekują: P4-0, P4-1, P4-36 Q3, P4-17).
+- **Parity:** `95930b446`. Rejestr: `ad14b7fbd` przed tym wpisem.
