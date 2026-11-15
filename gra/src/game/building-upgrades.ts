@@ -99,6 +99,24 @@ export function skipChainUpgradeSource(
   return null;
 }
 
+/**
+ * R-WEB-UI-FORTIFICATIONS-HIDE-SUPERSEDED-WALL-BUILD-OPTIONS-Q1: NOWA budowa etapu łańcucha
+ * fortyfikacji (upgradeSkip) przestaje być oferowana, gdy odblokowany jest KTÓRYKOLWIEK wyższy etap
+ * łańcucha (Palisada znika po Murach kamiennych, Mury kamienne po Murach ceglanych). „Odblokowany" =
+ * tech następcy spełniony (pusty / '-' / '—' techUnlock = od startu). Pure. Nie dotyczy ulepszenia
+ * już zbudowanego niższego etapu: ten pozostaje awansem (skipChainUpgradeSource), więc nie jest ukrywany.
+ */
+export function isFortificationSupersededForBuild(
+  buildingId: string,
+  unlockedTechIds: ReadonlySet<string>,
+  buildings: readonly (UpgradeChainNode & { techUnlock?: string })[],
+): boolean {
+  return skipChainHigherIds(buildingId, buildings).some(id => {
+    const tech = (buildings.find(b => b.id === id)?.techUnlock ?? '').trim();
+    return tech.length === 0 || tech === '-' || tech === '—' || unlockedTechIds.has(tech);
+  });
+}
+
 /** Etykieta kolejki produkcji (UPG-PROD A). */
 export function upgradeProductionDisplayName(
   target: BuildingUpgradeLite,

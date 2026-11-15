@@ -322,7 +322,7 @@ export interface PendingNegotiationRow {
    * samej bramki co `accepted`/`reason` (patrz diplomacy-proposals.ts ProposalEvalResult) —
    * `undefined` gdy akcja nie ma numerycznej bramki PW (np. nap/sojusz/wasal).
    */
-  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number };
+  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: { turnsAtWar: number; lostCities: number; level: number } };
   /** incoming: Przyjmij dostępne tylko gdy warunki spełnione (i brak legacy access). */
   canAccept?: boolean;
   /** own: czekamy na odpowiedź AI — akcja Przyjmij w panelu PN. */
@@ -1272,7 +1272,7 @@ export function showBreakTreatyConfirmModal(
 }
 
 /** FAZA 2 pkt 2 — baner statusu formalnego (odrębny od nastawienia). */
-function formalBannerHtml(st: DiplomacyAudienceState): string {
+export function formalBannerHtml(st: DiplomacyAudienceState): string {
   if (!st.formalStatus) return '';
   const iconByKind: Record<FormalDiplomaticKind, string> = {
     wojna: 'dip-war', sojusz: 'dip-alliance', pakt: 'dip-pact', handel: 'cp-trade', pokoj: 'dip-peace', brak: 'dip-peace',
@@ -1291,8 +1291,8 @@ function formalBannerHtml(st: DiplomacyAudienceState): string {
     : '';
   return (
     '<div class="da-banner da-tone-' + st.formalStatus.kind + '"' +
-    ' title="Formalny stan umów — odrębny od nastawienia (Zaufanie/Respekt)">' +
-    icon + '<span class="da-b-lbl">' + esc(st.formalStatus.label.toUpperCase()) + '</span>' + sub +
+    ' title="Aktualny formalny stan umów między wami. To nie jest propozycja.">' +
+    icon + '<span class="da-b-lbl">' + esc('Stan: ' + st.formalStatus.label.toUpperCase()) + '</span>' + sub +
     '</div>'
   );
 }

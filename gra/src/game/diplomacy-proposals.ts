@@ -31,7 +31,7 @@ import { czyAgresorAktywny, deltaRelacjiSojusz } from './diplomacy';
 import { resolveWarPeaceProfile, evaluatePeaceAiGate } from './diplomacy-war-peace-profile';
 import type { PeaceMilitaryPosition } from './diplomacy-military-strength';
 import { peaceProposalBlocked, PEACE_PROPOSAL_MIN_WAR_TURNS } from './diplomacy-peace-proposal-timing';
-import { warWearinessLevel, wearinessPeacePriceFactor } from './war-weariness';
+import { warWearinessLevel, wearinessPeaceItemPw } from './war-weariness';
 import type { Player } from '../types/player';
 import { TypCywilizacji } from '../types/player';
 import {
@@ -48,6 +48,7 @@ import {
 } from './diplomacy-pn-engine';
 import {
   diplomacyProgDarRelacja, diplomacyFairGivePn, diplomacyNormalizeSurowiecIlosc,
+  withDiplomacyTradeEra, diplomacyTradeEra, diplomacyClampQtyToEraBlock,
 } from './diplomacy-value-catalog';
 import {
   isCurrencyProposalForbiddenDuringWar,
@@ -183,6 +184,13 @@ export interface ProposalEvalContext {
   stanWojny: boolean;
   turn: number;
   epoka?: number;
+  /**
+   * R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: epoka UMOWY handlowej = WYŻSZA z epok proponenta i
+   * respondenta (diplomacyDealTradeEra). `evaluateProposal`/`generateCounterOffer` wyceniają i
+   * normalizują ilości surowców w tej epoce (okno gracza, bramka uczciwości i walidacja
+   * zatwierdzenia liczą tak samo). Brak = globalna epoka handlu.
+   */
+  tradeEra?: number;
   /** Respekt proponującego (0–100) w oczach respondenta */
   proposerRespekt: number;
   /** Respekt respondenta (0–100) w oczach proponującego */
@@ -193,7 +201,7 @@ export interface ProposalEvalContext {
   respektWzgledny?: number;
   /**
    * R-WEB-PEACE-RULES-Q1 R1/R5: stan wojny pary (tylko gdy stanWojny). `responderRw` = udział
-   * siły RESPONDENTA (AI) 0..1; `lostCitiesResponder` = miasta utracone przez respondenta w tej wojnie.
+   * siły RESPONDENTA (AI) 0..1; `lostCitiesResponder` = NAZWA HISTORYCZNA: licznik zmęczenia = miasta utracone przez OBIE strony w tej wojnie (suma, lostCitiesForWeariness w war-weariness.ts), nie tylko respondenta.
    * Brak pola = brak bramki pokoju R5 (zachowanie sprzed rundy).
    */
   warState?: {
@@ -306,6 +314,23 @@ export interface ProposalEvalResult {
    * disagree again.
    */
   pwBalance?: number;
+  /**
+   * R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: Z = pozycja PW „Zmęczenie wojną” (round(C×x²)) w tabeli
+   * oceniającego AI przy pokoju od gracza. `pwBalance` = givePn − (C − Z), więc tabela (Z + oddawane) − C = pwBalance.
+   * `undefined` poza tą gałęzią (brak zmęczenia w bilansie).
+   */
+  wearinessPw?: number;
+  /** Dane do podpowiedzi wiersza „Zmęczenie wojną” (tury wojny, utracone miasta, poziom zmęczenia 0..1). */
+  wearinessInfo?: WearinessPwInfo;
+  /** R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 r3 (zarzut 1): strona, której wiersz Z trafia do tabeli: 'ai' = oferta gracz->AI (kolumna AI), 'player' = oferta AI->gracz (kolumna gracza). */
+  wearinessSide?: 'ai' | 'player';
+}
+
+/** R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (runda 2): dane tooltipa wiersza Z. */
+export interface WearinessPwInfo {
+  turnsAtWar: number;
+  lostCities: number;
+  level: number;
 }
 
 export interface PendingProposal {
@@ -593,12 +618,17 @@ export function buildHandelSurowiecCykliczny(
   responderId: number,
   giveItems: readonly BasketItem[] = [],
   receiveItems: readonly BasketItem[] = [],
+  /** R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: jawna epoka umowy (brak = globalna epoka handlu). */
+  tradeEra?: number,
 ): HandelSurowiecCyklicznyItem[] {
   const out: HandelSurowiecCyklicznyItem[] = [];
   const giveRes = giveItems.find(i => i.typ === 'surowiec_ilosc' && (i.ilosc ?? 0) > 0);
   const givePayment = giveItems.find(i => i.typ === 'zloto' || i.typ === 'praca');
   const recvRes = receiveItems.find(i => i.typ === 'surowiec_ilosc' && (i.ilosc ?? 0) > 0);
   const recvPayment = receiveItems.find(i => i.typ === 'zloto' || i.typ === 'praca');
+  // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r4 (zarzut Evaluatora 1): epoka umowy zamrożona przy zawarciu.
+  const epokaRaw = Math.floor(Number(tradeEra ?? diplomacyTradeEra()));
+  const epokaUmowy: 1 | 2 | 3 = epokaRaw >= 3 ? 3 : epokaRaw === 2 ? 2 : 1;
 
   // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): pakietyPerTura zostaje ZAMROŻONE na cały czas
   // trwania dealu cyklicznego (tickCyclicResourceTradeDeals transferuje tę samą wartość co
@@ -607,7 +637,8 @@ export function buildHandelSurowiecCykliczny(
   if (giveRes) {
     out.push({
       surowiecKey: giveRes.id,
-      pakietyPerTura: diplomacyNormalizeSurowiecIlosc(giveRes.id, giveRes.ilosc ?? 0),
+      pakietyPerTura: diplomacyNormalizeSurowiecIlosc(giveRes.id, giveRes.ilosc ?? 0, undefined, epokaUmowy),
+      epokaUmowy,
       sellerOwnerId: proposerId,
       buyerOwnerId: responderId,
       zaplataTyp: recvPayment?.typ as 'zloto' | 'praca' | undefined,
@@ -617,7 +648,8 @@ export function buildHandelSurowiecCykliczny(
   if (recvRes) {
     out.push({
       surowiecKey: recvRes.id,
-      pakietyPerTura: diplomacyNormalizeSurowiecIlosc(recvRes.id, recvRes.ilosc ?? 0),
+      pakietyPerTura: diplomacyNormalizeSurowiecIlosc(recvRes.id, recvRes.ilosc ?? 0, undefined, epokaUmowy),
+      epokaUmowy,
       sellerOwnerId: responderId,
       buyerOwnerId: proposerId,
       zaplataTyp: givePayment?.typ as 'zloto' | 'praca' | undefined,
@@ -625,6 +657,29 @@ export function buildHandelSurowiecCykliczny(
     });
   }
   return out;
+}
+
+/**
+ * R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r4 (obrona, zarzut Evaluatora 1): epoka pozycji cyklicznej =
+ * zamrożona `epokaUmowy` (umowy zawarte od r4); brak pola (zapis sprzed r4) → epoka pary właścicieli
+ * `pairEra(seller, buyer)` (wyższa z epok stron). Nigdy globalna epoka gracza.
+ */
+export function cyclicItemTradeEra(
+  item: Pick<HandelSurowiecCyklicznyItem, 'epokaUmowy' | 'sellerOwnerId' | 'buyerOwnerId'>,
+  pairEra: (ownerA: number, ownerB: number) => 1 | 2 | 3,
+): 1 | 2 | 3 {
+  return item.epokaUmowy ?? pairEra(item.sellerOwnerId, item.buyerOwnerId);
+}
+
+/**
+ * Self-heal ilości pozycji cyklicznej (tura): wielokrotność bloku EPOKI UMOWY, min. 1 blok.
+ * Nie zeruje umowy (floor do 0 usuwałby dostawę na stałe); 0 zostaje 0 (pozycja bez ilości).
+ */
+export function cyclicSelfHealPakiety(
+  item: Pick<HandelSurowiecCyklicznyItem, 'epokaUmowy' | 'sellerOwnerId' | 'buyerOwnerId' | 'surowiecKey' | 'pakietyPerTura'>,
+  pairEra: (ownerA: number, ownerB: number) => 1 | 2 | 3,
+): number {
+  return diplomacyClampQtyToEraBlock(item.surowiecKey, item.pakietyPerTura, cyclicItemTradeEra(item, pairEra));
 }
 
 /** Etykieta UI traktatu przemarszu (Maciej 2026-07-29 — zamiast „granice"). */
@@ -1111,6 +1166,15 @@ export function evaluateProposal(
   proposal: DiplomaticProposal,
   ctx: ProposalEvalContext,
 ): ProposalEvalResult {
+  // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: ocena w jawnej epoce umowy (ctx.tradeEra), nie w
+  // epoce, którą akurat zostawił globalny stan (domyślna epoka handlu zostaje fallbackiem).
+  return withDiplomacyTradeEra(ctx.tradeEra ?? diplomacyTradeEra(), () => evaluateProposalImpl(proposal, ctx));
+}
+
+function evaluateProposalImpl(
+  proposal: DiplomaticProposal,
+  ctx: ProposalEvalContext,
+): ProposalEvalResult {
   const { actionId, proposerOwnerId, responderOwnerId, payload } = proposal;
   const { relation, stanWojny } = ctx;
   const p = getEffectiveDiplomacyParams(ctx.difficulty ?? 'normal');
@@ -1121,6 +1185,7 @@ export function evaluateProposal(
     // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2 defekt r2): bez actionId pozycja 'miasto' wyceniana
     // jako null (fail-safe) → cesja miasta nie wchodziła do bilansu PW propozycji.
     actionId,
+    tradeEra: ctx.tradeEra,
     ...proposalPnTurnsMultiplier(payload),
   };
   const score = relationScore(relation);
@@ -1354,6 +1419,28 @@ export function evaluateProposal(
       const r5PlayerAuthors = r5AuthorOwnerId === (pnOpts.playerOwnerId ?? 0);
       const r5RespondentIsAi = responderOwnerId !== (pnOpts.playerOwnerId ?? 0);
       let basePn = basePnCfg;
+      // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: Z (PW) zmęczenia wojną w tabeli; undefined poza gałęzią R5.
+      let wearyPwItem: number | undefined;
+      let wearyInfo: WearinessPwInfo | undefined;
+      let wearySide: 'ai' | 'player' = 'ai';
+      // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 r3 (zarzut 1 Evaluatora, DODATEK pkt 3): kierunek AI -> gracz.
+      // Gdy AI jest autorem pokoju, a respondentem jest gracz, wiersz Z (ta sama funkcja wearinessPeaceItemPw,
+      // C = basePnCfg bez mnoznika cywilizacji — ZALOZENIE: bramka R5 nie dziala dla autora AI) trafia do
+      // kolumny GRACZA. Informacyjnie: basePn / pokojPwBalance / accepted NIE zmieniaja sie w tej galezi.
+      if (ctx.warState && !r5PlayerAuthors && !r5RespondentIsAi && !ctx.responderIsCityState) {
+        const aiToPlayerLevel = warWearinessLevel({
+          turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
+          lostCitiesTotal: Math.max(0, ctx.warState.lostCitiesResponder),
+          turnsSinceCityChange: ctx.warState.turnsSinceCityChange,
+        });
+        wearyPwItem = wearinessPeaceItemPw(basePnCfg, aiToPlayerLevel);
+        wearyInfo = {
+          turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
+          lostCities: Math.max(0, ctx.warState.lostCitiesResponder),
+          level: aiToPlayerLevel,
+        };
+        wearySide = 'player';
+      }
       if (ctx.warState && r5PlayerAuthors && r5RespondentIsAi && !ctx.responderIsCityState) {
         const r5Profile = resolveWarPeaceProfile(
           typeof ctx.responderPlayer?.typCywilizacji === 'string' ? ctx.responderPlayer.typCywilizacji : undefined,
@@ -1371,13 +1458,22 @@ export function evaluateProposal(
         if (r5Gate.verdict === 'too_early') {
           return { accepted: false, reason: r5Gate.reason ?? 'AI odrzuca pokój' };
         }
-        // R-WEB-AI-WAR-WEARINESS-PEACE-Q1: zmęczenie wojną obniża cenę pokoju zadaną od gracza (do rabatCenyPokojuMax).
-        const wearyFactor = wearinessPeacePriceFactor(warWearinessLevel({
+        // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (ABC 2026-11-14: krzywa kwadratowa, rabat 60% usunięty):
+        // zmęczenie wojną to POZYCJA PW Z = round(C × x²), a NIE rabat ceny. Z pojawia się w tabeli po stronie
+        // oceniającego AI („Zmęczenie wojną (AI)”); wymagana reszta R = C − Z pokrywana wyłącznie miastem.
+        const cenaPokojuPn = Math.round(basePnCfg * r5Gate.priceMultiplier);
+        const wearyLevel = warWearinessLevel({
           turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
           lostCitiesTotal: Math.max(0, ctx.warState.lostCitiesResponder),
           turnsSinceCityChange: ctx.warState.turnsSinceCityChange,
-        }));
-        basePn = Math.round(basePnCfg * r5Gate.priceMultiplier * wearyFactor);
+        });
+        wearyPwItem = wearinessPeaceItemPw(cenaPokojuPn, wearyLevel);
+        wearyInfo = {
+          turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
+          lostCities: Math.max(0, ctx.warState.lostCitiesResponder),
+          level: wearyLevel,
+        };
+        basePn = Math.max(0, cenaPokojuPn - wearyPwItem);
         // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (zarzut 5 / wymóg 4): złoto i surowce NIE są
         // słodzikiem pokoju ani rozejmu — w każdej pozycji (słabsza i silniejsza AI) oferta z nimi jest
         // odrzucana. Słodzikiem jest wyłącznie miasto (poniżej, dla 'stronger').
@@ -1396,10 +1492,15 @@ export function evaluateProposal(
           const cityGivePn = cityItems.length > 0
             ? resolveProposalPn({ giveItems: cityItems, actionId }, pnOpts).givePn
             : 0;
-          if (!(cityGivePn >= basePn)) {
+          // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: silna AI nadal wymaga miasta o wartości PEŁNEJ ceny C
+          // (regula siły bez wygasania, R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1; testy C1/C2 diplo-peace-balance-accept
+          // i S3b/S3c diplo-war-peace-sim czerwieniały przy wymaganiu R = C − Z). Rozjazd z tabelą przy Z = C
+          // = DECISION_REQUIRED (raport, sekcja BLOKADY).
+          if (!(cityGivePn >= cenaPokojuPn)) {
             return {
               accepted: false,
-              reason: `${r5Gate.reason ?? 'AI odrzuca pokój'} — miasta w ofercie warte ${Math.round(cityGivePn)} PN, wymagane ${basePn} PN`,
+              reason: `${r5Gate.reason ?? 'AI odrzuca pokój'} — Silniejsza AI wymaga miasta o wartości ≥ ${cenaPokojuPn} PW `
+                + `(zmęczenie nie obniża tej ceny); miasta w ofercie warte ${Math.round(cityGivePn)} PN, wymagane ${cenaPokojuPn} PN`,
             };
           }
         }
@@ -1548,11 +1649,16 @@ export function evaluateProposal(
         return {
           accepted: false,
           pwBalance: pokojPwBalance,
+          wearinessPw: wearyPwItem, wearinessSide: wearySide,
+          wearinessInfo: wearyInfo,
           reason: `Brakuje ${Math.abs(pokojPwBalance)} PW do uczciwej oferty pokoju @ Relacji `
             + `(baza ${basePn} PW) — dopłać, by wysłać`,
         };
       }
-      return { accepted: true, pwBalance: pokojPwBalance, reason: 'Warunki pokoju spełnione', oneShotTrade: true };
+      return {
+        accepted: true, pwBalance: pokojPwBalance, wearinessPw: wearyPwItem, wearinessSide: wearySide, wearinessInfo: wearyInfo,
+        reason: 'Warunki pokoju spełnione', oneShotTrade: true,
+      };
     }
 
     case 'trybut_oferta': {
@@ -1639,7 +1745,7 @@ export function evaluateProposal(
         const cyklPwBalance = givePn - handelRequiredPn(receivePn, fairnessRelTotal, handelMultiplier);
         const turns = exchangeValuationTurns(payload);
         const cyklicznyItems = buildHandelSurowiecCykliczny(
-          proposerOwnerId, responderOwnerId, payload.giveItems, payload.receiveItems,
+          proposerOwnerId, responderOwnerId, payload.giveItems, payload.receiveItems, ctx.tradeEra,
         );
         if (!cyklicznyItems.length) {
           return { accepted: false, reason: 'Brak surowca do cyklicznej wymiany' };
@@ -2267,7 +2373,7 @@ export function resolvePlayerAcceptsAiPending(
   difficulty: GameDifficulty = 'normal',
   // R-HANDEL-WYMIANA-TECH-GATE-Q1: `hasTradeTech` opcjonalny — wsteczna zgodność
   // dla wywołujących spoza allowlisty tego tematu (undefined = bramka pominięta).
-  opts?: { atWar?: boolean; hasTradeTech?: (ownerId: number) => boolean },
+  opts?: { atWar?: boolean; hasTradeTech?: (ownerId: number) => boolean; tradeEra?: number },
 ): ProposalEvalResult {
   const { actionId, fromOwnerId, toOwnerId, payload } = pending;
   if (opts?.atWar === true) {
@@ -2401,7 +2507,7 @@ export function resolvePlayerAcceptsAiPending(
       if (payload.resourceTradeMode === 'per_turn' && hasQuantityResourceItems) {
         const turns = exchangeValuationTurns(payload);
         const cyklicznyItems = buildHandelSurowiecCykliczny(
-          fromOwnerId, toOwnerId, payload.giveItems, payload.receiveItems,
+          fromOwnerId, toOwnerId, payload.giveItems, payload.receiveItems, opts?.tradeEra,
         );
         if (!cyklicznyItems.length) {
           return { accepted: false, reason: 'Brak surowca do cyklicznej wymiany' };
@@ -2839,12 +2945,19 @@ export function generateCounterOffer(
   proposal: DiplomaticProposal,
   ctx: ProposalEvalContext,
 ): CounterOfferResult | null {
+  return withDiplomacyTradeEra(ctx.tradeEra ?? diplomacyTradeEra(), () => generateCounterOfferImpl(proposal, ctx));
+}
+
+function generateCounterOfferImpl(
+  proposal: DiplomaticProposal,
+  ctx: ProposalEvalContext,
+): CounterOfferResult | null {
   const { actionId, payload } = proposal;
   if (NEGOTIATION_NO_ENGINE_COUNTER.has(actionId)) return null;
 
   const difficulty = ctx.difficulty ?? 'normal';
   const relTotal = treatyEvalRelationTotal(ctx.relation);
-  const pnOpts: ResolveProposalPnOptions = { difficulty };
+  const pnOpts: ResolveProposalPnOptions = { difficulty, tradeEra: ctx.tradeEra };
 
   // P-DYPLO-BILANS-GATE-NIESPOJNY runda 2 (GOAL 4 — kryterium końca 3): `tryPayload` bramkuje
   // KAŻDĄ kandydacką kontrofertę w tej funkcji (jedno miejsce, wszystkie ścieżki niżej), więc to

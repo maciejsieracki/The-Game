@@ -19,6 +19,8 @@ import {
   diplomacyNormalizeSurowiecIlosc,
   diplomacyHandelSurowiecKrok,
   diplomacyHandelSurowiecCenaZaBlok,
+  withDiplomacyTradeEra,
+  diplomacyTradeEra,
   type DiplomacySumPnOptions,
   type WartoscPozycjaTyp,
   type PnRelacjaParams,
@@ -34,6 +36,8 @@ export interface ResolveProposalPnOptions {
   perTurn?: boolean;
   /** R-WEB-PEACE-CITY-CESSION-Q1 r2: akcja propozycji (bramka pozycji 'miasto'). */
   actionId?: string;
+  /** R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: jawna epoka umowy (wyższa z epok stron); brak = globalna. */
+  tradeEra?: number;
 }
 
 export function buildProposalPnSumOpts(opts?: ResolveProposalPnOptions): DiplomacySumPnOptions {
@@ -45,6 +49,7 @@ export function buildProposalPnSumOpts(opts?: ResolveProposalPnOptions): Diploma
     tempo: opts?.tempoGry,
     turnsMultiplier: opts?.turnsMultiplier,
     perTurn: opts?.perTurn,
+    tradeEra: opts?.tradeEra,
   };
 }
 
@@ -71,6 +76,19 @@ export interface DiploPairMeta {
   dobraWolaRemainingTur: number;
   /** N1 — tura, w której OSTATNIO wypowiedziano wojnę w tej parze (karencja 1 tury: atak w TEJ SAMEJ turze = kara). */
   wojnaOdTury?: number;
+  /**
+   * Stan przewagi militarnej gracza z partnerem dla zdarzeń Respektu (próg 50%): 'A' gracz ma przewagę,
+   * 'B' partner ma przewagę, 'brak' poniżej progu. Zdarzenie odpala tylko na przejściu progu.
+   * Brak pola = 'brak'.
+   */
+  respektPrzewagaStan?: 'A' | 'B' | 'brak';
+  /**
+   * Korekta Respektu pary z jednorazowych zdarzeń militarnych (+15 / −10); kolejne przejście progu ZASTĘPUJE poprzednią korektę, powrót w pasmo neutralne zeruje (nie kumuluje się). Główny tick AI
+   * (main.ts, pętla relacji gracz–AI) przelicza Respekt z Mocy (computeRespekt) co turę i bez tej
+   * korekty nadpisałby zdarzenie. Efektywny Respekt = clamp(computeRespekt + respektMilOffset).
+   * Brak pola = 0.
+   */
+  respektMilOffset?: number;
   /** N1 — czy kara za "atak bez ostrzeżenia" była już naliczona dla BIEŻĄCEJ wojny w tej parze (nalicza się raz na wojnę, nie raz na bitwę). */
   n1Zastosowany?: boolean;
   /**
@@ -381,6 +399,8 @@ export interface QuickDealQuantityGoodOption {
 export interface QuickDealInput {
   /** Relacja (Zaufanie+Respekt) pary — ten sam kurs co reszta koszyka PN. */
   relacjaTotal: number;
+  /** Epoka UMOWY (wyższa z epok stron, diplomacyDealTradeEra). Brak = epoka globalna. */
+  tradeEra?: number;
   /** Złoto dostępne u NAS (skarbiec) — górny limit dopełniacza. */
   ourGoldAvailable: number;
   /** Surowce boolean, które MY faktycznie mamy i możemy oddać (już wycenione w katalogu PN). */
@@ -415,7 +435,15 @@ const QUICK_DEAL_MAX_GOLD = 200;
  * osiągnie próg fair @ Relacji — DOKŁADNIE ten sam próg, którym AI ocenia ofertę
  * (diplomacyFairGivePn / pnDealAcceptedByAi w diplomacy-proposals.ts).
  */
+/**
+ * R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 (FC r1 pkt 1): Szybka umowa liczy ziarno ilosci i wycene
+ * w EPOCE UMOWY (`input.tradeEra` = wyzsza z epok stron); bez podania — epoka globalna.
+ */
 export function computeQuickDealBasket(input: QuickDealInput): QuickDealResult {
+  return withDiplomacyTradeEra(input.tradeEra ?? diplomacyTradeEra(), () => computeQuickDealBasketImpl(input));
+}
+
+function computeQuickDealBasketImpl(input: QuickDealInput): QuickDealResult {
   const receiveItems: BasketItem[] = [];
   let receivePn = 0;
 
@@ -438,7 +466,9 @@ export function computeQuickDealBasket(input: QuickDealInput): QuickDealResult {
     // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): dodatkowo floor do wielokrotności kroku
     // handlu (5 szt. dla surowców dotkniętych ×5) — ilość WIDOCZNA w koszyku „Szybkiej
     // umowy" i ilość FAKTYCZNIE wyceniona muszą się zgadzać.
-    const seedQty = diplomacyNormalizeSurowiecIlosc(pick.id, Math.min(10, pick.maxQty));
+    // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 (zarzut 4): ziarno = jeden blok EPOKI (Kamień 10, Brąz 50,
+    // Żelazo 100), a nie na sztywno 10 — inaczej w Brązie floor daje 0 i oferta spada na złoto.
+    const seedQty = diplomacyNormalizeSurowiecIlosc(pick.id, Math.min(diplomacyHandelSurowiecKrok(pick.id), pick.maxQty));
     if (seedQty > 0) {
       receiveItems.push({ typ: 'surowiec_ilosc', id: pick.id, ilosc: seedQty });
       receivePn = diplomacyPnSurowiecIlosc(pick.id, seedQty) ?? 0;
@@ -507,6 +537,7 @@ export function computeQuickDealBasket(input: QuickDealInput): QuickDealResult {
     receivePn,
     input.relacjaTotal,
     input.difficulty ?? 'normal',
+    input.tradeEra,
   );
 
   return { giveItems: trimmedGive, receiveItems };

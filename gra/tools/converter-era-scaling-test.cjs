@@ -51,7 +51,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.conv-era-bundle.cjs');
 fs.writeFileSync(ENTRY_FILE, `
 export {
   DEFAULT_CONVERTER_RECIPES, loadThroughput, runConverter, runConverters,
-  converterThroughputForEra, CONVERTER_ERA_SCALING_RECIPE_IDS, CONVERTER_ERA_SCALING_PCT, CONVERTER_FOUNDRY_ERA_RECIPE_IDS,
+  converterThroughputForEra, converterThroughputEraParamKey, CONVERTER_FOUNDRY_ERA_RECIPE_IDS,
   CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE, converterOutputMultiplierForEra, converterThroughputsForEra,
   CONVERTER_OUTPUT_MULT_KEY_SUFFIX,
 } from '../src/game/converters';
@@ -102,7 +102,7 @@ console.log('\n-- A. throughputFallback bazowe (DEFAULT_CONVERTER_RECIPES) --');
 eq(recipe('cegielnia').throughputFallback, 50, 'cegielnia: fallback 50 (bylo 10, R-EKONOMIA-SUROWCE-SKALA-5X-Q1; R-WEB-BRICK-PRODUCTION-X2: bez zmian)');
 eq(recipe('cegielnia').outputAmount, 2, 'cegielnia: outputAmount 2 (R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1, bylo 1)');
 eq(recipe('garncarnia').outputAmount, 1, 'garncarnia: outputAmount 1 (bez zmian)');
-eq(recipe('garncarnia').throughputFallback, 50, 'garncarnia: fallback 50 (bylo 10, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
+eq(recipe('garncarnia').throughputFallback, 30, 'garncarnia: fallback 30 (R-WEB-DATA-GARNCARNIA-THROUGHPUT-30-PLUS-20-PER-ERA-Q1)');
 eq(recipe('huta').throughputFallback, 50, 'huta: fallback 50 (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1, bylo 25)');
 eq(recipe('odlewnia_brazu').throughputFallback, 50, 'odlewnia_brazu: fallback 50 (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1, bylo 25)');
 eq(recipe('odlewnia_zelaza__braz').throughputFallback, 50, 'odlewnia_zelaza__braz: fallback 50 (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1, bylo 25)');
@@ -118,8 +118,8 @@ console.log('\n-- B. econ-params.json: wartosci realne, wszystkie trudnosci --')
 for (const diff of ['easy', 'normal', 'hard']) {
   eq(M.loadThroughput(econParamsRaw, 'budynek_cegielnia_przepustowosc', diff, -1), 50,
     `econ-params.json budynek_cegielnia_przepustowosc.${diff} = 50 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 10)`);
-  eq(M.loadThroughput(econParamsRaw, 'budynek_garncarnia_przepustowosc', diff, -1), 50,
-    `econ-params.json budynek_garncarnia_przepustowosc.${diff} = 50 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 10)`);
+  eq(M.loadThroughput(econParamsRaw, 'budynek_garncarnia_przepustowosc', diff, -1), 30,
+    `econ-params.json budynek_garncarnia_przepustowosc.${diff} = 30 (R-WEB-DATA-GARNCARNIA-THROUGHPUT-30-PLUS-20-PER-ERA-Q1)`);
   eq(M.loadThroughput(econParamsRaw, 'budynek_huta_przepustowosc', diff, -1), 50,
     `econ-params.json budynek_huta_przepustowosc.${diff} = 50 (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1, bylo 25)`);
   eq(M.loadThroughput(econParamsRaw, 'budynek_huta_braz_epoka2_przepustowosc', diff, -1), 50,
@@ -137,34 +137,27 @@ for (const diff of ['easy', 'normal', 'hard']) {
 // ===========================================================================
 console.log('\n-- C. converterThroughputForEra: Cegielnia/Garncarnia, jawny Brąz, mnożnik tylko Żelazo/Stal --');
 
-// C1. Zakres skalowania: DOKLADNIE cegielnia+garncarnia, nic wiecej (guard przed
-// przypadkowym rozszerzeniem/zwezeniem zbioru w przyszlej zmianie).
-eq(M.CONVERTER_ERA_SCALING_RECIPE_IDS.size, 1, 'CONVERTER_ERA_SCALING_RECIPE_IDS: dokladnie 1 wpis (cykle; Cegielnia skaluje WYJSCIE, BRICK-X2 opcja C)');
-assert(!M.CONVERTER_ERA_SCALING_RECIPE_IDS.has('cegielnia'), 'scaling set: NIE ma cegielni (cykle plaskie; mnoznik na wyjsciu)');
-assert(M.CONVERTER_ERA_SCALING_RECIPE_IDS.has('garncarnia'), 'scaling set: ma garncarnia');
+// C1. Zakres skalowania wyjscia/cykli: zbior skalowania Garncarni usuniety (jawne wiersze per era).
 for (const id of ['odlewnia_zelaza__zelazo', 'wielka_odlewnia__zelazo', 'wielka_odlewnia__stal']) {
   assert(M.CONVERTER_FOUNDRY_ERA_RECIPE_IDS.has(id), `foundry set: ${id} skaluje cykle m(e) (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1)`);
-  assert(!M.CONVERTER_ERA_SCALING_RECIPE_IDS.has(id), `garncarnia-scaling set: NIE ma ${id}`);
 }
 for (const id of ['odlewnia_brazu', 'odlewnia_zelaza__braz', 'wielka_odlewnia__braz']) {
   assert(!M.CONVERTER_FOUNDRY_ERA_RECIPE_IDS.has(id), `bronze recipe ${id} uses explicit per-era data, not global foundry multiplier`);
   const recipe = M.DEFAULT_CONVERTER_RECIPES.find(r => r.id === id);
   assert(!!recipe.throughputEraParamKeys, `bronze recipe ${id} has explicit era parameter keys`);
 }
-for (const id of ['huta']) {
-  assert(!M.CONVERTER_ERA_SCALING_RECIPE_IDS.has(id), `scaling set: NIE ma ${id} (plaska)`);
-}
-eq(M.CONVERTER_ERA_SCALING_PCT, 0.10, 'CONVERTER_ERA_SCALING_PCT = 0.10 (10%)');
 
-// C2. Cegielnia/Garncarnia: baza 10, ADDYTYWNIE +10%/epoke -- epoka1=10, epoka2=11, epoka3=12.
-// R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1: Garncarnia zostaje przy +10%/epoke, Cegielnia ma +50%/epoke (blok nizej).
-for (const id of ['garncarnia']) {
-  eq(M.converterThroughputForEra(id, 10, 1), 10, `${id}: era1 -> 10 (baza, bez bonusu)`);
-  eq(M.converterThroughputForEra(id, 10, 2), 11, `${id}: era2 -> 11 (+10% bazy)`);
-  eq(M.converterThroughputForEra(id, 10, 3), 12, `${id}: era3 -> 12 (+20% bazy)`);
-  // Ekstrapolacja poza dzisiejsze 3 epoki gry (Kamien/Braz/Zelazo) -- formula ADDYTYWNA,
-  // NIE compound: era4 -> 10 + 10*0.10*3 = 13 (compound dalby 10*1.1^3=13,31 -- rozne).
-  eq(M.converterThroughputForEra(id, 10, 4), 13, `${id}: era4 -> 13 (addytywnie, NIE compound=13,31)`);
+// C2. Garncarnia (R-WEB-DATA-GARNCARNIA-THROUGHPUT-30-PLUS-20-PER-ERA-Q1): jawne wiersze per era
+// 30/50/70/90/110 w econ-params; converterThroughputForEra NIE skaluje Garncarni.
+{
+  const gRec = recipe('garncarnia');
+  const expected = [30, 50, 70, 90, 110];
+  for (let e = 1; e <= 5; e++) {
+    const key = M.converterThroughputEraParamKey(gRec, e);
+    eq(M.loadThroughput(econParamsRaw, key, 'normal', -1), expected[e - 1], `garncarnia: era${e} -> ${expected[e - 1]} (wiersz ${key})`);
+    eq(M.converterThroughputForEra('garncarnia', 30, e), 30, `garncarnia: converterThroughputForEra bez skalowania (era${e})`);
+  }
+  eq(M.loadThroughput(econParamsRaw, M.converterThroughputEraParamKey(gRec, 7), 'normal', -1), 110, 'garncarnia: era7 -> ostatni wiersz 110 (carry-forward poza zakresem 1-5)');
 }
 // Cegielnia (BRICK-X2 opcja C): CYKLE plaskie, +50% BAZY/epoke na WYJSCIU -> mnoznik 1/1,5/2/2,5/3.
 {
@@ -207,11 +200,10 @@ eq(M.converterThroughputForEra('cegielnia', 10, NaN), 10, 'cegielnia: era=NaN ->
 
 // C5. Baza NIE rowna 10 (dowod, ze formula liczy naprawde, nie ma zaszytej stalej 10) +
 // interakcja z Math.floor w runConverter (throughput musi byc floorowany przed uzyciem).
-eq(M.converterThroughputForEra('garncarnia', 7, 3), 8.4, 'garncarnia: baza=7, era3 -> 7 + 7*0.10*2 = 8,4 (formula ogolna)');
 eq(M.converterThroughputForEra('cegielnia', 7, 3), 7, 'cegielnia: baza=7, era3 -> 7 (cykle plaskie)');
 {
   const garncarniaRecipe = recipe('garncarnia');
-  const scaledFractional = M.converterThroughputForEra('garncarnia', 7, 3); // 8.4
+  const scaledFractional = 8.4; // ulamkowa przepustowosc -- test Math.floor w runConverter
   const r = M.runConverter(garncarniaRecipe, { glina: 100, drewno: 100 }, scaledFractional, 500);
   eq(r.produced, 8, 'runConverter: throughput 8,4 -> Math.floor -> 8 ceramiki (nie 8,4 ani 9)');
 }
@@ -299,9 +291,9 @@ console.log('\n-- E. advanceCityEconomy: PARYTET AI (gracz era2, AI era3), jawny
     assert(!!econ, 'advanceCityEconomy nie rzuca wyjatku (2 ownerow, era1 vs era3)');
 
     eq(cPlayer.surowce.cegla, 225, 'gracz (era2): 225 cegiel/ture (75 cykli x 2 x mnoznik wyjscia 1.5; R-WEB-BRICK-CYCLES-75-100-Q1, bylo 150)');
-    eq(cPlayer.surowce.ceramika, 55, 'gracz (era2): 55 ceramiki/ture (+10% bazy)');
+    eq(cPlayer.surowce.ceramika, 50, 'gracz (era2): 50 ceramiki/ture (wiersz epoki 2)');
     eq(cAi.surowce.cegla, 400, 'AI (era3): 400 cegiel/ture (100 cykli x 2 x mnoznik wyjscia 2 -- MECHANIZM DZIALA DLA AI; R-WEB-BRICK-CYCLES-75-100-Q1, bylo 200)');
-    eq(cAi.surowce.ceramika, 60, 'AI (era3): 60 ceramiki/ture (+20% bazy -- MECHANIZM DZIALA DLA AI; R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 12)');
+    eq(cAi.surowce.ceramika, 70, 'AI (era3): 70 ceramiki/ture (wiersz epoki 3 -- MECHANIZM DZIALA DLA AI)');
 
     // Brąz korzysta z jawnych parametrów throughput per-era: owner era2 = 50, era3 = 75.
     eq(cPlayer.surowce.braz, 50, 'gracz (era2): 50 brazu/ture z jawnego wiersza epoki wlasciciela');

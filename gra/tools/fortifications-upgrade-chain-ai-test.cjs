@@ -133,5 +133,17 @@ console.log('\n=== A4: symulacja decyzji AI (wybor -> kolejka -> ukonczenie) ===
   assert(paid.every((id, i) => i === 0 || rank(id) > rank(paid[i - 1])), 'A4b kazdy kolejny zaplacony etap jest WYZSZY od poprzedniego (awans, brak doplat za ten sam/nizszy)');
 }
 
+console.log('\n=== A5 (R-WEB-UI-FORTIFICATIONS-HIDE-SUPERSEDED-WALL-BUILD-OPTIONS-Q1): od zera przy odblokowanym Budownictwie ===');
+{
+  // Nowa budowa przestarzalego muru (palisada, Mury kamienne) nie moze trafic do wyboru AI,
+  // gdy odblokowany jest tech wyzszego etapu. Test egzekwuje to przez REALNY gate (availableProduction).
+  const r0 = aiCandidates([], []);
+  console.log('  kandydaci (od zera):', r0.all.join(', ') || '-', '| lancuch:', r0.chain.join(', ') || '-');
+  assert(!r0.all.includes('palisada') && !r0.all.includes('mury_kamienne'), 'A5a od zera (Budownictwo odblokowane) AI nie wybiera palisady ani Murow kamiennych');
+  const r1 = aiCandidates(['mury_kamienne'], []);
+  console.log('  kandydaci (stoja kamienne):', r1.all.join(', ') || '-', '| lancuch:', r1.chain.join(', ') || '-');
+  assert(!r1.all.includes('palisada') && !r1.all.includes('mury_kamienne'), 'A5b mury kamienne stoja + Budownictwo: AI nie wybiera palisady ani drugich Murow kamiennych');
+}
+
 console.log(`\nWYNIK: ${pass} OK, ${fail} FAIL`);
 process.exit(fail === 0 ? 0 : 1);

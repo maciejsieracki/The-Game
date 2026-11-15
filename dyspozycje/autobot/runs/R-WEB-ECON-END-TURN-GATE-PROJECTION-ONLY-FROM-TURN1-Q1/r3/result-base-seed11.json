@@ -1,0 +1,124 @@
+{
+  "label": "base",
+  "seed": 11,
+  "scenarios": [
+    {
+      "id": "a",
+      "turn": 1,
+      "ok": true,
+      "why": "oczekiwano canEnd=true przy Skarbcu<0 i prognozie>=0",
+      "treasury": -4,
+      "forecastPo": 0,
+      "canEnd": true,
+      "button": {
+        "title": "",
+        "text": "Zakończ turę",
+        "disabled": false,
+        "cls": "end-turn et-signal"
+      },
+      "netMax": 4
+    },
+    {
+      "id": "b",
+      "turn": 1,
+      "ok": false,
+      "why": "oczekiwano blokady (canEnd=false), tooltipu „po zakończeniu tury”, propozycji podatku i braku końca tury",
+      "treasury": -4,
+      "forecastPo": -6,
+      "canEnd": true,
+      "komunikat": "",
+      "buttonTitle": "",
+      "turnBefore": 1,
+      "turnAfter": 2
+    },
+    {
+      "id": "c",
+      "turn": 1,
+      "ok": false,
+      "why": "brak propozycji podatku (patrz b)"
+    },
+    {
+      "id": "d",
+      "turn": 2,
+      "ok": false,
+      "why": "NIE_ZMIERZONO: automat nie daje dodatniej prognozy w tym scenariuszu",
+      "poAuto0": 0,
+      "base": -4,
+      "autoDelta": null
+    },
+    {
+      "id": "d2",
+      "turn": 2,
+      "ok": false,
+      "why": "oczekiwano blokady przy Auto wyłączonym, prognozie Spichlerza<0 i dostępnej dźwigni racji",
+      "granary": -1,
+      "forecastPo": -2,
+      "racjeZysk": 0,
+      "canEnd": true,
+      "komunikat": ""
+    },
+    {
+      "id": "e",
+      "turn": 3,
+      "ok": true,
+      "why": "oczekiwano: brak dźwigni = brak blokady (tura kończy się, brak martwego punktu)",
+      "treasury": -100,
+      "forecastPoSk": -92,
+      "forecastPoSp": -88,
+      "podatekZysk": 0,
+      "racjeZysk": 0,
+      "canEnd": true,
+      "turnBefore": 3,
+      "turnAfter": 4,
+      "treasuryAfter": -92,
+      "granaryAfter": 0
+    },
+    {
+      "id": "a",
+      "turn": 12,
+      "ok": true,
+      "why": "oczekiwano canEnd=true przy Skarbcu<0 i prognozie>=0",
+      "treasury": -4,
+      "forecastPo": 2,
+      "canEnd": true,
+      "button": {
+        "title": "",
+        "text": "Zakończ turę",
+        "disabled": false,
+        "cls": "end-turn et-signal"
+      },
+      "netMax": 6
+    },
+    {
+      "id": "b",
+      "turn": 12,
+      "ok": false,
+      "why": "oczekiwano blokady (canEnd=false), tooltipu „po zakończeniu tury”, propozycji podatku i braku końca tury",
+      "treasury": -4,
+      "forecastPo": -3,
+      "canEnd": true,
+      "komunikat": "",
+      "buttonTitle": "",
+      "turnBefore": 12,
+      "turnAfter": 13
+    },
+    {
+      "id": "c",
+      "turn": 12,
+      "ok": false,
+      "why": "brak propozycji podatku (patrz b)"
+    }
+  ],
+  "fails": [
+    "b@t1: oczekiwano blokady (canEnd=false), tooltipu „po zakończeniu tury”, propozycji podatku i braku końca tury",
+    "c@t1: brak propozycji podatku (patrz b)",
+    "d@t2: NIE_ZMIERZONO: automat nie daje dodatniej prognozy w tym scenariuszu",
+    "d2@t2: oczekiwano blokady przy Auto wyłączonym, prognozie Spichlerza<0 i dostępnej dźwigni racji",
+    "b@t12: oczekiwano blokady (canEnd=false), tooltipu „po zakończeniu tury”, propozycji podatku i braku końca tury",
+    "c@t12: brak propozycji podatku (patrz b)"
+  ],
+  "errors": [],
+  "phase2Turn": 12,
+  "pass": false,
+  "turn1": 1
+}

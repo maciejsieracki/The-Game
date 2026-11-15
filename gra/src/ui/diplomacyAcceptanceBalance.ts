@@ -14,6 +14,14 @@ import {
 import { diplomacyFairGivePn } from '../game/diplomacy-value-catalog';
 import { formatLiczbaPl, formatUmowyCount } from './formatPl';
 
+/** R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (runda 2): dane tooltipa wiersza „Zmęczenie wojną". */
+export interface WearinessRowInfo {
+  turnsAtWar: number;
+  lostCities: number;
+  /** Poziom zmęczenia 0..1 (warWearinessLevel). */
+  level: number;
+}
+
 export interface NegotiationBalanceSource {
   id?: string;
   direction: 'own' | 'incoming';
@@ -26,7 +34,7 @@ export interface NegotiationBalanceSource {
    * SAMEJ bramki, która policzyła `accepted` — patrz ProposalEvalResult w
    * diplomacy-proposals.ts. `undefined` gdy akcja nie ma numerycznej bramki PW.
    */
-  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number };
+  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: WearinessRowInfo };
   isGift?: boolean;
   awaitingAiResponse?: boolean;
   canCounter?: boolean;
@@ -49,7 +57,7 @@ export interface PnBalancePanelData {
    * SAMEJ bramki, która policzyła `accepted` — patrz ProposalEvalResult w
    * diplomacy-proposals.ts. `undefined` gdy akcja nie ma numerycznej bramki PW.
    */
-  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number };
+  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: WearinessRowInfo };
   canCounter?: boolean;
   uiActionId?: string;
 }
@@ -445,7 +453,14 @@ export function balancePanelDataFromRows(
     myBalance,
     canAccept,
     extraOnTable: 0,
-    responderPreview: canAccept ? base.responderPreview : { accepted: false, reason: blockReason },
+    // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (zarzut 6): wiersz Z zostaje widoczny także przy zablokowanym wierszu.
+    responderPreview: canAccept
+      ? base.responderPreview
+      : {
+        accepted: false, reason: blockReason, wearinessPw: base.responderPreview?.wearinessPw,
+        wearinessSide: base.responderPreview?.wearinessSide,
+        wearinessInfo: base.responderPreview?.wearinessInfo,
+      },
   };
 }
 
@@ -577,6 +592,20 @@ function treatyMetaHtml(
 }
 
 /** Główny panel PW — widoczny między kolumnami My / Oni na stole. */
+/**
+ * R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: pozycja „Zmęczenie wojną +N PW" po stronie AI (kolumna „Oni oddają").
+ * Z = round(C × x²) z wearinessPeaceItemPw; wiersz tylko dla Z > 0. Tooltip: tury wojny, utracone miasta, zmęczenie.
+ */
+export function wearinessPwRowHtml(z: number | undefined, info?: WearinessRowInfo, side: 'ai' | 'player' = 'ai'): string {
+  if (z == null || !(z > 0)) return '';
+  const tip = info
+    ? `Zmęczenie wojną: tury wojny ${Math.max(0, Math.round(info.turnsAtWar))} · utracone miasta ${Math.max(0, Math.round(info.lostCities))}`
+      + ` · zmęczenie ${Math.round(Math.max(0, Math.min(1, info.level)) * 100)}%`
+    : 'Zmęczenie wojną: pozycja PW po stronie AI — rośnie z turami wojny i utraconymi miastami';
+  return '<div class="da-pn-bal-meta weariness" title="' + esc(tip) + '">'
+    + esc('Zmęczenie wojną (' + (side === 'player' ? 'gracz' : 'AI') + ') +' + Math.round(z) + ' PW') + '</div>';
+}
+
 export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): string {
   if (!data) {
     return (
@@ -681,6 +710,9 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
     + (playerTreatyPw > 0
       ? pwAmountWithBaseHtml(data.myOfferPn, treatyBase, modPct)
       : pwAmountHtml(data.myOfferPn))
+    + (data.responderPreview?.wearinessSide === 'player'
+      ? wearinessPwRowHtml(data.responderPreview?.wearinessPw, data.responderPreview?.wearinessInfo, 'player')
+      : '')
     + '</div>'
     + '<div class="da-pn-bal-cell center ' + balCls + '">'
     + '<span class="da-pn-bal-lbl">' + esc(centerLabel) + '</span>'
@@ -690,6 +722,9 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
     + '<div class="da-pn-bal-cell they">'
     + '<span class="da-pn-bal-lbl">Oni oddają</span>'
     + pwAmountHtml(data.theirOfferPn)
+    + (data.responderPreview?.wearinessSide === 'player'
+      ? ''
+      : wearinessPwRowHtml(data.responderPreview?.wearinessPw, data.responderPreview?.wearinessInfo, 'ai'))
     + '</div>'
     + '</div>'
     + relModRow

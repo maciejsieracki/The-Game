@@ -191,6 +191,17 @@ export interface RuntimeUnit {
    * flag is only ever set on the player's units.
    */
   retreatedThisTurn?: boolean;
+  /**
+   * R-WEB-BATTLE-RETREAT-LIMIT-3-PER-TURN-THEN-DESTROYED-Q1: licznik odwrotów armii
+   * (rosteru bitwy) w TEJ turze -- liczba całkowita, nie boolean. Ten sam wpis na każdej
+   * jednostce rosteru (ustawiany przez recordRetreatOnRoster w game/battle-retreat-limit.ts).
+   * Limit: combat-params.json `odwrot.max_na_ture` (3). Po wyczerpaniu kolejna przegrana
+   * bitwa w tej turze kończy się unicestwieniem armii. Zerowany na początku tury (main.ts,
+   * obok ruchLeft). Stare zapisy: pole nieobecne -> czytane przez retreatCountOfRoster jako
+   * `retreatedThisTurn === true ? 1 : 0` (migracja boolean -> 1/0 bez zmiany load).
+   * / EN: per-turn retreat count of the army (battle roster); see battle-retreat-limit.ts.
+   */
+  odwrotyWTurze?: number;
 }
 
 /** Kategorie cywilne — bez utrzymania, bez głodu wojska, bez ataku miast. */

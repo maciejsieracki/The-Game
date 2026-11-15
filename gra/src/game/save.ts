@@ -75,6 +75,7 @@
 import type { RuntimeUnit } from '../units/setup';
 import type { City } from './cities';
 import type { TradeRoute } from './trade-routes';
+import type { LedgerHistorySave } from './resource-ledger';
 import { isValidMapSnapshot, type SerializedMapData } from '../map/mapSnapshot';
 import { Nakladka, Ulepszenie } from '../types/hex';
 import { idbGetItem, idbSetItem, idbRemoveItem, idbListKeys, idbIsAvailable } from './idb-storage';
@@ -345,6 +346,12 @@ export interface SaveGame {
    * it should always be present so the map can be regenerated on load.
    */
   seed?: number;
+
+  /**
+   * R-WEB-UI-RESOURCE-SOURCE-LEDGER-UI-AND-REST-Q1 (partia 3b): pamięć ostatnich N tur księgi „Skąd zapasy”.
+   * OPCJONALNE — stary zapis bez pola = pusty dziennik (bez błędu). Brak wpływu na stan gry.
+   */
+  resourceLedgerHistory?: LedgerHistorySave;
 
   /** All units on the map (the live `units: RuntimeUnit[]`). */
   units: RuntimeUnit[];

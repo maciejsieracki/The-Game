@@ -62,18 +62,20 @@ function proj(turn, skObecny, skPo, spObecny, spPo) {
 // (b) żadna dźwignia nie wystarcza -> brak blokady (brak zakleszczenia)
 {
   const g = M.decideEndTurnGate(proj(12, 5, -20, 0, 0), 5, 0, { podatekSkarbiec: 4 });
-  ok(g.blokada === false, '(b) podatek 4 + jednostki 5 < 20 -> brak blokady');
-  ok(g.komunikat === '' && g.dzwignie.length === 0, '(b) brak blokady = pusty komunikat i brak dzwigni');
+  // r3 (DODATEK 6): dźwignie istnieją (zysk > 0), więc blokada obowiązuje, mimo że nie pokrywają braku -> flaga niewystarczające.
+  ok(g.blokada === true && g.niewystarczajace === true, '(b) podatek 4 + jednostki 5 < 20 -> blokada + niewystarczające (r3)');
+  const g0 = M.decideEndTurnGate(proj(12, 5, -20, 0, 0), 0, 0, {});
+  ok(g0.blokada === false && g0.komunikat === '' && g0.dzwignie.length === 0, '(b) brak jakiejkolwiek dzwigni -> brak blokady, pusty komunikat, brak dzwigni (no-softlock)');
 }
 // (c) mutacja: bez dźwigni podatku ten sam przypadek (a1) nie blokuje
 {
   const g = M.decideEndTurnGate(proj(12, 5, -20, 0, 0), 0, 0);
   ok(g.blokada === false, '(c) mutacja: bez podatku przypadek (a1) nie blokuje (czerwony test)');
 }
-// (d) tury 1-10 zwolnione
+// (d) R-WEB-...-FROM-TURN1-Q1: tura 10 NIE jest zwolniona — dźwignia podatku, prognoza < 0 -> blokada
 {
   const g = M.decideEndTurnGate(proj(10, 5, -20, 0, 0), 0, 0, { podatekSkarbiec: 50 });
-  ok(g.blokada === false, '(d) tura 10 zwolniona nawet przy dźwigni podatku');
+  ok(g.blokada === true, '(d) tura 10 blokowana przy prognozie < 0 (brak wyjatku 1-10)');
 }
 // (e) komunikat: zasób, minus, dźwignie z liczbami
 {
@@ -90,14 +92,15 @@ function proj(turn, skObecny, skPo, spObecny, spPo) {
   ok(pojedyncze.dzwignie.some(d => d.id === 'podatek-skarbiec') && pojedyncze.dzwignie.some(d => d.id === 'rozwiaz-skarbiec'),
     '(g) obie dźwignie (podatek + jednostki) wymienione w dzwignie');
   const samPodatek = M.decideEndTurnGate(proj(12, 5, -20, 0, 0), 0, 0, { podatekSkarbiec: 12 });
-  ok(samPodatek.blokada === false, '(g) sam podatek 12 < 20 -> brak blokady (łączenie wymagane)');
+  // r3 (DODATEK 6): realna niewykorzystana dźwignia istnieje -> blokada obowiązuje także gdy jej użycie nie pokrywa braku (flaga niewystarczające).
+  ok(samPodatek.blokada === true && samPodatek.niewystarczajace === true, '(g) sam podatek 12 < 20 -> blokada + niewystarczające (r3: dźwignia istnieje)');
 }
 // (h) minus obu zasobów: blokada tylko gdy KAŻDY brak pokryty; spichlerz bez dźwigni blokuje całość
 {
   const niePokryty = M.decideEndTurnGate(proj(12, 5, -20, 3, -8), 30, 0, { podatekSkarbiec: 5 });
-  ok(niePokryty.blokada === false, '(h) skarbiec pokryty (35>=20), spichlerz bez dźwigni -> brak blokady (brak zakleszczenia)');
+  ok(niePokryty.blokada === true && niePokryty.zasob === 'skarbiec' && niePokryty.niewystarczajace === true, '(h) skarbiec pokryty (35>=20), spichlerz bez dźwigni -> blokada skarbca (jest dźwignia), niewystarczające (spichlerz bez dźwigni)');
   const spichlerzNiePokryty = M.decideEndTurnGate(proj(12, 5, -20, 3, -8), 30, 6, { podatekSkarbiec: 0 });
-  ok(spichlerzNiePokryty.blokada === false, '(h) skarbiec pokryty, spichlerz 6 < 8 -> brak blokady');
+  ok(spichlerzNiePokryty.blokada === true && spichlerzNiePokryty.niewystarczajace === true, '(h) skarbiec pokryty, spichlerz 6 < 8 -> blokada + niewystarczające (r3)');
   const obaPokryte2 = M.decideEndTurnGate(proj(12, 5, -20, 3, -8), 30, 8, { podatekSkarbiec: 0 });
   ok(obaPokryte2.blokada === true, '(h) minus obu zasobów pokryty przez jednostki (30 >= 20, 8 >= 8) -> blokada');
   ok(/Skarbiec/.test(obaPokryte2.komunikat) && /Spichlerz/.test(obaPokryte2.komunikat),

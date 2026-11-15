@@ -281,6 +281,7 @@ import {
   type CityBudowaProfil,
   migratePoziomRacjiOnLoad,
   freshOwnerDefaultPoziomRacji,
+  freshAiOwnerDefaultPoziomRacji,
   broadcastPoziomRacjiToOwnerCities,
   broadcastAutoWyzywienieToOwnerCities,
   resolveCityPoziomRacji,
@@ -439,9 +440,11 @@ import {
   REBEL_FACTION_OWNER_ID,
 } from './game/society-breakdown';
 import { computeCitizenResourceDrain } from './game/citizen-resource-upkeep';
+import { citizenLedgerParts, recordTakenToLedger, upkeepLedgerParts, pendingLedgerSink, drainPendingLedgerInto, recordStockDeltaToPending, resetPendingLedger, recordLedgerFlow, ledgerTurnForOwner, peekPendingLedger, setLedgerRecordingEnabled, isLedgerRecordingEnabled, type ResourceLedgerTurn, commitLedgerHistoryTick, readLedgerHistoryTurns, resetLedgerHistory, ledgerHistoryToSave, restoreLedgerHistoryFromSave, snapshotOwnersStock, recordOwnersStockDeltaToPending } from './game/resource-ledger';
 import { BATTLE_MODE_SETTING_VERSION, isAutomaticOnlyBattleMode } from './game/battle-mode';
 import { normalizeHitMode, setActiveHitMode } from './game/hit-mode';
 import { resourceUsageBreakdownFor, resourceUsageHasAny } from './game/resource-usage-breakdown';
+import { resourceGrossNetPerTurn } from './game/resource-gross-net';
 import {
   applyPostCaptureLawOnCapture,
   applyPostCaptureLawOverride,
@@ -669,8 +672,6 @@ import {
   tradeRouteIncomeForRoute,
   externalTradeContactOk,
   diagnoseMissingTradeRouteForPartner,
-  computeTradeRouteResourceFlow,
-  loadTradeRouteResourceFlowParams,
   computeSeaTradeRouteCountByCity,
   computeSeaTradeBonusIncomeByCity,
   ownersHaveSharedLandBorder,
@@ -680,7 +681,6 @@ import {
   type TradeRouteIncomeParams,
   type TradeRouteResourceGrant,
   type TradeRouteResourceKey,
-  type TradeRouteStockFlowResourceKey,
 } from './game/trade-routes';
 import {
   empireHasKopalniaMiedzi,
@@ -744,7 +744,7 @@ import { machinesByCampHex, campOwnerByHex, readyMachinesForCity } from './rende
 import { TerenBazowy, Nakladka, Ulepszenie } from './types/hex';
 import type { Hex } from './types/hex';
 import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen, cityGrowthLive, mountCityRecruitmentCardsForArmy, mountGeneralRecruitmentCardForArmy, recruitPanelPurchasableUnits, resetArmyRecruitDraftsSession, buildingCanBuildNow } from './ui/cityPanel';
-import { toggleEmpireRecruitPanel, refreshEmpireRecruitPanel, resetEmpireRecruitPanelSession, type EmpireRecruitUnitRow } from './ui/empireRecruitPanel';
+import { configureEmpireRecruitPanel, mountEmpireRecruitSection, refreshEmpireRecruitPanel, resetEmpireRecruitPanelSession, type EmpireRecruitPanelCfg, type EmpireRecruitUnitRow } from './ui/empireRecruitPanel';
 import { executeEmpireRecruitment, maxAffordableEmpireRecruits, type RecruitCityInput } from './game/empire-recruit-plan';
 import { livingGeneralsOf, resolveRecruitGeneral, recruitRallyStamp, pickRallyGeneral } from './game/recruit-general';
 import { syncCityOkolicaOverlay, disposeCityOkolicaOverlayGroup } from './render/cityOkolicaOverlay';
@@ -770,6 +770,7 @@ import {
   type BattleSummaryWinner,
 } from './game/battle-summary';
 import type { PreBattleInfo, PreBattleUnit, PreBattleModifier } from './ui/preBattle';
+import { buildWeakenedNote, type WeakenedNote } from './ui/battle-weakened-note';
 import { showHud, updateHud as refreshD1bHudRaw, hideHud, markMinimapDirty, updateMinimapViewport } from './ui/hud';
 import { createScopeMemo, hudPureScope, scopeObjectId } from './game/frame-memo';
 import {
@@ -821,6 +822,7 @@ import {
   hideEmpireDetailPanel,
   refreshEmpireDetailPanel,
   isEmpireDetailPanelOpen,
+  toggleEmpireDetailPanel,
   configureEmpireHandelSplit,
   configureEmpireMassRecruitment,
   configureEmpireGlobalDefaults,
@@ -968,6 +970,7 @@ import {
 } from './game/auto-battle-power';
 import {
   applyPostBattleMap,
+  type PostBattleMapResult,
   applyDefenderPreBattleRetreat,
   snapshotRosterPositions,
   battleReserveNotice,
@@ -975,6 +978,13 @@ import {
   applyCityCaptureAfterBattle,
   type MapBattleWinner,
 } from './game/post-battle-map';
+import {
+  retreatBudgetExhausted,
+  recordRetreatOnRoster,
+  resetRetreatCountOfUnit,
+  ARMIA_UNICESTWIONA_KOMUNIKAT,
+  ARMIA_WROGA_UNICESTWIONA_KOMUNIKAT,
+} from './game/battle-retreat-limit';
 import {
   collectRemovedEnemyTypeIds,
   computeBattleLoot,
@@ -1143,6 +1153,13 @@ import {
 // od drainu tej tury -- patrz komentarz przy cityHasSpichlerzBuilding w building-resource-gate.ts.
 import { cityHasSpichlerzBuilding } from './game/building-resource-gate';
 import { buildAutoRationSidePanelEvent } from './game/spich-auto-ration-notify';
+// R-WEB-UI-END-TURN-BLOCK-EVENT-Q1: wydarzenie-blokada „Nie można zakończyć tury” (zakładka Ważne).
+import {
+  endTurnBlockEventOf,
+  END_TURN_BLOCK_ACT_OPEN_FOOD,
+  END_TURN_BLOCK_ACT_OPEN_TAX,
+  END_TURN_BLOCK_ACT_TAX_RAISE,
+} from './ui/sidePanelEventFilter';
 import { applyFarmAssignHints } from './game/farm-assign-hint';
 import { SIDE_PANEL_ACTION_LABEL, sidePanelEventActionOf } from './game/side-panel-event-action';
 import {
@@ -1166,7 +1183,7 @@ import {
   type SidePanelEventLink,
 } from './game/side-panel-event-link';
 import { isProductionBuildingEnabled, operationalBuiltIds, operationalBuiltByCity, setProductionBuildingEnabled, isToggleableProductionBuilding, buildEmpireProducersSnap } from './game/building-toggle';
-import { decideEndTurnGate, projectEmpireFoodAfterTick, NNS_WOLNE_TURY, type NnsEndTurnLevers, type NnsGateResult, type NnsProjection } from './game/no-negative-stocks';
+import { decideEndTurnGate, projectEmpireFoodAfterTick, type NnsEndTurnLevers, type NnsGateResult, type NnsProjection } from './game/no-negative-stocks';
 import { unitUpkeep, unitFoodPerTurn, loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, addResourceCosts, readBuildingResourceUpkeepRatio, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex, computeLostToNearerSiblingByCity } from './game/okolica';
@@ -1199,7 +1216,7 @@ import {
 } from './game/improvement-tech';
 import { PendingImprovementsTurn, type PendingImprovementEntry } from './game/pending-improvements';
 import {
-  aiDiplomacyStance, relationTierDisplay, loadDiplomacyParams, getEffectiveDiplomacyParams,
+  aiDiplomacyStance, relationTierDisplay, loadDiplomacyParams, getEffectiveDiplomacyParams, DIPLOMACY_PARAMS,
   applyDiplomaticEvent, computePotegaNacji, computeRespekt, tickDiplomacy,
   computeTickZaufanieDelta, sharedBorderPenaltyForEpochs,
   ARCHETYPE_AGGRESSION, ARCHETYPE_TRADE, DEFAULT_POTEGA_WAGI,
@@ -1549,6 +1566,7 @@ import {
   hasPendingNegotiationForPair, findOwnOutgoingNegotiation, allowsMultipleOwnOutgoingNegotiations,
   treatyEvalRelationTotal, treatyBasePnFromConfig,
   NEGOTIATION_MAX_ROUNDS, NEGOTIATION_EXPIRY_TURNS,
+  cyclicItemTradeEra, cyclicSelfHealPakiety,
 } from './game/diplomacy-proposals';
 import { selectAiTradeBarter } from './game/ai-trade-proposal';
 import { peaceProposalBlocked, PEACE_PROPOSAL_MIN_WAR_TURNS } from './game/diplomacy-peace-proposal-timing';
@@ -1622,6 +1640,7 @@ import {
 import {
   addWarBattlePoints, resetWarBattlePoints, grantTributeBonus, loadMilitaryStrengthParams,
   computeMilitaryStrength, readWarBattlePoints, isTributeBonusActive, militaryBrakeOutcome, peaceStanceOf,
+  respektMilitaryCrossing, respektZKorektaMilitarna,
 } from './game/diplomacy-military-strength';
 import { resolveWarPeaceProfile, brakeRelationThreshold, recordWarCityLoss, warStateFromRecord, evaluatePeaceAiGate, PEACE_STRENGTH_GAP_PROC, type WarPeaceProfile } from './game/diplomacy-war-peace-profile';
 import { buildWarCityTargets } from './game/ai-war-target-select';
@@ -1629,7 +1648,7 @@ import {
   registerAiPeaceRequest, isAiAiPeaceBalanceAllowed, aiAiPeaceRequiredPn, isForcedPeaceEligiblePair, runAiAiPeaceTick, requesterShare, isClearlyLosing,
   type AiPeaceRequest, type AiPeaceKind, type PeaceAsset,
 } from './game/diplomacy-ai-forced-peace';
-import { runWarWearinessTick, militaryWearinessWiring, warWearinessLevel, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
+import { runWarWearinessTick, militaryWearinessWiring, warWearinessLevel, lostCitiesForWeariness, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
 import { warWearinessPairView, peakForCurrentWar, warWearinessSideView, type WarWearinessPairView, type WarWearinessReference } from './game/war-weariness-view';
 import {
   isPeaceTreatyLocked,
@@ -1704,6 +1723,12 @@ import {
   diplomacyHandelSurowceCatalog,
   diplomacyPnSurowiecIlosc,
   diplomacyNormalizeSurowiecIlosc,
+  diplomacyClampQtyToEraBlock,
+  diplomacyClampBasketItemsToEraBlock,
+  setDiplomacyTradeEra,
+  diplomacyTradeEra,
+  diplomacyDealTradeEra,
+  withDiplomacyTradeEra,
   diplomacySumPn,
   planCityCession,
   diplomacyPnMiasto,
@@ -2476,13 +2501,33 @@ async function boot(): Promise<void> {
     }
 
     /** Epoka startowa gry z kreatora — nie bieżąca epoka gracza po awansie tech. */
+    /** R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r4): nadpisanie epoki startowej TYLKO dla testu live (fixture epoki). */
+    let testEraFloorOverride: number | null = null;
     function gameStartEra(): number {
+      if (testEraFloorOverride != null) return testEraFloorOverride;
       return eraNumberFromEpochId(_menuEpochId || 'kamien');
     }
 
     function empireEpochForOwner(ownerId: number): number {
       if (isHuman(ownerId)) return playerStateByHuman.get(ownerId)!.era;
       return ownerEraByOwner.get(ownerId) ?? gameStartEra();
+    }
+
+    /**
+     * R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r2 (FC r2 zarzut 2): epoka UMOWY dla pary właścicieli =
+     * wyższa z epok obu stron (diplomacyDealTradeEra). Używana przez opakowania ocen propozycji.
+     */
+    function dealTradeEraForOwners(ownerA: number, ownerB: number): 1 | 2 | 3 {
+      return diplomacyDealTradeEra(empireEpochForOwner(ownerA), empireEpochForOwner(ownerB));
+    }
+
+    /**
+     * R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3 (FC r2 zarzut 2): JEDNO miejsce synchronizujące domyślną
+     * epokę handlu z epoką gracza — wołane wszędzie, gdzie zmienia się `player.era` (awans, nowa gra,
+     * wczytanie zapisu, hooki testowe). Ścieżki dwustronne i tak przekazują epokę umowy jawnie.
+     */
+    function syncDiplomacyTradeEra(): void {
+      setDiplomacyTradeEra(player.era);
     }
 
     /**
@@ -2594,6 +2639,8 @@ async function boot(): Promise<void> {
         completedWorldWonders,
       );
       player.era = next;
+      // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1: epoka handlu surowcami (Kamień 10 / Brąz 50 / Żelazo 100 szt. na PN).
+      syncDiplomacyTradeEra();
       // R-WEB-ERA-WAR-PLAYER-POOL-DESPITE-STONE-WAR-Q1: tura wejścia GRACZA w Brąz/Żelazo (owner 0 w
       // tych samych mapach co AI) — podstawa progu `eraForcedWarStartTurnsFromEra` dla puli celów.
       if (prev < 2 && next >= 2) bronzeEraEnterTurnByOwner.set(0, turn);
@@ -2957,10 +3004,23 @@ async function boot(): Promise<void> {
      * (dostępność akcji, uczciwość koszyka PN), nie tylko wyświetlaną liczbę.
      */
     function objectiveRespektPctTowardEffective(theirOwnerId: number): number {
-      return computeRespekt(
-        objectivePowerForOwnerEffective(0),
-        objectivePowerForOwnerEffective(theirOwnerId),
+      return respektBarWithMilitaryOffset(
+        theirOwnerId,
+        computeRespekt(
+          objectivePowerForOwnerEffective(0),
+          objectivePowerForOwnerEffective(theirOwnerId),
+        ),
       );
+    }
+    /**
+     * R-WEB-DIPLO-RESPECT-MILITARY-EVENTS-WIRING-Q1 (r4): pasek/liczba Respektu gracza w UI = baza z Mocy
+     * + korekta zdarzeń militarnych (+15 „Przewaga militarna”, −10 „Słabszy militarnie”), obcięte do [0, 100].
+     * Semantyka paska („wyżej = jesteś silniejszy”): przewaga podnosi, „słabszy” obniża. Jedno miejsce dla:
+     * listy dyplomacji, paska audiencji i relacjaTotal (audienceRelTotalEffective).
+     * / EN: player-facing Respekt bar = power-based base + military-event offset, clamped to [0, 100].
+     */
+    function respektBarWithMilitaryOffset(theirOwnerId: number, base: number): number {
+      return respektZKorektaMilitarna(base, getDiploPairMeta(ME(), theirOwnerId).respektMilOffset);
     }
     function unitCountOnHex(q: number, r: number): number {
       let n = 0;
@@ -4046,7 +4106,7 @@ async function boot(): Promise<void> {
           c.id, citizenUpkeep.deductions, ownerBuildingResUpkeep, ownerUnitResUpkeep,
         );
         rows.push({
-          id: c.id, label: c.label, icon: c.icon, stock, ratePerTurn, typ: c.typ, dostep,
+          id: c.id, label: c.label, icon: c.icon, stock, ratePerTurn, typ: c.typ, dostep, ownerId,
           rateProductionPerTurn: production,
           ...(diploOut > 0 ? { rateDiploOutPerTurn: diploOut } : {}),
           ...(diploIn > 0 ? { rateDiploInPerTurn: diploIn } : {}),
@@ -4829,7 +4889,7 @@ async function boot(): Promise<void> {
       }
       setOwnerTreasury(ownerId, ownerTreasury(ownerId) - totalGoldCost);
       if (Object.keys(batchStockCost).length > 0) {
-        deductBuildingStockCostAcrossCities(cities, ownerId, batchStockCost);
+        deductBuildingStockCostAcrossCities(cities, ownerId, batchStockCost, pendingLedgerSink(ownerId, 'rekrutacja', 'Rekrutacja jednostek'));
       }
       markCityStateDirty();
       let nextProd = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
@@ -4957,7 +5017,7 @@ async function boot(): Promise<void> {
       if (!deductManpowerFromEmpire(cities, ownerId, ep, totalManpower, mpMults.maxMult)) return false;
       setOwnerTreasury(ownerId, ownerTreasury(ownerId) - totalGold);
       if (Object.keys(totalStockCost).length > 0) {
-        deductBuildingStockCostAcrossCities(cities, ownerId, totalStockCost);
+        deductBuildingStockCostAcrossCities(cities, ownerId, totalStockCost, pendingLedgerSink(ownerId, 'rekrutacja', 'Rekrutacja jednostek'));
       }
       let prod = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
       // R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1: partia z Armii/Rekrutacji dziedziczy globalny przełącznik.
@@ -5111,8 +5171,9 @@ async function boot(): Promise<void> {
       return it ? it.koszt : fallback;
     }
 
-    function toggleEmpireRecruitFromHud(): void {
-      toggleEmpireRecruitPanel({
+    /** R-WEB-UI-EMPIRE-RECRUIT-PANEL-MOVE-TO-ARMY-PANEL-Q1: cfg sekcji rekrutacji cywilizacji w panelu armii. */
+    function empireRecruitPanelCfg(): EmpireRecruitPanelCfg {
+      return {
         getRows: empireRecruitRows,
         getBudget: () => {
           const ownerId = ME();
@@ -5126,7 +5187,9 @@ async function boot(): Promise<void> {
         },
         onOrder: orderEmpireRecruitment,
         getGenerals: () => {
-          validateRecruitGeneral();
+          // Panel armii jest przebudowywany także przy zamkniętym panelu (sekcja w DOM); walidację śmierci robi
+          // tura (endTurn) — tu tylko gdy panel otwarty, jak dawny modal (inaczej powiadomienie ginie poza turą).
+          if (isEmpireDetailPanelOpen()) validateRecruitGeneral();
           return livingGeneralsOf(units, ME()).map(g => ({ id: g.id, label: recruitGeneralLabel(g) }));
         },
         getSelectedGeneralId: () => recruitGeneralId,
@@ -5134,7 +5197,7 @@ async function boot(): Promise<void> {
           recruitGeneralId = id && resolveRecruitGeneral(id, units, ME()).status === 'ok' ? id : null;
           markCityStateDirty();
         },
-      });
+      };
     }
 
     /** Anulowanie opłaconej rekrutacji — zwrot złota i Manpower do puli imperium. */
@@ -5151,9 +5214,13 @@ async function boot(): Promise<void> {
       // (nie powinien ginąć nawet gdyby pula była tuż pod capem magazynu).
       const unitDef = data.units.find(u => u.Jednostka === itemId);
       const stockCost = unitStockCost(unitDef);
+      // R-WEB-UI-RESOURCE-SOURCE-LEDGER-UI-AND-REST-Q1 (partia 3c): zwrot anulowanej rekrutacji w księdze.
+      const ledgerRecruitRefundBefore = snapshotOwnersStock([ownerId], o => ownerResourceStockAll(cities, o));
       for (const [key, amt] of Object.entries(stockCost)) {
         creditOwnerResourceStock(cities, ownerId, key, amt);
       }
+      recordOwnersStockDeltaToPending(ledgerRecruitRefundBefore, o => ownerResourceStockAll(cities, o), 'zwrot-rekrutacja',
+        { kind: 'zwrot', label: 'Zwrot z rekrutacji' });
       markCityStateDirty();
       if (ownerId === 0) {
         updateHud();
@@ -6294,8 +6361,8 @@ async function boot(): Promise<void> {
           // P-AI-BADANIA-ZACOFANIE-Q1 (Runda 2, luka tury 1 -- Obrona Rundy 1, Zarzut 1,
           // PRZYJĘTE): dokładnie ten sam wzorzec co ownerDefaultPodzialPracy/
           // AI_FIXED_PROCENT_BUDYNKI wyżej w tym pliku. freshOwnerDefaultPodzialHandlu()
-          // zwraca DEFAULT_PODZIAL_HANDLU.procentNauka=20 (default GRACZA) -- bez tej
-          // gałęzi każdy nowy owner AI startował turę 1 z procentNauka=20, bo
+          // zwraca DEFAULT_PODZIAL_HANDLU.procentNauka=60 (default GRACZA) -- bez tej
+          // gałęzi każdy nowy owner AI startował turę 1 z procentNauka=60, bo
           // advanceCityEconomy czyta ten seed PRZED pierwszym wywołaniem
           // decideAIEconomySliders w tej samej turze. Seeduj AI (ownerId!==0, gracz zawsze
           // ma ownerId 0) od razu na AI_FIXED_PROCENT_NAUKA, żeby okno tury 1 nie istniało.
@@ -6375,7 +6442,7 @@ async function boot(): Promise<void> {
           );
         }
         if (!ownerDefaultPoziomRacji.has(ai.ownerId)) {
-          ownerDefaultPoziomRacji.set(ai.ownerId, freshOwnerDefaultPoziomRacji());
+          ownerDefaultPoziomRacji.set(ai.ownerId, freshAiOwnerDefaultPoziomRacji());
         }
       }
     }
@@ -6439,7 +6506,7 @@ async function boot(): Promise<void> {
         // dwóch pozostałych seedów (spawn miasta-państwa / test wymuszonej wojny) --
         // owner mógł tu pojawić się po raz pierwszy bez przejścia przez żaden z nich.
         // Bez tej gałęzi resolveCityPodzialHandlu (main.ts niżej) dostawał `undefined`
-        // z mapy i padał na DEFAULT_PODZIAL_HANDLU.procentNauka=20 (default GRACZA) dla
+        // z mapy i padał na DEFAULT_PODZIAL_HANDLU.procentNauka=60 (default GRACZA) dla
         // tego ownera AI, dokładnie ta sama klasa błędu co ownerDefaultPodzialPracy wyżej.
         ownerDefaultPodzialHandlu.set(
           c.ownerId,
@@ -6449,7 +6516,8 @@ async function boot(): Promise<void> {
         );
       }
       if (!ownerDefaultPoziomRacji.has(c.ownerId)) {
-        ownerDefaultPoziomRacji.set(c.ownerId, freshOwnerDefaultPoziomRacji());
+        // Właściciel nieobecny w mapie = nie-gracz (gracze są zasiani wcześniej z humanOwnerIds).
+        ownerDefaultPoziomRacji.set(c.ownerId, freshAiOwnerDefaultPoziomRacji());
       }
       c.okolicaFocusOverride = false;
       c.okolicaFocus = ownerDefaultOkolicaFocus.get(c.ownerId)!;
@@ -7413,8 +7481,11 @@ async function boot(): Promise<void> {
       const mpMults = civManpowerMultsForOwner(ownerId);
       refundManpowerToEmpire(cities, ownerId, ep,
         unitManpowerCostForType(u.typeId, ep, mpMults.maxMult, mpMults.costMult), mpMults.maxMult);
+      const ledgerAiDisbandBefore = snapshotOwnersStock([ownerId], o => ownerResourceStockAll(cities, o));
       disbandStockRefundCredit(cities, ownerId, u,
         ownerResourceCap(cities, cityBuilt, ownerId, data, _menuDifficulty, ep));
+      recordOwnersStockDeltaToPending(ledgerAiDisbandBefore, o => ownerResourceStockAll(cities, o), 'zwrot-rozwiazanie',
+        { kind: 'zwrot', label: 'Zwrot z rozwiązania jednostki' });
       const wasGarnizon = u.inGarnizon === true;
       const cityForGarnizon = cityAtUnit(u);
       units.splice(idx, 1);
@@ -7519,6 +7590,7 @@ async function boot(): Promise<void> {
 
     function nnsAiPreTickBalance(ctx: NnsPreCtx): void {
       aiNnsHoldOwners.clear();
+      aiNnsUncoveredOwners.clear();
       if (turn < NNS_AI_BALANCE_TURN_MIN) return;
       const tTurn0 = performance.now();
       if (nnsUnitUpkeepTblCache === null) {
@@ -7659,6 +7731,7 @@ async function boot(): Promise<void> {
               if (cur.skPo >= 0 && cur.spPo >= 0) break;
             }
             pokryte = cur.skPo >= 0 && cur.spPo >= 0;
+            if (cur.skPo < 0) aiNnsUncoveredOwners.add(oid);
             if (!pokryte) {
               wyjatek = 'brak dostępnych dźwigni: pozostało skarbiec=' + Math.round(cur.skPo) + ' spichlerz=' + Math.round(cur.spPo)
                 + ' (obecny skarbiec=' + Math.round(first.sk0) + ' spichlerz=' + Math.round(first.sp0)
@@ -7700,7 +7773,10 @@ async function boot(): Promise<void> {
       // EN: 100% of stock consumed at recruitment returns to the state pool (capped like
       // production); gold is NOT refunded; no trace (stockPaid) = no refund.
       const stockRefundCap = ownerResourceCap(cities, cityBuilt, 0, data, _menuDifficulty, ep);
+      const ledgerDisbandBefore = snapshotOwnersStock([0], o => ownerResourceStockAll(cities, o));
       const stockRefundCredited = disbandStockRefundCredit(cities, 0, u, stockRefundCap);
+      recordOwnersStockDeltaToPending(ledgerDisbandBefore, o => ownerResourceStockAll(cities, o), 'zwrot-rozwiazanie',
+        { kind: 'zwrot', label: 'Zwrot z rozwiązania jednostki' });
 
       const siegeCityId = u.oblegaCityId;
       const wasGarnizon = u.inGarnizon === true;
@@ -8486,7 +8562,7 @@ async function boot(): Promise<void> {
         stockCost: newTypeId => unitStockCost(lookupUnitDef(newTypeId)),
         canPayStock: cost => !unitReplaceStockMissingLabel({ money: 0, stock: cost }, ownerSurowcePoolFor(ownerId)),
         payStock: (cost, u) => {
-          deductBuildingStockCostAcrossCities(cities, ownerId, cost);
+          deductBuildingStockCostAcrossCities(cities, ownerId, cost, pendingLedgerSink(ownerId, 'rekrutacja', 'Zastąp jednostkę'));
           (u as { stockPaid?: Record<string, number> }).stockPaid = mergeStockPaid(
             (u as { stockPaid?: Record<string, number> }).stockPaid, cost,
           );
@@ -10150,6 +10226,12 @@ async function boot(): Promise<void> {
       clearDeferredAutoPreBattleQueue();
     }
 
+    /** Hak testowy ?civTest=1 (__ledgerTestDebug): rekordy księgi ostatniego ticku ekonomii i licznik ticków (tylko odczyt). */
+    let ledgerAuditLastTick: Map<number, ResourceLedgerTurn> | null = null;
+    let ledgerAuditTickSeq = 0;
+    let ledgerAuditE3cLast: Array<{ routeId: string; resourceKey: string; fromOwnerId: number; toOwnerId: number; amount: number }> = [];
+    let ledgerAuditE3cFires = 0;
+
     /** Pełny reset UI / flag przed wczytaniem innej gry (nie czyści mapy — to robi rebuild). */
     function prepareSessionForLoad(): void {
       resetStuckInteractiveState();
@@ -10157,6 +10239,8 @@ async function boot(): Promise<void> {
       resetArmyRecruitDraftsSession();
       resetEmpireMassRecruitmentMessage();
       resetEndTurnBlockers('prepareSessionForLoad');
+      resetPendingLedger(); // R-WEB-UI-...-Q1 (FC r3 nr 6): okno poza tickiem nie przechodzi między grami/wczytaniami
+      resetLedgerHistory(); // R-WEB-UI-...-UI-AND-REST-Q1: dziennik N tur nie jest w zapisie gry → pusty po wczytaniu
       playtestWalkaActive = false;
       bitwaDuzaActive = false;
       playtestMiastoActive = false;
@@ -10267,7 +10351,7 @@ async function boot(): Promise<void> {
     /** Pobiera koszt surowcowy budynku Z PULI PANSTWA (rozproszone po miastach ownera). */
     function deductOwnerStockCost(ownerId: number, cost: Record<string, number>): void {
       if (Object.keys(cost).length === 0) return;
-      deductBuildingStockCostAcrossCities(cities, ownerId, cost);
+      deductBuildingStockCostAcrossCities(cities, ownerId, cost, pendingLedgerSink(ownerId, 'budowa', 'Budowa budynku'));
     }
 
     /** Auto-budowa: dodaj następny budynek gdy kolejka pusta i tryb auto. */
@@ -10743,6 +10827,8 @@ async function boot(): Promise<void> {
     const aiSkarbiecByOwner = new Map<number, number>();
     // C2/C3 (R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1): AI wstrzymane w tej turze (wypełniane w nnsAiPreTickBalance).
     const aiNnsHoldOwners = new Set<number>();
+    // R-WEB-NNS-AI-TURN2-NEGATIVE-TREASURY-Q1: AI, których skarbiec po równoważeniu nadal < 0 (dźwignie wyczerpane).
+    const aiNnsUncoveredOwners = new Set<number>();
     /** R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1: przychód BRUTTO złota AI z ostatniego ticku
      *  (aiEcon.pieniadz z bloku bankowania AI) -- baza prognozy dochodu netto w
      *  aiPurchaseReserveInputs. Brak wpisu (tura 1, po wczytaniu zapisu) = reguła rezerwy
@@ -11847,7 +11933,7 @@ async function boot(): Promise<void> {
             // P-AI-BADANIA-ZACOFANIE-Q1 (Runda 2): wzorzec identyczny jak
             // initOwnerDefaultPodzialHandlu wyżej -- nowo powstały owner AI w trakcie gry
             // (nowe miasto-państwo/cywilizacja spawnowana tutaj) nie może dziedziczyć
-            // domyślnego procentNauka=20 gracza.
+            // domyślnego procentNauka=60 gracza.
             ownerDefaultPodzialHandlu.set(
               sc.ownerId,
               sc.ownerId === 0
@@ -12123,9 +12209,13 @@ async function boot(): Promise<void> {
         { id: proposerId, sila: prop.sila, armiaPkt: prop.armiaPkt },
         PEACE_STRENGTH_GAP_PROC,
       );
+      // R-WEB-DIPLO-WEARINESS-PW-FOLLOWUP-C615-BOTH-CITIES-Q1: licznik zmęczenia = miasta utracone przez OBIE strony
+      // (ta sama funkcja co tick AI↔AI, war-weariness.ts lostCitiesForWeariness). Pole `lostCitiesResponder` — nazwa
+      // historyczna; wartość = suma, nie tylko respondent.
+      const lostProposerInWar = diploWarStateFor(proposerId, responderId).lostCities;
       return {
         turnsAtWar: s.turnsAtWar,
-        lostCitiesResponder: s.lostCities,
+        lostCitiesResponder: lostCitiesForWeariness(s.lostCities, lostProposerInWar),
         turnsSinceCityChange: s.turnsSinceCityChange,
         responderRw,
         responderPozycjaMilitarna,
@@ -12731,6 +12821,59 @@ async function boot(): Promise<void> {
       return id;
     }
 
+    /**
+     * R-WEB-DIPLO-RESPECT-MILITARY-EVENTS-WIRING-Q1: zdarzenia Respektu „Przewaga militarna” (+15, gracz
+     * silniejszy o ≥50% siły wojskowej) i „Słabszy militarnie” (−10, gracz słabszy) dla pary gracz–AI.
+     * Siła = diploMilitarySideOf (Siła militarna, nie Power). Odpala RAZ na przejście progu; stan w
+     * DiploPairMeta.respektPrzewagaStan. Wołane raz na turę w runDiplomacyTurnTick.
+     * / EN: one-shot Respekt events for player–AI pairs on crossing the military-strength threshold.
+     */
+    function applyMilitaryRespektEdgeTick(): void {
+      const gracz = ME();
+      const params = loadMilitaryStrengthParams();
+      for (const o of allPowerOwnerIds()) {
+        if (isMe(o) || isBarbarian(o) || isCityStateOwner(o) || eliminatedOwners.has(o)) continue;
+        const sg = diploMilitarySideOf(gracz, o);
+        const sp = diploMilitarySideOf(o, gracz);
+        const meta = getDiploPairMeta(gracz, o);
+        const r = respektMilitaryCrossing(
+          { id: String(gracz), sila: sg.sila, armiaPkt: sg.armiaPkt },
+          { id: String(o), sila: sp.sila, armiaPkt: sp.armiaPkt },
+          meta.respektPrzewagaStan,
+          params,
+        );
+        // Brak pola stanu (nowa para przed pierwszą oceną albo stary zapis) = inicjalizacja bez zdarzenia.
+        const zdarzenie = meta.respektPrzewagaStan === undefined ? null : r.zdarzenieDla;
+        if (zdarzenie === null) {
+          if (r.stan !== meta.respektPrzewagaStan) {
+            // Powrót w pasmo neutralne ('brak') zdejmuje korektę; inicjalizacja (stary zapis) zostawia pole bez zmian.
+            const zdejmij = r.stan === 'brak' && meta.respektPrzewagaStan !== undefined;
+            setDiploPairMeta(gracz, o, {
+              ...meta,
+              respektPrzewagaStan: r.stan,
+              ...(zdejmij ? { respektMilOffset: 0 } : {}),
+            });
+          }
+          continue;
+        }
+        const ev: DiplomaticEvent = zdarzenie === 'A' ? 'przewaga_militarna' : 'slabszy_militarnie';
+        const cur = getDiploRelation(gracz, o);
+        const next = applyDiploEventTracked(gracz, o, cur, ev);
+        // Korekta = NOMINAŁ zdarzenia (+15 / −10 z DIPLOMACY_PARAMS, tym samym źródłem co applyDiplomaticEvent),
+        // NIE clampowana zmiana rel.respekt: przy skrajnych wartościach (np. 90 + 15 → 100) pasek ma przesunąć się
+        // dokładnie o nominał, a obcięcie 0–100 działa dopiero przy wyświetlaniu/liczeniu (respektZKorektaMilitarna).
+        // Korekta ZASTĘPUJE poprzednią (nie kumuluje się): +15 / −10 aktualnego stanu progu (DO POTWIERDZENIA).
+        setDiploPairMeta(gracz, o, {
+          ...meta,
+          respektPrzewagaStan: r.stan,
+          respektMilOffset: zdarzenie === 'A'
+            ? DIPLOMACY_PARAMS.przewagaMilitarna_respekt
+            : DIPLOMACY_PARAMS.slabszyMilitarnie_respekt,
+        });
+        setDiploRelation(gracz, o, next);
+      }
+    }
+
     function tickTruceExpiries(): void {
       const ids = allWiarygodnoscOwnerIds();
       const ports = truceEndPorts();
@@ -13197,6 +13340,8 @@ async function boot(): Promise<void> {
       toOwnerId: number,
       items: readonly BasketItem[] | undefined,
       dealId?: string,
+      /** R-WEB-UI-RESOURCE-SOURCE-LEDGER-UI-AND-REST-Q1 (partia 3c): jednostronny przelew = dar (etykieta księgi). */
+      oneWayGift = false,
     ): void {
       if (!items?.length) return;
       syncBasketResearchFromEngine();
@@ -13268,9 +13413,13 @@ async function boot(): Promise<void> {
             // cykliczny zbudowany przed tą zmianą, ręcznie edytowany save, przyszły refaktor).
             // Ten sam floor stosuje diplomacyPnSurowiecIlosc przy wycenie PN — transfer i
             // zapłata muszą się zgadzać, więc oba miejsca floorują IDENTYCZNIE.
-            const totalUnits = diplomacyNormalizeSurowiecIlosc(item.id, qty);
+            const totalUnits = withDiplomacyTradeEra(dealTradeEraForOwners(fromOwnerId, toOwnerId), () => diplomacyNormalizeSurowiecIlosc(item.id, qty)); // r4: epoka pary, nie gracza
             const capId = capitalCityIdForOwner(toOwnerId);
             const refs = cities.map(c => ({ id: c.id, ownerId: c.ownerId, surowce: c.surowce ?? {} }));
+            // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (partia 3a): księga „Umowa wymiany" --
+            // różnica magazynu obu stron (tylko dziennik, bez wpływu na stan), okno poza tickiem.
+            const ledgerFromBeforeB = { ...ownerResourceStockAll(cities, fromOwnerId) };
+            const ledgerToBeforeB = { ...ownerResourceStockAll(cities, toOwnerId) };
             const result = transferSurowiecIlosc(item.id, totalUnits, fromOwnerId, toOwnerId, capId, refs);
             for (let i = 0; i < cities.length; i++) {
               const before = refs[i];
@@ -13279,6 +13428,10 @@ async function boot(): Promise<void> {
                 cities[i]!.surowce = after.surowce;
               }
             }
+            recordStockDeltaToPending(fromOwnerId, ledgerFromBeforeB, ownerResourceStockAll(cities, fromOwnerId),
+              `umowa-wymiany|out|${toOwnerId}`, oneWayGift ? { kind: 'dar', label: `Dar dla ${ownerDiploLabel(toOwnerId)}` } : { kind: 'umowa_wymiany', label: `Umowa wymiany z ${ownerDiploLabel(toOwnerId)}` });
+            recordStockDeltaToPending(toOwnerId, ledgerToBeforeB, ownerResourceStockAll(cities, toOwnerId),
+              `umowa-wymiany|in|${fromOwnerId}`, oneWayGift ? { kind: 'dar', label: `Dar od ${ownerDiploLabel(fromOwnerId)}` } : { kind: 'umowa_wymiany', label: `Umowa wymiany z ${ownerDiploLabel(fromOwnerId)}` });
             break;
           }
           case 'miasto': {
@@ -13320,7 +13473,7 @@ async function boot(): Promise<void> {
       }
       const { giveItems, receiveItems } = payload;
       if (giveItems?.length || receiveItems?.length) {
-        transferBasketItems(proposerId, responderId, giveItems);
+        transferBasketItems(proposerId, responderId, giveItems, undefined, !receiveItems?.length);
         transferBasketItems(responderId, proposerId, receiveItems);
         return;
       }
@@ -17432,7 +17585,7 @@ async function boot(): Promise<void> {
         // Odjęcie DOKŁADNIE 50 'kon' — ten sam wzorzec mutacji magazynu (rozproszony po
         // miastach ownera) co deductBuildingStockCostAcrossCities gdzie indziej w tym pliku
         // (koszt_surowce budynków), nie osobna, równoległa ścieżka.
-        deductBuildingStockCostAcrossCities(cities, 0, { kon: 50 });
+        deductBuildingStockCostAcrossCities(cities, 0, { kon: 50 }, pendingLedgerSink(0, 'wejscie', 'Stadnina (koń)'));
       }
 
       const rm = new Set(impact.removedImprovements);
@@ -18344,7 +18497,10 @@ async function boot(): Promise<void> {
         const surrenderPopLoss = Math.max(0, surrenderPopBefore - city.population);
         applyPostCaptureLawOnCapture(city, newOwner, oldOwner);
         triggerRebelProtectionWarConsequence(wasProtectedRebel, rebelPrevOwnerSnapshot, newOwner);
+        const ledgerCaptureBefore = snapshotOwnersStock([oldOwner, newOwner], o => ownerResourceStockAll(cities, o));
         city.ownerId = newOwner;
+        recordOwnersStockDeltaToPending(ledgerCaptureBefore, o => ownerResourceStockAll(cities, o), `przejecie-miasta|${city.id}`,
+          o => (o === newOwner ? { kind: 'przejecie_miasta', label: 'Zdobycie miasta' } : { kind: 'przejecie_miasta', label: 'Oddanie miasta' }));
         settleWonderTransfer(wonderWatchSurrender); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
         noteCityCapture(civChronicleByOwner, oldOwner, newOwner, turn); // R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1
         // R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1 (ECHO = wariant A): kapitulacja
@@ -18887,7 +19043,7 @@ async function boot(): Promise<void> {
       if (!anchor) return false;
       const stockCost = option.costStock;
       setOwnerTreasury(besiegerOwnerId, ownerTreasury(besiegerOwnerId) - option.costMoney);
-      if (Object.keys(stockCost).length) deductBuildingStockCostAcrossCities(cities, besiegerOwnerId, stockCost);
+      if (Object.keys(stockCost).length) deductBuildingStockCostAcrossCities(cities, besiegerOwnerId, stockCost, pendingLedgerSink(besiegerOwnerId, 'budowa', 'Machina oblężnicza'));
       city.siegeEngineBuildsThisTurn = {
         turn,
         count: option.builtThisTurn + 1,
@@ -19084,6 +19240,10 @@ async function boot(): Promise<void> {
 
     /** Wpisy WYDARZEŃ ukryte krzyżykiem do końca tury (propozycja dyplomatyczna wraca w następnej, jeśli nadal aktualna). */
     const dismissedSidePanelEventIds = new Set<string>();
+    /** R-WEB-UI-END-TURN-BLOCK-EVENT-Q1: tura, w której gracz PRÓBOWAŁ zakończyć turę przy blokadzie NNS
+     * (null = nie próbował). Deklaracja MUSI być przed pierwszym wywołaniem collectTurnEventsUncached
+     * (inaczej TDZ przy starcie gry). */
+    let nnsEndTurnBlockAttemptTurn: number | null = null;
 
     function productionAvailabilityCtxForCity(city: City): AvailabilityContext {
       const ownImprovements = placedImprovementsForOwner(city.ownerId);
@@ -19573,6 +19733,8 @@ async function boot(): Promise<void> {
           blocking: true,
         });
       }
+      const nnsBlockEvent = nnsEndTurnBlockEvent();
+      if (nnsBlockEvent) events.push(nnsBlockEvent);
       return events.filter(e => !dismissedSidePanelEventIds.has(e.id));
     }
 
@@ -20813,7 +20975,12 @@ async function boot(): Promise<void> {
      * konwerter aiCommandToPendingProposal (diplomacy-proposals.ts) — bierzemy z niego
      * tylko treść (actionId/payload), id/expiresTurn/source dokłada createNegotiation.
      */
-    function enqueueNegotiationFromAiCmd(ownerId: number, cmd: AIDiplomacyCommand): void {
+    function enqueueNegotiationFromAiCmd(...args: Parameters<typeof enqueueNegotiationFromAiCmdImpl>): ReturnType<typeof enqueueNegotiationFromAiCmdImpl> {
+      // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r2 (FC r2 zarzut 2): propozycja AI do gracza w epoce UMOWY.
+      return withDiplomacyTradeEra(dealTradeEraForOwners(args[0], ME()), () => enqueueNegotiationFromAiCmdImpl(...args));
+    }
+
+    function enqueueNegotiationFromAiCmdImpl(ownerId: number, cmd: AIDiplomacyCommand): void {
       let workingCmd = cmd;
       // W80B-B1: znacznik kroku ścieżki pokoju (hak read-only; tylko gdy peaceTraceState.on).
       const ptr = (step: string): void => {
@@ -20853,7 +21020,8 @@ async function boot(): Promise<void> {
       if (workingCmd.type === 'zaproponuj_umowe_handlowa') {
         const rel = getDiploRelation(ownerId, ME());
         const treasury = buildDiploTreasury();
-        const quick = computeQuickDealBasket({
+        // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 (FC r1 pkt 1): Szybka umowa w epoce umowy (nie gracza).
+        const quick = withDiplomacyTradeEra(diplomacyDealTradeEra(player.era, empireEpochForOwner(ownerId)), () => computeQuickDealBasket({
           relacjaTotal: relationTotal(rel),
           ourGoldAvailable: treasury.getPieniadze(ownerId),
           ourResourceOptions: priceableTradableGoodOptions(ownerId),
@@ -20861,7 +21029,7 @@ async function boot(): Promise<void> {
           ourQuantityResourceOptions: quantityTradableGoodOptions(ownerId),
           theirQuantityResourceOptions: quantityTradableGoodOptions(ME()),
           difficulty: effectiveGameDifficultyForOwner(ownerId),
-        });
+        }));
         const umowaBuildArgs = [
           quick,
           workingCmd.sweetenerGold,
@@ -20931,7 +21099,7 @@ async function boot(): Promise<void> {
           0, 0, relationTotal(relForPeace), basePnPeace, difficultyForPeace,
         );
         if (neededPn > 0) {
-          const requestItems = peaceOfferAiRequestBasket(neededPn, quantityTradableGoodOptions(ME()));
+          const requestItems = peaceOfferAiRequestBasket(neededPn, quantityTradableGoodOptions(ME()), dealTradeEraForOwners(ownerId, ME()));
           if (requestItems.length > 0) {
             converted.payload = { ...converted.payload, receiveItems: requestItems };
           }
@@ -20958,6 +21126,18 @@ async function boot(): Promise<void> {
         // R-WEB-PEACE-CITY-CESSION-Q1 r3: akcja propozycji — bramka pozycji 'miasto' (pokój/wasal).
         actionId: converted.actionId,
       };
+      // R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 (r3, O1 PARYTET WYCENY): wymiana cykliczna wycenia
+      // PN dokladnie tymi opcjami co wybor pary (pickAiPlayerCyclicBarter, pnOpts): mnoznik
+      // tur (per_turn) i tempoGry. Bez tego wejscie na stol liczy PN 10x mniej niz wybor pary
+      // (pomiar r3: enqGive=10 vs pickGive=100), trimming i bramki uczciwosci dzialaja na innej
+      // skali i oferta odpada. Inne typy ofert: opcje bez zmian (pnCyclicOpts === pnBalanceOpts).
+      const pnCyclicOpts = workingCmd.type === 'zaproponuj_wymiane_cykliczna'
+        ? {
+          ...pnBalanceOpts,
+          tempoGry: player.tempoGry ?? 'standardowa',
+          ...proposalPnTurnsMultiplier(clampedPayload),
+        }
+        : pnBalanceOpts;
       // R-DYPLOMACJA-BILANS-UNIFIKACJA-Q1 (GOAL b, recon jawny w raporcie Operatora):
       // generator dostał opcjonalny 5. param `fairness` (multiplier/treatyBasePn) — patrz
       // diplomacy-ai-offer-balance.ts. CELOWO NIE przekazany tutaj: w tym jedynym realnym
@@ -20972,12 +21152,19 @@ async function boot(): Promise<void> {
       // składników jest `generateCounterOffer` (diplomacy-proposals.ts) — kontroferta AI
       // na propozycję GRACZA, gdzie proposerOwnerId=gracz/responderOwnerId=AI odwraca oba
       // warunki na "aktywne"; poza allowlistą tego main.ts (WYŁĄCZNIE ten jeden call site).
-      const balancedPayload = trimProposalForZeroBalance(
-        clampedPayload,
-        relationTotal(relForBalance),
-        difficultyForBalance,
-        pnBalanceOpts,
-      );
+      // R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 (r3, O1): wymiana cykliczna jest juz wyrownana przez
+      // wybor pary (pickAiPlayerCyclicBarter: te same opcje PN, bramka uczciwosci, podglad gracza).
+      // Trim po wyborze zmienial wybrany payload (pomiar r3: receive 10 -> 0) i oferta zawsze
+      // odpadala w bramce givePn > receivePn. Dla wymiany cyklicznej trim pomijamy; gracz nadal
+      // ma podglad „Przyjmij" i filtr bilansu PW (ponizej).
+      const balancedPayload = workingCmd.type === 'zaproponuj_wymiane_cykliczna'
+        ? clampedPayload
+        : trimProposalForZeroBalance(
+          clampedPayload,
+          relationTotal(relForBalance),
+          difficultyForBalance,
+          pnBalanceOpts,
+        );
       if (
         !peaceBareAllowed
         && !balancedPayload.giveItems?.length
@@ -20994,7 +21181,7 @@ async function boot(): Promise<void> {
       if (
         sensibleBalanceFilterApplies(isDiploSensibleDealsEnabled(), workingCmd.type)
         && !isPlayerBalanceAcceptable(
-          aiProposalPlayerBenefitSurplus(balancedPayload, relationTotal(relForBalance), pnBalanceOpts),
+          aiProposalPlayerBenefitSurplus(balancedPayload, relationTotal(relForBalance), pnCyclicOpts),
         )
       ) {
         console.log(`[Dyplomacja] AI${ownerId} ${workingCmd.type}: odrzucone (bilans PW gracza < 0)`);
@@ -21008,7 +21195,7 @@ async function boot(): Promise<void> {
         return;
       }
       if (workingCmd.type === 'zaproponuj_wymiane_cykliczna') {
-        const { givePn, receivePn } = resolveProposalPn(balancedPayload, pnBalanceOpts);
+        const { givePn, receivePn } = resolveProposalPn(balancedPayload, pnCyclicOpts);
         const exactEvalCtx = buildProposalEvalContext(ownerId, ME());
         if (handelFairnessGate(givePn, receivePn, AI_PROPOSER_FAIRNESS_REL_TOTAL, 1)) return;
         // R-WEB-AI-TRADE-WIRING-E2E-Q1 r3 (A1): gorny limit — AI nie oddaje wiecej PW niz dostaje
@@ -21140,7 +21327,12 @@ async function boot(): Promise<void> {
      * 'negot-handel-…' < 'negot-umowa_szlakow-…') zdejmowałaby sąsiada ze stołu PRZED oceną
      * traktatu i zgubiłaby kredyt pakietu (patrz handleNegotiationAcceptPackage niżej).
      */
-    function packageSiblingPn(
+    function packageSiblingPn(...args: Parameters<typeof packageSiblingPnImpl>): ReturnType<typeof packageSiblingPnImpl> {
+      // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r2 (FC r2 zarzut 2): ocena w epoce UMOWY (wyższa z epok stron).
+      return withDiplomacyTradeEra(dealTradeEraForOwners(args[0], args[1]), () => packageSiblingPnImpl(...args));
+    }
+
+    function packageSiblingPnImpl(
       proposerId: number,
       responderId: number,
       excludeId: string,
@@ -21382,7 +21574,7 @@ async function boot(): Promise<void> {
         negotiationToLegacyPending(entry),
         turn,
         _menuDifficulty,
-        { atWar, hasTradeTech: ownerHasTradeTech }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3
+        { atWar, hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(entry.proposerOwnerId, entry.responderOwnerId) }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3 + TRADE-ERA r3 (epoka umowy jawnie)
       );
       applyProposalOutcome(entry.proposerOwnerId, entry.responderOwnerId, result, entry.payload, entry.actionId);
       refreshD1bHud();
@@ -21687,7 +21879,15 @@ async function boot(): Promise<void> {
     function previewNegotiationEntry(
       entry: PendingNegotiation,
       siblingOverride?: { givePn: number; receivePn: number },
-    ): { accepted: boolean; reason?: string; pwBalance?: number } {
+    ): ReturnType<typeof previewNegotiationEntryImpl> {
+      // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r2 (FC r2 zarzut 2): podgląd w epoce UMOWY (wyższa z epok stron).
+      return withDiplomacyTradeEra(dealTradeEraForOwners(entry.proposerOwnerId, entry.responderOwnerId), () => previewNegotiationEntryImpl(entry, siblingOverride));
+    }
+
+    function previewNegotiationEntryImpl(
+      entry: PendingNegotiation,
+      siblingOverride?: { givePn: number; receivePn: number },
+    ): { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: { turnsAtWar: number; lostCities: number; level: number } } {
       const sibling = siblingOverride ?? livePackageSiblingFor(entry);
       // R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1: `authorOwnerId` DYNAMICZNY (entry, aktualizowany
       // przez applyCounterOffer po każdej kontrofercie) dopisany do ctx — jedyny konsument to
@@ -21727,7 +21927,11 @@ async function boot(): Promise<void> {
       // dla incoming, ten brak filtra stałby się realnym problemem, nie tylko nieścisłym
       // komentarzem. Zostawione bez zmiany logiki (poza zakresem N6 — "nieszkodliwe dziś"),
       // ale komentarz już nie obiecuje gwarancji, której kod nie daje.
-      return { accepted: result.accepted, reason: result.reason, pwBalance: result.pwBalance };
+      // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: Z (zmęczenie wojną) jako pozycja PW w tabeli stołu.
+      return {
+        accepted: result.accepted, reason: result.reason, pwBalance: result.pwBalance, wearinessPw: result.wearinessPw, wearinessSide: result.wearinessSide,
+        wearinessInfo: result.wearinessInfo,
+      };
     }
 
     /** C-DYP-Q1=A: wiersze UI (diplomacyAudience.ts kolumna „Oczekujące propozycje") dla tej pary. */
@@ -22075,7 +22279,7 @@ async function boot(): Promise<void> {
           if (pending) {
             const result = resolvePlayerAcceptsAiPending(
               pending, turn, undefined,
-              { hasTradeTech: ownerHasTradeTech }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3 (difficulty: undefined -> default 'normal', zachowanie bez zmian)
+              { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId) }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3 + TRADE-ERA r3 (difficulty: undefined -> default 'normal')
             );
             applyProposalOutcome(p.ownerId, ME(), result, pending.payload, pending.actionId);
             if (result.accepted) showHintMessage('Przyjęto: ' + p.civName, 3500);
@@ -22216,7 +22420,7 @@ async function boot(): Promise<void> {
       if (!pending) return false;
       const result = resolvePlayerAcceptsAiPending(
         pending, turn, undefined,
-        { hasTradeTech: ownerHasTradeTech },
+        { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId) },
       );
       applyProposalOutcome(p.fromOwnerId, p.toOwnerId, result, pending.payload, pending.actionId);
       return true;
@@ -22738,6 +22942,18 @@ async function boot(): Promise<void> {
     // R-WEB-ECON-NO-NEGATIVE-STOCKS-END-TURN-GATE-LEVERS-Q1: dźwignie podatku i racji gracza (0 = niedostępne).
     let _nnsPodatekZysk = 0;
     let _nnsRacjeZysk = 0;
+    // R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1 (Dodatek 2, martwy punkt Spichlerza): zmiana
+    // prognozy Spichlerza po reakcji automatu (auto-korekta racji miast z Auto-Żywieniem, ten sam
+    // autoBalanceRationsToSolvency co tick końca tury) względem `_nnsHumanForecast.spichlerzPo`.
+    // undefined = automat nie zmienia prognozy (brak Auto-Żywienia albo brak korekty).
+    let _nnsAutoSpichlerzDelta: number | undefined = undefined;
+    // R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1: ile punktów % udziału podatku gracz może
+    // dodać (pełny podział na podatek minus obecny); 0 = brak danych. Zasila propozycję podatku do zera.
+    let _nnsPodatekPunkty = 0;
+    // r3 (C): przyrost skarbca PO TURZE (delta względem prognozy bazowej) dla kolejnych kroków suwaka podatku
+    // (+10, +20, ... pkt % kosztem Nauki), liczony TĄ SAMĄ projekcją (previewCityEconomy) co prognoza bramki.
+    // Zasila propozycjaPodatkuKrokami przez `prognozaPoPodatku`. Pusta tablica = brak danych / brak potrzeby.
+    let _nnsTaxStepDeltas: Array<{ pkt: number; delta: number }> = [];
     function refreshLiveEmpireRates(): void {
       if (!empireEconDirty) return;   // D10: przelicz tylko po zmianie (trigger), nie co odświeżenie
       empireEconDirty = false;
@@ -22889,7 +23105,124 @@ async function boot(): Promise<void> {
       // z przełożonym podziałem / racjami, bez trwałej zmiany stanu (podział i racje przywracane w finally).
       _nnsPodatekZysk = 0;
       _nnsRacjeZysk = 0;
-      if (_nnsHumanForecast !== null && turn > NNS_WOLNE_TURY
+      _nnsPodatekPunkty = 0;
+      _nnsTaxStepDeltas = [];
+      // R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1 (Dodatek 2): prognoza PO REAKCJI automatu
+      // na koniec tury. Tick (blok „SPICH-AUTO-Q1” przy rozliczeniu Spichlerza) najpierw obniża racje miast
+      // z Auto-Żywieniem (autoBalanceRationsToSolvency), dopiero potem liczy advanceEmpireFood. Tu ta sama
+      // kolejność na świeżym podglądzie ekonomii; racje miast są przywracane w finally (stan nietknięty).
+      _nnsAutoSpichlerzDelta = undefined;
+      // r3 (D5 pkt 2 i 4): projekcja odtwarza PEŁNĄ ścieżkę ticku racji — autoBalanceRationsToSolvency (tylko miasta z
+      // Auto-Żywieniem), autoRaiseRationsForGrowth (parytet z tickiem: gracz, requireProductionSurplus) i clamp Q3
+      // (maxSafePoziomRacjiForCity dla WSZYSTKICH miast gracza, także z Auto wyłączonym) — i zawsze przywraca stan miast.
+      if (_nnsHumanForecast !== null) {
+        const savedAutoRacje = playerCities.map(c => ({ c, poziom: c.poziomRacji, procent: c.procentRozwoj }));
+        try {
+          const previewDomyslny = () => previewCityEconomy(
+            playerCities, map, data, _menuDifficulty, cityBuilt, player.era, player.zbadane, ownerCivMap,
+            orderMultMap, empireEpochForOwner, unlockedTechSetForOwner, tradeRouteBuildingBonusByCity,
+            routeIncomePreview.totalByCity, buildAllTerritoryNodes(), undefined,
+            buildWonderCityYieldsByOwnerMap([0]), makeOwnerZlotoAccessResolver(),
+            makeOwnerRuntimeActiveLabelsResolver(), makeOwnerEmpireStockResolver(),
+            ownerDefaultPodzialHandlu, ownerDefaultPodzialPracy, maritimeTradeIncomeByCityPreview, manualWorkTaxPreviewByCity,
+          );
+          const econPrzed = previewDomyslny();
+          const spichlerzByCityProj = new Map<string, import('./game/building-resource-gate').SpichlerzCityBonusState>();
+          for (const c of playerCities) {
+            const tick = econPrzed.perCity.find(t => t.cityId === c.id);
+            spichlerzByCityProj.set(c.id, {
+              ceramikaActive: tick?.spichlerzCeramika ?? false,
+              solActive: tick?.spichlerzSol ?? false,
+              maSpichlerzPop: tick?.maSpichlerz ?? false,
+              maSpichlerzIIPop: tick?.maSpichlerzII ?? false,
+            });
+          }
+          // Limit ludności per miasto — ta sama formuła co popCapByCityId w ticku (rozliczenie Spichlerza).
+          const econParamsProj = buildEconParams(data, _menuDifficulty);
+          const popCapProj = new Map<string, number>();
+          for (const c of playerCities) {
+            const builtIds = cityBuilt.get(c.id) ?? [];
+            popCapProj.set(c.id, cityPopulationCap(
+              builtIds.includes('akwedukt'), cityHasSpichlerzBuilding(builtIds), econParamsProj,
+              resolvePopulationCapMatrixDelta(ownerCivMap.get(ME()) ?? null),
+              builtIds.includes('spichlerz_ii'),
+            ));
+          }
+          const nnsEfParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
+          const nnsUpkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
+          const kosztArmiiProj = militaryFoodConsumptionWithSpichlerz(
+            playerEconUnitsForUpkeep, ME(), nnsUpkeepParams, unitFoodTbl,
+          );
+          const autoRes = autoBalanceRationsToSolvency({
+            ownerId: ME(),
+            cities: playerCities,
+            econ: econPrzed as unknown as Parameters<typeof autoBalanceRationsToSolvency>[0]['econ'],
+            zapasyPrzed: empireFoodStates.get(ME())?.zapasyPanstwa ?? 0,
+            rationParams: nnsEfParams.rationParams,
+            spichlerzByCity: spichlerzByCityProj,
+            onlyAutoManaged: true,
+            requireFlowBalance: true,
+            kosztArmii: kosztArmiiProj,
+            popCapByCityId: popCapProj,
+          });
+          // r3: raise (gracz) + Q3 clamp — ta sama kolejność co w triggerPlayerEndTurn.
+          const raiseRes = autoRaiseRationsForGrowth({
+            ownerId: ME(),
+            cities: playerCities,
+            econ: econPrzed as unknown as Parameters<typeof autoRaiseRationsForGrowth>[0]['econ'],
+            zapasyPrzed: empireFoodStates.get(ME())?.zapasyPanstwa ?? 0,
+            rationParams: nnsEfParams.rationParams,
+            spichlerzByCity: spichlerzByCityProj,
+            requireProductionSurplus: true,
+            onlyAutoManaged: true,
+            kosztArmii: kosztArmiiProj,
+            popCapByCityId: popCapProj,
+          });
+          if (autoRes.adjusted || raiseRes.adjusted) {
+            recomputeCityFoodBalancesInEcon(
+              econPrzed.perCity as unknown as Parameters<typeof recomputeCityFoodBalancesInEcon>[0], playerCities,
+              nnsEfParams.rationParams, spichlerzByCityProj,
+            );
+            refreshEconomyFoodTotals(econPrzed as unknown as Parameters<typeof refreshEconomyFoodTotals>[0]);
+          }
+          let clampedProj = false;
+          for (const c of playerCities) {
+            const maxSafeProj = maxSafePoziomRacjiForCity({
+              cityId: c.id, ownerId: ME(), cities: playerCities,
+              econ: econPrzed as unknown as Parameters<typeof maxSafePoziomRacjiForCity>[0]['econ'],
+              zapasyPrzed: empireFoodStates.get(ME())?.zapasyPanstwa ?? 0,
+              rationParams: nnsEfParams.rationParams,
+              spichlerzByCity: spichlerzByCityProj,
+              popCapByCityId: popCapProj,
+            });
+            if (getCityRationLevel(c) > maxSafeProj) { c.poziomRacji = maxSafeProj; clampedProj = true; }
+          }
+          if (autoRes.adjusted || raiseRes.adjusted || clampedProj) {
+            // Ponowny podgląd ekonomii PO korekcie racji (racje miast już zmienione przez automat / clamp).
+            const econPo = previewDomyslny();
+            const fAuto = projectEmpireFoodAfterTick({
+              ownerId: ME(),
+              states: empireFoodStates,
+              econ: econPo as unknown as Parameters<typeof projectEmpireFoodAfterTick>[0]['econ'],
+              units: playerEconUnitsForUpkeep,
+              upkeep: nnsUpkeepParams,
+              params: nnsEfParams,
+              foodTable: unitFoodTbl,
+              builtByCity: cityBuilt,
+              resolveOwnerEra: empireEpochForOwner,
+            });
+            _nnsAutoSpichlerzDelta = fAuto.spichlerzPo - _nnsHumanForecast.spichlerzPo;
+          }
+        } catch (errAuto) {
+          // Brak korekty automatu w prognozie = bramka liczy prognozę bez automatu (bezpieczny kierunek).
+          _nnsAutoSpichlerzDelta = undefined;
+          console.error('[NNS] projekcja reakcji automatu (Auto-Żywienie) nie powiodła się — bramka bez korekty automatu:', errAuto);
+        } finally {
+          for (const sv of savedAutoRacje) { sv.c.poziomRacji = sv.poziom; sv.c.procentRozwoj = sv.procent; }
+        }
+      }
+      // R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1: dźwignie liczone od tury 1 (bez wyjątku 1–10).
+      if (_nnsHumanForecast !== null
         && (_nnsHumanForecast.skarbiecPo < 0 || _nnsHumanForecast.spichlerzPo < 0)) {
         try {
           const previewWithSplit = (splitMap: typeof ownerDefaultPodzialHandlu) => previewCityEconomy(
@@ -22907,6 +23240,21 @@ async function boot(): Promise<void> {
           if (altSplit.procentNauka !== meSplit.procentNauka || altSplit.procentPieniadz !== meSplit.procentPieniadz) {
             const pAlt = previewWithSplit(new Map(ownerDefaultPodzialHandlu).set(ME(), altSplit));
             _nnsPodatekZysk = Math.max(0, sumEconomyForPlayerCities(pAlt, cities).pieniadz - playerEcon.pieniadz);
+            _nnsPodatekPunkty = Math.max(0, altSplit.procentPieniadz - meSplit.procentPieniadz);
+            // r3 (C): kroki suwaka po 10 pkt % (ta sama projekcja); stop na pierwszym kroku dającym prognozę ≥ 0.
+            if (_nnsHumanForecast.skarbiecPo < 0) {
+              for (let pkt = 10; pkt <= _nnsPodatekPunkty + 9; pkt += 10) {
+                const krok = Math.min(pkt, _nnsPodatekPunkty);
+                const stepSplit = normalizePodzialHandlu({
+                  procentNauka: meSplit.procentNauka - krok, procentLuksus: meSplit.procentLuksus,
+                  procentPieniadz: meSplit.procentPieniadz + krok,
+                });
+                const pStep = previewWithSplit(new Map(ownerDefaultPodzialHandlu).set(ME(), stepSplit));
+                const dStep = sumEconomyForPlayerCities(pStep, cities).pieniadz - playerEcon.pieniadz;
+                _nnsTaxStepDeltas.push({ pkt: krok, delta: dStep });
+                if (_nnsHumanForecast.skarbiecPo + dStep >= 0 || krok >= _nnsPodatekPunkty) break;
+              }
+            }
           }
           if (_nnsHumanForecast.spichlerzPo < 0 && playerCities.some(c => c.poziomRacji !== 0 || c.procentRozwoj !== 0)) {
             const savedRacje = playerCities.map(c => ({ c, poziom: c.poziomRacji, procent: c.procentRozwoj }));
@@ -22933,6 +23281,8 @@ async function boot(): Promise<void> {
           // Brak dźwigni = bramka liczy tylko jednostki (bezpieczny kierunek: brak zakleszczenia).
           _nnsPodatekZysk = 0;
           _nnsRacjeZysk = 0;
+          _nnsPodatekPunkty = 0;
+          _nnsTaxStepDeltas = [];
           console.error('[NNS] dźwignie podatku/racji gracza nie powiodły się — bramka bez tych dźwigni:', errLev);
         }
       }
@@ -23148,10 +23498,11 @@ async function boot(): Promise<void> {
       // Surowców (bez 2. kalkulacji): brutto = produkcja własna + przychód z umów; netto =
       // ratePerTurn (produkcja − umowy wychodzące + przychodzące) − zapotrzebowanie
       // (obywatele+budynki+wojsko, `usage`). Tylko podanie danych do HUD.
+      // R-WEB-UI-RESOURCE-CARDS-GROSS-AND-NET-Q1: jedno źródło liczb (gra/src/game/resource-gross-net.ts),
+      // to samo co karty surowców w panelu — suma kart zawsze równa nagłówkowi.
       const surowceBilans = shortageRows.map(r => {
-        const brutto = Math.max(0, (r.rateProductionPerTurn ?? r.ratePerTurn) + (r.rateDiploInPerTurn ?? 0));
-        const zuzycie = r.usage ? r.usage.buildings + r.usage.citizens + r.usage.units : 0;
-        return { label: r.label, brutto: Math.round(brutto), netto: Math.round(r.ratePerTurn - zuzycie) };
+        const gn = resourceGrossNetPerTurn(r);
+        return { label: r.label, brutto: gn.brutto, netto: gn.netto };
       });
       const surowceBrutto = surowceBilans.reduce((a, r) => a + r.brutto, 0);
       const surowceNetto = surowceBilans.reduce((a, r) => a + r.netto, 0);
@@ -24055,7 +24406,8 @@ async function boot(): Promise<void> {
       partnerOwnerId: number,
       proposerHandlowosc?: number,
     ): ReturnType<typeof pickResourceTradeRelOfferRaw> {
-      return hudPureScope.run(() => pickResourceTradeRelOfferRaw(proposerOwnerId, partnerOwnerId, proposerHandlowosc));
+      // r4 (zarzut Evaluatora 2): epoka UMOWY pary (wszystkie wyceny oferty w epoce pary).
+      return withDiplomacyTradeEra(dealTradeEraForOwners(proposerOwnerId, partnerOwnerId), () => hudPureScope.run(() => pickResourceTradeRelOfferRaw(proposerOwnerId, partnerOwnerId, proposerHandlowosc)));
     }
     function pickResourceTradeRelOfferRaw(
       proposerOwnerId: number,
@@ -24212,7 +24564,21 @@ async function boot(): Promise<void> {
       };
     }
 
+    /** R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 (r3, O1): para przechodzi wejście na stół tylko gdy clamp do realnych zasobów nie zmienia koszyka. */
+    function payloadKeepsRealResourcesForPick(ownerId: number, payload: import('./game/diplomacy-proposals').ProposalPayload): boolean {
+      const clamped = clampAiProposalPayloadToRealResources(ownerId, payload);
+      if (!clamped) return false;
+      return JSON.stringify([clamped.giveItems ?? [], clamped.receiveItems ?? []])
+        === JSON.stringify([payload.giveItems ?? [], payload.receiveItems ?? []]);
+    }
+
+    /** R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1: epoka umowy = wyższa z epok gracza i partnera AI. */
     function pickAiPlayerCyclicBarter(ownerId: number): ReturnType<typeof selectAiTradeBarter> {
+      const tradeEra = diplomacyDealTradeEra(player.era, empireEpochForOwner(ownerId));
+      return withDiplomacyTradeEra(tradeEra, () => pickAiPlayerCyclicBarterImpl(ownerId, tradeEra));
+    }
+
+    function pickAiPlayerCyclicBarterImpl(ownerId: number, tradeEra: number): ReturnType<typeof selectAiTradeBarter> {
       if (!ownerHasTradeTech(ownerId) || !ownerHasTradeTech(ME())) return null;
       const turns = AI_RESOURCE_TRADE_DEFAULT_TURNS;
       const pack = diplomacyHandelSurowcePakietWielkosc();
@@ -24248,6 +24614,7 @@ async function boot(): Promise<void> {
         playerOwnerId: ME(),
         actionId: 'handel' as const,
         tempoGry: player.tempoGry ?? 'standardowa',
+        tradeEra, // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: jawna epoka umowy (wyższa z epok stron)
         ...proposalPnTurnsMultiplier({ resourceTradeMode: 'per_turn', turns }),
       };
       const evalCtx = buildProposalEvalContext(ownerId, ME());
@@ -24255,6 +24622,7 @@ async function boot(): Promise<void> {
         aiResources: aiStates,
         playerResources: playerStates,
         turns,
+        tradeEra,
         resolvePayloadPn: payload => resolveProposalPn(payload, {
           ...pnOpts,
           ...proposalPnTurnsMultiplier(payload),
@@ -24270,7 +24638,12 @@ async function boot(): Promise<void> {
             difficulty: _menuDifficulty,
             proposerOwnerId: ownerId,
             tempoGry: player.tempoGry ?? 'standardowa',
-          })?.accepted ?? true),
+          })?.accepted ?? true)
+          // R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 (r3, O1 parytet): wejscie na stol clampuje koszyk do
+          // zasobow realnych na caly czas wymiany (clampAiProposalPayloadToRealResources, turnsMult).
+          // Wybor pary sprawdza tylko podazny nadwyzke na tura; pomiar r3: para wybrana, po clampie
+          // receive 10 -> 0 i oferta odpadala. Wybieramy wiec wylacznie pary, ktore clamp przechodzi bez zmian.
+          && payloadKeepsRealResourcesForPick(ownerId, payload),
       });
     }
 
@@ -24279,7 +24652,8 @@ async function boot(): Promise<void> {
       buyerOwnerId: number,
     ): { surowiecKey: string; label: string; pakietyPerTura: number; zaplataPerTura: number } | null {
       const pricedKeys = Object.keys(diplomacyHandelSurowceCatalog());
-      const pick = pickResourceSurplusTradePick({
+      // r4 (zarzut Evaluatora 2): epoka UMOWY pary sprzedawca↔kupujący, nie epoka gracza.
+      const pick = withDiplomacyTradeEra(dealTradeEraForOwners(sellerOwnerId, buyerOwnerId), () => pickResourceSurplusTradePick({
         sellerOwnerId,
         buyerOwnerId,
         goodsSeller: tradableGoodsIndexForOwner(sellerOwnerId),
@@ -24289,7 +24663,7 @@ async function boot(): Promise<void> {
         pakietWielkosc: diplomacyHandelSurowcePakietWielkosc(),
         maxPakietyPerTura: AI_RESOURCE_TRADE_MAX_PAKIETY_PER_TURA,
         pricePerPakiet: (key, pakiety) => diplomacyPnSurowiecIlosc(key, pakiety),
-      });
+      }));
       if (!pick) return null;
       return {
         surowiecKey: pick.surowiecKey,
@@ -24310,7 +24684,7 @@ async function boot(): Promise<void> {
       if (!pending) return;
       const result = resolvePlayerAcceptsAiPending(
         pending, turn, effectiveGameDifficultyForOwner(targetId),
-        { hasTradeTech: ownerHasTradeTech }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3
+        { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId) }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3 + TRADE-ERA r3
       );
       if (!result.accepted || !result.deal) return;
       activeDeals = applyAcceptedProposal(activeDeals, result);
@@ -24464,7 +24838,8 @@ async function boot(): Promise<void> {
           const sellerA = quantityTradableGoodOptions(a);
           const sellerB = quantityTradableGoodOptions(b);
           // P-AI-011: deficyt (kupno) przed nadwyżką (sprzedaż) — także AI↔miasto-państwo.
-          const tradePick = pickResourceDeficitForOwnerPair({
+          // r4 (zarzut Evaluatora 2): wszystkie 4 wyceny pary AI↔AI w epoce UMOWY tej pary.
+          const tradePick = withDiplomacyTradeEra(dealTradeEraForOwners(a, b), () => pickResourceDeficitForOwnerPair({
             ...tradeBase,
             buyerOwnerId: a,
             sellerOwnerId: b,
@@ -24495,7 +24870,7 @@ async function boot(): Promise<void> {
               goodsSeller: goodsB,
               goodsBuyer: goodsA,
               sellerOptions: sellerB,
-            });
+            }));
           const bestOffer = tradePick
             ? {
                 seller: tradePick.sellerOwnerId,
@@ -24868,6 +25243,9 @@ async function boot(): Promise<void> {
         const totalUnits = item.pakietyPerTura;
         const capId = capitalCityIdForOwner(item.buyerOwnerId);
         const refs = cities.map(c => ({ id: c.id, ownerId: c.ownerId, surowce: c.surowce ?? {} }));
+        // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (partia 3a): księga „Umowa wymiany" (cykliczna).
+        const ledgerSellerBeforeC = { ...ownerResourceStockAll(cities, item.sellerOwnerId) };
+        const ledgerBuyerBeforeC = { ...ownerResourceStockAll(cities, item.buyerOwnerId) };
         const result = transferSurowiecIlosc(
           item.surowiecKey, totalUnits, item.sellerOwnerId, item.buyerOwnerId, capId, refs,
         );
@@ -24878,6 +25256,10 @@ async function boot(): Promise<void> {
             cities[i]!.surowce = after.surowce;
           }
         }
+        recordStockDeltaToPending(item.sellerOwnerId, ledgerSellerBeforeC, ownerResourceStockAll(cities, item.sellerOwnerId),
+          `umowa-wymiany-cykl|out|${item.buyerOwnerId}`, { kind: 'umowa_wymiany', label: `Umowa wymiany z ${ownerDiploLabel(item.buyerOwnerId)}` });
+        recordStockDeltaToPending(item.buyerOwnerId, ledgerBuyerBeforeC, ownerResourceStockAll(cities, item.buyerOwnerId),
+          `umowa-wymiany-cykl|in|${item.sellerOwnerId}`, { kind: 'umowa_wymiany', label: `Umowa wymiany z ${ownerDiploLabel(item.sellerOwnerId)}` });
         const zaplata = item.zaplataPerTura ?? 0;
         if (zaplata > 0 && item.zaplataTyp === 'zloto') {
           applyOneShotGoldTransfer(item.buyerOwnerId, item.sellerOwnerId, zaplata, treasury);
@@ -24965,8 +25347,11 @@ async function boot(): Promise<void> {
         // wielokrotnością kroku). Floor w miejscu, RAZ na turę, PRZED sprawdzeniem zapasów
         // sprzedawcy (sellerOkOf) i faktycznym transferem — oba muszą widzieć TĘ SAMĄ,
         // już poprawną ilość.
+        // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r4 (zarzut Evaluatora 1): epoka UMOWY (zamrożona przy
+        // zawarciu; zapis sprzed r4 → para właścicieli), nie globalna epoka gracza; min. 1 blok, bez zerowania.
         for (const it of items) {
-          const normalized = diplomacyNormalizeSurowiecIlosc(it.surowiecKey, it.pakietyPerTura);
+          if (it.epokaUmowy === undefined) it.epokaUmowy = cyclicItemTradeEra(it, dealTradeEraForOwners);
+          const normalized = cyclicSelfHealPakiety(it, dealTradeEraForOwners);
           if (normalized !== it.pakietyPerTura) it.pakietyPerTura = normalized;
         }
 
@@ -25142,6 +25527,7 @@ async function boot(): Promise<void> {
       updateWiarygodnoscStreamsThisTurn();
       for (const oid of allWiarygodnoscOwnerIds()) tickWiarygodnoscBezWojnyMilestone(oid);
       tickTruceExpiries();
+      applyMilitaryRespektEdgeTick();
       const treasury = buildDiploTreasury();
       const payDeals = activeDealsToPaymentDeals(activeDeals, turn);
       const { broken, messages } = tickDiplomacyPayments(payDeals, treasury, turn);
@@ -25293,6 +25679,9 @@ async function boot(): Promise<void> {
         stanWojny: rel.status === 'wojna',
         turn,
         epoka: player.era,
+        // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: epoka UMOWY (wyższa z epok stron) — jedyny punkt budowy
+        // kontekstu oceny, więc pokrywa wszystkie wywołania evaluateProposal/generateCounterOffer.
+        tradeEra: dealTradeEraForOwners(proposerId, responderId),
         proposerRespekt,
         responderRespekt,
         militaryRatio,
@@ -25365,7 +25754,12 @@ async function boot(): Promise<void> {
       }
     }
 
-    function applyProposalOutcome(
+    function applyProposalOutcome(...args: Parameters<typeof applyProposalOutcomeImpl>): ReturnType<typeof applyProposalOutcomeImpl> {
+      // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r2 (FC r2 zarzut 2): ocena w epoce UMOWY (wyższa z epok stron).
+      return withDiplomacyTradeEra(dealTradeEraForOwners(args[0], args[1]), () => applyProposalOutcomeImpl(...args));
+    }
+
+    function applyProposalOutcomeImpl(
       proposerId: number,
       responderId: number,
       result: ReturnType<typeof evaluateProposal>,
@@ -25458,7 +25852,7 @@ async function boot(): Promise<void> {
         ) {
           const dealId = result.deal.id;
           const items = result.deal.handelPayload;
-          transferBasketItems(proposerId, responderId, items?.giveItems, dealId);
+          transferBasketItems(proposerId, responderId, items?.giveItems, dealId, !items?.receiveItems?.length);
           transferBasketItems(responderId, proposerId, items?.receiveItems, dealId);
           const turnsOpts = proposalPnTurnsMultiplier(payload);
           const { givePn, receivePn } = resolveProposalPn(payload, {
@@ -25502,7 +25896,7 @@ async function boot(): Promise<void> {
           // istnieje tylko dla UmowaHandlowa) — transfer bierzemy wprost z `payload` UI,
           // razem z zawarciem traktatu. ownerId-agnostyczne (proposerId/responderId — zwykłe
           // liczby, ta sama ścieżka gracz→AI lub AI→gracz).
-          transferBasketItems(proposerId, responderId, payload.giveItems, result.deal.id);
+          transferBasketItems(proposerId, responderId, payload.giveItems, result.deal.id, !payload.receiveItems?.length);
           transferBasketItems(responderId, proposerId, payload.receiveItems, result.deal.id);
         }
       }
@@ -25875,7 +26269,12 @@ async function boot(): Promise<void> {
      * Woła evaluateProposal (czysta funkcja, patrz diplomacy-proposals.ts:297) BEZ
      * applyProposalOutcome — zero mutacji stanu gry, zero efektów ubocznych (banner/relacja).
      */
-    function previewNegotiatedProposal(
+    function previewNegotiatedProposal(...args: Parameters<typeof previewNegotiatedProposalImpl>): ReturnType<typeof previewNegotiatedProposalImpl> {
+      // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r2 (FC r2 zarzut 2): podgląd w epoce UMOWY (gracz vs partner).
+      return withDiplomacyTradeEra(dealTradeEraForOwners(0, args[0]), () => previewNegotiatedProposalImpl(...args));
+    }
+
+    function previewNegotiatedProposalImpl(
       ownerId: number,
       payload: NegotiationPayload,
     ): { accepted: boolean; reason?: string } {
@@ -26225,7 +26624,7 @@ async function boot(): Promise<void> {
           const playerPower = objectivePowerForOwnerEffective(ME());
           const otherPower = objectivePowerForOwnerEffective(ownerId);
           const powerLine = formatPowerRelationLine(playerPower, otherPower);
-          const respektNorm = powerLine.respekt;
+          const respektNorm = respektBarWithMilitaryOffset(ownerId, powerLine.respekt);
           // Rekruci w audiencji: bieżąca pula + maks. (suma miast) obu stron — ta sama
           // definicja co panel werbu (empirePoborTotals.rekruci, mnożnik civManpowerMults).
           const recruitsPlayer = audienceRecruitsForOwner(ME());
@@ -26432,6 +26831,8 @@ async function boot(): Promise<void> {
             // C-DYP-SUROWCE-Q1=B (2026-07-23): surowce ILOŚCIOWE per STRONA (magazyn miast).
             giveQuantityResourceOptions: quantityTradableGoodOptions(ME()),
             receiveQuantityResourceOptions: quantityTradableGoodOptions(ownerId),
+            // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 (FC r1 pkt 1): epoka umowy = wyższa z epok stron.
+            tradeEra: diplomacyDealTradeEra(player.era, empireEpochForOwner(ownerId)),
             // Zaległość #1 (SZYBKA UMOWA) — górny limit złota-dopełniacza w propozycji.
             playerSkarbiec: Math.floor(player.skarbiec),
             tempoGry: player.tempoGry ?? 'standardowa',
@@ -27526,7 +27927,6 @@ async function boot(): Promise<void> {
         },
         onOpenScience: () => toggleScienceHubFromToolbar(),
         onOpenEmpireDetail: (section) => openEmpireDetailFromHud(section),
-        onOpenEmpireRecruit: () => toggleEmpireRecruitFromHud(),
         onOpenWiki: () => toggleWikiFromToolbar(),
         isWikiActive: () => isWikiHubHudOpen(),
         mapToolbar: {
@@ -27928,6 +28328,7 @@ async function boot(): Promise<void> {
         getEventLink: (ev) => ev.blocking === true ? null
           : (sidePanelEventLinkFor(ev.id) ?? techDoneEventLinkFor(ev.id) ?? cityCaptureEventLinkFor(ev.id)
             ?? (ev.action !== undefined ? { label: SIDE_PANEL_ACTION_LABEL } : null)),
+        onEventButton: (_id, act) => handleEndTurnBlockButton(act),
         onEventClick: (id) => {
           // R-WEB-UI-FARM-ASSIGN-HINT-CAMERA-IMPORTANT-Q1: akcja `centerCamera` karty (np. nowe pole
           // z podpowiedzi „Przydziel obywatela?") centruje kamerę na heksie. Sprawdzane pierwsze.
@@ -27993,7 +28394,9 @@ async function boot(): Promise<void> {
         },
         getRecruitFollowGeneralDefault: () => recruitFollowGeneralDefault,
         onRecruitFollowGeneralDefaultChange: enabled => { recruitFollowGeneralDefault = enabled; },
+        mountEmpireRecruit: host => mountEmpireRecruitSection(host),
       });
+      configureEmpireRecruitPanel(empireRecruitPanelCfg());
       configureEmpireHandelSplit({
         getOwnerDefault: (ownerId) => ownerDefaultPodzialHandlu.get(ownerId) ?? null,
         onOwnerDefaultChange: (ownerId, split) => {
@@ -28146,6 +28549,64 @@ async function boot(): Promise<void> {
     // w trakcie sceny playtestu (playtest nie przechodzi przez kreator; applyMenuParams ustawia
     // 'losowe' przy starcie). Produkcja: window.__civSetHitMode === undefined.
     if (isCivTestEnabled(window.location.search)) (window as any).__civSetHitMode = setActiveHitMode;
+    // R-WEB-DIPLO-RESPECT-MILITARY-EVENTS-WIRING-Q1 (runda 2, punkt 1): hak live-testu (tylko ?civTest=1).
+    // Odczyt siły militarnej (ta sama funkcja co tick: diploMilitarySideOf), stanu przewagi, offsetu,
+    // Respektu i rejestru zdarzeń pary; zapis tylko stanu meta (round-trip JSON jak w zapisie gry)
+    // oraz usunięcie pól stanu (stary zapis). Wszystkie zmiany siły idą REALNYMI jednostkami (__civTest.addUnit).
+    if (isCivTestEnabled(window.location.search)) (window as any).__respektMilTest = {
+      owners: (): number[] => allPowerOwnerIds().filter(o => !isMe(o) && !isBarbarian(o) && !isCityStateOwner(o) && !eliminatedOwners.has(o)),
+      progRespektProc: (): number => loadMilitaryStrengthParams().progRespektProc,
+      /** Baza paska Respektu w audiencji (bez korekty): ta sama formuła co powerLine.respekt w showDiplomacyAudience. */
+      bazaPaskaAudiencji: (o: number): number => formatPowerRelationLine(objectivePowerForOwnerEffective(ME()), objectivePowerForOwnerEffective(o)).respekt,
+      sila: (a: number, o: number) => {
+        // Hak testowy: po dodaniu jednostek (civTest.addUnit) cache Mocy trzeba przeliczyć, inaczej odczyt jest sprzed zmiany.
+        powerDirty = true;
+        refreshObjectivePowerCache();
+        const s = diploMilitarySideOf(a, o, true);
+        return { sila: s.sila, armiaPkt: s.armiaPkt };
+      },
+      stan: (a: number, o: number) => {
+        const m = getDiploPairMeta(a, o);
+        const rel = getDiploRelation(a, o);
+        return {
+          respektPrzewagaStan: m.respektPrzewagaStan ?? null,
+          respektMilOffset: m.respektMilOffset ?? 0,
+          respekt: rel.respekt,
+          status: rel.status,
+        };
+      },
+      log: (a: number, o: number) => (diplomacyFactorLog.get(diploPairKey(a, o)) ?? []).map(x => ({ ...x })),
+      /** Round-trip meta pary przez JSON (ta sama serializacja co save: pairMeta). */
+      metaRoundTrip: (a: number, o: number) => {
+        const j = JSON.parse(JSON.stringify(getDiploPairMeta(a, o)));
+        setDiploPairMeta(a, o, j);
+        return { respektPrzewagaStan: j.respektPrzewagaStan ?? null, respektMilOffset: j.respektMilOffset ?? null };
+      },
+      /** Stary zapis: kasuje pola stanu przewagi (brak pola = inicjalizacja bez zdarzenia). */
+      stripStan: (a: number, o: number) => {
+        const { respektPrzewagaStan: _s, respektMilOffset: _o, ...rest } = getDiploPairMeta(a, o) as DiploPairMeta & Record<string, unknown>;
+        setDiploPairMeta(a, o, rest as DiploPairMeta);
+      },
+      /** Scenariusz testu: zapas spichlerza państwa (bramka NNS przed zakończeniem tury; jednostki testowe jedzą racje). */
+      setZapasy: (o: number, v: number) => {
+        const st = empireFoodStates.get(o);
+        if (st) st.zapasyPanstwa = v;
+        return st?.zapasyPanstwa ?? null;
+      },
+      /** Scenariusz testu: kontakt + pokój z partnerem (jak `__aiTradeWiringTestDebug.prepare`); bez tego startowa wojna daje bitwy blokujące turę. */
+      setPokoj: (o: number) => {
+        getDiplomaticContacts().add(o);
+        diplomaticContactEstablishedSet().add(o);
+        diplomaticallyDiscoveredOwnersSet().add(o);
+        const rel = getDiploRelation(o, ME());
+        if (rel.status === 'wojna') setDiploRelation(o, ME(), { ...rel, status: 'pokoj' });
+        return getDiploRelation(o, ME()).status;
+      },
+      /** Ustawia stan przewagi bez zdarzenia (tylko do scenariusza testu: czysty start stanu 'brak'). */
+      setStan: (a: number, o: number, s: 'A' | 'B' | 'brak') => {
+        setDiploPairMeta(a, o, { ...getDiploPairMeta(a, o), respektPrzewagaStan: s });
+      },
+    };
     if (isCivTestEnabled(window.location.search)) (window as any).__siegeBlockTestDebug = {
       tryPurchase: (cityId: string): { ok: boolean; queued: number; item: string | null } => {
         const c = cities.find(x => x.id === cityId);
@@ -28208,7 +28669,8 @@ async function boot(): Promise<void> {
         }
         return ids;
       },
-      toggleViaHud: () => toggleEmpireRecruitFromHud(),
+      openArmyRecruitSection: () => { if (!isEmpireDetailPanelOpen()) toggleEmpireDetailPanel('armia'); },
+      closeArmyRecruitSection: () => hideEmpireDetailPanel(),
       // R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: stan wyboru generała rekrutującego (tylko test).
       selectedGeneral: () => recruitGeneralId,
       generals: () => livingGeneralsOf(units, ME()).map(g => g.id),
@@ -28331,6 +28793,7 @@ async function boot(): Promise<void> {
         );
         player.nauka = scaledCost + 5;
         player.era = 1;
+        syncDiplomacyTradeEra();
         return { remaining: remaining.Technologia as string, era1Count: era1.length };
       },
       getPlayerState: () => ({ era: player.era, zbadaneSize: player.zbadane.size, nauka: player.nauka, badana: player.badana }),
@@ -29132,7 +29595,7 @@ async function boot(): Promise<void> {
       },
       setPlayerPracaPool: (n: number): void => { playerPracaPool = n; },
       /** R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1: ustawia epokę gracza (bramka stadniny poza złożem od epoki 3). */
-      setPlayerEra: (era: number): void => { player.era = era; },
+      setPlayerEra: (era: number): void => { player.era = era; syncDiplomacyTradeEra(); },
       getPlacedLayers: (q: number, r: number): string[] => placedImprovements.get(`${q},${r}`) ?? [],
       applyBuildRequest: (req: ImprovementBuildRequest): void => applyBuildRequest(req),
       getToast: () => {
@@ -29545,7 +30008,7 @@ async function boot(): Promise<void> {
       getTurn: (): number => turn,
       /** Test izolujący regułę przegranej: playtest startuje w ostatniej epoce, gdzie samotny gracz
        *  wygrywa DOMINACJĄ już w 1. turze (wyprzedza przegraną w checkVictory) — zbijamy epokę. */
-      setPlayerEraForTest: (era: number): void => { player.zbadane = new Set(); player.badana = null; player.era = era; },
+      setPlayerEraForTest: (era: number): void => { player.zbadane = new Set(); player.badana = null; player.era = era; syncDiplomacyTradeEra(); },
       getPlayerEra: (): number => player.era,
       ownerCityIds: (owner: number): string[] => cities.filter(c => c.ownerId === owner).map(c => c.id),
       /** Dodaje osadnika właściciela (klon jednostki wojskowej tego właściciela, typ/kategoria `osadnik`) na hexie jego miasta. */
@@ -29879,7 +30342,7 @@ async function boot(): Promise<void> {
         if (!pending) return { converted: false, accepted: false, reason: 'nie skonwertowano' };
         const result = resolvePlayerAcceptsAiPending(
           pending, turn, undefined,
-          { hasTradeTech: ownerHasTradeTech },
+          { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId) },
         );
         applyProposalOutcome(ownerId, ME(), result, pending.payload, pending.actionId);
         return { converted: true, accepted: !!result.accepted, reason: result.reason ?? null };
@@ -29918,7 +30381,7 @@ async function boot(): Promise<void> {
         const pending = aiCommandToPendingProposal(cmd, ownerId, ME(), turn);
         if (!pending) return { accepted: false, reason: 'nie skonwertowano' };
         pending.payload = { ...pending.payload, turns };
-        const result = resolvePlayerAcceptsAiPending(pending, turn, undefined, { hasTradeTech: ownerHasTradeTech });
+        const result = resolvePlayerAcceptsAiPending(pending, turn, undefined, { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId) });
         applyProposalOutcome(ownerId, ME(), result, pending.payload, pending.actionId);
         return { accepted: !!result.accepted, reason: result.reason ?? null };
       },
@@ -29940,6 +30403,35 @@ async function boot(): Promise<void> {
       /** SETUP testu: mapa playtest kończy grę zwycięstwem w pierwszym EOT; hak wyłącza tylko ten warunek. */
       suppressVictoryForTest: (): void => { truceTestSuppressVictory = true; },
     };
+
+    /**
+     * R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r4, zarzut 1 FC r3): fixture epoki WYŁĄCZNIE dla testu live.
+     * Samo ustawienie `ownerEraByOwner` / `player.era` jest cofane przez produkcyjny sync badań
+     * (`syncOwnerEraFromResearch` / `reconcilePlayerEraFromResearch`) przy każdym EOT, więc tu ustawiamy BADANIA
+     * (AI: aiResearchDone + cuda; gracz: player.zbadane), a epoka wynika z nich. / EN: test-only era fixture
+     * that seeds research so the production era sync does not revert it.
+     */
+    function applyOwnerEraFixtureForTest(ownerId: number, era: number): number {
+      const bounded = Math.max(1, Math.min(10, Math.trunc(era)));
+      // Epoka startu gry (podloga awansu) bywa wyzsza niz zadana (playtest startuje w Brazu = 2): dla testu
+      // obnizamy podloge do zadanej epoki, inaczej Kamien nie daje sie ustawic (zmierzone: gameStart=2, ERA=1 -> 2).
+      testEraFloorOverride = bounded;
+      if (isHuman(ownerId)) {
+        const researchedPlayer = new Set<string>();
+        for (const tech of data.tech) {
+          const e = epochNumber(tech.Epoka);
+          if (e != null && e < bounded) researchedPlayer.add(tech.Technologia);
+        }
+        player.zbadane = researchedPlayer;
+        reconcilePlayerEraFromResearch();
+        return empireEpochForOwner(ownerId);
+      }
+      // Start AI = zadana epoka (jak nowy AI tej epoki): podloga = bounded, badania epoki startowej puste.
+      ownerStartEraByOwner.set(ownerId, bounded);
+      aiResearchDone.set(ownerId, new Set<string>());
+      ownerEraByOwner.set(ownerId, bounded);
+      return empireEpochForOwner(ownerId);
+    }
 
     // R-WEB-BORDER-RELATIONS-ERA-PENALTY-Q1 — WYŁĄCZNIE live-test hook.
     // Setup dodaje kopie istniejących rekordów City do aktywnego świata i wybiera
@@ -30142,6 +30634,75 @@ async function boot(): Promise<void> {
           return [k, rest];
         });
         return (await saveToLocal(dstSlot, { ...s, meta })).ok;
+      },
+    };
+
+    // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: hak WYŁĄCZNIE do tools/diplomacy-trade-era-saveload-live-test.cjs.
+    // Zapis/odczyt idą REALNĄ ścieżką gry (persistSaveToSlot / loadGameFromSlot); `setEraForTest` to SETUP
+    // (badania => epoka, jak applyOwnerEraFixtureForTest), `injectLegacyTradeOffers` wstawia do stołu i skrzynki
+    // oferty o ilościach SPRZED bloków epoki (stary zapis) — to setup, nie testowana logika. Obcinanie ilości
+    // przy wczytaniu wykonuje produkcyjny kod loadGameFromSlot (diplomacyClampBasketItemsToEraBlock).
+    (window as any).__tradeEraSaveLoadTestDebug = {
+      setEraForTest: (ownerId: number, era: number): Record<string, number> => {
+        applyOwnerEraFixtureForTest(ownerId, era);
+        syncDiplomacyTradeEra();
+        return { playerEra: player.era, ownerEra: empireEpochForOwner(ownerId), tradeEra: diplomacyTradeEra() };
+      },
+      /** Setup: wybiera AI i ustawia z nim POKÓJ (handel jest unieważniany w wojnie; mapa playtest startuje w wojnie). */
+      pickPeacefulAiOwner: (): number | null => {
+        const id = allPowerOwnerIds().find(o => o > 0 && !isBarbarian(o) && !isCityStateOwner(o) && !isHuman(o)
+          && aiOwnerCivMap.has(o));
+        if (id == null) return null;
+        const cur = getDiploRelation(ME(), id);
+        if (cur.status === 'wojna') setDiploRelation(ME(), id, { ...cur, status: 'pokoj' });
+        return id;
+      },
+      state: (aiOwnerId: number): Record<string, number> => ({
+        playerEra: player.era, aiEra: empireEpochForOwner(aiOwnerId),
+        tradeEra: diplomacyTradeEra(), dealEra: dealTradeEraForOwners(ME(), aiOwnerId),
+      }),
+      /** Skraca stan do czystego: usuwa propozycje na stole/skrzynce, wstawia po jednej ofercie AI->gracz o podanej ilości. */
+      injectLegacyTradeOffers: (aiOwnerId: number, qty: number, qtyInbox: number): void => {
+        establishDiplomaticContact(aiOwnerId); // setup: kontakt (stół wczytuje wpisy tylko ze znanych stron)
+        negotiationTable.length = 0;
+        pendingDiplomacyInbox.length = 0;
+        negotiationSeq += 1;
+        const proposal = {
+          actionId: 'handel' as const, proposerOwnerId: aiOwnerId, responderOwnerId: ME(),
+          payload: {
+            giveItems: [{ typ: 'surowiec_ilosc' as const, id: 'drewno', ilosc: qty }],
+            receiveItems: [{ typ: 'surowiec_ilosc' as const, id: 'kamien', ilosc: qty }],
+          },
+        };
+        negotiationTable.push(createNegotiation(proposal as any, turn, 'ai', negotiationSeq));
+        pendingDiplomacyInbox.push({
+          id: 'trade-era-legacy-inbox', ownerId: aiOwnerId, civName: ownerDiploLabel(aiOwnerId),
+          cmdType: 'zaproponuj_handel_surowiec', reason: 'trade-era-test',
+          surowiecKey: 'drewno', surowiecLabel: 'Drewno', pakietyPerTura: qtyInbox,
+          zaplataTyp: 'zloto', zaplataPerTura: 5, resTurns: 10,
+        });
+      },
+      dumpTradeOffers: (): Record<string, unknown> => ({
+        tradeEra: diplomacyTradeEra(),
+        negotiation: negotiationTable.map(n => ({
+          id: n.id,
+          give: (n.payload.giveItems ?? []).filter(i => i.typ === 'surowiec_ilosc').map(i => [i.id, i.ilosc]),
+          receive: (n.payload.receiveItems ?? []).filter(i => i.typ === 'surowiec_ilosc').map(i => [i.id, i.ilosc]),
+        })),
+        inbox: pendingDiplomacyInbox.map(p => ({ id: p.id, key: p.surowiecKey, pakiety: p.pakietyPerTura })),
+      }),
+      quickSave: async (slot: string): Promise<boolean> => (await persistSaveToSlot(slot, 'trade-era-saveload-test')).ok,
+      loadSlot: async (slot: string): Promise<void> => { await loadGameFromSlot(slot, false); },
+      /** Epoka handlu po sztucznym rozjechaniu (symulacja: nowa sesja startuje z epoką 1, zapis niesie epokę gracza). */
+      resetTradeEraTo: (era: number): void => { setDiplomacyTradeEra(era); },
+      /** Diagnostyka: co faktycznie siedzi w slocie (stół, kontakty) — odróżnia „nie zapisano” od „odfiltrowano przy wczytaniu”. */
+      peekSlot: async (slot: string): Promise<Record<string, unknown>> => {
+        const sv: any = await loadFromLocal(slot);
+        return {
+          negotiationInSlot: (sv?.meta?.negotiationTable ?? []).length,
+          contactsInSlot: JSON.stringify(sv?.meta?.diplomaticContactEstablished ?? null),
+          contactsLive: Array.from(diplomaticContactEstablishedSet()),
+        };
       },
     };
 
@@ -30457,6 +31018,20 @@ async function boot(): Promise<void> {
             pack: diplomacyHandelSurowcePakietWielkosc(),
           };
         },
+        /** R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r2): diagnostyka bramki NNS gracza (prognoza skarbca/spichlerza) — tylko test. */
+        nnsDiag: () => ({
+          forecast: _nnsHumanForecast,
+          gate: nnsGateForPlayer().blokada,
+          komunikat: nnsGateForPlayer().komunikat,
+          treasury: ownerTreasury(ME()),
+          spichlerz: empireFoodStates.get(ME())?.zapasyPanstwa ?? null,
+        }),
+        /** R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r2): ustawia zapas spichlerza panstwa wlasciciela (bufor bramki NNS w tescie). */
+        setSpichlerzPanstwa: (ownerId: number, value: number): number => {
+          const st = empireFoodStates.get(ownerId);
+          if (st) st.zapasyPanstwa = Math.max(0, Math.round(value));
+          return empireFoodStates.get(ownerId)?.zapasyPanstwa ?? 0;
+        },
         /** Zaklada pierwsze miasto gracza (bramka awaitingFirstPlayerCity). */
         foundFirstCity: (): boolean => {
           if (!isAwaitingFirstPlayerCity()) return true;
@@ -30485,6 +31060,21 @@ async function boot(): Promise<void> {
             status: getDiploRelation(ai, ME()).status,
           };
         },
+        /** R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r3): ustawia liczbe obywateli pierwszego miasta wlasciciela (scenariusz 20 obywateli). Tylko test. */
+        setCityPopulation: (ownerId: number, n: number): number => {
+          const c = cities.find(x => x.ownerId === ownerId);
+          if (!c) return -1;
+          c.population = Math.max(1, Math.round(n));
+          return c.population;
+        },
+        /** R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r3): ustawia epoke wlasciciela (1=Kamien, 2=Braz) -- scenariusz „20 obywateli w Brazie”. Tylko test. */
+        setOwnerEra: (ownerId: number, era: number): number => applyOwnerEraFixtureForTest(ownerId, era),
+        /** R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r4): epoka wlasciciela w danej chwili (odczyt do asercji w chwili oferty). Tylko test. */
+        ownerEra: (ownerId: number): number => empireEpochForOwner(ownerId),
+        /** R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r4): diagnostyka podlogi epoki (start gry / start wlasciciela). Tylko test. */
+        eraFloorForTest: (ownerId: number): Record<string, number> => ({
+          gameStart: gameStartEra(), ownerStart: ownerStartEraByOwner.get(ownerId) ?? -1, now: empireEpochForOwner(ownerId),
+        }),
         /** SETUP zapasu: ustawia absolutny zapas surowca wlasciciela (zerowanie + kredyt w jednym miescie). */
         setStock: (ownerId: number, key: string, amount: number): number => {
           for (const c of cities) if (c.ownerId === ownerId && c.surowce) c.surowce[key] = 0;
@@ -30668,7 +31258,7 @@ async function boot(): Promise<void> {
           negotiationTable.splice(idx, 1);
           const atWar = getDiploRelation(entry.proposerOwnerId, entry.responderOwnerId).status === 'wojna';
           const result = resolvePlayerAcceptsAiPending(
-            negotiationToLegacyPending(entry), turn, _menuDifficulty, { atWar, hasTradeTech: ownerHasTradeTech },
+            negotiationToLegacyPending(entry), turn, _menuDifficulty, { atWar, hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(entry.proposerOwnerId, entry.responderOwnerId) },
           );
           applyProposalOutcome(entry.proposerOwnerId, entry.responderOwnerId, result, entry.payload, entry.actionId);
           refreshD1bHud();
@@ -30885,6 +31475,263 @@ async function boot(): Promise<void> {
             queued: marchExecQueue.includes(followerId),
           };
         },
+      };
+    }
+
+    // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (runda 4): hak pomiaru zgodnosci ksiegi z magazynem w REALNEJ grze
+    // (tylko ?civTest=1; zero wplywu bez parametru). Czysty odczyt: stan magazynu per wlasciciel, rekordy ksiegi ostatniego
+    // ticku, okno „pending”. `setRecording(false)` wylacza WYLACZNIE zapis do ksiegi (stan gry nietkniety) -- do testu
+    // „hash stanu z ksiega i bez ksiegi”. Uzywa tools/resource-ledger-live-measure.cjs.
+    if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
+      const plain = (t: ResourceLedgerTurn | undefined | null) => JSON.parse(JSON.stringify(t ?? { byResource: {} }));
+      (window as any).__ledgerTestDebug = {
+        snapshot: () => {
+          const owners = [...new Set(cities.map(c => c.ownerId))].sort((a, b) => a - b);
+          const stock: Record<string, Record<string, number>> = {};
+          const tick: Record<string, unknown> = {};
+          for (const o of owners) {
+            stock[o] = { ...ownerResourceStockAll(cities, o) };
+            tick[o] = plain(ledgerAuditLastTick?.get(o));
+          }
+          const pending: Record<string, unknown> = {};
+          for (const [o, t] of peekPendingLedger()) pending[o] = plain(t);
+          return { turn, tickSeq: ledgerAuditTickSeq, owners, stock, tick, pending, e3cLast: ledgerAuditE3cLast, e3cFires: ledgerAuditE3cFires };
+        },
+        /**
+         * R-WEB-TRADE-ROUTE-REMOVE-STOCK-FLOW-E3C-Q1 (tylko ?civTest=1, odczyt): aktywne trasy i dochod
+         * Pieniadza ze szlaku per wlasciciel (computeTradeRouteIncomeByCityBreakdown -- ta sama sciezka co tura).
+         */
+        tradeRoutesProbe: () => {
+          const ownerOfCity = new Map(cities.map(c => [c.id, c.ownerId] as const));
+          const br = computeTradeRouteIncomeByCityBreakdown(
+            tradeRoutes,
+            loadTradeRouteIncomeParams(data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0], _menuDifficulty),
+            wonderTradeRouteBonusForOwner,
+            targowiskoTradeRouteBonusForCity,
+          );
+          const incomeByOwner: Record<string, number> = {};
+          for (const [cid, v] of br.totalByCity) {
+            const o = ownerOfCity.get(cid);
+            if (o != null) incomeByOwner[o] = (incomeByOwner[o] ?? 0) + v;
+          }
+          return {
+            count: tradeRoutes.length,
+            routes: tradeRoutes.map(r => ({ ownerId: r.ownerId, toOwnerId: r.toOwnerId, medium: r.medium, dystans: r.dystans, status: r.status })),
+            incomeByOwner,
+          };
+        },
+        /**
+         * Tylko test (?civTest=1): wymusza JEDNA polaczona trase miedzy miastem ownerA a miastem ownerB
+         * (createTradeRoute, ta sama funkcja co refreshTradeRoutes). Trasa trafia do tradeRoutes i od
+         * nastepnego endTurn idzie realna sciezka tury. Zwraca null, gdy zadna para nie jest polaczona.
+         */
+        forceTradeRoute: (ownerA: number, ownerB: number): { routes: number } => {
+          const lo = Math.min(ownerA, ownerB);
+          const hi = Math.max(ownerA, ownerB);
+          const umowa = activeDeals.some(d => normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.UmowaSzlakow && d.strony[0] === lo && d.strony[1] === hi);
+          if (!umowa) {
+            activeDeals = [...activeDeals, { id: `trsf-test-${lo}-${hi}`, rodzaj: RodzajTraktatu.UmowaSzlakow, strony: [lo, hi], wygasaTura: null, zawartaTura: turn }];
+          }
+          recomputeTradeRoutesNow(false);
+          return { routes: tradeRoutes.filter(r => (r.ownerId === lo && r.toOwnerId === hi) || (r.ownerId === hi && r.toOwnerId === lo)).length };
+        },
+        setRecording: (on: boolean): boolean => { setLedgerRecordingEnabled(on); return isLedgerRecordingEnabled(); },
+        isRecording: (): boolean => isLedgerRecordingEnabled(),
+        pendingPeek: () => { const o: Record<string, unknown> = {}; for (const [k, t] of peekPendingLedger()) o[k] = plain(t); return o; },
+        /**
+         * SETUP sceny dla pomiaru (poza oknem pomiaru): budynki Cegielnia/Garncarnia/Mennica/Stolarnia/Spichlerz w pierwszym
+         * miescie wlasciciela, zapasy startowe, Warzelnia soli na heksie w poblizu. Zmiany stanu robione PRZED pierwszym
+         * snapshotem pomiaru (nie sa przeplywami ksiegi). Tylko ?civTest=1.
+         */
+        scenarioSeed: (ownerId: number): { cityId: string; warzelniaHex: string | null } | null => {
+          const city = cities.find(c => c.ownerId === ownerId);
+          if (!city) return null;
+          const built = cityBuilt.get(city.id) ?? [];
+          cityBuilt.set(city.id, built);
+          for (const b of ['cegielnia', 'garncarnia', 'mennica', 'stolarnia', 'spichlerz']) if (!built.includes(b)) built.push(b);
+          if (ownerId === ME()) player.zbadane.add('Waluta');
+          for (const c of cities) if (c.ownerId === ownerId && c.surowce) for (const k of Object.keys(c.surowce)) c.surowce[k] = 0;
+          for (const [k, v] of Object.entries({ glina: 3000, drewno: 3000, kamien: 500, sol: 40, zloto: 60, ruda: 80, ceramika: 200 })) {
+            creditOwnerResourceStock(cities, ownerId, k, v, 99999);
+          }
+          let warzelniaHex: string | null = null;
+          for (const h of Object.values(map.hexes)) {
+            const d = hexDistance(h.coords.q, h.coords.r, city.q, city.r);
+            if (d === 2 && !(h as { ulepszenia?: string[] }).ulepszenia?.length) {
+              (h as { ulepszenia?: string[]; ulepszenie?: string }).ulepszenia = ['warzelnia_soli'];
+              (h as { ulepszenia?: string[]; ulepszenie?: string }).ulepszenie = 'warzelnia_soli';
+              warzelniaHex = `${h.coords.q},${h.coords.r}`;
+              break;
+            }
+          }
+          return { cityId: city.id, warzelniaHex };
+        },
+        /**
+         * SETUP: zaklada miasto wskazanego wlasciciela AI (realne `foundCityAt` + `finalizeCityFounding`, wzorzec
+         * `ensureSecondCityForOwner`) w pierscieniu 8..30 od pierwszego miasta gracza -- potrzebne, bo w gole gry z
+         * `startNewGame`/`?playtest=mapa` AI nie ma miasta przez pierwsze tury, a pomiar umowy wymiany wymaga drugiej strony.
+         */
+        spawnOwnerCity: (ownerId: number): string | null => {
+          const anchor = cities.find(c => c.ownerId === ME());
+          if (!anchor || cities.some(c => c.ownerId === ownerId)) return cities.find(c => c.ownerId === ownerId)?.id ?? null;
+          for (let ring = 8; ring <= 30; ring++) {
+            for (let dq = -ring; dq <= ring; dq++) {
+              for (let dr = -ring; dr <= ring; dr++) {
+                if (Math.max(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr)) !== ring) continue;
+                const q = anchor.q + dq, r = anchor.r + dr;
+                const found = foundCityAt(q, r, ownerId, cities, map, 'Miasto Testowe AI', false, true);
+                if (!found) continue;
+                cities.push(found);
+                finalizeCityFounding(found, found.q, found.r);
+                seedCityOwnerDefaults(found);
+                if (!empireFoodStates.has(ownerId)) empireFoodStates.set(ownerId, freshEmpireFoodState());
+                if (!goldDeficitStates.has(ownerId)) goldDeficitStates.set(ownerId, freshGoldDeficitState());
+                return found.id;
+              }
+            }
+          }
+          return null;
+        },
+        /** Dostawa umowy CYKLICZNEJ REALNYM `applyCyclicDeliveryOutcome` (delivered=true; item/deal minimalne, bez wplywu na zapisane umowy). */
+        cyclicDeliver: (sellerOwnerId: number, buyerOwnerId: number, key: string, perTurn: number): { seller: number; buyer: number } => {
+          const item = { surowiecKey: key, pakietyPerTura: perTurn, sellerOwnerId, buyerOwnerId } as unknown as HandelSurowiecCyklicznyItem;
+          const deal = { id: 'ledger-test-deal' } as unknown as ActiveDeal;
+          applyCyclicDeliveryOutcome(deal, item, true, false, false, buildDiploTreasury());
+          return { seller: ownerResourceStockAll(cities, sellerOwnerId)[key] ?? 0, buyer: ownerResourceStockAll(cities, buyerOwnerId)[key] ?? 0 };
+        },
+        /** Przelew surowca miedzy wlascicielami REALNYM `transferBasketItems` (ta sama sciezka co umowa jednorazowa; ksiega w okno pending). */
+        trade: (fromOwnerId: number, toOwnerId: number, key: string, qty: number): { from: number; to: number } => {
+          transferBasketItems(fromOwnerId, toOwnerId, [{ typ: 'surowiec_ilosc', id: key, ilosc: qty } as BasketItem]);
+          return { from: ownerResourceStockAll(cities, fromOwnerId)[key] ?? 0, to: ownerResourceStockAll(cities, toOwnerId)[key] ?? 0 };
+        },
+      };
+    }
+
+    // R-WEB-UI-RESOURCE-SOURCE-LEDGER-REALPATH-TESTS-Q1: hak testu REALNEJ sciezki nowych zrodel ksiegi (tylko ?civTest=1).
+    // Kazda metoda wola PRAWDZIWA funkcje gry (nie reimplementacje); hak tylko przygotowuje scene i czyta stan.
+    // Uzywa go tools/resource-ledger-realpath-live-test.cjs.
+    if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
+      const plainT = (t: ResourceLedgerTurn | undefined | null) => JSON.parse(JSON.stringify(t ?? { byResource: {} }));
+      (window as any).__ledgerRealPathDebug = {
+        stock: (o: number): Record<string, number> => ({ ...ownerResourceStockAll(cities, o) }),
+        pending: (): Record<string, unknown> => { const o: Record<string, unknown> = {}; for (const [k, t] of peekPendingLedger()) o[k] = plainT(t); return o; },
+        resetPending: (): void => { resetPendingLedger(); },
+        creditStock: (o: number, key: string, amt: number): number => creditOwnerResourceStock(cities, o, key, amt, 999999),
+        setTreasury: (o: number, v: number): void => { setOwnerTreasury(o, v); },
+        firstCityId: (o: number): string | null => cities.find(c => c.ownerId === o)?.id ?? null,
+        cityOwner: (cityId: string): number | null => cities.find(c => c.id === cityId)?.ownerId ?? null,
+        firstCity: (o: number): { id: string; q: number; r: number } | null => { const c = cities.find(x => x.ownerId === o); return c ? { id: c.id, q: c.q, r: c.r } : null; },
+        /** Dar (jednostronny przelew) REALNYM executePnDealTransfer (ta sama sciezka co zaakceptowana oferta). */
+        gift: (fromOwnerId: number, toOwnerId: number, key: string, qty: number): void => {
+          executePnDealTransfer(fromOwnerId, toOwnerId, { giveItems: [{ typ: 'surowiec_ilosc', id: key, ilosc: qty } as BasketItem], receiveItems: [] } as unknown as ProposalPayload);
+        },
+        /** Wojskowa jednostka-szablon sklonowana na wskazany typ/wlasciciela (z opcjonalnym stockPaid). */
+        spawnUnit: (ownerId: number, typeId: string, q: number, r: number, stockPaid?: Record<string, number>): string | null => {
+          const template = units.find(u => !isCivilianUnit(u));
+          if (!template) return null;
+          const id = `ledgerrp-${ownerId}-${typeId}-${units.length}`;
+          units.push({ ...template, id, typeId, ownerId, q, r, inGarnizon: false, ...(stockPaid ? { stockPaid } : {}) } as RuntimeUnit);
+          syncUnitsRender();
+          return id;
+        },
+        /** Typ jednostki z kosztem surowcowym (key -> ilosc) i ewentualnie koszt rekrutacji; do wyboru scenariuszy. */
+        stockCostOf: (typeId: string): Record<string, number> => unitStockCost(data.units.find(u => u.Jednostka === typeId)),
+        unitTypesWithStockCost: (): Array<{ typeId: string; cost: Record<string, number> }> => data.units
+          .map(u => ({ typeId: String(u.Jednostka), cost: unitStockCost(u) }))
+          .filter(x => Object.keys(x.cost).length > 0),
+        recruitRefund: (cityId: string, typeId: string, ownerId: number): void => { cancelRecruitmentPurchase(cityId, typeId, 0, ownerId); },
+        disband: (unitId: string, ownerId: number): boolean => (ownerId === 0 ? disbandPlayerUnit(unitId) : disbandAiSupportUnit(unitId, ownerId)),
+        replace: (unitId: string, newTypeId: string): boolean => performUnitReplace(unitId, newTypeId, true),
+        replaceDiag: (unitId: string, newTypeId: string): { inTerritory: boolean; used: boolean; gate: string | null; typeId: string } | null => {
+          const u = units.find(x => x.id === unitId);
+          if (!u) return null;
+          return { inTerritory: isUnitInPlayerTerritory(u), used: u.replaceUsedThisTurn === true, gate: unitReplaceExecuteDeps(0, true).gateReason(u, newTypeId), typeId: u.typeId };
+        },
+        cession: (cityId: string, fromOwnerId: number, toOwnerId: number): boolean => transferCityByTreaty(cityId, fromOwnerId, toOwnerId),
+        annex: (csOwnerId: number, annexerId: number): void => { annexCityStateToOwner(csOwnerId, annexerId); },
+        rebel: (cityId: string): boolean => { const c = cities.find(x => x.id === cityId); if (!c) return false; transferCityToRebelFactionWithLedger(c); return true; },
+        /** Kapitulacja oblezenia REALNYM resolveSiegeSurrender (scena: miasto oznaczone jako oblegane przez `besiegerOwnerId`, wojna). */
+        siegeSurrender: (cityId: string, besiegerOwnerId: number): boolean => {
+          const c = cities.find(x => x.id === cityId);
+          if (!c) return false;
+          getDiploRelation(c.ownerId, besiegerOwnerId).status = 'wojna';
+          c.oblegane = true;
+          c.oblegajacyOwnerId = besiegerOwnerId;
+          resolveSiegeSurrender(cityId);
+          return true;
+        },
+        /** Lup z bitwy REALNYM applyMapBattleOutcome: atakujacy `winnerOwnerId` wygrywa, polegli = jednostki-widma typow `killedTypeIds` (poza `units`). */
+        loot: (winnerOwnerId: number, atkUnitId: string, killedTypeIds: string[], loserOwnerId: number): boolean => {
+          const atk = units.find(u => u.id === atkUnitId);
+          if (!atk) return false;
+          const template = units.find(u => !isCivilianUnit(u)) ?? atk;
+          const dead = killedTypeIds.map((typeId, i) => ({ ...template, id: `ledgerrp-dead-${i}`, typeId, ownerId: loserOwnerId, q: atk.q + 1, r: atk.r } as RuntimeUnit));
+          getDiploRelation(winnerOwnerId, loserOwnerId).status = 'wojna';
+          applyMapBattleOutcome([atk], dead, 'atakujacy', undefined, { battleQ: atk.q + 1, battleR: atk.r });
+          return true;
+        },
+        /** Scena oblezenia: miasto oznaczone jako oblegane przez `besiegerOwnerId`, wojna, jednostka oblegajacego obok miasta. */
+        startSiege: (cityId: string, besiegerOwnerId: number, unitCount = 12): boolean => {
+          const c = cities.find(x => x.id === cityId);
+          if (!c) return false;
+          getDiploRelation(c.ownerId, besiegerOwnerId).status = 'wojna';
+          c.oblegane = true;
+          c.oblegajacyOwnerId = besiegerOwnerId;
+          siegeBesiegerByCity.set(c.id, besiegerOwnerId);
+          const template = units.find(u => !isCivilianUnit(u));
+          if (!template) return false;
+          const nb = hexNeighborCoords(c.q, c.r).find(({ q, r }) => !!map.hexes[keyOf(q, r)] && !units.some(u => u.q === q && u.r === r) && !cities.some(x => x.q === q && x.r === r));
+          if (!nb) return false;
+          for (let i = 0; i < unitCount; i++) units.push({ ...template, id: `ledgerrp-besieger-${units.length}`, ownerId: besiegerOwnerId, q: nb.q, r: nb.r, inGarnizon: false } as RuntimeUnit);
+          syncUnitsRender();
+          return true;
+        },
+        siegeEngine: (cityId: string, unitId: string, ownerId: number): boolean => buildSiegeEngine(cityId, unitId, ownerId),
+        siegeEngineOptions: (cityId: string): Array<{ unitId: string; allowed: boolean; reason: string; costStock: Record<string, number>; costMoney: number }> => {
+          const c = cities.find(x => x.id === cityId);
+          return c ? siegeEngineOptions(c).map(o => ({ unitId: String(o.unit.Jednostka), allowed: !!o.allowed, reason: String((o as { reason?: unknown }).reason ?? ''), costStock: { ...o.costStock }, costMoney: o.costMoney })) : [];
+        },
+        /** Heks docelowy stadniny (terytorium gracza, bez zloza konia, pusty) i jego sasiad w terytorium gracza. */
+        stadninaHexes: (): { hexKey: string; neighborKey: string } | null => {
+          const nodes = buildAllTerritoryNodes();
+          for (const key of Object.keys(map.hexes)) {
+            const [qs, rs] = key.split(','); const q = Number(qs), r = Number(rs);
+            const h = map.hexes[key]!;
+            if (!isTerritoryHexOwnedBy(q, r, 0, nodes) || hexHasHorseDeposit(h as { nakladka?: Nakladka; zloze?: string })) continue;
+            if ((placedImprovements.get(key) ?? []).length > 0 || cities.some(c => c.q === q && c.r === r)) continue;
+            const nb = hexNeighborCoords(q, r).map(n => keyOf(n.q, n.r)).find(k => !!map.hexes[k] && isTerritoryHexOwnedBy(Number(k.split(',')[0]), Number(k.split(',')[1]), 0, nodes) && (placedImprovements.get(k) ?? []).length === 0);
+            if (nb) return { hexKey: key, neighborKey: nb };
+          }
+          return null;
+        },
+        /** Stadnina poza zlozem REALNYM commitBuildRequest (gracz); `neighborKey` dostaje wczesniej postawiona stadnine (warunek sasiedztwa). */
+        stadnina: (hexKey: string, neighborKey: string): boolean => {
+          const nb = placedImprovements.get(neighborKey) ?? [];
+          if (!nb.includes('stadnina')) placedImprovements.set(neighborKey, [...nb, 'stadnina'] as unknown as PlacedLayers);
+          commitBuildRequest({ hexKey, key: 'stadnina', kosztPraca: 0 } as unknown as ImprovementBuildRequest,
+            { removedImprovements: [], removesForest: false } as unknown as ImprovementBuildImpact);
+          return (placedImprovements.get(hexKey) ?? []).includes('stadnina');
+        },
+        /** Zapis/wczytanie REALNYMI buildSaveGameSnapshot/restoreGameFromSave; `mutate` pozwala usunac pole `resourceLedgerHistory` (stary zapis). */
+        saveRoundTrip: (dropLedgerField: boolean): { savedBytes: number; savedTurns: number; afterTurns: number } => {
+          const snap = JSON.parse(JSON.stringify(buildSaveGameSnapshot('ledger-realpath')));
+          const savedTurns = Array.isArray(snap.resourceLedgerHistory) ? snap.resourceLedgerHistory.length : -1;
+          const savedBytes = JSON.stringify(snap.resourceLedgerHistory ?? null).length;
+          if (dropLedgerField) delete snap.resourceLedgerHistory;
+          restoreGameFromSave(snap);
+          return { savedBytes, savedTurns, afterTurns: ledgerHistoryToSave().length };
+        },
+        /** Pamiec dziennika (wszyscy wlasciciele) vs pole REALNEGO zapisu (tylko ludzie). */
+        historyForSave: (): unknown => JSON.parse(JSON.stringify(ledgerHistoryToSave())),
+        historyBytes: (): number => JSON.stringify(ledgerHistoryToSave()).length,
+        savedHistory: (): unknown => JSON.parse(JSON.stringify(buildSaveGameSnapshot('ledger-size').resourceLedgerHistory ?? null)),
+        savedBytes: (): number => JSON.stringify(buildSaveGameSnapshot('ledger-size').resourceLedgerHistory ?? null).length,
+        historyN: (): number => readLedgerHistoryTurns(data.econParams, _menuDifficulty),
+        /** Wycinka lasu gracza: wpis stanu wyrebu (jak po kliku); plon liczy REALNY tick tury w runWorldEndTurn (tickHexClearing). */
+        startClearing: (hexKey: string, ownerId: number, turnsLeft: number, pracaPerTurn: number): void => {
+          hexClearingStates.set(hexKey, { turnsLeft, pracaPerTurn, ownerId });
+        },
+        turnNo: (): number => turn,
       };
     }
 
@@ -31702,6 +32549,53 @@ async function boot(): Promise<void> {
         unitCount: (oid: number): number => units.filter(u => u.ownerId === oid).length,
         /** Dosypuje złota graczowi (runner nie gra — bramka „Zakończ turę” gracza nie może zatrzymać pomiaru AI). */
         grantPlayerGold: (n: number): void => { const ps = playerStateByHuman.get(ME()); if (ps) ps.skarbiec += n; },
+        // R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1 (r3): hooki pomiarowe bramki gracza (TYLKO ?civTest=1).
+        // Surowy odczyt + ustawienie STANU wyjściowego scenariusza (saldo, podział podatków, racje); logikę bramki liczy gra.
+        gateInfo: () => {
+          const g = nnsGateForPlayer();
+          const f = _nnsHumanForecast;
+          return {
+            gate: g,
+            canEnd: canPlayerInitiateEndTurn(),
+            turn,
+            forecast: f ? { ...f } : null,
+            treasury: playerStateByHuman.get(ME())?.skarbiec ?? 0,
+            granary: empireFoodStates.get(ME())?.zapasyPanstwa ?? 0,
+            podatekPunkty: _nnsPodatekPunkty,
+            podatekZysk: _nnsPodatekZysk,
+            racjeZysk: _nnsRacjeZysk,
+            autoSpichlerzDelta: _nnsAutoSpichlerzDelta ?? null,
+            taxSteps: _nnsTaxStepDeltas.slice(),
+          };
+        },
+        setPlayerTreasury: (v: number): void => { const ps = playerStateByHuman.get(ME()); if (ps) ps.skarbiec = v; markCityStateDirty(); updateHud(); },
+        setPlayerGranary: (v: number): void => { const st = empireFoodStates.get(ME()); if (st) st.zapasyPanstwa = v; markCityStateDirty(); updateHud(); },
+        getTaxSplit: () => ({ ...(ownerDefaultPodzialHandlu.get(ME()) ?? DEFAULT_PODZIAL_HANDLU) }),
+        setTaxSplit: (p: number, n: number, l: number): { procentPieniadz: number; procentNauka: number; procentLuksus: number } =>
+          applyPodzialHandluGracza(p, n, l),
+        setAutoWyz: (on: boolean): number => {
+          let k = 0;
+          for (const c of cities) if (isMe(c.ownerId)) { c.autoWyzywienie = on; k++; }
+          markCityStateDirty();
+          updateHud();
+          return k;
+        },
+        setRationAll: (level: number): number => {
+          let k = 0;
+          for (const c of cities) if (isMe(c.ownerId)) { c.poziomRacji = level; k++; }
+          markCityStateDirty();
+          updateHud();
+          return k;
+        },
+        cityRations: () => cities.filter(c => isMe(c.ownerId)).map(c => ({ id: c.id, poziomRacji: c.poziomRacji ?? null, auto: c.autoWyzywienie === true })),
+        /** Stan miast gracza (racje) i podziału — do testu braku efektów ubocznych projekcji. */
+        gateStateFingerprint: (): string => JSON.stringify({
+          r: cities.filter(c => isMe(c.ownerId)).map(c => [c.id, c.poziomRacji ?? null, c.procentRozwoj ?? null]),
+          s: ownerDefaultPodzialHandlu.get(ME()) ?? null,
+          t: playerStateByHuman.get(ME())?.skarbiec ?? 0,
+          g: empireFoodStates.get(ME())?.zapasyPanstwa ?? 0,
+        }),
+        forceGateRecompute: (): void => { markCityStateDirty(); updateHud(); },
       };
     }
 
@@ -34768,6 +35662,26 @@ async function boot(): Promise<void> {
       return leaderNameFromPool(civ, idx, era);
     }
 
+    /**
+     * R-WEB-BATTLE-WEAKENED-HUNGER-DEFICIT-WARNING-Q1: ostrzeżenie w oknie przed bitwą o karze
+     * głodu wojska / deficytu Złota strony (TYLKO WYŚWIETLANIE). Flagi te same co w
+     * runtimeToBattleUnit (isArmyHungry/isGoldDeficit && !cywil); mnożniki z econ-params --
+     * te same wartości, które dostaje silnik (buildEmpireFoodParams / buildGoldDeficitParams).
+     */
+    function preBattleWeakenedForRoster(roster: RuntimeUnit[]): WeakenedNote | undefined {
+      const ownerId = roster[0]?.ownerId ?? 0;
+      const hasFighters = roster.some(u => !isCivilianUnit(u));
+      const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
+      const gdParams = buildGoldDeficitParams(data.econParams, _menuDifficulty);
+      return buildWeakenedNote({
+        hungry: hasFighters && isArmyHungry(ownerId),
+        goldDeficit: hasFighters && isGoldDeficit(ownerId),
+        glodWojskaMult: efParams.glodWojskaStatMult,
+        zlotoDeficytMult: gdParams.zlotoDeficytStatMult,
+        barbarian: isBarbarian(ownerId),
+      });
+    }
+
     function preBattleSideFromRoster(roster: RuntimeUnit[], title: string, civLabel: string): PreBattleInfo['atakujacy'] {
       const ownerId = roster[0]?.ownerId ?? 0;
       return {
@@ -34783,6 +35697,7 @@ async function boot(): Promise<void> {
         // dostawal portret/ikone Grecji zamiast wlasnego sygnetu. Flaga isBarbarian ma
         // pierwszenstwo nad civId w renderze (preBattle.ts / battleScene.ts).
         isBarbarian: isBarbarian(ownerId),
+        oslabienie: preBattleWeakenedForRoster(roster),
         units: roster.map(preBattleUnitFromRuntime),
       };
     }
@@ -35165,8 +36080,16 @@ async function boot(): Promise<void> {
       const playerWon =
         (winner === 'atakujacy' && atkRoster[0]?.ownerId === 0)
         || (winner === 'obronca' && defRoster[0]?.ownerId === 0);
-      const loot = applyMapBattleOutcome(atkRoster, defRoster, winner, survivors, opts);
+      // LINIA-UNICESTWIENIE: wynik applyPostBattleMap (liczniki) przechwycony dla podsumowania.
+      const pbHolder: { res?: PostBattleMapResult } = {};
+      const loot = applyMapBattleOutcome(atkRoster, defRoster, winner, survivors, {
+        ...opts,
+        onPostBattleResult: r => { pbHolder.res = r; },
+      });
+      const pbRes = pbHolder.res;
       const summaryData = buildPostBattleSummary({
+        annihilatedAtkUnits: pbRes?.attackerAnnihilatedUnitCount,
+        annihilatedDefUnits: pbRes?.defenderAnnihilatedUnitCount,
         winner: winner as BattleSummaryWinner,
         // R-BITWA-ETYKIETA-TOZSAMOSC-STRONY-Q1 (runda 3, obrona -- zarzut Evaluatora 3):
         // TO JEST WIDOK ZE ZGLOSZENIA WLASCICIELA ("w wyniku bitwy jest informacja
@@ -35566,7 +36489,9 @@ async function boot(): Promise<void> {
       // attack this same turn -- must resolve the battle. Separate reason from the
       // garrison lock (defenderLockedByGarnizon) -- different message and different
       // button visual state in preBattle.ts (visible but greyed out, not hidden).
-      const retreatExhaustedThisTurn = defRosterRef.some(u => u.retreatedThisTurn === true);
+      // R-WEB-BATTLE-RETREAT-LIMIT-3-PER-TURN-THEN-DESTROYED-Q1: licznik odwrotow armii w tej turze
+      // (limit odwrot.max_na_ture = 3). Wyczerpany -> przycisk "Wycofaj" wyszarzony z powodem.
+      const retreatExhaustedThisTurn = retreatBudgetExhausted(defRosterRef);
 
       const pbInfo: PreBattleInfo = {
         atakujacy: preBattleSideFromRoster(atkRosterRef, atkSideTitle, atkCivLabel),
@@ -35843,7 +36768,7 @@ async function boot(): Promise<void> {
             // jednostki w tej samej turze (patrz RuntimeUnit.retreatedThisTurn).
             // / EN: mark the whole defending roster "retreated this turn" -- blocks a
             // further retreat on the next attack against these units this same turn.
-            for (const u of defRosterRef) u.retreatedThisTurn = true;
+            recordRetreatOnRoster(defRosterRef);
             showHintMessage('Wycofano się z bitwy.', 3000);
           }
           finishIncomingBattleUi();
@@ -35893,6 +36818,8 @@ async function boot(): Promise<void> {
         lossDefPct?: number;
         /** Event-log identity for the radius-1 rosters resolved this round. */
         battleEventLog?: BattleEventLog;
+        /** LINIA-UNICESTWIENIE: wynik applyPostBattleMap (liczniki unicestwienia) dla podsumowania. */
+        onPostBattleResult?: (res: PostBattleMapResult) => void;
         battleQ?: number;
         battleR?: number;
         atkStart?: Map<string | number, { q: number; r: number }>;
@@ -35983,6 +36910,14 @@ async function boot(): Promise<void> {
         units,
         map,
         cities,
+        // R-WEB-BATTLE-RETREAT-LIMIT-3-PER-TURN-THEN-DESTROYED-Q1: obrona wyczerpala limit
+        // odwrotow w tej turze (garnizon i miasto poza tym limitem -- bez zmian).
+        defRetreatBudgetExhausted: !cityOnHex
+          && !allDefendersFortifiedInGarnizon(defRoster)
+          && retreatBudgetExhausted(defRoster),
+        // R-WEB-BATTLE-RETREAT-LIMIT-3-PER-TURN-THEN-DESTROYED-Q1: lustrzany limit dla atakujacego
+        // (przegrana atakujacego po trzech odwrotach w tej turze = unicestwienie armii).
+        atkRetreatBudgetExhausted: !cityOnHex && retreatBudgetExhausted(atkRoster),
         battleQ,
         battleR,
         atkAnchor: atkRoster[0]!,
@@ -36006,6 +36941,14 @@ async function boot(): Promise<void> {
         cityOnBattleHex: cityOnHex,
         holdPositionAfterWin: fortifiedCaptureBlocked,
       });
+      opts?.onPostBattleResult?.(postBattleRes);
+      // Komunikat dla gracza: swoja armia (obrona lub atak) -> ARMIA_UNICESTWIONA; wroga -> wariant AI.
+      if (postBattleRes.defenderAnnihilatedByRetreatLimit || postBattleRes.attackerAnnihilatedByRetreatLimit) {
+        const playerArmyDestroyed = postBattleRes.defenderAnnihilatedByRetreatLimit
+          ? defRoster.some(u => u.ownerId === 0)
+          : atkRoster.some(u => u.ownerId === 0);
+        showHintMessage(playerArmyDestroyed ? ARMIA_UNICESTWIONA_KOMUNIKAT : ARMIA_WROGA_UNICESTWIONA_KOMUNIKAT, 6000);
+      }
       // R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1: odwrot ocalalych (pole) o 2 heksy to
       // przemieszczenie wieloheksowe -- odkrycie mgly gracza wzdluz drogi (heks bitwy -> cel).
       for (const rid of postBattleRes.retreatedTwoHexIds) {
@@ -36106,9 +37049,13 @@ async function boot(): Promise<void> {
               const battleLootCap = ownerResourceCap(
                 cities, cityBuilt, winOid, data, _menuDifficulty, empireEpochForOwner(winOid),
               );
+              // R-WEB-UI-RESOURCE-SOURCE-LEDGER-UI-AND-REST-Q1 (partia 3c): łup w księdze (różnica magazynu zwycięzcy, okno pending).
+              const ledgerLootBefore = snapshotOwnersStock([winOid], o => ownerResourceStockAll(cities, o));
               for (const [key, amt] of Object.entries(battleLoot.resources)) {
                 if (amt > 0) creditOwnerResourceStock(cities, winOid, key, amt, battleLootCap);
               }
+              recordOwnersStockDeltaToPending(ledgerLootBefore, o => ownerResourceStockAll(cities, o), 'lup-bitwy',
+                { kind: 'lup_bitwy', label: 'Łup z bitwy' });
             }
           }
         }
@@ -36739,7 +37686,10 @@ async function boot(): Promise<void> {
       const wonderWatchAnnex = beginWonderTransferWatch(); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
       for (const city of csCities) {
         stampCityFounderOnCapture(city, csOwnerId); // R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1
+        const ledgerAnnexBefore = snapshotOwnersStock([csOwnerId, annexerId], o => ownerResourceStockAll(cities, o));
         city.ownerId = annexerId;
+        recordOwnersStockDeltaToPending(ledgerAnnexBefore, o => ownerResourceStockAll(cities, o), `wchloniecie-miasta|${city.id}`,
+          o => (o === annexerId ? { kind: 'przejecie_miasta', label: 'Przyłączenie miasta-państwa' } : { kind: 'przejecie_miasta', label: 'Oddanie miasta' }));
         // R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1: to samo gaszenie oznaczenia co na
         // ścieżkach zbrojnych — jedna funkcja, żeby ścieżki nie rozłączyły się przy kolejnej
         // zmianie (przed tym tematem TYLKO ta ścieżka w ogóle gasiła flagę).
@@ -37300,10 +38250,12 @@ async function boot(): Promise<void> {
       const assets: PeaceAsset[] = [];
       const gold = Math.floor(buildDiploTreasury().getPieniadze(loserId));
       if (gold > 0) assets.push({ kind: 'zloto', id: 'zloto', amount: gold, pn: diplomacyPnZloto(gold) });
+      // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r4 (zarzut Evaluatora 2): epoka UMOWY pary, nie gracza.
+      const payEra = dealTradeEraForOwners(loserId, winnerId);
       for (const key of Object.keys(diplomacyHandelSurowceCatalog())) {
-        const qty = diplomacyNormalizeSurowiecIlosc(key, ownerResourceStock(loserId, key));
+        const qty = diplomacyNormalizeSurowiecIlosc(key, ownerResourceStock(loserId, key), undefined, payEra);
         if (qty <= 0) continue;
-        const pn = diplomacyPnSurowiecIlosc(key, qty);
+        const pn = diplomacyPnSurowiecIlosc(key, qty, payEra);
         if (pn != null && pn > 0) assets.push({ kind: 'surowiec_ilosc', id: key, amount: qty, pn });
       }
       for (const w of diploMiastaWycenaDla(loserId)) {
@@ -37939,6 +38891,14 @@ async function boot(): Promise<void> {
       return plan.ok ? null : plan.reason;
     }
 
+    /** Bunt miasta: zmiana właściciela na frakcję rebeliantów + księga „Skąd zapasy” (wspólne dla pętli tury i testu realnej ścieżki). */
+    function transferCityToRebelFactionWithLedger(city: City): void {
+      const ledgerRebelBefore = snapshotOwnersStock([city.ownerId, REBEL_FACTION_OWNER_ID], o => ownerResourceStockAll(cities, o));
+      city.ownerId = REBEL_FACTION_OWNER_ID;
+      recordOwnersStockDeltaToPending(ledgerRebelBefore, o => ownerResourceStockAll(cities, o), `bunt-miasta|${city.id}`,
+        o => (o === REBEL_FACTION_OWNER_ID ? { kind: 'przejecie_miasta', label: 'Bunt miasta (przejęte)' } : { kind: 'przejecie_miasta', label: 'Bunt miasta (utrata)' }));
+    }
+
     function transferCityByTreaty(cityId: string, fromOwnerId: number, toOwnerId: number): boolean {
       const city = cities.find(c => c.id === cityId);
       if (!city) {
@@ -37970,7 +38930,10 @@ async function boot(): Promise<void> {
       }
       const wonderWatchCession = beginWonderTransferWatch(); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
       stampCityFounderOnCapture(city, fromOwnerId); // R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1
+      const ledgerCessionBefore = snapshotOwnersStock([fromOwnerId, toOwnerId], o => ownerResourceStockAll(cities, o));
       city.ownerId = toOwnerId;
+      recordOwnersStockDeltaToPending(ledgerCessionBefore, o => ownerResourceStockAll(cities, o), `cesja-miasta|${city.id}`,
+        o => (o === toOwnerId ? { kind: 'przejecie_miasta', label: 'Cesja miasta (otrzymane)' } : { kind: 'przejecie_miasta', label: 'Cesja miasta (oddane)' }));
       settleWonderTransfer(wonderWatchCession);
       seedCityOwnerDefaults(city);
       applyLiveSafeRationForCity(city.id);
@@ -38046,6 +39009,7 @@ async function boot(): Promise<void> {
       eraForOwnerId: empireEpochForOwner,
       civIdForOwner: civTypeForOwner,
       isCityStateForOwner: (ownerId: number) => isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
+      oslabienieForRoster: preBattleWeakenedForRoster,
       lookupUnitDef,
       runtimeToBattleUnit,
       fortifyScaledDefFor: combatPowerScaledDefFor,
@@ -38749,6 +39713,7 @@ async function boot(): Promise<void> {
         wersja: SAVE_VERSION,
         tura: turn,
         seed: _gameSeed,
+        resourceLedgerHistory: ledgerHistoryToSave(ownerId => isHuman(ownerId)), // R-WEB-UI-...-UI-AND-REST-Q1 (partia 3b): dziennik N tur
         units: units.slice(),
         cities: cities.slice(),
         exploredByHuman: exploredByHumanSave,
@@ -39519,11 +40484,58 @@ async function boot(): Promise<void> {
       }
     }
 
+    /** R-WEB-UI-END-TURN-BLOCK-EVENT-Q1: wydarzenie-blokada dla bieżącej tury albo null.
+     * Bez próby gracza wczesny null (bramka nie jest liczona w każdym zbieraniu wydarzeń). */
+    function nnsEndTurnBlockEvent(): SidePanelEvent | null {
+      if (nnsEndTurnBlockAttemptTurn === null) return null;
+      const g = nnsGateForPlayer();
+      if (!g.blokada) nnsEndTurnBlockAttemptTurn = null;
+      const podatekTeraz = (ownerDefaultPodzialHandlu.get(ME()) ?? DEFAULT_PODZIAL_HANDLU).procentPieniadz;
+      return endTurnBlockEventOf({
+        blokada: g.blokada,
+        komunikat: g.komunikat,
+        turn,
+        attemptTurn: nnsEndTurnBlockAttemptTurn,
+        zasob: g.zasob,
+        propozycjaPunkty: g.propozycjaPodatku ? g.propozycjaPodatku.punktyProcentowe : null,
+        podatekTeraz,
+      });
+    }
+
+    /** R-WEB-UI-END-TURN-BLOCK-EVENT-Q1: zapisuje próbę zakończenia tury zablokowaną przez NNS i odświeża panel. */
+    function noteEndTurnBlockedByNns(): void {
+      nnsEndTurnBlockAttemptTurn = turn;
+      refreshD1bHud();
+    }
+
+    /** R-WEB-UI-END-TURN-BLOCK-EVENT-Q1: akcja przycisku karty blokady. „Zwiększ podatek” ustawia
+     * podatek na proponowaną wartość (ta sama podstawa podziału co suwak), bramka sama się odświeża. */
+    function handleEndTurnBlockButton(act: string): void {
+      if (act === END_TURN_BLOCK_ACT_OPEN_TAX) { openEmpireDetailFromHud('econ-skarbiec'); return; }
+      // Sekcja 'spichlerz' = blok racji (empirePanelSectionMap: 'zywnosc' nie jest sekcją panelu).
+      if (act === END_TURN_BLOCK_ACT_OPEN_FOOD) { openEmpireDetailFromHud('spichlerz'); return; }
+      if (act !== END_TURN_BLOCK_ACT_TAX_RAISE) return;
+      const p = nnsGateForPlayer().propozycjaPodatku;
+      if (!p) return;
+      const cur = ownerDefaultPodzialHandlu.get(ME()) ?? DEFAULT_PODZIAL_HANDLU;
+      applyPodzialHandluGracza(cur.procentPieniadz + p.punktyProcentowe, cur.procentNauka - p.punktyProcentowe, cur.procentLuksus);
+      refreshD1bHud();
+    }
+
+    /** Jedyna ścieżka zapisu podziału podatków gracza (suwak/hook testowy i przycisk karty blokady). */
+    function applyPodzialHandluGracza(p: number, n: number, l: number): { procentPieniadz: number; procentNauka: number; procentLuksus: number } {
+      const s = normalizePodzialHandlu({ procentPieniadz: p, procentNauka: n, procentLuksus: l });
+      ownerDefaultPodzialHandlu.set(ME(), s);
+      markCityStateDirty();
+      updateHud();
+      return s;
+    }
+
     /** R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1: bramka skarbca/spichlerza dla fotela gracza (tury ≥ 11). */
     function nnsGateForPlayer(): NnsGateResult {
       refreshLiveEmpireRates(); // dirty-gated: przelicza tylko po zmianie stanu ekonomii
       const f = _nnsHumanForecast;
-      if (!f) return { blokada: false, komunikat: '', dzwignie: [] };
+      if (!f) return { blokada: false, komunikat: '', dzwignie: [], zasob: null, prognoza: null, propozycjaPodatku: null, automatPoprawil: false, niewystarczajace: false };
       // Zarzut 4 (Evaluator): obecne salda czytane NA ŻYWO (cache dirty-gated mógłby mieć stare
       // saldo po grantGold/transferze złota bez markCityStateDirty). Z cache zostaje tylko DELTA
       // prognozy (netto tury), która zależy wyłącznie od ekonomii.
@@ -39536,7 +40548,25 @@ async function boot(): Promise<void> {
         spichlerzObecny: spLive,
         spichlerzPo: spLive + (f.spichlerzPo - f.spichlerzObecny),
       };
-      const levers: NnsEndTurnLevers = { podatekSkarbiec: _nnsPodatekZysk, suwakZywnosc: _nnsRacjeZysk };
+      const levers: NnsEndTurnLevers = {
+        podatekSkarbiec: _nnsPodatekZysk,
+        suwakZywnosc: _nnsRacjeZysk,
+        podatekPunkty: _nnsPodatekPunkty,
+        // r3 (C): propozycja podatku krokami 10% z projekcji (skarbiec po turze = żywy skarbiec + delta prognozy + delta kroku).
+        ...(_nnsTaxStepDeltas.length > 0
+          ? {
+            prognozaPoPodatku: (pkt: number): number => {
+              let d = _nnsTaxStepDeltas[_nnsTaxStepDeltas.length - 1]!;
+              for (const st of _nnsTaxStepDeltas) { if (st.pkt >= pkt) { d = st; break; } }
+              return live.skarbiecPo + d.delta;
+            },
+          }
+          : {}),
+        // Dodatek 2: reakcja automatu (Auto-Żywienie) liczona na żywym stanie spichlerza, tak jak `live`.
+        ...(_nnsAutoSpichlerzDelta !== undefined
+          ? { automat: { spichlerzPo: live.spichlerzPo + _nnsAutoSpichlerzDelta } }
+          : {}),
+      };
       return decideEndTurnGate(live, _nnsZyskSkarbiec, _nnsZyskSpichlerz, levers);
     }
 
@@ -39639,6 +40669,7 @@ async function boot(): Promise<void> {
       // R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1: komunikat co zmienić (kwota i zasób).
       const nnsHint = nnsGateForPlayer();
       if (nnsHint.blokada) {
+        noteEndTurnBlockedByNns();
         showHintMessage(nnsHint.komunikat, 6000);
         return;
       }
@@ -39745,7 +40776,7 @@ async function boot(): Promise<void> {
           // wycofania obrońcy — na nową turę znów może się wycofać raz.
           // / EN: reset the defender's "already retreated" lock — a new turn grants
           // one fresh retreat again.
-          if (u.retreatedThisTurn) u.retreatedThisTurn = false;
+          resetRetreatCountOfUnit(u);
         }
         turn++;
         chronicleTickEmpireSizes(); // R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1
@@ -39861,42 +40892,11 @@ async function boot(): Promise<void> {
             data.econParams as unknown as Parameters<typeof loadTradeRouteParams>[0],
             _menuDifficulty,
           );
-          // Handel E3c (PYTANIE 53=B, Maciej 2026-07-25): przepływ ILOŚCIOWY surowca
-          // (braz/zelazo/cegla — patrz TRADE_ROUTE_STOCK_FLOW_KEYS) przez aktywne trasy,
-          // NIEZALEŻNY od grantu dostępu wyżej (ten zostaje boolean-bramką jednostek).
-          // Surowiec REALNIE ubywa nadawcy i przybywa odbiorcy w puli PAŃSTWA (ta sama
-          // pula co koszt_surowce budynków, building-stock-cost.ts) — dzięki temu np.
-          // dowieziona Cegła faktycznie zasila budowę, nie tylko "odblokowuje" ją.
-          try {
-            const tradeFlowParams = loadTradeRouteResourceFlowParams(
-              data.econParams as unknown as Parameters<typeof loadTradeRouteResourceFlowParams>[0],
-              _menuDifficulty,
-            );
-            const ownerStockForTradeFlow = (ownerId: number, key: TradeRouteStockFlowResourceKey): number =>
-              ownerResourceStockAll(cities, ownerId)[key] ?? 0;
-            const tradeFlows = computeTradeRouteResourceFlow(tradeRoutes, ownerStockForTradeFlow, tradeFlowParams);
-            for (const flow of tradeFlows) {
-              deductBuildingStockCostAcrossCities(cities, flow.fromOwnerId, { [flow.resourceKey]: flow.amount });
-              // P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO (2026-08-09): audyt call-site'ów
-              // creditOwnerResourceStock bez cap — ten leci PRZED advanceCityEconomy/
-              // reconcileOwnerResourceCaps w tej samej turze, więc nadwyżka i tak zostałaby
-              // ścięta na końcu ticku; cap dołożony tu defensywnie (spójnie z resztą), żeby
-              // nie polegać na kolejności wywołań w przyszłych zmianach.
-              // P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): epoka ODBIORCY (flow.toOwnerId
-              // -- ten sam ownerId co creditOwnerResourceStock niżej) -- bez tego cap byłby
-              // zaniżony od epoki 2 wzwyż i surowiec mógłby zniknąć zamiast dotrzeć do odbiorcy.
-              // EN: RECEIVER's (flow.toOwnerId, same ownerId as creditOwnerResourceStock below)
-              // epoch -- otherwise the cap would be too low from epoch 2 onward and the resource
-              // could vanish instead of reaching the recipient.
-              const tradeFlowCap = ownerResourceCap(
-                cities, cityBuilt, flow.toOwnerId, data, _menuDifficulty,
-                empireEpochForOwner(flow.toOwnerId),
-              );
-              creditOwnerResourceStock(cities, flow.toOwnerId, flow.resourceKey, flow.amount, tradeFlowCap);
-            }
-          } catch (eTradeFlow) {
-            console.error('[Handel] Blad przeplywu ilosciowego surowca przez trase:', eTradeFlow);
-          }
+          // Handel E3c USUNIETY (decyzja ABC 2026-11-14/15, #311/#321, wariant A): szlak handlowy
+          // NIE przesuwa zapasow zadnej strony. Zostaje: dochod ze szlaku (premia Pieniadza, bonus
+          // morski/Targowisko/cud) i boolean-grant dostepu do jednostek (blok wyzej).
+          // Funkcje computeTradeRouteResourceFlow / loadTradeRouteResourceFlowParams usuniete z trade-routes.ts
+          // (martwy kod po E3c; testy asercjonuja ich nieobecnosc, bez wywolania w grze).
           const tradeIncomeParams = loadTradeRouteIncomeParams(
             data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
             _menuDifficulty,
@@ -40000,6 +41000,15 @@ async function boot(): Promise<void> {
             (oid: number) => effectiveGameDifficultyForOwner(oid),
             stateAdmByOwner,
           );
+          // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (partia 2b): pobory poza tickiem (budowa, rekrutacja)
+          // z okna pending wchodzą do rekordu tej tury; okno czyszczone.
+          drainPendingLedgerInto(econ.resourceLedgerByOwner);
+          // Tylko odczyt dla haka testowego ?civTest=1 (__ledgerTestDebug): referencja do rekordów BIEŻĄCEGO ticku
+          // (późniejsze zapisy utrzymania/obywateli trafiają do tej samej Mapy) + licznik ticków. Zero wpływu na stan gry.
+          ledgerAuditLastTick = econ.resourceLedgerByOwner; ledgerAuditTickSeq++;
+          // R-WEB-UI-RESOURCE-SOURCE-LEDGER-UI-AND-REST-Q1 (partia 4): pamięć N tur dla karty „Skąd zapasy”
+          // (tylko odczyt po stronie UI; referencja do mapy tego ticku, N z econ-params). Zero wpływu na stan.
+          commitLedgerHistoryTick(econ.resourceLedgerByOwner, readLedgerHistoryTurns(data.econParams, _menuDifficulty));
           pendingManualWorkTaxByOwner.clear();
           powerSnapshotsForTurn = buildPowerSnapshotsForTurn(econ);
           refreshObjectivePowerCache();
@@ -40350,9 +41359,12 @@ async function boot(): Promise<void> {
               const drewnoCap = ownerResourceCap(
                 cities, cityBuilt, ownerId, data, _menuDifficulty, empireEpochForOwner(ownerId),
               );
-              creditOwnerResourceStock(
+              const wycinkaGot = creditOwnerResourceStock(
                 cities, ownerId, 'drewno', drewnoCredit, drewnoCap,
               );
+              // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (runda 4): plon wyrębu gracza w księdze (ta sama tura ticku).
+              recordLedgerFlow(ledgerTurnForOwner(econ.resourceLedgerByOwner, ownerId), 'drewno', `wycinka|${ownerId}`,
+                { kind: 'wycinka', label: 'Wycinka lasu' }, wycinkaGot);
               // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: komunikat „Wycinka: +N Drewna” usunięty
               // (szum bez decyzji gracza). Zbiór drewna (creditOwnerResourceStock) bez zmian.
             }
@@ -40524,7 +41536,11 @@ async function boot(): Promise<void> {
               if (hResUpkeep && Object.keys(hResUpkeep).length > 0) {
                 const poolBefore = ownerResourceStockAll(cities, hOid);
                 const missingRes = missingStockFor(poolBefore, hResUpkeep);
-                deductBuildingStockCostAcrossCities(cities, hOid, hResUpkeep);
+                // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (partia 2): ten sam odjęcie + zapis do księgi tury.
+                const hTakenRes = deductBuildingStockCostAcrossCities(cities, hOid, hResUpkeep);
+                recordTakenToLedger(econ.resourceLedgerByOwner.get(hOid), hTakenRes, upkeepLedgerParts(
+                  hOid, econ.resourceUpkeepBuildingsByOwner.get(hOid), econ.resourceUpkeepUnitsByOwner.get(hOid),
+                ));
                 if (Object.keys(missingRes).length > 0) {
                   console.warn(
                     '[Ekonomia] Brak surowców na utrzymanie budynków: ' +
@@ -40572,7 +41588,10 @@ async function boot(): Promise<void> {
               }
               const aiResUpkeep = econ.resourceUpkeepByOwner.get(oid);
               if (aiResUpkeep && Object.keys(aiResUpkeep).length > 0) {
-                deductBuildingStockCostAcrossCities(cities, oid, aiResUpkeep);
+                const aiTakenRes = deductBuildingStockCostAcrossCities(cities, oid, aiResUpkeep);
+                recordTakenToLedger(econ.resourceLedgerByOwner.get(oid), aiTakenRes, upkeepLedgerParts(
+                  oid, econ.resourceUpkeepBuildingsByOwner.get(oid), econ.resourceUpkeepUnitsByOwner.get(oid),
+                ));
               }
               // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: parytet gracz/AI — publikuj rozbicie dla
               // KAŻDEGO ownera (nie tylko gracz=0), ten sam wzorzec co linia wyżej.
@@ -40590,6 +41609,10 @@ async function boot(): Promise<void> {
               // (nnsAiPreTickBalance, wywołane przed advanceCityEconomy). Tu tylko rejestr pomiarowy:
               // skarbiec po bankowaniu i surowy spichlerz (przed klamrą do 0) tej tury.
               nnsRecordPostBank(oid, aiSkarb);
+              // R-WEB-NNS-AI-TURN2-NEGATIVE-TREASURY-Q1: dług AI, którego nie da się pokryć dźwigniami (np. 1 miasto,
+              // utrzymanie > dochód przy podatku 100% i bez jednostek poza obrońcą), nie narasta z tury na turę:
+              // skarbiec AI zamknięty w 0 (tylko owner z `aiNnsUncoveredOwners`; reszta bankowania bez zmian).
+              if (aiNnsUncoveredOwners.has(oid) && aiSkarb < 0) aiSkarb = 0;
               aiSkarbiecByOwner.set(oid, aiSkarb);
 
               // Pula Nauki AI — symetryczna z graczem (totalNauka z ekonomii miast) + bonus trudności.
@@ -40856,7 +41879,10 @@ async function boot(): Promise<void> {
                   citizenUpkeepEmpireStock(ownerId),
                 );
                 if (Object.keys(v.deductions).length > 0) {
-                  deductBuildingStockCostAcrossCities(cities, ownerId, v.deductions);
+                  const citTakenRes = deductBuildingStockCostAcrossCities(cities, ownerId, v.deductions);
+                  recordTakenToLedger(
+                    econ.resourceLedgerByOwner.get(ownerId), citTakenRes, citizenLedgerParts(ownerId, v.deductions),
+                  );
                 }
                 citizenUpkeepDrainCache.set(ownerId, v);
                 // N1 runda 4: publikuj RÓWNOLEGLE do mapy kluczowanej OWNEREM (przetrwa
@@ -41179,7 +42205,7 @@ async function boot(): Promise<void> {
                   markCityRebellionStarted(city);
                   city.rebelState = true;
                   stampCityFounderOnCapture(city, city.ownerId); // R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1
-                  city.ownerId = REBEL_FACTION_OWNER_ID;
+                  transferCityToRebelFactionWithLedger(city);
                   settleWonderTransfer(wonderWatchRebel);
                   // B2 (Evaluator RUNDA 1: FAIL): przejście do rebeliantów musi zresetować
                   // override i zsynchronizować pola z globalnym defaultem frakcji rebeliantów.
@@ -42944,7 +43970,11 @@ async function boot(): Promise<void> {
                 void aiDiplomacyStance(aiStub, humanStub, rel, dipCtx);
 
                 const potPlr = objectivePowerByOwner.get(ME())?.power ?? 0;
-                const respektAI = computeRespekt(potAI, potPlr);
+                // Korekta zdarzeń militarnych (+15/−10) jest dodawana po przeliczeniu z Mocy, inaczej tick ją nadpisuje.
+                const respektAI = respektZKorektaMilitarna(
+                  computeRespekt(potAI, potPlr),
+                  getDiploPairMeta(ME(), ownerId).respektMilOffset,
+                );
                 const relWithRespekt = { ...rel, respekt: respektAI };
                 setDiploRelation(ME(), ownerId, relWithRespekt);
 
@@ -44660,6 +45690,9 @@ async function boot(): Promise<void> {
                     const drewnoCredited = creditOwnerResourceStock(
                       cities, ownerId, 'drewno', drewnoCredit, drewnoCap,
                     );
+                    // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (runda 4): plon wyrębu AI w księdze (okno poza tickiem).
+                    recordLedgerFlow(pendingLedgerSink(ownerId, 'wycinka', 'Wycinka lasu').turn, 'drewno', `wycinka|${ownerId}`,
+                      { kind: 'wycinka', label: 'Wycinka lasu' }, drewnoCredited);
                     hexForImprovement.nakladka = Nakladka.Brak;
                     stripForestDependentImprovements(hexKey);
                     hideDecorAtHex(hexKey);
@@ -46148,6 +47181,8 @@ async function boot(): Promise<void> {
       // Epoka startowa z kreatora (Kamień=1, Brąz=2, Żelazo=3)
       const ERA_MAP: Record<string, number> = { kamien: 1, braz: 2, zelazo: 3 };
       player.era = ERA_MAP[params.epochId] ?? 1;
+      // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1: nowa gra startuje z epoką handlu zgodną z kreatorem.
+      syncDiplomacyTradeEra();
 
       // Wepnij tożsamość nacji gracza; efekty są rozwiązywane z macierzy per owner.
       {
@@ -46614,6 +47649,8 @@ async function boot(): Promise<void> {
       // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): opcja z ekranu nowej gry (domyślnie ON).
       playerEpochWarEnabled = params.playerEpochWarEnabled ?? true;
       resetEndTurnBlockers('doStartGame');
+      resetPendingLedger(); // R-WEB-UI-...-Q1 (FC r3 nr 6): okno ksiegi poza tickiem nie przechodzi z poprzedniej gry do NOWEJ gry
+      resetLedgerHistory(); // R-WEB-UI-...-UI-AND-REST-Q1: dziennik N tur z poprzedniej gry nie przechodzi do NOWEJ gry
       resetEmpireRecruitPanelSession(); // R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: nowa gra = czysty panel zbiorczy
       recruitGeneralId = null; // R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1
       resetArmyRecruitDraftsSession();
@@ -47277,6 +48314,7 @@ async function boot(): Promise<void> {
       player.nauka = 200;
       player.pieniadzMnoznik = 1;
       player.era = 2;
+      syncDiplomacyTradeEra();
 
       const rozmiar = rozmiarFromMenuLabel('Maly');
       // C1/C2: generacja mapy asynchronicznie + panel „Tworzenie świata".
@@ -47499,6 +48537,7 @@ async function boot(): Promise<void> {
       player.nauka = 200;
       player.pieniadzMnoznik = 1;
       player.era = 2;
+      syncDiplomacyTradeEra();
 
       const rozmiar = rozmiarFromMenuLabel('Maly');
       // C1/C2: generacja mapy asynchronicznie + panel „Tworzenie świata".
@@ -47949,6 +48988,8 @@ async function boot(): Promise<void> {
         _gameSeed = saved.seed;
       }
       turn = saved.tura;
+      // R-WEB-UI-...-UI-AND-REST-Q1 (partia 3b): dziennik N tur z zapisu; brak pola = pusty dziennik.
+      restoreLedgerHistoryFromSave(saved.resourceLedgerHistory, readLedgerHistoryTurns(data.econParams, _menuDifficulty));
       // R-WEB-DETERMINISM-SAVE-LOAD-RESUME-Q1: przywrocenie licznikow z meta (brak pola = 0, jak dotad).
       {
         const m = saved.meta as { detIdSeq?: unknown; autoBattleSeqTurn?: unknown; autoBattleSeq?: unknown } | undefined;
@@ -48169,6 +49210,8 @@ async function boot(): Promise<void> {
       // go pisze), ale broniamy się defensywnie zamiast zakładać poprawność JSON-a.
       if (!playerStateByHuman.has(HUMAN_OWNER_PRIMARY)) playerStateByHuman.set(HUMAN_OWNER_PRIMARY, player);
       overlayDepositEra = player.era;
+      // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1: wczytany zapis ustawia epokę handlu od razu (nie dopiero po reconcile).
+      syncDiplomacyTradeEra();
       cityProd.clear();
       if (saved.cityProd) {
         for (const [cid, prod] of Object.entries(saved.cityProd)) {
@@ -48794,7 +49837,16 @@ async function boot(): Promise<void> {
       pendingDiplomacyInbox.length = 0;
       allianceWarCallHistory.length = 0;
       const savedPending = saved.meta?.pendingDiplomacyInbox as typeof pendingDiplomacyInbox | undefined;
-      if (savedPending?.length) pendingDiplomacyInbox.push(...savedPending);
+      if (savedPending?.length) {
+        // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: stare oferty AI w skrzynce — ilość surowca do pełnego bloku
+        // epoki umowy (floor, min. 1 blok); oferta nie znika.
+        for (const row of savedPending) {
+          if (row.surowiecKey && typeof row.pakietyPerTura === 'number') {
+            row.pakietyPerTura = diplomacyClampQtyToEraBlock(row.surowiecKey, row.pakietyPerTura, dealTradeEraForOwners(row.ownerId, ME()));
+          }
+        }
+        pendingDiplomacyInbox.push(...savedPending);
+      }
       for (let pi = pendingDiplomacyInbox.length - 1; pi >= 0; pi--) {
         if (!diplomaticContactEstablishedSet().has(pendingDiplomacyInbox[pi]!.ownerId)) {
           pendingDiplomacyInbox.splice(pi, 1);
@@ -48887,6 +49939,14 @@ async function boot(): Promise<void> {
           // z zapisu). Behawioralny no-op (dziś ME() === 0 zawsze).
           const otherOwnerId = isMe(entry.proposerOwnerId) ? entry.responderOwnerId : entry.proposerOwnerId;
           if (!diplomaticContactEstablishedSet().has(otherOwnerId)) continue;
+          // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: stare propozycje (ilości sprzed bloków epoki) — ilość surowca
+          // obcięta W DÓŁ do pełnego bloku epoki umowy (min. 1 blok), wpis zostaje na stole.
+          const entryEra = dealTradeEraForOwners(entry.proposerOwnerId, entry.responderOwnerId);
+          const p0 = entry.payload as { giveItems?: BasketItem[]; receiveItems?: BasketItem[] } | undefined;
+          if (p0) {
+            if (p0.giveItems) p0.giveItems = diplomacyClampBasketItemsToEraBlock(p0.giveItems, entryEra);
+            if (p0.receiveItems) p0.receiveItems = diplomacyClampBasketItemsToEraBlock(p0.receiveItems, entryEra);
+          }
           negotiationTable.push(entry);
         }
       }

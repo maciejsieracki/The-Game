@@ -90,9 +90,9 @@ const ok = (c, n, d) => { if (c) { pass++; console.log('PASS: ' + n); } else { f
     await D('clearQueues');
 
     // --- UI w realnej grze ---
-    const btn = page.locator('[data-act="empire-recruit"]');
-    ok(await btn.count() === 1 && await btn.isVisible(), 'L15 przycisk "Rekrutacja" w górnym pasku HUD widoczny');
-    await btn.click();
+    // R-WEB-UI-EMPIRE-RECRUIT-PANEL-MOVE-TO-ARMY-PANEL-Q1: przycisk HUD usunięty; sekcja w panelu armii (Armia → Rekrutacja)
+    ok(await page.locator('[data-act="empire-recruit"]').count() === 0, 'L15 przycisk "Rekrutacja" usunięty z górnego paska HUD');
+    await page.evaluate(() => window.__empireRecruitTestDebug.openArmyRecruitSection());
     await page.waitForSelector('#civ-empire-recruit-panel [data-unit]', { timeout: 10000 });
     const rowA = page.locator(`#civ-empire-recruit-panel [data-unit="${A.id}"]`), rowB = page.locator(`#civ-empire-recruit-panel [data-unit="${B.id}"]`);
     for (let i = 0; i < 5; i++) await rowA.locator('[data-erp="inc"]').click(); // licznik startowy = 0 (RECRUIT-ALL, DEFAULT_QTY=0)
@@ -114,14 +114,13 @@ const ok = (c, n, d) => { if (c) { pass++; console.log('PASS: ' + n); } else { f
     await page.setViewportSize({ width: 640, height: 700 });
     await page.waitForTimeout(500);
     const geo = await page.evaluate(() => {
-      const b = document.querySelector('[data-act="empire-recruit"]'), p = document.getElementById('civ-empire-recruit-panel');
-      const br = b && b.getBoundingClientRect(), pr = p && p.getBoundingClientRect();
-      return { btn: br && [Math.round(br.left), Math.round(br.right), Math.round(br.width)], panel: pr && [Math.round(pr.left), Math.round(pr.right)], vw: innerWidth };
+      const p = document.getElementById('civ-empire-recruit-panel');
+      const pr = p && p.getBoundingClientRect();
+      return { panel: pr && [Math.round(pr.left), Math.round(pr.right)], vw: innerWidth };
     });
-    ok(geo.btn && geo.btn[0] >= 0 && geo.btn[1] <= geo.vw && geo.btn[2] > 0, 'L20 640 px: przycisk "Rekrutacja" mieści się w oknie', geo);
-    ok(geo.panel && geo.panel[0] >= 0 && geo.panel[1] <= geo.vw, 'L21 640 px: panel zbiorczy mieści się w oknie', geo);
-    await page.locator('[data-erp="close"]').click();
-    ok(await page.locator('#civ-empire-recruit-panel').count() === 0, 'L22 panel zamyka się');
+    ok(geo.panel && geo.panel[0] >= 0 && geo.panel[1] <= geo.vw, 'L21 640 px: sekcja rekrutacji mieści się w oknie', geo);
+    await page.evaluate(() => window.__empireRecruitTestDebug.closeArmyRecruitSection());
+    ok(await page.evaluate(() => { const el = document.getElementById('civ-empire-recruit-panel'); return !!el && el.closest('.open') === null; }), 'L22 panel armii zamknięty (bez klasy .open)');
     ok(errs.length === 0, 'L23 zero pageerror', errs.join('|'));
   } finally { await browser.close(); fs.rmSync(outDir, { recursive: true, force: true }); }
   console.log(`\nempire-recruit-live-test: ${pass} passed, ${fail} failed`);

@@ -321,6 +321,8 @@ export interface HudConfig {
   /** Panel boczny (D1=C): wydarzenia z tury od silnika. */
   getEvents?: () => SidePanelEvent[];
   onEventClick?: (id: string) => void;
+  /** R-WEB-UI-END-TURN-BLOCK-EVENT-Q1: klik przycisku akcji karty (przekazywany do sidePanelHud). */
+  onEventButton?: (id: string, act: string) => void;
   /** P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: przelot do panelu bocznego — skrót karty
    * NIE-blokującej do istniejącego miejsca w grze (patrz `getEventLink` w sidePanelHud.ts). */
   getEventLink?: (ev: SidePanelEvent) => { label: string } | null;
@@ -360,8 +362,6 @@ export interface HudConfig {
   onDiploChip?: (kind: 'sojusz' | 'pakt' | 'wojna') => void;
   /** Panel boczny imperium (klik chipów zasobów). section = np. kultura, econ-praca. */
   onOpenEmpireDetail?: (section?: string) => void;
-  /** R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: przycisk „Rekrutacja” w górnym pasku — panel zamówień dla całej cywilizacji. */
-  onOpenEmpireRecruit?: () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -742,7 +742,7 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
    ustawia --civ-hud-toolbar-top = dol banera + 8 px, gdy baner siega glebiej niz domyslne TOOLBAR_TOP_PX. */
 html .civ-map-toolbar{top:var(--civ-hud-toolbar-top,${TOOLBAR_TOP_PX}px);}
 /* PRAWY BANER (Armia·Miasta·Obywatele·Kultura·Religia): WSZYSTKIE chipy w JEDNEJ linii (nowrap, bez zawijania
-   ikony do 2. wiersza). Klaster prawy (przyciski Rekrutacja/Civpedia/Menu) jest kolumna: przyciski u gory,
+   ikony do 2. wiersza). Klaster prawy (przyciski Civpedia/Menu) jest kolumna: przyciski u gory,
    baner POD nimi, wyrownany do prawej — baner nie wchodzi na medalion Mocy (max-width = 50vw − 148 px) ani na
    lewy baner. Rzad obok przyciskow tylko na bardzo szerokich oknach (>2600 px). Gdy chipy nie mieszcza sie
    w banerze, fitHudTopbar() zaweza je stopniami: .hud-r-tight (mniejsze czcionki/ikony) → .hud-r-stack
@@ -750,7 +750,7 @@ html .civ-map-toolbar{top:var(--civ-hud-toolbar-top,${TOOLBAR_TOP_PX}px);}
 .civ-hud .civ-hud-banner-right{max-width:max(150px,min(calc(50vw - 148px),900px));}
 .civ-hud .civ-hud-banner-right .hud-chip-row{flex-wrap:nowrap;row-gap:0;max-width:100%;min-width:0;}
 /* R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1: baner surowcow (prawy) jest PIERWSZY w klastrze = na samej gorze,
-   w tym samym rzedzie co lewy baner; przyciski Rekrutacja/Civpedia/Menu schodza POD baner (obnizony prawy panel). */
+   w tym samym rzedzie co lewy baner; przyciski Civpedia/Menu schodza POD baner (obnizony prawy panel). */
 .civ-hud .hud-right-cluster{flex-direction:column;align-items:flex-end;gap:8px;}  /* = HUD_RIGHT_RAIL_ROW_GAP_PX */
 /* Oba banery maja te sama wysokosc i wysrodkowana zawartosc: monety surowcow leza na jednej linii poziomej. */
 .civ-hud .civ-hud-banner-left>.civ-hud-banner-shell,
@@ -1576,10 +1576,6 @@ export function renderBarD1B(s: HudState): string {
       + '<span aria-hidden="true">⛶</span></button>'
     : '';
   const showMapZoomDock = !mapChromeSuppressed;
-  const recruitBtn = (!mapChromeSuppressed && cfg?.onOpenEmpireRecruit)
-    ? '<button type="button" class="b-wiki" data-act="empire-recruit" aria-label="Rekrutacja — cała cywilizacja" '
-      + 'title="Rekrutacja wojsk dla całej cywilizacji — zamówienie rozkładane po miastach"><span>Rekrutacja</span></button>'
-    : '';
   const menuBtn = (!mapChromeSuppressed && cfg?.onOpenMenu)
     ? '<button type="button" class="b-menu" data-act="menu" title="Menu główne">'
       + (menuIc || '') + '<span>Menu</span></button>'
@@ -1588,7 +1584,6 @@ export function renderBarD1B(s: HudState): string {
     + '<div class="civ-hud-banner-shell civ-hud-banner-right"><div class="hud-chip-row">'
     + rightChips.join('') + '</div></div>'
     + '<div class="hud-right">'
-    + recruitBtn
     + wikiBtn
     + menuBtn
     + (showMapZoomDock ? '' : fsBtn)
@@ -1675,7 +1670,6 @@ function handleHudBarAction(act: string): void {
   else if (act === 'science') cfg.onOpenScience?.();
   else if (act === 'diplo') cfg.onOpenDiplomacy?.();
   else if (act === 'wiki') cfg.onOpenWiki?.();
-  else if (act === 'empire-recruit') cfg.onOpenEmpireRecruit?.();
   else if (act === 'menu') cfg.onOpenMenu?.();
   else if (act === 'fullscreen') toggleFullscreen();
   else if (act === 'zoom-in') stepUiZoom(UI_ZOOM_STEP);
@@ -2070,6 +2064,7 @@ function mountSidePanel(): void {
     onContextCycleUnit: cfg.onContextCycleUnit,
     canContextCycleUnit: cfg.canContextCycleUnit,
     onEventClick: cfg.onEventClick,
+    onEventButton: cfg.onEventButton,
     getEventLink: cfg.getEventLink,
     onEventDismiss: cfg.onEventDismiss,
     onDismissAll: cfg.onDismissAll,
