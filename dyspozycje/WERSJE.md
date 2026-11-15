@@ -1,3 +1,9 @@
+## ROBOCZA 4f75c30b -- 2026-11-14 -- FALA 725: Ceramika obywateli w Kamieniu, kierunek natarcia dla zaznaczonych jednostek (testowa)
+
+- Obywatele zuzywaja 1 ceramiki na obywatela na ture juz w epoce Kamienia (kara -2 Szczescia / -1% rozwoju do czasu Garncarni); w rozstawieniu bitwy Kierunek natarcia, Formacja i Konnica dzialaja tylko na zaznaczone jednostki (bez zaznaczenia cala armia)
+- Weryfikacja: tsc 0; logic 213/213; citizen-upkeep-era-mult 681/0; attack-dir 32 OK; FC PASS-WITH-NOTES x2
+- Limity: NIE ZMIERZONO: reczny pomiar kierunku natarcia w Chromium; dlug bazowy citizen-resource-upkeep 2 czerwone; dlug Rust REPIN
+
 ## ROBOCZA 9a88937d -- 2026-11-14 -- FALA 724: Garncarnia 30-110, zmeczenie PW C=615 (obie strony), bramka Zakoncz ture (testowa)
 
 - Garncarnia produkuje 30/50/70/90/110 ceramiki na ture w epokach 1-5 (gracz i AI); cena pokoju stale 615 PW i licznik zmeczenia z miast obu stron; bramka Zakoncz ture liczy prognoze po turze od tury 1 (bez blokady przy braku recznych dzwigni)
