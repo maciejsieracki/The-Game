@@ -1610,3 +1610,14 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sprzątanie:** usunięte worktree P4-1J (`-4`, `-5`) i wcześniej cztery zakończone etapy. Dysk: 8,2 GB wolne.
 - **Slot #96:** rozpoznanie wież (K5-LOOP-WIEZE, `R-RUSTPORT-P6-K5-WIEZE-ROZPOZNANIE-Q1`, dispatch `fd9215ee8`, baza `62ff9de35`, tylko odczyt). Ustalenie: `fire_siege_towers` (siege_tactics_loop.rs ok. :436) i `pick_tower_target` (siege_tactics_tower.rs :486) są już wpięte; brak do sprawdzenia przy harmonogramie 180 ms.
 - **NASTĘPNY KROK:** odebrać rozpoznanie wież i zdecydować, czy #96 wdrażać; odebrać FC M01 (#210 — sprawdzić duplikację z P4.10: `MapHex` w renderze) i FC CRED-HAK (#171).
+
+## Przebieg (15.11, 15:18 UTC — heartbeat „twardy bit”, sloty Rust)
+
+- **KROK 1 (sloty):** 4 aktywne Workflow, bez nowych startów:
+  - M01-R2 MapHex (#210): FC, SONNET, od 12:18; Evaluator FAIL, Obrona odpowiedziała, FC w toku (od 15:02).
+  - P4-1E CITY-VIEW (#214): Obrona, HAIKU, od 12:27; Operator i Evaluator zakończone.
+  - CRED-HAK wdrożenie, wycinek 1 (#171): FC, SONNET, od 12:59; Operator PARTIAL, Evaluator FAIL, Obrona odpowiedziała.
+  - Rozpoznanie wież (#96, `R-RUSTPORT-P6-K5-WIEZE-ROZPOZNANIE-Q1`): Operator, HAIKU, od 15:14; baza `62ff9de35`.
+- **KROK 2 (FC PASS bez integracji):** brak.
+- **KROK 3 (sprzątanie):** brak zakończonych tematów do usunięcia w tym ticku. Dysk: 7,3 GB wolne.
+- **NASTĘPNY KROK:** odebrać FC M01 i FC CRED-HAK; po FC PASS — refs/keep, ancestry, integracja; po FAIL — kolejna runda tego samego ID.
