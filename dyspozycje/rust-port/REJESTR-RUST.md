@@ -1267,3 +1267,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Wolne sloty:** brak zweryfikowanego zakresu bez decyzji właściciela (#106 pkt 4; #115, #120 — ABC). Tematy K5 zablokowane allowlistą. Nie startuję na ślepo.
 - **Dysk:** 16 GB. **Parity:** `7b52c3842`.
 - **Pytania ABC:** #106 pkt 4 (rekomendacja B), #115, #120 oraz konwencja `Co-Authored-By` (rekomendacja B) — bez odpowiedzi właściciela.
+
+## Przebieg (15.11, 01:17): WIEZE-2B1 runda 2 — FC PASS-WITH-NOTES, integracja w toku
+- **Wynik r2:** Operator PASS-WITH-NOTES `c0d383e71`, Evaluator PASS-WITH-NOTES, Obrona `14d5e50b9`, FC PASS-WITH-NOTES (raport FC `68f4efc6b`). Baza `f78736d36`. Testy: fmt 0, clippy 0, `p6_wieze_2b1` 7/7, wektory z pinu 245 przypadków, `p6_siege_tactics_loop` 4/4, `p6_tower_target_wiring` 6/6, lib 118/118.
+- **Zakres 2B1 (zrobione):** planowanie wystrzałów wież z odroczeniem 180 ms (`pending_tower_shots`), usunięcie placeholdera `dead = true` przy planowaniu, zniszczenie wieży bez kafla muru (bez stanu `destroyed`), wybór celu w callbacku.
+- **NIE zrobione (2B2 — osobny temat, decyzja FC):** strzał `_singleBlow` wieży (callback `tower_shoot` pusty), guard `towerShooterRow` (pin `battleScene.ts:4209`, wymaga pola w `SiegeEnv`), stan `destroyed` i jego sprawdzenie w strzale.
+- **Pełny `cargo test`:** wymóg integracji — uruchomiony bez filtra w tle (`integ-2b1`, `--no-fail-fast`). Wynik: EXIT w logu `i2b-test.log`. Po zielonym wyniku FF `parity-v2` `7b52c3842` → `14d5e50b9`.
+- **Konflikt atrybucji:** commity operatora/obrony bez nazwy modelu zgodnie z dispatchem; nagłówek sesji wymaga `Co-Authored-By` — nadal do rozstrzygnięcia.
+- **Dysk:** 9 GB przed bramkami. **Parity:** `7b52c3842` (przed FF).
