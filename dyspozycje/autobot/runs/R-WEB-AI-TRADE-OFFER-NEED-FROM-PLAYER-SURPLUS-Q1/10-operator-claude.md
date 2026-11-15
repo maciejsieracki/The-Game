@@ -118,3 +118,87 @@ Runda 3 (ten sam ID): (2) scenariusz „jedno miasto, 20 obywateli" w epoce Kami
 - Dwa wpięcia w main.ts (`nnsDiag`, `setSpichlerzPanstwa`) są tylko dla testów (obiekt `__aiTradeWiringTestDebug`, nie wpływa na grę).
 
 DEPLOY/PUSH: NIE WYKONANO
+
+
+---
+
+# R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 — Operator (runda 3/5, SONNET, uzasadnienie w DODATKU 3)
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1
+GOAL: ilość odbioru AI od gracza wynika z nadwyżki gracza (nie ze sztywnego kroku 10); uczciwość wyceny, cooldown 15, limit 1 oferty/AI bez zmian.
+
+ZMIANY-COMMIT (baza f8af97173, kandydat = baza + poniższe; SHA w polu `sha` wyniku):
+- `gra/src/game/ai-trade-proposal.ts` — BEZ ZMIAN względem r2 (kod silnika nie wymagał poprawki, patrz „PRZYCZYNA”).
+- `gra/src/main.ts` — +5 linii: hak testowy `setOwnerEra` (tylko `?civTest=1`, zero wpływu bez parametru) w `__aiTradeWiringTestDebug`.
+- `gra/tools/ai-trade-wiring-e2e-live-test.cjs` — naprawa błędu testu (klucze wyceny), `AITW_ERA`, `AITW_BIG`, `AITW_PROBE_ONLY`.
+- `runs/<ID>/evidence/r3/**` (zrzuty Chromium, JSON-y, logi), ten raport.
+
+## 1. PRZYCZYNA „defektu” z r2 (ZMIERZONO) — to BŁĄD TESTU, nie silnika
+Odtworzone na kandydacie (bundle zbudowany poza repo, `AITW_POP=20`): stary test dawał 39/7 (log `evidence/r3/cand-p20-STARY-TEST-bledny-diag.log`).
+- Oferta na stole to `cegla 70 / drewno 350` (para wybrana w realnym `endTurn`, po produkcji/zużyciu 20 obywateli, więc INNA niż `probeBarter` liczony PRZED turą: `cegla 200 / zelazo 50`).
+- Test wywoływał `diagPayload(ai, GIVE, offGive, RECV, offRecv)` ze STAŁYMI `GIVE='cegla'`, `RECV='zelazo'` i ilością z oferty (350). Wyceniało więc **350 sztuk ŻELAZA** (35 bloków × 20 PN × 10 tur = 7000 PW), a nie zaproponowane **350 sztuk DREWNA** (35 × 1 × 10 = 350 PW). „7000 PW vs 350 PW” to artefakt złego klucza w diagnostyce.
+- Po wycenie po PRAWDZIWYCH kluczach oferty (`curGive`/`curRecv` z payloadu na stole): `givePn 350 = receivePn 350`, `fairBlock null`, `playerOk true`, `accepted true` (ta sama funkcja `resolveProposalPn` + `handelFairnessGate` + `evaluateProposal` + podgląd gracza co w akceptacji). Podgląd gracza (350 = 350, „Możesz przyjąć”) i bramka AI są zgodne — NIE ma rozjazdu podgląd↔bramka. Bramek uczciwości nie ruszano i nie osłabiano.
+- Pozostałe 5 FAIL z r2 (payload, stół, umowa, tick dostaw, wczytanie) wynikały z tego samego błędu: reszta testu sprawdzała stałą parę cegła/żelazo zamiast pary faktycznie zaproponowanej.
+- Naprawa testu: po pierwszym EOT para jest odczytywana z oferty na stole (`offerKeys` w JSON) i cała dalsza weryfikacja (wycena, umowa, tick dostaw, wczytanie, akceptacja przyciskiem) idzie po tych kluczach. Przy `POP=0` nadal wymagana jest para cegła/żelazo (ścisła zgodność z probe). Asercja dostawy po wczytaniu dla POP>0: zapas ODBIORCY rośnie (zapas sprzedawcy AI rośnie z produkcji 20 obywateli — strona sprzedawcy jest weryfikowana w ticku 1 z kontrolą bez umowy).
+
+## 2. ai-trade-wiring-e2e-live-test (ZMIERZONO, bundle kandydata, Chromium headless, realny endTurn)
+| Scenariusz | Wynik |
+|---|---|
+| domyślny (POP=0) | 46 pass, 0 fail (oferta cegla 200 / zelazo 50, 1000 = 1000 PW) |
+| POP=20, epoka Kamienia (AITW_ERA=1) | 46 pass, 0 fail |
+| POP=20, epoka Brązu (AITW_ERA=2) | 46 pass, 0 fail |
+Baza (sufit przywrócony, ten sam bundle poza `ai-trade-proposal.ts`), POP=20: Kamień 43/3, Brąz 43/3. Czerwone na bazie: (a) „nadwyżka gracza: AI prosi o ilość > krok” (`probeRecv 10, offRecv 10`) — oczekiwane, to właśnie mutacja z pkt 3; (b) dwa ticki dostaw przy 20 obywatelach (gracz zużywa dostarczoną cegłę: `plGive 0` po dostawie 40) — DŁUG BAZOWY, nie maskowany, nie dotyczy kandydata (kandydat dostarcza 70 i `plGive` rośnie 27→54).
+
+## 3. Test behawioralny na REALNEJ wycenie + mutacja (ZMIERZONO)
+- Asercje na wyniku realnego endTurn (nie na atrapach): `probe.receiveQty > 10 && offRecv > 10`; `diagPayload` po kluczach oferty: `fairBlock === null && givePn <= receivePn && playerOk && accepted`; „wycena A1 (givePn == receivePn)”; przyjęcie przyciskiem „Przyjmij” w oknie dyplomacji; tick dostaw z kontrolą bez umowy.
+- Mutacja 1 (przywrócenie sufitu = `ai-trade-proposal.ts` z bazy f1886bacf, ten sam bundle): CZERWONE w obu epokach (`nadwyzka gracza ... probeRecv 10, offRecv 10`), exit 1.
+- Mutacja 2 (zły klucz wyceny, jak w r2): stary test na kandydacie daje 7 FAIL (log w evidence) — asercje wyceny faktycznie czerwienieją przy niespójnej parze.
+- NIE ZMIERZONO: osobnej mutacji silnika polegającej na wyłączeniu `handelFairnessGate` w wyborze pary (wejście na stół i tak filtruje `givePn > receivePn` oraz `exactPreview`).
+
+## 4. Koszt pętli giveQty×receiveQty bez sufitu (ZMIERZONO na realnej wycenie, `probeBarter`, POP=0, jedno wywołanie)
+| zapas AI(cegła) = zapas gracza(żelazo) | czas probeBarter | wynik |
+|---|---|---|
+| 400 (domyślny) | 543 ms | cegla 200 / zelazo 50 |
+| 5 000 | 705 ms | to samo |
+| 20 000 | 821 ms | to samo |
+| 100 000 | 1 542 ms | to samo |
+| 1 000 000 | 44 172 ms | to samo |
+Wynik (para) jest niezależny od zapasu — wybór ogranicza realny przepływ (clamp per_turn), pętla tylko przechodzi więcej odrzuconych kombinacji. Koszt rośnie ok. kwadratowo; do 100 000 sztuk ≤ 1,6 s na wywołanie (wywołanie jest raz na AI na turę, tylko gdy cooldown pozwala). 1 000 000 sztuk (poza realnym zakresem) = 44 s. Limitu NIE dodano (to byłby nowy próg liczbowy — zakaz z dispatchu). **DO POTWIERDZENIA przez właściciela/orkiestratora:** czy dodać czysto wydajnościowy limit liczby kombinacji (propozycja: break po N=250 000 ocenionych kombinacji — przy zapasie ≤ 100 000 nie zmienia wyniku, bo para jest znajdowana wcześniej; NIE ZMIERZONO progu N na realnych danych) — rekomendacja: nie dodawać, dopóki zapasy gry są ograniczone pojemnością magazynu (realny maks. zapas w grze: NIE ZMIERZONO).
+Czas tury (endTurn tury 1): kandydat POP=20 8,3 s w tej uruchomionej instancji (obciążony procesor, kilka agentów); baza ~5,5 s wg r2 — NIE porównywane na tym samym obciążeniu.
+
+## 5. Zrzuty Chromium okna oferty AI→gracz (ZMIERZONO) — `evidence/r3/`
+- `cand-p20-e1-okno-oferty.png` (Kamień, 20 obywateli, kandydat), `cand-p20-e2-okno-oferty.png` (Brąz, 20 obywateli, kandydat): „Oni oferują 70 Cegła / My oferujemy 350 Drewno (na turę, 10 tur)”, PW 350 vs 350, Bilans 0, „Możesz przyjąć — wymiana symetryczna”, przycisk „Przyjmij” aktywny.
+- `base-p20-e1-okno-oferty.png`, `base-p20-e2-okno-oferty.png`: baza = 40 cegły za 10 żelaza.
+Przed/po (jedno miasto, 20 obywateli; oferta AI→gracz):
+| epoka | baza (sufit) | kandydat |
+|---|---|---|
+| Kamień | cegla 40 / zelazo 10 (200 PW) | cegla 70 / drewno 350 (350 PW) |
+| Brąz | cegla 40 / zelazo 10 (200 PW) | cegla 70 / drewno 350 (350 PW) |
+| POP=0 (baza bez 20 ob.) | cegla 40 / zelazo 10 | cegla 200 / zelazo 50 (1000 PW) |
+Uwaga produktowa (DO POTWIERDZENIA, wariant A): przy 20 obywatelach AI prosi o 350 drewna/turę (3500 przez 10 tur) — czyli cały realny przepływ nadwyżki gracza, bez limitu gameplayowego i bez związku z potrzebą AI. Warianty B (≤ 3× potrzeba AI) i C (powrót do sufitu) pozostają do decyzji właściciela.
+
+## 6. Bramki (ZMIERZONO, gra/ , TypeScript 5.9.3)
+- `tsc --noEmit`: exit 0.
+- logic 213/213; tech-tree 20/0; research 33/0 ALL GREEN; unit-replace 21/21; combat 6/6; unit-power 6/0.
+- ai-trade-need-from-surplus 8/0; ai-trade-offer-frequency-up 28/0; ai-trade-proposal-branch 10/0; ai-trade-proposal-to-player 25 OK.
+- CZERWONE-NA-BAZIE (osobno): `ai-trade-oneshot-overpay-limit-test` — exit 1 na asercji tekstowej „main.ts enqueue filter calls aiOneshotHandelOverpaysPlayer(...) -> return” (dług #379; diff nie dotyka tego fragmentu; ponowny pomiar na nietkniętej bazie: NIE ZMIERZONO).
+- `git diff --check`: czysty.
+- Pomiar częstości ofert 3 ziarna × 150 tur × 3 relacje (kryterium (a) oryginalnego dispatchu): NIE ZMIERZONO — harness `measure-ai-trade-offer-frequency*.cjs` zawiesza się w turze 10 także na bazie (DODATEK 2 pkt 5: nie naprawiać w tym temacie); zastąpiony pomiarem jednego miasta/20 obywateli z pkt 5.
+
+## BLOKADY
+- Brak blokady technicznej. Do decyzji człowieka: limit odbioru (A/B/C) oraz ewentualny limit wydajnościowy pętli (pkt 4).
+
+## RUNDY
+Operator r3/5 (Sonnet, po 2 nieudanych rundach Haiku — r1 FAIL, r2 FAIL; defekt analityczny: błąd w diagnostyce testu).
+
+## NASTĘPNY KROK
+Evaluator → Final Control (ten sam ID): zweryfikować samodzielnie e2e w 3 scenariuszach (POP=0, POP=20 Kamień, POP=20 Brąz) i mutację 1; ABC właściciela (A/B/C + limit wydajnościowy).
+
+## UWAGI-DLA-ORKIESTRATORA
+- Rozjazd „podgląd vs bramka” zgłoszony przez FC r2 NIE istnieje w silniku — to był błąd klucza w `diagPayload` w teście; wniosek FC o „wycieku uczciwości” należy wycofać.
+- Para na stole w scenariuszach z produkcją może różnić się od `probeBarter` liczonego przed turą (stan po produkcji/zużyciu) — zachowanie poprawne, test to teraz uwzględnia.
+- Środowisko: worktree nie miał `gra/node_modules`; użyto kopii poza repo (`/tmp/claude-0/r3/proj/node_modules`, symlink niecommitowany). Bundle: `/tmp/claude-0/r3/cand` i `/tmp/claude-0/r3/base` (poza repo).
+
+DEPLOY/PUSH: NIE WYKONANO

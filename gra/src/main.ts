@@ -30699,6 +30699,11 @@ async function boot(): Promise<void> {
           c.population = Math.max(1, Math.round(n));
           return c.population;
         },
+        /** R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r3): ustawia epoke wlasciciela (1=Kamien, 2=Braz) -- scenariusz „20 obywateli w Brazie”. Tylko test. */
+        setOwnerEra: (ownerId: number, era: number): number => {
+          if (isHuman(ownerId)) { playerStateByHuman.get(ownerId)!.era = era; if (ownerId === ME()) player.era = era; } else ownerEraByOwner.set(ownerId, era);
+          return empireEpochForOwner(ownerId);
+        },
         /** SETUP zapasu: ustawia absolutny zapas surowca wlasciciela (zerowanie + kredyt w jednym miescie). */
         setStock: (ownerId: number, key: string, amount: number): number => {
           for (const c of cities) if (c.ownerId === ownerId && c.surowce) c.surowce[key] = 0;
