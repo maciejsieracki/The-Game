@@ -151,3 +151,58 @@ UWAGI-DLA-ORKIESTRATORA:
 RUNDY: 4/5 (partia 2, runda 4 — częściowa: zarzuty 3, 6, 9a/9c obsłużone; 1, 2, 4, 5, 7, 8, 9b otwarte z powodów wyżej).
 NASTĘPNY KROK: decyzja ABC E3c → runda 5 tego samego ID (ostatnia) albo rozbicie na osobne tematy po stronie orkiestratora: Warzelnia, harness main.ts, reset nowej gry.
 DEPLOY/PUSH: NIE WYKONANO
+
+## OBRONA r4 (odpowiedź na zarzuty Evaluatora db100d19b, baza kandydat 006d1e87f) — 2026-11-15
+
+Kod obrony: `083c0d18c` (Co-Authored-By Haiku 5.5). Zmiany tylko w allowliście: `gra/src/game/turn-economy.ts`, `gra/tools/resource-ledger-engine-test.cjs`, `gra/tools/resource-ledger-trade-test.cjs`. Nie dotknięto E3c, WERSJE.md, manifestu, rust-port, UI.
+
+### Odpowiedzi na zarzuty
+
+- **Zarzut 1 (wycinka gracza nieprzetestowana mutacją na żywo): PRZYJMUJĘ częściowo.** Poprawka: test strukturalny `resource-ledger-trade-test.cjs` sekcja [7], punkty 7g–7i: guard `isHuman(st.ownerId)` w pętli `hexClearingStates`, zapis `wycinka|${ownerId}` (kind `wycinka`) PO `creditOwnerResourceStock` w tej samej pętli, oraz zapis AI do okna pending. Dowód: trade-test `RESULT: 27 passed, 0 failed` (wcześniej 24). Mutacja na żywo wycinki gracza NIE ZMIERZONA: scena headless nie wycina lasu gracza (`wycinka|0` = 0 wystąpień w pomiarze), a wstrzyknięcie wycinki wymaga osobnego haka scenariusza (poza zakresem tej rundy). Zarzut domknięty tylko na poziomie struktury kodu.
+- **Zarzut 2 (E3c przesuwa brąz/żelazo/cegłę/konie/złoto/sól szlakiem, nie księgowane): PRZYJMUJĘ jako fakt, kod NIE zmieniony.** Dispatch DODATKU 2 i 3 (pkt 5) zakazuje zmiany i księgowania E3c do decyzji ABC. Status: NIE ZAMKNIĘTE, zależy od decyzji właściciela (usunąć E3c zgodnie z #311 albo księgować jako „Szlak handlowy z <civ>”). Test na żywo z trasami nie był wykonany (scena bez aktywnych tras, e3cFires = 0). Nie zamykam kryterium (a) dla sytuacji z trasami.
+- **Zarzut 3 (Warzelnia per miasto, dispatch wymaga per budynek): PRZYJMUJĘ i NAPRAWIAM.** Zmiana w `turn-economy.ts`:
+  - `computeTerritoryResourceYieldByCity` (opcjonalny 5. parametr `solBreakdownOut`) zapisuje per miasto listę `{hexKey, amount}` dla ulepszeń `sol` (tylko warzelnia_soli). Suma = dotychczasowe `sol`, więc stan gry się nie zmienia.
+  - `tickEmpireResourcePipeline` (nowy końcowy opcjonalny parametr `solBreakdownByCity`): `got` (już po capie, wartość z `creditOwnerResourceStock`) przydzielane kolejno do ulepszeń; wpis źródła `warzelnia|<q,r>` per heks, etykieta „Warzelnia (<miasto>)”. Reszta (teoretycznie) na `warzelnia|<cityId>`.
+  - Kredyt do magazynu NIE zmieniony (dalej jeden `creditOwnerResourceStock` na miasto), więc wynik tury identyczny; zmienia się tylko księga.
+  - Dowód: `resource-ledger-engine-test.cjs` `20 passed, 0 failed` (nowy scenariusz `warzelnia2`: dwie Warzelnie w jednym mieście → dwa wpisy per heks, etykieta, `maxDiff 0`). Mutacja (no-op `recordStockDeltaToTurn`): 6 asercji czerwonych (mennica x3, cap x3).
+  - Na żywo (seed 7, 30 tur, `resource-ledger-live-measure.cjs`): `maxAbsDiff 0`, `nonzeroRows 0`, `hashEqualCount 30/30`, `pageErrorsOn 0`, `pageErrorsOff 0`, `solSourcesTotal`: „Warzelnia (Rzym)” 2250, „Warzelnia (Miasto Testowe AI)” 2250, „Umowa wymiany z Asyria” −20, „Umowa wymiany z Rzymianie” +20. Scena ma jedną Warzelnię na miasto, więc test na żywo nie obejmuje wielu budynków (to pokrywa wyłącznie test silnikowy `warzelnia2`).
+- **Zarzut 4 (test realnej gry na fixture: scenarioSeed, spawnOwnerCity, sztuczne zapasy; mutacje live analityczne): PRZYJMUJĘ jako ograniczenie, bez zmiany kodu.** To już było zapisane w raporcie r4 (UWAGI-DLA-ORKIESTRATORA pkt 1). Dla Warzelni realna mutacja jest teraz w teście silnikowym `warzelnia2`, nie w live. Dla wycinki gracza zob. zarzut 1.
+- **Zarzut 5 (nieksięgowane źródła z partii 3, okno pending nie w save, rozbieżność hasha seed 99991): PRZYJMUJĘ jako informację.** Lista źródeł nieksięgowanych (łup, zwrot anulowania, zdobycie/oddanie miasta, dary, E3c) pozostaje zakresem partii 3 i jest w raporcie r4. Rozbieżność hasha seed 99991 nie została odtworzona także w tej rundzie (pomiar obrony na seedach 7; pełnej trzyziarnowej serii nie powtarzano, patrz TESTY). Przyczyna nieustalona; nie przypisuję jej księdze (księga nie zapisuje do stanu gry).
+
+### TESTY (surowe wyniki z tej rundy, na 083c0d18c)
+
+- `npx tsc --noEmit` (gra/): exit 0 (po poprawce `part` z `noUncheckedIndexedAccess`; pierwszy przebieg dał TS2532 w 2 liniach, usunięte).
+- `node tools/resource-ledger-engine-test.cjs`: `resource-ledger-engine-test: 20 passed, 0 failed`; mutacja: `6 asercji czerwonych`.
+- `node tools/resource-ledger-trade-test.cjs`: `RESULT: 27 passed, 0 failed`.
+- `node tools/resource-ledger-test.cjs`: `resource-ledger-test: 1030 passed, 0 failed`.
+- `node tools/resource-ledger-consume-test.cjs`: `resource-ledger-consume-test: 30 passed, 0 failed`.
+- `npx vite build --outDir /tmp/civ-ledger-dist --emptyOutDir`: `BUILD_EXIT=0` (31,80 s).
+- `node tools/resource-ledger-live-measure.cjs --dist /tmp/civ-ledger-dist --seeds 7 --turns 30 --out /tmp/ledger-live-r5.json`: `maxAbsDiff 0`, `hashEqualCount 30`, `DONE; zgodnosc 0 i hash identyczny` (liczby z surowego wyjścia, patrz zarzut 3).
+- `git diff --check`: exit 0 (przed commitem); `git status --short` po commicie: czysto.
+- NIE URUCHAMIANO w tej rundzie: 5 bramek referencyjnych (logic, tech-tree, research, unit-replace, combat). Zmiana dotyka tylko ścieżki ekonomii surowców i testów `*ledger*`; bramki nie były ponownie mierzone. NIE ZMIERZONO.
+- NIE URUCHAMIANO: trzy ziarna × 30 tur (seed 2024, 99991). Tylko seed 7. NIE ZMIERZONO dla pozostałych ziaren w tym commicie.
+
+### Dysk i sprzątanie
+
+- Przed startem: 5,8 GB wolnego (dispatch wymaga ≥ 6 GB dla bramek). Po `npm ci` (gra/node_modules, 71 pakietów) i buildzie: 5,4 GB. Dispatch wymaga ≥ 6 GB; przekroczony o ok. 0,6 GB, zgłaszam. Build zrobiony poza repo w `/tmp/civ-ledger-dist` (do usunięcia po integracji).
+- `gra/node_modules` zostaje w worktree (ignorowany przez git); do usunięcia przez orkiestratora po integracji.
+
+### ZMIERZONO vs NIE ZMIERZONO (skrót)
+
+- ZMIERZONO: tsc 0; 4 testy ledgerowe zielone; mutacja silnikowa 6 czerwonych; live seed 7 × 30 tur diff 0 i hash 30/30 (po zmianie Warzelni).
+- NIE ZMIERZONO: mutacja wycinki gracza na żywo (zarzut 1); E3c z trasami (zarzut 2, decyzja ABC); live dla seedów 2024, 99991; 5 bramek referencyjnych po tej poprawce; przypadek wielu Warzelni w scenie live.
+
+### BLOKADY
+
+- Decyzja ABC w sprawie E3c (usunąć / księgować jako „Szlak handlowy z <civ>”): bez niej kryterium (a) nie jest spełnione dla gry z trasami.
+- Partia 3 (łup, zwrot anulowania, zdobycie/oddanie miasta, dary) i partia 4 (UI „Skąd zapasy”, zrzut Chromium, pomiar czasu tury, hash) poza zakresem tej rundy.
+
+### RUNDY
+
+5/5 (ostatnia runda po dispatchu). Po FAIL lub po zamknięciu rund: rozbicie na osobne tematy po stronie orkiestratora.
+
+### NASTĘPNY KROK
+
+FC r5 na 083c0d18c, następnie decyzja ABC E3c. Partia 3 i 4 jako nowe dispatche po stronie orkiestratora.
+
+### DEPLOY/PUSH: NIE WYKONANO
