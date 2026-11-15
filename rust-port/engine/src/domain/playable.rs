@@ -648,6 +648,37 @@ impl PlayableState {
     pub fn power_clear_eliminated_owner(&mut self, owner_id: i64) {
         self.war.clear_power_accumulators_for_owner(owner_id);
     }
+
+    /// P4-1H (`R-RUSTPORT-P4-1H-CANCEL-Q2`): 1:1 z galezia `unitId !== undefined` web
+    /// `clearPlannedMarch(unitId, force)` (`gra/src/main.ts:31051-31056` @ `07d2fbd72`):
+    /// - `!force` i plan jednostki ma `attackUnitId` -> brak zmian (`:31052`, `return`);
+    /// - w pozostalych przypadkach usuwa wpis jednostki z `plannedMarches`, `marchAttackTargets`,
+    ///   `marchStopNotified`, `marchStopDetail` (`:31053-31056`); brak wpisu = `Map.delete` bez efektu.
+    ///
+    /// Kolejnosc pozostalych planow zachowana (web `Map.delete`). Nie zmienia `status`: web nie
+    /// pokazuje tu hintu (hint „Zatrzymano” nalezy do `stopPlannedMarchForSelected`, poza zakresem).
+    /// Czyszczenie trasy w rendererze (`:31071-31073`) to efekt UI, poza stanem. Walidacja jednostki
+    /// (istnienie, wlasciciel) nalezy do `PlayableGame::cancel_planned_march`.
+    ///
+    /// Wskazowka dla przyszlych wywolan wewnatrz silnika (rozwiazanie jednostki, nowy rozkaz,
+    /// `tryLaunchMarchAttack`; web `main.ts:25920/25946/26013/26060/26085` @ `07d2fbd72`): wolac TE
+    /// funkcje bezposrednio, PRZED usunieciem jednostki z `units`. Komenda
+    /// `PlayableGame::cancel_planned_march` zwraca `UnitNotFound` dla jednostki, ktorej juz nie ma,
+    /// wiec osierocony plan nie zostalby przez nia wyczyszczony (web `Map.delete` by go usunal).
+    pub fn clear_planned_march_for_unit(&mut self, unit_id: UnitId, force: bool) {
+        if !force
+            && self
+                .planned_marches
+                .iter()
+                .any(|plan| plan.unit_id == unit_id && plan.attack_unit_id.is_some())
+        {
+            return;
+        }
+        self.planned_marches.retain(|plan| plan.unit_id != unit_id);
+        self.march_attack_targets.remove(&unit_id);
+        self.march_stop_notified.remove(&unit_id);
+        self.march_stop_detail.remove(&unit_id);
+    }
 }
 
 impl PlayableState {
@@ -947,6 +978,27 @@ impl PlayableGame {
         moved.movement = moved.movement.saturating_sub(distance as u8);
         self.state.units[unit_index] = moved;
         self.state.status = format!("Jednostka {} ruszyła na {}.", unit_id, destination);
+        Ok(())
+    }
+
+    /// P4-1H (`R-RUSTPORT-P4-1H-CANCEL-Q2`): komenda `cancel_planned_march { unit_id, force }`,
+    /// web `clearPlannedMarch(unitId, force)` z podanym `unitId` (`main.ts:31051-31056`); logika w
+    /// `PlayableState::clear_planned_march_for_unit`. Brak planu -> `Ok(())` bez zmian (idempotencja).
+    /// Nieznana jednostka -> `UnitNotFound`, obca -> `UnitNotOwned` (decyzja techniczna,
+    /// `REJESTR-RUST.md` 15.11, spojnie z `move_unit`; web tej sciezki nie ma). Bledy nie zmieniaja stanu.
+    /// Nie wymaga zaznaczenia jednostki: web wola to takze dla jednostek z petli HUD (`:25920` i dalej).
+    pub fn cancel_planned_march(&mut self, unit_id: u64, force: bool) -> Result<(), PlayableError> {
+        let unit = self
+            .state
+            .units
+            .iter()
+            .find(|unit| unit.id.get() == unit_id)
+            .ok_or(PlayableError::UnitNotFound(unit_id))?;
+        if unit.owner_id != HUMAN_PLAYER_ID {
+            return Err(PlayableError::UnitNotOwned(unit_id));
+        }
+        let id = unit.id;
+        self.state.clear_planned_march_for_unit(id, force);
         Ok(())
     }
 
@@ -1770,5 +1822,100 @@ mod unit_replace_error_tests {
             .expect("tura przechodzi mimo bledu sprawdzenia zwyciestwa");
         assert_eq!(game.state.turn, turn_before + 1);
         assert_eq!(game.state.koniec_gry, None, "blad nie ustawia konca gry");
+    }
+}
+
+/// P4-1H (`R-RUSTPORT-P4-1H-CANCEL-Q2`): komenda gry z planami w stanie i obca jednostka; stanu
+/// `PlayableGame` nie da sie zbudowac z zewnatrz modulu, wiec te przypadki sa tutaj, a wektory
+/// czystej logiki w `tests/p4_1h_cancel_planned_march.rs`.
+#[cfg(test)]
+mod cancel_planned_march_game_tests {
+    use super::*;
+
+    const FOREIGN_UNIT: u64 = 900;
+
+    fn plan(unit: u64, attack: Option<u64>) -> PlayablePlannedMarch {
+        PlayablePlannedMarch {
+            unit_id: UnitId::new(unit),
+            dest_q: 4,
+            dest_r: 2,
+            attack_unit_id: attack.map(UnitId::new),
+            general_target_id: None,
+        }
+    }
+
+    fn game_with_plan(attack: Option<u64>) -> PlayableGame {
+        let mut game = PlayableGame::new(StartGameParams::default()).expect("scenariusz");
+        let mut foreign = game.state.units[0].clone();
+        foreign.id = UnitId::new(FOREIGN_UNIT);
+        foreign.owner_id = PlayerId::new(2);
+        game.state.units.push(foreign);
+        let own = UnitId::new(STARTING_UNIT_ID);
+        game.state
+            .planned_marches
+            .push(plan(STARTING_UNIT_ID, attack));
+        game.state.planned_marches.push(plan(FOREIGN_UNIT, None));
+        if let Some(target) = attack {
+            game.state
+                .march_attack_targets
+                .insert(own, UnitId::new(target));
+        }
+        game.state
+            .march_stop_notified
+            .insert(own, PlayableMarchStopReason::Obstacle);
+        game.state
+            .march_stop_detail
+            .insert(own, "Wstrzymano: przeszkoda".to_owned());
+        game
+    }
+
+    fn has_own_entries(state: &PlayableState) -> bool {
+        let own = UnitId::new(STARTING_UNIT_ID);
+        state.planned_marches.iter().any(|p| p.unit_id == own)
+            || state.march_attack_targets.contains_key(&own)
+            || state.march_stop_notified.contains_key(&own)
+            || state.march_stop_detail.contains_key(&own)
+    }
+
+    #[test]
+    fn attack_plan_survives_without_force_and_is_cleared_with_force() {
+        let mut game = game_with_plan(Some(FOREIGN_UNIT));
+        let before = game.state.clone();
+        game.cancel_planned_march(STARTING_UNIT_ID, false)
+            .expect("wlasna jednostka");
+        assert_eq!(game.state, before, "web main.ts:31052 return");
+        game.cancel_planned_march(STARTING_UNIT_ID, true)
+            .expect("wlasna jednostka");
+        assert!(!has_own_entries(&game.state));
+        assert_eq!(game.state.planned_marches, vec![plan(FOREIGN_UNIT, None)]);
+    }
+
+    #[test]
+    fn plain_plan_is_cleared_without_force() {
+        let mut game = game_with_plan(None);
+        game.cancel_planned_march(STARTING_UNIT_ID, false)
+            .expect("wlasna jednostka");
+        assert!(!has_own_entries(&game.state));
+        let after = game.state.clone();
+        game.cancel_planned_march(STARTING_UNIT_ID, false)
+            .expect("drugie wywolanie = Map.delete bez efektu");
+        assert_eq!(game.state, after);
+    }
+
+    #[test]
+    fn foreign_and_unknown_units_are_rejected_without_changes() {
+        for force in [false, true] {
+            let mut game = game_with_plan(Some(FOREIGN_UNIT));
+            let before = game.state.clone();
+            assert_eq!(
+                game.cancel_planned_march(FOREIGN_UNIT, force),
+                Err(PlayableError::UnitNotOwned(FOREIGN_UNIT))
+            );
+            assert_eq!(
+                game.cancel_planned_march(424_242, force),
+                Err(PlayableError::UnitNotFound(424_242))
+            );
+            assert_eq!(game.state, before);
+        }
     }
 }
