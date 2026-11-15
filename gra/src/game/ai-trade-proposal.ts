@@ -83,6 +83,8 @@ export function selectAiTradeBarter(input: {
   receiveNeedMultiplier?: number;
   /** Override for tests; defaults to ai-params.json. */
   maxSearchCandidates?: number;
+  /** R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r2: epoka umowy (wyższa z dwóch stron) dla kroku/normalizacji ilości; brak = epoka globalna. */
+  tradeEra?: number;
 }): AiTradeBarter | null {
   const needMultiplier = input.receiveNeedMultiplier ?? AI_TRADE_RECEIVE_NEED_MULTIPLIER;
   const maxCandidates = input.maxSearchCandidates ?? AI_TRADE_QTY_SEARCH_MAX_CANDIDATES;
@@ -103,10 +105,10 @@ export function selectAiTradeBarter(input: {
   for (const humanNeed of playerDeficits) {
     const give = aiSurpluses.find(r => r.key === humanNeed.key);
     if (!give) continue;
-    const giveStep = diplomacyHandelSurowiecKrok(give.key);
+    const giveStep = diplomacyHandelSurowiecKrok(give.key, input.tradeEra);
     const aiGiveStockAvailable = Math.max(0, (give.stock - Math.max(0, give.reserve)) / turns);
     const aiGiveMax = diplomacyNormalizeSurowiecIlosc(
-      give.key, Math.floor(aiGiveStockAvailable + Math.max(0, give.netRate)),
+      give.key, Math.floor(aiGiveStockAvailable + Math.max(0, give.netRate)), undefined, input.tradeEra,
     );
     if (aiGiveMax <= 0) continue;
     const giveQtys = boundedQtyCandidates(aiGiveMax, giveStep, maxCandidates);
@@ -114,15 +116,15 @@ export function selectAiTradeBarter(input: {
       if (receive.key === give.key) continue;
       const humanSurplus = input.playerResources.find(r => r.key === receive.key && r.surplus);
       if (!humanSurplus) continue;
-      const receiveStep = diplomacyHandelSurowiecKrok(receive.key);
+      const receiveStep = diplomacyHandelSurowiecKrok(receive.key, input.tradeEra);
       const humanStockAvailable = Math.max(0, (humanSurplus.stock - Math.max(0, humanSurplus.reserve)) / turns);
       const receiveMax = diplomacyNormalizeSurowiecIlosc(
-        receive.key, Math.floor(humanStockAvailable + Math.max(0, humanSurplus.netRate)),
+        receive.key, Math.floor(humanStockAvailable + Math.max(0, humanSurplus.netRate)), undefined, input.tradeEra,
       );
       // Potrzeba AI na turę (ta sama miara co dotąd: deficyt netto). Odbiór AI = min(nadwyżka
       // gracza, mnożnik x potrzeba), a nie sama potrzeba.
       const aiNeedPerTurn = Math.max(receiveStep, Math.ceil(-receive.netRate));
-      const needCapMax = diplomacyNormalizeSurowiecIlosc(receive.key, needMultiplier * aiNeedPerTurn);
+      const needCapMax = diplomacyNormalizeSurowiecIlosc(receive.key, needMultiplier * aiNeedPerTurn, undefined, input.tradeEra);
       const feasibleReceiveMax = Math.min(receiveMax, needCapMax);
       if (feasibleReceiveMax <= 0) continue;
       const receiveQtys = boundedQtyCandidates(feasibleReceiveMax, receiveStep, maxCandidates);
