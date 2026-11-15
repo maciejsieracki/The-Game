@@ -1673,24 +1673,13 @@ function renderEmpirePracaBudgetSplitSection(): string {
  * FINANSOWANIA" niżej, który tylko WSKAZUJE suwak, nie duplikuje go).
  */
 /**
- * R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: wspolna linia „brutto -> netto" w nagłówkach zakładek
- * (Nauka/Spichlerz/Surowce/Handel) — te same liczby co komórki HUD (HudState), bez 2. kalkulacji.
- * Netto ujemne = klasa `neg` (czerwone), dodatnie/zero = `pos`.
- */
-function grossNetSub(brutto: number | undefined, netto: number | undefined, unit: string, note = ''): string {
-  if (brutto === undefined || netto === undefined) return '';
-  const b = Math.round(brutto);
-  const n = Math.round(netto);
-  const cls = n < 0 ? 'neg' : 'pos';
-  return `<div class="civ-emp-hero-sub civ-emp-grossnet">Brutto <b>${signedPl(b)}</b> → netto <b class="${cls}">${signedPl(n)}</b> ${unit} / turę${note}</div>`;
-}
-
-/**
  * R-WEB-UI-RESOURCE-CARD-NUMBERS-ONLY-DETAILS-COLLAPSED-Q1 (Maciej 2026-11-15): nagłówek Surowce
  * pokazuje SAME liczby „+brutto → +netto” (bez słów i bez „szt. / turę”). Opis (brutto = produkcja
  * przed zużyciem, netto = po zużyciu obywateli, budynków i wojska) idzie do `title` tooltipu.
- * Wspólna `grossNetSub` zostaje bez zmian dla pozostałych sekcji.
- * / EN: header line with numbers only; the explanation lives in the tooltip.
+ * R-WEB-UI-GROSS-NET-NUMBERS-ONLY-UNIFY-AND-WIKI-Q1 (Maciej 2026-11-15, decyzja A): ta sama
+ * konwencja dla Nauki, Żywności i Handlu; dawna `grossNetSub` (słowa „Brutto/netto / turę”) usunięta.
+ * Jednostka (PN, 🍞, złota) i dawny opis trafiają do `title` tooltipu.
+ * / EN: header line with numbers only; the explanation and unit live in the tooltip.
  */
 export function grossNetNumbersSub(brutto: number | undefined, netto: number | undefined, tooltip: string): string {
   if (brutto === undefined || netto === undefined) return '';
@@ -1718,7 +1707,7 @@ function renderNaukaSection(
   let h = '<div class="civ-emp-sect" data-section="nauka">'
     + '<div class="civ-emp-eyebrow">NAUKA IMPERIUM</div>'
     + `<div class="civ-emp-hero ${heroCls}">${signedPl(rate)} PN / turę</div>`
-    + grossNetSub(rate, rate, 'PN', ' (Nauka nie ma dziś kosztów — brutto = netto)');
+    + grossNetNumbersSub(rate, rate, 'Nauka nie ma dziś kosztów — brutto = netto. Jednostka: PN na turę.');
 
   if (rows.length === 0) {
     h += `<div class="civ-emp-hero-sub">Bank badań <b>${bank}</b> PN</div>`
@@ -3263,7 +3252,7 @@ function renderSpichlerzCentralnySection(food: EmpireFoodSnap, economy?: EmpireD
     + (food.maxCap > 0 ? `<span class="cap">/ ${food.maxCap}</span>` : '')
     + `<span class="ic" aria-hidden="true">${brandIconSvg('res-food', 16)}</span></div>`
     + renderSpichlerzHeroSub(food, pct, alarm, hasDeficit)
-    + (economy ? grossNetSub(economy.zywnoscWplywMiast ?? economy.zywnoscRate, economy.zywnoscRate, '🍞', ' (brutto = nadwyżka miast → centrala; netto = po deficytach miast i armii)') : '');
+    + (economy ? grossNetNumbersSub(economy.zywnoscWplywMiast ?? economy.zywnoscRate, economy.zywnoscRate, 'Brutto = nadwyżka miast → centrala; netto = po deficytach miast i armii. Jednostka: 🍞 żywność na turę.') : '');
   if (food.maxCap > 0) {
     h += `<div class="civ-emp-bar civ-emp-sp-bar"><div class="${barCls}" style="width:${pct}%"></div></div>`;
   }
@@ -3798,7 +3787,7 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
     + `<div class="civ-emp-res-hdr-row"><span class="civ-emp-res-hdr-ic" aria-hidden="true">${brandIconSvg('cp-trade', 14)}</span>`
     + `<span class="civ-emp-eyebrow">HANDEL — SZLAKI HANDLOWE</span></div>`
     + `<div class="civ-emp-hero ${heroCls}">${signedPl(t.totalIncome)} złota / turę</div>`
-    + grossNetSub(t.totalIncome, t.totalIncome, 'złota', ' (trasy nie mają kosztów; dochód jest już wliczony we wpływy Skarbca)')
+    + grossNetNumbersSub(t.totalIncome, t.totalIncome, 'Trasy nie mają kosztów; dochód jest już wliczony we wpływy Skarbca. Jednostka: złota na turę.')
     + `<div class="civ-emp-hero-sub"><b>${t.routes.length}</b> ${routeCountWord(t.routes.length)} · `
     + `<b>${t.activeDeals.length}</b> ${dealCountWord(t.activeDeals.length)}</div>`;
 
