@@ -1448,3 +1448,13 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Korekta:** wpis `f23326304` ("P4.17 PASS") był przedwczesny. Obowiązującym domknięciem jest FC r3 (`32e65f7d2`), a nie ten wpis.
 - **Zabezpieczenie:** refs/keep `P4-17-r3-{0dadaac3b,518064098,32e65f7d2}`, gałąź `rust-port-wip/R-RUSTPORT-P4-17-MOD03-TERRAIN-DECOR-Q1-fc-r3`.
 - **Ograniczenie:** stan `decor` na parity po późniejszych zmianach (P4.27) nie był testowany w tym cyklu; FC ocenił tylko commit `0dadaac3b`.
+
+## Przebieg (15.11, 10:xx UTC — P4-31 ATLAS-CACHE, domknięcie r3, Opus 5.5)
+- **Proces (P-1, do rejestru):** kod P4-31 (`5259741ab`, cache/klucze treści RR-T8d) trafił na parity-v2 w poprzedniej integracji **bez** Evaluatora i FC. Obieg Operator → Evaluator → FC → integracja nie został zachowany. Dokumentuję to, nie zmieniam historii.
+- **Evaluator r3 (`afea15d17`): PASS-WITH-NOTES, 6 zarzutów.** Główne: kod na parity różni się od ocenianego (`a827fac07` REPIN-3D-B2); brak pliku `02-evaluator-r1.md` w runie (zarzuty r1 rekonstruowane z odpowiedzi Operatora); E12 przeżywa (brak testu rozmiaru indeksu); LRU wyrzuca tekstury widoczne (poza allowlistą, zapisane w dokumentacji); MSRV i GPU na ANGLE → D3D11 NIE_ZMIERZONO.
+- **Obrona r3 (`d850b6b86` kod, `b7aecd8b6` docs):** przyjęła wszystkie 6. Dodano test `end_of_turn_alone_keeps_the_key_index_bounded` (zabija E12), dokumentację LRU z testem `lru_eviction_of_a_shown_texture_duplicates_it`, zaktualizowano README fixtur, MSRV 1.87 zmierzone (468 passed).
+- **FC r3 (`d850b6b86`): PASS-WITH-NOTES, 0 decyzji dla właściciela.**
+- **Integracja:** cherry-pick `d850b6b86` + `b7aecd8b6` na aktualne parity `32e65f7d2` → `525a2ef7b`. Testy na zintegrowanym drzewie: `cargo test --all-targets` 472 passed, 0 failed, EXIT=0; `cargo fmt --check` EXIT=0. FF `rust-port/parity-v2` → `525a2ef7b`.
+- **Uwaga:** `git diff --check` zgłasza białe znaki w logu dowodowym `dowody/18-obrona-r3-parity-atlas-diff.log` (wklejony `git log`), nie w kodzie. Dowodu nie zmieniam.
+- **Zabezpieczenie:** refs/keep `P4-31-r3-{d850b6b86,b7aecd8b6,afea15d17}`, `P4-31-integ`; gałęzie `rust-port-wip/…-obrona-r3-code`, `…-obrona-r3-docs`, `…-integ`.
+- **Otwarte (poza zakresem):** LRU w `assets/cache.rs` wyrzuca widoczne tekstury (osobny temat); GPU/ANGLE u właściciela NIE_ZMIERZONO.
