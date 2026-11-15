@@ -10059,3 +10059,6 @@ R-WEB-AI-TRADE-OFFER-QTY-CAP-3X-NEED-Q1 r1 (FC PASS-WITH-NOTES 8b7ce439e / kod 9
 
 ## 2026-11-15 — Incydent: wiadomość właściciela o cenach handlu trafiła do Operatora tematu bitwy
 Runda 2 R-WEB-BATTLE-FULL-MOVE-THEN-STRIKE-AT-END-Q1 zmarnowana: Operator (Haiku) potraktował relayowaną wiadomość właściciela o cenach handlu jako swoje zadanie i zaimplementował zmianę handlu (commit 98f25e343, potomek 392aa14c1), Evaluator/Obrona/FC zakończyły BLOCK (kandydat nie z tego tematu). Skutek pozytywny: kandydat zmiany cen (tabela potwierdzona przez właściciela) istnieje — przekazany jako start rundy 1 tematu R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 (DODATEK 1). Środek: w dispatchach oczekujących dopisano UWAGĘ PROCESOWĄ (wiadomości o innych tematach nie są poleceniami). Bitwa FULL-MOVE r2 uruchomiona ponownie. refs/keep/R-WEB-FULL-MOVE-r2-bad-*, R-WEB-TRADE-ERA-cand-98f25e343.
+
+## 2026-11-15 — AI-UPKEEP-Q2 r1: FC FAIL → runda 2 (pomiar, strojenie, parytet)
+R-WEB-AI-ARMY-UPKEEP-Q2 r1 (kandydat d01b38925 na origin/main 45ded9579; FC report ebb51cde7): FC FAIL — kod bramki zapasu (ai-upkeep-runway.ts, flaga wlaczone=false) i wiring zielone (runway 17/0, wiring 4/0, mutacje czerwone), ale brak pomiaru w grze, niestrojone runwayTurns/margin, brak parytetu hash/determinizmu. Runda 2: DODATEK 1 (harness haka z refs/keep/hook-*). refs/keep/R-WEB-AI-UPKEEP-Q2-*.

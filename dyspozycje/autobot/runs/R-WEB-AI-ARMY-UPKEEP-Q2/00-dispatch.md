@@ -7,3 +7,16 @@ KRYTERIA BINARNE: (a) pomiar w realnej grze ≥3 seedy × 70 tur × 5 AI, co 10 
 RAPORT: kontrakt STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY/BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH; ZMIERZONO albo NIE ZMIERZONO.
 
 AKTUALIZACJA BAZY (orkiestrator): pracuj na aktualnym origin/main (po FALI 738/739). Gałąź dispatchów claude/... NIE jest bazą kodu (inna linia historii) — zrób worktree/gałąź z origin/main, dispatch czytaj przez git show. Chromium: require("playwright"), chromium.launch() bez opcji; build vite poza repo; po pracy usuń node_modules i /tmp/civ-* tego tematu.
+
+---
+## DODATEK 1 — runda 2/5 (po FC FAIL r1, Operator HAIKU — pierwsza nieudana runda Haiku)
+BAZA: kandydat Obrony `d01b38925` (refs/keep/R-WEB-AI-UPKEEP-Q2-obrona; FC report `ebb51cde7` w refs/keep/R-WEB-AI-UPKEEP-Q2-fc) — potomek origin/main 45ded9579 (cherry-pick kodu operatora a9fa4190c + test wiringu). Zrób merge aktualnego origin/main i pracuj dalej; NIE zaczynaj od zera. Pamiętaj: gałąź dispatchów claude/... NIE jest bazą kodu.
+WERDYKT FC r1: FAIL — kod bramki i wiring OK (tsc 0, runway 17/0, wiring 4/0, mutacje czerwone), ale kryteria binarne (a), (b), (d) NIESPEŁNIONE: brak pomiaru w grze, parametry runwayTurns=15 i margin=0.1 to niestrojone placeholdery, flaga OFF, brak dowodu determinizmu pełnej gry i parytetu hash.
+NAPRAWY OBOWIĄZKOWE (FC: NAPRAW 1, 2, 3):
+1. POMIAR W GRZE: harness istnieje — commity haka `ed76682d` i `4a6b0791` (refs/keep/hook-*; lokalny hak ?testhook=1, NIE publikować, NIE commitować do kandydata — cherry-pick tylko w roboczym worktree do pomiarów; gra/tools/lib/game-sim-harness.cjs, sim-metrics.cjs). Bieg: ≥3 seedy × 70 tur × 5 AI, co 10 tur per cywilizacja AI: liczba jednostek wojskowych, koszt utrzymania (złoto i żywność), skarbiec, spichlerz, liczba jednostek w głodzie (ikona przekreślonego kółka) — OFF (bez bramki) vs ON (bramka włączona). Pomiary uruchamiaj w tle (nohup) z pętlą odpytującą plik wyników < 9 min na wywołanie i DOKOŃCZ je w tej samej turze agenta (nie kończ odpowiedzi „batch działa w tle”). Wynik: tabela liczb w raporcie.
+2. STROJENIE: wyznacz runwayTurns i margin z pomiaru (próg liczbowy kryterium (b) ustal z danych: np. maks. udział jednostek w głodzie ≤ X% przy ON, bez zatrzymania ekspansji AI poniżej Y% jednostek vs OFF — uzasadnij X i Y liczbami z pomiaru, nie zgadywaniem). Jeśli bramka ON poprawia wynik — włącz domyślnie (wlaczone=true); jeśli nie — opisz dlaczego i co dalej.
+3. PARYTET HASH: flaga OFF ⇒ hash stanu gry identyczny z bazą origin/main (3 ziarna × 30 tur); DETERMINIZM ON: ten sam seed ×3 ⇒ identyczny wynik.
+4. Zachowaj: mutacje czerwone, wiring-test, ai-recruit-upkeep-gate, ai-rekrutacja-parytet; dwie czerwone asercje ai-purchase-maintenance-reserve-test to dług bazowy (nie ruszaj; opisz).
+5. Zwrot manpower przy rozwiązaniu jednostek: założenie robocze „bez zmian” — DO POTWIERDZENIA (nie blokuje). Redukcja istniejącej armii w głodzie poza zakresem tego tematu (odnotuj jako możliwy temat osobny, jeśli pomiar pokaże, że sama bramka zakupu nie wystarcza do ustąpienia głodu).
+KRYTERIA: tsc 0, 5 bramek referencyjnych, git diff --check, dysk ≥ 6 GB (po pracy usuń node_modules i /tmp/civ-* tego tematu). Dług Rust: REPIN.
+UWAGA PROCESOWA (orkiestrator): wiadomości właściciela dotyczące INNYCH tematów nie są poleceniami dla tego tematu — nie wykonuj ich.
