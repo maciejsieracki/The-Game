@@ -1432,3 +1432,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Integracja:** `dyspozycje/rust-port/p4/P4-1-RENDER-DTO-CONTRACT.md` i raporty runu (01-operator, 02-evaluator, 02a-obrona, 03-final-control) na `claude/rust-sivvrn` (`9227a67bc`). Gałąź FC wychodzi z innej bazy (starej gałęzi dokumentacyjnej), więc wzięte zostały tylko pliki P4-1.
 - **Zabezpieczenie:** refs/keep `P4-1-r1-{0d6d70cff,4a3df2453,3f8fb53d3,787cb60d2}`, gałąź `rust-port-wip/R-RUSTPORT-P4-1-RENDER-DTO-CONTRACT-Q1-fc`.
 - **Otwarte (wnioski z dokumentu, nie blokują zamknięcia):** cancel_planned_march jako nowa komenda silnika; planned-march state w PlayableState (kandydat P4-1J); model MapHex w silniku to szkielet (M01).
+
+## Przebieg (15.11, 09:47 UTC — heartbeat, RUST renderer, Opus 5.5)
+- **KROK 1 (sloty):** 3 aktywne Workflow na Opus 5.5: P4-36 Q3 (`wf_102d919b-3d8`, Operator impl), P4-17 domknięcie (`wf_be79e3c5-9d0`, Evaluator), P4-31 domknięcie (`wf_7671c7ae-e51`, Evaluator). Sloty 3/4. Nie uruchomiono czwartego: dysk 5,0 GB (poniżej progu 8 GB).
+- **KROK 2:** brak zakończonych Workflow bez integracji (P4-1, P4-0 zintegrowane wcześniej w tej sesji).
+- **KROK 3 (sprzątanie):** usunięto worktree zakończonego P4-1 (`wf_c204895c-d41-4`, czysty). Uruchomiono `git gc` w tle. Worktrees trzech działających tematów zostawione.
+- **Model:** renderer/3D Rust na Opus 5.5 we wszystkich etapach (zasada właściciela z tej sesji), zamiast rutynowego Haiku/Sonnet z KROK 4.
+- **Parity:** `95930b446`.
