@@ -393,14 +393,19 @@ async function main() {
     assert(aiDeductIdx > aiLoopIdx, 'D6: deductBuildingStockCostAcrossCities(cities, oid, aiResUpkeep) leży wewnątrz pętli AI');
     // Okno 1000 zn. (było 500): między deduct a publikacją unit wstawiono blok recordTakenToLedger
     // (R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1) i długą linię converterProducedLastTurnByOwner.
+    // Dowód lokalności: wzorzec musi występować w CAŁYM pliku dokładnie raz (brak innego pasującego
+    // wystąpienia poza oknem) I leżeć w oknie za deduct. Samo `includes` w oknie nie wystarcza.
     const aiWindow = aiDeductIdx > -1 ? mainSrcStripped.slice(aiDeductIdx, aiDeductIdx + 1000) : '';
+    const countOcc = (hay, needle) => hay.split(needle).length - 1;
+    const AI_D7 = 'buildingResourceUpkeepByOwner.set(oid, { ...(econ.resourceUpkeepBuildingsByOwner.get(oid) ?? {}) });';
+    const AI_D8 = 'unitResourceUpkeepByOwner.set(oid, { ...(econ.resourceUpkeepUnitsByOwner.get(oid) ?? {}) });';
     assert(
-      aiWindow.includes('buildingResourceUpkeepByOwner.set(oid, { ...(econ.resourceUpkeepBuildingsByOwner.get(oid) ?? {}) });'),
-      'D7 (parytet gracz/AI): AI -- buildingResourceUpkeepByOwner.set(oid, ...) czyta WPROST econ.resourceUpkeepBuildingsByOwner.get(oid), tuż po deduct',
+      aiWindow.includes(AI_D7) && countOcc(mainSrcStripped, AI_D7) === 1,
+      'D7 (parytet gracz/AI): AI -- buildingResourceUpkeepByOwner.set(oid, ...) czyta WPROST econ.resourceUpkeepBuildingsByOwner.get(oid), tuż po deduct (wzorzec unikalny w pliku)',
     );
     assert(
-      aiWindow.includes('unitResourceUpkeepByOwner.set(oid, { ...(econ.resourceUpkeepUnitsByOwner.get(oid) ?? {}) });'),
-      'D8 (parytet gracz/AI): AI -- unitResourceUpkeepByOwner.set(oid, ...) czyta WPROST econ.resourceUpkeepUnitsByOwner.get(oid)',
+      aiWindow.includes(AI_D8) && countOcc(mainSrcStripped, AI_D8) === 1,
+      'D8 (parytet gracz/AI): AI -- unitResourceUpkeepByOwner.set(oid, ...) czyta WPROST econ.resourceUpkeepUnitsByOwner.get(oid) (wzorzec unikalny w pliku)',
     );
     assert(
       !/ownerId\s*===\s*0/.test(aiWindow),
