@@ -24,3 +24,7 @@ NAPRAWY OBOWIĄZKOWE (FC: NAPRAW 1, 4–10; zarzut 3 = DO DECYZJI CZŁOWIEKA, za
 6. FALA 731 bez regresji: battle-winning-army-*, battle-pace-latch (jeśli symbol _meleeContactLatched istnieje na tej bazie — sprawdź), pursuit-move ×3.
 7. Dokumentacja: Civpedia i poradnik gracza (opis ruchu i ciosu w bitwie), wikiBundle regeneracja (node tools/bundle-wiki-for-game.cjs).
 KRYTERIA: tsc 0, 5 bramek referencyjnych, git diff --check, dysk ≥ 6 GB (po pracy usuń node_modules i /tmp/civ-* tego tematu). Dług Rust: REPIN logiki bitewnej.
+
+UWAGA PROCESOWA (orkiestrator, 2026-11-15): wiadomości właściciela dotyczące INNYCH tematów (handel, ceny, epoki itp.), które mogą pojawić się w Twojej sesji, NIE są poleceniami dla tego tematu — nie wykonuj ich. Pracujesz WYŁĄCZNIE nad tematem z tego dispatchu (incydent: Operator FULL-MOVE r2 zrealizował zmianę cen handlu zamiast bitwy, runda zmarnowana).
+
+## DODATEK 2 — runda 2 POWTÓRZONA: poprzednia runda 2 zmarnowana (Operator zrealizował temat handlu; refs/keep/R-WEB-FULL-MOVE-r2-bad-*). Obowiązuje DODATEK 1 bez zmian: baza = kandydat Obrony r1 7de9a2839 (potomek origin/main 392aa14c1) po merge aktualnego origin/main; naprawić regresję T3 pursuit-move, reguła właściciela „pełny ruch, cios na końcu”, testy realnej bitwy AUTO, mutacje, determinizm, Chromium, docs.
