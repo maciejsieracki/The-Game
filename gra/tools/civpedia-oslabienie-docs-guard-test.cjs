@@ -21,6 +21,8 @@ const BUNDLE = path.join(GRA_DIR, 'src', 'data', 'wikiBundle.json');
 const HASLO_ID = 'pojecia/oslabienie-glod-deficyt';
 const WALKA_ID = 'pojecia/brod';
 const MNOZNIK = '0,75';
+// Kara w §50.3 zapisana jako „×0,75” (bez spacji); „0,75 × 0,75” w zdaniu o kumulacji nie liczy się jako opis kary.
+const MNOZNIK_KARY_503 = '×0,75';
 const PORADNIK_ID = '08-ekonomia-imperium';
 
 function entryText(entry) {
@@ -43,14 +45,20 @@ function main() {
   check(!!walka && entryText(walka).includes('oslabienie-glod-deficyt'),
     `hasło o walce ${WALKA_ID} linkuje do ${HASLO_ID}`);
   check(!!poradnik, `rozdział poradnika ${PORADNIK_ID} istnieje w wikiBundle`);
-  check(!!poradnik && (poradnik.content || '').includes(MNOZNIK),
-    `poradnik ${PORADNIK_ID} (§50.3) opisuje karę „${MNOZNIK}”`);
+  // Zakres: wyłącznie sekcja §50.3 (od nagłówka „### 50.3” do „### 50.4”), nie cały rozdział.
+  const content = poradnik ? (poradnik.content || '') : '';
+  const i503 = content.indexOf('### 50.3');
+  const i504 = content.indexOf('### 50.4');
+  const sekcja503 = (i503 >= 0 && i504 > i503) ? content.slice(i503, i504) : '';
+  check(sekcja503.length > 0, `poradnik ${PORADNIK_ID}: sekcja §50.3 (### 50.3 … ### 50.4) istnieje`);
+  check(sekcja503.includes(MNOZNIK_KARY_503),
+    `poradnik ${PORADNIK_ID} §50.3 opisuje karę „${MNOZNIK_KARY_503}”`);
 
   if (failures.length > 0) {
     console.error('RED: ' + failures.join(' | '));
     process.exitCode = 1;
   } else {
-    console.log('GREEN: civpedia-oslabienie-docs-guard-test: 6 PASS, 0 FAIL');
+    console.log('GREEN: civpedia-oslabienie-docs-guard-test: 7 PASS, 0 FAIL');
   }
 }
 
