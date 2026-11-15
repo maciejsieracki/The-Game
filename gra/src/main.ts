@@ -979,6 +979,13 @@ import {
   type MapBattleWinner,
 } from './game/post-battle-map';
 import {
+  retreatBudgetExhausted,
+  recordRetreatOnRoster,
+  resetRetreatCountOfUnit,
+  ARMIA_UNICESTWIONA_KOMUNIKAT,
+  ARMIA_WROGA_UNICESTWIONA_KOMUNIKAT,
+} from './game/battle-retreat-limit';
+import {
   collectRemovedEnemyTypeIds,
   computeBattleLoot,
   formatBattleLootNote,
@@ -35895,7 +35902,9 @@ async function boot(): Promise<void> {
       // attack this same turn -- must resolve the battle. Separate reason from the
       // garrison lock (defenderLockedByGarnizon) -- different message and different
       // button visual state in preBattle.ts (visible but greyed out, not hidden).
-      const retreatExhaustedThisTurn = defRosterRef.some(u => u.retreatedThisTurn === true);
+      // R-WEB-BATTLE-RETREAT-LIMIT-3-PER-TURN-THEN-DESTROYED-Q1: licznik odwrotow armii w tej turze
+      // (limit odwrot.max_na_ture = 3). Wyczerpany -> przycisk "Wycofaj" wyszarzony z powodem.
+      const retreatExhaustedThisTurn = retreatBudgetExhausted(defRosterRef);
 
       const pbInfo: PreBattleInfo = {
         atakujacy: preBattleSideFromRoster(atkRosterRef, atkSideTitle, atkCivLabel),
@@ -36172,7 +36181,7 @@ async function boot(): Promise<void> {
             // jednostki w tej samej turze (patrz RuntimeUnit.retreatedThisTurn).
             // / EN: mark the whole defending roster "retreated this turn" -- blocks a
             // further retreat on the next attack against these units this same turn.
-            for (const u of defRosterRef) u.retreatedThisTurn = true;
+            recordRetreatOnRoster(defRosterRef);
             showHintMessage('Wycofano się z bitwy.', 3000);
           }
           finishIncomingBattleUi();
@@ -36312,6 +36321,14 @@ async function boot(): Promise<void> {
         units,
         map,
         cities,
+        // R-WEB-BATTLE-RETREAT-LIMIT-3-PER-TURN-THEN-DESTROYED-Q1: obrona wyczerpala limit
+        // odwrotow w tej turze (garnizon i miasto poza tym limitem -- bez zmian).
+        defRetreatBudgetExhausted: !cityOnHex
+          && !allDefendersFortifiedInGarnizon(defRoster)
+          && retreatBudgetExhausted(defRoster),
+        // R-WEB-BATTLE-RETREAT-LIMIT-3-PER-TURN-THEN-DESTROYED-Q1: lustrzany limit dla atakujacego
+        // (przegrana atakujacego po trzech odwrotach w tej turze = unicestwienie armii).
+        atkRetreatBudgetExhausted: !cityOnHex && retreatBudgetExhausted(atkRoster),
         battleQ,
         battleR,
         atkAnchor: atkRoster[0]!,
@@ -36335,6 +36352,13 @@ async function boot(): Promise<void> {
         cityOnBattleHex: cityOnHex,
         holdPositionAfterWin: fortifiedCaptureBlocked,
       });
+      // Komunikat dla gracza: swoja armia (obrona lub atak) -> ARMIA_UNICESTWIONA; wroga -> wariant AI.
+      if (postBattleRes.defenderAnnihilatedByRetreatLimit || postBattleRes.attackerAnnihilatedByRetreatLimit) {
+        const playerArmyDestroyed = postBattleRes.defenderAnnihilatedByRetreatLimit
+          ? defRoster.some(u => u.ownerId === 0)
+          : atkRoster.some(u => u.ownerId === 0);
+        showHintMessage(playerArmyDestroyed ? ARMIA_UNICESTWIONA_KOMUNIKAT : ARMIA_WROGA_UNICESTWIONA_KOMUNIKAT, 6000);
+      }
       // R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1: odwrot ocalalych (pole) o 2 heksy to
       // przemieszczenie wieloheksowe -- odkrycie mgly gracza wzdluz drogi (heks bitwy -> cel).
       for (const rid of postBattleRes.retreatedTwoHexIds) {
@@ -40093,7 +40117,7 @@ async function boot(): Promise<void> {
           // wycofania obrońcy — na nową turę znów może się wycofać raz.
           // / EN: reset the defender's "already retreated" lock — a new turn grants
           // one fresh retreat again.
-          if (u.retreatedThisTurn) u.retreatedThisTurn = false;
+          resetRetreatCountOfUnit(u);
         }
         turn++;
         chronicleTickEmpireSizes(); // R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1
