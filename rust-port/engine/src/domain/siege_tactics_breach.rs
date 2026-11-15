@@ -78,10 +78,15 @@ use crate::domain::js_math::js_max0;
 /// Web `_breachWallTile(wallRow)` (`battleScene.ts:7638-7647`), skutki na stan wylomu.
 ///
 /// Jedno wywolanie wykonuje dwa kroki pinu: `wallTileHp.delete(wallRow)` (`:7646`) i `wallEverBreached = true`
-/// (`:7647`). Zburzenie wiezy na tym wierszu (`_destroyTowerAtRow`, `:7648`) nie ma osobnej flagi: wieza jest
-/// zburzona dokladnie wtedy, gdy kafla nie ma w `wall_tile_hp` (predykat `!wall_tile_hp.contains_key(row)`). Pin zapisuje
-/// `wallTileHp.set` tylko przy inicjalizacji (`:4053`), resecie replaya (`:10529`) i w `_attackWallTile` (`:7558`);
-/// ten ostatni po HP `<= 0` od razu wola `_breachWallTile` (`:7563`), wiec po zakonczonym wyłomie klucza nie ma.
+/// (`:7647`). Zburzenie wiezy na tym wierszu (`_destroyTowerAtRow`, `:7648`) nie ma osobnej flagi: w jednej bitwie
+/// (bez replayu) wieza jest zburzona dokladnie wtedy, gdy kafla nie ma w `wall_tile_hp` (predykat
+/// `!wall_tile_hp.contains_key(row)`). Poza replayem pin zapisuje `wallTileHp.set` tylko przy inicjalizacji (`:4053`)
+/// i w `_attackWallTile` (`:7558`); ten ostatni po HP `<= 0` od razu wola `_breachWallTile` (`:7563`), wiec w jednej
+/// bitwie po zakonczonym wyłomie klucza nie ma.
+///
+/// Wyjatek (NIE_ZMIERZONO/BRAK, nieportowany replay): `_resetSiegeForReplay` (`battleScene.ts:10518-10531`, zapis
+/// `wallTileHp.set` w `:10529`) przywraca kafle, a `_replayBattle` nie przebudowuje `siegeTowers` (`destroyed` zostaje
+/// `true`). Predykat powyzej tego nie odtwarza; przy portowaniu replayu wymagany jawny stan `destroyed`.
 ///
 /// `terrain_tiles_present` = web `this.terrainMap.tiles` nie jest `null` (inaczej `return` przed flaga).
 pub fn breach_wall_tile(s: &WallState, wall_row: i32, terrain_tiles_present: bool) -> WallState {

@@ -5,7 +5,8 @@
 //!   `pickTowerTarget`) z SHA-256 pliku i fragmentów. Test porównuje każdy krok (planowanie, wyłom, odpalenie zegara)
 //!   z pinem: odroczenia salwy, trafienia wieżą, stan muru i zburzenia wież.
 //! - Wyłom: [`breach_wall_tile`] usuwa kafel i w tym samym wywołaniu zburza wieżę na wierszu
-//!   (predykat: kafla nie ma w `wall_tile_hp`); [`SiegeEnv::sync_wall_state`] przenosi ten stan do pętli.
+//!   (predykat: kafla nie ma w `wall_tile_hp`); funkcja testowa [`sync_loop_from_wall`] przenosi ten stan do pętli
+//!   (bez zmian w kodzie produkcyjnym; wiring produkcyjny to #113).
 //! - Liczniki niepustości: każdy kluczowy scenariusz musi mieć trafienia, odroczenia i zburzenia (test sprawdza to
 //!   sam z wektorów, nie z ręcznych liczb).
 //! - Mutacja (ręczna, opisana w `01-operator-impl.md`): usunięcie `wall_tile_hp.remove` w `breach_wall_tile`
@@ -120,6 +121,15 @@ fn wall_from_rows(rows: &[i64], wall_col: i32) -> WallState {
     }
 }
 
+/// Przenosi stan muru do pętli: wiersze kafli (`wall_tile_rows`) i flaga wyłomu. Zburzenie wieży wynika z braku kafla
+/// na jej wierszu (pin `_destroyTowerAtRow`, `:4194-4199`). Funkcja żyje w teście, nie w kodzie produkcyjnym: wiring
+/// produkcyjny (#113) zaprojektuje własny most. Uwaga dla #113: flaga `wall_ever_breached` w pinie jest monotoniczna
+/// poza replayem (`:10522`), więc most nie może jej obniżać starszym stanem.
+fn sync_loop_from_wall<B: LoopBody>(env: &mut SiegeEnv<B>, w: &WallState) {
+    env.wall_tile_rows = w.wall_tile_hp.keys().map(|&r| i64::from(r)).collect();
+    env.wall_ever_breached = w.wall_ever_breached;
+}
+
 /// Pozycje atakujących z wektora (`atk: [{q, r, hp}]`); `None` nie występuje w tych scenariuszach.
 fn atk_cells(sc: &Value) -> Vec<Option<(i64, i64)>> {
     sc["atk"]
@@ -198,7 +208,7 @@ fn run_rust(sc: &Value) -> Vec<Value> {
             "breach" => {
                 let row = step["row"].as_i64().unwrap();
                 wall = breach_wall_tile(&wall, row as i32, true);
-                lp.env.sync_wall_state(&wall);
+                sync_loop_from_wall(&mut lp.env, &wall);
                 obs["row"] = json!(row);
             }
             "drain" => {
