@@ -10,8 +10,10 @@ Pin webu: `07d2fbd72` (`gra/src/**`, odczyt przez `git archive`). Wszystkie nume
 1. **Web nie ma strumienia zdarzeń bitwy dla renderera.** `battleScene.ts` (20 771 linii) to jedna klasa, w której logika
    (`_activateUnit`, `_singleBlow`, `_resolveBlowOutcome`, `_checkEnd`) **wywołuje bezpośrednio** metody sceny 3D/DOM
    (`_doMove`, `_doMeleeAttack`, `_doRangedAttack`, `_spawnDamageLabel`, `_breachWallTile` …). Wyszukiwanie z dispatchu
-   (`emit|event|Event|battleLog|onBlow|onShot`) w `battle/battleScene.ts` i `render/` nie znajduje żadnego emitera,
-   `dispatchEvent` ani subskrypcji. Jedyne trafienia to `BattleEventLog` (`battleScene.ts:68-69`, `:597`, `:10724`).
+   (`emit|event|Event|battleLog|onBlow|onShot`) w `battle/battleScene.ts` i `render/` nie znajduje żadnego emitera
+   zdarzeń bitwy, `dispatchEvent` ani subskrypcji zdarzeń bitwy. `addEventListener` występuje (`:3329`, `:3499-3512`),
+   ale wyłącznie dla wejścia UI (klik w ustawieniach, `resize`, `wheel`, klawisze zoom/pan/prędkość/paski/statystyki/pauza),
+   nie dla przebiegu bitwy. Jedyne trafienia „event” dotyczące bitwy to `BattleEventLog` (`battleScene.ts:68-69`, `:597`, `:10724`).
 2. **`eventLog` w webie NIE jest logiem animacji.** `BattleEventLog` (`units/battleRoster.ts:21-24`) to dwie listy ID
    (`attackerUnitIds`, `defenderUnitIds`), budowane raz przy wyjściu z bitwy (`buildBattleEventLog`, `battleRoster.ts:31-39`;
    wywołanie `battleScene.ts:10724-10727` w `onFinish`) z pełnych rosterów `this.atk`/`this.def`. Konsument:
@@ -38,7 +40,7 @@ Legenda kolumny „Rust”: **logika** = gdzie silnik liczy skutek; **render** =
 | 4 | Kontratak w tym samym starciu: `_defenderCounters` + zwrot obrońcy + `_singleBlow(defender, attacker)` (`:9134-9143`) | obrońca, atakujący, dmg | `ProdBody::counter_strike`, `counters: Vec<BlowRecord>` (`:869`) | `set_facing` + `FloatLabel::damage` | OK |
 | 5 | Strzał: `_doRangedAttack` (`:9179-9241`): `ammoLeft -= 1` + `_updateAmmoBar` (`:9190-9194`), pocisk `projectiles.push` (`:9221-9224`), trafienie po `RANGED_FLY_MS` (`:9227-9233`) | strzelec, cel, rodzaj pocisku (`projectileKind(bu)`), amunicja po strzale, `t0` | gałąź strzelca w `ProdBody` **nieportowana** (`ActivateEvent::RangedAction` → `"strzelec"`, `siege_tactics_loop.rs:812`) | `projectile_kind`, `launch_projectile`, `tick_projectiles` (`dynamics.rs:142`, `:268`, `:307`); `update_ammo_bar` (`units.rs:467`) | BRAK (logika strzelca w pętli) |
 | 6 | Pudło: `log.push('… chybia …')` (`:8962`), `return 0` — brak etykiety | wpis logu | `BlowRecord.missed` (`:840`) | — (log DOM) | ROZBIEŻNE (brak tekstu logu w Rust; patrz #18) |
-| 7 | Trafienie: `bu.hp -= dmg`, `_updateHpBar` (`:8991-8992`), log `:8997-9000` | id, hp, maxHp | `BlowRecord.def_hp_after` (`:843`) | `update_hp_bar` (`units.rs:432`) | OK |
+| 7 | Trafienie: `bu.hp -= dmg`, `_updateHpBar` (`:8991-8992`), log `:8997-9000` | id, hp, maxHp | `BlowRecord.def_hp_after` (`:844`) | `update_hp_bar` (`units.rs:432`) | OK |
 | 8 | Etykieta obrażeń: `_spawnDamageLabel` (`:9940-9971`; pomijana w FF `:9943`; kolor wg strony gracza `:9951`) | id celu, dmg, strona gracza, `vLastWall` | `BlowRecord.dmg` | `FloatLabel::damage` (`dynamics.rs:1210`) | OK |
 | 9 | Morale: `_applyMoraleDamage` (`:9722-9741`), `_gainMorale` (`:9695`), `_boostEnemiesOnBreak` (`:9707`), `_shakeAlliesOnLoss` (`:9743`) → `_updateMoraleBar` | id, morale, moraleMax (dla wielu jednostek naraz) | `ProdBody::apply_morale_damage`/`gain_morale`/`boost_enemies_on_break` (`siege_tactics_loop.rs:1266`, `:1312`, `:1324`); `shakeAlliesOnLoss` **nieportowany** (`:1252`) | `update_morale_bar` (`units.rs:450`) | ROZBIEŻNE (ripple ShakeAllies) |
 | 10 | Ucieczka: `_startRout` (`:9799-9825`): SFX, `routed`, zwrot ku krawędzi (`:9817-9818`), log `:9818` | id, facing W/E | `ProdBody::start_rout` (`:1360`); efekty dowódcy nieportowane (`:1371`) | `rout_facing` (`dynamics.rs:510`) + `set_facing` | OK (dowódca: BRAK) |
@@ -47,25 +49,25 @@ Legenda kolumny „Rust”: **logika** = gdzie silnik liczy skutek; **render** =
 | 13 | Śmierć: `_startFade` (`:9927-9938`) = SFX + `_removeUnitFromScene`; z ciosu (`:9047`), z wyłomu (katapulta obrońcy na murze, `:7704`) | id | `ProdBody::start_fade` (`siege_tactics_loop.rs:1413`) | `kill_unit` (`units.rs:638`) | OK (z ciosu); wyłom — BRAK (#16) |
 | 14 | Wieża muru: `_fireSiegeTowers` (`:4208-4221`, odstęp 180 ms) → `_fireOneTower` (`:4223-4270`): log `:4247`, pocisk `:4250-4261`, trafienie `:4262-4266` | rząd wieży, cel, `t0` (stagger), pocisk, dmg | `SiegeLoop::tower_shoot`/`tower_hit` (`siege_tactics_loop.rs:611-660`), `LoopTimer::TowerShot` | `fire_siege_towers`, `fire_one_tower`, `TowerShot` (`siege_towers.rs:382`, `:475`, `:459`) | OK (brak mostu) |
 | 15 | Zburzenie wieży: `_destroyTowerAtRow` (`:4194-4200`, log `:4199`); z `_fireSiegeTowers` (`:4216`) i `_breachWallTile` (`:7648`) | rząd | `siege_tactics_breach.rs` jawnie poza zakresem (komentarz l.24-26); pętla: wieża bez kafla nie strzela (`siege_tactics_loop.rs:623-626`) | `destroy_tower_at_row` (`siege_towers.rs:338`) | ROZBIEŻNE (brak flagi `destroyed` w silniku) |
-| 16 | Atak katapulty w mur: `_attackWallTile` (`:7540-7569`): `_spawnCatapultBoulder` (`:7552`), po 700 ms HP kafla, `_updateSiegeHud`, `_spawnWallLabel('-dmg (mur)')` (`:7561`), przy 0 → `_breachWallTile` (`:7563`) | katapulta, rząd, dmg, HP kafla, `t0` | `siege_tactics_breach::attack_wall_tile` (`:108`); w `ProdBody` `"atak-muru"` nieportowany (`:809`) | `wall_shot_endpoints`, `Boulder` (`dynamics.rs:630`, `:646`), `FloatLabel::wall` (`:1222`) | BRAK (pętla) |
-| 17 | Wyłom muru: `_breachWallTile` (`:7638-7750`): kafel → Plains, `wallEverBreached`, wieża, etykieta „MUR WYBURZONY!” (`:7649`), gruz, obrońcy z muru cofają się (`:7697-7740`), morale `MORALE_WALL_BREACH` (`:7743-7749`) | rząd, nowe pozycje obrońców, morale wszystkich obrońców | `breach_wall_tile` (`siege_tactics_breach.rs:92`) — tylko stan; odwrót z muru i morale: BRAK w silniku | `breach_wall_tile_fort` (`dynamics.rs:790`), `retreat_from_wall` (`:812`) | ROZBIEŻNE |
+| 16 | Atak katapulty w mur: `_attackWallTile` (`:7540-7569`): `_spawnCatapultBoulder` (`:7552`), po 700 ms HP kafla, `_updateSiegeHud`, `_spawnWallLabel('-dmg (mur)')` (`:7561`), przy 0 → `_breachWallTile` (`:7563`) | katapulta, rząd, dmg, HP kafla, `t0` | `siege_tactics_breach::attack_wall_tile` (`:108`); w `ProdBody` `"atak-muru"` nieportowany (`:810`) | `wall_shot_endpoints`, `Boulder` (`dynamics.rs:630`, `:646`), `FloatLabel::wall` (`:1222`) | BRAK (pętla) |
+| 17 | Wyłom muru: `_breachWallTile` (`:7638-7750`): kafel → Plains, `wallEverBreached`, wieża, etykieta „MUR WYBURZONY!” (`:7649`), gruz, obrońcy z muru cofają się (`:7697-7740`), morale `MORALE_WALL_BREACH` (`:7745-7750`) | rząd, nowe pozycje obrońców, morale wszystkich obrońców | `breach_wall_tile` (`siege_tactics_breach.rs:92`) — tylko stan; odwrót z muru i morale: BRAK w silniku | `breach_wall_tile_fort` (`dynamics.rs:790`), `retreat_from_wall` (`:812`) | ROZBIEŻNE |
 | 18 | Taran w bramę: `_attackGate` (`:7310-7336`): `_animateRam` (`:7323`), SFX, `gateHp`, `_breachGate` (`:7329`) lub `_updateSiegeHud` | taran, kierunek, gateHp | `attack_gate` (`siege_tactics_breach.rs:142`); w pętli brak ścieżki | `RamAnim` (`dynamics.rs:581`) | BRAK (pętla) |
-| 19 | Wyłom bramy: `_breachGate` (`:7757-7811`): kafle Gate → Plains, ukrycie bramy, morale `MORALE_GATE_BREACH` wszystkich obrońców (`:7803-7809`) | flaga, morale obrońców | `breach_gate` (`siege_tactics_breach.rs:131`) — stan; morale: BRAK | `breach_gate` (`dynamics.rs:833`) | ROZBIEŻNE |
+| 19 | Wyłom bramy: `_breachGate` (`:7757-7811`): kafle Gate → Plains, ukrycie bramy, morale `MORALE_GATE_BREACH` wszystkich obrońców (`:7804-7810`) | flaga, morale obrońców | `breach_gate` (`siege_tactics_breach.rs:131`) — stan; morale: BRAK | `breach_gate` (`dynamics.rs:833`) | ROZBIEŻNE |
 | 20 | Wejście na mur po wieży oblężniczej: `_trySiegeTowerClimb` (`:8056-8083`): `ru.q = wallCol`, `onWallWalkway`, log WYŁOM `:8074`, pozycja y=2.5 | id, kafel muru | `siege_tower_climb` (`siege_tactics_tower.rs:399`, log `:431`); w `ProdBody` `"wieza-wejscie"` nieportowany | `climb_onto_wall_walkway` (`units.rs:667`) | OK (brak mostu i wpięcia w pętlę) |
 | 21 | Log tekstowy bitwy `this.log` (`:3744`, `:4199`, `:4247`, `:8074`, `:8962`, `:8997`, `:9046`, `:9471-9472`, `:9493`, `:9818`, `:10179-10203`, `:10229`) | lista tekstów; trafia do `BattleResult.log` (`:10723`) | brak (komentarze „log poza portem”: `siege_tactics_blow.rs:19`, `siege_tactics_endcheck.rs:17`); jedynie `TowerScene.log` (`siege_tactics_tower.rs:119`) | — (DOM / P5) | BRAK |
 | 22 | Panel „Ostatnie starcia”: `_pushClash` (`:9550-9566`, max `CLASH_LOG_MAX`), `_renderClashLog` (`:9569`) | atakujący, cel, strony, dmg, tag `''/padl/rout` | `SceneEffect::PushClash{tag}`, `ClashTag` (`siege_tactics_blow.rs:125-140`) — zwracane, w pętli pomijane (`siege_tactics_loop.rs:1247`) | — (DOM / P5) | ROZBIEŻNE (tag jest, wpisu brak) |
 | 23 | Paski: `_updateHpBar` (`:9636`), `_updateMoraleBar` (`:9652`), `_updateAmmoBar` (`:9671`); też reset przy replay (`:4581-4583`, `:4725-4727`, `:5497-5499`) | id + wartości | stan `CombatUnit` w `TurnSeqState` | `update_hp_bar`/`update_morale_bar`/`update_ammo_bar` (`units.rs:432-490`) | OK (snapshot stanu wystarcza) |
 | 24 | HUD oblężenia `_updateSiegeHud` (`:7833`), etykiety muru `_spawnWallLabel` (`:7814-7831`) | gateHp, HP kafli, wyłom | `WallState` (`siege_tactics_breach.rs`), `SiegeEnv.wall_ever_breached` | `FloatLabel::wall`; HUD = DOM (`siegeHud1E.ts`, P5) | OK (stan) |
 | 25 | Tura/baner: `hint.textContent = 'Tura N'`, `_updateBattlePhaseBanner` | roundNo, aktywna jednostka | `SeqEvent::SetHint`, `SeqEvent::Banner` (`siege_tactics_turnseq.rs:145-171`) — ignorowane w `SiegeLoop::apply` (`siege_tactics_loop.rs:538-541`) | — (DOM / P5) | OK (zdarzenie jest) |
-| 26 | Koniec: `_checkEnd` (`:10153-10239`), `_finishDraw` (`:9467-9478`), PAT z FF (`:9493-9496`), `_skipInstantFallback` (`:3718-3748`), `_showEndScreen` (`:10666-10737`: `_sideEndStats` `:10257-10269`, łup, SFX zwycięstwa) | zwycięzca, statystyki stron (total/lost/remaining/hp/hpMax), łup | `end_check_order` (`siege_tactics_endcheck.rs:202`), `LoopWinner` (`siege_tactics_loop.rs:293`), `SiegeLoop::finish` (`:529`); statystyki końca i łup: BRAK | — (DOM / P5) | ROZBIEŻNE |
-| 27 | Wynik do mapy: `BattleResult` (`:588-604`) budowany w `onFinish` (`:10720-10729`): `winner`, `survivors` (`_battleUnitsForMapExport` `:10246-10250`), `log`, `eventLog`, `wallBreached` (tylko oblężenie) | jak obok | `CombatResult.survivors_*` (`combat.rs:160-178`) to wynik **mapowego** `resolveCombat`, nie bitwy taktycznej; `eventLog`/`BattleEventLog`: BRAK (`git grep -i battle_event_log` → 0); `post-battle-map`: BRAK | — | BRAK |
+| 26 | Koniec: `_checkEnd` (`:10153-10239`), `_finishDraw` (`:9467-9478`), PAT z FF (`:9493-9496`), `_skipInstantFallback` (`:3715-3748`), `_showEndScreen` (`:10666-10737`: `_sideEndStats` `:10257-10269`, łup, SFX zwycięstwa) | zwycięzca, statystyki stron (total/lost/remaining/hp/hpMax), łup | `end_check_order` (`siege_tactics_endcheck.rs:202`), `LoopWinner` (`siege_tactics_loop.rs:293`), `SiegeLoop::finish` (`:529`); statystyki końca i łup: BRAK | — (DOM / P5) | ROZBIEŻNE |
+| 27 | Wynik do mapy: `BattleResult` (`:588-604`) budowany w `onFinish` (`:10720-10729`): `winner` (`this._endWinner ?? winner`, `:10721`), `survivors` = `this._endSurvivors` (`:10722`), `log` (`:10723`), `eventLog` (`:10724-10727`), `wallBreached` (tylko oblężenie, `:10728`). `_endSurvivors` ma **4 źródła** (§2a.1): `_checkEnd` (`:10222-10237`), `_finishDraw` (`:9474-9477`), PAT z FF (`:9494-9495`), `_skipInstantFallback` (`:3746`, z `computeInstantResult` `:20389-20593`) | jak obok | ścieżki `_checkEnd`/`_finishDraw`/PAT: `SiegeLoop` + `LoopWinner` (`siege_tactics_loop.rs:293`, `:529-533`); ścieżka „Pomiń”: `computeInstantResult` woła `resolveCombat` na parę (`:20534`), a odpowiednik `combat::resolve` (`combat.rs:381`, wynik `CombatResult` `:160-170`) istnieje, więc `CombatResult` **dotyczy** bitwy taktycznej w ścieżce „Pomiń”; brakuje natomiast **agregacji `computeInstantResult`** (parowanie, `survivorsA/D` `:20574-20575`, werdykt HP `:20580-20589`, log `:20591`): BRAK (`git grep -i compute_instant_result` → 0); `eventLog`/`BattleEventLog`: BRAK (`git grep -i battle_event_log` → 0); `post-battle-map`: BRAK | — | BRAK |
 | 28 | Dźwięki `_sfxMelee/_sfxShot/_sfxDeath/_sfxRout/_sfxRamImpact/_sfxCatapultImpact/_sfxVictory` (`:11043-11160`, `:7366`, `:7608`) | rodzaj | — | brak modułu audio bitwy w `renderer/src/battle` (`grep sfx` → 0) | BRAK (poza P4-1I; audio) |
 | 29 | AUTO: odtworzenie intencji `_launchAutoBatchResolution` (`:5865-5960`) → `_doMove`/`_doAttack` | jak #1, #3, #5 | `siege_tactics_autobatch.rs`, `siege_tactics_autophase.rs`; `SeqEvent::BeginAutoBatchPhase` → `halt_unsupported` w `SiegeLoop` (`siege_tactics_loop.rs:552-556`) | te same co #1/#3/#5 | BRAK (pętla AUTO, #97/#149) |
 | 30 | Przewijanie (FF): `_runFastForward` (`:9415`), bez klatek; etykiety pomijane (`:9943`), pociski/fade tickowane (`FfEvent::TickProjectiles/TickFades`) | — (renderer pokazuje tylko stan końcowy) | `run_fast_forward` (`siege_tactics_fastforward.rs:131`); `FfEvent::TickProjectiles/TickFades` ignorowane (`siege_tactics_loop.rs:704`) | — | OK (w FF wystarcza snapshot końcowy) |
 
 ## 2. Pola `BattleEventsDto` z wejściami z modelu bitwy
 
-Nazwy robocze. Typ `UnitId` jak w `BattleUnitSpawnDto.id` (`view-model/src/battle.rs:88`). Czas = zegar wirtualny
+Nazwy robocze. Typ `UnitId` jak w `BattleUnitSpawnDto.id` (`view-model/src/battle.rs:85`). Czas = zegar wirtualny
 `VirtualClock::v_now` (`siege_tactics_clock.rs:50-51`) w ms, bo web liczy wszystkie animacje od `_now()` = `vNow`.
 
 ### 2a. Wynik bitwy (snapshot wg webu, `BattleResult`) — `BattleOutcomeDto`
@@ -73,11 +75,38 @@ Nazwy robocze. Typ `UnitId` jak w `BattleUnitSpawnDto.id` (`view-model/src/battl
 | Pole | Web | Wejście w Rust |
 |---|---|---|
 | `winner: Atk \| Def \| Draw` | `BattleResult.winner` (`:589`) | `SiegeLoop::winner` / `LoopWinner` (`siege_tactics_loop.rs:293`, `:529-533`) |
-| `survivors: Vec<{id, hp}>` | `_battleUnitsForMapExport` (`:10246-10250`): `hp > 0 && (!dead \|\| routed)` | `TurnSeqState::atk/def[].c` (`hp`, `dead`, `routed`) |
-| `log: Vec<String>` | `this.log` (`:10723`) | BRAK — wymaga producenta tekstów (#21) |
+| `survivors: Vec<{id, hp}>` | `this._endSurvivors` (`:10722`) — **cztery źródła wg ścieżki końca**, patrz §2a.1; zawężenie typu uzasadnione w §2a.1 | wg §2a.1 |
+| `log: Vec<String>` | `this.log` (`:10723`); w „Pomiń” dopisany `result.log` z `computeInstantResult` (`:3744`) | BRAK — wymaga producenta tekstów (#21) |
 | `attacker_unit_ids`, `defender_unit_ids` | `buildBattleEventLog(this.atk, this.def)` (`:10724-10727`, `battleRoster.ts:31-39`: unikalne, w kolejności rosteru) | lista ID rosteru wejściowego bitwy (`BattleSetupDto.units`, strona) |
-| `wall_breached: Option<bool>` | tylko gdy `siegeWallCol >= 0` (`:10728`) | `SiegeEnv.wall_ever_breached` (`siege_tactics_loop.rs:326-327`) |
+| `wall_breached: Option<bool>` | tylko gdy `siegeWallCol >= 0` (`:10728`); w „Pomiń” ustawiane na `true`, gdy atakujący ma żywą machinę oblężniczą (`:3720-3722`), bez rozgrywania wyłomu | `SiegeEnv.wall_ever_breached` (`siege_tactics_loop.rs:326-327`); reguła „Pomiń” (`:3720-3722`): BRAK (L9) |
 | `end_stats: [SideEndStats; 2]` (`total, lost, remaining, hp, hp_max`) | `_sideEndStats` (`:10257-10269`) | `TurnSeqState` (pochodna); dla ekranu końca (P5) |
+
+#### 2a.1 Źródła `survivors`/`winner`/`log`/`wallBreached` (cztery ścieżki końca)
+
+`BattleResult.survivors` = `this._endSurvivors` (`:10722`). Pole jest ustawiane w czterech miejscach (plus reset `[]`
+przy replay w `_resetBattleRuntimeState`, `:10542`). Producent I1/I1b musi obsłużyć wszystkie cztery:
+
+| Ścieżka | Wywołanie (pin) | `winner` | `survivors` | `wallBreached` | `log` | Wejście w Rust |
+|---|---|---|---|---|---|---|
+| E1 zwycięstwo | `_checkEnd` (`:10153-10239`, przypisanie `:10222-10237`) | atak./obr. (przy obu stronach żywych werdykt HP `:10219`) | **tylko strona zwycięzcy**: `_battleUnitsForMapExport(winner ? atk : def)` (`:10224-10226`, filtr `hp > 0 && (!dead \|\| routed)` `:10246-10250`) | `wallEverBreached` | `this.log` + linia końca `:10229` | `SiegeLoop::finish(LoopWinner::Attacker/Defender)`, `TurnSeqState::atk/def[].c` (`hp`, `dead`, `routed`) |
+| E2 remis (PAT / szturm odparty) | `_finishDraw` (`:9467-9478`), wołane z `_checkEnd` (`:10202`) i z FF (`:9488`) | `'remis'` (`:9473`) | **obie strony**: `[...export(atk), ...export(def)]` (`:9474-9477`), najpierw atk, potem def | `wallEverBreached` | `this.log` + `PAT …` (`:9471-9472`) | `LoopWinner::Draw` (`siege_tactics_loop.rs:296`) + `TurnSeqState` obu stron |
+| E3 PAT z przewijania z rozstrzygnięciem | `_ffRoundCapResult` (`:9485-9497`) | `cap.winner` (atak./obr.) | strona zwycięzcy: `export(winner ? atk : def)` (`:9494-9495`) | `wallEverBreached` | `this.log` + `PAT (przewijanie)` (`:9493`) | jak E1; wywołanie z `run_fast_forward` (`siege_tactics_fastforward.rs:131`) |
+| E4 „Pomiń” bez rozgrywki | `_skipInstantFallback` (`:3715-3748`, gdy `!started`, `:3691`) | `result.winner` (`:3745`); werdykt HP `:20580-20589`, **nigdy `'remis'`** | `result.survivors` (`:3746`): strona zwycięzcy z `computeInstantResult` (`:20574-20589`), `{...u.ru.bu, hp: u.hp}` przy `hp > 0` po `resolveCombat` na parę (`:20534`); na wejściu tylko `!u.dead` (`:3724-3725`) | `true`, gdy `siegeWallCol >= 0` i atakujący ma żywą machinę (`isSiegeUnit`, `:3720-3722`); inaczej bez zmian | `this.log` + `result.log` (`:3744`, linia końca `:20591`) | `combat::resolve` (`combat.rs:381`) na parę; agregacja `computeInstantResult`: **BRAK** (L9) |
+
+Różnice istotne dla I1: (a) E2 jest jedyną ścieżką z ocalałymi obu stron; (b) E4 nie zna `routed` (filtr tylko `hp > 0`;
+jednostki z `dead=true`, także rozbite i usunięte z pola, nie wchodzą do `computeInstantResult`); (c) E4 ustawia
+`wallBreached` regułą machiny, nie wyłomem; (d) E4 bierze HP z wyniku `resolveCombat`, nie z `bu.hp`.
+
+**Zawężenie typu `survivors` do `{id, hp}` — weryfikacja.** Web eksportuje pełny `BattleUnit` (`{...u.bu, hp}`,
+`:10248-10249`; w E4 `{...u.ru.bu, hp}`, `:20574-20575`). W `battleScene.ts` bezpośrednie przypisania do pól `bu`
+w trakcie bitwy (`grep -nE "\.bu\.[A-Za-z_]+ *(=|\+=|-=|\*=)[^=]"`) dotyczą tylko `hp` (`:8991`, `:11683-11684`)
+oraz `armyLeaderMoraleBonusFrac = 0` (`:9999`). Konsumenci `res.survivors` w pinie czytają **wyłącznie `id` i `hp`**:
+`main.ts:34514` (`survivors?.map(sv => ({ id: String(sv.id), hp: sv.hp }))`), `main.ts:34537` (`manualSurvivors` →
+`{id, hp}`), `game/post-battle-map.ts:28-31` (`ManualSurvivor { id; hp? }`, użycie `:169-172`),
+`game/siegeDefenders.ts:375-376`. Pozostałe użycia (`main.ts:33612`, `:34344`, `:36712`, `:36724`,
+`battle/mapFieldBattle.ts:560`) tylko przekazują tablicę do `applyMapBattleOutcome(WithSummary)` (`main.ts:33701`,
+`:34435`). Zmiana `armyLeaderMoraleBonusFrac` nie wraca więc na mapę przez `survivors`. Wniosek: `{id, hp}` wystarcza
+konsumentom mapy w pinie. Zastrzeżenie w §5 (NIE_ZMIERZONO): mutacje `bu` w funkcjach spoza `battleScene.ts`.
 
 ### 2b. Stan po kroku (snapshot dla pasków i pozycji) — `BattleFrameDto`
 
@@ -131,6 +160,8 @@ uderzeniu, `End`) — osobne pole niepotrzebne.
 - **L6** `BattleResult`/`eventLog`/`post-battle-map` — brak po stronie silnika dla bitwy taktycznej (#27).
 - **L7** Pozycja (`col,row`) i `on_wall_walkway` nie są polami `CombatUnit` w `TurnSeqState` — dziś wejście adaptera.
 - **L8** Audio bitwy — brak modułu (poza zakresem P4-1I).
+- **L9** Ścieżka „Pomiń” (E4, §2a.1): brak portu agregacji `computeInstantResult` (`battleScene.ts:20389-20593`) i reguły
+  `wallBreached` przy machinie (`:3720-3722`); `combat::resolve` na parę istnieje (`combat.rs:381`).
 
 ## 4. Propozycja podziału na wdrożenia (NIE wdrażać)
 
@@ -138,13 +169,14 @@ Kolejność: I1 → I2 → I3; I4 równolegle po I1; I5 po I3 i L1. Wszystkie: m
 
 | Nazwa | Zakres | Allowlista | Wektory / testy |
 |---|---|---|---|
-| `R-RUSTPORT-P4-1I1-BATTLE-OUTCOME` | `BattleOutcomeDto` (§2a) w `view-model`; producent z `SiegeLoop` (winner, survivors, ID rosterów = `buildBattleEventLog`, `wall_breached`, `end_stats`); `log` jako `Vec<String>` puste + jawne `NIE_ZMIERZONO` do I3 | `rust-port/view-model/src/battle.rs`, `rust-port/view-model/tests/**` (nowy), `rust-port/engine/src/domain/siege_tactics_outcome.rs` (nowy), `rust-port/engine/src/domain/mod.rs`, `rust-port/engine/tests/p4_1i1_*.rs` | wektory z pinu: `buildBattleEventLog` (duplikaty, kolejność, ID liczbowe → `String`), `_battleUnitsForMapExport` (rout z hp>0, dead z hp 0), `_sideEndStats`, `wallBreached` obecne tylko w oblężeniu; serde round-trip |
+| `R-RUSTPORT-P4-1I1-BATTLE-OUTCOME` | `BattleOutcomeDto` (§2a) w `view-model`; producent dla ścieżek E1–E3 (§2a.1) z `SiegeLoop`: winner, survivors **wg ścieżki** (E1/E3 strona zwycięzcy, E2 obie strony w kolejności atk→def), ID rosterów = `buildBattleEventLog`, `wall_breached`, `end_stats`; wejście producenta = jawna ścieżka końca (enum E1/E2/E3/E4), E4 jako wariant z danymi podanymi z zewnątrz do czasu I1b; `log` jako `Vec<String>` puste + jawne `NIE_ZMIERZONO` do I3 | `rust-port/view-model/src/battle.rs`, `rust-port/view-model/tests/**` (nowy), `rust-port/engine/src/domain/siege_tactics_outcome.rs` (nowy), `rust-port/engine/src/domain/mod.rs`, `rust-port/engine/tests/p4_1i1_*.rs` | wektory z pinu: `buildBattleEventLog` (duplikaty, kolejność, ID liczbowe → `String`), `_battleUnitsForMapExport` (rout z hp>0, dead z hp 0), `_sideEndStats`, `wallBreached` obecne tylko w oblężeniu; remis E2 z ocalałymi obu stron; PAT E3; serde round-trip |
+| `R-RUSTPORT-P4-1I1B-BATTLE-INSTANT` | ścieżka „Pomiń” E4 (L9): port `computeInstantResult` (`:20389-20593`) na `combat::resolve` + reguła `wallBreached` przy machinie (`:3720-3722`) + `result.log`; zasila `BattleOutcomeDto` z I1 | `rust-port/engine/src/domain/siege_tactics_instant.rs` (nowy), `rust-port/engine/src/domain/mod.rs`, `rust-port/engine/tests/p4_1i1b_*.rs` | wektory pinu: werdykt HP (`hpA >= hpD`), brak remisu, `!dead` na wejściu, `wallBreached` z/bez machiny i z/bez muru, teksty `result.log` |
 | `R-RUSTPORT-P4-1I2-BATTLE-FRAME` | `BattleFrameDto` (§2b) + producent ze stanu pętli po każdym `fire`; pozycje/`on_wall_walkway` jako wejście adaptera (L7), `towers_destroyed` z flagi dodanej w silniku (L4) | `rust-port/view-model/src/battle.rs`, `rust-port/engine/src/domain/siege_tactics_loop.rs` (tylko odczyt stanu + flaga wież), nowy `siege_tactics_frame.rs`, testy | wektory pinu: kolejność jednostek = kolejność spawnu; amunicja `Infinity` → `None`; wieże zburzone przy wyłomie (`:7648`) i przy strzale bez kafla (`:4216`) |
 | `R-RUSTPORT-P4-1I3-BATTLE-ACTIONS` | `Vec<BattleActionDto>` (§2c) emitowane przez `SiegeLoop`/`ProdBody` dla ścieżek JUŻ portowanych (cios, kontratak, wieża, rout, śmierć, koniec, tura) + producent tekstów logu i `_pushClash` (L5) 1:1 z pinu | `rust-port/engine/src/domain/siege_tactics_loop.rs`, `siege_tactics_blow.rs` (tylko `SceneEffect`), nowy `siege_tactics_actions.rs`, `rust-port/view-model/src/battle.rs`, testy | generator TS wykonujący tekst pinu (`_doMeleeAttack`/`_singleBlow`/`_resolveBlowOutcome`/`_fireOneTower`) z przechwyceniem wywołań sceny → oczekiwana sekwencja akcji z `t0`; teksty logu bajt-w-bajt (`toFixed(0)`, `arcTag`) |
 | `R-RUSTPORT-P4-1I4-BATTLE-CONSUMER` | konsument w rendererze: `BattleActionDto` → `MoveAnim`/`MeleeLunge`/`launch_projectile`/`Boulder`/`RamAnim`/`breach_*`/`FloatLabel`/`kill_unit`; `BattleFrameDto` → paski | `rust-port/renderer/src/battle/**` (nowy `playback.rs`), `rust-port/renderer/tests/**` | ten sam scenariusz: scena po odtworzeniu akcji = scena po wywołaniach z pinu (porównanie drzewa `Scene` z istniejącymi fiksturami `tests/fixtures/battle3d/`) |
-| `R-RUSTPORT-P4-1I5-BATTLE-ACTIONS-SIEGE` | warianty zależne od L1/L3: `Move`, `Shot` strzelca, `LeaveField`, `Boulder`/`WallDamage`, `Ram`/`GateDamage`, `WallBreach` z odwrotem i morale, `ClimbWall`, AUTO | jak I3 + moduły ruchu/oblężenia wskazane przez tematy L1 | wektory pinu `_attackWallTile`, `_attackGate`, `_breachWallTile` (`:7697-7749`), `_breachGate` (`:7803-7809`), `_fleeStep` |
+| `R-RUSTPORT-P4-1I5-BATTLE-ACTIONS-SIEGE` | warianty zależne od L1/L3: `Move`, `Shot` strzelca, `LeaveField`, `Boulder`/`WallDamage`, `Ram`/`GateDamage`, `WallBreach` z odwrotem i morale, `ClimbWall`, AUTO | jak I3 + moduły ruchu/oblężenia wskazane przez tematy L1 | wektory pinu `_attackWallTile`, `_attackGate`, `_breachWallTile` (`:7697-7750`), `_breachGate` (`:7804-7810`), `_fleeStep` |
 
-Zależności: I1 nie zależy od L1 (wynik da się zbudować z obecnego `SiegeLoop`). I3 i I5 zależą od rozstrzygnięcia §5.
+Zależności: I1 nie zależy od L1 (wynik E1–E3 da się zbudować z obecnego `SiegeLoop`); I1b po I1. I3 i I5 zależą od rozstrzygnięcia §5.
 
 ## 5. NIE_ZMIERZONO i sprawy do decyzji
 
@@ -161,6 +193,10 @@ Zależności: I1 nie zależy od L1 (wynik da się zbudować z obecnego `SiegeLoo
   **NIE_ZMIERZONO**.
 - `mapFieldBattle.ts` przekazuje `res.eventLog` dalej (`:566`); ścieżka mapowa bez sceny 3D buduje log z rosteru
   (`main.ts:33996`, `:34274`, `:34501`, `:36697`) — zakres P6 (post-battle-map), nie P4-1I; wpięcie **NIE_ZMIERZONO**.
+- Pola `BattleUnit` zmieniane w trakcie bitwy przez funkcje **spoza** `battleScene.ts` (wołane z `u.bu` jako argument) —
+  **NIE_ZMIERZONO**. Sprawdzone tylko bezpośrednie przypisania w `battleScene.ts` (§2a.1: `hp`, `armyLeaderMoraleBonusFrac`)
+  i konsumenci `res.survivors` (czytają `id`, `hp`). Typ `{id, hp}` pozostaje bezpieczny dla mapy w pinie niezależnie
+  od wyniku, bo konsumenci nie czytają innych pól.
 - Czas `t0` akcji w trybie AUTO (wiele animacji równolegle w fazie, `autoBatchPhase.ts:1-7`) — **NIE_ZMIERZONO**,
   zależy od L1 (#97/#149).
 
