@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "8204f17178ae2afa5735849e93bc11ac",
-  "bundleSha256": "60c3b9c82a9436f70c3f89cc1887ebc7d387dae0b7a5d8fdc54e37cdf2564f58",
-  "bundleBytes": 14800877,
+  "bundleMd5": "70828a6bfaad4caa42ba94b4da9bf932",
+  "bundleSha256": "15a5582aae9290c21e77fc176a886d581b4c46012d9baf04e857f06bce2427f0",
+  "bundleBytes": 14802686,
   "sourceSnapshot": {
-    "source": "main FC adde46879",
+    "source": "main FC 7de3aa9a4",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 753: diplo-truce-live-test: L2b opisuje mechanizm oferty w skrzynce gracza, nowe asercje L2b2 i L2g2 wykrywaja wariant AI akceptuje od razu, sekcja POKRYCIE; kod gry bez zmian"
+    "FALA 754: Blok __aiEconomyMeasure w main.ts za civTest (bez wplywu na gre), runner ai-economy-measure-run.cjs wznawialny z AI z miastami (41), obejscie bramki NNS gracza, test haka 10/10, skrypt ai-economy-measure-upkeep-onoff.cjs; kod gry w trybie normalnym bez zmian"
   ],
   "verification": [
-    "tsc 0; logic 213/213; 5 bramek zielone; live truce 32/0; mutacja czerwieni L2b2 i L2h; vite build OK"
+    "tsc 0; logic 213/213; 5 bramek zielone; resource-ledger-hook-gate 6/0; test haka 10/10 i 11/11 z mutantem; 100 tur x2 ziarna do t100; vite build OK"
   ],
   "limits": [
-    "NIE ZMIERZONO: odmowa AI wobec propozycji gracza (wymaga haka w main.ts); osobna mutacja wariantu AI odrzuca od razu"
+    "NIE ZMIERZONO: test wznowienia 0/10 (zakres #424); pomiar #415 ON/OFF na 100 turach; przebiegi ciagle zatrzymane w t51 i t89 (kolejka odlozonych bitew); przychod i utrata na ture"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES TEST-DEBT-TRUCE-L2B-RELABEL-Q1 r1 (kod 3bea30244, raport adde46879): tylko gra/tools/diplo-truce-live-test.cjs: L2b przeetykietowane na mechanizm oferty w skrzynce gracza (truceEndOffer), nowe asercje L2b2 i L2g2 (peaceUntilTurn null) wykrywaja wariant AI akceptuje od razu; sekcja POKRYCIE w naglowku. Live truce 32/0; tsc 0; 5 bramek zielone; mutacja (natychmiastowy pokoj) czerwieni L2b2 i L2h. NIE POKRYTE: odmowa AI wobec propozycji gracza (wymaga haka w main.ts)."
+    "notes": "FC PASS-WITH-NOTES AI-ECONOMY-MEASURE-HARNESS-Q1 r3 (kod 7f4299061, raport 7de3aa9a4): harness pomiarowy ekonomii AI: blok __aiEconomyMeasure w haku civTest (main.ts, tylko za civTest), runner wznawialny ai-economy-measure-run.cjs ze startem po koncu nakladki Tworzenie swiata (41 AI z miastami), obejscie bramki NNS gracza z testem i mutacja, test haka 10/10 (11/11 z mutantem), skrypt ON/OFF bramki utrzymania armii AI. 100 tur x2 ziarna (4242 777) dochodza do t100. tsc 0; 5 bramek zielone; resource-ledger-hook-gate 6/0. Notatki: test wznowienia --resume-test 0/10 (zakres #424 szerszy niz podzial pracy); przebiegi ciagle zatrzymane w t51 i t89 (zalegajaca kolejka odlozonych bitew blokuje Zakoncz ture - kandydat #418); pomiar #415 ON/OFF na 100 turach niewykonany."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-15T22:58:01",
+  "hubGeneratedAt": "2026-11-15T23:17:51",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "8204f17178ae2afa5735849e93bc11ac",
-      "sizeBytes": 14800877
+      "md5": "70828a6bfaad4caa42ba94b4da9bf932",
+      "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "8204f17178ae2afa5735849e93bc11ac",
-      "sizeBytes": 14800877
+      "md5": "70828a6bfaad4caa42ba94b4da9bf932",
+      "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "8204f17178ae2afa5735849e93bc11ac",
-      "sizeBytes": 14800877
+      "md5": "70828a6bfaad4caa42ba94b4da9bf932",
+      "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "8204f17178ae2afa5735849e93bc11ac",
-      "sizeBytes": 14800877
+      "md5": "70828a6bfaad4caa42ba94b4da9bf932",
+      "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "8204f17178ae2afa5735849e93bc11ac",
-      "sizeBytes": 14800877
+      "md5": "70828a6bfaad4caa42ba94b4da9bf932",
+      "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "8204f17178ae2afa5735849e93bc11ac",
-      "sizeBytes": 14800877
+      "md5": "70828a6bfaad4caa42ba94b4da9bf932",
+      "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "8204f17178ae2afa5735849e93bc11ac",
-      "sizeBytes": 14800877
+      "md5": "70828a6bfaad4caa42ba94b4da9bf932",
+      "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "8204f17178ae2afa5735849e93bc11ac",
-      "sizeBytes": 14800877
+      "md5": "70828a6bfaad4caa42ba94b4da9bf932",
+      "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "8204f17178ae2afa5735849e93bc11ac",
-      "sizeBytes": 14800877
+      "md5": "70828a6bfaad4caa42ba94b4da9bf932",
+      "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "8204f17178ae2afa5735849e93bc11ac",
-      "sizeBytes": 14800877
+      "md5": "70828a6bfaad4caa42ba94b4da9bf932",
+      "sizeBytes": 14802686
     }
   ],
-  "md5": "8204f17178ae2afa5735849e93bc11ac",
+  "md5": "70828a6bfaad4caa42ba94b4da9bf932",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

@@ -1,3 +1,9 @@
+## ROBOCZA 70828a6b -- 2026-11-14 -- FALA 754: Harness pomiarowy ekonomii AI: hak civTest, runner wznawialny, skrypt ON/OFF bramki utrzymania armii AI (testowa)
+
+- Blok __aiEconomyMeasure w main.ts za civTest (bez wplywu na gre), runner ai-economy-measure-run.cjs wznawialny z AI z miastami (41), obejscie bramki NNS gracza, test haka 10/10, skrypt ai-economy-measure-upkeep-onoff.cjs; kod gry w trybie normalnym bez zmian
+- Weryfikacja: tsc 0; logic 213/213; 5 bramek zielone; resource-ledger-hook-gate 6/0; test haka 10/10 i 11/11 z mutantem; 100 tur x2 ziarna do t100; vite build OK
+- Limity: NIE ZMIERZONO: test wznowienia 0/10 (zakres #424); pomiar #415 ON/OFF na 100 turach; przebiegi ciagle zatrzymane w t51 i t89 (kolejka odlozonych bitew); przychod i utrata na ture
+
 ## ROBOCZA 8204f171 -- 2026-11-14 -- FALA 753: Test rozejmu: przeetykietowanie L2b i asercje wariantu oferty w skrzynce (tylko narzedzie) (testowa)
 
 - diplo-truce-live-test: L2b opisuje mechanizm oferty w skrzynce gracza, nowe asercje L2b2 i L2g2 wykrywaja wariant AI akceptuje od razu, sekcja POKRYCIE; kod gry bez zmian
