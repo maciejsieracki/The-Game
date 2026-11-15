@@ -1813,3 +1813,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sprzątanie:** worktree `integ-jsround` i `target-integ-jsround` (3 GB) usunięte.
 - **Następny krok:** integracja `4183d0aab` (serde float_roundtrip, #170) na nowym parity `83f5fd654` z pełnym `cargo test`. Wymaga osobnej rundy integracyjnej (zmiana `Cargo.toml` + testu wektorowego).
 - **Dysk:** 5,7 GB wolne przed sprzątaniem; po usunięciu integracji ~8,7 GB. Próg 8 GB dla nowych startów z kodem Rust.
+
+## Przebieg (15.11, 18:5x UTC — #226 K5LOOP-OUTCOME: runda 5 PASS, integracja w toku)
+
+- **Runda 5 (Operator Sonnet, uzasadniony po 2×FAIL Haiku, `wf_f3b76b65-261`):** Operator PASS (`92be62324`), Evaluator PASS-WITH-NOTES (`b25317393`), Obrona (`205400ffc`), **FC PASS-WITH-NOTES `5f7cd0003`**.
+- **Zakres wdrożony:** efekty po ciosie w `ProdBody::strike` (Kill, MoraleOnly, rout-flaga, boost, gain, armia w odwrocie). Wektory pinu: 320 sekwencji, 1758 aktywacji, guard SHA-256 `outcomeSha256`. Liczniki pokrycia > 0. Pięć mutacji daje FAIL.
+- **Odstępstwo od allowlisty (ujawnione, zaakceptowane przez FC):** przeliczono generator, `_pin.rs`, `vectors.json` i jedną asercję w `p6_siege_tactics_loop_body.rs` — efekty zmieniają stan po każdym ciosie. Asercja **nie osłabiona** (wpis `unported` usunięty, bo efekt portowany).
+- **NIE_ZMIERZONO / jawnie unported:** ripple `_shakeAlliesOnLoss` (zależy od #123), efekty dowódcy (`dowodca-*`), `occByKey`, `routedUnits`, tower_blow nadal zapisuje unported. Osłona wręcz `_checkMeleeScreenLost` ma tylko test Rust-only (generator ma `primaryRanged=false`).
+- **Integracja:** merge `--no-ff` `5f7cd0003` na parity `83f5fd654` → `c3e3617b2` (worktree `integ-outcome`). Merge-tree bez konfliktów, ancestry potwierdzona (`f7baa3848` w łańcuchu, `92be62324` w FC). Bramki w tle: `FMT_EXIT=0`; clippy i pełny `cargo test` w toku. **FF po `TEST_EXIT=0`.**
+- **Sprzątanie:** worktree rundy 5 usunięte; refs `refs/keep/cleanup-wf_f3b76b65-261-*` i `refs/keep/K5LOOP-OUTCOME-r5-fc`.
