@@ -85,6 +85,7 @@ pub mod replay;
 pub mod resource_access;
 pub mod resource_production;
 pub mod rng;
+pub mod road_network;
 pub mod roads;
 // Wymagane: save_load.rs używa `civ_engine::`; tests/*.rs włączają go przez #[path], lib test nie ma tej ścieżki.
 #[cfg(not(test))]
