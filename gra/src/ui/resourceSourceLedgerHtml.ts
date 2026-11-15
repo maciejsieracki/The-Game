@@ -25,11 +25,14 @@ function escHtml(s: string): string {
  * Markup `<details class="civ-emp-res-skad">` z jedną linią na źródło.
  * `open` = domyślnie rozwinięte (sól i ceramika — priorytet właściciela).
  * `turnCount` = liczba tur w oknie (podpis w summary).
+ * `key` = klucz surowca (`data-skad-key`) — po przerysowaniu panelu stan `open` wraca wg klucza
+ * (R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1, GOAL 5).
  */
 export function resourceSourceLedgerDetailsHtml(
   lines: ReadonlyArray<LedgerSourceLine>,
   turnCount: number,
   open: boolean,
+  key?: string,
 ): string {
   const rows = lines.map(l => {
     const sign = l.amount > 0 ? '+' : '−';
@@ -37,7 +40,8 @@ export function resourceSourceLedgerDetailsHtml(
     return `<div class="civ-emp-res-skad-row ${cls}"><span class="v">${sign}${escHtml(String(Math.abs(l.amount)))}</span>`
       + `<span class="k">${escHtml(l.label)}</span></div>`;
   }).join('');
-  return `<details class="civ-emp-res-skad"${open ? ' open' : ''}>`
+  const keyAttr = key !== undefined ? ` data-skad-key="${escHtml(key)}"` : '';
+  return `<details class="civ-emp-res-skad"${keyAttr}${open ? ' open' : ''}>`
     + `<summary>Skąd zapasy (ostatnie ${escHtml(String(turnCount))} tur)</summary>`
     + `<div class="civ-emp-res-skad-body">${rows}`
     + `<div class="civ-emp-res-skad-note">Suma z okna tur; przyrost i ubytek osobno.</div>`

@@ -3587,7 +3587,30 @@ export function resSkadZapasyHtml(resourceKey: string, ownerId = 0): string {
   const lines = ledgerSourceLinesForResource(turns, resourceKey);
   if (lines.length === 0) return '';
   const open = resourceKey === 'sol' || resourceKey === 'ceramika';
-  return resourceSourceLedgerDetailsHtml(lines, turns.length, open);
+  return resourceSourceLedgerDetailsHtml(lines, turns.length, open, resourceKey);
+}
+
+/**
+ * R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1 (GOAL 5): `innerHTML` podmienia całą treść
+ * panelu, a przeglądarka resetuje `open` każdego `<details>` do wartości z markupu. Zapamiętujemy
+ * stan „Skąd zapasy” (wg `data-skad-key`) PRZED podmianą i przywracamy PO niej — gracz rozwinięte
+ * źródła nie zwijają się przy przerysowaniu (np. po tyknięciu tury lub zmianie bloku).
+ * / EN: remember open state of the ledger <details> before innerHTML swap, restore it after.
+ */
+export function captureSkadDetailsOpen(root: ParentNode): Map<string, boolean> {
+  const out = new Map<string, boolean>();
+  root.querySelectorAll<HTMLDetailsElement>('details.civ-emp-res-skad[data-skad-key]').forEach((d) => {
+    out.set(d.getAttribute('data-skad-key') ?? '', d.open);
+  });
+  return out;
+}
+
+export function restoreSkadDetailsOpen(root: ParentNode, prev: ReadonlyMap<string, boolean>): void {
+  if (prev.size === 0) return;
+  root.querySelectorAll<HTMLDetailsElement>('details.civ-emp-res-skad[data-skad-key]').forEach((d) => {
+    const k = d.getAttribute('data-skad-key') ?? '';
+    if (prev.has(k)) d.open = prev.get(k) === true;
+  });
 }
 
 
@@ -4477,7 +4500,9 @@ function render(): void {
   // (wireMocViewButtons) or a column filter (wireMiastaColFilter) doesn't scroll the panel back
   // to the very top.
   const prevScrollTop = bodyEl.scrollTop;
+  const skadOpenPrev = captureSkadDetailsOpen(bodyEl);
   bodyEl.innerHTML = body;
+  restoreSkadDetailsOpen(bodyEl, skadOpenPrev);
   mountMassRecruitmentControls(bodyEl, snap);
   wireMocViewButtons();
   // N1 (Evaluator, notatka na 89c16ec1): JEDNO wywołanie na render() (przeniesione z wnętrza

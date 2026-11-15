@@ -36,7 +36,7 @@ if (!fs.existsSync(CHROMIUM)) {
 }
 
 fs.writeFileSync(ENTRY, `
-export { resCardHtml } from ${JSON.stringify(path.join(GRA, 'src/ui/empireDetailPanel'))};
+export { resCardHtml, captureSkadDetailsOpen, restoreSkadDetailsOpen } from ${JSON.stringify(path.join(GRA, 'src/ui/empireDetailPanel'))};
 export { createLedgerTurn, recordLedgerFlow, commitLedgerHistoryTick, resetLedgerHistory } from ${JSON.stringify(path.join(GRA, 'src/game/resource-ledger'))};
 `, 'utf8');
 // Import panelu dotyka import.meta.glob (Vite) i ?raw — stub jak w resource-cards-gross-net-test.cjs.
@@ -132,7 +132,8 @@ console.log('resource-ledger-skad-dom-test (Chromium DOM)');
 const dom = {};
 for (const k of Object.keys(cards)) dom[k] = dumpDom(k, page(cards[k], 360));
 const bodyOf = (h) => h.slice(h.indexOf("<body"));
-const OPEN_DETAILS = /<details class="civ-emp-res-skad" open(=""|>)/;
+// R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1 (GOAL 5): markup niesie `data-skad-key` (klucz stanu open) przed `open`.
+const OPEN_DETAILS = /<details class="civ-emp-res-skad"(?: data-skad-key="[^"]*")? open(=""|>)/;
 
 check('D1 sol: blok "Skad zapasy" otwarty domyslnie', OPEN_DETAILS.test(bodyOf(dom.solOwner0)));
 check('D1 sol: "+12 Warzelnia (Rzym)" jako wartosc przed etykieta',
@@ -148,6 +149,42 @@ check('D4 owner 1 widzi wlasny dziennik ("Kopalnia soli (Egipt)")',
   dom.solOwner1.includes('Kopalnia soli (Egipt)') && !dom.solOwner1.includes('Umowa wymiany z Asyria'));
 check('D4 owner 0 nie dostaje danych owner 1', !dom.solOwner0.includes('Kopalnia soli (Egipt)'));
 check('D5 drewno bez wpisow: brak bloku "Skad zapasy"', !bodyOf(dom.drewno0).includes("civ-emp-res-skad"));
+
+// R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1 (GOAL 5, zarzut 2 Evaluatora r2): stan `<details>` „Skąd zapasy”
+// musi przeżyć przerysowanie. D6: zachowanie capture/restore w Chromium (funkcje wstrzyknięte jako toString z bundla);
+// D7: statyczna kolejność w render() panelu (capture PRZED innerHTML, restore PO) — usunięcie któregokolwiek wywołania czerwieni test.
+{
+  const cap = P.captureSkadDetailsOpen.toString();
+  const res = P.restoreSkadDetailsOpen.toString();
+  const fresh = (c) => `<div id="b">${c}</div>`;
+  const rerenderPage = '<!doctype html><html lang="pl"><head><meta charset="utf-8"></head><body>'
+    + `<div id="host">${fresh(cards.solOwner0)}${fresh(cards.ceramika0).replace('id="b"', 'id="c"')}</div>`
+    + '<pre id="res"></pre><script>'
+    + `const capture = ${cap};\nconst restore = ${res};\n`
+    + `const host = document.getElementById('host');\n`
+    + `const sol = host.querySelector('#b details.civ-emp-res-skad'); sol.open = false;\n` // gracz zwinął blok „sól”
+    + `const ceramikaDet = host.querySelector('#c details.civ-emp-res-skad'); ceramikaDet.open = true;\n`
+    + `const prev = capture(host);\n`
+    + `host.innerHTML = ${JSON.stringify(fresh(cards.solOwner0) + fresh(cards.ceramika0).replace('id="b"', 'id="c"'))};\n`
+    + `restore(host, prev);\n`
+    + `const st = (id) => host.querySelector('#' + id + ' details.civ-emp-res-skad').open ? 1 : 0;\n`
+    + `document.getElementById('res').textContent = 'sol=' + st('b') + ';ceramika=' + st('c') + ';keys=' + [...prev.keys()].sort().join(',');\n`
+    + '</script></body></html>';
+  const fileRR = path.join(TMP, 'restore-roundtrip.html');
+  fs.writeFileSync(fileRR, rerenderPage, 'utf8');
+  const outRR = execFileSync(CHROMIUM, [
+    '--headless=new', '--no-sandbox', '--disable-gpu', '--allow-file-access-from-files',
+    '--no-first-run', '--dump-dom', 'file://' + fileRR,
+  ], { encoding: 'utf8', timeout: 90000, stdio: ['ignore', 'pipe', 'ignore'] });
+  const m = /<pre id="res">([^<]*)<\/pre>/.exec(outRR);
+  const got = m ? m[1] : '(brak wyniku)';
+  check('D6 przerysowanie: zwiniety przez gracza blok "Skad zapasy" zostaje zwiniety (sol=0)', got.startsWith('sol=0;'), got);
+  check('D6 przerysowanie: rozwiniety blok ceramiki zostaje rozwiniety (ceramika=1)', got.includes(';ceramika=1;'), got);
+  check('D6 klucze stanu wg data-skad-key (sol, ceramika)', got.endsWith(';keys=ceramika,sol'), got);
+  const panelSrcNow = fs.readFileSync(path.join(GRA, 'src/ui/empireDetailPanel.ts'), 'utf8');
+  check('D7 render(): capture PRZED innerHTML, restore PO innerHTML (kolejnosc w kodzie)',
+    /const skadOpenPrev = captureSkadDetailsOpen\(bodyEl\);\s*bodyEl\.innerHTML = body;\s*restoreSkadDetailsOpen\(bodyEl, skadOpenPrev\);/.test(panelSrcNow));
+}
 
 if (SHOT_DIR) {
   fs.mkdirSync(SHOT_DIR, { recursive: true });
