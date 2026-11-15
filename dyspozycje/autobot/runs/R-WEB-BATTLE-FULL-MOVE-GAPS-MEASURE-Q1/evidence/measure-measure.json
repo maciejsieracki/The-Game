@@ -1,13 +1,19 @@
 {
  "part": "measure",
- "startedAt": "2026-11-15T22:18:37.372Z",
+ "mergedFrom": [
+  "measure C0,C2 (r2 tool, seeds 1-5)",
+  "measure C3,C4 (r2 tool, seeds 1-5)",
+  "measure C1 (r1 tool, seeds 1-5; no contact)"
+ ],
+ "startedAt": "2026-11-15T22:51:26.039Z",
+ "finishedAt": "2026-11-15T22:58:56.938Z",
  "runs": [
   {
    "comp": 0,
    "atk": "Hastati:8,Lucznik:6,Konnica:4",
    "def": "Hastati:14",
    "seed": 1,
-   "sec": 19,
+   "sec": 24,
    "firstContact": 2,
    "strikesTotal": 199,
    "doubleStrike": 0,
@@ -17,12 +23,464 @@
    "shooterLeftUnexplained": 104,
    "shooterLeftBlocked": 208,
    "shooterMoveAfterHit": 23,
-   "shooterMoveAfterHitActs": 23,
+   "shooterLeftUnexplainedNarrow": 104,
    "exemptActs": 46,
    "exemptMoveAfterHit": 0,
    "exemptRouted": 46,
    "exemptDoctrine": 0,
    "unexplainedList": [
+    {
+     "k": "2|def1",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "4|def11",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "4|def12",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|def0",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|def12",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk6",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def2",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def6",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def7",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def8",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def9",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk6",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def2",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def7",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def8",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def9",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def10",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk3",
+     "left": 1,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk6",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def2",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def7",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def8",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def9",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def10",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk6",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def7",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def9",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|atk6",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "11|atk6",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk0",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk2",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk3",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk4",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk5",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk6",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk7",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def3",
+     "left": 3,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def4",
+     "left": 3,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def5",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def6",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def7",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def8",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def9",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def10",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "narrowList": [
     {
      "k": "2|def1",
      "left": 2,
@@ -484,7 +942,7 @@
    "atk": "Hastati:8,Lucznik:6,Konnica:4",
    "def": "Hastati:14",
    "seed": 2,
-   "sec": 23,
+   "sec": 28,
    "firstContact": 2,
    "strikesTotal": 198,
    "doubleStrike": 0,
@@ -494,12 +952,274 @@
    "shooterLeftUnexplained": 67,
    "shooterLeftBlocked": 203,
    "shooterMoveAfterHit": 23,
-   "shooterMoveAfterHitActs": 23,
+   "shooterLeftUnexplainedNarrow": 67,
    "exemptActs": 26,
    "exemptMoveAfterHit": 0,
    "exemptRouted": 26,
    "exemptDoctrine": 0,
    "unexplainedList": [
+    {
+     "k": "2|def1",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|def9",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def5",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def7",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def9",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def5",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def9",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def12",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def12",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|def12",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk0",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk2",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk3",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk4",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk5",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk6",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk7",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def3",
+     "left": 3,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def4",
+     "left": 3,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def5",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def6",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def7",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def8",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def9",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def10",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "narrowList": [
     {
      "k": "2|def1",
      "left": 2,
@@ -771,7 +1491,7 @@
    "atk": "Hastati:8,Lucznik:6,Konnica:4",
    "def": "Hastati:14",
    "seed": 3,
-   "sec": 20,
+   "sec": 23,
    "firstContact": 2,
    "strikesTotal": 188,
    "doubleStrike": 0,
@@ -781,12 +1501,294 @@
    "shooterLeftUnexplained": 71,
    "shooterLeftBlocked": 183,
    "shooterMoveAfterHit": 29,
-   "shooterMoveAfterHitActs": 29,
+   "shooterLeftUnexplainedNarrow": 71,
    "exemptActs": 26,
    "exemptMoveAfterHit": 0,
    "exemptRouted": 26,
    "exemptDoctrine": 0,
    "unexplainedList": [
+    {
+     "k": "2|def1",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|def3",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|def4",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def3",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def4",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def6",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def4",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def6",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def7",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def8",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def4",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def7",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def8",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk0",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk2",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk3",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk4",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk5",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk6",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk7",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def3",
+     "left": 3,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def4",
+     "left": 3,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def5",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def6",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def7",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def8",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def9",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def10",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "narrowList": [
     {
      "k": "2|def1",
      "left": 2,
@@ -1078,7 +2080,7 @@
    "atk": "Hastati:8,Lucznik:6,Konnica:4",
    "def": "Hastati:14",
    "seed": 4,
-   "sec": 19,
+   "sec": 22,
    "firstContact": 2,
    "strikesTotal": 166,
    "doubleStrike": 0,
@@ -1088,12 +2090,234 @@
    "shooterLeftUnexplained": 58,
    "shooterLeftBlocked": 165,
    "shooterMoveAfterHit": 20,
-   "shooterMoveAfterHitActs": 20,
+   "shooterLeftUnexplainedNarrow": 58,
    "exemptActs": 11,
    "exemptMoveAfterHit": 0,
    "exemptRouted": 11,
    "exemptDoctrine": 0,
    "unexplainedList": [
+    {
+     "k": "2|def1",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def8",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def9",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def13",
+     "left": 1,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def12",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def12",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def12",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk0",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk2",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk3",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk4",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk5",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk6",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk7",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def3",
+     "left": 3,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def4",
+     "left": 3,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def5",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def6",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def7",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def8",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def9",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def10",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "narrowList": [
     {
      "k": "2|def1",
      "left": 2,
@@ -1325,7 +2549,7 @@
    "atk": "Hastati:8,Lucznik:6,Konnica:4",
    "def": "Hastati:14",
    "seed": 5,
-   "sec": 26,
+   "sec": 24,
    "firstContact": 2,
    "strikesTotal": 199,
    "doubleStrike": 0,
@@ -1335,12 +2559,334 @@
    "shooterLeftUnexplained": 77,
    "shooterLeftBlocked": 201,
    "shooterMoveAfterHit": 31,
-   "shooterMoveAfterHitActs": 31,
+   "shooterLeftUnexplainedNarrow": 77,
    "exemptActs": 21,
    "exemptMoveAfterHit": 0,
    "exemptRouted": 21,
    "exemptDoctrine": 0,
    "unexplainedList": [
+    {
+     "k": "2|def1",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk0",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def5",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk0",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk6",
+     "left": 1,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def5",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def11",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk0",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk11",
+     "left": 1,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def5",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def11",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|atk0",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|atk11",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|def11",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "11|atk0",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "11|atk5",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "11|atk12",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk0",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk2",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk3",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk4",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk5",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk6",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk7",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def3",
+     "left": 3,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def4",
+     "left": 3,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def5",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def6",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def7",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def8",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def9",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def10",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "narrowList": [
     {
      "k": "2|def1",
      "left": 2,
@@ -1802,7 +3348,7 @@
    "atk": "Lucznik:8,Konnica:6",
    "def": "Hastati:8,Konnica:4",
    "seed": 1,
-   "sec": 29,
+   "sec": 26,
    "firstContact": 2,
    "strikesTotal": 99,
    "doubleStrike": 0,
@@ -1812,12 +3358,254 @@
    "shooterLeftUnexplained": 48,
    "shooterLeftBlocked": 141,
    "shooterMoveAfterHit": 8,
-   "shooterMoveAfterHitActs": 8,
+   "shooterLeftUnexplainedNarrow": 48,
    "exemptActs": 106,
    "exemptMoveAfterHit": 0,
    "exemptRouted": 106,
    "exemptDoctrine": 0,
    "unexplainedList": [
+    {
+     "k": "4|atk6",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "4|atk7",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk6",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk7",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk0",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk6",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk7",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def5",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk0",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk6",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk7",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def5",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk0",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk7",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def5",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def5",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|def5",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "11|def5",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "12|def5",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "13|def5",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "14|def5",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "15|def5",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "16|def5",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "17|def5",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "narrowList": [
     {
      "k": "4|atk6",
      "left": 2,
@@ -2069,7 +3857,7 @@
    "atk": "Lucznik:8,Konnica:6",
    "def": "Hastati:8,Konnica:4",
    "seed": 2,
-   "sec": 25,
+   "sec": 23,
    "firstContact": 2,
    "strikesTotal": 89,
    "doubleStrike": 0,
@@ -2079,12 +3867,84 @@
    "shooterLeftUnexplained": 14,
    "shooterLeftBlocked": 118,
    "shooterMoveAfterHit": 9,
-   "shooterMoveAfterHitActs": 9,
+   "shooterLeftUnexplainedNarrow": 14,
    "exemptActs": 77,
    "exemptMoveAfterHit": 0,
    "exemptRouted": 77,
    "exemptDoctrine": 0,
    "unexplainedList": [
+    {
+     "k": "7|atk0",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk3",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk6",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk3",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk4",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk3",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "narrowList": [
     {
      "k": "7|atk0",
      "left": 2,
@@ -2166,7 +4026,7 @@
    "atk": "Lucznik:8,Konnica:6",
    "def": "Hastati:8,Konnica:4",
    "seed": 3,
-   "sec": 17,
+   "sec": 16,
    "firstContact": 2,
    "strikesTotal": 83,
    "doubleStrike": 0,
@@ -2176,12 +4036,134 @@
    "shooterLeftUnexplained": 24,
    "shooterLeftBlocked": 99,
    "shooterMoveAfterHit": 7,
-   "shooterMoveAfterHitActs": 7,
+   "shooterLeftUnexplainedNarrow": 24,
    "exemptActs": 27,
    "exemptMoveAfterHit": 0,
    "exemptRouted": 27,
    "exemptDoctrine": 0,
    "unexplainedList": [
+    {
+     "k": "4|atk6",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk6",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|def1",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk0",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk6",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk0",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk3",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk6",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "narrowList": [
     {
      "k": "4|atk6",
      "left": 2,
@@ -2313,7 +4295,7 @@
    "atk": "Lucznik:8,Konnica:6",
    "def": "Hastati:8,Konnica:4",
    "seed": 4,
-   "sec": 19,
+   "sec": 22,
    "firstContact": 2,
    "strikesTotal": 105,
    "doubleStrike": 0,
@@ -2323,12 +4305,54 @@
    "shooterLeftUnexplained": 7,
    "shooterLeftBlocked": 107,
    "shooterMoveAfterHit": 7,
-   "shooterMoveAfterHitActs": 7,
+   "shooterLeftUnexplainedNarrow": 7,
    "exemptActs": 26,
    "exemptMoveAfterHit": 0,
    "exemptRouted": 26,
    "exemptDoctrine": 0,
    "unexplainedList": [
+    {
+     "k": "8|def5",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk0",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def3",
+     "left": 1,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|atk0",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "narrowList": [
     {
      "k": "8|def5",
      "left": 2,
@@ -2380,7 +4404,7 @@
    "atk": "Lucznik:8,Konnica:6",
    "def": "Hastati:8,Konnica:4",
    "seed": 5,
-   "sec": 22,
+   "sec": 19,
    "firstContact": 2,
    "strikesTotal": 99,
    "doubleStrike": 0,
@@ -2390,7 +4414,7 @@
    "shooterLeftUnexplained": 18,
    "shooterLeftBlocked": 133,
    "shooterMoveAfterHit": 9,
-   "shooterMoveAfterHitActs": 9,
+   "shooterLeftUnexplainedNarrow": 18,
    "exemptActs": 27,
    "exemptMoveAfterHit": 0,
    "exemptRouted": 27,
@@ -2487,50 +4511,4273 @@
      "mounted": false
     }
    ],
+   "narrowList": [
+    {
+     "k": "6|def5",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk0",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk5",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk6",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk0",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk5",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk6",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
    "hasContact": true,
    "hash": "f97801d8be08de5157b01766a725f53c",
    "winner": "atakujacy",
    "rounds": 8
-  }
- ],
- "checks": [
-  {
-   "name": "(inv) brak bledow strony i wszystkie przebiegi zakonczone",
-   "ok": true,
-   "msg": ""
   },
   {
-   "name": "(inv) <=1 cios na aktywacje (cala bitwa)",
-   "ok": true,
-   "msg": ""
+   "comp": 3,
+   "atk": "Konnica:8,Hastati:6",
+   "def": "Hastati:8,Lucznik:6",
+   "seed": 1,
+   "sec": 31,
+   "firstContact": 2,
+   "strikesTotal": 89,
+   "doubleStrike": 0,
+   "shooterActs": 62,
+   "shooterPool": 186,
+   "shooterLeft": 103,
+   "shooterLeftUnexplained": 32,
+   "shooterLeftBlocked": 71,
+   "shooterMoveAfterHit": 3,
+   "shooterLeftUnexplainedNarrow": 32,
+   "exemptActs": 12,
+   "exemptMoveAfterHit": 0,
+   "exemptRouted": 12,
+   "exemptDoctrine": 0,
+   "unexplainedList": [
+    {
+     "k": "4|atk12",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk12",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|def7",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk12",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk9",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk10",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk11",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk12",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def2",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def3",
+     "left": 3,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def4",
+     "left": 3,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def5",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "narrowList": [
+    {
+     "k": "4|atk12",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk12",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|def7",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk12",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk9",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk10",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk11",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk12",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def2",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def3",
+     "left": 3,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def4",
+     "left": 3,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def5",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "hasContact": true,
+   "hash": "d9921aba7debb292f3e09e80643938b1",
+   "winner": "atakujacy",
+   "rounds": 7
   },
   {
-   "name": "(b) doktryna Obrona/Ostrzal i uciekinierzy NIE wykonuja ruchu po ciosie",
-   "ok": true,
-   "msg": ""
+   "comp": 3,
+   "atk": "Konnica:8,Hastati:6",
+   "def": "Hastati:8,Lucznik:6",
+   "seed": 2,
+   "sec": 16,
+   "firstContact": 2,
+   "strikesTotal": 87,
+   "doubleStrike": 0,
+   "shooterActs": 52,
+   "shooterPool": 156,
+   "shooterLeft": 94,
+   "shooterLeftUnexplained": 28,
+   "shooterLeftBlocked": 66,
+   "shooterMoveAfterHit": 3,
+   "shooterLeftUnexplainedNarrow": 28,
+   "exemptActs": 3,
+   "exemptMoveAfterHit": 0,
+   "exemptRouted": 3,
+   "exemptDoctrine": 0,
+   "unexplainedList": [
+    {
+     "k": "5|atk8",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def3",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk9",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk10",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk11",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk12",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def2",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def3",
+     "left": 3,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def4",
+     "left": 3,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def5",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "narrowList": [
+    {
+     "k": "5|atk8",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def3",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk9",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk10",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk11",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk12",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def2",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def3",
+     "left": 3,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def4",
+     "left": 3,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def5",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "hasContact": true,
+   "hash": "ff021f43c1d6923bd9a2a08655132c35",
+   "winner": "atakujacy",
+   "rounds": 7
   },
   {
-   "name": "(a) pomiar strzelcow po zderzeniu wykonany (>0 aktywacji)",
-   "ok": true,
-   "msg": ""
+   "comp": 3,
+   "atk": "Konnica:8,Hastati:6",
+   "def": "Hastati:8,Lucznik:6",
+   "seed": 3,
+   "sec": 20,
+   "firstContact": 2,
+   "strikesTotal": 88,
+   "doubleStrike": 0,
+   "shooterActs": 57,
+   "shooterPool": 171,
+   "shooterLeft": 102,
+   "shooterLeftUnexplained": 24,
+   "shooterLeftBlocked": 78,
+   "shooterMoveAfterHit": 3,
+   "shooterLeftUnexplainedNarrow": 24,
+   "exemptActs": 4,
+   "exemptMoveAfterHit": 0,
+   "exemptRouted": 4,
+   "exemptDoctrine": 0,
+   "unexplainedList": [
+    {
+     "k": "2|atk9",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk10",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk11",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk12",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def2",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def3",
+     "left": 3,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def4",
+     "left": 3,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def5",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "narrowList": [
+    {
+     "k": "2|atk9",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk10",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk11",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk12",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def2",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def3",
+     "left": 3,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def4",
+     "left": 3,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def5",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "hasContact": true,
+   "hash": "1964af16accd23fab1c566564544d5ed",
+   "winner": "atakujacy",
+   "rounds": 6
+  },
+  {
+   "comp": 3,
+   "atk": "Konnica:8,Hastati:6",
+   "def": "Hastati:8,Lucznik:6",
+   "seed": 4,
+   "sec": 20,
+   "firstContact": 2,
+   "strikesTotal": 85,
+   "doubleStrike": 0,
+   "shooterActs": 55,
+   "shooterPool": 165,
+   "shooterLeft": 95,
+   "shooterLeftUnexplained": 28,
+   "shooterLeftBlocked": 67,
+   "shooterMoveAfterHit": 4,
+   "shooterLeftUnexplainedNarrow": 28,
+   "exemptActs": 5,
+   "exemptMoveAfterHit": 0,
+   "exemptRouted": 5,
+   "exemptDoctrine": 0,
+   "unexplainedList": [
+    {
+     "k": "4|def5",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|def5",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk9",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk10",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk11",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk12",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def2",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def3",
+     "left": 3,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def4",
+     "left": 3,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def5",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "narrowList": [
+    {
+     "k": "4|def5",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|def5",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk9",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk10",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk11",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk12",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def2",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def3",
+     "left": 3,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def4",
+     "left": 3,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def5",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "hasContact": true,
+   "hash": "ad4c0816f8802b7afb98975d9acddbce",
+   "winner": "atakujacy",
+   "rounds": 6
+  },
+  {
+   "comp": 3,
+   "atk": "Konnica:8,Hastati:6",
+   "def": "Hastati:8,Lucznik:6",
+   "seed": 5,
+   "sec": 22,
+   "firstContact": 2,
+   "strikesTotal": 91,
+   "doubleStrike": 0,
+   "shooterActs": 59,
+   "shooterPool": 177,
+   "shooterLeft": 108,
+   "shooterLeftUnexplained": 26,
+   "shooterLeftBlocked": 82,
+   "shooterMoveAfterHit": 3,
+   "shooterLeftUnexplainedNarrow": 26,
+   "exemptActs": 7,
+   "exemptMoveAfterHit": 0,
+   "exemptRouted": 7,
+   "exemptDoctrine": 0,
+   "unexplainedList": [
+    {
+     "k": "5|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk9",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk10",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk11",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk12",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def2",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def3",
+     "left": 3,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def4",
+     "left": 3,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def5",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "narrowList": [
+    {
+     "k": "5|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk9",
+     "left": 3,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk10",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk11",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|atk12",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def2",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def3",
+     "left": 3,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def4",
+     "left": 3,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "2|def5",
+     "left": 3,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "hasContact": true,
+   "hash": "51658d8108cebddf768fc5571f59bed4",
+   "winner": "atakujacy",
+   "rounds": 7
+  },
+  {
+   "comp": 4,
+   "atk": "Hastati:12,Lucznik:4",
+   "def": "Hastati:10,Konnica:4",
+   "seed": 1,
+   "sec": 20,
+   "firstContact": 2,
+   "strikesTotal": 121,
+   "doubleStrike": 0,
+   "shooterActs": 137,
+   "shooterPool": 411,
+   "shooterLeft": 145,
+   "shooterLeftUnexplained": 17,
+   "shooterLeftBlocked": 128,
+   "shooterMoveAfterHit": 23,
+   "shooterLeftUnexplainedNarrow": 17,
+   "exemptActs": 30,
+   "exemptMoveAfterHit": 0,
+   "exemptRouted": 30,
+   "exemptDoctrine": 0,
+   "unexplainedList": [
+    {
+     "k": "5|atk3",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk11",
+     "left": 1,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk3",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk3",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk3",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "narrowList": [
+    {
+     "k": "5|atk3",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk11",
+     "left": 1,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk3",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk3",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk3",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "hasContact": true,
+   "hash": "f2e4201d3fbb18052aeff2b2ad9c18c9",
+   "winner": "obronca",
+   "rounds": 9
+  },
+  {
+   "comp": 4,
+   "atk": "Hastati:12,Lucznik:4",
+   "def": "Hastati:10,Konnica:4",
+   "seed": 2,
+   "sec": 24,
+   "firstContact": 2,
+   "strikesTotal": 164,
+   "doubleStrike": 0,
+   "shooterActs": 208,
+   "shooterPool": 624,
+   "shooterLeft": 270,
+   "shooterLeftUnexplained": 122,
+   "shooterLeftBlocked": 148,
+   "shooterMoveAfterHit": 23,
+   "shooterLeftUnexplainedNarrow": 122,
+   "exemptActs": 81,
+   "exemptMoveAfterHit": 0,
+   "exemptRouted": 81,
+   "exemptDoctrine": 0,
+   "unexplainedList": [
+    {
+     "k": "4|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "4|def2",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "4|def7",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk3",
+     "left": 1,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk6",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk8",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk13",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk3",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk5",
+     "left": 1,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk6",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk7",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk9",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk13",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk4",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk5",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk6",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk7",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk8",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk9",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk3",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk6",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk7",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk8",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk9",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk12",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk13",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk3",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk6",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk7",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk12",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk13",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|atk3",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|def1",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "11|atk3",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "11|atk8",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "11|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "11|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "11|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "12|atk8",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "12|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "12|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "13|atk8",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "13|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "13|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "narrowList": [
+    {
+     "k": "4|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "4|def2",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "4|def7",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk3",
+     "left": 1,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk6",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk8",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk13",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk3",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk5",
+     "left": 1,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk6",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk7",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk9",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk13",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk4",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk5",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk6",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk7",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk8",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk9",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk3",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk6",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk7",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk8",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk9",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk12",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk13",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk3",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk6",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk7",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk12",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk13",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|atk3",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|def1",
+     "left": 2,
+     "freeNew": 1,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "11|atk3",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "11|atk8",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "11|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "11|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "11|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "12|atk8",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "12|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "12|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "13|atk8",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "13|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "13|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "hasContact": true,
+   "hash": "53400e6640dbe82d0a8f892a77313fd4",
+   "winner": "obronca",
+   "rounds": 13
+  },
+  {
+   "comp": 4,
+   "atk": "Hastati:12,Lucznik:4",
+   "def": "Hastati:10,Konnica:4",
+   "seed": 3,
+   "sec": 23,
+   "firstContact": 2,
+   "strikesTotal": 140,
+   "doubleStrike": 0,
+   "shooterActs": 170,
+   "shooterPool": 510,
+   "shooterLeft": 217,
+   "shooterLeftUnexplained": 67,
+   "shooterLeftBlocked": 150,
+   "shooterMoveAfterHit": 23,
+   "shooterLeftUnexplainedNarrow": 67,
+   "exemptActs": 53,
+   "exemptMoveAfterHit": 0,
+   "exemptRouted": 53,
+   "exemptDoctrine": 0,
+   "unexplainedList": [
+    {
+     "k": "5|atk4",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk6",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk10",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk11",
+     "left": 1,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|def4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|def6",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk5",
+     "left": 1,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk8",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk10",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk11",
+     "left": 1,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def6",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk7",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk8",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk10",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk14",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def6",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk8",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk10",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def6",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk10",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def6",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|atk10",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|def4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|def6",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "11|atk10",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "11|def4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "11|def6",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "narrowList": [
+    {
+     "k": "5|atk4",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk6",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk10",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|atk11",
+     "left": 1,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|def4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|def6",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk5",
+     "left": 1,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk8",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk10",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk11",
+     "left": 1,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def6",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk7",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk8",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk10",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk14",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def6",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk8",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk10",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def6",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk10",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk11",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def6",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|atk10",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|def4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|def6",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "11|atk10",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "11|def4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "11|def6",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "hasContact": true,
+   "hash": "0297ebc31a683ff94a540412839673fc",
+   "winner": "obronca",
+   "rounds": 11
+  },
+  {
+   "comp": 4,
+   "atk": "Hastati:12,Lucznik:4",
+   "def": "Hastati:10,Konnica:4",
+   "seed": 4,
+   "sec": 19,
+   "firstContact": 2,
+   "strikesTotal": 141,
+   "doubleStrike": 0,
+   "shooterActs": 146,
+   "shooterPool": 438,
+   "shooterLeft": 179,
+   "shooterLeftUnexplained": 26,
+   "shooterLeftBlocked": 153,
+   "shooterMoveAfterHit": 23,
+   "shooterLeftUnexplainedNarrow": 26,
+   "exemptActs": 32,
+   "exemptMoveAfterHit": 0,
+   "exemptRouted": 32,
+   "exemptDoctrine": 0,
+   "unexplainedList": [
+    {
+     "k": "5|atk10",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|def2",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk4",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk7",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk10",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk10",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk10",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk10",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def0",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "narrowList": [
+    {
+     "k": "5|atk10",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|def2",
+     "left": 2,
+     "freeNew": 2,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk4",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk7",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk10",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk10",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk10",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk10",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def0",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def2",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "hasContact": true,
+   "hash": "97c67981f68cefc171c0fc8dabb96230",
+   "winner": "obronca",
+   "rounds": 9
+  },
+  {
+   "comp": 4,
+   "atk": "Hastati:12,Lucznik:4",
+   "def": "Hastati:10,Konnica:4",
+   "seed": 5,
+   "sec": 20,
+   "firstContact": 2,
+   "strikesTotal": 153,
+   "doubleStrike": 0,
+   "shooterActs": 161,
+   "shooterPool": 483,
+   "shooterLeft": 219,
+   "shooterLeftUnexplained": 37,
+   "shooterLeftBlocked": 182,
+   "shooterMoveAfterHit": 23,
+   "shooterLeftUnexplainedNarrow": 37,
+   "exemptActs": 42,
+   "exemptMoveAfterHit": 0,
+   "exemptRouted": 42,
+   "exemptDoctrine": 0,
+   "unexplainedList": [
+    {
+     "k": "5|atk8",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk6",
+     "left": 1,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk8",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk3",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk8",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk3",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk7",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk4",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk7",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk8",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|atk8",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "narrowList": [
+    {
+     "k": "5|atk8",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "5|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk6",
+     "left": 1,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|atk8",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "6|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk3",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk4",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|atk8",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "7|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk3",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|atk7",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "8|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk4",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk7",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|atk8",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "9|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|atk8",
+     "left": 2,
+     "freeNew": 4,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    },
+    {
+     "k": "10|def7",
+     "left": 2,
+     "freeNew": 3,
+     "pathExists": true,
+     "canStrike": false,
+     "psb": false,
+     "mp": 3,
+     "mounted": false
+    }
+   ],
+   "hasContact": true,
+   "hash": "744e09277940d56f4d027258ba174387",
+   "winner": "obronca",
+   "rounds": 10
   }
  ],
  "totals": {
-  "runs": 15,
-  "runsWithContact": 10,
-  "shooterActs": 1407,
-  "shooterPool": 4221,
-  "shooterLeft": 2046,
-  "shooterLeftUnexplained": 488,
-  "shooterLeftBlocked": 1558,
-  "wastedSharePct": 48.5,
-  "unexplainedSharePct": 11.6,
+  "runs": 25,
+  "runsWithContact": 20,
+  "compsWithContact": 4,
+  "seedsPerComp": 5,
+  "shooterActs": 2514,
+  "shooterPool": 7542,
+  "shooterLeft": 3578,
+  "shooterLeftBlocked": 2683,
+  "shooterLeftUnexplained": 895,
+  "shooterLeftUnexplainedNarrow": 895,
+  "canStrikeOnlyActs": 0,
+  "wastedSharePct": 47.4,
+  "unexplainedSharePct": 11.9,
+  "unexplainedNarrowSharePct": 11.9,
   "doubleStrikeActs": 0,
-  "exemptActs": 393,
-  "exemptRouted": 393,
+  "exemptActs": 662,
+  "exemptRouted": 662,
   "exemptDoctrine": 0,
   "exemptMoveAfterHit": 0,
-  "shooterMoveAfterHit": 166
+  "shooterMoveAfterHit": 297,
+  "perComp": {
+   "0": {
+    "atk": "Hastati:8,Lucznik:6,Konnica:4",
+    "def": "Hastati:14",
+    "runs": 5,
+    "withContact": 5,
+    "seeds": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "pool": 2892,
+    "left": 1337,
+    "unexplained": 377,
+    "unexplainedNarrow": 377,
+    "wastedPct": 46.2,
+    "unexplainedPct": 13,
+    "unexplainedNarrowPct": 13
+   },
+   "1": {
+    "atk": "Lucznik:10,Hastati:6",
+    "def": "Hastati:10,Lucznik:4",
+    "runs": 5,
+    "withContact": 0,
+    "seeds": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "pool": 0,
+    "left": 0,
+    "unexplained": 0,
+    "unexplainedNarrow": null,
+    "wastedPct": null,
+    "unexplainedPct": null,
+    "unexplainedNarrowPct": null
+   },
+   "2": {
+    "atk": "Lucznik:8,Konnica:6",
+    "def": "Hastati:8,Konnica:4",
+    "runs": 5,
+    "withContact": 5,
+    "seeds": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "pool": 1329,
+    "left": 709,
+    "unexplained": 111,
+    "unexplainedNarrow": 111,
+    "wastedPct": 53.3,
+    "unexplainedPct": 8.4,
+    "unexplainedNarrowPct": 8.4
+   },
+   "3": {
+    "atk": "Konnica:8,Hastati:6",
+    "def": "Hastati:8,Lucznik:6",
+    "runs": 5,
+    "withContact": 5,
+    "seeds": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "pool": 855,
+    "left": 502,
+    "unexplained": 138,
+    "unexplainedNarrow": 138,
+    "wastedPct": 58.7,
+    "unexplainedPct": 16.1,
+    "unexplainedNarrowPct": 16.1
+   },
+   "4": {
+    "atk": "Hastati:12,Lucznik:4",
+    "def": "Hastati:10,Konnica:4",
+    "runs": 5,
+    "withContact": 5,
+    "seeds": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "pool": 2466,
+    "left": 1030,
+    "unexplained": 269,
+    "unexplainedNarrow": 269,
+    "wastedPct": 41.8,
+    "unexplainedPct": 10.9,
+    "unexplainedNarrowPct": 10.9
+   }
+  }
  },
- "finishedAt": "2026-11-15T22:27:49.965Z"
+ "checks": [
+  {
+   "name": "(a) >=3 sklady z kontaktem i >=15 przebiegow z kontaktem",
+   "ok": true,
+   "msg": ""
+  },
+  {
+   "name": "(inv) <=1 cios na aktywacje",
+   "ok": true,
+   "msg": ""
+  },
+  {
+   "name": "(b) strzelcy/doktryny: brak ruchu po ciosie u wylaczonych",
+   "ok": true,
+   "msg": ""
+  }
+ ]
 }

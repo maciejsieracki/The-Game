@@ -37,6 +37,9 @@ const COMPS = [
   ['Hastati:8,Lucznik:6,Konnica:4', 'Hastati:14'],
   ['Lucznik:10,Hastati:6', 'Hastati:10,Lucznik:4'],
   ['Lucznik:8,Konnica:6', 'Hastati:8,Konnica:4'],
+  // R-WEB-BATTLE-FULL-MOVE-GAPS-MEASURE-Q1 r2: skladay z kontaktem wrecz (dodane po objeciu FC: C1 daje 0/5 zderzen).
+  ['Konnica:8,Hastati:6', 'Hastati:8,Lucznik:6'],
+  ['Hastati:12,Lucznik:4', 'Hastati:10,Konnica:4'],
 ];
 const compIdx = (process.env.BFG_COMP || '0,1,2').split(',').map(Number);
 const OUT = process.env.BFG_OUT || path.join(repo, 'dyspozycje/autobot/runs/R-WEB-BATTLE-FULL-MOVE-GAPS-MEASURE-Q1/evidence', `measure-${PART}.json`);
@@ -81,9 +84,10 @@ function metrics(r) {
   const m = {
     firstContact, strikesTotal: 0, doubleStrike: 0,
     shooterActs: 0, shooterPool: 0, shooterLeft: 0, shooterLeftUnexplained: 0, shooterLeftBlocked: 0,
-    shooterMoveAfterHit: 0, shooterMoveAfterHitActs: 0,
+    shooterMoveAfterHit: 0,
+    shooterLeftUnexplainedNarrow: 0,
     exemptActs: 0, exemptMoveAfterHit: 0, exemptRouted: 0, exemptDoctrine: 0,
-    unexplainedList: [],
+    unexplainedList: [], narrowList: [],
   };
   for (const [k, evs] of acts) {
     evs.sort((x, y) => x.seq - y.seq);
@@ -106,7 +110,6 @@ function metrics(r) {
     if (!isShooter || !e || !row) continue;
     m.shooterActs++;
     if (firstHit >= 0 && hits[0].ranged && moveAfter) m.shooterMoveAfterHit++;
-    if (firstHit >= 0 && hits[0].ranged && moveAfter) m.shooterMoveAfterHitActs++;
     m.shooterPool += row.mp;
     const left = Math.max(0, e.moveLeft);
     m.shooterLeft += left;
@@ -115,9 +118,14 @@ function metrics(r) {
     // stoi w zasiegu wolnego wroga albo silnik stwierdzil brak dokad isc po ciosie.
     const visited = new Set([row.q0 + ',' + row.r0, ...(cellsBy.get(k) || [])]);
     const freeNew = (e.freeCells || []).filter(c => !visited.has(c)).length;
+    // Definicja SZEROKA (raportowana jako glowna): + canStrike (stoi w zasiegu wolnego wroga = swiadomy wybor).
+    // Definicja WABA (wezsza, bez canStrike): tylko fizyczny brak pola/sciezki/ciosu. Roznica = przypadki canStrike.
     const blocked = freeNew === 0 || !e.pathExists || e.canStrike || e.postStrikeBlocked;
+    const blockedNarrow = freeNew === 0 || !e.pathExists || e.postStrikeBlocked;
+    const item = { k, left, freeNew, pathExists: e.pathExists, canStrike: e.canStrike, psb: e.postStrikeBlocked, mp: row.mp, mounted: row.mounted };
+    if (!blockedNarrow) { m.shooterLeftUnexplainedNarrow += left; m.narrowList.push(item); }
     if (blocked) m.shooterLeftBlocked += left;
-    else { m.shooterLeftUnexplained += left; m.unexplainedList.push({ k, left, freeNew, pathExists: e.pathExists, canStrike: e.canStrike, psb: e.postStrikeBlocked, mp: row.mp, mounted: row.mounted }); }
+    else { m.shooterLeftUnexplained += left; m.unexplainedList.push(item); }
   }
   // Przebieg bez zadnego zderzenia nie ma pomiaru zmarnowanego ruchu (firstContact = Infinity) -- zaznacz.
   m.hasContact = Number.isFinite(firstContact);
@@ -153,13 +161,16 @@ async function main() {
         runs: runs.length, runsWithContact: runs.filter(x => x.hasContact).length,
         shooterActs: sum('shooterActs'), shooterPool: pool, shooterLeft: left, shooterLeftUnexplained: unexpl,
         shooterLeftBlocked: sum('shooterLeftBlocked'),
+        shooterLeftUnexplainedNarrow: sum('shooterLeftUnexplainedNarrow'),
         wastedSharePct: pool ? Math.round(1000 * left / pool) / 10 : null,
         unexplainedSharePct: pool ? Math.round(1000 * unexpl / pool) / 10 : null,
+        unexplainedNarrowSharePct: pool ? Math.round(1000 * sum('shooterLeftUnexplainedNarrow') / pool) / 10 : null,
+        perComp: Object.fromEntries(compIdx.map(ci => { const rs = runs.filter(x => x.comp === ci); const p = rs.reduce((s, x) => s + x.shooterPool, 0); const l = rs.reduce((s, x) => s + x.shooterLeft, 0); const u = rs.reduce((s, x) => s + x.shooterLeftUnexplained, 0); const n = rs.reduce((s, x) => s + x.shooterLeftUnexplainedNarrow, 0); return [ci, { runs: rs.length, withContact: rs.filter(x => x.hasContact).length, pool: p, left: l, unexplained: u, unexplainedNarrow: n, wastedPct: p ? Math.round(1000 * l / p) / 10 : null, unexplainedPct: p ? Math.round(1000 * u / p) / 10 : null, unexplainedNarrowPct: p ? Math.round(1000 * n / p) / 10 : null }]; })),
         doubleStrikeActs: sum('doubleStrike'), exemptActs: sum('exemptActs'), exemptRouted: sum('exemptRouted'), exemptDoctrine: sum('exemptDoctrine'),
         exemptMoveAfterHit: sum('exemptMoveAfterHit'), shooterMoveAfterHit: sum('shooterMoveAfterHit'),
       };
       const chk = (name, ok, msg) => out.checks.push({ name, ok, msg: ok ? '' : msg });
-      chk('(inv) brak bledow strony i wszystkie przebiegi zakonczone', true, '');
+      // (inv) brak bledow strony: egzekwowane w openPage (asercja rzuca wyjatek -> exit 1), nie jako osobny check.
       chk('(inv) <=1 cios na aktywacje (cala bitwa)', out.totals.doubleStrikeActs === 0, 'aktywacje z >1 ciosem: ' + out.totals.doubleStrikeActs);
       chk('(b) doktryna Obrona/Ostrzal i uciekinierzy NIE wykonuja ruchu po ciosie', out.totals.exemptMoveAfterHit === 0, 'ruch po ciosie u wylaczonych: ' + out.totals.exemptMoveAfterHit + ' z ' + out.totals.exemptActs + ' aktywacji');
       chk('(a) pomiar strzelcow po zderzeniu wykonany (>0 aktywacji)', out.totals.shooterActs > 0, 'brak aktywacji strzelcow po zderzeniu');
@@ -179,8 +190,9 @@ async function main() {
         const rs = out.runs.filter(x => x.label === label);
         const docActs = rs.reduce((s2, x) => s2 + x.exemptDoctrine, 0);
         const mv = rs.reduce((s2, x) => s2 + x.exemptMoveAfterHit, 0);
-        out.checks.push({ name: `(b) ${label}: doktryna aktywna w pomiarze (>0 aktywacji)`, ok: docActs > 0, msg: 'NIE ZMIERZONO: brak aktywacji tej doktryny po zderzeniu' });
-        out.checks.push({ name: `(b) ${label}: brak ruchu po ciosie (regula pelnego ruchu jej nie dotyczy)`, ok: mv === 0, msg: 'ruch po ciosie: ' + mv + ' z ' + docActs + ' aktywacji' });
+        const cAct = docActs > 0, cMv = mv === 0;
+        out.checks.push({ name: `(b) ${label}: doktryna aktywna w pomiarze (>0 aktywacji)`, ok: cAct, msg: cAct ? '' : 'NIE ZMIERZONO: brak aktywacji tej doktryny po zderzeniu' });
+        out.checks.push({ name: `(b) ${label}: brak ruchu po ciosie (regula pelnego ruchu jej nie dotyczy)`, ok: cMv, msg: cMv ? '' : 'ruch po ciosie: ' + mv + ' z ' + docActs + ' aktywacji' });
       }
       out.totals = { variants: variants.map(v => v[0]), runs: out.runs.length };
     } else if (PART === 'det') {

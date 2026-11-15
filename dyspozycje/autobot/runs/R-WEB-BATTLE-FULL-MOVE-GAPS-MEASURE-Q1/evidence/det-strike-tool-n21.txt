@@ -1,0 +1,12 @@
+Surowe wyjscie: node tools/battle-full-move-strike-test.cjs z BFM_PART=det (domyslny sklad C0: Hastati:8,Lucznik:6,Konnica:4 vs Hastati:14, ziarno 1)
+Uruchomienia: 7 wywolan x 3 przebiegi = 21 przebiegow (wywolania 1-4: 12 przebiegow; wywolania 5-7: 9 przebiegow)
+Wynik: 21/21 identyczne skroty 14f9e9bbefc63f74ba042df02e716f88
+Anomalia e20cd0b5 (FC FULL-MOVE-RESIDUAL-INFANTRY-Q2) NIE ODTWORZONA w 21 przebiegach tym narzedziem (lacznie z 20 przebiegami gaps-tool det: evidence/measure-det.json, 20/20 ten sam skrot).
+
+wywolanie 1: det run 0 14f9e9bbefc63f74ba042df02e716f88 | det run 1 14f9e9bbefc63f74ba042df02e716f88 | det run 2 14f9e9bbefc63f74ba042df02e716f88
+wywolanie 2: det run 0 14f9e9bbefc63f74ba042df02e716f88 | det run 1 14f9e9bbefc63f74ba042df02e716f88 | det run 2 14f9e9bbefc63f74ba042df02e716f88
+wywolanie 3: det run 0 14f9e9bbefc63f74ba042df02e716f88 | det run 1 14f9e9bbefc63f74ba042df02e716f88 | det run 2 14f9e9bbefc63f74ba042df02e716f88
+wywolanie 4: det run 0 14f9e9bbefc63f74ba042df02e716f88 | det run 1 14f9e9bbefc63f74ba042df02e716f88 | det run 2 14f9e9bbefc63f74ba042df02e716f88
+wywolanie 5: det run 0 14f9e9bbefc63f74ba042df02e716f88 | det run 1 14f9e9bbefc63f74ba042df02e716f88 | det run 2 14f9e9bbefc63f74ba042df02e716f88
+wywolanie 6: det run 0 14f9e9bbefc63f74ba042df02e716f88 | det run 1 14f9e9bbefc63f74ba042df02e716f88 | det run 2 14f9e9bbefc63f74ba042df02e716f88
+wywolanie 7: det run 0 14f9e9bbefc63f74ba042df02e716f88 | det run 1 14f9e9bbefc63f74ba042df02e716f88 | det run 2 14f9e9bbefc63f74ba042df02e716f88
