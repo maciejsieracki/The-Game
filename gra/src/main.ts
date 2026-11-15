@@ -440,7 +440,7 @@ import {
   REBEL_FACTION_OWNER_ID,
 } from './game/society-breakdown';
 import { computeCitizenResourceDrain } from './game/citizen-resource-upkeep';
-import { citizenLedgerParts, recordTakenToLedger, upkeepLedgerParts, pendingLedgerSink, drainPendingLedgerInto, recordStockDeltaToPending, resetPendingLedger, recordLedgerFlow, ledgerTurnForOwner, peekPendingLedger, setLedgerRecordingEnabled, isLedgerRecordingEnabled, type ResourceLedgerTurn, commitLedgerHistoryTick, readLedgerHistoryTurns, resetLedgerHistory, ledgerHistoryToSave, restoreLedgerHistoryFromSave } from './game/resource-ledger';
+import { citizenLedgerParts, recordTakenToLedger, upkeepLedgerParts, pendingLedgerSink, drainPendingLedgerInto, recordStockDeltaToPending, resetPendingLedger, recordLedgerFlow, ledgerTurnForOwner, peekPendingLedger, setLedgerRecordingEnabled, isLedgerRecordingEnabled, type ResourceLedgerTurn, commitLedgerHistoryTick, readLedgerHistoryTurns, resetLedgerHistory, ledgerHistoryToSave, restoreLedgerHistoryFromSave, snapshotOwnersStock, recordOwnersStockDeltaToPending } from './game/resource-ledger';
 import { BATTLE_MODE_SETTING_VERSION, isAutomaticOnlyBattleMode } from './game/battle-mode';
 import { normalizeHitMode, setActiveHitMode } from './game/hit-mode';
 import { resourceUsageBreakdownFor, resourceUsageHasAny } from './game/resource-usage-breakdown';
@@ -5172,9 +5172,13 @@ async function boot(): Promise<void> {
       // (nie powinien ginąć nawet gdyby pula była tuż pod capem magazynu).
       const unitDef = data.units.find(u => u.Jednostka === itemId);
       const stockCost = unitStockCost(unitDef);
+      // R-WEB-UI-RESOURCE-SOURCE-LEDGER-UI-AND-REST-Q1 (partia 3c): zwrot anulowanej rekrutacji w księdze.
+      const ledgerRecruitRefundBefore = snapshotOwnersStock([ownerId], o => ownerResourceStockAll(cities, o));
       for (const [key, amt] of Object.entries(stockCost)) {
         creditOwnerResourceStock(cities, ownerId, key, amt);
       }
+      recordOwnersStockDeltaToPending(ledgerRecruitRefundBefore, o => ownerResourceStockAll(cities, o), 'zwrot-rekrutacja',
+        { kind: 'zwrot', label: 'Zwrot z rekrutacji' });
       markCityStateDirty();
       if (ownerId === 0) {
         updateHud();
@@ -7435,8 +7439,11 @@ async function boot(): Promise<void> {
       const mpMults = civManpowerMultsForOwner(ownerId);
       refundManpowerToEmpire(cities, ownerId, ep,
         unitManpowerCostForType(u.typeId, ep, mpMults.maxMult, mpMults.costMult), mpMults.maxMult);
+      const ledgerAiDisbandBefore = snapshotOwnersStock([ownerId], o => ownerResourceStockAll(cities, o));
       disbandStockRefundCredit(cities, ownerId, u,
         ownerResourceCap(cities, cityBuilt, ownerId, data, _menuDifficulty, ep));
+      recordOwnersStockDeltaToPending(ledgerAiDisbandBefore, o => ownerResourceStockAll(cities, o), 'zwrot-rozwiazanie',
+        { kind: 'zwrot', label: 'Zwrot z rozwiązania jednostki' });
       const wasGarnizon = u.inGarnizon === true;
       const cityForGarnizon = cityAtUnit(u);
       units.splice(idx, 1);
@@ -7724,7 +7731,10 @@ async function boot(): Promise<void> {
       // EN: 100% of stock consumed at recruitment returns to the state pool (capped like
       // production); gold is NOT refunded; no trace (stockPaid) = no refund.
       const stockRefundCap = ownerResourceCap(cities, cityBuilt, 0, data, _menuDifficulty, ep);
+      const ledgerDisbandBefore = snapshotOwnersStock([0], o => ownerResourceStockAll(cities, o));
       const stockRefundCredited = disbandStockRefundCredit(cities, 0, u, stockRefundCap);
+      recordOwnersStockDeltaToPending(ledgerDisbandBefore, o => ownerResourceStockAll(cities, o), 'zwrot-rozwiazanie',
+        { kind: 'zwrot', label: 'Zwrot z rozwiązania jednostki' });
 
       const siegeCityId = u.oblegaCityId;
       const wasGarnizon = u.inGarnizon === true;
@@ -8510,7 +8520,7 @@ async function boot(): Promise<void> {
         stockCost: newTypeId => unitStockCost(lookupUnitDef(newTypeId)),
         canPayStock: cost => !unitReplaceStockMissingLabel({ money: 0, stock: cost }, ownerSurowcePoolFor(ownerId)),
         payStock: (cost, u) => {
-          deductBuildingStockCostAcrossCities(cities, ownerId, cost);
+          deductBuildingStockCostAcrossCities(cities, ownerId, cost, pendingLedgerSink(ownerId, 'rekrutacja', 'Zastąp jednostkę'));
           (u as { stockPaid?: Record<string, number> }).stockPaid = mergeStockPaid(
             (u as { stockPaid?: Record<string, number> }).stockPaid, cost,
           );
@@ -13235,6 +13245,8 @@ async function boot(): Promise<void> {
       toOwnerId: number,
       items: readonly BasketItem[] | undefined,
       dealId?: string,
+      /** R-WEB-UI-RESOURCE-SOURCE-LEDGER-UI-AND-REST-Q1 (partia 3c): jednostronny przelew = dar (etykieta księgi). */
+      oneWayGift = false,
     ): void {
       if (!items?.length) return;
       syncBasketResearchFromEngine();
@@ -13322,9 +13334,9 @@ async function boot(): Promise<void> {
               }
             }
             recordStockDeltaToPending(fromOwnerId, ledgerFromBeforeB, ownerResourceStockAll(cities, fromOwnerId),
-              `umowa-wymiany|out|${toOwnerId}`, { kind: 'umowa_wymiany', label: `Umowa wymiany z ${ownerDiploLabel(toOwnerId)}` });
+              `umowa-wymiany|out|${toOwnerId}`, oneWayGift ? { kind: 'dar', label: `Dar dla ${ownerDiploLabel(toOwnerId)}` } : { kind: 'umowa_wymiany', label: `Umowa wymiany z ${ownerDiploLabel(toOwnerId)}` });
             recordStockDeltaToPending(toOwnerId, ledgerToBeforeB, ownerResourceStockAll(cities, toOwnerId),
-              `umowa-wymiany|in|${fromOwnerId}`, { kind: 'umowa_wymiany', label: `Umowa wymiany z ${ownerDiploLabel(fromOwnerId)}` });
+              `umowa-wymiany|in|${fromOwnerId}`, oneWayGift ? { kind: 'dar', label: `Dar od ${ownerDiploLabel(fromOwnerId)}` } : { kind: 'umowa_wymiany', label: `Umowa wymiany z ${ownerDiploLabel(fromOwnerId)}` });
             break;
           }
           case 'miasto': {
@@ -13366,7 +13378,7 @@ async function boot(): Promise<void> {
       }
       const { giveItems, receiveItems } = payload;
       if (giveItems?.length || receiveItems?.length) {
-        transferBasketItems(proposerId, responderId, giveItems);
+        transferBasketItems(proposerId, responderId, giveItems, undefined, !receiveItems?.length);
         transferBasketItems(responderId, proposerId, receiveItems);
         return;
       }
@@ -17478,7 +17490,7 @@ async function boot(): Promise<void> {
         // Odjęcie DOKŁADNIE 50 'kon' — ten sam wzorzec mutacji magazynu (rozproszony po
         // miastach ownera) co deductBuildingStockCostAcrossCities gdzie indziej w tym pliku
         // (koszt_surowce budynków), nie osobna, równoległa ścieżka.
-        deductBuildingStockCostAcrossCities(cities, 0, { kon: 50 });
+        deductBuildingStockCostAcrossCities(cities, 0, { kon: 50 }, pendingLedgerSink(0, 'wejscie', 'Stadnina (koń)'));
       }
 
       const rm = new Set(impact.removedImprovements);
@@ -18390,7 +18402,10 @@ async function boot(): Promise<void> {
         const surrenderPopLoss = Math.max(0, surrenderPopBefore - city.population);
         applyPostCaptureLawOnCapture(city, newOwner, oldOwner);
         triggerRebelProtectionWarConsequence(wasProtectedRebel, rebelPrevOwnerSnapshot, newOwner);
+        const ledgerCaptureBefore = snapshotOwnersStock([oldOwner, newOwner], o => ownerResourceStockAll(cities, o));
         city.ownerId = newOwner;
+        recordOwnersStockDeltaToPending(ledgerCaptureBefore, o => ownerResourceStockAll(cities, o), `przejecie-miasta|${city.id}`,
+          o => (o === newOwner ? { kind: 'przejecie_miasta', label: 'Zdobycie miasta' } : { kind: 'przejecie_miasta', label: 'Oddanie miasta' }));
         settleWonderTransfer(wonderWatchSurrender); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
         noteCityCapture(civChronicleByOwner, oldOwner, newOwner, turn); // R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1
         // R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1 (ECHO = wariant A): kapitulacja
@@ -18933,7 +18948,7 @@ async function boot(): Promise<void> {
       if (!anchor) return false;
       const stockCost = option.costStock;
       setOwnerTreasury(besiegerOwnerId, ownerTreasury(besiegerOwnerId) - option.costMoney);
-      if (Object.keys(stockCost).length) deductBuildingStockCostAcrossCities(cities, besiegerOwnerId, stockCost);
+      if (Object.keys(stockCost).length) deductBuildingStockCostAcrossCities(cities, besiegerOwnerId, stockCost, pendingLedgerSink(besiegerOwnerId, 'budowa', 'Machina oblężnicza'));
       city.siegeEngineBuildsThisTurn = {
         turn,
         count: option.builtThisTurn + 1,
@@ -25700,7 +25715,7 @@ async function boot(): Promise<void> {
         ) {
           const dealId = result.deal.id;
           const items = result.deal.handelPayload;
-          transferBasketItems(proposerId, responderId, items?.giveItems, dealId);
+          transferBasketItems(proposerId, responderId, items?.giveItems, dealId, !items?.receiveItems?.length);
           transferBasketItems(responderId, proposerId, items?.receiveItems, dealId);
           const turnsOpts = proposalPnTurnsMultiplier(payload);
           const { givePn, receivePn } = resolveProposalPn(payload, {
@@ -25744,7 +25759,7 @@ async function boot(): Promise<void> {
           // istnieje tylko dla UmowaHandlowa) — transfer bierzemy wprost z `payload` UI,
           // razem z zawarciem traktatu. ownerId-agnostyczne (proposerId/responderId — zwykłe
           // liczby, ta sama ścieżka gracz→AI lub AI→gracz).
-          transferBasketItems(proposerId, responderId, payload.giveItems, result.deal.id);
+          transferBasketItems(proposerId, responderId, payload.giveItems, result.deal.id, !payload.receiveItems?.length);
           transferBasketItems(responderId, proposerId, payload.receiveItems, result.deal.id);
         }
       }
@@ -36583,9 +36598,13 @@ async function boot(): Promise<void> {
               const battleLootCap = ownerResourceCap(
                 cities, cityBuilt, winOid, data, _menuDifficulty, empireEpochForOwner(winOid),
               );
+              // R-WEB-UI-RESOURCE-SOURCE-LEDGER-UI-AND-REST-Q1 (partia 3c): łup w księdze (różnica magazynu zwycięzcy, okno pending).
+              const ledgerLootBefore = snapshotOwnersStock([winOid], o => ownerResourceStockAll(cities, o));
               for (const [key, amt] of Object.entries(battleLoot.resources)) {
                 if (amt > 0) creditOwnerResourceStock(cities, winOid, key, amt, battleLootCap);
               }
+              recordOwnersStockDeltaToPending(ledgerLootBefore, o => ownerResourceStockAll(cities, o), 'lup-bitwy',
+                { kind: 'lup_bitwy', label: 'Łup z bitwy' });
             }
           }
         }
@@ -37216,7 +37235,10 @@ async function boot(): Promise<void> {
       const wonderWatchAnnex = beginWonderTransferWatch(); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
       for (const city of csCities) {
         stampCityFounderOnCapture(city, csOwnerId); // R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1
+        const ledgerAnnexBefore = snapshotOwnersStock([csOwnerId, annexerId], o => ownerResourceStockAll(cities, o));
         city.ownerId = annexerId;
+        recordOwnersStockDeltaToPending(ledgerAnnexBefore, o => ownerResourceStockAll(cities, o), `wchloniecie-miasta|${city.id}`,
+          o => (o === annexerId ? { kind: 'przejecie_miasta', label: 'Przyłączenie miasta-państwa' } : { kind: 'przejecie_miasta', label: 'Oddanie miasta' }));
         // R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1: to samo gaszenie oznaczenia co na
         // ścieżkach zbrojnych — jedna funkcja, żeby ścieżki nie rozłączyły się przy kolejnej
         // zmianie (przed tym tematem TYLKO ta ścieżka w ogóle gasiła flagę).
@@ -38447,7 +38469,10 @@ async function boot(): Promise<void> {
       }
       const wonderWatchCession = beginWonderTransferWatch(); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
       stampCityFounderOnCapture(city, fromOwnerId); // R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1
+      const ledgerCessionBefore = snapshotOwnersStock([fromOwnerId, toOwnerId], o => ownerResourceStockAll(cities, o));
       city.ownerId = toOwnerId;
+      recordOwnersStockDeltaToPending(ledgerCessionBefore, o => ownerResourceStockAll(cities, o), `cesja-miasta|${city.id}`,
+        o => (o === toOwnerId ? { kind: 'przejecie_miasta', label: 'Cesja miasta (otrzymane)' } : { kind: 'przejecie_miasta', label: 'Cesja miasta (oddane)' }));
       settleWonderTransfer(wonderWatchCession);
       seedCityOwnerDefaults(city);
       applyLiveSafeRationForCity(city.id);
@@ -41753,7 +41778,10 @@ async function boot(): Promise<void> {
                   markCityRebellionStarted(city);
                   city.rebelState = true;
                   stampCityFounderOnCapture(city, city.ownerId); // R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1
+                  const ledgerRebelBefore = snapshotOwnersStock([city.ownerId, REBEL_FACTION_OWNER_ID], o => ownerResourceStockAll(cities, o));
                   city.ownerId = REBEL_FACTION_OWNER_ID;
+                  recordOwnersStockDeltaToPending(ledgerRebelBefore, o => ownerResourceStockAll(cities, o), `bunt-miasta|${city.id}`,
+                    o => (o === REBEL_FACTION_OWNER_ID ? { kind: 'przejecie_miasta', label: 'Bunt miasta (przejęte)' } : { kind: 'przejecie_miasta', label: 'Bunt miasta (utrata)' }));
                   settleWonderTransfer(wonderWatchRebel);
                   // B2 (Evaluator RUNDA 1: FAIL): przejście do rebeliantów musi zresetować
                   // override i zsynchronizować pola z globalnym defaultem frakcji rebeliantów.

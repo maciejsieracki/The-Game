@@ -30,7 +30,11 @@ export type LedgerSourceKind =
   | 'rekrutacja'            // rekrutacja jednostek (pobór z puli państwa poza tickiem)
   | 'umowa_wymiany'         // przeniesienie surowca w umowie wymiany (cykliczna / jednorazowa)
   | 'mennica'               // drain Złota przez Mennicę (po plonach, w tiku)
-  | 'limit_magazynu';       // ścięcie nadwyżki ponad limit magazynu państwa (w tiku)
+  | 'limit_magazynu'        // ścięcie nadwyżki ponad limit magazynu państwa (w tiku)
+  | 'lup_bitwy'             // łup z wygranej bitwy (credit do puli państwa zwycięzcy)
+  | 'zwrot'                 // zwrot surowców: anulowana rekrutacja, rozwiązana jednostka
+  | 'przejecie_miasta'      // zdobycie / oddanie / utrata miasta (zapasy miasta zmieniają właściciela)
+  | 'dar';                  // dar / prezent surowców od innego właściciela
 
 /**
  * Miejsce zapisu w dzienniku dla wywołania, które odejmuje surowce z puli państwa.
@@ -454,5 +458,35 @@ export function restoreLedgerHistoryFromSave(raw: unknown, maxTurns: number): vo
       m.set(ownerId, turn);
     }
     ledgerTickHistory.push(m);
+  }
+}
+
+/**
+ * R-WEB-UI-RESOURCE-SOURCE-LEDGER-UI-AND-REST-Q1 (partia 3c): migawka magazynu wskazanych właścicieli
+ * PRZED zmianą (łup, zwrot, przejęcie miasta). Zwraca mapę ownerId -> kopia zapasów.
+ * Czysta funkcja względem stanu gry: tylko odczyt przekazanej funkcji `stockOf`.
+ */
+export function snapshotOwnersStock(
+  ownerIds: ReadonlyArray<number>,
+  stockOf: (ownerId: number) => Readonly<Record<string, number>>,
+): Map<number, Record<string, number>> {
+  const out = new Map<number, Record<string, number>>();
+  for (const o of ownerIds) if (!out.has(o)) out.set(o, { ...stockOf(o) });
+  return out;
+}
+
+/**
+ * Zapisuje do okna pending różnicę magazynu każdego właściciela z migawki (po − przed).
+ * Trafia do rekordu najbliższego ticku (ta sama tura co zmiana). Zero zmian stanu gry.
+ */
+export function recordOwnersStockDeltaToPending(
+  before: Map<number, Record<string, number>>,
+  stockOf: (ownerId: number) => Readonly<Record<string, number>>,
+  sourceKeyBase: string,
+  flow: { kind: LedgerSourceKind; label: string } | ((ownerId: number) => { kind: LedgerSourceKind; label: string }),
+): void {
+  for (const [ownerId, snap] of before) {
+    const f = typeof flow === 'function' ? flow(ownerId) : flow;
+    recordStockDeltaToPending(ownerId, snap, stockOf(ownerId), `${sourceKeyBase}|${ownerId}`, f);
   }
 }

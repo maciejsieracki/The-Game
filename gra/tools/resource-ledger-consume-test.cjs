@@ -266,7 +266,8 @@ for (const seed of [7, 2024]) {
   const mainTxt = fs.readFileSync(path.resolve(GRA, 'src/main.ts'), 'utf8');
   const cityTxt = fs.readFileSync(path.resolve(GRA, 'src/ui/cityPanel.ts'), 'utf8');
   const recruitSinks = mainTxt.split("pendingLedgerSink(ownerId, 'rekrutacja'").length - 1;
-  check('(7) main.ts: sinki rekrutacji (2 miejsca)', recruitSinks === 2, recruitSinks);
+  // R-WEB-UI-RESOURCE-SOURCE-LEDGER-UI-AND-REST-Q1 (partia 3c): +1 sink „Zastąp jednostkę” (payStock) — 3 miejsca.
+  check('(7) main.ts: sinki rekrutacji (3 miejsca: rekrutacja x2 + Zastąp)', recruitSinks === 3, recruitSinks);
   check("(7) main.ts: sink budowy w deductOwnerStockCost", mainTxt.includes("pendingLedgerSink(ownerId, 'budowa'"));
   check('(7) main.ts: drenaż okna po ticku ekonomii', mainTxt.includes('drainPendingLedgerInto(econ.resourceLedgerByOwner)'));
   check("(7) cityPanel.ts: sink budowy przy starcie budowy", cityTxt.includes("pendingLedgerSink(city.ownerId, 'budowa'"));
