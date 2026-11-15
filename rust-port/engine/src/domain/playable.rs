@@ -659,6 +659,12 @@ impl PlayableState {
     /// pokazuje tu hintu (hint „Zatrzymano” nalezy do `stopPlannedMarchForSelected`, poza zakresem).
     /// Czyszczenie trasy w rendererze (`:31071-31073`) to efekt UI, poza stanem. Walidacja jednostki
     /// (istnienie, wlasciciel) nalezy do `PlayableGame::cancel_planned_march`.
+    ///
+    /// Wskazowka dla przyszlych wywolan wewnatrz silnika (rozwiazanie jednostki, nowy rozkaz,
+    /// `tryLaunchMarchAttack`; web `main.ts:25920/25946/26013/26060/26085` @ `07d2fbd72`): wolac TE
+    /// funkcje bezposrednio, PRZED usunieciem jednostki z `units`. Komenda
+    /// `PlayableGame::cancel_planned_march` zwraca `UnitNotFound` dla jednostki, ktorej juz nie ma,
+    /// wiec osierocony plan nie zostalby przez nia wyczyszczony (web `Map.delete` by go usunal).
     pub fn clear_planned_march_for_unit(&mut self, unit_id: UnitId, force: bool) {
         if !force
             && self

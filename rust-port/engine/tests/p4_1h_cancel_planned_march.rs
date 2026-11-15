@@ -55,6 +55,18 @@ fn unit(id: u64, owner: u64) -> PlayableUnit {
 
 /// Stan z planami trzech jednostek; `OWN` ma plan z atakiem lub bez, wpisy we wszystkich 4 mapach.
 fn state_with_plans(own_attack: Option<u64>) -> PlayableState {
+    build_state(Some(own_attack))
+}
+
+/// Oczekiwany stan po usunieciu wpisow `OWN` (web `Map.delete` x4, `main.ts:31053-31056`),
+/// zbudowany NIEZALEZNIE od kodu produkcyjnego: ten sam fikstur, w ktorym wpisow `OWN` po prostu
+/// nigdy nie wstawiono (jednostka `OWN` nadal istnieje w `units`).
+fn expected_without_own() -> PlayableState {
+    build_state(None)
+}
+
+/// `own`: `Some(attack)` = wstaw wpisy `OWN` do 4 map; `None` = pomin wszystkie wpisy `OWN`.
+fn build_state(own: Option<Option<u64>>) -> PlayableState {
     let mut state = PlayableGame::new(StartGameParams::default())
         .expect("scenariusz startowy")
         .state()
@@ -62,12 +74,12 @@ fn state_with_plans(own_attack: Option<u64>) -> PlayableState {
     state.units.push(unit(OWN_B, 1));
     state.units.push(unit(OWN_C, 1));
     state.units.push(unit(ENEMY, 2));
-    state.planned_marches = vec![
-        march(OWN_C, 7, 3, None),
-        march(OWN, 4, 2, own_attack),
-        march(OWN_B, 5, 5, Some(ENEMY)),
-    ];
-    if let Some(target) = own_attack {
+    state.planned_marches = vec![march(OWN_C, 7, 3, None)];
+    if let Some(own_attack) = own {
+        state.planned_marches.push(march(OWN, 4, 2, own_attack));
+    }
+    state.planned_marches.push(march(OWN_B, 5, 5, Some(ENEMY)));
+    if let Some(Some(target)) = own {
         state
             .march_attack_targets
             .insert(UnitId::new(OWN), UnitId::new(target));
@@ -75,7 +87,12 @@ fn state_with_plans(own_attack: Option<u64>) -> PlayableState {
     state
         .march_attack_targets
         .insert(UnitId::new(OWN_B), UnitId::new(ENEMY));
-    for id in [OWN, OWN_B, OWN_C] {
+    let ids: &[u64] = if own.is_some() {
+        &[OWN, OWN_B, OWN_C]
+    } else {
+        &[OWN_B, OWN_C]
+    };
+    for &id in ids {
         state
             .march_stop_notified
             .insert(UnitId::new(id), PlayableMarchStopReason::Obstacle);
@@ -94,16 +111,6 @@ fn has_entries(state: &PlayableState, id: u64) -> [bool; 4] {
         state.march_stop_notified.contains_key(&id),
         state.march_stop_detail.contains_key(&id),
     ]
-}
-
-/// Oczekiwany stan po `delete` wpisu `id` z 4 map (web `Map.delete`, kolejnosc reszty zachowana).
-fn expected_after_delete(mut state: PlayableState, id: u64) -> PlayableState {
-    let id = UnitId::new(id);
-    state.planned_marches.retain(|plan| plan.unit_id != id);
-    state.march_attack_targets.remove(&id);
-    state.march_stop_notified.remove(&id);
-    state.march_stop_detail.remove(&id);
-    state
 }
 
 fn json(state: &PlayableState) -> String {
@@ -129,26 +136,24 @@ fn b_no_force_without_attack_clears_four_maps() {
     let mut state = before.clone();
     state.clear_planned_march_for_unit(UnitId::new(OWN), false);
     assert_eq!(has_entries(&state, OWN), [false; 4]);
-    assert_eq!(state, expected_after_delete(before, OWN));
+    assert_eq!(state, expected_without_own());
 }
 
 // (c) force=true z atakiem -> wyczyszczone (galaz `!force` nie blokuje).
 #[test]
 fn c_force_clears_attack_plan() {
-    let before = state_with_plans(Some(ENEMY));
-    let mut state = before.clone();
+    let mut state = state_with_plans(Some(ENEMY));
     state.clear_planned_march_for_unit(UnitId::new(OWN), true);
     assert_eq!(has_entries(&state, OWN), [false; 4]);
-    assert_eq!(state, expected_after_delete(before, OWN));
+    assert_eq!(state, expected_without_own());
 }
 
 // (c') force=true bez ataku -> tez wyczyszczone.
 #[test]
 fn c_force_clears_plain_plan() {
-    let before = state_with_plans(None);
-    let mut state = before.clone();
+    let mut state = state_with_plans(None);
     state.clear_planned_march_for_unit(UnitId::new(OWN), true);
-    assert_eq!(state, expected_after_delete(before, OWN));
+    assert_eq!(state, expected_without_own());
 }
 
 // (d) brak planu -> bez zmian (Map.delete brakujacego klucza); komenda -> Ok.
@@ -166,9 +171,8 @@ fn d_no_plan_is_ok_without_changes() {
     state
         .planned_marches
         .retain(|plan| plan.unit_id != UnitId::new(OWN));
-    let before = state.clone();
     state.clear_planned_march_for_unit(UnitId::new(OWN), false);
-    assert_eq!(state, expected_after_delete(before, OWN));
+    assert_eq!(state, expected_without_own());
     // Jednostka bez zadnego wpisu: stan identyczny.
     let mut state = state_with_plans(None);
     state.units.push(unit(9, 1));
@@ -235,17 +239,8 @@ fn g_unknown_unit_is_rejected_without_changes() {
     }
 }
 
-// Mutacja „pomin warunek attack” (usuniecie galezi `!force && attack`) daje inny wynik niz (a):
-// strazcik wartosci, ktora (a) sprawdza; wynik uruchomienia mutacji w raporcie Operatora.
-#[test]
-fn attack_branch_is_observable() {
-    let before = state_with_plans(Some(ENEMY));
-    assert_ne!(
-        before,
-        expected_after_delete(before.clone(), OWN),
-        "bez warunku attack (a) zmienilby stan"
-    );
-}
+// Mutacja „pomin warunek attack” jest wykrywana przez (a) i przez
+// `playable.rs::cancel_planned_march_game_tests` (wynik mutacji w raportach 01/02a).
 
 // Kontrakt bridge: ten sam w obu adapterach.
 #[test]
