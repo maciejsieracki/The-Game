@@ -1295,3 +1295,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Runda 2** (DODATEK r2, baza `ef8eeedc9`, dispatch `b975183da`): strzelec z `city_towers::strongest_ranged_unit_for_era` z wektorami pina; generator wejścia strzału (`_fireOneTower`, mock `_singleBlow` zapisujący argumenty) albo NIE_ZROBIONE z cytatami; czerwony przed zmianą. `destroyed` jako proxy `wall_tile_rows` zostaje (udokumentowane dowodem z pina). Workflow `wf_36dbda52-96d`.
 - **Zabezpieczenie:** worktree rundy 1 (`wf_3d64ca03-97e-*`) — refs `keep/*` i `rust-port-wip/*`, usunięte, jeśli czyste.
 - **Sloty: 1 z 4.** **Parity:** `14d5e50b9`. **Pytania ABC:** #106 pkt 4, #115, #120; konwencja `Co-Authored-By` (rekomendacja B) — bez odpowiedzi właściciela.
+
+## Przebieg (15.11, heartbeat 02:47): 1 z 4 slotów zajęty
+- **Trwających Workflow: 1** z 4: WIEZE-2B2 runda 2 (`wf_36dbda52-96d`, Operator HAIKU; dispatch `b975183da`, baza `ef8eeedc9`). Bez wyniku.
+- **Wolne sloty:** brak zweryfikowanego zakresu bez decyzji właściciela (#106 pkt 4; #115, #120 — ABC). Tematy K5 zablokowane allowlistą.
+- **Parity:** `14d5e50b9`. **Dysk:** 9,4 GB.
+- **Pytania ABC:** #106 pkt 4 (rekomendacja B), #115, #120; konwencja `Co-Authored-By` (rekomendacja B) — bez odpowiedzi właściciela.
