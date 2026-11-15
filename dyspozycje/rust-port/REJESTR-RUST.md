@@ -1894,3 +1894,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 
 - **R-RUSTPORT-P4-1H-CANCEL-Q2 (#217, Opus) — START:** dispatch `dyspozycje/autobot/runs/R-RUSTPORT-P4-1H-CANCEL-Q2/00-dispatch.md` (commit `49eb08038`), baza `origin/rust-port/parity-v2` = `2799cdd4b`. Workflow `wf_c5970398-de4`. Zakres: `cancel_planned_march` 1:1 z `clearPlannedMarch` gałąź `unitId` + `EngineCommand::CancelPlannedMarch` w `bridge.rs`. Decyzja techniczna nieznanej jednostki (Err) zapisana wcześniej w tym rejestrze.
 - **Sloty:** aktywne 2 workflow (P4-1B Q3 `wf_c431c5de-ee5`, obrona w toku; P4-1H Q2 `wf_c5970398-de4`). Pozostają 2 wolne. Brak dispatchu bez decyzji właściciela dla kolejnych tematów (Q3 RJ-REPIN wymaga Q2? nie — niezależne, ale dispatch do napisania).
+
+## Przebieg (15.11, 20:2x UTC — heartbeat „twardy bit”: integracja rozpoznań P4-1F i P4-1I)
+
+- **Sloty:** aktywne 2 z 4 — P4-1H Q2 `wf_c5970398-de4` (operator, Opus, start 20:09 UTC) i P4-1B Q3 `wf_c431c5de-ee5` (etap FC, gałąź `fc/q3-map-view`, Opus). Dwa wolne. Nie uzupełniłem: kolejne kandydaci z listy (#96–#119) są oznaczone jako zablokowane (allowlista, decyzje gameplay) albo wymagają dispatchu do napisania. Kandydat niezależny od Q2: `R-RUSTPORT-P4-1H-RJ-REPIN-Q3` (dryf RJ do `07d2fbd72`, bez zależności).
+- **P4-1F OVERLAYS rozpoznanie (#215, FC PASS-WITH-NOTES `763902cf7`):** dokumenty zintegrowane na `claude/rust-sivvrn` (cherry-pick `ada5952ce`, `0a17ae371`). Trzeci commit (FC) po rozstrzygnięciu konfliktu był pusty — treść już była w gałęzi (`03-final-control.md` obecny). Ref `refs/keep/P4-1F-ROZP-FC`.
+- **P4-1I BATTLE-EVENTS rozpoznanie (#218, FC PASS-WITH-NOTES `d93d38750`):** łańcuch `ed07607c4`, `f8f4bfdb4`, `d93d38750` — operator i obrona zintegrowane (`adeff9057`, `84d8bc2af`), FC pusty po rozstrzygnięciu (treść obecna). Ref `refs/keep/P4-1I-ROZP-FC`.
+- **Uwaga do konfliktu reguł modeli:** stored prompt heartbeatu podaje Haiku/Sonnet, a bieżąca reguła właściciela dla serii P4-1 to Opus. Stosuję Opus dla P4-1, do rozstrzygnięcia przez właściciela.
+- **Stan remote:** `claude/rust-sivvrn` = `84d8bc2af`, `rust-port/parity-v2` = `2799cdd4b`.
+- **Dysk:** 16 GB wolne (59%).
