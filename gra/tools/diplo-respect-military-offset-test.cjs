@@ -50,6 +50,7 @@ const {
 } = mod;
 
 const NO_OFFSET = process.env.MUTATE_NO_OFFSET === '1';
+const MUTATE_DIRECTION = process.env.MUTATE_DIRECTION === '1';
 let pass = 0;
 let fail = 0;
 function check(cond, msg) {
@@ -72,8 +73,8 @@ const SCHEDULE = [
   [100, 160, 'B'],  // gracz słabszy o 1,6×: −10 raz
   [100, 160, null], // utrzymanie: brak ponownego −10
 ];
-// Oczekiwany Respekt po pętli AI: baza 50 + skumulowana korekta (+15, +15, −10).
-const OCZEKIWANY = [50, 65, 65, 65, 65, 80, 70, 70];
+// Oczekiwany Respekt po pętli AI: baza 50 + korekta ZASTĘPUJĄCA (+15; powrót w pasmo = 0; +15; potem −10).
+const OCZEKIWANY = [50, 65, 65, 65, 50, 65, 40, 40];
 
 const SIDE = (id, sila) => ({ id: String(id), sila, armiaPkt: sila });
 let meta = { respektPrzewagaStan: undefined, respektMilOffset: 0 };
@@ -86,12 +87,13 @@ SCHEDULE.forEach(([sg, sp, expected], turn) => {
   const r = respektMilitaryCrossing(SIDE(0, sg), SIDE(1, sp), meta.respektPrzewagaStan, params);
   const zdarzenie = meta.respektPrzewagaStan === undefined ? null : r.zdarzenieDla;
   if (zdarzenie === null) {
-    meta = { ...meta, respektPrzewagaStan: r.stan };
+    const zdejmij = r.stan === 'brak' && meta.respektPrzewagaStan !== undefined && meta.respektPrzewagaStan !== 'brak';
+    meta = { ...meta, respektPrzewagaStan: r.stan, ...(zdejmij ? { respektMilOffset: 0 } : {}) };
   } else {
-    const ev = zdarzenie === 'A' ? 'przewaga_militarna' : 'slabszy_militarnie';
+    const ev = (MUTATE_DIRECTION ? zdarzenie !== 'A' : zdarzenie === 'A') ? 'przewaga_militarna' : 'slabszy_militarnie';
     const next = applyDiplomaticEvent(rel, ev);
     const dR = next.respekt - rel.respekt;
-    meta = { ...meta, respektPrzewagaStan: r.stan, respektMilOffset: meta.respektMilOffset + dR };
+    meta = { ...meta, respektPrzewagaStan: r.stan, respektMilOffset: dR };
     rel = next;
     eventsSeen.push(`t${turn + 1}:${zdarzenie}:${dR}`);
   }

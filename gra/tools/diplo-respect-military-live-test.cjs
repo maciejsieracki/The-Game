@@ -262,12 +262,13 @@ async function main() {
     out.panelHasSlabszy = pb.hasSlabszy;
     assert('T2 panel: okno audiencji otwarte i wiersz cywilizacji kliknięty', pb.panelOpened && pb.rowClicked, pb);
     assert('T2 panel: rejestr pokazuje „Przewaga militarna”', pb.hasPrzewaga, pb);
-    // Pasek w audiencji = udział GRACZA (computeRespekt(gracz, AI), bez korekty); korekta siedzi w relacji AI→gracz.
-    // Pomiar: bar == baza (bez korekty) oraz bar + (relacja AI po korekcie − offset) ≈ 100 (dopełnienie udziałów).
-    assert('T2 panel: pasek Respektu = baza Mocy gracza (stan obecny, bez korekty militarnej; DO POTWIERDZENIA perspektywa)',
-      pb.bar !== null && pb.bar === pb.base, pb);
-    assert('T2 panel: dopełnienie udziałów: bar + relacjaAI_bazowa ≈ 100 (tolerancja 3 pkt: zaokrąglenie, Moc efektywna vs nominalna)',
-      pb.bar !== null && Math.abs(pb.bar + pb.relacjaAIBazowa - 100) <= 3, pb);
+    // Pasek w audiencji = udział GRACZA: baza Mocy + korekta militarna (+15), obciete do [0,100] (r4: korekta uwzgledniona).
+    assert('T2 panel: pasek Respektu = clamp(baza + offset) (korekta +15 uwzgledniona)',
+      pb.bar !== null && pb.bar === Math.max(0, Math.min(100, pb.base + pb.offset)), pb);
+    out.t2ClampMaskuje = pb.base + pb.offset > 100;
+    if (pb.base + pb.offset <= 100) {
+      assert('T2 panel: baza+offset <= 100 => pasek PRZESUNIETY o +15 wzgledem bazy', pb.bar === pb.base + 15, pb);
+    }
 
     // T3–T6: utrzymanie przewagi -> bez ponownego naliczenia
     for (let t = 3; t <= 6; t++) {
@@ -290,14 +291,17 @@ async function main() {
     turn = await endTurnWait(page);
     const s7 = await pairState(page, ai);
     out.turns.push({ turn, faza: 'T7 spadek ponizej progu', ratio: r.ratio, ...s7 });
-    assert(`T7: spadek ponizej progu -> stan brak, bez zdarzenia (ratio ${r.ratio.toFixed(2)})`, s7.stan === 'brak' && s7.przewagaN === 1 && (s7.offset ?? 0) === 15, s7);
+    assert(`T7: spadek ponizej progu -> stan brak, bez zdarzenia, korekta zdjeta (ratio ${r.ratio.toFixed(2)})`, s7.stan === 'brak' && s7.przewagaN === 1 && (s7.offset ?? 0) === 0, s7);
 
     // T8: ponowne przekroczenie -> +15 drugi raz
     r = await pushUntil(page, ai, ME, 1.6, 'gracz');
     turn = await endTurnWait(page);
     const s8 = await pairState(page, ai);
     out.turns.push({ turn, faza: 'T8 ponowne przekroczenie', ratio: r.ratio, ...s8 });
-    assert('T8: ponowne przejscie progu -> drugie +15', s8.stan === 'A' && s8.przewagaN === 2 && s8.przewagaSum === 30 && (s8.offset ?? 0) === 30, s8);
+    assert('T8: ponowne przejscie progu -> drugie +15 (korekta zastepuje, offset 15)', s8.stan === 'A' && s8.przewagaN === 2 && s8.przewagaSum === 30 && (s8.offset ?? 0) === 15, s8);
+    const pb8 = await panelRespektBar(page, ai, 'respekt-live-t8.png');
+    out.panelT8 = pb8;
+    assert('T8 panel: pasek = clamp(baza + offset)', pb8.bar !== null && pb8.bar === Math.max(0, Math.min(100, pb8.base + pb8.offset)), pb8);
 
     // T9: AI >= 1,6x gracza -> −10 raz (slabszy)
     r = await pushUntil(page, ai, ME, 1.6, 'ai');
@@ -307,7 +311,14 @@ async function main() {
     out.turns.push({ turn, faza: 'T9 gracz slabszy', ratio: r.ratio, ...s9 });
     assert('T9: stan B (gracz slabszy)', s9.stan === 'B', s9);
     assert('T9: −10 „Słabszy militarnie” z rejestru (raz)', s9.slabszyN === 1 && s9.slabszySum === -10, s9);
-    assert('T9: korekta offsetu = 30 − 10 = 20', (s9.offset ?? 0) === 20, s9);
+    assert('T9: korekta offsetu = −10 (zastepuje +15, nie kumuluje)', (s9.offset ?? 0) === -10, s9);
+    const pb9 = await panelRespektBar(page, ai, 'respekt-live-t9.png');
+    out.panelT9 = pb9;
+    assert('T9 panel: pasek = clamp(baza − 10); rejestr „Słabszy militarnie”', pb9.bar !== null && pb9.bar === Math.max(0, Math.min(100, pb9.base + pb9.offset)) && pb9.hasSlabszy, pb9);
+    if (pb9.base >= 10) assert('T9 panel: pasek OBNIZONY o 10 wzgledem bazy', pb9.bar === pb9.base - 10, pb9);
+    const rt9 = await ev(page, ([me, a]) => window.__respektMilTest.metaRoundTrip(me, a), [ME, ai]);
+    out.roundTripT9 = rt9;
+    assert('T9: round-trip meta przy niezerowej korekcie zachowuje stan B i offset −10', rt9.respektPrzewagaStan === 'B' && rt9.respektMilOffset === -10, rt9);
 
     // T10–T12: utrzymanie slabszego -> bez ponownego −10
     for (let t = 10; t <= 12; t++) {
@@ -315,7 +326,7 @@ async function main() {
       turn = await endTurnWait(page);
       const st = await pairState(page, ai);
       out.turns.push({ turn, faza: 'T10-12 utrzymanie slabszego', ratio: r.ratio, ...st });
-      assert(`T${t}: utrzymanie slabszego bez ponownego −10`, st.stan === 'B' && st.slabszyN === 1 && (st.offset ?? 0) === 20, st);
+      assert(`T${t}: utrzymanie slabszego bez ponownego −10`, st.stan === 'B' && st.slabszyN === 1 && (st.offset ?? 0) === -10, st);
     }
 
     // T13: balans -> brak
@@ -323,7 +334,7 @@ async function main() {
     turn = await endTurnWait(page);
     const s13 = await pairState(page, ai);
     out.turns.push({ turn, faza: 'T13 balans', ratio: r.ratio, ...s13 });
-    assert('T13: balans -> stan brak, bez nowych zdarzen', s13.stan === 'brak' && s13.slabszyN === 1 && s13.przewagaN === 2 && (s13.offset ?? 0) === 20, s13);
+    assert('T13: balans -> stan brak, bez nowych zdarzen', s13.stan === 'brak' && s13.slabszyN === 1 && s13.przewagaN === 2 && (s13.offset ?? 0) === 0, s13);
 
     // T14: round-trip meta (JSON) zachowuje pola
     const rt = await ev(page, ([me, a]) => window.__respektMilTest.metaRoundTrip(me, a), [ME, ai]);
@@ -331,8 +342,8 @@ async function main() {
     turn = await endTurnWait(page);
     const s14 = await pairState(page, ai);
     out.turns.push({ turn, faza: 'T14 round-trip', roundTrip: rt, ratio: r.ratio, ...s14 });
-    assert('T14: round-trip meta zachowuje respektPrzewagaStan i respektMilOffset', rt.respektPrzewagaStan === 'brak' && rt.respektMilOffset === 20, rt);
-    assert('T14: po round-trip tick (balans) nie zmienia stanu ani offsetu, bez nowych zdarzen', s14.stan === 'brak' && (s14.offset ?? 0) === 20 && s14.przewagaN === 2 && s14.slabszyN === 1, s14);
+    assert('T14: round-trip meta zachowuje respektPrzewagaStan i respektMilOffset', rt.respektPrzewagaStan === 'brak' && rt.respektMilOffset === 0, rt);
+    assert('T14: po round-trip tick (balans) nie zmienia stanu ani offsetu, bez nowych zdarzen', s14.stan === 'brak' && (s14.offset ?? 0) === 0 && s14.przewagaN === 2 && s14.slabszyN === 1, s14);
 
     // T15: stary zapis (brak pol stanu) -> inicjalizacja bez zdarzenia. Stary zapis nie ma offsetu (brak pola = 0),
     // wiec korekta z przeszlosci nie jest odtwarzana; kluczowe: brak NOWEGO zdarzenia przy inicjalizacji.

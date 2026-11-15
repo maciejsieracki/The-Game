@@ -78,7 +78,7 @@ export interface DiploPairMeta {
    */
   respektPrzewagaStan?: 'A' | 'B' | 'brak';
   /**
-   * Skumulowana korekta Respektu pary z jednorazowych zdarzeń militarnych (+15 / −10). Główny tick AI
+   * Korekta Respektu pary z jednorazowych zdarzeń militarnych (+15 / −10); kolejne przejście progu ZASTĘPUJE poprzednią korektę, powrót w pasmo neutralne zeruje (nie kumuluje się). Główny tick AI
    * (main.ts, pętla relacji gracz–AI) przelicza Respekt z Mocy (computeRespekt) co turę i bez tej
    * korekty nadpisałby zdarzenie. Efektywny Respekt = clamp(computeRespekt + respektMilOffset).
    * Brak pola = 0.

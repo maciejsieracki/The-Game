@@ -2960,10 +2960,23 @@ async function boot(): Promise<void> {
      * (dostępność akcji, uczciwość koszyka PN), nie tylko wyświetlaną liczbę.
      */
     function objectiveRespektPctTowardEffective(theirOwnerId: number): number {
-      return computeRespekt(
-        objectivePowerForOwnerEffective(0),
-        objectivePowerForOwnerEffective(theirOwnerId),
+      return respektBarWithMilitaryOffset(
+        theirOwnerId,
+        computeRespekt(
+          objectivePowerForOwnerEffective(0),
+          objectivePowerForOwnerEffective(theirOwnerId),
+        ),
       );
+    }
+    /**
+     * R-WEB-DIPLO-RESPECT-MILITARY-EVENTS-WIRING-Q1 (r4): pasek/liczba Respektu gracza w UI = baza z Mocy
+     * + korekta zdarzeń militarnych (+15 „Przewaga militarna”, −10 „Słabszy militarnie”), obcięte do [0, 100].
+     * Semantyka paska („wyżej = jesteś silniejszy”): przewaga podnosi, „słabszy” obniża. Jedno miejsce dla:
+     * listy dyplomacji, paska audiencji i relacjaTotal (audienceRelTotalEffective).
+     * / EN: player-facing Respekt bar = power-based base + military-event offset, clamped to [0, 100].
+     */
+    function respektBarWithMilitaryOffset(theirOwnerId: number, base: number): number {
+      return respektZKorektaMilitarna(base, getDiploPairMeta(ME(), theirOwnerId).respektMilOffset);
     }
     function unitCountOnHex(q: number, r: number): number {
       let n = 0;
@@ -12768,7 +12781,13 @@ async function boot(): Promise<void> {
         const zdarzenie = meta.respektPrzewagaStan === undefined ? null : r.zdarzenieDla;
         if (zdarzenie === null) {
           if (r.stan !== meta.respektPrzewagaStan) {
-            setDiploPairMeta(gracz, o, { ...meta, respektPrzewagaStan: r.stan });
+            // Powrót w pasmo neutralne ('brak') zdejmuje korektę; inicjalizacja (stary zapis) zostawia pole bez zmian.
+            const zdejmij = r.stan === 'brak' && meta.respektPrzewagaStan !== undefined;
+            setDiploPairMeta(gracz, o, {
+              ...meta,
+              respektPrzewagaStan: r.stan,
+              ...(zdejmij ? { respektMilOffset: 0 } : {}),
+            });
           }
           continue;
         }
@@ -12780,7 +12799,8 @@ async function boot(): Promise<void> {
         setDiploPairMeta(gracz, o, {
           ...meta,
           respektPrzewagaStan: r.stan,
-          respektMilOffset: (meta.respektMilOffset ?? 0) + dR,
+          // Korekta ZASTĘPUJE poprzednią (nie kumuluje się): +15 / −10 aktualnego stanu progu (DO POTWIERDZENIA).
+          respektMilOffset: dR,
         });
         setDiploRelation(gracz, o, next);
       }
@@ -26463,7 +26483,7 @@ async function boot(): Promise<void> {
           const playerPower = objectivePowerForOwnerEffective(ME());
           const otherPower = objectivePowerForOwnerEffective(ownerId);
           const powerLine = formatPowerRelationLine(playerPower, otherPower);
-          const respektNorm = powerLine.respekt;
+          const respektNorm = respektBarWithMilitaryOffset(ownerId, powerLine.respekt);
           // Rekruci w audiencji: bieżąca pula + maks. (suma miast) obu stron — ta sama
           // definicja co panel werbu (empirePoborTotals.rekruci, mnożnik civManpowerMults).
           const recruitsPlayer = audienceRecruitsForOwner(ME());
