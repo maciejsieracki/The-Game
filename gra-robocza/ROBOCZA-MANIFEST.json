@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "152543dc513f1c8d05939038a494a562",
-  "bundleSha256": "9c021b8acfa3ec696daeaf7badeda8f4b8b0e04a73d32e7482fe08b8ca84f869",
-  "bundleBytes": 14754291,
+  "bundleMd5": "d61d8e2a26689599e91bfa6fb0500f36",
+  "bundleSha256": "86e9c293ac6894061c4298b2fe39cc0a2170fa583b959eecb744fe2ad1e2adc0",
+  "bundleBytes": 14754371,
   "sourceSnapshot": {
-    "source": "R-WEB-UI-EMPIRE-RECRUIT-PANEL-MOVE-TO-ARMY-PANEL-Q1 FC 0bf3eb27f kod 05f649925 oraz R-WEB-UI-RESOURCE-CARD-REMOVE-PLUS-X-BADGE-Q1 FC a5e329282 kod f99397d6f",
+    "source": "R-WEB-TRADE-ROUTE-REMOVE-STOCK-FLOW-E3C-Q1 r2 FC 2701af6cc kod ff7fac543",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 736: Panel Rekrutacja cala cywilizacja jest sekcja panelu armii na samej gorze nad wodzem, przycisk REKRUTACJA usuniety z gornego paska; na kartach surowcow usunieta plakietka plus X obok Brutto netto"
+    "FALA 737: Aktywny szlak handlowy nie przenosi juz zapasow miedzy cywilizacjami (usuniety blok Handel E3c i martwy kod przeplywu), zostaje dochod Pieniadza ze szlaku, bonusy i grant dostepu do jednostek; teksty gracza i dokumentacja poprawione"
   ],
   "verification": [
-    "tsc 0; logic 213/213; recruit testy 13/0 29/0 17/0 31/0 18/0 11/0; plusx 31/0 (DOM Chromium); gross-net 22/0; live recruit 29/0 17/0"
+    "tsc 0; logic 213/213; trade-ilosc 23/0 zloto-szlak 48/0 trade-grant 62/0 routes 96/0 income 134/0 limit 76/0 ownership 18/0 contact-only 36/0 ledger-trade 27/0; live Chromium 12/0 (6 tur, zapasy bez zmian, dochod 6/tura); mutacja czerwona"
   ],
   "limits": [
-    "map-controls-behind-panels wiersz rekrutacja-imperium N/A po przeniesieniu; Civpedia/poradnik recruit niesprawdzone; zrzut plus X z zywej gry NIE ZMIERZONO; martwy wiersz w map-controls do usuniecia"
+    "Sonda ledgerAuditE3c w main.ts zostaje (martwa, do sprzatniecia); grant dostepu w realnej turze NIE ZMIERZONO (pokryty trade-grant-test); surow-civ-storage sekcja G 4 FAIL i zloto-test 7 FAIL to dlug bazowy; hooki civTest poza litera allowlisty"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FALA 736: FC PASS-WITH-NOTES RECRUIT-MOVE (0bf3eb27f / kod 05f649925): panel Rekrutacja cala cywilizacja przeniesiony do panelu armii nad wodzem, przycisk REKRUTACJA usuniety z gornego paska, testy 13/0 29/0 17/0 31/0 18/0 11/0 live 29/0 17/0; FC PASS-WITH-NOTES PLUS-X (a5e329282 / kod f99397d6f): usunieta plakietka +X przy Brutto netto, test 31/0 w tym DOM Chromium, gross-net 22/0"
+    "notes": "FC PASS-WITH-NOTES E3C-REMOVE r2 (2701af6cc / kod ff7fac543 na 63db5c610): szlak handlowy tylko premia, usuniety blok Handel E3c i martwy kod przeplywu, testy szlaku zielone, live Chromium 6 tur z aktywnym szlakiem 12/0 zapasy 6 kluczy bez zmian dochod Pieniadza naliczany, mutacja czerwona"
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-15T07:48:02",
+  "hubGeneratedAt": "2026-11-15T07:51:16",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "152543dc513f1c8d05939038a494a562",
-      "sizeBytes": 14754291
+      "md5": "d61d8e2a26689599e91bfa6fb0500f36",
+      "sizeBytes": 14754371
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "152543dc513f1c8d05939038a494a562",
-      "sizeBytes": 14754291
+      "md5": "d61d8e2a26689599e91bfa6fb0500f36",
+      "sizeBytes": 14754371
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "152543dc513f1c8d05939038a494a562",
-      "sizeBytes": 14754291
+      "md5": "d61d8e2a26689599e91bfa6fb0500f36",
+      "sizeBytes": 14754371
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "152543dc513f1c8d05939038a494a562",
-      "sizeBytes": 14754291
+      "md5": "d61d8e2a26689599e91bfa6fb0500f36",
+      "sizeBytes": 14754371
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "152543dc513f1c8d05939038a494a562",
-      "sizeBytes": 14754291
+      "md5": "d61d8e2a26689599e91bfa6fb0500f36",
+      "sizeBytes": 14754371
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "152543dc513f1c8d05939038a494a562",
-      "sizeBytes": 14754291
+      "md5": "d61d8e2a26689599e91bfa6fb0500f36",
+      "sizeBytes": 14754371
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "152543dc513f1c8d05939038a494a562",
-      "sizeBytes": 14754291
+      "md5": "d61d8e2a26689599e91bfa6fb0500f36",
+      "sizeBytes": 14754371
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "152543dc513f1c8d05939038a494a562",
-      "sizeBytes": 14754291
+      "md5": "d61d8e2a26689599e91bfa6fb0500f36",
+      "sizeBytes": 14754371
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "152543dc513f1c8d05939038a494a562",
-      "sizeBytes": 14754291
+      "md5": "d61d8e2a26689599e91bfa6fb0500f36",
+      "sizeBytes": 14754371
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "152543dc513f1c8d05939038a494a562",
-      "sizeBytes": 14754291
+      "md5": "d61d8e2a26689599e91bfa6fb0500f36",
+      "sizeBytes": 14754371
     }
   ],
-  "md5": "152543dc513f1c8d05939038a494a562",
+  "md5": "d61d8e2a26689599e91bfa6fb0500f36",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

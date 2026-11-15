@@ -1,3 +1,9 @@
+## ROBOCZA d61d8e2a -- 2026-11-14 -- FALA 737: Szlak handlowy tylko premia bez przenoszenia zapasow (testowa)
+
+- Aktywny szlak handlowy nie przenosi juz zapasow miedzy cywilizacjami (usuniety blok Handel E3c i martwy kod przeplywu), zostaje dochod Pieniadza ze szlaku, bonusy i grant dostepu do jednostek; teksty gracza i dokumentacja poprawione
+- Weryfikacja: tsc 0; logic 213/213; trade-ilosc 23/0 zloto-szlak 48/0 trade-grant 62/0 routes 96/0 income 134/0 limit 76/0 ownership 18/0 contact-only 36/0 ledger-trade 27/0; live Chromium 12/0 (6 tur, zapasy bez zmian, dochod 6/tura); mutacja czerwona
+- Limity: Sonda ledgerAuditE3c w main.ts zostaje (martwa, do sprzatniecia); grant dostepu w realnej turze NIE ZMIERZONO (pokryty trade-grant-test); surow-civ-storage sekcja G 4 FAIL i zloto-test 7 FAIL to dlug bazowy; hooki civTest poza litera allowlisty
+
 ## ROBOCZA 152543dc -- 2026-11-14 -- FALA 736: Panel rekrutacji w panelu armii i usuniecie plakietki plus X (testowa)
 
 - Panel Rekrutacja cala cywilizacja jest sekcja panelu armii na samej gorze nad wodzem, przycisk REKRUTACJA usuniety z gornego paska; na kartach surowcow usunieta plakietka plus X obok Brutto netto
