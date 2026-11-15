@@ -1822,3 +1822,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **NIE_ZMIERZONO / jawnie unported:** ripple `_shakeAlliesOnLoss` (zależy od #123), efekty dowódcy (`dowodca-*`), `occByKey`, `routedUnits`, tower_blow nadal zapisuje unported. Osłona wręcz `_checkMeleeScreenLost` ma tylko test Rust-only (generator ma `primaryRanged=false`).
 - **Integracja:** merge `--no-ff` `5f7cd0003` na parity `83f5fd654` → `c3e3617b2` (worktree `integ-outcome`). Merge-tree bez konfliktów, ancestry potwierdzona (`f7baa3848` w łańcuchu, `92be62324` w FC). Bramki w tle: `FMT_EXIT=0`; clippy i pełny `cargo test` w toku. **FF po `TEST_EXIT=0`.**
 - **Sprzątanie:** worktree rundy 5 usunięte; refs `refs/keep/cleanup-wf_f3b76b65-261-*` i `refs/keep/K5LOOP-OUTCOME-r5-fc`.
+
+## Przebieg (15.11, 18:5x UTC — #221 generalTargetId: runda 1 BLOCK/FAIL, runda 2 start)
+
+- **#221 runda 1 (`wf_1a51a6f0-bfd`):** Operator BLOCK (`3f2089e09`): kod poprawny (3 z 4 nowych testów pada na mutację), ale bramka `p4_1j_planned_march_bounds` i `clippy --all-targets` nie kompilują się (E0063, E0609). Przyczyna: **moja allowlista pominęła `tests/p4_1j_planned_march_bounds.rs`**. Evaluator FAIL (`f09f4d22f`), FC FAIL (`5228db7d9`).
+- **Decyzja techniczna (zatwierdzona):** `general_target_id: Option<String>`, nie `Option<UnitId>` — web trzyma dowolny niepusty napis; ≥15 id niekanonicznych w wektorach. Pusty napis filtrowany jak w webie. Zapis w rejestrze.
+- **#221 runda 2 (START, `wf_c9da2dff-9c8`):** DODATEK na `6ea61d16f`: allowlista + `bounds.rs` z dwoma mechanicznymi zmianami (pole `None` w `march()`, usunięcie asercji `general_target_dropped`). Baza = aktualny parity. Punkty 4 i 5 NIE_ZMIERZONO.
+- **Sprzątanie:** worktree rundy 1 usunięte; refs `refs/keep/cleanup-wf_1a51a6f0-bfd-{1..4}`. Jeden worktree prunable.
+- **Integracja #226 K5LOOP-OUTCOME (`c3e3617b2`, na parity `83f5fd654`):** `FMT_EXIT=0`, `CLIPPY_EXIT=0`; pełny test w toku (625 passed do tej chwili, 0 failed). FF po `TEST_EXIT=0`.
+- **Aktywne workflow:** P4-1B Q1 Opus (`wf_13666f01-79e`), P4-1B Q2 Opus (`wf_3095763c-84a`), #221 r2 Haiku (`wf_c9da2dff-9c8`). Dysk: 9,1 GB wolne (77%).
