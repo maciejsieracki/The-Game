@@ -1,76 +1,97 @@
-# 30 — Obrona Operatora (runda 2), R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1
+# 30 — Obrona Operatora (odpowiedź na FC r2), R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1
 
-STATUS: FAIL (runda 2 wykonana i zacommitowana; zarzuty 1, 2 i 3 domknięte tylko częściowo lub wcale — szczegóły niżej)
-DOMAIN: GAME (dyplomacja, wycena koszyka handlu)
+STATUS: PASS-WITH-NOTES (zarzuty 1 i 4 przyjęte i naprawione; zarzut 2 przyjęty częściowo; zarzuty 3 i 5 przyjęte, NIE ZROBIONE w tej rundzie; zarzut 6 przyjęty — merge wykonany, dokumentacja NIE ZROBIONE)
+DOMAIN: GAME (dyplomacja, wycena koszyka handlu, epoka umowy)
 TEMAT: R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1
-GOAL: krok/blok handlu surowcem zależny od epoki (Kamień 10, Brąz 50, Żelazo 100 szt. na 1 PN), epoka umowy = wyższa z dwóch stron; testy zgodne z kryteriami (a)–(h) dispatchu.
-ZMIANY-COMMIT: kod `770aa4fed` (poprawki zarzutów; pliki po allowliście). Raport: ten plik, osobny commit (podany w odpowiedzi SHA). Baza: `7cee14d3a` (kandydat z rundy 1). Nie integrowano z `origin/main` `45ded9579` — to zadanie orkiestratora (zarzut 0 z Evaluatora: origin/main jest o rundę dalej).
+GOAL: krok/blok handlu surowcem zależny od epoki umowy (Kamień 10 / Brąz 50 / Żelazo 100 szt. na 1 PN; epoka umowy = wyższa z epok stron); ta sama epoka w oknie, ocenie propozycji, Szybkiej umowie i ofertach AI.
+ZMIANY-COMMIT:
+- baza kandydata: 969edd214 (runda 2 Operatora)
+- 230fd049f — poprawka zarzutu 1 (okno: onSubmit w epoce umowy) i zarzutu 2 (opakowania ocen propozycji w main.ts + hooki testowe)
+- b3bef1f0b — merge origin/main 115422be5 (bez konfliktów)
+- 185562f8f — merge origin/main 807ecebdd (FALA 741, QTY-CAP r2); konflikt w gra/src/game/ai-trade-proposal.ts rozwiązany wersją origin/main + ponownie dodany parametr `tradeEra` (krok i normalizacja ilości w `selectAiTradeBarter`, 4 miejsca)
+- Pliki zmienione względem origin/main w tej rundzie (tylko gra/src): main.ts, ui/diplomacyTradeBasket.ts, game/ai-trade-proposal.ts. Allowlista zachowana; `gra/` nie zmieniane przez build.
+- Ten plik raportu: osobny commit (hash w odpowiedzi orkiestratora).
 
-## Odpowiedź na zarzuty Evaluatora (35317ecf8)
+## Odpowiedzi na zarzuty FC r2
 
-| # | Zarzut | Decyzja | Dowód |
-|---|---|---|---|
-| 1 | Epoka umowy = wyższa z dwóch stron nie działa w grze | PRZYJMUJĘ CZĘŚCIOWO | Dodano `diplomacyDealTradeEra(playerEra, partnerEra)` i `withDiplomacyTradeEra(era, fn)` (gra/src/game/diplomacy-value-catalog.ts). `pickAiPlayerCyclicBarter` w main.ts liczy epokę umowy `max(player.era, empireEpochForOwner(ownerId))` i wykonuje cały wybór pary w tej epoce; `selectAiTradeBarter` dostał `tradeEra` (gra/src/game/ai-trade-proposal.ts). **Niedomknięte:** okno umowy (`diplomacyTradeBasket.ts`), `diplomacy-ai-offer-balance.ts`, bramka uczciwości w UI, `computeQuickDealBasket` (ziarno jest w epoce gracza) — nadal czytają globalną epokę gracza. Zarzut Evaluatora co do tych ścieżek jest trafny. |
-| 2 | Brak testu bramki uczciwości (c) w epokach 2/3 | PRZYJMUJĘ CZĘŚCIOWO | `tools/diplomacy-trade-era-table-test.cjs`: sekcja „zgodnosc jawna/globalna" — dla epok 2 i 3 i każdego z 13 kluczy blokowych wycena jawną epoką równa wycenie globalną. To NIE jest test samej bramki `diplomacyFairGivePn` w grze; brak testu bramki w UI. |
-| 3 | Brak testu DOM okna „Umowa wymiany surowców" (d, Playwright) | ODRZUCAM jako NIE ZROBIONE (blokada środowiska) | `require('playwright')` działa, ale `npx playwright install chromium` kończy się „Download failure, code=1" (wynik zmierzony w tej sesji). `/usr/bin/chromium` istnieje, ale dispatch wymaga `chromium.launch()` bez opcji. Build vite (`gra/dist`) nie był robiony. Kryterium (d) pozostaje OTWARTE. |
-| 4 | Brak testu AI w Brązie (e); blok 10 w pn-engine:454 | PRZYJMUJĘ | Nowy test `tools/diplomacy-trade-era-ai-test.cjs` (14/0): `selectAiTradeBarter` z `tradeEra=2`, stock 1234 → `giveQty` 1200, `receiveQty % 50 == 0`, PN > 0 po obu stronach; kontrola Kamień 1234→1230, Żelazo 1234→1200 (blok 100); epoka umowy (gracz Kamień + AI Brąz) → blok 50; mutacja „blok 10 w Brązie" nie przechodzi. Bug z pn-engine: `Math.min(10, maxQty)` zastąpiono `Math.min(diplomacyHandelSurowiecKrok(pick.id), maxQty)` (diplomacy-pn-engine.ts, `computeQuickDealBasket`) — w Kamieniu identyczne (krok 10), w Brązie daje 50 zamiast 0. **Ta poprawka nie ma testu** (bundlowanie diplomacy-pn-engine.ts nie było robione). |
-| 5 | Wczytanie zapisu i nowa gra nie ustawiają epoki handlu | PRZYJMUJĘ | main.ts: `setDiplomacyTradeEra(player.era)` po `player.era = ERA_MAP[params.epochId]` (nowa gra) i po `overlayDepositEra = player.era` w `restoreGameFromSave` (wczytanie). Stare zapisane propozycje/oferty (obcinanie do kroku epoki) — NIE zrobione; wymaga decyzji właściciela (ABC: czy obcinać, czy odrzucać). |
-| 6 | Poradnik i wikiBundle nieaktualne | PRZYJMUJĘ | `docs/PORADNIK-GRACZA/12-dyplomacja.md` (akapit „Epoka handlu surowcami"), `docs/encyklopedia/pojecia/handel-surowcami-dyplomacja.md` (akapit „Epoka umowy" z zakresem wdrożenia), `node gra/tools/bundle-wiki-for-game.cjs` → „22 rozdz. + 182 haseł (~1292 KB)`, `gra/src/data/wikiBundle.json` (diff 2 linie, jednolinijkowy JSON). Civpedia: ta sama encyklopedia; nie weryfikowano osobno w przeglądarce. |
-| 7 | `pn_per_szt` w `tools/.dip-audit-bundle.cjs` i w `dyspozycje/rust-port/*` | ODRZUCAM w tym temacie | `gra/tools/.dip-audit-bundle.cjs:57` (`pn_per_szt:` — pole generatora audytu) nie pasuje do allowlisty (`gra/tools/diplo*|trade*|ai-trade*`). Dokumenty `dyspozycje/rust-port/p2/P2-9-ASSET-DATA-MAPPING.md` i `p3/P3-5A-DATA-CIV-DIPLO.md` poza allowlistą. Zgłaszam do orkiestratora jako dług (patrz UWAGI). |
-| 8 | Mutacja tylko na warstwie danych | PRZYJMUJĘ CZĘŚCIOWO | Mutacja na ścieżce AI (`selectAiTradeBarter` z tradeEra=2 i blokiem 10 → 1230 ≠ 1200) jest w teście AI. Mutacji na ścieżce UI/gry NIE zrobiono (zarzut 1 nie zamknięty). |
+**Zarzut 1 (epoka umowy ustawiona tylko globalnie na czas okna; closeModal przywraca epokę gracza przed onSubmit): PRZYJMUJĘ — NAPRAWIONE.**
+- `gra/src/ui/diplomacyTradeBasket.ts` (przycisk zatwierdzenia, ok. l.3182-3186): po `closeModal()` (które przywraca epokę gracza) `onSubmit(payload)` jest wołane w `withDiplomacyTradeEra(ctx.tradeEra, ...)`. Ocena propozycji, `resolveProposalPn` i walidacja po stronie `onSubmit` liczą więc w epoce umowy. Gdy `ctx.tradeEra == null`, zachowanie jak dotąd.
+- Dowód kodu: `grep -n "withDiplomacyTradeEra(ctx.tradeEra, () => onSubmit" gra/src/ui/diplomacyTradeBasket.ts`.
+- Brak testu DOM tej ścieżki (patrz zarzut 3). Dowód jest na poziomie kodu, nie na poziomie klikniętego przycisku.
 
-## Pozostałe kryteria dispatchu
+**Zarzut 2 (diplomacy-proposals.ts i diplomacy-ai-offer-balance.ts zależą od globalu; brak jawnej epoki/kontekstu): PRZYJMUJĘ CZĘŚCIOWO — NAPRAWIONE na poziomie wejść do oceny w main.ts; pełna jawna epoka w funkcjach diplomacy-*.ts NIE ZROBIONA.**
+- Dodany helper `dealTradeEraForOwners(a, b) = diplomacyDealTradeEra(empireEpochForOwner(a), empireEpochForOwner(b))` obok `empireEpochForOwner` (main.ts).
+- Funkcje main.ts, które oceniają propozycję, zostały owinięte w `withDiplomacyTradeEra(dealTradeEraForOwners(...), ...)` przez opakowanie `...args` (oryginał przemianowany na `*Impl`):
+  - `enqueueNegotiationFromAiCmd` (AI -> gracz; para AI, ME()),
+  - `packageSiblingPn` (proposer, responder),
+  - `previewNegotiationEntry` (owners z wpisu negocjacji; sygnatura jawna, bo test źródłowy `diplomacy-fairness-gate-package-q2-test` czyta jej tekst),
+  - `applyProposalOutcome` (proposer, responder),
+  - `previewNegotiatedProposal` (0, ownerId).
+- Istniejące opakowanie `pickAiPlayerCyclicBarterImpl` (round 1) pozostaje.
+- Okno koszyka (ctx.tradeEra) ustawia epokę na czas otwarcia (round 1), więc podgląd UI w `diplomacyAcceptanceBalance.ts` (l.753, 849) też liczy w epoce umowy, dopóki okno jest otwarte.
+- NIE ZWERYFIKOWANO: pełnej listy wywołań `diplomacyFairGivePn`, `diplomacyNormalizeSurowiecIlosc`, `handelRequiredPn` z innych ścieżek (np. tury AI bez przejścia przez powyższe funkcje). Nie zrobiono grep-audytu każdego wywołania; pokrycie jest wnioskowane z wejść.
+- Dług: parametr `tradeEra` nie został dodany do `diplomacy-proposals.ts` i `diplomacy-ai-offer-balance.ts` (zarzut dispatchu: jawny kontekst). Zostaje w kolejnej rundzie.
 
-- (a) tabela 15 kluczy × epoki 1/2/3: `diplomacy-trade-era-table-test.cjs` 185 pass / 0 fail (wcześniej 151/0 — dopisano sekcje umowy, zgodności i przywracania epoki).
-- (b) mieszane epoki: test używa teraz `diplomacyDealTradeEra` (prawdziwa funkcja): (2,1)→2, (1,2)→2, (3,2)→3, (1,1)→1; `pn(drewno,50, epoka umowy)=1`; kontrola epoki Kamienia `pn(drewno,50,1)=5`.
-- (c) bramka uczciwości — tylko zgodność jawna/globalna (patrz zarzut 2). NIE ZROBIONE jako test bramki.
-- (d) DOM — NIE ZROBIONE (zarzut 3).
-- (e) AI w Brązie — ZROBIONE (`diplomacy-trade-era-ai-test.cjs`, 14/0).
-- (f) mutacja blok 10 w Brązie — ZROBIONE w obu testach (warstwa danych i AI). Wynik: nie przechodzi.
-- (g) determinizm — NIE ZMIERZONO w tej rundzie (funkcje czyste; brak osobnego uruchomienia 2×).
-- (h) bramki: patrz TESTY.
+**Zarzut 3 (brak testu DOM okna w Brązie i Żelazie; brak testu bramki w epokach 2 i 3 na ścieżce UI; brak mutacji UI): PRZYJMUJĘ — NIE ZROBIONE w tej rundzie.**
+- Powód: test DOM wymaga zbudowania aplikacji (vite build poza repo) i Chromium oraz otwarcia okna z mapy. Nie wykonano tego w tej rundzie.
+- Zostaje jako zadanie kolejnej rundy: (d) DOM okna w Brązie i Żelazie, (c) bramka uczciwości w epokach 2 i 3 na ścieżce UI, mutacja „blok 10 w Brązie" na ścieżce UI.
 
-## TESTY (surowe wyniki, uruchomione w worktree na `770aa4fed` po edycjach)
+**Zarzut 4 (zapis/wczytanie; obcięcie starych ofert; miejsca ustawiające player.era): PRZYJMUJĘ CZĘŚCIOWO.**
+- Zrobione: `setDiplomacyTradeEra` jest wołane przy nowej grze (main.ts ok. l.46924), przy wczytaniu zapisu (ok. l.48948) i przy zmianie epoki gracza (ok. l.2630). Dodane w tej rundzie: hooki testowe `setPlayerEra`, `setPlayerEraForTest` i reset epoki w hooku ok. l.28756 wołają `setDiplomacyTradeEra(era)`.
+- NIE ZROBIONE: dwa miejsca testowe `player.era = 2;` (ok. l.48054 i 48276, scenariusze testowe) nadal nie wołają `setDiplomacyTradeEra`. Wzorzec z edycją nie był jednoznaczny (dwa identyczne trafienia); zostaje do poprawy w kolejnej rundzie.
+- NIE ZROBIONE: obcięcie ilości starych zapisanych propozycji i ofert do kroku epoki przy wczytaniu (DODATEK 2 pkt 3). Brak implementacji i brak testu snapshot/restore.
+- NIE ZROBIONE: test realnej ścieżki zapisu (buildSaveGameSnapshot/restore).
 
-- `npx tsc --noEmit` → exit 0 (bez wyjścia).
-- logic-test: `LOGIC OK (213/213)`
-- tech-tree-test: `tech-tree-test: 20 pass, 0 fail`
-- research-test: `PASSED: 33 / FAILED: 0 / TOTAL: 33`
-- unit-replace-test: `WSZYSTKIE TESTY ZIELONE (21/21)`
-- combat-test: `COMBAT TEST: 6/6 pass`
-- diplomacy-trade-era-table-test: `185 pass, 0 fail`
-- diplomacy-trade-era-ai-test (nowy): `14 pass, 0 fail`
-- Rodzina trade/diplomacy/ai-trade (35 plików `tools/ai-trade-*`, `tools/trade-*`, `diplo*trade*`, `diplomacy-*basket*`, `diplomacy-*proposal*` i pokrewne): exit 0 dla 32 (w tym `diplomacy-basket-*`, `diplomacy-proposal-test`, `diplomacy-resource-cyclic-trade-test`, `diplomacy-tech-trade-*`, `ai-trade-proposal-branch-test`, `ai-trade-proposal-to-player-test`, `ai-trade-need-from-surplus-test`, `ai-trade-offer-frequency-up-test`, `trade-routes-*`, `trade-grant-test`, `trade-ilosc-test`, oba testy ery). Exit != 0 dla 3 (opisane niżej).
-  - `ai-trade-oneshot-overpay-limit-test`: exit 1, `FAIL: main.ts enqueue filter calls aiOneshotHandelOverpaysPlayer(...) -> return`. Ta asercja tekstowa jest czerwona od wcześniej (backlog #379). Wywołanie istnieje w `7cee14d3a:gra/src/main.ts` (grep count 1), czyli to nie moja zmiana. Oznaczam jako PRE-EXISTING (zweryfikowane grepem na bazie, nie pełnym uruchomieniem bazy).
-  - `ai-trade-wiring-e2e-live-test`: exit 1, `brak propozycji barteru na stole po realnym endTurn` (test live, tura 2, epoka 1). Ścieżka epoki 1 jest bitowo równa poprzedniej (tradeEra=1 → krok 10, brak zmiany normalizacji), więc uważam za niezwiązane — NIE ZMIERZONO na bazie.
-  - `trade-route-remove-stock-flow-live-test`: exit 2, `brak BUNDLE_DIR z index.html (zbuduj vite --outDir poza repo)` — infra (brak builda), NIE ZMIERZONO.
-- `git diff --check` → exit 0 (przed commitem kodu; `git diff --check` po commicie nie było potrzebne, diff pusty).
-- Brak `npm run build` (vite) — NIE ZMIERZONO.
+**Zarzut 5 (test mieszanych epok tylko dla computeQuickDealBasket i selectAiTradeBarter): PRZYJMUJĘ — NIE ZROBIONE.**
+- Zostaje: test mieszanych epok (Brąz+Kamień = blok 50) dla okna, oceny propozycji po zatwierdzeniu, bramki i walidacji. Wymaga testu DOM lub testu wywołania `applyProposalOutcome`, których nie ma.
+
+**Zarzut 6 (merge z FALA 740; Civpedia/poradnik; dług Rust pn_per_szt): PRZYJMUJĘ — merge WYKONANY, dokumentacja NIE ZROBIONA.**
+- Merge: origin/main 807ecebdd (zawiera FALA 740 i FALA 741) scalony do kandydata, bez regeneracji wikiBundle (nie zmieniano dokumentacji w tej rundzie). Konflikt w `ai-trade-proposal.ts` rozwiązany zgodnie z zasadą dispatchu „nie zmieniaj logiki ilości z tematu QTY-CAP": logika QTY-CAP z origin/main zachowana, dodano tylko parametr epoki.
+- Dług Rust `pn_per_szt` w `gra/tools/.dip-audit-bundle.cjs` (poza allowlistą): nie ruszany, tylko wypisany.
+- Civpedia i poradnik gracza (handel, punkty negocjacji, bloki 10/50/100): NIE ZROBIONE, NIE ZMIERZONO treści.
+
+## Dowody (surowe wyniki, uruchomione w tej rundzie)
+
+- `npx tsc --noEmit -p .` (gra/): brak wyjścia, kod wyjścia 0 — po każdej zmianie oraz po merge (807ecebdd).
+- Wyniki testów Node w `gra/tools/`:
+  - diplomacy-trade-era-deal-test: 14 pass, 0 fail
+  - diplomacy-trade-era-ai-test: 14 pass, 0 fail
+  - diplomacy-trade-era-table-test: 185 pass, 0 fail
+  - diplomacy-fairness-gate-package-q2-test: 24 pass, 0 fail (po poprawce tekstu sygnatury `previewNegotiationEntry`; przed poprawką 23/1)
+  - diplomacy-acceptance-points-test: 304 pass, 0 fail
+  - diplomacy-value-catalog-test: 82 pass, 0 fail
+  - diplomacy-resource-cyclic-trade-test: 53 pass, 0 fail
+  - diplomacy-ai-offer-balance-test: 29 passed, 0 failed
+  - ai-trade-oneshot-overpay-limit-test: 10 assertions passed (na kandydacie po merge z 807ecebdd; przed merge czerwony, bo kandydat miał starą wersję testu względem main.ts)
+- Przegląd całej rodziny `tools/diplomacy-*.cjs`, `tools/trade*.cjs`, `tools/ai-trade*.cjs` na kandydacie po merge (kod wyjścia != 0):
+  - testy live (Chromium / timeout 60 s): diplomacy-border-era-penalty-live-test (124), diplomacy-city-cession-live-test (124), diplomacy-relation-value-mismatch-live-test (124), diplomacy-direct-negotiation-live-test (1), diplomacy-relation-deal-text-consistent-live-test (1), ai-trade-wiring-e2e-live-test (1), trade-route-remove-stock-flow-live-test (2). NIE ZMIERZONO na bazie, poza dwoma z listy niżej.
+  - testy nie-live, czerwone również na bazie origin/main (kopia `git archive origin/main gra`, ten sam node_modules): diplomacy-city-cession-r3-test (1 na bazie, 1 na kandydacie), diplomacy-stol-pw-sum-test (1 na bazie, 1 na kandydacie). Nie są regresją tej rundy.
+  - na bazie origin/main także: diplomacy-direct-negotiation-live-test (1), diplomacy-relation-deal-text-consistent-live-test (124), ai-trade-wiring-e2e-live-test (124) — czerwone też na bazie, zatem nie regresja.
+- Brak testów zmienionych w tej rundzie: `main.ts` i `diplomacyTradeBasket.ts` nie mają nowego testu DOM (zarzut 3).
 
 ## BLOKADY
 
-1. Okno umowy, `diplomacy-ai-offer-balance`, bramka UI i Szybka umowa nadal używają epoki gracza. Ryzyko rozjazdu: oferta AI wybrana w epoce umowy (np. blok 50 przy graczu w Kamieniu) może wyglądać inaczej w podglądzie gracza (blok 10 → inna wycena). Wymaga domknięcia przed deployem albo wstrzymania części AI.
-2. Test DOM (d) — Playwright Chromium nie zainstalowany (download failure); build vite nie wykonany.
-3. Stare zapisane propozycje i oferty (obcinanie ilości do kroku epoki) — brak decyzji właściciela (ABC).
-4. Dług `pn_per_szt` poza allowlistą (`gra/tools/.dip-audit-bundle.cjs`, dokumenty Rust).
-5. Kompatybilność z `origin/main` (45ded9579): NIE ZMIERZONO — wymaga merge przez orkiestratora.
+- Test DOM okna (Brąz, Żelazo, bramka, mutacja UI) — NIE ZROBIONE (zarzut 3).
+- Test mieszanych epok na ścieżce zatwierdzenia i oceny — NIE ZROBIONE (zarzut 5).
+- Jawna epoka w `diplomacy-proposals.ts` i `diplomacy-ai-offer-balance.ts` — NIE ZROBIONE (zarzut 2, część).
+- Obcięcie starych zapisanych ofert/propozycji do kroku epoki — NIE ZROBIONE (zarzut 4).
+- Dwa testowe `player.era = 2;` bez `setDiplomacyTradeEra` (ok. l.48054, 48276) — NIE ZROBIONE (zarzut 4).
+- Civpedia / poradnik / wikiBundle — NIE ZROBIONE (zarzut 6).
+- Testy live (Chromium) — NIE ZMIERZONO w pełnym zakresie.
+
+## Założenia (DO POTWIERDZENIA)
+
+- Epoka umowy dla wrapperów = `diplomacyDealTradeEra(empireEpochForOwner(a), empireEpochForOwner(b))`, gdzie owner 0 = gracz.
+- Wrappery w main.ts są opakowaniami (`...args`) z zachowaniem sygnatur; funkcje `*Impl` zachowują dotychczasowe zachowanie.
 
 ## RUNDY
 
-2/5 (runda 1 = 7cee14d3a; runda 2 = ten raport).
+2/5 (ta odpowiedź na FC r2). Poprzednia runda: FC r2 FAIL, zarzuty 1–6.
 
 ## NASTĘPNY KROK
 
-Orkiestrator decyduje, czy:
-(a) przyjąć tę rundę jako częściowo domkniętą i zlecić rundę 3 na: okno umowy + AI offer balance + Szybka umowa w epoce umowy, test DOM (po zainstalowaniu przeglądarki lub zgodzie na `executablePath` systemowego chromium), test bramki uczciwości w epokach 2/3, pytanie ABC o stare oferty;
-(b) albo wstrzymać część AI (`pickAiPlayerCyclicBarter` wrap) do czasu domknięcia podglądu.
-Przed merge z origin/main: rebase/merge `770aa4fed` na `45ded9579` (konflikt możliwy w `diplomacy-value-catalog.ts`, `main.ts`).
+Runda 3: (a) DOM test okna Brąz/Żelazo + bramka + mutacja (Chromium, build poza repo); (b) jawny kontekst epoki w diplomacy-proposals.ts i diplomacy-ai-offer-balance.ts; (c) hooki `player.era = 2` w testach; (d) obcięcie zapisanych ofert przy wczytaniu; (e) test mieszanych epok na ścieżce zatwierdzenia; (f) Civpedia i poradnik; regeneracja wikiBundle.
 
-## UWAGI-DLA-ORKIESTRATORA
+## DEPLOY/PUSH
 
-- Commit: zgodnie z dispatchem commit raportu dotyczy wyłącznie tego pliku, ale poprawki kodu zostały zacommitowane osobno (`770aa4fed`, explicit paths), bo bez tego praca nie istniała w gałęzi.
-- Usunięto `gra/node_modules` po teście (zgodnie z zasadą sprzątania) — patrz ostatni krok.
-- `pn_per_szt` w `gra/tools/.dip-audit-bundle.cjs:57` i w dokumentach `dyspozycje/rust-port/` — dług do REPIN/osobnego tematu.
-- Stare pliki w `/home/user/The-Game/.claude/worktrees/` (`wf_npm_ci.log`, `wf_tsc.log`, `wf_tsc2.log`, `wf_pw.log`) to moje logi poza repo — usunięte.
-
-DEPLOY/PUSH: NIE WYKONANO
+NIE WYKONANO (commit lokalny w worktree; bez push na main, bez integracji, bez deployu).
