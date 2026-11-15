@@ -440,6 +440,7 @@ import {
   REBEL_FACTION_OWNER_ID,
 } from './game/society-breakdown';
 import { computeCitizenResourceDrain } from './game/citizen-resource-upkeep';
+import { citizenLedgerParts, recordTakenToLedger, upkeepLedgerParts, pendingLedgerSink, drainPendingLedgerInto, recordStockDeltaToPending, resetPendingLedger, recordLedgerFlow, ledgerTurnForOwner, peekPendingLedger, setLedgerRecordingEnabled, isLedgerRecordingEnabled, type ResourceLedgerTurn } from './game/resource-ledger';
 import { BATTLE_MODE_SETTING_VERSION, isAutomaticOnlyBattleMode } from './game/battle-mode';
 import { normalizeHitMode, setActiveHitMode } from './game/hit-mode';
 import { resourceUsageBreakdownFor, resourceUsageHasAny } from './game/resource-usage-breakdown';
@@ -4842,7 +4843,7 @@ async function boot(): Promise<void> {
       }
       setOwnerTreasury(ownerId, ownerTreasury(ownerId) - totalGoldCost);
       if (Object.keys(batchStockCost).length > 0) {
-        deductBuildingStockCostAcrossCities(cities, ownerId, batchStockCost);
+        deductBuildingStockCostAcrossCities(cities, ownerId, batchStockCost, pendingLedgerSink(ownerId, 'rekrutacja', 'Rekrutacja jednostek'));
       }
       markCityStateDirty();
       let nextProd = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
@@ -4970,7 +4971,7 @@ async function boot(): Promise<void> {
       if (!deductManpowerFromEmpire(cities, ownerId, ep, totalManpower, mpMults.maxMult)) return false;
       setOwnerTreasury(ownerId, ownerTreasury(ownerId) - totalGold);
       if (Object.keys(totalStockCost).length > 0) {
-        deductBuildingStockCostAcrossCities(cities, ownerId, totalStockCost);
+        deductBuildingStockCostAcrossCities(cities, ownerId, totalStockCost, pendingLedgerSink(ownerId, 'rekrutacja', 'Rekrutacja jednostek'));
       }
       let prod = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
       // R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1: partia z Armii/Rekrutacji dziedziczy globalny przełącznik.
@@ -10166,6 +10167,12 @@ async function boot(): Promise<void> {
       clearDeferredAutoPreBattleQueue();
     }
 
+    /** Hak testowy ?civTest=1 (__ledgerTestDebug): rekordy księgi ostatniego ticku ekonomii i licznik ticków (tylko odczyt). */
+    let ledgerAuditLastTick: Map<number, ResourceLedgerTurn> | null = null;
+    let ledgerAuditTickSeq = 0;
+    let ledgerAuditE3cLast: Array<{ routeId: string; resourceKey: string; fromOwnerId: number; toOwnerId: number; amount: number }> = [];
+    let ledgerAuditE3cFires = 0;
+
     /** Pełny reset UI / flag przed wczytaniem innej gry (nie czyści mapy — to robi rebuild). */
     function prepareSessionForLoad(): void {
       resetStuckInteractiveState();
@@ -10173,6 +10180,7 @@ async function boot(): Promise<void> {
       resetArmyRecruitDraftsSession();
       resetEmpireMassRecruitmentMessage();
       resetEndTurnBlockers('prepareSessionForLoad');
+      resetPendingLedger(); // R-WEB-UI-...-Q1 (FC r3 nr 6): okno poza tickiem nie przechodzi między grami/wczytaniami
       playtestWalkaActive = false;
       bitwaDuzaActive = false;
       playtestMiastoActive = false;
@@ -10283,7 +10291,7 @@ async function boot(): Promise<void> {
     /** Pobiera koszt surowcowy budynku Z PULI PANSTWA (rozproszone po miastach ownera). */
     function deductOwnerStockCost(ownerId: number, cost: Record<string, number>): void {
       if (Object.keys(cost).length === 0) return;
-      deductBuildingStockCostAcrossCities(cities, ownerId, cost);
+      deductBuildingStockCostAcrossCities(cities, ownerId, cost, pendingLedgerSink(ownerId, 'budowa', 'Budowa budynku'));
     }
 
     /** Auto-budowa: dodaj następny budynek gdy kolejka pusta i tryb auto. */
@@ -13293,6 +13301,10 @@ async function boot(): Promise<void> {
             const totalUnits = diplomacyNormalizeSurowiecIlosc(item.id, qty);
             const capId = capitalCityIdForOwner(toOwnerId);
             const refs = cities.map(c => ({ id: c.id, ownerId: c.ownerId, surowce: c.surowce ?? {} }));
+            // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (partia 3a): księga „Umowa wymiany" --
+            // różnica magazynu obu stron (tylko dziennik, bez wpływu na stan), okno poza tickiem.
+            const ledgerFromBeforeB = { ...ownerResourceStockAll(cities, fromOwnerId) };
+            const ledgerToBeforeB = { ...ownerResourceStockAll(cities, toOwnerId) };
             const result = transferSurowiecIlosc(item.id, totalUnits, fromOwnerId, toOwnerId, capId, refs);
             for (let i = 0; i < cities.length; i++) {
               const before = refs[i];
@@ -13301,6 +13313,10 @@ async function boot(): Promise<void> {
                 cities[i]!.surowce = after.surowce;
               }
             }
+            recordStockDeltaToPending(fromOwnerId, ledgerFromBeforeB, ownerResourceStockAll(cities, fromOwnerId),
+              `umowa-wymiany|out|${toOwnerId}`, { kind: 'umowa_wymiany', label: `Umowa wymiany z ${ownerDiploLabel(toOwnerId)}` });
+            recordStockDeltaToPending(toOwnerId, ledgerToBeforeB, ownerResourceStockAll(cities, toOwnerId),
+              `umowa-wymiany|in|${fromOwnerId}`, { kind: 'umowa_wymiany', label: `Umowa wymiany z ${ownerDiploLabel(fromOwnerId)}` });
             break;
           }
           case 'miasto': {
@@ -25073,6 +25089,9 @@ async function boot(): Promise<void> {
         const totalUnits = item.pakietyPerTura;
         const capId = capitalCityIdForOwner(item.buyerOwnerId);
         const refs = cities.map(c => ({ id: c.id, ownerId: c.ownerId, surowce: c.surowce ?? {} }));
+        // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (partia 3a): księga „Umowa wymiany" (cykliczna).
+        const ledgerSellerBeforeC = { ...ownerResourceStockAll(cities, item.sellerOwnerId) };
+        const ledgerBuyerBeforeC = { ...ownerResourceStockAll(cities, item.buyerOwnerId) };
         const result = transferSurowiecIlosc(
           item.surowiecKey, totalUnits, item.sellerOwnerId, item.buyerOwnerId, capId, refs,
         );
@@ -25083,6 +25102,10 @@ async function boot(): Promise<void> {
             cities[i]!.surowce = after.surowce;
           }
         }
+        recordStockDeltaToPending(item.sellerOwnerId, ledgerSellerBeforeC, ownerResourceStockAll(cities, item.sellerOwnerId),
+          `umowa-wymiany-cykl|out|${item.buyerOwnerId}`, { kind: 'umowa_wymiany', label: `Umowa wymiany z ${ownerDiploLabel(item.buyerOwnerId)}` });
+        recordStockDeltaToPending(item.buyerOwnerId, ledgerBuyerBeforeC, ownerResourceStockAll(cities, item.buyerOwnerId),
+          `umowa-wymiany-cykl|in|${item.sellerOwnerId}`, { kind: 'umowa_wymiany', label: `Umowa wymiany z ${ownerDiploLabel(item.sellerOwnerId)}` });
         const zaplata = item.zaplataPerTura ?? 0;
         if (zaplata > 0 && item.zaplataTyp === 'zloto') {
           applyOneShotGoldTransfer(item.buyerOwnerId, item.sellerOwnerId, zaplata, treasury);
@@ -31147,6 +31170,97 @@ async function boot(): Promise<void> {
             planned: plannedMarches.has(followerId),
             queued: marchExecQueue.includes(followerId),
           };
+        },
+      };
+    }
+
+    // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (runda 4): hak pomiaru zgodnosci ksiegi z magazynem w REALNEJ grze
+    // (tylko ?civTest=1; zero wplywu bez parametru). Czysty odczyt: stan magazynu per wlasciciel, rekordy ksiegi ostatniego
+    // ticku, okno „pending”. `setRecording(false)` wylacza WYLACZNIE zapis do ksiegi (stan gry nietkniety) -- do testu
+    // „hash stanu z ksiega i bez ksiegi”. Uzywa tools/resource-ledger-live-measure.cjs.
+    if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
+      const plain = (t: ResourceLedgerTurn | undefined | null) => JSON.parse(JSON.stringify(t ?? { byResource: {} }));
+      (window as any).__ledgerTestDebug = {
+        snapshot: () => {
+          const owners = [...new Set(cities.map(c => c.ownerId))].sort((a, b) => a - b);
+          const stock: Record<string, Record<string, number>> = {};
+          const tick: Record<string, unknown> = {};
+          for (const o of owners) {
+            stock[o] = { ...ownerResourceStockAll(cities, o) };
+            tick[o] = plain(ledgerAuditLastTick?.get(o));
+          }
+          const pending: Record<string, unknown> = {};
+          for (const [o, t] of peekPendingLedger()) pending[o] = plain(t);
+          return { turn, tickSeq: ledgerAuditTickSeq, owners, stock, tick, pending, e3cLast: ledgerAuditE3cLast, e3cFires: ledgerAuditE3cFires };
+        },
+        setRecording: (on: boolean): boolean => { setLedgerRecordingEnabled(on); return isLedgerRecordingEnabled(); },
+        isRecording: (): boolean => isLedgerRecordingEnabled(),
+        pendingPeek: () => { const o: Record<string, unknown> = {}; for (const [k, t] of peekPendingLedger()) o[k] = plain(t); return o; },
+        /**
+         * SETUP sceny dla pomiaru (poza oknem pomiaru): budynki Cegielnia/Garncarnia/Mennica/Stolarnia/Spichlerz w pierwszym
+         * miescie wlasciciela, zapasy startowe, Warzelnia soli na heksie w poblizu. Zmiany stanu robione PRZED pierwszym
+         * snapshotem pomiaru (nie sa przeplywami ksiegi). Tylko ?civTest=1.
+         */
+        scenarioSeed: (ownerId: number): { cityId: string; warzelniaHex: string | null } | null => {
+          const city = cities.find(c => c.ownerId === ownerId);
+          if (!city) return null;
+          const built = cityBuilt.get(city.id) ?? [];
+          cityBuilt.set(city.id, built);
+          for (const b of ['cegielnia', 'garncarnia', 'mennica', 'stolarnia', 'spichlerz']) if (!built.includes(b)) built.push(b);
+          if (ownerId === ME()) player.zbadane.add('Waluta');
+          for (const c of cities) if (c.ownerId === ownerId && c.surowce) for (const k of Object.keys(c.surowce)) c.surowce[k] = 0;
+          for (const [k, v] of Object.entries({ glina: 3000, drewno: 3000, kamien: 500, sol: 40, zloto: 60, ruda: 80, ceramika: 200 })) {
+            creditOwnerResourceStock(cities, ownerId, k, v, 99999);
+          }
+          let warzelniaHex: string | null = null;
+          for (const h of Object.values(map.hexes)) {
+            const d = hexDistance(h.coords.q, h.coords.r, city.q, city.r);
+            if (d === 2 && !(h as { ulepszenia?: string[] }).ulepszenia?.length) {
+              (h as { ulepszenia?: string[]; ulepszenie?: string }).ulepszenia = ['warzelnia_soli'];
+              (h as { ulepszenia?: string[]; ulepszenie?: string }).ulepszenie = 'warzelnia_soli';
+              warzelniaHex = `${h.coords.q},${h.coords.r}`;
+              break;
+            }
+          }
+          return { cityId: city.id, warzelniaHex };
+        },
+        /**
+         * SETUP: zaklada miasto wskazanego wlasciciela AI (realne `foundCityAt` + `finalizeCityFounding`, wzorzec
+         * `ensureSecondCityForOwner`) w pierscieniu 8..30 od pierwszego miasta gracza -- potrzebne, bo w gole gry z
+         * `startNewGame`/`?playtest=mapa` AI nie ma miasta przez pierwsze tury, a pomiar umowy wymiany wymaga drugiej strony.
+         */
+        spawnOwnerCity: (ownerId: number): string | null => {
+          const anchor = cities.find(c => c.ownerId === ME());
+          if (!anchor || cities.some(c => c.ownerId === ownerId)) return cities.find(c => c.ownerId === ownerId)?.id ?? null;
+          for (let ring = 8; ring <= 30; ring++) {
+            for (let dq = -ring; dq <= ring; dq++) {
+              for (let dr = -ring; dr <= ring; dr++) {
+                if (Math.max(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr)) !== ring) continue;
+                const q = anchor.q + dq, r = anchor.r + dr;
+                const found = foundCityAt(q, r, ownerId, cities, map, 'Miasto Testowe AI', false, true);
+                if (!found) continue;
+                cities.push(found);
+                finalizeCityFounding(found, found.q, found.r);
+                seedCityOwnerDefaults(found);
+                if (!empireFoodStates.has(ownerId)) empireFoodStates.set(ownerId, freshEmpireFoodState());
+                if (!goldDeficitStates.has(ownerId)) goldDeficitStates.set(ownerId, freshGoldDeficitState());
+                return found.id;
+              }
+            }
+          }
+          return null;
+        },
+        /** Dostawa umowy CYKLICZNEJ REALNYM `applyCyclicDeliveryOutcome` (delivered=true; item/deal minimalne, bez wplywu na zapisane umowy). */
+        cyclicDeliver: (sellerOwnerId: number, buyerOwnerId: number, key: string, perTurn: number): { seller: number; buyer: number } => {
+          const item = { surowiecKey: key, pakietyPerTura: perTurn, sellerOwnerId, buyerOwnerId } as unknown as HandelSurowiecCyklicznyItem;
+          const deal = { id: 'ledger-test-deal' } as unknown as ActiveDeal;
+          applyCyclicDeliveryOutcome(deal, item, true, false, false, buildDiploTreasury());
+          return { seller: ownerResourceStockAll(cities, sellerOwnerId)[key] ?? 0, buyer: ownerResourceStockAll(cities, buyerOwnerId)[key] ?? 0 };
+        },
+        /** Przelew surowca miedzy wlascicielami REALNYM `transferBasketItems` (ta sama sciezka co umowa jednorazowa; ksiega w okno pending). */
+        trade: (fromOwnerId: number, toOwnerId: number, key: string, qty: number): { from: number; to: number } => {
+          transferBasketItems(fromOwnerId, toOwnerId, [{ typ: 'surowiec_ilosc', id: key, ilosc: qty } as BasketItem]);
+          return { from: ownerResourceStockAll(cities, fromOwnerId)[key] ?? 0, to: ownerResourceStockAll(cities, toOwnerId)[key] ?? 0 };
         },
       };
     }
@@ -40247,6 +40361,9 @@ async function boot(): Promise<void> {
             const ownerStockForTradeFlow = (ownerId: number, key: TradeRouteStockFlowResourceKey): number =>
               ownerResourceStockAll(cities, ownerId)[key] ?? 0;
             const tradeFlows = computeTradeRouteResourceFlow(tradeRoutes, ownerStockForTradeFlow, tradeFlowParams);
+            // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (runda 4, zarzut 5): TYLKO pomiar dla haka ?civTest=1 (E3c NIE zmieniony,
+            // NIE ksiegowany -- czeka na ABC wlasciciela). Zapamietuje przeplywy E3c ostatniego ticku i licznik odpalen.
+            ledgerAuditE3cLast = tradeFlows.map(f => ({ ...f })); if (tradeFlows.length > 0) ledgerAuditE3cFires++;
             for (const flow of tradeFlows) {
               deductBuildingStockCostAcrossCities(cities, flow.fromOwnerId, { [flow.resourceKey]: flow.amount });
               // P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO (2026-08-09): audyt call-site'ów
@@ -40372,6 +40489,12 @@ async function boot(): Promise<void> {
             (oid: number) => effectiveGameDifficultyForOwner(oid),
             stateAdmByOwner,
           );
+          // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (partia 2b): pobory poza tickiem (budowa, rekrutacja)
+          // z okna pending wchodzą do rekordu tej tury; okno czyszczone.
+          drainPendingLedgerInto(econ.resourceLedgerByOwner);
+          // Tylko odczyt dla haka testowego ?civTest=1 (__ledgerTestDebug): referencja do rekordów BIEŻĄCEGO ticku
+          // (późniejsze zapisy utrzymania/obywateli trafiają do tej samej Mapy) + licznik ticków. Zero wpływu na stan gry.
+          ledgerAuditLastTick = econ.resourceLedgerByOwner; ledgerAuditTickSeq++;
           pendingManualWorkTaxByOwner.clear();
           powerSnapshotsForTurn = buildPowerSnapshotsForTurn(econ);
           refreshObjectivePowerCache();
@@ -40722,9 +40845,12 @@ async function boot(): Promise<void> {
               const drewnoCap = ownerResourceCap(
                 cities, cityBuilt, ownerId, data, _menuDifficulty, empireEpochForOwner(ownerId),
               );
-              creditOwnerResourceStock(
+              const wycinkaGot = creditOwnerResourceStock(
                 cities, ownerId, 'drewno', drewnoCredit, drewnoCap,
               );
+              // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (runda 4): plon wyrębu gracza w księdze (ta sama tura ticku).
+              recordLedgerFlow(ledgerTurnForOwner(econ.resourceLedgerByOwner, ownerId), 'drewno', `wycinka|${ownerId}`,
+                { kind: 'wycinka', label: 'Wycinka lasu' }, wycinkaGot);
               // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: komunikat „Wycinka: +N Drewna” usunięty
               // (szum bez decyzji gracza). Zbiór drewna (creditOwnerResourceStock) bez zmian.
             }
@@ -40896,7 +41022,11 @@ async function boot(): Promise<void> {
               if (hResUpkeep && Object.keys(hResUpkeep).length > 0) {
                 const poolBefore = ownerResourceStockAll(cities, hOid);
                 const missingRes = missingStockFor(poolBefore, hResUpkeep);
-                deductBuildingStockCostAcrossCities(cities, hOid, hResUpkeep);
+                // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (partia 2): ten sam odjęcie + zapis do księgi tury.
+                const hTakenRes = deductBuildingStockCostAcrossCities(cities, hOid, hResUpkeep);
+                recordTakenToLedger(econ.resourceLedgerByOwner.get(hOid), hTakenRes, upkeepLedgerParts(
+                  hOid, econ.resourceUpkeepBuildingsByOwner.get(hOid), econ.resourceUpkeepUnitsByOwner.get(hOid),
+                ));
                 if (Object.keys(missingRes).length > 0) {
                   console.warn(
                     '[Ekonomia] Brak surowców na utrzymanie budynków: ' +
@@ -40944,7 +41074,10 @@ async function boot(): Promise<void> {
               }
               const aiResUpkeep = econ.resourceUpkeepByOwner.get(oid);
               if (aiResUpkeep && Object.keys(aiResUpkeep).length > 0) {
-                deductBuildingStockCostAcrossCities(cities, oid, aiResUpkeep);
+                const aiTakenRes = deductBuildingStockCostAcrossCities(cities, oid, aiResUpkeep);
+                recordTakenToLedger(econ.resourceLedgerByOwner.get(oid), aiTakenRes, upkeepLedgerParts(
+                  oid, econ.resourceUpkeepBuildingsByOwner.get(oid), econ.resourceUpkeepUnitsByOwner.get(oid),
+                ));
               }
               // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: parytet gracz/AI — publikuj rozbicie dla
               // KAŻDEGO ownera (nie tylko gracz=0), ten sam wzorzec co linia wyżej.
@@ -41232,7 +41365,10 @@ async function boot(): Promise<void> {
                   citizenUpkeepEmpireStock(ownerId),
                 );
                 if (Object.keys(v.deductions).length > 0) {
-                  deductBuildingStockCostAcrossCities(cities, ownerId, v.deductions);
+                  const citTakenRes = deductBuildingStockCostAcrossCities(cities, ownerId, v.deductions);
+                  recordTakenToLedger(
+                    econ.resourceLedgerByOwner.get(ownerId), citTakenRes, citizenLedgerParts(ownerId, v.deductions),
+                  );
                 }
                 citizenUpkeepDrainCache.set(ownerId, v);
                 // N1 runda 4: publikuj RÓWNOLEGLE do mapy kluczowanej OWNEREM (przetrwa
@@ -45036,6 +45172,9 @@ async function boot(): Promise<void> {
                     const drewnoCredited = creditOwnerResourceStock(
                       cities, ownerId, 'drewno', drewnoCredit, drewnoCap,
                     );
+                    // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (runda 4): plon wyrębu AI w księdze (okno poza tickiem).
+                    recordLedgerFlow(pendingLedgerSink(ownerId, 'wycinka', 'Wycinka lasu').turn, 'drewno', `wycinka|${ownerId}`,
+                      { kind: 'wycinka', label: 'Wycinka lasu' }, drewnoCredited);
                     hexForImprovement.nakladka = Nakladka.Brak;
                     stripForestDependentImprovements(hexKey);
                     hideDecorAtHex(hexKey);
@@ -46990,6 +47129,7 @@ async function boot(): Promise<void> {
       // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): opcja z ekranu nowej gry (domyślnie ON).
       playerEpochWarEnabled = params.playerEpochWarEnabled ?? true;
       resetEndTurnBlockers('doStartGame');
+      resetPendingLedger(); // R-WEB-UI-...-Q1 (FC r3 nr 6): okno ksiegi poza tickiem nie przechodzi z poprzedniej gry do NOWEJ gry
       resetEmpireRecruitPanelSession(); // R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: nowa gra = czysty panel zbiorczy
       recruitGeneralId = null; // R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1
       resetArmyRecruitDraftsSession();
