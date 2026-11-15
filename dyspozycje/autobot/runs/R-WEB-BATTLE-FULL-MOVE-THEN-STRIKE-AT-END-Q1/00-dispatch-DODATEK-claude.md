@@ -9,3 +9,18 @@ OSOBNY TEMAT (nie ruszaj tutaj): arbitraż kolizji piechoty i łuczników.
 RAPORT: kontrakt STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY/BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH; ZMIERZONO albo NIE ZMIERZONO; lista założeń DO POTWIERDZENIA.
 
 AKTUALIZACJA BAZY (orkiestrator): pracuj na aktualnym origin/main b97287c88 (FALA 735). Gałąź dispatchów claude/... NIE jest bazą kodu (inna linia historii) — zrób worktree/gałąź z origin/main, dispatch czytaj przez git show. Chromium jest dostępny: require("playwright"), chromium.launch() bez opcji; build vite poza repo.
+
+---
+## DODATEK 1 — runda 2/5 (po FC FAIL r1, Operator HAIKU — pierwsza nieudana runda Haiku)
+BAZA: kandydat Obrony `7de9a2839` (refs/keep/R-WEB-FULL-MOVE-obrona; FC report `8704745c3` w refs/keep/R-WEB-FULL-MOVE-fc) — to potomek origin/main 392aa14c1 (FALA 737), czyli ma kod FALI 731. Pracuj na gałęzi z TEGO kandydata po merge aktualnego origin/main. Pamiętaj: gałąź dispatchów claude/... NIE jest bazą kodu.
+PRZYCZYNA FAIL: regresja FALI 731 — test battle-pursuit-move-behavior (BPM_PART=code) T3 czerwony: freeRatio 0.679 (114/168), próg 0.80, na czystym origin/main 1.0 (133/133). Mechanizm: cios przy pierwszym kontakcie kończy aktywację z niewykorzystanym ruchem. Interpretacja z r1 („cios przy pierwszym kontakcie, reszta ruchu przepada”) jest ZŁA wobec decyzji właściciela.
+REGUŁA WŁAŚCICIELA (obowiązuje dosłownie): „Każda jednostka wykorzystuje pełen zakres ruchu, a jeżeli w ramach ruchu wystarcza jej na zadanie ciosu, to zadaje cios na sam koniec.” Czyli: NAJPIERW pełna ścieżka ruchu (cały przydział ruchu, bez przerywania przy pierwszym kontakcie), POTEM — na samym końcu ruchu — jeden cios, jeśli wróg jest w zasięgu ciosu. Jeden cios na aktywację; bez podwójnego ciosu i ping-ponga.
+NAPRAWY OBOWIĄZKOWE (FC: NAPRAW 1, 4–10; zarzut 3 = DO DECYZJI CZŁOWIEKA, założenie robocze jak wyżej, oznacz DO POTWIERDZENIA):
+1. T3 pursuit-move zielony (freeRatio ≥ 0.80, cel jak baza ≈ 1.0) po zmianie; ustal mechanizm regresji i napisz go w raporcie.
+2. Testy na REALNEJ bitwie AUTO (nie atrapie sceny Object.create(BattleScene.prototype)): (a) ruch pełny N pól, potem cios (kolejność zdarzeń: ruch ⇒ cios; liczby w raporcie); (b) wróg poza zasięgiem na końcu ścieżki ⇒ brak ciosu, ruch pełny; (c) uciekinier w zasięgu na końcu ruchu ⇒ cios; (d) max JEDEN cios na aktywację (asercja), brak ping-ponga w 30 rundach; (e) konnica (_cavStrikeAtEndOfMove i oba miejsca manewrów) pokryta testem.
+3. Mutacje na realnym kodzie: cios przed ruchem, utrata ruchu po ciosie, wyłączenie ciosu ⇒ każda czerwona.
+4. Determinizm: ten sam seed ×3 ⇒ identyczny wynik (na prawdziwej bitwie).
+5. Chromium (require("playwright"), chromium.launch() bez opcji; build vite poza repo): log/zrzut z żywej bitwy AUTO pokazujący ruch pełny + cios na końcu. Odpal battle-doctrine-live r3/r4 i large-mixed-doctrine-matrix i porównaj z bazą origin/main (dług bazowy vs regresja).
+6. FALA 731 bez regresji: battle-winning-army-*, battle-pace-latch (jeśli symbol _meleeContactLatched istnieje na tej bazie — sprawdź), pursuit-move ×3.
+7. Dokumentacja: Civpedia i poradnik gracza (opis ruchu i ciosu w bitwie), wikiBundle regeneracja (node tools/bundle-wiki-for-game.cjs).
+KRYTERIA: tsc 0, 5 bramek referencyjnych, git diff --check, dysk ≥ 6 GB (po pracy usuń node_modules i /tmp/civ-* tego tematu). Dług Rust: REPIN logiki bitewnej.
