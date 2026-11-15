@@ -1,23 +1,18 @@
-# DISPATCH R-RUSTPORT-P6-ZDOBYCIE-MIASTA-ROZPOZNANIE-Q1 (runda 1) — rozpoznanie, BEZ zmian kodu
+# DISPATCH R-RUSTPORT-P6-ZDOBYCIE-MIASTA-ROZPOZNANIE-Q1 (runda 1) — ROZPOZNANIE, TYLKO ODCZYT
 
-TEMAT: ZDOBYCIE-MIASTA (#115/#175): wpięcie zdobycia miasta (apply_transfer_with_effects, run_capital_capture_plunder, akumulatory zdobyczy) i druga ścieżka przegranej po utracie miasta w bitwie (pin `main.ts:34018-34025`) — rozpoznanie
-DOMENA: GAME (rozpoznanie). BAZA: `0ca58770e` (czubek `origin/rust-port/parity-v2`). Worktree na `wip/R-RUSTPORT-P6-ZDOBYCIE-MIASTA-ROZPOZNANIE-Q1`. Przed startem: `git checkout --detach 0ca58770e`.
-Pin (tylko odczyt): `git show 07d2fbd72:gra/src/<ścieżka>` — szukać `capture`, `captureCity`, `plunder`, `transferCity`, `zdobycz`, `34018`, `34025`.
+STATUS: DISPATCHED
+DOMAIN: GAME
+TEMAT: #175 ZDOBYCIE-MIASTA: apply_transfer_with_effects i run_capital_capture_plunder — czy i gdzie są wpięte w produkcję, akumulatory zdobyczy (#115)
+MODEL: Operator HAIKU 5.5; Obrona HAIKU 5.5; Evaluator SONNET 5.5; Final Control SONNET 5.5.
 
-## GOAL
-Ustalić dla każdego miejsca zdobycia miasta z pina (wywołania ścieżek przejęcia w bitwie, w dyplomacji i w fazie kapitulacji): pin plik:linia → odpowiednik w Rust (plik:linia) → status (jest w produkcji / jest tylko w testach / brak). Wskazać, co blokuje wpięcie w produkcję (brakujący producent, allowlista, zależności od #106/#120). Zaproponować podział na tematy wykonawcze z liczbą rund jako szacunek (nie pomiar). Parytet z webem: nie wymyślać zachowania poza pinem.
+ZASADA: NAJPIERW WEB. Pin `07d2fbd72` (gra/src/**). Brak rozstrzygnięcia w webie = NIE_ZMIERZONO, nie pytaj właściciela.
 
-## ALLOWLISTA
-- `dyspozycje/rust-port/p6/R-RUSTPORT-P6-ZDOBYCIE-MIASTA-ROZPOZNANIE-Q1-ROZPOZNANIE.md` (NOWY)
-- `dyspozycje/autobot/runs/<ID>/**`
-ZAKAZ: `src/**`, `tests/**`, `gra/**`, `Cargo.*`, push do parity.
+BAZA: `origin/rust-port/parity-v2` = `d5a52a980`. Czytaj przez `git show`/`git grep` (worktree opcjonalny, bez zmian kodu).
 
-## KRYTERIA KOŃCA
-1. Tabela wszystkich miejsc przejęcia z pina z odpowiednikami w Rust i statusem, z dowodem plik:linia po obu stronach.
-2. Lista braków (pola, funkcje, producenty) z plik:linia.
-3. Plan podziału na tematy wykonawcze z zależnościami; szacunek rund oznaczony jako szacunek.
-4. Niepewne = NIE_ZMIERZONO.
+CEL: Dla pinu: przejęcie miasta (runCapitalCapturePlunder, applyCaptureTransfer i skutki) — które funkcje są w produkcji w Rust (wołający poza testami), a których brak. Źródła: gra/src/**, grep 'runCapitalCapturePlunder' i 'applyCapturePopulationLoss'.
 
-## RAPORT
-`01-operator-r1.md`: STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT (tylko dokumenty)/TESTY (NIE DOTYCZY)/BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH (NIE WYKONANO).
-Operator: Haiku. Commit BEZ linii `Co-Authored-By` z nazwą modelu (CLAUDE.md), z `Claude-Session`. RUNDY: 1/5.
+RAPORT (`01-rozpoznanie.md`): tabela krok → odpowiednik Rust (plik:linia) | BRAK | ROZBIEŻNE | ZINTEGROWANE; lista NIE_ZMIERZONO; wskazanie, które luki są zależnościami do innych tematów.
+
+ALLOWLISTA: wyłącznie `dyspozycje/autobot/runs/R-RUSTPORT-P6-ZDOBYCIE-MIASTA-ROZPOZNANIE-Q1/**`. Zero zmian w gra/, rust-port/.
+
+PROCES: Operator → Evaluator → (Obrona jeśli zarzuty) → Final Control. Commit tylko katalogu runu (jawne git add). Bez push na parity. Commit z `Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>` i `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`.
