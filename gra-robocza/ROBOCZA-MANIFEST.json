@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "a070d9a3c194a7213120c4d190cb0573",
-  "bundleSha256": "c2d9f35403929f996332c54e90e8c95ef0ba6273a452362218dfc79082c14e15",
-  "bundleBytes": 14778496,
+  "bundleMd5": "4e90b36abcee77bde181e33b441ad9e2",
+  "bundleSha256": "664fd264d0a15f204fb2aa8babb41c0e01caf3840d77ea9097ec57d829ad5c28",
+  "bundleBytes": 14787915,
   "sourceSnapshot": {
-    "source": "main FC 3549cc41c",
+    "source": "main FC 45c8f170a + 78ee7ee57",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 744: Etykiety matrix i terenu w oknie rozstawienia po polsku (bez Matrix:walka_*, plytkie_morze, atak_piechota, pancerz_piechota); lista wojsk 12 jednostek w 1024x640 w viewport; testy prebattle-labels i live"
+    "FALA 745: Od pierwszego zderzenia wrecz jednostka uzywa pelnego ruchu, uderza przy dojsciu, rusza ku nastepnemu wrogowi, jeden cios na ture, reszta ruchu przepada gdy brak dokad isc; rowne wejscie szeregu do pierwszego zderzenia bez zmian; wyjatki doktryny Obrona/Ostrzal, reczny rozkaz, uciekajacy, oblezenie muru; dokumentacja i wikiBundle; narzedzia: city-cession-r3, json-descriptions, truce-r1/live, stol-pw-sum, trade-route-live"
   ],
   "verification": [
-    "tsc 0; logic 213/213; prebattle-labels 297/0; civ-bonusy 56/0; civ-matrix-semantic-labels 490/0; population-civ-matrix-wiring 122/0; live Chromium 3 rozdzielczosci ASSERT OK; vite build OK"
+    "tsc 0; logic 213/213; battle-full-move-strike 8/8 mutacje 4/4; pace-latch 5/5; city-cession-r3 72/0; json-descriptions 19/0; truce-r1 31/0; stol-pw-sum 168/0; vite build OK"
   ],
   "limits": [
-    "NIE ZMIERZONO: gestosc listy przy 640 px, wartosci premii w chipach (decyzja wlasciciela); dlug bazowy defense-breakdown-test; dlug Rust REPIN"
+    "ZNANA POZOSTALOSC: T5 piechota 2/80 aktywacji (temat RESIDUAL-INFANTRY-Q2); NIE ZMIERZONO: animowany AUTO, doktryny w realnej bitwie, oblezenie muru, tryb reczny; dlug bazowy doctrine-live r3, line-advance-browser; dlug Rust REPIN"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES PREBATTLE-UI r1 (kod bf3b9bd15, raport 3549cc41c): okno przed bitwa pokazuje polskie nazwy zamiast surowych ID (Matrix:walka_*, plytkie_morze, atak_piechota, pancerz_piechota); lista wojsk przy 12 jednostkach w 1024x640 nie jest zaslonieta (po przewinieciu ostatnia karta w viewport), nowe testy prebattle-labels 297/0 i live Chromium 3 rozdzielczosci ASSERT OK, mutacje czerwone; civ-bonusy 56/0, civ-matrix-semantic-labels 490/0, population-civ-matrix-wiring 122/0; NIE ZMIERZONO: gestosc listy przy 640 px i wartosci premii w chipach (do decyzji wlasciciela)"
+    "notes": "FULL-MOVE r5/5 (kod cdfdb274d, FC raport 45c8f170a; FC FAIL=LIMIT-5, wdrozone decyzja wlasciciela ABC B): od pierwszego zderzenia wrecz jednostka uzywa pelnego ruchu, uderza przy dojsciu, rusza ku nastepnemu wrogowi, jeden cios na ture, reszta ruchu przepada gdy brak dokad isc; rowne wejscie szeregu do pierwszego zderzenia bez zmian; wyjatki doktryny Obrona/Ostrzal, reczny rozkaz, uciekajacy, oblezenie muru; konnica wastedActs 0, strike-test 7/7 mutacje M1-M3, determinizm x3, pace-latch 5/5; ZNANA POZOSTALOSC: T5 piechota 2/80 aktywacji z 1-2 MP przy wolnej drodze (osobny temat RESIDUAL-INFANTRY-Q2); plus narzedzia TEST-DEBT Q2 (FC PASS-WITH-NOTES 78ee7ee57, city-cession-r3 72/0, truce-live 24/0)"
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-15T13:31:24",
+  "hubGeneratedAt": "2026-11-15T15:07:57",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "a070d9a3c194a7213120c4d190cb0573",
-      "sizeBytes": 14778496
+      "md5": "4e90b36abcee77bde181e33b441ad9e2",
+      "sizeBytes": 14787915
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "a070d9a3c194a7213120c4d190cb0573",
-      "sizeBytes": 14778496
+      "md5": "4e90b36abcee77bde181e33b441ad9e2",
+      "sizeBytes": 14787915
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "a070d9a3c194a7213120c4d190cb0573",
-      "sizeBytes": 14778496
+      "md5": "4e90b36abcee77bde181e33b441ad9e2",
+      "sizeBytes": 14787915
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "a070d9a3c194a7213120c4d190cb0573",
-      "sizeBytes": 14778496
+      "md5": "4e90b36abcee77bde181e33b441ad9e2",
+      "sizeBytes": 14787915
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "a070d9a3c194a7213120c4d190cb0573",
-      "sizeBytes": 14778496
+      "md5": "4e90b36abcee77bde181e33b441ad9e2",
+      "sizeBytes": 14787915
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "a070d9a3c194a7213120c4d190cb0573",
-      "sizeBytes": 14778496
+      "md5": "4e90b36abcee77bde181e33b441ad9e2",
+      "sizeBytes": 14787915
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "a070d9a3c194a7213120c4d190cb0573",
-      "sizeBytes": 14778496
+      "md5": "4e90b36abcee77bde181e33b441ad9e2",
+      "sizeBytes": 14787915
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "a070d9a3c194a7213120c4d190cb0573",
-      "sizeBytes": 14778496
+      "md5": "4e90b36abcee77bde181e33b441ad9e2",
+      "sizeBytes": 14787915
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "a070d9a3c194a7213120c4d190cb0573",
-      "sizeBytes": 14778496
+      "md5": "4e90b36abcee77bde181e33b441ad9e2",
+      "sizeBytes": 14787915
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "a070d9a3c194a7213120c4d190cb0573",
-      "sizeBytes": 14778496
+      "md5": "4e90b36abcee77bde181e33b441ad9e2",
+      "sizeBytes": 14787915
     }
   ],
-  "md5": "a070d9a3c194a7213120c4d190cb0573",
+  "md5": "4e90b36abcee77bde181e33b441ad9e2",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

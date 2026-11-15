@@ -1,3 +1,9 @@
+## ROBOCZA 4e90b36a -- 2026-11-14 -- FALA 745: Bitwa: pelny ruch, cios przy dojsciu, ruch dalej (jeden cios na ture) + narzedzia testowe dlugu bazowego (testowa)
+
+- Od pierwszego zderzenia wrecz jednostka uzywa pelnego ruchu, uderza przy dojsciu, rusza ku nastepnemu wrogowi, jeden cios na ture, reszta ruchu przepada gdy brak dokad isc; rowne wejscie szeregu do pierwszego zderzenia bez zmian; wyjatki doktryny Obrona/Ostrzal, reczny rozkaz, uciekajacy, oblezenie muru; dokumentacja i wikiBundle; narzedzia: city-cession-r3, json-descriptions, truce-r1/live, stol-pw-sum, trade-route-live
+- Weryfikacja: tsc 0; logic 213/213; battle-full-move-strike 8/8 mutacje 4/4; pace-latch 5/5; city-cession-r3 72/0; json-descriptions 19/0; truce-r1 31/0; stol-pw-sum 168/0; vite build OK
+- Limity: ZNANA POZOSTALOSC: T5 piechota 2/80 aktywacji (temat RESIDUAL-INFANTRY-Q2); NIE ZMIERZONO: animowany AUTO, doktryny w realnej bitwie, oblezenie muru, tryb reczny; dlug bazowy doctrine-live r3, line-advance-browser; dlug Rust REPIN
+
 ## ROBOCZA a070d9a3 -- 2026-11-14 -- FALA 744: Okno przed bitwa: polskie nazwy zamiast surowych ID i lista wojsk nie zaslonieta (testowa)
 
 - Etykiety matrix i terenu w oknie rozstawienia po polsku (bez Matrix:walka_*, plytkie_morze, atak_piechota, pancerz_piechota); lista wojsk 12 jednostek w 1024x640 w viewport; testy prebattle-labels i live
