@@ -1,3 +1,9 @@
+## ROBOCZA a070d9a3 -- 2026-11-14 -- FALA 744: Okno przed bitwa: polskie nazwy zamiast surowych ID i lista wojsk nie zaslonieta (testowa)
+
+- Etykiety matrix i terenu w oknie rozstawienia po polsku (bez Matrix:walka_*, plytkie_morze, atak_piechota, pancerz_piechota); lista wojsk 12 jednostek w 1024x640 w viewport; testy prebattle-labels i live
+- Weryfikacja: tsc 0; logic 213/213; prebattle-labels 297/0; civ-bonusy 56/0; civ-matrix-semantic-labels 490/0; population-civ-matrix-wiring 122/0; live Chromium 3 rozdzielczosci ASSERT OK; vite build OK
+- Limity: NIE ZMIERZONO: gestosc listy przy 640 px, wartosci premii w chipach (decyzja wlasciciela); dlug bazowy defense-breakdown-test; dlug Rust REPIN
+
 ## ROBOCZA a8c8c83c -- 2026-11-14 -- FALA 743: Oferta handlowa AI przy malej potrzebie: najmniej jeden pelny blok epoki (testowa)
 
 - Podloga bloku liczona z surowej potrzeby: oferta AI przy malej potrzebie = 1 blok (Kamien 10 / Braz 50 / Zelazo 100) zamiast 3; duza potrzeba bez zmian; dokumentacja i wikiBundle
