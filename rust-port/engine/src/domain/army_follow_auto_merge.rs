@@ -5,7 +5,7 @@
 //!
 //! web: army-follow-auto-merge.ts:17-22 (typ jednostki), :24-26 (`FollowAutoMergeDecision`),
 //! :28-41 (`followLeaderAutoMergeDecision`); army-stack-limit.ts:24-38 (`ownUnitCountAt`),
-//! :56-66 (`canJoinStackAt`).
+//! :56-66 (`canJoinStackAt`); R-RUSTPORT-P4-1H-RJ-REPIN-Q3: :86-98 (`trimPathToStackRoom`, pin 07d2fbd72).
 //!
 //! ZALOZENIA (ZALOZENIE):
 //! - Web `undefined` dla `followGeneral` / `isGeneral` jest tu `false`: warunki webowe
@@ -73,6 +73,29 @@ pub fn can_join_stack_at(
     let moving_ids: HashSet<&str> = moving.iter().map(|u| u.id.as_str()).collect();
     let there = own_unit_count_at(units, first.owner_id, q, r, &moving_ids);
     there + moving.len() as i64 <= limit
+}
+
+/// Web `trimPathToStackRoom` (`army-stack-limit.ts:86-98`, pin `07d2fbd72`): przycina sciezke
+/// ruchu od konca, az OSTATNI heks ma miejsce na caly ruszajacy sie stos (`can_join_stack_at`).
+/// Wynik moze byc pusty (= nie ma gdzie stanac). `coords` wyciaga `(q, r)` z elementu sciezki
+/// (web: generyczne `T extends {q, r}`). `limit` jest parametrem jak w webie (`armyStackLimit()` =
+/// 500, `main.ts:4358-4360`).
+pub fn trim_path_to_stack_room<T: Clone>(
+    units: &[FollowAutoMergeUnit],
+    moving: &[FollowAutoMergeUnit],
+    path: &[T],
+    coords: impl Fn(&T) -> (i64, i64),
+    limit: i64,
+) -> Vec<T> {
+    let mut out = path.to_vec();
+    while let Some(last) = out.last() {
+        let (q, r) = coords(last);
+        if can_join_stack_at(units, moving, q, r, limit) {
+            break;
+        }
+        out.pop();
+    }
+    out
 }
 
 /// Web `followLeaderAutoMergeDecision` (`army-follow-auto-merge.ts:28-41`).

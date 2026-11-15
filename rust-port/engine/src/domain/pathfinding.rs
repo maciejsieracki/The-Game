@@ -1166,14 +1166,136 @@ pub mod ruch_jednostek {
         reachable
     }
 
+    // -----------------------------------------------------------------------
+    // R-RUSTPORT-P4-1H-RJ-REPIN-Q3 (pin 07d2fbd72): przejscie przez wlasne jednostki
+    // (R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1, `setup.ts:735-813`) i blokada wejscia do
+    // obleganego miasta (R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1, `setup.ts:682-732`).
+    // -----------------------------------------------------------------------
+
+    /// Web `siegeBlocksEntry(unit, q, r)` (`setup.ts:723-732`) jako JAWNY predykat (web: globalny
+    /// rejestr `setSiegeEntryBlocker`). `true` = jednostka NIE moze wejsc na heks (ani jako cel,
+    /// ani jako heks posredni). Brak predykatu (`None`) = web `siegeEntryBlocker === null`.
+    /// Pamiec podreczna weba (`withSiegeScope`, `siegeScopeCache`) to wylacznie optymalizacja
+    /// czystej funkcji; tutaj predykat jest wolany bez niej (wynik ten sam).
+    pub type SiegeEntryFn<'a> = dyn Fn(&RuchJednostka, i32, i32) -> bool + 'a;
+
+    /// Web `MoveOccupancy` (`setup.ts:748-750`): `blocked` = sam `Set` weba (obce jednostki i obce
+    /// miasta: wejscie zablokowane), `pass_through` = heksy z WLASNYMI jednostkami (wolno przejsc,
+    /// nie wolno zakonczyc ruchu inaczej niz celowo = scalenie). Zwykly web `Set<string>` (nie
+    /// `MoveOccupancy`) odpowiada tu pustemu `pass_through` - wszystkie funkcje pinu
+    /// (`trimSegmentEndOffPassThrough`, `isPassThroughHex`, `endBlockedKeys`) zachowuja sie wtedy
+    /// identycznie.
+    #[derive(Debug, Clone, Default, PartialEq, Eq)]
+    pub struct MoveOccupancy {
+        pub blocked: HashSet<Klucz>,
+        pub pass_through: HashSet<Klucz>,
+    }
+
+    impl MoveOccupancy {
+        /// Odpowiednik zwyklego web `Set` (bez `passThrough`).
+        pub fn from_blocked(blocked: HashSet<Klucz>) -> Self {
+            Self {
+                blocked,
+                pass_through: HashSet::new(),
+            }
+        }
+    }
+
+    /// Web `buildMoveOccupancy` (`setup.ts:757-773`): obce jednostki -> blokada, wlasne ->
+    /// przejscie (o ile heks nie jest juz zablokowany obca jednostka). `exclude_ids` = jednostki
+    /// ruszajacej sie armii.
+    pub fn build_move_occupancy(
+        units: &[RuchJednostka],
+        mover_owner_id: i64,
+        exclude_ids: &[&str],
+    ) -> MoveOccupancy {
+        let skip: HashSet<&str> = exclude_ids.iter().copied().collect();
+        let mut occ = MoveOccupancy::default();
+        for unit in units {
+            if skip.contains(unit.id.as_str()) {
+                continue;
+            }
+            if unit.owner_id != mover_owner_id {
+                occ.blocked.insert((unit.q, unit.r));
+            }
+        }
+        for unit in units {
+            if skip.contains(unit.id.as_str()) || unit.owner_id != mover_owner_id {
+                continue;
+            }
+            let key = (unit.q, unit.r);
+            if !occ.blocked.contains(&key) {
+                occ.pass_through.insert(key);
+            }
+        }
+        occ
+    }
+
+    /// Web `endBlockedKeys` (`setup.ts:784-788`): heksy, na ktorych ruch NIE moze sie zakonczyc.
+    pub fn end_blocked_keys(occ: &MoveOccupancy) -> HashSet<Klucz> {
+        occ.blocked.union(&occ.pass_through).copied().collect()
+    }
+
+    /// Web `isPassThroughHex` (`setup.ts:791-793`).
+    pub fn is_pass_through_hex(occ: &MoveOccupancy, q: i32, r: i32) -> bool {
+        occ.pass_through.contains(&(q, r))
+    }
+
+    fn trim_end_off_pass_through(
+        segment: Vec<Klucz>,
+        full_length: usize,
+        pass_through: &HashSet<Klucz>,
+    ) -> Vec<Klucz> {
+        if pass_through.is_empty() || segment.len() >= full_length {
+            return segment;
+        }
+        let mut end = segment.len();
+        while end > 0 && pass_through.contains(&segment[end - 1]) {
+            end -= 1;
+        }
+        let mut segment = segment;
+        segment.truncate(end);
+        segment
+    }
+
+    /// Web `trimSegmentEndOffPassThrough` (`setup.ts:800-812`): ucina koniec SKROCONEGO segmentu,
+    /// by nie konczyl sie na heksie z wlasna jednostka. Pelna trasa (`segment.len() >= full_length`)
+    /// zostaje bez zmian: cel na wlasnej jednostce = scalenie.
+    pub fn trim_segment_end_off_pass_through(
+        segment: &[Klucz],
+        full_length: usize,
+        occ: &MoveOccupancy,
+    ) -> Vec<Klucz> {
+        trim_end_off_pass_through(segment.to_vec(), full_length, &occ.pass_through)
+    }
+
     /// Web `computePath` (`setup.ts:884`): trasa PO starcie, konczaca sie na celu; `[]` gdy cel
     /// = start lub nieosiagalny. Cel nieprzejezdny / zajety jest dozwolony jako ostatni krok.
+    /// Bez blokady oblezenia (web `siegeEntryBlocker === null`); z blokada:
+    /// [`compute_path_with_siege`].
     pub fn compute_path(
         unit: &RuchJednostka,
         map: &RuchMapa,
         dest_q: f64,
         dest_r: f64,
         occupied: &HashSet<Klucz>,
+        cost_fn: Option<&CostFn<'_>>,
+    ) -> Vec<Klucz> {
+        compute_path_with_siege(unit, map, dest_q, dest_r, occupied, None, cost_fn)
+    }
+
+    /// Web `computePath` / `computePathImpl` @07d2fbd72 (`setup.ts:1019-1147`): jak
+    /// [`compute_path`], a heks, na ktory `siege` zabrania wejscia, jest pomijany - TAKZE gdy to
+    /// cel (`setup.ts:1138-1139`, sprawdzenie przed galezia celu), wiec trasa do oblezonego miasta
+    /// jest odrzucana (`[]`). Web czyta tu tylko `occupied.has` (blokady); `passThrough` nie
+    /// wplywa na `computePath`.
+    pub fn compute_path_with_siege(
+        unit: &RuchJednostka,
+        map: &RuchMapa,
+        dest_q: f64,
+        dest_r: f64,
+        occupied: &HashSet<Klucz>,
+        siege: Option<&SiegeEntryFn<'_>>,
         cost_fn: Option<&CostFn<'_>>,
     ) -> Vec<Klucz> {
         let start = (unit.q, unit.r);
@@ -1223,6 +1345,10 @@ pub mod ruch_jednostek {
                     continue;
                 };
                 let mov_cost = cost_of(cost_fn, hex);
+                // Web `setup.ts:1138-1139`: oblezone miasto - wejscie zablokowane, takze jako cel.
+                if siege.is_some_and(|blocks| blocks(unit, nq, nr)) {
+                    continue;
+                }
                 if n_key == dest {
                     let enter_cost = if mov_cost == f64::INFINITY {
                         trasa.koszt_celu_nieprzejezdnego
@@ -1855,7 +1981,14 @@ pub mod ruch_jednostek {
         out
     }
 
-    /// Web `planPathTurns` (`planned-march.ts:211`).
+    /// Wspolny pusty zbior `passThrough` dla wariantow ze zwyklym web `Set`.
+    fn no_pass_through() -> &'static HashSet<Klucz> {
+        static EMPTY: OnceLock<HashSet<Klucz>> = OnceLock::new();
+        EMPTY.get_or_init(HashSet::new)
+    }
+
+    /// Web `planPathTurns` (`planned-march.ts:211`) ze zwyklym web `Set` zajetosci i bez blokady
+    /// oblezenia; pelny wariant pinu `07d2fbd72`: [`plan_path_turns_occ`].
     #[allow(clippy::too_many_arguments)] // sygnatura 1:1 z webem
     pub fn plan_path_turns(
         unit: &RuchJednostka,
@@ -1863,6 +1996,62 @@ pub mod ruch_jednostek {
         dest_r: f64,
         map: &RuchMapa,
         occupied: &HashSet<Klucz>,
+        per_turn_move: f64,
+        movement_budget: Option<f64>,
+        cost_fn: Option<&CostFn<'_>>,
+    ) -> PathTurnPlan {
+        plan_path_turns_impl(
+            unit,
+            dest_q,
+            dest_r,
+            map,
+            occupied,
+            no_pass_through(),
+            None,
+            per_turn_move,
+            movement_budget,
+            cost_fn,
+        )
+    }
+
+    /// Web `planPathTurns` @07d2fbd72 (`planned-march.ts:215-285`) z `MoveOccupancy` i blokada
+    /// oblezenia: segment skrocony budzetem jest przycinany `trimSegmentEndOffPassThrough`
+    /// (`planned-march.ts:271-275`), wiec nie konczy sie na heksie z wlasna jednostka.
+    #[allow(clippy::too_many_arguments)] // sygnatura 1:1 z webem + jawny predykat oblezenia
+    pub fn plan_path_turns_occ(
+        unit: &RuchJednostka,
+        dest_q: f64,
+        dest_r: f64,
+        map: &RuchMapa,
+        occ: &MoveOccupancy,
+        siege: Option<&SiegeEntryFn<'_>>,
+        per_turn_move: f64,
+        movement_budget: Option<f64>,
+        cost_fn: Option<&CostFn<'_>>,
+    ) -> PathTurnPlan {
+        plan_path_turns_impl(
+            unit,
+            dest_q,
+            dest_r,
+            map,
+            &occ.blocked,
+            &occ.pass_through,
+            siege,
+            per_turn_move,
+            movement_budget,
+            cost_fn,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn plan_path_turns_impl(
+        unit: &RuchJednostka,
+        dest_q: f64,
+        dest_r: f64,
+        map: &RuchMapa,
+        occupied: &HashSet<Klucz>,
+        pass_through: &HashSet<Klucz>,
+        siege: Option<&SiegeEntryFn<'_>>,
         per_turn_move: f64,
         movement_budget: Option<f64>,
         cost_fn: Option<&CostFn<'_>>,
@@ -1883,7 +2072,7 @@ pub mod ruch_jednostek {
                 ..empty
             };
         }
-        let path = compute_path(unit, map, dest_q, dest_r, occupied, cost_fn);
+        let path = compute_path_with_siege(unit, map, dest_q, dest_r, occupied, siege, cost_fn);
         if path.is_empty() {
             return empty;
         }
@@ -1932,7 +2121,12 @@ pub mod ruch_jednostek {
             });
         }
         let budget = movement_budget.unwrap_or(per_turn);
-        let segment_path = truncate_path_to_budget(&path, budget, map, cost_fn);
+        // Web `planned-march.ts:271-275` (R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1).
+        let segment_path = trim_end_off_pass_through(
+            truncate_path_to_budget(&path, budget, map, cost_fn),
+            path.len(),
+            pass_through,
+        );
         let segment_cost = if segment_path.is_empty() {
             0.0
         } else {
@@ -1977,7 +2171,8 @@ pub mod ruch_jednostek {
         f64::from(q) == dest.dest_q && f64::from(r) == dest.dest_r
     }
 
-    /// Web `shouldStopAtObstacle` (`planned-march.ts:280`).
+    /// Web `shouldStopAtObstacle` (`planned-march.ts:280`) ze zwyklym web `Set` i bez blokady
+    /// oblezenia; pelny wariant pinu `07d2fbd72`: [`should_stop_at_obstacle_occ`].
     pub fn should_stop_at_obstacle(
         unit: &RuchJednostka,
         dest: &PlannedMarchDest,
@@ -1987,11 +2182,70 @@ pub mod ruch_jednostek {
         movement_budget: f64,
         cost_fn: Option<&CostFn<'_>>,
     ) -> StopDecision {
+        should_stop_at_obstacle_impl(
+            unit,
+            dest,
+            map,
+            occupied,
+            no_pass_through(),
+            None,
+            segment_path,
+            movement_budget,
+            cost_fn,
+        )
+    }
+
+    /// Web `shouldStopAtObstacle` @07d2fbd72 (`planned-march.ts:288-338`): obciety segment
+    /// przechodzi przez `trimSegmentEndOffPassThrough` (`:311-313`); `occupied.has` = blokady.
+    #[allow(clippy::too_many_arguments)] // sygnatura 1:1 z webem + jawny predykat oblezenia
+    pub fn should_stop_at_obstacle_occ(
+        unit: &RuchJednostka,
+        dest: &PlannedMarchDest,
+        map: &RuchMapa,
+        occ: &MoveOccupancy,
+        siege: Option<&SiegeEntryFn<'_>>,
+        segment_path: &[Klucz],
+        movement_budget: f64,
+        cost_fn: Option<&CostFn<'_>>,
+    ) -> StopDecision {
+        should_stop_at_obstacle_impl(
+            unit,
+            dest,
+            map,
+            &occ.blocked,
+            &occ.pass_through,
+            siege,
+            segment_path,
+            movement_budget,
+            cost_fn,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn should_stop_at_obstacle_impl(
+        unit: &RuchJednostka,
+        dest: &PlannedMarchDest,
+        map: &RuchMapa,
+        occupied: &HashSet<Klucz>,
+        pass_through: &HashSet<Klucz>,
+        siege: Option<&SiegeEntryFn<'_>>,
+        segment_path: &[Klucz],
+        movement_budget: f64,
+        cost_fn: Option<&CostFn<'_>>,
+    ) -> StopDecision {
         let texts = &ruch_jednostek_params().marsz.teksty;
         if movement_budget <= 0.0 {
             return halt(MarchStopReason::NoMovement, &texts.brak_ruchu);
         }
-        let path = compute_path(unit, map, dest.dest_q, dest.dest_r, occupied, cost_fn);
+        let path = compute_path_with_siege(
+            unit,
+            map,
+            dest.dest_q,
+            dest.dest_r,
+            occupied,
+            siege,
+            cost_fn,
+        );
         if path.is_empty() {
             return halt(MarchStopReason::NoPath, &texts.brak_trasy);
         }
@@ -2001,7 +2255,12 @@ pub mod ruch_jednostek {
         if arrived {
             return go();
         }
-        let truncated = truncate_path_to_budget(&path, movement_budget, map, cost_fn);
+        // Web `planned-march.ts:311-313` (R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1).
+        let truncated = trim_end_off_pass_through(
+            truncate_path_to_budget(&path, movement_budget, map, cost_fn),
+            path.len(),
+            pass_through,
+        );
         if truncated.is_empty() {
             return halt(MarchStopReason::NoMovement, &texts.brak_ruchu);
         }
@@ -2050,7 +2309,8 @@ pub mod ruch_jednostek {
         }
     }
 
-    /// Web `executeMarchStep` (`planned-march.ts:343`).
+    /// Web `executeMarchStep` (`planned-march.ts:343`) ze zwyklym web `Set` i bez blokady
+    /// oblezenia; pelny wariant pinu `07d2fbd72`: [`execute_march_step_occ`].
     #[allow(clippy::too_many_arguments)] // sygnatura 1:1 z webem
     pub fn execute_march_step(
         unit: &RuchJednostka,
@@ -2063,13 +2323,81 @@ pub mod ruch_jednostek {
         fog: Option<&MarchFogContext>,
         cost_fn: Option<&CostFn<'_>>,
     ) -> ExecuteMarchResult {
+        execute_march_step_impl(
+            unit,
+            dest,
+            map,
+            occupied,
+            no_pass_through(),
+            None,
+            movement_budget,
+            can_occupy_hex,
+            per_turn_move,
+            fog,
+            cost_fn,
+        )
+    }
+
+    /// Web `executeMarchStep` @07d2fbd72 (`planned-march.ts:353-434`) z `MoveOccupancy` i blokada
+    /// oblezenia. Pusty segment, gdy pierwszy heks pelnej trasy to przejscie przez wlasna jednostke
+    /// (`isPassThroughHex(occupied, fullPath[0])`), daje `obstacle` z [`OWN_UNIT_IN_REACH_DETAIL`]
+    /// zamiast `no_movement` (`planned-march.ts:388-400`).
+    #[allow(clippy::too_many_arguments)] // sygnatura 1:1 z webem + jawny predykat oblezenia
+    pub fn execute_march_step_occ(
+        unit: &RuchJednostka,
+        dest: &PlannedMarchDest,
+        map: &RuchMapa,
+        occ: &MoveOccupancy,
+        siege: Option<&SiegeEntryFn<'_>>,
+        movement_budget: f64,
+        can_occupy_hex: &dyn Fn(i32, i32) -> bool,
+        per_turn_move: f64,
+        fog: Option<&MarchFogContext>,
+        cost_fn: Option<&CostFn<'_>>,
+    ) -> ExecuteMarchResult {
+        execute_march_step_impl(
+            unit,
+            dest,
+            map,
+            &occ.blocked,
+            &occ.pass_through,
+            siege,
+            movement_budget,
+            can_occupy_hex,
+            per_turn_move,
+            fog,
+            cost_fn,
+        )
+    }
+
+    /// Web `planned-march.ts:399` (literal pinu; brak w `ruch-jednostek-params.json`, ktory jest
+    /// poza allowlista tematu `R-RUSTPORT-P4-1H-RJ-REPIN-Q3`).
+    pub const OWN_UNIT_IN_REACH_DETAIL: &str =
+        "własna jednostka na trasie — brak wolnego heksu w zasięgu";
+
+    #[allow(clippy::too_many_arguments)]
+    fn execute_march_step_impl(
+        unit: &RuchJednostka,
+        dest: &PlannedMarchDest,
+        map: &RuchMapa,
+        occupied: &HashSet<Klucz>,
+        pass_through: &HashSet<Klucz>,
+        siege: Option<&SiegeEntryFn<'_>>,
+        movement_budget: f64,
+        can_occupy_hex: &dyn Fn(i32, i32) -> bool,
+        per_turn_move: f64,
+        fog: Option<&MarchFogContext>,
+        cost_fn: Option<&CostFn<'_>>,
+    ) -> ExecuteMarchResult {
         let texts = &ruch_jednostek_params().marsz.teksty;
-        let mut plan = plan_path_turns(
+        let mut plan = plan_path_turns_impl(
             unit,
             dest.dest_q,
             dest.dest_r,
             map,
             occupied,
+            pass_through,
+            siege,
             per_turn_move,
             Some(movement_budget),
             cost_fn,
@@ -2083,6 +2411,15 @@ pub mod ruch_jednostek {
         }
         let move_path = plan.segment_path.clone();
         if move_path.is_empty() {
+            // Web `planned-march.ts:388-400`: budzet starcza tylko na heksy z wlasnymi
+            // jednostkami - przeszkoda, nie brak ruchu.
+            let only_own_in_reach = plan
+                .full_path
+                .first()
+                .is_some_and(|first| pass_through.contains(first));
+            if only_own_in_reach {
+                return march_failure(MarchStopReason::Obstacle, OWN_UNIT_IN_REACH_DETAIL);
+            }
             return march_failure(MarchStopReason::NoMovement, &texts.brak_ruchu);
         }
         let last = move_path[move_path.len() - 1];
@@ -2090,11 +2427,13 @@ pub mod ruch_jednostek {
             return march_failure(MarchStopReason::BlockedCity, &texts.obce_miasto);
         }
         let arrived = f64::from(last.0) == dest.dest_q && f64::from(last.1) == dest.dest_r;
-        let obstacle = should_stop_at_obstacle(
+        let obstacle = should_stop_at_obstacle_impl(
             unit,
             dest,
             map,
             occupied,
+            pass_through,
+            siege,
             &move_path,
             movement_budget,
             cost_fn,
@@ -2118,6 +2457,63 @@ pub mod ruch_jednostek {
             stop_reason,
             stop_detail,
         }
+    }
+
+    /// Web `isNotifiableMarchStop` (`planned-march.ts:511-513`): przerwanie warte JEDNEGO
+    /// powiadomienia (`obstacle`, `no_path`, `blocked_city`); `no_movement` i `fog` to zwykle pauzy.
+    pub fn is_notifiable_march_stop(reason: Option<MarchStopReason>) -> bool {
+        matches!(
+            reason,
+            Some(
+                MarchStopReason::Obstacle | MarchStopReason::NoPath | MarchStopReason::BlockedCity
+            )
+        )
+    }
+
+    /// Web `marchPausedLabel` (`planned-march.ts:519-525`): etykieta "trasa wstrzymana".
+    /// `detail` niepusty ma pierwszenstwo (web `if (detail)`: pusty napis jest falsy).
+    pub fn march_paused_label(
+        reason: Option<MarchStopReason>,
+        detail: Option<&str>,
+    ) -> Option<String> {
+        if !is_notifiable_march_stop(reason) {
+            return None;
+        }
+        if let Some(text) = detail.filter(|text| !text.is_empty()) {
+            return Some(text.to_owned());
+        }
+        let texts = &ruch_jednostek_params().marsz.teksty;
+        Some(match reason {
+            Some(MarchStopReason::Obstacle) => texts.zablokowany_heks.clone(),
+            Some(MarchStopReason::BlockedCity) => texts.obce_miasto.clone(),
+            _ => texts.brak_trasy.clone(),
+        })
+    }
+
+    /// Web `registerMarchStop` (`planned-march.ts:532-541`): `true` = nowy epizod przerwania (albo
+    /// zmiana powodu) - pokaz JEDNO powiadomienie i zapamietaj powod. Wejscie stanu = web
+    /// `marchStopNotified` (`main.ts:31007`; w Rust `PlayableState::march_stop_notified`).
+    pub fn register_march_stop<K: Ord>(
+        notified: &mut BTreeMap<K, MarchStopReason>,
+        unit_id: K,
+        reason: Option<MarchStopReason>,
+    ) -> bool {
+        let Some(reason) = reason else {
+            return false;
+        };
+        if !is_notifiable_march_stop(Some(reason)) {
+            return false;
+        }
+        if notified.get(&unit_id) == Some(&reason) {
+            return false;
+        }
+        notified.insert(unit_id, reason);
+        true
+    }
+
+    /// Web `clearMarchStop` (`planned-march.ts:544-546`): postep marszu konczy epizod przerwania.
+    pub fn clear_march_stop<K: Ord>(notified: &mut BTreeMap<K, MarchStopReason>, unit_id: &K) {
+        notified.remove(unit_id);
     }
 
     /// Web `AutoMarchSave` (`planned-march.ts:22`) po dekodowaniu zapisu: pola `None` = brak /
