@@ -31295,6 +31295,134 @@ async function boot(): Promise<void> {
       };
     }
 
+    // R-WEB-UI-RESOURCE-SOURCE-LEDGER-REALPATH-TESTS-Q1: hak testu REALNEJ sciezki nowych zrodel ksiegi (tylko ?civTest=1).
+    // Kazda metoda wola PRAWDZIWA funkcje gry (nie reimplementacje); hak tylko przygotowuje scene i czyta stan.
+    // Uzywa go tools/resource-ledger-realpath-live-test.cjs.
+    if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
+      const plainT = (t: ResourceLedgerTurn | undefined | null) => JSON.parse(JSON.stringify(t ?? { byResource: {} }));
+      (window as any).__ledgerRealPathDebug = {
+        stock: (o: number): Record<string, number> => ({ ...ownerResourceStockAll(cities, o) }),
+        pending: (): Record<string, unknown> => { const o: Record<string, unknown> = {}; for (const [k, t] of peekPendingLedger()) o[k] = plainT(t); return o; },
+        resetPending: (): void => { resetPendingLedger(); },
+        creditStock: (o: number, key: string, amt: number): number => creditOwnerResourceStock(cities, o, key, amt, 999999),
+        setTreasury: (o: number, v: number): void => { setOwnerTreasury(o, v); },
+        firstCityId: (o: number): string | null => cities.find(c => c.ownerId === o)?.id ?? null,
+        cityOwner: (cityId: string): number | null => cities.find(c => c.id === cityId)?.ownerId ?? null,
+        firstCity: (o: number): { id: string; q: number; r: number } | null => { const c = cities.find(x => x.ownerId === o); return c ? { id: c.id, q: c.q, r: c.r } : null; },
+        /** Dar (jednostronny przelew) REALNYM executePnDealTransfer (ta sama sciezka co zaakceptowana oferta). */
+        gift: (fromOwnerId: number, toOwnerId: number, key: string, qty: number): void => {
+          executePnDealTransfer(fromOwnerId, toOwnerId, { giveItems: [{ typ: 'surowiec_ilosc', id: key, ilosc: qty } as BasketItem], receiveItems: [] } as unknown as ProposalPayload);
+        },
+        /** Wojskowa jednostka-szablon sklonowana na wskazany typ/wlasciciela (z opcjonalnym stockPaid). */
+        spawnUnit: (ownerId: number, typeId: string, q: number, r: number, stockPaid?: Record<string, number>): string | null => {
+          const template = units.find(u => !isCivilianUnit(u));
+          if (!template) return null;
+          const id = `ledgerrp-${ownerId}-${typeId}-${units.length}`;
+          units.push({ ...template, id, typeId, ownerId, q, r, inGarnizon: false, ...(stockPaid ? { stockPaid } : {}) } as RuntimeUnit);
+          syncUnitsRender();
+          return id;
+        },
+        /** Typ jednostki z kosztem surowcowym (key -> ilosc) i ewentualnie koszt rekrutacji; do wyboru scenariuszy. */
+        stockCostOf: (typeId: string): Record<string, number> => unitStockCost(data.units.find(u => u.Jednostka === typeId)),
+        unitTypesWithStockCost: (): Array<{ typeId: string; cost: Record<string, number> }> => data.units
+          .map(u => ({ typeId: String(u.Jednostka), cost: unitStockCost(u) }))
+          .filter(x => Object.keys(x.cost).length > 0),
+        recruitRefund: (cityId: string, typeId: string, ownerId: number): void => { cancelRecruitmentPurchase(cityId, typeId, 0, ownerId); },
+        disband: (unitId: string, ownerId: number): boolean => (ownerId === 0 ? disbandPlayerUnit(unitId) : disbandAiSupportUnit(unitId, ownerId)),
+        replace: (unitId: string, newTypeId: string): boolean => performUnitReplace(unitId, newTypeId, true),
+        replaceDiag: (unitId: string, newTypeId: string): { inTerritory: boolean; used: boolean; gate: string | null; typeId: string } | null => {
+          const u = units.find(x => x.id === unitId);
+          if (!u) return null;
+          return { inTerritory: isUnitInPlayerTerritory(u), used: u.replaceUsedThisTurn === true, gate: unitReplaceExecuteDeps(0, true).gateReason(u, newTypeId), typeId: u.typeId };
+        },
+        cession: (cityId: string, fromOwnerId: number, toOwnerId: number): boolean => transferCityByTreaty(cityId, fromOwnerId, toOwnerId),
+        annex: (csOwnerId: number, annexerId: number): void => { annexCityStateToOwner(csOwnerId, annexerId); },
+        rebel: (cityId: string): boolean => { const c = cities.find(x => x.id === cityId); if (!c) return false; transferCityToRebelFactionWithLedger(c); return true; },
+        /** Kapitulacja oblezenia REALNYM resolveSiegeSurrender (scena: miasto oznaczone jako oblegane przez `besiegerOwnerId`, wojna). */
+        siegeSurrender: (cityId: string, besiegerOwnerId: number): boolean => {
+          const c = cities.find(x => x.id === cityId);
+          if (!c) return false;
+          getDiploRelation(c.ownerId, besiegerOwnerId).status = 'wojna';
+          c.oblegane = true;
+          c.oblegajacyOwnerId = besiegerOwnerId;
+          resolveSiegeSurrender(cityId);
+          return true;
+        },
+        /** Lup z bitwy REALNYM applyMapBattleOutcome: atakujacy `winnerOwnerId` wygrywa, polegli = jednostki-widma typow `killedTypeIds` (poza `units`). */
+        loot: (winnerOwnerId: number, atkUnitId: string, killedTypeIds: string[], loserOwnerId: number): boolean => {
+          const atk = units.find(u => u.id === atkUnitId);
+          if (!atk) return false;
+          const template = units.find(u => !isCivilianUnit(u)) ?? atk;
+          const dead = killedTypeIds.map((typeId, i) => ({ ...template, id: `ledgerrp-dead-${i}`, typeId, ownerId: loserOwnerId, q: atk.q + 1, r: atk.r } as RuntimeUnit));
+          getDiploRelation(winnerOwnerId, loserOwnerId).status = 'wojna';
+          applyMapBattleOutcome([atk], dead, 'atakujacy', undefined, { battleQ: atk.q + 1, battleR: atk.r });
+          return true;
+        },
+        /** Scena oblezenia: miasto oznaczone jako oblegane przez `besiegerOwnerId`, wojna, jednostka oblegajacego obok miasta. */
+        startSiege: (cityId: string, besiegerOwnerId: number, unitCount = 12): boolean => {
+          const c = cities.find(x => x.id === cityId);
+          if (!c) return false;
+          getDiploRelation(c.ownerId, besiegerOwnerId).status = 'wojna';
+          c.oblegane = true;
+          c.oblegajacyOwnerId = besiegerOwnerId;
+          siegeBesiegerByCity.set(c.id, besiegerOwnerId);
+          const template = units.find(u => !isCivilianUnit(u));
+          if (!template) return false;
+          const nb = hexNeighborCoords(c.q, c.r).find(({ q, r }) => !!map.hexes[keyOf(q, r)] && !units.some(u => u.q === q && u.r === r) && !cities.some(x => x.q === q && x.r === r));
+          if (!nb) return false;
+          for (let i = 0; i < unitCount; i++) units.push({ ...template, id: `ledgerrp-besieger-${units.length}`, ownerId: besiegerOwnerId, q: nb.q, r: nb.r, inGarnizon: false } as RuntimeUnit);
+          syncUnitsRender();
+          return true;
+        },
+        siegeEngine: (cityId: string, unitId: string, ownerId: number): boolean => buildSiegeEngine(cityId, unitId, ownerId),
+        siegeEngineOptions: (cityId: string): Array<{ unitId: string; allowed: boolean; reason: string; costStock: Record<string, number>; costMoney: number }> => {
+          const c = cities.find(x => x.id === cityId);
+          return c ? siegeEngineOptions(c).map(o => ({ unitId: String(o.unit.Jednostka), allowed: !!o.allowed, reason: String((o as { reason?: unknown }).reason ?? ''), costStock: { ...o.costStock }, costMoney: o.costMoney })) : [];
+        },
+        /** Heks docelowy stadniny (terytorium gracza, bez zloza konia, pusty) i jego sasiad w terytorium gracza. */
+        stadninaHexes: (): { hexKey: string; neighborKey: string } | null => {
+          const nodes = buildAllTerritoryNodes();
+          for (const key of Object.keys(map.hexes)) {
+            const [qs, rs] = key.split(','); const q = Number(qs), r = Number(rs);
+            const h = map.hexes[key]!;
+            if (!isTerritoryHexOwnedBy(q, r, 0, nodes) || hexHasHorseDeposit(h as { nakladka?: Nakladka; zloze?: string })) continue;
+            if ((placedImprovements.get(key) ?? []).length > 0 || cities.some(c => c.q === q && c.r === r)) continue;
+            const nb = hexNeighborCoords(q, r).map(n => keyOf(n.q, n.r)).find(k => !!map.hexes[k] && isTerritoryHexOwnedBy(Number(k.split(',')[0]), Number(k.split(',')[1]), 0, nodes) && (placedImprovements.get(k) ?? []).length === 0);
+            if (nb) return { hexKey: key, neighborKey: nb };
+          }
+          return null;
+        },
+        /** Stadnina poza zlozem REALNYM commitBuildRequest (gracz); `neighborKey` dostaje wczesniej postawiona stadnine (warunek sasiedztwa). */
+        stadnina: (hexKey: string, neighborKey: string): boolean => {
+          const nb = placedImprovements.get(neighborKey) ?? [];
+          if (!nb.includes('stadnina')) placedImprovements.set(neighborKey, [...nb, 'stadnina'] as unknown as PlacedLayers);
+          commitBuildRequest({ hexKey, key: 'stadnina', kosztPraca: 0 } as unknown as ImprovementBuildRequest,
+            { removedImprovements: [], removesForest: false } as unknown as ImprovementBuildImpact);
+          return (placedImprovements.get(hexKey) ?? []).includes('stadnina');
+        },
+        /** Zapis/wczytanie REALNYMI buildSaveGameSnapshot/restoreGameFromSave; `mutate` pozwala usunac pole `resourceLedgerHistory` (stary zapis). */
+        saveRoundTrip: (dropLedgerField: boolean): { savedBytes: number; savedTurns: number; afterTurns: number } => {
+          const snap = JSON.parse(JSON.stringify(buildSaveGameSnapshot('ledger-realpath')));
+          const savedTurns = Array.isArray(snap.resourceLedgerHistory) ? snap.resourceLedgerHistory.length : -1;
+          const savedBytes = JSON.stringify(snap.resourceLedgerHistory ?? null).length;
+          if (dropLedgerField) delete snap.resourceLedgerHistory;
+          restoreGameFromSave(snap);
+          return { savedBytes, savedTurns, afterTurns: ledgerHistoryToSave().length };
+        },
+        /** Pamiec dziennika (wszyscy wlasciciele) vs pole REALNEGO zapisu (tylko ludzie). */
+        historyForSave: (): unknown => JSON.parse(JSON.stringify(ledgerHistoryToSave())),
+        historyBytes: (): number => JSON.stringify(ledgerHistoryToSave()).length,
+        savedHistory: (): unknown => JSON.parse(JSON.stringify(buildSaveGameSnapshot('ledger-size').resourceLedgerHistory ?? null)),
+        savedBytes: (): number => JSON.stringify(buildSaveGameSnapshot('ledger-size').resourceLedgerHistory ?? null).length,
+        historyN: (): number => readLedgerHistoryTurns(data.econParams, _menuDifficulty),
+        /** Wycinka lasu gracza: wpis stanu wyrebu (jak po kliku); plon liczy REALNY tick tury w runWorldEndTurn (tickHexClearing). */
+        startClearing: (hexKey: string, ownerId: number, turnsLeft: number, pracaPerTurn: number): void => {
+          hexClearingStates.set(hexKey, { turnsLeft, pracaPerTurn, ownerId });
+        },
+        turnNo: (): number => turn,
+      };
+    }
+
     // R-WEB-DETERMINISM-SAVE-LOAD-RESUME-Q1: hak pomiaru live (tylko ?civTest=1; zero wplywu bez parametru).
     // Zapis/odczyt przez REALNE buildSaveGameSnapshot/restoreGameFromSave; digest = skrot stanu jednostek i miast
     // + liczniki ID/walk. Uzywa go tools/determinism-save-load-resume-live.cjs.
@@ -38438,6 +38566,14 @@ async function boot(): Promise<void> {
       return plan.ok ? null : plan.reason;
     }
 
+    /** Bunt miasta: zmiana właściciela na frakcję rebeliantów + księga „Skąd zapasy” (wspólne dla pętli tury i testu realnej ścieżki). */
+    function transferCityToRebelFactionWithLedger(city: City): void {
+      const ledgerRebelBefore = snapshotOwnersStock([city.ownerId, REBEL_FACTION_OWNER_ID], o => ownerResourceStockAll(cities, o));
+      city.ownerId = REBEL_FACTION_OWNER_ID;
+      recordOwnersStockDeltaToPending(ledgerRebelBefore, o => ownerResourceStockAll(cities, o), `bunt-miasta|${city.id}`,
+        o => (o === REBEL_FACTION_OWNER_ID ? { kind: 'przejecie_miasta', label: 'Bunt miasta (przejęte)' } : { kind: 'przejecie_miasta', label: 'Bunt miasta (utrata)' }));
+    }
+
     function transferCityByTreaty(cityId: string, fromOwnerId: number, toOwnerId: number): boolean {
       const city = cities.find(c => c.id === cityId);
       if (!city) {
@@ -39252,7 +39388,7 @@ async function boot(): Promise<void> {
         wersja: SAVE_VERSION,
         tura: turn,
         seed: _gameSeed,
-        resourceLedgerHistory: ledgerHistoryToSave(), // R-WEB-UI-...-UI-AND-REST-Q1 (partia 3b): dziennik N tur
+        resourceLedgerHistory: ledgerHistoryToSave(ownerId => isHuman(ownerId)), // R-WEB-UI-...-UI-AND-REST-Q1 (partia 3b): dziennik N tur
         units: units.slice(),
         cities: cities.slice(),
         exploredByHuman: exploredByHumanSave,
@@ -41778,10 +41914,7 @@ async function boot(): Promise<void> {
                   markCityRebellionStarted(city);
                   city.rebelState = true;
                   stampCityFounderOnCapture(city, city.ownerId); // R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1
-                  const ledgerRebelBefore = snapshotOwnersStock([city.ownerId, REBEL_FACTION_OWNER_ID], o => ownerResourceStockAll(cities, o));
-                  city.ownerId = REBEL_FACTION_OWNER_ID;
-                  recordOwnersStockDeltaToPending(ledgerRebelBefore, o => ownerResourceStockAll(cities, o), `bunt-miasta|${city.id}`,
-                    o => (o === REBEL_FACTION_OWNER_ID ? { kind: 'przejecie_miasta', label: 'Bunt miasta (przejęte)' } : { kind: 'przejecie_miasta', label: 'Bunt miasta (utrata)' }));
+                  transferCityToRebelFactionWithLedger(city);
                   settleWonderTransfer(wonderWatchRebel);
                   // B2 (Evaluator RUNDA 1: FAIL): przejście do rebeliantów musi zresetować
                   // override i zsynchronizować pola z globalnym defaultem frakcji rebeliantów.

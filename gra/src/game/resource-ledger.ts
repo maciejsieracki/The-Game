@@ -414,11 +414,19 @@ function cloneLedgerTurn(turn: ResourceLedgerTurn): ResourceLedgerTurn {
   return { byResource };
 }
 
-/** Kopia pamięci N tur do zapisu (niezależna od późniejszych mutacji map). */
-export function ledgerHistoryToSave(): LedgerHistorySave {
+/**
+ * Kopia pamięci N tur do zapisu (niezależna od późniejszych mutacji map).
+ * `keepOwner` (opcjonalny) ogranicza zapis do wybranych właścicieli: karta „Skąd zapasy” czyta dziennik tylko
+ * właściciela-człowieka, a dziennik AI przy N=10 (gracz + 5 AI) potrafił przekroczyć 100 KB (pomiar:
+ * REALPATH-TESTS, tura ~30 = 119 KB), więc zapis obejmuje tylko właścicieli-ludzi. Bez argumentu = wszyscy.
+ */
+export function ledgerHistoryToSave(keepOwner?: (ownerId: number) => boolean): LedgerHistorySave {
   return ledgerTickHistory.map(m => {
     const out: Record<string, ResourceLedgerTurn> = {};
-    for (const [ownerId, turn] of m) out[String(ownerId)] = cloneLedgerTurn(turn);
+    for (const [ownerId, turn] of m) {
+      if (keepOwner && !keepOwner(ownerId)) continue;
+      out[String(ownerId)] = cloneLedgerTurn(turn);
+    }
     return out;
   });
 }
