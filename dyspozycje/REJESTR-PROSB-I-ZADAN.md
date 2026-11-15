@@ -10047,3 +10047,6 @@ Polecenie właściciela: „zwiększ koszt w epoce brązu, czyli jeden punkt neg
 
 ## 2026-11-15 — KOREKTA decyzji o cenach handlu (właściciel: „totalnie na odwrót”)
 Poprzedni wpis (wariant C, cena PN ×5/×10) jest ANULOWANY. Właściwie: liczba PN za blok zostaje, rośnie ilość surowca na ten PN (drewno: 10 → 50 w Brązie → 100 w Żelazie szt. za 1 PN; analogicznie reszta, złoto i węgiel: cena za sztukę /5 i /10). Epoka umowy = wyższa z epok stron. Dispatch R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 przepisany; start dopiero po potwierdzeniu tabeli przez właściciela i po #406.
+
+## 2026-11-15 — Ceny handlu z epoką: tabela POTWIERDZONA przez właściciela
+Właściciel potwierdził: ta sama liczba PN za blok w każdej epoce, blok = 10 szt. (Kamień), 50 szt. (Brąz), 100 szt. (Żelazo); cena bloku bez zmian (drewno 1, glina 2, sól 2, kamień 3, ruda miedzi/cegła/koń/ceramika 5, ruda żelaza/cyny 10, brąz 15, żelazo 20, stal 25 PN); złoto 50 PN za 1/5/10 szt., węgiel 20 PN za 1/5/10 szt.; epoka umowy = wyższa z epok stron. Temat R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 startuje po wdrożeniu FALI z limitem ofert AI (#406).
