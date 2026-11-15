@@ -1,0 +1,5 @@
+M1-R1-brak-trimu-planPathTurns: EXIT 101 FAIL(oczekiwany) ['test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s'] ['test march_vectors_match_pin_07d2fbd72 ... FAILED']
+M2-R2-brak-trimu-shouldStopAtObstacle: EXIT 101 FAIL(oczekiwany) ['test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.39s'] ['test march_vectors_match_pin_07d2fbd72 ... FAILED']
+M3-R3-pusty-segment-bez-obstacle: EXIT 101 FAIL(oczekiwany) ['test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.39s'] ['test march_vectors_match_pin_07d2fbd72 ... FAILED']
+M4-R4-brak-blokady-oblezenia-dla-celu: EXIT 101 FAIL(oczekiwany) ['test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.93s'] ['test march_vectors_match_pin_07d2fbd72 ... FAILED']
+M5-brak-trim_path_to_stack_room: EXIT 101 FAIL(oczekiwany) ['test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.16s'] ['test stack_limit_trim_matches_pin_with_limit_500_boundaries ... FAILED']

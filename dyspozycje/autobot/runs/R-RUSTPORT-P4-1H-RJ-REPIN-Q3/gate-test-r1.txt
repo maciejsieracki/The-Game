@@ -1,0 +1,967 @@
+     Running unittests src/lib.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/civ_engine-fb8c2eb92bd3a249)
+test result: ok. 121 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+     Running tests/ai_turn.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/ai_turn-3dfcda03e0dc5585)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/assets_manifest.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/assets_manifest-c48bdf1a5f0872d9)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.56s
+     Running tests/barbarians.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/barbarians-2f8c024f5e2095f0)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/bridge_add_player.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/bridge_add_player-fe63e39dc01bbf5c)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/building_costs.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/building_costs-fb04eb2b3a9f4def)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/city_growth.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/city_growth-4c5bd68e34067255)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/city_id.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/city_id-22f7835b7a8ed8c0)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/combat.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/combat-a37d28f5e79bf0b4)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/combat_ai_multipliers.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/combat_ai_multipliers-cc60664d41de3ac3)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/counter_multipliers.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/counter_multipliers-58453c30b5052900)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/data_buildings_tech.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/data_buildings_tech-c876a687cc405636)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/data_civilizations.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/data_civilizations-b5fbb31e9e6fb1fe)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/data_compliance.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/data_compliance-a35c858e48f3f182)
+test result: ok. 40 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+     Running tests/data_economy_society.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/data_economy_society-22f7a35ca9226efb)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/data_loader.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/data_loader-b645638fecf5ff4a)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.50s
+     Running tests/data_terrain_map.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/data_terrain_map-ad5c6b49fb23404b)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/data_units_combat.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/data_units_combat-de6b718049de4bdc)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/derived_values.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/derived_values-d71e08b6b0c0702b)
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests/diplomacy.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/diplomacy-5de7c2bff32fd4ce)
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/economy_city_vectors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/economy_city_vectors-69529b773a66bc4b)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+     Running tests/economy_city_vectors_r3.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/economy_city_vectors_r3-0389bd2ca5b386ea)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+     Running tests/economy_city_vectors_r4.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/economy_city_vectors_r4-ce4a4529763f911b)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+     Running tests/events.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/events-9fcae0d4c4e8066d)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/hex_terrain.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/hex_terrain-a9f7c4b0d80d5be0)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/improvements.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/improvements-02e7c45750f6068f)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/map_generator.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/map_generator-6a11ce9f996a69b6)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/owner_ref.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/owner_ref-41ba3b38a6067be5)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p4_1b_map_view.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p4_1b_map_view-216b45e8ce4a67f4)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.65s
+     Running tests/p4_1b_river_trim.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p4_1b_river_trim-7f37bbafc76486cb)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p4_1b_road_mask.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p4_1b_road_mask-d750d63120516f01)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/p4_1h_rj_repin.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p4_1h_rj_repin-0ba393234be3f632)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.21s
+     Running tests/p4_1j_general_target_vectors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p4_1j_general_target_vectors-b224a0bb1efbc3c4)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+     Running tests/p4_1j_planned_march_bounds.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p4_1j_planned_march_bounds-1448b7c53f40abf2)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p4_1j_planned_march_pin_vectors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p4_1j_planned_march_pin_vectors-150e3cf81fd8aed3)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+     Running tests/p4_1j_planned_march_state.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p4_1j_planned_march_state-b75b1248d3ab987b)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_1_civ_entry_epoch.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_1_civ_entry_epoch-de939be40e0345bd)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_1_first_player_city.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_1_first_player_city-7da0450fa51cabe1)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_1_owner_seats.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_1_owner_seats-37860d33d2347837)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_1_rng_mulberry.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_1_rng_mulberry-dd8b4b9f481fea5e)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_1b_playerstate.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_1b_playerstate-6ad2de8941f76da7)
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.49s
+     Running tests/p6_1c_braz_access.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_1c_braz_access-cb00db1e837ebc98)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+     Running tests/p6_1c_llama_seed.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_1c_llama_seed-3ddd64ccb7a7a9d0)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.02s
+     Running tests/p6_1c_start_cluster.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_1c_start_cluster-7aacba5a8b2addad)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.46s
+     Running tests/p6_1c_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_1c_tables-d7f070613ee98930)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_1d_city_names.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_1d_city_names-e8605a873da57e52)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+     Running tests/p6_1d_civ_bonuses.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_1d_civ_bonuses-aa139c4176d5e1be)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.65s
+     Running tests/p6_1d_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_1d_tables-a4525a7903f3a4c9)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_1e_civ_gaps.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_1e_civ_gaps-1c0a88f4884bd93a)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_1e_civ_matrix.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_1e_civ_matrix-ed7ed975ec15f773)
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
+     Running tests/p6_1e_civ_names.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_1e_civ_names-3c7bc89b96c9541a)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.76s
+     Running tests/p6_1e_js_compat.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_1e_js_compat-9402abe0e78b4825)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+     Running tests/p6_1e_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_1e_tables-9cec13d94c37640d)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_23_fort.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_23_fort-43224cfa689c673e)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+     Running tests/p6_23_hexmove.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_23_hexmove-936de82808356fea)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/p6_23_improvements.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_23_improvements-b4f5d5e52b4386d9)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+     Running tests/p6_23_order.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_23_order-d70e3e3f3ff926c2)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+     Running tests/p6_23_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_23_tables-cf469af34aba7905)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_4_core.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_4_core-e50591a709e6fb90)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.53s
+     Running tests/p6_4_embark.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_4_embark-83be573277a91703)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
+     Running tests/p6_4_march.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_4_march-04e4089535c25815)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.83s
+     Running tests/p6_4_rally.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_4_rally-5405472223af76cd)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_4_scout.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_4_scout-0c528b97d64654c1)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 17.18s
+     Running tests/p6_4_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_4_tables-65612bd7127f75c2)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_5a_cost.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_5a_cost-f5fc5f95c5cc3db2)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_5a_display.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_5a_display-c1e28090a8da4953)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.02s
+     Running tests/p6_5a_ruch.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_5a_ruch-8677b87b1c3f90f9)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.80s
+     Running tests/p6_5a_stack.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_5a_stack-6b9afe8643efb1b9)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.34s
+     Running tests/p6_5a_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_5a_tables-e8d3f5d894f7f9d7)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_5b_bonuses.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_5b_bonuses-4d1b67baaf8c7d6e)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.35s
+     Running tests/p6_5b_format.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_5b_format-3474f7ee739572f7)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
+     Running tests/p6_5b_manpower.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_5b_manpower-d5eff88d2f6d2246)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.63s
+     Running tests/p6_5b_replenish.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_5b_replenish-8522b3ac95d5275a)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.98s
+     Running tests/p6_5b_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_5b_tables-24d67161b99f6a6e)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+     Running tests/p6_6a_conquest.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_6a_conquest-b17ce2a1f6715d03)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+     Running tests/p6_6a_founding.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_6a_founding-3e00c707963accf2)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+     Running tests/p6_6a_hexclear.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_6a_hexclear-f1f0dcb1418eceb4)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests/p6_6a_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_6a_tables-6ae090cb6a5bb903)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_6a_visibility.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_6a_visibility-b4cfd31d2e396e4a)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.80s
+     Running tests/p6_6b_cities_ensure.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_6b_cities_ensure-cc5c6468dfcc1218)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s
+     Running tests/p6_6b_cities_found.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_6b_cities_found-b3c182e1bd3782a5)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.86s
+     Running tests/p6_6b_display.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_6b_display-7fbdfab3a2939200)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
+     Running tests/p6_6b_empire.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_6b_empire-71d5fb2ee31b567a)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.06s
+     Running tests/p6_6b_lists.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_6b_lists-b0107b95f4d6759c)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_6b_percent.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_6b_percent-7ab7b03a8b60456e)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.74s
+     Running tests/p6_6b_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_6b_tables-ac891581bd843839)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_7a_empire.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_7a_empire-bc1fe48836e078da)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.97s
+     Running tests/p6_7a_growth.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_7a_growth-e7c0ad8f66dda9ff)
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.12s
+     Running tests/p6_7a_post_central.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_7a_post_central-ee2deb00bd68a51e)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.48s
+     Running tests/p6_7a_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_7a_tables-2cfaec4288159d29)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_7a_tempo.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_7a_tempo-d57df2a10b5e3ef3)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests/p6_7b_cost.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_7b_cost-2590ab7eaad42346)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.96s
+     Running tests/p6_7b_gate.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_7b_gate-11494aca28849f0b)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.00s
+     Running tests/p6_7b_nfd.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_7b_nfd-6c80ab7320bc359b)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.09s
+     Running tests/p6_7b_pool.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_7b_pool-93fa41093e5a15ba)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.98s
+     Running tests/p6_7b_spichlerz.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_7b_spichlerz-89a62a0138a95cb6)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.71s
+     Running tests/p6_7b_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_7b_tables-3b68cccc8f48e4e2)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+     Running tests/p6_8a_building_upgrades.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8a_building_upgrades-472b4da755604abe)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_8a_pending_improvements.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8a_pending_improvements-59da8db03d40a5fb)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_8a_production_costs.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8a_production_costs-4efee762517de4fe)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+     Running tests/p6_8a_vectors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8a_vectors-b13947bc0f249b65)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.60s
+     Running tests/p6_8b2_p2_gaps.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8b2_p2_gaps-87393bf348a1d1a6)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_8b2_p2_vectors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8b2_p2_vectors-4eed5157238f45ec)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+     Running tests/p6_8b_c2a_vectors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8b_c2a_vectors-13abb042104dda58)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+     Running tests/p6_8b_c2b_vectors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8b_c2b_vectors-1c3a5cbc9634f5e4)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.65s
+     Running tests/p6_8b_c2c_vectors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8b_c2c_vectors-6db0f6490cf91cb9)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.81s
+     Running tests/p6_8b_helpers_vectors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8b_helpers_vectors-5038b3ae02223456)
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.59s
+     Running tests/p6_8b_p1b_vectors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8b_p1b_vectors-81ab05a4f689d7d5)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+     Running tests/p6_8c_vectors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8c_vectors-5217c86ff500e865)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.50s
+     Running tests/p6_8d_citizen_upkeep.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8d_citizen_upkeep-0c49e3ae22127c67)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+     Running tests/p6_8d_gold_deficit.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8d_gold_deficit-b99b86412162b3ca)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+     Running tests/p6_8d_mennica_grace.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8d_mennica_grace-21c9eb409b6aff78)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_8d_wealth.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8d_wealth-16e8dce360e271d2)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+     Running tests/p6_8e_upkeep_p1.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8e_upkeep_p1-657114e748a30b76)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.30s
+     Running tests/p6_8e_upkeep_p2.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8e_upkeep_p2-995bac7fd65f5185)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.49s
+     Running tests/p6_8g_hook.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8g_hook-737c01cdc6ee8d92)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_8g_okolica.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8g_okolica-d5ab1d3d7983c0e4)
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_8g_web_vectors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8g_web_vectors-59836f3b4c6be689)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.13s
+     Running tests/p6_8g_web_vectors_r4.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8g_web_vectors_r4-900f087b5d5cd649)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.47s
+     Running tests/p6_8h2_active_access.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8h2_active_access-df130cf6ebb4b4d2)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.93s
+     Running tests/p6_8h2_capital_labels.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8h2_capital_labels-9210ea2354098975)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_8h2_society_inputs.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8h2_society_inputs-e6f210188f91aedf)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+     Running tests/p6_8h_access.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8h_access-4e7057dbb626cd1a)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.30s
+     Running tests/p6_8i_pick.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8i_pick-0a976c826b9639d7)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 328.59s
+     Running tests/p6_8i_relief.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8i_relief-29d31e81de5ddf2e)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_8j_guards.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8j_guards-ca36cbb26f01a406)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_8j_order.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8j_order-1adad19d0eab1613)
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.64s
+     Running tests/p6_8j_society.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_8j_society-dd3b0fdde10b3c70)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.43s
+     Running tests/p6_adv_city_econ_heal.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_adv_city_econ_heal-69ca71da0724d65b)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+     Running tests/p6_adv_city_econ_pipeline.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_adv_city_econ_pipeline-ed2daf89d5cd97f9)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.48s
+     Running tests/p6_adv_q2a_pipeline.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_adv_q2a_pipeline-1300d15754bef433)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.78s
+     Running tests/p6_adv_q3_pipeline.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_adv_q3_pipeline-7a2614824526128c)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.48s
+     Running tests/p6_adv_q4_pipeline.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_adv_q4_pipeline-e3699d1ca50ec2dc)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.72s
+     Running tests/p6_adv_q4_preview.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_adv_q4_preview-b23f6f60c71202c3)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.98s
+     Running tests/p6_adv_q5_tick.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_adv_q5_tick-073ba0e0f0ec4b4a)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.00s
+     Running tests/p6_adv_q6_wire.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_adv_q6_wire-cf4d90de70128b52)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.39s
+     Running tests/p6_ai_peace_city_offer.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_ai_peace_city_offer-dbfdc7006acc800e)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.58s
+     Running tests/p6_aipeace_balans.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_aipeace_balans-5c50854f3d0a4026)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+     Running tests/p6_brake_inputs.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_brake_inputs-bd7c09776999f8a7)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_brake_inputs_vectors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_brake_inputs_vectors-a28f8cd3b034ff3f)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+     Running tests/p6_city_towers.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_city_towers-4d1aa50c83793764)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+     Running tests/p6_combat_harness.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_combat_harness-ffee3b2729326d8c)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+     Running tests/p6_combat_melee.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_combat_melee-dca277167342873d)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+     Running tests/p6_counter_falangita.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_counter_falangita-d824c2cce021a915)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_cred_hak_bridge.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_cred_hak_bridge-f822cbd5f2e3d490)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_cred_hak_kolejnosc.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_cred_hak_kolejnosc-0e2aae1bd9ad4a60)
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_cred_wojna.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_cred_wojna-72a5397504f56646)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_cred_wojna_forced.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_cred_wojna_forced-dc1df2cc814c521a)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_cred_wojna_vectors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_cred_wojna_vectors-eb949fe2e7e17e6c)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests/p6_cred_wojna_vectors_r2.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_cred_wojna_vectors_r2-beff743a2a0b6392)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+     Running tests/p6_credibility.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_credibility-ac4e9b3b521875cf)
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+     Running tests/p6_dyplo_multiwar2_balance.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_dyplo_multiwar2_balance-59222113bbcb5cdc)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/p6_dyplo_multiwar2_eraign.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_dyplo_multiwar2_eraign-00dda5c5995566d8)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_dyplo_multiwar2_peace_ai.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_dyplo_multiwar2_peace_ai-a673793a8eb9347e)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_dyplo_multiwar2_peace_helpers.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_dyplo_multiwar2_peace_helpers-4e0b79ddad733d4a)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_dyplo_multiwar2_tick.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_dyplo_multiwar2_tick-c300face325cff99)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_dyplo_multiwar_gates.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_dyplo_multiwar_gates-918d8d24e009a539)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_dyplo_multiwar_interciv.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_dyplo_multiwar_interciv-55454f730e0a15d4)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_dyplo_multiwar_peace.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_dyplo_multiwar_peace-dfbb687b51c7b575)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+     Running tests/p6_dyplomacja_multiwar3_d.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_dyplomacja_multiwar3_d-39e8f5c122f98d96)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+     Running tests/p6_dyplomacja_multiwar3_e.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_dyplomacja_multiwar3_e-225584e507c2bd04)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+     Running tests/p6_dyplomacja_multiwar3_f.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_dyplomacja_multiwar3_f-a34e513ecbf8d090)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/p6_dyplomacja_multiwar3_g.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_dyplomacja_multiwar3_g-6cdbd70c27b3e374)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+     Running tests/p6_dyplomacja_profil_wojny_pokoju.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_dyplomacja_profil_wojny_pokoju-85805584ace014f2)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.85s
+     Running tests/p6_dyplomacja_truce_aggressor.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_dyplomacja_truce_aggressor-d9a633e89d94b10e)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.67s
+     Running tests/p6_econ_post_e2e.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_econ_post_e2e-35d61ec4f92e87db)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.96s
+     Running tests/p6_econ_post_unit.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_econ_post_unit-0924cef1acabfee5)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_eliminacja.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_eliminacja-c53efe7a8a4e75e7)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+     Running tests/p6_empirefood_e2e.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_empirefood_e2e-21fde2f06bfe12f9)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.59s
+     Running tests/p6_empirefood_unit.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_empirefood_unit-b43c126667348ca2)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_forced_war_g1.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_forced_war_g1-2314fc3b52a675d6)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_forced_war_g2.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_forced_war_g2-01e59e3f9b8842b3)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/p6_forced_war_g3.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_forced_war_g3-80b0009447e0b9ae)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+     Running tests/p6_forced_war_g3b.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_forced_war_g3b-c3891f83d556043e)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+     Running tests/p6_heal_maxhp_wire.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_heal_maxhp_wire-d729f2b4ded80ddf)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+     Running tests/p6_js_math_equiv.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_js_math_equiv-c35a3e0a8bc721ca)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_js_max0.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_js_max0-0dc07dd5344b197f)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_js_max0_rest.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_js_max0_rest-8428309da1657e9c)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_js_max_sign.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_js_max_sign-b55443768a4ee1c3)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_js_round_minus_zero.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_js_round_minus_zero-d3ed5549bdc2acba)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_k5loop_outcome_pin.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_k5loop_outcome_pin-774074d5bd21dfcf)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s
+     Running tests/p6_m00_skeleton.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m00_skeleton-129bab209a05e3a9)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_m01_climate.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m01_climate-cefaec61235baa9e)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+     Running tests/p6_m01_earth_mask.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m01_earth_mask-dc3df3ac0af656ec)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+     Running tests/p6_m01_maphex_pin_snapshot.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m01_maphex_pin_snapshot-ae0d5bd6be210534)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_m01_maphex_types.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m01_maphex_types-1021cb3ff90076f5)
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_m01_params_shape.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m01_params_shape-01e990505db509c8)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+     Running tests/p6_m01_prims.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m01_prims-01683dc828bf3a99)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+     Running tests/p6_m02_deposit_river.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m02_deposit_river-dfe708955b2da011)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+     Running tests/p6_m02_float_parse.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m02_float_parse-4f0a479c2413f6b0)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_m02_generator.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m02_generator-5beb81ca8f14a8c3)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_m02_new_game.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m02_new_game-3e5c0da8586edafb)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+     Running tests/p6_m02_quality.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m02_quality-83527acb32ea587d)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_m02_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m02_tables-3ad1550ccd0665cb)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_m03_centers.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m03_centers-3d992325fbdacccf)
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+     Running tests/p6_m03_earth.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m03_earth-2420902ca202b979)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_m03_edges.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m03_edges-fb7f1b99bbb28091)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_m03_jsmath.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m03_jsmath-31f31e2f77c3e373)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+     Running tests/p6_m03_masks.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m03_masks-3323dec6608045ec)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.63s
+     Running tests/p6_m03_strait.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m03_strait-458804bc2a21dd7d)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_m03_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m03_tables-7167f765bb930588)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_m04_border.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m04_border-1dee22e0a2ace928)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.97s
+     Running tests/p6_m04_classify.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m04_classify-99a20f9786a76aaa)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.65s
+     Running tests/p6_m04_reapply.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m04_reapply-ef57d18b034f09fe)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.73s
+     Running tests/p6_m04_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m04_tables-cd32b8ff2b6b49b5)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_m05a_cover.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m05a_cover-4211d7d0e3ebf2bf)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 16.38s
+     Running tests/p6_m05a_masses.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m05a_masses-c0767cf73f59f8ab)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 17.07s
+     Running tests/p6_m05a_relief.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m05a_relief-63592a69d523ae5e)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.87s
+     Running tests/p6_m05a_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m05a_tables-7e832c82223cfa07)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s
+     Running tests/p6_m05b_grow.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m05b_grow-67ee2c683cc9db29)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.66s
+     Running tests/p6_m05b_helpers.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m05b_helpers-c28d9752213987c3)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.36s
+     Running tests/p6_m05b_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m05b_tables-1b3399d267eda079)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+     Running tests/p6_m06a2_landsea.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06a2_landsea-c621e0fcee9f3b7c)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+     Running tests/p6_m06a3_climate.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06a3_climate-eedf038224e99fbb)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+     Running tests/p6_m06a4_chan.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06a4_chan-d94daebf18a319d1)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/p6_m06a4_jagged.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06a4_jagged-a95d60481a14afe0)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+     Running tests/p6_m06a4_landsea.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06a4_landsea-8fa2f4379c6809d9)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.94s
+     Running tests/p6_m06a4_trim.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06a4_trim-cd2b8f0ec12b83e7)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s
+     Running tests/p6_m06a5_landfrac.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06a5_landfrac-fdf01457bb179fe6)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s
+     Running tests/p6_m06a5_landfrac_edge.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06a5_landfrac_edge-02fd076a21853d68)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+     Running tests/p6_m06a6_pangea.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06a6_pangea-79a2245ddaf92be5)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.56s
+     Running tests/p6_m06a7_annular.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06a7_annular-b310e8bff6516fa3)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+     Running tests/p6_m06a8_landsea.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06a8_landsea-ca7f7e4f01118322)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.42s
+     Running tests/p6_m06a8_pomiary.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06a8_pomiary-889e6fdcf3d3518d)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+     Running tests/p6_m06a9_edge.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06a9_edge-2b9a93ad3b745e8a)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/p6_m06a9_landsea.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06a9_landsea-a50c351b2687154b)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.16s
+     Running tests/p6_m06a_landsea.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06a_landsea-97992483ba897179)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s
+     Running tests/p6_m06b1_boundary.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06b1_boundary-7233562e6261607b)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests/p6_m06b1_cap.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06b1_cap-5c926948b2fe9e85)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.59s
+     Running tests/p6_m06b1_coast.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06b1_coast-a3566f1c251c2205)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.46s
+     Running tests/p6_m06b1_ocean.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06b1_ocean-1a017d99c9334f48)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.38s
+     Running tests/p6_m06b1_overlay.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06b1_overlay-95a80fafd9f4ccff)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s
+     Running tests/p6_m06b1_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06b1_tables-673b20be6845a8b9)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_m06b2_enforce.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06b2_enforce-a2692313568398b6)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 17.65s
+     Running tests/p6_m06b2_finalize.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06b2_finalize-6ddc2836171738b1)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.63s
+     Running tests/p6_m06b2_specks.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06b2_specks-be3a4fee6aba7d68)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+     Running tests/p6_m06b2_tiny.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m06b2_tiny-bbd9425261272ae1)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.20s
+     Running tests/p6_m07a_cap.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m07a_cap-411a759d233f7fac)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.86s
+     Running tests/p6_m07a_grow.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m07a_grow-5bc04159f389601e)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.42s
+     Running tests/p6_m07a_rivers_a.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m07a_rivers_a-9aa058d3c5f66a78)
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.51s
+     Running tests/p6_m07a_rivers_a_caps.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m07a_rivers_a_caps-5918e6d73b448540)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.37s
+     Running tests/p6_m07a_walk.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m07a_walk-4ff0bafb03c8eb4d)
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.57s
+     Running tests/p6_m07b2_coast.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m07b2_coast-5ef9916a3326e6da)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.38s
+     Running tests/p6_m07b2_edges.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m07b2_edges-c1087a0b6ca65c43)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.61s
+     Running tests/p6_m07b2_q2r4.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m07b2_q2r4-4f7851ed8dac7100)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.92s
+     Running tests/p6_m07b3_q3.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m07b3_q3-f6c3b56a5660bc99)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.84s
+     Running tests/p6_m07b4_q4.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m07b4_q4-bf8968f68be48634)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 56.34s
+     Running tests/p6_m07b_turn.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m07b_turn-fbb796fe81d3213f)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.48s
+     Running tests/p6_m09_rivals.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m09_rivals-6db004eae2277cca)
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.06s
+     Running tests/p6_m09_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m09_tables-4d72228e22469c59)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_m10_masses.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m10_masses-48f5fc02b2f8a40a)
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.06s
+     Running tests/p6_m10_placement.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m10_placement-5c9e0462d1c7dae6)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.16s
+     Running tests/p6_m10_start_scoring.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m10_start_scoring-d01b2ce6e6ec78b8)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s
+     Running tests/p6_m10_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m10_tables-cbdd8a42b862bdd6)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_m10_v8sort.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m10_v8sort-3d2e02b11db31835)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+     Running tests/p6_m11_gates.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m11_gates-90504fa7db5c4c28)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.11s
+     Running tests/p6_m11_integration.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m11_integration-376e5c61a28c525f)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.10s
+     Running tests/p6_m11_layout.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m11_layout-d0a3a0048f57bc00)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.93s
+     Running tests/p6_m11_repair.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m11_repair-5776a408f1e9f7a1)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.66s
+     Running tests/p6_m11_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m11_tables-30c341557f1bed0f)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_m12_compute.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m12_compute-e92ffbec36f203c8)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 70.14s
+     Running tests/p6_m12_integration.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m12_integration-6e5b41bbc90bd4b4)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.66s
+     Running tests/p6_m12_spawn.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m12_spawn-f81d19a03133454f)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 39.58s
+     Running tests/p6_m12_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m12_tables-352959c2b1b7ad52)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.88s
+     Running tests/p6_m14_range.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m14_range-327d7156b2bde628)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+     Running tests/p6_m14_territory.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m14_territory-44ae40b8f66d3d4a)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+     Running tests/p6_m14_wonder.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m14_wonder-a33e9dede1af0f5a)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s
+     Running tests/p6_m14_work.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m14_work-7c8c644194e89c12)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
+     Running tests/p6_m15_roads.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m15_roads-76ea5490a55b633a)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+     Running tests/p6_m16_divergence.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m16_divergence-11dfa84833206cc1)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.93s
+     Running tests/p6_m16_doc.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m16_doc-ed1868ec15883c3c)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_m16_gallery.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m16_gallery-2d772a8577b0b74f)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+     Running tests/p6_m16_qualifier.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m16_qualifier-42566b999dc4e364)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.38s
+     Running tests/p6_m16_rules.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m16_rules-0ad398ace27a4ccd)
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.48s
+     Running tests/p6_m16_tables.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m16_tables-8f3c313ffd92883b)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_m17_rebuild.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m17_rebuild-dafbb33ef604234e)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+     Running tests/p6_m17_serialize.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m17_serialize-595a6c435cf9f7c2)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+     Running tests/p6_m17_validate.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_m17_validate-bf0c8036a94c7a84)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+     Running tests/p6_oblezenie_glod.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_oblezenie_glod-e50dd7b4e50c8427)
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_oblezenie_wejscie.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_oblezenie_wejscie-b874fd2aac16c64f)
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_oblezenie_wypad.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_oblezenie_wypad-4e312897e56db64e)
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_order_lane.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_order_lane-7f36cf8c09595163)
+test result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 8.91s
+     Running tests/p6_power_acc_wiring.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_power_acc_wiring-53438843252e5db5)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+     Running tests/p6_power_army.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_power_army-1a4202d606fcc4cb)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+     Running tests/p6_power_battle_acc.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_power_battle_acc-16155b877488ea1c)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests/p6_power_improvements.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_power_improvements-b768089c05a61701)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.43s
+     Running tests/p6_power_nan.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_power_nan-79a770a07fa0e937)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_power_nozeros.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_power_nozeros-6ace002f1fc9ea41)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_power_producers.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_power_producers-75db41aa3d106ee8)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_power_rest.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_power_rest-dd99b116fbcf7e63)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_power_sources.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_power_sources-d570982b770ef3fd)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.65s
+     Running tests/p6_r7k7b_zloze_sync.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_r7k7b_zloze_sync-5eaca2db73008db5)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/p6_r7k7c_owner_pools.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_r7k7c_owner_pools-f13d8580026b995f)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests/p6_ranged_damage_nan.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_ranged_damage_nan-9665d40be5c0dc56)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+     Running tests/p6_repin4_vectors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin4_vectors-34f9373b8d558ff9)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 23.40s
+     Running tests/p6_repin_a_costmult.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_a_costmult-71dd704612e096ed)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_repin_ai_drogi_qualifier.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_ai_drogi_qualifier-6e66eb0ab5cf1e35)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
+     Running tests/p6_repin_ai_founded_by.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_ai_founded_by-59fbc93b92f71b4f)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_repin_ai_home.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_ai_home-cb0b35cbbc082104)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+     Running tests/p6_repin_ai_nearest_plan.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_ai_nearest_plan-87932764bdb45bab)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_repin_ai_war_vectors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_ai_war_vectors-b10753436c0b888d)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_repin_ai_zakup_needs.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_ai_zakup_needs-76a848d203b36152)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/p6_repin_ai_zakup_purchase.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_ai_zakup_purchase-e00dd403389ae748)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/p6_repin_ai_zakup_rezerwa.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_ai_zakup_rezerwa-5599109647032f78)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_repin_armia_follow_auto_merge.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_armia_follow_auto_merge-2d63ca6d24e9039f)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+     Running tests/p6_repin_autoimpr_terrain.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_autoimpr_terrain-75b707c740ba1f56)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.92s
+     Running tests/p6_repin_b2_production.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_b2_production-12c09aedc1f7b9b1)
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s
+     Running tests/p6_repin_b3_route.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_b3_route-e39a7dd3b2efd857)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+     Running tests/p6_repin_b3_wealth.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_b3_wealth-819e7721d35fb549)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_repin_b_ration_era.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_b_ration_era-a46427609aea59ac)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/p6_repin_b_recompute_era.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_b_recompute_era-5e6e7c84a9c60272)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+     Running tests/p6_repin_c_construction.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_c_construction-001bb221cd7c1e24)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_repin_d2_full.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_d2_full-978031cd3d2d91e2)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.07s
+     Running tests/p6_repin_d2_head.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_d2_head-9ce86f327127d05f)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+     Running tests/p6_repin_d2_imp.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_d2_imp-5d8cbcc03d971611)
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.46s
+     Running tests/p6_repin_d2_tail.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_d2_tail-71bfac834826cd19)
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+     Running tests/p6_repin_d_economy_mnoznik.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_d_economy_mnoznik-f87f76484393c9ee)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+     Running tests/p6_repin_d_work_tax.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_d_work_tax-5fe8932dbbb79b80)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+     Running tests/p6_repin_d_work_tax_edge.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_d_work_tax_edge-0d17cb25aafe0ed0)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+     Running tests/p6_repin_dyplomacja_dane2_sojusz_nap_ekspansja.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_dyplomacja_dane2_sojusz_nap_ekspansja-3ca800dfdac7b2e8)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_repin_dyplomacja_dane_sojusz_era.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_dyplomacja_dane_sojusz_era-370490477f88cbe4)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_repin_dystans_fieldpower.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_dystans_fieldpower-b82024c5617166e9)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_repin_dystans_formulas.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_dystans_formulas-414d07dbf3b50f54)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/p6_repin_dystans_petla.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_dystans_petla-addfe153ff3be581)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+     Running tests/p6_repin_ekon_f_converters.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_ekon_f_converters-b7d15e921b346081)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_repin_ekon_f_m_era.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_ekon_f_m_era-2156748cf052a4bf)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_repin_ekon_f_popcap.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_ekon_f_popcap-634f7f12591ab9b4)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_repin_ekon_f_storage.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_ekon_f_storage-bbe6edcde5700ea8)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_repin_ekon_f_zelazo_mlyn.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_ekon_f_zelazo_mlyn-9a5740d6a5eb80c9)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_repin_ekonomia_ceramika_data.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_ekonomia_ceramika_data-bb6821f593b305c5)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_repin_ekonomia_ceramika_web.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_ekonomia_ceramika_web-4b93a19e32070dcc)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/p6_repin_ekonomia_e_citizen.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_ekonomia_e_citizen-23d33478c039d5c3)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s
+     Running tests/p6_repin_ekonomia_e_spichlerz.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_ekonomia_e_spichlerz-f0e3f527a8851cad)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.62s
+     Running tests/p6_repin_ekonomia_e_terrain_rates.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_ekonomia_e_terrain_rates-44db0929dee2e9ba)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_repin_ekonomii_era.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_ekonomii_era-b1e594a6445039c8)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests/p6_repin_oblezenie_cooldown.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_oblezenie_cooldown-e5e166e15f087185)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_repin_oblezenie_limit_cap.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_oblezenie_limit_cap-d84063e1714a0274)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_repin_oblezenie_limit_lock.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_oblezenie_limit_lock-7ae396323f1b2ed5)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_repin_oblezenie_limit_web.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_oblezenie_limit_web-31a0486c68f021fb)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_repin_oblezenie_maszyny_web_parity.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_oblezenie_maszyny_web_parity-102b043a8f7145ec)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_repin_oblezenie_obrona.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_oblezenie_obrona-bbd59b703adec1da)
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_repin_rozejm_koniec.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_rozejm_koniec-165bf458e58e3576)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_repin_rozejm_silnik.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_rozejm_silnik-f45712ac29ec4824)
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_repin_rozejm_wektory_web.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_rozejm_wektory_web-d008e8279043f6a9)
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_repin_teren_domain.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_teren_domain-f70e550619d0973a)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.92s
+     Running tests/p6_repin_unit_replace_data.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_unit_replace_data-3063954c2a198e29)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/p6_repin_unit_replace_execute.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_unit_replace_execute-e649d56acf78dad9)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_repin_unit_replace_pure.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_unit_replace_pure-bebbfd1155878465)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_repin_wojna_2_battle_mode.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_wojna_2_battle_mode-28d7516dfc6f8f4e)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_repin_wojna_2_generals.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_wojna_2_generals-de5192202b6a9605)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+     Running tests/p6_repin_wojna_2_r3_battle_mode.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_wojna_2_r3_battle_mode-f9b66944d0b53cdb)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_repin_wojna_2_r3_nearest_nan.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_wojna_2_r3_nearest_nan-6db513f11e5193fb)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/p6_repin_wojna_2_r3_planned_march.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_wojna_2_r3_planned_march-5f964ab2c77e0ae1)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+     Running tests/p6_repin_wojna_2_r4_save.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_wojna_2_r4_save-16338e047d3051ce)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+     Running tests/p6_repin_wojna_3_hook.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_wojna_3_hook-5884ee891901d730)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s
+     Running tests/p6_repin_wojna_a_formation.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_wojna_a_formation-568753a8f2a14b1b)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+     Running tests/p6_repin_wojna_a_leadership.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_wojna_a_leadership-186d17c6352797fc)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+     Running tests/p6_repin_wojna_a_promotion.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_wojna_a_promotion-32c4d0dbf2b1f0d9)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_repin_wojna_b_ai_general.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_wojna_b_ai_general-be777b47134660f0)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.67s
+     Running tests/p6_repin_wojna_b_army_consolidation.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_wojna_b_army_consolidation-83cb62691e52087d)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s
+     Running tests/p6_repin_wojna_c_move_range.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_wojna_c_move_range-f64820e3896990fe)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+     Running tests/p6_repin_wojna_c_war_brake.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_wojna_c_war_brake-b7a0b2c1fc58c4a6)
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.64s
+     Running tests/p6_repin_wojna_d_engage.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_wojna_d_engage-bea176aaf061c134)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_repin_wojna_d_nav.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_wojna_d_nav-ec365f8ddff3d451)
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/p6_repin_wojna_d_vectors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_repin_wojna_d_vectors-c1b29ea5e5eb892b)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.70s
+     Running tests/p6_siege_capital_plunder.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_capital_plunder-3fe5ae943f3316e4)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+     Running tests/p6_siege_capture_events.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_capture_events-d6a2730a16be9c29)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_siege_city_fortification.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_city_fortification-e82cb3d0eaba4c56)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/p6_siege_surrender.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_surrender-3ab3d460ca24d372)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+     Running tests/p6_siege_tactics_activate.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_activate-15fa02789ae3c0ea)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+     Running tests/p6_siege_tactics_approach.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_approach-c2523d2909dc5b04)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+     Running tests/p6_siege_tactics_approach_k1.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_approach_k1-30c68d5cec7e1142)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.66s
+     Running tests/p6_siege_tactics_autobatch.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_autobatch-ea193010217114a3)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.53s
+     Running tests/p6_siege_tactics_autophase.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_autophase-6a5132d1eb3ab59a)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.48s
+     Running tests/p6_siege_tactics_blow.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_blow-3ad00c6821c04d97)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+     Running tests/p6_siege_tactics_blow_env.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_blow_env-8d5fd0f621134ec5)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.00s
+     Running tests/p6_siege_tactics_blow_full.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_blow_full-56d44887097ae5a0)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+     Running tests/p6_siege_tactics_breach.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_breach-00baf670c940cac3)
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+     Running tests/p6_siege_tactics_class_adapters.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_class_adapters-2ce74fb3b1b66261)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 21.65s
+     Running tests/p6_siege_tactics_classify.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_classify-b25e4a608be4ab67)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_siege_tactics_end.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_end-8ac141735eed1085)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_siege_tactics_endcheck.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_endcheck-a93f324aa43e97a1)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+     Running tests/p6_siege_tactics_fastforward.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_fastforward-84000cd60a8777a5)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.38s
+     Running tests/p6_siege_tactics_inputs_pos.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_inputs_pos-098dcbf582a78efd)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/p6_siege_tactics_inputs_terrain.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_inputs_terrain-656b83f1c169d400)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.73s
+     Running tests/p6_siege_tactics_inputs_unit.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_inputs_unit-38dec49939ba57fe)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.22s
+     Running tests/p6_siege_tactics_inputs_wall.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_inputs_wall-c9b751b1e17dea58)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+     Running tests/p6_siege_tactics_loop.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_loop-c1a0d25186d9f9e6)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.02s
+     Running tests/p6_siege_tactics_loop_body.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_loop_body-de3a35a8cf51d696)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_siege_tactics_loop_body_pin.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_loop_body_pin-26e20361e8c0c749)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.63s
+     Running tests/p6_siege_tactics_loop_resume.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_loop_resume-0c1f02307ed72abf)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.80s
+     Running tests/p6_siege_tactics_roundcap.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_roundcap-54015285a3cd74c6)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/p6_siege_tactics_siege_tactics_clock.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_siege_tactics_clock-39b953c41e23a05e)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+     Running tests/p6_siege_tactics_siege_tactics_unit.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_siege_tactics_unit-f3bb42c541cf6438)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests/p6_siege_tactics_tower.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_tower-fea3684d10a26e59)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.68s
+     Running tests/p6_siege_tactics_turnseq.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_turnseq-e144f137e258d563)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+     Running tests/p6_siege_tactics_walk.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_tactics_walk-82d0b0f6c8957645)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.87s
+     Running tests/p6_siege_transfer.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_transfer-8ff784278c9d0072)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/p6_siege_transfer_effects.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_transfer_effects-625fc4b460be62fd)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+     Running tests/p6_siege_transfer_effects_q4.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_transfer_effects_q4-a6ffea8e24662acc)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_siege_transfer_prod.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_transfer_prod-a5b3f8ba6af06dbf)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_siege_transfer_q5.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_transfer_q5-c042ad4699403862)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_siege_wonder_watch.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_wonder_watch-6b7c5acd7f2aca07)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_siege_wonder_wrappers.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_wonder_wrappers-e9b74f934815e50a)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+     Running tests/p6_siege_wylom_tower.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_siege_wylom_tower-4a5cefad139a9162)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_stan_ulepszenia.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_stan_ulepszenia-e35d4a4e25685dbe)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+     Running tests/p6_stan_ulepszenia_border.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_stan_ulepszenia_border-45b13bdf17cb62c1)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+     Running tests/p6_stan_ulepszenia_territory.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_stan_ulepszenia_territory-73534ee3109b1ab5)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.09s
+     Running tests/p6_state_src.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_state_src-97b0352d3684dc80)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.64s
+     Running tests/p6_tickdiplo.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_tickdiplo-e8002b49f868c85a)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests/p6_tower_target.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_tower_target-fd01a4b1a376f09f)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_tower_target_wiring.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_tower_target_wiring-aa0ecee238fd9ecf)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_trade_pin.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_trade_pin-a3e3295568cb9515)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.57s
+     Running tests/p6_turn_econ_res_pipeline.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_turn_econ_res_pipeline-679276130a1c437b)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.80s
+     Running tests/p6_unit_power_maxnan.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_unit_power_maxnan-d5c6540f90fe6f57)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_unit_replace_cost.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_unit_replace_cost-3f9b7da04b7515c6)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.62s
+     Running tests/p6_unit_replace_defs.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_unit_replace_defs-12b809e7de030f6a)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_unit_replace_l2.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_unit_replace_l2-fadcda49e22b419d)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_unit_replace_l3.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_unit_replace_l3-8ece3aa317d2ff28)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/p6_unit_replace_l3_state.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_unit_replace_l3_state-193111b0a8e65607)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+     Running tests/p6_unit_replace_progress.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_unit_replace_progress-7547d625d5221bc2)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+     Running tests/p6_victory.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_victory-b06ef30689fc52be)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_victory_wiring.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_victory_wiring-0e3a4b1bc3b0dd51)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+     Running tests/p6_w6s_cooldown.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_w6s_cooldown-8ab4b6a7b71173bd)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_w6s_locks.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_w6s_locks-2fcf4ab0a7f45574)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+     Running tests/p6_w6s_peace.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_w6s_peace-de77b791e661f9ba)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+     Running tests/p6_w6s_siege.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_w6s_siege-a93b267d523b12b2)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_wieze_2b1.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_wieze_2b1-06e376a81857655b)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_wieze_2b2.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_wieze_2b2-210d092559c36bf6)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.80s
+     Running tests/p6_wire_war_declare.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_wire_war_declare-dd46a7ce768777cc)
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_wire_war_declare_peace.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_wire_war_declare_peace-6a596dc19d6d2c11)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_wire_war_dipl_steps.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_wire_war_dipl_steps-90dad817491da590)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_wire_war_diplo.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_wire_war_diplo-60a81af5a5763a8d)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_wire_war_epoch.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_wire_war_epoch-2b74a8def25fdb3a)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+     Running tests/p6_wire_war_forced_step.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_wire_war_forced_step-2849a35bdf516973)
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_wire_war_inputs.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_wire_war_inputs-a6613ff7f3e76f7f)
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+     Running tests/p6_wire_war_march_adapter.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_wire_war_march_adapter-e3399fd7dc532d88)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/p6_wire_war_march_core.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_wire_war_march_core-20c5a83b86d8a05d)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/p6_wire_war_march_vectors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_wire_war_march_vectors-2660316acee38b2a)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+     Running tests/p6_wire_war_pipeline.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_wire_war_pipeline-c4e7520f8c41c223)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+     Running tests/p6_wire_war_pop.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_wire_war_pop-a9305018fa0f6565)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+     Running tests/p6_wire_war_siege_aiai.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_wire_war_siege_aiai-2f1c9ea76b2f7038)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.41s
+     Running tests/p6_wire_war_siege_aiai_peace.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_wire_war_siege_aiai_peace-c26fae3341690589)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+     Running tests/p6_wire_war_siege_aiai_seq.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_wire_war_siege_aiai_seq-ceac3b550fc45eb2)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_wire_war_state.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_wire_war_state-9bbf420448b475d6)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_wire_war_state_owner.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_wire_war_state_owner-d4ea33d117ce2fcc)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_wire_war_state_snapshot.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_wire_war_state_snapshot-19db24039a8de964)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_wire_war_stores.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_wire_war_stores-bc8aa6b7686f7796)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+     Running tests/p6_wire_war_view.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_wire_war_view-59319e30327ba1fa)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_zapis_era_zapisu.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_zapis_era_zapisu-eeeb1ba91255400b)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_zapis_erawar_counts.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_zapis_erawar_counts-1e954f95c7768537)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_zapis_erawar_save.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_zapis_erawar_save-864a4ce4871d321b)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_zapis_loader_migrate.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_zapis_loader_migrate-b7dd46075a7ba2a1)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_zapis_migracje_generals_vectors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_zapis_migracje_generals_vectors-d49546c23e770990)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_zapis_migracje_meta_flags.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_zapis_migracje_meta_flags-218005bda1b36fc0)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_zapis_migracje_planned_dedupe.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_zapis_migracje_planned_dedupe-79da2973f95adcf1)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_zapis_migracje_snapshot_flags.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_zapis_migracje_snapshot_flags-40f20892312b7bc4)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_zapis_migracje_snapshot_load.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_zapis_migracje_snapshot_load-ed9209ec9ef2c0fc)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests/p6_zapis_migracje_stack_vectors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_zapis_migracje_stack_vectors-641c71ed775b4fff)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/p6_zapis_replay_migrate.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_zapis_replay_migrate-3057356513e18fbe)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/p6_zloza_basket.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_zloza_basket-bc5c3c74c64fb076)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+     Running tests/p6_zloze_break_war_a.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_zloze_break_war_a-d1aebf97fa7d0c98)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+     Running tests/p6_zloze_grants_state.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_zloze_grants_state-ce327d1f5f8cd5fe)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+     Running tests/p6_zloze_wire_expire_tribute.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/p6_zloze_wire_expire_tribute-7dbbc0d93a297326)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/parity_suite.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/parity_suite-cef4a3f00452b9dc)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/pathfinding.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/pathfinding-8dedbd98caaddeb6)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/playable_slice.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/playable_slice-ae7766521216608d)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+     Running tests/recruitment.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/recruitment-50ba94ebf0675f3b)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/replay.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/replay-15bca8157eee26e4)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/resource_production.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/resource_production-e7036be854732e48)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/rng.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/rng-b7d748627850243d)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/road_movement_multipliers.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/road_movement_multipliers-3c9f2fe602c47f63)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/save_load.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/save_load-4a0fcd05766600d7)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/smoke.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/smoke-97039972057d3bd9)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/state_dto.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/state_dto-a2912ca60a3a841b)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/steam_adapter.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/steam_adapter-7b093849acafdb56)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/structure_defense_max.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/structure_defense_max-f3cff3abf5dad579)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/terrain_movement_fix.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/terrain_movement_fix-a487310021940491)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/trade.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/trade-8c58b2bf199a3245)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/turn_economy.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/turn_economy-3c626326d4581736)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/unit_epoch.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/unit_epoch-fc7dee71f112eb0f)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/view_city_pin_vectors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/view_city_pin_vectors-82a2dbb518a99aad)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running benches/engine_modules.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/rjq3r1/tgt-rjq3r1/debug/deps/engine_modules-15d84af3abd3a47b)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.06s
+TEST_EXIT=0
