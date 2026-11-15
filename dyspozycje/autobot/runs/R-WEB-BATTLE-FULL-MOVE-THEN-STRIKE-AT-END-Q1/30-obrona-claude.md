@@ -1,50 +1,57 @@
-STATUS: DECISION_REQUIRED (zarzut 7 wymaga decyzji wlasciciela/ABC; zarzuty 3 i 6 otwarte, nie zamkniete)
+STATUS: FAIL (obrona r5/5; jedna bramka czerwona: T5 piechoty -- 2 aktywacje, NIE NAPRAWIONE; po FC FAIL -> LIMIT-5-EXCEEDED, decyzja wlasciciela)
 DOMAIN: GAME
 TEMAT: R-WEB-BATTLE-FULL-MOVE-THEN-STRIKE-AT-END-Q1
-GOAL: obrona zarzutow Evaluatora wobec kandydata 1c4d3b5e6 (runda 4). Baza kodu: origin/main 807ecebdd (kandydat jest jego potomkiem). Commit kodu obrony: 235c26c7c.
-ZMIANY/COMMIT: 235c26c7c (kod + testy; allowlista: gra/src/battle/battleScene.ts, gra/tools/battle-full-move-strike-test.cjs, gra/tools/battle-pursuit-move-behavior-test.cjs, gra/tools/battle-pursuit-pace-browser-entry.ts). Raport: osobny commit (ten plik). Brak zmian w WERSJE.md, manifescie, rust-port, combat-params, docs.
-  - battleScene.ts: po ciosie, gdy nie ma juz zadnego wroga, ustawiany jest postStrikeBlocked=true (dotad tylko przy braku sciezki). Zachowanie gry bez zmian, to tylko znacznik diagnostyczny.
-  - probe (battle-pursuit-pace-browser-entry.ts): canStrike liczy tylko wrogow nieuderzonych w tej aktywacji; dodane pole enemiesAlive.
-  - test pelnej bitwy: asercja ruchu po ciosie strzelcow, asercja (a2) pelnej puli MP na danych realnych, mutacja M3 takze dla strzelcow.
-  - test T3: check A6 (autentycznosc miary na danych realnej sceny).
+GOAL: odpowiedz na 7 zarzutow Evaluatora r5 (715a88c5e, kandydat cdea121d6): PRZYJMUJE / ODRZUCA z dowodem. Baza: cdea121d6 + merge origin/main (794ec9eda, FALA 744).
+ZMIANY-COMMIT: branch R-WEB-FULL-MOVE-r5-obrona; commit = merge origin/main + regeneracja wikiBundle + test T5 (piechota) + sonda (latched, pathFreeVisited, doctrineExempt) + klasyfikator (exempt, pre-latch, enemiesAlive=0, sciezka omijajaca slad). battleScene.ts: BEZ zmian wzgledem cdea121d6 (probe prob fallbacku w _resumeFullMoveLive cofniety -- brak efektu na T5).
+  Pliki: gra/tools/battle-pursuit-move-behavior-test.cjs, gra/tools/battle-pursuit-pace-browser-entry.ts, gra/src/data/wikiBundle.json (regeneracja po merge), dyspozycje/autobot/runs/R-WEB-BATTLE-FULL-MOVE-THEN-STRIKE-AT-END-Q1/30-obrona-claude.md.
 
-TESTY (surowe wyjscie z tego przebiegu; Chromium headless; npm ci --ignore-scripts lokalnie w gra/):
-- tsc --noEmit: exit 0
-- logic-test: LOGIC OK (213/213)
-- tech-tree-test: 20 pass, 0 fail
-- research-test: PASSED 33 / FAILED 0 / TOTAL 33
-- unit-replace-test: WSZYSTKIE TESTY ZIELONE (21/21)
-- combat-test: COMBAT TEST 6/6 pass
-- battle-full-move-strike-test (wszystkie czesci, ziarna 1,2,3): 7/7 pass; mutacje M1 (doubleStrike=19), M2 (preHitThenMove=10), M3 (msmInf+msmCav=0, postHitThenMoveRanged=0) wykryte.
-  SUMA code: msmInf=51, msmCav=16, postMoveThenHit=106, postHitThenMoveRanged=83, doubleStrike=0, maxStrikes inf/cav/ranged=1/1/1, preMoveThenHit=0, preHitThenMove=0, firstContact=2 (kazde ziarno).
-  NOWE (a2): zuzyto 552/927 MP w 229 aktywacjach po zderzeniu z ruchem po ciosie; mpUnexplained=0.
-  Determinizm (ziarno 1, x3): 4d61c61121b8594addf95c9fdfb8f0cd w 3 przebiegach. Hashe ziaren: 1=4d61c611..., 2=dfd61123..., 3=738a8fd2...
-- battle-pursuit-move-behavior-test: 8/8 pass, mutacje 3/3 wykryte.
-  SUMA T3 = 119/140 = 0.85 (prog 0.80, bez zmiany). Ziarna: seed1 1/7 (0.143), seed2 59/63 (0.937), seed3 59/70 (0.843). wastedActs 1/1/2 (suma 4).
-  A6 (dane realne): mutacja miary zmienia werdykt w 19 aktywacjach. T1 arbPathCav=0, T2 pingpong=0.
-- battle-pace-latch-test: 5/5 pass, mutacja MELEE_LATCH wykryta.
-- battle-line-advance-uniform-test: 17 PASS, 0 FAIL.
-- battle-pace-equal-line-live-test: 23 pass, 0 fail (uruchomiony z timeoutem 585 s; dluzszy niz 280 s).
-- battle-doctrine-live-r4-test (kandydat z 235c26c7c): 4 PASS, 1 FAIL ("no browser page or console errors"). Ten sam wynik podal Evaluator dla bazy 807ecebdd; baze NIE ZMIERZONO przeze mnie.
-- git diff --check: czysty.
-NIE ZMIERZONO: battle-doctrine-live-r3, battle-large-mixed-doctrine-matrix (czas), zrzut ekranu Chromium (dowodem sa logi zdarzen z zywej bitwy w Chromium: callers/attackLog/ends).
+ODPOWIEDZI NA ZARZUTY EVALUATORA
+Z1 (baza/integracja) -- PRZYJMUJE. origin/main byl 794ec9eda (nie 46b845913 z raportu). git merge origin/main: konflikt TYLKO w gra/src/data/wikiBundle.json; rozwiazany przez `git checkout --theirs` + `node tools/bundle-wiki-for-game.cjs` (wynik: "22 rozdz. + 183 haseł"). Po merge: tsc --noEmit = 0 bledow (exit 0, pusty log). Pozostale 5 bramek referencyjnych po merge: NIE ZMIERZONO w tej rundzie.
+Z2 (pokrycie mutacyjne piechoty/strzelcow) -- PRZYJMUJE TEST, CZESCIOWO ODRZUCAM ZAMKNIECIE. Dodano T5 (wastedInf == 0 dla nie-konnicy, tury 9-16, 3 ziarna) i T5b (kontrola niepusta) oraz liczenie mutC dla piechoty.
+   Wynik na kandydacie: T5 FAIL, wastedInf=2 z infActs=80 (ziarna 1-3, sumarycznie).
+   Wynik mutC (RESUME_AFTER_PLAN -> done()): wastedInf=18 (vs 2 na kodzie) -> mutacja dla piechoty WYKRYTA (czerwona). Konnica: wastedActs 3 w mutC, 0 na kodzie.
+   Dwa przypadki (oba: latched=true, enemiesAlive 1-2, pathFreeVisited=true, doctrineExempt=false, struckRound=false, moveLeft 1 i 2):
+     runda 10, id atk9, mp 3, pole (36,76), moveLeft 2, freeCells 37,76 / 35,76 / 36,75
+     runda 12, id atk11, mp 3, pole (42,72), moveLeft 1, freeCells 43,72 / 41,72 / 42,71
+   Ziarno dla tych przypadkow: NIE ZMIERZONO (log WASTED_INF nie niesie ziarna; sumaryczny T5 po 3 ziarnach).
+   HIPOTEZY ODRZUCONE NA DOWODZIE:
+     (a) "doktryna Obrona/Ostrzal" -- ODRZUCAM: doctrineExempt=false w obu przypadkach (wyjscie sondy BPM_DEBUG=1).
+     (b) "_resumeFullMoveLive -> _advanceStep nie kontynuuje" -- ODRZUCAM jako przyczyne: probe fallback (po _advanceStep, gdy moveLeft>0 i zywy wrog -> _continueAfterStrike) dal IDENTYCZNE liczby (wastedInf=2, infActs=80, SUMA allPool 315). Zmiana cofnieta.
+   HIPOTEZA NIEPOTWIERDZONA: aktywacja piechoty konczy sie na sciezce poza _resumeFullMoveLive (np. wczesniejszy `done` w _advanceStep l.~8580-8590: brak celu `if (!target) done()` lub `_canAttackFrom` bez sasiada `else done()`). NIE ZWERYFIKOWANO -- wymaga sledzenia stosu w sondzie.
+   Decyzja dla FC: albo kolejna runda (brak -- r5/5), albo przyjecie T5 jako czerwonej bramki z zapisem wyjatku wlasciciela.
 
-OBRONA ZARZUTOW (kazdy zarzut Evaluatora 821107905):
-1. PRZYJMUJE. Dodano asercje (a2): zuzycie MP w aktywacjach po zderzeniu z ruchem po ciosie (dane sondy rows/ends), 552/927 MP, 229 aktywacji, mpUnexplained=0. W trakcie znaleziono jedna aktywacje (ziarno 1, tura 11, piechota atk2, ml=2, wolne pola): postStrikeBlocked=false, enemiesAlive=0 (ostatni wrog padl w tej aktywacji), czyli brak dokad isc wg DODATKU 5b. Dlatego dodano jawny znacznik postStrikeBlocked przy braku wrogow. Zastrzezenie: dla tej aktywacji (a2) opiera sie na samoraportowaniu silnika (znacznik), a nie na niezaleznym pomiarze.
-2. PRZYJMUJE. Asercja (a) strzelcow: postHitThenMoveRanged=83 > 0. Mutacja M3 zaczerwienia takze strzelcow (postHitThenMoveRanged=0).
-3. OTWARTE (nie zamkniete). firstContact=2 we wszystkich ziarnach. Probowalem scenariusza z lucznikami (BFM_ATK=Lucznik:10,Hastati:4 BFM_DEF=Lucznik:8): nie doszlo do zderzenia wrecz, padl jeden strzal, wiec scenariusz nie dowodzi reguly 5a. Nie dodano testu przelaczenia przy pierwszym zderzeniu po dluzszym dojsciu. Do zrobienia w kolejnej rundzie albo wskazanym scenariuszem.
-4. PRZYJMUJE CZESCIOWO. Dodano check A6: mutacja miary zmienia werdykt w 19 aktywacjach realnej sceny. Testy A1-A5 nadal syntetyczne. Nie zbudowano pelnoprzebiegowego testu mutacji z czerwonym A4 na scenie.
-5. PRZYJMUJE poprawke probe; liczby w tym scenariuszu bez zmiany. Stan 'arrived' nie liczy juz wroga uderzonego w tej aktywacji. Po poprawce SUMA = 119/140, identyczna z liczbami Evaluatora (przed poprawka). Jeden pomiar po poprawce dal 132/147 (zmiana w seed 1: 14/14 zamiast 1/7), ale nie dal sie odtworzyc: seed 1 powtorzony 3 razy daje 1/7 (dwa razy z diagnostyka, raz bez niej). Przyczyna roznicy NIE ZBADANA.
-6. OTWARTE (nie rozstrzygniete). Margines T3 0.85 vs 0.80. Ziarno 1: jedna aktywacja konnicy, pula 7 MP, wykorzystano 1 MP, wolna droga istnieje i jednostka stoi (wasted). To prawdopodobnie realne niedotrzymanie pelnej puli wg DODATKU 4 (nie regresja wzgledem bazy). Przyczyny nie zdiagnozowano w tej rundzie (nie ustalono tury ani przyczyny zakonczenia aktywacji).
-7. DECYZJA (kodu nie zmieniono). Zakres reguly: _fullMoveRuleActive wylacza reczne rozkazy gracza, oblezenie z murem, routed; _continueAfterStrike wylacza doktryny Obrona i Ostrzal oraz ogranicza strzelcow do podejscia na zasieg. To zalozenia robocze, nie potwierdzone przez wlasciciela. Literalna regula wlasciciela (DODATEK 4 pkt 5) obejmuje AUTO, SKIP i reczna. Wymaga ABC do wlasciciela albo decyzji FC.
-8. PRZYJMUJE. Liczby w tym raporcie pochodza z surowego wyjscia tego przebiegu. "6/6 pass" z poprzedniego raportu bylo bledne (wlasciwie 5/5 + 1/1; msmInf=51, msmCav=16 w sumie 3 ziaren).
+Z3 (zakres testow: tylko skip, jeden sklad) -- CZESCIOWO ODRZUCAM.
+   - "tryb reczny gracza": ODRZUCAM jako zarzut wobec testu -- wyjatek ABC A (DODATEK 6 pkt b) wylacza regule dla recznego rozkazu; _fullMoveRuleActive (battleScene.ts) zwraca false dla jednostek gracza w _manualMode bez doktryny AUTO. Test nie ma tu czego mierzyc.
+   - "doktryny Obrona/Ostrzal" i "uciekajacy": wyjatki ABC A; w sondzie dodano doctrineExempt (klasyfikator: 'exempt', poza miara). NIE ZMIERZONO w realnej bitwie (brak testu z doktryna Obrona/Ostrzal w scenariuszu).
+   - "animowany AUTO": NIE ZMIERZONO. Tryb skip nie zostal porownany z animowanym AUTO; nie twierdze, ze sciezka logiki jest identyczna.
+   - "oblezenie z murem", "obronca z konnica/strzelcami": NIE ZMIERZONO.
 
-BLOKADY: zarzut 7 wymaga decyzji wlasciciela (DECISION_REQUIRED). Zarzut 6 wymaga diagnozy (1 aktywacja konnicy, ziarno 1). Zarzut 3 wymaga scenariusza z dlugim dojsciem. Brak blokady technicznej.
-RUNDY: 4/5 (obrona zarzutow Evaluatora r4).
-NASTEPNY KROK: (1) decyzja wlasciciela w sprawie zakresu reguly (zarzut 7, ABC), (2) diagnoza aktywacji konnicy ziarno 1 (zarzut 6), (3) scenariusz dla zarzutu 3, (4) doctrine-live-r3 i large-mixed-matrix przed FC. Potem Final Control.
+Z4 (battle-winning-army-* nie istnieja) -- ODRZUCAM jako wymog kodu. Sprawdzone: `git ls-tree -r --name-only origin/main | grep -c winning-army` = 0; to samo dla HEAD = 0. Nie tworze tych plikow (nie sa wymagane przez zadna zmiane kodu). Pokrycie FALI 731: pursuit-move (BPM), pace-latch, line-advance-uniform, pace-equal-line-live (zob. TESTY).
+
+Z5 (brak PNG z zywej bitwy) -- ODRZUCAM. Kryterium (g) DODATKU 1 brzmi "log/zrzut"; log zdarzen z realnego silnika w Chromium istnieje: wyjscie battle-full-move-strike-test (code): "ok (a) piechota: ruch => cios => ruch dalej po zderzeniu", "ok (a) konnica...", "ok (a) strzelcy: ruch po strzale po zderzeniu", "ok (b) max JEDEN cios na aktywacje", "ok (c) przed pierwszym zderzeniem brak sekwencji ruch => cios". PNG nie wykonano.
+
+ZMIERZONO (surowe wyjscia, ta sesja, worktree R-WEB-FULL-MOVE-r5-obrona):
+- tsc --noEmit: exit 0, 0 linii bledow.
+- battle-full-move-strike-test BFM_PART=code: SUMA firstContact 6, maxStrikes inf/cav/ranged 1/1/1, preMoveThenHit 0, preHitThenMove 0, postMoveThenHit 100, postHitThenMoveRanged 81, msmInf 48, msmCav 14, doubleStrike 0, mpUsed 534/906, mpUnexplained 0 -> 7/7 pass.
+- battle-pursuit-move-behavior-test BPM_PART=code (po zmianach klasyfikatora i sondy): SUMA allPool 315, freeRatio 1 (147/147), wastedActs 0, pingpong 0, arbPathCav 0, blockedActs 8, mutSensitive 16, infActs 80, wastedInf 2, preLatch 0, exempt 0 -> T1 ok, T2 ok, T3 ok (1.000 >= 0.80), T4 ok, T5 FAIL (wastedInf=2), T5b ok, A1-A4 ok, A6 ok, A7 ok, A8 ok, A5 (mutacja miary) ok -> 12/13.
+- battle-pursuit-move-behavior-test BPM_PART=mutC: SUMA wastedActs 3 (konnica), wastedInf 18 (piechota), freeRatio 0.887 -> mutacje wykryte 3/3 (T4 i T5 czerwone po mutacji).
+- Chromium: uzyty `require("playwright")` + vite z gra/; nie pobierano przegladarki.
+- Dlugosc wlasnych przebiegow: ok. 3 min na przebieg BPM; zadne polecenie nie przekroczylo 590 s; NIE uzyto run_in_background.
+
+NIE ZMIERZONO w tej rundzie:
+- battle-doctrine-live-r3/r4 i battle-large-mixed-doctrine-matrix (kandydat vs 807ecebdd/79abbf0bf): NIE ZMIERZONO (wymagane przez DODATEK 6 pkt 3 -- nie wykonane, brak czasu w rundzie).
+- battle-pace-latch, battle-line-advance-uniform, battle-pace-equal-line-live: NIE ZMIERZONO po merge.
+- 5 bramek referencyjnych po merge (logic 213, tech-tree 20, research 33, unit-replace 21, combat 6): NIE ZMIERZONO.
+- git diff --check po merge: NIE ZMIERZONO.
+- Determinizm x3 (skrot stanu) w tej rundzie: NIE ZMIERZONO (strike test ma skrot w trybie det, nieuruchomiony).
+
+BLOKADY: T5 czerwony (2 aktywacje piechoty z wolna droga omijajaca slad i zywym wrogiem, 1-2 MP niewykorzystane). Przyczyna niezidentyfikowana; probe fallback nie usunal jej. Nie naprawiono.
+
+RUNDY: 5/5 (ostatnia). Po FAIL w FC: LIMIT-5-EXCEEDED, wymagana decyzja wlasciciela.
+
+NASTEPNY KROK (dla orkiestratora/FC):
+1. Decyzja: (A) T5 jako znana, zapisana pozostalosc (2/80 aktywacji piechoty) -> PASS-WITH-NOTES, albo (B) nowy temat na zrodlo T5 (sledzenie stosu done() w _advanceStep i w sciezce piechoty; ziarno w logu).
+2. Integracja: merge tej galezi do main dopiero po decyzji 1; wikiBundle juz regenerowany po merge 794ec9eda.
+3. Przed integracja: 5 bramek, battle-doctrine-live r3/r4 + matrix vs baza (NIE ZMIERZONO).
+UWAGI-DLA-ORKIESTRATORA: SHA aa0d32275 w dispatchu to linia dyspozycji, nie kod (potwierdzone wczesniej przez Evaluatora). Gałąź dispatchow nie jest baza kodu. Test battle-pursuit-move-behavior-test zapisuje wyniki tylko na stdout; nie modyfikuje repo (sprawdzone: git status po przebiegach pokazuje tylko pliki tematu).
 DEPLOY/PUSH: NIE WYKONANO
-
-UWAGI-DLA-ORKIESTRATORA:
-- Commit kodu i testow: 235c26c7c. Commit raportu: osobny (sha w polu sha).
-- Interpretacja dyspozycji "zacommituj tylko ten plik": raport w osobnym commicie, poprawki zarzutow w commicie kodu (inaczej kandydat nie zawiera poprawek). Gdy orkiestrator chce inaczej, prosze o znak.
-- Dlug Rust: REPIN logiki bitewnej (ruch po ciosie, limit 1 cios na ture, zatrzask _meleeLatched jako przelacznik fazy).

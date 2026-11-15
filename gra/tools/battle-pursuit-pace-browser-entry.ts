@@ -81,6 +81,16 @@ function instrumentActed(ru: any, round: number): void {
           struckRound: ru.struckRound === round,
           postStrikeBlocked: !!ru.postStrikeBlocked, q: ru.q, r: ru.r,
           enemiesAlive: scene._enemiesOf(ru).filter((e: any) => !e.dead && !e.removed && e.bu.id !== undefined && !(api.attackLog || []).some((a: any) => a.round === round && a.id === ru.bu.id && a.target === e.bu.id)).length,
+          // r6 (zarzut 2 FC): stan zatrzasku wzwarcia w chwili konca aktywacji (regula pelnego ruchu dziala tylko PO zderzeniu wrecz)
+          latched: !!scene._meleeLatched,
+          // r6: wyjatki od reguly pelnego ruchu (DODATEK 6, decyzja ABC A): doktryny Obrona/Ostrzal i jednostka uciekajaca -- poza miara.
+          doctrineExempt: ['defensive', 'skirmish'].includes(scene._getEffectiveDoctrine(ru)) || !!ru.routed,
+          // r6: czy istnieje sciezka do wroga omijajaca pola juz odwiedzone w tej aktywacji (slad ruchu + pola wejscia), czyli
+          // czy "wolna droga" z classifyEnd jest realna dla reguly bez ping-ponga (DODATEK 1 pkt 5).
+          pathFreeVisited: (() => {
+            const trail = new Set<string>([`${ru.q},${ru.r}`, ...((ru.moveTrailRound === round && ru.moveTrail) ? [...ru.moveTrail] : [])]);
+            try { return scene._firstStepAlongPathToAttack(ru, (q: number, r: number) => !trail.has(`${q},${r}`)) !== null; } catch { return false; }
+          })(),
         });
       }
       val = v;

@@ -1,0 +1,287 @@
+{
+  "label": "base",
+  "n": 12,
+  "runs": {
+    "1024x640": {
+      "suppressVictory": true,
+      "playerUnits": 12,
+      "selectionMethod": "klik",
+      "overlay": {
+        "open": true,
+        "vw": 1024,
+        "vh": 640,
+        "innerText": "RZYMIANIE · ATAKUJĄCY — TY\nKamillus\nKamillus\n12 oddziałów\nMatrix:walka_atak_piechota\nMatrix:walka_pancerz_piechota\nBARBARZYŃCY · OBROŃCA\nHastati\n1 oddziałów\nTWOJE WOJSKA · 12\nHastati\nAtak 7\nHastati\nAtak 7\nHastati\nAtak 7\nHastati\nAtak 7\nHastati\nAtak 7\nHastati\nAtak 7\nHastati\nAtak 7\nHastati\nAtak 7\n+4 więcej…\nHASTATI · 1\nHastati\nAtak 7\nROZSTAWIENIE BITWY\nAtakujesz: plytkie_morze\nTeren: plytkie_morze\n·\nTura 1\nSzansa zwycięstwa: 92% Ty\n8% wróg · przewaga atakującego\nBez Wodza lub Generała możesz wejść na pole bitwy, ale walka rozegra się automatycznie bez indywidualnego sterowania.\nWYCOFAJ\nAUTO\nBITWA\nZAPISZ\nEnter = BITWA · Esc = Wycofaj · Zapisz dostępny przed bitwą",
+        "rawMatches": [
+          "Matrix:",
+          "walka_",
+          "atak_piechota",
+          "Matrix:",
+          "walka_",
+          "pancerz_piechota",
+          "plytkie_morze",
+          "plytkie_morze"
+        ],
+        "youShown": 8,
+        "youMore": "+4 więcej…",
+        "rosterRect": {
+          "top": 132,
+          "bottom": 454,
+          "left": 14,
+          "right": 182
+        },
+        "moreRect": {
+          "top": 434,
+          "bottom": 454,
+          "left": 14,
+          "right": 91
+        },
+        "cardsRect": {
+          "top": 161,
+          "bottom": 428,
+          "left": 14,
+          "right": 182
+        },
+        "deployRect": {
+          "top": 383,
+          "bottom": 622,
+          "left": 208,
+          "right": 816
+        },
+        "btnRects": [
+          {
+            "top": 549,
+            "bottom": 589,
+            "left": 271,
+            "right": 414
+          },
+          {
+            "top": 549,
+            "bottom": 589,
+            "left": 422,
+            "right": 528
+          },
+          {
+            "top": 549,
+            "bottom": 589,
+            "left": 536,
+            "right": 647
+          },
+          {
+            "top": 549,
+            "bottom": 589,
+            "left": 655,
+            "right": 753
+          }
+        ],
+        "cardsScrollable": true,
+        "rosterOverlapsDeploy": false,
+        "moreOverlapsDeploy": false,
+        "moreInViewport": true,
+        "btnsInViewport": true,
+        "docScroll": {
+          "scrollH": 640,
+          "clientH": 640,
+          "scrollW": 1024,
+          "clientW": 1024
+        },
+        "lastCardAfterScroll": {
+          "top": 383,
+          "bottom": 428,
+          "inViewport": true,
+          "inCards": true,
+          "count": 8
+        }
+      },
+      "pageErrors": []
+    },
+    "1280x800": {
+      "suppressVictory": true,
+      "playerUnits": 12,
+      "selectionMethod": "klik",
+      "overlay": {
+        "open": true,
+        "vw": 1280,
+        "vh": 800,
+        "innerText": "RZYMIANIE · ATAKUJĄCY — TY\nKamillus\nKamillus\n12 oddziałów\nMatrix:walka_atak_piechota\nMatrix:walka_pancerz_piechota\nBARBARZYŃCY · OBROŃCA\nHastati\n1 oddziałów\nTWOJE WOJSKA · 12\nHastati\nAtak 7\nHastati\nAtak 7\nHastati\nAtak 7\nHastati\nAtak 7\nHastati\nAtak 7\nHastati\nAtak 7\nHastati\nAtak 7\nHastati\nAtak 7\n+4 więcej…\nHASTATI · 1\nHastati\nAtak 7\nROZSTAWIENIE BITWY\nAtakujesz: plytkie_morze\nTeren: plytkie_morze\n·\nTura 1\nSzansa zwycięstwa: 92% Ty\n8% wróg · przewaga atakującego\nBez Wodza lub Generała możesz wejść na pole bitwy, ale walka rozegra się automatycznie bez indywidualnego sterowania.\nWYCOFAJ\nAUTO\nBITWA\nZAPISZ\nEnter = BITWA · Esc = Wycofaj · Zapisz dostępny przed bitwą",
+        "rawMatches": [
+          "Matrix:",
+          "walka_",
+          "atak_piechota",
+          "Matrix:",
+          "walka_",
+          "pancerz_piechota",
+          "plytkie_morze",
+          "plytkie_morze"
+        ],
+        "youShown": 8,
+        "youMore": "+4 więcej…",
+        "rosterRect": {
+          "top": 132,
+          "bottom": 614,
+          "left": 14,
+          "right": 206
+        },
+        "moreRect": {
+          "top": 562,
+          "bottom": 582,
+          "left": 14,
+          "right": 91
+        },
+        "cardsRect": {
+          "top": 161,
+          "bottom": 556,
+          "left": 14,
+          "right": 206
+        },
+        "deployRect": {
+          "top": 543,
+          "bottom": 782,
+          "left": 320,
+          "right": 960
+        },
+        "btnRects": [
+          {
+            "top": 709,
+            "bottom": 749,
+            "left": 399,
+            "right": 542
+          },
+          {
+            "top": 709,
+            "bottom": 749,
+            "left": 550,
+            "right": 656
+          },
+          {
+            "top": 709,
+            "bottom": 749,
+            "left": 664,
+            "right": 775
+          },
+          {
+            "top": 709,
+            "bottom": 749,
+            "left": 783,
+            "right": 881
+          }
+        ],
+        "cardsScrollable": false,
+        "rosterOverlapsDeploy": false,
+        "moreOverlapsDeploy": false,
+        "moreInViewport": true,
+        "btnsInViewport": true,
+        "docScroll": {
+          "scrollH": 800,
+          "clientH": 800,
+          "scrollW": 1280,
+          "clientW": 1280
+        },
+        "lastCardAfterScroll": {
+          "top": 511,
+          "bottom": 556,
+          "inViewport": true,
+          "inCards": true,
+          "count": 8
+        }
+      },
+      "pageErrors": []
+    },
+    "1920x1080": {
+      "suppressVictory": true,
+      "playerUnits": 12,
+      "selectionMethod": "klik",
+      "overlay": {
+        "open": true,
+        "vw": 1920,
+        "vh": 1080,
+        "innerText": "RZYMIANIE · ATAKUJĄCY — TY\nKamillus\nKamillus\n12 oddziałów\nMatrix:walka_atak_piechota\nMatrix:walka_pancerz_piechota\nBARBARZYŃCY · OBROŃCA\nHastati\n1 oddziałów\nTWOJE WOJSKA · 12\nHastati\nAtak 7\nHastati\nAtak 7\nHastati\nAtak 7\nHastati\nAtak 7\nHastati\nAtak 7\nHastati\nAtak 7\nHastati\nAtak 7\nHastati\nAtak 7\n+4 więcej…\nHASTATI · 1\nHastati\nAtak 7\nROZSTAWIENIE BITWY\nAtakujesz: plytkie_morze\nTeren: plytkie_morze\n·\nTura 1\nSzansa zwycięstwa: 92% Ty\n8% wróg · przewaga atakującego\nBez Wodza lub Generała możesz wejść na pole bitwy, ale walka rozegra się automatycznie bez indywidualnego sterowania.\nWYCOFAJ\nAUTO\nBITWA\nZAPISZ\nEnter = BITWA · Esc = Wycofaj · Zapisz dostępny przed bitwą",
+        "rawMatches": [
+          "Matrix:",
+          "walka_",
+          "atak_piechota",
+          "Matrix:",
+          "walka_",
+          "pancerz_piechota",
+          "plytkie_morze",
+          "plytkie_morze"
+        ],
+        "youShown": 8,
+        "youMore": "+4 więcej…",
+        "rosterRect": {
+          "top": 132,
+          "bottom": 894,
+          "left": 14,
+          "right": 220
+        },
+        "moreRect": {
+          "top": 562,
+          "bottom": 582,
+          "left": 14,
+          "right": 91
+        },
+        "cardsRect": {
+          "top": 161,
+          "bottom": 556,
+          "left": 14,
+          "right": 220
+        },
+        "deployRect": {
+          "top": 823,
+          "bottom": 1062,
+          "left": 640,
+          "right": 1280
+        },
+        "btnRects": [
+          {
+            "top": 989,
+            "bottom": 1029,
+            "left": 719,
+            "right": 862
+          },
+          {
+            "top": 989,
+            "bottom": 1029,
+            "left": 870,
+            "right": 976
+          },
+          {
+            "top": 989,
+            "bottom": 1029,
+            "left": 984,
+            "right": 1095
+          },
+          {
+            "top": 989,
+            "bottom": 1029,
+            "left": 1103,
+            "right": 1201
+          }
+        ],
+        "cardsScrollable": false,
+        "rosterOverlapsDeploy": false,
+        "moreOverlapsDeploy": false,
+        "moreInViewport": true,
+        "btnsInViewport": true,
+        "docScroll": {
+          "scrollH": 1080,
+          "clientH": 1080,
+          "scrollW": 1920,
+          "clientW": 1920
+        },
+        "lastCardAfterScroll": {
+          "top": 511,
+          "bottom": 556,
+          "inViewport": true,
+          "inCards": true,
+          "count": 8
+        }
+      },
+      "pageErrors": []
+    }
+  },
+  "failures": [
+    "1024x640: surowe ID w tekscie okna: [\"Matrix:\",\"walka_\",\"atak_piechota\",\"Matrix:\",\"walka_\",\"pancerz_piechota\",\"plytkie_morze\",\"plytkie_morze\"]",
+    "1280x800: surowe ID w tekscie okna: [\"Matrix:\",\"walka_\",\"atak_piechota\",\"Matrix:\",\"walka_\",\"pancerz_piechota\",\"plytkie_morze\",\"plytkie_morze\"]",
+    "1920x1080: surowe ID w tekscie okna: [\"Matrix:\",\"walka_\",\"atak_piechota\",\"Matrix:\",\"walka_\",\"pancerz_piechota\",\"plytkie_morze\",\"plytkie_morze\"]"
+  ]
+}
