@@ -24,8 +24,8 @@
     "zywnosc": { "pn_per_unit": 1, "jednostka": "once", "zrodlo": "pn_relacja: 1 PN = 1 żywność" },
     "surowiec_ilosc": {
       "jednostka": "once lub /t (sztuki wprost — R-DYP-PAKIET-USUN 2026-08-08, Maciej: bez pakietów)",
-      "zrodlo": "econ-params.handel_surowce — PN = sztuki × cena_PN/szt.",
-      "pn_per_szt": {
+      "zrodlo": "econ-params.handel_surowce — PN = bloki × cena_PN/blok (cena_* = PN za BLOK, nie za sztukę; blok wg epoki: Kamień 10, Brąz 50, Żelazo 100 szt. — krok_blok_*; złoto/węgiel: cena za szt. /5 i /10 w Brązie/Żelazie)",
+      "pn_per_blok": {
         "drewno": 1,
         "glina": 2,
         "kamien": 3,

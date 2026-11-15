@@ -86,6 +86,17 @@ eq(D.diplomacyPnSurowiecIlosc('drewno', 100), 1, 'domyslna epoka 3: 100 szt drew
 D.setDiplomacyTradeEra(1);
 eq(D.diplomacyPnSurowiecIlosc('drewno', 10), 1, 'powrot do epoki 1: 10 szt = 1 PN');
 
+// Mieszane epoki: epoka umowy = WYZSZA z epok dwoch stron (Braz + Kamien => blok Brazu).
+const ERA_UMOWY = (eraA, eraB) => Math.max(eraA, eraB);
+eq(D.diplomacyPnSurowiecIlosc('drewno', 50, ERA_UMOWY(2, 1)), 1, 'mieszane: Braz+Kamien => 50 szt = 1 PN');
+eq(D.diplomacyNormalizeSurowiecIlosc('drewno', 50, undefined, ERA_UMOWY(2, 1)), 50, 'mieszane: Braz+Kamien => krok 50');
+eq(D.diplomacyPnSurowiecIlosc('drewno', 50, 1), 5, 'kontrola: sama epoka Kamienia liczy 50 szt = 5 PN (rozjazd bez reguly wyzszej epoki)');
+
+// Determinizm: ten sam wejscie = ten sam wynik.
+for (let i = 0; i < 3; i++) {
+  eq(D.diplomacyPnSurowiecIlosc('zloto', 7, 3), D.diplomacyPnSurowiecIlosc('zloto', 7, 3), 'determinizm zloto Zelazo');
+}
+
 // Mutacja: blok 10 w Brazie nie moze dac 1 PN.
 ok(D.diplomacyPnSurowiecIlosc('drewno', 10, 2) !== 1, 'mutacja: blok 10 w Brazie odrzucony');
 
