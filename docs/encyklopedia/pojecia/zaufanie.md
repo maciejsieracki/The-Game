@@ -92,7 +92,7 @@ Start: **20** (każda para, niezależnie od poziomu trudności).
 
 Wiarygodność (reputacja dotrzymywania słowa, patrz hasło **Wiarygodność**) działa jak mnożnik tempa: przy dodatniej wiarygodności Zaufanie rośnie szybciej, a przy ujemnej spada szybciej. Dodatkowo co turę działa dryf około ±3 (wiarygodność × 0,03).
 
-### Zasady zatwierdzone, jeszcze niewdrożone
+### Zasady z decyzji właściciela 2026-11-13 (wdrożone)
 
 Zasady dotyczące Zaufania z decyzji właściciela 2026-11-13 są wdrożone: kara za sąsiedztwo −3/−4/−5 z wstrzymaniem w karencji, religia bez wpływu, ustawienie 10/20 po rozejmie i pokoju, a w wojnie Zaufanie wynosi 0. Wypowiedzenie wojny przy Zaufaniu poniżej 30 i zerowe Zaufanie przez kilka tur opisują hasła **Wypowiadanie wojny** i **Rozejm i pokój**; siła militarna, od której zależą te decyzje, jest opisana w sekcji **Siła militarna** haśła **Moc (Power) i jej podział na wojskowy i gospodarczy**.
 
@@ -154,6 +154,6 @@ Uwaga: wiersz `kod:` (−15 za dobrowolne zerwanie traktatu) nie ma klucza w `pa
 
 Runda 2 (orkiestrator, DECYZJA WŁAŚCICIELA 2026-11-13, wdrożona w kodzie w 478cefaed, FALA 679): kara za sąsiedztwo −3/−4/−5 (wcześniej −2/−3/−4) z wstrzymaniem w karencji po pokoju lub rozejmie (`main.ts`, `karaWspolnaGranicaDelta`); religia usunięta z wpływu na Zaufanie (wcześniej ±0,5 na turę, wiersze usunięte z tabel obecnych zmian); po rozejmie Zaufanie = 10, po pokoju = 20 (`main.ts`, `finalizePeaceTreatyBetween`, `rozejm_zaufanie_ustawienie` / `pokoj_zaufanie_ustawienie`). Kod: `diplomacy.ts` `sharedBorderPenaltyForEpochs` (linie 608–610), `computeTickZaufanieDelta`.
 
-Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Runda 2 (obrona Operatora, zarzuty 1–3): usunięto z opisu martwe źródła (handel +2, dar +6, aktywny pakt +1) i poprawiono zdanie o sumowaniu tierów; kod: `diplomacy.ts` case 'handel' i 'dar' (dZ = 0), `computeTickZaufanieDelta` (switch tieru: sojusz/nap). Sekcja „Zasady zatwierdzone, jeszcze niewdrożone” wynika z DECYZJI WŁAŚCICIELA 2026-11-13.
+Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Runda 2 (obrona Operatora, zarzuty 1–3): usunięto z opisu martwe źródła (handel +2, dar +6, aktywny pakt +1) i poprawiono zdanie o sumowaniu tierów; kod: `diplomacy.ts` case 'handel' i 'dar' (dZ = 0), `computeTickZaufanieDelta` (switch tieru: sojusz/nap). Sekcja „Zasady z decyzji właściciela 2026-11-13 (wdrożone)” wynika z DECYZJI WŁAŚCICIELA 2026-11-13.
 
 Rozbieżność do wyjaśnienia: dodatek podawał czas dobrej woli 5 tur, a `diplomacy.json` (`dobra_wola_tur`) ma 3. Hasło podaje 3 (wartość z kodu).

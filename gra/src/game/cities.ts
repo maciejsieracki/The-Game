@@ -14,8 +14,9 @@ import { freshWealthState, type WealthState } from './wealth';
 import { readCityFoodBuffer } from './economy-upkeep';
 import { sanitizeDisabledBuildings } from './building-toggle';
 import {
-  DEFAULT_POZIOM_RACJI,
+  DEFAULT_POZIOM_RACJI_LEGACY,
   ensureCityRationDefaults,
+  startowyPoziomRacjiDlaWlasciciela,
   WYZYWIENIE_MAX,
 } from './population-growth-v85';
 import type { SiegeMachinesState } from './siegeMachines';
@@ -401,24 +402,34 @@ export function sanitizeBudowaPriorytetTypow(
 }
 
 /**
- * Domyslny podzial Daniny netto nowego miasta — zgodny z econ-params.json
+ * Domyslny podzial Daniny netto nowego miasta i nowej gry gracza — zgodny z econ-params.json
  * (suwak_handel_*_domyslnie, wszystkie poziomy trudnosci).
  *
- * 20% Nauka / 60% Skarbiec / 20% Zamoznosc — decyzja Maciej 2026-07-25 (PYTANIE 74 = A),
- * podniesione z dawnych 20/70/10. Powod: 20% Zamoznosci to dokladnie prog utrzymania
- * poziomu Zamoznosci (20% pieniadza miasta przy poziomie 0), wiec poziom rusza z miejsca
- * bez recznej interwencji; w nowej siatce Szczescia przedzial 20-29% daje +1 pkt Szczescia
- * na normalnym i 0 na trudnym (zamiast 0 / -1 przy dawnych 10%).
+ * 60% Nauka / 30% Skarb / 10% Zamoznosc — decyzja wlasciciela 2026-11-14
+ * (R-WEB-SETTINGS-DEFAULT-TAX-SPLIT-30-60-10-Q1). Poprzednio 20/60/20 (decyzja 2026-07-25).
+ * Stary podzial NIE jest juz domyslnym podzialem gracza; AI korzysta z LEGACY ponizej.
  */
 export const DEFAULT_PODZIAL_HANDLU: Readonly<CityPodzialHandlu> = {
+  procentNauka:    60,
+  procentPieniadz: 30,
+  procentLuksus:   10,
+};
+
+/**
+ * Podzial sprzed 2026-11-14 (20% Nauka / 60% Skarb / 20% Zamoznosc). Uzywany WYLACZNIE tam,
+ * gdzie zachowanie AI i starych zapisow musi pozostac bez zmian: seed AI (aiSeedPodzialHandlu),
+ * fallback Zamoznosci dla miasta bez podzialu (society-breakdown) i migracja starych zapisow
+ * bez zapisanego podzialu imperium (migrateHandelSplitOnLoad). Nie uzywac jako domyslnego gracza.
+ */
+export const LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14: Readonly<CityPodzialHandlu> = {
   procentNauka:    20,
   procentPieniadz: 60,
   procentLuksus:   20,
 };
 
-/** Domyslny podzial Pracy — zgodny z buildEconParams (70% budynki). */
+/** Domyslny podzial Pracy — zgodny z buildEconParams (50% budynki / 50% pula). */
 export const DEFAULT_PODZIAL_PRACY: Readonly<CityPodzialPracy> = {
-  procentBudynki: 70,
+  procentBudynki: 50,
 };
 
 /**
@@ -548,7 +559,7 @@ export const DEFAULT_PROCENT_ROZWOJ = 100;
 
 /** Legacy procentRozwoj odpowiadający domyślnemu Wyżywieniu (poziomRacji ma pierwszeństwo w getCityRationLevel). */
 export const DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE = Math.round(
-  (DEFAULT_POZIOM_RACJI / WYZYWIENIE_MAX) * 100,
+  (DEFAULT_POZIOM_RACJI_LEGACY / WYZYWIENIE_MAX) * 100,
 );
 
 /** Suwak podziału handlu — tylko wielokrotności 10 (0, 10, …, 100). */
@@ -708,7 +719,7 @@ export function ensureCityPodzialDefaults(city: City): void {
   if (city.podzialHandluOverride && city.podzialHandlu) {
     city.podzialHandlu = normalizePodzialHandlu(city.podzialHandlu);
   } else if (city.podzialHandluOverride && !city.podzialHandlu) {
-    city.podzialHandlu = { ...DEFAULT_PODZIAL_HANDLU };
+    city.podzialHandlu = { ...LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14 };
   }
   if (!city.podzialPracy) {
     city.podzialPracy = { ...DEFAULT_PODZIAL_PRACY };
@@ -1375,7 +1386,7 @@ export function foundCity(
     okolicaFocusOverride: false,
     budowaFocusOverride: false,
     procentRozwoj: DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE,
-    poziomRacji: DEFAULT_POZIOM_RACJI,
+    poziomRacji: startowyPoziomRacjiDlaWlasciciela(settler.ownerId),
     poziomRacjiOverride: false,
     foundedByOwner: true,
     foundedBy: settler.ownerId,
@@ -1413,7 +1424,7 @@ export function foundCityAt(
     okolicaFocusOverride: false,
     budowaFocusOverride: false,
     procentRozwoj: DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE,
-    poziomRacji: DEFAULT_POZIOM_RACJI,
+    poziomRacji: startowyPoziomRacjiDlaWlasciciela(ownerId),
     poziomRacjiOverride: false,
     autoWyzywienie: true, // Włączone automatyczne wyżywienie dla nowo założonych miast / EN: enable auto-feeding for newly founded cities
     budowaTryb: 'zrownowazone', // Domyślna zrównoważona budowa dla nowych miast / EN: default balanced build mode for new cities

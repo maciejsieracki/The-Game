@@ -50,7 +50,12 @@ import {
   DEFAULT_BUDOWA_FOCUS,
   DEFAULT_BUDOWA_TRYB,
 } from './cities';
-import { DEFAULT_POZIOM_RACJI, type PoziomRacji } from './population-growth-v85';
+import {
+  DEFAULT_POZIOM_RACJI,
+  DEFAULT_POZIOM_RACJI_AI,
+  DEFAULT_POZIOM_RACJI_LEGACY,
+  type PoziomRacji,
+} from './population-growth-v85';
 
 // ---------------------------------------------------------------------------
 // 1. Podział Pracy (budynki / skarbiec) — resolver-przy-odczycie, wzorem Handlu.
@@ -531,24 +536,30 @@ export function migratePoziomRacjiOnLoad(
     // (heurystyka, wzorem migrateOkolicaFocusOnLoad wyżej).
     for (const city of cities) {
       if (!ownerDefaults.has(city.ownerId)) {
-        ownerDefaults.set(city.ownerId, city.poziomRacji ?? DEFAULT_POZIOM_RACJI);
+        ownerDefaults.set(city.ownerId, city.poziomRacji ?? DEFAULT_POZIOM_RACJI_LEGACY);
       }
     }
     // KAŻDE miasto różniące się od tak wyliczonego defaultu dostaje override=true
     // i ZACHOWUJE swoją starą wartość (zakaz cichego nadpisania, wzorem M7/M8).
     for (const city of cities) {
       if (city.poziomRacjiOverride !== undefined) continue;
-      const def = ownerDefaults.get(city.ownerId) ?? DEFAULT_POZIOM_RACJI;
+      const def = ownerDefaults.get(city.ownerId) ?? DEFAULT_POZIOM_RACJI_LEGACY;
       const differs = city.poziomRacji != null && city.poziomRacji !== def;
       city.poziomRacjiOverride = differs;
       if (!differs) city.poziomRacji = def;
     }
   }
   for (const city of cities) {
-    if (!ownerDefaults.has(city.ownerId)) ownerDefaults.set(city.ownerId, DEFAULT_POZIOM_RACJI);
+    if (!ownerDefaults.has(city.ownerId)) ownerDefaults.set(city.ownerId, DEFAULT_POZIOM_RACJI_LEGACY);
   }
 }
 
+/** Globalny domyślny poziom Racji nowego GRACZA (= 6). */
 export function freshOwnerDefaultPoziomRacji(): PoziomRacji {
   return DEFAULT_POZIOM_RACJI;
+}
+
+/** Globalny domyślny poziom Racji AI / miast-państw / barbarzyńców (= 4, bez zmian). */
+export function freshAiOwnerDefaultPoziomRacji(): PoziomRacji {
+  return DEFAULT_POZIOM_RACJI_AI;
 }

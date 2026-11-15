@@ -208,9 +208,15 @@ async function modeSim(scratch, evidence, seed, turns) {
       const ai = last.econ.filter(t => t.ownerId !== 0 && t.ownerId < 90);
       const aiCities = last.cityOwners.filter(c => c.ownerId !== 0 && c.ownerId < 90);
       const missing = Object.entries(last.upkeep).filter(([k]) => k !== '0').reduce((s, [, v]) => s + v.missing.length, 0);
+      // R-WEB-DATA-CITIZEN-CERAMICS-STONE-AGE-Q1 (pomiar kryterium d): ceramika obywateli per tura
+      const meMissing = (last.upkeep['0'] && last.upkeep['0'].missing) || [];
+      const aiOwnersCeramMissing = Object.entries(last.upkeep).filter(([k, v]) => k !== '0' && (v.missing || []).includes('ceramika')).length;
+      const aiOwnersTotal = Object.keys(last.upkeep).filter(k => k !== '0').length;
       per.push({ turn: last.turn, aiTicks: ai.length, aiCities: aiCities.length, aiPop: aiCities.reduce((s, c) => s + c.pop, 0),
         aiFoodDeficit: ai.filter(t => (t.bilansLokalny ?? 0) < 0).length, aiMissingResources: missing,
-        aiErasMax: Math.max(...last.eras.map(e => e[1])), meEra: last.meEra });
+        aiErasMax: Math.max(...last.eras.map(e => e[1])), meEra: last.meEra,
+        meCeramMissing: meMissing.includes('ceramika'), meCeramStock: (await page.evaluate(() => window.__ccMeas.stock(0))).ceramika || 0,
+        aiOwnersCeramMissing, aiOwnersTotal });
     }
   } finally { await browser.close(); }
   const sum = (f) => per.reduce((s, r) => s + f(r), 0);
@@ -218,6 +224,9 @@ async function modeSim(scratch, evidence, seed, turns) {
     aiCityTurnsInFoodDeficit: sum(r => r.aiFoodDeficit), aiCityTurns: sum(r => r.aiTicks),
     aiMissingResourceTurns: sum(r => r.aiMissingResources), aiPopFinal: per[per.length - 1].aiPop, aiCitiesFinal: per[per.length - 1].aiCities,
     aiPopMax: Math.max(...per.map(r => r.aiPop)), aiErasMaxFinal: per[per.length - 1].aiErasMax,
+    meCeramMissingTurns: sum(r => (r.meCeramMissing ? 1 : 0)),
+    meFirstTurnWithCeramika: (per.find(r => r.meCeramMissing === false) || {}).turn ?? null,
+    aiOwnerCeramMissingTurns: sum(r => r.aiOwnersCeramMissing), aiOwnerTurns: sum(r => r.aiOwnersTotal),
   }, per, errors: errors.slice(0, 5) };
   const file = path.join(evidence, `sim-seed${seed}.json`);
   fs.writeFileSync(file, JSON.stringify(result, null, 1));

@@ -32,8 +32,8 @@ for (const d of ['easy', 'normal', 'hard']) eq(M.loadThroughput(econ, 'budynek_c
 eq(rec('cegielnia').throughputFallback, 50, 'fallback 50');
 eq(JSON.stringify(rec('cegielnia').inputs), JSON.stringify({ glina: 2, drewno: 1 }), 'receptura wejsc bez zmian');
 eq(rec('cegielnia').outputAmount, 2, 'outputAmount 2 (x2 cegly)');
-eq(rec('garncarnia').throughputFallback, 50, 'garncarnia baza bez zmian (50)');
-eq(M.loadThroughput(econ, 'budynek_garncarnia_przepustowosc', 'normal', -1), 50, 'garncarnia econ bez zmian');
+eq(rec('garncarnia').throughputFallback, 30, 'garncarnia baza 30 (R-WEB-DATA-GARNCARNIA-THROUGHPUT-30-PLUS-20-PER-ERA-Q1)');
+eq(M.loadThroughput(econ, 'budynek_garncarnia_przepustowosc', 'normal', -1), 30, 'garncarnia econ 30');
 
 console.log('-- B. wzor epoki: mnoznik WYJSCIA 1/1,5/2/2,5/3 tylko Cegielnia, cykle plaskie --');
 const mult = [1, 1.5, 2, 2.5, 3];
@@ -41,7 +41,7 @@ for (let e = 1; e <= 5; e++) {
   eq(M.converterThroughputForEra('cegielnia', 50, e), 50, `cegielnia era${e} cykle plaskie`);
   eq(M.converterOutputMultiplierForEra('cegielnia', e), mult[e - 1], `cegielnia era${e} mnoznik wyjscia`);
   eq(M.converterOutputMultiplierForEra('garncarnia', e), 1, `garncarnia era${e} bez mnoznika wyjscia`);
-  eq(M.converterThroughputForEra('garncarnia', 50, e), 50 * (1 + 0.1 * (e - 1)), `garncarnia era${e} nadal +10% cykli`);
+  eq(M.loadThroughput(econ, e === 1 ? 'budynek_garncarnia_przepustowosc' : 'budynek_garncarnia_epoka' + e + '_przepustowosc', 'normal', -1), [30, 50, 70, 90, 110][e - 1], `garncarnia era${e} = 30/50/70/90/110 (wiersz per era)`);
   eq(M.converterThroughputForEra('huta', 25, e), 25, `huta plaska era${e}`);
   eq(M.converterOutputMultiplierForEra('odlewnia_zelaza__zelazo', e), 1, `odlewnia zelaza bez mnoznika era${e}`);
 }

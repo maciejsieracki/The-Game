@@ -147,9 +147,9 @@ async function screenshot(page, name) {
 }
 
 // Resource keys that appear in building costs, upkeep and converter recipes (fixtures from
-// citypanel-konwerter-produkcja-test era 1: Garncarnia, Odlewnia brazu).
+// citypanel-konwerter-produkcja-test era 1: Garncarnia 30 (R-WEB-DATA-GARNCARNIA-THROUGHPUT-30-PLUS-20-PER-ERA-Q1), Odlewnia brazu).
 const CONVERTER_FIXTURES = {
-  garncarnia: { consumed: { glina: 50, drewno: 50 }, produced: { ceramika: 50 } },
+  garncarnia: { consumed: { glina: 30, drewno: 30 }, produced: { ceramika: 30 } },
   odlewnia_brazu: { consumed: { ruda: 50, drewno: 50, ruda_cyny: 5 }, produced: { braz: 50 } },
 };
 const ROW_FIXTURE_IDS = ['garncarnia', 'cegielnia', 'odlewnia_brazu', 'port', 'spichlerz_ii', 'spichlerz'];

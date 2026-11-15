@@ -115,14 +115,14 @@ console.log('-- 1. SIATKA KONTRAKTU: ustawienie X% ulepszeń → X% Pracy, suma 
 
 console.log('\n-- 2. REGRES ZE ZGŁOSZENIA: domyślne ustawienia NIE dają już 0% na ulepszenia --');
 {
-  // Zmierzone przed zmianą (dispatch): 10 Pracy, domyślne 70% budynki / 33% ulepszenia
-  // (drugi suwak) → do ulepszeń trafiało DOKŁADNIE 0. Po przebudowie ta sama Praca przy
-  // domyślnym podziale ma dać nominalne 30%.
+  // R-WEB-SETTINGS-DEFAULT-LABOR-SPLIT-50-50-Q1 (decyzja właściciela 2026-11-14): domyślny
+  // podział nowej gry = 50% budynki / 50% pula (dawniej 70/30). Regres „0 na ulepszenia"
+  // dalej zamknięty: przy 10 Pracy domyślny podział daje 5 na ulepszenia (nie 0).
   const domyslny = M.DEFAULT_PODZIAL_PRACY.procentBudynki;
-  eq(domyslny, 70, 'domyślny podział to nadal 70% budynki');
+  eq(domyslny, 50, 'domyślny podział to 50% budynki (R-WEB-SETTINGS-DEFAULT-LABOR-SPLIT-50-50-Q1)');
   const r = M.splitPraca(10, domyslny / 100);
-  eq(r.doPuli, 3, '10 Pracy, ustawienia domyślne → 3 na ulepszenia (było 0 — regres zamknięty)');
-  eq(r.doBudynkow, 7, '10 Pracy, ustawienia domyślne → 7 na budynki');
+  eq(r.doPuli, 5, '10 Pracy, ustawienia domyślne → 5 na ulepszenia (było 0 — regres zamknięty)');
+  eq(r.doBudynkow, 5, '10 Pracy, ustawienia domyślne → 5 na budynki');
   // Maksymalne suwaki: obiecane 50% ma być realne 50%, nie ~20%.
   const maks = M.splitPraca(10, M.MIN_PODZIAL_PRACY_BUDYNKI_PERCENT / 100);
   eq(maks.doPuli, 5, '10 Pracy, suwak na maksimum → 5 na ulepszenia (było 2 = 20%)');

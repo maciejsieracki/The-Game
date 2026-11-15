@@ -77,7 +77,7 @@ function ok(c, m) {
 {
   // Targowisko (Rynek) wyjęte z tej listy: R-WEB-DATA-TARGOWISKO-REMOVE-STONE-COST-Q1 (2026-11-09)
   // -- koszt wyłącznie drewno 30 (jak przed FALA 573). Studnia i Kamienne kręgi zostają z kamieniem.
-  const DREWNO_KAMIEN = { kamieniarski: 30, stela: 30, kamienne_kregi: 40, studnia: 25 };
+  const DREWNO_KAMIEN = { kamieniarski: 30, stela: 30, kamienne_kregi: 40, studnia: 25, mury_kamienne: 80 };
   const epoch1 = buildings.filter(b => b.epokaWejscia === 1);
   ok(epoch1.length > 0, 'sanity: sa budynki epoki Kamienia');
   for (const b of epoch1) {

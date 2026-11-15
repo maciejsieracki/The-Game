@@ -30,6 +30,7 @@ import { collectAtkRosterNearCity } from '../units/battleRoster';
 import type { BattleEventLog } from '../units/battleRoster';
 import { battleReserveNotice } from '../game/post-battle-map';
 import type { PreBattleInfo, PreBattleCallbacks, PreBattleOptions } from '../ui/preBattle';
+import type { WeakenedNote } from '../ui/battle-weakened-note';
 import type { BattleOpts, BattleResult, BattleUnit } from './battleScene';
 import type { CivBonusEntry } from '../game/civ-bonuses';
 import { setMood } from '../audio/muzyka-antyczna';
@@ -75,6 +76,8 @@ export interface MapFieldBattleLaunchDeps {
    * dowodcy MP wraca wtedy do ikony-symbolu kultury zamiast portretu-zdjecia glownej cyw.
    */
   isCityStateForOwner?: (ownerId: number) => boolean;
+  /** R-WEB-BATTLE-WEAKENED-HUNGER-DEFICIT-WARNING-Q1: kara głodu/deficytu strony (tylko okno preBattle). */
+  oslabienieForRoster?: (roster: RuntimeUnit[]) => WeakenedNote | undefined;
   lookupUnitDef: (typeId: string) => unknown;
   runtimeToBattleUnit: (u: RuntimeUnit, def: unknown, color: number) => BattleUnit;
   /** Auto-moc M: veteran + fortify (+50% Obr. gdy pole lub garnizon bez muru). */
@@ -321,6 +324,7 @@ export function planOpenCityFieldBattle(
     | 'eraForOwnerId'
     | 'civIdForOwner'
     | 'isCityStateForOwner'
+    | 'oslabienieForRoster'
     | 'getCompletedBuildingIds'
   >,
 ): OpenCityFieldBattlePlan | null {
@@ -361,28 +365,34 @@ export function planOpenCityFieldBattle(
   const defTitle = defenderSideTitle(city, defRoster);
 
   const preBattle: PreBattleInfo = {
-    atakujacy: preBattleSideFromRoster(
-      atkRoster,
-      atkTitle,
-      deps.civLabelForOwner(anchor.ownerId),
-      deps.unitDefFor,
-      deps.unitHealth,
-      deps.unitAtak,
-      deps.civIdForOwner,
-      deps.eraForOwnerId,
-      deps.isCityStateForOwner,
-    ),
-    obronca: preBattleSideFromRoster(
-      defRoster,
-      defTitle,
-      deps.civLabelForOwner(defLead.ownerId),
-      deps.unitDefFor,
-      deps.unitHealth,
-      deps.unitAtak,
-      deps.civIdForOwner,
-      deps.eraForOwnerId,
-      deps.isCityStateForOwner,
-    ),
+    atakujacy: {
+      ...preBattleSideFromRoster(
+        atkRoster,
+        atkTitle,
+        deps.civLabelForOwner(anchor.ownerId),
+        deps.unitDefFor,
+        deps.unitHealth,
+        deps.unitAtak,
+        deps.civIdForOwner,
+        deps.eraForOwnerId,
+        deps.isCityStateForOwner,
+      ),
+      oslabienie: deps.oslabienieForRoster?.(atkRoster),
+    },
+    obronca: {
+      ...preBattleSideFromRoster(
+        defRoster,
+        defTitle,
+        deps.civLabelForOwner(defLead.ownerId),
+        deps.unitDefFor,
+        deps.unitHealth,
+        deps.unitAtak,
+        deps.civIdForOwner,
+        deps.eraForOwnerId,
+        deps.isCityStateForOwner,
+      ),
+      oslabienie: deps.oslabienieForRoster?.(defRoster),
+    },
     teren: terrain,
     szanseAtkPct: szanse,
     miejsce: city.name,

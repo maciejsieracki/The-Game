@@ -54,13 +54,13 @@ function runOne(builtIds, cer, sol, params) {
 }
 
 // ---------------------------------------------------------------------------
-console.log('[1] golden 25/25/25 — stany po turze identyczne jak przed zmianą');
+console.log('[1] golden 25/25/25 (syntetyczne) — logika wypłaty bez zmian');
 {
-  const loaded = M.loadSpichlerzDrainParams(ECON, 'normal');
   const FB = M.SPICHLERZ_DRAIN_FALLBACK_PER_TURN;
   const fromFallback = { ceramikaI: FB, ceramikaII: FB, solII: FB };
-  for (const params of [fromFallback, P25, loaded]) {
-    const tag = params === fromFallback ? 'fallback-const' : (params === loaded ? 'JSON' : 'literal');
+  // Syntetyczne 25/25/25 (logika bez wartości z JSON; wartości realne 10/20/25 testuje sekcja [4]).
+  for (const params of [fromFallback, P25]) {
+    const tag = params === fromFallback ? 'fallback-const' : 'literal';
     let allOk = true;
     for (const cer of [24, 25, 26]) {
       for (const sol of [24, 25, 26]) {
@@ -116,14 +116,14 @@ console.log('[2] klucze JSON są czytane (każdy osobno, per trudność)');
 {
   for (const d of DIFFS) {
     const p = M.loadSpichlerzDrainParams(ECON, d);
-    ok(p.ceramikaI === 25 && p.ceramikaII === 25 && p.solII === 25,
-      `JSON ${d}: wartości realne 25/25/25 (bez zmiany danych)`);
+    ok(p.ceramikaI === 10 && p.ceramikaII === 20 && p.solII === 25,
+      `JSON ${d}: wartości realne 10/20/25 (R-WEB-DATA-SPICHLERZ-II-REMOVE-CERAMICS-UPKEEP-Q1)`);
   }
   const expected = { easy: 10, normal: 40, hard: 60 };
   for (const d of DIFFS) {
     const raw = withKey(withKey(withKey(clone(ECON), K_I, 'easy', 10), K_I, 'normal', 40), K_I, 'hard', 60);
     const p = M.loadSpichlerzDrainParams(raw, d);
-    ok(p.ceramikaI === expected[d] && p.ceramikaII === 25 && p.solII === 25,
+    ok(p.ceramikaI === expected[d] && p.ceramikaII === 20 && p.solII === 25,
       `klucz Spichlerz I (ceramika) ${d}=${expected[d]} czytany, II/sól bez zmian`);
     const r = runOne(['spichlerz'], 100, 0, p);
     ok(r.cer === 100 - expected[d], `Spichlerz I zużywa ${expected[d]} ceramiki (${d}): 100→${100 - expected[d]}`);
@@ -131,27 +131,46 @@ console.log('[2] klucze JSON są czytane (każdy osobno, per trudność)');
   for (const d of DIFFS) {
     const raw = withKey(withKey(withKey(clone(ECON), K_II, 'easy', 10), K_II, 'normal', 40), K_II, 'hard', 60);
     const p = M.loadSpichlerzDrainParams(raw, d);
-    ok(p.ceramikaII === expected[d] && p.ceramikaI === 25,
+    ok(p.ceramikaII === expected[d] && p.ceramikaI === 10,
       `klucz Spichlerz II (ceramika) ${d}=${expected[d]} czytany, I bez zmian`);
     const r = runOne(['spichlerz_ii'], 100, 100, p);
     ok(r.cer === 100 - expected[d] && r.sol === 100 - 25,
       `Spichlerz II zużywa ${expected[d]} ceramiki (${d}), sól nadal 25`);
     const rI = runOne(['spichlerz'], 100, 0, p);
-    ok(rI.cer === 75, `Spichlerz I nadal 25 przy zmienionym kluczu II (${d}) — brak mieszania kluczy`);
+    ok(rI.cer === 90, `Spichlerz I nadal 10 przy zmienionym kluczu II (${d}) — brak mieszania kluczy`);
   }
   for (const d of DIFFS) {
     const raw = withKey(withKey(withKey(clone(ECON), K_SOL, 'easy', 10), K_SOL, 'normal', 40), K_SOL, 'hard', 60);
     const p = M.loadSpichlerzDrainParams(raw, d);
-    ok(p.solII === expected[d] && p.ceramikaI === 25 && p.ceramikaII === 25,
+    ok(p.solII === expected[d] && p.ceramikaI === 10 && p.ceramikaII === 20,
       `klucz Sól II ${d}=${expected[d]} czytany, ceramika bez zmian`);
     const r = runOne(['spichlerz_ii'], 100, 100, p);
-    ok(r.sol === 100 - expected[d] && r.cer === 75,
-      `Spichlerz II zużywa ${expected[d]} soli (${d}), ceramika 25`);
+    ok(r.sol === 100 - expected[d] && r.cer === 80,
+      `Spichlerz II zużywa ${expected[d]} soli (${d}), ceramika 20`);
   }
   // Mutacja zamiany I↔II: zmiana klucza I nie może zmienić zużycia Spichlerza II (i odwrotnie).
   const rawSwap = withKey(clone(ECON), K_I, 'normal', 40);
   const pSwap = M.loadSpichlerzDrainParams(rawSwap, 'normal');
-  ok(runOne(['spichlerz_ii'], 100, 0, pSwap).cer === 75, 'zamiana I↔II: II nie czyta klucza I');
+  ok(runOne(['spichlerz_ii'], 100, 0, pSwap).cer === 80, 'zamiana I↔II: II nie czyta klucza I');
+}
+
+// ---------------------------------------------------------------------------
+console.log('[4] wartości realne (R-WEB-DATA-SPICHLERZ-II-REMOVE-CERAMICS-UPKEEP-Q1): Spichlerz I 10, II 20 ceramiki; sól II 25');
+{
+  for (const d of DIFFS) {
+    const p = M.loadSpichlerzDrainParams(ECON, d);
+    const rI = runOne(['spichlerz'], 100, 0, p);
+    ok(rI.cer === 90 && rI.drain.ceramikaPaid, `Spichlerz I (${d}): ceramika 100→90 (zużycie 10)`);
+    const rII = runOne(['spichlerz_ii'], 100, 100, p);
+    ok(rII.cer === 80 && rII.sol === 75, `Spichlerz II (${d}): ceramika 100→80 (20), sól 100→75 (25)`);
+    const rBoth = runOne(['spichlerz', 'spichlerz_ii'], 100, 100, p);
+    ok(rBoth.cer === 80 && rBoth.sol === 75, `miasto z I+II (${d}): jedna wypłata ceramiki 20 (klucz II), sól 25`);
+    const rLow = runOne(['spichlerz_ii'], 19, 100, p);
+    ok(rLow.drain.ceramikaPaid === false && rLow.cer === 19, `Spichlerz II przy 19 ceramiki (${d}): brak wypłaty`);
+  }
+  const old = withKey(clone(ECON), K_II, 'normal', 25);
+  ok(runOne(['spichlerz_ii'], 100, 100, M.loadSpichlerzDrainParams(old, 'normal')).cer === 75,
+    'mutacja: Spichlerz II = 25 daje 75 (test wykrywa powrót do starej wartości)');
 }
 
 // ---------------------------------------------------------------------------
@@ -172,7 +191,7 @@ console.log('[3] fallback 25 (brak klucza / NaN / ujemny / brak danych)');
   const perDiff = withKey(clone(ECON), K_I, 'hard', 60);
   delete perDiff.budynki[K_I].hard;
   ok(M.loadSpichlerzDrainParams(perDiff, 'hard').ceramikaI === 25, 'brak wartości tylko dla hard → 25 dla hard');
-  ok(M.loadSpichlerzDrainParams(perDiff, 'easy').ceramikaI === 25, 'brak wartości hard nie wpływa na easy');
+  ok(M.loadSpichlerzDrainParams(perDiff, 'easy').ceramikaI === 10, 'brak wartości hard nie wpływa na easy (easy nadal z JSON = 10)');
   ok(M.SPICHLERZ_DRAIN_DEFAULT_PARAMS === undefined, 'R-WEB-SPICHLERZ-HUD-PARAMS-Q1: brak drugiego źródła prawdy (SPICHLERZ_DRAIN_DEFAULT_PARAMS usunięty)');
   ok(M.SPICHLERZ_DRAIN_FALLBACK_PER_TURN === 25, 'SPICHLERZ_DRAIN_FALLBACK_PER_TURN = 25');
 }

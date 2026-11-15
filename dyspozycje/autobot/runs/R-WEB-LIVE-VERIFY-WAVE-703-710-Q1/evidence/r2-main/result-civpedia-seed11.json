@@ -1,0 +1,112 @@
+{
+  "seed": 11,
+  "checks": [
+    {
+      "ok": true,
+      "name": "d: wpis „Wypowiadanie wojny” (pojecia/wypowiedzenie-wojny) w wynikach wyszukiwania „wojny”",
+      "extra": [
+        "Wypowiadanie wojny"
+      ]
+    },
+    {
+      "ok": true,
+      "name": "d: w otwartym haśle NIE ma tekstu „jeszcze niewdrożone / NIE opisuje obecnego stanu”",
+      "extra": {
+        "stale": false
+      }
+    },
+    {
+      "ok": true,
+      "name": "d: w otwartym haśle jest liczba tur N (3–7 / 6)",
+      "extra": [
+        "od 3 do 7 tur"
+      ]
+    },
+    {
+      "ok": true,
+      "name": "d: brak pageerror",
+      "extra": []
+    }
+  ],
+  "encyList": [
+    "Poradnik",
+    "Encyklopedia",
+    "Miasto i społeczeństwo",
+    "Administrator miasta",
+    "**{{ikona-administratora}} Administrator miasta** to osoba przypisana do jednego miasta (maksymalnie jeden na miasto), którą zatrudniasz w n",
+    "Administrator państwa",
+    "**{{ikona-administratora-ulepszen}} Administrator państwa** to jedna osoba na całe Państwo, którą zatrudniasz w panelu ulepszeń. Pozwala **w",
+    "Bunt",
+    "**Bunt** to stan niskiego **porządku** — kary do złota, pracy, nauki i wzrostu; czasem migracja ludzi. **Nie tracisz miasta**; przy długim k",
+    "Porządek",
+    "**Porządek** łączy **szczęście** i **prawo** (po 50% wagi każde na normal). Od progu zależą kary ekonomiczne i ryzyko **buntu** — nie tracis",
+    "Spichlerz — zapasy i wzrost",
+    "**Spichlerz** zmienia dwie rzeczy: po awansie ludności zostaje **50% bufora** wzrostu (bez niego → **0%**), oraz żywność z suwaka **wojsko**",
+    "Budynki",
+    "Akademia",
+    "**Akademia** — budynek (Nauka), epoka Żelazo. Koszt **70** pracy + **8× drewno, 14× cegła**, utrzymanie **3** ¤/t. Technologia **Filozofia**",
+    "Akademia wojskowa",
+    "**Akademia wojskowa** — budynek (Wojsko), epoka Żelazo. Koszt **80** pracy + surowce, utrzymanie **4** ¤/t. Technologia **Sztuka wojenna**.",
+    "Baszta",
+    "**Baszta** — trzeci budynek obronny miasta (Obrona), epoka Żelazo. **Niezależna** obok Murów i Cytadeli (nie zastępuje żadnego). Koszt **70*",
+    "Biblioteka",
+    "**Biblioteka** — budynek (Nauka), epoka Brąz. Koszt od **25** pracy, utrzymanie **1** ¤/t. Technologia **Pismo**.\n\n---",
+    "Emporion",
+    "**Emporion** — budynek (Podatek), epoka Brąz. Koszt budowy **50** pracy, utrzymanie **2** ¤/t. Technologia **Handel**. Wymaga **Targowiska w",
+    "Fort (Cytadela)",
+    "**Cytadela** (w danych `id: fort`) — budynek obronny (Obrona), epoka Żelazo. **Niezależny** obok Murów (nie zastępuje ich). Koszt **70** pra",
+    "Garnizon",
+    "**Garnizon** — budynek administracyjny (Administracja), epoka Kamień. **Tylko miasta regionalne** (nie stolica). **Bez wymogu technologii**",
+    "Koszary",
+    "**Koszary** — budynek (Wojsko), epoka Brąz. Koszt od **25** pracy, utrzymanie **2** ¤/t. Technologia **Wojskowość**. **Maks. 2 poziomy.** **",
+    "Kuźnia brązu",
+    "**Kuźnia brązu** — budynek (Produkcja+Wojsko), epoka Brąz. Koszt **30** pracy + surowce, utrzymanie **2** ¤/t. Technologia **Brązownictwo**.",
+    "Kuźnia żelaza",
+    "**Kuźnia żelaza** — budynek (Produkcja+Wojsko), epoka Żelazo. **Upgrade Kuźni brązu** (zastępuje ją w mieście). Koszt **60** pracy, utrzyman",
+    "Łaźnia publiczna",
+    "**Łaźnia publiczna** — budynek (Zdrowie), epoka Żelazo. Koszt od **50** pracy, utrzymanie **2** ¤/t. Technologia **Medycyna**. Utrzymanie su",
+    "Magazyn",
+    "**Magazyn** — budynek (Produkcja+Podatek), epoka Brąz. Koszt od **20** pracy, utrzymanie **1** ¤/t. Technologia **Handel**. **Dodatkowo (202",
+    "Mury ceglane",
+    "**Mury ceglane** — budynek obronny (Obrona), epoka Brąz. Koszt od **35** pracy + **80× drewno, 80× kamień, 80× cegła**, utrzymanie **2** ¤/t",
+    "Mury kamienne",
+    "**Mury kamienne** — budynek obronny (Obrona), epoka Kamień. Koszt od **35** pracy + **80× drewno, 80× kamień, 80× cegła**, utrzymanie **2**",
+    "Palac",
+    "**Palac** — budynek (Kultura/Administracja), epoka Kamień. Koszt od **40** pracy, utrzymanie **2** ¤/t. Bez dodatkowej technologii.\n\n---",
+    "Port handlowy",
+    "**Port handlowy** — budynek (Podatek), epoka Brąz. Koszt od **30** pracy, utrzymanie **2** ¤/t. Technologia **Żegluga**. Utrzymanie surowcow",
+    "Pretorium",
+    "**Pretorium** — budynek administracyjny (Administracja), epoka Żelazo. **Tylko miasta regionalne** (nie stolica). Upgrade **Dworu Zarządcy**",
+    "Sąd",
+    "**Sąd** — budynek (Administracja), epoka Żelazo. Koszt od **55** pracy, utrzymanie **2** ¤/t. Technologia **Prawo**.\n\n---",
+    "Spichlerz",
+    "**Spichlerz** — budynek (Zywnosc), epoka Kamień. Koszt od **20** pracy, utrzymanie **1** ¤/t. Technologia **Garncarstwo**.\n\n---",
+    "Stela / Pomnik",
+    "**Stela / Pomnik** — budynek (Kultura), epoka Kamień. Koszt od **15** pracy, utrzymanie **0** ¤/t. Technologia **Murarstwo**.\n\n---",
+    "Stolarnia",
+    "**Stolarnia** — budynek (Produkcja), epoka Kamień. Koszt od **20** pracy, utrzymanie **1** ¤/t. Technologia **Obróbka drewna**.\n\n---",
+    "Studnia",
+    "**Studnia** — budynek (Zdrowie), epoka Kamień. Koszt od **15** pracy, utrzymanie **1** ¤/t. Technologia **Gospodarka wodna**.\n\n---",
+    "Świątynia",
+    "**Świątynia** — budynek (Kultura), epoka Kamień. Koszt od **25** pracy, utrzymanie **1** ¤/t. Technologia **Mistycyzm**.\n\n---"
+  ],
+  "encyListAfterSearch": [
+    "Poradnik",
+    "Encyklopedia",
+    "Dyplomacja",
+    "Wypowiadanie wojny",
+    "**Wojnę wypowiada się** wobec innej cywilizacji. Gracz decyduje sam. AI wypowiada wojnę, gdy ma wrogie nastawienie, **Zaufanie** pary spadło",
+    "Zmęczenie wojną",
+    "**Zmęczenie wojną** rośnie z każdą turą wojny, z każdym utraconym miastem i gdy front stoi w miejscu. Gdy jest wysokie, obie strony chętniej"
+  ],
+  "openedText": "CIVPEDIA\n×\nPoradnik\nEncyklopedia\n← Lista\nWypowiadanie wojny\nSkrót\nHasło\nPełny\nWypowiadanie wojny\nKiedy AI może wypowiedzieć wojnę (przypadek zwykły)\n\nAI wybiera wojnę (priorytet 4 w decideAIDiplomacy, ai.ts, ok. linii 7340), gdy jednocześnie:\n\nnie toczy już wojny z tą cywilizacją, nie ma z nią zablokowanego pokoju i nie ma paktu o nieagresji;\nnie działa okno wczesnej fazy: przez pierwsze 25 tur (AI_MAJOR_EARLY_NO_WAR_TURNS) AI nie wypowiada wojny drugiej głównej cywilizacji AI (wojny z graczem i ataki na miasta-państwa nie są objęte tym oknem);\nma wrogie nastawienie (willingnessWar > 0);\nZaufanie pary jest poniżej 30 (wypowiedzenieZaufanie.progZaufaniaWojny);\njej przewaga siły militarnej wynosi co najmniej próg: bazowo 20% (progPrzewagiProc), przesunięty o charakter cywilizacji i obcięty do zakresu 10–35% (agresywna AI wypowiada przy mniejszej przewadze, ostrożna przy większej);\njej agresja archetypu wynosi co najmniej 0,5 (ai.ts, PROG_WOJNA_AGRESJA, z mnożnikiem trudności).\n\nRelacja i zwykły wskaźnik siły (respekt względny) nie wchodzą już do tej bramki.\n\nHamulec zerowego Zaufania (wojna po N turach)\nLicznik kryzysu liczy kolejne tury, w których Zaufanie pary wynosi 0 (p6.kryzysProgZaufania = 0). Relacja nie steruje licznikiem.\nLiczba tur N pochodzi z profilu cywilizacji: clamp(round(8 − 0,5 × dip_prog_wojny), 3, 7), czyli od 3 do 7 tur (dla wartości bazowej dip_prog_wojny = 5 wychodzi 6). Dla pary brane jest wyższe N z dwóch profili; gracz ma profil bazowy.\nGdy licznik dojdzie do N, wojnę wypowiada silniejsza strona wg siły militarnej (remis rozstrzyga armia, potem kolejność identyfikatorów).\nGracz nigdy nie wypowiada wojny automatycznie z hamulca. Gdy silniejszą stroną jest AI, gracz dostaje jedno ostrzeżenie na epizod zerowego Zaufania (komunikat z liczbą tur do wojny).\nHamulec wyłącza się, gdy Zaufanie wzrośnie powyżej zera albo gdy para już jest w wojnie.\nW wojnie Zaufanie pary tkwi na zerze (tick go nie podnosi), a licznik kryzysu nie liczy: para w wojnie ma licznik 0 i brak ostrzeżenia. Licznik ruszy dopiero po pokoju i ponownym spadku Zaufania do zera.\nPole N nie występuje w diplomacy-tick-params.json (dawne p6.kryzysTurDoWojny usunięto jako martwe): silnik podaje N z profilu wojny pary (main.ts, diploBrakeCrisisStep). Flaga w kodzie (DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT, diplomacy-tick-war-brake.ts) ma wartość włączoną; pole flagaDomyslna w JSON nie jest czytane.\nBramki wojen wymuszonych przez epokę\nWojny wymuszone przez epoki (Kamień, Brąz, Żelazo) startują dopiero od tury 40 (licząc od wejścia właściciela w epokę).\nW epoce Kamienia może trwać tylko jedna wojna naraz.\nKażda cywilizacja może mieć jedną wymuszoną wojnę na epokę.\nPlusy i minusy\n\nDla gracza\n\nPlus: wojnę możesz wypowiedzieć, kiedy chcesz, więc masz pełną kontrolę nad momentem ataku.\nPlus: bramki epokowe chronią przed falą wojen na starcie gry.\nMinus: wypowiedzenie wojny bez ostrzeżenia kosztuje −10 Wiarygodności i karencję jednej tury.\nMinus: wojna zeruje Zaufanie wobec wroga, więc odbudowa relacji trwa długo.\nMinus: długie zerowe Zaufanie z silniejszym AI kończy się wojną, której nie wypowiedziałeś sam; zostaje tylko ostrzeżenie.\n\nDla AI\n\nPlus: AI z przewagą siły i niskim Zaufaniem może wypowiedzieć wojnę bez czekania na wrogość gracza.\nMinus: hamulec zerowego Zaufania opóźnia wojnę o N tur od chwili, gdy Zaufanie spadło do zera.\nEtykiety nastawienia przy niskim Zaufaniu\n\nWrogi poniżej Zaufania 10, Nieufny przy Zaufaniu 10–29 (szczegóły: hasło Relacja). W wojnie etykieta to zawsze Wrogi.\n\nZasady wdrożone z decyzji właściciela (2026-11-13)\nWypowiedzenie wojny przez AI wymaga Zaufania poniżej 30 i przewagi siły militarnej co najmniej progu (20%, z przesunięciem charakteru 10–35%). Samo Power ani Relacja nie wystarczają.\nPrzy Zaufaniu 0 przez N tur (3–7 wg profilu) silniejsza strona wypowiada wojnę. Gracz nigdy automatycznie.\nSłabsza strona o więcej niż próg siły nie wypowiada wojny sama (poza wojną epoki): bramka wymaga przewagi AI, więc słabsze AI nie spełnia warunku.\nEncyklopedia · Hasło\nSkarbiec\n0\n+5\n/\n+1\nPraca\n0\n+6\n/\n+6\nSpichlerz\n0\n0\n/\n−4\nHandel\n0\n/\n0\nNauka\n0\n+1\n/\n+1\nSurowce\n+14\n/\n+11\nEpoka brązu\n2k (1)\n1224\nMOC\n2\n+1\n1\n0\n1\n0\n0\n0\n1\n0\nREKRUTACJA\nCIVPEDIA\nMENU\n−\n100%\n+\n⛶\n1 WYMAGA DECYZJI\nDyplomacja\n0\nWażne\n0\nInne\n0\nWYMAGA DECYZJI\nProdukcja: Rzym\nKolejka pusta — wybierz budynek lub jednostkę\nOTWÓRZ →\n1 karta wymaga decyzji. Pokaż →\nBLOKUJĄ ZAKOŃCZENIE TURY\n1 karta wymaga decyzji. Kliknij Wykonaj, aby przejść do pierwszej.\nWYKONAJ\n1\nZAKOŃCZ TURĘ\nTURA 1 · 4000 P.N.E.",
+  "hasStaleBlock": false,
+  "hasZaufanie0Rule": [
+    "Przy Zaufaniu 0 przez N tur (3–7 wg profilu) silniejsza strona wypowiada wojnę. Gracz nigdy automatycznie."
+  ],
+  "hasN": [
+    "od 3 do 7 tur"
+  ],
+  "pageErrors": [],
+  "pass": true
+}

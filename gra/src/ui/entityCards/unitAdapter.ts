@@ -40,6 +40,7 @@ import type { CounterDef, UnitDef } from '../../data/loader';
 import countersData from '../../../data/counters.json';
 import { categoryOf } from '../../units/setup';
 import { unitInfographicLabel, unitInfographicSvg } from '../unitInfographic';
+import { unitEngineStats } from '../unitEngineStats';
 import { resolveTechnologyRow, resolveUnitRow, technologyIdFromName, unitToSlug } from './registry';
 import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
 import { resourcesFromList, yieldValueFields } from './resourceRows';
@@ -235,12 +236,14 @@ export const unitAdapter: EntityCardAdapter<UnitDef> = (unit) => {
   sections.push({ key: 'characteristics', title: 'Charakterystyka', rows: characteristicsRows });
 
   // --- 7a. STATYSTYKI BOJOWE — PODSTAWOWE, zawsze widoczne ------------------------------------
+  // Wartości bojowe = silnik walki (ABC nr 8 = A, 2026-11-14), nie kolumny PL.
+  const es = unitEngineStats(unit as unknown as Record<string, unknown>);
   const basicRows: EntityCardRow[] = [
-    { label: 'Atak', value: text(unit.Atak) },
-    { label: 'Obrona', value: text(unit.Obrona) },
-    { label: 'HP', value: text(unit.Health) },
-    { label: 'Pancerz', value: text(unit.Pancerz) },
-    { label: 'Przebicie', value: text(unit.Przebicie) },
+    { label: 'Atak', value: text(es.atak) },
+    { label: 'Obrona', value: text(es.obrona) },
+    { label: 'HP', value: text(es.hp) },
+    { label: 'Pancerz', value: text(es.pancerz) },
+    { label: 'Przebicie', value: text(es.przebicie) },
     { label: 'Ruch', value: hasValue(unit.Ruch) ? `${text(unit.Ruch)} hex` : '' },
     { label: 'Zasięg', value: hasValue(unit['Zasięg ataku (hex)']) ? `${text(unit['Zasięg ataku (hex)'])} hex` : '' },
   ].filter((r) => hasValue(r.value));
@@ -249,8 +252,8 @@ export const unitAdapter: EntityCardAdapter<UnitDef> = (unit) => {
   // --- 7b. STATYSTYKI ZAAWANSOWANE — sekcja ROZWIJANA, domyślnie ZWINIĘTA ---------------------
   const progDezercji = unit['Próg dezercji (% health)'];
   const advancedRows: EntityCardRow[] = [
-    { label: 'Atak dystansowy', value: text(unit['Atak dystansowy']) },
-    { label: 'Obrażenia broni', value: text(unit.Uderzenie) },
+    { label: 'Atak dystansowy', value: es.atakDystansowy > 0 ? text(es.atakDystansowy) : '' },
+    { label: 'Obrażenia broni', value: text(es.obrazeniaBroni) },
     { label: 'Bonus szarży', value: extra(unit, 'Bonus szarży') },
     { label: 'Ruch (bitwa)', value: hasValue(unit['Ruch w bitwie (heksy)']) ? `${text(unit['Ruch w bitwie (heksy)'])} hex` : '' },
     { label: 'Pociski', value: text(unit['Ilość pocisków']) },

@@ -14,6 +14,7 @@ import { formatObywateleLabel, formatManpowerCompact } from '../game/manpower';
 import { stockResourceLabel } from '../game/building-stock-cost';
 import { CITIZEN_UPKEEP_RATE_PER_CITIZEN } from '../game/citizen-resource-upkeep';
 import { resourceUsageTotal } from '../game/resource-usage-breakdown';
+import { resourceGrossNetPerTurn } from '../game/resource-gross-net';
 import { taxForWorkAmount } from '../game/work-tax';
 import {
   MIASTA_TABLE_COLUMNS,
@@ -46,6 +47,7 @@ import {
 } from '../game/cities';
 import {
   WYZYWIENIE_MIN, WYZYWIENIE_MAX, WYZYWIENIE_STEP, formatWyzwienieLabel,
+  DEFAULT_POZIOM_RACJI,
   type PoziomRacji,
 } from '../game/population-growth-v85';
 import { formatCivBrandLine } from './civBrandDisplay';
@@ -129,7 +131,7 @@ function renderDefaultHandelSplitSection(): string {
   // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: `ownerId` aktywnego fotela — dawniej zaszyty `0`
   // literał czytał/pisał WYŁĄCZNIE default fotela 0 niezależnie od tego, kto jest aktywny.
   const ownerId = handelSplitUi.getActiveOwnerId?.() ?? 0;
-  const split = normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 });
+  const split = normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 30, procentNauka: 60, procentLuksus: 10 });
   const daninaLbl = handelSplitUi.getDaninaLabel?.() ?? 'Podatek';
   const id = 'emp-handel-split';
   let h = `<div class="civ-emp-sect" data-section="ekonomia-handel-split" id="${id}">`
@@ -219,7 +221,7 @@ function renderDefaultPoziomRacjiSection(): string {
   if (!getDef || !onChange) return '';
   // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: patrz komentarz w renderDefaultHandelSplitSection.
   const ownerId = empireGlobalDefaultsUi.getActiveOwnerId?.() ?? 0;
-  const poziom = getDef(ownerId) ?? 4;
+  const poziom = getDef(ownerId) ?? DEFAULT_POZIOM_RACJI;
   const id = 'emp-zywnosc-racje';
   const steps = poziom / WYZYWIENIE_STEP;
   const minSteps = WYZYWIENIE_MIN / WYZYWIENIE_STEP;
@@ -583,6 +585,11 @@ ${RESOURCE_CHIP_CSS}
   font-weight:700;color:#cfd5de;}
 .civ-emp-res-usage-row.total .v{color:#e07a7a;}
 .civ-emp-res-usage-note{margin-top:5px;font-size:10px;line-height:1.4;color:#7d8798;}
+.civ-emp-res-gn{margin-top:3px;font-size:11px;line-height:1.3;color:#9aa4b5;}
+.civ-emp-res-gn b{font-weight:700;}
+.civ-emp-res-gn.good b.net{color:#78c95a;}
+.civ-emp-res-gn.warn b.net{color:#d9a441;}
+.civ-emp-res-gn.bad b.net{color:#e07a7a;}
 .civ-emp-res-usage-note b{color:#78c95a;}
 .civ-emp-res-foodnote{margin:14px 0 4px;padding:10px 12px;border-radius:8px;border:1px dashed #2b3543;
   background:rgba(142,197,255,.05);font-size:12px;color:#b8c4d8;display:flex;gap:9px;
@@ -1256,7 +1263,7 @@ function renderSkarbiecTaxSplitSection(baseAmount: number): string {
   if (!getDef || !onChange) return '';
   // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: patrz komentarz w renderDefaultHandelSplitSection.
   const ownerId = handelSplitUi.getActiveOwnerId?.() ?? 0;
-  const split = normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 });
+  const split = normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 30, procentNauka: 60, procentLuksus: 10 });
   const daninaLbl = handelSplitUi.getDaninaLabel?.() ?? 'Podatek';
   const id = 'emp-skarbiec-tax-split';
   const rows: { key: keyof CityPodzialHandlu; label: string; cls: string; from: string; to: string }[] = [
@@ -1682,7 +1689,7 @@ function renderNaukaSection(
   const getDef = handelSplitUi.getOwnerDefault;
   // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: patrz komentarz w renderDefaultHandelSplitSection.
   const ownerId = handelSplitUi.getActiveOwnerId?.() ?? 0;
-  const split = getDef ? normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 }) : null;
+  const split = getDef ? normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 30, procentNauka: 60, procentLuksus: 10 }) : null;
   const procentNauka = split ? split.procentNauka : 20;
   const heroCls = rate < 0 ? 'neg' : 'pos';
 
@@ -3403,6 +3410,14 @@ function resTooltipHtml(r: EmpireResourceRow): string {
   } else {
     parts.push(prod === 0 ? 'Produkcja: brak zmiany w tej turze' : `Produkcja: ${signedTxt(prod)} / turę`);
   }
+  if (!r.placeholder) {
+    const gn = resourceGrossNetPerTurn(r);
+    if (gn.brutto !== 0 || gn.zuzycie !== 0) {
+      parts.push(`Brutto (produkcja łącznie): ${gn.brutto === 0 ? '0' : signedPl(gn.brutto)} / turę`);
+      if (gn.zuzycie > 0) parts.push(`Zużycie: −${gn.zuzycie} / turę (obywatele, budynki, wojsko — rozbicie: „Zobacz szczegóły zużycia”)`);
+      parts.push(`Netto po zużyciu: ${gn.netto === 0 ? '0' : signedPl(gn.netto)} / turę (jak w nagłówku)`);
+    }
+  }
   // R-ZUZYCIE-SUROWCOW-OBYWATELE N2 (Maciej 2026-08-11): reguła pokrycia = magazyn centralny
   // ZASPOKAJA CAŁĄ populację imperium tego ownera (stawka per epoka citizenUpkeepRateForEra szt.
   // surowca/obywatela/turę — kanon: citizen-resource-upkeep.ts), NIE starsza binarna
@@ -3519,8 +3534,27 @@ function resPlaceholderCardHtml(r: EmpireResourceRow): string {
     + `</div>`;
 }
 
+/**
+ * R-WEB-UI-RESOURCE-CARDS-GROSS-AND-NET-Q1 (Maciej 2026-11-14): wiersz „Brutto +X · netto +Y / turę"
+ * na karcie surowca. Liczby z `resourceGrossNetPerTurn` (gra/src/game/resource-gross-net.ts) — te
+ * same co nagłówek „Brutto … → netto …”, więc suma kart = nagłówek. Netto = po zużyciu obywateli,
+ * budynków i wojska (plakietka „+X" nad paskiem to nadal produkcja ± dyplomacja, PRZED zużyciem).
+ * Brak produkcji i brak zużycia → '' (karta jak dziś, „—").
+ * / EN: per-card gross/net line; same numbers as the header (single source in game/resource-gross-net).
+ */
+export function resGrossNetLineHtml(r: EmpireResourceRow): string {
+  if (r.placeholder) return '';
+  const gn = resourceGrossNetPerTurn(r);
+  if (gn.brutto === 0 && gn.zuzycie === 0) return '';
+  const netState = gn.netto < 0 ? 'bad' : (gn.netto === 0 ? 'warn' : 'good');
+  const fmt = (n: number): string => (n === 0 ? '0' : signedPl(n));
+  return `<div class="civ-emp-res-gn ${netState}">`
+    + `Brutto <b>${esc(fmt(gn.brutto))}</b> · netto <b class="net">${esc(fmt(gn.netto))}</b> / turę`
+    + `</div>`;
+}
+
 /** Karta pojedynczego surowca magazynowanego (pasek zapełnienia stock/cap). */
-function resCardHtml(r: EmpireResourceRow): string {
+export function resCardHtml(r: EmpireResourceRow): string {
   if (r.placeholder) return resPlaceholderCardHtml(r);
   const cap = r.cap ?? 0;
   const pct = cap > 0 ? Math.max(0, Math.min(100, Math.round((r.stock / cap) * 100))) : 0;
@@ -3543,6 +3577,7 @@ function resCardHtml(r: EmpireResourceRow): string {
     + (flagPill ? `<span class="civ-emp-res-flag-pill ${state}">${esc(flagPill)}</span>` : '')
     + `</div>`
     + `<div class="civ-emp-res-bar ${state}"><span style="width:${pct}%"></span></div>`
+    + resGrossNetLineHtml(r)
     + (flagNote ? `<div class="civ-emp-res-flag-note ${state}">${esc(flagNote)}</div>` : '')
     + resCitizenBadgeHtml(r)
     + resUsageDetailsHtml(r)

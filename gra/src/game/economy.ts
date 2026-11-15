@@ -183,7 +183,6 @@ export interface EconParams {
   suwaakHandelPieniadz:             number;
   suwaakHandelLuksus:               number;
   suwaakPracaBudynki:               number;
-  suwaakPracaTeren:                 number;
 }
 
 type Difficulty = 'easy' | 'normal' | 'hard';
@@ -260,8 +259,7 @@ export function loadEconParams(
     suwaakHandelNaukaDefault:       read(em, 'suwak_handel_nauka_domyslnie', 60),
     suwaakHandelPieniadz:           read(em, 'suwak_handel_pieniadz_domyslnie', 30),
     suwaakHandelLuksus:             read(em, 'suwak_handel_luksus_domyslnie', 10),
-    suwaakPracaBudynki:             read(em, 'suwak_praca_budynki_domyslnie', 70),
-    suwaakPracaTeren:               read(em, 'suwak_praca_teren_domyslnie', 30),
+    suwaakPracaBudynki:             read(em, 'suwak_praca_budynki_domyslnie', 50),
   };
 }
 

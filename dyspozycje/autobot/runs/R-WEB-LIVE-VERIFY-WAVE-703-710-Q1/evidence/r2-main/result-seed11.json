@@ -1,0 +1,4326 @@
+{
+  "seed": 11,
+  "map": "Maly",
+  "turns": [
+    {
+      "from": 1,
+      "to": 2,
+      "owners": [
+        {
+          "id": 40,
+          "civ": "rzymianie",
+          "cityState": true,
+          "treasury": 1,
+          "granary": 5,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 41,
+          "civ": "rzymianie",
+          "cityState": true,
+          "treasury": 1,
+          "granary": 5,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 1,
+          "civ": "hetyci",
+          "cityState": false,
+          "treasury": -1,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 2,
+          "civ": "hetyci",
+          "cityState": true,
+          "treasury": 53,
+          "granary": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 3,
+          "civ": "hetyci",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 4,
+          "civ": "germanie",
+          "cityState": false,
+          "treasury": 3,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 5,
+          "civ": "germanie",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 4,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 6,
+          "civ": "germanie",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 4,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 7,
+          "civ": "asyria",
+          "cityState": false,
+          "treasury": 3,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 8,
+          "civ": "asyria",
+          "cityState": true,
+          "treasury": -1,
+          "granary": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 9,
+          "civ": "asyria",
+          "cityState": true,
+          "treasury": 57,
+          "granary": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 10,
+          "civ": "babilonia",
+          "cityState": false,
+          "treasury": 2,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 11,
+          "civ": "babilonia",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 7,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 12,
+          "civ": "babilonia",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 7,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 13,
+          "civ": "celtowie",
+          "cityState": false,
+          "treasury": 43,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 14,
+          "civ": "celtowie",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 15,
+          "civ": "celtowie",
+          "cityState": true,
+          "treasury": -1,
+          "granary": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 16,
+          "civ": "sumer",
+          "cityState": false,
+          "treasury": 3,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 17,
+          "civ": "sumer",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 8,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 18,
+          "civ": "sumer",
+          "cityState": true,
+          "treasury": -1,
+          "granary": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 19,
+          "civ": "harappa",
+          "cityState": false,
+          "treasury": 67,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 20,
+          "civ": "harappa",
+          "cityState": true,
+          "treasury": 56,
+          "granary": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 21,
+          "civ": "harappa",
+          "cityState": true,
+          "treasury": 0,
+          "granary": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 22,
+          "civ": "chinczycy",
+          "cityState": false,
+          "treasury": -1,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 23,
+          "civ": "chinczycy",
+          "cityState": true,
+          "treasury": -1,
+          "granary": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 24,
+          "civ": "chinczycy",
+          "cityState": true,
+          "treasury": 45,
+          "granary": 7,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 25,
+          "civ": "egipt",
+          "cityState": false,
+          "treasury": 2,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 26,
+          "civ": "egipt",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 4,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 27,
+          "civ": "egipt",
+          "cityState": true,
+          "treasury": 59,
+          "granary": 5,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 28,
+          "civ": "inkowie",
+          "cityState": false,
+          "treasury": 3,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 29,
+          "civ": "inkowie",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 30,
+          "civ": "inkowie",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 31,
+          "civ": "zulusi",
+          "cityState": false,
+          "treasury": 87,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 32,
+          "civ": "zulusi",
+          "cityState": true,
+          "treasury": 98,
+          "granary": 4,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 33,
+          "civ": "zulusi",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 7,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 34,
+          "civ": "grecy",
+          "cityState": false,
+          "treasury": 6,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 35,
+          "civ": "grecy",
+          "cityState": true,
+          "treasury": 6,
+          "granary": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 36,
+          "civ": "grecy",
+          "cityState": true,
+          "treasury": 4,
+          "granary": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 37,
+          "civ": "fenicjanie",
+          "cityState": false,
+          "treasury": 80,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 38,
+          "civ": "fenicjanie",
+          "cityState": true,
+          "treasury": 8,
+          "granary": 4,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 39,
+          "civ": "fenicjanie",
+          "cityState": true,
+          "treasury": 59,
+          "granary": 5,
+          "cities": 1,
+          "units": 1
+        }
+      ]
+    },
+    {
+      "from": 2,
+      "to": 3,
+      "owners": [
+        {
+          "id": 40,
+          "civ": "rzymianie",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 10,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 41,
+          "civ": "rzymianie",
+          "cityState": true,
+          "treasury": 42,
+          "granary": 10,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 1,
+          "civ": "hetyci",
+          "cityState": false,
+          "treasury": 2,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 2,
+          "civ": "hetyci",
+          "cityState": true,
+          "treasury": 53,
+          "granary": 16,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 3,
+          "civ": "hetyci",
+          "cityState": true,
+          "treasury": 4,
+          "granary": 16,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 4,
+          "civ": "germanie",
+          "cityState": false,
+          "treasury": 0,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 5,
+          "civ": "germanie",
+          "cityState": true,
+          "treasury": 0,
+          "granary": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 6,
+          "civ": "germanie",
+          "cityState": true,
+          "treasury": 0,
+          "granary": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 7,
+          "civ": "asyria",
+          "cityState": false,
+          "treasury": 0,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 8,
+          "civ": "asyria",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 10,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 9,
+          "civ": "asyria",
+          "cityState": true,
+          "treasury": 53,
+          "granary": 16,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 10,
+          "civ": "babilonia",
+          "cityState": false,
+          "treasury": 4,
+          "granary": 1,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "id": 11,
+          "civ": "babilonia",
+          "cityState": true,
+          "treasury": 0,
+          "granary": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 12,
+          "civ": "babilonia",
+          "cityState": true,
+          "treasury": 0,
+          "granary": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 13,
+          "civ": "celtowie",
+          "cityState": false,
+          "treasury": 118,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 14,
+          "civ": "celtowie",
+          "cityState": true,
+          "treasury": 0,
+          "granary": 16,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 15,
+          "civ": "celtowie",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 10,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 16,
+          "civ": "sumer",
+          "cityState": false,
+          "treasury": 0,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 17,
+          "civ": "sumer",
+          "cityState": true,
+          "treasury": 6,
+          "granary": 16,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 18,
+          "civ": "sumer",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 8,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 19,
+          "civ": "harappa",
+          "cityState": false,
+          "treasury": 64,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 20,
+          "civ": "harappa",
+          "cityState": true,
+          "treasury": 53,
+          "granary": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 21,
+          "civ": "harappa",
+          "cityState": true,
+          "treasury": 76,
+          "granary": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 22,
+          "civ": "chinczycy",
+          "cityState": false,
+          "treasury": 50,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 23,
+          "civ": "chinczycy",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 10,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 24,
+          "civ": "chinczycy",
+          "cityState": true,
+          "treasury": 49,
+          "granary": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 25,
+          "civ": "egipt",
+          "cityState": false,
+          "treasury": 4,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 26,
+          "civ": "egipt",
+          "cityState": true,
+          "treasury": 0,
+          "granary": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 27,
+          "civ": "egipt",
+          "cityState": true,
+          "treasury": 56,
+          "granary": 10,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 28,
+          "civ": "inkowie",
+          "cityState": false,
+          "treasury": 0,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 29,
+          "civ": "inkowie",
+          "cityState": true,
+          "treasury": 0,
+          "granary": 16,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 30,
+          "civ": "inkowie",
+          "cityState": true,
+          "treasury": 0,
+          "granary": 16,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 31,
+          "civ": "zulusi",
+          "cityState": false,
+          "treasury": 84,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 32,
+          "civ": "zulusi",
+          "cityState": true,
+          "treasury": 95,
+          "granary": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 33,
+          "civ": "zulusi",
+          "cityState": true,
+          "treasury": 6,
+          "granary": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 34,
+          "civ": "grecy",
+          "cityState": false,
+          "treasury": 4,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 35,
+          "civ": "grecy",
+          "cityState": true,
+          "treasury": 93,
+          "granary": 16,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 36,
+          "civ": "grecy",
+          "cityState": true,
+          "treasury": 6,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 37,
+          "civ": "fenicjanie",
+          "cityState": false,
+          "treasury": 78,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "id": 38,
+          "civ": "fenicjanie",
+          "cityState": true,
+          "treasury": 12,
+          "granary": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 39,
+          "civ": "fenicjanie",
+          "cityState": true,
+          "treasury": 67,
+          "granary": 10,
+          "cities": 1,
+          "units": 1
+        }
+      ]
+    },
+    {
+      "from": 3,
+      "to": 4,
+      "owners": [
+        {
+          "id": 40,
+          "civ": "rzymianie",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 41,
+          "civ": "rzymianie",
+          "cityState": true,
+          "treasury": 38,
+          "granary": 11,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 1,
+          "civ": "hetyci",
+          "cityState": false,
+          "treasury": 0,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 2,
+          "civ": "hetyci",
+          "cityState": true,
+          "treasury": 55,
+          "granary": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 3,
+          "civ": "hetyci",
+          "cityState": true,
+          "treasury": 0,
+          "granary": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 4,
+          "civ": "germanie",
+          "cityState": false,
+          "treasury": 3,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 5,
+          "civ": "germanie",
+          "cityState": true,
+          "treasury": 1,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 6,
+          "civ": "germanie",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 7,
+          "civ": "asyria",
+          "cityState": false,
+          "treasury": 1,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 8,
+          "civ": "asyria",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 9,
+          "civ": "asyria",
+          "cityState": true,
+          "treasury": 101,
+          "granary": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 10,
+          "civ": "babilonia",
+          "cityState": false,
+          "treasury": 1,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 11,
+          "civ": "babilonia",
+          "cityState": true,
+          "treasury": 1,
+          "granary": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 12,
+          "civ": "babilonia",
+          "cityState": true,
+          "treasury": 1,
+          "granary": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 13,
+          "civ": "celtowie",
+          "cityState": false,
+          "treasury": 115,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 14,
+          "civ": "celtowie",
+          "cityState": true,
+          "treasury": 1,
+          "granary": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 15,
+          "civ": "celtowie",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 16,
+          "civ": "sumer",
+          "cityState": false,
+          "treasury": 3,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 17,
+          "civ": "sumer",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 6,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 18,
+          "civ": "sumer",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 19,
+          "civ": "harappa",
+          "cityState": false,
+          "treasury": 61,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 20,
+          "civ": "harappa",
+          "cityState": true,
+          "treasury": 121,
+          "granary": 9,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 21,
+          "civ": "harappa",
+          "cityState": true,
+          "treasury": 72,
+          "granary": 9,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 22,
+          "civ": "chinczycy",
+          "cityState": false,
+          "treasury": 46,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 23,
+          "civ": "chinczycy",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 24,
+          "civ": "chinczycy",
+          "cityState": true,
+          "treasury": 51,
+          "granary": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 25,
+          "civ": "egipt",
+          "cityState": false,
+          "treasury": 1,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 26,
+          "civ": "egipt",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 27,
+          "civ": "egipt",
+          "cityState": true,
+          "treasury": 52,
+          "granary": 11,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 28,
+          "civ": "inkowie",
+          "cityState": false,
+          "treasury": 75,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 29,
+          "civ": "inkowie",
+          "cityState": true,
+          "treasury": 41,
+          "granary": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 30,
+          "civ": "inkowie",
+          "cityState": true,
+          "treasury": 1,
+          "granary": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 31,
+          "civ": "zulusi",
+          "cityState": false,
+          "treasury": 169,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 32,
+          "civ": "zulusi",
+          "cityState": true,
+          "treasury": 92,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 33,
+          "civ": "zulusi",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 3,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 34,
+          "civ": "grecy",
+          "cityState": false,
+          "treasury": 2,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 35,
+          "civ": "grecy",
+          "cityState": true,
+          "treasury": 96,
+          "granary": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 36,
+          "civ": "grecy",
+          "cityState": true,
+          "treasury": 8,
+          "granary": 0,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 37,
+          "civ": "fenicjanie",
+          "cityState": false,
+          "treasury": 76,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 38,
+          "civ": "fenicjanie",
+          "cityState": true,
+          "treasury": 16,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 39,
+          "civ": "fenicjanie",
+          "cityState": true,
+          "treasury": 73,
+          "granary": 15,
+          "cities": 1,
+          "units": 1
+        }
+      ]
+    },
+    {
+      "from": 4,
+      "to": 5,
+      "owners": [
+        {
+          "id": 40,
+          "civ": "rzymianie",
+          "cityState": true,
+          "treasury": 0,
+          "granary": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 41,
+          "civ": "rzymianie",
+          "cityState": true,
+          "treasury": 34,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 1,
+          "civ": "hetyci",
+          "cityState": false,
+          "treasury": 7,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 2,
+          "civ": "hetyci",
+          "cityState": true,
+          "treasury": 51,
+          "granary": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 3,
+          "civ": "hetyci",
+          "cityState": true,
+          "treasury": 1,
+          "granary": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 4,
+          "civ": "germanie",
+          "cityState": false,
+          "treasury": 5,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 5,
+          "civ": "germanie",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 16,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 6,
+          "civ": "germanie",
+          "cityState": true,
+          "treasury": 0,
+          "granary": 16,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 7,
+          "civ": "asyria",
+          "cityState": false,
+          "treasury": 2,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 8,
+          "civ": "asyria",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 0,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 9,
+          "civ": "asyria",
+          "cityState": true,
+          "treasury": 97,
+          "granary": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 10,
+          "civ": "babilonia",
+          "cityState": false,
+          "treasury": 3,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "id": 11,
+          "civ": "babilonia",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 10,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 12,
+          "civ": "babilonia",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 13,
+          "civ": "celtowie",
+          "cityState": false,
+          "treasury": 112,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 14,
+          "civ": "celtowie",
+          "cityState": true,
+          "treasury": 4,
+          "granary": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 15,
+          "civ": "celtowie",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 0,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 16,
+          "civ": "sumer",
+          "cityState": false,
+          "treasury": 0,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 17,
+          "civ": "sumer",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 18,
+          "civ": "sumer",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 19,
+          "civ": "harappa",
+          "cityState": false,
+          "treasury": 58,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 20,
+          "civ": "harappa",
+          "cityState": true,
+          "treasury": 117,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 21,
+          "civ": "harappa",
+          "cityState": true,
+          "treasury": 68,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 22,
+          "civ": "chinczycy",
+          "cityState": false,
+          "treasury": 42,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 23,
+          "civ": "chinczycy",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 0,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 24,
+          "civ": "chinczycy",
+          "cityState": true,
+          "treasury": 53,
+          "granary": 10,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 25,
+          "civ": "egipt",
+          "cityState": false,
+          "treasury": 3,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 26,
+          "civ": "egipt",
+          "cityState": true,
+          "treasury": 0,
+          "granary": 16,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 27,
+          "civ": "egipt",
+          "cityState": true,
+          "treasury": 48,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 28,
+          "civ": "inkowie",
+          "cityState": false,
+          "treasury": 72,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 29,
+          "civ": "inkowie",
+          "cityState": true,
+          "treasury": 37,
+          "granary": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 30,
+          "civ": "inkowie",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 31,
+          "civ": "zulusi",
+          "cityState": false,
+          "treasury": 166,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 32,
+          "civ": "zulusi",
+          "cityState": true,
+          "treasury": 89,
+          "granary": 16,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 33,
+          "civ": "zulusi",
+          "cityState": true,
+          "treasury": 6,
+          "granary": 10,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 34,
+          "civ": "grecy",
+          "cityState": false,
+          "treasury": 0,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 35,
+          "civ": "grecy",
+          "cityState": true,
+          "treasury": 99,
+          "granary": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 36,
+          "civ": "grecy",
+          "cityState": true,
+          "treasury": 10,
+          "granary": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 37,
+          "civ": "fenicjanie",
+          "cityState": false,
+          "treasury": 74,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 38,
+          "civ": "fenicjanie",
+          "cityState": true,
+          "treasury": 20,
+          "granary": 16,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 39,
+          "civ": "fenicjanie",
+          "cityState": true,
+          "treasury": 134,
+          "granary": 2,
+          "cities": 1,
+          "units": 1
+        }
+      ]
+    },
+    {
+      "from": 5,
+      "to": 6,
+      "owners": [
+        {
+          "id": 40,
+          "civ": "rzymianie",
+          "cityState": true,
+          "treasury": 1,
+          "granary": 7,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 41,
+          "civ": "rzymianie",
+          "cityState": true,
+          "treasury": 30,
+          "granary": 13,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 1,
+          "civ": "hetyci",
+          "cityState": false,
+          "treasury": 77,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 2,
+          "civ": "hetyci",
+          "cityState": true,
+          "treasury": 49,
+          "granary": 4,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 3,
+          "civ": "hetyci",
+          "cityState": true,
+          "treasury": 1,
+          "granary": 4,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 4,
+          "civ": "germanie",
+          "cityState": false,
+          "treasury": 10,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 5,
+          "civ": "germanie",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 6,
+          "civ": "germanie",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 7,
+          "civ": "asyria",
+          "cityState": false,
+          "treasury": 3,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 8,
+          "civ": "asyria",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 1,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 9,
+          "civ": "asyria",
+          "cityState": true,
+          "treasury": 93,
+          "granary": 4,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 10,
+          "civ": "babilonia",
+          "cityState": false,
+          "treasury": 1,
+          "granary": 0,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "id": 11,
+          "civ": "babilonia",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 12,
+          "civ": "babilonia",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 9,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 13,
+          "civ": "celtowie",
+          "cityState": false,
+          "treasury": 109,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 14,
+          "civ": "celtowie",
+          "cityState": true,
+          "treasury": 5,
+          "granary": 4,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 15,
+          "civ": "celtowie",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 1,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 16,
+          "civ": "sumer",
+          "cityState": false,
+          "treasury": 3,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 17,
+          "civ": "sumer",
+          "cityState": true,
+          "treasury": 4,
+          "granary": 4,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 18,
+          "civ": "sumer",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 19,
+          "civ": "harappa",
+          "cityState": false,
+          "treasury": 55,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 20,
+          "civ": "harappa",
+          "cityState": true,
+          "treasury": 113,
+          "granary": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 21,
+          "civ": "harappa",
+          "cityState": true,
+          "treasury": 64,
+          "granary": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 22,
+          "civ": "chinczycy",
+          "cityState": false,
+          "treasury": 38,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 23,
+          "civ": "chinczycy",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 1,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 24,
+          "civ": "chinczycy",
+          "cityState": true,
+          "treasury": 54,
+          "granary": 13,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 25,
+          "civ": "egipt",
+          "cityState": false,
+          "treasury": 74,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 26,
+          "civ": "egipt",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 27,
+          "civ": "egipt",
+          "cityState": true,
+          "treasury": 44,
+          "granary": 13,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 28,
+          "civ": "inkowie",
+          "cityState": false,
+          "treasury": 69,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 29,
+          "civ": "inkowie",
+          "cityState": true,
+          "treasury": 33,
+          "granary": 4,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 30,
+          "civ": "inkowie",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 4,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 31,
+          "civ": "zulusi",
+          "cityState": false,
+          "treasury": 163,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 32,
+          "civ": "zulusi",
+          "cityState": true,
+          "treasury": 85,
+          "granary": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 33,
+          "civ": "zulusi",
+          "cityState": true,
+          "treasury": 8,
+          "granary": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 34,
+          "civ": "grecy",
+          "cityState": false,
+          "treasury": 6,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 35,
+          "civ": "grecy",
+          "cityState": true,
+          "treasury": 100,
+          "granary": 4,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 36,
+          "civ": "grecy",
+          "cityState": true,
+          "treasury": 11,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 37,
+          "civ": "fenicjanie",
+          "cityState": false,
+          "treasury": 72,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 38,
+          "civ": "fenicjanie",
+          "cityState": true,
+          "treasury": 23,
+          "granary": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 39,
+          "civ": "fenicjanie",
+          "cityState": true,
+          "treasury": 138,
+          "granary": 7,
+          "cities": 1,
+          "units": 2
+        }
+      ]
+    },
+    {
+      "from": 6,
+      "to": 7,
+      "owners": [
+        {
+          "id": 40,
+          "civ": "rzymianie",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 41,
+          "civ": "rzymianie",
+          "cityState": true,
+          "treasury": 26,
+          "granary": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 1,
+          "civ": "hetyci",
+          "cityState": false,
+          "treasury": 63,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 2,
+          "civ": "hetyci",
+          "cityState": true,
+          "treasury": 47,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 3,
+          "civ": "hetyci",
+          "cityState": true,
+          "treasury": 1,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 4,
+          "civ": "germanie",
+          "cityState": false,
+          "treasury": 12,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 5,
+          "civ": "germanie",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 6,
+          "civ": "germanie",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 7,
+          "civ": "asyria",
+          "cityState": false,
+          "treasury": 4,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 8,
+          "civ": "asyria",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 2,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 9,
+          "civ": "asyria",
+          "cityState": true,
+          "treasury": 151,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 10,
+          "civ": "babilonia",
+          "cityState": false,
+          "treasury": 2,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "id": 11,
+          "civ": "babilonia",
+          "cityState": true,
+          "treasury": 4,
+          "granary": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 12,
+          "civ": "babilonia",
+          "cityState": true,
+          "treasury": 4,
+          "granary": 16,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 13,
+          "civ": "celtowie",
+          "cityState": false,
+          "treasury": 106,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 14,
+          "civ": "celtowie",
+          "cityState": true,
+          "treasury": 6,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 15,
+          "civ": "celtowie",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 2,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 16,
+          "civ": "sumer",
+          "cityState": false,
+          "treasury": 0,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 17,
+          "civ": "sumer",
+          "cityState": true,
+          "treasury": 5,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 18,
+          "civ": "sumer",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 19,
+          "civ": "harappa",
+          "cityState": false,
+          "treasury": 146,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 20,
+          "civ": "harappa",
+          "cityState": true,
+          "treasury": 109,
+          "granary": 0,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 21,
+          "civ": "harappa",
+          "cityState": true,
+          "treasury": 60,
+          "granary": 0,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 22,
+          "civ": "chinczycy",
+          "cityState": false,
+          "treasury": 34,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 23,
+          "civ": "chinczycy",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 2,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 24,
+          "civ": "chinczycy",
+          "cityState": true,
+          "treasury": 55,
+          "granary": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 25,
+          "civ": "egipt",
+          "cityState": false,
+          "treasury": 72,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 26,
+          "civ": "egipt",
+          "cityState": true,
+          "treasury": 0,
+          "granary": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 27,
+          "civ": "egipt",
+          "cityState": true,
+          "treasury": 40,
+          "granary": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 28,
+          "civ": "inkowie",
+          "cityState": false,
+          "treasury": 164,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 29,
+          "civ": "inkowie",
+          "cityState": true,
+          "treasury": 29,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 30,
+          "civ": "inkowie",
+          "cityState": true,
+          "treasury": 4,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 31,
+          "civ": "zulusi",
+          "cityState": false,
+          "treasury": 160,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 32,
+          "civ": "zulusi",
+          "cityState": true,
+          "treasury": 81,
+          "granary": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 33,
+          "civ": "zulusi",
+          "cityState": true,
+          "treasury": 10,
+          "granary": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 34,
+          "civ": "grecy",
+          "cityState": false,
+          "treasury": 4,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 35,
+          "civ": "grecy",
+          "cityState": true,
+          "treasury": 102,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 36,
+          "civ": "grecy",
+          "cityState": true,
+          "treasury": 12,
+          "granary": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 37,
+          "civ": "fenicjanie",
+          "cityState": false,
+          "treasury": 70,
+          "granary": 0,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "id": 38,
+          "civ": "fenicjanie",
+          "cityState": true,
+          "treasury": 26,
+          "granary": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 39,
+          "civ": "fenicjanie",
+          "cityState": true,
+          "treasury": 138,
+          "granary": 8,
+          "cities": 1,
+          "units": 2
+        }
+      ]
+    },
+    {
+      "from": 7,
+      "to": 8,
+      "owners": [
+        {
+          "id": 40,
+          "civ": "rzymianie",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 41,
+          "civ": "rzymianie",
+          "cityState": true,
+          "treasury": 22,
+          "granary": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 1,
+          "civ": "hetyci",
+          "cityState": false,
+          "treasury": 54,
+          "granary": 0,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "id": 2,
+          "civ": "hetyci",
+          "cityState": true,
+          "treasury": 45,
+          "granary": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 3,
+          "civ": "hetyci",
+          "cityState": true,
+          "treasury": 1,
+          "granary": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 4,
+          "civ": "germanie",
+          "cityState": false,
+          "treasury": 17,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 5,
+          "civ": "germanie",
+          "cityState": true,
+          "treasury": 1,
+          "granary": 10,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 6,
+          "civ": "germanie",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 10,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 7,
+          "civ": "asyria",
+          "cityState": false,
+          "treasury": 2,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 8,
+          "civ": "asyria",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 3,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 9,
+          "civ": "asyria",
+          "cityState": true,
+          "treasury": 147,
+          "granary": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 10,
+          "civ": "babilonia",
+          "cityState": false,
+          "treasury": 3,
+          "granary": 1,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "id": 11,
+          "civ": "babilonia",
+          "cityState": true,
+          "treasury": 5,
+          "granary": 13,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 12,
+          "civ": "babilonia",
+          "cityState": true,
+          "treasury": 5,
+          "granary": 5,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 13,
+          "civ": "celtowie",
+          "cityState": false,
+          "treasury": 103,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 14,
+          "civ": "celtowie",
+          "cityState": true,
+          "treasury": 7,
+          "granary": 2,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 15,
+          "civ": "celtowie",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 3,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 16,
+          "civ": "sumer",
+          "cityState": false,
+          "treasury": 3,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 17,
+          "civ": "sumer",
+          "cityState": true,
+          "treasury": 6,
+          "granary": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 18,
+          "civ": "sumer",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 19,
+          "civ": "harappa",
+          "cityState": false,
+          "treasury": 143,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 20,
+          "civ": "harappa",
+          "cityState": true,
+          "treasury": 105,
+          "granary": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 21,
+          "civ": "harappa",
+          "cityState": true,
+          "treasury": 56,
+          "granary": 3,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 22,
+          "civ": "chinczycy",
+          "cityState": false,
+          "treasury": 30,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 23,
+          "civ": "chinczycy",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 3,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 24,
+          "civ": "chinczycy",
+          "cityState": true,
+          "treasury": 56,
+          "granary": 9,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 25,
+          "civ": "egipt",
+          "cityState": false,
+          "treasury": 70,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 26,
+          "civ": "egipt",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 10,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 27,
+          "civ": "egipt",
+          "cityState": true,
+          "treasury": 36,
+          "granary": 15,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 28,
+          "civ": "inkowie",
+          "cityState": false,
+          "treasury": 161,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 29,
+          "civ": "inkowie",
+          "cityState": true,
+          "treasury": 25,
+          "granary": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 30,
+          "civ": "inkowie",
+          "cityState": true,
+          "treasury": 5,
+          "granary": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 31,
+          "civ": "zulusi",
+          "cityState": false,
+          "treasury": 157,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 32,
+          "civ": "zulusi",
+          "cityState": true,
+          "treasury": 77,
+          "granary": 10,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 33,
+          "civ": "zulusi",
+          "cityState": true,
+          "treasury": 12,
+          "granary": 13,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 34,
+          "civ": "grecy",
+          "cityState": false,
+          "treasury": 2,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 35,
+          "civ": "grecy",
+          "cityState": true,
+          "treasury": 104,
+          "granary": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 36,
+          "civ": "grecy",
+          "cityState": true,
+          "treasury": 13,
+          "granary": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 37,
+          "civ": "fenicjanie",
+          "cityState": false,
+          "treasury": 68,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 38,
+          "civ": "fenicjanie",
+          "cityState": true,
+          "treasury": 29,
+          "granary": 10,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 39,
+          "civ": "fenicjanie",
+          "cityState": true,
+          "treasury": 138,
+          "granary": 12,
+          "cities": 1,
+          "units": 2
+        }
+      ]
+    },
+    {
+      "from": 8,
+      "to": 9,
+      "owners": [
+        {
+          "id": 40,
+          "civ": "rzymianie",
+          "cityState": true,
+          "treasury": 0,
+          "granary": 4,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 41,
+          "civ": "rzymianie",
+          "cityState": true,
+          "treasury": 18,
+          "granary": 16,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 1,
+          "civ": "hetyci",
+          "cityState": false,
+          "treasury": 42,
+          "granary": 0,
+          "cities": 1,
+          "units": 4
+        },
+        {
+          "id": 2,
+          "civ": "hetyci",
+          "cityState": true,
+          "treasury": 43,
+          "granary": 10,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 3,
+          "civ": "hetyci",
+          "cityState": true,
+          "treasury": 1,
+          "granary": 10,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 4,
+          "civ": "germanie",
+          "cityState": false,
+          "treasury": 19,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 5,
+          "civ": "germanie",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 6,
+          "civ": "germanie",
+          "cityState": true,
+          "treasury": 0,
+          "granary": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 7,
+          "civ": "asyria",
+          "cityState": false,
+          "treasury": 77,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 8,
+          "civ": "asyria",
+          "cityState": true,
+          "treasury": 8,
+          "granary": 1,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 9,
+          "civ": "asyria",
+          "cityState": true,
+          "treasury": 143,
+          "granary": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 10,
+          "civ": "babilonia",
+          "cityState": false,
+          "treasury": 0,
+          "granary": 0,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "id": 11,
+          "civ": "babilonia",
+          "cityState": true,
+          "treasury": 6,
+          "granary": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 12,
+          "civ": "babilonia",
+          "cityState": true,
+          "treasury": 6,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 13,
+          "civ": "celtowie",
+          "cityState": false,
+          "treasury": 100,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 14,
+          "civ": "celtowie",
+          "cityState": true,
+          "treasury": 8,
+          "granary": 10,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 15,
+          "civ": "celtowie",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 1,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 16,
+          "civ": "sumer",
+          "cityState": false,
+          "treasury": 0,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 17,
+          "civ": "sumer",
+          "cityState": true,
+          "treasury": 7,
+          "granary": 10,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 18,
+          "civ": "sumer",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 19,
+          "civ": "harappa",
+          "cityState": false,
+          "treasury": 140,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 20,
+          "civ": "harappa",
+          "cityState": true,
+          "treasury": 101,
+          "granary": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 21,
+          "civ": "harappa",
+          "cityState": true,
+          "treasury": 52,
+          "granary": 6,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 22,
+          "civ": "chinczycy",
+          "cityState": false,
+          "treasury": 27,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 23,
+          "civ": "chinczycy",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 1,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 24,
+          "civ": "chinczycy",
+          "cityState": true,
+          "treasury": 57,
+          "granary": 16,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 25,
+          "civ": "egipt",
+          "cityState": false,
+          "treasury": 69,
+          "granary": 1.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 26,
+          "civ": "egipt",
+          "cityState": true,
+          "treasury": 0,
+          "granary": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 27,
+          "civ": "egipt",
+          "cityState": true,
+          "treasury": 32,
+          "granary": 16,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 28,
+          "civ": "inkowie",
+          "cityState": false,
+          "treasury": 158,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 29,
+          "civ": "inkowie",
+          "cityState": true,
+          "treasury": 21,
+          "granary": 10,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 30,
+          "civ": "inkowie",
+          "cityState": true,
+          "treasury": 6,
+          "granary": 10,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 31,
+          "civ": "zulusi",
+          "cityState": false,
+          "treasury": 154,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 32,
+          "civ": "zulusi",
+          "cityState": true,
+          "treasury": 73,
+          "granary": 10,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 33,
+          "civ": "zulusi",
+          "cityState": true,
+          "treasury": 13,
+          "granary": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 34,
+          "civ": "grecy",
+          "cityState": false,
+          "treasury": 0,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 35,
+          "civ": "grecy",
+          "cityState": true,
+          "treasury": 105,
+          "granary": 10,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 36,
+          "civ": "grecy",
+          "cityState": true,
+          "treasury": 13,
+          "granary": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 37,
+          "civ": "fenicjanie",
+          "cityState": false,
+          "treasury": 66,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 38,
+          "civ": "fenicjanie",
+          "cityState": true,
+          "treasury": 31,
+          "granary": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 39,
+          "civ": "fenicjanie",
+          "cityState": true,
+          "treasury": 139,
+          "granary": 16,
+          "cities": 1,
+          "units": 2
+        }
+      ]
+    },
+    {
+      "from": 9,
+      "to": 10,
+      "owners": [
+        {
+          "id": 40,
+          "civ": "rzymianie",
+          "cityState": true,
+          "treasury": 1,
+          "granary": 9,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 41,
+          "civ": "rzymianie",
+          "cityState": true,
+          "treasury": 14,
+          "granary": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 1,
+          "civ": "hetyci",
+          "cityState": false,
+          "treasury": 45,
+          "granary": 0,
+          "cities": 1,
+          "units": 5
+        },
+        {
+          "id": 2,
+          "civ": "hetyci",
+          "cityState": true,
+          "treasury": 41,
+          "granary": 0,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 3,
+          "civ": "hetyci",
+          "cityState": true,
+          "treasury": 1,
+          "granary": 0,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 4,
+          "civ": "germanie",
+          "cityState": false,
+          "treasury": 22,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "id": 5,
+          "civ": "germanie",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 0,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 6,
+          "civ": "germanie",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 0,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 7,
+          "civ": "asyria",
+          "cityState": false,
+          "treasury": 65,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 8,
+          "civ": "asyria",
+          "cityState": true,
+          "treasury": 8,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 9,
+          "civ": "asyria",
+          "cityState": true,
+          "treasury": 136,
+          "granary": 10,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 10,
+          "civ": "babilonia",
+          "cityState": false,
+          "treasury": 3,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "id": 11,
+          "civ": "babilonia",
+          "cityState": true,
+          "treasury": 7,
+          "granary": 9,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 12,
+          "civ": "babilonia",
+          "cityState": true,
+          "treasury": 7,
+          "granary": 1,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 13,
+          "civ": "celtowie",
+          "cityState": false,
+          "treasury": 97,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 14,
+          "civ": "celtowie",
+          "cityState": true,
+          "treasury": 8,
+          "granary": 0,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 15,
+          "civ": "celtowie",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 16,
+          "civ": "sumer",
+          "cityState": false,
+          "treasury": 3,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 17,
+          "civ": "sumer",
+          "cityState": true,
+          "treasury": 7,
+          "granary": 0,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 18,
+          "civ": "sumer",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 19,
+          "civ": "harappa",
+          "cityState": false,
+          "treasury": 137,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 20,
+          "civ": "harappa",
+          "cityState": true,
+          "treasury": 97,
+          "granary": 9,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 21,
+          "civ": "harappa",
+          "cityState": true,
+          "treasury": 48,
+          "granary": 9,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 22,
+          "civ": "chinczycy",
+          "cityState": false,
+          "treasury": 24,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 23,
+          "civ": "chinczycy",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 2,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 24,
+          "civ": "chinczycy",
+          "cityState": true,
+          "treasury": 58,
+          "granary": 5,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 25,
+          "civ": "egipt",
+          "cityState": false,
+          "treasury": 25,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 26,
+          "civ": "egipt",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 0,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 27,
+          "civ": "egipt",
+          "cityState": true,
+          "treasury": 28,
+          "granary": 17,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 28,
+          "civ": "inkowie",
+          "cityState": false,
+          "treasury": 155,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 29,
+          "civ": "inkowie",
+          "cityState": true,
+          "treasury": 17,
+          "granary": 0,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 30,
+          "civ": "inkowie",
+          "cityState": true,
+          "treasury": 8,
+          "granary": 0,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 31,
+          "civ": "zulusi",
+          "cityState": false,
+          "treasury": 151,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 32,
+          "civ": "zulusi",
+          "cityState": true,
+          "treasury": 69,
+          "granary": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 33,
+          "civ": "zulusi",
+          "cityState": true,
+          "treasury": 14,
+          "granary": 9,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 34,
+          "civ": "grecy",
+          "cityState": false,
+          "treasury": 4,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 35,
+          "civ": "grecy",
+          "cityState": true,
+          "treasury": 106,
+          "granary": 0,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 36,
+          "civ": "grecy",
+          "cityState": true,
+          "treasury": 13,
+          "granary": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 37,
+          "civ": "fenicjanie",
+          "cityState": false,
+          "treasury": 64,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 38,
+          "civ": "fenicjanie",
+          "cityState": true,
+          "treasury": 33,
+          "granary": 0,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 39,
+          "civ": "fenicjanie",
+          "cityState": true,
+          "treasury": 136,
+          "granary": 2,
+          "cities": 1,
+          "units": 2
+        }
+      ]
+    },
+    {
+      "from": 10,
+      "to": 11,
+      "owners": [
+        {
+          "id": 40,
+          "civ": "rzymianie",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 14,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 41,
+          "civ": "rzymianie",
+          "cityState": true,
+          "treasury": 10,
+          "granary": 0,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 1,
+          "civ": "hetyci",
+          "cityState": false,
+          "treasury": 53.2,
+          "granary": 0,
+          "cities": 1,
+          "units": 5
+        },
+        {
+          "id": 2,
+          "civ": "hetyci",
+          "cityState": true,
+          "treasury": 39,
+          "granary": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 3,
+          "civ": "hetyci",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 4,
+          "civ": "germanie",
+          "cityState": false,
+          "treasury": 75,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "id": 5,
+          "civ": "germanie",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 4,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 6,
+          "civ": "germanie",
+          "cityState": true,
+          "treasury": 3,
+          "granary": 4,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 7,
+          "civ": "asyria",
+          "cityState": false,
+          "treasury": 59,
+          "granary": 0,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "id": 8,
+          "civ": "asyria",
+          "cityState": true,
+          "treasury": 8,
+          "granary": 0,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 9,
+          "civ": "asyria",
+          "cityState": true,
+          "treasury": 129,
+          "granary": 0,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 10,
+          "civ": "babilonia",
+          "cityState": false,
+          "treasury": 10,
+          "granary": 1,
+          "cities": 1,
+          "units": 3
+        },
+        {
+          "id": 11,
+          "civ": "babilonia",
+          "cityState": true,
+          "treasury": 7,
+          "granary": 16,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 12,
+          "civ": "babilonia",
+          "cityState": true,
+          "treasury": 7,
+          "granary": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 13,
+          "civ": "celtowie",
+          "cityState": false,
+          "treasury": 94,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 14,
+          "civ": "celtowie",
+          "cityState": true,
+          "treasury": 8,
+          "granary": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 15,
+          "civ": "celtowie",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 0,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 16,
+          "civ": "sumer",
+          "cityState": false,
+          "treasury": 0,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 17,
+          "civ": "sumer",
+          "cityState": true,
+          "treasury": 7,
+          "granary": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 18,
+          "civ": "sumer",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 19,
+          "civ": "harappa",
+          "cityState": false,
+          "treasury": 134,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 20,
+          "civ": "harappa",
+          "cityState": true,
+          "treasury": 93,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 21,
+          "civ": "harappa",
+          "cityState": true,
+          "treasury": 44,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 22,
+          "civ": "chinczycy",
+          "cityState": false,
+          "treasury": 22,
+          "granary": 1.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 23,
+          "civ": "chinczycy",
+          "cityState": true,
+          "treasury": 2,
+          "granary": 3,
+          "cities": 1,
+          "units": 0
+        },
+        {
+          "id": 24,
+          "civ": "chinczycy",
+          "cityState": true,
+          "treasury": 55,
+          "granary": 12,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 25,
+          "civ": "egipt",
+          "cityState": false,
+          "treasury": 19,
+          "granary": 2.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 26,
+          "civ": "egipt",
+          "cityState": true,
+          "treasury": 0,
+          "granary": 4,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 27,
+          "civ": "egipt",
+          "cityState": true,
+          "treasury": 24,
+          "granary": 0,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 28,
+          "civ": "inkowie",
+          "cityState": false,
+          "treasury": 152,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 29,
+          "civ": "inkowie",
+          "cityState": true,
+          "treasury": 13,
+          "granary": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 30,
+          "civ": "inkowie",
+          "cityState": true,
+          "treasury": 9,
+          "granary": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 31,
+          "civ": "zulusi",
+          "cityState": false,
+          "treasury": 248,
+          "granary": 0.5,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 32,
+          "civ": "zulusi",
+          "cityState": true,
+          "treasury": 65,
+          "granary": 0,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 33,
+          "civ": "zulusi",
+          "cityState": true,
+          "treasury": 15,
+          "granary": 16,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 34,
+          "civ": "grecy",
+          "cityState": false,
+          "treasury": 1,
+          "granary": 0,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 35,
+          "civ": "grecy",
+          "cityState": true,
+          "treasury": 107,
+          "granary": 8,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 36,
+          "civ": "grecy",
+          "cityState": true,
+          "treasury": 13,
+          "granary": 2,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 37,
+          "civ": "fenicjanie",
+          "cityState": false,
+          "treasury": 62,
+          "granary": 1,
+          "cities": 1,
+          "units": 2
+        },
+        {
+          "id": 38,
+          "civ": "fenicjanie",
+          "cityState": true,
+          "treasury": 35,
+          "granary": 4,
+          "cities": 1,
+          "units": 1
+        },
+        {
+          "id": 39,
+          "civ": "fenicjanie",
+          "cityState": true,
+          "treasury": 133,
+          "granary": 6,
+          "cities": 1,
+          "units": 2
+        }
+      ]
+    }
+  ],
+  "negatives": [
+    {
+      "turn": 2,
+      "id": 1,
+      "civ": "hetyci",
+      "cityState": false,
+      "treasury": -1,
+      "granary": 0
+    },
+    {
+      "turn": 2,
+      "id": 8,
+      "civ": "asyria",
+      "cityState": true,
+      "treasury": -1,
+      "granary": 3
+    },
+    {
+      "turn": 2,
+      "id": 15,
+      "civ": "celtowie",
+      "cityState": true,
+      "treasury": -1,
+      "granary": 3
+    },
+    {
+      "turn": 2,
+      "id": 18,
+      "civ": "sumer",
+      "cityState": true,
+      "treasury": -1,
+      "granary": 2
+    },
+    {
+      "turn": 2,
+      "id": 22,
+      "civ": "chinczycy",
+      "cityState": false,
+      "treasury": -1,
+      "granary": 0
+    },
+    {
+      "turn": 2,
+      "id": 23,
+      "civ": "chinczycy",
+      "cityState": true,
+      "treasury": -1,
+      "granary": 3
+    }
+  ],
+  "gate": {
+    "buttonTitle": "",
+    "buttonText": "Zakończ turę",
+    "buttonDisabled": false,
+    "messages": [
+      "Praca — bilans na turę: BRUTTO +6 → NETTO +6 pkt Pracy/turę (PROGNOZA następnej tury: wpływ z miast + nadwyżka z ukończonego budynku − utrzymanie ulepszeń; bez auto-ulepszeń i Cudów na mapie, których koszt wychodzi dopiero w ticku) · Ostatnia tura (zrealizowane): BRUTTO +6 → NETTO +6 · Wpływ do puli imperium: +6 pkt Pracy · Utrzymanie ulepszeń surowcowych: 0 pkt Pracy · Auto-ulepszenia AI (gracz): 0 pkt Pracy · Cuda na mapie: 0 pkt Pracy · Razem netto: +6 pkt Pracy. Kliknij po szczegóły. · Przyrost: pierwsza liczba = BRUTTO (przychód przed kosztami), druga = NETTO (po wszystkich opłatach = zmiana stanu na turę)",
+      "Spichlerz — magazyn centralny żywności · W magazynie: 5 / 1000 🍞 · BRUTTO (nadwyżka miast → centrala): +5 🍞/turę → NETTO (po deficytach miast i armii, zmiana magazynu): 0 🍞/turę · Deficyty miast pokryte z magazynu: −1 🍞/turę · Nadwyżka miast → centrala: +5 🍞/turę · Koszt armii: −4 🍞/turę · Kliknij po szczegóły. · Przyrost: pierwsza liczba = BRUTTO (przychód przed kosztami), druga = NETTO (po wszystkich opłatach = zmiana stanu na turę)",
+      "Handel — wymiana z obcymi cywilizacjami · BRUTTO: 0 pkt Pieniądza/turę (dochód z 0 aktywnych tras handlowych) → NETTO: 0 (trasy nie mają kosztów; ten dochód jest już wliczony we wpływy Skarbca) · Kliknij po szczegóły. · Przyrost: pierwsza liczba = BRUTTO (przychód przed kosztami), druga = NETTO (po wszystkich opłatach = zmiana stanu na turę)",
+      "Kultura — wpływ kulturowy imperium · Duża liczba: 0 pkt Kultury (zapas imperium) · BRUTTO 0 → NETTO 0 pkt Kultury/turę (brak dziś drenaży Kultury) · Kliknij po szczegóły.",
+      "Wiarygodność (W) = globalna reputacja twojego państwa (−100…+100). Twarde bramki: sojusz W≥0, pakt o nieagresji W≥−40. Wiarygodność +20 · Uczciwy. Start +20 · Trwały życiorys 0 · Bieżące uczynki 0. Nie wraca w pełni do startu — ślady zostają.",
+      "Otwiera i utrzymuje szlaki handlowe między miastami (+1 Zaufanie/turę). Bez koszyka towarów — wymiana surowców to osobna umowa (akcja 14). Zerwanie: −10 Zaufanie (a więc także −10 Relacja); po ≥10 turach od zawarcia zerwanie jest bez kary Zaufania.",
+      "Zezwolenie na przemarsz jednostek cywilnych lub wojskowych przez terytorium. Nieautoryzowany przemarsz: −5 Zaufanie/tura u właściciela (koniec tury, bez stacku jednostek).",
+      "Zakończenie aktywnej wojny pokojem (trwałym) lub rozejmem (tymczasowym). Może zawierać warunki: reparacje, cesja terytoriów."
+    ]
+  },
+  "checks": [
+    {
+      "ok": true,
+      "name": "e: 10 realnych tur zakończonych (tura >= 11)",
+      "extra": {
+        "turns": 10,
+        "lastTo": 11
+      }
+    },
+    {
+      "ok": true,
+      "name": "e: w snapshotach są właściciele AI (liczba)",
+      "extra": 41
+    },
+    {
+      "ok": false,
+      "name": "e: brak ujemnych skarbca/spichlerza AI w T1–10 (wszystkie właściciele AI)",
+      "extra": [
+        {
+          "turn": 2,
+          "id": 1,
+          "civ": "hetyci",
+          "cityState": false,
+          "treasury": -1,
+          "granary": 0
+        },
+        {
+          "turn": 2,
+          "id": 8,
+          "civ": "asyria",
+          "cityState": true,
+          "treasury": -1,
+          "granary": 3
+        },
+        {
+          "turn": 2,
+          "id": 15,
+          "civ": "celtowie",
+          "cityState": true,
+          "treasury": -1,
+          "granary": 3
+        },
+        {
+          "turn": 2,
+          "id": 18,
+          "civ": "sumer",
+          "cityState": true,
+          "treasury": -1,
+          "granary": 2
+        },
+        {
+          "turn": 2,
+          "id": 22,
+          "civ": "chinczycy",
+          "cityState": false,
+          "treasury": -1,
+          "granary": 0
+        },
+        {
+          "turn": 2,
+          "id": 23,
+          "civ": "chinczycy",
+          "cityState": true,
+          "treasury": -1,
+          "granary": 3
+        }
+      ]
+    },
+    {
+      "ok": false,
+      "name": "e: brak ujemnych skarbca/spichlerza u major AI w T1–10",
+      "extra": [
+        {
+          "turn": 2,
+          "id": 1,
+          "civ": "hetyci",
+          "cityState": false,
+          "treasury": -1,
+          "granary": 0
+        },
+        {
+          "turn": 2,
+          "id": 22,
+          "civ": "chinczycy",
+          "cityState": false,
+          "treasury": -1,
+          "granary": 0
+        }
+      ]
+    },
+    {
+      "ok": true,
+      "name": "g: bramka „Zakończ turę” zablokowana realnym deficytem (kroki jednostek)",
+      "extra": {
+        "steps": 2
+      }
+    },
+    {
+      "ok": true,
+      "name": "g: przycisk „Zakończ turę” znaleziony w DOM",
+      "extra": "Zakończ turę"
+    },
+    {
+      "ok": true,
+      "name": "g: tooltip/komunikat bramki NIE zawiera „kolejki produkcji”",
+      "extra": {
+        "buttonTitle": "",
+        "buttonText": "Zakończ turę",
+        "buttonDisabled": false,
+        "messages": [
+          "Praca — bilans na turę: BRUTTO +6 → NETTO +6 pkt Pracy/turę (PROGNOZA następnej tury: wpływ z miast + nadwyżka z ukończonego budynku − utrzymanie ulepszeń; bez auto-ulepszeń i Cudów na mapie, których koszt wychodzi dopiero w ticku) · Ostatnia tura (zrealizowane): BRUTTO +6 → NETTO +6 · Wpływ do puli imperium: +6 pkt Pracy · Utrzymanie ulepszeń surowcowych: 0 pkt Pracy · Auto-ulepszenia AI (gracz): 0 pkt Pracy · Cuda na mapie: 0 pkt Pracy · Razem netto: +6 pkt Pracy. Kliknij po szczegóły. · Przyrost: pierwsza liczba = BRUTTO (przychód przed kosztami), druga = NETTO (po wszystkich opłatach = zmiana stanu na turę)",
+          "Spichlerz — magazyn centralny żywności · W magazynie: 5 / 1000 🍞 · BRUTTO (nadwyżka miast → centrala): +5 🍞/turę → NETTO (po deficytach miast i armii, zmiana magazynu): 0 🍞/turę · Deficyty miast pokryte z magazynu: −1 🍞/turę · Nadwyżka miast → centrala: +5 🍞/turę · Koszt armii: −4 🍞/turę · Kliknij po szczegóły. · Przyrost: pierwsza liczba = BRUTTO (przychód przed kosztami), druga = NETTO (po wszystkich opłatach = zmiana stanu na turę)",
+          "Handel — wymiana z obcymi cywilizacjami · BRUTTO: 0 pkt Pieniądza/turę (dochód z 0 aktywnych tras handlowych) → NETTO: 0 (trasy nie mają kosztów; ten dochód jest już wliczony we wpływy Skarbca) · Kliknij po szczegóły. · Przyrost: pierwsza liczba = BRUTTO (przychód przed kosztami), druga = NETTO (po wszystkich opłatach = zmiana stanu na turę)",
+          "Kultura — wpływ kulturowy imperium · Duża liczba: 0 pkt Kultury (zapas imperium) · BRUTTO 0 → NETTO 0 pkt Kultury/turę (brak dziś drenaży Kultury) · Kliknij po szczegóły.",
+          "Wiarygodność (W) = globalna reputacja twojego państwa (−100…+100). Twarde bramki: sojusz W≥0, pakt o nieagresji W≥−40. Wiarygodność +20 · Uczciwy. Start +20 · Trwały życiorys 0 · Bieżące uczynki 0. Nie wraca w pełni do startu — ślady zostają.",
+          "Otwiera i utrzymuje szlaki handlowe między miastami (+1 Zaufanie/turę). Bez koszyka towarów — wymiana surowców to osobna umowa (akcja 14). Zerwanie: −10 Zaufanie (a więc także −10 Relacja); po ≥10 turach od zawarcia zerwanie jest bez kary Zaufania.",
+          "Zezwolenie na przemarsz jednostek cywilnych lub wojskowych przez terytorium. Nieautoryzowany przemarsz: −5 Zaufanie/tura u właściciela (koniec tury, bez stacku jednostek).",
+          "Zakończenie aktywnej wojny pokojem (trwałym) lub rozejmem (tymczasowym). Może zawierać warunki: reparacje, cesja terytoriów."
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "name": "g: klik „Zakończ turę” przy blokadzie NIE kończy tury",
+      "extra": {
+        "turnBefore": 11,
+        "turnAfterClick": 11
+      }
+    },
+    {
+      "ok": true,
+      "name": "g: komunikaty i tooltip po kliknięciu/najechaniu bez „kolejki produkcji”",
+      "extra": {
+        "toasts": [
+          "Kolejka pusta — wybierz budynek lub jednostkę",
+          "Zakończ turę"
+        ],
+        "hover": []
+      }
+    },
+    {
+      "ok": true,
+      "name": "g: komunikat DOM „Nie można zakończyć tury” obecny i bez „kolejki produkcji”",
+      "extra": [
+        "Nie można zakończyć tury: Spichlerz państwa (żywność): po turze zabraknie 3. Pomogą: podatek złota: +2 złota/turę; obniżka racji żywności: +8 żywności/turę; rozwiązanie jednostek (złoto): +12 złota/turę; rozwiązanie jednostek (żywność): +12 żywności/turę."
+      ]
+    },
+    {
+      "ok": true,
+      "name": "brak pageerror w trakcie run",
+      "extra": []
+    },
+    {
+      "ok": true,
+      "name": "brak błędów konsoli (poza tłem znanym)",
+      "extra": []
+    }
+  ],
+  "playerCities": 1,
+  "startSnapshot": {
+    "turn": 1,
+    "owners": [
+      {
+        "id": 40,
+        "civ": "rzymianie",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 41,
+        "civ": "rzymianie",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 1,
+        "civ": "hetyci",
+        "cityState": false,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 2,
+        "civ": "hetyci",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 3,
+        "civ": "hetyci",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 4,
+        "civ": "germanie",
+        "cityState": false,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 5,
+        "civ": "germanie",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 6,
+        "civ": "germanie",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 7,
+        "civ": "asyria",
+        "cityState": false,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 8,
+        "civ": "asyria",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 9,
+        "civ": "asyria",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 10,
+        "civ": "babilonia",
+        "cityState": false,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 11,
+        "civ": "babilonia",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 12,
+        "civ": "babilonia",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 13,
+        "civ": "celtowie",
+        "cityState": false,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 14,
+        "civ": "celtowie",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 15,
+        "civ": "celtowie",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 16,
+        "civ": "sumer",
+        "cityState": false,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 17,
+        "civ": "sumer",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 18,
+        "civ": "sumer",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 19,
+        "civ": "harappa",
+        "cityState": false,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 20,
+        "civ": "harappa",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 21,
+        "civ": "harappa",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 22,
+        "civ": "chinczycy",
+        "cityState": false,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 23,
+        "civ": "chinczycy",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 24,
+        "civ": "chinczycy",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 25,
+        "civ": "egipt",
+        "cityState": false,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 26,
+        "civ": "egipt",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 27,
+        "civ": "egipt",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 28,
+        "civ": "inkowie",
+        "cityState": false,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 29,
+        "civ": "inkowie",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 30,
+        "civ": "inkowie",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 31,
+        "civ": "zulusi",
+        "cityState": false,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 32,
+        "civ": "zulusi",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 33,
+        "civ": "zulusi",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 34,
+        "civ": "grecy",
+        "cityState": false,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 35,
+        "civ": "grecy",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 36,
+        "civ": "grecy",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 37,
+        "civ": "fenicjanie",
+        "cityState": false,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 38,
+        "civ": "fenicjanie",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      },
+      {
+        "id": 39,
+        "civ": "fenicjanie",
+        "cityState": true,
+        "treasury": 0,
+        "granary": 0
+      }
+    ]
+  },
+  "aiOwnersCount": 41,
+  "aiMajorCount": 13,
+  "negativesMajor": [
+    {
+      "turn": 2,
+      "id": 1,
+      "civ": "hetyci",
+      "cityState": false,
+      "treasury": -1,
+      "granary": 0
+    },
+    {
+      "turn": 2,
+      "id": 22,
+      "civ": "chinczycy",
+      "cityState": false,
+      "treasury": -1,
+      "granary": 0
+    }
+  ],
+  "baselineCanEnd": true,
+  "baselineModal": true,
+  "gateSteps": 2,
+  "blockLog": [
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)"
+  ],
+  "modalAfterSpawn": true,
+  "modalAfterClose": false,
+  "turnAfterClick": 11,
+  "toastsAfterClick": [
+    "Kolejka pusta — wybierz budynek lub jednostkę",
+    "Zakończ turę"
+  ],
+  "hoverTooltip": [],
+  "gateMessageDom": [
+    "Nie można zakończyć tury: Spichlerz państwa (żywność): po turze zabraknie 3. Pomogą: podatek złota: +2 złota/turę; obniżka racji żywności: +8 żywności/turę; rozwiązanie jednostek (złoto): +12 złota/turę; rozwiązanie jednostek (żywność): +12 żywności/turę."
+  ],
+  "diploCounterDom": [
+    "Dyplomacja\n0",
+    "Ważne\n0",
+    "Inne\n0"
+  ],
+  "diploTabs": [
+    "Dyplomacja0"
+  ],
+  "pageErrors": [],
+  "consoleErrorsCount": 0,
+  "consoleErrorsSample": [],
+  "pass": false
+}

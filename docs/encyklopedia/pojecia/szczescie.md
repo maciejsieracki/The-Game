@@ -43,6 +43,7 @@ Pełna rozpiska jest w panelu **Miasto** — każda linia to jeden czynnik z JSO
 | Własna religia ≥50% | +2 |
 | Własna kultura ≥80% | +1 |
 | Osiedle pop 1→4 | +3/+2/+1/0 |
+| Surowce utrzymania obywateli (za każdy surowiec epoki w pełni pokryty) | +2 |
 
 ### Zamożność w Daninie — tabela pełna (10 przedziałów po 10 p.p.)
 
@@ -71,6 +72,7 @@ Domyślny udział zamożności w Daninie nowego miasta to **20%** (wszystkie tru
 | Zagęszczenie (pop − próg 4) | −1 × nadmiar |
 | Obca kultura dominuje | −1 |
 | Obca religia | −2 |
+| Brak surowca utrzymania obywateli (za każdy surowiec epoki; Kamień: drewno, glina, ceramika) | −2 |
 
 **Wysokie podatki** nie jest już osobnym minusem — to ta sama tabela zamożności powyżej, tylko przy niskim udziale (0–19% na normal) wynik wychodzi ujemny.
 

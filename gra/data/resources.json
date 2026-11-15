@@ -69,7 +69,7 @@
     "Surowiec": "Ceramika",
     "Typ": "przetworzony",
     "Źródło / budynek": "Garncarnia (glina+drewno)",
-    "Uwagi": "magazyn państwa (klucz stock: ceramika); zużycie Spichlerz I/II (25 Ceramiki/t, było 5) — R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13, ×5); Garncarnia nie zużywa Ceramiki (U-14)"
+    "Uwagi": "magazyn państwa (klucz stock: ceramika); zużycie Spichlerz I 10 Ceramiki/t, Spichlerz II 20 Ceramiki/t (było 5 → 25 → 10/20) — R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13, ×5); Garncarnia nie zużywa Ceramiki (U-14)"
   },
   {
     "Surowiec": "Brąz",
