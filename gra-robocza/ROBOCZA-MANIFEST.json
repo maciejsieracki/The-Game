@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "4f75c30b346583e4adee73db4372e533",
-  "bundleSha256": "8ffd577a3f96419ab9677efead8d8eba9491e01f807dd0ebdf9fd313811c1918",
-  "bundleBytes": 14734037,
+  "bundleMd5": "34f8fb438b8392d12922d9440b7cd09b",
+  "bundleSha256": "a7ed04d5f1aefc136b4db01700dee67b10383a59eec73191358a46a7a7defff7",
+  "bundleBytes": 14739916,
   "sourceSnapshot": {
-    "source": "merge FC CERAM-KAMIEN r2 7f9cd4fa5 + ATTACK-DIR 931b1c92d na main e956b5015",
+    "source": "merge kod WIN-ARMY r3 bd07227f4 + raport FC ad34a7218 na main ff090714d",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 725: Obywatele zuzywaja 1 ceramiki na obywatela na ture juz w epoce Kamienia (kara -2 Szczescia / -1% rozwoju do czasu Garncarni); w rozstawieniu bitwy Kierunek natarcia, Formacja i Konnica dzialaja tylko na zaznaczone jednostki (bez zaznaczenia cala armia)"
+    "FALA 731: W bitwie AUTO i SKIP zwyciezcy nie tracą ruchu po zerwaniu kontaktu z wrogiem: sufit tempa nie wraca (zatrzask wzwarcia), ucięte ścieżki są przeplanowywane, konnica nie robi ping-pongu; konnica z wolna droga wykorzystuje pule ruchu (test behawioralny)"
   ],
   "verification": [
-    "tsc 0; logic 213/213; citizen-upkeep-era-mult 681/0; attack-dir 32 OK; FC PASS-WITH-NOTES x2"
+    "tsc 0; logic 213/213; pace-latch 5/5; pursuit-move-behavior 3/3 (mutacje 2/2); skip=auto 42/0; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "NIE ZMIERZONO: reczny pomiar kierunku natarcia w Chromium; dlug bazowy citizen-resource-upkeep 2 czerwone; dlug Rust REPIN"
+    "NIE ZMIERZONO: pelna macierz s1-s3 w Chromium; do decyzji wlasciciela: regula ciosu konnicy i arbitraz kolizji piechoty/lucznikow; dlug Rust REPIN"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES: CERAM-KAMIEN r2 7f9cd4fa5 / kod df5333720 (ceramika w utrzymaniu obywateli od epoki Kamienia, 1 na obywatela na ture; kara -2 Szczescia/-1% rozwoju bez ceramiki; zrzut Chromium panelu pokrycia surowcow); ATTACK-DIR 931b1c92d / kod 0721e8d80 (Kierunek natarcia, Formacja i Konnica w rozstawieniu tylko dla zaznaczonych jednostek; brak zaznaczenia = cala armia). Testy: citizen-upkeep-era-mult 681/0, attack-dir 32 OK, tsc 0, logic 213/213; citizen-resource-upkeep 122/2 (2 czerwone bazowe). NIE ZMIERZONO: pomiar kierunku natarcia w Chromium (reczna weryfikacja). Dlug Rust REPIN: citizen-resource-upkeep epoka 1."
+    "notes": "FC PASS-WITH-NOTES WIN-ARMY r3 ad34a7218 / kod bd07227f4: zwyciezca armia w AUTO i SKIP nie traci ruchu po zerwaniu kontaktu - zatrzask wzwarcia (sufit tempa nie wraca), przeplanowanie ucietych sciezek, rezerwacja sciezki konnicy i cavTrail (bez ping-pongu). Testy: battle-pace-latch 5/5 (mutacja czerwona), battle-pursuit-move-behavior 3/3 (mutacje 2/2: PATH_RESERVE, CAV_TRAIL), battle-skip-equals-auto-resolve 42/0, tsc 0, logic 213/213. NIE ZMIERZONO: pelna macierz s1-s3 w Chromium (watch/skip). Do decyzji wlasciciela: regula ciosu konnicy przy rozbitym wrogu w zasiegu (prototyp A: 27-55% puli ruchu) i arbitraz kolizji piechoty/lucznikow. Dlug Rust REPIN: melee_latched, przeplanowanie ucietych sciezek, cavTrail."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-15T01:21:14",
+  "hubGeneratedAt": "2026-11-15T05:36:46",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "4f75c30b346583e4adee73db4372e533",
-      "sizeBytes": 14734037
+      "md5": "34f8fb438b8392d12922d9440b7cd09b",
+      "sizeBytes": 14739916
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "4f75c30b346583e4adee73db4372e533",
-      "sizeBytes": 14734037
+      "md5": "34f8fb438b8392d12922d9440b7cd09b",
+      "sizeBytes": 14739916
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "4f75c30b346583e4adee73db4372e533",
-      "sizeBytes": 14734037
+      "md5": "34f8fb438b8392d12922d9440b7cd09b",
+      "sizeBytes": 14739916
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "4f75c30b346583e4adee73db4372e533",
-      "sizeBytes": 14734037
+      "md5": "34f8fb438b8392d12922d9440b7cd09b",
+      "sizeBytes": 14739916
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "4f75c30b346583e4adee73db4372e533",
-      "sizeBytes": 14734037
+      "md5": "34f8fb438b8392d12922d9440b7cd09b",
+      "sizeBytes": 14739916
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "4f75c30b346583e4adee73db4372e533",
-      "sizeBytes": 14734037
+      "md5": "34f8fb438b8392d12922d9440b7cd09b",
+      "sizeBytes": 14739916
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "4f75c30b346583e4adee73db4372e533",
-      "sizeBytes": 14734037
+      "md5": "34f8fb438b8392d12922d9440b7cd09b",
+      "sizeBytes": 14739916
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "4f75c30b346583e4adee73db4372e533",
-      "sizeBytes": 14734037
+      "md5": "34f8fb438b8392d12922d9440b7cd09b",
+      "sizeBytes": 14739916
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "4f75c30b346583e4adee73db4372e533",
-      "sizeBytes": 14734037
+      "md5": "34f8fb438b8392d12922d9440b7cd09b",
+      "sizeBytes": 14739916
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "4f75c30b346583e4adee73db4372e533",
-      "sizeBytes": 14734037
+      "md5": "34f8fb438b8392d12922d9440b7cd09b",
+      "sizeBytes": 14739916
     }
   ],
-  "md5": "4f75c30b346583e4adee73db4372e533",
+  "md5": "34f8fb438b8392d12922d9440b7cd09b",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

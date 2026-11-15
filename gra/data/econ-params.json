@@ -98,13 +98,6 @@
       "jednostka": "%",
       "opis": "Domyślny udział strumienia Praca→Budynki w podziale Pracy netto. [PT]"
     },
-    "suwak_praca_teren_domyslnie": {
-      "easy": 30,
-      "normal": 30,
-      "hard": 30,
-      "jednostka": "%",
-      "opis": "Domyślny udział strumienia Praca→Teren (ulepszenia heksów). [PT]"
-    },
     "suwak_zywnosc_rozwoj_domyslnie": {
       "easy": 100,
       "normal": 100,

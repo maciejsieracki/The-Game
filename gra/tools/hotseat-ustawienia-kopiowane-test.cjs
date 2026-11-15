@@ -95,10 +95,10 @@ async function main() {
     await openWizardToSettingsStep(page);
 
     await page.locator('.civ-newgame .seat2-toggle-btn').click();
-    await page.locator('.civ-newgame .start').click();
+    await page.locator('.civ-newgame .nb.next').click();
     await page.waitForSelector('.civ-newgame .seat2-dist-row', { timeout: 15000 });
     await page.locator('.civ-newgame .seat2-dist-opt', { hasText: 'Blisko' }).click();
-    await page.locator('.civ-newgame .start').click();
+    await page.locator('.civ-newgame .nb.next').click();
     await waitForWorld(page);
 
     const seats = await page.evaluate(() => window.__hotSeatTestDebug.snapshotHumanSeatsForTest());

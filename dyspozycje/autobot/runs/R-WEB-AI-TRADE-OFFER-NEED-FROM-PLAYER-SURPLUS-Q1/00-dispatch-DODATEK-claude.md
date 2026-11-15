@@ -19,3 +19,15 @@ OBOWIĄZKOWE w r2 (każdy punkt ZMIERZONO albo NIE ZMIERZONO z powodem; brak (1)
  5. Harness measure-ai-trade-offer-frequency(-matrix).cjs zawiesza się w turze 10 także na bazie — NIE naprawiaj w tym temacie (osobny dług); pomiar częstości zastąp pomiarem z pkt 2.
  6. 5 bramek referencyjnych + unit-power; czerwone-na-bazie (ai-trade-oneshot-overpay-limit #379) osobno; git diff --check czysty.
 ALLOWLISTA bez zmian + gra/tools/ai-trade-wiring-e2e-live-test.cjs (rozszerzenie), ewentualnie punkt wpięcia oferty na stół (znajdź grepem; wypisz pliki).
+
+## DODATEK 3 orkiestratora — RUNDA 3/5 (2026-11-15) — Operator SONNET (uzasadnienie: dwie nieudane rundy Haiku TEGO SAMEGO tematu, r1 FAIL i r2 FAIL; defekt jest analityczny — rozjazd wyceny par/podglądu, a nie brak pomiaru) — baza: kandydat 68d61aa45 (refs/keep/R-WEB-TRADE-NEED-r2-obrona) + merge origin/main; raport FC r2: f8af97173 (FAIL)
+Wynik r2 (przyjęty): przyczyna regresji wiring-e2e-live = bramka NNS „Zakończ turę” z FALI 724 (blokuje EOT przy ujemnej prognozie spichlerza) — naprawa w teście (bufor spichlerza), hook setCityPopulation, AITW_POP. Zostają.
+DEFEKT DO NAPRAWY (FC zmierzył): w scenariuszu AITW_POP=20 na kandydacie na stole leży oferta cegła 70 / drewno 350; realna wycena: givePn 350, receivePn 7000, bramka uczciwości AI ją ODRZUCA (fairBlock „wymagane >= 7000 PW”, accepted false), a podgląd gracza pokazuje „Możesz przyjąć” (playerOk true, 350=350). Baza z sufitem tego nie ma. To rozjazd podgląd↔bramka uczciwości — naruszenie GOAL („uczciwość wyceny bez zmian”).
+ZADANIE r3 (wszystkie punkty ZMIERZONO albo NIE ZMIERZONO z powodem):
+ 1. Zbadaj PRZYCZYNĘ: skąd bierze się para cegła 70 / drewno 350 przy zdjętym suficie (selekcja `selectAiTradeBarter`/ai-trade-proposal.ts: czy dobiera ilości po złej cenie, czy ilość odbioru nie przechodzi okna uczciwości, czy podgląd gracza liczy inną funkcją niż bramka). Napraw u źródła tak, aby OFERTA NA STOLE ZAWSZE PRZECHODZIŁA bramkę uczciwości AI (to ta sama wycena, której używa akceptacja) i podgląd gracza zgadzał się z bramką. Nie osłabiaj bramki uczciwości.
+ 2. ai-trade-wiring-e2e-live-test: 44/0 dla domyślnego scenariusza ORAZ AITW_POP=20 w Kamieniu i w Brązie (ticki dostaw padające w POP=20 także na bazie — odnotuj osobno jako dług bazowy, nie maskuj).
+ 3. Asercja behawioralna na REALNEJ wycenie: dla oferty z endTurn accepted == true i podgląd == bramka (para sufit/bez sufitu, mutacja przywracająca błąd ma dać czerwone).
+ 4. Koszt pętli giveQty×receiveQty: pomiar skalowania na realnej wycenie (nadwyżka 20000/5000/100000) albo wydajnościowy limit kombinacji z liczbami; limit NIE może zmieniać wyniku dla realnych ilości.
+ 5. Zrzut Chromium okna oferty AI→gracz (jedno miasto, 20 obywateli, Kamień i Brąz) do runs/<ID>/evidence/.
+ 6. 5 bramek referencyjnych + unit-power (dysk ≥ 8 GB wolny teraz); czerwone-na-bazie (ai-trade-oneshot-overpay-limit #379) osobno; git diff --check czysty.
+DECYZJA PRODUKTOWA robocza bez zmian (wariant A bez limitu gameplayowego; właściciel jeszcze nie odpowiedział na ABC o limicie — opisz w raporcie jako DO POTWIERDZENIA).

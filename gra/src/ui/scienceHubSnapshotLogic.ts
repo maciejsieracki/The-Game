@@ -70,6 +70,26 @@ export function hubEpochLabel(
 }
 
 /**
+ * Jawna kolejność czterech badań startowych w sekcji „Możesz wybrać" (decyzja
+ * właściciela 2026-11-14). Jedyne miejsce, w którym ta kolejność jest zapisana.
+ * Dotyczy WYŁĄCZNIE sortowania listy wyboru w hubie — nie kosztów, wymagań,
+ * efektów, drzewka ani AI (AI nie korzysta z buildHubTechEntries).
+ * Pozostałe badania zachowują sortowanie alfabetyczne (pl) między sobą, po tych czterech.
+ */
+export const HUB_START_TECH_ORDER: readonly string[] = [
+  'Obróbka drewna',
+  'Rolnictwo',
+  'Oswojenie zwierząt',
+  'Łowiectwo',
+];
+
+/** Pozycja nazwy w HUB_START_TECH_ORDER; Infinity dla pozostałych badań. */
+export function hubStartTechRank(name: string): number {
+  const idx = HUB_START_TECH_ORDER.indexOf(name);
+  return idx === -1 ? Number.POSITIVE_INFINITY : idx;
+}
+
+/**
  * Buduje wpisy sidebara: wszystkie pickable tech z silnika w bieżącej epoce +
  * podgląd do 4 zablokowanych.
  */
@@ -135,6 +155,11 @@ export function buildHubTechEntries(input: {
 
   entries.sort((a, b) => {
     if (a.locked !== b.locked) return a.locked ? 1 : -1;
+    if (!a.locked) {
+      const ra = hubStartTechRank(a.name);
+      const rb = hubStartTechRank(b.name);
+      if (ra !== rb) return ra < rb ? -1 : 1;
+    }
     return a.name.localeCompare(b.name, 'pl');
   });
 

@@ -1992,6 +1992,9 @@ interface RuntimeBattleUnit {
   r:            number;   // ROW (grid z); kept as `r` to minimise churn
   /** Last tile left by an automatic move; prevents replanning loops into the prior tile. */
   lastAutoMoveFrom?: { q: number; r: number };
+  /** R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1 (r3): pola, ktore konnica juz odwiedzila w TEJ aktywacji
+   *  (manewr `_cavManeuverStep` nie wraca na nie -- koniec ping-pongu A-B-A-B, ktory spalal cala pule ruchu bez postepu). */
+  cavTrail?: Set<string>;
   side:         'atk' | 'def';
   dead:         boolean;
   fadingOut:    boolean;
@@ -2726,6 +2729,14 @@ export class BattleScene {
   private roundNo = 0;
   /** R-WEB-BATTLE-PACE-EQUAL-LINE-LIVE-BUG-Q1: tempo marszu (pula ruchu) per strona, raz na runde. */
   private _paceCache: { round: number; contact: boolean; bySide: Map<string, number> } | null = null;
+  /**
+   * R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1: zatrzask wzwarcia wrecz na czas bitwy.
+   * Ustawiany RAZ, przy pierwszym kontakcie wrecz (poczatek rundy albo pierwsze zapytanie o sufit tempa);
+   * od tego momentu sufity tempa (_paceCapFor) i natarcia rangi (_lineAdvanceCap) nie obowiazuja do
+   * konca bitwy. Bez niego po zerwaniu kontaktu (wrog rozbity/uciekl) sufit wracal i dlawil pościg.
+   * Zmierzone: konnica (7 MP) ucinana do 3 MP przez piechote po zerwaniu kontaktu (ETAP 1).
+   */
+  private _meleeLatched = false;
   private _lineCapCache: { round: number; info: Map<string, { engaged: Set<string>; minMp: number }> } | null = null;
   /** Per jednostka (po bu.id; planowanie AUTO pracuje na klonach): rekord postepu i rundy bez rekordu. */
   private _lineAdvanceState: Map<string, { best: number; stall: number }> | undefined;
@@ -3592,6 +3603,7 @@ export class BattleScene {
   private _startBattle(): void {
     this.started    = true;
     this.roundNo    = 0;
+    this._meleeLatched = false;
     this.activeSide = 'atk';
     // TW v5 §2: zegar bitwy MM:SS startuje TERAZ — bazowa = zegar wirtualny w
     // chwili START WALKI (patrz _updateArmyMoraleBars / _fmtBattleClock).
@@ -5674,6 +5686,7 @@ export class BattleScene {
     this._updateStallWatch();
     if (this._checkEnd()) return;
     this.roundNo++;
+    this._refreshMeleeLatch();
 
     // R-WALKA-PRZEWAGA-LICZEBNA-Q1-W2 GOAL 1: nowa tura => stan "obronca juz
     // kontratakowal" wraca do zera i kazdy obronca znow moze kontratakowac raz.
@@ -5764,8 +5777,43 @@ export class BattleScene {
     // are rebuilt per unit below, so each decision sees exactly this snapshot,
     // never a previous same-side move.
     const intents = this._snapshotAutoBatchIntents(side, units);
+    let resolutions = resolveAutoBatchPhase(side, snapshots, intents);
+    // R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1 (r3): konnica (7 MP), ktorej plan arbitraz UTNIE na kolizji
+    // sciezek z juz zaakceptowanym planem innej jednostki tej fali, przeplanowuje sie (te same zrodlowe jednostki) z polami
+    // cudzych zaakceptowanych sciezek widzianymi jako zajete -- zamiast tracic reszte puli ruchu na pierwszej kolizji.
+    // Piechota/lucznicy planuja jak dotad (szyk W19), przeplanowanie dotyczy wylacznie ucietych planow konnicy.
+    if (/*PATH_RESERVE*/ true) { // marker mutacji testu behawioralnego (battle-pursuit-move-behavior-test.cjs)
+      const truncated = resolutions.filter(r => {
+        const it = intents.find(i => i.unitId === r.unitId);
+        return it !== undefined && it.steps.length > r.steps.length
+          && this._findUnitById(r.unitId)?.mounted === true;
+      });
+      if (truncated.length > 0) {
+        const reserved = new Map<string, string>();
+        for (const r of resolutions) {
+          for (const st of r.steps) {
+            const key = cellKey(st.col, st.row);
+            if (!reserved.has(key)) reserved.set(key, r.unitId);
+          }
+        }
+        for (const t of truncated) {
+          const unit = this._findUnitById(t.unitId);
+          if (!unit) continue;
+          for (const [key, owner] of [...reserved]) if (owner === t.unitId) reserved.delete(key);
+          const replanned = this._snapshotAutoBatchIntents(side, [unit], reserved)[0];
+          if (!replanned) continue;
+          const at = intents.findIndex(i => i.unitId === t.unitId);
+          if (at >= 0) intents[at] = replanned;
+          for (const st of replanned.steps) {
+            const key = cellKey(st.col, st.row);
+            if (!reserved.has(key)) reserved.set(key, t.unitId);
+          }
+        }
+        resolutions = resolveAutoBatchPhase(side, snapshots, intents);
+      }
+    }
     this._autoBatchPhase = side;
-    this._autoBatchResolutions = resolveAutoBatchPhase(side, snapshots, intents);
+    this._autoBatchResolutions = resolutions;
     this._autoBatchPending = this._autoBatchResolutions.length;
     const token = ++this._autoBatchToken;
     const first = this._autoBatchResolutions[0];
@@ -5789,7 +5837,11 @@ export class BattleScene {
    * important distinction from sequential AUTO: earlier intents cannot move a
    * later unit's target or occupancy while the phase is being planned.
    */
-  private _snapshotAutoBatchIntents(side: AutoBatchPhase, units: RuntimeBattleUnit[]): AutoBatchIntent[] {
+  private _snapshotAutoBatchIntents(
+    side: AutoBatchPhase,
+    units: RuntimeBattleUnit[],
+    reservedLanes?: ReadonlyMap<string, string>,
+  ): AutoBatchIntent[] {
     const originalAtk = this.atk;
     const originalDef = this.def;
     const originalOcc = this.occByKey;
@@ -5797,6 +5849,7 @@ export class BattleScene {
     const originalLogLength = this.log.length;
     const originalRoutedLength = this.routedUnits.length;
     const intents: AutoBatchIntent[] = [];
+    // `reservedLanes` (tylko przeplanowanie ucietych planow konnicy): kafel -> id jednostki, ktorej zaakceptowana sciezka go zajmuje.
 
     try {
       for (const source of units) {
@@ -5817,6 +5870,12 @@ export class BattleScene {
         }
         const clone = cloneById.get(source.bu.id);
         if (!clone) continue;
+        if (reservedLanes) {
+          for (const [key, reserverId] of reservedLanes) {
+            const reserver = cloneById.get(reserverId);
+            if (reserver && !cloneOcc.has(key)) cloneOcc.set(key, reserver);
+          }
+        }
 
         const intent: AutoBatchIntent = {
           unitId: source.bu.id,
@@ -6428,6 +6487,7 @@ export class BattleScene {
   private _cavalryAction(ru: RuntimeBattleUnit, done: () => void): void {
     if (this.finished) { done(); return; }
     if (ru.dead || ru.fadingOut) { done(); return; }
+    ru.cavTrail = new Set<string>(); // nowa aktywacja = czysty slad (klon planowania ma wlasna kopie pola)
 
     // 1) A worthy (non-spear) enemy is adjacent -> strike it now.
     const adjGood = this._cavAdjacentNonSpear(ru);
@@ -6523,6 +6583,7 @@ export class BattleScene {
       const nk = cellKey(nc, nr);
       if (this.occByKey.has(nk)) continue;
       if (!this._passableForUnit(ru, nc, nr)) continue;
+      if (/*CAV_TRAIL*/ ru.cavTrail?.has(nk)) continue; // nie wracaj na pole z tej aktywacji (ping-pong)
 
       const dTgt = manhattan(nc, nr, tgt.q, tgt.r);
 
@@ -6542,6 +6603,7 @@ export class BattleScene {
     const parts = best.split(',');
     const nc = Number(parts[0]);
     const nr = Number(parts[1]);
+    (ru.cavTrail ??= new Set<string>()).add(cellKey(ru.q, ru.r));
     this._doMove(ru, nc, nr, () => {
       if (this.finished) { done(); return; }
       // After the step: if now adjacent to a worthy target, stop (strike next
@@ -8253,17 +8315,32 @@ export class BattleScene {
     return /*PACE_EXEMPT*/false;
   }
 
+  /** Wzwarcie wrecz w tej chwili (ta sama definicja, co kontakt tempa): dowolna zywa, nierozbita jednostka bez zasiegu strzeleckiego, ktora moze atakowac z obecnego pola. */
+  private _meleeContactNow(): boolean {
+    return [...this.atk, ...this.def].some(u => !u.dead && !u.fadingOut && !u.removed && !u.routed
+      && !u.rangedBase && !isSiegeUnit(u.bu) && this._canAttackFrom(u, u.q, u.r));
+  }
+
+  /**
+   * R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1: zatrzask wzwarcia. Wywolywane na
+   * poczatku rundy (po roundNo++) i przy kazdym wyliczeniu kontaktu tempa; po pierwszym kontakcie
+   * wrecz zostaje ustawiony na czas calej bitwy (reset w _startBattle / _resetBattleRuntimeState).
+   */
+  private _refreshMeleeLatch(): void {
+    if (!this._meleeLatched && this._meleeContactNow()) this._meleeLatched = true;
+  }
+
   private _paceCapFor(ru: RuntimeBattleUnit): number {
     if (this.siegeWallCol >= 0 || ru.routed || this._paceExemptClass(ru)) return Number.POSITIVE_INFINITY;
     if (this._effectiveMetaForUnit(ru).doctrine !== 'steady') return Number.POSITIVE_INFINITY;
     let cache = this._paceCache;
     if (!cache || cache.round !== this.roundNo) {
-      const contact = [...this.atk, ...this.def].some(u => !u.dead && !u.fadingOut && !u.removed && !u.routed
-        && !u.rangedBase && !isSiegeUnit(u.bu) && this._canAttackFrom(u, u.q, u.r));
+      const contact = this._meleeContactNow();
       cache = { round: this.roundNo, contact, bySide: new Map() };
       this._paceCache = cache;
+      if (contact) this._meleeLatched = true;
     }
-    if (cache.contact) return Number.POSITIVE_INFINITY;
+    if (cache.contact || this._meleeLatched /*MELEE_LATCH*/) return Number.POSITIVE_INFINITY;
     let pace = cache.bySide.get(ru.side);
     if (pace === undefined) {
       pace = Number.POSITIVE_INFINITY;
@@ -8296,6 +8373,7 @@ export class BattleScene {
    * biezacych pozycji -- deterministyczny dla AUTO (klony stanu z poczatku fazy) i SKIP.
    */
   private _lineAdvanceCap(ru: RuntimeBattleUnit): number {
+    if (this._meleeLatched /*MELEE_LATCH_LINE*/) return Number.POSITIVE_INFINITY;
     if (this._effectiveMetaForUnit(ru).doctrine !== 'steady' || ru.mounted || ru.rangedBase || isSiegeUnit(ru.bu)) {
       return Number.POSITIVE_INFINITY;
     }
@@ -10881,6 +10959,7 @@ export class BattleScene {
     this.started = false;
     this.busy = false;
     this.roundNo = 0;
+    this._meleeLatched = false;
     this._lineCapCache = null;
     this._paceCache = null;
     this._lineAdvanceState?.clear();

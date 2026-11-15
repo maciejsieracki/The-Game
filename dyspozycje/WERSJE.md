@@ -1,3 +1,39 @@
+## ROBOCZA 34f8fb43 -- 2026-11-14 -- FALA 731: Zwyciezka armia w AUTO: pelny ruch w poscigu (testowa)
+
+- W bitwie AUTO i SKIP zwyciezcy nie tracą ruchu po zerwaniu kontaktu z wrogiem: sufit tempa nie wraca (zatrzask wzwarcia), ucięte ścieżki są przeplanowywane, konnica nie robi ping-pongu; konnica z wolna droga wykorzystuje pule ruchu (test behawioralny)
+- Weryfikacja: tsc 0; logic 213/213; pace-latch 5/5; pursuit-move-behavior 3/3 (mutacje 2/2); skip=auto 42/0; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: pelna macierz s1-s3 w Chromium; do decyzji wlasciciela: regula ciosu konnicy i arbitraz kolizji piechoty/lucznikow; dlug Rust REPIN
+
+## ROBOCZA 1771231a -- 2026-11-14 -- FALA 730: Oferty handlowe AI: ilosc odbioru z nadwyzki gracza (testowa)
+
+- Ilosc, o ktora prosi AI w ofercie handlowej do gracza, wynika z nadwyzki gracza zamiast sztywnego kroku 10 (jedno miasto, 20 obywateli: 70 cegly za 350 drewna, 350 PW = 350 PW); uczciwosc wyceny, cooldown 15 i limit 1 oferty na AI bez zmian
+- Weryfikacja: tsc 0; logic 213/213; need-from-surplus 12/0; wiring-e2e-live 47/0 (Kamien i Braz); proposal-branch 10/0; proposal-to-player 25 OK; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: czestosc ofert (harness zawiesza sie w turze 10); do decyzji wlasciciela: limit odbioru A/B/C i limit wydajnosciowy petli; dlug bazowy ai-trade-oneshot-overpay-limit-test #379; dlug Rust REPIN
+
+## ROBOCZA f074e0f1 -- 2026-11-14 -- FALA 729: Brutto i netto na kartach surowcow (testowa)
+
+- Przy kazdym surowcu w panelu surowcow widac Brutto i netto na ture (netto po zuzyciu obywateli, budynkow i wojska); suma kart rowna sie naglowkowi
+- Weryfikacja: tsc 0; logic 213/213; resource-cards-gross-net 22/0; hud-gross-net-rest 820/0; zywy Chromium brutto 52 / netto -13; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: hotseat; plakietka +X obok Brutto/netto redundantna - do decyzji wlasciciela; 4 testy czerwone bazowe; dlug Rust REPIN nie dotyczy (UI)
+
+## ROBOCZA 9ba327d6 -- 2026-11-14 -- FALA 728: Widok miasta: zetony w jednej linii, boczne panele wyzej (testowa)
+
+- W widoku miasta zetony lewego i prawego bannera (Praca, Zywnosc, Skarbiec / Nauka, Kultura, Religia) ukladaja sie w jednej linii bez zawijania, skala dopasowuje sie do szerokosci okna; boczne panele zaczynaja sie tuz pod bannerami
+- Weryfikacja: tsc 0; logic 213/213; city-view-layout 120/0; side-panels-below-topbanners 61/0; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: dluga Produkcja/kolejka, realna gra; czytelnosc zetonow ok. 11 px w oknach 1280-1366 px przy 6-7 cyfrach do decyzji wlasciciela; dlug testowy recruitment-panel-compact-row 7 FAIL
+
+## ROBOCZA a2585e07 -- 2026-11-14 -- FALA 727: Kolejnosc badan: Obrobka drewna, Rolnictwo, Oswojenie zwierzat, Lowiectwo (testowa)
+
+- W panelu Mozesz wybrac cztery badania startowe wyswietlaja sie w kolejnosci Obrobka drewna, Rolnictwo, Oswojenie zwierzat, Lowiectwo (tylko kolejnosc listy gracza; AI i drzewko bez zmian)
+- Weryfikacja: tsc 0; logic 213/213; tech-choice-order 9/0; science-hub 7/0; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: pelna gra nowa gra -> panel badan; brak REPIN Rust (tylko UI)
+
+## ROBOCZA f2b31b16 -- 2026-11-14 -- FALA 726: Porzadek po wdrozeniach: hotseat, martwe pole pracy, rada 50, poradnik (testowa)
+
+- Test hotseat zielony; usuniete martwe pole suwak_praca_teren_domyslnie (bez zmiany zachowania); rada 50% zamiast 70% w poradniku i encyklopedii; poradnik: kara x0,75 za glod i deficyt, opis banera Stan; nowy test pilnujacy hasla oslabienie-glod-deficyt
+- Weryfikacja: tsc 0; logic 213/213; hotseat 16/0; guard 7/0; growthmult 24/0; FC PASS-WITH-NOTES
+- Limity: Dlug bazowy budynki-koszt-pracy-50-test 141/42; NIE ZMIERZONO determinism-save-load-resume; dlug Rust REPIN
+
 ## ROBOCZA 4f75c30b -- 2026-11-14 -- FALA 725: Ceramika obywateli w Kamieniu, kierunek natarcia dla zaznaczonych jednostek (testowa)
 
 - Obywatele zuzywaja 1 ceramiki na obywatela na ture juz w epoce Kamienia (kara -2 Szczescia / -1% rozwoju do czasu Garncarni); w rozstawieniu bitwy Kierunek natarcia, Formacja i Konnica dzialaja tylko na zaznaczone jednostki (bez zaznaczenia cala armia)

@@ -144,6 +144,8 @@ Gdy zapasy państwa spadną **poniżej zera**:
 
 **Remedium:** Spichlerz w imperium, suwak żywności na wojsko, mniej armii w polu, więcej farm.
 
+**Osłabienie w walce (gracz i AI):** jednostka armii, która w danej turze **głoduje** (zapasy państwa poniżej zera) albo gdy **Skarbiec właściciela jest poniżej zera** po zbankowaniu tury, walczy z karą **×0,75** (−25%) do statystyk bojowych — bez pancerza. Obie kary kumulują się (0,75 × 0,75). Barbarzyńcy nie są osłabiani tymi karami. Okno przed bitwą pokazuje, która kara działa. Szczegóły: [Osłabienie w bitwie — głód wojska i deficyt złota](../encyklopedia/pojecia/oslabienie-glod-deficyt.md).
+
 ### 50.4. Priorytety gracza
 
 | Sytuacja | Suwak / budowa |
@@ -303,6 +305,10 @@ Model zmienił się z prostego „masz tech = masz surowiec" na **dwuwarunkowy**
 | Hodowla (Model B: bydło/owce/lama) | Bez złoża — wystarczy pastwisko/teren |
 
 **Złoże rezerwuje heks** — nie postawisz farmy na miedzi. **Ukryte złoża** — miedź/ruda od Brązu, żelazo od Żelaza, tylko w **Górach**.
+
+### 53.1a. Karta surowca: brutto i netto na turę (R-WEB-UI-RESOURCE-CARDS-GROSS-AND-NET-Q1, 2026-11-14)
+
+Każda karta surowca w panelu Surowce pokazuje dwie liczby na turę: **brutto** (cała produkcja surowca: teren, konwertery i przychód z umów handlowych) oraz **netto** (brutto po zużyciu: obywatele, budynki i wojsko). Suma kart jest równa wartościom z nagłówka „Brutto … → netto …”. Plakietka **+X** nad paskiem to nadal produkcja ± dyplomacja **przed** zużyciem; szczegóły zużycia są w „Zobacz szczegóły zużycia”. Surowiec bez produkcji i bez zużycia pokazuje „—”; surowiec bez produkcji, ale zużywany, ma brutto 0 i netto ujemne (na czerwono).
 
 ### 53.2. Magazyn surowców = pula CAŁEGO PAŃSTWA, nie per miasto (aktualizacja 2026-07-24, SUROW-CIV-01)
 
