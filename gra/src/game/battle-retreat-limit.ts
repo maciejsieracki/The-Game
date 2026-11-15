@@ -27,6 +27,10 @@ export const MAX_ODWROTOW_NA_TURE: number = Number.isFinite(odwrotCfg?.max_na_tu
 export const ARMIA_UNICESTWIONA_KOMUNIKAT =
   'Armia unicestwiona — wyczerpano trzy odwroty w tej turze';
 
+/** Komunikat unicestwienia armii PRZECIWNIKA (AI) — ta sama reguła, inna strona. */
+export const ARMIA_WROGA_UNICESTWIONA_KOMUNIKAT =
+  'Armia przeciwnika unicestwiona — wyczerpano trzy odwroty w tej turze';
+
 /** Powód wyszarzenia przycisku „Wycofaj" po wyczerpaniu limitu. */
 export const ODWROT_WYCZERPANY_POWOD =
   'Wycofanie niedostępne — wyczerpano trzy odwroty w tej turze; kolejna przegrana oznacza unicestwienie armii';

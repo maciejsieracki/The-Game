@@ -64,6 +64,7 @@ function run(P, o) {
     winner: o.winner, lossAtkPct: undefined, lossDefPct: undefined,
     manualSurvivors: o.survivors,
     defRetreatBudgetExhausted: o.exhausted === true,
+    atkRetreatBudgetExhausted: o.atkExhausted === true,
     battleEventLog: undefined,
     getDef: () => ({ health: 100, 'Rola (linia)': 'Wręcz' }), maxHpOf: () => 100,
     isPassableHex: () => true,
@@ -151,8 +152,9 @@ async function main() {
     const units = [a0, d0, d1];
     run(P, { units, bq: 11, br: 22, atk: [a0], def: [d0, d1], winner: 'atakujacy',
       survivors: [{ id: 'a0', hp: 90 }, { id: 'd0', hp: 37 }], exhausted: false });
-    assert(!at(units, 'd0') || at(units, 'd0').odwrotyWTurze === 0,
-      '2e: garnizon — licznik odwrotow nie jest zwiekszany');
+    assert(!!at(units, 'd0') && !at(units, 'd1'), '2e: garnizon — ocalaly garnizonu zyje, polegly d1 usuniety (bez unicestwienia)');
+    assert(H.retreatCountOfUnit(at(units, 'd0')) === 0 && at(units, 'd0').odwrotyWTurze === 0,
+      '2e: garnizon — licznik odwrotow nie jest zwiekszany (brak odwrotu do liczenia)');
   }
   // 2f) stary zapis: boolean retreatedThisTurn=true bez licznika -> liczony jako 1, nie wyczerpany.
   {
@@ -160,18 +162,82 @@ async function main() {
     assert(!H.retreatBudgetExhausted([d0]), '2f: stary zapis boolean true = 1 odwrot, budzet nie wyczerpany');
   }
 
+  // 2g) LUSTRO: atakujacy przegrywa po wyczerpaniu limitu (obrona wygrywa w polu) -> unicestwienie atakujacego.
+  {
+    const a0 = U('a0', 0, 11, 23, { odwrotyWTurze: 3 });
+    const d0 = U('d0', 1, 11, 22);
+    const units = [a0, d0];
+    const res = run(P, { units, bq: 11, br: 22, atk: [a0], def: [d0], winner: 'obronca',
+      survivors: [{ id: 'd0', hp: 90 }, { id: 'a0', hp: 37 }], exhausted: false, atkExhausted: true });
+    assert(!at(units, 'a0'), '2g: atakujacy po wyczerpaniu limitu ginie (unicestwienie armii)');
+    assert(!!at(units, 'd0'), '2g: zwycieski obronca zyje');
+    assert(res.attackerAnnihilatedByRetreatLimit === true, '2g: wynik zglasza unicestwienie atakujacego');
+    assert(res.defenderAnnihilatedByRetreatLimit === false, '2g: brak falszywej flagi unicestwienia obrony');
+    assert(res.removedIds.includes('a0'), '2g: a0 w removedIds');
+  }
+  // 2h) LUSTRO, budzet niewyczerpany: ocalaly atakujacego cofa sie (zyje) i licznik rosnie o 1.
+  {
+    const a0 = U('a0', 0, 11, 23);
+    const d0 = U('d0', 1, 11, 22);
+    const units = [a0, d0];
+    const res = run(P, { units, bq: 11, br: 22, atk: [a0], def: [d0], winner: 'obronca',
+      survivors: [{ id: 'd0', hp: 90 }, { id: 'a0', hp: 37 }], exhausted: false, atkExhausted: false });
+    assert(!!at(units, 'a0') && res.attackerAnnihilatedByRetreatLimit === false,
+      '2h: atakujacy po przegranej (budzet 0) — ocalaly zyje, brak unicestwienia');
+    assert(at(units, 'a0').odwrotyWTurze === 1, '2h: odwrot ocalalego atakujacego liczy sie do limitu (licznik 0 -> 1)');
+  }
+  // 2i) LICZNIK ROSTERU = MAKSIMUM: jednostka świeża (0) przy jednostce z 3 odwrotami -> budzet wyczerpany.
+  {
+    assert(H.retreatBudgetExhausted([{ id: 'n', odwrotyWTurze: 0 }, { id: 'o', odwrotyWTurze: 3 }]),
+      '2i: roster mieszany (0 + 3) -> budzet wyczerpany (maksimum)');
+    const a0 = U('a0', 0, 11, 23);
+    const d0 = U('d0', 1, 11, 22, { odwrotyWTurze: 0 });
+    const d1 = U('d1', 1, 11, 22, { odwrotyWTurze: 3 });
+    const units = [a0, d0, d1];
+    const res = run(P, { units, bq: 11, br: 22, atk: [a0], def: [d0, d1], winner: 'atakujacy',
+      survivors: [{ id: 'a0', hp: 90 }, { id: 'd0', hp: 37 }], exhausted: true });
+    assert(!at(units, 'd0') && res.defenderAnnihilatedByRetreatLimit === true,
+      '2i: swiezy obronca w armii z 3 odwrotami ginie razem z armia (unicestwienie)');
+  }
+  // 2j) REMIS: odwrot obroncow przy remisie NIE jest liczony i NIE unicestwia (zalozenie Operatora, decyzja 7).
+  {
+    const a0 = U('a0', 0, 11, 23);
+    const d0 = U('d0', 1, 11, 22);
+    const units = [a0, d0];
+    const res = run(P, { units, bq: 11, br: 22, atk: [a0], def: [d0], winner: 'remis',
+      survivors: [{ id: 'a0', hp: 40 }, { id: 'd0', hp: 40 }], exhausted: true, atkExhausted: true });
+    assert(res.defenderAnnihilatedByRetreatLimit === false && res.attackerAnnihilatedByRetreatLimit === false,
+      '2j: remis — brak unicestwienia (remis to nie przegrana)');
+    assert(at(units, 'd0').odwrotyWTurze === undefined && at(units, 'a0').odwrotyWTurze === undefined,
+      '2j: remis — licznik nie zmieniony (ZALOZENIE: remis nie jest odwrotem z dispatchu)');
+  }
+
   // ---------- Czesc 3: pin tekstowy main.ts ----------
   const mainSrc = fs.readFileSync(path.join(ROOT, 'src', 'main.ts'), 'utf8');
-  assert(/retreatExhaustedThisTurn = retreatBudgetExhausted\(defRosterRef\)/.test(mainSrc),
+  // Piny wiążą wyrażenie z KODEM (linia nieskomentowana), nie z samym tekstem w komentarzu.
+  const codeLines = mainSrc.split('\n').filter(l => !/^\s*(\/\/|\*|\/\*)/.test(l));
+  const codeHas = re => codeLines.some(l => re.test(l));
+  const codeBlock = (startRe, lines) => {
+    const i = codeLines.findIndex(l => startRe.test(l));
+    return i < 0 ? '' : codeLines.slice(i, i + lines).join('\n');
+  };
+  assert(codeHas(/const retreatExhaustedThisTurn = retreatBudgetExhausted\(defRosterRef\);/),
     '3a: main.ts: retreatExhaustedThisTurn liczony z licznika rosteru (retreatBudgetExhausted)');
-  assert(/recordRetreatOnRoster\(defRosterRef\);/.test(mainSrc),
+  assert(codeHas(/^\s*recordRetreatOnRoster\(defRosterRef\);\s*$/),
     '3b: main.ts: po Wycofaj zapis odwrotu na rosterze obrony (recordRetreatOnRoster)');
-  assert(/resetRetreatCountOfUnit\(u\);/.test(mainSrc),
-    '3c: main.ts: reset licznika na poczatku tury (EOT)');
-  assert(/defRetreatBudgetExhausted: !cityOnHex/.test(mainSrc),
-    '3d: main.ts: przekazanie budzetu do applyPostBattleMap (poza miastem)');
-  assert(/showHintMessage\(ARMIA_UNICESTWIONA_KOMUNIKAT/.test(mainSrc),
-    '3e: main.ts: komunikat „Armia unicestwiona” po unicestwieniu');
+  const eotBlock = codeBlock(/turn\+\+;/, 1) && mainSrc.slice(mainSrc.indexOf('// Restore movement for all units'), mainSrc.indexOf('// Restore movement for all units') + 4000);
+  const eotCall = eotBlock.split('\n').find(l => /resetRetreatCountOfUnit\(u\);/.test(l) && !/^\s*\/\//.test(l));
+  assert(!!eotCall && /for \(const u of units\)/.test(eotBlock.slice(0, eotBlock.indexOf('resetRetreatCountOfUnit(u);'))) ,
+    '3c: main.ts: reset licznika w petli po units w EOT (nieskomentowany)');
+  assert(codeHas(/defRetreatBudgetExhausted: !cityOnHex$/) && codeHas(/&& !allDefendersFortifiedInGarnizon\(defRoster\)$/)
+    && codeHas(/&& retreatBudgetExhausted\(defRoster\),$/),
+    '3d: main.ts: defRetreatBudgetExhausted = !miasto && !garnizon && retreatBudgetExhausted(defRoster) (dokladna forma)');
+  assert(codeHas(/atkRetreatBudgetExhausted: !cityOnHex && retreatBudgetExhausted\(atkRoster\),/),
+    '3g: main.ts: atkRetreatBudgetExhausted = !miasto && retreatBudgetExhausted(atkRoster) (lustro)');
+  assert(codeHas(/showHintMessage\(playerArmyDestroyed \? ARMIA_UNICESTWIONA_KOMUNIKAT : ARMIA_WROGA_UNICESTWIONA_KOMUNIKAT/),
+    '3e: main.ts: komunikat „Armia unicestwiona” (gracz) / wariant wrogi po unicestwieniu');
+  assert(codeHas(/if \(postBattleRes\.defenderAnnihilatedByRetreatLimit \|\| postBattleRes\.attackerAnnihilatedByRetreatLimit\)/),
+    '3h: main.ts: komunikat wywolywany dla obu stron (obrona i atak)');
   assert(!/u\.retreatedThisTurn = true/.test(mainSrc) && !/if \(u\.retreatedThisTurn\) u\.retreatedThisTurn = false/.test(mainSrc),
     '3f: main.ts: stare zapisy boolean nie są już ustawiane (migracja przez helper)');
 

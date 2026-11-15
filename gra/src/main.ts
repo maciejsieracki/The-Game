@@ -980,6 +980,7 @@ import {
   recordRetreatOnRoster,
   resetRetreatCountOfUnit,
   ARMIA_UNICESTWIONA_KOMUNIKAT,
+  ARMIA_WROGA_UNICESTWIONA_KOMUNIKAT,
 } from './game/battle-retreat-limit';
 import {
   collectRemovedEnemyTypeIds,
@@ -35996,6 +35997,9 @@ async function boot(): Promise<void> {
         defRetreatBudgetExhausted: !cityOnHex
           && !allDefendersFortifiedInGarnizon(defRoster)
           && retreatBudgetExhausted(defRoster),
+        // R-WEB-BATTLE-RETREAT-LIMIT-3-PER-TURN-THEN-DESTROYED-Q1: lustrzany limit dla atakujacego
+        // (przegrana atakujacego po trzech odwrotach w tej turze = unicestwienie armii).
+        atkRetreatBudgetExhausted: !cityOnHex && retreatBudgetExhausted(atkRoster),
         battleQ,
         battleR,
         atkAnchor: atkRoster[0]!,
@@ -36019,8 +36023,12 @@ async function boot(): Promise<void> {
         cityOnBattleHex: cityOnHex,
         holdPositionAfterWin: fortifiedCaptureBlocked,
       });
-      if (postBattleRes.defenderAnnihilatedByRetreatLimit) {
-        showHintMessage(ARMIA_UNICESTWIONA_KOMUNIKAT, 6000);
+      // Komunikat dla gracza: swoja armia (obrona lub atak) -> ARMIA_UNICESTWIONA; wroga -> wariant AI.
+      if (postBattleRes.defenderAnnihilatedByRetreatLimit || postBattleRes.attackerAnnihilatedByRetreatLimit) {
+        const playerArmyDestroyed = postBattleRes.defenderAnnihilatedByRetreatLimit
+          ? defRoster.some(u => u.ownerId === 0)
+          : atkRoster.some(u => u.ownerId === 0);
+        showHintMessage(playerArmyDestroyed ? ARMIA_UNICESTWIONA_KOMUNIKAT : ARMIA_WROGA_UNICESTWIONA_KOMUNIKAT, 6000);
       }
       // R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1: odwrot ocalalych (pole) o 2 heksy to
       // przemieszczenie wieloheksowe -- odkrycie mgly gracza wzdluz drogi (heks bitwy -> cel).
