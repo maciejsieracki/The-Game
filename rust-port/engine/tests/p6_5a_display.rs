@@ -2,6 +2,14 @@
 //! `stackVitals` z `armyMerge.ts`, z wektorami z URUCHOMIONEGO weba
 //! (`tests/p6_5a_vectors/display.json`, pin edb8fb56).
 //!
+//! P4-1D-Q1 (R-RUSTPORT-P4-1D-Q1-STACK-REPIN): czesc wyswietlania stosu przepieta na pin
+//! `07d2fbd72` (reprezentant = `pickStackLeader`, `StackVitals.hasCommander`). Wektory @07:
+//! `tests/p6_5a_vectors/vectors.json` (generator `gen.mjs`, strazniki SHA-256 fragmentow pinu):
+//! `repin` = wszystkie wejscia starych wektorow przeliczone na @07, `cases` = nowe przypadki
+//! (cywile, wodz, remisy UTF-16, garnizon+pole, jawny `stackGroupId` na dwoch heksach).
+//! Stare wektory edb8fb56 sa sprawdzane bez zmian (diff = 0) dla przypadkow, ktorych wynik @07 sie
+//! nie zmienil; przypadki z `repinChanged` sa sprawdzane wylacznie wynikiem @07.
+//!
 //! Zaleznosci spoza zakresu tematu (`sumRosterFieldM`, odznaki sciezek, poziomy weterana) sa
 //! wstrzykiwane domknieciami czytajacymi WYNIKI prawdziwych funkcji weba zapisane w wektorze
 //! (tablica `dep` rownolegla do listy jednostek); domkniecie rosteru ASERTUJE, ze `stack_field_power_m`
@@ -15,13 +23,40 @@ use civ_engine::domain::recruitment::army_merge::{
     stack_hp_pool, stack_soft_badge_level, stack_veteran_level, stack_veteran_star_count,
     stack_vitals, unit_at_representative, RosterEntry, StackVitals, StackVitalsDeps, StosJednostka,
 };
+use civ_engine::domain::recruitment::manpower::is_civilian_unit;
 use common::{assert_same, cases, indices, load, num, refs, units};
 use serde_json::Value;
 
 const VECTORS: &str = include_str!("p6_5a_vectors/display.json");
+const VECTORS_07: &str = include_str!("p6_5a_vectors/vectors.json");
 
 fn root() -> Value {
     load(VECTORS)
+}
+
+fn root07() -> Value {
+    load(VECTORS_07)
+}
+
+/// Indeksy starych przypadkow (`display.json`), ktorych wynik na @07 sie zmienil.
+fn repin_changed(root07: &Value, name: &str) -> Vec<usize> {
+    indices(&root07["repinChanged"][name])
+}
+
+fn list<'a>(root: &'a Value, section: &str, name: &str) -> &'a Vec<Value> {
+    root[section][name]
+        .as_array()
+        .unwrap_or_else(|| panic!("brak {section}.{name}"))
+}
+
+fn has_tag(case: &Value, tag: &str) -> bool {
+    case["tags"]
+        .as_array()
+        .is_some_and(|tags| tags.iter().any(|t| t.as_str() == Some(tag)))
+}
+
+fn count_tag(list: &[Value], tag: &str) -> usize {
+    list.iter().filter(|case| has_tag(case, tag)).count()
 }
 
 /// Wpis `dep` jednego uzycia (rownolegly do listy jednostek).
@@ -127,6 +162,19 @@ fn assert_vitals(label: &str, got: &StackVitals, want: &Value) {
         want["veteranStars"].as_u64().expect("stars"),
         "{label}"
     );
+    // `hasCommander` (pole @07); wektory edb8fb56 go nie maja, a ich jednostki nie niosa `isGeneral`,
+    // wiec web @07 dalby `false` (sprawdzone w `repin`).
+    match want.get("hasCommander") {
+        Some(flag) => assert_eq!(
+            got.has_commander,
+            flag.as_bool().expect("hasCommander"),
+            "{label} hasCommander"
+        ),
+        None => assert!(
+            !got.has_commander,
+            "{label} hasCommander bez pola w wektorze"
+        ),
+    }
 }
 
 /// Tabela `roster -> wynik sumRosterFieldM` zapisana w wektorze (wynik PRAWDZIWEGO weba).
@@ -193,18 +241,26 @@ fn with_deps<R>(
     })
 }
 
-#[test]
-fn representative_matches_web_including_utf16_id_order_and_nan_attack() {
-    let root = root();
-    let mut ties = 0;
-    let mut empty = 0;
-    for case in cases(&root, "pickStackRepresentative") {
+/// Liczniki pokrycia sprawdzenia `pickStackRepresentative`.
+#[derive(Default)]
+struct PickCounts {
+    checked: usize,
+    ties: usize,
+    empty: usize,
+}
+
+fn check_pick(list: &[Value], skip: &[usize]) -> PickCounts {
+    let mut counts = PickCounts::default();
+    for (at, case) in list.iter().enumerate() {
+        if skip.contains(&at) {
+            continue;
+        }
         let all = units(&case["units"]);
         if case.get("threw").is_some() {
             assert!(case["threw"].as_bool().expect("threw"));
             let none: Vec<&StosJednostka> = Vec::new();
             assert!(pick_stack_representative(&none, &|_| 0.0).is_none());
-            empty += 1;
+            counts.empty += 1;
             continue;
         }
         let attacks: Vec<f64> = case["attacks"]
@@ -224,21 +280,31 @@ fn representative_matches_web_including_utf16_id_order_and_nan_attack() {
         assert_eq!(
             index_of(&all, got) as u64,
             case["out"].as_u64().expect("out"),
-            "pickStackRepresentative {case}"
+            "pickStackRepresentative [{at}] {case}"
         );
         if attacks.windows(2).any(|w| w[0] == w[1]) {
-            ties += 1;
+            counts.ties += 1;
         }
+        counts.checked += 1;
     }
-    assert_eq!(empty, 1);
-    assert!(ties > 10, "wektory musza zawierac remisy ataku ({ties})");
+    counts
 }
 
-#[test]
-fn compute_stack_display_matches_web_order_and_vitals() {
-    let root = root();
-    let (mut with_vitals, mut stacked) = (0, 0);
-    for case in cases(&root, "computeStackDisplay") {
+/// Liczniki pokrycia sprawdzenia `computeStackDisplay`.
+#[derive(Default)]
+struct DisplayCounts {
+    checked: usize,
+    with_vitals: usize,
+    stacked: usize,
+    commander: usize,
+}
+
+fn check_display(list: &[Value], skip: &[usize]) -> DisplayCounts {
+    let mut counts = DisplayCounts::default();
+    for (at, case) in list.iter().enumerate() {
+        if skip.contains(&at) {
+            continue;
+        }
         let all = units(&case["units"]);
         let dep = deps(&case["dep"]);
         let attack_of = attack_table(&all, &dep);
@@ -258,7 +324,7 @@ fn compute_stack_display_matches_web_order_and_vitals() {
             .iter()
             .map(|v| v.as_str().expect("id"))
             .collect();
-        assert_eq!(got.visible_ids, want_ids, "visibleIds {case}");
+        assert_eq!(got.visible_ids, want_ids, "visibleIds [{at}] {case}");
         let want_badge: Vec<(String, u64)> = want["badge"]
             .as_array()
             .expect("badge")
@@ -275,33 +341,37 @@ fn compute_stack_display_matches_web_order_and_vitals() {
             .iter()
             .map(|(id, n)| (id.clone(), *n as u64))
             .collect();
-        assert_eq!(got_badge, want_badge, "badgeByRepId {case}");
+        assert_eq!(got_badge, want_badge, "badgeByRepId [{at}] {case}");
         assert!(got.starving_rep_ids.is_none() && got.gold_deficit_rep_ids.is_none());
         match (&got.vitals_by_rep_id, want["vitals"].as_array()) {
             (None, None) => {}
             (Some(got_v), Some(want_v)) => {
-                assert_eq!(got_v.len(), want_v.len(), "vitals {case}");
+                assert_eq!(got_v.len(), want_v.len(), "vitals [{at}] {case}");
                 for ((id, vitals), want) in got_v.iter().zip(want_v) {
                     assert_eq!(id, want[0].as_str().expect("id"));
-                    assert_vitals(&format!("vitals {id}"), vitals, &want[1]);
+                    assert_vitals(&format!("vitals [{at}] {id}"), vitals, &want[1]);
+                    if vitals.has_commander {
+                        counts.commander += 1;
+                    }
                 }
-                with_vitals += 1;
+                counts.with_vitals += 1;
             }
-            other => panic!("obecnosc vitalsByRepId: {other:?}"),
+            other => panic!("obecnosc vitalsByRepId [{at}]: {other:?}"),
         }
         if got_badge.len() < want_ids.len() {
-            stacked += 1;
+            counts.stacked += 1;
         }
+        counts.checked += 1;
     }
-    assert!(with_vitals > 50, "{with_vitals}");
-    assert!(stacked > 20, "wektory musza zawierac stosy >1 ({stacked})");
+    counts
 }
 
-#[test]
-fn unit_at_representative_matches_web() {
-    let root = root();
+fn check_at(list: &[Value], skip: &[usize]) -> (usize, usize) {
     let (mut found, mut missing) = (0, 0);
-    for case in cases(&root, "unitAtRepresentative") {
+    for (at, case) in list.iter().enumerate() {
+        if skip.contains(&at) {
+            continue;
+        }
         let all = units(&case["units"]);
         let attacks: Vec<f64> = case["attacks"]
             .as_array()
@@ -325,12 +395,82 @@ fn unit_at_representative_matches_web() {
         match (got, case["out"].as_u64()) {
             (None, None) => missing += 1,
             (Some(u), Some(want)) => {
-                assert_eq!(index_of(&all, u) as u64, want, "{case}");
+                assert_eq!(index_of(&all, u) as u64, want, "[{at}] {case}");
                 found += 1;
             }
-            other => panic!("unitAtRepresentative {case}: {:?}", other.1),
+            other => panic!("unitAtRepresentative [{at}] {case}: {:?}", other.1),
         }
     }
+    (found, missing)
+}
+
+/// `(niepuste stosy, stosy z wodzem)`.
+fn check_vitals(list: &[Value], skip: &[usize]) -> (usize, usize) {
+    let (mut nonempty, mut commander) = (0, 0);
+    for (at, case) in list.iter().enumerate() {
+        if skip.contains(&at) {
+            continue;
+        }
+        let all = units(&case["units"]);
+        let dep = deps(&case["dep"]);
+        let stack = refs(&all, &indices(&case["stack"]));
+        let roster = expected_roster(case);
+        let table: RosterTable = if stack.is_empty() {
+            Vec::new()
+        } else {
+            vec![(roster, num(&case["rosterSum"]))]
+        };
+        let got = with_deps(&all, &dep, &table, |d| stack_vitals(&stack, d));
+        assert_vitals(&format!("stackVitals [{at}]"), &got, &case["out"]);
+        if !stack.is_empty() {
+            nonempty += 1;
+        }
+        if got.has_commander {
+            commander += 1;
+        }
+    }
+    (nonempty, commander)
+}
+
+#[test]
+fn representative_matches_web_including_utf16_id_order_and_nan_attack() {
+    let root = root();
+    let skip = repin_changed(&root07(), "pickStackRepresentative");
+    let counts = check_pick(cases(&root, "pickStackRepresentative"), &skip);
+    assert_eq!(counts.empty, 1);
+    assert!(
+        counts.ties > 10,
+        "wektory musza zawierac remisy ataku ({})",
+        counts.ties
+    );
+    assert_eq!(
+        counts.checked + counts.empty + skip.len(),
+        cases(&root, "pickStackRepresentative").len()
+    );
+}
+
+#[test]
+fn compute_stack_display_matches_web_order_and_vitals() {
+    let root = root();
+    let skip = repin_changed(&root07(), "computeStackDisplay");
+    let counts = check_display(cases(&root, "computeStackDisplay"), &skip);
+    assert!(counts.with_vitals > 50, "{}", counts.with_vitals);
+    assert!(
+        counts.stacked > 20,
+        "wektory musza zawierac stosy >1 ({})",
+        counts.stacked
+    );
+    assert_eq!(
+        counts.checked + skip.len(),
+        cases(&root, "computeStackDisplay").len()
+    );
+}
+
+#[test]
+fn unit_at_representative_matches_web() {
+    let root = root();
+    let skip = repin_changed(&root07(), "unitAtRepresentative");
+    let (found, missing) = check_at(cases(&root, "unitAtRepresentative"), &skip);
     assert!(found > 20 && missing > 5, "{found}/{missing}");
 }
 
@@ -435,22 +575,169 @@ fn badge_and_veteran_maxima_match_web() {
 #[test]
 fn stack_vitals_matches_web() {
     let root = root();
-    let mut nonempty = 0;
-    for case in cases(&root, "stackVitals") {
-        let all = units(&case["units"]);
-        let dep = deps(&case["dep"]);
-        let stack = refs(&all, &indices(&case["stack"]));
-        let roster = expected_roster(case);
-        let table: RosterTable = if stack.is_empty() {
-            Vec::new()
-        } else {
-            vec![(roster, num(&case["rosterSum"]))]
-        };
-        let got = with_deps(&all, &dep, &table, |d| stack_vitals(&stack, d));
-        assert_vitals("stackVitals", &got, &case["out"]);
-        if !stack.is_empty() {
-            nonempty += 1;
+    let skip = repin_changed(&root07(), "stackVitals");
+    let (nonempty, _) = check_vitals(cases(&root, "stackVitals"), &skip);
+    assert!(nonempty > 50, "{nonempty}");
+}
+
+// ---------------------------------------------------------------------------
+// P4-1D-Q1: wektory @07 (`vectors.json`)
+// ---------------------------------------------------------------------------
+
+#[test]
+fn vectors_07_meta_and_pin_guards() {
+    let old = root();
+    let root = root07();
+    assert_eq!(root["meta"]["pin"].as_str(), Some("07d2fbd72"));
+    let guards = root["meta"]["guards"].as_object().expect("guards");
+    for key in [
+        "game/stack-leader.ts::pickStackLeader",
+        "game/stack-leader.ts::isNonCombatStackMember",
+        "units/setup.ts::isCivilianUnit",
+        "game/armyMerge.ts::pickStackRepresentative",
+        "game/armyMerge.ts::computeStackDisplay",
+        "game/armyMerge.ts::unitAtRepresentative",
+        "game/armyMerge.ts::stackVitals",
+        "game/armyMerge.ts::StackVitals",
+    ] {
+        let sha = guards[key]["sha256"].as_str().unwrap_or_default();
+        assert_eq!(sha.len(), 64, "straznik {key}");
+    }
+    // repin obejmuje WSZYSTKIE stare przypadki (te same wejscia, wynik @07)
+    for name in [
+        "pickStackRepresentative",
+        "computeStackDisplay",
+        "unitAtRepresentative",
+        "stackVitals",
+    ] {
+        assert_eq!(
+            list(&root, "repin", name).len(),
+            cases(&old, name).len(),
+            "repin {name}"
+        );
+        for (at, (new, was)) in list(&root, "repin", name)
+            .iter()
+            .zip(cases(&old, name))
+            .enumerate()
+        {
+            assert_eq!(new["units"], was["units"], "repin {name}[{at}] wejscie");
         }
     }
+    // zmiana zasady (cywil nie jest reprezentantem) musi byc widoczna w starych wejsciach
+    assert!(!repin_changed(&root, "pickStackRepresentative").is_empty());
+    assert!(!repin_changed(&root, "computeStackDisplay").is_empty());
+}
+
+#[test]
+fn representative_matches_web_07_repin_and_new_cases() {
+    let root = root07();
+    let repin = check_pick(list(&root, "repin", "pickStackRepresentative"), &[]);
+    assert_eq!(repin.empty, 1);
+    assert!(repin.checked > 100, "{}", repin.checked);
+    let new_cases = list(&root, "cases", "pickStackRepresentative");
+    let counts = check_pick(new_cases, &[]);
+    assert_eq!(counts.empty, 1);
+    assert!(counts.ties > 10, "{}", counts.ties);
+    // pokrycie: cywil silniejszy od bojowego, stos sam cywilny, cywil po kategorii i po typie,
+    // remisy UTF-16
+    assert!(count_tag(new_cases, "civ-higher-attack") >= 20);
+    assert!(count_tag(new_cases, "civ-only") >= 5);
+    assert!(count_tag(new_cases, "civ-by-category") >= 10);
+    assert!(count_tag(new_cases, "civ-by-type") >= 10);
+    assert!(count_tag(new_cases, "tie-utf16") >= 3);
+    assert!(count_tag(new_cases, "civ-higher") >= 2);
+}
+
+#[test]
+fn compute_stack_display_matches_web_07_repin_and_new_cases() {
+    let root = root07();
+    let repin = check_display(list(&root, "repin", "computeStackDisplay"), &[]);
+    assert!(repin.with_vitals > 50 && repin.stacked > 20);
+    let new_cases = list(&root, "cases", "computeStackDisplay");
+    let counts = check_display(new_cases, &[]);
+    assert!(counts.with_vitals > 50, "{}", counts.with_vitals);
+    assert!(counts.stacked > 20, "{}", counts.stacked);
+    assert!(
+        counts.commander > 10,
+        "hasCommander=true w vitals ({})",
+        counts.commander
+    );
+    for tag in [
+        "garrison-field",
+        "group-two-hexes",
+        "civ-only",
+        "civ-higher",
+        "commander-true",
+        "commander-false",
+        "commander-undefined",
+    ] {
+        assert!(count_tag(new_cases, tag) >= 2, "brak przypadkow {tag}");
+    }
+}
+
+#[test]
+fn unit_at_representative_matches_web_07_repin_and_new_cases() {
+    let root = root07();
+    let (found, missing) = check_at(list(&root, "repin", "unitAtRepresentative"), &[]);
+    assert!(found > 20 && missing > 5, "{found}/{missing}");
+    let new_cases = list(&root, "cases", "unitAtRepresentative");
+    let (found, missing) = check_at(new_cases, &[]);
+    assert!(found > 50 && missing > 5, "{found}/{missing}");
+    assert!(count_tag(new_cases, "civ-higher-attack") >= 10);
+}
+
+#[test]
+fn stack_vitals_has_commander_matches_web_07() {
+    let root = root07();
+    let (nonempty, commander) = check_vitals(list(&root, "repin", "stackVitals"), &[]);
     assert!(nonempty > 50, "{nonempty}");
+    assert_eq!(commander, 0, "jednostki edb8fb56 nie niosa isGeneral");
+    let new_cases = list(&root, "cases", "stackVitals");
+    let (nonempty, commander) = check_vitals(new_cases, &[]);
+    assert!(nonempty > 50, "{nonempty}");
+    assert!(commander > 10, "{commander}");
+    for tag in ["commander-true", "commander-false", "commander-undefined"] {
+        assert!(count_tag(new_cases, tag) >= 5, "brak przypadkow {tag}");
+    }
+    // `hasCommander` w wektorze = `stack.some(isGeneral === true)` takze dla stosow, w ktorych
+    // `isGeneral` jest `false` albo brak pola
+    let only_false_or_missing = new_cases
+        .iter()
+        .filter(|c| {
+            !has_tag(c, "commander-true") && !c["out"]["count"].as_u64().is_some_and(|n| n == 0)
+        })
+        .count();
+    assert!(only_false_or_missing > 10, "{only_false_or_missing}");
+}
+
+#[test]
+fn civilian_table_matches_pin_is_civilian_unit() {
+    let root = root07();
+    let civilian = &root["civilian"];
+    let probes = civilian["probes"].as_array().expect("probes");
+    assert!(probes.len() > 50);
+    let (mut yes, mut no) = (0, 0);
+    for probe in probes {
+        let category = probe["category"].as_str().expect("category");
+        let type_id = probe["typeId"].as_str().expect("typeId");
+        let want = probe["out"].as_bool().expect("out");
+        assert_eq!(
+            probe["leaderNonCombat"].as_bool(),
+            Some(want),
+            "isNonCombatStackMember == isCivilianUnit"
+        );
+        assert_eq!(is_civilian_unit(category, type_id), want, "{probe}");
+        if want {
+            yes += 1;
+        } else {
+            no += 1;
+        }
+    }
+    assert!(yes > 10 && no > 10, "{yes}/{no}");
+    for category in civilian["categories"].as_array().expect("categories") {
+        assert!(is_civilian_unit(category.as_str().expect("kat"), ""));
+    }
+    for type_id in civilian["typeIds"].as_array().expect("typeIds") {
+        assert!(is_civilian_unit("", type_id.as_str().expect("typ")));
+    }
 }

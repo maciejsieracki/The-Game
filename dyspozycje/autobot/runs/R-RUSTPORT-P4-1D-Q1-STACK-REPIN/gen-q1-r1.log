@@ -1,0 +1,92 @@
+875ef35f74fddeeb458edf2c233832ed32d83827a505f3db184a9d7dc8a0ec0b  vectors.json
+d5c14715ff1d48b825ededde698cdd6ae077d9b9817d6a7289af9ad92501431b  display.json
+{
+ "repin": {
+  "pickStackRepresentative": 118,
+  "computeStackDisplay": 148,
+  "unitAtRepresentative": 110,
+  "stackVitals": 110
+ },
+ "repinChanged": {
+  "pickStackRepresentative": 34,
+  "computeStackDisplay": 19,
+  "unitAtRepresentative": 1,
+  "stackVitals": 0
+ },
+ "cases": {
+  "pickStackRepresentative": 131,
+  "computeStackDisplay": 134,
+  "unitAtRepresentative": 127,
+  "stackVitals": 134
+ },
+ "tags": {
+  "civ-only": 90,
+  "civ-only-tie": 1,
+  "civ-higher": 7,
+  "civ-mixed": 199,
+  "civ-higher-attack": 88,
+  "civ-by-category": 179,
+  "civ-by-type": 162,
+  "tie-utf16": 3,
+  "nan": 1,
+  "empty": 1,
+  "random": 480,
+  "garrison-field": 5,
+  "commander-true": 106,
+  "commander-false": 116,
+  "commander-undefined": 187,
+  "group-two-hexes": 5
+ },
+ "guards": {
+  "game/stack-leader.ts::isNonCombatStackMember": {
+   "lines": "15-17",
+   "sha256": "65db849e5b7a0f82a4665353d3a4b4823c922f7b06126a533c8782d3c2a49342"
+  },
+  "game/stack-leader.ts::pickStackLeader": {
+   "lines": "28-41",
+   "sha256": "98a0b5858d650d0b7252cad9e89d6145c694fbe424770ceea6a96030f59d4594"
+  },
+  "units/setup.ts::CIVILIAN_CATEGORIES": {
+   "lines": "197-197",
+   "sha256": "48c79c6bd4247c13541055ebf57a9de9c76254b51ab4772c6fd06a91adf85f9c"
+  },
+  "units/setup.ts::CIVILIAN_TYPE_IDS": {
+   "lines": "200-200",
+   "sha256": "5ede15ac769c337548b5e458d88451c679a9954b88f15e83f85685e86905e733"
+  },
+  "units/setup.ts::isCivilianUnit": {
+   "lines": "203-206",
+   "sha256": "558bbf13324eb0bff39ef673784b59f592e404c1947bb4c4ba1d2366ab52a18d"
+  },
+  "game/armyMerge.ts::stackGroupIdOf": {
+   "lines": "57-62",
+   "sha256": "e164d0a29fb79f7b2834d9c8847ccfff3f92a3b1ae1c010c3518b2d2cfa162f8"
+  },
+  "game/armyMerge.ts::pickStackRepresentative": {
+   "lines": "530-535",
+   "sha256": "c8ff894cc800147a0d1ddfbeef4bc1707548be274ab24607a3a004b6b7d247c3"
+  },
+  "game/armyMerge.ts::stackRenderKey": {
+   "lines": "579-581",
+   "sha256": "191c052428c55653f914fc8bd0260a6225d48f00261c1f730d5cc09646255f50"
+  },
+  "game/armyMerge.ts::computeStackDisplay": {
+   "lines": "584-646",
+   "sha256": "3b2e1b4ed1800d521b8a3b99df1c56b7f306de754391160a3a74e3439800fbd1"
+  },
+  "game/armyMerge.ts::unitAtRepresentative": {
+   "lines": "649-661",
+   "sha256": "df5d4870140ce274579cb86a730c2bbea89776aef507a40fccf9cc9d7750ad9c"
+  },
+  "game/armyMerge.ts::StackVitals": {
+   "lines": "1103-1126",
+   "sha256": "ca361c5a416f2b7b1a1001cfce13fc6d4331f34fc3c08cc7c3b39fddcd9603a1"
+  },
+  "game/armyMerge.ts::stackVitals": {
+   "lines": "1137-1155",
+   "sha256": "d704e7f3c1087b30db04fad8f578b80b0db6dfa6fc1311b59dcc931e53119afd"
+  }
+ }
+}
+GEN_EXIT=0
+875ef35f74fddeeb458edf2c233832ed32d83827a505f3db184a9d7dc8a0ec0b  /tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/v2.json

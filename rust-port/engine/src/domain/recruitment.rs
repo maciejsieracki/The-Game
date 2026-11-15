@@ -302,9 +302,15 @@ pub fn unit_recruitment(unit_id: &str) -> Option<UnitRecruitment> {
 // ---------------------------------------------------------------------------
 
 pub mod army_merge {
+    // P4-1D-Q1 (R-RUSTPORT-P4-1D-Q1-STACK-REPIN): czesc wyswietlania stosu (reprezentant,
+    // `computeStackDisplay`, `unitAtRepresentative`, `stackVitals` i pule stosu) przepieta na pin
+    // `07d2fbd72` (odwolania oznaczone `@07`); reprezentant = `pickStackLeader`
+    // (`stack-leader.ts:28-41` @07), `StackVitals.hasCommander` (`armyMerge.ts:1153` @07).
+    // Pozostale odwolania linii w tym module dotycza pinu `edb8fb56` (bez zmian w tym temacie).
     use std::borrow::Borrow;
     use std::collections::{HashMap, HashSet};
 
+    use super::manpower::is_civilian_unit;
     use crate::data::derived::{army_merge_params, ruch_jednostek_params, unit_cost_tempo};
 
     /// Klucz heksa `(q, r)`; web: napis `"q,r"` (`keyOf`, `setup.ts:346`).
@@ -409,6 +415,11 @@ pub mod army_merge {
         pub ufortyfikowany_w_polu: Option<bool>,
         /// Web `stackGroupId?: string` (pusty napis = falsy).
         pub stack_group_id: Option<String>,
+        /// Web `category: string` (`units/setup.ts` @07); czytane przez `isCivilianUnit`
+        /// (reprezentant stosu, `stack-leader.ts:15-17` @07).
+        pub category: String,
+        /// Web `isGeneral?: boolean` (`None` = brak pola); `StackVitals.hasCommander`.
+        pub is_general: Option<bool>,
     }
 
     impl StosJednostka {
@@ -429,6 +440,8 @@ pub mod army_merge {
                 auto_explore: None,
                 ufortyfikowany_w_polu: None,
                 stack_group_id: None,
+                category: String::new(),
+                is_general: None,
             }
         }
 
@@ -686,13 +699,22 @@ pub mod army_merge {
     // Reprezentant stosu i wyswietlanie
     // -----------------------------------------------------------------------
 
-    /// Web `pickStackRepresentative` (`armyMerge.ts:324`). Web na pustym stosie rzuca
-    /// (`reduce` bez wartosci poczatkowej); tu: `None`.
+    /// Web `pickStackRepresentative` (`armyMerge.ts:530-535` @07). Deleguje do
+    /// `pickStackLeader` (`stack-leader.ts:28-41` @07): pula = jednostki bojowe (nie
+    /// `isNonCombatStackMember` = `isCivilianUnit`), gdy choc jedna jest w stosie; inaczej caly stos.
+    /// W puli `reduce` jak web: `a !== b` -> `a > b ? u : best`, inaczej mniejsze id (UTF-16);
+    /// semantyka `NaN` wynika z tych samych porownan.
+    /// Web na pustym stosie rzuca (`pickStackLeader: pusty stos`); tu: `None`.
     pub fn pick_stack_representative<'a, U: Borrow<StosJednostka>>(
         stack: &'a [U],
         attack_of: &dyn Fn(&StosJednostka) -> f64,
     ) -> Option<&'a StosJednostka> {
-        let mut items = stack.iter().map(Borrow::borrow);
+        let is_combat = |u: &StosJednostka| !is_civilian_unit(&u.category, &u.type_id);
+        let has_combat = stack.iter().any(|u| is_combat(u.borrow()));
+        let mut items = stack
+            .iter()
+            .map(Borrow::borrow)
+            .filter(|u| !has_combat || is_combat(u));
         let mut best: &StosJednostka = items.next()?;
         for u in items {
             let a = attack_of(u);
@@ -712,7 +734,7 @@ pub mod army_merge {
         Some(best)
     }
 
-    /// Web `stackRenderKey` (`armyMerge.ts:378`).
+    /// Web `stackRenderKey` (`armyMerge.ts:579` @07).
     pub fn stack_render_key(u: &StosJednostka) -> String {
         let stos = &ruch_jednostek_params().stos;
         let mut key = format!("{}{}{},{}", stack_group_id_of(u), stos.separator, u.q, u.r);
@@ -722,7 +744,7 @@ pub mod army_merge {
         key
     }
 
-    /// Web `StackVitals` (`armyMerge.ts:902`).
+    /// Web `StackVitals` (`armyMerge.ts:1103` @07).
     #[derive(Debug, Clone, PartialEq)]
     pub struct StackVitals {
         pub ruch_left: f64,
@@ -735,6 +757,8 @@ pub mod army_merge {
         pub soft_badge_level: u8,
         pub veteran_level: u8,
         pub veteran_stars: u32,
+        /// Web `hasCommander` = `stack.some(unit => unit.isGeneral === true)` (`armyMerge.ts:1153` @07).
+        pub has_commander: bool,
     }
 
     /// Pozycja rosteru dla `sumRosterFieldM` (web: `{ typeId, def }`).
@@ -744,7 +768,7 @@ pub mod army_merge {
         pub def: D,
     }
 
-    /// Web `StackVitalsDeps` (`armyMerge.ts:926`) wraz z zaleznosciami, ktore web importuje z innych
+    /// Web `StackVitalsDeps` (`armyMerge.ts:1129` @07) wraz z zaleznosciami, ktore web importuje z innych
     /// plikow, a ktore nie naleza do tego tematu (`sumRosterFieldM` z `auto-battle-power.ts`,
     /// `armorPathBadgeLevel` / `softPathBadgeLevel` z `unit-building-bonuses.ts`, `veteranLevel` /
     /// `veteranStarCount` z `veteran.ts`) - tu wstrzykiwane domknieciami.
@@ -758,7 +782,7 @@ pub mod army_merge {
         pub veteran_star_count: &'a dyn Fn(&StosJednostka) -> u32,
     }
 
-    /// Web `StackDisplayInfo` (`armyMerge.ts:20`); kolejnosc `Set`/`Map` zachowana.
+    /// Web `StackDisplayInfo` (`armyMerge.ts:21` @07); kolejnosc `Set`/`Map` zachowana.
     #[derive(Debug, Clone, PartialEq)]
     pub struct StackDisplayInfo {
         pub visible_ids: Vec<String>,
@@ -770,7 +794,7 @@ pub mod army_merge {
         pub vitals_by_rep_id: Option<Vec<(String, StackVitals)>>,
     }
 
-    /// Web `computeStackDisplay` (`armyMerge.ts:383`).
+    /// Web `computeStackDisplay` (`armyMerge.ts:584` @07).
     pub fn compute_stack_display<D>(
         units: &[StosJednostka],
         attack_of: &dyn Fn(&StosJednostka) -> f64,
@@ -817,7 +841,7 @@ pub mod army_merge {
         }
     }
 
-    /// Web `unitAtRepresentative` (`armyMerge.ts:448`).
+    /// Web `unitAtRepresentative` (`armyMerge.ts:649` @07).
     pub fn unit_at_representative<'a>(
         q: i32,
         r: i32,
@@ -1080,7 +1104,7 @@ pub mod army_merge {
         items.fold(first, js_min)
     }
 
-    /// Web `stackRuchLeft` (`armyMerge.ts:707`).
+    /// Web `stackRuchLeft` (`armyMerge.ts:908` @07).
     pub fn stack_ruch_left<U: Borrow<StosJednostka>>(stack: &[U]) -> f64 {
         if stack.is_empty() {
             return 0.0;
@@ -1104,7 +1128,7 @@ pub mod army_merge {
         min_by(stack, planning_unit_ruch_left)
     }
 
-    /// Web `stackRuchMax` (`armyMerge.ts:754`).
+    /// Web `stackRuchMax` (`armyMerge.ts:955` @07).
     pub fn stack_ruch_max<U: Borrow<StosJednostka>>(stack: &[U]) -> f64 {
         if stack.is_empty() {
             return 0.0;
@@ -1112,7 +1136,7 @@ pub mod army_merge {
         min_by(stack, |u| u.ruch)
     }
 
-    /// Web `stackHpPool` (`armyMerge.ts:775`): `(hp, hpMax)`.
+    /// Web `stackHpPool` (`armyMerge.ts:976` @07): `(hp, hpMax)`.
     pub fn stack_hp_pool<U: Borrow<StosJednostka>>(
         stack: &[U],
         max_hp_of: &dyn Fn(&StosJednostka) -> f64,
@@ -1135,7 +1159,7 @@ pub mod army_merge {
         (hp, hp_max)
     }
 
-    /// Web `stackFieldPowerM` (`armyMerge.ts:833`).
+    /// Web `stackFieldPowerM` (`armyMerge.ts:1034` @07).
     pub fn stack_field_power_m<U: Borrow<StosJednostka>, D>(
         stack: &[U],
         def_of: &dyn Fn(&StosJednostka) -> D,
@@ -1157,7 +1181,7 @@ pub mod army_merge {
         sum_roster_field_m(&roster)
     }
 
-    /// Web `stackArmorBadgeLevel` / `stackSoftBadgeLevel` (`armyMerge.ts:854`, `:864`): maksimum
+    /// Web `stackArmorBadgeLevel` / `stackSoftBadgeLevel` (`armyMerge.ts:1055`, `:1065` @07): maksimum
     /// poziomu odznaki (`level_of` = `armorPathBadgeLevel` / `softPathBadgeLevel`).
     pub fn stack_badge_level<U: Borrow<StosJednostka>>(
         stack: &[U],
@@ -1173,7 +1197,7 @@ pub mod army_merge {
         best
     }
 
-    /// Web `stackArmorBadgeLevel` (`armyMerge.ts:854`).
+    /// Web `stackArmorBadgeLevel` (`armyMerge.ts:1055` @07).
     pub fn stack_armor_badge_level<U: Borrow<StosJednostka>>(
         stack: &[U],
         armor_path_badge_level: &dyn Fn(&StosJednostka) -> u8,
@@ -1181,7 +1205,7 @@ pub mod army_merge {
         stack_badge_level(stack, armor_path_badge_level)
     }
 
-    /// Web `stackSoftBadgeLevel` (`armyMerge.ts:864`).
+    /// Web `stackSoftBadgeLevel` (`armyMerge.ts:1065` @07).
     pub fn stack_soft_badge_level<U: Borrow<StosJednostka>>(
         stack: &[U],
         soft_path_badge_level: &dyn Fn(&StosJednostka) -> u8,
@@ -1189,7 +1213,7 @@ pub mod army_merge {
         stack_badge_level(stack, soft_path_badge_level)
     }
 
-    /// Web `stackVeteranLevel` (`armyMerge.ts:874`).
+    /// Web `stackVeteranLevel` (`armyMerge.ts:1075` @07).
     pub fn stack_veteran_level<U: Borrow<StosJednostka>>(
         stack: &[U],
         veteran_level: &dyn Fn(&StosJednostka) -> u8,
@@ -1204,7 +1228,7 @@ pub mod army_merge {
         best
     }
 
-    /// Web `stackVeteranStarCount` (`armyMerge.ts:892`).
+    /// Web `stackVeteranStarCount` (`armyMerge.ts:1093` @07).
     pub fn stack_veteran_star_count<U: Borrow<StosJednostka>>(
         stack: &[U],
         veteran_star_count: &dyn Fn(&StosJednostka) -> u32,
@@ -1219,7 +1243,7 @@ pub mod army_merge {
         best
     }
 
-    /// Web `stackVitals` (`armyMerge.ts:934`).
+    /// Web `stackVitals` (`armyMerge.ts:1137-1155` @07).
     pub fn stack_vitals<U: Borrow<StosJednostka>, D>(
         stack: &[U],
         deps: &StackVitalsDeps<'_, D>,
@@ -1236,6 +1260,7 @@ pub mod army_merge {
             soft_badge_level: stack_soft_badge_level(stack, deps.soft_badge_level),
             veteran_level: stack_veteran_level(stack, deps.veteran_level),
             veteran_stars: stack_veteran_star_count(stack, deps.veteran_star_count),
+            has_commander: stack.iter().any(|u| is_true(u.borrow().is_general)),
         }
     }
 

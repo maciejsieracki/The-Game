@@ -1,0 +1,21 @@
+MUTACJA: cywil jako reprezentant (brak filtra puli bojowej)
+  exit=101 -> FAIL (oczekiwany)
+    test representative_matches_web_07_repin_and_new_cases ... FAILED
+    test compute_stack_display_matches_web_07_repin_and_new_cases ... FAILED
+    test unit_at_representative_matches_web_07_repin_and_new_cases ... FAILED
+MUTACJA: cywil zawsze w puli (has_combat = false)
+  exit=101 -> FAIL (oczekiwany)
+    test compute_stack_display_matches_web_07_repin_and_new_cases ... FAILED
+    test representative_matches_web_07_repin_and_new_cases ... FAILED
+    test unit_at_representative_matches_web_07_repin_and_new_cases ... FAILED
+MUTACJA: hasCommander zawsze false
+  exit=101 -> FAIL (oczekiwany)
+    test compute_stack_display_matches_web_07_repin_and_new_cases ... FAILED
+    test stack_vitals_has_commander_matches_web_07 ... FAILED
+MUTACJA: hasCommander = isGeneral.is_some() (false liczone jak true)
+  exit=101 -> FAIL (oczekiwany)
+    test compute_stack_display_matches_web_07_repin_and_new_cases ... FAILED
+    test stack_vitals_has_commander_matches_web_07 ... FAILED
+PRZYWROCONO src/domain/recruitment.rs
+MUTANTY_PRZEZYLY 0
+EXIT=0
