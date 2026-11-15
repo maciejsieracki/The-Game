@@ -58,6 +58,7 @@ import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { administratorUpkeepValueHtml } from './icons/administratorIcon';
 import { stateAdministratorStatusHtml } from './stateAdministratorRow';
 import { getArmyRecruitDraftTotal, submitArmyRecruitmentDrafts, clearArmyRecruitDraftsOnPanelClose } from './cityPanel';
+import { resetEmpireRecruitDrafts } from './empireRecruitPanel';
 export type { EmpireDetailSnap } from './empireDetailTypes';
 export { empireSectionFromHudAct, empirePanelBlockForSection } from './empirePanelSectionMap';
 
@@ -78,6 +79,11 @@ export interface EmpireMassRecruitmentUiConfig {
   mountCityRecruitment?: (cityId: string, host: HTMLElement) => boolean;
   /** Mount the capital-only commander card above the per-city Army recruitment catalog. */
   mountGeneralRecruitment?: (host: HTMLElement) => boolean;
+  /**
+   * R-WEB-UI-EMPIRE-RECRUIT-PANEL-MOVE-TO-ARMY-PANEL-Q1: montuje sekcję „Rekrutacja — cała cywilizacja”
+   * w hoście `[data-erp-root]` na samej górze części Rekrutacja (nad wodzem).
+   */
+  mountEmpireRecruit?: (host: HTMLElement | null) => void;
   getRecruitFollowGeneralDefault?: () => boolean;
   onRecruitFollowGeneralDefaultChange?: (enabled: boolean) => void;
 }
@@ -2993,6 +2999,10 @@ export function renderMassRecruitmentSection(
   let h = `<div class="civ-emp-mass" data-mass-recruitment>`
     + `<div class="civ-emp-mass-hd"><span class="civ-emp-mass-title">Rekrutacja</span>`
     + `<span class="civ-emp-mass-sub">jednostki pogrupowane według miasta</span></div>`
+    // R-WEB-UI-EMPIRE-RECRUIT-PANEL-MOVE-TO-ARMY-PANEL-Q1: rekrutacja całej cywilizacji na samej górze, nad wodzem.
+    + `<div id="civ-empire-recruit-panel" data-erp-root class="civ-emp-erp-host"></div>`
+    + `<div class="civ-emp-mass-leader"><div class="civ-emp-mass-leader-title">Wódz / Generał — rekrutacja w stolicy</div>`
+    + `<div data-general-recruitment-card></div></div>`
     + `<div class="civ-emp-mass-counters">`
     + `<div class="civ-emp-mass-counter"><div class="k">W KOLEJCE</div>`
     + `<div class="v" data-mass-recruitment-queued>${state.queuedCount}</div></div>`
@@ -3004,9 +3014,7 @@ export function renderMassRecruitmentSection(
     + `<div class="civ-emp-mass-pool">Skarbiec: <b>${formatRawCount(state.treasury)} złota</b>`
     + ` · Manpower: <b>${formatRawCount(state.manpower)}</b>`
     + `${stock ? ` · Magazyn: <b>${stock}</b>` : ''}</div>`
-    + `<div class="civ-emp-mass-batch"><button type="button" data-army-recruit-all${getArmyRecruitDraftTotal() <= 0 ? ' disabled' : ''}>Rekrutuj wszystko</button></div>`
-    + `<div class="civ-emp-mass-leader"><div class="civ-emp-mass-leader-title">Wódz / Generał — rekrutacja w stolicy</div>`
-    + `<div data-general-recruitment-card></div></div>`;
+    + `<div class="civ-emp-mass-batch"><button type="button" data-army-recruit-all${getArmyRecruitDraftTotal() <= 0 ? ' disabled' : ''}>Rekrutuj wszystko</button></div>`;
 
   if (rows.length === 0) {
     return h + '<div class="civ-emp-mass-empty">Brak miast gracza do rekrutacji.</div>'
@@ -3049,6 +3057,7 @@ export function mountMassRecruitmentControls(
   mountCityRecruitment: EmpireMassRecruitmentUiConfig['mountCityRecruitment'] = massRecruitmentUi.mountCityRecruitment,
   mountGeneralRecruitment: EmpireMassRecruitmentUiConfig['mountGeneralRecruitment'] = massRecruitmentUi.mountGeneralRecruitment,
 ): void {
+  massRecruitmentUi.mountEmpireRecruit?.(host.querySelector<HTMLElement>('[data-erp-root]'));
   const batchBtns = Array.from(host.querySelectorAll<HTMLButtonElement>('[data-army-recruit-all]'));
   const syncBatchButtons = (): void => {
     const disabled = getArmyRecruitDraftTotal() <= 0;
@@ -4594,7 +4603,10 @@ export function hideEmpireDetailPanel(): void {
   popOverlay('empire-detail-panel');
   // R-WEB-UI-RECRUIT-PANEL-COUNTERS-RESET-ON-CLOSE-Q1: każda ścieżka zamknięcia (Zamknij, Esc, tło) zeruje szkice,
   // ale TYLKO gdy panel był faktycznie otwarty (dismissToolbarSidePanels/closeAll wołają to bezwarunkowo).
-  if (open) clearArmyRecruitDraftsOnPanelClose();
+  if (open) {
+    clearArmyRecruitDraftsOnPanelClose();
+    resetEmpireRecruitDrafts(); // R-WEB-UI-RECRUIT-PANEL-COUNTERS-RESET-ON-CLOSE-Q1: zamknięcie panelu armii = zera
+  }
   open = false;
   pendingScrollSection = null;
   root?.classList.remove('open');

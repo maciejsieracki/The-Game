@@ -71,12 +71,12 @@ const ok = (c, n, d) => { if (c) { pass++; console.log('PASS: ' + n); } else { f
     await D('setResources', 1000000, 1000000);
     // Mapa playtestowa bez przeciwników: ekran zwycięstwa (dominacja) zasłania HUD — zamykamy go (tylko test).
     await page.evaluate(() => { const v = document.getElementById('__victory_screen__'); if (v) v.remove(); });
-    await page.locator('[data-act="empire-recruit"]').click();
+    await page.evaluate(() => window.__empireRecruitTestDebug.openArmyRecruitSection());
     await page.waitForSelector('#civ-empire-recruit-panel [data-unit]', { timeout: 10000 });
     const panelTxt = await page.locator('#civ-empire-recruit-panel').innerText();
     ok(/rekrutuje/i.test(panelTxt), 'L10 realny panel oznacza wybranego generała znacznikiem "rekrutuje"', panelTxt.slice(0, 300));
     if (process.argv.includes('--shot')) await page.screenshot({ path: path.join(SHOT_DIR, 'panel-rekrutacja-live-z-generalem.png') });
-    await page.locator('[data-erp="close"]').click();
+    await page.evaluate(() => window.__empireRecruitTestDebug.closeArmyRecruitSection());
 
     // Zapis / wczytanie w realnej grze.
     const saved = await page.evaluate(() => window.__empireRecruitTestDebug.quickSave('arg-live-slot'));
