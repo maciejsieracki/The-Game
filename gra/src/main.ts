@@ -669,8 +669,6 @@ import {
   tradeRouteIncomeForRoute,
   externalTradeContactOk,
   diagnoseMissingTradeRouteForPartner,
-  computeTradeRouteResourceFlow,
-  loadTradeRouteResourceFlowParams,
   computeSeaTradeRouteCountByCity,
   computeSeaTradeBonusIncomeByCity,
   ownersHaveSharedLandBorder,
@@ -680,7 +678,6 @@ import {
   type TradeRouteIncomeParams,
   type TradeRouteResourceGrant,
   type TradeRouteResourceKey,
-  type TradeRouteStockFlowResourceKey,
 } from './game/trade-routes';
 import {
   empireHasKopalniaMiedzi,
@@ -39861,42 +39858,11 @@ async function boot(): Promise<void> {
             data.econParams as unknown as Parameters<typeof loadTradeRouteParams>[0],
             _menuDifficulty,
           );
-          // Handel E3c (PYTANIE 53=B, Maciej 2026-07-25): przepływ ILOŚCIOWY surowca
-          // (braz/zelazo/cegla — patrz TRADE_ROUTE_STOCK_FLOW_KEYS) przez aktywne trasy,
-          // NIEZALEŻNY od grantu dostępu wyżej (ten zostaje boolean-bramką jednostek).
-          // Surowiec REALNIE ubywa nadawcy i przybywa odbiorcy w puli PAŃSTWA (ta sama
-          // pula co koszt_surowce budynków, building-stock-cost.ts) — dzięki temu np.
-          // dowieziona Cegła faktycznie zasila budowę, nie tylko "odblokowuje" ją.
-          try {
-            const tradeFlowParams = loadTradeRouteResourceFlowParams(
-              data.econParams as unknown as Parameters<typeof loadTradeRouteResourceFlowParams>[0],
-              _menuDifficulty,
-            );
-            const ownerStockForTradeFlow = (ownerId: number, key: TradeRouteStockFlowResourceKey): number =>
-              ownerResourceStockAll(cities, ownerId)[key] ?? 0;
-            const tradeFlows = computeTradeRouteResourceFlow(tradeRoutes, ownerStockForTradeFlow, tradeFlowParams);
-            for (const flow of tradeFlows) {
-              deductBuildingStockCostAcrossCities(cities, flow.fromOwnerId, { [flow.resourceKey]: flow.amount });
-              // P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO (2026-08-09): audyt call-site'ów
-              // creditOwnerResourceStock bez cap — ten leci PRZED advanceCityEconomy/
-              // reconcileOwnerResourceCaps w tej samej turze, więc nadwyżka i tak zostałaby
-              // ścięta na końcu ticku; cap dołożony tu defensywnie (spójnie z resztą), żeby
-              // nie polegać na kolejności wywołań w przyszłych zmianach.
-              // P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): epoka ODBIORCY (flow.toOwnerId
-              // -- ten sam ownerId co creditOwnerResourceStock niżej) -- bez tego cap byłby
-              // zaniżony od epoki 2 wzwyż i surowiec mógłby zniknąć zamiast dotrzeć do odbiorcy.
-              // EN: RECEIVER's (flow.toOwnerId, same ownerId as creditOwnerResourceStock below)
-              // epoch -- otherwise the cap would be too low from epoch 2 onward and the resource
-              // could vanish instead of reaching the recipient.
-              const tradeFlowCap = ownerResourceCap(
-                cities, cityBuilt, flow.toOwnerId, data, _menuDifficulty,
-                empireEpochForOwner(flow.toOwnerId),
-              );
-              creditOwnerResourceStock(cities, flow.toOwnerId, flow.resourceKey, flow.amount, tradeFlowCap);
-            }
-          } catch (eTradeFlow) {
-            console.error('[Handel] Blad przeplywu ilosciowego surowca przez trase:', eTradeFlow);
-          }
+          // Handel E3c USUNIETY (decyzja ABC 2026-11-14/15, #311/#321, wariant A): szlak handlowy
+          // NIE przesuwa zapasow zadnej strony. Zostaje: dochod ze szlaku (premia Pieniadza, bonus
+          // morski/Targowisko/cud) i boolean-grant dostepu do jednostek (blok wyzej).
+          // Funkcje computeTradeRouteResourceFlow / loadTradeRouteResourceFlowParams w trade-routes.ts
+          // pozostaja wyeksportowane wylacznie dla testow (bez wywolania w grze).
           const tradeIncomeParams = loadTradeRouteIncomeParams(
             data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
             _menuDifficulty,
