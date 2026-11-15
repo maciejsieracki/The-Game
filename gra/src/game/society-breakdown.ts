@@ -4,7 +4,7 @@
  * PURE — bez DOM, bez main.ts.
  */
 import type { City, CityPodzialHandlu } from './cities';
-import { DEFAULT_PODZIAL_HANDLU } from './cities';
+import { LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14 } from './cities';
 import {
   type Difficulty,
   type OrderEffects,
@@ -665,8 +665,9 @@ export function luksusHappinessBonus(
 }
 
 function podzialLuksus(city?: CityPodzialHandlu): number {
-  const p = city ?? DEFAULT_PODZIAL_HANDLU;
-  return p.procentLuksus ?? DEFAULT_PODZIAL_HANDLU.procentLuksus;
+  // Fallback = podział sprzed 2026-11-14 (Zamożność 20%): zachowuje wyliczenie szczęścia bez zmian.
+  const p = city ?? LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14;
+  return p.procentLuksus ?? LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14.procentLuksus;
 }
 
 /**

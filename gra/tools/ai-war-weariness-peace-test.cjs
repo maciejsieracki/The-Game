@@ -246,12 +246,14 @@ function mkDeps(o) {
   eq(M.requesterShare(300, 700), rwScale, '4i: requesterShare = potAI/(potAI+potPlr) (ta sama skala co respektWzgledny)');
   eq(W.loserDespair({ level: 0.7, share: M.requesterShare(300, 700), lostCities: 2 }), W.loserDespair({ level: 0.7, share: rwScale, lostCities: 2 }), '4i: desperacja identyczna dla obu zrodel udzialu');
 }
-// 4j. cena pokoju zadana od gracza maleje z zmeczeniem (zarzut 3)
+// 4j. R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: zmeczenie = pozycja PW Z=round(C*x^2) (rabat 60% usuniety)
 {
-  eq(W.wearinessPeacePriceFactor(0), 1, '4j: brak zmeczenia => pelna cena');
-  eq(W.wearinessPeacePriceFactor(0.5), 1, '4j: na progu chetnosci => pelna cena');
-  ok(W.wearinessPeacePriceFactor(0.8) < 1 && W.wearinessPeacePriceFactor(0.8) > W.wearinessPeacePriceFactor(1), '4j: rabat rosnie monotonicznie');
-  ok(Math.abs(W.wearinessPeacePriceFactor(1) - (1 - W.WAR_WEARINESS_PARAMS.czlowiek.rabatCenyPokojuMax)) < 1e-9, '4j: przy pelnym zmeczeniu rabat = rabatCenyPokojuMax');
+  eq(W.wearinessPeaceItemPw(500, 0), 0, '4j: brak zmeczenia => Z=0');
+  eq(W.wearinessPeaceItemPw(500, 0.5), 0, '4j: na progu chetnosci => Z=0');
+  eq(W.wearinessPeaceItemPw(500, 0.8), 500, '4j: przy progu konca zmeczenia => Z=C (R=0)');
+  eq(W.wearinessPeaceItemPw(500, 1), 500, '4j: pelne zmeczenie => Z=C');
+  ok(W.wearinessPeaceItemPw(500, 0.7) > W.wearinessPeaceItemPw(500, 0.6), '4j: Z rosnie z zmeczeniem');
+  ok(W.WAR_WEARINESS_PARAMS.czlowiek.rabatCenyPokojuMax === undefined, '4j: pole rabatCenyPokojuMax usuniete z parametrow');
 }
 
 // ---- 5. AI przegrywajace z graczem: eskalacja oferty miasta ----
@@ -283,7 +285,7 @@ ok(cession(runAI({ rw: 0.12, turnsAtWar: 200, lost: 3, miastaAI: CITIES.slice(0,
 
 // ---- 6. straznik okablowania main.ts ----
 const propTs = fs.readFileSync(path.join(SRC, 'game/diplomacy-proposals.ts'), 'utf8');
-ok(/wearinessPeacePriceFactor\(warWearinessLevel\(/.test(propTs), 'diplomacy-proposals: rabat ceny pokoju z zmeczenia podpiety do bramki R5');
+ok(/wearinessPeaceItemPw\(/.test(propTs) && !/wearinessPeacePriceFactor/.test(propTs), 'diplomacy-proposals: pozycja PW zmeczenia podpieta do bramki R5 (bez rabatu)');
 
 const mainTs = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
 ok(/runWarWearinessTick\(/.test(mainTs) && /tickAiAiWarWeariness\(aiTurnAwaitingBattle\)/.test(mainTs), 'main.ts: tick zmeczenia wywolany po fazie AI');

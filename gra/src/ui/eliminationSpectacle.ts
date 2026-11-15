@@ -396,7 +396,8 @@ export function ensureSpectacleStyles(): void {
 @keyframes elsp-glow{0%,100%{box-shadow:0 0 18px var(--elsp-c),0 0 0 1px var(--elsp-c) inset}50%{box-shadow:0 0 34px var(--elsp-c),0 0 0 1px var(--elsp-c) inset}}
 @keyframes elsp-rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .civ-ccn.civ-ccn-spectacle{max-width:min(800px,calc(100vw - 24px));width:min(800px,calc(100vw - 24px));
-  max-height:calc(100vh - 24px);overflow-y:auto;animation:elsp-in .5s cubic-bezier(.2,.8,.2,1);}
+  max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain;
+  animation:elsp-in .5s cubic-bezier(.2,.8,.2,1);}
 .elsp{--elsp-c:#c9a84c;text-align:center;}
 .elsp-hd{position:relative;padding:6px 8px 14px;border-bottom:1px solid rgba(232,216,138,.22);
   background:radial-gradient(ellipse at 50% 0%,color-mix(in srgb,var(--elsp-c) 28%,transparent),transparent 70%);}

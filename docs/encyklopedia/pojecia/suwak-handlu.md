@@ -12,7 +12,7 @@
 
 ## Wiki‑S
 
-Suwak **Daniny** dzieli Daninę netto miasta na trzy kierunki: domyślnie **60% skarbiec (złoto) · 20% nauka · 20% zamożność (luksus)**. Ten domyślny podział jest identyczny na wszystkich trzech poziomach trudności. Więcej zamożności = wyższe szczęście, mniej złota i nauki **z tego miasta**.
+Suwak **Daniny** dzieli Daninę netto miasta na trzy kierunki: domyślnie **30% skarbiec (złoto) · 60% nauka · 10% zamożność (luksus)** (od 2026-11-14). Ten domyślny podział jest identyczny na wszystkich trzech poziomach trudności. Więcej zamożności = wyższe szczęście, mniej złota i nauki **z tego miasta**.
 
 ---
 
@@ -40,7 +40,7 @@ Ustawiasz **per miasto** w zakładce Miasto. **Zamożność** (trzeci segment) w
 | 80–89% | **+9** | **+7** | **+6** |
 | 90–100% | **+10** | **+8** | **+7** |
 
-Przy domyślnym udziale **20%** zamożności miasto dostaje na normalnej trudności **+1 pkt** Szczęścia z tego tytułu.
+Przy domyślnym udziale **10%** zamożności miasto nie dostaje na normalnej trudności Szczęścia z tego tytułu (przedział 20–29% daje **+1 pkt**).
 
 ---
 
@@ -66,7 +66,7 @@ Korupcja obniża procent Daniny/Podatku miasta (rośnie z odległością od stol
 
 | Ustawienie | Skarbiec/t | Nauka/t | Luksus/t | Bonus szczęścia (normal) |
 |------------|---------|---------|----------|---------------------------|
-| **60/20/20** (domyślne) | 6 | 2 | 2 | **+1** (20–29%) |
+| **30/60/10** (domyślne) | 3 | 6 | 1 | **0** (10–19%) |
 | **50/20/30** | 5 | 2 | 3 | **+2** (30–39%) |
 | **40/20/40** | 4 | 2 | 4 | **+3** (40–49%) |
 | **30/20/50** | 3 | 2 | 5 | **+4** (50–59%) |

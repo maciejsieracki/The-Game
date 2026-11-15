@@ -33,7 +33,7 @@ export const decideAIEconomySliders = (AI as any).decideAIEconomySliders;
 export const loadAiSliderParams = (AI as any).loadAiSliderParams;
 export { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT } from '../src/map/generator';
 export { computeStartPlacements } from '../src/units/setup';
-export { foundCity, cityName, DEFAULT_PODZIAL_HANDLU, AI_FIXED_PROCENT_NAUKA, normalizePodzialHandlu } from '../src/game/cities';
+export { foundCity, cityName, DEFAULT_PODZIAL_HANDLU, LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14, AI_FIXED_PROCENT_NAUKA, normalizePodzialHandlu } from '../src/game/cities';
 export { freshOwnerDefaultPodzialHandlu } from '../src/game/empire-handel-split';
 export { loadGameData } from '../src/data/loader';
 export { DEFAULT_PODZIAL_PRACY, DEFAULT_PROCENT_ROZWOJ } from '../src/game/cities';
@@ -127,18 +127,19 @@ function callsOf(src, name) {
 // 1. SEED PODZIAŁU DANINY AI
 // ===========================================================================
 console.log('\n-- 1. seed podziału Daniny AI (suma 100%) --');
-const { aiSeedPodzialHandlu, normalizePodzialHandlu, DEFAULT_PODZIAL_HANDLU, AI_FIXED_PROCENT_NAUKA,
+const { aiSeedPodzialHandlu, normalizePodzialHandlu, LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14, AI_FIXED_PROCENT_NAUKA,
   freshOwnerDefaultPodzialHandlu } = B;
 
 ok(typeof aiSeedPodzialHandlu === 'function', 'ai.ts eksportuje aiSeedPodzialHandlu()');
-const oldSeed = { ...DEFAULT_PODZIAL_HANDLU, procentNauka: AI_FIXED_PROCENT_NAUKA };
+// Dawny seed = podział sprzed 2026-11-14 (20/60/20) z Nauką AI; nowy domyślny gracz to 60/30/10.
+const oldSeed = { ...LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14, procentNauka: AI_FIXED_PROCENT_NAUKA };
 eq(oldSeed.procentNauka + oldSeed.procentPieniadz + oldSeed.procentLuksus, 140, 'fixture: dawny seed AI = 140% (60/60/20)');
 const oldEffective = normalizePodzialHandlu(oldSeed);
 if (typeof aiSeedPodzialHandlu === 'function') {
   const seed = aiSeedPodzialHandlu();
   eq(seed.procentNauka + seed.procentPieniadz + seed.procentLuksus, 100, 'nowy seed AI sumuje się do 100%');
   eq(seed.procentNauka, AI_FIXED_PROCENT_NAUKA, 'nowy seed zachowuje politykę AI: Nauka = AI_FIXED_PROCENT_NAUKA');
-  eq(seed.procentLuksus, DEFAULT_PODZIAL_HANDLU.procentLuksus, 'nowy seed zachowuje Zamożność z domyślnego podziału gracza');
+  eq(seed.procentLuksus, LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14.procentLuksus, 'nowy seed AI zachowuje Zamożność 20% (podział sprzed 2026-11-14, nie nowe 10% gracza)');
   const norm = normalizePodzialHandlu(seed);
   ok(norm.procentNauka === seed.procentNauka && norm.procentPieniadz === seed.procentPieniadz
     && norm.procentLuksus === seed.procentLuksus, 'normalizePodzialHandlu(seed) nic nie zmienia (nie ma cichej korekty)');
@@ -155,7 +156,7 @@ if (typeof aiSeedPodzialHandlu === 'function') {
   ok(nextNauka === seed.procentNauka && nextPieniadz === seed.procentPieniadz && nextLuksus === seed.procentLuksus,
     'pierwsza korekta suwaków (baza = seed) nie zmienia podziału: tura 1 == tura 2+');
   // Stara baza (20) przy nowym seedzie zepsułaby podział -- pilnujemy, że main.ts jej nie używa.
-  const brokenPieniadz = Math.max(0, Math.min(100, seed.procentPieniadz - (nextNauka - DEFAULT_PODZIAL_HANDLU.procentNauka)));
+  const brokenPieniadz = Math.max(0, Math.min(100, seed.procentPieniadz - (nextNauka - LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14.procentNauka)));
   ok(brokenPieniadz !== seed.procentPieniadz, 'fixture: baza korekty = default gracza (20) zepsułaby podział (Skarb->0)');
 }
 ok(!/\.\.\.DEFAULT_PODZIAL_HANDLU,\s*procentNauka:\s*AI_FIXED_PROCENT_NAUKA/.test(MAIN),
@@ -165,7 +166,7 @@ ok(/ownerDefaultPodzialHandlu\.get\(ownerId\)\?\.procentNauka/.test(MAIN),
   'main.ts: baza pierwszej korekty suwaków czytana z faktycznego seeda ownera');
 {
   const pl = freshOwnerDefaultPodzialHandlu();
-  eq(`${pl.procentNauka}/${pl.procentPieniadz}/${pl.procentLuksus}`, '20/60/20', 'gracz nadal startuje na 20/60/20 (bez zmian)');
+  eq(`${pl.procentNauka}/${pl.procentPieniadz}/${pl.procentLuksus}`, '60/30/10', 'gracz startuje na nowym domyślnym 60/30/10 (R-WEB-SETTINGS-DEFAULT-TAX-SPLIT-30-60-10-Q1)');
 }
 
 // --- pomiar dochodu AI T1-T10 przed/po (realny silnik) ---

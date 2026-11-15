@@ -1,0 +1,40 @@
+{
+ "seed": 7,
+ "era": 1,
+ "stockBeforeZero": {
+  "ceramika": 5000
+ },
+ "removedCeramika": 5000,
+ "withCeramika": {
+  "file": "panel-kamien-z-ceramika-seed7.png",
+  "texts": [
+   "1 · 20 obywateli · 200k abs.",
+   "Obywatele",
+   "Obywatele we wszystkich miastach (sloty populacji 1–10)",
+   "Obywatele: POKRYTE",
+   "Obywatele (drenaż realny)",
+   "Obywatele: POKRYTE",
+   "Obywatele (drenaż realny)",
+   "Ceramika",
+   "Obywatele: POKRYTE",
+   "Obywatele (drenaż realny)"
+  ],
+  "obywatelCount": 3
+ },
+ "withoutCeramika": {
+  "file": "panel-kamien-bez-ceramiki-seed7.png",
+  "texts": [
+   "1 · 20 obywateli · 200k abs.",
+   "Obywatele",
+   "Obywatele we wszystkich miastach (sloty populacji 1–10)",
+   "Obywatele: POKRYTE",
+   "Obywatele (drenaż realny)",
+   "Obywatele: POKRYTE",
+   "Obywatele (drenaż realny)",
+   "Ceramika",
+   "Obywatele: NIEDOBÓR"
+  ],
+  "obywatelCount": 3
+ },
+ "errors": []
+}

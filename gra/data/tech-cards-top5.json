@@ -274,7 +274,7 @@
       },
       {
         "tytul": "Garncarnia: wytwarza ceramikę (glina + drewno)",
-        "zdanie": "Przerabia glinę i drewno na ceramikę; Spichlerz zużywa jej 25 na turę, a bez niej nie daje bonusów ludności.",
+        "zdanie": "Przerabia glinę i drewno na ceramikę; Spichlerz zużywa jej 10 na turę (Spichlerz Królewski 20), a bez niej nie daje bonusów ludności.",
         "dowod": "gra/src/game/converters.ts:85; gra/data/buildings.json:554"
       },
       {

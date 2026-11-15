@@ -1,0 +1,34 @@
+{
+  "aiId": 1,
+  "results": {
+    "wczesna": {
+      "turn": 11,
+      "warTurns": {
+        "turnsAtWar": 11,
+        "lostCities": 0
+      },
+      "sent": {
+        "entryFound": true,
+        "tableLen": 1
+      },
+      "rowHtml": null
+    },
+    "pozna": {
+      "turn": 15,
+      "warTurns": {
+        "turnsAtWar": 15,
+        "lostCities": 0
+      },
+      "sent": {
+        "entryFound": true,
+        "tableLen": 1
+      },
+      "rowHtml": "<div class=\"da-pn-bal-meta weariness\" title=\"Zmęczenie wojną: tury wojny 15 · utracone miasta 0 · zmęczenie 75%\">Zmęczenie wojną (AI) +330 PW</div>"
+    },
+    "silna": {
+      "rowHtml": "<div class=\"da-pn-bal-meta weariness\" title=\"Zmęczenie wojną: tury wojny 15 · utracone miasta 0 · zmęczenie 75%\">Zmęczenie wojną (AI) +330 PW</div>",
+      "panelText": "PUNKTY WYMIANY\nPW\nPropozycja pokoju / zawieszenia broni\nMY ODDAJEMY\n50 PW\n(baza 500, Relacja −90% siła)\nBILANS (NETTO)\n-131\nBrakuje 131 PW do uczciwej oferty pokoju @ Relacji (baza 145 PW) — dopłać, by wysłać\nONI ODDAJĄ\n500 PW\nZmęczenie wojną (AI) +330 PW\nWPŁYW RELACJI NA DEAL\n−90%\nRelacja z perspektywy AI 0 · Twoja strona słabsza (−90% PW); oni: baza (punkt balansu: 100)\nTraktat: Ty: baza 500 → 50 PW · Oni: 500 PW (baza) @ Rel 0\nNie spełnia warunków: Brakuje 131 PW do uczciwej oferty pokoju @ Relacji (baza 145 PW) — dopłać, by wysłać"
+    }
+  },
+  "errors": []
+}

@@ -108,7 +108,7 @@ function deepEqSet(a, b, msg) {
 // ===========================================================================
 console.log('\n-- A. Tabela zużycia per epoka (kumulatywna, data-driven) --');
 {
-  deepEqSet(M.citizenRequiredResourcesForEra(1), ['drewno', 'glina'], 'Epoka 1 (Kamień): Drewno + Glina');
+  deepEqSet(M.citizenRequiredResourcesForEra(1), ['drewno', 'glina', 'ceramika'], 'Epoka 1 (Kamień): Drewno + Glina + Ceramika (R-WEB-DATA-CITIZEN-CERAMICS-STONE-AGE-Q1)');
   deepEqSet(
     M.citizenRequiredResourcesForEra(2),
     ['drewno', 'glina', 'kamien', 'ceramika'],
@@ -142,27 +142,27 @@ console.log('\n-- A. Tabela zużycia per epoka (kumulatywna, data-driven) --');
 console.log('\n-- B. Bramka binarna (ECHO Q3=A) -- magazyn CENTRALNY, nie proporcjonalna --');
 {
   // Epoka 1: wymaga drewno + glina.
-  const full = M.resolveCitizenResourceCoverage(1, { drewno: 50, glina: 1 });
-  deepEqSet(full.available, ['drewno', 'glina'], 'oba surowce w magazynie (>0) -> oba available');
+  const full = M.resolveCitizenResourceCoverage(1, { drewno: 50, glina: 1, ceramika: 1 });
+  deepEqSet(full.available, ['drewno', 'glina', 'ceramika'], 'oba surowce w magazynie (>0) -> oba available');
   deepEqSet(full.missing, [], 'oba surowce w magazynie -> brak missing');
-  eq(full.happinessDelta, 2 * M.CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE, 'happinessDelta = 2 × bonus dostępności');
+  eq(full.happinessDelta, 3 * M.CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE, 'happinessDelta = 3 × bonus dostępności');
   eq(full.growthPctDelta, 0, 'growthPctDelta = 0 gdy brak braków');
 
-  const empty = M.resolveCitizenResourceCoverage(1, { drewno: 0, glina: 0 });
-  deepEqSet(empty.missing, ['drewno', 'glina'], 'magazyn=0 dla obu -> oba missing');
-  eq(empty.happinessDelta, 2 * M.CITIZEN_UPKEEP_HAPPINESS_PER_MISSING, 'happinessDelta = 2 × kara braku');
-  eq(empty.growthPctDelta, 2 * M.CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING, 'growthPctDelta = 2 × kara Rozwoju za brak');
+  const empty = M.resolveCitizenResourceCoverage(1, { drewno: 0, glina: 0, ceramika: 0 });
+  deepEqSet(empty.missing, ['drewno', 'glina', 'ceramika'], 'magazyn=0 dla wszystkich -> wszystkie missing');
+  eq(empty.happinessDelta, 3 * M.CITIZEN_UPKEEP_HAPPINESS_PER_MISSING, 'happinessDelta = 3 × kara braku');
+  eq(empty.growthPctDelta, 3 * M.CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING, 'growthPctDelta = 3 × kara Rozwoju za brak');
 
   const noEntry = M.resolveCitizenResourceCoverage(1, {});
-  deepEqSet(noEntry.missing, ['drewno', 'glina'], 'brak wpisu w magazynie (undefined) = tak samo jak 0 -> missing');
+  deepEqSet(noEntry.missing, ['drewno', 'glina', 'ceramika'], 'brak wpisu w magazynie (undefined) = tak samo jak 0 -> missing');
 
-  const negative = M.resolveCitizenResourceCoverage(1, { drewno: -3, glina: 5 });
+  const negative = M.resolveCitizenResourceCoverage(1, { drewno: -3, glina: 5, ceramika: 5 });
   deepEqSet(negative.missing, ['drewno'], 'magazyn ujemny (dane śmieciowe) traktowany jak brak (missing), nie jak dostępność');
-  deepEqSet(negative.available, ['glina'], 'glina > 0 -> available mimo że drewno w tym samym wywołaniu jest missing');
+  deepEqSet(negative.available, ['glina', 'ceramika'], 'glina > 0 -> available mimo że drewno w tym samym wywołaniu jest missing');
 
   // Binarność: NIE skaluje się z WIELKOŚCIĄ zapasu -- 1 sztuka i 10000 sztuk dają IDENTYCZNY wynik.
-  const tiny = M.resolveCitizenResourceCoverage(1, { drewno: 1, glina: 1 });
-  const huge = M.resolveCitizenResourceCoverage(1, { drewno: 10000, glina: 10000 });
+  const tiny = M.resolveCitizenResourceCoverage(1, { drewno: 1, glina: 1, ceramika: 1 });
+  const huge = M.resolveCitizenResourceCoverage(1, { drewno: 10000, glina: 10000, ceramika: 10000 });
   eq(tiny.happinessDelta, huge.happinessDelta, 'ECHO Q3=A: 1 sztuka i 10000 sztuk w magazynie dają IDENTYCZNĄ karę/bonus (binarne, nie proporcjonalne)');
   eq(tiny.growthPctDelta, huge.growthPctDelta, 'to samo dla kanału Rozwoju -- binarne, nie proporcjonalne do wielkości zapasu');
 
@@ -171,13 +171,13 @@ console.log('\n-- B. Bramka binarna (ECHO Q3=A) -- magazyn CENTRALNY, nie propor
   // resolveCitizenResourceCoverage jest ślepa na to, skąd wartość pochodzi -- weryfikacja przez
   // ownerResourceStockAll (integracja z building-stock-cost.ts).
   const cities = [
-    { id: 'c1', ownerId: 0, surowce: { drewno: 3 } },
+    { id: 'c1', ownerId: 0, surowce: { drewno: 3, ceramika: 1 } },
     { id: 'c2', ownerId: 0, surowce: { drewno: 0, glina: 2 } },
   ];
   const pool = M.ownerResourceStockAll(cities, 0);
   const viaPool = M.resolveCitizenResourceCoverage(1, pool);
   deepEqSet(
-    viaPool.available, ['drewno', 'glina'],
+    viaPool.available, ['drewno', 'glina', 'ceramika'],
     'ECHO Q1: miasto c2 BEZ własnego drewna nadal ma "drewno" available -- pochodzi z magazynu CENTRALNEGO (c1+c2), nie lokalnego',
   );
 }
@@ -499,22 +499,23 @@ console.log('\n-- G. computeCitizenResourceDrain -- realny drenaż 1,0 szt./obyw
   //
   // Stawka 1,0: 10 obywateli, magazyn 10 drewna/10 gliny (epoka 1) -> required=floor(10*1,0)=10
   // każdy, drained=10 każdy (magazyn wystarcza), oba "available" (pełne pokrycie).
-  const full = M.computeCitizenResourceDrain(1, 10, { drewno: 10, glina: 10 });
-  deepEqSet(full.available, ['drewno', 'glina'], 'magazyn wystarcza na required=10 (z 10 obywateli x 1,0) każdego surowca -> oba available');
+  const full = M.computeCitizenResourceDrain(1, 10, { drewno: 10, glina: 10, ceramika: 10 });
+  deepEqSet(full.available, ['drewno', 'glina', 'ceramika'], 'magazyn wystarcza na required=10 (z 10 obywateli x 1,0) każdego surowca -> oba available');
   eq(full.deductions.drewno, 10, 'deductions.drewno = 10 (1,0 szt./obywatel × 10 obywateli)');
   eq(full.deductions.glina, 10, 'deductions.glina = 10 (1,0 szt./obywatel × 10 obywateli)');
+  eq(full.deductions.ceramika, 10, 'deductions.ceramika = 10 (epoka 1 zawiera ceramikę)');
 
   // Niedobór: magazyn MNIEJSZY niż required -> drained = min(required, stock), NIGDY < 0,
   // surowiec liczy się jako "missing" (pokrycie częściowe, nie pełne -- kara nadal binarna).
-  const partial = M.computeCitizenResourceDrain(1, 10, { drewno: 3, glina: 0 });
-  deepEqSet(partial.missing, ['drewno', 'glina'], '10 obywateli (required=10), magazyn drewna=3 (< required=10) -> missing (pokrycie częściowe = brak)');
+  const partial = M.computeCitizenResourceDrain(1, 10, { drewno: 3, glina: 0, ceramika: 0 });
+  deepEqSet(partial.missing, ['drewno', 'glina', 'ceramika'], '10 obywateli (required=10), magazyn drewna=3 (< required=10) -> missing (pokrycie częściowe = brak)');
   eq(partial.deductions.drewno, 3, 'deductions.drewno = min(10, 3) = 3 -- drenuje ile jest, magazyn NIE schodzi poniżej zera');
   assert(!('glina' in partial.deductions), 'deductions.glina nieobecne (0 do odjęcia) -- magazyn=0, nic nie drenować');
 
   // Zero obywateli -> zero zapotrzebowania -> zawsze "available" (brak kary na dane brzegowe).
   // Stawka nie ma tu znaczenia (0 * dowolna_stawka = 0) -- populacja NIE przeskalowana.
-  const zeroPop = M.computeCitizenResourceDrain(1, 0, { drewno: 0, glina: 0 });
-  deepEqSet(zeroPop.available, ['drewno', 'glina'], '0 obywateli -> required=0 -> zawsze pełne pokrycie, nawet z pustym magazynem');
+  const zeroPop = M.computeCitizenResourceDrain(1, 0, { drewno: 0, glina: 0, ceramika: 0 });
+  deepEqSet(zeroPop.available, ['drewno', 'glina', 'ceramika'], '0 obywateli -> required=0 -> zawsze pełne pokrycie, nawet z pustym magazynem');
   eq(Object.keys(zeroPop.deductions).length, 0, '0 obywateli -> brak zapotrzebowania -> brak odjęcia (deductions puste)');
 
   // Populacja ujemna/niefinitna (dane śmieciowe) -> traktowana jak 0, zero regresji/crashu.
@@ -528,8 +529,8 @@ console.log('\n-- G. computeCitizenResourceDrain -- realny drenaż 1,0 szt./obyw
   // niedoboru) -- 1 sztuka brakująca do pełnego pokrycia daje TAKĄ SAMĄ karę jak 1000 sztuk
   // brakujących (obie "missing"), happinessDelta/growthPctDelta liczą TYLKO available.length/missing.length.
   // 10 obywateli -> required=10 (jak wyżej); drewno=9 to "brakuje 1 sztuki do required=10".
-  const barelyMissing = M.computeCitizenResourceDrain(1, 10, { drewno: 9, glina: 10 });
-  const wayMissing = M.computeCitizenResourceDrain(1, 10, { drewno: 0, glina: 10 });
+  const barelyMissing = M.computeCitizenResourceDrain(1, 10, { drewno: 9, glina: 10, ceramika: 10 });
+  const wayMissing = M.computeCitizenResourceDrain(1, 10, { drewno: 0, glina: 10, ceramika: 10 });
   eq(barelyMissing.happinessDelta, wayMissing.happinessDelta, 'ECHO Q3=A zachowane: brak 1 sztuki do pełnego pokrycia = ta sama kara co brak całości (binarne, nie proporcjonalne)');
 
   // G2 (Evaluator FAIL na 1208eb6c -- pokrycie zaokrąglenia; NOTA 2026-08-13,
@@ -724,7 +725,7 @@ console.log('\n-- H. citizenUpkeepDrainForOwner: drenaż liczony RAZ per owner (
     wrongPerCity3.available.includes('drewno') && wrongPerCity7.available.includes('drewno'),
     'sanity: liczone OSOBNO (błędny wzorzec) obie "widzą" magazyn=8 jako wystarczający -- to właśnie ta pułapka, którą H1-H3 mają wykluczyć w main.ts',
   );
-  const correctSummedFirst = M.computeCitizenResourceDrain(1, 3 + 7, { drewno: 8, glina: 10 });
+  const correctSummedFirst = M.computeCitizenResourceDrain(1, 3 + 7, { drewno: 8, glina: 10, ceramika: 10 });
   eq(correctSummedFirst.deductions.drewno, 8, 'poprawny wzorzec (suma populacji NAJPIERW, RAZ per owner): deductions.drewno = min(10, 8) = 8, nie 2×8=16');
   deepEqSet(correctSummedFirst.missing, ['drewno'], 'poprawny wzorzec: 10 obywateli (required=10) > 8 sztuk drewna w magazynie (glina wystarcza) -> tylko drewno missing (poprawnie wykrywa niedobór, którego wzorzec "osobno" by nie zauważył)');
 }
@@ -954,6 +955,38 @@ console.log('\n-- K. main.ts: parytet liczby wystąpień citizenUpkeepByOwner.cl
       + 'K1/K2 liczą wystąpienia w CAŁYM main.ts i NIE wykrywają PRZENIESIENIA jednego z 5 '
       + 'clear() poza tę funkcję, dopóki suma w pliku się zgadza',
   );
+}
+
+// --- L. Kamień z ceramiką (R-WEB-DATA-CITIZEN-CERAMICS-STONE-AGE-Q1, runda 2 obrony) ---
+console.log('\n-- L. Kamień z ceramiką: drenaż pop 20, kara/premia za ceramikę, parytet AI --');
+{
+  // (a') drenaż: epoka 1, populacja 20, magazyn pełny -> ceramika 20 sztuk (1,0 × 20), bez odjęcia poniżej zera
+  const stockFull = { drewno: 100, glina: 100, ceramika: 100 };
+  const drain20 = M.computeCitizenResourceDrain(1, 20, stockFull);
+  eq(drain20.deductions.ceramika, 20, 'L1: Kamień, pop 20 -> deductions.ceramika = 20 (1,0 szt./obywatel × 20)');
+  eq(drain20.deductions.drewno, 20, 'L1b: Kamień, pop 20 -> deductions.drewno = 20');
+  eq(drain20.deductions.glina, 20, 'L1c: Kamień, pop 20 -> deductions.glina = 20');
+  deepEqSet(drain20.available, ['drewno', 'glina', 'ceramika'], 'L1d: Kamień, pop 20, pełny magazyn -> wszystkie 3 surowce available');
+
+  // (b') zachowanie kary: bez ceramiki w magazynie -> missing, −2 Szczęścia i −1% Rozwoju za ceramikę
+  const noCer = M.resolveCitizenResourceCoverage(1, { drewno: 50, glina: 50, ceramika: 0 });
+  deepEqSet(noCer.missing, ['ceramika'], 'L2: Kamień, ceramika=0 -> missing = [ceramika]');
+  eq(noCer.happinessDelta, 2 * M.CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE + M.CITIZEN_UPKEEP_HAPPINESS_PER_MISSING,
+    'L3: Kamień, ceramika=0 -> happinessDelta = 2 × (+2) + (−2) = +2');
+  eq(noCer.growthPctDelta, M.CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING, 'L4: Kamień, ceramika=0 -> growthPctDelta = −1 (kara Rozwoju za ceramikę)');
+  eq(M.CITIZEN_UPKEEP_HAPPINESS_PER_MISSING, -2, 'L5: kara Szczęścia za brakujący surowiec = −2');
+  eq(M.CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING, -1, 'L6: kara Rozwoju za brakujący surowiec = −1');
+
+  // z ceramiką: +2 (jak dla pozostałych), brak kary Rozwoju
+  const withCer = M.resolveCitizenResourceCoverage(1, { drewno: 50, glina: 50, ceramika: 5 });
+  eq(withCer.happinessDelta, 3 * M.CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE, 'L7: Kamień, ceramika>0 -> happinessDelta = 3 × (+2)');
+  eq(withCer.growthPctDelta, 0, 'L8: Kamień, ceramika>0 -> growthPctDelta = 0');
+
+  // (c') parytet AI/Państwa-Miasta: funkcje nie przyjmują ownerId, więc wynik zależy wyłącznie od (era, pop, magazyn)
+  eq(M.computeCitizenResourceDrain.length, 3, 'L9: computeCitizenResourceDrain(era, population, stock) -- brak parametru ownerId (parytet AI)');
+  eq(M.resolveCitizenResourceCoverage.length, 3, 'L10: resolveCitizenResourceCoverage(era, stock, population?) -- brak parametru ownerId (parytet AI)');
+  const aiLike = M.computeCitizenResourceDrain(1, 20, stockFull);
+  eq(JSON.stringify(aiLike), JSON.stringify(drain20), 'L11: ten sam wejściowy magazyn -> identyczny drenaż dla "AI" i gracza (ownerId nieobecne)');
 }
 
 // --- summary ---------------------------------------------------------------

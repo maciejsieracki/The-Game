@@ -259,7 +259,7 @@ function integrationTick(ownerId) {
       hex.nakladka = 'las';
     }
   }
-  // Same-turn edge case: the Spichlerz drains 25 Ceramiki, while Garncarnia
+  // Same-turn edge case: the Spichlerz drains 10 Ceramiki, while Garncarnia
   // produces one from the available Glina+Drewno in this very tick.  Preview
   // must use the post-production snapshot just like runtime.
   city.surowce = { ceramika: 20, glina: 1, drewno: 1 };
@@ -335,7 +335,9 @@ function multiSpichlerzTick(ownerId) {
     : null;
   if (second) cities.push(second);
   if (!first || !second) throw new Error(`multi-spichlerz: nie można założyć miast owner=${ownerId}`);
-  first.surowce = { ceramika: 25 };
+  // Pula = dokładnie jedna wypłata Spichlerza I (10, econ-params.json po R-WEB-DATA-SPICHLERZ-II-REMOVE-CERAMICS-UPKEEP-Q1):
+  // drugie miasto nie ma z czego zapłacić → brak dubla.
+  first.surowce = { ceramika: 10 };
   second.surowce = {};
   const built = new Map([
     [first.id, ['spichlerz']],

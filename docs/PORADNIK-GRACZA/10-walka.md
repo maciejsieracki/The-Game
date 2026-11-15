@@ -80,7 +80,7 @@ Przy słabej obronie miasto może paść szybciej; przy silnej — preBattle lub
 
 Scenariusz na **Normalnym**: przyrost **+10**/turę z działalności opisanej w tej sekcji.
 Po **5** turach akumulacja **50** jednostek zasobu — wystarcza na **1** kluczową decyzję (budowa, tech lub armia).
-Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 60% skarbiec · 20% nauka · 20% zamożność.
+Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 30% skarbiec · 60% nauka · 10% zamożność.
 
 ### Strategia gracza
 
@@ -150,6 +150,8 @@ HUD przeszedł pełne przeprojektowanie na makietę **POLE-BITWY-TW-v5** (3 fazy
 | **Zębatka ⚙** | Przy „Wycofaj się" | Popup z dawnym prawym railem (Muzyka/Historia/Info/Pomoc) — sam rail 56px zlikwidowany |
 
 Nazewnictwo dokładnych etykiet może się nieznacznie różnić w buildzie — szukaj wg **funkcji z tabeli**, nie dosłownego tekstu.
+
+**Zakres rozkazów w rozstawieniu (Formacja, Konnica, Kierunek natarcia).** Rozkaz działa na **dokładnie zaznaczone** żywe jednostki, także mieszane (piechota + konnica) i z różnych grup. Nic nie zaznaczone = **cała armia**. Dzięki temu można np. zaznaczyć samą konnicę i ustawić **Tył**, a piechota zostanie na **Froncie**. Komunikat po rozkazie mówi, czego dotyczył: „zaznaczenie (N)”, „cała grupa (N)” (wszystkie żywe jednostki jednej grupy) albo „cała armia”. Chip kierunku natarcia pokazuje „Natarcie: różne”, gdy zaznaczone jednostki mają różne kierunki. Kierunek natarcia wpływa na **auto-odgrywanie** bitwy (manewr konnicy na tyły/flankę), a nie na układ jednostek w strefie rozstawienia.
 
 ### 60.2. Sterowanie
 

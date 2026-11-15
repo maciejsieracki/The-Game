@@ -83,7 +83,7 @@ Wartość mnożnika zależy od **cywilizacji** (parametr „Mnożnik waluty” z
 
 ### 49.3c. Co jeszcze wchodzi do puli Daniny
 
-**Podatek z budynków** (np. Targowisko) oraz **Podatek z zamiany Pracy przez Targowisko** nie trafiają wprost do skarbca — wpadają do **puli Daniny netto miasta** i dzielą się tym samym suwakiem 60/20/20 (Część VI §38.1), zamiast omijać podział.
+**Podatek z budynków** (np. Targowisko) oraz **Podatek z zamiany Pracy przez Targowisko** nie trafiają wprost do skarbca — wpadają do **puli Daniny netto miasta** i dzielą się tym samym suwakiem 30/60/10 (Część VI §38.1), zamiast omijać podział.
 
 ### 49.4. Strategie gracza
 
@@ -143,6 +143,8 @@ Gdy zapasy państwa spadną **poniżej zera**:
 - Głód **nie blokuje rekrutacji** — możesz werbować, ale karmić musisz od razu.
 
 **Remedium:** Spichlerz w imperium, suwak żywności na wojsko, mniej armii w polu, więcej farm.
+
+**Osłabienie w walce (gracz i AI):** jednostka armii, która w danej turze **głoduje** (zapasy państwa poniżej zera) albo gdy **Skarbiec właściciela jest poniżej zera** po zbankowaniu tury, walczy z karą **×0,75** (−25%) do statystyk bojowych — bez pancerza. Obie kary kumulują się (0,75 × 0,75). Barbarzyńcy nie są osłabiani tymi karami. Okno przed bitwą pokazuje, która kara działa. Szczegóły: [Osłabienie w bitwie — głód wojska i deficyt złota](../encyklopedia/pojecia/oslabienie-glod-deficyt.md).
 
 ### 50.4. Priorytety gracza
 
@@ -410,7 +412,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 Scenariusz na **Normalnym**: przyrost **+10**/turę z działalności opisanej w tej sekcji.
 Po **5** turach akumulacja **50** jednostek zasobu — wystarcza na **1** kluczową decyzję (budowa, tech lub armia).
-Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 60% skarbiec · 20% nauka · 20% zamożność.
+Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 30% skarbiec · 60% nauka · 10% zamożność.
 
 ### Strategia gracza
 

@@ -4,7 +4,9 @@
  * Headless Chromium, bundle vite z ?civTest=1. Deterministyczny seed. Dwa tryby:
  *  --mode sweep : tura 11 — schodzenie skarbca (grantPlayerGold) krokami po STEP aż do pierwszej blokady;
  *                 zapisuje progowy deficyt T (sumę ujemnych dosypek w tej turze).
- *  --mode check --deficit T : tury 1–10 przy deficycie T (canEnd musi być true w każdej turze),
+ *  --mode check --deficit T : tury 1–10 przy deficycie T. R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1 (r3):
+ *                 od tury 1 liczy się WYŁĄCZNIE prognoza po turze — przy prognozie < 0 canEnd musi być false także w turach 1–10
+ *                 (dawne oczekiwanie „tury 1–10 wolne od blokady” zostało usunięte; wynik loguje `turnN_expectBlocked`),
  *                 potem tura 11 przy tym samym T (canEnd musi być false), odczyt title,
  *                 klik NIE kończy tury, po przywróceniu skarbca (+T) klik kończy turę.
  * Diagnostyka: tekst HUD „Skarbiec”, tura i flaga awaitingFirstCity przed/po każdym przełączeniu renderu.
@@ -90,11 +92,12 @@ async function main() {
     for (let i = 0; i < 4; i++) { await S.grant(p, 5000); await S.endTurnOnce(p); }
 
     if (MODE === 'check') {
-      // Tury 1–10: przy deficycie T bramka NIE może blokować.
+      // Tury 1–10: r3 — przy deficycie T (prognoza po turze < 0) bramka BLOKUJE od tury 1 (reguła „tylko prognoza”).
       for (let turn = await S.turn(p); turn <= 10; turn = await S.turn(p)) {
         await S.grant(p, -DEFICIT); await wait(200);
         const can = await S.canEnd(p);
         log('turn' + turn + '_canEndAtDeficit', can);
+        log('turn' + turn + '_expectBlocked', can === false);
         await S.grant(p, DEFICIT);
         await S.grant(p, 5000); await S.endTurnOnce(p);
       }

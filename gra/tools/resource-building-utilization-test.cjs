@@ -65,7 +65,7 @@ function realTick(cities, built, era = 1) {
 
 // ---------------------------------------------------------------------------
 console.log('-- A. tabela: pelny / polowa / brak / wylaczony / bez przerobu --');
-const GARN_MAX = 50; // Garncarnia, epoka 1 (cykle/ture z econ-params)
+const GARN_MAX = 30; // Garncarnia, epoka 1 (cykle/ture z econ-params; R-WEB-DATA-GARNCARNIA-THROUGHPUT-30-PLUS-20-PER-ERA-Q1)
 // Miasto ma wlasny dopyw gliny z terytorium (przed konwerterami) -- mierzymy go realna tura przy pustym magazynie,
 // zeby liczby tabeli byly dokladne (zapas koncowy = zapas + dopyw).
 const GIN = (realTick([mkCity('p', 0, 0, { surowce: { glina: 0, drewno: 500 } })], { p: ['garncarnia'] })
@@ -73,9 +73,9 @@ const GIN = (realTick([mkCity('p', 0, 0, { surowce: { glina: 0, drewno: 500 } })
 console.log(`   zmierzony dopyw gliny z terytorium miasta: ${GIN}/ture`);
 const TABLE = [
   { name: 'pelny zapas', stock: { glina: 500, drewno: 500 }, pct: 100, cykle: GARN_MAX, lim: undefined },
-  { name: 'polowa zapasu glina', stock: { glina: 25 - GIN, drewno: 500 }, pct: 50, cykle: 25, lim: 'wejscie', missing: { glina: 25 } },
-  { name: 'brak gliny', stock: { glina: 0, drewno: 500 }, pct: Math.round(100 * GIN / GARN_MAX), cykle: GIN, lim: 'wejscie', missing: { glina: 50 - GIN } },
-  { name: 'brak drewna', stock: { glina: 500, drewno: 0 }, pct: 0, cykle: 0, lim: 'wejscie', missing: { drewno: 50 } },
+  { name: 'polowa zapasu glina', stock: { glina: 15 - GIN, drewno: 500 }, pct: 50, cykle: 15, lim: 'wejscie', missing: { glina: 15 } },
+  { name: 'brak gliny', stock: { glina: 0, drewno: 500 }, pct: Math.round(100 * GIN / GARN_MAX), cykle: GIN, lim: 'wejscie', missing: { glina: GARN_MAX - GIN } },
+  { name: 'brak drewna', stock: { glina: 500, drewno: 0 }, pct: 0, cykle: 0, lim: 'wejscie', missing: { drewno: GARN_MAX } },
 ];
 for (const t of TABLE) {
   const f = forecast([mkCity('c1', 0, 0, { surowce: { ...t.stock } })], { c1: ['garncarnia'] });
@@ -144,24 +144,24 @@ console.log('-- B. spojnosc z realna tura (advanceCityEconomy) --');
     const nominal = M.converterProductionDisplayForBuilding('garncarnia', econParams, 'normal', 1).produced.ceramika;
     eq(shown, Math.round(100 * produced / nominal), `glina=${glina}: pokazany % == realna realizacja (${produced}/${nominal})`);
   }
-  // 3 garncarnie w 3 miastach, wspolna pula 75 gliny: 100 / 50 / 0 (konkurencja, kolejnosc jak w ticku)
-  const mk = () => [mkCity('c1', 0, 0, { surowce: { glina: 75 - GIN, drewno: 500 } }), mkCity('c2', 0, 40), mkCity('c3', 0, 80)];
+  // 3 garncarnie w 3 miastach, wspolna pula 45 gliny (cykle 30/30 => 30+15+0): 100 / 50 / 0 (konkurencja, kolejnosc jak w ticku)
+  const mk = () => [mkCity('c1', 0, 0, { surowce: { glina: 45 - GIN, drewno: 500 } }), mkCity('c2', 0, 40), mkCity('c3', 0, 80)];
   const built = { c1: ['garncarnia'], c2: ['garncarnia'], c3: ['garncarnia'] };
   const f = forecast(mk(), built);
   const pcts = ['c1', 'c2', 'c3'].map(id => f.utilizationByCity.get(id).garncarnia.pct);
-  eq(pcts.join(','), '100,50,0', '3 garncarnie, 75 gliny: 100/50/0%');
+  eq(pcts.join(','), '100,50,0', '3 garncarnie, 45 gliny: 100/50/0%');
   const real = realTick(mk(), built);
-  eq((real.converterProducedByOwner.get(0) || {}).ceramika, 75, 'realna tura: 75 ceramiki');
+  eq((real.converterProducedByOwner.get(0) || {}).ceramika, 45, 'realna tura: 45 ceramiki (30+15+0)');
   const sumCykle = ['c1', 'c2', 'c3'].reduce((a, id) => a + f.utilizationByCity.get(id).garncarnia.cykle, 0);
-  eq(sumCykle, 75, 'suma cykli z prognozy == realna produkcja');
+  eq(sumCykle, 45, 'suma cykli z prognozy == realna produkcja');
   const g = f.producedByOwner.get(0).ceramika;
-  eq(g, 75, 'prognoza produkcji (te sama) == 75');
+  eq(g, 45, 'prognoza produkcji (te sama) == 45');
 }
 
 // ---------------------------------------------------------------------------
 console.log('-- C. migawka: agregat per typ --');
 function buildSnap(utilMutator) {
-  const cities = [mkCity('c1', 0, 0, { surowce: { glina: 75 - GIN, drewno: 500 } }), mkCity('c2', 0, 40), mkCity('c3', 0, 80), mkCity('c4', 0, 120)];
+  const cities = [mkCity('c1', 0, 0, { surowce: { glina: 45 - GIN, drewno: 500 } }), mkCity('c2', 0, 40), mkCity('c3', 0, 80), mkCity('c4', 0, 120)];
   M.setProductionBuildingEnabled(cities[3], 'garncarnia', false);
   const built = { c1: ['garncarnia', 'stolarnia'], c2: ['garncarnia'], c3: ['garncarnia', 'kamieniarski'], c4: ['garncarnia'] };
   const f = forecast(cities, built);
@@ -228,7 +228,7 @@ async function sectionD() {
     if (pctOf('c3|garncarnia') !== '0') bad.push('c3 garncarnia != 0');
     const r2 = rowOf('c2|garncarnia');
     if (!r2 || !r2.querySelector('[data-prod-util-kind="wejscie"] .bld-res-chip')) bad.push('c2: brak chipa ikona+liczba dla powodu');
-    if (r2 && !/brakuje\s*25/.test(r2.textContent)) bad.push('c2: brak "brakuje 25"');
+    if (r2 && !/brakuje\s*15/.test(r2.textContent)) bad.push('c2: brak "brakuje 15"');
     if (r2 && /Glina/.test(r2.textContent.replace(/title="[^"]*"/g, '')) && !r2.querySelector('.bld-res-chip-ic')) bad.push('c2: naga nazwa surowca zamiast ikony');
     const r4 = rowOf('c4|garncarnia');
     if (!r4 || !r4.querySelector('[data-prod-util-kind="off"]') || !/wyłączony/.test(r4.textContent)) bad.push('c4: brak "wyłączony"');
