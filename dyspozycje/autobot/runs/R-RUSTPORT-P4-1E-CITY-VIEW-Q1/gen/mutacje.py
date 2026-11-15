@@ -38,6 +38,12 @@ MUTATIONS = [
     ("brak koloru z kosztu pustego", "if !cost.is_empty() {", "if cost.is_empty() {"),
     ("epoka startu ignorowana", "game_start_era(&state.params.epoch_id),", "1.0,"),
     ("displayName pominiete", "display_name: civ_display_name(civs, civ_key),", "display_name: None,"),
+    # Obrona r1 (mutanty Evaluatora r1, ktore przezyly przed dopisaniem scenariusza
+    # `przeniesiona_stolica_obce_jednostki_paleta`):
+    ("E4 jawna stolica pominieta (zawsze najstarsze)", ".find(|c| c.is_capital && c.owner_id == owner)", ".find(|c| false && c.is_capital && c.owner_id == owner)"),
+    ("E14 jednostki na heksie tylko wlasciciela miasta", ".filter(|u| u.position == city.position)", ".filter(|u| u.position == city.position && u.owner_id == city.owner_id)"),
+    ("E7 ringHex bez dopelnienia do 6 cyfr", 'format!("#{color:06x}")', 'format!("#{color:x}")'),
+    ("E8 paleta zapasowa % 7", "let idx = usize::try_from(owner_id % 8).unwrap_or(0);", "let idx = usize::try_from(owner_id % 7).unwrap_or(0);"),
 ]
 
 

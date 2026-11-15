@@ -1531,6 +1531,430 @@ const PIN_VECTORS: &str = r##"{
      }
     ]
    }
+  },
+  {
+   "input": {
+    "name": "przeniesiona_stolica_obce_jednostki_paleta",
+    "epochId": "kamien",
+    "viewer": 0,
+    "fogActive": false,
+    "visibleHexes": [],
+    "players": [
+     {
+      "id": 0,
+      "civilization": "rzymianie",
+      "isHuman": true
+     },
+     {
+      "id": 1,
+      "civilization": "grecy",
+      "isHuman": false
+     },
+     {
+      "id": 6,
+      "civilization": "player-6",
+      "isHuman": false
+     },
+     {
+      "id": 7,
+      "civilization": "player-7",
+      "isHuman": false
+     }
+    ],
+    "cities": [
+     {
+      "id": 1,
+      "ownerId": 0,
+      "name": "Roma",
+      "q": 1,
+      "r": 1,
+      "isCapital": false,
+      "population": 4,
+      "built": [],
+      "surowce": null,
+      "production": null,
+      "orderBunt": false,
+      "orderRevoltWarning": false,
+      "oblegane": true,
+      "growth": null
+     },
+     {
+      "id": 2,
+      "ownerId": 1,
+      "name": "Ateny",
+      "q": 4,
+      "r": 1,
+      "isCapital": false,
+      "population": 3,
+      "built": [],
+      "surowce": null,
+      "production": null,
+      "orderBunt": false,
+      "orderRevoltWarning": false,
+      "oblegane": false,
+      "growth": null
+     },
+     {
+      "id": 3,
+      "ownerId": 0,
+      "name": "Ostia",
+      "q": 2,
+      "r": 2,
+      "isCapital": true,
+      "population": 2,
+      "built": [],
+      "surowce": null,
+      "production": null,
+      "orderBunt": false,
+      "orderRevoltWarning": false,
+      "oblegane": false,
+      "growth": null
+     },
+     {
+      "id": 5,
+      "ownerId": 1,
+      "name": "Korynt",
+      "q": 6,
+      "r": 3,
+      "isCapital": true,
+      "population": 5,
+      "built": [],
+      "surowce": null,
+      "production": null,
+      "orderBunt": false,
+      "orderRevoltWarning": false,
+      "oblegane": false,
+      "growth": null
+     },
+     {
+      "id": 8,
+      "ownerId": 6,
+      "name": "Turkusowo",
+      "q": 9,
+      "r": 1,
+      "isCapital": true,
+      "population": 1,
+      "built": [],
+      "surowce": null,
+      "production": null,
+      "orderBunt": false,
+      "orderRevoltWarning": false,
+      "oblegane": false,
+      "growth": null
+     },
+     {
+      "id": 9,
+      "ownerId": 7,
+      "name": "Rozowo",
+      "q": 11,
+      "r": 4,
+      "isCapital": true,
+      "population": 1,
+      "built": [],
+      "surowce": null,
+      "production": null,
+      "orderBunt": false,
+      "orderRevoltWarning": false,
+      "oblegane": false,
+      "growth": null
+     }
+    ],
+    "units": [
+     {
+      "ownerId": 1,
+      "q": 1,
+      "r": 1
+     },
+     {
+      "ownerId": 0,
+      "q": 1,
+      "r": 1
+     },
+     {
+      "ownerId": 0,
+      "q": 6,
+      "r": 3
+     }
+    ],
+    "relations": [
+     {
+      "a": 0,
+      "b": 1,
+      "status": "wojna"
+     }
+    ],
+    "deals": [],
+    "simplifiedOwners": [],
+    "typCopyOwners": [],
+    "clusterCapitalOwnerIds": [],
+    "itemStockCost": {}
+   },
+   "expected": {
+    "owners": [
+     {
+      "ownerId": 0,
+      "color": 9116186,
+      "civIconId": "rzymianie",
+      "bronzeCiv": "rzym",
+      "era": 1,
+      "isCityState": false,
+      "isBarbarian": false,
+      "ringHex": "#8b1a1a",
+      "displayName": "Rzymianie",
+      "mapOutlineKind": "player",
+      "capitalCityId": 3,
+      "relationToViewer": "self"
+     },
+     {
+      "ownerId": 1,
+      "color": 1989288,
+      "civIconId": "grecy",
+      "bronzeCiv": "grecja",
+      "era": 1,
+      "isCityState": false,
+      "isBarbarian": false,
+      "ringHex": "#1e5aa8",
+      "displayName": "Grecy",
+      "mapOutlineKind": "war",
+      "capitalCityId": 5,
+      "relationToViewer": "wojna"
+     },
+     {
+      "ownerId": 6,
+      "color": 44225,
+      "civIconId": "player-6",
+      "bronzeCiv": "grecja",
+      "era": 1,
+      "isCityState": false,
+      "isBarbarian": false,
+      "ringHex": "#00acc1",
+      "displayName": null,
+      "mapOutlineKind": "neutral",
+      "capitalCityId": 8,
+      "relationToViewer": "neutralni"
+     },
+     {
+      "ownerId": 7,
+      "color": 15753874,
+      "civIconId": "player-7",
+      "bronzeCiv": "grecja",
+      "era": 1,
+      "isCityState": false,
+      "isBarbarian": false,
+      "ringHex": "#f06292",
+      "displayName": null,
+      "mapOutlineKind": "neutral",
+      "capitalCityId": 9,
+      "relationToViewer": "neutralni"
+     }
+    ],
+    "cities": [
+     {
+      "id": 1,
+      "ownerId": 0,
+      "hex": {
+       "q": 1,
+       "r": 1
+      },
+      "population": 4,
+      "level": 4,
+      "wallKind": "none",
+      "revolt": false,
+      "besieged": true,
+      "fogVisible": true,
+      "unitCountOnHex": 2,
+      "badge": {
+       "cityName": "Roma",
+       "population": 4,
+       "defenseTier": 0,
+       "civIconId": "rzymianie",
+       "ownerColor": 9116186,
+       "prodActive": false,
+       "prodKind": null,
+       "prodId": null,
+       "growthPercent": null,
+       "growthStarving": false,
+       "resourceWarning": false,
+       "prodCategoryLabel": null,
+       "prodItemName": null,
+       "prodPaused": false,
+       "isCityState": false,
+       "era": 1,
+       "isCapital": false
+      }
+     },
+     {
+      "id": 2,
+      "ownerId": 1,
+      "hex": {
+       "q": 4,
+       "r": 1
+      },
+      "population": 3,
+      "level": 3,
+      "wallKind": "none",
+      "revolt": false,
+      "besieged": false,
+      "fogVisible": true,
+      "unitCountOnHex": 0,
+      "badge": {
+       "cityName": "Ateny",
+       "population": 3,
+       "defenseTier": 0,
+       "civIconId": "grecy",
+       "ownerColor": 1989288,
+       "prodActive": false,
+       "prodKind": null,
+       "prodId": null,
+       "growthPercent": null,
+       "growthStarving": false,
+       "resourceWarning": false,
+       "prodCategoryLabel": null,
+       "prodItemName": null,
+       "prodPaused": false,
+       "isCityState": false,
+       "era": 1,
+       "isCapital": false
+      }
+     },
+     {
+      "id": 3,
+      "ownerId": 0,
+      "hex": {
+       "q": 2,
+       "r": 2
+      },
+      "population": 2,
+      "level": 2,
+      "wallKind": "none",
+      "revolt": false,
+      "besieged": false,
+      "fogVisible": true,
+      "unitCountOnHex": 0,
+      "badge": {
+       "cityName": "Ostia",
+       "population": 2,
+       "defenseTier": 0,
+       "civIconId": "rzymianie",
+       "ownerColor": 9116186,
+       "prodActive": false,
+       "prodKind": null,
+       "prodId": null,
+       "growthPercent": null,
+       "growthStarving": false,
+       "resourceWarning": false,
+       "prodCategoryLabel": null,
+       "prodItemName": null,
+       "prodPaused": false,
+       "isCityState": false,
+       "era": 1,
+       "isCapital": true
+      }
+     },
+     {
+      "id": 5,
+      "ownerId": 1,
+      "hex": {
+       "q": 6,
+       "r": 3
+      },
+      "population": 5,
+      "level": 5,
+      "wallKind": "none",
+      "revolt": false,
+      "besieged": false,
+      "fogVisible": true,
+      "unitCountOnHex": 1,
+      "badge": {
+       "cityName": "Korynt",
+       "population": 5,
+       "defenseTier": 0,
+       "civIconId": "grecy",
+       "ownerColor": 1989288,
+       "prodActive": false,
+       "prodKind": null,
+       "prodId": null,
+       "growthPercent": null,
+       "growthStarving": false,
+       "resourceWarning": false,
+       "prodCategoryLabel": null,
+       "prodItemName": null,
+       "prodPaused": false,
+       "isCityState": false,
+       "era": 1,
+       "isCapital": true
+      }
+     },
+     {
+      "id": 8,
+      "ownerId": 6,
+      "hex": {
+       "q": 9,
+       "r": 1
+      },
+      "population": 1,
+      "level": 1,
+      "wallKind": "none",
+      "revolt": false,
+      "besieged": false,
+      "fogVisible": true,
+      "unitCountOnHex": 0,
+      "badge": {
+       "cityName": "Turkusowo",
+       "population": 1,
+       "defenseTier": 0,
+       "civIconId": "player-6",
+       "ownerColor": 44225,
+       "prodActive": false,
+       "prodKind": null,
+       "prodId": null,
+       "growthPercent": null,
+       "growthStarving": false,
+       "resourceWarning": false,
+       "prodCategoryLabel": null,
+       "prodItemName": null,
+       "prodPaused": false,
+       "isCityState": false,
+       "era": 1,
+       "isCapital": true
+      }
+     },
+     {
+      "id": 9,
+      "ownerId": 7,
+      "hex": {
+       "q": 11,
+       "r": 4
+      },
+      "population": 1,
+      "level": 1,
+      "wallKind": "none",
+      "revolt": false,
+      "besieged": false,
+      "fogVisible": true,
+      "unitCountOnHex": 0,
+      "badge": {
+       "cityName": "Rozowo",
+       "population": 1,
+       "defenseTier": 0,
+       "civIconId": "player-7",
+       "ownerColor": 15753874,
+       "prodActive": false,
+       "prodKind": null,
+       "prodId": null,
+       "growthPercent": null,
+       "growthStarving": false,
+       "resourceWarning": false,
+       "prodCategoryLabel": null,
+       "prodItemName": null,
+       "prodPaused": false,
+       "isCityState": false,
+       "era": 1,
+       "isCapital": true
+      }
+     }
+    ]
+   }
   }
  ]
 }"##;
@@ -1844,7 +2268,7 @@ fn blok_wektorow_pochodzi_z_pinu() {
     assert_eq!(v["pin"], "07d2fbd72");
     // Jedyna zaslepka harnessu to `three` (geometria renderu, nieuzywana przez wolany kod).
     assert_eq!(v["stubbedModules"], serde_json::json!(["three"]));
-    assert_eq!(v["scenarios"].as_array().expect("scenarios").len(), 3);
+    assert_eq!(v["scenarios"].as_array().expect("scenarios").len(), 4);
 }
 
 #[test]
@@ -1867,6 +2291,11 @@ fn wielu_wlascicieli_mgla_zgodne_z_pinem() {
 #[test]
 fn hotseat_drugi_fotel_bez_mgly_zgodne_z_pinem() {
     assert_scenario("hotseat_drugi_fotel_bez_mgly_braz");
+}
+
+#[test]
+fn przeniesiona_stolica_obce_jednostki_paleta_zgodne_z_pinem() {
+    assert_scenario("przeniesiona_stolica_obce_jednostki_paleta");
 }
 
 #[test]
@@ -1930,6 +2359,60 @@ fn wektory_pokrywaja_galezie_producenta() {
         && b["isCityState"] == true));
     // Wzrost obcego miasta jest w wejsciu, ale pin go nie czyta (`render/cities.ts:904`).
     assert!(has(&badges, &|b| b["growthPercent"].is_null()));
+
+    // Obrona r1 (zarzuty Evaluatora Z1-Z3): galezie rozroznione wektorami, liczone z wejsc scenariusza.
+    let mut explicit_capital_not_oldest = 0usize;
+    let mut foreign_unit_on_city_hex = 0usize;
+    for sc in v["scenarios"].as_array().expect("scenarios") {
+        let input = &sc["input"];
+        let in_cities = input["cities"].as_array().expect("cities");
+        let in_units = input["units"].as_array().expect("units");
+        let viewer = &input["viewer"];
+        for o in sc["expected"]["owners"].as_array().expect("owners") {
+            let own: Vec<&Value> = in_cities
+                .iter()
+                .filter(|c| c["ownerId"] == o["ownerId"])
+                .collect();
+            let oldest = own.iter().map(|c| u(&c["id"])).min();
+            // Z1: jawna stolica (`capitalCityIdByOwner`, `main.ts:35000-35001`) inna niz najstarsze
+            // miasto (`oldestCityOfOwner`) u wlasciciela obcego dla widza.
+            if &o["ownerId"] != viewer
+                && own.iter().any(|c| c["isCapital"] == true)
+                && o["capitalCityId"].as_u64() != oldest
+            {
+                explicit_capital_not_oldest += 1;
+            }
+        }
+        for c in sc["expected"]["cities"].as_array().expect("cities") {
+            // Z2: `unitCountOnHex` (`main.ts:2901-2907`) liczy wszystkie jednostki na heksie.
+            let foreign = in_units
+                .iter()
+                .filter(|x| {
+                    x["q"] == c["hex"]["q"]
+                        && x["r"] == c["hex"]["r"]
+                        && x["ownerId"] != c["ownerId"]
+                })
+                .count();
+            if foreign > 0 && c["unitCountOnHex"].as_u64() > Some(0) {
+                foreign_unit_on_city_hex += 1;
+            }
+        }
+    }
+    assert!(
+        explicit_capital_not_oldest > 0,
+        "Z1: jawna stolica != najstarsze"
+    );
+    assert!(
+        foreign_unit_on_city_hex > 0,
+        "Z2: obca jednostka na heksie miasta"
+    );
+    // Z3: paleta zapasowa (`civ-visual.ts:69`) dla wlasciciela, u ktorego `id % 7 != id % 8`,
+    // i `ringHex` z zerem wiodacym (`padStart(6, '0')`, `main.ts:4081`).
+    assert!(has(&owners, &|o| o["displayName"].is_null()
+        && o["ownerId"].as_u64().is_some_and(|id| id % 7 != id % 8)));
+    assert!(has(&owners, &|o| o["ringHex"]
+        .as_str()
+        .is_some_and(|h| h.starts_with("#0"))));
 }
 
 #[test]

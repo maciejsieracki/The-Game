@@ -200,5 +200,63 @@
     "itemStockCost": {
       "budynek:koszary": { "zelazo": 3 }
     }
+  },
+  {
+    "name": "przeniesiona_stolica_obce_jednostki_paleta",
+    "epochId": "kamien",
+    "viewer": 0,
+    "fogActive": false,
+    "visibleHexes": [],
+    "players": [
+      { "id": 0, "civilization": "rzymianie", "isHuman": true },
+      { "id": 1, "civilization": "grecy", "isHuman": false },
+      { "id": 6, "civilization": "player-6", "isHuman": false },
+      { "id": 7, "civilization": "player-7", "isHuman": false }
+    ],
+    "cities": [
+      {
+        "id": 1, "ownerId": 0, "name": "Roma", "q": 1, "r": 1, "isCapital": false, "population": 4,
+        "built": [], "surowce": null, "production": null,
+        "orderBunt": false, "orderRevoltWarning": false, "oblegane": true, "growth": null
+      },
+      {
+        "id": 2, "ownerId": 1, "name": "Ateny", "q": 4, "r": 1, "isCapital": false, "population": 3,
+        "built": [], "surowce": null, "production": null,
+        "orderBunt": false, "orderRevoltWarning": false, "oblegane": false, "growth": null
+      },
+      {
+        "id": 3, "ownerId": 0, "name": "Ostia", "q": 2, "r": 2, "isCapital": true, "population": 2,
+        "built": [], "surowce": null, "production": null,
+        "orderBunt": false, "orderRevoltWarning": false, "oblegane": false, "growth": null
+      },
+      {
+        "id": 5, "ownerId": 1, "name": "Korynt", "q": 6, "r": 3, "isCapital": true, "population": 5,
+        "built": [], "surowce": null, "production": null,
+        "orderBunt": false, "orderRevoltWarning": false, "oblegane": false, "growth": null
+      },
+      {
+        "id": 8, "ownerId": 6, "name": "Turkusowo", "q": 9, "r": 1, "isCapital": true, "population": 1,
+        "built": [], "surowce": null, "production": null,
+        "orderBunt": false, "orderRevoltWarning": false, "oblegane": false, "growth": null
+      },
+      {
+        "id": 9, "ownerId": 7, "name": "Rozowo", "q": 11, "r": 4, "isCapital": true, "population": 1,
+        "built": [], "surowce": null, "production": null,
+        "orderBunt": false, "orderRevoltWarning": false, "oblegane": false, "growth": null
+      }
+    ],
+    "units": [
+      { "ownerId": 1, "q": 1, "r": 1 },
+      { "ownerId": 0, "q": 1, "r": 1 },
+      { "ownerId": 0, "q": 6, "r": 3 }
+    ],
+    "relations": [
+      { "a": 0, "b": 1, "status": "wojna" }
+    ],
+    "deals": [],
+    "simplifiedOwners": [],
+    "typCopyOwners": [],
+    "clusterCapitalOwnerIds": [],
+    "itemStockCost": {}
   }
 ]
