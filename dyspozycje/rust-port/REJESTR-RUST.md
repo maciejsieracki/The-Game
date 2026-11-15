@@ -1680,3 +1680,19 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sprzątanie:** usunięto worktree `integ-p41e` (z nieśledzonym `rust-port/engine/Cargo.lock`, niecommitowanym) i cache `target-integ-m01`. Dysk: 14 GB wolne (64%).
 - **Odblokowane:** #211–#218 (P4-1B…I, Opus) zależą od tego, co już jest na parity; ich kolejność i start wymagają osobnego dispatchu. #222 → completed.
 - **NIE_ZMIERZONO:** wynik workflow #98 (wyłom wieży) nadal w toku; nie dotyczy tej integracji.
+
+## Przebieg (15.11, 17:5x UTC — wynik R7K7C-WIRING-ROZPOZNANIE #227)
+
+- **Wynik:** Operator PASS-WITH-NOTES, Evaluator PASS-WITH-NOTES, Obrona r2 (przyjęte 5/5 zarzutów z poprawkami), FC PASS-WITH-NOTES (`5fb5297e4`). Zmian kodu brak. Dokumenty: `dyspozycje/autobot/runs/R-RUSTPORT-P6-R7K7C-WIRING-ROZPOZNANIE-Q1/` i `dyspozycje/rust-port/p6/R-RUSTPORT-P6-R7K7C-WIRING-ROZPOZNANIE-Q1.md`, commit `a71645fc7` na `claude/rust-sivvrn`.
+- **Ustalenia na parity `f7baa3848`:**
+  1. `apply_dipl_deltas_to_state` ma tylko definicję (`turn_war_dipl_steps.rs:1041`) i testy; brak produkcyjnego wołającego.
+  2. Pin: brakujący wpis AI = 0 (`main.ts:34865`, `:34877`, `?? 0`), wpis tworzony przy zapisie (`main.ts:22642`). Rust zwraca błąd. Rekomendacja B (0) zgodna z zasadą 9.
+  3. **Korekta własna:** wariant B maskuje lukę producenta (`turn_war_inputs.rs:713-714`). Dlatego potrzebny osobny temat R7K7C-PRODUCER, a nie samo wpięcie.
+  4. Wiring musi obsłużyć wszystkie fotele człowieka (pin `main.ts:34864-34866`, `:34876-34878`); Rust używa `find(is_human)` (`turn_war_dipl_steps.rs:1049`). Poprawka w WIRING-IMPL: dispatch przez `is_human_owner`.
+  5. D3 (przelew pracy, `main.ts:24014-24016`, warunek kupca `main.ts:24154-24155`, Rust `turn_war_dipl_steps.rs:551`) nie ma harnessu wektorów; wymaga osobnego tematu R7K7C-D3-VEC.
+  6. Odporność fazy: `advance_turn` cofa `war_before` tylko przy błędzie fazy Diplomacy (`playable.rs:1181-1184`); po udanym apply błąd kolejki nie cofa ekonomii. Wymagana migawka `economy_before`.
+- **Nowe tematy wynikające z rozpoznania:** R7K7C-PRODUCER, R7K7C-D3-VEC, PARITY-MISSING0 (testy `p6_wire_war_dipl_steps.rs:611/625` w allowliście), R7K7C-WIRING-IMPL (po wyżej).
+- **Odstępstwo:** wynik na gałęzi `wip/…-Q1-b` zamiast `…-Q1` (stara runda `9be44a148` na `-Q1`). Zachowane jako `refs/keep/cleanup-wf_309a1316-473-*`.
+- **Incydent:** wiadomość „dopisz do pamięci” z kontekstu orkiestratora trafiła do Operatora K5LOOP-OUTCOME (runda 1 → NIE_WYKONANO, FAIL). Runda 2 z zakazem wiadomości spoza dispatchu (`11b818690`). Dispatch R7K7C-WIRING nie miał takiej linii; Operator też wspomniał o pamięci (bez skutku).
+- **#106** pozostaje pending (decyzja „brak wpisu = 0” zgodna z pinem; implementacja wymaga R7K7C-PRODUCER).
+- **#227 → completed.** #225, #226 w toku.
