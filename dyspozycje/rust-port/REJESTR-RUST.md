@@ -2025,4 +2025,4 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 
 - **Start:** `R-RUSTPORT-P4-1I1-BATTLE-OUTCOME` (#244, Opus), dispatch `23ffd75d5` na `claude/rust-sivvrn`, baza `84ec520a5` (P4-1H Q2 zintegrowany). Workflow `wf_8948228b-2a5`. Zakres: `BattleOutcomeDto` w view-model i producent E1–E3 w nowym module silnika. E4 (Pomiń) i log zostają poza zakresem (#245, #247).
 - **Sloty:** 4 z 4 — P4-1H RJ-REPIN Q3 (`wf_28c84406-989`, FC), P4-1G Q4 BATTLE (`wf_304cdf8e-350`, operator), P4-1F1 OVERLAY-TYPES (`wf_e0bf527e-c00`, operator), P4-1I1 BATTLE-OUTCOME (`wf_8948228b-2a5`, operator).
-- **Dysk:** ok. 9–10 GB wolne po sprzątaniu worktrees (przed startem nowego tematu).
+- **Dysk:** po starcie P4-1I1 wolne 6,6 GB (84%). Poniżej progu 8 GB nie startuję kolejnych tematów z kodem Rust.
