@@ -862,7 +862,7 @@ function buildDeployPanel(
         : '')
     : retreatExhausted
       ? '<div class="pb-noretreat">' + PB_ICON_NO_RETREAT +
-        'Wycofanie niedostępne — ta jednostka wycofała się już w tej turze, rozstrzygnij bitwę</div>'
+        'Wycofanie niedostępne — wyczerpano trzy odwroty w tej turze, rozstrzygnij bitwę (przegrana = unicestwienie armii)</div>'
       : '<div class="pb-noretreat">' + PB_ICON_NO_RETREAT +
         'Wycofanie niedostępne — to wróg wybrał bitwę (obrońca nie może uciec)</div>';
 

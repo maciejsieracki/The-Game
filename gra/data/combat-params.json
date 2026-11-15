@@ -86,5 +86,9 @@
   "battle_loot": {
     "_opis": "Łup po wygranej bitwie — % bazowego kosztu rekrutacji (Pieniądz + Surowiec) każdej jednostki wroga usuniętej z mapy po walce.",
     "recruit_cost_pct": 100
+  },
+  "odwrot": {
+    "_opis": "Limit odwrotów armii w jednej turze (R-WEB-BATTLE-RETREAT-LIMIT-3-PER-TURN-THEN-DESTROYED-Q1). Licznik odwrotów (wycofanie przed bitwą + odwrót ocalałych przegranej) zeruje się na początku następnej tury. Po wyczerpaniu limitu kolejna przegrana bitwa w tej turze = unicestwienie armii (polowej).",
+    "max_na_ture": 3
   }
 }
