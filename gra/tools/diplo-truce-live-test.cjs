@@ -12,11 +12,30 @@
  *      truceUntilTurn = tura + 5, peaceUntilTurn = null (rozejm nie zakłada blokady DOW).
  *  L2. Okno rozejmu: w turach przed wygaśnięciem status nadal 'pokoj'; w turze wygaśnięcia
  *      (R-WEB-TEST-DEBT-BASE-RED-FALA741-Q1, decyzja #169): w scenariuszu L2b inicjatorem rozejmu jest AI
- *      (acceptTruceForTest(AI,…)), więc adresatem pokoju stałego jest GRACZ. Po wygaśnięciu powstaje oferta
- *      w skrzynce; status zostaje 'pokoj', truceUntilTurn czyszczony, BEZ flagi agresora i BEZ kary
- *      (brak 'zlamanie_paktu_nap' w zdarzeniach Wiarygodności gracza). Asercja L2b sprawdza wyłącznie status
- *      'pokoj' i NIE rozróżnia „AI zgadza się” od „oferta czeka na gracza”; rozróżniają to L2f–L2h.
- *  L2f–L2h. Brak odpowiedzi gracza na ofertę pokoju stałego (timeout) = wojna bez kary (osobna gałąź).
+ *      (acceptTruceForTest(AI,…)), więc adresatem pokoju stałego jest GRACZ. Mechanizm (diplomacy-peace-lock.ts
+ *      truceEndTickPair, gałąź `ports.isHuman(target)`): po wygaśnięciu powstaje OFERTA W SKRZYNCE GRACZA
+ *      (`truceEndOffer`, bez natychmiastowej decyzji AI); status zostaje 'pokoj', truceUntilTurn czyszczony,
+ *      peaceUntilTurn pozostaje null (pokój stały NIE zawarty), BEZ flagi agresora i BEZ kary
+ *      (brak 'zlamanie_paktu_nap' w zdarzeniach Wiarygodności gracza). Asercja L2b sprawdza status 'pokoj',
+ *      brak peaceUntilTurn (wariant „AI akceptuje od razu” zawarłby pokój stały i ustawił peaceUntilTurn)
+ *      oraz brak wojny. Obecności wpisu w skrzynce nie widać z poziomu testu (brak haka odczytu skrzynki
+ *      w main.ts, poza allowlistą) — rozróżnienie opiera się na peaceUntilTurn.
+ *  L2f–L2h. Brak odpowiedzi gracza na ofertę pokoju stałego (timeout) = wojna bez kary (ten sam wariant
+ *      oferty w skrzynce, inicjator AI; kolejna tura bez odpowiedzi = truceEndToWarCore).
+ *
+ * POKRYCIE (stan na tę rundę):
+ *  - POKRYTE: rozejm 5 tur z UI i z akceptacji AI (L1, U1); okno rozejmu (L2a); wygaśnięcie rozejmu z ofertą
+ *    pokoju stałego w skrzynce gracza, bez wojny i bez kary (L2b, L2g); brak odpowiedzi gracza = wojna bez kary
+ *    (L2h); złamanie rozejmu w oknie = kara + flaga (L3).
+ *  - NIE POKRYTE (1): odmowa AI wobec propozycji GRACZA — wymaga haka odpowiedzi AI w gra/src/main.ts (poza
+ *    allowlistą tego tematu). Minimalny hak testowy (PROPOZYCJA, NIE zaimplementowana): w `__truceTestDebug`
+ *    funkcja `respondPlayerPeaceProposalForTest(aiId, accept)` wołająca TĘ SAMĄ ścieżkę co odpowiedź AI na stole
+ *    (resolvePlayerAcceptsAiPending / evaluateProposal) dla propozycji gracza, plus odczyt `truceEndOffer` z meta.
+ *  - NIE POKRYTE (2): wariant „AI akceptuje od razu po wygaśnięciu” (inicjator = GRACZ, adresat = AI) — ta
+ *    gałąź truceEndTickPair (`truceEndAiAccepts`) nie ma scenariusza, bo acceptTruceForTest zawsze ustawia AI
+ *    jako proponującego. Zamknięcie wymaga haka z inicjatorem-graczem (propozycja proposal-level), NIE
+ *    implementowane tutaj.
+ *  - NIE POKRYTE (3): jawna akceptacja lub odrzucenie oferty pokoju przez GRACZA w UI (tylko timeout).
  *  L3. Złamanie: rozejm 5 tur, wypowiedzenie wojny w oknie (REALNE ownerDeclareWarOn) →
  *      kara 'zlamanie_paktu_nap' w Wiarygodności gracza + flaga agresora dla pary,
  *      truceUntilTurn czyszczony.
@@ -231,13 +250,15 @@ async function main() {
     assert('L2a w oknie (tura < until) status nadal pokoj', sWin.turn < t0 + 5 && sWin.status === 'pokoj' && sWin.truceUntilTurn === t0 + 5, sWin);
     await endUntilTurn(page, t0 + 5);
     const sExp = await pairState(page);
-    // R-WEB-TEST-DEBT-BASE-RED-FALA741-Q1 (klasa A, dowód: diplomacy-peace-lock.ts truceEndTickPair + truceEndAiAccepts,
-    // decyzja #169 DIPLO-TRUCE-IMPL): po końcu rozejmu NIE ma już natychmiastowej wojny. AI-adresat rozstrzyga od razu:
-    // zgoda (proponujący ≥20% słabszy militarnie) = pokój stały (status zostaje 'pokoj'), brak zgody = wojna.
-    // Ten test sprawdza WYŁĄCZNIE status 'pokoj' po wygaśnięciu. Inicjatorem jest AI, więc adresatem jest
-    // gracz: w tej turze powstaje oferta w skrzynce, a nie natychmiastowa decyzja AI. Gałąź wojny po timeoutcie
-    // oferty jest pokryta przez L2f–L2h. Mutacja „natychmiast wojna przy wygaśnięciu” NIE_ZMIERZONO.
-    assert('L2b w turze wygaśnięcia rozejm się kończy: zgoda AI -> pokój stały (status pokoj, bez wojny)', sExp.turn === t0 + 5 && sExp.status === 'pokoj', sExp);
+    // L2b (R-WEB-TEST-DEBT-BASE-RED-FALA741-Q1, klasa A; mechanizm: diplomacy-peace-lock.ts truceEndTickPair, decyzja #169):
+    // inicjatorem rozejmu jest AI, więc adresatem propozycji pokoju stałego po wygaśnięciu jest GRACZ. Wygaśnięcie
+    // tworzy OFERTĘ W SKRZYNCE GRACZA (truceEndOffer), a nie natychmiastową decyzję AI. Dlatego asercja L2b wymaga:
+    // status 'pokoj' (brak wojny), truceUntilTurn wyczyszczony (L2c), ORAZ peaceUntilTurn === null — pokój stały nie
+    // został zawarty w tej turze. Wariant „AI akceptuje od razu” zawarłby pokój stały przez finalizePeace (ustawia
+    // peaceUntilTurn), więc ten warunek go odróżnia. Wariant „AI odrzuca od razu” daje status 'wojna' (też czerwone).
+    // Brak wpisu w skrzynce nie jest widoczny z testu (brak haka odczytu), stąd rozróżnienie po peaceUntilTurn.
+    assert('L2b w turze wygaśnięcia rozejmu: status pokoj, bez wojny (oferta pokoju stałego dla gracza, nie decyzja AI)', sExp.turn === t0 + 5 && sExp.status === 'pokoj', sExp);
+    assert('L2b2 oferta czeka na gracza: pokój stały NIE zawarty w turze wygaśnięcia (peaceUntilTurn null)', sExp.peaceUntilTurn === null, sExp);
     assert('L2c truceUntilTurn wyczyszczony', sExp.truceUntilTurn === null, sExp);
     const flags = await page.evaluate(() => window.__truceTestDebug.aggressorFlags());
     assert('L2d brak flagi agresora po wygaśnięciu', Object.keys(flags).length === 0, flags);
@@ -247,7 +268,7 @@ async function main() {
     // jednostek na terytorium AI, nalicza się też przy pokoju) nie są karą za rozejm.
     assert('L2e brak kary zlamanie_paktu_nap po wygaśnięciu', !credTyp.includes('zlamanie_paktu_nap'), { credBefore, credAfter, credTyp: credTyp.slice(0, 400) });
     // Odmowa AI wobec propozycji GRACZA — JAWNIE NIE_ZMIERZONO: wymaga haka odpowiedzi AI w main.ts (poza allowlistą).
-    console.log('L2b-odmowa „AI odmawia wobec propozycji gracza”: NIE_ZMIERZONO (brak haka odpowiedzi AI w main.ts, poza allowlistą)');
+    console.log('L2b-odmowa (AI odmawia wobec propozycji GRACZA, inicjator gracz): NIE_ZMIERZONO — brak haka odpowiedzi AI w main.ts (poza allowlistą); patrz POKRYCIE w nagłówku');
 
     // --- L3: złamanie w oknie ---
     console.log('L3 złamanie rozejmu');
