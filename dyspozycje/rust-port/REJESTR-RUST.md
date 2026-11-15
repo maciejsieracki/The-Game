@@ -1275,3 +1275,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Pełny `cargo test`:** wymóg integracji — uruchomiony bez filtra w tle (`integ-2b1`, `--no-fail-fast`). Wynik: EXIT w logu `i2b-test.log`. Po zielonym wyniku FF `parity-v2` `7b52c3842` → `14d5e50b9`.
 - **Konflikt atrybucji:** commity operatora/obrony bez nazwy modelu zgodnie z dispatchem; nagłówek sesji wymaga `Co-Authored-By` — nadal do rozstrzygnięcia.
 - **Dysk:** 9 GB przed bramkami. **Parity:** `7b52c3842` (przed FF).
+
+## Przebieg (15.11, po 01:17): WIEZE-2B1 r2 zintegrowany na parity-v2
+- **Integracja:** FC PASS-WITH-NOTES `14d5e50b9` (baza `f78736d36`, ancestry od `7b52c3842` OK, diff w allowliście rundy 2). Bramki na `14d5e50b9` (pełny `cargo test` bez filtra, `--no-fail-fast`): fmt 0, clippy 0, test 0 — 3368 passed, 0 failed (w tym `p6_8i_pick`). FF `parity-v2`: `7b52c3842` → `14d5e50b9`.
+- **Refs:** `refs/keep/WIEZE-2B1-Q1-r2-integ`, `rust-port-wip/WIEZE-2B1-Q2`, `rust-port-wip/wf_7faf2bb4-2cd-1..4`. Worktree `integ-2b1` i worktree rundy 2 usunięte.
+- **Zakres 2B1 w parity:** planowanie wystrzałów z odroczeniem 180 ms, usunięcie placeholdera `dead = true`, zniszczenie wieży bez kafla. NIE w parity (2B2, osobny temat): strzał `_singleBlow` wieży, guard `towerShooterRow`, stan `destroyed`.
+- **Parity:** `14d5e50b9`. **Dysk:** 14 GB. **Sloty:** 0 z 4.
+- **Otwarte:** 2B2 (strzał wieży, guard, stan `destroyed`) — do dispatchu; ABC #106 pkt 4, #115, #120; konwencja `Co-Authored-By`.
