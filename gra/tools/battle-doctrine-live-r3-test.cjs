@@ -125,6 +125,32 @@ async function waitForMapBoot(page, errors) {
   throw new Error(`Map did not become ready within ${mapBootTimeoutMs}ms; evidence=${evidence.jsonPath}`);
 }
 
+const BUILD_MIME = {
+  '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.mp3': 'audio/mpeg',
+  '.ogg': 'audio/ogg', '.wav': 'audio/wav', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml',
+  '.webp': 'image/webp', '.wasm': 'application/wasm', '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf',
+};
+
+function serveBuildFile(outDir, req, res) {
+  const pathname = decodeURIComponent(new URL(req.url, 'http://127.0.0.1').pathname);
+  // Przegladarka pyta o favicon.ico automatycznie; gra go nie ma. Odpowiedz 204 (bez bledu konsoli),
+  // a nie 404 z konsoli ktora bylaby liczona jako blad strony.
+  if (pathname === '/favicon.ico') { res.statusCode = 204; res.end(); return; }
+  const rel = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '');
+  const file = path.resolve(outDir, rel);
+  const inside = file.startsWith(path.resolve(outDir) + path.sep);
+  if (!inside || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
+    console.log(`[battle-doctrine-r3] static 404: ${pathname}`);
+    res.statusCode = 404;
+    res.setHeader('content-type', 'text/plain; charset=utf-8');
+    res.end(`not found: ${pathname}`);
+    return;
+  }
+  res.setHeader('content-type', BUILD_MIME[path.extname(file).toLowerCase()] || 'application/octet-stream');
+  fs.createReadStream(file).pipe(res);
+}
+
 async function build() {
   const { build: viteBuild, mergeConfig } = await import('vite');
   const base = (await import(pathToFileURL(path.join(root, 'vite.config.ts')).href)).default;
@@ -181,10 +207,10 @@ async function main() {
       args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'],
     });
     mark('browser:launched');
-    server = http.createServer((req, res) => {
-      res.setHeader('content-type', 'text/html; charset=utf-8');
-      fs.createReadStream(path.join(out, 'index.html')).pipe(res);
-    });
+    // Serwer statyczny: plik z outDir po sciezce URL (sidecary audio-pack-*.js dostaja wlasciwy MIME).
+    // Tylko '/' trafia do index.html; brakujacy plik = 404, a NIE index.html (dawniej kazdy URL
+    // dostawal HTML, przez co skrypty sidecar konczyly sie bledem "Unexpected token '<'").
+    server = http.createServer((req, res) => serveBuildFile(out, req, res));
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
     const url = `http://127.0.0.1:${server.address().port}/?playtest=mapa`;
     page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
@@ -273,7 +299,14 @@ async function main() {
     if (!rosterDetails.hasRanged || !rosterDetails.hasMounted) throw new Error(`Preset is not mixed ranged+mounted: ${JSON.stringify(rosterDetails)}`);
     const startButton = page.getByText(/^START WALKI$/i).last();
     await startButton.waitFor({ state: 'visible', timeout: 30000 });
-    await startButton.click();
+    // Klik czeka na klatki Chromium (SwiftShader, scena 28 vs 28): domyslne 30 s nie wystarcza,
+    // a strona nie jest zawieszona (battle:open:complete przeszlo). Zmienia tylko czas oczekiwania.
+    await startButton.click({ timeout: 120000 });
+    // Tempo symulacji jak w battle-line-advance-uniform-browser-entry.ts (idx 9, clamp). Pod SwiftShader
+    // runda 2 pojawia sie po ~2 min zegara scianowego, a 120 s na runde 8 nie wystarcza (zmierzone:
+    // FAIL po 120 s przy rundzie 2). Okno na runde 8 = 400 s (zmierzone: runda 8 po ok. 3 min od
+    // rundy 2). Progi rund i asercje bez zmian; zmienia sie tylko budzet czasu oczekiwania.
+    await page.evaluate(() => { window.__battleLargeReturnProbe.scene._setSpeedIdx(9, { clamp: true }); });
     await page.evaluate(() => {
       const s = window.__battleLargeReturnProbe.scene;
       // The battle initializer rebuilds group state. Build the test groups only
@@ -310,7 +343,7 @@ async function main() {
         if (m) { window.__r3LiveActions.push({ type:'doctrine-change', from:m.doctrine, to:'steady', round:s.roundNo }); s._setGroupDoctrine('r3-atk', 'steady'); }
       });
       await page.waitForFunction(() => window.__battleLargeReturnProbe.scene.roundNo >= 8
-        || window.__battleLargeReturnProbe.isFinished(), undefined, { timeout: 120000, polling: 250 });
+        || window.__battleLargeReturnProbe.isFinished(), undefined, { timeout: 400000, polling: 250 });
     }
     const finalBattle = await page.evaluate(() => {
       const s = window.__battleLargeReturnProbe.scene;

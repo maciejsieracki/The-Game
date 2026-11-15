@@ -245,7 +245,7 @@ async function main() {
     assert('L2e brak kary zlamanie_paktu_nap po wygaśnięciu', !credTyp.includes('zlamanie_paktu_nap'), { credBefore, credAfter, credTyp: credTyp.slice(0, 400) });
     // L2b (odmowa) — JAWNIE NIE_ZMIERZONO w tym teście: gałąź odmowy (AI wypowiada wojnę po wygaśnięciu) wymaga zasiewu
     // armii gracza ≥20% silniejszej od AI albo słabszej, czego ten scenariusz nie ustawia. Pokrycie: osobny temat.
-    console.log('L2b-odmowa: NIE_ZMIERZONO w tym scenariuszu (brak zasiewu armii dla gałęzi „AI odmawia” — osobny temat)');
+    console.log('L2b-odmowa „AI odmawia wobec propozycji gracza”: NIE_ZMIERZONO (brak haka odpowiedzi AI w main.ts, poza allowlistą); gałąź timeoutu oferty dla gracza = L2f–L2h');
 
     // --- L3: złamanie w oknie ---
     console.log('L3 złamanie rozejmu');
@@ -265,6 +265,31 @@ async function main() {
     assert('L3d flaga agresora dla złamania rozejmu (mimo casus belli)', Object.keys(flagsBr).length > 0, flagsBr);
     const credCount = await page.evaluate(([p]) => window.__truceTestDebug.credibilityEvents(p).length, [PLAYER]);
     assert('L3e zdarzenia Wiarygodności przybyły po złamaniu', credCount > credBreach0, { credBreach0, credCount });
+
+    // --- L2f–L2h: gałąź ODMOWY (R-WEB-TEST-DEBT-BASE-RED-FALA741-Q1 / DIPLO-TRUCE-IMPL, truceEndTickPair) ---
+    // Inicjatorem rozejmu jest AI (acceptTruceForTest(AI,…)), więc adresatem pokoju stałego po wygaśnięciu jest GRACZ:
+    // w turze wygaśnięcia powstaje oferta w skrzynce (status nadal 'pokoj'); brak odpowiedzi do kolejnej tury = timeout
+    // = wojna BEZ kary (truceEndToWarCore). Ta gałąź jest odrębna od L2b (zgoda AI, rozstrzygana natychmiast).
+    // Pokrycie: wyłącznie timeout oferty przez zwykłe tury (bez UI odpowiedzi). Odmowa AI wobec propozycji gracza
+    // (hak w main.ts poza allowlistą) pozostaje JAWNIE NIE_ZMIERZONO.
+    console.log('L2f–L2h odmowa gracza: oferta pokoju stałego po rozejmie, timeout = wojna bez kary');
+    const tD0 = (await pairState(page)).turn;
+    const accD = await page.evaluate(([ai]) => window.__truceTestDebug.acceptTruceForTest(ai, 5), [AI]);
+    assert('L2f0 ponowne zawarcie rozejmu z AI (startowy stan odmowy)', accD.accepted === true, accD);
+    const sD0 = await pairState(page);
+    assert('L2f0b po rozejmie status pokoj, truceUntilTurn = tura + 5', sD0.status === 'pokoj' && sD0.truceUntilTurn === tD0 + 5, { tD0, sD0 });
+    const credDenialBefore = await page.evaluate(([p]) => window.__truceTestDebug.credibilityEvents(p).filter(e => JSON.stringify(e).includes('zlamanie_paktu_nap')).length, [PLAYER]);
+    const flagsDenialBefore = JSON.stringify(await page.evaluate(() => window.__truceTestDebug.aggressorFlags()));
+    await endUntilTurn(page, tD0 + 5);
+    const sOffer = await pairState(page);
+    assert('L2g w turze wygaśnięcia oferta dla gracza: status nadal pokoj, bez natychmiastowej wojny', sOffer.turn === tD0 + 5 && sOffer.status === 'pokoj' && sOffer.truceUntilTurn === null, sOffer);
+    await endUntilTurn(page, tD0 + 6);
+    const sRefuse = await pairState(page);
+    assert('L2h brak odpowiedzi na ofertę do kolejnej tury = wojna po wygaśnięciu oferty', sRefuse.turn === tD0 + 6 && sRefuse.status === 'wojna' && sRefuse.truceUntilTurn === null, sRefuse);
+    const credDenialAfter = await page.evaluate(([p]) => window.__truceTestDebug.credibilityEvents(p).filter(e => JSON.stringify(e).includes('zlamanie_paktu_nap')).length, [PLAYER]);
+    assert('L2h bez nowej kary zlamanie_paktu_nap za odmowę/timeout', credDenialAfter === credDenialBefore, { credDenialBefore, credDenialAfter });
+    const flagsDenialAfter = JSON.stringify(await page.evaluate(() => window.__truceTestDebug.aggressorFlags()));
+    assert('L2h bez nowej flagi agresora za odmowę/timeout', flagsDenialAfter === flagsDenialBefore, { flagsDenialBefore, flagsDenialAfter });
   } catch (e) {
     fail++;
     console.error(' FAIL wyjątek:', e && e.stack ? e.stack.split('\n').slice(0, 4).join(' | ') : e);
