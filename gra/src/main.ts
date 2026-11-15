@@ -5128,7 +5128,9 @@ async function boot(): Promise<void> {
         },
         onOrder: orderEmpireRecruitment,
         getGenerals: () => {
-          validateRecruitGeneral();
+          // Panel armii jest przebudowywany także przy zamkniętym panelu (sekcja w DOM); walidację śmierci robi
+          // tura (endTurn) — tu tylko gdy panel otwarty, jak dawny modal (inaczej powiadomienie ginie poza turą).
+          if (isEmpireDetailPanelOpen()) validateRecruitGeneral();
           return livingGeneralsOf(units, ME()).map(g => ({ id: g.id, label: recruitGeneralLabel(g) }));
         },
         getSelectedGeneralId: () => recruitGeneralId,

@@ -87,7 +87,9 @@ const ok = (c, n, d) => { if (c) { pass++; console.log('PASS: ' + n); } else { f
     ok((await D('selectedGeneral')) === chosen.id, 'L12 po wczytaniu zapisu wybrany generał przywrócony', await D('selectedGeneral'));
 
     // Śmierć generała przy ZAMKNIĘTYM panelu: powiadomienie na granicy tury, wybór wyczyszczony.
-    ok(await page.locator('#civ-empire-recruit-panel').count() === 0, 'L13 panel zamknięty');
+    // R-WEB-UI-EMPIRE-RECRUIT-PANEL-MOVE-TO-ARMY-PANEL-Q1: sekcja rekrutacji siedzi w DOM panelu armii, więc
+    // zamknięcie sprawdzamy po klasie „open” panelu (dawniej: brak osobnego okna w DOM).
+    ok(await page.evaluate(() => !document.querySelector('.civ-emp-panel')?.classList.contains('open')), 'L13 panel zamknięty');
     await D('killGeneral', chosen.id);
     await turn();
     for (let i = 0; i < 40 && (await D('selectedGeneral')) !== null; i++) await page.waitForTimeout(500);
