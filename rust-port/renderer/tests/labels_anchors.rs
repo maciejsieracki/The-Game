@@ -190,19 +190,68 @@ fn projections_match_the_web_bit_for_bit() {
         battle_world_to_screen(Vec3::new(0.0, 0.0, 0.0), &c.cam, 0.0, 10.0),
         None
     );
+    // `rect.height <= 0` alone (`picker.ts:112`, second operand of `||`).
+    let flat = ScreenRect {
+        left: 0.0,
+        top: 0.0,
+        width: 10.0,
+        height: 0.0,
+    };
+    assert_eq!(
+        world_to_client_px(Vec3::new(0.0, 0.0, 0.0), &c.cam, &flat),
+        None
+    );
+    // The far-plane boundary is strict `z > 1` (`picker.ts:110`,
+    // `main.ts:14593`): an identity camera makes `project(p) == p`, so NDC
+    // z == 1.0 exactly stays visible and the next double above 1 is culled.
+    let ident = ProjectionCamera {
+        world: Mat4::IDENTITY,
+        projection: Mat4::IDENTITY,
+    };
+    let on_far = Vec3::new(0.0, 0.0, 1.0);
+    let past_far = Vec3::new(0.0, 0.0, f64::from_bits(1.0_f64.to_bits() + 1));
+    assert!(same(ident.project(on_far).z, 1.0));
+    assert!(ident.project(past_far).z > 1.0);
+    let rect = ScreenRect {
+        left: 0.0,
+        top: 0.0,
+        width: 100.0,
+        height: 50.0,
+    };
+    assert_eq!(
+        siege_label_position(on_far, &ident, 100.0, 50.0),
+        Some((50.0, 25.0))
+    );
+    assert_eq!(siege_label_position(past_far, &ident, 100.0, 50.0), None);
+    assert_eq!(
+        world_to_client_px(on_far, &ident, &rect),
+        Some((50.0, 25.0))
+    );
+    assert_eq!(world_to_client_px(past_far, &ident, &rect), None);
 }
 
 #[test]
 fn js_round_is_math_round() {
+    // Compared with `to_bits` (`assert_eq!` on f64 treats 0.0 == -0.0).
+    // Documented deviation: for x in [-0.5, 0) JS `Math.round` gives -0,
+    // `js_round` gives +0. Unobservable on the web: the value only reaches
+    // the DOM as `String(v) + 'px'` (`main.ts:12967-12968`, `14600-14601`)
+    // and `String(-0)` is "0", i.e. the CSS value Chromium reports is +0px
+    // (what `anchors.tsv` holds and what `js_round` matches bit for bit).
     for (x, r) in [
         (0.5, 1.0),
-        (-0.5, -0.0),
+        (-0.5, 0.0),
+        (-0.2, 0.0),
+        (-0.0, -0.0),
+        (0.0, 0.0),
         (1.4999, 1.0),
+        (0.499_999_999_999_999_94, 0.0),
         (-1.5, -1.0),
         (2.5, 3.0),
         (-2.6, -3.0),
     ] {
-        assert_eq!(js_round(x), r, "{x}");
+        let got = js_round(x);
+        assert!(same(got, r), "js_round({x:?}) = {got:?}, want {r:?}");
     }
 }
 

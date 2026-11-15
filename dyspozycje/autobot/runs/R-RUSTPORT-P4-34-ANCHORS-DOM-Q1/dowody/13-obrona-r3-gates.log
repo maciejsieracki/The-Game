@@ -1,0 +1,149 @@
+HEAD(base)=525a2ef7b5df3f12a91ebbf5e533c2475276004c
+cargo 1.97.0 (c980f4866 2026-06-30)
+rustc 1.97.0 (2d8144b78 2026-07-07)
+$ cargo fmt --all -- --check
+EXIT=0
+$ cargo clippy --locked --all-targets -- -D warnings
+    Checking resvg v0.48.1
+    Checking civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_ff0761db-05e-2/rust-port/renderer)
+    Finished `dev` profile [unoptimized] target(s) in 18.71s
+EXIT=0
+$ cargo clippy --locked --all-targets --features gpu -- -D warnings
+    Checking wgpu v30.0.1
+    Checking civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_ff0761db-05e-2/rust-port/renderer)
+    Finished `dev` profile [unoptimized] target(s) in 1m 05s
+EXIT=0
+$ cargo test --locked --all-targets
+     Running unittests src/lib.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/civ_renderer-415aa63799900207)
+test result: ok. 108 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+     Running tests/assets_nturns.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/assets_nturns-c71ee1b3b9f1d55f)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+     Running tests/assets_registry.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/assets_registry-86339d11d876bad4)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/atlas_gpu.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/atlas_gpu-f45017a21099e866)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/atlas_json.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/atlas_json-80417938dde3527e)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/atlas_keys.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/atlas_keys-f2c1cbb18f72b1da)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+     Running tests/atlas_mip.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/atlas_mip-adb5419506e735d2)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+     Running tests/atlas_nturns.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/atlas_nturns-3391f29972f81078)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+     Running tests/battle3d_dynamics.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/battle3d_dynamics-a485ecd6f534246f)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.63s
+     Running tests/battle3d_field.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/battle3d_field-dac71aa026e50479)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.49s
+     Running tests/battle3d_picking.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/battle3d_picking-199b035c8df4a8f1)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.66s
+     Running tests/battle3d_siege_wall.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/battle3d_siege_wall-981c0fea427e638e)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.40s
+     Running tests/battle3d_units.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/battle3d_units-5c9acd32845fd9e3)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.31s
+     Running tests/camera_web_parity.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/camera_web_parity-a0b2fa0f06bb9dd7)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+     Running tests/cities_web_parity.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/cities_web_parity-e3f711a09ff99e7d)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.77s
+     Running tests/cityoverlay_web_parity.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/cityoverlay_web_parity-8637ab54d92b6f1c)
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 40.09s
+     Running tests/core_web_parity.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/core_web_parity-e04a100442768078)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+     Running tests/cpu_sanity.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/cpu_sanity-f9e40b23efe942f9)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/decor_web_parity.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/decor_web_parity-56537f96dfeba1a8)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.46s
+     Running tests/geom_three_parity.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/geom_three_parity-b0b358e02b13db4c)
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/gpu_probe.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/gpu_probe-d1e62fac1586f6d4)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/image_assets.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/image_assets-310f70886c7c6ab0)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+     Running tests/image_metrics.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/image_metrics-e62279e88096846b)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/image_scenes.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/image_scenes-b36c031bd1e2556d)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.20s
+     Running tests/improvements_web_parity.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/improvements_web_parity-92201854eb95c388)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.08s
+     Running tests/jsmath_v8_parity.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/jsmath_v8_parity-c9aeaef9eb5c0b17)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+     Running tests/jsmath_wiring.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/jsmath_wiring-da90b0d04c2429c1)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.50s
+     Running tests/jsnum_to_fixed_v8.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/jsnum_to_fixed_v8-a355c5ba0f0f9126)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+     Running tests/labels_anchors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/labels_anchors-ca7eb7a335710c58)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.63s
+     Running tests/labels_layout.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/labels_layout-840fa294cfbfa41b)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.74s
+     Running tests/labels_scenes.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/labels_scenes-1c806f90c26d77ed)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.77s
+     Running tests/misc_web_parity.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/misc_web_parity-1148be654a01e9d9)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.75s
+     Running tests/overlay_web_parity.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/overlay_web_parity-f7914e194d794a2e)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.34s
+     Running tests/pick_golden.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/pick_golden-10c032ce692a4904)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.57s
+     Running tests/raster_api_closed.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/raster_api_closed-82f838fade47ecf9)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/raster_color.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/raster_color-469c9741abb21d49)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/raster_scenes.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/raster_scenes-8b0bcaf73fa801b6)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.93s
+     Running tests/raster_unit.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/raster_unit-c0835d24e48081c5)
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/repin3d_a1.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/repin3d_a1-9d67e37f6347f803)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+     Running tests/repin3d_a2.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/repin3d_a2-f47896f1a1812e77)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.08s
+     Running tests/repin3d_a3.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/repin3d_a3-58df22e704453eae)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 40.34s
+     Running tests/repin3d_a5.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/repin3d_a5-c0fcbbe1c6eb9f96)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 19.02s
+     Running tests/repin3d_b1.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/repin3d_b1-a5f23c51db5ced98)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/repin3d_b2.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/repin3d_b2-d377cec3f32dc371)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.11s
+     Running tests/repin3d_b4.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/repin3d_b4-4df92b4ea9c31e71)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.59s
+     Running tests/terrain_web_parity.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/terrain_web_parity-09cd3f83f8b9824b)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+     Running tests/text_api_closed.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/text_api_closed-a2a3d2ee245938fd)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/text_fonts.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/text_fonts-98572513c09757fa)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.54s
+     Running tests/text_metrics.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/text_metrics-ba89b210bc724226)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 16.07s
+     Running tests/text_scenes.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/text_scenes-70d43aa9341d3c84)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.18s
+     Running tests/text_upper.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/text_upper-5193ed35a1b2dc9d)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/textmix_chromium.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/textmix_chromium-21db452a05fb294c)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.27s
+     Running tests/textmix_manifest.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/textmix_manifest-241983ea8e0fc41d)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+     Running tests/textmix_unify.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/textmix_unify-e540a292242bfc1e)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.70s
+     Running tests/unit_core_json.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/unit_core_json-43d1465e4f9c4fbe)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/unit_core_model_rule.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/unit_core_model_rule-12b575805bc2039a)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.53s
+     Running tests/unit_core_trig.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/unit_core_trig-35e65152f9e1b3ae)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/unit_core_web_parity.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/unit_core_web_parity-72914bb5ff30948f)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+     Running tests/units_braz_web_parity.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/units_braz_web_parity-8ef5ddeb7a3135a7)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.07s
+     Running tests/units_kamien_web_parity.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/units_kamien_web_parity-663398b62f78b29b)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s
+     Running tests/units_zelazo_web_parity.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/units_zelazo_web_parity-3c726a841bc40151)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.71s
+     Running tests/wonders_web_parity.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt/debug/deps/wonders_web_parity-2c0eba5ec7d38510)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+EXIT=0
+$ cargo +1.87.0 test --locked --test labels_layout --test labels_scenes --test labels_anchors
+     Running tests/labels_anchors.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt-187/debug/deps/labels_anchors-d0a40725cdd648fa)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.39s
+     Running tests/labels_layout.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt-187/debug/deps/labels_layout-982e4d9eb2d8d26f)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.43s
+     Running tests/labels_scenes.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt-187/debug/deps/labels_scenes-68077c9943f417fd)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.68s
+EXIT=0

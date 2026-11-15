@@ -1,0 +1,6 @@
+$ python3 -I dowody/13-obrona-r3-mutacje.py rust-port/renderer   (CARGO_TARGET_DIR w scratch, swiezy; baza 525a2ef7b + poprawki obrony r3)
+E6 | world_to_client_px: usuniety warunek rect.height <= 0 | exit=101 | ZABITA | ['test projections_match_the_web_bit_for_bit ... FAILED']
+E7 | siege_label_position: wp.z > 1 -> wp.z >= 1 | exit=101 | ZABITA | ['test projections_match_the_web_bit_for_bit ... FAILED']
+O3 | world_to_client_px: v.z > 1 -> v.z >= 1 | exit=101 | ZABITA | ['test projections_match_the_web_bit_for_bit ... FAILED']
+O4 | js_round: -0 dla x w [-0.5, 0) (Math.round zamiast wartosci CSS) | exit=101 | ZABITA | ['test js_round_is_math_round ... FAILED']
+restored True

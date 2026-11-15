@@ -111,7 +111,11 @@ pub fn world_to_client_px(
     ))
 }
 
-/// JavaScript `Math.round` (ties toward +∞).
+/// JavaScript `Math.round` (ties toward +∞), as observed through CSS:
+/// for x in [-0.5, 0) JS returns -0 and this returns +0 — the web only
+/// writes the result as `String(v) + 'px'` (`main.ts:12967-12968`,
+/// `14600-14601`) and `String(-0)` is "0", so +0 is the value Chromium
+/// reports (see `js_round_is_math_round`).
 #[must_use]
 pub fn js_round(x: f64) -> f64 {
     let f = x.floor();
