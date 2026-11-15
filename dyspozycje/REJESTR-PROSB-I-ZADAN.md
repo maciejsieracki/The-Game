@@ -10020,3 +10020,6 @@ FALA 734 (main 06fcc8526, ROBOCZA MD5 61b50b89, Raw MD5 zgodne): R-WEB-UI-END-TU
 
 ## 2026-11-15 — Decyzje właściciela (ABC): szlak E3c, limit ofert AI, ceramika Kamień, korekta Respektu
 Odpowiedzi: (1) Szlak E3c = A: usunąć przenoszenie zapasów (potwierdza #311) → temat R-WEB-TRADE-ROUTE-REMOVE-STOCK-FLOW-E3C-Q1. (2) Oferty AI = B: ≤3× potrzeby AI + limit pętli → R-WEB-AI-TRADE-OFFER-QTY-CAP-3X-NEED-Q1 (dispatch zapisany, start gdy slot). (3) Ceramika w Kamieniu = A: bez zmian (zamknięte). (4) Korekta Respektu = A: zastępowana przy każdym progu (zgodna z założeniem RESPECT r4; bez zmiany dispatchu).
+
+## 2026-11-15 — Decyzja właściciela: cios konnicy → pełny ruch, cios na końcu ruchu (wszystkie jednostki)
+Odpowiedź własna (ABC „cios konnicy”): „Każda jednostka wykorzystuje pełen zakres ruchu, a jeżeli w ramach ruchu wystarcza jej na zadanie ciosu, to zadaje cios na sam koniec.” → temat R-WEB-BATTLE-FULL-MOVE-THEN-STRIKE-AT-END-Q1 (dispatch zapisany, Haiku r1, start gdy slot). Założenia robocze DO POTWIERDZENIA zapisane w dispatchu (cios nie kosztuje puli ruchu; brak ciosu, gdy ścieżka kończy się poza zasięgiem).
