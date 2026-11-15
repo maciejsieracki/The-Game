@@ -1474,3 +1474,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Integracja:** kod P4-22 był już na parity (`fa94290a4`, ancestor `525a2ef7b`). Na `claude/rust-sivvrn` wzięto wyłącznie raporty runu `04-evaluator-r3.md`, `05-obrona-r3.md`, `06-final-control-r3.md`. Commit FC wychodzi ze starej bazy i zawiera cudze pliki, więc nie brano go w całości.
 - **Zabezpieczenie:** refs/keep `P4-22-r3-{713e3646,44527717,36109f96}`, gałąź `rust-port-wip/R-RUSTPORT-P4-22-MOD13-MISC-Q1-fc-r3`.
 - **LEDGER.md:155** podaje stare SHA raportów r1. Wpis do poprawy przez orkiestratora (poza allowlistą obrony).
+
+## Przebieg (15.11, 10:48 UTC — heartbeat, RUST renderer, Opus 5.5)
+- **KROK 1 (sloty):** 3 aktywne Workflow na Opus 5.5: P4-1A typy DTO (`wf_5cdb4080-e0a`), P4-34 domknięcie (`wf_ff0761db-05e`), P4-29 domknięcie (`wf_e92860f9-2cc`). Sloty 3/4. Czwartego nie uruchomiono: brak kandydata spełniającego reguły (kod na parity i dispatch gotowy), a dysk 7,7 GB, poniżej progu 8 GB.
+- **KROK 2:** zakończone w ostatniej godzinie i zintegrowane: P4-36 Q3 (BLOCK, temat zamknięty, bo część 3 była już na parity), P4-17 (FC r3), P4-31 (FC r3 i integracja `525a2ef7b`), P4-22 (FC r3, raporty `c37ba1da8`).
+- **KROK 3 (sprzątanie):** usunięto worktrees P4-22 i P4-36 Q3 (czyste, commity w `refs/keep`). Próba usunięcia katalogu scratch została zablokowana przez zabezpieczenie systemu i nie została powtórzona; katalog `p431ob-target` już nie istnieje, `p417gates` ma 84 KB.
+- **Parity:** `525a2ef7b`. Rust: `c37ba1da8` przed tym wpisem.
