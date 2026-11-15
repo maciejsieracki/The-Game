@@ -81,14 +81,6 @@ fn eff_of(s: &str) -> Eff {
     }
 }
 
-fn side_of(s: &str) -> BattleSide {
-    match s {
-        "atk" => BattleSide::Attacker,
-        "def" => BattleSide::Defender,
-        other => panic!("nieznana strona {other}"),
-    }
-}
-
 fn unit_of(u: &Value) -> (SeqUnit, (f64, Eff), f64) {
     let hp = num(&u["hp"]);
     let c = CombatUnit {
@@ -137,13 +129,6 @@ fn build(spec: &Value) -> Built {
         def_max.push(mx);
         def_mp.push(num(&u["mp"]));
     }
-    let tower = match &spec["tower"] {
-        Value::Null => None,
-        t => Some(UnitRef {
-            side: side_of(t["side"].as_str().expect("side")),
-            idx: t["idx"].as_u64().expect("idx") as usize,
-        }),
-    };
     let st = TurnSeqState {
         atk,
         def,
@@ -164,8 +149,8 @@ fn build(spec: &Value) -> Built {
         body: ScriptedBody {
             specs: [atk_spec, def_spec],
         },
-        tower,
         tower_rows: Vec::new(),
+        pending_tower_shots: Vec::new(),
         tower_range: 0.0,
         wall_tile_rows: Vec::new(),
         wall_ever_breached: spec["wallBreached"].as_bool().expect("wallBreached"),

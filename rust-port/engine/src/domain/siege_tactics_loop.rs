@@ -12,7 +12,8 @@
 //! * ciało jednostki ([`LoopBody`]): czas trwania animacji i efekt na stanie w chwili zakończenia; na pinie to
 //!   `_activateUnit` (K5h/K5i), tu jawny port wstrzykiwany (domyślna implementacja `single_blow_full` nie jest
 //!   jeszcze podpięta, patrz raport K5-LOOP),
-//! * wieżyczka muru (`_fireSiegeTowers`, R4): jednostka docelowa z [`SiegeEnv::tower`].
+//! * wieżyczki muru (`_fireSiegeTowers`, R4): planowanie wystrzałów z odroczeniem 180 ms ([`SiegeEnv::pending_tower_shots`]),
+//!   cel wybierany w chwili wystrzału; sam strzał `_singleBlow` wieży jest w etapie 2B2 (nie zrobiony tutaj).
 //!
 //! Zakres: oblężenie (`siege_wall_col >= 0`) w trybie AUTO sekwencyjnym. Sciezka `_beginAutoBatchPhase` (K5g0, bez
 //! oblezenia) nie jest składana w tym module: zdarzenie [`SeqEvent::BeginAutoBatchPhase`] zatrzymuje sterownik panika,
@@ -60,6 +61,22 @@ pub trait LoopBody {
 pub enum LoopTimer {
     Step(SeqStep),
     BodyDone(UnitRef),
+    /// Wystrzał wieży o indeksie `i` w `tower_rows` (web `_fireOneTower`, zaplanowany `_schedule(delay, ...)`).
+    TowerShot(usize),
+}
+
+/// Web `stagger += 180` (`battleScene.ts:4216`): odstęp między wystrzałami kolejnych wież.
+pub const TOWER_STAGGER_MS: f64 = 180.0;
+
+/// Zaplanowany wystrzał wieży (web `_schedule(delay, () => this._fireOneTower(...))` z `_fireSiegeTowers`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PlannedTowerShot {
+    /// Odroczenie w ms (web `delay`, `0`, `180`, `360` …).
+    pub ms: f64,
+    /// Indeks wieży w `tower_rows`.
+    pub tower: usize,
+    /// Web `_autoBatchPlanning != null` w chwili planowania (wtedy callback wykonywany od razu).
+    pub planning: bool,
 }
 
 /// Zwycięzca bitwy w nomenklaturze pinu (`'atk'`, `'def'`, `'remis'`).
@@ -84,11 +101,12 @@ impl LoopWinner {
 /// Efekty i dane statyczne sceny potrzebne sekwencji: ciało, wieża, pole sufitu, mnożniki.
 pub struct SiegeEnv<B: LoopBody> {
     pub body: B,
-    /// Web `_fireSiegeTowers` (R4): jednostka trafiona przez wieżyczkę przy każdym początku tury (jeśli żyje).
-    pub tower: Option<UnitRef>,
     /// Web `siegeTowers` (etap 1): wiersze wież na kolumnie `siegeWallCol`, kolejność jak w pinie.
-    /// Puste = brak wież, wtedy działa placeholder [`Self::tower`].
+    /// Puste = brak wież = brak wystrzałów (web `siegeTowers.length === 0` → `return`).
     pub tower_rows: Vec<i64>,
+    /// Wystrzały zaplanowane przez [`TurnSeqEnv::fire_siege_towers`], czekające na odebranie przez sterownik
+    /// (sterownik opróżnia kolejkę przy `SeqEvent::FireSiegeTowers` i wstawia je do zegara).
+    pub pending_tower_shots: Vec<PlannedTowerShot>,
     /// Web `towerRange` (`towerRangeFor`, `battleScene.ts:4168`).
     pub tower_range: f64,
     /// Web `wallTileHp.has(row)` (etap 1): wiersze, na których kafel muru jeszcze stoi.
@@ -140,46 +158,50 @@ impl<B: LoopBody> SiegeEnv<B> {
         army_morale_ratio_without_commander(&army)
     }
 
-    /// Web `_fireSiegeTowers` (`battleScene.ts:4208-4219`) + `_fireOneTower` (`:4223-4232`), etap 1: każda wieża
-    /// z `tower_rows` (z kafelkiem muru) wybiera cel przez [`pick_tower_target`] spośród żywych atakujących
-    /// (filtr jak `this.atk.filter(...)` w pinie). Wybrany cel dostaje placeholder `dead` (do etapu 2).
-    /// Wybory są liczone przed zastosowaniem placeholderów, bo w pinie zmiana HP następuje później (`_schedule`).
-    /// Etap 1 NIE robi: odroczenia 180 ms (`_schedule`), strzału `_singleBlow` i `_destroyTowerAtRow`.
-    fn fire_towers_by_pick(&mut self, st: &mut TurnSeqState) {
-        let wall_col = st.siege_wall_col;
-        let mut picked: Vec<usize> = Vec::new();
-        for &row in &self.tower_rows {
+    /// Web `_fireSiegeTowers` (`battleScene.ts:4208-4219`), etap 2A: PLANOWANIE wystrzałów. Wieża bez kafla muru
+    /// (`wall_tile_rows`) jest pomijana (web `_destroyTowerAtRow`; kafel nie wraca, więc wejście nie wymaga stanu
+    /// `destroyed`). Pozostałe dostają odroczenie `stagger` (0, 180, 360 … ms) w kolejności `tower_rows`; `stagger`
+    /// rośnie tylko dla wież planujących wystrzał (jak w pinie). Nic nie ustawia `dead` ani HP w chwili planowania.
+    fn plan_tower_shots(&mut self, st: &TurnSeqState) {
+        let mut stagger = 0.0_f64;
+        for (i, &row) in self.tower_rows.iter().enumerate() {
             if !self.wall_tile_rows.contains(&row) {
                 continue;
             }
-            let mut refs: Vec<usize> = Vec::new();
-            let mut targets: Vec<TowerTarget> = Vec::new();
-            for (idx, u) in st.atk.iter().enumerate() {
-                let c = u.c;
-                if c.dead || c.fading_out || c.routed || c.removed {
-                    continue;
-                }
-                let Some((q, r)) = self.body.unit_cell(UnitRef {
-                    side: BattleSide::Attacker,
-                    idx,
-                }) else {
-                    continue;
-                };
-                refs.push(idx);
-                targets.push(TowerTarget {
-                    q,
-                    r,
-                    hp: c.hp,
-                    dead: c.dead,
-                });
-            }
-            if let Some(k) = pick_tower_target(wall_col, row, self.tower_range, &targets) {
-                picked.push(refs[k]);
-            }
+            self.pending_tower_shots.push(PlannedTowerShot {
+                ms: stagger,
+                tower: i,
+                planning: st.auto_batch_planning,
+            });
+            stagger += TOWER_STAGGER_MS;
         }
-        for idx in picked {
-            st.atk[idx].c.dead = true;
+    }
+
+    /// Web `_fireOneTower` → `pickTowerTarget` (`battleScene.ts:4223-4232`): cel wybierany W CHWILI WYSTRZAŁU spośród
+    /// żywych atakujących (filtr jak `this.atk.filter(...)` w pinie). Zwraca indeks w `st.atk`.
+    fn pick_tower_for_row(&self, st: &TurnSeqState, row: i64) -> Option<usize> {
+        let mut refs: Vec<usize> = Vec::new();
+        let mut targets: Vec<TowerTarget> = Vec::new();
+        for (idx, u) in st.atk.iter().enumerate() {
+            let c = u.c;
+            if c.dead || c.fading_out || c.routed || c.removed {
+                continue;
+            }
+            let Some((q, r)) = self.body.unit_cell(UnitRef {
+                side: BattleSide::Attacker,
+                idx,
+            }) else {
+                continue;
+            };
+            refs.push(idx);
+            targets.push(TowerTarget {
+                q,
+                r,
+                hp: c.hp,
+                dead: c.dead,
+            });
         }
+        pick_tower_target(st.siege_wall_col, row, self.tower_range, &targets).map(|k| refs[k])
     }
 }
 
@@ -212,20 +234,11 @@ impl<B: LoopBody> TurnSeqEnv for SiegeEnv<B> {
     }
 
     fn fire_siege_towers(&mut self, st: &mut TurnSeqState) {
-        if !self.tower_rows.is_empty() {
-            self.fire_towers_by_pick(st);
+        // Web `siegeTowers.length === 0` → `return`: brak wież, brak planowania.
+        if self.tower_rows.is_empty() {
             return;
         }
-        // Etap 1: placeholder bez wież (`tower_rows` puste). Usunięcie w etapie 2 razem z odroczeniem i strzałem.
-        if let Some(r) = self.tower {
-            let c = match r.side {
-                BattleSide::Attacker => &mut st.atk[r.idx].c,
-                BattleSide::Defender => &mut st.def[r.idx].c,
-            };
-            if !c.dead {
-                c.dead = true;
-            }
-        }
+        self.plan_tower_shots(st);
     }
 
     fn player_unit_idle(&mut self, _unit: UnitRef, _st: &TurnSeqState) -> bool {
@@ -316,6 +329,14 @@ impl<B: LoopBody> SiegeLoop<B> {
                 | SeqEvent::RefreshQueuedVisuals => {}
                 SeqEvent::FireSiegeTowers => {
                     self.trace.push(format!("turn:{}", self.st.round_no));
+                    // Wystrzały zaplanowane w tej turze wchodzą do zegara przed kolejnymi `Schedule` (kolejność jak w pinie).
+                    let planned = std::mem::take(&mut self.env.pending_tower_shots);
+                    for p in planned {
+                        match clock.schedule(p.ms, LoopTimer::TowerShot(p.tower), p.planning) {
+                            ScheduleOutcome::Queued | ScheduleOutcome::Dropped => {}
+                            ScheduleOutcome::RunNow(t) => self.fire(clock, t),
+                        }
+                    }
                 }
                 SeqEvent::BeginAutoBatchPhase { .. } => {
                     self.halt_unsupported(
@@ -375,8 +396,22 @@ impl<B: LoopBody> SiegeLoop<B> {
                 self.env.body.complete(u, &mut self.st);
                 activation_done(&mut self.st, &mut self.env, u, &mut out);
             }
+            LoopTimer::TowerShot(i) => {
+                self.tower_shoot(i);
+            }
         }
         self.apply(clock, out);
+    }
+
+    /// Web `_fireOneTower` (`battleScene.ts:4223`): wystrzał zaplanowanej wieży. Pomijany po `finished`. Cel wybierany
+    /// w chwili wystrzału. Strzał `_singleBlow` wieży (2B2) NIE jest jeszcze zaimplementowany: brak efektu na stanie.
+    fn tower_shoot(&mut self, i: usize) {
+        if self.st.finished {
+            return;
+        }
+        let row = self.env.tower_rows[i];
+        let _target = self.env.pick_tower_for_row(&self.st, row);
+        // 2B2: strzał _singleBlow wieży (web `_fireOneTower`, dalsza część po `pickTowerTarget`) — NIE zrobione.
     }
 }
 
