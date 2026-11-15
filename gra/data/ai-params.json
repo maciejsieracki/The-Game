@@ -4,6 +4,16 @@
     "sekcja": "§12 Dyplomacja AI",
     "opis": "Cooldown AI→gracz dla propozycji cyklicznej wymiany surowców (decyzja właściciela 2026-11-09)."
   },
+  "propozycja_wymiany_surowcow_ilosc_mnoznik_potrzeby": {
+    "wartosc": 3,
+    "sekcja": "§12 Dyplomacja AI",
+    "opis": "Górny limit ilości odbioru AI w ofercie cyklicznej gracz->AI: min(nadwyżka gracza, mnożnik x potrzeba AI na turę). Decyzja właściciela 2026-11-15 (wariant B)."
+  },
+  "propozycja_wymiany_surowcow_sufit_iteracji": {
+    "wartosc": 64,
+    "sekcja": "§12 Dyplomacja AI",
+    "opis": "Stały sufit kandydatów ilości na każdą oś pętli wyszukiwania oferty cyklicznej (stały koszt niezależny od zapasu gracza; większe zakresy są próbkowane co krok)."
+  },
   "ai_zamiana_jednostek_limit_udzial": {
     "wartosc": 0.1,
     "sekcja": "§9 Armia AI",
