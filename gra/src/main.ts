@@ -1202,7 +1202,7 @@ import {
 } from './game/improvement-tech';
 import { PendingImprovementsTurn, type PendingImprovementEntry } from './game/pending-improvements';
 import {
-  aiDiplomacyStance, relationTierDisplay, loadDiplomacyParams, getEffectiveDiplomacyParams,
+  aiDiplomacyStance, relationTierDisplay, loadDiplomacyParams, getEffectiveDiplomacyParams, DIPLOMACY_PARAMS,
   applyDiplomaticEvent, computePotegaNacji, computeRespekt, tickDiplomacy,
   computeTickZaufanieDelta, sharedBorderPenaltyForEpochs,
   ARCHETYPE_AGGRESSION, ARCHETYPE_TRADE, DEFAULT_POTEGA_WAGI,
@@ -12798,13 +12798,16 @@ async function boot(): Promise<void> {
         const ev: DiplomaticEvent = zdarzenie === 'A' ? 'przewaga_militarna' : 'slabszy_militarnie';
         const cur = getDiploRelation(gracz, o);
         const next = applyDiploEventTracked(gracz, o, cur, ev);
-        // Korekta = faktyczna zmiana Respektu z tego zdarzenia (z uwzględnieniem skali trudności i clampu).
-        const dR = next.respekt - cur.respekt;
+        // Korekta = NOMINAŁ zdarzenia (+15 / −10 z DIPLOMACY_PARAMS, tym samym źródłem co applyDiplomaticEvent),
+        // NIE clampowana zmiana rel.respekt: przy skrajnych wartościach (np. 90 + 15 → 100) pasek ma przesunąć się
+        // dokładnie o nominał, a obcięcie 0–100 działa dopiero przy wyświetlaniu/liczeniu (respektZKorektaMilitarna).
+        // Korekta ZASTĘPUJE poprzednią (nie kumuluje się): +15 / −10 aktualnego stanu progu (DO POTWIERDZENIA).
         setDiploPairMeta(gracz, o, {
           ...meta,
           respektPrzewagaStan: r.stan,
-          // Korekta ZASTĘPUJE poprzednią (nie kumuluje się): +15 / −10 aktualnego stanu progu (DO POTWIERDZENIA).
-          respektMilOffset: dR,
+          respektMilOffset: zdarzenie === 'A'
+            ? DIPLOMACY_PARAMS.przewagaMilitarna_respekt
+            : DIPLOMACY_PARAMS.slabszyMilitarnie_respekt,
         });
         setDiploRelation(gracz, o, next);
       }

@@ -20,7 +20,7 @@ Dyplomacja to relacje z **odkrytymi** nacjami: zaufanie, szacunek i wynikowa **r
 | **Szacunek (Respekt)** | 0…100 | Siła państwa — jak bardzo cię „boją/szanują" |
 | **Relacja** | 0…200 | **Zaufanie + Respekt** — wynik używany do progów akcji dyplomatycznych |
 
-**Przewaga militarna (Respekt):** gdy twoja **siła wojskowa** (armia + rekruci + wygrane bitwy) jest co najmniej **1,5×** siły partnera (próg **50%**), Respekt w relacji z tym partnerem rośnie o **+15** — **jednorazowo**, na przejściu progu. Gdy to ty jesteś słabszy o 50%, Respekt w tej relacji spada o **−10** jednorazowo. Ponowne naliczenie dopiero po spadku poniżej progu i ponownym przekroczeniu. Wpis widzisz w rejestrze Respektu w panelu dyplomacji ("Przewaga militarna" / "Słabszy militarnie"). Próg 50% dotyczy wyłącznie Respektu; próg wojny (20%) jest osobny.
+**Przewaga militarna (Respekt):** gdy twoja **siła wojskowa** (armia + rekruci + wygrane bitwy) jest co najmniej **1,5×** siły partnera (próg **50%**), Respekt w relacji z tym partnerem rośnie o **+15** — **jednorazowo**, na przejściu progu. Gdy to ty jesteś słabszy o 50%, Respekt w tej relacji spada o **−10** jednorazowo. Ponowne naliczenie dopiero po spadku poniżej progu i ponownym przekroczeniu. Korekta widoczna na pasku Respektu trwa, dopóki utrzymuje się stan progu: po powrocie w pasmo neutralne pasek wraca do wartości bez korekty, a wpis w rejestrze zostaje jako historia. Wpis widzisz w rejestrze Respektu w panelu dyplomacji ("Przewaga militarna" / "Słabszy militarnie"). Próg 50% dotyczy wyłącznie Respektu; próg wojny (20%) jest osobny.
 
 **Model (FALA 206):** Wiarygodność wpływa na **tempo** wzrostu Zaufania (im wyższa W, tym szybciej budujesz zaufanie u wszystkich). Relacja to suma osi per para — nie mylić z W.
 
