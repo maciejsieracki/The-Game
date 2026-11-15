@@ -91,7 +91,7 @@ function metrics(r) {
   for (const e of r.ends || []) endByAct.set(e.round + '|' + e.id, e);
   const cellsByAct = new Map();
   for (const c of r.callers || []) { const k = c.round + '|' + c.id; if (!cellsByAct.has(k)) cellsByAct.set(k, new Set()); cellsByAct.get(k).add(c.col + ',' + c.row); }
-  let freeSteps = 0; let freePool = 0; let allSteps = 0; let allPool = 0; let blockedActs = 0; let wastedActs = 0;
+  let freeSteps = 0; let freePool = 0; let allSteps = 0; let allPool = 0; let blockedActs = 0; let wastedActs = 0; let mutSensitive = 0;
   for (const row of r.rows) {
     if (row.side !== 'atk' || !row.mounted || row.routed0 || !inWin(row)) continue;
     const k = row.round + '|' + row.id;
@@ -101,12 +101,14 @@ function metrics(r) {
     allSteps += used; allPool += row.mp;
     const visited = new Set([row.q0 + ',' + row.r0, ...(cellsByAct.get(k) || [])]);
     const cls = classifyEnd(end, visited);
+    // A6 (dane realne): mutacja miary (kazda niewykorzystana = zablokowana) zmienia werdykt w tej aktywacji?
+    if (classifyEnd(end, visited, true) !== cls) mutSensitive++;
     if (cls === 'blocked') { blockedActs++; continue; }
     if (cls === 'arrived') continue;
     freeSteps += used; freePool += row.mp;
     if (cls === 'wasted') wastedActs++;
   }
-  return { arbPathCav, pingpong, uniqueCells, freeSteps, freePool, freeRatio: freePool ? freeSteps / freePool : 1, allSteps, allPool, blockedActs, wastedActs, winner: r.result && r.result.winner };
+  return { arbPathCav, pingpong, uniqueCells, freeSteps, freePool, freeRatio: freePool ? freeSteps / freePool : 1, allSteps, allPool, blockedActs, wastedActs, mutSensitive, winner: r.result && r.result.winner };
 }
 
 /** Twardy test autentycznosci blokady (czysta funkcja, dane syntetyczne w ksztalcie sondy sceny). */
@@ -130,7 +132,7 @@ function authenticityChecks() {
   const parts = process.env.BPM_PART ? [process.env.BPM_PART] : ['code', 'mutA', 'mutB'];
   const out = {};
   for (const p of parts) {
-    const agg = { arbPathCav: 0, pingpong: 0, uniqueCells: 0, freeSteps: 0, freePool: 0, allSteps: 0, allPool: 0 };
+    const agg = { arbPathCav: 0, pingpong: 0, uniqueCells: 0, freeSteps: 0, freePool: 0, allSteps: 0, allPool: 0, blockedActs: 0, wastedActs: 0, mutSensitive: 0 };
     for (const seed of SEEDS) {
       const m = metrics(await run(p === 'mutA' ? '/*PATH_RESERVE*/ true' : p === 'mutB' ? '/*CAV_TRAIL*/ ru.cavTrail?.has(nk)' : null, seed));
       console.log(p, 'seed', seed, JSON.stringify(m));
@@ -148,6 +150,7 @@ function authenticityChecks() {
     check('T1 arbitraz nie tnie planow konnicy (kolizja sciezek) w turach 9-16', () => assert.equal(c.arbPathCav, 0));
     check('T2 brak ping-pongu konnicy (unikalne pola == kroki w kazdej aktywacji)', () => assert.equal(c.pingpong, 0));
     check('T3 wolna droga: konnica wykonuje >= 80% puli', () => assert.ok(c.freePool > 0 && c.freeRatio >= 0.8, `freeRatio=${c.freeRatio.toFixed(3)} (${c.freeSteps}/${c.freePool})`));
+    check('A6 autentycznosc na DANYCH REALNEJ sceny: mutacja miary zmienia werdykt >= 1 aktywacji', () => assert.ok(c.mutSensitive > 0, 'mutSensitive=' + c.mutSensitive));
   }
   const mutResults = [];
   if (authMut) mutResults.push(['MUTACJA miary T3 (kazda niewykorzystana = zablokowana) wykryta przez A4', authMut[1]]);

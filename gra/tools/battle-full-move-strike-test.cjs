@@ -65,7 +65,7 @@ async function run(part, seed) {
     await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/tools/battle-pursuit-pace-browser-entry.html?mode=skip&seed=${seed}&atk=${ATK}&def=${DEF}`, { waitUntil: 'load', timeout: 60000 });
     await page.waitForFunction(() => window.__e2e?.ready === true, undefined, { timeout: 60000 });
     await page.waitForFunction(() => window.__e2e.done === true, undefined, { timeout: MAX_MS, polling: 500 });
-    const r = await page.evaluate(() => ({ result: window.__e2e.result, rounds: window.__e2e.rounds, callers: window.__e2e.callers || [], attackLog: window.__e2e.attackLog || [] }));
+    const r = await page.evaluate(() => ({ result: window.__e2e.result, rounds: window.__e2e.rounds, callers: window.__e2e.callers || [], attackLog: window.__e2e.attackLog || [], rows: window.__e2e.rows || [], ends: window.__e2e.ends || [] }));
     assert.deepEqual(errors, [], 'bledy strony: ' + errors.join('; '));
     return r;
   } finally { await browser.close(); await server.close(); }
@@ -99,6 +99,25 @@ function metrics(r) {
     if (moveBefore) { if (round < firstContact) m.preMoveThenHit++; else m.postMoveThenHit++; }
     if (round >= firstContact && moveBefore && moveAfter) { if (hits[0].mounted) m.msmCav++; else m.msmInf++; }
   }
+  // (a2) pelna pula ruchu (dane realne, sonda `rows`/`ends`): aktywacja po zderzeniu, w ktorej po ciosie byl ruch, konczy
+  // z pula wykorzystana (moveLeft==0) albo fizyczna blokada stanu sceny (brak wolnego pola / brak sciezki / stoi przy wrogu).
+  const endBy = new Map((r.ends || []).map(e => [e.round + '|' + e.id, e]));
+  const mpBy = new Map((r.rows || []).filter(x => x.side === 'atk' || x.side === 'def').map(x => [x.round + '|' + x.id, x]));
+  m.mpUsed = 0; m.mpPool = 0; m.mpUnexplained = 0; m.mpChecked = 0; m.unexplainedList = [];
+  const cellsBy = new Map(); for (const c of r.callers) { const k = c.round + '|' + c.id; if (!cellsBy.has(k)) cellsBy.set(k, new Set()); cellsBy.get(k).add(c.col + ',' + c.row); }
+  for (const [k, evs] of acts) {
+    const e = endBy.get(k); const row = mpBy.get(k);
+    const firstHit = evs.findIndex(x => x.t === 'hit');
+    if (!e || !row || firstHit < 0 || evs[0].round < firstContact) continue;
+    if (evs[firstHit].ranged || !evs.slice(firstHit + 1).some(x => x.t === 'move')) continue;
+    m.mpChecked++; m.mpPool += row.mp; m.mpUsed += row.mp - e.moveLeft;
+    // wolne pola liczone bez pol juz odwiedzonych w tej aktywacji (zawracanie = ping-pong, nie droga), jak classifyEnd w tescie T3
+    const visited = new Set([row.q0 + ',' + row.r0, ...(cellsBy.get(k) || [])]);
+    const freeNew = (e.freeCells || []).filter(c => !visited.has(c)).length;
+    // postStrikeBlocked: silnik stwierdzil brak dokad isc po ciosie (brak wolnej sciezki do nastepnego wroga albo brak wrogow)
+    const physBlock = freeNew === 0 || !e.pathExists || e.canStrike || e.postStrikeBlocked;
+    if (e.moveLeft > 0 && !physBlock) { m.mpUnexplained++; m.unexplainedList.push({ k, ml: e.moveLeft, freeNew, pathExists: e.pathExists, canStrike: e.canStrike, psb: e.postStrikeBlocked, enemiesAlive: e.enemiesAlive, mp: row.mp, mounted: row.mounted, q: e.q, r: e.r, visited: [...visited] }); }
+  }
   const hash = crypto.createHash('md5').update(JSON.stringify([
     r.callers.map(c => [c.round, c.id, c.col, c.row, c.seq]), r.attackLog.map(a => [a.round, a.id, a.target, a.seq]),
   ])).digest('hex');
@@ -108,7 +127,7 @@ function metrics(r) {
 (async () => {
   const parts = process.env.BFM_PART ? [process.env.BFM_PART] : ['code', 'mutA', 'mutB', 'mutC', 'det'];
   const out = {};
-  const sum = (o, p) => Object.keys(p).forEach(k => { if (typeof p[k] === 'number') o[k] = k.startsWith('max') ? Math.max(o[k] ?? 0, p[k]) : (o[k] ?? 0) + p[k]; });
+  const sum = (o, p) => Object.keys(p).forEach(k => { if (typeof p[k] === "number") o[k] = k.startsWith('max') ? Math.max(o[k] ?? 0, p[k]) : (o[k] ?? 0) + p[k]; });
   for (const p of parts) {
     if (p === 'det') {
       const hashes = [];
@@ -136,6 +155,8 @@ function metrics(r) {
       assert.equal(c.doubleStrike, 0, 'aktywacje z >1 ciosem: ' + c.doubleStrike);
       assert.ok(c.maxStrikesInf <= 1 && c.maxStrikesCav <= 1 && c.maxStrikesRanged <= 1);
     });
+    check('(a) strzelcy: ruch po strzale po zderzeniu (kontynuacja, nie koniec aktywacji)', () => assert.ok(c.postHitThenMoveRanged > 0, 'postHitThenMoveRanged=' + c.postHitThenMoveRanged));
+    check('(a2) pelna pula ruchu po ciosie: kazda aktywacja z ruchem po ciosie zuzywa pule albo ma fizyczna blokade (dane realne)', () => assert.equal(c.mpUnexplained, 0, `mpUnexplained=${c.mpUnexplained} (zuzyto ${c.mpUsed}/${c.mpPool} MP, aktywacji ${c.mpChecked})`));
     check('(c) przed pierwszym zderzeniem brak sekwencji ruch => cios (wrecz) i cios => ruch (kazda klasa)', () => assert.equal(c.preMoveThenHit + c.preHitThenMove, 0, 'pre=' + (c.preMoveThenHit + c.preHitThenMove)));
     check('(c) po zderzeniu jest cios na dojsciu (ruch => cios)', () => assert.ok(c.postMoveThenHit > 0, 'postMoveThenHit=' + c.postMoveThenHit));
   }
@@ -143,6 +164,7 @@ function metrics(r) {
   if (out.mutA) mutResults.push(['MUTACJA M1 (bez limitu "jeden cios") wykryta: >1 cios na aktywacje', out.mutA.doubleStrike > 0]);
   if (out.mutB) mutResults.push(['MUTACJA M2 (regula przed zderzeniem) wykryta: ruch => cios przed zderzeniem', out.mutB.preMoveThenHit + out.mutB.preHitThenMove > 0]);
   if (out.mutC) mutResults.push(['MUTACJA M3 (cios konczy aktywacje) wykryta: brak ruch => cios => ruch', out.mutC.msmInf + out.mutC.msmCav === 0]);
+  if (out.mutC) mutResults.push(['MUTACJA M3 wykryta takze dla strzelcow: brak ruchu po strzale', out.mutC.postHitThenMoveRanged === 0]);
   if (out.det) check('(d) determinizm: to samo ziarno x3 => identyczny skrot zdarzen', () => { assert.equal(out.det[0], out.det[1]); assert.equal(out.det[1], out.det[2]); });
   for (const [name, ok, msg] of results) console.log(`${ok ? 'ok  ' : 'FAIL'} ${name}${ok ? '' : ' -- ' + msg}`);
   for (const [name, ok] of mutResults) console.log(`${ok ? 'ok  ' : 'FAIL'} ${name}`);

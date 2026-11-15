@@ -75,8 +75,12 @@ function instrumentActed(ru: any, round: number): void {
         api.ends.push({
           round, id: ru.bu.id, mounted: !!ru.mounted, side: ru.side, routed: !!ru.routed,
           moveLeft: Math.round(ru.moveLeft * 100) / 100, freeNb, freeCells, pathExists: pathStep !== null,
-          canStrike: scene._canAttackFrom(ru, ru.q, ru.r), struckRound: ru.struckRound === round,
+          // canStrike = w zasiegu ciosu WOLNEGO wroga (bez wroga uderzonego juz w tej aktywacji): po ciosie stanie przy
+          // uderzonym wrogu NIE zamyka aktywacji jako 'arrived' (R-WEB-...-Q1 r4 zarzut 5 Evaluatora).
+          canStrike: (() => { const hit = new Set((api.attackLog || []).filter((a: any) => a.round === round && a.id === ru.bu.id).map((a: any) => a.target)); return scene._enemiesOf(ru).some((e: any) => !e.dead && !e.removed && !hit.has(e.bu.id) && scene._canStrikeTargetFrom(ru, ru.q, ru.r, e)); })(),
+          struckRound: ru.struckRound === round,
           postStrikeBlocked: !!ru.postStrikeBlocked, q: ru.q, r: ru.r,
+          enemiesAlive: scene._enemiesOf(ru).filter((e: any) => !e.dead && !e.removed && e.bu.id !== undefined && !(api.attackLog || []).some((a: any) => a.round === round && a.id === ru.bu.id && a.target === e.bu.id)).length,
         });
       }
       val = v;

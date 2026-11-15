@@ -9171,7 +9171,7 @@ export class BattleScene {
       const candidates = this._enemiesOf(ru).filter(e => e !== struck)
         .map((e, i) => ({ e, i, d: manhattan(ru.q, ru.r, e.q, e.r) }))
         .sort((a, b) => a.d - b.d || a.i - b.i);
-      if (candidates.length === 0) { done(); return; }
+      if (candidates.length === 0) { ru.postStrikeBlocked = true; done(); return; } // nie ma juz zadnego wroga: brak dokad isc, reszta ruchu przepada (DODATEK 5b)
       let key: string | null = null;
       for (const c of candidates) {
         if (this._canStrikeTargetFrom(ru, ru.q, ru.r, c.e)) { /*CONT_REATTACK*/ done(); return; } // juz przy nastepnym wrogu: drugiego ciosu nie ma
