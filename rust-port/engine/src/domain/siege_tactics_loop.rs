@@ -33,6 +33,7 @@ use crate::domain::siege_tactics_blow_full::{
     attacker_from_cu, single_blow_full, AtkMods, AttackerCu, BlowEnv, DefMods, DefenderCu,
     FullBlowInput, FullBlowOutput,
 };
+use crate::domain::siege_tactics_breach::WallState;
 use crate::domain::siege_tactics_clock::{ScheduleOutcome, VirtualClock};
 use crate::domain::siege_tactics_end::BattleSide;
 use crate::domain::siege_tactics_endcheck::EndCheckOutcome;
@@ -358,10 +359,21 @@ impl<B: LoopBody> SiegeEnv<B> {
         army_morale_ratio_without_commander(&army)
     }
 
-    /// Web `_fireSiegeTowers` (`battleScene.ts:4208-4219`), etap 2A: PLANOWANIE wystrzałów. Wieża bez kafla muru
-    /// (`wall_tile_rows`) jest pomijana (web `_destroyTowerAtRow`; kafel nie wraca, więc wejście nie wymaga stanu
-    /// `destroyed`). Pozostałe dostają odroczenie `stagger` (0, 180, 360 … ms) w kolejności `tower_rows`; `stagger`
-    /// rośnie tylko dla wież planujących wystrzał (jak w pinie). Nic nie ustawia `dead` ani HP w chwili planowania.
+    /// Synchronizacja stanu muru z [`WallState`] (wynik `breach_wall_tile` albo stan startowy).
+    ///
+    /// Stan zburzenia wież (web `siegeTowers[].destroyed`, `_destroyTowerAtRow`) jest wyprowadzany z żywych kafli:
+    /// wieża na wierszu `r` jest zburzona wtedy, gdy `r` nie ma w `wall_tile_rows`. Ustawia też `wall_ever_breached`
+    /// (web `_breachWallTile`, `:7647`). Pola `SiegeEnv` nie dostają nowej flagi, bo literały `SiegeEnv { .. }`
+    /// w testach poza tym etapem by się rozsypały.
+    pub fn sync_wall_state(&mut self, w: &WallState) {
+        self.wall_tile_rows = w.wall_tile_hp.keys().map(|&r| i64::from(r)).collect();
+        self.wall_ever_breached = w.wall_ever_breached;
+    }
+
+    /// Web `_fireSiegeTowers` (`battleScene.ts:4208-4219`), etap 2A: PLANOWANIE wystrzałów. Wieża zburzona (brak
+    /// kafla muru na `wall_tile_rows`, web `_destroyTowerAtRow`) jest pomijana; pozostałe dostają odroczenie
+    /// `stagger` 0, 180, 360 … ms, w kolejności `tower_rows`; `stagger` rośnie tylko dla wież planujących wystrzał
+    /// (pin `:4214-4218`). Nic nie ustawia `dead` ani HP w chwili planowania.
     fn plan_tower_shots(&mut self, st: &TurnSeqState) {
         let mut stagger = 0.0_f64;
         for (i, &row) in self.tower_rows.iter().enumerate() {
@@ -607,7 +619,8 @@ impl<B: LoopBody> SiegeLoop<B> {
     }
 
     /// Web `_fireOneTower` (`battleScene.ts:4223-4262`): wystrzał zaplanowanej wieży. Pomijany po `finished`.
-    /// Zniszczona wieża (web `t.destroyed`, kafel muru zburzony przez `_destroyTowerAtRow`) nie strzela. Cel wybierany
+    /// Zniszczona wieża (web `t.destroyed`; tu: brak kafla muru na `wall_tile_rows`, zob. [`SiegeEnv::sync_wall_state`])
+    /// nie strzela, także gdy wyłom nastąpił po zaplanowaniu salwy (pin `:4227`). Cel wybierany
     /// W CHWILI wystrzału (`pickTowerTarget`); brak celu = `return`. Trafienie `_singleBlow` po locie
     /// [`TOWER_FLY_MS`] (`_schedule(RANGED_FLY_MS, ...)`, pin `:4262`).
     fn tower_shoot(&mut self, clock: &mut VirtualClock<LoopTimer>, i: usize) {
