@@ -30650,6 +30650,20 @@ async function boot(): Promise<void> {
             pack: diplomacyHandelSurowcePakietWielkosc(),
           };
         },
+        /** R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r2): diagnostyka bramki NNS gracza (prognoza skarbca/spichlerza) — tylko test. */
+        nnsDiag: () => ({
+          forecast: _nnsHumanForecast,
+          gate: nnsGateForPlayer().blokada,
+          komunikat: nnsGateForPlayer().komunikat,
+          treasury: ownerTreasury(ME()),
+          spichlerz: empireFoodStates.get(ME())?.zapasyPanstwa ?? null,
+        }),
+        /** R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r2): ustawia zapas spichlerza panstwa wlasciciela (bufor bramki NNS w tescie). */
+        setSpichlerzPanstwa: (ownerId: number, value: number): number => {
+          const st = empireFoodStates.get(ownerId);
+          if (st) st.zapasyPanstwa = Math.max(0, Math.round(value));
+          return empireFoodStates.get(ownerId)?.zapasyPanstwa ?? 0;
+        },
         /** Zaklada pierwsze miasto gracza (bramka awaitingFirstPlayerCity). */
         foundFirstCity: (): boolean => {
           if (!isAwaitingFirstPlayerCity()) return true;

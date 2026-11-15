@@ -87,13 +87,34 @@ const state = page => ev(page, () => window.__aiTradeWiringTestDebug.state());
 
 async function endTurnWait(page) {
   const t0 = (await state(page)).turn;
+  const started = Date.now();
   await ev(page, () => window.__aiTradeWiringTestDebug.endTurn());
-  await page.waitForFunction(
-    t => window.__aiTradeWiringTestDebug.state().turn > t && !window.__aiTradeWiringTestDebug.isEndTurnInProgress(),
-    t0, { timeout: 60000 },
-  );
+  try {
+    await page.waitForFunction(
+      t => window.__aiTradeWiringTestDebug.state().turn > t && !window.__aiTradeWiringTestDebug.isEndTurnInProgress(),
+      t0, { timeout: 60000 },
+    );
+  } catch (err) {
+    // Diagnostyka zawieszenia tury: stan w chwili timeoutu (tura, faza, stol) przed rzuceniem dalej.
+    const dbg = await ev(page, () => ({
+      turn: window.__aiTradeWiringTestDebug.state().turn,
+      inProgress: window.__aiTradeWiringTestDebug.isEndTurnInProgress(),
+      battle: window.__aiTradeWiringTestDebug.info && window.__aiTradeWiringTestDebug.state().pending,
+    })).catch(e => ({ evalErr: String(e) }));
+    console.error(`  [timeout-tury] od tury ${t0} stan:`, JSON.stringify(dbg).slice(0, 600));
+    console.error('  [timeout-tury] powody blokady konca tury:', endTurnBlockWarnings.slice(-3));
+    const nns = await ev(page, () => window.__aiTradeWiringTestDebug.nnsDiag()).catch(e => String(e));
+    console.error('  [timeout-tury] NNS gracza:', JSON.stringify(nns).slice(0, 900));
+    throw err;
+  }
+  // R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 r2: czas tury zmierzony (koszt petli selekcji AI).
+  const ms = Date.now() - started;
+  turnMsLog.push({ turn: t0, ms });
+  console.log(`  [czas-tury] tura ${t0}: ${ms} ms`);
   await wait(150);
 }
+const turnMsLog = [];
+const endTurnBlockWarnings = [];
 
 /** Otwiera REALNE okno „Audiencja dyplomatyczna” klikajac karte HUD „Dyplomacja” (jak gracz). Zwraca stan przyciskow okna. */
 async function openAudienceFromHud(page) {
@@ -142,6 +163,10 @@ async function setupScenario(page, info) {
     for (const k of keys) { h.setStock(ai, k, 0); h.setStock(0, k, 0); }
     h.setStock(ai, give, big);
     h.setStock(0, recv, big);
+    // R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r2): bramka NNS (FALA 724, z origin/main) blokuje
+    // koniec tury, gdy spichlerz panstwa gracza po turze < 0 (zerowany powyzej zapas zywnosci, zero produkcji
+    // w scenariuszu). Bufor zywnosci NIE zmienia pary handlowej (zywnosc nie jest w GIVE/RECV), tylko odblokowuje EOT.
+    h.setSpichlerzPanstwa(0, 100000);
   }, [info.ai, info.pricedKeys, GIVE, RECV, BIG]);
 }
 
@@ -155,7 +180,11 @@ async function main() {
   const consoleErrors = [];
   try {
     const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
-    page.on('console', m => { if (m.type() === 'error') consoleErrors.push(m.text()); });
+    page.on('console', m => {
+      if (m.type() === 'error') consoleErrors.push(m.text());
+      // Ostrzezenia [EndTurn] (powod zablokowania konca tury) -- tylko do diagnostyki timeoutu.
+      if (m.type() === 'warning' && /\[EndTurn\] blocked/.test(m.text())) endTurnBlockWarnings.push(m.text());
+    });
     page.on('pageerror', e => consoleErrors.push('[pageerror] ' + e.message));
     await page.goto(URL_HTML, { waitUntil: 'load', timeout: 180000 });
     await page.waitForFunction(
@@ -181,7 +210,9 @@ async function main() {
     out.stocksSetup = stocksSetup;
     assert('setup: zapasy ustawione (AI nadwyzka zelaza / brak cegly, gracz odwrotnie)',
       stocksSetup.aiGive >= BIG && stocksSetup.aiRecv === 0 && stocksSetup.plRecv >= BIG && stocksSetup.plGive === 0, stocksSetup);
+    const probeT0 = Date.now();
     const probe = await ev(page, a => window.__aiTradeWiringTestDebug.probeBarter(a), ai);
+    console.log(`  [czas-selekcji] probeBarter: ${Date.now() - probeT0} ms`);
     out.probe = probe;
     assert('selekcja (ta sama funkcja co wiring): AI daje zelazo, bierze cegle',
       !!probe && probe.giveKey === GIVE && probe.receiveKey === RECV && probe.giveQty > 0 && probe.receiveQty > 0, probe);
