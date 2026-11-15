@@ -25,7 +25,10 @@ export type LedgerSourceKind =
   | 'utrzymanie_jednostek'  // utrzymanie jednostek (surowce, po tiku)
   | 'obywatele'            // zużycie przez obywateli (citizen-resource-upkeep)
   | 'budowa'                // start budowy budynku (pobór z puli państwa poza tickiem)
-  | 'rekrutacja';           // rekrutacja jednostek (pobór z puli państwa poza tickiem)
+  | 'rekrutacja'            // rekrutacja jednostek (pobór z puli państwa poza tickiem)
+  | 'umowa_wymiany'         // przeniesienie surowca w umowie wymiany (cykliczna / jednorazowa)
+  | 'mennica'               // drain Złota przez Mennicę (po plonach, w tiku)
+  | 'limit_magazynu';       // ścięcie nadwyżki ponad limit magazynu państwa (w tiku)
 
 /**
  * Miejsce zapisu w dzienniku dla wywołania, które odejmuje surowce z puli państwa.
@@ -253,4 +256,40 @@ export function drainPendingLedgerInto(target: Map<number, ResourceLedgerTurn> |
 /** Test/diagnostyka: podgląd okna bez czyszczenia (kopia). */
 export function peekPendingLedger(): Map<number, ResourceLedgerTurn> {
   return new Map(pendingLedgerByOwner);
+}
+
+/**
+ * R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (partia 3a): zapis różnicy magazynu państwa
+ * (po − przed) dla jednego właściciela do rekordu tury. Używane wokół mutacji, których nie da
+ * się rozbić na pojedyncze części (Mennica, ścięcie capu, transfer umowy). Zero zmian stanu.
+ * Każdy surowiec dostaje jeden wpis `sourceKey` z tym samym `flow`.
+ */
+export function recordStockDeltaToTurn(
+  turn: ResourceLedgerTurn | null | undefined,
+  before: Readonly<Record<string, number>>,
+  after: Readonly<Record<string, number>>,
+  sourceKey: string,
+  flow: { kind: LedgerSourceKind; label: string },
+): void {
+  if (!turn) return;
+  const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
+  for (const resourceKey of keys) {
+    const delta = (after[resourceKey] ?? 0) - (before[resourceKey] ?? 0);
+    recordLedgerFlow(turn, resourceKey, sourceKey, flow, delta);
+  }
+}
+
+/**
+ * Jak recordStockDeltaToTurn, ale do okna poza tickiem dla właściciela (drenowane przy
+ * najbliższym ticku ekonomii). Używane przy przelewach w turze dyplomacji (przed tickiem).
+ */
+export function recordStockDeltaToPending(
+  ownerId: number,
+  before: Readonly<Record<string, number>>,
+  after: Readonly<Record<string, number>>,
+  sourceKey: string,
+  flow: { kind: LedgerSourceKind; label: string },
+): void {
+  const sink = pendingLedgerSink(ownerId, flow.kind, flow.label);
+  recordStockDeltaToTurn(sink.turn, before, after, sourceKey, flow);
 }

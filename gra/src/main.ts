@@ -440,7 +440,7 @@ import {
   REBEL_FACTION_OWNER_ID,
 } from './game/society-breakdown';
 import { computeCitizenResourceDrain } from './game/citizen-resource-upkeep';
-import { citizenLedgerParts, recordTakenToLedger, upkeepLedgerParts, pendingLedgerSink, drainPendingLedgerInto } from './game/resource-ledger';
+import { citizenLedgerParts, recordTakenToLedger, upkeepLedgerParts, pendingLedgerSink, drainPendingLedgerInto, recordStockDeltaToPending } from './game/resource-ledger';
 import { BATTLE_MODE_SETTING_VERSION, isAutomaticOnlyBattleMode } from './game/battle-mode';
 import { normalizeHitMode, setActiveHitMode } from './game/hit-mode';
 import { resourceUsageBreakdownFor, resourceUsageHasAny } from './game/resource-usage-breakdown';
@@ -13284,6 +13284,10 @@ async function boot(): Promise<void> {
             const totalUnits = diplomacyNormalizeSurowiecIlosc(item.id, qty);
             const capId = capitalCityIdForOwner(toOwnerId);
             const refs = cities.map(c => ({ id: c.id, ownerId: c.ownerId, surowce: c.surowce ?? {} }));
+            // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (partia 3a): księga „Umowa wymiany" --
+            // różnica magazynu obu stron (tylko dziennik, bez wpływu na stan), okno poza tickiem.
+            const ledgerFromBeforeB = { ...ownerResourceStockAll(cities, fromOwnerId) };
+            const ledgerToBeforeB = { ...ownerResourceStockAll(cities, toOwnerId) };
             const result = transferSurowiecIlosc(item.id, totalUnits, fromOwnerId, toOwnerId, capId, refs);
             for (let i = 0; i < cities.length; i++) {
               const before = refs[i];
@@ -13292,6 +13296,10 @@ async function boot(): Promise<void> {
                 cities[i]!.surowce = after.surowce;
               }
             }
+            recordStockDeltaToPending(fromOwnerId, ledgerFromBeforeB, ownerResourceStockAll(cities, fromOwnerId),
+              `umowa-wymiany|out|${toOwnerId}`, { kind: 'umowa_wymiany', label: `Umowa wymiany z ${ownerDiploLabel(toOwnerId)}` });
+            recordStockDeltaToPending(toOwnerId, ledgerToBeforeB, ownerResourceStockAll(cities, toOwnerId),
+              `umowa-wymiany|in|${fromOwnerId}`, { kind: 'umowa_wymiany', label: `Umowa wymiany z ${ownerDiploLabel(fromOwnerId)}` });
             break;
           }
           case 'miasto': {
@@ -25064,6 +25072,9 @@ async function boot(): Promise<void> {
         const totalUnits = item.pakietyPerTura;
         const capId = capitalCityIdForOwner(item.buyerOwnerId);
         const refs = cities.map(c => ({ id: c.id, ownerId: c.ownerId, surowce: c.surowce ?? {} }));
+        // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (partia 3a): księga „Umowa wymiany" (cykliczna).
+        const ledgerSellerBeforeC = { ...ownerResourceStockAll(cities, item.sellerOwnerId) };
+        const ledgerBuyerBeforeC = { ...ownerResourceStockAll(cities, item.buyerOwnerId) };
         const result = transferSurowiecIlosc(
           item.surowiecKey, totalUnits, item.sellerOwnerId, item.buyerOwnerId, capId, refs,
         );
@@ -25074,6 +25085,10 @@ async function boot(): Promise<void> {
             cities[i]!.surowce = after.surowce;
           }
         }
+        recordStockDeltaToPending(item.sellerOwnerId, ledgerSellerBeforeC, ownerResourceStockAll(cities, item.sellerOwnerId),
+          `umowa-wymiany-cykl|out|${item.buyerOwnerId}`, { kind: 'umowa_wymiany', label: `Umowa wymiany z ${ownerDiploLabel(item.buyerOwnerId)}` });
+        recordStockDeltaToPending(item.buyerOwnerId, ledgerBuyerBeforeC, ownerResourceStockAll(cities, item.buyerOwnerId),
+          `umowa-wymiany-cykl|in|${item.sellerOwnerId}`, { kind: 'umowa_wymiany', label: `Umowa wymiany z ${ownerDiploLabel(item.sellerOwnerId)}` });
         const zaplata = item.zaplataPerTura ?? 0;
         if (zaplata > 0 && item.zaplataTyp === 'zloto') {
           applyOneShotGoldTransfer(item.buyerOwnerId, item.sellerOwnerId, zaplata, treasury);

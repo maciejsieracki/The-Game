@@ -45,6 +45,7 @@ import {
 import {
   createLedgerTurn,
   recordLedgerFlow,
+  recordStockDeltaToTurn,
   type ResourceLedgerTurn,
 } from './resource-ledger';
 import type { Hex } from '../types/hex';
@@ -3182,6 +3183,12 @@ export function advanceCityEconomy(
     result.totalPracaPula  += doPuli;
   }
 
+  // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (partia 3a): migawki magazynu państwa wokół
+  // Mennicy i ścięcia capu -- tylko do zapisu w dzienniku (różnica po − przed), bez wpływu na stan.
+  const ledgerBeforeMennica = ledgerEnabled
+    ? new Map([...new Set(cities.map(c => c.ownerId))].map(oid => [oid, { ...ownerResourceStockAll(cities, oid) }]))
+    : undefined;
+
   // PYTANIE-84-U-13: drain Mennicy po plonach (łaska = efekt bez pobrania Złota).
   applyMennicaZlotoDrainForOwners(
     cities,
@@ -3190,9 +3197,34 @@ export function advanceCityEconomy(
     playerZbadane,
     resolveOwnerZlotoAccess,
   );
+  if (ledgerBeforeMennica) {
+    for (const [oid, before] of ledgerBeforeMennica) {
+      recordStockDeltaToTurn(
+        ledgerTurnFor(result.resourceLedgerByOwner, oid),
+        before,
+        ownerResourceStockAll(cities, oid),
+        `mennica|${oid}`,
+        { kind: 'mennica', label: 'Mennica (złoto)' },
+      );
+    }
+  }
 
   // SUROW-CIV-01: klamruj sumę city.surowce po pipeline (teren + konwertery + drain Spichlerza).
+  const ledgerBeforeCap = ledgerEnabled
+    ? new Map([...new Set(cities.map(c => c.ownerId))].map(oid => [oid, { ...ownerResourceStockAll(cities, oid) }]))
+    : undefined;
   reconcileOwnerResourceCaps(cities, ownerResourceCapFor);
+  if (ledgerBeforeCap) {
+    for (const [oid, before] of ledgerBeforeCap) {
+      recordStockDeltaToTurn(
+        ledgerTurnFor(result.resourceLedgerByOwner, oid),
+        before,
+        ownerResourceStockAll(cities, oid),
+        `limit-magazynu|${oid}`,
+        { kind: 'limit_magazynu', label: 'Ścięcie nadwyżki ponad limit magazynu' },
+      );
+    }
+  }
 
   // --- Compute upkeep balance per owner (s.6.4 / s.8.4) ---
   // Collect all unique owner IDs across cities + units.
