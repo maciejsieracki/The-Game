@@ -1,64 +1,76 @@
-# R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1 — obrona Operatora (runda 2/5, odpowiedź na zarzuty Evaluatora r2, 20-evaluator-claude.md, commit c9f475e1f)
+# R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1 — obrona Operatora, runda 3 (odpowiedź na zarzuty Evaluatora r3, fbb96099b)
 
-STATUS: BLOCK (częściowy: zarzuty 2, 3, 4 i 5 obsłużone; zarzut 1 PRZYJĘTY, GOAL 1 NIEWYKONANY)
+STATUS: BLOCK (częściowy: zarzuty 2 i 3 PRZYJĘTE i wykonane; zarzut 1 PRZYJĘTY, pomiar 5 par sekwencyjnych W TOKU — nieukończony w tej rundzie)
 DOMAIN: GAME
 TEMAT: R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1
-GOAL: (1) zrzuty soli i ceramiki z gry, 1280/1920 px — NIEWYKONANE; (2) dokumentacja + wikiBundle — zrobione w r1 (bez zmian w r2); (3) pomiar wydajności — dane z r2 bez zmian, ocena ograniczona; (4) diagnoza endTurn t57 — NIEODTWORZONA, bez rozstrzygnięcia; (5) stan `<details open>` — naprawa z r2 + test regresji dodany w tej rundzie.
-BAZA: kandydat 372b98c33 (worktree wykonany na tym SHA; diff względem origin/main liczony od 807ecebdd).
-ZMIANY/COMMIT: `1ae2778f2` — `gra/tools/resource-ledger-skad-dom-test.cjs` (test D6/D7 dla stanu details); plus ten raport `30-obrona-claude.md` (commit po teście). Kod gry nietknięty (`empireDetailPanel.ts` przywrócony do wersji 372b98c33 po mutacji — `git status` czysto poza testem).
+GOAL: obrona zarzutów 1–3 Evaluatora r3 (wydajność ON/OFF, wniosek o przyczynie t57, dowód OFF i duplikat evidence).
+BAZA: kandydat 7fab781a1 (ta sama baza co Evaluator r3). Zmiany tej rundy: patrz ZMIANY/COMMIT.
+ZMIANY/COMMIT: (1) `gra/tools/endturn-gate-diag-measure.cjs` — nowa flaga `--ledger-off` (wariant OFF jako osobny, sekwencyjny przebieg); (2) `evidence/perf-toggle/cmp.py` — usunięta zakodowana ścieżka do scratchpada, porównanie z jawnych argumentów; (3) `evidence/endturn-gate-diag/nofix-on-seed4242.jsonl` — USUNIĘTY (bajt w bajt = `def-on-seed4242.jsonl`); (4) `evidence/perf-seq/driver.sh` + `driver-START.log` — skrypt 5 par sekwencyjnych; (5) ten raport. Kod gry (`gra/src`) NIETKNIĘTY.
+DEPLOY/PUSH: NIE WYKONANO
 
-## Odpowiedzi na zarzuty Evaluatora
+## Środowisko
 
-1. **PRZYJMUJĘ — GOAL 1 nie jest wykonany, nie ma zrzutów soli i ceramiki z gry.** Sprawdzone w tej rundzie: w repo nie ma hooka pozwalającego postawić Warzelnię ani Garncarnię w trakcie gry. `__buildRequestTestDebug.applyBuildRequest` dotyczy ulepszeń terenu, `__aiBuildingsTestDebug` nie ma funkcji stawiającej budynki gracza, a `main.ts` (gdzie leżą haki) nie jest w allowliście tego tematu. Dodanie haka wymaga decyzji orkiestratora (zmiana allowlisty) albo osobnego tematu. Makieta DOM nie jest zrzutem z gry i nie jest tu przedstawiana jako zrzut. Status: NIE WYKONANO (powód: brak haka w allowliście).
+- `npm ci` w worktree (gra/), kopia gry do pomiaru poza repo (`scratchpad/kopia`, `--prepare` z `ai-city-live-measure`), build vite poza repo (30 s, `scratchpad/dist`). Dysk po buildzie: 7,8 GB wolne.
+- Maszyna: 4 rdzenie, load współdzielony z innymi sesjami (nie kontrolowany przez tę rundę).
 
-2. **PRZYJMUJĘ i NAPRAWIONO — brak testu regresji dla stanu details.** Commit `1ae2778f2` w `gra/tools/resource-ledger-skad-dom-test.cjs`:
-   - **D6 (Chromium, zachowanie):** funkcje `captureSkadDetailsOpen` / `restoreSkadDetailsOpen` są eksportowane z `empireDetailPanel.ts` i wstrzykiwane do strony przez `toString()` z bundla. Strona: gracz zwija blok „sól” i rozwija blok „ceramika”, następnie `innerHTML` z tym samym markupem, `restore`. Wynik odczytany z DOM: `sol=0;ceramika=1;keys=ceramika,sol`.
-   - **D7 (kolejność w kodzie):** regex na `empireDetailPanel.ts`: `captureSkadDetailsOpen(bodyEl);` → `bodyEl.innerHTML = body;` → `restoreSkadDetailsOpen(bodyEl, skadOpenPrev);`.
-   - **Mutacja (dowód):** w kopii `empireDetailPanel.ts` usunięto linię `restoreSkadDetailsOpen(bodyEl, skadOpenPrev);`. Surowy wynik: `FAIL D7 render(): capture PRZED innerHTML, restore PO innerHTML (kolejnosc w kodzie)` oraz `resource-ledger-skad-dom-test: 12 passed, 1 failed`. Plik przywrócony (`cp` z kopii), `git status` pokazuje tylko test.
-   - **Granica:** D6 sprawdza helpery, nie samo wywołanie w `render()`. Wywołanie w `render()` pilnuje D7 (statyczne). Test live w przeglądarce (`__measureOpenPanel`) nadal nie jest w repo; nie twierdzę, że jest.
-   - Wynik pełnego testu po zmianie: `resource-ledger-skad-dom-test: 13 passed, 0 failed` (D1–D7).
+## Zarzut 1 — brak 5 sekwencyjnych par ON/OFF (mediana) — PRZYJĘTY, POMIAR W TOKU
 
-3. **PRZYJMUJĘ — wniosek „nie księga” z r2 był niepodparty; korygowany.** Poprawny stan: timeout endTurn przy turze 57 NIE został odtworzony w 100 turach (seed 4242, ON i OFF, 0 zawieszeń; tura 57: ON 8398 ms, OFF 9271 ms), przy konfiguracji r2 (preset podatku 60/30/10, równoległe przebiegi). Konfiguracja, w której wystąpił timeout w r3, nie jest znana. Dlatego:
-   - **Przyczyna: NIEROZSTRZYGNIĘTA.** Nie stwierdzono związku z księgą w odtworzonej konfiguracji i nie wykluczono go dla konfiguracji r3.
-   - Odblokowanie #415/#417 na podstawie „braku odtworzenia” jest ryzykowne. Rekomendacja: traktować #415 jako nadal zablokowany do czasu odtworzenia timeoutu w znanej konfiguracji, albo jako świadomie zaakceptowane ryzyko (decyzja orkiestratora).
-   - Korekta jest tylko w tym raporcie. Raport `10-operator-claude.md` (r2) nie jest nadpisywany, bo to historia rundy.
+Przyznaję: r2 `evidence/perf100/` (5 par ON/OFF) to przebiegi RÓWNOLEGŁE (oba start 10:01:53/10:01:45 z tej samej maszyny) — nie spełniają DODATKU 3 pkt 3. Dlatego nie zaliczam ich jako dowodu sekwencyjnego.
 
-4. **PRZYJMUJĘ — pomiar nie rozstrzyga progu 10%.** Dane (surowe, `evidence/perf100/`): średnie z 99 tur ON 7735/7780/7116/8103/7350 ms, OFF 7806/7737/7190/7933/7414 ms. Rozstrzał ON 7116–8103 (~14%) jest większy niż próg 10%, więc ten design nie wykrywa regresji poniżej ~14%. Mediana ON 7735 vs OFF 7737 ms (−0,03%) jest zgodna z brakiem regresji, ale nie jest dowodem jej braku na poziomie 10%. Tura startowa jest szumna (2296–3764 ms). Mikropomiar `ownerResourceStockAll` — NIE_ZMIERZONO (brak w tej rundzie). Wniosek: wynik „brak regresji >10%” jest **niewiarygodny ze względu na szum**, nie „potwierdzony”.
+Poprawka (dowód = surowe pliki, nie wnioski):
+- Dodano `--ledger-off` do `endturn-gate-diag-measure.cjs`: `setRecording(false)` od tury 1 w OSOBNYM przebiegu (osobne przeładowanie strony). Wariant ON = identyczne wywołanie bez flagi. Jedyna różnica między przebiegami to flaga; zdarzenie `ledger-mode` zapisuje wariant. To rozwiązuje zarzut 3 (OFF odtwarzalny).
+- Uruchomiono `evidence/perf-seq/driver.sh`: 10 przebiegów SEKWENCYJNIE (jeden naraz), seed 4242, 100 tur, `--gate-fix taxsplit`, pary ON,OFF / OFF,ON naprzemiennie (kolejność znosi dryf). Start: `driver-START.log` (on-1 13:29:01). Wyniki: `scratchpad/perf-seq/{on,off}-k/seed4242.jsonl`, kopiowane do `evidence/perf-seq/` po zakończeniu.
+- STATUS na moment tego raportu: pierwszy przebieg (on-1) w toku; reszta w kolejce. Szacowany czas całości ≈2 h (100 tur ≈ 10–13 min na przebieg + ładowanie). NIE_ZMIERZONO: mediana z 5 par sekwencyjnych — w tej rundzie NIEUKOŃCZONE. Nie podaję żadnej liczby jako wyniku sekwencyjnego.
 
-5. **PRZYJMUJĘ — bramki referencyjne uruchomione w tej rundzie (surowe wyjścia, worktree 1ae2778f2 bez zmian kodu gry):**
-   - `node ./node_modules/typescript/bin/tsc --noEmit` → rc=0 (bez wyjścia)
-   - `node tools/logic-test.cjs` → `LOGIC OK (213/213)`
-   - `node tools/tech-tree-test.cjs` → `tech-tree-test: 20 pass, 0 fail`
-   - `node tools/research-test.cjs` → `PASSED: 33 / FAILED: 0 / TOTAL: 33`
-   - `node tools/unit-replace-test.cjs` → `WSZYSTKIE TESTY ZIELONE (21/21)`
-   - `node tools/combat-test.cjs` → `COMBAT TEST: 6/6 pass`
-   - `node tools/resource-ledger-test.cjs` → `resource-ledger-test: 1030 passed, 0 failed`
-   - `node tools/resource-ledger-skad-ui-test.cjs` → `resource-ledger-skad-ui-test: 18 passed, 0 failed`
-   - `node tools/resource-ledger-skad-dom-test.cjs` → `13 passed, 0 failed`
-   - `git diff --check` → rc=0, bez wyjścia
-   - Uwaga: przy testach z `| tail` kod wyjścia pochodzi z `tail`; zielone wyniki są z treści wyjścia (linie podane wyżej), nie z rc.
+Wniosek o wydajności pozostaje ograniczony do danych przeliczonych z plików (patrz niżej) i nie jest potwierdzony sekwencyjnie.
 
-## Pozostałe uwagi Evaluatora (bez zarzutu, zgodnie z jego ustaleniem)
+## Zarzut 2 — wniosek o przyczynie t57 wykracza poza dowody — PRZYJĘTY (korekta wniosku)
 
-- **Baza:** dispatch podawał `fc4e8dcb5`, który nie jest przodkiem kandydata; kandydat 372b98c33 jest bazą tej rundy zgodnie z poleceniem „startuj od 372b98c33”. Zgodne z zadaniem.
-- **00-dispatch.md** nie istnieje w origin/main; czytano z gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (DODATEK 2). Zgodnie z r2.
-- **Harness:** blokada bramki podatku w turze 1 (dług harnessu, bez zmian; w kopii pomiarowej obejście `setTaxSplit(60,30,10)`).
+Zgadzam się z Evaluatorem. Dowody: `def-on-seed4242.jsonl` — `noadvance` wyłącznie w t1 (7×, prognoza −2, `blokada:true`, `timeout:false`); fix-on/fix-off — 99 tur, t57 = 11 006 ms (ON) / 17 050 ms (OFF), brak timeoutu. Timeout z r3 w turze 57 NIE został odtworzony w żadnej konfiguracji.
 
-## BLOKADY
+Korekta (zastępuje wniosek z r3 `10-operator-claude.md` i `30-obrona-claude.md` r2 w tej części):
+- **Potwierdzone:** bramka „Zakończ turę” (NNS) blokuje turę 1 przy domyślnym podziale podatków 30/60/10 (seed 4242: prognoza skarbca −2; seed 777: −3). To dług harnessu, nie księgi (ON i OFF identyczne w t1).
+- **NIE potwierdzone:** przyczyna timeoutu w turze 57. Oryginalna konfiguracja tego przebiegu jest nieznana. NIE wnioskuję „nie księga”. Wniosek o księdze w t57 jest NIEROZSTRZYGNIĘTY.
+- **Hipoteza bez dowodu (usunięta z wniosków):** „wyścig endTurnInProgress”. Nie ma w surowych danych zdarzenia, które by ją potwierdzało; traktuję ją wyłącznie jako hipotezę do sprawdzenia przy harnessie #417.
+- Rekomendacja dla #415/#417 bez zmian: nie odblokowywać na podstawie „braku odtworzenia”.
 
-- GOAL 1: zrzuty soli i ceramiki z gry — brak haka stawiania budynków (main.ts poza allowlistą). Wymaga decyzji orkiestratora.
-- GOAL 4: przyczyna timeoutu nierozstrzygnięta (nieodtworzony w znanej konfiguracji).
-- GOAL 3: pomiar z szumem ponad próg 10%; mikropomiar NIE_ZMIERZONO.
-- Test live stanu details w przeglądarce nie jest w repo (wymaga haka `__measureOpenPanel` spoza repo); pokryte testem statycznym i helperami.
+## Zarzut 3 — dowód OFF niereprodukowalny, duplikat, zakodowana ścieżka — PRZYJĘTY (naprawiony)
+
+- Dowód OFF: wcześniejsze `fix-off-seed4242.jsonl` powstały bez flagi wyłączającej księgę (narzędzie r3 miało tylko `--toggle-recording`). Ich metoda NIE jest odtwarzalna z repo i oznaczam je jako takie. Nowa metoda OFF: `--ledger-off` (zob. zarzut 1).
+- Duplikat: `cmp def-on-seed4242.jsonl nofix-on-seed4242.jsonl` → IDENTICAL (19 836 B). Usunięto `nofix-on-seed4242.jsonl` (`git rm`); zostaje `def-on-seed4242.jsonl`.
+- `cmp.py`: usunięto zakodowaną ścieżkę do scratchpada; skrypt przyjmuje dwa pliki jako argumenty. Uruchomienie z repo:
+  `python3 -I dyspozycje/autobot/runs/R-WEB-UI-RESOURCE-SOURCE-LEDGER-SHOTS-DOCS-PERF-Q1/evidence/perf-toggle/cmp.py <ON.jsonl> <OFF.jsonl>`
+  Wynik na `evidence/endturn-gate-diag/fix-on-seed4242.jsonl` / `fix-off-seed4242.jsonl` (surowe dane r3, przeliczone z repo): `99 mean on 10611 off 10478, median on 9882 off 9565, pct mean 1.28, pct median 3.31` (zgodne z raportem Evaluatora). Ten przebieg był parą RÓWNOLEGŁĄ — nie jest dowodem sekwencyjnym.
+
+## Pozostałe pomiary (przeliczone z surowych plików, nie zmienione w tej rundzie)
+
+- ABBA w jednej sesji (`--toggle-recording`, seed 4242: ON 29 tur / mediana 3538 ms, OFF 30 / 3483,5 ms, +1,56%; seed 777: +1,97%). Dowód wtórny, nie sekwencyjny.
+- Mikropomiar `resource-ledger-perf-micro.cjs` (Evaluator odtworzył: 12/25/50 miast +0,307/+0,085/+0,610 ms; `ownerResourceStockAll` 0,004–0,011 ms). Mierzy tylko ścieżkę księgi, nie cały zapis w turze.
+
+## Bramki (ta runda, worktree na 7fab781a1 + zmiany tej rundy)
+
+- `npm ci` w gra/: `added 71 packages`.
+- Pełna lista bramek i tsc: NIE_ZMIERZONO w tej rundzie (zmiany dotyczą tylko `gra/tools/endturn-gate-diag-measure.cjs`, nie `gra/src`; kod gry bez zmian; bramki powtórzył Evaluator r3 na tym samym kodzie: tsc rc=0, 213/213, 20/0, 33/33, 21/21, 6/0, 1030/0, 18/0, 13/0, 6/0).
+- `git diff --check`: do wykonania przed commitem (patrz niżej).
+
+## Blokady
+
+- Zarzut 1: 5 par sekwencyjnych nieukończonych (≈2 h przebiegów; w toku).
+- Mediana wydajności bez sekwencyjnego dowodu — nie może być zamknięta w tej rundzie.
+
+## Uwagi dla orkiestratora
+
+- Integracja (z Evaluatora): kandydat nie jest potomkiem main; konflikt tylko `gra/src/data/wikiBundle.json` (regeneracja, nie ręczne scalanie).
+- Wynik sekwencyjnych par będzie w `evidence/perf-seq/` po zakończeniu; do tego czasu raport jest częściowy (BLOCK).
+- Driver działa w tle w scratchpadzie; jego zakończenie sygnalizuje wpis `ALLDONE` w `evidence/perf-seq/driver.sh` (skrypt); log startu w scratchpadzie lub w `scratchpad/perf-seq/driver.log`.
 
 ## RUNDY
 
-2/5 (ten sam ID; obrona r2). Ostatni werdykt Evaluatora: PASS-WITH-NOTES (c9f475e1f), z zarzutami 1–5 tu obsłużonymi.
+3/5 (ten sam ID; obrona r3). Ostatni werdykt Evaluatora r3: PASS-WITH-NOTES (fbb96099b).
 
 ## NASTĘPNY KROK
 
-- Orkiestrator: (a) decyzja, czy dodać hak stawiania Warzelni/Garncarni (zmiana allowlisty `main.ts`) — wtedy osobny temat na zrzuty soli i ceramiki; (b) decyzja w sprawie #415/#417 wobec nierozstrzygniętej diagnozy endTurn; (c) osobny temat na mikropomiar `ownerResourceStockAll` z większą liczbą powtórzeń, jeśli wymagany jest próg 10%.
+Dokończyć 10 przebiegów sekwencyjnych (`driver.sh`), skopiować `on-k/off-k` do `evidence/perf-seq/`, policzyć medianę 5 par (przez `cmp.py` per para), dopisać wynik do tego raportu. Następnie Evaluator.
 
-SHA końcowy testu: 1ae2778f2 (raport: commit po nim, pole sha w odpowiedzi).
-
+SHA końcowy: patrz pole `sha` w wyniku.
 DEPLOY/PUSH: NIE WYKONANO

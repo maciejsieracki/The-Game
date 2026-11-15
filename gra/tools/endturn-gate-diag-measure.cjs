@@ -9,6 +9,8 @@
  *  - dla kazdego endTurn, ktory nie przesuwa tury, linia `noadvance` (tura, przyczyna z konsoli, stan bramki, ms);
  *  - `--gate-fix taxsplit` : przy blokadzie bramki ustawia podzial 60/30/10 (jawnie zapisany w `gate-fix`) i biegnie dalej;
  *    bez tej flagi harness po 6 nieudanych probach konczy bledem (zachowanie oryginalnego harnessu).
+ *  - `--ledger-off` : sekwencyjny wariant OFF (ksiega wylaczona przez __ledgerTestDebug.setRecording(false) od tury 1,
+ *    osobny przebieg z przeladowaniem strony). Wariant ON = identyczne wywolanie bez tej flagi. Zdarzenie `ledger-mode`.
  *  Uzycie: --prepare <kopia-gra> (deleguje do longrun ... --prepare), potem --run --pw .. --dist .. --out .. --seed 4242.
  * Zero zmian w grze; zadnych hookow poza istniejacymi (?civTest=1).
  */
@@ -184,6 +186,11 @@ async function main() {
         forecast: gi.forecast, tax: d.getTaxSplit(), podatekPunkty: gi.podatekPunkty };
     });
     emit({ ev: 'gate-initial', ...(await readGate()) });
+    // --ledger-off: sekwencyjny wariant OFF (osobny przebieg, osobne przeladowanie strony): ksiega wylaczona od tury 1.
+    // Wariant ON = ten sam przebieg bez flagi (ksiega domyslnie zapisuje). Jedyna roznica miedzy przebiegami to ta flaga.
+    const LEDGER_OFF = process.argv.includes('--ledger-off');
+    if (LEDGER_OFF) await page.evaluate(() => window.__ledgerTestDebug.setRecording(false));
+    emit({ ev: 'ledger-mode', mode: LEDGER_OFF ? 'off' : 'on', from: 'turn1' });
     while (turn < TURNS) {
       const pre = await readGate(); blockedLog.length = 0;
       // --toggle-recording: pomiar narzutu ksiegi w JEDNEJ sesji; kolejnosc ABBA (ON,OFF,OFF,ON) znosi dryf rosnacego czasu tury.
