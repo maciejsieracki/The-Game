@@ -10159,3 +10159,8 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 - ROBOCZA MD5 5340ea32 (Raw GitHub = manifest = dep3 build), main 7ac79daf (merge FC 748689d40 → 20cf2ceb2). Bramki dep3: tsc 0, logic 213/213, battle-full-move-strike 8/8 (mutacje 4/4), pace-latch 5/5, vite OK.
 - NIE ZMIERZONO: strzelcy bez dozwolonego kroku w innych ziarnach; wyjątek doktryn osobno; jednorazowy inny hash determinizmu (niepowtórzony). Dług Rust: REPIN ruchu strzelców po zderzeniu.
 - Następny: #410 COLLISION-ARBITRATION (start po tym wpisie).
+
+### 2026-11-15 — LIVE-VERIFY-BATTLE-AFTER-FULL-MOVE-Q1 runda 1: FC FAIL → runda 2 (Haiku)
+- Kandydat r1 6f1f557f3 (refs `refs/keep/R-WEB-LV-BATTLE-FM-r1-{op,eval,obrona,fc}`). Ucieczka/pościg: 12/12 PASS w Chromium (checker K1–K5, mutacje czerwienieją). FC FAIL: brak pomiaru strat zwycięzcy w trybie RĘCZNYM (brak drivera), mieszana armia tylko headless bez wymaganych metryk, brak limitu odwrotu/flagi „walczy do śmierci”/zrzutów.
+- WAŻNE (orkiestrator): kandydat r1 NIE zawiera FALI 745/746/747 (merge-base z main = b1eff89ee) — pomiary r1 dotyczą kodu sprzed „pełnego ruchu”, więc nie dowodzą braku regresji. Runda 2 (DODATEK 1, dispatch 62258062): merge origin/main 7ac79dafb + powtórzenie pomiarów + driver ręcznej bitwy + eksport flagi odwrotu. Kandydaci z r1: K-A driver ręcznej bitwy, K-B eksport odwrotów, K-C scenariusz 12v12 (cała armia ucieka bez zabitych — do oceny).
+- Dług narzędzia: battle-large-mixed-doctrine-matrix-test nadpisuje tracked 01-matrix.json.
