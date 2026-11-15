@@ -106,6 +106,10 @@ export interface PostBattleMapResult {
   defenderAnnihilatedByRetreatLimit: boolean;
   /** R-WEB-BATTLE-RETREAT-LIMIT-3-PER-TURN-THEN-DESTROYED-Q1: true = ocalali atakującego zginęli (wyczerpany limit). */
   attackerAnnihilatedByRetreatLimit: boolean;
+  /** LINIA-UNICESTWIENIE: ile jednostek obrony zginęło przez unicestwienie (0 = brak). */
+  defenderAnnihilatedUnitCount: number;
+  /** LINIA-UNICESTWIENIE: ile jednostek atakującego zginęło przez unicestwienie (0 = brak). */
+  attackerAnnihilatedUnitCount: number;
 }
 
 function removeUnitById(units: RuntimeUnit[], id: string | number): void {
@@ -572,6 +576,8 @@ export function applyPostBattleMap(input: PostBattleMapInput): PostBattleMapResu
   const twoHex = { retreated: [] as string[], noRoute: [] as string[] };
   let defenderAnnihilated = false;
   let attackerAnnihilated = false;
+  let defenderAnnihilatedUnitCount = 0;
+  let attackerAnnihilatedUnitCount = 0;
 
   // DECYZJA WLASCICIELA 2026-11-11: odwrot ocalalych przegranej dotyczy TYLKO walki w polu.
   // W MIESCIE (heks bitwy = miasto: szturm, obrona miasta, oblezenie) przegrani gina jak dotad.
@@ -605,6 +611,7 @@ export function applyPostBattleMap(input: PostBattleMapInput): PostBattleMapResu
         if (!u) continue;
         removeUnitById(input.units, u.id);
         removedIds.push(String(u.id));
+        defenderAnnihilatedUnitCount += 1;
       }
       defenderAnnihilated = true;
     } else {
@@ -628,6 +635,7 @@ export function applyPostBattleMap(input: PostBattleMapInput): PostBattleMapResu
         if (!u) continue;
         removeUnitById(input.units, u.id);
         removedIds.push(String(u.id));
+        attackerAnnihilatedUnitCount += 1;
       }
       attackerAnnihilated = true;
     } else {
@@ -661,6 +669,8 @@ export function applyPostBattleMap(input: PostBattleMapInput): PostBattleMapResu
     retreatNoTwoHexRouteIds: twoHex.noRoute,
     defenderAnnihilatedByRetreatLimit: defenderAnnihilated,
     attackerAnnihilatedByRetreatLimit: attackerAnnihilated,
+    defenderAnnihilatedUnitCount,
+    attackerAnnihilatedUnitCount,
   };
 }
 

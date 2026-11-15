@@ -41,6 +41,24 @@ export interface BattleSummarySide {
   totalDead: number;
 }
 
+/**
+ * LINIA-UNICESTWIENIE (R-WEB-BATTLE-SUMMARY-ANNIHILATION-LINE-Q1): osobna linia podsumowania,
+ * gdy czwarty odwrot w turze (wyczerpany limit odwrotów) niszczy armię. Nie miesza się ze stratami.
+ */
+export interface BattleSummaryAnnihilation {
+  /** Strona, której armia została unicestwiona (dla gracza i AI tak samo). */
+  side: 'atakujacy' | 'obronca';
+  /** Etykieta strony (cywilizacja / wódz) po polsku. */
+  label: string;
+  /** Ile jednostek zginęło przez unicestwienie (>= 1). */
+  units: number;
+  /** Powód po polsku. */
+  reason: string;
+}
+
+export const ANNIHILATION_REASON_RETREAT_LIMIT =
+  'wyczerpany limit odwrotów (trzy odwroty w tej turze)';
+
 export interface PostBattleSummaryData {
   title: string;
   subtitle?: string;
@@ -54,6 +72,8 @@ export interface PostBattleSummaryData {
   playerSide?: 'atk' | 'def';
   /** Krótki opis łupu (np. „+16 Pieniądz, +2 Brąz”) — tylko gdy gracz wygrał. */
   lootNote?: string;
+  /** Linia „Unicestwienie” — tylko gdy limit odwrotów zniszczył armię tej bitwy. */
+  annihilation?: BattleSummaryAnnihilation;
 }
 
 export interface BuildBattleSummaryInput {
@@ -77,6 +97,43 @@ export interface BuildBattleSummaryInput {
   defBefore: BattleUnitBeforeSnap[];
   lookupHp: (id: string) => number | null;
   playerSide?: 'atk' | 'def';
+  /** LINIA-UNICESTWIENIE: wynik applyPostBattleMap (liczniki > 0 = unicestwienie tej strony). */
+  annihilatedAtkUnits?: number;
+  annihilatedDefUnits?: number;
+}
+
+/**
+ * Buduje linię unicestwienia z liczników applyPostBattleMap. Zwraca undefined, gdy żadna
+ * strona nie została unicestwiona przez limit odwrotów (brak linii).
+ * Obrona ma pierwszeństwo tylko gdyby obie strony miały licznik > 0 (w praktyce niemożliwe).
+ */
+export function buildAnnihilationNote(
+  atkUnits: number | undefined,
+  defUnits: number | undefined,
+  atkLabel: string,
+  defLabel: string,
+): BattleSummaryAnnihilation | undefined {
+  if (defUnits && defUnits > 0) {
+    return { side: 'obronca', label: defLabel, units: defUnits, reason: ANNIHILATION_REASON_RETREAT_LIMIT };
+  }
+  if (atkUnits && atkUnits > 0) {
+    return { side: 'atakujacy', label: atkLabel, units: atkUnits, reason: ANNIHILATION_REASON_RETREAT_LIMIT };
+  }
+  return undefined;
+}
+
+/** Tekst linii unicestwienia (po polsku), używany w UI i w testach. */
+export function formatAnnihilationLine(a: BattleSummaryAnnihilation): string {
+  return 'Unicestwienie: ' + a.label + ' \u2014 ' + a.units + ' ' + unitsWordPl(a.units)
+    + ' zniszczonych; powód: ' + a.reason + '.';
+}
+
+function unitsWordPl(n: number): string {
+  if (n === 1) return 'jednostka';
+  const last = n % 10;
+  const last2 = n % 100;
+  if (last >= 2 && last <= 4 && (last2 < 12 || last2 > 14)) return 'jednostki';
+  return 'jednostek';
 }
 
 function pct(hp: number, maxHp: number): number {
@@ -159,6 +216,13 @@ export function buildPostBattleSummary(input: BuildBattleSummaryInput): PostBatt
       : input.mode === 'manual' ? 'Wynik bitwy'
         : 'Wynik bitwy';
 
+  const annihilation = buildAnnihilationNote(
+    input.annihilatedAtkUnits,
+    input.annihilatedDefUnits,
+    input.atkLabel,
+    input.defLabel,
+  );
+
   return {
     title: modeTitle,
     subtitle: input.placeLabel,
@@ -169,5 +233,6 @@ export function buildPostBattleSummary(input: BuildBattleSummaryInput): PostBatt
     atakujacy: atkSide,
     obronca: defSide,
     playerSide: input.playerSide ?? 'atk',
+    ...(annihilation ? { annihilation } : {}),
   };
 }
