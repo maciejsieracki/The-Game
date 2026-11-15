@@ -111,7 +111,9 @@ console.log('\n=== (2) SCENARIUSZ: Palisada -> Mury kamienne -> Mury ceglane PRZ
   const rows = [];
   const snap = (turn, label) => { const s0 = snapshot(`${turn} ${label}`, built, queue); rows.push({ turn, built: built.slice(), gold: s0.gold, bonus: s0.bonus }); return s0; };
   snap('T0', 'start');
-  assert(CHAIN.every(i => idsOf(built, queue).includes(i)), 'S0 od zera oferowane: palisada, mury kamienne i mury ceglane (przeskok)');
+  // R-WEB-UI-FORTIFICATIONS-HIDE-SUPERSEDED-WALL-BUILD-OPTIONS-Q1: od zera (Budownictwo odblokowane) nowa budowa
+  // palisady i murow kamiennych znika; oferowany jest tylko najwyzszy odblokowany etap (przeskok).
+  assert(idsOf(built, queue).includes('mury') && !idsOf(built, queue).includes('palisada') && !idsOf(built, queue).includes('mury_kamienne'), 'S0 od zera (wszystkie techy): oferowane tylko mury ceglane (przeskok), palisada i mury kamienne znikaja');
   const p1 = pay(cs, 'palisada'); queue = [item('palisada')]; snap('T1', 'palisada w kolejce');
   built = M.applyCompletedBuildingIds(built, 'palisada', buildings); queue = [];
   const s2 = snap('T2', 'palisada ukonczona');
@@ -132,9 +134,9 @@ console.log('\n=== (2) SCENARIUSZ: Palisada -> Mury kamienne -> Mury ceglane PRZ
   assert(s2.bonus === 100 && s4.bonus === 150 && s6.bonus === 200, 'S5b bonus obrony 100 -> 150 -> 200 (bez zmian)');
   assert(idsOf(built, queue).length === 0, 'S5c gdy stoja mury ceglane, nic z lancucha nie jest oferowane');
   assert(p1.drewno === 120 && p1.kamien === 0 && p1.cegla === 0, 'F1 palisada: realnie pobrano drewno 120');
-  assert(p2.drewno === 160 && p2.kamien === 160 && p2.cegla === 160, 'F2 awans palisada->kamienne: PELNY koszt nowego 160/160/160 (bez odliczenia, bez zwrotu)');
+  assert(p2.drewno === 160 && p2.kamien === 160 && p2.cegla === 0, 'F2 awans palisada->kamienne: PELNY koszt nowego 160/160 BEZ cegly (Mury kamienne nie wymagaja cegly; bez odliczenia, bez zwrotu)');
   assert(p3.drewno === 320 && p3.kamien === 320 && p3.cegla === 320, 'F3 awans kamienne->ceglane: PELNY koszt nowego 320/320/320');
-  assert(sumOf(cs, 'drewno') === 2000 - 600 && sumOf(cs, 'kamien') === 2000 - 480 && sumOf(cs, 'cegla') === 2000 - 480, 'F4 magazyny po 3 etapach: -600/-480/-480 (stan faktyczny, nie arytmetyka cen)');
+  assert(sumOf(cs, 'drewno') === 2000 - 600 && sumOf(cs, 'kamien') === 2000 - 480 && sumOf(cs, 'cegla') === 2000 - 320, 'F4 magazyny po 3 etapach: -600/-480/-320 (cegla tylko na Murach ceglanych; stan faktyczny, nie arytmetyka cen)');
   console.log('  TABELA tura -> (budynki fortyfikacyjne, utrzymanie zl, bonus obrony):');
   for (const r of rows) console.log(`    ${r.turn}: [${r.built.join(',') || '-'}] utrzymanie=${r.gold} bonus=+${r.bonus}%`);
   assert(rows.every(r => r.built.length <= 1), 'S6 w zadnej turze wiecej niz jedna fortyfikacja w miescie');
@@ -196,7 +198,7 @@ console.log('\n=== (6) UI / AI: pinezki zrodla ===');
   const main = fs.readFileSync(path.join(GRA, 'src/main.ts'), 'utf8');
   const ai = fs.readFileSync(path.join(GRA, 'src/game/ai.ts'), 'utf8');
   const ui = fs.readFileSync(path.join(GRA, 'src/ui/cityPanel.ts'), 'utf8');
-  assert((prod.match(/isWallTierBlockedByStrongerWall\(b\.id, builtList, queue, data\.buildings\)/g) || []).length === 2, 'U1 blokada lancucha jest we wspolnej dostepnosci (availableProduction + katalog) dla gracza i AI');
+  assert((prod.match(/isWallTierBlockedByStrongerWall\(b\.id, builtList, queue, data\.buildings, techs\)/g) || []).length === 2, 'U1 blokada lancucha jest we wspolnej dostepnosci (availableProduction + katalog) dla gracza i AI');
   assert(main.split('applyCompletedBuildingIds(').length - 1 === 1 && /collapseFortificationChain\(blt as string\[\], data\.buildings\)/.test(main), 'U2 jedna sciezka ukonczenia; migracja zapisu wpieta przy wczytaniu cityBuilt');
   assert(/skipChainUpgradeSource\(it\.id, built, data\.buildings\)/.test(ui) && /Ulepsz → \$\{def\.nazwa\}/.test(ui), 'U3 UI: etap z poprzednikiem trafia do sekcji "Ulepsz" z etykieta "Ulepsz -> Nazwa"');
   assert(/b\.upgradeSkip !== true && !built\.includes\(upgradeFrom\)/.test(ai), 'U4 AI: filtr upgradeFrom respektuje przeskok (parytet z graczem)');

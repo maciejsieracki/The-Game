@@ -60,6 +60,12 @@ const TRADE_ACTIONS = new Set(['handel', 'umowa_handlowa', 'umowa_szlakow']);
 // MEAS_FAST (domyslnie 1): tryb przyspieszony = hak setFastMode (pomija renderer.render; tylko ?civTest=1). MEAS_FAST=0 wylacza.
 const FAST = process.env.MEAS_FAST !== '0';
 const PHASE = process.env.MEAS_PHASE === '1';
+// R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 (r2, opcja A): MEAS_ECON=1 — realistyczniejsza gospodarka gracza: zapasy surowcow
+// (setStock hak, tylko ?civTest=1): parzyste klucze 400 (nadwyzka), nieparzyste 0 (deficyt). Symulacja STANU, nie produkcji.
+const ECON = process.env.MEAS_ECON === '1';
+const ECON_KEYS = ['drewno', 'glina', 'kamien', 'ruda', 'ruda_zelaza', 'ruda_cyny', 'cegla', 'sol', 'kon', 'ceramika', 'braz', 'zelazo', 'stal', 'wegiel'];
+// Lejek ofert (diagnoza): cooldown propozycji AI->gracz (zgodnie z ai-params.json, jak w grze).
+const CD_TURNS = parseInt(process.env.MEAS_CD_TURNS || '15', 10);
 const PLAYTEST_SEED_DEFAULT = 271828;
 const URL_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa' + (GATE ? '' : '&civTest=1') + (SEED != null ? '&civSeed=' + SEED : '');
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
@@ -135,6 +141,7 @@ async function main() {
     turnsRequested: TURNS, turnsRun: 0, offers: 0, activePrzyjmij: 0, pairs: {}, cyclicDealsMax: 0,
     tableStart: 0, tableEnd: 0, tableGrowth: 0, scriptRejected: 0, rejectCooldownsMax: 0, per100: 0, aiOwner: null, stoppedBy: null,
     autoBattles: 0, battleActs: {}, consoleMatches: [], fastMode: FAST, consoleErrors: 0, offerLog: [], perTurn: [],
+    econ: ECON, cdTurns: CD_TURNS, funnel: { turns: 0, cdTurns: 0, cdWithPair: 0, noCdPair: 0, noCdNoPair: 0, noCdNoAiSurplus: 0, noCdNoMeDeficit: 0, noCdPairNullBothSides: 0 },
   };
   const consoleErrors = [];
   const endBlocks = [];
@@ -208,6 +215,7 @@ async function main() {
     } else if (!(await page.evaluate(() => window.__aiTradeWiringTestDebug.foundFirstCity()))) throw new Error('nie udalo sie zalozyc miasta gracza');
     if (FAST) await page.evaluate(() => window.__aiTradeWiringTestDebug.setFastMode(true));
     if (ARM === 'prepared' && !resumed) await page.evaluate(ai => window.__aiTradeWiringTestDebug.prepare(ai), info.ai);
+    if (ECON && !resumed) await page.evaluate(keys => keys.forEach((k, i) => window.__aiTradeWiringTestDebug.setStock(0, k, i % 2 === 0 ? 400 : 0)), ECON_KEYS);
     // r4/Z1: pin Relacji (hak setRelationPin, tylko ?civTest=1) wymuszany w tiku PRZED decyzjami AI; stan strony ginie przy wznowieniu, wiec pin ustawiany ZAWSZE.
     if (REL != null) {
       await page.evaluate(([ai, t]) => window.__aiTradeWiringTestDebug.setRelationPin(ai, t), [info.ai, REL]);
@@ -235,6 +243,27 @@ async function main() {
         for (const p of st.pending) { await page.evaluate(id => window.__aiTradeWiringTestDebug.reject(id), p.id); rep.scriptRejected++; }
       }
       rep.autoBattles += await clearBattles(page, rep.battleActs);
+      // Lejek (diagnoza): per tura — cooldown propozycji, para surowcow z probeBarter, nadwyzka AI / deficyt gracza (diag).
+      if (process.env.MEAS_NOFUNNEL !== '1') {
+        const last = (st.barterCooldown || []).find(([oid]) => oid === info.ai);
+        const cd = !!last && (st.turn - last[1]) < CD_TURNS;
+        const pb = await page.evaluate(ai => window.__aiTradeWiringTestDebug.probeBarter(ai), info.ai);
+        const dg = await page.evaluate(([ai, keys]) => window.__aiTradeWiringTestDebug.diag(ai, keys), [info.ai, ECON_KEYS]);
+        // Zgodnie z pickAiPlayerCyclicBarter: deficyt = klasyfikacja (diag.need) LUB resourceDeficitKeysForOwner (diag.deficitKeys).
+        const aiSurplus = dg.ai.per.filter(x => x.need === 'surplus').length;
+        const meDeficit = new Set([...dg.me.per.filter(x => x.need === 'deficit').map(x => x.k), ...(dg.me.deficitKeys || [])]).size;
+        const f = rep.funnel; f.turns++;
+        if (cd) { f.cdTurns++; if (pb) f.cdWithPair++; }
+        else if (pb) f.noCdPair++;
+        else {
+          f.noCdNoPair++;
+          if (aiSurplus === 0) f.noCdNoAiSurplus++;
+          else if (meDeficit === 0) f.noCdNoMeDeficit++;
+          else f.noCdPairNullBothSides++;
+        }
+        rep.lastFunnelTurn = { t: st.turn, cd, lastBarterTurn: last ? last[1] : null, pair: !!pb, aiSurplus, meDeficit };
+        (rep.funnelLog = rep.funnelLog || []).push([st.turn, cd ? 1 : 0, pb ? 1 : 0, aiSurplus, meDeficit]);
+      }
       // Relacja przypinana PRZED kazdym endTurn (smoke r3: bez przypiecia relacja spadala 40→29→9 w 3 turach = dryf naturalny).
       let relBeforeEnd = null;
       if (REL != null) {
@@ -242,6 +271,13 @@ async function main() {
       }
       // Gracz bez miast = koniec sensownego pomiaru (stan gry „awaitingFirstPlayerCity” blokuje koniec tury); wynik terminalny.
       if (st.playerCities === 0) { rep.stoppedBy = 'gracz bez miast'; rep.playerCitiesLostAtTurn = st.turn; break; }
+      // R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 (r2): bramka NNS „Zakończ turę” (od tury 11, NNS_WOLNE_TURY=10) blokuje gracza-skrypt
+      // przy ujemnej prognozie skarbca/spichlerza. Skrypt dosypuje DODATNIE zasoby przez hooki grantPlayerGold/grantPlayerFood (jak
+      // gracz, który podnosi podatki/racje) — licznik w rep.nnsGrants. Nie zmienia reguł gry ani stolu ofert.
+      for (let g = 0; g < 30 && await page.evaluate(() => window.__aiTradeWiringTestDebug.nnsGateBlocked()); g++) {
+        await page.evaluate(() => { window.__aiTradeWiringTestDebug.grantPlayerGold(300); window.__aiTradeWiringTestDebug.grantPlayerFood(300); });
+        rep.nnsGrants = (rep.nnsGrants || 0) + 1;
+      }
       await endTurnWait(page);
       st = await page.evaluate(() => window.__aiTradeWiringTestDebug.state());
       rep.turnsRun = i + 1;

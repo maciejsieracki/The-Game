@@ -331,12 +331,15 @@ export { MENNICA_ZLOTO_DRAIN_PER_TURN };
 // ---------------------------------------------------------------------------
 
 /** Klucze JSON (gra/data/econ-params.json → budynki) czytane przez loadSpichlerzDrainParams.
- *  R-WEB-SPICHLERZ-DRAIN-KEYS-Q1: wcześniej martwe; wartości w JSON = 25 (bez zmian). */
+ *  R-WEB-SPICHLERZ-DRAIN-KEYS-Q1: wcześniej martwe. Wartości w JSON (R-WEB-DATA-SPICHLERZ-II-REMOVE-CERAMICS-UPKEEP-Q1,
+ *  2026-11-14): Spichlerz I = 10, Spichlerz Królewski = 20 ceramiki/turę; sól II = 25 (bez zmian). */
 export const SPICHLERZ_DRAIN_JSON_KEY_CERAMIKA_I = 'budynek_spichlerz_zuzywa_ceramika';
 export const SPICHLERZ_DRAIN_JSON_KEY_CERAMIKA_II = 'budynek_spichlerz_ii_zuzywa_ceramika';
 export const SPICHLERZ_DRAIN_JSON_KEY_SOL_II = 'budynek_spichlerz_ii_zuzywa_sol';
 
 /** Fallback (25) gdy klucz JSON brakuje, nie jest liczbą skończoną lub jest ujemny.
+ *  UWAGA (R-WEB-DATA-SPICHLERZ-II-REMOVE-CERAMICS-UPKEEP-Q1): to tylko awaryjna wartość przy BRAKU klucza;
+ *  właściwe zużycie Ceramiki to econ-params.json (Spichlerz I 10, II 20) — fallback celowo nie zmieniony.
  *  R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5, było 5 (utrzymanie surowcowe
  *  budynków — Ceramika to surowiec fizyczny, nie waluta). / EN: ×5, was 5. */
 export const SPICHLERZ_DRAIN_FALLBACK_PER_TURN = 25;

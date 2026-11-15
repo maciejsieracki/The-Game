@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "ab171a4c72cff6d39c871bb4709eaee3",
-  "bundleSha256": "2da231dcbd6e31caa6e751118d50bedc97afa33e9a796a436f047e300f4280ec",
-  "bundleBytes": 14688203,
+  "bundleMd5": "4f75c30b346583e4adee73db4372e533",
+  "bundleSha256": "8ffd577a3f96419ab9677efead8d8eba9491e01f807dd0ebdf9fd313811c1918",
+  "bundleBytes": 14734037,
   "sourceSnapshot": {
-    "source": "RIVERS-PERF FC 43f11d042 + SIEGE-NARROW FC 1ea7f8bb7",
+    "source": "merge FC CERAM-KAMIEN r2 7f9cd4fa5 + ATTACK-DIR 931b1c92d na main e956b5015",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 707: Generacja swiata: pamiec srodka ladu w etapie Rzeki-uzupelnianie (BFS ziarna 22 Maly 4745 -> 1, ta sama suma kontrolna; mapy Maly 1-10 i Standardowy 22 bez zmian) oraz panel oblezenia: zwarty blok machin w 2 kolumnach (R-WEB-MAPGEN-RIVERS-FILL-CENTROID-PERF-Q1, R-WEB-UI-SIEGE-PANEL-NARROW-MACHINES-BLOCK-Q1)"
+    "FALA 725: Obywatele zuzywaja 1 ceramiki na obywatela na ture juz w epoce Kamienia (kara -2 Szczescia / -1% rozwoju do czasu Garncarni); w rozstawieniu bitwy Kierunek natarcia, Formacja i Konnica dzialaja tylko na zaznaczone jednostki (bez zaznaczenia cala armia)"
   ],
   "verification": [
-    "tsc 0, logic 213/213, mapgen-rivers-fill-centroid-cache PASS (4745x), siege-panel-machines-block-fit PASS 6/6 w FC, 5 bramek zielone"
+    "tsc 0; logic 213/213; citizen-upkeep-era-mult 681/0; attack-dir 32 OK; FC PASS-WITH-NOTES x2"
   ],
   "limits": [
-    "Nie zmierzono: Standardowy 1-10, czysty pomiar czasu generacji, siege-storm w Chromium; panel nadal wymaga przewiniecia (decyzja A)"
+    "NIE ZMIERZONO: reczny pomiar kierunku natarcia w Chromium; dlug bazowy citizen-resource-upkeep 2 czerwone; dlug Rust REPIN"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES RIVERS 43f11d042 + SIEGE-NARROW 1ea7f8bb7. RIVERS: pamiec srodka ladu w etapie Rzeki-uzupelnianie (generacja swiata); ziarno 22 Maly: BFS 4745 -> 1, ta sama suma kontrolna 9f0c2884; Maly 1-10 i Standardowy 22 bez zmiany ukladu (11/11). SIEGE: blok machin w panelu oblezenia zwarty (siatka 2 kolumny; 106/119/186 px dla 1/2/4 typow, wczesniej 112/166/274), widoczny w calosci po przewinieciu panelu, 1280x800 i 1366x768; decyzja wlasciciela A: zostawic. NIE ZMIERZONO: Standardowy 1-10, czysty pomiar czasu, siege-storm w Chromium."
+    "notes": "FC PASS-WITH-NOTES: CERAM-KAMIEN r2 7f9cd4fa5 / kod df5333720 (ceramika w utrzymaniu obywateli od epoki Kamienia, 1 na obywatela na ture; kara -2 Szczescia/-1% rozwoju bez ceramiki; zrzut Chromium panelu pokrycia surowcow); ATTACK-DIR 931b1c92d / kod 0721e8d80 (Kierunek natarcia, Formacja i Konnica w rozstawieniu tylko dla zaznaczonych jednostek; brak zaznaczenia = cala armia). Testy: citizen-upkeep-era-mult 681/0, attack-dir 32 OK, tsc 0, logic 213/213; citizen-resource-upkeep 122/2 (2 czerwone bazowe). NIE ZMIERZONO: pomiar kierunku natarcia w Chromium (reczna weryfikacja). Dlug Rust REPIN: citizen-resource-upkeep epoka 1."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-14T14:03:51",
+  "hubGeneratedAt": "2026-11-15T01:21:14",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
-      "sizeBytes": 14688203
+      "md5": "4f75c30b346583e4adee73db4372e533",
+      "sizeBytes": 14734037
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
-      "sizeBytes": 14688203
+      "md5": "4f75c30b346583e4adee73db4372e533",
+      "sizeBytes": 14734037
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
-      "sizeBytes": 14688203
+      "md5": "4f75c30b346583e4adee73db4372e533",
+      "sizeBytes": 14734037
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
-      "sizeBytes": 14688203
+      "md5": "4f75c30b346583e4adee73db4372e533",
+      "sizeBytes": 14734037
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
-      "sizeBytes": 14688203
+      "md5": "4f75c30b346583e4adee73db4372e533",
+      "sizeBytes": 14734037
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
-      "sizeBytes": 14688203
+      "md5": "4f75c30b346583e4adee73db4372e533",
+      "sizeBytes": 14734037
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
-      "sizeBytes": 14688203
+      "md5": "4f75c30b346583e4adee73db4372e533",
+      "sizeBytes": 14734037
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
-      "sizeBytes": 14688203
+      "md5": "4f75c30b346583e4adee73db4372e533",
+      "sizeBytes": 14734037
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
-      "sizeBytes": 14688203
+      "md5": "4f75c30b346583e4adee73db4372e533",
+      "sizeBytes": 14734037
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "ab171a4c72cff6d39c871bb4709eaee3",
-      "sizeBytes": 14688203
+      "md5": "4f75c30b346583e4adee73db4372e533",
+      "sizeBytes": 14734037
     }
   ],
-  "md5": "ab171a4c72cff6d39c871bb4709eaee3",
+  "md5": "4f75c30b346583e4adee73db4372e533",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

@@ -60,7 +60,7 @@ for (let e = 1; e <= 5; e++) {
   eq(M.converterThroughputForEra('huta', 50, e), 50, `huta era${e}: plaska`);
   eq(M.converterThroughputForEra('cegielnia', 50, e), 50, `cegielnia era${e}: cykle plaskie (BRICK)`);
   near(M.converterOutputMultiplierForEra('cegielnia', e), mult[e - 1], `cegielnia era${e}: mnoznik wyjscia 1/1,5/2/2,5/3 (BRICK)`);
-  near(M.converterThroughputForEra('garncarnia', 50, e), 50 * (1 + 0.1 * (e - 1)), `garncarnia era${e}: nadal +10% cykli`);
+  near(M.converterThroughputForEra('garncarnia', 50, e), 50, `garncarnia era${e}: funkcja bez skalowania (cykle z wierszy per era)`);
   const bronzeMap = M.converterThroughputsForEra((r, ownerEra) => {
     const key = M.converterThroughputEraParamKey(r, ownerEra);
     return key ? M.loadThroughput(econ, key, 'normal', r.throughputFallback) : 50;

@@ -110,7 +110,7 @@ async function main() {
     // Czerwony przed: fotel 1 dostaje wartości celowo różne od DEFAULT_*.
     await page.evaluate((ownerId) => {
       window.__hotSeatTestDebug.setOwnerSettingsForTest(ownerId, {
-        procentBudynki: 50,
+        procentBudynki: 60,
         procentPieniadz: 10,
         procentNauka: 60,
         procentLuksus: 30,
@@ -123,7 +123,7 @@ async function main() {
     fs.mkdirSync(EVIDENCE_DIR, { recursive: true });
     await page.screenshot({ path: path.join(EVIDENCE_DIR, 'hotseat-ustawienia-kopiowane-przed-czerwony.png'), fullPage: true });
 
-    check(before.work && before.work.procentBudynki === 50, `fotel 1 work=50 (got ${JSON.stringify(before.work)})`);
+    check(before.work && before.work.procentBudynki === 60, `fotel 1 work=60 (got ${JSON.stringify(before.work)})`);
     check(before.trade && before.trade.procentPieniadz === 10 && before.trade.procentNauka === 60,
       `fotel 1 trade=10/60 (got ${JSON.stringify(before.trade)})`);
     check(before.ration === 1, `fotel 1 ration=1 (got ${before.ration})`);
@@ -136,11 +136,11 @@ async function main() {
     const after = await page.evaluate((ownerId) => window.__hotSeatTestDebug.snapshotOwnerSettingsForTest(ownerId), seat2);
     await page.screenshot({ path: path.join(EVIDENCE_DIR, 'hotseat-ustawienia-kopiowane-po-zielony.png'), fullPage: true });
 
-    check(after.work && after.work.procentBudynki === 70,
-      `fotel 2 ma DEFAULT_PODZIAL_PRACY=70, nie 50 (got ${JSON.stringify(after.work)})`);
-    check(after.trade && after.trade.procentPieniadz === 60 && after.trade.procentNauka === 20 && after.trade.procentLuksus === 20,
-      `fotel 2 ma DEFAULT_PODZIAL_HANDLU=60/20/20, nie fotela 1 (got ${JSON.stringify(after.trade)})`);
-    check(after.ration === 4, `fotel 2 ma DEFAULT_POZIOM_RACJI=4, nie 1 (got ${after.ration})`);
+    check(after.work && after.work.procentBudynki === 50,
+      `fotel 2 ma DEFAULT_PODZIAL_PRACY=50, nie fotela 1 (got ${JSON.stringify(after.work)})`);
+    check(after.trade && after.trade.procentPieniadz === 30 && after.trade.procentNauka === 60 && after.trade.procentLuksus === 10,
+      `fotel 2 ma DEFAULT_PODZIAL_HANDLU=30/60/10 (Skarb/Nauka/Zamożność), nie fotela 1 (got ${JSON.stringify(after.trade)})`);
+    check(after.ration === 6, `fotel 2 ma DEFAULT_POZIOM_RACJI=6, nie 1 (got ${after.ration})`);
     check(after.treasury !== 9876, `fotel 2 nie dziedziczy skarbca fotela 1 (got ${after.treasury})`);
     check(after.hud.zloto !== 9876 && after.hud.nauka !== 321,
       `HUD fotela 2 nie czyta state'u fotela 1 (got zloto=${after.hud.zloto}, nauka=${after.hud.nauka})`);
@@ -151,7 +151,7 @@ async function main() {
     }), seat2);
     const seat2Changed = await page.evaluate((ownerId) => window.__hotSeatTestDebug.snapshotOwnerSettingsForTest(ownerId), seat2);
     const seat1Still = await page.evaluate((ownerId) => window.__hotSeatTestDebug.snapshotOwnerSettingsForTest(ownerId), seat1);
-    check(seat2Changed.work.procentBudynki === 81 && seat1Still.work.procentBudynki === 50,
+    check(seat2Changed.work.procentBudynki === 81 && seat1Still.work.procentBudynki === 60,
       'zapis fotela 2 nie nadpisuje podziału pracy fotela 1');
     check(seat2Changed.treasury === 2468 && seat1Still.treasury === 9876,
       'zapis fotela 2 nie nadpisuje skarbca fotela 1');

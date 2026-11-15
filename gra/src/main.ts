@@ -281,6 +281,7 @@ import {
   type CityBudowaProfil,
   migratePoziomRacjiOnLoad,
   freshOwnerDefaultPoziomRacji,
+  freshAiOwnerDefaultPoziomRacji,
   broadcastPoziomRacjiToOwnerCities,
   broadcastAutoWyzywienieToOwnerCities,
   resolveCityPoziomRacji,
@@ -770,6 +771,7 @@ import {
   type BattleSummaryWinner,
 } from './game/battle-summary';
 import type { PreBattleInfo, PreBattleUnit, PreBattleModifier } from './ui/preBattle';
+import { buildWeakenedNote, type WeakenedNote } from './ui/battle-weakened-note';
 import { showHud, updateHud as refreshD1bHudRaw, hideHud, markMinimapDirty, updateMinimapViewport } from './ui/hud';
 import { createScopeMemo, hudPureScope, scopeObjectId } from './game/frame-memo';
 import {
@@ -1166,7 +1168,7 @@ import {
   type SidePanelEventLink,
 } from './game/side-panel-event-link';
 import { isProductionBuildingEnabled, operationalBuiltIds, operationalBuiltByCity, setProductionBuildingEnabled, isToggleableProductionBuilding, buildEmpireProducersSnap } from './game/building-toggle';
-import { decideEndTurnGate, projectEmpireFoodAfterTick, NNS_WOLNE_TURY, type NnsEndTurnLevers, type NnsGateResult, type NnsProjection } from './game/no-negative-stocks';
+import { decideEndTurnGate, projectEmpireFoodAfterTick, type NnsEndTurnLevers, type NnsGateResult, type NnsProjection } from './game/no-negative-stocks';
 import { unitUpkeep, unitFoodPerTurn, loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, addResourceCosts, readBuildingResourceUpkeepRatio, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex, computeLostToNearerSiblingByCity } from './game/okolica';
@@ -1630,7 +1632,7 @@ import {
   registerAiPeaceRequest, isAiAiPeaceBalanceAllowed, aiAiPeaceRequiredPn, isForcedPeaceEligiblePair, runAiAiPeaceTick, requesterShare, isClearlyLosing,
   type AiPeaceRequest, type AiPeaceKind, type PeaceAsset,
 } from './game/diplomacy-ai-forced-peace';
-import { runWarWearinessTick, militaryWearinessWiring, warWearinessLevel, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
+import { runWarWearinessTick, militaryWearinessWiring, warWearinessLevel, lostCitiesForWeariness, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
 import { warWearinessPairView, peakForCurrentWar, warWearinessSideView, type WarWearinessPairView, type WarWearinessReference } from './game/war-weariness-view';
 import {
   isPeaceTreatyLocked,
@@ -6295,8 +6297,8 @@ async function boot(): Promise<void> {
           // P-AI-BADANIA-ZACOFANIE-Q1 (Runda 2, luka tury 1 -- Obrona Rundy 1, Zarzut 1,
           // PRZYJĘTE): dokładnie ten sam wzorzec co ownerDefaultPodzialPracy/
           // AI_FIXED_PROCENT_BUDYNKI wyżej w tym pliku. freshOwnerDefaultPodzialHandlu()
-          // zwraca DEFAULT_PODZIAL_HANDLU.procentNauka=20 (default GRACZA) -- bez tej
-          // gałęzi każdy nowy owner AI startował turę 1 z procentNauka=20, bo
+          // zwraca DEFAULT_PODZIAL_HANDLU.procentNauka=60 (default GRACZA) -- bez tej
+          // gałęzi każdy nowy owner AI startował turę 1 z procentNauka=60, bo
           // advanceCityEconomy czyta ten seed PRZED pierwszym wywołaniem
           // decideAIEconomySliders w tej samej turze. Seeduj AI (ownerId!==0, gracz zawsze
           // ma ownerId 0) od razu na AI_FIXED_PROCENT_NAUKA, żeby okno tury 1 nie istniało.
@@ -6376,7 +6378,7 @@ async function boot(): Promise<void> {
           );
         }
         if (!ownerDefaultPoziomRacji.has(ai.ownerId)) {
-          ownerDefaultPoziomRacji.set(ai.ownerId, freshOwnerDefaultPoziomRacji());
+          ownerDefaultPoziomRacji.set(ai.ownerId, freshAiOwnerDefaultPoziomRacji());
         }
       }
     }
@@ -6440,7 +6442,7 @@ async function boot(): Promise<void> {
         // dwóch pozostałych seedów (spawn miasta-państwa / test wymuszonej wojny) --
         // owner mógł tu pojawić się po raz pierwszy bez przejścia przez żaden z nich.
         // Bez tej gałęzi resolveCityPodzialHandlu (main.ts niżej) dostawał `undefined`
-        // z mapy i padał na DEFAULT_PODZIAL_HANDLU.procentNauka=20 (default GRACZA) dla
+        // z mapy i padał na DEFAULT_PODZIAL_HANDLU.procentNauka=60 (default GRACZA) dla
         // tego ownera AI, dokładnie ta sama klasa błędu co ownerDefaultPodzialPracy wyżej.
         ownerDefaultPodzialHandlu.set(
           c.ownerId,
@@ -6450,7 +6452,8 @@ async function boot(): Promise<void> {
         );
       }
       if (!ownerDefaultPoziomRacji.has(c.ownerId)) {
-        ownerDefaultPoziomRacji.set(c.ownerId, freshOwnerDefaultPoziomRacji());
+        // Właściciel nieobecny w mapie = nie-gracz (gracze są zasiani wcześniej z humanOwnerIds).
+        ownerDefaultPoziomRacji.set(c.ownerId, freshAiOwnerDefaultPoziomRacji());
       }
       c.okolicaFocusOverride = false;
       c.okolicaFocus = ownerDefaultOkolicaFocus.get(c.ownerId)!;
@@ -7520,6 +7523,7 @@ async function boot(): Promise<void> {
 
     function nnsAiPreTickBalance(ctx: NnsPreCtx): void {
       aiNnsHoldOwners.clear();
+      aiNnsUncoveredOwners.clear();
       if (turn < NNS_AI_BALANCE_TURN_MIN) return;
       const tTurn0 = performance.now();
       if (nnsUnitUpkeepTblCache === null) {
@@ -7660,6 +7664,7 @@ async function boot(): Promise<void> {
               if (cur.skPo >= 0 && cur.spPo >= 0) break;
             }
             pokryte = cur.skPo >= 0 && cur.spPo >= 0;
+            if (cur.skPo < 0) aiNnsUncoveredOwners.add(oid);
             if (!pokryte) {
               wyjatek = 'brak dostępnych dźwigni: pozostało skarbiec=' + Math.round(cur.skPo) + ' spichlerz=' + Math.round(cur.spPo)
                 + ' (obecny skarbiec=' + Math.round(first.sk0) + ' spichlerz=' + Math.round(first.sp0)
@@ -10744,6 +10749,8 @@ async function boot(): Promise<void> {
     const aiSkarbiecByOwner = new Map<number, number>();
     // C2/C3 (R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1): AI wstrzymane w tej turze (wypełniane w nnsAiPreTickBalance).
     const aiNnsHoldOwners = new Set<number>();
+    // R-WEB-NNS-AI-TURN2-NEGATIVE-TREASURY-Q1: AI, których skarbiec po równoważeniu nadal < 0 (dźwignie wyczerpane).
+    const aiNnsUncoveredOwners = new Set<number>();
     /** R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1: przychód BRUTTO złota AI z ostatniego ticku
      *  (aiEcon.pieniadz z bloku bankowania AI) -- baza prognozy dochodu netto w
      *  aiPurchaseReserveInputs. Brak wpisu (tura 1, po wczytaniu zapisu) = reguła rezerwy
@@ -11848,7 +11855,7 @@ async function boot(): Promise<void> {
             // P-AI-BADANIA-ZACOFANIE-Q1 (Runda 2): wzorzec identyczny jak
             // initOwnerDefaultPodzialHandlu wyżej -- nowo powstały owner AI w trakcie gry
             // (nowe miasto-państwo/cywilizacja spawnowana tutaj) nie może dziedziczyć
-            // domyślnego procentNauka=20 gracza.
+            // domyślnego procentNauka=60 gracza.
             ownerDefaultPodzialHandlu.set(
               sc.ownerId,
               sc.ownerId === 0
@@ -12124,9 +12131,13 @@ async function boot(): Promise<void> {
         { id: proposerId, sila: prop.sila, armiaPkt: prop.armiaPkt },
         PEACE_STRENGTH_GAP_PROC,
       );
+      // R-WEB-DIPLO-WEARINESS-PW-FOLLOWUP-C615-BOTH-CITIES-Q1: licznik zmęczenia = miasta utracone przez OBIE strony
+      // (ta sama funkcja co tick AI↔AI, war-weariness.ts lostCitiesForWeariness). Pole `lostCitiesResponder` — nazwa
+      // historyczna; wartość = suma, nie tylko respondent.
+      const lostProposerInWar = diploWarStateFor(proposerId, responderId).lostCities;
       return {
         turnsAtWar: s.turnsAtWar,
-        lostCitiesResponder: s.lostCities,
+        lostCitiesResponder: lostCitiesForWeariness(s.lostCities, lostProposerInWar),
         turnsSinceCityChange: s.turnsSinceCityChange,
         responderRw,
         responderPozycjaMilitarna,
@@ -21002,6 +21013,18 @@ async function boot(): Promise<void> {
         // R-WEB-PEACE-CITY-CESSION-Q1 r3: akcja propozycji — bramka pozycji 'miasto' (pokój/wasal).
         actionId: converted.actionId,
       };
+      // R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 (r3, O1 PARYTET WYCENY): wymiana cykliczna wycenia
+      // PN dokladnie tymi opcjami co wybor pary (pickAiPlayerCyclicBarter, pnOpts): mnoznik
+      // tur (per_turn) i tempoGry. Bez tego wejscie na stol liczy PN 10x mniej niz wybor pary
+      // (pomiar r3: enqGive=10 vs pickGive=100), trimming i bramki uczciwosci dzialaja na innej
+      // skali i oferta odpada. Inne typy ofert: opcje bez zmian (pnCyclicOpts === pnBalanceOpts).
+      const pnCyclicOpts = workingCmd.type === 'zaproponuj_wymiane_cykliczna'
+        ? {
+          ...pnBalanceOpts,
+          tempoGry: player.tempoGry ?? 'standardowa',
+          ...proposalPnTurnsMultiplier(clampedPayload),
+        }
+        : pnBalanceOpts;
       // R-DYPLOMACJA-BILANS-UNIFIKACJA-Q1 (GOAL b, recon jawny w raporcie Operatora):
       // generator dostał opcjonalny 5. param `fairness` (multiplier/treatyBasePn) — patrz
       // diplomacy-ai-offer-balance.ts. CELOWO NIE przekazany tutaj: w tym jedynym realnym
@@ -21016,12 +21039,19 @@ async function boot(): Promise<void> {
       // składników jest `generateCounterOffer` (diplomacy-proposals.ts) — kontroferta AI
       // na propozycję GRACZA, gdzie proposerOwnerId=gracz/responderOwnerId=AI odwraca oba
       // warunki na "aktywne"; poza allowlistą tego main.ts (WYŁĄCZNIE ten jeden call site).
-      const balancedPayload = trimProposalForZeroBalance(
-        clampedPayload,
-        relationTotal(relForBalance),
-        difficultyForBalance,
-        pnBalanceOpts,
-      );
+      // R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 (r3, O1): wymiana cykliczna jest juz wyrownana przez
+      // wybor pary (pickAiPlayerCyclicBarter: te same opcje PN, bramka uczciwosci, podglad gracza).
+      // Trim po wyborze zmienial wybrany payload (pomiar r3: receive 10 -> 0) i oferta zawsze
+      // odpadala w bramce givePn > receivePn. Dla wymiany cyklicznej trim pomijamy; gracz nadal
+      // ma podglad „Przyjmij" i filtr bilansu PW (ponizej).
+      const balancedPayload = workingCmd.type === 'zaproponuj_wymiane_cykliczna'
+        ? clampedPayload
+        : trimProposalForZeroBalance(
+          clampedPayload,
+          relationTotal(relForBalance),
+          difficultyForBalance,
+          pnBalanceOpts,
+        );
       if (
         !peaceBareAllowed
         && !balancedPayload.giveItems?.length
@@ -21038,7 +21068,7 @@ async function boot(): Promise<void> {
       if (
         sensibleBalanceFilterApplies(isDiploSensibleDealsEnabled(), workingCmd.type)
         && !isPlayerBalanceAcceptable(
-          aiProposalPlayerBenefitSurplus(balancedPayload, relationTotal(relForBalance), pnBalanceOpts),
+          aiProposalPlayerBenefitSurplus(balancedPayload, relationTotal(relForBalance), pnCyclicOpts),
         )
       ) {
         console.log(`[Dyplomacja] AI${ownerId} ${workingCmd.type}: odrzucone (bilans PW gracza < 0)`);
@@ -21052,7 +21082,7 @@ async function boot(): Promise<void> {
         return;
       }
       if (workingCmd.type === 'zaproponuj_wymiane_cykliczna') {
-        const { givePn, receivePn } = resolveProposalPn(balancedPayload, pnBalanceOpts);
+        const { givePn, receivePn } = resolveProposalPn(balancedPayload, pnCyclicOpts);
         const exactEvalCtx = buildProposalEvalContext(ownerId, ME());
         if (handelFairnessGate(givePn, receivePn, AI_PROPOSER_FAIRNESS_REL_TOTAL, 1)) return;
         // R-WEB-AI-TRADE-WIRING-E2E-Q1 r3 (A1): gorny limit — AI nie oddaje wiecej PW niz dostaje
@@ -21731,7 +21761,7 @@ async function boot(): Promise<void> {
     function previewNegotiationEntry(
       entry: PendingNegotiation,
       siblingOverride?: { givePn: number; receivePn: number },
-    ): { accepted: boolean; reason?: string; pwBalance?: number } {
+    ): { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: { turnsAtWar: number; lostCities: number; level: number } } {
       const sibling = siblingOverride ?? livePackageSiblingFor(entry);
       // R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1: `authorOwnerId` DYNAMICZNY (entry, aktualizowany
       // przez applyCounterOffer po każdej kontrofercie) dopisany do ctx — jedyny konsument to
@@ -21771,7 +21801,11 @@ async function boot(): Promise<void> {
       // dla incoming, ten brak filtra stałby się realnym problemem, nie tylko nieścisłym
       // komentarzem. Zostawione bez zmiany logiki (poza zakresem N6 — "nieszkodliwe dziś"),
       // ale komentarz już nie obiecuje gwarancji, której kod nie daje.
-      return { accepted: result.accepted, reason: result.reason, pwBalance: result.pwBalance };
+      // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: Z (zmęczenie wojną) jako pozycja PW w tabeli stołu.
+      return {
+        accepted: result.accepted, reason: result.reason, pwBalance: result.pwBalance, wearinessPw: result.wearinessPw, wearinessSide: result.wearinessSide,
+        wearinessInfo: result.wearinessInfo,
+      };
     }
 
     /** C-DYP-Q1=A: wiersze UI (diplomacyAudience.ts kolumna „Oczekujące propozycje") dla tej pary. */
@@ -22782,6 +22816,18 @@ async function boot(): Promise<void> {
     // R-WEB-ECON-NO-NEGATIVE-STOCKS-END-TURN-GATE-LEVERS-Q1: dźwignie podatku i racji gracza (0 = niedostępne).
     let _nnsPodatekZysk = 0;
     let _nnsRacjeZysk = 0;
+    // R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1 (Dodatek 2, martwy punkt Spichlerza): zmiana
+    // prognozy Spichlerza po reakcji automatu (auto-korekta racji miast z Auto-Żywieniem, ten sam
+    // autoBalanceRationsToSolvency co tick końca tury) względem `_nnsHumanForecast.spichlerzPo`.
+    // undefined = automat nie zmienia prognozy (brak Auto-Żywienia albo brak korekty).
+    let _nnsAutoSpichlerzDelta: number | undefined = undefined;
+    // R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1: ile punktów % udziału podatku gracz może
+    // dodać (pełny podział na podatek minus obecny); 0 = brak danych. Zasila propozycję podatku do zera.
+    let _nnsPodatekPunkty = 0;
+    // r3 (C): przyrost skarbca PO TURZE (delta względem prognozy bazowej) dla kolejnych kroków suwaka podatku
+    // (+10, +20, ... pkt % kosztem Nauki), liczony TĄ SAMĄ projekcją (previewCityEconomy) co prognoza bramki.
+    // Zasila propozycjaPodatkuKrokami przez `prognozaPoPodatku`. Pusta tablica = brak danych / brak potrzeby.
+    let _nnsTaxStepDeltas: Array<{ pkt: number; delta: number }> = [];
     function refreshLiveEmpireRates(): void {
       if (!empireEconDirty) return;   // D10: przelicz tylko po zmianie (trigger), nie co odświeżenie
       empireEconDirty = false;
@@ -22933,7 +22979,124 @@ async function boot(): Promise<void> {
       // z przełożonym podziałem / racjami, bez trwałej zmiany stanu (podział i racje przywracane w finally).
       _nnsPodatekZysk = 0;
       _nnsRacjeZysk = 0;
-      if (_nnsHumanForecast !== null && turn > NNS_WOLNE_TURY
+      _nnsPodatekPunkty = 0;
+      _nnsTaxStepDeltas = [];
+      // R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1 (Dodatek 2): prognoza PO REAKCJI automatu
+      // na koniec tury. Tick (blok „SPICH-AUTO-Q1” przy rozliczeniu Spichlerza) najpierw obniża racje miast
+      // z Auto-Żywieniem (autoBalanceRationsToSolvency), dopiero potem liczy advanceEmpireFood. Tu ta sama
+      // kolejność na świeżym podglądzie ekonomii; racje miast są przywracane w finally (stan nietknięty).
+      _nnsAutoSpichlerzDelta = undefined;
+      // r3 (D5 pkt 2 i 4): projekcja odtwarza PEŁNĄ ścieżkę ticku racji — autoBalanceRationsToSolvency (tylko miasta z
+      // Auto-Żywieniem), autoRaiseRationsForGrowth (parytet z tickiem: gracz, requireProductionSurplus) i clamp Q3
+      // (maxSafePoziomRacjiForCity dla WSZYSTKICH miast gracza, także z Auto wyłączonym) — i zawsze przywraca stan miast.
+      if (_nnsHumanForecast !== null) {
+        const savedAutoRacje = playerCities.map(c => ({ c, poziom: c.poziomRacji, procent: c.procentRozwoj }));
+        try {
+          const previewDomyslny = () => previewCityEconomy(
+            playerCities, map, data, _menuDifficulty, cityBuilt, player.era, player.zbadane, ownerCivMap,
+            orderMultMap, empireEpochForOwner, unlockedTechSetForOwner, tradeRouteBuildingBonusByCity,
+            routeIncomePreview.totalByCity, buildAllTerritoryNodes(), undefined,
+            buildWonderCityYieldsByOwnerMap([0]), makeOwnerZlotoAccessResolver(),
+            makeOwnerRuntimeActiveLabelsResolver(), makeOwnerEmpireStockResolver(),
+            ownerDefaultPodzialHandlu, ownerDefaultPodzialPracy, maritimeTradeIncomeByCityPreview, manualWorkTaxPreviewByCity,
+          );
+          const econPrzed = previewDomyslny();
+          const spichlerzByCityProj = new Map<string, import('./game/building-resource-gate').SpichlerzCityBonusState>();
+          for (const c of playerCities) {
+            const tick = econPrzed.perCity.find(t => t.cityId === c.id);
+            spichlerzByCityProj.set(c.id, {
+              ceramikaActive: tick?.spichlerzCeramika ?? false,
+              solActive: tick?.spichlerzSol ?? false,
+              maSpichlerzPop: tick?.maSpichlerz ?? false,
+              maSpichlerzIIPop: tick?.maSpichlerzII ?? false,
+            });
+          }
+          // Limit ludności per miasto — ta sama formuła co popCapByCityId w ticku (rozliczenie Spichlerza).
+          const econParamsProj = buildEconParams(data, _menuDifficulty);
+          const popCapProj = new Map<string, number>();
+          for (const c of playerCities) {
+            const builtIds = cityBuilt.get(c.id) ?? [];
+            popCapProj.set(c.id, cityPopulationCap(
+              builtIds.includes('akwedukt'), cityHasSpichlerzBuilding(builtIds), econParamsProj,
+              resolvePopulationCapMatrixDelta(ownerCivMap.get(ME()) ?? null),
+              builtIds.includes('spichlerz_ii'),
+            ));
+          }
+          const nnsEfParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
+          const nnsUpkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
+          const kosztArmiiProj = militaryFoodConsumptionWithSpichlerz(
+            playerEconUnitsForUpkeep, ME(), nnsUpkeepParams, unitFoodTbl,
+          );
+          const autoRes = autoBalanceRationsToSolvency({
+            ownerId: ME(),
+            cities: playerCities,
+            econ: econPrzed as unknown as Parameters<typeof autoBalanceRationsToSolvency>[0]['econ'],
+            zapasyPrzed: empireFoodStates.get(ME())?.zapasyPanstwa ?? 0,
+            rationParams: nnsEfParams.rationParams,
+            spichlerzByCity: spichlerzByCityProj,
+            onlyAutoManaged: true,
+            requireFlowBalance: true,
+            kosztArmii: kosztArmiiProj,
+            popCapByCityId: popCapProj,
+          });
+          // r3: raise (gracz) + Q3 clamp — ta sama kolejność co w triggerPlayerEndTurn.
+          const raiseRes = autoRaiseRationsForGrowth({
+            ownerId: ME(),
+            cities: playerCities,
+            econ: econPrzed as unknown as Parameters<typeof autoRaiseRationsForGrowth>[0]['econ'],
+            zapasyPrzed: empireFoodStates.get(ME())?.zapasyPanstwa ?? 0,
+            rationParams: nnsEfParams.rationParams,
+            spichlerzByCity: spichlerzByCityProj,
+            requireProductionSurplus: true,
+            onlyAutoManaged: true,
+            kosztArmii: kosztArmiiProj,
+            popCapByCityId: popCapProj,
+          });
+          if (autoRes.adjusted || raiseRes.adjusted) {
+            recomputeCityFoodBalancesInEcon(
+              econPrzed.perCity as unknown as Parameters<typeof recomputeCityFoodBalancesInEcon>[0], playerCities,
+              nnsEfParams.rationParams, spichlerzByCityProj,
+            );
+            refreshEconomyFoodTotals(econPrzed as unknown as Parameters<typeof refreshEconomyFoodTotals>[0]);
+          }
+          let clampedProj = false;
+          for (const c of playerCities) {
+            const maxSafeProj = maxSafePoziomRacjiForCity({
+              cityId: c.id, ownerId: ME(), cities: playerCities,
+              econ: econPrzed as unknown as Parameters<typeof maxSafePoziomRacjiForCity>[0]['econ'],
+              zapasyPrzed: empireFoodStates.get(ME())?.zapasyPanstwa ?? 0,
+              rationParams: nnsEfParams.rationParams,
+              spichlerzByCity: spichlerzByCityProj,
+              popCapByCityId: popCapProj,
+            });
+            if (getCityRationLevel(c) > maxSafeProj) { c.poziomRacji = maxSafeProj; clampedProj = true; }
+          }
+          if (autoRes.adjusted || raiseRes.adjusted || clampedProj) {
+            // Ponowny podgląd ekonomii PO korekcie racji (racje miast już zmienione przez automat / clamp).
+            const econPo = previewDomyslny();
+            const fAuto = projectEmpireFoodAfterTick({
+              ownerId: ME(),
+              states: empireFoodStates,
+              econ: econPo as unknown as Parameters<typeof projectEmpireFoodAfterTick>[0]['econ'],
+              units: playerEconUnitsForUpkeep,
+              upkeep: nnsUpkeepParams,
+              params: nnsEfParams,
+              foodTable: unitFoodTbl,
+              builtByCity: cityBuilt,
+              resolveOwnerEra: empireEpochForOwner,
+            });
+            _nnsAutoSpichlerzDelta = fAuto.spichlerzPo - _nnsHumanForecast.spichlerzPo;
+          }
+        } catch (errAuto) {
+          // Brak korekty automatu w prognozie = bramka liczy prognozę bez automatu (bezpieczny kierunek).
+          _nnsAutoSpichlerzDelta = undefined;
+          console.error('[NNS] projekcja reakcji automatu (Auto-Żywienie) nie powiodła się — bramka bez korekty automatu:', errAuto);
+        } finally {
+          for (const sv of savedAutoRacje) { sv.c.poziomRacji = sv.poziom; sv.c.procentRozwoj = sv.procent; }
+        }
+      }
+      // R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1: dźwignie liczone od tury 1 (bez wyjątku 1–10).
+      if (_nnsHumanForecast !== null
         && (_nnsHumanForecast.skarbiecPo < 0 || _nnsHumanForecast.spichlerzPo < 0)) {
         try {
           const previewWithSplit = (splitMap: typeof ownerDefaultPodzialHandlu) => previewCityEconomy(
@@ -22951,6 +23114,21 @@ async function boot(): Promise<void> {
           if (altSplit.procentNauka !== meSplit.procentNauka || altSplit.procentPieniadz !== meSplit.procentPieniadz) {
             const pAlt = previewWithSplit(new Map(ownerDefaultPodzialHandlu).set(ME(), altSplit));
             _nnsPodatekZysk = Math.max(0, sumEconomyForPlayerCities(pAlt, cities).pieniadz - playerEcon.pieniadz);
+            _nnsPodatekPunkty = Math.max(0, altSplit.procentPieniadz - meSplit.procentPieniadz);
+            // r3 (C): kroki suwaka po 10 pkt % (ta sama projekcja); stop na pierwszym kroku dającym prognozę ≥ 0.
+            if (_nnsHumanForecast.skarbiecPo < 0) {
+              for (let pkt = 10; pkt <= _nnsPodatekPunkty + 9; pkt += 10) {
+                const krok = Math.min(pkt, _nnsPodatekPunkty);
+                const stepSplit = normalizePodzialHandlu({
+                  procentNauka: meSplit.procentNauka - krok, procentLuksus: meSplit.procentLuksus,
+                  procentPieniadz: meSplit.procentPieniadz + krok,
+                });
+                const pStep = previewWithSplit(new Map(ownerDefaultPodzialHandlu).set(ME(), stepSplit));
+                const dStep = sumEconomyForPlayerCities(pStep, cities).pieniadz - playerEcon.pieniadz;
+                _nnsTaxStepDeltas.push({ pkt: krok, delta: dStep });
+                if (_nnsHumanForecast.skarbiecPo + dStep >= 0 || krok >= _nnsPodatekPunkty) break;
+              }
+            }
           }
           if (_nnsHumanForecast.spichlerzPo < 0 && playerCities.some(c => c.poziomRacji !== 0 || c.procentRozwoj !== 0)) {
             const savedRacje = playerCities.map(c => ({ c, poziom: c.poziomRacji, procent: c.procentRozwoj }));
@@ -22977,6 +23155,8 @@ async function boot(): Promise<void> {
           // Brak dźwigni = bramka liczy tylko jednostki (bezpieczny kierunek: brak zakleszczenia).
           _nnsPodatekZysk = 0;
           _nnsRacjeZysk = 0;
+          _nnsPodatekPunkty = 0;
+          _nnsTaxStepDeltas = [];
           console.error('[NNS] dźwignie podatku/racji gracza nie powiodły się — bramka bez tych dźwigni:', errLev);
         }
       }
@@ -24256,6 +24436,14 @@ async function boot(): Promise<void> {
       };
     }
 
+    /** R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 (r3, O1): para przechodzi wejście na stół tylko gdy clamp do realnych zasobów nie zmienia koszyka. */
+    function payloadKeepsRealResourcesForPick(ownerId: number, payload: import('./game/diplomacy-proposals').ProposalPayload): boolean {
+      const clamped = clampAiProposalPayloadToRealResources(ownerId, payload);
+      if (!clamped) return false;
+      return JSON.stringify([clamped.giveItems ?? [], clamped.receiveItems ?? []])
+        === JSON.stringify([payload.giveItems ?? [], payload.receiveItems ?? []]);
+    }
+
     function pickAiPlayerCyclicBarter(ownerId: number): ReturnType<typeof selectAiTradeBarter> {
       if (!ownerHasTradeTech(ownerId) || !ownerHasTradeTech(ME())) return null;
       const turns = AI_RESOURCE_TRADE_DEFAULT_TURNS;
@@ -24314,7 +24502,12 @@ async function boot(): Promise<void> {
             difficulty: _menuDifficulty,
             proposerOwnerId: ownerId,
             tempoGry: player.tempoGry ?? 'standardowa',
-          })?.accepted ?? true),
+          })?.accepted ?? true)
+          // R-WEB-AI-TRADE-OFFER-FREQUENCY-UP-Q1 (r3, O1 parytet): wejscie na stol clampuje koszyk do
+          // zasobow realnych na caly czas wymiany (clampAiProposalPayloadToRealResources, turnsMult).
+          // Wybor pary sprawdza tylko podazny nadwyzke na tura; pomiar r3: para wybrana, po clampie
+          // receive 10 -> 0 i oferta odpadala. Wybieramy wiec wylacznie pary, ktore clamp przechodzi bez zmian.
+          && payloadKeepsRealResourcesForPick(ownerId, payload),
       });
     }
 
@@ -31747,6 +31940,58 @@ async function boot(): Promise<void> {
         unitCount: (oid: number): number => units.filter(u => u.ownerId === oid).length,
         /** Dosypuje złota graczowi (runner nie gra — bramka „Zakończ turę” gracza nie może zatrzymać pomiaru AI). */
         grantPlayerGold: (n: number): void => { const ps = playerStateByHuman.get(ME()); if (ps) ps.skarbiec += n; },
+        // R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1 (r3): hooki pomiarowe bramki gracza (TYLKO ?civTest=1).
+        // Surowy odczyt + ustawienie STANU wyjściowego scenariusza (saldo, podział podatków, racje); logikę bramki liczy gra.
+        gateInfo: () => {
+          const g = nnsGateForPlayer();
+          const f = _nnsHumanForecast;
+          return {
+            gate: g,
+            canEnd: canPlayerInitiateEndTurn(),
+            turn,
+            forecast: f ? { ...f } : null,
+            treasury: playerStateByHuman.get(ME())?.skarbiec ?? 0,
+            granary: empireFoodStates.get(ME())?.zapasyPanstwa ?? 0,
+            podatekPunkty: _nnsPodatekPunkty,
+            podatekZysk: _nnsPodatekZysk,
+            racjeZysk: _nnsRacjeZysk,
+            autoSpichlerzDelta: _nnsAutoSpichlerzDelta ?? null,
+            taxSteps: _nnsTaxStepDeltas.slice(),
+          };
+        },
+        setPlayerTreasury: (v: number): void => { const ps = playerStateByHuman.get(ME()); if (ps) ps.skarbiec = v; markCityStateDirty(); updateHud(); },
+        setPlayerGranary: (v: number): void => { const st = empireFoodStates.get(ME()); if (st) st.zapasyPanstwa = v; markCityStateDirty(); updateHud(); },
+        getTaxSplit: () => ({ ...(ownerDefaultPodzialHandlu.get(ME()) ?? DEFAULT_PODZIAL_HANDLU) }),
+        setTaxSplit: (p: number, n: number, l: number): { procentPieniadz: number; procentNauka: number; procentLuksus: number } => {
+          const s = normalizePodzialHandlu({ procentPieniadz: p, procentNauka: n, procentLuksus: l });
+          ownerDefaultPodzialHandlu.set(ME(), s);
+          markCityStateDirty();
+          updateHud();
+          return s;
+        },
+        setAutoWyz: (on: boolean): number => {
+          let k = 0;
+          for (const c of cities) if (isMe(c.ownerId)) { c.autoWyzywienie = on; k++; }
+          markCityStateDirty();
+          updateHud();
+          return k;
+        },
+        setRationAll: (level: number): number => {
+          let k = 0;
+          for (const c of cities) if (isMe(c.ownerId)) { c.poziomRacji = level; k++; }
+          markCityStateDirty();
+          updateHud();
+          return k;
+        },
+        cityRations: () => cities.filter(c => isMe(c.ownerId)).map(c => ({ id: c.id, poziomRacji: c.poziomRacji ?? null, auto: c.autoWyzywienie === true })),
+        /** Stan miast gracza (racje) i podziału — do testu braku efektów ubocznych projekcji. */
+        gateStateFingerprint: (): string => JSON.stringify({
+          r: cities.filter(c => isMe(c.ownerId)).map(c => [c.id, c.poziomRacji ?? null, c.procentRozwoj ?? null]),
+          s: ownerDefaultPodzialHandlu.get(ME()) ?? null,
+          t: playerStateByHuman.get(ME())?.skarbiec ?? 0,
+          g: empireFoodStates.get(ME())?.zapasyPanstwa ?? 0,
+        }),
+        forceGateRecompute: (): void => { markCityStateDirty(); updateHud(); },
       };
     }
 
@@ -34813,6 +35058,26 @@ async function boot(): Promise<void> {
       return leaderNameFromPool(civ, idx, era);
     }
 
+    /**
+     * R-WEB-BATTLE-WEAKENED-HUNGER-DEFICIT-WARNING-Q1: ostrzeżenie w oknie przed bitwą o karze
+     * głodu wojska / deficytu Złota strony (TYLKO WYŚWIETLANIE). Flagi te same co w
+     * runtimeToBattleUnit (isArmyHungry/isGoldDeficit && !cywil); mnożniki z econ-params --
+     * te same wartości, które dostaje silnik (buildEmpireFoodParams / buildGoldDeficitParams).
+     */
+    function preBattleWeakenedForRoster(roster: RuntimeUnit[]): WeakenedNote | undefined {
+      const ownerId = roster[0]?.ownerId ?? 0;
+      const hasFighters = roster.some(u => !isCivilianUnit(u));
+      const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
+      const gdParams = buildGoldDeficitParams(data.econParams, _menuDifficulty);
+      return buildWeakenedNote({
+        hungry: hasFighters && isArmyHungry(ownerId),
+        goldDeficit: hasFighters && isGoldDeficit(ownerId),
+        glodWojskaMult: efParams.glodWojskaStatMult,
+        zlotoDeficytMult: gdParams.zlotoDeficytStatMult,
+        barbarian: isBarbarian(ownerId),
+      });
+    }
+
     function preBattleSideFromRoster(roster: RuntimeUnit[], title: string, civLabel: string): PreBattleInfo['atakujacy'] {
       const ownerId = roster[0]?.ownerId ?? 0;
       return {
@@ -34828,6 +35093,7 @@ async function boot(): Promise<void> {
         // dostawal portret/ikone Grecji zamiast wlasnego sygnetu. Flaga isBarbarian ma
         // pierwszenstwo nad civId w renderze (preBattle.ts / battleScene.ts).
         isBarbarian: isBarbarian(ownerId),
+        oslabienie: preBattleWeakenedForRoster(roster),
         units: roster.map(preBattleUnitFromRuntime),
       };
     }
@@ -38091,6 +38357,7 @@ async function boot(): Promise<void> {
       eraForOwnerId: empireEpochForOwner,
       civIdForOwner: civTypeForOwner,
       isCityStateForOwner: (ownerId: number) => isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
+      oslabienieForRoster: preBattleWeakenedForRoster,
       lookupUnitDef,
       runtimeToBattleUnit,
       fortifyScaledDefFor: combatPowerScaledDefFor,
@@ -39568,7 +39835,7 @@ async function boot(): Promise<void> {
     function nnsGateForPlayer(): NnsGateResult {
       refreshLiveEmpireRates(); // dirty-gated: przelicza tylko po zmianie stanu ekonomii
       const f = _nnsHumanForecast;
-      if (!f) return { blokada: false, komunikat: '', dzwignie: [] };
+      if (!f) return { blokada: false, komunikat: '', dzwignie: [], zasob: null, prognoza: null, propozycjaPodatku: null, automatPoprawil: false, niewystarczajace: false };
       // Zarzut 4 (Evaluator): obecne salda czytane NA ŻYWO (cache dirty-gated mógłby mieć stare
       // saldo po grantGold/transferze złota bez markCityStateDirty). Z cache zostaje tylko DELTA
       // prognozy (netto tury), która zależy wyłącznie od ekonomii.
@@ -39581,7 +39848,25 @@ async function boot(): Promise<void> {
         spichlerzObecny: spLive,
         spichlerzPo: spLive + (f.spichlerzPo - f.spichlerzObecny),
       };
-      const levers: NnsEndTurnLevers = { podatekSkarbiec: _nnsPodatekZysk, suwakZywnosc: _nnsRacjeZysk };
+      const levers: NnsEndTurnLevers = {
+        podatekSkarbiec: _nnsPodatekZysk,
+        suwakZywnosc: _nnsRacjeZysk,
+        podatekPunkty: _nnsPodatekPunkty,
+        // r3 (C): propozycja podatku krokami 10% z projekcji (skarbiec po turze = żywy skarbiec + delta prognozy + delta kroku).
+        ...(_nnsTaxStepDeltas.length > 0
+          ? {
+            prognozaPoPodatku: (pkt: number): number => {
+              let d = _nnsTaxStepDeltas[_nnsTaxStepDeltas.length - 1]!;
+              for (const st of _nnsTaxStepDeltas) { if (st.pkt >= pkt) { d = st; break; } }
+              return live.skarbiecPo + d.delta;
+            },
+          }
+          : {}),
+        // Dodatek 2: reakcja automatu (Auto-Żywienie) liczona na żywym stanie spichlerza, tak jak `live`.
+        ...(_nnsAutoSpichlerzDelta !== undefined
+          ? { automat: { spichlerzPo: live.spichlerzPo + _nnsAutoSpichlerzDelta } }
+          : {}),
+      };
       return decideEndTurnGate(live, _nnsZyskSkarbiec, _nnsZyskSpichlerz, levers);
     }
 
@@ -40635,6 +40920,10 @@ async function boot(): Promise<void> {
               // (nnsAiPreTickBalance, wywołane przed advanceCityEconomy). Tu tylko rejestr pomiarowy:
               // skarbiec po bankowaniu i surowy spichlerz (przed klamrą do 0) tej tury.
               nnsRecordPostBank(oid, aiSkarb);
+              // R-WEB-NNS-AI-TURN2-NEGATIVE-TREASURY-Q1: dług AI, którego nie da się pokryć dźwigniami (np. 1 miasto,
+              // utrzymanie > dochód przy podatku 100% i bez jednostek poza obrońcą), nie narasta z tury na turę:
+              // skarbiec AI zamknięty w 0 (tylko owner z `aiNnsUncoveredOwners`; reszta bankowania bez zmian).
+              if (aiNnsUncoveredOwners.has(oid) && aiSkarb < 0) aiSkarb = 0;
               aiSkarbiecByOwner.set(oid, aiSkarb);
 
               // Pula Nauki AI — symetryczna z graczem (totalNauka z ekonomii miast) + bonus trudności.

@@ -67,8 +67,25 @@ export const WYZYWIENIE_GROWTH_PCT: Readonly<Record<number, number>> = {
   6: 7,
 };
 
-/** Domyślne Wyżywienie = 4 (≈ dawna racja 2 przy koszcie 4 żywności). */
-export const DEFAULT_POZIOM_RACJI: PoziomRacji = 4;
+/**
+ * Domyślne Wyżywienie NOWEJ GRY dla gracza = 6 (decyzja właściciela 2026-11-14:
+ * „Nowe miasta (i te bez własnego Indywidualne) dziedziczą ten poziom Racji").
+ * Jedno źródło prawdy: suwak „Domyślne wyżywienie” (empireDetailPanel), nowe miasta
+ * gracza (seedCityOwnerDefaults) i wartość startowa gracza czytają tę stałą.
+ */
+export const DEFAULT_POZIOM_RACJI: PoziomRacji = 6;
+/** Wyżywienie startowe AI (dotychczasowe 4) — rozdzielone od gracza, AI bez zmian. */
+export const DEFAULT_POZIOM_RACJI_AI: PoziomRacji = 4;
+/** Wyżywienie przypisywane przy migracji STARYCH zapisów bez pola (dotychczasowe 4). */
+export const DEFAULT_POZIOM_RACJI_LEGACY: PoziomRacji = 4;
+
+/**
+ * Startowe Wyżywienie miasta zakładanego przez właściciela, zanim `seedCityOwnerDefaults`
+ * (main.ts) nadpisze je globalnym ustawieniem właściciela. Właściciel 0 = gracz.
+ */
+export function startowyPoziomRacjiDlaWlasciciela(ownerId: number): PoziomRacji {
+  return ownerId === 0 ? DEFAULT_POZIOM_RACJI : DEFAULT_POZIOM_RACJI_AI;
+}
 
 export interface RationParams {
   racjeZywnosc1: number;
@@ -178,7 +195,7 @@ export function migrateLegacyRationLevel(old: number): PoziomRacji {
 
 /** Migracja: procentRozwoj 0–100 → Wyżywienie 0–6. */
 export function migrateProcentRozwojToPoziomRacji(procentRozwoj: number | undefined): PoziomRacji {
-  if (procentRozwoj === undefined) return DEFAULT_POZIOM_RACJI;
+  if (procentRozwoj === undefined) return DEFAULT_POZIOM_RACJI_LEGACY;
   return clampPoziomRacji((procentRozwoj / 100) * WYZYWIENIE_MAX);
 }
 
@@ -406,7 +423,7 @@ export function ensureCityRationDefaults(city: City): void {
     city.rationMigratedV114 = true;
   }
   if (city.poziomRacji === undefined) {
-    city.poziomRacji = DEFAULT_POZIOM_RACJI;
+    city.poziomRacji = DEFAULT_POZIOM_RACJI_LEGACY;
   } else {
     city.poziomRacji = clampPoziomRacji(city.poziomRacji);
   }

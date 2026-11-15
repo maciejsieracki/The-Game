@@ -42,10 +42,11 @@ function ok(cond, label) {
 
 const base = { skarbiecObecny: 100, skarbiecPo: 100, spichlerzObecny: 100, spichlerzPo: 100 };
 
-// 1) Wolne tury 1–10: nawet przy ujemnej prognozie brak blokady.
+// 1) R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1: brak wyjątku tur 1–10 dla gracza —
+// ujemna prognoza blokuje także w turach 1, 5, 10.
 for (const t of [1, 5, 10]) {
   const v = M.evaluateEndTurnStocks({ ...base, turn: t, skarbiecPo: -50 });
-  ok(v.wyjatekTur === true && v.blokada === false, `tura ${t} zwolniona z blokady`);
+  ok(v.wyjatekTur === false && v.blokada === true, `tura ${t}: prognoza < 0 blokuje (bez wyjatku)`);
 }
 
 // 2) Tura 11: skarbiec prognozowany poniżej zera i gorszy niż obecny -> blokada z kwotą.
@@ -70,11 +71,11 @@ for (const t of [1, 5, 10]) {
   ok(v.blokada === false && v.komunikat === '', 'dodatnie prognozy bez blokady');
 }
 
-// 5) Bezpieczny wyjątek: stan już ujemny i prognoza nie gorsza -> nie blokuje.
+// 5) Stary wyjątek „stan już ujemny, prognoza nie gorsza” USUNIĘTY: prognoza < 0 blokuje zawsze.
 {
   const v = M.evaluateEndTurnStocks({ ...base, turn: 80, skarbiecObecny: -30, skarbiecPo: -25 });
-  ok(v.blokada === false, 'stary zapis, prognoza lepsza -> brak blokady');
-  ok(v.wyjatekStarego === true, 'wyjatekStarego ustawione');
+  ok(v.blokada === true, 'stary zapis, prognoza < 0 -> blokada (nowa regula, prognoza nadrzedna)');
+  ok(v.wyjatekStarego === false, 'wyjatekStarego zawsze false');
 }
 // ...a pogorszenie ujemnego stanu już blokuje.
 {
@@ -102,7 +103,7 @@ for (const t of [1, 5, 10]) {
 // 6b) Wyjątek starego zapisu nie zmienia się przez dźwignie: ruch naprawczy niezbędny tylko przy blokadzie.
 {
   const v = M.evaluateEndTurnStocks({ ...base, turn: 80, skarbiecObecny: -30, skarbiecPo: -25 });
-  ok(v.wyjatekStarego === true && v.blokada === false, 'stary zapis bez blokady (decyzja dispatch: prognoza nie gorsza)');
+  ok(v.wyjatekStarego === false && v.blokada === true, 'stary zapis z prognoza < 0 blokuje (R-WEB-...-FROM-TURN1-Q1)');
 }
 
 // 7) Plan AI: podatki, potem wstrzymanie, potem najdroższe jednostki; bez eliminacji.

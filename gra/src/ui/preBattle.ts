@@ -12,6 +12,7 @@
 
 import type { CivBonusLite } from '../game/production';
 import { civCombatUnitShapeFromCategory, effectiveCombatBonusChipTexts } from '../game/civ-bonuses';
+import { weakenedNoteText, type WeakenedNote } from './battle-weakened-note';
 import { terrainIconSvg, civIconSvg, brandIconSvg } from './icons/brandAssets';
 import { PB_SVG } from '../battle/battleHudTheme';
 import { leaderPortraitUrl, leaderName } from './leaderPortraits';
@@ -74,6 +75,12 @@ export interface PreBattleSide {
    * Ma pierwszenstwo przed isCityState (wzajemnie wykluczajace sie w praktyce).
    */
   isBarbarian?: boolean;
+  /**
+   * R-WEB-BATTLE-WEAKENED-HUNGER-DEFICIT-WARNING-Q1: aktywna kara głodu wojska / deficytu Złota
+   * tej strony (mnożniki z econ-params przez buildWeakenedNote). Brak = brak ostrzeżenia.
+   * Tylko wyświetlanie -- silnik nakłada karę niezależnie (combat.ts).
+   */
+  oslabienie?: WeakenedNote;
   units: PreBattleUnit[];
 }
 
@@ -464,6 +471,7 @@ function ensureStyles(): void {
 .pb-cmd.pb-foe .pb-cnt{color:var(--pb-foe-txt)}
 .pb-bonuses{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
 .pb-cmd.pb-r .pb-bonuses{justify-content:flex-end}
+.pb-weak{margin-top:4px;font-size:10px;font-weight:600;color:var(--pb-gold);line-height:1.3}
 .pb-bchip{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;color:var(--pb-text);white-space:nowrap;
   border:1px solid var(--pb-border-soft);border-radius:999px;padding:2px 8px;background:rgba(0,0,0,.35)}
 .pb-bchip svg{width:9px;height:9px;color:var(--pb-gold);flex:none}
@@ -726,6 +734,12 @@ function commanderHtml(
   const chipTexts = effectiveCombatBonusChipTexts(bonusy, combatRoster, {
     side: role === 'atk' ? 'attacker' : 'defender', terrain, isChargeRound: false,
   });
+  // R-WEB-BATTLE-WEAKENED-HUNGER-DEFICIT-WARNING-Q1: ostrzeżenie o osłabieniu (głód/deficyt)
+  // -- tylko gdy strona faktycznie ma karę (oslabienie ustawione przez main.ts).
+  const weakenedText = weakenedNoteText(side.oslabienie);
+  const weakenedHtml = weakenedText
+    ? '<div class="pb-weak">\u25BC ' + esc(weakenedText) + '</div>'
+    : '';
   const chipsHtml = chipTexts.length
     ? '<div class="pb-bonuses">' +
       chipTexts.map(t => '<span class="pb-bchip">' + PB_ICON_DOT + esc(t) + '</span>').join('') +
@@ -763,6 +777,7 @@ function commanderHtml(
     leaderHtml +
     '<div class="pb-who">' + who + '</div>' +
     '<div class="pb-cnt">' + String(total) + ' oddziałów</div>' +
+    weakenedHtml +
     chipsHtml +
     '</div>' +
     '</div>'

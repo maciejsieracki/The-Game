@@ -114,7 +114,7 @@ function runChecks(M, cityPanelText, log) {
   eq(tick.bilansLokalny, 80, 'C4: recompute bilans 200-120');
 
   // --- D. surowce ---------------------------------------------------------------------------
-  for (const [era, rate, list] of [[1, 1, 2], [2, 1.5, 4], [3, 2, 5]]) {
+  for (const [era, rate, list] of [[1, 1, 3], [2, 1.5, 4], [3, 2, 5]]) {
     eq(M.citizenUpkeepRateForEra(era), rate, `D1: stawka epoki ${era}`);
     const stock = { drewno: 1e6, glina: 1e6, kamien: 1e6, ceramika: 1e6, cegla: 1e6 };
     const d = M.computeCitizenResourceDrain(era, 20, stock);
