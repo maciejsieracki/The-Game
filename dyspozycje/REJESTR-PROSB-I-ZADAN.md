@@ -10236,3 +10236,6 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 - Dostarczono: sonda sceny `battle-manual-orders-full-move-repro-*` (tylko gra/tools). Wyniki (Hastati 6 vs 6, ziarna 1–3): marsz ręczny 1,00 heksa/aktywację (ZGODNE z decyzją A); ruch+cios w tej samej rundzie: AUTO 5/60, ręczne 0/60; przepadek ok. 2 MP po kroku — NIE ROZSTRZYGNIĘTE.
 - DO ZAPYTANIA RANO (ABC): ruch ręczny po kroku — A (obecne) / B (pełny ruch jak AUTO) / C (pełny ruch w marszu, cios na końcu ruchu; rekomendacja).
 - NIE ZMIERZONO: Wojownik (MP 4), armia mieszana, powtórzenia ziaren, zachowanie live; w produkcyjnym `_activateUnit` (battleScene.ts ~6276) gałąź doktryny AI pomijana przy `_manualMode=true` — wymaga weryfikacji na żywo.
+
+### Start 2026-11-15 ~23:50 UTC — R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1 (#419, wf_0a29d571-1f1, Haiku, cand 1afc302bc)
+- Pomiar wydajności księgi „Skąd zapasy” w konfiguracji domyślnej (≥3 ziarna × 100 tur × ≥3 pary ON/OFF naprzemiennie). Uwaga: 4 rdzenie przy 4 workflowach naraz → DODATEK 1 wymaga zapisu load average i jawnego rozstępu; przy rozstępie ≥10% wynik = NIE ROZSTRZYGNIĘTE (powtórzyć w ciszy).
