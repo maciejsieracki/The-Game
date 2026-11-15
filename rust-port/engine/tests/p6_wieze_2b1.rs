@@ -260,13 +260,20 @@ fn planning_matches_pin_fire_siege_towers_on_all_vectors() {
             "{id}: planowanie nie zabija"
         );
 
-        // Wieże bez kafla muru (web `_destroyTowerAtRow`) to dokładnie te, których pin nie planuje.
+        // Wieże POMINIĘTE przez Rust (brak wpisu w `pending_tower_shots`) muszą być dokładnie tymi, które pin niszczy
+        // (`destroyed` z wykonania `_destroyTowerAtRow`). Zbiór wyprowadzony z wyjścia Rust, nie z wejść testu.
+        // Sam efekt zniszczenia (stan `destroyed`) NIE jest jeszcze portowany (2B2) i nie jest tu asertowany.
+        let planned_idx: BTreeSet<usize> = e.pending_tower_shots.iter().map(|p| p.tower).collect();
         let skipped: Vec<i64> = towers
             .iter()
-            .filter(|r| !walls.contains(r))
-            .copied()
+            .enumerate()
+            .filter(|(i, _)| !planned_idx.contains(i))
+            .map(|(_, r)| *r)
             .collect();
-        assert_eq!(skipped, want_destroyed, "{id}: wieże bez kafla");
+        assert_eq!(
+            skipped, want_destroyed,
+            "{id}: wieże pominięte przez planowanie != destroyed z pinu"
+        );
 
         skipped_total += skipped.len();
         planned_total += got.len();

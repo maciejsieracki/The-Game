@@ -155,7 +155,6 @@ fn vectors_match_pin_pick_tower_target() {
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------------------------
 // Wiring produkcyjnej pętli: `SiegeEnv::fire_siege_towers` (wywoływane przez `begin_turn`).
 // WIEZE-2B1: fire_siege_towers tylko PLANUJE wystrzały (odroczenie 0/180/360 ms). Cel jest wybierany w chwili
 // wystrzału (`pick_tower_for_row`, testy jednostkowe w `siege_tactics_loop.rs`). Nic nie ustawia `dead` przy planowaniu.
