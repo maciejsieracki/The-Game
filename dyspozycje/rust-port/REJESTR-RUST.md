@@ -1951,3 +1951,8 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 
 - **Start:** `R-RUSTPORT-P4-1G-Q2-ADAPTER-TERRAIN` (#216, Opus), dispatch `448d2d25c` na `claude/rust-sivvrn`, baza `601ff304c` (P4-1G Q1 zintegrowany). Workflow `wf_c9f7943e-b13`. Zakres: adapter terenu `MapViewDto` → `TerrainInput`/`MapHex`/`OverlayMap`/`OkolicaMap`. Luki L5 (`wonderBuildSites`) i L1/L2 (`revealAllLand`, `riverRevealKeys`) pozostają NIE_ZMIERZONO.
 - **Sloty:** aktywne 3 z 4 — P4-1H Q2 (`wf_c5970398-de4`, etap Evaluator), P4-1H Q3 RJ-REPIN (`wf_28c84406-989`, operator), P4-1G Q2 (`wf_c9f7943e-b13`, operator). Czwarty slot: kolejny kandydat (P4-1G Q3/Q4 po Q2 albo P4-1I) wymaga dispatchu.
+
+## Przebieg (heartbeat — czwarty slot: start P4-1G Q3 ADAPTER-CITIES)
+
+- **Start:** `R-RUSTPORT-P4-1G-Q3-ADAPTER-CITIES` (#216, Opus), dispatch `d7d9ba1bb` na `claude/rust-sivvrn`, baza `601ff304c`. Workflow `wf_7221cd0a-cbb`. Zakres: `cities[]`, `owners[]`, `wonders[]` → `City`, `CityRenderOptions`, `PlacedWonder`, `WonderRenderOptions`, `OwnerEmblemContext`, `CityBadgeDto` → `CityMapBadgeInput`. Równolegle z Q2 (teren); pliki rozłączne.
+- **Sloty:** 4 z 4 — P4-1H Q2 (`wf_c5970398-de4`, Evaluator), P4-1H Q3 RJ-REPIN (`wf_28c84406-989`, operator), P4-1G Q2 TERRAIN (`wf_c9f7943e-b13`, operator), P4-1G Q3 CITIES (`wf_7221cd0a-cbb`, operator). Model Opus we wszystkich rolach (reguła właściciela dla serii P4-1; heartbeat podawał Haiku/Sonnet — rozbieżność zgłoszona).
