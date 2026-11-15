@@ -34,7 +34,7 @@ function mutPlugin(from, to = 'false') {
 }
 
 async function run(mutation, seed) {
-  const plugins = mutation ? [mutPlugin(mutation, mutation === '/*RESUME_AFTER_PLAN*/' ? 'done(); return;' : 'false')] : [];
+  const plugins = mutation ? [mutPlugin(mutation, mutation === '/*RESUME_AFTER_PLAN*/' ? 'done(); return;' : mutation === '/*RANGED_BFS_FALLBACK*/' ? '&& false' : 'false')] : [];
   const server = await createServer({ root, plugins, configFile: path.join(root, 'vite.config.ts'), logLevel: 'error', server: { host: '127.0.0.1', port: 0, strictPort: false } });
   await server.listen();
   const browser = await chromium.launch({ headless: true, executablePath: exe, args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
@@ -148,12 +148,12 @@ function authenticityChecks() {
 }
 
 (async () => {
-  const parts = process.env.BPM_PART ? [process.env.BPM_PART] : ['code', 'mutA', 'mutB', 'mutC'];
+  const parts = process.env.BPM_PART ? [process.env.BPM_PART] : ['code', 'mutA', 'mutB', 'mutC', 'mutD'];
   const out = {};
   for (const p of parts) {
     const agg = { arbPathCav: 0, pingpong: 0, uniqueCells: 0, freeSteps: 0, freePool: 0, allSteps: 0, allPool: 0, blockedActs: 0, wastedActs: 0, mutSensitive: 0, infActs: 0, wastedInf: 0, preLatch: 0, exempt: 0 };
     for (const seed of SEEDS) {
-      const m = metrics(await run(p === 'mutA' ? '/*PATH_RESERVE*/ true' : p === 'mutB' ? '/*CAV_TRAIL*/ ru.cavTrail?.has(nk)' : p === 'mutC' ? '/*RESUME_AFTER_PLAN*/' : null, seed));
+      const m = metrics(await run(p === 'mutA' ? '/*PATH_RESERVE*/ true' : p === 'mutB' ? '/*CAV_TRAIL*/ ru.cavTrail?.has(nk)' : p === 'mutC' ? '/*RESUME_AFTER_PLAN*/' : p === 'mutD' ? '/*RANGED_BFS_FALLBACK*/' : null, seed));
       console.log(p, 'seed', seed, JSON.stringify(m));
       for (const k of Object.keys(agg)) agg[k] += m[k];
     }
@@ -180,6 +180,7 @@ function authenticityChecks() {
   if (out.mutB) mutResults.push(['MUTACJA CAV_TRAIL->false wykryta (T2 czerwony)', out.mutB.pingpong > 0]);
   if (out.mutC) mutResults.push(['MUTACJA RESUME_AFTER_PLAN->done() (stary blad r4) wykryta dla konnicy (T4 czerwony)', out.mutC.wastedActs > 0]);
   if (out.mutC) mutResults.push(['MUTACJA RESUME_AFTER_PLAN->done() wykryta dla piechoty/strzelcow (T5 czerwony, r6)', out.mutC.wastedInf > 0]);
+  if (out.mutD) mutResults.push(['MUTACJA RANGED_BFS_FALLBACK->wylaczony (strzelec po zderzeniu traci ruch przy wolnej drodze) wykryta (T5 czerwony, Q2)', out.mutD.wastedInf > 0]);
   for (const [name, ok, msg] of results) console.log(`${ok ? 'ok  ' : 'FAIL'} ${name}${ok ? '' : ' -- ' + msg}`);
   for (const [name, ok] of mutResults) console.log(`${ok ? 'ok  ' : 'FAIL'} ${name}`);
   const fail = results.filter(r => !r[1]).length + mutResults.filter(r => !r[1]).length;

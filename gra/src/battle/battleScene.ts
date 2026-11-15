@@ -6977,18 +6977,26 @@ export class BattleScene {
     // Already in range? Stop -- the caller normally chooses the shoot branch first.
     if (manhattan(ru.q, ru.r, nearest.q, nearest.r) <= ru.range) { done(); return; }
 
-    const stepKey = this._bestForwardStep(ru, nearest);
-    if (!stepKey) { done(); return; } // walled in: hold for this turn
-    const parts = stepKey.split(',');
-    const nc = Number(parts[0]);
-    const nr = Number(parts[1]);
     const meleeLine = (ru.side === 'atk' ? this.atk : this.def)
       .some(u => !u.dead && !u.fadingOut && !u.removed && !u.routed
         && !u.mounted && !u.rangedBase && !isSiegeUnit(u.bu));
-    const lineAllowsRangedStep = meleeLine && this._effectiveMetaForUnit(ru).doctrine === 'steady'
-      ? this._rangedFiringStepStaysBehindMelee(ru, nc)
-      : this._compactAttackAllowsStep(ru, nc);
-    if (!lineAllowsRangedStep) { done(); return; }
+    const stepAllowed = (col: number): boolean => meleeLine && this._effectiveMetaForUnit(ru).doctrine === 'steady'
+      ? this._rangedFiringStepStaysBehindMelee(ru, col)
+      : this._compactAttackAllowsStep(ru, col);
+    let stepKey = this._bestForwardStep(ru, nearest);
+    if (stepKey && !stepAllowed(Number(stepKey.split(',')[0]))) stepKey = null;
+    if (!stepKey && this._fullMoveRuleActive(ru) /*RANGED_BFS_FALLBACK*/) {
+      // R-WEB-BATTLE-FULL-MOVE-RESIDUAL-INFANTRY-Q2: po zderzeniu wrecz strzelec, ktorego "prosty" krok naprzod jest zablokowany
+      // (_bestForwardStep == null albo krok lamie linie formacji), nie traci reszty ruchu przy wolnej drodze: idzie najkrotsza
+      // sciezka (BFS) do pozycji strzalu pierwszym krokiem DOZWOLONYM przez linie, bez wracania na pola z tej aktywacji (zakaz ping-ponga).
+      const trail = new Set<string>([cellKey(ru.q, ru.r), ...(ru.moveTrailRound === this.roundNo && ru.moveTrail ? ru.moveTrail : [])]);
+      stepKey = this._firstStepAlongPathToAttack(ru, (q, r) => !trail.has(cellKey(q, r)) && stepAllowed(q));
+    }
+    if (!stepKey) { done(); return; } // walled in / linia formacji: hold for this turn
+    const parts = stepKey.split(',');
+    const nc = Number(parts[0]);
+    const nr = Number(parts[1]);
+    if (!stepAllowed(nc)) { done(); return; }
 
     this._doMove(ru, nc, nr, () => {
       if (this.finished) { done(); return; }
