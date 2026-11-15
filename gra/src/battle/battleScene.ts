@@ -2726,6 +2726,14 @@ export class BattleScene {
   private roundNo = 0;
   /** R-WEB-BATTLE-PACE-EQUAL-LINE-LIVE-BUG-Q1: tempo marszu (pula ruchu) per strona, raz na runde. */
   private _paceCache: { round: number; contact: boolean; bySide: Map<string, number> } | null = null;
+  /**
+   * R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1: zatrzask wzwarcia wrecz na czas bitwy.
+   * Ustawiany RAZ, przy pierwszym kontakcie wrecz (poczatek rundy albo pierwsze zapytanie o sufit tempa);
+   * od tego momentu sufity tempa (_paceCapFor) i natarcia rangi (_lineAdvanceCap) nie obowiazuja do
+   * konca bitwy. Bez niego po zerwaniu kontaktu (wrog rozbity/uciekl) sufit wracal i dlawil pościg.
+   * Zmierzone: konnica (7 MP) ucinana do 3 MP przez piechote po zerwaniu kontaktu (ETAP 1).
+   */
+  private _meleeLatched = false;
   private _lineCapCache: { round: number; info: Map<string, { engaged: Set<string>; minMp: number }> } | null = null;
   /** Per jednostka (po bu.id; planowanie AUTO pracuje na klonach): rekord postepu i rundy bez rekordu. */
   private _lineAdvanceState: Map<string, { best: number; stall: number }> | undefined;
@@ -3592,6 +3600,7 @@ export class BattleScene {
   private _startBattle(): void {
     this.started    = true;
     this.roundNo    = 0;
+    this._meleeLatched = false;
     this.activeSide = 'atk';
     // TW v5 §2: zegar bitwy MM:SS startuje TERAZ — bazowa = zegar wirtualny w
     // chwili START WALKI (patrz _updateArmyMoraleBars / _fmtBattleClock).
@@ -5674,6 +5683,7 @@ export class BattleScene {
     this._updateStallWatch();
     if (this._checkEnd()) return;
     this.roundNo++;
+    this._refreshMeleeLatch();
 
     // R-WALKA-PRZEWAGA-LICZEBNA-Q1-W2 GOAL 1: nowa tura => stan "obronca juz
     // kontratakowal" wraca do zera i kazdy obronca znow moze kontratakowac raz.
@@ -8253,17 +8263,32 @@ export class BattleScene {
     return /*PACE_EXEMPT*/false;
   }
 
+  /** Wzwarcie wrecz w tej chwili (ta sama definicja, co kontakt tempa): dowolna zywa, nierozbita jednostka bez zasiegu strzeleckiego, ktora moze atakowac z obecnego pola. */
+  private _meleeContactNow(): boolean {
+    return [...this.atk, ...this.def].some(u => !u.dead && !u.fadingOut && !u.removed && !u.routed
+      && !u.rangedBase && !isSiegeUnit(u.bu) && this._canAttackFrom(u, u.q, u.r));
+  }
+
+  /**
+   * R-WEB-BATTLE-WINNING-ARMY-FULL-MOVE-RANGE-AFTER-CONTACT-Q1: zatrzask wzwarcia. Wywolywane na
+   * poczatku rundy (po roundNo++) i przy kazdym wyliczeniu kontaktu tempa; po pierwszym kontakcie
+   * wrecz zostaje ustawiony na czas calej bitwy (reset w _startBattle / _resetBattleRuntimeState).
+   */
+  private _refreshMeleeLatch(): void {
+    if (!this._meleeLatched && this._meleeContactNow()) this._meleeLatched = true;
+  }
+
   private _paceCapFor(ru: RuntimeBattleUnit): number {
     if (this.siegeWallCol >= 0 || ru.routed || this._paceExemptClass(ru)) return Number.POSITIVE_INFINITY;
     if (this._effectiveMetaForUnit(ru).doctrine !== 'steady') return Number.POSITIVE_INFINITY;
     let cache = this._paceCache;
     if (!cache || cache.round !== this.roundNo) {
-      const contact = [...this.atk, ...this.def].some(u => !u.dead && !u.fadingOut && !u.removed && !u.routed
-        && !u.rangedBase && !isSiegeUnit(u.bu) && this._canAttackFrom(u, u.q, u.r));
+      const contact = this._meleeContactNow();
       cache = { round: this.roundNo, contact, bySide: new Map() };
       this._paceCache = cache;
+      if (contact) this._meleeLatched = true;
     }
-    if (cache.contact) return Number.POSITIVE_INFINITY;
+    if (cache.contact || this._meleeLatched /*MELEE_LATCH*/) return Number.POSITIVE_INFINITY;
     let pace = cache.bySide.get(ru.side);
     if (pace === undefined) {
       pace = Number.POSITIVE_INFINITY;
@@ -8296,6 +8321,7 @@ export class BattleScene {
    * biezacych pozycji -- deterministyczny dla AUTO (klony stanu z poczatku fazy) i SKIP.
    */
   private _lineAdvanceCap(ru: RuntimeBattleUnit): number {
+    if (this._meleeLatched /*MELEE_LATCH_LINE*/) return Number.POSITIVE_INFINITY;
     if (this._effectiveMetaForUnit(ru).doctrine !== 'steady' || ru.mounted || ru.rangedBase || isSiegeUnit(ru.bu)) {
       return Number.POSITIVE_INFINITY;
     }
@@ -10881,6 +10907,7 @@ export class BattleScene {
     this.started = false;
     this.busy = false;
     this.roundNo = 0;
+    this._meleeLatched = false;
     this._lineCapCache = null;
     this._paceCache = null;
     this._lineAdvanceState?.clear();
