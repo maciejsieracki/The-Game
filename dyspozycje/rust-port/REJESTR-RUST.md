@@ -1859,3 +1859,13 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **P4-1I rozpoznanie zdarzeń bitwy (START, Opus):** `wf_e6d580b9-55a` (dispatch `db47ed5a5`).
 - **Integracja P4-1B Q1+Q2 (`ca6c97472` → `2f9a12786`):** w toku, `integ-p4-1b.log`: fmt i clippy zielone, pełny test 1139 passed, 0 failed do tej chwili (długi test `pick_auto_improvements_matches_pinned_web_vectors` w toku). FF po `TEST_EXIT=0`.
 - **Aktywne workflow:** #221 r2 Haiku (`wf_c9da2dff-9c8`), P4-1D Q1 Opus (`wf_515c8fe6-0a4`), P4-1F Opus (`wf_4c7d8400-1cd`), P4-1I Opus (`wf_e6d580b9-55a`). Dysk: 12 GB wolne (71%).
+
+## Przebieg (15.11, 19:2x UTC — heartbeat „twardy bit”, sloty Rust)
+
+- **KROK 1 (sloty):** 4 aktywne Workflow bez FC: P4-1D Q1 STACK-REPIN Opus (#213, `wf_515c8fe6-0a4`), P4-1B Q3 MAP-VIEW Opus (#211, `wf_c431c5de-ee5`), rozpoznanie P4-1G adaptera Opus (#216, `wf_55400caa-ca7`), rozpoznanie P4-1H komend mapy Opus (#217, `wf_44cd2d61-4e4`). Sloty pełne.
+- **KROK 2 (FC PASS bez integracji):**
+  - **#221 P4-1J generalTargetId (runda 2, FC PASS-WITH-NOTES `cb491333a`):** kod `896a147c4`, obrona `f0efd5d29`. Ancestry i merge-tree bez konfliktów na `2f9a12786`. **Integracja w toku** (`integ-221`, merge `400fd0bd1`): fmt i clippy EXIT 0, testy się kompilują. FF po `TEST_EXIT=0`.
+  - **P4-1B Q1+Q2:** zintegrowane wcześniej (FF `2f9a12786`, `TEST_EXIT=0`, 3491 passed).
+- **KROK 3 (sprzątanie):** worktree rund rozpoznań i rundy 2 #221 usunięte; refs `refs/keep/cleanup-*`. Dysk: 17 GB wolne (59%).
+- **KROK 4:** pytanie ABC o mgłę dla fotela ≠ 0 (P4-1C, zasada 10) nadal otwarte — czeka na właściciela w czacie. Nie jest to decyzja orkiestratora.
+- **Następny krok:** FF #221 po zielonym teście; FC wyników P4-1D Q1, P4-1B Q3, P4-1G i P4-1H.
