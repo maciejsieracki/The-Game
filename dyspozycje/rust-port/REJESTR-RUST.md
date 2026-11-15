@@ -1301,3 +1301,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Wolne sloty:** brak zweryfikowanego zakresu bez decyzji właściciela (#106 pkt 4; #115, #120 — ABC). Tematy K5 zablokowane allowlistą.
 - **Parity:** `14d5e50b9`. **Dysk:** 9,4 GB.
 - **Pytania ABC:** #106 pkt 4 (rekomendacja B), #115, #120; konwencja `Co-Authored-By` (rekomendacja B) — bez odpowiedzi właściciela.
+
+## Przebieg (15.11, heartbeat 03:00): WIEZE-2B2 r2 — Operator i Evaluator zakończeni, Obrona/FC w toku
+- **Trwających Workflow: 1** z 4 (`wf_36dbda52-96d`): WIEZE-2B2 runda 2, etap Obrona/FC. Operator i Evaluator zakończeni; wyniki w journalu.
+- **Dysk:** spadł do 5,4 GB, poniżej 8 GB progu startu. Zwolniono 2,9 GB: usunięto `scratchpad/target-q2` (katalog bramek WIEZE-2B1 r2, temat zakończony i zintegrowany). Dysk: 8,3 GB. Nie startuję nowych tematów poniżej progu 8 GB.
+- **Do zrobienia po FC:** worktree rundy 2 (`wf_36dbda52-96d-1..2`) — refs `keep/*` i `rust-port-wip/*`, potem usunięcie; `target-2b2r2` w scratchpadzie po zakończeniu bramek.
+- **Parity:** `14d5e50b9`. **Pytania ABC:** #106 pkt 4, #115, #120; konwencja `Co-Authored-By` — bez odpowiedzi właściciela.
