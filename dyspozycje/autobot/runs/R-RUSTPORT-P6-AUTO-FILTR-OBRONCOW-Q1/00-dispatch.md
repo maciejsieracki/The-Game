@@ -20,3 +20,10 @@ Mutacja (d) przeżyła: usunięcie filtra `acted/fading/removed` przy budowie li
 - `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` w scratchpadzie.
 - `cargo fmt --check`; `cargo clippy --all-targets -- -D warnings`; `cargo test --test p6_k5loop_auto_v1v5v6`; mutacje (a)(b)(c)(d) z wynikami w raporcie.
 - df >= 8 GB przed bramką. Nie commituj Cargo.lock; bez push do parity; commit bez nazw modeli w wiadomości.
+
+## DODATEK r2 — integracja na parity (BAZA: origin/rust-port/parity-v2 = d66aaa3a7)
+- Wynik FC: commit `597bdcd8a` (rodzic FC 6cda54727), zmiana wyłącznie w `rust-port/engine/tests/p6_k5loop_auto_v1v5v6.rs`. Mutacja (d) daje teraz FAIL.
+- Merge-tree 597bdcd8a -> d66aaa3a7: CZYSTY.
+- Zadanie: worktree detached z d66aaa3a7, `git merge --no-ff 597bdcd8a`, pełne bramki w rust-port/engine (fmt --check, clippy -D warnings, pełny cargo test --all-targets w tle, setsid nohup). df >= 8 GB przed bramką.
+- Nie pushuj do parity. Nie commituj Cargo.lock. Bez git add -A. Commit bez nazw modeli w wiadomości.
+- Zwróć SHA merge, EXIT bramek, sumy test result, verdict PASS albo FAIL/BLOCK.
