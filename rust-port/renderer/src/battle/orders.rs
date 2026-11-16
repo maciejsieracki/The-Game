@@ -1,18 +1,21 @@
 //! REPIN-3D batch A1 (topic R-RUSTPORT-REPIN-3D-A-Q1, document
 //! `dyspozycje/rust-port/p4/P4-REPIN-3D.md`): the order-queue state of the
-//! CURRENT web `battle/battleScene.ts` (`origin/main`) that decides which
+//! web `battle/battleScene.ts` (pin `07d2fbd72`) that decides which
 //! order arrows the scene draws and whether they are drawn as queued
-//! (dashed). Pin `edb8fb56` (parts 1–5 of MOD-14) had no attack-move order
+//! (dashed). The earlier baseline `edb8fb56` (parts 1–5 of MOD-14; not an
+//! ancestor of pin `07d2fbd72`) had no attack-move order
 //! and never consumed queue entries on activation; both changed in the web
 //! (commits `601fc3baf` "Add manual attack-move battle order", `96d088b4d`
 //! "clear stale queued order ids after activation").
 //!
-//! | web (`origin/main`) | Rust |
+//! Numery linii wg pinu 07d2fbd72 (gra/src/battle/battleScene.ts)
+//!
+//! | web (pin `07d2fbd72`) | Rust |
 //! |---|---|
 //! | `_queuedOrderUnitIds: Set<string>` | [`QueuedOrders`] (JS `Set` semantics: insertion order, no duplicates) |
-//! | the queue part of `_activateNext` (`:5847-5898`) | [`next_activation`], [`consume_on_activation`] |
-//! | `_issueBattleAttackMove` (`:18076-18096`) | [`issue_attack_move`] |
-//! | `_cancelAttackMoveSelected` (`:18098-18106`), Escape in `_onKeyManual` (`:16850-16856`) | [`cancel_attack_move_selected`] |
+//! | the queue part of `_activateNext` (`:5979`; `:5993-5994`, `:6013`) | [`next_activation`], [`consume_on_activation`] |
+//! | `_issueBattleAttackMove` (`:18682-18702`) | [`issue_attack_move`] |
+//! | `_cancelAttackMoveSelected` (`:18704-18712`), Escape in `_onKeyManual` (`:17406`, call `:17410`), button "Anuluj marsz" (`:19095`) | [`cancel_attack_move_selected`] |
 //!
 //! The arrows themselves are [`super::units::refresh_queued_order_visuals`]
 //! (with [`super::units::PlayerOrder::AttackMove`]); the immediate removal of
@@ -119,7 +122,7 @@ pub struct TurnCandidate {
 }
 
 impl TurnCandidate {
-    /// `!cand.dead && !cand.fadingOut && !cand.removed && !cand.acted` (`:5861`).
+    /// `!cand.dead && !cand.fadingOut && !cand.removed && !cand.acted` (`:5993`).
     #[must_use]
     pub const fn can_act(&self) -> bool {
         !self.dead && !self.fading_out && !self.removed && !self.acted
@@ -139,7 +142,7 @@ pub struct NextActivation {
     pub refresh: bool,
 }
 
-/// The candidate scan of `_activateNext` (`origin/main :5853-5866`; the
+/// The candidate scan of `_activateNext` (`:5979-5993`; the
 /// early returns on `finished`, `_battleAwaitingOrders` and `_checkEnd()`
 /// before it are the caller's). Walks `order` from `*turn_idx` (advanced
 /// past the activated unit, or to the end), stops at the first candidate
@@ -173,7 +176,7 @@ pub fn next_activation(
 }
 
 /// The first step of the activation callback of `_activateNext`
-/// (`:5881-5883`): the unit's queued order has been consumed by its own
+/// (`:6013`; skipped candidates `:5994`): the unit's queued order has been consumed by its own
 /// activation. `true` = it was queued (manual mode only) — refresh the
 /// arrows.
 pub fn consume_on_activation(manual: bool, queued: &mut QueuedOrders, id: &str) -> bool {
@@ -195,7 +198,7 @@ pub struct AttackMoveIssued {
     pub execute_now: bool,
 }
 
-/// `_issueBattleAttackMove(col, row, queueOnly)` (`origin/main :18076-18096`)
+/// `_issueBattleAttackMove(col, row, queueOnly)` (`:18682-18702`)
 /// on the player roster, with `ids` = `_collectOrderUnitIds()` (selection /
 /// groups → P6.13). Returns `None` for an empty selection (nothing happens).
 /// Otherwise `order_move(roster, col, row, ids)` is `_orderMoveForUnits`
@@ -249,8 +252,8 @@ where
     })
 }
 
-/// `_cancelAttackMoveSelected()` (`origin/main :18098-18106`; also the
-/// Escape branch of `_onKeyManual`) with `ids` = `_collectOrderUnitIds()`:
+/// `_cancelAttackMoveSelected()` (`:18704-18712`; called from the
+/// Escape branch of `_onKeyManual` `:17410` and the "Anuluj marsz" button `:19095`) with `ids` = `_collectOrderUnitIds()`:
 /// every listed unit whose order is `AttackMove` gets no order and leaves the
 /// queue. The caller then refreshes the arrows.
 pub fn cancel_attack_move_selected(
