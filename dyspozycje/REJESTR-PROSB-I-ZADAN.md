@@ -10550,3 +10550,6 @@ MULTITYPE (FC cf304e036, PASS-WITH-NOTES): modal na każdy typ z zamiennikiem (g
 
 ### WEARY40 r1 → FC FAIL (2026-11-17 noc) — runda 2 w toku
 Kandydat 35db7c8fc niekompletny (gracz bez pokoju wymuszonego i okna, 11 czerwonych testów, brak testu migracji/widoku etapów/wiki). Runda 2 (Haiku, DODATEK 1): zał. A potwierdzone (pokój wymuszony omija bramkę bilansu AI↔AI). **CZEKA NA RANO (ABC):** waga miasta +10% przy 40 turach (~4 tury/miasto) oraz „nigdy stolica, min. 3 miasta po oddaniu” — założenia, bez zmian do decyzji właściciela.
+
+### FALA 782 (2026-11-17) — WDROŻONE na ROBOCZĄ: wydarzenia bez wpisu o zwolnieniu zarządcy OBCEJ cywilizacji
+EVENTS (FC 18eb1a384, PASS-WITH-NOTES): po zajęciu miasta gracz nie dostaje wpisu o zwolnieniu obcego zarządcy (bramka wg poprzedniego właściciela). ROBOCZA 2cb84db4, main fadf21af9, raw MD5 = manifest, 3 sidecary OK. ZAŁOŻENIE do potwierdzenia: utrata WŁASNEGO miasta z zarządcą nadal daje wpis. NIE ZMIERZONO: żywy Chromium. Dług Rust: REPIN noteAdministratorChange.
