@@ -18924,7 +18924,7 @@ export class BattleScene {
       }
       const adj = this._adjacentEnemy(ru);
       if (adj) {
-        this._doAttack(ru, adj, done);
+        this._manualOrderStrike(ru, adj, done);
         return true;
       }
       const dc = Math.sign(tc - ru.q);
@@ -18965,7 +18965,7 @@ export class BattleScene {
       this._doMove(ru, nc, nr, () => {
         if (previousPosition) ru.lastAutoMoveFrom = previousPosition;
         this._refreshQueuedOrderVisuals();
-        done();
+        this._manualOrderAfterStep(ru, done);
       });
       return true;
     }
@@ -18986,7 +18986,7 @@ export class BattleScene {
       const target = routeThreat[0];
       if (target) {
         if (this._canStrikeTargetFrom(ru, ru.q, ru.r, target)) {
-          this._doAttack(ru, target, done);
+          this._manualOrderStrike(ru, target, done);
           return true;
         }
         // Advance toward a blocking threat while retaining the waypoint order.
@@ -18994,7 +18994,7 @@ export class BattleScene {
         if (routeStep) {
           const [nc, nr] = routeStep.split(',').map(Number);
           if (this._destAllowedByBlockade(ru, nc!)) {
-            this._doMove(ru, nc!, nr!, () => { this._refreshQueuedOrderVisuals(); done(); });
+            this._doMove(ru, nc!, nr!, () => { this._refreshQueuedOrderVisuals(); this._manualOrderAfterStep(ru, done); });
             return true;
           }
         }
@@ -19009,7 +19009,7 @@ export class BattleScene {
       if (!step) { done(); return true; }
       const [nc, nr] = step.split(',').map(Number);
       if (!this._destAllowedByBlockade(ru, nc!)) { done(); return true; }
-      this._doMove(ru, nc!, nr!, () => { this._refreshQueuedOrderVisuals(); done(); });
+      this._doMove(ru, nc!, nr!, () => { this._refreshQueuedOrderVisuals(); this._manualOrderAfterStep(ru, done); });
       return true;
     }
     if (ord.type === 'attack') {
@@ -19021,7 +19021,7 @@ export class BattleScene {
         return true;
       }
       if (this._canStrikeTargetFrom(ru, ru.q, ru.r, tgt)) {
-        this._doAttack(ru, tgt, done);
+        this._manualOrderStrike(ru, tgt, done);
         return true;
       }
       const avoidAutoBacktrack = this._shouldAvoidAutoBacktrack(ru);
@@ -19038,12 +19038,47 @@ export class BattleScene {
       this._doMove(ru, nc!, nr!, () => {
         if (previousPosition) ru.lastAutoMoveFrom = previousPosition;
         this._refreshQueuedOrderVisuals();
-        done();
+        this._manualOrderAfterStep(ru, done);
       });
       return true;
     }
     done();
     return true;
+  }
+
+  /**
+   * R-WEB-BATTLE-MANUAL-ORDERS-FULL-MOVE-STRIKE-AT-END-Q1: rozkaz RECZNY (marsz / atak) = pelny ruch w jednej aktywacji,
+   * jak w AUTO: po kazdym kroku, jesli zostaly punkty ruchu i rozkaz trwa, ponownie wykonujemy rozkaz (bez czekania
+   * na kolejna aktywacje). Cios nastepuje na koncu ruchu, gdy wrog jest w zasiegu; max 1 cios na jednostke na ture.
+   * Doktryny AI nie wplywaja na lancuch rozkazu recznego (rozkaz ma pierwszenstwo).
+   */
+  private _manualOrderChainActive(ru: RuntimeBattleUnit): boolean {
+    if (this.finished || this._autoBattleSuspended || ru.dead || ru.fadingOut || ru.removed) return false;
+    // Rozkaz reczny ma pierwszenstwo przed doktryna (ABC A 2026-11-15): jednostka bez doktryny i bez grupy
+    // (isUnitDoctrineAuto=true z domyslu) tez idzie lancuchem. Warunek doktryny usuniety po zarzucie Evaluatora.
+    if (!this._manualMode || !this._isPlayerSide(ru.side)) return false;
+    if (ru.struckRound === this.roundNo) return false;
+    const t = ru.playerOrder.type;
+    if (t !== 'move' && t !== 'attackMove' && t !== 'attack') return false;
+    if (ru.moveLeft > 0) return true;
+    // Wyczerpany ruch: rozkaz trwa tylko, zeby cios na koncu ruchu mogl dojsc do skutku (wrog juz w zasiegu, bez kroku).
+    if (t === 'move') return !!this._adjacentEnemy(ru);
+    const ord = ru.playerOrder;
+    if (ord.type === 'attack') {
+      const tgt = this._enemiesOf(ru).find(u => u.bu.id === ord.targetId && !u.dead && !u.fadingOut);
+      return !!tgt && this._canStrikeTargetFrom(ru, ru.q, ru.r, tgt);
+    }
+    return false;
+  }
+
+  private _manualOrderAfterStep(ru: RuntimeBattleUnit, done: () => void): void {
+    if (this._manualOrderChainActive(ru)) this._performPlayerOrder(ru, done);
+    else done();
+  }
+
+  private _manualOrderStrike(ru: RuntimeBattleUnit, target: RuntimeBattleUnit, done: () => void): void {
+    ru.struckRound = this.roundNo;
+    this._doAttack(ru, target, done);
   }
 
   /**
