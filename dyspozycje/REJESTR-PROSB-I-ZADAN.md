@@ -10330,3 +10330,8 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 
 ### Start 2026-11-16 ~05:20 UTC — #419 R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1 runda 2 (Haiku, cand 459354a12)
 - DODATEK 3: warunek ciszy zmieniony na „load ≤ 3,0 przed każdą parą” (maszyna prawie wolna: tylko #415 r3 zajmuje ~1 rdzeń); pary naprzemienne ≥3 ziarna × ≥3 pary; hak stats() księgi za `?civTest=1`.
+
+### #419 LEDGER-PERF — runda 2 FC FAIL, runda 3 start (2026-11-16 ~05:45 UTC)
+- R2 (Haiku): 0/18 przebiegów — środowisko subagenta ODRZUCA uruchomienia odłączone (klasyfikator uprawnień), a pojedynczy przebieg 100 tur ≈ 41–49 min nie mieści się w poleceniu < 590 s; hak `ledgerStats` (main.ts +5, za civTest) i opcja `--ledger-off` powstały, brak testu/mutacji haka (zarzut FC). Obserwacja: OFF dopisuje puste tiki (entries równe), dowodem trybu są bytes (t10: ON 140 259 B vs OFF 8 623 B). Refs `refs/keep/R-WEB-LEDGER-PERF-r2-{op,eval,fc,obrona-wip}`.
+- R3: Operator SONNET (2 nieudane rundy Haiku); NOWY PROJEKT: pary ON/OFF na WSPÓLNYM SLOCIE t50 (ON,OFF,OFF,ON) dla t51→t80, segmenty < 590 s (wznawianie wiarygodne od FALI 760), 2 ziarna (+ trzecie jeśli czas), load ≤ 3 przed segmentem. Okno 51–80, nie 100 tur — jawnie.
+- WNIOSEK PROCESOWY: subagenci Workflow nie mogą uruchamiać procesów odłączonych (klasyfikator); pomiary > 590 s muszą iść segmentami z wznawianiem albo przez orkiestratora.
