@@ -1,3 +1,9 @@
+## ROBOCZA 3af9f170 -- 2026-11-14 -- FALA 765: Wczytanie zapisu nie dopisuje domyslnej listy priorytetow budowy (testowa)
+
+- wczytanie zapisu nie dopisuje miastom zrownowazonym domyslnej listy budowaPriorytetTypow (stan po wczytaniu jak w zywej grze); zapisana lista zachowana
+- Weryfikacja: tsc 0, 5 bram. ref. zielone, test regresji 6/0 + mutacja czerwona, load-game-regression 34/0, drift-test dynamiczny 4242 i 777 po 10/10 tur bez pola w whiteliscie
+- Limity: stare zapisy z juz dopisana lista zachowuja ja; legacy migracja onlyZrownowazone bez zmian; README harnessu l.105 nieaktualne
+
 ## ROBOCZA c0173fc1 -- 2026-11-14 -- FALA 764: Bitwa reczna: rozkaz gracza = pelny ruch, cios na koncu ruchu (testowa)
 
 - rozkaz reczny marszu i ataku daje pelny ruch w jednej aktywacji (jak AUTO), cios na koncu ruchu, max 1 cios na jednostke na ture; AUTO i Pomin bez zmian

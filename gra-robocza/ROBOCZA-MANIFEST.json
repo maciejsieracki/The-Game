@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "c0173fc1e3ea4f01a7f379423e7313e0",
-  "bundleSha256": "81d20f9ebd0dbb8eb6d3e36b27911b68b60d0522fb5923a08fb04ec0d3e17003",
-  "bundleBytes": 14804839,
+  "bundleMd5": "3af9f1706c180061625341b13b40e5f7",
+  "bundleSha256": "37383e7eeb08e28998d7d6f5e44c5a6eae6f812f6d9f6342599acfcc6273271b",
+  "bundleBytes": 14804811,
   "sourceSnapshot": {
-    "source": "FC 39dab519d (BATTLE-MANUAL-ORDERS-FULL-MOVE-STRIKE-AT-END-Q1 r1) na origin/main FALA 763",
+    "source": "FC ca4d3ca2d (NO-DEFAULT-BUILD-PRIORITY-ON-LOAD-Q1) na origin/main FALA 764",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 764: rozkaz reczny marszu i ataku daje pelny ruch w jednej aktywacji (jak AUTO), cios na koncu ruchu, max 1 cios na jednostke na ture; AUTO i Pomin bez zmian"
+    "FALA 765: wczytanie zapisu nie dopisuje miastom zrownowazonym domyslnej listy budowaPriorytetTypow (stan po wczytaniu jak w zywej grze); zapisana lista zachowana"
   ],
   "verification": [
-    "tsc 0, 5 bram. ref. zielone, test tematu + mutacja czerwona, routing/attack-move zielone, live Chromium Hastati 6v6 1,00->1,65-1,92 hex/aktywacje"
+    "tsc 0, 5 bram. ref. zielone, test regresji 6/0 + mutacja czerwona, load-game-regression 34/0, drift-test dynamiczny 4242 i 777 po 10/10 tur bez pola w whiteliscie"
   ],
   "limits": [
-    "pelny przebieg bitwy do konca i AUTO ziarno 3 NIE ZMIERZONO; niewykorzystany ruch 13-18 proc.; arbitraz kolizji niewybranych osobnym tematem"
+    "stare zapisy z juz dopisana lista zachowuja ja; legacy migracja onlyZrownowazone bez zmian; README harnessu l.105 nieaktualne"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES BATTLE-MANUAL-ORDERS-FULL-MOVE-STRIKE-AT-END-Q1 r1 (kandydat 39dab519d, raport 52ffe5053): rozkaz reczny marszu/ataku = pelny ruch w jednej aktywacji, cios na koncu ruchu (max 1/ture); AUTO i Pomin bez zmian. Live Chromium Hastati 6v6: baza 1,00 hex/aktywacje i 0 ruch+cios -> kandydat 1,65-1,92 hex, ruch+cios 6-11; AUTO identyczny z baza na ziarnach 1-2. Noty: niewykorzystany ruch 13-18 proc. w move, pelny przebieg do konca bitwy i ziarno 3 AUTO NIE ZMIERZONO, spojnosc attackMove z wyczerpanym MP vs move do osobnej decyzji."
+    "notes": "FC PASS-WITH-NOTES SAVE-LOAD-NO-DEFAULT-BUILD-PRIORITY-ON-LOAD-Q1 (kandydat ca4d3ca2d, raport ed394f617): wczytanie zapisu nie dopisuje domyslnej listy budowaPriorytetTypow miastom zrownowazonym (jak w zywej grze); zapisana lista zachowana; konsumenci obsluguja undefined; pole usuniete z whitelisty hash. Test regresji 6/0 + mutacja czerwona; drift-test dynamiczny --turns 16 bez tego pola w whiteliscie: ziarno 4242 10/10, 777 10/10. Noty: README ai-economy-measure l.105 nieaktualne; legacy migracja onlyZrownowazone dalej daje liste DEFAULT (zgodnie z dispatchem)."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-16T09:53:17",
+  "hubGeneratedAt": "2026-11-16T09:58:07",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "c0173fc1e3ea4f01a7f379423e7313e0",
-      "sizeBytes": 14804839
+      "md5": "3af9f1706c180061625341b13b40e5f7",
+      "sizeBytes": 14804811
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "c0173fc1e3ea4f01a7f379423e7313e0",
-      "sizeBytes": 14804839
+      "md5": "3af9f1706c180061625341b13b40e5f7",
+      "sizeBytes": 14804811
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "c0173fc1e3ea4f01a7f379423e7313e0",
-      "sizeBytes": 14804839
+      "md5": "3af9f1706c180061625341b13b40e5f7",
+      "sizeBytes": 14804811
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "c0173fc1e3ea4f01a7f379423e7313e0",
-      "sizeBytes": 14804839
+      "md5": "3af9f1706c180061625341b13b40e5f7",
+      "sizeBytes": 14804811
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "c0173fc1e3ea4f01a7f379423e7313e0",
-      "sizeBytes": 14804839
+      "md5": "3af9f1706c180061625341b13b40e5f7",
+      "sizeBytes": 14804811
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "c0173fc1e3ea4f01a7f379423e7313e0",
-      "sizeBytes": 14804839
+      "md5": "3af9f1706c180061625341b13b40e5f7",
+      "sizeBytes": 14804811
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "c0173fc1e3ea4f01a7f379423e7313e0",
-      "sizeBytes": 14804839
+      "md5": "3af9f1706c180061625341b13b40e5f7",
+      "sizeBytes": 14804811
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "c0173fc1e3ea4f01a7f379423e7313e0",
-      "sizeBytes": 14804839
+      "md5": "3af9f1706c180061625341b13b40e5f7",
+      "sizeBytes": 14804811
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "c0173fc1e3ea4f01a7f379423e7313e0",
-      "sizeBytes": 14804839
+      "md5": "3af9f1706c180061625341b13b40e5f7",
+      "sizeBytes": 14804811
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "c0173fc1e3ea4f01a7f379423e7313e0",
-      "sizeBytes": 14804839
+      "md5": "3af9f1706c180061625341b13b40e5f7",
+      "sizeBytes": 14804811
     }
   ],
-  "md5": "c0173fc1e3ea4f01a7f379423e7313e0",
+  "md5": "3af9f1706c180061625341b13b40e5f7",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
