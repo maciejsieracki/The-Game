@@ -121,6 +121,49 @@ pub fn machines_by_camp_hex(
     out
 }
 
+/// Globalne mapy obozow dla rendera (web `refreshSiegeMarkers`, `main.ts:17509-17517`): web liczy
+/// `allMachinesByCamp` i `allCampOwners` jako JEDNA mape po heksie dla wszystkich obleganych miast.
+/// * maszyny: dla kazdego miasta w kolejnosci `sieges` `machinesByCampHex(camps, ready)` i LACZENIE
+///   list (`[...prev, ...kinds]`, `:17511-17513`);
+/// * wlasciciel: `allCampOwners.set(hk, oid)` (`:17514-17516`) - OSTATNIE miasto wygrywa.
+///
+/// Kolejnosc wpisow = kolejnosc pierwszego wstawienia heksa (semantyka `Map.set` dla istniejacego
+/// klucza: wartosc podmieniona, pozycja bez zmian). `SiegeViewDto.camp_hexes[].owner_id` pozostaje
+/// wlascicielem per miasto (P4-1F1); te funkcje to regula, ktora adapter P4-1G Q5 (#236/#269) MUSI
+/// zastosowac, aby odtworzyc web 1:1, gdy dwa oblegane miasta dziela heks obozu.
+#[must_use]
+pub fn global_camp_owners(sieges: &[SiegeViewDto]) -> Vec<(vm::HexCoord, vm::OwnerRef)> {
+    let mut out: Vec<(vm::HexCoord, vm::OwnerRef)> = Vec::new();
+    for siege in sieges {
+        for camp in &siege.camp_hexes {
+            match out.iter_mut().find(|(h, _)| *h == camp.hex) {
+                Some((_, owner)) => *owner = camp.owner_id,
+                None => out.push((camp.hex, camp.owner_id)),
+            }
+        }
+    }
+    out
+}
+
+/// Web `allMachinesByCamp` (`main.ts:17509-17513`): round-robin per miasto, listy laczone po heksie
+/// w kolejnosci `sieges`. Patrz [`global_camp_owners`].
+#[must_use]
+pub fn global_machines_by_camp(
+    sieges: &[SiegeViewDto],
+) -> Vec<(vm::HexCoord, Vec<SiegeMachineKind>)> {
+    let mut out: Vec<(vm::HexCoord, Vec<SiegeMachineKind>)> = Vec::new();
+    for siege in sieges {
+        let camps: Vec<vm::HexCoord> = siege.camp_hexes.iter().map(|c| c.hex).collect();
+        for (hk, kinds) in machines_by_camp_hex(&camps, &siege.ready_machines) {
+            match out.iter_mut().find(|(h, _)| *h == hk) {
+                Some((_, list)) => list.extend(kinds),
+                None => out.push((hk, kinds)),
+            }
+        }
+    }
+    out
+}
+
 /// Producent `sieges[]` (web `refreshSiegeMarkers`, `main.ts:17492-17530`): jeden wpis na miasto z
 /// `oblegane` w kolejnosci `state.cities`. `are_enemies(a, b)` = web `areEnemyOwners` (wejscie wolajacego).
 pub fn siege_views(

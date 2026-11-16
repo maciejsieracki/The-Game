@@ -3,8 +3,8 @@
 
 use civ_engine::data::buildings_tech::parse_wonders;
 use civ_engine::domain::overlays_view::{
-    camp_owner_at_hex, machines_by_camp_hex, siege_views, wonder_is_ruin, wonder_views,
-    wonder_views_with_era, OverlaysViewError,
+    camp_owner_at_hex, global_camp_owners, global_machines_by_camp, machines_by_camp_hex,
+    siege_views, wonder_is_ruin, wonder_views, wonder_views_with_era, OverlaysViewError,
 };
 use civ_engine::domain::playable::{
     MovementPoints, PlayableCity, PlayablePlacedWonder, PlayableSiegeMachineKind,
@@ -340,4 +340,46 @@ fn production_wonder_views_use_state_epoch() {
     assert!(wonder_views(&PlayableState::empty())
         .expect("empty")
         .is_empty());
+}
+
+/// Web `main.ts:17509-17517` (obrona r1, zarzut Evaluatora 1): `allCampOwners` i `allMachinesByCamp`
+/// sa GLOBALNE po heksie. Miasta 10 (wlasciciel 1) i 20 (wlasciciel 2) dziela heks obozu (6,5) z
+/// jednostkami wlascicieli [1, 3]. Per miasto (`siegeCampSync.ts:43`): 10 -> 3, 20 -> 1. Globalnie
+/// ostatnie miasto wygrywa (`allCampOwners.set`, `:17515`) -> 1; maszyny laczone (`:17512`).
+#[test]
+fn global_camp_maps_last_city_wins_and_machines_concatenate() {
+    let mut state = PlayableState::empty();
+    state.cities = vec![city(10, CITY_OWNER, 5, 5), city(20, ENEMY, 7, 5)];
+    state.units = vec![unit(1, CITY_OWNER, 6, 5), unit(2, NEUTRAL, 6, 5)];
+    state.oblegane.insert(CityId::new(10));
+    state.oblegane.insert(CityId::new(20));
+    state
+        .siege_machines_ready
+        .insert(CityId::new(10), vec![PlayableSiegeMachineKind::Taran]);
+    state
+        .siege_machines_ready
+        .insert(CityId::new(20), vec![PlayableSiegeMachineKind::Wieza]);
+    let enemies = |a: i64, b: i64| a != b;
+    let sieges = siege_views(&state, enemies).expect("sieges");
+    assert_eq!(sieges.len(), 2);
+    // Per miasto (P4-1F1): wlasciciel z pelnej listy z filtrem wlasciciela TEGO miasta.
+    assert_eq!(sieges[0].camp_hexes.len(), 1);
+    assert_eq!(sieges[0].camp_hexes[0].owner_id, player(NEUTRAL));
+    assert!(sieges[1]
+        .camp_hexes
+        .iter()
+        .all(|c| c.owner_id == player(CITY_OWNER)));
+    // Globalnie (web render): ostatnie miasto wygrywa.
+    assert_eq!(
+        global_camp_owners(&sieges),
+        vec![(hex(6, 5), player(CITY_OWNER))]
+    );
+    // Maszyny: miasto 10 (1 oboz) + miasto 20 (2 wpisy tego samego heksa) laczone po heksie.
+    assert_eq!(
+        global_machines_by_camp(&sieges),
+        vec![(
+            hex(6, 5),
+            vec![SiegeMachineKind::Taran, SiegeMachineKind::Wieza]
+        )]
+    );
 }
