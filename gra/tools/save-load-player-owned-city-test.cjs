@@ -40,24 +40,36 @@ const SAVE_RE = /\.\.\.\(playerEverOwnedCityByOwner\.size > 0\s*\?\s*\{\s*player
 const RESTORE_RE = /const savedEverOwnedCity: unknown = saved\.meta\?\.playerEverOwnedCityByOwner;\s*if \(Array\.isArray\(savedEverOwnedCity\)\)\s*\{[\s\S]{0,250}playerEverOwnedCityByOwner\.add\(oid\)/;
 const HEURISTIC_RE = /if \(cities\.some\(c => c\.ownerId === oid\)\) playerEverOwnedCityByOwner\.add\(oid\);/;
 
-function staticChecks(src, label) {
-  check(SAVE_RE.test(src), `${label}: zapis meta.playerEverOwnedCityByOwner (tylko gdy niepusty)`);
-  check(RESTORE_RE.test(src), `${label}: odczyt z Array.isArray + typeof number po heurystyce`);
-  check(HEURISTIC_RE.test(src), `${label}: heurystyka "ma miasto teraz" zachowana dla starych zapisow`);
+// Zwraca liczbe NIEspelnionych warunkow statycznych dla danego zrodla (0 = wszystko na miejscu).
+function staticFailures(src) {
+  let bad = 0;
+  if (!SAVE_RE.test(src)) bad++;
+  if (!RESTORE_RE.test(src)) bad++;
+  if (!HEURISTIC_RE.test(src)) bad++;
+  return bad;
 }
 
 const src = fs.readFileSync(MAIN_TS, 'utf8');
-staticChecks(src, 'main.ts');
+check(SAVE_RE.test(src), 'main.ts: zapis meta.playerEverOwnedCityByOwner (tylko gdy niepusty)');
+check(RESTORE_RE.test(src), 'main.ts: odczyt z Array.isArray + typeof number po heurystyce');
+check(HEURISTIC_RE.test(src), 'main.ts: heurystyka "ma miasto teraz" zachowana dla starych zapisow');
 
-// mutacja na KOPII: usuniecie bloku odczytu musi dac FAIL (test wykrywa brak odtworzenia flagi)
+// Mutacje na KOPIACH (nie na main.ts): kazda musi byc WYKRYTA przez staticFailures (wynik > 0).
+// Mutacja A: usuniecie bloku odczytu. Mutacja B: usuniecie zapisu. Zaden z warunkow nie jest
+// sprawdzany przez siebie samego -- liczy sie to, czy test zaczerwienieje sie na zmienionym kodzie.
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pownedcity-mut-'));
-const mutPath = path.join(tmpDir, 'main-mutant.ts');
-const mutated = src.replace(RESTORE_RE, 'NOOP_MUTANT');
-fs.writeFileSync(mutPath, mutated);
-const mutSrc = fs.readFileSync(mutPath, 'utf8');
-check(!RESTORE_RE.test(mutSrc), 'mutacja kopii: blok odczytu usuniety -> odczyt NIE istnieje');
-check(SAVE_RE.test(mutSrc), 'mutacja kopii: zapis nadal obecny (mutacja dotyczy tylko odczytu)');
+const mutants = {
+  'bez odczytu (RESTORE)': src.replace(RESTORE_RE, 'NOOP_MUTANT_RESTORE'),
+  'bez zapisu (SAVE)': src.replace(SAVE_RE, 'NOOP_MUTANT_SAVE'),
+};
+for (const [name, text] of Object.entries(mutants)) {
+  const p = path.join(tmpDir, 'main-mutant.ts');
+  fs.writeFileSync(p, text);
+  const n = staticFailures(fs.readFileSync(p, 'utf8'));
+  check(n > 0, `mutacja kopii "${name}" wykryta przez test (niespelnionych warunkow: ${n})`);
+}
 fs.rmSync(tmpDir, { recursive: true, force: true });
+check(staticFailures(src) === 0, 'main.ts: wszystkie warunki statyczne spelnione');
 
 console.log(failures === 0 ? 'RESULT: PASS' : `RESULT: FAIL (${failures})`);
 process.exit(failures === 0 ? 0 : 1);

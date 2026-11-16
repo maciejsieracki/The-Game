@@ -32594,7 +32594,9 @@ async function boot(): Promise<void> {
         },
         /** Test hooka: usuwa miasta i jednostki gracza (symulacja podboju biernego gracza). */
         debugKillPlayer: (forgetOwnership?: boolean): void => {
-          if (forgetOwnership) playerEverOwnedCityByOwner.clear(); // jak po wczytaniu zapisu (zbiór nie jest w zapisie)
+          // R-WEB-SAVE-LOAD-PLAYER-OWNED-CITY-AND-LEDGER-HISTORY-Q1 (#433): zbiór trafia do zapisu (meta) gdy niepusty;
+          // forgetOwnership=true zeruje go w pamięci (jak po wczytaniu zapisu bez flagi / starego zapisu).
+          if (forgetOwnership) playerEverOwnedCityByOwner.clear();
           for (let i = cities.length - 1; i >= 0; i--) if (cities[i]!.ownerId === ME()) cities.splice(i, 1);
           for (let i = units.length - 1; i >= 0; i--) if (units[i]!.ownerId === ME()) units.splice(i, 1);
         },
