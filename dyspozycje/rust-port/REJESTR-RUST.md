@@ -2248,3 +2248,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **RENDERER-ORDERS-CYTATY-Q1** (`wf_59b7fc97-124`, Opus we wszystkich rolach): zamiana cytatów `plik:linia` w `rust-port/renderer/src/battle/orders.rs` na numery z pinu `07d2fbd72` (tylko komentarze, zero zmian kodu). Dispatch `0c11bd5b0`. Uwaga: reguła CLAUDE.md przydziela Opus wyłącznie tematom pamięci/GPU/grafiki; ten temat jest komentarzowy w crate renderer — do rozstrzygnięcia przy kolejnych przydziałach, Haiku byłby zgodny z regułą domyślną.
 - **K5-BLOW-ENV-WEKTORY-Q1** (`wf_6ab179f1-525`, Operator/Obrona HAIKU, Evaluator/FC SONNET): wektory pinu dla kopii B `terrain_river_attack_multiplier` (`blow_env_for`, `siege_tactics_blow_inputs.rs:21`, pin `battleScene.ts:8861`), 8+ przypadków, mutacja `atk_tile_is_river`→`def_tile_is_river`; bez zmian w `src/`. Dispatch `0c11bd5b0`.
 - **Sloty:** 2 z 4 aktywne (oba powyżej). Pozostałe tematy kodu czekają na decyzje ABC (kontrakt `ActivateOps`, #253, RESOLVE-PAIR-FULL).
+
+## Przebieg (05:01 UTC — heartbeat slotów, druga połowa godziny)
+
+- **Sloty:** 2 z 4 aktywne, obie bez FC: RENDERER-ORDERS-CYTATY-Q1 (`wf_59b7fc97-124`, Opus, Operator) i K5-BLOW-ENV-WEKTORY-Q1 (`wf_6ab179f1-525`, Haiku, Operator).
+- **Nie uruchomiono dwóch dispatchów rozpoznań** (`R-RUSTPORT-P6-COMBAT-WEJSCIA-ROZP-Q1`, `R-RUSTPORT-P6-K5-AUTO-EXEC-ROZP-Q1`): oba już wykonane i zintegrowane (wpisy wyżej: COMBAT-WEJSCIA-ROZP-Q1 FC `09d92eb24`, K5-AUTO-EXEC-ROZP-Q1 FC `95eb581c1` → parity `de88d9d55`). Ich dispatche mają bazę `474487792` i są nieaktualne. Nie ponawiać.
+- **Kandydaci z kolejki bez startu:** #135/#167 (wejścia zwarcia) — czeka na decyzję właściciela o kolejności względem RESOLVE-PAIR; #106 R7K7C-WIRING — decyzja pkt 4; #115 ZDOBYCIE-MIASTA-WIRING i #120 CRED-HAK — decyzje A/B; K5-AUTO-EXEC (port `_executeUnitsImmediate`) — wymaga dispatchu i decyzji o zmianie kontraktu `ActivateOps` (rekomendacja: zmiana); V15/V16 — po EXEC.
+- **Parity:** `7d8993c42` (bez zmian w tym ticku).
+- **Dysk:** 18 GB wolnego.
