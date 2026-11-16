@@ -2512,3 +2512,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Kolejność integracji:** I2 (`43709ed0a`, merge `0e3c149fa` do powtórzenia na `0f3483e57`) MUSI wejść przed I3. Dopiero potem I3.
 - **Zarzuty do przeniesienia (nie blokują):** I5 / K5LOOP-OUTCOME — skutki trafienia wieży poza zabiciem i gałąź `neverRout`; I4 — kierunek jednostki w oknie `[t0, hitAt)` z akcji `Facing`; przy wpinaniu #113 — unikalność id jednostek między stronami.
 - **Dysk:** 4,8 GB — pełny test engine dla I2/I3 wymaga ≥ 8 GB.
+
+### Przebieg — P4-1F5 REACH-PATH-VIEW: FC PASS-WITH-NOTES, 2026-11-16 ~15:30 UTC
+
+- **FC:** `63b4f0dd8` (kod `e34af8294` + Obrona `5b8a70ba5`). Na WIP: `wip/R-RUSTPORT-P4-1F5-REACH-PATH-VIEW-integracja`, `refs/keep/P4-1F5-fc`.
+- **Bramki Operatora/Evaluatora:** fmt/clippy `-D warnings` EXIT 0; `view_overlays_reach_path` 12/12 (po Obronie 14/14); `--lib` 124/124; pełny test: 3665 passed, 0 failed (zmierzony przez Operatora). Final Control nie powtarzał pełnego testu.
+- **Merge z parity `0f3483e57`:** konflikt add/add w `overlays_view.rs` (F6 i 1F5 tworzą ten sam plik). Ten sam konflikt ma 1F4. Scalenie to współdzielenie kodu, nie wybór wersji.
+- **Zarzuty do rejestru (nieblokujące):** składacz `reachable_overlay`/`path_route_overlay` nie jest wołany w produkcji (P4-1G Q6); `is_me` (aktywny fotel) zamiast `is_human_owner` — dług przy #281; granica kosztu scalenia pokryta testem r7.
+- **Kolejność integracji:** I2 → I3 → overlays (1F4, 1F5, 1F3), każdy z pełną bramką przy ≥ 8 GB.
