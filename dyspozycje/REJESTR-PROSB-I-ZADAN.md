@@ -10487,3 +10487,6 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 
 ### Zgłoszenie 2026-11-16 (wieczór): BOOT ERROR przy łączeniu jednostek (oblegająca + dołączająca)
 Właściciel: „Podczas łączenia jednostek taki dziwny błąd wystąpił. Jedna jednostka oblegała, a druga dołączyła.” Zrzut: `TypeError: Cannot read properties of undefined (reading 'typeId')` ← `onMerge` (panel „Połącz”) ← `applyMerge`. STATUS: **OTWARTE** — dispatch `R-WEB-ARMY-MERGE-JOIN-BESIEGING-TYPEID-CRASH-Q2` zapisany (e9efa70bf); start po ARMYSPLIT (te same pliki). Przyczyna NIE ZMIERZONA (4 hipotezy w dispatchu).
+
+### FALA 773 (2026-11-16, wieczór) — ŁUCZNICY: ZDROWIE 20 (ARCHERS) — WDROŻONE NA ROBOCZĄ
+FC PASS-WITH-NOTES (FC e61b23d3b, kandydat 68dd4666a). main = 327e5104d, ROBOCZA MD5 a35723b44dc3d1a6be77943eb6f89fc6 (raw = manifest), 3 sidecary audio zgodne. Zdrowie wszystkich pieszych łuczników = 20 w obu polach `units.json`; pole „Atak dystansowy” 5/6/7. NOTATKA: silnik czyta `missileAttack` (Łucznik 3 / egipski 6 / nubijski 6) — zmiana pola „Atak dystansowy” nie zmienia realnej walki; ABC o missileAttack czeka na właściciela (#451). Następny: UNITSHP (jedno pole zdrowia).
