@@ -184,6 +184,8 @@ esbuild.buildSync({
 const { civMatrixBonusyForCivKey } = require(CB_BUNDLE);
 const grecyBonusy = civMatrixBonusyForCivKey('grecy');
 const falangaBonus = grecyBonusy.find((b) => b.typ === 'bonus_obrona' && b.cel === 'piechota' && b.wartosc > 0);
+// polski tekst opisu Falangi = ten sam, ktory panel pokazuje (defenderCivBonusBreakdown -> civBonusOpisPl), obciety z licznika "— N z M jednostek"
+const falangaOpisPl = defenderCivBonusBreakdown([{ celShape: civBonusUnitShapeFromDef({ Jednostka: 'Wojownik', Typ: 'Piechota', Rola: 'Wrecz' }) }], [falangaBonus])[0].text.replace(/ — \d+ z \d+ jednostek$/, '');
 if (!falangaBonus) throw new Error('bonus_obrona piechota Grecji (Falanga, civ-matrix) nie znaleziony');
 assert(falangaBonus.cel === 'piechota', 'DANE: Falanga (Grecy) bonus_obrona.cel === "piechota" (fundament warunku "N z M")');
 
@@ -313,7 +315,8 @@ console.log('\n--- B. Bonus cywilizacji (Falanga, cel="piechota") -- licznik N z
       lines[0].text.endsWith(' — 2 z 4 jednostek'),
       'Falanga: tekst konczy sie liczbnikiem "— 2 z 4 jednostek" ("' + lines[0].text + '")',
     );
-    assert(lines[0].text.startsWith(falangaBonus.opis), 'Falanga: tekst zaczyna sie od oryginalnego opisu z civs.json (bez utraty tresci)');
+    // A: panel pokazuje opis przetlumaczony (civBonusOpisPl), a nie surowy `Matrix:<id>`; polski tekst Falangi wyprowadzamy z tej samej sciezki.
+    assert(lines[0].text.startsWith(falangaOpisPl), 'Falanga: tekst zaczyna sie od polskiego opisu bonusu (bez utraty tresci)');
   }
 }
 
@@ -431,7 +434,12 @@ console.log('\n--- E. DefenseRosterUnit bez zbednych pol (meleeDefence / defense
 console.log('\n--- F. bonusChipTexts (regresja -- uzywane przez ui/preBattle.ts) ---');
 {
   const chips = bonusChipTexts(grecyBonusy);
-  assert(chips.length === 1 && chips[0] === falangaBonus.opis, 'bonusChipTexts(Grecy): 1 chip liczbowy walki (Falanga) -- jednostka_specjalna/ekonomia odrzucone przez isCombatModifierBonus');
+  // A: Grecy niosa dzis 6 niezerowych bonusow walki z macierzy (Falanga + morska + plytkie morze), nie jeden; wpisy o wartosci 0 (np. walka_hp_*)
+  // oraz jednostka_specjalna/ekonomia maja byc odrzucone przez isCombatModifierBonus. Oczekiwana liczba liczona z tych samych danych (nie z pamieci).
+  const expectedChipCount = grecyBonusy.filter(b => b.realizuje === 'walka' && b.typ !== 'jednostka_specjalna' && b.wartosc !== 0).length;
+  assert(expectedChipCount >= 1 && chips.length === expectedChipCount, 'bonusChipTexts(Grecy): dokladnie ' + expectedChipCount + ' niezerowych chipow walki (dostalem ' + chips.length + ')');
+  assert(chips.includes(falangaOpisPl), 'bonusChipTexts(Grecy): zawiera chip Falangi ("' + falangaOpisPl + '")');
+  assert(!chips.some(c => /punkty zdrowia/.test(c)), 'bonusChipTexts(Grecy): wpisy zerowe (walka_hp_*) nie daja chipow');
 }
 
 // ===========================================================================
