@@ -2704,3 +2704,15 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Konflikt do zapamiętania:** #109 i #123 dotykają `siege_tactics_loop.rs`. Integracja sekwencyjnie: najpierw jeden, potem drugi, z pełną bramką.
 - **Dysk:** do sprawdzenia przed startem; worktree zakończonych tematów do usunięcia po zabezpieczeniu referencjami `keep`.
 - **Otwarte:** push referencji `keep` odrzucany przez proxy; trailer `463fb2636` z nazwą modelu (decyzja #289).
+
+### Przebieg — heartbeat Rust (19:17 UTC), 2026-11-16
+
+- **Parity:** `0fccd8dbf`, bez zmian. Dysk 11 GB wolnego (po zajęciu przez trzy bramki); sprzątanie przy następnym starcie.
+- **Wyniki:**
+  - Wektory NaN/Inf (#137): Operator PASS-WITH-NOTES, commit `3fd4d9677`, Evaluator PASS-WITH-NOTES. FC w toku (`wf_a2bf4706-6d5`).
+  - Facing po krokach ruchu (#123, `wf_43129880-afd`): BLOCK w rundzie 1/5 (Operator, Evaluator i FC zgodnie). W `ProdBody::start` zdarzenia `AdvanceStep`, `FallBackStep`, `CavalryAction` są pomijane (`siege_tactics_loop.rs` ~1476, unported), więc facing po kroku nie ma czego testować. Zablokowane przez port ruchu (#258, #259, #261).
+  - Efekty po ciosie (#109, runda 4, `wf_43129880-afd`): w toku.
+  - Integracja wektorów V2/V7 (#296, FC `70d5c80e7`): w toku (`wf_0a773a2f-c9c`).
+- **Nowy temat:** rozpoznanie portu ruchu pieszego (#258 K5DOC-T4), dispatch `39d0ba73c`, `wf_7fdf1cf6-fb3`, tylko odczyt, Haiku i Sonnet.
+- **Sloty: 4 z 4 aktywne** (NaN FC, OUTCOME, integracja V2/V7, rozpoznanie T4).
+- **Otwarte:** push referencji `keep` odrzucany przez proxy; trailer `463fb2636` z nazwą modelu (decyzja #289).
