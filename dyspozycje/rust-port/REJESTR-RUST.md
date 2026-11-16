@@ -2716,3 +2716,10 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Nowy temat:** rozpoznanie portu ruchu pieszego (#258 K5DOC-T4), dispatch `39d0ba73c`, `wf_7fdf1cf6-fb3`, tylko odczyt, Haiku i Sonnet.
 - **Sloty: 4 z 4 aktywne** (NaN FC, OUTCOME, integracja V2/V7, rozpoznanie T4).
 - **Otwarte:** push referencji `keep` odrzucany przez proxy; trailer `463fb2636` z nazwą modelu (decyzja #289).
+
+### Przebieg — wektory NaN/Inf (#137) gotowe, sprzątanie, 2026-11-16 ~20:00 UTC
+
+- **Wektory NaN/Inf/ułamków amunicji i maxRounds (#137):** Operator PASS-WITH-NOTES `3fd4d9677`, Evaluator PASS-WITH-NOTES (własna mutacja zabita), FC PASS-WITH-NOTES raport `095e6d036`. Tylko cztery pliki testowe, zero zmian w kodzie produkcyjnym. Merge-tree na `0fccd8dbf` czysty. Integracja do zrobienia po FF wektorów V2/V7 (ta sama baza). Zarzuty: V-A1 dla 0.5 i 2.5 oraz log tekstowy poza Rust (NIE_ZMIERZONO); NaN i ±Inf to wartości zastępcze, a nie test obsługi.
+- **Sprzątanie:** dysk spadł do 6,8 GB, poniżej progu bramki. Usunięto worktree zakończonego workflowu wektorów NaN/Inf, targety `target-nan`, `target-v2v7`, `tgt`, `tgt-fc` i logi/skrypty z katalogu scratch poprzednich przebiegów. Commity bez odpowiednika na parity zostały w referencjach `keep` (`3fd4d9677`, `095e6d036`, `70c0bbcd6`, `39888d3fa`, `2aa1992d3`). Dysk 15 GB wolnego.
+- **Uwaga o sprzątaniu:** wzorzec usuwał też pliki robocze (logi i skrypty) z katalogu scratch, nie tylko targety. Nie były to commity ani zatwierdzone raporty, ale wynik był szerszy niż zamierzony.
+- **Trwa:** integracja V2/V7 (`wf_0a773a2f-c9c`), OUTCOME r4 (#109) i rozpoznanie T4 (#258). Wynik RUCH-FACING (#123): BLOCK, port ruchu jest warunkiem.
