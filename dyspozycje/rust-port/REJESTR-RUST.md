@@ -2598,3 +2598,35 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sloty: 2 z 4 aktywne:** wektory AUTO V1/V5/V6 (#118, `wf_55097f16-9ad`) i wektory pętli dystansu (#100, `wf_a01f4cfa-dd0`). Dwa wolne: kolejne czyste tematy wymagają decyzji właściciela (#308 droga DTO, #97 tryb ręczny, #282 fotele) albo rozpoznania (#310 pola ekonomii do zaplanowania).
 - **Dysk:** 15 GB. Parity bez zmian poza FF I4.
 - **Otwarte:** `refs/keep` I4 (`54fa4c704`) odrzucany przez proxy; weryfikacja logu `p6_8i_pick`.
+
+### KOREKTA 2026-11-16 — statusy „ZINTEGROWANE” vs wołający produkcyjny (#309)
+
+Dopisek, historia wpisów powyżej nie zmieniona. Źródło: `dyspozycje/rust-port/p6/AUDYT-PARYTET-9a71caf8a.md` (§3–§4, commit `8a0beec86`). Dispatch: `dyspozycje/autobot/runs/R-RUSTPORT-P6-REJESTR-KOLEJKA-KOREKTA-Q1/00-dispatch.md`. Parity: `55e00a164`.
+
+Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. Nie oznacza, że funkcja ma wołającego produkcyjnego osiągalnego z `bridge.rs` (`src-tauri` → `engine::bridge`). Skorygowane pozycje:
+
+| Funkcja / moduł (pin Rust `9a71caf8a`) | Wpis historyczny | Stan wg audytu | Korekta |
+|---|---|---|---|
+| `apply_dipl_deltas_to_state` (`turn_war_dipl_steps.rs:1034`) | #89/#90 R7K7-B/C; moduł „wpięty” | wołana tylko z testów (`p6_r7k7c_owner_pools.rs`); `advance_turn` jej nie woła | NIEPODPIĘTA. Moduł wpięty, funkcja nie. Wpięcie: #106/#298, po #282 |
+| `eliminate_owner` (`eliminacja.rs:48`) | #141 (completed); INTEG-B21 `cf281d785` wg wpisu | brak wołającego produkcyjnego (L5) | NIEPODPIĘTA. Kod w parity, ścieżka produkcyjna nie. #114 pozostaje w toku |
+| `run_economy_tick_for_game` (`turn_economy_wire.rs:234`), `run_post_central_growth` (`:245`), `apply_praca_upkeep_post` (`:394`) | ekonomia opisana jako zintegrowana | brak wołającego produkcyjnego (L1) | NIEPODPIĘTE. `advance_turn` woła tylko `run_war_turn` i fazę zwycięstwa. Wpięcie: #304, po #310 |
+| `declare_war_by_player` (`diplomacy_player_war.rs:311`) | #171 CRED-HAK-WYPOWIEDZENIE-IMPL (completed) | brak wołającego; `bridge.rs:309–313` odrzuca `DeclareWar` (L4) | NIEPODPIĘTA. #171 nie oznacza wpięcia. Wpięcie: #305, po #286 |
+| `SiegeLoop` (`siege_tactics_loop.rs:490`), `ProdBody` (`:1092`), `pick_tower_target` (`:176`) | #96, #98, #116, #146 (completed) | wołane tylko z nieosiągalnego klastra oblężenia; nic nie tworzy `SiegeLoop` poza testami (L2) | NIEPODPIĘTE. Wpięcie: #113/#306 |
+| `combat::resolve` (`combat.rs:381`), `combat::resolve_combat` (`:321`) | #136 COMBAT-RESOLVE-PETLA (completed) | brak wołającego; `playable.rs:771` stwierdza to samo (L3) | NIEPODPIĘTE. Port pętli istnieje, nie jest wołany. Wpięcie: #306 |
+| `apply_transfer_with_effects` (`siege_transfer.rs:340`), `run_capital_capture_plunder` (`siege_capital_plunder.rs:504`) | SIEGE-TRANSFER Q2–Q8 (#28–#43), #175 (completed) | wołane tylko z nieosiągalnego `siege_transfer` (L5) | NIEPODPIĘTE. Wpięcie: #307 (#115) |
+| `forced_war_step` (`war_turn_forced.rs:231`), `plan_war_march` (`ai_war_march_plan.rs:259`), `plan_ai_turn` (`ai_turn.rs:1045`) | W3 FORCED-STEP `0ccd2da2a`, W5 MARCH-PLAN `72209573c` (zintegrowane) | audyt L5: brak wołającego produkcyjnego | DO WERYFIKACJI (NIE_ZMIERZONO). Audyt wykrywa wołających po nazwach; ręcznego potwierdzenia dla tych trzech nie było |
+| `run_ai_ai_peace_turn` (`war_turn_ai_ai.rs:84`) | #4 W7 SIEGE-AIAI-TURN (completed), #26 | brak wołającego produkcyjnego; audyt §3: ROZBIEŻNOŚĆ z opisem zadania | ROZBIEŻNOŚĆ, do wyjaśnienia przez właściciela tematu |
+| `ReplayLog` / `zapis_loader::load_save_snapshot` (`zapis_loader.rs:43`) | #13 (completed) | brak wołającego; `bridge.rs` nie ma komendy wczytania (audyt §3, L6) | ROZBIEŻNOŚĆ: opis mówi o ścieżce produkcyjnej, kodu produkcyjnego brak |
+| Widoki P4: `city_views` (`city_view.rs:578`), `build_map_view` (`map_view.rs:286`), `build_highlight` / `okolica_view` / `path_route_overlay` (`overlays_view.rs:223/631/449`) | P4-1E (#214, #222), P4-1F3/F4/F5 (#271–#273) zintegrowane | brak wołającego; renderer nie zależy od `civ-engine` (L6) | Kod DTO w parity, droga do renderera nieustalona. Decyzja: #308 |
+| `js_max` / `js_round` (`siege_tactics_blow.rs`) | #110, #142 (completed) | używane przez `okolica` i `unit_power` (helpery); silnik bloku nie | CZĘŚCIOWO (audyt §3) |
+
+**K5LOOP-OUTCOME (#109), rozjazd.** W historii `parity-v2` jest commit `c3e3617b2` „Integracja K5LOOP-OUTCOME (#226): efekty po ciosie w ProdBody::strike …” (przodek `55e00a164`). Tasklista pokazuje #109 `pending`, a w rejestrze brak wpisu o tej integracji. Status `NIE_ZMIERZONO`, do uzgodnienia przez orkiestratora. Audyt 9a71caf8a go nie obejmuje.
+
+**Uwaga do audytu (dla przyszłych dispatchów).** Audyt wykrywa wołających po nazwach; wywołania metod przez odbiorcę bez nazwy typu nie są wykryte (§6 audytu). Pozycje z tabeli wymagają ręcznego `git grep` przed dispatchem.
+
+### Domknięcie tasków po integracjach 1F3 i I4 (#301), 2026-11-16
+
+- **P4-1F3 SIEGE-WONDER-VIEW (#271): zintegrowany.** Kod FC `25fdeb11a` (FC r1 FAIL INFRA: bramki niedokończone), integracja na `parity-v2` = `9a71caf8a` (FF z `3a8f068f6`). Konflikt add/add w `overlays_view.rs` rozstrzygnięty przez zachowanie funkcji i typów obu stron. Bramki: 3735 passed, 0 failed, 1 ignored (pre-existing).
+- **P4-1I4 BATTLE-CONSUMER (#277, #293): zintegrowany.** Kod FC `54fa4c704` (PASS-WITH-NOTES), integracja na `parity-v2` = `55e00a164` (FF z `9a71caf8a`). Bramki: patrz wpis 17:47 UTC.
+- **Otwarte po tym domknięciu:** #294 (push `refs/keep/R-RUSTPORT-P4-1I4-fc` = `54fa4c704`, odrzucany przez proxy; zostaje lokalnie) i #295 (log `p6_8i_pick`).
+- **Pozostałe integracje z tej serii, dla kompletności:** nakładki 1F4/1F5 r2 `86366b5fe` na `75de326bc` → `3a8f068f6`; K5DOC-T2/T3 `03dfa64c2`, `efa3b7642` na `75de326bc`; K5-AUTO-WEKTORY V5/V6 `b6aa05024` (V1 nieweryfikowane, patrz rozjazdy w `KOLEJKA-RUST.md` §6).

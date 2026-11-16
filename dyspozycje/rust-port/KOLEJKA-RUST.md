@@ -1,91 +1,78 @@
-# KOLEJKA RUST — gotowe tematy do uzupełniania slotów (maks. 4 operatorów naraz)
+# KOLEJKA RUST — otwarte tematy do uzupełniania slotów (maks. 4 operatorów naraz)
 
-**Stan na 15.11 (po integracji P4-1E).** Migawka z 15.11 04:48 UTC jest nieaktualna i zastąpiona tym plikiem.
-Temat #228 (`R-RUSTPORT-KOLEJKA-ODSWIEZ-Q1`), dispatch: `dyspozycje/autobot/runs/R-RUSTPORT-KOLEJKA-ODSWIEZ-Q1/00-dispatch.md`.
-Baza odświeżenia: `f7baa3848` (= `origin/rust-port/parity-v2`).
+**Stan: 2026-11-16, po FF I4 na parity (rejestr, wpis 17:47 UTC).** Zastępuje migawkę z 15.11 (baza `f7baa3848`), która jest nieaktualna i nie wolno jej używać jako bazy.
+Parity: `rust-port/parity-v2` = `55e00a164`.
+Dispatch korekty: `dyspozycje/autobot/runs/R-RUSTPORT-P6-REJESTR-KOLEJKA-KOREKTA-Q1/00-dispatch.md` (gałąź `claude/rust-sivvrn`). Korekta statusów w rejestrze: `REJESTR-RUST.md`, sekcja „KOREKTA 2026-11-16”.
 
-**Źródła i pierwszeństwo.** Status tematu ustala się w tej kolejności: (1) rejestr `dyspozycje/rust-port/REJESTR-RUST.md` (najświeższy wpis), (2) tasklista, (3) dispatch. Gdy źródła się rozjeżdżają, pozycja jest oznaczona `NIE_ZMIERZONO` z odnośnikiem — rozstrzyga orkiestrator. Numery #1–#234 są zgodne z tasklistą, z wyjątkami opisanymi przy pozycjach.
+**Źródła i pierwszeństwo.** Status tematu: (1) rejestr `dyspozycje/rust-port/REJESTR-RUST.md` (najświeższy wpis), (2) tasklista, (3) dispatch. Rozjazdy oznaczone `NIE_ZMIERZONO` rozstrzyga orkiestrator.
 
-Zasada (właściciel, 2026-11-11): zawsze działają cztery tematy operatorskie. Slot zwolniony = w tej samej turze start następnego z tej listy (dispatch gotowy lub pisany od razu). Nie czekać na integrację: temat zależny od niezintegrowanego batcha startuje na czubku batcha (gałąź `rust-port-wip/BATCH*-tip`); FF na parity-v2 daje dokładnie ten commit.
+**Zasada slotów.** Maks. 4 operatory naraz. Slot zwolniony = start następnego tematu z tej listy w tej samej turze. Start tylko z dispatchem wypchniętym na `claude/rust-sivvrn`, bazą = czubek FC albo `parity-v2`, zależnościami już zintegrowanymi i bez otwartej decyzji gameplay. Nie startować „dla zapełnienia”.
 
-## Parity
+**Reguła modeli (właściciel, 2026-11-12; wiążąca).** Operator = HAIKU zawsze; SONNET na Operatorze tylko po dwóch nieudanych rundach Haiku tego samego tematu, z uzasadnieniem w dispatchu. Obrona = HAIKU; Evaluator i Final Control = SONNET. Renderer/DTO = OPUS.
 
-- Parity-v2: `f7baa3848` — „Integracja P4-1E CITY-VIEW (FC PASS-WITH-NOTES 185e3c0f3) na parity 10a2fc4af” (FF z `10a2fc4af`, rejestr: sekcja 15.11 17:xx UTC).
-- `f2bb11970` NIE jest błędnym SHA. Był to wcześniejszy czubek parity-v2 po integracji WIEZE-2B2 r2 (rejestr, 15.11 04:08 i 04:24), zastąpiony przez kolejne FF. Nie używać go jako bazy. Poprzednia migawka KOLEJKI wskazywała go jako aktualny czubek, co było nieaktualne, nie błędne.
+## 1. Zintegrowane — usunięte z kolejki
 
-## W toku (operatorzy / Workflow)
+| Temat | Integracja na parity | Uwaga |
+|---|---|---|
+| #271 P4-1F3 SIEGE-WONDER-VIEW | `9a71caf8a` (FC `25fdeb11a`, FF z `3a8f068f6`) | konflikt add/add w `overlays_view.rs` rozstrzygnięty; 3735 passed |
+| #293 P4-1I4 BATTLE-CONSUMER | `55e00a164` (FC `54fa4c704`, FF z `9a71caf8a`) | `refs/keep/…-1I4-fc` odrzucany przez proxy (#294, otwarte) |
+| #272 / #273 P4-1F4 / P4-1F5 nakładki | `3a8f068f6` (r2 `86366b5fe`, na `75de326bc`) | ancestry potwierdzona |
+| #256 / #262 / #290 K5DOC-T2 / T3 | `75de326bc` (merge `03dfa64c2` i `efa3b7642`) | ancestry potwierdzona |
+| #118 K5-AUTO-WEKTORY, część V5/V6 | `b6aa05024` (FC `9a79cc1e3`) | **V1 nie jest zamknięte** — patrz §6 |
 
-1. #98 K5-LOOP-WYLOM — wyłom w trakcie bitwy i ucieczka/rout w pętli. Dispatch nazywa go „wyłom wieży”; wg tasklisty właściwy zakres to wyłom, bo #96 (wieże) jest zamknięte. **Uwaga:** #98 figuruje tu jako `in_progress` (tasklista), a równocześnie w „Zablokowane zależnością” (po OUTCOME). Rejestr: r1 `K5-LOOP-WYLOM-Q1` zakończył się BLOCK (funkcje wyłomu bez produkcyjnego wołającego). Status `NIE_ZMIERZONO` — do rozstrzygnięcia przez orkiestratora.
-2. #225 K5LOOP-FACING-ROZPOZNANIE — port `_nearestEnemy` / `_updateFacing` (dispatch: `R-RUSTPORT-P6-K5LOOP-FACING-Q1`).
-3. #226 K5LOOP-OUTCOME-ROZPOZNANIE — `_resolveBlowOutcome` / `_targetInRange`, runda 2 (dispatch: `R-RUSTPORT-P6-K5LOOP-OUTCOME-Q1`).
-4. #9 Dług UNIT-REPLACE L-3 (po W8) — tasklista `in_progress`; brak wpisu w rejestrze w tej rundzie. `NIE_ZMIERZONO`.
-5. #11 Siege #217 (pętla taktyczna oblężenia, po W8) — tasklista `in_progress`; brak wpisu w rejestrze w tej rundzie. `NIE_ZMIERZONO`.
+## 2. W toku (stan wg rejestru, 17:47 UTC)
 
-Pozycje 4–5 nie są w dispatchu. Są dopisane, bo tasklista je wymienia jako `in_progress`, a kolejka ma pokazywać wszystkie aktywne tematy.
+- #100 COMBAT-HARNESS — wektory pinu dla pętli dystansu `resolveCombat` (Workflow `wf_a01f4cfa-dd0`).
+- #118 K5-LOOP-AUTO, V1 — Workflow `wf_55097f16-9ad` aktywny w rejestrze; status V1 `NIE_ZMIERZONO` (§6).
+- #114 ELIMINACJA-GRACZA — tasklista `in_progress`. Korekta: funkcja `eliminate_owner` jest w kodzie, ale nie ma wołającego produkcyjnego (audyt L5). Otwarte wpięcie, patrz §3.
 
-## Zakończone w tym cyklu
+## 3. Gotowe do startu (bez decyzji, zależności spełnione)
 
-- R7K7C-WIRING-ROZPOZNANIE (#227): FC PASS-WITH-NOTES `5fb5297e4`, dokumenty `a71645fc7`.
-- P4-1E CITY-VIEW (#214, integracja #222): zintegrowane na parity (`f7baa3848`). Rejestr odnotowuje integrację; tasklista nadal pokazuje #214 `in_progress` i #222 `pending` — `NIE_ZMIERZONO` w tasklist, do uzgodnienia przez orkiestratora.
-- ELIMINACJA-GRACZA (#114): zintegrowana (INTEG-B21, `cf281d785`) wg rejestru; tasklista pokazuje `in_progress`. Do uzgodnienia przez orkiestratora.
-- JS-MAX-SIGN (#110): FC PASS-WITH-NOTES (`9a9112a3d`); konsolidacja wg rejestru przeszła przez JS-MAX-SIGN-R2 (#142, integracja `efc77e0cf`). Tasklista pokazuje #110 `in_progress`; finalna weryfikacja to #174 (pending). `NIE_ZMIERZONO`.
+1. **#114 wiring eliminacji gracza** — krok 1 wg audytu §5: podpięcie `eliminate_owner` (`eliminacja.rs:48`) w ścieżce, która już zmienia właściciela. Wymaga dispatchu z rozpoznaniem ścieżki wojny/tury.
+2. **#310 EKONOMIA-STAN** — pola wejściowe ekonomii w `PlayableState`. Musi być przed #304.
+3. **#311 AUTO-FILTR-OBRONCOW** — test czułości dla filtra w `finish_auto_batch_phase` (zarzut FC #118). Tylko testy.
+4. **#107 K5LOOP-FACING** — rozpoznanie zakończone (#225). Dispatch do napisania. Zależność od #109 nie jest potwierdzona (patrz §6).
 
-## Oczekujące na ponowne rozpoznanie (NIE zakończone)
+## 4. Otwarte — po zależności
 
-- R7K7C-STATUS (#176): sprawdzenie integracji R7K7C-WIRING-Q1/Q2 (wynik Workflow `wf_8ddee49c-415`). Wiring na parity NIE wykonany wg notatki operatora. Tasklista: `pending`. Ponowienie rozpoznania: #224 (po zwolnieniu dysku).
-- Zwolnienie dysku do ≥ 8 GB przed tematami z kodem Rust: #223 (tasklista `pending`). Stan na 15.11: 2,9 GB wolnego w worktree operatora tematu #228 (dokument, bez cargo).
+- **#304 EKONOMIA-TURA** — wpięcie `run_economy_tick_for_game` (`turn_economy_wire.rs:234`) w `advance_turn` (audyt L1). Po #310. Rozpoznanie kolejności faz zakończone: `dyspozycje/rust-port/p6/EKONOMIA-TURA-FAZY-ROZPOZNANIE.md`.
+- **#305 DYPLOMACJA-GRACZA** — `DeclareWar` w `bridge.rs:309–313` oraz `declare_war_by_player` (`diplomacy_player_war.rs:311`) (audyt L4). Po #286 (wariant A/B wg web).
+- **#306 OBLĘŻENIE-WPIĘCIE** — `SiegeLoop` (`siege_tactics_loop.rs:490`) i `combat::resolve` (`combat.rs:381`) w bridge (audyt L2/L3). Po #109 i #113; kolejność zwarcia wg #135/#167/#283.
+- **#307 ZDOBYCIE-MIASTA-WPIĘCIE (#115)** — `apply_transfer_with_effects` (`siege_transfer.rs:340`) i `run_capital_capture_plunder` (`siege_capital_plunder.rs:504`) (audyt L5). Po #306 i #114. Tasklista (#285): wstrzymać do W8, opcja B. Do potwierdzenia.
+- **#113 K5LOOP-WIRING** — `ProdBody` i `SiegeLoop` jako produkcyjna pętla bitwy oblężniczej. Po #107 i #109.
+- **#106 / #298 / #299 R7K7C-WIRING** — `apply_dipl_deltas_to_state` (`turn_war_dipl_steps.rs:1034`) w `advance_turn` oraz wektory ≥150 (#299). **Blokada: #282.**
+- **V2, V7–V14 (K5-LOOP-AUTO, #296)** — blokady: #109 (morale/rout po ciosie), #97 (tryb ręczny). V8 dodatkowo #148. Doktryna #112 jest już zamknięta.
+- **V15 `_executeQueuedOrders` (`battleScene.ts:3603`), V16 `_ffEnterAuto` (`:3709`)** — brak portu w `engine/src`. Po K5-AUTO-EXEC (`_executeUnitsImmediate`, #268 T3–T7). Decyzja kontraktu #284.
+- **#140 COMBAT-HARNESS FC r1 i integracja** — po #100.
+- **#165 INTEG-MELEE-PORT, #174 INTEG-JS-MAX-VERIFY** — weryfikacja i FF po pełnym teście.
+- **#257–#261, #263–#264 (K5DOC-T1/T4–T8)** — po zależnościach z tasklisty (#263 wymaga decyzji o modelu UI doktryny).
+- **#269, #270 PRIO-3D-1/2 (Opus, renderer)** — nakładki i jednostki; po decyzji o drodze DTO (#308).
+- **#218 P4-1I BATTLE-EVENTS (Opus)** — zdarzenia bitwy jako snapshot (D-DTO-7). Po #308.
 
-## Nowe (do dopisania jako pending, bez startu)
+## 5. Decyzje właściciela (ABC) — NIE startować
 
-Z rozpoznania #227. Brak numerów w tasklist — oznaczone jako `NIE_ZMIERZONO` do czasu nadania numeru.
+- **#97** K5-LOOP-AUTO: zakres trybu ręcznego w sterowniku pętli.
+- **#135 / #167 / #283** kolejność fazy zwarcia względem `_performPlayerOrder` (pin).
+- **#137** NaN/Inf w amunicji i `maxRounds`: zachowanie przy NaN (rozpoznanie PASS-WITH-NOTES, implementacja po decyzji).
+- **#282** dispatch przez wszystkie fotele ludzkie (blokuje #106).
+- **#284** `ActivateOps`: zmiana kontraktu (blokuje K5-AUTO-EXEC i V15/V16).
+- **#286 / #120** CRED-HAK-WYPOWIEDZENIE: wariant A/B wg web (`zarejestrujWypowiedzenie`). Rejestr odnotowuje odpowiedź właściciela z 13.11 — `NIE_ZMIERZONO` (§6).
+- **#104 / #172 / #300** ZLOŻA-WIRING: brak `zlozeGrants` w stanie Rust, wymaga zmiany formatu zapisu (poza allowlistą, rejestr BLOCK). Decyzja, jak wpiąć.
+- **#253 / #278 / #279 / #281 / #297** mgła fotela (FOG-VIEW), TERRITORY-RANGES, `revealAllLand`.
+- **#308** droga DTO z engine do renderera (audyt L6). Pytanie ABC **nie zostało zadane** — orkiestrator decyduje, czy je zgłosić.
+- **#15–#19** REPIN-DRYFT 2–6 (odlewnie, handel, łodzie, civBonusy, dane dyplomacji).
+- **#177** PIN-MOVE-PLAN (przesunięcie pinu po zamknięciu P6).
 
-- R7K7C-PRODUCER — producent AI skarbca/pracy (`turn_war_inputs.rs:713-714`).
-- R7K7C-D3-VEC — wektory D3 (tasklista: wzmianka w #89 „D3 → osobne zadanie”).
-- PARITY-MISSING0 — parytet „brak wpisu = 0” (powiązane z #106).
-- R7K7C-WIRING-IMPL — po PRODUCER; dispatch przez `is_human_owner`; migawka `economy_before` w `advance_turn`.
+## 6. Rozjazdy do uzgodnienia (NIE_ZMIERZONO)
 
-## Zablokowane decyzją właściciela — NIE startować
+- **#118 V1.** Dispatch korekty traktuje „AUTO V1/V5/V6” jako zamknięte po integracji. Rejestr (wpis o integracji) mówi, że zintegrowano wektory **V5 i V6**. Commit `b6aa05024` ma tytuł „K5-AUTO-WEKTORY-Q1” i nie wymienia V1. V1 zostaje otwarte do potwierdzenia stanu Workflow `wf_55097f16-9ad`.
+- **#109 K5LOOP-OUTCOME.** W historii `parity-v2` jest commit `c3e3617b2` „Integracja K5LOOP-OUTCOME (#226): efekty po ciosie w ProdBody::strike” (przodek `55e00a164`). Tasklista pokazuje #109 `pending`, a rejestr nie ma wpisu o tej integracji. Do uzgodnienia, czy #109 jest zamknięte.
+- **#114 ELIMINACJA-GRACZA.** Tasklista: `in_progress`. Wpis rejestru: „zintegrowana (INTEG-B21, `cf281d785`)”. Audyt L5: brak wołającego produkcyjnego. Przyjęto stan „wpięcie otwarte”.
+- **#120 / #171 / #286 / #160.** Rejestr odnotowuje odpowiedź właściciela z 13.11 odblokowującą hak; tasklista ma #171 `completed`, a #160 (duplikat) `pending`.
+- **#98.** Tasklista `in_progress`, a jednocześnie „zablokowane” (po OUTCOME). Rejestr: BLOCK (funkcje wyłomu bez wołającego w produkcji).
 
-- #115 ZDOBYCIE-MIASTA-WIRING: wariant B / A / C (pytanie ABC w czacie). Tasklista: `pending`; rejestr: pending (brak commitów i dispatchów).
-- #120 CRED-HAK-WYPOWIEDZENIE: wariant A (nowy wariant EngineCommand) — rekomendowany. **Uwaga:** rejestr odnotowuje odpowiedź właściciela z 13.11 odblokowującą T5 haka (#120/#171), a tasklista ma #171 CRED-HAK-WYPOWIEDZENIE-IMPL = `completed`, #160 (duplikat) = `pending`. Status `NIE_ZMIERZONO` — do rozstrzygnięcia przez orkiestratora.
-- DYSTANS: #10 zamknięte, ale wejścia fazy zwarcia (#135, #167) wymagają rozpoznania.
-- REPIN-DRYFT 2–6 (#15–#19).
-- #106 R7K7C-WIRING: potwierdzenie reguły „brak wpisu = 0” — rekomendacja B. Rejestr: pending, integracja nieznana.
+## 7. Migawka numerów spoza kolejki (zamknięte, do wiadomości)
 
-## Zablokowane zależnością od niezintegrowanego kodu / rozpoznania — NIE startować
+Zamknięte wg tasklisty (`completed`) i rejestru, bez pozycji w kolejce: #110/#142 JS-MAX-SIGN (konsolidacja, weryfikacja #174 pending), #116 TOWER-TARGET, #131–#134, #136, #141, #144, #166, #170, #175, #176, #211, #213, #214, #216, #217, #235, #238, #241–#247, #250–#252, #255, #265–#267, #275–#277, #290, #293.
 
-- #109, #147 K5LOOP-OUTCOME — rozpoznanie #179 w toku (dispatch: #226).
-- #107, #121–#125 K5LOOP-FACING — rozpoznanie #178 w toku (dispatch: #225).
-- #112, #113, #148 doktryna/strzelec i produkcyjna pętla oblężnicza — po OUTCOME.
-- #97, #118, #149, #150 AUTO / WYLOM — po K5LOOP-OUTCOME. #98 — patrz „W toku” (sprzeczność pozycji).
-- #100, #135, #137, #167–#169 COMBAT-HARNESS — rozpoznanie wejść fazy zwarcia (#167).
-- #104, #172 ZLOZA-WIRING — rozpoznanie (wywołania w `main.ts`). Rejestr: #104 pending, brak commitów.
-- #139, #151 serde_json float_roundtrip — decyzja techniczna i `Cargo.toml` (#170 — patrz „Odblokowane”).
-- #165 INTEG-MELEE-PORT — weryfikacja przed FF.
-- #174 INTEG-JS-MAX-VERIFY — weryfikacja przed FF.
-
-## Odblokowane — pending, bez startu (kolejność i dispatch do ustalenia)
-
-- #211–#218 P4-1B…P4-1I renderer (Opus): MAP-VIEW-PRODUCER, FOG-VIEW, UNIT-VIEW, OVERLAYS-VIEW, VIEW-ADAPTER, MAP-COMMANDS, BATTLE-EVENTS. Rejestr (integracja P4-1E): „odblokowane #211–#218, ich kolejność i start wymagają osobnego dispatchu”. Pominięte w poprzedniej wersji tego pliku — uzupełnione.
-- #177 PIN-MOVE-PLAN (econ REPIN): przesunięcie pinu po zamknięciu P6 — pending.
-- #223 zwolnienie dysku — patrz „Oczekujące na ponowne rozpoznanie”.
-- #224 R7K7C-STATUS ponowne rozpoznanie — patrz „Oczekujące na ponowne rozpoznanie”.
-
-## Odblokowane bez decyzji właściciela — do wykonania przez orkiestratora
-
-- #166 TEST-JS-ROUND-MINUS-ZERO. Duplikat: #231.
-- #170 SERDE-FLOAT-ROUNDTRIP — decyzja techniczna (orkiestrator). Duplikat: #232.
-- #183 MAPGEN M08/M13/M18 — wpisy w rejestrze jako NIE_ZMIERZONO. Duplikat: #230.
-- #219 DTO-DECYZJE — D-DTO-4 / D-DTO-10 (Opus), wg webu. Duplikat: #229.
-- #221 generalTargetId P4-1J — luka parytetu. Duplikat: #233.
-- #234 K5-LOOP-AUTO-SCOPE — zakres wektorów AUTO bez oblężenia. Pokrywa się z #118 i #157 (duplikaty w tasklist).
-
-Duplikaty #229–#233 są wpisami tasklisty o tym samym temacie co numer podany w nawiasie; kolejka wskazuje pierwszy numer.
-
-## Reguła modeli (właściciel, 2026-11-12; wiążąca)
-
-Operator = HAIKU 5.5 zawsze. SONNET na Operatorze wyłącznie po dwóch nieudanych rundach Haiku TEGO SAMEGO tematu (FAIL/BLOCK bez kodu), z pisemnym uzasadnieniem w dispatchu. Obrona = Haiku; Evaluator i Final Control = Sonnet. Renderer/DTO = Opus. Zadania dokumentacyjne i integracyjne = Haiku. Nie startować zbędnych tematów „dla zapełnienia”, jeśli nie ma realnej pracy bez zależności od decyzji gameplay.
-
-## Zasada startu
-
-Start tylko z dispatchem wypchniętym na `claude/rust-sivvrn`, bazą = czubek FC albo `origin/rust-port/parity-v2`, zależnościami już zintegrowanymi i bez decyzji gameplay.
+Zamknięte wg audytu, ale z korektą wpięcia: #136 COMBAT-RESOLVE-PETLA (port jest, wołającego brak), #141 eliminate_owner, #175/#115, #213 UNIT-VIEW (`NIE_ZMIERZONO`, brak modułu w `domain/`). Szczegóły w rejestrze, sekcja KOREKTA.
