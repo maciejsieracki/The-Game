@@ -883,7 +883,8 @@ pub struct ProdBody<R: RollSource> {
     /// `ru.screenLostApplied` (`_checkMeleeScreenLost`, jednorazowe -50% morale strzelców).
     screen_lost_applied: [Vec<bool>; 2],
     /// Stan doktryny każdej jednostki (K5DOC-PROD-UNIT-STAN): `unitDoctrine`, `groupId`, `rangedKite`, `shootingEnabled`,
-    /// `dryCol`, `heldAfterFallback`, `lastAutoMoveFrom`, `antiCavSpear`, `mounted`, `unitTargetPriorities`.
+    /// `lastAutoMoveFrom`, `antiCavSpear`, `unitTargetPriorities`. `dryCol`, `heldAfterFallback`, `mounted` są w
+    /// `ProdUnit::activate` (ActivateUnit, K5H), jedynym źródle prawdy tych pól.
     /// Tylko stan (wartości domyślne z pinu, patrz [`ProdDoctrineState`]); nic w tym ciele go jeszcze nie czyta.
     /// Trzymany w ciele, a nie w [`ProdUnit`], bo literał `ProdUnit` jest też w `p6_k5loop_outcome_pin.rs` (poza allowlistą).
     pub doctrine: [Vec<ProdDoctrineState>; 2],

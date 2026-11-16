@@ -145,15 +145,10 @@ fn domyslne_pola_doktryny_zgodne_z_pinem() {
     assert_eq!(atk.group_id, None);
     // rangedKite: true (battleScene.ts:4572).
     assert!(atk.ranged_kite);
-    // dryCol: -1 (battleScene.ts:4555).
-    assert_eq!(atk.dry_col, -1);
-    // heldAfterFallback: false (battleScene.ts:4556).
-    assert!(!atk.held_after_fallback);
     // lastAutoMoveFrom: brak (battleScene.ts:1980, pole opcjonalne).
     assert_eq!(atk.last_auto_move_from, None);
-    // antiCavSpear / mounted: bez klasy false (battleScene.ts:4557-4558 wyliczane z klasy przy spawnie).
+    // antiCavSpear: bez klasy false (battleScene.ts:4558 wyliczane z klasy przy spawnie).
     assert!(!atk.anti_cav_spear);
-    assert!(!atk.mounted);
     // unitTargetPriorities: brak (battleScene.ts:2045).
     assert_eq!(atk.unit_target_priorities, None);
 
@@ -178,4 +173,26 @@ fn default_stanu_doktryny_ma_klasy_i_priorytety_zgodne_z_wariantami() {
     };
     assert!(st.unit_target_priorities.is_some());
     assert_ne!(st, ProdDoctrineState::default());
+}
+
+#[test]
+fn domyslne_pola_doktryny_dla_wielu_jednostek_i_pustej_strony() {
+    // Długości wektorów doktryny = liczba jednostek każdej strony (także 0 dla pustej strony), każdy element domyślny.
+    let body = ProdBody::new(
+        [
+            vec![unit(true, 0), unit(true, 1), unit(true, 2)],
+            Vec::new(),
+        ],
+        scene(),
+        SequenceRolls::new(Vec::new()),
+    );
+    for idx in 0..3 {
+        let st = body.doctrine(UnitRef {
+            side: BattleSide::Attacker,
+            idx,
+        });
+        assert_eq!(st, &ProdDoctrineState::default(), "atk idx {idx}");
+    }
+    assert!(body.doctrine[1].is_empty());
+    assert_eq!(body.doctrine[0].len(), 3);
 }

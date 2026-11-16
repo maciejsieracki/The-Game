@@ -44,6 +44,8 @@ pub enum BattleUnitClass {
 }
 
 /// Stan doktryny jednostki (pola `BattleUnit` pinu, które `ProdUnit` nie niósł). Wartości domyślne: [`Default`].
+/// Pól już obecnych w [`ActivateUnit`](crate::domain::siege_tactics_activate::ActivateUnit) (`dry_col`,
+/// `held_after_fallback`, `mounted`) tu NIE powielamy: jedynym źródłem prawdy jest `ProdUnit::activate` (K5H).
 #[derive(Debug, Clone, PartialEq)]
 pub struct ProdDoctrineState {
     /// `ru.unitDoctrine` (`battleScene.ts:2041`). Pin spawn: `unitDoctrine: null` (`:4576`) -> `None`.
@@ -55,18 +57,11 @@ pub struct ProdDoctrineState {
     /// `ru.shootingEnabled` (`battleScene.ts:2032`). Pin spawn: `shootingEnabled: true` (`:4573`);
     /// pin sprawdza `ru.shootingEnabled !== false` (`:6241`), więc domyślnie `true`.
     pub shooting_enabled: bool,
-    /// `ru.dryCol` (`battleScene.ts:2006`). Pin spawn: `dryCol: -1` (`:4555`); `-1` = jeszcze nie pusty.
-    pub dry_col: i64,
-    /// `ru.heldAfterFallback` (`battleScene.ts:2007`). Pin spawn: `heldAfterFallback: false` (`:4556`).
-    pub held_after_fallback: bool,
     /// `ru.lastAutoMoveFrom` (`battleScene.ts:1980`, pole opcjonalne, pin: brak = `undefined`) -> `None`.
     pub last_auto_move_from: Option<(i64, i64)>,
     /// `ru.antiCavSpear` (`battleScene.ts:2009`). Pin spawn: `isAntiCavSpear(bu)` (`:4558`); bez klasy domyślnie `false`.
     /// Wartość wyliczana z klasy przez adapter spawnu, nie tutaj.
     pub anti_cav_spear: bool,
-    /// `ru.mounted` (`battleScene.ts:2008`). Pin spawn: `isMounted(bu)` (`:4557`); bez klasy domyślnie `false`.
-    /// Wartość wyliczana z klasy przez adapter spawnu, nie tutaj.
-    pub mounted: bool,
     /// `ru.unitTargetPriorities` (`battleScene.ts:2045`, pole opcjonalne). Domyślnie „brak” = `None`
     /// (pin: `Partial<Record<BattleUnitClass, BattleUnitClass[]>>`, brak wpisu = brak nadpisania).
     pub unit_target_priorities: Option<Vec<(BattleUnitClass, Vec<BattleUnitClass>)>>,
@@ -80,11 +75,8 @@ impl Default for ProdDoctrineState {
             group_id: None,               // battleScene.ts:4574 (`groupId: null`)
             ranged_kite: true,            // battleScene.ts:4572 (`rangedKite: true`)
             shooting_enabled: true, // battleScene.ts:4573 (`shootingEnabled: true`), sprawdzane jako `!== false` (:6241)
-            dry_col: -1,            // battleScene.ts:4555 (`dryCol: -1`)
-            held_after_fallback: false, // battleScene.ts:4556 (`heldAfterFallback: false`)
             last_auto_move_from: None, // battleScene.ts:1980 (pole opcjonalne, brak w spawnie)
             anti_cav_spear: false, // battleScene.ts:4558 (`isAntiCavSpear(bu)`), tu: brak klasy = false
-            mounted: false,        // battleScene.ts:4557 (`isMounted(bu)`), tu: brak klasy = false
             unit_target_priorities: None, // battleScene.ts:2045 (pole opcjonalne), domyślnie „brak”
         }
     }
