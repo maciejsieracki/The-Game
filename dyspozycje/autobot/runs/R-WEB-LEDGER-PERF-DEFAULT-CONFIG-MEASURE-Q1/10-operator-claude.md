@@ -1,6 +1,6 @@
 # R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1 — raport Operatora (runda 3/5)
 
-STATUS: PASS-WITH-NOTES (pomiar wykonany; wynik progu 10%: NIE ROZSTRZYGNIETE — patrz WYNIK)
+STATUS: PASS-WITH-NOTES (narzedzie + hak + hak-test zielone; pomiar wykonany dla 1 z 3 ziaren; wynik progu 10%: NIE ROZSTRZYGNIETE — patrz WYNIK)
 DOMAIN: GAME (tylko pomiar; w gra/src jedna zmiana: hak odczytu `ledgerStats` w bloku `?civTest=1`)
 TEMAT: R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1
 GOAL: pomiar kosztu czasu tury zapisu do ksiegi „Skad zapasy” (ON vs OFF) w konfiguracji DOMYSLNEJ na harnessie AI z miastami, wg projektu DODATKU 4 (pary na wspolnym slocie t50, okno t51-80; NIE 100 tur).
@@ -42,6 +42,9 @@ Wariant z odrzuceniem tur o load1 > 3,0: 0 tur spelnia warunek dla wszystkich 4 
 WERDYKT PROGU 10%: **NIE ROZSTRZYGNIETE** — rozstep same-variant 17,5% >= 10% (DODATEK 4). Nie wolno wnioskowac ani „optymalizacja niepotrzebna”, ani „kandydat R-WEB-*”. Najwyrazniejszy sygnal to dryf czasowy maszyny (przebiegi pozniejsze wolniejsze niezaleznie od wariantu), nie wariant.
 Okno to t51-t80 (30 tur, 27 po odrzuceniu rozgrzewek), NIE 100 tur.
 
+## SEED 777 i 31337 — NIE ZMIERZONO
+Seed 777: baza do slotu t50 zrobiona (281 s), przebieg ON1 50->70 uruchomiony przy load 2,36 i zakonczony przy load 7,3 (10:07 UTC); dalsze przebiegi NIE wykonane — maszyna wspoldzielona stale miala load 4-10 (inne workflowy z Chromium), co wg DODATKU 3/4 (load <= 3,0) wykluczalo kolejne pary; pojedynczy przebieg ON1 bez pary jest bezuzyteczny i nie jest raportowany jako wynik (evidence/s777/uptime.log). Seed 31337: nie podjety (zgodnie z DODATKIEM 4: tylko jesli starczy czasu). Wynik jest wiec z JEDNEGO ziarna (4242), 4 przebiegi (2 pary ON/OFF kolejnosci ON,OFF,OFF,ON), nie z >=3 ziaren.
+
 ## ROZMIAR KSIEGI N=10 (zmierzone, `ledgerStats.bytes`)
 ON: ok. 0,97 MB (t50) -> 1,56 MB (t60) -> 2,04 MB (t70) -> 2,25 MB (t80), rosnie z liczba miast/wlascicieli (42 wlascicieli). OFF: 3-4 KB. Uwaga: `entries` w OFF nie jest zerem (puste wpisy tury), wiec dowodem trybu sa bajty.
 
@@ -51,7 +54,8 @@ ON: ok. 0,97 MB (t50) -> 1,56 MB (t60) -> 2,04 MB (t70) -> 2,25 MB (t80), rosnie
 3. Srodowisko tej sesji zwracalo wielokrotnie „classifier no verdict” dla polecen z runnerem; kazda proba ponawiana ponownie (bez obchodzenia); brak wplywu na dane.
 
 ## BLOKADY
-- Rozstep same-variant >= 10% (maszyna wspoldzielona z kilkoma workflowami Chromium; load 1,0-10,8). Seed 777 i 31337: patrz nizej.
+- Rozstep same-variant >= 10% (17,5% ON, 8,4% OFF; maszyna wspoldzielona z kilkoma workflowami Chromium; load 1,0-10,8).
+- Tylko 1 ziarno z 3 (patrz „SEED 777 i 31337”).
 
 ## RUNDY
 Runda 3/5 (Operator, SONNET wg DODATKU 4).
