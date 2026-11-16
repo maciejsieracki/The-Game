@@ -2301,3 +2301,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Zakres wg recon:** T0 jest pierwszy i sam, bo `siege_tactics_loop.rs` jest współdzielony z #109, #113, #147–#150. Po jego integracji startują równolegle T2', T6, T5a, T4 (fala 1 z §5).
 - **Pozostałe kandydaci:** nieruszane — ZŁOŻA, COMBAT-WEJSCIA, R7K7C, ZDOBYCIE, ActivateOps — czekają na decyzje.
 - **Dysk:** 14 GB wolnego.
+
+## Przebieg (06:00 UTC — tick: stan slotów i dysku)
+
+- **Sloty:** 2 z 4: K5-BLOW-ENV-WEKTORY-Q1 (`wf_6ab179f1-525`, Obrona, Haiku) i K5DOC-PROD-UNIT-STAN-T0 (`wf_a3de76ac-91a`, Operator, Haiku). Bez zmian w kodzie w tym ticku.
+- **Dysk: 9,4 GB wolnego** (spadek z 14 GB). Składniki: `scratchpad/target` 3,1 GB (właściciel niezidentyfikowany), `scratchpad/target-k5doc-t0` 3,1 GB (cache aktywnego T0, nie ruszany), worktree `wf_f3b76b65-261-3` 0,99 GB i `wf_5a965001-591-4` 1,1 GB (oba oznaczone wcześniej jako „dirty, nie ruszam”), `/tmp/claude-0/ev9f1` (decyzja właściciela).
+- **Decyzja:** nie usuwam niczego z tych pozycji bez potwierdzenia. Nowe starty Rust przy < 8 GB wstrzymuję (zasada 5 z CLAUDE.md).
+- **Do decyzji właściciela:** czy usunąć `scratchpad/target` (cache bez znanego właściciela) i dwa dirty worktree po zabezpieczeniu HEAD w `refs/keep`.
