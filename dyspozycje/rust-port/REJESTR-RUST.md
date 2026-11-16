@@ -2879,3 +2879,11 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
   - #97, #104, #106, #107, #113, #115, #120, #121–#125 zablokowane decyzjami (#282, #286, format zapisu) lub zależnościami (K5LOOP, facing, #123).
   - Kandydaci z listy 328–358 wymagają rozpoznania (Haiku, tylko odczyt) albo decyzji właściciela (#358). Rozpoznanie dla #261 (falanga) lub #263 (MODEL-UI) można uruchomić w następnym heartbeacie.
 - **Reguła modeli:** Operatorzy Haiku, Evaluator i FC Sonnet. Opus tylko dla R4 (zamknięte) i zadań 3D z listy 328–337.
+
+### Przebieg — K5DOC-T6 JAZDA, runda 1 zakończona, runda integracyjna w toku (2026-11-16 ~23:05 UTC)
+
+- **Runda 1 (`wf_7a5e569c-542`):** Operator BLOCK (dysk 6,5 GB). Evaluator FAIL: luka pokrycia kary `spearAdj` w szarży (pin `battleScene.ts:17753-17759`) i brak pełnego testu. Obrona przyjęła zarzuty 1, 3, 4 (commit `30c1e1392`, nazwany wektor `f_szarza_kara_spearAdj_bez_bfs`, komentarz o nieosiągalności kroku 4). FC PASS-WITH-NOTES na `87829df94`. Pełny `cargo test` NIE_ZMIERZONO (dysk 3,5 GB).
+- **Zabezpieczenie:** WIP `87829df94` na `rust-port-wip/R-RUSTPORT-P6-K5DOC-T6-JAZDA-r1` (push OK), ref keep `refs/keep/P4-x-T6-fc-87829df94`. Recon `daf56eddd` na `rust-port-wip/…-recon-r1`.
+- **Runda integracyjna (`wf_3180bfbf-196`, Haiku Operator, Sonnet Evaluator/FC):** BAZA `87829df94`, DODATEK r2 w dispatchu `89833dac8`. Zadanie: pełna bramka `cargo test --all-targets --no-fail-fast` przy dysku ≥ 8 GB, bez zmian w kodzie. FF `parity-v2` dopiero po EXIT 0.
+- **Sprzątanie:** usunięte 5 worktree (T6 r1 `-1..-4` i recon). Dysk 9,7 GB przed startem rundy.
+- **Reguła:** Operatorzy Haiku; Evaluator i FC Sonnet. Decyzje gameplay poza tym przebiegiem.
