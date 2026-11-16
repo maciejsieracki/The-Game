@@ -1,0 +1,51 @@
+{
+  "phase": "old",
+  "strip": false,
+  "seed": 4242,
+  "results": [
+    {
+      "status": "FAIL",
+      "label": "OLD tura 1 zatrzymana: cannot-end",
+      "extra": {
+        "stop": "cannot-end",
+        "tura": 1,
+        "battle": {
+          "preBattleOpen": false,
+          "pendingAuto": false,
+          "sceneOpen": false,
+          "summaryOpen": false,
+          "resolving": false
+        }
+      }
+    },
+    {
+      "status": "PASS",
+      "label": "OLD zapis gry (quickSave -> IndexedDB) powiodl sie",
+      "extra": true
+    },
+    {
+      "status": "PASS",
+      "label": "OLD zapis odczytany z IndexedDB",
+      "extra": 827510
+    },
+    {
+      "status": "PASS",
+      "label": "OLD brak pageerror",
+      "extra": []
+    },
+    {
+      "status": "PASS",
+      "label": "OLD zapis zapisany do pliku",
+      "extra": {
+        "strip": false,
+        "noFound": true,
+        "removed": {
+          "meta": [],
+          "top": []
+        },
+        "bytes": 827753,
+        "turn": 1
+      }
+    }
+  ]
+}
