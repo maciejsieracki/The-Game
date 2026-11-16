@@ -10490,3 +10490,6 @@ Właściciel: „Podczas łączenia jednostek taki dziwny błąd wystąpił. Jed
 
 ### FALA 773 (2026-11-16, wieczór) — ŁUCZNICY: ZDROWIE 20 (ARCHERS) — WDROŻONE NA ROBOCZĄ
 FC PASS-WITH-NOTES (FC e61b23d3b, kandydat 68dd4666a). main = 327e5104d, ROBOCZA MD5 a35723b44dc3d1a6be77943eb6f89fc6 (raw = manifest), 3 sidecary audio zgodne. Zdrowie wszystkich pieszych łuczników = 20 w obu polach `units.json`; pole „Atak dystansowy” 5/6/7. NOTATKA: silnik czyta `missileAttack` (Łucznik 3 / egipski 6 / nubijski 6) — zmiana pola „Atak dystansowy” nie zmienia realnej walki; ABC o missileAttack czeka na właściciela (#451). Następny: UNITSHP (jedno pole zdrowia).
+
+### Zgłoszenie 2026-11-16 (wieczór): skróty „zaznacz wszystkich <typ>” przy zaznaczaniu pojedynczych jednostek armii
+Właściciel: u góry listy zaznaczania pojedynczych jednostek ma być wybór typu (np. wszyscy łucznicy / wszyscy procarze), żeby nie klikać 50 jednostek przy zamianie na inny typ. STATUS: **OTWARTE** — dispatch `R-WEB-UI-ARMY-PICK-SELECT-ALL-BY-TYPE-Q1` zapisany; start po ARMYSPLIT i wolnym slocie. Panele z listą: split, merge-pick, ewentualnie zamiana (NIE ZMIERZONO).
