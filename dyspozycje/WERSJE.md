@@ -1,3 +1,9 @@
+## ROBOCZA b3e02480 -- 2026-11-14 -- FALA 759: pomiar na zywo mieszanej armii po FALACH 750-758 (narzedzie) (testowa)
+
+- Pomiar live 80 bitew (seedy 11-18): ciosy/jedn./ture max 1, niewykorzystany ruch max 2,9%; rozrzut frontu M1 max 2, M2 max 1, M3 max 3 (A1 zlamany dla skladu asymetrycznego). Narzedzie +2 linie (sklad M3). Bez zmian gra/src.
+- Weryfikacja: FC PASS-WITH-NOTES f2e2e910d; logic 213/213, vite OK, MD5 Raw
+- Limity: prog A1 dla skladow asymetrycznych = ABC; kandydat R-WEB-BATTLE-FRONT-SPREAD-ASYM-Q1 nienaprawiany
+
 ## ROBOCZA b2864c14 -- 2026-11-14 -- FALA 758: runner pomiarowy zamyka modale konca tury (narzedzie) (testowa)
 
 - Runner gra/tools/ai-economy-measure-run.cjs zamyka audiencje dyplomatyczna, panel laczenia armii i karte odkrycia przed Zakoncz ture; liczniki po zniknieciu blokady; state.json po kazdej turze; test hooka 16/16. Bez zmian gra/src.
