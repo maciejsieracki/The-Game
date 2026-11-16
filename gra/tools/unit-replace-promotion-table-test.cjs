@@ -32,6 +32,15 @@ const EPOCH_RANK = { 'Kamień': 1, 'Brąz': 2, 'Żelazo': 3 };
 const CLASS_RANK = { 'Standardowa': 1, 'Specjalna': 2, 'Super': 3 };
 const BLANK = new Set(['', '-', '—']);
 
+// R-WEB-DATA-REPLACE-ARCHER-TO-SLINGER-Q1 (zgloszenie wlasciciela 2026-11-16): jedyny wyjatek od
+// zasady "tylko piechota" -- Lucznik (Typ=Distance) -> Procarz (Typ=Slinger, standard) i
+// Procarz (Huaracoc) (Inkowie, nacja gatowana przez availableReplacementsFor). Kierunek wylacznie
+// Lucznik -> Procarz. Kazdy inny wpis poza piechota nadal jest bledem.
+const ARCHER_EXCEPTIONS = {
+  'Łucznik': ['Procarz', 'Procarz (Huaracoc)'],
+};
+const exceptionTargets = new Set(Object.values(ARCHER_EXCEPTIONS).flat());
+
 const byName = new Map(units.map(u => [String(u.Jednostka).trim(), u]));
 const failures = [];
 const fail = msg => failures.push(msg);
@@ -56,7 +65,8 @@ for (const src of units) {
   const seen = new Set();
   edges.set(srcName, []);
 
-  if (!INFANTRY_TYPES.has(String(src.Typ).trim())) fail(`${srcName}: źródło spoza piechoty (Typ=${src.Typ})`);
+  const isArcherException = Object.prototype.hasOwnProperty.call(ARCHER_EXCEPTIONS, srcName);
+  if (!INFANTRY_TYPES.has(String(src.Typ).trim()) && !isArcherException) fail(`${srcName}: źródło spoza piechoty (Typ=${src.Typ})`);
 
   for (const tName of targets) {
     if (seen.has(tName)) fail(`${srcName}: duplikat celu "${tName}"`);
@@ -64,7 +74,10 @@ for (const src of units) {
     if (tName === srcName) { fail(`${srcName}: cel wskazuje samą siebie`); continue; }
     const tgt = byName.get(tName);
     if (!tgt) { fail(`${srcName} -> "${tName}": cel nie istnieje w units.json`); continue; }
-    if (!INFANTRY_TYPES.has(String(tgt.Typ).trim())) fail(`${srcName} -> ${tName}: cel spoza piechoty (Typ=${tgt.Typ})`);
+    if (!INFANTRY_TYPES.has(String(tgt.Typ).trim())) {
+      if (!(isArcherException && ARCHER_EXCEPTIONS[srcName].includes(tName)))
+        fail(`${srcName} -> ${tName}: cel spoza piechoty (Typ=${tgt.Typ})`);
+    }
 
     const rs = rank(src), rt = rank(tgt);
     const higher = rt.epoch > rs.epoch || (rt.epoch === rs.epoch && rt.cls > rs.cls);
@@ -92,7 +105,8 @@ for (const n of edges.keys()) dfs(n, []);
 for (const u of units) {
   const typ = String(u.Typ).trim();
   const raw = String(u['Zastąp specjalnie'] ?? '').trim();
-  if (!INFANTRY_TYPES.has(typ) && !BLANK.has(raw)) fail(`${u.Jednostka}: wpis tabeli poza piechotą (Typ=${typ})`);
+  if (!INFANTRY_TYPES.has(typ) && !BLANK.has(raw) && !Object.prototype.hasOwnProperty.call(ARCHER_EXCEPTIONS, String(u.Jednostka).trim()))
+    fail(`${u.Jednostka}: wpis tabeli poza piechotą (Typ=${typ})`);
 }
 for (const n of ['Zwiadowca', 'Galera', 'Procarz']) {
   const u = byName.get(n);
@@ -148,7 +162,8 @@ const EXPECTED_TABLE = {
     "Wojownik babiloński": "Piechota neobabilońska",
     "Wojownik fenicki": "Tyrski miecznik/Gwardia Tyreńska",
     "Thorakites": "Hieros Lochos (Święty Zastęp)",
-    "Gwardzista z champi": "Królewska Gwardia"
+    "Gwardzista z champi": "Królewska Gwardia",
+    "Łucznik": "Procarz/Procarz (Huaracoc)"
   };
 {
   const actual = {};
