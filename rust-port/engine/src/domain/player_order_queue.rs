@@ -64,6 +64,8 @@ pub trait PlayerOrderExec {
     /// Web `this._performPlayerOrder(u, done)`.
     fn perform_player_order(&mut self, id: &str) -> OrderOutcome<Self::Event>;
     /// Web `u.acted = true` w callbacku `done` (`battleScene.ts:18609`).
+    /// Web ustawia pole na obiekcie `u` zlapanym przed asynchronicznym `done`; tu wywolanie idzie po id.
+    /// Kontrakt dla T3/T4: implementacja musi trafic w jednostke, ktora nadal istnieje w scenie (brak wektora na zniknieta jednostke).
     fn mark_acted(&mut self, id: &str);
 }
 
@@ -138,6 +140,11 @@ fn run_from<X: PlayerOrderExec>(
             };
         }
         let id = &queue[idx];
+        // `if (!id) { runNext(idx + 1); return; }` (battleScene.ts:18591-18594): pusty id pomijany przed odczytem jednostki.
+        if id.is_empty() {
+            idx += 1;
+            continue;
+        }
         // `const u = this._findPlayerUnit(id); if (!u) runNext(idx + 1);`
         if exec.find_player_unit(id).is_none() {
             idx += 1;

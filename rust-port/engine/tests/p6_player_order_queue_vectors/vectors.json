@@ -876,6 +876,45 @@
       }
     },
     {
+      "name": "pusty_id_pomijany",
+      "units": [
+        {
+          "id": "",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "B",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        }
+      ],
+      "ids": [
+        "",
+        "B"
+      ],
+      "queued": [],
+      "busy": [],
+      "planning": false,
+      "finished": false,
+      "async": [],
+      "side_effects": {},
+      "expect": {
+        "events": [
+          "suspend:false",
+          "perform:B",
+          "refresh"
+        ],
+        "acted": [
+          "B"
+        ]
+      }
+    },
+    {
       "name": "busy_planowanie_dwa_razy",
       "units": [
         {

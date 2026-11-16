@@ -149,6 +149,8 @@ const scenarios = [
   { name: 'acted_przed_busy_nie_odracza', units: [U('A', { acted: true }), U('B')], ids: ['A', 'B'], busy: [false, true, false] },
   { name: 'dead_przed_busy_nie_odracza', units: [U('D', { dead: true }), U('B')], ids: ['D', 'B'], busy: [false, true, false] },
   { name: 'routed_przed_busy_nie_odracza', units: [U('R', { routed: true }), U('B')], ids: ['R', 'B'], busy: [false, true, false] },
+  // Pusty id (`if (!id) runNext(idx + 1)`, battleScene.ts:18591-18594) pomijany przed odczytem jednostki.
+  { name: 'pusty_id_pomijany', units: [U(''), U('B')], ids: ['', 'B'], busy: [] },
   // Planowanie synchroniczne z dwoma kolejnymi busy: petla RunNow ponawia busy-gate bez odroczenia.
   { name: 'busy_planowanie_dwa_razy', units: [U('A'), U('B')], ids: ['A', 'B'], busy: [true, true, false], planning: true },
 ];
