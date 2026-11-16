@@ -10474,3 +10474,6 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 - Pole bitwy: generał ma być wyróżniony jasną gwiazdką (nie wiadomo, kto jest generałem). Nowy temat R-WEB-BATTLE-GENERAL-STAR-MARKER-Q1 (Haiku r1; zmiana UI, stała zgoda na błędy/UI webowe — kształt zgodny z poleceniem właściciela).
 - Egipscy łucznicy „mogą być za mocni”: porównanie parametrów (units.json) przekazane właścicielowi w czacie; decyzja o ewentualnej zmianie balansu — do właściciela (nie zmieniam bez zgody).
 - Uruchomione równolegle (Haiku r1): R-WEB-DEFEAT-SCREEN-LOSS-COUNTERS-AND-HIDE-POST-DEFEAT-AUTOSAVE-Q2, R-WEB-LOAD-ENDTURN-NNS-GATE-DIAGNOSIS-Q1.
+
+### 2026-11-16 ~19:20 UTC — DECYZJA WŁAŚCICIELA (balans łuczników, po porównaniu parametrów)
+- Zdrowie WSZYSTKICH pieszych łuczników = 20 (w całej grze); atak dystansowy: Łucznik 5, egipski 6 (było 5), nubijski 7 (bez zmian). Pozostałe parametry bez zmian. Temat R-WEB-DATA-ARCHERS-HEALTH-20-DIST-EGYPT-6-Q1 (Haiku r1; zmiana danych; dług Rust: REPIN danych jednostek).
