@@ -235,6 +235,25 @@ const movesOf = (cmds, id) => cmds.filter(c => c.type === 'move' && c.unitId ===
     ok(firstA === 0 && cntW(threat, CITY_A.id) === 1, `G8: zagrozone puste miasto A (wrog w zasiegu) dostaje garnizon z priorytetem w pokoju z cywilizacjami (idx ${firstA})`);
     ok(cntW(threat, CITY_C.id) === cntW(threatBase, CITY_C.id), 'G9: niezagrozone miasto C w pokoju nie dostaje garnizonu');
   }
+  // G10 (r4): realny data/units.json -- zastapienie produkcji jednostki bojowej garnizonem
+  // (jeden build na miasto, bez fallbackIds z Wojownikiem). Dowod na danych, nie na pustej tablicy.
+  {
+    const realUnits = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', 'data', 'units.json'), 'utf8'));
+    const dataReal = Object.assign({}, data, { units: realUnits });
+    const decideReal = (B, units) => B.decideAITurn(1, units, CITIES, MAP, dataReal, {
+      civType: 'grecy', currentTurn: 40, canEngageOwner: () => true, capitalCityId: CITY_A.id, atWarWithCiv: true,
+      warAllIn: { targets: [{ ownerId: 2, cityId: ENEMY1.id, q: ENEMY1.q, r: ENEMY1.r }], enemyArmies: [], engageRadius: 6,
+        enemyStrength: [{ ownerId: 2, strength: 0 }] },
+    });
+    nextUid = 1200;
+    const cmdsReal = decideReal(GOOD, [mk(CITY_B.q, CITY_B.r)]);
+    const aBuilds = buildsOf(cmdsReal).filter(c => c.cityId === CITY_A.id);
+    console.log('G10-PROBE', JSON.stringify(aBuilds));
+    ok(aBuilds.length === 1 && aBuilds[0].buildingId === 'Wojownik',
+      `G10: puste miasto A (realny units.json): dokladnie 1 polecenie build = Wojownik (${aBuilds.length})`);
+    ok(aBuilds.length === 1 && !aBuilds[0].fallbackIds.includes('Wojownik'),
+      'G10b: fallbackIds garnizonu nie zawieraja Wojownika');
+  }
   if (MUT_REC !== null) {
     nextUid = 1100;
     const bW = mk(CITY_B.q, CITY_B.r);

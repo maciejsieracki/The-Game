@@ -3941,7 +3941,6 @@ function decideAITurnCore(
     myCities, myUnits, enemyAllUnitsRegardlessOfVisibility, opts, data,
   );
   const garrisonCmds: AICmdBuild[] = [];
-  const garrisonFallbacks = new Map<string, readonly string[]>();
   for (const city of myCities) {
     const buildId = chooseCityProduction(
       city.id, myCities, units, playerId, data, IGNORED_LEGACY_ARCHETYPE_MODS, opts, map, difficultyParams,
@@ -3949,7 +3948,6 @@ function decideAITurnCore(
     const isGarrisonCity = garrisonRecruitCityIds.has(city.id);
     if (isGarrisonCity) {
       const rest = buildId === null ? [] : [buildId, ...(opts.lastProductionFallbackIds ?? [])];
-      garrisonFallbacks.set(city.id, rest);
       garrisonCmds.push({
         type: 'build', cityId: city.id, buildingId: EMPTY_CITY_GARRISON_UNIT_ID,
         fallbackIds: rest.filter(id => id !== EMPTY_CITY_GARRISON_UNIT_ID),
