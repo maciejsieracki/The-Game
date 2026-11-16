@@ -1,0 +1,81 @@
+{
+  "source": "gra/src/battle/battleScene.ts @ 07d2fbd72: _moveTargetForUnit :11442-11448; BF_COLS/BF_ROWS :661-662",
+  "bf_cols": 68,
+  "bf_rows": 156,
+  "cases": [
+    {
+      "id": "brak-offsetu-srodek",
+      "formation_offset": null,
+      "col": 10,
+      "row": 20,
+      "expect_col": 10,
+      "expect_row": 20
+    },
+    {
+      "id": "offset-dodatni-dr-ujemny",
+      "formation_offset": [
+        2,
+        -3
+      ],
+      "col": 10,
+      "row": 20,
+      "expect_col": 12,
+      "expect_row": 17
+    },
+    {
+      "id": "clamp-kolumny-dolny",
+      "formation_offset": [
+        -5,
+        0
+      ],
+      "col": 2,
+      "row": 5,
+      "expect_col": 0,
+      "expect_row": 5
+    },
+    {
+      "id": "clamp-gorny-obu-osi",
+      "formation_offset": [
+        100,
+        200
+      ],
+      "col": 60,
+      "row": 150,
+      "expect_col": 67,
+      "expect_row": 155
+    },
+    {
+      "id": "clamp-zero-obu-osi",
+      "formation_offset": [
+        -1,
+        -1
+      ],
+      "col": 0,
+      "row": 0,
+      "expect_col": 0,
+      "expect_row": 0
+    },
+    {
+      "id": "granica-gorna-bez-zmiany",
+      "formation_offset": [
+        3,
+        3
+      ],
+      "col": 67,
+      "row": 155,
+      "expect_col": 67,
+      "expect_row": 155
+    },
+    {
+      "id": "offset-tylko-wiersz",
+      "formation_offset": [
+        0,
+        1
+      ],
+      "col": 5,
+      "row": 155,
+      "expect_col": 5,
+      "expect_row": 155
+    }
+  ]
+}
