@@ -10309,3 +10309,7 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 
 ### Start 2026-11-16 ~04:35 UTC — R-WEB-SAVE-LOAD-LEDGER-HISTORY-LOST-AFTER-LOAD-Q1 (#432, Haiku, cand 8f9250294)
 - Naprawa defektu zmierzonego w FALI 761: dziennik „Skąd zapasy” (3 wpisy w zapisie) znika po wczytaniu w nowej stronie; lokalizacja kroku + minimalna poprawka + test regresji z mutacją.
+
+### #415 R-WEB-AI-UPKEEP-ONOFF-MEASURE-100T-Q1 — runda 2 FC FAIL, runda 3 start (2026-11-16 ~04:50 UTC)
+- R2 (Haiku): 3 z 4 przebiegów do t100 (4242 OFF, 777 OFF, 777 ON), 4242 ON stanął w t90 (cannot-end: gracz stracił jedyne miasto w t86 — defekt #433, nieobejście). Dane częściowe (zbiór AI wspólny w obu wariantach, wznowienia ze slotów sprzed poprawki FALI 760 — NIE porównywalne z nowymi): 777 t100 skarbiec ON 31 697 vs OFF 26 360, wojsko ON 1 105 vs OFF 950; 4242 t90 skarbiec 13 856 vs 13 716; 777 t50 ≈ równo (2 086 vs 2 107). FC FAIL: brak t100 dla ON 4242, brak wojen, brak kolumny bankructw/deficytu, brak dowodu zadziałania bramki ON, brak md5 bundli JS i dokładnych komend. Refs `refs/keep/R-WEB-UPKEEP-ONOFF-r2-{op,eval,obrona,fc}`.
+- R3: Operator SONNET (po 2 nieudanych rundach Haiku, uzasadnienie w DODATKU 2); baza main 8f9250294 (FALA 760 naprawia dryf wznowień, FALA 761 naprawia #433, FALA 758 runner); nowe przebiegi wszystkie 4 od nowa na nowej bazie, w segmentach; zbieranie wojen/eliminacji/deficytów; flaga zostaje OFF — decyzja o włączeniu = ABC właściciela.
