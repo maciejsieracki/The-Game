@@ -1,3 +1,9 @@
+## ROBOCZA a35723b4 -- 2026-11-16 -- FALA 773: Lucznicy: zdrowie 20 dla wszystkich pieszych, atak dystansowy 5/6/7 (pole) (testowa)
+
+- Zdrowie wszystkich pieszych lucznikow = 20 w obu polach danych (Health i health); pole Atak dystansowy: zwykly 5, egipski 6, nubijski 7. Silnik walki czyta missileAttack - decyzja osobno.
+- Weryfikacja: tsc 0, archers-health-dist-data-test, ranged-damage-mult-test, unit-card-ranged-mult-test, load-game-regression 34/0, 5 bramek referencyjnych
+- Limity: Realny atak dystansowy w walce (missileAttack) bez zmian; NIE ZMIERZONO w zywej grze
+
 ## ROBOCZA 3a328cd0 -- 2026-11-16 -- FALA 772: Ekran porazki: osiagniecia i straty, Wczytaj gre albo Rozpocznij od nowa (testowa)
 
 - Porazka gracza (utrata ostatniego miasta) pokazuje pelny ekran konca gry: sekcje Osiagniecia (tury, epoka, zbadane technologie, cywilizacja) i Straty (utracone miasta), przyciski Wczytaj gre (otwiera dialog wczytania) i Rozpocznij od nowa; ekrany zwyciestwa bez zmian

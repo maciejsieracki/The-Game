@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "3a328cd0dc029274074b7b7e9660f2dd",
-  "bundleSha256": "30101c8eb8e6cf708d23a6b37935db445dcc1bc42884d910d5d6d9941066c963",
+  "bundleMd5": "a35723b44dc3d1a6be77943eb6f89fc6",
+  "bundleSha256": "12c09cf6b749b5b1432f49af06dd5b2840c68b8a8a3509fdce45037344f5b643",
   "bundleBytes": 14810984,
   "sourceSnapshot": {
-    "source": "FALA 772: FC c2c35ad8a scalone w main, build Vite poza repo",
+    "source": "FC e61b23d3b (kandydat 68dd4666a), main b160459c9",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 772: Porazka gracza (utrata ostatniego miasta) pokazuje pelny ekran konca gry: sekcje Osiagniecia (tury, epoka, zbadane technologie, cywilizacja) i Straty (utracone miasta), przyciski Wczytaj gre (otwiera dialog wczytania) i Rozpocznij od nowa; ekrany zwyciestwa bez zmian"
+    "FALA 773: Zdrowie wszystkich pieszych lucznikow = 20 w obu polach danych (Health i health); pole Atak dystansowy: zwykly 5, egipski 6, nubijski 7. Silnik walki czyta missileAttack - decyzja osobno."
   ],
   "verification": [
-    "tsc 0; logic-test 213/213; defeat-screen-summary-test 23/0; victory-test 12/0; load-game-regression 34/0; test zywy Chromium 45/0 (kandydat a470f0327); FC PASS-WITH-NOTES"
+    "tsc 0, archers-health-dist-data-test, ranged-damage-mult-test, unit-card-ranged-mult-test, load-game-regression 34/0, 5 bramek referencyjnych"
   ],
   "limits": [
-    "Tura po wczytaniu z ekranu porazki (blokada NNS), autozapis po porazce na liscie wczytania i uszkodzony zapis NIE ZMIERZONO; Straty bez licznikow utraconych miast i jednostek"
+    "Realny atak dystansowy w walce (missileAttack) bez zmian; NIE ZMIERZONO w zywej grze"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES DEFEAT-SCREEN-SUMMARY-LOAD-OR-NEW-Q1 r1 (kandydat a470f0327, FC c2c35ad8a): porazka gracza = pelny ekran konca gry z sekcjami Osiagniecia (tury, epoka, zbadane technologie, cywilizacja z nazwa wyswietlana) i Straty (utracone miasta: wszystkie) oraz przyciskami Wczytaj gre (dialog wczytania; Anuluj/Esc przywraca ekran) i Rozpocznij od nowa; zwyciestwa bez zmian. tsc 0, defeat-screen-summary-test 23/0, test zywy Chromium 45/0 (przyciski widoczne 1280x720 i 1400x900, klawisze N i Spacja nie zmieniaja tury), 5 bramek zielonych, load-game-regression 34/0. NIE ZMIERZONO: tura rosnie po wczytaniu (blokada NNS rowniez w kontroli bez porazki), autozapis po porazce na liscie wczytania, uszkodzony zapis; Straty bez licznikow utraconych miast i jednostek (brak w stanie gry) — ABC do wlasciciela."
+    "notes": "FC PASS-WITH-NOTES ARCHERS-HEALTH-20-DIST-EGYPT-6-Q1 r1 (kandydat 68dd4666a, FC e61b23d3b): zdrowie WSZYSTKICH pieszych lucznikow = 20 w obu polach units.json (Health i health); pole Atak dystansowy zwykly 5 / egipski 6 / nubijski 7 (UWAGA: silnik czyta missileAttack, nie to pole - decyzja balansu osobno). tsc 0, archers-health-dist-data-test, ranged-damage-mult-test, unit-card-ranged-mult-test, 5 bramek zielonych, load-game-regression 34/0."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-16T18:25:31",
+  "hubGeneratedAt": "2026-11-16T19:31:51",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "3a328cd0dc029274074b7b7e9660f2dd",
+      "md5": "a35723b44dc3d1a6be77943eb6f89fc6",
       "sizeBytes": 14810984
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "3a328cd0dc029274074b7b7e9660f2dd",
+      "md5": "a35723b44dc3d1a6be77943eb6f89fc6",
       "sizeBytes": 14810984
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "3a328cd0dc029274074b7b7e9660f2dd",
+      "md5": "a35723b44dc3d1a6be77943eb6f89fc6",
       "sizeBytes": 14810984
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "3a328cd0dc029274074b7b7e9660f2dd",
+      "md5": "a35723b44dc3d1a6be77943eb6f89fc6",
       "sizeBytes": 14810984
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "3a328cd0dc029274074b7b7e9660f2dd",
+      "md5": "a35723b44dc3d1a6be77943eb6f89fc6",
       "sizeBytes": 14810984
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "3a328cd0dc029274074b7b7e9660f2dd",
+      "md5": "a35723b44dc3d1a6be77943eb6f89fc6",
       "sizeBytes": 14810984
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "3a328cd0dc029274074b7b7e9660f2dd",
+      "md5": "a35723b44dc3d1a6be77943eb6f89fc6",
       "sizeBytes": 14810984
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "3a328cd0dc029274074b7b7e9660f2dd",
+      "md5": "a35723b44dc3d1a6be77943eb6f89fc6",
       "sizeBytes": 14810984
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "3a328cd0dc029274074b7b7e9660f2dd",
+      "md5": "a35723b44dc3d1a6be77943eb6f89fc6",
       "sizeBytes": 14810984
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "3a328cd0dc029274074b7b7e9660f2dd",
+      "md5": "a35723b44dc3d1a6be77943eb6f89fc6",
       "sizeBytes": 14810984
     }
   ],
-  "md5": "3a328cd0dc029274074b7b7e9660f2dd",
+  "md5": "a35723b44dc3d1a6be77943eb6f89fc6",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
