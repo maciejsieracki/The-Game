@@ -886,7 +886,13 @@ function roadPlanHexes(
     isTraversable: (q, r) => reach.has(`${q},${r}`),
     extraRoadKeys: roadKeys,
   });
-  memo.plan = new Set(plan.hexes);
+  // R-WEB-ROADS-REACH-CITY-HEX-REGRESSION-Q2 (zgloszenie wlasciciela 2026-11-16): plan `planRoadNetwork` nie zawiera heksow miast
+  // (miasto = wezel), wiec droga konczyla sie na heksie SASIADUJACYM z miastem — bez `droga` na heksie miasta renderer nie rysuje
+  // ramienia do centrum (maska drogi, road-network.ts). Miasto z krawedzia w planie dostaje heks miasta jako element sieci
+  // (ten sam kandydat co kazdy heks planu, reguly kosztu/limitow bez zmian). Miasto bez krawedzi (wyspa, brak sciezki) — bez zmian.
+  const linked = new Set(plan.edges.flatMap(e => [e.a, e.b]));
+  const cityHexes = own.filter(c => linked.has(c.id)).map(c => `${c.q},${c.r}`);
+  memo.plan = new Set([...plan.hexes, ...cityHexes]);
   perMap.set(ownerId, { sig, plan: memo.plan });
   return memo.plan;
 }
