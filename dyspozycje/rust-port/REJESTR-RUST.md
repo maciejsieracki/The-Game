@@ -2118,3 +2118,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Q6 (#252) nie startuje równolegle:** wspólne pliki `playable.rs`/`bridge.rs` z Q5; start po integracji Q5. Q6 musi przejść `movement` na `f64` (decyzja z Q4).
 - **Sloty:** 3 z 4 — R7K7C PARITY-MISSING0 r2 (`wf_e42107cb-dc8`, Haiku/Sonnet), P4-1I1B BATTLE-INSTANT (`wf_aafc5812-7e5`, Opus), P4-1H PREVIEW-Q5 (`wf_7546f307-6dc`, Opus). Czwarty wolny: brak odblokowanego tematu bez konfliktu plików (#239 — decyzja o fogu; #252 — po Q5).
 - **Dysk:** ok. 13 GB przed startem.
+
+## Przebieg (01:3x UTC — heartbeat slotów: start #118 K5-AUTO-WEKTORY)
+
+- **Start:** `R-RUSTPORT-P6-K5-AUTO-WEKTORY-Q1` (#118, Haiku/Sonnet — silnik), dispatch `998e5d3cb` na `claude/rust-sivvrn`, baza `b3c0b2209`. Workflow `wf_4c16ed22-a6c`.
+- **Zakres (wg rozpoznania #234 `ed4a61199` i korekty Obrony):** wektory V5 (`_finishAutoBatchPhase` `:5961`), V6 (`_haltAutoBattleTurn` `:17333`), V15 (`_executeQueuedOrders` `:3603`), V16 (`_ffEnterAuto` `:3709`). Poza zakresem: V1/V2 (zależność od #112), V7–V13 (#112/#109), tryb ręczny (`_toggleManualMode` `:17348`, `_performPlayerOrder` `:18280`) — **luka bez tematu w kolejce**, do dopisania przez orkiestratora po rozstrzygnięciu zakresu.
+- **Sloty:** 4 z 4 — R7K7C PARITY-MISSING0 r2 (`wf_e42107cb-dc8`), P4-1I1B BATTLE-INSTANT (`wf_aafc5812-7e5`, ewaluator), P4-1H PREVIEW-Q5 (`wf_7546f307-6dc`, Opus), K5-AUTO-WEKTORY (`wf_4c16ed22-a6c`).
+- **Dysk:** ok. 13 GB.
+- **Nie startowano:** #239 (decyzja o fogu), #252 (po integracji Q5 — wspólne `playable.rs`/`bridge.rs`), #97/#100/#104/#107/#109/#112/#113/#115/#120 (blokady wg kolejki: rozpoznanie, zależności, decyzja właściciela).
