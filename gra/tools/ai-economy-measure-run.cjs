@@ -167,6 +167,51 @@ async function closeEndTurnModals(page, ctx) {
   return [...stuck];
 }
 
+/**
+ * R-WEB-AI-UPKEEP-ONOFF-MEASURE-100T-Q1 (r3, przeniesione na main w R-WEB-AI-UPKEEP-ONOFF-TOOLS-PORT-Q1):
+ * wojny aktywne per tura -- TYLKO ODCZYT, z haka `window.__truceTestDebug.pairState(a, b).status` (status === 'wojna').
+ * Pary: wszyscy wlasciciele z wierszy metryk. Brak haka -> `null` (NIE ZMIERZONO, nie zero).
+ * Uruchamiane w PRZEGLADARCE.
+ */
+function warsInPage(ownerIds) {
+  const t = window.__truceTestDebug;
+  if (!t || typeof t.pairState !== 'function') return null;
+  const pairs = [];
+  for (let i = 0; i < ownerIds.length; i++) {
+    for (let j = i + 1; j < ownerIds.length; j++) {
+      let st = null;
+      try { st = t.pairState(ownerIds[i], ownerIds[j]).status; } catch (_) { st = null; }
+      if (st === 'wojna') pairs.push([ownerIds[i], ownerIds[j]]);
+    }
+  }
+  return { active: pairs.length, withPlayer: pairs.filter(p => p[0] === 0 || p[1] === 0).length,
+    aiAi: pairs.filter(p => p[0] !== 0 && p[1] !== 0).length, pairs };
+}
+
+/** Wojny z listy wlascicieli wiersza metryk (uruchamia warsInPage w przegladarce). */
+async function collectWars(page, owners) {
+  try { return await page.evaluate(warsInPage, owners.map(o => o.owner)); } catch (e) { return null; }
+}
+
+/**
+ * Licznik bramki utrzymania armii AI: `window.__aiUpkeepGateStats`. Hak NIE istnieje w main (licznik byl tylko
+ * w kopii kandydata r3, evidence/r3/upkeep-gate-counter.patch) -> `null` = NIE ZMIERZONO. Nie dodawany do src.
+ */
+async function readGateStats(page) {
+  try { return await page.evaluate(() => (window.__aiUpkeepGateStats ? JSON.parse(JSON.stringify(window.__aiUpkeepGateStats)) : null)); } catch (_) { return null; }
+}
+/** Delta licznikow bramki (po - przed) w obrebie jednej tury; reset licznika (nowa sesja) -> delta = po. */
+function gateDelta(before, after) {
+  if (!after) return null;
+  const d = {};
+  for (const k of ['calls', 'flagOff', 'noTickData', 'allowed', 'blocked']) {
+    const a = Number(after[k] || 0), b = before ? Number(before[k] || 0) : 0;
+    d[k] = a >= b ? a - b : a;
+  }
+  d.cum = { calls: after.calls || 0, blocked: after.blocked || 0 };
+  return d;
+}
+
 function ensureBuild() {
   if (arg('build', '0') !== '1' && fs.existsSync(path.join(DIST, 'index.html'))) return;
   console.log('[econ] build vite -> ' + DIST);
@@ -281,6 +326,7 @@ async function stopDump(page, extra) {
 async function playOneTurn(page, ctxState) {
   const t0 = Date.now();
   const before = await turnOf(page);
+  const gateBefore = await readGateStats(page);
   const modalBefore = {};
   for (const k of MODAL_KEYS) modalBefore[k] = ctxState[k];
   const modalDelta = () => { const d = {}; for (const k of MODAL_KEYS) d[k] = ctxState[k] - modalBefore[k]; return d; };
@@ -327,6 +373,8 @@ async function playOneTurn(page, ctxState) {
     const recH = { seed: SEED, turn: afterH, gateBlockedBeforeEnd: blocked, bypass, battlesAuto, stuckQueueHealEndedTurn: true,
       modalClosedThisTurn: modalDelta(),
       owners: mH.owners, diag: mH.diag, niezmierzone: mH.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10 };
+    recH.wars = await collectWars(page, mH.owners);
+    recH.upkeepGate = gateDelta(gateBefore, await readGateStats(page));
     if (HASH) recH.stateHash = await stateHash(page, null);
     return { rec: recH };
   }
@@ -361,6 +409,8 @@ async function playOneTurn(page, ctxState) {
     load1: Math.round(os.loadavg()[0] * 100) / 100,
     ledgerRecording: LEDGER_OFF ? 'off' : 'on',
   };
+  rec.wars = await collectWars(page, m.owners);
+  rec.upkeepGate = gateDelta(gateBefore, await readGateStats(page));
   // R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1: rozmiar dziennika w pamieci (co 10 tur, tura koncowa i pierwsza tura po starcie segmentu; poza pomiarem tury).
   if (after % 10 === 0 || after === TURNS || after === RUN_START_TURN + 1) {
     try { rec.ledgerStats = await page.evaluate(() => window.__aiEconomyMeasure.ledgerStats()); } catch (e) { rec.ledgerStats = 'ERR:' + String(e); }
@@ -520,7 +570,7 @@ function compareHashes(jsonlPath, saveAt, turns, resumed) {
   return { saveAt, turns, compared: pairs.length, allEqual: ok && pairs.length === turns - saveAt, mutant: MUTANT, pairs };
 }
 
-module.exports = { closeModalsInPage, blockerDumpInPage, closeEndTurnModals, newCtx, countersOf, COUNTER_KEYS, MODAL_KEYS };
+module.exports = { warsInPage, gateDelta, closeModalsInPage, blockerDumpInPage, closeEndTurnModals, newCtx, countersOf, COUNTER_KEYS, MODAL_KEYS };
 
 if (require.main === module) {
   main().catch(e => { console.error('[econ] BLAD: ' + (e && e.stack || e)); process.exit(1); });
