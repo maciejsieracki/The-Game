@@ -122,6 +122,11 @@ export interface ImprovementTypeInfo {
   techUnlocked: boolean;
   techLabel: string | null;
   lockHint: string | null;
+  /**
+   * R-WEB-ROAD-PAVED-DIRECT-BUILD-OR-UPGRADE-Q1: koszt Pracy budowy OD ZERA (tylko droga_brukowana:
+   * Droga + Droga brukowana). Gdy brak — koszt `kosztPraca` jest pełny dla każdego heksu.
+   */
+  kosztOdZera?: number;
 }
 
 export interface ImprovementBuildRequest {
@@ -1025,7 +1030,16 @@ export function roadBuildBlockReason(state: ImprovementBuildState, q: number, r:
   return null;
 }
 
-function createQualifier(state: ImprovementBuildState) {
+/**
+ * R-WEB-ROAD-PAVED-DIRECT-BUILD-OR-UPGRADE-Q1: `direktBruk` (domyślnie true = gracz) pozwala
+ * postawić `droga_brukowana` OD ZERA na heksie bez Drogi. Auto-ulepszenia przekazują `false`
+ * (ich koszt to koszt samej brukowanej; decyzje AI/auto zostają jak były).
+ */
+export interface ImprovementQualifierOpts {
+  direktBruk?: boolean;
+}
+
+function createQualifier(state: ImprovementBuildState, opts: ImprovementQualifierOpts = {}) {
   const { map, cityNodes, playerCivArchetype } = state;
   const playerEra = state.playerEra ?? 1;
   const playerOwnerIdNum = state.playerOwnerIdNum ?? 0;
@@ -1079,7 +1093,13 @@ function createQualifier(state: ImprovementBuildState) {
       const hasDroga = existing.includes('droga') || hex.ulepszenie === Ulepszenie.Droga;
       const hasBruk = existing.includes('droga_brukowana')
         || hex.ulepszenie === Ulepszenie.DrogaBrukowana;
-      return hasDroga && !hasBruk;
+      if (hasBruk) return false;
+      // Ulepszenie istniejącej zwykłej Drogi (jak dotąd).
+      if (hasDroga) return true;
+      // R-WEB-ROAD-PAVED-DIRECT-BUILD-OR-UPGRADE-Q1: budowa OD ZERA (bez wcześniejszej Drogi) —
+      // tylko gdy heks łączy się z siecią dróg jak zwykła droga; koszt = Droga + Droga brukowana
+      // (patrz createImprovementBuildApi / workCostAt).
+      return opts.direktBruk !== false && roadAdjacencyOk(state, q, r);
     }
 
     if (state.pendingUndoKeys?.has(`${hexKey}:${key}`)) return true;
@@ -1272,12 +1292,15 @@ function createQualifier(state: ImprovementBuildState) {
 }
 
 /** Wspólna kwalifikacja — używać w podglądach (placementpreview, mainview). */
-export function buildImprovementQualifier(state: ImprovementBuildState): (
+export function buildImprovementQualifier(
+  state: ImprovementBuildState,
+  opts: ImprovementQualifierOpts = {},
+): (
   key: ImprovementKey,
   q: number,
   r: number,
 ) => boolean {
-  return createQualifier(state);
+  return createQualifier(state, opts);
 }
 
 /**
@@ -1635,6 +1658,20 @@ export function createImprovementBuildApi(
   const getWorkCost = (key: ImprovementKey): number =>
     getImprovementMeta(key)?.kosztPraca ?? readWorkCost(key);
 
+  // R-WEB-ROAD-PAVED-DIRECT-BUILD-OR-UPGRADE-Q1: koszt Pracy na KONKRETNYM heksie. Brukowana na
+  // heksie z Drogą = ulepszenie (koszt samej brukowanej); brukowana OD ZERA = Droga + Droga
+  // brukowana (założenie orkiestratora 2026-11-16, do potwierdzenia przez właściciela).
+  const workCostAt = (key: ImprovementKey, q: number, r: number): number => {
+    const base = getWorkCost(key);
+    if (key !== 'droga_brukowana') return base;
+    const hk = `${q},${r}`;
+    const hex = map.hexes[hk];
+    if (!hex) return base;
+    const existing = getHexLayers(hk, hex, buildPlacedImprovementsMap(map, state.placedImprovements));
+    const hasDroga = existing.includes('droga') || hex.ulepszenie === Ulepszenie.Droga;
+    return hasDroga ? base : getWorkCost('droga') + base;
+  };
+
   const canBuild = (key: ImprovementKey, q: number, r: number): boolean =>
     qualifies(key, q, r);
 
@@ -1673,6 +1710,7 @@ export function createImprovementBuildApi(
         key,
         label: meta?.nazwa ?? label,
         kosztPraca: koszt,
+        ...(key === 'droga_brukowana' ? { kosztOdZera: getWorkCost('droga') + koszt } : {}),
         epoka,
         typ,
         techId,
@@ -1699,7 +1737,7 @@ export function createImprovementBuildApi(
       q,
       r,
       hexKey,
-      kosztPraca: meta?.kosztPraca ?? readWorkCost(key),
+      kosztPraca: workCostAt(key, q, r),
       action: meta?.typ ?? 'ulepszenie',
     };
   };
@@ -1716,7 +1754,7 @@ export function createImprovementBuildApi(
         q,
         r,
         hexKey,
-        kosztPraca: meta?.kosztPraca ?? readWorkCost(key),
+        kosztPraca: workCostAt(key, q, r),
         action: meta?.typ ?? 'ulepszenie',
       };
       mode.onSelect?.(req);

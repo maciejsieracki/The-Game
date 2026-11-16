@@ -136,7 +136,15 @@ const qual = M.buildImprovementQualifier({
 });
 
 ok(qual('droga_brukowana', 0, 0), 'upgrade bruk on hex with droga');
-ok(!qual('droga_brukowana', 1, 0), 'no bruk without existing droga');
+// R-WEB-ROAD-PAVED-DIRECT-BUILD-OR-UPGRADE-Q1: gracz może postawić brukowaną OD ZERA (sąsiad drogi);
+// auto-ulepszenia (direktBruk:false) zachowują dawną regułę „najpierw droga”.
+ok(qual('droga_brukowana', 1, 0), 'direct bruk from scratch on hex next to road (player)');
+ok(!M.buildImprovementQualifier({
+  map, cityNodes,
+  territoryNodes: [{ q: 0, r: 0, pop: 10, level: 1, ownerId: 0 }],
+  roadKeys,
+  researchedTechs: new Set(['Drogi brukowane']),
+}, { direktBruk: false })('droga_brukowana', 1, 0), 'auto (direktBruk:false): no bruk without existing droga');
 ok(qual('droga_brukowana', 2, 0), 'bruk upgrade on hex with droga ulepszenie');
 
 hexes['0,0'].ulepszenie = UL.DrogaBrukowana;
