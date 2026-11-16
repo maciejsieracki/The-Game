@@ -1,0 +1,55 @@
+STATUS: BLOCK (bramka pelnych testow nie zakonczona: spadek dysku ponizej 8 GB)
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P6-K5DOC-T4A-HELPERY-SCIEZKI (#312), runda 1, Operator HAIKU 5.5
+GOAL: helpery sciezki pieszego z pinu 07d2fbd72 jako czyste funkcje Rust:
+  first_step_along_path_to_attack (_firstStepAlongPathToAttack, battleScene.ts:8565-8622)
+  oraz step_toward (_stepToward, battleScene.ts:8413-8427). Asymetria allowFirstStep zachowana.
+BAZA: origin/rust-port/parity-v2 = 0fccd8dbf (HEAD sprawdzony przed startem, detached)
+PIN: 07d2fbd72 (tylko odczyt)
+
+ZMIANY/COMMIT:
+  NOWE rust-port/engine/src/domain/siege_tactics_pathstep.rs (2 funkcje, bez zmian w innych modulach domeny)
+  rust-port/engine/src/domain/mod.rs (+1 linia: pub mod siege_tactics_pathstep;)
+  NOWE rust-port/engine/tests/p6_k5doc_t4a.rs (12 testow: 11 nazwanych + test wektorow)
+  NOWE rust-port/engine/tests/p6_k5doc_t4a_gen.mjs (generator; WYKONUJE tekst pina przez TypeScript)
+  NOWE rust-port/engine/tests/p6_k5doc_t4a_vectors/vectors.json (461 przypadkow: 307 first_step, 154 step_toward)
+  NOWE dyspozycje/autobot/runs/R-RUSTPORT-P6-K5DOC-T4A-HELPERY-SCIEZKI/raport.txt
+  Cargo.lock NIE w commicie (wygenerowany przez cargo, usuniety z worktree).
+  Commit: patrz SHA w odpowiedzi orkiestratora (commit lokalny, bez push).
+  Poza allowlista: NIC (siege_tactics_loop.rs, ProdBody, gra/, walk.rs, tower.rs nietkniete).
+
+STUBY W GENERATORZE (zaleznosci pina spoza wycinka): _makeCanAttackFromTest (-> is_goal w Rust),
+  _passableForUnit (-> AutoBatchEnv::passable_for_unit). occByKey = BatchBoard::occ.
+
+TESTY:
+  rustfmt --check (2 nowe pliki): EXIT 0
+  cargo fmt --check (crate engine): EXIT 0
+  cargo clippy --all-targets -- -D warnings: EXIT 0 (po poprawce manual_range_contains w pathstep)
+  cargo test --test p6_k5doc_t4a: EXIT 0, 12 passed; 0 failed (wektory zgodne z pinem: 461 przypadkow)
+  cargo test --all-targets --no-fail-fast: NIE ZAKONCZONE. Kompilacja testow trwala; dysk / spadl
+    z 8.9 GB (start) do 6.0 GB (w trakcie) i z 9.0 GB po usunieciu katalogu bramki. Bramke
+    zatrzymano recznie (proces tylko z worktree R-RUSTPORT-P6-K5DOC-T4A), katalog CARGO_TARGET_DIR usuniety.
+    NIE_ZMIERZONO: pelny wynik cargo test --all-targets.
+
+MUTACJE (wymagane; kazda w pliku pathstep.rs, potem przywrocenie z kopii, cmp OK):
+  (a) asymetria allowFirstStep usunieta (filtr dla wszystkich krokow): EXIT 101, FAIL
+      (2 failed: asymetria_allow_first_step_dalszy_krok_nie_jest_filtrowany_pin_8593, wektory_zgodne_z_wykonaniem_pina)
+  (b) occByKey pominiete (if false && occ.contains_key): EXIT 101, FAIL
+      (4 failed: allow_first_step_zakazuje_pierwszego_kroku_pin_8593, asymetria..., zajety_heks_occbykey_omijany_pin_8594, wektory_zgodne...)
+  (c) passable_for_unit zastapione true (w first_step): EXIT 101, FAIL
+      (3 failed: heks_nieprzejezdny_passable_for_unit_omijany_pin_8605, brak_sciezki_brak_kroku_pin_8565_8622, wektory_zgodne...)
+
+BLOKADY:
+  1. Bramka cargo test --all-targets nie zakonczona (dysk < 8 GB w trakcie; patrz TESTY).
+  2. Zaleznosci poza zakresem tematu, wymagane przez nastepne tematy: _makeCanAttackFromTest i
+     _canStrikeTargetFrom nie sa portowane (w tym temacie goal = parametr is_goal). T4b/T5 musza
+     dostarczyc predykat celu (np. zbior kafelkow policzony przed BFS).
+  3. Terenowe _passableForUnit (koszt, konny, bród) nie jest portowane (T4c); tu tylko przez trait.
+
+RUNDY: 1/5
+NASTEPNY KROK: (a) orkiestrator: ponowic bramke cargo test --all-targets przy dysku >= 8 GB
+  (kompilacja testow zajmuje dluzej niz 30 min, wymaga ok. 3 GB), potem FC (Sonnet).
+  (b) T4b (#313) dopiero po FC T4a.
+UWAGA (commit): trailer Co-Authored-By z nazwa modelu pominieto (decyzja #289 i dispatch: bez nazwy modelu);
+  zostawiono linie Claude-Session.
+DEPLOY/PUSH: NIE WYKONANO (brak push, brak integracji; BLOCK).
