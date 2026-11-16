@@ -2080,3 +2080,13 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Następne (po integracji tego tematu):** R7K7C-WIRING-IMPL (wpięcie `apply_dipl_deltas_to_state` w `run_diplomacy_war_phase`, `playable.rs:1247`), potem R7K7C-VEC (wektory ≥150).
 - **Sloty:** 3 z 4 — P4-1I1 (`wf_8948228b-2a5`, FC), P4-1H Q4 (`wf_312e0180-927`, ewaluator), R7K7C PARITY-MISSING0 (`wf_e8d80c7c-629`, operator).
 - **Dysk:** ok. 8–9 GB.
+
+## Przebieg (00:2x UTC — integracja P4-1I1 BATTLE-OUTCOME, #244)
+
+- **Parity:** `1bacc7621` → `05e4df502` (fast-forward, odczyt z GitHub: `05e4df502500c591afae67b4017b6e3e907a0f86`). Merge `--no-ff` FC `44e35db25` (kod `0f29d1a86`, operator `475b795a5`, ewaluator `69c2b7eb9`, obrona `0f29d1a86`). Baza `84ec520a5` jest przodkiem; `merge-tree` względem parity czysty (exit 0); zakres zmian: wyłącznie `rust-port/engine`, `rust-port/view-model` i `dyspozycje/`.
+- **Bramki na merge'u (`05e4df502`):** view-model `fmt 0`, `clippy 0`, `test 0`; silnik `fmt 0`, `clippy 0`, `test 0` (łącznie 3653 passed, 0 failed, 1 ignored).
+- **Refy:** `refs/keep/P4-1I1-BATTLE-OUTCOME-{FC,OBRONA,OP,EVAL,MERGE}`.
+- **Sprzątanie:** worktree `integ-P4-1I1` i cache `target-integ-I1` usunięte; worktree `wf_8948228b-2a5-1..4` usunięte po zachowaniu refów.
+- **Otwarte (z FC, bez zmian w tej integracji):** `validate.rs`/`lib.rs` poza allowlistą (brak reeksportów; kontrola `hp>0` przez istniejący `ViewError::OutOfRange`); `build_battle_outcome` nie ma jeszcze produkcyjnego wołającego (wpięcie w #113/#246); erratum `FortDto` None → INFINITY (patrz wpis Q4 wyżej) obowiązuje też P4-1I.
+- **Incydent dysku:** workflow `wf_e8d80c7c-629` (R7K7C PARITY-MISSING0) przerwany na etapie Obrony (`WorktreeIsolationError`, `unable to write file`, dysk 964 MB przy 98%). Operator i Evaluator zakończone; wznowienie po zwolnieniu dysku (9,8 GB po sprzątaniu).
+- **Dysk:** 9,8 GB (75%) po sprzątaniu.
