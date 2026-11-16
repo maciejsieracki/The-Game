@@ -10544,3 +10544,6 @@ FC PASS-WITH-NOTES (FC 162e95664). main = 98abccdfc, ROBOCZA MD5 f06ba9ebe1a1777
 
 ### Zgłoszenie 2026-11-17 (noc): panel TEMPO + minimapa w bitwie — oprawa graficzna zgodna z nowym brandbookiem
 Właściciel (zrzut): panel w bitwie mógłby być atrakcyjniejszy graficznie i zgodny z nowym brandbookiem. STATUS: **OTWARTE** — dispatch `R-WEB-UI-BATTLE-TEMPO-MINIMAP-PANEL-BRANDBOOK-Q1` (Haiku r1; zrzuty PRZED/PO; start gdy zwolni się slot).
+
+### FALA 781 (2026-11-17) — WDROŻONE na ROBOCZĄ: Zastąp przechodzi przez wszystkie typy jednostek w armii
+MULTITYPE (FC cf304e036, PASS-WITH-NOTES): modal na każdy typ z zamiennikiem (grupa k/n), „Pomiń ten typ”, „Zakończ”, komunikat o niezałatwionych typach. ROBOCZA df6c91bf, main 774fd0eec, raw MD5 = manifest, 3 sidecary OK. NIE ZMIERZONO: żywy Chromium; komunikat gdy wszystkie typy bez zamiennika nie nazywa typów (mały osobny temat). Dług Rust: REPIN.
