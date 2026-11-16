@@ -125,7 +125,6 @@ const REQUIRED_LINES = [
   "if (key === 'kopalnia_miedzi'\n      && zloze !== 'miedz' && nakladka !== Nakladka.ZlozeRudy && zloze !== 'ruda') continue;",
   "if (key === 'kopalnia_zlota' && zloze !== 'zloto') continue;",
   "if (key === 'kopalnia_cyny' && zloze !== 'cyna') continue;",
-  "if (key === 'droga_brukowana' && !active.has('droga') && hex.ulepszenie !== Ulepszenie.Droga) continue;",
   "if (key === 'irygacja' && !hexHasRiverAccess(hex, map)) continue;",
 ];
 for (const line of REQUIRED_LINES) {
@@ -280,8 +279,6 @@ async function main() {
         && zloze !== 'miedz' && nakladka !== Nakladka.ZlozeRudy && zloze !== 'ruda') continue;
       if (!skip.has('kopalnia_zlota') && key === 'kopalnia_zlota' && zloze !== 'zloto') continue;
       if (!skip.has('kopalnia_cyny') && key === 'kopalnia_cyny' && zloze !== 'cyna') continue;
-      if (!skip.has('droga_brukowana') && key === 'droga_brukowana'
-        && !active.has('droga') && hex.ulepszenie !== Ulepszenie.Droga) continue;
       if (!skip.has('irygacja') && key === 'irygacja' && !river(hex, map)) continue;
       out.push(key);
     }
@@ -351,13 +348,13 @@ async function main() {
     assert(keys.includes('warzelnia_soli'), 'Wybrzeże bez złoża: lista ZAWIERA Warzelni soli (sól z morza, bez złoża)');
   }
 
-  // --- (a) droga_brukowana wymaga JUŻ zbudowanej Drogi na heksie --------------------------
-  console.log('\n[4] droga_brukowana wymaga istniejącej Drogi na heksie');
+  // --- (a) droga_brukowana: upgrade Drogi LUB budowa od zera (R-WEB-ROAD-PAVED-DIRECT-BUILD-OR-UPGRADE-Q1)
+  console.log('\n[4] droga_brukowana: bez Drogi = budowa od zera, z Drogą = ulepszenie');
   {
     const hexNoRoad = makeHex(TerenBazowy.Laka, Nakladka.Brak, undefined);
     const keysNoRoad = computePossibleKeys(hexNoRoad, null);
-    assert(!keysNoRoad.includes('droga_brukowana'),
-      'Łąka BEZ Drogi: lista NIE zawiera Drogi brukowanej (silnik wymaga istniejącej Drogi)');
+    assert(keysNoRoad.includes('droga_brukowana'),
+      'Łąka BEZ Drogi: lista ZAWIERA Drogę brukowaną (budowa od zera, koszt Droga + Droga brukowana)');
 
     const hexWithRoad = makeHex(TerenBazowy.Laka, Nakladka.Brak, undefined, { ulepszenie: 'droga' });
     const keysWithRoad = computePossibleKeys(hexWithRoad, null);
@@ -424,10 +421,8 @@ async function main() {
   {
     const hexNoRoad = makeHex(TerenBazowy.Laka, Nakladka.Brak, undefined);
     const fixedRoadKeys = computePossibleKeys(hexNoRoad, null);
-    const mutatedRoadKeys = computePossibleKeys(hexNoRoad, null, new Set(['droga_brukowana']));
-    assert(!fixedRoadKeys.includes('droga_brukowana'), 'Z warunkiem: Droga brukowana NIE pojawia się bez Drogi');
-    assert(mutatedRoadKeys.includes('droga_brukowana'),
-      'Bez warunku: Droga brukowana WRACA bez Drogi -- odtworzony zgłoszony bug (720/1008 przy 0 dozwolonych)');
+    assert(fixedRoadKeys.includes('droga_brukowana'), 'Z nowym warunkiem: Droga brukowana pojawia się też bez Drogi (budowa od zera)');
+    // (dawny mutant „cofnięcia warunku” usunięty razem z warunkiem; regres pokrywa map-road-movement-test.cjs)
   }
 
   // --- [3c]/[3d] MUTACJA NA PRAWDZIWYM PLIKU ŹRÓDŁOWYM hexContextTooltip.ts (F2, runda 4) ---

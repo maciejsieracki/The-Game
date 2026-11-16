@@ -8403,11 +8403,21 @@ async function boot(): Promise<void> {
         const g = groups.get(key);
         if (g) g.push(t); else groups.set(key, [t]);
       }
-      const skipped = targets.length - eligible.length;
-      const note = skipped > 0
-        ? 'pominięto ' + skipped + ' z ' + targets.length + ' zaznaczonych (już zastąpione w tej turze lub brak zamienników)'
-        : '';
-      openUnitReplaceGroupPicker([...groups.values()], 0, note);
+      // R-WEB-UNIT-REPLACE-MULTITYPE-WALK-ALL-GROUPS-Q2: typy bez zamiennika NIE znikają po cichu --
+      // są liczone po nazwie i wymienione w komunikacie łańcucha; reszta pominięć = już zastąpione / poza terytorium.
+      const eligibleSet = new Set<RuntimeUnit>(eligible);
+      const noReplacement = new Map<string, number>();
+      let otherSkipped = 0;
+      for (const t of targets) {
+        if (eligibleSet.has(t)) continue;
+        if (t.ownerId === 0 && isUnitInPlayerTerritory(t) && t.replaceUsedThisTurn !== true) {
+          const label = (t.isGeneral === true ? '★ Wódz: ' : '') + t.typeId;
+          noReplacement.set(label, (noReplacement.get(label) ?? 0) + 1);
+        } else {
+          otherSkipped++;
+        }
+      }
+      openUnitReplaceGroupPicker({ groups: [...groups.values()], noReplacement, otherSkipped }, 0);
     }
 
     /** Pełny koszt rekrutacji nowej jednostki `typeId` razy `k` (Pieniądz + surowiec). */
@@ -8435,10 +8445,66 @@ async function boot(): Promise<void> {
       return ok;
     }
 
-    function openUnitReplaceGroupPicker(groups: RuntimeUnit[][], index: number, note = ''): void {
+    /** Stan łańcucha "Zastąp" po zaznaczeniu wielu typów (R-WEB-UNIT-REPLACE-MULTITYPE-WALK-ALL-GROUPS-Q2). */
+    type UnitReplaceChain = {
+      /** Kwalifikujące się jednostki pogrupowane wg typu (wódz osobno), w kolejności zaznaczenia. */
+      groups: RuntimeUnit[][];
+      /** Typy zaznaczone BEZ żadnego zamiennika: etykieta -> liczba jednostek. */
+      noReplacement: Map<string, number>;
+      /** Pozostałe pominięte zaznaczone (już zastąpione w tej turze / poza terytorium). */
+      otherSkipped: number;
+    };
+
+    function unitReplaceGroupLabel(group: readonly RuntimeUnit[]): string {
+      const s = group[0]!;
+      return (s.isGeneral === true ? '★ Wódz: ' : '') + s.typeId + ' ×' + group.length;
+    }
+
+    /** Jeden komunikat po polsku o typach zaznaczonych, których nie da się zastąpić (w tym pominiętych). */
+    function unitReplaceSkipNote(chain: UnitReplaceChain): string {
+      const parts: string[] = [];
+      if (chain.noReplacement.size > 0) {
+        const list = [...chain.noReplacement].map(([label, n]) => label + (n > 1 ? ' ×' + n : '')).join(', ');
+        parts.push('Bez zamiennika: ' + list);
+      }
+      if (chain.otherSkipped > 0) {
+        parts.push('pominięto ' + chain.otherSkipped + ' (już zastąpione w tej turze lub poza terytorium)');
+      }
+      return parts.join(' · ');
+    }
+
+    /** Czy od grupy `from` zostały jeszcze kwalifikujące się typy (łańcuch idzie dalej). */
+    function unitReplaceHasPending(chain: UnitReplaceChain, from: number): boolean {
+      return chain.groups.slice(from).some(g => g.some(unitReplaceEligible));
+    }
+
+    /** Przerwanie łańcucha (Zakończ/Esc): komunikat o niezałatwionych typach + uwaga o pominiętych. */
+    function unitReplaceChainStopped(chain: UnitReplaceChain, from: number): void {
+      const parts: string[] = [];
+      const left = chain.groups.slice(from);
+      if (left.length > 0) {
+        parts.push('Zastąp: zakończono — niezałatwione typy (' + left.length + ' z ' + chain.groups.length + '): '
+          + left.map(unitReplaceGroupLabel).join(', '));
+      }
+      const skip = unitReplaceSkipNote(chain);
+      if (skip) parts.push(skip);
+      if (parts.length > 0) showHintMessage(parts.join(' · '), 5200);
+    }
+
+    /** Komunikat po wyborze/pominięciu ostatniej grupy: uwaga o pominiętych dochodzi do tego samego toastu. */
+    function unitReplaceHintWithTail(chain: UnitReplaceChain, index: number, msg: string): { text: string; ms: number } {
+      if (unitReplaceHasPending(chain, index + 1)) return { text: msg, ms: 3800 };
+      const tail = unitReplaceSkipNote(chain);
+      return tail ? { text: msg + ' · ' + tail, ms: 5200 } : { text: msg, ms: 3800 };
+    }
+
+    /** Okno zamiany dla grupy `index` łańcucha; kolejne typy idą same (Zastąp / Pomiń), Zakończ/Esc przerywa. */
+    function openUnitReplaceGroupPicker(chain: UnitReplaceChain, index: number): void {
+      const { groups } = chain;
+      if (index >= groups.length) return;
       const group = groups[index]?.filter(unitReplaceEligible) ?? [];
       if (group.length === 0) {
-        if (index + 1 < groups.length) openUnitReplaceGroupPicker(groups, index + 1);
+        openUnitReplaceGroupPicker(chain, index + 1);
         return;
       }
       const sample = group[0]!;
@@ -8453,7 +8519,7 @@ async function boot(): Promise<void> {
         unitName: label,
         count: n,
         groupLabel: groups.length > 1 ? 'grupa ' + (index + 1) + '/' + groups.length : undefined,
-        note: note || undefined,
+        note: unitReplaceSkipNote(chain) || undefined,
         skarb: player.skarbiec,
         options: ordered.map(it => {
           const udef = lookupUnitDef(it.id);
@@ -8484,13 +8550,18 @@ async function boot(): Promise<void> {
             else break;
           }
           const failed = n - done;
-          showHintMessage(
+          const hint = unitReplaceHintWithTail(chain, index,
             'Zastąp: ' + sample.typeId + ' → ' + newTypeId + ' ×' + done
-              + (failed > 0 ? ' (nie zastąpiono ' + failed + ' z ' + n + ' — brak zasobów/limit)' : ''),
-            3800,
-          );
-          if (index + 1 < groups.length) openUnitReplaceGroupPicker(groups, index + 1);
+              + (failed > 0 ? ' (nie zastąpiono ' + failed + ' z ' + n + ' — brak zasobów/limit)' : ''));
+          showHintMessage(hint.text, hint.ms);
+          openUnitReplaceGroupPicker(chain, index + 1);
         },
+        onSkip: () => {
+          const hint = unitReplaceHintWithTail(chain, index, 'Zastąp: pominięto typ ' + sample.typeId + ' ×' + n);
+          showHintMessage(hint.text, hint.ms);
+          openUnitReplaceGroupPicker(chain, index + 1);
+        },
+        onCancel: () => unitReplaceChainStopped(chain, index),
       });
     }
 
