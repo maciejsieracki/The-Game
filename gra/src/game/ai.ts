@@ -42,6 +42,7 @@ import {
   splitIntoWarArmies,
   warArmyCount,
 } from './army-consolidation';
+import { unitsVisibleToViewer } from './ambush';
 import { hexDistance, computePath, computeReachable, keyOf, isCivilianUnit, terrainMoveCost, buildMoveOccupancy, endBlockedKeys, MoveOccupancy } from '../units/setup';
 import { type AiMarchGuard, firstBlockedOwnerOnPath, isDetourSignificant } from './ai-march-guard';
 import { farthestStepWithinBudget } from './ai-move-range';
@@ -3495,6 +3496,11 @@ export function decideAITurn(
   data: GameData,
   opts: AITurnOpts = {},
 ): AICommand[] {
+  // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1: zasadzki WROGA sa dla AI niewidoczne -- planista widzi heks jak
+  // pusty (pathfinding, "sily wroga w zasiegu", cele). Brak zasadzek = ta sama tablica (zero kosztu).
+  if (units.some(u => u.ambush === true && u.ownerId !== playerId)) {
+    units = unitsVisibleToViewer(units, playerId);
+  }
   const prevGuard = activeMarchGuard;
   activeMarchGuard = opts.marchGuard ?? null;
   try {

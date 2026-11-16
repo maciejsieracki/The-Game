@@ -102,6 +102,7 @@ export function canSetAmbush(
 export function setAmbush(stack: RuntimeUnit[]): void {
   for (const u of stack) {
     u.ambush = true;
+    u.ambushAt = ambushStamp(u);
     u.ruchLeft = 0;
   }
 }
@@ -110,9 +111,62 @@ export function setAmbush(stack: RuntimeUnit[]): void {
  * Odwołuje zasadzkę (bez kosztu ruchu). Używane przy ręcznym odwołaniu przez gracza.
  */
 export function cancelAmbush(stack: RuntimeUnit[]): void {
-  for (const u of stack) {
-    if (u.ambush !== undefined) delete u.ambush;
+  for (const u of stack) clearAmbushState(u);
+}
+
+/** Pieczec miejsca zasadzki: heks + wlasciciel. Zmiana (ruch, odwrot, zmiana wlasciciela) = zasadzka wygasa. */
+function ambushStamp(u: Pick<RuntimeUnit, 'q' | 'r' | 'ownerId'>): string {
+  return u.q + ',' + u.r + ',' + u.ownerId;
+}
+
+function clearAmbushState(u: RuntimeUnit): boolean {
+  const had = u.ambush !== undefined || u.ambushAt !== undefined;
+  if (u.ambush !== undefined) delete u.ambush;
+  if (u.ambushAt !== undefined) delete u.ambushAt;
+  return had;
+}
+
+/**
+ * Cykl zycia zasadzki (pkt 4) -- JEDNO miejsce, wolane z synchronizacji jednostek po kazdej zmianie stanu.
+ * Zdejmuje zasadzke jednostce, ktora: zmienila heks lub wlasciciela (ruch, odwrot po bitwie, relokacja,
+ * podzial stosu -- czesc, ktora odeszla), stoi w miescie, w garnizonie, czuwa (sentry), jest ufortyfikowana w
+ * polu albo oblega. Dodatkowo spojnosc grupy: stos (wlasciciel + heks + stackGroupId) jest ALBO caly w zasadzce,
+ * ALBO wcale -- dolaczenie widocznej jednostki (scalenie) ujawnia caly stos; reszta po PODZIALE zostaje.
+ * `hasCityAt(q, r)` = czy heks ma miasto. Zwraca liczbe jednostek, ktorym zdjeto stan.
+ */
+export function reconcileAmbush(
+  units: RuntimeUnit[],
+  hasCityAt: (q: number, r: number) => boolean,
+): number {
+  if (!units.some(u => u.ambush !== undefined || u.ambushAt !== undefined)) return 0;
+  let n = 0;
+  for (const u of units) {
+    if (u.ambush === undefined && u.ambushAt === undefined) continue;
+    if (u.ambush !== true) { if (clearAmbushState(u)) n++; continue; }
+    if (u.ambushAt === undefined) { u.ambushAt = ambushStamp(u); }
+    const bad = u.ambushAt !== ambushStamp(u)
+      || u.inGarnizon === true
+      || u.sentry === true
+      || u.ufortyfikowanyWPolu === true
+      || (typeof u.oblegaCityId === 'string' && u.oblegaCityId.length > 0)
+      || hasCityAt(u.q, u.r);
+    if (bad && clearAmbushState(u)) n++;
   }
+  // Spojnosc grupy (stos = wlasciciel + heks + stackGroupId).
+  const groups = new Map<string, RuntimeUnit[]>();
+  for (const u of units) {
+    if (u.inGarnizon === true) continue;
+    const k = u.ownerId + '|' + u.q + ',' + u.r + '|' + (u.stackGroupId ?? '');
+    const g = groups.get(k);
+    if (g === undefined) groups.set(k, [u]); else g.push(u);
+  }
+  for (const g of groups.values()) {
+    if (g.length < 2) continue;
+    const amb = g.filter(u => u.ambush === true).length;
+    if (amb === 0 || amb === g.length) continue;
+    for (const u of g) if (clearAmbushState(u)) n++;
+  }
+  return n;
 }
 
 /**
@@ -182,8 +236,66 @@ export function resolveAmbushTrigger(
   const revealed = units.filter(
     u => u.q === q && u.r === r && u.ownerId === ambushOwnerId && isUnitAmbushed(u),
   );
-  for (const u of revealed) delete u.ambush;
+  for (const u of revealed) clearAmbushState(u);
   return { triggered: true, ambushOwnerId, revealed };
+}
+
+/** Predykat wojny dostarczany przez wołającego (symetryczny; barbarzyńcy = wróg). */
+export type AmbushWarPredicate = (a: number, b: number) => boolean;
+
+/**
+ * Czy zasadzka jednostki `u` jest UKRYTA przed poruszającym się właścicielem `moverOwnerId`
+ * (i traktowana przez pathfinding jak pusty heks): tylko stos w zasadzce, cudzy, w WOJNIE.
+ * Wobec nie-wrogów (pokój/sojusz) heks pozostaje zajęty (brak nakładania jednostek).
+ */
+export function isAmbushHiddenFromMover(
+  u: Pick<RuntimeUnit, 'ownerId' | 'ambush'>,
+  moverOwnerId: number,
+  isAtWar: AmbushWarPredicate,
+): boolean {
+  return u.ambush === true && u.ownerId !== moverOwnerId && isAtWar(moverOwnerId, u.ownerId);
+}
+
+/** Wynik przycięcia trasy ruchu na pierwszej zasadzce wroga. */
+export interface AmbushPathCut<T extends { q: number; r: number }> {
+  /** Trasa do heksu PRZED zasadzką (może być pusta: zasadzka tuż przy starcie). */
+  path: T[];
+  /** Heks zasadzki, w którą ruch wpada; brak = trasa czysta (path = wejście bez zmian). */
+  ambushHex?: { q: number; r: number };
+}
+
+/**
+ * Przycina trasę ruchu `path` (heksy kroków, bez heksu startu) na pierwszym heksie z zasadzką
+ * wroga (mover w WOJNIE z właścicielem zasadzki). Ruch kończy się na ostatnim heksie PRZED
+ * zasadzką (nie nakłada jednostek), a wołający otwiera bitwę o heks zasadzki.
+ */
+export function truncatePathAtAmbush<T extends { q: number; r: number }>(
+  units: ReadonlyArray<Pick<RuntimeUnit, 'ownerId' | 'ambush' | 'q' | 'r'>>,
+  path: ReadonlyArray<T>,
+  moverOwnerId: number,
+  isAtWar: AmbushWarPredicate,
+): AmbushPathCut<T> {
+  if (path.length === 0 || !units.some(u => u.ambush === true)) return { path: path.slice() };
+  for (let i = 0; i < path.length; i++) {
+    const h = path[i]!;
+    if (units.some(u => u.q === h.q && u.r === h.r && isAmbushHiddenFromMover(u, moverOwnerId, isAtWar))) {
+      return { path: path.slice(0, i), ambushHex: { q: h.q, r: h.r } };
+    }
+  }
+  return { path: path.slice() };
+}
+
+/**
+ * Polityka cyklu życia: stos po scaleniu/podziale -- zasadzkę zachowują tylko jednostki, które
+ * NIE zmieniły heksu ani składu. `movedIds` = jednostki poruszające się/dołączane; zdejmuje im
+ * zasadzkę, reszta zostaje. Zwraca liczbę jednostek, którym zdjęto stan.
+ */
+export function cancelAmbushForUnits(units: RuntimeUnit[], movedIds: ReadonlySet<string>): number {
+  let n = 0;
+  for (const u of units) {
+    if (movedIds.has(u.id) && clearAmbushState(u)) n++;
+  }
+  return n;
 }
 
 /**
@@ -193,5 +305,6 @@ export function resolveAmbushTrigger(
 export function normalizeAmbushField(u: { ambush?: unknown }): boolean {
   if (u.ambush === undefined || u.ambush === true) return false;
   delete (u as { ambush?: unknown }).ambush;
+  delete (u as { ambushAt?: unknown }).ambushAt;
   return true;
 }

@@ -1,3 +1,55 @@
+# R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 — raport Operatora, RUNDA 3/5 (sekcja r3; r2 i r1 poniżej)
+
+STATUS: PASS-WITH-NOTES (wpięcie 1+2+3+4+5+6 zrobione RAZEM w kodzie i testach na realnych funkcjach; NIE ZMIERZONO Chromium i bitwy w żywej grze — patrz BLOKADY)
+DOMAIN: GAME
+TEMAT: R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1
+GOAL: wyzwalacz zasadzki w ruchu gracza i AI + niewidoczność w pathfindingu/AI + cykl życia + testy + wiki, w jednej rundzie (decyzja podziału z DODATKU 2).
+BAZA: `82f5d6ad2` (kandydat r2) + `git merge origin/main` (`64069b1a2`, FALA 783) bez konfliktów; `git merge-base --is-ancestor origin/main HEAD` = TAK.
+
+ZMIANY (kod):
+- `gra/src/game/ambush.ts`: `isAmbushHiddenFromMover`, `truncatePathAtAmbush` (trasa kończy się na ostatnim heksie PRZED zasadzką wroga w wojnie; brak nakładania jednostek), `reconcileAmbush` (cykl życia, jedno miejsce), pole pieczęci `ambushAt` ("q,r,owner"), `cancelAmbush`/`resolveAmbushTrigger` czyszczą oba pola.
+- `gra/src/units/setup.ts`: `RuntimeUnit.ambushAt?`; `buildMoveOccupancy(..., isAtWar?)` — z predykatem stos w zasadzce WROGA w wojnie nie blokuje heksu (dla wroga niewidoczny); bez predykatu zachowanie bez zmian (barbarzyńcy, zwiad: zasadzka nadal blokuje, bez ryzyka nakładania).
+- `gra/src/game/ai.ts` (punktowo, `decideAITurn`): zasadzki wroga odfiltrowane z listy jednostek widzianej przez planistę AI (pathfinding, „siły wroga w zasięgu”, cele); brak zasadzek = ta sama tablica.
+- `gra/src/main.ts` (punktowo): `occupiedForMove` przekazuje `areEnemyOwners`; `fireAmbushOnHex` (zdjęcie stanu, skasowanie zaplanowanego marszu i celu ataku, komunikaty „Wpadłeś w zasadzkę!” / „Zasadzka się powiodła”, bitwa przez `openPlayerMapUnitAttackCore`: poruszający = atakujący, zastawiający = obrońca, STANDARDOWE rozstawienie, punkt wpięcia R3/AMBUSH-DEPLOY opisany w komentarzu); `startAnimatedMove` (obcięcie trasy; pusta trasa = bitwa od razu; po animacji `AnimState.ambushHex` → bitwa); `applyMarchSegmentInstant` (marsz końca tury; bez `launchAttack` zasadzka zostaje nietknięta); executor AI (`truncatePath` przycina trasę, po ruchu `resolveAmbushTrigger` + wstrzyknięty rozkaz `attack` z flagą `ambush` omijający test widoczności i wznowienie fazy AI istniejącą ścieżką `aiCmdResume`/`launchIncomingMapFieldBattle`); `syncUnitsRender` woła `reconcileAmbush`.
+- `gra/tools/ambush-wiring-test.cjs` (NOWY, 27 asercji), `docs/encyklopedia/pojecia/zasadzka.md` + wpis w `indeks.md`, regeneracja `gra/src/data/wikiBundle.json` (`node gra/tools/bundle-wiki-for-game.cjs` → 185 haseł).
+NIE zmieniano: `armyMerge.ts` (scalenie/podział/odwrót obsługuje `reconcileAmbush` z `syncUnitsRender`; kod armyMerge bez zmian), `save.ts` (pola przechodzą przez zapis jako część jednostki; normalizacja z r1 obejmuje teraz też `ambushAt`), battle/*, WERSJE.md, manifest, rust-port.
+
+ZAŁOŻENIA (luki rozstrzygnięte):
+1. „Przerwany na tym heksie”: poruszający zatrzymuje się na heksie SĄSIEDNIM przed zasadzką, bitwa toczy się o heks zasadzki jak zwykły atak (unika dwóch jednostek na jednym heksie). Po wygranej atakującego działa istniejąca logika wejścia/odwrotu.
+2. Scalenie widocznej jednostki ze stosem w zasadzce ujawnia CAŁY stos (spójność grupy owner+heks+stackGroupId); podział: część, która odeszła (zmiana heksu), traci zasadzkę, reszta zostaje. To odstępstwo od brzmienia „reszta zostaje” przy scaleniu — dla FC do decyzji.
+3. Zasadzka wygasa też przy: sentry, garnizonie, fortyfikacji w polu, oblężeniu, mieście na heksie, zmianie właściciela, zmianie heksu (odwrót po bitwie, relokacja). Zasadzka trwa bez limitu tur (decyzja A), nie wraca do kolejki rozkazów.
+4. Sojusznik/pokój/własny: nie wyzwala; heks dla nich pozostaje ZAJĘTY (AI filtruje wszystkie cudze zasadzki, ale wykonawca ruchu w main.ts blokuje heks przy braku wojny — brak nakładania). Barbarzyńcy: nie obsłużeni (zasadzka blokuje ich ruch jak zwykła jednostka; bez trigger) — UWAGA dla orkiestratora.
+5. AI ruszające przez zasadzkę wyzwala ją tylko gdy po ruchu stoi bezpośrednio obok heksu zasadzki (inaczej trasa przycięta wcześniej, zasadzka zostaje).
+
+TESTY (surowe wyniki z tego worktree, `npm ci --ignore-scripts`):
+- `npx tsc --noEmit` → exit 0.
+- `node tools/ambush-wiring-test.cjs` → `Wynik: 27 OK, 0 FAIL` (A pathfinding: real `buildMoveOccupancy`+`computePath`; B obcięcie trasy + realny `resolveAmbushTrigger`; C cykl życia: ruch/odwrót, miasto, właściciel, sentry/garnizon/fortyfikacja/oblężenie, scalenie, podział, stary zapis; D real `decideAITurn` + mutacja filtra AI; E wpięcie w main.ts (strukturalne); F real `serializeGame`/`deserializeGame`).
+- `node tools/ambush-core-test.cjs` → `40 OK, 0 FAIL`; `ambush-ui-reason-test` → `5 OK, 0 FAIL`; `ambush-save-roundtrip-test` → `5 OK, 0 FAIL`.
+- Mutacje: M7 (usunięcie `u.ownerId !== moverOwnerId` w `resolveAmbushTrigger`) → `ambush-core-test` 38 OK / 2 FAIL oraz `ambush-wiring-test` B5 FAIL; usunięcie ukrycia w `buildMoveOccupancy` → wiring A1 i A5 FAIL; wyłączenie filtra AI w `ai.ts` → wiring D4 wykrywa (bundle zmutowany zmienia decyzję AI).
+- Bramki: `logic-test` `LOGIC OK (213/213)`; `tech-tree-test` `20 pass, 0 fail`; `research-test` `PASSED: 33 / FAILED: 0 / TOTAL: 33`; `unit-replace-test` `WSZYSTKIE TESTY ZIELONE (21/21)`; `combat-test` `6/6 pass`, `All sanity checks passed.` (wszystkie exit 0).
+- `load-game-regression-test` `34 PASS / 0 FAIL`; `army-merge-colocated-test` `4 pass, 0 fail`; `army-merge-besieger-only-move-test` `WYNIK: 8 OK / 0 FAIL`; `army-merge-dismiss-bounce-test` `16 pass, 0 fail`; `army-merge-bounce-test` `4 pass, 0 fail`.
+- Determinizm: `determinism-same-seed-test` `WYNIK: PASS`; `determinism-digest-stackgroup-test` `ZIELONY (5/5)`.
+- AI (regresja filtra): `ai-army-composition-per-civ-test` `341 passed, 0 failed`; `ai-army-all-civs-general-muster-test` `26 PASS, 0 FAIL`; `ai-army-scattered-merge-test` `33 passed, 0 failed` w 2 z 3 uruchomień (1 uruchomienie: FAIL jednej asercji czasowej „czas tury AI <= 3x + 10 ms” — test czasowy, rozbieżność przy równoległym obciążeniu; powtórki zielone).
+- NIE ZMIERZONO: Chromium / żywa gra (przycisk → zasadzka → wejście wroga → przerwanie ruchu → okno bitwy, zrzuty 1280×720) — brak builda vite i sesji przeglądarkowej w tej rundzie; wpięcie w main.ts potwierdzone tsc i testem strukturalnym E1 + testami funkcji wołanych, NIE realnym krokiem ruchu w grze. `siege-*`, pełne `battle-*` nie uruchamiane.
+
+BLOKADY (jawnie):
+1. Brak zmierzonego przebiegu na żywo (Chromium) — kandydat NIE był uruchomiony w grze; ryzyko szczególnie: otwarcie `preBattle` z `renderLoop` i z końca tury, wznowienie fazy AI po bitwie z zasadzki.
+2. Barbarzyńcy nie wyzwalają zasadzki (blokuje ich jak zwykła jednostka).
+3. Hotseat: „Zasadzka się powiodła” pokazywana tylko, gdy zastawiający jest aktywnym siedzeniem; bitwa AI→gracz tylko dla ownerId 0 (istniejące ograniczenie gałęzi `attack`).
+4. Rozstawienie w bitwie na polu wroga + szyk ≤3 (`AMBUSH_FORMATION_MAX_WIDTH`) — POZA zakresem (R4/AMBUSH-DEPLOY), zostaje punkt wpięcia w `fireAmbushOnHex`.
+5. Animacja ucięta na końcu tury (gałąź ~46790 main.ts) nie wyzwala zasadzki (zasadzka zostaje, ruch kończy się przed nią).
+
+LISTA DO DEPLOYU (nowe testy): `gra/tools/ambush-core-test.cjs`, `gra/tools/ambush-ui-reason-test.cjs`, `gra/tools/ambush-save-roundtrip-test.cjs`, `gra/tools/ambush-wiring-test.cjs`. Wiki: `docs/encyklopedia/pojecia/zasadzka.md`, `docs/encyklopedia/indeks.md`, `gra/src/data/wikiBundle.json`.
+
+DŁUG RUST (REPIN `rust-port`, NIE zmieniano): `ambush.rs` (stan `ambush`/`ambushAt`, `can_set`, `set`, `cancel`, `is_hidden_from_mover`, `truncate_path_at_ambush`, `resolve_trigger`, `reconcile`, `normalize`), `RuntimeUnit.ambush/ambush_at` i zapis/wczytanie, `build_move_occupancy(…, is_at_war)`, filtr zasadzek wroga w wejściu planisty AI (`decide_ai_turn`), wpięcie w krok ruchu gracza (animowany i końca tury) oraz wykonawcę ruchu AI + atak z flagą `ambush`, `reconcile_ambush` po zmianie stanu jednostek, UI: akcja, `disabledReason`, znacznik „w zasadzce”; fixtury: `ambush-core-test`, `ambush-wiring-test` (A1–F2), `ambush-save-roundtrip-test`.
+
+RUNDY: 3/5 zużyte. Następna: weryfikacja Chromium (gracz→AI i AI→gracz), potem AMBUSH-DEPLOY (rozstawienie + szyk ≤3).
+NASTĘPNY KROK: Evaluator → Obrona → Final Control; jeśli FC wymaga żywej weryfikacji — runda 4 tylko pomiar w Chromium + ewentualne poprawki.
+UWAGI-DLA-ORKIESTRATORA: `gra/node_modules` w worktree (ignorowany przez git) do sprzątnięcia; testy tymczasowe w `/tmp`; commit tylko ścieżkami (bez `-A`). Brak push i integracji.
+DEPLOY/PUSH: NIE WYKONANO
+
+---
+
 # R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 — raport Operatora, RUNDA 2/5 (sekcja r2; r1 poniżej)
 
 STATUS: PASS-WITH-NOTES (CZĘŚCIOWY — runda 2 NIE domknięta: wyzwalacz w ruchu wroga (pkt 1 dodatku) i filtr AI/pathfindingu (pkt 2) NIE zrobione; zob. BLOKADY 1–3)
