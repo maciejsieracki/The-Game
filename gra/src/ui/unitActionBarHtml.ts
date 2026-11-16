@@ -87,7 +87,7 @@ export function buildUnitActionBarHtml(actions: readonly UnitPanelAction[]): str
       ? ` aria-pressed="${a.active ? 'true' : 'false'}"`
       : '';
     html += `<button type="button" class="uc-act-btn${onCls}" data-act="${esc(id)}"`
-      + ` title="${esc(a.label)}" aria-label="${esc(a.label)}"${ariaPressed}`
+      + ` title="${esc(a.disabled && a.disabledReason ? a.disabledReason : a.label)}" aria-label="${esc(a.label)}"${ariaPressed}`
       + (a.disabled ? ' disabled' : '')
       + `><span class="uc-act-ic">${icon}</span></button>`;
   }

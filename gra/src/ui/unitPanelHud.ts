@@ -24,6 +24,9 @@ export interface UnitPanelAction {
   primary?: boolean;
   danger?: boolean;
   disabled?: boolean;
+  /** R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (runda 2): powód blokady po polsku — idzie do `title`
+   *  zablokowanego przycisku (disabled nie wywołuje handlera, więc powód musi być widoczny sam). */
+  disabledReason?: string;
   /** Tryb włączony (fortyfikacja / czuwaj / zwiedzaj) — przycisk „wciśnięty”. */
   active?: boolean;
 }

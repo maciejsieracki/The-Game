@@ -84,6 +84,9 @@ export interface ArmyStackHudState extends UnitSufferingStatusFields {
   marchPausedReason?: string;
   buildingBonusLabel?: string;
   actions: UnitPanelAction[];
+  /** R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (runda 2): stos stoi w zasadzce — znacznik widoczny TYLKO
+   *  dla właściciela (wróg go nie widzi, więc ten HUD go nie dotyczy). */
+  ambushed?: boolean;
 }
 
 export interface ArmyStackHudConfig {
@@ -290,7 +293,9 @@ export function createArmyStackHud(config: ArmyStackHudConfig): ArmyStackHudApi 
       + '<div class="ash-title-wrap">'
       + armyIc
       + '<div><div class="ash-title">Armia · ' + esc(st.hexLabel) + '</div>'
-      + '<div class="ash-meta">' + formatJednostkiCount(st.unitCount) + ' na heksie</div></div></div>'
+      + '<div class="ash-meta">' + formatJednostkiCount(st.unitCount) + ' na heksie'
+      + (st.ambushed === true ? ' · <span class="ash-ambush-mark" title="Zasadzka: wróg Cię nie widzi, dopóki na nią nie wejdzie">w zasadzce</span>' : '')
+      + '</div></div></div>'
       + '<button type="button" class="ash-nav-arr" data-cycle="1"' + cycleDis
       + ' title="Następna jednostka (dowolna, niezależnie od ruchu) — Spacja: następna AKTYWNA jednostka">▶</button>'
       + '<div class="ash-hdr-actions">';
@@ -386,7 +391,7 @@ export function createArmyStackHud(config: ArmyStackHudConfig): ArmyStackHudApi 
         ? ' aria-pressed="' + (a.active ? 'true' : 'false') + '"'
         : '';
       html += '<button type="button" class="' + cls + '" data-act="' + esc(a.id) + '"'
-        + ' title="' + esc(a.label) + '" aria-label="' + esc(a.label) + '"' + ariaPressed
+        + ' title="' + esc(a.disabled && a.disabledReason ? a.disabledReason : a.label) + '" aria-label="' + esc(a.label) + '"' + ariaPressed
         + (a.disabled ? ' disabled' : '') + '>' + body + '</button>';
     }
     html += '</div></div>';

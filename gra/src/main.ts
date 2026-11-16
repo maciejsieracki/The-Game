@@ -27207,6 +27207,8 @@ async function boot(): Promise<void> {
           id: 'ambush',
           label: ambushActive ? 'Odwołaj zasadzkę' : 'Zasadzka',
           disabled: ambushActive ? false : !ambushCheck.ok,
+          // Powód blokady w tooltipie przycisku (disabled nie wywołuje handlera).
+          disabledReason: !ambushActive && !ambushCheck.ok ? ambushCheck.message : undefined,
           active: ambushActive,
         });
         // P-SCOUT-EXPLORE-Q1=A: przycisk Zwiedzaj — tylko zwiadowca, domyślnie OFF.
@@ -27274,6 +27276,7 @@ async function boot(): Promise<void> {
         rng: normFieldVal(def['Zasi\u0119g'] ?? def['Zasieg'], 0),
         hp: active.hp ?? combat.hpMaxEffective,
         actions,
+        ambushed: isStackAmbushed(stack),
       };
     }
 
@@ -27401,6 +27404,8 @@ async function boot(): Promise<void> {
           );
           clearPlayerUnitSelection();
         } else {
+          // Fortyfikacja w polu wy\u0142\u0105cza zasadzk\u0119 (wzajemne wykluczanie; runda 2).
+          cancelAmbush(stack);
           for (const su of stack) enterFieldFortify(su);
           showHintMessage(u.typeId + ' ufortyfikowany w polu (ruch zu\u017cyty)', 2500);
         }
@@ -27434,6 +27439,8 @@ async function boot(): Promise<void> {
           // supersedes any previous march plan.
           clearPlannedMarch(u.id, true);
           syncStackRuchLeft(stack, 0);
+          // Czuwanie wyłącza zasadzkę (wzajemne wykluczanie; runda 2).
+          cancelAmbush(stack);
           for (const su of stack) su.sentry = true;
           showHintMessage(u.typeId + ' czuwa (obudź ręcznie)', 2500);
           clearPlayerUnitSelection();
@@ -27454,6 +27461,11 @@ async function boot(): Promise<void> {
             return;
           }
           clearPlannedMarch(u.id, true);
+          // Zasadzka wyłącza czuwanie i fortyfikację w polu (decyzja runda 2: wzajemne wykluczanie).
+          for (const su of stack) {
+            su.sentry = false;
+            exitFieldFortify(su);
+          }
           setAmbush(stack);
           showHintMessage('Zasadzka zastawiona', 2500);
           clearPlayerUnitSelection();
