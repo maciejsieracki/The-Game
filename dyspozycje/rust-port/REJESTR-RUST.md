@@ -2381,3 +2381,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **T3:** dispatch `452201a3` (baza `585bb48e0`). Zakres: `_attackFormationRallyPoint` i `_chargeMoveDest` (C7/C8, recon Z3 wskazuje martwy kod — osiągalność do potwierdzenia przed portem), `_moveTargetForUnit` (C9). `_forwardCol` już w parity (T0).
 - **Czwarty slot:** brak niezależnego kandydata — EXEC-T3..T7 czekają na EXEC-T1, DOC-T4/T5a/T6 na T2', DOC-T8/T1 na całą falę.
 - **Dysk:** 17 GB wolnego. **Parity:** `585bb48e0`.
+
+## Przebieg (08:43 UTC — tick: 3 tematy w toku, bez FC do integracji; sprzątanie dysku 5,4 → 9,1 GB)
+
+- **Sloty 3/4:** EXEC-T1-QUEUE r2 (`wf_487c53ff-a4c`, cargo w `target-t1-r2`), K5DOC-T2-CELE (`wf_1c92bca8-2d5`, cargo w `scratch_k5/target-t2`), K5DOC-T3-GEOMETRIA (`wf_7d52ae9a-3df`, cargo w `tgt-k5doc-geom`). Wszystkie na etapie Operatora, procesy żyją.
+- **Sprzątanie:** worktree rundy 1 EXEC-T1 (`wf_acc61d3f-1fa-1..3`) usunięte po zapisaniu HEAD w `refs/keep/cleanup-EXEC-T1-r1-wt1..3` (`9b8ef8560`, `6fd1c850a`, `3e370995e`); cache `/tmp/claude-0/t1-target` (290 MB, runda 1) usunięty. **Dysk: 9,1 GB.**
+- **Parity:** `585bb48e0` (bez zmian). Czwarty slot wolny: brak niezależnego kandydata.
