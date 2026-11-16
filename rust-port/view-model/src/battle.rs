@@ -306,3 +306,193 @@ impl BattleOutcomeDto {
         Ok(())
     }
 }
+
+// ---------------------------------------------------------------------------
+// Battle frame (P4-1I2, `R-RUSTPORT-P4-1I2-BATTLE-FRAME`).
+//
+// State of the battle after one step of the loop (one fired timer of the web
+// `_drainTimers`, `battle/battleScene.ts:9616-9634`): what the renderer needs
+// for the bars and the positions. Field list: recon
+// `dyspozycje/rust-port/p4/P4-1I-BATTLE-ROZPOZNANIE.md` §2b. Transient actions
+// (lunge, projectile flight, labels) are not here: P4-1I3 (`BattleActionDto`).
+// ---------------------------------------------------------------------------
+
+/// One unit of a battle frame: the fields of `RuntimeBattleUnit`
+/// (`battle/battleScene.ts:1962-2028`) the bars and the scene read.
+///
+/// `ammoLeft`: the web keeps `Infinity` for unlimited ammunition (`ammoCount`,
+/// `:1434-1448`; `_doRangedAttack` decrements only a finite value, `:9191-9192`).
+/// JSON cannot carry it, so `None` = unlimited, as in
+/// [`BattleUnitSpawnDto::ammo_left`].
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct BattleFrameUnitDto {
+    /// `bu.id`.
+    pub id: UnitId,
+    /// Column `q` (`:1977`).
+    pub col: i32,
+    /// Row `r` (`:1978`).
+    pub row: i32,
+    /// `facing` (`:2011`; `Dir`: `N = 0`, `E = 1`, `S = 2`, `W = 3`, `:315-320`).
+    pub facing: i32,
+    /// `bu.hp` (may be `<= 0` after a killing blow, `:8991`).
+    pub hp: f64,
+    /// `morale` (`:2013`).
+    pub morale: f64,
+    /// `ammoLeft` (`:1999`); `None` = unlimited (`Infinity`).
+    pub ammo_left: Option<f64>,
+    /// `routed` (`:2016`).
+    pub routed: bool,
+    /// `dead` (`:1982`).
+    pub dead: bool,
+    /// `removed` (`:2021`).
+    pub removed: bool,
+    /// `onWallWalkway` (`:2028`).
+    pub on_wall_walkway: bool,
+}
+
+/// One living wall tile: `wallTileHp.get(row)` (`battle/battleScene.ts:2501`;
+/// a missing key = tile breached, `:7646`).
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct BattleWallTileHpDto {
+    /// Wall row.
+    pub row: i32,
+    /// Tile HP.
+    pub hp: f64,
+}
+
+/// Wall state of a battle frame: `wallTileHp` (`:2501`), `gateHp` (`:2454`),
+/// `gateOpen` (`:2456`), `wallEverBreached` (`:2503`),
+/// `siegeTowers[].destroyed` (`:2443`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct BattleFrameWallDto {
+    /// Living wall tiles; one entry per row.
+    pub tile_hp: Vec<BattleWallTileHpDto>,
+    /// `gateHp`.
+    pub gate_hp: f64,
+    /// `gateOpen`.
+    pub gate_open: bool,
+    /// `wallEverBreached`.
+    pub ever_breached: bool,
+    /// Rows of the towers with `destroyed === true`, in `siegeTowers` order
+    /// (`_destroyTowerAtRow`, `:4194-4200`; called on a breach, `:7648`, and by
+    /// `_fireSiegeTowers` for a tower whose tile is gone, `:4216`).
+    pub towers_destroyed: Vec<i32>,
+}
+
+/// Battle frame: the state after one loop step (recon §2b).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct BattleFrameDto {
+    /// `vNow` (virtual clock, ms, `:2556`).
+    pub v_now: f64,
+    /// `roundNo` (`:2698`).
+    pub round_no: i64,
+    /// Units in the web spawn order: attackers, then defenders (`this.atk` /
+    /// `this.def` from `place(...)`, `:5541-5550`; iterated as
+    /// `[...this.atk, ...this.def]`, e.g. `:5573`).
+    pub units: Vec<BattleFrameUnitDto>,
+    /// Wall state.
+    pub wall: BattleFrameWallDto,
+    /// `finished` (`:2518`).
+    pub finished: bool,
+}
+
+impl BattleFrameDto {
+    /// Checks the invariants the types do not enforce: every float finite
+    /// (JSON has no `NaN`/`Infinity`; unlimited ammunition is `None`),
+    /// `vNow >= 0`, `roundNo >= 0`, `facing` a `Dir` (`0..=3`), `ammoLeft >= 0`
+    /// (`ammoCount` returns `Math.max(0, …)`, `:1447`; `canShoot` needs
+    /// `ammoLeft > 0` before the decrement, `:1458`, `:9191-9192`), no
+    /// duplicate unit id, wall row or destroyed tower row (`towerRows` yields
+    /// strictly increasing rows, `game/city-towers.ts:47-56`).
+    ///
+    /// # Errors
+    /// The first violated invariant.
+    pub fn validate(&self) -> Result<(), crate::validate::ViewError> {
+        use crate::validate::ViewError;
+        use std::collections::BTreeSet;
+        fn finite(field: impl FnOnce() -> String, v: f64) -> Result<(), ViewError> {
+            if v.is_finite() {
+                Ok(())
+            } else {
+                Err(ViewError::NonFinite { field: field() })
+            }
+        }
+        fn non_negative(field: impl FnOnce() -> String, v: f64) -> Result<(), ViewError> {
+            if v >= 0.0 {
+                return Ok(());
+            }
+            // `floor`, not `trunc`: for a finite `v < 0`, `floor(v) <= -1 < min`, so the reported
+            // `value` itself lies outside `min..=max` (`trunc(-0.5)` = 0 would look in range). Same
+            // convention as `survivors[i].hp` above (`ceil` for the `min = 1` bound).
+            #[allow(clippy::cast_possible_truncation)]
+            let value = v.floor() as i64;
+            Err(ViewError::OutOfRange {
+                field: field(),
+                value,
+                min: 0,
+                max: i64::MAX,
+            })
+        }
+        // Duplicates are reported as `LengthMismatch { expected: distinct, actual: len }` with a
+        // `(unique …)` field, the convention already used by `BattleOutcomeDto::validate`
+        // (`attackerUnitIds (unique)`); `ViewError` lives in `validate.rs`, outside this topic.
+        fn unique(field: &str, distinct: usize, actual: usize) -> Result<(), ViewError> {
+            if distinct == actual {
+                return Ok(());
+            }
+            Err(ViewError::LengthMismatch {
+                field: field.to_string(),
+                expected: distinct,
+                actual,
+            })
+        }
+        finite(|| "vNow".into(), self.v_now)?;
+        non_negative(|| "vNow".into(), self.v_now)?;
+        if self.round_no < 0 {
+            return Err(ViewError::OutOfRange {
+                field: "roundNo".into(),
+                value: self.round_no,
+                min: 0,
+                max: i64::MAX,
+            });
+        }
+        let mut ids = BTreeSet::new();
+        for (i, u) in self.units.iter().enumerate() {
+            finite(|| format!("units[{i}].hp"), u.hp)?;
+            finite(|| format!("units[{i}].morale"), u.morale)?;
+            if let Some(a) = u.ammo_left {
+                finite(|| format!("units[{i}].ammoLeft"), a)?;
+                non_negative(|| format!("units[{i}].ammoLeft"), a)?;
+            }
+            if !(0..=3).contains(&u.facing) {
+                return Err(ViewError::OutOfRange {
+                    field: format!("units[{i}].facing"),
+                    value: i64::from(u.facing),
+                    min: 0,
+                    max: 3,
+                });
+            }
+            ids.insert(u.id);
+        }
+        unique("units (unique id)", ids.len(), self.units.len())?;
+        let w = &self.wall;
+        finite(|| "wall.gateHp".into(), w.gate_hp)?;
+        let mut rows = BTreeSet::new();
+        for (i, t) in w.tile_hp.iter().enumerate() {
+            finite(|| format!("wall.tileHp[{i}].hp"), t.hp)?;
+            rows.insert(t.row);
+        }
+        unique("wall.tileHp (unique row)", rows.len(), w.tile_hp.len())?;
+        let towers: BTreeSet<i32> = w.towers_destroyed.iter().copied().collect();
+        unique(
+            "wall.towersDestroyed (unique row)",
+            towers.len(),
+            w.towers_destroyed.len(),
+        )?;
+        Ok(())
+    }
+}

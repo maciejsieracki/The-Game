@@ -122,6 +122,7 @@ pub mod siege_tactics_doctrine_state;
 pub mod siege_tactics_end;
 pub mod siege_tactics_endcheck;
 pub mod siege_tactics_fastforward;
+pub mod siege_tactics_frame;
 pub mod siege_tactics_inputs_pos;
 pub mod siege_tactics_inputs_terrain;
 pub mod siege_tactics_inputs_unit;

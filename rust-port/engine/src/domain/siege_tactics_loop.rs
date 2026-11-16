@@ -473,7 +473,25 @@ pub struct SiegeLoop<B: LoopBody> {
     pub unsupported: Option<&'static str>,
     /// Stan pętli przewijania (`ffVirtualMs`, `ffPendingAuto`, kolejka) zachowany między wywołaniami [`Self::resume`].
     ff: FfLoopState<()>,
+    /// P4-1I2 (L4): web `siegeTowers[i].destroyed` (`battleScene.ts:2443`), indeks = indeks w
+    /// [`SiegeEnv::tower_rows`]. Ustawiane wyłącznie przez [`Self::destroy_tower_at_row`] (`_destroyTowerAtRow`,
+    /// `:4194-4197`). Tylko odczyt dla ramki bitwy: strzał wieży nadal sprawdza kafel muru (bez zmiany logiki).
+    tower_destroyed: Vec<bool>,
+    /// P4-1I2: obserwator wołany po KAŻDYM odpaleniu klocka zegara ([`LoopTimer`]) z `vNow` tej chwili
+    /// (producent ramki `siege_tactics_frame`). Tylko odczyt stanu; brak = nic się nie dzieje.
+    fire_observer: Option<FireObserver<B>>,
 }
+
+/// Obserwator odpaleń zegara pętli (P4-1I2): dostaje stan pętli PO kroku (tylko odczyt), `vNow` i odpalony
+/// klocek. Wołany dokładnie raz na każde odpalenie: z kolejki (`_drainTimers`) i synchroniczne
+/// ([`ScheduleOutcome::RunNow`], planowanie AUTO).
+///
+/// Kolejność przy zagnieżdżeniu: odpalenie `RunNow` wykonuje się wewnątrz `apply` odpalenia zewnętrznego
+/// (web: callback `_schedule` wołany synchronicznie, `battleScene.ts:9595-9606`), a obserwator odpalenia
+/// zewnętrznego jest wołany po zakończeniu jego `apply`. Ramka zagnieżdżonego odpalenia poprzedza więc ramkę
+/// odpalenia zewnętrznego (to samo `vNow`); ramka zewnętrzna pokazuje stan po obu krokach. Pokryte testem
+/// `p4_1i2_frame::ramka_po_kazdym_odpaleniu_stan_po_kroku`.
+pub type FireObserver<B> = Box<dyn FnMut(&SiegeLoop<B>, f64, LoopTimer)>;
 
 impl<B: LoopBody> SiegeLoop<B> {
     pub fn new(st: TurnSeqState, env: SiegeEnv<B>) -> Self {
@@ -484,6 +502,79 @@ impl<B: LoopBody> SiegeLoop<B> {
             winner: None,
             unsupported: None,
             ff: FfLoopState::<()>::new(),
+            tower_destroyed: Vec::new(),
+            fire_observer: None,
+        }
+    }
+
+    /// P4-1I2: ustawia (albo zdejmuje, `None`) obserwatora wołanego po każdym odpaleniu klocka zegara.
+    pub fn set_fire_observer(&mut self, observer: Option<FireObserver<B>>) {
+        self.fire_observer = observer;
+    }
+
+    /// Web `t.destroyed` wieży o indeksie `i` w [`SiegeEnv::tower_rows`] (`false` poza zakresem).
+    pub fn tower_destroyed(&self, i: usize) -> bool {
+        self.tower_destroyed.get(i).copied().unwrap_or(false)
+    }
+
+    /// Wiersze wież z `destroyed === true` w kolejności `siegeTowers` (= kolejność [`SiegeEnv::tower_rows`]).
+    pub fn towers_destroyed_rows(&self) -> Vec<i64> {
+        self.env
+            .tower_rows
+            .iter()
+            .enumerate()
+            .filter(|(i, _)| self.tower_destroyed(*i))
+            .map(|(_, &row)| row)
+            .collect()
+    }
+
+    /// Web `_destroyTowerAtRow(wallRow)` (`battleScene.ts:4194-4200`), część stanu: PIERWSZA niezburzona wieża
+    /// na wierszu (`siegeTowers.find(x => x.row === wallRow && !x.destroyed)`) dostaje `destroyed = true`; brak
+    /// takiej wieży = `return`. Mesh i wpis logu (`:4198-4199`) poza silnikiem. Zwraca, czy flaga została ustawiona.
+    pub fn destroy_tower_at_row(&mut self, row: i64) -> bool {
+        let n = self.env.tower_rows.len();
+        if self.tower_destroyed.len() < n {
+            self.tower_destroyed.resize(n, false);
+        }
+        let Some(i) = (0..n).find(|&i| self.env.tower_rows[i] == row && !self.tower_destroyed[i])
+        else {
+            return false;
+        };
+        self.tower_destroyed[i] = true;
+        true
+    }
+
+    /// Web `_breachWallTile(wallRow)` (`battleScene.ts:7638-7650`), część stanu czytana przez pętlę:
+    /// `wallTileHp.delete(wallRow)` (`:7646`, tu: usunięcie wiersza z [`SiegeEnv::wall_tile_rows`]),
+    /// `wallEverBreached = true` (`:7647`) i `_destroyTowerAtRow(wallRow)` (`:7648`). Kafel terenu, etykieta,
+    /// gruz, odwrót obrońców i morale (`:7643-7645`, `:7649-7750`) są poza tym sterownikiem (recon L3).
+    ///
+    /// Wymóg dla wpięcia produkcyjnego (#113 K5LOOP-WIRING): (1) każdy wyłom w bitwie musi iść przez tę metodę
+    /// w chwili wyłomu — inaczej flaga wieży (`:7648`) powstanie dopiero przy kolejnym `_fireSiegeTowers`
+    /// (`:4216`), z opóźnieniem względem pinu; (2) strażnik `if (!tiles) return;` (`:7639-7640`, brak mapy
+    /// terenu bitwy) należy do wołającego: gdy mapy terenu nie ma, metody nie wolno wołać (web nie usuwa wtedy
+    /// kafla, nie ustawia `wallEverBreached` i nie burzy wieży). Pętla nie ma mapy terenu, więc strażnika tu nie ma.
+    pub fn breach_wall_row(&mut self, row: i64) {
+        self.env.wall_tile_rows.retain(|&r| r != row);
+        self.env.wall_ever_breached = true;
+        self.destroy_tower_at_row(row);
+    }
+
+    /// Web `_fireSiegeTowers` (`battleScene.ts:4208-4219`), część flag: przy przejściu przez wieże (strażnik
+    /// `finished || siegeTowers.length === 0 || !towerShooterRow`, `:4209`) wieża niezburzona bez kafla muru
+    /// zostaje zburzona (`:4215-4216`). Planowanie wystrzałów robi bez zmian [`TurnSeqEnv::fire_siege_towers`].
+    fn mark_towers_without_tile(&mut self) {
+        if self.st.finished || self.env.tower_rows.is_empty() || self.env.tower_shot.is_none() {
+            return;
+        }
+        for i in 0..self.env.tower_rows.len() {
+            if self.tower_destroyed(i) {
+                continue;
+            }
+            let row = self.env.tower_rows[i];
+            if !self.env.wall_tile_rows.contains(&row) {
+                self.destroy_tower_at_row(row);
+            }
         }
     }
 
@@ -542,6 +633,8 @@ impl<B: LoopBody> SiegeLoop<B> {
                 | SeqEvent::RefreshQueuedVisuals => {}
                 SeqEvent::FireSiegeTowers => {
                     self.trace.push(format!("turn:{}", self.st.round_no));
+                    // P4-1I2: flaga `destroyed` wież bez kafla (pin `:4216`); nie zmienia planowania ani zegara.
+                    self.mark_towers_without_tile();
                     // Wystrzały zaplanowane w tej turze wchodzą do zegara przed kolejnymi `Schedule` (kolejność jak w pinie).
                     let planned = std::mem::take(&mut self.env.pending_tower_shots);
                     for p in planned {
@@ -617,6 +710,12 @@ impl<B: LoopBody> SiegeLoop<B> {
             }
         }
         self.apply(clock, out);
+        // P4-1I2: ramka po każdym odpaleniu (tylko odczyt). `take` pozwala przekazać `&self` obserwatorowi.
+        // Kolejność przy zagnieżdżonym `RunNow`: zob. [`FireObserver`].
+        if let Some(mut obs) = self.fire_observer.take() {
+            obs(self, clock.v_now, timer);
+            self.fire_observer = Some(obs);
+        }
     }
 
     /// Web `_fireOneTower` (`battleScene.ts:4223-4262`): wystrzał zaplanowanej wieży. Pomijany po `finished`.
