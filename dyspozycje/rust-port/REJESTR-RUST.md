@@ -2680,3 +2680,14 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Czwarty slot wolny:** kandydaci czekają na decyzje (#308, #97, #282, #100, #115/#120, #135, #310 D1–D6) albo zależą od niezintegrowanego kodu (#304, #165, #298 po #282, #297 po #253).
 - **Dysk:** 19 GB wolnego.
 - **Otwarte:** push referencji `keep` odrzucany przez proxy; trailer `463fb2636` z nazwą modelu (decyzja #289).
+
+### Przebieg — stała instrukcja (sprzątanie, workerzy, wyniki), 2026-11-16 ~19:35 UTC
+
+- **Parity:** `0fccd8dbf`, bez zmian (FF #311 zrobiony w poprzednim przebiegu). Dziś nie ma nowego FF: żaden kod nie ma jeszcze FC.
+- **Wyniki:**
+  - Wektory AUTO V2 i V7 (#296): Operator PASS-WITH-NOTES, commit `2aa1992d3` (od `d66aaa3a7`). Evaluator i FC w toku (`wf_5fee88d9-4fc`). Kod jeszcze nie na parity.
+  - Wektory NaN/Inf (#137, V-A1, V-A2, V-A3, V-K2, V-K3): Operator PASS-WITH-NOTES, commit `3fd4d9677` (od `0fccd8dbf`, cztery testy zielone). Evaluator i FC w toku (`wf_a2bf4706-6d5`).
+  - Rozpoznanie złóż (#300): PASS-WITH-NOTES, dokument `ZLOZA-WIRING-ROZPOZNANIE.md`, cherry-pick `c8cd97123` na gałąź roboczą (readback zgodny). #300 zamknięte, #104/#172 czekają na decyzję o kolejności w turze (web-first).
+- **Sloty: 2 z 4 aktywne** (V2/V7 i NaN/Inf po FC-stage). Czwarty slot: brak czystego tematu; kandydaci czekają na decyzje (#308, #97, #282, #100, #115/#120, #135, #310 D1–D6) albo na niezintegrowany kod (#304, #165, #298, #297).
+- **Sprzątanie:** usunięto worktree `wf_d6ab4ac2-b7f-1` (integracja #311 zrobiona) i `wf_5fee88d9-4fc-1` (zachowano `refs/keep/cleanup-2aa1992d3`), usunięto target `target-d6ab`. Dysk 19 GB wolnego.
+- **Otwarte:** push referencji `keep` odrzucany przez proxy; trailer `463fb2636` z nazwą modelu (decyzja #289).
