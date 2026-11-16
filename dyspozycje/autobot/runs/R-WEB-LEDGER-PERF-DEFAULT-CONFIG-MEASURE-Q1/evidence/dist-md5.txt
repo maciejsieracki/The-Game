@@ -1,0 +1,5 @@
+c14b38a5396ebe70e59a6cc1addf0571  dist/index.html
+5b990bc33b4513f343ccc4bc7f12f26f  dist/audio-pack-1.js
+0a9a10473f9d29bbe01fd9a4f592f89d  dist/audio-pack-2.js
+9e88be9fa542eaf2f2a2ecb5c2424fa2  dist/audio-pack-3.js
+baza kodu: 459354a12e00eb04cc8365c5ac03a03c2ffec999 + hak ledgerStats (gra/src/main.ts, civTest) + runner --ledger-off; build vite poza repo (r3)

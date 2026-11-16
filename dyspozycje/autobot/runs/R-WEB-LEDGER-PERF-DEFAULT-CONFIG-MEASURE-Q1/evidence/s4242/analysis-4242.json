@@ -1,0 +1,179 @@
+{
+  "window": [
+    51,
+    80
+  ],
+  "maxLoad1": null,
+  "warmDiscarded": [
+    51,
+    61,
+    71
+  ],
+  "turnsAnalysed": 27,
+  "missing": [],
+  "runs": {
+    "on1": {
+      "mode": "on",
+      "meanSec": 20.86,
+      "medianSec": 16.7,
+      "meanLoad1": 1.2,
+      "ledgerRecording": [
+        "on"
+      ],
+      "ledgerBytes": {
+        "t50": 972632,
+        "t51": 118419,
+        "t60": 1558684,
+        "t61": 188491,
+        "t70": 2035873,
+        "t71": 213202,
+        "t80": 2248878
+      }
+    },
+    "off1": {
+      "mode": "off",
+      "meanSec": 21.49,
+      "medianSec": 20.2,
+      "meanLoad1": 1.26,
+      "ledgerRecording": [
+        "off"
+      ],
+      "ledgerBytes": {
+        "t50": 972632,
+        "t51": 1996,
+        "t60": 3661,
+        "t70": 3661,
+        "t71": 537,
+        "t80": 3201
+      }
+    },
+    "off2": {
+      "mode": "off",
+      "meanSec": 23.47,
+      "medianSec": 19.1,
+      "meanLoad1": 3.02,
+      "ledgerRecording": [
+        "off"
+      ],
+      "ledgerBytes": {
+        "t50": 972632,
+        "t51": 1996,
+        "t60": 3661,
+        "t70": 3661,
+        "t71": 537,
+        "t80": 3201
+      }
+    },
+    "on2": {
+      "mode": "on",
+      "meanSec": 25.28,
+      "medianSec": 21.6,
+      "meanLoad1": 2.87,
+      "ledgerRecording": [
+        "on"
+      ],
+      "ledgerBytes": {
+        "t50": 972632,
+        "t51": 118419,
+        "t60": 1558684,
+        "t70": 2039767,
+        "t71": 212519,
+        "t80": 2259491
+      }
+    }
+  },
+  "pairsOnVsOff": [
+    {
+      "on": "on1",
+      "off": "off1",
+      "medianPerTurnDeltaPct": -7.14,
+      "meanPerTurnDeltaPct": -4.77,
+      "totalTimeDeltaPct": -2.93
+    },
+    {
+      "on": "on1",
+      "off": "off2",
+      "medianPerTurnDeltaPct": -9.64,
+      "meanPerTurnDeltaPct": -8.59,
+      "totalTimeDeltaPct": -11.1
+    },
+    {
+      "on": "on2",
+      "off": "off1",
+      "medianPerTurnDeltaPct": 12.5,
+      "meanPerTurnDeltaPct": 14.12,
+      "totalTimeDeltaPct": 17.61
+    },
+    {
+      "on": "on2",
+      "off": "off2",
+      "medianPerTurnDeltaPct": 9.29,
+      "meanPerTurnDeltaPct": 9.37,
+      "totalTimeDeltaPct": 7.72
+    }
+  ],
+  "overall": {
+    "medianTotalDeltaPct": 2.39,
+    "meanTotalDeltaPct": 2.83,
+    "medianPerTurnDeltaPct": 1.07
+  },
+  "sameVariantSpread": [
+    {
+      "a": "on1",
+      "b": "on2",
+      "totalDeltaPct": -17.47
+    },
+    {
+      "a": "off1",
+      "b": "off2",
+      "totalDeltaPct": -8.41
+    }
+  ],
+  "maxSameVariantSpreadPct": 17.47,
+  "byWindow": [
+    {
+      "window": [
+        51,
+        60
+      ],
+      "n": 9,
+      "medianTotalDeltaPct": 3.76,
+      "meanTotalDeltaPct": 3.98
+    },
+    {
+      "window": [
+        61,
+        70
+      ],
+      "n": 9,
+      "medianTotalDeltaPct": -3.55,
+      "meanTotalDeltaPct": -3.53
+    },
+    {
+      "window": [
+        71,
+        80
+      ],
+      "n": 9,
+      "medianTotalDeltaPct": 5.72,
+      "meanTotalDeltaPct": 6.64
+    }
+  ],
+  "byRunOrder": {
+    "onFirst": {
+      "n": 2,
+      "meanTotalDeltaPct": -7.01
+    },
+    "offFirst": {
+      "n": 2,
+      "meanTotalDeltaPct": 12.67
+    }
+  },
+  "order": [
+    "on1",
+    "off1",
+    "off2",
+    "on2"
+  ],
+  "verdict10pct": "NIE ROZSTRZYGNIETE (rozstep same-variant >= 10% lub brak pary)"
+}
