@@ -2242,3 +2242,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Refy:** `refs/keep/P4-1H-MOVE-Q6-{OP,EV,OB,FC}`, `refs/keep/P4-1H-MOVE-Q6-MERGE`. **Sprzątanie:** worktree `integ-Q6`, `wf_b1e51033-24c-1..4`; cache `target-integ-Q6`.
 - **Sloty:** 0 z 4 — brak aktywnych workflow. Dostępne tematy: #237 (P4-1G Q6), #236 (P4-1G Q5), #239–#243 (P4-1F), #246–#249 (P4-1I) — większość po P4-1F/P4-1C lub do decyzji orkiestratora.
 - **Dysk:** 15 GB.
+
+## Przebieg (05:00 UTC — start dwóch tematów: poprawka cytatów renderer i wektory blow_env K5)
+
+- **RENDERER-ORDERS-CYTATY-Q1** (`wf_59b7fc97-124`, Opus we wszystkich rolach): zamiana cytatów `plik:linia` w `rust-port/renderer/src/battle/orders.rs` na numery z pinu `07d2fbd72` (tylko komentarze, zero zmian kodu). Dispatch `0c11bd5b0`. Uwaga: reguła CLAUDE.md przydziela Opus wyłącznie tematom pamięci/GPU/grafiki; ten temat jest komentarzowy w crate renderer — do rozstrzygnięcia przy kolejnych przydziałach, Haiku byłby zgodny z regułą domyślną.
+- **K5-BLOW-ENV-WEKTORY-Q1** (`wf_6ab179f1-525`, Operator/Obrona HAIKU, Evaluator/FC SONNET): wektory pinu dla kopii B `terrain_river_attack_multiplier` (`blow_env_for`, `siege_tactics_blow_inputs.rs:21`, pin `battleScene.ts:8861`), 8+ przypadków, mutacja `atk_tile_is_river`→`def_tile_is_river`; bez zmian w `src/`. Dispatch `0c11bd5b0`.
+- **Sloty:** 2 z 4 aktywne (oba powyżej). Pozostałe tematy kodu czekają na decyzje ABC (kontrakt `ActivateOps`, #253, RESOLVE-PAIR-FULL).
