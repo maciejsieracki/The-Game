@@ -6,8 +6,10 @@
 //! `UnitSpawn` (`units.rs:510-541`) and `FortDto` (`units.rs:726-733`). This
 //! crate must not depend on the renderer (D-DTO-1 = A), so the same fields are
 //! mirrored here as plain data; the adapter (P4-1G) builds the renderer
-//! structs from them. The battle event stream ("Przebieg") is decision D-DTO-7,
-//! not taken yet — no type for it here.
+//! structs from them. The battle course ("Przebieg", D-DTO-7) follows the recon
+//! `P4-1I-BATTLE-ROZPOZNANIE.md` §5: outcome and frame as snapshots
+//! ([`BattleOutcomeDto`], [`BattleFrameDto`]) plus the transient actions of a
+//! step ([`BattleActionDto`], P4-1I3).
 //!
 //! Web literals cite the pin `07d2fbd72` (`gra/src/…`).
 
@@ -305,4 +307,475 @@ impl BattleOutcomeDto {
         }
         Ok(())
     }
+}
+
+// ---------------------------------------------------------------------------
+// Battle frame (P4-1I2, `R-RUSTPORT-P4-1I2-BATTLE-FRAME`).
+//
+// State of the battle after one step of the loop (one fired timer of the web
+// `_drainTimers`, `battle/battleScene.ts:9616-9634`): what the renderer needs
+// for the bars and the positions. Field list: recon
+// `dyspozycje/rust-port/p4/P4-1I-BATTLE-ROZPOZNANIE.md` §2b. Transient actions
+// (lunge, projectile flight, labels) are not here: P4-1I3 (`BattleActionDto`).
+// ---------------------------------------------------------------------------
+
+/// One unit of a battle frame: the fields of `RuntimeBattleUnit`
+/// (`battle/battleScene.ts:1962-2028`) the bars and the scene read.
+///
+/// `ammoLeft`: the web keeps `Infinity` for unlimited ammunition (`ammoCount`,
+/// `:1434-1448`; `_doRangedAttack` decrements only a finite value, `:9191-9192`).
+/// JSON cannot carry it, so `None` = unlimited, as in
+/// [`BattleUnitSpawnDto::ammo_left`].
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct BattleFrameUnitDto {
+    /// `bu.id`.
+    pub id: UnitId,
+    /// Column `q` (`:1977`).
+    pub col: i32,
+    /// Row `r` (`:1978`).
+    pub row: i32,
+    /// `facing` (`:2011`; `Dir`: `N = 0`, `E = 1`, `S = 2`, `W = 3`, `:315-320`).
+    pub facing: i32,
+    /// `bu.hp` (may be `<= 0` after a killing blow, `:8991`).
+    pub hp: f64,
+    /// `morale` (`:2013`).
+    pub morale: f64,
+    /// `ammoLeft` (`:1999`); `None` = unlimited (`Infinity`).
+    pub ammo_left: Option<f64>,
+    /// `routed` (`:2016`).
+    pub routed: bool,
+    /// `dead` (`:1982`).
+    pub dead: bool,
+    /// `removed` (`:2021`).
+    pub removed: bool,
+    /// `onWallWalkway` (`:2028`).
+    pub on_wall_walkway: bool,
+}
+
+/// One living wall tile: `wallTileHp.get(row)` (`battle/battleScene.ts:2501`;
+/// a missing key = tile breached, `:7646`).
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct BattleWallTileHpDto {
+    /// Wall row.
+    pub row: i32,
+    /// Tile HP.
+    pub hp: f64,
+}
+
+/// Wall state of a battle frame: `wallTileHp` (`:2501`), `gateHp` (`:2454`),
+/// `gateOpen` (`:2456`), `wallEverBreached` (`:2503`),
+/// `siegeTowers[].destroyed` (`:2443`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct BattleFrameWallDto {
+    /// Living wall tiles; one entry per row.
+    pub tile_hp: Vec<BattleWallTileHpDto>,
+    /// `gateHp`.
+    pub gate_hp: f64,
+    /// `gateOpen`.
+    pub gate_open: bool,
+    /// `wallEverBreached`.
+    pub ever_breached: bool,
+    /// Rows of the towers with `destroyed === true`, in `siegeTowers` order
+    /// (`_destroyTowerAtRow`, `:4194-4200`; called on a breach, `:7648`, and by
+    /// `_fireSiegeTowers` for a tower whose tile is gone, `:4216`).
+    pub towers_destroyed: Vec<i32>,
+}
+
+/// Battle frame: the state after one loop step (recon §2b).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct BattleFrameDto {
+    /// `vNow` (virtual clock, ms, `:2556`).
+    pub v_now: f64,
+    /// `roundNo` (`:2698`).
+    pub round_no: i64,
+    /// Units in the web spawn order: attackers, then defenders (`this.atk` /
+    /// `this.def` from `place(...)`, `:5541-5550`; iterated as
+    /// `[...this.atk, ...this.def]`, e.g. `:5573`).
+    pub units: Vec<BattleFrameUnitDto>,
+    /// Wall state.
+    pub wall: BattleFrameWallDto,
+    /// `finished` (`:2518`).
+    pub finished: bool,
+}
+
+impl BattleFrameDto {
+    /// Checks the invariants the types do not enforce: every float finite
+    /// (JSON has no `NaN`/`Infinity`; unlimited ammunition is `None`),
+    /// `vNow >= 0`, `roundNo >= 0`, `facing` a `Dir` (`0..=3`), `ammoLeft >= 0`
+    /// (`ammoCount` returns `Math.max(0, …)`, `:1447`; `canShoot` needs
+    /// `ammoLeft > 0` before the decrement, `:1458`, `:9191-9192`), no
+    /// duplicate unit id, wall row or destroyed tower row (`towerRows` yields
+    /// strictly increasing rows, `game/city-towers.ts:47-56`).
+    ///
+    /// # Errors
+    /// The first violated invariant.
+    pub fn validate(&self) -> Result<(), crate::validate::ViewError> {
+        use crate::validate::ViewError;
+        use std::collections::BTreeSet;
+        fn finite(field: impl FnOnce() -> String, v: f64) -> Result<(), ViewError> {
+            if v.is_finite() {
+                Ok(())
+            } else {
+                Err(ViewError::NonFinite { field: field() })
+            }
+        }
+        fn non_negative(field: impl FnOnce() -> String, v: f64) -> Result<(), ViewError> {
+            if v >= 0.0 {
+                return Ok(());
+            }
+            // `floor`, not `trunc`: for a finite `v < 0`, `floor(v) <= -1 < min`, so the reported
+            // `value` itself lies outside `min..=max` (`trunc(-0.5)` = 0 would look in range). Same
+            // convention as `survivors[i].hp` above (`ceil` for the `min = 1` bound).
+            #[allow(clippy::cast_possible_truncation)]
+            let value = v.floor() as i64;
+            Err(ViewError::OutOfRange {
+                field: field(),
+                value,
+                min: 0,
+                max: i64::MAX,
+            })
+        }
+        // Duplicates are reported as `LengthMismatch { expected: distinct, actual: len }` with a
+        // `(unique …)` field, the convention already used by `BattleOutcomeDto::validate`
+        // (`attackerUnitIds (unique)`); `ViewError` lives in `validate.rs`, outside this topic.
+        fn unique(field: &str, distinct: usize, actual: usize) -> Result<(), ViewError> {
+            if distinct == actual {
+                return Ok(());
+            }
+            Err(ViewError::LengthMismatch {
+                field: field.to_string(),
+                expected: distinct,
+                actual,
+            })
+        }
+        finite(|| "vNow".into(), self.v_now)?;
+        non_negative(|| "vNow".into(), self.v_now)?;
+        if self.round_no < 0 {
+            return Err(ViewError::OutOfRange {
+                field: "roundNo".into(),
+                value: self.round_no,
+                min: 0,
+                max: i64::MAX,
+            });
+        }
+        let mut ids = BTreeSet::new();
+        for (i, u) in self.units.iter().enumerate() {
+            finite(|| format!("units[{i}].hp"), u.hp)?;
+            finite(|| format!("units[{i}].morale"), u.morale)?;
+            if let Some(a) = u.ammo_left {
+                finite(|| format!("units[{i}].ammoLeft"), a)?;
+                non_negative(|| format!("units[{i}].ammoLeft"), a)?;
+            }
+            if !(0..=3).contains(&u.facing) {
+                return Err(ViewError::OutOfRange {
+                    field: format!("units[{i}].facing"),
+                    value: i64::from(u.facing),
+                    min: 0,
+                    max: 3,
+                });
+            }
+            ids.insert(u.id);
+        }
+        unique("units (unique id)", ids.len(), self.units.len())?;
+        let w = &self.wall;
+        finite(|| "wall.gateHp".into(), w.gate_hp)?;
+        let mut rows = BTreeSet::new();
+        for (i, t) in w.tile_hp.iter().enumerate() {
+            finite(|| format!("wall.tileHp[{i}].hp"), t.hp)?;
+            rows.insert(t.row);
+        }
+        unique("wall.tileHp (unique row)", rows.len(), w.tile_hp.len())?;
+        let towers: BTreeSet<i32> = w.towers_destroyed.iter().copied().collect();
+        unique(
+            "wall.towersDestroyed (unique row)",
+            towers.len(),
+            w.towers_destroyed.len(),
+        )?;
+        Ok(())
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Battle actions (P4-1I3, `R-RUSTPORT-P4-1I3-BATTLE-ACTIONS`).
+//
+// Transient actions of a loop step that the state difference cannot show
+// (recon `dyspozycje/rust-port/p4/P4-1I-BATTLE-ROZPOZNANIE.md` §2c): the web
+// calls scene methods directly (`_doMeleeAttack`, `_spawnDamageLabel`,
+// `_startRout`, `_startFade`, `_fireOneTower`, `_pushClash`, `this.log.push`),
+// so a lunge or a miss leaves no trace in the frame. Each action carries `t0`,
+// the virtual time (`vNow`, ms) of the scene call; a list is in the order of the
+// scene calls in the pin `07d2fbd72`. Only paths already ported in the engine
+// are produced (blow, counter, tower shot, rout, kill, end, turn); movement,
+// the shooter, the ram, the catapult and the breach are P4-1I5.
+// ---------------------------------------------------------------------------
+
+/// Tag of a clash entry (`_pushClash(…, outcome)`, `battle/battleScene.ts:9550-9566`):
+/// `''`, `'padl'`, `'rout'`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum BattleClashTagDto {
+    /// `''` (plain hit).
+    Plain,
+    /// `'padl'` (the blow killed the target).
+    Padl,
+    /// `'rout'` (the blow broke the target's morale).
+    Rout,
+}
+
+/// Who dealt a blow: a battle unit or a wall tower. The tower shooter of
+/// `_fireOneTower` is synthetic (`id: 'wieza:' + row`, in no roster,
+/// `battle/battleScene.ts:4238-4245`), so it is identified by its wall row.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", tag = "type", deny_unknown_fields)]
+pub enum BattleActorDto {
+    /// A unit of `this.atk` / `this.def`.
+    Unit {
+        /// `bu.id`.
+        id: UnitId,
+    },
+    /// The tower on wall row `row` (`'wieza:' + t.row`).
+    Tower {
+        /// Wall row of the tower.
+        row: i32,
+    },
+}
+
+/// One transient action (the variant), see [`BattleActionDto`].
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", tag = "kind", deny_unknown_fields)]
+pub enum BattleActionKindDto {
+    /// A new turn: `hint.textContent = 'Tura ' + roundNo` (`_beginTurn`).
+    #[serde(rename_all = "camelCase")]
+    Turn {
+        /// `roundNo` after the increment.
+        round_no: i64,
+    },
+    /// A unit turns: `ru.facing = …; ru.group.rotation.y = dirYaw(ru.facing)`
+    /// (`_updateFacing` `:8334-8341`, `_doMeleeAttack` `:9104-9105` and
+    /// `:9137-9138`, `_startRout` `:9817-9818`).
+    Facing {
+        /// Unit.
+        id: UnitId,
+        /// New `Dir` (`N = 0`, `E = 1`, `S = 2`, `W = 3`, `:315-320`).
+        dir: i32,
+    },
+    /// Melee lunge (`_doMeleeAttack`, `:9096-9175`): the lunge starts at `t0`,
+    /// the blow connects at `hitAt` (`t0 + BLOW_HIT_T`, `:9122`).
+    #[serde(rename_all = "camelCase")]
+    Melee {
+        /// Attacker.
+        attacker: UnitId,
+        /// Target.
+        target: UnitId,
+        /// Moment of the blow.
+        hit_at: f64,
+    },
+    /// Wall tower shot (`_fireOneTower`, `:4223-4270`): projectile from the
+    /// tower of row `row` to `target`, launched at `t0`, landing at `landAt`
+    /// (`t0 + RANGED_FLY_MS`, `:4262`).
+    #[serde(rename_all = "camelCase")]
+    TowerShot {
+        /// Wall row of the tower.
+        row: i32,
+        /// Target unit.
+        target: UnitId,
+        /// Moment of the hit.
+        land_at: f64,
+    },
+    /// Floating damage label `_spawnDamageLabel(ru, dmg)` (`:9940-9971`).
+    Damage {
+        /// Unit hit.
+        target: UnitId,
+        /// Damage shown as `'-' + dmg`.
+        dmg: f64,
+    },
+    /// Entry of the "Ostatnie starcia" panel (`_pushClash`, `:9550-9566`).
+    Clash {
+        /// Who dealt the blow.
+        attacker: BattleActorDto,
+        /// Unit hit.
+        target: UnitId,
+        /// Damage of the blow (`> 0`).
+        dmg: f64,
+        /// Tag.
+        tag: BattleClashTagDto,
+        /// The panel line built by `_pushClash`.
+        text: String,
+    },
+    /// The unit breaks and flees (`_startRout`, `:9799-9825`; `_sfxRout`).
+    Rout {
+        /// Unit.
+        id: UnitId,
+    },
+    /// The unit dies and leaves the field (`_startFade` → `_removeUnitFromScene`,
+    /// `:9927-9938`; `_sfxDeath`).
+    Kill {
+        /// Unit.
+        id: UnitId,
+    },
+    /// A line of the battle log, `this.log.push(text)` (→ `BattleResult.log`,
+    /// `:10723`).
+    Log {
+        /// Text, byte for byte as in the pin.
+        text: String,
+    },
+    /// End of the battle (`_showEndScreen(winner)`).
+    End {
+        /// Winner.
+        winner: BattleWinner,
+    },
+}
+
+/// One action with its start time (recon §2c).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct BattleActionDto {
+    /// Virtual time of the scene call (`vNow`, ms).
+    pub t0: f64,
+    /// The action.
+    pub action: BattleActionKindDto,
+}
+
+fn action_finite(field: String, v: f64) -> Result<(), crate::validate::ViewError> {
+    if v.is_finite() {
+        Ok(())
+    } else {
+        Err(crate::validate::ViewError::NonFinite { field })
+    }
+}
+
+/// `v >= min` for finite `v` and `min`; the error reports `floor(v)` and
+/// `ceil(min)` (same convention as [`BattleFrameDto::validate`]).
+fn action_at_least(field: String, v: f64, min: f64) -> Result<(), crate::validate::ViewError> {
+    if v >= min {
+        return Ok(());
+    }
+    #[allow(clippy::cast_possible_truncation)]
+    let (value, min) = (v.floor() as i64, min.ceil() as i64);
+    Err(crate::validate::ViewError::OutOfRange {
+        field,
+        value,
+        min,
+        max: i64::MAX,
+    })
+}
+
+/// `dmg` finite and `> 0`.
+fn action_dmg(field: String, v: f64) -> Result<(), crate::validate::ViewError> {
+    action_finite(field.clone(), v)?;
+    if v > 0.0 {
+        return Ok(());
+    }
+    #[allow(clippy::cast_possible_truncation)]
+    let value = v.floor() as i64;
+    Err(crate::validate::ViewError::OutOfRange {
+        field,
+        value,
+        min: 1,
+        max: i64::MAX,
+    })
+}
+
+fn action_text(field: String, s: &str) -> Result<(), crate::validate::ViewError> {
+    if s.is_empty() {
+        Err(crate::validate::ViewError::LengthMismatch {
+            field,
+            expected: 1,
+            actual: 0,
+        })
+    } else {
+        Ok(())
+    }
+}
+
+impl BattleActionDto {
+    /// Checks one action: `t0` finite and `>= 0`; `hitAt`/`landAt` finite and
+    /// `>= t0`; `dmg` finite and `> 0` (`_spawnDamageLabel` and `_pushClash` are
+    /// only called for `dmg > 0`, `:9125`, `:9142`, `:4265`, doc `:9547`); `dir`
+    /// a `Dir` (`0..=3`); `roundNo >= 1` (`_beginTurn` increments before the
+    /// hint); log and clash texts non-empty; melee attacker != target.
+    /// `prefix` is the JSON path of the action (e.g. `actions[3]`).
+    ///
+    /// # Errors
+    /// The first violated invariant.
+    pub fn validate_at(&self, prefix: &str) -> Result<(), crate::validate::ViewError> {
+        use crate::validate::ViewError;
+        let f = |name: &str| format!("{prefix}.{name}");
+        action_finite(f("t0"), self.t0)?;
+        action_at_least(f("t0"), self.t0, 0.0)?;
+        match &self.action {
+            BattleActionKindDto::Turn { round_no } => {
+                if *round_no < 1 {
+                    return Err(ViewError::OutOfRange {
+                        field: f("action.roundNo"),
+                        value: *round_no,
+                        min: 1,
+                        max: i64::MAX,
+                    });
+                }
+            }
+            BattleActionKindDto::Facing { dir, .. } => {
+                if !(0..=3).contains(dir) {
+                    return Err(ViewError::OutOfRange {
+                        field: f("action.dir"),
+                        value: i64::from(*dir),
+                        min: 0,
+                        max: 3,
+                    });
+                }
+            }
+            BattleActionKindDto::Melee {
+                attacker,
+                target,
+                hit_at,
+            } => {
+                action_finite(f("action.hitAt"), *hit_at)?;
+                action_at_least(f("action.hitAt"), *hit_at, self.t0)?;
+                if attacker == target {
+                    // Two distinct units expected, one found.
+                    return Err(ViewError::LengthMismatch {
+                        field: f("action.target (!= attacker)"),
+                        expected: 2,
+                        actual: 1,
+                    });
+                }
+            }
+            BattleActionKindDto::TowerShot { land_at, .. } => {
+                action_finite(f("action.landAt"), *land_at)?;
+                action_at_least(f("action.landAt"), *land_at, self.t0)?;
+            }
+            BattleActionKindDto::Damage { dmg, .. } => action_dmg(f("action.dmg"), *dmg)?,
+            BattleActionKindDto::Clash { dmg, text, .. } => {
+                action_dmg(f("action.dmg"), *dmg)?;
+                action_text(f("action.text"), text)?;
+            }
+            BattleActionKindDto::Log { text } => action_text(f("action.text"), text)?,
+            BattleActionKindDto::Rout { .. }
+            | BattleActionKindDto::Kill { .. }
+            | BattleActionKindDto::End { .. } => {}
+        }
+        Ok(())
+    }
+}
+
+/// Checks a list of actions (one battle or one step): every action
+/// ([`BattleActionDto::validate_at`], prefix `actions[i]`) and the time order of
+/// the scene calls: `t0` never decreases (the engine emits each action when its
+/// virtual clock reaches it).
+///
+/// # Errors
+/// The first violated invariant.
+pub fn validate_actions(actions: &[BattleActionDto]) -> Result<(), crate::validate::ViewError> {
+    let mut prev = 0.0_f64;
+    for (i, a) in actions.iter().enumerate() {
+        let prefix = format!("actions[{i}]");
+        a.validate_at(&prefix)?;
+        action_at_least(format!("{prefix}.t0"), a.t0, prev)?;
+        prev = a.t0;
+    }
+    Ok(())
 }

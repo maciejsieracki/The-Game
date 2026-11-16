@@ -26,11 +26,16 @@ use crate::domain::army_leadership::{army_morale_ratio_without_commander, ArmyLe
 use crate::domain::city_towers::{strongest_ranged_unit_for_era, tower_range_for, UnitRow};
 use crate::domain::js_math::js_max0;
 use crate::domain::siege_no_breach::RoundCapVerdict;
+use crate::domain::siege_tactics_actions::{
+    actions_to_dto, arc_tag, check_end_logs, clash_line, eliminated_log, ff_round_cap_logs,
+    hit_log, miss_log, rout_log, tower_shooter_name, tower_shot_log, ActionError, Actor,
+    BattleAction, EndLogInput, TimedAction,
+};
 use crate::domain::siege_tactics_activate::{
     activate_unit, ActivateEvent, ActivateOps, ActivateScene, ActivateUnit, EnemyRef,
 };
 use crate::domain::siege_tactics_blow::{
-    js_max, js_min, DefenderState, HitArc, Outcome, RollSource, SceneEffect, Side,
+    js_max, js_min, ClashTag, DefenderState, HitArc, Outcome, RollSource, SceneEffect, Side,
     MORALE_HIT_LOSS_SCALE,
 };
 use crate::domain::siege_tactics_blow_full::{
@@ -72,6 +77,27 @@ pub trait LoopBody {
     /// Trafienie wieży (web `_singleBlow(shooter, target, true)` w `_fireOneTower`, `battleScene.ts:4262`): cios z
     /// szablonu `tmpl` na atakującego `target` (indeks w `st.atk`), skutki HP/zabicia w `st`. Domyślnie bez efektu.
     fn tower_blow(&mut self, _tmpl: &FullBlowInput, _target: usize, _st: &mut TurnSeqState) {}
+    /// P4-1I3: czas wirtualny (`vNow`) kolejnego wywołania ciała (`start`, `complete`, `tower_blow`); sterownik
+    /// ustawia go tuż przed wywołaniem. Akcje sceny ciała dostają ten czas jako `t0`. Domyślnie bez efektu.
+    fn set_now(&mut self, _v_now: f64) {}
+    /// P4-1I3: wiersz wieży, której pocisk trafia w najbliższym [`LoopBody::tower_blow`] (web `'wieza:' + t.row`).
+    /// Domyślnie bez efektu.
+    fn set_tower_row(&mut self, _row: i64) {}
+    /// P4-1I3 (obrona r1, zarzut 1): web `this._ffActive` (`battleScene.ts:2573`). W trybie przewijania
+    /// `_spawnDamageLabel` kończy się od razu (`:9943`), więc ciało nie emituje wtedy [`BattleAction::Damage`].
+    /// Sterownik ustawia `true` w [`SiegeLoop::resume`] (jedyny sterownik czasu to [`run_fast_forward`], web
+    /// `_runFastForward`, wołane tylko przy `_ffActive`, `:9267`). Domyślnie bez efektu.
+    fn set_ff_active(&mut self, _ff_active: bool) {}
+    /// P4-1I3: akcje sceny zebrane od ostatniego odbioru, w kolejności wywołań (sterownik odbiera je po każdym
+    /// wywołaniu ciała). Domyślnie brak akcji.
+    fn take_actions(&mut self) -> Vec<TimedAction> {
+        Vec::new()
+    }
+    /// P4-1I3: `bu.nazwa` jednostki (tekst logu wystrzału wieży, `battleScene.ts:4247`). Domyślnie znacznik
+    /// strony i indeksu (`atk0`, `def1`).
+    fn unit_name(&self, unit: UnitRef) -> String {
+        unit_tag(unit)
+    }
 }
 
 /// Stałe morale z pinu (`battleScene.ts:1129, 1141, 1144-1145`).
@@ -473,7 +499,31 @@ pub struct SiegeLoop<B: LoopBody> {
     pub unsupported: Option<&'static str>,
     /// Stan pętli przewijania (`ffVirtualMs`, `ffPendingAuto`, kolejka) zachowany między wywołaniami [`Self::resume`].
     ff: FfLoopState<()>,
+    /// P4-1I2 (L4): web `siegeTowers[i].destroyed` (`battleScene.ts:2443`), indeks = indeks w
+    /// [`SiegeEnv::tower_rows`]. Ustawiane wyłącznie przez [`Self::destroy_tower_at_row`] (`_destroyTowerAtRow`,
+    /// `:4194-4197`). Tylko odczyt dla ramki bitwy: strzał wieży nadal sprawdza kafel muru (bez zmiany logiki).
+    tower_destroyed: Vec<bool>,
+    /// P4-1I2: obserwator wołany po KAŻDYM odpaleniu klocka zegara ([`LoopTimer`]) z `vNow` tej chwili
+    /// (producent ramki `siege_tactics_frame`). Tylko odczyt stanu; brak = nic się nie dzieje.
+    fire_observer: Option<FireObserver<B>>,
+    /// P4-1I3: akcje sceny (pętla + ciało) z `t0`, w kolejności wywołań sceny w pinie.
+    actions: Vec<TimedAction>,
+    /// P4-1I3: pociski wież w locie, `(cel, wiersz wieży)`, w kolejności wystrzałów. Lot ma stałą długość
+    /// ([`TOWER_FLY_MS`]), więc trafienia przychodzą w tej samej kolejności; klocek [`LoopTimer::TowerHit`] niesie
+    /// tylko cel, a wiersz potrzebny jest wpisowi `_pushClash` (`'wieza:' + row`).
+    tower_in_flight: Vec<(usize, i64)>,
 }
+
+/// Obserwator odpaleń zegara pętli (P4-1I2): dostaje stan pętli PO kroku (tylko odczyt), `vNow` i odpalony
+/// klocek. Wołany dokładnie raz na każde odpalenie: z kolejki (`_drainTimers`) i synchroniczne
+/// ([`ScheduleOutcome::RunNow`], planowanie AUTO).
+///
+/// Kolejność przy zagnieżdżeniu: odpalenie `RunNow` wykonuje się wewnątrz `apply` odpalenia zewnętrznego
+/// (web: callback `_schedule` wołany synchronicznie, `battleScene.ts:9595-9606`), a obserwator odpalenia
+/// zewnętrznego jest wołany po zakończeniu jego `apply`. Ramka zagnieżdżonego odpalenia poprzedza więc ramkę
+/// odpalenia zewnętrznego (to samo `vNow`); ramka zewnętrzna pokazuje stan po obu krokach. Pokryte testem
+/// `p4_1i2_frame::ramka_po_kazdym_odpaleniu_stan_po_kroku`.
+pub type FireObserver<B> = Box<dyn FnMut(&SiegeLoop<B>, f64, LoopTimer)>;
 
 impl<B: LoopBody> SiegeLoop<B> {
     pub fn new(st: TurnSeqState, env: SiegeEnv<B>) -> Self {
@@ -484,6 +534,109 @@ impl<B: LoopBody> SiegeLoop<B> {
             winner: None,
             unsupported: None,
             ff: FfLoopState::<()>::new(),
+            tower_destroyed: Vec::new(),
+            fire_observer: None,
+            actions: Vec::new(),
+            tower_in_flight: Vec::new(),
+        }
+    }
+
+    /// P4-1I3: akcje sceny zebrane od startu (albo od ostatniego [`Self::take_actions`]).
+    pub fn actions(&self) -> &[TimedAction] {
+        &self.actions
+    }
+
+    /// P4-1I3: odbiór akcji (kolejka zostaje pusta).
+    pub fn take_actions(&mut self) -> Vec<TimedAction> {
+        std::mem::take(&mut self.actions)
+    }
+
+    /// P4-1I3: bieżące akcje jako [`civ_view_model::battle::BattleActionDto`] (id z rosteru pętli).
+    ///
+    /// # Errors
+    /// [`ActionError`] z [`actions_to_dto`].
+    pub fn actions_dto(&self) -> Result<Vec<civ_view_model::battle::BattleActionDto>, ActionError> {
+        actions_to_dto(&self.actions, &self.st)
+    }
+
+    fn emit(&mut self, t0: f64, action: BattleAction) {
+        self.actions.push(TimedAction { t0, action });
+    }
+
+    /// Odbiór akcji ciała po jego wywołaniu (zachowuje kolejność z akcjami pętli).
+    fn drain_body(&mut self) {
+        let a = self.env.body.take_actions();
+        self.actions.extend(a);
+    }
+
+    /// P4-1I2: ustawia (albo zdejmuje, `None`) obserwatora wołanego po każdym odpaleniu klocka zegara.
+    pub fn set_fire_observer(&mut self, observer: Option<FireObserver<B>>) {
+        self.fire_observer = observer;
+    }
+
+    /// Web `t.destroyed` wieży o indeksie `i` w [`SiegeEnv::tower_rows`] (`false` poza zakresem).
+    pub fn tower_destroyed(&self, i: usize) -> bool {
+        self.tower_destroyed.get(i).copied().unwrap_or(false)
+    }
+
+    /// Wiersze wież z `destroyed === true` w kolejności `siegeTowers` (= kolejność [`SiegeEnv::tower_rows`]).
+    pub fn towers_destroyed_rows(&self) -> Vec<i64> {
+        self.env
+            .tower_rows
+            .iter()
+            .enumerate()
+            .filter(|(i, _)| self.tower_destroyed(*i))
+            .map(|(_, &row)| row)
+            .collect()
+    }
+
+    /// Web `_destroyTowerAtRow(wallRow)` (`battleScene.ts:4194-4200`), część stanu: PIERWSZA niezburzona wieża
+    /// na wierszu (`siegeTowers.find(x => x.row === wallRow && !x.destroyed)`) dostaje `destroyed = true`; brak
+    /// takiej wieży = `return`. Mesh i wpis logu (`:4198-4199`) poza silnikiem. Zwraca, czy flaga została ustawiona.
+    pub fn destroy_tower_at_row(&mut self, row: i64) -> bool {
+        let n = self.env.tower_rows.len();
+        if self.tower_destroyed.len() < n {
+            self.tower_destroyed.resize(n, false);
+        }
+        let Some(i) = (0..n).find(|&i| self.env.tower_rows[i] == row && !self.tower_destroyed[i])
+        else {
+            return false;
+        };
+        self.tower_destroyed[i] = true;
+        true
+    }
+
+    /// Web `_breachWallTile(wallRow)` (`battleScene.ts:7638-7650`), część stanu czytana przez pętlę:
+    /// `wallTileHp.delete(wallRow)` (`:7646`, tu: usunięcie wiersza z [`SiegeEnv::wall_tile_rows`]),
+    /// `wallEverBreached = true` (`:7647`) i `_destroyTowerAtRow(wallRow)` (`:7648`). Kafel terenu, etykieta,
+    /// gruz, odwrót obrońców i morale (`:7643-7645`, `:7649-7750`) są poza tym sterownikiem (recon L3).
+    ///
+    /// Wymóg dla wpięcia produkcyjnego (#113 K5LOOP-WIRING): (1) każdy wyłom w bitwie musi iść przez tę metodę
+    /// w chwili wyłomu — inaczej flaga wieży (`:7648`) powstanie dopiero przy kolejnym `_fireSiegeTowers`
+    /// (`:4216`), z opóźnieniem względem pinu; (2) strażnik `if (!tiles) return;` (`:7639-7640`, brak mapy
+    /// terenu bitwy) należy do wołającego: gdy mapy terenu nie ma, metody nie wolno wołać (web nie usuwa wtedy
+    /// kafla, nie ustawia `wallEverBreached` i nie burzy wieży). Pętla nie ma mapy terenu, więc strażnika tu nie ma.
+    pub fn breach_wall_row(&mut self, row: i64) {
+        self.env.wall_tile_rows.retain(|&r| r != row);
+        self.env.wall_ever_breached = true;
+        self.destroy_tower_at_row(row);
+    }
+
+    /// Web `_fireSiegeTowers` (`battleScene.ts:4208-4219`), część flag: przy przejściu przez wieże (strażnik
+    /// `finished || siegeTowers.length === 0 || !towerShooterRow`, `:4209`) wieża niezburzona bez kafla muru
+    /// zostaje zburzona (`:4215-4216`). Planowanie wystrzałów robi bez zmian [`TurnSeqEnv::fire_siege_towers`].
+    fn mark_towers_without_tile(&mut self) {
+        if self.st.finished || self.env.tower_rows.is_empty() || self.env.tower_shot.is_none() {
+            return;
+        }
+        for i in 0..self.env.tower_rows.len() {
+            if self.tower_destroyed(i) {
+                continue;
+            }
+            let row = self.env.tower_rows[i];
+            if !self.env.wall_tile_rows.contains(&row) {
+                self.destroy_tower_at_row(row);
+            }
         }
     }
 
@@ -498,6 +651,9 @@ impl<B: LoopBody> SiegeLoop<B> {
     /// Wynik zależy tylko od sumy wykonanych iteracji, nie od podziału na wywołania: kolejne wywołania z małym
     /// `max_steps` dają ten sam stan i ślad co jedno wywołanie z dużym limitem.
     pub fn resume(&mut self, clock: &mut VirtualClock<LoopTimer>, max_steps: u32) -> FfStop {
+        // P4-1I3 (obrona r1, zarzut 1): przewijanie = web `_ffActive = true` (`skip()` `:3696`, pętla `:9267`);
+        // etykiety obrażeń są wtedy pomijane (`_spawnDamageLabel` `:9943`).
+        self.env.body.set_ff_active(true);
         let mut ff = std::mem::take(&mut self.ff);
         let stop = run_fast_forward(clock, &mut ff, self, max_steps);
         self.ff = ff;
@@ -527,21 +683,61 @@ impl<B: LoopBody> SiegeLoop<B> {
         clock.finished = true;
     }
 
-    fn finish(&mut self, clock: &mut VirtualClock<LoopTimer>, winner: LoopWinner) {
+    /// Koniec bitwy; `logs` = linie `this.log.push` ścieżki końca (P4-1I3), po nich akcja `End`
+    /// (`_showEndScreen(winner)`).
+    fn finish(
+        &mut self,
+        clock: &mut VirtualClock<LoopTimer>,
+        winner: LoopWinner,
+        logs: Vec<String>,
+    ) {
         self.st.finished = true;
         clock.finished = true;
         self.winner = Some(winner);
+        for text in logs {
+            self.emit(clock.v_now, BattleAction::Log { text });
+        }
+        self.emit(clock.v_now, BattleAction::End { winner });
+    }
+
+    /// P4-1I3: linie logu `_checkEnd` dla wyniku `outcome` (wejścia z tego samego zrzutu co sam test końca,
+    /// [`TurnSeqEnv::end_check_snapshot`], liczonego ponownie na stanie z chwili obsługi zdarzenia: między testem
+    /// a obsługą `EndCheck` sekwencja nie zmienia HP, morale ani flag jednostek).
+    fn end_logs(&mut self, site: CheckSite, winner: LoopWinner) -> Vec<String> {
+        let s = self.env.end_check_snapshot(site, &self.st);
+        check_end_logs(
+            &EndLogInput {
+                stalled: s.stalled,
+                alive_a: s.alive_a,
+                alive_d: s.alive_d,
+                is_siege: s.is_siege,
+                wall_ever_breached: s.wall_ever_breached,
+                total_dead: s.total_dead,
+                ratio_a: s.ratio_a,
+                ratio_d: s.ratio_d,
+                ratio_a_at_cap: s.ratio_a_at_cap,
+                ratio_d_at_cap: s.ratio_d_at_cap,
+                round_no: s.round_no,
+                no_breach_cap: s.no_breach_cap,
+            },
+            Some(winner),
+        )
     }
 
     fn apply(&mut self, clock: &mut VirtualClock<LoopTimer>, events: Vec<SeqEvent>) {
         for ev in events {
             match ev {
                 SeqEvent::CounterBudgetBeginTurn
-                | SeqEvent::SetHint { .. }
                 | SeqEvent::Banner { .. }
                 | SeqEvent::RefreshQueuedVisuals => {}
+                // P4-1I3: `hint.textContent = 'Tura ' + roundNo` (`_beginTurn`) = akcja tury.
+                SeqEvent::SetHint { round_no } => {
+                    self.emit(clock.v_now, BattleAction::Turn { round_no });
+                }
                 SeqEvent::FireSiegeTowers => {
                     self.trace.push(format!("turn:{}", self.st.round_no));
+                    // P4-1I2: flaga `destroyed` wież bez kafla (pin `:4216`); nie zmienia planowania ani zegara.
+                    self.mark_towers_without_tile();
                     // Wystrzały zaplanowane w tej turze wchodzą do zegara przed kolejnymi `Schedule` (kolejność jak w pinie).
                     let planned = std::mem::take(&mut self.env.pending_tower_shots);
                     for p in planned {
@@ -569,21 +765,23 @@ impl<B: LoopBody> SiegeLoop<B> {
                         EndCheckOutcome::Ended(BattleSide::Defender) => "ended:def".to_string(),
                     };
                     self.trace.push(format!("check:{site_s}:{out_s}"));
-                    match outcome {
-                        EndCheckOutcome::Continue => {}
-                        EndCheckOutcome::Draw => self.finish(clock, LoopWinner::Draw),
-                        EndCheckOutcome::Ended(BattleSide::Attacker) => {
-                            self.finish(clock, LoopWinner::Attacker)
-                        }
-                        EndCheckOutcome::Ended(BattleSide::Defender) => {
-                            self.finish(clock, LoopWinner::Defender)
-                        }
+                    let winner = match outcome {
+                        EndCheckOutcome::Continue => None,
+                        EndCheckOutcome::Draw => Some(LoopWinner::Draw),
+                        EndCheckOutcome::Ended(BattleSide::Attacker) => Some(LoopWinner::Attacker),
+                        EndCheckOutcome::Ended(BattleSide::Defender) => Some(LoopWinner::Defender),
+                    };
+                    if let Some(w) = winner {
+                        let logs = self.end_logs(site, w);
+                        self.finish(clock, w, logs);
                     }
                 }
                 SeqEvent::ActivateUnit(u) => {
                     self.trace
                         .push(format!("act:{}@{}", unit_tag(u), clock.v_now));
+                    self.env.body.set_now(clock.v_now);
                     let dur = self.env.body.start(u, &self.st);
+                    self.drain_body();
                     let _ = clock.schedule(dur, LoopTimer::BodyDone(u), false);
                 }
                 SeqEvent::Schedule { ms, step, planning } => {
@@ -606,17 +804,25 @@ impl<B: LoopBody> SiegeLoop<B> {
                 activate_next(&mut self.st, &mut self.env, &mut out);
             }
             LoopTimer::BodyDone(u) => {
+                self.env.body.set_now(clock.v_now);
                 self.env.body.complete(u, &mut self.st);
+                self.drain_body();
                 activation_done(&mut self.st, &mut self.env, u, &mut out);
             }
             LoopTimer::TowerShot(i) => {
                 self.tower_shoot(clock, i);
             }
             LoopTimer::TowerHit(target) => {
-                self.tower_hit(target);
+                self.tower_hit(target, clock.v_now);
             }
         }
         self.apply(clock, out);
+        // P4-1I2: ramka po każdym odpaleniu (tylko odczyt). `take` pozwala przekazać `&self` obserwatorowi.
+        // Kolejność przy zagnieżdżonym `RunNow`: zob. [`FireObserver`].
+        if let Some(mut obs) = self.fire_observer.take() {
+            obs(self, clock.v_now, timer);
+            self.fire_observer = Some(obs);
+        }
     }
 
     /// Web `_fireOneTower` (`battleScene.ts:4223-4262`): wystrzał zaplanowanej wieży. Pomijany po `finished`.
@@ -635,16 +841,42 @@ impl<B: LoopBody> SiegeLoop<B> {
         let Some(target) = self.env.pick_tower_for_row(&self.st, row) else {
             return;
         };
+        // P4-1I3: `this.log.push('Wieza strzelnicza …')` (`:4247`), potem pocisk (`projectiles.push`, `:4260`).
+        let tref = UnitRef {
+            side: BattleSide::Attacker,
+            idx: target,
+        };
+        let text = tower_shot_log(row, &self.env.body.unit_name(tref));
+        self.emit(clock.v_now, BattleAction::Log { text });
+        self.emit(
+            clock.v_now,
+            BattleAction::TowerShot {
+                row,
+                target: tref,
+                land_at: clock.v_now + TOWER_FLY_MS,
+            },
+        );
         let planning = self.st.auto_batch_planning;
+        // Wpis „w locie” przed `schedule`: przy planowaniu trafienie odpala się synchronicznie (`RunNow`).
+        self.tower_in_flight.push((target, row));
         match clock.schedule(TOWER_FLY_MS, LoopTimer::TowerHit(target), planning) {
-            ScheduleOutcome::Queued | ScheduleOutcome::Dropped => {}
+            ScheduleOutcome::Queued => {}
+            ScheduleOutcome::Dropped => {
+                self.tower_in_flight.pop();
+            }
             ScheduleOutcome::RunNow(t) => self.fire(clock, t),
         }
     }
 
     /// Web callback `_schedule(RANGED_FLY_MS, ...)` w `_fireOneTower` (`battleScene.ts:4263-4269`): trafienie
     /// pomijane po `finished`, gdy cel martwy lub znika. Inaczej `_singleBlow` wieży przez [`LoopBody::tower_blow`].
-    fn tower_hit(&mut self, target: usize) {
+    fn tower_hit(&mut self, target: usize, v_now: f64) {
+        // P4-1I3: pocisk ląduje (także gdy trafienie jest pomijane); wiersz wieży dla wpisu `_pushClash`.
+        let row = self
+            .tower_in_flight
+            .iter()
+            .position(|&(t, _)| t == target)
+            .map(|k| self.tower_in_flight.remove(k).1);
         if self.st.finished {
             return;
         }
@@ -655,7 +887,12 @@ impl<B: LoopBody> SiegeLoop<B> {
         let Some(tmpl) = self.env.tower_shot.clone() else {
             return;
         };
+        self.env.body.set_now(v_now);
+        if let Some(row) = row {
+            self.env.body.set_tower_row(row);
+        }
         self.env.body.tower_blow(&tmpl, target, &mut self.st);
+        self.drain_body();
     }
 }
 
@@ -694,7 +931,9 @@ impl<B: LoopBody> FfHost<LoopTimer, ()> for SiegeLoop<B> {
                     RoundCapVerdict::Defender => LoopWinner::Defender,
                     RoundCapVerdict::Attacker => LoopWinner::Attacker,
                 };
-                self.finish(clock, w);
+                // P4-1I3: `_ffRoundCapResult` (`:9485-9497`): `_finishDraw` albo linia `PAT (przewijanie)`.
+                let logs = ff_round_cap_logs(v, self.env.no_breach_cap);
+                self.finish(clock, w, logs);
             }
             FfEvent::EnterAuto => {
                 self.halt_unsupported(
@@ -888,6 +1127,21 @@ pub struct ProdBody<R: RollSource> {
     /// Tylko stan (wartości domyślne z pinu, patrz [`ProdDoctrineState`]); nic w tym ciele go jeszcze nie czyta.
     /// Trzymany w ciele, a nie w [`ProdUnit`], bo literał `ProdUnit` jest też w `p6_k5loop_outcome_pin.rs` (poza allowlistą).
     pub doctrine: [Vec<ProdDoctrineState>; 2],
+    /// P4-1I3: `bu.nazwa` jednostek (teksty logu i `_pushClash`), indeks: [strona][jednostka]. Wejście adaptera;
+    /// domyślnie znacznik `atk<i>` / `def<i>`.
+    pub names: [Vec<String>; 2],
+    /// P4-1I3: `String(towerShooterRow['Jednostka'] ?? 'Strzelec')` (`battleScene.ts:4211`); nazwa strzelca wieży w
+    /// logu to `'Wieza (' + nazwa + ')'` (`:4241`). Wejście adaptera; domyślnie `Strzelec`.
+    pub tower_shooter_nazwa: String,
+    /// P4-1I3: czas wirtualny bieżącego wywołania (ustawia sterownik, [`LoopBody::set_now`]).
+    now: f64,
+    /// P4-1I3: wiersz wieży bieżącego trafienia ([`LoopBody::set_tower_row`]).
+    tower_row: i64,
+    /// P4-1I3: akcje sceny od ostatniego odbioru ([`LoopBody::take_actions`]).
+    actions: Vec<TimedAction>,
+    /// P4-1I3 (obrona r1): web `_ffActive` ([`LoopBody::set_ff_active`]); `true` = bez [`BattleAction::Damage`]
+    /// (`_spawnDamageLabel` `:9943`). Domyślnie `false` (ciało wołane poza przewijaniem).
+    ff_active: bool,
 }
 
 impl<R: RollSource> ProdBody<R> {
@@ -918,6 +1172,10 @@ impl<R: RollSource> ProdBody<R> {
             vec![ProdDoctrineState::default(); units[0].len()],
             vec![ProdDoctrineState::default(); units[1].len()],
         ];
+        let names = [
+            (0..units[0].len()).map(|i| format!("atk{i}")).collect(),
+            (0..units[1].len()).map(|i| format!("def{i}")).collect(),
+        ];
         Self {
             units,
             scene,
@@ -935,7 +1193,43 @@ impl<R: RollSource> ProdBody<R> {
             is_army_commander,
             screen_lost_applied,
             doctrine,
+            names,
+            tower_shooter_nazwa: "Strzelec".to_string(),
+            now: 0.0,
+            tower_row: 0,
+            actions: Vec::new(),
+            ff_active: false,
         }
+    }
+
+    /// P4-1I3: akcje sceny zebrane od ostatniego odbioru (tylko odczyt).
+    pub fn pending_actions(&self) -> &[TimedAction] {
+        &self.actions
+    }
+
+    fn emit(&mut self, action: BattleAction) {
+        // P4-1I3 (obrona r1, zarzut 1): `_spawnDamageLabel` (`:9940-9943`): `if (this._ffActive) return;`, jedyne
+        // miejsce filtra (trzy wywołania: cios `:9125`, kontratak `:9142`, wieża `:4265`).
+        if self.ff_active && matches!(action, BattleAction::Damage { .. }) {
+            return;
+        }
+        self.actions.push(TimedAction {
+            t0: self.now,
+            action,
+        });
+    }
+
+    /// P4-1I3 (obrona r1): bieżący tryb przewijania ciała (web `_ffActive`).
+    pub fn ff_active(&self) -> bool {
+        self.ff_active
+    }
+
+    /// `bu.nazwa` jednostki ([`Self::names`]; poza listą: znacznik strony i indeksu).
+    fn name_of(&self, unit: UnitRef) -> String {
+        self.names[side_ix(unit.side)]
+            .get(unit.idx)
+            .cloned()
+            .unwrap_or_else(|| unit_tag(unit))
     }
 
     /// `ru.screenLostApplied` jednostki.
@@ -977,12 +1271,17 @@ impl<R: RollSource> ProdBody<R> {
             return;
         };
         let cur = self.facing[ix][unit.idx];
-        self.facing[ix][unit.idx] = facing_toward(
+        let next = facing_toward(
             &JsVal::Num((e.q - q) as f64),
             &JsVal::Num((e.r - r) as f64),
             &JsVal::Num(cur),
         )
         .to_number();
+        self.facing[ix][unit.idx] = next;
+        // P4-1I3: pin zmienia `rotation.y` tylko przy zmianie (`if (newFacing === ru.facing) return;`, `:8338`).
+        if next != cur {
+            self.emit(BattleAction::Facing { unit, dir: next });
+        }
     }
 
     /// Flaga `surroundApplied` jednostki (stan między aktywacjami; nie ma jej w [`CombatUnit`]).
@@ -1021,11 +1320,70 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             side: BattleSide::Attacker,
             idx: target,
         };
+        let max_hp = tmpl.defender_state.max_hp;
         let out = tower_blow_on_target(tmpl, st, target, &mut self.rolls);
         if out.blow.outcome != Outcome::None {
             self.unported
                 .push((tref, "wieza-resolveBlowOutcome-efekty"));
         }
+        // P4-1I3: wywołania sceny `_singleBlow(shooter, target, true)` (`:4264`) i etykieta (`:4265`). Skutki
+        // `_resolveBlowOutcome` poza zabiciem są nieportowane (wpis wyżej): emitowane jest tylko to, co odpowiada
+        // stanowi silnika — log ciosu, przy zabiciu log `wyeliminowany` i `Kill`, wpis `_pushClash` i etykieta.
+        let shooter = tower_shooter_name(&self.tower_shooter_nazwa);
+        let tname = self.name_of(tref);
+        self.emit_blow_log(&shooter, &tname, tmpl.hit_arc, &out, max_hp);
+        if out.blow.missed {
+            return;
+        }
+        let killed = out.blow.outcome == Outcome::Kill;
+        if killed {
+            self.emit(BattleAction::Log {
+                text: eliminated_log(&tname),
+            });
+            self.emit(BattleAction::Kill { unit: tref });
+        }
+        let tag = match out.blow.outcome {
+            Outcome::Kill => ClashTag::Padl,
+            Outcome::RoutBeforeDeath => ClashTag::Rout,
+            Outcome::MoraleOnly | Outcome::None => {
+                if st.unit(tref).c.routed {
+                    ClashTag::Rout
+                } else {
+                    ClashTag::Plain
+                }
+            }
+        };
+        let row = self.tower_row;
+        self.emit_clash(
+            Actor::Tower(row),
+            &shooter,
+            BattleSide::Defender,
+            tref,
+            out.blow.dmg,
+            tag,
+        );
+        let tc = st.unit(tref).c;
+        if out.blow.dmg > 0.0 && !tc.dead && !tc.fading_out {
+            self.emit(BattleAction::Damage {
+                target: tref,
+                dmg: out.blow.dmg,
+            });
+        }
+    }
+    fn set_now(&mut self, v_now: f64) {
+        self.now = v_now;
+    }
+    fn set_tower_row(&mut self, row: i64) {
+        self.tower_row = row;
+    }
+    fn set_ff_active(&mut self, ff_active: bool) {
+        self.ff_active = ff_active;
+    }
+    fn take_actions(&mut self) -> Vec<TimedAction> {
+        std::mem::take(&mut self.actions)
+    }
+    fn unit_name(&self, unit: UnitRef) -> String {
+        self.name_of(unit)
     }
     fn unit_cell(&self, unit: UnitRef) -> Option<(i64, i64)> {
         let pu = self.units[side_ix(unit.side)].get(unit.idx)?;
@@ -1138,6 +1496,30 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         } else {
             0.0
         };
+        // P4-1I3: `_doMeleeAttack` (`:9096-9175`): zwrot atakującego ku celowi (`:9104-9105`, zawsze `rotation.y`),
+        // potem start lunge w `t0`; cios w `t0 + body_ms` (adapter: `BLOW_HIT_T`). Sam stan `facing` zmienia
+        // [`Self::strike`] w `complete` (bez zmiany logiki); tu ta sama wartość liczona z tego samego wejścia.
+        if let Some(target) = pend.attack {
+            let tref = UnitRef {
+                side: opposite(unit.side),
+                idx: target,
+            };
+            let (aq, ar) = self.cell_of(unit);
+            let (dq, dr) = self.cell_of(tref);
+            let dir = facing_toward(
+                &JsVal::Num((dq - aq) as f64),
+                &JsVal::Num((dr - ar) as f64),
+                &JsVal::Num(self.facing[ix][unit.idx]),
+            )
+            .to_number();
+            self.emit(BattleAction::Facing { unit, dir });
+            let hit_at = self.now + dur;
+            self.emit(BattleAction::Melee {
+                attacker: unit,
+                target: tref,
+                hit_at,
+            });
+        }
         self.pending[ix][unit.idx] = Some(pend);
         dur
     }
@@ -1166,7 +1548,14 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         let Some(input) = self.units[ix][unit.idx].blow.clone() else {
             return;
         };
-        let rec = self.strike(st, unit, tref, input);
+        let rec = self.strike(st, unit, tref, input, false);
+        // P4-1I3: `if (dmg > 0 && !defender.dead) this._spawnDamageLabel(defender, dmg)` (`:9125`).
+        if rec.dmg > 0.0 && !st.unit(tref).c.dead {
+            self.emit(BattleAction::Damage {
+                target: tref,
+                dmg: rec.dmg,
+            });
+        }
         self.blows.push(rec);
         self.counter_strike(st, unit, tref);
     }
@@ -1182,6 +1571,7 @@ impl<R: RollSource> ProdBody<R> {
         attacker: UnitRef,
         target: UnitRef,
         mut input: FullBlowInput,
+        emit_facing: bool,
     ) -> BlowRecord {
         let ix = side_ix(attacker.side);
         let tix = side_ix(target.side);
@@ -1202,6 +1592,14 @@ impl<R: RollSource> ProdBody<R> {
             &JsVal::Num(self.facing[ix][attacker.idx]),
         )
         .to_number();
+        // P4-1I3: zwrot obrońcy przed kontratakiem (`:9137-9138`); zwrot atakującego ciosu głównego emituje `start`.
+        if emit_facing {
+            let dir = self.facing[ix][attacker.idx];
+            self.emit(BattleAction::Facing {
+                unit: attacker,
+                dir,
+            });
+        }
         input.hit_arc = relative_hit(
             &JsVal::Num(self.facing[tix][target.idx]),
             &JsVal::Num(aq as f64),
@@ -1228,7 +1626,18 @@ impl<R: RollSource> ProdBody<R> {
         let max_hp = input.defender_state.max_hp;
         let out = single_blow_full(&input, &mut self.rolls);
         unit_cu_mut(st, target).hp = out.blow.def_hp_after;
-        self.apply_outcome_effects(st, attacker, target, max_hp, &out.blow.effects);
+        // P4-1I3: `this.log.push(… chybia …)` (`:8962`) albo `(… trafia …)` (`:8997-9000`), przed skutkami ciosu.
+        let (an, dn) = (self.name_of(attacker), self.name_of(target));
+        self.emit_blow_log(&an, &dn, input.hit_arc, &out, max_hp);
+        self.apply_outcome_effects(
+            st,
+            attacker,
+            target,
+            max_hp,
+            &out.blow.effects,
+            out.blow.outcome,
+            out.blow.dmg,
+        );
         if out.blow.engaged_add && !self.engaged.contains(&(attacker, target)) {
             self.engaged.push((attacker, target));
         }
@@ -1251,6 +1660,7 @@ impl<R: RollSource> ProdBody<R> {
     /// (`UpdateHpBar`, `PushClash`) są pomijane. Zabicie: `_startFade`, ripple `_shakeAlliesOnLoss` (NIEPORTOWANY),
     /// `_boostEnemiesOnBreak`, `_gainMorale`. Pozostałe ścieżki: `_applyMoraleDamage` i `_gainMorale` atakującego,
     /// gdy cel po ciosie jest `routed` (`if (defender.routed) this._gainMorale(...)`).
+    #[allow(clippy::too_many_arguments)]
     fn apply_outcome_effects(
         &mut self,
         st: &mut TurnSeqState,
@@ -1258,14 +1668,45 @@ impl<R: RollSource> ProdBody<R> {
         defender: UnitRef,
         max_hp: f64,
         effects: &[SceneEffect],
+        outcome: Outcome,
+        blow_dmg: f64,
     ) {
         for e in effects {
             match *e {
-                SceneEffect::UpdateHpBar | SceneEffect::PushClash { .. } => {}
+                SceneEffect::UpdateHpBar => {}
+                // P4-1I3: `_pushClash` (`:9038`, `:9053`, `:9067`). Tag: `padl` przy zabiciu, `rout` w gałęzi
+                // rout-przed-śmiercią (bezwarunkowo, `:9038`), w gałęzi zwykłej `defender.routed ? 'rout' : ''`
+                // po `_applyMoraleDamage` (`:9067`). Tag z listy efektów nie jest użyty: `routed_after_morale`
+                // jest tu zawsze `true` (patrz [`Self::strike`]).
+                SceneEffect::PushClash { tag } => {
+                    let tag = match (tag, outcome) {
+                        (ClashTag::Padl, _) => ClashTag::Padl,
+                        (_, Outcome::RoutBeforeDeath) => ClashTag::Rout,
+                        _ if st.unit(defender).c.routed => ClashTag::Rout,
+                        _ => ClashTag::Plain,
+                    };
+                    let an = self.name_of(attacker);
+                    self.emit_clash(
+                        Actor::Unit(attacker),
+                        &an,
+                        attacker.side,
+                        defender,
+                        blow_dmg,
+                        tag,
+                    );
+                }
                 SceneEffect::ApplyMoraleDamage { dmg, extra_morale } => {
                     self.apply_morale_damage(st, defender, max_hp, dmg, extra_morale);
                 }
-                SceneEffect::StartFade => self.start_fade(st, defender),
+                SceneEffect::StartFade => {
+                    // P4-1I3: `this.log.push('  -> ' + nazwa + ' wyeliminowany')` (`:9046`) przed `_startFade`.
+                    let c = st.unit(defender).c;
+                    if !c.dead && !c.fading_out && !c.removed {
+                        let text = eliminated_log(&self.name_of(defender));
+                        self.emit(BattleAction::Log { text });
+                    }
+                    self.start_fade(st, defender);
+                }
                 SceneEffect::ShakeAllies => self.unported.push((defender, "shakeAlliesOnLoss")),
                 SceneEffect::BoostEnemies => self.boost_enemies_on_break(st, defender),
                 SceneEffect::GainMorale { side, amount } => {
@@ -1384,6 +1825,8 @@ impl<R: RollSource> ProdBody<R> {
             c.routed = true;
             c.acted = true;
         }
+        // P4-1I3: `_sfxRout()` (`:9801`) = początek rozbicia, przed kaskadą osłony wręcz.
+        self.emit(BattleAction::Rout { unit });
         if self.is_army_commander[ix][unit.idx] {
             self.unported.push((unit, "dowodca-rout"));
         }
@@ -1391,10 +1834,15 @@ impl<R: RollSource> ProdBody<R> {
             self.check_melee_screen_lost(st, unit.side);
         }
         self.boost_enemies_on_break(st, unit);
-        self.facing[ix][unit.idx] = match unit.side {
+        let dir = match unit.side {
             BattleSide::Attacker => 3.0,
             BattleSide::Defender => 1.0,
         };
+        self.facing[ix][unit.idx] = dir;
+        // P4-1I3: `ru.group.rotation.y = dirYaw(ru.facing)` (`:9818`), potem log (`:9819`).
+        self.emit(BattleAction::Facing { unit, dir });
+        let text = rout_log(&self.name_of(unit));
+        self.emit(BattleAction::Log { text });
     }
 
     /// `_checkMeleeScreenLost(side)` (`battleScene.ts:9759-9774`): gdy strona nie ma już żywej jednostki wrecz,
@@ -1438,6 +1886,61 @@ impl<R: RollSource> ProdBody<R> {
         if self.is_army_commander[side_ix(unit.side)][unit.idx] {
             self.unported.push((unit, "dowodca-fade"));
         }
+        // P4-1I3: `_sfxDeath()` + `_removeUnitFromScene(ru)` (`:9933-9937`).
+        self.emit(BattleAction::Kill { unit });
+    }
+
+    /// P4-1I3: log ciosu `_singleBlow`: pudło (`:8962`) albo trafienie z `arcTag` (`:8993-9000`). `max_hp` =
+    /// `defender.bu.maxHp`; HP po ciosie = `def_hp_after`.
+    fn emit_blow_log(
+        &mut self,
+        attacker: &str,
+        defender: &str,
+        arc: HitArc,
+        out: &FullBlowOutput,
+        max_hp: f64,
+    ) {
+        let text = if out.blow.missed {
+            miss_log(attacker, defender, out.blow.roll, out.blow.hit_pct)
+        } else {
+            let tag = arc_tag(arc, out.composition.def_penalty_frac);
+            hit_log(
+                attacker,
+                defender,
+                &tag,
+                out.blow.dmg,
+                out.blow.def_hp_after,
+                max_hp,
+            )
+        };
+        self.emit(BattleAction::Log { text });
+    }
+
+    /// P4-1I3: wpis `_pushClash` (`:9550-9566`) jako akcja z gotowym tekstem panelu.
+    fn emit_clash(
+        &mut self,
+        attacker: Actor,
+        attacker_name: &str,
+        attacker_side: BattleSide,
+        target: UnitRef,
+        dmg: f64,
+        tag: ClashTag,
+    ) {
+        let text = clash_line(
+            attacker_name,
+            attacker_side,
+            &self.name_of(target),
+            target.side,
+            dmg,
+            tag,
+        );
+        self.emit(BattleAction::Clash {
+            attacker,
+            target,
+            dmg,
+            tag,
+            text,
+        });
     }
 
     /// Kontratak obrońcy (pin `_doMeleeAttack`, COUNTER-ATTACK, battleScene.ts:9134-9143). Warunki jak w
@@ -1471,7 +1974,16 @@ impl<R: RollSource> ProdBody<R> {
         if !self.engaged.contains(&(defender, attacker)) {
             self.engaged.push((defender, attacker));
         }
-        let rec = self.strike(st, defender, attacker, cin);
+        let rec = self.strike(st, defender, attacker, cin, true);
+        // P4-1I3: `if (back > 0 && !attacker.dead && !attacker.fadingOut) this._spawnDamageLabel(attacker, back)`
+        // (`:9142`).
+        let ac = st.unit(attacker).c;
+        if rec.dmg > 0.0 && !ac.dead && !ac.fading_out {
+            self.emit(BattleAction::Damage {
+                target: attacker,
+                dmg: rec.dmg,
+            });
+        }
         self.counters.push(rec);
     }
 }
