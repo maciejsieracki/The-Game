@@ -593,3 +593,26 @@ fn etykiety_i_deduplikacja_powodow_zatrzymania() {
         Some("opis")
     );
 }
+
+/// Obrona Q6, zarzut 4: niezmiennik "tylko skonczone wartosci" (podstawa recznego `Eq`) jest
+/// wymuszony w buildach debug/test na obu publicznych konstruktorach.
+#[cfg(debug_assertions)]
+#[test]
+#[should_panic(expected = "MovementPoints: wartosc nieskonczona lub NaN")]
+fn movement_points_new_odrzuca_nan_w_debug() {
+    let _ = MovementPoints::new(f64::NAN);
+}
+
+#[cfg(debug_assertions)]
+#[test]
+#[should_panic(expected = "MovementPoints: wartosc nieskonczona lub NaN")]
+fn movement_points_from_f64_odrzuca_nieskonczonosc_w_debug() {
+    let _ = MovementPoints::from(f64::INFINITY);
+}
+
+#[test]
+fn movement_points_skonczone_wartosci_bez_zmian() {
+    assert_eq!(MovementPoints::new(1.0 / 3.0).get(), 1.0 / 3.0);
+    assert_eq!(MovementPoints::from(2.5_f64), MovementPoints::new(2.5));
+    assert_eq!(MovementPoints::new(-0.0), MovementPoints::ZERO);
+}

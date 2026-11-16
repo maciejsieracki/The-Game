@@ -417,7 +417,13 @@ pub struct MovementPoints(f64);
 impl MovementPoints {
     pub const ZERO: Self = Self(0.0);
 
+    /// Niezmiennik typu (podstawa recznego `Eq`): tylko skonczone wartosci. Pilnowany w buildach
+    /// debug/test (`debug_assert!`); w release brak kosztu (obrona Q6, zarzut 4 Evaluatora).
     pub const fn new(value: f64) -> Self {
+        debug_assert!(
+            value.is_finite(),
+            "MovementPoints: wartosc nieskonczona lub NaN"
+        );
         Self(value)
     }
 
@@ -437,7 +443,7 @@ impl From<u8> for MovementPoints {
 
 impl From<f64> for MovementPoints {
     fn from(value: f64) -> Self {
-        Self(value)
+        Self::new(value)
     }
 }
 
