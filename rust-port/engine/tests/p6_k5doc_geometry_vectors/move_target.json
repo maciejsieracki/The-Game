@@ -1,5 +1,5 @@
 {
-  "source": "gra/src/battle/battleScene.ts @ 07d2fbd72: _moveTargetForUnit :11442-11448; BF_COLS/BF_ROWS :661-662",
+  "source": "gra/src/battle/battleScene.ts @ 07d2fbd72: _moveTargetForUnit :11442-11448 (wykonane); BF_COLS/BF_ROWS :661-662",
   "bf_cols": 68,
   "bf_rows": 156,
   "cases": [
@@ -76,6 +76,17 @@
       "row": 155,
       "expect_col": 5,
       "expect_row": 155
+    },
+    {
+      "id": "clamp-zero-dr-ujemny-niezerowy",
+      "formation_offset": [
+        0,
+        -3
+      ],
+      "col": 10,
+      "row": 1,
+      "expect_col": 10,
+      "expect_row": 0
     }
   ]
 }

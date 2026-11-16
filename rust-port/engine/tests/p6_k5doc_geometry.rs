@@ -1,6 +1,7 @@
 //! K5DOC-T3 GEOMETRIA (dispatch R-RUSTPORT-P6-K5DOC-T3-GEOMETRIA-Q1): wektory C9 `_moveTargetForUnit`
 //! (pin `gra/src/battle/battleScene.ts:11442-11448`). Wektory generuje `p6_k5doc_geometry_gen.mjs`
-//! (replika 1:1 pina); sumy SHA-256 w `p6_k5doc_geometry_vectors/SHA256SUMS`.
+//! (wykonuje ciało metody wyciągnięte z pina `07d2fbd72` przez `git show`); sumy SHA-256 w
+//! `p6_k5doc_geometry_vectors/SHA256SUMS`, egzekwowane testem `vector_files_match_sha256sums`.
 //! C7 `_attackFormationRallyPoint` i C8 `_chargeMoveDest` są NIE_PORTOWANE (martwe w pinie), patrz
 //! nagłówek `siege_tactics_doctrine_geometry.rs`.
 
@@ -39,6 +40,44 @@ fn move_target_for_unit_matches_pin_vectors() {
         };
         assert_eq!(got, want, "przypadek {id}");
     }
+}
+
+/// Egzekwuje `SHA256SUMS` (dispatch: sumy SHA-256 fragmentow). Uruchamia `sha256sum -c` (albo
+/// `shasum -a 256 -c` na systemach bez `sha256sum`) w katalogu wektorow, bo plik sum ma sciezki wzgledne.
+#[test]
+fn vector_files_match_sha256sums() {
+    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("p6_k5doc_geometry_vectors");
+    let attempts: [(&str, &[&str]); 2] = [
+        ("sha256sum", &["-c", "SHA256SUMS"]),
+        ("shasum", &["-a", "256", "-c", "SHA256SUMS"]),
+    ];
+    let mut ran = false;
+    for (prog, args) in attempts {
+        match std::process::Command::new(prog)
+            .args(args)
+            .current_dir(&dir)
+            .output()
+        {
+            Ok(out) => {
+                ran = true;
+                assert!(
+                    out.status.success(),
+                    "SHA256SUMS niezgodne ({prog}): stdout={} stderr={}",
+                    String::from_utf8_lossy(&out.stdout),
+                    String::from_utf8_lossy(&out.stderr)
+                );
+                break;
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => continue,
+            Err(e) => panic!("nie mozna uruchomic {prog}: {e}"),
+        }
+    }
+    assert!(
+        ran,
+        "brak narzedzia sha256sum/shasum do weryfikacji SHA256SUMS"
+    );
 }
 
 #[test]
