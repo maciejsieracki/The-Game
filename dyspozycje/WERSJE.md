@@ -1,3 +1,9 @@
+## ROBOCZA 3a328cd0 -- 2026-11-16 -- FALA 772: Ekran porazki: osiagniecia i straty, Wczytaj gre albo Rozpocznij od nowa (testowa)
+
+- Porazka gracza (utrata ostatniego miasta) pokazuje pelny ekran konca gry: sekcje Osiagniecia (tury, epoka, zbadane technologie, cywilizacja) i Straty (utracone miasta), przyciski Wczytaj gre (otwiera dialog wczytania) i Rozpocznij od nowa; ekrany zwyciestwa bez zmian
+- Weryfikacja: tsc 0; logic-test 213/213; defeat-screen-summary-test 23/0; victory-test 12/0; load-game-regression 34/0; test zywy Chromium 45/0 (kandydat a470f0327); FC PASS-WITH-NOTES
+- Limity: Tura po wczytaniu z ekranu porazki (blokada NNS), autozapis po porazce na liscie wczytania i uszkodzony zapis NIE ZMIERZONO; Straty bez licznikow utraconych miast i jednostek
+
 ## ROBOCZA fbafced0 -- 2026-11-16 -- FALA 771: Kolejka pusta tylko gdy jest co wybudowac (testowa)
 
 - Powiadomienie Produkcja: <miasto> Kolejka pusta pojawia sie tylko gdy w miescie jest dostepny i osiagalny budynek lub ulepszenie a kolejka jest pusta; sama mozliwosc rekrutacji jednostek go nie wywoluje; tekst: wybierz budynek

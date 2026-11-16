@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "fbafced0c371793c29fef2d9c17b3cda",
-  "bundleSha256": "bb647af342b9512b32a9b5212414183fc930a47fd84ec5133b8e215a55160562",
-  "bundleBytes": 14808045,
+  "bundleMd5": "3a328cd0dc029274074b7b7e9660f2dd",
+  "bundleSha256": "30101c8eb8e6cf708d23a6b37935db445dcc1bc42884d910d5d6d9941066c963",
+  "bundleBytes": 14810984,
   "sourceSnapshot": {
-    "source": "FALA 771: FC 893fec505 scalone w main, build Vite poza repo",
+    "source": "FALA 772: FC c2c35ad8a scalone w main, build Vite poza repo",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 771: Powiadomienie Produkcja: <miasto> Kolejka pusta pojawia sie tylko gdy w miescie jest dostepny i osiagalny budynek lub ulepszenie a kolejka jest pusta; sama mozliwosc rekrutacji jednostek go nie wywoluje; tekst: wybierz budynek"
+    "FALA 772: Porazka gracza (utrata ostatniego miasta) pokazuje pelny ekran konca gry: sekcje Osiagniecia (tury, epoka, zbadane technologie, cywilizacja) i Straty (utracone miasta), przyciski Wczytaj gre (otwiera dialog wczytania) i Rozpocznij od nowa; ekrany zwyciestwa bez zmian"
   ],
   "verification": [
-    "tsc 0; logic-test 213/213; notif-empty-queue-buildable 20/0; notif-empty-queue-gate-behaviour 11/0; load-game-regression 34/0; FC PASS-WITH-NOTES (b0f4356b9)"
+    "tsc 0; logic-test 213/213; defeat-screen-summary-test 23/0; victory-test 12/0; load-game-regression 34/0; test zywy Chromium 45/0 (kandydat a470f0327); FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "Zywy bieg w Chromium (stan ze zrzutu wlasciciela) i galaz Ulepsz NIE ZMIERZONO; weryfikacja na zywo po deployu"
+    "Tura po wczytaniu z ekranu porazki (blokada NNS), autozapis po porazce na liscie wczytania i uszkodzony zapis NIE ZMIERZONO; Straty bez licznikow utraconych miast i jednostek"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES NOTIF-EMPTY-QUEUE-NO-BUILDING-AVAILABLE-Q2 r1 (kandydat b0f4356b9, FC 893fec505): powiadomienie Produkcja: <miasto> Kolejka pusta nie wynika juz z mozliwosci rekrutacji jednostek (usunieta galez z cityHasActionableProduction); pojawia sie tylko gdy jest dostepny i osiagalny budynek lub ulepszenie, a kolejka pusta; tekst: wybierz budynek. tsc 0, testy notif-empty-queue 20/0 i gate-behaviour 11/0 (realne funkcje, przypadki i-iv, mutacje), 5 bramek zielonych, load-game-regression 34/0. NIE ZMIERZONO: zywy bieg w Chromium (stan ze zrzutu wlasciciela), galaz Ulepsz (ten sam predykat co panel, ryzyko resztkowe) — weryfikacja na zywo po deployu."
+    "notes": "FC PASS-WITH-NOTES DEFEAT-SCREEN-SUMMARY-LOAD-OR-NEW-Q1 r1 (kandydat a470f0327, FC c2c35ad8a): porazka gracza = pelny ekran konca gry z sekcjami Osiagniecia (tury, epoka, zbadane technologie, cywilizacja z nazwa wyswietlana) i Straty (utracone miasta: wszystkie) oraz przyciskami Wczytaj gre (dialog wczytania; Anuluj/Esc przywraca ekran) i Rozpocznij od nowa; zwyciestwa bez zmian. tsc 0, defeat-screen-summary-test 23/0, test zywy Chromium 45/0 (przyciski widoczne 1280x720 i 1400x900, klawisze N i Spacja nie zmieniaja tury), 5 bramek zielonych, load-game-regression 34/0. NIE ZMIERZONO: tura rosnie po wczytaniu (blokada NNS rowniez w kontroli bez porazki), autozapis po porazce na liscie wczytania, uszkodzony zapis; Straty bez licznikow utraconych miast i jednostek (brak w stanie gry) — ABC do wlasciciela."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-16T18:00:20",
+  "hubGeneratedAt": "2026-11-16T18:25:31",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "fbafced0c371793c29fef2d9c17b3cda",
-      "sizeBytes": 14808045
+      "md5": "3a328cd0dc029274074b7b7e9660f2dd",
+      "sizeBytes": 14810984
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "fbafced0c371793c29fef2d9c17b3cda",
-      "sizeBytes": 14808045
+      "md5": "3a328cd0dc029274074b7b7e9660f2dd",
+      "sizeBytes": 14810984
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "fbafced0c371793c29fef2d9c17b3cda",
-      "sizeBytes": 14808045
+      "md5": "3a328cd0dc029274074b7b7e9660f2dd",
+      "sizeBytes": 14810984
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "fbafced0c371793c29fef2d9c17b3cda",
-      "sizeBytes": 14808045
+      "md5": "3a328cd0dc029274074b7b7e9660f2dd",
+      "sizeBytes": 14810984
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "fbafced0c371793c29fef2d9c17b3cda",
-      "sizeBytes": 14808045
+      "md5": "3a328cd0dc029274074b7b7e9660f2dd",
+      "sizeBytes": 14810984
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "fbafced0c371793c29fef2d9c17b3cda",
-      "sizeBytes": 14808045
+      "md5": "3a328cd0dc029274074b7b7e9660f2dd",
+      "sizeBytes": 14810984
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "fbafced0c371793c29fef2d9c17b3cda",
-      "sizeBytes": 14808045
+      "md5": "3a328cd0dc029274074b7b7e9660f2dd",
+      "sizeBytes": 14810984
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "fbafced0c371793c29fef2d9c17b3cda",
-      "sizeBytes": 14808045
+      "md5": "3a328cd0dc029274074b7b7e9660f2dd",
+      "sizeBytes": 14810984
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "fbafced0c371793c29fef2d9c17b3cda",
-      "sizeBytes": 14808045
+      "md5": "3a328cd0dc029274074b7b7e9660f2dd",
+      "sizeBytes": 14810984
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "fbafced0c371793c29fef2d9c17b3cda",
-      "sizeBytes": 14808045
+      "md5": "3a328cd0dc029274074b7b7e9660f2dd",
+      "sizeBytes": 14810984
     }
   ],
-  "md5": "fbafced0c371793c29fef2d9c17b3cda",
+  "md5": "3a328cd0dc029274074b7b7e9660f2dd",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
