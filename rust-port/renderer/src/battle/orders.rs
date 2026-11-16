@@ -4,9 +4,8 @@
 //! order arrows the scene draws and whether they are drawn as queued
 //! (dashed). The earlier baseline `edb8fb56` (parts 1–5 of MOD-14; not an
 //! ancestor of pin `07d2fbd72`) had no attack-move order
-//! and never consumed queue entries on activation; both changed in the web
-//! (commits `601fc3baf` "Add manual attack-move battle order", `96d088b4d`
-//! "clear stale queued order ids after activation").
+//! and never consumed queue entries on activation; both behaviours are
+//! present in pin `07d2fbd72` (`:5994`, `:6013`, `:18682`).
 //!
 //! Numery linii wg pinu 07d2fbd72 (gra/src/battle/battleScene.ts)
 //!
@@ -176,8 +175,8 @@ pub fn next_activation(
 }
 
 /// The first step of the activation callback of `_activateNext`
-/// (`:6013`; skipped candidates `:5994`): the unit's queued order has been consumed by its own
-/// activation. `true` = it was queued (manual mode only) — refresh the
+/// (`:6013`; skipped candidates `:5994`): the unit's queued order has been
+/// consumed by its own activation. `true` = it was queued (manual mode only) — refresh the
 /// arrows.
 pub fn consume_on_activation(manual: bool, queued: &mut QueuedOrders, id: &str) -> bool {
     manual && queued.delete(id)
@@ -253,7 +252,8 @@ where
 }
 
 /// `_cancelAttackMoveSelected()` (`:18704-18712`; called from the
-/// Escape branch of `_onKeyManual` `:17410` and the "Anuluj marsz" button `:19095`) with `ids` = `_collectOrderUnitIds()`:
+/// Escape branch of `_onKeyManual` `:17410` and the "Anuluj marsz" button
+/// `:19095`) with `ids` = `_collectOrderUnitIds()`:
 /// every listed unit whose order is `AttackMove` gets no order and leaves the
 /// queue. The caller then refreshes the arrows.
 pub fn cancel_attack_move_selected(
