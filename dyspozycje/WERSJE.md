@@ -1,3 +1,9 @@
+## ROBOCZA c8b6031d -- 2026-11-16 -- FALA 774: Ekran porazki: liczniki utraconych miast i jednostek, brak autozapisu po porazce (testowa)
+
+- Ekran porazki w sekcji Straty pokazuje Utracone miasta i Utracone jednostki (brak danych = myslnik, stary zapis 0/0). Po porazce autozapis i Ctrl+S nie zapisuja; lista Wczytaj gre zawiera tylko zapis sprzed porazki; reczny nazwany zapis nie jest blokowany.
+- Weryfikacja: tsc 0, loss-counters-test 35/0, defeat-screen-summary-test 25/0, victory 12/0, victory-screen 11/0, load-game-regression 34/0, 5 bramek referencyjnych, zywy Chromium 51/0
+- Limity: NIE ZMIERZONO: polegle jednostki w zywej bitwie; round-trip licznika >0 przez save.ts; gracz = wlasciciel 0 (hotseat drugi fotel nie liczony)
+
 ## ROBOCZA a35723b4 -- 2026-11-16 -- FALA 773: Lucznicy: zdrowie 20 dla wszystkich pieszych, atak dystansowy 5/6/7 (pole) (testowa)
 
 - Zdrowie wszystkich pieszych lucznikow = 20 w obu polach danych (Health i health); pole Atak dystansowy: zwykly 5, egipski 6, nubijski 7. Silnik walki czyta missileAttack - decyzja osobno.
