@@ -2444,3 +2444,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sprzątanie dysku:** worktree T2 `wf_1c92bca8-2d5-4` (HEAD `03dfa64c2`, FC PASS-WITH-NOTES, brudny tylko `Cargo.lock`) usunięty; HEAD zabezpieczony lokalnie jako `refs/keep/cleanup-T2-wt4`. **Push tego refa nieudany** (HTTP 403 z proxy przy wysyłce ~91 tys. obiektów; zgodnie z dokumentacją proxy nie obchodzę polityki). Commit `03dfa64c2` istnieje tylko lokalnie — do ponowienia przy dostępnym transferze.
 - Wolne miejsce na `/`: 12 GB przed startem (próg 8 GB dla tematów Rust spełniony).
 - Zablokowane bez zmian: P4-1F2 (#278) i P4-1 L1/L2 (#279) — decyzja mgły #253; P4-1I5 (#280) — pętla oblężnicza K5LOOP.
+
+### Przebieg — heartbeat Rust, 2026-11-16 10:19 UTC
+
+- **Sloty:** realnie aktywne 2 Workflow — P4-1F3 SIEGE-WONDER-VIEW (`wf_e659c069-e97`, Operator, OPUS) i P4-1I2 BATTLE-FRAME (`wf_9ebab86f-5b4`, Operator, OPUS). Pozostałe 26 journali ma stare znaczniki (sprzed restartu), nie liczę ich jako trwających.
+- **Start nowych tematów: WSTRZYMANY.** Dysk 4,7 GB wolnego; reguła 5 (CLAUDE.md) wymaga ≥ 8 GB dla tematów z kodem Rust. Heartbeat dopuszcza 4 GB, ale ostrzejsza reguła wygrywa.
+- **Integracja EXEC-T1 (K5EXEC-T1, FC PASS-WITH-NOTES `6462b7b07`, kod `2e510195c`):** merge `05b872fc5` na `parity-v2 585bb48e0`, jedyny konflikt w `mod.rs` rozwiązany (obie linie `pub mod`). Bramki: fmt EXIT 0, clippy EXIT 0; pełny `cargo test --all-targets` w toku. FF na parity dopiero po zielonym wyniku. Kopia WIP: `wip/R-RUSTPORT-P6-EXEC-T1-QUEUE-Q1-integracja`.
+- **Do integracji po EXEC-T1:** K5DOC-T3 GEOMETRIA (FC PASS-WITH-NOTES, FC `efa3b7642`, kod `85befb9ff`) — task #290. Notatki FC: C7/C8 martwe w pinie, mutacja (c) NIE_DOTYCZY dla C9.
+- **Rozbieżność z harmonogramem:** prompt heartbeatu wymaga Operatora Haiku; reguła właściciela dla tematów 3D (seria P4-1) to OPUS we wszystkich rolach. Tematy 1F3 i 1I2 działają na Opus zgodnie z regułą właściciela.
+- **Nie ruszane:** `Cargo.lock` (nieśledzony, zgodnie z regułą), cache `fc_k5t3_target` (3,2 GB, do usunięcia po T3, task #287), `ev9f1` (decyzja właściciela).
