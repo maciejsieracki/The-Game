@@ -10439,3 +10439,13 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 
 ### 2026-11-16 ~17:10 UTC — ODPOWIEDŹ ABC właściciela: bramka utrzymania armii AI (#415) → B: włączyć teraz
 - Po pomiarze UPKEEP-ONOFF r3 (bez korzyści widocznej w danych; opisowo, 1 przebieg na ziarno) właściciel zdecydował: WŁĄCZYĆ bramkę. Nowy temat R-WEB-AI-UPKEEP-RUNWAY-GATE-ENABLE-Q1 (Haiku r1): wprowadzenie kodu bramki (kandydat 11362dad4) na aktualny main + `wlaczone=true` (parametry 15/0,1 bez zmian) + testy + smoke w grze. Wdrożenie jako FALA 771 po FC PASS (FALA 770 = ekran porażki + narzędzia pomiarowe).
+
+### 2026-11-17 ~17:45 UTC — FALA 770 WDROŻONA (ROBOCZA MD5 4676942d, main 7d3cd3099)
+- R-WEB-AI-UPKEEP-RUNWAY-GATE-ENABLE-Q1 r1 (Operator Haiku → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES; kandydat 7f1e9f274, FC e2bfd3b2c; refs/keep/UPKEEPEN-r1-{op,eval,obrona,fc}). Zmiana: bramka rekrutacji AI oparta na zapasie złota/żywności WŁĄCZONA decyzją właściciela (`gra/data/ai-upkeep-params.json` wlaczone=true, runwayTurns 15, margin 0,1; `gra/src/game/ai-upkeep-runway.ts`; wpięcie w `wantsPurchase` AI w `main.ts`); gracz nie podlega bramce.
+- Build: MERGED 79255ea00, tsc 0, logic 213/213, ai-upkeep-runway-test 17/0, ai-upkeep-wiring-test 4/0, load-game-regression 34/0, vite 0. Raw MD5 = manifest (4676942d55dc487e79a9d8659dc5237d), 3 sidecary audio zgodne.
+- Co to daje w grze: AI nie kupuje jednostek, gdy zapas złota/żywności nie pokrywa utrzymania armii na 15 tur (margines 10%).
+- NIE ZMIERZONO: smoke w Chromium na końcowym SHA (smoke Operatora t1–45 przed usunięciem liczników: brak błędów końca tury, deficyt złota AI 0, ok. 77% zablokowanych sprawdzeń do t45 vs ok. 35% w pomiarze 100 tur); hash przy wlaczone=false (dowód z kodu); wpływ na tempo rekrutacji i balans AI; wiki/Civpedia.
+- Narzędzia pomiarowe UPKEEP-ONOFF r3 (FC 6af3003f9) NIE weszły: konflikt w `ai-economy-measure-run.cjs` z wersją w main → zadanie #443 (Haiku, tylko narzędzia).
+- Dług Rust: REPIN bramki rekrutacji AI (ai-upkeep-runway + dane).
+- Numeracja: FALA 771 = ekran porażki (DEFEATSCR) po FC PASS.
+- Do właściciela (obserwacja w grze): AI mniej rekrutuje przy niskich zapasach; sprawdzić, czy siła militarna AI nie spadła zbyt mocno.
