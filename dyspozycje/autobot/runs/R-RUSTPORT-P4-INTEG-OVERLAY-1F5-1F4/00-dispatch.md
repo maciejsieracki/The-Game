@@ -24,3 +24,10 @@ BAZA: `origin/rust-port/parity-v2` = `9f7c55499` (zawiera I2 i I3). Worktree det
 - Bramki zielone; utrata funkcji z którejkolwiek strony = FAIL; brak `#[ignore]`; brak push do parity.
 - Raport zawiera SHA końcowego merge, kody wyjścia bramek i sumy `test result`.
 - Orkiestrator robi FF na parity po zielonych bramkach i FC.
+
+## DODATEK r2 — ponowna integracja na nowym parity (BAZA NADPISANA)
+- Poprzedni wynik (`e668add29`, raport `86366b5fe`) zbudowany na `9f7c55499`. Parity przesunięte na `75de326bc` (integracja K5DOC-T2 + T3).
+- NOWA BAZA: `origin/rust-port/parity-v2` = `75de326bc`. Worktree detached.
+- Scal `86366b5fe` (zawiera `e668add29` i raport) na `75de326bc` (`git merge --no-ff 86366b5fe`). Merge-tree czysty (sprawdzone).
+- Bramki jak w r1: fmt, clippy `-D warnings`, PEŁNY `cargo test --all-targets --no-fail-fast` w tle. Zapisz SHA merge i wyniki.
+- Model: OPUS (temat 3D, nakładki) — reguła właściciela dla tematów 3D.
