@@ -10239,3 +10239,9 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 
 ### Start 2026-11-15 ~23:50 UTC — R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1 (#419, wf_0a29d571-1f1, Haiku, cand 1afc302bc)
 - Pomiar wydajności księgi „Skąd zapasy” w konfiguracji domyślnej (≥3 ziarna × 100 tur × ≥3 pary ON/OFF naprzemiennie). Uwaga: 4 rdzenie przy 4 workflowach naraz → DODATEK 1 wymaga zapisu load average i jawnego rozstępu; przy rozstępie ≥10% wynik = NIE ROZSTRZYGNIĘTE (powtórzyć w ciszy).
+
+### #424 SAVE-LOAD-ROUNDTRIP-STATE-DRIFT — runda 1 FC FAIL, runda 2 start (2026-11-16 ~00:05 UTC, wf_0ed852a3-bd1, Haiku, cand 1afc302bc)
+- Runda 1: Operator BLOCK bez poprawki (brak npm ci/pomiaru), Obrona odtworzyła rozjazd: `--resume-test` 0/3 powtarzalnie; różnice w migawce po wczytaniu (budowaPriorytetTypow, budowaLista, magazynZywnosci, postepBudynkowUsuniete, resourceLedgerHistory 5→0) i po jednym tiku (wealthState.pula, procentRozwoj/poziomRacji/wzrostUlamkowy, surowce, manpower, cityProd) — źródło niezlokalizowane, hipoteza RNG. FC FAIL (report 6b4cc6aa4). Refs `refs/keep/R-WEB-SAVELOAD-DRIFT-r1-{op,eval,obrona,fc}`.
+- Runda 2: DODATEK 1 (zgoda na normalizację stackGroupId w runnerze i na poprawkę źródła w gra/src zapisu/wczytania; pomiar RNG; test regresji + mutacja).
+- NOWE ZGŁOSZENIE: `resourceLedgerHistory` (dziennik „Skąd zapasy”) nie wraca po wczytaniu zapisu — osobny defekt, do tematu po #424.
+- CZEKA NA RANO (ABC): budowaPriorytetTypow po wczytaniu — A: wczytanie nie dopisuje listy (zgodne z żywą grą, rekomendacja Obrony) / B: żywa gra dopisuje listę przy zakładaniu miasta (zmiana zachowania AI).
