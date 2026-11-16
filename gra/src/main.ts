@@ -49269,6 +49269,14 @@ async function boot(): Promise<void> {
         for (const oid of savedEverOwnedCity) {
           if (typeof oid === 'number' && Number.isFinite(oid)) playerEverOwnedCityByOwner.add(oid);
         }
+      } else if (saved.tura > 1) {
+        // R-WEB-SAVE-LOAD-OLD-SAVE-ZERO-CITIES-NO-AWAIT-FIRST-CITY-Q1 (ABC A, 2026-11-16): stary zapis
+        // (sprzed FALI 761, bez pola) z turą > 1 NIGDY nie wraca do „czekam na pierwsze miasto”.
+        // Heurystyka wyżej gubi fotel z 0 miastami, więc fotele ludzkie z zapisu (oraz aktywny) dostają
+        // flagę. Bezpieczne: gra po turze 1 już istniała, a pierwsze miasto było wymagane wcześniej.
+        // Tura 1 i nowe zapisy (z polem) nie są objęte tą gałęzią.
+        for (const oid of saved.humanOwnerIds) playerEverOwnedCityByOwner.add(oid);
+        playerEverOwnedCityByOwner.add(saved.activeHumanOwnerId);
       }
       // R-HOTSEAT-ETAP7-SAVELOAD-Q1 (v3): `gracze[]`/`exploredByHuman` ZASTĘPUJĄ
       // pojedyncze `gracz`/`explored`. Odtwarzamy WSZYSTKIE fotele z zapisu do

@@ -1,0 +1,16 @@
+PASS NEW zapis wejsciowy jest STARY: brak 5 pol meta FAL 760-761 :: {"obecne":[],"resourceLedgerHistoryWZapisie":6}
+INFO NEW po wczytaniu {"st":{"turn":7,"myCities":0,"awaiting":false},"eco":{"owner":0,"skarbiec":188,"spichlerz":203,"miasta":0,"obywatele":0,"rekruci":0,"jednostkiWojskowe":1,"jednostkiCywilne":1,"utrzymanieBudynkowPieniadz":0,"utrzymanieGarnizonuPieniadz":0,"turn":7},"swiat":{"cities":41,"units":61},"zapis":{"expectCities":41,"expectUnits":61},"eco0":null}
+INFO NEW dziennik „Skad zapasy" po wczytaniu {"wZapisie":6,"poWczytaniuPole":6,"pamiecWszyscy":6,"limit":10}
+PASS NEW dziennik „Skad zapasy" po wczytaniu = wpisy zapisu :: {"got":6,"want":6}
+PASS NEW liczba miast (wszyscy wlasciciele) po wczytaniu = zapis :: {"got":41,"want":41}
+PASS NEW liczba jednostek (wszyscy wlasciciele) po wczytaniu = zapis :: {"got":61,"want":61}
+NIE_ZMIERZONO NEW ekonomia po wczytaniu = zapis :: brak pliku metryk zapisu (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/r1/save-nocity.json.metrics.json)
+INFO NEW 0 miast gracza: isAwaitingFirstPlayerCity() (obserwacja, kryterium = A4 „Zakoncz ture") {"awaiting":false,"myCities":0}
+NIE_ZMIERZONO NEW dryf ekonomii przy niepustych mapach zamowien :: w tym zapisie puste: orderMultByCity, orderGrowthMultByCity, orderValueByCity (niepuste mapy NIE ZMIERZONE)
+INFO NEW tura 8 {"bypass":false,"eco":{"owner":0,"skarbiec":184,"spichlerz":195,"miasta":0,"obywatele":0,"rekruci":0,"jednostkiWojskowe":1,"jednostkiCywilne":1,"utrzymanieBudynkowPieniadz":0,"utrzymanieGarnizonuPieniadz":0,"turn":8},"errs":0}
+FAIL NEW tura 2 zatrzymana: cannot-end :: {"stop":"cannot-end","warns":["[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] triggerPlayerEndTurn: START tura 7","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] triggerPlayerEndTurn: DONE tura 8","[EndTurn] blocked: gameOver"],"gameOverProbe":true,"tura":8,"battle":{"preBattleOpen":false,"pendingAuto":false,"sceneOpen":false,"summaryOpen":false,"resolving":false}}
+FAIL NEW „Zakoncz ture" dziala 3 razy (tura rosnie o 1) :: [7,8,null]
+PASS NEW dziennik „Skad zapasy" rosnie po tickach (lub limit) :: {"przed":6,"po":7,"limit":10}
+INFO NEW scenariusz 0 miast (zapis z usunietymi miastami gracza): wynik tur {"turns":[7,8,null],"myCities":0}
+PASS NEW brak pageerror i bledow konsoli :: []
+WYNIK: FAIL=2

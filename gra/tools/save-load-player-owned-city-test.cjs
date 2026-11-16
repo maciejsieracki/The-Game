@@ -39,6 +39,8 @@ function check(ok, msg) {
 const SAVE_RE = /\.\.\.\(playerEverOwnedCityByOwner\.size > 0\s*\?\s*\{\s*playerEverOwnedCityByOwner:\s*Array\.from\(playerEverOwnedCityByOwner\)\s*\}\s*:\s*\{\}\)/;
 const RESTORE_RE = /const savedEverOwnedCity: unknown = saved\.meta\?\.playerEverOwnedCityByOwner;\s*if \(Array\.isArray\(savedEverOwnedCity\)\)\s*\{[\s\S]{0,250}playerEverOwnedCityByOwner\.add\(oid\)/;
 const HEURISTIC_RE = /if \(cities\.some\(c => c\.ownerId === oid\)\) playerEverOwnedCityByOwner\.add\(oid\);/;
+// R-WEB-SAVE-LOAD-OLD-SAVE-ZERO-CITIES-NO-AWAIT-FIRST-CITY-Q1: stary zapis (bez pola) z tura > 1 -> fotele dostaja flage.
+const OLD_SAVE_RE = /else if \(saved\.tura > 1\) \{[\s\S]{0,900}for \(const oid of saved\.humanOwnerIds\) playerEverOwnedCityByOwner\.add\(oid\);/;
 
 // Zwraca liczbe NIEspelnionych warunkow statycznych dla danego zrodla (0 = wszystko na miejscu).
 function staticFailures(src) {
@@ -46,6 +48,7 @@ function staticFailures(src) {
   if (!SAVE_RE.test(src)) bad++;
   if (!RESTORE_RE.test(src)) bad++;
   if (!HEURISTIC_RE.test(src)) bad++;
+  if (!OLD_SAVE_RE.test(src)) bad++;
   return bad;
 }
 
@@ -53,6 +56,7 @@ const src = fs.readFileSync(MAIN_TS, 'utf8');
 check(SAVE_RE.test(src), 'main.ts: zapis meta.playerEverOwnedCityByOwner (tylko gdy niepusty)');
 check(RESTORE_RE.test(src), 'main.ts: odczyt z Array.isArray + typeof number po heurystyce');
 check(HEURISTIC_RE.test(src), 'main.ts: heurystyka "ma miasto teraz" zachowana dla starych zapisow');
+check(OLD_SAVE_RE.test(src), 'main.ts: stary zapis (bez pola) z tura > 1 -> fotele ludzkie dostaja flage (ZERO-CITIES)');
 
 // Mutacje na KOPIACH (nie na main.ts): kazda musi byc WYKRYTA przez staticFailures (wynik > 0).
 // Mutacja A: usuniecie bloku odczytu. Mutacja B: usuniecie zapisu. Zaden z warunkow nie jest
@@ -61,6 +65,7 @@ const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pownedcity-mut-'));
 const mutants = {
   'bez odczytu (RESTORE)': src.replace(RESTORE_RE, 'NOOP_MUTANT_RESTORE'),
   'bez zapisu (SAVE)': src.replace(SAVE_RE, 'NOOP_MUTANT_SAVE'),
+  'bez uzupelnienia starego zapisu z tura > 1 (ZERO-CITIES)': src.replace(OLD_SAVE_RE, 'NOOP_MUTANT_OLD_SAVE'),
 };
 for (const [name, text] of Object.entries(mutants)) {
   const p = path.join(tmpDir, 'main-mutant.ts');
