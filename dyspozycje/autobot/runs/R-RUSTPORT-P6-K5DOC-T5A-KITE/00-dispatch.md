@@ -44,3 +44,15 @@ WZÓR: moduł T4a — `rust-port/engine/src/domain/siege_tactics_pathstep.rs` i 
 3. Brak `#[ignore]`, brak osłabionych asercji, zero zmian poza allowlistą.
 4. Commit jawnym `git add` (nigdy `-A`), BEZ `Cargo.lock`, BEZ nazwy modelu w treści i trailerach. Bez push do parity. Raport w `dyspozycje/autobot/runs/R-RUSTPORT-P6-K5DOC-T5A-KITE/`.
 5. `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` poza repo i unikalny; usuń po bramkach.
+
+## DODATEK r2 (po BLOCK INFRA i zarzutach Ewaluatora rundy 1; BAZA NADPISANA)
+
+- Runda 1: Operator wykonał kod, Ewaluator i Obrona zgłosili zarzuty (raport obrony zachowany w `wf-d3b365ce`, commit `8884ee5a8` na `rust-port-wip/R-RUSTPORT-P6-K5DOC-T5A-KITE-reports-r1`). FC nie ruszył z powodu braku dysku.
+- NOWA BAZA (jedyna obowiązująca): `7de3417e8` (kod Operatora rundy 1, baza `2edc808d7`). Worktree detached. Kod NIE jest przepisywany, tylko poprawiany wg poniższego.
+- Zadanie rundy 2:
+  1. **Typ zwrotu:** `best_kite_shot_step` zwraca `Option<CellKey>` (`CellKey = (u64, u64)`, `cell_key(col,row)` w `siege_tactics_autobatch.rs`), a NIE `Option<Tile>`, zgodnie z pisemną specyfikacją. W teście mapuj wynik `.map(|(c, r)| (f64::from_bits(c), f64::from_bits(r)))`.
+  2. **Mutant (a) — DECYZJA ORKIESTRATORA:** mutant `gap <= dNow` → `gap < dNow` jest równoważny (dowód w obronie: 25920 przypadków, `gap - dNow ∈ {+1,-1}`). ZAMIEŃ go na NIERÓWNOWAŻNY: `gap <= dNow` → `gap < dNow - 1`. Test `best_gap_nie_wiekszy_od_dnow_odrzuca` (me (2,5), zagrożenie (5,5), kandydat (3,5): gap=2, dNow=3) musi wtedy dać FAIL.
+  3. **Test `p6_8i_pick`:** zawieszał się w pełnym runie rundy 1 (NIE_ZMIERZONO na bazie). Uruchom go NA BAZIE `7de3417e8` z limitem czasu i zapisz wynik. Jeśli zawiesza się także na bazie — to dług istniejący, zapisz w raporcie, nie naprawiaj.
+  4. **Pełne bramki** w `rust-port/engine`: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --all-targets --no-fail-fast`, każda EXIT 0 (zapisz kody). Sprawdź `df -h /` przed bramkami (≥ 8 GB).
+  5. **Mutacje** (a) nierównoważny, (b), (c): wszystkie FAIL, z wynikami.
+  6. Raport `01-operator-r2.md` w run dir. Commit jawnym `git add` (bez `Cargo.lock`, bez `-A`, bez nazwy modelu w trailerach). Bez push do parity.

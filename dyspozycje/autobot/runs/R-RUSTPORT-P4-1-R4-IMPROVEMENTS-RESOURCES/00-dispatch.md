@@ -39,3 +39,10 @@ Istniejące modele: `rust-port/renderer/src/models/improvements/registry.rs:290`
 3. Brak `#[ignore]`, brak osłabionych asercji, zero zmian poza allowlistą.
 4. Commit jawnym `git add` (nigdy `-A`), BEZ `Cargo.lock`, BEZ nazwy modelu w treści i trailerach. Bez push do parity. Raport w `dyspozycje/autobot/runs/R-RUSTPORT-P4-1-R4-IMPROVEMENTS-RESOURCES/`.
 5. `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` poza repo i unikalny; usuń po bramkach.
+
+## DODATEK r2 (po BLOCK INFRA rundy 1; BAZA NADPISANA)
+
+- Runda 1: Operator BLOCK (dysk 4,1 GB → 120 MB), Evaluator BLOCK (INFRA), FC przerwany przez brak miejsca. Kod Operatora jest zachowany: commit `aa9d36ac4` (gałąź `rust-port-wip/R-RUSTPORT-P4-1-R4-IMPROVEMENTS-RESOURCES-r1`, ref keep `refs/keep/P4-1-R4-op-aa9d36ac4`).
+- NOWA BAZA (jedyna obowiązująca): `aa9d36ac4`. Worktree detached. Kodu NIE przepisuj.
+- Zadanie rundy 2: (1) PEŁNE bramki na tym drzewie: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --all-targets --no-fail-fast` — wszystkie EXIT 0. Dysk jest teraz > 8 GB; sprawdź `df -h /` przed każdą bramką. (2) Mutacje (a)(b)(c) ponownie, z wynikami (FAIL). (3) Raport `01-operator-r2.md` w run dir. (4) Commit tylko raportu (jawny `git add`, bez `Cargo.lock`, bez nazwy modelu w trailerach).
+- Luka G5 (normalizacja kluczy ulepszeń i fallback `hex.ulepszenie`) jest odnotowana jako osobny temat i NIE wchodzi do tej rundy.
