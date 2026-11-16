@@ -10436,3 +10436,6 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 - NIE ZMIERZONO / ograniczenia: wpływ na eliminacje (w t22 w każdym przebiegu znika 20–26 właścicieli AI przy 0 wojnach i bez zmiany liczby miast — konsolidacja własności, mechanizm niezbadany, kandydat na osobny temat); 4 segmenty OFF 4242 przy load > 3 (stan gry deterministyczny, czasy NIEWIARYGODNE); md5 bundli nieodtwarzalne; równość OFF z czystym origin/main nie zmierzona; przyczyna zamknięcia przeglądarki (ON 777 t88) nieustalona.
 - Wniosek orkiestratora: pomiar NIE wskazuje korzyści z włączenia (skarbce/wojsko bez spójnego kierunku, deficytu złota brak w żadnej wersji). Bez rekomendacji z pomiaru; decyzja ABC → właściciel.
 - Sprzątanie: worktree wf_2bd2286e-571-* usunięte.
+
+### 2026-11-16 ~17:10 UTC — ODPOWIEDŹ ABC właściciela: bramka utrzymania armii AI (#415) → B: włączyć teraz
+- Po pomiarze UPKEEP-ONOFF r3 (bez korzyści widocznej w danych; opisowo, 1 przebieg na ziarno) właściciel zdecydował: WŁĄCZYĆ bramkę. Nowy temat R-WEB-AI-UPKEEP-RUNWAY-GATE-ENABLE-Q1 (Haiku r1): wprowadzenie kodu bramki (kandydat 11362dad4) na aktualny main + `wlaczone=true` (parametry 15/0,1 bez zmian) + testy + smoke w grze. Wdrożenie jako FALA 771 po FC PASS (FALA 770 = ekran porażki + narzędzia pomiarowe).
