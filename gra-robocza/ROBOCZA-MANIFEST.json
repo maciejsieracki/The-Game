@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "42f135a6f25c751bed869760c07571bb",
-  "bundleSha256": "75efdfd8a0ec86547addafe7eb81a9d932d17869473e777126034b95ce635d97",
-  "bundleBytes": 14817715,
+  "bundleMd5": "a33381a56e681a571256711619d87b0f",
+  "bundleSha256": "c734c8a170ab544ed754d2eb7115d6c1437dfc7c24543e19c6f5aa630361bdc8",
+  "bundleBytes": 14817735,
   "sourceSnapshot": {
-    "source": "FC 4191e9cb0, main 263a0f242",
+    "source": "FC c79a65654, main cb077b588",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 778: Plan drog automatycznych (auto-ulepszenia gracza z administratorem i AI) dodaje heks miasta, do ktorego prowadzi droga; wczesniej droga konczyla sie na heksie sasiednim (od FALI 521), bo plan pomijal heksy miast. Reczna budowa gracza dzialala bez zmian."
+    "FALA 779: Lucznik (standardowy) ma w danych Zastap specjalnie = Procarz / Procarz (Huaracoc); Zastap (gracz i AI, te same reguly, pelny koszt rekrutacji, limit 10% armii na ture) pozwala go awansowac na Procarza (Brąz, wymaga Koszar); kierunek tylko Lucznik -> Procarz."
   ],
   "verification": [
-    "tsc 0, roads-reach-city-hex-test 24/0 (baza 6/18), roads-city-links-only 57/0, road-connectivity 99/0, road-build-player-parity 17/0, load-game-regression 34/0, 5 bramek referencyjnych, autoimprove-stages-q1 299/0"
+    "tsc 0, unit-replace-archer-slinger-test 15/0, promotion-table PASS, unit-replace 21/21, ai-era-unit-promotion 17/0, ai-unit-replace-same-rules 45/0, load-game-regression 34/0, 5 bramek referencyjnych"
   ],
   "limits": [
-    "NIE ZMIERZONO: zywy Chromium, rust-port (dlug REPIN planRoadNetwork), wplyw na balans (ok. +1 heks drogi na miasto), stare zapisy (heks miasta dostanie droge w kolejnych turach)"
+    "NIE ZMIERZONO: zrzut pickera w Chromium, ilosciowy wplyw na AI; ABC: Inkowie widza oba warianty Procarza, narodowi lucznicy bez przejscia; dlug bazowy unit-replace-full-cost 39/1"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES ROADS-REACH-CITY-HEX-REGRESSION-Q2 r1 (kandydat 4191e9cb0): przyczyna w danych, nie w rysowaniu - planRoadNetwork (od FALI 521, e5bb46741) pomijal heksy miast, wiec droga automatu (auto-ulepszenia gracza z administratorem i AI) konczyla sie na heksie sasiednim; poprawka w roadPlanHexes dodaje heks miasta majacy krawedz w planie (+7/-1 w auto-improvements.ts). tsc 0, roads-reach-city-hex-test 24/0 (na bazie 6/18, mutacja czerwona), roads-city-links-only 57/0 (dwie asercje skorygowane), road-connectivity 99/0, road-build-player-parity 17/0, road-hook-mainguard 19/0, autoimprove-stages-q1 299/0, load-game-regression 34/0, 5 bramek zielonych. NIE ZMIERZONO: zywy Chromium, rust-port (dlug REPIN planRoadNetwork), wplyw na balans (okolo +1 heks drogi na miasto), stare zapisy (heks miasta dostanie droge w kolejnych turach), dwa wolne testy irygacji."
+    "notes": "FC PASS-WITH-NOTES DATA-REPLACE-ARCHER-TO-SLINGER-Q1 r1 (kandydat c79a65654): Lucznik (standardowy) ma w danych units.json Zastap specjalnie = Procarz/Procarz (Huaracoc), wiec Zastap (gracz i AI, te same reguly, pelny koszt rekrutacji, limit 10% armii na ture) pozwala awansowac go na Procarza (Brąz, wymaga Koszar); kierunek tylko Lucznik->Procarz. tsc 0, unit-replace-archer-slinger-test 15/0, promotion-table PASS, unit-replace 21/21, ai-era-unit-promotion 17/0, ai-unit-replace-same-rules 45/0, 5 bramek zielonych, load-game-regression 34/0. Dlug bazowy: unit-replace-full-cost 39/1 i ai-army-replacement-concentration 34/1 identyczne na bazie. ABC do wlasciciela: Inkowie widza oba warianty Procarza; narodowi lucznicy (Egipt, Sumer, Asyria) bez przejscia na Procarza. NIE ZMIERZONO: zrzut pickera w Chromium, ilosciowy wplyw na AI. Dlug Rust: REPIN tabeli zamian."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-16T21:16:41",
+  "hubGeneratedAt": "2026-11-16T21:51:22",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "42f135a6f25c751bed869760c07571bb",
-      "sizeBytes": 14817715
+      "md5": "a33381a56e681a571256711619d87b0f",
+      "sizeBytes": 14817735
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "42f135a6f25c751bed869760c07571bb",
-      "sizeBytes": 14817715
+      "md5": "a33381a56e681a571256711619d87b0f",
+      "sizeBytes": 14817735
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "42f135a6f25c751bed869760c07571bb",
-      "sizeBytes": 14817715
+      "md5": "a33381a56e681a571256711619d87b0f",
+      "sizeBytes": 14817735
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "42f135a6f25c751bed869760c07571bb",
-      "sizeBytes": 14817715
+      "md5": "a33381a56e681a571256711619d87b0f",
+      "sizeBytes": 14817735
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "42f135a6f25c751bed869760c07571bb",
-      "sizeBytes": 14817715
+      "md5": "a33381a56e681a571256711619d87b0f",
+      "sizeBytes": 14817735
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "42f135a6f25c751bed869760c07571bb",
-      "sizeBytes": 14817715
+      "md5": "a33381a56e681a571256711619d87b0f",
+      "sizeBytes": 14817735
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "42f135a6f25c751bed869760c07571bb",
-      "sizeBytes": 14817715
+      "md5": "a33381a56e681a571256711619d87b0f",
+      "sizeBytes": 14817735
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "42f135a6f25c751bed869760c07571bb",
-      "sizeBytes": 14817715
+      "md5": "a33381a56e681a571256711619d87b0f",
+      "sizeBytes": 14817735
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "42f135a6f25c751bed869760c07571bb",
-      "sizeBytes": 14817715
+      "md5": "a33381a56e681a571256711619d87b0f",
+      "sizeBytes": 14817735
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "42f135a6f25c751bed869760c07571bb",
-      "sizeBytes": 14817715
+      "md5": "a33381a56e681a571256711619d87b0f",
+      "sizeBytes": 14817735
     }
   ],
-  "md5": "42f135a6f25c751bed869760c07571bb",
+  "md5": "a33381a56e681a571256711619d87b0f",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

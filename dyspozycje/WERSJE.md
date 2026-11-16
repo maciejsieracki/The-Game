@@ -1,3 +1,9 @@
+## ROBOCZA a33381a5 -- 2026-11-16 -- FALA 779: Lucznik moze awansowac na Procarza w Zastap (testowa)
+
+- Lucznik (standardowy) ma w danych Zastap specjalnie = Procarz / Procarz (Huaracoc); Zastap (gracz i AI, te same reguly, pelny koszt rekrutacji, limit 10% armii na ture) pozwala go awansowac na Procarza (Brąz, wymaga Koszar); kierunek tylko Lucznik -> Procarz.
+- Weryfikacja: tsc 0, unit-replace-archer-slinger-test 15/0, promotion-table PASS, unit-replace 21/21, ai-era-unit-promotion 17/0, ai-unit-replace-same-rules 45/0, load-game-regression 34/0, 5 bramek referencyjnych
+- Limity: NIE ZMIERZONO: zrzut pickera w Chromium, ilosciowy wplyw na AI; ABC: Inkowie widza oba warianty Procarza, narodowi lucznicy bez przejscia; dlug bazowy unit-replace-full-cost 39/1
+
 ## ROBOCZA 42f135a6 -- 2026-11-16 -- FALA 778: Drogi automatu dochodza do heksu miasta (AI i administrator ulepszen) (testowa)
 
 - Plan drog automatycznych (auto-ulepszenia gracza z administratorem i AI) dodaje heks miasta, do ktorego prowadzi droga; wczesniej droga konczyla sie na heksie sasiednim (od FALI 521), bo plan pomijal heksy miast. Reczna budowa gracza dzialala bez zmian.
