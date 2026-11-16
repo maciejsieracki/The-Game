@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "b155916393f5e8424b90267f83854eca",
-  "bundleSha256": "b898b0bf638da71491c15845d709b4826443be590913bf87906a7c3d1e6e9115",
+  "bundleMd5": "b2864c14646900196cc2ba4a78ac93ec",
+  "bundleSha256": "7258ba2357ad4c63b9f42ec51fa827ea0a5a1a4fd6cbf1ee45409623c0443676",
   "bundleBytes": 14802686,
   "sourceSnapshot": {
-    "source": "main 1afc302bc + 2cd7911fb (tools-only)",
+    "source": "main f80f90a99 + ecc275cb2 (tools-only)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 757: Narzedzie endturn-t57-repro.cjs + evidence: t51 seed 4242 = otwarta audiencja dyplomatyczna wstrzymuje kolejke odlozonych bitew (zamierzone + dlug harnessu). Bez zmian gra/src."
+    "FALA 758: Runner gra/tools/ai-economy-measure-run.cjs zamyka audiencje dyplomatyczna, panel laczenia armii i karte odkrycia przed Zakoncz ture; liczniki po zniknieciu blokady; state.json po kazdej turze; test hooka 16/16. Bez zmian gra/src."
   ],
   "verification": [
-    "FC PASS-WITH-NOTES 2cd7911fb; logic 213/213, vite OK, MD5 Raw"
+    "FC PASS-WITH-NOTES ecc275cb2; logic 213/213, vite OK, MD5 Raw"
   ],
   "limits": [
-    "t57, t89 seed 777, tabela 5 ziaren NIE ZMIERZONO"
+    "baza seed 4242 niezmierzona; panel armii i karta tech tylko na atrapach DOM"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES ENDTURN-T57-DIAGNOSIS-Q1 r2 (kandydat e45c12470, raport 2cd7911fb): diagnoza tylko narzedzie gra/tools/endturn-t57-repro.cjs + evidence, bez zmian gra/src. Zawieszenie t51 (seed 4242) odtworzone na zywo: otwarta audiencja dyplomatyczna (isOtherEndTurnModalOpen main.ts:33403) wstrzymuje kolejke odlozonych bitew; po jej zamknieciu tura przechodzi (t51-t56). Zachowanie zamierzone + dlug harnessu, nie trwaly deadlock. NIE ZMIERZONO: t57, t89 seed 777, tabela 5 ziaren; ABC: tresc podpowiedzi main.ts:40729 i czy audiencja AI ma blokowac koniec tury."
+    "notes": "FC PASS-WITH-NOTES HARNESS-CLOSE-DIPLO-AUDIENCE-Q1 r1 (kandydat 4da22e712, raport ecc275cb2): runner pomiarowy gra/tools/ai-economy-measure-run.cjs zamyka audiencje dyplomatyczna, panel laczenia armii i karte odkrycia przed Zakoncz ture, liczniki zamkniec liczone po zniknieciu blokady, state.json po kazdej turze; test hooka 16/16 + mutacje czerwone; live seed 4242 do t60 przez t51/t57. Tylko gra/tools, bez zmian gra/src. Noty: nie zmierzono bazy na seed 4242 (dowod: przechodzi), panel armii i karta tech tylko na atrapach DOM, niezerowy stuckQueueHeals nie zaobserwowany."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-16T00:23:33",
+  "hubGeneratedAt": "2026-11-16T01:30:32",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "b155916393f5e8424b90267f83854eca",
+      "md5": "b2864c14646900196cc2ba4a78ac93ec",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "b155916393f5e8424b90267f83854eca",
+      "md5": "b2864c14646900196cc2ba4a78ac93ec",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "b155916393f5e8424b90267f83854eca",
+      "md5": "b2864c14646900196cc2ba4a78ac93ec",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "b155916393f5e8424b90267f83854eca",
+      "md5": "b2864c14646900196cc2ba4a78ac93ec",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "b155916393f5e8424b90267f83854eca",
+      "md5": "b2864c14646900196cc2ba4a78ac93ec",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "b155916393f5e8424b90267f83854eca",
+      "md5": "b2864c14646900196cc2ba4a78ac93ec",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "b155916393f5e8424b90267f83854eca",
+      "md5": "b2864c14646900196cc2ba4a78ac93ec",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "b155916393f5e8424b90267f83854eca",
+      "md5": "b2864c14646900196cc2ba4a78ac93ec",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "b155916393f5e8424b90267f83854eca",
+      "md5": "b2864c14646900196cc2ba4a78ac93ec",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "b155916393f5e8424b90267f83854eca",
+      "md5": "b2864c14646900196cc2ba4a78ac93ec",
       "sizeBytes": 14802686
     }
   ],
-  "md5": "b155916393f5e8424b90267f83854eca",
+  "md5": "b2864c14646900196cc2ba4a78ac93ec",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

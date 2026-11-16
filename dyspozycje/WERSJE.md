@@ -1,3 +1,9 @@
+## ROBOCZA b2864c14 -- 2026-11-14 -- FALA 758: runner pomiarowy zamyka modale konca tury (narzedzie) (testowa)
+
+- Runner gra/tools/ai-economy-measure-run.cjs zamyka audiencje dyplomatyczna, panel laczenia armii i karte odkrycia przed Zakoncz ture; liczniki po zniknieciu blokady; state.json po kazdej turze; test hooka 16/16. Bez zmian gra/src.
+- Weryfikacja: FC PASS-WITH-NOTES ecc275cb2; logic 213/213, vite OK, MD5 Raw
+- Limity: baza seed 4242 niezmierzona; panel armii i karta tech tylko na atrapach DOM
+
 ## ROBOCZA b1559163 -- 2026-11-14 -- FALA 757: diagnoza zawieszenia Zakoncz ture t51 (narzedzie) (testowa)
 
 - Narzedzie endturn-t57-repro.cjs + evidence: t51 seed 4242 = otwarta audiencja dyplomatyczna wstrzymuje kolejke odlozonych bitew (zamierzone + dlug harnessu). Bez zmian gra/src.
