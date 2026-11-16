@@ -10252,3 +10252,6 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 - NIE ZMIERZONO: t57 (pierwotny timeout), t89 seed 777, tabela 5 ziaren × 100 tur, co gracz widzi po kliknięciu „Zakończ turę” przy otwartej audiencji.
 - DO ZAPYTANIA RANO (ABC): (a) treść podpowiedzi main.ts:40729 („Zakończ ekran bitwy” myli przy audiencji); (b) czy audiencja AI ma blokować koniec tury.
 - Kandydat techniczny (start nocą, tylko narzędzie): harness zamyka audiencję w clearBattles + utrwala `stuckQueueHeals`.
+
+### Start 2026-11-16 ~01:00 UTC — R-WEB-HARNESS-CLOSE-DIPLO-AUDIENCE-Q1 (wf_8e38b091-f78, Haiku, cand f80f90a99)
+- Z diagnozy #418: runner pomiarowy ma zamykać audiencję dyplomatyczną / panel łączenia armii / kartę odkrycia (blokady `isOtherEndTurnModalOpen`) i utrwalać liczniki; dowód: przebieg seed 4242 przez t51 i t57. Tylko narzędzie. Uwaga: ten sam plik runnera zmienia #424 (stackGroupId) — konflikt rozwiązuję merge-tree przy integracji.
