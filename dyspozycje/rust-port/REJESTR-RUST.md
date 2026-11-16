@@ -2557,3 +2557,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Dispatch:** `2a0967eaa` (`dyspozycje/autobot/runs/R-RUSTPORT-P6-INTEG-K5DOC-T2-T3/`).
 - **Do zrobienia:** wątek nakładek (`wf_4b0573bb-d8f`, integracja 1F5+1F4) był zbudowany na `9f7c55499` — jego FF na parity nie będzie fast-forward. Trzeba zrobić re-merge na `75de326bc` i powtórzyć pełną bramkę przed FF. Tak samo FC 1F3 (`25fdeb11a`, bramki PASS) wymaga rundy integracyjnej po nakładkach.
 - **Dysk:** 20 GB wolnego po sprzątaniu.
+
+### Przebieg — heartbeat Rust „twardy bit” (druga połowa, 16:48 UTC), 2026-11-16
+
+- **Sloty: 2 z 4 aktywne.**
+  - Ponowna integracja nakładek 1F5 + 1F4 na `75de326bc` (OPUS, `wf_b810fc5a-fea`, dispatch r2 `3e6a4556b`). Poprzedni wynik (`e668add29`) był na `9f7c55499`, więc wymaga re-merge i pełnej bramki przed FF.
+  - K5-LOOP-AUTO-WEKTORY V1/V5/V6 (#118, HAIKU Operator, SONNET Evaluator i FC, `wf_55097f16-9ad`, dispatch `157d49f5b`). Zakres bez blokady wg rozpoznania `R-RUSTPORT-P6-AUTO-SCOPE-ROZP-Q1` §5 pkt 1. V2, V7–V14 zostają zablokowane (doktryna #112, morale #109, tryb ręczny).
+- **Slot 3 i 4 wstrzymane:** kolejka #96–#119 bez czystych tematów (decyzje: #97 zakres ręcznego, #106 pkt 4, #115/#120 A/B, #135 kolejność; #109/#113 zależą od OUTCOME).
+- **Parity:** `75de326bc` (bez zmian w tym przebiegu). **Dysk:** 16 GB.
+- **Otwarte:** `refs/keep/R-RUSTPORT-P4-1I4-fc` (`54fa4c704`) nadal odrzucany przez proxy; zostaje lokalnie.
