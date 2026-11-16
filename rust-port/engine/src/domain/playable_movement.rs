@@ -22,8 +22,12 @@ use std::collections::{BTreeSet, HashMap};
 use std::sync::OnceLock;
 
 use crate::data::units_combat::parse_units;
+use civ_view_model::ids::HexCoord;
+use civ_view_model::overlays::{PathRouteDto, PathTurnStopDto};
+
 use crate::domain::pathfinding::ruch_jednostek::{
-    build_move_occupancy, Klucz, MoveOccupancy, RuchHex, RuchJednostka, RuchMapa, TerenBazowy,
+    apply_fog_to_path_plan, build_move_occupancy, plan_path_turns_occ, stack_group_id_of, Klucz,
+    MoveOccupancy, PathTurnPlan, RuchHex, RuchJednostka, RuchMapa, TerenBazowy,
 };
 use crate::domain::pathfinding::{add_foreign_city_block_coords, CityHexRef};
 use crate::domain::playable::{
@@ -222,4 +226,153 @@ impl PlayableMoveModel {
         let id = unit_id.to_string();
         self.jednostki.iter().find(|unit| unit.id == id)
     }
+}
+
+// ---------------------------------------------------------------------------
+// P4-1H Q5 (`R-RUSTPORT-P4-1H-PREVIEW-Q5`, #251): podglad trasy marszu
+// ---------------------------------------------------------------------------
+
+/// Web `playerStackAt(u)` (`main.ts:14694-14699`) = `activeUnitStack(units, u)`
+/// (`armyMerge.ts:243-252`): jednostka bez garnizonu -> `visibleStackOnHex(units, u.q, u.r, u.ownerId,
+/// stackGroupIdOf(u))` (`armyMerge.ts:89-105`). `PlayableState` nie ma garnizonu ani `stackGroupId`
+/// (adapter Q4: `in_garnizon = false`, `stack_group_id = None`), wiec grupa = `stackGroupIdOf` z
+/// fallbacku `owner|q,r` (`armyMerge.ts:57-62`) - stos to wszystkie jednostki wlasciciela na heksie,
+/// w kolejnosci `units`.
+pub fn player_stack_at<'a>(
+    jednostki: &'a [RuchJednostka],
+    unit: &RuchJednostka,
+) -> Vec<&'a RuchJednostka> {
+    let group = stack_group_id_of(unit);
+    jednostki
+        .iter()
+        .filter(|u| {
+            u.owner_id == unit.owner_id
+                && u.q == unit.q
+                && u.r == unit.r
+                && !u.in_garnizon
+                && stack_group_id_of(u) == group
+        })
+        .collect()
+}
+
+/// Web `unitWithPlanningStackRuch(unit, stack)` (`armyMerge.ts:1180-1186`): `ruchLeft` = minimum
+/// `planningUnitRuchLeft` stosu (`armyMerge.ts:918-929`; `fortifyRuchSnapshot` nie istnieje w stanie,
+/// wiec = `ruchLeft`); pusty stos -> 0.
+pub fn unit_with_planning_stack_ruch(
+    unit: &RuchJednostka,
+    stack: &[&RuchJednostka],
+) -> RuchJednostka {
+    let pooled = if stack.is_empty() {
+        0.0
+    } else {
+        stack
+            .iter()
+            .map(|u| u.ruch_left)
+            .fold(f64::INFINITY, f64::min)
+    };
+    let mut mover = unit.clone();
+    mover.ruch_left = pooled;
+    mover
+}
+
+/// Web `perTurnMoveForUnit(u)` (`main.ts:31084-31095`): `Math.max(1, normFieldVal(u.ruch, ...))`.
+/// `u.ruch` = `movement_max` (`f64`, zawsze skonczone), wiec fallback `def['Ruch']` nie zachodzi.
+pub fn per_turn_move_for_unit(unit: &RuchJednostka) -> f64 {
+    1.0_f64.max(unit.ruch)
+}
+
+/// Cel podgladu wybrany jak w webie: aktywny plan marszu ma pierwszenstwo nad heksem pod kursorem
+/// (`main.ts:32335-32340`: `if (plannedMarches.has(uSel.id)) { refreshPlannedMarchPreview(uSel.id); return; }`
+/// -> `refreshHoverPathPreview(uSel, hit.q, hit.r)`). Bez planu i bez celu -> `None`.
+fn preview_destination(
+    state: &PlayableState,
+    unit_id: UnitId,
+    destination: Option<PositionDto>,
+) -> Option<Klucz> {
+    if let Some(plan) = state.planned_marches.iter().find(|p| p.unit_id == unit_id) {
+        return Some((plan.dest_q, plan.dest_r));
+    }
+    destination.map(klucz_of)
+}
+
+/// Plan trasy podgladu (`marchPathPlan`, `main.ts:31110-31122`) dla `refreshPlannedMarchPreview`
+/// (`main.ts:31146-31179`) i `refreshHoverPathPreview` (`main.ts:31181-31209`):
+/// - stos `playerStackAt(u)` (`:31158` / `:31182`), zajetosc `occupiedForMove(u.ownerId, ...stack ids)`
+///   (`:31159` / `:31183`), `mover = unitWithPlanningStackRuch(u, stack)` (`:31160` / `:31184`);
+/// - `perTurn = perTurnMoveForUnit(u)` (`:31166` / `:31198`), `budget = undefined` (`:31167` /
+///   `:31199`) -> `None`;
+/// - mgla: `applyFogToPathPlan` zwraca plan bez zmian (C-RUCH-Q1=B, `planned-march.ts:67`), wiec
+///   kontekst mgly (`buildMarchFogContext`, `hoverDest.attackUnitId`) nie zmienia wyniku;
+/// - koszt: `moveCostFnForUnit(u)` (`main.ts:14656-14658`) = `moveCostFnFor(u, ownerHasSeafaring(owner),
+///   ...)`; `ownerHasSeafaring` (`main.ts:14589-14593`) zawiera galaz `ownerId === 0` (gracz weba), a
+///   adapter przekazuje surowe `PlayerId` (gracz = 1) - mapowanie NIE_ZMIERZONO (erratum P4-1H), wiec
+///   podglad przyjmuje `ownerHasSeafaring = false`: `canUnitEmbark` = `false` (stan nie ma `embarked`)
+///   -> web `undefined` -> `None` (woda nieprzejezdna);
+/// - oblezenie (`siegeBlocksEntry`): brak stanu oblezenia w `PlayableState` -> `None`.
+///
+/// Czysta funkcja (tylko odczyt stanu). `None`, gdy jednostka nie istnieje albo brak celu.
+pub fn preview_path_plan(
+    state: &PlayableState,
+    unit_id: UnitId,
+    destination: Option<PositionDto>,
+) -> Option<PathTurnPlan> {
+    let (dest_q, dest_r) = preview_destination(state, unit_id, destination)?;
+    let model = PlayableMoveModel::from_state(state);
+    let unit = model.jednostka(unit_id)?;
+    let stack = player_stack_at(&model.jednostki, unit);
+    let except: Vec<UnitId> = stack
+        .iter()
+        .filter_map(|u| u.id.parse::<u64>().ok().map(UnitId::new))
+        .collect();
+    let occ = occupied_for_move(state, unit.owner_id, &except);
+    let mover = unit_with_planning_stack_ruch(unit, &stack);
+    let per_turn = per_turn_move_for_unit(unit);
+    let budget: Option<f64> = None;
+    let raw = plan_path_turns_occ(
+        &mover,
+        f64::from(dest_q),
+        f64::from(dest_r),
+        &model.mapa,
+        &occ,
+        None,
+        per_turn,
+        budget,
+        None,
+    );
+    Some(apply_fog_to_path_plan(
+        raw,
+        &model.mapa,
+        per_turn,
+        budget,
+        None,
+    ))
+}
+
+/// Zapytanie `preview_path`: argumenty `unitRenderer.setPathRoute([{q: u.q, r: u.r}, ...plan.fullPath],
+/// { turnStops: plan.turnStops })` (`main.ts:31175-31178`, `:31204-31207`) jako [`PathRouteDto`].
+/// `plan.fullPath.length === 0` -> `clearPathRoute()` (`main.ts:31171-31173`, `:31203`, `:31209`) -> `None`.
+/// Jednostka z aktywnym planem ignoruje `destination` (trasa planu). Nie zmienia `PlayableState`.
+pub fn preview_path(
+    state: &PlayableState,
+    unit_id: UnitId,
+    destination: Option<PositionDto>,
+) -> Option<PathRouteDto> {
+    let plan = preview_path_plan(state, unit_id, destination)?;
+    if plan.full_path.is_empty() {
+        return None;
+    }
+    let unit = state.units.iter().find(|u| u.id == unit_id)?;
+    let (uq, ur) = klucz_of(unit.position);
+    let mut hexes = Vec::with_capacity(plan.full_path.len() + 1);
+    hexes.push(HexCoord::new(uq, ur));
+    hexes.extend(plan.full_path.iter().map(|&(q, r)| HexCoord::new(q, r)));
+    let turn_stops = plan
+        .turn_stops
+        .iter()
+        .map(|stop| PathTurnStopDto {
+            hex: HexCoord::new(stop.q, stop.r),
+            turn: stop.turn,
+        })
+        .collect();
+    Some(PathRouteDto { hexes, turn_stops })
 }
