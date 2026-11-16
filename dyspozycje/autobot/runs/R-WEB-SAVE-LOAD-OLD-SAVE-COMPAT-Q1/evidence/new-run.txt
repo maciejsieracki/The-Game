@@ -1,0 +1,18 @@
+PASS NEW zapis wejsciowy jest STARY: brak 5 pol meta FAL 760-761 :: {"obecne":[],"resourceLedgerHistoryWZapisie":6}
+INFO NEW po wczytaniu {"st":{"turn":7,"myCities":1,"awaiting":false},"eco":{"owner":0,"skarbiec":188,"spichlerz":203,"miasta":1,"obywatele":1,"rekruci":2000,"jednostkiWojskowe":1,"jednostkiCywilne":1,"utrzymanieBudynkowPieniadz":0,"utrzymanieGarnizonuPieniadz":4,"turn":7},"swiat":{"cities":42,"units":61},"zapis":{"expectCities":42,"expectUnits":61},"eco0":{"owner":0,"skarbiec":188,"spichlerz":203,"miasta":1,"obywatele":1,"rekruci":2000,"jednostkiWojskowe":1,"jednostkiCywilne":1,"utrzymanieBudynkowPieniadz":0,"utrzymanieGarnizonuPieniadz":4,"turn":7}}
+INFO NEW dziennik „Skad zapasy" po wczytaniu {"wZapisie":6,"poWczytaniuPole":6,"pamiecWszyscy":6,"limit":10}
+PASS NEW dziennik „Skad zapasy" po wczytaniu = wpisy zapisu :: {"got":6,"want":6}
+PASS NEW liczba miast (wszyscy wlasciciele) po wczytaniu = zapis :: {"got":42,"want":42}
+PASS NEW liczba jednostek (wszyscy wlasciciele) po wczytaniu = zapis :: {"got":61,"want":61}
+PASS NEW miasta gracza = metryki zapisu :: {"got":1,"want":1}
+PASS NEW ekonomia gracza po wczytaniu = metryki w chwili zapisu (skarbiec, spichlerz, miasta, ludnosc, wojsko) :: []
+PASS NEW isAwaitingFirstPlayerCity()=false przy miastach gracza :: false
+NIE_ZMIERZONO NEW dryf ekonomii przy niepustych mapach zamowien :: w tym zapisie puste: orderMultByCity, orderGrowthMultByCity, orderValueByCity (niepuste mapy NIE ZMIERZONE)
+INFO NEW tura 8 {"bypass":false,"eco":{"owner":0,"skarbiec":186,"spichlerz":203.5,"miasta":1,"obywatele":1,"rekruci":2000,"jednostkiWojskowe":1,"jednostkiCywilne":1,"utrzymanieBudynkowPieniadz":0,"utrzymanieGarnizonuPieniadz":4,"turn":8},"errs":0}
+INFO NEW tura 9 {"bypass":false,"eco":{"owner":0,"skarbiec":184,"spichlerz":204,"miasta":1,"obywatele":1,"rekruci":2000,"jednostkiWojskowe":1,"jednostkiCywilne":1,"utrzymanieBudynkowPieniadz":0,"utrzymanieGarnizonuPieniadz":4,"turn":9},"errs":0}
+INFO NEW tura 10 {"bypass":false,"eco":{"owner":0,"skarbiec":182,"spichlerz":204.5,"miasta":1,"obywatele":1,"rekruci":2000,"jednostkiWojskowe":1,"jednostkiCywilne":1,"utrzymanieBudynkowPieniadz":0,"utrzymanieGarnizonuPieniadz":4,"turn":10},"errs":0}
+PASS NEW „Zakoncz ture" dziala 3 razy (tura rosnie o 1) :: [7,8,9,10]
+PASS NEW dziennik „Skad zapasy" rosnie po tickach (lub limit) :: {"przed":6,"po":9,"limit":10}
+INFO NEW wynik tur (gracz ma miasta; scenariusz 0 miast: evidence/make-nocity-save.cjs) {"turns":[7,8,9,10],"myCities":1}
+PASS NEW brak pageerror i bledow konsoli :: []
+WYNIK: brak FAIL

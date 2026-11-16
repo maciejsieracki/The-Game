@@ -1,0 +1,14 @@
+PASS OLD zaklada stolice gracza :: true
+INFO OLD start {"turn":1,"eco":{"owner":0,"skarbiec":0,"spichlerz":0,"miasta":1,"obywatele":1,"rekruci":2000,"jednostkiWojskowe":1,"jednostkiCywilne":1,"utrzymanieBudynkowPieniadz":0,"utrzymanieGarnizonuPieniadz":4,"turn":1}}
+INFO OLD tura 2 {"bypass":true,"eco":{"owner":0,"skarbiec":198,"spichlerz":200.5,"miasta":1,"obywatele":1,"rekruci":2000,"jednostkiWojskowe":1,"jednostkiCywilne":1,"utrzymanieBudynkowPieniadz":0,"utrzymanieGarnizonuPieniadz":4,"turn":2}}
+INFO OLD tura 3 {"bypass":false,"eco":{"owner":0,"skarbiec":196,"spichlerz":201,"miasta":1,"obywatele":1,"rekruci":2000,"jednostkiWojskowe":1,"jednostkiCywilne":1,"utrzymanieBudynkowPieniadz":0,"utrzymanieGarnizonuPieniadz":4,"turn":3}}
+INFO OLD tura 4 {"bypass":false,"eco":{"owner":0,"skarbiec":194,"spichlerz":201.5,"miasta":1,"obywatele":1,"rekruci":2000,"jednostkiWojskowe":1,"jednostkiCywilne":1,"utrzymanieBudynkowPieniadz":0,"utrzymanieGarnizonuPieniadz":4,"turn":4}}
+INFO OLD tura 5 {"bypass":false,"eco":{"owner":0,"skarbiec":192,"spichlerz":202,"miasta":1,"obywatele":1,"rekruci":2000,"jednostkiWojskowe":1,"jednostkiCywilne":1,"utrzymanieBudynkowPieniadz":0,"utrzymanieGarnizonuPieniadz":4,"turn":5}}
+INFO OLD tura 6 {"bypass":false,"eco":{"owner":0,"skarbiec":190,"spichlerz":202.5,"miasta":1,"obywatele":1,"rekruci":2000,"jednostkiWojskowe":1,"jednostkiCywilne":1,"utrzymanieBudynkowPieniadz":0,"utrzymanieGarnizonuPieniadz":4,"turn":6}}
+INFO OLD tura 7 {"bypass":false,"eco":{"owner":0,"skarbiec":188,"spichlerz":203,"miasta":1,"obywatele":1,"rekruci":2000,"jednostkiWojskowe":1,"jednostkiCywilne":1,"utrzymanieBudynkowPieniadz":0,"utrzymanieGarnizonuPieniadz":4,"turn":7}}
+PASS OLD zapis gry (quickSave -> IndexedDB) powiodl sie :: true
+PASS OLD zapis odczytany z IndexedDB :: 1023935
+INFO OLD eko w chwili zapisu {"owner":0,"skarbiec":188,"spichlerz":203,"miasta":1,"obywatele":1,"rekruci":2000,"jednostkiWojskowe":1,"jednostkiCywilne":1,"utrzymanieBudynkowPieniadz":0,"utrzymanieGarnizonuPieniadz":4,"turn":7}
+PASS OLD brak pageerror :: []
+PASS OLD zapis zapisany do pliku :: {"strip":false,"noFound":false,"removed":{"meta":[],"top":[]},"bytes":1024382,"turn":7}
+WYNIK: brak FAIL
