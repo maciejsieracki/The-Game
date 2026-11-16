@@ -1,0 +1,33 @@
+{
+ "mode": "433",
+ "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-fix",
+ "seed": 4242,
+ "slot": "pownedcity-live-433-4242",
+ "steps": [
+  {
+   "step": "sesja1 po zalozeniu miasta",
+   "playerCities": 1
+  },
+  {
+   "step": "sesja1 po utracie miast",
+   "playerCities": 0
+  },
+  {
+   "step": "sesja1 quickSave",
+   "ok": true
+  },
+  {
+   "step": "sesja2 po wczytaniu",
+   "playerCities": 0,
+   "awaitingFirstPlayerCity": false
+  },
+  {
+   "step": "sesja2 endTurn po wczytaniu",
+   "ok": true,
+   "turnAfter": 2
+  }
+ ],
+ "error": null,
+ "awaitingAfterLoad": false,
+ "pass": true
+}

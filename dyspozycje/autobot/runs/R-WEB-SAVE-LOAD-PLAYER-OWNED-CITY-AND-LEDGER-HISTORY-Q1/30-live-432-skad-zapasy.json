@@ -1,0 +1,85 @@
+{
+ "mode": "432",
+ "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-fix",
+ "seed": 4242,
+ "slot": "pownedcity-live-432-4242",
+ "steps": [
+  {
+   "step": "sesja1 endTurn",
+   "turn": 2,
+   "ledger": {
+    "memEntries": 1,
+    "memBytes": 598,
+    "saveEntries": 1,
+    "saveBytes": 598,
+    "historyNCap": 10
+   }
+  },
+  {
+   "step": "sesja1 endTurn",
+   "turn": 3,
+   "ledger": {
+    "memEntries": 2,
+    "memBytes": 1195,
+    "saveEntries": 2,
+    "saveBytes": 1195,
+    "historyNCap": 10
+   }
+  },
+  {
+   "step": "sesja1 endTurn",
+   "turn": 4,
+   "ledger": {
+    "memEntries": 3,
+    "memBytes": 1792,
+    "saveEntries": 3,
+    "saveBytes": 1792,
+    "historyNCap": 10
+   }
+  },
+  {
+   "step": "sesja1 PRZED zapisem",
+   "ledger": {
+    "memEntries": 3,
+    "memBytes": 1792,
+    "saveEntries": 3,
+    "saveBytes": 1792,
+    "historyNCap": 10
+   }
+  },
+  {
+   "step": "sesja1 quickSave",
+   "ok": true
+  },
+  {
+   "step": "sesja1 saveRoundTrip (ta sama sesja)",
+   "rt": {
+    "savedBytes": 1792,
+    "savedTurns": 3,
+    "afterTurns": 3
+   }
+  },
+  {
+   "step": "sesja2 PO wczytaniu, PRZED tickiem",
+   "ledger": {
+    "memEntries": 0,
+    "memBytes": 2,
+    "saveEntries": 0,
+    "saveBytes": 2,
+    "historyNCap": 10
+   }
+  },
+  {
+   "step": "sesja2 PO pierwszym ticku",
+   "turnAfter": 5,
+   "ledger": {
+    "memEntries": 1,
+    "memBytes": 598,
+    "saveEntries": 1,
+    "saveBytes": 598,
+    "historyNCap": 10
+   }
+  }
+ ],
+ "error": null
+}
