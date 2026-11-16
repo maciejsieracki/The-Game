@@ -10449,3 +10449,7 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 - Dług Rust: REPIN bramki rekrutacji AI (ai-upkeep-runway + dane).
 - Numeracja: FALA 771 = ekran porażki (DEFEATSCR) po FC PASS.
 - Do właściciela (obserwacja w grze): AI mniej rekrutuje przy niskich zapasach; sprawdzić, czy siła militarna AI nie spadła zbyt mocno.
+
+### 2026-11-16 ~17:50 UTC — ZGŁOSZENIE właściciela (ze zrzutami): „Kolejka pusta” mimo braku czegokolwiek do wybudowania
+- Powiadomienie „Produkcja: <miasto> — Kolejka pusta — wybierz budynek lub jednostkę” wyświetla się (10 kart: Ateny, Sparta, Korynt, Argos, Mykeny, Milet, Rodos, Syrakuzy …), choć w panelu miasta „Dostępne do budowy” są tylko pozycje zablokowane epoką. Oczekiwanie właściciela: powiadomienie tylko gdy jest coś do WYBUDOWANIA, a kolejka jest pusta. Poprzednia poprawka (#317, R-WEB-NOTIF-EMPTY-QUEUE-ONLY-BUILDABLE-Q1) nie usunęła zjawiska. Hipoteza: bramka `cityHasAffordableUnitRecruitment` (rekrutacja jednostek) wystarcza do wygenerowania zdarzenia.
+- Nowy temat R-WEB-NOTIF-EMPTY-QUEUE-NO-BUILDING-AVAILABLE-Q2 (Haiku r1; błąd webowy — stała zgoda 2026-11-01, bez ABC); FALA 772 po FC PASS.
