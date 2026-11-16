@@ -10,9 +10,10 @@
 //!   `main.ts:14578-14585`) oraz heksy wlasnych stosow osiagalne kosztem ruchu, o ile caly
 //!   ruszajacy sie stos sie tam zmiesci (`canJoinStackAt`, `army-stack-limit.ts:55-66`).
 //! - `pathRoute` = web `refreshPlannedMarchPreview` / `refreshHoverPathPreview`
-//!   (`main.ts:31146-31211`) przez zapytanie P4-1H `preview_path` (kontrakt bez zmian); sklad
-//!   `marchPathPlan` (`main.ts:31110-31122`) = `planPathTurns` + `applyFogToPathPlan` jest jawny w
-//!   [`march_path_plan`].
+//!   (`main.ts:31146-31211`) przez zapytanie P4-1H `preview_path` (kontrakt bez zmian). Sklad
+//!   `marchPathPlan` (`main.ts:31110-31122`) = `planPathTurns` + `applyFogToPathPlan` ma JEDNO
+//!   miejsce w produkcji: `playable_movement::preview_path_plan` (obrona r1, zarzut 3: usunieto
+//!   duplikat `march_path_plan` i `path_route_of`).
 //!
 //! Decyzje techniczne (raport `01-operator-r1.md`):
 //! - `moveCostFnForUnit(u)` -> `None` (ta sama decyzja co P4-1H `preview_path_plan`: stan nie ma
@@ -20,24 +21,30 @@
 //! - `siegeBlocksEntry` -> `None` (brak stanu oblezenia w `PlayableState`);
 //! - `isSiegeMapPanelOpen()` to stan UI (panel), nie stanu gry: producent go nie widzi, warstwa UI
 //!   czysci `reachable`, gdy panel jest otwarty;
-//! - `armyStackLimit()` = `save_migrations::ARMY_STACK_LIMIT` (web `BATTLE_MAX_PER_SIDE`).
+//! - `armyStackLimit()` = `save_migrations::ARMY_STACK_LIMIT` (web `BATTLE_MAX_PER_SIDE`);
+//! - `isMe(owner)` = `owner === ME()` (`main.ts:13748-13750`), `ME()` = aktywny fotel
+//!   (`main.ts:13729-13731`): [`HumanSeats::is_active_human`]. `PlayableState` nie ma pola
+//!   aktywnego fotela, wiec aktywny = pierwszy gracz `is_human` (web `HUMAN_OWNER_PRIMARY`, jeden
+//!   fotel). Dlug hot-seat (aktywny fotel w stanie): #281.
+//!
+//! Wolajacy produkcyjny (agregator `OverlaysViewDto` / adapter renderera) jeszcze nie istnieje:
+//! wpiecie `reachable_overlay` i `path_route_overlay` nalezy do P4-1G Q6 / PRIO-3D-2 (#237 / #270).
 
 use std::collections::HashSet;
 
 use civ_view_model::ids::HexCoord;
-use civ_view_model::overlays::{PathRouteDto, PathTurnStopDto};
+use civ_view_model::overlays::PathRouteDto;
 
 use crate::domain::army_follow_auto_merge::{can_join_stack_at, FollowAutoMergeUnit};
 use crate::domain::pathfinding::ruch_jednostek::{
-    apply_fog_to_path_plan, compute_path, compute_reachable_occ, path_cost, plan_path_turns_occ,
-    CostFn, Klucz, MarchFogContext, MoveOccupancy, PathTurnPlan, RuchJednostka, RuchMapa,
+    compute_path, compute_reachable_occ, path_cost, CostFn, Klucz, RuchJednostka,
 };
 use crate::domain::playable::PlayableState;
 use crate::domain::playable_movement::{
-    klucz_of, occupied_for_move, player_stack_at, preview_path, unit_with_planning_stack_ruch,
+    occupied_for_move, player_stack_at, preview_path, unit_with_planning_stack_ruch,
     PlayableMoveModel,
 };
-use crate::domain::player::is_awaiting_first_player_city;
+use crate::domain::player::{is_awaiting_first_player_city, HumanSeats};
 use crate::domain::save_migrations::ARMY_STACK_LIMIT;
 use crate::domain::OwnerRef;
 use crate::domain::{PlayerId, PositionDto, UnitId};
@@ -136,16 +143,28 @@ pub fn reachable_with_merge_targets(state: &PlayableState, unit_id: UnitId) -> V
     reach.iter().map(hex_of).collect()
 }
 
-/// Web `isMe(ownerId)`: wlasciciel jest graczem ludzkim stanu.
-fn is_human_owner(state: &PlayableState, owner: u64) -> bool {
-    state
+/// Web `ME()` (`main.ts:13729-13731`, `humanSeats.activeHumanOwnerId`): aktywny fotel. Stan nie ma
+/// pola aktywnego fotela -> pierwszy gracz `is_human` (`HUMAN_OWNER_PRIMARY`); dlug #281.
+fn human_seats(state: &PlayableState) -> Option<HumanSeats> {
+    let humans: Vec<PlayerId> = state
         .players
         .iter()
-        .any(|p| p.is_human && p.id.get() == owner)
+        .filter(|p| p.is_human)
+        .map(|p| p.id)
+        .collect();
+    let active = *humans.first()?;
+    Some(HumanSeats::new(humans, active))
 }
 
-/// Web `isAwaitingFirstPlayerCity(ownerId)` (`main.ts:12882-12884`) dla wlasciciela jednostki:
-/// flaga `graczKiedysMialMiasto` + miasta stanu (`player::is_awaiting_first_player_city`).
+/// Web `isMe(ownerId)` = `ownerId === ME()` (`main.ts:13748-13750`): TYLKO aktywny fotel, nie
+/// dowolny fotel ludzki (`isHuman`).
+fn is_me(state: &PlayableState, owner: PlayerId) -> bool {
+    human_seats(state).is_some_and(|seats| seats.is_active_human(OwnerRef::Player(owner)))
+}
+
+/// Web `isAwaitingFirstPlayerCity(ownerId = ME())` (`main.ts:12882-12884`): flaga
+/// `graczKiedysMialMiasto` + miasta stanu (`player::is_awaiting_first_player_city`). Wolane po
+/// bramce `isMe(u.ownerId)`, wiec `u.ownerId` == `ME()` - argument domyslny pinu.
 fn awaiting_first_city(state: &PlayableState, owner: PlayerId) -> bool {
     is_awaiting_first_player_city(
         state.gracz_kiedys_mial_miasto,
@@ -173,7 +192,7 @@ pub fn reachable_overlay(state: &PlayableState) -> Vec<HexCoord> {
     let Some(unit) = state.units.iter().find(|u| u.id == unit_id) else {
         return Vec::new();
     };
-    if !is_human_owner(state, unit.owner_id.get()) {
+    if !is_me(state, unit.owner_id) {
         return Vec::new();
     }
     let model = PlayableMoveModel::from_state(state);
@@ -186,61 +205,6 @@ pub fn reachable_overlay(state: &PlayableState) -> Vec<HexCoord> {
         return Vec::new();
     }
     reachable_with_merge_targets(state, unit_id)
-}
-
-/// Web `marchPathPlan(mover, destQ, destR, occ, perTurn, budget, fog, costFn)`
-/// (`main.ts:31110-31122`): `planPathTurns(...)` (`planned-march.ts:215-285`, wariant z
-/// `MoveOccupancy` i `passThrough`), potem `applyFogToPathPlan(raw, map, perTurn, budget, fog)`
-/// (`planned-march.ts:67-75`). Wynik (`fullPath`, `turnStops`) pochodzi z planu PO mgle.
-///
-/// Pin C-RUCH-Q1=B (`planned-march.ts:56-66`): `applyFogToPathPlan` NIE ucina trasy na granicy
-/// widocznosci (trasa wolno prowadzi przez mgle), wiec `turnStops` po mgle = `turnStops` planu.
-#[allow(clippy::too_many_arguments)]
-pub fn march_path_plan(
-    mover: &RuchJednostka,
-    dest_q: i32,
-    dest_r: i32,
-    mapa: &RuchMapa,
-    occ: &MoveOccupancy,
-    per_turn: f64,
-    budget: Option<f64>,
-    fog: Option<&MarchFogContext>,
-    cost_fn: Option<&CostFn<'_>>,
-) -> PathTurnPlan {
-    let raw = plan_path_turns_occ(
-        mover,
-        f64::from(dest_q),
-        f64::from(dest_r),
-        mapa,
-        occ,
-        None,
-        per_turn,
-        budget,
-        cost_fn,
-    );
-    apply_fog_to_path_plan(raw, mapa, per_turn, budget, fog)
-}
-
-/// Argumenty `unitRenderer.setPathRoute([{q: u.q, r: u.r}, ...plan.fullPath], { turnStops:
-/// plan.turnStops })` (`main.ts:31175-31178`) jako [`PathRouteDto`]; `fullPath` pusty ->
-/// `clearPathRoute()` -> `None`.
-pub fn path_route_of(unit_hex: PositionDto, plan: &PathTurnPlan) -> Option<PathRouteDto> {
-    if plan.full_path.is_empty() {
-        return None;
-    }
-    let (uq, ur) = klucz_of(unit_hex);
-    let mut hexes = Vec::with_capacity(plan.full_path.len() + 1);
-    hexes.push(HexCoord::new(uq, ur));
-    hexes.extend(plan.full_path.iter().copied().map(hex_of));
-    let turn_stops = plan
-        .turn_stops
-        .iter()
-        .map(|stop| PathTurnStopDto {
-            hex: HexCoord::new(stop.q, stop.r),
-            turn: stop.turn,
-        })
-        .collect();
-    Some(PathRouteDto { hexes, turn_stops })
 }
 
 /// Pole `overlays.pathRoute` dla zaznaczonej jednostki: zapytanie P4-1H

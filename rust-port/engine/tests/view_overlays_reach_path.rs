@@ -18,11 +18,14 @@
 use std::collections::HashSet;
 
 use civ_engine::domain::overlays_view::{
-    march_path_plan, path_route_of, path_route_overlay, reachable_overlay,
-    reachable_with_merge_targets,
+    path_route_overlay, reachable_overlay, reachable_with_merge_targets,
 };
-use civ_engine::domain::pathfinding::ruch_jednostek::MarchFogContext;
-use civ_engine::domain::playable::{MovementPoints, PlayableCity, PlayablePlannedMarch};
+use civ_engine::domain::pathfinding::ruch_jednostek::{
+    apply_fog_to_path_plan, plan_path_turns_occ, MarchFogContext,
+};
+use civ_engine::domain::playable::{
+    MovementPoints, PlayableCity, PlayablePlannedMarch, PlayablePlayer,
+};
 use civ_engine::domain::playable_movement::{
     occupied_for_move, per_turn_move_for_unit, player_stack_at, unit_with_planning_stack_ruch,
     PlayableMoveModel,
@@ -215,6 +218,48 @@ fn r6_obce_miasto_zdejmuje_pass_through() {
     assert_eq!(reachable_overlay(&state), hs(&[1, 2]));
 }
 
+/// Wektor R7 (granica kosztu celu scalenia, `main.ts:14728`: `pathCost(path) <= mover.ruchLeft`;
+/// obrona r1, zarzut 1): ruch 3, wlasna jednostka 901 na (3,0). `computeReachable`: (1,0) k1,
+/// (2,0) k2, (3,0) k3 <= 3 ale `passThrough` -> NIE do zasiegu (`setup.ts:948-949`); (4,0) k4 > 3.
+/// Petla stosow: `computePath` [(1,0),(2,0),(3,0)], `pathCost` 3 == `ruchLeft` 3 -> `<=` prawda ->
+/// (3,0) dopisany TYLKO przez galaz scalenia. Mutacja `<` -> (3,0) znika. Wynik [(1,0),(2,0),(3,0)].
+#[test]
+fn r7_cel_scalenia_przy_koszcie_rownym_ruch_left_dopisany() {
+    let mut state = corridor(6, 3, 3);
+    state.units.push(unit(901, HUMAN, 3, 3, 3));
+    assert_eq!(
+        reachable_with_merge_targets(&state, UnitId::new(MOVER)),
+        hs(&[1, 2, 3])
+    );
+    assert_eq!(reachable_overlay(&state), hs(&[1, 2, 3]));
+}
+
+/// Hot-seat (obrona r1, zarzut 4): `syncPlayerUnitSelectionOnMap` sprawdza `isMe(u.ownerId)` =
+/// `u.ownerId === ME()` (`main.ts:7118`, `:13748-13750`), nie `isHuman` (dowolny fotel). Dwa fotele
+/// ludzkie: 1 (aktywny = pierwszy, `ME()` = `humanSeats.activeHumanOwnerId`, `:13729-13731`) i 3.
+/// Zaznaczona jednostka fotela 3 (nieaktywnego) -> pusty zasieg; ta sama jednostka fotela 1 ->
+/// zasieg jak w R5 (bez miast) [(1,0),(2,0),(3,0)].
+#[test]
+fn hot_seat_zasieg_tylko_dla_aktywnego_fotela() {
+    let mut state = corridor(6, 3, 3);
+    state.players.retain(|p| p.id.get() == HUMAN);
+    assert!(state
+        .players
+        .iter()
+        .any(|p| p.is_human && p.id.get() == HUMAN));
+    state.players.push(PlayablePlayer {
+        id: PlayerId::new(3),
+        name: "Fotel 2".to_string(),
+        civilization: "Test".to_string(),
+        is_human: true,
+    });
+    assert_eq!(reachable_overlay(&state), hs(&[1, 2, 3]));
+
+    let mut other_seat = state.clone();
+    other_seat.units[0].owner_id = PlayerId::new(3);
+    assert_eq!(reachable_overlay(&other_seat), Vec::<HexCoord>::new());
+}
+
 /// Bramki `syncPlayerUnitSelectionOnMap` (`main.ts:7115-7134`): brak zaznaczenia (`:7116`),
 /// jednostka nie gracza (`:7118`), `!stackCanMove` (`planningStackRuchLeft <= 0`, `:14701-14703`),
 /// `isAwaitingFirstPlayerCity()` (`:7123`) -> pusty zasieg.
@@ -302,8 +347,10 @@ fn hover_przez_preview_path() {
 /// Wektor P2 (trasa a mgla, `applyFogToPathPlan`): pin C-RUCH-Q1=B (`planned-march.ts:56-75`):
 /// `applyFogToPathPlan` zwraca plan BEZ zmian - trasa NIE jest skracana na granicy widocznosci
 /// (wariant „slepy” `_applyFogToPathPlanBlind` `:78+` jest martwy). Mgla aktywna, widoczne tylko
-/// (0,0) i (1,0), cel (5,0) w mgle: `fullPath` i `turnStops` jak bez mgly (P1), a `pathRoute`
-/// producenta = trasa z `marchPathPlan` po mgle.
+/// (0,0) i (1,0), cel (5,0) w mgle. `marchPathPlan` (`main.ts:31110-31122`) = `planPathTurns`
+/// (`planned-march.ts:215-285`) + `applyFogToPathPlan` skladane jak w produkcyjnym
+/// `preview_path_plan` (obrona r1, zarzut 3: bez duplikatu w `overlays_view`): `fullPath` i
+/// `turnStops` po mgle = przed mgla = P1, a `pathRoute` producenta niesie te same `turnStops`.
 #[test]
 fn p2_mgla_nie_skraca_trasy_turn_stops_po_mgle() {
     let mut state = corridor(6, 2, 2);
@@ -319,26 +366,34 @@ fn p2_mgla_nie_skraca_trasy_turn_stops_po_mgle() {
         visible: HashSet::from([(0, 0), (1, 0)]),
         attack_on_visible_enemy: false,
     };
-    let fogged = march_path_plan(
+    let raw = plan_path_turns_occ(
         &mover,
-        5,
-        0,
+        5.0,
+        0.0,
         &model.mapa,
         &occ,
+        None,
         per_turn,
         None,
-        Some(&fog),
         None,
     );
-    let route = path_route_of(PositionDto::new(0, 0), &fogged).expect("trasa przez mgle");
+    let fogged = apply_fog_to_path_plan(raw.clone(), &model.mapa, per_turn, None, Some(&fog));
+    let expected_path: Vec<(i32, i32)> = (1..=5).map(|q| (q, 0)).collect();
+    assert_eq!(fogged.full_path, expected_path, "mgla nie skraca trasy");
+    let fogged_stops: Vec<(i32, i32, u32)> = fogged
+        .turn_stops
+        .iter()
+        .map(|s| (s.q, s.r, s.turn))
+        .collect();
+    assert_eq!(fogged_stops, vec![(2, 0, 1), (4, 0, 2), (5, 0, 3)]);
+    assert_eq!(fogged.full_path, raw.full_path);
     assert_eq!(
-        route,
-        PathRouteDto {
+        path_route_overlay(&state, None),
+        Some(PathRouteDto {
             hexes: hs(&[0, 1, 2, 3, 4, 5]),
             turn_stops: vec![stop(2, 1), stop(4, 2), stop(5, 3)],
-        }
+        })
     );
-    assert_eq!(path_route_overlay(&state, None), Some(route));
 }
 
 /// Trasa przez wlasna jednostke (`computePath` czyta tylko blokady, `passThrough` nie wplywa,
