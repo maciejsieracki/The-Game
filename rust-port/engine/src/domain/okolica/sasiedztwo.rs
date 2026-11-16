@@ -204,5 +204,6 @@ pub fn collect_worked_hex_owner_map_by_owner_yield(
             }
         }
     }
+    by_key.sort();
     by_key
 }
