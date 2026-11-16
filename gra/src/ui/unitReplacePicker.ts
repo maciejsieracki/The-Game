@@ -167,7 +167,7 @@ export function showUnitReplacePicker(opts: UnitReplacePickerOptions): void {
     + (multi ? ' · zastępuje zaznaczone: ' + count : '')
     + (opts.groupLabel ? ' · ' + esc(opts.groupLabel) : '')
     + (opts.note ? '<br>' + esc(opts.note) : '') + '</div></div>';
-  hdr.appendChild(document.createRange().createContextualFragment(mapUnitCloseBtnHtml('Anuluj')));
+  hdr.appendChild(document.createRange().createContextualFragment(mapUnitCloseBtnHtml('Zakończ')));
   panel.appendChild(hdr);
   hdr.querySelector('.mu-close-btn')?.addEventListener('click', () => {
     hideUnitReplacePicker();

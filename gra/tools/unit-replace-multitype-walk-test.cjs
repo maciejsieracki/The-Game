@@ -31,7 +31,7 @@ function toJs(ts) { return esbuild.transformSync(ts, { loader: 'ts', target: 'no
 const NAMES = [
   'pickedUnitsOnStack', 'unitReplaceTargetsOnStack', 'unitReplaceEligible',
   'openUnitReplaceForSelection', 'unitReplaceGroupLabel', 'unitReplaceSkipNote',
-  'unitReplaceChainEnd', 'openUnitReplaceGroupPicker',
+  'unitReplaceHasPending', 'unitReplaceHintWithTail', 'unitReplaceChainStopped', 'openUnitReplaceGroupPicker',
 ];
 const src = NAMES.map(n => extractFn(main, n)).join('\n');
 
@@ -121,6 +121,9 @@ console.log('\n== A. przejscie przez WSZYSTKIE typy (pick, skip, pick) ==');
   assert(run.modals.length === 3, 'po ostatniej grupie nie ma kolejnego modala');
   const last = run.hints[run.hints.length - 1] || '';
   assert(last.includes('Bez zamiennika: Procarz ×2, Zwiadowca'), 'koncowy komunikat nadal wymienia typy bez zamiennika');
+  // Regresja (zarzut Evaluatora 3): uwaga koncowa NIE nadpisuje toastu podsumowania ostatniej zamiany.
+  assert(last.includes('Zastąp: Konnica → Rydwan') && last.includes('Bez zamiennika'),
+    'ostatni toast niesie jednoczesnie podsumowanie zamiany i uwage o typach bez zamiennika');
 }
 
 console.log('\n== B. Pomin wszystkie typy -> brak zamian, komunikat o brakach ==');

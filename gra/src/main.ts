@@ -8411,7 +8411,7 @@ async function boot(): Promise<void> {
       for (const t of targets) {
         if (eligibleSet.has(t)) continue;
         if (t.ownerId === 0 && isUnitInPlayerTerritory(t) && t.replaceUsedThisTurn !== true) {
-          const label = (t.isGeneral === true ? 'Wódz: ' : '') + t.typeId;
+          const label = (t.isGeneral === true ? '★ Wódz: ' : '') + t.typeId;
           noReplacement.set(label, (noReplacement.get(label) ?? 0) + 1);
         } else {
           otherSkipped++;
@@ -8457,7 +8457,7 @@ async function boot(): Promise<void> {
 
     function unitReplaceGroupLabel(group: readonly RuntimeUnit[]): string {
       const s = group[0]!;
-      return (s.isGeneral === true ? 'Wódz: ' : '') + s.typeId + ' ×' + group.length;
+      return (s.isGeneral === true ? '★ Wódz: ' : '') + s.typeId + ' ×' + group.length;
     }
 
     /** Jeden komunikat po polsku o typach zaznaczonych, których nie da się zastąpić (w tym pominiętych). */
@@ -8473,11 +8473,16 @@ async function boot(): Promise<void> {
       return parts.join(' · ');
     }
 
-    /** Koniec łańcucha: `from` = pierwsza niezałatwiona grupa; `stopped` = gracz przerwał (Zakończ/Esc). */
-    function unitReplaceChainEnd(chain: UnitReplaceChain, from: number, stopped: boolean): void {
+    /** Czy od grupy `from` zostały jeszcze kwalifikujące się typy (łańcuch idzie dalej). */
+    function unitReplaceHasPending(chain: UnitReplaceChain, from: number): boolean {
+      return chain.groups.slice(from).some(g => g.some(unitReplaceEligible));
+    }
+
+    /** Przerwanie łańcucha (Zakończ/Esc): komunikat o niezałatwionych typach + uwaga o pominiętych. */
+    function unitReplaceChainStopped(chain: UnitReplaceChain, from: number): void {
       const parts: string[] = [];
       const left = chain.groups.slice(from);
-      if (stopped && left.length > 0) {
+      if (left.length > 0) {
         parts.push('Zastąp: zakończono — niezałatwione typy (' + left.length + ' z ' + chain.groups.length + '): '
           + left.map(unitReplaceGroupLabel).join(', '));
       }
@@ -8486,10 +8491,17 @@ async function boot(): Promise<void> {
       if (parts.length > 0) showHintMessage(parts.join(' · '), 5200);
     }
 
+    /** Komunikat po wyborze/pominięciu ostatniej grupy: uwaga o pominiętych dochodzi do tego samego toastu. */
+    function unitReplaceHintWithTail(chain: UnitReplaceChain, index: number, msg: string): { text: string; ms: number } {
+      if (unitReplaceHasPending(chain, index + 1)) return { text: msg, ms: 3800 };
+      const tail = unitReplaceSkipNote(chain);
+      return tail ? { text: msg + ' · ' + tail, ms: 5200 } : { text: msg, ms: 3800 };
+    }
+
     /** Okno zamiany dla grupy `index` łańcucha; kolejne typy idą same (Zastąp / Pomiń), Zakończ/Esc przerywa. */
     function openUnitReplaceGroupPicker(chain: UnitReplaceChain, index: number): void {
       const { groups } = chain;
-      if (index >= groups.length) { unitReplaceChainEnd(chain, index, false); return; }
+      if (index >= groups.length) return;
       const group = groups[index]?.filter(unitReplaceEligible) ?? [];
       if (group.length === 0) {
         openUnitReplaceGroupPicker(chain, index + 1);
@@ -8538,18 +8550,18 @@ async function boot(): Promise<void> {
             else break;
           }
           const failed = n - done;
-          showHintMessage(
+          const hint = unitReplaceHintWithTail(chain, index,
             'Zastąp: ' + sample.typeId + ' → ' + newTypeId + ' ×' + done
-              + (failed > 0 ? ' (nie zastąpiono ' + failed + ' z ' + n + ' — brak zasobów/limit)' : ''),
-            3800,
-          );
+              + (failed > 0 ? ' (nie zastąpiono ' + failed + ' z ' + n + ' — brak zasobów/limit)' : ''));
+          showHintMessage(hint.text, hint.ms);
           openUnitReplaceGroupPicker(chain, index + 1);
         },
         onSkip: () => {
-          showHintMessage('Zastąp: pominięto typ ' + sample.typeId + ' ×' + n, 2600);
+          const hint = unitReplaceHintWithTail(chain, index, 'Zastąp: pominięto typ ' + sample.typeId + ' ×' + n);
+          showHintMessage(hint.text, hint.ms);
           openUnitReplaceGroupPicker(chain, index + 1);
         },
-        onCancel: () => unitReplaceChainEnd(chain, index, true),
+        onCancel: () => unitReplaceChainStopped(chain, index),
       });
     }
 
