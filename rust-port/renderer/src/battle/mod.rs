@@ -30,6 +30,7 @@ pub mod dynamics;
 pub mod field;
 pub mod orders;
 pub mod picking;
+pub mod playback;
 pub mod siege_towers;
 pub mod siege_wall;
 pub mod units;
