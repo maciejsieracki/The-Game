@@ -2899,3 +2899,12 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Krok 3:** worktree 9; zakończone usunięte w poprzednich przebiegach.
 - **Dysk:** 7,1 GB wolnego. Nowe tematy z kodem Rust nie startują poniżej 8 GB. Rozpoznanie nie kompiluje i nie zużywa targetu.
 - **Reguła:** Operatorzy Haiku; Evaluator i FC Sonnet. Decyzje gameplay poza tym przebiegiem (#358).
+
+### Przebieg — rozpoznanie K5DOC-T7 falanga (`7ae1e3e58`): PASS, podział tematu (2026-11-16 ~23:25 UTC)
+
+- **Wynik:** w Rust przy `32c84d6a9` falanga istnieje tylko jako zdarzenie `PhalanxAction` (`siege_tactics_activate.rs:461-465`), bez treści. Brak `_phalanxLineFront`, `_phalanxAction`, `_phalanxStep`, `_fallBackStep`, `_bestFallBackStep`.
+- **Decyzja techniczna (orkiestrator):** T7 dzielę na dwa tematy.
+  - **T7a (#261):** `_phalanxLineFront` i `_phalanxAction`/`_phalanxStep` (pin ~6519 i ~6556). Zależy od T4b (#313, `_advanceStep` pin 8198) — start dopiero po integracji T4b na parity.
+  - **T7b (nowy):** `_fallBackStep` i `_bestFallBackStep` (pin ~7186). Zależy od T4c (#314, `_doMove`). Przypisanie `_bestFallBackStep` do T7b, nie T5a, bo wywołuje go tylko falanga.
+- **Zależności:** T7a i T7b nie startują przed T4b/T4c na parity. Nie zmieniam kontraktu `ActivateOps`; wpięcie zostaje na T8 / #113.
+- **Zabezpieczenie:** commit rozpoznania `7ae1e3e58` ma ref `refs/keep/T7-recon-7ae1e3e58`.
