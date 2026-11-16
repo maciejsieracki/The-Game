@@ -10523,3 +10523,6 @@ Właściciel opisał pożądane zachowanie AI w wojnie: w każdym mieście zosta
 
 ### Zgłoszenie 2026-11-16 (noc): Łucznik → Procarz w „Zastąp”
 Właściciel: łucznik powinien móc awansować na procarza (w kodzie/danych nie ma takiej zamiany: Łucznik i Procarz mają `Zastąp specjalnie: —`). Zmienia wcześniejszą decyzję 2026-11-09 („luki zamienników Procarz: nie ruszać”). STATUS: **OTWARTE** — dispatch `R-WEB-DATA-REPLACE-ARCHER-TO-SLINGER-Q1` (Haiku r1; wpływ na AI do pomiaru, bez nowych kosztów).
+
+### Zgłoszenie 2026-11-16 (noc): „Zastąp” po zaznaczeniu wielu typów w armii obsługuje tylko pierwszy typ
+Właściciel: wcześniej system przechodził po kolei przez wszystkie typy i proponował warianty; teraz wygląda, jakby tylko pierwszy typ mógł być zamieniony, a reszta zostawała bez zmian. Ma przechodzić przez WSZYSTKIE typy w armii. STATUS: **OTWARTE** — dispatch `R-WEB-UNIT-REPLACE-MULTITYPE-WALK-ALL-GROUPS-Q2` (REGRES UI; start gdy zwolni się slot — 4/4 zajęte). Hipotezy w dispatchu: zaznaczenie z jednego typu / brak zamienników po cichu pomijany / łańcuch kończy się po pierwszym modalu / stan po pierwszej zamianie. Powiązanie: brak zamiennika Łucznik→Procarz (`R-WEB-DATA-REPLACE-ARCHER-TO-SLINGER-Q1`).
