@@ -715,3 +715,29 @@ fn error_messages_name_the_field() {
     view.units[1].hp = f64::NAN;
     assert_eq!(err(&view).to_string(), "units[1].hp: not a finite number");
 }
+
+/// P4-1I1: `BattleOutcomeDto::validate` (full per-field table in
+/// `battle_outcome.rs`); here the pass case and one message per check kind.
+#[test]
+fn battle_outcome_validate() {
+    let ok = sample_outcome();
+    ok.validate().unwrap();
+    let mut o = ok.clone();
+    o.survivors[0].hp = f64::INFINITY;
+    assert_eq!(
+        o.validate().unwrap_err().to_string(),
+        "survivors[0].hp: not a finite number"
+    );
+    let mut o = ok.clone();
+    o.end_stats.atk.lost = 0;
+    assert_eq!(
+        o.validate().unwrap_err().to_string(),
+        "endStats.atk.lost+remaining: length 1, expected 2"
+    );
+    let mut o = ok;
+    o.defender_unit_ids.push(o.defender_unit_ids[0]);
+    assert_eq!(
+        o.validate().unwrap_err().to_string(),
+        "defenderUnitIds (unique): length 3, expected 2"
+    );
+}

@@ -354,6 +354,41 @@ fn battle_keys() {
     );
 }
 
+/// P4-1I1 battle outcome: web `BattleResult` (`battle/battleScene.ts:588-604`
+/// @ `07d2fbd72`) with `eventLog` flattened to `attackerUnitIds` /
+/// `defenderUnitIds`, plus `_sideEndStats` (`:10257-10269`).
+#[test]
+fn battle_outcome_keys() {
+    let v = serde_json::to_value(sample_outcome()).unwrap();
+    expect(
+        &v,
+        &[
+            "winner",
+            "survivors",
+            "log",
+            "attackerUnitIds",
+            "defenderUnitIds",
+            "wallBreached",
+            "endStats",
+        ],
+        "BattleOutcomeDto",
+    );
+    expect(&v["survivors"][0], &["id", "hp"], "BattleSurvivorDto");
+    expect(&v["endStats"], &["atk", "def"], "BattleEndStatsDto");
+    for side in ["atk", "def"] {
+        expect(
+            &v["endStats"][side],
+            &["total", "lost", "remaining", "hp", "hpMax"],
+            "BattleSideEndStatsDto",
+        );
+    }
+    assert_eq!(v["winner"], "remis");
+    let mut none = sample_outcome();
+    none.wall_breached = None;
+    let n = serde_json::to_value(none).unwrap();
+    assert!(n["wallBreached"].is_null(), "None is an explicit null");
+}
+
 /// Every object key anywhere in the snapshot is camelCase: starts with a
 /// lowercase ASCII letter and has no `_` (string *values* such as
 /// `plytkie_morze` are web literals and are not keys).

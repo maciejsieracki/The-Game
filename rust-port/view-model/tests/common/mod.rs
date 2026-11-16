@@ -457,6 +457,45 @@ pub fn sample_battle() -> BattleViewDto {
     }
 }
 
+/// Battle outcome (P4-1I1): two survivors, a siege (`wallBreached` set),
+/// non-integer HP sums. `log` empty (NIE_ZMIERZONO until P4-1I3).
+pub fn sample_outcome() -> civ_view_model::battle::BattleOutcomeDto {
+    use civ_view_model::battle::*;
+    BattleOutcomeDto {
+        winner: BattleWinner::Remis,
+        survivors: vec![
+            BattleSurvivorDto {
+                id: uid(100),
+                hp: 30.5,
+            },
+            BattleSurvivorDto {
+                id: uid(12),
+                hp: 7.25,
+            },
+        ],
+        log: vec![],
+        attacker_unit_ids: vec![uid(100), uid(7)],
+        defender_unit_ids: vec![uid(12), uid(3)],
+        wall_breached: Some(false),
+        end_stats: BattleEndStatsDto {
+            atk: BattleSideEndStatsDto {
+                total: 2,
+                lost: 1,
+                remaining: 1,
+                hp: 30.5,
+                hp_max: 90.0,
+            },
+            def: BattleSideEndStatsDto {
+                total: 2,
+                lost: 2,
+                remaining: 0,
+                hp: 0.0,
+                hp_max: 120.0,
+            },
+        },
+    }
+}
+
 /// Every field filled, every `Option` `Some` (except where the same type has
 /// a `None` twin elsewhere in the snapshot).
 pub fn sample_view() -> RenderViewDto {

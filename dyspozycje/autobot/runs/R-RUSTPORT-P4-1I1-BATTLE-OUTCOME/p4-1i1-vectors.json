@@ -1,0 +1,531 @@
+[
+ {
+  "name": "e1_attacker",
+  "winner": "atakujacy",
+  "survivors": [
+   {
+    "id": 100,
+    "hp": 30
+   },
+   {
+    "id": 42,
+    "hp": 12.5
+   },
+   {
+    "id": 9,
+    "hp": 4
+   },
+   {
+    "id": 100,
+    "hp": 30
+   }
+  ],
+  "attackerUnitIds": [
+   "100",
+   "7",
+   "42",
+   "9",
+   "8"
+  ],
+  "defenderUnitIds": [
+   "3",
+   "11",
+   "12",
+   "5"
+  ],
+  "hasWallBreached": false,
+  "wallBreached": null,
+  "endStats": {
+   "atk": {
+    "total": 6,
+    "lost": 4,
+    "remaining": 2,
+    "hp": 60,
+    "hpMax": 260
+   },
+   "def": {
+    "total": 5,
+    "lost": 4,
+    "remaining": 1,
+    "hp": 20,
+    "hpMax": 300
+   }
+  }
+ },
+ {
+  "name": "e1_defender",
+  "winner": "obronca",
+  "survivors": [
+   {
+    "id": 12,
+    "hp": 7.25
+   },
+   {
+    "id": 5,
+    "hp": 20
+   }
+  ],
+  "attackerUnitIds": [
+   "100",
+   "7",
+   "42",
+   "9",
+   "8"
+  ],
+  "defenderUnitIds": [
+   "3",
+   "11",
+   "12",
+   "5"
+  ],
+  "hasWallBreached": false,
+  "wallBreached": null,
+  "endStats": {
+   "atk": {
+    "total": 6,
+    "lost": 4,
+    "remaining": 2,
+    "hp": 60,
+    "hpMax": 260
+   },
+   "def": {
+    "total": 5,
+    "lost": 4,
+    "remaining": 1,
+    "hp": 20,
+    "hpMax": 300
+   }
+  }
+ },
+ {
+  "name": "e2_draw_siege_no_breach",
+  "winner": "remis",
+  "survivors": [
+   {
+    "id": 100,
+    "hp": 30
+   },
+   {
+    "id": 42,
+    "hp": 12.5
+   },
+   {
+    "id": 9,
+    "hp": 4
+   },
+   {
+    "id": 100,
+    "hp": 30
+   },
+   {
+    "id": 12,
+    "hp": 7.25
+   },
+   {
+    "id": 5,
+    "hp": 20
+   }
+  ],
+  "attackerUnitIds": [
+   "100",
+   "7",
+   "42",
+   "9",
+   "8"
+  ],
+  "defenderUnitIds": [
+   "3",
+   "11",
+   "12",
+   "5"
+  ],
+  "hasWallBreached": true,
+  "wallBreached": false,
+  "endStats": {
+   "atk": {
+    "total": 6,
+    "lost": 4,
+    "remaining": 2,
+    "hp": 60,
+    "hpMax": 260
+   },
+   "def": {
+    "total": 5,
+    "lost": 4,
+    "remaining": 1,
+    "hp": 20,
+    "hpMax": 300
+   }
+  }
+ },
+ {
+  "name": "e3_ff_cap_defender_siege_breached",
+  "winner": "obronca",
+  "survivors": [
+   {
+    "id": 12,
+    "hp": 7.25
+   },
+   {
+    "id": 5,
+    "hp": 20
+   }
+  ],
+  "attackerUnitIds": [
+   "100",
+   "7",
+   "42",
+   "9",
+   "8"
+  ],
+  "defenderUnitIds": [
+   "3",
+   "11",
+   "12",
+   "5"
+  ],
+  "hasWallBreached": true,
+  "wallBreached": true,
+  "endStats": {
+   "atk": {
+    "total": 6,
+    "lost": 4,
+    "remaining": 2,
+    "hp": 60,
+    "hpMax": 260
+   },
+   "def": {
+    "total": 5,
+    "lost": 4,
+    "remaining": 1,
+    "hp": 20,
+    "hpMax": 300
+   }
+  }
+ },
+ {
+  "name": "e3_ff_cap_attacker",
+  "winner": "atakujacy",
+  "survivors": [
+   {
+    "id": 100,
+    "hp": 30
+   },
+   {
+    "id": 42,
+    "hp": 12.5
+   },
+   {
+    "id": 9,
+    "hp": 4
+   },
+   {
+    "id": 100,
+    "hp": 30
+   }
+  ],
+  "attackerUnitIds": [
+   "100",
+   "7",
+   "42",
+   "9",
+   "8"
+  ],
+  "defenderUnitIds": [
+   "3",
+   "11",
+   "12",
+   "5"
+  ],
+  "hasWallBreached": false,
+  "wallBreached": null,
+  "endStats": {
+   "atk": {
+    "total": 6,
+    "lost": 4,
+    "remaining": 2,
+    "hp": 60,
+    "hpMax": 260
+   },
+   "def": {
+    "total": 5,
+    "lost": 4,
+    "remaining": 1,
+    "hp": 20,
+    "hpMax": 300
+   }
+  }
+ },
+ {
+  "name": "e3_ff_cap_remis_is_e2",
+  "winner": "remis",
+  "survivors": [
+   {
+    "id": 100,
+    "hp": 30
+   },
+   {
+    "id": 42,
+    "hp": 12.5
+   },
+   {
+    "id": 9,
+    "hp": 4
+   },
+   {
+    "id": 100,
+    "hp": 30
+   },
+   {
+    "id": 12,
+    "hp": 7.25
+   },
+   {
+    "id": 5,
+    "hp": 20
+   }
+  ],
+  "attackerUnitIds": [
+   "100",
+   "7",
+   "42",
+   "9",
+   "8"
+  ],
+  "defenderUnitIds": [
+   "3",
+   "11",
+   "12",
+   "5"
+  ],
+  "hasWallBreached": true,
+  "wallBreached": false,
+  "endStats": {
+   "atk": {
+    "total": 6,
+    "lost": 4,
+    "remaining": 2,
+    "hp": 60,
+    "hpMax": 260
+   },
+   "def": {
+    "total": 5,
+    "lost": 4,
+    "remaining": 1,
+    "hp": 20,
+    "hpMax": 300
+   }
+  }
+ },
+ {
+  "name": "e1_then_draw",
+  "winner": "remis",
+  "survivors": [
+   {
+    "id": 100,
+    "hp": 30
+   },
+   {
+    "id": 42,
+    "hp": 12.5
+   },
+   {
+    "id": 9,
+    "hp": 4
+   },
+   {
+    "id": 100,
+    "hp": 30
+   },
+   {
+    "id": 12,
+    "hp": 7.25
+   },
+   {
+    "id": 5,
+    "hp": 20
+   }
+  ],
+  "attackerUnitIds": [
+   "100",
+   "7",
+   "42",
+   "9",
+   "8"
+  ],
+  "defenderUnitIds": [
+   "3",
+   "11",
+   "12",
+   "5"
+  ],
+  "hasWallBreached": false,
+  "wallBreached": null,
+  "endStats": {
+   "atk": {
+    "total": 6,
+    "lost": 4,
+    "remaining": 2,
+    "hp": 60,
+    "hpMax": 260
+   },
+   "def": {
+    "total": 5,
+    "lost": 4,
+    "remaining": 1,
+    "hp": 20,
+    "hpMax": 300
+   }
+  }
+ },
+ {
+  "name": "end_winner_null_after_reset",
+  "winner": "obronca",
+  "survivors": [],
+  "attackerUnitIds": [
+   "100",
+   "7",
+   "42",
+   "9",
+   "8"
+  ],
+  "defenderUnitIds": [
+   "3",
+   "11",
+   "12",
+   "5"
+  ],
+  "hasWallBreached": false,
+  "wallBreached": null,
+  "endStats": {
+   "atk": {
+    "total": 6,
+    "lost": 4,
+    "remaining": 2,
+    "hp": 60,
+    "hpMax": 260
+   },
+   "def": {
+    "total": 5,
+    "lost": 4,
+    "remaining": 1,
+    "hp": 20,
+    "hpMax": 300
+   }
+  }
+ },
+ {
+  "name": "e4_siege_machine",
+  "winner": "atakujacy",
+  "survivors": [
+   {
+    "id": 21,
+    "hp": 9.5
+   }
+  ],
+  "attackerUnitIds": [
+   "21",
+   "22"
+  ],
+  "defenderUnitIds": [
+   "3",
+   "11",
+   "12",
+   "5"
+  ],
+  "hasWallBreached": true,
+  "wallBreached": true,
+  "endStats": {
+   "atk": {
+    "total": 2,
+    "lost": 1,
+    "remaining": 1,
+    "hp": 15,
+    "hpMax": 60
+   },
+   "def": {
+    "total": 5,
+    "lost": 4,
+    "remaining": 1,
+    "hp": 20,
+    "hpMax": 300
+   }
+  }
+ },
+ {
+  "name": "e4_siege_no_machine_alive",
+  "winner": "obronca",
+  "survivors": [
+   {
+    "id": 5,
+    "hp": 3
+   }
+  ],
+  "attackerUnitIds": [
+   "21",
+   "22"
+  ],
+  "defenderUnitIds": [
+   "3",
+   "11",
+   "12",
+   "5"
+  ],
+  "hasWallBreached": true,
+  "wallBreached": false,
+  "endStats": {
+   "atk": {
+    "total": 2,
+    "lost": 1,
+    "remaining": 1,
+    "hp": 8,
+    "hpMax": 60
+   },
+   "def": {
+    "total": 5,
+    "lost": 4,
+    "remaining": 1,
+    "hp": 20,
+    "hpMax": 300
+   }
+  }
+ },
+ {
+  "name": "e4_no_siege",
+  "winner": "atakujacy",
+  "survivors": [
+   {
+    "id": 21,
+    "hp": 9.5
+   }
+  ],
+  "attackerUnitIds": [
+   "21",
+   "22"
+  ],
+  "defenderUnitIds": [
+   "3",
+   "11",
+   "12",
+   "5"
+  ],
+  "hasWallBreached": false,
+  "wallBreached": null,
+  "endStats": {
+   "atk": {
+    "total": 2,
+    "lost": 1,
+    "remaining": 1,
+    "hp": 15,
+    "hpMax": 60
+   },
+   "def": {
+    "total": 5,
+    "lost": 4,
+    "remaining": 1,
+    "hp": 20,
+    "hpMax": 300
+   }
+  }
+ }
+]
