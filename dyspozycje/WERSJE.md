@@ -1,3 +1,9 @@
+## ROBOCZA 2cb84db4 -- 2026-11-16 -- FALA 782: Wydarzenia bez wpisu o zwolnieniu zarzadcy obcej cywilizacji (testowa)
+
+- Po zajeciu miasta gracz nie dostaje wpisu o zwolnieniu zarzadcy OBCEJ cywilizacji (bramka wg poprzedniego wlasciciela); utrata wlasnego miasta z zarzadca nadal daje wpis
+- Weryfikacja: tsc 0, logic 213/213, foreign-administrator-dismissed 12/0 (mutacja czerwona), city-administrator 119/0, improvement-administrator 59/0, load-game-regression 34/0
+- Limity: Chromium live NIE ZMIERZONO; dlug bazowy events-defer-to-turn-start C3 1 FAIL; REPIN Rust noteAdministratorChange
+
 ## ROBOCZA df6c91bf -- 2026-11-16 -- FALA 781: Zastap: przejscie przez wszystkie typy jednostek w armii (testowa)
 
 - Zastap po zaznaczeniu roznych typow w armii przechodzi kolejno przez kazdy typ z zamiennikiem (modal na typ, grupa k/n), przycisk Pomin ten typ, Zakoncz konczy lancuch, komunikat o niezalatwionych typach
