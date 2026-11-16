@@ -1,4 +1,8 @@
 'use strict';
+// WYCOFANY: dowód historyczny (R-WEB-TEST-DEBT-BASELINE-Q4, decyzja właściciela 2026-11-16, wariant: wczesne wyjście z kodem 0).
+// Powód: brak pliku dowodu dyspozycje/autobot/runs/R-PR141-CODEX-F04-PRODUCTION-DECISION-CLOSEOUT-20261018/evidence/matrix-93x15-current-evidence-ledger-v4.json (ENOENT); dane NIE są regenerowane.
+console.log('WYCOFANY: dowód historyczny -- pr141-current-evidence-ledger-v4-test');
+process.exit(0);
 
 const fs = require('node:fs');
 const path = require('node:path');

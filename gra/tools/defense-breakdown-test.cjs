@@ -530,6 +530,46 @@ const fikcyjnyBonusLesny = {
 }
 
 // ---------------------------------------------------------------------------
+// H -- MUTACJA (R-WEB-TEST-DEBT-BASELINE-Q4, decyzja A): filtr „wartosc === 0"
+// w defenderCivBonusBreakdown (wpisy zerowe nie sa pokazywane w panelu).
+// Kopia zrodla z WYCIETYM filtrem jest budowana w katalogu tymczasowym (importy
+// zamienione na sciezki absolutne), a wynik dla Grekow na rosterze z sama
+// piechota MUSI sie roznic od wersji produkcyjnej -- inaczej filtr nie jest
+// testowany i mutacja nie wykrywa regresji (czerwono = test dziala).
+console.log('\n--- H. Mutacja: cofniecie filtra wartosc === 0 (defenderCivBonusBreakdown) ---');
+{
+  const FILTER_LINE = "if (b.wartosc === 0) continue;";
+  const srcPath = path.join(GRA_ROOT, 'src/game/defenseBreakdown.ts');
+  const srcText = fs.readFileSync(srcPath, 'utf8');
+  assert(srcText.includes(FILTER_LINE), 'MUTACJA: produkcyjne zrodlo zawiera filtr "' + FILTER_LINE + '"');
+  const gameDir = path.join(GRA_ROOT, 'src/game');
+  const mutatedText = srcText
+    .replace(FILTER_LINE, '')
+    .replace(/from '\.\//g, "from '" + gameDir + '/');
+  const MUT_SRC = path.join(os.tmpdir(), `defense-breakdown-mut-src-${TMPDIR_RUN_ID}.ts`);
+  const MUT_BUNDLE = path.join(os.tmpdir(), `defense-breakdown-mut-bundle-${TMPDIR_RUN_ID}.cjs`);
+  fs.writeFileSync(MUT_SRC, mutatedText);
+  esbuild.buildSync({
+    entryPoints: [MUT_SRC],
+    bundle: true,
+    platform: 'node',
+    format: 'cjs',
+    outfile: MUT_BUNDLE,
+    logLevel: 'silent',
+  });
+  const mut = require(MUT_BUNDLE);
+  const rosterInf = ['Wojownik', 'Wojownik', 'Wojownik'].map((n) => ({ celShape: celShape(n) }));
+  const prodLines = defenderCivBonusBreakdown(rosterInf, grecyBonusy, 'Rownina');
+  const mutLines = mut.defenderCivBonusBreakdown(rosterInf, grecyBonusy, 'Rownina');
+  assert(mutLines.length !== prodLines.length,
+    'MUTACJA: bez filtra wartosc===0 wynik dla Grekow rozni sie od produkcji (mut=' + mutLines.length + ', prod=' + prodLines.length + ')');
+  assert(prodLines.every(l => l.affectedCount > 0),
+    'PRODUKCJA: kazda pokazana linia ma affectedCount > 0 (zero-wartosciowe i zero-dopasowane pominiete)');
+  try { fs.unlinkSync(MUT_SRC); } catch (e) {}
+  try { fs.unlinkSync(MUT_BUNDLE); } catch (e) {}
+}
+
+// ---------------------------------------------------------------------------
 console.log('\n=== defense-breakdown-test: ' + pass + ' pass, ' + fail + ' fail ===');
 try { fs.unlinkSync(DB_BUNDLE); } catch (e) {}
 try { fs.unlinkSync(CD_BUNDLE); } catch (e) {}
