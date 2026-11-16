@@ -170,6 +170,31 @@ export function inheritSiegeOnJoin(
 }
 
 /**
+ * R-WEB-ARMY-SPLIT-BESIEGING-ARMY-NO-SIEGE-LOCK-Q2: jednostki WYDZIELONE z armii oblegającej
+ * (Rozdziel) przestają być częścią oblężenia. Czyści `oblegaCityId` (nie liczą się do
+ * `besiegeArmyGroups`, nie zasilają oblężenia i nie są zerowane co turę w turn-loop) i przywraca
+ * normalną pulę ruchu (`ruch`), bo blokada z commitBesiege (ruchLeft=0) dotyczy tylko oblegających.
+ * Zwraca id miasta, z którego wydzielono jednostki (undefined, gdy żadna nie oblegała).
+ * EN: units split off a besieging army leave the siege and regain their normal movement pool.
+ */
+export function releaseSplitFromSiege(
+  arrivals: ReadonlyArray<RuntimeUnit>,
+): string | undefined {
+  let cityId: string | undefined;
+  for (const u of arrivals) {
+    if (u.oblegaCityId === undefined) continue;
+    cityId = u.oblegaCityId;
+    delete u.oblegaCityId;
+    // Oblegający ufortyfikowany w polu (enterFieldFortify zapisało fortifyRuchSnapshot=0):
+    // najpierw zdejmij fortyfikację (przywraca snapshot), bo inaczej exitFieldFortify
+    // późniejszy (Czuwaj / normalizeMergedFortify) nadpisze ruchLeft zerem.
+    exitFieldFortify(u);
+    u.ruchLeft = u.ruch;
+  }
+  return cityId;
+}
+
+/**
  * Grupy stosów FAKTYCZNIE oblegających miasto `cityId` (właściciel `ownerId`).
  * Źródło prawdy: jednostki już oznaczone `oblegaCityId` -- ich BIEŻĄCE stackGroupId (odporne na
  * scalenie i podział stosu, które zmieniają id grupy). Brak takich jednostek (pierwsze oblężenie)
