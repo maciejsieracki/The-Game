@@ -33,6 +33,7 @@ pub mod decor;
 pub mod geom;
 pub mod jsmath;
 pub mod labels;
+pub mod map_units;
 pub mod material;
 pub mod models;
 pub mod overlays;
