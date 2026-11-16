@@ -1,3 +1,9 @@
+## ROBOCZA df6c91bf -- 2026-11-16 -- FALA 781: Zastap: przejscie przez wszystkie typy jednostek w armii (testowa)
+
+- Zastap po zaznaczeniu roznych typow w armii przechodzi kolejno przez kazdy typ z zamiennikiem (modal na typ, grupa k/n), przycisk Pomin ten typ, Zakoncz konczy lancuch, komunikat o niezalatwionych typach
+- Weryfikacja: tsc 0, logic 213/213, multitype-walk 25/0 (mutacja czerwona), army-multi-select 36/36, unit-replace 21/21, archer-slinger 15/0, load-game-regression 34/0
+- Limity: Chromium live NIE ZMIERZONO; dlug bazowy unit-replace-full-cost 1 FAIL; komunikat gdy wszystkie typy bez zamiennika nie nazywa typow
+
 ## ROBOCZA f06ba9eb -- 2026-11-16 -- FALA 780: Droga brukowana: budowa od zera albo ulepszenie zwyklej drogi (testowa)
 
 - Droga brukowana moze byc zbudowana od zera na heksie bez drogi (koszt Droga + Brukowana = 40 pracy; zalozenie do potwierdzenia) albo jako ulepszenie istniejacej Drogi (25 jak dotad); tooltip heksa i HUD budowy pokazuja oba koszty; AI i auto-ulepszenia bez zmian decyzji.

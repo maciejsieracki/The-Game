@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "f06ba9ebe1a1777d0b09c469505a1bce",
-  "bundleSha256": "deb6bfeeb1eed45f32151f1dc2a422bcbcefc442085dc89f1622e45d40e08fc5",
-  "bundleBytes": 14818452,
+  "bundleMd5": "df6c91bfe22f33773e2f389fb7569326",
+  "bundleSha256": "fc8004187e6fe4e76fd9a12348209fc49c92c4e52811530c4b9314304404113a",
+  "bundleBytes": 14820295,
   "sourceSnapshot": {
-    "source": "FC 162e95664, main 0c80544ee",
+    "source": "FC cf304e036, main 98abccdfc",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 780: Droga brukowana moze byc zbudowana od zera na heksie bez drogi (koszt Droga + Brukowana = 40 pracy; zalozenie do potwierdzenia) albo jako ulepszenie istniejacej Drogi (25 jak dotad); tooltip heksa i HUD budowy pokazuja oba koszty; AI i auto-ulepszenia bez zmian decyzji."
+    "FALA 781: Zastap po zaznaczeniu roznych typow w armii przechodzi kolejno przez kazdy typ z zamiennikiem (modal na typ, grupa k/n), przycisk Pomin ten typ, Zakoncz konczy lancuch, komunikat o niezalatwionych typach"
   ],
   "verification": [
-    "tsc 0, road-paved-direct-build-test 15/0, roads-* testy zielone, map-road-movement 27/0, hex-tooltip 63/0, auto-improvements 46/0, load-game-regression 34/0, 5 bramek referencyjnych"
+    "tsc 0, logic 213/213, multitype-walk 25/0 (mutacja czerwona), army-multi-select 36/36, unit-replace 21/21, archer-slinger 15/0, load-game-regression 34/0"
   ],
   "limits": [
-    "NIE ZMIERZONO: zywy Chromium tooltip i panel, test kolejki/anulowania/zapisu brukowanej od zera, wiki bundle; dlug bazowy map-improvement-qualify i auto-fort-claim"
+    "Chromium live NIE ZMIERZONO; dlug bazowy unit-replace-full-cost 1 FAIL; komunikat gdy wszystkie typy bez zamiennika nie nazywa typow"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES ROAD-PAVED-DIRECT-BUILD-OR-UPGRADE-Q1 r1 (kandydat 162e95664): droga brukowana moze byc zbudowana od zera na heksie bez drogi (koszt Droga+Brukowana = 40 pracy, zalozenie orkiestratora do potwierdzenia przez wlasciciela) albo jako ulepszenie istniejacej Drogi (25 jak dotad); tooltip heksa i HUD budowy pokazuja oba koszty (25 z Droga / 40 od zera); AI i auto-ulepszenia bez zmian decyzji. tsc 0, road-paved-direct-build-test 15/0, roads-* 24/57/99/17/19, map-road-movement 27/0, hex-tooltip 63/0, auto-improvements 46/0, autoimprove-stages-q1 299/0, load-game-regression 34/0, 5 bramek zielonych. Dlug bazowy: map-improvement-qualify, auto-fort-claim. NIE ZMIERZONO: zywy Chromium tooltip/panel, test kolejki/anulowania/zapisu brukowanej od zera, wiki bundle niezsynchronizowany, tooltip pokazuje opcje poza siecia drog (zachowanie sprzed tematu dla zwyklej Drogi). Dlug Rust: kwalifikator i koszt."
+    "notes": "FC PASS-WITH-NOTES UNIT-REPLACE-MULTITYPE-WALK-ALL-GROUPS-Q2 r1 (kandydat cf304e036): Zastap po zaznaczeniu roznych typow jednostek w armii przechodzi kolejno przez wszystkie typy z zamiennikiem (osobny modal na typ, grupa k/n); typy bez zamiennika sa nazwane w komunikacie; przycisk Pomin ten typ; Zakoncz/Esc/Anuluj konczy lancuch i podaje liczbe niezalatwionych typow; jeden toast z uwaga koncowa. tsc 0, unit-replace-multitype-walk-test 25/0 (mutacja czerwona), unit-replace-army-multi-select 36/36, unit-replace 21/21, 5 bramek zielonych, load-game-regression 34/0. Dlug bazowy: unit-replace-full-cost 1 FAIL i army-panel-general-label-multiselect (build). NIE ZMIERZONO: zywy Chromium i odtworzenie objawu wlasciciela w grze (hipotezy H2 i H3 potwierdzone w kodzie); gdy WSZYSTKIE zaznaczone typy sa bez zamiennika komunikat nie nazywa ich po nazwie (maly osobny temat)."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-16T22:16:28",
+  "hubGeneratedAt": "2026-11-16T22:21:17",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "f06ba9ebe1a1777d0b09c469505a1bce",
-      "sizeBytes": 14818452
+      "md5": "df6c91bfe22f33773e2f389fb7569326",
+      "sizeBytes": 14820295
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "f06ba9ebe1a1777d0b09c469505a1bce",
-      "sizeBytes": 14818452
+      "md5": "df6c91bfe22f33773e2f389fb7569326",
+      "sizeBytes": 14820295
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "f06ba9ebe1a1777d0b09c469505a1bce",
-      "sizeBytes": 14818452
+      "md5": "df6c91bfe22f33773e2f389fb7569326",
+      "sizeBytes": 14820295
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "f06ba9ebe1a1777d0b09c469505a1bce",
-      "sizeBytes": 14818452
+      "md5": "df6c91bfe22f33773e2f389fb7569326",
+      "sizeBytes": 14820295
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "f06ba9ebe1a1777d0b09c469505a1bce",
-      "sizeBytes": 14818452
+      "md5": "df6c91bfe22f33773e2f389fb7569326",
+      "sizeBytes": 14820295
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "f06ba9ebe1a1777d0b09c469505a1bce",
-      "sizeBytes": 14818452
+      "md5": "df6c91bfe22f33773e2f389fb7569326",
+      "sizeBytes": 14820295
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "f06ba9ebe1a1777d0b09c469505a1bce",
-      "sizeBytes": 14818452
+      "md5": "df6c91bfe22f33773e2f389fb7569326",
+      "sizeBytes": 14820295
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "f06ba9ebe1a1777d0b09c469505a1bce",
-      "sizeBytes": 14818452
+      "md5": "df6c91bfe22f33773e2f389fb7569326",
+      "sizeBytes": 14820295
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "f06ba9ebe1a1777d0b09c469505a1bce",
-      "sizeBytes": 14818452
+      "md5": "df6c91bfe22f33773e2f389fb7569326",
+      "sizeBytes": 14820295
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "f06ba9ebe1a1777d0b09c469505a1bce",
-      "sizeBytes": 14818452
+      "md5": "df6c91bfe22f33773e2f389fb7569326",
+      "sizeBytes": 14820295
     }
   ],
-  "md5": "f06ba9ebe1a1777d0b09c469505a1bce",
+  "md5": "df6c91bfe22f33773e2f389fb7569326",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
