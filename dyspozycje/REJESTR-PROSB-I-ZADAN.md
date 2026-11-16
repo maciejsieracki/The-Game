@@ -10484,3 +10484,6 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 
 ### 2026-11-16 ~19:20 UTC — ZGŁOSZENIE właściciela (REGRES): rozdzielona armia oblegająca dziedziczy oblężenie i zakaz ruchu
 - „Jest jakiś regres: gdy armia główna oblega i rozdzielimy ją, rozdzielone armie nie powinny być w oblężeniu ani mieć zakazu ruchu. Już to raz naprawialiśmy i znowu wróciło.” Wcześniejsza naprawa: R-WEB-SIEGE-NEARBY-UNIT-LOCK-AND-JOIN-BESIEGING-ARMY-Q1 (FALA ok. 574–580; 47d53fae0/218d7d5cf). Nowy temat R-WEB-ARMY-SPLIT-BESIEGING-ARMY-NO-SIEGE-LOCK-Q2 (Haiku r1; błąd webowy — stała zgoda; pilne): odtworzenie regresu, ustalenie commitu, test regresyjny do stałego zestawu. START przy pierwszym wolnym slocie (komplet 4 aktywnych w chwili zgłoszenia).
+
+### Zgłoszenie 2026-11-16 (wieczór): BOOT ERROR przy łączeniu jednostek (oblegająca + dołączająca)
+Właściciel: „Podczas łączenia jednostek taki dziwny błąd wystąpił. Jedna jednostka oblegała, a druga dołączyła.” Zrzut: `TypeError: Cannot read properties of undefined (reading 'typeId')` ← `onMerge` (panel „Połącz”) ← `applyMerge`. STATUS: **OTWARTE** — dispatch `R-WEB-ARMY-MERGE-JOIN-BESIEGING-TYPEID-CRASH-Q2` zapisany (e9efa70bf); start po ARMYSPLIT (te same pliki). Przyczyna NIE ZMIERZONA (4 hipotezy w dispatchu).
