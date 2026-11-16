@@ -11,6 +11,8 @@ use std::{error::Error, fmt};
 
 use super::brake_power::{objective_power_for_owner, ObjectivePowerRaw};
 use super::building_costs::p6_7b::StockRecord;
+use super::pathfinding::ruch_jednostek::MoveOccupancy;
+use super::playable_movement::{occupied_for_move, PlayableMoveModel};
 use super::turn_war_inputs::{
     build_war_inputs, power_raw_for_owner, production_config, start_epoch_number,
 };
@@ -481,7 +483,7 @@ fn replace_difficulty_of(label: &str) -> Result<Difficulty, PlayableError> {
 }
 
 /// Typ startowy jednostki (units.json) dla `PlayableUnitKind`.
-const fn base_type_id(kind: PlayableUnitKind) -> &'static str {
+pub(crate) const fn base_type_id(kind: PlayableUnitKind) -> &'static str {
     match kind {
         PlayableUnitKind::Warrior => "Wojownik",
     }
@@ -547,6 +549,14 @@ pub struct PlayableState {
     /// jednostki (`main.ts:25737`). Web jej NIE zapisuje i czysci przy wczytaniu (`main.ts:46274`).
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub march_stop_detail: BTreeMap<UnitId, String>,
+    /// P4-1H Q4: web `movedByPlayerThisTurn` (`main.ts:31010-31014`, `Set<string>`): jednostki gracza,
+    /// ktore w biezacej turze dostaly rozkaz ruchu (`markPlayerMovedUnit`, `main.ts:31026-31028`,
+    /// wolane z `planMarchTo` `:31284`). Czyszczone przy odnowieniu ruchu na starcie tury
+    /// (`main.ts:38144`), przy nowej grze (`:45066`) i przy wczytaniu (`:46280`). Web go NIE zapisuje
+    /// (brak w `save.ts`); pusty => pole pomijane w DTO, wiec stan bez pola jest bajt w bajt jak dawniej.
+    /// Web czyta tylko `has` / `add` / `clear` / `size`, wiec kolejnosc zbioru nie ma znaczenia.
+    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
+    pub moved_by_player_this_turn: BTreeSet<UnitId>,
 }
 
 /// P4-1J: jeden plan marszu, web `PlannedMarchDest` (`planned-march.ts:16-23`) z kluczem mapy
@@ -682,6 +692,33 @@ impl PlayableState {
 }
 
 impl PlayableState {
+    /// P4-1H Q4: web `markPlayerMovedUnit(unitId)` (`main.ts:31026-31028`): `movedByPlayerThisTurn.add`.
+    pub fn mark_player_moved_unit(&mut self, unit_id: UnitId) {
+        self.moved_by_player_this_turn.insert(unit_id);
+    }
+
+    /// P4-1H Q4: web `movedByPlayerThisTurn.has(unitId)` (`main.ts:31566`, `:31696`, `:31702`).
+    pub fn is_moved_by_player_this_turn(&self, unit_id: UnitId) -> bool {
+        self.moved_by_player_this_turn.contains(&unit_id)
+    }
+
+    /// P4-1H Q4: wejscia modelu ruchu weba (`RuchMapa`, `RuchJednostka`, `CityHexRef`) z tego stanu;
+    /// adapter: [`super::playable_movement`].
+    pub fn move_model(&self) -> PlayableMoveModel {
+        PlayableMoveModel::from_state(self)
+    }
+
+    /// P4-1H Q4: web `occupiedForMove(moverOwnerId, ...exceptIds)` (`main.ts:14578-14584`) na tym
+    /// stanie; adapter: [`super::playable_movement::occupied_for_move`].
+    pub fn occupied_for_move(
+        &self,
+        mover_owner_id: PlayerId,
+        except_ids: &[UnitId],
+    ) -> MoveOccupancy {
+        let owner = i64::try_from(mover_owner_id.get()).expect("PlayerId miesci sie w i64");
+        occupied_for_move(self, owner, except_ids)
+    }
+
     /// Empty state used only by the deterministic bridge mock.
     pub fn empty() -> Self {
         Self {
@@ -707,6 +744,7 @@ impl PlayableState {
             march_attack_targets: BTreeMap::new(),
             march_stop_notified: BTreeMap::new(),
             march_stop_detail: BTreeMap::new(),
+            moved_by_player_this_turn: BTreeSet::new(),
         }
     }
 }
@@ -879,6 +917,7 @@ impl PlayableGame {
                 march_attack_targets: BTreeMap::new(),
                 march_stop_notified: BTreeMap::new(),
                 march_stop_detail: BTreeMap::new(),
+                moved_by_player_this_turn: BTreeSet::new(),
             },
             phase_queue: EventQueue::new(),
         };
@@ -973,7 +1012,11 @@ impl PlayableGame {
         if distance != 1 {
             return Err(PlayableError::DestinationNotAdjacent);
         }
-        let mut moved = unit.clone();
+        // P4-1H Q4: web `markPlayerMovedUnit(u.id)` (`main.ts:31284`) po bramkach rozkazu, przed
+        // wykonaniem segmentu. Sam ruch (1 heks) bez zmian - pelny `planMarchTo` to Q6 (#252).
+        let moved_id = unit.id;
+        self.state.mark_player_moved_unit(moved_id);
+        let mut moved = self.state.units[unit_index].clone();
         moved.position = destination;
         moved.movement = moved.movement.saturating_sub(distance as u8);
         self.state.units[unit_index] = moved;
@@ -1276,6 +1319,8 @@ impl PlayableGame {
         self.state.phase = TurnPhase::PlayerActions;
         self.state.last_advanced_phases = phases;
         self.state.selected_unit_id = None;
+        // P4-1H Q4: web `movedByPlayerThisTurn.clear()` tuz przed odnowieniem ruchu (`main.ts:38144-38146`).
+        self.state.moved_by_player_this_turn.clear();
         for unit in &mut self.state.units {
             unit.selected = false;
             unit.movement = unit.movement_max;
