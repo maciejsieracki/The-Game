@@ -38,6 +38,7 @@ pub mod models;
 pub mod overlays;
 pub mod pick;
 pub mod raster;
+pub mod rivers;
 pub mod scene;
 pub mod terrain;
 pub mod text;
