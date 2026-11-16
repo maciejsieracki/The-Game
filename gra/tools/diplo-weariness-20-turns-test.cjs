@@ -63,22 +63,22 @@ function behaviour(W) {
   const lvl = (turnsAtWar, lostCitiesTotal = 0, turnsSinceCityChange) =>
     W.warWearinessLevel({ turnsAtWar, lostCitiesTotal, turnsSinceCityChange });
   // (a) krzywa bez strat
-  out.push(['a: 10 tur bez strat = 0,5', near(lvl(10), 0.5)]);
-  out.push(['a: 16 tur bez strat = 0,8', near(lvl(16), 0.8)]);
-  out.push(['a: 20 tur bez strat = 1,0', near(lvl(20), 1)]);
-  out.push(['a: 5% na ture (tura 1 = 0,05)', near(lvl(1), 0.05)]);
-  out.push(['a: po 20 turach poziom nie przekracza 1 (min(1, ...))', near(lvl(35), 1)]);
+  out.push(['a: 20 tur bez strat = 0,5', near(lvl(20), 0.5)]);
+  out.push(['a: 32 tur bez strat = 0,8', near(lvl(32), 0.8)]);
+  out.push(['a: 40 tur bez strat = 1,0', near(lvl(40), 1)]);
+  out.push(['a: 2,5% na ture (tura 1 = 0,025)', near(lvl(1), 0.025)]);
+  out.push(['a: po 40 turach poziom nie przekracza 1 (min(1, ...))', near(lvl(70), 1)]);
   // (b) +0,10 za zmienione miasto
-  out.push(['b: 1 zmienione miasto (10 tur) = 0,6', near(lvl(10, 1), 0.6)]);
-  out.push(['b: 3 zmienione miasta (10 tur) = 0,8', near(lvl(10, 3), 0.8)]);
+  out.push(['b: 1 zmienione miasto (20 tur) = 0,6', near(lvl(20, 1), 0.6)]);
+  out.push(['b: 3 zmienione miasta (20 tur) = 0,8', near(lvl(20, 3), 0.8)]);
   out.push(['b: 0 tur + 2 miasta = 0,2', near(lvl(0, 2), 0.2)]);
-  out.push(['b: miasta obu stron sumuja sie (lostCitiesTotal)', near(lvl(4, 2), 0.2 + 0.2)]);
+  out.push(['b: miasta obu stron sumuja sie (lostCitiesTotal)', near(lvl(4, 2), 0.1 + 0.2)]);
   // (c) brak zastoju i brak drugiego zegara
   out.push(['c: poziom niezalezny od turnsSinceCityChange (brak zastoju)',
-    near(lvl(8, 0, 120), lvl(8, 0, 0)) && near(lvl(8, 0, 120), 0.4)]);
-  out.push(['c: zapas pola wagi zastoju nie wplywa (8 tur, 0 miast)', near(lvl(8, 0, 1), 0.4)]);
+    near(lvl(8, 0, 120), lvl(8, 0, 0)) && near(lvl(8, 0, 120), 0.2)]);
+  out.push(['c: zapas pola wagi zastoju nie wplywa (8 tur, 0 miast)', near(lvl(8, 0, 1), 0.2)]);
   // (d) progi z JSON
-  out.push(['d: pelneTur = 20 w JSON', PJ.zmeczenie.pelneTur === 20]);
+  out.push(['d: pelneTur = 40 w JSON (DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1)', PJ.zmeczenie.pelneTur === 40]);
   out.push(['d: wagaStratMiasta = 0,1 w JSON', near(PJ.zmeczenie.wagaStratMiasta, 0.1)]);
   out.push(['d: progChetnosci = 0,5 w JSON', near(PJ.zmeczenie.progChetnosci, 0.5)]);
   out.push(['d: progKoncaZmeczenia = 0,8 w JSON', near(PJ.zmeczenie.progKoncaZmeczenia, 0.8)]);
@@ -87,10 +87,12 @@ function behaviour(W) {
   out.push(['d: brak kluczy zastoju w JSON',
     PJ.zmeczenie.stagnacjaWaga === undefined && PJ.zmeczenie.stagnacjaOdTur === undefined
     && PJ.zmeczenie.stagnacjaSkalaTur === undefined]);
-  out.push(['d: progi 0,5 / 0,8 / 1,0 osiagane w turach 10 / 16 / 20',
-    lvl(10) >= W.WAR_WEARINESS_PARAMS.zmeczenie.progChetnosci
-    && lvl(16) >= W.WAR_WEARINESS_PARAMS.zmeczenie.progKoncaZmeczenia
-    && lvl(20) >= 1 && lvl(15) < W.WAR_WEARINESS_PARAMS.zmeczenie.progKoncaZmeczenia]);
+  out.push(['d: progi 0,5 / 0,8 / 1,0 osiagane w turach 20 / 32 / 40; wymuszenie od 1,0',
+    lvl(20) >= W.WAR_WEARINESS_PARAMS.zmeczenie.progChetnosci
+    && lvl(32) >= W.WAR_WEARINESS_PARAMS.zmeczenie.progKoncaZmeczenia
+    && lvl(40) >= 1 && lvl(31) < W.WAR_WEARINESS_PARAMS.zmeczenie.progKoncaZmeczenia
+    && W.WAR_WEARINESS_PARAMS.zmeczenie.progWymuszonyPokoj === 1
+    && W.wearinessForcedPeaceDue(lvl(40)) && !W.wearinessForcedPeaceDue(lvl(32))]);
   return out;
 }
 
@@ -116,13 +118,14 @@ try {
   const W = loadW(ORIG);
   for (const [name, ok] of behaviour(W)) check(name, ok);
 
-  // (g) AI<->AI bez strat miast: tick (runWarWearinessTick) daje pokoj w turze 16 (poziom 0,8 = 16/20), nie pozniej niz 24.
+  // (g) AI<->AI bez strat miast: 80% (tura 32) NIE wymusza pokoju; 100% (tura 40) = pokoj WYMUSZONY (forced_peace).
   //     Przed 10. turą wojny tick nie wykonuje żadnej akcji (PEACE_PROPOSAL_MIN_WAR_TURNS).
   {
     const store = new Map();
     let firstPeace = -1;
     let anyEarly = false;
-    for (let t = 1; t <= 24; t++) {
+    let at32 = 'none';
+    for (let t = 1; t <= 44; t++) {
       const deps = {
         store, turn: 400 + t, pairs: [{ a: 1, b: 2 }],
         pairKey: (a, b) => `${Math.min(a, b)}-${Math.max(a, b)}`,
@@ -138,10 +141,12 @@ try {
         finalize: () => {},
       };
       const out = W.runWarWearinessTick(deps)[0];
-      if (out.action === 'mutual_peace' && firstPeace < 0) firstPeace = t;
+      if (t === 32) at32 = out.action;
+      if (out.action === 'forced_peace' && firstPeace < 0) firstPeace = t;
       if (t < 10 && out.action !== 'none') anyEarly = true;
     }
-    check('g1: AI<->AI bez strat: pokoj (mutual_peace) w turze 16, nie pozniej niz 24', firstPeace === 16);
+    check('g1: AI<->AI bez strat: pokoj wymuszony (forced_peace) w turze 40 (100%)', firstPeace === 40);
+    check('g3: AI<->AI bez strat: przy 80% (tura 32) nie ma pokoju wymuszonego', at32 !== 'forced_peace');
     check('g2: AI<->AI bez strat: przed 10. tura wojny zadna akcja tickera', !anyEarly);
   }
 

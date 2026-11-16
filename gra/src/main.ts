@@ -21090,9 +21090,7 @@ async function boot(): Promise<void> {
         // givePn/receivePn AI = 0/0 — payload dziś zawsze goły w tym miejscu (żaden branch
         // wyżej nie dotyczy 'zaproponuj_pokoj'); gdyby to się kiedyś zmieniło, resolveProposalPn
         // czytałby realne wartości, ale dziś jest to poza zakresem (payload:{} zawsze).
-        // R-WEB-DIPLO-WEARINESS-UNCONDITIONAL-END-Q1: koniec zmęczenia = pokój BEZWARUNKOWY (bez płatności).
-        const unconditionalEnd = workingCmd.bezwarunkowy === true;
-        const neededPn = unconditionalEnd ? 0 : peaceOfferAiRequestPn(
+        const neededPn = peaceOfferAiRequestPn(
           0, 0, relationTotal(relForPeace), basePnPeace, difficultyForPeace,
         );
         if (neededPn > 0) {
@@ -21103,7 +21101,7 @@ async function boot(): Promise<void> {
         }
         // Zakres: WYŁĄCZNIE rozejm (pokój zostaje bit w bit — ten sam ubytek zmierzony w kontroli
         // pokoju, decyzja o pokoju poza tym tematem; patrz raport R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1).
-        peaceBareAllowed = (workingCmd.rodzaj === 'rozejm' || unconditionalEnd)
+        peaceBareAllowed = workingCmd.rodzaj === 'rozejm'
           && neededPn <= 0
           && !converted.payload.giveItems?.length
           && !converted.payload.receiveItems?.length
@@ -44798,8 +44796,7 @@ async function boot(): Promise<void> {
                 if (peaceTraceState.on) {
                   const trPlr = (xs: AIDiplomacyCommand[]): string[] => xs
                     .filter(c => c.targetId === '0')
-                    .map(c => c.type + ((c as { bezwarunkowy?: boolean }).bezwarunkowy ? '/bezw' : '')
-                      + ((c as { rodzaj?: string }).rodzaj ? '/' + (c as { rodzaj?: string }).rodzaj : ''));
+                    .map(c => c.type + ((c as { rodzaj?: string }).rodzaj ? '/' + (c as { rodzaj?: string }).rodzaj : ''));
                   // Odczyty BEZ wstawiania (getDiploRelation / diplomaticContactEstablishedSet dopisują brakujący wpis do Map).
                   const trRel = diplomacyRelations.get(ownerId < ME() ? `${ownerId}_${ME()}` : `${ME()}_${ownerId}`) ?? defaultNeutralRelation();
                   const trMeta = diplomacyPairMeta.get(diploPairKey(ownerId, ME())) as (DiploPairMeta & WarPairMetaR1) | undefined;
