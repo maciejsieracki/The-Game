@@ -5,15 +5,16 @@
 //! of them are hidden by a city, a wonder or a unit.
 //!
 //! Pin `07d2fbd72`, `gra/src/render/scene.ts` (roblox style, `styledTerrain`):
-//! - placement (`:2346-2374`): a hex gets a clump when
-//!   `hex.nakladka === Nakladka.Las && isDryLandTeren(t)`; it is a jungle
-//!   clump when `isWarmJungleForestHex(q, r, map.wysokoscR)`, variant
-//!   `wariantDjungliDlaHeksa(q, r, NDJ = 5, map.seed)`, yaw
-//!   `rotacjaDjungliDlaHeksa`, otherwise a forest clump, variant
-//!   `wariantLasuDlaHeksa(q, r, NL_NATURAL = 4, map.seed)` (variant 4 is
-//!   reserved for the dynamic clearing, `:1717-1719`), yaw
-//!   `rotacjaLasuDlaHeksa`; position `(x, vis.height + vis.yOffset, z)`,
-//!   scale 1. Instances are appended to the layer of their variant in
+//! - placement (`:2348-2374`): a hex gets a clump when
+//!   `hex.nakladka === Nakladka.Las && isDryLandTeren(t)` (`:2348`); it is a
+//!   jungle clump when `isWarmJungleForestHex(q, r, map.wysokoscR)`
+//!   (`:2354`), variant `wariantDjungliDlaHeksa(q, r, NDJ = 5, map.seed)`,
+//!   yaw `rotacjaDjungliDlaHeksa` (`:2355-2356`), otherwise a forest clump,
+//!   variant `wariantLasuDlaHeksa(q, r, NL_NATURAL = 4, map.seed)` (variant
+//!   4 is reserved for the dynamic clearing, `:1717-1719`), yaw
+//!   `rotacjaLasuDlaHeksa` (`:2365-2366`); position
+//!   `(x, vis.height + vis.yOffset, z)` (`baseY` `:2349`), scale 1
+//!   (`:2352-2353`). Instances are appended to the layer of their variant in
 //!   `Object.values(map.hexes)` order (the DTO order, contract §1.4); the
 //!   layers are `lasInst[0..NL)` and `djunglaInst[0..NDJ)` (`:1877-1886`);
 //! - `hideDecorAtHex(hexKey)` (`:3172-3216`): removes the hex from the unit
@@ -139,7 +140,7 @@ pub struct ForestPlacement {
     unit_forest_hidden: HashSet<HexCoord>,
 }
 
-/// Places the forest / jungle clumps (`scene.ts:2346-2374`). `seed` is
+/// Places the forest / jungle clumps (`scene.ts:2348-2374`). `seed` is
 /// `map.seed | 0`, `map_height` is `map.wysokoscR`.
 #[must_use]
 pub fn place_forests(seed: i32, map_height: u32, hexes: &[ForestHexInput]) -> ForestPlacement {
@@ -156,7 +157,7 @@ pub fn place_forests(seed: i32, map_height: u32, hexes: &[ForestHexInput]) -> Fo
         }
         let (q, r) = (h.coord.q, h.coord.r);
         let (x, z) = axial_to_world(h.coord, HEX_R);
-        // `baseY = vis.height + vis.yOffset` (`:2348`), no coastal drop.
+        // `baseY = vis.height + vis.yOffset` (`:2349`), no coastal drop.
         let pos = Vec3::new(x, h.terrain.top_y(), z);
         let (layer, yaw) = if is_warm_jungle_forest_hex(r, height) {
             let v = wariant_djungli_dla_heksa(q, r, LICZBA_WARIANTOW_DJUNGLI, seed);

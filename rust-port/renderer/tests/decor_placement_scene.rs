@@ -8,16 +8,16 @@
 //!
 //! Sources of the expected values (pin `07d2fbd72`, `gra/src/**`):
 //! - V1 placement condition `hex.nakladka === Nakladka.Las &&
-//!   isDryLandTeren(t)` (`render/scene.ts:2347`);
+//!   isDryLandTeren(t)` (`render/scene.ts:2348`);
 //! - V2 jungle when `isWarmJungleForestHex(q, r, map.wysokoscR)`
-//!   (`render/scene.ts:2352`), variant `wariantDjungliDlaHeksa(q, r, NDJ,
-//!   map.seed)` and yaw `rotacjaDjungliDlaHeksa` (`:2353-2354`); forest
+//!   (`render/scene.ts:2354`), variant `wariantDjungliDlaHeksa(q, r, NDJ,
+//!   map.seed)` and yaw `rotacjaDjungliDlaHeksa` (`:2355-2356`); forest
 //!   variant `wariantLasuDlaHeksa(q, r, NL_NATURAL = 4, map.seed)` and yaw
-//!   `rotacjaLasuDlaHeksa` (`:2363-2364`, `NL_NATURAL` `:1719`);
+//!   `rotacjaLasuDlaHeksa` (`:2365-2366`, `NL_NATURAL` `:1719`);
 //! - V3 position `(x, vis.height + vis.yOffset, z)`, scale 1
-//!   (`render/scene.ts:2348`, `:2350-2351`);
+//!   (`render/scene.ts:2349`, `:2352-2353`);
 //! - V4 order: instances appended per variant layer (`lasIdx[v]++`,
-//!   `djunglaIdx[v]++`, `:2356-2372`) while iterating
+//!   `djunglaIdx[v]++`, `:2357-2373`) while iterating
 //!   `Object.values(map.hexes)` (`:1727`, r-major DTO order);
 //! - V5 `hideDecorAtHex` for every placed wonder (`main.ts:4312`), finished
 //!   wonder site (`main.ts:5264`) and city (`main.ts:16158`, `:16211`);
