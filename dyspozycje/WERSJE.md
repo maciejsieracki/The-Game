@@ -1,3 +1,9 @@
+## ROBOCZA 6b8fa405 -- 2026-11-14 -- FALA 763: audyt pol zapisu: deserializeGame nie gubi pol (narzedzie) (testowa)
+
+- Narzedzie save-load-deserialize-fields-audit.cjs: audyt live seed 4242, 282 klucze, deserializeGame nie gubi zadnego pola (poza naprawionym w FALI 762 resourceLedgerHistory); mutacja czerwona. Bez zmian gra/src.
+- Weryfikacja: FC PASS-WITH-NOTES 71def8b3e; logic 213/213, vite OK, MD5 Raw
+- Limity: jedna probka; tablice cities/units/mapSnapshot jako liscie; faza b proxy; scenariusz 0 miast NIE ZMIERZONO
+
 ## ROBOCZA 2143e042 -- 2026-11-14 -- FALA 762: dziennik Skad zapasy wraca po wczytaniu zapisu (deserializeGame) (testowa)
 
 - save.ts: deserializeGame przepisuje resourceLedgerHistory (jawna lista pol je gubila); test save-load-ledger-history-test 4/0 + mutant; live Chromium: baza 0 wpisow przed tickiem, kandydat 2 (jak w zapisie), po ticku 3.

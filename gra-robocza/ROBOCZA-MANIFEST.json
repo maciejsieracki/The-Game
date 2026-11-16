@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "2143e04291acced75727e29018ca9594",
-  "bundleSha256": "dbe4144b4a033687bac51be3aee225a677b0ce0dbb9c8ce2fc7f8b3de2fef911",
+  "bundleMd5": "6b8fa4051b332a9b59ef7bd3cdebb0bd",
+  "bundleSha256": "97fa24743e1aa6c777712214bbbd8b548ea7cabf3e4c77616e98a354bd67685a",
   "bundleBytes": 14804007,
   "sourceSnapshot": {
-    "source": "main 8f9250294 + f6c5c8820 (save.ts +4)",
+    "source": "main 178aa1a5b + 71def8b3e (tools-only)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 762: save.ts: deserializeGame przepisuje resourceLedgerHistory (jawna lista pol je gubila); test save-load-ledger-history-test 4/0 + mutant; live Chromium: baza 0 wpisow przed tickiem, kandydat 2 (jak w zapisie), po ticku 3."
+    "FALA 763: Narzedzie save-load-deserialize-fields-audit.cjs: audyt live seed 4242, 282 klucze, deserializeGame nie gubi zadnego pola (poza naprawionym w FALI 762 resourceLedgerHistory); mutacja czerwona. Bez zmian gra/src."
   ],
   "verification": [
-    "FC PASS-WITH-NOTES f6c5c8820; tsc 0, logic 213/213, ledger-history 4/0, resource-ledger-save-history 15/0, load-game-regression 34/0, player-owned-city PASS, vite OK, MD5 Raw"
+    "FC PASS-WITH-NOTES 71def8b3e; logic 213/213, vite OK, MD5 Raw"
   ],
   "limits": [
-    "inne pola SaveGame moga byc gubione przez jawna liste (audyt osobno); test live nie jest czescia testu node"
+    "jedna probka; tablice cities/units/mapSnapshot jako liscie; faza b proxy; scenariusz 0 miast NIE ZMIERZONO"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES SAVE-LOAD-LEDGER-HISTORY-LOST-AFTER-LOAD-Q1 r1 (kandydat bb9928abb, raport f6c5c8820): przyczyna utraty dziennika Skad zapasy po wczytaniu = jawna lista pol w deserializeGame (gra/src/game/save.ts) nie przepisywala resourceLedgerHistory; poprawka 1 linia; test save-load-ledger-history-test.cjs 4/0 + mutant czerwony; live Chromium (obrona): baza 0 wpisow przed tickiem i 1 po, kandydat 2 przed tickiem (jak w zapisie) i 3 po ticku. Notka: ta sama jawna lista pol w deserializeGame (save.ts ~686-760) moze gubic inne pola SaveGame - osobny audyt."
+    "notes": "FC PASS-WITH-NOTES SAVE-LOAD-DESERIALIZE-FIELDS-AUDIT-Q1 r1 (kandydat bfca8d03b, raport 71def8b3e): narzedzie gra/tools/save-load-deserialize-fields-audit.cjs; audyt na zywo (seed 4242, 282 klucze): deserializeGame nie gubi zadnego pola zapisu (faza a: OK 193, OK_PUSTA 89, NIEPRZETESTOWANE 4; faza b: OK 191, OK_PUSTA 86, ZMIENIONE_PO_RESTORE 4, EFEMERYCZNE 1); mutacja resourceLedgerHistory czerwona. Noty: jedna probka, tablice cities/units/mapSnapshot jako liscie, panel armii/autoMarch/plannedMarches/recruitGeneralId/rallyPoints nieobecne w probce, faza b to proxy; scenariusz 0 miast (#433) niezmierzony."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-16T04:47:37",
+  "hubGeneratedAt": "2026-11-16T05:03:06",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "2143e04291acced75727e29018ca9594",
+      "md5": "6b8fa4051b332a9b59ef7bd3cdebb0bd",
       "sizeBytes": 14804007
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "2143e04291acced75727e29018ca9594",
+      "md5": "6b8fa4051b332a9b59ef7bd3cdebb0bd",
       "sizeBytes": 14804007
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "2143e04291acced75727e29018ca9594",
+      "md5": "6b8fa4051b332a9b59ef7bd3cdebb0bd",
       "sizeBytes": 14804007
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "2143e04291acced75727e29018ca9594",
+      "md5": "6b8fa4051b332a9b59ef7bd3cdebb0bd",
       "sizeBytes": 14804007
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "2143e04291acced75727e29018ca9594",
+      "md5": "6b8fa4051b332a9b59ef7bd3cdebb0bd",
       "sizeBytes": 14804007
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "2143e04291acced75727e29018ca9594",
+      "md5": "6b8fa4051b332a9b59ef7bd3cdebb0bd",
       "sizeBytes": 14804007
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "2143e04291acced75727e29018ca9594",
+      "md5": "6b8fa4051b332a9b59ef7bd3cdebb0bd",
       "sizeBytes": 14804007
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "2143e04291acced75727e29018ca9594",
+      "md5": "6b8fa4051b332a9b59ef7bd3cdebb0bd",
       "sizeBytes": 14804007
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "2143e04291acced75727e29018ca9594",
+      "md5": "6b8fa4051b332a9b59ef7bd3cdebb0bd",
       "sizeBytes": 14804007
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "2143e04291acced75727e29018ca9594",
+      "md5": "6b8fa4051b332a9b59ef7bd3cdebb0bd",
       "sizeBytes": 14804007
     }
   ],
-  "md5": "2143e04291acced75727e29018ca9594",
+  "md5": "6b8fa4051b332a9b59ef7bd3cdebb0bd",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
