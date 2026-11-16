@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "cb305af1388850ebe2d4011d1dbc0585",
-  "bundleSha256": "d629e9aea93167fc2d3981766ffcd16787bbe81e2ae3ff85528919e1a97a38cc",
-  "bundleBytes": 14812977,
+  "bundleMd5": "ad43bd51aba278b1eaa85d810f2dea97",
+  "bundleSha256": "fabfd4295b34f94aaf4294dc643cc02cef4f54dac570391dc9cdfb74a1bb5509",
+  "bundleBytes": 14817613,
   "sourceSnapshot": {
-    "source": "FC 58907d41d, main 4ac665447",
+    "source": "FC 3c82cce26, main 5c5488d33",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 776: Strażnik w obsludze laczenia (promptMergeIfCoLocated): gdy po ruchu nie ma jednostek przybywajacych (np. oblegajaca jednostka wchodzi na heks innej), gra nie wywala sie bledem typeId, tylko loguje ostrzezenie i wraca."
+    "FALA 777: Nad listami jednostek w panelu podzialu armii, panelu scalania i pasku zaznaczenia stosu (Zastap/Rozwiaz) pojawiaja sie chipy po jednym na typ jednostki (nazwa i liczba); klik zaznacza lub odznacza wszystkie jednostki danego typu, stan chipa: brak/czesc/wszystkie; w panelu podzialu rzad chipow zostaje u gory przy przewijaniu."
   ],
   "verification": [
-    "tsc 0, army-merge-besieger-only-move-test 8/0 (mutant 5/3), siege-nearby-lock-join 23/0, army-split-besieging 21/0, load-game-regression 34/0, 5 bramek referencyjnych; zywy Chromium: blad odtworzony na bazie, zniknal po poprawce"
+    "tsc 0, army-type-chips-test 50/0 (mutacja 28/22), 5 bramek referencyjnych, load-game-regression 34/0, 15 testow army-split i army-merge zielonych, Chromium: panel podzialu 50 lucznikow, pasek stosu 1280x720 i 360x640"
   ],
   "limits": [
-    "NIE ZMIERZONO: dokladna sciezka Polacz->applyMerge ze zrzutu wlasciciela, Idz do wodza, odroczony prompt, wczytany zapis; jesli BOOT ERROR wroci - potrzebny zapis gry sprzed kliku"
+    "NIE ZMIERZONO: pasek stosu i klik w pelnej grze, merge-pick w Chromium; odstepstwo od allowlisty (hexContextTooltip, armyStackHud, armyMergePanel, main.ts) zatwierdzone przez FC; army-split-panel-scroll-grid 16/2 dlug bazowy"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES ARMY-MERGE-JOIN-BESIEGING-TYPEID-CRASH-Q2 r2 (kandydat 58907d41d): straznik w promptMergeIfCoLocated (arrivingUnits.length===0 -> ostrzezenie i powrot) usuwa TypeError reading typeId w mergeUnitRow przy ruchu oblegajacej jednostki na heks rezydenta (odtworzone w Chromium). tsc 0, army-merge-besieger-only-move-test 8/0 (mutant 5/3), 5 bramek zielonych, army-merge-colocated 4/0, siege-nearby-lock-join 23/0, load-game-regression 34/0. NIE ZMIERZONO: dokladna sciezka Polacz->applyMerge ze zrzutu wlasciciela, followLeader, odroczony prompt, wczytany zapis. Jesli BOOT ERROR wroci - potrzebny zapis gry sprzed kliku."
+    "notes": "FC PASS-WITH-NOTES UI-ARMY-PICK-SELECT-ALL-BY-TYPE-Q1 r1 (kandydat 3c82cce26): chipy zaznacz wszystkich typ nad listami jednostek w panelu podzialu armii, panelu scalania (merge-pick) i pasku zaznaczenia stosu (zasila Zastap/Rozwiaz); klik zaznacza lub odznacza wszystkie jednostki typu (po typeId), stan chipa brak/czesc/wszystkie, etykiety nazwa wyswietlana, rzad chipow sticky w panelu podzialu. tsc 0, army-type-chips-test 50/0 (mutacja 28/22), 5 bramek zielonych, load-game-regression 34/0, 15 testow army-split i army-merge zielonych. NIE ZMIERZONO: pasek stosu i klik w pelnej grze (Vite), merge-pick w Chromium, army-split-panel-scroll-grid (dlug bazowy). Odstepstwo od allowlisty (hexContextTooltip, armyStackHud, armyMergePanel, 5 punktow main.ts) zatwierdzone przez FC."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-16T20:22:25",
+  "hubGeneratedAt": "2026-11-16T20:27:07",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "cb305af1388850ebe2d4011d1dbc0585",
-      "sizeBytes": 14812977
+      "md5": "ad43bd51aba278b1eaa85d810f2dea97",
+      "sizeBytes": 14817613
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "cb305af1388850ebe2d4011d1dbc0585",
-      "sizeBytes": 14812977
+      "md5": "ad43bd51aba278b1eaa85d810f2dea97",
+      "sizeBytes": 14817613
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "cb305af1388850ebe2d4011d1dbc0585",
-      "sizeBytes": 14812977
+      "md5": "ad43bd51aba278b1eaa85d810f2dea97",
+      "sizeBytes": 14817613
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "cb305af1388850ebe2d4011d1dbc0585",
-      "sizeBytes": 14812977
+      "md5": "ad43bd51aba278b1eaa85d810f2dea97",
+      "sizeBytes": 14817613
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "cb305af1388850ebe2d4011d1dbc0585",
-      "sizeBytes": 14812977
+      "md5": "ad43bd51aba278b1eaa85d810f2dea97",
+      "sizeBytes": 14817613
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "cb305af1388850ebe2d4011d1dbc0585",
-      "sizeBytes": 14812977
+      "md5": "ad43bd51aba278b1eaa85d810f2dea97",
+      "sizeBytes": 14817613
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "cb305af1388850ebe2d4011d1dbc0585",
-      "sizeBytes": 14812977
+      "md5": "ad43bd51aba278b1eaa85d810f2dea97",
+      "sizeBytes": 14817613
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "cb305af1388850ebe2d4011d1dbc0585",
-      "sizeBytes": 14812977
+      "md5": "ad43bd51aba278b1eaa85d810f2dea97",
+      "sizeBytes": 14817613
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "cb305af1388850ebe2d4011d1dbc0585",
-      "sizeBytes": 14812977
+      "md5": "ad43bd51aba278b1eaa85d810f2dea97",
+      "sizeBytes": 14817613
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "cb305af1388850ebe2d4011d1dbc0585",
-      "sizeBytes": 14812977
+      "md5": "ad43bd51aba278b1eaa85d810f2dea97",
+      "sizeBytes": 14817613
     }
   ],
-  "md5": "cb305af1388850ebe2d4011d1dbc0585",
+  "md5": "ad43bd51aba278b1eaa85d810f2dea97",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

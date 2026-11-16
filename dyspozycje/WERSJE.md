@@ -1,3 +1,9 @@
+## ROBOCZA ad43bd51 -- 2026-11-16 -- FALA 777: Skroty zaznacz wszystkich danego typu przy zaznaczaniu jednostek armii (testowa)
+
+- Nad listami jednostek w panelu podzialu armii, panelu scalania i pasku zaznaczenia stosu (Zastap/Rozwiaz) pojawiaja sie chipy po jednym na typ jednostki (nazwa i liczba); klik zaznacza lub odznacza wszystkie jednostki danego typu, stan chipa: brak/czesc/wszystkie; w panelu podzialu rzad chipow zostaje u gory przy przewijaniu.
+- Weryfikacja: tsc 0, army-type-chips-test 50/0 (mutacja 28/22), 5 bramek referencyjnych, load-game-regression 34/0, 15 testow army-split i army-merge zielonych, Chromium: panel podzialu 50 lucznikow, pasek stosu 1280x720 i 360x640
+- Limity: NIE ZMIERZONO: pasek stosu i klik w pelnej grze, merge-pick w Chromium; odstepstwo od allowlisty (hexContextTooltip, armyStackHud, armyMergePanel, main.ts) zatwierdzone przez FC; army-split-panel-scroll-grid 16/2 dlug bazowy
+
 ## ROBOCZA cb305af1 -- 2026-11-16 -- FALA 776: Laczenie z jednostka oblegajaca: koniec bledu BOOT ERROR typeId (testowa)
 
 - Strażnik w obsludze laczenia (promptMergeIfCoLocated): gdy po ruchu nie ma jednostek przybywajacych (np. oblegajaca jednostka wchodzi na heks innej), gra nie wywala sie bledem typeId, tylko loguje ostrzezenie i wraca.
