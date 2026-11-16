@@ -2751,3 +2751,15 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Aktywne workflowy:** 2 z 4 (`wf_43129880-afd` OUTCOME r4 w toku, RUCH-FACING BLOCK; `wf_cf05e21c-412` T4a).
 - **Wolne sloty: 2 — brak czystego tematu, powód:** #107 K5LOOP-FACING i #257 K5DOC-T5a dotykają `siege_tactics_loop.rs`/`ProdBody`, które zajmuje OUTCOME r4 (konflikt, nie wymyślam obejścia). #269/#270 PRIO-3D (Opus, renderer) czekają na decyzję drogi DTO #308. #263–#264, #259–#261 zależą od ProdBody i #284. #106/#115/#120 blokują decyzje #282/#285/#286.
 - **Otwarte:** NaN/Inf integracja, OUTCOME r4 po zakończeniu, push `refs/keep` odrzucany przez proxy (nie obchodzić).
+
+### Przebieg — dwa ciężkie tematy Opus (PRIO-3D-1, R1), 2026-11-16 ~20:20 UTC
+
+- **Decyzja techniczna #308 (droga DTO do renderera) = D-DTO-1 = A.** Już ratyfikowane w kontrakcie P4-1 (`P4-1-RENDER-DTO-CONTRACT.md` §7, `P4-1G-ADAPTER-ROZPOZNANIE.md`): DTO liczy producent w engine, adapter w rendererze tylko tłumaczy typy. Decyzja techniczna, więc podjęta przez orkiestratora, nie przez ABC. Do wiadomości właściciela.
+- **L4 (stan UI) = osobny parametr adaptera `MapUiState`** (D-CMD-12), zgodnie z kontraktem. Adapter nie zgaduje przełączników.
+- **Dispatche (Opus we wszystkich rolach), baza `0fccd8dbf`, pushnięte na `claude/rust-sivvrn` (`6132cce73`):**
+  - `R-RUSTPORT-P4-1G-Q5-ADAPTER-OVERLAYS` = PRIO-3D-1 (#269): terytorium, zasięgi, szlaki, okolica, pola robotników, kopalnia, oblężenia, `MapUiState`. Bez zmian w view-model (L6/L7 osobno).
+  - `R-RUSTPORT-P4-1-R1-UNIT-TOKENS` = R1 kontraktu (żetony jednostek, `units.ts:5787–6747`). Q6 (PRIO-3D-2, #270) zostaje zablokowany do czasu R1, bo kontrakt wymaga R1 przed Q6.
+- **Workflow:** `wf_fff1cacf-ac8`, dwie równoległe ścieżki (Operator → Evaluator → FC), wszystkie role Opus.
+- **Dlaczego nie więcej:** pozostałe tematy Opus są zablokowane: #278 i #279 przez decyzję mgły (#253), #280 przez K5LOOP (#107/#109/#112/#113), #218 był już zrealizowany przez I1–I4.
+- **Sloty (cztery workflowy):** OUTCOME r4 (`wf_43129880-afd`), T4a (`wf_cf05e21c-412`, Haiku/Sonnet), Q5 i R1 (`wf_fff1cacf-ac8`, Opus).
+- **Bramka V2/V7 (`0e04a75c6`):** fmt i clippy zielone, `gate-test.log` w toku. FF po zielonej bramce, bez zmian.
