@@ -255,6 +255,9 @@ export interface WearinessTickOutcome {
   level: number;
   stage: number;
   plan?: PeacePaymentPlan;
+  /** Strony pokoju wymuszonego (DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1): przegrywający i wygrywający. */
+  loser?: number;
+  winner?: number;
 }
 
 /**
@@ -297,6 +300,8 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
     // DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1: 100% zmęczenia = pokój WYMUSZONY. Wyraźnie przegrywający
     // oddaje tyle miast, ile trzeba do zrównoważenia ceny pokoju (bez stałego limitu 1–2; nigdy stolica, nigdy poniżej
     // minMiastPoOddaniu). Brak wyraźnie przegrywającego albo cena 0 → pokój BEZ miast. Bez bramki bilansu.
+    // Bitwa w toku (battlePending): pokój wymuszony ODROCZONY na następną turę (ABC orkiestratora, zarzut FC 1+2).
+    if (wearinessForcedPeaceDue(lvl, P) && d.battlePending) { none(); continue; }
     if (wearinessForcedPeaceDue(lvl, P)) {
       const lockEnd = protectedLoser ? L.karencjaChronionegoTur : L.karencjaPoPokojuTur;
       const price = d.price(winner, loser);
@@ -320,7 +325,7 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
       d.finalize(loser, winner, lockEnd);
       d.log?.(`pokój WYMUSZONY AI${loser}↔AI${winner} przy zmęczeniu ${lvl.toFixed(2)}; miasta oddane: ${given}`);
       d.store.delete(key);
-      out.push({ pairKey: key, action: 'forced_peace', level: lvl, stage: st.stage, plan: forcedPlan });
+      out.push({ pairKey: key, action: 'forced_peace', level: lvl, stage: st.stage, plan: forcedPlan, loser, winner });
       continue;
     }
     // Desperacja liczona z udziałem nie większym niż próg „wyraźnie" (słabsza strona przy remisie nie wypada z oferty).

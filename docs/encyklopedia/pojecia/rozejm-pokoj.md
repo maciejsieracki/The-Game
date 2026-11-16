@@ -45,8 +45,8 @@
 
 Licznik zmęczenia (5% na turę od startu wojny, +10% za każde zmienione miasto, patrz hasło **Zmęczenie wojną**) zmienia zasady pokoju:
 - **50%** — silniejsza strona obniża cenę pokoju, słabsza szuka pokoju;
-- **80%** — silniejsza strona sama proponuje pokój bezwarunkowy (cena 0 = bez miasta);
-- **100%** — bez osobnego skutku: kod nie wygasza wojny przy 100%; koniec zmęczenia to próg **80%** (patrz wyżej).
+- **80%** — AI proponuje pokój z miastami przegrywającego (bez pokoju bezwarunkowego);
+- **100%** — **pokój wymuszony**: wyraźnie przegrywający oddaje miasta do zrównoważenia ceny (min. 3 miasta zostają, stolica nigdy); przy remisie sił albo cenie 0 pokój bez miast (patrz hasło **Zmęczenie wojną**).
 
 Pierwsze propozycje pokoju AI pojawiają się od tury 10 wojny.
 

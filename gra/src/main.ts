@@ -1551,6 +1551,7 @@ import {
   showDiplomacyAudience, hideDiplomacyAudience, updateDiplomacyAudience, isDiplomacyAudienceOpen,
   showWarConsentModal,
   showAllianceObligationModal,
+  showForcedPeaceModal,
   type AudienceAction, type NegotiationPayload, type PendingNegotiationRow,
   type AudienceOtherRelations, type AudienceRelationPartner,
   negotiationRoundCounterText,
@@ -38668,15 +38669,28 @@ async function boot(): Promise<void> {
         finalize: (loser, winner, lockTurns) => { finalizePeaceTreatyBetween(loser, winner, lockTurns); },
         log: msg => console.log(`[Dyplomacja] R-WEB-WEARINESS: ${msg}`),
       });
-      // Gracz dowiaduje się o pokoju wymuszonym (toast; okno i wpis w „Ważne” — poza tym krokiem, patrz raport).
+      // Gracz dostaje natywne okno oraz wpis w „Ważne” (warEventLog) po pokoju wymuszonym (zarzut Evaluatora 1+2).
       for (const o of outcomes) {
         if (o.action !== 'forced_peace') continue;
-        const [pa, pb] = o.pairKey.split('_').map(Number);
-        if (pa !== humanOwner && pb !== humanOwner) continue;
+        if (o.winner !== humanOwner && o.loser !== humanOwner) continue;
         const given = o.plan?.histogram.miasto ?? 0;
-        const other = pa === humanOwner ? pb! : pa!;
+        const humanIsLoser = o.loser === humanOwner;
+        const other = humanIsLoser ? o.winner! : o.loser!;
         const who = ownerDiploLabel(other);
-        showHintMessage(`Wojna z ${who} osiągnęła 100% zmęczenia — pokój wymuszony${given > 0 ? `; miasta oddane: ${given}` : ' (bez miast)'}`, 8000);
+        const evId = `forced-peace-${turn}-${o.pairKey}`;
+        if (!warEventLog.some(e => e.id === evId)) {
+          warEventLog.unshift({
+            id: evId,
+            icon: '⚔',
+            title: 'Pokój wymuszony: ' + who,
+            subtitle: given > 0 ? (humanIsLoser ? 'Oddajemy miasta: ' + given : 'Otrzymujemy miasta: ' + given) : 'Pokój bez wymiany miast',
+            kind: 'enemy',
+            turnCreated: turn,
+          });
+          trimWarEventLog();
+          refreshD1bHud();
+        }
+        showForcedPeaceModal({ otherName: who, humanIsLoser, cities: given });
       }
     }
 

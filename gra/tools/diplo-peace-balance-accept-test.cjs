@@ -110,9 +110,11 @@ check('A4: AI słabsza militarnie (75 vs 100), BEZ miasta => AI NIE proponuje po
   const c = aiTurn({ silaAI: 75, silaPlr: 100, turnsAtWar: 12, lost: 0 });
   check('A4b: AI słabsza bez miasta — brak zaproponuj_pokoj (nie ma słodzika)', !proposes(c), c);
 }
-// R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: koniec zmęczenia (20 tur = 100%) zdejmuje blokadę — silniejsza AI proponuje pokój bezwarunkowy.
-check('A5: AI silniejsza militarnie, koniec zmęczenia (20 tur) => AI proponuje pokój bezwarunkowy',
-  proposes(aiTurn({ silaAI: 125, silaPlr: 100, turnsAtWar: 20 })));
+// DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1: 80%+ NIE zdejmuje blokady pokoju bezwarunkowego (galezi
+// „koniec zmeczenia” usunieta z ai.ts). Silniejsza AI przy 40 turach (100%) nie proponuje pokoju bezwarunkowego;
+// pokoj wymuszony (z miastami przegrywajacego) jest w tick (diplo-weariness-forced-peace-test.cjs).
+check('A5: AI silniejsza militarnie, 80%+ zmeczenia (40 tur) => AI NIE proponuje pokoju bezwarunkowego',
+  !proposes(aiTurn({ silaAI: 125, silaPlr: 100, turnsAtWar: 40 })));
 check('A6: AI silniejsza, wojna 9 tur (przed minimalnym czasem) => AI NIE proponuje',
   !proposes(aiTurn({ silaAI: 125, silaPlr: 100, turnsAtWar: 9 })));
 check('A7: przewaga militarna bez wojny nie generuje pokoju (kontrola)', (() => {
