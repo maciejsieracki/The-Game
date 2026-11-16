@@ -1,0 +1,750 @@
+{
+  "pin": "07d2fbd72",
+  "file": "gra/src/battle/battleScene.ts",
+  "fragment_lines": [
+    18578,
+    18614
+  ],
+  "fragment_sha256": "db40eb37544c98982858347cb3f60165ce79dc1ce66151938f77e37dc76c76cf",
+  "generator": "rust-port/engine/tests/p6_player_order_queue_gen.mjs",
+  "scenarios": [
+    {
+      "name": "kolejnosc_tablicy_id",
+      "units": [
+        {
+          "id": "A",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "B",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "C",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        }
+      ],
+      "ids": [
+        "A",
+        "B",
+        "C"
+      ],
+      "queued": [],
+      "busy": [],
+      "planning": false,
+      "finished": false,
+      "async": [],
+      "side_effects": {},
+      "expect": {
+        "events": [
+          "suspend:false",
+          "perform:A",
+          "perform:B",
+          "perform:C",
+          "refresh"
+        ],
+        "acted": [
+          "A",
+          "B",
+          "C"
+        ]
+      }
+    },
+    {
+      "name": "kolejnosc_nie_sortowana",
+      "units": [
+        {
+          "id": "A",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "B",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "C",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        }
+      ],
+      "ids": [
+        "C",
+        "A",
+        "B"
+      ],
+      "queued": [],
+      "busy": [],
+      "planning": false,
+      "finished": false,
+      "async": [],
+      "side_effects": {},
+      "expect": {
+        "events": [
+          "suspend:false",
+          "perform:C",
+          "perform:A",
+          "perform:B",
+          "refresh"
+        ],
+        "acted": [
+          "C",
+          "A",
+          "B"
+        ]
+      }
+    },
+    {
+      "name": "filtr_dead_removed_routed_acted_queued",
+      "units": [
+        {
+          "id": "A",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "B",
+          "dead": true,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "C",
+          "dead": false,
+          "removed": true,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "D",
+          "dead": false,
+          "removed": false,
+          "routed": true,
+          "acted": false
+        },
+        {
+          "id": "E",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": true
+        },
+        {
+          "id": "F",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "G",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        }
+      ],
+      "ids": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "queued": [
+        "F"
+      ],
+      "busy": [],
+      "planning": false,
+      "finished": false,
+      "async": [],
+      "side_effects": {},
+      "expect": {
+        "events": [
+          "suspend:false",
+          "perform:A",
+          "perform:G",
+          "refresh"
+        ],
+        "acted": [
+          "A",
+          "G"
+        ]
+      }
+    },
+    {
+      "name": "pusta_lista",
+      "units": [
+        {
+          "id": "A",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        }
+      ],
+      "ids": [],
+      "queued": [],
+      "busy": [],
+      "planning": false,
+      "finished": false,
+      "async": [],
+      "side_effects": {},
+      "expect": {
+        "events": [
+          "suspend:false",
+          "refresh"
+        ],
+        "acted": []
+      }
+    },
+    {
+      "name": "brak_jednostki_pomijana",
+      "units": [
+        {
+          "id": "A",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "B",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        }
+      ],
+      "ids": [
+        "X",
+        "A",
+        "B"
+      ],
+      "queued": [],
+      "busy": [],
+      "planning": false,
+      "finished": false,
+      "async": [],
+      "side_effects": {},
+      "expect": {
+        "events": [
+          "suspend:false",
+          "perform:A",
+          "perform:B",
+          "refresh"
+        ],
+        "acted": [
+          "A",
+          "B"
+        ]
+      }
+    },
+    {
+      "name": "duplikat_wykonywany_raz",
+      "units": [
+        {
+          "id": "A",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "B",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        }
+      ],
+      "ids": [
+        "A",
+        "A",
+        "B"
+      ],
+      "queued": [],
+      "busy": [],
+      "planning": false,
+      "finished": false,
+      "async": [],
+      "side_effects": {},
+      "expect": {
+        "events": [
+          "suspend:false",
+          "perform:A",
+          "perform:B",
+          "refresh"
+        ],
+        "acted": [
+          "A",
+          "B"
+        ]
+      }
+    },
+    {
+      "name": "juz_acted_nie_wykonywana",
+      "units": [
+        {
+          "id": "A",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": true
+        },
+        {
+          "id": "B",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        }
+      ],
+      "ids": [
+        "A",
+        "B"
+      ],
+      "queued": [],
+      "busy": [],
+      "planning": false,
+      "finished": false,
+      "async": [],
+      "side_effects": {},
+      "expect": {
+        "events": [
+          "suspend:false",
+          "perform:B",
+          "refresh"
+        ],
+        "acted": [
+          "B"
+        ]
+      }
+    },
+    {
+      "name": "busy_blokuje_do_zdarzenia_zegara",
+      "units": [
+        {
+          "id": "A",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "B",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        }
+      ],
+      "ids": [
+        "A",
+        "B"
+      ],
+      "queued": [],
+      "busy": [
+        true,
+        false,
+        false
+      ],
+      "planning": false,
+      "finished": false,
+      "async": [],
+      "side_effects": {},
+      "expect": {
+        "events": [
+          "suspend:false",
+          "schedule:40",
+          "perform:A",
+          "perform:B",
+          "refresh"
+        ],
+        "acted": [
+          "A",
+          "B"
+        ]
+      }
+    },
+    {
+      "name": "busy_co_jednostke",
+      "units": [
+        {
+          "id": "A",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "B",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "C",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        }
+      ],
+      "ids": [
+        "A",
+        "B",
+        "C"
+      ],
+      "queued": [],
+      "busy": [
+        false,
+        true,
+        false,
+        true,
+        false
+      ],
+      "planning": false,
+      "finished": false,
+      "async": [],
+      "side_effects": {},
+      "expect": {
+        "events": [
+          "suspend:false",
+          "perform:A",
+          "schedule:40",
+          "perform:B",
+          "schedule:40",
+          "perform:C",
+          "refresh"
+        ],
+        "acted": [
+          "A",
+          "B",
+          "C"
+        ]
+      }
+    },
+    {
+      "name": "busy_planowanie_synchroniczne",
+      "units": [
+        {
+          "id": "A",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "B",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        }
+      ],
+      "ids": [
+        "A",
+        "B"
+      ],
+      "queued": [],
+      "busy": [
+        true,
+        false,
+        false
+      ],
+      "planning": true,
+      "finished": false,
+      "async": [],
+      "side_effects": {},
+      "expect": {
+        "events": [
+          "suspend:false",
+          "perform:A",
+          "perform:B",
+          "refresh"
+        ],
+        "acted": [
+          "A",
+          "B"
+        ]
+      }
+    },
+    {
+      "name": "zakonczona_kolejka_bez_zegara",
+      "units": [
+        {
+          "id": "A",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "B",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        }
+      ],
+      "ids": [
+        "A",
+        "B"
+      ],
+      "queued": [],
+      "busy": [
+        true
+      ],
+      "planning": false,
+      "finished": true,
+      "async": [],
+      "side_effects": {},
+      "expect": {
+        "events": [
+          "suspend:false"
+        ],
+        "acted": []
+      }
+    },
+    {
+      "name": "async_done_przed_nastepna",
+      "units": [
+        {
+          "id": "A",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "B",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        }
+      ],
+      "ids": [
+        "A",
+        "B"
+      ],
+      "queued": [],
+      "busy": [],
+      "planning": false,
+      "finished": false,
+      "async": [
+        "A"
+      ],
+      "side_effects": {},
+      "expect": {
+        "events": [
+          "suspend:false",
+          "perform:A",
+          "perform:B",
+          "refresh"
+        ],
+        "acted": [
+          "A",
+          "B"
+        ]
+      }
+    },
+    {
+      "name": "rozkaz_zabija_nastepna_jednostke",
+      "units": [
+        {
+          "id": "A",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "B",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "C",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        }
+      ],
+      "ids": [
+        "A",
+        "B",
+        "C"
+      ],
+      "queued": [],
+      "busy": [],
+      "planning": false,
+      "finished": false,
+      "async": [],
+      "side_effects": {
+        "A": [
+          {
+            "id": "B",
+            "flag": "dead",
+            "value": true
+          }
+        ]
+      },
+      "expect": {
+        "events": [
+          "suspend:false",
+          "perform:A",
+          "perform:C",
+          "refresh"
+        ],
+        "acted": [
+          "A",
+          "C"
+        ]
+      }
+    },
+    {
+      "name": "rozkaz_rozbija_nastepna_przy_async",
+      "units": [
+        {
+          "id": "A",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "B",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "C",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        }
+      ],
+      "ids": [
+        "A",
+        "B",
+        "C"
+      ],
+      "queued": [],
+      "busy": [],
+      "planning": false,
+      "finished": false,
+      "async": [
+        "A"
+      ],
+      "side_effects": {
+        "A": [
+          {
+            "id": "B",
+            "flag": "routed",
+            "value": true
+          }
+        ]
+      },
+      "expect": {
+        "events": [
+          "suspend:false",
+          "perform:A",
+          "perform:C",
+          "refresh"
+        ],
+        "acted": [
+          "A",
+          "C"
+        ]
+      }
+    },
+    {
+      "name": "busy_po_async",
+      "units": [
+        {
+          "id": "A",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "X1",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "B",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        }
+      ],
+      "ids": [
+        "A",
+        "X1",
+        "B"
+      ],
+      "queued": [],
+      "busy": [
+        false,
+        true,
+        false
+      ],
+      "planning": false,
+      "finished": false,
+      "async": [
+        "A"
+      ],
+      "side_effects": {},
+      "expect": {
+        "events": [
+          "suspend:false",
+          "perform:A",
+          "schedule:40",
+          "perform:X1",
+          "perform:B",
+          "refresh"
+        ],
+        "acted": [
+          "A",
+          "X1",
+          "B"
+        ]
+      }
+    }
+  ]
+}
