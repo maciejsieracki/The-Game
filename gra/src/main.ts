@@ -1403,6 +1403,8 @@ import {
 } from './game/forced-war-waves';
 import { checkVictory, checkDefeat, techIdsInGameScope, allTechInScopeResearched, OSTATNIA_EPOKA_GRY_V1, powerShare } from './game/victory';
 import type { VictoryPlayer, VictoryInput } from './game/victory';
+import { emptyLossCounters, recordCityLoss, recordUnitLosses, normalizeLossCounters, isDefeatedState } from './game/loss-counters';
+import type { LossCounters } from './game/loss-counters';
 import {
   showVictoryScreen,
   hideVictoryScreen,
@@ -3169,6 +3171,8 @@ async function boot(): Promise<void> {
      * main.ts:12825/14016/28051/35807/36033/36472) zmigrowane na ten Set.
      */
     let playerEverOwnedCityByOwner: Set<number> = new Set<number>();
+    /** LOSS-COUNTERS: liczniki strat gracza (miasta/jednostki utracone w całej grze). Zapis: meta.lossCounters (opcjonalne). */
+    let lossCounters: LossCounters = emptyLossCounters();
     /** Tryb „Załóż miasto” w panelu budowy (A-START-01/05). */
     let foundCityMode = false;
 
@@ -18502,6 +18506,8 @@ async function boot(): Promise<void> {
         applyPostCaptureLawOnCapture(city, newOwner, oldOwner);
         triggerRebelProtectionWarConsequence(wasProtectedRebel, rebelPrevOwnerSnapshot, newOwner);
         const ledgerCaptureBefore = snapshotOwnersStock([oldOwner, newOwner], o => ownerResourceStockAll(cities, o));
+        // LOSS-COUNTERS: utrata miasta gracza (poddanie/przejęcie przez kapitulację).
+        lossCounters = recordCityLoss(lossCounters, oldOwner, newOwner);
         city.ownerId = newOwner;
         recordOwnersStockDeltaToPending(ledgerCaptureBefore, o => ownerResourceStockAll(cities, o), `przejecie-miasta|${city.id}`,
           o => (o === newOwner ? { kind: 'przejecie_miasta', label: 'Zdobycie miasta' } : { kind: 'przejecie_miasta', label: 'Oddanie miasta' }));
@@ -36493,6 +36499,9 @@ async function boot(): Promise<void> {
         // DEFEATSCR obrona r1 (zarzut 2): nazwa wyświetlana zamiast surowego klucza civType.
         civLabel: civDisplayNameForKey(String(player.civType ?? '')),
         technologieZbadane: player.zbadane.size,
+        // LOSS-COUNTERS: liczniki strat (ekran porażki: „Utracone miasta / jednostki”).
+        utraconeMiasta: lossCounters.lostCities,
+        utraconeJednostki: lossCounters.lostUnits,
       }));
       console.log('[Victory] ' + formatVictoryTitle(defeat.rodzaj, turn) + ' gracz=0 rodzaj=' + defeat.rodzaj + ' (po bitwie)');
     }
@@ -36994,6 +37003,11 @@ async function boot(): Promise<void> {
 
       const chronAtkOwner = atkRoster[0]?.ownerId;
       const chronDefOwner = defRoster[0]?.ownerId;
+      // LOSS-COUNTERS: jednostki GRACZA (owner 0) obecne w `units` przed rozstrzygnięciem bitwy;
+      // po `applyPostBattleMap` te, których już nie ma, poległy (licznik strat, nie rozwiązanie).
+      const playerLossCandidateIds = [...atkRoster, ...defRoster]
+        .filter(u => u.ownerId === HUMAN_OWNER_PRIMARY && units.some(x => x.id === u.id))
+        .map(u => u.id);
       const postBattleRes = applyPostBattleMap({
         units,
         map,
@@ -37029,6 +37043,9 @@ async function boot(): Promise<void> {
         cityOnBattleHex: cityOnHex,
         holdPositionAfterWin: fortifiedCaptureBlocked,
       });
+      // LOSS-COUNTERS: poległe jednostki gracza w tej bitwie (zniknęły z `units` po rozstrzygnięciu).
+      const playerUnitsLostNow = [...new Set(playerLossCandidateIds)].filter(id => !units.some(x => x.id === id)).length;
+      lossCounters = recordUnitLosses(lossCounters, playerUnitsLostNow);
       opts?.onPostBattleResult?.(postBattleRes);
       // Komunikat dla gracza: swoja armia (obrona lub atak) -> ARMIA_UNICESTWIONA; wroga -> wariant AI.
       if (postBattleRes.defenderAnnihilatedByRetreatLimit || postBattleRes.attackerAnnihilatedByRetreatLimit) {
@@ -37817,6 +37834,7 @@ async function boot(): Promise<void> {
       for (const city of csCities) {
         stampCityFounderOnCapture(city, csOwnerId); // R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1
         const ledgerAnnexBefore = snapshotOwnersStock([csOwnerId, annexerId], o => ownerResourceStockAll(cities, o));
+        lossCounters = recordCityLoss(lossCounters, csOwnerId, annexerId); // LOSS-COUNTERS: anektowanie miasta-państwa
         city.ownerId = annexerId;
         recordOwnersStockDeltaToPending(ledgerAnnexBefore, o => ownerResourceStockAll(cities, o), `wchloniecie-miasta|${city.id}`,
           o => (o === annexerId ? { kind: 'przejecie_miasta', label: 'Przyłączenie miasta-państwa' } : { kind: 'przejecie_miasta', label: 'Oddanie miasta' }));
@@ -38790,6 +38808,7 @@ async function boot(): Promise<void> {
       }
       // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (Przyczyna 2, miejsce zapisu 3/6):
       // per-owner z ISTNIEJĄCEJ zmiennej `atkOwner` z kontekstu (NIE ME()).
+      lossCounters = recordCityLoss(lossCounters, oldOwner, atkOwner); // LOSS-COUNTERS: zdobycie miasta w bitwie
       playerEverOwnedCityByOwner.add(atkOwner);
       syncCityGarnizon(city);
       endMapSiege(city.id);
@@ -39024,6 +39043,7 @@ async function boot(): Promise<void> {
     /** Bunt miasta: zmiana właściciela na frakcję rebeliantów + księga „Skąd zapasy” (wspólne dla pętli tury i testu realnej ścieżki). */
     function transferCityToRebelFactionWithLedger(city: City): void {
       const ledgerRebelBefore = snapshotOwnersStock([city.ownerId, REBEL_FACTION_OWNER_ID], o => ownerResourceStockAll(cities, o));
+      lossCounters = recordCityLoss(lossCounters, city.ownerId, REBEL_FACTION_OWNER_ID); // LOSS-COUNTERS: bunt
       city.ownerId = REBEL_FACTION_OWNER_ID;
       recordOwnersStockDeltaToPending(ledgerRebelBefore, o => ownerResourceStockAll(cities, o), `bunt-miasta|${city.id}`,
         o => (o === REBEL_FACTION_OWNER_ID ? { kind: 'przejecie_miasta', label: 'Bunt miasta (przejęte)' } : { kind: 'przejecie_miasta', label: 'Bunt miasta (utrata)' }));
@@ -39061,6 +39081,7 @@ async function boot(): Promise<void> {
       const wonderWatchCession = beginWonderTransferWatch(); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
       stampCityFounderOnCapture(city, fromOwnerId); // R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1
       const ledgerCessionBefore = snapshotOwnersStock([fromOwnerId, toOwnerId], o => ownerResourceStockAll(cities, o));
+      lossCounters = recordCityLoss(lossCounters, fromOwnerId, toOwnerId); // LOSS-COUNTERS: cesja traktatowa
       city.ownerId = toOwnerId;
       recordOwnersStockDeltaToPending(ledgerCessionBefore, o => ownerResourceStockAll(cities, o), `cesja-miasta|${city.id}`,
         o => (o === toOwnerId ? { kind: 'przejecie_miasta', label: 'Cesja miasta (otrzymane)' } : { kind: 'przejecie_miasta', label: 'Cesja miasta (oddane)' }));
@@ -39983,6 +40004,8 @@ async function boot(): Promise<void> {
           ...(playerEverOwnedCityByOwner.size > 0
             ? { playerEverOwnedCityByOwner: Array.from(playerEverOwnedCityByOwner) }
             : {}),
+          // LOSS-COUNTERS: opcjonalne (dopisywane tylko gdy niezerowe; stary zapis = 0/0).
+          ...(lossCounters.lostCities > 0 || lossCounters.lostUnits > 0 ? { lossCounters: { ...lossCounters } } : {}),
           zlozeGrants: zlozeGrants.slice(),
           surowiecBooleanGrants: basketTransferCtx.surowiecBooleanGrants,
           battlePowerPtsByOwner: Array.from(battlePowerPtsByOwner.entries()),
@@ -40173,6 +40196,11 @@ async function boot(): Promise<void> {
       }
     }
 
+    /** LOSS-COUNTERS: stan porażki gracza (0 miast, który kiedyś miał miasto). Wspólna bramka autozapisu i szybkiego zapisu. */
+    function isPlayerDefeatedNow(): boolean {
+      return isDefeatedState({ cities, graczKiedysMialMiasto: playerEverOwnedCityByOwner.has(HUMAN_OWNER_PRIMARY) });
+    }
+
     /**
      * Szybki zapis (Ctrl+S, przed bitwą) — slot autosave bez okna dialogowego.
      * MIGRACJA IDB: async (persistSaveToSlot -> saveToLocal -> IndexedDB).
@@ -40181,6 +40209,13 @@ async function boot(): Promise<void> {
       // R-WEB-BATTLE-SAVE-DISABLED-DURING-BATTLE-Q1: Ctrl+S w bitwie -- komunikat, bez zapisu.
       if (isSaveBlockedByBattle()) {
         notifySaveBlockedByBattle();
+        return false;
+      }
+      // LOSS-COUNTERS (obrona r2, zarzut 5): po porażce szybki zapis nie idzie do slotu autosave
+      // (ten slot trafia na listę „Wczytaj grę” i nadpisałby wcześniejszy szybki zapis).
+      if (isPlayerDefeatedNow()) {
+        if (showHintOnSuccess) showHintMessage('Zapis po porażce jest wyłączony.', 3000);
+        console.warn('[Save] pomijam szybki zapis -- stan porazki, tura=' + turn);
         return false;
       }
       const { ok, reason } = await persistSaveToSlot(AUTOSAVE_SLOT_ID, currentSaveLabel('quick'));
@@ -40295,6 +40330,13 @@ async function boot(): Promise<void> {
      * write failure) fall back to the pre-existing localStorage path.
      */
     async function doRotatingAutosave(): Promise<void> {
+      // LOSS-COUNTERS (ABC właściciela 2026-11-16, opcja A): stan porażki (0 miast gracza, który
+      // kiedyś miał miasto) nie tworzy autozapisu -- inaczej wpadłby na listę „Wczytaj grę”,
+      // a wczytanie od razu dawałoby porażkę. Zapisy sprzed porażki zostają bez zmian.
+      if (isPlayerDefeatedNow()) {
+        console.warn('[Autosave] pomijam -- stan porazki (brak miast gracza), tura=' + turn);
+        return;
+      }
       // R-WEB-BATTLE-SAVE-DISABLED-DURING-BATTLE-Q1: autozapis nie zapisuje stanu bitwy
       // ani pośredniego (tura kończy się poza bitwą, ta gałąź to siatka bezpieczeństwa).
       if (isSaveBlockedByBattle()) {
@@ -46399,6 +46441,8 @@ async function boot(): Promise<void> {
                 // DEFEATSCR obrona r1 (zarzut 2): ta sama nazwa wyświetlana także dla zwycięstw (wspólne pole).
                 civLabel: civDisplayNameForKey(String(player.civType ?? '')),
                 technologieZbadane: player.zbadane.size,
+                utraconeMiasta: lossCounters.lostCities,
+                utraconeJednostki: lossCounters.lostUnits,
               });
               if (vResult.rodzaj === 'przegrana') {
                 pokazEkranPorazki(screenData);
@@ -47991,6 +48035,7 @@ async function boot(): Promise<void> {
       // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (Przyczyna 2, miejsce zapisu 4/6):
       // reset pełnej gry -- czyści WSZYSTKICH właścicieli, nie tylko fotel 1.
       playerEverOwnedCityByOwner.clear();
+      lossCounters = emptyLossCounters(); // LOSS-COUNTERS: nowa gra = zerowe liczniki strat
       veteranEnemyEducationShown = false;
       warEventLog.length = 0;
       borderMarchEventTargets.clear(); // N6: mapa celow kamery rowniez zerowana przy resecie
@@ -48317,6 +48362,7 @@ async function boot(): Promise<void> {
       // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (Przyczyna 2, miejsce zapisu 5/6):
       // reset scenariusza playtest -- czyści WSZYSTKICH właścicieli.
       playerEverOwnedCityByOwner.clear();
+      lossCounters = emptyLossCounters(); // LOSS-COUNTERS: nowa gra = zerowe liczniki strat
 
       cities.length = 0;
       tradeRoutes.length = 0;
@@ -48566,6 +48612,7 @@ async function boot(): Promise<void> {
       // scenariusz playtest miasta -- zawsze zakłada fotel 1 (HUMAN_OWNER_PRIMARY),
       // ten preset nie zna drugiego fotela.
       playerEverOwnedCityByOwner.clear();
+      lossCounters = emptyLossCounters(); // LOSS-COUNTERS: nowa gra = zerowe liczniki strat
       playerEverOwnedCityByOwner.add(HUMAN_OWNER_PRIMARY);
 
       cities.length = 0;
@@ -49318,6 +49365,7 @@ async function boot(): Promise<void> {
       // ludzkich z zapisu (nie tylko fotela 1) -- ten sam heurystyczny odczyt "ma
       // miasto teraz" jak dawny kod, powielony dla każdego `saved.humanOwnerIds`.
       playerEverOwnedCityByOwner.clear();
+      lossCounters = normalizeLossCounters(saved.meta?.lossCounters); // LOSS-COUNTERS: stary zapis -> 0/0
       for (const oid of saved.humanOwnerIds) {
         if (cities.some(c => c.ownerId === oid)) playerEverOwnedCityByOwner.add(oid);
       }
