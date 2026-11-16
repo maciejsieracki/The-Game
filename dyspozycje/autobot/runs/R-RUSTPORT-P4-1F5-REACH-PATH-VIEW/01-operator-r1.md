@@ -6,7 +6,7 @@ TEMAT: R-RUSTPORT-P4-1F5-REACH-PATH-VIEW (P4-1F5 / PRIO-3D-5, #273 · #242)
 GOAL: producent `overlays.reachable` (`reachableWithMergeTargets` + `occupiedForMove` z `passThrough` + `foreignCityHexKeys`) i `overlays.pathRoute` z `turnStops` (`marchPathPlan` = `plan_path_turns` + `apply_fog_to_path_plan`, plan z `planned_marches`, hover przez `preview_path` P4-1H).
 BAZA: `origin/rust-port/parity-v2` = `05b872fc5763256d1f607f3b73a47dd6f3244903` (DODATEK r2: baza nadpisana; zawiera EXEC-T1 `2e510195c` i 1F1 `8ecf01c2c`). Worktree detached na `05b872fc5`, potem gałąź robocza `rust-wip/R-RUSTPORT-P4-1F5-REACH-PATH-VIEW-op-r2`. Pin: `07d2fbd72` (`gra/src/**`, tylko odczyt).
 ŹRÓDŁO KODU: praca niedokończona r1 z `wip/R-RUSTPORT-P4-1F5-REACH-PATH-VIEW-niedokonczony` (`587cfa79`, rodzic `585bb48e0`) przeniesiona `git cherry-pick -n` na nową bazę (bez konfliktów; różnica baz `585bb48e0..05b872fc5` dotyczy wyłącznie `player_order_queue.rs` + jego testów i wpisu `mod.rs`). Każdy element ZWERYFIKOWANY na nowej bazie: kod porównany z pinem (`main.ts:14578-14585`, `:14706-14731`, `planned-march.ts:56-79`), testy, mutacje i pełne bramki uruchomione od nowa (§4–§5). Wartości z WIP-owego raportu nie zostały przepisane bez ponownego pomiaru.
-ZMIANY/COMMIT: patrz §1; SHA commitu w §6.
+ZMIANY/COMMIT: patrz §1; kod `e34af829405f94ca7bc0010347d3b5b45d4875e0` (§6).
 TESTY: patrz §4.
 BLOKADY: brak blokad technicznych. Dwie rozbieżności dispatch ↔ pin opisane w §3 (rozstrzygnięte wg pinu, zasada 9/11 CLAUDE.md).
 RUNDY: 1/5 (runda 1 wznowiona wg DODATKU r2 po blokadzie płatności; poprzednia próba bez commitu kodu)
@@ -81,4 +81,4 @@ Brak `#[ignore]` w plikach tematu, brak osłabionych asercji.
 
 ## 6. Commit
 
-SHA: patrz wiadomość końcowa Operatora / `git log` gałęzi `rust-wip/R-RUSTPORT-P4-1F5-REACH-PATH-VIEW-op-r2` (rodzic `05b872fc5`). Commit jawnym `git add` (5 plików z allowlisty), `Cargo.lock` niecommitowany, bez push.
+SHA kodu: `e34af829405f94ca7bc0010347d3b5b45d4875e0` (kod + pierwsza wersja raportu); ten dopisek SHA w osobnym commicie raportu na `rust-wip/R-RUSTPORT-P4-1F5-REACH-PATH-VIEW-op-r2` (rodzic `05b872fc5`). Commit jawnym `git add` (5 plików z allowlisty), `Cargo.lock` niecommitowany, bez push.
