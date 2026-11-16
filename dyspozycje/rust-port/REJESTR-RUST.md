@@ -2804,3 +2804,13 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
   - R2, rozmieszczenie dekoru i lasu (`wf_2a208b31-2df`, OPUS): Operator.
   - T4b, decyzja `_advanceStep` (#313, `wf_6ffa730a-4ec`, HAIKU/SONNET): baza `68b2a6633`, dispatch `79cd12ec2`.
 - **Pozostałe kandydaty:** Q6 (#270) czeka na integrację R1 i kontrakty L6/L7; #278, #279 na decyzję o mgle (#253); #280 na K5LOOP (#107, #113).
+
+### Przebieg — FF T4a, R3 FC PASS, R2 BLOCK→r2, R6 uruchomiony, 2026-11-16 ~21:10 UTC
+
+- **FF `parity-v2`: `dd9a1b4e7` → `68b2a6633`** (T4a, helpery ścieżki pieszego, #312). Bramka `fmt`/`clippy`/`test` zielona (509 wyników, zero FAILED). Readback zgodny.
+- **R3, wstęgi rzek (`963148a78`, FC `b82ca9375` PASS-WITH-NOTES):** gotowe do integracji. Ewaluator zgłosił błąd kontraktu P4-1G (§3 wiersz 61, §4 wiersz R3): pin nie czyta `rzeka_krawedzie` w renderze. Poprawka dokumentu poza allowlistą, dla orkiestratora.
+- **R2, rozmieszczenie dekoru (`47f491508`, r1 BLOCK):** kod poprawny, ale strażnik `tests/decor_web_parity.rs` (`decor_sources()`) zakazuje podkatalogów `decor/`. Decyzja: wariant A, dopisanie do allowlisty wyłącznie `decor_sources()`, plus poprawka numerów linii pinu. Runda 2 (`wf_b838b674-86e`, OPUS) z bazą `47f491508`, dispatch `78fe2c2d6`.
+- **R6, sprite buntu i licznik jednostek (OPUS):** dispatch `044a1c8eb` na `68b2a6633`, workflow `wf_f53eacb7-7f9`. DTO `revolt` i `unit_count_on_hex` już istnieją.
+- **Sprzątanie:** usunięto worktree `integ-t4a`, target `target-integ-t4a`. Dysk 11 GB.
+- **Trwające workflowy (4/4):** R5 (`wf_ce6a50a1-e40`, OPUS), R2 r2 (`wf_b838b674-86e`, OPUS), T4b (`wf_6ffa730a-4ec`, HAIKU/SONNET), R6 (`wf_f53eacb7-7f9`, OPUS).
+- **Do integracji po wolnym dysku:** Q5 (`922300020`/FC `3d21e5679`), R1 (`3dec6ac5d`/FC `c6ab07fb09a5`), R3 (`963148a78`/FC `b82ca9375`) — jedna integracja renderera i jedna bramka.
