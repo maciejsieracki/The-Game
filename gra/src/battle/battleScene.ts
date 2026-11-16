@@ -2336,6 +2336,12 @@ export class BattleScene {
   private _autoBatchPlanning: { intent: AutoBatchIntent } | null = null;
   /** Jednostki z rozkazem odlozonym (Ctrl/Shift) — wykonaj na SPACJI. */
   private _queuedOrderUnitIds = new Set<string>();
+  /**
+   * R-WEB-BATTLE-COLLISION-ARBITRATION-MANUAL-UNSELECTED-Q1: rezerwacje pól na bieżącą turę trybu RECZNEGO
+   * dla jednostek NIEWYBRANYCH (wrogowie + gracze z doktryną AUTO bez rozkazu). Klucz = pole, wartość = id jednostki,
+   * której zaakceptowany plan (arbitraż jak w AUTO) to pole zajmuje. Pusta poza turą ręczną.
+   */
+  private _manualArbOwner = new Map<string, string>();
   /** Zaznaczone jednostki gracza (id). */
   private _selectedUnits = new Set<string>();
   /** Dolny pasek kart jednostek (roster). */
@@ -5747,7 +5753,84 @@ export class BattleScene {
       this._beginAutoBatchPhase('atk', a);
       return;
     }
+    if (this._manualMode) this._computeManualArbitrationClaims();
     this._activateNext();
+  }
+
+  /** R-WEB-BATTLE-COLLISION-ARBITRATION-MANUAL-UNSELECTED-Q1: jednostka NIEWYBRANA przez gracza (ruchem steruja reguly sceny). */
+  private _isManualNonSelected(ru: RuntimeBattleUnit): boolean {
+    if (!this._isPlayerSide(ru.side)) return true;
+    return ru.playerOrder.type === 'none'
+      && !this._queuedOrderUnitIds.has(ru.bu.id)
+      && this._isUnitDoctrineAuto(ru);
+  }
+
+  /** Migawka fazy do arbitrazu (wspolna dla AUTO i trybu recznego). */
+  private _autoBatchSnapshots(): AutoBatchUnitSnapshot[] {
+    return [...this.atk, ...this.def].map((ru): AutoBatchUnitSnapshot => ({
+      id: ru.bu.id,
+      side: ru.side,
+      q: ru.q,
+      r: ru.r,
+      dead: ru.dead || ru.fadingOut,
+      fadingOut: ru.fadingOut,
+      routed: ru.routed,
+      removed: ru.removed,
+      acted: ru.acted,
+      hp: ru.bu.hp,
+      occupies: this.occByKey.get(cellKey(ru.q, ru.r)) === ru,
+      arbClass: this._arbitrationClassOf(ru),
+    }));
+  }
+
+  /**
+   * R-WEB-BATTLE-COLLISION-ARBITRATION-MANUAL-UNSELECTED-Q1: na starcie tury RECZNEJ rozstrzyga kolizje pol miedzy
+   * jednostkami niewybranymi tym samym arbitrazem co AUTO (piechota przed dystansowymi, ten sam typ mniejsze ID,
+   * bez zamiany miejscami). Wynik = rezerwacje pol na cala ture (kazda strona osobno; rezerwacja zwalniana,
+   * gdy wlasciciel juz dzialal). Rozkazy wybranych jednostek nie sa tu uwzgledniane.
+   */
+  private _computeManualArbitrationClaims(): void {
+    this._manualArbOwner.clear();
+    const nonSelected = this.turnOrder.filter(ru =>
+      !ru.dead && !ru.fadingOut && !ru.removed && !ru.acted && this._isManualNonSelected(ru));
+    if (nonSelected.length < 2) return;
+    for (const side of ['atk', 'def'] as const) {
+      const units = nonSelected.filter(ru => ru.side === side);
+      if (units.length < 2) continue;
+      const intents = this._snapshotAutoBatchIntents(side, units);
+      const resolutions = resolveAutoBatchPhase(side, this._autoBatchSnapshots(), intents);
+      for (const res of resolutions) {
+        for (const st of res.steps) {
+          const key = cellKey(st.col, st.row);
+          if (!this._manualArbOwner.has(key)) this._manualArbOwner.set(key, res.unitId);
+        }
+      }
+    }
+  }
+
+  /**
+   * Przed aktywacja niewybranej jednostki: pola zarezerwowane przez INNA, jeszcze niedzialajaca jednostke tej samej strony
+   * staja sie na czas jej aktywacji zajete (jak zajete pole). Zwraca wpisy do zdjecia po zakonczeniu aktywacji.
+   */
+  private _applyManualArbPhantoms(ru: RuntimeBattleUnit): Array<{ key: string; owner: RuntimeBattleUnit }> {
+    const added: Array<{ key: string; owner: RuntimeBattleUnit }> = [];
+    if (!this._manualMode || this._manualArbOwner.size === 0) return added;
+    if (!this._isManualNonSelected(ru) || ru.playerOrder.type !== 'none' || this._queuedOrderUnitIds.has(ru.bu.id)) return added;
+    for (const [key, ownerId] of this._manualArbOwner) {
+      if (ownerId === ru.bu.id || this.occByKey.has(key)) continue;
+      const owner = this._findUnitById(ownerId);
+      if (!owner || owner.side !== ru.side || owner.dead || owner.fadingOut || owner.removed || owner.acted) continue;
+      this.occByKey.set(key, owner);
+      added.push({ key, owner });
+    }
+    return added;
+  }
+
+  /** Zdejmuje rezerwacje dodane przez _applyManualArbPhantoms (tylko te, ktore nadal wskazuja tego samego wlasciciela). */
+  private _clearManualArbPhantoms(added: Array<{ key: string; owner: RuntimeBattleUnit }>): void {
+    for (const { key, owner } of added) {
+      if (this.occByKey.get(key) === owner) this.occByKey.delete(key);
+    }
   }
 
   /**
@@ -5778,20 +5861,7 @@ export class BattleScene {
   private _beginAutoBatchPhase(side: AutoBatchPhase, units: RuntimeBattleUnit[]): void {
     if (this.finished || this._manualMode || this._autoBattleSuspended) return;
 
-    const snapshots = [...this.atk, ...this.def].map((ru): AutoBatchUnitSnapshot => ({
-      id: ru.bu.id,
-      side: ru.side,
-      q: ru.q,
-      r: ru.r,
-      dead: ru.dead || ru.fadingOut,
-      fadingOut: ru.fadingOut,
-      routed: ru.routed,
-      removed: ru.removed,
-      acted: ru.acted,
-      hp: ru.bu.hp,
-      occupies: this.occByKey.get(cellKey(ru.q, ru.r)) === ru,
-      arbClass: this._arbitrationClassOf(ru),
-    }));
+    const snapshots = this._autoBatchSnapshots();
     // The phase is frozen before any live action is launched. Planning clones
     // are rebuilt per unit below, so each decision sees exactly this snapshot,
     // never a previous same-side move.
@@ -6189,7 +6259,9 @@ export class BattleScene {
 
     const u = ru;
     this._updateBattlePhaseBanner(u);
+    const manualArbPhantoms = this._applyManualArbPhantoms(u);
     this._activateUnit(u, () => {
+      this._clearManualArbPhantoms(manualArbPhantoms);
       // A queued pointer order has now been consumed by this unit's real turn
       // activation. Keep queue membership limited to orders still waiting for
       // activation; otherwise a stale id leaves the order marked as queued and
