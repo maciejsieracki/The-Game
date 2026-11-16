@@ -1,3 +1,9 @@
+## ROBOCZA 4676942d -- 2026-11-16 -- FALA 770: Bramka utrzymania armii AI wlaczona (testowa)
+
+- Bramka rekrutacji AI oparta na zapasie (zloto/zywnosc) WLACZONA: AI nie kupuje jednostek, gdy zapas nie pokrywa utrzymania na 15 tur (margines 0,1); dotyczy tylko AI, nie gracza
+- Weryfikacja: tsc 0; logic-test 213/213; ai-upkeep-runway-test 17/0; ai-upkeep-wiring-test 4/0; load-game-regression 34/0; FC PASS-WITH-NOTES (7f1e9f274)
+- Limity: Smoke w Chromium na koncowym SHA, hash przy wlaczone=false, wplyw na tempo rekrutacji i balans AI oraz wiki/Civpedia NIE ZMIERZONO
+
 ## ROBOCZA f24457ae -- 2026-11-16 -- FALA 769: Wczytany stary zapis nie czeka na pierwsze miasto (testowa)
 
 - Stary zapis (bez flagi playerEverOwnedCityByOwner) z tura>1 dostaje flage dla foteli ludzkich: po wczytaniu Zakoncz ture nie wraca do stanu oczekiwania na pierwsze miasto; nowa gra i tura 1 bez zmian
