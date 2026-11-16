@@ -14,6 +14,8 @@ import { armyStackCardLabel, sortArmyStackGeneralsFirst } from './armyStackLabel
 
 export interface ArmyMergeUnitRow {
   id: string;
+  /** Identyfikator typu (typeId) — skróty „zaznacz wszystkich <typ>” grupują po nim. */
+  typeId?: string;
   name: string;
   icon?: string;
   ruchLeft?: number;

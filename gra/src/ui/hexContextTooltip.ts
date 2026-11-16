@@ -25,6 +25,7 @@ import {
   isOwceBaseTerrain,
 } from '../map/improvement-build';
 import type { ImprovementKey } from '../render/improvements';
+import { armyTypeChipButtonHtml, armyTypeChipRowHtml, groupUnitsByType } from './armyTypeChips';
 // R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1: etykiety terenu z jednego źródła (map/terrain-names.ts).
 import { TEREN_LABEL_PL as TEREN_LABEL } from '../map/terrain-names';
 // R-ZETON-PASKI (Maciej 2026-07-29): kolory pasków Zdrowia i Ruchu były tu
@@ -678,6 +679,8 @@ export interface UnitContextTooltipInput extends UnitSufferingStatusFields {
   /** Karty jednostek na stosie (widoczne gdy length > 1). */
   stackCards?: ReadonlyArray<{
     id: string;
+    /** Identyfikator typu (skróty „zaznacz wszystkich <typ>”). */
+    typeId?: string;
     name: string;
     /** Rola jednostki dowodzącej, odróżniana od zwykłej jednostki tego samego typu. */
     commanderTitle?: 'Wódz' | 'Generał';
@@ -765,6 +768,33 @@ function buildUnitStackPickBarHtml(cards: NonNullable<UnitContextTooltipInput['s
     + '</span></div>';
 }
 
+/**
+ * Rząd chipów „zaznacz wszystkich <typ>” nad kartami stosu (R-WEB-UI-ARMY-PICK-SELECT-ALL-BY-TYPE-Q1).
+ * Jeden chip na typeId (bez generała/wodza). Klik → data-act „pick-type:<typeId>” → onContextAction.
+ */
+export function buildUnitStackTypeChipsHtml(
+  cards: NonNullable<UnitContextTooltipInput['stackCards']>,
+  esc: (raw: string) => string,
+): string {
+  const groups = groupUnitsByType(
+    cards.map(c => ({
+      id: c.id,
+      typeId: c.typeId ?? c.name,
+      name: c.name,
+      isGeneral: c.commanderTitle !== undefined,
+    })),
+    { includeGenerals: false },
+  );
+  if (groups.length === 0) return '';
+  const selected = new Set(cards.filter(c => c.picked === true).map(c => c.id));
+  const inner = groups.map(g => armyTypeChipButtonHtml(g, selected, {
+    className: 'sp-unit-pick-btn sp-unit-type-chip',
+    attrs: 'data-act="pick-type:' + esc(g.typeId) + '"',
+    esc,
+  })).join('');
+  return armyTypeChipRowHtml(inner, 'Zaznacz wszystkie jednostki danego typu', 'sp-unit-type-row', esc);
+}
+
 function buildUnitStackCardsHtml(
   cards: NonNullable<UnitContextTooltipInput['stackCards']>,
   esc: (raw: string) => string,
@@ -772,7 +802,7 @@ function buildUnitStackCardsHtml(
   if (cards.length <= 1) return '';
   // Generałowie/wodzowie zawsze na początku listy — odróżnialni nawet w długim stosie.
   const ordered = sortArmyStackGeneralsFirst(cards);
-  let html = buildUnitStackPickBarHtml(cards) + '<div class="sp-unit-stack">';
+  let html = buildUnitStackPickBarHtml(cards) + buildUnitStackTypeChipsHtml(cards, esc) + '<div class="sp-unit-stack">';
   for (const c of ordered) {
     const hpPct = c.hpMax > 0 ? (c.hp / c.hpMax) * 100 : 0;
     const movPct = c.ruchMax > 0 ? (c.ruchLeft / c.ruchMax) * 100 : 0;
@@ -921,6 +951,10 @@ ${UNIT_CARD_STATUS_CSS}
   margin:8px 0 0;font-size:10px;color:var(--civ-text-muted,#a09880);}
 .sp-unit-pick-count{letter-spacing:.04em;}
 .sp-unit-pick-btns{display:flex;gap:6px;}
+.sp-unit-type-row{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 2px;}
+.sp-unit-pick-btn.sp-unit-type-chip{text-transform:none;letter-spacing:.02em;font-size:10px;}
+.sp-unit-pick-btn.sp-unit-type-chip.part{border-style:dashed;}
+.sp-unit-pick-btn.sp-unit-type-chip.all{background:rgba(232,216,138,.2);border-color:var(--civ-gold-primary,#e8d88a);}
 .sp-unit-pick-btn{font:inherit;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;border-radius:5px;
   border:1px solid rgba(212,175,90,.35);background:rgba(20,26,36,.75);color:var(--civ-gold-primary,#e8d88a);cursor:pointer;}
 .sp-unit-pick-btn:disabled{opacity:.4;cursor:not-allowed;}

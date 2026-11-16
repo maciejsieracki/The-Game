@@ -28,6 +28,8 @@ import type { ArmyCommanderTitle } from './armyStackLabel';
 
 export interface ArmyStackCard {
   id: string;
+  /** Identyfikator typu jednostki (skróty „zaznacz wszystkich <typ>”). */
+  typeId?: string;
   name: string;
   /** Leader role shown in the map roster; `name` remains its real unit type. */
   commanderTitle?: ArmyCommanderTitle;

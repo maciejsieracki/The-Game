@@ -8,6 +8,15 @@ import type { ArmyMergeUnitRow } from './armyMergePanel';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { unitIconSvg } from './icons/brandAssets';
 import { armyStackCardLabel, sortArmyStackGeneralsFirst } from './armyStackLabel';
+import {
+  ARMY_TYPE_CHIP_CSS,
+  applyArmyTypeChipInfo,
+  armyTypeChipButtonHtml,
+  armyTypeChipInfo,
+  armyTypeChipRowHtml,
+  groupUnitsByType,
+  toggleArmyTypeChip,
+} from './armyTypeChips';
 
 export interface SplitDestOption {
   q: number;
@@ -152,6 +161,7 @@ function ensureStyles(): void {
 @media(max-width:559px){.civ-asp-units{grid-template-columns:repeat(2,minmax(0,1fr));}}
 @media(max-width:359px){.civ-asp-units{grid-template-columns:1fr;}}
 @media(max-height:520px){.civ-asp-overlay{align-items:flex-start;}}
+${ARMY_TYPE_CHIP_CSS}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -246,6 +256,21 @@ export function showArmySplitPanel(opts: ArmySplitPanelOpts): void {
     + '<small>' + opts.units.length + ' jedn.</small>' + (cityDest ? '<small>Miasto</small>' : '') + '</' + (cityDest ? 'button' : 'div') + '>';
   const mapHtml = '<div class="civ-asp-map" role="group" aria-label="Sąsiednie heksy wokół źródła">'
     + centerHtml + directionOrder.map(cellFor).join('') + '</div>';
+  // Skróty „zaznacz wszystkich <typ>” (typ po typeId; generał liczy się do swojego typu).
+  const typeGroups = groupUnitsByType(
+    opts.units.map(u => ({ id: u.id, typeId: u.typeId ?? u.name, name: u.name, isGeneral: u.commanderTitle !== undefined })),
+    { includeGenerals: true },
+  );
+  const chipsHtml = armyTypeChipRowHtml(
+    typeGroups.map(g => armyTypeChipButtonHtml(g, selected, {
+      className: 'civ-atc',
+      attrs: 'data-chip-type="' + esc(g.typeId) + '"',
+      esc,
+    })).join(''),
+    'Zaznacz wszystkie jednostki danego typu',
+    'civ-atc-row',
+    esc,
+  );
   // Budowane RAZ: zmiana zaznaczenia aktualizuje tylko klasy/atrybuty (scrollTop listy zostaje).
   box.innerHTML =
     '<div class="civ-asp-hdr">'
@@ -256,6 +281,7 @@ export function showArmySplitPanel(opts: ArmySplitPanelOpts): void {
     + '</div>'
     + '<div class="civ-asp-body">'
       + '<div class="civ-asp-lbl">Wybierz jednostki do odłączenia</div>'
+      + chipsHtml
       + '<div class="civ-asp-units" role="group" aria-label="Jednostki do odłączenia">' + uHtml + '</div>'
       + '<div class="civ-asp-status" role="status" aria-live="polite" data-status></div>'
       + '<div class="civ-asp-lbl">Docelowy heks</div>'
@@ -277,6 +303,12 @@ export function showArmySplitPanel(opts: ArmySplitPanelOpts): void {
   const destBtns = Array.from(box.querySelectorAll<HTMLElement>('[data-dq]'));
   const statusEl = box.querySelector('[data-status]') as HTMLElement;
   const goBtn = box.querySelector('[data-go]') as HTMLElement;
+  const chipBtns = Array.from(box.querySelectorAll<HTMLElement>('[data-chip-type]'));
+
+  function groupOfChip(btn: HTMLElement): (typeof typeGroups)[number] | undefined {
+    const typeId = btn.getAttribute('data-chip-type');
+    return typeGroups.find(g => g.typeId === typeId);
+  }
 
   function canSplit(): boolean {
     return selected.size > 0 && opts.units.length - selected.size >= 1;
@@ -292,6 +324,10 @@ export function showArmySplitPanel(opts: ArmySplitPanelOpts): void {
       const on = Number(btn.getAttribute('data-dq')) === destQ && Number(btn.getAttribute('data-dr')) === destR;
       btn.classList.toggle('on', on);
       btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+    for (const btn of chipBtns) {
+      const g = groupOfChip(btn);
+      if (g) applyArmyTypeChipInfo(btn, armyTypeChipInfo(g, selected));
     }
     const n = selected.size;
     const stay = opts.units.length - n;
@@ -336,6 +372,14 @@ export function showArmySplitPanel(opts: ArmySplitPanelOpts): void {
     btn.addEventListener('click', () => {
       destQ = Number(btn.getAttribute('data-dq'));
       destR = Number(btn.getAttribute('data-dr'));
+      sync();
+    });
+  });
+  chipBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const g = groupOfChip(btn);
+      if (!g) return;
+      toggleArmyTypeChip(selected, g);
       sync();
     });
   });
