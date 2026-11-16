@@ -2402,3 +2402,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sprzątanie:** worktree T2 `-1` i `-2` usunięte (HEAD-y w `refs/keep/cleanup-T2-wt1..2`), cache `scratchpad/target-t1-r2` (3,2 GB, runda 2 Operatora EXEC-T1 już zakończona) usunięty. **Dysk: 5,3 GB.**
 - **Nie usuwane:** `k5doc-target-r2` (aktywny proces testu T2), `ev_t1q1_target` (aktywny Evaluator EXEC-T1), `tgt-ev` (aktywny T3), `/tmp/claude-0/ev9f1` (decyzja właściciela).
 - **Parity:** `585bb48e0`. **Sloty:** EXEC-T1 r2 (Evaluator), T3 (Evaluator), T2 (po FC, czeka na integrację).
+
+## Przebieg (09:19 UTC — heartbeat: bez nowych startów, dysk 5,3 GB; T2 czeka na integrację)
+
+- **Stan:** EXEC-T1 r2 (`wf_487c53ff-a4c`) i T3 GEOMETRIA (`wf_7d52ae9a-3df`) — Operator zakończony, w Evaluatorze (Sonnet). T2 CELE (`wf_1c92bca8-2d5`) — FC PASS-WITH-NOTES `03dfa64c2`, integracja odłożona (pełny test wymaga ≥8 GB).
+- **Dlaczego bez startów:** dysk 5,3 GB < próg 8 GB dla tematów z kodem (CLAUDE.md, zasada 5). Pozostałe kandydaty (DOC-T4/T5a/T6 z bazą `03dfa64c2`) są dozwolone regułą heartbeatu, ale wstrzymane tym samym progiem dysku.
+- **Cache aktywne:** `k5doc-target-r2`, `ev_t1q1_target`, `tgt-ev` (po 3,2 GB każdy) — w użyciu, nie ruszane. Stare katalogi w `/tmp/claude-0` są małe (<12 MB), nie zwalniają miejsca.
+- **Parity:** `585bb48e0`.
