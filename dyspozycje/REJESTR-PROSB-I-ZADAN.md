@@ -10562,3 +10562,6 @@ WEARY40 (FC b23fc3ad3, PASS-WITH-NOTES): pełne zmęczenie po 40 turach, 80% = o
 
 ### AMBUSH r2 → FC FAIL (2026-11-17 noc) — runda 3 (Operator SONNET po 2 nieudanych rundach Haiku)
 r1/r2 (Haiku): stan, akcja, render, znacznik, testy zapisu — ale wyzwalacz i niewidoczność w AI/pathfindingu NIEWPIĘTE (0 wywołań). Runda 3 (Sonnet, DODATEK 2): wpięcie 1+2 razem (częściowe = błąd „dwie jednostki na hexie”), cykl życia, testy realnych ścieżek, wiki; rozstawienie w bitwie (pole wroga, szyk ≤3) = osobny temat po R3. Baza `82f5d6ad2`.
+
+### Nowy temat pomiarowy 2026-11-17: R-WEB-DIPLO-WEARY40-SIM-MEASURE-Q1
+Pomiar w Node (≥3 ziarna × ≥150 tur × ≥4 civ AI) zmęczenia wojną 40 tur + pokoju wymuszonego (FALA 783): eliminacje, snowball, pętle wojen, pokoje przy cenie 0. Tylko narzędzia + raport; Haiku r1. STATUS: **OTWARTE** (uruchomiony).
