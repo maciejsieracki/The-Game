@@ -1,3 +1,27 @@
+## ROBOCZA 2cb84db4 -- 2026-11-16 -- FALA 782: Wydarzenia bez wpisu o zwolnieniu zarzadcy obcej cywilizacji (testowa)
+
+- Po zajeciu miasta gracz nie dostaje wpisu o zwolnieniu zarzadcy OBCEJ cywilizacji (bramka wg poprzedniego wlasciciela); utrata wlasnego miasta z zarzadca nadal daje wpis
+- Weryfikacja: tsc 0, logic 213/213, foreign-administrator-dismissed 12/0 (mutacja czerwona), city-administrator 119/0, improvement-administrator 59/0, load-game-regression 34/0
+- Limity: Chromium live NIE ZMIERZONO; dlug bazowy events-defer-to-turn-start C3 1 FAIL; REPIN Rust noteAdministratorChange
+
+## ROBOCZA df6c91bf -- 2026-11-16 -- FALA 781: Zastap: przejscie przez wszystkie typy jednostek w armii (testowa)
+
+- Zastap po zaznaczeniu roznych typow w armii przechodzi kolejno przez kazdy typ z zamiennikiem (modal na typ, grupa k/n), przycisk Pomin ten typ, Zakoncz konczy lancuch, komunikat o niezalatwionych typach
+- Weryfikacja: tsc 0, logic 213/213, multitype-walk 25/0 (mutacja czerwona), army-multi-select 36/36, unit-replace 21/21, archer-slinger 15/0, load-game-regression 34/0
+- Limity: Chromium live NIE ZMIERZONO; dlug bazowy unit-replace-full-cost 1 FAIL; komunikat gdy wszystkie typy bez zamiennika nie nazywa typow
+
+## ROBOCZA f06ba9eb -- 2026-11-16 -- FALA 780: Droga brukowana: budowa od zera albo ulepszenie zwyklej drogi (testowa)
+
+- Droga brukowana moze byc zbudowana od zera na heksie bez drogi (koszt Droga + Brukowana = 40 pracy; zalozenie do potwierdzenia) albo jako ulepszenie istniejacej Drogi (25 jak dotad); tooltip heksa i HUD budowy pokazuja oba koszty; AI i auto-ulepszenia bez zmian decyzji.
+- Weryfikacja: tsc 0, road-paved-direct-build-test 15/0, roads-* testy zielone, map-road-movement 27/0, hex-tooltip 63/0, auto-improvements 46/0, load-game-regression 34/0, 5 bramek referencyjnych
+- Limity: NIE ZMIERZONO: zywy Chromium tooltip i panel, test kolejki/anulowania/zapisu brukowanej od zera, wiki bundle; dlug bazowy map-improvement-qualify i auto-fort-claim
+
+## ROBOCZA a33381a5 -- 2026-11-16 -- FALA 779: Lucznik moze awansowac na Procarza w Zastap (testowa)
+
+- Lucznik (standardowy) ma w danych Zastap specjalnie = Procarz / Procarz (Huaracoc); Zastap (gracz i AI, te same reguly, pelny koszt rekrutacji, limit 10% armii na ture) pozwala go awansowac na Procarza (Brąz, wymaga Koszar); kierunek tylko Lucznik -> Procarz.
+- Weryfikacja: tsc 0, unit-replace-archer-slinger-test 15/0, promotion-table PASS, unit-replace 21/21, ai-era-unit-promotion 17/0, ai-unit-replace-same-rules 45/0, load-game-regression 34/0, 5 bramek referencyjnych
+- Limity: NIE ZMIERZONO: zrzut pickera w Chromium, ilosciowy wplyw na AI; ABC: Inkowie widza oba warianty Procarza, narodowi lucznicy bez przejscia; dlug bazowy unit-replace-full-cost 39/1
+
 ## ROBOCZA 42f135a6 -- 2026-11-16 -- FALA 778: Drogi automatu dochodza do heksu miasta (AI i administrator ulepszen) (testowa)
 
 - Plan drog automatycznych (auto-ulepszenia gracza z administratorem i AI) dodaje heks miasta, do ktorego prowadzi droga; wczesniej droga konczyla sie na heksie sasiednim (od FALI 521), bo plan pomijal heksy miast. Reczna budowa gracza dzialala bez zmian.

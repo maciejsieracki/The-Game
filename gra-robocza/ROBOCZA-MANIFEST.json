@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "42f135a6f25c751bed869760c07571bb",
-  "bundleSha256": "75efdfd8a0ec86547addafe7eb81a9d932d17869473e777126034b95ce635d97",
-  "bundleBytes": 14817715,
+  "bundleMd5": "2cb84db4ff9649ca2d269f04645bae42",
+  "bundleSha256": "24352271a4bfe6192fdfd56c9621c75411194cb715ce4bb6f965b1c8d80fd060",
+  "bundleBytes": 14820472,
   "sourceSnapshot": {
-    "source": "FC 4191e9cb0, main 263a0f242",
+    "source": "FC 18eb1a384, main 774fd0eec",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 778: Plan drog automatycznych (auto-ulepszenia gracza z administratorem i AI) dodaje heks miasta, do ktorego prowadzi droga; wczesniej droga konczyla sie na heksie sasiednim (od FALI 521), bo plan pomijal heksy miast. Reczna budowa gracza dzialala bez zmian."
+    "FALA 782: Po zajeciu miasta gracz nie dostaje wpisu o zwolnieniu zarzadcy OBCEJ cywilizacji (bramka wg poprzedniego wlasciciela); utrata wlasnego miasta z zarzadca nadal daje wpis"
   ],
   "verification": [
-    "tsc 0, roads-reach-city-hex-test 24/0 (baza 6/18), roads-city-links-only 57/0, road-connectivity 99/0, road-build-player-parity 17/0, load-game-regression 34/0, 5 bramek referencyjnych, autoimprove-stages-q1 299/0"
+    "tsc 0, logic 213/213, foreign-administrator-dismissed 12/0 (mutacja czerwona), city-administrator 119/0, improvement-administrator 59/0, load-game-regression 34/0"
   ],
   "limits": [
-    "NIE ZMIERZONO: zywy Chromium, rust-port (dlug REPIN planRoadNetwork), wplyw na balans (ok. +1 heks drogi na miasto), stare zapisy (heks miasta dostanie droge w kolejnych turach)"
+    "Chromium live NIE ZMIERZONO; dlug bazowy events-defer-to-turn-start C3 1 FAIL; REPIN Rust noteAdministratorChange"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES ROADS-REACH-CITY-HEX-REGRESSION-Q2 r1 (kandydat 4191e9cb0): przyczyna w danych, nie w rysowaniu - planRoadNetwork (od FALI 521, e5bb46741) pomijal heksy miast, wiec droga automatu (auto-ulepszenia gracza z administratorem i AI) konczyla sie na heksie sasiednim; poprawka w roadPlanHexes dodaje heks miasta majacy krawedz w planie (+7/-1 w auto-improvements.ts). tsc 0, roads-reach-city-hex-test 24/0 (na bazie 6/18, mutacja czerwona), roads-city-links-only 57/0 (dwie asercje skorygowane), road-connectivity 99/0, road-build-player-parity 17/0, road-hook-mainguard 19/0, autoimprove-stages-q1 299/0, load-game-regression 34/0, 5 bramek zielonych. NIE ZMIERZONO: zywy Chromium, rust-port (dlug REPIN planRoadNetwork), wplyw na balans (okolo +1 heks drogi na miasto), stare zapisy (heks miasta dostanie droge w kolejnych turach), dwa wolne testy irygacji."
+    "notes": "FC PASS-WITH-NOTES EVENTS-NO-FOREIGN-ADMINISTRATOR-DISMISSED r1 (kandydat 71009aaa0, integracja 18eb1a384): po zajeciu miasta gracz nie dostaje wpisu o zwolnieniu zarzadcy OBCEJ cywilizacji (bramka wg poprzedniego wlasciciela); utrata wlasnego miasta z zarzadca nadal daje wpis (zalozenie do potwierdzenia). tsc 0, foreign-administrator-dismissed-test 12/0 (mutacja czerwona), city-administrator 119/0, improvement-administrator 59/0, notif-diplo 25/0, events-one-turn 25/0, load-game-regression 34/0, 5 bramek zielonych. Dlug bazowy: events-defer-to-turn-start C3 1 FAIL. NIE ZMIERZONO: zywy Chromium. Dlug Rust: REPIN noteAdministratorChange."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-16T21:16:41",
+  "hubGeneratedAt": "2026-11-16T22:37:51",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "42f135a6f25c751bed869760c07571bb",
-      "sizeBytes": 14817715
+      "md5": "2cb84db4ff9649ca2d269f04645bae42",
+      "sizeBytes": 14820472
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "42f135a6f25c751bed869760c07571bb",
-      "sizeBytes": 14817715
+      "md5": "2cb84db4ff9649ca2d269f04645bae42",
+      "sizeBytes": 14820472
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "42f135a6f25c751bed869760c07571bb",
-      "sizeBytes": 14817715
+      "md5": "2cb84db4ff9649ca2d269f04645bae42",
+      "sizeBytes": 14820472
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "42f135a6f25c751bed869760c07571bb",
-      "sizeBytes": 14817715
+      "md5": "2cb84db4ff9649ca2d269f04645bae42",
+      "sizeBytes": 14820472
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "42f135a6f25c751bed869760c07571bb",
-      "sizeBytes": 14817715
+      "md5": "2cb84db4ff9649ca2d269f04645bae42",
+      "sizeBytes": 14820472
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "42f135a6f25c751bed869760c07571bb",
-      "sizeBytes": 14817715
+      "md5": "2cb84db4ff9649ca2d269f04645bae42",
+      "sizeBytes": 14820472
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "42f135a6f25c751bed869760c07571bb",
-      "sizeBytes": 14817715
+      "md5": "2cb84db4ff9649ca2d269f04645bae42",
+      "sizeBytes": 14820472
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "42f135a6f25c751bed869760c07571bb",
-      "sizeBytes": 14817715
+      "md5": "2cb84db4ff9649ca2d269f04645bae42",
+      "sizeBytes": 14820472
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "42f135a6f25c751bed869760c07571bb",
-      "sizeBytes": 14817715
+      "md5": "2cb84db4ff9649ca2d269f04645bae42",
+      "sizeBytes": 14820472
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "42f135a6f25c751bed869760c07571bb",
-      "sizeBytes": 14817715
+      "md5": "2cb84db4ff9649ca2d269f04645bae42",
+      "sizeBytes": 14820472
     }
   ],
-  "md5": "42f135a6f25c751bed869760c07571bb",
+  "md5": "2cb84db4ff9649ca2d269f04645bae42",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

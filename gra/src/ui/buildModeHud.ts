@@ -31,6 +31,8 @@ export interface BuildTypeInfo {
   key: ImprovementKey;
   label: string;
   kosztPraca: number;
+  /** Koszt budowy od zera (np. brukowana bez Drogi = Droga + brukowana); gdy brak — jak kosztPraca. */
+  kosztOdZera?: number;
   epoka: number;
   typ?: 'wycinka' | 'ulepszenie';
   techId?: string | null;
@@ -818,7 +820,12 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
     for (const { t, techLocked, insufficientPraca, locked } of typesWithLock) {
       const sel = t.key === active ? ' sel' : '';
       const ic = impIconHtml(t.key);
-      const costLabel = t.kosztPraca <= 0 ? 'FREE' : t.kosztPraca + ' P';
+      // R-WEB-ROAD-PAVED-DIRECT-BUILD-OR-UPGRADE-Q1: brukowana pokazuje oba koszty (ulepszenie / od zera).
+      const costLabel = t.kosztPraca <= 0
+        ? 'FREE'
+        : t.kosztOdZera != null && t.kosztOdZera !== t.kosztPraca
+          ? `${t.kosztPraca} P (z Drogą) · ${t.kosztOdZera} P (od zera)`
+          : t.kosztPraca + ' P';
       const hint = techLocked
         ? (t.lockHint ?? (t.techLabel ? 'Technologia: «' + t.techLabel + '»' : 'Zablokowane'))
         : insufficientPraca

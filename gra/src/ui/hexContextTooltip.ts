@@ -472,11 +472,10 @@ function listTerrainPossibleImprovements(
       && zloze !== 'miedz' && nakladka !== Nakladka.ZlozeRudy && zloze !== 'ruda') continue;
     if (key === 'kopalnia_zlota' && zloze !== 'zloto') continue;
     if (key === 'kopalnia_cyny' && zloze !== 'cyna') continue;
-    // Droga brukowana to upgrade istniejącej Drogi — silnik (createQualifier) wymaga JUŻ
-    // zbudowanej zwykłej Drogi na tym heksie, nie samego terenu lądowego.
-    // EN: cobblestone road is an upgrade of an existing Road — the engine (createQualifier)
-    // requires an ALREADY-BUILT plain Road on this hex, not just land terrain.
-    if (key === 'droga_brukowana' && !active.has('droga') && hex.ulepszenie !== Ulepszenie.Droga) continue;
+    // Droga brukowana: na heksie z Drogą to ulepszenie; na heksie bez Drogi — budowa od zera
+    // (R-WEB-ROAD-PAVED-DIRECT-BUILD-OR-UPGRADE-Q1, koszt Droga + Droga brukowana). Oba warianty
+    // pokazuje tooltip; kwalifikator (createQualifier) pilnuje połączenia z siecią dróg.
+    // EN: cobblestone road is either an upgrade of an existing Road or built directly from scratch.
     // Irygacja wymaga rzeki NA heksie lub na sąsiedzie (isRiverAdjacent w createQualifier).
     // EN: irrigation requires a river on the hex or a neighbor (isRiverAdjacent in createQualifier).
     if (key === 'irygacja' && !hexHasRiverAccess(hex, map)) continue;
