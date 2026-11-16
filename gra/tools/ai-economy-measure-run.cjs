@@ -354,7 +354,7 @@ async function playOneTurn(page, ctxState) {
 
 /** Skrot stanu gry: zapis realnej migawki (buildSaveGameSnapshot) BEZ pola meta (znaczniki czasu/sesji). */
 async function stateHash(page, dumpTo) {
-  const json = await page.evaluate(() => { const o = JSON.parse(window.__detHarness.snapshotJson()); delete o.meta; return JSON.stringify(o); });
+  const json = await page.evaluate(() => { const o = JSON.parse(window.__detHarness.snapshotJson()); delete o.meta; if (Array.isArray(o.units)) for (const u of o.units) { if (u && 'stackGroupId' in u) u.stackGroupId = null; } return JSON.stringify(o); });
   if (dumpTo) fs.writeFileSync(dumpTo, json);
   return sha(json);
 }
@@ -456,6 +456,7 @@ async function resumeCheck(ctx, saveAt, turns) {
   await suppressVictory(page);
   let turn = await turnOf(page);
   const out = [];
+  if (process.env.SNAP_LOAD_DUMP) await stateHash(page, path.join(OUT, `${process.env.SNAP_LOAD_DUMP}-load-t${turn}.json`));
   if (MUTANT) await page.evaluate(([g]) => window.__aiTradeWiringTestDebug.grantPlayerGold(g), [1]);
   if (SNAP_PREFIX) SNAP_PREFIX = 'res';
   const ctxState = newCtx(null);

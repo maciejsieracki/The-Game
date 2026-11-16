@@ -39950,6 +39950,18 @@ async function boot(): Promise<void> {
           // [ownerId, stan]. Stary zapis (bez tego pola) wczytuje się z pustym stanem,
           // patrz restoreGameFromSave niżej.
           aiSliderStateByOwner: Array.from(aiSliderStateByOwner.entries()),
+          // R-WEB-SAVE-LOAD-ROUNDTRIP-STATE-DRIFT-Q1 (r3): nadpisania suwakow AI przez rownowazenie NNS
+          // (podatek i RACJE zerowane na miastach tuz przed tickiem). Zapisana gra niesie miasta z
+          // racjami 0/0 -- oryginalne wartosci zyja WYLACZNIE w tej mapie (nnsRestoreAiOverrides
+          // przywraca je na starcie nastepnego rownowazenia). Bez zapisu wczytana gra zostawala na
+          // racjach 0 (AI glodzilo miasta, inna trajektoria niz przebieg ciagly). Tylko gdy niepusta:
+          // brak pola = pusta mapa (stary zapis wczytuje sie jak dotad).
+          ...(nnsAiOverrides.size > 0 ? {
+            nnsAiOverrides: Array.from(nnsAiOverrides.entries()).map(([oid, ov]) => [oid, {
+              ...(ov.split ? { split: ov.split } : {}),
+              ...(ov.rations ? { rations: Array.from(ov.rations.entries()) } : {}),
+            }] as const),
+          } : {}),
           zdobyczePowerByOwner: Array.from(zdobyczePowerByOwner.entries()),
           // B5 (Evaluator FAIL runda 1, R-EPOKA-BRAZU-WYMUSZONA-WOJNA): 4 struktury stanu
           // wojny wymuszonej Brązu — bez tego wpisu/odtworzenia licznik miast, cykl i
@@ -49400,6 +49412,23 @@ async function boot(): Promise<void> {
         | undefined;
       if (savedSliderState?.length) {
         for (const [oid, st] of savedSliderState) aiSliderStateByOwner.set(oid, st);
+      }
+      // R-WEB-SAVE-LOAD-ROUNDTRIP-STATE-DRIFT-Q1 (r3): odtworz nadpisania NNS (patrz zapis wyzej).
+      // `clear()` bezwarunkowo; stary zapis bez pola = pusta mapa (jak dotad).
+      nnsAiOverrides.clear();
+      const savedNnsOverrides = saved.meta?.nnsAiOverrides as
+        | Array<[number, {
+            split?: { saved: CityPodzialHandlu; applied: CityPodzialHandlu };
+            rations?: Array<[string, { poziom: number | undefined; procent: number | undefined }]>;
+          }]>
+        | undefined;
+      if (Array.isArray(savedNnsOverrides)) {
+        for (const [oid, ov] of savedNnsOverrides) {
+          nnsAiOverrides.set(oid, {
+            ...(ov?.split ? { split: ov.split } : {}),
+            ...(Array.isArray(ov?.rations) ? { rations: new Map(ov.rations) } : {}),
+          });
+        }
       }
       aiTargetMemoryByOwner.clear();
       const restoredAiTargetMemory = restoreAiTargetMemory(saved.meta?.aiTargetMemoryByOwner ?? []);
