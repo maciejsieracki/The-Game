@@ -19,7 +19,7 @@
  *
  * Uzycie (z gra/):
  *   node tools/save-load-roundtrip-state-drift-test.cjs --static-only 1 [--main <sciezka do main.ts>]   (A)
- *   node tools/save-load-roundtrip-state-drift-test.cjs --dist <abs-dist> --work <abs-katalog> [--seeds 4242,777] [--save-at 6] [--turns 9]   (A+B)
+ *   node tools/save-load-roundtrip-state-drift-test.cjs --dist <abs-dist> --work <abs-katalog> [--seeds 4242,777] [--save-at 6] [--turns 16]   (A+B)
  * Bundle buduje sie POZA repo: vite build --outDir <abs-dist>.  Exit 1 przy kazdym niepowodzeniu.
  */
 'use strict';
@@ -38,7 +38,7 @@ const MAIN_TS = path.resolve(arg('main', path.join(GRA, 'src', 'main.ts')));
 const STATIC_ONLY = arg('static-only', '0') === '1';
 const SEEDS = arg('seeds', '4242,777').split(',').map(x => parseInt(x, 10)).filter(Number.isFinite);
 const SAVE_AT = parseInt(arg('save-at', '6'), 10);
-const TURNS = parseInt(arg('turns', '9'), 10);
+const TURNS = parseInt(arg('turns', '16'), 10);
 const DIST = arg('dist', '');
 const WORK = path.resolve(arg('work', path.join(os.tmpdir(), 'save-load-drift-work')));
 
@@ -71,10 +71,10 @@ function staticChecks() {
   for (const [name, re] of saveRules) check(re.test(src), name);
   // odczyt (restoreGameFromSave) -- clear() + odczyt pola meta
   const restoreRules = [
-    ['odczyt nnsAiOverrides', /nnsAiOverrides\.clear\(\);[\s\S]{0,400}saved\.meta\?\.nnsAiOverrides[\s\S]{0,700}nnsAiOverrides\.set\(/],
-    ['odczyt orderMultByCity', /orderMultMap\.clear\(\);[\s\S]{0,300}saved\.meta\?\.orderMultByCity[\s\S]{0,200}orderMultMap\.set\(/],
-    ['odczyt orderGrowthMultByCity', /saved\.meta\?\.orderGrowthMultByCity[\s\S]{0,200}growthMultMap\.set\(/],
-    ['odczyt orderValueByCity', /saved\.meta\?\.orderValueByCity[\s\S]{0,200}orderValueMap\.set\(/],
+    ['odczyt nnsAiOverrides', /nnsAiOverrides\.clear\(\);[\s\S]{0,400}saved\.meta\?\.nnsAiOverrides(?![\w])[\s\S]{0,700}nnsAiOverrides\.set\(/],
+    ['odczyt orderMultByCity', /orderMultMap\.clear\(\);[\s\S]{0,300}saved\.meta\?\.orderMultByCity(?![\w])[\s\S]{0,200}orderMultMap\.set\(/],
+    ['odczyt orderGrowthMultByCity', /saved\.meta\?\.orderGrowthMultByCity(?![\w])[\s\S]{0,200}growthMultMap\.set\(/],
+    ['odczyt orderValueByCity', /saved\.meta\?\.orderValueByCity(?![\w])[\s\S]{0,200}orderValueMap\.set\(/],
   ];
   for (const [name, re] of restoreRules) check(re.test(src), name);
   // zgodnosc wsteczna: stary zapis bez pol => pusta mapa, brak wyjatku (odczyt jest chroniony Array.isArray)
