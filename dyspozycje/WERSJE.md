@@ -1,3 +1,9 @@
+## ROBOCZA 62f493be -- 2026-11-16 -- FALA 785: Gwiazdka generala w bitwie we wszystkich sciezkach, takze po Reset rozstawienia (testowa)
+
+- Jasna gwiazdka nad generalem w bitwie w 4 sciezkach budowy grupy jednostki (start, replay/wczytanie, obrona oblezonego, rozstawienie z Reset)
+- Weryfikacja: tsc 0, logic 213/213, battle-commander-star 17/0, battle-commander-star-reset 10/0 (sekwencja + mutacja), garrison 20/0, forced-peace-wiring 13/0, load-game-regression 34/0
+- Limity: NIE ZMIERZONO: zywy Chromium po Reset; 4 timeouty battle-* na wydluzonym limicie (dlug bazowy); manualBattle.ts:756 martwy kod; REPIN Rust znacznika generala
+
 ## ROBOCZA 4cdc5adc -- 2026-11-16 -- FALA 784: AI pilnuje pustych miast w wojnie: rekrutacja garnizonu (testowa)
 
 - AI w wojnie lub zagrozeniu rekrutuje Wojownika w kazdym miescie bez jednostki wojskowej (istniejaca sciezka zakupu, bramki bez zmian); garnizon nie jest wyprowadzany przez muster; pomiar Node: puste miasta w wojnie 62,5/58,3/55,1/39,3 -> 0 procent

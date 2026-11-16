@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "4cdc5adc822a37b6f2126adf1d5a7d90",
-  "bundleSha256": "3140254af2de0bb16c41cd7436cddd9de48f9202cecf99095c74bb4332ff3933",
-  "bundleBytes": 14825400,
+  "bundleMd5": "62f493bed411431d0f2c9ac538e66aa8",
+  "bundleSha256": "e1f13de495132dcf853190e8e5c0af621e0574fae591363306456e148d5c90b0",
+  "bundleBytes": 14826821,
   "sourceSnapshot": {
-    "source": "FC ed8c91142 integracja 3fdcab34b, main 64069b1a2",
+    "source": "FC 5b275ed46 integracja 3c96d46ca, main 8bc385dee",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 784: AI w wojnie lub zagrozeniu rekrutuje Wojownika w kazdym miescie bez jednostki wojskowej (istniejaca sciezka zakupu, bramki bez zmian); garnizon nie jest wyprowadzany przez muster; pomiar Node: puste miasta w wojnie 62,5/58,3/55,1/39,3 -> 0 procent"
+    "FALA 785: Jasna gwiazdka nad generalem w bitwie w 4 sciezkach budowy grupy jednostki (start, replay/wczytanie, obrona oblezonego, rozstawienie z Reset)"
   ],
   "verification": [
-    "tsc 0, logic 213/213, ai-war-city-garrison 20/0, defend-home 30/0, scattered-merge 33/0, muster 26/0, war-gate 24/0, general-war-campaign 51/0, forced-peace-wiring 13/0, load-game-regression 34/0"
+    "tsc 0, logic 213/213, battle-commander-star 17/0, battle-commander-star-reset 10/0 (sekwencja + mutacja), garrison 20/0, forced-peace-wiring 13/0, load-game-regression 34/0"
   ],
   "limits": [
-    "NIE ZMIERZONO: zywa gra (bramki manpower/surowcow/epoki w main.ts), dostepnosc Wojownika we wszystkich epokach i civ, zdobyte miasta (0,33 przed i po); dlug bazowy replacement-concentration atrybucja; REPIN Rust"
+    "NIE ZMIERZONO: zywy Chromium po Reset; 4 timeouty battle-* na wydluzonym limicie (dlug bazowy); manualBattle.ts:756 martwy kod; REPIN Rust znacznika generala"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES GARRISON r3 (kandydat ed8c91142, integracja 3fdcab34b): AI w wojnie lub zagrozeniu rekrutuje Wojownika w kazdym miescie bez jednostki wojskowej (przez istniejaca sciezke zakupu: bramki skarbca, rezerwy i manpower bez zmian), garnizon nie jest wyprowadzany przez muster. Pomiar Node (model zakupu, 3 ziarna x 100 tur): odsetek miast AI bez jednostki w wojnie t10/30/60/100 62,5/58,3/55,1/39,3 -> 0/0/0/0; pokoj bez zmian (87,5 procent, swiadomie); czas tury AI bez regresji. tsc 0, ai-war-city-garrison 20/0, defend-home 30/0, scattered-merge 33/0, muster 26/0, determinism PASS, load-game-regression 34/0, 5 bramek zielonych. NIE ZMIERZONO: zywa gra (main.ts, bramki manpower/surowcow/epoki), zdobyte miasta (0,33 przed i po), dostepnosc Wojownika we wszystkich epokach i cywilizacjach. Dlug bazowy: replacement-concentration atrybucja 34/1. Dlug Rust: REPIN reguly garnizonu applyWarAllInCapitalToCommands."
+    "notes": "FC PASS-WITH-NOTES GENSTAR r2 (kandydat 5b275ed46, integracja 3c96d46ca): w bitwie general ma jasna gwiazdke nad jednostka we WSZYSTKICH czterech sciezkach budowy grupy jednostki (start, replay/wczytanie, obrona oblezonego, rozstawienie z Reset). tsc 0, battle-commander-star 17/0, battle-commander-star-reset 10/0 (sekwencja rozstaw-Reset-ruch-Reset, mutacja czerwona), logic 213/213, tech-tree 20/0, research zielony, unit-replace 21/21, combat OK. NIE ZMIERZONO: zywy Chromium po Reset (zrzuty 1280x720/1400x900 tylko z r1), 4 timeouty battle-* na wydluzonym limicie (identyczne na bazie = dlug). manualBattle.ts:756 bez gwiazdki (modul nieimportowany). Dlug Rust: REPIN znacznika generala."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-16T23:14:04",
+  "hubGeneratedAt": "2026-11-16T23:22:02",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "4cdc5adc822a37b6f2126adf1d5a7d90",
-      "sizeBytes": 14825400
+      "md5": "62f493bed411431d0f2c9ac538e66aa8",
+      "sizeBytes": 14826821
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "4cdc5adc822a37b6f2126adf1d5a7d90",
-      "sizeBytes": 14825400
+      "md5": "62f493bed411431d0f2c9ac538e66aa8",
+      "sizeBytes": 14826821
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "4cdc5adc822a37b6f2126adf1d5a7d90",
-      "sizeBytes": 14825400
+      "md5": "62f493bed411431d0f2c9ac538e66aa8",
+      "sizeBytes": 14826821
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "4cdc5adc822a37b6f2126adf1d5a7d90",
-      "sizeBytes": 14825400
+      "md5": "62f493bed411431d0f2c9ac538e66aa8",
+      "sizeBytes": 14826821
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "4cdc5adc822a37b6f2126adf1d5a7d90",
-      "sizeBytes": 14825400
+      "md5": "62f493bed411431d0f2c9ac538e66aa8",
+      "sizeBytes": 14826821
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "4cdc5adc822a37b6f2126adf1d5a7d90",
-      "sizeBytes": 14825400
+      "md5": "62f493bed411431d0f2c9ac538e66aa8",
+      "sizeBytes": 14826821
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "4cdc5adc822a37b6f2126adf1d5a7d90",
-      "sizeBytes": 14825400
+      "md5": "62f493bed411431d0f2c9ac538e66aa8",
+      "sizeBytes": 14826821
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "4cdc5adc822a37b6f2126adf1d5a7d90",
-      "sizeBytes": 14825400
+      "md5": "62f493bed411431d0f2c9ac538e66aa8",
+      "sizeBytes": 14826821
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "4cdc5adc822a37b6f2126adf1d5a7d90",
-      "sizeBytes": 14825400
+      "md5": "62f493bed411431d0f2c9ac538e66aa8",
+      "sizeBytes": 14826821
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "4cdc5adc822a37b6f2126adf1d5a7d90",
-      "sizeBytes": 14825400
+      "md5": "62f493bed411431d0f2c9ac538e66aa8",
+      "sizeBytes": 14826821
     }
   ],
-  "md5": "4cdc5adc822a37b6f2126adf1d5a7d90",
+  "md5": "62f493bed411431d0f2c9ac538e66aa8",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
