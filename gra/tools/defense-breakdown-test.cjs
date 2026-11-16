@@ -185,7 +185,9 @@ const { civMatrixBonusyForCivKey } = require(CB_BUNDLE);
 const grecyBonusy = civMatrixBonusyForCivKey('grecy');
 const falangaBonus = grecyBonusy.find((b) => b.typ === 'bonus_obrona' && b.cel === 'piechota' && b.wartosc > 0);
 // polski tekst opisu Falangi = ten sam, ktory panel pokazuje (defenderCivBonusBreakdown -> civBonusOpisPl), obciety z licznika "— N z M jednostek"
-const falangaOpisPl = defenderCivBonusBreakdown([{ celShape: civBonusUnitShapeFromDef({ Jednostka: 'Wojownik', Typ: 'Piechota', Rola: 'Wrecz' }) }], [falangaBonus])[0].text.replace(/ — \d+ z \d+ jednostek$/, '');
+// A (obrona r4, zarzut 2 Evaluatora): oczekiwany tekst WPISANY NA SZTYWNO (nie wyprowadzany z testowanej funkcji).
+// Zmiana civBonusOpisPl / tekstu Falangi w danych musi zaczerwienic test. Wartosc = wynik pomiaru na 18df17133 (probe).
+const falangaOpisPl = 'Walka · obrona · piechoty';
 if (!falangaBonus) throw new Error('bonus_obrona piechota Grecji (Falanga, civ-matrix) nie znaleziony');
 assert(falangaBonus.cel === 'piechota', 'DANE: Falanga (Grecy) bonus_obrona.cel === "piechota" (fundament warunku "N z M")');
 
@@ -436,8 +438,12 @@ console.log('\n--- F. bonusChipTexts (regresja -- uzywane przez ui/preBattle.ts)
   const chips = bonusChipTexts(grecyBonusy);
   // A: Grecy niosa dzis 6 niezerowych bonusow walki z macierzy (Falanga + morska + plytkie morze), nie jeden; wpisy o wartosci 0 (np. walka_hp_*)
   // oraz jednostka_specjalna/ekonomia maja byc odrzucone przez isCombatModifierBonus. Oczekiwana liczba liczona z tych samych danych (nie z pamieci).
-  const expectedChipCount = grecyBonusy.filter(b => b.realizuje === 'walka' && b.typ !== 'jednostka_specjalna' && b.wartosc !== 0).length;
-  assert(expectedChipCount >= 1 && chips.length === expectedChipCount, 'bonusChipTexts(Grecy): dokladnie ' + expectedChipCount + ' niezerowych chipow walki (dostalem ' + chips.length + ')');
+  // A (obrona r4, zarzut 2): oczekiwana liczba WPISANA NA SZTYWNO (6); osobna asercja DANE sprawdza, ze dane macierzy nadal daja 6
+  // tym samym kryterium co isCombatModifierBonus (realizuje=walka, typ!=jednostka_specjalna, wartosc!=0) -- wtedy zmiana danych zaczerwieni test.
+  const expectedChipCount = 6;
+  const dataChipCount = grecyBonusy.filter(b => b.realizuje === 'walka' && b.typ !== 'jednostka_specjalna' && b.wartosc !== 0).length;
+  assert(dataChipCount === expectedChipCount, 'DANE: Grecy maja ' + dataChipCount + ' niezerowych bonusow walki (oczekiwano ' + expectedChipCount + ')');
+  assert(chips.length === expectedChipCount, 'bonusChipTexts(Grecy): dokladnie ' + expectedChipCount + ' niezerowych chipow walki (dostalem ' + chips.length + ')');
   assert(chips.includes(falangaOpisPl), 'bonusChipTexts(Grecy): zawiera chip Falangi ("' + falangaOpisPl + '")');
   assert(!chips.some(c => /punkty zdrowia/.test(c)), 'bonusChipTexts(Grecy): wpisy zerowe (walka_hp_*) nie daja chipow');
 }

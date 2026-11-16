@@ -125,6 +125,9 @@ console.log('\n-- PYTANIE-84 U-17: Warsztat kamieniarski +10% Kamienia (civ-wide
     `bez Warsztatu: kamien silnika (${baseKamien}) >= plon terytorium (${row.kamien})`);
   eq(runTick(city, ['kamieniarski']), Math.floor(baseKamien * 1.1), '1 Warsztat: kamien ×1.10 (floor)');
   eq(runTwoCitiesKamien(), 2 * Math.floor(baseKamien * 1.2), '2 Warsztaty w 2 miastach: kamien ×1.20 na każde miasto (suma 2 miast, addytywnie civ-wide)');
+  // A (obrona r4, zarzut 3): przywrocona asercja "dwa Warsztaty w JEDNYM miescie nie kumuluja sie". Licznik civ-wide liczy MIASTA z Warsztatem
+  // (turn-economy.ts: activeBuiltIds.includes('kamieniarski') -> +1 na miasto), wiec 2 budynki w jednym miescie = ×1.10, nie ×1.20.
+  eq(runTick(city, ['kamieniarski', 'kamieniarski']), Math.floor(baseKamien * 1.1), '2 Warsztaty w 1 miescie: kamien ×1.10 (licznik = miasta z Warsztatem, nie budynki)');
 }
 
 // Parytet ze Stolarnią: ten sam wzorzec mnoznika drewno/kamien

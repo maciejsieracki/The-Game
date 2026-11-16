@@ -121,7 +121,11 @@ check('shared presentation helper routes all known owners canonically and retain
   assert.equal(context.civKeyForOwner(123), 'oid-123');
 });
 
-check('actual shared diplomacy tick context resolves the nonzero human seat culture and religion', () => {
+// A (obrona r4, zarzut 4): tytul sprawdzal wczesniej dodatnia flage religii; po decyzji #342 (religia bez wplywu na Zaufanie, params
+// wspolnaReligia_zaufanie_perTura=0) test pilnuje NIEOBECNOSCI flagi w TickCtx (regresja: ponowne wprowadzenie wplywu religii zaczerwieni test).
+// Routing kultury wlasciciela (roznicaKulturowa) nadal sprawdza check nizej. Uwaga: main.ts:44101 nadal buduje wspolnaReligia w glownym ticku
+// pary gracz-AI (bez efektu na Zaufanie) -- pozostalosc poza zakresem tego testu, zgloszona w UWAGI-DLA-ORKIESTRATORA.
+check('actual shared diplomacy tick context does not carry religion flag (decyzja #342: religia bez wplywu na Zaufanie)', () => {
   const contextForSecondary = context.buildDiplomacyTickCtxForPair(7, 99);
 // A (R-WEB-DIPLO-TRUST-NUMBERS-Q1 / decyzja wlasciciela "usunac wplyw religii na zaufanie"): TickCtx i relationBreakdown nie niosa juz flagi wspolnaReligia.
   assert.equal(contextForSecondary.wspolnaReligia, undefined, 'religia nie wchodzi do TickCtx (decyzja: bez wplywu religii na zaufanie)');
