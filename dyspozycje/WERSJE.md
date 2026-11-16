@@ -1,3 +1,9 @@
+## ROBOCZA cc014eb0 -- 2026-11-16 -- FALA 775: Rozdzielanie armii oblegajacej: wydzielone jednostki bez oblezenia i z pelnym ruchem (testowa)
+
+- Jednostki wydzielone przez Rozdziel z armii oblegajacej miasto traca oblezenie (oblegaCityId) i fortyfikacje w polu, maja pelny ruch i nie licza sie do grup oblezenia; reszta armii nadal oblega, a gdy nikt nie zostaje przy murze oblezenie jest zdjete.
+- Weryfikacja: tsc 0, army-split-besieging-no-siege-lock-test 21/0, siege-nearby-lock-join 23/0, load-game-regression 34/0, army-merge-* zielone, 5 bramek referencyjnych
+- Limity: NIE ZMIERZONO: zywy Chromium, commit regresu; wydzielona jednostka dostaje pelna pule ruchu (decyzja produktowa); army-split-panel-scroll-grid 16/2 dlug bazowy
+
 ## ROBOCZA c8b6031d -- 2026-11-16 -- FALA 774: Ekran porazki: liczniki utraconych miast i jednostek, brak autozapisu po porazce (testowa)
 
 - Ekran porazki w sekcji Straty pokazuje Utracone miasta i Utracone jednostki (brak danych = myslnik, stary zapis 0/0). Po porazce autozapis i Ctrl+S nie zapisuja; lista Wczytaj gre zawiera tylko zapis sprzed porazki; reczny nazwany zapis nie jest blokowany.

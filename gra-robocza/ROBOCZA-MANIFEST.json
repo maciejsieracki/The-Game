@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "c8b6031daade4b865ed9317db8337b8b",
-  "bundleSha256": "16235be76903af4c4f79874505f7eaeaf2f435c45dd674ee99f03375d56173ef",
-  "bundleBytes": 14812560,
+  "bundleMd5": "cc014eb0b375fb8fa177940d7652fc32",
+  "bundleSha256": "76cb20a386a31e006e731410baaefbf2574901cc162e6f8a808f77413c284c37",
+  "bundleBytes": 14812829,
   "sourceSnapshot": {
-    "source": "FC a9003952d (kandydat 09d59f60b+obrona), main 327e5104d",
+    "source": "FC 95c095be7, main 08d42ad72",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 774: Ekran porazki w sekcji Straty pokazuje Utracone miasta i Utracone jednostki (brak danych = myslnik, stary zapis 0/0). Po porazce autozapis i Ctrl+S nie zapisuja; lista Wczytaj gre zawiera tylko zapis sprzed porazki; reczny nazwany zapis nie jest blokowany."
+    "FALA 775: Jednostki wydzielone przez Rozdziel z armii oblegajacej miasto traca oblezenie (oblegaCityId) i fortyfikacje w polu, maja pelny ruch i nie licza sie do grup oblezenia; reszta armii nadal oblega, a gdy nikt nie zostaje przy murze oblezenie jest zdjete."
   ],
   "verification": [
-    "tsc 0, loss-counters-test 35/0, defeat-screen-summary-test 25/0, victory 12/0, victory-screen 11/0, load-game-regression 34/0, 5 bramek referencyjnych, zywy Chromium 51/0"
+    "tsc 0, army-split-besieging-no-siege-lock-test 21/0, siege-nearby-lock-join 23/0, load-game-regression 34/0, army-merge-* zielone, 5 bramek referencyjnych"
   ],
   "limits": [
-    "NIE ZMIERZONO: polegle jednostki w zywej bitwie; round-trip licznika >0 przez save.ts; gracz = wlasciciel 0 (hotseat drugi fotel nie liczony)"
+    "NIE ZMIERZONO: zywy Chromium, commit regresu; wydzielona jednostka dostaje pelna pule ruchu (decyzja produktowa); army-split-panel-scroll-grid 16/2 dlug bazowy"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES DEFEAT-SCREEN-LOSS-COUNTERS-AND-HIDE-POST-DEFEAT-AUTOSAVE-Q2 r1+obrona (kandydat a9003952d): ekran porazki pokazuje Utracone miasta i Utracone jednostki (brak danych = myslnik, stary zapis 0/0); autozapis i Ctrl+S po porazce nie zapisuja, lista Wczytaj gre po porazce zawiera tylko zapis sprzed porazki; reczny nazwany zapis nie blokowany. tsc 0, loss-counters-test 35/0, defeat-screen-summary-test 25/0, victory 12/0, victory-screen 11/0, load-game-regression 34/0, 5 bramek zielonych, zywy Chromium 51/0. NIE ZMIERZONO: polegle jednostki w zywej bitwie, round-trip licznika >0 przez save.ts. Dlug Rust: REPIN meta.lossCounters i bramka porazki w autozapisie."
+    "notes": "FC PASS-WITH-NOTES ARMY-SPLIT-BESIEGING-ARMY-NO-SIEGE-LOCK-Q2 r1 (kandydat 95c095be7): jednostki wydzielone przez Rozdziel z armii oblegajacej traca oblegaCityId i fortyfikacje w polu, maja pelny ruch i nie wchodza do grup oblezenia; reszta armii nadal oblega, a gdy nikt nie zostaje przy murze oblezenie jest zdjete. tsc 0, army-split-besieging-no-siege-lock-test 21/0 (baza 9/12, mutant 19/2), 5 bramek zielonych, load-game-regression 34/0, siege-nearby-lock-join 23/0, army-merge-* zielone. NIE ZMIERZONO: zywy Chromium, commit regresu (bisect), army-split-panel-scroll-grid 16/2 (dlug bazowy). Nota: wydzielona jednostka dostaje pelna pule ruchu (decyzja produktowa zgodna z dispatchem). Dlug Rust: REPIN releaseSplitFromSiege."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-16T19:55:18",
+  "hubGeneratedAt": "2026-11-16T19:57:54",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "c8b6031daade4b865ed9317db8337b8b",
-      "sizeBytes": 14812560
+      "md5": "cc014eb0b375fb8fa177940d7652fc32",
+      "sizeBytes": 14812829
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "c8b6031daade4b865ed9317db8337b8b",
-      "sizeBytes": 14812560
+      "md5": "cc014eb0b375fb8fa177940d7652fc32",
+      "sizeBytes": 14812829
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "c8b6031daade4b865ed9317db8337b8b",
-      "sizeBytes": 14812560
+      "md5": "cc014eb0b375fb8fa177940d7652fc32",
+      "sizeBytes": 14812829
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "c8b6031daade4b865ed9317db8337b8b",
-      "sizeBytes": 14812560
+      "md5": "cc014eb0b375fb8fa177940d7652fc32",
+      "sizeBytes": 14812829
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "c8b6031daade4b865ed9317db8337b8b",
-      "sizeBytes": 14812560
+      "md5": "cc014eb0b375fb8fa177940d7652fc32",
+      "sizeBytes": 14812829
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "c8b6031daade4b865ed9317db8337b8b",
-      "sizeBytes": 14812560
+      "md5": "cc014eb0b375fb8fa177940d7652fc32",
+      "sizeBytes": 14812829
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "c8b6031daade4b865ed9317db8337b8b",
-      "sizeBytes": 14812560
+      "md5": "cc014eb0b375fb8fa177940d7652fc32",
+      "sizeBytes": 14812829
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "c8b6031daade4b865ed9317db8337b8b",
-      "sizeBytes": 14812560
+      "md5": "cc014eb0b375fb8fa177940d7652fc32",
+      "sizeBytes": 14812829
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "c8b6031daade4b865ed9317db8337b8b",
-      "sizeBytes": 14812560
+      "md5": "cc014eb0b375fb8fa177940d7652fc32",
+      "sizeBytes": 14812829
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "c8b6031daade4b865ed9317db8337b8b",
-      "sizeBytes": 14812560
+      "md5": "cc014eb0b375fb8fa177940d7652fc32",
+      "sizeBytes": 14812829
     }
   ],
-  "md5": "c8b6031daade4b865ed9317db8337b8b",
+  "md5": "cc014eb0b375fb8fa177940d7652fc32",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
