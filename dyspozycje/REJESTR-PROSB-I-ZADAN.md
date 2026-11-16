@@ -10517,3 +10517,6 @@ FC PASS-WITH-NOTES (FC 4191e9cb0). main = cb077b588, ROBOCZA MD5 42f135a6f25c751
 
 ### Zgłoszenie 2026-11-16 (noc): droga brukowana — budowa od razu LUB ulepszenie
 Właściciel: brukowana ma się dać zbudować samodzielnie (na heksie bez drogi) ORAZ jako ulepszenie istniejącej zwykłej drogi; bez przymusu najpierw zwykłej. STATUS: **OTWARTE** — dispatch `R-WEB-ROAD-PAVED-DIRECT-BUILD-OR-UPGRADE-Q1` (Haiku r1). ZAŁOŻENIE do potwierdzenia przez właściciela: koszt od zera = Droga + Droga brukowana (15+25=40), ulepszenie = 25 jak dziś (właściciel koszt od zera nie podał).
+
+### Zgłoszenie 2026-11-16 (noc): AI w wojnie — ≥1 jednostka wojskowa w każdym mieście, reszta do generała
+Właściciel opisał pożądane zachowanie AI w wojnie: w każdym mieście zostaje przynajmniej jedna jednostka wojskowa (wydłuża oblężenie), cała reszta idzie do generała/wodza i dopiero atakuje. STATUS: **OTWARTE** — dispatch `R-WEB-AI-WAR-CITY-GARRISON-ONE-REST-TO-GENERAL-Q1` (Haiku r1; najpierw audyt: część mechanizmów mogła już powstać w FALACH 499/550). Bez zmian balansu/parametrów bez decyzji.
