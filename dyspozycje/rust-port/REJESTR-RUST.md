@@ -2267,3 +2267,17 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **NIE_ZMIERZONO:** skąd pochodzą pierwotne numery linii (sprzed poprawki) — poza zakresem tego tematu.
 - **Sprzątanie:** worktree `wf_59b7fc97-124-1..4` i worktree integracji usunięte; `target-integ-renderer-Q1` usunięty. Gałęzie lokalne `rust-port-wip/R-RUSTPORT-P6-RENDERER-ORDERS-CYTATY-Q1-*` zostawione (nie wypychane na zdalny). `scratchpad/target` niezidentyfikowany — nie ruszany.
 - **Sloty:** 1 z 4 — K5-BLOW-ENV-WEKTORY-Q1 (`wf_6ab179f1-525`, Operator, Haiku).
+
+## Przebieg (05:19 UTC — heartbeat slotów RUST: start rozpoznania #112)
+
+- **Sloty:** 2 z 4 aktywne: K5-BLOW-ENV-WEKTORY-Q1 (`wf_6ab179f1-525`, Operator, Haiku — trwa od ok. 05:00 UTC, bez wyniku) i **K5LOOP-DOCTRINA-ROZP-Q1** (#112, `wf_8cdeaadf-cf7`, Operator, Haiku).
+- **Start:** `R-RUSTPORT-P6-K5LOOP-DOCTRINA-ROZP-Q1` — rozpoznanie tylko do odczytu, baza `59746d373` (parity). Dispatch `66171e279` wypchnięty na `claude/rust-sivvrn`. Skrypt `topic-ROZP-GENERIC.js` (Operator/Obrona Haiku, Evaluator/FC Sonnet). Warunek wstępny spełniony: OUTCOME (`c3e3617b2`) jest przodkiem parity.
+- **Dlaczego tylko ten:** pozostali kandydaci z kolejki nie mają zielonego światła:
+  - #104/#172 ZŁOŻA-WIRING: r1 DECISION_REQUIRED (`40884a5f8`), decyzja właściciela (a)/(b) nieodebrana.
+  - #135/#167 COMBAT-WEJSCIA: kolejność względem RESOLVE-PAIR — pytanie ABC w czacie, bez odpowiedzi.
+  - #106 R7K7C-WIRING: decyzja pkt 4. #115 ZDOBYCIE-MIASTA-WIRING: wariant A/B/C. #120 CRED-HAK: w tasklistach #171 już `completed` (duplikat, do uzgodnienia).
+  - K5-AUTO-EXEC / V15 / V16: port `_executeUnitsImmediate` wymaga zmiany kontraktu `ActivateOps` — pytanie w czacie, bez odpowiedzi.
+  - #123 K5LOOP-RUCH i #97 AUTO: wymagają rozpoznania (ruch w ProdBody; AUTO po doktrynie) — nie uruchamiane bez dispatchu.
+- **Decyzja do właściciela (nieodebrana):** czy mam uznać zmianę kontraktu `ActivateOps` za decyzję techniczną orkiestratora (rekomendacja: tak) — wtedy startuje EXEC.
+- **Procesowo:** worktree zakończonego RENDERER (`wf_59b7fc97-124-*`) usunięte w poprzednim ticku; `scratchpad/target` niezidentyfikowany (nie ruszany).
+- **Dysk:** 16 GB wolnego.
