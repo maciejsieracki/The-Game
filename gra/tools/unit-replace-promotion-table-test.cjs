@@ -1,7 +1,7 @@
 'use strict';
 /**
  * unit-replace-promotion-table-test.cjs -- R-WEB-UNIT-REPLACE-PROMOTION-TABLE-INFANTRY-Q1
- * Walidacja tabeli awansów piechoty w units.json (pole "Zastąp specjalnie").
+ * Walidacja tabeli awansów w units.json (pole "Zastąp specjalnie"): piechota + wyjątek Łucznik -> Procarz (ARCHER_EXCEPTIONS).
  * Run from gra/:
  *   node tools/unit-replace-promotion-table-test.cjs
  *

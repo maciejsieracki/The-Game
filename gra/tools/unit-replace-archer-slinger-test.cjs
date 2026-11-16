@@ -13,6 +13,11 @@
  *   4. Brak drewna w magazynie (bramka surowca) -> Procarz znika.
  *   5. Mutacja KOPII danych (pole Łucznika cofnięte do "—") -> Procarz znika.
  *   6. Kierunek jednokierunkowy: Procarz -> Łucznik NIE jest zamiennikiem.
+ *   7. Brąz BEZ Koszar: Procarz niedostępny (bramka budynku).
+ *   8. Ścieżka AI: promoteAiUnitForEra (ta sama tabela, te same bramki co gracz) awansuje
+ *      Łucznika na Procarza w Brązie z pełnym kosztem; w Kamieniu nie; klasa armii zachowana.
+ *   9. Zakres narodowy (stan zgodny z dispatchem, decyzja ABC otwarta): Łucznik egipski
+ *      w Brązie NIE ma Procarza jako zamiennika (wpis tylko dla Łucznika standardowego).
  */
 
 const fs = require('fs');
@@ -28,7 +33,10 @@ const esbuild = (() => {
 
 const ENTRY_FILE = path.resolve(__dirname, '.unit-replace-archer-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.unit-replace-archer-bundle.cjs');
-fs.writeFileSync(ENTRY_FILE, "export { availableReplacementsFor } from '../src/game/production';\n", 'utf8');
+fs.writeFileSync(ENTRY_FILE,
+  "export { availableReplacementsFor } from '../src/game/production';\n" +
+  "export { promoteAiUnitForEra } from '../src/game/ai-era-unit-promotion';\n" +
+  "export { aiReplaceKeepsArmyClass } from '../src/game/ai-unit-replace-plan';\n", 'utf8');
 try {
   esbuild.buildSync({
     entryPoints: [ENTRY_FILE], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
@@ -38,7 +46,7 @@ try {
   console.error('[unit-replace-archer-slinger-test] esbuild bundling failed:\n', e.message || e);
   process.exit(1);
 }
-const { availableReplacementsFor } = require(BUNDLE_FILE);
+const { availableReplacementsFor, promoteAiUnitForEra, aiReplaceKeepsArmyClass } = require(BUNDLE_FILE);
 const unitsJson = require('../data/units.json');
 
 let passed = 0, failed = 0;
@@ -102,6 +110,55 @@ console.log('6. Kierunek jednokierunkowy');
 {
   const ids = idsOf(DATA, 'Procarz', baseCtx(2, 'Rzym'));
   check(!ids.includes('Łucznik'), 'Procarz NIE może zostać zamieniony z powrotem na Łucznika');
+}
+
+console.log('7. Brąz bez Koszar: Procarz niedostępny (bramka budynku)');
+{
+  const ids = idsOf(DATA, 'Łucznik', { ...baseCtx(2, 'Rzym'), builtBuildingIds: [] });
+  check(!ids.includes('Procarz'), 'w Brązie bez Koszar Procarz NIE jest zamiennikiem', JSON.stringify(ids));
+}
+
+const EPOCH_NUM = { 'Kamień': 1, 'Brąz': 2, 'Żelazo': 3 };
+function aiPromote(unitName, ctx, treasury0) {
+  const pool = { ...ctx.empireResourceStock };
+  const state = { treasury: treasury0 };
+  const unit = { typeId: unitName, category: 'Standardowa', hp: 20, hpMax: 20, ruchLeft: 2, replaceUsedThisTurn: false };
+  const defOf = id => unitsJson.find(u => u.Jednostka === id);
+  const ok = promoteAiUnitForEra(unit, {
+    oldDefinition: u => defOf(u.typeId),
+    candidates: u => availableReplacementsFor(u.typeId, DATA, TECHS, ctx).map(i => defOf(i.id)).filter(Boolean),
+    newestSameRole: (u, cands) => cands.reduce((best, c) => (!best || EPOCH_NUM[c.Epoka] > EPOCH_NUM[best.Epoka] ? c : best), null),
+    epochNumber: e => EPOCH_NUM[e] ?? 0,
+    unitCost: id => Number(defOf(id)['Pieniądz (koszt)']) || 0,
+    stockCost: t => ({ [t['Surowiec']]: Number(t['Surowiec (ilość)']) || 0 }),
+    canPayStock: cost => Object.entries(cost).every(([r, n]) => (pool[r] ?? 0) >= n),
+    payStock: cost => { for (const [r, n] of Object.entries(cost)) pool[r] -= n; },
+    currentTreasury: () => state.treasury,
+    setTreasury: v => { state.treasury = v; },
+    oldMaxHp: (u, d) => Number(d.health) || 20,
+    newMaxHp: t => Number(t.health) || 20,
+    category: () => 'Standardowa',
+  });
+  return { ok, typeId: unit.typeId, treasury: state.treasury, drewno: pool.Drewno };
+}
+
+console.log('8. Ścieżka AI: promoteAiUnitForEra awansuje Łucznika na Procarza (te same reguły co gracz)');
+{
+  const ctx = { ...baseCtx(2, 'Rzym'), empireResourceStock: { braz: 10, zelazo: 10, Drewno: 100, drewno: 100 } };
+  const r = aiPromote('Łucznik', ctx, 100);
+  check(r.ok && r.typeId === 'Procarz', 'AI w Brązie: Łucznik -> Procarz (promoteAiUnitForEra zwraca ok)', JSON.stringify(r));
+  check(r.ok && r.treasury === 96, 'AI płaci pełny koszt Pieniądza Procarza (100 - 4 = 96)', String(r.treasury));
+  check(r.ok && r.drewno === 75, 'AI płaci pełny koszt surowca Procarza (drewno 100 - 25 = 75)', String(r.drewno));
+  const k = aiPromote('Łucznik', { ...baseCtx(1, 'Rzym'), empireResourceStock: { Drewno: 100, drewno: 100 } }, 100);
+  check(!k.ok && k.typeId === 'Łucznik', 'AI w Kamieniu: brak awansu na Procarza (Procarz niedostępny)', JSON.stringify(k));
+  check(aiReplaceKeepsArmyClass(unitsJson.find(u => u.Jednostka === 'Łucznik'), unitsJson.find(u => u.Jednostka === 'Procarz')),
+    'klasa armii: Łucznik (Distance) -> Procarz (Slinger) zachowuje klasę „dystans”');
+}
+
+console.log('9. Zakres narodowy: Łucznik egipski w Brązie NIE ma Procarza (stan zgodny z dispatchem; ABC otwarte)');
+{
+  const ids = idsOf(DATA, 'Łucznik egipski', baseCtx(2, 'Egipt'));
+  check(!ids.includes('Procarz'), 'Łucznik egipski: brak Procarza na liście (decyzja otwarta w ABC)', JSON.stringify(ids));
 }
 
 console.log(`\n[unit-replace-archer-slinger-test] ${passed} OK, ${failed} FAIL`);
