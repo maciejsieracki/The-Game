@@ -2326,3 +2326,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Uwaga NIE_ZMIERZONO:** źródło `ctx.river_attack_mult` w produkcji nie jest weryfikowane tym tematem (Evaluator zarzut 2).
 - **Dysk:** 14 GB wolnego po sprzątaniu (było 7,1 GB).
 - **Sloty:** 1 z 4 — K5DOC-PROD-UNIT-STAN-T0 (`wf_a3de76ac-91a`, Evaluator, Sonnet). Fala 1 (T2', T6, T5a, T4) czeka na integrację T0 (zależność z §5 rozpoznania).
+
+## Przebieg (06:54 UTC — cztery tematy na raz; sprzątanie dysku; nowe taski)
+
+- **Sloty 4/4:** K5DOC-PROD-UNIT-STAN-T0 (`wf_a3de76ac-91a`, Obrona, Haiku) · **EXEC-T1-QUEUE** (`wf_acc61d3f-1fa`, Operator, Haiku) · **EXEC-T2-MOVE-GATE** (`wf_479bcc22-c55`, Operator, Haiku) · **H-MANUAL-ROZP** (`wf_d8a3e31a-461`, Operator, Haiku; recon, bez kodu).
+- **Dispatche** na `claude/rust-sivvrn` przed startem (`52258872`), baza `316ded4b7` (parity po K5-BLOW).
+- **Zależności:** EXEC-T2 wprowadza `player_order_move_gate.rs`; DOC-T4 ma go ponownie użyć (nie dublować). EXEC-T1 nie zmienia kontraktu `ActivateOps` (wstrzyknięty trait) — decyzja o kontrakcie nie jest potrzebna dla T1.
+- **Taski:** dodano #255–#268 (DOC-T0…T8, DOC-H, EXEC-T1…T7). #112 zamknięty jako rozbity na DOC-T*. #255, #265, #266, #267 w toku.
+- **Sprzątanie dysku:** usunięto nieaktywne cache (`/tmp/claude-0/fc-tgt`, `fc-tgt-missing0`, `tgt`) i pliki robocze scratchpadu (`web.tar`, `a.tar`, `w`, `w9`, `__pycache__`). Worktree zakończonych runów `wf_f3b76b65-261-3` i `wf_5a965001-591-4` zapisane przez `git stash push -u` (wpisy `stash@{0}` i `stash@{1}`) i usunięte. **Dysk: 17 GB wolnego** (było 7,1 GB).
+- **Nie ruszane:** cache aktywnego T0 (`/tmp/claude-0/k5doc-r2-target`, 3,1 GB), `/tmp/claude-0/ev9f1` (1,2 GB, niezacommitowane zmiany — decyzja właściciela), worktree `wf_a3de76ac-91a-*`.
