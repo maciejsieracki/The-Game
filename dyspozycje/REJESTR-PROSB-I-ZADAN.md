@@ -10280,3 +10280,6 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 - R2: Operator BLOCK (hipoteza RNG ODRZUCONA; load-state różni się tylko normalizacją: budowaPriorytetTypow/budowaLista/magazynZywnosci/postepBudynkowUsuniete + resourceLedgerHistory 5→0; po 1 ticku 208 różnic semantycznych, źródło NIEZLOKALIZOWANE; trop: city15 recruitGeneralId/administratorsEnabled), Obrona BLOCK, FC FAIL (bez poprawki kodu). Refs `refs/keep/R-WEB-SAVELOAD-DRIFT-r2-{op,eval,obrona,fc}`.
 - Dwie nieudane rundy Haiku tego samego tematu → runda 3 z Operatorem SONNET (uzasadnienie w DODATKU 2: bisect pierwszego ticku, poprawka w gra/src, synteza wielu ścieżek stanu). Obrona Haiku, Evaluator/FC Sonnet.
 - CZEKA NA RANO (ABC): budowaPriorytetTypow po wczytaniu A/B (bez zmian w r3).
+
+### Start 2026-11-16 ~01:55 UTC — R-WEB-LIVE-VERIFY-MIXED-ARMY-REMEASURE-Q1 (Haiku, cand cb29ce7af)
+- Ponowny pomiar mieszanej armii na żywo (≥8 nowych ziaren × ≥3 składy) po FALACH 750–758: rozrzut frontu był dokładnie na limicie 2; tylko pomiar, defekty → kandydaci. Zadanie z #272/#335.
