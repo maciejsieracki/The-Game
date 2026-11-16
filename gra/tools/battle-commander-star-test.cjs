@@ -57,6 +57,27 @@ function makeArmy() {
   ];
 }
 
+
+/** Lokalizuje miejsca `group = buildUnitModel(...)` i sprawdza, czy po `scene.add(group)` jest gwiazdka. */
+function findUnitGroupSites(src) {
+  const lines = src.split('\n');
+  const sites = [];
+  let fn = '?';
+  for (let i = 0; i < lines.length; i++) {
+    const m = /^  (?:private |public |)(_[A-Za-z0-9_]+)\(/.exec(lines[i]);
+    if (m) fn = m[1];
+    if (/group = buildUnitModel\(/.test(lines[i])) {
+      let addIdx = -1;
+      for (let j = i; j < Math.min(lines.length, i + 25); j++) {
+        if (/this\.scene\.add\(group\);/.test(lines[j])) { addIdx = j; break; }
+      }
+      const covered = addIdx >= 0 && /this\._attachCommanderStar\(group, bu\);/.test(lines.slice(addIdx, addIdx + 3).join('\n'));
+      sites.push({ line: i + 1, fn, covered });
+    }
+  }
+  return { sites, uncovered: sites.filter(s => !s.covered) };
+}
+
 function runChecks(mod, label) {
   const { battleCommanderStarIds, attachBattleCommanderStar, BATTLE_COMMANDER_STAR_NAME } = mod;
   const army = makeArmy();
@@ -136,6 +157,29 @@ async function main() {
       const mutIds = mutMod.battleCommanderStarIds(army);
       check('mutacja kopii (warunek = true) daje czerwono: zwykle jednostki dostaja gwiazdke',
         mutIds.length !== 1, JSON.stringify(mutIds));
+    }
+
+
+    // Pokrycie ścieżek tworzenia grup jednostek w scenie (R-WEB-...-Q1 runda 2):
+    // każde miejsce `group = buildUnitModel(...)` w battleScene.ts musi po
+    // `this.scene.add(group)` dołączać gwiazdkę przez _attachCommanderStar.
+    // Obejmuje rozstawienie (_placeUnits), oblężenie (_placeSiegeDefenders) i
+    // Reset rozstawiania (_placeUnitsOneSide).
+    const sceneSrc = fs.readFileSync(path.join(ROOT, 'src/battle/battleScene.ts'), 'utf8');
+    const coverage = findUnitGroupSites(sceneSrc);
+    check(`pokrycie: ${coverage.sites.length} miejsc budowy grupy jednostki, wszystkie z gwiazdką`,
+      coverage.sites.length === 4 && coverage.uncovered.length === 0,
+      JSON.stringify(coverage));
+    check('pokrycie: ścieżka Reset (_placeUnitsOneSide) ma gwiazdkę',
+      coverage.sites.some(s => s.fn === '_placeUnitsOneSide' && s.covered));
+    if (coverage.sites.length > 0) {
+      // Mutacja na KOPII: usunięcie wywołania w _placeUnitsOneSide -> czerwono.
+      const mutatedScene = sceneSrc.replace(
+        /(private _placeUnitsOneSide[\s\S]*?this\.scene\.add\(group\);\n)\s*this\._attachCommanderStar\(group, bu\);\n/,
+        '$1');
+      const mutCov = findUnitGroupSites(mutatedScene);
+      check('mutacja kopii (brak gwiazdki w _placeUnitsOneSide) daje czerwono',
+        mutCov.uncovered.some(s => s.fn === '_placeUnitsOneSide'), JSON.stringify(mutCov));
     }
 
     // Zrodlo nie zalezy od przelacznika paskow i nie wiesza sie na barsVisible.

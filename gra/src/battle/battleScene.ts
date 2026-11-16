@@ -17902,6 +17902,7 @@ export class BattleScene {
       group.position.set(x, topY, z);
       group.rotation.y = dirYaw(faceDir);
       this.scene.add(group);
+      this._attachCommanderStar(group, bu);
 
       const mats: THREE.Material[] = (group.userData['mats'] as THREE.Material[]) ?? [];
       const perTokenGeos: THREE.BufferGeometry[] = (group.userData['perTokenGeos'] as THREE.BufferGeometry[]) ?? [];
