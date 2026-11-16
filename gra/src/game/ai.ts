@@ -1933,6 +1933,38 @@ function applyArmyCompositionProgram(
   return kept;
 }
 
+/** Najtansza jednostka bojowa (units.json: Wojownik, 5 Pieniadza) -- baza zawsze dostepna; garnizon pustego miasta. */
+export const EMPTY_CITY_GARRISON_UNIT_ID = 'Wojownik';
+
+/**
+ * R-WEB-AI-WAR-CITY-GARRISON-ONE-REST-TO-GENERAL-Q1 (r3): ktore miasta AI maja dostac rekrutowany garnizon.
+ * Warunek: AI w wojnie z cywilizacja (atWarWithCiv / cele wojny) ALBO wrog (aiCanEngageOwner) w zasiegu
+ * `ekspansja_zagroz_zasieg` od miasta, ORAZ brak w miescie jakiejkolwiek jednostki wojskowej (cywile,
+ * zwiadowcy, wodz i zaokretowani sie nie licza). Maks. 1 na miasto na ture. W pokoju bez zagrozenia: zero.
+ * Czysta funkcja (determinizm: kolejnosc myCities).
+ */
+export function emptyCityGarrisonRecruitIds(
+  myCities: readonly AICity[],
+  myUnits: readonly RuntimeUnit[],
+  enemyUnitsAll: readonly RuntimeUnit[],
+  opts: AITurnOpts,
+  data: GameData,
+): Set<string> {
+  const out = new Set<string>();
+  const atWar = opts.atWarWithCiv === true
+    || (opts.warAllIn !== undefined && opts.warAllIn.targets.length > 0);
+  const threatRange = getAiParam(data, 'ekspansja_zagroz_zasieg', AI_THREAT_RANGE_DEFAULT);
+  const hostile = enemyUnitsAll.filter(u => aiCanEngageOwner(opts, u.ownerId));
+  for (const city of myCities) {
+    const hasMilitary = myUnits.some(u => u.q === city.q && u.r === city.r
+      && !isCivilianUnit(u) && !isScoutUnit(u) && u.isGeneral !== true && u.embarked !== true);
+    if (hasMilitary) continue;
+    const threatened = hostile.some(eu => hexDistance(city.q, city.r, eu.q, eu.r) <= threatRange);
+    if (atWar || threatened) out.add(city.id);
+  }
+  return out;
+}
+
 /**
  * Returns the id of the building or unit this city should build next.
  * Priority based on Spec-AI §4 and archetype modifiers.
@@ -3903,10 +3935,29 @@ function decideAITurnCore(
   // Step 2: PRODUCTION -- one build command per city
   // -------------------------------------------------------------------------
   opts.armyCompositionPending = [];
+  // R-WEB-AI-WAR-CITY-GARRISON-ONE-REST-TO-GENERAL-Q1 (r3): puste miasta AI w wojnie/zagrozeniu
+  // dostaja garnizon z priorytetem (polecenia 'build' najtanszej jednostki PRZED reszta produkcji).
+  const garrisonRecruitCityIds = emptyCityGarrisonRecruitIds(
+    myCities, myUnits, enemyAllUnitsRegardlessOfVisibility, opts, data,
+  );
+  const garrisonCmds: AICmdBuild[] = [];
+  const garrisonFallbacks = new Map<string, readonly string[]>();
   for (const city of myCities) {
     const buildId = chooseCityProduction(
       city.id, myCities, units, playerId, data, IGNORED_LEGACY_ARCHETYPE_MODS, opts, map, difficultyParams,
     );
+    const isGarrisonCity = garrisonRecruitCityIds.has(city.id);
+    if (isGarrisonCity) {
+      const rest = buildId === null ? [] : [buildId, ...(opts.lastProductionFallbackIds ?? [])];
+      garrisonFallbacks.set(city.id, rest);
+      garrisonCmds.push({
+        type: 'build', cityId: city.id, buildingId: EMPTY_CITY_GARRISON_UNIT_ID,
+        fallbackIds: rest.filter(id => id !== EMPTY_CITY_GARRISON_UNIT_ID),
+      });
+      // Gdy wybrana produkcja to jednostka bojowa, garnizon ja zastepuje (jeden zakup wojska na miasto).
+      if (buildId === null || buildId === EMPTY_CITY_GARRISON_UNIT_ID
+        || data.units.some(u => u.Jednostka === buildId && armyClassOfUnit(u) !== null)) continue;
+    }
     if (buildId !== null) {
       // R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1: kolejne miasta tej tury widzą już wybraną jednostkę.
       if (data.units.some(u => u.Jednostka === buildId && armyClassOfUnit(u) !== null)) {
@@ -3921,6 +3972,12 @@ function decideAITurnCore(
         fallbackIds: opts.lastProductionFallbackIds ?? [],
       });
     }
+  }
+  if (garrisonCmds.length > 0) {
+    // Priorytet: garnizony pustych miast przed pozostalymi zakupami tej tury (kolejnosc polecen = kolejnosc egzekucji).
+    const firstBuildIdx = commands.findIndex(c => c.type === 'build');
+    const insertAt = firstBuildIdx === -1 ? commands.length : firstBuildIdx;
+    commands.splice(insertAt, 0, ...garrisonCmds);
   }
 
   // -------------------------------------------------------------------------

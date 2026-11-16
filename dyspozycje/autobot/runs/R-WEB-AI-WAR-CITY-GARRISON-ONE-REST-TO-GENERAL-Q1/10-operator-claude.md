@@ -112,3 +112,72 @@ Orkiestrator: (a) decyzja BLOKADY 1 (main.ts) — jesli TAK, osobny temat rundy 
 - Kandydat r1 (3524f5f38) nie jest potomkiem origin/main 98abccdfc (baza cb077b588 zostala wyprzedzona). Przy integracji: merge-tree na aktualny main.
 
 DEPLOY/PUSH: NIE WYKONANO
+
+
+---
+
+# RUNDA 3/5 — raport Operatora (SONNET 5.5; uzasadnienie: 2 nieudane rundy Haiku tego tematu, haikuFailures=2)
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (AI wojna / garnizony miast)
+TEMAT: R-WEB-AI-WAR-CITY-GARRISON-ONE-REST-TO-GENERAL-Q1
+GOAL: AI pilnuje KAZDEGO miasta >= 1 jednostka wojskowa: rdzen = rekrutacja najtanszej jednostki do pustego miasta w wojnie/zagrozeniu z priorytetem; garnizon 1 jednostka zostaje (r1); reszta do marszu.
+BAZA: `235ad7b4d` (kod gry = r1 `3524f5f38`), merge `origin/main` (fadf21af9) -> `cdb2bfdd8` (bez konfliktow; `git merge-base --is-ancestor origin/main HEAD` = tak, `... 235ad7b4d HEAD` = tak).
+
+## ZMIANY / COMMIT (SHA w polu `sha` zwrotu)
+- `gra/src/game/ai.ts` (TYLKO ai.ts; main.ts NIE ruszany — pelna decyzja zapadla po stronie ai.ts, egzekucja przez ISTNIEJACA sciezke `cmd.type === 'build'` -> `pickExecutableCandidate` -> bramki `aiNnsHoldOwners`, `aiUpkeepRunwayAllows`, `shouldAIPurchaseUnit` (rezerwa), manpower w main.ts ~45914 BEZ omijania):
+  - nowa funkcja eksportowana `emptyCityGarrisonRecruitIds(myCities, myUnits, enemyUnitsAll, opts, data)` + stala `EMPTY_CITY_GARRISON_UNIT_ID = 'Wojownik'` (najtansza jednostka bojowa: units.json `Pieniadz (koszt)` = 5, epoka Kamien, baza zawsze dostepna; ten sam wybor co istniejacy garnizon pierwszej jednostki w chooseCityProduction). Miasto kwalifikuje sie gdy: (AI w wojnie z cywilizacja: `opts.atWarWithCiv` LUB `opts.warAllIn.targets.length > 0`) LUB (wrog `aiCanEngageOwner` w zasiegu `ekspansja_zagroz_zasieg` = domyslnie `AI_THREAT_RANGE_DEFAULT` od miasta; N = ta wartosc) ORAZ w miescie nie ma zadnej jednostki wojskowej (cywile, zwiadowcy, wodz, zaokretowani nie licza sie). Maks. 1 na miasto na ture. W pokoju bez zagrozenia: zero zmian (ekonomia pokoju nietknieta, zgodnie z DODATKIEM 1).
+  - `decideAITurn` Step 2: dla kwalifikujacych sie miast emitowane jest polecenie `build` z `buildingId='Wojownik'` i `fallbackIds` = dotychczasowy wybor produkcji (+jego fallbacki); gdy dotychczasowa produkcja to jednostka bojowa/`Wojownik`, garnizon ja ZASTEPUJE (jeden zakup wojska na miasto); gdy to budynek — dopisuje sie obok. Polecenia garnizonow sa wstawiane PRZED pierwszym innym `build` (priorytet przed reszta zakupow wojska tej tury, w ramach istniejacego budzetu).
+  - Brak nowego budzetu, kosztow, limitow, parametrow (DECISION_REQUIRED nie jest potrzebne).
+- Wariant (b) przesuniecia nadwyzki: NIE wdrazany. Powod: rekrutacja (a) doprowadza odsetek pustych miast w wojnie do 0% w pomiarze, wiec przesuwanie jednostek (3 nieudane proby w r2: regresje defend-home 22/8 itd.) jest zbedne i niebezpieczne; zakazane powtarzanie prob z r2 zachowane.
+- `gra/tools/ai-war-city-garrison-test.cjs` — rozszerzony: 18 PASS (przyrost o G1-G4, G6-G9 + 2 asercje mutacyjne MUTACJA G/G2; wlasny mutant `mutrec` wylaczajacy rekrutacje: polecenia sie roznia).
+- `gra/tools/ai-war-city-garrison-measure.cjs` — NOWE narzedzie pomiarowe Fazy 1 (Node; PRAWDZIWY decideAITurn + prawdziwe units/buildings/ai-params; wykonanie `build` = MODEL zakupu przez `pickExecutableCandidate`+`shouldAIPurchaseUnit`).
+- `gra/tools/ai-war-defend-home-sim.cjs` — tylko dwa opcjonalne haki (`o.data`, `o.onOptions`, `o.onCommands`); zachowanie dotychczasowych testow bez zmian (30/0).
+- Raport: ten plik.
+
+## TESTY (liczby z surowego wyjscia, drzewo po merge `cdb2bfdd8` + zmiany)
+- `tsc --noEmit`: exit 0.
+- ai-war-city-garrison-test: 18 PASS / 0 FAIL (nowe G1-G9 + mutant czerwony).
+- ai-war-defend-home-test: 30 passed / 0 failed (baza 30/0).
+- ai-army-scattered-merge-test: 33 passed / 0 failed.
+- ai-army-replacement-concentration-test: 34 passed / 1 failed — jedyna czerwona = `atrybucja` (DLUG BAZOWY, nietkniety).
+- ai-army-all-civs-general-muster-test: 26 PASS / 0 FAIL.
+- ai-move-full-range-test: 20/0 (D3 czas decyzji PO 2.51 ms/ruch = PRZED); ai-war-gate-test: 24/0; ai-general-war-campaign-test: 51/0; ai-home-defense-vs-barbarians-test: 46/0.
+- ai-prod-fallback-test 17/0; ai-prod-gate-difficulty-test 8/0; ai-production-priority-test 9/0; ai-jednostki-tylko-zakup-test 45/0; ai-produkcja-pokrycie-katalogu-test 6/0; ai-army-composition-per-civ-test 341/0.
+- determinism-same-seed-test: PASS; logic-test: 213/213; combat-test: 6/6; tech-tree-test: 20/0; research-test: 33/0; unit-replace-test: 21/21; load-game-regression-test: 34 PASS / 0 FAIL.
+
+## FAZA 1 — POMIAR (Node, ZMIERZONO; `node tools/ai-war-city-garrison-measure.cjs --seeds 3 --turns 100`)
+Swiat: 2 cywilizacje AI x 8 miast rozrzuconych, start = 3 jednostki bojowe w stolicy, reszta miast pusta (odtwarza obserwacje wlasciciela); 3 ziarna (1,2,3); karencja: miasta zdobyte < N = 5 tur wczesniej pomijane w odsetku. PRZED = ta sama zrodlowa wersja z wylaczona rekrutacja garnizonu (mutacja jednej linii), PO = kod dostarczony.
+| tryb | wersja | % miast AI bez jednostki wojskowej t10 / t30 / t60 / t100 | zdobyte miasta w 30 turach (sr. na ziarno) | czas decideAITurn (sr. ms/ture, 100 tur) |
+|---|---|---|---|---|
+| WOJNA | PRZED | 62,5 / 58,3 / 55,1 / 39,3 | 0,33 | 96,28 |
+| WOJNA | PO | 0 / 0 / 0 / 0 | 0,33 | 73,33 |
+| POKOJ | PRZED | 87,5 / 87,5 / 87,5 / 87,5 | 0 | 4,70 |
+| POKOJ | PO | 87,5 / 87,5 / 87,5 / 87,5 | 0 | 4,74 |
+Wniosek: w wojnie odsetek niepilnowanych miast spada z 39-63% do 0%; czas tury bez regresji; w pokoju bez zagrozenia 87,5% miast nadal puste (SWIADOMIE nie ruszane — DODATEK 1: nie wymuszac garnizonow w pokoju kosztem ekonomii bez decyzji; patrz UWAGI). Zdobycia w 30 turach tego modelu sa nieliczne (0,33/ziarno, bez zmiany) — model walki jest uproszczony, wiec kryterium „mniej zdobytych miast” NIE jest tym pomiarem rozstrzygniete.
+NIE ZMIERZONO: zywa gra (Chromium + main.ts): bramki manpower/surowcow/epoki/rezerwy realnego main.ts nie sa w modelu (zakup modelowy: skarbiec 3/miasto/ture, utrzymanie 1/jednostke, rezerwa Normalny z ai-params); czy w prawdziwej turze Wojownik przechodzi `isBuildAllowed` w kazdej epoce/cywilizacji (np. cywilizacje bez Wojownika) — NIE ZMIERZONO; fallbackIds (dotychczasowy wybor) zawieraja alternatywy.
+
+## BLOKADY
+Brak blokujacych. Zalozenia: (1) cel garnizonu = `Wojownik` (id stale w ai.ts, jak istniejaca gałąź garnizonu); (2) „wojna” = `atWarWithCiv` lub cele warAllIn; „zagrozenie” = wrog w `ekspansja_zagroz_zasieg` (nie tylko barbarzyncy); (3) wodz w mieście nie liczy sie jako garnizon.
+
+## RUNDY
+3/5 (Operator Sonnet 5.5, po 2 nieudanych rundach Haiku). Rdzen dostarczony; status nie BLOCK.
+
+## NASTEPNY KROK
+Evaluator -> Obrona -> Final Control. Zalecane weryfikacje zywe (Chromium) po FC: puste miasto AI w wojnie dostaje zakup Wojownika przez realny main.ts (log `[AI n] Zakup jednostki za Skarbiec: Wojownik`).
+
+## LISTA DEPLOYU (nowe narzedzia/testy)
+`gra/tools/ai-war-city-garrison-test.cjs` (test), `gra/tools/ai-war-city-garrison-measure.cjs` (narzedzie pomiarowe, nie test bramkowy); zmieniony `gra/tools/ai-war-defend-home-sim.cjs` (haki opcjonalne).
+
+## DLUG RUST — REPIN (pelna lista)
+- `emptyCityGarrisonRecruitIds` (nowa; warunki: atWarWithCiv || warAllIn.targets>0 || wrog aiCanEngageOwner w ekspansja_zagroz_zasieg; brak jednostki wojskowej poza cywilami/zwiadowcami/wodzem/zaokretowanymi) — fixtury: wojna+puste miasto, miasto z samym zwiadowca+wodzem, pokoj bez zagrozenia, pokoj + barbarzynca w zasiegu.
+- `decideAITurn` Step 2: wstawienie polecen garnizonu PRZED pierwszym `build`, zastapienie produkcji-jednostki, `fallbackIds` = [dotychczasowy wybor, jego fallbacki]; reguła priorytetu = kolejnosc polecen (egzekucja main.ts w kolejnosci).
+- `applyWarAllInCapitalToCommands` (garnizon 1 jednostka z r1, bez zmian w r3) i sciezka zakupu `item.kind === 'jednostka'` w main.ts (bez zmian w r3; reuzywa `shouldAIPurchaseUnit`, `aiUpkeepRunwayAllows`, `aiNnsHoldOwners`, manpower).
+- Fixtury: scenariusz G1-G9 z `ai-war-city-garrison-test.cjs`.
+
+## UWAGI-DLA-ORKIESTRATORA
+- W pokoju 87,5% miast AI pozostaje bez jednostki wojskowej (pomiar). Jesli wlasciciel chce tez pokoj: ABC (koszt utrzymania garnizonu 1 jednostka/miasto vs zdobywanie przez nagly atak); rekomendacja: wlaczyc dla miast graniczacych z obca cywilizacja (osobny temat).
+- `ai-army-replacement-concentration` `atrybucja` — dlug bazowy, bez zmian.
+- Zmiana asercji S1/S3 (scattered-merge) i S3 (replacement-concentration) z r1 nie byla wymagana na tym drzewie (33/0, 34/1 tylko atrybucja).
+
+DEPLOY/PUSH: NIE WYKONANO

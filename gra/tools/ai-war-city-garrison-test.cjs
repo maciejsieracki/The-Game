@@ -23,10 +23,11 @@ const os = require('os');
 const path = require('path');
 const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild'));
 
+const REC_LINE = 'if (atWar || threatened) out.add(city.id);';
 const PINNED_LINE = 'let planned = eligible.filter(u => !keep.has(u.id) && !garrisonIds.has(u.id));';
 const WORK = fs.mkdtempSync(path.join(process.env.GARRISON_TMP || os.tmpdir(), 'wcg-'));
 
-async function buildBundle(name, mutate) {
+async function buildBundle(name, mutate, mutateRecruit) {
   const entry = path.join(WORK, `${name}-entry.ts`);
   const out = path.join(WORK, `${name}-bundle.cjs`);
   const srcDir = process.env.GARRISON_SRC_GAME || path.resolve(__dirname, '..', 'src', 'game');
@@ -43,6 +44,11 @@ export { hexDistance } from ${JSON.stringify(path.resolve(__dirname, '..', 'src'
           if (text.split(PINNED_LINE).length !== 2) throw new Error('mutacja: nie znaleziono dokladnie jednej linii planned');
           text = text.replace(PINNED_LINE, 'let planned = eligible.filter(u => !keep.has(u.id));');
           // (mutant: garnizony nie sa wyjmowane z planned -- wracaja do marszu)
+        }
+        if (mutateRecruit) {
+          if (text.split(REC_LINE).length !== 2) throw new Error('mutacja: nie znaleziono linii out.add garnizonu');
+          // mutant: rekrutacja garnizonow pustych miast wylaczona (zawsze pusty zbior)
+          text = text.replace(REC_LINE, 'void atWar; void threatened;');
         }
         return { contents: text, loader: 'ts' };
       });
@@ -115,6 +121,7 @@ const movesOf = (cmds, id) => cmds.filter(c => c.type === 'move' && c.unitId ===
   // GARRISON_BASELINE=1: uruchomienie na zrodle bazowym (bez linii pinnedIds) -- mutanta nie budujemy.
   const BASELINE = process.env.GARRISON_BASELINE === '1';
   const MUT = BASELINE ? null : await buildBundle('mut', true);
+  const MUT_REC = BASELINE ? null : await buildBundle('mutrec', false, true);
 
   const runOn = (B) => {
     const s = scenario();
@@ -184,6 +191,57 @@ const movesOf = (cmds, id) => cmds.filter(c => c.type === 'move' && c.unitId ===
     const mn = [mu1, mu2].map(u => movesOf(mcmds, u.id).length);
     ok(!(mn.filter(x => x === 0).length === 1 && mn.filter(x => x >= 1).length === 1),
       `MUTACJA T2: mutant nie zostawia dokladnie jednej jednostki (rozkazow: ${mn.join(',')})`);
+  }
+
+  // ---- G: REKRUTACJA garnizonu pustych miast (r3) ----
+  // data.units jest puste, wiec zwykla produkcja tez zwraca 'Wojownik' -- garnizon rozpoznajemy
+  // przez roznice wzgledem mutanta (rekrutacja wylaczona) oraz przez kolejnosc polecen.
+  const buildsOf = (cmds) => cmds.filter(c => c.type === 'build');
+  const cntW = (cmds, cityId) => buildsOf(cmds).filter(c => c.cityId === cityId && c.buildingId === 'Wojownik').length;
+  const decideWith = (B, units, extraOpts) => {
+    const opts = Object.assign({
+      civType: 'grecy', currentTurn: 40, canEngageOwner: () => true, capitalCityId: CITY_A.id, atWarWithCiv: true,
+      warAllIn: { targets: [{ ownerId: 2, cityId: ENEMY1.id, q: ENEMY1.q, r: ENEMY1.r }], enemyArmies: [], engageRadius: 6,
+        enemyStrength: [{ ownerId: 2, strength: 0 }] },
+    }, extraOpts || {});
+    return B.decideAITurn(1, units, CITIES, MAP, data, opts);
+  };
+  const noWar = { atWarWithCiv: false, warAllIn: undefined };
+  const MUTR = MUT_REC !== null ? MUT_REC : GOOD;
+  {
+    nextUid = 1100;
+    const bW = mk(CITY_B.q, CITY_B.r);
+    const cScout = mk(CITY_C.q, CITY_C.r, { typeId: 'Zwiadowca', category: 'zwiadowca' });
+    const cGen = mk(CITY_C.q, CITY_C.r, { typeId: 'Wodz', category: 'wodz', isGeneral: true });
+    const us = [bW, cScout, cGen];
+    const cmds = decideWith(GOOD, us);
+    const base = decideWith(MUTR, us);
+    ok(cntW(cmds, CITY_A.id) === 1, `G1: puste miasto A w wojnie dostaje dokladnie 1 zakup garnizonu (${cntW(cmds, CITY_A.id)})`);
+    ok(cntW(cmds, CITY_B.id) === cntW(base, CITY_B.id), 'G2: miasto B z jednostka bojowa nie dostaje dodatkowego garnizonu');
+    ok(cntW(cmds, CITY_C.id) === 1, `G3: miasto C z samym zwiadowca/wodzem liczy sie jako puste (${cntW(cmds, CITY_C.id)})`);
+    const idxA = buildsOf(cmds).findIndex(c => c.cityId === CITY_A.id);
+    const idxC = buildsOf(cmds).findIndex(c => c.cityId === CITY_C.id);
+    const idxB = buildsOf(cmds).findIndex(c => c.cityId === CITY_B.id);
+    ok(idxA === 0 && idxC === 1 && idxB > idxC, `G4: garnizony pustych miast (A,C) sa przed reszta polecen build (indeksy A=${idxA} C=${idxC} B=${idxB})`);
+    ok(JSON.stringify(cmds) === JSON.stringify(decideWith(GOOD, us)), 'G6: determinizm rekrutacji garnizonow');
+    const peace = decideWith(GOOD, [bW], noWar);
+    const peaceBase = decideWith(MUTR, [bW], noWar);
+    ok(JSON.stringify(buildsOf(peace)) === JSON.stringify(buildsOf(peaceBase)),
+      'G7: w pokoju bez zagrozenia rekrutacja garnizonow nie zmienia polecen build');
+    const barb = { id: 'barb1', ownerId: -1, typeId: 'Wojownik', category: 'miecznik', q: CITY_A.q + 3, r: CITY_A.r, ruch: 2, ruchLeft: 2 };
+    const threat = decideWith(GOOD, [bW, barb], noWar);
+    const threatBase = decideWith(MUTR, [bW, barb], noWar);
+    const firstA = buildsOf(threat).findIndex(c => c.cityId === CITY_A.id);
+    ok(firstA === 0 && cntW(threat, CITY_A.id) === 1, `G8: zagrozone puste miasto A (wrog w zasiegu) dostaje garnizon z priorytetem w pokoju z cywilizacjami (idx ${firstA})`);
+    ok(cntW(threat, CITY_C.id) === cntW(threatBase, CITY_C.id), 'G9: niezagrozone miasto C w pokoju nie dostaje garnizonu');
+  }
+  if (MUT_REC !== null) {
+    nextUid = 1100;
+    const bW = mk(CITY_B.q, CITY_B.r);
+    const cmds = decideWith(GOOD, [bW]);
+    const mcmds = decideWith(MUT_REC, [bW]);
+    ok(JSON.stringify(cmds) !== JSON.stringify(mcmds), 'MUTACJA G: bez rekrutacji garnizonow polecenia sie roznia (test czerwony na mutancie)');
+    ok(buildsOf(mcmds).filter(c => c.cityId === CITY_A.id).length <= 1 && cntW(mcmds, CITY_A.id) <= 1, 'MUTACJA G2: mutant nie ma zdublowanych polecen');
   }
 
   console.log(`ai-war-city-garrison-test: ${passed} PASS, ${failed} FAIL`);
