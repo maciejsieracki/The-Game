@@ -2229,3 +2229,16 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sprawdzenie pozostałych integracji dokumentacji:** `09d92eb24`, `de88d9d55` (EXEC merge), `b151636e8` — wszystkie mają parity jako przodka lub bazę na linii parity; zakres `dyspozycje/` (zweryfikowane).
 - **Sloty:** 1 z 4 — P4-1H MOVE-Q6 (`wf_b1e51033-24c`, obrona, Opus). Trzy wolne — brak odblokowanego tematu kodu bez decyzji.
 - **Dysk:** 12 GB.
+
+## Przebieg (05:0x UTC — integracja P4-1H MOVE-Q6 (#252) na parity)
+
+- **Parity:** `47745929a` → `7d8993c42` (merge `--no-ff` FC `c66ed0bda`, kod `b5057adea`, obrona `17a12c18e`, ewaluator `fa15185f5`). Ancestry: baza `9f1a29af3` jest przodkiem FC; zakres `rust-port/engine` i `dyspozycje/`; merge-tree czysty. Odczyt z GitHub zgodny.
+- **Bramki na merge'u:** silnik `fmt 0`, `clippy 0`, `test 0` — **3624 passed, 0 failed, 1 ignored** (ignorowany istniał wcześniej).
+- **Decyzje techniczne:** ruch jako `MovementPoints` (obwoluta f64, `debug_assert!(value.is_finite())` w `new`, `From<f64>` przechodzi przez `new`); JSON z liczbą całkowitą bajt w bajt. Zmienione poza literalną allowlistą (zaakceptowane jako wymuszone): `tests/playable_slice.rs` (reguła „tylko sąsiad” zastąpiona) i `tests/p6_unit_replace_l3_state.rs` (1 linia, `movement = 0`).
+- **Zależności do wpisania (z obrony/ewaluacji):**
+  - **R-RUSTPORT-P4-1H-MARCH-ATTACK-LAUNCH** (nowy, zależny od P4-1C i P4-1I): stos gracza może stanąć na heksie wroga przy `attack_pending=true`; web uruchamia bitwę i `clearPlannedMarch(force)` (`main.ts:31132-31143`, `:44184`, `:31663`). Bez tego PlayableState może mieć obie strony na jednym heksie.
+  - **Widoczność celu ataku — NIE_ZMIERZONO** (zależność od P4-1C): web odmawia dla niewidocznego celu (`main.ts:31248-31251`, `:31135`); Rust zapisuje plan ataku.
+  - **Embarked, oblężenia, mgła/chatki/obozy/bonusy miast, auto-capture, forty** — poza zakresem (brak pól w stanie).
+- **Refy:** `refs/keep/P4-1H-MOVE-Q6-{OP,EV,OB,FC}`, `refs/keep/P4-1H-MOVE-Q6-MERGE`. **Sprzątanie:** worktree `integ-Q6`, `wf_b1e51033-24c-1..4`; cache `target-integ-Q6`.
+- **Sloty:** 0 z 4 — brak aktywnych workflow. Dostępne tematy: #237 (P4-1G Q6), #236 (P4-1G Q5), #239–#243 (P4-1F), #246–#249 (P4-1I) — większość po P4-1F/P4-1C lub do decyzji orkiestratora.
+- **Dysk:** 15 GB.
