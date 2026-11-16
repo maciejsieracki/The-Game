@@ -2374,3 +2374,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **K5DOC-T2 CELE (#256) — start:** dispatch `0c585fbe`, baza `126432304`. Start: `wf_1c92bca8-2d5`.
 - **Sprzątanie:** worktree T0 (`wf_a3de76ac-91a-1..4`) i EXEC-T2 (`wf_479bcc22-c55-1..3`) usunięte po `refs/keep`. Cache: `fc-t0-target`, `tgt-t2`, `target-integ-*` usunięte; `k5doc-r2-target` nie istniał.
 - **Dysk:** 19 GB wolnego. **Sloty:** 2 z 4 (EXEC-T1 r2, T2'). Brak niezależnych kandydatów na 3. i 4. slot: T3 (geometria) czeka na dispatch; EXEC-T3..T7 czekają na EXEC-T1; DOC-T4/T5a/T6 czekają na T2'.
+
+## Przebieg (08:23 UTC — heartbeat: 3/4 slotów, start T3 geometria)
+
+- **Sloty 3/4:** EXEC-T1-QUEUE r2 (`wf_487c53ff-a4c`, Operator, Haiku), K5DOC-T2-CELE (`wf_1c92bca8-2d5`, Operator, Haiku), **K5DOC-T3-GEOMETRIA** (`wf_7d52ae9a-3df`, Operator, Haiku — start).
+- **T3:** dispatch `452201a3` (baza `585bb48e0`). Zakres: `_attackFormationRallyPoint` i `_chargeMoveDest` (C7/C8, recon Z3 wskazuje martwy kod — osiągalność do potwierdzenia przed portem), `_moveTargetForUnit` (C9). `_forwardCol` już w parity (T0).
+- **Czwarty slot:** brak niezależnego kandydata — EXEC-T3..T7 czekają na EXEC-T1, DOC-T4/T5a/T6 na T2', DOC-T8/T1 na całą falę.
+- **Dysk:** 17 GB wolnego. **Parity:** `585bb48e0`.
