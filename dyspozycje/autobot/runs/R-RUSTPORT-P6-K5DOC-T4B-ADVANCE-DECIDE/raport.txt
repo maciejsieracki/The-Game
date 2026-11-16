@@ -1,0 +1,49 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P6-K5DOC-T4B-ADVANCE-DECIDE (runda 2, wg DODATKU r2 dispatchu; decyzja _advanceStep, #313 / podzial T4b z #258)
+GOAL: Czysta funkcja advance_step_decide (Done / Attack / Move{col,row,then}) i callback advance_after_move w rust-port/engine/src/domain/siege_tactics_advance.rs, 1:1 z kolejnoscia decyzji pinu _advanceStep (kroki 1-10, bez C-FLANK, bez efektow). Runda 2: wylacznie poprawki numerow linii pinu, przegenerowanie wektorow, mutacje, bramki i commit. Kod portu z rundy 1 bez zmian logiki.
+BAZA: 57907d39e (WIP rundy 1 na 68b2a6633; worktree detached). PIN (tylko odczyt): 07d2fbd72 gra/src/battle/battleScene.ts.
+
+ZMIANY/COMMIT:
+- rust-port/engine/src/domain/siege_tactics_advance.rs: komentarze `// Web :...` i naglowek przepisane na zweryfikowane zakresy pinu. Logika bez zmian.
+- rust-port/engine/tests/p6_k5doc_t4b.rs: naglowek i komentarze z liniami pinu poprawione. Kod testow bez zmian.
+- rust-port/engine/tests/p6_k5doc_t4b_gen.mjs: pola `pin` 14 nazwanych przypadkow poprawione. Kod generatora bez zmian.
+- rust-port/engine/tests/p6_k5doc_t4b_vectors/vectors.json: przegenerowany generatorem `node rust-port/engine/tests/p6_k5doc_t4b_gen.mjs`. Porownanie z wersja rundy 1 (bez pola pin): identyczne, 520 przypadkow. Zmienionych pol pin: 14. Pola top-level (pin, pin_path, fragments, attack_direction, stubs) bez zmian.
+- dyspozycje/autobot/runs/R-RUSTPORT-P6-K5DOC-T4B-ADVANCE-DECIDE/mutacje.py: kotwice ATTACK_BLOCK (`:8241-8246`) i ANCHOR_THEN (`:8272`) zgodne z nowymi komentarzami.
+- dyspozycje/autobot/runs/R-RUSTPORT-P6-K5DOC-T4B-ADVANCE-DECIDE/raport.txt: ten raport.
+- Weryfikacja diffu: wszystkie zmiany to komentarze, pola pin albo wektory. Brak zmian w siege_tactics_loop.rs, ProdBody, gra/, siege_tactics_pathstep.rs, siege_tactics_walk.rs, siege_tactics_tower.rs, Cargo.lock.
+- Commit: jawny `git add` tych 6 plikow, bez -A, bez Cargo.lock, bez nazwy modelu w tresci i trailerach. Bez push do parity.
+
+LINIE PINU (zweryfikowane przez `git show 07d2fbd72:gra/src/battle/battleScene.ts`, numeracja od 1):
+- 8199 finished; 8200 dead/fadingOut; 8202 moveLeft <= 0 (prelude 8199-8202)
+- 8204-8235 blok C-FLANK (pominiety dla attackDirection = front)
+- 8241-8246 atak z obecnej pozycji (_canAttackFrom -> _pickAdjacentTargetByPriority -> _doAttack / done); 8244 `else done()`
+- 8248-8249 _nearestEnemy; brak wroga -> done
+- 8256-8260 avoidAutoBacktrack + _firstStepAlongPathToAttack(allow) ?? _stepToward; 8258 bramka kompaktu w allow; 8259 anty-cofanie lastAutoMoveFrom
+- 8261-8265 brak kroku -> done
+- 8270 bramka _compactAttackAllowsStep dla kroku zachlannego
+- 8272 previousPosition; 8273-8284 callback _doMove; 8275 finished; 8277 pozycja ataku -> done; 8279-8280 _schedule(STEP_GAP_MS); 8281-8282 brak ruchu -> done
+- 8198-8285 cala funkcja _advanceStep; 8593 asymetria allowFirstStep (w _firstStepAlongPathToAttack)
+
+TESTY (wszystko w rust-port/engine, CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0, CARGO_TARGET_DIR poza repo):
+- cargo fmt --check: EXIT 0
+- cargo clippy --all-targets -- -D warnings: EXIT 0
+- cargo test --all-targets --no-fail-fast: EXIT 0. Suma po wszystkich targetach: passed 3778, failed 0, ignored 1 (ignorowany test istniejacy wczesniej; zadna z plikow T4b nie zawiera #[ignore]).
+- p6_k5doc_t4b: 8/8 ok (w tym wszystkie_wektory_zgodne_z_pinem i pokrycie_galezi_wektorow).
+- Generator: OK: 520 przypadkow (nazwane 20, losowe 500), wyniki done 265 / attack 16 / move 239.
+- Mutacje (python3 mutacje.py; cargo test --test p6_k5doc_t4b):
+  (a) kolejnosc krokow (atak z pozycji przeniesiony za marsz): exit 101 -> FAIL. Testy FAILED: wszystkie_wektory_zgodne_z_pinem
+  (b) bramka 8270 pominieta: exit 101 -> FAIL. Testy FAILED: greedy_bramka_kompaktu_i_asymetria_allow_first_step, wszystkie_wektory_zgodne_z_pinem
+  (c) Attack zamiast Move, gdy cel poza zasiegiem: exit 101 -> FAIL. Testy FAILED: anty_cofanie_omija_last_auto_move_from, greedy_bramka_kompaktu_i_asymetria_allow_first_step, marsz_pierwszym_krokiem_i_zapis_then, wszystkie_wektory_zgodne_z_pinem
+  Zrodlo przywrocone bajt-w-bajt (sha256 6da75152c6d2f364269cb26e77db1110d57369b5fed90951ab7fec6479e5bb55, ZRODLO PRZYWROCONE: tak).
+- Pierwsza proba mutacji (b)/(c) zakonczyla sie bledem ENOSPC (`No space left on device` przy budowie civ-engine, exit 101 bez nazwanych testow). Nie jest to dowod FAIL testow. Powtorzona po zwolnieniu dysku; wyniki jak wyzej.
+
+BLOKADY:
+- Dysk: przed bramkami `df -h /` pokazal 9,8 GB wolnego (bramki uruchomione przy 9,7 GB, czyli powyzej progu 8 GB). W trakcie pierwszej proby mutacji spadl do 119 MB (zmiana spowodowana przez inne procesy na maszynie), co dalo ENOSPC opisany wyzej. Po zwolnieniu: 13 GB przed rerunem mutacji. Po bramkach usunieto CARGO_TARGET_DIR tematu (3,2 GB).
+- Brak innych blokad.
+
+RUNDY: 2/5. Runda 1: Operator BLOCK/Evaluator FAIL/FC FAIL (procesowy, bez commitu i raportu). Runda 2: dodatek r2 dispatchu, poprawki bez zmiany logiki.
+
+NASTEPNY KROK: Evaluator (SONNET 5.5) i Final Control (SONNET 5.5) weryfikuja commit na bazie 57907d39e, w tym zgodnosc numerow linii pinu z `git show 07d2fbd72`, wektory (diff bez pola pin = identyczny) i wyniki mutacji. Integracja tylko po FC PASS, w osobnej rundzie orkiestratora.
+
+DEPLOY/PUSH: NIE WYKONANO (brak push do parity; dispatch tego nie przewiduje).

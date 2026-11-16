@@ -8,7 +8,7 @@
 //! * [`advance_after_move`] = callback `_doMove` po przesunieciu (`:8273-8284`): `Done` albo `Schedule` (web
 //!   `_schedule(STEP_GAP_MS, ...)`).
 //!
-//! CELOWO POMINIETE: krok 2 (C-FLANK, `:8201-8227`, tylko `attackDirection` bok/tyl; osobny klocek T4d). Wejscie jest
+//! CELOWO POMINIETE: krok 2 (C-FLANK, `:8204-8235`, tylko `attackDirection` bok/tyl; osobny klocek T4d). Wejscie jest
 //! z definicji `front`, wiec ten blok nie wystepuje w decyzji. Efekty `_doMove`, `_doAttack` i `_schedule` naleza do
 //! wolajacego (T4c/T4e); ta funkcja ich nie wykonuje.
 //!
@@ -86,22 +86,22 @@ where
     W: AdvanceWorld + ?Sized,
     E: AutoBatchEnv,
 {
-    // Web :8199-8203: finished, dead/fadingOut, moveLeft <= 0.
+    // Web :8199-8202: finished, dead/fadingOut, moveLeft <= 0.
     if st.finished() || unit.dead || unit.fading_out || unit.move_left <= 0.0 {
         return AdvanceDecision::Done;
     }
-    // Web :8229-8236: atak z obecnej pozycji, bez sasiada -> done.
+    // Web :8241-8246: atak z obecnej pozycji, bez sasiada -> done.
     if world.can_attack_from(&unit.id, unit.q, unit.r) {
         return match world.pick_adjacent_target(&unit.id) {
             Some(target_id) => AdvanceDecision::Attack { target_id },
             None => AdvanceDecision::Done,
         };
     }
-    // Web :8238-8239: brak wroga -> done.
+    // Web :8248-8249: brak wroga -> done.
     let Some((_target_id, target_pos)) = world.nearest_enemy(&unit.id) else {
         return AdvanceDecision::Done;
     };
-    // Web :8241-8247: avoidAutoBacktrack i allow = bramka kompaktu && brak powrotu na lastAutoMoveFrom.
+    // Web :8256-8259: avoidAutoBacktrack i allow = bramka kompaktu && brak powrotu na lastAutoMoveFrom.
     let start = (unit.q, unit.r);
     let avoid = world.avoid_auto_backtrack(&unit.id);
     let last = unit.last_auto_move_from;
@@ -109,7 +109,7 @@ where
     let allow = |c: f64, r: f64| {
         world.compact_attack_allows_step(&unit.id, c) && !(avoid && last == Some((c, r)))
     };
-    // Web :8245-8247: `_firstStepAlongPathToAttack(ru, allow) ?? _stepToward(ru, target)`.
+    // Web :8256-8260: `_firstStepAlongPathToAttack(ru, allow) ?? _stepToward(ru, target)`.
     let bfs = first_step_along_path_to_attack(
         env,
         st,
@@ -122,15 +122,15 @@ where
         Some(tile) => Some(tile),
         None => step_toward(env, st, &unit.id, start, target_pos),
     };
-    // Web :8248-8250: brak kroku -> done.
+    // Web :8261-8265: brak kroku -> done.
     let Some((col, row)) = step else {
         return AdvanceDecision::Done;
     };
-    // Web :8251: bramka kompaktu takze dla kroku zachlannego (poza filtrem BFS).
+    // Web :8270: bramka kompaktu takze dla kroku zachlannego (poza filtrem BFS).
     if !world.compact_attack_allows_step(&unit.id, col) {
         return AdvanceDecision::Done;
     }
-    // Web :8252-8253: previousPosition tylko gdy avoidAutoBacktrack; zapisywane w callbacku `_doMove`.
+    // Web :8272: previousPosition tylko gdy avoidAutoBacktrack; zapisywane w callbacku `_doMove`.
     AdvanceDecision::Move {
         col,
         row,

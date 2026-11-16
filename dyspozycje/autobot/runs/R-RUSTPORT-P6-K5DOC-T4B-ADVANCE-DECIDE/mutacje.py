@@ -13,7 +13,7 @@ SRC = os.path.join(ROOT, 'rust-port', 'engine', 'src', 'domain', 'siege_tactics_
 ENGINE = os.path.join(ROOT, 'rust-port', 'engine')
 
 ATTACK_BLOCK = (
-    "    // Web :8229-8236: atak z obecnej pozycji, bez sasiada -> done.\n"
+    "    // Web :8241-8246: atak z obecnej pozycji, bez sasiada -> done.\n"
     "    if world.can_attack_from(&unit.id, unit.q, unit.r) {\n"
     "        return match world.pick_adjacent_target(&unit.id) {\n"
     "            Some(target_id) => AdvanceDecision::Attack { target_id },\n"
@@ -26,7 +26,7 @@ COMPACT_GATE = (
     "        return AdvanceDecision::Done;\n"
     "    }\n"
 )
-ANCHOR_THEN = "    // Web :8252-8253:"
+ANCHOR_THEN = "    // Web :8272:"
 
 
 def mut_a(t):

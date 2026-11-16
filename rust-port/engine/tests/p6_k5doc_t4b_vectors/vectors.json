@@ -136,7 +136,7 @@
   {
    "name": "prelude_move_left_zero_przed_atakiem",
    "kind": "advance",
-   "pin": "battleScene.ts:8203",
+   "pin": "battleScene.ts:8202",
    "finished": false,
    "unit": {
     "id": "u1",
@@ -170,7 +170,7 @@
   {
    "name": "attack_sasiad",
    "kind": "advance",
-   "pin": "battleScene.ts:8229-8236",
+   "pin": "battleScene.ts:8241-8246",
    "finished": false,
    "unit": {
     "id": "u1",
@@ -209,7 +209,7 @@
   {
    "name": "attack_brak_sasiada_done",
    "kind": "advance",
-   "pin": "battleScene.ts:8235",
+   "pin": "battleScene.ts:8244",
    "finished": false,
    "unit": {
     "id": "u1",
@@ -247,7 +247,7 @@
   {
    "name": "brak_wroga_done",
    "kind": "advance",
-   "pin": "battleScene.ts:8238-8239",
+   "pin": "battleScene.ts:8248-8249",
    "finished": false,
    "unit": {
     "id": "u1",
@@ -281,7 +281,7 @@
   {
    "name": "marsz_bfs_pierwszy_krok",
    "kind": "advance",
-   "pin": "battleScene.ts:8241-8253",
+   "pin": "battleScene.ts:8256-8260",
    "finished": false,
    "unit": {
     "id": "u1",
@@ -323,7 +323,7 @@
   {
    "name": "marsz_avoid_zapisuje_then",
    "kind": "advance",
-   "pin": "battleScene.ts:8252",
+   "pin": "battleScene.ts:8272",
    "finished": false,
    "unit": {
     "id": "u1",
@@ -368,7 +368,7 @@
   {
    "name": "marsz_avoid_omija_lastAutoMoveFrom",
    "kind": "advance",
-   "pin": "battleScene.ts:8243-8244",
+   "pin": "battleScene.ts:8259",
    "finished": false,
    "unit": {
     "id": "u1",
@@ -416,7 +416,7 @@
   {
    "name": "marsz_bez_avoid_ignoruje_lastAutoMoveFrom",
    "kind": "advance",
-   "pin": "battleScene.ts:8243-8244",
+   "pin": "battleScene.ts:8259",
    "finished": false,
    "unit": {
     "id": "u1",
@@ -461,7 +461,7 @@
   {
    "name": "bfs_bramka_kompaktu_pierwszy_krok_kolumna5",
    "kind": "advance",
-   "pin": "battleScene.ts:8243",
+   "pin": "battleScene.ts:8258",
    "finished": false,
    "unit": {
     "id": "u1",
@@ -683,7 +683,7 @@
   {
    "name": "brak_kroku_bfs_i_greedy_done",
    "kind": "advance",
-   "pin": "battleScene.ts:8260",
+   "pin": "battleScene.ts:8261-8265",
    "finished": false,
    "unit": {
     "id": "u1",
@@ -755,7 +755,7 @@
   {
    "name": "po_ruchu_schedule_gdy_zostal_ruch",
    "kind": "advance",
-   "pin": "battleScene.ts:8280-8283",
+   "pin": "battleScene.ts:8279-8280",
    "finished": false,
    "unit": {
     "id": "u1",
@@ -797,7 +797,7 @@
   {
    "name": "po_ruchu_done_pozycja_ataku",
    "kind": "advance",
-   "pin": "battleScene.ts:8275",
+   "pin": "battleScene.ts:8277",
    "finished": false,
    "unit": {
     "id": "u1",
@@ -843,7 +843,7 @@
   {
    "name": "po_ruchu_done_brak_ruchu",
    "kind": "advance",
-   "pin": "battleScene.ts:8283",
+   "pin": "battleScene.ts:8281-8282",
    "finished": false,
    "unit": {
     "id": "u1",
@@ -885,7 +885,7 @@
   {
    "name": "po_ruchu_done_finished",
    "kind": "advance",
-   "pin": "battleScene.ts:8274",
+   "pin": "battleScene.ts:8275",
    "finished": false,
    "unit": {
     "id": "u1",

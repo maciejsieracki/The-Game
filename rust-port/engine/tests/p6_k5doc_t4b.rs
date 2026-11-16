@@ -7,10 +7,10 @@
 //! krok 2 (C-FLANK) jest nieosiagalny dla `attackDirection = front`.
 //!
 //! Nazwane przypadki (asercje wprost, z odniesieniem do linii pina) pokrywaja zakres dispatchu:
-//! * prelude `finished` / `dead` / `fadingOut` / `moveLeft <= 0` (`:8199-8203`),
-//! * atak z obecnej pozycji (`:8229-8236`) i brak wroga (`:8238-8239`),
-//! * marsz BFS pierwszym krokiem (`:8245-8253`), zapis `then` = `previousPosition` (`:8252`),
-//! * anty-cofanie `lastAutoMoveFrom` (`:8243-8244`),
+//! * prelude `finished` / `dead` / `fadingOut` / `moveLeft <= 0` (`:8199-8202`),
+//! * atak z obecnej pozycji (`:8241-8246`) i brak wroga (`:8248-8249`),
+//! * marsz BFS pierwszym krokiem (`:8256-8260`), zapis `then` = `previousPosition` (`:8272`),
+//! * anty-cofanie `lastAutoMoveFrom` (`:8259`),
 //! * bramka kompaktu na kroku zachlannym (`:8270`) i asymetria `allowFirstStep` (`:8593`),
 //! * callback po ruchu (`:8273-8284`): `Done` albo `Schedule(STEP_GAP_MS = 70)`.
 
@@ -298,7 +298,7 @@ fn pokrycie_galezi_wektorow() {
 
 #[test]
 fn prelude_zatrzymuje_przed_atakiem_i_marszem() {
-    // pin :8199-8203: finished, dead/fadingOut, moveLeft <= 0 -> done (przed krokiem 3 i przed atakiem).
+    // pin :8199-8202: finished, dead/fadingOut, moveLeft <= 0 -> done (przed krokiem 3 i przed atakiem).
     assert_eq!(decide(&named("prelude_finished")), AdvanceDecision::Done);
     assert_eq!(decide(&named("prelude_dead")), AdvanceDecision::Done);
     assert_eq!(decide(&named("prelude_fading_out")), AdvanceDecision::Done);
@@ -310,7 +310,7 @@ fn prelude_zatrzymuje_przed_atakiem_i_marszem() {
 
 #[test]
 fn atak_z_pozycji_i_brak_wroga() {
-    // pin :8229-8236: sasiad -> _doAttack; brak sasiada -> done. :8238-8239: brak wroga -> done.
+    // pin :8241-8246: sasiad -> _doAttack; brak sasiada -> done (:8244). :8248-8249: brak wroga -> done.
     assert_eq!(
         decide(&named("attack_sasiad")),
         AdvanceDecision::Attack {
@@ -326,7 +326,7 @@ fn atak_z_pozycji_i_brak_wroga() {
 
 #[test]
 fn marsz_pierwszym_krokiem_i_zapis_then() {
-    // pin :8245-8253: BFS pierwszy krok (5,6); then = previousPosition tylko przy avoidAutoBacktrack.
+    // pin :8256-8260: BFS pierwszy krok (5,6); then = previousPosition (:8272) tylko przy avoidAutoBacktrack.
     assert_eq!(
         decide(&named("marsz_bfs_pierwszy_krok")),
         AdvanceDecision::Move {
@@ -347,7 +347,7 @@ fn marsz_pierwszym_krokiem_i_zapis_then() {
 
 #[test]
 fn anty_cofanie_omija_last_auto_move_from() {
-    // pin :8243-8244: avoid && lastAutoMoveFrom == kandydat -> niedozwolony pierwszy krok (5,6).
+    // pin :8259: avoid && lastAutoMoveFrom == kandydat -> niedozwolony pierwszy krok (5,6).
     let d = decide(&named("marsz_avoid_omija_lastAutoMoveFrom"));
     assert!(
         !matches!(d, AdvanceDecision::Move { col, row, .. } if col == 5.0 && row == 6.0),
@@ -396,7 +396,7 @@ fn greedy_bramka_kompaktu_i_asymetria_allow_first_step() {
 
 #[test]
 fn callback_po_ruchu_done_albo_schedule() {
-    // pin :8273-8284: finished/pozycja ataku/brak ruchu -> done; zostal ruch -> _schedule(STEP_GAP_MS).
+    // pin :8273-8284: finished (:8275) / pozycja ataku (:8277) / brak ruchu (:8281-8282) -> done; zostal ruch (:8279-8280) -> _schedule(STEP_GAP_MS).
     assert_eq!(
         after_move(&named("po_ruchu_schedule_gdy_zostal_ruch"), 5.0, 6.0),
         AfterStep::Schedule {
