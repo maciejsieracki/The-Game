@@ -1,0 +1,37 @@
+{
+  "topic": "R-RUSTPORT-P4-1-R6-REVOLT-COUNT",
+  "pin": "07d2fbd72",
+  "source": "Values copied by hand from gra/src/render/cities.ts and gra/src/main.ts at the pin (git show 07d2fbd72:<path>); the line of every value is next to it. Not produced by the Rust code under test.",
+  "cityLiftFactor": { "value": 0.008, "pin": "render/cities.ts:141 CITY_LIFT = 0.008 * R" },
+  "cityModelScale": { "value": 1.38, "pin": "render/cities.ts:143 CITY_MODEL_SCALE = 1.38" },
+  "sprite": {
+    "position": { "value": [0, 1.35, 0], "pin": "render/cities.ts:828 sprite.position.set(0, 1.35, 0)" },
+    "scale": { "value": [0.9, 0.9, 1], "pin": "render/cities.ts:827 sprite.scale.set(0.9, 0.9, 1)" },
+    "material": {
+      "transparent": true,
+      "depthTest": false,
+      "depthWrite": true,
+      "opacity": 1,
+      "colorHex": 16777215,
+      "pin": "render/cities.ts:821-825 new THREE.SpriteMaterial({ map, transparent: true, depthTest: false }); other params three r169 defaults"
+    },
+    "texture": {
+      "size": 64,
+      "font": "48px serif",
+      "glyph": "🔥",
+      "x": 32,
+      "y": 36,
+      "pin": "render/cities.ts:794-800 canvas 64x64, font '48px serif', fillText('\\u{1F525}', 32, 36)"
+    }
+  },
+  "unitCountReaders": {
+    "value": 0,
+    "pin": "git grep -n 'getUnitCountOnHex\\|unitCountOnHex' 07d2fbd72 -- gra/src: main.ts:2901 (definition), main.ts:2971 (callback), render/cities.ts:346 (interface); no reader, so no counter is drawn for any value"
+  },
+  "cities": [
+    { "id": 11, "q": 0, "r": 0, "terrain": "Laka", "revolt": true, "unitCount": 0, "note": "revolt, empty hex" },
+    { "id": 12, "q": 2, "r": 1, "terrain": "Wzgorza", "revolt": false, "unitCount": 3, "note": "no revolt, units on hex" },
+    { "id": 13, "q": 3, "r": 2, "terrain": "Pustynia", "revolt": true, "unitCount": 7, "note": "revolt, units on hex" },
+    { "id": 14, "q": 1, "r": 2, "terrain": "Rownina", "revolt": false, "unitCount": 0, "note": "no revolt, empty hex" }
+  ]
+}

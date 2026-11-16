@@ -2,3 +2,6 @@
 //! overlays drawn for cities — see [`overlay`].
 
 pub mod overlay;
+pub mod revolt;
+
+pub use revolt::{RevoltCityInput, RevoltInputs, RevoltRenderer, RevoltSprite};
