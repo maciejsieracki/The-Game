@@ -745,6 +745,180 @@
           "B"
         ]
       }
+    },
+    {
+      "name": "acted_przed_busy_nie_odracza",
+      "units": [
+        {
+          "id": "A",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": true
+        },
+        {
+          "id": "B",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        }
+      ],
+      "ids": [
+        "A",
+        "B"
+      ],
+      "queued": [],
+      "busy": [
+        false,
+        true,
+        false
+      ],
+      "planning": false,
+      "finished": false,
+      "async": [],
+      "side_effects": {},
+      "expect": {
+        "events": [
+          "suspend:false",
+          "perform:B",
+          "refresh"
+        ],
+        "acted": [
+          "B"
+        ]
+      }
+    },
+    {
+      "name": "dead_przed_busy_nie_odracza",
+      "units": [
+        {
+          "id": "D",
+          "dead": true,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "B",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        }
+      ],
+      "ids": [
+        "D",
+        "B"
+      ],
+      "queued": [],
+      "busy": [
+        false,
+        true,
+        false
+      ],
+      "planning": false,
+      "finished": false,
+      "async": [],
+      "side_effects": {},
+      "expect": {
+        "events": [
+          "suspend:false",
+          "perform:B",
+          "refresh"
+        ],
+        "acted": [
+          "B"
+        ]
+      }
+    },
+    {
+      "name": "routed_przed_busy_nie_odracza",
+      "units": [
+        {
+          "id": "R",
+          "dead": false,
+          "removed": false,
+          "routed": true,
+          "acted": false
+        },
+        {
+          "id": "B",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        }
+      ],
+      "ids": [
+        "R",
+        "B"
+      ],
+      "queued": [],
+      "busy": [
+        false,
+        true,
+        false
+      ],
+      "planning": false,
+      "finished": false,
+      "async": [],
+      "side_effects": {},
+      "expect": {
+        "events": [
+          "suspend:false",
+          "perform:B",
+          "refresh"
+        ],
+        "acted": [
+          "B"
+        ]
+      }
+    },
+    {
+      "name": "busy_planowanie_dwa_razy",
+      "units": [
+        {
+          "id": "A",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        },
+        {
+          "id": "B",
+          "dead": false,
+          "removed": false,
+          "routed": false,
+          "acted": false
+        }
+      ],
+      "ids": [
+        "A",
+        "B"
+      ],
+      "queued": [],
+      "busy": [
+        true,
+        true,
+        false
+      ],
+      "planning": true,
+      "finished": false,
+      "async": [],
+      "side_effects": {},
+      "expect": {
+        "events": [
+          "suspend:false",
+          "perform:A",
+          "perform:B",
+          "refresh"
+        ],
+        "acted": [
+          "A",
+          "B"
+        ]
+      }
     }
   ]
 }
