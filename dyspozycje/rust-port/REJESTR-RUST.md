@@ -2135,3 +2135,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
   - P4-1H PREVIEW-Q5 (#251, `wf_7546f307-6dc`) — ewaluator (Opus).
   - K5 AUTO-WEKTORY (#118, `wf_4c16ed22-a6c`) — obrona (Haiku).
 - **Dysk:** 7,8 GB (80%). Nie startuję nowych tematów poniżej 8 GB dla kodu Rust.
+
+## Przebieg (02:4x UTC — P4-1H PREVIEW-Q5 (#251): FC PASS-WITH-NOTES, merge lokalny, bramki w kolejce)
+
+- **FC:** PASS-WITH-NOTES `18478e3a6` (kod `8408a2535`, obrona `c9f538309`, ewaluator `66c968055`, operator `8408a2535`). Ancestry: baza `b3c0b2209` jest przodkiem FC; zakres `rust-port/engine` (`playable_movement.rs`, `tests/p4_1h_preview_path.rs`) i dokumentacja; merge-tree czysty.
+- **Merge:** `--no-ff` na `b3c0b2209` → `0d2f399a2` (lokalnie, **nie wypchnięty**). `cargo fmt --check` EXIT 0. Pełny `cargo test --all-targets` i clippy — **do wykonania**: dysk spadł do 4,1 GB przy trzech cargo, a Operator/Ewaluator zanotowali zapełnienie dysku do 0 MB przy pełnym teście. FF dopiero po EXIT 0 bramek przy ≥8 GB wolnego.
+- **Otwarte z FC (nie blokują):** (1) strażnik `isMe(uSel.ownerId)` (`main.ts:32301-32306`) należy do wywołującego hovera — #237/#242 (erratum PlayerId: gracz = 1); (2) gałąź garnizonu (`armyMerge.ts:248-250`) nieportowana — zamknąć przy dodaniu garnizonów do `PlayableState`; (3) Żegluga (`ownerHasSeafaring` `main.ts:14589-14593`, rozgałęzienie `ownerId === 0`) — NIE_ZMIERZONO, do Q6 i mapowania PlayerId.
+- **Refy:** `refs/keep/P4-1H-PREVIEW-Q5-{OP,EV,OB,FC}`. **Sprzątanie:** worktree `wf_7546f307-6dc-1..4` usunięte.
+- **Sloty:** 3 z 4 działające (R7K7C r2 — ewaluator, P4-1I1B — ewaluator, K5 AUTO — obrona/FC); Q5 zakończony.
+- **Dysk:** 4,1 GB (90%) — poniżej progu 8 GB; bez nowych startów kodu Rust do czasu odzyskania miejsca.
