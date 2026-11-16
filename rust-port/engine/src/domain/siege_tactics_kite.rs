@@ -16,7 +16,7 @@
 //! pina przez TypeScript).
 
 use super::siege_tactics_approach::BF_ROWS;
-use super::siege_tactics_autobatch::BF_COLS;
+use super::siege_tactics_autobatch::{cell_key, CellKey, BF_COLS};
 use super::siege_tactics_end::BattleSide;
 use super::siege_tactics_pathstep::Tile;
 
@@ -108,7 +108,7 @@ pub fn kite_branch_applies(me: &KiteUnit, ranged_kite: bool, units: &[KiteUnit])
 ///
 /// * `occupied` = web `occByKey.has(nk)`, `passable` = web `_passableForUnit(ru, nc, nr)`,
 /// * `threat` = przekazane `threat` (web: `meleeThreat`), `units` = wszystkie jednostki (filtr `_enemiesOf` wewnatrz),
-/// * zwraca kafelek kandydata (web `cellKey` zwrocony jako wspolrzedne), albo `None`.
+/// * zwraca klucz kafelka kandydata [`CellKey`] (web `cellKey(nc, nr)`, `battleScene.ts:1797`), albo `None`.
 ///
 /// Wybor: wiekszy `gapScore = gap*100 + (movedBackAxis ? 50 : 0)`; przy remisie mniejszy `lateral` (ostro `<`),
 /// przy pelnym remisie wygrywa pierwszy z DIRS4.
@@ -118,7 +118,7 @@ pub fn best_kite_shot_step(
     units: &[KiteUnit],
     occupied: &dyn Fn(f64, f64) -> bool,
     passable: &dyn Fn(f64, f64) -> bool,
-) -> Option<Tile> {
+) -> Option<CellKey> {
     let dir = advance_dir(me.side); // web: forward dir; we want the OPPOSITE
     let enemies = enemies_of_kite(me.side, units);
     if enemies.is_empty() {
@@ -127,7 +127,7 @@ pub fn best_kite_shot_step(
     let d_now = manhattan(me.tile, threat);
     let (ux, uy) = me.tile;
 
-    let mut best: Option<Tile> = None;
+    let mut best: Option<CellKey> = None;
     let mut best_gap = f64::NEG_INFINITY;
     let mut best_lateral = f64::INFINITY;
     for (dc, dr) in DIRS4 {
@@ -174,7 +174,7 @@ pub fn best_kite_shot_step(
         if gap_score > best_gap || (gap_score == best_gap && lateral < best_lateral) {
             best_gap = gap_score;
             best_lateral = lateral;
-            best = Some((nc, nr));
+            best = Some(cell_key(nc, nr));
         }
     }
     best

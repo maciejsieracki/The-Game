@@ -114,6 +114,7 @@ fn best(
     let occupied = move |c: f64, r: f64| occ_set.contains(&(c, r));
     let passable = move |c: f64, r: f64| !imp_set.contains(&(c, r));
     best_kite_shot_step(&me, threat, units, &occupied, &passable)
+        .map(|(c, r)| (f64::from_bits(c), f64::from_bits(r)))
 }
 
 const ATK: BattleSide = BattleSide::Attacker;
