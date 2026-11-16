@@ -10535,3 +10535,6 @@ Właściciel: nowa opcja armii „zasadzka” (jak fortyfikacja): armia dla wrog
 
 ### Zgłoszenie 2026-11-16 (noc): wydarzenia — bez informacji, że obca cywilizacja utraciła zarządcę
 Właściciel: po zajęciu miasta obcej cywilizacji nie pokazywać wpisu o zwolnieniu jej zarządcy (wystarczy „zająłem miasto”); wpis o własnym zarządcy po utracie własnego miasta może zostać. STATUS: **OTWARTE** — dispatch `R-WEB-UI-EVENTS-NO-FOREIGN-ADMINISTRATOR-DISMISSED-Q1` (Haiku r1; start gdy zwolni się slot).
+
+### Zgłoszenie 2026-11-16 (noc): okresy/etapy wojny, zmęczenie wojną dłuższe + PRZYMUSOWY pokój przy 100%
+Właściciel: podać okresy i etapy wojny (zrobione w odpowiedzi czatu: 20 tur do 100%, 50% chęć pokoju, 80% koniec zmęczenia = pokój bezwarunkowy, oferty przegrywającego od tury 3/6, stopnie desperacji, karencja 40/100) i wydłużyć zmęczenie; przy 100% pokój wymuszony, przegrywający oddaje miasta. ODPOWIEDZI ABC: 40 tur (A); 80% = oferta, 100% = przymus (B); miasta: „tyle, ile trzeba do zrównoważenia” (bez stałego limitu); każda para w wojnie, gracz też (A). STATUS: **OTWARTE** — dispatch `R-WEB-DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1` (Haiku r1; zmiana reguł wojny, wiele miejsc). ZAŁOŻENIA do potwierdzenia: waga miasta 10% bez zmian, nigdy stolica, nigdy poniżej 3 miast u przegrywającego.
