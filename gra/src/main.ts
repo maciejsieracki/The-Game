@@ -500,7 +500,7 @@ import {
 import { combatAnchorFor } from './game/stack-leader';
 import {
   stackGroupIdOf as stackGroupIdOfAnchor, besiegingUnitsOnHex, inheritSiegeOnJoin,
-  besiegeArmyGroups, besiegeLockTargets,
+  besiegeArmyGroups, besiegeLockTargets, releaseSplitFromSiege,
 } from './game/armyMerge';
 import { resolveEnemyCityClick, type MapEnemyCityClickAction } from './map/map-attack-city';
 import { launchFieldBattleFromMap } from './battle/mapFieldBattle';
@@ -15906,6 +15906,9 @@ async function boot(): Promise<void> {
           // dojścia na wybrane pole. Ten sam helper obsługuje zwykłe pole,
           // obóz barbarzyńców oraz „W mieście (ten heks)" (koszt 0); nigdy nie
           // zerujemy ruchu bez względu na rodzaj celu.
+          // R-WEB-ARMY-SPLIT-BESIEGING-ARMY-NO-SIEGE-LOCK-Q2: wydzielone jednostki wychodzą z oblężenia
+          // (oblegaCityId) i dostają normalną pulę ruchu PRZED liczeniem kosztu dojścia.
+          const splitFromSiegeCityId = releaseSplitFromSiege(splitArrivals);
           let splitMoveCostValue = 0;
           if (splitArrivals.length > 0) {
             const splitMover = unitWithStackRuch(splitArrivals[0]!, splitArrivals);
@@ -15940,6 +15943,12 @@ async function boot(): Promise<void> {
           // ONLY) let a sub-stack land on a camp that keeps spawning units
           // underneath it.
           const campDestroyed = checkBarbCampDestroyedAt(destQ, destR);
+          // Armia zdjęta z murów (wszyscy oblegający wydzieleni): oblężenie znika jak przy braku wojsk.
+          if (splitFromSiegeCityId !== undefined
+            && !units.some(x => x.oblegaCityId === splitFromSiegeCityId)) {
+            const sc = cities.find(c => c.id === splitFromSiegeCityId);
+            if (sc?.oblegane) endMapSiege(splitFromSiegeCityId);
+          }
           sweepFortCaptures(); // R3 Q-A=A: rozdzielenie armii na heks fortu = wejscie wojska
           if (tryAutoCaptureEmptyCityAt(destQ, destR, splitArrivals)) {
             refreshD1bHud();
