@@ -2791,3 +2791,16 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Integracja NaN/Inf (#137):** merge `dd9a1b4e7` na `0e04a75c6` (czysty `merge-tree`), bramka fmt OK, clippy i test w toku. FF dopiero po zielonej bramce.
 - **Cargo.lock:** wygenerowany przez cargo w worktree integracji, nieśledzony. Dodany lokalnie do `.git/info/exclude` (nie commitowany, zgodnie z regułą projektu).
 - **Pozostałe kandydaty (R2, R4–R6, #107, #257):** nie startowane w tym slocie; kolejne do wzięcia po zwolnieniu slotu.
+
+### Przebieg — heartbeat 20:48 UTC: sloty 4/4, dysk, FC PASS bez integracji, 2026-11-16
+
+- **Integracja NaN/Inf (#137):** FF `parity-v2` `0e04a75c6` → `dd9a1b4e7` (bramka zielona: fmt, clippy, test 508 wyników). Readback zgodny.
+- **T4a (#312):** Operator BLOCK tylko z powodu dysku, Ewaluator domknął pełną bramkę przy ponad 8 GB (507 wyników, zero FAILED), FC PASS-WITH-NOTES. Merge `68b2a6633` na `dd9a1b4e7`. Bramka engine w toku (`integ-t4a`).
+- **Q5 (PRIO-3D-1, `922300020`, FC `3d21e5679`) i R1 (żetony jednostek, `3dec6ac5d`, FC `c6ab07fb09a5`):** FC PASS-WITH-NOTES, merge czysty na `0e04a75c6`. Integracja w kolejce po bramce T4a (oba w renderer, bez konfliktu).
+- **Sprzątanie:** usunięte worktree zakończonych workflowów T4a i Q5/R1 (osiem sztuk). Commity zabezpieczone referencjami `refs/keep/P4-1-*` i `refs/keep/T4a-op-8d9eacf77`. Dysk: z 4,9 GB do 15 GB.
+- **Trwające workflowy (4/4):**
+  - R3, wstęgi rzek (`wf_e624be51-b6c`, OPUS): FC w toku.
+  - R5, plakietki miast (`wf_ce6a50a1-e40`, OPUS): Operator.
+  - R2, rozmieszczenie dekoru i lasu (`wf_2a208b31-2df`, OPUS): Operator.
+  - T4b, decyzja `_advanceStep` (#313, `wf_6ffa730a-4ec`, HAIKU/SONNET): baza `68b2a6633`, dispatch `79cd12ec2`.
+- **Pozostałe kandydaty:** Q6 (#270) czeka na integrację R1 i kontrakty L6/L7; #278, #279 na decyzję o mgle (#253); #280 na K5LOOP (#107, #113).
