@@ -120,6 +120,7 @@ pub mod siege_tactics_breach;
 pub mod siege_tactics_class_adapters;
 pub mod siege_tactics_classify;
 pub mod siege_tactics_clock;
+pub mod siege_tactics_doctrine_geometry;
 pub mod siege_tactics_doctrine_state;
 pub mod siege_tactics_doctrine_target;
 pub mod siege_tactics_end;
