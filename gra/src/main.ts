@@ -19325,28 +19325,6 @@ async function boot(): Promise<void> {
       return cityHasAffordableLevelUpgrade(city, ctx);
     }
 
-    function cityHasAffordableUnitRecruitment(city: City, ctx: AvailabilityContext): boolean {
-      if (city.ownerId !== 0) return false;
-      // Ta sama blokada co w panelu rekrutacji (cityPanel: isCityUnderSiege → brak werbunku).
-      if (isCityUnderSiege([city], city)) return false;
-      const techs = unlockedTechsForOwner(city.ownerId);
-      const treasury = player.skarbiec;
-      const pool = ownerSurowcePoolFor(city.ownerId);
-      const ep = empireEpochForOwner(city.ownerId);
-      const mpMults = civManpowerMultsForOwner(city.ownerId);
-      for (const item of purchasableUnits(city, data, techs, ctx)) {
-        if (treasury < item.koszt) continue;
-        const unitDef = data.units.find(u => String(u.Jednostka) === item.id);
-        if (!unitDef) continue;
-        if (!canAffordUnitRecruitFull(pool, unitDef)) continue;
-        if (!canAffordUnitManpowerEmpire(
-          cities, city.ownerId, city, ep, UNIT_POPULATION_COST, mpMults.maxMult, item.id, mpMults.costMult,
-        )) continue;
-        return true;
-      }
-      return false;
-    }
-
     function cityHasAffordableWonderEnqueue(city: City): boolean {
       if (city.ownerId !== 0) return false;
       const wonders = listBuildableWondersForOwner(0);
@@ -19394,7 +19372,6 @@ async function boot(): Promise<void> {
     function productionOptionsFingerprint(city: City): string {
       const ctx = productionAvailabilityCtxForCity(city);
       const techs = unlockedTechsForOwner(city.ownerId);
-      const pool = ownerSurowcePoolFor(city.ownerId);
       const affordIds: string[] = [];
       for (const item of buildableProduction(city, data, techs, { ...ctx, showResourceGatedBuildings: true })) {
         const def = data.buildings.find(b => b.id === item.id);
@@ -19402,33 +19379,21 @@ async function boot(): Promise<void> {
         if (!buildingCanBuildNow(def, city, data, ctx, techs)) continue;
         affordIds.push(item.id);
       }
-      const unitIds: string[] = [];
-      // Ta sama blokada oblężenia co w cityHasAffordableUnitRecruitment (odcisk ma być spójny z bramką).
-      if (city.ownerId === 0 && !isCityUnderSiege([city], city)) {
-        const treasury = player.skarbiec;
-        const ep = empireEpochForOwner(city.ownerId);
-        const mpMults = civManpowerMultsForOwner(city.ownerId);
-        for (const item of purchasableUnits(city, data, techs, ctx)) {
-          if (treasury < item.koszt) continue;
-          const unitDef = data.units.find(u => String(u.Jednostka) === item.id);
-          if (!unitDef) continue;
-          if (!canAffordUnitRecruitFull(pool, unitDef)) continue;
-          if (!canAffordUnitManpowerEmpire(
-            cities, city.ownerId, city, ep, UNIT_POPULATION_COST, mpMults.maxMult, item.id, mpMults.costMult,
-          )) continue;
-          unitIds.push(item.id);
-        }
-      }
+      // Odcisk dotyczy wyłącznie budynków/ulepszeń (ta sama bramka co cityHasActionableProduction);
+      // rekrutacja jednostek nie wchodzi do odcisku — nie przywraca zamkniętego wydarzenia.
       const ups = cityHasAffordableLevelUpgrade(city, ctx) ? 1 : 0;
-      return affordIds.sort().join(',') + '|u:' + unitIds.sort().join(',') + '|up:' + ups;
+      return affordIds.sort().join(',') + '|up:' + ups;
     }
 
-    /** Czy w mieście jest coś do wyboru w produkcji (kolejka może być pusta) — tylko realnie dostępne teraz. */
+    /**
+     * Czy w mieście jest coś do WYBUDOWANIA (kolejka może być pusta) — tylko realnie dostępne teraz:
+     * budynek albo ulepszenie budynku. Rekrutacja jednostek NIE wlicza się (ma własny panel rekrutacji),
+     * więc miasto bez nic do wybudowania nie dostaje wydarzenia „Kolejka pusta” (R-WEB-NOTIF-EMPTY-QUEUE-NO-BUILDING-AVAILABLE-Q2).
+     */
     function cityHasActionableProduction(city: City): boolean {
       if (isAutoBudowaTryb(city.budowaTryb) && isCityAutoBuildActive(city)) return false;
       const ctx = productionAvailabilityCtxForCity(city);
       if (cityHasAffordableBuildingEnqueue(city, ctx)) return true;
-      if (cityHasAffordableUnitRecruitment(city, ctx)) return true;
       // R-CUDA-TAB (2026-07-28): cuda tylko z Budowy w terenie — nie liczą się
       // jako „pusta kolejka produkcji miasta" (inaczej wydarzenie otwiera panel
       // miasta, gdzie cuda już nie ma → gracz widzi „wykrzaczoną" produkcję).
@@ -19702,7 +19667,7 @@ async function boot(): Promise<void> {
               id: 'prod-empty-' + city.id,
               icon: '\u2699\ufe0f',
               title: 'Produkcja: ' + city.name,
-              subtitle: 'Kolejka pusta — wybierz budynek lub jednostkę',
+              subtitle: 'Kolejka pusta — wybierz budynek',
               kind: 'city',
               blocking: true,
             });
