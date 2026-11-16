@@ -2918,3 +2918,15 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
   - `integ-rend` (`70d6fbb62`, nowy ref `refs/keep/integ-rend-70d6fbb62`): usuwanie w tle, po zakończeniu sprawdzić.
 - **Nie ruszane (aktywne):** worktree T4b integracji (`wf_18327ef5-a0e-2`), T6 integracji (`wf_3180bfbf-196-1/2`), T5a r2 (`wf_f88b947e-171-1/2/3`).
 - **Reguła:** nowe tematy z kodem Rust nie startują poniżej 8 GB. Bramka renderera (#330) wymaga ≥12 GB i braku budujących workerów.
+
+### Przebieg — restart kontenera: utrata trzech workflow, ponowne uruchomienie (2026-11-17 ~00:05 UTC)
+
+- **Utracone w restarcie (bez wyniku w dziennikach):** integracja T4b (`wf_18327ef5-a0e`, Evaluator), integracja T6 (`wf_3180bfbf-196`, Evaluator), runda 2 T5a (`wf_f88b947e-171`, Obrona).
+- **Zachowany stan przed sprzątaniem:**
+  - T4b: merge `3d016a5ae` (= `32c84d6a9` + `d1dfff126`), ref `refs/keep/T4b-merge-3d016a5ae`, gałąź `rust-port-wip/R-RUSTPORT-P6-K5DOC-T4B-merge-r3`. Bramki na merge nie były uruchomione.
+  - T6: `87829df94`, fmt, clippy i `p6_k5doc_cavalry` 10/10 zielone. Pełny test NIEZAKOŃCZONY.
+  - T5a: `761768677`, Operator PASS-WITH-NOTES (pełny test 3788 passed). Ewaluator FAIL: granice planszy (`nc<0`, `nc>=BF_COLS`, `nr>=BF_ROWS`) bez wektorów; mutanty G/H/I przechodzą. Ref `refs/keep/T5a-r2-op-761768677`, gałąź `rust-port-wip/R-RUSTPORT-P6-K5DOC-T5A-KITE-r2`.
+- **Sprzątanie:** usunięte 6 worktree (T5a r2 `-1/-2/-3`, T6 integracja `-1/-2`, T4b integracja `-2`). Dysk 4,2 → 12 GB.
+- **Dispatche r3/r4 (`3e2367892`):** T4b — tylko bramka na merge; T6 — tylko pełny test na `87829df94`; T5a — poprawka wektorów granic, base `761768677`.
+- **Uruchomione ponownie:** T5a r3 (`wf_4f8fcb4a-b7c`), T4b bramka (`wf_a6a0b1b3-74a`). T6 pełny test odłożony do zwolnienia dysku (dwie kompilacje naraz zajmują ~8 GB).
+- **Reguła:** Operatorzy Haiku; Evaluator i FC Sonnet.
