@@ -43,3 +43,10 @@ Mutacje (MUSZĄ dać FAIL, wyniki w raporcie): (a) `canJoinStackAt` pominięte (
 3. Brak `#[ignore]`, brak osłabionych asercji, zero zmian poza allowlistą.
 4. Commit jawnym `git add` (nigdy `-A`). NIE commituj `Cargo.lock`. Bez push do parity. Raport w `dyspozycje/autobot/runs/R-RUSTPORT-P4-1F5-REACH-PATH-VIEW/`.
 5. `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` poza repo i unikalny; usuń po bramkach.
+
+## DODATEK r2 (wznowienie po blokadzie płatności; BAZA NADPISANA)
+
+- Poprzednia runda Operatora nie zakończyła się (błąd płatności; kod nie powstał w commicie).
+- NOWA BAZA (jedyna obowiązująca): `origin/rust-port/parity-v2` = `05b872fc5` (zawiera EXEC-T1 `2e510195c` i 1F1 `8ecf01c2c`). Worktree detached. Zapisz SHA w raporcie.
+- Niezacommitowana wcześniej praca Operatora r1 jest zachowana na `wip/R-RUSTPORT-P4-1F5-REACH-PATH-VIEW-niedokonczony` (`587cfa79`). Możesz z niej korzystać jako referencji, ale każdy kod musisz zweryfikować na nowej bazie (testy, bramki), nie kopiować bezkrytycznie.
+- Bramki engine wymagają >= 8 GB wolnego dysku. Sprawdź `df -h /` przed bramką; przy mniej zgłoś BLOCK z liczbą GB.
