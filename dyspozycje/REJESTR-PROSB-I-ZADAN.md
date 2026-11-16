@@ -10547,3 +10547,6 @@ Właściciel (zrzut): panel w bitwie mógłby być atrakcyjniejszy graficznie i 
 
 ### FALA 781 (2026-11-17) — WDROŻONE na ROBOCZĄ: Zastąp przechodzi przez wszystkie typy jednostek w armii
 MULTITYPE (FC cf304e036, PASS-WITH-NOTES): modal na każdy typ z zamiennikiem (grupa k/n), „Pomiń ten typ”, „Zakończ”, komunikat o niezałatwionych typach. ROBOCZA df6c91bf, main 774fd0eec, raw MD5 = manifest, 3 sidecary OK. NIE ZMIERZONO: żywy Chromium; komunikat gdy wszystkie typy bez zamiennika nie nazywa typów (mały osobny temat). Dług Rust: REPIN.
+
+### WEARY40 r1 → FC FAIL (2026-11-17 noc) — runda 2 w toku
+Kandydat 35db7c8fc niekompletny (gracz bez pokoju wymuszonego i okna, 11 czerwonych testów, brak testu migracji/widoku etapów/wiki). Runda 2 (Haiku, DODATEK 1): zał. A potwierdzone (pokój wymuszony omija bramkę bilansu AI↔AI). **CZEKA NA RANO (ABC):** waga miasta +10% przy 40 turach (~4 tury/miasto) oraz „nigdy stolica, min. 3 miasta po oddaniu” — założenia, bez zmian do decyzji właściciela.
