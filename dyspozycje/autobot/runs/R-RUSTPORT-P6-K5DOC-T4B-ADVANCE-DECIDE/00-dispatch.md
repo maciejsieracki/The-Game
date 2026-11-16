@@ -33,3 +33,17 @@ ROZPOZNANIE: `git show origin/claude/rust-sivvrn:dyspozycje/rust-port/p6/K5DOC-T
 3. Brak `#[ignore]`, brak osłabionych asercji, zero zmian poza allowlistą.
 4. Commit jawnym `git add` (nigdy `-A`), BEZ `Cargo.lock`, BEZ nazwy modelu w treści i trailerach. Bez push do parity. Raport w `dyspozycje/autobot/runs/R-RUSTPORT-P6-K5DOC-T4B-ADVANCE-DECIDE/`.
 5. `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` poza repo i unikalny; usuń po bramkach.
+
+## DODATEK r2 (po FAIL rundy 1; BAZA NADPISANA)
+
+- Runda 1 (Operator BLOCK, Ewaluator FAIL, FC FAIL) zakończyła się bez commitu i bez raportu. Logika portu była zielona: fmt, clippy, `p6_k5doc_t4b` 8/8 (520 wektorów), pełny `cargo test --all-targets` EXIT 0, mutacje (a)(b)(c) FAIL.
+- NOWA BAZA (jedyna obowiązująca): WIP rundy 1 = `57907d39e` (na `68b2a6633`; gałąź `rust-port-wip/R-RUSTPORT-P6-K5DOC-T4B-ADVANCE-DECIDE-r1`). Worktree detached na `57907d39e`. Kod portu (`siege_tactics_advance.rs`, `mod.rs`, testy) ZOSTAJE — nie przepisuj logiki.
+- Zadanie rundy 2 — WYŁĄCZNIE to, co wskazał FC:
+  1. Numery linii pinu w komentarzach `siege_tactics_advance.rs`, `p6_k5doc_t4b.rs` i polach `pin` generatora `p6_k5doc_t4b_gen.mjs` przepisz na faktyczne z `git show 07d2fbd72:gra/src/battle/battleScene.ts`. Błędne były m.in.: `:8201-8227`, `:8229-8236`, `:8238-8239`, `:8241-8247`, `:8245-8247`, `:8248-8250`, `:8251`, `:8252-8253`. Poprawne zakresy: prelude 8199-8202; C-FLANK 8204-8235; atak z pozycji 8241-8246; nearestEnemy 8248-8249; avoidAutoBacktrack i BFS+stepToward 8256-8260; brak kroku 8261-8265; bramka 8270; previousPosition 8272; callback 8273-8284; cała funkcja 8198-8285. Zweryfikuj każdą liczbę sam.
+  2. Przegeneruj `vectors.json` generatorem; ma być identyczny z obecnym poza polem `pin`.
+  3. Zaktualizuj kotwice w `mutacje.py` (`// Web :8229-8236`, `// Web :8238-8239`, `// Web :8252-8253` itd.) i uruchom mutacje ponownie: (a) (b) (c) muszą dać FAIL.
+  4. Bramki na tym samym drzewie: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --all-targets --no-fail-fast` — wszystkie EXIT 0, pełny test, nie tylko `p6_k5doc_t4b`.
+  5. Zapisz `raport.txt` w run dir (STATUS, DOMAIN, TEMAT, GOAL, ZMIANY/COMMIT, TESTY, BLOKADY, RUNDY, NASTĘPNY KROK, DEPLOY/PUSH).
+  6. Commit jawnym `git add` tylko zmienionych plików (bez `Cargo.lock`, bez `-A`), BEZ nazwy modelu w treści i trailerach.
+- Zakres allowlisty bez zmian. Nie zmieniaj `siege_tactics_loop.rs`, `ProdBody`, `gra/`.
+- Dysk: przed bramkami `df -h /`; < 8 GB = BLOCK z liczbą GB.
