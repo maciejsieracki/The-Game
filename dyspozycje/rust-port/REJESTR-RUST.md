@@ -2169,3 +2169,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Start:** `R-RUSTPORT-P6-K5-AUTO-PORT-V15-V16-Q1` (port `_executeQueuedOrders` V15 i `_ffEnterAuto` V16, Haiku/Sonnet — silnik), dispatch `c3035b18a` na `claude/rust-sivvrn`, baza `9f1a29af3`. Workflow `wf_64cdfe7b-3a5`. Blokada z FC `9a79cc1e3` (notatki 2, 7) — V15: `BTreeSet<u64>` porządkuje po id, pin po kolejności wstawienia; V16: `FfEvent::EnterAuto` → `halt_unsupported` (`siege_tactics_loop.rs:698-702`).
 - **Sloty:** 3 z 4 — P4-1I1B (`wf_aafc5812-7e5`, FC), P4-1H Q6 (`wf_b1e51033-24c`, operator, Opus), V15/V16 (`wf_64cdfe7b-3a5`, operator, Haiku). Czwarty wolny — brak odblokowanego tematu z jasnym zakresem.
 - **Dysk:** ok. 13 GB.
+
+## Przebieg (03:17 UTC — heartbeat slotów: 3 z 4, bez zmian)
+
+- **Sloty:** aktywne 3 — P4-1I1B BATTLE-INSTANT (`wf_aafc5812-7e5`, FC, Sonnet), P4-1H MOVE-Q6 (`wf_b1e51033-24c`, operator, Opus), K5 port V15/V16 (`wf_64cdfe7b-3a5`, operator, Haiku). Czwarty wolny: brak odblokowanego tematu z jasnym zakresem (#239 — decyzja o fogu; #236/#237/#240–#243 — zależności od producentów nakładek).
+- **FC/integracja:** brak nowych werdyktów FC. Parity `9f1a29af3`.
+- **Dysk:** 12 GB (70%) — ponad próg 8 GB.
