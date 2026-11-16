@@ -48,7 +48,6 @@ const EXPECTED_HASH_IGNORED = [
   'cities[].budowaLista(gdy [])',
   'cities[].magazynZywnosci(gdy 0)',
   'cities[].postepBudynkowUsuniete(gdy {})',
-  'cities[].budowaPriorytetTypow(DO ABC)',
   'resourceLedgerHistory(#432)',
 ];
 

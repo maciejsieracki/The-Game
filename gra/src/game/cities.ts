@@ -761,9 +761,10 @@ export function ensureCitySaveDefaults(city: City): void {
     }
   }
   if (city.budowaTryb === 'zrownowazone') {
-    if (!city.budowaPriorytetTypow?.length) {
-      city.budowaPriorytetTypow = [...DEFAULT_BUDOWA_PRIORYTET_TYPOW];
-    } else {
+    // R-WEB-SAVE-LOAD-NO-DEFAULT-BUILD-PRIORITY-ON-LOAD-Q1: brak listy = brak listy (jak w żywej grze,
+    // nowe miasto ma budowaTryb 'zrownowazone' bez budowaPriorytetTypow); konsumenci mają fallback na undefined.
+    // Zapisana lista jest zachowana (tylko sanitize).
+    if (city.budowaPriorytetTypow?.length) {
       city.budowaPriorytetTypow = sanitizeBudowaPriorytetTypow(city.budowaPriorytetTypow);
     }
     city.budowaFocus = 'zrownowazone';
