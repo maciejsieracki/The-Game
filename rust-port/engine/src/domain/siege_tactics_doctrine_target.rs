@@ -252,7 +252,7 @@ pub fn pick_target_by_priority(
 }
 
 /// Web `_pickAdjacentTargetByPriority(ru)` (`battleScene.ts:17545-17569`). Sasiedzi (dystans 1); gdy kierunek
-/// natarcia wymaga `flank`/`rear`, najpierw wybor sposrod trafien o tym lukti (`relativeHit`), potem zwykly wybor.
+/// natarcia wymaga `flank`/`rear`, najpierw wybor sposrod trafien o tym łuku (`relativeHit`), potem zwykly wybor.
 /// Tie-break w wyborze po priorytecie: nizsze HP (`e.bu.hp < best.bu.hp`).
 pub fn pick_adjacent_target_by_priority(
     a: &Combatant,

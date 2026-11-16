@@ -1,11 +1,19 @@
 // P6 SIEGE K5DOC-T2 CELE (dispatch R-RUSTPORT-P6-K5DOC-T2-CELE-Q1): generator wektorow wyboru celu.
 // Uruchomienie: node rust-port/engine/tests/p6_k5doc_target_gen.mjs
 //
-// Zrodlo: `gra/src/battle/battleScene.ts` przy pinie 07d2fbd72 (git show, bez checkoutu). Fragmenty pina sa
-// hashowane (SHA-256 straznik); logika jest wycieta RECZNIE do JS (bez typow TS, bez `this.`), wiernie wg
-// fragmentow. Wyjatek: `meleeBlockedByWall` (city-fortification.ts:76-79) nie jest w tym pinie w tym pliku —
-// jego tresc jest odtworzona wg komentarza Rust (`siege_city_fortification::melee_blocked_by_wall`) i
-// oznaczona jako NIE w straznik SHA.
+// Zrodlo: `gra/src/battle/battleScene.ts` oraz `gra/src/game/city-fortification.ts` przy pinie 07d2fbd72
+// (git show, bez checkoutu). Fragmenty pina sa hashowane (SHA-256 straznik, tekst).
+// DWIE warstwy kontroli (odpowiedz na zarzut r1 Evaluatora):
+//  1. Reimplementacja JS (ponizej) wycieta z fragmentow — generuje wektory.
+//  2. WYKONANIE pina: wybrane metody pina (_pickTargetByPriority, _pickAdjacentTargetByPriority,
+//     _pickRangedTargetByPriority, _priorityScore, _prefsForUnit, _unitBattleClass, _enemiesOf,
+//     manhattan, desiredHitForDirection) oraz meleeBlockedByWall (city-fortification.ts) sa transpilowane
+//     przez TypeScript (ts.transpileModule) i WYKONYWANE. Kazdy przypadek pick_* i kazde sprawdzenie
+//     meleeBlockedByWall musi dac wynik zgodny z JS; inaczej generator konczy sie bledem.
+//     Poza wykonaniem pozostaja (JS, NIE_ZMIERZONO): relativeHit/facingToward/oppositeDir oraz
+//     targetInRange/rangedTargetInRange/takesRangedAction (tylko JS, bez wykonania pina).
+//     Wymaga TypeScript: zmienna TYPESCRIPT_JS (domyslnie jak p6_city_towers_gen.mjs).
+//
 //
 // Wynik -> tests/p6_k5doc_target_vectors/vectors.json. Przypadki nazwane (minimum dispatchu) + losowe (seed 2026).
 
@@ -14,6 +22,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
 
 const PIN = '07d2fbd72f758705f8e1d59cc4968027ffbafe75';
 const PIN_PATH = 'gra/src/battle/battleScene.ts';
@@ -217,6 +226,56 @@ const targetInRange = (u, side, scene) => {
 };
 const takesRangedAction = (u) => canShoot(u) && u.shootingEnabled !== false;
 
+// --- Wykonanie fragmentow pina (warstwa 2: oracle niezalezny od recznej transkrypcji) ---
+const TS_JS = process.env.TYPESCRIPT_JS ?? '/opt/node22/lib/node_modules/typescript/lib/typescript.js';
+const tsLib = createRequire(import.meta.url)(TS_JS);
+const cityFortSrc = execFileSync('git', ['show', `${PIN}:gra/src/game/city-fortification.ts`], {
+  cwd: repoRoot,
+  encoding: 'utf8',
+  maxBuffer: 64 * 1024 * 1024,
+}).split('\n');
+const mbwStart = cityFortSrc.findIndex((l) => l.startsWith('export function meleeBlockedByWall('));
+if (mbwStart < 0) throw new Error('brak meleeBlockedByWall w city-fortification.ts pina');
+let mbwEnd = mbwStart;
+while (cityFortSrc[mbwEnd] !== '}') mbwEnd++;
+const mbwText = cityFortSrc.slice(mbwStart, mbwEnd + 1).join('\n').replace('export function', 'function');
+// Klasa-obudowa: metody pina wklejone 1:1 (zakres linii jak w FRAGMENTS); typy usuwa transpilacja.
+const execSrc = [
+  pinRange(1917, 1919),
+  pinRange(1956, 1960),
+  'class P {',
+  pinRange(8291, 8294),
+  pinRange(17486, 17584),
+  '}',
+  'module.exports.P = P;',
+  'module.exports.meleeBlockedByWall = meleeBlockedByWall;',
+].join('\n');
+const execJs = tsLib.transpileModule(`${mbwText}\n${execSrc}`, {
+  compilerOptions: { module: tsLib.ModuleKind.CommonJS, target: tsLib.ScriptTarget.ES2020 },
+}).outputText;
+const pinMod = { exports: {} };
+// relativeHit (battleScene.ts, poza wycietymi fragmentami) bierzemy z JS; pozostale zaleznosci sa w pinie.
+new Function('module', 'exports', 'require', 'relativeHit', execJs)(pinMod, pinMod.exports, createRequire(import.meta.url), relativeHit);
+const PIN_PICK = {
+  pick_target: '_pickTargetByPriority',
+  pick_adjacent: '_pickAdjacentTargetByPriority',
+  pick_ranged: '_pickRangedTargetByPriority',
+};
+// Wykonuje metode pina na obiektach testowych; zwraca indeks w side (jak warstwa JS) albo null.
+const execPick = (kind, input) => {
+  const wrap = (u, side) => ({ ...u, side, bu: { hp: u.hp }, groupId: input.group ? 'g' : undefined });
+  const defs = input.side.map((u) => wrap(u, 'def'));
+  const atk = wrap(input.attacker, 'atk');
+  const inst = new pinMod.exports.P();
+  inst.atk = [];
+  inst.def = defs;
+  inst._targetPriorities = input.army ?? DEFAULT_TARGET_PRIORITIES;
+  inst._groupMeta = new Map(input.group ? [['g', input.group]] : []);
+  const r = inst[PIN_PICK[kind]](atk);
+  return r === null || r === undefined ? null : defs.indexOf(r);
+};
+let execChecked = 0;
+
 // --- Przypadki ---
 const UNIT_DEFAULTS = {
   q: 0, r: 0, hp: 10, range: 1, mounted: false, primaryRanged: false, rangedBase: false, ammoLeft: 0,
@@ -228,7 +287,28 @@ const U = (over) => ({ ...UNIT_DEFAULTS, ...over });
 const INF = { siegeWallCol: -1, wallEverBreached: false };
 const WALL = (breached = false) => ({ siegeWallCol: 1, wallEverBreached: breached });
 const cases = [];
-const add = (kind, name, input, expect) => cases.push({ kind, name, ...input, expect });
+const add = (kind, name, input, expect) => {
+  if (PIN_PICK[kind]) {
+    const got = execPick(kind, input);
+    if (got !== expect) throw new Error(`rozjazd wykonanie pina vs JS: ${kind}/${name}: pin=${got} js=${expect}`);
+    execChecked++;
+  }
+  if (kind === 'target_in_range') {
+    const ctxOf = (u, e) => ({
+      wallBreached: input.scene.wallEverBreached,
+      attackerIsMelee: !canShoot(u) && !u.isSiegeUnit,
+      attackerOnWall: u.onWallWalkway === true,
+      defenderOnWall: e.onWallWalkway === true,
+    });
+    for (const e of input.side) {
+      const js = meleeBlockedByWall(ctxOf(input.attacker, e));
+      const ex = pinMod.exports.meleeBlockedByWall(ctxOf(input.attacker, e));
+      if (js !== ex) throw new Error(`rozjazd meleeBlockedByWall pin vs JS: ${name}: pin=${ex} js=${js}`);
+      execChecked++;
+    }
+  }
+  cases.push({ kind, name, ...input, expect });
+};
 
 // Nazwane przypadki (minimum dispatchu + mutacje).
 {
@@ -386,4 +466,5 @@ const out = {
 const dir = join(dirname(fileURLToPath(import.meta.url)), 'p6_k5doc_target_vectors');
 mkdirSync(dir, { recursive: true });
 writeFileSync(join(dir, 'vectors.json'), JSON.stringify(out, null, 1) + '\n');
+console.log(`pin-exec: ${execChecked} sprawdzen zgodnych z wykonaniem pina`);
 console.log(`zapisano ${cases.length} przypadkow -> ${join(dir, 'vectors.json')}`);
