@@ -2362,3 +2362,15 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Nie usuwane (aktywne cache cargo):** `scratchpad/tgt-exec-t1` (3,2 GB, EXEC-T1), `scratchpad/tgt-t2` (3,2 GB, EXEC-T2), `/tmp/claude-0/fc-t0-target` (3,2 GB, T0). Po FC T0 i zakończeniu EXEC-T1/T2 — usunąć (kandydaci do sprzątania w następnym ticku).
 - **Nie usuwane (decyzja właściciela):** `/tmp/claude-0/ev9f1` (1,2 GB).
 - **Parity:** `f38675a8` (docs-only H). Gałąź `claude/rust-sivvrn`.
+
+## Przebieg (08:22 UTC — T0 i EXEC-T2 zintegrowane; EXEC-T1 r2 i T2' w toku)
+
+- **K5DOC-T0 (#255) — INTEGRACJA:** FC PASS-WITH-NOTES `18fca5b5a` → merge `--no-ff` na parity `f38675a8` = `126432304`. Bramki: fmt 0, clippy 0, `cargo test --all-targets` **TEST_EXIT=0, 3636 passed, 0 failed, 1 ignored** (istniejący). FF `rust-port/parity-v2` = `126432304` (readback zgodny). Refy: `refs/keep/K5DOC-T0-fc`, `-integ`, `cleanup-K5DOC-T0-wt1..4`.
+  - **Odstępstwo zaakceptowane przez orkiestratora:** pola doktryny w `ProdBody.doctrine` (nie `ProdUnit`), bo literał `ProdUnit` w `tests/p6_k5loop_outcome_pin.rs:173` jest poza allowlistą.
+  - **WARUNEK WSTĘPNY dla T1–T9 (zapisany):** `ProdBody` klonuje `pu.activate` i zapisuje z powrotem tylko `morale` i `surround_applied`. Mutacje `dry_col` i `held_after_fallback` z K5H nie przenoszą się między aktywacjami; `ProdDoctrineState` duplikuje `dry_col`/`held_after_fallback`/`mounted` z `ActivateUnit`. Naprawa (czytanie z `ActivateUnit` i zapis z powrotem) zmienia zachowanie U7.6, więc jest osobnym tematem przed T5a/T4/T6.
+- **EXEC-T2-MOVE-GATE (#267) — INTEGRACJA:** FC PASS-WITH-NOTES `6e3a025fb` → merge `585bb48e0` na parity `126432304`. Zakres: 5 plików allowlisty (`player_order_move_gate.rs`, testy, generator, wektory) + `mod.rs`. Bramki: fmt 0, clippy 0, **TEST_EXIT=0, 3649 passed, 0 failed, 1 ignored**. FF parity = `585bb48e0`. Refy: `refs/keep/EXEC-T2-fc`, `EXEC-T2-integ`.
+  - Notatka FC: anty-cofanie kolumny siedzi w `compact_attack_allows_step`, nie w `should_avoid_auto_backtrack` (korekta opisu dla DOC-T4). Atrapy `isSiegeUnit`/`_effectiveMetaForUnit` w generatorze — zależność DOC-T4.
+- **EXEC-T1-QUEUE (#266) — FC FAIL (INFRA), runda 2:** commit obrony `3e370995e` wypchnięty jako `wip/R-RUSTPORT-P6-EXEC-T1-QUEUE-Q1-obrona-r1` (uwaga: pierwszy push trafił na złą gałąź, poprawione `--force-with-lease`). DODATEK r2 w dispatchu. Start: `wf_487c53ff-a4c`.
+- **K5DOC-T2 CELE (#256) — start:** dispatch `0c585fbe`, baza `126432304`. Start: `wf_1c92bca8-2d5`.
+- **Sprzątanie:** worktree T0 (`wf_a3de76ac-91a-1..4`) i EXEC-T2 (`wf_479bcc22-c55-1..3`) usunięte po `refs/keep`. Cache: `fc-t0-target`, `tgt-t2`, `target-integ-*` usunięte; `k5doc-r2-target` nie istniał.
+- **Dysk:** 19 GB wolnego. **Sloty:** 2 z 4 (EXEC-T1 r2, T2'). Brak niezależnych kandydatów na 3. i 4. slot: T3 (geometria) czeka na dispatch; EXEC-T3..T7 czekają na EXEC-T1; DOC-T4/T5a/T6 czekają na T2'.
