@@ -10424,3 +10424,8 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 - NIE ZMIERZONO: roundtrip seed 777, ekonomia po wczytaniu zapisu 0 miast, MP/hotseat, tura 1 nowej gry w żywej grze (tylko analiza statyczna).
 - Sprzątanie: worktree wf_1b638048-582-* usunięte, /home/user/integ usunięty.
 - Do właściciela (weryfikacja w grze): wczytaj stary zapis z turą > 1 i zakończ turę; zapis z 0 miast = jedna tura, potem porażka.
+
+### 2026-11-16 ~16:55 UTC — ODPOWIEDZI ABC właściciela (zapis z 0 miast / map-snapshot-load / Grecy las)
+- Zapis z 0 miast po FALI 769: porażka ma być PEŁNYM końcem gry — ekran jak przy pokonaniu innej cywilizacji, z podsumowaniem „co osiągnął / ile stracił”, informacją o końcu gry i opcjami „Wczytaj grę” oraz „Rozpocznij od nowa” → nowy temat R-WEB-DEFEAT-SCREEN-SUMMARY-LOAD-OR-NEW-Q1 (Haiku r1; dispatch na gałęzi dispatchów). Stan zastany: ekran porażki istnieje (victoryScreen.ts), ale pokazuje tylko Tur/Epoka/Cywilizacja i jeden przycisk „Spróbuj ponownie”.
+- map-snapshot-load KNOWN-FAIL (budżet rotacji autozapisu): A — zostaje znanym błędem, bez tematu.
+- Dane Greków `walka_obrona_piechota_teren_las = 0`: A — zostaje 0.
