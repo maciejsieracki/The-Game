@@ -279,19 +279,38 @@ fn apply_deltas_moves_human_and_ai_balances() {
 }
 
 #[test]
-fn apply_deltas_is_atomic_on_missing_owner() {
+fn apply_deltas_missing_owner_reads_zero_and_creates_entry() {
     let base = with_ai(fresh_game().state().clone());
     let ai = ai_id(&base);
     let mut st = base.clone();
     st.economy.ai_treasury_by_owner.insert(ai, 30.0);
     let before = st.clone();
 
-    // Wlasciciel 99 nie ma producenta: cala zmiana odrzucona, takze poprawna pozycja dla `ai`.
+    // Wariant B (parytet, pin `ownerTreasury` `?? 0`, main.ts:34865): wlasciciel 99 bez wpisu
+    // startuje od 0, a zapis tworzy wpis; poprawna pozycja dla `ai` jest tez zastosowana.
     let treasury = BTreeMap::from([(ai as i64, -5.0), (99, 1.0)]);
-    let err = apply_dipl_deltas_to_state(&mut st, &treasury, &BTreeMap::new())
-        .expect_err("brak producenta");
-    assert!(matches!(err, WarTurnError::DiplStep(_)));
-    assert_eq!(st, before, "blad = zadnej zmiany");
+    apply_dipl_deltas_to_state(&mut st, &treasury, &BTreeMap::new())
+        .expect("parytet: brak wpisu = 0");
+    assert_eq!(st.economy.ai_treasury_by_owner.get(&ai), Some(&25.0));
+    assert_eq!(st.economy.ai_treasury_by_owner.get(&99), Some(&1.0));
+    assert_ne!(st, before);
+}
+
+#[test]
+fn apply_missing_praca_entry_reads_zero_and_creates_entry() {
+    // Pin `ownerPracaPool` (`?? 0`, main.ts:34877): brak wpisu puli = 0; zapis tworzy wpis, podloga 0.
+    let base = with_ai(fresh_game().state().clone());
+    let ai = ai_id(&base);
+    let mut st = base.clone();
+    st.economy.praca_pool_by_owner.remove(&ai);
+    let praca = BTreeMap::from([(ai as i64, 2.0)]);
+    apply_dipl_deltas_to_state(&mut st, &BTreeMap::new(), &praca).expect("parytet");
+    assert_eq!(st.economy.praca_pool_by_owner.get(&ai), Some(&2.0));
+    let mut st2 = base.clone();
+    st2.economy.praca_pool_by_owner.remove(&ai);
+    let praca_neg = BTreeMap::from([(ai as i64, -3.0)]);
+    apply_dipl_deltas_to_state(&mut st2, &BTreeMap::new(), &praca_neg).expect("parytet");
+    assert_eq!(st2.economy.praca_pool_by_owner.get(&ai), Some(&0.0));
 }
 
 #[test]
@@ -370,4 +389,69 @@ fn producer_rejects_human_entry_in_ai_treasury() {
         civ_engine::domain::turn_war_inputs::WarInputsError::HumanOwnerInAiTreasury(id)
             if id == human as i64
     ));
+}
+
+// ---------------------------------------------------------------------------------------------
+// Wektory pinu dla "brak wpisu = 0" (R7K7C-PARITY-MISSING0, wariant B)
+// ---------------------------------------------------------------------------------------------
+
+const OWNER_POOLS: &str = include_str!("p6_r7k7c_owner_pools_vectors/owner_pools.json");
+
+fn pin_map_u64(v: &Value) -> BTreeMap<u64, f64> {
+    v.as_object()
+        .expect("obiekt")
+        .iter()
+        .map(|(k, x)| (k.parse().expect("klucz"), x.as_f64().expect("liczba")))
+        .collect()
+}
+
+fn pin_map_i64(v: &Value) -> BTreeMap<i64, f64> {
+    v.as_object()
+        .expect("obiekt")
+        .iter()
+        .map(|(k, x)| (k.parse().expect("klucz"), x.as_f64().expect("liczba")))
+        .collect()
+}
+
+#[test]
+fn owner_pools_vectors_from_pin_match_rust() {
+    let v: Value = serde_json::from_str(OWNER_POOLS).expect("owner_pools.json");
+    assert_eq!(
+        v["pin"].as_str(),
+        Some("07d2fbd72f758705f8e1d59cc4968027ffbafe75"),
+        "pin"
+    );
+    assert_eq!(
+        v["snippetSha256"]["ownerTreasury"].as_str(),
+        Some("03fcfdbc9f629943c962ac1cbdefa1e48e7bf09cf94803028ef789e734d1d7ca"),
+        "straznik wycinka ownerTreasury"
+    );
+    let cases = v["cases"].as_array().expect("cases");
+    assert!(cases.len() >= 150, "wektory: {} < 150", cases.len());
+
+    let base = with_ai(fresh_game().state().clone());
+    assert_eq!(human_id(&base), 1, "wektory zakladaja gracza ludzkiego = 1");
+    for row in cases {
+        let name = row["name"].as_str().expect("name");
+        let mut st = base.clone();
+        st.economy.ai_treasury_by_owner = pin_map_u64(&row["aiTreasury"]);
+        st.economy.praca_pool_by_owner = pin_map_u64(&row["aiPraca"]);
+        apply_dipl_deltas_to_state(
+            &mut st,
+            &pin_map_i64(&row["treasuryDeltas"]),
+            &pin_map_i64(&row["pracaDeltas"]),
+        )
+        .unwrap_or_else(|e| panic!("{name}: {e}"));
+        // Pelna mapa po zapisie (klucze i wartosci): brak wpisu startuje od 0 i zapis tworzy wpis.
+        assert_eq!(
+            st.economy.ai_treasury_by_owner,
+            pin_map_u64(&row["expTreasury"]),
+            "{name}: skarbiec AI"
+        );
+        assert_eq!(
+            st.economy.praca_pool_by_owner,
+            pin_map_u64(&row["expPraca"]),
+            "{name}: pula Pracy AI"
+        );
+    }
 }
