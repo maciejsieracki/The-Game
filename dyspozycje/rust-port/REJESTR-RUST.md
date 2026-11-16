@@ -2471,3 +2471,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sprzątanie:** usunięte worktree 1I2 (`-1..4`), 1F3 `-4`, 1F4 `-2`, 1F5. Pozostają: 1F3 `-1..3` (branche wip zachowane), `wf_acc61d3f` (stary EXEC-T1 r1), `ev9f1` (decyzja właściciela).
 - **Do zrobienia:** (1) po zielonym teście engine — FF `parity-v2` na `0e3c149fa` i wpis wyniku; (2) po opłaceniu subskrypcji — Evaluator/FC dla 1F3 (`48ef28025`) i 1F4 (`c1d829320`); 1F5 — nowa runda Operatora; (3) integracja K5DOC-T3 GEOMETRIA (`efa3b7642`).
 - **Rozbieżność z harmonogramem:** prompty heartbeatu wymagają Operatora/Obrony Haiku i Evaluatora/FC Sonnet; reguła właściciela dla 3D to Opus we wszystkich rolach (zachowana).
+
+### Przebieg — heartbeat Rust, 2026-11-16 ~12:50 UTC
+
+- **Sloty: 0 z 4 aktywnych.** Tematy 1F3, 1F4, 1F5 zakończone lub przerwane przez blokadę płatności (Evaluator/FC/Operator: „payment is past due”). Nowe starty wstrzymane: każdy agent padłby na tym samym błędzie. Wznowienie po opłaceniu subskrypcji.
+- **P4-1I2 — bramka engine:** pierwszy przebieg `cargo test --all-targets` został przerwany restartem sesji (log urwany 12:39, test `pick_auto_improvements_matches_pinned_web_vectors` działał ponad 60 s). Ponowiony odłączony przez `setsid`. FF `parity-v2` (`05b872fc5` → `0e3c149fa`) dopiero po zielonym wyniku.
+- **Dysk:** 8,5 GB wolnego.
+- **Rozbieżność z harmonogramem:** prompty heartbeatu wymagają Haiku na Operatorze/Obronie i Sonnet na Evaluatorze/FC; reguła właściciela dla 3D to Opus we wszystkich rolach (zachowana).
