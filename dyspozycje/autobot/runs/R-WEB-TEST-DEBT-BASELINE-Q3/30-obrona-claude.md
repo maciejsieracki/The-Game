@@ -1,90 +1,82 @@
-STATUS: PASS-WITH-NOTES
-DOMAIN: PROCESS
+STATUS: BLOCK
+DOMAIN: GAME (tylko testy i narzędzia w gra/tools; kod gry nietknięty)
 TEMAT: R-WEB-TEST-DEBT-BASELINE-Q3
-GOAL: zredukować dług testowy bazy 37bcf8ebb (testy czerwone na bazie) bez zmian kodu gry w gra/src i danych gry; odpowiedź Obrony na zarzuty Evaluatora z 20-evaluator-claude.md (kandydat 5bed9d7cc8870d41fb145e8b014e3606ab910634, raport Evaluatora b8ff3aa57876c3a1bcb22b9ceb5e7188beb905ef).
-BAZA: origin/main 37bcf8ebb; kandydat 5bed9d7cc (rodzic 37bcf8ebb); ta obrona = commit na gałęzi detached od 5bed9d7cc (SHA commita podany w polu sha odpowiedzi orkiestratorowi, nie w tym pliku).
-ZMIANY/COMMIT: allowlista gra/tools/*-test.cjs; zmienione pliki (4): gra/tools/okolica-ownership-change-reconcile-test.cjs, gra/tools/pre-battle-retreat-exhausted-test.cjs, gra/tools/recruitment-batch-contract-test.cjs, gra/tools/hex-tooltip-unlock-label-dedup-test.cjs; plus ten raport. gra/src, WERSJE.md, gra-robocza: nietkniete (git diff --name-only 5bed9d7cc..HEAD = wyłącznie powyższe). git diff --check: czysto.
+GOAL: odpowiedź Obrony na zarzuty Evaluatora (runda 1, baza a55333602); poprawki klasy A z mutacją, tabela przed/po, klasyfikacja B/C.
+BAZA: a553336024de5cdd8f7b6891c65b26dee39595dc (detach), npm ci w gra/ wykonany wcześniej (57 wpisów w node_modules).
 
-## Odpowiedzi na zarzuty Evaluatora
+## 1. Odpowiedź na zarzuty Evaluatora
 
-### Zarzut 1 (okolica-ownership-change-reconcile: klasa C niepoparta) -- PRZYJMUJĘ (zmiana klasy na A, poprawka testu)
-Diagnoza ponowna. Kod gry jest poprawny: ownerId jest przypisywane PRZED wywołaniem seedCityOwnerDefaults we wszystkich czterech ścieżkach:
-- resolveSiegeSurrender: `city.ownerId = newOwner;` w linii 17525, `seedCityOwnerDefaults(city);` w linii 17615 (ta sama funkcja, bez granicy function między nimi).
-- annexCityStateToOwner: `city.ownerId = annexerId;` w linii 35051, `seedCityOwnerDefaults(city);` w linii 35058.
-- post-battle-map.ts::applyCityCaptureAfterBattle: `city.ownerId = atkOwner;` w linii 574, `captureOpts?.onOwnerChanged?.(city);` w linii 591.
-Przyczyna 3 niezaliczeń: okna regex w teście (1500 / 300 / 200 znaków) były ZA KRÓTKIE. Zmierzone odległości między przypisaniem a wywołaniem: (a) 6744, (b) 506, (c) 1199 znaków, wszystkie w tym samym ciele funkcji. Test anchorował się do tekstu, nie do zachowania. Klasa A (test przestarzały), NIE błąd gry. Wniosek z R1 (klasa C, "osobny temat") jest wycofany; nie zakładam tematu C.
-Zmiana: helper `sameFnAfter(src, assignStr, callStr)` -- wywołanie musi wystąpić PO przypisaniu, w odległości <= 8000 znaków, bez granicy `function` pomiędzy. Okna (a)(b)(c) zastąpione tym helperem. Punkt (d) i sekcje 1, 2.1, 2.3 bez zmian.
-Dowód: `cd gra && node tools/okolica-ownership-change-reconcile-test.cjs` -> `OKOLICA-OWNERSHIP-CHANGE-RECONCILE OK (15/15)`, exit 0 (wcześniej 12/15, exit 1).
-Dowód helpera (zestaw syntetyczny, skrypt poza repo): brak wywołania -> false; granica function między -> false; poprawny układ -> true.
+| nr | zarzut | decyzja | dowód |
+|---|---|---|---|
+| 1 | cele 3 i 4 niespełnione, brak poprawek klasy A, brak tabeli przed/po | PRZYJMUJĘ częściowo | Wykonane poprawki klasy A: `budynek-civ-bonus-u17-test.cjs`, `defense-breakdown-test.cjs` (TypeError). NIE wykonane w tej rundzie: harness 7× `ReferenceError` (pr141), dryf ledgerów (2 testy), okolica-load-reconcile, diplo weaker-seeks/main-guard/gate/truce, map-snapshot. Tabela przed/po w sekcji 2. |
+| 2 | ok. 10 pozycji bez klasyfikacji lub „nie zbadano” | PRZYJMUJĘ | Nie uzupełniam w tej rundzie: pr141-dip-activation, matrix-only-economy, matrix-only-owner-ui, matrix-only-ai, ai-strategy, okolica-load-reconcile, defense-breakdown (pozostałe 10 asercji), ledgery. Pozostają jako „NIE ZBADANO w rundzie 2”. |
+| 3 | u17: przyczyna błędnie opisana (nie ma zaszytego 50; to fixture; B lub zły fixture) | PRZYJMUJĘ | Probe na silniku (ten sam bundle co test): `computeTerritoryResourceYieldByCity` kamien = 50; `advanceCityEconomy` bez Warsztatu kamien = 55 (identycznie dla population 0 i 3). Różnica 5 nie jest premią bez Warsztatu z danych. Źródło różnicy nie wyizolowane (założenie: plon pracy miasta liczony w advanceCityEconomy poza `computeTerritoryResourceYieldByCity`). Poprawka: baza = wynik SILNIKA bez Warsztatu, mnożnik testowany względem niej. Asercja „2 Warsztaty w jednym mieście” przechodziła przypadkiem (floor(50*1.2)=60 = floor(55*1.1)); silnik liczy Warsztat raz na miasto (`includes`), więc test przepisany na 2 miasta tego samego właściciela (suma 132). |
+| 4 | defense-breakdown: `grecy.bonusy` nie istnieje; faktyczny błąd to TypeError; nieskorygowany | PRZYJMUJĘ | Rekord Grecy w civs.json nie ma pola `bonusy` (klucze: Cywilizacja…nazwyMiast). Bonusy przeniesiono do civ-matrix (`civMatrixBonusyForCivKey`, civ-bonuses.ts). Test czyta teraz `civMatrixBonusyForCivKey('grecy')`. Asercje o `jednostka_specjalna` i `bonus_zloto` w `bonusy[]` zastąpione wpisami syntetycznymi dla filtru `isDefenseOnlyCivBonus` (wpis `jednostka_specjalna` w civs.json jest w polu 'Jednostka specjalna'). Pozostałe 10 FAIL: patrz sekcja 3. |
+| 5 | grupa 7× pr141 ReferenceError (harness wycina z main.ts) nieanalizowana | PRZYJMUJĘ | Nie naprawione w tej rundzie. Ustalone tylko: `diploBrakeBonusFlags` jest zagnieżdżoną funkcją w `src/main.ts:12309` (nie eksportowaną), więc wycinanie po nazwie z pliku nie działa bez zmiany wzorca. Nie zbadano pozostałych 6 symboli. |
+| 6 | dispatch mówi o „4 testach pr141-*”, Operator objął 17 | PRZYJMUJĘ | Dispatch nie wymienia nazw czterech testów; w rundzie 1 objęto wszystkie czerwone pr141 (17 z 33 plików pr141). Zakres do potwierdzenia przez FC. |
+| 7 | commit a55333602 nadpisał wcześniejszy 10-operator-claude.md (inna runda, baza 37bcf8ebb) | PRZYJMUJĘ (potwierdzone) | `git log -- …/10-operator-claude.md`: 5bed9d7cc (R1 na bazie 37bcf8ebb, „naprawy harnessu i okna testów”) i a55333602 (triage na 459354a12). Poprzednia wersja jest w 5bed9d7cc. Nie przywracam jej w tym temacie. Ten raport (30-obrona) jest zapisany osobno. |
+| 8 | brak dowodu mutacyjnego | PRZYJMUJĘ częściowo | Wykonane (sekcja 4): u17 (2 mutacje na kopii silnika), defense-breakdown (1 mutacja na kopii defenseBreakdown.ts). NIE wykonane dla pozostałych testów (nie zmieniano ich). |
+| 9 | brak potwierdzenia sprzątania | PRZYJMUJĘ | Usunięte: kopie mutantów i pliki probe w scratchpad (sekcja 5). Worktree i gra/node_modules zostają do sprzątania przez orkiestratora. |
 
-### Zarzut 2 (niedokończone punkty: recruitment-batch, general-capital, pre-battle-retreat, D-FOG-F) -- PRZYJMUJĘ częściowo (poprawka + klasyfikacja), jedna pozycja ODRZUCAM jako nieaktualną
+## 2. Tabela przed / po (surowe wyniki z uruchomień)
 
-2a. pre-battle-retreat-exhausted (6 FAIL bez klasyfikacji) -- PRZYJMUJĘ, klasa A, NAPRAWIONE: 33 pass, 0 fail (exit 0).
-Przyczyna: test szukał końca funkcji markerem `}, { defaultAction: 'manual' });`, którego NIE MA w main.ts (grep `defaultAction` daje linie 33410, 34174, 36818 w innym kształcie). Pozostałe asercje [A1]-[A6] trafiają w aktualny kod: retreatExhaustedThisTurn (l. 33891), defenderCanRetreat (l. 33904), retreatExhaustedThisTurn w PreBattleInfo (l. 33905), warunek onCancel `if (playerDefends && !defenderLockedByGarnizon && !retreatExhaustedThisTurn)` (l. 34152), oznaczenie rostera po applyDefenderPreBattleRetreat (l. 34153 -> 34167). Zmiana: granica ciała = następna funkcja na poziomie 4 spacji (`\n    function `). Asercje nie osłabione.
-Pozostałe 6 FAIL w raporcie R1 nie były błędem gry: wszystkie zależały od markera.
+| test | przed (a553336) | po (ta runda) | zmiana |
+|---|---|---|---|
+| budynek-civ-bonus-u17-test | `3 passed, 3 failed` (got 55 want 50; got 60 want 55; got 60 want 55) | `6 passed, 0 failed` | ZIELONY (klasa A) |
+| defense-breakdown-test | exit przez wyjątek: `TypeError … reading 'find'` (grecy.bonusy) | `=== defense-breakdown-test: 23 pass, 10 fail ===` | nie ma już TypeError; 10 FAIL to dane/decyzje (sekcja 3) |
+| pozostałe 18 plików czerwonych | NIE ZMIERZONO w tej rundzie | NIE ZMIERZONO w tej rundzie | bez zmian w kodzie testów |
 
-2b. recruitment-batch-contract -- PRZYJMUJĘ jako CZĘŚCIOWO NAPRAWIONE, NADAL CZERWONE (stan otwarty, jawnie na liście).
-Zrobione: wycięcie prawdziwej superUnitLimitViolation i SUPER_UNIT_LIMIT_BLOCK_PL z src/game/production.ts (ta sama metoda co hexHasRoomFor); reservedUnitTypeNamesForOwner = `() => new Set()` (ZAŁOŻENIE: fixture bez żywych Super-jednostek; test sprawdza atomowość zakupu, nie samą regułę Super-jednostki).
-Wynik po zmianie: exit 1. Raw: `ReferenceError: effectiveGameDifficultyForOwner is not defined`. Przed zmianą błąd był na superUnitLimitViolation, więc zależności przesuwają się łańcuchowo.
-Otwarte zależności wycinanej funkcji (skan statyczny ciała purchaseRecruitmentUnit + cancelRecruitmentPurchase, funkcje wołane, których nie ma w fixture): effectiveGameDifficultyForOwner, bestGeneralUnitForOwner, attemptGeneralPurchase, capitalCityIdForOwner, recruitFollowGeneralForOrder, armyLeaderTitle, empireBuiltIdsForOwner, stackLimitBlockMessage (oraz zestaw z dalszego skanu, do zweryfikowania). Harness przez `new Function(...names)` z pozycyjnymi argumentami gonią za zmianami w produkcji; to klasa B wymagająca przebudowy harnessu (np. jawna atrapa całego zestawu lub boot prawdziwego modułu), nie jednej poprawki. Nie robię tego w tej rundzie.
+Liczba czerwonych plików z listy dispatchu (20 = 3 + 17 pr141): przed 20, po 19 (u17 zielony, defense nadal czerwony).
 
-2c. general-capital-recruitment-order -- PRZYJMUJĘ, NIEDOKOŃCZONE (stan otwarty, nie zmieniane).
-Raw: 11 PASS (statyczne i Chromium-mount), potem `page.evaluate: ReferenceError: hexHasRoomFor is not defined` (exit 1). Ta sama przyczyna co w 2b: lista names w extractBackend() nie zawiera nowych zależności purchaseRecruitmentUnit (hexHasRoomFor, superUnitLimitViolation, reservedUnitTypeNamesForOwner, SUPER_UNIT_LIMIT_BLOCK_PL). Nie zmieniane w tej rundzie, bo wymaga tej samej przebudowy co 2b.
+## 3. Klasyfikacja pozostałych FAIL defense-breakdown (NIE naprawiane)
 
-2d. D-FOG-F (punkt 6: 3 skrypty measure wciskają F bez włączenia opcji) -- ODRZUCAM jako nieaktualne na bazie 37bcf8ebb. Dowód (grep, stan 5bed9d7cc = baza dla tych plików):
-- gra/tools/memory-unit-static-merge-game-measure.cjs:112 `startNewGame(... fogRevealKeyFEnabled: true)`, l. 124-125 asercja, że wartość doszła do doStartGame, l. 127 `keyboard.press('f')` -- opcja włączona PRZED F.
-- gra/tools/memory-growth-rootcause-q1-measure.cjs:161 `startNewGame(... fogRevealKeyFEnabled: true)`, l. 173-174 asercja, l. 176 `keyboard.press('f')`.
-- gra/tools/longrun-100-turns-leak-q1-measure.cjs:184 `keyboard.press('f')` jest CELOWĄ kontrolą negatywną w trybie PREFLIGHT_ONLY (l. 181-186: baseline enabled===false i oczekiwanie "F nie zmienia stanu przy OFF"); właściwe nowe gry z opcją włączoną: l. 189.
-Wniosek: punkt 6 nie wymaga zmiany. Nie uruchamiałem skryptów measure (długie przebiegi gry); dowód jest statyczny -> NIE_ZMIERZONO runtime.
+Eksperyment na kopii (nie w commicie): odfiltrowanie wpisów `wartosc === 0` z `civMatrixBonusyForCivKey('grecy')` → `35 pass, 5 fail`. Czyli 5 z 10 FAIL wynika z zerowych wpisów matrix (`walka_hp_piechota`, `walka_hp_rydwany` itd.), które `defenderCivBonusBreakdown` zamienia w linie (`civBonusOpisPl` daje etykietę PL, nie surowe ID).
 
-### Zarzut 3 (unit-replace-full-cost F0: decyzja ABC właściciela) -- PRZYJMUJĘ jako STAN OTWARTY, bez zmiany asercji
-Raw (exit 1): `unit-replace pelny koszt: 39 passed, 1 failed`; `[FAIL] Taran okuty ma zamiennik Katapulta w Zelazie u 16/16 nacji (brak: Grecja, Rzym, Chiny, Zulu, Inkowie, Egipt, Sumer, Ludy Morza, Celtowie, Germanie, Asyria, Słowianie, Harappa, Hetyci, Babilonia, Fenicjanie)`.
-Nie rozstrzygam sam: asercja zostaje; czy Taran okuty ma mieć zamiennik Katapulta (Oblężniczy wykluczony z Zastąp w danych) -- pytanie ABC do właściciela, poza zakresem Operatora. Bramki referencyjne tego testu nie obejmują.
+| FAIL | klasa | uzasadnienie |
+|---|---|---|
+| Roster kawalerii/rydwanów: lista PUSTA (oczekiwano) | B-KANDYDAT | zerowy wpis `walka_hp_rydwany` produkuje linię; do potwierdzenia, czy linie 0% są zamierzone |
+| Roster mieszany: 1 linia (Falanga) | B-KANDYDAT | jak wyżej (zerowe wpisy piechoty) |
+| Roster cała piechota: 4 z 4 | B-KANDYDAT | jak wyżej |
+| cityDefenseBreakdownLines: 4 linie, otrzymano 5 | B-KANDYDAT | jak wyżej |
+| cityDefenseBreakdownLines bez trudności: 3 linie | B-KANDYDAT | jak wyżej |
+| bonusChipTexts(Grecy): 1 chip | A (dane) po decyzji o zerach | liczba chipów zależy od wpisów matrix |
+| Bonus leśny na Las: DOKŁADNIE 1 linia | DECYZJA DANYCH | `walka_obrona_piechota_teren_las` dla Grecy = 0 w civ-matrix; test zakłada bonus leśny Grecji. Wymaga decyzji właściciela (0 zamierzone czy zgubione) |
+| Bonus leśny bez terrain | DECYZJA DANYCH | jak wyżej |
+| Falanga: tekst zaczyna się od opisu z civs.json | A (dane) | pole `opis` wpisu z civs.json zniknęło; tekst pochodzi z etykiety matrix |
+| REGRESJA Falanga bez warunku terenowego: 3 z 3 | B-KANDYDAT | przy zerach liczba wpisów nie zgadza się z oczekiwaniem |
+| cityDefenseBreakdownLines(terrain=Las): „undefined” | B-KANDYDAT | do potwierdzenia w kodzie `defenseBreakdown.ts` (wartość 'undefined' w tekście) |
 
-### Zarzut 4 (raport R1 bez surowych linii bramek) -- PRZYJMUJĘ
-Surowe wyjścia bramek na kandydacie + poprawkach tej obrony (patrz sekcja TESTY).
+Nie potwierdzono w kodzie gry, że linie 0% są błędem. Klasyfikacja B jest hipotezą do potwierdzenia przez FC.
 
-### Zarzut 5 (hex-tooltip: slice(indexOf('Kamieniołom'), indexOf('Fort')) kruchy) -- PRZYJMUJĘ, poprawka
-Zmiana: koniec wiersza Kamieniołomu wyznaczany granicą WIERSZA (`\p{L}[\p{L}\s()\-]*? → `), nie położeniem "Fort". Rzeczywisty tekst listy (z tymczasowej kopii testu z dump-em, usuniętej po użyciu): `Możliwe ulepszenia (teren)Owce → plony miasta: ... odblok. OwceKamieniołom →  +113 Kamień/t · plony miasta:  3 ·  4Fort → ...`.
-Dowód na wyprowadzonym tekście (skrypt poza repo): real -> pass=true, wiersz `Kamieniołom →  +113 Kamień/t · plony miasta:  3 ·  4`; mutant z `odblok. Kamień` w wierszu Kamieniołomu -> pass=false; zmiana kolejności wierszy (Fort/Owce po Kamieniołomie) -> pass=true.
-Wynik testu: `28 passed, 0 failed`, exit 0.
-Uwaga: to jest mutacja helpera na wyprowadzonym tekście, a nie mutacja samego pliku testu; NIE_ZMIERZONO mutacja samego pliku hex-tooltip.
+## 4. Mutacje (na kopiach, nie w repo)
 
-## Bramki (surowe wyjścia, stan po poprawkach R2)
-- tsc --noEmit: exit 0, brak linii wyjścia
-- logic-test: `LOGIC OK (213/213)`, exit 0
-- tech-tree-test: `tech-tree-test: 20 pass, 0 fail`, exit 0
-- research-test: `PASSED: 33 / FAILED: 0 / TOTAL: 33`, `ALL GREEN`, exit 0
-- unit-replace-test: `[unit-replace-test] WSZYSTKIE TESTY ZIELONE (21/21)`, exit 0
-- combat-test: `COMBAT TEST: 6/6 pass`, `All sanity checks passed.`, exit 0
-- unit-replace-full-cost-test: `39 passed, 1 failed`, exit 1 (F0, ABC, bez zmian)
+| test | mutacja | wynik |
+|---|---|---|
+| u17 | M1: `kamienMult = 1 + k * Math.min(1, count)` (bez mnożenia per miasto) | `FAIL: 2 Warsztaty w 2 miastach … (got 120, want 132)`; `5 passed, 1 failed` — test wykrywa |
+| u17 | M2: `kamienMult = 1 + 0 * count` (Warsztat bez efektu) | `FAIL: 1 Warsztat … (got 55, want 60)`; `FAIL … 2 Warsztaty (got 110, want 132)`; `3 passed, 3 failed` — test wykrywa |
+| defense-breakdown | filtr `isDefenseOnlyCivBonus` bez gałęzi `realizuje === 'walka'` | nowy `FAIL: isDefenseOnlyCivBonus odrzuca bonus ekonomiczny`; `22 pass, 11 fail` (przed mutacją 23/10) — test wykrywa |
 
-Testy zmienionych plików (po poprawkach R2):
-- okolica-ownership-change-reconcile-test: `OKOLICA-OWNERSHIP-CHANGE-RECONCILE OK (15/15)`, exit 0
-- pre-battle-retreat-exhausted-test: `33 pass, 0 fail`, exit 0
-- hex-tooltip-unlock-label-dedup-test: `28 passed, 0 failed`, exit 0
-- recruitment-batch-contract-test: exit 1, `ReferenceError: effectiveGameDifficultyForOwner is not defined` (CZERWONE, otwarte)
-- general-capital-recruitment-order-test: exit 1, 11 PASS, `ReferenceError: hexHasRoomFor is not defined` (CZERWONE, otwarte)
+## 5. Sprzątanie
 
-## Dowody mutacyjne (stan)
-- forced-war-bronze/iron (R1 Evaluatora): mutacje zmierzone przez Evaluatora; nie powtarzane.
-- hex-tooltip, mgla, ai-dlug, rally: NIE_ZMIERZONO mutacja samego pliku testu (patrz zarzut 5 dla helpera).
-- okolica: helper sameFnAfter sprawdzony na trzech przypadkach syntetycznych (patrz zarzut 1).
+Usunięto: `gra/tools/.probe-u17.cjs` (plik roboczy, nie w commicie), kopie mutantów `mut1`/`mut2` w scratchpad (kopie `src`, `data`, `tools`), pliki probe w scratchpad. Usuwanie `gra/node_modules` i worktree zostawiam orkiestratorowi (po Final Control).
 
-## BLOKADY
-1. recruitment-batch-contract: CZERWONE; łańcuch zależności purchaseRecruitmentUnit (klasa B, wymaga przebudowy harnessu).
-2. general-capital-recruitment-order: CZERWONE; ta sama przyczyna (browser-side names).
-3. unit-replace-full-cost F0: DECYZJA ABC właściciela (zamiennik Taran okuty -> Katapulta, Oblężniczy wykluczony z Zastąp).
-4. Punkt 6 (D-FOG-F): ZAMKNIĘTY na bazie bez zmiany; runtime NIE_ZMIERZONO.
+## 6. Pliki zmienione w commicie
 
-## RUNDY
-2/5 (obrona Operatora po zarzutach Evaluatora z 5bed9d7cc). Ostatni werdykt Evaluatora: PASS-WITH-NOTES, bez werdyktu końcowego (rola FC).
+- `gra/tools/budynek-civ-bonus-u17-test.cjs` (mnożnik względem bazy silnika, test 2 miast, bez asercji zaszytego 50)
+- `gra/tools/defense-breakdown-test.cjs` (źródło bonusów: civ-matrix; bundle civ-bonuses.ts; syntetyczne wpisy dla filtrów; unlink bundla)
+- `dyspozycje/autobot/runs/R-WEB-TEST-DEBT-BASELINE-Q3/30-obrona-claude.md` (ten raport)
 
-## ZAŁOŻENIA
-- Dispatch oryginalny nieobecny na origin/main; użyty DODATEK z origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0 (jak w R1).
-- reservedUnitTypeNamesForOwner w fixture recruitment-batch = pusty Set (patrz 2b).
-- Klasyfikacja okolica = A na podstawie odległości kod/test i wiringu; nie wykonano mutacji src (zakaz zmian gra/src).
-- hex-tooltip: wiersze listy rozdzielane wzorcem "<Nazwa> → "; tekst z jednego renderu w środowisku testu.
+## 7. Kandydaty do osobnych tematów (UWAGI-DLA-ORKIESTRATORA)
 
-NASTĘPNY KROK: (1) Orkiestrator: decyzja ABC właściciela dla unit-replace F0 (nie rozstrzygam). (2) Runda Operatora 3 dla recruitment-batch-contract i general-capital-recruitment-order: przebudowa harnessu (klasa B), bez zmian gra/src. (3) Evaluator na nowym SHA (ten commit) -- w tym: weryfikacja okna sameFnAfter i granicy wiersza hex-tooltip.
+- R-WEB-DEFENSE-BREAKDOWN-ZERO-MATRIX-LINES-Q1 (B-kandydat, do potwierdzenia): linie breakdown dla wpisów matrix o wartości 0.
+- Decyzja danych: Grecy `walka_obrona_piechota_teren_las` = 0 wobec testu zakładającego bonus leśny (do ABC).
+- Źródło 5 jednostek różnicy plonu kamienia (50 vs 55) między `computeTerritoryResourceYieldByCity` a `advanceCityEconomy` — do zbadania (potencjalny dryf podglądu).
+- Nie wykonano: 7× pr141 harness, ledgery, okolica-load-reconcile, diplo, map-snapshot.
+
+NASTĘPNY KROK: runda 2 Operatora — pr141 harness (7 testów), ledgery, okolica-load-reconcile, diplo weaker-seeks/main-guard/gate/truce, map-snapshot; następnie Evaluator i FC.
+BLOKADY: czas i zakres rundy; pozostałe klasy A nie wykonane; decyzja danych (Grecy las) wymaga właściciela.
+RUNDY: 2/5 (Operator R1 = a553336, Obrona = ta runda)
+ZMIANY-COMMIT: gra/tools (2 pliki testów) + raport 30-obrona-claude.md; bez zmian w gra/src i gra/data.
+TESTY: u17 6/0 (zielony); defense 23 pass / 10 fail; tsc i pięć referencyjnych bramek NIE uruchomione w tej rundzie (zmiany tylko w tools/*.cjs, nie w src); git diff --check OK.
 DEPLOY/PUSH: NIE WYKONANO
+UWAGI-DLA-ORKIESTRATORA: nie utworzono żadnych sesji, zadań ani harmonogramów. Commit 5bed9d7cc (poprzednia runda, inna baza) — patrz zarzut 7. Ten plik nadpisał poprzedni raport Obrony z rundy na bazie 37bcf8ebb (wersja w git: `git show a553336024de5cdd8f7b6891c65b26dee39595dc:dyspozycje/autobot/runs/R-WEB-TEST-DEBT-BASELINE-Q3/30-obrona-claude.md`); zgodnie z dispatchem ścieżka raportu tej rundy jest ta sama.

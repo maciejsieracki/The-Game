@@ -169,8 +169,22 @@ const { FORTIFY_OBRONA_PROC_FIELD } = require(SIEGE_BUNDLE);
 const civsRaw = JSON.parse(fs.readFileSync(path.join(GRA_ROOT, 'data/civs.json'), 'utf8'));
 const grecy = civsRaw.cywilizacje.find((c) => c['Cywilizacja'] === 'Grecy');
 if (!grecy) throw new Error('Grecy nie znalezieni w civs.json');
-const falangaBonus = grecy.bonusy.find((b) => b.typ === 'bonus_obrona');
-if (!falangaBonus) throw new Error('bonus_obrona Grecji (Falanga) nie znaleziony');
+// R-WEB-TEST-DEBT-BASELINE-Q3: rekord Grecy w civs.json NIE ma już pola `bonusy` (bonusy cywilizacji
+// przeniesiono do civ-matrix.json). Źródło runtime = civMatrixBonusyForCivKey (civ-bonuses.ts) —
+// ten sam strumień, który gra podaje do defenderCivBonusy. Test czyta go zamiast nieistniejącego pola.
+const CB_BUNDLE = path.join(os.tmpdir(), `defense-breakdown-civb-bundle-${TMPDIR_RUN_ID}.cjs`);
+esbuild.buildSync({
+  entryPoints: [path.join(GRA_ROOT, 'src/game/civ-bonuses.ts')],
+  bundle: true,
+  platform: 'node',
+  format: 'cjs',
+  outfile: CB_BUNDLE,
+  logLevel: 'silent',
+});
+const { civMatrixBonusyForCivKey } = require(CB_BUNDLE);
+const grecyBonusy = civMatrixBonusyForCivKey('grecy');
+const falangaBonus = grecyBonusy.find((b) => b.typ === 'bonus_obrona' && b.cel === 'piechota' && b.wartosc > 0);
+if (!falangaBonus) throw new Error('bonus_obrona piechota Grecji (Falanga, civ-matrix) nie znaleziony');
 assert(falangaBonus.cel === 'piechota', 'DANE: Falanga (Grecy) bonus_obrona.cel === "piechota" (fundament warunku "N z M")');
 
 const unitsRaw = JSON.parse(fs.readFileSync(path.join(GRA_ROOT, 'data/units.json'), 'utf8'));
@@ -284,14 +298,14 @@ console.log('\n--- B. Bonus cywilizacji (Falanga, cel="piechota") -- licznik N z
     { celShapeName: 'Konnica' },
     { celShapeName: 'Rydwan mykeński' },
   ].map((u) => ({ celShape: celShape(u.celShapeName) }));
-  const lines = defenderCivBonusBreakdown(rosterKawaleriaRydwany, grecy.bonusy);
+  const lines = defenderCivBonusBreakdown(rosterKawaleriaRydwany, grecyBonusy);
   assert(lines.length === 0, 'Roster samej kawalerii/rydwanow: defenderCivBonusBreakdown zwraca PUSTA liste (Falanga cel=piechota nie pasuje do nikogo -- N=0 pomijane calkowicie)');
 }
 
 {
   // Roster MIESZANY: 2x kawaleria/rydwany (nie licza sie) + 2x piechota (licza sie) = 2 z 4.
   const rosterMixed = ['Konnica', 'Rydwan mykeński', 'Wojownik', 'Wojownik'].map((n) => ({ celShape: celShape(n) }));
-  const lines = defenderCivBonusBreakdown(rosterMixed, grecy.bonusy);
+  const lines = defenderCivBonusBreakdown(rosterMixed, grecyBonusy);
   assert(lines.length === 1, 'Roster mieszany (2 kawaleria/rydwany + 2 piechota): dokladnie 1 linia bonusu obrony (Falanga)');
   if (lines.length === 1) {
     assert(lines[0].affectedCount === 2 && lines[0].totalCount === 4, 'Falanga: 2 z 4 jednostek (tylko piechota) -- licznik = ' + lines[0].affectedCount + '/' + lines[0].totalCount);
@@ -306,7 +320,7 @@ console.log('\n--- B. Bonus cywilizacji (Falanga, cel="piechota") -- licznik N z
 {
   // Roster CALA PIECHOTA -- bonus dotyczy WSZYSTKICH -> 4 z 4.
   const rosterAllInfantry = ['Wojownik', 'Wojownik', 'Wojownik', 'Wojownik'].map((n) => ({ celShape: celShape(n) }));
-  const lines = defenderCivBonusBreakdown(rosterAllInfantry, grecy.bonusy);
+  const lines = defenderCivBonusBreakdown(rosterAllInfantry, grecyBonusy);
   assert(lines.length === 1 && lines[0].affectedCount === 4 && lines[0].totalCount === 4, 'Roster cala piechota: Falanga dotyczy WSZYSTKICH -- 4 z 4');
 }
 
@@ -314,11 +328,14 @@ console.log('\n--- B. Bonus cywilizacji (Falanga, cel="piechota") -- licznik N z
   // isDefenseOnlyCivBonus: filtr bramkuje typ==='bonus_obrona' (nie ogolny
   // 'bonus_walka', ktory moze mowic o ataku) -- jednostka_specjalna Falangi
   // (drugi wpis Grecji w civs.json, typ='jednostka_specjalna') MUSI byc odrzucona.
-  const jednostkaSpecjalna = grecy.bonusy.find((b) => b.typ === 'jednostka_specjalna');
-  assert(!!jednostkaSpecjalna, 'DANE: Grecy maja wpis typ="jednostka_specjalna" w bonusy[]');
+  // Dane: jednostka specjalna Grecji jest w polu 'Jednostka specjalna' (civs.json), nie w bonusy[].
+  assert(typeof grecy['Jednostka specjalna'] === 'string' && grecy['Jednostka specjalna'].length > 0,
+    'DANE: Grecy maja pole "Jednostka specjalna" (Falanga) w civs.json');
+  // Filtr odporności: wpis syntetyczny o typie jednostka_specjalna (przed refaktorem był w bonusy[]).
+  const jednostkaSpecjalna = { typ: 'jednostka_specjalna', cel: 'piechota', wartosc: 'Falanga (Hoplita)', realizuje: 'walka' };
   assert(!isDefenseOnlyCivBonus(jednostkaSpecjalna), 'isDefenseOnlyCivBonus odrzuca typ="jednostka_specjalna" (nie liczbowy bonus obrony)');
-  const bonusZloto = grecy.bonusy.find((b) => b.typ === 'bonus_zloto');
-  assert(!!bonusZloto, 'DANE: Grecy maja wpis typ="bonus_zloto" (ekonomia)');
+  // Filtr odporności: wpis syntetyczny bonus ekonomiczny (realizuje !== "walka").
+  const bonusZloto = { typ: 'bonus_obrona', cel: 'piechota', wartosc: 0.1, realizuje: 'ekonomia' };
   assert(!isDefenseOnlyCivBonus(bonusZloto), 'isDefenseOnlyCivBonus odrzuca bonus ekonomiczny (realizuje!=="walka")');
 }
 
@@ -367,7 +384,7 @@ console.log('\n--- D. cityDefenseBreakdownLines (integracja pelnej sciezki main.
   );
   const lines = cityDefenseBreakdownLines(roster, {
     fortifyPct: FORTIFY_OBRONA_PROC_FIELD,
-    civBonusy: grecy.bonusy,
+    civBonusy: grecyBonusy,
     difficultyMult: 1.15,
   });
   assert(lines.length === 4, 'cityDefenseBreakdownLines: 4 linie (garnizon, weteran, Falanga, trudnosc) -- otrzymano ' + lines.length);
@@ -381,13 +398,13 @@ console.log('\n--- D. cityDefenseBreakdownLines (integracja pelnej sciezki main.
   // difficultyMult<=1 (poziom nie-Trudny) -> linia trudnosci NIE pojawia sie.
   const linesNoDiff = cityDefenseBreakdownLines(roster, {
     fortifyPct: FORTIFY_OBRONA_PROC_FIELD,
-    civBonusy: grecy.bonusy,
+    civBonusy: grecyBonusy,
     difficultyMult: 1.0,
   });
   assert(linesNoDiff.length === 3, 'cityDefenseBreakdownLines z difficultyMult=1.0: bez linii trudnosci (3 linie, nie 4)');
 
   // Roster pusty -> tablica pusta (bez wyjatku).
-  assert(cityDefenseBreakdownLines([], { fortifyPct: FORTIFY_OBRONA_PROC_FIELD, civBonusy: grecy.bonusy, difficultyMult: 1.15 }).length === 0, 'Roster pusty: cityDefenseBreakdownLines === []');
+  assert(cityDefenseBreakdownLines([], { fortifyPct: FORTIFY_OBRONA_PROC_FIELD, civBonusy: grecyBonusy, difficultyMult: 1.15 }).length === 0, 'Roster pusty: cityDefenseBreakdownLines === []');
 }
 
 // ===========================================================================
@@ -413,7 +430,7 @@ console.log('\n--- E. DefenseRosterUnit bez zbednych pol (meleeDefence / defense
 // ---------------------------------------------------------------------------
 console.log('\n--- F. bonusChipTexts (regresja -- uzywane przez ui/preBattle.ts) ---');
 {
-  const chips = bonusChipTexts(grecy.bonusy);
+  const chips = bonusChipTexts(grecyBonusy);
   assert(chips.length === 1 && chips[0] === falangaBonus.opis, 'bonusChipTexts(Grecy): 1 chip liczbowy walki (Falanga) -- jednostka_specjalna/ekonomia odrzucone przez isCombatModifierBonus');
 }
 
@@ -460,7 +477,7 @@ const fikcyjnyBonusLesny = {
   // Falanga (grecka, bez warunku lesnego) na tym samym rosterze na terenie
   // NIE-lesnym -- MUSI dzialac normalnie (regresja: gating lesny nie dotyka
   // bonusow, ktorych opis nie mowi o lesie).
-  const linesFalangaRownina = defenderCivBonusBreakdown(rosterAllInfantry, grecy.bonusy, 'Rownina');
+  const linesFalangaRownina = defenderCivBonusBreakdown(rosterAllInfantry, grecyBonusy, 'Rownina');
   assert(linesFalangaRownina.length === 1 && linesFalangaRownina[0].affectedCount === 3, 'REGRESJA: Falanga (bez warunku terenowego) na terenie Rownina nadal dziala normalnie -- 3 z 3');
 }
 
@@ -495,4 +512,5 @@ console.log('\n=== defense-breakdown-test: ' + pass + ' pass, ' + fail + ' fail 
 try { fs.unlinkSync(DB_BUNDLE); } catch (e) {}
 try { fs.unlinkSync(CD_BUNDLE); } catch (e) {}
 try { fs.unlinkSync(SIEGE_BUNDLE); } catch (e) {}
+try { fs.unlinkSync(CB_BUNDLE); } catch (e) {}
 process.exit(fail > 0 ? 1 : 0);
