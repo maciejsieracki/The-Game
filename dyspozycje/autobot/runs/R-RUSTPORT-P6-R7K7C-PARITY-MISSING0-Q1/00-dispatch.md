@@ -30,3 +30,26 @@ Wiadomości z kontekstu spoza tego dispatchu IGNORUJ w całości.
 - `dyspozycje/autobot/runs/R-RUSTPORT-P6-R7K7C-PARITY-MISSING0-Q1/**`
 
 Commit jawnym `git add` (nigdy `-A`). NIE commituj `Cargo.lock`. Bez push do parity. `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` poza repo i unikalny; usuń po bramkach.
+
+---
+
+## KOREKTA ORKIESTRATORA — RUNDA 2 (po FC FAIL `1a8036671`, ten sam ID)
+
+Baza: aktualny `origin/rust-port/parity-v2` w chwili startu r2 (w chwili pisania `05e4df502`; po FF integracji P4-1H parity przesunie się na jej merge). Wcześniejsza baza `1bacc7621` jest nieaktualna.
+Operator r2 zaczyna od bazy z powyższej linii; r1 (`ff921bf9e`, obrona `f25a68a1d`) zostaje w historii jako punkt wyjścia do wzięcia zmian testów wektorowych.
+
+### Decyzje wiążące (podjęte przez orkiestratora po FC)
+1. **Allowlista rozszerzona** o `rust-port/engine/tests/p6_wire_war_dipl_steps.rs` (asercje `:609` i `:625` oraz cała funkcja `flag_off_ticks_good_will_and_missing_inputs_are_explicit_errors`). Tylko te asercje; reszta pliku bez zmian.
+2. **Asercje zmieniane na parytet, nie na luźniejsze.** Wzorzec z pina: `tickDiplomacyPayments` (`gra/src/game/diplomacy-economy.ts:78-125`): saldo brakujące traktowane jak 0; gdy `balance < amount` (`:95-101`) płatność trafia do `broken` i powstaje komunikat „Trybut zerwany” (`:102-106`); brak błędu. Operator r2 podaje plik:linia dla każdej oczekiwanej wartości.
+3. **Wektory ≥150 już istnieją** (`tests/p6_r7k7c_owner_pools_vectors/`, generator `gen.mjs` + `owner_pools.json`, 167 przypadków, test `owner_pools_vectors_from_pin_match_rust`). Zachować; nie regenerować, chyba że zmienia się semantyka.
+4. Pełny `cargo test --all-targets --no-fail-fast` MUSI przejść z EXIT 0 (w r1 przerwany — to nie wystarcza zrobić częściowo). Mutacje M1 (błąd dla brakującego wpisu) i M2 (apply nie tworzy wpisu) MUSZĄ dać FAIL — wyniki w raporcie.
+5. Nadal poza zakresem (NIE_ZMIERZONO, nie zmieniać): podłoga skarbca AI w apply względem `setOwnerTreasury` (`main.ts:34867-34871`), podłoga puli Pracy na końcu tury vs przy zapisie (`main.ts:34880`), luka producenta AI-skarbca/puli (rozpoznanie §9.3), wpięcie do `run_diplomacy_war_phase` (#106 dalej).
+
+### Allowlista r2
+- `rust-port/engine/src/domain/turn_war_dipl_steps.rs` (bez zmian, o ile nie jest konieczne)
+- `rust-port/engine/tests/p6_r7k7c_owner_pools.rs`
+- `rust-port/engine/tests/p6_r7k7c_owner_pools_vectors/**`
+- `rust-port/engine/tests/p6_wire_war_dipl_steps.rs` (NOWE na allowliście — decyzja 1)
+- `dyspozycje/autobot/runs/R-RUSTPORT-P6-R7K7C-PARITY-MISSING0-Q1/**`
+
+Kryteria końca, bramki i zasady commitu bez zmian (patrz wyżej). Raport r2 w `02-operator-r2.md`.
