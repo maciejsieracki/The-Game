@@ -1,22 +1,22 @@
 # R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1 — raport Operatora (runda 5/5, dokumentacyjna)
 
-STATUS: PASS-WITH-NOTES (runda dokumentacyjna wg DODATKU 5: raport poprawiony, bramki zmierzone; próg 10% NIE ROZSTRZYGNIĘTE, 1 ziarno)
+STATUS: PASS-WITH-NOTES (runda 5/5, dokumentacyjna wg DODATKU 6: raport poprawiony, bramki zmierzone; próg 10% NIE ROZSTRZYGNIĘTE, 1 ziarno)
 DOMAIN: GAME (tylko pomiar; w `gra/src` zmiana wyłącznie z rundy 3: hak odczytu `ledgerStats` za `?civTest=1`; w rundzie 4 `gra/src` NIE zmieniano)
 TEMAT: R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1
-GOAL: pomiar kosztu czasu tury zapisu do księgi „Skąd zapasy” (ON vs OFF) w konfiguracji DOMYŚLNEJ na harnessie AI z miastami (DODATEK 4: pary na wspólnym slocie t50, okno t51–t80; NIE 100 tur). Runda 4: korekta raportu wg zarzutów FC r3 (sekcja KOREKTY) i pełne bramki.
-BAZA: 23f28558e (obrona r4; `refs/keep/LEDGER-PERF-r4-obrona`; potomek 16d9b9841 (obrona r3), potomek origin/main 459354a12). Worktree detach na tym SHA.
+GOAL: pomiar kosztu czasu tury zapisu do księgi „Skąd zapasy” (ON vs OFF) w konfiguracji DOMYŚLNEJ na harnessie AI z miastami (DODATEK 4: pary na wspólnym slocie t50, okno t51–t80; NIE 100 tur). Runda 5: korekta wg zarzutów Evaluatora na kandydacie b5852fc01 (sekcja KOREKTY, pkt 8–9); bramki z rundy 4 nie są powtarzane, bo kod gry nie zmienił się w rundzie 5.
+BAZA: 23f28558e (kod gry, `origin/main` tematu). Kandydat r5: b5852fc01 (potomek 23f28558e; diff względem bazy wyłącznie w `10-operator-claude.md`). Worktree detach na b5852fc01 przed korektą; poprawka r5 w commicie obrony.
 
 ## ZMIANY / COMMIT
-- Runda 4 zmienia wyłącznie plik `dyspozycje/autobot/runs/R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1/10-operator-claude.md` (korekty) i ten sam katalog run (sekcja KOREKTY). Kod gry i narzędzia bez zmian.
+- Runda 5 zmienia wyłącznie pliki `dyspozycje/autobot/runs/R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1/10-operator-claude.md` (sekcja KOREKTY, nagłówki) oraz `30-obrona-claude.md`. Kod gry i narzędzia bez zmian.
 - Zmiany z rundy 3 (bez zmian w tej rundzie): `gra/src/main.ts` — `__aiEconomyMeasure.ledgerStats()` (odczyt, tylko `?civTest=1`); `gra/tools/ai-economy-measure-run.cjs` — `--ledger-off 1`, pola `load1`/`ledgerRecording`, `ledgerStats` co 10 tur; `gra/tools/ai-economy-measure-hook-test.cjs` — asercja kształtu `ledgerStats` i mutacja; `gra/tools/ledger-perf-default-analyze.cjs` (nowy analizator).
 - evidence/: surowe JSONL (gzip) każdego przebiegu, `s4242/pairs-4242.csv`, `s4242/analysis-4242.json`, `dist-md5.txt`. Brak katalogu z danymi dla innych ziaren (patrz BLOKADY).
 - Allowlista zachowana. Brak zmian WERSJE.md, manifestu, gra-robocza/, rust-port/.
 
 ## BUILD / POCHODZENIE
 - Rund 3: vite build poza repo; md5 w `evidence/dist-md5.txt`: index.html c14b38a5396ebe70e59a6cc1addf0571; audio-pack-1.js 5b990bc3…; audio-pack-2.js 0a9a1047…; audio-pack-3.js 9e88be9f….
-- Runda 4 (testy bramek): `node ./node_modules/vite/bin/vite.js build --outDir <scratchpad>/w/dist --emptyOutDir` (poza repo, 23,4 s). md5 tego builda: index.html 2a6d7e67fc065ef88a1fdefea38b4988; audio-pack-1.js 5b990bc33b4513f343ccc4bc7f12f26f; audio-pack-2.js 0a9a10473f9d29bbe01fd9a4f592f89d; audio-pack-3.js 9e88be9fa542eaf2f2a2ecb5c2424fa2. Audio packi zgodne z rundą 3; md5 index.html różni się między buildami (niepowtarzalny bajtowo — zapisano md5 builda użytego w tej rundzie). Pomiary ON/OFF z rundy 3 nie były wykonywane na tym buildzie.
+- Build użyty w rundzie 4 (testy bramek; runda 5 nie buduje): `node ./node_modules/vite/bin/vite.js build --outDir <scratchpad>/w/dist --emptyOutDir` (poza repo, 23,4 s). md5 tego builda: index.html 2a6d7e67fc065ef88a1fdefea38b4988; audio-pack-1.js 5b990bc33b4513f343ccc4bc7f12f26f; audio-pack-2.js 0a9a10473f9d29bbe01fd9a4f592f89d; audio-pack-3.js 9e88be9fa542eaf2f2a2ecb5c2424fa2. Audio packi zgodne z rundą 3; md5 index.html różni się między buildami (niepowtarzalny bajtowo — zapisano md5 builda użytego w tej rundzie). Pomiary ON/OFF z rundy 3 nie były wykonywane na tym buildzie.
 
-## TESTY RUNDY 4 (liczby z surowego wyjścia)
+## TESTY ZMIERZONE W RUNDZIE 4 (liczby z surowego wyjścia; runda 5 nie powtarza bramek, bo zmienia tylko dokumenty)
 - `npm ci` w `gra/` (71 pakietów, 4 s); `node ./node_modules/typescript/bin/tsc --noEmit` → exit 0, bez wyjścia.
 - Hook-test `node tools/ai-economy-measure-hook-test.cjs --dist <dist> --mutant-dist <mut>` → `PODSUMOWANIE 19/19 zielone`, exit 0, czas 5 min 47 s. Mutant: kopia dist z dwiema ręcznymi podmianami w `index.html`: `ledgerStats` zwraca `{entries:"x",bytes:"y"}` oraz `metrics` zwraca `[{}]`. Pierwsza próba (tylko mutacja `ledgerStats`) dała `18/19`: asercja „mutacja realna (zepsuty hak w bundle)” — `brak problemow -- test slepy`, bo mutant nie psuł `metrics()`; to błąd przygotowania mutanta po stronie Operatora, nie wynik kodu. Druga próba (oba haki zepsute) → 19/19. Tryb mutanta opisany jawnie.
 - 5 bramek referencyjnych (`node tools/<t>.cjs`, exit 0 w każdej):
@@ -47,7 +47,7 @@ Warunek load: tur z load1 ≤ 3,0 we WSZYSTKICH 4 przebiegach jest 12 z 27 (tury
 WERDYKT PROGU 10%: **NIE ROZSTRZYGNIĘTE** — rozstęp same-variant 17,5% (ON) ≥ 10% (DODATEK 4 pkt „NIE ROZSTRZYGNIĘTE gdy rozstęp ≥ 10%”). Nie wolno wnioskować ani „optymalizacja niepotrzebna”, ani „kandydat R-WEB-*”. Okno to t51–t80 (27 tur po odrzuceniu rozgrzewek), NIE 100 tur.
 
 ## ZIARNA 777 i 31337 — NIE ZMIERZONO
-Ziarno 777: baza do slotu t50 wykonana (281 s), przebieg ON1 50→70 uruchomiony przy load 2,36 i przerwany przy load 7,3 (10:07 UTC). Dalsze przebiegi NIE wykonane: maszyna współdzielona miała load 4–10 (inne workflowy z Chromium), co wyklucza warunek DODATKU 3/4 (load ≤ 3,0). Przerwany przebieg NIE jest zachowany w evidence i NIE jest wynikiem. Ziarno 31337 nie podjęte (DODATEK 4: tylko jeśli starczy czasu). Wynik jest więc z JEDNEGO ziarna (4242).
+Brak danych dla ziaren 777 i 31337 w drzewie: `evidence/` zawiera wyłącznie `s4242/` i `dist-md5.txt`. Dalsze przebiegi NIE wykonane (warunek load ≤ 3,0 z DODATKU 3/4 nie był możliwy do spełnienia w tych warunkach maszyny). Ziarno 31337 nie podjęte. Wynik jest więc z JEDNEGO ziarna (4242). Zdania o czasie bazy i przebiegu ziarna 777 usunięte jako nieweryfikowalne (KOREKTY pkt 8).
 
 ## ROZMIAR KSIĘGI N=10 (zmierzone, `ledgerStats.bytes`, runda 3)
 ON: ok. 0,97 MB (t50) → 1,56 MB (t60) → 2,04 MB (t70) → 2,25 MB (t80). OFF: 3–4 KB. `entries` w OFF nie jest zerem (puste wpisy tury), więc dowodem trybu są bajty. Hak `ledgerStats` liczy wszystkich właścicieli (`gra/src/main.ts:32430–32433`), a zapis slotu filtruje tylko gracza (`gra/src/main.ts:39799`) — zob. KOREKTY 4.
@@ -61,11 +61,12 @@ Poniższe zdania z wersji rundy 3 zostały USUNIĘTE lub zastąpione, nie są ju
 5. Zdanie „0 tur spełnia warunek load” jest błędne; poprawnie: 12 tur (sekcja WYNIK).
 6. Pozycje „uptime/load przed każdym segmentem w evidence” i „tsc/hook-test/5 bramek zielone z r2” są wycofane; bramki zmierzone w rundzie 4 (sekcja TESTY RUNDY 4).
 7. (runda 5, zarzut FC r4 / 30-obrona zarzut 3) Zdanie „ON1 wznowiony ze slotu t60/t70, pozostałe ze slotu t70” jest WYCOFANE. Dane (zob. `30-obrona-claude.md`, zarzut 3) wskazują jeden slot t50 dla wszystkich 4 przebiegów: wiersze tur 2–50 są identyczne we wszystkich czterech plikach JSONL. Wartości księgi t60/t70 w tabeli powyżej dotyczą odpowiednich tur przebiegów, a nie punktów startu wznowień.
-8. (runda 5) Zdanie o przebiegu ziarna 777 „ON1 50→70 uruchomiony przy load 2,36 i przerwany przy load 7,3” nie ma śladu w drzewie (zob. zarzut 1 powyżej); traktować jako NIEZWERYFIKOWANE i nieuwzględnione w wynikach.
+8. (runda 5, zarzut Evaluatora nr 1) Zdania o ziarnie 777 (czas bazy do t50, przebieg ON1 50→70, load i godzina przerwania) USUNIĘTE z sekcji ZIARNA i z BLOKAD. Nie ma ich śladu w drzewie (`evidence/` bez katalogu 777) i nie wchodzą do wyników.
+9. (runda 5, zarzut Evaluatora nr 2) Nagłówki GOAL, STATUS, BAZA, ZMIANY oraz RUNDY przeniesione do rundy 5/5; sekcja testów oznaczona jako zmierzona w rundzie 4 (kod gry bez zmian w rundzie 5).
 
 ## BLOKADY
 - Rozstęp same-variant ≥ 10% (ON 17,5%, OFF 8,4%): wynik NIE ROZSTRZYGNIĘTY.
-- Tylko 1 ziarno z 3 wymaganych (777 przerwany przy load 7,3; 31337 nie podjęte).
+- Tylko 1 ziarno z 3 wymaganych (777 i 31337 bez danych w drzewie; 31337 nie podjęte).
 - Warunek load ≤ 3,0 (DODATEK 3/4) naruszony w części tur przebiegów ON2 i OFF2.
 - Wpływ filtra `isHuman` (zapis slotu) na Δ% NIE OSZACOWANO.
 - Pomiary live w rundzie 4 NIE wykonane (DODATEK 5 pkt 3; load maszyny 6–7).
@@ -75,7 +76,7 @@ Poniższe zdania z wersji rundy 3 zostały USUNIĘTE lub zastąpione, nie są ju
 2. Dwa przebiegi ON2 odrzucono i powtórzono (`evidence/s4242/*DISCARDED*`); pierwszy ruszył przy load 7,9 — błąd operatora wobec warunku DODATKU 3, wykryty i odrzucony.
 
 ## RUNDY
-Runda 4/5 (Operator, Haiku wg DODATKU 5; runda dokumentacyjna). Historia: r1 (FAIL), r2 (FAIL), r3 (Sonnet, FAIL po FC r3 — błędne zdania w raporcie).
+Runda 5/5 (Operator, Haiku wg DODATKU 6; runda dokumentacyjna, ostatnia). Historia: r1 (FAIL), r2 (FAIL), r3 (Sonnet, FAIL po FC r3 — błędne zdania w raporcie), r4 (FAIL po FC r4 — zdanie o slotach t60/t70, wycofane w r5).
 
 ## NASTĘPNY KROK
 Werdykt tematu wg DODATKU 5 pkt 5: PASS-WITH-NOTES z notą „próg 10% nie rozstrzygnięty; dalszy pomiar = NOWY temat (≥ 2 ziarna, load ≤ 1,5, kontrola filtra isHuman)”. Decyzja o nowym temacie należy do orkiestratora.
