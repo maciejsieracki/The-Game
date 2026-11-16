@@ -160,7 +160,8 @@ try {
       `difficulty offsets and clamps cover archetype base ${baseValue}, slot ${index}`));
   }
   assert.equal(aggression('grecy', 'normal'), 0.4, 'caller fallback does not replace a major matrix row');
-  assert.equal(aggression('not-a-civ', 'normal'), 0.42, 'missing/non-major row preserves caller fallback');
+  // A (decyzja matrix-only PR141: brak wiersza macierzy = neutralne 0.5, `_fallback` wywolujacego jest ignorowany -- civ-ai-data.ts resolveArchetypeAggression).
+assert.equal(aggression('not-a-civ', 'normal'), 0.5, 'missing/non-major row yields neutral 0.5 and ignores caller fallback (matrix-only)');
   console.log('PASS: PR141 DIP activation consumer and all-major-pairs contract');
 } finally {
   fs.rmSync(scratch, { recursive: true, force: true });

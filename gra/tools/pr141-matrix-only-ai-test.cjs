@@ -137,6 +137,9 @@ const unknownDiplomacy = {
     relation: { zaufanie: 5, respekt: 5, status: 'neutralni' },
     respektWzgledny: 0.7,
     stanWojny: false,
+    // A (R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 krok 3): wojne wypowiada AI przy ZAUFANIU < 30 i PRZEWADZE SILY MILITARNEJ (>=20%),
+    // nie przy rw; fixture niesie wiec jawna przewage (200 vs 100), a o tym czy AI z niej skorzysta nadal decyduje wiersz macierzy (willingnessWar).
+    silaMilitarnaAI: { sila: 200, armiaPkt: 200 }, silaMilitarnaPartner: { sila: 100, armiaPkt: 100 },
   }],
 };
 const absentTypeCommands = decideAIDiplomacy({ ...unknownDiplomacy });
