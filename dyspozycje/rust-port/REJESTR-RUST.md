@@ -2529,3 +2529,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Do scalenia na nowym parity (konflikty w `overlays_view.rs`):** 1F4 (FC `1724516c2`), 1F5 (FC `63b4f0dd8`). 1F3 — FC po opłaceniu subskrypcji.
 - **W toku:** P4-1I4 BATTLE-CONSUMER (Opus, baza FC I3 `0deb9a075`, Workflow `wf_965d78f9-294`): Evaluator zakończony, Obrona/FC w toku.
 - **Dysk:** 18 GB wolnego po sprzątaniu worktree integracji.
+
+### Przebieg — heartbeat Rust, 2026-11-16 15:48 UTC
+
+- **Sloty: 1 z 4 aktywny** — P4-1I4 BATTLE-CONSUMER (Opus, baza FC I3 `0deb9a075`): Evaluator PASS-WITH-NOTES, Obrona w toku, potem FC.
+- **Brak odblokowanych tematów Opus do startu:** I5 (#280) i F2 (#278) zablokowane (K5LOOP / mgła #253); overlay 1F4/1F5 wymaga ręcznego scalenia `overlays_view.rs` z pełnym testem, nie nowego Workflow; 1F3 FC po opłaceniu subskrypcji.
+- **Parity:** `9f7c55499`. **Dysk:** 17 GB.
+- **Rozbieżność z harmonogramem:** prompt heartbeatu wymaga Haiku/Sonnet; reguła właściciela dla 3D to Opus we wszystkich rolach (zachowana).
