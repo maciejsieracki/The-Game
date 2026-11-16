@@ -1,0 +1,5 @@
+[econ] seed=4242 tura=15 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=3/0/0 czas=11s
+[econ] seed=4242 tura=20 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=3/0/0 czas=22s
+[econ] seed=4242 tura=25 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=3/0/0 czas=35s
+[econ] seed=4242 tura=30 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=3/0/0 czas=49s
+[econ] PODSUMOWANIE {"seed":4242,"startTurn":10,"endTurn":30,"stop":null,"counters":{"gateActiveTurns":1,"bypassApplied":1,"stuckQueueHeals":0,"battlesAuto":0,"diploAudienceClosed":3,"armyMergeClosed":0,"techNoticeClosed":0},"wallSec":49,"resumed":true}
