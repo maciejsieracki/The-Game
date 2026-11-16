@@ -2126,3 +2126,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sloty:** 4 z 4 — R7K7C PARITY-MISSING0 r2 (`wf_e42107cb-dc8`), P4-1I1B BATTLE-INSTANT (`wf_aafc5812-7e5`, ewaluator), P4-1H PREVIEW-Q5 (`wf_7546f307-6dc`, Opus), K5-AUTO-WEKTORY (`wf_4c16ed22-a6c`).
 - **Dysk:** ok. 13 GB.
 - **Nie startowano:** #239 (decyzja o fogu), #252 (po integracji Q5 — wspólne `playable.rs`/`bridge.rs`), #97/#100/#104/#107/#109/#112/#113/#115/#120 (blokady wg kolejki: rozpoznanie, zależności, decyzja właściciela).
+
+## Przebieg (02:18 UTC — heartbeat slotów: bez zmian, 4 z 4)
+
+- **Sloty:** 4 aktywne, żaden FC jeszcze nie wydany, nic do integracji ani sprzątania. Parity `b3c0b2209`.
+  - R7K7C PARITY-MISSING0 r2 (#106, `wf_e42107cb-dc8`) — ewaluator (Sonnet).
+  - P4-1I1B BATTLE-INSTANT (#245, `wf_aafc5812-7e5`) — ewaluator (Sonnet; seria P4-1, wg reguły właściciela Opus — rozbieżność zgłoszona).
+  - P4-1H PREVIEW-Q5 (#251, `wf_7546f307-6dc`) — ewaluator (Opus).
+  - K5 AUTO-WEKTORY (#118, `wf_4c16ed22-a6c`) — obrona (Haiku).
+- **Dysk:** 7,8 GB (80%). Nie startuję nowych tematów poniżej 8 GB dla kodu Rust.
