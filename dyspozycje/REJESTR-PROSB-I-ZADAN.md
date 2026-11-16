@@ -10469,3 +10469,8 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 - ODPOWIEDZI ABC właściciela (2026-11-16): (1) Straty = B: dodać liczniki utraconych miast i jednostek; (2) Autozapis po porażce = A: ukryć na liście „Wczytaj grę”; (3) Blokada „Zakończ turę” po wczytaniu = A: osobny temat diagnozy (bez zmiany reguł).
 - Nowe tematy (Haiku r1): R-WEB-DEFEAT-SCREEN-LOSS-COUNTERS-AND-HIDE-POST-DEFEAT-AUTOSAVE-Q2 (liczniki + ukrycie autosave'a) oraz R-WEB-LOAD-ENDTURN-NNS-GATE-DIAGNOSIS-Q1 (tylko diagnoza). Dług Rust: REPIN ekranu końca gry.
 - Do właściciela (weryfikacja w grze): przegraj grę (utrata ostatniego miasta) — ekran ma Osiągnięcia/Straty i dwa przyciski; „Wczytaj grę” otwiera dialog.
+
+### 2026-11-16 ~19:00 UTC — ZGŁOSZENIA właściciela: gwiazdka generała na polu bitwy + porównanie łuczników
+- Pole bitwy: generał ma być wyróżniony jasną gwiazdką (nie wiadomo, kto jest generałem). Nowy temat R-WEB-BATTLE-GENERAL-STAR-MARKER-Q1 (Haiku r1; zmiana UI, stała zgoda na błędy/UI webowe — kształt zgodny z poleceniem właściciela).
+- Egipscy łucznicy „mogą być za mocni”: porównanie parametrów (units.json) przekazane właścicielowi w czacie; decyzja o ewentualnej zmianie balansu — do właściciela (nie zmieniam bez zgody).
+- Uruchomione równolegle (Haiku r1): R-WEB-DEFEAT-SCREEN-LOSS-COUNTERS-AND-HIDE-POST-DEFEAT-AUTOSAVE-Q2, R-WEB-LOAD-ENDTURN-NNS-GATE-DIAGNOSIS-Q1.
