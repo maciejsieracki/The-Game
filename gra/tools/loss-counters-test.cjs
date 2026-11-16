@@ -93,7 +93,27 @@ eq(L.isDefeatedState({ cities: [cityOf(0), cityOf(2)], graczKiedysMialMiasto: tr
 eq(L.isDefeatedState({ cities: [cityOf(1)], graczKiedysMialMiasto: false }), false, 'nigdy nie miał miasta -> brak porażki (start, nie klęska)');
 eq(L.isDefeatedState({ cities: [], graczKiedysMialMiasto: true }), true, 'brak jakichkolwiek miast i kiedyś miał -> porażka');
 
-// 6. Mutacja na kopii (LC_SRC): test nie może przejść z zepsutą regułą -- sprawdzane ręcznie w raporcie.
+// 4b. Kształt zapisu (meta.lossCounters, kształt jak w main.ts). Realny przepływ przez save.ts NIE jest tu mierzony.
+const saveLike = JSON.parse(JSON.stringify({ meta: { lossCounters: { ...c3 } } }));
+eq(JSON.stringify(L.normalizeLossCounters(saveLike.meta.lossCounters)), JSON.stringify(c3), 'meta.lossCounters: round-trip zachowuje liczniki');
+const oldSaveLike = JSON.parse(JSON.stringify({ meta: { label: 'stary zapis' } }));
+eq(JSON.stringify(L.normalizeLossCounters(oldSaveLike.meta.lossCounters)), JSON.stringify({ lostCities: 0, lostUnits: 0 }), 'stary zapis bez meta.lossCounters -> 0/0');
+
+// 6. Wiring guard (ŹRÓDŁO src/main.ts, NIE zachowanie): liczba wpięć i bramek w main.ts.
+// Chroni przed usunięciem wpięcia; NIE dowodzi zachowania -- to robi test na żywo
+// (tools/defeat-screen-summary-live-test.cjs). Mutacja kopii main.ts: env LC_MAIN=<ścieżka>.
+const MAIN = process.env.LC_MAIN
+  ? path.resolve(process.env.LC_MAIN)
+  : path.resolve(__dirname, '..', 'src', 'main.ts');
+const mainSrc = fs.readFileSync(MAIN, 'utf8');
+const countIn = (re) => (mainSrc.match(re) || []).length;
+eq(countIn(/lossCounters = recordCityLoss\(/g), 5, 'main.ts: 5 wpięć recordCityLoss (bitwa, kapitulacja/przejęcie, aneksja, bunt, cesja)');
+eq(countIn(/lossCounters = recordUnitLosses\(/g), 1, 'main.ts: 1 wpięcie recordUnitLosses (poległe w bitwie)');
+eq(countIn(/if \(isPlayerDefeatedNow\(\)\) \{/g), 2, 'main.ts: bramka porażki w autozapisie i w szybkim zapisie (Ctrl+S)');
+eq(countIn(/lossCounters: \{ \.\.\.lossCounters \}/g), 1, 'main.ts: zapis meta.lossCounters (opcjonalny)');
+eq(countIn(/normalizeLossCounters\(saved\.meta\?\.lossCounters\)/g), 1, 'main.ts: odczyt meta.lossCounters przy wczytaniu (stary zapis -> 0/0)');
+
+// 7. Mutacja na kopii (LC_SRC / LC_MAIN): test nie może przejść z zepsutą regułą -- sprawdzane ręcznie w raporcie.
 
 console.log(`loss-counters-test: ${passed} OK, ${failed} FAIL`);
 fs.rmSync(tmp, { recursive: true, force: true });

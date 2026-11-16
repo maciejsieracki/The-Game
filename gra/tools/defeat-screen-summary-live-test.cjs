@@ -157,6 +157,11 @@ async function main() {
     const overlayText = await page.locator(OVERLAY_LOSE).evaluate((n) => n.textContent || '');
     assert('L1 ekran ma sekcję Osiągnięcia', overlayText.includes('Osiągnięcia'), overlayText.slice(0, 200));
     assert('L1 ekran ma sekcję Straty', overlayText.includes('Straty'), overlayText.slice(0, 200));
+    // LOSS-COUNTERS (criterion b): liczniki strat jako liczby; po utracie jedynego miasta: miasta 1, jednostki 0.
+    const lossM = overlayText.match(/(\d+|—)Utracone miasta/);
+    const lossU = overlayText.match(/(\d+|—)Utracone jednostki/);
+    assert('L1 Straty: „Utracone miasta” pokazuje liczbę 1 (nie „Wszystkie”)', !!lossM && lossM[1] === '1' && !overlayText.includes('Wszystkie'), overlayText.slice(0, 400));
+    assert('L1 Straty: „Utracone jednostki” pokazuje liczbę 0 (brak bitwy)', !!lossU && lossU[1] === '0', overlayText.slice(0, 400));
     const btnTexts = await page.locator(`${OVERLAY_LOSE} button`).evaluateAll((ns) => ns.map((n) => (n.textContent || '').trim()));
     assert('L1 dokładnie dwa przyciski: Wczytaj grę, Rozpocznij od nowa',
       btnTexts.length === 2 && btnTexts[0] === 'Wczytaj grę' && btnTexts[1] === 'Rozpocznij od nowa',
@@ -231,6 +236,10 @@ async function main() {
       return !!el && !!el.closest('#__victory_screen__');
     });
     assert('L1 środek ekranu (mapa pod spodem) zasłonięty przez ekran porażki', mapUnderOverlay === true);
+    // LOSS-COUNTERS (obrona r2, zarzut 5): Ctrl+S po porażce nie zapisuje (brak wpisu „Tura 2” / autozapisu).
+    await page.keyboard.press('Control+s');
+    await wait(1200);
+    assert('L1 Ctrl+S po porażce: ekran porażki nadal otwarty', (await page.locator(OVERLAY_LOSE).count()) === 1);
     await page.locator(OVERLAY_LOSE).locator('#vsc-load-game').click();
     await page.waitForSelector('.civ-sl', { timeout: 20000 });
     await wait(1500);
@@ -241,6 +250,9 @@ async function main() {
     const rowTexts = await page.locator('.civ-sl-row').evaluateAll((ns) => ns.map((n) => (n.textContent || '').trim()));
     console.log('      L1 wiersze dialogu:', JSON.stringify(rowTexts));
     assert('L1 dialog pokazuje zapis', rowTexts.length >= 1, rowTexts);
+    // LOSS-COUNTERS (ABC B+A): po porażce lista nie zawiera zapisu/autozapisu z tury porażki (tura 2).
+    assert('L1 lista po porażce nie zawiera autozapisu ani zapisu z tury porażki (Tura 2 / Autozapis)',
+      rowTexts.every((t) => !/Tura 2\s*·|Autozapis/.test(t)), rowTexts);
     // Wybieramy zapis z tury 1 (quickSave przed porażką), a nie autozapis po utracie miasta.
     const rowPre = page.locator('.civ-sl-row').filter({ hasText: /Tura 1\s*·/ }).first();
     assert('L1 w dialogu jest zapis z tury 1 (przed porażką)', (await rowPre.count()) === 1, rowTexts);
@@ -276,10 +288,16 @@ async function main() {
     p2.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
     p2.on('console', (m) => { if (m.type() === 'error') errors.push('console.error: ' + m.text()); });
     await gotoPlaytestMapa(p2);
+    // Zapis PRZED porażką (tura 1): Ctrl+S w turze 1 -- ma być na liście „Wczytaj grę” po porażce.
+    await p2.keyboard.press('Control+s');
+    await wait(1500);
     const r2 = await loseOnlyCity(p2);
     assert('L2 ekran porażki po endTurn', r2.overlay && r2.gameOver, r2);
     await p2.locator(OVERLAY_LOSE).locator('#vsc-load-game').click();
     await p2.waitForSelector('.civ-sl', { timeout: 20000 });
+    const l2Rows = await p2.locator('.civ-sl-row').evaluateAll((ns) => ns.map((n) => (n.textContent || '').trim()));
+    assert('L2 lista po porażce zawiera zapis sprzed porażki (Tura 1)', l2Rows.some((t) => /Tura 1\s*·/.test(t)), l2Rows);
+    assert('L2 lista po porażce nie zawiera zapisu z tury porażki (Tura 2)', !l2Rows.some((t) => /Tura 2\s*·/.test(t)), l2Rows);
     await p2.locator('.civ-sl-btns button', { hasText: 'Anuluj' }).first().click();
     await wait(800);
     assert('L2 Anuluj przywraca ekran porażki', (await p2.locator(OVERLAY_LOSE).count()) === 1);

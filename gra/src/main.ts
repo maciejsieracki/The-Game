@@ -40196,6 +40196,11 @@ async function boot(): Promise<void> {
       }
     }
 
+    /** LOSS-COUNTERS: stan porażki gracza (0 miast, który kiedyś miał miasto). Wspólna bramka autozapisu i szybkiego zapisu. */
+    function isPlayerDefeatedNow(): boolean {
+      return isDefeatedState({ cities, graczKiedysMialMiasto: playerEverOwnedCityByOwner.has(HUMAN_OWNER_PRIMARY) });
+    }
+
     /**
      * Szybki zapis (Ctrl+S, przed bitwą) — slot autosave bez okna dialogowego.
      * MIGRACJA IDB: async (persistSaveToSlot -> saveToLocal -> IndexedDB).
@@ -40204,6 +40209,13 @@ async function boot(): Promise<void> {
       // R-WEB-BATTLE-SAVE-DISABLED-DURING-BATTLE-Q1: Ctrl+S w bitwie -- komunikat, bez zapisu.
       if (isSaveBlockedByBattle()) {
         notifySaveBlockedByBattle();
+        return false;
+      }
+      // LOSS-COUNTERS (obrona r2, zarzut 5): po porażce szybki zapis nie idzie do slotu autosave
+      // (ten slot trafia na listę „Wczytaj grę” i nadpisałby wcześniejszy szybki zapis).
+      if (isPlayerDefeatedNow()) {
+        if (showHintOnSuccess) showHintMessage('Zapis po porażce jest wyłączony.', 3000);
+        console.warn('[Save] pomijam szybki zapis -- stan porazki, tura=' + turn);
         return false;
       }
       const { ok, reason } = await persistSaveToSlot(AUTOSAVE_SLOT_ID, currentSaveLabel('quick'));
@@ -40321,7 +40333,7 @@ async function boot(): Promise<void> {
       // LOSS-COUNTERS (ABC właściciela 2026-11-16, opcja A): stan porażki (0 miast gracza, który
       // kiedyś miał miasto) nie tworzy autozapisu -- inaczej wpadłby na listę „Wczytaj grę”,
       // a wczytanie od razu dawałoby porażkę. Zapisy sprzed porażki zostają bez zmian.
-      if (isDefeatedState({ cities, graczKiedysMialMiasto: playerEverOwnedCityByOwner.has(HUMAN_OWNER_PRIMARY) })) {
+      if (isPlayerDefeatedNow()) {
         console.warn('[Autosave] pomijam -- stan porazki (brak miast gracza), tura=' + turn);
         return;
       }
