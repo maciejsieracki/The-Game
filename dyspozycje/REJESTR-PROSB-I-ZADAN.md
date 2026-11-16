@@ -10245,3 +10245,10 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 - Runda 2: DODATEK 1 (zgoda na normalizację stackGroupId w runnerze i na poprawkę źródła w gra/src zapisu/wczytania; pomiar RNG; test regresji + mutacja).
 - NOWE ZGŁOSZENIE: `resourceLedgerHistory` (dziennik „Skąd zapasy”) nie wraca po wczytaniu zapisu — osobny defekt, do tematu po #424.
 - CZEKA NA RANO (ABC): budowaPriorytetTypow po wczytaniu — A: wczytanie nie dopisuje listy (zgodne z żywą grą, rekomendacja Obrony) / B: żywa gra dopisuje listę przy zakładaniu miasta (zmiana zachowania AI).
+
+### FALA 757 — R-WEB-ENDTURN-T57-DIAGNOSIS-Q1 (#418) — WDROŻONE NA ROBOCZĄ (2026-11-16)
+- main f80f90a99, ROBOCZA MD5 b1559163 (Raw = manifest; sidecary zgodne). FC PASS-WITH-NOTES (kandydat e45c12470, raport 2cd7911fb; runda 2/5 Obrony, Haiku; Operator BLOCK bez przebiegu live, pracę wykonała Obrona). Refs `refs/keep/R-WEB-ENDTURN-T57-r1-{op,eval,obrona,fc}`. Bramki: tsc 0, logic 213/213, 5 referencyjnych zielone, vite OK.
+- Dostarczono: `gra/tools/endturn-t57-repro.cjs` + evidence (tylko narzędzie). ZMIERZONO (live, seed 4242, 41 AI): zawieszenie w t51 odtworzone 2×; sonda DOM: pendingAuto=true i OTWARTA AUDIENCJA DYPLOMATYCZNA (`isOtherEndTurnModalOpen`, main.ts:33403-33405: audiencja LUB panel łączenia armii LUB karta odkrycia tech); heal wychodzi przy audiencji (main.ts:40796); po zamknięciu „Wróć” tura przechodzi t51→t56. Ocena: zamierzone wstrzymanie kolejki przez modal + dług harnessu (runner nie zamyka audiencji), nie trwały deadlock dla gracza.
+- NIE ZMIERZONO: t57 (pierwotny timeout), t89 seed 777, tabela 5 ziaren × 100 tur, co gracz widzi po kliknięciu „Zakończ turę” przy otwartej audiencji.
+- DO ZAPYTANIA RANO (ABC): (a) treść podpowiedzi main.ts:40729 („Zakończ ekran bitwy” myli przy audiencji); (b) czy audiencja AI ma blokować koniec tury.
+- Kandydat techniczny (start nocą, tylko narzędzie): harness zamyka audiencję w clearBattles + utrwala `stuckQueueHeals`.
