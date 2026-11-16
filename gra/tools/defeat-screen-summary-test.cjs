@@ -63,7 +63,7 @@ function ok(cond, msg) {
 }
 function eq(a, b, msg) { ok(a === b, `${msg} (got "${a}", want "${b}")`); }
 
-const defeatStats = { turn: 42, eraLabel: 'Żelazo', civLabel: 'Polska', technologieZbadane: 17 };
+const defeatStats = { turn: 42, eraLabel: 'Żelazo', civLabel: 'Polska', technologieZbadane: 17, utraconeMiasta: 3, utraconeJednostki: 7 };
 const defeatData = V.buildVictoryScreenData({ rodzaj: 'przegrana', winner: 1 }, defeatStats);
 
 // 1. Podsumowanie (bez DOM)
@@ -71,7 +71,10 @@ const sum = V.buildDefeatSummary(defeatStats);
 ok(sum.osiagniecia.some((c) => c.value === '42' && c.label === 'Tur przetrwanych'), 'osiagniecia: tury z stats');
 ok(sum.osiagniecia.some((c) => c.value === 'Żelazo'), 'osiagniecia: epoka z stats');
 ok(sum.osiagniecia.some((c) => c.value === '17' && c.label === 'Zbadane technologie'), 'osiagniecia: technologie z stats');
-ok(sum.straty.length >= 1 && sum.straty[0].label === 'Utracone miasta', 'straty: utracone miasta');
+ok(sum.straty.length === 2 && sum.straty[0].label === 'Utracone miasta' && sum.straty[0].value === '3', 'straty: utracone miasta = licznik');
+ok(sum.straty[1].label === 'Utracone jednostki' && sum.straty[1].value === '7', 'straty: utracone jednostki = licznik');
+const sumNoCounters = V.buildDefeatSummary({ turn: 3 });
+ok(sumNoCounters.straty.every((c) => c.value === '—'), 'stary zapis bez licznikow: myslniki, nie zgadujemy');
 const sumNoTech = V.buildDefeatSummary({ turn: 3 });
 ok(!sumNoTech.osiagniecia.some((c) => c.label === 'Zbadane technologie'), 'brak technologii w stats = brak karty');
 
@@ -87,7 +90,7 @@ const titles = el ? Array.from(el.querySelectorAll('.vsc-section-title')).map((n
 ok(titles.includes('Osiągnięcia') && titles.includes('Straty'), `przegrana: sekcje Osiągnięcia/Straty (got ${JSON.stringify(titles)})`);
 const valsText = el ? el.textContent : '';
 ok(valsText.includes('42') && valsText.includes('Żelazo') && valsText.includes('17') && valsText.includes('Polska'), 'przegrana: liczby ze stats w DOM');
-ok(valsText.includes('Wszystkie') && valsText.includes('Utracone miasta'), 'przegrana: sekcja strat w DOM');
+ok(valsText.includes('Utracone miasta') && valsText.includes('Utracone jednostki') && valsText.includes('3') && valsText.includes('7'), 'przegrana: sekcja strat z licznikami w DOM');
 const buttons = el ? Array.from(el.querySelectorAll('button')) : [];
 eq(buttons.length, 2, 'przegrana: dokładnie dwa przyciski');
 eq(buttons[0] && buttons[0].textContent.trim(), 'Wczytaj grę', 'przegrana: pierwszy przycisk Wczytaj grę');

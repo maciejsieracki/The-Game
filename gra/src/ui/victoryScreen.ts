@@ -21,6 +21,10 @@ export interface VictoryScreenStats {
   civLabel?: string;
   /** Liczba zbadanych technologii gracza (przegrana: sekcja osiągnięć). Opcjonalne. */
   technologieZbadane?: number;
+  /** LOSS-COUNTERS: miasta utracone przez gracza w całej grze (przegrana: sekcja strat). Opcjonalne. */
+  utraconeMiasta?: number;
+  /** LOSS-COUNTERS: jednostki wojskowe gracza, które poległy w bitwach (przegrana: sekcja strat). Opcjonalne. */
+  utraconeJednostki?: number;
 }
 
 export interface VictoryScreenData {
@@ -270,7 +274,7 @@ function displayDividerMark(win: boolean): string {
 type StatCard = VictoryScreenStatCard;
 
 /** Podsumowanie porażki: osiągnięcia (tury, epoka, technologie, cywilizacja) i straty
- *  (utrata wszystkich miast — jedyna strata, którą przegrana definiuje). Testowalne bez DOM. */
+ *  (liczniki: utracone miasta i utracone jednostki wojskowe). Testowalne bez DOM. */
 export function buildDefeatSummary(stats: VictoryScreenStats): DefeatSummary {
   const osiagniecia: StatCard[] = [
     { value: String(stats.turn), label: 'Tur przetrwanych' },
@@ -286,8 +290,10 @@ export function buildDefeatSummary(stats: VictoryScreenStats): DefeatSummary {
     label: 'Cywilizacja',
     accent: true,
   });
+  // LOSS-COUNTERS: liczniki strat z gry (brak pola = stary zapis / brak danych -> myślnik, bez zgadywania).
   const straty: StatCard[] = [
-    { value: 'Wszystkie', label: 'Utracone miasta' },
+    { value: stats.utraconeMiasta != null ? String(stats.utraconeMiasta) : '—', label: 'Utracone miasta' },
+    { value: stats.utraconeJednostki != null ? String(stats.utraconeJednostki) : '—', label: 'Utracone jednostki' },
   ];
   return { osiagniecia, straty };
 }
