@@ -275,8 +275,11 @@ console.log('\n2.2 reconcileAllWorkedTiles(...) wolane WEWNATRZ restoreGameFromS
   const WINDOW = 13000;
   const fnWindow = fnStart >= 0 ? MAIN_TS_SRC.slice(fnStart, fnStart + WINDOW) : '';
 
-  ok(/cities\.push\(c\);\s*\}[\s\S]{0,2500}?reconcileAllWorkedTiles\(\s*cities,\s*buildAllTerritoryNodes\(\),\s*computeLostToNearerSiblingByCity\(cities, map\)\s*\)[\s\S]{0,300}?playerEverOwnedCity = cities\.some/.test(fnWindow),
-    'P-MILET-ATENY-OKOLICA-RECZNE-PRZY-PRZEJECIU-LOAD: reconcileAllWorkedTiles(cities, buildAllTerritoryNodes(), computeLostToNearerSiblingByCity(cities, map)) wywolane MIEDZY koncem petli cities.push a linia playerEverOwnedCity = cities.some(...) -- czyli PO odtworzeniu miast z zapisu');
+  // Kotwica po R-WEB-SAVE-LOAD-PLAYER-OWNED-CITY-AND-LEDGER-HISTORY-Q1 (#433): linia
+  // `playerEverOwnedCity = cities.some(...)` zastapiona przez przeliczenie flagi per wlasciciel
+  // (`playerEverOwnedCityByOwner.clear()` + `cities.some(c => c.ownerId === oid)`).
+  ok(/cities\.push\(c\);\s*\}[\s\S]{0,2500}?reconcileAllWorkedTiles\(\s*cities,\s*buildAllTerritoryNodes\(\),\s*computeLostToNearerSiblingByCity\(cities, map\)\s*\)[\s\S]{0,400}?playerEverOwnedCityByOwner\.clear\(\)/.test(fnWindow),
+    'P-MILET-ATENY-OKOLICA-RECZNE-PRZY-PRZEJECIU-LOAD: reconcileAllWorkedTiles(cities, buildAllTerritoryNodes(), computeLostToNearerSiblingByCity(cities, map)) wywolane MIEDZY koncem petli cities.push a przeliczeniem flagi playerEverOwnedCityByOwner -- czyli PO odtworzeniu miast z zapisu');
 }
 
 console.log('\n2.3 dokladnie 3 miejsca w main.ts wolaja reconcileAllWorkedTiles z tym samym wzorcem argumentow (seedCityOwnerDefaults, zalozenie miasta gracza, load) -- zero duplikatow/literowek');
@@ -289,14 +292,14 @@ console.log('\n2.3 dokladnie 3 miejsca w main.ts wolaja reconcileAllWorkedTiles 
 
 console.log('\n2.4 mutacja kontrolna -- fizyczne usuniecie call site\'u load\'u zawala TYLKO 2.2, nie 2.1/2.3 w izolacji (dowod, ze asercja 2.2 faktycznie zalezy od tego call site\'u)');
 {
-  const CALL = 'reconcileAllWorkedTiles(cities, buildAllTerritoryNodes(), computeLostToNearerSiblingByCity(cities, map));\n      playerEverOwnedCity = cities.some(c => c.ownerId === 0);';
-  const REPLACEMENT = 'playerEverOwnedCity = cities.some(c => c.ownerId === 0);';
+  const CALL = "healInconsistentUnits('wczytanie zapisu', { siege: true, render: false });\n      reconcileAllWorkedTiles(cities, buildAllTerritoryNodes(), computeLostToNearerSiblingByCity(cities, map));";
+  const REPLACEMENT = "healInconsistentUnits('wczytanie zapisu', { siege: true, render: false });";
   ok(MAIN_TS_SRC.includes(CALL), 'punkt mutacji zlokalizowany dokladnie (string do podmiany istnieje raz w pliku)');
   const mutated = MAIN_TS_SRC.split(CALL).join(REPLACEMENT);
   const fnMarker = 'function restoreGameFromSave(saved: SaveGame): void {';
   const fnStart = mutated.indexOf(fnMarker);
   const fnWindow = fnStart >= 0 ? mutated.slice(fnStart, fnStart + 13000) : '';
-  const stillHasCall = /cities\.push\(c\);\s*\}[\s\S]{0,2500}?reconcileAllWorkedTiles\(\s*cities,\s*buildAllTerritoryNodes\(\),\s*computeLostToNearerSiblingByCity\(cities, map\)\s*\)[\s\S]{0,300}?playerEverOwnedCity = cities\.some/.test(fnWindow);
+  const stillHasCall = /cities\.push\(c\);\s*\}[\s\S]{0,2500}?reconcileAllWorkedTiles\(\s*cities,\s*buildAllTerritoryNodes\(\),\s*computeLostToNearerSiblingByCity\(cities, map\)\s*\)[\s\S]{0,400}?playerEverOwnedCityByOwner\.clear\(\)/.test(fnWindow);
   ok(!stillHasCall, 'PO usunieciu call site\'u load\'u: wzorzec 2.2 faktycznie przestaje pasowac (mutacja wykryta) -- asercja nie jest tautologiczna');
 }
 

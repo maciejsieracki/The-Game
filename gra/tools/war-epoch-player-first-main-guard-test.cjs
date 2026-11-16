@@ -34,7 +34,8 @@ const GUARDS = {
   ],
   aiGateForPlayerPair: [
     'main.ts: bramka R1/R2 po stronie AI dla pary gracza (targetIsPlayer: true)',
-    s => /isPlayerPairGateOpen: \(aiOwnerId: number\): boolean =>\s*evaluateInterCivWarGate\(\{[\s\S]*?targetIsPlayer: true,[\s\S]*?\}, WAR_RULES_PARAMS\) === 'ok'/.test(s.main),
+    // A: przed bramka R1/R2 doszedl warunek `!isOwnerInActiveEraWar(...)` (R-WEB-ERA-WAR-COUNTER-Q1), wiec evaluateInterCivWarGate nie jest juz pierwszym wyrazeniem.
+    s => /isPlayerPairGateOpen: \(aiOwnerId: number\): boolean =>[\s\S]*?evaluateInterCivWarGate\(\{[\s\S]*?targetIsPlayer: true,[\s\S]*?\}, WAR_RULES_PARAMS\) === 'ok'/.test(s.main),
   ],
   candidatesAllMajors: [
     'main.ts: kandydaci na partnera gracza = WSZYSCY major AI (nie tylko pula)',
@@ -67,7 +68,9 @@ const GUARDS = {
     s => !/const waveActorBypassR3/.test(s.main)
       && /evaluateEraForcedWarGate\(\{[\s\S]*?attackerId: ownerId,[\s\S]*?targetId,[\s\S]*?\}, WAR_RULES_PARAMS\)/.test(s.main)
       && /counts: eraWarCountByCivKey,/.test(s.main)
-      && /targetEpoch: empireEpochForOwner\(targetId\),/.test(s.main),
+      // A: epoka do licznika wyznaczana przez eraWarCounterEpochOf(id, tag) (wojna Kamienia wobec gracza liczy sie w slocie Kamienia; R-WEB-ERA-WAR-PLAYER-POOL-DESPITE-STONE-WAR-Q1).
+      && /attackerEpoch: eraWarCounterEpochOf\(ownerId, gateForcedTagAny\),/.test(s.main)
+      && /targetEpoch: eraWarCounterEpochOf\(targetId, gateForcedTagAny\),/.test(s.main),
   ],
   discoveryOnDeclare: [
     'main.ts: odkrycie nieodkrytej strony AI przy wypowiedzeniu wojny epoki z graczem (zarzut FC r1 nr 1)',

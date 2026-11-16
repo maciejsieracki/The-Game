@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 'use strict';
+// WYCOFANY: dowód historyczny (R-WEB-TEST-DEBT-BASELINE-Q4, decyzja właściciela 2026-11-16, wariant: wczesne wyjście z kodem 0).
+// Powód: wymaga nieobecnego katalogu dyspozycje/autobot/runs/R-PR141-CODEX-RUNTIME-ORDINARY-PREP-20261019 (ENOENT); dane NIE są regenerowane.
+console.log('WYCOFANY: dowód historyczny -- pr141-runtime-ordinary-scope-test');
+process.exit(0);
 
 // Bounded contract test of the candidate's actual exported guard/status
 // functions. The preflight case invokes the real CLI branch with filesystem

@@ -236,6 +236,9 @@ export function defenderCivBonusBreakdown(
   const out: RosterBonusBreakdown[] = [];
   for (const b of bonusy) {
     if (!isDefenseOnlyCivBonus(b)) continue;
+    // Decyzja właściciela (2026-11-16, A): wpisy o wartości 0 nie są pokazywane w panelu.
+    // Dane (civ-matrix) pozostają bez zmian -- filtr tylko w prezentacji.
+    if (b.wartosc === 0) continue;
     const text = civBonusOpisPl((b.opis ?? '').trim());
     if (!text) continue;
     const affected = roster.filter(u => bonusApplies(b, u.celShape, ctx)).length;

@@ -136,6 +136,7 @@ const mainTurnCall = findCall(mainFile, node =>
   ts.isIdentifier(node.expression)
   && node.expression.text === 'advanceProduction'
   && node.arguments.length === 3
+  && node.arguments[0].getText(mainFile) === 'prod0' // rzeczywista petla tury; prognoza HUD (arg 'prod') ma ta sama sygnature
   && node.arguments[2].getText(mainFile).includes(parameterId),
 'main.ts owner-aware advanceProduction call');
 const mainTurnExpression = printer.printNode(ts.EmitHint.Unspecified, mainTurnCall, mainFile);
@@ -159,7 +160,8 @@ vm.runInNewContext(
 const poolGainCall = findCall(mainFile, node =>
   ts.isIdentifier(node.expression)
   && node.expression.text === 'pracaImperialPoolGain'
-  && node.arguments.length === 2,
+  && node.arguments.length === 2
+  && node.arguments[1].getText(mainFile) === 'queueEmpty', // rzeczywista petla tury (prognoza HUD uzywa qEmpty)
 'main.ts empty-queue pool call');
 const poolGainExpression = printer.printNode(ts.EmitHint.Unspecified, poolGainCall, mainFile);
 vm.runInNewContext(

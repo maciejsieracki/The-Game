@@ -65,9 +65,16 @@ const warRelation = { partnerId: '2', partnerTypCywilizacji: 'rzymianie', relati
   respektWzgledny: 0.55, stanWojny: false };
 function diplomacyInputs(civ, overrides = {}) {
   const p = profile(civ);
-  const rel = { ...warRelation, respektWzgledny: overrides.respektWzgledny ?? warRelation.respektWzgledny };
+  // A (R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 krok 3 + R-WEB-DIPLO-WAR-CHARACTER-THRESHOLD-Q1, decyzje wlasciciela):
+  // wypowiedzenie wojny decyduje juz SILA MILITARNA pary (prog przewagi 20% + przesuniecie charakteru
+  // 100 * warSilaBonus, obciete do [10%,35%]), nie respektWzgledny. Fixture niesie wiec silaMilitarnaAI/Partner;
+  // `silaAI` (domyslnie 100) steruje przewaga AI nad partnerem o sile 100.
+  const silaAI = overrides.silaAI ?? 100;
+  const rel = { ...warRelation, respektWzgledny: overrides.respektWzgledny ?? warRelation.respektWzgledny,
+    silaMilitarnaAI: { sila: silaAI, armiaPkt: silaAI }, silaMilitarnaPartner: { sila: 100, armiaPkt: 100 } };
   const rest = { ...overrides };
   delete rest.respektWzgledny;
+  delete rest.silaAI;
   return { relacje: [rel], agresja: p.agresywnosc / 10, agresywnoscRaw: p.agresywnosc,
     sklonnoscDoPodboju: p.sklonnoscDoPodboju, tolerancjaRyzyka: p.tolerancjaRyzyka,
     myTypCywilizacji: civ, currentTurn: 40, skarbiecGold: 1000, ...rest };
@@ -101,7 +108,8 @@ console.log('--- ai_ekspansywnosc: command from fixed map and founding state ---
 
 console.log('--- ai_sklonnosc_podboju: final declaration command threshold ---');
 {
-  const fixed = { agresja: 0.5, agresywnoscRaw: 5, respektWzgledny: 0.48 };
+  // przewaga AI 16%: prog neutralny 20% (nie wypowiada), prog agresywny (pod>=4) 14%/10% (wypowiada)
+  const fixed = { agresja: 0.5, agresywnoscRaw: 5, respektWzgledny: 0.48, silaAI: 116 };
   const foreignBaseline = decide(diplomacyInputs('grecy', fixed));
   let low;
   let high;
@@ -122,7 +130,8 @@ console.log('--- ai_sklonnosc_podboju: final declaration command threshold ---')
 
 console.log('--- ai_tolerancja_ryzyka: risk threshold changes final war command ---');
 {
-  const fixed = { agresja: 0.5, agresywnoscRaw: 5, sklonnoscDoPodboju: 4, respektWzgledny: 0.4 };
+  // przewaga AI 12%: ryzyko 6 -> prog 14% (nie wypowiada), ryzyko 8 -> prog 10% (wypowiada)
+  const fixed = { agresja: 0.5, agresywnoscRaw: 5, sklonnoscDoPodboju: 4, respektWzgledny: 0.4, silaAI: 112 };
   const foreignBaseline = decide(diplomacyInputs('grecy', fixed));
   let cautious;
   let risky;

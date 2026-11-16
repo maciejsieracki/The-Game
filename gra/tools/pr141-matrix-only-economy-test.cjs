@@ -74,6 +74,8 @@ fs.writeFileSync(entry, [
       : { procentNauka: 0, procentPieniadz: 100, procentLuksus: 0 },
     podziałPracy: { procentBudynki: 0 },
   });
+  // A (R-WEB-TRADE-ROUTE... decyzja 2026-11-14 'szlak: tylko premia'): dochodTrasHandlowych NIE wchodzi do handelBrutto miasta (podatek miasta wyklucza przychod z tras);
+  // zrodlem addytywnej bazy brutto w tescie jest teraz premiaHandluTrasHandlowych (przed wspolczynnikiem macierzy eko_handel_brutto_proc).
   const ctx = overrides => ({
     wojskoZuzycieZywnosci: 0, strataFraction: 0, maMlyn: false, maCegielnia: false,
     maTargowisko: false, maMennica: false, walutaOdkryta: false,
@@ -82,7 +84,7 @@ fs.writeFileSync(entry, [
   const runYield = (civKey, field, amount, science = false) => {
     globalThis.__pr141MatrixOnlyEconomy = { [civKey]: { [field]: amount, eko_pieniadz_proc: 0 } };
     return M.cityYieldPerTurn(cityFor(civKey, science), [], [], params,
-      ctx({ dochodTrasHandlowych: 100 }));
+      ctx({ premiaHandluTrasHandlowych: 100 }));
   };
   for (const row of matrixSource.cywilizacje) {
     const result = runYield(row.ikonaId, 'eko_handel_brutto_proc', row.params.eko_handel_brutto_proc);
@@ -96,16 +98,16 @@ fs.writeFileSync(entry, [
     assert.equal(science.nauka, expectedScience, `${row.ikonaId}: science uses only matrix, not poison civ multiplier`);
   }
   globalThis.__pr141MatrixOnlyEconomy = { grecy: { eko_handel_brutto_proc: 0, eko_pieniadz_proc: 0 } };
-  assert.equal(M.cityYieldPerTurn(cityFor('grecy'), [], [], params, ctx({ dochodTrasHandlowych: 100 })).handelBrutto, 100,
+  assert.equal(M.cityYieldPerTurn(cityFor('grecy'), [], [], params, ctx({ premiaHandluTrasHandlowych: 100 })).handelBrutto, 100,
     'matrix gross-trade zero remains neutral despite poison legacy context');
   const noOwnerBonuses = M.civEconomyYieldMultipliers(poisonBonusy);
   const missingOwnerCity = cityFor(undefined);
   assert.equal(M.cityYieldPerTurn(missingOwnerCity, [], [], params,
-    ctx({ civHandelMult: noOwnerBonuses.handel, dochodTrasHandlowych: 100 })).handelBrutto, 100,
+    ctx({ civHandelMult: noOwnerBonuses.handel, premiaHandluTrasHandlowych: 100 })).handelBrutto, 100,
   'missing owner stays generic/neutral, not Greek or legacy');
   globalThis.__pr141MatrixOnlyEconomy = { grecy: { eko_nauka_proc: 0, eko_pieniadz_proc: 0 } };
   const zeroMatrixScience = M.cityYieldPerTurn(cityFor('grecy', true), [], [], params,
-    ctx({ civNaukaMult: 1, dochodTrasHandlowych: 100 })).nauka;
+    ctx({ civNaukaMult: 1, premiaHandluTrasHandlowych: 100 })).nauka;
   assert.equal(zeroMatrixScience, 114,
   'matrix science zero preserves this fixture’s unmodified local/trade inputs despite poison legacy science multiplier');
 

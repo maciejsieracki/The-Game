@@ -50,7 +50,11 @@ assert.match(aiProfile, /civAiProfileForTyp\(data, civKey as TypCywilizacji/);
 assert.doesNotMatch(main.slice(main.indexOf('function peacefulArchetypeForOwner('), main.indexOf('function buildAllianceWarObligationCtx(')), /\?\? 'grecy'/);
 
 const availabilityContexts = (main.match(/civKey: civKeyForOwnerId\(/g) || []).length;
-assert.ok(availabilityContexts >= 5, `expected owner civKey in availability contexts, found ${availabilityContexts}`);
+// A: konsolidacja kontekstu Zastap (R-WEB-UNIT-REPLACE-COST-AND-PROMOTION-IMPL-Q1 -> game/unit-replace-context.ts) zmniejszyla liczbe literalnych
+// wystapien z 5 do 4; zamiast gołego progu >= 5 wymagamy 4 + jawnie obu kontekstow dostepnosci (Zastap i produkcja) z kluczem WLASCICIELA.
+assert.ok(availabilityContexts >= 4, `expected owner civKey in availability contexts, found ${availabilityContexts}`);
+assert.match(functionBody(main, 'function replaceAvailabilityCtxEmpireWide('), /civKey: civKeyForOwnerId\(ownerId\)/);
+assert.match(functionBody(main, 'function productionAvailabilityCtxForCity('), /civKey: civKeyForOwnerId\(city\.ownerId\)/);
 assert.equal((main.match(/getCivKey: \(ownerId: number\) => civKeyForOwnerId\(ownerId\)/g) || []).length, 2);
 assert.match(cityPanel, /function rushCostModifierForCity\(city: City\): number[\s\S]*?cfg\.getCivKey\?\.\(city\.ownerId\)[\s\S]*?civMatrixParam\(civKey, 'prod_rush_koszt_proc'\)/);
 assert.equal((main.match(/const expectedCost = rushCost\(/g) || []).length, 2);

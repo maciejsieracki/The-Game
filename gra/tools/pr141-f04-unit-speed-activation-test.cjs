@@ -130,7 +130,7 @@ const actualGatedCall = findCall(mainFile, node =>
 'actual city-turn advanceRecruitmentGated call with recMaxPerTurn');
 const actualGatedCallText = printer.printNode(ts.EmitHint.Unspecified, actualGatedCall, mainFile);
 vm.runInNewContext(
-  `this.runTurnRecruitment = (city, prodFinal) => { const recMaxPerTurn = ${transpile(capacityInitializer)}; const recMpMults = { maxMult: 1, costMult: 1 }; return ${transpile(actualGatedCallText)}; };`,
+  `this.runTurnRecruitment = (city, prodFinal) => { const recStackFree = 1e9; /* limit stosu (R-WEB-ARMY-STACK-LIMIT-Q1) poza zakresem testu predkosci */ const recMaxPerTurn = ${transpile(capacityInitializer)}; const recMpMults = { maxMult: 1, costMult: 1 }; return ${transpile(actualGatedCallText)}; };`,
   context,
   { timeout: 1000 },
 );
