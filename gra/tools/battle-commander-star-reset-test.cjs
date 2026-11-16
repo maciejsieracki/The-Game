@@ -74,8 +74,8 @@ function bunit(id, commander) {
   };
 }
 
-/** Składa scenę-stub i wywołuje realny Reset (_placeUnitsOneSide) dla strony atakującej. */
-function runReset(BattleScene) {
+/** Składa scenę-stub: rozstawienie strony atakującej przez realne ścieżki BattleScene. */
+function makeScene(BattleScene) {
   const scene = Object.create(BattleScene.prototype);
   const added = [];
   scene.scene = { add(obj) { added.push(obj); }, remove() {} };
@@ -84,7 +84,8 @@ function runReset(BattleScene) {
   scene.occByKey = new Map();
   scene.ownedGeos = [];
   scene.ownedMats = [];
-  scene.ownedMats = [];
+  scene._groups = new Map();
+  scene._groupCounter = 0;
   scene._deployMode = false;
   scene.deployPhase = true;
   scene.siegeWallCol = -1;
@@ -95,12 +96,39 @@ function runReset(BattleScene) {
   scene._debugRecordSiegeColumns = scene._repositionSiegeAttackers = () => {};
   scene._placeSiegeDefenders = () => [];
   scene._showDeployFeedback = () => {};
+  scene._clearAllSelection = scene._clearDeploySelection = () => {};
+  scene._rebuildDeployRosterGrid = scene._updateDeployRosterHeader = () => {};
   scene._savedAtkBUs = [bunit('wodz', true), bunit('zwykly-1', false), bunit('zwykly-2', false)];
   scene._savedDefBUs = [];
   scene.def = [];
   scene.atk = [];
-  scene._placeUnitsOneSide('atk', false);
   return { scene, added };
+}
+
+/** Generał = jednostka roster z isArmyCommander; sprawdza gwiazdkę jako dziecko JEJ grupy. */
+function rosterStarState(scene) {
+  const roster = scene.atk.filter(ru => !ru.removed);
+  return {
+    total: roster.length,
+    commanderStars: roster.filter(ru => ru.isArmyCommander && starsOf(ru.group).length === 1).length,
+    plainStars: roster.filter(ru => !ru.isArmyCommander && starsOf(ru.group).length > 0).length,
+    starsOutsideGroup: roster.reduce((n, ru) => n + (starsOf(ru.group).some(st => st.parent !== ru.group) ? 1 : 0), 0),
+  };
+}
+
+/** Sekwencja z DODATKU 1 pkt 2: rozstaw -> Reset -> ruch grupy (render) -> Reset. */
+function runSequence(BattleScene, mutate) {
+  const { scene } = makeScene(BattleScene);
+  const steps = [];
+  scene._placeUnitsOneSide('atk', false);
+  steps.push(['rozstawienie', rosterStarState(scene)]);
+  scene._resetDeploySide('atk');
+  steps.push(['Reset #1', rosterStarState(scene)]);
+  for (const ru of scene.atk) ru.group.position.x += 2; // przesunięcie grupy, gwiazdka ma podążać (dziecko)
+  steps.push(['po ruchu', rosterStarState(scene)]);
+  scene._resetDeploySide('atk');
+  steps.push(['Reset #2', rosterStarState(scene)]);
+  return steps;
 }
 
 /** Grupy jednostek = obiekty dodane do sceny, które mają dzieci (sprite gwiazdki jest dzieckiem grupy). */
@@ -110,26 +138,27 @@ function starsOf(group) {
 
 async function main() {
   const BattleScene = await loadBattleScene(false);
-  const { added } = runReset(BattleScene);
-  const groups = added.filter(o => o && Array.isArray(o.children));
-  check('Reset: scena dostaje grupy jednostek (realna _placeUnitsOneSide)', () => {
-    assert.ok(groups.length >= 3, `grup: ${groups.length}`);
-  });
-  check('Reset: dokladnie jedna grupa z gwiazdka (generał) po rozstawieniu', () => {
-    const withStar = groups.filter(g => starsOf(g).length > 0);
-    assert.equal(withStar.length, 1, `z gwiazdka: ${withStar.length}`);
-  });
-  check('Reset: zwykle jednostki nie maja gwiazdki', () => {
-    const plain = groups.filter(g => starsOf(g).length === 0);
-    assert.equal(plain.length, groups.length - 1);
+  const steps = runSequence(BattleScene, false);
+  const byLabel = Object.fromEntries(steps);
+  for (const [label, st] of steps) {
+    check(`${label}: dokladnie jeden generał ze gwiazdka, zwykle bez`, () => {
+      assert.equal(st.commanderStars, 1, `generał z gwiazdka: ${st.commanderStars}`);
+      assert.equal(st.plainStars, 0, `zwykle ze gwiazdka: ${st.plainStars}`);
+      assert.equal(st.total, 3, `jednostek w armii: ${st.total}`);
+    });
+    check(`${label}: gwiazdka jest dzieckiem grupy (podąża za jednostką)`, () => {
+      assert.equal(st.starsOutsideGroup, 0);
+    });
+  }
+  check('sekwencja: wszystkie kroki (rozstaw, Reset, ruch, Reset) zielone', () => {
+    assert.equal(Object.keys(byLabel).length, 4);
   });
 
-  const mutatedScene = await loadBattleScene(true);
-  const { added: addedMut } = runReset(mutatedScene);
-  const groupsMut = addedMut.filter(o => o && Array.isArray(o.children));
-  check('mutacja kopii (brak gwiazdki w Resecie) daje czerwono: zadnego generała ze gwiazdka', () => {
-    const withStar = groupsMut.filter(g => starsOf(g).length > 0);
-    assert.equal(withStar.length, 0, `z gwiazdka po mutacji: ${withStar.length}`);
+  const BattleSceneMut = await loadBattleScene(true);
+  const mutSteps = runSequence(BattleSceneMut, true);
+  const mutReset = mutSteps.find(([l]) => l === 'Reset #1')[1];
+  check('mutacja kopii (brak gwiazdki w Resecie) daje czerwono: zadnego generała ze gwiazdka po Reset', () => {
+    assert.equal(mutReset.commanderStars, 0, `generał z gwiazdka po mutacji: ${mutReset.commanderStars}`);
   });
 
   console.log(`\nWynik: ${pass} PASS, ${fail} FAIL`);

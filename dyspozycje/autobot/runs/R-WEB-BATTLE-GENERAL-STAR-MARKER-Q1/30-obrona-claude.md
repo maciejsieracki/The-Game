@@ -1,65 +1,51 @@
-# R-WEB-BATTLE-GENERAL-STAR-MARKER-Q1 — raport obrony (Operator, runda 1, odpowiedź na zarzuty Evaluatora)
+# R-WEB-BATTLE-GENERAL-STAR-MARKER-Q1 — raport obrony, runda 2 (Operator HAIKU, odpowiedź na zarzuty Evaluatora r2)
 
 STATUS: PASS-WITH-NOTES
 DOMAIN: GAME (render sceny bitwy taktycznej)
 TEMAT: R-WEB-BATTLE-GENERAL-STAR-MARKER-Q1
-GOAL: w scenie bitwy generał (wódz armii, `BattleUnit.isArmyCommander === true`) po obu stronach ma jasną złotą gwiazdkę nad jednostką; gwiazdka podąża za jednostką, nie zasłania paska HP/morale/flagi, znika razem z jednostką (śmierć, usunięcie z sceny), nie pojawia się przy zwykłych jednostkach ani w armii bez generała. Zero zmian reguł bitwy, walki, balansu i danych.
-BAZA: origin/main = b160459c9dea67e082ec59dc7770d10cc59c08d4 (ancestor OK). Kod operatora: commit w gałęzi roboczej tego worktree (SHA w sekcji ZMIANY-COMMIT).
+GOAL: generał armii na polu bitwy ma jasną gwiazdkę po obu stronach, także po Resecie rozstawiania (poprawka zarzutu FC r1). Zero zmian reguł, balansu i danych.
+BAZA: kandydat r1 `ad422d889` (potomek `b160459c9`, `merge-base --is-ancestor` OK). Kod r2 = `33f91bd8e` (kod operatora: +1 linia `this._attachCommanderStar(group, bu);` w `_placeUnitsOneSide`, ok. linii 17905). Ten raport + test zmieniony w tym commicie.
 
-## Odpowiedź na zarzuty Evaluatora
+## Odpowiedź na zarzuty Evaluatora r2
 
 | Zarzut | Decyzja | Dowód |
 |---|---|---|
-| 1. Kandydat == baza, brak zmiany w kodzie, brak znacznika w `battleScene.ts` | PRZYJMUJĘ | Dodano moduł `gra/src/battle/battleCommanderStar.ts` i cztery wywołania `_attachCommanderStar(group, bu)` w `battleScene.ts` (miejsca tworzenia jednostki: 4 sites, `scene.add(group)`). `git diff --stat` po zmianie: `battleScene.ts +19`, dwa nowe pliki. |
-| 2. Brak testu stanu/mutacyjnego (kryt. a) | PRZYJMUJĘ | `gra/tools/battle-commander-star-test.cjs`: 14 PASS / 0 FAIL na realnym module (bundle esbuild). Mutacja KOPII źródła (warunek celu zastąpiony `return true;`) daje wynik czerwony (zwykłe jednostki dostają gwiazdkę). |
-| 3. Brak zrzutów Chromium 1280x720 i 1400x900 (kryt. b) | PRZYJMUJĘ | Żywa bitwa w Chromium (vite dev server z `gra/`, playwright, `/usr/bin/chromium`), obie strony, oba rozmiary. Zrzuty skopiowane do `evidence/` tego runu (patrz niżej). |
-| 4. Brak raportu operatora i commita z pracą | PRZYJMUJĘ | Ten raport + commit kodu i testu (`git add` ścieżek, bez `-A`). |
+| 1. Brak żywego Chromium dla Reset (1280x720, 1400x900) | PRZYJMUJĘ JAKO OTWARTY, NIE ZMIERZONO | W tej rundzie nie uruchomiono przeglądarki. Test `gra/tools/battle-commander-star-reset-test.cjs` działa na poziomie sceny (realna `_resetDeploySide` -> `_placeUnitsOneSide`), nie pikselowo. Zrzuty w `evidence/` pochodzą z r1 i nie pokazują Reset. Powód: harness żywego Chromium (`gra/tools/battle-doctrine-live-r3-test.cjs` jako wzór) wymaga osobnego buildu vite poza repo oraz hooka, który ustawia `isArmyCommander` na generale w presecie `bitwa_duza_pole` (preset nie ma generała). Ten krok nie został zrealizowany w tej rundzie. Decyzja orkiestratora: osobny przebieg Chromium albo akceptacja wyłącznie testu sceny. |
+| 2. Test nie pokrywa sekwencji z DODATKU 1 pkt 2 | PRZYJMUJĘ, POPRAWIONE | Test przepisany: sekwencja **rozstaw -> Reset #1 (`_resetDeploySide`) -> ruch grupy -> Reset #2**. Po każdym kroku: dokładnie jeden generał ze gwiazdką, zwykłe bez, gwiazdka jest dzieckiem własnej grupy (`st.parent === ru.group`). Stub sceny: `_resetDeploySide` wywołuje realne `_placeUnitsOneSide`; stubowane są tylko UI-helpery (`_clearAllSelection`, `_clearDeploySelection`, `_rebuildDeployRosterGrid`, `_updateDeployRosterHeader`) i `scene.remove`. Wynik: `node tools/battle-commander-star-reset-test.cjs` -> `Wynik: 10 PASS, 0 FAIL`. Mutacja na kopii (usunięcie ostatniego wywołania `_attachCommanderStar` = ścieżka Reset) daje po Reset #1 `commanderStars = 0` -> test wykrywa regresję. Uwaga: „ruch” to przesunięcie grupy w renderze (`group.position.x += 2`), a nie logika ruchu gry. Asercja dotyczy tego, że gwiazdka pozostaje dzieckiem grupy. |
+| 3. Regresja timeoutów battle-* na wydłużonym limicie | PRZYJMUJĘ, CZĘŚCIOWO ZMIERZONO | Przebiegi kandydata `33f91bd8e` z limitem `timeout 580` (osobne wywołania, < 590 s): `battle-natural-chariot-r5-test.cjs` rc=0 (161 s); `battle-natural-near-range-r6-test.cjs` rc=0 (72 s); `battle-pursuit-move-behavior-test.cjs` rc=0 (347 s, `13/13 pass, mutacje wykryte 6/6`); `battle-ranged-approach-regression-test.cjs` rc=0 (281 s). Cztery testy, które Evaluator wskazał jako niezmierzone, przechodzą na wydłużonym limicie. Pozostałe cztery timeouty (`collision-arbitration`, `full-move-strike`, `neverrout-hold`, `attack-move-pointer`) NIE zostały zmierzone przeze mnie w tej rundzie. Wg pomiaru Evaluatora (270 s / 560 s / 210 s) wyniki są identyczne na bazie `ad422d889` i na kandydacie, czyli są to przedistniejące długi, a nie regresja tego tematu. Nie zweryfikowałem tego ponownie. |
 
 ## ZMIANY-COMMIT
 
-- `gra/src/battle/battleCommanderStar.ts` (nowy): `isBattleCommanderStarTarget`, `battleCommanderStarIds`, `getBattleCommanderStarTexture` (DataTexture 64×64 rysowany kodem, bez canvas), `attachBattleCommanderStar(group, unit, localY)` (Sprite, dziecko `ru.group`, `depthTest:false`, `raycast` no-op, `renderOrder 10`, rozmiar 0,26).
-- `gra/src/battle/battleScene.ts` (+19): import; stała `BATTLE_COMMANDER_STAR_Y = HPBAR_Y + AMMOBAR_Y + BAR_OUTLINE_PAD + 0.22 + 0.16` (nad flagą-masztem z `makeUnitBars`); metoda `_attachCommanderStar` (materiał trafia do `ownedMats` do zwolnienia); 4 wywołania po `this.scene.add(group)`.
-- `gra/tools/battle-commander-star-test.cjs` (nowy): test stanu + mutacja kopii + sprawdzenie braku zależności od `barsVisible`.
-- `dyspozycje/autobot/runs/R-WEB-BATTLE-GENERAL-STAR-MARKER-Q1/30-obrona-claude.md` (ten plik) + `evidence/*.png`, `evidence/live-zoom-atk-result.json`.
-
-Źródło danych: `isArmyCommander` już jest w `BattleUnit` i ustawiane w `main.ts:35567` (`isArmyCommander: u.isGeneral === true`). Dlatego **nie zmieniono `main.ts`** (zgodnie z allowlistą).
-
-## Wybory wizualne (wypisane wg dispatchu)
-
-- Kolor: gwiazdka **złota** (#FFD84A) z **ciemnobrązowym obrysem** (#3A2300) — ta sama dla obu stron. Barwa strony zostaje na pasku i fladze, a nie na gwiazdce, bo obrys w kolorze strony (np. czerwony/niebieski) był słabo czytelny na zielonej trawie i brązowym terenie. Wybór do akceptacji przez orkiestratora.
-- Położenie: środek gwiazdki ~1,19 j. nad punktem stania, czyli nad flagą (szczyt flagi ~1,03), bez zasłaniania HP/morale/ammo.
-- Widoczność: niezależna od przełącznika „Paski HP / Morale” (gwiazdka nie chowa się razem z paskami).
-- Brak nowych tekstów UI, więc kryterium (d) nie dotyczy.
+- `gra/tools/battle-commander-star-reset-test.cjs` (przepisany, sekwencja rozstaw -> Reset -> ruch -> Reset, mutacja na kopii, 10 PASS / 0 FAIL).
+- `dyspozycje/autobot/runs/R-WEB-BATTLE-GENERAL-STAR-MARKER-Q1/30-obrona-claude.md` (ten raport).
+- Kod gry (`gra/src/battle/battleScene.ts`, `battleCommanderStar.ts`) nie zmieniony w tej rundzie: poprawka Reset jest już w `33f91bd8e`.
+- Worktree po przebiegach regresji: przywrócone śledzone pliki artefaktów `R-BITWA-ATAK-LUCZNICY-POZA-ZASIEGIEM-Q1/evidence/*` (`git checkout --`), nie dodane do commita.
 
 ## TESTY (surowe wyniki)
 
-- `npx tsc --noEmit` (w `gra/`): exit 0 (po poprawce typu w `pointInPolygon`; ostatni przebieg po wszystkich zmianach: rc=0).
-- Bramki referencyjne (exit codes, `node tools/<x>.cjs`): logic-test 0, tech-tree-test 0, research-test 0, unit-replace-test 0, combat-test 0.
-- Nowy test: `node tools/battle-commander-star-test.cjs` → `Wynik: 14 PASS, 0 FAIL` (dwa przebiegi: przed i po poprawce typu).
-- Żywy bieg Chromium (`/tmp` poza repo nie użyto; skrypt w scratchpad, entry tymczasowy usunięty): 2 sprite'y `battleCommanderStar` w scenie (po jednym na stronę), `visible: true`, brak błędów `pageerror`. Zrzuty zbliżone (kamera nad gwiazdką): atak 1280×720 i 1400×900, obrona 1280×720 i 1400×900 — gwiazdka wyraźnie widoczna, nad flagą, bez zasłaniania pasków. Pliki w `evidence/`.
-- Testy bitwy (regresja), `gra/tools/battle-*-test.cjs`:
-  - nie-przeglądarkowe, uruchomione: 33 × rc=0; `battle-standoff-two-warriors-test.cjs` rc=1 — **ta sama awaria na baseline (origin/main battleScene.ts): TypeError w `_computeManualArbitrationClaims` → PRZED-ISTNIEJĄCA, nie regresja** (sprawdzone podmianą pliku na HEAD i przywróceniem).
-  - `battle-collision-arbitration-test.cjs` część `BCA_PART=pure`: **14 OK, 0 FAIL** (test pełnego ruchu/arbitrażu). Części `live` (`det`, `mutRev`, pełny przebieg z Chromium) NIE ZMIERZONO w limicie czasu (>190 s / >580 s bez wyniku końcowego; w pierwszym przebiegu 17 znaczników `ok` bez błędu).
-  - `battle-pace-equal-line-live-test.cjs`: NIE ZMIERZONO (przekroczenie 60 s, test przeglądarkowy).
-  - `battle-dead-unit-disappearance-browser-test.cjs` (rc=1), `battle-defeat-survivor-retreat-browser-test.cjs` (rc=1), `battle-dead-unit-e2e-browser-test.cjs` (rc=124 @100 s), `battle-attack-move-pointer-test.cjs` (rc=124 @100 s): NIE ZMIERZONO na baseline — nie wiadomo, czy są przed-istniejące; do sprawdzenia przez FC.
+- `node tools/battle-commander-star-test.cjs` (test modułu, mutacje): `Wynik: 17 PASS, 0 FAIL`.
+- `node tools/battle-commander-star-reset-test.cjs` (test sceny, sekwencja Reset): `Wynik: 10 PASS, 0 FAIL`, mutacja kopii: czerwona (zero generałów ze gwiazdką po Reset).
+- `npm ci` w `gra/` (lokalnie w worktree, 71 pakietów). Nie uruchamiano `npm run build/dev`.
+- tsc i 5 bramek referencyjnych NIE uruchomiono ponownie w tej rundzie: kod gry nie zmienił się względem `33f91bd8e`, a zmieniony jest tylko plik testu. Wyniki z rundy 1 i zarzutu Evaluatora (tsc 0, logic 213/213, tech-tree 20/0, research 33/0, unit-replace 21/21, combat 6/6) dotyczą kandydata `33f91bd8e`.
+- Regresja `battle-*` na kandydacie (limit 580 s): patrz tabela, zarzut 3.
 
 ## BLOKADY
 
-- Brak. Zarzut Evaluatora 3 (zrzuty) zamknięty dowodem żywym; części live testów collision/pace nie zostały ukończone w czasie (patrz TESTY, NIE ZMIERZONO).
+- Żywy Chromium (zrzuty Reset 1280x720 i 1400x900) nie wykonany: NIE ZMIERZONO. Wymaga osobnego przebiegu lub decyzji orkiestratora (patrz zarzut 1).
+- Cztery timeouty (`collision-arbitration`, `full-move-strike`, `neverrout-hold`, `attack-move-pointer`) nie zmierzone przeze mnie na wydłużonym limicie; wynik porównawczy tylko z pomiaru Evaluatora.
 
 ## RUNDY
 
-1/5 (runda obrony na zarzuty Evaluatora z raportu 20-evaluator-claude.md).
+2/5. Ostatni werdykt FC r1: FAIL (brak gwiazdki po Reset). Ostatni werdykt Evaluatora r2: FAIL (3 zarzuty). Decyzja wymagana: czy wymagany jest żywy Chromium dla Reset przed READY_FOR_DEPLOY.
 
-## NASTĘPNY KROK
+## UWAGI-DLA-ORKIESTRATORA
 
-1. Evaluator: przegląd diffu (`git diff b160459c9..<SHA>`, pliki z ZMIANY-COMMIT) i powtórzenie testu + bramek.
-2. Final Control: część `live` testu arbitrażu kolizji (`BCA_PART=det`, `mutRev`) w osobnym przebiegu, plus ocena wizualna gwiazdki przez właściciela (kolor/obrys — decyzja, czy zostawić złoto dla obu stron).
-3. Dług Rust: REPIN znacznika generała w scenie bitwy (port Rust) — osobny temat, poza tym tematem.
+1. `manualBattle.ts:756` (`place()`) nie ma gwiazdki. Moduł nie jest importowany przez grę (zgodnie z raportem r1). Jeśli ma być podpięty, osobny temat.
+2. Żywy Chromium: osobny temat z hookiem `isArmyCommander` dla generała w presecie (albo wybór innego presetu z generałem) i buildem vite poza repo. Nie jest to część tego raportu.
+3. Cztery timeouty (`collision-arbitration`, `full-move-strike`, `neverrout-hold`, `attack-move-pointer`) są długiem istniejącym wg Evaluatora. Do osobnego tematu, jeśli FC uzna, że trzeba je ponownie zmierzyć.
+4. `gra/node_modules` zainstalowano w worktree (`npm ci`) na potrzeby testów. Usuwam je po commicie, zgodnie z dispatchem (FC/Evaluator mogą zainstalować ponownie w swoim worktree).
+5. Dług Rust: REPIN znacznika generała w scenie bitwy (port Rust), osobny temat.
 
-UWAGI-DLA-ORKIESTRATORA:
-- Nie dotyczy tego tematu, ale w zgłoszeniu właściciela padło pytanie o łuczników (zwykli vs egipscy): to temat #448/R-WEB-DATA-ARCHERS-HEALTH-20-DIST-EGYPT-6-Q1, nie ten; nie ruszałem danych jednostek.
-- Testy bitwy z przeglądarką (`battle-*-live*`, `*-browser-*`) zapisują artefakty do śledzonych plików w `dyspozycje/autobot/runs/*/evidence*` (np. `R-BITWA-DEAD-UNIT-DISAPPEARS-Q2/evidence`, `R-BITWA-BTF-MIXED-ARMY-DOCTRINES-Q1/01-matrix.json`). Przy uruchamianiu w worktree trzeba je przywracać `git checkout --`; w tym worktree przywrócono, a nieśledzone artefakty usunięto.
-- `gra/node_modules` zainstalowano lokalnie (`npm ci --ignore-scripts`) na potrzeby testów; usuwam po zakończeniu zgodnie z dispatchem.
+NASTĘPNY KROK: Evaluator r3: weryfikacja testu sekwencji (`battle-commander-star-reset-test.cjs`) i decyzja o zarzucie 1 (żywy Chromium). Final Control po decyzji orkiestratora.
 
 DEPLOY/PUSH: NIE WYKONANO
