@@ -30,10 +30,14 @@ const armySrc = process.env.ARMY_MERGE_SRC
   : path.join(GRA, 'src', 'game', 'armyMerge.ts');
 const entry = path.join(tmp, 'entry.ts');
 const out = path.join(tmp, 'bundle.cjs');
+// Namespace-import: dziala tez na BAZIE (ARMY_MERGE_SRC = armyMerge.ts z b160459c9, bez releaseSplitFromSiege).
 fs.writeFileSync(entry,
-  `export { besiegeLockTargets, besiegeArmyGroups, inheritSiegeOnJoin, releaseSplitFromSiege, stackGroupIdOf, stackRuchLeft, unitWithStackRuch } from ${JSON.stringify(armySrc)};\n`);
+  `import * as ARM from ${JSON.stringify(armySrc)};\nexport const M = ARM;\n`);
 esbuild.buildSync({ entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', outfile: out, logLevel: 'error', absWorkingDir: GRA, nodePaths: [path.join(GRA, 'node_modules')] });
-const M = require(out);
+const M = require(out).M;
+// Brak funkcji (stan bazy) -> undefined: asercje czerwone zamiast wyjatku.
+const rel = (arr) => (typeof M.releaseSplitFromSiege === 'function' ? M.releaseSplitFromSiege(arr) : undefined);
+console.log('  zrodlo armyMerge.ts: ' + armySrc + ' | releaseSplitFromSiege: ' + (typeof M.releaseSplitFromSiege === 'function' ? 'jest' : 'BRAK (stan bazy)'));
 
 // Jednostka pola: pelna pula ruch = 3, ruchLeft = 3 przed blokada.
 const U = (id, o = {}) => ({ id, ownerId: 0, typeId: 'test', q: 5, r: 4, ruch: 3, ruchLeft: 3, inGarnizon: false, stackGroupId: 'G1', ...o });
@@ -72,22 +76,22 @@ console.log('A2. POPRAWKA: releaseSplitFromSiege zdejmuje oblezenie i przywraca 
 {
   const units = besiegedArmy();
   const split = [units[0], units[1]];
-  const cityId = M.releaseSplitFromSiege(split);
+  const cityId = rel(split);
   ok(cityId === 'c1', 'zwraca id miasta, z ktorego wydzielono', String(cityId));
   ok(split.every(u => u.oblegaCityId === undefined), 'wydzielone: oblegaCityId wyczyszczone');
   ok(split.every(u => u.ruchLeft === u.ruch && u.ruchLeft > 0), 'wydzielone: ruchLeft = ruch (> 0), nie zerowa blokada',
     JSON.stringify(split.map(u => u.ruchLeft)));
   ok(M.stackRuchLeft(split) > 0, 'pula ruchu wydzielonego stosu > 0 (wykonalny ruch)');
-  ok(M.releaseSplitFromSiege([units[2]]) === 'c1' && units[2].oblegaCityId === undefined,
+  ok(rel([units[2]]) === 'c1' && units[2].oblegaCityId === undefined,
     'zwolnienie dziala tez dla pojedynczej jednostki');
-  ok(M.releaseSplitFromSiege([U('plain')]) === undefined, 'jednostka spoza oblezenia: brak zmian, undefined');
+  ok(rel([U('plain')]) === undefined, 'jednostka spoza oblezenia: brak zmian, undefined');
 }
 
 console.log('A3. Pozostala czesc nadal oblega; wydzielone nie naleza do grup oblegajacych');
 {
   const units = besiegedArmy();
   const split = [units[0], units[1]];
-  M.releaseSplitFromSiege(split);
+  rel(split);
   const remain = units.filter(u => !split.includes(u));
   ok(remain.every(u => u.oblegaCityId === 'c1' && u.ruchLeft === 0), 'reszta armii: oblegaCityId=c1, ruchLeft=0');
   // Wydzielone dostaja nowy stackGroupId (jak w onSplit: assignSharedStackGroupId) -- zbior grup = tylko stare.
@@ -100,7 +104,7 @@ console.log('A4. Po kolejnej turze: wydzielone nie wracaja do blokady i maja pul
 {
   const units = besiegedArmy();
   const split = [units[0], units[1]];
-  M.releaseSplitFromSiege(split);
+  rel(split);
   turnReset(units);
   ok(split.every(u => u.ruchLeft === u.ruch && u.ruchLeft > 0), 'po resecie tury: wydzielone ruchLeft = ruch (> 0)');
   ok(units.filter(u => !split.includes(u)).every(u => u.ruchLeft === 0), 'po resecie tury: reszta oblegajacych nadal ruchLeft=0');
@@ -112,10 +116,28 @@ console.log('A5. Laczenie z powrotem do armii oblegajacej przejmuje oblezenie (n
 {
   const units = besiegedArmy();
   const split = [units[0], units[1]];
-  M.releaseSplitFromSiege(split);
+  rel(split);
   const besiegers = units.filter(u => u.oblegaCityId === 'c1');
   const taken = M.inheritSiegeOnJoin(split, besiegers);
   ok(taken === 2 && split.every(u => u.oblegaCityId === 'c1'), 'dolaczenie wydzielonych do oblegajacych: przejete oblezenie (2)', String(taken));
+}
+
+console.log('A6. Ufortyfikowany oblegajacy (fortyfikacja w polu): zwolnienie zdejmuje fortyfikacje, ruch nie wraca do 0');
+{
+  const units = besiegedArmy();
+  const split = [units[0], units[1]];
+  for (const u of units) M.enterFieldFortify(u); // "Ufortyfikuj" na stosie oblegajacych (main.ts)
+  ok(units.every(u => u.ufortyfikowanyWPolu === true && u.ruchLeft === 0), 'przed: oblegajacy ufortyfikowani w polu, ruchLeft=0');
+  rel(split);
+  ok(split.every(u => u.ufortyfikowanyWPolu !== true), 'po zwolnieniu: wydzielone bez fortyfikacji w polu');
+  ok(split.every(u => u.ruchLeft === u.ruch && u.ruchLeft > 0), 'po zwolnieniu: ruchLeft = ruch (> 0)',
+    JSON.stringify(split.map(u => [u.ufortyfikowanyWPolu, u.fortifyRuchSnapshot, u.ruchLeft])));
+  M.normalizeMergedFortify(split, false, false); // scalanie / Czuwaj: nie moze wyzerowac ruchu wydzielonych
+  ok(split.every(u => u.ruchLeft > 0), 'normalizeMergedFortify po zwolnieniu nie zeruje ruchu wydzielonych',
+    JSON.stringify(split.map(u => u.ruchLeft)));
+  const remain = units.filter(u => !split.includes(u));
+  ok(remain.every(u => u.ufortyfikowanyWPolu === true && u.ruchLeft === 0 && u.oblegaCityId === 'c1'),
+    'reszta armii nadal oblega i pozostaje ufortyfikowana (ruchLeft=0)');
 }
 
 console.log('B. STRUKTURALNA main.ts: onSplit zwalnia wydzielone PRZED kosztem ruchu');

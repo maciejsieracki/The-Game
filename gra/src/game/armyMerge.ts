@@ -185,6 +185,10 @@ export function releaseSplitFromSiege(
     if (u.oblegaCityId === undefined) continue;
     cityId = u.oblegaCityId;
     delete u.oblegaCityId;
+    // Oblegający ufortyfikowany w polu (enterFieldFortify zapisało fortifyRuchSnapshot=0):
+    // najpierw zdejmij fortyfikację (przywraca snapshot), bo inaczej exitFieldFortify
+    // późniejszy (Czuwaj / normalizeMergedFortify) nadpisze ruchLeft zerem.
+    exitFieldFortify(u);
     u.ruchLeft = u.ruch;
   }
   return cityId;
