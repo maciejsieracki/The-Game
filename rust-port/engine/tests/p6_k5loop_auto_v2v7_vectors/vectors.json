@@ -1,0 +1,814 @@
+{
+  "source": "gra/src/battle/battleScene.ts @ 07d2fbd72",
+  "pin_refs": {
+    "BF_COLS": "battleScene.ts:661",
+    "snapshot": "battleScene.ts:5752-5815",
+    "doMove_planning": "battleScene.ts:8694-8712",
+    "doAttack_planning": "battleScene.ts:8788-8795",
+    "executeStep": "battleScene.ts:17966-18100",
+    "effectiveMeta": "battleScene.ts:17645-17655",
+    "forwardCol": "battleScene.ts:6748-6750"
+  },
+  "vectors": [
+    {
+      "id": "v2a_clones_isolate_planned_cells",
+      "pin": "battleScene.ts:5752-5815 (klon per zrodlo, kolejnosc planowania) + 5785-5795 (_doMove galaz planowania)",
+      "title": "Dwoch atakujacych planuje ten sam kafelek: obaj dostaja ruch, bo kazdy widzi migawke, nie plan drugiego",
+      "family": "v2",
+      "setup": {
+        "side": "atk",
+        "units": [
+          "a0",
+          "a1"
+        ],
+        "atk": [
+          {
+            "id": "a0",
+            "side": "atk",
+            "q": 0,
+            "r": 0
+          },
+          {
+            "id": "a1",
+            "side": "atk",
+            "q": 1,
+            "r": 0
+          }
+        ],
+        "def": [
+          {
+            "id": "d0",
+            "side": "def",
+            "q": 5,
+            "r": 0
+          },
+          {
+            "id": "d1",
+            "side": "def",
+            "q": 6,
+            "r": 0
+          }
+        ],
+        "scripts": {
+          "a0": [
+            {
+              "op": "move",
+              "col": 2,
+              "row": 0
+            }
+          ],
+          "a1": [
+            {
+              "op": "move",
+              "col": 2,
+              "row": 0
+            }
+          ]
+        }
+      },
+      "expect": {
+        "intents": [
+          {
+            "unit_id": "a0",
+            "side": "atk",
+            "kind": "move",
+            "steps": [
+              {
+                "col": 2,
+                "row": 0
+              }
+            ],
+            "target_id": null
+          },
+          {
+            "unit_id": "a1",
+            "side": "atk",
+            "kind": "move",
+            "steps": [
+              {
+                "col": 2,
+                "row": 0
+              }
+            ],
+            "target_id": null
+          }
+        ],
+        "live_after": [
+          {
+            "id": "a0",
+            "q": 0,
+            "r": 0
+          },
+          {
+            "id": "a1",
+            "q": 1,
+            "r": 0
+          },
+          {
+            "id": "d0",
+            "q": 5,
+            "r": 0
+          },
+          {
+            "id": "d1",
+            "q": 6,
+            "r": 0
+          }
+        ],
+        "live_occ_after": [
+          "0,0",
+          "1,0",
+          "5,0",
+          "6,0"
+        ]
+      }
+    },
+    {
+      "id": "v2b_multi_step_order_and_attack_after_move",
+      "pin": "battleScene.ts:5752-5815 + _doMove planowania :8694-8712 (kroki w kolejnosci) + _doAttack :8788-8795",
+      "title": "Trzy kroki zapisane w kolejnosci, atak po ruchu ustawia rodzaj attack i zachowuje kroki",
+      "family": "v2",
+      "setup": {
+        "side": "atk",
+        "units": [
+          "a0",
+          "a1"
+        ],
+        "atk": [
+          {
+            "id": "a0",
+            "side": "atk",
+            "q": 0,
+            "r": 0
+          },
+          {
+            "id": "a1",
+            "side": "atk",
+            "q": 1,
+            "r": 0
+          }
+        ],
+        "def": [
+          {
+            "id": "d0",
+            "side": "def",
+            "q": 5,
+            "r": 0
+          },
+          {
+            "id": "d1",
+            "side": "def",
+            "q": 6,
+            "r": 0
+          }
+        ],
+        "scripts": {
+          "a0": [
+            {
+              "op": "move",
+              "col": 2,
+              "row": 0
+            },
+            {
+              "op": "move",
+              "col": 3,
+              "row": 0
+            },
+            {
+              "op": "move",
+              "col": 4,
+              "row": 0
+            }
+          ],
+          "a1": [
+            {
+              "op": "move",
+              "col": 2,
+              "row": 0
+            },
+            {
+              "op": "attack",
+              "target": "d0"
+            }
+          ]
+        }
+      },
+      "expect": {
+        "intents": [
+          {
+            "unit_id": "a0",
+            "side": "atk",
+            "kind": "move",
+            "steps": [
+              {
+                "col": 2,
+                "row": 0
+              },
+              {
+                "col": 3,
+                "row": 0
+              },
+              {
+                "col": 4,
+                "row": 0
+              }
+            ],
+            "target_id": null
+          },
+          {
+            "unit_id": "a1",
+            "side": "atk",
+            "kind": "attack",
+            "steps": [
+              {
+                "col": 2,
+                "row": 0
+              }
+            ],
+            "target_id": "d0"
+          }
+        ],
+        "live_after": [
+          {
+            "id": "a0",
+            "q": 0,
+            "r": 0
+          },
+          {
+            "id": "a1",
+            "q": 1,
+            "r": 0
+          },
+          {
+            "id": "d0",
+            "q": 5,
+            "r": 0
+          },
+          {
+            "id": "d1",
+            "q": 6,
+            "r": 0
+          }
+        ],
+        "live_occ_after": [
+          "0,0",
+          "1,0",
+          "5,0",
+          "6,0"
+        ]
+      }
+    },
+    {
+      "id": "v2c_live_occupancy_blocks_plan_as_hold",
+      "pin": "battleScene.ts:5752-5815 (cloneOcc z zywej occByKey) + brak ruchu na zajety kafelek",
+      "title": "Kafelek zajety przez zywego obroncy: plan zatrzymuje sie, intencja zostaje hold bez krokow",
+      "family": "v2",
+      "setup": {
+        "side": "atk",
+        "units": [
+          "a0"
+        ],
+        "atk": [
+          {
+            "id": "a0",
+            "side": "atk",
+            "q": 0,
+            "r": 0
+          },
+          {
+            "id": "a1",
+            "side": "atk",
+            "q": 1,
+            "r": 0
+          }
+        ],
+        "def": [
+          {
+            "id": "d0",
+            "side": "def",
+            "q": 5,
+            "r": 0
+          },
+          {
+            "id": "d1",
+            "side": "def",
+            "q": 6,
+            "r": 0
+          }
+        ],
+        "scripts": {
+          "a0": [
+            {
+              "op": "move",
+              "col": 5,
+              "row": 0
+            }
+          ]
+        }
+      },
+      "expect": {
+        "intents": [
+          {
+            "unit_id": "a0",
+            "side": "atk",
+            "kind": "hold",
+            "steps": [],
+            "target_id": null
+          }
+        ],
+        "live_after": [
+          {
+            "id": "a0",
+            "q": 0,
+            "r": 0
+          },
+          {
+            "id": "a1",
+            "q": 1,
+            "r": 0
+          },
+          {
+            "id": "d0",
+            "q": 5,
+            "r": 0
+          },
+          {
+            "id": "d1",
+            "q": 6,
+            "r": 0
+          }
+        ],
+        "live_occ_after": [
+          "0,0",
+          "1,0",
+          "5,0",
+          "6,0"
+        ]
+      }
+    },
+    {
+      "id": "v2d_special_branch_fixup_adds_move_step",
+      "pin": "battleScene.ts:5806-5812 (fixup: brak krokow, a q/r zmienione poza _doMove -> kind move + krok koncowy)",
+      "title": "Zmiana pozycji bez _doMove (galaz specjalna): intencja move z jednym krokiem koncowym",
+      "family": "v2",
+      "setup": {
+        "side": "atk",
+        "units": [
+          "a0",
+          "a1"
+        ],
+        "atk": [
+          {
+            "id": "a0",
+            "side": "atk",
+            "q": 0,
+            "r": 0
+          },
+          {
+            "id": "a1",
+            "side": "atk",
+            "q": 1,
+            "r": 0
+          }
+        ],
+        "def": [
+          {
+            "id": "d0",
+            "side": "def",
+            "q": 5,
+            "r": 0
+          },
+          {
+            "id": "d1",
+            "side": "def",
+            "q": 6,
+            "r": 0
+          }
+        ],
+        "scripts": {
+          "a0": [
+            {
+              "op": "set",
+              "col": 1,
+              "row": 1
+            }
+          ],
+          "a1": []
+        }
+      },
+      "expect": {
+        "intents": [
+          {
+            "unit_id": "a0",
+            "side": "atk",
+            "kind": "move",
+            "steps": [
+              {
+                "col": 1,
+                "row": 1
+              }
+            ],
+            "target_id": null
+          },
+          {
+            "unit_id": "a1",
+            "side": "atk",
+            "kind": "hold",
+            "steps": [],
+            "target_id": null
+          }
+        ],
+        "live_after": [
+          {
+            "id": "a0",
+            "q": 0,
+            "r": 0
+          },
+          {
+            "id": "a1",
+            "q": 1,
+            "r": 0
+          },
+          {
+            "id": "d0",
+            "q": 5,
+            "r": 0
+          },
+          {
+            "id": "d1",
+            "q": 6,
+            "r": 0
+          }
+        ],
+        "live_occ_after": [
+          "0,0",
+          "1,0",
+          "5,0",
+          "6,0"
+        ]
+      }
+    },
+    {
+      "id": "v2e_unknown_source_is_skipped",
+      "pin": "battleScene.ts:5778 (cloneById.get brak -> continue, bez intencji)",
+      "title": "Zrodlo spoza klonow nie daje intencji; pozostale jednostki planuja normalnie",
+      "family": "v2",
+      "setup": {
+        "side": "atk",
+        "units": [
+          "a0",
+          "zz"
+        ],
+        "atk": [
+          {
+            "id": "a0",
+            "side": "atk",
+            "q": 0,
+            "r": 0
+          },
+          {
+            "id": "a1",
+            "side": "atk",
+            "q": 1,
+            "r": 0
+          }
+        ],
+        "def": [
+          {
+            "id": "d0",
+            "side": "def",
+            "q": 5,
+            "r": 0
+          },
+          {
+            "id": "d1",
+            "side": "def",
+            "q": 6,
+            "r": 0
+          }
+        ],
+        "scripts": {
+          "a0": [
+            {
+              "op": "move",
+              "col": 2,
+              "row": 0
+            }
+          ]
+        }
+      },
+      "expect": {
+        "intents": [
+          {
+            "unit_id": "a0",
+            "side": "atk",
+            "kind": "move",
+            "steps": [
+              {
+                "col": 2,
+                "row": 0
+              }
+            ],
+            "target_id": null
+          }
+        ],
+        "live_after": [
+          {
+            "id": "a0",
+            "q": 0,
+            "r": 0
+          },
+          {
+            "id": "a1",
+            "q": 1,
+            "r": 0
+          },
+          {
+            "id": "d0",
+            "q": 5,
+            "r": 0
+          },
+          {
+            "id": "d1",
+            "q": 6,
+            "r": 0
+          }
+        ],
+        "live_occ_after": [
+          "0,0",
+          "1,0",
+          "5,0",
+          "6,0"
+        ]
+      }
+    },
+    {
+      "id": "v2f_attack_then_move_keeps_attack_kind",
+      "pin": "battleScene.ts:5752-5815 + _doMove :8694-8712 (kind nie zmienia sie na move, gdy juz attack)",
+      "title": "Atak zapisany przed ruchem: rodzaj zostaje attack, a ruch dopisuje tylko krok",
+      "family": "v2",
+      "setup": {
+        "side": "atk",
+        "units": [
+          "a0"
+        ],
+        "atk": [
+          {
+            "id": "a0",
+            "side": "atk",
+            "q": 0,
+            "r": 0
+          },
+          {
+            "id": "a1",
+            "side": "atk",
+            "q": 1,
+            "r": 0
+          }
+        ],
+        "def": [
+          {
+            "id": "d0",
+            "side": "def",
+            "q": 5,
+            "r": 0
+          },
+          {
+            "id": "d1",
+            "side": "def",
+            "q": 6,
+            "r": 0
+          }
+        ],
+        "scripts": {
+          "a0": [
+            {
+              "op": "attack",
+              "target": "d0"
+            },
+            {
+              "op": "move",
+              "col": 2,
+              "row": 0
+            }
+          ]
+        }
+      },
+      "expect": {
+        "intents": [
+          {
+            "unit_id": "a0",
+            "side": "atk",
+            "kind": "attack",
+            "steps": [
+              {
+                "col": 2,
+                "row": 0
+              }
+            ],
+            "target_id": "d0"
+          }
+        ],
+        "live_after": [
+          {
+            "id": "a0",
+            "q": 0,
+            "r": 0
+          },
+          {
+            "id": "a1",
+            "q": 1,
+            "r": 0
+          },
+          {
+            "id": "d0",
+            "q": 5,
+            "r": 0
+          },
+          {
+            "id": "d1",
+            "q": 6,
+            "r": 0
+          }
+        ],
+        "live_occ_after": [
+          "0,0",
+          "1,0",
+          "5,0",
+          "6,0"
+        ]
+      }
+    },
+    {
+      "id": "v7a_ungrouped_steady_rally_two_cols_forward_atk",
+      "pin": "battleScene.ts:17642-17646 (rally = _forwardCol(side, q, 2), r) + :18022-18025 (steady bez strzelca -> _advanceStep)",
+      "title": "Pojedyncza jednostka steady bez strzelca (atak): cel marszu dwie kolumny w przod, krok doktryny = advanceStep",
+      "family": "v7",
+      "setup": {
+        "unit": {
+          "id": "s0",
+          "side": "atk",
+          "q": 10,
+          "r": 4
+        },
+        "group_meta": null
+      },
+      "expect": {
+        "meta": {
+          "doctrine": "steady",
+          "rally_col": 12,
+          "rally_row": 4,
+          "auto_play": true
+        },
+        "returned": true,
+        "branch": "advanceStep",
+        "done_calls": 0
+      }
+    },
+    {
+      "id": "v7b_ungrouped_steady_rally_clamped_at_zero_def",
+      "pin": "battleScene.ts:6748-6750 (_forwardCol z clampem 0) + :17645",
+      "title": "Obrona przy lewym brzegu: cel dwie kolumny w przod zacisniety do kolumny 0",
+      "family": "v7",
+      "setup": {
+        "unit": {
+          "id": "s1",
+          "side": "def",
+          "q": 1,
+          "r": 3
+        },
+        "group_meta": null
+      },
+      "expect": {
+        "meta": {
+          "doctrine": "steady",
+          "rally_col": 0,
+          "rally_row": 3,
+          "auto_play": true
+        },
+        "returned": true,
+        "branch": "advanceStep",
+        "done_calls": 0
+      }
+    },
+    {
+      "id": "v7c_ungrouped_steady_rally_clamped_at_east_edge",
+      "pin": "battleScene.ts:6748-6750 (clamp do BF_COLS-1 = 67) + :17645",
+      "title": "Atak przy prawym brzegu planszy: cel zacisniety do ostatniej kolumny 67",
+      "family": "v7",
+      "setup": {
+        "unit": {
+          "id": "s2",
+          "side": "atk",
+          "q": 66,
+          "r": 5
+        },
+        "group_meta": null
+      },
+      "expect": {
+        "meta": {
+          "doctrine": "steady",
+          "rally_col": 67,
+          "rally_row": 5,
+          "auto_play": true
+        },
+        "returned": true,
+        "branch": "advanceStep",
+        "done_calls": 0
+      }
+    },
+    {
+      "id": "v7d_group_steady_rally_from_group_meta_atk",
+      "pin": "battleScene.ts:17890-17895 (steady grupy: rally = _forwardCol(side, centroid.col, 2)) + :17630-17634 (meta z grupy)",
+      "title": "Jednostka grupy steady (atak): cel grupy z zapisanej mety, krok doktryny advanceStep",
+      "family": "v7",
+      "setup": {
+        "unit": {
+          "id": "g0",
+          "side": "atk",
+          "q": 12,
+          "r": 3,
+          "group": "g1"
+        },
+        "group_centroid_col": 12,
+        "group_meta": {
+          "doctrine": "steady",
+          "autoPlay": true,
+          "rallyCol": 14,
+          "rallyRow": 3
+        }
+      },
+      "expect": {
+        "meta": {
+          "doctrine": "steady",
+          "rally_col": 14,
+          "rally_row": 3,
+          "auto_play": true
+        },
+        "returned": true,
+        "branch": "advanceStep",
+        "done_calls": 0
+      }
+    },
+    {
+      "id": "v7e_group_steady_rally_from_group_meta_def",
+      "pin": "battleScene.ts:17890-17895 (steady grupy, strona def: _forwardCol(def, centroid.col, 2)) + :17630-17634",
+      "title": "Jednostka grupy steady (obrona): cel grupy dwie kolumny w strone atakujacego",
+      "family": "v7",
+      "setup": {
+        "unit": {
+          "id": "g1d",
+          "side": "def",
+          "q": 20,
+          "r": 9,
+          "group": "g2"
+        },
+        "group_centroid_col": 20,
+        "group_meta": {
+          "doctrine": "steady",
+          "autoPlay": true,
+          "rallyCol": 18,
+          "rallyRow": 9
+        }
+      },
+      "expect": {
+        "meta": {
+          "doctrine": "steady",
+          "rally_col": 18,
+          "rally_row": 9,
+          "auto_play": true
+        },
+        "returned": true,
+        "branch": "advanceStep",
+        "done_calls": 0
+      }
+    },
+    {
+      "id": "v7f_steady_mounted_takes_cavalry_branch",
+      "pin": "battleScene.ts:18013-18016 (steady && mounted -> _cavalryAction, przed galezia doktryny piechoty)",
+      "title": "Konnica w doktrynie steady nie idzie galezia piesza: cavalryAction, bez celu marszu z formacji",
+      "family": "v7",
+      "setup": {
+        "unit": {
+          "id": "k0",
+          "side": "atk",
+          "q": 10,
+          "r": 4,
+          "mounted": true
+        },
+        "group_meta": null
+      },
+      "expect": {
+        "meta": {
+          "doctrine": "steady",
+          "rally_col": 12,
+          "rally_row": 4,
+          "auto_play": true
+        },
+        "returned": true,
+        "branch": "cavalryAction",
+        "done_calls": 0
+      }
+    }
+  ]
+}
