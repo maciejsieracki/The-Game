@@ -2308,3 +2308,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Dysk: 9,4 GB wolnego** (spadek z 14 GB). Składniki: `scratchpad/target` 3,1 GB (właściciel niezidentyfikowany), `scratchpad/target-k5doc-t0` 3,1 GB (cache aktywnego T0, nie ruszany), worktree `wf_f3b76b65-261-3` 0,99 GB i `wf_5a965001-591-4` 1,1 GB (oba oznaczone wcześniej jako „dirty, nie ruszam”), `/tmp/claude-0/ev9f1` (decyzja właściciela).
 - **Decyzja:** nie usuwam niczego z tych pozycji bez potwierdzenia. Nowe starty Rust przy < 8 GB wstrzymuję (zasada 5 z CLAUDE.md).
 - **Do decyzji właściciela:** czy usunąć `scratchpad/target` (cache bez znanego właściciela) i dwa dirty worktree po zabezpieczeniu HEAD w `refs/keep`.
+
+## Przebieg (06:18 UTC — heartbeat: bez nowych startów, dysk 7,1 GB)
+
+- **Sloty:** 2 z 4. K5-BLOW-ENV-WEKTORY-Q1 (`wf_6ab179f1-525`) — FC w toku (Sonnet), Operator i Obrona zakończone. K5DOC-PROD-UNIT-STAN-T0 (`wf_a3de76ac-91a`) — Evaluator w toku (Sonnet), Operator zakończony.
+- **Dlaczego bez nowych startów:** dysk **7,1 GB** wolnego — poniżej progu 8 GB dla tematów z kodem Rust (CLAUDE.md, zasada 5). Pełny `cargo test` przy integracji też tego wymaga. Tematy bez cargo (dokumentacja/rozpoznanie) są dozwolone, ale kandydaci z kolejki bez kodu pokrywają się z T4 (#123) albo czekają na decyzje (ZŁOŻA, COMBAT-WEJSCIA, R7K7C, ZDOBYCIE, kontrakt `ActivateOps`).
+- **Zakaz startu kodu** do czasu zwolnienia miejsca (patrz tick wcześniej: `scratchpad/target` 3,1 GB, dirty worktree `wf_f3b76b65-261-3` i `wf_5a965001-591-4`, `/tmp/claude-0/ev9f1` — decyzje właściciela).
+- **Parity:** `1a4982574` (bez zmian).
