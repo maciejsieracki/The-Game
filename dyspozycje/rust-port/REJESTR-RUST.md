@@ -2630,3 +2630,14 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **P4-1I4 BATTLE-CONSUMER (#277, #293): zintegrowany.** Kod FC `54fa4c704` (PASS-WITH-NOTES), integracja na `parity-v2` = `55e00a164` (FF z `9a71caf8a`). Bramki: patrz wpis 17:47 UTC.
 - **Otwarte po tym domknięciu:** #294 (push `refs/keep/R-RUSTPORT-P4-1I4-fc` = `54fa4c704`, odrzucany przez proxy; zostaje lokalnie) i #295 (log `p6_8i_pick`).
 - **Pozostałe integracje z tej serii, dla kompletności:** nakładki 1F4/1F5 r2 `86366b5fe` na `75de326bc` → `3a8f068f6`; K5DOC-T2/T3 `03dfa64c2`, `efa3b7642` na `75de326bc`; K5-AUTO-WEKTORY V5/V6 `b6aa05024` (V1 nieweryfikowane, patrz rozjazdy w `KOLEJKA-RUST.md` §6).
+
+### Przebieg — heartbeat Rust (18:18 UTC), 2026-11-16
+
+- **Parity:** `55e00a164`, bez zmian.
+- **Sloty: 2 z 4 aktywne:**
+  - Integracja wektorów AUTO V1/V5/V6 na `55e00a164` (HAIKU, pełna bramka, `wf_15af2fae-6db`). Wynik jeszcze nie przyszedł, FF po zielonej bramce.
+  - Test czułości filtra obrońców (#311, HAIKU Operator, SONNET Evaluator i FC, `wf_8ea63f66-118`, dispatch `b0728d522`, baza FC `6cda54727`).
+- **Wolne sloty — brak czystych tematów:** pozostałe pozycje wymagają decyzji właściciela (#308 droga DTO, #97 tryb ręczny, #282 fotele, #115/#120 wariant A/B, #135 kolejność zwarcia, #310 decyzje D1–D6) albo zależą od niezintegrowanego kodu (#304 po #310, #296 po integracji AUTO, #174 po integracji #110).
+- **Wynik pętli dystansu (#100):** Operator d1dbd1ff3 PASS-WITH-NOTES, FC raport 9aaee0ca8 PASS-WITH-NOTES. Commity zachowane lokalnie (`refs/keep/COMBAT-PETLA-DYSTANSU-op` i `-fc`, push referencji odrzucony przez proxy). Nie zintegrowano: dubluje COMBAT-HARNESS R1–R3, decyzja o scaleniu u orkiestratora.
+- **Dysk:** 15 GB wolnego. Sprzątanie: usunięto worktree wf_a01f4cfa-dd0 (-1, -4, -5).
+- **Otwarte:** push referencji `keep` (I4 `54fa4c704`, dwa COMBAT) odrzucany przez proxy; zarzut trailera commitu z nazwą modelu w `463fb2636` (decyzja #289).
