@@ -1,3 +1,9 @@
+## ROBOCZA 2143e042 -- 2026-11-14 -- FALA 762: dziennik Skad zapasy wraca po wczytaniu zapisu (deserializeGame) (testowa)
+
+- save.ts: deserializeGame przepisuje resourceLedgerHistory (jawna lista pol je gubila); test save-load-ledger-history-test 4/0 + mutant; live Chromium: baza 0 wpisow przed tickiem, kandydat 2 (jak w zapisie), po ticku 3.
+- Weryfikacja: FC PASS-WITH-NOTES f6c5c8820; tsc 0, logic 213/213, ledger-history 4/0, resource-ledger-save-history 15/0, load-game-regression 34/0, player-owned-city PASS, vite OK, MD5 Raw
+- Limity: inne pola SaveGame moga byc gubione przez jawna liste (audyt osobno); test live nie jest czescia testu node
+
 ## ROBOCZA bbbecbee -- 2026-11-14 -- FALA 761: wczytanie zapisu odtwarza flage pierwszego miasta gracza (Zakoncz ture przy 0 miast) (testowa)
 
 - main.ts +19: playerEverOwnedCityByOwner zapisywane w meta (gdy niepuste) i odtwarzane po wczytaniu; test live Chromium: po wczytaniu przy 0 miast Zakoncz ture dziala (baza: timeout); test save-load-player-owned-city z mutacjami; #432 zmierzone live (dziennik Skad zapasy 3->0 po wczytaniu w nowej stronie) - defekt trwalosci, niezlatany.

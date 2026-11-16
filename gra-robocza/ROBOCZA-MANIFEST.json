@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "bbbecbee0ae02c4841a266f88656a709",
-  "bundleSha256": "5805bca53cf7896f1ec01ea340e0bdd36fef959895f87e771970b708acc4499b",
-  "bundleBytes": 14803915,
+  "bundleMd5": "2143e04291acced75727e29018ca9594",
+  "bundleSha256": "dbe4144b4a033687bac51be3aee225a677b0ce0dbb9c8ce2fc7f8b3de2fef911",
+  "bundleBytes": 14804007,
   "sourceSnapshot": {
-    "source": "main c284fe02d + 6e38f9388 (main.ts +19)",
+    "source": "main 8f9250294 + f6c5c8820 (save.ts +4)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 761: main.ts +19: playerEverOwnedCityByOwner zapisywane w meta (gdy niepuste) i odtwarzane po wczytaniu; test live Chromium: po wczytaniu przy 0 miast Zakoncz ture dziala (baza: timeout); test save-load-player-owned-city z mutacjami; #432 zmierzone live (dziennik Skad zapasy 3->0 po wczytaniu w nowej stronie) - defekt trwalosci, niezlatany."
+    "FALA 762: save.ts: deserializeGame przepisuje resourceLedgerHistory (jawna lista pol je gubila); test save-load-ledger-history-test 4/0 + mutant; live Chromium: baza 0 wpisow przed tickiem, kandydat 2 (jak w zapisie), po ticku 3."
   ],
   "verification": [
-    "FC PASS-WITH-NOTES 6e38f9388; tsc 0, logic 213/213, player-owned-city PASS, load-game-regression 34/0, ledger-save-history 15/0, vite OK, MD5 Raw"
+    "FC PASS-WITH-NOTES f6c5c8820; tsc 0, logic 213/213, ledger-history 4/0, resource-ledger-save-history 15/0, load-game-regression 34/0, player-owned-city PASS, vite OK, MD5 Raw"
   ],
   "limits": [
-    "#432 przyczyna niezmierzona (osobny temat); test live #433 nie jest bramka package.json"
+    "inne pola SaveGame moga byc gubione przez jawna liste (audyt osobno); test live nie jest czescia testu node"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES SAVE-LOAD-PLAYER-OWNED-CITY-AND-LEDGER-HISTORY-Q1 r1 (kandydat 088c6a058, raport 6e38f9388): #433 naprawione - playerEverOwnedCityByOwner zapisywane w meta (tylko gdy niepuste) i odtwarzane po wczytaniu (unia z heurystyka, odczyt chroniony); test live w Chromium: po wczytaniu awaitingFirstPlayerCity=false, Zakoncz ture dziala przy 0 miast gracza (turnAfter=2), kontrola bazy awaiting=true i timeout; test save-load-player-owned-city-test.cjs z mutacjami. #432 zmierzone live: dziennik Skad zapasy 3 wpisy przed zapisem, 0 po wczytaniu w nowej stronie przed tickiem, 1 po ticku, round-trip w tej samej sesji 3->3 = realny defekt trwalosci, przyczyna NIE ZMIERZONA (slot IDB / saveToLocal-loadFromLocal), bez zmiany gry, osobny temat."
+    "notes": "FC PASS-WITH-NOTES SAVE-LOAD-LEDGER-HISTORY-LOST-AFTER-LOAD-Q1 r1 (kandydat bb9928abb, raport f6c5c8820): przyczyna utraty dziennika Skad zapasy po wczytaniu = jawna lista pol w deserializeGame (gra/src/game/save.ts) nie przepisywala resourceLedgerHistory; poprawka 1 linia; test save-load-ledger-history-test.cjs 4/0 + mutant czerwony; live Chromium (obrona): baza 0 wpisow przed tickiem i 1 po, kandydat 2 przed tickiem (jak w zapisie) i 3 po ticku. Notka: ta sama jawna lista pol w deserializeGame (save.ts ~686-760) moze gubic inne pola SaveGame - osobny audyt."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-16T04:35:11",
+  "hubGeneratedAt": "2026-11-16T04:47:37",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "bbbecbee0ae02c4841a266f88656a709",
-      "sizeBytes": 14803915
+      "md5": "2143e04291acced75727e29018ca9594",
+      "sizeBytes": 14804007
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "bbbecbee0ae02c4841a266f88656a709",
-      "sizeBytes": 14803915
+      "md5": "2143e04291acced75727e29018ca9594",
+      "sizeBytes": 14804007
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "bbbecbee0ae02c4841a266f88656a709",
-      "sizeBytes": 14803915
+      "md5": "2143e04291acced75727e29018ca9594",
+      "sizeBytes": 14804007
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "bbbecbee0ae02c4841a266f88656a709",
-      "sizeBytes": 14803915
+      "md5": "2143e04291acced75727e29018ca9594",
+      "sizeBytes": 14804007
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "bbbecbee0ae02c4841a266f88656a709",
-      "sizeBytes": 14803915
+      "md5": "2143e04291acced75727e29018ca9594",
+      "sizeBytes": 14804007
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "bbbecbee0ae02c4841a266f88656a709",
-      "sizeBytes": 14803915
+      "md5": "2143e04291acced75727e29018ca9594",
+      "sizeBytes": 14804007
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "bbbecbee0ae02c4841a266f88656a709",
-      "sizeBytes": 14803915
+      "md5": "2143e04291acced75727e29018ca9594",
+      "sizeBytes": 14804007
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "bbbecbee0ae02c4841a266f88656a709",
-      "sizeBytes": 14803915
+      "md5": "2143e04291acced75727e29018ca9594",
+      "sizeBytes": 14804007
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "bbbecbee0ae02c4841a266f88656a709",
-      "sizeBytes": 14803915
+      "md5": "2143e04291acced75727e29018ca9594",
+      "sizeBytes": 14804007
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "bbbecbee0ae02c4841a266f88656a709",
-      "sizeBytes": 14803915
+      "md5": "2143e04291acced75727e29018ca9594",
+      "sizeBytes": 14804007
     }
   ],
-  "md5": "bbbecbee0ae02c4841a266f88656a709",
+  "md5": "2143e04291acced75727e29018ca9594",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
