@@ -147,3 +147,29 @@ Orkiestrator: (a) decyzja BLOKADY 1 — jesli TAK, osobny temat z regula prioryt
 
 ## DEPLOY/PUSH
 NIE WYKONANO (brak integracji, brak push na main, brak deployu — zgodnie z zakazami dispatchu).
+
+## Obrona — odpowiedź na zarzuty Evaluatora (kandydat c0cfc30bf, poprawka 9d8e8812a)
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-AI-WAR-CITY-GARRISON-ONE-REST-TO-GENERAL-Q1
+GOAL: obrona zarzutów FC (rdzeń: puste miasta AI w wojnie; pomiar Fazy 1; kryterium spadku zdobyć).
+ZMIANY/COMMIT: 9d8e8812a — gra/src/game/ai.ts (usunięta martwa mapa garrisonFallbacks, bez zmiany zachowania), gra/tools/ai-war-city-garrison-test.cjs (+G10/G10b na realnym gra/data/units.json). Ten raport: osobny commit.
+
+Odpowiedzi na zarzuty:
+- Zarzut 1 (słaby dowód mutacyjny): PRZYJMUJĘ CZĘŚCIOWO. Dodano G10 na realnym units.json: puste miasto A dostaje dokładnie 1 build = Wojownik, fallbackIds bez Wojownika (G10b). Dowód wyjścia: PROBE `[{"type":"build","cityId":"cityA","buildingId":"Wojownik","fallbackIds":[]}]`. ZOSTAJE NIE ZMIERZONE: gałąź zastąpienia produkcji jednostki bojowej garnizonem (`continue`), bo fixture nie ma budynków, więc chooseCityProduction zwraca null i gałąź nie jest wykonywana. Mutacja tej gałęzi nie została wykonana.
+- Zarzut 2 (main.ts / model zakupu NIE ZMIERZONE): PRZYJMUJĘ jako lukę otwartą. Nie zmierzono w żywej grze (main.ts, Chromium), bramek manpower/surowców/epoki w modelu. Brak nowego dowodu w tej rundzie.
+- Zarzut 3 (zdobycia nie spadły): PRZYJMUJĘ. Pomiar Evaluatora: capturedIn30Turns 0,33 PRZED i 0,33 PO. Kryterium „mniej zdobytych miast” NIE jest spełnione; nie twierdzę poprawy.
+- Zarzut 4 (higiena): PRZYJMUJĘ garrisonFallbacks — usunięte (grep przed: 3 wystąpienia w 2 liniach zapisu, 0 odczytów; po: 0). Allowlista ai-war-defend-home-sim.cjs (+3/-2, tylko haki opcjonalne) — PRZYJMUJĘ jako uwagę do decyzji orkiestratora (allowlista nie jest moja do zmiany). Pomiar PRZED jako mutacja jednej linii: PRZYJMUJĘ jako słabość metody, NIE ZMIERZONE jako niezależny build bazy.
+- Zarzut 5 (stała 'Wojownik'): ODRZUCAM jako regresję, PRZYJMUJĘ jako ryzyko NIE ZMIERZONE. Dane units.json: Wojownik — Epoka Kamień, Tech "-", Kultura null, Pieniądz 5, Surowiec Drewno 13. Dane nie zawierają ograniczenia cywilizacyjnego. Ryzyko: brak Drewna lub inna blokada zakupu odrzuci polecenie, a miasto zostanie puste (fallbacki z normalnej produkcji mogą być niemilitarne). Kodu nie zmieniano; NIE ZMIERZONE dla wszystkich cywilizacji i epok.
+
+TESTY (surowe wyniki, ten worktree, Node 22; esbuild 0.28.2 zainstalowany lokalnie bez zmiany package.json/lock):
+- ai-war-city-garrison-test.cjs: 20 PASS, 0 FAIL (było 18/0; +G10, +G10b)
+- ai-war-defend-home-test.cjs: 30 passed, 0 failed
+- Nie uruchomiono ponownie: tsc, pozostałe 4 bramki referencyjne, determinizm, load-game-regression (zmiana to usunięcie martwej zmiennej, bez zmiany zachowania; NIE ZMIERZONE w tej rundzie).
+
+BLOKADY: brak pomiaru w żywej grze (main.ts, Chromium); gałąź zastąpienia produkcji nieprzetestowana; kryterium zdobyć niespełnione; stała Wojownik dla wszystkich cywilizacji NIE ZMIERZONE.
+RUNDY: 4/5 (obrona). Ostatni werdykt FC: FAIL (r3 BLOCK->FC FAIL nie dotyczy tej rundy; ten raport odpowiada na PASS-WITH-NOTES z zarzutami).
+NASTĘPNY KROK: orkiestrator decyduje o allowliście sim.cjs i o uzupełnieniu testu gałęzi zastąpienia (wymaga fixture z budynkiem produkującym jednostkę bojową).
+UWAGI-DLA-ORKIESTRATORA: 1) allowlista: ai-war-defend-home-sim.cjs poza wzorcem ai-*test*. 2) dług: brak fixture budynku w ai-war-city-garrison-test. Nie zakładałem tasków ani sesji (zakaz).
+DEPLOY/PUSH: NIE WYKONANO
