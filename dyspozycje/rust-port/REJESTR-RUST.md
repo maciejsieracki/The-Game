@@ -2814,3 +2814,10 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Sprzątanie:** usunięto worktree `integ-t4a`, target `target-integ-t4a`. Dysk 11 GB.
 - **Trwające workflowy (4/4):** R5 (`wf_ce6a50a1-e40`, OPUS), R2 r2 (`wf_b838b674-86e`, OPUS), T4b (`wf_6ffa730a-4ec`, HAIKU/SONNET), R6 (`wf_f53eacb7-7f9`, OPUS).
 - **Do integracji po wolnym dysku:** Q5 (`922300020`/FC `3d21e5679`), R1 (`3dec6ac5d`/FC `c6ab07fb09a5`), R3 (`963148a78`/FC `b82ca9375`) — jedna integracja renderera i jedna bramka.
+
+### Przebieg — R5 zakończony, integracja renderera (Q5 + R1 + R3 + R5) przygotowana, 2026-11-16 ~21:25 UTC
+
+- **R5, plakietki miast (`56c84ea45`, FC `84e421c57` PASS-WITH-NOTES):** integrator `syncStatChips` (`cities/sync/`), 11 testów z pin-linkami, mutacje (a)(b)(c)(d)(e)(f) FAIL, bramka renderera 570 passed. Notatki do domknięcia: (1) `StatChipUiState` to osobny typ; po integracji Q5 ujednolicić z `MapUiState`; (2) luka: `grp.visible` w webie = `isVisible` razem z panelem miasta, a `CityInputs::sync` bierze tylko `fog_visible` (widoczne tylko przy panelu nad miastem we mgle); (3) kilka numerów linii pinu w komentarzach przesunięte o 1 (`cities.ts:888/928`, `main.ts:2988`, `applyFogVisibility` to `cities.ts:740`). Do poprawy w osobnym temacie komentarzy.
+- **Integracja renderera (gotowa, bramka nieuruchomiona):** merge na `68b2a6633` czysty dla czterech tematów: Q5 (`3d21e5679`), R1 (`c6ab07fb09a5`), R3 (`b82ca9375`), R5 (`84e421c57`). Worktree `integ-rend` na `70d6fbb62`. Pełna bramka (fmt, clippy, test renderer) zostaje na następny tick, po zakończeniu R2 r2 i R6, żeby nie przekroczyć dysku.
+- **Sprzątanie:** usunięto worktree R5 (`wf_ce6a50a1-e40-1`), commit zabezpieczony `refs/keep/P4-1-R5-84e421c57`. Dysk 9,5 GB.
+- **Trwające workflowy:** R2 r2 (`wf_b838b674-86e`, OPUS), R6 (`wf_f53eacb7-7f9`, OPUS), T4b (`wf_6ffa730a-4ec`, HAIKU/SONNET). Czwarty slot wolny do uzupełnienia (R4, Opus 3D).
